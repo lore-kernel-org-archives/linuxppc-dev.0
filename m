@@ -1,10 +1,10 @@
-Date: Wed, 12 Jan 2000 10:35:01 +0100 (MET)
+Date: Wed, 12 Jan 2000 10:36:11 +0100 (MET)
 From: Gabriel Paubert <paubert@iram.es>
-To: Pravin Pathak <pkpathak@dnrc.bell-labs.com>
-cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Need Help
-In-Reply-To: <387A333B.9CA93FF@dnrc.bell-labs.com>
-Message-ID: <Pine.HPX.4.10.10001121032080.20852-100000@gra-ux1.iram.es>
+To: Manoj Jaitly <manojj@dnrc.bell-labs.com>
+cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: CPC 700
+In-Reply-To: <387BA1CA.413480E3@dnrc.bell-labs.com>
+Message-ID: <Pine.HPX.4.10.10001121035170.20852-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
@@ -13,27 +13,15 @@ List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 
-On Mon, 10 Jan 2000, Pravin Pathak wrote:
+On Tue, 11 Jan 2000, Manoj Jaitly wrote:
 
 > 
-> Hi,
-> I need to port Linux on our hardware with
-> 603e processor and cpc700 MMU. There is no disk support.
-> We do have flash ROM and ethernet on board.
-> Can anyone suggest a site I can download this port OR
-> a close match ?
+> Does any body has a Linux driver for IBM CPC 700.
 
-You might want to see if my patches for MVME2600 and especially the
-bootloader part in arch/ppc/prepboot help. They are available at 
+As far as I know, not. If you have some firmware which sets is basically
+up, the only thing you actually need to write is a new interrupt
+controller code...
 
-	ftp://vlab1.iram.es/pub/linux-2.2/
-
-you will still need to perform the early setup of the CPC700, modify
-the UART address etc...but the code includes things like PCI resource
-allocation and is flexible enough to be adapted to a variety of PCI I/O
-base addresses, memory offsets etc...
-
-	Regards,
 	Gabriel.
 
 
