@@ -1,55 +1,36 @@
 From: Steffen Haeuser <SteffenH@hyperion-software.de>
 Reply-To: SteffenH@hyperion-software.de
-To: Iain Sandoe <iain@sandoe.co.uk>, daenzerm@student.ethz.ch,
-        linuxppc-dev@lists.linuxppc.org
-Date: Tue, 25 Jul 2000 17:50:21 -0500
-Message-ID: <yam8241.1084.150101632@mail.lf-online.de>
-In-Reply-To: <200007251441.PAA21903@hyperion.valhalla.net>
-Subject: Re: sound again [was: Re: xf4 bug report]
+To: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
+Date: Tue, 25 Jul 2000 17:52:14 -0500
+Message-ID: <yam8241.727.150101632@mail.lf-online.de>
+In-Reply-To: <20000725144714.804@mailhost.mipsys.com>
+Subject: Re: xf4 bug report
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Am 25-Jul-00 schrieb Iain Sandoe:
+Am 25-Jul-00 schrieb Benjamin Herrenschmidt:
 
 Hi!
+>>
+>>A "blue/white" G3 Mac first Revision. Kernel is: 2.2.17pre10-ben2 (with the
+>>older
+>>kernel Sound worked - at least I cannot remember that an error message
+during
+>>OS-booting happened, I never tried out the sound then.
+>>But the new Kernel is needed for the X Server V4)
 
->OK, which was the last working version (prob. easiest is if you mail me
->drivers/sound/dmasound.c).  I can diff that to what we have under 17preXX
->and see if there are any clues...
+>To my knowledge, there have been no change to the sound driver in 2.2 lately
 
-Hmmm, I never touched the source code... the latest with working sound was
-2.2.15
-... well, actually I never tried the sound there... but I *think* this error
-message
-during bootup concerning sound came first with the new kernel (something about
-dma
-it said... if that helps I can look up the exact error message...).
+Hmmm... maybe it did not work before either... but I first noticed the
+"Failed"
+after the installation of the new Kernel...
 
->I did a back-port of the 2.4.0-test4 dmasound stuff to 2.2.17pre10-ben2
->(will check on pre13-ben1 later):
->http://www.drfruitcake.com/linux/linuxppc.html
+>Which bootloader are you using ?
 
-I guess the dmasnd-v2a.patch is the file to get ? Hmmm, is there also a Binary
-Version available somewhere ? I do not have the latest Kernel Source on my
-machine
-and would like to avoid having to download it if possible...
-
-BTW: Note about this page: at the start there is written
-"PowerMac/Amiga/Atari/etc."
-There is no such thing as a PowerAtari... there is a PowerAmiga, yes... but no
-PowerAtari... Atari never got rid of the 68k CPU Architecture...
-(and never, never name Amiga and Atari in one sentence :) )
-
->Having said that, I would expect your machine to work - I think it's an
->AWACS sound chip of some variety?  If it has a DACA you'll have to wait..
->:-(
-
-No clue what soundchip... it is a out-of-the-box "Blue/White" G3 Mac 1st
-Revision...
-no changes...
+I boot up using the system extension...
 
 Steffen
 
