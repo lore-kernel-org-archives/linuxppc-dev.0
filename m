@@ -1,47 +1,56 @@
-Message-ID: <3DFA3420.10105@mvista.com>
-Date: Fri, 13 Dec 2002 11:25:20 -0800
-From: Todd Poynor <tpoynor@mvista.com>
+Message-ID: <20021214003254.94837.qmail@web11501.mail.yahoo.com>
+Date: Fri, 13 Dec 2002 16:32:54 -0800 (PST)
+From: Khai Trinh <kqtrinh@yahoo.com>
+Subject: DMA question for ppc440 PCI board
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Support for Arctic platform (405LP based)
-References: <20021213043628.GI21319@zax.zax>
-In-Reply-To: <20021213043628.GI21319@zax.zax>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-A few comments and questions...
+Hi folks,
 
-I assume symbol CONFIG_ARCTIC2 is more appropriate than CONFIG_ARCTIC,
-with additional symbols possibly to be invented in the future to
-distinguish minor changes in board rev 3, 4, ... But mentioning this
-just in case it might make future maintenance easier to use a single
-symbol for common Arctic family code.
+Does anyone out there work on 440 based PCI board?
 
-CONFIG_IBM_OPENBIOS is taken out of the CONFIG_SYCAMORE section of
-arch/ppc/config.in?
+I have a DMA problem with the 440 DMA controller. In
+our application, the 440 based PCI board is living in
+a Solaris host platform. Our PCI board is running with
+linux version 2.4.17. So, there are Host software,
+driver and embedded linux software, driver, etc...We
+want to move data in and out between the Host and the
+board. We have defined a messaging system to allow
+host software to send messages to the embedded
+software. When it comes to time to do DMA, the host
+sends a DMA request message containing the PCI bus
+address and size of the DMA transfer to the embedded
+software.
 
-Duplication of the CONFIG_BEECH case in
-arch/ppc/boot/simple/embed_config.c: might be trying to enable the SSX
-bootloader for Beech, but since CONFIG_IBM_OPENBIOS is on for Beech it
-seems we'd have dup definitions?  Would more SSX code would be necessary
-anyhow?
+When the embedded software starts programming the DMA
+controller, the 440 requires that the PCI bus address
+be mapped to the 440 PLB local bus address. There are
+3 sets of POM registers on the 440 supposed to allow
+us to remap the PCI bus address into PLB local
+address. I did that. But when I started programming
+the DMA src register with the PCI mapped PLB address,
+and the dst register with the locally allocated
+buffer, and enable DMA, no DMA is taken place? What am
+I missing? Please advice...
 
-CONFIG_PPC_RTC is used to protect RTC code, most of these were
-explicitly removed from other platforms some time ago, not sure what the
-status of this is since there are a couple platforms that still use it.
+I can even tried to use ioremap64() and pass it with
+the mapped LPB address to get kernel virtual address.
+The kernel address looks good (ie: c0228000). The one
+big problem is that the moment I dereferenced the
+virtual pointer using readl, the kernel panic...
 
-I notice the bd_t has no entry for the ethernet MAC address in firmware,
-like Beech, but am hoping there's an EEPROM on the device that holds
-this info.  On Beech it causes some ugliness because the usual EEPROM is
-not provided, so only the bootloader can program the ether dev's MAC.
-And consequently the generic ethernet driver is hacked to deal with that.
+That suggested to me that somehow I wasn't able to
+perform the map correctly.
 
+I would be appreciated if anyone out there can give me
+advice on this problem I have.
 
---
-Todd
+Thanks,
+--Khai
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
