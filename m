@@ -1,55 +1,39 @@
-Date: Fri, 10 Aug 2001 12:51:34 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: PReP and generic PCI resource assignment
-In-Reply-To: <20010810095659.6588@smtp.adsl.oleane.com>
-Message-ID: <Pine.LNX.4.05.10108101249010.2083-100000@callisto.of.borg>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Fri, 10 Aug 2001 08:07:51 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Larry McVoy <lm@bitmover.com>
+Cc: linuxppc-dev@lists.linuxppc.org,
+	linuxppc-commit@source.mvista.com
+Subject: Re: PPC bk repos reorg
+Message-ID: <20010810080751.B31136@cpe-24-221-152-185.az.sprintbbd.net>
+References: <15218.2656.8980.846399@cargo.ozlabs.ibm.com> <20010808211410.J7728@work.bitmover.com> <15218.4778.270562.782105@cargo.ozlabs.ibm.com> <20010808213806.C13789@work.bitmover.com> <15218.7077.297813.862317@cargo.ozlabs.ibm.com> <20010809192852.L13789@work.bitmover.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20010809192852.L13789@work.bitmover.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 10 Aug 2001, Benjamin Herrenschmidt wrote:
-> >You should initialize the parent pointers in the PCI bus structure with
-> >pointers to resources containing the correct region.
-> >
-> >I once hardcoded the parents for the LongTrail, but that code is gone. Now it
-> >tries to set up the parents from information in the OF device, which works
-> >more or less. There are (or were, read as in `were the last time I tried
-> it, a
-> >few months ago) still some problems, though. One of them is that the
-> hardcoded
-> >ISA motherboard resources (i8259 and legacy stuff) are requested before PCI
-> >resources are done, and that the PCI bus parent resources were not requested
-> >and thus don't appear in the full resource tree.
->
-> Parent pointer should be set properly nowadays on bk _2_4_devel at least.
+On Thu, Aug 09, 2001 at 07:28:52PM -0700, Larry McVoy wrote:
 
-Are the parent resources registered using request_resource() yet?
+> c) URL changes
+>    Old anonymous:
+> 	bk://ppc.bitkeeper.com:5000..5004 these are going away
+>    New anonymous:
+> 	bk://ppc.bkserver.net/linux_2_2
+> 	bk://ppc.bkserver.net/linux_2_4
+> 	etc.
+>    Old ssh:
+> 	bk://ppc.linux_2_2@bitkeeper.com
+>    New ssh:
+> 	bk://ppc@ppc.bkserver.net/linux_2_2
+> 	bk://ppc@ppc.bkserver.net/linux_2_4
 
-Furthermore legacy resources should be requested after that, so they are
-requested from the correct region, and no overlaps will occur. I had some
-(fortunately harmless, it still worked) conflicts, because the PCI resource
-tree and the normal I/O resources where in two separate resource trees.
-
-> However, the generic PCI code still wants to add that PCIBIOS_MIN_MEM
-> value when assigning resources, I bet we should probably #define that
-> to 0 on PPC.
-
-Yes, that should be OK, iff all PIC buses have valid parent resources.
-
-Gr{oetje,eeting}s,
-
-						Geert
+And, er by request on IRC, 'linux_2_2' is still Linus' 2.2 tree, and
+'linux_2_4' is still Linus' 2.4 tree.  Our trees are 'linuxppc_2_4',
+'linuxppc_2_4_devel' and 'linuxppc_2_2'.
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
