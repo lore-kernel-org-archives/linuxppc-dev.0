@@ -1,37 +1,37 @@
-Date: Wed, 29 May 2002 16:16:00 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Dan Malek <dan@embeddededge.com>,
-	David Gibson <david@gibson.dropbear.id.au>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: LMBench and CONFIG_PIN_TLB
-Message-ID: <20020529231600.GW5997@opus.bloom.county>
-References: <20020529030838.GZ16537@zax> <3CF4E842.3070207@embeddededge.com> <15605.24191.948013.249297@argo.ozlabs.ibm.com>
+Date: Wed, 29 May 2002 17:42:22 -0700
+From: Matt Porter <porter@cox.net>
+To: Khai Trinh <kqtrinh@yahoo.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Where to place the text section of the kernel image
+Message-ID: <20020529174222.A4363@home.com>
+References: <20020529223118.11673.qmail@web11504.mail.yahoo.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <15605.24191.948013.249297@argo.ozlabs.ibm.com>
+In-Reply-To: <20020529223118.11673.qmail@web11504.mail.yahoo.com>; from kqtrinh@yahoo.com on Wed, May 29, 2002 at 03:31:18PM -0700
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, May 30, 2002 at 09:04:31AM +1000, Paul Mackerras wrote:
+On Wed, May 29, 2002 at 03:31:18PM -0700, Khai Trinh wrote:
+>
+> I am building the ppc kernel image for Ebony. I would
+> like to find out how one goes about deciding where the
+> place the text section of the kernel image in memory?
+> The output of the built had it put @0x800000. I looked
+> in the Makefile but couldn't find where it's
+> specified. More importantly, how do we decide where to
+> put it? The output of the makefile is shown below:
 
-> available.  Tom Rini mentioned the other day that some 8xx processors
-> only have 8 (I assume he meant 8 data + 8 instruction).
+If you put the zImage at anything less than 0x800000 then the
+bootloader has to do the extra work of relocating the bootloader
+and image.  The simplest approach is to simply load it at
+0x800000 so it can simply uncompress the vmlinux.gz and
+vector to the kernel.
 
-Quite probably, yes. :)
-
-[snip]
-> processor, which has 64.  I don't think he was advocating removing the
-> config option on the 8xx processors (actually, why is there the "860
-> only" comment in there?)
-
-Because the current code goes and pins 8 or so TLBs (4 data, 4
-instruction) which won't fly on the ones which only allow for 2/8 to be
-pinned.  So 860 is a slight mislabing, if I read it all correctly.
-
+Regards,
 --
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Matt Porter
+porter@cox.net
+This is Linux Country. On a quiet night, you can hear Windows reboot.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
