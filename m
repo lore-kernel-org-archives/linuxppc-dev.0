@@ -1,26 +1,39 @@
-Message-ID: <XFMail.000621153237.pochini@shiny.it>
-Content-Type: text/plain; charset=us-ascii
-MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.21.0006200827480.1155-100000@pegmatite.iu13.k12.pa.us>
-Date: Wed, 21 Jun 2000 15:32:37 +0200 (CEST)
-From: Giuliano Pochini <pochini@shiny.it>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Slow Adaptec
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Message-Id: <v04020a08b57676893fce@[129.116.176.243]>
+In-Reply-To: <XFMail.000621153237.pochini@shiny.it>
+References: 
+ <Pine.LNX.4.21.0006200827480.1155-100000@pegmatite.iu13.k12.pa.us>
+Date: Wed, 21 Jun 2000 08:44:33 -0500
+To: Giuliano Pochini <pochini@shiny.it>, linuxppc-dev@lists.linuxppc.org
+From: Mike DeSimone <desimone@arlut.utexas.edu>
+Subject: Re: Slow Adaptec
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi!
+>Is there any boot parameter or so to make it work in "ultra" mode ?
 
-I've just mounted an Adaptec 2930 SCSI ultra-narrow controller into my
-"new" G3. It works fine with Linux, but it refuse to go at 20MB/s as
-it should. At boot time it tells 10MB/s and it reaches about 9.5MB/s
-raw transfer. I connected a 9GB IBM U2W harddisk and it correctly runs
-at 20MB/s with MacOS. It's the only device on the SCSI bus.
-Is there any boot parameter or so to make it work in "ultra" mode ?
+I think what you want is in this clip from
+/usr/src/linux/drivers/scsi/aic7xxx.c:
 
-Bye.
-    Giuliano Pochini ->)|(<- Shiny Corporation {AS6665} ->)|(<-
+ *  A Boot time option was also added for not resetting the scsi bus.
+ *
+ *    Form:  aic7xxx=extended
+ *           aic7xxx=no_reset
+ *           aic7xxx=ultra
+ *           aic7xxx=irq_trigger:[0,1]  # 0 edge, 1 level
+ *           aic7xxx=verbose
+ *
 
+So you might try aic7xxx=ultra or aic7xxx=ultra,verbose.
+
+I have no idea if this works or will even do anything; I just remember
+running across this when trying to debug a tape drive problem.
+_______________________________________________________________________________
+Mike DeSimone        Applied Research Laboratories: The University of Texas
+Research Engineer    Mail to: PO Box 8029       Shipments to: 10000 Burnet Rd.
+Sonar Development             Austin, TX 78713                Austin, TX 78758
+Office (512) 835-3061-------FAX (512) 835-3259--------desimone@arlut.utexas.edu
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
