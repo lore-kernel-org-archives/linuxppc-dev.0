@@ -1,84 +1,31 @@
-Date: Fri, 30 Jul 1999 08:03:24 -0500
-From: Alain Birtz <abz@videotron.ca>
-Subject: Bug or hidden feature ?
-To: linuxppc-dev@lists.linuxppc.org
-Message-id: <37A1A29B.43C7AE75@videotron.ca>
-MIME-version: 1.0
-Content-type: text/plain; x-mac-creator=4D4F5353; x-mac-type=54455854; charset=us-ascii
+Message-Id: <9907301512.AA32890@marc.watson.ibm.com>
+To: trevor@ica.net
+Cc: LinuxPPC dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: creating EABI stack frames 
+In-Reply-To: Message from trevor <trevor@ica.net>
+   of "Fri, 30 Jul 1999 06:30:01 EDT." <37A17EA6.C3D20B38@ica.net>
+Date: Fri, 30 Jul 1999 11:12:36 -0400
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+	Linux/PPC uses SVR4 ABI for PowerPC.  Linux/PPC originally was
+developed using eABI which is a more restrictive variant of SVR4, but it
+has transitioned to standard SVR4.  SVR4 and eABI stacks look identical.
 
-/*
-In the code below, the second loop print char exactly is the same place
-as the first loop. The only change is the char printed. Hit 3 time a key
+	For a description of the stack frame, see the file
+gcc/config/rs6000.c in the GCC distribution.  Just above the function
+rs6000_stack_info() is a picture, like the ones in your message, showing
+the layout of an AIX, SVR4, and Windows/NT (discontinued) stack on
+PowerPC. 
 
-A strange thing happen when the last half end of the line hold only
-blanck space character.
-Normally the blank must erase the underscore. This not happen.
-Instead the remaining of the line (after the underscore) is erased.
+	The current release of GCC does have some argument alignment
+problems and stdarg/varargs is very complicated for SVR4/PPC.  The
+alignment problems may be fixed in gcc-2.95.1, but I cannot guarantee
+that. 
 
-This seem happen only in the X term window
-Tested in Gnome terminal (linucPPC R5)
-Is it an hidden feature ? Or is there something wrong with the code ?
-*/
-
-
-// gcc -I/usr/include/ncurses tst_addch.c -g -o tst -lncurses
-
-#include <curses.h>
-
-int main()
-{
- int r, c;
-
- initscr();
-
- for (r = 0; r < LINES; r++)   /* fill screen of letter, so we can see
-what happen */
-  {
-  for (c = 0; c < COLS; c++)
-   mvaddch(r, c, 'A'+ r);
-  }
- refresh();
- getchar();
-
-// FIRST LOOP
-
- for (r = 2; r < LINES - 2; r++)  /* write in middle of the screen */
-  {
-  for (c = 3; c < COLS / 2; c++)
-   if (c < COLS / 5)
-    mvaddch(r, c, '*');
-   else
-    mvaddch(r, c, '_');  /* first loop -> use underscore */
-  }
- refresh();
- getchar();
-
-// SECOND LOOP
-
- for (r = 2; r < LINES - 2; r++)  /* write in same place */
-  {
-  for (c = 3; c < COLS / 2; c++)
-   if (c < COLS / 5)
-    mvaddch(r, c, '/');
-   else
-    mvaddch(r, c, ' ');  /* second loop -> use blanck space char */
-  }
- refresh();
- getchar();
-
- endwin();
- exit(0);
-}
-
-// the second loop is same as the first loop, except for the char
-printed
-// the underscore is not replaced by the blank char
-// but the remainning of the line (after the unserscore) is erased
-// if the terminal window is small, this not happen
+David
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
