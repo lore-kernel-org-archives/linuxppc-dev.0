@@ -1,58 +1,45 @@
-Message-ID: <384E7C14.ECF75B72@pacbell.net>
-Date: Wed, 08 Dec 1999 07:41:08 -0800
-From: David Brownell <david-b@pacbell.net>
+Message-ID: <384E9672.7632BAB9@amberdata.demon.co.uk>
+Date: Wed, 08 Dec 1999 17:33:38 +0000
+From: David Monro <davidm@amberdata.demon.co.uk>
 MIME-Version: 1.0
-To: "Gregory P. Smith" <greg@electricrain.com>
-Cc: iweiny@pacbell.net, linuxdev <linuxppc-dev@lists.linuxppc.org>,
-        usb <linux-usb@suse.com>
-Subject: Re: [linux-usb] OHCI fix for Belkin BusPort card on PowerMac
-References: <199912062223.OAA05538@batcave2.localdomain> <19991206152414.B8929@yyz.electricrain.com>
+To: linuxppc-workstation@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: IRQ problems on IBM 850
+References: <Pine.HPX.4.10.9911050931010.2724-100000@gra-ux1.iram.es>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"Gregory P. Smith" wrote:
+Sorry to reply so late, but I went on holiday.
+
+Gabriel Paubert wrote:
 > 
-> On Mon, Dec 06, 1999 at 02:23:12PM -0800, iweiny@pacbell.net wrote:
-> >
-> > I am running:
-> > PowerMac 8500 (604 processor)
-> > USB BusPort from Belkin (Model: F5U005-MAC) PCI USB card
-> > 2.2.12 kernel (self compiled)
-> > 2.3.29 USB stack from Paul Mackerras's rsync tree
-> > opendis-0.0.3-pre4 from http://digitalux.netpedia.net
-
-(and a DC-265 camera)
-
-> ...
-> > However, when requesting more data then the camera had to give the returned
-> > status was "9" and not "0".  The OHCI driver interpreted this as an error and
-> > subsequently the user level program would think no data had been returned.
-> ...
+> On Thu, 4 Nov 1999, Hollis R Blanchard wrote:
 > 
-> Data underrun means the controller received less data that it asked
-> for in a transfer.  This is not really an error in many situations;
-> try modifying the dc2xx driver to accept it.
+[..]
+> 
+> Using interrupt 13 is strange, to say the least. It was reserved for FPU
+> errors on x86 processors. In your case obviously the interrupts are
+> expected (since you have a timeout) but have stayed masked for some
+> reason. We have to find where this happens. Some code paths might have an
+> unbalanced enable/disable_irq but I suspect that it will be hard to find.
+> 
 
-I'd not be sure it should be OK in this situation, though.  Or that
-the "opendis-0.0.3-pre4" release is really free of dependencies on
-serial I/O models, where such cases are the norm.  (By the way, the
-page above lists 0.0.2 -- dated August, with no USB support -- as the
-most current version!)
+Umm. Possible data point which may help here - I cannot cause my machine
+to do anything silly unless I hit two interrupt sources at the same
+time. I can compile kernels on the IDE disk (irq 13) till the cows come
+home if I don't have the ethernet enabled and don't play with the mouse
+too much. If I enable the ethernet (irq 15 I think), or play with the
+mouse a lot (irq 12), sooner or later I die. My (very uneducated) guess
+is that it has something to do with getting two interrupts in a very
+short space of time. I guess I should try thrashing one of the lower 8
+interrupts (serial mouse I guess would do it) and see if that can cause
+problems, or whether it is restricted to the second controller.
 
+[..]
 
-> It's not your card, its all controllers and a general "all slightly
-> different" state of the HCDs at the moment.  We're working on fixing
-> this with a move to a new cleaner device <-> usb stack/hcd interface.
+Cheers,
 
-That'll be very good to have.
-
-
-As a quick sanity check, though, is USB working nicely on that
-PowerMac for anyone else?  I've not heard many success reports,
-pro or con, on Mac USB support.
-
-- Dave
+        David
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
