@@ -1,55 +1,44 @@
-To: sruel@oerlikon.ca
-Cc: Scott Anderson <scott_anderson@mvista.com>,
-	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: RPX-CLLF & Flash root filesystem 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 23 Oct 2001 17:50:37 EDT."
-             <3BD5E62D.8000807@oerlikon.ca>
-Date: Wed, 24 Oct 2001 00:55:05 +0200
-Message-Id: <20011023225510.6AE3510CD6@denx.denx.de>
+Message-Id: <5.1.0.14.0.20011024095739.02d78c50@pop.gmx.de>
+Date: Wed, 24 Oct 2001 10:04:06 +0800
+To: linuxppc-embedded@lists.linuxppc.org
+From: Michael Habermann <MHabermann@gmx.de>
+Subject: RE: Reducing glibc with mklibs.sh
+In-Reply-To: <F1BED55F35F4D3118C0F00E0295CFF4D414C53@mail.mediatrix.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3BD5E62D.8000807@oerlikon.ca> you wrote:
->
-> initrd.txt is only part of the answer. I'm missing info on how to tell
-> Linux where to fetch the root filesystem.
+At 09:07 AM 10/18/2001 -0400, Jean-Denis Boyer wrote:
 
-This depends on how you load and boot Linux.
+>A couple of things are missing in your configuration for mklibs.sh
+>to properly work. I spent many hours finding what was the exact
+>configuration to have mklibs.sh properly works.
 
-> Once a minimal/functional root filesystem has been created (and
-> compressed), you have to put it somewhere in the Flash memory (just like
-> the Linux image).
+Thank you very much, it worked in exactly this way. I could reduce my
+libc-2.2.2 from 1.1 MB to 500 kB now.
 
-When using the "standard" bootloader method, you will run
+For the other people trying this here is my script I execute after
+compiling and installing  glibc 2.2.2:
 
-	make zImage.initrd
+---
+#!/bin/sh
+cp libc_pic.a ../lib/
+cp libc.map ../lib/libc_pic.map
+mkdir ../lib/libc_pic
+cp elf/interp.os ../lib/libc_pic/interp.o
+cp elf/soinit.os ../lib/libc_pic/soinit.o
+cp elf/sofini.os ../lib/libc_pic/sofini.o
+---
 
-which builds a  binary  image  that  contrains  the  bootloader,  the
-compressed  Linux kernel image, and the (compressed) ramdisk image as
-one file, "zImage.initrd".
 
-With PPCBoot, you can build your kernel and ramdisk images separately
-or optionally combine them as one file.
 
-> When the system boots, it needs to "see" this root filesystem that is
-> inside the flash.
+>Note: I successfully reduced libpthread.so, also.
 
-The bootloader takes care of passing the  correct  arguments  to  the
-Linux kernel.
 
-With PPCBoot you pass the addresses of both images  as  arguments  to
-the "bootm" command.
+How have you done the libthread? Standard compilation for glibc produces
+_pic only for libc on my system. My libm is still quite large.
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-To the systems programmer,  users  and  applications  serve  only  to
-provide a test load.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
