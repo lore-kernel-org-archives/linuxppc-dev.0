@@ -1,25 +1,27 @@
-Return-Path: <torsten.demke@motorola.com>
-Received: from motgate4.mot.com (motgate4.mot.com [144.189.100.102])
-	by ozlabs.org (Postfix) with ESMTP id 4E83D67A79
+Return-Path: <matej.kupljen@ultra.si>
+Received: from deliver-1.mx.triera.net (deliver-1.mx.triera.net [213.161.0.31])
+	by ozlabs.org (Postfix) with ESMTP id DC39667A79
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Feb 2005 21:09:16 +1100 (EST)
-Received: from az33exr03.mot.com (az33exr03.mot.com [10.64.251.233])
-	by motgate4.mot.com (8.12.11/Motgate4) with ESMTP id j1GADCtN018284
+	Wed, 16 Feb 2005 21:11:51 +1100 (EST)
+Received: from localhost (in-2.mx.triera.net [213.161.0.26])
+	by deliver-1.mx.triera.net (Postfix) with ESMTP id 254A0C01F
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Feb 2005 03:13:12 -0700 (MST)
-Received: from zwg57exm01.ds.mot.com (zwg57exm01.ea.mot.com [10.170.189.6])
-	by az33exr03.mot.com (8.13.1/8.13.0) with ESMTP id j1GA9h32023839
+	Wed, 16 Feb 2005 10:51:08 +0100 (CET)
+Received: from smtp.triera.net (smtp.triera.net [213.161.0.30])
+	by in-2.mx.triera.net (Postfix) with SMTP id 607801BC08A
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Feb 2005 04:09:44 -0600 (CST)
-Message-ID: <43395BE65409D911B9FF00110A9BFFDCDF4EF4@zwg57exm01.ea.mot.com>
-From: Demke Torsten-atd012 <torsten.demke@motorola.com>
-To: Shawn Jin <shawnxjin@gmail.com>,
-	ppcembed <linuxppc-embedded@ozlabs.org>
-Date: Wed, 16 Feb 2005 11:09:10 +0100
-MIME-Version: 1.0
+	Wed, 16 Feb 2005 10:51:09 +0100 (CET)
+Received: from [172.18.1.53] (unknown [213.161.20.162])
+	by smtp.triera.net (Postfix) with ESMTP id C1ECE1A18B1
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 16 Feb 2005 10:51:09 +0100 (CET)
+From: Matej Kupljen <matej.kupljen@ultra.si>
+To: linuxppc-embedded@ozlabs.org
 Content-Type: text/plain
-Subject: RE: Incomplete network configuration information when booting fro
-	m NFS root on Ebony
+Date: Wed, 16 Feb 2005 10:50:31 +0100
+Message-Id: <1108547431.30212.37.camel@mbmatejdebian.ultra.si>
+Mime-Version: 1.0
+Subject: bdi2000 debugging
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,105 +32,78 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Hi 
 
-is this correct?
-nfsroot=192.68.0.47:/opt/eldk3.1/ppc_4xx
-            ^^
-ip=192.168.0.245:192.168.0.47:::::off
-                     ^^^
+I am trying to debug a problem in a user space application
+(X windows), which when the process exits, crashes the kernel.
+---------------------------------------------------------------
+Oops: Exception in kernel mode, sig: 4
+NIP: 000003B4 XER: 00000000 LR: C002B540 SP: C3B8DD10 REGS: c3b8dc60
+TRAP: 0700    Not tainted
+MSR: 00081000 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 00
+TASK = c3b8c000[55] 'Xorg.strip' Last syscall: 146 
+last math c36aa000 last altivec 00000000
+GPR00: 00000000 C3B8DD10 C3B8C000 C3B8DD20 30105D0C 20000000 C3B8DDE0
+00136DA8 
+GPR08: 00136DA8 00000000 00000035 000081A4 24048424 1031688C C0200000
+C3B8DDE0 
+GPR16: C0200000 C3B7F3E0 00000000 0C3B80C5 00001032 03B8DD10 C002B580
+00009032 
+GPR24: 00000035 00000000 00000FCB C3B80C50 00136DA8 00000000 00000035
+C3B80C10 
+Call backtrace: 
+C0200000 C002B540 C002BCE8 C0090A58 C0039B64 C0039DCC C0005A7C 
+00000000 0FE20BFC 0FE29878 0FE29D1C 0FE29DE8 0FD7E354 0FD65D78 
+00000000 
+Oops: Exception in kernel mode, sig: 4
+NIP: 000003B4 XER: 20000000 LR: 0FDF527C SP: C3BAFF40 REGS: c3baff50
+TRAP: 0700    Not tainted
+MSR: 00081000 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 00
+TASK = c3bae000[54] 'run_xorg.sh' Last syscall: 114 
+last math c36aa000 last altivec 00000000
+GPR00: 00000000 C3BAFF40 30012738 C3BAFF50 0FEF1C6C 20000000 00000000
+7F7F0000 
+GPR08: FFFFFFFD 00000000 1015E4CC 00000000 44000828 10094078 00000000
+00000000 
+GPR16: 00000000 00000000 00000005 7FFFFA20 00001032 03BAFF40 0FE49374
+0000D032 
+GPR24: 1009949C 00000000 00000003 00000000 7FFFFF8F 0FF0B59C 0FF09120
+7FFFF8B0 
+Call backtrace: 
+C0005CC8 C0005CC8 C0005CC8 C0005CC8 C0005CC8 C0005CC8 C0005CC8 
+C0005CC8 C0005CC8 C0005CC8 C0005CC8 C0005CC8 C0005CC8 C0005CC8 
+C0005CC8 C0005CC8 C0005CC8 C0005CC8 C0005CC8 C0005CC8 C0005CC8 
+C0005CC8 C0005CC8 C0005CC8 C0005CC8 C0005CC8 C0005CC8 C0005CC8 
+C0005CC8 C0005CC8 C0005CC8 C0005CC8 C0005CC8 
+---------------------------------------------------------------
 
-Why does your kernel uses the IP address 130.27.84.47
-(where comes this address from?), but not the IP address from u-boot?
+And that goes on for every process running :-(
 
+Something is overwriting memory in kernel space I guess.
+Now, I have the BDI 2000 and I am trying to debug this, but until
+now I was unsuccessful :-(
 
-Torsten
+When I debug the kernel, the BDI prints this out in the telnet
+interface:
+- Target MBAR is 0xF0000000
+- Target XLBA is 0x8000A366
 
-> -----Original Message-----
-> From: linuxppc-embedded-bounces@ozlabs.org
-> [mailto:linuxppc-embedded-bounces@ozlabs.org]On Behalf Of Shawn Jin
-> Sent: Mittwoch, 16. Februar 2005 03:03
-> To: ppcembed
-> Subject: Incomplete network configuration information when 
-> booting from
-> NFS root on Ebony
-> 
-> 
-> Hi,
-> 
-> Is anybody using linux-2.6.10 from kernel.org for testing IBM 
-> Ebony board?
-> 
-> I found that 2.6.10 is not aware of U-Boot. That is, it neither
-> understands U-Boot's bd_info nor parses U-Boot's bootargs. So even if
-> the ethernet MAC address is set for EMAC0 on uboot, the kernel doesn't
-> get the value from it. Instead it reads MAC address from Ebony VPD,
-> which results in FF:FF:FF:FF:FF:FF. Isn't it strange that mac address
-> isn't set in its VPD?
-> 
-> After some hacks in arch/ppc/platforms/4xx/ebony.c, the kernel now can
-> get MAC address and boot arguments from uboot. However a new problem
-> occurs. When the kernel tries to mount a NFS root filesystem, it
-> complains incomplete network configuration information. See the
-> following message dump. Any hints to solve the problem? Thanks a lot.
-> 
-> ## Transferring control to Linux (at address 00000000) ...
-> Linux version 2.6.10 (xjin@swl001.scs.agilent.com) (gcc version 3.3.3
-> (DENX ELDK 3.1 3.3.3-8)) #11 T
-> ue Feb 15 16:41:47 PST 2005
-> IBM Ebony port (MontaVista Software, Inc. (source@mvista.com))
-> Built 1 zonelists
-> Kernel command line: root=/dev/nfs rw
-> nfsroot=192.68.0.47:/opt/eldk3.1/ppc_4xx
-> ip=192.168.0.245:192.168.0.47:::::off
-> 
-> <snipped>
-> 
-> mal0: Initialized, 4 tx channels, 2 rx channels
-> emac: IBM EMAC Ethernet driver, version 2.0
-> Maintained by Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> zmii0: input 0 in SMII mode
-> eth0: IBM emac, MAC 00:04:ac:e3:1b:bb
-> eth0: Found Generic MII PHY (0x08)
-> zmii0: input 1 in RMII mode
-> eth1: IBM emac, MAC FF:FF:FF:FF:FF:FF
-> eth1: Found Generic MII PHY (0x09)
-> 
-> <--- only eth0's mac address is set on uboot -->
-> 
-> mice: PS/2 mouse device common for all mice
-> NET: Registered protocol family 2
-> IP: routing cache hash table of 1024 buckets, 8Kbytes
-> TCP: Hash tables configured (established 8192 bind 16384)
-> NET: Registered protocol family 1
-> NET: Registered protocol family 17
-> eth0: Link is Up
-> eth0: Speed: 100, Full duplex.
-> IP-Config: Incomplete network configuration information.
-> 
-> ????
-> 
-> Looking up port of RPC 100003/2 on 130.27.84.47
-> RPC: sendmsg returned error 101
-> portmap: RPC call returned error 101
-> Root-NFS: Unable to get nfsd port number from server, using default
-> Looking up port of RPC 100005/1 on 130.27.84.47
-> RPC: sendmsg returned error 101
-> portmap: RPC call returned error 101
-> Root-NFS: Unable to get mountd port number from server, using default
-> RPC: sendmsg returned error 101
-> mount: RPC call returned error 101
-> Root-NFS: Server returned error -101 while mounting 
-> /opt/eldk3.1/ppc_4xx
-> VFS: Unable to mount root fs via NFS, trying floppy.
-> Kernel panic - not syncing: VFS: Unable to mount root fs on 
-> unknown-block(2,0)
->  <0>Rebooting in 180 seconds..<6>eth0: Link is Up
-> eth0: Speed: 100, Full duplex.
-> 
-> -Shawn.
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
+I know what MBAR is, but what the XLBA is?
+The problem is that while this value remains the same everything 
+is fine. But sometimes it is set to 0x00000000 and then I cannot
+use debugger anymore. I can make a few steps when this value 
+is set to 0x0, but the "stepping" is done in completely unrelated
+code. I first noticed this while stepping trough hc_found_ohci
+function when the return 0 is executed. When I disabled the USB
+support in my kernel I could use debugger to debug a kernel.
+But is still does not work all the time, because the XLBA still 
+gets set to 0!
+
+I am using CVS version of DENX kernel version 2.4.25.
+
+Has anybody seen this?
+
+Maybe a tip how to debug this problem?
+
+Best regards,
+Matej
