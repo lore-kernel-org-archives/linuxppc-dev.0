@@ -1,33 +1,22 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3BA24CEA.4FE030D0@mvista.com>
-Date: Fri, 14 Sep 2001 14:31:06 -0400
-From: Dan Malek <dan@mvista.com>
+Message-ID: <C97ABDA0DC2DD511BA400002A50974132804F6@jdry.lanier.com>
+From: "Donovan, Chris" <cdonovan@lanier.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Status on 403 (Oak) support
+Date: Fri, 14 Sep 2001 16:03:45 -0400
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-Cc: Michael Habermann <MHabermann@gmx.de>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MMU and BDI2000
-References: <20010914112953.26B7C10099@denx.denx.de>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
+> Yes, when I merged the latest bunch of 405GP changes I did break
+> some of the 403 support.
 
-> Maybe we should start a mailing list.
-
-Probably not a bad idea.....
-
-> Are you using latest BDI2000 firmware?
-
-I've had some troubles myself recently with the latest BDI firmware.
-Since I instigated these changes and worked with Abatron to ensure
-they work correctly, I'll continue to do so.  I'm pretty certain
-it is something I am doing wrong, because it has worked correctly
-in the past.
-
-
-	-- Dan
+When was the last time that support for the 403 was working? Where can I get
+a copy of the source code at that point? I understand if there might be new
+features that would be missing but I'd like to see if I can get something
+working. Thanks.
+Chris
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
