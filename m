@@ -1,47 +1,50 @@
-Message-ID: <20030402013434.7201.qmail@web21010.mail.yahoo.com>
-Date: Tue, 1 Apr 2003 17:34:34 -0800 (PST)
-From: kas turi <inox_kas@yahoo.com>
-Subject: Disabling data cache
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Wed, 02 Apr 2003 14:31:12 +1200
+From: Dmytro Bablinyuk <dmytro.bablinyuk@tait.co.nz>
+Subject: Linux support for MPC859T processor
 To: linuxppc-embedded@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-id: <3E8A4B70.7090607@tait.co.nz>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi
-  We have a custom made board and we are running 8250
-processor. We are using DMA to transmit and receive
-data between peripheral and memory. The data is
-getting corrupted while transmitting and receiving. We
-are suspecting it might be due to data cache being
-enabled. So I disabled data cache in the routine
-enable_cache in the file arch/ppc/kernel/head.S. I
-rebuilt the kernel and when I run on my board it hangs
-after printing "Now booting the kernel". I would like
-to know why the kernel is not booting up. I have
-enclosed the console output:
+We are trying to find a linux supplier who supports Motorola MPC859T
+processor (actually it will be processor from Motorola but our custom
+board).
+We have contacted MontaVista and we discovered that the nearest
+processor they support is MPC860.
+Also we discovered that:
 
-Transfering control to linux (at address 00400040)
-loaded at : 00400040   0040b340
-relocated to : 00400000 0040b300
-board data at: 007FFE40 007FFEF8
-relocated to: 0040B148  0040B200
-image at:     0040B340  004B6026
-avail ram:    004B7000  04000000
+An MPC860 based board might be suitable for initial S/W development
+purposes as the chip is very similar to the MPC859T we intend to use.
+There are 7 variants of the '860 with different cache sizes and serial
+communications capabilities.
+The main differences between the '860 and the '859T that I am aware of are:
 
-Linux/PPC load: console=ttyS0,9600
-root=/dev/mtdblock/1
-Uncompressing linux
-Now booting the kernel
+1.    The '860 runs at approximately half the speed of the '859T.
+2.    The clocking generator for the 860 would require a different
+configuration to the the '859 as a consequence of above.
+3.    The '860 has an internal RTC function whereas the '859T does not.
+4.    The '859T has a dedicated 10/100Mbps ethernet MAC whereas the '860
+has to use the serial communication controllers for ethernet operations.
+The available ethernet speeds depend on the particular variant of the '860.
+Note some of the '860 variants include a dedicated 10/100Mbps ethernet MAC.
+5.     The '859T core operates off a lower voltage (1.8V) for power
+saving whereas the '860 core runs off a 3.3V supply.
+Consequently the '860 draws approximately 2x the power of the '859T.
 
-Also I would like to understand what is the use of ESE
-bit in SIUMCR. Should this bit be always enabled
-whenever data cache is enabled.
+Apart from the differing core voltages the '860 and '859T appear to be
+pin compatible
 
-Any help is appreciated.
+* Could somebody please give me an advice on how much S/W work might be
+involved in the future to port linux from '860 to '859T based on 1-5
+(see above)
 
-Yahoo! Tax Center - File online, calculators, forms, and more
-http://platinum.yahoo.com
+* Can you suggest (based on above) any of 7 variants of the '860
+
+Thank you
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
