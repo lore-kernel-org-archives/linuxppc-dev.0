@@ -1,32 +1,43 @@
-Date: Wed, 1 Sep 1999 10:07:05 +1000
-Message-Id: <199909010007.KAA17780@tango.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: costabel@wanadoo.fr
-CC: ddkilzer@computer.org, linuxppc-dev@lists.linuxppc.org
-In-reply-to: <37CBFD6B.DB0182B6@wanadoo.fr> (message from Martin Costabel on
-	Tue, 31 Aug 1999 18:06:03 +0200)
+Message-Id: <v03130301b3f246350c70@[192.168.1.1]>
+In-Reply-To: <199908310616.IAA00299@piglet.cpu.lu>
+References: <v03130301b3f116a864e2@[192.168.1.1]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Tue, 31 Aug 1999 21:59:31 -0500
+To: mlan@cpu.lu
+From: "David D. Kilzer" <ddkilzer@computer.org>
 Subject: Re: SMP support for Daystar 604e 200MHz dual-processor card
-Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <v03130301b3f116a864e2@[192.168.1.1]> <v03130300b3f1774818a8@[192.168.1.1]> <37CBFD6B.DB0182B6@wanadoo.fr>
+Cc: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Martin Costabel <costabel@wanadoo.fr> wrote:
+Michel Lanners wrote:
 
-> (On the other hand, I see that Paul M. has CONFIG_SERIAL=m in his
-> standard config files. Does this mean that the serial.c stuff is
-> supposed to work on the PPC?)
+>> Serial driver version 4.27 with no serial options enabled
+>  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>> Machine check in kernel mode.
+>
+>This might be a shot in the dark, but I never heard of anyone
+>successfully compiling in standard serial support on the PowerMacs. I
+>tried it myself; I would get a panic upon initializing the serial
+>driver (exactly like above..).
+>
+>So you might want to disable standard serial suport, and recompile...
 
-Only with some awful hacks to disable the probing of I/O ports and to
-make it start at ttyS2 instead of ttyS0.  This hack is in my rsync
-trees and in the precompiled kernels I've done.  (I could post a patch
-if necessary.)
+Yes!  Thanks for all the help!  This was the problem.  I removed
+CONFIG_SERIAL and it booted!
 
-It's not a good long-term solution but I needed something so I could
-use the PC-card modem on my 3400. :-)
+Unfortunately, I still get a "Processor 1 stuck." message on boot, which
+apparently makes it absent from /proc/cpuinfo as well.  This is booting
+from the BootX application in Mac OS (with or without extensions loaded).
 
-Paul.
+I haven't tried booting from OF or with the BootX extension yet.
+
+Thanks again for all the help!!  (Anyone get 2.3.x to boot with SMP? :^)
+
+Dave
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
