@@ -1,82 +1,35 @@
-Date: Sat, 20 Dec 2003 17:58:50 +0100
-From: Colin Leroy <colin@colino.net>
-To: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
-	benh@kernel.crashing.org
-Subject: [PATCH] tas3004_tables.c off-by-one
-Message-Id: <20031220175850.416fb0ec.colin@colino.net>
+Date: Sat, 20 Dec 2003 19:45:01 +0100
+From: Giuliano Pochini <pochini@shiny.it>
+To: LinuxPPC-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: weird pppoe/eth problem
+Message-Id: <20031220194501.354e298a.pochini@shiny.it>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="Multipart_Sat__20_Dec_2003_17_58_50_+0100_=.PbUjRbQ2?jeXgo"
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
+I have a Mac connected to internet via pppoe.
+If the pppoe connection is up, and eth mtu is 1492 or 1490, it works for a
+while. When it start receiving more data (eg. I load a webpage) the eth stops
+receiving packets. A ping to any address, (even in the lan) fails and tcpdump
+shows only the echo-req packet. The other machine on the lan does answer. To
+make the eth work again I have to kill pppd and bring the eth down and up, or
+detach and reattach the cable.
+Ok, perhaps is not a good thing reducing the eth mtu, but the pppd should
+complain or it should reduce its mtu accordigly if pppoe is supposed to respect
+that limit. Anyway the ethernet shouldn't stop working.
+Have you any idea where is the problem ?  I need some hint to figure out if
+the bug is in the sungem driver, in the pppd (unlikely), or somewhere else.
 
---Multipart_Sat__20_Dec_2003_17_58_50_+0100_=.PbUjRbQ2?jeXgo
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+I'll repeat the test on a PC (without the sunmgem driver) as soon as I can.
 
-Hi,
+Linux Jay 2.4.23 #2 SMP sab dic 20 15:49:32 CET 2003 ppc unknown
+pppd 2.4.2
+PMac FW800, sungem eth0 driver
 
-I noticed that when pushed to the upper limits, the mixer channels on my
-ibook G4 just went silent (tested with master, bass, treble).
-
-I found out this was due to too short (by one item) arrays in
-tas3004_tables.c. This patch fixes it. I just copied over the last entry
-of each array.
-
-HTH,
 --
-Colin
-http://www.colino.net/
+Giuliano.
 
---Multipart_Sat__20_Dec_2003_17_58_50_+0100_=.PbUjRbQ2?jeXgo
-Content-Type: text/plain;
- name="tas3004_tables.diff"
-Content-Disposition: attachment;
- filename="tas3004_tables.diff"
-Content-Transfer-Encoding: 7bit
-
---- drivers/sound/dmasound/tas3004_tables.c.orig	2003-12-20 17:53:45.000000000 +0100
-+++ drivers/sound/dmasound/tas3004_tables.c	2003-12-20 17:53:57.000000000 +0100
-@@ -195,7 +195,7 @@
- 	   0x1577b,    0x16a37,    0x17df5,    0x192bd,
- 	   0x1a890,    0x1bf7b,    0x1d78d,    0x1f0d1,
- 	   0x20b55,    0x22727,    0x24456,    0x262f2,
--	   0x2830b
-+	   0x2830b,    0x2830b
- };
-
- static uint tas3004_mixer_tab[]={
-@@ -224,7 +224,7 @@
- 	  0x1577ac,   0x16a370,   0x17df51,   0x192bc2,
- 	  0x1a88f8,   0x1bf7b7,   0x1d78c9,   0x1f0d04,
- 	  0x20b542,   0x227268,   0x244564,   0x262f26,
--	  0x2830af
-+	  0x2830af,   0x2830af
- };
-
- static uint tas3004_treble_tab[]={
-@@ -253,7 +253,7 @@
- 	      0x2f,       0x2c,       0x27,       0x23,
- 	      0x1f,       0x1a,       0x15,        0xf,
- 	       0x8,        0x5,        0x2,        0x1,
--	       0x1
-+	       0x1,        0x1
- };
-
- static uint tas3004_bass_tab[]={
-@@ -282,7 +282,7 @@
- 	      0x36,       0x33,       0x2f,       0x2b,
- 	      0x28,       0x24,       0x20,       0x1c,
- 	      0x17,       0x12,        0xd,        0x7,
--	       0x1
-+	       0x1,       0x1
- };
-
- struct tas_gain_t tas3004_gain={
-
---Multipart_Sat__20_Dec_2003_17_58_50_+0100_=.PbUjRbQ2?jeXgo--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
