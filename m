@@ -1,39 +1,45 @@
-Message-ID: <3C88C54E.7040402@bluewin.ch>
-Date: Fri, 08 Mar 2002 15:06:06 +0100
-From: Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3C88CB3D.4752A3E1@imc-berlin.de>
+Date: Fri, 08 Mar 2002 15:31:25 +0100
+From: Steven Scholz <steven.scholz@imc-berlin.de>
 MIME-Version: 1.0
-To: Adam Wozniak <awozniak@comdev.cc>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: problems with shared memory
-References: <Pine.LNX.4.33.0203070831490.16428-100000@rangers.comdev.cc>
+To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: HHL setserial and MPC8xx SCC/SMC
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
- Adam Wozniak wrote:
+Hi there,
 
->On Thu, 7 Mar 2002, Wolfgang Grandegger wrote:
->> David Ashley has reported lately a bug in arch/ppc/mm/ppc_mmu.c (see
->> http://lists.linuxppc.org/linuxppc-embedded/200202/msg00307.html),
->> which seems to be present in the linuxppc_2_4 tree but not in the
->> linuxppc_2_4_devel tree.
->>
->> Hope it helps,
->
->Thanks so much.  I think that fixed it.  10000+ iterations without problem.
->
-The real thank goes to David who found it.
+i tried to use setserial (version 2.17, 27-Jan-2000) that comes with HHL
+2.0 on my custom board (MPC855T).
 
-Well, for me the linuxppc_2_4 tree seems to be less up-to-date. It would
-be nice if somebody could give a brief status or even recommandation
-on the various trees (linuxppc_2_4, linuxppc_2_4_devel, linuxppc_2_5)
-including their future ... or point me to a list where it's already
-dicussed.
+The Linux kernel is Wolfgangs's linux-2.4.4-2002-02-14 from ftp.denx.de.
+During boot up it tells me
+...
+CPM UART driver version 0.03
+ttyS0 on SMC1 at 0x0280, BRG1
+ttyS1 on SCC1 at 0x0000, BRG2
+pty: 256 Unix98 ptys configured
+...
+
+When I call setserial I get
+
+root@idif3:~# setserial -abv /dev/ttyS0
+Cannot get serial info: Invalid argument
+root@idif3:~# setserial -abv /dev/ttyS1
+Cannot get serial info: Invalid argument
+root@idif3:~#
+
+Does anyone know which argument is considered invalid?
+Is there no support for setserial and SCC/SMC in that kernel?
 
 Thanks,
 
-Wolfgang.
+Steven
 
+PS: Actually I was just looking for an easy way to test my serial
+ports...
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
