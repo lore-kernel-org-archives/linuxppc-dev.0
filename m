@@ -1,53 +1,60 @@
-To: Jan Damborsky <jan.damborsky@devcom.cz>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Console on frame buffer for mpc823 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 06 Aug 2003 12:17:32 +0200."
-             <3F30D5BC.9070400@devcom.cz>
-Date: Wed, 06 Aug 2003 12:50:31 +0200
-Message-Id: <20030806105036.D6EDEC59E4@atlas.denx.de>
+Date: Wed, 6 Aug 2003 12:55:17 +0200
+Message-ID: <3F30AF4800000549@mssbzhh-int.msg.bluewin.ch>
+In-Reply-To: <3F30BEFF.9060207@devcom.cz>
+From: "Wolfgang Grandegger" <wolfgang.grandegger@bluewin.ch>
+Subject: RE: Console on frame buffer for mpc823
+To: "Jan Damborsky" <jan.damborsky@devcom.cz>,
+	linuxppc-dev@lists.linuxppc.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="ISO-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dear Jan,
+Hello,
 
-in message <3F30D5BC.9070400@devcom.cz> you wrote:
+try booting with the Linux boot argument:
+
+  console=tty0
+
+Good luck.
+
+Wolfgang.
+
+
+>-- Original Message --
+>Date: Wed, 06 Aug 2003 10:40:31 +0200
+>From: Jan Damborsky <jan.damborsky@devcom.cz>
+>To: linuxppc-dev@lists.linuxppc.org
+>Subject: Console on frame buffer for mpc823
 >
-> primarily thank you for your help. But I have not
-> been lucky to solve my problem. May be I have
-> old kernel version - 2.4.3.
+>
+>  Hello,
+>
+>I use custom board with MPC823 and TFT display
+>connected directly to TFT processor interface.
+>I would like to use display as console on framebuffer
+>when booting and running Linux.
+>I use Linux distribution from ElinOS (version 2.0),
+>kernel 2.4.3 running busybox on it.
+>I successfully compiled in kernel support for framebuffer on /dev/fb/0
+>(trying command ¨*dd if=/dev/urandom of=/dev/fb/0 count=100¨* is working
+>as expected)
+>but console always works on serial channel SMC1.
+>How to make kernel use console on /dev/fb/0 ?
+>I have attached output of *dmesg *command as well as
+>*.config* file.
+>                          Thanks in advance, HANYS
+>
+>
+>Attachment: dmesg.out
+>
+>
+>Attachment: .config
+>
 
-We did most of the framebuffer related work  with  our  2.4.4  kernel
-tree;  I  don't  know  if older kernel versions have problems in that
-area, but it's easily possible.
+
+Wolfgang
 
-> I have set all this CONFIGS_xxx except for CONFIG_CONSOLE_NOBLANK and
-> CONFIG_CONSOLE_NOCUR which are not supported in this kernel version.
-
-These are extensions in our kernel tree to avoid  a  blinking  cursor
-and  the  default  screen  blank  which  is not what you want on most
-embedded systems.
-
-> How to test that frame buffer is assigned to text console ?
-
-Do you see the penguin logo when booting?
-
-> [1] CONFIG_SERIAL_CONSOLE is set - it is hardwired
->      to CONFIG_8xx - may be it is problem - isn't it ?
-
-This is OK.
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-All men should freely use those seven words which have the  power  to
-make any marriage run smoothly: You know dear, you may be right.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
