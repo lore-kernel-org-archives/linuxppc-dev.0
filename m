@@ -1,58 +1,52 @@
-Message-ID: <19990222143657.28939.rocketmail@send206.yahoomail.com>
-Date: Mon, 22 Feb 1999 06:36:57 -0800 (PST)
-From: "D.J. Barrow" <barrow_dj@yahoo.com>
-Subject: I believe I found a bug in /arch/ppc/kernel/signal.c
-To: Gary Thomas <gdt@linuxppc.org>
-Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Date: Mon, 22 Feb 1999 16:19:17 +0100 (MET)
+From: Marc Dejardin <Marc.Dejardin@cern.ch>
+Reply-To: Marc Dejardin <Marc.Dejardin@cern.ch>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Kernel panic with kernel 2.2.1
+Message-ID: <Pine.A41.3.95a.990222150156.146678A-100000@rsplus05.cern.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Gary/Others,
-I'm currently using 2.1.123 ( yup I know this is old but the bug on
-reading the source is still in 2.1.124 DR4 ) & possibly is still
-there. Unfortunately my net connection isn't good enough to download
-the latest 2.2 stuff in less than a few hours.
+Hello,
+I have experienced kernel panics with kernel 2.2.1
+when I run X. I got a beep and then everything freezed.
+In the /ver/log/messages file I have found the following :
 
-The bug manifested itself in tftp, when longjmp'ing out
-of the signal handler on timeouts.
+ NIP: C00D56B0 XER: 00000000 LR: C00D1998 REGS: c1e69c90 TRAP: 0300
+ MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+ TASK = c1e68000[322] 'X' mm->pgd c1e67000 Last syscall: 142 
+ last math c483c000
+ GPR00: 00000000 C1E69D80 C1E68000 C200F100 C200F970 00000000 C1ADC86C 00000010 
+ GPR08: 00000010 C200F000 00000000 00000001 0000009C 01A87568 01A80000 215C7C5A 
+ GPR16: 01A8B3AC 01A8B52C 01A80000 01A80000 00009032 00000001 C1E69E28 C4227000 
+ GPR24: 0000000F 00000028 00000000 00000000 C1E69D88 C1E69E08 C1C83560 C200F000 
+ Call backtrace: 
+ C008B274 C00D1998 C00358C4 C0035D20 C0007E80 C00038AC 01837B64  0180E1D4 01822310 01801BD4 
+ Instruction DUMP: 38000000  3b810008  901c0004 <801b0084> 2c000000  41820150 3bbb0970  7fe000a6  4bf329ad 
+ Kernel panic: kernel access of bad area pc c00d56b0 lr c00d1998 address 84 tsk X/322
 
-Resulting in....
-a )sys_sigreturn not get called 
-b) signals queued & trampoline stuff on the user stack being trashed.
-c) SIGALRM being blocked forever.
+Call traceback in System.map :
+C008B274: c008b220 T tcp_poll
+C00D1998: c00d18e8 t tty_poll
+C00358C4: c00357a4 T do_select
+C0035D20: c00359e0 T sys_select
+C0007E80: c0007dcc T ppc_select
+C00038AC: c00038ac T syscall_ret_1
 
-The stuff works on intel & it also works if I kludge handle signal not
-to block SIGALRM.
+C00D56B0: c00d5688 T tty_wait_until_sent
 
-I originally thought fixing longjmp with a syscall would be a good
-idea on conversing with other hackers it isn't.
+If somebody could help me to debug this problem, I would apreciate very much !
+It seems that this problem occur with all kernels > 2.1.1xx
+and If I run with 2.1.24 everything is very stable.
 
-The code here I believe can be simplified if you didn't do all the
-queueing in handle_signal & remove the while/dequeue loop from
-do_signal & make do_signal also work as sys_sigreturn & unblock the
-signals just before sending them, this way I don't think you'll lose
-any ( however I haven't fully investigated any possible problems
-caused unblocking signals before sending them ). As sys_sigreturn is
-getting called for every signal delivered, there is no benefit gained
-by queueing them in the first place.
+ thanks in advance...
+                                 Marc Dejardin
 
-If you still aren't maintaining signal.c anymore could someone forward
-on this bug report.
-
-Also could you tell me a good place where I can find some info on the
-rt_signal stuff & tell me if a fix gets/already is posted....
-
-
-
-
-
-
-_________________________________________________________
-DO YOU YAHOO!?
-Get your free @yahoo.com address at http://mail.yahoo.com
+PS: If it stays like that, I will not be able to run the R5 release that I have
+already ordered... 
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
