@@ -1,35 +1,25 @@
-Subject: Re: Error in drm with 2.6.7-rc2
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-To: Cedric Pradalier <cedric.pradalier@inrialpes.fr>
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20040605133935.1e560a09.cedric.pradalier@inrialpes.fr>
-References: <20040605133935.1e560a09.cedric.pradalier@inrialpes.fr>
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 07 Jun 2004 23:21:07 +0200
-Message-Id: <1086643267.2331.35.camel@localhost>
+Date: Tue, 8 Jun 2004 09:01:08 +0200
+From: Marc Leeman <marc.leeman@barco.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: eepro100 load
+Message-ID: <20040608070108.GO18676@smtp.barco.com>
+Reply-To: Marc Leeman <marc.leeman@barco.com>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 2004-06-05 at 13:39 +0200, Cedric Pradalier wrote:
->
-> Jun  5 13:30:04 ceruse kernel: [drm] Initialized radeon 1.10.0 20020828 on minor 0: ATI Technologies Inc Radeon Mobility M7 LW [Radeon Mobility 7500]
-> Jun  5 13:30:10 ceruse kernel: [drm:radeon_cp_init] *ERROR* radeon_cp_init called without lock held
-> Jun  5 13:30:10 ceruse kernel: [drm:radeon_unlock] *ERROR* Process 1387 using kernel context 0
+A (quick) question:
 
-These are harmless symptoms of not dealing gracefully with the failure
-to initialize the DRM.
+we're using 82551ER silicon with the eepro100 driver to take in data.
+After doing some tests where we tried to eliminate all^Wmost other
+resource consuming factors, we came to the conclusion that a lot of the
+used processing is done in kernel mode handling incoming data, which
+seems to contradict the rumoured efficiency of the hardware/driver.
 
-> (WW) RADEON(0): [agp] AGP not available
-
-This has been discussed last week on linux-kernel and dri-devel, see
-http://marc.theaimsgroup.com/?l=linux-kernel&m=108639488301600&w=2 .
-
-
---
-Earthling Michel Dänzer      |     Debian (powerpc), X and DRI developer
-Libre software enthusiast    |   http://svcs.affero.net/rm.php?r=daenzer
-
+We are currently looking into some settings (rx buffers) in /proc, but
+70-80 Mbps with a 350 MHz should be able to handle this without this
+much load (seems to be > 60% in kernel mode for the moment for 56 Mbps).
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
