@@ -1,45 +1,47 @@
-In-Reply-To: <40BB42EF.10805@intracom.gr>
-References: <40BB42EF.10805@intracom.gr>
-Mime-Version: 1.0 (Apple Message framework v618)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <6715B8BC-B4A7-11D8-853B-003065F9B7DC@embeddededge.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+Message-ID: <40BEEA15.3070505@intracom.gr>
+Date: Thu, 03 Jun 2004 12:06:29 +0300
+From: Pantelis Antoniou <panto@intracom.gr>
+MIME-Version: 1.0
+To: Matt Porter <porter@cox.net>,
 	Tom Rini <trini@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>,
 	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-From: Dan Malek <dan@embeddededge.com>
-Subject: Re: [PATCH] fix TLB handling for 8xx on linuxppc-2.5
-Date: Wed, 2 Jun 2004 11:13:28 -0400
-To: Pantelis Antoniou <panto@intracom.gr>
+Subject: new dma API questions
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On May 31, 2004, at 10:36 AM, Pantelis Antoniou wrote:
-> +#define LAZY_DTLB_FIX			\
-> +	rlwinm  r12,r10,0,23,25;	\
-> +	cmpwi   r12,0xc0;		\
-> +	bne+    0f;			\
-> +	ori     r10,r10,0x100;		\
-> +	b	1f;			\
-> + 0:	cmpwi   r12,0x100;		\
-> +	bne+    1f;			\
-> +	rlwinm  r10,r10,0,24,22;	\
-> + 1:
-> +
+Hi there.
 
-This shouldn't be necessary.  The TLB handler manages dirty/used
-flags already.  There is absolutely no need for testing/branching like
-this in the TLB handlers.  Simply getting the exception and the flow
-through the handler will imply the states that need to be cleared or
-set.
+I have a few questions regarding the new DMA API.
 
-I'll look into this further.
+1. dma_map_single finally calls virt_to_bus, which is simplified
+   to:
+      return (unsigned long)address - KERNELBASE + PCI_DRAM_OFFSET;
 
-Thanks.
+   PCI_DRAM_OFFSET is defined to be pci_dram_offset.
+   Typically it is set be 0 for most arches without pci.
+   How could we overide it with a constant 0 so that we avoid the
+   memory access?
 
+2. How soon in the init sequence could we call dma_alloc_consistent?
+   For example when setting up a serial console on 8xx I need memory
+   for the fifos, and I have to revert in using m8xx_hostalloc which
+   IMO should be already dead.
 
-	-- Dan
+   If we could arrange for consistent_alloc to be able to operate with
+   a fixed memory area until the memory initialization is complete
+   it would make my life much easier and we could finally kill
+   m8xx_hostalloc & friends.
+
+3. The first argument is dma_* function is a struct device.
+   When working with network devices I must set this to NULL.
+   Granted this is no problem right now, but could this be
+   a problem in the future?
+
+Regards
+
+Pantelis
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
