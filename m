@@ -1,70 +1,47 @@
-Message-Id: <5.1.0.14.2.20030108064518.025dfc08@falcon.si.com>
-Date: Wed, 08 Jan 2003 06:47:39 -0500
-To: linuxppc-embedded@lists.linuxppc.org
-From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
+Message-ID: <DB0585C9F6F9D411BE8F00D0B7896A4CC05FDE@SNCMAIL>
+From: James Don <JDon@spacebridge.com>
+To: "'Marius Groeger'" <mag@sysgo.de>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: BDI-2000
-In-Reply-To: <0065D0B7.C21188@alloptic.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Date: Wed, 8 Jan 2003 08:59:00 -0500 
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-You are setting your breakpoint at 0x0c000000.  Linux in virtual memory
-starts at 0xc0000000.  Am I missing something?
+Do you have ppcboot ... or an equivalent bootloader running yet ?
 
-gvb
+If not start with this ...
 
+Jim
 
-At 04:40 PM 1/7/2003 -0500, cecilia.muaddi@alloptic.com wrote:
+-----Original Message-----
+From: Marius Groeger [mailto:mag@sysgo.de]
+Sent: Wednesday, January 08, 2003 4:23 AM
+To: Muaddi, Cecilia
+Cc: 'linuxppc-embedded@lists.linuxppc.org'
+Subject: Re: BDI-2000
 
->Hello,
+On Tue, 7 Jan 2003, Muaddi, Cecilia wrote:
+
+> I have a proven hardware platform with
+> 	PPC860, IMMR is mapped to 0xf0000000.
+> 	16 MB of SRAM in CS3 starts at physical locatio 0x0
+> 	1 MB of BootROM in CS1 starts at physical location 0x28000000
+> 	16 MB of code flash in CS5 starts at physical location 0x08000000
+> 	some other IO mapped to miscellaneous addresses.
 >
->I finally got my BDI-2000 for PPC 860 this week, and tried to set it up to
->debug my MMU problem.
->This is my first time using the BDI-2000, and really hope someone here can
->give me a hand.
+> The hardware platform is running vxWorks with vxWorks bootrom. I am
+> trying to port the Linux to this custom hardware platform. I was
+> successful building
 
-[snip]
-
->I am able to check and modify the SRAM (at physical address location 0x0).
->and view the bootROM memory
->(at physical address of 0x28000000).  I enable the MMU XLAT and set the
->PTBASE to 0xf0 as suggested in the
->user manual.
->Here is the output of the BDI
->
->BDI>reset
->- TARGET: processing user reset request
->- TARGET: resetting target passed
->- TARGET: processing target init list ....
->- TARGET: processing target init list passed
->BDI>bi 0x0c000000 0x0c00ffff
->Breakpoint identification is 0
->BDI>go 0x28000100
->- TARGET: target has entered debug mode
->BDI>ci
->BDI>info
->     Target state      : debug mode
->     Debug entry cause : entering check stop state
->     Current PC        : 0x00000220
->BDI>
->
->I never seem to get the break at the location of 0x0c000000.
->The same problem if I set the break at location of start_here grep from
->System.map
->
->However I do get the break if I set at address location of 0 (start of the
->head_8xx.S)
->Can someone help me out here??
->
->Thanks
->
->Cecilia
->
->P.S. here is a brief information of my .cfg file which I loaded to BDI
-
-[snip]
-
+I'm sorry for sounding a bit negative and not giving any real help,
+but I can't resist commenting that being able to run vxWorks is NOT
+proving the same HW can also run Linux. This is because Linux is using
+the HW in ways WindRiver can only dream vxWorks could. We have seen
+many HW going down on it's knees in the transition from a boot-loader/
+interrupt handler kind of OS to real Unix systems with true virtual
+memory support.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
