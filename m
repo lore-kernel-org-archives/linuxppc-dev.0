@@ -1,39 +1,63 @@
-Date: Tue, 27 Nov 01 10:27:58 PST
+Date: Tue, 27 Nov 01 10:46:17 PST
 From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
-Message-Id: <0111271827.AA24645@ivan.Harhan.ORG>
+Message-Id: <0111271846.AA24695@ivan.Harhan.ORG>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: VT82C686B IDE and Linux/PPC woes
+Subject: Re: Please make K2 Linux bootable without PeeMON again
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Adrian Cox <adrian@humboldt.co.uk> wrote:
+Tom Rini <trini@kernel.crashing.org> wrote:
 
-> You're probably lacking the other IDE setup functions as well, then.
-> Take a look at the sandpoint code as an example.
+> Maybe it's just me, but wouldn't you need to know the size to how much
+> to shove into memory?
 
-No, the problem turned out to be elsewhere. I just got it to work, and I didn't
-need any more IDE functions in my board port except the ppcmd.ide_init_hwif I
-posted. It saw the drive when I removed the pciauto_bus_scan() calls from my
-adir_find_bridges, i.e., let it inherit the PCI enumeration from StarMON and
-not re-enumerate it again. I have to admit that the Adirondack memory map is
-fragile. It works as we've made it work in our firmware, and my hardware/
-firmware manual warns against changing it. I can see how Linux redoing its own
-PCI enumeration turns out not good in this case.
+My booter doesn't shove the kernel into memory, if that's what you meant. It
+expects the kernel to be there already prior to it being run. I.e., the user
+first loads the kernel by whatever means s/he wants (that's why I call it
+occult, I don't assume any particular mechanism, the user could use JTAG or
+whatever to do it) and *then* runs my booter.
 
-Now to change the Adirondack port to not use pciauto_bus_scan() I'll have to
-make a few other changes to its memory map, and I'd rather do it all at once.
-I'll post the patch when I have it.
+> Because it's only a slightly less magical location than the current one
+> (in the wrapper, I don't know where yours puts it).
+
+No, with my solution you don't need to know the kernel size, you just simply
+point it at where you've put the bi_recs.
+
+The point is, you broke what worked. I was able to run public Linux on my K2
+prior to your change of 2001-11-19, I am not able to any more. You cannot break
+code that people use. You must fix it. I have already offered one easy fix.
+
+> Well, that's the fun part.  No one really like the current magic
+> location, but no one's come up with a better one.
+
+But why have any magic location at all? I have no problem with your zImage goo
+putting bi_recs where it does (hell, I'll never use it anyway, so I don't care
+what it does in general), just please don't make the kernel look in any fixed
+location and let the booter tell it where it put them.
+
+My booter, for example, doesn't use any magic locations. My booter is a plain
+standalone C program built with the GNU toolchain, and I store the bi_recs in
+my program's memory. You don't need to worry about what physical address it is,
+as I set R3 to point to them when I start vmlinux.
+
+You are welcome to look at my code:
+
+cvs -d :pserver:anoncvs@ivan.Harhan.ORG:/fs3/IFCTF-cvs co ppc-linux-boot
+
+> After reading the
+> pmac/chrp stuff which shoves the initrd at the end of RAM (we _could_
+> overwrite our initrds that we place right after the kernel, if we have a
+> big kernel and low link addresss).  Not that i've tried it yet, it just
+> poped out at me.
+
+OK, so now you want to make the kernel look for stuff only at the end of RAM
+and nowhere else, right? Then how is it going to know where the end of RAM is
+if the memory size is one of the things communicated via bi_recs in the first
+place? Isn't it easier to pass a pointer? Then you can make your wrapper/
+whatever put them whereever, including the end of RAM if you want, and them
+pass a pointer to the kernel.
 
 MS
-
-P.S. When I took the pciauto_bus_scan() calls out, it saw the drive, but hung
-on the partition check. Disabling the VIA82CXXX support .config and leaving
-only the generic PCI IDE support made it really work. I guess the VIA82CXXX
-fast modes code still has issues to be worked out. Maybe it's because it
-assumes there is a BIOS and in my case there isn't one. (My minimalist firmware
-does not touch any VT82C686B IDE stuff at all, and yet if I want I can pull the
-IDE register addresses out of the BARs and see the drive there using ancient
-WD100x code.)
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
