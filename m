@@ -1,49 +1,37 @@
-Date: Sun, 12 Aug 2001 00:21:11 +0100
-Subject: Re: Fix for PPC audio devices that can't reendianize samples
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Derrik Pates <demon@devrandom.net>,
-	linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
-Message-Id: <20010811232652.D17E62F06D@apollo.valhalla.net>
+Date: Sat, 11 Aug 2001 20:57:07 -0700
+From: Ira Weiny <iweiny@acm.org>
+Subject: pmu_suspend/resume
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Message-id: <3B75FE93.DC81EBFE@acm.org>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Aug 11, 2001,  Geert Uytterhoeven wrote:
-> On Fri, 10 Aug 2001, Iain Sandoe wrote:
->> > The attached patch adds code to drivers/sound/dmasound/trans_16.c to
->> > byteswap little-endian audio samples for hardware that needs it (like the
->> > DACA audio chip in the iBook and iBook FireWire), and also marks the DACA
->> > in the iBook FireWire as being unable to handle little-endian audio
->> > samples (in dmasound_awacs.c).
->>
->> we've been round this loop ;-)))
->>
->> the reason that the byte-swap code was taken out of trans_16.c is that it
->> will never be allowed into the kernel.
->
-> And we'll have to remove the current byteswap code in the kernel (there still
-> is some).
+I have been using pmu_suspend and pmu_resume to keep my TiBook from
+turning off when debugging some kernel stuff.  Is this ok?
 
-Well, actually, I'd like to lose all the translation stuff (rate conversion,
-format conversion etc.).  This belongs in User-Land and is preventing me
-from implementing mmio (which would be useful for the more serious
-applications).
+The reason I ask is that pmu_suspend seems to have the desired effect,
+temporarily turning off the PMU.  But pmu_resume does not seem to leave
+the PMU in a stable state.  Now I realize that I am debuging a kernel
+and that it could/probably is other factors which are causing these
+problems but I just wanted to make sure that there is not some better
+way of disabiling the PMU or that I might be using these functions
+incorrectly.
 
-My main problems atm are:
+Basically:
 
-(a) working out what to do about mksound() - this is messy as it is and
-needs fixing in order to deal with DACA & Tumbler (it fiddles with the H/W
-which makes it chip-specific at present)...
+pmu_suspend();
 
-(b) wondering if losing all that stuff is going to be acceptable to the m68k
-ports (or whether we will end up having a PPC-specific driver).
+/* suspicious/known bad code here */
 
-(c) not having any time ... (but that's an old problem) ...
+pmu_resume();
 
-ciao,
-Iain.
+Just like that right?
+
+Thanks,
+Ira Weiny
+iweiny@acm.org
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
