@@ -1,66 +1,38 @@
-Message-ID: <002001bf8add$8b37aaf0$1dc9a4cd@rtdsp.com>
-Reply-To: "Rob Grimm" <rgrimm@rtdsp.com>
-From: "Rob Grimm" <rgrimm@rtdsp.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
+Message-Id: <v03130305b4ef3818f765@[10.0.0.55]>
+In-Reply-To: <002001bf8add$8b37aaf0$1dc9a4cd@rtdsp.com>
 References: <Pine.HPX.4.10.10003071044220.22162-100000@gra-ux1.iram.es>
-Subject: Cross-compiling Bash
-Date: Fri, 10 Mar 2000 17:11:09 -0500
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Fri, 10 Mar 2000 15:46:37 -0800
+To: "Rob Grimm" <rgrimm@rtdsp.com>, <linuxppc-embedded@lists.linuxppc.org>
+From: Gilbert Coville <gilbert@mvista.com>
+Subject: Re: Cross-compiling Bash
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-All,
-    I apologize if this topic has come up before, I checked the archives but
-could
-not find the answer I'm looking for.
+At 2:11 PM -0800 3/10/00, Rob Grimm wrote:
 
-     I have successfully setup a cross-compiler
-on an x86 computer, to build code for our embedded PowerPC750 platform.  I
-have been able compile the kernel, create a ramdisk, and the kernel boots
-fine.
-I have been using a small filesystem I downloaded for the mbx board, and can
-run the included bash.   My question is, has anyone successfully
-cross-compiled
-bash (any version, or any GNU software package for that matter)?  Whenever
-I run configure (I set all the command line options, like
-CC=mycompilername --target=
-blah), it says something like can not run test when using cross - compiling.
-I get the same results, no matter which GNU package I try to compile (ie
-shell-utils).
-I have also tried running configure with no options, and then manually
-editing
-the makefiles so it uses my cross-compiler, this does not work either.
-Here is the stuff I am using for my cross-compiler (which has all been built
-successfully):
-           binutils-2.9.1.0.19a
-           egcs-1.1.2
-           glibc-2.1.2
-           glibc-crypt-2.0.111
-           glibc-linuxthreads-2.1.2
+>Does anyone have any suggestions?  I'm trying to avoid going out and buying
+>a powermac.  How do others handle this problem, when developing code
+>on a non-powerpc platform?
 
-Does anyone have any suggestions?  I'm trying to avoid going out and buying
-a powermac.  How do others handle this problem, when developing code
-on a non-powerpc platform?
+Cross compiling bash is pretty weird.
 
-    Also, I have tried running pre-built binaries, which I got from
-ftp.linuxppc.orq, with
-no success.  I downloaded pre-built libs, bash..., and all I get is "init"
-on the console
-after the kernel boots.  It then hangs up.
+Check out how we did it in the 8xx version of our Cross Development Kit.
+The recipe will be the same for your 750 -- just point it to your 750 cross
+tools.  The recipe is in the %build portion of the SPEC file in the SRPM
+for bash:
+ftp://ftp.mvista.com/pub/CDK/1.0/ppc_8xx/SRPMS/hhl-ppc_8xx-bash-2.03-4.src.rpm
 
-Thanks in advance.
+Also, we'll have a 750-based version of our CDK out in a few days, if
+you're willing to wait.
 
-Regards,
-Rob Grimm
+Gilbert
 
------------------------------
-Rob Grimm
-Real-Time Digital
-rgrimm@rtdsp.com
------------------------------
+--
+Gilbert Coville			MontaVista Software Inc.
+gilbert@mvista.com		+1 408-328-9208
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
