@@ -1,37 +1,37 @@
-From: "Stefano Coluccini" <s.coluccini@caen.it>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: MVME5100
-Date: Tue, 6 Feb 2001 16:44:42 +0100
-Message-ID: <NDBBIFIMCKPOADMAJOKMOEHCCOAA.s.coluccini@caen.it>
+From: Dave Pegler <dwp@cambridgebroadband.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <14976.13620.587588.692077@gargle.gargle.HOWL>
+Date: Tue, 6 Feb 2001 17:32:36 +0000 (GMT)
+To: Mark Clayton <clayton@shore.net>
+Cc: linuxppc-embedded@lists.linuxppc.org, dwp@cambridgebroadband.com
+Subject: ATM driver for 8260
+In-Reply-To: <200102061511.KAA17221@northshore.shore.net>
+References: <200102061511.KAA17221@northshore.shore.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi guys,
-  I've a MVME5100 and I'm trying to port linux on it but I've many problems
-because I'm not a PowerPC/PReP/CHRP expert. I've correctly patched the boot
-loader (remapping the UART in ns16550.h) so I can see its messages on my
-terminal emulator, but the boot process hangs after the "Now booting the
-kernel" printout (a little too early :-(). I've read some archived articles
-and it seems to me that I've to do many other remapping for the MMU and
-interrupts but my efforts didn't get results. Is there anyone can give me
-some useful hints ?
+Mark,
 
-I've started the port from a Debian kernel source ver. 2.2.18.
-I haven't a IPMC761 transition module (it seems important for interrupts ...
-or doesn't ?)
+   I've been working on a driver for the MPC860SAR (855T / 857 /
+862SAR). It supports AAL0, AAL5, CBR and UBR and is integrated into
+linux ATM version 0.59 (so you get Q.2931, RFC1577, ILMI etc). I use
+a FADS 860 with a SAR-PHY daughter card (STM-1/STS-3c, E1/T1 and
+ATM25) as the development platform.
 
-Thanks in advance.
-Stefano.
+Unfortunately its not finished yet and has quite a low throughput. I've not
+worked on it for about 3 months but hope to do so in the next few weeks.
 
-+--------------------------------------------------------+
-! Stefano Coluccini         ! CAEN Engineering srl       !
-! Via Vetraia, 11           ! 55049 Viareggio (LU)-ITALY !
-! Tel. +39 0584 388 398     ! Fax +39 0584 388 959       !
-! s.coluccini@caen.it       ! www.caen.it/computing      !
-+--------------------------------------------------------+
+Dave.
+
+Mark Clayton writes:
+ >
+ > Is anyone aware of a linux driver for the ADS8260.  Or any 8260?
+ >
+ > Thanks,
+ > Mark
+ >
+ >
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
