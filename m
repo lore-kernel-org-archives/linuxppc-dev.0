@@ -1,25 +1,19 @@
-Message-ID: <40CF6B43.90007@246tNt.com>
-Date: Tue, 15 Jun 2004 23:33:55 +0200
-From: Sylvain Munaut <tnt@246tnt.com>
-MIME-Version: 1.0
-To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: PCI irq mapping for mpc5xxx in denx cvs
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+From: matik@ug.bilkent.edu.tr
+Message-ID: <BasiliX-1.1.0-108731023640cf099ce2530@postaci.ug.bilkent.edu.tr>
+Date: Tue, 15 Jun 2004 17:37:16 EEST
+Reply-To: matik@ug.bilkent.edu.tr
+Subject: MPC8260 ethernet transmit problem
+To: linuxppc-embedded@lists.linuxppc.org
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi
+Hi all,
 
-I don't see how the PCI irq mapping is done in the denx CVS. I know on
-the lite5200 hardware, INTA is connected to IRQ0 and it's the only
-connected but I don't see how they are linked in the software. I
-though that was the role of the ppc_md.pci_map_irq function but I
-don't see any defined ? Is there a default behavior ? Or is it just
-luck ;)
+I am using Windriver SBCPowerQUICC2 with MPC8265 on it with 2.4.26 kernel. When I configure FCC ethernet on one of FCC1/2/3 it does not transmit any packet through channel although it successfully calls 'fcc_enet_xmit' function.
+Note: reception works.
 
-Thanks,
-    Sylvain Munaut
-
+Thanks.
+matik
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
