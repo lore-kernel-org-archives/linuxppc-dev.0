@@ -1,20 +1,19 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E655A2BC0F
+Return-Path: <rupesh.sugathan@gmail.com>
+Received: from mproxy.gmail.com (rproxy.gmail.com [64.233.170.204])
+	by ozlabs.org (Postfix) with ESMTP id B5B0D2BDB8
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 13 Oct 2004 07:24:18 +1000 (EST)
-In-Reply-To: <20041012210259.3831.qmail@web53807.mail.yahoo.com>
-References: <20041012210259.3831.qmail@web53807.mail.yahoo.com>
-Mime-Version: 1.0 (Apple Message framework v619)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <61D85700-1C95-11D9-91B5-003065F9B7DC@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Tue, 12 Oct 2004 17:26:30 -0400
-To: annamaya <annamaya@yahoo.com>
-Cc: Sam Song <samlinuxppc@yahoo.com.cn>, linuxppc-embedded@ozlabs.org
-Subject: Re: Booting Linux using a PlanetCore BootLoader 
+	Wed, 13 Oct 2004 07:31:31 +1000 (EST)
+Received: by mproxy.gmail.com with SMTP id 75so679903rnl
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 12 Oct 2004 14:31:30 -0700 (PDT)
+Message-ID: <1e44ebcf04101214247d3072b6@mail.gmail.com>
+Date: Tue, 12 Oct 2004 14:24:50 -0700
+From: Rupesh S <rupesh.sugathan@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Subject: PPC kernel hangs
+Reply-To: Rupesh S <rupesh.sugathan@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,32 +24,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-On Oct 12, 2004, at 5:02 PM, annamaya wrote:
+To perform a Memory Mapped access of a device, I setup the OR and BR
+registers in the bootloader (u-boot). I am able to read and write to
+the device being in the u-boot prompt. However, when I try to access
+the device after the Linux kernel boots up (say, in a driver), it
+gives me a exception message as follows.
+#################################################################
+enabl0004, DSISR: 00000063
+TASK = c3ef4000[18] 'insmod' Last syscall: 128
+last math 00000000 last altivec 00000000
+GPR00: C60B0338 C3EF5E50 C3EF4000 60000004 00001032 00000001 C018009E C60B0000
+GPR08: C60B0BB8 C60B085C C60B0BBC C60B0000 C0180000 10056374 00000000 00000000
+3
+TASK = c3ef4000[18] 'insmod' Last syscall: 128
+last math 00000000 last altivec 00000000
+GPR00: C60B0338 C3EF5E50 C3EF4000 60000004 00001032 00000001 C018009E C60B0000
+GPR08: C60B0BB8 C60B085C C60B0BBC C60B0000 C0180000 10056374 00000000 00000000
+GPR16: 00000000 00000000 00000000 00000000 00009032 C3EF5E98 10064EBC C3E2C000
+GPR24: C02EEA80 00000008 C60B2000 00000060 FFFFFFEA 00000000 C60B0000 C60B0000
+Call backtrace:
+00000000 C60B0338 C0014DE4 C000447C 10050000 1000B27C 1000C344
+10003CBC 100038C8 0FE70E88 00000000
+#################################################################
 
-> I am now trying to do an NFS mount of the root file
-> system. Looks like the EP8280 uses LXT971A PHY device.
+My platform is MPC880 Processor.
 
-I have one of their first 8260 boards that I used to do
-the initial Linux port long ago.  At that time, they had
-some weird CPLD implementation of MDIO that I could
-never get to work properly.  Not a bad idea, just didn't
-seem to be implemented properly.  I know they have
-done a second revision of this board, and I suspect
-the 8280 is just a glue into the same location design.
+Do I need to setup something more in the kernel?
 
-With that board you should have received sufficient
-information to determine what to do, although they
-have always been quite secretive about releasing
-enough information to successfully write software.
-
-In the interim, just compile the driver without any
-MDIO control, hack the call to fcc_restart() at the
-end of init_fcc_startup() to just force half or full
-duplex (0 or 1) based upon the switch you are using.
-
-
-Good Luck.
-
-
-	-- Dan
+-- 
+Rupesh S
