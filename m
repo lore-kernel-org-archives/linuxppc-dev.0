@@ -1,76 +1,56 @@
-Date: Tue, 6 Jul 1999 13:54:24 -0700 (PDT)
-From: Jonathan Moore <moore@eds.org>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: Jason Haas <jhaas@madison-web.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Fwd: Macsbug conflict w/BootX?
-In-Reply-To: <19990706222944.001895@mail.mipsys.com>
-Message-ID: <Pine.LNX.3.96.990706133431.18599C-100000@zen.eds.org>
+Message-ID: <37834109.17B9FDC3@switchboard.ericsson.se>
+Date: Wed, 07 Jul 1999 13:59:05 +0200
+From: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Scott Wood <scott@broadlink.com>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: RPX Lite kernel
+References: <37823F71.2BD5AF5F@broadlink.com> <3782515B.471DCEBE@broadlink.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-	The computer is a 7500 with a 604e 120 upgrade card. This happens
-even with all extenctions turned off. The boot x vertion is the 1.1
-vertion from the R5 cd I reseaved last week and the os is 7.5.1. The
-kernels that showed this
-problime are the finle and with video driver form the same R5 cd. I am not
-at home so I don't know the vertion of macsbug but it is serteanly
-srevreal years old (most likley pre 1995). I don't think I have anny thing
-funkey set up in macsbug but I might; I rilly only use it to try to
-recover from applacation crasheses. The dealitals of the failular are that
-after doing a small amount of file writes the systome lockes  up and when
-after a reboot the systome complaines about files with sared blocks.
+Scott Wood wrote:
+> I'd still like to know if anyone has a working 2.2 kernel on the RPX Lite...  I'd compile one myself, but my B&W G3 LinuxPPC box
+> is getting its guts replaced and I've heard horror stories about cross-compling the kernel...
 
-The os was installed using the mklinux installer becouse the redhat
-linuxppc vertion would die with mesh errors farley quickly (possibaly
-related error) and the x installer would refuse to swich keybord fosic
-making it usless.
+Well, I've heard horror stories about compiling "hello world" too,
+but that doesn't mean it's particularly complicated. ;)
 
-seance I have removed macsbug form the systome folder on the mac side I
-have hade no problimes. The only othere problime I have hade is that the
-kernel with video is 2.2.9 and not 2.2.6 and you provied no kernal mods or
-systome map to 2.2.9.
+If "cross-compiling" from PPC I can't see why you should need to do
+anything else than configure the kernel properly.
+And this diff is all that is needed to cross-compile from ix86 Linux:
 
--Jonathan
+diff -urN linux-2.2.10.orig/Makefile embedded-2.2.10/Makefile
+--- linux-2.2.10.orig/Makefile	Sat May 29 03:10:19 1999
++++ embedded-2.2.10/Makefile	Tue Jul  6 18:32:40 1999
+@@ -3,7 +3,8 @@
+ SUBLEVEL = 10
+ EXTRAVERSION =
+ 
+-ARCH := $(shell uname -m | sed -e s/i.86/i386/ -e s/sun4u/sparc64/ -e s/arm.*/arm/ -e s/sa110/arm/)
++ARCH := ppc
++#ARCH := $(shell uname -m | sed -e s/i.86/i386/ -e s/sun4u/sparc64/ -e s/arm.*/arm/ -e s/sa110/arm/)
+ 
+ .EXPORT_ALL_VARIABLES:
+ 
+@@ -18,7 +19,7 @@
+ HOSTCC  	=gcc
+ HOSTCFLAGS	=-Wall -Wstrict-prototypes -O2 -fomit-frame-pointer
+ 
+-CROSS_COMPILE 	=
++CROSS_COMPILE 	= ppc-linux-
+ 
+ AS	=$(CROSS_COMPILE)as
+ LD	=$(CROSS_COMPILE)ld
 
-
-On Tue, 6 Jul 1999, Benjamin Herrenschmidt wrote:
-
-> On Tue, Jul 6, 1999, Jason Haas <jhaas@madison-web.com> wrote:
-> 
-> >---------- Forwarded message ----------
-> >Date: Mon, 05 Jul 1999 13:24:28 -0700
-> >From: moore@eds.org
-> >To: support@linuxppc.org
-> >Subject: Nasty bug (data loss)
-> >Resent-Date: Tue, 6 Jul 1999 12:58:59 -0500 (CDT)
-> >Resent-From: <support@www.linuxppc.org>
-> >Resent-To: Jason Haas <jhaas@www.linuxppc.org>
-> >
-> >    I have discuverd that mascbug is incompatabull with boot x using at
-> >least kernels 2.2.6 and 2.2.9; I have tryed no otheres. If you boot
-> >linux using bootx while macsbug is installed on you mac it will cause
-> >linux to have bad writes to disc and will destroy you fs.
-> 
-> I don't think I ever booted a Mac without Macsbug for the past few years,
-> so I don't think there is such an incompatibility. Are you sure you have
-> the latest version of MB ? Also, check that you MB install don't have
-> weird dcmd's (Macsbug external commands).
-> 
-> Some infos about your configuration may help me find out what's going on:
-> kind of machine, expansion boards, disk controller, version of BootX, etc...
-> 
-> -- 
->            Perso. e-mail: <mailto:bh40@calva.net>
->            Work   e-mail: <mailto:benh@mipsys.com>
-> BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
-> 
-> 
-> 
-> 
-
+//Marcus
+-- 
+-------------------------------+------------------------------------
+        Marcus Sundberg        | http://www.stacken.kth.se/~mackan/
+ Royal Institute of Technology |       Phone: +46 707 295404
+       Stockholm, Sweden       |   E-Mail: mackan@stacken.kth.se
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
