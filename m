@@ -1,48 +1,34 @@
-To: David Updegraff <dave@cray.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: abatron and kernel modules. 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 25 Jul 2002 12:13:37 CDT."
-             <200207251713.MAA00232@mint.mw.cray.com>
-Date: Thu, 25 Jul 2002 21:53:16 +0200
-Message-Id: <20020725195321.3A96410875@denx.denx.de>
+Message-ID: <3D405B7F.5020200@lvl7.com>
+Date: Thu, 25 Jul 2002 16:11:43 -0400
+From: "John W. Linville" <linville@lvl7.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: abatron and kernel modules.
+References: <200207251713.MAA00232@mint.mw.cray.com> <3D40556C.4040108@embeddededge.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear David,
+Dan Malek wrote:
 
-in message <200207251713.MAA00232@mint.mw.cray.com> you wrote:
 >
-> We've been very happily using BDI2000 for kernel debugging on our 405GP
-> on a 2.4.2 kernel with builtin abatron MMU support (via PTBASE at 0xf0).
+> There was also a version of the 2.4.2 kernel, perhaps even a MontaVista
+> snapshot, where I screwed up loading the address of the pte pointer
 
-There have been some changes in the way how the Linux kernel and  the
-BDI2000  exchange  information  about the MMU state; I'd recommend to
-use a more recent kernel (linuxppc_2_4_devel) with the latest version
-of the Abatron firmware (afaik 1.08 for 4xx)
+I recall having to add the BDI support to the linux-2.4.2_hhl20 kernel
+source here.  If the original poster doesn't want to use a later kernel
+for whatever reason (e.g. no support contract), he should get some late
+2.4 source, find the BDI references (there aren't that many), and port
+them back to his 2.4.2-derived base.
 
-> But I have not figured out how to get it deal with the address space of
-> a loaded kernel module: it claims that the region is missing from the
-> page tables.  Kernel addresses are in 0xC00xxxxx ranges, and when we load
-> the module, 'module_list' now points to 0xC340xxxx ranges.  BDI can
-> dump the physical addresses of my module, but cant talk to the virual
-> kernel address space of the loaded module.
+Good luck!
 
-We have a bit of documentation about this at
-http://www.denx.de/doc/TQM8xxL/debugging.html#DEBUGGING-LINUX-KERNEL
-
-Hope it helps,
-
-Wolfgang Denk
+John
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-A person who is more than casually interested in computers should  be
-well  schooled in machine language, since it is a fundamental part of
-a computer.                                           -- Donald Knuth
+John W. Linville
+LVL7 Systems, Inc.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
