@@ -1,31 +1,51 @@
-Message-Id: <200007182137.RAA28182@mal-ach.watson.ibm.com>
-To: Nathan Ingersoll <ningerso@d.umn.edu>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Malloc bug? 
-In-Reply-To: Message from Nathan Ingersoll <ningerso@d.umn.edu>
-   of "Tue, 18 Jul 2000 16:30:27 CDT." <Pine.SO4.4.02.10007181627250.11229-100000@ub.d.umn.edu>
-Date: Tue, 18 Jul 2000 17:37:09 -0400
-From: David Edelsohn <dje@watson.ibm.com>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Joseph Garcia <jpgarcia@execpc.com>, <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: switching consoles
+Date: Tue, 18 Jul 2000 23:50:51 +0200
+Message-Id: <20000718215051.22873@192.168.1.10>
+In-Reply-To: <3974CA79.C5F0AB2B@execpc.com>
+References: <3974CA79.C5F0AB2B@execpc.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> Nathan Ingersoll writes:
+>
+>i'd think that it would be more likely the nvram resetting.  But PMU is
+>actually
+>on ADB.  as far as i know, all direct pmu ioctls (battery query, etc)
+are sent
+>to /dev/adb, while interpreted ioctls (like sleep) are sent to /dev/pmu,
+which
+>is why /dev/pmu features need kernel support and vary from system to system.
 
-Nathan> On Tue, 18 Jul 2000, Paul Schinder wrote:
+Well, in fact, it's exactly the opposite ;)
 
->> At 3:40 PM -0500 7/18/00, Nathan Ingersoll wrote:
->> >I've been working on a GTK program for a while now, and I've been
->> >experiencing segfaults within malloc. I was under the impression that
->> >malloc should always return successfully (at least that's what the man
->> >page says).
+The PMU is a replacement for Cuda on older machines, and is actually a
+microcontroller that, among other things, the the ADB controller of the
+machine. When you send PMU commands via /dev/adb, those are passed to the
+PMU driver by the ADB layer, and such commands are directly sent to the
+PMU. ADB commands are, however, encapsulated in specific PMU commands.
 
-Nathan> Right, but it's not returning at all. It's segfaulting inside the malloc
-Nathan> function before it returns anything.
+I've done some hacking on MacOS today and found that the Fn key behaviour
+can apparently be triggered by setting an ADB register of the keyboard.
 
-	Sounds more like something is overwriting one of malloc's internal
-data areas or possibly hitting some weird ulimit symptom.
+If you write 0xc6 0x01 to register 1 of the keyboard, the Fx keys will be
+real function keys by default and Fn will trigger the control buttons.
+Write 0xc6 00 to revert the behaviour to default.
 
-David
+So a userland tool can be easily hacked using the trackpad tool source as
+an example, you have to find the keyboard instead of the trackpad (device
+with default and current address 2 should always work on PowerBook and
+iBook ADB) and then do the register write of a 2 bytes message
+(0xc6 0x01). I can't try this now, but if someone wants to look at it...
+
+>The noodle-scratcher in this is the fact that the keyboard's F-key setting is
+>maintained post-sleep, while trackpad tapping is always reset.  both
+being ADB
+>devs reset upon wake, id think it would get reset.  there could be
+>something we
+>are missing.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
