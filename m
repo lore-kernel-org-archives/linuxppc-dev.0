@@ -1,46 +1,55 @@
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Misc problems with Lombard (serial, ethernet, SCSI)
-Reply-To: minyard@acm.org
-From: Corey Minyard <minyard@acm.org>
-Date: 24 Sep 2000 19:57:41 -0500
-Message-ID: <m2vgvlthiy.fsf@c469597-a.grlnd1.tx.home.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Message-ID: <14798.43366.937709.900651@esb.bbn.com>
+Date: Sun, 24 Sep 2000 21:24:54 -0400
+From: R Shapiro <rshapiro@bbn.com>
+To: Michel Dänzer <daenzerm@student.ethz.ch>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: xf 4.0.1 with rage II/rage pro -- multi-headed display!
+In-Reply-To: <39CE8B90.1B318DD2@student.ethz.ch>
+References: <Pine.LNX.4.10.10009231028030.26749-100000@apollo.kulian.net>
+	<14798.23332.833379.615321@esb.bbn.com>
+	<39CE8B90.1B318DD2@student.ethz.ch>
+Reply-To: rshapiro@bbn.com
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I have a Powerboot 1999 and I'm having a few annoyances with it.  I'm
-currently using the stable rsync kernel from linuxcare.  The following is
-happening:
+Michel Dänzer writes:
+ > What bug with screenblanking?
 
-* Serial drivers - At least when talking to the modem, it will occasionally
-  cease to work.  I use pppd to connect, and when it disconnects I cannot
-  reconnect.  Once this happens, anything that tries to open the port get
-  an I/O error.  If I unload the serial module and then reload it, the
-  problem goes away for a while.  This started happening around 2.2.15.
+Using the fbdev driver with xf 4.0.1, the default screenblanker kills
+the server as soon as the blanker is activated.  This can easily be
+replicated via 'xset s activate' or by letting the screenblanker
+activate itself by timing out. The ati driver and the r128 driver
+don't have this problem, only fbdev.
 
-* MESH Driver - It won't work with my scanner.  The scanner works fine
-  under MacOS and used to work under Linux x86.  It has problems with
-  disconnects.  Also, once I use it then sleeping and awaking will locks up
-  the machine.  Also, unloading the MESH module and reloading it locks up
-  the machine.
+I've seen this on all three platforms where I've tested 4.0.1, either
+using Franz Sirl's rpms or using the version I built with sources
+rsync'd yesterday.
 
-* Ethernet driver (BMAC) - The driver will occasionally lock up under heavy
-  load (I haven't seen this yet with 2.2.17, though).  If I define an alias
-  address, bringing down the alias address will also bring down the main
-  address (this is still happening under 2.2.17).  Unloading the ethernet
-  driver and loading it again causes a lockup.
+Martin Costabel reported this back in July on the users list so I
+assumed it was a known but low-priority bug (it's easily gotten around
+via 'xset s noblank').
 
-I'm also seeing random lockups after long periods of running under
-heavy load, but this is new and I'm thinking it may be a heat problem.
-But just in case, I'll say it.
 
-I'm posting this to see if anyone is aware of these problems.  I'm
-willing to work on them, but I don't want to duplicate work.  But I
-would like to hear from the responsible parties for each driver to
-know what to do.
 
-Thanks,
 
-Corey
+ > > I can't test xinerama on this platform because the three screen don't
+ > > all run at same depth (two use depth 15/16, one uses depth 8).
+ >
+ > What about just testing it with the two heads who run at 16 bpp, or run all
+ > heads in depth 8?
+
+I won't have access to the machine for a few days: the multi screen X
+will be used off and on for demos all week :) But I'll test this as
+soon as I can fiddle with the config file again.
+
+What's the right syntax for starting in this mode?  startx -- +xinerama ?
+
+
+
+--
+rshapiro@bbn.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
