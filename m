@@ -1,33 +1,24 @@
-Message-ID: <3DC7F628.8070005@iram.es>
-Date: Tue, 05 Nov 2002 17:47:36 +0100
-From: Gabriel Paubert <paubert@iram.es>
-MIME-Version: 1.0
-To: Daniel Lao <laodx@gzjpg.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+From: "Daniel Lao" <laodx@gzjpg.com>
+To: Gabriel Paubert <paubert@iram.es>,
+	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: A question about the 68-pin SCSI devices
-References: <200211051305359.SM00332@xuyf>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Mime-Version: 1.0
+Content-Type: text/plain
+Date: Wed, 6 Nov 2002 8:39:11 +0800
+Message-Id: <20021106092862.SM00332@xuyf>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Daniel Lao wrote:
-> Hello,
-> My system are based on Motolora's "MVME2700 + 3-row P2 adapter + MVME761
-> + 50-pin SCSI devices", the linuxppc kernel is 2.212. Now I would like
-> to update my system with 68-pin SCSI devices. That is , the new system
-> configuration is "MVME2700 + 5-row P2 adapter + MVME761 + 68-pin SCSI
-> devices". The MOT's documents said that the SCSI controler(53C825A)
-> on MVME2700 can support 68-pin devices, but I am not sure whether the
-> linux kernel(2.2.12) can support them. Should anyone kindly give me some
-> advice? Thank a lot!
+Thanks for your answer.
+Yes, I use 2.2.12 because of the VME driver! I am too lazy to compile a latest kernel :-( , and not sure if I must get a VME patch for the new kernel to support it.
+May you help me to make a better choice?
 
-It should work right out of the box.
+>It should work right out of the box.
+>
+>But why are you still using 2.2.12, because you use my VME driver ?
 
-But why are you still using 2.2.12, because you use my VME driver ?
-
-	Regards,
-	Gabriel.
-
+---
+Daniel Lao
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
