@@ -1,43 +1,39 @@
-Subject: Re: USB, 2.6-test11 and hot flaming death
+Subject: Re: userspace testing an ati fb driver
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Samuel Rydh <samuel@ibrium.se>
+To: David Eger <random-temp_addy-1071230825.92d33e@theboonies.us>
 Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <20031205233307.GA7462@ibrium.se>
-References: <1070080961.683.26.camel@gaston>
-	 <09B6571B-2408-11D8-970C-0003939E069A@mac.com>
-	 <20031204163433.GA21236@ibrium.se> <1070580925.613.7.camel@gaston>
-	 <20031205233307.GA7462@ibrium.se>
+In-Reply-To: <1070626021.3fd074e539732@mail.theboonies.us>
+References: <1070626021.3fd074e539732@mail.theboonies.us>
 Content-Type: text/plain
-Message-Id: <1070759378.12499.15.camel@gaston>
+Message-Id: <1070760089.11004.19.camel@gaston>
 Mime-Version: 1.0
-Date: Sun, 07 Dec 2003 12:09:39 +1100
+Date: Sun, 07 Dec 2003 12:21:30 +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 2003-12-06 at 10:33, Samuel Rydh wrote:
-> On Fri, Dec 05, 2003 at 10:35:26AM +1100, Benjamin Herrenschmidt wrote:
-> >
-> > > This problem has actually been present quite a while (at least
-> > > since 2.6.0-test3). On my dual 1.25 GHz G4, it occurs once
-> > > every four boots or so.
-> >
-> > Interesting. It happens with the NEC EHCI/OHCI or with the
-> > KeyLargo OHCI's ? I suspect it's a problem of the NEC part,
-> > and I think K2 actually contains that part built-in on the G5
+On Fri, 2003-12-05 at 23:07, David Eger wrote:
+> I think this explains my problem;  output from my reg dump:
+
+Are you properly endian-flipping register accesses ? My access
+macro use the lwbrx/stwbrx instructions that to the endian flipping
+automatically.
+
+> Radeon MMIO registers:
+> 0000 : 0000c081
+> 0004 : 00313131
+> 0008 : 3f000000
+> ...
 >
-> The USB devices are all hooked up on the NEC EHCI/OHCI. I don't think the
-> KeyLargo OHCI cell is physically connected to any ports; it doesn't
-> show up in the device tree...
+> output from your reg dump:
+>
+> Radeon MMIO registers:
+> 0000 : 81c00000
+> 0004 : 31313100
+> 0008 : 0000003f
+> ...
 
-Ok, so something is wrong between those old Apple kbds and the NEC
-part... Interesting. Does MacOS X show any similar symptom ? Also,
-I suppose we could fix the OHCI driver to at least try to recover
-in this case... I don't have much time to play with this at the
-moment, but I'll keep that in mind. I need to find one  of those
-bad kbds first ;)
-
-Ben.
-
+--
+Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
