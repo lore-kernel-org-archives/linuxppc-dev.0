@@ -1,41 +1,29 @@
-Date: Fri, 19 Feb 1999 22:39:12 -0600 (CST)
-From: Troy Benjegerdes <hozer@drgw.net>
-To: Cort Dougan <cort@persephone.cs.nmt.edu>
-cc: Jesper Skov <jskov@cygnus.co.uk>, Gabriel Paubert <paubert@iram.es>,
-        Christian Zankel <zankel@tarantel.rz.fh-muenchen.de>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Restructuring Efforts
-In-Reply-To: <Pine.LNX.3.96.990218100142.6024A-100000@persephone.cs.nmt.edu>
-Message-ID: <Pine.LNX.4.04.9902192238300.22050-100000@narn.local.drgw.net>
+Date: Fri, 19 Feb 1999 23:48:01 -0500 (EST)
+From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
+To: Scott Trimmer <strimmer@rift.foo.net>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Compiling Kernel 2.2.1 on a G3
+In-Reply-To: <Pine.LNX.3.96.990219201949.20971B-100000@rift.foo.net>
+Message-ID: <Pine.LNX.3.96L.990219234636.31229A-100000@unix47.andrew.cmu.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Now that's kinda slick.. (And sorta scary ;)
+On Fri, 19 Feb 1999, Scott Trimmer wrote:
+> 
+> I have tried for weeks to get ANY kernel compiled, and I can get the
+> kernel to compile.  But when I copy it into my System Folder on the mac,
+> and boot every piece of text on the consoles is colored boxed with colored
+> circles in the center of them.  Why is this, and what can I do?  The
+> penguin in the upper right corner shows correctly, as well as the first
+> message saying that kernel 2.2.1 is booting.
 
-> 
-> I was just trying this out with tlbia: Use real tlbias in the kernel even
-> on chips that don't do tlbia.  When on a chip that doesn't have the tlbia
-> instruction take the trap and fix the code up in the trap handler (put in
-> a bl soft_tlbia instead of a tlbia).  We could do something like this per
-> architecture.  When doing an arch specific function trap, take the trap
-> and fix it up.  The problem with that is keeping track of the myriad of
-> functions we need to keep track of.
-> 
-> }It may be the case that none of the Amiga drivers use the same IO
-> }macros as other drivers use. As I remember it, there are two set of
-> }macros. But it's a long time since I looked at that, I could be wrong.
-> 
-> 
-> 
+You need to disable "VGA font support" or something like that in the kernel
+config. One would hope that 'make pmac_config' sets that value properly...
 
---------------------------------------------------------------------------
-| Troy Benjegerdes    |       troy@microux.com     |    hozer@drgw.net   |
-|    Unix is user friendly... You just have to be friendly to it first.  |
-| This message composed with 100% free software.    http://www.gnu.org   |
---------------------------------------------------------------------------
+-Hollis
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
