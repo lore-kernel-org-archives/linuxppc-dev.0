@@ -1,40 +1,43 @@
-Subject: serial reset?
-From: Hollis Blanchard <hollis@austin.ibm.com>
-To: embedded list <linuxppc-embedded@lists.linuxppc.org>
-Date: 06 Nov 2002 11:13:08 -0600
-Message-Id: <1036602788.17846.146.camel@granite.austin.ibm.com>
-Mime-Version: 1.0
+To: "leeyang" <leeyang@ycig.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: ELDK 2.0 released 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 06 Nov 2002 17:46:56 +0800."
+             <001d01c28579$7216d070$cc00a8c0@ycigrnd.ycig.com>
+Date: Wed, 06 Nov 2002 19:17:41 +0100
+Message-Id: <20021106181746.2B21C10160@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi, I'm working on sleep on the 405LP. In one mode the chip is powered
-down and all state must be saved/restored by software.
+In message <001d01c28579$7216d070$cc00a8c0@ycigrnd.ycig.com> you wrote:
+> I use the follwoing command line to install
+> without root account
+> ./install -d /eldk2.0.2 ppc_8xx
+> ....
+> warning:user wd does not exist, using root
+> .....
 
-My current problem is with the UART (and I'm using serial console only,
-so it's problem). When I wake up, I can type commands to my shell and
-see them echoed correctly. However the result of those commands is
-garbled, like so:
-  ls
-    1  tm[lc ;u;v  43m
-Sometimes I get the message "ttyS: 1 input overrun(s)". Return
-characters come through as spaces.
+Yes, I'm sorry, but I mistakenly ran the final build under my own id,
+which was  not  noticed  here  because  I  have  an  account  on  all
+machines...
 
-I've tried to save/restore the UART registers just like all the others.
-Unfortunately FCR is write-only, and my attempts have just resulted in
-no serial activity at all.
+> and it ends up successfully.
+>
+> Does it affect works?
 
-I've also tried the unregister_serial/register_serial calls to the
-serial driver (intended for PCMCIA). I can't see how those ever worked
--- unregister_serial doesn't reset state->count, which causes
-register_serial to complain the device is already open. When I hack the
-driver though, I get the same result though: dead serial.
+No, it has absolutely no  consequences.  The  tools  will  work  fine
+anyway.
 
-This is a 2.4.17 kernel. Can you think of anything situation that would
-allow correct character echo but not output? I don't mind going through
-a full serial initialization if necessary, but it doesn't look like the
-driver was mutated *ahem* written with this in mind...
+Best regards,
 
--Hollis
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+See us @ electronica 2002 in Munich, Nov 12-15, Hall A3, Booth A3.325
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
