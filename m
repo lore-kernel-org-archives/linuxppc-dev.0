@@ -1,143 +1,80 @@
-Message-Id: <4.3.2.20001213174222.00bfdef0@falcon.si.com>
-Date: Wed, 13 Dec 2000 17:45:26 -0500
-To: Brian Ford <ford@vss.fsi.com>, Dan Malek <dan@mvista.com>
-From: Jerry Van Baren <vanbaren_gerald@si.com>
-Subject: Re: 2.5 or 2.4 kernel profiling
-Cc: Graham Stoney <greyham@research.canon.com.au>,
-        linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <Pine.GSO.4.21.0012131547530.24199-100000@eos>
-References: <3A37A048.46E692A0@mvista.com>
+Message-ID: <3A37FDDA.BA68DDF1@mvista.com>
+Date: Wed, 13 Dec 2000 17:53:14 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+To: Brian Ford <ford@vss.fsi.com>
+CC: Graham Stoney <greyham@research.canon.com.au>,
+        linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 2.5 or 2.4 kernel profiling
+References: <Pine.GSO.4.21.0012131547530.24199-100000@eos>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 04:08 PM 12/13/00 -0600, Brian Ford wrote:
+Brian Ford wrote:
 
->On Wed, 13 Dec 2000, Dan Malek wrote:
+> I speak only for the 8260, but...
 >
-> > Graham Stoney wrote:
-> >
+> With it, you can DMA directly into IP aligned skbuffs,
 
-[snip]
+No, you can't.  The receiver buffers must be 32-byte aligned.  The
+Ethernet header is 14 bytes, so the IP frame starts on this 16-bit
+aligned boundary.  Then the IP stack promptly does a 32-bit load from
+this misaligned address.
 
->I speak only for the 8260, but...
->
->With it, you can DMA directly into IP aligned skbuffs, eliminating the
->copy.  I've done it and it seems to work.  I'll have to benchmark it, but
->the copy overhead should be significant.  This just makes IP do the
->checksum later.
->
->Also, to avoid bus contention, shouldn't the Rx buffers be on the local
->bus?  Probably the BD's too.  Unless we can figure out how to
->put these in DPRAM, but it doesn't look possible for the FCC's.  I don't
->know if it is possible to allocate skbuffs in other than 60x bus SDRAM,
->though.
+> ... I've done it and it seems to work.
 
-I asked the Mot help line about this.  There response follows.  The
-bottom line, according to them, is that you can put the BDs in DPRAM,
-but it will still cause 60x bus cycles, defeating the purpose of
-putting them in DPRAM.  I have not personally verified this.
+I don't think so......It is typical of all of the CPM devices to
+require strict alignment of incoming buffers, and very relaxed alignment
+of outgoing buffers (which is precisely what you need for most
+protocol processing).
 
-----------------------------------------------------------------------
+> .....  I'll have to benchmark it, but
+> the copy overhead should be significant.  This just makes IP do the
+> checksum later.
 
-Date: Wed, 3 May 2000 07:36:33 +0200
-Subject: Motorola DigitalDNA Help, Service Request # 1-PUU6 Reply
-To: vanbaren_gerald@si.com
-From: DigitalDNA Help <DigitalDNA.Help@motorola.com>
-MIME-Version: 1.0
-Reply-To: DigitalDNA Help <DigitalDNA.Help@motorola.com>
-Message-Id: <390FCC60.2280E779@tcfc.tornado.nsk.ru>
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=us-ascii
-Content-Length: 2170
-X-UID: 1
+Right, you have to read this data at some point, so the copy-sum does
+both in one operation.  It does the checksum while it is moving the
+buffer and aligning it on the IP frame boundary.  This also give the
+advantage of the IP frame in the cache, so when you push it upstream
+you are likely to get some cache hits.
 
-Dear K Van Baren,
+> Also, to avoid bus contention, shouldn't the Rx buffers be on the local
+> bus?  Probably the BD's too.
 
-in reply to your Service Request SR 1-PUU6 [ref. TORLP] (see details
-below):
+Yeah, that's why they designed the part this way.  Not many boards
+use it, though.
 
+> .....  Unless we can figure out how to
+> put these in DPRAM, but it doesn't look possible for the FCC's.
 
-CPM busy-polling adds about 1% overhead to bus activity. Can you ignore
-it?
-You may put FCC BDs in Dual-Port RAM but CPM will continues to access
-them through 60x bus.
-The only way to disable this polling is to emit STOP TX command when you
-have not data to send.
+I have tried, and for some reason I couldn't make it work correctly.
+It should, I just haven't been back to debug it.
 
-------- Details of your request: -------
+> ....  I don't
+> know if it is possible to allocate skbuffs in other than 60x bus SDRAM,
+> though.
 
-Date Opened :  04 Apr 2000 06:46:09
-Product :       MPC8260
-Category:       Technical Request
-
----------- Subject ----------
-8260 FCC buffer description
-
----------- Description ----------
-I want to minimize bus activity due to the CPM busy-polling buffer
-descriptors for the transmit "ready" flag.  I realize I can turn off the
-polling and do the transmit on
-  demand trick, but polling is convenient.  To minimize bus activity, I
-wish to put the FCC buffer descriptors in Dual-Port RAM.
-
-  The discussion of Dual-Port RAM in section 13.5 talks about the buffer
-descriptors residing in Dual-Port RAM or in main memory.  The SCC
-discussion on buffer
-  descriptors in section 19.2 says the buffer descriptors for the SCCs,
-SMCs, SPI, and I2C _must_ reside in Dual-Port RAM, and the RBASE and
-TBASE definitions
-  enforce that since they are 16 bits only.
-
-  The FCCs are not mentioned in the above list.  The FCC parameter RAM
-has a full 32 bit address for RBASE and TBASE and there is a flag that
-selects whether the
-   buffer descriptors are in local bus memory or 60x bus memory.  Can
-they be put in Dual-Port RAM?
-
-------- End of request details -------
+Probably not worth it.  The 66 MHz buses with burst mode and fast
+SDRAM are pretty sweet.  The skbuffs pool can get very large, certainly
+more than would fit into DPRAM, but it is sufficiently modular that you
+could put it into the local DRAM.
 
 
+> .....  Unless the local bus proves to be a larger gain and we can't
+> do that there.
 
-To review or update this Service Request, or to enter a new Service
-Request, please access Motorola's Customer Support web site at
-http://www.motorola.com/semiconductors/support
-
-If there is ever an occasion when you cannot access Motorola's Customer
-Support web site, you can also contact us by sending an email to
-DigitalDNA.Help@motorola.com
-or by calling us at one of the following numbers:
-
-Americas                1-800-521-6274          7AM-6PM Phoenix
-Asia                    +852-2666-8307          8AM-6PM Hong Kong
-Japan                   0120-191-014            8AM-5PM Tokyo
-Europe                  +49-89-92103-559        9AM-5PM Munich
+The local bus can be an advantage for some applications.  For data
+or information the CPM accesses frequently (BDs, hash tables, channel
+tables, scheduler tables, etc.) this is a great benefit.  If you are
+also just packet/frame routing, this is a useful place for the data.
+It seems for other applications, where the PowerPC core is going to
+use the data frequently, the best place is the 60x memory.  It is
+one of those features that you shouldn't try to use just because it
+is there.
 
 
-Regards,
-Motorola Semiconductors Customer Support
-
-----------------------------------------------------------------------
-
-
-[snip]
-
->Opinions welcome.
-
-I have plenty of them :-)
-
-
->--
->Brian Ford
->Software Engineer
->Vital Visual Simulation Systems
->FlightSafety International
->Phone: 314-551-8460
->Fax:   314-551-8444
-
-gvb
-
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
