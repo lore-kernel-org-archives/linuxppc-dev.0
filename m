@@ -1,29 +1,33 @@
-To: linuxppc-dev@lists.linuxppc.org
-From: Amit Shah <amitshah@gmx.net>
-Subject: IBM 750GX SMP on Marvell Discovery II or III?
-Date: Mon, 10 May 2004 12:58:41 +0530
-Message-ID: <c7nb0l$5e3$1@sea.gmane.org>
+Date: Mon, 10 May 2004 17:36:24 +0200
+From: Olaf Hering <olh@suse.de>
+To: akpm@osdl.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.linuxppc.org, Paul Mackeras <paulus@samba.org>
+Subject: [PATCH] export clear_pages on ppc32
+Message-ID: <20040510153624.GA9214@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+ext3 as module is not possible in 2.6.6, clear_pages, called from
+clear_page, is not exported.
 
-I was wondering if SMP is supported for the 750 GX processor built on the
-Marvell Discovery boards.
 
-If not, what's the problem in getting it supported? An older mail by Cort
-Dougan said it was because of TLB invalidate information not being
-broadcasted, but it was a really old mail, has anyone come up with any
-workarounds?
+--- ./arch/ppc/kernel/ppc_ksyms.c~      2004-05-10 04:33:19.000000000 +0200
++++ ./arch/ppc/kernel/ppc_ksyms.c       2004-05-10 17:32:17.663513410 +0200
+@@ -73,6 +73,7 @@ int abs(int);
+ extern unsigned long mm_ptov (unsigned long paddr);
 
-Thanks,
-Amit.
+ EXPORT_SYMBOL(clear_page);
++EXPORT_SYMBOL(clear_pages);
+ EXPORT_SYMBOL(clear_user_page);
+ EXPORT_SYMBOL(do_signal);
+ EXPORT_SYMBOL(do_syscall_trace);
+
 --
-Amit Shah
-http://amitshah.nav.to/
+USB is for mice, FireWire is for men!
 
+sUse lINUX ag, nÜRNBERG
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
