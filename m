@@ -1,33 +1,70 @@
-Reply-To: <joakim.tjernlund@lumentis.se>
-From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
-To: "'Tom Rini'" <trini@kernel.crashing.org>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: tx_full v.s tx_free race fix in 8xx_io/enet.c?
-Date: Thu, 4 Dec 2003 15:32:04 +0100
-Message-ID: <000201c3ba73$63dba410$0a01a8c0@LUMENTIS02>
+Message-ID: <3FCF4D78.9000706@intracom.gr>
+Date: Thu, 04 Dec 2003 17:06:32 +0200
+From: Pantelis Antoniou <panto@intracom.gr>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: 
+To: Dan Malek <dan@embeddededge.com>
+Cc: Paul Mackerras <paulus@samba.org>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: the door is closing for 2.4
+References: <16334.33020.624995.521330@cargo.ozlabs.ibm.com> <3FCEFB59.80300@intracom.gr> <3FCF3CE0.4020008@embeddededge.com>
+In-Reply-To: <3FCF3CE0.4020008@embeddededge.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Something I find a bit odd is that I can run ping -s 1472 -f
-> <myTargetIp>
-> without problems, but if i "jump start" the ping with "ping
-> -s 800 -f <myTargetIp> -l 8"
-> I start to loose packages. Ifconfig shows no errors for both cases.
-> Do you get the same?
+Dan Malek wrote:
+
+> Pantelis Antoniou wrote:
 >
->  Jocke
+>> However I don't think that 2.6 works for 8xx at all.
+>
+>
+> It doesn't.
+>
+>> What is the status of 2.6 for 8xx?
+>
+>
+> It's a f'ing mess.
+>
+>> Does someone intent to do it, or should I try to give it a shot?
+>
+>
+> I intended to do it, but I'm so busy with non-PPC stuff I never
+> finshed much of anything.
+>
+> Right now, it won't even compile because all of the drivers need
+> updates, then we need the usual processor dependent porting stuff
+> done.  I have a pretty good idea what needs to be done, it's just
+> more work than the few weekends I thought it would take.
 
-Found this problem. It is the backoff/retry logic thats
-causing very long TX delays. If I reduce "retlim"(retry limit) from
-15 to 6, the system recovers from a large packet ping storm.
+Once upon a time I had it at least compile, but for my board only.
+But then you mentioned you were working on it and I dropped it.
 
-Is it a bad idea to reduce the retry limit?
+Could you please elaborate on the tasks that need to be done?
+I know that the head_8xx.S file definetely needs alot of work,
+and you mentioned the drivers.
 
- Jocke
+What is the minimum stuff needed to make it work at least for my
+boards?
+
+>
+> If someone wants to get the drivers to compile, I'll continue working
+> on the processor specific parts and maybe we can get it done soon.
+
+I'd be happy to help at least as long as my busy schedule permits.
+
+>
+> Thanks.
+>
+>
+>     -- Dan
+>
+>
+>
+Regards
+
+Pantelis
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
