@@ -1,36 +1,52 @@
-Date: Wed, 17 Nov 1999 20:49:53 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Ani Joshi <ajoshi@shell.unixbox.com>
-cc: Andreas Tobler <a.tobler@schweiz.ch>,
-        Linux -Dev <linuxppc-dev@lists.linuxppc.org>
+Date: Wed, 17 Nov 1999 11:53:40 -0800
+From: "David N. Welton" <davidw@linuxcare.com>
+To: Linux -Dev <linuxppc-dev@lists.linuxppc.org>
+Cc: ajoshi@shell.unixbox.com
 Subject: Re: again 2.3.28
-In-Reply-To: <Pine.LNX.4.10.9911171133220.5126-100000@shell.unixbox.com>
-Message-ID: <Pine.LNX.4.05.9911172048000.25661-100000@callisto.of.borg>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <19991117115340.D4281@bassano.linuxcare.com>
+References: <19991117110116.B4281@bassano.linuxcare.com> <Pine.LNX.4.10.9911171141110.5126-100000@shell.unixbox.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.10.9911171141110.5126-100000@shell.unixbox.com>; from Ani Joshi on Wed, Nov 17, 1999 at 11:43:40AM -0800
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 17 Nov 1999, Ani Joshi wrote:
-> 	i messed aroudn with .28 last night and it seems to die *after*
-> mmu_init but before start_kernel, you can test this by making and export a
-> function which simply prom_print("got here\n");'s and then calling it from
-> head.S with the asm "bl	my_got_here_function".  it also gets passed
-> loading the new hash table.
+On Wed, Nov 17, 1999 at 11:43:40AM -0800, Ani Joshi wrote:
 
-Probably it depends on the machine, since I get up to free_all_bootmem(), which
-is called by mem_init() in start_kernel(). OK, I have a different box (CHRP)
-and was actually speaking about 2.3.27, but the 2.3.28 patch doesn't contain
-relevant changes.
+> On Wed, 17 Nov 1999, David N. Welton wrote:
 
-Gr{oetje,eeting}s,
---
-Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
+> > So, we can't use prom_print to print checkpoints and we can't use
+> > printk yet.
+ 
+> you can use prom_print to print until start_kernel, 
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+This is from arch/ppc/kernel/prom.c :
 
+ * Because OF may have mapped I/O devices into the area starting at
+ * KERNELBASE, particularly on CHRP machines, we can't safely call
+ * OF once the kernel has been mapped to KERNELBASE.  Therefore all
+ * OF calls should be done within prom_init(), and prom_init()
+ * and all routines called within it must be careful to relocate
+ * references as necessary.
+
+This is indeed a CHRP machine, an RS6K F50, to be precise.
+
+So, according to the people who wrote this code, you cannot do that.
+
+> then you can use printk because console_init() is done very early
+> (unless its dieing before that which would really suck), but i'm
+> pretty sure you should be able to prom_print until then.  how are
+> you calling your prints?
+
+I was calling them with 'bl myfunc', which was defined as void myfunc
+() and contained a call to prom_print.
+
+Thanks,
+-- 
+David N. Welton, Developer, Linuxcare, Inc.
+415.354.4878 x241 tel, 415.701.7457 fax
+davidw@linuxcare.com, http://www.linuxcare.com/
+Linuxcare. At the center of Linux.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
