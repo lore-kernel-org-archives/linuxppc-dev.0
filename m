@@ -1,60 +1,57 @@
-Message-ID: <40B35085.7090006@fh-landshut.de>
-Date: Tue, 25 May 2004 15:56:21 +0200
-From: Oliver Korpilla <okorpil@fh-landshut.de>
+Date: Tue, 25 May 2004 10:01:33 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+To: Pantelis Antoniou <panto@intracom.gr>
+Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: 2.6 on 8xx (was [PATCH] Driver for FECs on motorola DUET (87x/88x))
+In-Reply-To: <40B327EF.2090903@intracom.gr>
+Message-ID: <Pine.LNX.4.58.0405250954480.28787@localhost.localdomain>
+References: <40A38968.6060701@intracom.gr> <40A4C04A.8060508@intracom.gr>
+ <F8A7B640-A5F0-11D8-9559-003065F9B7DC@embeddededge.com> <40B1FB42.1040306@intracom.gr>
+ <505FCE42-ADA6-11D8-B485-003065F9B7DC@embeddededge.com> <40B327EF.2090903@intracom.gr>
 MIME-Version: 1.0
-To: "Heater, Daniel (GE Infrastructure)" <Daniel.Heater@gefanuc.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [Fwd: Memory layout question]
-References: <DB1DE297F535B340AEAE1E51B221C3D0016B3DCB@FTWMLVEM02.e2k.ad.ge.com>
-In-Reply-To: <DB1DE297F535B340AEAE1E51B221C3D0016B3DCB@FTWMLVEM02.e2k.ad.ge.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello!
+On Tue, 25 May 2004, Pantelis Antoniou wrote:
 
-It's not done and over with virt_to_bus() etc.
+> Hi there
+>
+> Success!!!
+>
+>   netvia-ppc root # uname -a
+>   Linux netvia-ppc 2.6.6 #54 Tue May 25 13:53:27 EEST 2004 ppc ppc ppc
+> GNU/Linux
+>
+> Everything works now, the problem was with the uart driver, had a
+> problem with
+> the interrupts.
 
-What we basically got here is a PCI configuration and portability issue.
+i'm definitely interested in what it took for you to get this to work.
+currently, i've got a perfectly working system, booting a 2.4-based
+kernel, compiled with ELDK 3.0, on a customized 8xx board.  this system
+uses the now-deprecated "devfs".
 
-On the MVME2100, e.g., the PCI host bridge grabs I/O resource 0x80000000
-- 0xFFFFFFFF.
+i bk-cloned the linuxppc-2.5 tree, did "make menuconfig" as best i could
+(guessing every so often at some of the new features), compiled a new
+kernel and, glory be, actually got the new kernel to boot up to the point
+of trying to start "init", at which point it hung.
 
-On the VMIC driver it requests an I/O memory ressource, and a region on
-the I/O memory is awarded.
+i'm using embedded planet's planet core bootloader and, although i'd love
+to make the switch to u-boot, given that planet core seems to be doing the
+job at the moment, i think i won't tempt the gods just yet.  that's a
+later project.
 
-In order to request a region being mapped by the PCI host bridge, one
-would have to request a region of the PCI host bridge resource, not the
-I/O resource.
+given that "devfs" is now technically obsolete, i'm wondering what you did
+in terms of the kernel configuration, and what you had to do in your root
+filesystem to effect the switch over to (i'm assuming) sysfs+udev.
 
-As far as I can deduce from looking at kernel/resource.c
-allocate_resource(), find_resource() and __request_resource() have no
-recursion, so one cannot request an appropriate region from the
-iomem_resource.
+mind sharing your .config file for this?  i'm not interested in getting
+every feature of this board to work at the moment -- just getting to the
+command line prompt would make me happy.
 
-I guess to do it portably PCI functions may be needed, though I'm still
-looking at it.
+rday
 
- From my current knowledge, the driver may have 3 issues:
-1) How to request a "safe" range of PCI addresses.
-2) How to map those PCI addresses safely to virtual (kernel) and bus
-(PCI device) addresses.
-3) Using the safer readb/readw ... etc. calls, or stuff like memcpy_io
-to portably access the VME bus, perhaps in read() and write()
-implementations, perhaps deprecating the not-so-portable dereferencing
-of a pointer.
-
-1) and 2) are non-issues on the x86, because of the PCI and memory
-layout. So all these 3 issues are about portability.
-
-I'm looking into this, starting with 2) currently.
-
-Maybe the driver would be easier to port and maintain, if the universe
-gets treated like a "proper" PCI device right from the start. I'm not
-experienced enough to say something about that right now.
-
-With kind regards,
-Oliver Korpilla
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
