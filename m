@@ -1,22 +1,27 @@
-Message-ID: <3A9BDDB4.D514E9A7@ipno.in2p3.fr>
-Date: Tue, 27 Feb 2001 18:02:44 +0100
-From: xav <grave@ipno.in2p3.fr>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: gopi krishna <mgopik@yahoo.com>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Unable to read/write consistently to a device.
+Date: Tue, 27 Feb 2001 20:27:29 +0100
+Message-Id: <19350122125913.1459@smtp.wanadoo.fr>
+In-Reply-To: <20010227170238.55737.qmail@web11103.mail.yahoo.com>
+References: <20010227170238.55737.qmail@web11103.mail.yahoo.com>
 MIME-Version: 1.0
-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>, paubert@iram.es
-Subject: Re: Problem requesting IRQ with 2.4.2 kernel
-References: <3A9BDC55.FCD90F9A@ipno.in2p3.fr>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Sorry I've forgot a few information:
+>  We have a device 0xf0040000.  This address has been
+>ioremapped.
+>(Hence directly using the physical address to access
+>the memory)
 
-I'm using a MVME2303 Board (ppc603)
+What do you mean by ioremapped ? You should use the virtual address
+returned by ioremap (which is usually _not_ the same as the physical
+address, except in some specific cases), not the physical address, to
+access the registers.
 
---
-33 (0) 1 69 15 79 59
-De chacun selon ses forces, a chacun selon ses besoins
-
+Ben.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
