@@ -1,53 +1,54 @@
-To: jk@espy.org
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Blue G3 and machine check
-In-Reply-To: Your message of "Thu, 8 Apr 1999 22:58:36 -0700"
-	<v04204d03b333436e691f@[206.163.71.146]>
-References: <v04204d03b333436e691f@[206.163.71.146]>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Message-Id: <19990410011237E.roikawa@rr.iij4u.or.jp>
-Date: Sat, 10 Apr 1999 01:12:37 +0900
-From: Ryuichi Oikawa <roikawa@rr.iij4u.or.jp>
+Content-Type: text/plain; charset="us-ascii"
+Message-Id: <v04020a00b333dce82245@[128.32.182.85]>
+In-Reply-To: <199904090459.XAA24735@lists.linuxppc.org>
+Date: Fri, 9 Apr 1999 10:03:15 -0700
+To: linuxppc-dev@lists.linuxppc.org
+From: Brian C Burke <bcburke@socrates.berkeley.edu>
+Subject: Re: TurboMax PCI host adapter (Ultra-ATA)
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-From: Joel Klecker <jk@espy.org>
-Subject: Re: Blue G3 and machine check
-> >>ftp://ppc.linux.or.jp/pub/users/oikawa/linux-pmac/bluemacg3/vmlinux-2. 
-> >>2.1-challenger2.gz
-> >>I was given many useful advice on this by Benjamin Herrenschmidt.
-> >
-> >Any chance you could put up a proper diff for the sources used to build that
-> >kernel? I'd really appreciate it. Thanks.
-> 
-> Since I received absolutely no response to this, let me elaborate. I 
-> have had success in booting and running a system with this kernel, 
-> but its config does not suit my needs, therefore I really would like 
-> to have the source. The pseudo-diffs in the message I originally 
-> replied to do not seem to be enough to produce a working kernel, are 
-> they really all of the changes?
- Yes, that was all.
+The TurboMax card is not detected at start up with LinuxPPC 2.2.1. With the
+MacOS the card is seen as a scsi card and apple drive setup can partition
+and initialize disks attached to the card, as can FWB Hard Disk ToolKit
+using its generic scsi drivers. I have a pair of 17.2G maxtors attached to
+the card each on its own cable, configured as a master drive. Oddly enough
+on my setup (rev1 G3) pdisk only sees the first, scsi1.0, failing to see
+scsi1.1.
+ I wish a I knew enough to attempt setting up a driver as these drives are
+cheap (whole setup including tax and shipping $730) and fast.
 
-> If they are, then I would like a copy 
-> of the .config so I can see what the differences in configuration 
-> are. Thanks again.
-I thought it was almost default...  Then I'll make complete
-diff to 2.2.1 kernel from samba and put it later on 
-  ftp://ppc.linux.or.jp/pub/users/oikawa/linux-pmac/bluemacg3/ 
-But please note that
- - it is minimal workaround and should not be used for long time
- - ultraATA chip(CMD646) driver has not been ported yet, so that
-   if you need it, you have to rewrite yourself. But usual ATA bus,
-   which CDROM is connected, does work.
- - it is a diff to kernel 2.2.1, not to latest one
+Brian
 
 
-Regards,
-
-Ryuichi Oikawa
-roikawa@rr.iij4u.or.jp
+>Date: 8 Apr 1999 17:38:50 -0000
+>From: LinuxPPC-Dev@associate.com
+>Subject: TurboMax PCI host adapter (Ultra-ATA)
+>
+>Hi,
+>
+>Can anyone verify that this card works with LinuxPPC?  Comparing the price
+>of an Ultra ATA drive with SCSI makes this
+>method look really attractive at the 17Gb drive size.  They confirm that
+>it'll run under MacOS on a 7500, at least.
+>
+>Noel Suarez found an inexpensive way to add 10GB of high-speed storage to
+>his Power Mac G3/233:
+>
+>   "I saw the ad from ProMax for an Ultra ATA/DMA PCI card for the Mac.
+>When I asked the sales guy on the phone a couple of
+>   weeks ago if I could boot off the Ultra ATA/DMA drives attached to the
+>card, he said no. I ordered it anyway. It just shipped 2
+>   days ago and I installed it yesterday when I got my 10.1 GB Ultra
+>ATA/DMA drive from PC Warehouse. The drive was $199
+>   and the card was $99. I reformatted the drive with Apple Drive Setup -
+>and installed MacOS 8.5 on it and it booted just fine."
+>
+>Thanks,
+>
+>glen_stewart@associate.com
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
