@@ -1,28 +1,25 @@
-From: "Meena Ramamoorthi" <meena@stargateip.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Cc: "Meenakshi Ramamoorthi" <meena@stargateip.com>
-Subject: Hardware software co verification tools on Embedded LINUX
-Date: Tue, 2 Jan 2001 17:50:22 -0800
-Message-ID: <NEBBJELJBMCNBHIPPOHFCEMCCAAA.meena@stargateip.com>
+Date: Wed, 3 Jan 2001 14:33:17 +0100 (CET)
+From: Holger Waechtler <holger@yacoub.de>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: MPC8xx lcd driver for 2.4 kernels
+Message-ID: <Pine.LNX.4.10.10101031425580.26834-100000@Q.yacoub.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-  Hi all,
+Hi everybody,
 
-  Happy new year to all !
+I wrote a framebuffer kernel driver (2.4) for the MPC8xx LCD controller.
+It supports all usual features and uses the default framebuffer API. I
+don't know if such a driver is already included in the HardHat sources
+(Before I startet it was not - ).
 
-  I want to know if any body has used any of the HW/SW co verification tools
-on embedded linux and if so what is that ? and from where ?. Most of the
-tools are available in Solaris or HP unix and some are still being ported to
-LINUX. SO if any one has used any of the HW/SW co verification tools please
-let me know.
+If anybody is interested, please contact me.
+I'm not subscribed on this list -- please CC me in replies.
 
-    Thanks in advance !!
+- Holger
 
-  - Meenakshi
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
