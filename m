@@ -1,31 +1,38 @@
-From: Jesper Skov <jskov@redhat.com>
-Message-ID: <14480.11654.353178.379982@thinktwice.zoftcorp.dk>
-Date: Thu, 27 Jan 2000 12:35:34 +0100 (CET)
-To: dony <dony.he@huawei.com.cn>
-Cc: linuxppc-embed <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Looking for a better debug tool for embed-environment...
-In-Reply-To: <38902BAB.57A994F8@huawei.com.cn>
-References: <3889220B.2BD1CB63@huawei.com.cn>
-	<otu2k6tn9h.fsf@thinktwice.zoftcorp.dk>
-	<388FB1FD.A75F048A@huawei.com.cn>
-	<14480.8703.852087.45813@thinktwice.zoftcorp.dk>
-	<38902BAB.57A994F8@huawei.com.cn>
+Date: Thu, 27 Jan 2000 15:06:28 -0700
+From: Cort Dougan <cort@fsmlabs.com>
+To: Dan Malek <dan@netx4.com>
+Cc: Brendan.Simon@ctam.com.au,
+        linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: linuxppc-embedded: main kernel tree
+Message-ID: <20000127150628.U14218@hq.fsmlabs.com>
+References: <388F3D65.3B420FED@ctam.com.au> <388F18F5.BDE5D395@netx4.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <388F18F5.BDE5D395@netx4.com>; from Dan Malek on Wed, Jan 26, 2000 at 10:55:33AM -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->>>>> "dony" == dony  <dony.he@huawei.com.cn> writes:
+I have no trouble.  Send me mail with the error and we can get you going
+again.
 
-dony> Hi, Now I am looking for a friendly GUI debug tool for our
-dony> embed-linux-environment.  Do you know other debug tools which
-dony> can be used in embed-environment?  The "gdbserver" and
-dony> "powerpc-linux-gdb" are not friendly for debug, especially in a
-dony> large project.
+} The "main" tree is really the 2.3.xx tree right now, and all of
+} the 8xx support is there.  For some reason, the BitKeeper 2.3.41
+} version doesn't build.  I fixed a couple of problems, but now I
+} am wondering if it will build for any PMac platform.......
 
-DDD or Insight are the ones I know of. I think Insight is now
-available from sourceware.cygnus.com.
+I send patches to Linus every pre-patch he releases.  If he doesn't have
+time or is unwilling to absorb the patches for the next pre-patch that's an
+issue you need to take up with him...  Lately he's been pretty good about
+absorbing things right away, though.
 
-Jesper
+} Every day?  I have the same complaint most people have expressed
+} lately.  I work in the BitKeeper tree, which is supposed to be
+} the official PPC tree and one step away from kernel.org.  I can't
 
+No, you need to tell me there's a problem so we can fix it.
+
+} build it for any of my systems.  I have to go looking for something
+} from Paul or Ben or someone else to get something to work......
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
