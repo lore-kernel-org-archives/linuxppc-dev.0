@@ -1,39 +1,39 @@
-Message-ID: <3CAB3F0B.8080700@embeddededge.com>
-Date: Wed, 03 Apr 2002 12:42:35 -0500
+Message-ID: <3CAB40C1.8000909@embeddededge.com>
+Date: Wed, 03 Apr 2002 12:49:53 -0500
 From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-embedded@lists.linuxppc.org
+To: Armin <akuster@pacbell.net>
+Cc: David Gibson <david@gibson.dropbear.id.au>,
+	linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Workaround for USB DMA bugs
-References: <20020403024321.GN1026@zax>
+References: <20020403024321.GN1026@zax> <3CAABAB0.5030000@pacbell.net>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David Gibson wrote:
+Armin wrote:
 
-> Well, I'm not sure I'd want to pollute the tree with this sort of
-> hack, but on the other hand it makes things work that wouldn't
-> otherwise.
 
-This has been floating around for a long time while we were searching
-for the proper solution.  As you said, if you want things to work, you
-have to do this.  This still isn't logically correct, it just makes
-the window of error smaller.
 
-This is one of several problems in the Linux kernel that has to be
-solved for processors that don't have bus snooping.  All we have been
-doing over time is making the problems less apparent, not solving them.
-There are similar hacks for DMA into sk buffers, which still doesn't
-work in forwarding/bridging applications (you won't notice the bugs
-in endpoint only situations).
+> Ah yes,  We have done something simular (internally) and had the same
+> reservations. This will help me with the ocp usb drivers i am working
+> on.   I would like to see some way of reminding us that this was done.
+> let say a config option for 4xx_usb_dma_workarround.
 
-The real problem to be solved is any memory object that can be the target
-for DMA has to be cache line aligned, and modulo cache line size for
-incoherent processors.  Since few people work with this type of processor,
-it is hard to get maintainers interested in making these general changes
-(and polluting the Linux kernel with knowledge of cache line size).
+It isn't unique to 4xx.  This was originally done for the 8xx USB (actually,
+probably for StrongARM and I just copied it over).  These functions are
+only used for incoherent processors, so there isn't any need to further
+define this with another config option.  Just leave a comment here, change
+the #ifdef CONFIG_USB to #if 1 (it should be done all of the time).
+
+Just remember this is not a solution, and simply makes the problem less
+likely to appear.  If you happen to perform this operation, and then the
+processor happens to touch the cache line before the DMA is complete,
+your DMA buffer will still be corrputed.  So far, we have just been lucky
+the DMA completes before anything else in the cache line is touched by
+the processor.  This only guarantees the processor will never get incorrect
+information when it shares a cache line with a DMA.
 
 
 	-- Dan
