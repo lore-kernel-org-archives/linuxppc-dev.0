@@ -1,18 +1,33 @@
-Return-Path: <mark@toertel.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.184]) by ozlabs.org (Postfix) with ESMTP id 47DA62BDB5
+Return-Path: <srivatsan@deccanetworld.com>
+Received: from gatekeeper.deccanetworld.com (mail.deccanetworld.com
+	[203.196.146.50])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C6E3F2BDB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 13 Dec 2004 06:00:05 +1100 (EST)
-Message-ID: <41BC7D18.9090201@toertel.de>
-Date: Sun, 12 Dec 2004 18:17:12 +0100
-From: Mark Jonas <mark@toertel.de>
+	Mon, 13 Dec 2004 15:46:18 +1100 (EST)
+Received: from gatekeeper.deccanetworld.com (localhost [127.0.0.1])
+	by gatekeeper.deccanetworld.com (8.12.2/8.12.2/SuSE Linux 0.6) with
+	ESMTP id iBD4VVj0005944
+	for <linuxppc-embedded@ozlabs.org>; Mon, 13 Dec 2004 10:01:31 +0530
+Received: from mail.deccanetworld.com (server.deccanetworld.com [192.168.1.32])
+	by gatekeeper.deccanetworld.com (8.12.2/8.12.2/SuSE Linux 0.6) with
+	ESMTP id iBD4VGdW005922
+	for <linuxppc-embedded@ozlabs.org>; Mon, 13 Dec 2004 10:01:16 +0530
+Received: (from root@localhost)
+	by mail.deccanetworld.com (8.11.0/8.11.0) id iBD4xjL18719
+	for linuxppc-embedded@ozlabs.org; Mon, 13 Dec 2004 10:29:45 +0530
+Received: from bgcw301 ([192.168.1.69])
+	by mail.deccanetworld.com (8.11.0/8.11.0) with ESMTP id iBD4xi718674
+	for <linuxppc-embedded@ozlabs.org>; Mon, 13 Dec 2004 10:29:44 +0530
+From: "Srivatsan" <srivatsan@deccanetworld.com>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Mon, 13 Dec 2004 10:10:48 +0530
+Message-ID: <001001c4e0cd$eb27fb40$4501a8c0@bgcw301>
 MIME-Version: 1.0
-To: wangwenbin <stcwang@163.net>
-References: <20041210015932.A3B692BDA0@ozlabs.org>
-In-Reply-To: <20041210015932.A3B692BDA0@ozlabs.org>
-Content-Type: text/plain; charset=GB2312
-Cc: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
-Subject: Re: video card for Lite5200
+In-reply-to: <20041213010004.457862BF24@ozlabs.org>
+Content-type: multipart/mixed; boundary="=_IS_MIME_Boundary"
+Subject: Linux MPC8280 patch
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,37 +38,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello Tony,
 
->   I have successfully boot Linux 2.4.22 on my Lite5200 Evaluation Board with the ELDK. but when I want to use PCI slot for the video card,something goes wrong. The whole board loses supply of electricity. And i take the video card out ,the board is still ok. So i change to put RTL81390 network card into PCI slot. The same thing happen.
->    The video card i have tried :
->            S3 Trio64V
->            Trident TGUI9680
->            S3 ViRGE/DX
->  
->
-According to my experience with the Lite5200 board there are three
-things that might have gone wrong in your experiments:
+--=_IS_MIME_Boundary
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-1.) You plugged in a 5V-only card. Make sure your card 3.3V compliant.
-Check that by looking at the data sheet _and_ by looking a the PCI
-card's edge connector. The coding gap must be in to the front of the card.
 
-2.) You plugged in a card which claims to be 3.3V PCI compliant card but
-is not. Even if the coding gap marks it as 3.3V compliant I've seen
-cards before that aren't. They usually make a short between V I/O and +5
-VDC which results in what you can see: The power supply goes into
-protection.
 
-3.) You placed the PCI card into the PCI slot turned by 180 degrees.
-That also usually results in a short and the power supply goes into
-protection. Please consult the Lite5200's user manual and make sure you
-plug in the card the right way.
+Dear all,
 
-If had to make a bet what your problem is I would put my money on 3. I
-think so because RTL8139 cards are usually 3.3V compliant. Additionally,
-the graphics cards you mentioned are usually not 3.3V compliant but if
-you turn them by 180 degrees their coding gap will fit.
+    1) I am trying to bring up a Rattler board by using MPC8260ADS
+kernel. From what I am seeing from all my trials MPC8260ADS kernel is
+not bringing up the MPC8280 based board.
 
-Regards
-Mark
+   2) Is there any patch to be added to the MPC8260 based kernel to
+bring up the MPC8280 based board? If so, May I know the name of the
+patch?
+
+Expecting all your help.
+
+With Best Regards,
+C.R.Srivatsan
+
+
+
+********************************DISCLAIMER**********************************
+
+This e-mail and any attachment is for authorised use by the intended
+recipient(s) only. It may contain proprietary material, confidential
+information and/or be subject to legal privilege of Deccanet Designs Ltd.
+If you have received this message in error, please notify the originator
+immediately. If you are not the intended recipient, you are notified that
+you are strictly prohibited from retaining, using, copying, altering or
+disclosing the contents of this message.
+
+****************************************************************************
+--=_IS_MIME_Boundary--
