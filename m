@@ -1,29 +1,32 @@
-Subject: Re: I need assembler programming PowerPC4xx
-From: Hubert Figuiere <hub-linux-arm@trantor.staff.proxad.net>
-To: sulvin xavier <sulvinx@yahoo.fr>
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <20030919075029.59928.qmail@web9503.mail.yahoo.com>
-References: <20030919075029.59928.qmail@web9503.mail.yahoo.com>
-Content-Type: text/plain
-Message-Id: <1063965137.7956.12.camel@trantor.staff.proxad.net>
-Mime-Version: 1.0
-Date: Fri, 19 Sep 2003 11:52:17 +0200
+Date: 19 Sep 2003 10:51:19 -0000
+Message-ID: <20030919105119.26534.qmail@webmail27.rediffmail.com>
+MIME-Version: 1.0
+From: "somshekar chandrashekar kadam" <som_kadam1@rediffmail.com>
+Reply-To: "somshekar chandrashekar kadam" <som_kadam1@rediffmail.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: linux ram size
+Content-type: text/plain;
+	format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, 2003-09-19 at 09:50, sulvin xavier wrote:
-> Hello all,
-> Please, Anyone can send me documentation (or web url)
-> for assembler programming PowerPC4xx (programming
-> tutorial, example, exercise with correction  ...)
-> Thanks in advance,
+hi ,
 
-motorola.com has references manuals for PowerPC assembly.
-For sample code, look for .S files in linux/arch/ppc
+    Ineed to know can i run my linux with 8mb of ram , what
+changes i need to do with my mpc860 linuxppc code as i see he is
+mapping 8mb and again 8mb , totally 16mb he is using , soi am not
+getting anything proper , it hangs after uncompressing the kernel
+,i use ppcboot .
+my ram size is 8mb
+pls mail to this id
 
+Thanksin advance
+Somshekar
+___________________________________________________
+Art meets Anesthesia; Shefali Weds Dr. Raman.
+Rediff Matchmaker strikes another interesting match !!
+Visit http://matchmaker.rediff.com?1
 
-
-Hub
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
