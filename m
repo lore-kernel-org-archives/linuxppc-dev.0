@@ -1,32 +1,46 @@
-Message-Id: <200011271726.eARHQOC06036@denx.local.net>
-To: Tom Armistead <tarmiste@phx.mcd.mot.com>
-cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: MPC860-T / FEC transmits each packet 3 times? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 27 Nov 2000 09:57:28 MST."
-             <3A229278.C774FB4@phx.mcd.mot.com>
-Date: Mon, 27 Nov 2000 18:26:24 +0100
+Message-ID: <D53137D1F3DDD211A3750800060DA3130149DA67@viee122a.erd.siemens.at>
+From: Grubmair Peter <peter.grubmair@siemens.at>
+To: "'Julia Elbert'" <jelbert@enerdyne.com>
+Cc: "'linuxppc-embedded post'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: AW: uart.c and scc2
+Date: Mon, 27 Nov 2000 18:31:31 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3A229278.C774FB4@phx.mcd.mot.com> Tom Armistead wrote:
->
->    I experienced the same behaviour when I had initialized the FEC to
-> use only 1 transmit BD (it was a simple application and I only needed 1
-> transmit buffer).  I modified the code to use 2 transmit BD's and the
-> problem went away.  If you are using only a single transmit BD, try
-> increasing it to 2.
+Hi,
+I have a patch for 2.2.14 at MPC850, which
+supports RTS/CTS flow control, allows reordering
+of SCC in rs_table (that means you can assign ttySx to
+every SMC/SCC) and allows to configure more buffer for
+SCC uarts ( 4 kB for receive, 8kB for transmit),
+and is tested for baudrates up to (including) 460800 kBaud.
+Additionally buffer_flush for these extended buffers is implemented,
+and uarts can also operate in 8x oversampling mode, which is preferable for
+some bad combinations of clock frequency and baudrate.
+But as I need SCC uarts only for MPC850, I did code it  for other MPC8xx,
+nor did I implement other features like DCD and other modem stuff.
+If youe are interested, I can give it to you, but be aware its only
+an implementation for special needs and is not fully tested
+(e.g it crashes if on other side of line hw is sending at full speed
+while you open  ttySx).
+Best regards
+                Peter
+-----Ursprüngliche Nachricht-----
+Von: Julia Elbert [mailto:jelbert@enerdyne.com]
+Gesendet am: Montag, 27. November 2000 17:43
+An: 'linuxppc-embedded@lists.linuxppc.org'
+Betreff: uart.c and scc2
 
-Thank you very much - that was exactly the problem I had.
 
-Wolfgang Denk
+Does anyone know the status of scc2 in uart.c?
+How far is it from working?
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Status quo. Latin for "the mess we're in."
+Very much appreciated.
+--Julia
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
