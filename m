@@ -1,49 +1,73 @@
-From: Daniel Wu <Daniel.Wu@alcatel.com.au>
-Subject: Re: Using zImage.initrd
-To: Dan Malek <dan@netx4.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Message-Id: <00Jun13.090942est.115229@border.alcanet.com.au>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-References: <00Jun9.083821est.115346@border.alcanet.com.au>
- <3940614D.5BB18EF9@embeddededge.com>
- <00Jun9.185145est.115383@border.alcanet.com.au>
- <394110AB.1B25BBF4@embeddededge.com>
-Date: Tue, 13 Jun 2000 09:09:40 +1000
+Message-ID: <39458490.234545FC@embeddededge.com>
+Date: Mon, 12 Jun 2000 20:47:12 -0400
+From: Dan Malek <dan@netx4.com>
+MIME-Version: 1.0
+To: Lucinda Schafer <lucsch@adaptivemicro.com>
+CC: Dan Malek <dan@netx4.com>, Wolfgang Denk <wd@denx.de>,
+        "Wohlgemuth, Jason" <jason.wohlgemuth@marconi.com>,
+        linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Software Emulation Kernel Panic
+References: <A109131318C4D1119AC20060088DECE330F37A@amwmail.adaptivemicro.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek wrote:
-
+Lucinda Schafer wrote:
 >
-> > > What is the rest of this backtrace?
-> > >
-> >
-> > C00FF71B buf
-> > C00B8474 extract_entropy
-> > C00B8648 get random_bytes
-> > C00FA2B4 init_elf_binfmt
-> > C00F7774 start_kernel
-> > C000221C start_here
->
-> Oh wow.....If this is really where the code is running, something
-> very fundamental is broken in the hardware because there should have
-> been lots more printed out on the console.  You are still running in
-> very generic kernel functions that work on all architectures.
->
+> Thanks for answering so promptly.
 
-But this is only a problem if I do "make zImage.initrd" and not "make zImage". The
-latter actually passes this point without error, it fails when it can't get the root
-image from the network, when is expected since I am not planning to boot using that
-method.
+Enjoy it when you can, it doesn't always happen that way :-).
 
-Anyway, I will give your suggestions a try, but my feeling is that they won't make
-much difference. BTW, the hardware is not "new" and it works fine with another OS and
-applications. I ported the UPM setup from the existing code so I'm pretty sure they
-are ok.
+> We are using the mpc8xx-2.2.13 Kernel ......
 
-Daniel
+You may want to try taking the entire CDK from the MontaVista FTP
+server.  It is pretty nice to have a complete set of tools, kernel,
+applications, filesystem that has seen QA and doesn't need patches
+taken from the Internet.
 
+> ..... Some boards do seem more likely than others to
+> panic.
+
+Some QA people would interpret this as hardware DVT failure.  Manufacturing
+variations trigger borderline design decisions.
+
+> ........ I have a special application program
+> that will run automatically at bootup and shut the processor power down for
+> a minute, powerup, and then have the reboot sequence starts over again.
+
+
+A minute isn't very long.  If you suspect temperature related problems
+put these things in an environmental chamber using temperature cycles
+that actually affect operation.
+
+> This seems to be a boot related problem,....
+> ..... If it works once, it will
+> not panic on this particular bootup ever.
+
+So, are these identical systems?  Same processor silicon, same memory
+devices, same lot of boards, same boot rom?  Are you properly initializing
+the processor cache/mmu/debug registers from power up?
+
+> Wolfgang's suggestion makes a lot of sense to me:
+> "Usually this means that you are running on an old  mask  revision  of
+> the  CPU,  which  still  has  the  (in)famous  "Cache Corruption When
+> Writing to Special Registers" bug."
+
+I believe that only affected some 860(T) processors.  I don't remember
+that listed for any other processor model or silicon.
+
+
+> ....software emulation exception with PR=0 if there is a bus error
+> (why should there be a bus error?? this isn't answered),
+
+There are lots of SPRs listed for PowerPC cores that the MPC8xx family
+doesn't support (or need).  If you have some generic software that
+would access these, you have to emulate the function in software.  There
+isn't any Linux software that would access SPRs that don't exist.
+
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
