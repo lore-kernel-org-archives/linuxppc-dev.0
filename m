@@ -1,19 +1,22 @@
-Return-Path: <lagrange@fr.oleane.com>
-Received: from smtp11.clb.oleane.net (smtp11.clb.oleane.net [213.56.31.48])
-	by ozlabs.org (Postfix) with ESMTP id EBE152BDA1
+Return-Path: <joakim.tjernlund@lumentis.se>
+Received: from dmz.lumentis.net (unknown [212.105.56.244])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BA2812BDA2
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Oct 2004 19:48:06 +1000 (EST)
-From: "Laurent Lagrange" <lagrange@fr.oleane.com>
-To: "'Kumar Gala'" <kumar.gala@freescale.com>,
-	"'Dan Malek'" <dan@embeddededge.com>
-Date: Thu, 14 Oct 2004 11:49:18 +0200
-Message-ID: <004401c4b1d3$1ac0df40$5201a8c0@GEG2400>
+	Fri, 15 Oct 2004 01:17:52 +1000 (EST)
+Received: from jockewin (fw [172.31.1.1]) (authenticated bits=0)
+	by dmz.lumentis.net (8.12.8/8.12.8) with ESMTP id i9EEru7H030304
+	(version=TLSv1/SSLv3 cipher=RC4-MD5 bits=128 verify=NO)
+	for <linuxppc-embedded@ozlabs.org>; Thu, 14 Oct 2004 16:53:56 +0200
+From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Thu, 14 Oct 2004 16:53:49 +0200
+Message-ID: <JPEALJAFNGDDLOPNDIEEIEEPCNAA.joakim.tjernlund@lumentis.se>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-In-Reply-To: <010190ED-1D8F-11D9-92E7-000393DBC2E8@freescale.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: MPC8560 problem to launch user application like /sbin/init
+Subject: Merge 8xx to Linus tree?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,28 +27,11 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Is it not time to merge 8xx from linuxppc-2.5 into Linus tree?
 
+I know the 8xx is not fully functional yet but this isn't done
+soon I think it won't happen at all. The 8xx arch can be made to 
+depend on BROKEN in Linus tree to make it clear that it isn't
+working properly yet.
 
-> Have you turned on emulation of FP in the kernel?
-No I did not it, but with the FP emulation on, the Linux runs...
-Many thanks for your help.
-
-> > The console is mapped on SCC1 port.
-> > CCSRBAR is mapped at 0xF8000000 and immr at 0xF8080000.
-> I would suggest using the standard memory map the rest of
-> us use for 8560.  It makes the porting lots easier.
-Sure. But where can I find the standard rules ?
-Are the rules dependent on each demo board like 8560_ads ?
-Do the custom boots respect some rules ?
-
-> I open 2 TLBs on memory and a big TLB for all IOs included CSSRBAR.
-> How do you to this?  The linux ppc kernel already manages all
-> of this mapping for you.
-Right. I let the kernel configure the memory TLBs but I use
-a call to io_block_mapping to open the IO space
-io_block_mapping(0xf0000000, 0xf0000000, 0x10000000, _PAGE_IO);
-
-Thanks again
-Bye
-Laurent
+  Jocke
