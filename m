@@ -1,69 +1,57 @@
-From: Cort Dougan <cort@fsmlabs.com>
-Date: Thu, 26 Jun 2003 12:45:29 -0600
-To: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
-Cc: "'t.vanremortel@ha.be'" <t.vanremortel@ha.be>,
-	PPC Mailinglist <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: EP405 network interface
-Message-ID: <20030626184529.GB25098@host109.fsmlabs.com>
-References: <D73A25AA6E54D511AD74009027B1110F3C08ED@ORION>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <D73A25AA6E54D511AD74009027B1110F3C08ED@ORION>
+Message-ID: <3EFB5D4C.8070605@esteem.com>
+Date: Thu, 26 Jun 2003 13:53:32 -0700
+From: Conn Clark <clark@esteem.com>
+MIME-Version: 1.0
+To: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+Cc: May Ling List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: (Sudo off topic)Simple cheap IDE intrerface for IBM 405
+References: <3EF8CDF4.3050700@esteem.com> <3EFABFF4.9010707@esd-electronics.com>
+In-Reply-To: <3EFABFF4.9010707@esd-electronics.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I ended up hard-coding the interface since the 2_4_devel tree was shifting
-on EP405 support quite a bit.  Some EP405 boards worked and some didn't.
-Once you tell it it definitely has one (unconditionally) it sails along
-smoothly.
+Hello Matthias,
 
-I also found that booting out of flash does the same thing regardless of
-the EP405 board.  I had to initialize the interface via the firmware before
-the Linux driver work work.  I wasn't able to hard-code around that one.
+	Actualy it was a quest for a compact flash interface that started me on
+this IDE interface saga to begin with. I knew you could build an adapter
+to access compact flash cheaply/easily.
 
-Another point to keep in mind - the linux bootloader code will assume clock
-rates for everything.  They're not always correct and that screwed up a lot
-of things.  You may want to double check those.
+	Would it be posssible to give me ( or post ) a list of signal names of
+what 405 signal connects to what compact flash signal in your interface?
+I can understand if you say no.
 
-} Did you enable the phy in the Board Control Status Register?
-}
-} -----Original Message-----
-} From: Toni Van Remortel [mailto:t.vanremortel@ha.be]
-} Sent: Thursday, June 26, 2003 10:01 AM
-} To: PPC Mailinglist
-} Subject: EP405 network interface
-}
-}
-}
-} Hi all,
-}
-} I cannot get the NIC working on my EP405. I used the ep405_config from
-} the linuxppc_2_4_devel tree.
-}
-} This is a part of the output:
-}
-} ...
-} loop: loaded (max 8 devices)
-} eth0: No PHY device found.
-} removing net dev
-} ...
-}
-} So it seems that the kernel doesn't find the NIC (but it is there, and
-} working, ep-bootloader can use it to download the image).
-}
-} Anybody an idea?
-}
-} I already checked the NIC support, and the onboard-IBM NIC support is
-} enabled.
-}
-} Regards,
-} --
-}                            Toni Van Remortel
-}               Wetenschappelijk Medewerker - D-science lab
-}                  Tel: 03 205 61 72 - Fax: 03 205 61 95
-}                       E-mail: t.vanremortel@ha.be
-}
-}
+	Also was the compact flash connected dirrectly to the data and address
+bus or did you need to buffer it in some way?
+
+Matthias Fuchs wrote:
+> Hi Conn,
+>
+> we attached a CompactFlash socket to the 405's external bus on our CPCI405
+> CompactPCI board. The board is directly supported by the
+> linuxppc_2_4_devel tree.
+> The tree includes a driver for simple memorymapped CompactFlash cards.
+>
+> Matthias
+>
+
+	Just the fact that I now know it can be done is of great help.
+
+Thanks
+
+	Conn
+
+--
+
+*****************************************************************
+   If you live at home long enough, your parents will move out.
+  (Warning they may try to sell their house out from under you.)
+*****************************************************************
+
+Conn Clark
+Engineering Stooge				clark@esteem.com
+Electronic Systems Technology Inc.		www.esteem.com
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
