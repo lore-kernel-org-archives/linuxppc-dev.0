@@ -1,41 +1,35 @@
-Date: Thu, 30 Sep 1999 11:41:17 +0200 (MET DST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Joerg Rambau <rambau@zib.de>
-cc: bh40@calva.net, linuxppc-dev@lists.linuxppc.org, tas@mindspring.com
-Subject: Re: SndConfig for Linux/PPC
-In-Reply-To: <37F32EBC.FAFD82E2@zib.de>
-Message-ID: <Pine.GSO.4.10.9909301138500.8003-100000@begonia.sonytel.be>
+Date: Thu, 30 Sep 1999 11:21:47 -0500 (CDT)
+From: Takashi Oe <toe@unlserve.unl.edu>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: [Fwd: Bug: 2.2.12 still hangs PPC after some PPP activity]
+In-Reply-To: <19990930105030.013866@mailhost.mipsys.com>
+Message-ID: <Pine.LNX.3.96LJ1.1b7.990930111227.23148D-100000@ofey.inetnebr.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 30 Sep 1999, Joerg Rambau wrote:
-> I have a Rev 2 PB G3 266 MHz (bought in Dec 98)
-> with Rage LT Pro, Chip ID 0x4c50.
+On Thu, 30 Sep 1999, Benjamin Herrenschmidt wrote:
 
-> MCLK 78, PLL 135 crashes (and some others I cannot remember),
-> MCLK 60, 63, 71, PLL 135, MCLK 100, PLL DEFAULT do not crash.
-> 
-> I have to say that, in contrast to earlier versions of atyfb.c,
-> MCLK 100, PLL DEFAULT
+> I've heard of various possible issues with DMA hardware on the serial
+> ports and G3 macs. There seem to be a problem with the Heathrow
+> generation of Apple ASICs. (This was reported to me by people who made a
+> special device that was plugged into those ports, with a custom driver
+> under MacOS). They told me some characters end up beeing garbled when
+> reaching the SCC. I'll do some testings with your driver and my
+> powerbook's internal modem this week end to see if this problem actually
+> occurs or not.
 
-Why try PLL 135?
+I suppose that can happen if DBDMA's FIFO wasn't flushed properly for
+some reason.  Do you know if the problem occurs on receiving side (from
+SCC to DMA) or transmitting side (from DMA to SCC)?  How many chars were
+garbled?  If the FIFO were the cause of the problem, the number should be
+between 1 and 7.
 
-AFAIK the RAGE PRO LT PLL upper limit is 230 Mhz. This means that the PLL locks
-best in the range 115-230 MHz. Outside this range, the PLL may not lock to the
-specified frequency. If you use PLL 135, atyfb will assume the PLL locks best
-in the range 62.5-135 MHz, which may cause screen unstabilities.
 
-Greetings,
-
-						Geert
-
---
-Geert Uytterhoeven ----------------- Sony Suprastructure Center Europe (SUPC-E)
-Geert.Uytterhoeven@sonycom.com ------------------- Sint Stevens Woluwestraat 55
-Phone +32-2-7248648 Fax +32-2-7262686 ---------------- B-1130 Brussels, Belgium
+Takashi Oe
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
