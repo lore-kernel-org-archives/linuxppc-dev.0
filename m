@@ -1,20 +1,30 @@
-Message-Id: <200003111944.OAA24668@mal-ach.watson.ibm.com>
-To: Giuliano Pochini <pochini@denise.shiny.it>
-cc: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
-        Sean Harding <sharding@dogcow.org>, linuxppc-dev@lists.linuxppc.org
+Message-ID: <38CAC92A.5F4B4CFF@denise.shiny.it>
+Date: Sat, 11 Mar 2000 17:31:06 -0500
+From: Giuliano Pochini <pochini@denise.shiny.it>
+MIME-Version: 1.0
+To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+CC: Sean Harding <sharding@dogcow.org>, linuxppc-dev@lists.linuxppc.org
 Subject: Re: compiler optimization? something else?
-In-Reply-To: Message from Giuliano Pochini <pochini@denise.shiny.it>
-   of "Sat, 11 Mar 2000 17:32:31 EST." <38CAC97F.4F45265A@denise.shiny.it>
-Date: Sat, 11 Mar 2000 14:44:34 -0500
-From: David Edelsohn <dje@watson.ibm.com>
+References: <4.3.2.20000309152803.00ca9100@mail.munich.netsurf.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-	Fused multiply-add always is used on POWER/PowerPC unless the user
-specifically request that it not be used.  -ffast-math does not affect
-it.
 
-David
+> >juliet ~
+> >27% gcc --version
+> >egcs-2.91.66
+>
+> Upgrade to gcc-2.95.2, <ftp://devel.linuxppc.org/users/fsirl/R5/RPMS/ppc/>.
+> Though I don't believe this will give you a really big improvement in code
+> optimization, it is a big step forward in compiler correctness on PPC.
+
+I don't see any speed improvement from egcs-1.1.12 to gcc 2.95.2. Various
+tests done with lame and mpg123 show than 2.95.2 produces code only 0.5%
+faster or so. Executable size is 10-15% smaller.
+
+Bye.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
