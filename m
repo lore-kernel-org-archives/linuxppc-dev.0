@@ -1,28 +1,35 @@
-Message-ID: <3E65DE1E.5080803@devcom.cz>
-Date: Wed, 05 Mar 2003 12:23:10 +0100
-From: Jan Damborsky <jan.damborsky@devcom.cz>
+Message-ID: <81A66F72DCACD511B0600002A551BFCB4E9D5B@kuumex05.barco.com>
+From: =?iso-8859-1?Q?=22Callebaut=2C_Beno=EEt=22?= <benoit.callebaut@barco.com>
+To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Decrementer exception on a 8245 custom board
+Date: Wed, 5 Mar 2003 16:24:38 +0100 
 MIME-Version: 1.0
-To: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: mpc8241/8245 floating point unit
-References: <5.1.0.14.2.20030304062954.0261de18@falcon.si.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Jerry Van Baren wrote:
+Hello,
+Sometime when a compile the kernel and run it on our custom board, the
+kernel blocks because it receive a decrementer exception (0X900) .
+It happens rapidely (1 or 2 seconds). Does someone knows from where can this
+come or a workaround.
 
->
-> I don't have 8241/8245 experience, but I do have 8260 experience (also
-> uses
-> the 603e core).  Floating point (FPU) works well under linux.
+Best regards,
 
-Does 8260 really have full FPU support ?. I think it only has FPU
-register set and it supports
-FPU load and store instructions, but NOT arithmetic instructions. Am I
-right ?
-                  HANYS
+----------------------------------------------------------------------------
+------
+Benoit Callebaut
+Software Development Engineer
+Barco | Control Rooms
+Noordlaan 5, 8520 Kuurne, Belgium
+
+Tel 	+32(0)56 36 84 28
+Fax 	+32(0)56 36 86 05
+
+mailto:benoit.callebaut@barco.com
+http://www.barcocontrolrooms.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
