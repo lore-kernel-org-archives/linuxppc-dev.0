@@ -1,79 +1,42 @@
-Date: Tue, 17 Jul 2001 11:01:25 -0400
-From: Ethan Blanton <eblanton@cs.ohiou.edu>
+Date: Tue, 17 Jul 2001 16:35:32 +0100
+Subject: sleepable delays from kernel code.
+From: "Iain Sandoe" <iain@sandoe.co.uk>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: [Fwd: Re: 2.4 - buttons, temperature, ictc]
-Message-ID: <20010717110125.D22214@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-md5;
-	protocol="application/pgp-signature"; boundary="E7i4zwmWs5DOuDSH"
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
+Message-Id: <20010717160446.D98BDDBA19@atlas.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---E7i4zwmWs5DOuDSH
-Content-Type: multipart/mixed; boundary="gDGSpKKIBgtShtf+"
-Content-Disposition: inline
+Hi,
 
+It would be very useful to have a "sleepable" kernel delay function with
+better resolution than 10ms for some of the sound stuff.  10 or 100 us
+resolution would be helpful.
 
---gDGSpKKIBgtShtf+
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This is because power-up/down (and some register accesses) of some of the
+audio devices takes quite some time.
 
-Oops, I pulled this off the list by hitting 'r' instead of 'L'.  ;-)
-Ethan
+Also, it seems, that the keywest-i2c device only works in polled mode at the
+moment (?? don't know if this is a real hardware fault or just waiting for a
+fix).
 
---=20
-If I've told you once, I've told you once
-And once is all that you needed.
-		-- The Refreshments, "Carefree"
+To my mind there are too many u/mdelay() calls in the sound code at the
+moment and I would like to replace as many as possible/appropriate with
+sleeps on a timer.
 
---gDGSpKKIBgtShtf+
-Content-Type: message/rfc822
-Content-Disposition: inline
+any ideas how best to improve the resolution?
 
-Received: from oucsace.cs.ohiou.edu (oucsace.cs.ohiou.edu [132.235.1.2])
-	by masaka.cs.ohiou.edu (8.9.3+Sun/8.9.3) with ESMTP id KAA01069
-	for <eblanton@masaka.cs.ohiou.edu>; Tue, 17 Jul 2001 10:56:39 -0400 (EDT)
-Received: from zirkon.biophys.uni-duesseldorf.de (IDENT:root@zirkon.biophys.uni-duesseldorf.de [134.99.176.3])
-	by oucsace.cs.ohiou.edu (8.9.3/8.9.3) with ESMTP id KAA24159
-	for <eblanton@cs.ohiou.edu>; Tue, 17 Jul 2001 10:56:37 -0400 (EDT)
-Received: from localhost (schmitz@localhost)
-	by zirkon.biophys.uni-duesseldorf.de (8.9.3/8.9.3) with ESMTP id QAA22932;
-	Tue, 17 Jul 2001 16:56:35 +0200
-Date: Tue, 17 Jul 2001 16:56:33 +0200 (CEST)
-From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-To: Ethan Blanton <eblanton@cs.ohiou.edu>
-cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-Subject: Re: 2.4 - buttons, temperature, ictc
-In-Reply-To: <20010717104848.C22214@localhost.localdomain>
-Message-ID: <Pine.LNX.4.10.10107171651070.22917-100000@zirkon.biophys.uni-duesseldorf.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+e.g.
 
-> > handle all this. That way, users could even customize the thing to get
-> > particular functions mapped to keys :-)
->
-> Yeah ...  Like I would *love* to make those function keys be FUNCTION
-> KEYS and press fn if I want to change the backlight/etc ...  I don't
-> know about you guys, but I change desktops with Alt+Fn *way* more
-> often than I turn my backlight brightness up or down...
+increase HZ (could we stand a higher rate on PPC? - IIUC Alpha uses 1024)
 
-That's not what I meant - I think there's some magic word you tell the
-keyboard controller to make the fn keys default.
+add a front end into arch/ppc/kernel/time.c that exports a high(er)
+resolution timer callback?
 
-Would you know the necessary ADB command by any chance, Ben?
-
-	Michael
-
-
---gDGSpKKIBgtShtf+--
-
---E7i4zwmWs5DOuDSH
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
-
---E7i4zwmWs5DOuDSH--
+any help would be appreciated.
+ciao,
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
