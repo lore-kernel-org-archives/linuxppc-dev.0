@@ -1,61 +1,44 @@
-Message-ID: <39F438F3.FEC7F99@snmc.com>
-Date: Mon, 23 Oct 2000 08:11:15 -0500
-From: Daris A Nevil <dnevil@snmc.com>
+Message-ID: <67505026E29DD311A9AA00508B7315F350A56D@EXCHANGE>
+From: Julia Elbert <jelbert@enerdyne.com>
+To: "'Daris A Nevil'" <dnevil@snmc.com>,
+        "'linuxppc-embedded@lists.linuxppc.org'"
+	 <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: HDLC/PPP Driver
+Date: Mon, 23 Oct 2000 13:30:41 -0700
 MIME-Version: 1.0
-To: Julia Elbert <jelbert@enerdyne.com>
-CC: "'linuxppc-embedded@lists.linuxppc.org'"
- <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: HDLC/PPP Driver
-References: <67505026E29DD311A9AA00508B7315F350A569@EXCHANGE>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Julia,
+Thank you, Darvis!
 
-I've not tested the HDLC/PPP driver on SCC2, so there could be a bug
-lurking there.  Check the table named "SCC_Params" in the hdlcppp.c
-file.  Also check to make sure that the constants in that table are
-defined correctly in the associated .h files.
+I was able to get your driver to load, configured, and pinging on the 860T.
+Now, let me see if I can explain what happened.
 
-Other than that I can't figure out how the kernel would confuse the
-network device "hdlcppp2" for "enet".  The hdlcppp.c file registers each
-device using the "register_netdev()" function, and this relies on the
-device name.
+I only wanted 1 SCC chanel, SCC2. I know you said that would not matter
+until I actually configured hdlcppp2, but I think it did in the init in the
+for {} where you go through all the PPP_HDLC_CHANNELS, because I am already
+using SCC1, SCC3 and SCC4 at this point in other drivers.
 
-If it had been the receive function that was called by mistake then I
-would suggest that the hdlc/ppp driver was overwriting the IRQ vector
-table incorrectly.  But the transmit function,
-hdlc_ppp_hard_start_xmit(), is called directly from the network stack
-(sorry about the bogus comment in that function header).
+It appears the line
+dev->base_addr = (unsigned long)&cp->scc[i];
+was the culprit.
 
-Daris
+I just forced i to 1 and used one PPP_HDLC_CHANNEL and my problems went
+away. I was confused with this line a little because other drivers
+initialize there drivers differently. Feel free to expand if you like
 
+dev->base_addr = (unsigned long)&cp->scc[1];
 
-Julia Elbert wrote:
->
-> Hello,
-> Thank you for the white paper.
-> My problem is my hdlcppp is confused with enet. It appears my enet is
-> calling the xmit in hdlcppp after the enet open is called. Weird. How could
-> this happen? My enet is on SCC1 and hdlcppp is SCC2. Could some parameter in
-> hdlcppp have priority even when enet is loaded?
-> Thank you for your help. I hope this is not to elementary.
-> --Julia
->
-> http://qslinux.org/docs/snmc/hdlc/index.html
->
+The other indices with i were fine in the loop because i uses your
+SCC_Params array which is fine.
 
---
-Daris A Nevil
-Simple Network Magic Corporation
-401 Kentucky Lane
-McKinney, TX 75069
-214-793-7757
-dnevil@snmc.com
-www.snmc.com
-quickstack.com
-qslinux.org
+Thought you would be interested.
+Thank you, again. This kind of stuff makes my day and I enjoy learning from
+the group.
+--Julia
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
