@@ -1,31 +1,43 @@
-Date: Tue, 13 Jun 2000 23:42:12 -0400 (EDT)
-From: "Peter R. Wood" <pwood@gordon.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: D-Link UHCI USB card free for developer
-Message-ID: <Pine.LNX.4.21.0006132339270.2650-100000@dyn-133-196.gordon.edu>
+Date: Wed, 14 Jun 2000 12:52:09 +0200 (MET DST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: cs4232 module crash
+Message-ID: <Pine.GSO.4.10.10006141247540.8589-100000@dandelion.sonytel.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello all,
+If I put the commands to load the sounddriver for the CS4236 in my CHRP
+LongTrail in /etc/modules to auto-load them on startup:
 
-If anyone is interested on getting UHCI USB support working under
-LinuxPPC, I have a D-Link adapter which I could send you, free of
-charge.  I recently purchased it, hoping it would work on my SuperMac
-w/LinuxPPC, but this didn't work out, so I bought the better supported
-Belkin card. I'd planned to simply return the D-Link card, but then I
-thought perhaps someone would be interested in using it.
+    cs4232 io=0x530 irq=5 dma=1 dma2=5
 
-Again, if you would like a brand-new D-Link UHCI USB card mailed to you
-free of charge, let me know and I'll send it right out.
+The system crashes somewhere in the module code.
 
-Peter
+If I manually do
+
+    modprobe cs4232 io=0x530 irq=5 dma=1 dma2=5
+
+after boot up, everything works fine.
+
+Anyone seeing a similar problem? Perhaps the PReP boys (some of those boxes
+also have CS4236 sound, right)? This has been annoying me since a while (for at
+least a year :-), but it never was a high-priority problem to me...
+
+I haven't tried compiling the module into the kernel yet...
+
+Gr{oetje,eeting}s,
+
+						Geert
 
 --
-Peter R. Wood				pwood@gordon.edu
-Gordon College				http://www.cs.gordon.edu/~pwood/
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
