@@ -1,39 +1,35 @@
-Message-ID: <20030312181132.1087.qmail@web41211.mail.yahoo.com>
-Date: Wed, 12 Mar 2003 10:11:32 -0800 (PST)
-From: Prakash kanthi <pkanthi@yahoo.com>
-Subject: User mode accesses cause a SIGSEGV 
+Date: Wed, 12 Mar 2003 13:02:14 -0600
+From: Eric Seppanen <eds@reric.net>
 To: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <20030218014641.49645.qmail@web41201.mail.yahoo.com>
-MIME-Version: 1.0
+Subject: cache control functions
+Message-ID: <20030312130214.A7123@reric.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Folk,
+I'm writing a driver module, for a pci device that lives in a 405GPr
+based system.  I notice that the 405 doesn't seem to have a consistent
+cache after the pci device busmasters a bunch of data into SDRAM (or
+before it pulls data out), so I think the thing I'm supposed to do is
+call (depending on direction) one of these:
+ invalidate_dcache_range
+ clean_dcache_range
+ flush_dcache_range
+or what seems to be the equivalent, but cross-platform names
+ dma_cache_inv
+ dma_cache_wback
+ dma_cache_wback_inv
+ (these are just macros calling the first three; include/asm-ppc/io.h)
 
-I have a problem with user mode processes on my PPC405
-based board with 16MB SDRAM. I am using busybox based
-'init'. When linux boots, init tries to swapn 'sh'.
-Shell starts ok but after that, any 'application'
-started under 'sh' bails out with error
-"User mode accesses cause a SIGSEGV for <some
-address>"
+But invalidate_dcache_range and clean_dcache_range are never exported,
+so they're unavailable to modules.  (and means that dma_cache_inv and
+dma_cache_wback are unavailable as well.)
 
-The address it bails out is always same and generally
-is a huge value (ex: 0x92612077).
+Is this intentional or an oversight?  I can't see how I can write a
+driver for a busmaster device (that will work on a 405) without them.
 
-I am suspecting that there might be something wrong
-with user mode PTEs. I am not sure when PTEs are
-created how they are privileged.
-
-Any help is appreciated.
-
-Thanks,
-Prakash
-
-
-Yahoo! Web Hosting - establish your business online
-http://webhosting.yahoo.com
+Eric
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
