@@ -1,48 +1,43 @@
-Date: Tue, 2 Apr 2002 14:18:45 -0700
-From: Matt Porter <mporter@mvista.com>
-To: Eugene Surovegin <ebs@innocent.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
+Date: Tue, 2 Apr 2002 13:41:09 -0800
+From: andrew may <acmay@acmay.homeip.net>
+To: Matt Porter <mporter@mvista.com>
+Cc: Eugene Surovegin <ebs@innocent.com>,
+	linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Status of 440GP port
-Message-ID: <20020402141845.A12269@home.com>
-References: <5.1.0.14.2.20020402113518.02aa3800@pop.prodigy.net>
+Message-ID: <20020402134109.A5189@ecam.san.rr.com>
+References: <5.1.0.14.2.20020402113518.02aa3800@pop.prodigy.net> <20020402141845.A12269@home.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5.1.0.14.2.20020402113518.02aa3800@pop.prodigy.net>; from ebs@innocent.com on Tue, Apr 02, 2002 at 11:46:12AM -0800
+In-Reply-To: <20020402141845.A12269@home.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Apr 02, 2002 at 11:46:12AM -0800, Eugene Surovegin wrote:
+On Tue, Apr 02, 2002 at 02:18:45PM -0700, Matt Porter wrote:
 >
-> Hello all!
+> On Tue, Apr 02, 2002 at 11:46:12AM -0800, Eugene Surovegin wrote:
+> >
+> > I checked yesterday bk://ppc.bkserver.net/linuxppc_2_4_devel tree and found
+> > some preparations for this port (e.g. 4xx->40x renaming).
 >
-> Could anyone (probably MontaVista guys) give some information on status of
-> IBM 440GP port?
+> There will be a few more preparation changes before the rest arrives.
 >
-> I checked yesterday bk://ppc.bkserver.net/linuxppc_2_4_devel tree and found
-> some preparations for this port (e.g. 4xx->40x renaming).
-
-There will be a few more preparation changes before the rest arrives.
-
-> I understand that this effort is under way for quite some time but not yet
-> released (or am I wrong?).
-
-I wouldn't say it has been underway for "quite some time".  4-5 working
-weeks is a short amount of development time for a new processor (at least
-for me). :)
-
-> We already have 440GP hardware and I'm eager to test linux on it (even be
-> alpha/beta tester for this port).
+> > I understand that this effort is under way for quite some time but not yet
+> > released (or am I wrong?).
 >
-> Any info will be greatly appreciated.
+> I wouldn't say it has been underway for "quite some time".  4-5 working
+> weeks is a short amount of development time for a new processor (at least
+> for me). :)
 
-My showstopper list is down to a 1-2 entries.  When those are exhausted,
-it will be available for use/testing.
+So are you useing your own repository to track your development? It sure
+doesn't seem like the 2_4_devel tree is a development tree anymore. And
+seeing how hard it has become to get changes into the "devel" tree also
+suggests that the tree is not really a development tree.
 
-Regards,
---
-Matt Porter
-MontaVista Software, Inc.
-mporter@mvista.com
+Any particular reason you are keeping things "close to your chest"? I know
+it is nice to be able to go through and makes changes where ever you
+like without having to be confronted with them every checkin/merge, but
+since there are change that will at least change the file structure of
+other boards it seems like it should be kept more in the open.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
