@@ -1,28 +1,54 @@
-Date: Mon, 17 Mar 2003 06:02:01 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Guenther SOMMER <gue@rettung.at>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: linuxppc on dsp-board
-Message-ID: <20030317130201.GA23106@ip68-0-152-218.tc.ph.cox.net>
-References: <3E725ACA.7080301@rettung.at>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3E725ACA.7080301@rettung.at>
+From: "Kim, Kwansuk" <kskim@neowave.co.kr>
+To: "Rakesh Jagota" <j.rakesh@gdatech.co.in>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: ppc_405-nm
+Date: Mon, 17 Mar 2003 22:03:21 +0900
+Message-ID: <OMENKEONFDLIGLHPFALBEEMJCNAA.kskim@neowave.co.kr>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="ks_c_5601-1987"
+In-Reply-To: <1v5twbd61t8c8b7.170320031325@gda-server>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Mar 14, 2003 at 11:42:18PM +0100, Guenther SOMMER wrote:
+Why don't you use the 'nm' for your host system?
 
-> it's a dsp-board with some dsp on board an a motorola 860 processor. the
-> board itself has 32mb sdram and 8 mb flash. the board has a bootloader
-> integrated, which configures the mpcs and start a simple "boot-aplication".
+It will work with any object or elf file on any host system.
 
-It sounds like you would want the code inside of arch/ppc/boot/, with a
-more or less empty 'embed_config' function.
+(Even big-endian object on little-endian system)
 
---
-Tom Rini
-http://gate.crashing.org/~trini/
+ ==============================================
+     Just for fun...
+                                                  - Linus Torvalds
+ ==============================================
+  Kwansuk Kim
+  Engineer, NeoWave Inc.
+  Tel   +82-31-380-4927    Fax +82-31-380-4747
+  E-mail: kskim@neowave.co.kr
+==============================================
+
+-----Original Message-----
+From: owner-linuxppc-embedded@lists.linuxppc.org [mailto:owner-linuxppc-
+embedded@lists.linuxppc.org]On Behalf Of Rakesh Jagota
+Sent: Monday, March 17, 2003 5:03 PM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: ppc_405-nm
+
+
+
+
+Hi all,
+I am working on linux. I am working with custom design board based on
+STBx25xx IBM ppc405 processor. I have downloaded the montavista preview kit
+and install on my system. I am not finding one the option "ppc_405-nm" in my
+cross-compiler bin directory. I want to see the system.map file and
+vmlinux.dis file, which is not possible without this option. Can anyone
+suggest me how can I include this ppc_405-nm option in my bin directory.
+
+Thanks & Regards,
+
+Rakesh
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
