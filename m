@@ -1,29 +1,31 @@
-Date: Wed, 26 Nov 2003 20:18:58 +0100
-From: Peter Vandenabeele <peter.vandenabeele@mind.be>
-To: linuxppc user <linuxppc@opqua.com>
+Date: Wed, 26 Nov 2003 13:48:14 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Felix Domke <tmbinc@elitedvb.net>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: routing performance w/embedded linux on ppc?
-Message-ID: <20031126201858.A7373@mind.be>
-Reply-To: Peter Vandenabeele <peter.vandenabeele@mind.be>
-References: <16694.138.89.83.168.1069733893.squirrel@www.opqua.com>
+Subject: Re: 405 Critical Interrupts
+Message-ID: <20031126134814.A9704@home.com>
+References: <3FC4D4B5.2030901@elitedvb.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <16694.138.89.83.168.1069733893.squirrel@www.opqua.com>; from linuxppc@opqua.com on Mon, Nov 24, 2003 at 11:18:13PM -0500
+In-Reply-To: <3FC4D4B5.2030901@elitedvb.net>; from tmbinc@elitedvb.net on Wed, Nov 26, 2003 at 05:28:37PM +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Nov 24, 2003 at 11:18:13PM -0500, linuxppc user wrote:
-> I'm looking for some papers, pointers, or whatever regarding linux
-> routing performance on midrange embedded ppc hardware, for example
-> the moto8245 and ibm405GP (as used inside the Xilinx Virtex II Pro).
+On Wed, Nov 26, 2003 at 05:28:37PM +0100, Felix Domke wrote:
+> I thought about routing the CriticalInterrupt pretty much the same way
+> as the HardwareInterrupt, but with disabling MSR_CE. MSR_CE would be
+> enabled then even in (normal) interrupts, we probably have to add a
+> __crit_cli and __save_and_crit_cli as someone already suggested.
+>
+> Does CRIT_EXCEPTION work? Is do_IRQ reentrant? Should i use the same
+> interrupt processing as a normal hardware interrupt, with the exception
+> that only "critical"-flagged interrupts are processed?
+>
+> Any suggestions?
 
-The core in the Virtex-II Pro is not a full 405GP but only a
-PowerPC 405 core with MMU and caches in hard-core. When using soft-core
-(IP) Ethernet implementations connected to the OPB bus (the slower
-bus, compared to the PLB bus), the OPB bus bandwidth may be the
-limiting factor.
+You could backport the critical exception handling code from 2.6.
 
-Peter
+-Matt
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
