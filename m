@@ -1,55 +1,66 @@
-Message-ID: <19990721074712.12470.qmail@ww181.netaddress.usa.net>
-Date: 21 Jul 99 00:47:12 PDT
-From: skinny boeceifus <mudskinny@netscape.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: re: Support for Mouse Systems A3 protocol mice
-CC: aidan@kublai.com
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-Id: <199907210848.DAA25068@lists.linuxppc.org>
+Date: Wed, 21 Jul 1999 10:54:13 +0100
+Subject: Re : X : caught signal 11 ?
+From: "Yann Bizeul" <yann@tynsoe.com>
+To: "P. Barrette" <barretp@mcmail.cis.McMaster.CA>,
+        Hollis R Blanchard <hollis+@andrew.cmu.edu>
+CC: puetzk6715@uni.edu, linuxppc-dev@lists.linuxppc.org,
+        linuxppc-user@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello,
- 
-Your patch is working great for me, but I did have one complication with it,
-or mabey my own stupidity. I was thinking- yea I'll unplug my mac point pro
-and try my old one button to see if it would work. So I did it(without
-rebooting, thats where my stupor came in).. The pointer moved but I couldnt
-click any thing or type anything, So I had to hard reboot **, and got to the
-login screen(with the mac point pro pluged in) to find the keyboard still
-wouldn't work but the mouse did, and about that time my keyboard started
-smellin' like burnt board. luckily I managed to cut and paste my login and
-password to log in and reboot:) to make a long story shorter, I booted to
-macos, unplugged and replugged the keyboard, then rebooted. Now it works
-perfectly.. I thought this was pretty weird so thats why I write this.
+Hi
 
-Thanks!
-from Bob
- 
- >Date: Sun, 18 Jul 1999 14:49:49 -0400
- >From: Aidan Cully <aidan@kublai.com>
- >To: linuxppc-dev@lists.linuxppc.org
- >Subject: [PATCH]: Support for Mouse Systems A3 protocol mice
+> Hollis,
+> I have the platinumfb too (7200), and I read your message, tried it and
+> bang, x
+> was down.  I recompiled the kernel with the new driver (I didn't get it
+> from your site it was mailed to me) and it is ok now.  I never had this
+> problem before with fvwm and accel X , maybe it is a Xpmac & the driver?
 
- >This patch adds 3-button support for (at least) the Mouse Systems A3
- >Trackball, and Mac Point Pro products.  I've also changed a bit of how
- >the button-change logic works, since I think it's allowed for mice to
- >slip back into the 1-button mouse protocol.  I don't know if that's
- >entirely appropriate, but both Darwin and NetBSD seem to take that
- >precaution..
- >
- >The patch is against kernel 2.2.10.  Hopefully, someone here will know
- >how to get it integrated into new kernel revisions.
- >
- >I'm not subscribed to this list, so please CC: any replies to me.
- >Thanks,
- >--aidan
+Which new driver do u use ?
 
+I have recompiled the most recent stable kernel (2.2.10) and did not correct
+that :'(
 
+Thanks !
+> --------
+> Paul Barrette
+> Ph.D. Candidate Classics (Latin Literature)
+> System Administrator
+> McMaster University
+>
+> "Oppositaque ad os manu nescio quid taetrum
+> exsibilavit, quod postea Graecum esse affirmabat."
+>                                       --Petronius
+>
+> On Tue, 20 Jul 1999, Hollis R Blanchard wrote:
+>
+>>
+>> On Tue, 20 Jul 1999 puetzk6715@uni.edu wrote:
+>>
+>> > Well, I switch on and off all the time (I have 6 console VT's and 2 X
+>> > VT's). I used to get palette problems, but not since I applied anthony
+>> > tong's patch and rebuilt X. It never died (well, it did in my cobbled
+>> > pre-R5, but not in the released LinuxPPC 1999).
+>>
+>> I see. What video driver are you using? Yann, you too? As I mentioned, I'm
+>> using platinumfb on a PowerCenter 132. I'm wondering if it's the driver. I
+>> just got Mark Abene's updated driver but haven't had a chance to try it yet
+>> (and won't for the rest of the week). For those of you who want to see if it
+>> fixes anything, I've put it up at
+>> http://www.andrew.cmu.edu/~hollis/platinumfb.c
+>>
+>> -Hollis
+>>
+>>
 
-____________________________________________________________________
-Get your own FREE, personal Netscape WebMail account today at http://webmail.netscape.com.
+>>
+>
+> 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
