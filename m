@@ -1,77 +1,54 @@
-Message-ID: <3C8956BA.7000609@brocade.com>
-Date: Fri, 08 Mar 2002 16:26:34 -0800
-From: "Amit D. Chaudhary" <amitc@brocade.com>
+Message-ID: <3C896322.E0394EAE@esteem.com>
+Date: Fri, 08 Mar 2002 17:19:30 -0800
+From: Conn Clark <clark@esteem.com>
 MIME-Version: 1.0
-To: David Ashley <dash@xdr.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Bugfix in arch/ppc/8260_io/fcc_enet.c linux-2.4.17
-References: <200203081939.g28JdCP28936@xdr.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: May Ling List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: linux-2.4.18 & copy-back cache mode
+References: <D3A72C5007329A4F991C0DD87202259F096A96@sekhmet.ad.newisys.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David,
+Navin Boppuri wrote:
+>
+> I am sorry. I meant 64Mhz , not 66Mhz.
+>
+> Navin.
+>
+> -----Original Message-----
+> From: Navin Boppuri
+> Sent: Thursday, March 07, 2002 2:33 PM
+> To: linuxppc-embedded@lists.linuxppc.org
+> Cc: laurent.pinchart@capflow.com
+> Subject: RE: linux-2.4.18 & copy-back cache mode
+>
+> I am running my MPC855T at 66Mhz 1:1 CPU/bus clock mode without any problems. I used an app. note from Motorola to do this and according to the app.note, we just need to satisfy some timing constraints on the processor (latency of data reaching the MPC pins from SDRAM). The app. note suggests using specific Micron SDRAM which satisfy all these requirements.
+>
+> Navin.
 
-Is there an impact of your change on the board doing a netboot and
-loading the rootfs from a nfs mount?
+Which app note was this? Does any body know if it will work on an
+MPC850?
 
-Thanks
-Amit
+Thanks,
 
-David Ashley wrote:
-> I found a bug which was manifest when linux boots and lots of ethernet
-> packets are coming in. I think the problem is because the fcc_enet.c
-> adds the network device in very early during the boot, and the driver is
-> happily calling netif_rx() on the received packets even though the interface
-> isn't officially "up". Linux appears not to like this, and would crash
-> sporadically, or predictibly if I have a program on another computer running
-> just blasting packets at the first one.
->
-> The fix is to just put an if around this section in fcc_enet_rx:
-> 		skb = dev_alloc_skb(pkt_len-4);
->
-> 		if (skb == NULL) {
-> 			printk("%s: Memory squeeze, dropping packet.\n", dev->name);
-> 			cep->stats.rx_dropped++;
-> 		}
-> 		else {
-> 			skb->dev = dev;
-> 			skb_put(skb,pkt_len-4);	/* Make room */
-> 			eth_copy_and_sum(skb,
-> 				(unsigned char *)__va(bdp->cbd_bufaddr),
-> 				pkt_len-4, 0);
-> 			skb->protocol=eth_type_trans(skb,dev);
-> 			netif_rx(skb);
-> 		}
->
-> So it becomes:
-> 		if(dev->flags & IFF_UP) { /* only do if iface is up */
-> 	                skb = dev_alloc_skb(pkt_len-4);
->
-> 	                if (skb == NULL) {
-> 	                        printk("%s: Memory squeeze, dropping packet.\n", dev->name);
-> 	                        cep->stats.rx_dropped++;
-> 	                }
-> 	                else {
-> 	                        skb->dev = dev;
-> 	                        skb_put(skb,pkt_len-4); /* Make room */
-> 	                        eth_copy_and_sum(skb,
-> 	                                (unsigned char *)__va(bdp->cbd_bufaddr),
-> 	                                pkt_len-4, 0);
-> 	                        skb->protocol=eth_type_trans(skb,dev);
-> 	                        netif_rx(skb);
-> 	                }
-> 		}
->
-> This fixes the crash bug.
->
-> -Dave
->
->
->
->
->
+	Conn
+--
 
+*****************************************************************
+  If you live at home long enough, your parents will move out.
+*****************************************************************
+
+Conn Clark
+Engineering Stooge				clark@esteem.com
+Electronic Systems Technology Inc.		www.esteem.com
+
+Stock Ticker Symbol				ELST
+
+"clark@esteem.com" Copyright 2000 By Electronic Systems Technology
+ This email address may be used to communicate to Conn Clark
+ provided it is not being used for advertisement purposes, unless
+ prior written consent is given. This email address may not be
+ sold under any circumstances. All other rights reserved.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
