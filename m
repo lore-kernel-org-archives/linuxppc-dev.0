@@ -1,31 +1,30 @@
-Subject: Re: page fault
-From: David Woodhouse <dwmw2@infradead.org>
-To: bharat <bharat@coraltele.com>
-Cc: PPC_LINUX <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <18345265.1090641072140.JavaMail.administrator@RnDserver>
-References: <1090590567.3939.20.camel@localhost.localdomain>
-	 <20820601.1090640061250.JavaMail.administrator@RnDserver>
-	 <18345265.1090641072140.JavaMail.administrator@RnDserver>
-Content-Type: text/plain
-Date: Sat, 24 Jul 2004 13:16:32 -0400
-Message-Id: <1090689392.4213.3.camel@localhost.localdomain>
+Date: Sat, 24 Jul 2004 11:52:35 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Andreas Oberritter <obi@saftware.de>
+Cc: Matt Porter <mporter@kernel.crashing.org>,
+	Dan Malek <dan@embeddededge.com>,
+	Tom Rini <trini@kernel.crashing.org>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [PATCH] export m8xx_cpm_hostalloc
+Message-ID: <20040724115234.A32427@home.com>
+References: <1090590567.3939.20.camel@localhost.localdomain> <20040723140231.GA21814@smtp.west.cox.net> <6658EF7A-DCB6-11D8-BC2F-003065F9B7DC@embeddededge.com> <20040723083856.A25212@home.com> <1090674246.3023.1.camel@localhost.localdomain>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1090674246.3023.1.camel@localhost.localdomain>; from obi@saftware.de on Sat, Jul 24, 2004 at 03:04:06PM +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Sat, 2004-07-24 at 09:22 +0530, bharat wrote:
-> problem is that it all went ok in kernel space but as soon as it enters
-> in user space it starts giving PAGE_FAULTS.
+On Sat, Jul 24, 2004 at 03:04:06PM +0200, Andreas Oberritter wrote:
+> Am Fr, den 23.07.2004 schrieb Matt Porter um 17:38:
+> > That doesn't exist in 2.6. Use dma_alloc_coherent().
+>
+> Thanks, that works, but requires the attached patch. Please apply.
 
-You seem to have posted this in reply to Andreas Oberritter's message in
-which he offered a patch to export m8xx_cpm_hostalloc().
+Ack. I forgot to submit this one before I left on vacation, it
+was languishing in one of my working trees. Submitted.
 
-Please could you explain why these are related -- did you only start
-seeing this problem after you applied his patch?
-
---
-dwmw2
-
+Thanks,
+Matt
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
