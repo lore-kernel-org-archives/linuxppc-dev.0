@@ -1,33 +1,41 @@
-Date: Tue, 26 Oct 1999 18:38:26 -0400
-From: Tom Vier <thomassr@erols.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linuxppc-dev@lists.linuxppc.org
+Date: Tue, 26 Oct 1999 17:43:50 -0500 (CDT)
+From: Kumar Gala <kumar@chaos.ph.utexas.edu>
+To: Jim Terman <terman@ddi.com>
+cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: question about altivec registers
-Message-ID: <19991026183826.A6668@zero>
-References: <v03010d0cb43a9d52cd3e@[192.168.1.16]> <Pine.LNX.4.05.9910262020350.665-100000@callisto.of.borg>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.05.9910262020350.665-100000@callisto.of.borg>
+In-Reply-To: <199910262152.OAA02956@sade.ddi.com>
+Message-ID: <Pine.LNX.4.10.9910261733160.10102-100000@chaos.ph.utexas.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Oct 26, 1999 at 08:22:06PM +0200, Geert Uytterhoeven wrote:
+>
+> Will the linuxppc kernal as it is right now save the AltiVec registers
+> if we enable the MSR VEC bit.  I've been trying to follow the other messages
+> on this subject, but I'm not clear.
+> 
 
-> Moving around blocks of 512 bytes quickly thrashes the L1 cache, unless the
-> loads/stores are done using cache-bypassing instructions (cfr. MOVE16 on '040).
-> Don't know whether PPC has these (still no PPC guru :-(
+No, the kernel does not know anything about the AltiVec registers,
+unlike the x86 platform on interrupts only two registers and saved and
+restored typically.  SRR0 and SRR1, one contains the MSR settings and the
+other the PC to return two.  On an rfi values are copied out of these
+registers.
 
-from what i've read, you can disable cache for the altivec regs. this was
-intended for doing infrequent vector ops between frequent vectors ops
-(loops) without distrubing the cache.
+The AltiVec registers have to be saved and restore explicitly, if you look
+at /arch/ppc/kernel/head.S and look for load_up_fp you will see how the
+floating point unit is handled on exceptions.  Essential what is done is
+there are some checks done, and a pointer is kept to the last
+process using the FP unit (last_task_used_fp) which then if needed the FP
+regs are saved in to that processes context and the FPs for the incoming
+are restored.
 
--- 
-Tom Vier - 0x27371A1C
-thomassr@erols.com
-http://users.erols.com/thomassr/zero/
+- kumar
 
-DSA Key fingerprint:
-42D4 82D6 6DF5 77EC 1251  30D2 D9E7 E858 2737 1A2C
+
+
+ignorance is bliss.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
