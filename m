@@ -1,32 +1,29 @@
-Subject: Re: get_pteptr mystery
-From: Hollis Blanchard <hollis@austin.ibm.com>
-To: Paul Mackerras <paulus@au1.ibm.com>
-Cc: devel list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <15873.4495.363395.683328@argo.ozlabs.ibm.com>
-References: <1040256384.30597.70.camel@granite.austin.ibm.com>
-	<15873.4495.363395.683328@argo.ozlabs.ibm.com>
-Date: 18 Dec 2002 18:41:19 -0600
-Message-Id: <1040258479.29647.72.camel@granite.austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain
+Message-Id: <200212191610.RAA21095@ipnmail.in2p3.fr>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Xavier Grave <grave@ipno.in2p3.fr>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: mmap problem with personnal code driver
+Date: Thu, 19 Dec 2002 17:18:52 +0100
+MIME-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 2002-12-18 at 18:23, Paul Mackerras wrote:
-> Hollis Blanchard writes:
->
-> > I need to mark the first kernel code page writeable because I need to
-> > write to 0xc00000fc. Can someone tell me why the following code fails?
-> > get_pteptr returns 0.
->
-> What platform, what tree? :)
+Hi all,
 
-Right, sorry. linuxppc_2_4_devel running on a 405LP (Beech board).
+I have written a driver for a pci to vme bridge and I have the following
+problem : when I try to mmap some pci space to the user memory read is ok but
+write seems broken on ppc arch. (it run without problem on x86 arch).
 
--Hollis
---
-PowerPC Linux
-IBM Linux Technology Center
+I think the problem is in the pgprot_val(vma->vm_page_prot) value.
+
+I wonder if I haven't see something about that in the list before but I
+couldn't find it for the moment.
+Does anyone have an idea to help me ? :-)
+
+xavier
+PS: for people interested in the vme driver the new version support both
+rtlinux, rtai and standard linux.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
