@@ -1,32 +1,30 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: "Halfmann, Klaus" <khalfmann@libra.de>, <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Status of hfs support as of 2.4.0-test1-ac21
-Date: Fri, 23 Jun 2000 14:27:38 +0200
-Message-Id: <20000623122738.30313@mailhost.mipsys.com>
-In-Reply-To: <F14441D40E5AD3118886005004607AD10BDD30@mail.libra.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Message-Id: <v04020a12b57915860fff@[129.116.176.243]>
+In-Reply-To: <200006231135.NAA00733@piglet.grunz.lu>
 References: <F14441D40E5AD3118886005004607AD10BDD30@mail.libra.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Fri, 23 Jun 2000 08:26:30 -0500
+To: linuxppc-dev@lists.linuxppc.org
+From: Mike DeSimone <desimone@arlut.utexas.edu>
+Subject: Re: Status of hfs support as of 2.4.0-test1-ac21
+Cc: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Jun 23, 2000, Halfmann, Klaus <khalfmann@libra.de> wrote:
+At 06:35 -0500 6/23/00, Michel Lanners wrote:
+>Did you try accessing CDRoms ith their 2K block size? While late
+>2.3.99/2.4 kernels have always been able to access hfs disks in a more
+>or less stable way, CDRoms have not been working for a very long time...
 
->
->I found however some bugs not related to hfs and may reproduce
->them in detail in case someone asks:
->  - the console driver messed up some pixels while editing
->  - hdparm did not always work correctly
->    (I use pmud and it calls hdparm depending on the battery load)
->    Sometimes I got stuck with the message "hda interrupt lost"
->    or similar.
+Really?  All the CDs I burn in Toast must have 512 byte sectors.  I've
+always been able to access them from both my PPC and X86 Linux boxes.
 
-That's interesting. Could you give me more details about what you do
-excatly with hdparm that is causing the lost interrupt ? Can you try to
-use it manually (without pmud) and reproduce the problem ?
-
-Ben.
-
+Or maybe it's because I threw out the Philips and got a Pioneer.  I dunno.
+_______________________________________________________________________________
+Mike DeSimone        Applied Research Laboratories: The University of Texas
+Research Engineer    Mail to: PO Box 8029       Shipments to: 10000 Burnet Rd.
+Sonar Development             Austin, TX 78713                Austin, TX 78758
+Office (512) 835-3061-------FAX (512) 835-3259--------desimone@arlut.utexas.edu
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
