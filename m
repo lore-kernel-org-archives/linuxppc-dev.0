@@ -1,48 +1,56 @@
-Date: Tue, 17 Sep 2002 15:02:04 -0300
-From: Ricardo Scop <scop@digitel.com.br>
-Reply-To: Ricardo Scop <scop@plugin.com.br>
-Message-ID: <11626.020917@plugin.com.br>
-To: "zhongqx" <zhongqx@guoguang.com.cn>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Why FEC and SCC1 can not work at the same time?
-In-reply-To: <001001c25e1e$c9c33ac0$7301a8c0@zhongqx>
-References: <001001c25e1e$c9c33ac0$7301a8c0@zhongqx>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <200209171824.g8HIOaS17677@flyingfox.snowshore.com>
+From: Waqar Ahmad <wahmad@snowshore.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: problem with pci_alloc_consistent (it does work)
+Date: Tue, 17 Sep 2002 14:24:35 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Zhongqx,
-
-Probably there some is initialization missing/misconfigured both in FEC
-and SCC enet drivers for your board. Main candidates are I/O pins
-configuration and/or clock selection.
-
-HTH,
-
-Ricardo Scop                            mailto:scop@digitel.com.br
-
-------------------------------------------------------------------
-It might look like I'm doing nothing, but at the cellular level I'm
-really quite busy.
-
-Tuesday, September 17, 2002, 4:49:44 AM, you wrote:
+Found the problem I was using phys_to_virt(..) to convert the physical address to virtual. Once I fixed that everything seems to be working now. so
 
 
-z> Hello,every one
-z>     Hello Wolf gang thank you for help!my ramdisk problem has passed!I use linux-2.4.4-2002-02-14 kernel and all is ok!but I dont understand why linux-2.4.18 is not ok.
 
+Waqar
 
-z> Now I meet a new problem! it is very strange!
-z> I want to use FEC(100M) and SCC1(10M) interface,but they can not work together.
-z>      When I use ppcboot with CONFIG_SCC1_ENET defined , boot linux ,then SCC1 is ok,when I ping FEC (I config it ip address is 192.168.2.221) it displayed messaged "time out".
-z>      When I use ppcboot with CONFIG_FEC_ENET  defined,  boot linux ,then FEC is ok, when I
-z> ping SCC( I config it ip address is 192.168.1.198) it displayed messaged also "time out".
-
-z> Can you someone give help?thank you in advanced! the following is the linux output:
-
-<snip>
+> -----Original Message-----
+> From: owner-linuxppc-embedded@lists.linuxppc.org
+> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of wahmad
+> Sent: Monday, September 16, 2002 6:38 PM
+> To: linuxppc-embedded@lists.linuxppc.org
+> Subject: problem with pci_alloc_consistent
+>
+>
+>
+> I am using pci_alloc_consistent() for obtaining contiguous
+> memory that is
+> cache safe. Here is how I am calling the routine
+>
+> pci_alloc_consistent(NULL,size,&dummy).
+> Note I am throwing away the bus address.
+>
+> The memory that I get does not seem to be cache safe. My
+> device doesn't see
+> the data  untill I add flush_dcache_range(..). It is very
+> undesirable for me
+> to add flushes and invalidates. I will appreciate any help in
+> this matter.
+>
+> I am using kernel version 2.4.20-pre5 for IBM PPC405GP and
+> using version
+> 2.95.3 for gcc on an x86 as a cross compiler.
+>
+> I also have CONFIG_NOT_COHERENT_CACHE defined.
+>
+> Thanks
+>
+> Waqar
+>
+>
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
