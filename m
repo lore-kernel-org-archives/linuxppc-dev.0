@@ -1,75 +1,53 @@
-Message-ID: <3C67A6B6.4050802@cambridgebroadband.com>
-Date: Mon, 11 Feb 2002 11:10:46 +0000
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
+Message-ID: <3C67AC2D.3050005@pacbell.net>
+Date: Mon, 11 Feb 2002 11:34:05 +0000
+From: Armin <akuster@pacbell.net>
 MIME-Version: 1.0
-To: "David Marqvar (DAM)" <DAM@tt.dk>
-Cc: "Embedded Linux PPC List (E-mail)" <linuxppc-embedded@lists.linuxppc.org>,
-	"Laurits Lassen Petersen (LLP)" <LLP@tt.dk>
-Subject: Re: Kernel 2.4.4
-References: <E8F83D6D2A6AD3118E0300902786A20502371417@NTEX>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Stefan Roese <stefan.roese@esd-electronics.com>
+Cc: "David =?ISO-8859-15?Q?M=FCller?= (ELSOFT AG)" <d.mueller@elsoft.ch>,
+	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: [PATCH] Several patches against linuxppc_devel-2.4.18-pre9
+References: <EFEAIMDCOOOHIEPHDNFJCELKDKAA.stefan.roese@esd-electronics.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Try make pImage for the last step instead of make zImage.  The result should then be found in
-arch/ppc/mbxboot/pImage.
-
-Alex
-
-PS pImage is bootable by PPCBoot.  So you'll need to get PPCBoot on your board before you can do
-anything with pImage.
-
-David Marqvar (DAM) wrote:
-
-> I've downloaded the Linux kernel 2.4.4-2002-01-19 from ftp.denx.de.
-> I want to compile it for a custom MPC823-based board.
->
-> I'm a newbie with Linux. Maybe someone have a comment at my problems and
-> fixes.... :)
->
-> I'm using:
-> gcc-3.0.3, cross-compiling for "powerpc-elf".
-> binutils-2.11.2
-> newlib-1.10.0
->
-> make menuconfig
-> make dep
-> make clean
-> make zImage
->
-> During the compilation (last step) I've encountered the following problems:
->
-> 1) error compiling coda.h (missing keywords)
-> Fix: adding the switch -D__linux__ to the makefile.
->
-> 2) error compiling ... (don't remember)
-> Fix: changed sched.c:540 declaring time struct, to ..volatile..
->
-> 3) error compiling embedded_config.c:
-> Fix: changed include sys/types to linux/types.h
->
-> 4) I had to stop enabling "Magic SysRq Key" in Kernel hacking in menuconfig.
-> Error: m8xx_setup.c:851: structure has no member named  'kbd_sysrq_xlate'.
->
-> Please give me any comments about my fixes? Anyone had the same problems?
->
-> Where do I find the zImage file - it is compressed, right? I've located the
-> vmlinux, but as far as I know this is the uncompressed kernel-image.
+Stefan Roese wrote:
+> Armin and David,
 >
 >
-> I want to compile SASH for powerpc too. Does anyone know a place with
-> powerpc-ready source for this? I've tried to compile it from the latest
-> source, but I'm missing some kind of way to make i compile for powerpc - the
-> Makefile keeps compiling for i386 (working fine by the way).
+>>The ethernet changes look fine.  there was on other change regarding
+>>resetting the EMAC. The ethernet part can go in as is our we can wait
+>>until tomorrow when I send in that change + multi emac irq fix.
+>>
 >
-> My next step is to find a simple bootloader..
+> I checked the EMAC/PHY patch on our board (CPCI-405 with Intel LXT971), and
+> the driver seems to start without problems without ethernet cable connected,
+> when the EMAC soft-reset command is removed from the init routine.
+>
+> With the soft-reset in init still implemented, "fec_enet_mdio_read()"
+> returns with timeout, waiting for transfer to complete. The next soft-reset
+> in open leads to the same problem (timeout in mdio_read()), but doesn't lead
+> to a kernel panik.
+>
+> So Armin, could you please remove the soft-reset from init (if nobody
+> objects, of cause).
 >
 > Best regards,
-> David Marqvar
+> Stefan Roese
 >
 >
 >
+>
+>
+
+Stefan, David & Andrew,
+
+Thanks
+
+I will remove the EMAC soft-reset.
+
+--armin
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
