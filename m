@@ -1,76 +1,42 @@
-Date: Mon, 11 Feb 2002 23:37:30 +0100
-From: Werner Almesberger <wa@almesberger.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: performance monitor exceptions
-Message-ID: <20020211233730.E5079@almesberger.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: benh@kernel.crashing.org
+To: <linuxppc-dev@lists.linuxppc.org>,
+	Werner Almesberger <wa@almesberger.net>
+Subject: Re: performance monitor exceptions
+Date: Tue, 12 Feb 2002 13:55:01 +0100
+Message-Id: <20020212125502.32396@mailhost.mipsys.com>
+In-Reply-To: <20020211233730.E5079@almesberger.net>
+References: <20020211233730.E5079@almesberger.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+>It seems to work (I had a handler there that does something a little
+>more useful), but when I start kernel builds, I get a dead system
+>(rebooted by hardware watchdog) within a few minutes.
+>
+>Instead of SIAR, I also tried SPRG0 and SPRG1, but got exactly the
+>same behaviour. Time to crash varies from one to ten minutes. The
+>time increases proportionally if I use TLB[19] (~200 Hz) instead.
+>
+>Any ideas of what I could be trampling over (or be trampled over
+>by) ? This code seems rather bullet-proof to me, and I don't think
+>anything else is using SIAR, or could change it while I'm using it.
 
-I'm banging my head at a problem with exceptions. What I want to
-do is to get the performance monitor to give me exceptions at
-roughly 1 kHz, to drive the kernel profiler. The problem is that
-my changes usually kill the system within a few minutes :-(
+A first quick look doesn't seem to show any problem with your code
+I have two clues at hand:
 
-I'm quite new to the PPC, so I'll include a bit more details, in
-case I made some trivial mistake. My kernel is 2.4.17, my CPU is a
-MPC7410.
+ - I don't know how the perf. mon stuff works, but couldn't you
+enter a condition were the CPU is continuously sending your the
+pef monitor exception until you clear something else ?
 
-First of all, I changed the vector to:
+ - I encountered a problem with the TAU stuff and the 7400 where
+the CPU could actually get mixed up when getting both a normal
+interrupt and a TAU exception and scew up itself (by taking both
+exceptions and screwing up SRR0/1)
 
-        . = 0xf00
-        b       PerformanceMonitor
+Ben.
 
-Then, I added a tiny little handler that does nothing but re-enable
-the PE exception. For getting a register, I mimicked EXCEPTION_PROLOG:
-
-PerformanceMonitor:
-        // 955 is SIAR
-        mtspr   955,r20
-        mfspr   r20,SPRN_MMCR0
-        oris    r20,r20,MMCR0_PMXE@h
-        mtspr   SPRN_MMCR0,r20
-        mfspr   r20,955
-        SYNC
-        RFI
-
-And then I added of course a bit of code to enable all this:
-
-int __init setup_perf_mon(void)
-{
-        unsigned long flags;
-
-        local_irq_save(flags);
-        local_irq_disable();
-        /* ca. 3 kHz */
-        mtspr(SPRN_MMCR0,(mfspr(SPRN_MMCR0) & ~MMCR0_TBSEL_MASK) |
-          MMCR0_PMXE | (MMCR0_TBSEL_TBL15 << MMCR0_TBSEL_SHIFT) | MMCR0_TBEE);
-        local_irq_restore(flags);
-        return 0;
-}
-
-It seems to work (I had a handler there that does something a little
-more useful), but when I start kernel builds, I get a dead system
-(rebooted by hardware watchdog) within a few minutes.
-
-Instead of SIAR, I also tried SPRG0 and SPRG1, but got exactly the
-same behaviour. Time to crash varies from one to ten minutes. The
-time increases proportionally if I use TLB[19] (~200 Hz) instead.
-
-Any ideas of what I could be trampling over (or be trampled over
-by) ? This code seems rather bullet-proof to me, and I don't think
-anything else is using SIAR, or could change it while I'm using it.
-
-Thanks,
-- Werner
-
---
-  _________________________________________________________________________
- / Werner Almesberger, Lausanne, CH                    wa@almesberger.net /
-/_http://icawww.epfl.ch/almesberger/_____________________________________/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
