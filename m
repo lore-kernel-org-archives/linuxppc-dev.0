@@ -1,30 +1,49 @@
-Date: Tue, 2 Feb 1999 10:23:49 +1100
-Message-Id: <199902012323.KAA24452@tango.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: bryanc@ihug.co.nz
-CC: linuxppc-dev@lists.linuxppc.org
-In-reply-to: <l03130300b2dbb10d21bc@[172.16.10.14]> (message from Bryan
-	Christianson on Tue, 2 Feb 1999 08:42:28 +1300)
-Subject: Re: I/O Port Conflicts with PCI devices?
-Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <l03130300b2dbb10d21bc@[172.16.10.14]>
+Date: Mon, 1 Feb 1999 15:53:25 -0800 (PST)
+From: Eric Guenterberg <mavpion@fire.csua.ucla.edu>
+To: linuxppc-dev@lists.linuxppc.org
+cc: Eric Guenterberg <mavpion@fire.csua.ucla.edu>
+Subject: Linux 2.2.1 Kernel scsi troubles
+Message-ID: <Pine.LNX.3.96.990201154257.111F-100000@fire.csua.ucla.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Bryan Christianson <bryanc@ihug.co.nz> wrote:
+I recently compiled the the Linux 2.2.1 kernel, but I can't get it to boot
+because when it is booting it aborts the reading of the harddrive that
+contains my root partition.
 
-> The following listing of /proc/pci shows that I have 2 devices reporting an
-> I/O port of 0x400. Is this possible or am I not seeing the whole truth
-> here? When I try to access the port (with inl() or outl()), the machine
-> panics. I published this panic on the list last week and had no response.
+I have a PowerMac 7600/132
 
-Most likely neither devices is responding to I/O-space accesses
-because the PCI_COMMAND_IO bit (enable response to I/O space accesses)
-in the PCI command register isn't set.  That would explain the machine
-check when you try to access the device.
+I have two internal scsi devices and one external scsi device. The
+internal ones are a Quantum Fireball with scsi id 0, and a CD Rom drive
+with scsi id 3. I also have an external Jaz drive with id 4. (it is on the
+other scsi chain) 
 
-Paul.
+Here is what happens:
+
+It detects two scsi chains (it may call them hosts). One is MESH, the
+other is that weird numbered one. At any rate, they correspond to the
+internal and external scsi stuff.
+
+It says:
+scsi host 0 aborted
+
+(or maybe it's "scsi device 0"). It recognizes the other two devices just
+fine, though. 
+
+This also happens with the precompiled 2.2.0pre-2 on linuxppc's ftp site.
+The only recent kernel (ie kernel that can be booted with bootx) that has
+worked for me is a precompiled 2.1.131 kernel. 
+
+I have tried compiling the kernel with the maximum scsi reset time (20s),
+and with asynchronous transfer only, and none of it works.
+
+Any suggestions, patches, etc?
+
+--Eric Guenterberg
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
