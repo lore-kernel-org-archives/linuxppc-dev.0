@@ -1,40 +1,46 @@
-Subject: Re: [PATCH][RFC] OCP support for MPC107 and relatives
-From: Adrian Cox <adrian@humboldt.co.uk>
-To: "Mark A. Greer" <mgreer@mvista.com>
+From: bharat <bharat@coraltele.com>
+To: "Georg Klug" <gklug@giga-stream.de>
+Subject: Re: regarding kernel access of bad area
+Date: Tue, 15 Jun 2004 17:01:02 +0530
+References: <FFECLICFNBJAHONLGAKMAEBIDEAA.gklug@giga-stream.de>
+In-Reply-To: <FFECLICFNBJAHONLGAKMAEBIDEAA.gklug@giga-stream.de>
 Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <40CDDAC7.4090608@mvista.com>
-References: <1087207803.7360.83.camel@newt>  <40CDDAC7.4090608@mvista.com>
-Content-Type: text/plain
-Message-Id: <1087287047.2374.6.camel@newt>
-Mime-Version: 1.0
-Date: Tue, 15 Jun 2004 09:10:47 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;  charset="utf-8"
+Message-Id: <200406151701.02638.bharat@coraltele.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, 2004-06-14 at 18:05, Mark A. Greer wrote:
+hi georg
+thanks for answering
+but i could not understand which initialization u are talking about whether it
+is of UPM machine or it is something else if it is regarding that UPM machine
+then it is ok as other code is also using the same upm machine settings and
+running ok
+please put some light on it.
+bharat
 
-> That's great that you're OCP-ifying the mpc10x code!  My only comment is
-> thatI don't like hardcoding the position of an entry in the OCP (e.g.,
-> core_ocp[0].vedor/paddr).  I don't think its safe to assume that any
-> particular piece of code will always know all of the entries in the OCP
-> and therefore what an entry's position will be.  You can use
-> 'ocp_for_each_device()' and a routine that checks for the fields that
-> you want to accomplish the same thing.
-
-I'll try to do a new version of the patch at the end of the week.
-
-Would it work to have an empty core_ocp[] array, and then call
-ocp_add_one_device() to insert the entries? That would deal with these
-issues, as the code would look like:
-mpc10x_i2c_ocp.paddr = phys_eumb_base + MPC10X_EUMB_I2C_OFFSET;
-ocp_add_one_device(&mpc10x_i2c_ocp);
-
-Then the MPC106 path would simply not add any entries, rather than
-having to go through and mark them as invalid.
-
-- Adrian Cox
-Humboldt Solutions Ltd.
-
+On Tuesday 15 June 2004 02:08 pm, you wrote:
+>
+> Most likely your SDRAM initialization is corrupt. How do you do the
+> hardware initialization if you don't use a boot loader? The U-Boot
+> project is a good example of the work what needs to be done BEFORE
+> loading the Linux kernel.
+>
+> > -----Ursprungliche Nachricht-----
+> > Von: bharat
+> > Gesendet: Dienstag, 15. Juni 2004 07:35
+> > Betreff: regarding kernel access of bad area
+> >
+> >                    i am trying to port hardhat linux for our
+> > custome hardware i donot use a bootloader instead i used
+> > uncompressed(vmlinux) image and a self made utility which download
+> > the kernel into the ram and transfer the control to it kernel gets
+> > executed and mount the NFS file system from my host as soon as it
+> > tries to execute the /sbin/init or /bin/init or any other user
+> > program init it gives the following error Kernel panic: kernel
+> > access of bad area pc c0014198 lr 1 addr ess FFFFB104 tsk swapper/0
+> > In swapper task - not syncing
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
