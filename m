@@ -1,76 +1,19 @@
-Date: Sat, 22 Jan 2000 13:21:30 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Robert Neugebauer <rneugeba@undergrad.math.uwaterloo.ca>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: RS6000 to G4 assembly changes
-In-Reply-To: <Pine.SOL.3.96.1000122013827.17059B-100000@fitch.math.uwaterloo.ca>
-Message-ID: <Pine.HPX.4.10.10001221230260.18916-100000@gra-ux1.iram.es>
+Message-ID: <3889A423.D98DA633@iname.com>
+Date: Sat, 22 Jan 2000 12:35:47 +0000
+From: Jim Chapman <jim.chapman@iname.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: Blue G3: v2.3 kernel?
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Anyone know whether recent v2.3 kernels run on Apple Blue G3 machines? I
+couldn't find any mention of v2.3 at www.linuxppc.org/blueg3/.
 
+Thanks
 
-On Sat, 22 Jan 2000, Robert Neugebauer wrote:
-
->
-> I am not trying to build a cross compiler, I am not trying to build GCC.
-> My course at university uses its own compiler called uC++ (Micro C++).
->
-> The compiler thus far only has the following targets that work:
->         dmake sun-sparc-sunos
->         dmake sun-sparc-svr4
->         dmake sun-m68k-sunos
->         dmake dec-ultrix-mips
->         dmake dec-alpha
->         dmake sgi-mips-r4000
->         dmake sgi-mips-r3000
->         dmake ibm-rs6000
->         dmake hp-hppa
->         dmake pc-i386-linux
->         dmake gizmo
->
-> By my knowledge rs6000 is a RISC based architecture, thus I tried to build
-> uC++ using the target ibm-rs6000. This resulted in an unrecognized opcode
-> movl during compilation.
-
-Then your compiler is seriously buggy since there is no such instruction
-in the RS6000 or PPC assembly. There significant differences between
-the architectures (for application level code) are:
-
-a) multiply and divides are different (not even the same opcode for most
-of them), the RS6000 has an MQ register for remainders and widening
-multiplies. The PPC does not have this register.
-
-b) all the extended shifts in the RS6000 which use the MQ register do not
-exist in the PPC architecture, so you have to synthesize multiword shifts
-(how to do this is documented in an appendix of the programmer's
-environment manual, see below).
-
-c) a few other oddball RS6000 instructions do not exist in the PPC:
-lscbx (that one was indeed very odd), doz, dozi, abs, nabs, rlmi, maskir,
-maskg, and I certainly forget a few more...
-
-d) the PPC has a full complement of single precision floating point
-operations, the RS6000 does not
-
-For a C compiler, a) is very important, b) affects only compilers which
-support 64 bit operations, c) the only critical instruction is abs which
-can be replaced with a simple sequence and d) can safely be ignored by
-performing all FP operations in double precision.
-
-For more information you can download the programming environments
-manuals from IBM or Motorola website:
-
-http://www.chips.ibm.com/techlib/products/powerpc/manuals/
-http://www.motorola.com/SPS/PowerPC/teksupport/teklibrary/index.html
-
-and if you are interested in improving your compiler, you might find the
-compiler writer's guide (link on IBM's website) interesting.
-
-	Gabriel.
-
+-Jim
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
