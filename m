@@ -1,61 +1,47 @@
-Message-ID: <367833C4.60C22371@jlc.net>
-Date: Wed, 16 Dec 1998 17:27:16 -0500
+Message-ID: <3678367F.B4519A13@jlc.net>
+Date: Wed, 16 Dec 1998 17:38:55 -0500
 From: Dan Malek <dmalek@jlc.net>
 MIME-Version: 1.0
-To: Helmut Buchsbaum <helmut.buchsbaum@siemens.at>
+To: Cort Dougan <cort@ladron.cs.nmt.edu>
 CC: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Problems starting up system on a MPC823FADS
-References: <36750901.A3E0E6D1@siemens.at>
+Subject: Embedded 8xx update
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Helmut Buchsbaum wrote:
-
-> I try to get a linux system up and running on a Motorola MPC823FADS
-
-Cool!
 
 
-> ...... I only adopted the boot code slightly to feed the
-> correct board info data, set up the correct clocks, etc., since my board
-> has no boot prom.
+I have been fielding lots of personal e-mail lately about
+the embedded LinuxPPC ports, so I thought I would take
+a minute and post some notes.
 
-Points again!
+I have some boot rom software that I used in my 860T/FADS
+board, and a 2.1.127 kernel that usually boots on that
+board.  I placed them in the embedded directory of
+linuxppc.cs.nmt.edu.  The rom software is a collection
+of stuff from Motorola and adapted Linux kernel functions.
+Probably the most important is it contains working UPM
+programming for 100 MHz SDRAM on a 50 MHz bus.
+I hope it will serve as a base for anyone to do something
+more.  I have no intention of updating it.  It served its
+purpose for me and should be used as a reference.  I
+am only going to work on hardware with real debug monitors
+from now on :-).
 
+I am working on, and have finished, several ports to
+821, 823, 850 processor boards.  I am trying to merge
+all of this into the 2.1.131 baseline, including making
+useful modifications to the configuration scripts.  I
+hope to have this done soon, and the upcoming holidays
+will probably allow that to happen.
 
-> 3) Setting up MMU works fine, the kernel initializes SMC1 (my console)
-> and SMC2 for UART and SCC2 for ethernet (I adopted Dan's drivers for the
-> MPC823, wasn't a big deal ;-)
-
-Sorry about that.  I have recently finished an 821, 823, and 850
-port to several boards.  I am sitting on lots of configuration changes
-like this.  It was easy to just hack the files, but now I have to
-make the config process work.  That is going to take longer
-than the other changes :-(.  I hope to have it done as a new year
-treat for everyone!
-
-
-> Now the kernel tries to load & exec /sbin/init and /lib/ld.so.1. Loading
-> via nfs seems to work fine (haven't had any trouble with this part) but
-> when the kernel sets up the memory for this process I realized a strange
-
-Yes.  I and others have seen this on the FADS boards.  I don't
-yet understand it since the same software will run on other boards.
-
-
-> BTW, why must the M_TWB be set in SET_PAGE_DIR ?
-
-The M_TWB points to the first level page table (Linux pgd_t)
-and is used in the mpc8xx page fault handler.  When Linux
-deletes or otherwise modifies the memory map object such that
-the first level page table is modified (as during exec), it
-uses SET_PAGE_DIR.  Since the first level table has potentially
-moved to a new memory location, we have to set M_TWB at
-this time.  If we don't, a process exec without an intervening
-context switch will cause us to use a bogus M_TWB when
-trying to find page tables.
+If anyone needs a port to one of these processors or
+other type of board, let me know and I can probably
+help out rather quickly, hopefully saving you from
+replicating anthing I have done.  Prior to having
+everything merged into the baseline, I could probably
+be convinced to drop a tarball on the server sometime.
 
 
     -- Dan
