@@ -1,31 +1,26 @@
-Message-ID: <19981209200520.A7128@bleck.ksu.ksu.edu>
-Date: Wed, 9 Dec 1998 20:05:20 -0600
-From: Zach Metzinger <wizkid@ksu.edu>
-To: Randy Gobbel <gobbel@andrew.cmu.edu>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: New XF68_FBDev
-References: <Pine.LNX.4.03.9812041504560.26444-100000@mercator.cs.kuleuven.ac.be> <ML-3.4.913235228.9383.gobbel@gamera.psy.cmu.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <ML-3.4.913235228.9383.gobbel@gamera.psy.cmu.edu>; from Randy Gobbel on Wed, Dec 09, 1998 at 03:27:08PM -0500
+Date: Wed, 9 Dec 1998 20:24:40 -0700 (MST)
+From: Cort Dougan <cort@persephone.cs.nmt.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: changes to the kernel
+In-Reply-To: <m0zj1h1-0000WUC@tri-yann.crf.canon.fr>
+Message-ID: <Pine.LNX.3.96.981209202241.18834A-100000@persephone.cs.nmt.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Dec 09, 1998 at 03:27:08PM -0500, Randy Gobbel wrote:
-> 
-> Using XF68_FBDevv-accel-ppc-19981204-2, I'm seeing some trashed pixels when
-> doing solid window moves and when scrolling, at both 8 and 16 bpp.  It looks to
-> me like the BITBLTs are picking up bits from the framebuffer rather than from
-> the window.  xrefresh puts things back in order.
+Please try out the latest one.  In cvs and a compiled prep image at
+ftp://linuxppc.cs.nmt.edu/pub/linuxppc/kernel-images/zImage
 
-Well, bitblt's do pick up bits from the framebuffer and not from the system
-memory. That's why it's called acceleration, the video card's graphics
-engine does the moving of data within the framebuffer memory on behalf of
-the X server. No idea why it does this, however, since -accel-ppc exits
-on signal 11 (Segv) on my machine.
+I just added the ide changes for prep.  I want to get this image tested on
+all the archs just to make sure things are cleaned up for prep.  
 
---- Zach
+Can someone tell me about this mcp750 thing?  Ian Hewitt at the Motorola
+booth mentioned something about them at the Atlanta conference but I
+haven't seen one or info on them.  Anyone feeling generous with info or
+pointers?
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
