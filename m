@@ -1,30 +1,35 @@
-Date: Fri, 23 Jul 1999 11:24:46 +0200
-From: Hubert Figuiere <hub@point-barre.fr>
-To: Jon Martinsson <jon_m_martinsson@swipnet.se>
-Cc: ppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: PCCARD/PCMCIA support
-Message-ID: <19990723112446.B1753@rhodan.businessobjects.com>
-References: <19990719232804.65517.qmail@hotmail.com>
+Date: Fri, 23 Jul 1999 14:46:47 +0200
+To: linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: vger 2.2.10 compile failures
+Message-Id: <19990723144647.023789@mail.mipsys.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <19990719232804.65517.qmail@hotmail.com>; from Jon Martinsson on Tue, Jul 20, 1999 at 02:13:28AM +0200
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-According to Jon Martinsson <jon_m_martinsson@swipnet.se>:
-> Hi,
-> 
-> 1) Would it technically be possible use a PCCARD/PCMCIA network/modem card on my Macintosh powerbook (assuming that one implemented the required drivers for the card in the Kernel. 2) Do I also need a driver for the PCCARD/PCMCIA bridge on the moderboard?
-> 
+I'm getting link errors when compiling today's vger 2.2.10 with xmon
+support enabled:
+
+arch/ppc/xmon/x.o: In function `backtrace':
+arch/ppc/xmon/x.o(.text+0x129e): undefined reference to `ret_from_int'
+arch/ppc/xmon/x.o(.text+0x12a2): undefined reference to `ret_from_syscall_1'
+arch/ppc/xmon/x.o(.text+0x12a6): undefined reference to `ret_from_int'
+arch/ppc/xmon/x.o(.text+0x12aa): undefined reference to `ret_from_syscall_1'
+arch/ppc/xmon/x.o(.text+0x12ae): undefined reference to `ret_from_syscall_2'
+arch/ppc/xmon/x.o(.text+0x12b6): undefined reference to `ret_from_syscall_2'
+
+Apparently, the name of those symbols changed, I'll try to fix xmon here,
+but maybe someone already did it (Paul ?)
+
+-- 
+           Perso. e-mail: <mailto:bh40@calva.net>
+           Work   e-mail: <mailto:benh@mipsys.com>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
 
-PCMCIA works well on PowerBook 3400c (the on I tried).
 
-
-Hub
-
-PS: please don't post HTML.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
