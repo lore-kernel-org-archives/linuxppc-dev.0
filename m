@@ -1,35 +1,44 @@
-Subject: Re: Error when linking
-To: manu@stapf.org
-Date: Sat, 20 Oct 2001 21:26:33 -0700 (PDT)
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <000401c159ae$35376950$650a000a@venice> from "Emmanuel STAPF" at Oct 20, 2001 02:28:49 PM
+From: Paul Mackerras <paulus@samba.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-Id: <20011021042633.BE4EA2B54A@marcus.pants.nu>
-From: flar@pants.nu (Brad Boyer)
+Message-ID: <15314.48871.176187.508759@cargo.ozlabs.ibm.com>
+Date: Sun, 21 Oct 2001 22:26:15 +1000 (EST)
+To: Stefan Jeglinski <jeglin@4pi.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.4.13-pre5 crash when mounting proc
+In-Reply-To: <p04330100b7f7f805ef9a@[24.163.33.28]>
+References: <p04330100b7f7f805ef9a@[24.163.33.28]>
+Reply-To: paulus@samba.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Take a look at this thread in the archives:
+Stefan Jeglinski writes:
 
-http://lists.linuxppc.org/linuxppc-user/199907/msg01059.html
+> 6500, Linux/PPC 2KQ4 running 2.2.19, I compiled 2.4.13-pre5, rsynced
+> from bk yesterday.
 
-Similar problem (90M executable), and the solution seems to
-have been to use shared libraries.
+linuxppc_2_4 or linuxppc_2_4_devel?
 
-Emmanuel STAPF wrote:
+> On boot, when it gets to "mounting proc
+> filesystem," I get a break into the mon debugger, but I have no
+> keyboard response (so no backtrace). The info I can copy is:
+
+You have an ADB keyboard, no?  I am surprised the keyboard doesn't
+respond.
+
+> vector: 300 at pc = c02432fc lr = c00544e0 msr = b032 sp = c5dc3ef0
 >
->
-> Indeed my problem is supposed to be around 50MB in size and as you
-> guessed I can't make it smaller.
->
-> I looked at the mailing list archive but I could not find what I should
-> use to make `ld' link my object files. So if anyone as the solution do
-> not hesitate to share it.
->
-> Thanks,
-> Manu
->
+> plus some more that I'm not sure will help much. For this output
+> alone, should I include System.map also?
+
+Yes, or alternatively find out where those pc and lr addresses are in
+the System.map list and tell us the nearest symbols and their values.
+
+> Is this a known problem?
+
+Not to me...
+
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
