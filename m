@@ -1,24 +1,28 @@
-Return-Path: <mikpe@user.it.uu.se>
-Received: from aun.it.uu.se (aun.it.uu.se [130.238.12.36])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "aun.it.uu.se",
-	Issuer "Uppsala University CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 135FE67A71
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Feb 2005 21:08:17 +1100 (EST)
+Return-Path: <evil@g-house.de>
+Received: from mail.g-house.de (ns1.g-housing.de [62.75.136.201])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 602C267A75
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Feb 2005 22:59:27 +1100 (EST)
+Message-ID: <49984.195.126.66.126.1109332744.squirrel@housecafe.dyndns.org>
+In-Reply-To: <20050225063609.GA21244@pegasos>
+References: <20041206185416.GE7153@smtp.west.cox.net>
+	<Pine.SOC.4.61.0502221031230.6097@math.ut.ee>
+	<20050224074728.GA31434@pegasos>
+	<Pine.SOC.4.61.0502241746450.21289@math.ut.ee>
+	<20050224160657.GB11197@pegasos> <421E7033.1030600@g-house.de>
+	<20050225063609.GA21244@pegasos>
+Date: Fri, 25 Feb 2005 12:59:04 +0100 (CET)
+From: "Christian" <evil@g-house.de>
+To: "Sven Luther" <sven.luther@wanadoo.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <16926.63745.143566.413488@alkaid.it.uu.se>
-Date: Fri, 25 Feb 2005 11:08:01 +0100
-From: Mikael Pettersson <mikpe@csd.uu.se>
-To: Jakub Jelinek <jakub@redhat.com>
-In-Reply-To: <20050224160139.GF853@devserv.devel.redhat.com>
-References: <16924.59237.581247.498382@alkaid.it.uu.se>
-	<1109210688.15027.2.camel@gaston>
-	<16925.60927.49095.758660@alkaid.it.uu.se>
-	<20050224160139.GF853@devserv.devel.redhat.com>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: ppc32 weirdness with gcc-4.0 in 2.6.11-rc4
+Content-Type: text/plain;charset=iso-8859-1
+Cc: Tom Rini <trini@kernel.crashing.org>, Christian Kujau <evil@g-house.de>,
+	Meelis Roos <mroos@linux.ee>,
+	Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, Sven Hartge <hartge@ds9.gnuu.de>
+Subject: Re: [PATCH 2.6.10-rc3][PPC32] Fix Motorola PReP (PowerstackII
+ Utah) PCI IRQ map
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,15 +32,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jakub Jelinek writes:
- > On Thu, Feb 24, 2005 at 04:08:47PM +0100, Mikael Pettersson wrote:
- > > _However_, the 0k data message is due to a gcc-4.0 bug, and below
- > > you'll find a test program which illustrates it.
- > 
- > http://gcc.gnu.org/PR20196
+On Fri, February 25, 2005 7:36, Sven Luther said:
+> So, now, we need to find out what the problems where, i think it is
+> something that went in between 2.6.8 and 2.6.10, and leigh said he had
+> some ideas.
 
-Jakub's patch to gcc4 solved the mysterious "0k data" message,
-but my eMac's USB is still dysfunctional. I'll try to look into
-that next week.
+may i ask what patches were applied to a vanilla 2.6.8 kernel to build the
+2.6.8-d-i then?
 
-/Mikael
+thanks,
+Christian.
+-- 
+make bzImage, not war
