@@ -1,48 +1,42 @@
-Date: Mon, 27 Jan 2003 23:14:17 +0100 (CET)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
+Date: Tue, 28 Jan 2003 10:41:20 +0100 (MET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Michel Lanners <mlan@cpu.lu>
+Cc: vroopcha@mcw.edu,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: Info on IO vs. Memory mapped PCI configuration ...
-To: vroopcha@mcw.edu
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.LNX.4.44.0301271152170.265-100000@kaiso.biophysics.mcw.edu>
+In-Reply-To: <E18dHWJ-00008i-00@piglet.grunz.lu>
+Message-ID: <Pine.GSO.4.21.0301281040070.9269-100000@vervain.sonytel.be>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
-Message-Id: <E18dHWJ-00008i-00@piglet.grunz.lu>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  27 Jan, this message from vinai echoed through cyberspace:
-> I am just getting into some driver programming for my work.  I read a
-> bit of the PCI System Architecture book, and it talked about one of the
-> main ways x86 vs the PPC did PCI configuration was through IO vs memory
-> space.
+On Mon, 27 Jan 2003, Michel Lanners wrote:
+> On  27 Jan, this message from vinai echoed through cyberspace:
+> > I am just getting into some driver programming for my work.  I read a
+> > bit of the PCI System Architecture book, and it talked about one of the
+> > main ways x86 vs the PPC did PCI configuration was through IO vs memory
+> > space.
+>
+> Configration? That's inherently platform-dependant. The host bridge
+> arranges for _some_ way of configuration space access to be available.
+> _You_ need to know _how_ you access it from the bridge docs.
 
-Configration? That's inherently platform-dependant. The host bridge
-arranges for _some_ way of configuration space access to be available.
-_You_ need to know _how_ you access it from the bridge docs.
+It's explained in the PCI System Architecture book for PReP-style PPC host
+bridges only. Other host bridges behave different, check out their technical
+docs (if you can find them), or look at the arch/ppc/kernel/*pci.c files.
 
-It happens that PowerPC lacks the seperate address space that is called
-'IO' on i386. So yes, everything is memory-mapped on PowerPC, be it
-PCI's memory space (big fat mapping often mapped 1:1), IO space (smaller
-mapping) or configuration space (mapped in the host bridge's memory
-space).
+Gr{oetje,eeting}s,
 
->  Is there an on-line reference somewhere that talks about these
-> ideas or concept in more detail?
+						Geert
 
-Not much that I know of... Try Intel or PCI SIG.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Cheers
-
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
