@@ -1,48 +1,39 @@
-Date: Tue, 28 Dec 1999 02:59:01 -0500
-From: Daniel Jacobowitz <drow@false.org>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: DB_THREAD support in Berkeley DB/glibc
-Message-ID: <19991228025900.A1950@drow.res.cmu.edu>
-References: <Pine.LNX.4.10.9912262058050.21529-100000@altus.drgw.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.10.9912262058050.21529-100000@altus.drgw.net>; from hozer@drgw.net on Sun, Dec 26, 1999 at 09:04:12PM -0600
+Date: Tue, 28 Dec 1999 13:35:57 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: weasel@cs.stanford.edu
+cc: Kostas Gewrgiou <gewrgiou@imbc.gr>,
+        "Jens Ch. Restemeier" <jrestemeier@currantbun.com>,
+        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Update - Re: Open Sourced Glide on Linux PPC
+In-Reply-To: <w9kr9g8mipm.fsf@euclide.irisa.fr>
+Message-ID: <Pine.LNX.4.05.9912281334500.389-100000@callisto.of.borg>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-If I'm not mistaken, David Huggins-Daines did this recently.  It is in
-the debian packages of glibc in the latest release.
+On 27 Dec 1999, Peter Chang wrote:
+> Geert Uytterhoeven <geert@linux-m68k.org> writes:
+> > If you use the *mb() macros instead of eieio(), you don't have to use #ifdefs
+> > and it'll work automagically on e.g. Alpha as well.
+> 
+> This I know less about, but these might fence more often than strictly necessary?
 
+wmb() is a barrier for writing.
+rmb() is a barrier for reading.
+mb() is a barrier for both and thus the `safest'.
 
-On Sun, Dec 26, 1999 at 09:04:12PM -0600, Troy Benjegerdes wrote:
-> 
-> I've just figured out that the reason openldap doesn't work is that it
-> assumes all platforms support the DB_THREAD argument for db_appinit.
-> 
-> After looking at the glibc/Berkeley DB source, it turns out that all it
-> needs is 10 or so lines of ASM for spinlocks.
-> 
-> Could someone working on glibc developement add the required ASM and get
-> this into the mainline distribution? Thanks.
-> 
-> (look in glibc/db2/mutex, I believe )
-> 
-> --------------------------------------------------------------------------
-> | Troy Benjegerdes    |  troy@blacklablinux.com    |    hozer@drgw.net   |
-> |    Unix is user friendly... You just have to be friendly to it first.  |
-> | This message composed with 100% free software.    http://www.gnu.org   |
-> --------------------------------------------------------------------------
-> 
-> 
+The main advantage is that these are defined for all architectures, unlike
+eieio().
 
+Gr{oetje,eeting}s,
+--
+Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
 
-Dan
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
-/--------------------------------\  /--------------------------------\
-|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
-|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
-|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
-\--------------------------------/  \--------------------------------/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
