@@ -1,29 +1,49 @@
-Date: Thu, 03 May 2001 10:15:40 +1000
-From: Tony Arnold <tony_mailinglists@mac.com>
-Subject: Re: Creative SBLive card
-To: linuxppc-dev@lists.linuxppc.org
-Message-id: <006201c0d366$2fac9ba0$86f09486@redgum>
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-References: <3AF05597.F7D0C433@acm.org>
- <6B735C87.20F18C9C.A41E0FAA@netscape.net>
+To: Uwe Steinmann <steinm@majestix.fernuni-hagen.de>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: IRDA support
+References: <20010503102914.A4411@gehtnix.fernuni-hagen.de>
+From: Daniel Berlin <dan@cgsoftware.com>
+Date: 03 May 2001 03:42:44 -0400
+In-Reply-To: <20010503102914.A4411@gehtnix.fernuni-hagen.de> (Uwe Steinmann's message of "Thu, 3 May 2001 10:29:14 +0200")
+Message-ID: <8766fianez.fsf@dynamic-addr-83-177.resnet.rochester.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> This is too cool. I bought an SB512 (aka, the cheapest SBLive!) with the
-intention of getting it working but never got the time. I was stuck looking
-in the ioctl's.
+Uwe Steinmann <steinm@majestix.fernuni-hagen.de> writes:
+
+> Hi,
 >
-> -jeramy b smith
+> short question. Do any of the recent kernels support IRDA on a
+> Pismo?
+Nope.
+
+> If no, what needs to be done to make it work?
+
+Get it to actually turn it on properly, i would imagine.
+it times out trying to send the setup bytes, or something like this.
+
+I actually cared about this for 10 or 20 minutes, and looked at the
+openfirmware code, and it looked like it was remarkably simple to turn
+the led on and off, so i wouldn't imagine fixing it is a large job.
+
 >
-> PPC\Linux: The First PPC OS to Support the SBLive!
+>   Uwe
+> --
+>   Uwe.Steinmann@fernuni-hagen.de
+>   Tel: +2331 987 4528    Fax: +2331 987 375
 >
 
-Erm....not to be a stick in the mud, but the SB Live! (MacOS) has been out
-for a bit now....
-
-Tony
-
+--
+"Last time I went skiing, I had to get up at 5:00 in the morning.
+I knew I couldn't do that, so I slept with my skis on.  My ride
+came at 5:30 in the morning, couldn't wake me up so he carried
+me out of the house, put my skis on the roof rack of the car,
+and drove to the mountain.  Seventeen miles later, I woke up out
+of this incredibly bizarre dream that I was skydiving
+horizontally.  I'm sure this has happened to you.
+"-Steven Wright
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
