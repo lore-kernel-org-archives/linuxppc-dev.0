@@ -1,28 +1,42 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-From: greggiraud@netcourrier.com
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: ppcboot 8260 LXT971A
-Date: Mon, 30 Jun 2003 10:12:10 CEST
-Mime-Version: 1.0
-Message-Id: <mnet1.1056960730.12133.greggiraud@netcourrier.com>
-Content-Type: text/plain; charset=ISO-8859-1
+From: "Christophe Hannoyer" <christophe.hannoyer@men-france.fr>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Baud rate for synchronous/asyncronous device driver.
+Date: Mon, 30 Jun 2003 19:34:10 +0200
+Message-ID: <KIEIKPGDNIEHFJHOLDKGKENACCAA.christophe.hannoyer@men-france.fr>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-I installed a ppcboot and a linux 2.4 on a MPC8260ADS card.
+Hello,
 
-Now, I am working on a custom card such as an MPC8260ADS card. The difference between those two cards is the ethernet: my custom card has two ethernet port, and uses two LXT971A.
+I'm currently developing a device driver for Triple Communication
+Controller. The diver managed two modes (asynchronous or synchronous)
+because each serial line could be independently configured as synchronous or
+asynchronous.
 
-So, I compile a ppcboot for 8260ads. PPCBOOT can't download a kernel with tftp. Is someone has a source code to support the LXT971?
+My request is concerning the configuration of the baud rate. In asynchronous
+mode, there is no problem. I used the standard method (stty command for
+example) and the standard predefine baud rates. Now I need in synchronous
+mode to be able to configure the baud rate at any custom value (and not
+predefined or fixed values).
 
-I compile a new kernel, which support LXT971A. PPCBOOT can run it from memory. But the kernel doesn't have network.
+One solution could be to use the spd_cust mode and the divisor. But with
+this solution I can't set any values and I'm limited by pre-define values
+too (baud_base, baud_base / 2, baud_base / 3 ...)
+An other solution could be to use the baud_base to set the baud rate. I
+don't like this one because it's not the standard use of baud_base and could
+be disturbing for the next users of this driver.
 
-please can someone help me?
+Any solution will be welcome.
 
-grego
-greggiraud@netcourrier.com
+Best regards,
+
+Christophe Hannoyer
+MEN Mikro Elektronik
+www.men-france.fr
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
