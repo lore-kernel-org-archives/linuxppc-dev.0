@@ -1,27 +1,31 @@
-Message-ID: <3AA12536.DAF3B1A7@denise.shiny.it>
-Date: Sat, 03 Mar 2001 18:09:11 +0100
-From: Giuliano Pochini <pochini@denise.shiny.it>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Console text selection bug
+Date: Sat, 3 Mar 2001 19:19:20 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: sym53c875 in 2.4.2
+Message-ID: <20010303191920.A2396@opus.bloom.county>
+References: <Pine.LNX.4.05.10103021932200.480-100000@callisto.of.borg>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.05.10103021932200.480-100000@callisto.of.borg>; from geert@linux-m68k.org on Fri, Mar 02, 2001 at 07:51:21PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-When I select text in console it's scrambled. I looked at the
-aty128 sources, but I didn't find anything about it. Where is
-the code that manages selection/cut/paste ?
+On Fri, Mar 02, 2001 at 07:51:21PM +0100, Geert Uytterhoeven wrote:
 
-The selected text is scrambled in this way: every char has
-the bits 1,2,3 swapped with bits 5,6,7 respectively (bits
-numbered left to right). I don't know what can cause this
-strange behaviour... I thought the console screen was a
-simple array of char/colour pairs.
+> I just tried the current bk linuxppc_2_4 on my CHRP LongTrail with Sym53c875
+> card. The Sym53c8xx driver fails downloading the SCSI scripts, and keeps trying
+> ad infinitum.
+>
+> At first sight, the kernel seems to work when I disable the Sym53c8xx driver
+> with `sym53c8xx=excl:0x1400'. It boots to a shell from the MESH.
 
-[b/w G3, r128, all kernels]
+Er, the very current 2_4?  Paulus just commited some changes which boil down
+to we have phys_to_bus (or so) and can use the stock driver.
 
-Bye.
-
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
