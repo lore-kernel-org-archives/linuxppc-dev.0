@@ -1,39 +1,30 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stefan Jeglinski <jeglin@4pi.com>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: ethtool failure with tulip 21143
-Date: Mon, 17 Dec 2001 00:38:53 +0100
-Message-Id: <20011216233853.23752@smtp.wanadoo.fr>
-In-Reply-To: <p04330101b842de27485b@[24.163.44.170]>
-References: <p04330101b842de27485b@[24.163.44.170]>
+From: Paul Mackerras <paulus@samba.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15389.55012.312836.197493@argo.ozlabs.ibm.com>
+Date: Mon, 17 Dec 2001 22:28:36 +1100 (EST)
+To: linuxppc-dev@lists.linuxppc.org
+Subject: moving include/asm-ppc/platforms
+Reply-To: paulus@samba.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->A long time ago (2.2.13 or so), I could not use another card on the
->6500 for very long with the de4x5 driver as well. At that time, Paul
->provided a patch for the de4x5 driver which fixed the problem. He
->also described the issue as a cache coherency problem.
+With the addition of -I$(TOPDIR)/arch/$(ARCH) to the compilation flags
+for the kernel, we can now move the platform-specific header files
+from include/asm-ppc/platforms to arch/ppc/platforms, which is where I
+think they belong.  That does require changing <asm/platforms/blah.h>
+to <platforms/blah.h>, but that is not a big job because these headers
+tend to get included in only a few places.
 
-Yes, paul's patch is what I'm talking about.
+For 2.4 we will keep the ugly lists of ifdefs in places like serial.h
+and mpc8xx.h.  For 2.5 we should change over to using a mechanism to
+copy an appropriate platform-dependent file to arch/ppc/platform.h.
 
->Well, I wonder if that was the fix that Paul put in. Some time ago
->(early 2.4) I tried the de4x5 driver with this Farallon 10/100 card
->but it worked even more poorly than the tulip driver of that time did.
+Once we have moved include/asm-ppc/platforms/*.h to arch/ppc/platforms,
+it will just about be time to do a big merge from devel into
+linuxppc_2_4 and thence to Marcelo's tree.
 
-Yup.
->
->>Try defining CACHE_ALIGN to CAL_32LONG, and DESC_ALIGN to u32 dummy[4]
->>(as in the commented out example).
->
->I will look at the de4x5 code again and try this. It's all vaguely
->familiar to me... Thanks much!
-
-That should be the same patch paul did.
-
-Ben.
-
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
