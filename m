@@ -1,79 +1,83 @@
-From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-Date: Tue, 5 Dec 2000 18:51:11 +0100
-Content-Type: text/plain;
-  charset="US-ASCII"
-Cc: linuxppc-dev@lists.linuxppc.org, max@trega.com
+Date: Tue, 5 Dec 2000 19:04:13 +0100 (CET)
+From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
 To: alex@cosmo.allay.net
-References: <Pine.LNX.4.10.10012051230170.22364-100000@macachu.ex-pressnet.com>
-In-Reply-To: <Pine.LNX.4.10.10012051230170.22364-100000@macachu.ex-pressnet.com>
-Subject: Re: lots of questions (va_list, embedded perl, cvsd, introduction - sort of)
+cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+        linuxppc-dev@lists.linuxppc.org, max@trega.com
+Subject: Re: lots of questions (va_list, embedded perl, cvsd, introduction
+ - sort of)
+In-Reply-To: <Pine.LNX.4.10.10012051221430.22364-100000@macachu.ex-pressnet.com>
+Message-ID: <Pine.LNX.4.10.10012051837160.24871-100000@zirkon.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-Message-Id: <00120518511100.12228@enzo.bigblue.local>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tuesday 05 December 2000 18:36, Alex Avriette wrote:
-> And lo there was much discussion regarding:
-> > > void
-> > > log (const char *fmt, ...)
+> > pass [4] int: 25 string: somestring
+> > Speicherschutzverletzung (core dumped)
 > >
-> > This code looks OK. What environment? (gcc/glibc)
+> > is what I get. On Intel, that is. gcc version is egcs-2.91.66. Seems
+> > something's wrong with your code in general.
 >
-> from glibcbug:
->
-> Host type: powerpc-redhat-linux-gnu
-> System: Linux macachu 2.4.0-test11 #5 Sun Nov 26 13:51:22 EST 2000 ppc
-> unknown
-> Architecture: ppc
->
-> Addons: crypt linuxthreads
-> Build CFLAGS: -g -O2
-> Build CC: gcc
-> Compiler version: 2.95.2 19991024 (release/franzo)
-> Kernel headers: 2.4.0-test11
-> Symbol versioning: yes
-> Build static: yes
-> Build shared: yes
-> Build pic-default: no
-> Build profile: yes
-> Build omitfp: no
-> Build bounded: no
-> Build static-nss: no
-> Stdio: libio
->
-> > > void vs_test ( const char *fmt, ...)
-> >
-> > This testcase is buggy (look at the printf!), if fixed it behaves as
-> > expected. You would have seen that if you compiled with -W -Wall!
->
-> whoops! (blush!) gotcha.
->
-> > > void nested_test ( const char *fmt, ...)
-> >
-> > This testcase is bogus since you miss the required va_start/va_end pairs.
-> > It misbehaves as expected.
->
-> let me check with the bsd guy, but AIR, it runs without the two pairs. i
-> could be wrong.
+> well, thats the thing. there isnt, i dont think, wrong with my code (apart
+> from what you said earlier (later? i get this as being 15 minutes
+> "new"er). it doesnt segfault at all here. i get some screwed up variables,
 
-It may run on some platforms by accident, but this is simply illegal C code
-if you want to process the same AP 2 times without an intervening
-va_end()/va_start() pair.
+It does segfault for me, on an Intel Redhat system. So far I haven't
+noticed unexplained breakage compiling other programs on Intel machines,
+though there's been a number of obscure programming errors that show only
+occasional segfaults. The fact that it doesn't segfault for you does not
+constiute proof that it's correct code.
 
-> > I've tested this both with gcc-2.95.3 and a recent gcc-2.97 snapshot.
-> > This looks a lot like your are still using egcs on PPC, don't do that,
-> > use gcc-2.95.[23] as the current distributions do.
->
-> all my experience writing c was in dos on borland c++, years ago. im
-> actually not sure about egcs, except that i get the error in gdb. how can
-> i be sure, and if i am, how can i switch?
+Anyway, this is what happens on PPC:
 
-rpm -q binutils egcs gcc glibc
+pass [1] int: 25 string: somestring
+pass [2] int: 25 string: somestring
+pass [3] int: 25 string: somestring
+pass [4] int: 25 string: somestring
+pass [1] somestring
+pass [2] (null)
+pass [3] (null)
+pass [4] (null)
+pass [1] int: 25 string: somestring
+pass [2] int: 25 string: somestring
+pass [3] int: 25 string: somestring
+pass [4] int: 25 string: somestring
+dual-run pass [1][vsn] int: 25 string: somestring
+dual-run pass [1][v] int: 25 string: somestring
+dual-run pass [2][vsn] int: 25 string: somestring
+dual-run pass [2][v] int: 25 string: somestring
+dual-run pass [3][vsn] int: 25 string: somestring
+dual-run pass [3][v] int: 25 string: somestring
+dual-run pass [4][vsn] int: 25 string: somestring
+dual-run pass [4][v] int: 25 string: somestring
+buffer [a] pass [1]: int: 25 string: somestring
+buffer [b] pass [1]: int: 2147480592 string:
+buffer [a] pass [2]: int: 25 string: somestring
+buffer [b] pass [2]: int: 2147480592 string:
+buffer [a] pass [3]: int: 25 string: somestring
+buffer [b] pass [3]: int: 2147480592 string:
+buffer [a] pass [4]: int: 25 string: somestring
+buffer [b] pass [4]: int: 2147480592 string:
 
-You can get current stuff at
-ftp://devel.linuxppc.org/users/fsirl/glibc-2.1/RPMS/ppc/
+No segfault. Just garbage if you use vsnprintf (which completely exhausts
+the va_list so there are no unprocessed arguments left after the call)
+twice without restoring ap in between.
+Now what exactly did you expect to happen in that case? Garbage (or
+segfaults due to what precisely was left on the stack from previous
+operations) is all you will get if you call vsnprintf with a va_list
+argument that has its internal pointers to the next arguments set to
+beyond what was allocated on stack for the arguments.
+Please see the definitions of the va_list type, and the va_arg macro, in
+va-ppc.h.
 
-Franz.
+I don't care what the maintainers of opennap claim about 'it can't run on
+Mac because Mac is broken anyway'. Writing portable code may be tough in
+this special neck of the woods, but it's possible. I've seen maintainers
+of other free software packages act reasonably about this very issue. Send
+them a patch, and explain why the patch is required.
+
+	Michael
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
