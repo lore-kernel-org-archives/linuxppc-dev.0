@@ -1,35 +1,23 @@
-Message-Id: <200011212143.WAA00749@piglet.grunz.lu>
-Date: Tue, 21 Nov 2000 22:43:53 +0100 (CET)
+Message-Id: <200011212148.WAA00753@piglet.grunz.lu>
+Date: Tue, 21 Nov 2000 22:48:25 +0100 (CET)
 From: Michel Lanners <mlan@cpu.lu>
 Reply-To: mlan@cpu.lu
-Subject: Re: controlfb problem (on XFree86-4.0.1 off the penguinppc.org deve
-  lopment tree)
-To: jens_tingleff@yahoo.com
-cc: linuxppc-dev@lists.linuxppc.org, ajoshi@unixbox.com
-In-Reply-To: <20001121113537.25972.qmail@web1611.mail.yahoo.com>
+Subject: Re: whacked out 2.2.18preX - last gasp
+To: Stefan Jeglinski <jeglin@4pi.com>
+cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <19341016094934.2031@192.168.1.2>
 MIME-Version: 1.0
 Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  21 Nov, this message from Jens Tingleff echoed through cyberspace:
->> That problem I fixed for me with a patch you can find here:
->>
->> http://www.cpu.lu/~mlan/linux/dev/xf4.html
->>
->
-> Actually, I did roll this patch into my modifications. Could it be that
-> the development tree on penguinppc.org doesn't have these patches at
-> the moment?
+> _2_5 will help configs with multiple PCI busses except for IO ports which
+> will still be available on the first bus only. This may get fixed for PCI
+> IO BARs if we end up mapping virtually all the IO spaces appended together.
 
-That could be; I never got any positive feedback of any patch that fixes
-this problem getting close enough to official XFree to be swallowed ;-)
-
-The patch I'm using isn't clean enough for that... and it might even not
-work for all resolutions/depths; never tried...
-
-Cheers
+... which prompts me to ask: have you tried the 2940 in the three upper
+    slots _and_ in the three lower slots? Same result both times?
 
 Michel
 
