@@ -1,48 +1,32 @@
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: BAT mapping exported to user-space
-References: <EB9CAD60-DF2E-11D8-910D-003065F9B7DC@embeddededge.com>
-From: Linh Dang <linh@linhdang.home>
-Date: Mon, 26 Jul 2004 14:33:27 -0400
-In-Reply-To: <EB9CAD60-DF2E-11D8-910D-003065F9B7DC@embeddededge.com> (Dan
- Malek's message of "Mon, 26 Jul 2004 14:09:22 -0400")
-Message-ID: <wn5ekmysjns.fsf@linhd-2.ca.nortel.com>
+Message-ID: <41055881.6000707@icarus.com>
+Date: Mon, 26 Jul 2004 12:16:17 -0700
+From: Stephen Williams <steve@icarus.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Andrei Konovalov <akonovalov@ru.mvista.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Patch for SystemACE without CONFIG_XILINX_OCP
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek <dan@embeddededge.com> wrote:
-
->
-> On Jul 26, 2004, at 1:20 PM, Linh Dang wrote:
->
->> - has it been discussed/comptemplate/done before?
->
-> Of course.  Use mmap(), either on /dev/mem directly, or more
-> preferable through a simple device driver for your ASIC that
-> could also do simple system protection.
->
-> Please don't be making such memory mapping kernel
-> modifications.  It will only cause future trouble.
->
-> -- Dan
 
 
-My understanding is:
+hI,
 
-- mmap(2) uses pages to map the device (my platform doesn't have large page.)
-- mapping a large address range (hundreds-of-megabytes) is much more
-  efficient with BATs than with pages.
+I passed around the attached patch in hopes that it could be
+integrated into the linuxppc-2.4 bitkeeper tree, assuming that
+is the best place to maintain linux 2.4 for PPC. But I don't
+see it showing up in the repository.
 
-So, do you mean:
-        - mmap(2) can use BATs? or
-        - the difference in performance is negligible between BATs and
-          pages when mapping an address range of 200MBs?
+Actually, I noticed that there were no changes to the tree
+in a little while. Is everybody off working on 2.6? Should
+I be there too?
+- --
+Steve Williams                "The woods are lovely, dark and deep.
+steve at icarus.com           But I have promises to keep,
+http://www.icarus.com         and lines to code before I sleep,
+http://www.picturel.com       And lines to code before I sleep."
 
-
-Thanx
---
-Linh Dang
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
