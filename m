@@ -1,54 +1,64 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <4522-80798@sneakemail.com>
-Date: Tue, 02 Mar 2004 10:48:42 -0800
-From: "Stephen Williams" <612dlag102@sneakemail.com>
-MIME-Version: 1.0
+Message-ID: <20040302185407.37614.qmail@web20726.mail.yahoo.com>
+Date: Tue, 2 Mar 2004 10:54:07 -0800 (PST)
+From: Shawn Jin <shawnxtech@yahoo.com>
+Subject: breakpoints cause oops
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Kernel hangs in early_init
-References: <20040302085159.1174CC0655@atlas.denx.de>
-In-Reply-To: <20040302085159.1174CC0655@atlas.denx.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang Denk wd-at-denx.de |PPC Linux Embedded| wrote:
- > In message <19122-27221@sneakemail.com> you wrote:
- >
- >>I have a PPC405GPr based board w/ 128Meg SDRAM, and I'm building
- >>kernel 2.4.24 (devel CVS) for it. I also have U-Boot ported to
- >>it, and I'm using U-Boot as the bootstrap loader.
- >
- > ...
- >
- >>## Transferring control to Linux (at address 00000000) ...
- >
- >
- > Did you check the FAQ? See
- > http://www.denx.de/twiki/bin/view/DULG/LinuxHangsAfterUncompressingKernel
+Hi,
 
-Good point, I missed that. However, that particular FAQ doesn't seem
-to apply. I'm using 2.4.24+ (>2.4.5), the CFG_IMMR value doesn't seem
-to apply (PPC405GPr, not a MPC8xx system) and I double-checked that
-the bd_t structure matches. Besides, it's nowhere neer trying to access
-any of the arguments yet.
+I have a custom MPC8245 board and have linux running on the board. When
+trying to debug the kernel using BDI+GDB, I have some problems on
+breakpoints. Each time a breakpoint is reached, an oops message is
+generated and gdb never gets the control.
 
-I put some progress checking code in the source to see where it
-goes, and I see it enters early_init, calls early_init (there is
-an initial MMU setup active at the time) and calls reloc_offset.
-However, it never actually seems to *arrive* in reloc_offset.
+What I did is set a breakpoint at 'sys_sync'. So each time the shell
+command 'sync' is executed, the kernel should stop at the breakpoint. But
+it only generates an oops message. The decoded oops is as follows.
 
-Humm... The MMU comment makes me think. U-Boot is running with the
-MMU off. The head_4xx.S entry code sets up a temporary MMU mapping
-that includes the linked kernel address space, but that is only 32meg.
-The stack at the time is still where U-Boot left it, near the end of
-the 128Meg memory. Is this something I should address (pardon the pun)?
+Do you have any idea why this occurs? There may be still some bugs in the
+kernel I ported. Is it related to memory, or stack allocation? Any help is
+greatly appreciated.
 
---
-Steve Williams                "The woods are lovely, dark and deep.
-steve at XXXXXXXXXX           But I have promises to keep,
-http://www.XXXXXXXXXX         and lines to code before I sleep,
-http://www.picturel.com       And lines to code before I sleep."
+Oops: Exception in kernel mode, sig: 5
+NIP: C003C040 XER: 00000000 LR: C0005C5C SP: C77BDF30 REGS: c77bde80 TRAP:
+0700
+MSR: 00029032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c77bc000[226] 'sync' Last syscall: 36
+last math c77bc000 last altivec 00000000
+GPR00: C0005C5C C77BDF30 C77BC000 00000001 7FFFFBD4 10002198 10002174
+100021A0
+GPR08: 100021A4 C77BDF50 C003C034 28000004 48000004 1001A768 00000000
+00000000
+GPR16: 00000000 00000000 00000000 00000000 00009032 077BDF40 00000000
+C0005E90
+GPR24: C0005C00 10002060 300251CC 00000001 7FFFFBD4 10000000 0FFE8714
+7FFFFC28
+Call backtrace:
+10000000 C0005C5C 10000C68 0FECFF70 00000000
+Warning (Oops_read): Code line not seen, dumping what data is available
 
+
+>>???; c003c040 <sync_dev+c/48>   <=====
+
+>>GPR0; c0005c5c <set_context+2640/288c>
+>>GPR10; c003c034 <sync_dev+0/48>
+>>GPR23; c0005e90 <set_context+2874/288c>
+>>GPR24; c0005c00 <set_context+25e4/288c>
+
+Trace; 10000000 Before first symbol
+Trace; c0005c5c <set_context+2640/288c>
+Trace; 10000c68 Before first symbol
+Trace; 0fecff70 Before first symbol
+Trace; 00000000 Before first symbol
+
+-Shawn.
+
+Yahoo! Search - Find what you’re looking for faster
+http://search.yahoo.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
