@@ -1,32 +1,40 @@
-Message-ID: <3BC470F6.F429B1ED@prodys.net>
-Date: Wed, 10 Oct 2001 18:01:58 +0200
-From: Pedro Parrilla <pparrilla@prodys.net>
+Message-ID: <3BC488CA.E4F176D6@mvista.com>
+Date: Wed, 10 Oct 2001 10:43:38 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Using Kgdb...
+To: "Sarnath K - CTD, Chennai." <k_sarnath@ctd.hcltech.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: How to boot linux on sandpoint board ?
+References: <EF836A380096D511AD9000B0D021B5271A87B1@narmada.ctd.hcltech.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-    Hello, first of all, I am using a MBX860 board, with a Motorola
-MPC860 processor, and I am debugging a 2.4.7 Kernel with KGDB on this
-target from my Intel PC host with DDD via serial line. I'd like to load
-a module of mine, and I have to stop Kernel execution from DDD, so I can
-load symbols from my module with 'add-symbol-file', but I think that you
-have to set a breakpoint to stop the Kernel, you can't use INTERRUPT
-(^C)...
-    Could anyone tell me how to stop execution of a Kernel with Kgdb
-whenever you want, with remote debugging, without having to set a
-breakpoint?
+Sarnath,
 
+Yes, the sandpoint is supported in the public linux source base.  There are
+some things you need to know, though.
 
+1) There are 2 types of sandpoint boards, X2 and X3, you have to know which
+one you have and select the appropriate option
+2) It has been some time since I've verified that it still works and a lot has
+changed (in linuxppc_2_4_devel) so you may run into problems
+3) Depending on how you download, etc., you may need to strip off the first
+64KB of the zImage
+4) The general instructions for building a kernel are:
+  a) get the src (I'm assuming linuxppc_2_4_devel) and [cross]compile tools
+  b) go into the top level directory (and set the Makefile appropriately)
+  c) "make sandpoint_config"
+  d) "make oldconfig" (or menuconfig if you need to change some options)
+  e) "make dep zImage"
+  f) the zImage (which is probably what you want) will be in
+arch/ppc/boot/images/zImage.sandpoint
 
---
-Pedro Parrilla Jimena           Prodys.S.L
-Embedded systems programming    Trigo,54
-e-mail pparrilla@prodys.net     Leganes(Madrid) 28914
-Tel.:+34916896880               http://www.prodys.net
+For more info, you need to refer to the mailing list archives and appropriate
+linuxppc websites.
+
+Mark
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
