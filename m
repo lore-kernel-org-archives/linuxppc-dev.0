@@ -1,51 +1,44 @@
-Message-ID: <3CD199C0.6070700@pacbell.net>
-Date: Thu, 02 May 2002 12:55:44 -0700
-From: Armin <akuster@pacbell.net>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Ricardo Scop <scop@digitel.com.br>
+To: Hihn Jason <JasonHihn@DANFOSS.com>,
+	"'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Position available for 8xx series programmer
+Date: Thu, 2 May 2002 20:03:55 -0300
+Cc: Christensen Henrik USAC <HenrikChristensen@DANFOSS.com>
+References: <E1836A7F3557D311A14000805F9F36FC0141C664@usdfo011.usac.danfoss.net>
+In-Reply-To: <E1836A7F3557D311A14000805F9F36FC0141C664@usdfo011.usac.danfoss.net>
 MIME-Version: 1.0
-To: "David =?ISO-8859-1?Q?M=FCller?= (ELSOFT AG)" <d.mueller@elsoft.ch>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [PATCH] Several patches against linuxppc_devel-2.4.19-pre7
-References: <3CD1382D.8060109@elsoft.ch>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Message-Id: <02050220035500.01026@scop.digitel.com.br>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David Müller (ELSOFT AG) wrote:
-> Hello
->
-> The attached patch fixes the following issues:
->
->    - arch/ppc/kernel/ocp_uart.c
->       fixes problem with "ghost" uart device
->
->       I'm not sure if this is the correct fix or if
->       the semantic of ocp_register() should be changed?
->
->    - drivers/char/ibm_ocp_gpio.c
->       fixes typo ([pv]start instead of [pv]addr)
->
->    - arch/ppc/platforms/Makefile
->       include ibm405gp.o into export-objs list
->
->    - arch/ppc/platforms/ibm405gp.c
->       export base address symbols for use with modularized
->       OCP device drivers
->
->       Shouldn't IIC_ADDR also be "const struct"?
->
->    - include/asm-ppc/floppy.h
->       fixes swapped arguments of {fd_}outb
->
->
-> Dave
->
+Hi,
 
-Dave
+Do you accept foreigners too ;-) ???
 
-Thanks
+-Scop.
+Brazil
 
-armin
-
+On Thursday 02 May 2002 11:56, Hihn Jason wrote:
+> Hello all,
+>
+> Danfoss Inc (www.danfoss.com) a world leader in industrial automation, has
+> a position available for an Embedded PPC software engineer in Baltimore,
+> MD. This position requires low-level experience with the 8xx series
+> processors. Embedded Linux in particular, but any Linux experience is
+> desired, but not required.
+>
+> Anyone interested is encouraged to contact my boss, Henrik Christensen at:
+> HenrikChristensen@Danfoss.com or (410)931-6778 x4254
+>
+> I look forward to working with you in the future.
+>
+> Sincerely,
+> Jason Hihn
+> Danfoss R&D
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
