@@ -1,133 +1,139 @@
-Message-Id: <20001225090438.Postino-021848@smtp01.highway.ne.jp>
-Date: Mon, 25 Dec 2000 09:04:38 +0900
-To: Alexandre Oliva <aoliva@redhat.com>, sailer@ife.ee.ethz.ch
-CC: linuxppc-dev@lists.linuxppc.org, gcc@gcc.gnu.org
-From: Kaoru Fukui <k_fukui@highway.ne.jp>
-Subject: Re: kerne-2.4.0-test13pre3 with gcc-2.97
+Message-Id: <200012250303.VAA08564@lists.linuxppc.org>
+Date: Sun, 24 Dec 2000 22:03:04 -0500
+From: jingai <jingai@telocity.com>
+To: "debian-powerpc" <debian-powerpc@lists.debian.org>,
+        "linuxppc-dev" <linuxppc-dev@lists.linuxppc.org>
+Subject: Status of PCI-PCI bridge on UMAX S900
+Reply-To: jingai@telocity.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Thanks,Alex and Tom.
+Hello, I am just curious if anyone is working on getting the PCI-PCI
+bridge code working for the UMAX S900 (similar to 9500, but
+obviously different enough to break the code).  The problem is this:
+all cards not in slots 1-2 are assigned an IRQ of 1, which is
+obviously wrong.  I'm not sure why slot 3 does not work, however,
+unless the code just thinks the PCI bridge *is* slot 3 (which it does
+appear to be that way).
 
-I have done kernel compiling with the patch.
-it boot ,but  unstable.
+If no one is currently attempting to fix it, but someone would like to,
+here is all of the relevant info I can think of.  Thanks in advance for
+any help.
 
-I will wait gcc-3.0.
+Location of the pci bridge in /proc is:
 
-Thanks a lot.
+/proc/device-tree/bandit/pci-bridge/AAPL,interrupts
 
-Kaoru
------------------------
+colour:/home/jingai# lspci
+00:0b.0 Host bridge: Apple Computer Inc. Bandit PowerPC host bridge (rev
+03)
+00:0d.0 Unknown mass storage controller: Promise Technology, Inc. 20267
+(rev 02)
+00:0e.0 USB Controller: OPTi Inc. 82C861 (rev 10)
+00:0f.0 PCI bridge: Digital Equipment Corporation DECchip 21052 (rev 01)
+00:10.0 Class ff00: Apple Computer Inc. Grand Central I/O (rev 02)
+01:01.0 VGA compatible controller: ATI Technologies Inc Rage 128 RE
+01:02.0 Ethernet controller: 3Com Corporation 3c905C-TX [Fast Etherlink]
+(rev 30)
 
-diff -urN base/linux/drivers/usb/audio.c fixed/linux/drivers/usb/audio.c
---- base/linux/drivers/usb/audio.c	Fri Dec 22 13:47:44 2000
-+++ fixed/linux/drivers/usb/audio.c	Mon Dec 25 04:31:59 2000
-@@ -788,7 +788,7 @@
- {
- 	union {
- 		__s16 s[64];
--		unsigned char b[0];
-+		unsigned char b[1];
- 	} tmp;
- 	unsigned int scnt, maxs, ufmtsh, dfmtsh;
+colour:/home/jingai# lspci -vv
+00:0b.0 Host bridge: Apple Computer Inc. Bandit PowerPC host bridge (rev
+03)
+        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr-
+Stepping- SERR- FastB2B-
+        Status: Cap- 66Mhz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
+<TAbort- <MAbort+ >SERR- <PERR-
+        Latency: 32, cache line size 08
 
-@@ -1139,7 +1139,7 @@
- {
- 	union {
- 		__s16 s[64];
--		unsigned char b[0];
-+		unsigned char b[1];
- 	} tmp;
- 	unsigned int scnt, maxs, ufmtsh, dfmtsh;
+00:0d.0 Unknown mass storage controller: Promise Technology, Inc. 20267
+(rev 02)
+        Subsystem: Promise Technology, Inc.: Unknown device 4d33
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+Stepping- SERR- FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+        Latency: 32
+        Interrupt: pin A routed to IRQ 23
+        Region 0: I/O ports at 2070 [size=8]
+        Region 1: I/O ports at 2060 [size=4]
+        Region 2: I/O ports at 2050 [size=8]
+        Region 3: I/O ports at 2040 [size=4]
+        Region 4: I/O ports at 2000 [size=64]
+        Region 5: Memory at 88020000 (32-bit, non-prefetchable) [size=128K]
+        Expansion ROM at 88010000 [disabled] [size=64K]
+        Capabilities: [58] Power Management version 1
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
+PME(D0-,D1-,D2-,D3hot-,D3cold-)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
 
-diff -urN base/linux/drivers/video/aty128fb.c fixed/linux/drivers/video/aty128fb.c
---- base/linux/drivers/video/aty128fb.c	Fri Dec 22 13:47:45 2000
-+++ fixed/linux/drivers/video/aty128fb.c	Mon Dec 25 05:02:21 2000
-@@ -148,7 +148,7 @@
- };
+00:0e.0 USB Controller: OPTi Inc. 82C861 (rev 10) (prog-if 10 [OHCI])
+        Subsystem: OPTi Inc. 82C861
+        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+Stepping- SERR- FastB2B-
+        Status: Cap- 66Mhz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
+<TAbort- <MAbort- >SERR- <PERR+
+        Latency: 32, cache line size 08
+        Interrupt: pin A routed to IRQ 24
+        Region 0: Memory at 88000000 (32-bit, non-prefetchable) [size=4K]
 
- /* supported Rage128 chipsets */
--static const struct aty128_chip_info aty128_pci_probe_list[] __initdata =
-+static const struct aty128_chip_info aty128_pci_probe_list[]  =
- {
-     {"Rage128 RE (PCI)", PCI_DEVICE_ID_ATI_RAGE128_RE, rage_128},
-     {"Rage128 RF (AGP)", PCI_DEVICE_ID_ATI_RAGE128_RF, rage_128},
-diff -urN base/linux/include/linux/netfilter_ipv4/ip_tables.h fixed/linux/include/
-linux/netfilter_ipv4/ip_tables.h
---- base/linux/include/linux/netfilter_ipv4/ip_tables.h	Mon Dec 25 05:15:00
-2000
-+++ fixed/linux/include/linux/netfilter_ipv4/ip_tables.h	Mon Dec 25 05:30:22
-2000
-@@ -65,7 +65,7 @@
- 		u_int16_t match_size;
- 	} u;
+00:0f.0 PCI bridge: Digital Equipment Corporation DECchip 21052 (rev 01)
+(prog-if 00 [Normal decode])
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+Stepping- SERR- FastB2B-
+        Status: Cap- 66Mhz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+        Latency: 32, cache line size 08
+        Bus: primary=00, secondary=01, subordinate=01, sec-latency=0
+        I/O behind bridge: 00001000-00001fff
+        Memory behind bridge: 80800000-87ffffff
+        BridgeCtl: Parity- SERR- NoISA+ VGA- MAbort- >Reset- FastB2B-
 
--	unsigned char data[0];
-+	unsigned char data[1];
- };
+00:10.0 Class ff00: Apple Computer Inc. Grand Central I/O (rev 02)
+        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr-
+Stepping- SERR- FastB2B-
+        Status: Cap- 66Mhz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
+<TAbort- <MAbort- >SERR- <PERR+
+        Latency: 32, cache line size 08
+        Region 0: Memory at f3000000 (32-bit, non-prefetchable) [size=128K]
 
- struct ipt_entry_target
-@@ -88,7 +88,7 @@
- 		u_int16_t target_size;
- 	} u;
+01:01.0 VGA compatible controller: ATI Technologies Inc Rage 128 RE
+(prog-if 00 [VGA])
+        Subsystem: Unknown device b530:0408
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+Stepping+ SERR- FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+        Latency: 32 (2000ns min), cache line size 08
+        Interrupt: pin A routed to IRQ 1
+        Region 0: Memory at 84000000 (32-bit, prefetchable) [size=64M]
+        Region 1: I/O ports at 1000 [size=256]
+        Region 2: Memory at 80804000 (32-bit, non-prefetchable) [size=16K]
+        Expansion ROM at 80840000 [disabled] [size=128K]
+        Capabilities: [5c] Power Management version 1
+                Flags: PMEClk- DSI- D1+ D2- AuxCurrent=0mA
+PME(D0-,D1-,D2-,D3hot-,D3cold-)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
 
--	unsigned char data[0];
-+	unsigned char data[1];
- };
-
- struct ipt_standard_target
-@@ -138,7 +138,7 @@
- 	struct ipt_counters counters;
-
- 	/* The matches (if any), then the target. */
--	unsigned char elems[0];
-+	unsigned char elems[1];
- };
-
- /*
-@@ -255,7 +255,7 @@
- 	struct ipt_counters *counters;
-
- 	/* The entries (hang off end: not really an array). */
--	struct ipt_entry entries[0];
-+	struct ipt_entry entries[1];
- };
-
- /* The argument to IPT_SO_ADD_COUNTERS. */
-@@ -267,7 +267,7 @@
- 	unsigned int num_counters;
-
- 	/* The counters (actually `number' of these). */
--	struct ipt_counters counters[0];
-+	struct ipt_counters counters[1];
- };
-
- /* The argument to IPT_SO_GET_ENTRIES. */
-@@ -280,7 +280,7 @@
- 	unsigned int size;
-
- 	/* The entries. */
--	struct ipt_entry entrytable[0];
-+	struct ipt_entry entrytable[1];
- };
-
- /* Standard return verdict, or do jump. */
-diff -urN base/linux/net/ipv4/netfilter/ip_tables.c fixed/linux/net/ipv4/netfilter/
-ip_tables.c
---- base/linux/net/ipv4/netfilter/ip_tables.c	Fri Dec 22 13:48:22 2000
-+++ fixed/linux/net/ipv4/netfilter/ip_tables.c	Mon Dec 25 05:46:05 2000
-@@ -90,7 +90,7 @@
- 	unsigned int underflow[NF_IP_NUMHOOKS];
-
- 	/* ipt_entry tables: one per CPU */
--	char entries[0] __attribute__((aligned(SMP_CACHE_BYTES)));
-+	char entries[1] __attribute__((aligned(SMP_CACHE_BYTES)));
- };
-
- static LIST_HEAD(ipt_target);
+01:02.0 Ethernet controller: 3Com Corporation 3c905C-TX [Fast Etherlink]
+(rev 30)
+        Subsystem: 3Com Corporation 3C905C-TX Fast Etherlink for PC
+Management NIC
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr-
+Stepping- SERR- FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+        Latency: 32 (2500ns min, 2500ns max), cache line size 08
+        Interrupt: pin A routed to IRQ 1
+        Region 0: I/O ports at 1400 [size=128]
+        Region 1: Memory at 80800000 (32-bit, non-prefetchable) [size=128]
+        Expansion ROM at 80820000 [disabled] [size=128K]
+        Capabilities: [dc] Power Management version 2
+                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA
+PME(D0+,D1+,D2+,D3hot+,D3cold-)
+                Status: D0 PME-Enable+ DSel=0 DScale=2 PME-
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
