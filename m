@@ -1,116 +1,83 @@
-Message-ID: <3904CAD9.17C1AA93@pandora.be>
-Date: Mon, 24 Apr 2000 18:29:46 -0400
-From: Daniel Gonzalez <daniel.gonzalez@pandora.be>
+Message-ID: <3904DA19.E105A181@dynamite.com.au>
+Date: Mon, 24 Apr 2000 23:34:49 +0000
+From: Brad Hards <bradh@dynamite.com.au>
 MIME-Version: 1.0
-To: "Dunlap, Randy" <randy.dunlap@intel.com>
-CC: Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
-        linuxppc-dev@lists.linuxppc.org, linux-usb@suse.com
+To: Daniel Gonzalez <daniel.gonzalez@pandora.be>
+CC: Sheldon Easterbrook <sheldie@hotmail.com>, linuxppc-dev@lists.linuxppc.org,
+        linux-usb@suse.com
 Subject: Re: [linux-usb] Close to a solution. Please help !
-References: <D5E932F578EBD111AC3F00A0C96B1E6F0545CA67@orsmsx31.jf.intel.com>
+References: <20000424010537.73861.qmail@hotmail.com> <39048829.EA283A23@pandora.be> <390490A9.2D8EB962@pandora.be>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Randy,
+Daniel Gonzalez wrote:
+> After a very long week, I think I am close to actually access my 250 Usb Zip drive.
+> I have now 2.3.99-pre6.
+You should feel priviliged. It took me months on and off to think I
+might be close.
+I do have some bad news though - you probably should have stayed with
+Paulus' tree,
+since Matt did think that there was some endian bugs, and I am pretty
+sure
+Paul had at least a floppy disk working.
 
-Strange enough my /etc/conf.modules is empty. No wonder that the modules
-are not automatically loaded ( I have to do it by hand )Any idea of what
-should
-I do to recreate that file ?
+> THE PROBLEM: I am not able to mount my Zip drive:
+>
+> [root scsi]# mount /mnt/usbzip/
+> mount: /dev/sdb4 has wrong major or minor number
+weird
 
-BTW, no sd_mod module present in my system ...
+> THE DESCRIPTION:
+> I have the following /etc/fstab entry for the Zip
+>
+> /dev/sdb4  /mnt/usbzip  auto noauto,user 0 0
+>
+> I have also tried with sda4.
+Which should be the right device - this Powerbook is IDE, right? No SCSI
+attached? Then it should be on /dev/sda. But maybe /dev/sda1 if it is
+HFS disk? What does fdisk show as the partitions?
+
+> How do I get the major and minor numbers for a given device?
+>
+> THE GOOD SIGNS
+> [root scsi]# cat /proc/scsi/usb-storage-0/2
+> Host scsi2: usb-storage
+>     Vendor: Iomega
+>    Product: USB Zip 250
+>   Protocol: Bulk only
+>  Transport: Transparent SCSI
+>       GUID: 059b0030059b003003005fc1
+Looks good, although mine shows up slightly differently:
+bradh@isp651:~ > more /proc/scsi/usb-storage-0/0
+Host scsi0: usb-storage
+    Vendor: Iomega
+   Product: USB Zip 100
+  Protocol: Bulk only
+ Transport: Transparent SCSI
+      GUID: 059b00010000000000f41dea
 
 
-"Dunlap, Randy" wrote:
+> BTW, what is shm ?
+SysV shared memory. You need to mount it on /var/shm
 
-> Hi Daniel,
+> THE BAD SIGNS
+> [root scsi]# cat /proc/scsi/scsi
+> Attached devices: none
+This is definately not so good.
+
+> This after I have issued a:
+> [root scsi]# echo "scsi add-single-device 1 0 0 0" > /proc/scsi/scsi
+I don't need to do this any more. Do you get anything without it?
+
+> But it could be that the creation of /proc/scsi/usb-storage-0/2 was caused
+> by that last command. I did not pay attention to that.
 >
-> I don't see anything that is obviously wrong in the
-> linux/.config file.
->
-> The recent advice from Joseph Fannin looks good.
-> Have you tried it?  (except change:
->   alias char-major-8 sd_mod
-> to
->   alias block-major-8 sd_mod
-> )
->
-> Give us a list of modules that are loaded when you connect
-> the Zip drive.
->
-> Switching to the main linux tree is likely just to give
-> you/us a different set of problems, but I'm just guessing
-> that based on Brad Hards's comments.
->
-> For USB source file comparisons, all of my 2.3.99-pre6-5
-> unzipped .c files are dated between Mar. 10 and Apr. 21, 2000.
-> None from the Jan.-Feb. timeframe as you listed.
-> There have been beaucoups changes in this time, especially
-> to the usb-storage driver.
->
-> ~Randy
->
-> > -----Original Message-----
-> > From: Daniel Gonzalez [mailto:daniel.gonzalez@pandora.be]
-> > Sent: Monday, April 24, 2000 2:54 PM
-> > To: Dunlap, Randy
-> > Cc: Matthew Dharm; Sheldon Easterbrook;
-> > linuxppc-dev@lists.linuxppc.org;
-> > linux-usb@suse.com
-> > Subject: Re: [linux-usb] Close to a solution. Please help !
-> >
-> > > > Well. The sources I have are taken from linuxcare (I
-> > think that is Paul's tree,
-> > > > isn't?). I am using the devel tree, since I heard that
-> > was performing better for the USB subsystem.
-> > >
-> > >
-> > > I'm still confused about what version of the kernel code this is.
-> > >
-> > > The Linux boot message says 2.3.99-pre6, but the USB code is clearly
-> > > MUCH earlier than that.
-> > > Could you explain a little of how you came by this code?
-> > > I don't want the complete history, just enough to help us
-> > > understand what you are trying to use here.
-> > >
-> >
-> > I am using a development tree targeted for the PowerPC
-> > community. I suppose this code
-> > is periodically merged with the main linux tree, but I do not
-> > know how they put together
-> > the sources. Maybe I should use the main linux tree ?
-> >
-> > The usb sources are:
-> >
-> > [root@dhcp-213-224-12-204 usb]# grep \$Id /usr/src/linux/drivers/usb/*
-> > 2>/dev/nul
-> > /usr/src/linux/drivers/usb/dabusb.c: *  $Id: dabusb.c,v 1.45
-> > 2000/01/31
-> > 10:23:44 fliegl Exp $
-> > /usr/src/linux/drivers/usb/devices.c: * $Id: devices.c,v 1.5
-> > 2000/01/11
-> > 13:58:21 tom Exp $
-> > /usr/src/linux/drivers/usb/devio.c: *  $Id: devio.c,v 1.7
-> > 2000/02/01 17:28:48
-> > fliegl Exp $
-> > /usr/src/linux/drivers/usb/drivers.c: * $Id: drivers.c,v 1.3
-> > 2000/01/11
-> > 13:58:24 tom Exp $
-> > /usr/src/linux/drivers/usb/inode.c: *  $Id: inode.c,v 1.3
-> > 2000/01/11 13:58:25
-> > tom Exp $
-> > /usr/src/linux/drivers/usb/plusb.c: *  $Id: plusb.c,v 1.18
-> > 2000/02/14 10:38:58
-> > fliegl Exp $
-> > /usr/src/linux/drivers/usb/usb-uhci.c: * $Id: usb-uhci.c,v
-> > 1.228 2000/04/02
-> > 19:55:51 acher Exp $
-> > /usr/src/linux/drivers/usb/usb-uhci.h:   $Id: usb-uhci.h,v
-> > 1.54 2000/04/02
-> > 19:55:53 acher Exp $
-> > /usr/src/linux/drivers/usb/usb.c: * $Id: usb.c,v 1.53
-> > 2000/01/14 16:19:09 acher
-> > Exp $
+> What should I do know ?
+This is showing up correctly in /proc/bus/usb/devices and
+/proc/bus/usb/drivers, right? The drive shows up and the usb-storage
+driver is associated with it?
+Any more kernel debug messages?
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
