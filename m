@@ -1,6 +1,6 @@
-Message-Id: <200007282223.XAA13499@hyperion.valhalla.net>
-Date: Fri, 28 Jul 2000 23:19:43 +0100
-Subject: IRQ Blocking Test 0.1.3
+Message-Id: <200007282223.XAA13505@hyperion.valhalla.net>
+Date: Fri, 28 Jul 2000 23:23:56 +0100
+Subject: dmasound patch - three machine tests
 From: "Iain Sandoe" <iain@sandoe.co.uk>
 To: linuxppc-dev@lists.linuxppc.org
 Mime-version: 1.0
@@ -9,29 +9,21 @@ Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Well I've applied this across the machines I've got that boot linux (still
-haven't commissioned the G4).
+I've supplemented the tests that others have done with the machines I have
+(not G4 yet).
 
-Using Ben's 2.2.17pre13ben2. + IRQ_blocking patch + dmasound patch (separate
-message)
+Against 2.2.17pre13ben2 + IRQ blocking patch + dmasound patch
 
-The good news - is that it's stable & OK on
-G3 beige minitower,
-G3 Lombard
-604e 9600/233
+G3 beige minitower (SCSI disk, IDE CDROM only)
+G3 Lombard (All IDE)
+604e 9600/233  (All SCSI)
 
-The bad news is that there are high interrupt latencies across the board:
+All three are OK and exhibit more or less the same behaviour as reported
+elsewhere (i.e. some cases no sound from internal speaker, weird mixer
+controls etc.)
 
-As Ben suggested would be the case, the Lombard is worst (it's the only one
-based on ide) but
-all three produce >250 us blocks quite easily (ll_rw_blk.c)
+No crashes.
 
-and the
-9600 (which *was* until two weeks ago my studio machine - quite capable of
-recording 12 channels of 44k audio direct to disk under MacOS) produces
-400-700 us in scsi without really trying to load it.
-
-Ah well.
 Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
