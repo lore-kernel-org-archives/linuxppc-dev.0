@@ -1,52 +1,33 @@
-Date: Fri, 16 May 2003 16:58:49 -0700
+Date: Fri, 16 May 2003 17:04:48 -0700
+From: Peter Ryser <Peter.Ryser@xilinx.com>
 Subject: Re: Virtex II Pro eval Boards
-Content-Type: text/plain; delsp=yes; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v552)
-Cc: linuxppc-embedded@lists.linuxppc.org
 To: emanuel stiebler <emu@ecubics.com>
-From: bob piatek <bobtek@fishcamp.com>
-In-Reply-To: <3EC568D2.6020905@ecubics.com>
-Message-Id: <5668A00E-87FA-11D7-AD26-000393D6CBAE@fishcamp.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Message-id: <3EC57CA0.F22C2C59@xilinx.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+References: <3EC568D2.6020905@ecubics.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Insight electronics has a V2Pro evaluation card that is bare bones:
+Emanuel,
 
-http://www.insight.memec.com/cgi-bin/bvutf8/memec/scripts/local/
-mc_loc_b.jsp?Div=INSIGHT&Reg=AMERICAS&Country=UNITED_STATES&Lang=EN&isDe
-tailPage=true&EDOID=200910&Manu=MD_XILINX
+Xilinx sells the ML300 board, see http://www.xilinx.com/ml300. The board has a
+PMC slot, two PC Card slots and FireWire (behind a PCI bridge). All peripherals
 
+(including the PCI host bridge) are compiled into the FPGA.
+MontaVista Linux 3.0 supports the ML300 including PCI, see
+http://www.mvista.com/partners/semiconductor/xilinx.html
 
-It's a lot cheaper than the Xilinx ML300 but, of course, doesn't do as
-much.  You can get daughter cards for it to support things like
-Ethernet, CompactFlash, etc.  I understand that 'Mind' has ported
-PPCBoot and Linux to the card:
+Our distributors also sell Virtex-II Pro based boards. AFAIK, none of them have
 
-http://mind.be/library/software/
+PCI.
 
+- Peter
 
-Xilinx has a OPB to PCI bridge that supports their PCI core but it
-doesn't (yet) support host applications.  Right now the bridge requires
-a license to use but I understand that if you already have a license to
-their PCI core then you automatically qualify for the OPB-PCI bridge.
-At least that's what my FAE has told me.  I am just getting into a PCI
-design with the chip so I don't have any direct experience to relate.
+emanuel stiebler wrote:
 
-Bob
-
-fishcamp engineering
-105 W. Clark Ave.
-Orcutt, CA  93455
-
-http://www.fishcamp.com
-TEL: 805-937-6365
-FAX: 805-937-6252
-
-
-On Friday, May 16, 2003, at 03:40 PM, emanuel stiebler wrote:
-
->
 > Hi,
 > I remember few people out here talking about the VirtexIIPro. What Eval
 > Boards did you use ? Experiences ?
@@ -54,10 +35,6 @@ On Friday, May 16, 2003, at 03:40 PM, emanuel stiebler wrote:
 > Anybody used the VirtexIIPro with a PCI-Bridge ?
 >
 > cheers & thanks in advance
->
->
->
->
 >
 
 
