@@ -1,38 +1,35 @@
-Date: Fri, 5 May 2000 13:38:26 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Jeff Garzik <jgarzik@mandrakesoft.com>
-cc: linux-fbdev@vuser.vu.union.edu,
-        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: PATCH 2.3.99.7.5: update for clgenfb fbdev driver
-In-Reply-To: <391270BD.A170EC15@mandrakesoft.com>
-Message-ID: <Pine.LNX.4.10.10005051335010.428-100000@cassiopeia.home>
+Message-ID: <3912C0F0.3B3CC7A7@wibble.net>
+Date: Fri, 05 May 2000 22:39:12 +1000
+From: Steven Hanley <sjh@wibble.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Sacha Varma <sacha@ssl.co.uk>,
+        Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: SMP/DayStar x4
+References: <39128EF2.9E503704@ssl.co.uk>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 5 May 2000, Jeff Garzik wrote:
-> updates my cirrus logic fbdev driver with a few cleanups, fix 0xA0000
-> bug (note to alan), module and PCI cleanups, ...
+> only 2 processors are available.
+>
+> Can anyone set me straight?
 
-Since clgen_of_init() is exactly the same as clgenfb_init(), and since clgenfb
-uses PCI resource management, can't we simply get rid of the OF specific stuff
-in clgenfb?
+very wrong, smp even back when it was added in 1.3.something could
+handle more than two AFAIR, it was just very inefficient then. it is now
+a lot more efficient and scales a lot better. Dave Miller was using it
+on a 14 cpu ultra sparc pre 2.2.0 release, as for ppc, it works on 4 way
+ppc, I have no idea how it will work on your specific hardware though.
 
-Can someone please test this by disabling Offb (CONFIG_FB_OF=n) and seeing
-whether everything still works fine? Thanks!
-
-Gr{oetje,eeting}s,
-
-						Geert
+	See You
+	    Steve
 
 --
-Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+sjh@wibble.net http://wibble.net/~sjh/
+Look Up In The Sky
+   Is it a bird?  No
+      Is it a plane?  No
+         Is it a small blue banana?
+YES
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
