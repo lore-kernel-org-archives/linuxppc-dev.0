@@ -1,23 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C63C52BDB0
+Return-Path: <jonmasters@gmail.com>
+Received: from mproxy.gmail.com (rproxy.gmail.com [64.233.170.207])
+	by ozlabs.org (Postfix) with ESMTP id B5FAA2BC0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  2 Oct 2004 14:39:35 +1000 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: jonathan@jonmasters.org
-In-Reply-To: <35fb2e590410011454270f2698@mail.gmail.com>
+	Sat,  2 Oct 2004 23:00:01 +1000 (EST)
+Received: by mproxy.gmail.com with SMTP id 76so4695449rnk
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat, 02 Oct 2004 05:59:59 -0700 (PDT)
+Message-ID: <35fb2e59041002055952ae54a7@mail.gmail.com>
+Date: Sat, 2 Oct 2004 13:59:59 +0100
+From: Jon Masters <jonmasters@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1096691732.11996.6.camel@gaston>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 References: <35fb2e59040930165327f2dd59@mail.gmail.com>
 	<87127382-1357-11D9-8EFC-000393DBC2E8@freescale.com>
 	<1096602008.14803.16.camel@gaston> <415D3C2C.7050704@jonmasters.org>
 	<35fb2e590410011454270f2698@mail.gmail.com>
-Content-Type: text/plain
-Message-Id: <1096691732.11996.6.camel@gaston>
-Mime-Version: 1.0
-Date: Sat, 02 Oct 2004 14:35:32 +1000
+	<1096691732.11996.6.camel@gaston>
 Cc: linuxppc-embedded@ozlabs.org
 Subject: Re: bi_recs
+Reply-To: jonathan@jonmasters.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,25 +31,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Sat, 02 Oct 2004 14:35:32 +1000, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
 
-> 
-> ppc64 head.S and startup looks quite fun. After jumping through a few
-> hoops you eventually end up in prom_init and start setting up the OF
-> device-tree (btw it looks like at least one call to prom_panic doesn't
-> relocate the string it wants to print to real memory - is this what
-> the comments are referring to out of sheer interest?). I am assuming
-> that you always expect to see an Open Firmware on ppc64 and simply use
-> bi_recs to pass accross additional information from the bootloader,
-> but I've only had a cursory look on the train on the way home from
-> work this evening so please be gentle.
-> 
-> I'll give this a go through over the weekend and figure out how to get
-> this hooked in to the ppc32 tree.
+> bi_recs have been removed completely from ppc64.
 
-bi_recs have been removed completely from ppc64. head.S explains
-how the entry is done. You can enter the kernel with r5=NULL if
-you provide the flattened device-tree in r3. prom_init does just
-that in fact (re-enters the kernel with that setup).
+Sorry. I was getting confused by old references in the prom_init stuff
+in 2.6.8.1 and couldn't see how it handled systems without OF - but I
+was looking at this the wrong way around.
 
-Ben.
- 
+> head.S explains how the entry is done.
+
+Yeah. I hadn't looked at how this is actually linked together (I don't
+have ppc64 myself remember so I'm just getting up to speed on which bk
+tree is which and so on at this stage). I can clearly see the
+multiplatform entry stuff now so thanks. It might help for me to build
+a kernel and look at it with objdump (which is what I usually do to
+figure out layouts).
+
+> You can enter the kernel with r5=NULL if
+> you provide the flattened device-tree in r3.
+
+I'll get there. Just need a bit of time to get familiar with the code
+- I'll probably followup with annoying questions later on in the early
+hours UK time :-).
+
+Jon.
