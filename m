@@ -1,29 +1,27 @@
-Date: Thu, 26 Aug 1999 10:03:13 +0200 (CEST)
+Date: Thu, 26 Aug 1999 10:39:13 +0200 (CEST)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Hubert Figuiere <hub@point-barre.fr>
-cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Performa 5200
-In-Reply-To: <19990825123612.C2225@rhodan.businessobjects.com>
-Message-ID: <Pine.LNX.4.10.9908261001270.29782-100000@mercator.cs.kuleuven.ac.be>
+To: Takashi Oe <toe@unlserve.unl.edu>
+cc: David Riley <happyoscar42@usa.net>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: BootX enhancement request
+In-Reply-To: <Pine.A41.3.96LJ1.1b7.990825194557.72736C-100000@unlserve.unl.edu>
+Message-ID: <Pine.LNX.4.10.9908261010520.29782-100000@mercator.cs.kuleuven.ac.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 25 Aug 1999, Hubert Figuiere wrote:
-> According to Benjamin Herrenschmidt <bh40@calva.net>:
+On Wed, 25 Aug 1999, Takashi Oe wrote:
+> On Tue, 24 Aug 1999, David Riley wrote:
+> > Some of the drivers don't do video=xxxx.  I know controlfb doesn't.  Is there
+> > a _good_ reason for this, or does controlfb just not like me?
 > 
-> > is this a NuBus class machine or a PCI based one ?
-> 
-> 5200 is basically, like the 6200, which is a LC 63O with a
-> PowerPC... :-) This means that Linux Mac68k may be of great help,
-> and this may lead to a mix of PPC and 68k source trees :-)
+> It's probably a simple oversight.  Last I checked,
+> controlfb does have the necessary code for "video=...", while
+> drivers/video/fbmem.c lacks an entry for controlfb to actually activate
+> the code.
 
-Originally the idea was to create machine specific directories for machine
-stuff that's shared between architectures (m68k and PPC Amigas and Macs, m68k
-and SPARC Suns, `PC' for ia32/PPC/MIPS/AXP/SPARC, ...) in 2.3.x, but due to the
-feature freeze announce we won't be able to do that in time...
+Fixed this in vger, and sent a patch to Linus.
 
 Greetings,
 
