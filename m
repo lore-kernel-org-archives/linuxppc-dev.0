@@ -1,45 +1,33 @@
-Message-ID: <3C989DA4.E76C43A3@lvl7.com>
-Date: Wed, 20 Mar 2002 09:33:08 -0500
-From: Neil Horman <nhorman@lvl7.com>
+Message-ID: <3C98CECA.E7187E8C@gmx.net>
+Date: Wed, 20 Mar 2002 19:02:50 +0100
+From: Oliver Amft <oam@oamx.net>
 MIME-Version: 1.0
-To: Frank Haverkamp <f.haverkamp@web.de>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Debugging Multithreaded applications
-References: <200203201427.g2KERAv17415@mailgate5.cinetic.de>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: initial shell respawning too fast
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-If your friends debug problems stem from the fact that when he does things like run his application in gdb, the breakpoints and backtraces don't seem to be correct, then I think his problem, is that he is running a pre v5.1 copy of gdb.  If I remember correctly, gdb 5.1 added features to better handle the debugging of multithreaded applications.  If the above behavior sounds familiar, I'd try getting the latest GDB.  Hope that helps!
-Neil
+I am trying to boot Linux (linuxppc_2_4_devel 2.4.19-pre1) from a
+Walnut,
+405GP Rev D board - All works fine till INIT starts (see screen
+printout below). The root fs (nfs boot) is an older version of the
+HardHat filesystem. bash crashes somehow, but unforunatly it prints no
+report. An old HHL 2.4.0-test2 kernel still works with this root fs.
 
-Frank Haverkamp wrote:
->
-> Hi,
->
-> a friend of mine told me that he had problems debugging multithreaded
-> applications on a powerpc Linux based platform. I think he is using
-> glibc 2.1.3 and gcc-2.95.2 and libpthread-0.8.
->
-> Does anybody has made experiences with that? Unfortunatly I have no
-> more information about the system he is using. Are there any known
-> problems with the gcc, glibc or libpthread concering debugging?
-> Should he update? Which version should he than take?
->
-> Which are the latest version of gcc, glibc and libpthread known to be
-> working with powerpc Linux?
->
-> Thanks,
->
-> Frank
->
-> --
-> Frank Haverkamp
-> f.haverkamp@web.de
-> ________________________________________________________________
-> Keine verlorenen Lotto-Quittungen, keine vergessenen Gewinne mehr!
-> Beim WEB.DE Lottoservice: http://tippen2.web.de/?x=13
->
+INIT: version 2.77 booting
+INIT: Entering runlevel: 3
+INIT: Id "sh" respawning too fast: disabled for 5 minutes
+INIT: no more processes left in this runlevel
+INIT: Id "sh" respawning too fast: disabled for 5 minutes
+INIT: Id "sh" respawning too fast: disabled for 5 minutes
+INIT: Id "sh" respawning too fast: disabled for 5 minutes
+INIT: Id "sh" respawning too fast: disabled for 5 minutes
+
+
+Probably I am missing some trivial thing - any ideas welcome!
+
+Oliver
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
