@@ -1,305 +1,185 @@
-Message-Id: <A3E34B558F5CD211B4980008C7A4A99003163D3C@sparrow.eng.gilbarco.com>
-From: "Williams, Kevin M." <kevin.m.williams@marconi.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'"
-	 <linuxppc-embedded@lists.linuxppc.org>
-Subject: Another question on the initialization of MMU on 860
-Date: Mon, 5 Feb 2001 09:56:25 -0500 
-Mime-Version: 1.0
+Message-ID: <A109131318C4D1119AC20060088DECE34B8F32@mail.adaptivemicro.com>
+From: Lucinda Schafer <lucsch@adaptivemicro.com>
+To: "'Christopher Huffine'" <huffine@wopr.nrl.navy.mil>,
+        linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Serial port two on an 823 based system (BSE-IPEngine) (Additi
+	onal Thoughts)
+Date: Mon, 5 Feb 2001 10:10:01 -0500 
+MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+We started with a BSE board and moved on to our own design. The kernel
+version we use is 2.2.13. I remember having a problem in this area but was
+not the engineer that changed it. Looking in the files I found the
+following. Hope this is helpful. All I know is it works for us.
 
-I am having a similar problem on a custom 860 board. I do not think it is
-exactly the same, but my system is hanging in the same place on the serial
-output.  Here is my problem:
+in the __initfunc(int rs_8xx_init(void)) in uart.c
+see if you have something similar to the following
 
-I can build and run our 2.2.13 version of the kernel on this hardware
-without a problem.  I ported our custom 2.2.13 modifications to 2.4.0.  When
-I boot 2.4.0, I get:
+	/* Configure SMCs Tx/Rx instead of port B parallel I/O.
+	*/
+#if 0
+	/* DRC SMC1/SMC2 are on PortB on A MPC860 */
+	cp->cp_pbpar |= 0x00000cc0;
+	cp->cp_pbdir &= ~0x00000cc0;
+	cp->cp_pbodr &= ~0x00000cc0;
+#else
+	/* DRC SMC1 is on PortA and SMC2 is on PortA on A MPC823 */
+	cp->cp_pbpar |= 0x000000c0;
+	cp->cp_pbdir &= ~0x000000c0;
+	cp->cp_pbodr &= ~0x000000c0;
+	immap->im_ioport.iop_papar |= 0x00c0;
+	immap->im_ioport.iop_padir &= ~0x00c0;
+	immap->im_ioport.iop_paodr &= ~0x00c0;
+#endif
 
-loaded at:     FFC20000 FFC2E580
-relocated to:  00400000 0040E580
-board data at: 004001C4 004001E0
-relocated to:  00200100 0020011C
-zimage at:     FFC2D000 FFCB103A
-avail ram:     00201000 01000000
+Also, furthur down in the file:
 
-Linux/PPC load:
-Uncompressing Linux...
-Now booting the kernel
+static _INLINE_ void transmit_chars(ser_info_t *info)
+{
 
-And then nothing.  When I hook up my VisionICE debugger, it runs and never
-gives me an error, but when I stop running or take a snapshot of the code
-once it's locked up, I get:
-
->BKM>.DR PC;
-C000A1B0
->BKM>DI0 C000A1B0 28
-!BREAK! - BUS ERROR
-  Addres of Bus error =C000A1B0
->BKM>.DR GPR;
-GPR register Group.(GPR)
-C00021F4 C0154B70 C0153000 C0154B80 C000A1B0 40001032 151000 F C0151000 0
-F80 0 C0181EFC FF000936 FFFFF004 910000 910000 910000 910000 910000
-
-I can see from the debugger that MSR[IR] and MSR[DR] are set, so address
-translation is enabled, but I'm not real clear on the details of the TLB's
-or what Linux is trying to do at this point.
-
->From system.map I see that address C000A1B0 is the 'do_page_fault' function.
-In the documentation folder "exceptions.txt" tells me this function gets
-called "whenever the kernel tries to access an address that is currently not
-accessible".  I started to read through the MMU and TLB documentation for
-the PPC, but I've seen a couple posts stating that the MMU code works fine.
-Since there is not an MMU problem, what else could be happening that makes
-this memory not accessible?  It looks like the kernel never gets past
-arch/ppc/kernel/head_8xx.s.
-
-I am new to Linux and this is my first post. Any help is greatly
-appreciated.
-
-Kevin Williams
-
+//DRC--removed for  call back routines to happen	if (info->flags &
+TX_WAKEUP)
+	{
+		rs_sched_event(info, RS_EVENT_WRITE_WAKEUP);
+	}
 
 -----Original Message-----
-From: Borlizzi Giacomo [mailto:giacomo.borlizzi@tei.ericsson.se]
-Sent: Friday, February 02, 2001 5:03 AM
-To: linuxppc-embedded@lists.linuxppc.org; Giacomo Borlizzi (TEI)
-Subject: The initialization of MMU on 860
+From: Christopher Huffine [mailto:huffine@wopr.nrl.navy.mil]
+Sent: Monday, January 29, 2001 3:34 AM
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: Stuart Adams; Don Kremer; support@brightstareng.com; Gary Sheets
+Subject: Serial port two on an 823 based system (BSE-IPEngine)
+(Additional Thoughts)
 
 
 
-.. and now using the linux-2.4.1 I see on my vt100:
+Folks,
 
-=>  go 830000
-## Starting application at 0x00830000 ...
-loaded at:     00830000 0083B1D4
-relocated to:  00180000 0018B1D4
-board data at: 001801B8 001801D4
-relocated to:  00820100 0082011C
-zimage at:     00836000 008AE0E1
-initrd at:     008AE0E1 00A84F1E
-avail ram:     00A85000 01000000
+Some additional information.  I have pulled the data
+sheet on the 823 processor and found the SMC data
+TX and RX lines for ports one and two.  SMTXD1 (pin N11)
+sends out the serial data that you would expect
+for the console, and its partner, SMRXD1 (pin T11) receives
+in the console keystrokes.
 
-Linux/PPC load:
-Uncompressing Linux...done.
-Now booting the kernel
+Unfortunately,  SMRTXD2 (pin T11) shows no activity
+when characters are sent out of the port.  It reamains logic
+high, no glitches.
 
+I have communicated with Wolfgang Denx who confirms
+that under HHL Kernel 2.2.14, both serial ports
+work on his 823 based boards.  Since the 823 is integrated
+with the communications controller, I would expect functionality
+that works in one board to work in the other.  Is there a possiblity
+that the boot loader or pre-boot ROM monitor could somehow
+prevent use of port two?
 
-:((((
+Thanks,
 
+Chris
 
-and on the emulator:
+On Sun, 28 Jan 2001, Christopher Huffine wrote:
 
->RUN>
-!ERROR! - Unexpected Exception(s) Taken at 00001228
-Exception(s) Reported are (ECR) : Machine Check,
-Current Address Pointer (SRR0)  : 00001228
-Machine State Register (MSR)    : 00001000
-Data Address Register (DAR)     : 040003FC
-Data Interrupt Register (DSISR) : 000002B4
-Break Address Register (BAR)    : 00000000
-Interrupt Cause Register (ICR)  : 10201000
-PPC Instruction at    $00001228 : 0x82B40000 :ppc LWZ
-R21,0x0000(R20)
->BKM>
-
->BKM>dr
- R00     = 00000300 R01     = C0116E10 R02     = 3FFFFDA8 R03     =
-C0116ED0
- R04     = C0820100 R05     = 0000A4A3 R06     = 00820000 R07     =
-0082000D
- R08     = C014D88C R09     = C0140000 R10     = 00000000 R11     =
-00008624
- R12     = 00000005 R13     = 00000000 R14     = 00FDB200 R15     =
-010C0000
- R16     = 00000000 R17     = 00000000 R18     = 00000000 R19     =
-00000000
- R20     = 040003FC R21     = 00000000 R22     = 00000000 R23     =
-C0002838
- R24     = C000A44C R25     = 00F9FC70 R26     = 00030000 R27     =
-C0116ED0
- R28     = C0820100 R29     = 008AE0E1 R30     = 0000A4A3 R31     =
-0082000D
- CR      = 35005009 MSR     = 00001000 LR      = C0002838 SRR0    =
-00001228
- SRR1    = 00001000 SPRG0   = 00000000 SPRG1   = 001801B8 SPRG2   =
-00000000
- SPRG3   = 80000000 XER     = 80000000 CTR     = 00000000 PC      =
-00001228
->BKM>
-
->BKM>dr mmu
-MMU register Group. (MMU)
- MICTR   = 00001F00 MIAP    = 40000000 MIEPN   = C0000200 MITWC   =
-0000000D
- MIRPN   = 000001FD MIDCAM  = 4082140E MIDRAM0 = 00000EFF MIDRAM1 =
-00000002
- MDCTR   = 14001E00 MCASID  = 00000000 MDAP    = 40000000 MDEPN   =
-3FFFFE00
- MTWB    = 040003FC MDTWC   = 00000FFC MDRPN   = 220001FF MTW     =
-00001032
- MDDCAM  = 00320020 MDDRAM0 = EF104A0D MDDRAM1 = EF104A0D
->BKM>
-
-Then after some investigation I discovered that the MTWB (the tablewalk
-M_TWB) register
-was not initialized by the kernel startup process, and when a data table
-miss occurs the
-related interrupt routine crashes due to an access to an illegal
-address.
-
-Now I'll try to investigating where is the initialization value.... but
-if there is
-a fast response about it I'll very apprecciate.
-
-This is the initialiazation code of kernel....
-
-
- .globl __start
-__start:
- mr r31,r3   /* save parameters */
- mr r30,r4
- mr r29,r5
- mr r28,r6
- mr r27,r7
- li r24,0   /* cpu # */
-
- tlbia   /* Invalidate all TLB entries */
- li r8, 0
- mtspr MI_CTR, r8 /* Set instruction control to zero */
- lis r8, MD_RESETVAL@h
-#ifndef CONFIG_8xx_COPYBACK
- oris r8, r8, MD_WTDEF@h
-#endif
- mtspr MD_CTR, r8 /* Set data TLB control */
-
- /* Now map the lower 8 Meg into the TLBs.  For this quick hack,
-  * we can load the instruction and data TLB registers with the
-  * same values.
-  */
- lis r8, KERNELBASE@h /* Create vaddr for TLB */
- ori r8, r8, MI_EVALID /* Mark it valid */
- mtspr MI_EPN, r8
- mtspr MD_EPN, r8
- li r8, MI_PS8MEG  /* Set 8M byte page */
- ori r8, r8, MI_SVALID /* Make it valid */
- mtspr MI_TWC, r8
- mtspr MD_TWC, r8
- li r8, MI_BOOTINIT  /* Create RPN for address 0 */
- mtspr MI_RPN, r8  /* Store TLB entry */
- mtspr MD_RPN, r8
- lis r8, MI_Kp@h  /* Set the protection mode */
- mtspr MI_AP, r8
- mtspr MD_AP, r8
-
- /* Map another 8 MByte at the IMMR to get the processor
-  * internal registers (among other things).
-  */
- mfspr r9, 638   /* Get current IMMR */
- andis. r9, r9, 0xff80  /* Get 8Mbyte boundary */
-
- mr r8, r9   /* Create vaddr for TLB */
- ori r8, r8, MD_EVALID /* Mark it valid */
- mtspr MD_EPN, r8
- li r8, MD_PS8MEG  /* Set 8M byte page */
- ori r8, r8, MD_SVALID /* Make it valid */
- mtspr MD_TWC, r8
- mr r8, r9   /* Create paddr for TLB */
- ori r8, r8, MI_BOOTINIT|0x2 /* Inhibit cache -- Cort */
- mtspr MD_RPN, r8
-
- /* Since the cache is enabled according to the information we
-  * just loaded into the TLB, invalidate and enable the caches here.
-  * We should probably check/set other modes....later.
-  */
- lis r8, IDC_INVALL@h
- mtspr IC_CST, r8
- mtspr DC_CST, r8
- lis r8, IDC_ENABLE@h
- mtspr IC_CST, r8
-#ifdef CONFIG_8xx_COPYBACK
- mtspr DC_CST, r8
-#else
- /* For a debug option, I left this here to easily enable
-  * the write through cache mode
-  */
- lis r8, DC_SFWT@h
- mtspr DC_CST, r8
- lis r8, IDC_ENABLE@h
- mtspr DC_CST, r8
-#endif
-
-/* We now have the lower 8 Meg mapped into TLB entries, and the caches
- * ready to work.
- */
-
-turn_on_mmu:
- mfmsr r0
- ori r0,r0,MSR_DR|MSR_IR
- mtspr SRR1,r0
- lis r0,start_here@h
- ori r0,r0,start_here@l
- mtspr SRR0,r0
- SYNC
- rfi    /* enables MMU */
-
-........
-......
-.......
-
-this is the interrupt routine
-
-
- . = 0x1200
-DataStoreTLBMiss:
-#ifdef CONFIG_8xx_CPU6
- stw r3, 8(r0)
- li r3, 0x3f80
- stw r3, 12(r0)
- lwz r3, 12(r0)
-#endif
- mtspr M_TW, r20 /* Save a couple of working registers */
- mfcr r20
- stw r20, 0(r0)
- stw r21, 4(r0)
- mfspr r20, M_TWB /* Get level 1 table entry address */
-
- /* If we are faulting a kernel address, we have to use the
-  * kernel page tables.
-  */
- andi. r21, r20, 0x0800
- beq 3f
- lis r21, swapper_pg_dir@h
- ori r21, r21, swapper_pg_dir@l
- rlwimi r20, r21, 0, 2, 19
-3:
- lwz r21, 0(r20) /* Get the level 1 entry */            <<------ the
-crash point !!!!!!!
- rlwinm. r20, r21,0,0,19 /* Extract page descriptor page address */
- beq 2f  /* If zero, don't try to find a pte */
-
- /* We have a pte table, so load fetch the pte from the table.
-  */
- tophys(r21, r21)
- ori r21, r21, 1 /* Set valid bit in physical L2 page */
-#ifdef CONFIG_8xx_CPU6
- li r3, 0x3b80
- stw r3, 12(r0)
- lwz r3, 12(r0)
-#endif
- mtspr MD_TWC, r21 /* Load pte table base address */
- mfspr r20, MD_TWC /* ....and get the pte address */
- lwz r20, 0(r20) /* Get the pte */
-.......
-......
-
-ciao,
-/Giacomo Borlizzi
+> Folks,
+>
+> I'm trying to utilize the second serial port on a
+> Bright Star Engineering IPEngine.  I've tried two
+> verions of the kernel (2.2.14 from Montavista's HHL),
+> as well as the 2.2.0 from BSE directly.  The revisions
+> of uart.c in arch/ppc/8xx_io differ from 0.1 and 0.3
+>
+> The kernel seems to boot up, configure, and recognize
+> everything properly:
+>
+> CPM UART driver version 0.03
+> ttyS00 at 0x0280 is a SMC
+> ttyS01 at 0x0380 is a SMC
+>
+>
+> Here's the story:  I can read from the port fine.  Writing
+> from the port (to external devices), however is a problem.
+> Yes, I am opening the port and deviceproperly for read-write.
+> I have tried both the new, standard ttyS0 dev file, as well
+> as the older cua0 device files.  Yes, the permissions are set
+> propery.  Upon boot-up, the kernel reconizes and configures
+> both.
+>
+> cat /proc/tty/drivers returns the following as one would
+> expect:
+>
+> serial               /dev/cua        5   64-65 serial:callout
+> serial               /dev/ttyS       4   64-65 serial
+>
+> cat /proc/tty/driver/serial returns:
+>
+> driverinfo:1.0 driver:0.03
+> 0: uart:SMC port:280 irq:4
+> 1: uart:SMC port:380 irq:3
+>
+> cat /proc/devices returns as you'd expect:
+>
+> Character devices:
+>   1 mem
+>   2 pty
+>   3 ttyp
+>   4 ttyS
+>   5 cua
+>  10 misc
+> 128 ptm
+> 136 pts
+>
+> Using a simple command such as
+> 	echo	"hello world" > /dev/ttyS0
+>
+> causes the text to display on the console port
+> 	echo 	"hello world" > /dev/ttyS1
+>
+> does not cause any charaters to be written.
+>
+> Using a C program (using open, write(s), and read(s),
+> allows characters to be _read_ OK.  Writes, however,
+> return a perror() of "Bad Address" (with kernel 2.0.0).
+> With the Montavista version of 2.2.14, I get no errors,
+> and `write' returns that all of the bytes were
+> properly sent out.  The file descriptor is valid, and again,
+> the permission are set properly.
+>
+> I have probed the serial transciever chip (linear 1385)
+> and the bits coming into the transciever for serial port one
+> look fine.  Nothing is making into the driver for
+> serial port two.
+>
+> Next, I have turned on all of the debugging statements in
+> uart.c looking to figure out what is going on.  Everything
+> appears to to be operating properly.  open() calls make it, and
+> seems to complete sucessfully.  Writes seems to come in, and
+> complete sucessfully.  Closes seem to complete properly.
+>
+> I have only two guesses right now:  the hardware is not
+> connected properly from the CPM transmit pin on the 823 to the
+> line driver, or the setup of the CPM is corrupt somehow, and
+> get the setup for receive enabled and executed properly,
+> but the write does not complete properly.
+>
+> I have tried moving the console from port 0 to port 1, with
+> little luck -- the system hangs when changing the console
+> port selection in uart.c ... This may because the console
+> control is somewhat more complex, with parts of it in
+> arch/ppc/mbxboot/8xx_tty.c as well.
+>
+> Any suggestions would be greatly appreciated.
+>
+> Thanks,
+>
+> Chris
+>
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
