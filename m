@@ -1,21 +1,27 @@
-Message-ID: <3BE08DCE.1B2E78BF@midrivers.com>
-Date: Wed, 31 Oct 2001 16:48:31 -0700
+Message-ID: <3BE09446.CC614261@midrivers.com>
+Date: Wed, 31 Oct 2001 17:16:06 -0700
 From: Mark Pilon <mpilon@midrivers.com>
 MIME-Version: 1.0
 To: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: building gdb ... no input
-References: <20011031213937.C0BC611269@denx.denx.de> <3BE086F8.3A6158DA@midrivers.com>
+References: <20011031213937.C0BC611269@denx.denx.de> <3BE086F8.3A6158DA@midrivers.com> <3BE08DCE.1B2E78BF@midrivers.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-one more data point ... I copied the .tar.gz archive of gdb5.0
-to a vanilla redhat 6.2 machine, did the same configure, built
-a gdb and it does respond to keyboard input ...?
+I've traced the problem as far as configuring w/ --prefix= pointing
+to my ppc tools & glibc home, wanting the tools to be installed
+w/ gcc et al.
 
-I've diff'd gdb/config.h between the 2 builds and there's no
-difference.  any idea what else I can check for differences?
+I haven't debugged it all the way, but the build of readline was
+complaining of ambiguous endian-ness because it was picking endian.h
+from my ppc include dir ...
+
+So.  I'll build w/o specifying a --prefix dir, and make install
+specifying an install_root ...
+
+Time to watch the Simpsons ... Doh!
 
 Mark
 
