@@ -1,51 +1,29 @@
-MIME-Version: 1.0
+Date: Sun, 21 Dec 2003 22:52:17 -0500
+From: Daniel Jacobowitz <drow@false.org>
+To: "Christopher R. Johnson" <cjohnson@gcctech.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: powerpc gdb and gdbserver
+Message-ID: <20031222035217.GA7378@nevyn.them.org>
+References: <3FE0977B.7020504@gcctech.com> <20031218171010.GA16791@nevyn.them.org> <3FE20DAE.6010708@gcctech.com> <20031218203501.GA22392@nevyn.them.org> <3FE2101D.6000005@gcctech.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <16358.4872.857438.957341@cargo.ozlabs.ibm.com>
-Date: Mon, 22 Dec 2003 08:39:20 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: org@stop.crashing.org, linuxppc-dev@lists.linuxppc.org,
-	Dan Malek <dan@embeddededge.com>
-Subject: Re: 8xx drivers for 2.6
-In-Reply-To: <20031211191854.GK23731@stop.crashing.org>
-References: <20031211191854.GK23731@stop.crashing.org>
+In-Reply-To: <3FE2101D.6000005@gcctech.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tom Rini writes:
+On Thu, Dec 18, 2003 at 03:37:49PM -0500, Christopher R. Johnson wrote:
+> As I mentioned, the library doesn't exist.  I need to build it, but I'm
+> not sure where it comes from (glibc I think) or how to get it built.
+> Its a target library, so I have to build it for ppc and deliver it to
+> my target box.  That part I know how to do, its creating the library to
+> begin with that I don't know how to do.
 
-> (serial), and in 2.6 having request_8xxirq becomes much uglier because
-> of the irqreturn_t stuff (at least I couldn't make it happen w/o chaning
-> <linux/interrupt.h>, and I never did figure out why cond_syscall()
-> doesn't work in some files but not others.
+Wherever you got glibc from you should have gotten libthread_db.so.1
+also; maybe it just wasn't installed?
 
-Gaahhhh, I thought we had got rid of request_8xxirq.  I don't want to
-see it come back.  And this sort of thing is just bad:
-
-> diff -Nru a/include/asm-ppc/mpc8xx.h b/include/asm-ppc/mpc8xx.h
-> --- a/include/asm-ppc/mpc8xx.h	Thu Dec 11 12:14:00 2003
-> +++ b/include/asm-ppc/mpc8xx.h	Thu Dec 11 12:14:00 2003
-> @@ -96,8 +96,10 @@
->  extern unsigned char __res[];
->
->  struct pt_regs;
-> +typedef int irqreturn_t;	/* FIXME -- Tom */
-> +
-
-[snip]
-
-> diff -Nru a/include/linux/interrupt.h b/include/linux/interrupt.h
-> --- a/include/linux/interrupt.h	Thu Dec 11 12:14:00 2003
-> +++ b/include/linux/interrupt.h	Thu Dec 11 12:14:00 2003
-> @@ -26,7 +26,9 @@
->   * IRQ_HANDLED means that we did have a valid interrupt and handled it.
->   * IRQ_RETVAL(x) selects on the two depending on x being non-zero (for handled)
->   */
-> +#ifndef __CONFIG_8xx_DEFS
->  typedef int irqreturn_t;
-> +#endif
-
-Paul.
+--
+Daniel Jacobowitz
+MontaVista Software                         Debian GNU/Linux Developer
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
