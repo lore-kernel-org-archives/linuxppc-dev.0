@@ -1,31 +1,37 @@
-Date: Thu, 21 Jan 1999 19:04:24 -0700 (MST)
-From: Cort Dougan <cort@persephone.cs.nmt.edu>
-To: Michael Meissner <meissner@cygnus.com>
-cc: Johnnie Peters <jpeters@phx.mcd.mot.com>, Gary Thomas <gdt@linuxppc.org>,
-        Alois Fertl <alois_fertl@mucmot.muenchen.europe.mcd.mot.com>,
-        linux-kernel@vger.rutgers.edu, linuxppc-dev@lists.linuxppc.org,
-        Dan Malek <dmalek@jlc.net>
-Subject: Re: Booting 2.2.0-pre6 on a PowerStack-II (Net 4000/200)
-In-Reply-To: <19990121205232.A10305@wogglebug.cygnus.com>
-Message-ID: <Pine.LNX.3.96.990121190157.466A-100000@persephone.cs.nmt.edu>
+Date: Thu, 21 Jan 1999 20:48:28 -0600 (CST)
+From: Vinai <vroopcha@post.its.mcw.edu>
+Reply-To: Vinai <vroopcha@post.its.mcw.edu>
+To: linuxppc-user@lists.linuxppc.org, linux-pmac@samba.anu.edu.au,
+        linuxppc-dev@lists.linuxppc.org
+Subject: MP machine with VME bridge ??
+Message-ID: <Pine.SOL.3.96.990121203832.18026A-100000@post.its.mcw.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-The changes are not minor.  I'm going to hold off for a while.
+Hi All,
 
-arch/ppc/boot needs to be redone anyway so until that happens (which
-should happen soon) I think it best to wait.  
+I am trying to collect some information here.  We currently have a high-
+speed data acquisition system (16-bit, 2E6 samples per sec) running on a
+Power Challange (multiple CPU Sili-graph machine with a VME bus). We are
+trying to create a duplicate system, but would very much like to avoid
+paying what we did for the Sili-graph.
 
-My current thinking is that there will be a arch/ppc/prepboot for prep and
-a arch/ppc/8xxboot for the 8xx processor systems (mbx, rpx lite and so
-on).  prepboot will likely be based on Gabriels prepboot code.  Those are
-just my rough ideas right now so they're subject to change.  Anyone have
-suggestions or opinions about that?
+Are there any multiple-CPU VME motorola based machines out there that'll
+run LinuxPPC?  Our only other alternative is linux running on a multiple
+-CPU intel machine.  But as yet we have not been able to find a PCI card
+that has the A/D performance we currently have with our present VME set-
+up.
 
-}I suspose it is too late to get this in the real 2.2.0 release?
+Thanks all.
+
+Cheers
+Vinai
+
+
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
