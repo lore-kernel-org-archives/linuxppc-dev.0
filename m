@@ -1,36 +1,33 @@
-Subject: Re: mbx860
-From: Jaap-Jan Boor <jjboor@aimsys.nl>
-To: Amit.Lubovsky@infineon.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <AD2F581BD7340A4C908AF1AFB066EA3B0E4805@ntah901e.savan.com>
-References: <AD2F581BD7340A4C908AF1AFB066EA3B0E4805@ntah901e.savan.com>
-Content-Type: text/plain
-Message-Id: <1063725702.15410.1.camel@linpc003.aimsys.nl>
-Mime-Version: 1.0
-Date: 16 Sep 2003 17:21:43 +0200
+Date: Wed, 17 Sep 2003 08:55:44 +1200
+From: Robin Gilks <robin.gilks@tait.co.nz>
+Subject: kernel config & nfs (maybe!!)
+To: linuxppc mail list <linuxppc-embedded@lists.linuxppc.org>
+Message-id: <3F6778D0.1010700@tait.co.nz>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-look at http://www.denx.de
+Greetings
 
-works great. Includes toolchain, kernel sources and supports
-a range of PowerPC processors.
-The MBX board is supported by the standard kernel also.
+I might be missing something here with nfsroot, kernel config & the
+kernel command line but...
 
-Jaap-Jan
+When one does a "make oldconfig", is there a way to stop it asserting
+the lockd config if nfs is enabled? Its driving me nuts trying to do an
+automated build of a kernel that doesn't require a local rpc server to
+do the locking and since I want to boot with a nfsroot filesystem, I
+can't see how to get the -o nolock across the kernel command line.
 
+Many thanks
 
-On Tue, 2003-09-16 at 16:10, Amit.Lubovsky@infineon.com wrote:
-> Hi,
-> I want to run Linux on MBX860-006c,
-> Could anyone please let me know from where I can get sources and tool chain
-> For this task ?
->
-> Best regards,
-> Amit.
->
->
+--
+Robin Gilks
+Senior Design Engineer          Phone: (+64)(3) 357 1569
+Tait Electronics                Fax  :  (+64)(3) 359 4632
+PO Box 1645 Christchurch        Email : robin.gilks@tait.co.nz
+New Zealand
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
