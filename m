@@ -1,15 +1,17 @@
-Return-Path: <alebas@televes.com>
-Received: from tvesnat.televes.com (unknown [212.163.42.137])
-	by ozlabs.org (Postfix) with ESMTP id 3BC182BE83
+Return-Path: <CWernham@Airspan.com>
+Received: from mail.airspan.com (mail.airspan.com [62.189.116.4])
+	by ozlabs.org (Postfix) with ESMTP id 624662BF0E
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Dec 2004 00:14:10 +1100 (EST)
-Message-ID: <1102944779.41bd9a0b9155f@webmail.televes.com:443>
-Date: Mon, 13 Dec 2004 14:32:59 +0100
-From: alebas@televes.com
-To: linuxppc-embedded@ozlabs.org
+	Tue, 14 Dec 2004 01:14:40 +1100 (EST)
+Message-ID: <41BDA25A.3090205@airspan.com>
+Date: Mon, 13 Dec 2004 14:08:26 +0000
+From: Colin Wernham <cwernham@airspan.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: depmod.pl script & kernel 2.6
+To: mporter@kernel.crashing.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: inuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Subject: [PATCH]PPC4XX DMA polarity init fix kernel 2.6.9
+Reply-To: cwernham@airspan.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,26 +22,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+This patch applies to the kernel 2.6.9 and fixes the initialisation of 
+the DMA channel polarity in the function ppc4xx_init_dma_channel() for 
+the PPC 4XX processor.
 
-Till now I've been using the ELDK 3.0 framework for development.
-Now I am involved in some development on kernel 2.6, and I would
-prefer using kernel modules. But I can't get script depmod.pl in
-eldk/usr/sbin working with kernel 2.6 modules.
+Signed-off-by: Colin P Wernham <cwernham@airspan.com>
 
-I've checked for a new version of this script on Busybox (I think
-it's the same than ELDK's one), but since version 1.0 this is not
-available.
+--- /home/cwernham/work/linux-2.6.9.old/arch/ppc/syslib/ppc4xx_dma.c 
+2004-10-18 22:55:35.000000000 +0100
++++ arch/ppc/syslib/ppc4xx_dma.c	2004-12-10 09:19:19.000000000 +0000
+@@ -466,7 +466,7 @@ ppc4xx_init_dma_channel(unsigned int dma
 
-So, how are you coping with this? Is there any way to use ELDK
-with kernel 2.6 modules? Or should I change to another framework?
-
-Currently, I work with ELDK on an i686 system, cross-compiling
-onto PPC with the ppc_82xx- toolchain included in the ELDK.
-I use the SELF's RamFS from the ELDK, with Busybox shell and
-modutils. The depmod.pl script creates the modules.dep file
-in this rootfs.
-
-Thanks,
-
-Alex
+  	/* clear all polarity signals and then "or" in new signal levels */
+  	polarity &= ~GET_DMA_POLARITY(dmanr);
+-	polarity |= p_dma_ch->polarity;
++	polarity |= p_init->polarity;
+  #if DCRN_POL > 0
+  	mtdcr(DCRN_POL, polarity);
+  #endif
