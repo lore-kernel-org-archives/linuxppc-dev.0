@@ -1,18 +1,17 @@
-Return-Path: <dbruce@ll.mit.edu>
-Received: from ll.mit.edu (LLMAIL.LL.MIT.EDU [129.55.12.40])
-	by ozlabs.org (Postfix) with ESMTP id AB49E67A64
+Return-Path: <greg.weeks@timesys.com>
+Received: from exchange.timesys.com (mail.timesys.com [65.117.135.102])
+	by ozlabs.org (Postfix) with ESMTP id A8BFB67A71
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 15 Mar 2005 06:38:28 +1100 (EST)
-Received: (from smtp@localhost) by ll.mit.edu (8.12.10/8.8.8) id j2EJIsjN025453
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 14 Mar 2005 14:18:54 -0500 (EST)
-Message-ID: <4235E387.4000807@ll.mit.edu>
-Date: Mon, 14 Mar 2005 14:18:31 -0500
-From: David Bruce <dbruce@ll.mit.edu>
+	Tue, 15 Mar 2005 08:24:12 +1100 (EST)
+Message-ID: <423600F9.5050705@timesys.com>
+Date: Mon, 14 Mar 2005 16:24:09 -0500
+From: Greg Weeks <greg.weeks@timesys.com>
 MIME-Version: 1.0
 To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Subject: Re:problem opening I2C device on MPC8260
+References: <4235A636.4020309@timesys.com> <4235B13C.9010604@anagramm.de>
+In-Reply-To: <4235B13C.9010604@anagramm.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Re: mpc8560ads PCI bus
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,25 +22,57 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Look back into the February logs of this group that was having simular 
-discussions.
-In short:
-a.) 2.6 has some problems with the I2C. You may have to port over 2.4 
-i2c code. I don't know the specific details.
-b.) you need an adapter interface to create your device(s) (/dev/i2c-0). 
-See ./drivers/i2c/i2c-pm826.c. You should be able to use this untouched. 
-It is part of the configuration in 2.4.x.
-c.) The 2.4 version of i2c-algo-8260.c has a potential bug where all the 
-__pa()'s need to be replaced by iopa().
+Switch bank SW1 switch #4 was on which stops config accesses from making 
+it on the bus. It works fine now.
 
-I am using 2.4.24 of the ELDK and had problems with the i2c. Items b & c 
-corrected them except that with "b" I had to load it *after* boot as a 
-module. Don't know why but it works and have successfully used the i2c 
-since.
--- 
-David Bruce
-MIT Lincoln Laboratory
-244 Wood Street
-Lexington, MA 02420
-781.981.3863
-mailto:dbruce@ll.mit.edu
+Greg Weeks
+
+Clemens Koller wrote:
+
+> Hello, Greg,
+>
+> I am working on an mpc8540_ads-like board and recently, I ran into data
+> corruption problems with a Silicon Motion SM501 (Rev AA) PCI graphics 
+> card. From my current point of view it seems that Kernel 2.6.11 PCI 
+> works well. I am about to check the hardware and signal integrity.
+>
+> BTW: I am working with a Promise Ultra-TX133 IDE controller (PDC20269)
+> which is fine with 66MHz PCICLK.
+>
+> Greets,
+>
+> Clemens
+>
+>
+>> Has anyone else tried to get the PCI bus working on the mpc8560ads 
+>> board at 2.6.11? The card enumerates, but the I/O resource regions 
+>> aren't getting set up.
+>>
+>> -bash-2.05b# lspci -vv
+>> 00:03.0 Unknown mass storage controller: Silicon Image, Inc. 
+>> (formerly CMD Technology Inc) PCI0680 Ultra ATA-133 Host Controller 
+>> (rev 02)
+>>        Subsystem: Silicon Image, Inc. (formerly CMD Technology Inc) 
+>> PCI0680 Ultra ATA-133 Host Controller
+>>        Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- 
+>> ParErr- Stepping- SERR- FastB2B-
+>>        Status: Cap+ 66Mhz- UDF- FastB2B+ ParErr- DEVSEL=medium 
+>> >TAbort- <TAbort- <MAbort- >SERR- <PERR+
+>>        Interrupt: pin A routed to IRQ 100
+>>        Region 0: I/O ports at <unassigned> [disabled]
+>>        Region 1: I/O ports at <unassigned> [disabled]
+>>        Region 2: I/O ports at <unassigned> [disabled]
+>>        Region 3: I/O ports at <unassigned> [disabled]
+>>        Region 4: I/O ports at <unassigned> [disabled]
+>>        Capabilities: [60] Power Management version 2
+>>                Flags: PMEClk- DSI+ D1+ D2+ AuxCurrent=0mA 
+>> PME(D0-,D1-,D2-,D3hot-,D3cold-)
+>>                Status: D0 PME-Enable- DSel=0 DScale=2 PME-
+>>
+>> Greg Weeks
+>> _______________________________________________
+>> Linuxppc-embedded mailing list
+>> Linuxppc-embedded@ozlabs.org
+>> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>>
+>
