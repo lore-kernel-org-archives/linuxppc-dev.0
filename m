@@ -1,16 +1,19 @@
-Return-Path: <samlinuxppc@yahoo.com.cn>
-Received: from web15601.mail.cnb.yahoo.com (web15601.mail.cnb.yahoo.com
-	[202.165.102.55]) by ozlabs.org (Postfix) with SMTP id 931562BC0F
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Sep 2004 21:47:34 +1000 (EST)
-Message-ID: <20040920114723.35233.qmail@web15601.mail.cnb.yahoo.com>
-Date: Mon, 20 Sep 2004 19:47:23 +0800 (CST)
-From: Song Sam <samlinuxppc@yahoo.com.cn>
-To: Pantelis Antoniou <panto@intracom.gr>
-In-Reply-To: <414E7265.4090105@intracom.gr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao02.cox.net (fed1rmmtao02.cox.net [68.230.241.37])
+	by ozlabs.org (Postfix) with ESMTP id 06F242BDAB
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Sep 2004 03:32:49 +1000 (EST)
+Date: Mon, 20 Sep 2004 10:32:41 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: David Gardiner <daveg@sonartech.com.au>
+Message-ID: <20040920173241.GL27914@smtp.west.cox.net>
+References: <414916BD.9080607@sonartech.com.au>
+	<20040915223624.A25752@home.com>
+	<414946A0.1020306@sonartech.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <414946A0.1020306@sonartech.com.au>
 Cc: linuxppc-dev@ozlabs.org
-Subject: Re: Linux 2.6.x on 8xx status
+Subject: Re: Linux-2.6.9-rc2 kernel build for mvme5100
 List-Id: "Linux on PowerPC \(Including Embedded\) Developers Mail List"
 	<linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,29 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Pantelis Antoniou <panto@intracom.gr> wrote：
-> Ahem, the new ethernet driver is for the FEC not the
-> SCC.
+On Thu, Sep 16, 2004 at 05:54:08PM +1000, David Gardiner wrote:
 
-Oh, I misused the driver but got the improvement. A
-little strange...
+> 
+> >You need this patch:
+> >http://www.ussg.iu.edu/hypermail/linux/kernel/0409.1/1192.html
+> >
+> >-Matt
+> > 
+> >
+> Thanks that compiles, but it doesn't boot, I got:
 
-> By the bootload messages RPXlite uses the SCC
-> ethernet.
+Did you disable CONFIG_VT, if it was enabled?  Otherwise you need to
+pass console=ttyS0
 
-Yeah, RPXlite uses SCC2 as Ethernet Controller.
-
-Thanks for pointing out the key problem.
-
-Best regards,
-
-Sam
-
-_________________________________________________________
-Do You Yahoo!?
-150万曲MP3疯狂搜，带您闯入音乐殿堂
-http://music.yisou.com/
-美女明星应有尽有，搜遍美图、艳图和酷图
-http://image.yisou.com
-1G就是1000兆，雅虎电邮自助扩容！
-http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
