@@ -1,49 +1,117 @@
-Date: Wed, 3 Nov 1999 13:42:12 -0700
-From: Cort Dougan <cort@ppc.kernel.org>
-To: Andreas <a.tobler@schweiz.ch>
-Cc: Linux -Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: 2.3.25 builds
-Message-ID: <19991103134212.A28448@chimaera.ppc.kernel.org>
-References: <381F63A2.BE4A2AD7@schweiz.ch>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <381F63A2.BE4A2AD7@schweiz.ch>; from Andreas on Tue, Nov 02, 1999 at 11:20:22PM +0100
+Message-ID: <3820A90B.E0D77EDE@denise.shiny.it>
+Date: Wed, 03 Nov 1999 22:28:43 +0100
+From: Giuliano Pochini <pochini@denise.shiny.it>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: [patch] controlfb update
+Content-Type: multipart/mixed;
+ boundary="------------E1B7FBA721308A401B87EA84"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-The next release should build for PPC.  There were some swap changes that
-had to be cleaned up.  The Linus 2.3.x trees are now nearly up-to-date with
-my tree so it shouldn't be released with ppc broken as often now.
+This is a multi-part message in MIME format.
+--------------E1B7FBA721308A401B87EA84
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-} Hi all,
-} sitting here and try to build a 2.3.25 for PPC. No success. The same
-} with 2.3.23/24. 2.3.23 worked except I had horrible amounts of Ram (2GB
-} iso 80MB). Was to late to figure out the 2.3.24 the 2.3.25 was already
-} out. So I tried this one.
-} In the beginning not much luck, got some steps further when applying the
-} fbmem patch mentioned on this list the earlier the day. (ramdisk support
-} was disabled from beginning).
-} Later I struggled about pieces in memory.c; pte is not member of.... Ok,
-} I found some hints, but as a newbie I saw that there are too many things
-} included. Diff showed me too many things changed. So, Paul, Cort, are
-} you already aware of?
-} 
-} Another major question I have, what is the 'deciding fact' for releasing
-} a new dev kernel? Only one or two/three arch's working? I noticed that a
-} few people had also problems building 2.3.25. ( Intel camp) Or, is it
-} only the number count? (25 is better than 24?)
-} Sorry, this is a bit cynic. But on the 2.2.x I see that there are up to
-} at least xy pre's before a new Kernel is released.
-} 
-} This mail is NOT meant as a blame, but I don't know how to treat such
-} quick changes on the kernel side. Do I have to wait for a working kernel
-} x steps behind the offical kernel?
-} Yeah, I know I don't have to, I should contribute .... If I can....
-} As said, what is the aim of releasing kernels in such short time stamps?
-} 
-} Regards & thanks for Linux (I still prefer it to MacOS9)
-} 
-} Andreas
+
+Hi!  I've just linked this ML, so if someone already send a similar patch,
+please don't shot me :)
+This patch make possible to pass boot parameters to the "control" display
+driver.
+
+Bye.
+--------------E1B7FBA721308A401B87EA84
+Content-Type: text/plain; charset=us-ascii;
+ name="control.patch.2.2.13"
+Content-Disposition: inline;
+ filename="control.patch.2.2.13"
+Content-Transfer-Encoding: 7bit
+
+--- drivers/video/fbmem.old	Wed Sep  1 18:50:55 1999
++++ drivers/video/fbmem.c	Wed Sep  1 18:58:34 1999
+@@ -92,6 +92,8 @@
+ extern void sbusfb_setup(char *options, int *ints);
+ extern void valkyriefb_init(void);
+ extern void valkyriefb_setup(char *options, int *ints);
++extern void control_init(void);
++extern void control_setup(char *options, int *ints);
+ extern void g364fb_init(void);
+ extern void fm2fb_init(void);
+ extern void fm2fb_setup(char *options, int *ints);
+@@ -178,6 +180,9 @@
+ #endif 
+ #ifdef CONFIG_FB_VALKYRIE
+ 	{ "valkyriefb", valkyriefb_init, valkyriefb_setup },
++#endif
++#ifdef CONFIG_FB_CONTROL
++	{ "controlfb", control_init, control_setup },
+ #endif
+ #ifdef CONFIG_FB_G364
+ 	{ "g364", g364fb_init, NULL },
+--- drivers/video/controlfb.old	Wed Sep  1 18:30:38 1999
++++ drivers/video/controlfb.c	Wed Sep  1 19:44:06 1999
+@@ -531,24 +531,30 @@
+ 
+ 	p->sense = read_control_sense(p);
+ 	printk(KERN_INFO "Monitor sense value = 0x%x, ", p->sense);
++
+ 	/* Try to pick a video mode out of NVRAM if we have one. */
+-	par->vmode = nvram_read_byte(NV_VMODE);
+-	if(par->vmode <= 0 || par->vmode > VMODE_MAX || !control_reg_init[par->vmode - 1])
+-		par->vmode = VMODE_CHOOSE;
+-	if(par->vmode == VMODE_CHOOSE)
+-		par->vmode = mac_map_monitor_sense(p->sense);
+-	if(!control_reg_init[par->vmode - 1])
+-		par->vmode = VMODE_640_480_60;
++	if (default_vmode == VMODE_NVRAM){
++		par->vmode = nvram_read_byte(NV_VMODE);
++		if(par->vmode <= 0 || par->vmode > VMODE_MAX || !control_reg_init[par->vmode - 1])
++			par->vmode = VMODE_CHOOSE;
++		if(par->vmode == VMODE_CHOOSE)
++			par->vmode = mac_map_monitor_sense(p->sense);
++		if(!control_reg_init[par->vmode - 1])
++			par->vmode = VMODE_640_480_60;}
++	else
++		par->vmode=default_vmode;
+ 
+-	par->cmode = nvram_read_byte(NV_CMODE);
+-	if(par->cmode < CMODE_8 || par->cmode > CMODE_32)
+-		par->cmode = CMODE_8;
+-	/*
+-	 * Reduce the pixel size if we don't have enough VRAM.
+-	 */
++	if (default_cmode == CMODE_NVRAM){
++		par->cmode = nvram_read_byte(NV_CMODE);
++		if(par->cmode < CMODE_8 || par->cmode > CMODE_32)
++			par->cmode = CMODE_8;}
++	else
++		par->cmode=default_cmode;
++
++	/* Reduce the pixel size if we don't have enough VRAM. */
+ 	while(par->cmode > CMODE_8 && control_vram_reqd(par->vmode, par->cmode) > p->total_vram)
+ 		par->cmode--;
+-	
++
+ 	printk("using video mode %d and color mode %d.\n", par->vmode, par->cmode);
+ 	
+ 	par->vxres = par->xres = control_reg_init[par->vmode - 1]->hres;
+@@ -1176,9 +1182,9 @@
+ 		}
+ 		if (!strncmp(this_opt, "vmode:", 6)) {
+ 			int vmode = simple_strtoul(this_opt+6, NULL, 0);
+-		if (vmode > 0 && vmode <= VMODE_MAX)
+-			default_vmode = vmode;
+-		} else if (!strncmp(this_opt, "cmode:", 6)) {
++			if (vmode > 0 && vmode <= VMODE_MAX)
++				default_vmode = vmode;}
++		else if (!strncmp(this_opt, "cmode:", 6)) {
+ 			int depth = simple_strtoul(this_opt+6, NULL, 0);
+ 			switch (depth) {
+ 			 case CMODE_8:
+
+--------------E1B7FBA721308A401B87EA84--
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
