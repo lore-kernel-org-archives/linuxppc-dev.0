@@ -1,50 +1,49 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3AAF4DC1.CAE5395B@vienna.at>
-Date: Wed, 14 Mar 2001 11:53:53 +0100
-From: Roman Weissgaerber <weissg@vienna.at>
-Reply-To: weissg@vienna.at
+Message-ID: <3AAF73C0.D0DA94A6@inn.ericsson.se>
+Date: Wed, 14 Mar 2001 14:36:00 +0100
+From: Kenneth Johansson <kenneth.johansson@inn.ericsson.se>
 MIME-Version: 1.0
-To: Brad Parker <brad@parker.boston.ma.us>
-Cc: "linux-usb-devel@lists.sourceforge.net" <linux-usb-devel@lists.sourceforge.net>,
-	dan@mvista.com, linuxppc-embedded@lists.linuxppc.org
-Subject: MPC823/850 USB host driver
-Content-Type: text/plain; charset=us-ascii
+To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: walnut 405
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Brad,
+I have finally got my walnut card from IBM and compiled linux for it.
+I used the version from Frank (mvista) on area51 dated 01_03_03 but changed
+the configuration to remove kgdb and enable float emulation.
 
-now I have some USB bulk devices (USB-storage and pegasus.c (patched))
-working with a modified version of your MPC850/823 USB host driver.
-(BTW. The MPC850 has some serious hardware problems when used with some
-tranceivers.)
-As I am useing a TQ Board and there were some problems with bulk
-transfers
-I made the following modifications:
+Things looks quite good I now have a debian potato for ppc running on the card
+but there is a few problems.
 
-Patch 1: adds some more choices of resources for SOF and clock so it
-  should also work with other boards (at least TQ boards)
+1. It kills the Ethernet port on a cisco catalyst 5505 switch/router.
+   This is something I never seen before but when I use a port that is 10Mb
+linux sends out something that the switch dose not like and it simply
+disable the port. I put a 3com 10Mb hub between but the same problem so it's
+not electric. I was however unsuccessful in getting any useful information
+from the network people on what rule was violated. It dose not happen on a
+100Mb port. I guess that it is some clock or timing that is wrong in the
+Ethernet driver.
 
-Patch 2: replaces the 'old fashioned' roothub process with a
- virtual root hub and also uses the bus wires to detect new devices
- (this makes it more conform with how other Linux USB-host-driver
- like OHCI and UHCI manages the root-hub
- and the detection of devices is more USB spec. conform)
-
-Patch 3,..: OHCI like URB-queueing, new SCC code ...
+2. it's not possible to run gdb
 
 
-Patch 1 and 2 changes not very much of the architecture besides the
-root hub.
-But patches 3,.. changes a lot. So these patches could need some
-discussion. (whether we use the OHCI like structure (smaller) or
-I will try to extract the changes needed for bulk transfers)
-
-Patches 1 and 2 follow immediately (on linux-usb-devel).
-The other patches follow in the next days.
+3. dpkg segfaults
+   It's quite easy to get into a state where dpkg segfaults. A reboot fixes
+the problem. To get into the mess again all you have to do is start emacs.
 
 
-- Roman
+On the bright side alot of stuff works. I did the kernel compile test and that
+worked.
+
+If anybody want's to run debian I could write a small howto but I'am not going
+to do that if nobody ask's for it.
+
+
+--
+Kenneth Johansson
+Ericsson Business Innovation AB   Tel: +46 8 404 71 83
+Viderögatan 3                     Fax: +46 8 404 72 72
+164 80 Stockholm                  kenneth.johansson@inn.ericsson.se
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
