@@ -1,18 +1,21 @@
-Return-Path: <jpl@xiphos.ca>
-Received: from mail.net (custpop.ca.mci.com [142.77.1.111])
-	by ozlabs.org (Postfix) with ESMTP id 399AE67A9A
+Return-Path: <Martin.Krause@tqs.de>
+Received: from mail.tqs.de (mail.tqs.de [213.68.230.225])
+	by ozlabs.org (Postfix) with ESMTP id BD15C67AA9
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  8 Feb 2005 07:28:51 +1100 (EST)
-Message-ID: <4207CFBE.2000109@xiphos.ca>
-Date: Mon, 07 Feb 2005 20:29:50 +0000
-From: Joshua Lamorie <jpl@xiphos.ca>
+	Tue,  8 Feb 2005 18:33:35 +1100 (EST)
+Received: from tq-mailsrv-1.tq-net.de (tq-mailsrv-1 [172.20.1.1])
+	by mail.tqs.de (Postfix) with ESMTP id 22C323C4C
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  8 Feb 2005 08:33:32 +0100 (CET)
 MIME-Version: 1.0
-To: Andrei Konovalov <akonovalov@ru.mvista.com>
-References: <4202E286.1010206@xiphos.ca> <42035D27.50901@ru.mvista.com>
-In-Reply-To: <42035D27.50901@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Edge Interrupts (Virtex-II Pro)
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Tue, 8 Feb 2005 08:33:31 +0100
+Message-ID: <DE2CC66C40EAB74EA6D66AC71BF98E1E03055B6E@TQ-MAILSRV-1>
+From: "Martin Krause" <Martin.Krause@tqs.de>
+To: "Mark Chambers" <markc@mail.com>
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: AW: Microwindows on Icecube/CoralP 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,37 +26,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Andrei Konovalov wrote:
+linuxppc-embedded-bounces@ozlabs.org wrote on :
+> > This will not work. Microwindows can only  use  a  plain framebuffer
+> > interface,  but  the Coral-P does not allow for such a driver
+> > because of the fact that it has a little-endian register interface.
+>=20
+> Or is it because 5200 swaps bytes around on PCI.  It sure looks to me
+> like Freescale has made a major screwup in their implementation of
+> PCI on the 5200.  I'd love for somebody to prove me wrong about this,
+> but I'm afraid I'm right.  I was under the impression that
+> CoralP worked
+> nicely on 5200, but now I see that it also requires software
+> tweaks to work
+> on 5200.
 
-> As this code is not board specific at all,
-> I would move it to arch/ppc/syslib/xilinx_pic.c:ppc4xx_pic_init().
-> Does it sound reasonable (I'll prepare the patch this weekend then)?
+I have similar problems with an MPC5200 board and a Silicon Motion
+SM501 (Voyager) grafic controller. The controller has a PCI and a
+local bus interface. We use the local bus interface to connect it
+with the 5200. In 32 bit truecolor mode everything works fine, but
+in 16 bit mode bytes are swapped: 0x12345678 =3D> 0x34127856.
+I'm not sure, if this problem has something to do with the CoralP
+problem, but it is likely too similar to be completely independent.
+Does anyone use an SM501 in 16 bit mode?
 
-This sounds useful, since I am using a custom developed board using the 
-Virtex-II Pro. Unfortunately, the patch wouldn't help me much because I 
-am doing my interrupt setup for most of my custom devices within 
-modules. You see my hardware has a Virtex-II Pro and a Virtex-II with a 
-shared (logically) address space (OPB). I have cascaded interrupt 
-controllers (ask me if anyone wants the code). So it is quite often that 
-I have a changed hardware and therefore require different drivers. 
-Rather than downloading to flash the 700k kernel each time while I am 
-developing, I just download the 6k - 20k modules. Then I store them in 
-onboard NOR flash.
-
-That's a long way of saying YES, isn't it?
-
-Joshua
-
--- 
-
-Xiphos Technologies
-(514) 848-9640 x227
-(514) 848-9644 fax
-
-www.xiplink.com
-_______________________________________________
-The information transmitted is intended only for the
-person or entity to which it is addressed and may contain
-confidential and/or privileged material.  If you have
-received this in error, please contact the sender and delete
-this communication and any copy immediately. Thank you.
+regards,
+Martin Krause
