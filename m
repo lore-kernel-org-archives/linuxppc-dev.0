@@ -1,82 +1,42 @@
-Message-ID: <4050642C.6070100@lucent.com>
-Date: Thu, 11 Mar 2004 06:05:48 -0700
-From: Mike Wellington <wellington@lucent.com>
+Message-ID: <034c01c40775$1dbb9fe0$3000a8c0@foundation>
+From: "Stuart Yoder" <stuart.yoder@conformative.com>
+To: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
+Subject: problem during kernel init with mmu_off
+Date: Thu, 11 Mar 2004 08:28:25 -0600
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org, wellington@lucent.com,
-	mike@lo-ex.com
-Subject: re:  V2Pro/Linux (was PLB UART)
-References: <40501AF3.1020906@cefriel.it>
-In-Reply-To: <40501AF3.1020906@cefriel.it>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Roberto-
+I am trying to boot the 2.4 PPC kernel on a PPC750FX eval board.   The
+bootloader in the boards firmware has the mmu _on_ with block addr
+translation enabled.  It seems that all the BAT mappings are 1:1.
 
-    To get Linux running on the V2Pro, see the following
-page.  Most of what it says there applies to the Memec board.
+The kernel source as well as comments in the archive of this mailing list
+indicate that the mmu being on during kernel initialization should not be an
+issue.
 
-http://www.klingauf.de/v2p/index.phtml
+However, I've determined through leds and uart that the kernel makes it to
+the RFI in mmu_off, but from that point goes into never-never land (I can't
+tell exactly what happened).
 
-In general -
+I've verified that the values in SRR0 and SRR1 are what is expected prior to
+the RFI which is supposed to turn the mmu off.
 
-  Download the latest 2.4 or 2.6 kernel.
-  Run the configure program of your choice (make menuconfig, etc)
-  Configure for XILINX_OCP ,  PPC40x, ML300
-  Edit  xparameters.h and xparameters_ml300.h  to match the
-  xparameters.h (and therefore the memory map) for your Memec board.
-  Remake the kernel
-  Using the Xilinx Parallel IV Cable, load the kernel onto your V2P.
-  Boot It.
+I also tried using MTMSR instead of RFI to turn the mmu off but the
+processor seems to halt at that instruction.
 
-  If you want, you can get the latest U-Boot source ,
-  Configure it for the ML300 if there is no config for the Memec
-  Replace the xparameters.h file (or whatever its called in the U-Boot tree.
-  Build U-Boot.
+I don't have a jtag debugger (yet) so I'm relying on leds and uart to debug.
+I really have no idea of the state of the chip after the RFI or MTMSR.
 
-  Using whatever debugger you have, load U-Boot into flash if you have any.
-  Configure a TFTP server on the machine where you built the kernel.
-  Configure U-Boot to download the kernel and run it.
+Anyone out there have any ideas?   Anything about the 750FX that is
+different than other processors?
 
--mike wellington
+Thanks,
 
-  mike@lo-ex.com,  wellington@lucent.com
-  Consultant
-  Global Communications Lab
-  Bell Labs Division
-  Lucent Technologies
-
-
-
-Roberto Farina wrote:
-
->
->
-> Hi,
-> I'm working on a Memec XC2VP7 board with a V2Pro device.
-> I'm considering different Linux solutions and I was successful to boot
-> uclinux for MicroBlaze.
-> Now I'm taking into account PPC-based solutions.
-> Can u pls post a little howto on how u success in this?
->
-> Thanks in advance
->
-> - --------------------------------------------------------
-> Roberto Farina
-> CEFRIEL - Computer Architectures and Operating Systems
-> Via Fucini, 2 - 20133 MILANO (ITALY)
-> - --------------------------------------------------------
->
-
-
-
---
-
-=mike wellington
-wellington@lucent.com
-303.920.6412  Desk
-720.434.7559  Cell
+Stuart Yoder
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
