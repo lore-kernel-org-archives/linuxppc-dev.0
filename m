@@ -1,43 +1,38 @@
-To: "Ing.Gianfranco Morandi (LAN)" <gianfranco.morandi@euro-studio.it>
-Cc: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: "mkimage" not found 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 05 Mar 2004 10:10:53 +0100."
-             <00a101c40291$c31a7120$0400a8c0@portatile>
-Date: Fri, 05 Mar 2004 10:19:36 +0100
-Message-Id: <20040305091941.73A3AC0655@atlas.denx.de>
+Message-ID: <40485490.8040207@246tNt.com>
+Date: Fri, 05 Mar 2004 11:21:04 +0100
+From: Sylvain Munaut <tnt@246tnt.com>
+MIME-Version: 1.0
+To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Linux 2.6 on MPC5200. First port attempt ... Early problems ;(
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Gianfranco,
+Hello,
 
-in message <00a101c40291$c31a7120$0400a8c0@portatile> you wrote:
->
-> > Maybe your PATH ist not correct?
->
-> You are perfectly right! I didn't add the line "export
+I'd like to run a 2.6 on a MPC5200 based board. Even if at first I'll
+only use a 2.4 in production, I figured that the sooner I start to test
+2.6, the sooner I'll be able to use it with enough stability. So I
+started to tweak the 2.6.3 tree to make it boot on my LITE5200.
 
-Thanks for the confirmation.
+So, I've written/ported/copied some code for the console, the early
+serial debug, ..., added the MPC to cputable.c and modified the
+Kconfig/Makefile to build theses.
+So far I don't seen anything on the serial console and  apparently, the
+call the setup_common_caches ( in the cpu_setup_6xx.S ), never returns.
+But the code is an exact copy of the 2.4 version ...
 
-> [gianfranco@home001 linux]$ make pImage
-> make: *** No rule to make target `pImage'.  Stop.
-...
-> Should I modify BOOT_TARGET into arch/ppc/Makefile?
+The method I use to trace where the execution goes or not is through the
+leds connected to the GPIOs. From what I understood, the MBAR (
+0xf0000000 ) is always mapped so I can trace with MMU on or off.
 
-As you like. Maybe it's better to get used to the U-Boot image name.
+Anyone could give me a clue ?
 
-Best regards,
+Sylvain Munaut
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-There is is no reason for any individual to have a computer in  their
-home.      -- Ken Olsen (President of Digital Equipment Corporation),
-              Convention of the World Future Society, in Boston, 1977
+PS: I'm not an expert in PPC arch. However, I've done such a port ( 2.4
+-> 2.6 ) for an ARM architecture, so I'm not completly new to this
+either ( even if ARM and PPC are little alike ... )
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
