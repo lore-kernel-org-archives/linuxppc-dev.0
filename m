@@ -1,55 +1,51 @@
-From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: "Embedded Linux PPC list" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: 2.6.5 kernel build: 'macro "mfmsr" passed 1 arguments, but takes just 0'
-Date: Sat, 8 May 2004 17:05:00 +0200
-Message-ID: <BCEFJBPJCGFCNMMMIDBHKENPCFAA.Joakim.Tjernlund@lumentis.se>
+Date: Sat, 8 May 2004 20:31:07 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+To: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
+Subject: moving on -- build error in linuxppc-2.5 source
+Message-ID: <Pine.LNX.4.58.0405081941280.2975@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <Pine.LNX.4.58.0405081014260.13274@localhost.localdomain>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> On Sat, 8 May 2004, Joakim Tjernlund wrote:
->
-> > >   as did someone else on this list recently, i did a first attempt at
-> > > compiling the stock 2.6.5 kernel for an MPC8xx board.  from a verbose
-> > > build:
-> > > ====================================================================
-> > > ...
-> > [SNIP]
-> >
-> > The stock kernel is not up to date. Use the PPC tree,
-> > http://ppc.bkbits.net:8080/linuxppc-2.5, instead. That tree should
-> > compile, but still has run time problems.
->
-> ok, thanks.  regarding the run-time problems, it's not like i wanted to
-> get a production-ready system right now -- i'll be satisfied to see just
-> how far i can get.  more a curiosity thing than anything else.
+  following previous advice, i BK-checked out the kernel source tree from
+http://ppc.bkbits.net:8080/linuxppc-2.5 in order to configure and build a
+basic kernel for my MPC850 board.  the results thus far -- after the
+initial configure:
+===========================================================
+...
+  ppc_8xx-gcc -Wp,-MD,arch/ppc/kernel/.ppc_ksyms.o.d -nostdinc
+-iwithprefix include -D__KERNEL__ -Iinclude  -Iarch/ppc -Wall
+-Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common
+-Iarch/ppc -msoft-float -pipe -ffixed-r2 -Wno-uninitialized -mmultiple
+-mstring -O2 -fomit-frame-pointer     -DKBUILD_BASENAME=ppc_ksyms
+-DKBUILD_MODNAME=ppc_ksyms -c -o arch/ppc/kernel/ppc_ksyms.o
+arch/ppc/kernel/ppc_ksyms.c
+arch/ppc/kernel/ppc_ksyms.c:344: `request_8xxirq' undeclared here (not in
+a function)
+arch/ppc/kernel/ppc_ksyms.c:344: initializer element is not constant
+arch/ppc/kernel/ppc_ksyms.c:344: (near initialization for
+`__ksymtab_request_8xxirq.value')
+make[2]: *** [arch/ppc/kernel/ppc_ksyms.o] Error 1
+make[1]: *** [arch/ppc/kernel] Error 2
+make[1]: Leaving directory
+`/home/rpjday/rdm/projects/2.5/TONTO/OS/linuxppc-2.5'
+make: *** [build] Error 2
+ ...
+===========================================================
 
-I think you will get to early user space. Dan Malek knowns more.
+  been here before, the offending code in arch/ppc/kernel/ppc_ksyms.c is:
 
-Also, I think the MachineCheck exception in head_8xx.S is broken.
-I think is should be:
-	. = 0x200
-MachineCheck:
- 	EXCEPTION_PROLOG
- 	mfspr	r4,DAR
- 	stw	r4,_DAR(r11)
- 	mfspr	r5,DSISR
- 	stw	r5,_DSISR(r11)
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	EXC_XFER_EE(0x200, MachineCheckException)
->
-> rday
->
-> p.s.  BTW, is this the right forum to discuss getting a 2.5/2.6 kernel
-> running on an MPX8xx board?
+#if defined(CONFIG_8xx)
+EXPORT_SYMBOL(request_8xxirq);
+#endif
 
-Yes
+  since request_8xxirq appears to be undefined, i can just comment out
+those three lines and move on, but it would be nice to know if i've
+misconfigured something.
 
- Jocke
+rday
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
