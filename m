@@ -1,40 +1,27 @@
-Subject: Re: /proc problem
-From: "Guy M. Streeter" <streeter@redhat.com>
-To: t.vanremortel@ha.be
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <1066306828.735.29.camel@toni>
-References: <1066306828.735.29.camel@toni>
-Content-Type: text/plain
-Message-Id: <1066313452.1033.1.camel@jarjar.hsv.redhat.com>
-Mime-Version: 1.0
-Date: 16 Oct 2003 09:10:52 -0500
+Date: Thu, 16 Oct 2003 16:11:38 +0200
+From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
+Subject: RE: Problem of concurrency in arch/ppc/8260_io/uart.c
+In-reply-to: <3F8E8817.5ACD7ACB@siemens.com>
+To: Agostino Sette ICN-CNX-RD-SW3 <Agostino.Sette@siemens.com>
+Cc: Jean-Denis Boyer <jdboyer@m5t.com>,
+	Steffen Rumler <Steffen.Rumler@siemens.com>,
+	linuxppc <linuxppc-embedded@lists.linuxppc.org>
+Reply-To: joakim.tjernlund@lumentis.se
+Message-id: <IGEFJKJNHJDCBKALBJLLMEGNGAAA.joakim.tjernlund@lumentis.se>
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-You're trying to do floating-point math. The kernel doesn't do
-floating-point.
+> I had a similar problem on my_console_write. Here I wite down two version of the code, the first one is the old
+> and the second one is the new with the modification. As you can see, there was a spin_unlock without a spink_lock
+> ;this hangs the startup in calibration loop.
 
---Guy
+Agostino,
+check out the new 8xx_io/uart.c in BK. I wrote a patch that fixes the locking problems
+but minimizes the lock time.
 
-On Thu, 2003-10-16 at 07:20, Toni Van Remortel wrote:
-> Hi all,
->
-> I just added some /proc support to my module to run on an EP405, but
-> when I load my module, I get
-> unresolved symbol __extendsfdf2
-> Google didn't get me any further.
-> Code can be found at http://linemb.d-sciencelab.com/rt_mod.c
->
-> Thanks,
-> --
->                            Toni Van Remortel
->               Wetenschappelijk Medewerker - D-science lab
->   Real time Linux for embedded systems: http://linemb.d-sciencelab.com
->               Tel: +32 3 205 61 72 - Fax: +32 3 205 61 95
->                       E-mail: t.vanremortel@ha.be
->
->
-
+   Jocke
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
