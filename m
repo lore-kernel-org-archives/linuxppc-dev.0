@@ -1,33 +1,32 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: <mlan@cpu.lu>, <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Re; 2.4.0-test9 on B&W G3 
-Date: Fri, 22 Sep 2000 23:37:53 +0200
-Message-Id: <19340817150937.10283@192.168.1.10>
-In-Reply-To: <200009222037.WAA00829@piglet.grunz.lu>
-References: <200009222037.WAA00829@piglet.grunz.lu>
+Message-ID: <39CBD3D0.C7F1964A@wanadoo.fr>
+Date: Fri, 22 Sep 2000 23:49:04 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: Henry Worth <haworth@ncal.verio.com>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Linux keycodes and left cursor on Pismo
+References: <Pine.SOL.4.10.10009221556010.17778-100000@ncal.verio.com>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Henry Worth wrote:
 >
->The pci_enable_device() in your changeset is not enough, unfortunately.
->My Promise Ultra66 (which others, including Andre Hedrick also use)
->doesn't identify as an IDE storage controller:
->
->[mlan@piglet ~]$ lspci
->00:0b.0 Host bridge: Apple Computer Inc. Bandit PowerPC host bridge (rev 03)
->00:0d.0 Unknown mass storage controller: Promise Technology, Inc. 20262
->(rev 01)
->
->Would it be possible to select on mass storage in general? If that is an
->'official' classification, that is...
+> Michel Dänzer <daenzerm@student.ethz.ch> wrote:
 
-Well, we could. That is supposed to remain a temporary hack until we find
-a better way to tell the IDE driver to stop avoiding disabled cards if
-told so by the arch.
+> >Also, what is the key combination for the Magic Sysrq on a Pismo?
+> >
+>
+> For xmon it's <cmd><Power>. I'm not sure the Linux SysReq facility
+> is supported for PPC, I've never seen it enabled in Ben's .config
+> files and there is no sign of it in the archives.
 
-Ben.
+F13 (keycode 0x69) works for me as MagicSysRq (ADB keyboard, kernels
+2.2.x or 2.4.0-x).
+
+> However, invoking xmon once X (at least Xpmac 10) is running
+> will result in a microscopic xmon text session replicated 4 times
+> across the screen (even if you switch back to a text VT first).
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
