@@ -1,46 +1,41 @@
-Message-ID: <3EB7AE58.5050702@mvista.com>
-Date: Tue, 06 May 2003 07:45:12 -0500
-From: Mark Hatle <fray@mvista.com>
-MIME-Version: 1.0
-To: Matt Porter <mporter@kernel.crashing.org>
-Cc: Dale Farnsworth <dale@farnsworth.org>,
-	Yu Bo-BOYU1 <Bo.Yu@motorola.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Busybox of Hardhat preview 2.1 for sandpoint 74xx ?
-References: <0B0A39652BB0D411BCCF00508B9512EC08AEBD8A@tx14exm05.ftw.mot.com> <20030506031544.GA29462@rover.farnsworth.org> <20030505211154.A12082@home.com>
-In-Reply-To: <20030505211154.A12082@home.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Re: Linux Kernel generic question (procedure queue)
+From: Gary Thomas <gary@mlbassoc.com>
+To: Steven Rothweiler <Stevenr@raritan.com>
+Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <159C486347C8D3119B1D005004A4694001FDE5FA@OLIVE>
+References: <159C486347C8D3119B1D005004A4694001FDE5FA@OLIVE>
+Content-Type: text/plain
+Message-Id: <1052227569.30126.4476.camel@hermes>
+Mime-Version: 1.0
+Date: 06 May 2003 07:26:09 -0600
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Matt Porter wrote:
-> On Mon, May 05, 2003 at 08:15:44PM -0700, Dale Farnsworth wrote:
+On Tue, 2003-05-06 at 06:40, Steven Rothweiler wrote:
+> >
+> > But my main advice will be to get yourself a copy of
+> > "Linux Device Drivers" by Rubini and Corbet first.
+> >
 >
->>On Mon, May 05, 2003 at 08:31:34PM +0000, Yu Bo-BOYU1 wrote:
->>
->>>Did anyone know if busybox of hardhat preview 2.1 for sandpoint 74xx work or
->>>not ?
->>>I got error "Bad trap at PC: 300162fc, SR: f032, vector=f00    Not tainted"
->>>no matter
->>>the root is mounted on NFS or ramfs.
->>
->>It's been a while since I last saw it, but this reminds me of what
->>happens when running the 74xx userspace on a kernel that doesn't have
->>altivec support enabled.
+> After purchasing the book on Vladmir's great advice, I realized
+> that I could download the PDF version of the entire book at
+> http://www.xml.com/ldd/chapter/book/bookindexpdf.html .
 >
+> Is there any reason the PDF version of this book is (seemingly)
+> free?  I don't feel bad about downloading it, since I've already
+> purchased the book, but I think it's not fair to the authors.
 >
-> Just to confirm, with the MSR VEC off on a 74xx core, it will definitely
-> generate that bad trap (UnknownException) on mvista 74xx userspace.  I've
-> seen it on 7xx's that were unintentionally run on the ppc_74xx userspace,
-> for example.
+> Unless, of course, they *want* to give it away...
 
-That would definatly explain it then.  MontaVista ppc_74xx userspace has altivec
-enabled in glibc.  So the userspace DOES use altivec calls.  (Altivec registers
-are saved on signals and longjmp... this allows you to use altivec instructions
-safely in complex programs.)
+Read page 'xvii':
+  Online Version and License
+  The authors have chosen to make this book freely available under
+  the GNU Free Documentation License, version 1.1.
 
---Mark
+--
+Gary Thomas <gary@mlbassoc.com>
+MLB Associates
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
