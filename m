@@ -1,89 +1,66 @@
-Message-ID: <028801c28ed5$49cbdab0$993810ac@cn.utstar.com>
-From: "qi zhaoling" <zlqi@utstar.com>
-To: "Anders Blomdell" <anders.blomdell@control.lth.se>,
-	<linuxppc-embedded@lists.linuxppc.org>
-References: <C5555DFE-FAC6-11D6-96A7-0003931C2BFA@control.lth.se>
-Subject: Re: ramdisk crash
-Date: Mon, 18 Nov 2002 15:37:03 +0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Subject: Re: gdbserver and gdb cross debug?
+From: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
+To: jack.sun@bmrtech.com
+Cc: bgat@billgatliff.com,
+	Linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <3DD845D7.5C98736B@bmrtech.com>
+References: <200210260458.g9Q4wpq15745@ftp1.mvista.com>
+	<3DCF5E9B.406F7565@bmrtech.com>
+	<20021115134822.A5906@saturn.billgatliff.com>
+	<3DD845D7.5C98736B@bmrtech.com>
+Content-Type: text/plain
+Date: 18 Nov 2002 09:16:03 +0100
+Message-Id: <1037607363.15662.199.camel@spawn>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Anders,
-    thanks for your commit.
-    yes, I am sure i have done it .
-    following is my configuration file :
-
-#
-# File systems
-#
-# CONFIG_QUOTA is not set
-# CONFIG_AUTOFS_FS is not set
-# CONFIG_AUTOFS4_FS is not set
-# CONFIG_REISERFS_FS is not set
-# CONFIG_REISERFS_CHECK is not set
-# CONFIG_ADFS_FS is not set
-# CONFIG_ADFS_FS_RW is not set
-# CONFIG_AFFS_FS is not set
-# CONFIG_HFS_FS is not set
-# CONFIG_BFS_FS is not set
-# CONFIG_FAT_FS is not set
-# CONFIG_MSDOS_FS is not set
-# CONFIG_UMSDOS_FS is not set
-# CONFIG_VFAT_FS is not set
-# CONFIG_EFS_FS is not set
-CONFIG_JFFS_FS=y
-CONFIG_JFFS_FS_VERBOSE=0
-# CONFIG_JFFS2_FS is not set
-CONFIG_CRAMFS=y
-# CONFIG_TMPFS is not set
-# CONFIG_RAMFS is not set
-# CONFIG_ISO9660_FS is not set
-# CONFIG_JOLIET is not set
-# CONFIG_MINIX_FS is not set
-# CONFIG_NTFS_FS is not set
-# CONFIG_NTFS_RW is not set
-# CONFIG_HPFS_FS is not set
-CONFIG_PROC_FS=y
-# CONFIG_DEVFS_FS is not set
-# CONFIG_DEVFS_MOUNT is not set
-# CONFIG_DEVFS_DEBUG is not set
-CONFIG_DEVPTS_FS=y
-# CONFIG_QNX4FS_FS is not set
-# CONFIG_QNX4FS_RW is not set
-# CONFIG_ROMFS_FS is not set
-CONFIG_EXT2_FS=y
-# CONFIG_SYSV_FS is not set
-# CONFIG_SYSV_FS_WRITE is not set
-# CONFIG_UDF_FS is not set
-# CONFIG_UDF_RW is not set
-# CONFIG_UFS_FS is not set
-# CONFIG_UFS_FS_WRITE is not set
-
-
------ Original Message -----
-From: "Anders Blomdell" <anders.blomdell@control.lth.se>
-To: "qi zhaoling" <zlqi@utstar.com>
-Sent: Monday, November 18, 2002 3:24 PM
-Subject: Re: ramdisk crash
-
-
-> > hi ,
-> >      I use the SELF from the denx corp to bring up my embedded linux.
-> >  the PPCBoot and Kernel bootup sucessfully , but when i used initrd
-> >  to mount ramdisk , the system crashed . but if i use NFS to mount =
-> >  ramdisk
-> >  , it's fine .
-> >
-> >  i am sure:
-> >
-> >  1. I build linux kernel according to SELF
-> And you did remember to enable ext2 filesyste (CONFIG_EXT2_FS=y)?
+On Mon, 2002-11-18 at 02:43, sjk wrote:
 >
-> /Anders Blomdell
+> "William A. Gatliff" wrote:
+>
+> > Jikun:
+> >
+> > On Mon, Nov 11, 2002 at 03:39:07PM +0800, sjk wrote:
+> > > I am porting Linux on EP405 board. So I use gdbserver and gdb to debug
+> > > applications,but only the first
+> > > breakpoint could be stopped.Then if i press 'step', the program will
+> > > execute to end straightforwardly . Any other breakpoints could not break
+> > > the execution.
+> >
+> > Have you compiled the application in question with optimizations?  Gdb
+> > isn't so good at debugging optimized code.  Compile with -g -O0 if you
+> > intend to debug.
+>
+> I tried to compile hello.c as following:
+>
+> ppc_405-gcc -g -O0 -o hello hello.c
+>
+> Then set up the connection of gdbserver and ppc_405-gdb. The program could not
+> be debugged step by step either.
+> Is it possible that there is bug in ptrace.c or traps.c
+>
+>
+> Thanks a lot
+>
+> Jikun
+
+I have looked into this some more and could not find any problem on the
+kernel side(this is no guarantee that none exist). I also get the same
+problem with the gdb version from debian (woody)and a fresh compile of
+5.2.
+
+However using the gdb 5.1.1 from ELDK 2.0 makes single step work but it
+steps right into functions that have no debugging information and I
+think step is supposed to avoid this.
+
+
+--
+Kenneth Johansson
+Ericsson AB                       Tel: +46 8 404 71 83
+Borgafjordsgatan 9                Fax: +46 8 404 72 72
+164 80 Stockholm                  kenneth.johansson@etx.ericsson.se
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
