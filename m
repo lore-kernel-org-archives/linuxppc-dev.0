@@ -1,70 +1,34 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Reply-To: <jwalden@digitalatlantic.com>
-From: "Jerry Walden" <jwalden@digitalatlantic.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Need Help w/ PPC Boot
-Date: Thu, 26 Dec 2002 11:51:20 -0800
-Message-ID: <EGEGIJHKDKJGAJMGIDPNEEEICDAA.jwalden@digitalatlantic.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <EGEGIJHKDKJGAJMGIDPNAEBOCDAA.jwalden@digitalatlantic.com>
+To: bin_ren@myrealbox.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: mpcbdm SDRAM and Flash program 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 24 Dec 2002 20:48:24 +0800."
+             <1040734104.7b13ac00bin_ren@myrealbox.com>
+Date: Thu, 26 Dec 2002 21:09:16 +0100
+Message-Id: <20021226200921.B905BC6139@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Greetings:
+In message <1040734104.7b13ac00bin_ren@myrealbox.com> you wrote:
+>
+>   We're reading mails to this list for quite a while and finally
+> have found no other way but to post our question here.
 
-I apologize in advance if this is a stupid question, or a question
-with an obvious answer.  The fact is that I have place linux on
-and ARM, and an X86 board, however never on a PPC platform.  In
-fact I have very little experience with the PPC, and RISC processors
-in general.  I am trying to trace my way through the u-boot code -
-since I do not have access to an in circuit emulator, I am somewhat
-hindered.  However I do have the capability to turn on a LED via a
-GPIO register.  So I am tracing through the code in a "burn an learn"
-fashion.
+Do not post the same message to several mailing lists.
 
-I have a routine called "led" that turns on an led.  The code below is
-from start.S from the u-boot distro from the cpu/ppc4xx, my processor is
-a ppc 405GPr.
-
-The below code turns the LEN on. Note the branch instruction that branches
-to some code to turn the led on.  If I put the branch instruction AFTER
-the "mtmsr	r4" instruction the LED does not turn on.  I cannot figure out
-what is going on.  If anyone has any recommendations on documentation to
-read (I have the 600 page "green book") or if there is something I am
-obviously missing (i.e. not being familiar enough with how a risc
-processor works) any advice is welcome.
-
-	. = EXC_OFF_SYS_RESET
-	.globl	_start
-_start:
+This has been answered before (on bdm4gdb-users)
 
 
-/* Clear and set up some registers. */
-	addi	r4,r0,0x0000
-	mtspr	sgr,r4
-	mtspr	dcwr,r4
-	mtesr	r4			/* clear Exception Syndrome Reg */
-	mttcr	r4			/* clear Timer Control Reg */
-	mtxer	r4			/* clear Fixed-Point Exception Reg */
-	mtevpr r4		 	/* clear Exception Vector Prefix Reg */
-	addi	r4,r0,0x1000	/* set ME bit (Machine Exceptions) */
-	oris	r4,r4,0x0002	/* set CE bit (Critical Exceptions) */
+Wolfgang Denk
 
-
-	/* the LED will turn on if I branch here */
-	b	LED
-
-	mtmsr	r4			/* change MSR */
-
-	/* the LED will NOT turn on if I branch here */
-	/*b	LED */
-
-	addi	r4,r0,(0xFFFF-0x10000)	/* set r4 to 0xFFFFFFFF */
-					/* dbsr is cleared by setting bits to 1) */
-	mtdbsr	r4		/* clear/reset the dbsr */
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Far back in the mists of ancient time, in the great and glorious days
+of the former Galactic Empire, life was wild, rich  and  largely  tax
+free.         - Douglas Adams, _The Hitchhiker's Guide to the Galaxy_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
