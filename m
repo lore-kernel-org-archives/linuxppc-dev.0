@@ -1,40 +1,35 @@
-Date: Mon, 9 Feb 2004 13:13:40 -0800
-From: Brad Boyer <flar@allandria.com>
-To: Costantino Pistagna <cpistagna@vrlteam.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: ibook G4 Status Report
-Message-ID: <20040209211340.GA18028@pants.nu>
-References: <27203D60-5B28-11D8-A96D-000A95B30208@vrlteam.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <27203D60-5B28-11D8-A96D-000A95B30208@vrlteam.org>
+Message-ID: <40281EE5.6090501@mvista.com>
+Date: Mon, 09 Feb 2004 16:59:33 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Incoming to linuxppc-2.4
+References: <E1AqJv7-0004D6-00@source.mvista.com>
+In-Reply-To: <E1AqJv7-0004D6-00@source.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Feb 09, 2004 at 06:48:22PM +0100, Costantino Pistagna wrote:
-> A minor request is about the status of Broadcom BCM94306 driver. Looking
-> around i've noticed that many new Centrino-Based laptop are equipped
-> with
-> this wificard. After some minutes of googling i've reached a sf.net
-> hosted project
-> about a .vxd/Windows drivers wrapper; it successfully use the windows
-> drivers
-> for the above card under x86/linux. is there any way to use this method
-> under
-> linuxppc ?. Another time: any clues? and/or usefull start point ?
+Hmm, I wonder what the odds of you passing this on to Pete are??   ;)
+--
 
-I don't remember if it was on this list, but I did write up a short
-list of what it would take to get osx drivers running, at it's pretty
-extensive. It might be easier to get an x86 emulator running enough
-to use the windows driver and the vxd wrapper hack.
+Linux/PPC Kernel Mirrors wrote:
 
-The problem is that osx has a lot of support code built into the
-kernel that gets used by every driver. It's nice for the person
-writing the driver, but a pain for someone trying to emulate it.
-
-	Brad Boyer
-	flar@allandria.com
+>ChangeSet@1.1212, 2004-02-09 14:48:39-07:00, mporter@kernel.crashing.org
+>  PPC32: Due to hardware issues, add a L2 cache disable routine. Disable
+>         the L2 cache on Ocotea.
+>
+>
+>_______________________________________________
+>linuxppc-commit mailing list
+>linuxppc-commit@source.mvista.com
+>http://source.mvista.com/cgi-bin/mailman/listinfo/linuxppc-commit
+>
+>
+>
+>
+>
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
