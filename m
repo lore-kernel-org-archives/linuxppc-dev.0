@@ -1,29 +1,27 @@
-Subject: Re: PREEMPT on PPC
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <daenzer@debian.org>
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
-	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
-In-Reply-To: <Pine.LNX.4.44.0403261442210.3900-100000@opal.biophys.uni-duesseldorf.de>
-References: 
-	 <Pine.LNX.4.44.0403261442210.3900-100000@opal.biophys.uni-duesseldorf.de>
-Content-Type: text/plain; charset=UTF-8
-Message-Id: <1080329240.17435.293.camel@thor.asgaard.local>
+Date: Fri, 26 Mar 2004 13:03:04 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Matt Porter <mporter@kernel.crashing.org>
+Cc: Toru UCHIYAMA <uchi@cs.fujitsu.co.jp>,
+	linuxppc-dev@lists.linuxppc.org, paulus@samba.org
+Subject: Re: [PATCH] Fix memory leak on PPC44x/kernel 2.6.5-rc2-bk
+Message-ID: <20040326210304.GA16601@gate.ebshome.net>
+References: <200403260934.i2Q9YY324825@stbrain.utsfd.cs.fujitsu.co.jp> <20040326122425.A21727@home.com>
 Mime-Version: 1.0
-Date: Fri, 26 Mar 2004 20:27:20 +0100
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20040326122425.A21727@home.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 2004-03-26 at 18:48, Michael Schmitz wrote:
+On Fri, Mar 26, 2004 at 12:24:25PM -0700, Matt Porter wrote:
 >
-> Works fine here on 2.6.5-rc2-ben0 . Including disk suspend.
+> Paul: Ok to send to akpm?
+>
 
-Have you hit swap with it? The problems with preempt usually only
-started at that point here.
+Maybe we should get rid of clear_page in misc.S and make it an inline:
 
---
-Earthling Michel Dänzer      |     Debian (powerpc), X and DRI developer
-Libre software enthusiast    |   http://svcs.affero.net/rm.php?r=daenzer
+static inline void clear_page(void* page) { clear_pages(page, 0); }
+
+Eugene.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
