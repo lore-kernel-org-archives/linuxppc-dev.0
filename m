@@ -1,46 +1,54 @@
-Message-ID: <38BD4123.F49B678D@colltech.com>
-Date: Wed, 01 Mar 2000 11:11:15 -0500
-From: Rich West <rwest@colltech.com>
-Reply-To: rwest@wesmo.com
-MIME-Version: 1.0
-To: Info <info@amberjack.net>
-CC: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
 Subject: Re: LinuxPPC vs. RedHat???
-References: <v04220801b4e2e259e1dd@[10.0.43.218]>
-Content-Type: text/plain; charset=us-ascii
+Date: Wed, 1 Mar 2000 18:31:34 +0100
+From: John L Grantham <jgrantha@hannover.sgh-net.de>
+To: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>,
+        "Info" <info@amberjack.net>
+cc: <linuxppc-user@lists.linuxppc.org>, <linuxppc-dev@lists.linuxppc.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Message-ID: <12QCy8-16pAwaC@fmrl00.sul.t-online.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-The best person to answer your question would be Jason Haas at LinuxPPC,
-Inc.  He'd be able to give you both an honest answer and a politically
-correct one. :)
+On 1/3/00 6:17 pm, David A. Gatwood at dgatwood@deepspace.mklinux.org was
+inspired to say:
 
-Just my 2 cents, but I don't think you will have any problems integrating
-LinuxPPC in a Redhat environment (I did it at home.. in fact, it's the
-reverse.  I introduced a Redhat box into a LinuxPPC environment shortly
-after I got my RHCE).
-
-LinuxPPC is very close to RedHat 6.1.  Sure, there are some minor
-differences, but those are mostly related to dealing directly with the
-architecture differences.
-
-Java is a touchy subject.. so far, with the Blackdown port, things seem
-rather stable and reliable.  However I am not the person to even put my 2
-cents in on this one.. :)
-
--Rich
-
-Info wrote:
-
-> I need to buy a workstation for Linux development (C++,JAVA,PERL,etc)
-> and would like to buy a Mac instead of Wintel.
 >
-> -Is LinuxPPC 2000 on par with RedHat 6.1?
-> -Other than recompiling on wintel for delivery, can anyone see
-> potential problems with using LinuxPPC in a RedHat shop?
-> -Any known problems with JAVA tools (JDK, JSDK, Tomcat)?
+>On Wed, 1 Mar 2000, Info wrote:
 >
+>> I need to buy a workstation for Linux development (C++,JAVA,PERL,etc)
+>> and would like to buy a Mac instead of Wintel.
+>>
+>> -Is LinuxPPC 2000 on par with RedHat 6.1?
+>
+>That's what all the PPC Linux distros are based on, yes.
+
+<nitpick>Not Debian...</nitpick>
+
+>> -Other than recompiling on wintel for delivery, can anyone see
+>> potential problems with using LinuxPPC in a RedHat shop?
+>> -Any known problems with JAVA tools (JDK, JSDK, Tomcat)?
+>
+>You mean taking LinuxPPC and trying to rebuild it on x86?  Good luck.  The
+>words source compatible tend to be somewhat exaggerated when it comes to
+>real-world use, especially where RPMs are involved.  Just MHO.
+
+Agreed. However, if you want to use LinuxPPC for development for Red Hat,
+so long as you have decent cross-compilers I don't see why there would be
+a major problem. But Java tools are still pretty much Intel-centric
+AFAIK. (Now isn't that an oxymoron...Java on one platform. ;-P )
+
+cya
+
+John
+
+---
+
+John Grantham | Freelance Graphic and Web Designer
+              | Dipl.-Designer (FH)
+              | Homepage: http://surf.to/multimedia
+              | MacLinux: http://www.maclinux.de/
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
