@@ -1,90 +1,53 @@
-Message-ID: <20040122034730.55118.qmail@web21409.mail.yahoo.com>
-Date: Wed, 21 Jan 2004 19:47:30 -0800 (PST)
-From: Huailin Chen <chen_huailin@yahoo.com>
-Subject: Re: any one use 750fx/MV64360
-To: Xiaoshan Zuo <xzuo@vinesystech.com>,
-	linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <400F1270.7000107@vinesystech.com>
+Content-Type: text/plain;
+  charset="us-ascii"
+From: "S. Hebbar" <shebbar@india.tejasnetworks.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: AMD flash error
+Date: Thu, 22 Jan 2004 10:00:10 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <200401221000.10453.shebbar@india.tejasnetworks.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-My 2 cents:
+Hello,
 
-I happened to use all your options these years:--(.
+I am using AMD flash on the target and I am getting
+"Chip not ready after erase suspended" error.
 
-750fx + 64260
-it should be good enough if you don't have
-MP(Multi-CPU) demand for running smp-os on top of it.
-The reason is obivous: 750fx is G3. The MEI protocol
-may not be prefered if your system happens to be a
-high-end applicances.
+Is there any known  flash driver bug in
+linux 2.4.20 (denx) kernel?
 
-750fx + 64360
+Any help is will be appreciated.
 
-if you do want to stay 750 and need SMP, you may have
-to use 64360. Check out Marvell FAE people to
-understand their Arbiter part, which have some fixes
-for SMP support. If you have legacy issue, note that
-some tiny porting work needed for 64360 part.
+Regards,
+S. Hebbar.
 
-7447 + 64260
-No one would go for this option
+Linux boot log:
+============
 
-7447 + 64360
+Physically mapped flash: Found 2 x16 devices at 0x0 in 32-bit mode
+ Amd/Fujitsu Extended Query Table at 0x0040
+Physically mapped flash: Swapping erase regions for broken CFI table.
+number of CFI chips: 1
+cfi_cmdset_0002: Disabling fast programming due to code brokenness.
+Using tn100_map partition definition
 
-Well, G4+ MES(R)I is born to support SMP system. So,
-if you concern this part, do go for it. One thing you
-need talk to your hardware board group is: Powerp
-Consumption. If you guys are able to live with it, go
-for it:-).
+====================
 
-Also, if you have legacy codes under IBM 750-based
-system, please pay high alert on driver part. For
-example, Out of Order issue when under Non-Cachable
-and Guard......One missing will make your driver all
-srew up. For more detail, you are welcome to talk to
-me.
+Error dislay:
 
-Good luck,
-Huailin Chen
-www.xtrj.org
+Chip not ready after erase suspended: status = 0xffffffff
+Write of %zd bytes at 0x00001044 failed. returned 582240, retlen %zd
+Not marking the space at 0x0008e260 as dirty because the flash driver returned
+r
+etlen zero
+Chip not ready after erase suspended: status = 0xffffffff
+Write of %zd bytes at 0x00001044 failed. returned 582240, retlen %zd
+Not marking the space at 0x0008e260 as dirty because the flash driver returned
+r
+etlen zero
+cp: write: Input/output error
 
-
-
-
---- Xiaoshan Zuo <xzuo@vinesystech.com> wrote:
->
-> Hello,
->
-> We are planning design a custom board. The preferred
-> cpu is IBM 750FX,
-> the bridge is going to be Marvell 64360. Depending
-> on the software
-> support, we may alter our plan to use either
-> 750FX/64260 or Motorola
-> 7447/64360/64260. It seems that 64360 is not
-> supported in stock kernel,
-> there is galieo tree for that, but I am not sure the
-> code is really
-> stable. Anyone has experience using 750fx/64360?
-> Which version of
-> gcc/kernel/u-boot should I use? If that is not a
-> good option, then how
-> about 750FX/64260 or Motorola 7447/64360/64260? Any
-> suggestions/comments
-> will be appreciated.
->
-> Thanks,
->
-> Xiaoshan
->
->
-
-
-Yahoo! SiteBuilder - Free web site building tool. Try it!
-http://webhosting.yahoo.com/ps/sb/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
