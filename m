@@ -1,36 +1,27 @@
-To: Shamile Khan <shamile@yahoo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: RAMDISK image in flash not getting mounted - Memec Powerpc405 board 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 05 Nov 2003 17:06:08 PST."
-             <20031106010608.27803.qmail@web11602.mail.yahoo.com>
-Date: Thu, 06 Nov 2003 09:31:24 +0100
-Message-Id: <20031106083129.32359C5F59@atlas.denx.de>
+Message-ID: <3FAA07B0.4070309@elettra.trieste.it>
+Date: Thu, 06 Nov 2003 09:34:56 +0100
+From: Vincenzo Forchi` <vincenzo.forchi@elettra.trieste.it>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org, grave@ipno.in2p3.fr
+Subject: Re: rtai + mvme5500 boot
+References: <3FA8F643.3040007@elettra.trieste.it> <20031105154540.GE22947@ipnpcu9.acq.ami>
+In-Reply-To: <20031105154540.GE22947@ipnpcu9.acq.ami>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20031106010608.27803.qmail@web11602.mail.yahoo.com> you wrote:
+xavier grave wrote:
+>>
+> In order to boot I use the following command :
+> netBoot -s192.168.120.70 -s192.168.120.75 -fzImage.pplus -z
 >
-> I am trying to get Linux to boot with U-boot using a flash
-> based initrd image. I am using a Memec Virtex II Pro board
-> which has a Powerpc 405 processor embedded in an FPGA. I
-> have u-boot running. My flash is 8 Megs and is organized as
-> follows:
+> the -z option is really important (don't boot)
+>
+now it boots, it was the -z option, thanks for your help.
+just another question: how can I setup the board to perform netBoot
+automatically at each power-up?
 
-Please do not post the same message to several mailing lists.
-
-
-Answered in u-boot-users.
-
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Disc space - the final frontier!
+Vincenzo
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
