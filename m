@@ -1,36 +1,33 @@
-In-Reply-To: <1088516489.20324.12.camel@localhost>
-References: <1088516489.20324.12.camel@localhost>
-Mime-Version: 1.0 (Apple Message framework v618)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <F5009B2E-C9DF-11D8-A76E-000393DBC2E8@freescale.com>
-Cc: Adrian Cox <adrian@humboldt.co.uk>,
-	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-From: Kumar Gala <kumar.gala@freescale.com>
-Subject: Re: [PATCH] OCP for MP10x
-Date: Tue, 29 Jun 2004 10:21:13 -0500
-To: Tom Rini <trini@kernel.crashing.org>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: BAT mapping
+From: "Linh Dang" <linhd@nortelnetworks.com>
+Date: Tue, 29 Jun 2004 11:23:51 -0400
+In-Reply-To: <1088518106.14216.1415.camel@hades.cambridge.redhat.com> (David
+ Woodhouse's message of "Tue, 29 Jun 2004 10:08:27 -0400")
+Message-ID: <wn5isdatmk8.fsf@linhd-2.ca.nortel.com>
+References: <1088518106.14216.1415.camel@hades.cambridge.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Tom,
+Hi,
 
-This patch looks good to me.
+I'm porting Linux to our proprietary boards. it's 7447-based with
+gt64260 bridge. We used vanilla 2.6.7 from kernel.org. It worked out
+well (2 person/grunt/slave-dats to get it linux booted and with
+nfs/telnet/gdb...) thank you very much for your work.
 
-- kumar
+In the porting process, we change the bat mapping to used all the 8
+DBAT registers. our new algorithm is quite generic and will work for
+cpu without hi_bats as well. My question is why it was NOT done this
+way but hard-coded to bat2 and bat3. Am I missing some subtle things?
 
-On Jun 29, 2004, at 8:41 AM, Adrian Cox wrote:
+Thanx
 
-> Attached is the latest version of my OCP patch for MPC107/8240/8245.
-> This unifies some openpic setup code, and ensures that the OCP devices
-> are only added to the bus on chip variants which have them.
-> All interested parties seem happy, and this patch is necessary to
-> provide a unified I2C driver for 85xx and 107/824x.
-> Signed-off-by: Adrian Cox <adrian@humboldt.co.uk>
-> - Adrian Cox
-> Humboldt Solutions Ltd.
->
-> <ocp3.patch>
+--
+Linh Dang
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
