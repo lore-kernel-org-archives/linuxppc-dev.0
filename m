@@ -1,70 +1,46 @@
-Message-Id: <4.3.2.20010321074303.00be5a70@falcon.si.com>
-Date: Wed, 21 Mar 2001 07:48:57 -0500
-To: "shalini  jain" <shalijain@rediffmail.com>,
-	"linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-From: Jerry Van Baren <vanbaren_gerald@si.com>
-Subject: Re: What do you all say of the file size ???
-In-Reply-To: <20010321024258.19911.qmail@mailweb30.rediffmail.com>
+Date: Thu, 22 Mar 2001 20:41:46 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: st corruption
+Message-ID: <Pine.LNX.4.05.10103222032400.552-100000@callisto.of.borg>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-man fstat
+(cfr. my posting on linux-kernel)
 
-               struct stat
-               {
-                   dev_t         st_dev;      /* device */
-                   ino_t         st_ino;      /* inode */
-                   mode_t        st_mode;     /* protection */
-                   nlink_t       st_nlink;    /* number of hard links */
-                   uid_t         st_uid;      /* user ID of owner */
-                   gid_t         st_gid;      /* group ID of owner */
-                   dev_t         st_rdev;     /* device type (if inode
-device) */
-                   off_t         st_size;     /* total size, in bytes */
-                   unsigned long st_blksize;  /* blocksize for
-filesystem I/O */
-                   unsigned long st_blocks;   /* number of blocks
-allocated */
-                   time_t        st_atime;    /* time of last access */
-                   time_t        st_mtime;    /* time of last
-modification */
-                   time_t        st_ctime;    /* time of last change */
-               };
+I'm seeing data corruption when writing to tape. Not when reading, not when
+copying between disks.
 
-In particular, element st_size.
+The corruption affects 32 bytes on a 32-byte boundary. The corrupted data are
+always a copy of the data exactly 10240 bytes before. Note that 32 bytes is the
+cache line size of a 604e, while 10240 is the default block size for tar.
+Perhaps a missing sync before PCI busmastering?
 
-There is no EOF character stored in the file, that went out of style
-with CP/M.  Although DOS/WinXX still support EOF characters, that
-doesn't change the validity of my assertion.
+My hardware: CHRP LongTrail, HP C1536 DDS1 tape drive connected to Sym53c875.
+The problem happens with 2.4.3-pre4, but also with the good old
+2.4.0-test1-ac10. This means all backups I have may be corrupted :-(
 
-If you are trying to find the file size of a raw disk partition that
-has been formatted ext2 without using the linux file system resources
-(i.e. fstat()), that is a pretty significant undertaking and you will
-just have read and understand the ext2 sources.  You are not likely to
-get much help or sympathy from this list.
+Anybody out there with a SCSI tape drive who's willing to do some tests?
+Someone already tried with a Pentium, but no corruption, so it may be a PPC
+specific problem. Just create some large files, make md5sums, tar them to tape,
+untar them from tape, and verify the md5sums. I see approx. 7 blocks of
+corrupted data for 256 MB of data.
 
-gvb
+Many thanks in advance!
 
+Gr{oetje,eeting}s,
 
-At 02:42 AM 3/21/01 +0000, shalini  jain wrote:
+						Geert
 
->hello list,
->
->can someone suggest the way to find the file size in ext2fs ?(provided
->the no. of blocks are known)
->
->is there any EOF char in ext2fs files ? if yes. what is it ? is there
->any other way of knowing the file size than to count up to EOF ???
->
->
->if possible, please reply in a bit detail.
->thanx,
->Shalini
->
->
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
