@@ -1,49 +1,37 @@
-Message-ID: <3DD9CD90.7080901@iram.es>
-Date: Tue, 19 Nov 2002 06:35:12 +0100
-From: Gabriel Paubert <paubert@iram.es>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Cc: joakim.tjernlund@lumentis.se, Tim Seufert <tas@mindspring.com>,
-	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: csum_partial() and csum_partial_copy_generic() in badly optimized?
-References: <IGEFJKJNHJDCBKALBJLLEEBFFIAA.joakim.tjernlund@lumentis.se>	<3DD92C01.7080906@iram.es> <15833.45182.639413.720952@argo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: Unexpected sleep on old iBook
+Date: Tue, 19 Nov 2002 08:43:22 +0100
+Message-ID: <2C5637A6A7CE844EA3C0A94565479F520BCD90@dest-as20-002.int.bauer-partner.com>
+From: "Halfmann, Klaus" <Klaus.Halfmann@bauer-partner.com>
+To: "linuxppc-dev" <linuxppc-dev@lists.linuxppc.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Paul Mackerras wrote:
-> Gabriel Paubert writes:
->
->
->>I don't know this code, whether it is correct or not depends on what you
->>pass in r4. If it is invalidate_dcache_range(start, start+len), the code
->>is correct since start+len is one byte beyond the buffer. If it is
->>invalidate_dcache_range(first, last), then it is buggy. The former
->>definition of parameters is more frequent in practice.
->
->
-> That is correct, the `stop' parameter is the address of the first byte
-> after the end of the range that you want invalidated.
->
->
->>This said, the first instruction can be removed:
->>_GLOBAL(invalidate_dcache_range)
->>  	rlwinm	r3,r3,0,~(L1_CACHE_LINE_SIZE-1)
->
->
-> Huh?  I'm guessing you really mean to say:
->
-> 	rlwinm	r3,r3,0,0,31-LG_L1_CACHE_LINE_SIZE
+Since kernel 2.4.20-rc1 (and possibly some versions before)
+my iBook (first generation) goes to sleep when I use pmud.
 
+I fetched the latest pmud I could get (1.1.1.1 2002/12/07 11:31:46 sleemburg)
 
-No, since a long time gas admits a special syntax of rlwinm and friends
-with only four parameters: instead of 2 bit numbers giving the first and
-last bit of the mask, you simply write the mask value. Very handy when
-writing assembly code.
+I use pmud -s (if that matters at all).
+I set "lid_wakeup=0" in boot.local via /proc/pmu/options.
 
-	Regards,
-	Gabriel.
+The logs do not show any clue why the kernel puts the iBook to sleep.
+I feel that pressing keys keeps the iBook from sleeping, but
+running processes or usage of the track pad do not.
+This does not change when the Box in on AC or on Battery.
+
+I rsynced against source.mvista.com yesterday (2002-11-18)
+(no space for a Bitkeeper tree :-| )
+
+Can someone help ?
+
+Thanks
+
+klaus.halfmann@t-online.de, 		(49)-(0)-6172/492497
+Klaus Halfmann, Mainstrasse 8, 61352 Bad Homburg GERMANY
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
