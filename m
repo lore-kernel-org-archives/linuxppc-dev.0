@@ -1,48 +1,36 @@
-Date: Thu, 15 Jul 1999 09:11:50 -0700 (MST)
-From: Matt Porter <mmporter@home.com>
-To: puetzk6715@uni.edu
-cc: Justin Vallon <vallon@mindspring.COM>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: altivec
-In-Reply-To: <Pine.PMDF.3.96.990715091130.538970498B-100000@uni.edu>
-Message-ID: <Pine.LNX.3.96.990715090450.16549A-100000@liberty.chnd1.az.home.com>
+Date: Thu, 15 Jul 1999 11:12:07 -0500 (CDT)
+From: Dave Weis <djweis@plconline.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: performa 6214 support?
+Message-ID: <Pine.LNX.4.10.9907151110080.25231-100000@catbert.desm.plconline.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 15 Jul 1999 puetzk6715@uni.edu wrote:
 
-> 
-> On Thu, 15 Jul 1999, Justin Vallon wrote:
-> 
-> > > Matt Porter writes:
-> > > > 
-> > > > The MAX processor hasn't even been released yet.  When it is, Apple is
-> > > > always the cheapest supplier of PowerPC systems.
-> > >              ^^^^^^^^^^^^^^^^^
-> > > Something needs to be done about this :)
-> > 
-> > Maybe you'd like them to raise the price?
-> 
-> No, I think he wants non-apple non-MacOS PPC machines for Linux. They're
-> getting hard to find...
+has anyone been working on getting machines like the above working with
+linuxppc? i looked thru the compatibility lists and it was mentioned as
+non-supported. i think mklinux would be closer but i remember seeing
+something about trying to merge them.
+also, the 7011-250 rs/6000 i was using here was sold so if anyone knows
+where i can get one really cheap, please let me know. a bare machine is
+fine.
 
-Motorola or IBM will be happy to sell you a "non-apple non-MacOS PPC"
-machine for Linux, it's just nobody wants to pay the price. :)  A startup
-with a very low overhead could probably provide a reasonably priced mobo
-with an MPC107 and MPC750@400+mhz.  They would want to then sell them to a
-system manufacturer which already has volume discount commodity parts in
-their facility to build a consumer priced machine.  Selling 1-2 boards to
-each homebrew person isn't a business plan that will attract any
-investment, a decent volume distribution deal is needed.  Hrm, I wonder
-what the licensing cost of OF is or would it be better to do an open
-implementation of the standard...
- 
---
-Matt Porter
-mmporter@home.com
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+thanks
+
+djweis
+
+
+-- 
+David Weis                | 10520 New York Ave, Des Moines, IA 50322
+djweis@plconline.com      | Voice 515-278-0133 Ext 231
+
+When they took the Fourth Amendment, I was quiet because I didn't deal drugs.
+When they took the Sixth Amendment, I was quiet because I was innocent.
+When they took the Second Amendment, I was quiet because I didn't own a gun.
+Now they've taken the First Amendment and I can't say anything.
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
