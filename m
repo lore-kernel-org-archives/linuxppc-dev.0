@@ -1,17 +1,15 @@
-Return-Path: <linwoes@gmail.com>
-Received: from sccrmhc11.comcast.net (sccrmhc14.comcast.net [204.127.202.59])
-	by ozlabs.org (Postfix) with ESMTP id 47E1B67A7B
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Mar 2005 00:32:31 +1100 (EST)
-From: Linwoes <linwoes@gmail.com>
-To: linuxppc-dev@ozlabs.org, Nicolas DET <det.nicolas@free.fr>,
-	James Chapman <jchapman@katalix.com>
-Date: Mon, 7 Mar 2005 08:23:25 -0500
-References: <20050307125808.6585A200008A@mwinf0308.wanadoo.fr>
-In-Reply-To: <20050307125808.6585A200008A@mwinf0308.wanadoo.fr>
+Return-Path: <mgreer@mvista.com>
+Message-ID: <422C8E3F.1000909@mvista.com>
+Date: Mon, 07 Mar 2005 10:24:15 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200503070823.25642.linwoes@gmail.com>
+To: Sven Luther <sven.luther@wanadoo.fr>
+References: <422C495B.8090805@katalix.com>	<20050307125808.6585A200008A@mwinf0308.wanadoo.fr>
+	<20050307132003.GA21030@pegasos>
+In-Reply-To: <20050307132003.GA21030@pegasos>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Nicolas DET <det.nicolas@free.fr>, linuxppc-embedded@ozlabs.org,
+	linuxppc-dev@ozlabs.org
 Subject: Re: mv64x60 updates
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,32 +20,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Sven Luther wrote:
+
+>I have appended a (slightly revised) version of the patch, which is against a
+>saturday/sunday checkout of bk://dfarnsworth.bkbits.net/linux-2.5-mv643xx-enet, 
+>which is what Mark and Dale are working on. Viewed like that the patch is
+>against to really manageable size, altough it may need some fine-tuning. The
+>rest of your comments probably apply to Dale's and Mark's work in the above
+>tree though.
+>  
 >
-> About arch/ppc/syslibs/ mv64x60 code. Well, it's a bit evil as it has
-> hardcoded IRQ, hardcoded register base, it changes
-> chipset configuration... whereas all of these is already done by the
-> Pegasos II OpenFirmWare.
->
-All of the hardcoded IRQs are not really hardcoded. They are easily 
-overridable in you platform file using a fixup routine as seen in katana.c 
-flags can be added also. 
 
-As far as the register base being hardcoded, I don't see it. The config 
-options:
-CONFIG_MV64X60_BASE=0xf1000000
-CONFIG_MV64X60_NEW_BASE=0xf1000000
-will allow you register base to be anywhere you would like it.
+Hi guys.  I got in late today so I'm just reading this thread now.
 
-If you don't need to reinitialize the chip, then don't call mv64x60_init(). 
-The only part of mv64x60_init() I see that is not chip related is the 
-pci_alloc_hoses(). I guess you could make a new function for that part and 
-maybe others you need so the code does not get duplicated in your platform 
-files.
-Again, mv64x60_early_init() does very little non-chipset stuff and you could 
-probably just place the:
-        mv64x60_bridge_pbase = bh->p_base;
-        mv64x60_bridge_vbase = bh->v_base;
-initializers into your platform files.
+I basically want to reiterate and expand on what Brian 
+<linwoes@gmail.com> stated.
 
-Thanks
-Brian
+The arch/ppc/syslib/mv64x60* code is really for embedded systems only.  
+More accurately, its for systems whose firmwares don't do a good job of 
+configuring the bridge or if you want to significantly change that 
+configuration.  This ends up including many embedded systems but 
+basically no "desktop"-like systems (e.g., ones with openfirmware) so 
+that's why this thread should stay on linuxppc-embedded only.
+
+Sven, et. al., your system has openfirmware and apparenly does a very 
+good job of configuring the bridge so just ignore the mv64x60 stuff.  
+You can use the platform_data code from there as an example of what 
+needs to be passed into the enet driver (and mpsc & i2c & wdt, if you 
+use them (and find all the patches :)).
+
+If I missed something or you have any more questions, I'l be happy to help.
+
+Mark
