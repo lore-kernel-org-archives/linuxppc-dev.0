@@ -1,101 +1,104 @@
-Date: Fri, 30 May 2003 19:58:33 -0500
-To: linas@austin.ibm.com
-Cc: Hollis Blanchard <hollisb@us.ibm.com>,
-	Hawkins Jeffrey-CJH016 <Jeffrey.F.Hawkins@motorola.com>,
-	linuxppc-dev@lists.linuxppc.org, linas@linas.org
-Subject: Re: Kernel Panic in 2.2.x
-Message-ID: <20030531005832.GA4272@backlot.linas.org>
-References: <20030530113402.B29314@forte.austin.ibm.com> <7874ED64-92BD-11D7-A2DA-000A95A0560C@us.ibm.com> <20030530164822.A28086@forte.austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20030530164822.A28086@forte.austin.ibm.com>
-From: linas@linas.org (Linas Vepstas)
+Message-ID: <62639.213.107.143.228.1054413401.squirrel@www.solinno.co.uk>
+Date: Sat, 31 May 2003 21:36:41 +0100 (BST)
+Subject: [RFC] A stand-alone boot loader for PReP
+From: "Leigh Brown" <leigh@solinno.co.uk>
+To: <linuxppc-dev@lists.linuxppc.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Hollis,
+Hi,
 
+[If you bore easily: http://www.solinno.co.uk/leigh/pablo/pablo-0.2.tar.gz ]
 
-I got your reply, but don't have it here in front of me, so I can't
-quote it. But ...
+Ever since I got Linux going on my PReP box I've been unhappy about the
+boot loader.  There is no lilo or yaboot equivalent for PReP and it's a
+pain.  For the past several months I've been trying to devise a way of
+making a bootloader similar to lilo or yaboot, and this is the best I've
+been able to come up with.
 
-On Fri, May 30, 2003 at 04:48:22PM -0500, linas@austin.ibm.com was heard to remark:
-> On Fri, May 30, 2003 at 11:40:49AM -0500, Hollis Blanchard wrote:
-> > On Friday, May 30, 2003, at 11:34 US/Central, linas@austin.ibm.com
-> > wrote:
-> > >
-> > > Latest & greatest is only the best if you are a developer.  For users,
-> > > old-trustworthy is usually a much better bet.
-> >
-> > I disagree,
->
-> OK, I can't just let this one slide.
+PABLO, the "PReP Architecture Boot LOader", has a great name, and in fact
+that's probably the best thing about it right now.  Although it's far
+from finished, I have actually managed to boot with it, which is a start.
 
-In your reply, you talk mostly of Linux desktop apps, and new hardware.
-Lets not dismiss the problem by false analogy.
+At this point I'm interested in feedback on the basic concept and
+implementation, especially if there is some fatal flaw that I've not
+noticed.
 
--- New hardware (e.g. laptop which won't go into sleep mode)  does
-   require new software, drivers, etc. But that's OK, cause its new
-   hardware, not an upgrade.  I have nothing against new software:
-   I create a lot of it, and I use a lot of it.
+The boot loader code (which is 90% the same as the old loader) has been
+changed to be fully relocatable.  Instead of relocating the loader on
+startup it fixes up the relocation entries.  The loader now compiles
+into a standalone ELF executable with no attached kernel images.  The
+ELF header is stripped off and the loader is written to disk when the
+boot image is created.
 
--- You also mention desktop apps. Yes, the linux desktop has been
-   moving rapidly, and it is reasonable to assume that some users want
-   to upgrade old hardware to use the new desktops. (instead of
-   buying new hardware that actually has things like USB on it).
+The pablo frontend itself works much in the same way as lilo (I
+modelled the config file on lilo's).  When you run pablo it reads the
+config file, locates the kernel images specified in the config and
+creates an appropriate prep image that it writes directly to the
+prep boot partition (or any file you like).  I haven't implemented
+ramdisk and System.map just yet, but the support is in there.  It
+does support multiple images and I've used it boot dual-boot between
+a 2.4 and 2.5 kernel.
 
-   But beware of turning the home user into an inadvertant sysadmin.
-   When your home user becomes the sysadmin, they will rapidly come
-   to hate you.
+The boot image construction takes advantage of the fact that the
+PReP spec specifies an offset into the boot image at which execution
+of the code starts.  The boot image is written as shown below (sorry
+for the crappy ascii art):
 
-   A little annecdote: I 'inherited' a late-model Win98 box.  I 'loaned'
-   it to my 6 year old.  Who used it happily.  One day, we got a new
-   game that required a new 'macromedia flash'.  OK, I'm a big man,
-   'I can do this', I say to myself.  It pre-req'ed an newer version
-   of apple's 'quicktime veiwer'.  This pre-req'ed a pile of Win98
-   upgrades from Microsoft, about 25MB worth.  I think it must have
-   been an automated Win98SE upgrade.  Took a while to download.  When
-   done, the sound card didn't work.  My 6 year old was unhappy.  The
-   next day, 10 drivers later, sound still doesn't work.  Every nite,
-   I come home, my 6 year old hovers waiting to get the computer back.
-   This goes on for 5 evenings in a row.  In furstration, I tell him,
-   sorry, computer's ba-ba.  We have discussion about piggy-banks and
-   cost of new computer, and how spare change isn't gonna solve it.
-   Next week a freind offers to pirate a copy of WinXP for me, he
-   says its pretty good, he likes it.  I almost go for it: one thought
-   holds me back:  new software sometimes has a real problem with
-   old hardware.  I might be jumping from frying pan into fire on such
-   an upgrade. Sometime, a few weeks later, after we've given up on it,
-   I'm toying around, install the sound driver one more time, one more
-   reboot, magic! it starts working!  Oh, and the game that required
-   the software update? It still didn't work.
++----------------------------+ 0x0000
+|                            |
+| x86 compatible boot sector |
+|                            |
++----------------------------+ 0x0100
+|              ENTRY POINT >-+----+
+|                            |    |
+|        PReP header         |    |
+|                            |    |
++----------------------------+    |
+|      Table of contents     |    |
++----------------------------+    |
+|                            |    |
+|         vmlinux.gz         |    |
+|                            |    |
++----------------------------+    |
+|                            |    |
+|         ramdisk            |    |
+|                            |    |
++----------------------------+    |
+              .                   |
+              .                   |
+              .                   |
++----------------------------+ <--+
+|                            |
+|          loader            |
+|                            |
++----------------------------+
 
-   Moral of the story? Even desktop users can be turned into sysadmins.
+The offset points to the first address of the boot loader.  The table
+of contents contains a list of offsets to the various kernel images
+and so on contained within the boot image.  The images are written
+after the table of contents.  The loader itself must be written last
+to avoid the BSS area overlapping other areas of the boot image.
 
-   (BTW, I am the proud co-author of gnucash, which, if you read the
-   trade-press, is in the top-10, if not ranked #1 in the category of
-   'most difficult-to-install Linux desktop software'.  Of which I'm
-   *not* proud of. But what can one do?  How else can one add new
-   features? So I understand the other side of the coin pretty well.)
+When the boot loader starts it uses the passed offset to the start
+of the boot image to determine where the table of contents resides.
+It then uses the table of contents to display a prompt, select the
+appropriate kernel and so on.  The table of contents also holds
+default arguments for each image, that will be passed to the running
+kernel via BI_RECS.
 
-Linux is real strong in the server space, weak in the desktop.  Server
-'users' are almost exclusively sysadmins.  They run systems for 5 years
-or more.  (my www.linas.org is an 9 year old Dell 486.  www.gnucash.org
-is 3.5 years old)  When a server goes down, hundreds of users are
-affected.  (each of the www.gnucash.org mailing lists have 500+
-subscribers, I move 7-10 GBytes a month.).  I think we need to make sure
-that Linux in the server space benefits the sysadmin, and this means
-very conservative design principles, and conservative installers
-(something that really can backout the new version and replace old
-version).   God help us all if one day Microsoft succeeds in building
-a system that is easier to install/upgrade/manage than a Linux server.
-Don't bite the hand that is currently feeding Linux.
+You can download it from here:
 
---linas
+http://www.solinno.co.uk/leigh/pablo/pablo-0.2.tar.gz
 
---
-pub  1024D/01045933 2001-02-01 Linas Vepstas (Labas!) <linas@linas.org>
-PGP Key fingerprint = 8305 2521 6000 0B5E 8984  3F54 64A9 9A82 0104 5933
+That's it really.  Any feedback is appreciated.
+
+Cheers,
+
+Leigh.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
