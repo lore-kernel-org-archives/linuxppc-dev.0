@@ -1,36 +1,40 @@
-Date: Wed, 19 May 1999 16:27:05 -0400 (EDT)
-From: Tom Rini <tmrini@ntplx.net>
-To: Andreas Bogk <andreas@andreas.org>
-cc: Alvin Brattli <Alvin.Brattli@phys.uit.no>, linuxppc-dev@lists.linuxppc.org,
-        linuxppc-user@lists.linuxppc.org
-Subject: Re: Patch: PB G3 volume and mute buttons (2nd attempt)
-In-Reply-To: <m3r9oceul6.fsf@soma.andreas.org>
-Message-ID: <Pine.LNX.4.05.9905191626410.8961-100000@pc.wackyland.com>
+From: Brad Boyer <flar@cegt201.bradley.edu>
+Message-Id: <199905192056.PAA21815@cegt201.bradley.edu>
+Subject: Re: possible egcs c compiler bug
+To: allison@dirac.nist.gov (Thomas C. Allison)
+Date: Wed, 19 May 1999 15:56:30 -0500 (CDT)
+Cc: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <199905192019.QAA00884@dirac.nist.gov> from "Thomas C. Allison" at May 19, 99 04:19:17 pm
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 19 May 1999, Andreas Bogk wrote:
+> I have found what *appears* to be a bug in the C compiler.  I have experienced
+> this bug in R4 (regardless of the compiler/library installed) as well as in
+> the latest (i.e. all the latest packages through 5/15/1999) pre-R5
+> installation.  I include a short program below which illustrates the problem
+> I am having.  The code compiles without error on my i386 machine
+> running RHL 5.2.  The version of EGCS on the PC is 1.0.3 versus 1.1.2 on my
+> PowerMac, so I don't know if this is a PPC problem or an EGCS problem.
+> Any input is greatly appreciated.
 
-> 
-> Alvin Brattli <Alvin.Brattli@phys.uit.no> writes:
-> 
-> > Since I have received very little feedback regarding my patches
-> > implementing support for the mute and volume buttons on the PowerBook
-> > G3, I'm reposting the patches here, in case they have been overlooked.
-> 
-> I've used these patches with success and without any problems. I wish
-> they would make it into the standard distribution.
+"It's not a bug, it's a feature"...
 
-Put 'em someplace on ftp.ppc.kernel.org and drop cort@ppc.kernel.org a
-note..
+You're using something that is not technically the proper way to use
+va_list in your code.  However, that code works on everything but ppc.
+It has to do with the way va_list is implemented on any ppc platform,
+and causes all sorts of strange things to happen when you don't follow
+the spec close enough.  Find a better way to copy the va_list.  Just
+using the = operator isn't enough on ppc.  Use a block copy of
+sizeof(va_list) bytes, or some such.  This has come up before, so if
+you search the list archives, you should find sample code.  Someone
+else could give a lot more details on this.  I only know the general
+overview.
 
----
-Tom Rini (TR1265)
-http://dobbstown.yeti.edu/
-
+      Brad Boyer
+      flar@cegt201.bradley.edu
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
