@@ -1,61 +1,39 @@
-From: "Georg Klug" <gklug@giga-stream.de>
-To: "caixupeng" <edmoon@huawei.com>,
-	<linuxppc-embedded@lists.linuxppc.org>
-Subject: AW: compile a linux kernel for ppc4xx, error message
-Date: Fri, 22 Nov 2002 08:27:57 +0100
-Message-ID: <FFECLICFNBJAHONLGAKMCEADCHAA.gklug@giga-stream.de>
+Message-ID: <3DDDE525.7050309@attbi.com>
+Date: Fri, 22 Nov 2002 00:04:53 -0800
+From: Amit Chaudhary <amit_ch@attbi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <001501c291c2$04745150$33690b0a@DBKQW41X>
+To: GOTZON ASTONDOA <gastondoa@fagorautomation.es>
+Cc: bgat@billgatliff.com, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Fast shutdown
+References: <CA78D1B723D8D411AF0300508BDCF74FF0C566@NTCORREO> <20021115151001.I5906@saturn.billgatliff.com>
+In-Reply-To: <CA78D1B723D8D411AF0300508BDCF74FF0C566@NTCORREO>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Edmoon,
+William A. Gatliff wrote:
 
-the problem is most likely a wrong kernel source or a wrong .config.
-There is a nice little howto on the web, actualy posted here a long time
-ago. Try a google search with
-   howto kernel compile walnut
-and you'll find that posting.
+> On Tue, Nov 12, 2002 at 04:04:39PM +0100, GOTZON ASTONDOA wrote:
+> >interrupt to the PowerPC.We have more or less 8 mSeg to close all the
+> Linux
+> >system (it has hard disk, ethernet, ftp and our own application).
+> >
+> >	Can somebody tell me any idea to close the Linux system in the
+> >fastest way? We are thinking in capture the interrupt signal, but, is it
+> >enough fast?
+>
+>
+>
+> You could have an interrupt handler watching the signal from the 68k,
+> and sending a message via named pipe (perhaps) to a userspace program.
+> The userspace program would signal all your other programs, sync(),
+> then wait for powerdown.
 
-Kind regards,
-Georg Klug
+Another option is mount the main fs as readonly, put in a robust
+recovery for any config data fs and use something equivalent of a reboot -f.
 
-> Dear all,
->
-> I config the kernel as ppc4xx-->walnut ,a 405 based board. and make
-> zImage,then
-> I got the following error messages:
->
-> {standard input}: Assembler messages:
-> {standard input}:44: Error: unsupported relocation against DCRN_EXISR
-> {standard input}:45: Error: unsupported relocation against DCRN_EXIER
-> {standard input}:72: Error: unsupported relocation against DCRN_EXIER
-> {standard input}:89: Error: unsupported relocation against DCRN_EXIER
-> {standard input}:106: Error: unsupported relocation against DCRN_EXIER
-> {standard input}:110: Error: unsupported relocation against DCRN_EXISR
-> {standard input}:25: Error: unsupported relocation against DCRN_EXIER
-> make[1]: *** [ppc4xx_pic.o] Error 1
-> make[1]: Leaving directory `/usr/src/src-linuxppc_2_4/arch/ppc/kernel'
-> make: *** [_dir_arch/ppc/kernel] Error 2
->
->
-> another question:
->
-> who has successed in compiling a linux kernel for ppc440GP?
->
-> I have made my ebony board run ppcboot correctly, and I want compile
-> and download a
->
-> linux kernel to the ebony board.
->
-> who can help me?
->
-> thanks!
->
->             edmoon
+Amit
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
