@@ -1,24 +1,21 @@
-Message-ID: <20010916055800.9866.qmail@web15003.mail.bjs.yahoo.com>
-Date: Sun, 16 Sep 2001 13:58:00 +0800 (CST)
-From: =?gb2312?q?=B2=FD=20=D6=DC?= <zjuzhou@yahoo.com.cn>
-Subject: What embedded database works better?
-To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <003801c13ea8$4e68bf80$0200a8c0@aiwa>
+From: "qiuqingjun" <qiuqingjun@263.net>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Where can I download a done ramdisk.image ?
+Date: Sun, 16 Sep 2001 20:08:24 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
+Content-Type: text/plain;
+	charset="gb2312"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hello all.
-   What embedded databse software works better now?
-Is it opensource software? How can i get or but it?
+Hi, all,
+I need a ramdisk.image for initrd, in which I can access the /proc/net, and can use ftp,ping or other simple net applications. However, when I added some scripts according to the description in
+http://www.linux.org/docs/ldp/howto/Bootdisk-HOWTO/buildroot.html
+I could not get the correct result yet. Where can I download a done ramdisk.image? or an instruction about how to build root in embedded system in detail.
+Thanks in advance.
 
-
-
-_________________________________________________________
-Do You Yahoo!? 登录免费雅虎电邮! http://mail.yahoo.com.cn
-
-<font color=#6666FF>无聊？郁闷？高兴？没理由？都来聊天吧！</font>——
-雅虎全新聊天室! http://cn.chat.yahoo.com/c/roomlist.html
+Qiu Qingjun
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
