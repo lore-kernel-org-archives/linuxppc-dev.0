@@ -1,20 +1,20 @@
+Date: Fri, 21 Mar 2003 15:39:13 +0100
+Message-Id: <HC3SPD$4C386C318A714AF18699E2F7DD3FCC76@libero.it>
+Subject: =?iso-8859-1?Q?ATM_UTOPIA_structure_initialization_sequence_for_linux?=
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RPXLite pcmcia
-Date: Fri, 21 Mar 2003 07:15:28 -0600
-Message-ID: <45E73EE17E678C4081B8A09E651628D2524E4A@atlas.info-engineering.com>
-From: "Collins, Steve" <Steve.Collins@dynetics.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
+Content-Type: text/plain; charset=iso-8859-1
+From: "=?iso-8859-1?Q?en=5Fch@libero.it?=" <en_ch@libero.it>
+To: "=?iso-8859-1?Q?linuxppc-embedded?=" <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have an Embedded Planet RPXLite MPC823 and would like to use a 16 bit
-pcmcia ethernet card.  Does anyone know of any cards that work "out of
-the box"?
+i have to realize a char driver to set ATM Utopia for a linux
+embedded system using motorola mpc850sar.
 
-Thanks,
-Steve
+Anyone knows if there is - and which is - a correct ATM UTOPIA structure (buffer, BDs, CTs, APC )initialization sequence for linux ?  my code running stopped after starting utopia, and i start utopia after structure init. I have seen every register setting is correct so i think its initialization sequence order.
+thanks
+en_ch
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
