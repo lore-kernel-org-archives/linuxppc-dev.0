@@ -1,59 +1,52 @@
-Message-ID: <4024DD8F.7030609@g-house.de>
-Date: Sat, 07 Feb 2004 13:43:59 +0100
-From: Christian Kujau <evil@g-house.de>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: compiling error with 2.4.24-ben1
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Re: benh performance problem
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Hollis Blanchard <hollisb@us.ibm.com>
+Cc: Mikolaj Krzewicki <mkrzewicki@lycos.nl>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <A3B443AA-58B8-11D8-884B-000A95A0560C@us.ibm.com>
+References: <401FE138.8080807@lycos.nl> <1075847083.17327.31.camel@gaston>
+	 <40221664.70208@lycos.nl> <1076044476.885.9.camel@gaston>
+	 <A3B443AA-58B8-11D8-884B-000A95A0560C@us.ibm.com>
+Content-Type: text/plain
+Message-Id: <1076188588.27930.57.camel@gaston>
+Mime-Version: 1.0
+Date: Sun, 08 Feb 2004 08:16:43 +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+> pbbuttons is loading the machine? What about all those extra
+> decrementer ticks? I assume benchmarks showed no performance
+> degradation on some class of ppc32; what was the slowest system tested?
+> For that matter, couldn't this hurt 4xx, 8xx(x), as well?
 
-Hi,
+Heh, well, I did see any obvious degradation on my powerbook but
+I didn't benchmark much actually. Maybe I should, or make kernel HZ
+a config option.
 
-me again with another issue here. said in another thread that
-2.4.24-ben1 is compiling fine 8producing only odd warnings), i still
-*have* to enable
+> Perhaps HZ should be user-configurable? Although that doesn't help
+> distributions who'd like one kernel to work everywhere... How does
+> Linux handle increased HZ on old i386 anyways?
 
-CONFIG_ADB_CUDA
-CONFIG_ADB_PMU
-CONFIG_NVRAM
+I don't know :)
 
-disabling one of these or even CONFIG_NVRAM=m
-will produce an error:
+> > Not sure if I can fix any of this at this point without doing a
+> > major rewrite of the exception handling code, I suspect those
+> > CPUs don't like running in real mode and our exception handling
+> > happens mostly in that mode in ppc32...
+>
+> I didn't realize CPUs go slower in real mode..?
 
-ld -T arch/ppc/vmlinux.lds -Ttext 0xc0000000 -Bstatic
-arch/ppc/kernel/head.o arch/ppc/kernel/idle_6xx.o init/main.o
-init/version.o init/do_mounts.o \
-~        --start-group \
-~        arch/ppc/kernel/kernel.o arch/ppc/platforms/platform.o
-arch/ppc/mm/mm.o arch/ppc/lib/lib.o kernel/kernel.o mm/mm.o fs/fs.o
-ipc/ipc.o arch/ppc/xmon/x.o \
-~         drivers/char/char.o drivers/block/block.o drivers/misc/misc.o
-drivers/net/net.o drivers/scsi/scsidrv.o drivers/pci/driver.o
-drivers/macintosh/macintosh.o drivers/video/video.o
-drivers/media/media.o drivers/isdn/vmlinux-obj.o crypto/crypto.o \
-~        net/network.o \
-~        /data/MP3/scratch/kernel/linux-2.4-benh-RSYNC/lib/lib.a \
-~        --end-group \
-~        -o vmlinux
-arch/ppc/platforms/platform.o(.text.init+0x64bc): In function
-`lookup_partitions':
-: undefined reference to `nvram_read_byte'
-make: *** [vmlinux] Error 1
-evil@sheep:/data/MP3/scratch/kernel/linux-2.4-benh-RSYNC$
+It is the case with 970's and I think with IBM G3s, I'm not sure
+about Motorola G4s and other CPUs. In real mode, all memory is
+treated like it has the G bit set, preventing speculation (among
+others, I suppose prefetch gets killed too).
 
-i have a PReP here and i think i do not really need these options:
-http://nerdbynature.de/bits/sheep/2.4.24-benh/ver_linux
-http://nerdbynature.de/bits/sheep/2.4.24-benh/nvram_read_byte/config
+I's very visible on lmbench with a G5: The null syscall overhead
+of the ppc64 kernel is lower than the one of the ppc32 kernel
+despite actually running more code and saving more & bigger registers.
 
-Thank you for your time,
-Christian.
+Ben.
 
-- --
-BOFH excuse #444:
-
-overflow error in /dev/null
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
