@@ -1,42 +1,76 @@
-Date: Mon, 29 Dec 2003 03:50:10 -0600
-From: Chris Zimman <chris@cryptoapps.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [Question]DMA problem in Sil0680A...
-Message-ID: <20031229095009.GA13346@dingdong.cryptoapps.com>
-Reply-To: Chris Zimman <chris@cryptoapps.com>
+Subject: RE: kernel can't boot
+From: Gary Thomas <gary@mlbassoc.com>
+To: kamarajp@future.futsoft.com
+Cc: "'Wolfgang Denk'" <wd@denx.de>,
+	linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <003a01c3cdc1$008e16c0$6704060a@future.futsoft.com>
+References: <003a01c3cdc1$008e16c0$6704060a@future.futsoft.com>
+Content-Type: text/plain
+Message-Id: <1072707167.13356.1.camel@hermes>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Date: 29 Dec 2003 07:12:47 -0700
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Dec 29, 2003 at 01:16:17PM +0900, ?????? wrote:
+On Sun, 2003-12-28 at 21:05, Kamaraj P wrote:
+> Hi All,
+> I am using RedBoot in IXP425 Board (Embedded Linux).
+> Whether this environment settings are specific to U-Boot ?? If I am using
+> RedBoot, How can I debug the kernel Image.
+> Is there any FAQ available.
 >
-> I'm trying to recognize IDE drive via Sil0680A driver
-> in embedded linux enviroments. see below.
+
+Perhaps you should be asking these questions on an ARM Linux list.
+This list, and its members, concentrate mostly on PowerPC based
+systems and the software that support them.
+
 >
-> * OS : denx(http://www.denx.de) linuxppc_devel_2.4 (2.4.23)
-> * board : custom board for DVR
-> * bootloader : u-boot 0.4.0
-> * chipset : sil0680a(Siliconimage ultra ATA/133 PCI to ATA Host Controller)
+> Thanks in Advance.
+> Kamaraj.
+>
+> -----Original Message-----
+> From: owner-linuxppc-embedded@lists.linuxppc.org
+> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Wolfgang
+> Denk
+> Sent: Friday, December 26, 2003 3:56 PM
+> To: sun-zj
+> Cc: linuxppc-embedded@lists.linuxppc.org
+> Subject: Re: kernel can't boot
+>
+>
+>
+> In message <200312260052.SAA27783@lists.linuxppc.org> you wrote:
+> >
+> > I am using the ELDL-2.1 from denx(Thanks their hard works)
+> > and the recent kernel advised by Denk(thanks a lots). I compile
+> > it and download it by tftp with FEC ethernet.
+> > I use the FADS board and U-boot-1.0.0. The eldk enclosed
+> > kernel-2.4.4 works fine. But kernel-2.4.23 can go to the stage
+> > of Uncompressed kernel image OK. and then system Hangs there
+> > without any messages?
+>
+> Probably the kernel received invalid parameters (clock information).
+>
+> > Who can tell me what happens ?
+>
+> You did not read the FAQ. See
+> http://www.denx.de/twiki/bin/view/DULG/LinuxHangsAfterUncompressingKernel
+>
+> Best regards,
+>
+> Wolfgang Denk
+>
+> --
+> Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+> Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+> Ernest asks Frank how long he has been working for the company.
+>         "Ever since they threatened to fire me."
+>
+>
+--
+Gary Thomas <gary@mlbassoc.com>
+MLB Associates
 
-[ snip ]
-
-This could be one of at least a few things.  First, make sure that you're
-actually getting the interrupt signaling the end of DMA.  See
-drivers/ide/ide-dma.c:ide_dma_intr().
-
-Without knowing how you have things wired up on the board, it's hard to give
-definite suggestions about what might be wrong.  But in general, if you're
-not getting the interrupt, check the interrupt routing etc. (found in
-platforms/sycamore.c or whatever you called it if you've made a custom
-setup for your board).
-
-What external IRQ is the sil680 using?
-
-By the looks of your PCI table, you also have a QLogic SCSI controller
-on the board.  Have you tried that to see if it works?
-
---Chris
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
