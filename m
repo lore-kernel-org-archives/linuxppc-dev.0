@@ -1,50 +1,191 @@
-Message-ID: <37DBDBB6.4B608A42@chpc.utah.edu>
-Date: Sun, 12 Sep 1999 10:58:30 -0600
-From: Lou Langholtz <ldl@chpc.utah.edu>
+Message-Id: <199909121740.TAA00248@piglet.cpu.lu>
+Date: Sun, 12 Sep 1999 19:40:09 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: PowerPC Uniform IDE patches
+To: andre@suse.com, Paul.Mackerras@cs.anu.edu.au
+cc: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-To: mlan@cpu.lu
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: controlfb.c bug in VRAM bank2 check if bank1
-References: <199909101833.UAA17210@piglet.cpu.lu>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: MULTIPART/mixed; BOUNDARY="134392852-1804289383-937158009=:240"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michel Lanners wrote:
+--134392852-1804289383-937158009=:240
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 
-> On  10 Sep, this message from Lou Langholtz echoed through cyberspace:
-> > After getting an extra 2MB VRAM for my PowerMac7500 and seeing that only
-> > 2MB were still being recognized (despite having just added the 2MB to
-> > total to 4MB VRAM), I dug into the controlfb.c code from 2.2.11 and
-> > 2.2.12 and made the following changes to get all 4MB VRAM recognized:
->
-> > <  out_8(&p->frame_buffer[0x600000], 0xa5);
-> > <  out_8(&p->frame_buffer[0x600001], 0x38);
-> > ---
-> >>  out_8(&p->frame_buffer[0x200000], 0xa5);
-> >>  out_8(&p->frame_buffer[0x200001], 0x38);
->
-> Hmm, if I remember right, there have been half a dozen patch pairs that
-> changed 0x600000 to 0x200000 and back over the years ;-)
->
-> I guess it's time to clear thgis up once and for all. By the way, I do
-> have 4 MB of VRAM, and all of it is detected with the current version
-> of controlfb.....
+Hi all,
 
-If I had a spare PowerMac 7500 I'd love to test every combo and see what gets
-detected where. Unfortunately I don't, but hope someone else can do this
-instead and get conclusive info that we need. It concerns me too that people
-with 8500's (that seem to have the same graphics card) seem to observe
-different behavior in detection.
+Below is a patch against Andre's latest 2.2.12 Uniform IDE driver, in
+order to make it work on the PowerPC.
 
-What version of controlfb are you using? Current from the 2.2 kernel tree,
-2.3 kernel tree, or 2.2 or 2.3 from vger, or even somewhere else. 2.2.12
-wouldn't detect all 4MB VRAM in my 7500 box. I'm sorry but I haven't kept up
-very well with all the different distributions of source. Let me know which
-release then you use and I'll eagerely check it out ;-)
+Paul, is this patch OK with you? If yes, Andre, I'd suggest that you
+integrate this into your Uniform IDE stuff.
 
-> Michel . . .
+To others using Andre's IDE stuff: please test and see if it breaks
+anything...
 
+Patch below applies to a kernel.org 2.2.12 tree, patched with
+'ide.2.2.12.patch' from Andre's page on ftp.kernel.org.
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
+
+--134392852-1804289383-937158009=:240
+Content-Type: TEXT/plain; CHARSET=US-ASCII
+Content-Description: ide.diff
+
+diff -uNr linux-2.2.12-pristine/arch/ppc/kernel/chrp_pci.c linux-2.2.12/arch/ppc/kernel/chrp_pci.c
+--- linux-2.2.12-pristine/arch/ppc/kernel/chrp_pci.c	Thu Aug 26 21:51:03 1999
++++ linux-2.2.12/arch/ppc/kernel/chrp_pci.c	Sun Sep 12 16:47:32 1999
+@@ -8,6 +8,7 @@
+ #include <linux/string.h>
+ #include <linux/init.h>
+ #include <linux/openpic.h>
++#include <linux/ide.h>
+ 
+ #include <asm/io.h>
+ #include <asm/pgtable.h>
+@@ -15,7 +16,6 @@
+ #include <asm/hydra.h>
+ #include <asm/prom.h>
+ #include <asm/gg2.h>
+-#include <asm/ide.h>
+ #include <asm/machdep.h>
+ 
+ #include "pci.h"
+diff -uNr linux-2.2.12-pristine/arch/ppc/kernel/chrp_setup.c linux-2.2.12/arch/ppc/kernel/chrp_setup.c
+--- linux-2.2.12-pristine/arch/ppc/kernel/chrp_setup.c	Sun Sep 12 16:49:40 1999
++++ linux-2.2.12/arch/ppc/kernel/chrp_setup.c	Sun Sep 12 16:23:23 1999
+@@ -28,6 +28,7 @@
+ #include <linux/reboot.h>
+ #include <linux/init.h>
+ #include <linux/blk.h>
++#include <linux/ide.h>
+ #include <linux/ioport.h>
+ #include <linux/console.h>
+ #include <linux/pci.h>
+@@ -38,8 +39,6 @@
+ #include <asm/processor.h>
+ #include <asm/io.h>
+ #include <asm/pgtable.h>
+-#include <linux/ide.h>
+-#include <asm/ide.h>
+ #include <asm/prom.h>
+ #include <asm/gg2.h>
+ #include <asm/pci-bridge.h>
+diff -uNr linux-2.2.12-pristine/arch/ppc/kernel/mbx_setup.c linux-2.2.12/arch/ppc/kernel/mbx_setup.c
+--- linux-2.2.12-pristine/arch/ppc/kernel/mbx_setup.c	Sun Sep 12 16:49:40 1999
++++ linux-2.2.12/arch/ppc/kernel/mbx_setup.c	Sun Sep 12 16:28:41 1999
+@@ -30,6 +30,7 @@
+ #include <linux/reboot.h>
+ #include <linux/init.h>
+ #include <linux/blk.h>
++#include <linux/ide.h>
+ #include <linux/ioport.h>
+ 
+ #include <asm/mmu.h>
+@@ -37,7 +38,6 @@
+ #include <asm/residual.h>
+ #include <asm/io.h>
+ #include <asm/pgtable.h>
+-#include <asm/ide.h>
+ #include <asm/mbx.h>
+ #include <asm/machdep.h>
+ 
+diff -uNr linux-2.2.12-pristine/arch/ppc/kernel/pmac_setup.c linux-2.2.12/arch/ppc/kernel/pmac_setup.c
+--- linux-2.2.12-pristine/arch/ppc/kernel/pmac_setup.c	Sun Sep 12 16:49:40 1999
++++ linux-2.2.12/arch/ppc/kernel/pmac_setup.c	Sun Sep 12 16:45:38 1999
+@@ -39,6 +39,7 @@
+ #include <linux/ioport.h>
+ #include <linux/major.h>
+ #include <linux/blk.h>
++#include <linux/ide.h>
+ #include <linux/vt_kern.h>
+ #include <linux/console.h>
+ #include <linux/pci.h>
+@@ -54,7 +55,6 @@
+ #include <asm/ohare.h>
+ #include <asm/mediabay.h>
+ #include <asm/feature.h>
+-#include <asm/ide.h>
+ #include <asm/machdep.h>
+ 
+ #include "time.h"
+@@ -584,14 +584,6 @@
+ /* This is declared in drivers/block/ide-pmac.c */
+ void pmac_ide_init_hwif_ports (hw_regs_t *hw, ide_ioreg_t data_port, ide_ioreg_t ctrl_port, int *irq);
+ 
+-/*
+- * This registers the standard ports for this architecture with the IDE
+- * driver.
+- */
+-void
+-ide_init_default_hwifs(void)
+-{
+-}
+ #endif
+ 
+ __initfunc(void
+diff -uNr linux-2.2.12-pristine/arch/ppc/kernel/prep_setup.c linux-2.2.12/arch/ppc/kernel/prep_setup.c
+--- linux-2.2.12-pristine/arch/ppc/kernel/prep_setup.c	Sun Sep 12 16:49:40 1999
++++ linux-2.2.12/arch/ppc/kernel/prep_setup.c	Sun Sep 12 16:27:07 1999
+@@ -28,6 +28,7 @@
+ #include <linux/reboot.h>
+ #include <linux/init.h>
+ #include <linux/blk.h>
++#include <linux/ide.h>
+ #include <linux/ioport.h>
+ #include <linux/console.h>
+ #include <linux/timex.h>
+@@ -39,8 +40,6 @@
+ #include <asm/residual.h>
+ #include <asm/io.h>
+ #include <asm/pgtable.h>
+-#include <linux/ide.h>
+-#include <asm/ide.h>
+ #include <asm/cache.h>
+ #include <asm/dma.h>
+ #include <asm/machdep.h>
+diff -uNr linux-2.2.12-pristine/arch/ppc/kernel/setup.c linux-2.2.12/arch/ppc/kernel/setup.c
+--- linux-2.2.12-pristine/arch/ppc/kernel/setup.c	Sun Sep 12 16:49:40 1999
++++ linux-2.2.12/arch/ppc/kernel/setup.c	Sun Sep 12 16:25:51 1999
+@@ -11,14 +11,13 @@
+ #include <linux/reboot.h>
+ #include <linux/delay.h>
+ #include <linux/blk.h>
++#include <linux/ide.h>
+ 
+ #include <asm/adb.h>
+ #include <asm/cuda.h>
+ #include <asm/pmu.h>
+ #include <asm/residual.h>
+ #include <asm/io.h>
+-#include <linux/ide.h>
+-#include <asm/ide.h>
+ #include <asm/prom.h>
+ #include <asm/processor.h>
+ #include <asm/pgtable.h>
+diff -uNr linux-2.2.12-pristine/include/asm-ppc/ide.h linux-2.2.12/include/asm-ppc/ide.h
+--- linux-2.2.12-pristine/include/asm-ppc/ide.h	Sun Sep 12 16:49:40 1999
++++ linux-2.2.12/include/asm-ppc/ide.h	Sun Sep 12 16:49:40 1999
+@@ -59,9 +59,7 @@
+ 
+ extern struct ide_machdep_calls ppc_ide_md;
+ 
+-#if 0
+ void ide_init_hwif_ports (hw_regs_t *hw, ide_ioreg_t data_port, ide_ioreg_t ctrl_port, int *irq);
+-#endif
+ 
+ void ide_insw(ide_ioreg_t port, void *buf, int ns);
+ void ide_outsw(ide_ioreg_t port, void *buf, int ns);
+
+--134392852-1804289383-937158009=:240--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
