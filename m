@@ -1,46 +1,21 @@
-Message-ID: <3EF2EE71.5070504@intrex.net>
-Date: Fri, 20 Jun 2003 07:22:25 -0400
-From: Ralph Blach <rblach@intrex.net>
+From: mcreasey@nd.edu
+Message-ID: <1056134787.3ef356832e714@webmail.nd.edu>
+Date: Fri, 20 Jun 2003 13:46:27 -0500
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: support for vme5500?
 MIME-Version: 1.0
-To: Laurent Mohin <laurent.mohin@acterna.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: framebuffer access in little endian mode
-References: <OFE7EE0F3B.3DB23516-ONC1256D4B.0023C9C9-C1256D4B.0026ED64@se.wavetek.com>
-In-Reply-To: <OFE7EE0F3B.3DB23516-ONC1256D4B.0023C9C9-C1256D4B.0026ED64@se.wavetek.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Laurent,
+I want to install linux on a VP 742/10x.  This computer uses a MPC7455 processor and a Universe II bus.  From what I have been able to find, this is
+essentially a mvme5500.
 
-One thought would be to modify the pte entries to support little endian and have an
-IO_Remap little endian.  (To those who think this is herasy or what ever, I accept you
-critisisms.)
+Unfortunately this system doesn't seem to be very well supported.  I am not at all familiar with vme machines, but have had some experience with
+using/installing linux.  Any tips on what distributions and drivers to look at would be much appreciated.  Thanks.
 
-Any body else out there with better, and I know there must be better solutions?
-
-Chip
-
-Laurent Mohin wrote:
-> Hello,
->
-> I'm designing a custom board with a 405GPr and a Silicon Motion SMI712
-> graphic controller. The interface to this chip is via PCI interface and it
-> gives access to its internal framebuffer in little endian format. Because
-> access done by the 405GPr are in big endian, color in 16bpp mode aren't
-> displayed correctly.
->
-> Unfortunately, it seems that the chip doesn't provide a way to access the
-> framebuffer in big endian format.
->
-> Any  hints are welcome.
->
-> Laurent
->
->
->
->
+--Meg Creasey
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
