@@ -1,48 +1,47 @@
-From: Gabriel Paubert <paubert@iram.es>
-Date: Wed, 14 May 2003 17:57:11 +0200
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Eugene Surovegin <ebs@ebshome.net>,
-	Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.linuxppc.org
+Message-ID: <3EC26EAD.8080200@embeddededge.com>
+Date: Wed, 14 May 2003 12:28:29 -0400
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: Gabriel Paubert <paubert@iram.es>
+Cc: Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev@lists.linuxppc.org
 Subject: Re: set_rtc_time() cleanup / normalization
-Message-ID: <20030514155711.GE9430@iram.es>
-References: <20030512211733.B489EC6092@atlas.denx.de> <20030512211733.B489EC6092@atlas.denx.de> <5.1.0.14.2.20030513161846.03805338@mail.ebshome.net> <1052901153.664.15.camel@gaston>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1052901153.664.15.camel@gaston>
+References: <20030512211733.B489EC6092@atlas.denx.de> <16065.31312.163813.582334@argo.ozlabs.ibm.com> <20030514154310.GC9430@iram.es>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, May 14, 2003 at 10:32:33AM +0200, Benjamin Herrenschmidt wrote:
->
-> >
-> > 2) set_rtc_time() implementation for concrete RTC device *maybe* slow or
-> > just cannot
-> >     be called from the interrupt context.
-> >     Why just don't fix actual RTC code in each case ?
-> >     It may be useful to provide some *generic* facility for such cases.
->
-> It may just not be fixable cleanly. If you RTC is on a bus which requires
-> some semaphoring for access (i2c does on pmac, though so far, the RTC isn't
-> on i2c on these, I admit), or which is just so slow that you really do NOT
-> want to block the machine in an interrupt that long ?
->
-> Actually, the later is the most nasty. Also, since set_rtc_time() is used for
-> both interrupt call and non-interrupt call, it cannot make assumptions about
-> beeing able to schedule or not, thus causing the same latency problem when
-> called via /dev/rtc, possibly a good DOS attack tool, but more simply, it
-> just suck that way...
+Gabriel Paubert wrote:
 
-Well, on all these aspects, I am strongly on Eugene's side. I believe
-the implementation has to be refined, but that the functionality cannot
-be removed.
+> Ask on the ntp lists first, I bet you'll upset a lot of people
+> if you suggest it.
 
-It seems that we are only two, ok. In any case, it will stay that way
-in my source trees. I have reasonably fast RTC (15 microseconds to write
-them) so it's never a big issue of course.
+I'll bet no one is using it on a system that has an unpredictable
+latency, interrupt generating, i2c RTC, either. :-)
 
-I also suspect that people strongly object to a CONFIG option.
+The solution is to do like other architectures and allow (as Tom
+suggested) a selectable rtc update function.  Although I may use
+a particular RTC driver, I may not want the update function that
+comes along with it.  All we need is an indirect function pointer
+to the get/set functions that is initialized by the board set
+up functions.  By default they should be null functions, if you
+want something else, put a pointer there.
 
-	Gabriel.
+The fact is the current rtc update functions are not suitable for
+embedded boards that have to meet latency guarantees.  They simply
+add overhead, often in a bad way, even if implemented correctly.
+Installing any kind of real-time enhancement (like RTLinux or RTAI)
+will cause a failure of the rtc update model because the update thread of
+control can be easily preempted.
+
+The solution is easy, you can find examples in other architectures,
+and we don't have to argue about it.
+
+Thanks.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
