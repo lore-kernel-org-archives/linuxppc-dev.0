@@ -1,57 +1,43 @@
-Date: Tue, 12 Dec 2000 15:59:51 +0100 (CET)
-From: Geir Frode Raanes <geirfrs@invalid.ed.ntnu.no>
-To: "'linux-ppc Mailing-List'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Chaning multiple FECs into a loop?
-In-Reply-To: <8B43573754BCD211B5970008C74B8126010F774B@RENEXCH3.rennes.thmulti.com>
-Message-ID: <Pine.BSF.4.21.0012121533560.24656-100000@invalid.ed.ntnu.no>
+Date: Tue, 12 Dec 2000 09:26:47 -0600 (CST)
+From: Brian Ford <ford@vss.fsi.com>
+To: Graham Stoney <greyham@research.canon.com.au>
+cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 2.5 or 2.4 kernel profiling
+In-Reply-To: <20001212133658.C1773@brixi.research.canon.com.au>
+Message-ID: <Pine.GSO.4.21.0012120915570.24199-100000@eos>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am not to familiar with ethernet devices so I simply ask here.
-We will soon have eight XPC855T controller boards in tight
-confinement running off batteries. We need to synchronize these
-controllers through ethernet broadcasts. We would rather not have
-a hub embedded in there and seeking alternatives we se that the
-TDK PHY can be put in `repeater´ mode where Rx is forwarded to Tx.
+On Tue, 12 Dec 2000, Graham Stoney wrote:
 
-The documentation states that this can not be performed in full
-duplex and something about collision detection between the Rx
-data and MII data. I interpret that as the PHY will still operate
-in half duplex mode interrupting Rx->Tx forwarding as soon as there
-is data incoming over tha MII interface.
+> Also, doesn't the 8260 have seperate memory subsystems to help get
+> around this?
+>
+I assume you are referring to the local bus?  Well yes, but there are large
+tradeoffs.
 
-The question is, if we hook up the loop like illustrated below,
-will this work with the PHY in repeater mode or will this be
-oscillating and hence jamming itself?
+If you use the local bus for the receive buffers then you can have
+simultaneous CPM to local bus and CPU to 60x bus transactions.  The catch
+is that the local bus can not be cached.  So, you trade off bus contention
+for caching/bursting.  The CPU must go across the 60x to local bus bridge
+for those transactions.  The DMA engine can burst between the 60x and
+local busses.
 
-
-+---> (uC[0]Rx , uC[0]Tx) -+
-|                          |
-| +------------------------+
-| |
-| +-> (uC[1]Rx , uC[1]Tx) -+
-|                          |
-| +------------------------+
-| |
-| +->         ...         -+
-|                          |
-| +------------------------+
-| |
-| +-> (uC[7]Rx , uC[7]Tx) -+
-|                          |
-+--------------------------+
+If the data has to end up in user space, it ends up being about a
+wash, given the checksum and user space copy.  I need more testing to
+confirm this, though.  If the user space copy was not needed, like for
+routing, then it might help some.
 
 --
-
-  ******************************************************
-  Never ever underestimate the power of human stupidity.
-  -Robert Anson Heinlein
-
-		GeirFRS@invalid.and.so.forth
-  ******************************************************
+Brian Ford
+Software Engineer
+Vital Visual Simulation Systems
+FlightSafety International
+Phone: 314-551-8460
+Fax:   314-551-8444
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
