@@ -1,49 +1,40 @@
-Date: Sat, 25 Jan 2003 22:04:22 +0100
-From: Vojtech Pavlik <vojtech@suse.cz>
-To: George Staikos <staikos@kde.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Vojtech Pavlik <vojtech@suse.cz>,
-	Till Straumann <Till.Straumann@TU-Berlin.de>,
-	linuxppc-dev@lists.linuxppc.org
 Subject: Re: [patch] ignore trackpad/mouse while typing
-Message-ID: <20030125220422.A18276@ucw.cz>
-References: <3DE6C428.5000403@TU-Berlin.de> <20030125184701.A16865@ucw.cz> <1043521480.3684.32.camel@zion.wanadoo.fr> <200301251558.30600.staikos@kde.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Vojtech Pavlik <vojtech@suse.cz>
+Cc: Till Straumann <Till.Straumann@TU-Berlin.de>,
+	linuxppc-dev@lists.linuxppc.org, George Staikos <staikos@kde.org>
+In-Reply-To: <20030125220422.A18276@ucw.cz>
+References: <3DE6C428.5000403@TU-Berlin.de> <20030125184701.A16865@ucw.cz>
+	 <1043521480.3684.32.camel@zion.wanadoo.fr>
+	 <200301251558.30600.staikos@kde.org>  <20030125220422.A18276@ucw.cz>
+Content-Type: text/plain
+Message-Id: <1043529955.3683.41.camel@zion.wanadoo.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200301251558.30600.staikos@kde.org>; from staikos@kde.org on Sat, Jan 25, 2003 at 03:58:30PM -0500
+Date: 25 Jan 2003 22:25:56 +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Jan 25, 2003 at 03:58:30PM -0500, George Staikos wrote:
-> On Saturday 25 January 2003 14:04, Benjamin Herrenschmidt wrote:
-> > On Sat, 2003-01-25 at 18:47, Vojtech Pavlik wrote:
-> > > On Thu, Nov 28, 2002 at 05:34:32PM -0800, Till Straumann wrote:
-> > > > OK, here's a trivial patch (linux-2.4.18) for disabling/ignoring
-> > > > the mouse/trackpad while typing. It can be very convenient on notebook
-> > > > computers.
-> > > > NOTE: this patch works only on machines using the 'new' input layer
-> > > > (e.g. Apple Powerbook, ibook, ...)
-> > > >
-> > > > The holdoff time can be adjusted via sysctl/procfs - see description
-> > > > in the patch file.
-> > >
-> > > It's a very nice idea, but I'd prefer this to be handled somewhere
-> > > higher than the IDE code, preferably in X ...
+On Sat, 2003-01-25 at 22:04, Vojtech Pavlik wrote:
+
+> > > Well... the problem happpens in console as well, and with other
+> > > non-X apps like MacOnLinux. Some Apple PowerBooks have over-sensitive
+> > > trackpad. Apple themselves implement a similar mecanism in the kernel
+> > > driver of OS X.
 > >
-> > Well... the problem happpens in console as well, and with other
-> > non-X apps like MacOnLinux. Some Apple PowerBooks have over-sensitive
-> > trackpad. Apple themselves implement a similar mecanism in the kernel
-> > driver of OS X.
+> >   Mine is one of those machines.  I have to turn off gpm for sure, and X is
+> > quite oversensitive too (tuned it in KDE, but still this functionality would
+> > be very nice).
 >
->   Mine is one of those machines.  I have to turn off gpm for sure, and X is
-> quite oversensitive too (tuned it in KDE, but still this functionality would
-> be very nice).
+> How about implementing it in mousedev.c?
 
-How about implementing it in mousedev.c?
+Right, though it would need hooks in kbddev or something to know
+about keystrokes. Also, I don't like the sysctl's as those need
+allocating sysctl numbers, which are always a problem. In 2.5,
+we could have these in sysfs, though for 2.4 I'm not sure what
+to do.
 
---
-Vojtech Pavlik
-SuSE Labs
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
