@@ -1,46 +1,41 @@
-Message-ID: <XFMail.20030829091718.pochini@shiny.it>
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <3F4F322B.5030900@mac.com>
+Date: Fri, 29 Aug 2003 12:59:55 +0200
+From: Ernst Persson <ernstp@mac.com>
 MIME-Version: 1.0
-In-Reply-To: <20030828120243.A50750@forte.austin.ibm.com>
-Date: Fri, 29 Aug 2003 09:17:18 +0200 (CEST)
-From: Giuliano Pochini <pochini@shiny.it>
-To: linas@austin.ibm.com
-Subject: Re: Random crashes
-Cc: linuxppc-dev@lists.linuxppc.org
-Cc: linuxppc-dev@lists.linuxppc.org,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: [PATCH] Bmac also needs crc32
+Content-Type: multipart/mixed;
+ boundary="------------090000010803030106060903"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 28-Aug-2003 linas@austin.ibm.com wrote:
-> On Wed, Aug 27, 2003 at 10:06:27PM +0200, Giuliano Pochini wrote:
->>
->> > > Random... lockups, oopses, sig11... but nothing useful because is happens
->> > > in random places. Ok, so the answer is no. Maybe the hw is faulty. It's
->> > > the only kernel I used on this mac.
->
-> Can you monitor cpu temp somehow? I had this once when a cpu fan would
-> barely spin.
+This is a multi-part message in MIME format.
+--------------090000010803030106060903
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-I cannot monitor the tempeature directly because AFAIK that feature is
-not available on 7455. The g4fan driver by Samuel Rydh says the temp.
-is always around 59C. But I don't think this is the cause because I also
-tried to keep the fans at full speed (~50C) with same results.
+Before you had to enable another net driver och crc32 in library to
+compile the bmac driver.
 
-> Slightly off-topic: I've always wanted to have a memory-cache checker
-> kerneld that ran continuously in the background.
->
-> More off-topic. I've always wanted to have an on-line, background fsck
-> checker running continuously.   I've had problems where a journalling
-> FS would think the FS was fine, log journal clean, but in fact, the fs
-> had slowly accumulated errors over many months due to ?? faulty
-> electronics ??.
+//ernie
 
-Small bugs, more likely. All journalling fs are still beta.
+--------------090000010803030106060903
+Content-Type: text/plain; name="bmac-crc32.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="bmac-crc32.diff"
 
+--- linux-2.6/drivers/net/Makefile.lib	2003-08-28 17:20:35.000000000 +0200
++++ linuxppc-2.5-benh/drivers/net/Makefile.lib	2003-08-29 12:39:36.000000000 +0200
+@@ -5,6 +5,7 @@
+ obj-$(CONFIG_ARM_AM79C961A)	+= crc32.o
+ obj-$(CONFIG_AT1700)		+= crc32.o
+ obj-$(CONFIG_ATP)		+= crc32.o
++obj-$(CONFIG_BMAC)              += crc32.o
+ obj-$(CONFIG_DE2104X)		+= crc32.o
+ obj-$(CONFIG_DE4X5)		+= crc32.o
+ obj-$(CONFIG_DECLANCE)		+= crc32.o
 
-Bye.
-    Giuliano.
+--------------090000010803030106060903--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
