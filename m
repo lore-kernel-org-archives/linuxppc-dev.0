@@ -1,25 +1,23 @@
-Message-ID: <3AB4E320.233162CD@intrex.net>
-Date: Sun, 18 Mar 2001 11:32:32 -0500
-From: Ralph Blach <rblach@intrex.net>
+Message-ID: <3AB521CF.BD295C73@mvista.com>
+Date: Sun, 18 Mar 2001 15:59:59 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: es1371.o sound module on a IBM405 gp walnut
+To: ragman@wanadoo.nl
+Cc: Embedded Linux PPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Linux for MPC8260 available ?
+References: <3AB49034.7BA68DA7@wanadoo.nl>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am trying to get an es1371. sound module working on an IBM405 walunt
-developement kit.  8 bit sound works ok
-but 16 bit sound sounds like noise.  Will this driver have to be made
-Endian  aware?
+Daniel Roganti wrote:
 
-Thanks in advance
+> Is there Linux for MPC8260 available ?
 
---
-Ralph "Chip" Blach
-KF4WBK
-Chapel Hill, North Carolina
+Yes, in the 2.4/2.5 kernels in the usual places.
 
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
