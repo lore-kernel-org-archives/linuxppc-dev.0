@@ -1,51 +1,50 @@
-Message-ID: <B25E2E5A003CD311B61E00902778AF2A02044644@SERVER1>
-From: Brian Kuschak <brian.kuschak@skystream.com>
-To: "'Dan Malek'" <dan@mvista.com>, Gabriel Paubert <paubert@iram.es>
-Cc: Eli Chen <eli@routefree.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: dcache BUG()
-Date: Mon, 7 May 2001 18:53:10 -0700 
+From: "Kim, Kwansuk" <kskim@neowave.co.kr>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: After add CONFIG_MODULES,it works noting?
+Date: Tue, 8 May 2001 10:54:44 +0900
+Message-ID: <OMENKEONFDLIGLHPFALBCEOHCCAA.kskim@neowave.co.kr>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
+	charset="ks_c_5601-1987"
+In-Reply-To: <3AF74DF9.23628@bjapp4>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I've been running with Gabriel's suggested patch for about an hour now, and
-I still see the problem.  It hasn't generated an Oops in dcache.h yet, but I
-do still see the 'de_put: entry net already free!' messages.
+If you don't use driver as module, whenever you modify the driver you should compile the kernel.
+(I think it's one of the reasons why module is used)
 
-I'll let it run overnight to see if the oops occurs.
+And if you want you the driver, I suggest using KGDB.
+Using KGDB you can even debug dynamically linked modules by add-symbols command (maybe) during exploring (almost) all the kernel source.
+There is the method in "Linux Device Drivers" (O'reilly) Chap. 4.
 
-Brian
+ ==============================================
+  Kwansuk Kim
+  Engineer, NeoWave Inc.
+  Tel   +82-31-380-4927    Fax +82-31-380-4747
+  E-mail: kskim@neowave.co.kr
+==============================================
 
 -----Original Message-----
-From: Dan Malek [mailto:dan@mvista.com]
-Sent: Monday, May 07, 2001 6:44 PM
-To: Gabriel Paubert
-Cc: Eli Chen; Brian Kuschak; linuxppc-embedded@lists.linuxppc.org
-Subject: Re: dcache BUG()
+From: owner-linuxppc-embedded@lists.linuxppc.org [mailto:owner-linuxppc-
+embedded@lists.linuxppc.org]On Behalf Of zjuzhou@163.net
+Sent: Tuesday, May 08, 2001 10:38 AM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: After add CONFIG_MODULES,it works noting?
 
 
-Gabriel Paubert wrote:
-
-> I'm myself more and more convinced myself that this is really a bug,
-
-I'm convinced, too, so thanks for the suggestion.  I think it is
-much more likely to show up on the 4xx because of my (assumed)
-implementation than on other processors that attempt to make some
-use of the EA in the instructions.
-
-> .... It does not fix Eli's problems, so
-> either my patch is wrong or something else is going on.
-
-We have many people testing on a variety of systems, so we will
-know more shortly.
-
-Thanks again.
 
 
-	-- Dan
+hello,
+        when i don't use CONFIG_MODULES in .config,HHL works well,but when i
+add CONFIG_MODULES into kernel,i reboot my borad using new kernel,when it
+uncompress kernel image,then do noting.Just like the question asked by somebody
+before.
+        By the way,i want to write driver,if don't use "ismod",how can i debug
+my driver?i don't like compile kernel again and again.
+        thanks.
+
+Dross Chou
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
