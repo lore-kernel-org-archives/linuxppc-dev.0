@@ -1,40 +1,36 @@
-Message-ID: <19990610122324.A82556@risc.sps.mot.com>
-Date: Thu, 10 Jun 1999 12:23:24 -0500
-From: Dave Wolfe <dwolfe@risc.sps.mot.com>
-To: "Packer, Dave" <dPacker@uppercase.xerox.com>,
-        "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Wierd File Sizes....
-References: <AF223B12F1FDD2119253006097C4FCEC05B163@cats.pdri.xerox.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <AF223B12F1FDD2119253006097C4FCEC05B163@cats.pdri.xerox.com>; from Packer, Dave on Thu, Jun 10, 1999 at 09:48:54AM -0700
+Date: Thu, 10 Jun 1999 13:13:51 -0500 (CDT)
+From: Joseph Palani Garcia <jpgarcia@execpc.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: EM86 port for LinuxPPC?
+Message-ID: <Pine.GSO.3.95.990610130308.9290A-100000@earth>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-[ Packer, Dave writes: ]
-> 
-> This is peculiar behavior I've never noticed before and was wondering if
-> anyone else has experienced this.  I've created a file using mmap, set its
-> size to the appropriate bytes, and then written it. As you can see in the
-> listing below the file size is 156K, but du -k only sees 7K.  What's not
-> below is if I use df -k it sees 7K less than before the file was created.
+Some may have noticed the EM86 x86 "emulator" for alpha/linux to run
+x86/linux binaries.  I recently added the define to my kernel compile and
+it compiled the binary support (the em86 program gets help from the
+kernel, so theres a kernel define in the alpha kernel config).  Anyway,
+I downloaded all the source from digital's site, and tried compiling it.
+It all compiled fine except for one thing, the thing i am doubious about.
+a source file that is only about 25 lines of assembly.  What i think it
+does is reroute the syscalls to the friend in the kernel.  It seems to me
+that because of this, it may be bound to the alpha architecure.  Is there
+a way to port this to ppc?  or is there just too many dissimilarities
+between alpha and ppc archs?  ( i haven't tried doing it yet because i
+don't know if its worth the time in learning alpha and ppc assm/arch just
+to get x86/linux bins to run... or im just lazy)
 
-This is a feature. Unix file systems support sparse files. The
-uninitialized blocks aren't allocated on disk, so du is reporting the
-true file size, i.e. the disk space used to contain the file, vs the
-offset of the EOF, which is what ls reports.
+Thanks.
 
-> As you can see below by using gzip / ungzip the file gets noticed properly.
+--
 
-Ungzip actually wrote the intervening blocks which didn't exist in the
-original file, so now disk space is required to hold those blocks.
-I believe tar has an option to accurately preserve sparse files, so
-gzipping a tar of such files would be one way of compressing them if you
-felt you really needed to do that.
+Joseph Garcia
+Madison, WI
+jpgarcia@execpc.com
 
--- 
- Dave Wolfe
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
