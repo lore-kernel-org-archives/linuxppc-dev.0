@@ -1,46 +1,41 @@
-To: Andrew Dixon <andrew.dixon@seranoa.com>
-Cc: ppclist <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Linux not outputting to serial console on sbc8260 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 07 Dec 2001 11:27:24 EST."
-             <3C10EDEC.630AE7DD@seranoa.com>
-Date: Sat, 08 Dec 2001 00:02:49 +0100
-Message-Id: <20011207230254.9A0D6F9C2@denx.denx.de>
+Message-ID: <3C114C63.3050102@embeddededge.com>
+Date: Fri, 07 Dec 2001 18:10:27 -0500
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: Steve Rossi <srossi@labs.mot.com>
+Cc: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: high priority interrupts disabled
+References: <3C112297.6DE37608@labs.mot.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3C10EDEC.630AE7DD@seranoa.com> you wrote:
->
-> I'm trying to get Linux up on an sbc8260.  I'm working with Linux-2.4.16
-> and PPCBoot-1.1.0.  I'm booting from the flash simm on the sbc8260 and
-> I'm using the 33mhz oscillator.
+Steve Rossi wrote:
 
-Check the definition of the bd_info structure in the est8260.h  Linux
-kernel header file; it must match the definition defined and exported
-by PPCBoot.
+> .....IRQ2 gets asserted and remains asserted (without
+> being serviced) in excess of 10ms during which IRQ6 (hard disk) is
+> asserted and quickly serviced over 120 times, and IRQ1 is also asserted
+> and quickly serviced several times in that 10ms. IRQ2 doesn't get
+> serviced until the disk activity completes
 
-You can simply replace the whole file by this:
+That's interesting.  We read the SIVEC, which gives us the highest priority
+unmasked pending interrupt.  We don't read and parse bitmasks.  Since IRQ1
+is getting serviced, I wonder if IRQ2 is being masked.  It is possible
+to mask an irq, service others, then unmask the irq again, so ensure your
+driver isn't doing this.  Of course, we are also doing a mask_and_ack in
+the 8xx interrupt handler, which may not be the right thing either.
 
------ cut here -----
-/*
- * Board information for the EST8260.
- */
+You could try changing the mask_and_ack function in the ppc8xx_pic.c to
+just ack the interrupt and let us know what happens.
 
-#define IMAP_ADDR ((uint)0xf0000000)
+> .... IRQ1 is requested with the SA_INTERRUPT flag,
+> while IRQ2 is not - should this matter?
 
-#include <asm/ppcboot.h>
------ cut here -----
+I didn't think this flag had any effect anymore.
 
-Wolfgang Denk
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-C makes it easy for you to shoot yourself in the foot. C++ makes that
-harder, but when you do, it blows away your whole leg.
-                                                 -- Bjarne Stroustrup
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
