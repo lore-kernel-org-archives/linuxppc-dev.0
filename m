@@ -1,44 +1,37 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3CB60E13.BA0A4A6@esteem.com>
-Date: Thu, 11 Apr 2002 15:28:35 -0700
-From: Conn Clark <clark@esteem.com>
-MIME-Version: 1.0
-To: May Ling List <linuxppc-embedded@lists.linuxppc.org>
-Subject: MPC8xx fpu support and compiling glib.
+Date: Thu, 11 Apr 2002 15:36:42 -0700
+From: andrew may <acmay@acmay.homeip.net>
+To: Armin <akuster@pacbell.net>
+Cc: John Tyner <jtyner@cs.ucr.edu>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [PATCH] early serial init
+Message-ID: <20020411153642.C18158@ecam.san.rr.com>
+References: <Pine.LNX.4.30.0204111424410.10803-100000@hill.cs.ucr.edu> <3CB5A370.4080409@pacbell.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3CB5A370.4080409@pacbell.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello All,
+On Thu, Apr 11, 2002 at 02:53:36PM +0000, Armin wrote:
+>
+> John Tyner wrote:
+> > I remember seeing something awhile ago about early boots, but I didn't
+> > think it was for Walnut. Where is it/would it be?
+> >
+> > On Thu, 11 Apr 2002, Armin wrote:
+> >
+> >
+> >>John Tyner wrote:
+> >>
+>
+>
+> David G did something and he hit the head_4xx.S & ppc4xx_setup.c and a
+> few header files imb405gp.h
 
-
-	I was wondering a few things about MPC8xx FPU support. If
-I build a kernel with fpu-emulation do I have to pass the CFLAGS
-"-msoft-float -D_SOFT_FLOAT" when compiling glibc? Does it save me
-any ram if I don't? I know if I don't my performance will drop but
-our aplication doesn't use floating point except for ping mabey.
-
-
-Thanks in advance,
-
-	Conn
---
-
-*****************************************************************
-  If you live at home long enough, your parents will move out.
-*****************************************************************
-
-Conn Clark
-Engineering Stooge				clark@esteem.com
-Electronic Systems Technology Inc.		www.esteem.com
-
-Stock Ticker Symbol				ELST
-
-"clark@esteem.com" Copyright 2000 By Electronic Systems Technology
- This email address may be used to communicate to Conn Clark
- provided it is not being used for advertisement purposes, unless
- prior written consent is given. This email address may not be
- sold under any circumstances. All other rights reserved.
+This patch is to remove the need for the BASE BAUD define. If we ever start
+trying to get a single kernel to build for multiple 405 boards that run at
+various clock rates it becomes helpful to calc the base baud for the serial
+ports rather than forcing it at compile time.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
