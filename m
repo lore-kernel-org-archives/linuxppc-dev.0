@@ -1,13 +1,25 @@
-Message-ID: <0F48024310E5D6118D200002B3A440DB08B079C0@zil01exm08.mcil.comm.mot.com>
-From: Meriin Michael-BMM063 <BMM063@motorola.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: MPC852 Cache initializing problem
-Date: Mon, 19 Apr 2004 18:56:51 +0300
+Message-ID: <D73A25AA6E54D511AD74009027B1110F5BB190@ORION>
+From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+To: "'Meriin Michael-BMM063'" <BMM063@motorola.com>,
+	"'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: MPC852 Cache initializing problem
+Date: Mon, 19 Apr 2004 12:42:56 -0400
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="windows-1255"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+It may be your debugger that is causing the problem.  The next thing called
+is turn_on_mmu and I believe that causes an exception.
+
+-----Original Message-----
+From: Meriin Michael-BMM063 [mailto:BMM063@motorola.com]
+Sent: Monday, April 19, 2004 11:57 AM
+To: 'linuxppc-embedded@lists.linuxppc.org'
+Subject: MPC852 Cache initializing problem
+
 
 
 Hello,
