@@ -1,17 +1,17 @@
-Return-Path: <olh@suse.de>
-Received: from Cantor.suse.de (mail.suse.de [195.135.220.2])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "mail.suse.de",
-	Issuer "SuSE Linux AG internal IMAP-Server CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id A8CF667A46
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Feb 2005 00:44:23 +1100 (EST)
-Date: Sun, 6 Feb 2005 14:44:17 +0100
-From: Olaf Hering <olh@suse.de>
-To: Paul Mackeras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Message-ID: <20050206134417.GA9963@suse.de>
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao09.cox.net (fed1rmmtao09.cox.net [68.230.241.30])
+	by ozlabs.org (Postfix) with ESMTP id A94D967A6B
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 Feb 2005 03:54:30 +1100 (EST)
+Date: Sun, 6 Feb 2005 09:54:28 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Olaf Hering <olh@suse.de>
+Message-ID: <20050206165428.GA7686@smtp.west.cox.net>
+References: <20050206125056.GA6394@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Subject: [PATCH] nvram driver for chrp
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20050206125056.GA6394@suse.de>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] remove .tmp_gas_check
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,136 +21,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-(resend with the correct mail address)
+On Sun, Feb 06, 2005 at 01:50:56PM +0100, Olaf Hering wrote:
 
-This implements a nvram acccess method, similar to
-arch/ppc64/kernel/pSeries_nvram.c
-tested on CHRP B50.
+> make ARCH=ppc tags leaves a .tmp_gas_check file behind.
+> Just remove it after the as test.
+> 
+> Signed-off-by: Olaf Hering <olh@suse.de>
 
-Signed-off-by: Olaf Hering <olh@suse.de>
+What is the problem exactly?  .tmp_* should be removed in a normal
+'clean' target ?
 
-
-diff -purNx tags ../linux-2.6.11-rc3.orig/arch/ppc/platforms/Makefile ./arch/ppc/platforms/Makefile
---- ../linux-2.6.11-rc3.orig/arch/ppc/platforms/Makefile	2005-02-03 02:57:04.000000000 +0100
-+++ ./arch/ppc/platforms/Makefile	2005-02-06 10:56:57.428548209 +0100
-@@ -13,6 +13,9 @@ obj-$(CONFIG_PPC_PMAC)		+= pmac_pic.o pm
- 					pmac_feature.o pmac_pci.o pmac_sleep.o \
- 					pmac_low_i2c.o pmac_cache.o
- obj-$(CONFIG_PPC_CHRP)		+= chrp_setup.o chrp_time.o chrp_pci.o
-+ifeq ($(CONFIG_PPC_CHRP),y)
-+obj-$(CONFIG_NVRAM)		+= chrp_nvram.o
-+endif
- obj-$(CONFIG_PPC_PREP)		+= prep_pci.o prep_setup.o
- ifeq ($(CONFIG_PPC_PMAC),y)
- obj-$(CONFIG_NVRAM)		+= pmac_nvram.o
-diff -purNx tags ../linux-2.6.11-rc3.orig/arch/ppc/platforms/chrp_nvram.c ./arch/ppc/platforms/chrp_nvram.c
---- ../linux-2.6.11-rc3.orig/arch/ppc/platforms/chrp_nvram.c	1970-01-01 01:00:00.000000000 +0100
-+++ ./arch/ppc/platforms/chrp_nvram.c	2005-02-06 13:45:57.671598084 +0100
-@@ -0,0 +1,83 @@
-+/*
-+ *  c 2001 PPC 64 Team, IBM Corp
-+ *
-+ *      This program is free software; you can redistribute it and/or
-+ *      modify it under the terms of the GNU General Public License
-+ *      as published by the Free Software Foundation; either version
-+ *      2 of the License, or (at your option) any later version.
-+ *
-+ * /dev/nvram driver for PPC
-+ *
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/slab.h>
-+#include <linux/spinlock.h>
-+#include <asm/uaccess.h>
-+#include <asm/prom.h>
-+#include <asm/machdep.h>
-+
-+static unsigned int nvram_size;
-+static unsigned char nvram_buf[4];
-+static DEFINE_SPINLOCK(nvram_lock);
-+
-+static unsigned char chrp_nvram_read(int addr)
-+{
-+	unsigned long done, flags;
-+	unsigned char ret;
-+
-+	if (addr >= nvram_size) {
-+		printk(KERN_DEBUG "%s: read addr %d > nvram_size %u\n",
-+		       current->comm, addr, nvram_size);
-+		return 0xff;
-+	}
-+	spin_lock_irqsave(&nvram_lock, flags);
-+	if ((call_rtas("nvram-fetch", 3, 2, &done, addr, __pa(nvram_buf), 1) != 0) || 1 != done)
-+		ret = 0xff;
-+	else
-+		ret = nvram_buf[0];
-+	spin_unlock_irqrestore(&nvram_lock, flags);
-+
-+	return ret;
-+}
-+
-+static void chrp_nvram_write(int addr, unsigned char val)
-+{
-+	unsigned long done, flags;
-+
-+	if (addr >= nvram_size) {
-+		printk(KERN_DEBUG "%s: write addr %d > nvram_size %u\n",
-+		       current->comm, addr, nvram_size);
-+		return;
-+	}
-+	spin_lock_irqsave(&nvram_lock, flags);
-+	nvram_buf[0] = val;
-+	if ((call_rtas("nvram-store", 3, 2, &done, addr, __pa(nvram_buf), 1) != 0) || 1 != done)
-+		printk(KERN_DEBUG "rtas IO error storing 0x%02x at %d", val, addr);
-+	spin_unlock_irqrestore(&nvram_lock, flags);
-+}
-+
-+void __init chrp_nvram_init(void)
-+{
-+	struct device_node *nvram;
-+	unsigned int *nbytes_p, proplen;
-+
-+	nvram = of_find_node_by_type(NULL, "nvram");
-+	if (nvram == NULL)
-+		return;
-+
-+	nbytes_p = (unsigned int *)get_property(nvram, "#bytes", &proplen);
-+	if (nbytes_p == NULL || proplen != sizeof(unsigned int))
-+		return;
-+
-+	nvram_size = *nbytes_p;
-+
-+	printk(KERN_INFO "CHRP nvram contains %u bytes\n", nvram_size);
-+	of_node_put(nvram);
-+
-+	ppc_md.nvram_read_val = chrp_nvram_read;
-+	ppc_md.nvram_write_val = chrp_nvram_write;
-+
-+	return;
-+}
-diff -purNx tags ../linux-2.6.11-rc3.orig/arch/ppc/platforms/chrp_setup.c ./arch/ppc/platforms/chrp_setup.c
---- ../linux-2.6.11-rc3.orig/arch/ppc/platforms/chrp_setup.c	2005-02-03 02:56:33.000000000 +0100
-+++ ./arch/ppc/platforms/chrp_setup.c	2005-02-06 13:15:12.494374066 +0100
-@@ -465,8 +465,7 @@ void __init
- chrp_init2(void)
- {
- #ifdef CONFIG_NVRAM
--// XX replace this in a more saner way
--//	pmac_nvram_init();
-+	chrp_nvram_init();
- #endif
- 
- 	request_region(0x20,0x20,"pic1");
-diff -purNx tags ../linux-2.6.11-rc3.orig/include/asm-ppc/system.h ./include/asm-ppc/system.h
---- ../linux-2.6.11-rc3.orig/include/asm-ppc/system.h	2005-02-03 02:55:50.000000000 +0100
-+++ ./include/asm-ppc/system.h	2005-02-06 13:13:38.456637144 +0100
-@@ -70,6 +70,7 @@ extern void _set_L3CR(unsigned long);
- #endif
- extern void via_cuda_init(void);
- extern void pmac_nvram_init(void);
-+extern void chrp_nvram_init(void);
- extern void read_rtc_time(void);
- extern void pmac_find_display(void);
- extern void giveup_fpu(struct task_struct *);
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
