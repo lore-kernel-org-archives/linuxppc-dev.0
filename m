@@ -1,39 +1,41 @@
-Date: Tue, 18 Jul 2000 20:20:46 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Martin Costabel <costabel@wanadoo.fr>
+Date: Tue, 18 Jul 2000 22:29:47 +0200 (MET DST)
+From: Derek Homeier <supas100@astrophysik.uni-kiel.de>
+To: Joseph Garcia <jpgarcia@execpc.com>
 cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: strace doesn't work on 2.4.0-testX
-In-Reply-To: <39744BAA.6E5984DA@wanadoo.fr>
-Message-ID: <Pine.LNX.4.10.10007182019150.488-100000@cassiopeia.home>
+Subject: Re: switching consoles
+In-Reply-To: <396F59AC.AD522F00@execpc.com>
+Message-ID: <Pine.SOL.3.95.1000718222308.3933C-100000@juliet>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 18 Jul 2000, Martin Costabel wrote:
-> The problem is that strace stopped working somewhere between
-> 2.4.0-test1-ac18 and -ac21 (I have both kernels and verified just
-> moments ago). It still doesn't work with 2.4.0-test5-pre2. Is this a
-> known problem or am I doing something wrong? I haven't seen anything on
-> the linux-kernel list (in the l-k archives, the last message with a
-> similar subject is from 1996), so it could be a ppc-related problem.
+On Fri, 14 Jul 2000, Joseph Garcia wrote:
 
-IIRC this is a known problem, caused by some changes in the ptrace() syscall.
+> Derek Homeier wrote:
+> > Generally, however, I prefer to set the primary function of the F[1-12]
+> > keys to "Function keys" in the "Options" of the "Keyboard" Control Panel.
+> > BTW, this seems to be reset whenever my OF variables are set back to defaults.
+> > Does anyone know if it is possible to change this setting in OF directly?
+>
+> I suppose you could try setting it back and forth and getting a hexdump of nvram
+> and then diff them to find the common thread.  then write an app that does it
+> for you.
+>
+> Kinda brute force, but thats how I wrote setpramboot and got it working for my
+> PDQ. (http://www.execpc.com/~jpgarcia)  The F[1-12] keys thing could be as
+> little as a single bit, right?
+>
+You mean, writing an app that can set it in Linux? Well, would be even
+slicker, actually I was only thinking about some OF command like
+'setenv keyxxx yyy' to not have to fully boot into MacOS every time the
+bootvars are reset. But a linux utility would really be quite useful,
+unfortunately I've never played with OF settings from within Linux.
+I'll have a look at your setpramboot docs, though.
 
-But IIRC, I did see an announce that someone did fix it on PPC. Or was that on
-MIPS?
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Thanks,
+							Derek
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
