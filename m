@@ -1,14 +1,27 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-From: "Richard Jones" <rjones@nexus-tech.net>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Mounting Compact Flash card under Linux on ppc823
-Date: Thu, 12 Sep 2002 18:48:42 -0400
-Message-ID: <PEEPKCHHHBJOFJKGMMLHOEEDCAAA.rjones@nexus-tech.net>
+Message-ID: <8D7C5F56B409554D9D46AC22195807F3061A56@exchwenz01.smtp.dmcwave.co.nz>
+From: Rod Boyce <rod_boyce@stratexnet.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Mounting Compact Flash card under Linux on ppc823
+Date: Fri, 13 Sep 2002 10:55:51 +1200
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+My only question is does /dev/hda1 exist in the device file system?
+
+If this does not exist not amount of trying will get this to work.
+
+Regards,
+Rod Boyce
+
+ -----Original Message-----
+From: 	Richard Jones [mailto:rjones@nexus-tech.net]
+Sent:	Thursday, September 12, 2002 3:49 PM
+To:	linuxppc-embedded@lists.linuxppc.org
+Subject:	Mounting Compact Flash card under Linux on ppc823
 
 
 Hello all,
