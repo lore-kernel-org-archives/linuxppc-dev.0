@@ -1,9 +1,8 @@
-Message-ID: <D73A25AA6E54D511AD74009027B1110F2C853D@ORION>
-From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
-To: "'Linux  PPC'" <linuxppc@rediffmail.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Serial port on IcePlanet
-Date: Fri, 23 Aug 2002 11:13:19 -0400
+Message-ID: <E1836A7F3557D311A14000805F9F36FC0141C859@usdfo011.usac.danfoss.net>
+From: Hihn Jason <JasonHihn@DANFOSS.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Connecting an Optrex display
+Date: Fri, 23 Aug 2002 17:31:24 +0200
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -11,54 +10,40 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is code that I wrote to set up the second uart.  I used Metrowerks 6.0
-to compile it.
+I am trying to get an Optrex display working in an 823e. (DMF-50840)
+It's a 320x240 passive monochrome, with a parallel 4 bit interface.
+I'm close to having it working, but I can't seem to get it 100%
 
-//-----------------------------------------------------------
-//UART1
-void setUpOtherUart()
-{
+I try to put out a pattern of
+*-*-*-*-*-*-... (AA)
+-*-*-*-*-*-*... (55)
+[repeat]
 
-	unsigned char* uart = (unsigned char*)0xef600400;
-	unsigned char* bcsr3    = (unsigned char*)0xF4000003;
-	int k = 11059200 / (16 * 9600);
+but what's displayed is:
+123456789ABC
+*--**--**--*...
+*--**--**--*...
+-*-*-*-*-*-*...
+-*-*-*-*-*-*...
+[repeats]
 
-    uart[3]       |= 0x80;        // set lcr[DLAB] divisor latch access bit
-    uart[0] =  k &  0xFF;   // set LSB of divisor
-    uart[1] =  k >> 8;      // set MSB of divisor
-    uart[3]       |=~0x80;        // clear lcr[DLAB] divisor latch access
-bit
+Note how columns 3,7,B are always 0, and 4,8,C are always one.
+I have the panel configed as :
+static vidinfo_t panel_info = {
+ /* W(p), H(p), W(mm), H(mm) */
+    320,  240,  120,   90,
 
-    uart[3]     = 0x03;           // 8 bit, 1 stop, no parity
-    uart[4]     = 0x03;           // DTR and RTS active.
-    uart[2] = 0x01;           // 16550 Fifo enabled.
+ /* CLK POL,  OUT_EN,   HSYNC POL, VSYN POL, DATA POL */
+    CFG_HIGH, CFG_HIGH, CFG_HIGH,  CFG_HIGH, CFG_LOW,
 
-    uart[0] |= 0x10;
+    /*BPP 2^X */ 0, /*BUSWID=4*/ 0, /*SINGLE=YES*/ 1, /*COLOR=NO*/ 0,
+    /*TFT=NO*/ 0,   /*WBL*/ 5,      /*VSPW=NA*/ 0, /*AC*/ 16, /*WBF*/ 0
+};
 
+I have to admit I have no idea on what Wait Between Lines and Wait Between
+frames should be set to, or how to derive them.
 
-}
-
------Original Message-----
-From: Linux PPC [mailto:linuxppc@rediffmail.com]
-Sent: Friday, August 23, 2002 11:06 AM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Serial port on IcePlanet
-
-
-
-Hi!
-
-Has anybody got the second serial port working on the
-Iceplanet (405pc processor)? The second serial port doesn't have
-DCD and RI pins on it. Does this mean that the standard serial
-driver will not work for it?
-
-Thanx for reading,
-
-
-- navin.
-
-__________________________________________________________
-
+Any help would be appreciated.
+-Jason
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
