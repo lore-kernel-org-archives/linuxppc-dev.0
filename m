@@ -1,35 +1,30 @@
-Date: Thu, 30 Dec 1999 10:39:45 -0800
+Date: Thu, 30 Dec 1999 10:41:02 -0800
 From: David Hinds <dhinds@valinux.com>
-To: Dan Malek <dan@netx4.com>
-Cc: Magnus Damm <damm@kieraypc01.p.y.ki.era.ericsson.se>,
-        dhinds@sourceforge.org,
+To: Magnus Damm <damm@kieraypc01.p.y.ki.era.ericsson.se>
+Cc: dhinds@sourceforge.org,
         linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>,
         phr-pcmcia@nightsong.com, nknack@vikingcomponents.com
 Subject: Re: CompactFlash Viking problem
-Message-ID: <19991230103945.D30321@valinux.com>
-References: <386B5437.86F7449B@switchboard.ericsson.se> <386B855F.58D64F2B@netx4.com>
+Message-ID: <19991230104102.E30321@valinux.com>
+References: <386B5437.86F7449B@switchboard.ericsson.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <386B855F.58D64F2B@netx4.com>; from Dan Malek on Thu, Dec 30, 1999 at 11:16:31AM -0500
+In-Reply-To: <386B5437.86F7449B@switchboard.ericsson.se>; from Magnus Damm on Thu, Dec 30, 1999 at 01:46:47PM +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Dec 30, 1999 at 11:16:31AM -0500, Dan Malek wrote:
-> Magnus Damm wrote:
+On Thu, Dec 30, 1999 at 01:46:47PM +0100, Magnus Damm wrote:
 > 
-> > Another thing is that if I stick to access the ATA registers
-> > all CompactFlash cards (even the Viking) work.
-> 
-> I haven't been very successful using Flash cards (PCMCIA or
-> Compact Flash) as pure memory devices.  I have always ended up
-> using them as ATA disk drives.
+> My code reads the attribute space on each card
+> and parses the tuples. The problem is that the
+> Viking card gives me correct CIS sometimes,
+> but mostly crap (I guess some kind of test-pattern).
+> This leads to no end-of-cis marker, which is bad.
 
-I don't know of any cards that can actually be used either way (either
-as a plain memory card, or as an ATA device).  As far as I know, they
-are either one or the other.  All PCMCIA ATA devices are supposed to
-support a memory mapped access mode, but that just puts the ATA
-registers in memory space instead of IO space.
+It's possible that the card is reporting "ready" too early, before the
+CIS is actually readable.  You might try working around the problem by
+increasing the delays in the power-up sequence.
 
 -- Dave
 
