@@ -1,29 +1,33 @@
-Message-ID: <3439AB3A99ECD5409F3A52ACF814744D158D78@norcom2.norcom.net>
-From: Lokesh Kumar <lokesh.kumar@wrx-us.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: 16650 driver on mpc8xx
-Date: Wed, 3 Sep 2003 11:21:14 -0400 
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Wed, 3 Sep 2003 11:04:00 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Yuxiao Xi <xiyuxiao@harbournetworks.com>
+Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: DINK32 R13.1 on Sandpoint X2
+Message-ID: <20030903180400.GB11224@ip68-0-152-218.tc.ph.cox.net>
+References: <200309020913.EAA17470@lists.linuxppc.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200309020913.EAA17470@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello all,
+On Tue, Sep 02, 2003 at 05:22:08PM +0800, Yuxiao Xi wrote:
 
-I have a board based on mpc8xx, with console on SMC1, and SCC1 as UART.
-There is 16650 on board which is mapped on cs#3.
+>
+> Hi,all,
+>     Now I'm working on a Motorola Sandpoint X2 board with ppc8240.
+> I use DINK32 r13.1 to boot my linux kernel image.
+>     From DINK32 r13.1 user manual,I know that DINK32 r13.1 supports
+> ethernet card Realtek 8139,but after these steps:
 
-I have gone through the mailing list and a similar issue was discussed
-earlier, but without any pointer to which code to customized. Can anyone
-help me to figure out how to approach this?
+What I would suggest is that instead of using the ethernet card support,
+you use the serial support still.  DINK32 r13.0.0 and newer support
+115200 baud, so loading a kernel via serial is now much less painful
+than it used to be.
 
-Thanks in advance.
-
-Lokesh Kumar
-Wireless Matrix USA Inc.
-703-262-4032
-
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
