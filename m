@@ -1,46 +1,47 @@
-Message-Id: <200406141752.AZK02995@sentinel.ucr.edu>
-From: "Steve Kaiser" <steven.kaiser@ucr.edu>
-To: "'saurosalomoni'" <saurosalomoni@bol.com.br>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Lite5200 from RS232 to RS485
-Date: Mon, 14 Jun 2004 10:53:07 -0700
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-reply-to: <HZ5CEE$AB58D6D6E1D4B27E5EB20145E6922465@bol.com.br>
+In-Reply-To: <20040614084625.A29057@home.com>
+References: <1087207803.7360.83.camel@newt> <20040614084625.A29057@home.com>
+Mime-Version: 1.0 (Apple Message framework v618)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <5F4101CA-BE64-11D8-ACA7-000393DBC2E8@freescale.com>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+From: Kumar Gala <kumar.gala@freescale.com>
+Subject: Re: [PATCH][RFC] OCP support for MPC107 and relatives
+Date: Mon, 14 Jun 2004 19:38:51 -0500
+To: Matt Porter <mporter@kernel.crashing.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> I need to switch between RS232 and RS485 in my Lite5200,
->  but I realized it's a little bit more dificult than I
-> thought at first...
-> Well,  as far as I'm concerned, I can do that just by
-> controling the RTS pin of my ttyS0 device to activate
-> the 485 module (is it 100% right?).
+Matt,
 
-There are ways to enable an RS485 transceiver without the extra I/O
-control line.  The transceiver needs to be enabled only during
-transmission (i.e from your Lite5200 to the outside world), and if your
-output differential pair is pulled up (normally the case I believe),
-then only during a transmission of a zero as well.
+We know have several systems which have the same issue of updating a
+paddr based on some offset.
 
-The way to accomplish this is with a one-shot and a diode.  Use the xmt
-line to low-active trigger the one-shot, and (via the diode) also pull
-the one-shot's threshold low, effectively holding the output high.  Set
-the timing of the one-shot for 1/2 the maximum bit time you need (ex: at
-115.2 baud, set it to 56us).  The one-shot output then is an inverted
-and extended version of your xmt line, and perfect for enabling the
-transceiver.  Also perfect for disabling the receiver at the same time.
+I'm wondering if we should add something like the following code into
+ocp.c (obviously, removing the 85xx specific aspects).
 
-See B&B Electronics [ http://www.bb-elec.com/ ] as one place I know of
-that sells RS232 - RS485 coverters off-the-shelf using this method if
-you don't want to build your own.  There are schematics on their site
-from which you can glean more info to build your own.  If am not a fan
-of one-shots, but in this case they are suitable.
+Called w/in board code:
 
-Steve Kaiser
-UCR Chem Electronics Shop
+         ocp_for_each_device(mpc85xx_update_paddr_ocp,
+&(binfo->bi_immr_base));
+
+Or should we have a more explicit ocp_update_paddr(phys_addr_t x);
+
+/*
+************************************************************************
+  */
+/* Update the 85xx OCP tables paddr field */
+void
+mpc85xx_update_paddr_ocp(struct ocp_device *dev, void *arg)
+{
+         phys_addr_t ccsrbar;
+         if (arg) {
+                 ccsrbar = *(phys_addr_t *)arg;
+                 dev->def->paddr += ccsrbar;
+         }
+}
+
+- kumar
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
