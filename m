@@ -1,45 +1,39 @@
-Message-Id: <v04003a02b3d54317d88f@[10.0.0.2]>
-In-Reply-To: 
- <Pine.LNX.3.96L.990809183523.5833A-100000@unix47.andrew.cmu.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Mon, 9 Aug 1999 22:51:31 -0400
-To: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-From: Paul Barrette <barretp@mcmail.cis.mcmaster.ca>
-Subject: Re: cvs.on.openprojects.net status?
-Cc: linuxppc-dev@lists.linuxppc.org
+Message-ID: <37AFA3A3.370B25CB@stny.rr.com>
+Date: Mon, 09 Aug 1999 23:59:31 -0400
+From: Patrick Berge <pberge@stny.rr.com>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: mace:transmit timeout - resetting
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I asked this question about a week or so ago and no one replied.  I don't
-trust kernel dists when it comes to the platinumfb.c driver it seems to get
-broken in every other incarnation.
+ I have am receiving "mace:transmit timeout - resetting" sporadically.
+It occurs while running VNC ( http://www.uk.research.att.com/vnc) .
+Ping, telnet and even IP Masquerading are working fine on all machines.
+I have one Power Mac with PPCLinux (R5-Kernel 2.2.6-15apmac) , an Intel
+box (Red Hat 6.0 - Kernel-2.2.5-15) which is the gateway  and an AMD
+box (RedHat 5.1- Kernel 2.0.34).    I only see this error on PPC Linux
+console when transmitting to the Intel box  with either Linux or Windows
+95 (Sorry it came with PC and used it to see if it was just Red Hat 6.0
+causing my problem).  I am betting I need to increase the timeout in
+the  /usr/src/linux/drivers/net/mace.c file? Although I don not
+understand why, since the connection to the AMD box is fine.  I swapped
+the ethernet cards (except the built-in) /cables and hub ports and
+always get the  same problem.  I even disabled IP Masquerading think
+that was the problem ... but I still had the problem.
 
+ I am not sure but I think the line I need to change is in
+/usr/src/linux/drivers/net/mace.c file shown below? Not sure what to
+change it to?
 
->What's the deal with the CVS tree? The kernel I compiled from it a week or so
->ago has a very screwed platinumfb driver, but now the cvs server
->cvs.on.openprojects.net does not exist. www.openprojects.net has moved to
->openprojects.nu, but no mention made of CVS anywhere...
->
->Is it just a matter of waiting for it to get set up again, or should I be
->looking elsewhere?
->
->-Hollis
->
+ #define TX_TIMEOUT HZ /* 1 second */
 
+Any ideas about my problem and/or the meaning of the HZ would be
+helpful.
 
---
-Paul Barrette
-Ph.D. candidate, dept. of Classics
-System Administrator
-McMaster University
-
-umbra loco deerat; qua postquam parte resedit
-Dis genitus vates et fila sonantia movit,
-umbra loco venit.                  (Ov. Met. 10. 88 ff.)
-http://www.humanities.mcmaster.ca/~barrette/
-
+Patrick Berge
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
