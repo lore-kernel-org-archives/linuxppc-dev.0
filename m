@@ -1,22 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <marc.leeman@ieee.org>
+Received: from scorpius.homelinux.org (75-112.a2f.dsl.net4all.net
+	[81.89.112.75]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A530A67A6C
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Mar 2005 18:31:33 +1100 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sven Luther <sven.luther@wanadoo.fr>
-In-Reply-To: <20050308064945.GC27722@pegasos>
-References: <422C495B.8090805@katalix.com>
-	<20050307125808.6585A200008A@mwinf0308.wanadoo.fr>
-	<20050307225401.GA31041@xyzzy>  <20050308064945.GC27722@pegasos>
-Content-Type: text/plain
-Date: Tue, 08 Mar 2005 18:27:12 +1100
-Message-Id: <1110266832.13607.267.camel@gaston>
+	by ozlabs.org (Postfix) with ESMTP id 5DA0267A75
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Mar 2005 20:18:16 +1100 (EST)
+Date: Tue, 8 Mar 2005 09:35:15 +0100
+From: Marc Leeman <marc.leeman@gmail.com>
+To: leo <leo_guo@jisung.cn>
+Message-ID: <20050308083515.GA13403@scorpius.homelinux.org>
+References: <20050308030424.DA5D367A79@ozlabs.org>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Dale Farnsworth <dale@farnsworth.org>, Nicolas DET <det.nicolas@free.fr>
-Subject: Re: mv643xx_eth SA_SHIRQ support patch
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="n8g4imXOkfNTN/H1"
+In-Reply-To: <20050308030424.DA5D367A79@ozlabs.org>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Re: MPC82xx and linux-2.6.
+Reply-To: Marc Leeman <marc.leeman@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,16 +26,37 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> Notice that benh is telling me that you should use SA_SHIRQ always and that
-> SA_INTERRUPT should go away, and that you should contact him online if you
-> have trouble with that.
-> 
-> > For the pegasos 2, you'll need the second patch which applies after
-> > the one I previously sent for chrp_setup.c.
-> 
-> Ok, will test this anyway, and tell you how it works.
+--n8g4imXOkfNTN/H1
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-GHeh, ok, just picked up the discussion. Yes, there is really no reason
-to use SA_INTERRUPT here, this is a thing of the past.
+> Anyone who has experience in booting linux-2.6 on Motorola ADS8260 platfo=
+rm?
 
-Ben.
+MPC8245, don't know if this is close enough.
+
+I had little problems porting a 2.4 to a 2.6 kernel.
+
+
+--=20
+  greetz, marc
+Repent? We have less than an arn. I was a Dominar. It'd take me longer
+than that to repent.
+	Rygel - Suns and Lovers
+scorpius 2.6.11 #1 Wed Mar 2 16:38:38 CET 2005 GNU/Linux
+
+--n8g4imXOkfNTN/H1
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.0 (GNU/Linux)
+
+iD8DBQFCLWPDUQpj09NWLeERAoGWAJ0fz0jnxgVzusZG4bUnBtlOEXH2GACfTFJo
+GqgSQpBOU5UyC4eCnVFbWdg=
+=OO4x
+-----END PGP SIGNATURE-----
+
+--n8g4imXOkfNTN/H1--
