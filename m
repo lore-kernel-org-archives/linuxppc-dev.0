@@ -1,27 +1,29 @@
-Message-Id: <200101291550.HAA25459@mail.turbolinux.com>
-Date: Mon, 29 Jan 2001 15:58:15 -0000
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-        Brad Midgley <brad@turbolinux.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Iain Sandoe <iain@sandoe.co.uk>, <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: pmud monitoring temperature (Re: powerbook doubles)
-From: Brad Midgley <brad@turbolinux.com>
-Cc: linuxppc-dev@lists.linuxppc.org, djosg@mgu.bath.ac.uk
-Reply-To: brad@turbolinux.com
+Date: Mon, 29 Jan 2001 17:18:59 +0100
+Message-Id: <19341224095043.1630@mailhost.mipsys.com>
+In-Reply-To: <20010129151910.792132EF9B@apollo.valhalla.net>
+References: <20010129151910.792132EF9B@apollo.valhalla.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michael
+>> What is the maximum CPU speed for machines without clock_frequency
+>> present in the device tree?
+>
+>wouldn't you have to go back quite a long way to find one?
+>My 9600 has it - and that's nearly prehistoric ;-)
 
-> gives too long conversion times for slower processors - does this hurt?
+The problem is that this property is often wrong...
 
-the motorola docs suggest waiting too long is fine. (they talk about how the only problem is the
-temp may be changing -- but that the temperature only changes at a max 1C/sec)
+I think Troy's temperature code (in bk _2_5) is an hard-coded value that
+should be good enough for most CPUs speeds. We did however notice quite
+wrong results with some G4s used in Apple's dual G4s.
 
-i think assuming 500mhz is fine.
-
---
-Brad
-brad@turbolinux.com      http://www.turbolinux.com/~brad/
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
