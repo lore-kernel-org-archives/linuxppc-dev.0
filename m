@@ -1,70 +1,85 @@
-Date: Sun, 9 Feb 2003 23:26:33 +0000
-From: Magnus Damm <damm@opensource.se>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: aty128fb and EDID
-Message-Id: <20030209232633.414c0fc0.damm@opensource.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
+To: Magnus Damm <damm@opensource.se>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: aty128fb and EDID
+Date: Sun, 9 Feb 2003 19:40:10 -0500
+References: <20030209232633.414c0fc0.damm@opensource.se>
+In-Reply-To: <20030209232633.414c0fc0.damm@opensource.se>
+MIME-Version: 1.0
+Message-Id: <200302091940.10202.kevin.hendricks@sympatico.ca>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 Hi,
 
-I recently bought a Cube G4 and got a 17" Apple Studio Display (CRT, ADC) with
-it. However, that combination seems hard to use out of the box if you want to
-use something else than the open firmware framebuffer.
+Steal the code from the radeon dirver in the kernel.  It finds and parses
+the EDID block in OF for ppc linux systems for LCD.
 
-The thing is that the monitor only supports two modes:
-1600x1200 64Hz
-1280x1024 75Hz
+It works fine with my 17 in lcd display.
 
-This gives me no picture at all when I try to use the aty128 driver.
+Kevin
 
-However, when I hardcode this video mode as default things work out ok:
-/* default modedb mode */
-/* 1600x1200, 64Hz, Non-Interlaced */
-static struct fb_videomode defaultmode __initdata = {
-        refresh:        64,
-        xres:           1600,
-        yres:           1200,
-        pixclock:       5952,
-        left_margin:    304,
-        right_margin:   24,
-        upper_margin:   38,
-        lower_margin:   1,
-        hsync_len:      184,
-        vsync_len:      3,
-        sync:           3,
-        vmode:          FB_VMODE_NONINTERLACED
-};
+On February 9, 2003 06:26, Magnus Damm wrote:
+> Hi,
+>
+> I recently bought a Cube G4 and got a 17" Apple Studio Display (CRT,
+> ADC) with it. However, that combination seems hard to use out of the box
+> if you want to use something else than the open firmware framebuffer.
+>
+> The thing is that the monitor only supports two modes:
+> 1600x1200 64Hz
+> 1280x1024 75Hz
+>
+> This gives me no picture at all when I try to use the aty128 driver.
+>
+> However, when I hardcode this video mode as default things work out ok:
+> /* default modedb mode */
+> /* 1600x1200, 64Hz, Non-Interlaced */
+> static struct fb_videomode defaultmode __initdata = {
+>         refresh:        64,
+>         xres:           1600,
+>         yres:           1200,
+>         pixclock:       5952,
+>         left_margin:    304,
+>         right_margin:   24,
+>         upper_margin:   38,
+>         lower_margin:   1,
+>         hsync_len:      184,
+>         vsync_len:      3,
+>         sync:           3,
+>         vmode:          FB_VMODE_NONINTERLACED
+> };
+>
+> The information above was built from my EDID file.
+>
+> To create some kind of generic solution I need to add EDID support to
+> the aty128 driver, or even better - a generic framebuffer layer.
+>
+> My question to you is:
+> All probing that is done by checking if "machine_is_compatible()", could
+> that all be replaced by EDID code?
+>
+> If you could send me your EDID files with together with information
+> about your machine and monitor I would be really happy. Then I could
+> parse them and see if they contain enough information. If you don't find
+> any EDID file then I would be glad to know that too.
+>
+> These machines are extra interesting:
+> * PowerMac2,1 first r128 iMacs
+> * PowerMac2,2 summer 2000 iMacs
+> * PowerMac4,1 january 2001 iMacs "flower power"
+> * iBook SE
+> * PowerBook Firewire (Pismo), iBook Dual USB
+> * PowerBook Titanium
+>
+> I find my EDID file in /proc/device-tree/pci/ATY,Rage128Pd@10/EDID
+>
+> Thanks.
+>
+> / magnus
+>
 
-The information above was built from my EDID file.
-
-To create some kind of generic solution I need to add EDID support to
-the aty128 driver, or even better - a generic framebuffer layer.
-
-My question to you is:
-All probing that is done by checking if "machine_is_compatible()", could
-that all be replaced by EDID code?
-
-If you could send me your EDID files with together with information about your
-machine and monitor I would be really happy. Then I could parse them and
-see if they contain enough information. If you don't find any EDID file then
-I would be glad to know that too.
-
-These machines are extra interesting:
-* PowerMac2,1 first r128 iMacs
-* PowerMac2,2 summer 2000 iMacs
-* PowerMac4,1 january 2001 iMacs "flower power"
-* iBook SE
-* PowerBook Firewire (Pismo), iBook Dual USB
-* PowerBook Titanium
-
-I find my EDID file in /proc/device-tree/pci/ATY,Rage128Pd@10/EDID
-
-Thanks.
-
-/ magnus
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
