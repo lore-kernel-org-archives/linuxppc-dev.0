@@ -1,24 +1,22 @@
-Reply-To: <joakim.tjernlund@lumentis.se>
-From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: WRITE_THRU  on 8xx missing
-Date: Wed, 4 Sep 2002 15:20:33 +0200
-Message-ID: <IGEFJKJNHJDCBKALBJLLGECHFGAA.joakim.tjernlund@lumentis.se>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <E1836A7F3557D311A14000805F9F36FC0141C86B@usdfo011.usac.danfoss.net>
+From: Hihn Jason <JasonHihn@DANFOSS.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: hacking linux - framebuffer console/i2c keyboard
+Date: Wed, 4 Sep 2002 15:34:02 +0200 
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="US-ASCII"
-In-reply-to: <3D6DB30E.6060509@embeddededge.com>
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am trying to create a cached memory mapping which is in WRITETHRU using ioremap().
-But in the latest PPC kernel for a mpc8xx target there is no flag for WRITETHRU (_PAGE_WRITETHRU).
+How would one hack up a i2c keypad interface to appear as a keyboard on a
+system, and get messages to stdout appear on an LCD? Specifically, I'm
+working on 823e. I have no idea where or how to start. I know each thing
+works correctly, that is, I have the i2c keypad and the LCD properly working
+on the system. I'm just at a loss on how to tie it all together.
 
-Why is it gone? Is there a replacement flag?
-I want to use this mapping to do burst reads but single writes for a flash device.
-
- Joakim
-
+Many thanks in advance!
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
