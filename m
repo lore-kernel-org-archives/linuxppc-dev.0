@@ -1,50 +1,49 @@
-Message-Id: <200104240553.HAA01467@piglet.grunz.lu>
-Date: Tue, 24 Apr 2001 07:53:38 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
+Date: Mon, 23 Apr 2001 23:14:25 -0800
+From: Ethan Benson <erbenson@alaska.net>
+To: linuxppc-dev@lists.linuxppc.org
 Subject: Re: Rsync access through NAT?
-To: jsmith@ash.penguinppc.org
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.LNX.4.33.0104171133410.17972-100000@ash.penguinppc.org>
-MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Message-ID: <20010423231425.C8585@plato.local.lan>
+References: <Pine.LNX.4.33.0104171133410.17972-100000@ash.penguinppc.org> <200104240553.HAA01467@piglet.grunz.lu>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="z4+8/lEcDcG5Ke9S"
+In-Reply-To: <200104240553.HAA01467@piglet.grunz.lu>; from mlan@cpu.lu on Tue, Apr 24, 2001 at 07:53:38AM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Jeramy,
+--z4+8/lEcDcG5Ke9S
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On  17 Apr, this message from jeramy b smith echoed through cyberspace:
->
-> We had problems serving rsyncs with 2.4 also. Using 2.4 and an rsync built
-> against 2.2 headers, we would get hung rsync processes that a stack trace
-> revealed were hung in a newselect (Paulus already knows this bit).
+On Tue, Apr 24, 2001 at 07:53:38AM +0200, Michel Lanners wrote:
 
-Might this be the problem here:
+> I have ECN compiled in all my 2.4 kernels. They are building right now
+> without ECN.... We'll see.
+>=20
+> <a compile & reboot later>
 
-http://slashdot.org/articles/01/04/24/0255224.shtml
+there is a sysctl variable that disables this at runtime you know ;-)
+i don't remember where it is offhand, sysctl -a | grep ecn or find
+/proc -name '*ecn*' -print should find it. =20
 
-I have ECN compiled in all my 2.4 kernels. They are building right now
-without ECN.... We'll see.
+> Yup, that seems to be the problem. rsync works again for me on
+> penguinppc. So I guess that some device close to penguinppc.org doesn't
+> support ECN.....
 
-<a compile & reboot later>
+probably turning on ecn is more trouble then its worth right now,
+unfortuanatly...=20
 
-Yup, that seems to be the problem. rsync works again for me on
-penguinppc. So I guess that some device close to penguinppc.org doesn't
-support ECN.....
+--=20
+Ethan Benson
+http://www.alaska.net/~erbenson/
 
-Well, no biggy, I'll just leave it disabled for now...
+--z4+8/lEcDcG5Ke9S
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
-Cheers
 
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
-
+--z4+8/lEcDcG5Ke9S--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
