@@ -1,81 +1,42 @@
-Subject: Re: [PATCH] export m8xx_cpm_hostalloc
-From: Andreas Oberritter <obi@saftware.de>
-To: Matt Porter <mporter@kernel.crashing.org>
-Cc: Dan Malek <dan@embeddededge.com>,
-	Tom Rini <trini@kernel.crashing.org>,
-	linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <20040723083856.A25212@home.com>
-References: <1090590567.3939.20.camel@localhost.localdomain>
-	 <20040723140231.GA21814@smtp.west.cox.net>
-	 <6658EF7A-DCB6-11D8-BC2F-003065F9B7DC@embeddededge.com>
-	 <20040723083856.A25212@home.com>
-Content-Type: multipart/mixed; boundary="=-aC1Gd3i2/98zGh5DD4uO"
-Message-Id: <1090674246.3023.1.camel@localhost.localdomain>
-Mime-Version: 1.0
-Date: Sat, 24 Jul 2004 15:04:06 +0200
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Sat, 24 Jul 2004 09:07:46 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+To: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
+Subject: different device file name when relocating SMC1?
+Message-ID: <Pine.LNX.4.60.0407240816340.11139@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---=-aC1Gd3i2/98zGh5DD4uO
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+      working with the latest 2.4.25 kernel tree from denx (sorry, i know
+everyone else is keen on 2.6, but we do have a project to maintain), i
+have a baseline kernel config for our 850DE board with SMC1 UART, and
+no networking configured in yet.  i just wanted to test the simple
+relocation of SMC1 *in* *preparation* for adding ethernet on SCC3, so
+i added the ucode patches to shift SMC1 (that was the only change in
+the kernel config), and a couple of us moved over the patches from the
+old uart.c file as best we could.
 
-Am Fr, den 23.07.2004 schrieb Matt Porter um 17:38:
-> On Fri, Jul 23, 2004 at 10:41:36AM -0400, Dan Malek wrote:
-> >
-> > On Jul 23, 2004, at 10:02 AM, Tom Rini wrote:
-> >
-> > > Must the driver use hostalloc?  I didn't think that i2c was called so
-> > > early that kmalloc/bootmem_alloc() (or so) couldn't be used.
-> >
-> >
-> > Should use ...consistent_alloc()
->
-> That doesn't exist in 2.6. Use dma_alloc_coherent().
+      with just this change, all we now get at boot time is:
 
-Thanks, that works, but requires the attached patch. Please apply.
+Linux/PPC load: console=ttyS0,9600 rw root=/dev/ram0
+Uncompressing Linux...done.
+Now booting the kernel
 
-Regards,
-Andreas
+... and hang ...
 
---=-aC1Gd3i2/98zGh5DD4uO
-Content-Disposition: attachment; filename=dma.diff
-Content-Type: text/x-patch; name=dma.diff; charset=utf-8
-Content-Transfer-Encoding: 7bit
+      so, simple question -- until now, we've identified the console as
+ttyS0, and it's worked fine.  does relocation require referring to the
+console with a different device file name?  i (vaguely) recall /dev
+entries with names like cpmuart0 or something like that.  given
+relocation, should i be using something other than "ttyS0"?
 
-# This is a BitKeeper generated diff -Nru style patch.
-#
-# ChangeSet
-#   2004/07/24 14:59:23+02:00 obi@pegasos.saftware.de
-#   export __dma_alloc_coherent and __dma_free_coherent (required for CONFIG_NOT_COHERENT_CACHE)
-#
-# arch/ppc/kernel/dma-mapping.c
-#   2004/07/24 14:59:03+02:00 obi@pegasos.saftware.de +2 -1
-#   export __dma_alloc_coherent and __dma_free_coherent (required for CONFIG_NOT_COHERENT_CACHE)
-#
-diff -Nru a/arch/ppc/kernel/dma-mapping.c b/arch/ppc/kernel/dma-mapping.c
---- a/arch/ppc/kernel/dma-mapping.c	2004-07-24 15:00:12 +02:00
-+++ b/arch/ppc/kernel/dma-mapping.c	2004-07-24 15:00:12 +02:00
-@@ -254,6 +254,7 @@
-  no_page:
- 	return NULL;
- }
-+EXPORT_SYMBOL(__dma_alloc_coherent);
+      (chances are, of course, we have to mess with uart.c a bit longer to
+see what's different between the two 2.4 kernel trees, but i thought
+i'd ask if it could be something this simple.)
 
- /*
-  * free a page as defined by the above mapping.
-@@ -317,7 +318,7 @@
- 	       __func__, vaddr);
- 	dump_stack();
- }
--EXPORT_SYMBOL(dma_free_coherent);
-+EXPORT_SYMBOL(__dma_free_coherent);
-
- /*
-  * Initialise the consistent memory allocation.
-
---=-aC1Gd3i2/98zGh5DD4uO--
-
+rday
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
