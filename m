@@ -1,22 +1,21 @@
-Return-Path: <shawnxjin@gmail.com>
-Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.206])
-	by ozlabs.org (Postfix) with ESMTP id 335F267A95
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Jan 2005 12:55:02 +1100 (EST)
-Received: by rproxy.gmail.com with SMTP id 1so318359rny
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Jan 2005 17:55:01 -0800 (PST)
-Message-ID: <c3d0340b0501271755585c2b0b@mail.gmail.com>
-Date: Thu, 27 Jan 2005 17:55:01 -0800
-From: Shawn Jin <shawnxjin@gmail.com>
-To: linuxppc <linuxppc-dev@ozlabs.org>
-In-Reply-To: <20050127134117.D4266@cox.net>
+Return-Path: <colin@colino.net>
+Received: from paperstreet.colino.net (colino.net [213.41.131.56])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2265167A7E
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Jan 2005 23:08:03 +1100 (EST)
+Date: Fri, 28 Jan 2005 13:07:27 +0100
+From: Colin Leroy <colin@colino.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <20050128130727.44a2e265@jack.colino.net>
+In-Reply-To: <1106866874.6250.97.camel@gaston>
+References: <1106012932.4533.46.camel@gaston>
+	<20050127195205.192c8c28@jack.colino.net>
+	<1106866874.6250.97.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-References: <c3d0340b0501271005409166e6@mail.gmail.com>
-	<20050127111615.A4266@cox.net>
-	<c3d0340b050127121826b92395@mail.gmail.com>
-	<20050127134117.D4266@cox.net>
-Subject: Re: Relocating interrupt vectors in ppc440?
-Reply-To: Shawn Jin <shawnxjin@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] radeonfb: massive update of PM code
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,24 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> > I guess the value set to PPC_MEMSTART should be the offset to the
-> > physical starting address of 2GB SDRAM not the absolute physical
-> > address, right?
-> 
-> It would be 0x00000000 for the first processor and 0x40000000 for the
-> second processor. Note that head_44x.S is a major place where a lot
-> of "system memory is at zero" assumptions take place that need to
-> be addressed for the second processor.
+On 28 Jan 2005 at 10h01, Benjamin Herrenschmidt wrote:
 
-The theory behind changing PPC_MEMSTART is to change MMU configuration
-and to let it translate 0xC0000000 to 0x40000000 for the 2nd
-processor. Right?
+Hi,=20
 
-One place I found the assumption is when loading the kernel physical address.
-	/* Kernel is at the base of RAM */
-	li r4, 0			/* Load the kernel physical address */
+> Well, this is basically equivalent to sleep #7 patch, so I'm not sure
+> what's wrong...
 
-I'll find out more places as you indicated.
+Maybe the dynclk parameter which default changed? I'll do more tests
+as soon as possible...
 
-Best regards,
--Shawn.
+--=20
+Colin
+  4. la d=E9t=E9rioration de la t=EAte peut avoir de graves cons=E9quences.=
+ =20
