@@ -1,31 +1,48 @@
-Message-ID: <3817D447.238914B2@263.net>
-Date: Thu, 28 Oct 1999 12:42:47 +0800
-From: Wang Yong <wung_y@263.net>
-Reply-To: wung_y@263.net
+Message-ID: <3817D7C5.24905FE3@jlc.net>
+Date: Thu, 28 Oct 1999 00:57:41 -0400
+From: Dan Malek <dmalek@jlc.net>
 MIME-Version: 1.0
-To: linuxppc embedded mail list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: What's MMU context?
+To: wung_y@263.net
+CC: linuxppc embedded mail list <linuxppc-embedded@lists.linuxppc.org>,
+        linux-ce-devel <linuxce-devel@linuxce.org>,
+        linux embedded maillist <linux-embedded@waste.org>
+Subject: Re: Root FS on Flash?
+References: <3817A40D.F62BC2FA@263.net>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek wrote:
-> I intened to use it on the 8xx processors, as they have an address
-> space id that allows a TLB optimization so you don't have to
-> invalidate the entire TLB on context switches.  I assume the
+Wang Yong wrote:
 
-  is this context contained in TLB entry? if yes, do you mean the
-entries
-  belong to other processes other the current one should not be replaced
-  because it contains the integer ID named context?
 
-  the TLB Entry of PPC401D2 contains lower 8 bit of PID. so it doesn't 
-  need to flush all entries out when processing task switch. taking this
-  into consider, if context of MMU is not useful any more?
+> .... i have a question: how to make root file system on the
+> flash memory? by now, most embedded linux employ NFS as root file
+> system.
 
-  Thank you.
-  Wang
+The diskless NFS root file system is simply used for convenience and
+to reduce application development time.  You can put a root file
+system on anything that will hold the bits.
 
+
+>         does anyone has any experience on it? is there a embedded linux
+> has done it? any comment and suggestion are welcome. thank you.
+
+Yes, there are many systems using a variety of solutions to Flash rom
+root file systems.  You have to consider your own application
+requirements to choose what is appropriate for you.  You can use
+a compressed initrd stored in flash rom, which is uncompressed into
+a ram disk.  Another popular alternative is PCMCIA flash disks,
+compact flash or Smart Media cards.  You can put a file system on them,
+partition them, and compress some or all of the data.  Least favorite
+on my list, but used by some people, is soldered on-board flash rom
+parts.  Wear leveling and dynamic allocation are complex algorithms,
+and above a rather small size compact flash cards are more cost effective.
+
+All of this is supported by standard Linux distributions, and the boot
+code in the PPC port handles it well.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
