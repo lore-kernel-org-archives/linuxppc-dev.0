@@ -1,36 +1,46 @@
-Message-ID: <2C1BAF8F8E1DD611862B0002A5D4C3FC02B6D068@renexch3.rennes.thmulti.com>
-From: Fillod Stephane <stephane.fillod@thomson.net>
-To: "'Bob White'" <bwhite@perigee.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: DPRAM driver on 440gp
-Date: Tue, 11 May 2004 11:15:49 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Marc Leeman <marc.leeman@barco.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [PATCH] u-boot 1.1.1 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 10 May 2004 15:46:38 +0200."
+             <20040510134638.GW14935@smtp.barco.com>
+Date: Tue, 11 May 2004 21:24:53 +0200
+Message-Id: <20040511192458.48159C108D@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->Given that the physical address has already been mapped, via
->ioremap64(), do I need remap_page_range()?  Does anyone have any ideas
->on what the mmap file_op for this driver would look like?  Do I even
->need mmap() or should I just use an ioctl to return the pointer I've
->already got to the user?
+Marc,
 
-The ioctl won't do because the virtual address returned by the ioremap64
-is not valid in process context. You could remap it through mmap file_op,
-but why bother?
-Rem: reading ioremap64 and drivers/char/mem.c is very instructive.
+in message <20040510134638.GW14935@smtp.barco.com> you wrote:
+>
+> oops:
+>
+>  -    CONFIG_READ_BYTE(PCMBRCR,val);
+>  +    CONFIG_READ_BYTE(PCMBCR,val);
 
-Since you're accessing your DPRAM guarded/uncached, you may simply
-map it both in kernel with ioremap64 and in userland with mmap64
-of /dev/mem.
+I told you before:
 
-For more information, search the archive (or DENX PPC FAQ) on userland
-mapping of physical memory.
+This is not the right place for  U-Boot  patches.  Please  send  such
+stuff  to  the  U-Boot-Users  mailing  list.  And  please  follow the
+instructions in the README ("Submitting Patches").
 
 
-Regards,
-Stephane
+Do you think I will search 850k+ lines of code? And actually no  such
+line appears anywhere in the current U-Boot code.
+
+If you have something to report, please do  it  on  the  U-Boot-Users
+mailing list, and do it in a usable form.
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Always leave room to add an explanation if it doesn't work out.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
