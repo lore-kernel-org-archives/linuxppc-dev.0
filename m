@@ -1,31 +1,42 @@
-Message-ID: <3A7863F9.906D65F9@convergence.de>
-Date: Wed, 31 Jan 2001 20:14:01 +0100
-From: Andreas Hundt <andi@convergence.de>
+Message-ID: <3A50A051.1000907@galileo.co.il>
+Date: Mon, 01 Jan 2001 17:20:49 +0200
+From: Rabeeh Khoury <rabeeh@galileo.co.il>
+Reply-To: rabeeh@galileo.co.il
 MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-CC: Michel Ddnzer <michdaen@iiic.ethz.ch>,
-        Benjamin
-	Herrenschmidt <benh@kernel.crashing.org>,
-        linuxppc-dev@lists.linuxppc.org, linux-fbdev@vuser.vu.union.edu
-Subject: Re: [linux-fbdev] Re: r128 DRI driver now fully functional on PPC
-References: <Pine.LNX.4.05.10101311942170.9168-100000@callisto.of.borg>
-Content-Type: text/plain; charset=us-ascii
-Sender: owner-linuxppc-dev@lists.linuxppc.org
-List-Id: <linuxppc-dev@lists.linuxppc.org>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Page tables
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Sender: owner-linuxppc-embedded@lists.linuxppc.org
+List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> The disadvantage is that if you change the palette, the text colors don't
-> change until you redraw the screen (or switch VC back-and-forth). That's why I
-> decided to use the hardware palette in directcolor modes.
+Hi All,
 
-I dont think it is good to use a palette in >8bpp modes. At least it
-breaks
-my fbdev software.
+I have been able to boot our embedded system (7400 PowerPC and Galileo
+Technology system controller) and mounting NFS throught network.
+Now the system is trying to run the first process - init.
+It starts downloading part of init, then downloads part of ld.so.1 and
+in the function padzero (in fs/binfmt_elf.c), where the user space is
+first accessed at all (address 0x30026328 to be exact), the kernel tries
+to zero the bss section.
+Due to that an exception occurs due to not valid page, then the kernel
+allocates succesfully new pte to the process (in function do_page_fault
+in file arch/ppc/mm/fault.c) and it is supposed to go back to function
+padzero to resume, but the weird thing is that it doesn't go back and
+stays stuck some where that I couldn't find where.
+One good thing is that the interrupt handling mechainsm is still working
+and the kernel still responds to pings.
 
---
-Andreas Hundt                              andi@convergence.de
-Convergence Integrated Media GmbH          http://www.convergence.de
-Rosenthaler Str. 51                        fon: +49(0)30-72 62 06 50
-D-10178 Berlin                             fax: +49(0)30-72 62 06 55
 
-** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
+Did any one encounter such a problem ?
+and how can I debug this problem ?
+is there any functions that I can use to search the page tables ?
+
+Any tip would help a lot !
+
+
+Thank you,
+Rabeeh
+
+
+** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
