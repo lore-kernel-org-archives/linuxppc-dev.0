@@ -1,41 +1,41 @@
-Date: Thu, 23 Mar 2000 10:29:38 -0600 (CST)
-From: Grant Erickson <erick205@tc.umn.edu>
-To: Michael Manousos <manousos@telecom.ntua.gr>
-cc: Young-Han Kim <yhkim@da-san.com>,
-        linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: www.ppc.kernel.org and gcc for PPC(Cross Compiler) ...
-In-Reply-To: <38DA4031.8C1177E8@telecom.ntua.gr>
-Message-Id: <Pine.SOL.4.20.0003231028490.25183-100000@garnet.tc.umn.edu>
+To: christof <xfr@freenet.de>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: kernel executing from flash
+References: <1314024740.953824470340.JavaMail.wwwrun@moe.freenet.de>
+From: Markus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
+Date: 23 Mar 2000 17:33:50 +0100
+In-Reply-To: christof's message of "Thu, 23 Mar 2000 16:14:30 +0100 (CET)"
+Message-ID: <kfyog85zlw1.fsf@kieraypc25.p.y.ki.era.ericsson.se>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, 23 Mar 2000, Michael Manousos wrote:
-> Sources and info about the setup of a cross-compiling environment
-> can be found on the site below:
+christof <xfr@freenet.de> writes:
+
+> Hello,
 >
-> http://members.home.net/mmporter/linux/cross/
+> all Linux I know will be copied during startup from Harddisk, NFS or
+> Flash to RAM and will be executed there.  Is there a possibility for
+> smaller systems to run the kernel directly from flash memory as other
+> embedded os's do? Did somebody try this or is it totaly impossible?
 
-And also at:
+Well, I see no reason why it shouldn't be possible, but not without
+modifying things.
 
-	http://www.lcse.umn.edu/~grant/Linux/cross.html
+You'd need to link the .data, .data.cacheline_aligned, .data.init
+and .bss sections so they are located in RAM, and the former
+three plus the exception vectors would have to be copied from flash
+to their linked location.
 
-Regards,
+The question is why?
+RAM is usually cheaper than flash, and if you run the kernel in
+RAM as usual you can have it compressed in flash, whereas if
+you intend to run it directly from flash it must be uncompressed.
 
-Grant
-
-
-> Young-Han Kim wrote:
-> >   Nowadays, have you been visit the http://www.ppc.kernel.org ?
-> >   Currently, I can't access the www.ppc.kernel.org...
-> >   If someone know the reason, please answer to me...
-> >
-> >   I want to find the gcc compiler(base on i386) for PPC(Cross Compiler).
-> >   If someone know the site, please answer to me...
-> >
-> >   Thanks for in advance !
-
+//Marcus
+--
+Signature under construction, please come back later.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
