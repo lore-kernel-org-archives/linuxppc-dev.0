@@ -1,63 +1,49 @@
-Date: Thu, 31 Aug 2000 18:04:16 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: Michel Dänzer <daenzerm@student.ethz.ch>,
-        Tony Mantler <nicoya@apia.dhs.org>,
-        Tom Rini <trini@kernel.crashing.org>, Dan Malek <dan@netx4.com>,
-        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Platform configuration (was: Re: CONFIG_PPC != Mac)
-In-Reply-To: <Pine.LNX.4.10.10008311714050.390-100000@cassiopeia.home>
-Message-ID: <Pine.HPX.4.10.10008311753590.15978-100000@gra-ux1.iram.es>
+Date: Thu, 31 Aug 2000 18:09:19 +0200 (CET)
+From: Marc Dietrich <Marc.Dietrich@hrz.uni-giessen.de>
+To: daenzerm@student.ethz.ch
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: asm statement in include/asm not ansi conform
+In-Reply-To: <39AD4E8F.76FB97E0@relog.ch>
+Message-Id: <Pine.A41.4.21.0008311751210.17008-100000@c2.hrz.uni-giessen.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 31 Aug 2000, Geert Uytterhoeven wrote:
+Hello Michel,
 
-> > The only reasonable way to do this that I see is to have a self linking
-> > kernel, the initial boot code would simply uncompress a partially linked
-> > kernel and perform the final link step before passing control to it.
-> >
-> > Yes this involves putting several versions of processor specific code
-> > in the same kernel, but once compressed it's not that big. The _init
-> > sections are ok, but adding apus/prep/openfirmware is pushing the method
-> > past the breaking point.
+after some testing dri works now. On startup X says "dri enabled" and
+glinfo shows many supported GL functions. But at least when running
+"gears" for example, I get no accelaration at all. Still 60 frames per
+second - same as with software rendering. I also have a P-III/500 box with
+Rage128 (AGP) witch produces 400 frames! Glxinfo says something like "RGB
+error" and breaks.
+
+Maybe it's better at your site?
+
+Marc
+
+On Wed, 30 Aug 2000, Michel Dänzer wrote:
+
+> Marc Dietrich wrote:
 >
-> Cool!
+> > I just compiled XFree from dri.sourceforge.net, which uses the "-ansi"
+> > option for compiling.
 >
-> > Yes, this will make the bot iamge bigger, I just  don't care (embedded
-> > systems are different) since it will make the running kernel smaller:
+> Is that defined in xc/config/cf/host.def? It's always a good idea to tweak
+> that file before an X build.
 >
-> My interest is in smaller kernel images. I don't want to compile every single
-> piece of PPC code that's useless for my hardware, I want to compile only what
-> I need. I think I'm already wasting too much of my time waiting for kernel
-> compiles.
+>
+> > Problem is, that this fails on some "asm" instructions in e.g.
+> > include/asm-ppc/processor.h. I'm not very firm with C but is it posible to
+> > replace this with __asm__ ? I compiled X without -ansi and it seems to work.
+>
+> So the DRI is working for you? Cool, we are two now then ;)
+>
+>
 
-And you `make {x,menu,old,}config' to take longer than `make zimage' ?
-
-First, kernel compile times are only fairly large after a big update, when
-I do `make dep clean zImage'. Second, the proportion of time spend in the
-specific PPC code (mostly arch/ppc and drivers/macintosh) is rather small.
-Third, building a minimal kernel image for each machine would involve a
-ton (and that's an undrestatement) of kernel options: CONFIG_INTC_8259,
-CONFIG_INTC_POWERMAC, CONFIG_INTC_OPENPIC and others for the interrupt
-controllers, half a dozen or so CONFIG_RTC types, same for CONFIG_NVRAM
-and a few other things I surely forget. The only reasonable solution is to
-aim for the smallest runtime kernel image.
-
-> And since there are people who care about embedded PPC systems, it would be
-> great to at least have _the choice_ to compile a small specific kernel or a
-> large generic one.
-
-Then build an utility which trims the kernel the same way as the smart
-bootloader would do. People with embedded systems know what their target
-systems is and could use it, but please don't add another couple of
-hundred entries in the basic Linux kernel configuration.
-
-	Regards,
-	Gabriel.
+Marc Dietrich                marc.dietrich@physik.uni-giessen.de
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
