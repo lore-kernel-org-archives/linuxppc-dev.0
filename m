@@ -1,30 +1,27 @@
-Message-ID: <0B0A39652BB0D411BCCF00508B9512EC08AEB466@tx14exm05.ftw.mot.com>
-From: Yu Bo-BOYU1 <Bo.Yu@motorola.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: /dev/console and mknod question
-Date: Wed, 9 Oct 2002 22:21:49 -0500 
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Thu, 10 Oct 2002 17:9:20 +0800
+From: "=?GB2312?Q?=B5=CB=D3=C0=C1=FA?=" <dengyonglong@sohu.com>
+To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: how to use the isa emulator on the motorola mpc823 board
+Mime-Version: 1.0
+Content-Type: text/plain
+Message-Id: <20021010084813.AF6425372B@smtp01.sohu.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Finally I got the linux work on my custom board. At first I encountered
-"unable to open an initial console" problem. I created /dev/console then it
-worked.
+hi,
 
-But I am still wondering how this /dev/console works ? Why mknod (which I
-think
-is a native intel platform command) can create a device that cross platform
-powerpc linux
-can understand ?
+I am using the motorola mpc823 evaluation board and the linux kernel. I
+want to connect with a isa card by the UPMB, that's the kernel's default
+setting. I have read the bootloader code ,I found it has done all the
+work that needed for using the isa emulator. Now, can I access the isa
+address area in the kernel or moduler like this:(port size is 16 bit)
 
-Thanks.
+	unsigned short *p	0x06000000;		//BR4 = 0x060018C1
+	*p = 0x55;
+Do some know about it? Thank's very much for you help!
 
-Bo Yu
-Motorola, GTSS
-1-817-245-6725
-
+dengyonglong@sohu.com
+2002-10-10
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
