@@ -1,29 +1,42 @@
-Message-Id: <200005311833.UAA00704@piglet.grunz.lu>
-Date: Wed, 31 May 2000 20:33:33 +0200 (CEST)
+Message-Id: <200005311840.UAA00709@piglet.grunz.lu>
+Date: Wed, 31 May 2000 20:40:57 +0200 (CEST)
 From: Michel Lanners <mlan@cpu.lu>
 Reply-To: mlan@cpu.lu
 Subject: Re: Lite-On ethernet controller
-To: jgarzik@mandrakesoft.com
-cc: huberj@wpi.edu, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <3935145C.DE1F478D@mandrakesoft.com>
+To: huberj@wpi.edu
+cc: jgarzik@mandrakesoft.com, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20000531094520.B652@mclinux.com>
 MIME-Version: 1.0
 Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  31 May, this message from Jeff Garzik echoed through cyberspace:
->> Device information:
->> tulip driver output:
->> eth1: Lite-On PNIC-II rev 37 at 0x1c00, 00:00:94:C5:EF:FF, IRQ 30.
->
-> IRQ 30?  Is that ok for PPC?
+Hi there,
 
-Yes, actually there are systems that are not limited to 8 IRQs cascaded
-into another 8 IRQs ;-))
+On  31 May, this message from Josh Huber echoed through cyberspace:
+>> > lspci -vv output attached because it's too wide.
 
-Seriously, IIRC, desktop PPC systems have at least one interrupt
-controller with 32 IRQs. Some even have more... or more controllers.
+
+00:05.0 Ethernet controller: Lite-On Communications Inc: Unknown device c115 (rev 25)
+        Subsystem: Asante Technologies, Inc.: Unknown device f001
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping+ SERR- FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+        Latency: 8 min, 56 max, 32 set, cache line size 08
+        Interrupt: pin A routed to IRQ 30
+        Region 0: I/O ports at 1c00 [size=256]
+                  ^^^^^^^^^    ^^^^
+        Region 1: Memory at c3002000 (32-bit, non-prefetchable) [size=256]
+        Expansion ROM at c1240000 [disabled] [size=256K]
+
+The IO port region above might be your problem. What machine type is
+this? Do you have any ISA slots in your machine? Form the i8259
+interrupt controller I deduce it's not a PowerMac...
+
+Have you looked at the driver whether it runs on IO ports or
+memory-mapped? Since the two regions above probably represent different
+views on the same register file, I'd go memory-mapped (i.e. using region
+1 above), if possible.
 
 Michel
 
