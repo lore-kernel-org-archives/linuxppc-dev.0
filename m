@@ -1,29 +1,28 @@
-Message-ID: <01C0750B.A7F4C420@NB1>
-From: torsten.rissel@t-online.de (Torsten Rissel)
-To: "Linuxppc-Embedded (E-Mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: swapoff error; buffer memory
-Date: Tue, 2 Jan 2001 22:30:47 +0100
+From: "Meena Ramamoorthi" <meena@stargateip.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Cc: "Meenakshi Ramamoorthi" <meena@stargateip.com>
+Subject: Hardware software co verification tools on Embedded LINUX
+Date: Tue, 2 Jan 2001 17:50:22 -0800
+Message-ID: <NEBBJELJBMCNBHIPPOHFCEMCCAAA.meena@stargateip.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Everybody !
+  Hi all,
 
-I have a strange problem in my newly ported kernel:
-The amount of buffer memory is unusually high according to
-meminfo (more then 48 MB on a board with 64MB memory);
-if I use a swap partition it is immediately completly used
-(104 MB size) and when I shut down the system, swapoff
-generated a "swap_duplicate" error ?
+  Happy new year to all !
 
-I have used both a 2.2.16 standard kernel and a 2.2.18 kernel from linuxppc,
-the results are identically.
+  I want to know if any body has used any of the HW/SW co verification tools
+on embedded linux and if so what is that ? and from where ?. Most of the
+tools are available in Solaris or HP unix and some are still being ported to
+LINUX. SO if any one has used any of the HW/SW co verification tools please
+let me know.
 
-Any idea what is going wrong ?
+    Thanks in advance !!
 
-Torsten Rissel
-
+  - Meenakshi
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
