@@ -1,23 +1,42 @@
-Message-ID: <XFMail.000706093030.pochini@shiny.it>
+Date: Thu, 6 Jul 2000 10:39:43 +0200
+From: Olaf Hering <olh@suse.de>
+To: "Iain Sandoe" <iain@sandoe.co.uk>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Multi-boot advice.
+Message-ID: <20000706103943.B27516@suse.de>
+Reply-To: linuxppc-dev@lists.linuxppc.org
+References: <200007052323.AAA07099@hyperion.valhalla.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-MIME-Version: 1.0
-In-Reply-To: <20000705125107.63985.qmail@hotmail.com>
-Date: Thu, 06 Jul 2000 09:30:30 +0200 (CEST)
-From: Giuliano Pochini <pochini@shiny.it>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: USB related panics
+In-Reply-To: <200007052323.AAA07099@hyperion.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Sometimes my G3 crashes with the error: "had to kill usb urb",
-then the kernel panics with -I don't remember well- "reschedule
-in interrupt handler" or something similar. /:-6
-Yes, I know the usb support is still beta, but this one should
-be fixed ASAP.
+On Thu, Jul 06, Iain Sandoe wrote:
 
-Bye.
-    Giuliano Pochini ->)|(<- Shiny Corporation {AS6665} ->)|(<-
+>
 
+> LinuxPPC.
+> MacOS (9)
+> MacOS (X) / Darwin
+>
+> I think (from the comments that have passed on the list) that there may be
+> some constraints on partition ordering - and booters.
+
+http://sdb.suse.de/sdb/en/html/olh_ppc_macosx.html
+
+> Does it matter which partition is the MacOS-9 one?
+
+No.
+
+
+Gruss Olaf
+
+--
+ $ man clone
+
+BUGS
+       Main feature not yet implemented...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
