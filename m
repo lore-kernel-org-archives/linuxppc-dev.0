@@ -1,38 +1,49 @@
-Date: Sat, 4 Aug 2001 12:18:40 -0500
-From: Troy Benjegerdes <hozer@drgw.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: bogus SCSI timeouts and ntpd...
-Message-ID: <20010804121840.G17468@altus.drgw.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <3B6C64A7.9040005@hadess.net>
+Date: Sat, 04 Aug 2001 22:09:59 +0100
+From: Bastien Nocera <hadess@hadess.net>
+MIME-Version: 1.0
+To: Ethan Blanton <eblanton@cs.ohiou.edu>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: DRI on an iBook2
+References: <20010804225709.A861@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I have recently started getting what appear to be 'bogus' SCSI timeouts
-after a crash and reboot, when my raid1 is re-syncing. (which amounts to
-copying disk1 of the raid to disk2 of the raid.)
+Hi,
 
-This didn't start happening until I started running ntpd at bootup..
+On PPC, we can't use AGP GART because of the lack of documentation for
+the chipsets Apple uses on its motherboards. But we have PCI GART.
 
-I suspect something is broken somewhere such that when ntp adjusts the
-time by a small amount, the SCSI layer (and generic timer code??) gets
-confused and thinks that SCSI command have timed out.
+Grab the DRM modules sources here: http://xfree86.org/~alanh/
 
-This is with the current linuxppc_2_4_devel, running on a dual processor
-MTX (604ev) with a symbios SCSI chip on-board.
+Compile, insmod r128.o, modify your XF86Config to include the dri,
+glcore and glx modules, and use 16bpp by default (the iBook2 doesn't
+have enough video ram to do OpenGL at 1024x768@24bpp).
 
-Anyone have any ideas on this, or how to do a testcase to attempt to
-verify it?
+Start X-Windows and you should be set ;)
 
-So does anyone think this is a generic SCSI problem, or something only
-with PPC, and the use of timebase for the clock?
+glxinfo's first lines will tell you if you got DRI to work.
 
---
-Troy Benjegerdes | master of mispeeling | 'da hozer' |  hozer@drgw.net
------"If this message isn't misspelled, I didn't write it" -- Me -----
-"Why do musicians compose symphonies and poets write poems? They do it
-because life wouldn't have any meaning for them if they didn't. That's
-why I draw cartoons. It's my life." -- Charles Shulz
+Cheers
+
+PS: If you want to see my XF86Config-4, tell me, I'll post it on my site.
+
+Ethan Blanton wrote:
+
+>Hi,
+>I see on the DRI project (http://dri.sourceforge.net/) page that the
+>ATI Rage128 Mobility chipset is supported by XFree86 DRI.  However,
+>I'm not having a whole lot of luck getting anything working on my
+>iBook2.  I notice that I *can* turn on the kernel option for the DRM
+>and select support for the ATI Rage128.  My question to this list
+>before I spend too much time beating my head against this is whether
+>or not DRM and/or DRI for the ATI chipsets are supported on LinuxPPC.
+>
+>Thanks...
+>Ethan
+>
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
