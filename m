@@ -1,116 +1,63 @@
-From: Alan Mimms <alan@packetengines.com>
-To: Clinton Lam <clinton@AudeSi.com>, Clinton Lam <clinton@AudeSi.com>,
-        "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: mpc8xx-2.2.13 booting problem
-Date: Thu, 3 Feb 2000 17:47:56 -0800
-Content-Type: text/plain
-References: <2044A9F15B38D211A89900104BD36C02381B4E@thebank.audesi.com>
-In-Reply-To: <2044A9F15B38D211A89900104BD36C02381B4E@thebank.audesi.com>
+Message-ID: <389A7487.738ACDAA@netx4.com>
+Date: Fri, 04 Feb 2000 01:41:11 -0500
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-Message-Id: <0002031748410T.00733@alan.corp.packetengines.com>
+To: Ruedi.Hofer@ascom.ch
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: initrd
+References: <0FPD00L6T17ENM@pmdf-it.hasler.ascom.ch>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Sounds like you need to turn on some prescaling for the timebase/decrementer.
-If you can't find the required stuff, maybe I can help, but I'm not all THAT
-familiar with these cockamamie 8xx processors myself.  Perhaps someone else?
+Ruedi.Hofer@ascom.ch wrote:
 
-a
 
-On
-Thu, 03 Feb 2000, Clinton Lam wrote: > Alan,
->
-> After another 5 hours of debugging, I've narrowed the problem to the
-> decrement counter interrupt. For some unknown reasons, the interrupt never
-> gets clear. The system just keep looping and waiting for this interrupt to
-> be cleared.
->
-> In the file time.c (this is the file where all of the timer interrupt code
-> is), it mentions something about making an assumption that MBX board is
-> running off a 32.768KHz crystal. But the Touchstone board has a 3.57 MHz
-> crystal. So, something has to be changed to make this work! Anyone has any
-> ideas???
->
-> BTW, the network bootloader is modified from a comercial OS. We use it to
-> jump start our project. I don't think we can share the code with everyone,
-> sorry...
->
-> Regards
-> Clinton Lam
->
-> > -----Original Message-----
-> > From: Alan Mimms [mailto:alan@packetengines.com]
-> > Sent: Thursday, February 03, 2000 10:03 AM
-> > To: Clinton Lam; Linuxppc-Embedded (E-mail)
-> > Subject: Re: mpc8xx-2.2.13 booting problem
-> >
-> >
-> > Clinton,
-> >
-> > This function enables interrupts.  Some bit of hardware is leaving an
-> > interrupt asserted permanently, or else your port or your
-> > driver for some bit
-> > of hardware is not turning off the interrupt request by
-> > servicing the interrupt
-> > properly.  Or, possibly, your 8xx interrupt management is screwed up.
-> >
-> > One of those explanations is it, just about guaranteed...
-> >
-> > Luck.
-> > a
-> >
-> > On Thu, 03 Feb 2000, Clinton Lam wrote:
-> > > Hi,
-> > >
-> > > I am new to the embeded linux. I am trying to port
-> > mpc8xx-2.2.13 kernel to
-> > > our custom board, called Touchstone. It is a reference
-> > design based on
-> > > mpc823, which has 32 Mbyte of SDRAM, and 4 Mbyte of flash.
-> > >
-> > > So far, I've developed a network bootloader, which
-> > downloads the zImage to
-> > > the target. I am at the stage where I can unzip the kernel
-> > image to address
-> > > location 0x0, and jump to it. Then, inside the routine
-> > "start_kernel", I am
-> > > able to get the console up and have the linux banner
-> > partially displayed at
-> > > the cosole.
-> > >
-> > > However, after some more kernel initialization in
-> > "start_kernel", the
-> > > program stuck in a routine called "sti()". I've debugged
-> > through this
-> > > routine (it is an assembly routine) , and it seems that it
-> > is looping
-> > > forever inside the routine. I know that the routine is
-> > trying to set the EE
-> > > bit in MSR, and also doing some thing with
-> > ppc_n_lost_interrupts, which I
-> > > don't quite understand.
-> > >
-> > > Does anyone have any idea what is wrong with my port? Can
-> > someone explain to
-> > > me what is the purpose of this "sti()" routine, what are
-> > the possible cause
-> > > for it to hang?
-> > >
-> > > Your response is greately appreciated!
-> > >
-> > > Thanks in advance.
-> > >
-> > > Clinton Lam
-> --
-> Alan Mimms     Packet Engines, Inc.     Spokane, Washington [99214-0497]
->   USA, Earth, Sol, Milky Way, The Local Group, Virgo Supercluster, U0
-> Despite the cost of living, have you noticed how popular it remains?
->   -- Steven Wright?
---
-Alan Mimms     Packet Engines, Inc.     Spokane, Washington [99214-0497]
-  USA, Earth, Sol, Milky Way, The Local Group, Virgo Supercluster, U0
-Despite the cost of living, have you noticed how popular it remains?
-  -- Steven Wright?
+>  2) create an empty file system of the appropriate size, e.g.
+>     # mke2fs -m0 /dev/ram 300
+
+
+>From experience, I know a 300 block size ramdisk can't possibly
+hold enough files to get a system started.  You need at least
+2 Meg (2048), and I build at least 4000 block ramdisks.  Make
+sure you get all of the minimal shared libraries in there.....
+
+
+>  7) copy the image to a file
+>     # dd if=/dev/ram bs=1k count=300 of=/boot/initrd
+>  8) deallocate the RAM disk
+>     # freeramdisk /dev/ram
+
+
+....I am assuming you gzip'ped the ramdisk......
+
+
+> entry 0x100000, phoff 0x34, shoff 0xf2864
+> phnum 0x1, shnum 0xa
+> p_offset 0x10000, p_vaddr 0x100000, p_paddr 0x100000
+> p_filesz 0x532c, p_memsz 0xb1bc
+
+
+Oh oh....you are using a FADS board or something custom......
+
+
+> If I take a prebuilt ramdisk.image.gz then the kernel
+> starts up and crashes with the following output:
+
+> RAMDISK: Compressed image found at block 0
+> crc error
+
+Ummm....doesn't this mean something to you?  When something is
+uncompressed and you get a CRC error, the file is usually
+truncated or corrputed.....
+
+Since it appears this is a board that isn't known to be able
+to download something properly that is this large, you should
+probably verify the download with some kind of standard test
+pattern and test software.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
