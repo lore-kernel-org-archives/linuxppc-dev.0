@@ -1,34 +1,36 @@
-Message-ID: <3981D46D.1CBEFF74@embeddededge.com>
-Date: Fri, 28 Jul 2000 14:43:57 -0400
-From: Dan Malek <dan@netx4.com>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Matthias Pfisterer <Matthias.Pfisterer@gmx.de>,
+        Iain Sandoe
+ <iain@sandoe.co.uk>, <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: internal speakers on Pismo
+Date: Sat, 29 Jul 2000 00:16:34 +0200
+Message-Id: <20000728221634.5701@192.168.1.10>
+In-Reply-To: <3981F1F7.9314DAD3@gmx.de>
+References: <3981F1F7.9314DAD3@gmx.de>
 MIME-Version: 1.0
-To: Paolo Scaffardi <arsenio@tin.it>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: MPC8xx-2.2.13 kernel and Framebuffer support: cannot compile!
-References: <001b01bff7e1$ab6b4720$640a0a0a@server>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Paolo Scaffardi wrote:
->
-> I trying to develop a simple framebuffer driver for my MPC823FADS Video
-> analog output, but when i modify the kernel to include the any frame buffer
-> device driver, the compilers reports me:
+Ok, I got it working here too. I've pushed changes in my rsync tree
+(dmasound 2.2, I'll take care of 2.4 later, I'll send you patches, Iain).
 
-Go visit www.mvista.com.  We already have 823 frame buffers for
-some products in the Linux kernels.  It would at least be a starting
-point for your customization.
+Basically, clearing the additional registers is not what made it work as
+I originally expected ! What made it work was _not_ to enable the
+parallel port output. However, it is needed on some machines. So what I
+did was to enable it conditionally in a way similar to what Darwin does.
+I also fixed up detection of screamer chips.
 
-> I cannot use other kernels because of my FADS board (not supported by
-> HardHat and similars).
+Oddly, the master volume doesn't work (but the speaker volume does).
+Also, Apple code has some weird thing: They detect two different device-
+id's for new iMacs (DV/SE). One is an inverted version. But they only
+enable the parallel output one of them. I don't know if it's normal or if
+it's actually a bug in their code. I did the same thing but left the case
+of normal iMacDV in comments, so users of this machine can try and see if
+it helps. I suspect that like other iMacs, there's an I2C amplifier/SRS
+module that needs to be setup too, but I'm not completely sure.
 
-It may be easier to add FADS support to a kernel that already supports
-the frame buffer.  Unfortunately, I am adding FADS support (again) to
-the Linux kernel, and I guess I will make it stick this time.......
-
-
-	-- Dan
+Ben.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
