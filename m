@@ -1,30 +1,33 @@
-Date: Mon, 17 Nov 2003 08:55:45 +0100
-From: Olaf Hering <olh@suse.de>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Alan Modra <amodra@bigpond.net.au>,
-	Kumar Gala <kumar.gala@motorola.com>, benh@kernel.crashing.org,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
-	David Edelsohn <dje@watson.ibm.com>
-Subject: Re: kernel oops due to unaligned access with lswi
-Message-ID: <20031117075545.GA7821@suse.de>
-References: <20031115210449.GA10105@suse.de> <20031115222430.GA13820@suse.de> <200311152230.hAFMUwT32990@makai.watson.ibm.com> <20031115224342.GA16897@suse.de> <200311152259.hAFMxGT27464@makai.watson.ibm.com> <1068977831.681.8.camel@gaston> <3C0F7C71-185D-11D8-976A-000393DBC2E8@motorola.com> <20031116221932.GD14287@bubble.sa.bigpond.net.au> <16312.7017.405972.816440@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <16312.7017.405972.816440@cargo.ozlabs.ibm.com>
+To: "Dale Farnsworth" <dale@farnsworth.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: MPC5200 Patches 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Sun, 16 Nov 2003 23:07:01 MST."
+             <20031117060701.GA26252@zenos.farnsworth.org>
+Date: Mon, 17 Nov 2003 09:35:32 +0100
+Message-Id: <20031117083537.5DAFDC5F59@atlas.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
- On Mon, Nov 17, Paul Mackerras wrote:
+In message <20031117060701.GA26252@zenos.farnsworth.org> you wrote:
+>
+> Per your suggestion above, I created
+> bk://source.mvista.com/linuxppc_2_4_mpc5200
 
-> Olaf, do we know what the source and destination addresses were?
+Which source tree / change set is this based on?
 
-source was c0fe4ffa, I cant reproduce it righht now to get the
-destination address.
+Best regards,
+
+Wolfgang Denk
 
 --
-USB is for mice, FireWire is for men!
-
-sUse lINUX ag, nÜRNBERG
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"The question of whether a computer can think is no more  interesting
+than the question of whether a submarine can swim"
+                                                - Edsgar W.  Dijkstra
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
