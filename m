@@ -1,33 +1,52 @@
-From: bob@kunk.jriver.com
-Message-ID: <20000729203215.23597.qmail@kunk.jriver.com>
-Subject: Re: RS/6000 Model 170 Boots Linux
+Message-Id: <200007292107.WAA04363@hyperion.valhalla.net>
+Date: Sat, 29 Jul 2000 22:06:54 +0100
+Subject: 2.4.0-test5 observations
+From: "Iain Sandoe" <iain@sandoe.co.uk>
 To: linuxppc-dev@lists.linuxppc.org
-Date: Sat, 29 Jul 2000 15:32:15 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I'm curious about a few things...
+Hi,
 
-The Power 3 in the 170 is running in 32 bit mode I assume?
+1.  My build problem was solved by:
 
-Also with reference to the PPC linux system running on the Beta Power 4
-is this also in 32 bit mode?
+--- bk-devel/drivers/input/adbhid.c Sat Jul 29 08:04:54 2000
++++ linux-2.4.0-t5-wrk/drivers/input/adbhid.c Sat Jul 29 17:28:42 2000
+@@ -40,9 +40,9 @@
+ #include <linux/input.h>
+ #include <linux/kbd_ll.h>
 
-The Power 3,  RS6000-III and Power 4 are all 64 bit chips from what I
-understand and IBM's literature makes me think that AIX is indeed running
-in 64 bit mode with the ability to run 32 bit apps.
+-#include <asm/adb.h>
+-#include <asm/cuda.h>
+-#include <asm/pmu.h>
++#include <linux/adb.h>
++#include <linux/cuda.h>
++#include <linux/pmu.h>
+ #include <asm/backlight.h>
 
->From what I have heard, NT running on the Alpha is in 32 bit mode. Is
-Linux running on the Alpha also 32 bit? I would assume Tru64 Unix is
-running in 64 bit mode on the Alpha....
+ #define KEYB_KEYREG 0 /* register # for key up/down data */
 
-Bob
---
-Robert E. Brose II    N0QBJ
-http://www.jriver.com/~bob/
-bob@kunk.jriver.com
+
+======
+
+This may be related to my so-called "broken" distro re. kernel builds - but
+there it is...
+
+========
+2. The sound [AWACS rev 3] (at present) exhibits the following behaviour
+(built as modules).
+
+The first buffer plays and then.... silence...
+
+I don't know if it's related, but the kernel log is filling up with:
+
+Jul 29 22:50:41 athena VFS: Disk change detected on device ide1(22,0)
+Jul 29 22:50:41 athena last message repeated 684 times
+
+messages... IIRC this happened also on 2.4.0-test4
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
