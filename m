@@ -1,43 +1,34 @@
-From: Keith Owens <kaos@ocs.com.au>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: include/asm-ppc/platforms/ 
-In-reply-to: Your message of "Thu, 29 Nov 2001 08:26:25 PDT."
-             <20011129082625.R29541@cpe-24-221-152-185.az.sprintbbd.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Fri, 30 Nov 2001 09:19:20 +1100
-Message-ID: <30560.1007072360@ocs3.intra.ocs.com.au>
+Message-ID: <3C06B4E3.8000203@humboldt.co.uk>
+Date: Thu, 29 Nov 2001 22:21:23 +0000
+From: Adrian Cox <adrian@humboldt.co.uk>
+MIME-Version: 1.0
+To: mod+linuxppc-dev@MissionCriticalLinux.com
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: ide_init_hwif_ports
+References: <200111292142.QAA30752@missioncriticallinux.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 29 Nov 2001 08:26:25 -0700,
-Tom Rini <trini@kernel.crashing.org> wrote:
->On Thu, Nov 29, 2001 at 10:48:46PM +1100, Paul Mackerras wrote:
->> The only reason for having include/asm-ppc/platforms under
->> include/asm-ppc is so that serial.h can include the right
->> blah_serial.h file.  We can get around that by using
->> early_serial_setup except that that doesn't work if the serial driver
->> is built as a module.  The boot stuff also needs to get at the first
->> serial port but we can manage that by requiring the platform.h file to
->> define e.g. BOOT_SERIAL_ADDRESS, BOOT_SERIAL_REG_SHIFT, etc., if it
->> wants to use a serial port in the boot wrapper.  The boot wrapper code
->> then just does #include <platform.h>.
->
->What would <asm/serial.h> contain here?  Keep in mind that some ports
->'just work' with the default <asm/serial.h>.
+mod+linuxppc-dev@MissionCriticalLinux.com wrote:
 
-The make rules I sent to Paul automatically generate platform.h and
-platform_serial.h by copying the platform specific files to arch/ppc
-under standard names.  If the platform has no *_serial.h file then
-platform_serial.h is a zero length file.  So ppc code can always
 
-#include <platform.h>
-#include <platform_serial.h>
+> Not to quibble with your painfully accurate
+> description of the VT82C686B, but might it be
+> possible (using the IDE Interrupt Routing register
+> at offset 0x4a in function 1) to arrange for both
+> channels to use the same interrupt routing?
+> Like force both to IRQ14?  Just a thought...
 
-without #ifdef in the main code.
+
+Tried that on my 686A board. As far as I can tell that register does
+nothing at all, and the physical wiring on the board is the only thing
+that influences the interrupts. I think that register may  be useful on
+an i386 with IO-APIC, but I'm not sure.
+
+--
+Adrian Cox   http://www.humboldt.co.uk/
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
