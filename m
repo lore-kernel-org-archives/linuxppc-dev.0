@@ -1,99 +1,64 @@
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: "Mark A. Greer" <mgreer@mvista.com>,
+To: "Mark A. Greer" <mgreer@mvista.com>
+Cc: Tom Rini <trini@kernel.crashing.org>,
 	linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
 Subject: Re: EV-64260-BP & GT64260 bi_recs 
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 19 Mar 2002 15:44:20 MST."
-             <20020319224420.GO3762@opus.bloom.county>
-Date: Wed, 20 Mar 2002 00:00:18 +0100
-Message-Id: <20020319230023.8D72C109F3@denx.denx.de>
+In-reply-to: Your message of "Tue, 19 Mar 2002 16:12:33 EST."
+             <3C97A9C1.EBA150B6@mvista.com>
+Date: Wed, 20 Mar 2002 00:36:30 +0100
+Message-Id: <20020319233635.2E203109F3@denx.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message <20020319224420.GO3762@opus.bloom.county> you wrote:
+In message <3C97A9C1.EBA150B6@mvista.com> you wrote:
 >
-> > BI_GT64260_ETH_CFG to a more generic BI_ETH_CFG.
+> > How about my proposal to replace MEMSIZE and  MEMSTART  with  a  more
+> > general description which allows for _several_ memory areas, probably
+> > of  different type (RAM, ROM, Flash, SRAM, ...), different bus witdth
+> > etc. ?
 >
-> I don't know about this.  Why?  From what I can tell, this is something
-> that will be useful for 8xx/8260, but would require changing the driver
-> to know about this, and it's currently over bd_t, and I'd rather leave
-> it for now.
+> I think its a good idea but overkill for now isn't it ("now" being 2.4 since
+> its going to change in 2.5)?
+...
+> Can we push this off into 2.5?  I was hoping to keep it fairly simple and
+> just get it done in 2.4.
 
-I  have  seen  enough  requests  for   a   more   flexible   ethernet
-configuration  (systems with 2 or 3 or more ethernet interfaces) that
-I'm willing to adapt the 8xx and  82xx  drivers  rather  sooner  than
-later.
+The systems I see shipping in the next 6 months or so will  be  based
+on 2.4 kernel; I think we should define this feature rather sooner or
+later to try it out and get it right.
 
-BTW: the structure should probably be extended by one entry  for  the
-interface (eth0, eth1, etc...).
+Of course, we can always add this locally, but why not do it now when
+we know it needs to get done?
 
-> > New (and [pretty much] generic):
-> > --------------------------------
-> >   BI_MEMSTART -- mem start
->
-> GT-64260 doesn't use this, does it?  We'll need this for Nubus and other
-> discontig memory situations, but not right now (except for APUS).
+> But every board/driver can still use the console=xxx on the cmd line, right?
+> Can we get by with that?
 
-How about my proposal to replace MEMSIZE and  MEMSTART  with  a  more
-general description which allows for _several_ memory areas, probably
-of  different type (RAM, ROM, Flash, SRAM, ...), different bus witdth
-etc. ?
+The command line is pretty limited in leght, and there are many  more
+"interesting"  things  you want to pass to proprietary drivers etc. I
+rather had common stuff like this somewhere else...
 
-For instance, we have MPC8260 systems with both global and local  RAM
-which  are  not  contiguous  (they  could  be,  but it makes no sense
-anyway).
+> The only reason I'm pushing for simple bi_recs now is because I expect all
+> this to change significantly in 2.5.  If you want the 2.5 way back-ported to
+> 2.4 and everyone agrees that's what should be done, then I agree we should do
+> it the "right way" now.  Otherwise, I say do the minimum now and do it right
+> in 2.5.
 
-How to handle this?
+If you ask for my opinion: let's do it right NOW, and stick with this
+in 2.5, rather than wasting some work  now  for  a  preliminary  ugly
+solution  which we think will get thrown avay (which might not happen
+as expected), and then spending even more work to do it right.
 
-We have boards with several flash banks - one 8 bit wide,  the  other
-64 bit.
-
-Etc. etc. IMHO we should do it right from the  beginning  and  use  a
-more flexible way to describe memory.
-
-You can probably #define a simple macro for backward compatibility.
-
-> >   BI_INTFREQ -- internal CPU frequency??
-> >   BI_BUSFREQ -- CPU bus freqency?
-> >   BI_ETH_CFG -> struct with following:
-> >    -- mac addr
-> >    -- hdx/fdx; 10/100/1000/...; OR autonegotiate
-> >    -- phy addr
-> >    -- some bytes for driver specific info (e.g., on gt64260, is_rmii)
-
-==> please add interface (index)
-
-> >   BI_BAUDRATE -- Console baudrate
->
-> Is this actually needed?  iirc, the ns1655x serial driver _should_ pick
-> up what things are running at.  But either way I don't see how we'd use
-> this, except in custom serial drivers.
-
-Yes, This _is_ necessary. Not every board has a ns1655x UART.
-
-> >   BI_IMMRBASE -- Base Address of CPU internal memory (82xx/8xx only)
-> >   BI_SCCFREQ  -- SCC frequency in Hz (82xx, 8xx only)
->
-> See my comment about about bd_t stuffs.  I don't think bi_recs will
-> become useful to PPCBoot until 2.5, when we can expand/otherwise flesh
-
-You are wrong. We'll switch faster than you seem to think.
-
-> out things and be done with it, and use it in 2.6.0.
-
-Why postpone a decision that will make life easier to us?
-
-We have these requirements NOW, and no clean way to solve them. Let's
-do it NOW.
+If you know what  the  final  version  will  look  like,  then  let's
+implement this now. And be done with it.
 
 Wolfgang Denk
 
 --
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-The software required `Windows 95 or better', so I installed Linux.
+Above all else -- sky.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
