@@ -1,59 +1,76 @@
-Message-ID: <38EB8412.132D57F0@erols.com>
-Date: Wed, 05 Apr 2000 14:21:06 -0400
-From: Nelson Abramson <pogtal@erols.com>
+Message-Id: <200004051909.VAA00311@piglet.grunz.lu>
+Date: Wed, 5 Apr 2000 21:09:14 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: l2cr= command line and bogomips
+To: linuxppc-dev@lists.linuxppc.org
+cc: paulus@linuxcare.com
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <bh40@calva.net>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Hard freezing w/ mp3s [Was: Re: XFree 4 & sound problems]
-References: <20000405190131.025451@mailhost.mipsys.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: MULTIPART/mixed; BOUNDARY="134392852-1804289383-954961754=:310"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
+--134392852-1804289383-954961754=:310
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 
-> That's really interesting since there is no bug I know of. Can you please
-> tell me:
->
->   - The exact machine model
+Hi list,
 
-Sawtooth G4 450
+For all those with G3-upgraded machines booting directly via OF, here
+is a small patch that actually enables the 'l2cr=' kernel command line
+option.
 
->   - Did the problem began with a specific kernel or did you always had it
+Paul, if you agree, can you add this to your tree? Thanks.
 
-Not sure.  I have only used your 2.2.15 to install and now 2.2.15pre14 that
-I compiled (I am working on getting 2.3.99 to boot correclty)
+The code to handle the option was present; but it was never called. I've
+also made it more secure when enabling the cache.
 
->   - Do you use the "nap" mode for power management ? (assuming it's a
-> powerbook)
+The main reason I wanted to have this as a command line option is to
+get tha cache enabled _before_ calculating the bogomips value, in order
+to get the delay loop calibrated for a correct value, which is not the
+case if you enable the cache later only (via /proc/sys/kernel/l2cr).
 
-It's a desktop.
+However, I've noticed that in 2.3 the bogomips value is 'correct'
+whether the cache is enabled or not, whereas in 2.2 it varies from
+single to double without/with cache.
 
-It happens seemingly randomly, and generally only after being on for a while.
-And I am 99% sure it only happens when I start tweaking w/ multiword and
-unmask irq..
+Any explanation? Is the loop tighter now, so it runs in L1? Does 2.3
+always enable the cache (but how does it know the correct settings
+then)?
 
-I even wrote down the exact xmon output one time :-)
-    vector: 300  at pc=C003e6d0, msr=9032, sp=08459c60 [c8459bb0]
-    dar=d453d724, dsisr=40000000
-    current=c8458000, pid=6536, comm=slocate
+Michel
 
-I guess that is the slocate one...
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
-I understand the basic information in that (I have taken my cpu and assembly
-classes), but definately not enough to debug wtf it means is wrong.  I have
-deduced the error from the fact that it happens during a period of data
-transfer (mp3s or a database execution; the latter only happened once)
-and that I am almost certain it only happens when I play with the ide
-settings...
+--134392852-1804289383-954961754=:310
+Content-Type: TEXT/plain; CHARSET=US-ASCII
+Content-Description: l2cr-cmdline.diff
 
---Nelson Abramson
+--- linux-2.3.paul/arch/ppc/kernel/setup.c	Tue Mar 21 06:12:14 2000
++++ linux/arch/ppc/kernel/setup.c	Wed Apr  5 20:58:33 2000
+@@ -633,10 +633,14 @@
+ 	{
+ 		unsigned long val = simple_strtoul(str, NULL, 0);
+ 		printk(KERN_INFO "l2cr set to %lx\n", val);
+-		_set_L2CR(0);
+-		_set_L2CR(val);
++		val |= 0x200000;		/* perform global invalidate */
++		_set_L2CR(0); 			/* disable cache */
++		_set_L2CR(val & ~0x80000000);	/* set cache parameters */
++		_set_L2CR(val);			/* and enable it */
+ 	}
+ }
++
++__setup("l2cr=", ppc_setup_l2cr);
 
+ void __init ppc_init(void)
+ {
 
---
-Shouldn't people be arrested and persecuted for engaging in their
-constitutional rights?  http://www.opendvd.org
-
+--134392852-1804289383-954961754=:310--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
