@@ -1,139 +1,61 @@
-From: ghannon@cspi.com
-To: mutex <mutex@cryptobackpack.org>
+Message-ID: <400327FF.1080403@g-house.de>
+Date: Tue, 13 Jan 2004 00:04:31 +0100
+From: Christian <evil@g-house.de>
+MIME-Version: 1.0
+To: Mikael Pettersson <mikpe@csd.uu.se>
 Cc: linuxppc-dev@lists.linuxppc.org
-Message-ID: <85256E19.0072D654.00@pine.cspi.com>
-Date: Mon, 12 Jan 2004 15:57:56 -0500
-Subject: Re: DMA timing issues with promise controllers
-Mime-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Subject: Re: perfctr-2.6.4 released with PPC32 support
+References: <200401121724.i0CHONeP023816@harpo.it.uu.se>
+In-Reply-To: <200401121724.i0CHONeP023816@harpo.it.uu.se>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> Anything I saw on lists said to check cables, etc. which was not the
-issue
->> here.     For me, the bigger problem is to get the firmware on the board
-to
->> talk to the controller and recognize the drive so I can boot from it.
->> This was booted from flash.
->>
-
-> I checked cables and what not as well.  Are you able to boot from
-> it ?  I haven't tried yet, so far I've just been messing with the
-> drives on a gentoo livecd.
-
-I boot the kernel from flash and then the kernel can use the
-drive as the root device.  The PPC-Bug firmware on the board
-can not see the drive directly.
-
-> Are you using the pdc202xx_new or pdc202xx_old driver ?  It looks like
-
-I am using the pdc202xxx_new.
-
--
-Gary
-
-
-
-
-
-mutex <mutex@cryptobackpack.org> on 01/12/2004 03:09:42 PM
-
-Please respond to mutex <mutex@cryptobackpack.org>
-
-To:   Gary Hannon/CSP
-cc:   linuxppc-dev@lists.linuxppc.org
-Subject:  Re: DMA timing issues with promise controllers
-
-
-
-
-On Mon, Jan 12, 2004 at 10:14:39AM -0500 or thereabouts, ghannon@cspi.com
-wrote:
-> If it helps any I've seen exactly the same thing on a Motorola VME board
-> with a Ramix (now GE Fanuc) card running over PCI.  It also uses
-> a PROMIS chip.   The error seem to be just a nuisance, but does cause
-> an extra delay during boot.  You're right that it does appear to be a DMA
-> timing
-> issue, as the system sees the drive fine and it works great after the
-> reset.
+Mikael Pettersson wrote:
+> Version 2.6.4 of perfctr, the Linux performance
+> monitoring counters driver, is now available at the usual
+> place: http://www.csd.uu.se/~mikpe/linux/perfctr/
 >
-
-It would be nice if my machine didn't have a 5 min booting time ;-)
-
-> Anything I saw on lists said to check cables, etc. which was not the
-issue
-> here.     For me, the bigger problem is to get the firmware on the board
-to
-> talk to the controller and recognize the drive so I can boot from it.
-> This was booted from flash.
+> Three architectures are now supported: x86, AMD64, and PPC32.
 >
+> Since I only have a PPC750, I'm looking for testers with 74xx
+> or 604 processors. Even if you don't intend to use the driver,
 
-I checked cables and what not as well.  Are you able to boot from
-it ?  I haven't tried yet, so far I've just been messing with the
-drives on a gentoo livecd.
+kernel patches applied with no fuzz to 2.4.24, but compiling the library
+gives:
 
-I would like to test 2.6, see if it has the same problems.
+[...]
+make[4]: Leaving directory `/usr/local/src/perfctr-2.6.4/examples/perfex'
+make[4]: Entering directory `/usr/local/src/perfctr-2.6.4/examples/signal'
+gcc -O2 -fomit-frame-pointer -Wall -I../../linux/include -I../../usr.lib
+  -c -o ppc.o ppc.c
+ppc.c: In function `mcontext_pc':
+ppc.c:15: error: structure has no member named `regs'
+make[4]: *** [ppc.o] Error 1
+make[4]: Leaving directory `/usr/local/src/perfctr-2.6.4/examples/signal'
+make[3]: Leaving directory `/usr/local/src/perfctr-2.6.4/examples'
+make[2]: Leaving directory `/usr/local/src/perfctr-2.6.4/examples'
+make[1]: Leaving directory `/usr/local/src/perfctr-2.6.4'
+evil@sheep:/usr/local/src/perfctr-2.6.4$
 
->
-> Snip from boot output ************
->
-> Uniform Multi-Platform E-IDE driver Revision: 7.00beta4-2.4
-> ide: Assuming 33MHz system bus speed for PIO modes; override with
-idebus=xx
-> PDC20269: IDE controller at PCI slot 00:11.0
-> PDC20269: chipset revision 2
-> PDC20269: not 100% native mode: will probe irqs later
->     ide2: BM-DMA at 0x77ef90-0x77ef97, BIOS settings: hde:pio, hdf:pio
->     ide3: BM-DMA at 0x77ef98-0x77ef9f, BIOS settings: hdg:pio, hdh:pio
-> Probing IDE interface ide2...
-> hde: IC25N040ATCS04-0, ATA DISK drive
-> blk: queue c0224b60, I/O limit 4095Mb (mask 0xffffffff)
-> Probing IDE interface ide3...
-> ide2 at 0x77efb8-0x77efbf,0x77efb6 on irq 28
-> hde: attached ide-disk driver.
-> hde: host protected area => 1
-> hde: 78140160 sectors (40008 MB) w/1768KiB Cache, CHS=77520/16/63,
-> UDMA(100)
-> Partition check:
->  hde:<4>hde: dma_timer_expiry: dma status == 0x21
-> hde: error waiting for DMA
-> hde: dma timeout retry: status=0x51 { DriveReady SeekComplete Error }
-> hde: dma timeout retry: error=0x84 { DriveStatusError BadCRC }
->  hde1 hde2 hde3 hde4 <hde: dma_intr: status=0x51 { DriveReady
-SeekComplete
-> Error }
-> hde: dma_intr: error=0x84 { DriveStatusError BadCRC }
-> hde: dma_intr: status=0x51 { DriveReady SeekComplete Error }
-> hde: dma_intr: error=0x84 { DriveStatusError BadCRC }
-> hde: dma_intr: status=0x51 { DriveReady SeekComplete Error }
-> hde: dma_intr: error=0x84 { DriveStatusError BadCRC }
-> hde: dma_intr: status=0x51 { DriveReady SeekComplete Error }
-> hde: dma_intr: error=0x84 { DriveStatusError BadCRC }
-> PDC202XX: Primary channel reset.
-> ide2: reset: success
->  hde5 >
-> SCSI subsystem driver Revision: 1.00
-> scsi0 : SCSI host adapter emulation for IDE ATAPI devices
->
-> end snip ************************
->
-> If you find a fix and would like me to test it on this platform, I'd be
-> glad to.
-> I'm running at 2.4.23-pre5 from the linuxppc_2_4_devel tree.
-> The errors happen on every reset.
->
+evil@sheep:/usr/local/src/perfctr-2.6.4$ gcc --version | head -n1
+gcc (GCC) 3.3.3 20031229 (prerelease) (Debian)
 
-yeah sucks.  I think i'm running 2.4.22-something... I'll check when
-I'm back at home in front of the box.  Benh said that it may be the
-controller is expecting a PC bios to set some timing register, and OF
-isn't doing that.  I'll take a look at the driver when I have a few
-minutes.. see if it insipres anything, however I must admit my
-experince with IDE drivers is definatly 'less-than-expert' status.
+evil@sheep:/usr/local/src/perfctr-2.6.4$ cat /proc/cpuinfo
+processor       : 0
+cpu             : 604r
+clock           : ???
+revision        : 49.2 (pvr 0009 3102)
+bogomips        : 299.00
+machine         : PReP Utah (Powerstack II Pro4000)
+l2 cache        : 512KiB, parity disabled SRAM:synchronous, pipelined,
+no parity
 
-Are you using the pdc202xx_new or pdc202xx_old driver ?  It looks like
-andre hedrick is the maintainer, I'll email him with a pointer to this
-thread, maybe he will have something insipring to add.
+Christian.
+--
+BOFH excuse #123:
 
+user to computer ratio too high.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
