@@ -1,36 +1,38 @@
-To: Rakesh Jagota <j.rakesh@gdatech.co.in>
+To: greggiraud@netcourrier.com
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: JFFS2 for IBM ppc405 based Target board 
+Subject: Re: using bdi2000 
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 21 Apr 2003 10:24:12 +0530."
-             <slemye5aoor48df.210420031014@gda-server>
-Date: Mon, 21 Apr 2003 09:50:34 +0200
-Message-Id: <20030421075039.98028C58B9@atlas.denx.de>
+In-reply-to: Your message of "Mon, 21 Apr 2003 12:22:53 EST."
+             <mnet1.1050920573.22642.greggiraud@netcourrier.com>
+Date: Mon, 21 Apr 2003 12:38:05 +0200
+Message-Id: <20030421103810.F2970C58B9@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <slemye5aoor48df.210420031014@gda-server> you wrote:
+In message <mnet1.1050920573.22642.greggiraud@netcourrier.com> you wrote:
 >
-> I am using montavista linux priviewkit 2.4.17. Currently I am using nfs. How
-> can I create jffs2 file fyftem. I am working with IBM power pc 405. Can
-> anyone suggest me, how to create the jffs2 filesystem for PPC 405.
+> I am trying to debug my linux with a bdi2000.
+> I succeed in loading ppcboot into flash. But I can't debug!
+>
+> pc_82xx-gdb
+> target remote 192.168.15.3:2001
+>
+> And then how to say the debugger to break at a specific line in a specific file like l 23 in uart.c?
 
-Create a directory  with  all  the  required  files  for  yout  JFFS2
-filesystem,  and use the mkfs.jffs2 which comes with the MTD tools to
-create a JFFS2 image.
+(gdb) b uart.c:23
 
-See also the mkfs.jffs2 man page.
 
-Best regards,
+Maybe you should start reading GDB documentation?
+
 
 Wolfgang Denk
 
 --
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"Engineering without management is art."               - Jeff Johnson
+Why is an average signature file longer than an average Perl script??
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
