@@ -1,21 +1,18 @@
-Return-Path: <joern@wohnheim.fh-wedel.de>
-Received: from moskovskaya.fh-wedel.de (mail.fh-wedel.de [213.39.232.198])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C648867A67
+Return-Path: <rpjday@mindspring.com>
+Received: from mailhost.rdmcorp.com (world.rdmcorp.com [204.225.180.10])
+	by ozlabs.org (Postfix) with ESMTP id 9D68167A73
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 18 Mar 2005 03:35:46 +1100 (EST)
-Date: Thu, 17 Mar 2005 17:35:26 +0100
-From: =?iso-8859-1?Q?J=F6rn?= Engel <joern@wohnheim.fh-wedel.de>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Message-ID: <20050317163526.GB10864@wohnheim.fh-wedel.de>
-References: <42323A97.5070105@mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <42323A97.5070105@mvista.com>
-Cc: linux-mtd@lists.infradead.org, dwmw2@infradead.org,
-	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH 2.6.12] mtd: Remove MTD map file for Chestnut platform.
+	Fri, 18 Mar 2005 03:37:27 +1100 (EST)
+Date: Thu, 17 Mar 2005 11:35:56 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+To: Wolfgang Denk <wd@denx.de>
+In-Reply-To: <20050317163223.6C37EC1510@atlas.denx.de>
+Message-ID: <Pine.LNX.4.61.0503171134230.22767@localhost.localdomain>
+References: <20050317163223.6C37EC1510@atlas.denx.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: looking for a model for building CRAMFS(?)-based system 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,22 +23,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, 11 March 2005 17:40:55 -0700, Mark A. Greer wrote:
-> 
-> Remove Chestnut mtd map file.
-> 
-> The chestnut now sets up its MTD map from its platform-specific file so 
-> the map file drivers/mtd/maps/chestnut.c is no longer needed.  This 
-> patch removes the file & the Kconfig/Makefile hooks.
-> 
-> Please apply.
+On Thu, 17 Mar 2005, Wolfgang Denk wrote:
 
-Applied to mtd cvs.  It will make its way to Linus eventually...
+> Dear Robert,
+>
+> in message <Pine.LNX.4.61.0503171011220.20335@localhost.localdomain> you wrote:
+> >
+> > now this is the sticky part.  imagine this system out in the field,
+> > where you need to make an update to something in the initrd in the
+> > root filesystem.
+>
+> This is the szenario where an overly filesystem enters the stage.
+>
+> See http://www.denx.de/e/news.php#MINI_FO
 
-Thanks!
+i'd already read that paper a few months back, but wasn't sure if this
+was actually being used, or was just a concept idea.  if it's actually
+in practise, i'll take another look at it.
 
-Jörn
-
--- 
-Sometimes, asking the right question is already the answer.
--- Unknown
+rday
