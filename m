@@ -1,74 +1,44 @@
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
 Subject: RE: ssh on ppc 405gp?
-Date: Tue, 20 May 2003 08:26:52 -0400
-Message-ID: <C6D44AA99ECEB540A5498F15F92DA07D6886F7@amperion01>
-From: "Jeff David" <jdavid@amperion.com>
-To: "Chris Zimman" <chris@cryptoapps.com>,
-	"Dave Strout" <dstrout@linuxfoundary.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
+From: Dave Strout <dstrout@linuxfoundary.com>
+To: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <C6D44AA99ECEB540A5498F15F92DA07D6886F7@amperion01>
+References: <C6D44AA99ECEB540A5498F15F92DA07D6886F7@amperion01>
+Content-Type: text/plain
+Date: 20 May 2003 08:44:09 -0400
+Message-Id: <1053434650.21004.7.camel@dstrout.nsw.enterasys.com>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have seen this problem before.  It was happening a few months ago, and
-hasn't happened since!
+Jeff,
 
-We use ssh to get to our ppc405h.  The temporary workaround for this
-problem was to use a different mac protocol.  I believe the default is
-2, so we tried 1, and it worked!  Here's the command:
+Thanks for the lead.  I've actually tried that, and I get:
+Disconnecting: Corrupted check bytes on input.
 
-ssh -1 192.168.25.35
+I'll keep playing with it.  If anybody has a generated Makefile for
+openssl / openssh on the 405, I'd love to see it & see what the
+differences are.  I'm thinking it's most likely in my config, given that
+there exists at least one working example...
 
-Hope this works for you.
+thanks,
+dave.
 
-Jeff
-
-
-
-> -----Original Message-----
-> From: Chris Zimman [mailto:chris@cryptoapps.com]
-> Sent: Monday, May 19, 2003 3:18 PM
-> To: Dave Strout
-> Cc: linuxppc-embedded@lists.linuxppc.org
-> Subject: Re: ssh on ppc 405gp?
+On Tue, 2003-05-20 at 08:26, Jeff David wrote:
 >
+> I have seen this problem before.  It was happening a few months ago, and
+> hasn't happened since!
 >
+> We use ssh to get to our ppc405h.  The temporary workaround for this
+> problem was to use a different mac protocol.  I believe the default is
+> 2, so we tried 1, and it worked!  Here's the command:
 >
-> On Mon, May 19, 2003 at 03:01:00PM -0400, Dave Strout wrote:
-> >
-> > Has anybody succeeded in getting ssh to work on a 405GP
-> machine?  I've
-> > checked the archives, and seen a couple of reports of
-> problems, but no
-> > solutions.
-> >
-> > I get the following error when trying to connect between a
-> ppc machine
-> > and an intel machine in either direction:
-> >
-> > Received disconnect from 192.168.1.2: 2: Corrupted MAC on input.
-> >
-> > If I ssh from the ppc to the ppc via 'localhost', it works.  That
-> > makes me think that it's something to do with either byte
-> ordering of
-> > structure alignment, but I don't have any thoughts beyond
-> that...  Any
-> > suggestions on how to tackle this are welcome.
-> >
-> > thanks,
-> > dave.
+> ssh -1 192.168.25.35
 >
-> Dave,
+> Hope this works for you.
 >
-> Not sure what's going on in your case, but I've had it
-> working fine for the longest time.
->
-> What versions of distribution, kernel, ssh, etc. are you running?
->
-> --Chris
->
+> Jeff
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
