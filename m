@@ -1,44 +1,26 @@
-From: clark@esteem.com
-Message-Id: <1.5.4.32.20000721160550.0068bee4@pop.esteem.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Fri, 21 Jul 2000 09:05:50 -0700
-To: "Paolo Scaffardi" <arsenio@tin.it>
-Subject: Re: What kernel for a MPC823FADS and PCMCIA?
-Cc: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <39787D1D.462244E0@embeddededge.com>
+Date: Fri, 21 Jul 2000 12:41:01 -0400
+From: Dan Malek <dan@netx4.com>
+MIME-Version: 1.0
+To: Paolo Scaffardi <arsenio@tin.it>
+CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: MPC823 revision number!
+References: <002501bff222$51db4e40$640a0a0a@server>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 10:21 AM 7/21/00 +0200, you wrote:
->
->I have a MPC823FADS and i want to make a simple Linux box with ETHERNET and
->PCMCIA support.
->
->What is the right kernel to use and patches to make the PCMCIA working on
->the board?
->
->I'm very confused... i probably had to buy another board... MVista doesn't
->support my board... why?!?!?!
->
->Bye,
->Paolo.
->
->
+Paolo Scaffardi wrote:
 
-        Paolo,
+> If i knew this before...
 
-        You need to get the pcmcia suport package called
-pcmcia-cs-3.1.10.tar.gz or what ever the newest one is. You can find it and
-some patches and instructions on how to get it to work with a RPX LITE 823
-board at ftp://ftp.absoval.com/pub/rpxlite/ . You may have to tweak it to
-work with your board. I'm sorry I can't be more help to you from here,
-because this is the stage I am at.
+Motorola posts silicon errata for a reason.  It helps to carefuly
+read and understand just how it affects what you are doing.  Some
+Linux kernel configuration options (or source code hacks :-) or
+processor speed selections are based upon this information.
 
 
-        Good Luck,
-
-        Conn Clark
-
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
