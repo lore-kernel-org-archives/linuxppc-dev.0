@@ -1,56 +1,54 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3C99FCB2.8050109@thales-bm.com>
-Date: Thu, 21 Mar 2002 16:30:58 +0100
-From: Julien Eyries <julien.eyries@thales-bm.com>
+Message-ID: <C08678384BE7D311B4D70004ACA371050B763346@amer22.avnet.com>
+From: "Kerl, John" <John.Kerl@Avnet.com>
+To: "'Steven Scholz'" <steven.scholz@imc-berlin.de>,
+	LinuxPPC <linuxppc-embedded@lists.linuxppc.org>,
+	PPCBoot <ppcboot-users@lists.sourceforge.net>
+Subject: RE: MPC8xx, FEC and DP83847 !?
+Date: Thu, 21 Mar 2002 09:49:33 -0700
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MBX boot loader on a MPC8260 custom board
-References: <20020321111807.9BC64109F3@denx.denx.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Wolfgang,
+We are using a DP83846 with 857T FEC.  At the software
+level, I am just using the plain fec.c, and it works for me.
 
-
-first let me thank you for your help
-we have found the reason for our problem :
-it was some specific ADS8260 code which crashe the CPU
-on our board . we just had to removed it to have the kernel booting.
-even if we see the kernel hanging up a few time latter,
-while initializing the FEC , we are now very very happy to see some log
-messages from the kernel on the console !!!
-
-
->
-> Well, my recommendation is to get rid of all this stuff in the mbxbot
-> directory and use PPCBoot as  firmware  instead;  but  I'm  obviously
-> biased, and YMMV.
-
-Yes  :-) . i had a look at PPCboot which i m sure is very cool ;
-and seems to support a lot of commercial boards.
-
-anyway for the moment, it is just O.K. for us if we can do all the
-things we have to do, like loading our code via TFTP, debugging and so
-on by using our BDI-2000 probe.
-
-
-Greetings,
-
-Julien.
+One note (if you want details, I'll have to check with my
+hardware guys and get back to you, but here's the gist):
+The Motorola reference boards use port D for MII, but we
+used PCMCIA/port A pins instead.  This caused us a bit of
+trouble when bringing up the board, but the resolution
+was that we had to clear PDPAR[UT], set ECNTRL[PIN_MUX]
+and set UTMODE[SPLIT].  I pasted these few lines into
+fec.c's init function and it works like a charm.
 
 
 
+-----Original Message-----
+From: Steven Scholz [mailto:steven.scholz@imc-berlin.de]
+Sent: Thursday, March 21, 2002 5:37 AM
+To: LinuxPPC; PPCBoot
+Subject: MPC8xx, FEC and DP83847 !?
 
---
-Julien Eyries
-R&D engineer
-Thales Broadcast & Multimedia (ex-thomcast)
-email: julien.eyries@thales-bm.com
-fax: 33(0) 1 34 90 31 10
-tel: 33(0) 1 34 90 31 01
+
+
+Hi there,
+
+I am about to redesign my board and consider to replace Level One's
+LXT971 with National's DP83847.
+
+Is anyone using National's Phyter DP83846/7 together with MPC8xx FEC?
+Is there support for this chip like it is for LXT97x, AMD79c874 and
+QS6612?
+Or do I have to use ./drivers/net/natsemi.c or somthing similar?
+
+Are there any (dis)advantages over the LXT971?
+
+Cheers,
+
+Steven
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
