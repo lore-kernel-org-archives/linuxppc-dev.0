@@ -1,53 +1,52 @@
-Subject: Re: Non NFS boot
-To: dulimart@egr.msu.edu (Hans - Dulimarta)
-Date: Fri, 21 Jan 2000 12:39:45 +1100 (EST)
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <Pine.GSO.4.10.10001201541460.15391-100000@scully> from "Hans - Dulimarta" at Jan 20, 2000 04:26:56 PM
+Message-ID: <388809E5.619D80C9@huawei.com.cn>
+Date: Fri, 21 Jan 2000 15:25:25 +0800
+From: dony <dony.he@huawei.com.cn>
 MIME-Version: 1.0
+To: kd@flaga.is
+CC: jim Lewis <jlewis@mvista.com>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: gdbserver
+References: <OFFF644F53.7F60D0CE-ON0025684E.0050176B@flaga.is>
 Content-Type: text/plain; charset=us-ascii
-Message-Id: <20000121013945.A4B981B298@elph.research.canon.com.au>
-From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hans - Dulimarta writes:
-> I'm looking for information on a similar kind of kernel which does not
-> require NFS root.
 
-Sure. Here's a section from a brief LinuxPPC Embedded HOWTO I've been working
-on which may get you started: (feedback from all is welcome)
 
-Root File System
+kd@flaga.is wrote:
 
-Minimal and complete root file system images are available on the ftp site at:
-ftp://linuxppc.cs.nmt.edu/pub/linuxppc/embedded/mbxroot.min.tgz and
-ftp://linuxppc.cs.nmt.edu/pub/linuxppc/embedded/mbxroot.full.tgz
+> Hi,
+>
+> I am trying to get gdbserver to run on my mpc823 board. (The precompiled
+> gdbserver is not working for me, it does not seem to get argc and argv
+> correctly into main() and always terminates with "usage info".
+>
+> Using the vanilla gdb-4.18 is of no use, since it has not support for ppc.
+> Using the gdbserver source that Dan posted here a few weeks back results in
+> the
+> the following undefined symbols,
+> PTRACE_POKEUSR
+> PTRACE_PEEKUSR
+> KERNEL_U_ADDR
+> when compiling low-linux.c
 
-During development, the embedded system can NFS-mount its root file system to
-provide a complete diskless Linux system. Answer "Y" to the configuration
-questions regarding NFS client and root filesystem via NFS, and "make zImage".
+Now I have the same problem. Have you solved it? I downloaded gdbserver.tar.gz
+form Dan's web site and put it in the gdb-4.17 's tree
+(gdb-4.17/gdb/gdbserver)which are copied from the SRC RPM on the LinuxPPC CD.
 
-To make your system standalone, you need an initial ramdisk image containing
-an ext2 filesystem to put in arch/ppc/mbxboot/ramdisk.image.gz. Then, build
-with "make zImage.initrd" and the ramdisk image will be mounted as the root
-filesystem at startup. An example ramdisk.image.gz is already included in many
-of the kernel source tarballs on the ftp site. The easiest way to create or
-modify the ramdisk image is to use the loop device on your Linux development
-host to mount the file as a local filesystem, and then copy the files you
-require into it.
+If I enter this directory , then type "make", an error occurs:
+    make:***No rule to make target '../config/powerpc/linux.mt',needed by
+Makefile.Stop
+Yes, ../config/powerpc doesn't have file "linux.mt".I don't how to modify
+Makefile.
 
-Note that the minix file system code in Linux is not endian-independant, so
-you can't build a minix file system on an x86 machine and expect to read it
-on a PowerPC machine. ext2 does not suffer from this problem.
+Also I find that there are three symbol link files nm.h , tm.h and xm.h which
+are pointed to nm-linux.h , tm-linux.h, and xm-linux.h in ../config/powerpc
+respectively. But nm-linux.h and tm.linux.h don't exist , only xm-linux.h
+exists in ../config/powerpc.
+How do you solve all the above problems?
+Thank you very much.
+dony
 
-If your system has a hard disk, you can start by using NFS then build a root
-file system on the disk and boot from that.
-
-If your system has no ethernet, you may want to start developing on a board
-that does.
-
-Regards,
-Graham
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
