@@ -1,24 +1,39 @@
-In-Reply-To: <19990910161322.A1674@them.org>
-Date: Sat, 11 Sep 1999 11:23:23 +0200
-To: Daniel Jacobowitz <drow@false.org>, linuxppc-dev@lists.linuxppc.org
+Date: Sat, 11 Sep 1999 11:47:19 +0200
+To: linuxppc-dev@lists.linuxppc.org
 From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: controlfb.c bug in VRAM bank2 check if bank1
-Message-Id: <19990911112323.032168@smtp.calvacom.fr>
+Subject: Weird problem compiling jcc
+Message-Id: <19990911114719.012048@smtp.calvacom.fr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->I have a bunch of information on this lying around, and most of my
->other kernel problems seem to be resolved now.  I'm in the process of
->upgrading to current vger; if it succeeds, I'll try to merge all
->pending controlfb stuff tomorrow.
+Recently, I downloaded the various jcc Code Crusader sources and compiled
+them without a problem on my R5 distribution.
 
-I also have a pair of crazy 8500 who have 2Mb of VRAM but in bank2 (they
-don't work if the VRAM is moved to bank1, even under MacOS). The current
-controlfb appears to work well. Send me your merge results, I'll test on
-one of those weird machines Monday.
+Yesterday, I wanted to add Code Medic. So I untar'ed the CM archive in my
+JX hierarchy (versions of other components were still the same), did a
+make clean, just in case, and stared a make for all the components.
+
+After a couple of hours, I had a new jcc, code medic, and the various
+shared libs used by those compiled in ~/bin and ~/lib (which _is_ in my
+library path).
+
+Fine. However the problem is that any attempt to run either jcc or medic
+will give me an error about symbol __ti21JXNamedTreeListWidget not found. 
+
+I did check wiht objdump that this symbol _is_ present in
+libjtree.xxx.so. I tried removing the various .o files of libjtree and
+recompiled, just in case, but I still have the same problem.
+
+Any clues ? Is this the sign that I have to update my linker ? I think I
+still have the toolchain from the R5 CD, or eventually an updated version
+from ftp.linuxppc.org if there is one in there (I don't use Frank's
+2.95.x version yet). (I can't tell for sure which version I use now, I'm
+on MacOS for the rest of the day).
+
+Any clues ?
 
 
 -- 
