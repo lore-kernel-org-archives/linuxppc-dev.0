@@ -1,134 +1,43 @@
-From: "Etienne van der Linde" <evdl@ananzi.co.za>
-Subject: CPM UART Driver failing with kernel 2.4.20
+Message-ID: <20040318072428.47575.qmail@web10601.mail.yahoo.com>
+Date: Wed, 17 Mar 2004 23:24:28 -0800 (PST)
+From: sudhakar rajashekhara <rsudhakar_blr@yahoo.com>
+Subject: RAM Free Space Decreasing
 To: linuxppc-embedded@lists.linuxppc.org
-Cc: evdl@ananzi.co.za
-Date: Wed, 17 Mar 2004 19:41:52 +0200
-Message-ID: <web-19386629@mail01.ananzi.co.za>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi
+Hi All,
 
-I used the Denx ELDK with kernel 2.4.2 for a custom MPC8260
-board, but ran into some problems during the final stages
-of booting. Thus on your recommendation (Wolfgang Denk) I
-spent the last few day upgrading to kernel 2.4.20. which
-obviously introduced its own issues. Well the major one
-that I can't get rid of is the following;
-The preliminary UART setup works fine, but when the final
-CPM UART driver gets loaded / registered / enabled, my
-console dies. Here is the output:
+We have ported U-boot and Linux-2.4.22 onto a custom
+powerpc 8280 board. We were successful in booting
+Linux from Hard Disk also(Hard Disk is connected to a
+serial ATA card which sits on PCI. We ported the
+Serial ATA driver to U-boot from libata source. U-Boot
+identifes the Hard Disk and we are able to read and
+write to the hard disk from U-Boot). Once the linux
+comes up, the Hard Disk is being identifed as a SCSI
+device. We have created a swap partition in sda3, and
+our filesystem resides in sda4. We have 256MB ram. The
+problem what we are facing is, when we try to untar a
+huge file (EX: linux-2.4.22.tar, size 158MB), the
+board hangs after some time. We observed the available
+ram space from other window, when untar was happening,
+using "free" command. We found that the "used" area is
+continuosly increasing and the available free ram
+space is decreasing. At one point of time, when the
+free ram space exhausts, the board is hanging. On a
+x86 system, the "used" space of ram keeps varying, but
+on our PPC board, it's continuosly increasing. We
+tried enabling the swap (on /dev/sda3), but even then
+the result is same. What is the reason for this? Are
+we missing some configuration?
 
-#######################################################
-## Booting image at 00100000 ...
-   Image Name:   Linux-2.4.20
-   Image Type:   PowerPC Linux Kernel Image (gzip
-compressed)
-   Data Size:    591672 Bytes = 577.8 kB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-## Current stack ends at 0x00F79948 => set upper limit to
-0x00800000
-## cmdline at 0x007FFF00 ... 0x007FFF79
-No initrd
-## Transferring control to Linux (at address 00000000) ...
-Memory BAT mapping: BAT2=16Mb, BAT3=0Mb, residual: 0Mb
-Linux version 2.4.20 (root@infineon.parsec) (gcc version
-2.95.4 20010319 (prerelease/franzo/20011204)) #97 Tue Mar
-164On node 0 totalpages: 4096
-zone(0): 4096 pages.
-zone(1): 0 pages.
-zone(2): 0 pages.
-Kernel command line: root=/dev/nfs rw
-nfsroot=172.17.5.125:/predator
-ip=172.17.5.238:172.17.5.125:172.17.0.1:255.255.1Warning:
-real time clock seems stuck!
-Calibrating delay loop... 175.71 BogoMIPS
-Memory: 14652k available (1076k kernel code, 396k data, 56k
-init, 0k highmem)
-Dentry cache hash table entries: 2048 (order: 2, 16384
-bytes)
-Inode cache hash table entries: 1024 (order: 1, 8192 bytes)
-Mount-cache hash table entries: 512 (order: 0, 4096 bytes)
-Buffer-cache hash table entries: 1024 (order: 0, 4096
-bytes)
-Page-cache hash table entries: 4096 (order: 2, 16384 bytes)
-POSIX conformance testing by UNIFIX
-Linux NET4.0 for Linux 2.4
-Based upon Swansea University Computer Society NET3.039
-Initializing RT netlink socket
-Starting kswapd
-CPM UART driver version 0.01
-ttyS0 on SCC1 at 0x8000, BRG2
-
-#######################################################
-
- that's it - that is where it stops, where as my old Kernel
-2.4.2 (with CPM UART driver version 0.02) worked perfectly
-fine. Well in an effort to fix this I spent some time
-integrating the old driver into the new kernel, but that
-did not fix the problem.
-
-Here are the important configuration parts of my uart.c;
-
-#######################################################
-
-#define CONFIG_SERIAL_CONSOLE_PORT	0
-
-....
-
-#define SCC_NUM_BASE	1	/* SCC base tty "number" */
-#define SCC_IDX_BASE	0	/* table index */
-static struct serial_state rs_table[] = {
-	/* UART CLK   PORT          IRQ      FLAGS  NUM   */
-	{ 0,     0, PROFF_SCC1, SIU_INT_SCC1,   0, SCC_NUM_BASE},
-   /* SCC1 ttyS0 */
-	{ 0,     0, PROFF_SCC2, SIU_INT_SCC2,   0,
-SCC_NUM_BASE+1},    /* SCC2 ttyS1 */
-};
-
-static int rs_brg_map[] = {0,0};
-
-.....
-
-
-int __init rs_8xx_init(void)
-{
-
-.....
-
-/* TX = PB28 */
-	io->iop_pparb |= 0x00000008;
-	io->iop_psorb |= 0x00000008;
-	io->iop_pdirb |= 0x00000008;
-/* RX = PD31 */
-	io->iop_ppard |= 0x00000001;
-	io->iop_psord &= ~0x00000001;
-	io->iop_pdird &= ~0x00000001;
-
-	/* Connect SCC1, SCC2, SCC3 to NMSI.  Connect BRG1 to
-SCC1,
-	 * BRG2 to SCC2, BRG3 to SCC3.
-	 */
-
-	immap->im_cpmux.cmx_scr &= ~0xffffff00;
-	immap->im_cpmux.cmx_scr |= 0x00091200;
-
-......
-
-#######################################################
-
-Has anybody ever encountered this / can anyone give me a
-hint of what might cause this. Any help will be appreciated
-at this stage...
-
-Regards
-Etienne
+thanks in advance,
+regards,
+Sudhakar.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
