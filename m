@@ -1,120 +1,39 @@
-Message-ID: <3C06705B.15147A92@mvista.com>
-Date: Thu, 29 Nov 2001 09:28:59 -0800
-From: Armin Kuster <akuster@mvista.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <001301c1791c$e28385c0$6b97143e@jocke>
+From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Monta Vistas HHL 2.0 ppc-8xx_gcc(2.95.3) buggy?
+Date: Thu, 29 Nov 2001 22:29:10 +0100
 MIME-Version: 1.0
-To: Kent Borg <kentborg@borg.org>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [PATCH] New PHY for ppc405_phy.c
-References: <20011129110530.E3091@borg.org>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Kent Borg wrote:
->
-> I hope I am sending this to the right place, someone please correct me
-> if I am doing this wrong...
->
-> Our 405 board has a different PHY from those supported in the current
-> sources, the following patch makes our PHY work.  If it looks
-> sensible, please apply.
->
-> Thanks,
->
-> -kb
->
-> --- linuxppc_2_4_devel/drivers/net/ppc405_phy.c Thu Nov 29 10:34:53 2001
-> +++ linux-penguinppc4/drivers/net/ppc405_phy.c  Thu Nov 29 10:48:07 2001
-> @@ -579,6 +579,75 @@
->         },
->  };
->
-> +/* ------------------------------------------------------------------------- */
-> +/* The Lucent Technologies LU3X31FT */
-> +
-> +/* register definitions */
-> +
-> +#define MII_LU3X31FT_PHYCTRLSTS 0x17    /* PHY Control/Status Register */
-> +#define MII_LU3X31FT_IER        0x1D    /* PHY interrupt enable Register */
-> +#define MII_LU3X31FT_ISR        0x1E    /* PHY interrupt status Register */
-> +
-> +static void mii_parse_lu3x31ft_pcr(uint mii_reg, struct net_device *dev)
-> +{
-> +       struct fec_enet_private *fep = dev->priv;
-> +       volatile uint *s = &(fep->phy_status);
-> +
-> +       *s &= ~(PHY_STAT_SPMASK);
-> +
-> +       switch((mii_reg >> 8) & 3) {
-> +               case 0:
-> +                       *s |= PHY_STAT_10HDX;
-> +                       break;
-> +               case 1:
-> +                       *s |= PHY_STAT_10FDX;
-> +                       break;
-> +               case 2:
-> +                       *s |= PHY_STAT_100HDX;
-> +                       break;
-> +               case 3:
-> +                       *s |= PHY_STAT_100FDX;
-> +                       break;
-> +       }
-> +}
-> +
-> +static phy_info_t phy_info_lu3x31ft = {
-> +       0x90307421,
-> +       "LU3X31FT",
-> +       0,
-> +       (const phy_cmd_t []) {  /* config */
-> +
-> +               /* parse cr and anar to get some info */
-> +
-> +               { mk_mii_read(MII_REG_CR), mii_parse_cr },
-> +               { mk_mii_read(MII_REG_ANAR), mii_parse_anar },
-> +               { mk_mii_end, }
-> +       },
-> +       (const phy_cmd_t []) {  /* startup - enable interrupts */
-> +               { mk_mii_write(MII_LU3X31FT_IER, 0x0000), NULL },
-> +               { mk_mii_write(MII_REG_CR, PHY_BMCR_RST_NEG), NULL }, /* autonegotiate */
-> +               { mk_mii_end, }
-> +       },
-> +       ( const phy_cmd_t []) { /* ack_int */
-> +
-> +               /* we need to read ISR, SR and ANER to acknowledge */
-> +
-> +               { mk_mii_read(MII_LU3X31FT_ISR), NULL },
-> +               { mk_mii_read(MII_REG_SR), mii_parse_sr },
-> +               { mk_mii_read(MII_REG_ANAR), mii_parse_anar },
-> +
-> +               /* read pcr to get info */
-> +
-> +               { mk_mii_read(MII_LU3X31FT_PHYCTRLSTS), mii_parse_lu3x31ft_pcr },
-> +               { mk_mii_end, }
-> +       },
-> +       ( const phy_cmd_t []) { /* shutdown - disable interrupts */
-> +               { mk_mii_write(MII_LU3X31FT_IER, 0xff80), NULL },
-> +               { mk_mii_end, }
-> +       },
-> +};
-> +
-> +
->
->  /* ------------------------------------------------------------------------- */
->  /* The AMD Am79C875*/
-> @@ -659,6 +728,7 @@
->         &phy_info_lxt971a,
->         &phy_info_cs8952,
->         &phy_info_dp83846A,
-> +       &phy_info_lu3x31ft,
->         &phy_info_Am79C875,
->         NULL
->  };
->
+Hi there
 
+I am trying to compile the latest(2.4.16) ppclinux_2_4 kernel
+for our custom MPC860 board and it wont boot(I get a signal 11 Oops).
 
-Thanks,
+If I reduce gcc flag -O2 to -O1 I get as far as the first
+call to printk() in emit_log_char() where it Oops(signal 11).
+If I replace the printk.c file with the one found in MV HLL 2.0 kernel,
+It will boot just fine.  Then I change -O1 back to -O2 and I get an Oops
+again. This time halfway through the booting process.
 
--- armin
+I can run the MV 2.4.2 kernel without problems.
+
+I am on  RH 7.1 with almost all updates applied. Also tried to
+compile it on  RH 7.0 but got the same result(signal 11).
+
+This looks to me like a compiler problem, has anyone else
+had similar problems ?
+
+Where can I find a "good" cross compiler for ppc 8xx which
+will run on RH 7.1?
+
+         Jocke
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
