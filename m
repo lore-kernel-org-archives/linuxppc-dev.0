@@ -1,44 +1,106 @@
-Message-ID: <3AB0BECF.650FA111@inn.ericsson.se>
-Date: Thu, 15 Mar 2001 14:08:31 +0100
+Message-ID: <3AB0DE72.959AE34F@inn.ericsson.se>
+Date: Thu, 15 Mar 2001 16:23:30 +0100
 From: Kenneth Johansson <kenneth.johansson@inn.ericsson.se>
 MIME-Version: 1.0
-To: frowand@mvista.com
-Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: walnut 405
-References: <3AAF73C0.D0DA94A6@inn.ericsson.se> <3AAFC805.AE1CA2B@mvista.com>
+To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Installing debian on embedded ppc Micro-HOWTO
 Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Frank Rowand wrote:
->
-> Kenneth Johansson wrote:
-> >
- > Things looks quite good I now have a debian potato for ppc running on the card
-> > but there is a few problems.
-> >
-> > 1. It kills the Ethernet port on a cisco catalyst 5505 switch/router.
->
-> Can you get a network trace to see what packets are involved?
+I got a request for the howto so here it is.
 
-Yes I can snoop it with tcpdump but it has to wait until next week. This will only
-show something if the content of the packet is wrong but I think the problem is more
-timing related but that is only a guess.
+-------------------
+Installing debian on embedded ppc Micro-HOWTO
 
->
-> > 2. it's not possible to run gdb
->
-> Yes, ptrace is still not yet implemented for the 4xx.  This means that both gdb
+1.  What you need.
 
-That explains it :)
+A PowerPC CPU that is compatible with 601 userspace.
+This means that you have to compile in math emulation on most
+embedded version of ppc and that the 8xx series from motorola
+dose not work.
 
-> robust version in place.  I hope to have this available very soon.  (If anyone
-> feels like debugging this, I can send them my current patch.)
+It is assumed that you have set up the system so that it is
+booting to the point of mounting / from a nfs server.
 
-I can test it but don't have much time to actually debug this right now. Once this works
-it should be simpler to find out what the kernel dose when running emacs that prevents dpkg
-to run after it.
+And last you need the debian base system for ppc located at
+http://ftp.se.debian.org/debian/dists/potato/main/disks-powerpc/current/base2_2.tgz
+
+
+
+2. Create the root file system
+
+Since the first part of a debian installation never was done a few manual
+changes has to be done.
+
+Unpack base2_2.tgz into the directory that is used as root mount point.
+>From now on / will mean this directory on the server.
+
+do the following changes
+
+/etc/passwd
+	put in a valid root entry with password. Debian has some sanity checks that
+	fails if no password is used for root.
+
+/sbin/unconfigured.sh
+	remove/rename
+
+/etc/fstab
+	To get a rw root change the / entry to
+	"/dev/root	/		none	rw		0	0"
+
+/etc/securetty
+	We need to login as root add the tty used to this file
+	ex.
+	console
+	ttyS0
+	ttyS1
+
+/etc/resolv.conf
+	fill in nameserver
+
+/etc/inittab
+	comment out
+
+	# Format:
+	#  <id>:<runlevels>:<action>:<process>
+	#1:2345:respawn:/sbin/getty 38400 tty1
+	#2:23:respawn:/sbin/getty 38400 tty2
+	#3:23:respawn:/sbin/getty 38400 tty3
+	#4:23:respawn:/sbin/getty 38400 tty4
+	#5:23:respawn:/sbin/getty 38400 tty5
+	#6:23:respawn:/sbin/getty 38400 tty6
+
+	and uncomment
+
+	T0:23:respawn:/sbin/getty -L ttyS0 9600 vt100
+
+
+The above has to be done but changing the following can't hurt
+
+/etc/hostname
+/ets/hosts
+
+
+
+3. Booting the system.
+
+Now you boot and login as root.
+
+If you are behind a firewall set http_proxy with
+Export http_proxy="http://<your_proxy>"
+
+Start dselect
+      first you need to do a update. Then just chose install and wait.
+
+
+This should result in a complete install of debian.
+
+------
+
+if you run a 405 and at any point starts to get segmentation faults just reboot and
+restart deselect.
 
 --
 Kenneth Johansson
