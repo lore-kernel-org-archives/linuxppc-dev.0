@@ -1,27 +1,43 @@
-Date: Wed, 20 Mar 02 09:04:35 PST
+Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
+Date: Wed, 20 Mar 02 09:11:10 PST
 From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
-Message-Id: <0203201704.AA10152@ivan.Harhan.ORG>
-To: trini@kernel.crashing.org
+Message-Id: <0203201711.AA10183@ivan.Harhan.ORG>
+To: linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
 Subject: Re: EV-64260-BP & GT64260 bi_recs
-Cc: linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tom Rini <trini@kernel.crashing.org> wrote:
+Wolfgang Denk <wd@denx.de> wrote:
 
-> Sure there is, for it to be accepted.
+> I'm getting a bit tired about this discussion.
 
-Wait a minute, why am I even talking to you? Mark said he is the responsible
-maintainer and promised to push my patch in a few days if there is no consensus
-by then, and I think I'll just wait a few days and then ask him to stick to his
-word. (I'm willing to bet $50 that in the next few days there will be no
-consensus nor will anyone else offer a counterpatch.)
+I got tired a long time ago.
 
-> And would you please make it
-> versus the _galileo tree
+> We  start  with  siome
+> nice  ideas,  then  some open issues pop up, and instead of trying to
+> find a solution we drop everything again.
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Sorry, no, that would be a step backward and we need to move forward.
+No, we don't drop everything again, there is my patch, and Mark said he'll push
+it if there is no consensus in the next few days, which I've already bet $50
+on.
+
+> For instance. Hey, but we are talking about a very, very special case
+> here - when you have set of non-standard controllers which don't know
+> their own addresses _and_ need to get a specific assignment _and_ you
+> don't know the initialization sequence _and_ ...
+>
+> For 98% of all practical purposes it will be sufficient to  pass  the
+> list of MAC addresses, and for 1.95% it will be sufficient to combine
+> the  MAC  address  with  information about the driver type (GT, 82xx,
+> ...).
+
+But this is lousy logic, it's this kind of logic (it's OK for 98% of cases)
+that has given us the crap we have right now.
+
+Just what is wrong with my solution of BI_GT64260_ETH_CFG, BI_8260_ETH_CFG,
+BI_8XX_ETH_CFG, etc?
 
 MS
 
