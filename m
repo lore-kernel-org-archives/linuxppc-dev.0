@@ -1,40 +1,34 @@
-Message-ID: <38340F9F.E7A9CC63@iname.com>
-Date: Thu, 18 Nov 1999 14:39:27 +0000
-From: Jim Chapman <jim.chapman@iname.com>
+Message-ID: <38341D34.F5CD1482@netx4.com>
+Date: Thu, 18 Nov 1999 10:37:24 -0500
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: "linuxppc-embedded@lists.linuxppc.org"
- <linuxppc-embedded@lists.linuxppc.org>
-Subject: configuring swap on a diskless mpc860 embedded target
+To: Ron Fredericks <ronf@Lynx.COM>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Linux driver support for 860 PowerQUICC and 8260 PowerQUICC II  devices?
+References: <199911180439.UAA00333@lynx.Lynx.COM>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Is anyone using an NFS-mounted swap file on an mpc860 diskless system?
+Ron Fredericks wrote:
 
-I created a swap file on the embedded target using
 
-dd if=/dev/zero of=/SWAPFILE bs=1k count=8192
-mkswap /SWAPFILE
+> Does anyone know if there is a public Linux driver for PowerQUICC devices?
 
-But when I try to enable swapping using "swapon /SWAPFILE", linux
-complains that it can't find a swap signature in the file. I've looked
-at the file using a hex dump and it seems to be in the right place (10
-characters at offset 4096-10). Adding some debug printk's, I can see
-that sys_swapon() reads in random data (usually NULLs, but not always)
-into a swap_header struct. I get the same result with v0 and v1 swap
-file formats.
+Yep.  I wrote them for the SMC, SCC, Ethernet, FEC.  There are
+some experimental versions around for I2C and SPI, along with
+microcode patches.  There is probably some other stuff around
+in there as well that I accidently let slip out.....
 
-I tried creating the swap file on my PowerMac G3 (running linux-2.2.10)
-but that yielded the same result.
 
-My kernel is the embedded 2.2.13 running on a custom mpc860 board. The
-system's NFS root is served from a cheapie x86 system running
-linux-2.2.13.
+> Strategic Alliance Manager ....Lynx Real-Time Systems
 
-Any thoughts?
+So, you want to take advantage of "free" software in your
+proprietary OS.....how nice :-).
 
--Jim
 
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
