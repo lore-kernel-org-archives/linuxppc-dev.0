@@ -1,40 +1,49 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3F56C5D3.9080202@einfochips.com>
-Date: Thu, 04 Sep 2003 10:25:47 +0530
-From: bhavin <bhavinp@einfochips.com>
+From: Der Herr Hofrat <der.herr@hofr.at>
+Message-Id: <200309040558.h845wW900694@hofr.at>
+Subject: Re: Memory Profiling Tool
+In-Reply-To: <200309021344.IAA18035@lists.linuxppc.org> from "mss59@att.net"
+ at "Sep 2, 2003 01:43:55 pm"
+To: mss59@att.net
+Date: Thu, 4 Sep 2003 07:58:32 +0200 (CEST)
+Cc: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Problems with PM826 card
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello All,
+>
+> Is there any memory profiling and leak detection tool available which works
+> for both PPC and X86??
 
-    I am using a PM826 card with our own developed carrier extension
-board. I have build the ppcboot image. I am booting the image from flash
-and through serial communication SCC and I have configured the correct
-serial channel number from our card's schematics. Now, the ppcboot works
-but, when I try to write something in flash through ppcboot (either
-'loadb' command or 'nm' command) the flash contents are not getting
-changed. All other functionality of ppcboot works like erase, read, etc.
-but all the functionality related to 'write to flash' is not working.
-Can any one please suggest me what could be the possible reason??
+bgcc - bounds checking gcc - its a patch to gcc
 
-Also, I have one separate program which, I downloaded from somewhere
-which does some read/write operation to the PM826 card's flash. Through
-that program the writing is working perfect.
+the output will look something like this but can be tuned with compile time options:
 
-Has it something to do with ppcboot configuration or the addressing mode?
-Your help will be highly appreciated.
+Bounds Checking GCC v gcc-3.2.2-3.1 Copyright (C) 1995 Richard W.M. Jones
+Bounds Checking comes with ABSOLUTELY NO WARRANTY. For details see file
+`COPYING' that should have come with the source to this program.
+Bounds Checking is free software, and you are welcome to redistribute it
+under certain conditions. See the file `COPYING' for details.
+For more information, set GCC_BOUNDS_OPTS to `-help'
+Bounds library call frequency statistics:
+  Calls to push, pop, param function:        1, 1, 0
+  Calls to add, delete stack:                1, 1
+  Calls to add, delete heap:                 1, 0
+                                             ^^^^
+                                       malloc but no free..
 
+  Calls to check pointer +/- integer:        0
+  Calls to check array references:           0
+  Calls to check pointer differences:        0
+  Calls to check object references:          0
+  Calls to check component references:       0
+  Calls to check truth, falsity of pointers: 0, 0
+  Calls to check <, >, <=, >= of pointers:   0
+  Calls to check ==, != of pointers:         0
+  Calls to check p++, ++p, p--, --p:         0, 0, 0, 0
+  References to unchecked static, stack:     0, 0
 
-Thanks & Regards,
-Bhavin Shah
-Embedded Engineer
-eInfochips Ltd.,
-bhavinp@einfochips.com
-
+hofrat
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
