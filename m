@@ -1,42 +1,38 @@
-Date: Fri, 06 Jun 2003 12:50:20 -0700
-From: Ron Bianco <ronb@lcsaudio.com>
-Subject: Has anyone made the 8240 do burst reads from PCI memory?
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Message-id: <000401c32c64$dc6a4690$4d00a8c0@warp-speed>
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
+Message-ID: <3EE14A54.7D33413C@opersys.com>
+Date: Fri, 06 Jun 2003 22:13:40 -0400
+From: Karim Yaghmour <karim@opersys.com>
+Reply-To: karim@opersys.com
+MIME-Version: 1.0
+To: Lokesh Kumar <lokesh.kumar@wrx-us.com>
+Cc: brian.auld@adic.com, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: x86(host) --> ppc(tgt) cross-tool-chain
+References: <3439AB3A99ECD5409F3A52ACF814744D158D23@norcom2.norcom.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Lokesh Kumar wrote:
+> Yes, it does work. I have a small web server running with glibc-2.2.3.
+...
+> > I built the toolchain on x86 host for PPC, and I used
+> >
+> > GCC-2.95.3
+> > GLIBC-2.2.3
+> > Binutils-2.11.92
 
-We have a custom 8240 board running a linux 2.2.x kernel variant with some dual
-port SRAM mapped into PCI memory space using a custom CPLD.  We use a modified
-version of the sandpoint setup in the ppc linux kernel initialization code.
+It seems the success with a toolchain component version set depends on the
+native tools you have on your workstation. Can you tell me what distro
+you were using on your workstation when you built glibc 2.2.3 in the
+above setup.
 
-In the ISR of a custom device driver we read and write to the PCI mem
-successfully.
+Thanks,
 
-FYI, although not a PCI expert, I'm trying to determine if we need to upgrade
-our CPLD code in order to successfully support memory read cycles with more than
-one data phase.
+Karim
 
-Even with sequential reads in groups of 8 words, ( or writes for that matter )
-we are unable to get the 8240 to do other than single (beat) word read PCI
-cycles.  One 'strange' thing in particular is that the 8240 as PCI initiator is
-keeping !FRAME asserted only very briefly.
-It also de-asserts !IRDY very soon after the first data phase completes.  It may
-be that the 8240 is just indicating a wait and we need to handle that better.
-
-Anyway, according to the 8240 user's manual it supports burst ordering of the
-linear incrementing type for memory accesses when the 2 low order bits of the
-address are 0, as we are doing.
-
-So I was just wondering if anyone has actually gotten an 8240 to access PCI
-memory with multiple beat, memory read cmds.?
-
-regards, Ron
-
+--
+Author, Speaker, Developer, Consultant
+Pushing Embedded and Real-Time Linux Systems Beyond the Limits
+http://www.opersys.com || karim@opersys.com || 514-812-4145
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
