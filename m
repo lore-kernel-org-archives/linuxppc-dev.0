@@ -1,39 +1,35 @@
-To: linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jiri Masik <masik@pc203b.fzu.cz>,
+	<linuxppc-dev@lists.linuxppc.org>
 Subject: Re: Occasional crash reports
-From: Jiri Masik <masik@pc203b.fzu.cz>
-Date: 14 Aug 2001 18:02:15 +0200
-Message-ID: <4vg0auiq9k.fsf@darbujan.fzu.cz>
+Date: Tue, 14 Aug 2001 18:28:27 +0200
+Message-Id: <20010814162827.16595@smtp.adsl.oleane.com>
+In-Reply-To: <4vg0auiq9k.fsf@darbujan.fzu.cz>
+References: <4vg0auiq9k.fsf@darbujan.fzu.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
-
-> So basically, the kernel tends to die in various locations where things
-> should be just fine, but I did notice one thing: In most of these cases,
-> I had softirq around in the backtrace (either running in softirqs, or
-> having do_softirq() in the backtrace). There is one case where I didn't
-> have it: it dies inside power_save(), so probably because an interrupt
-> that happened just before messed things up.
+>Hi,
 >
-> I'm wondering if we might be running into some stack overflow...
->
-> Any clue ?
->
-> Ben.
+>I haven't observed any problem with recent kernels from your tree with
+>power supply. When running on battery kernel crashes soon (usually by
+>15 minutes). This is on my Pismo (March 2000) with 2.4.7-ben0. On the
+>second thought it might be related to USB as well as I'm not using
+>battery and USB mouse uncorrelated - IIRC one crash occurred inside
+>hc_interrupt. I'll rsync and see what's the current status.
 
-Hi,
+Make sure you have the latest yaboot (1.2.3), and add an initrd=<path>
+line to your yaboot.conf in order to load the kernel's System.map along
+with the kernel image. Also, enable xmon in your kernel. This will give
+you some symbols lookup in xmon backtrace which is cool :)
 
-I haven't observed any problem with recent kernels from your tree with
-power supply. When running on battery kernel crashes soon (usually by
-15 minutes). This is on my Pismo (March 2000) with 2.4.7-ben0. On the
-second thought it might be related to USB as well as I'm not using
-battery and USB mouse uncorrelated - IIRC one crash occurred inside
-hc_interrupt. I'll rsync and see what's the current status.
+If that crash ever happens again, send me the backtrace (or just copy me
+PC, LR and the backtrace values and send along System.map)
 
-cheers,
-        Jiri
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
