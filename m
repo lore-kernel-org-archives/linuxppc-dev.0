@@ -1,84 +1,98 @@
-Date: Thu, 5 Jun 2003 23:16:00 +0200 (CEST)
-From: Mich Lanners <mlan@cpu.lu>
-Reply-To: Mich Lanners <mlan@cpu.lu>
-Subject: Re: new ATI sleep code freezes
-To: mutex@kerneli.org
-Cc: linuxppc-dev@lists.linuxppc.org
+Message-ID: <3EDFBA42.3050306@mvista.com>
+Date: Thu, 05 Jun 2003 14:46:42 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Message-Id: <E19O25a-0000Ej-00@piglet.grunz.lu>
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: linuxppc_2_4_devel patch for arch/ppc/kernel/gen550_dbg.c
+Content-Type: multipart/mixed;
+ boundary="------------010002040706090100070505"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On   5 Jun, this message from Benjamin Herrenschmidt echoed through
-cyberspace:
->> from my XF86Config file...
->>
->> (WW) Open APM failed (/dev/apm_bios) (No such file or directory)
->>
->> But my kernel config says...
->> CONFIG_PMAC_APM_EMU=y
->>
->> The only thing unusual is I am running devfs..
->
-> Poor boy... ;)
+This is a multi-part message in MIME format.
+--------------010002040706090100070505
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Na. I run devfs on my Powerbook, and I am very happy. Never had any
-problem. I am absolutely certain (even if it may not be true :-) that
-using devfs saves me quite a number of HD spinups.
+This patch add in the check to see if the UART already appears to be
+initialized that is in arch/ppc/boot/common/ns16550.c.
 
->> so i checked /dev
->>
->> heliosphan dev # find . -name *apm*
->> ./misc/apm_bios
->> ./apm_bios
->>
->> /dev/misc/apm_bios has perms:
->>
->> crw-------    1 mutex    root      10, 134 Dec 31  1969 apm_bios
+Please apply if there are no objections.
 
-Mine show this:
+Mark
+--
 
-mlan@pooh:~$ ll /dev/apm_bios  /dev/misc/apm_bios
-lr-xr-xr-x    1 root     root           13 2003-05-14 22:42 /dev/apm_bios -> misc/apm_bios
-crw-rw----    1 root     root      10, 134 1970-01-01 01:00 /dev/misc/apm_bios
+--------------010002040706090100070505
+Content-Type: text/plain;
+ name="gen550.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="gen550.patch"
 
-This is with the Debian devfs package, which _may_ fix up a few things.
-My devfs config says this:
+===== arch/ppc/kernel/gen550_dbg.c 1.3 vs edited =====
+--- 1.3/arch/ppc/kernel/gen550_dbg.c	Fri Apr 25 11:01:46 2003
++++ edited/arch/ppc/kernel/gen550_dbg.c	Wed Jun  4 17:17:12 2003
+@@ -57,6 +57,7 @@
+ unsigned long serial_init(int chan, void *ignored)
+ {
+ 	unsigned long com_port;
++	unsigned char lcr, dlm;
 
-mlan@pooh:/etc/devfs$ find . -type f |xargs grep apm
-/conf.d/apm:REGISTER ^misc/apm_bios$   PERMISSIONS root.root 0660
-/conf.d/pmud:REGISTER ^misc/apm_bios$   PERMISSIONS root.root 0660
-/perms:REGISTER ^misc/apm_bios         PERMISSIONS root.root   0660
+ 	/* We need to find out which type io we're expecting.  If it's
+ 	 * 'SERIAL_IO_PORT', we get an offset from the isa_io_base.
+@@ -79,22 +80,38 @@
 
-plus this one for setting up symlinks:
+ 	/* How far apart the registers are. */
+ 	shift = rs_table[chan].iomem_reg_shift;
++
++	/* save the LCR */
++	lcr = serial_inb(com_port + (UART_LCR << shift));
 
-mlan@pooh:/etc/devfs$ head compat_symlinks
-# Enable full compatibility mode for old device names. You may comment these
-# out if you don't use the old device names. Make sure you know what you're
-# doing!
-REGISTER        .*              MKOLDCOMPAT
-UNREGISTER      .*              RMOLDCOMPAT
+ 	/* Access baud rate */
+-	serial_outb(com_port + (UART_LCR << shift), 0x80);
++	serial_outb(com_port + (UART_LCR << shift), UART_LCR_DLAB);
++	dlm = serial_inb(com_port + (UART_DLM << shift));
 
->> are those normal permissions ?  Also, I'm running an enlightenment
->> battery applet which afaik uses apm layer to report battery level.
->> So something has to be working. Dave
->
-> I don't know wtf with devfs & perms, but the problem is here, once you
-> fix that, it should work much better ;)
+-	/* Input clock. */
+-	serial_outb(com_port + (UART_DLL << shift),
++	/*
++	 * Test if serial port is unconfigured
++	 * We assume that no-one uses less than 110 baud or
++	 * less than 7 bits per character these days.
++	 *  -- paulus.
++	 */
++	if ((dlm <= 4) && (lcr & 2)) {
++		/* port is configured, put the old LCR back */
++		serial_outb(com_port + (UART_LCR << shift), lcr);
++	}
++	else {
++		/* Input clock. */
++		serial_outb(com_port + (UART_DLL << shift),
+ 			(rs_table[chan].baud_base / SERIAL_BAUD) & 0xFF);
+-	serial_outb(com_port + (UART_DLM << shift),
+-			(rs_table[chan].baud_base / SERIAL_BAUD) >> 8);
+-	/* 8 data, 1 stop, no parity */
+-	serial_outb(com_port + (UART_LCR << shift), 0x03);
+-	/* RTS/DTR */
+-	serial_outb(com_port + (UART_MCR << shift), 0x03);
++		serial_outb(com_port + (UART_DLM << shift),
++				(rs_table[chan].baud_base / SERIAL_BAUD) >> 8);
++		/* 8 data, 1 stop, no parity */
++		serial_outb(com_port + (UART_LCR << shift), 0x03);
++		/* RTS/DTR */
++		serial_outb(com_port + (UART_MCR << shift), 0x03);
 
-I'm tempted to say: install Debian :-)
+-	/* Clear & enable FIFOs */
+-	serial_outb(com_port + (UART_FCR << shift), 0x07);
++		/* Clear & enable FIFOs */
++		serial_outb(com_port + (UART_FCR << shift), 0x07);
++	}
 
-Cheers
+ 	return (com_port);
+ }
 
-Michel
+--------------010002040706090100070505--
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
