@@ -1,38 +1,47 @@
-Date: Mon, 27 Nov 2000 17:09:33 -0600 (CST)
-From: Brian Ford <ford@vss.fsi.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: EST SBC8260 and Canary CTX-1170
-In-Reply-To: <3A22C5BF.445BF4F1@mvista.com>
-Message-ID: <Pine.GSO.4.21.0011271651000.493-100000@eos>
+Message-ID: <3A2322FB.ECCD2CA2@mvista.com>
+Date: Mon, 27 Nov 2000 22:14:03 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Brian Ford <ford@vss.fsi.com>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: EST SBC8260 and Canary CTX-1170
+References: <Pine.GSO.4.21.0011271651000.493-100000@eos>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am having the same problem that was referenced in:
-http://lists.linuxppc.org/listarcs/linuxppc-embedded/200010/msg00167.html
+Brian Ford wrote:
 
-Basically, I can't generate any traffic on the fast Ethernet as seen
-by a sniffer.  I could not find any responses to that message, so I will
-pose those questions again.
 
-Does Linux support the CTX-1170 MII?  The arch/ppc/8260_io/fcc_enet.c
-source code talks about the QS6612.  Will I need to extended fcc_enet.c to
-support the CTX-1170?
+> Does Linux support the CTX-1170 MII?  The arch/ppc/8260_io/fcc_enet.c
+> source code talks about the QS6612.  Will I need to extended fcc_enet.c to
+> support the CTX-1170?
 
-I know that the hardware can work, because the VxWorks boot rom loads
-Linux successfully via this interface and MII.
+That driver either "supports" any PHY, or none at all, depending upon
+your perspective.  None of the command/status MII interface is in
+place to do anything.  None of those functions are called in the
+driver.  The QS6612 comment is left over from the 860T FEC driver I
+copied to get the framework for the FCC driver.
 
-Thanks for any pointers on where to start.
+The Linux 8260 FCC driver works with the supplied EST hardware and the
+CTX-1170 I have.  I know it doesn't work on some others, and I don't
+know if they use the same Ethernet PHY or the deal of the week.
 
---
-Brian Ford
-Software Engineer
-Vital Visual Simulation Systems
-FlightSafety International
-Phone: 314-551-8460
-Fax:   314-551-8444
+>From looking at the drivers, it appears they are a little out of
+date.  I have a newer one (that I was certain I checked in) that will
+interrogate the PHY.  In any case, this driver should work fine on
+any half duplex Ethernet, and you should see transmit packets in any
+case.
 
+> I know that the hardware can work, because the VxWorks boot rom loads
+> Linux successfully via this interface and MII.
+
+Then the driver must not be configuring the I/O lines correctly for
+some unknown reason, or you are running full duplex without the FCC
+initialized to do that.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
