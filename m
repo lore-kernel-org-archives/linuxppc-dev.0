@@ -1,230 +1,313 @@
-Message-ID: <36E29D89.B6877224@mail.esiea.fr>
-Date: Sun, 07 Mar 1999 16:38:56 +0100
-From: "G. =?iso-8859-1?Q?Laur=E8s?=" <laures@hp1.esiea.fr>
-Reply-To: laures@hp1.esiea.fr
-MIME-Version: 1.0
-To: Batmensch <hcaley@loomer.com>,
-        "Dev @ LinuXppc" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: PBG3Series and pre-R5: a little bit further
-References: <XFMail.990307023826.hcaley@loomer.com>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <199903071729.SAA11528@mitra.phys.uit.no>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: More patches for PB G3 volume and mute buttons
+From: Alvin Brattli <Alvin.Brattli@phys.uit.no>
+Date: Sun, 07 Mar 1999 18:29:06 +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello *,
+Here is a further development of my patches for the mute and volume
+buttons on the PowerBook G3.  Here, I have added some minor details,
+plus autorepeat for the volume and brightness control buttons.
 
-Batmensch : to be continued on the list
+*** The original patch implemented the following:
 
-This afternoon I discovered the XF86Config.controlfb of Mr T. Oe I believe.
-I tried it on my 8600, thinking it would accelerate somethings...(may be
-later with the controlfb.c took at the same archive) but instead I took
-some time to better use the "Monitor" statement of the XF86Config.
-I set the good values for my monitor (Hitachi CM751ET) and now XFBDev
-behaves slightly better to my taste.
-For example I now get rid of the strange 1280x1024 real over 1280x16XX
-virtual resolution of the very generic XF86Config.pmac.
+Pressing the mute button toggles the muting of the internal speakers on
+the PowerBook G3.  Changing the volume via xmixer, kmix, etc. does not
+unmute the speakers, as this implementation gives precedence to the
+user's choice of muting via the button.  However, the volume *can* be
+changed this way, but this does not go into effect until the speakers
+are unmuted again.
 
-Wich leaded me to this : what about if XFBDev tryied the same weird
-resolutions on the poor LCD of my PBG3 ? (I use XF86Config.pmac on the
-PBG3). Since the beginning I though it would be an error in the
-resolution , this strange behavior of two small X screens in two
-quarters etc..
+The volume buttons work as expected; they change the speaker volume.  If
+the speakers are muted, they will be unmuted, and the volume will be
+increased/decreased from the level set before muting (or from the level
+set by xmixer/kmix while muted).
 
-I tried to include in my 8600's XF86Config the LCD settings, but I lack
-some info (how to set 1024x768@60Hz)
-Well, I hooked up the hitachi on the PBG3, with the SAME config as the
-8600 (works here in 1280x1024@75Hz) and it didn't work.
-I got basically the same error than here (no valid modes found, after
-having eliminated all modes), using my half definition for the PBG3 14,1
-LCD :
+Pressing shift-mute or shift-volume up/down does the same thing with the
+headphones.
 
-XFree86 Version 3.3.3 / X Window System
-(protocol Version 11, revision 0, vendor release 6300)
-Release Date: November 18 1998
-	If the server is older than 6-12 months, or if your card is newer
-	than the above date, look for a newer version before reporting
-	problems.  (see http://www.XFree86.Org/FAQ)
-Operating System: Linux 2.1.130 ppc [ELF] 
-Configured drivers:
-   FBDev: Server for frame buffer device
-   (Patchlevel 10): mfb, afb, cfb8, cfb16, cfb32, NCR 77C32BLT (accel),
-ATI Mach64 (accel), IMS TwinTurbo (accel)
-(using VT number 7)
+*** The new stuff in this patch is:
 
-XF86Config: /etc/XF86Config
-(**) stands for supplied, (--) stands for probed/default values
-(**) XKB: keymap: "macintosh" (overrides other XKB settings)
-(**) Mouse: type: BusMouse, device: /dev/adbmouse, buttons: 3
-(**) FBDev: Graphics device ID: "Linux Frame Buffer Device"
-(**) FBDev: Monitor ID: "Apple PowerBook G3 Series 14,1 TFT"
-(--) FBDev: Mode "1024x768" needs hsync freq of 59.91 kHz. Deleted.
-Warning: The directory "/usr/X11R6/lib/X11/fonts/local/" does not exist.
-         Entry deleted from font path.
-(**) FontPath set to "/usr/X11R6/lib/X11/fonts/misc/,/usr/X11R6/lib/X11/fonts/Type1/,/usr/X11R6/lib/X11/fonts/Speedo/,/usr/X11R6/lib/X11/fonts/75dpi/,/usr/X11R6/lib/X11/fonts/100dpi/"
-(**) FBDev: Using XF86Config video mode database
-(--) FBDev: Removing mode "640x480" from list of valid modes.
-(--) FBDev: Removing mode "800x600" from list of valid modes.
-(--) FBDev: Removing mode "832x624" from list of valid modes.
-(--) FBDev: Removing mode "1024x768" from list of valid modes.
-(--) FBDev: Removing mode "1152x870" from list of valid modes.
-(--) FBDev: Removing mode "1152x900" from list of valid modes.
++ The volume and brightness control buttons now autorepeat.
++ Pressing option-brightness up/down sets the brightness of the
+  backlighting to the maximum/minimum (without switching it off)
+  respectively.
++ Pressing option-volume up/down sets the volume of the speakers to
+  maximum/minimum, and shift-option-volume up/down does the same
+  thing for the headphones.
 
-Fatal server error:
-No valid modes found.
+Here are the patches (relative to 2.2.1):
 
 
-When reporting a problem related to a server crash, please send
-the full server output, not just the last messages
+--- drivers/macintosh/mac_keyb.c.orig	Mon Mar  1 18:48:13 1999
++++ drivers/macintosh/mac_keyb.c	Sun Mar  7 18:20:36 1999
+@@ -211,6 +211,7 @@
+ static void mac_put_queue(int);
+ 
+ static void buttons_input(unsigned char *, int, struct pt_regs *, int);
++static void buttons_handler(unsigned char *, int);
+ 
+ static void init_trackpad(int id);
+ static void init_trackball(int id);
+@@ -243,6 +244,10 @@
+ 
+ static int adb_mouse_kinds[16];
+ 
++/* code in buttons_input() needs to know if shift or option key is down */
++static int shift_down;
++static int option_down;
++
+ struct mackbd_state {
+ 	int	adb_id;
+ 	void	*kbd_id;
+@@ -326,6 +331,12 @@
+ 	if (keycode == 0x3f)
+ 		keycode = 0x48;
+ 
++	/* buttons_handler() needs to know if shift or option key is down */
++	if (keycode == 0x38)
++		shift_down = !up_flag;
++	if (keycode == 0x3a)
++		option_down = !up_flag;
++
+ #ifdef CONFIG_ADBMOUSE
+ 	/*
+ 	 * XXX: Add mouse button 2+3 fake codes here if mouse open.
+@@ -514,9 +525,31 @@
+ }
+ #endif /* CONFIG_ADBMOUSE */
+ 
++
++/* Autorepeat delays for ADB buttons */
++#define BUTTON_DELAY0	(HZ/2)
++#define BUTTON_DELAY1	(HZ/6)
++
+ /* XXX Needs to get rid of this, see comments in pmu.c */
+ extern int backlight_level;
+ 
++/* Timer for buttons autorepeat */
++static struct timer_list button_timer;
++/* Store buttons data here between each interrupt */
++static unsigned char button_data[4];
++
++/* Interrupt handler for ADB button autorepeat */
++static void
++buttons_repeat(unsigned long x)
++{
++	unsigned long flags;
++
++	save_flags(flags);
++	cli();
++	buttons_handler(button_data, BUTTON_DELAY1);
++	restore_flags(flags);
++}
++
+ static void
+ buttons_input(unsigned char *data, int nb, struct pt_regs *regs, int autopoll)
+ {
+@@ -528,47 +561,86 @@
+ 	/* Ignore data from register other than 0 */
+ 	if ((adb_hardware != ADB_VIAPMU) || (data[0] & 0x3) || (nb < 2))
+ 		return;
+-		
+-	switch (data[1]&0xf )
++
++	buttons_handler(data, BUTTON_DELAY0);
++}
++
++static void
++buttons_handler(unsigned char *data, int repeat_delay)
++{
++	int down_flag;
++	int repeat_flag = 0;
++
++	extern int pmac_togglemute(int);
++	extern int pmac_addto_volume(int, int);
++
++	del_timer(&button_timer);
++
++	down_flag = data[1] == (data[1] & 0xf);
++	switch (data[1]&0xf)
+ 	{
+ 		/* mute */
+ 		case 0x8:
+ 			/* down event */
+-			if ( data[1] == (data[1]&0xf) ) {
++			if (down_flag) {
++				if (pmu_get_model() == PMU_HEATHROW_BASED)
++					pmac_togglemute(shift_down? 2:4);
+ 			}
+ 			break;
+-		/* contrast decrease */
++		/* contrast decrease (volume decrease on PowerBook G3) */
+ 		case 0x7:
+ 			/* down event */
+-			if ( data[1] == (data[1]&0xf) ) {
++			if (down_flag) {
++				if (pmu_get_model() == PMU_HEATHROW_BASED)
++					pmac_addto_volume(shift_down? 2:4, option_down? -1000:-7);
++				repeat_flag = !option_down;
+ 			}
+ 			break;
+-		/* contrast increase */
++		/* contrast increase (volume increase on PowerBook G3) */
+ 		case 0x6:
+ 			/* down event */
+-			if ( data[1] == (data[1]&0xf) ) {
++			if (down_flag) {
++				if (pmu_get_model() == PMU_HEATHROW_BASED)
++					pmac_addto_volume(shift_down? 2:4, option_down? 1000:7);
++				repeat_flag = !option_down;
+ 			}
+ 			break;
+ 		/* brightness decrease */
+ 		case 0xa:
+ 			/* down event */
+-			if ( data[1] == (data[1]&0xf) ) {
+-				if (backlight_level > 2)
++			if (down_flag) {
++				if (!option_down && backlight_level > 2)
+ 					pmu_set_brightness(backlight_level-2);
+ 				else
+-					pmu_set_brightness(0);
++					pmu_set_brightness(option_down? 1:0);
++				repeat_flag = !option_down;
+ 			}
+ 			break;
+ 		/* brightness increase */
+ 		case 0x9:
+ 			/* down event */
+-			if ( data[1] == (data[1]&0xf) ) {
+-				if (backlight_level < 0x1e)
++			if (down_flag) {
++				if (!option_down && backlight_level < 0x1e)
+ 					pmu_set_brightness(backlight_level+2);
+ 				else 
+ 					pmu_set_brightness(0x1f);
++				repeat_flag = !option_down;
+ 			}
+ 			break;
++		default:
++			/* another button */
++			break;
++	}
++
++	if (repeat_flag) {
++		button_data[0] = data[0];
++		button_data[1] = data[1];
++		button_data[2] = data[2];
++		button_data[3] = data[3];
++		button_timer.expires = repeat_delay + jiffies;
++		button_timer.data = 0;
++		button_timer.function = buttons_repeat;
++		add_timer(&button_timer);
+ 	}
+ }
+ 
+--- drivers/sound/dmasound.c.orig	Mon Mar  1 19:21:46 1999
++++ drivers/sound/dmasound.c	Sat Mar  6 22:37:01 1999
+@@ -243,6 +243,9 @@
+ static volatile struct dbdma_cmd *beep_dbdma_cmd;
+ static void (*orig_mksound)(unsigned int, unsigned int);
+ 
++/* Mute/unmute status */
++static int is_mute;
++
+ /* Burgundy functions */
+ static void awacs_burgundy_wcw(unsigned addr,unsigned newval);
+ static unsigned awacs_burgundy_rcw(unsigned addr);
+@@ -3143,6 +3146,7 @@
+ 		awacs_write((n << 12) | rn);
+ 		volume = awacs_get_volume(rn, lshift);
+ 	}
++	r1 |= is_mute;
+ 	if (r1 != awacs_reg[1]) {
+ 		awacs_reg[1] = r1;
+ 		awacs_write(r1 | MASK_ADDR1);
+@@ -3194,6 +3198,70 @@
+ 	restore_flags(flags);
+ }
+ 
++
++/* Toggle muting of headphones (n==2) or speakers (n==4) */
++int
++pmac_togglemute(int n)
++{
++	int mask;
++
++	if (n == 2)
++		mask = MASK_AMUTE;
++	else if (n == 4)
++		mask = MASK_CMUTE;
++	else
++		return 0;
++
++	is_mute ^= mask;
++	awacs_reg[1] ^= mask;
++	awacs_write(awacs_reg[1] | MASK_ADDR1);
++
++	return is_mute & mask;
++}
++
++/* Adjust volume of headphones (n==2) or speakers (n==4) */
++int
++pmac_addto_volume(int n, int incr)
++{
++	int volume, v1, v2, mask;
++
++	if (n == 2)
++		mask = MASK_AMUTE;
++	else if (n == 4)
++		mask = MASK_CMUTE;
++	else
++		return 0;
++		
++	if (is_mute & mask)
++		is_mute &= ~mask;
++	if (incr > 100)
++		volume = 0x6464;
++	else if (incr < -100)
++		volume = 0x0101;
++	else {
++		volume = awacs_get_volume(awacs_reg[n], 6);
++		v1 = ((volume >> 8) & 0x0ff) + incr;
++		v2 = (volume & 0x0ff) + incr;
++		if (v1 > 100)
++			v1 = 100;
++		if (v2 > 100)
++			v2 = 100;
++		if (v1 <= 0 && v2 <= 0) {
++			volume = 0;
++		} else {
++			if (v1 < 1)
++				v1 = 1;
++			if (v2 < 1)
++				v2 = 1;
++			volume = (v1 << 8) | v2;
++		}
++	}
++	awacs_volume_setter(volume, n, mask, 6);
++
++	return volume;
++}
++
++
+ static void
+ pmac_awacs_tx_intr(int irq, void *devid, struct pt_regs *regs)
+ {
 
-X connection to :0.0 broken (explicit kill or server shutdown).
-
-Here is my long-awaited ;-) XF86Config :
-
-# /etc/XF86Config
-# makes XF68_FBDev emulate Xpmac by using the current video mode
-# and the mac mouse. be sure to compile macintosh mouse
-# support into your kernel and to create /dev/adbmouse.
-# major=10 minor=10
-# (Courtesy Brad Midgley <brad@pht.com>)
-
-Section "Files"
-    RgbPath "/usr/X11R6/lib/X11/rgb"
-    FontPath "/usr/X11R6/lib/X11/fonts/misc/"
-    FontPath "/usr/X11R6/lib/X11/fonts/local/"
-    FontPath "/usr/X11R6/lib/X11/fonts/Type1/"
-    FontPath "/usr/X11R6/lib/X11/fonts/Speedo/"
-    FontPath "/usr/X11R6/lib/X11/fonts/75dpi/"
-    FontPath "/usr/X11R6/lib/X11/fonts/100dpi/"
-EndSection
-Section "ServerFlags"
-EndSection
-Section "Keyboard"
-    Protocol "Standard"
-    AutoRepeat 300 5
-    XkbKeymap "macintosh"
-EndSection
-Section "Pointer"
-    Protocol "BusMouse"
-    Device "/dev/adbmouse"
-EndSection
-Section "Monitor"
-    Identifier "Generic"
-
-EndSection
-Section "Monitor"
-    Identifier "Apple PowerBook G3 Series 14,1 TFT"
-    VendorName "Unknown"
-    ModelName  "Unknown"
-
-    HorizSync  31.5
-    VertRefresh 60
-
-Mode "1024x768"
-    # H: 59.905 kHz, V: 74.509 Hz
-    DotClock 79.555
-    HTimings 1024 1068 1164 1328
-    VTimings 768 771 774 804
-EndMode
-
-EndSection
-Section "Monitor"
-    Identifier "Hitachi CM751ET"
-    VendorName "Hitachi"
-    ModelName "CM751ET"
-
-    HorizSync	31-93
-    VertRefresh	50-160
-    Gamma 1.5
-
-ModeLine "1280x1024" 155.000 1280 1384 1528 1688 1024 1025 1028 1066
-+HSync +VSync -CSync
-#ModeLine "1280x1024" 144.551 1280 1352 1496 1632 1024 1025 1028 1059
-+HSync +VSync -CSync
-
-ModeLine "1152x900" 146.606 1152 1320 1360 1620 900 901 905 943 +HSync
-+VSync -CSync
-#ModeLine "1152x900" 130.000 1152 1320 1360 1620 900 901 905 943 +HSync
-+VSync -CSync
-
-ModeLine "1152x870" 94.358 1152 1216 1280 1344 870 902 904 936 -HSync
--VSync -CSync
-
-Mode "1024x768"
-    # H: 59.905 kHz, V: 74.509 Hz
-    DotClock 79.555
-    HTimings 1024 1068 1164 1328
-    VTimings 768 771 774 804
-    Flags    "+HSync" "+VSync" "-CSync"
-EndMode
-
-Mode "832x624"
-    # H: 49.538 kHz, V: 74.270 Hz
-    DotClock 57.069
-    HTimings 832 876 940 1152
-    VTimings 624 625 628 667
-    Flags    "-HSync" "-VSync" "-CSync"
-EndMode
-
-Mode "800x600"
-    # H: 46.507 kHz, V: 74.411 Hz
-    DotClock 49.112
-    HTimings 800 828 908 1056
-    VTimings 600 601 604 625
-    Flags    "+HSync" "+VSync" "-CSync"
-EndMode
-
-Mode "640x480"
-    # H: 34.880 kHz, V: 66.437 Hz
-    DotClock 30.137
-    HTimings 640 716 780 864
-    VTimings 480 483 486 525
-    Flags    "-HSync" "-VSync" "-CSync"
-EndMode
-
-EndSection
-Section "Device"
-    Identifier "Linux Frame Buffer Device"
-EndSection
-Section "Screen"
-    Driver "fbdev"
-    Device "Linux Frame Buffer Device"
-    Monitor "Apple PowerBook G3 Series 14,1 TFT"
-#    DefaultColorDepth 32
-    DefaultColorDepth 16
-#    DefaultColorDepth 8
-    SubSection "Display"
-	Depth 32
-	Modes "640x480" "800x600" "832x624" "1024x768" "1152x870"
-#	ViewPort 0 0
-	Virtual 1152 870
-    EndSubsection
-    SubSection "Display"
-	Depth 24
-	Modes "640x480" "800x600" "832x624" "1024x768" "1152x870"
-#	ViewPort 0 0
-	Virtual 1152 870
-    EndSubsection
-    SubSection "Display"
-	Depth 16
-	Modes "640x480" "800x600" "832x624" "1024x768" "1152x870" "1152x900" "1280x1024"
-#	ViewPort 0 0
-	Virtual 1280 1024
-    EndSubsection
-    SubSection "Display"
-	Depth 8
-	Modes "640x480" "800x600" "832x624" "1024x768" "1152x870" "1152x900" "1280x1024"
-#	ViewPort 0 0
-	Virtual 1280 1024
-    EndSubsection
-EndSection
 
 
-My question is : is it necessary to tune things to this end to get this
-[snip] of XFBdev working ?
-Has it already be done ? If yes where ?
+
+
+
+
+
+aLViN
 -- 
-GoM
+:r .signature
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
