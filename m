@@ -1,32 +1,26 @@
-Message-Id: <200003180622.BAA20354@shell.faradic.net>
-Date: Fri, 17 Mar 2000 20:22:17 EST
-From: jingai <jingai@floatingpenguins.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: YUP and RPM dependencies
-Reply-To: jingai@floatingpenguins.com
+Date: Sat, 18 Mar 2000 08:14:56 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+To: jingai <jingai@floatingpenguins.com>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: YUP and RPM dependencies
+In-Reply-To: <200003180622.BAA20354@shell.faradic.net>
+Message-ID: <Pine.HPX.4.10.10003180814110.28648-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-After I heard about the YellowDog Update Program (YUP) from someone on this
-list, I went and downloaded the RPM and installed it.  However, it
-initially performs some sanity checks, such as making sure all installed
-RPMS pass dependency checks, and will not continue if this fails.. but I've
-got a few RPMS (such as glibc, which requires the kernel-headers RPMS, but
-I build my own kernel from sources) that I purposely installed even though
-they fail dependency checks..
+On Fri, 17 Mar 2000, jingai wrote:
 
-.so, my question is, is there a way to bypass this check (a force option
-or somesuch)?  And if not, if anyone from  the YD team is here, please make
-this an option.
+> .so, my question is, is there a way to bypass this check (a force option
+> or somesuch)?  And if not, if anyone from  the YD team is here, please make
+> this an option.
 
-But, as a side note, I'm ecstatic that this sort of app is finally out.. I
-was just about to suck down the Debian install CDs, if for nothing other
-than it's automatic package updater..
+Perhaps not, but did you try to install kernel-headers with the --justdb
+option ?
 
--j
+	Gabriel.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
