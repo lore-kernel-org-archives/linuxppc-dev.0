@@ -1,76 +1,35 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: Paul Ruhland <pruhland@microwavedata.com>
-Reply-To: pruhland@microwavedata.com
-To: kd@flaga.is
-Subject: Re: cramfs root filesystem corruption
-Date: Fri, 31 May 2002 10:23:16 -0400
-References: <A60FFE6CA339C742BE11C311EA8BFF5401641E@mdsms2.inside.mdsroc.com>
-In-Reply-To: <A60FFE6CA339C742BE11C311EA8BFF5401641E@mdsms2.inside.mdsroc.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <41EDEC3C1B88D51186EB00A0C9CFADF72B1318@amwmail.adaptivemicro.com>
+From: Cindy Peters <cinpet@adaptivemicro.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Questions about debugfs and the Ext2 file system 
+Date: Fri, 31 May 2002 09:29:30 -0500
 MIME-Version: 1.0
-Message-Id: <200205311023.16775.pruhland@microwavedata.com>
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-If it was mounted it certainly wouldn't qualify as 'inactive', at least by my
-standards.  It is not mounted or being used in any way by the running system.
+I am working with a custom board with an MPC823 running Linux version 2.4.6.
+We are using the ext2 file system. I am noticing some problems with finding
+inodes when copying or adding files after Linux is booted. I need to get the
+list of blocks used by a file and was using debugfs "stat" command to get
+the information. This command works correctly when looking at files that
+were present when Linux booted. If I copy a file and then attempt to look at
+the new file with the "stat" command then the inode cannot be found. If I
+reboot then the file is found correctly.
 
+We are using a ramdisk for booting and we also have a hard drive mounted
+with some files on it. The same problem occurs when using the ramdisk or the
+hard drive.
 
-> -----Original Message-----
-> From: Kári Davíðsson [mailto:kd@flaga.is]
-> Sent: Friday, May 31, 2002 10:07 AM
-> To: pruhland@microwavedata.com; wd@denx.de
-> Cc: linuxppc-embedded@lists.linuxppc.org
-> Subject: RE: cramfs root filesystem corruption
->
->
-> Inactive meaning "unmounted" or just not beeing used?
->
-> K.D.
->
-> > -----Original Message-----
-> > From: Paul Ruhland [mailto:pruhland@microwavedata.com]
-> > Sent: 31. maí 2002 14:04
-> > To: wd@denx.de
-> > Cc: linuxppc-embedded@lists.linuxppc.org
-> > Subject: Re: cramfs root filesystem corruption
-> >
-> > 200205301450.50112.pruhland@microwavedata.com> you wrote:
-> > >> The cramfs image is in flash, mounted as root via mtd blockdevice.
-> > >> Typically the error occurs during flash reprogramming (
-> >
-> > using mtd char
-> >
-> > >> device '/dev/mtd0' ) ...during/after flash programming the cramfs
-> > >> filesystem 'loses' information ( files disappear ).  The
-> >
-> > errors from syslog
-> >
-> > >> are 'error during decompression', typically the error
-> >
-> > numbers ( from
-> >
-> > >> 'linux/zlib_fs.h' ) are Z_BUF_ERROR, for the first error,
-> >
-> > and Z_DATA_ERROR
-> >
-> > >> for the rest.
-> > >
-> > > Ummm... can you please explain EXACTLY what you
-> > > are doing? You have a
-> > > cramfs in flash, mounted as root, and you are erasing and
-> >
-> > overwriting
-> >
-> > > the SAME cramfs partition WHILE RUNNING FROM IT?
-> >
-> > No, I have redundant cramfs images in flash.  I am erasing
-> > and overwriting the
-> > inactive image while the other, active image,  is mounted as root.
-> >
-> >
+It is probably my lack of understanding of how the file system works with
+Linux. If anyone could give me some information about why this is happening
+and the best way to work with it I would appreciate it.
 
+Thank you.
+
+Cindy Peters
+Adaptive Micro-Ware, Inc.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
