@@ -1,20 +1,21 @@
-Return-Path: <rpjday@mindspring.com>
-Received: from mailhost.rdmcorp.com (world.rdmcorp.com [204.225.180.10])
-	by ozlabs.org (Postfix) with ESMTP id 534DB2BC0F
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao11.cox.net (fed1rmmtao11.cox.net [68.230.241.28])
+	by ozlabs.org (Postfix) with ESMTP id 684CE2BDA0
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 15 Oct 2004 18:23:52 +1000 (EST)
-Date: Fri, 15 Oct 2004 04:16:47 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-To: Tom Rini <trini@kernel.crashing.org>
-In-Reply-To: <20041014221623.GD19791@smtp.west.cox.net>
-Message-ID: <Pine.LNX.4.60.0410150412150.9222@localhost.localdomain>
-References: <JPEALJAFNGDDLOPNDIEEIEEPCNAA.joakim.tjernlund@lumentis.se>
-	<20041014221623.GD19791@smtp.west.cox.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Joakim Tjernlund <joakim.tjernlund@lumentis.se>,
-	linuxppc-embedded@ozlabs.org
-Subject: Re: Merge 8xx to Linus tree?
+	Sat, 16 Oct 2004 04:15:44 +1000 (EST)
+Date: Fri, 15 Oct 2004 11:15:39 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+Message-ID: <20041015181539.GG19791@smtp.west.cox.net>
+References: <20041015160941.GA4054@logos.cnet>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20041015160941.GA4054@logos.cnet>
+Cc: "Nei A. Chiaradia" <nei.chiaradia@cyclades.com>,
+	Regina Kodato <regina.kodato@cyclades.com>,
+	Wanda Rosalino <wanda.rosalino@cyclades.com>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] PRxK sub-architecture
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,32 +26,57 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, 14 Oct 2004, Tom Rini wrote:
+[ Switched over to linuxppc-embedded ]
 
-> On Thu, Oct 14, 2004 at 04:53:49PM +0200, Joakim Tjernlund wrote:
->
-> > Is it not time to merge 8xx from linuxppc-2.5 into Linus tree?
-> >
-> > I know the 8xx is not fully functional yet but this isn't done
-> > soon I think it won't happen at all. The 8xx arch can be made to
-> > depend on BROKEN in Linus tree to make it clear that it isn't
-> > working properly yet.
->
-> I've been the hard-ass about holding back on moving 8xx forward.
-> Once 2.6.9 finally comes out (assuming and hoping that Linus really
-> intends to do a release and not -rc5), I'll start moving stuff over
-> and make it depend on BROKEN hopefully in time for 2.6.10-rc1.
+On Fri, Oct 15, 2004 at 01:09:41PM -0300, Marcelo Tosatti wrote:
 
-not like anyone here would care, but i'm pretty sure that it was my
-carping and whining some time back on LKML that inspired someone to
-add the extra options to the kernel config process regarding the
-selections to pick only drivers expected to compile cleanly, etc.
-this was based on my having, once too often, done a kernel compile and
-having the compile fail because a selected driver was just plain
-broken (from memory, it was a riscom driver that no one cared about
-anymore).
+Just some rough comments:
 
-see?  sometimes the squeaky wheel really does get the grease.  (or
-maybe they did it just to shut me up.  hard to believe ...)
+[snip]
+> diff -Nur --exclude-from=/tmp/exclude linux-2.6-bkppc.orig/arch/ppc/8xx_io/fec.c linux-2.6-bkppc/arch/ppc/8xx_io/fec.c
+> --- linux-2.6-bkppc.orig/arch/ppc/8xx_io/fec.c	2004-09-02 08:52:19.000000000 -0300
+> +++ linux-2.6-bkppc/arch/ppc/8xx_io/fec.c	2004-09-02 14:33:23.000000000 -0300
+> @@ -173,7 +173,7 @@
+>  	uint	phy_status;
+>  	uint	phy_speed;
+>  	phy_info_t	*phy;
+> -	struct tq_struct phy_task;
+> +	struct work_struct phy_task;
+>  
+>  	uint	sequence_done;
+>  
 
-rday
+This looks like a dupe of what's already in linuxppc-2.5.
+
+[snip]
+> diff -Nur --exclude-from=/tmp/exclude linux-2.6-bkppc.orig/arch/ppc/boot/simple/embed_config.c linux-2.6-bkppc/arch/ppc/boot/simple/embed_config.c
+> --- linux-2.6-bkppc.orig/arch/ppc/boot/simple/embed_config.c	2004-09-02 08:52:19.000000000 -0300
+> +++ linux-2.6-bkppc/arch/ppc/boot/simple/embed_config.c	2004-09-02 10:17:19.000000000 -0300
+
+This looks like it should be done in prxk.c, with the various hooks that
+we provide in misc.c, which might have to be ported to misc-embedded.c.
+
+[snip]
+> diff -Nur --exclude-from=/tmp/exclude linux-2.6-bkppc.orig/arch/ppc/boot/simple/head.S linux-2.6-bkppc/arch/ppc/boot/simple/head.S
+> --- linux-2.6-bkppc.orig/arch/ppc/boot/simple/head.S	2004-09-02 08:52:19.000000000 -0300
+> +++ linux-2.6-bkppc/arch/ppc/boot/simple/head.S	2004-09-02 17:30:39.000000000 -0300
+
+Do we really need to do this?  If so, why?
+
+[snip]
+> diff -Nur --exclude-from=/tmp/exclude linux-2.6-bkppc.orig/include/asm-ppc/prxk.h linux-2.6-bkppc/include/asm-ppc/prxk.h
+> --- linux-2.6-bkppc.orig/include/asm-ppc/prxk.h	1969-12-31 21:00:00.000000000 -0300
+> +++ linux-2.6-bkppc/include/asm-ppc/prxk.h	2004-09-02 08:54:51.000000000 -0300
+[snip]
+> +/* Machine type
+> +*/
+> +#define _MACH_8xx (_MACH_PRxK)
+
+Eh?  Is there more to come that moves 8xx towards what we have on
+pmac/prep/chrp ?  Or a left-over from older kernels?
+
+Thanks.
+
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
