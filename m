@@ -1,52 +1,39 @@
-Date: Fri, 28 Jun 2002 07:57:10 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Scott Anderson <scott_anderson@mvista.com>,
-	Armin Kuster <akuster@mvista.com>,
-	linuxppc-embedded@lists.linuxppc.org,
-	Paul Mackerras <paulus@samba.org>
-Subject: Re: Trivial cleanup in ocp_uart.c
-Message-ID: <20020628145710.GJ26734@opus.bloom.county>
-References: <20020620073440.GC20689@zax> <20020620155026.GE16052@opus.bloom.county> <20020621005216.GH20689@zax> <20020621143903.GO16052@opus.bloom.county> <20020624074019.GA9087@zax> <3D19F965.86668872@mvista.com> <20020627004144.GR9087@zax> <3D1B3C0D.9B36EB42@mvista.com> <20020628005908.GC11095@zax>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020628005908.GC11095@zax>
+Reply-To: <acurtis@onz.com>
+From: "Allen Curtis" <acurtis@onz.com>
+To: "Ppc Embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: IBM405/Linux Cross compiler
+Date: Fri, 28 Jun 2002 20:45:18 -0700
+Message-ID: <NCBBIINEHIPFGJPLBEIFCEDLDJAA.acurtis@onz.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Jun 28, 2002 at 10:59:08AM +1000, David Gibson wrote:
-> On Thu, Jun 27, 2002 at 09:23:41AM -0700, Scott Anderson wrote:
-> >
-> > David Gibson wrote:
-> > > Eek, wibble.  It still seems somewhat unlikely to me that you'd be
-> > > changing the peripherals "on the fly" in a real life embedded
-> > > application.  Especially considering that reboots are likely to be
-> > > much less of an issue on an embedded system than on a big server.
-> >
-> > My contrived example is a piece of test equipment that has an LCD
-> > touchscreen and some high speed serial collection device.  The LCD is
-> > only used when interacting with the UI and the serial is only used
-> > during a run when the LCD can be blank.  By reprogramming part of the
-> > FPGA on the fly you can squeeze more into a smaller FPGA.  It appears
-> > that Xilinx already has this working:
-> >   http://www.xilinx.com/xapp/xapp290.pdf
-> >
-> > I guess I wouldn't be quite so quick to dismiss this as unlikely, but
-> > I must admit, my crystal ball is in the shop this week.  It sure would
-> > be nice to keep such things in mind as OCP is evolving, though.
->
-> Heh, well, maybe.  In any case this sounds more like a 2.5 and later
-> timerframe thing to me, in which case integration into the unified
-> device model should give us what's needed.
+I have tried to build a cross compiler for the IBM405 processor under
+Linux/x86. After much playing, I have decided that the problem is not a
+compiler or linker problem but rather a configuration/installation issue.
+The problem that I am having is that there are some 403/405 specific
+pneumonics that are not recognized by the assembler. (as installed) The
+problem appears to be that the option:
 
-I think alot of what we're talking about for OCP is 2.5 fodder really.
-Keep in mind that the current stuff has been well tested on ~13
-different 4xx boards.  Perhaps we should allow OCP to become semi solid
-in 2_4_devel now so that we can move 4xx out to Marcelo and allow armin
-to do some drastic changes in 2.5...
+	-mcpu=403		->		-mppc
+			should be		-m403
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+I solved this by modifying the "specs" file.
+
+1. Is this the right solution?  I used the configuration options:
+
+	--target=powerpc-linux --with-cpu=403
+
+2. How do you change the configuration utility so that the correct "specs"
+file is generated? This was built using 2.95.3. Inspecting the GCC files, it
+appears that 3.0.4 has the same problem.
+
+3. Where can I find documentation on the "specs" file?
+
+TIA
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
