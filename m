@@ -1,42 +1,30 @@
-Message-ID: <38F200CF.B4A07187@embeddededge.com>
-Date: Mon, 10 Apr 2000 12:26:55 -0400
-From: Dan Malek <dan@netx4.com>
+Date: Mon, 10 Apr 2000 13:47:45 -0400 (EDT)
+From: Pavel Roskin <pavel_roskin@geocities.com>
+To: Graham Stoney <greyham@research.canon.com.au>
+cc: Jason Wohlgemuth <jsw-embedded@mindspring.com>,
+        linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Unpacking the mvista kernel RPMs
+In-Reply-To: <20000410045041.8530D3C960@elph.research.canon.com.au>
+Message-ID: <Pine.LNX.4.21.0004101342080.3916-100000@sunapee.transcept.com>
 MIME-Version: 1.0
-To: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
-CC: Pavel Roskin <pavel_roskin@geocities.com>,
-        "Wohlgemuth, Jason" <jason_wohlgemuth@gilbarco.com>,
-        "'linuxppc-embedded@lists.linuxppc.org'"
- <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Software Emulation Exception...
-References: <Pine.LNX.4.21.0004071011570.19406-100000@sunapee.transcept.com> <38EE0267.FB881499@embeddededge.com> <kfywvm6s3dz.fsf@kieraypc01.p.y.ki.era.ericsson.se>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Marcus Sundberg wrote:
+Hello!
 
-> Well, it also happens to be typical to the MM problem solved by
-> the patches at http://www.zeta.org.au/~linsol/.....
+> Sure, this works, but it doesn't automagically apply the patches.
+> Perhaps I'm just asking too much :-(.
 
-That's pretty interesting, since the Software Emulation trap is
-caused by fetching trash from memory, and the MMU changes are to
-properly track dirty data pages.  I don't buy it.  All you did
-by adding these changes was eliminate (or change) the data TLB
-miss timing.  Have you ever looked at the 8xx bus when it gets
-a TLB fault?  Pretty damn weird.  I've seen several external devices
-not behave properly because of this.
+You can install source rpm's and use "rpm -bp foo.spec" from
+/usr/src/redhat/SPECS to "prepare" the sources. All the patches will be
+applied. "man rpm" for details.
 
+I agree that it would be nice to do it in one step from foo.src.rpm just
+like "rpm -tp" works on tarballs. But the world is not perfect.
 
-> And by Pavel's description it's almost 100% certain that the MM
-> bug is the problem.
+Pavel Roskin
 
-Well, almost 100% doesn't cut it for me.  If you can't determine the
-actual cause of the problem and prove it has been corrected, it is
-still broken.
-
-
-
-	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
