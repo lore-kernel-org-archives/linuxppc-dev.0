@@ -1,21 +1,19 @@
-Return-Path: <flucifredi@acm.org>
-Received: from mail3.speakeasy.net (mail3.speakeasy.net [216.254.0.203])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 48B4B2BF0E
+Return-Path: <robin@india.tejasnetworks.com>
+Received: from pop-mail.india.tejasnetworks.com (smtp.india.tejasnetworks.com
+	[164.164.94.83]) by ozlabs.org (Postfix) with SMTP id E0CF72BF0E
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  7 Jan 2005 08:04:56 +1100 (EST)
-Received: from blhealthcare.com (HELO [192.168.1.201])
-	(blsoftware@[151.204.230.210]) (envelope-sender <flucifredi@acm.org>)
-	by mail3.speakeasy.net (qmail-ldap-1.03) with AES256-SHA encrypted SMTP
-	for <linuxppc-embedded@ozlabs.org>; 6 Jan 2005 20:58:14 -0000
-Message-ID: <41DDA5DA.1030802@acm.org>
-Date: Thu, 06 Jan 2005 15:55:54 -0500
-From: Federico Lucifredi <flucifredi@acm.org>
+	Fri,  7 Jan 2005 18:26:51 +1100 (EST)
+Message-ID: <41DE3A2A.3050105@india.tejasnetworks.com>
+Date: Fri, 07 Jan 2005 12:58:42 +0530
+From: Robin <robin@india.tejasnetworks.com>
 MIME-Version: 1.0
-To: "Linux-ppc [mailing list]" <linuxppc-embedded@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: MPC8272ADS and frame buffer
+To: Marius Groeger <mgroeger@sysgo.com>
+References: <20050106121238.BB99AC108D@atlas.denx.de>
+	<41DC9568.6090106@india.tejasnetworks.com>
+	<Pine.LNX.4.61.0501061450190.4945@mag.sysgo.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: Linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: TZ variable setting for denx 2.4.20
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,41 +24,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello Federico,
-    It turns out you can solve your problem by using the Epson SD13806 
-evaluation board (s5u13806b00c). It comes with drivers distributed, 
-inanely enough, as a patch for a specific kernel, so prepare for some 
-hand-patching. Other than that, it works.
+Hi
+Thanx for your response. I am setting TZ variable as
+given in the documentation.
+   export TZ="xxx5:30yyy4:30,M10.1.1,M2.1.1"
+Its working fine till Dec 31 23:59:59GMT. On Jan 01 00:00:00,
+ its not taking DST into account at all.
 
-    Love answering myself :)  -Federico
+Please tell me some way of setting it across an year boundary.
+Thanks,
+Robin
 
->Hello Linux-PPCers,
->    I have a quick one: I am looking at the Arabella kernel on the 
->MPC8272ADS, which I am planning to use as a prototyping platform while 
->we get to figure out a BSP for our custom board.
->
->    Now, I have an Epson card on hand (13806) which I know to be working 
->on ppc, and which has drivers as a kernel patch for 2.4.21, and I have a 
->radeon card on hand which I used to like because of its vesa 2.0 
->compliance.  The first brings up the problem of porting the patch to the 
->2.4.26 kernel, which Arabella/Yuli Barcohen customized to the 
->MPC8272ADS. The latter, according to Yuli himself, won't work because of 
->BIOS initialization issues.
->
->    I do not mind buying another card if necessary (time is at a greater 
->premium), but I would like to know that there is a 2.4.6 driver for it 
->or that it is supported by Arabella's kernel.
->
->Anyone here using the Arabella BSP on the 8272ADS with a frame buffer on 
->it ? What setup are you using?
->
->-Federico
->  
->
 
--- 
-_________________________________________
--- "'Problem' is a bleak word for challenge" - Richard Fish
+Marius Groeger wrote:
 
-Muad'Dib of Caladan (Federico L. Lucifredi)- Harvard University & BU
-http://metcs.bu.edu/~lucifred
+> Robin,
+>
+> On Thu, 6 Jan 2005, Robin wrote:
+>
+>> I have tried with the standard linux date too. That too doesnt seem 
+>> to consider timezone variable that has been set. Can you give me a 
+>> way for setting timezone for southern hemisphere countries?? The 
+>> busybox code uses strftime function. But that does not seem to 
+>> consider TZ variable...
+>
+>
+> You should read up on how glibc handles all that timezone stuff:
+>
+>   sh# info libc "TZ Variable"
+>
+> Most notably, make sure you /etc/localtime is set up correctly. There 
+> is also a tool (script) called tzselect which may be helpful for you.
+>
+> Note I'm not exactly an expert on this, I'm just giving pointers...
+>
+> Regards,
+> Marius
+>
