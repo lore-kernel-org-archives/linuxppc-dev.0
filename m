@@ -1,26 +1,50 @@
-From: Benjamin Herrenschmidt <benh@mipsys.com>
-To: Christof Petig <christof.petig@wtal.de>, <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: 2.2.17pre9-ben1 gmac problems on iBook
-Date: Wed, 5 Jul 2000 15:37:28 +0200
-Message-Id: <20000705133728.28733@mailhost.mipsys.com>
-In-Reply-To: <396201D1.B43A97F1@wtal.de>
-References: <396201D1.B43A97F1@wtal.de>
+Message-ID: <39633BE2.58BC56D1@relog.ch>
+Date: Wed, 05 Jul 2000 15:45:06 +0200
+From: Michel Dänzer <daenzer@relog.ch>
+Reply-To: daenzerm@student.ethz.ch
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: Gwyn Judd <b.judd@xtra.co.nz>
+CC: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: seemingly random lock-up with kernel 2.2.17p7
+References: <20000706013650.A2546@thislove.dyndns.org>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Gwyn Judd wrote:
 >
->You're right.
->Strange though that BootX gives this kind of weird behaviour (2.2.15pre14
->works fine for me).
->I'll report about yaboot soon.
+> This has me puzzled. I'm not sure if it is a kernel panic or just X
+> freezing since it never leaves anything in the logs.
 
-You "think" it worked right, but I'm pretty sure that if you do an
-extensive memory testing, you'll discover that random bits of memory are
-damaged and that the kernel is actually not fully reliable when booting
-with BootX.
+Pinging from a remote machine can tell for sure as well as the Magic Sysrq
+keys.
 
+
+> Has anyone had this problem?
+
+
+> It seems to happen most often when I am listening to mp3's although it has
+> happened a few times while it was just sitting there doing nothing.
+
+It has also happened to me when the machine was idle. But I've been playing
+MP3s extensively without any lockups for some time now.
+
+
+> Also I am using BootX.
+
+Me yaboot (BootX doesn't work on my Pismo).
+
+What machine do you have?
+
+
+Michel
+
+
+--
+                        Press every key to continue.
+______________________________________________________________________________
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
