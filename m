@@ -1,73 +1,40 @@
-Message-ID: <3E3A9FAD.9070409@imms.de>
-Date: Fri, 31 Jan 2003 17:09:17 +0100
-From: Rolf Peukert <rolf.peukert@imms.de>
+Message-ID: <3E3AB650.5080108@embeddededge.com>
+Date: Fri, 31 Jan 2003 12:45:52 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: MPC850 SCC3/USB host conflict
+To: acurtis@onz.com
+Cc: gopi@india.tejasnetworks.com,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: mpc 8260 performance..
+References: <NCBBIINEHIPFGJPLBEIFKEKKEBAA.acurtis@onz.com>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi everybody!
+Allen Curtis wrote:
 
-We are installing Linux (2.4.4) on a board design using an MPC850
-(XSPC850SRZT66C). We're planning to make the device work as USB host
-controller, and to use SCC3 as an additional UART.
-
-We're using Brad Parker's USB Host Controller Interface driver
-m8xxhci.c, and the USB Host Start-of-Frame microcode patch available on
-your site for the MPC823 (MPC823SOFGENMC). Timer 1 is configured to
-generate the SOF clock, and PA6/Tout1 is connected to PC15/Dreq0. An
-external 48 MHz oscillator on PA4 is used as USB clock.
-
-The standard UART driver (8xx_io/uart.c) is configured to use SMC1 as
-console, and SCC3 as an additional UART using PB29/30 (RXD3/TXD3), PC5
-(CTS3), PC13 (RTS3) and PC4 (CD3). Ethernet is on SCC2.
-
-As far as I can tell, these pin configurations don't conflict, but still
-we are experiencing a conflict between the USB and UART drivers.
-
-USB works fine when SCC3 UART is not enabled, as does SCC3 without USB.
-But when both config options are selected, the kernel will hang during
-bootup, shortly after the "Enable" bit in the USMOD register is set (in
-function rh_port_reset).
-
-With printk statements around that line,
-...
-         reset_bus_history();
-     printk("rh_port_reset() before USMOD_EN\n");
-         usbregs->usb_usmod |= USMOD_EN;
-     printk("rh_port_reset() after USMOD_EN\n");
-         wait_ms(20);
-...
-
-the output typically looks like this,
-...
-Freeing unused kernel memory: 60k init
-rh_port_reset(1)
-rh_port_reset() before USMOD_EN
-rh_port
-
-(with sometimes a few output characters more or less)
-
-The microcode patch is installed during initialization, way before
-rh_port_reset() is called.
-We found out, that the Kernel will start up with a USB/SCC3
-configuration, if the microcode patch is not installed. It will also
-start up, if the microcode is installed, but timer 1 (SOF) is not
-activated. In these cases, however, USB does not work.
-
-So, we're left rather clueless and will be very grateful for any help.
-
-Are there still possible I/O port conflicts we did not check?
-What does the microcode patch actually do?
-Is it possible to make USB (host controller mode) and SCC3 UART work
-concurrently on the MPC850 at all?
+ > gopi wrote:
+>>In this case, the system can potentially be interrupted too...
 
 
-Best Regards,
-Rolf
+> Sounds like a HW design issue you need to address. Perhaps it would be
+> better to interrupt on buffer full ....
+
+High performance routers don't interrupt at all, typically have
+carefully hand-tuned algorithms to maximize the use of processor cache
+for instructions and ensure the data bus is aligned and bursting data.
+Linux has been used in such designs, but the network drivers are
+written specific to those applications.  The Linux network drivers are
+examples of workstation connections and network layer interfaces, but
+aren't suitable for these specialty applications.  They are suitable
+for functional testing, but not for high performance routing.
+
+An 8260 can process lots of communication data, obviously its performance
+is totally dependent upon the software design and implemetation.
+
+
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
