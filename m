@@ -1,36 +1,39 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stefan Jeglinski <jeglin@4pi.com>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: 2.4.9-bk and X on 6500, not so good
-Date: Tue, 21 Aug 2001 10:15:47 +0200
-Message-Id: <20010821081547.5029@smtp.wanadoo.fr>
-In-Reply-To: <p04330104b7a79e11b8be@[24.25.18.209]>
-References: <p04330104b7a79e11b8be@[24.25.18.209]>
+Date: Tue, 21 Aug 2001 19:04:23 +1000 (EST)
+From: Rodney Schneider <rodney@bicamera.com>
+To: <linux1394-devel@lists.sourceforge.net>
+Cc: <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Task Queue Imediate Bottom Halfs question.
+In-Reply-To: <200108200602.IAA00834@piglet.grunz.lu>
+Message-ID: <Pine.LNX.4.30.0108211903270.21527-100000@boom.bicamera.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->I have a stock 6500/300, on which I just compiled and installed the
->ppc.bitkeeper linuxppc_2_4 (2.4.9) kernel. In console mode (RL3) it
->works just fine.
->
->But whenever I launch X (Gnome for example, or a plain window
->manager), about 70% of the time it breaks into the mon debugger
->before X has fully launched.
->
->Problem is, there is no keyboard response at this point, and I can't
->even restart with the 3-fingered approach (no response). Only thing
->that works is power down, and restart.
->
->Any suggestions? To create a backtrace appears impossible...
+Hi,
 
-You can at least get the PC and LR values displayed by xmon and
-lookup them in your System.map. Eventually, you can hack xmon
-entry point to do a backtrace automatically.
+This free book from Oreilly might also help you:
 
-Ben.
+http://www.xml.com/ldd/chapter/book/index.html
+
+Regards,
+
+-- Rodney
+
+
+On Mon, 20 Aug 2001, Michel Lanners wrote:
+
+> On  19 Aug, this message from Ira Weiny echoed through cyberspace:
+> > So, my question is, why use a bottom half here?  Or really what is the
+> > difference between scheduling a task queue (tasklet) imediate vs just
+> > running the code in the IRQ handler?
+>
+> Have a look at Documentation/DocBook/kernel-hacking.tmpl.
+>
+> It explains some of these things quite well, I think.
+>
+> Michel
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
