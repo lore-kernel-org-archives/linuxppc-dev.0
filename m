@@ -1,38 +1,37 @@
-Message-Id: <199905071754.KAA09699@soda.CSUA.Berkeley.EDU>
-To: Brad Boyer <flar@cegt201.bradley.edu>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Question about SMP 
-In-Reply-To: Your message of "Thu, 06 May 1999 23:42:45 CDT."
-             <199905070442.XAA11076@cegt201.bradley.edu>
-Date: Fri, 07 May 1999 10:54:03 -0700
-From: Sriranga Veeraraghavan <ranga@CSUA.Berkeley.EDU>
+Date: Fri, 7 May 1999 23:15:25 +0200 (CEST)
+From: Philipp Tomsich <mac@mars.zserv.tuwien.ac.at>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Partitions > 2GB?
+In-Reply-To: <Pine.LNX.4.10.9905061642580.3082-100000@mercator.cs.kuleuven.ac.be>
+Message-ID: <Pine.LNX.4.03.9905072308590.20829-100000@mars.zserv.tuwien.ac.at>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 
-> I started looking at kernel/sched.c which is where most of this stuff
-> is, and I didn't see anything obvious, but I did notice a few things
-> that seemed odd.  Do spinlocks only exist in an SMP kernel?  I ask
-> because there is a spinlock where the matching unlock is in an #ifdef
-> __SMP__ which seemed like a bad idea.  If anyone can help me get this
-> running, I'd appreciate it.  I'm more than willing to fiddle around
-> with the code if someone can give me some hints on this stuff.
- 
-My knowledge of SMP is limited, but in general spin locks are required
-only on MP machines.  If you use a spin lock (condition variable?) on
-a single processor machine, basically your thread ends up spinning
-until its time slice runs out, which is not particularly efficient.
 
-I think that on single processors locks are implemented using sem_wait
-and sem_post, where these enable and disable interrupts. This is not
-possible on MP machines, so spin locks are used instead. (Someone
-please correct me if I'm wrong).
+On Thu, 6 May 1999, Geert Uytterhoeven wrote:
 
->From you post, I take it that my SMP kernel didn't work for you. What
-was the exact problem you had?
+> Once upon a time, there was a bug in fdisk preventing it to work with disks
+> larger than 2 GiB on PPC.
 
-----ranga <ranga@soda.berkeley.edu>
+As far as I remember it, there also was a problem with the return value of
+llseek in some versions of the glibc. As a consequence, mke2fs was unable
+to make a filesystem larger than 2gbs.
+
+--phil.
+
+--
+Philipp Tomsich                     eMail: phil@ifs.tuwien.ac.at
+Institute of Software Technology    URL: http://www.ifs.tuwien.ac.at/
+Vienna University of Technology
+Resselgasse 3 / E188
+A-1040 Wien, AUSTRIA
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
