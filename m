@@ -1,52 +1,109 @@
-Date: Fri, 21 May 2004 12:50:55 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Rune Torgersen <runet@innovsys.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 8260 CPM DP ram free function
-Message-ID: <20040521195055.GJ6763@smtp.west.cox.net>
-References: <DCEAAC0833DD314AB0B58112AD99B93B06DADF@ismail.innsys.innovsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B06DADF@ismail.innsys.innovsys.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="----_=_NextPart_001_01C43F70.750F8B7F"
+Subject: RE: 8260 CPM DP ram free function
+Date: Fri, 21 May 2004 15:16:10 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B06DAE0@ismail.innsys.innovsys.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Tom Rini" <trini@kernel.crashing.org>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, May 21, 2004 at 02:34:08PM -0500, Rune Torgersen wrote:
+This is a multi-part message in MIME format.
 
->
-> > First, when this has come up in the past, the first question
-> > is why is this useful, given that with the hardware and
-> > peripherals in question, loadable drivers aren't really
-> > useful (and don't shoot the messenger please).
->
-> Right now I mainly use it to debug a driver, which would run out of host
-> ram when I reloaded it
->
-> > Second, you removed the EXPORT_SYMBOL for the old alloc, but
-> > I didn't see quickly how a module would make use of the new
-> > infrastructure since there weren't any new EXPORT_SYMBOLs.
->
-> This is because I did my patch against 2.6.5, and all the EXPORT sympols
-> are in arch/ppc/kernel/ppc_ksyms.c
-> and not in commprocs.c
->
-> In ppc_ksyms.c I have:
-> extern uint m8260_cpm_dpalloc(uint size, uint align);
-> extern uint m8260_cpm_hostalloc(uint size, uint align);
-> extern uint m8260_cpm_hostfree(uint ptr);
-> extern uint m8260_cpm_dpfree(uint ptr);
->
-> EXPORT_SYMBOL(m8260_cpm_dpalloc);
-> EXPORT_SYMBOL(m8260_cpm_hostalloc);
-> EXPORT_SYMBOL(m8260_cpm_dpfree);
-> EXPORT_SYMBOL(m8260_cpm_hostfree);
+------_=_NextPart_001_01C43F70.750F8B7F
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Er?  Aren't dpfree/hostfree new functions?  I didn't see them added as
-exports in your patch, and regardless they belong in comproc.c now.
+> Er?  Aren't dpfree/hostfree new functions?  I didn't see them=20
+> added as exports in your patch, and regardless they belong in=20
+> comproc.c now.
 
---
-Tom Rini
-http://gate.crashing.org/~trini/
+Try this then
+
+The problem is that on 2.6.x I have never gotten EXPORT() in commproc.c
+(or anywhere else) to work, I have had to put them on ppc_ksyms.c to be
+able to load my modules
+
+I do not know if there is some magic thatI have forgotten to do.
+
+
+
+
+------_=_NextPart_001_01C43F70.750F8B7F
+Content-Type: application/x-gzip;
+	name="cpm_dpfree.patch.gz"
+Content-Transfer-Encoding: base64
+Content-Description: cpm_dpfree.patch.gz
+Content-Disposition: attachment;
+	filename="cpm_dpfree.patch.gz"
+
+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
+
+------_=_NextPart_001_01C43F70.750F8B7F--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
