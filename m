@@ -1,32 +1,28 @@
-To: Hzzttbb@aol.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: I2C driver on the 8260 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 20 Dec 2001 10:51:30 EST."
-             <13.3bd6b36.29536303@aol.com>
-Date: Thu, 20 Dec 2001 17:07:17 +0100
-Message-Id: <20011220160722.A5A7710E20@denx.denx.de>
+Message-ID: <3C222B9A.9010209@embeddededge.com>
+Date: Thu, 20 Dec 2001 13:19:06 -0500
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: Wolfgang Denk <wd@denx.de>
+Cc: Jakob Jepsen <JSJ@voxtream.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MPC8xx INIT_TASK_SIZE
+References: <20011220080622.4178010E18@denx.denx.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <13.3bd6b36.29536303@aol.com> you wrote:
->
-> Is there a working version of the I2C driver for the 8260 out there somewhere?
+Wolfgang Denk wrote:
 
-We support I2C on the 8260 in the configurations for the TQM8260  and
-for the MicroSys PM826 boards; see our kernel sources on
-ftp://ftp.denx.de/pub/LinuxPPC/usr/src/
 
-Wolfgang Denk
+> In schred.c? Do you mean include/linux/sched.h instead by any chance?
+> Because that's the only place where INIT_TASK_SIZE is actually used.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-When properly administered, vacations do not  diminish  productivity:
-for every week you're away and get nothing done, there's another when
-your boss is away and you get twice as much done.  -- Daniel B. Luten
+There are assumptions in the 8xx tlb miss handler that everything above
+0x80000000 is kernel space.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
