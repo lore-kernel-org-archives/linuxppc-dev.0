@@ -1,50 +1,87 @@
-Date: Mon, 14 Jul 2003 13:49:27 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Roland Dreier <roland@topspin.com>
-Cc: Paul Mackerras <paulus@samba.org>,
-	Tom Rini <trini@kernel.crashing.org>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Ethernet PHY chip discovery not working on 855T with 971/972 chips
-Message-ID: <20030714134927.A2543@home.com>
-References: <3F0C8112.5060001@earthlink.net> <20030709212145.49E24C6D82@atlas.denx.de> <20030711151834.GU17433@ip68-0-152-218.tc.ph.cox.net> <3F0F468F.1050909@earthlink.net> <16143.24034.31805.589402@cargo.ozlabs.ibm.com> <3F117F3C.7090008@embeddededge.com> <52ptkewfu2.fsf@topspin.com>
+From: shuaiye1999@sohu.com
+Message-ID: <933899.1058237235238.JavaMail.postfix@mx49.mail.sohu.com>
+Date: Tue, 15 Jul 2003 10:47:15 +0800 (CST)
+To: "hi" <linuxppc-embedded@lists.linuxppc.org>
+Subject: booting succeed,using program fail.
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <52ptkewfu2.fsf@topspin.com>; from roland@topspin.com on Sun, Jul 13, 2003 at 09:29:09AM -0700
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Sun, Jul 13, 2003 at 09:29:09AM -0700, Roland Dreier wrote:
->
->     Paul> .... It's a bit disappointing that 8xx still doesn't compile
->     Paul> in 2.5.  I don't have any 8xx hardware to test on so I have
->     Paul> been relying on others to update it.
->
-> Speaking of 2.5, since our custom boards are in production now, I have
-> an Ebony (440GP eval board) that is completely idle, and some free
-> hacking time.  Is there any 4xx work that I could help with?  Is
+hi,all:
 
-A 44x thing that would be nice is to abstract the PCI-X bridge support
-into a common call (or calls) so it can be configured into a variety
-of windowing modes...like alternative monarch memory maps or any
-non-monarch configurations.  Part of this would work would require that
-fixup_bigphys_addr() be made aware of these window changes.  In addition
-it would be nice to have a helper function that sets the same values as
-the current hardcoded monarch configuration via the new abstracted
-interface since that is a common configuration.
+	I use the ELDK and the kernel source linux-2.4.4 it take,
+taking the TQM8260_config as model of our board. the FCC1
+as ethernet.use IMMR 0xf0000000.NFS as root file system.
 
-Sorry, but you asked. :)
+	the linux boot succeed.and  simple program "ls" works well.
+but when use some program,it crashed.Can somebody give me some
+infomation about it? thx a lot.
 
-> linuxppc-2.5 the right tree to use?
+ps: first use "find",and "ls", and login
+I have a bdi2000 in hand,but not familiar with it.
 
-Yes, nothing 44x-related should be going in without a 2.5 patch.
-I've invested considerable time making sure that it was usable
-by other developers on 44x...hopefully that still the case after
-two weeks of vacation.
+the output is below:
 
-Regards,
---
-Matt Porter
-mporter@kernel.crashing.org
+bash-2.05# find / -name ttt
+find / -name ttt
+Oops: kernel access of bad area, sig: 11
+NIP: C0069488 XER: 20000000 LR: C0065EDC SP: C1959C80 REGS: c1959bd0 TRAP: 0300
+MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+DAR: 30E152AC, DSISR: 20000000
+TASK = c1958000[226] 'find' Last syscall: 202
+last math c1958000 last altivec 00000000
+GPR00: 6F616B60 C1959C80 C1958000 C17FE74C C1959CE8 00000000 00000000 00000000
+GPR08: 00000001 6F616B5F 0000000D 00000001 64656663 1002EB8C 00000000 100B9210
+GPR16: 100D34D0 7FFFFD88 10020000 0000002F 00009032 C1959E38 C00469C4 C1C1DF20
+GPR24: C1959E38 C00469C4 C17FE000 00000000 00000072 C1959CE8 C17FE740 C1959CB8
+Call backtrace:
+C0065F60 C0066488 C00463FC C0046BF8 C0003B7C 1002E728 0FF567D8
+10009280 1000229C 10002198 100024F0 10002198 100024F0 10002198
+100024F0 10002198 100024F0 10002198 100024F0 10002198 100024F0
+10002198 10001E54 10001B38 0FECFF70 00000000
+Segmentation fault
+
+bash-2.05# ls
+ls
+go to the bad_area field....../nOops: kernel access of bad area, sig: 11
+NIP: 00000000 XER: 00000000 LR: 00000000 SP: C1959C70 REGS: c1959bc0 TRAP: 0400
+MSR: 20009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c1958000[227] 'ls' Last syscall: 90
+last math c1958000 last altivec 00000000
+GPR00: 00000000 C1959C70 C1958000 00000001 000000BE 00017C05 206C6973 74206465
+GPR08: 6C696D69 00000008 C020F060 0000005F 44222082 100B0734 7FFFF5D4 7FFFF5D0
+GPR16: 7FFFF5D8 00000000 00000001 0FE8A13C 00009032 01959C80 00000000 C0003DE4
+GPR24: C000432C C02D8120 00000000 C1C1DF80 C19F9520 C0192DEC 00000129 C1959C90
+Call backtrace:
+C0004344 C0003DE4 C00264A0 C002214C C00222CC C000C8F8 C0003DE4
+3000996C 30003674 3000DE98 30002364 30002290 300100E8
+Segmentation fault
+
+bash-2.05# ls
+ls
+go to the bad_area field....../nOops: kernel access of bad area, sig: 11
+NIP: 00000000 XER: 00000000 LR: 00000000 SP: C19FBCA0 REGS: c19fbbf0 TRAP: 0400
+MSR: 20009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c19fa000[198] 'bash' Last syscall: 174
+last math 00000000 last altivec 00000000
+GPR00: 00000000 C19FBCA0 C19FA000 00000001 000000BE 00017C05 6B6C6F6E 652B7367
+GPR08: 727C6174 00000008 000017FC 0000005F 24422080 100B0734 7FFFED88 00000002
+GPR16: 7FFFFD90 7FFFFD88 7FFFDD90 10010000 00009032 019FBCB0 00000000 C0003DE4
+GPR24: C000432C C19EF2DC 00000000 C19F9F60 0191E183 02000000 C01ECEF0 C19FBCC0
+Call backtrace:
+C0004344 C0003DE4 C00218C8 C0022328 C000C8F8 C0003DE4 1002CEFC
+1001F350 1001EB88 10013564 100111E8 0FE88F70 00000000
+
+scm3 login:
+
+scm3 login: root
+rootLast login: Wed Dec 31 19:01:14 on console
+go to the bad_area field....../n
+scm3 login: root
+rootLast login: Wed Dec 31 19:04:31 on console
+go to the bad_area field....../n
+scm3 login:
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
