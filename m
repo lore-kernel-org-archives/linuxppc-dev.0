@@ -1,26 +1,55 @@
-Message-ID: <19991212014800.9853.qmail@web307.mail.yahoo.com>
-Date: Sat, 11 Dec 1999 17:48:00 -0800 (PST)
-From: Brian Kuschak <bkuschak@yahoo.com>
-Subject: glibc 1.99-8xx include files?
-To: linuxppc-embedded@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Message-Id: <v04011700b479adc20511@[216.164.138.53]>
+In-Reply-To: <Pine.SGI.4.10.9912081721580.155726-100000@brule.borg.umn.edu>
+References: <384EF3D1.DFC1D281@jlc.net>
+Date: Sun, 12 Dec 1999 14:56:16 -0500
+To: Grant Erickson <grant@lcse.umn.edu>
+From: Noah Misch <nmisch@erols.com>
+Subject: Re: PPC Cache Flush and Invalidate Routines
+Cc: linuxppc-embedded@lists.linuxppc.org
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-It appears that the glibc header files in the
-mbxroot.full.tgz filesystem on the ftp site are for
-glibc version 2.0.  I'm using the glibc-1.99 version
-with the 8xx patches.  If anyone has the matching
-header files for this library, could you please post
-them somewhere.  I can't seem to find them anywhere.
+>On Wed, 8 Dec 1999, Dan Malek wrote:
+>> Grant Erickson wrote:
+>> > In trying to accomodate the 4xx-based code into the Linux kernel, I've
+>> > encountered an issue which relates to the cache flushing and invalidation
+>> > routines in misc.S.
+>> >
+>> > Thoughts, opinions?
+>>
+>> We could simply create a configuration #define for the cache line size
+>> that is assigned in the 'make config' scripts when the processor type
+>> is chosen.
+>
+>In general, I like that idea; however, the 4xx messes things up.
+>
+>I'd like to have a kernel that will boot on any 4xx-based board (maybe or
+>maybe not realistic), so because the 403 uses 16 byte lines and the 405
+>uses 32 byte lines, I need a dynamic solution such as the one Gary
+>suggested.
 
-My code is including the 2.0 headers, but linking to
-the 1.99 library.  It's not very happy :-)
+Instead of stuff like this:
 
-Thanks,
-Brian
+#ifdef CONFIG_403
+...
+#endif
 
+you could write the code like this:
+
+if(CONFIG_403) {
+...
+}
+
+and then remove it with optimization when you wanted to make the slimmest
+possible kernel.  Otherwise, don't optimize and it will run on both boards.
+
+
+>
+
+Noah Misch
+nmisch@erols.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
