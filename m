@@ -1,40 +1,43 @@
-Date: Fri, 6 Dec 2002 11:52:06 -0700
-From: Matt Porter <porter@cox.net>
-To: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
-Cc: Matt Porter <porter@cox.net>,
+Message-ID: <3DF0FE5F.1050409@embeddededge.com>
+Date: Fri, 06 Dec 2002 14:45:35 -0500
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: Matt Porter <porter@cox.net>
+Cc: Joakim Tjernlund <joakim.tjernlund@lumentis.se>,
 	Pantelis Antoniou <panto@intracom.gr>,
 	linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Regarding consistent_alloc
-Message-ID: <20021206115206.C18257@home.com>
-References: <20021206113007.B18257@home.com> <IGEFJKJNHJDCBKALBJLLOEJHFIAA.joakim.tjernlund@lumentis.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <IGEFJKJNHJDCBKALBJLLOEJHFIAA.joakim.tjernlund@lumentis.se>; from joakim.tjernlund@lumentis.se on Fri, Dec 06, 2002 at 07:15:15PM +0100
+References: <3DF0A4D9.4030603@intracom.gr> <IGEFJKJNHJDCBKALBJLLCEJFFIAA.joakim.tjernlund@lumentis.se> <20021206085909.B17918@home.com> <3DF0D6B6.2050307@embeddededge.com> <20021206112901.A18257@home.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Dec 06, 2002 at 07:15:15PM +0100, Joakim Tjernlund wrote:
-> >
-> > On Fri, Dec 06, 2002 at 05:08:22PM +0100, Joakim Tjernlund wrote:
-> > that's a problem with m8xx_cpm_hostalloc() (or how you are using it) if
-> > it doesn't keep around the values you need.
-> >
->
-> Yes and no, someone changed the m8xx_cpm_hostalloc() implementation and now
-> it does not behave as it used to. Earlier both __pa(adr) and __va(__pa(adr))
-> worked on addresses returned by m8xx_cpm_hostalloc().
->
-> I think in it's current form it's useless and should either be changed back to what
-> it was or die.
+Matt Porter wrote:
 
-The 8xx-specific stuff is clearly Dan's area...I was just commenting
-on your generic concerns about consistent_*.
+> That's what I said...but you clipped it out.  Once again,
+> consistent_alloc provides the caller everything they need.
+> An uncached mapping, a phys address, and from that you can use
+> __va() to get the cached mapping.
 
-Regards,
---
-Matt Porter
-porter@cox.net
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+Well, in my defense.......I think you said you can use __va()
+to get a kernel virtual address :-)  To further confuse thing,
+yes it will give you a virtual address, but it isn't one that
+you want to use.
+
+
+> Seemed clear enough to me the first time.  My definition of a
+> "kernel virtual address" is the lowmem cached mapping.
+
+It wasn't clear to me, and "kernel virtual address" really can't
+carry any other attributes since they are used to map a variety
+of address spaces, including non-cached and highmem :-)  You
+need to update your glossary :-)
+
+Thanks.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
