@@ -1,97 +1,62 @@
-From: "Chris Hallinan" <clh@net1plus.com>
-To: "Eli Brin" <elib@rokonet.co.il>, <brian.auld@adic.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Problems installing DENX ELDK
-Date: Sun, 26 Jan 2003 12:35:32 -0500
-Message-ID: <NEBBKJPFOLJNBMFNKBIIAEGCDEAA.clh@net1plus.com>
+From: Paul Mackerras <paulus@samba.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <75DF04AC5ED4D511A9810090273CB4163A67B6@ROKONET-E>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15924.24396.105367.383171@argo.ozlabs.ibm.com>
+Date: Mon, 27 Jan 2003 09:21:00 +1100
+To: Steven Scholz <steven.scholz@imc-berlin.de>,
+	Dan Malek <dan@embeddededge.com>
+Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: [PATCH] m8xx_setup.c and PCMCIA
+In-Reply-To: <3E3157BF.7060804@embeddededge.com>
+References: <3E30F363.1020501@imc-berlin.de>
+	<3E3157BF.7060804@embeddededge.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have occasionally encountered problems with the download itself.
-I assumed it was my ISP or simply 'net congestion.  It seems that
-ncftp is not great at informing the user of problems with the
-download.  I have experienced several times where the 'get ...'
-command does not in fact download every file, and it seems to remain
-silent about some types of errors.  I have seen it terminate more
-than once without reporting errors, although not every file was
-downloaded.
+Dan Malek writes:
 
-What I have done in the past is to issue the command repeatedly
-until all the files were downloaded.  In earlier versions (those
-distributed with RedHat 7.x, you could see each file reported as
-something like "File already downloaded, skipping..." but in the
-ncftp version distributed w/ RH8.0, ncftp is silent about that, too.
+> > I reckon that (almost) all MPC8xx boards that use PCMCIA CS have to call
+> > io_block_mapping() with _IO_BASE anyway....
+>
+> Well, _almost_ isn't good enough :-)
+>
+> I hope some of the more PCMCIA literate folks speak up here, because I
+> think placing IO_BASE into the mix, and certainly io_block_mapping it
+> is quite wrong.  It may be necessary for your board, but it certainly
+> isn't something that is going to work on many others.  All you need is
+> an 860 with a Tundra PCI bridge and all of these patches will fail to work.
+> The pcmcia register mapping for you board should take these things
+> into consideration when that mapping and register configuration is
+> done, it's not something that should be part of global set up.
 
-I'm sure those more familiar with ncftp could suggest a better way!!
-I haven't bothered, because the above works for me.
+I'm not really here, I'm on vacation, but anyway...
 
--Chris Hallinan
-DS4.COM, Inc.
+The PCMCIA layer is one of those places where we can't easily get in
+and change its assumptions about how I/O is mapped.  The reason is
+that it will assign some range of I/O addresses to a card and then
+expect to be able to access the card using those addresses.
 
+In more detail, when a card is plugged in, the PCMCIA layer will read
+its attribute memory to find out what it is and what memory and I/O
+resources it has.  For example, suppose it is a modem card that
+presents a serial port (16550-style) interface.  Its attribute memory
+will say that it needs 8 bytes of I/O.  The PCMCIA layer will look for
+8 bytes of unused I/O space.  Suppose it finds 8 bytes free at 0x400.
+It will then write that value (0x400) into the appropriate spot in the
+card's attribute memory, and expect to be able to do inb(0x400) to
+access the card.
 
+Which is, on the face of it, perfectly reasonable.  It put the card at
+I/O address 0x400 and it expects to be able to access the card at I/O
+address 0x400.  It creates difficulties for us, of course, because it
+is assuming a single space of I/O port addresses with no translations.
 
-> -----Original Message-----
-> From: owner-linuxppc-embedded@lists.linuxppc.org
-> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On
-> Behalf Of Eli Brin
-> Sent: Sunday, January 26, 2003 8:31 AM
-> To: 'brian.auld@adic.com'
-> Cc: 'linuxppc-embedded@lists.linuxppc.org'
-> Subject: RE: Problems installing DENX ELDK
->
->
->
-> Hi Brian,
->
-> We have installed the ELDK 2.0.2 (ppc_8xx) on Redhat
-> Linux 8.0 without any
-> problems.  I suggest to create and installation CD (ISO
-> image), and begin
-> the installation from there.
->
-> Every thing is covered in the documentation.
->
-> Best Regards,
-> Eli Brin
->
->
->
-> -----Original Message-----
-> From: brian.auld@adic.com [mailto:brian.auld@adic.com]
-> Sent: Friday, January 24, 2003 6:12 PM
-> To: linuxppc-embedded@lists.linuxppc.org
-> Subject: Problems installing DENX ELDK
->
->
->
-> I am trying to setup my tool-chain for embedded PPC
-> development. I am
-> considering different approaches, one of them using DENX's ELDK.
->
-> Regarding the DENX option, I'm not getting very far as
-> after having run the
-> "get -R eldk-ppc-linux-x86" command as per the
-> installation instructions, I
-> find that underlying files in the, for example, "tools"
-> directory do not
-> exist. I therefore cannot proceed with the installation.
->
-> Have others had problems downloading and installing (vers
-> 2.0.2) of this
-> kit? I also found that the directory structure within
-> 'eldk-linux-ppc-x86'
-> directory is not consistent with what's in the document.
->
-> Thanks
->
-> -- Brian
->
->
+What it boils down to is that we have little choice (unless you want
+to rewrite the pcmcia layer :) but to make inb/outb etc. do what the
+pcmcia layer is expecting.  That's the reason for the _IO_BASE mapping
+hacks.
 
+Paul.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
