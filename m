@@ -1,33 +1,42 @@
-Date: Wed, 28 Nov 2001 22:10:45 -0900
-From: Ethan Benson <erbenson@alaska.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 'make rpm' Failing due to i386 bug
-Message-ID: <20011128221045.J10071@plato.local.lan>
-References: <20011127233224.C23109@cardassian.cse.psu.edu> <20011128104926.C28956@cpe-24-221-152-185.az.sprintbbd.net> <20011128160615.I10071@plato.local.lan> <20011128201949.P29541@cpe-24-221-152-185.az.sprintbbd.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20011128201949.P29541@cpe-24-221-152-185.az.sprintbbd.net>; from trini@kernel.crashing.org on Wed, Nov 28, 2001 at 08:19:49PM -0700
+Date: Thu, 29 Nov 2001 09:26:19 +0100 (MET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Tom Gall <tom_gall@vnet.ibm.com>
+Cc: Paul Mackerras <paulus@samba.org>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: CONFIG_ALL_PPC
+In-Reply-To: <3C0561FE.80489F5E@vnet.ibm.com>
+Message-ID: <Pine.GSO.4.21.0111290925100.6747-100000@mullein.sonytel.be>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Nov 28, 2001 at 08:19:49PM -0700, Tom Rini wrote:
-> > no we have a zImage target, not bzImage which is a i386 specific hack
-> > to work around that braindamaged architecture.
+On Wed, 28 Nov 2001, Tom Gall wrote:
+> Paul Mackerras wrote:
+> > I want to rename CONFIG_ALL_PPC to CONFIG_PREP_PMAC_CHRP in the
+> > linuxppc_2_4_devel tree (or if anyone can suggest a better name I'll
+> > use that).
+> >
+> > Does anyone object to this?
 >
-> No, we as of 2.4.10ish have a 'bzImage' target which calls 'zImage'
-> since most of the docs are braindead and say "Now type 'bzImage' or
-> 'bzdisk'".
+> Hmmm well not that I object because I don't... but I am working on this POP
+> board here and technically speaking it's the next in the great PREP / PMAC /
+> CHRP chain...
 
-hrm, i would have made it echo something like:
+Is this a revive of the POP-boards or a we-still-have-a-few-prototypes-lying-
+around-so-let-us-port-Linux-to-it event?
 
-	bzImage is a i386 specific hack, it is not supported by any other
-	architecure.  Use make zImage instead.
+Gr{oetje,eeting}s,
 
-rather then just silently perpetuate further ignorance.
+						Geert
 
 --
-Ethan Benson
-http://www.alaska.net/~erbenson/
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
