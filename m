@@ -1,35 +1,27 @@
 From: benh@kernel.crashing.org
-To: Tom Rini <trini@kernel.crashing.org>,
-	Linux/PPC BK repository <linuxppc@helium.Harhan.ORG>
-Cc: <linuxppc-commit@source.mvista.com>,
-	<linuxppc-dev@lists.linuxppc.org>
+To: <msokolov@ivan.Harhan.ORG>, <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: Incoming to helium.harhan.org:/home/linuxppc/linuxppc_2_4_alt
-Date: Mon, 8 Apr 2002 18:58:06 +0100
-Message-Id: <20020408175806.9080@mailhost.mipsys.com>
-In-Reply-To: <20020408152026.GG2716@opus.bloom.county>
-References: <20020408152026.GG2716@opus.bloom.county>
+Date: Mon, 8 Apr 2002 19:02:25 +0100
+Message-Id: <20020408180225.10676@mailhost.mipsys.com>
+In-Reply-To: <0204081705.AA21087@ivan.Harhan.ORG>
+References: <0204081705.AA21087@ivan.Harhan.ORG>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->We shouldn't be #ifdef'ing externs, since it doesn't matter.  The
->pmac/prep/chrp ones were hidden just because the line above was, iirc.
 >
->And the one downside to the GENERIC_PPC32 platform_init, is that we're
->back to adding:
->#ifdef CONFIG_x
-> case _MACH_x:
->  x_init(...);
->  break;
->#endif
->
->Which I think Paul was happy to see die :)
+>And I'm hoping that some day PReP will be part of CONFIG_GENERIC_PPC32. See
+>BenH's response about putting CONFIG_ALL_PPC to rest and converting to
+>CONFIG_GENERIC_PPC32.
 
-No, in the version I'm implementing for 2.5, the ppc_md structure of
-each board will be statically defined and contain the init function.
-A global array will contain ppc_md pointers indexed by machine.
+Yes, I've started doing that on a _devel code base, then figured out that
+I had to cleanup a few crap remaining in pmac/chrp/prep, and that it would
+rather be in 2.5 (we can still backport later).
+So I'll start again on 2.5 this week but only for pmac/prep/chrp, I'll let
+the various board maintainers decide wether to move their board under the
+CONFIG_GENERIC_PPC32 umbrella or not.
 
 Ben.
 
