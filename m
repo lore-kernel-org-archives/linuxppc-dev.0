@@ -1,15 +1,37 @@
-From: Raphael Bossek <raphael.bossek@solutions4linux.de>
-Date: Tue, 22 Feb 2000 11:48:56 +0100
-To: jonb@marel.is
-Cc: psosuser@isi.com, linuxppc-embedded@lists.linuxppc.org
+From: jonb@marel.is
 Subject: Re: 8xxFADS and SingleStep BDM
-Message-ID: <20000222114856.B2743@raphael.bossek.home>
-References: <OF9754FB8B.2B42D5DE-ON0025688C.003AFCD8@marel.is>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <OF9754FB8B.2B42D5DE-ON0025688C.003AFCD8@marel.is>; from jonb@marel.is on Mon, Feb 21, 2000 at 11:39:12AM +0000
+To: Raphael Bossek <raphael.bossek@solutions4linux.de>
+Cc: psosuser@isi.com, linuxppc-embedded@lists.linuxppc.org
+Date: Tue, 22 Feb 2000 11:00:50 +0000
+Message-ID: <OF04827236.36AA26A3-ON0025688D.003BF3A6@marel.is>
+MIME-Version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Hello Raphael,
+
+Thank you for replying.  This morning I discovered what the problem was.
+It was the
+BIOS settings for the parallel port, which had been set to EPP mode.  When
+I changed it to
+"bi-directional" mode, things started working.
+
+Best regards,
+
+Jon Benediktsson
+Marel hf.
+
+
+
+
+
+Raphael Bossek <raphael.bossek@solutions4linux.de> on 22/02/2000 10:48:56
+
+To:   jonb@marel.is
+cc:   psosuser@isi.com, linuxppc-embedded@lists.linuxppc.org
+Subject:  Re: 8xxFADS and SingleStep BDM
 
 
 hi Jon,
@@ -27,5 +49,6 @@ access to the configuration (ill at home :( so be patient...
 Raphael Bossek <raphael.bossek@solutions4linux.de> [ICQ #40047651]
 PGP fingerprint: DF 6F 2C 76 46 1E B4 1C  5B A5 2E 1B FC E0 D3 F6
 PGP public key: http://www.solutions4linux.de/private/pgpkey.asc
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
