@@ -1,57 +1,34 @@
-Subject: Re: mpc / linux kernel - user space
-From: Jaap-Jan Boor <jjboor@aimsys.nl>
-To: Dan Malek <dan@embeddededge.com>
-Cc: Juergen Oberhofer <e9826367@student.tuwien.ac.at>,
-	linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <3FC76CEA.9040309@embeddededge.com>
-References: <Pine.GHP.4.58.0311271703390.25225@stud3.tuwien.ac.at>
-	 <7E0B03AE-2100-11D8-BF18-003065E2BB06@aimsys.nl>
-	 <Pine.GHP.4.58.0311271903490.4360@stud3.tuwien.ac.at>
-	 <1070011018.1263.27.camel@linpc003.aimsys.nl>
-	 <3FC76CEA.9040309@embeddededge.com>
-Content-Type: text/plain
-Message-Id: <1070266735.328.5.camel@linpc003.aimsys.nl>
-Mime-Version: 1.0
-Date: Mon, 01 Dec 2003 09:18:55 +0100
+Message-ID: <3FCB3969.9010707@catapult.com>
+Date: Mon, 01 Dec 2003 07:51:53 -0500
+From: "Kevin A. Sapp" <Kevin.Sapp@catapult.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Peripherals  Memory Mapping
+References: <Pine.GHP.4.58.0311271703390.25225@stud3.tuwien.ac.at>	 <7E0B03AE-2100-11D8-BF18-003065E2BB06@aimsys.nl>	 <Pine.GHP.4.58.0311271903490.4360@stud3.tuwien.ac.at>	 <1070011018.1263.27.camel@linpc003.aimsys.nl>	 <3FC76CEA.9040309@embeddededge.com> <1070266735.328.5.camel@linpc003.aimsys.nl>
+In-Reply-To: <1070266735.328.5.camel@linpc003.aimsys.nl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, 2003-11-28 at 16:42, Dan Malek wrote:
-> Jaap-Jan Boor wrote:
->
-> > If you want to send a signal to user code, you can use kill_proc()
-> > I think.
->
-> IMHO, trying to use signals to propagate a hardware interrupt to a
-> user application is complicated and has design flaws (what happens
-> if the application "misses" an interrupt or gets blocked for some
-> reason).
+Hello,
 
-Fortunately I never used it (that's the 'I think')
+Maybe this is a simple question, but I have searched the code
+and played around with no luck.  This is for an 8260 FADS
+board, later to be used on custom H/W.
 
->
-> A couple of other methods that I find simple and use extensively
-> are multi-threading the application and then using a different
-> minor ID device to wait on a read() or ioctl() to simply return.
-> The driver just uses the standard sleep/wakeup mechanisms to
-> synchronize with the application.
->
-> Another, and I think most useful, method is to implement a select/poll
-> entry point in the driver.  It provides the most flexibility when
-> waiting for various events, plus provides a timeout should something
-> fail to function properly.
+How and where do I add peripherals memory to the memory
+map?   I have tried adding it in the ads_map_io function but
+when I try to access the 82xx internal memory space there to
+add the memory to the base and option registers it dies.
+io_block_mapping is called successfully for the internal
+space, but appears to be inaccessable at this time.
 
-Yes, especially the timeout is nice as 'this should never happen'
-failures never happens except with the customer
+Is there a function that adds memory ranges to both the Linux
+map and the processor map (Base and Option registers) ?
 
-Jaap-Jan
-
->
->
-> 	-- Dan
->
->
+Thank you
+Kevin
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
