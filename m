@@ -1,69 +1,64 @@
-Message-ID: <3D81B066.66AD59CE@imc-berlin.de>
-Date: Fri, 13 Sep 2002 11:31:18 +0200
-From: Steven Scholz <steven.scholz@imc-berlin.de>
+Message-ID: <E1836A7F3557D311A14000805F9F36FC0141C89C@usdfo011.usac.danfoss.net>
+From: Hihn Jason <JasonHihn@DANFOSS.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: FW: [linux-usb-devel] General USB Hub question and 832e question
+Date: Fri, 13 Sep 2002 15:54:38 +0200
 MIME-Version: 1.0
-To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Problems with 2.4.20 and includes...
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi there,
+FYI:
 
-I just pulled the BITKEEPERs linuxppc_2_4_devel and have trouble building it:
-...
-ppc_8xx-gcc -D__KERNEL__ -I/opt/BITKEEPER/devel-2.4.20-pre6/include -Wall
--Wstrict-prototypes -Wno-trigraphs -O2 -fno-strict-aliasing -fno-common
--fomit-frame-pointer -I/opt/BITKEEPER/devel-2.4.20-pre6/arch/ppc -fsigned-char
--msoft-float -pipe -ffixed-r2 -Wno-uninitialized -mmultiple -mstring   -nostdinc
--iwithprefix include -DKBUILD_BASENAME=sched  -fno-omit-frame-pointer -c -o
-sched.o sched.c
-In file included from /opt/BITKEEPER/devel-2.4.20-pre6/include/linux/wait.h:13,
-                 from /opt/BITKEEPER/devel-2.4.20-pre6/include/linux/fs.h:12,
-                 from
-/opt/BITKEEPER/devel-2.4.20-pre6/include/linux/capability.h:17,
-                 from
-/opt/BITKEEPER/devel-2.4.20-pre6/include/linux/binfmts.h:5,
-                 from /opt/BITKEEPER/devel-2.4.20-pre6/include/linux/sched.h:9,
-                 from /opt/BITKEEPER/devel-2.4.20-pre6/include/linux/mm.h:4,
-                 from sched.c:23:
-/opt/BITKEEPER/devel-2.4.20-pre6/include/linux/kernel.h:10: stdarg.h: Datei oder
-Verzeichnis nicht gefunden
-...
-
-scholz@pinguin:/opt/BITKEEPER/devel-2.4.20-pre6> locate stdarg.h
-/opt/ELDK/ppc_8xx/usr/lib/gcc-lib/ppc-linux/2.95.3/include/stdarg.h
-/opt/ELDK/usr/lib/gcc-lib/ppc-linux/2.95.3/include/stdarg.h
-
-I am using the ELDK as build environment. 2.4.19 kernel compiled with no
-problems!
-
-I found the problem in the main Makefile:
-
----------------
-@@ -261,7 +262,7 @@
- # 'kbuild_2_4_nostdinc :=' or -I/usr/include for kernel code and you are not
-UML
- # then your code is broken!  KAO.
-
--kbuild_2_4_nostdinc    := -nostdinc -iwithprefix include
-+kbuild_2_4_nostdinc    := -nostdinc $(shell $(CC) -print-search-dirs | sed -ne
-'s/install: \(.*\)/-I \1include/gp')
- export kbuild_2_4_nostdinc
-
- export CPPFLAGS CFLAGS CFLAGS_KERNEL AFLAGS AFLAGS_KERNEL
----------------
-
-After changing this line back to the old one (from 2.4.19) I can build the
-kernel.
-
-Could someone please explain to me what happend, why it happened and what I am
-supposed to do about it (except changing this line to the old one)!?
+-----Original Message-----
+From: Steve Calfee [mailto:stevecalfee@hotmail.com]
+Sent: Thursday, September 12, 2002 8:42 PM
+To: Hihn Jason
+Subject: Re: [linux-usb-devel] General USB Hub question and 832e
+question
 
 
-Thanks a million,
 
-Steven
+At 10:57 PM 9/12/02 +0200, you wrote:
+>I'm doing a design on a PPC 832e processor. Slave mode is known to work ok,
+>but host mode is iffy. Apparently there is a issue with low-speed USB
+>devices. I was wondering if anyone here could answer my question:
+>
+>If we were to go through a USB hub, would low-speed devices get converted
+to
+>high speed?
+>
+>Additionally your experiences with USB on the 823e (and 850) are welcome.
+>
+>Thank you for your time.
+>
+>
+>----
+
+Hi I wrote a host for the 823 USB circuitry. The 823 usb stuff is just a
+very marginal design and therefore a huge amount of work. A single function
+host for an embedded system is reasonable, a general purpose host just will
+not work with the built in circuitry. I recommend you use an external chip
+for host mode.
+
+There should not be a problem with low speed, the 823 would need to change
+its bus clock from 12000000 to 1500000. It needs to do this on a very tight
+time frame, which is probably the problem..You would have to spin testing
+the CPM after a SOF, so you know exactly when to change the clock. This is
+just another of its marginal design features.
+
+Hubs do not translate speeds, they prevent low speed devices from seeing
+any high speed packets...SOF is sent as just a one bit pulse. The actual
+data packets are just sent on through the hub at low speed. The host
+actually sends the hub a special packet called a PRE PID, which tells it
+and all other high speed devices that a low speed packet is coming.
+
+Regards, Steve
+
+__________________________________________
+Steve Calfee    --      embedded systems consultant
+stevecalfee@NOSPAMhotmail.com
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
