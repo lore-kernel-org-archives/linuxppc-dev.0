@@ -1,75 +1,29 @@
-Date: Fri, 31 Mar 2000 17:18:54 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Josh Huber <huberj@wpi.edu>
-cc: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: gcc bug
-In-Reply-To: <20000331092707.C354@wpi.edu>
-Message-ID: <Pine.HPX.4.10.10003311657580.13384-100000@gra-ux1.iram.es>
+Message-ID: <38BB7CA0.E0156113@netx4.com>
+Date: Tue, 29 Feb 2000 03:00:32 -0500
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Sender: owner-linuxppc-dev@lists.linuxppc.org
-List-Id: <linuxppc-dev@lists.linuxppc.org>
+To: Graham Stoney <greyham@research.canon.com.au>
+CC: Tobias Otto-Adamczak <Tobias.Otto-Adamczak@e-technik.tu-chemnitz.de>,
+        linuxppc-embedded@lists.linuxppc.org
+Subject: Re: On-Chip-Debugging for MPC 860 ?
+References: <20000229054521.6C2385064E@brixi.research.canon.com.au>
+Content-Type: text/plain; charset=us-ascii
+Sender: owner-linuxppc-embedded@lists.linuxppc.org
+List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, 31 Mar 2000, Josh Huber wrote:
-
+Graham Stoney wrote:
 >
-> Interesting gcc bug here...
+> Which remote device do the HMI BMDs interface to?  I can't see any mention
+> of them in the latest gdb snapshots on sourceware.
 
-No.
-
->
-> in both cases this should print 0xDEADBEEF, but in the second case, garbage
-> is printed.
->
-> main()
-> {
-> 	unsigned long t1 = 32;
-> 	unsigned long long t2 = 64;
->
-> 	printf("%x\n", 1 ? 0xDEADBEEF : t1);
-> 	printf("%x\n", 1 ? 0xDEADBEEF : t2);
-> }
->
-> as expected, the 1 ? ... operation is optimized away, but the compiler seems
-> to screw things up ...
->
-> working case:
-> 	li 4,15
-> 	crxor 6,6,6
-> 	bl printf
->
-> failure case:
-> 	li 5,0
-> 	li 6,15
-> 	crxor 6,6,6
-> 	bl printf
->
-> in the failure case, r4 is not loaded with anything, so this is were the
-> garbage probably comes from.
-
-The compiler is right, it chooses to pass the parameter as a long long
-because of promotion rules among the types of the two expressions of a ? :
-operator.
-
-But you have to tell printf that the variable is a long long for varargs
-in the library functions to find it, so replace your last statement with
-printf("%llx\n", 1 ? 0xDEADBEEF : t2) and it will work properly.
-
-There have been various bugs in this area with GCC on PPC, in some cases
-due to varargs problems and the ABI actually took some time to stabilize
-and to be properly implemeted IIRC. But in this case the compiler is
-right: if it is a long long it can only be passed in r3:r4, r5:r6, r7:r8,
-r9:r10, or on the stack.
-
-Think at what happens if you don't tell that the argument is a long long
-and you have more arguments after that one, everything will be off. And
-it's not an endian issue either, it will just give the impression to work
-when this is the last parameter on most little endian machines but the bug
-would stil be here. Little endian is great to hide bugs, it's basically
-the only "advantage" it has, and I regard this as a fundamental flaw.
-
-	Gabriel.
+Download the patches from their website, then.  I think
+it is ftp.hmi.com.....If you still can't find them, let me
+know and when I return home after travelling this week I will
+send them to you.
 
 
-** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
+
+	-- Dan
+
+** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
