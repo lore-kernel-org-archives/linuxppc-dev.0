@@ -1,15 +1,17 @@
-Return-Path: <alebas@televes.com>
-Received: from tvesnat.televes.com (unknown [212.163.42.137])
-	by ozlabs.org (Postfix) with ESMTP id B55E12BDB3
+Return-Path: <rpjday@mindspring.com>
+Received: from mailhost.rdmcorp.com (world.rdmcorp.com [204.225.180.10])
+	by ozlabs.org (Postfix) with ESMTP id A6F542BDB4
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  8 Oct 2004 19:27:16 +1000 (EST)
-Message-ID: <1097227736.41665dd81009b@webmail.televes.com:443>
-Date: Fri,  8 Oct 2004 11:28:56 +0200
-From: alebas@televes.com
-To: linuxppc-embedded@ozlabs.org
+	Fri,  8 Oct 2004 21:23:14 +1000 (EST)
+Received: from [10.1.1.102] (10.1.2.1) by mailhost.rdmcorp.com (Worldmail
+	1.3.167) for linuxppc-embedded@ozlabs.org; 8 Oct 2004 07:23:07 -0400
+Date: Fri, 8 Oct 2004 07:16:18 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+To: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Message-ID: <Pine.LNX.4.60.0410080704170.6219@dell.enoriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: Bridge, promiscous mode andCPM2
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Subject: cleaning up the Kconfig menu structure -- the bigger picture
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,21 +23,50 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Hi,
+   somewhat related to dan malek's posting, but i think part of the 
+problem with trying to figure out what the menuconfig menus should 
+support is that the relevant options are organized in a confusingly 
+haphazard way.
 
-I would need confirmation on this.
+   if you're building a kernel for an 8xx system, obviously you'll 
+choose the 8xx processor, at which point naturally a number of other 
+kernel config menu entries (dependent on the "8xx" config variable and 
+falling off of that) suddenly become visible.  unfortunately, in 
+really badly-chosen places.
 
-As long as I have seen, bridge's stuff in kernel sets promiscous mode by using
-dev_set_promiscuity, which arrives in the execution of fcc_enet's
-set_multicast_list.
+   consider, first, serial port options.  if you choose 8xx, then 
+you'll be presented with the menu choices:
 
-But this function is not developed, so the promiscous mode is never set in the
-FCC Ethernet Mode Register.
+   Device Drivers -->
+     Character devices -->
+       Serial drivers -->
+         CPM SCC/SMC serial port support --> etc, etc.
 
-Am I right? By now, I only needs the promiscous mode, so, could it be a solution
-to implement only this functionality in the set_multicast_list function? Do I
-need to consider anything else?
+now, is this the right place for configuring CPM SCC/SMC serial port 
+support?  sure, some people might say.  after all, it's serial port 
+stuff, it should be under "Serial drivers".  makes perfect sense, 
+right?
 
-Best regards
+   in that case, if you wanted to configure "CPM SCC Ethernet", why 
+would you go under "MPC8xx CPM Options" rather than the general 
+networking menu?  this is clearly inconsistent.
 
-Alexandre Bastos
+   more to the point, i've always found it a bit strange that selecting 
+"8xx" as a processor would suddenly cause the top-level "MPC8xx CPM 
+Options" menu to appear, when other 8xx-related stuff was still 
+scattered elswewhere throughout the kernel source tree.
+
+   it might make more sense, if you choose "8xx", to have *all* 
+8xx-related stuff to suddenly appear under a single top-level menu: 
+serial ports, networking, patches, etc.  at least, you'd get to see 
+everything in one place, and calculating interdependencies would be 
+simpler (no, you can't choose SMC1 to be both a serial port and an 
+ethernet, that sort of thing).
+
+   i don't know if this suggestion is feasible but, really, it seems 
+clear that the current menu structure is pretty ad hoc and 
+disorganized.
+
+   thoughts?
+
+rday
