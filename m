@@ -1,32 +1,50 @@
-Date: Tue, 4 Dec 2001 21:32:01 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: mod+linuxppc-dev@MissionCriticalLinux.com
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Status of linuxppc support for Galileo GT64260
-Message-ID: <20011205043201.GC17651@cpe-24-221-152-185.az.sprintbbd.net>
-References: <200112042332.SAA17067@missioncriticallinux.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200112042332.SAA17067@missioncriticallinux.com>
+Message-ID: <3C0DF1A8.934A3588@folkwang-hochschule.de>
+Date: Wed, 05 Dec 2001 11:06:32 +0100
+From: =?iso-8859-1?Q?J=F6rn?= Nettingsmeier <nettings@folkwang-hochschule.de>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.linuxppc.org, DerrikPates <dpates@dsdk12.net>
+Subject: Re: 2.4.17-pre[12]-ben0 trees hang on unsuspend
+References: <3C0D53A4.E6A2F0DD@folkwang-hochschule.de> <20011204231235.7099@smtp.wanadoo.fr>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Dec 04, 2001 at 06:32:12PM -0500, mod+linuxppc-dev@MissionCriticalLinux.com wrote:
+Benjamin Herrenschmidt wrote:
+>
+> >
+> >i'm seeing the same, but on 2.4.16-ben0 on a pismo powerbook.
+> >it does not happen every time, but often enough to be almost
+> >unusable.
+> >
+> >i *think* it gets triggered when i hit a button immediately after
+> >the screen has blanked. when i wait a couple of seconds until the
+> >suspend led has started blinking, i get the machine back most of the
+> >time.
+> >
+> >when it dies, the hd comes up, but the screen remains black. i tried
+> >blind-typing "reboot" in a root shell, but nothing happened. i could
+> >not ssh into the box from outside. there are no ping echos.
+> >
+>
+> Try the latest rsync and tell me if that still happens.
 
-[snip]
-> Would I be wrong to interpret the fact
-> that it wouldn't compile when I tried it
-> today as indication that not much has
-> happened since the initial checkin by
-> MontaVista?
+so far, it has not died after resume. but it only went through 3
+sleep cycles so far...
+btw, alsa compiles now, the feature.h header is there.
 
-No, just that people don't always test all of the changes when they do a
-commit, and that the people with the hardware and write access aren't
-staying up to date (in an effort to limit bugs one can assume).
+thanks,
+
+
+jörn
+
 
 --
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Jörn Nettingsmeier
+home://Kurfürstenstr.49.45138.Essen.Germany
+phone://+49.201.491621
+http://spunk.dnsalias.org
+http://www.linuxdj.com/audio/lad/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
