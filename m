@@ -1,31 +1,66 @@
-Message-ID: <3F26303D.1060101@dgt-lab.com.pl>
-Date: Tue, 29 Jul 2003 10:28:45 +0200
-From: Wojciech Kromer <krom@dgt-lab.com.pl>
-MIME-Version: 1.0
-To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: /dev/random
-References: <3F26160F.8060503@dgt-lab.com.pl>
-In-Reply-To: <3F26160F.8060503@dgt-lab.com.pl>
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Date: Tue, 29 Jul 2003 11:20:11 +0100
+From: Malcolm Dodds <mdodds@totalise.co.uk>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: cramfs mount problems
+Message-ID: <3F26D0E5@mail.totalise.co.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="ISO-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-U¿ytkownik Wojciech Kromer napisa³:
+Hi,
 
->
-> anyone has sucesses with /dev/random ?
-> how to switch it to another sources (i do not have keyboard and mouse on
-> my ebedded ppc platform)
->
-> --
+I'm having a strange problem. I create a cramfs image, mount it and then look
+at the contents - these are wrong! In fact they are my root filesystem
+again.I'm at a complete loss.
 
-OK, i solved this quickly, just adding SA_SAMPLE_RANDOM flag in fec.c
+Here's what I've done:
 
---
-* * * * * * * * * * * *
-* per pedes ad astra! *
-* * * * * * * * * * * *    mailto:krom@dgt-lab.com.pl
+# uname -r
+2.4.2_hhl20
+# mkdir /tmp/cram
+# cp /bin/ash /bin/cat /bin/ls /tmp/cram
+# mkcramfs /tmp/cram /tmp/cramfs.img
+  ash
+  cat
+  ls
+Directory data: 124 bytes
+  0.00% (+1648 bytes)   .ÿüx
+Everything: 92 kilobytes
+Super block: 76 bytes
+CRC: 4731a9e0
+# eraseall /dev/mtd4
+Erased 2560 Kibyte @ 0 -- 100% complete.
+# cp /tmp/cramfs.img /dev/mtd4
+Invalid ioctl 402c7413 (MEMGETINFO = 40204d01)
+# mount -t cramfs /dev/mtdblock4 /mnt
+# mount
+/dev/root on / type nfs
+(rw,v2,rsize=4096,wsize=4096,hard,udp,nolock,addr=10.0.)
+/proc on /proc type proc (rw)
+none on /var type ramfs (rw)
+/dev/mtdblock4 on /mnt type cramfs (rw)
+# ls -l /mnt
+drwxrwxr-x    1 root     root          612 Jun  4 16:17 bin
+drwxr-xr-x    1 root     root            0 Jan  1  1970 boot
+drwxr-xr-x    1 root     root        18868 Jan  1  1970 dev
+drwxrwxr-x    1 root     root          348 Jun  4 16:17 etc
+drwxr-xr-x    1 505      249            36 Jan  1  1970 home
+drwxrwxr-x    1 root     root          728 Jun  4 16:17 lib
+drwxr-xr-x    1 root     root            0 Jan  1  1970 mnt
+drwxr-xr-x    1 root     root            0 Jan  1  1970 opt
+drwxr-xr-x    1 root     root            0 Jan  1  1970 proc
+drwxr-xr-x    1 root     root            0 Jan  1  1970 root
+drwxrwxr-x    1 root     root          316 Jun  4 16:17 sbin
+lrwxrwxrwx    1 root     root            5 Jan  1  1970 tmp -> ./var
+drwxrwxr-x    1 root     root           88 Jan  1  1970 usr
+drwxrwxr-x    1 root     root          164 Jan  1  1970 var
+#
+
+Any help greatly appreciated - I'm a bit stuck here.
+
+Malcolm.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
