@@ -1,39 +1,58 @@
-Date: Sat, 10 Jan 2004 09:41:55 +0100
+Mime-Version: 1.0 (Apple Message framework v609)
+In-Reply-To: <20040110003731.GD23038@krispykreme>
+References: <00c801c3d6d6$a9f818a0$7138e30a@ibm18437> <20040110003731.GD23038@krispykreme>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <367D9728-436D-11D8-A844-000393911DE2@sara.nl>
+From: Remco Post <r.post@sara.nl>
+Subject: Re: Linux on IBM 9076 nodes
+Date: Sat, 10 Jan 2004 14:02:15 +0100
 To: linuxppc-dev@lists.linuxppc.org
-Subject: linuxppc trees, what is going on ?
-Message-ID: <20040110084155.GA19817@iliana>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-From: Sven Luther <sven.luther@wanadoo.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello,
+On Jan 10, 2004, at 01:37, Anton Blanchard wrote:
 
-I am confused about what is going on with the different 2.4 powerpc
-trees.
+>
+> Hi,
+>
+>> Our lab has recently acquired a 48-node IBM SP configuration based on
+>> 4-way "Winterhawk-II" Power3-2 wide nodes with 8 GB memory. I see on
+>> the
+>> Linuxppc site (boxes) that Linux is known to work on 9076-SP nodes
+>> (ours). How difficult is the port? IBM does not support Linux on the
+>> 9076 but does on the newer Power4 pSeries units.
+>
+> We've booted linux on winterhawks in the past, there was one weird
+> problem where we allocated memory for RTAS too high but that should be
+> fixed.
+>
+> As pointed out we have no support for the switch unfortunately.
+>
+> One of our build machines here is a nighthawk (16 way 9076) and it
+> works
+> nicely in case anyone has a cluster of these lying around :)
+>
 
-Last year, there was linuxppc_2_4 and the -benh tree. But since december
-24, this tree doesn't seem to be touched anymore, and a new linuxppc-2.4
-tree is used.
+unfortunately, IBM wanted ours back when it was traded in for 6 32way
+p690's.... we had 8 16cpu nodes ;-)
 
-Are we supposed to move to the linuxppc-2.4 tree, and if so, what is
-the rationale behind this change.
+> Anton
+>
+>
+>
+--
+Met vriendelijke groeten,
 
-Furthermore, 2.4.24 was released, and the linuxppc-2.4 now contains
-TAG: v2.4.24, and a bit later there is a Changeset marked as "Import
-2.4.24 final tree". There used to be TAGS like TAG: v2.4.23_linuxppc_2_4
-which i used to take snapshots for releasing debian powerpc kernel
-packages. Will there still be those, did they simply get forgotten,
-should i sync with the v2.4.24 tags, or am i missing something.
+Remco Post
 
-BTW, while we were at renaming stuffs, would it not have been better to
-use linuxppc-2.6 instead of the linuxppc-2.5 we currently have ?
+SARA - Reken- en Netwerkdiensten                      http://www.sara.nl
+High Performance Computing  Tel. +31 20 592 8008    Fax. +31 20 668 3167
 
-Friendly,
-
-Sven Luther
+"I really didn't foresee the Internet. But then, neither did the
+computer industry. Not that that tells us very much of course - the
+computer industry didn't even foresee that the century was going
+to end."                                       -- Douglas Adams
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
