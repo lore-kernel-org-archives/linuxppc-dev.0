@@ -1,20 +1,20 @@
-Return-Path: <sr@denx.de>
-Received: from natpreptil.rzone.de (natpreptil.rzone.de [81.169.145.163])
-	by ozlabs.org (Postfix) with ESMTP id 67FE067A2F
+Return-Path: <wd@denx.de>
+Received: from mailout04.sul.t-online.com (mailout04.sul.t-online.com
+	[194.25.134.18]) by ozlabs.org (Postfix) with ESMTP id 1E4C367A81
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  4 Apr 2005 17:54:56 +1000 (EST)
-Received: from server.lan (ip51cf43f8.direct-adsl.nl [81.207.67.248])
-	by post.webmailer.de (8.13.1/8.13.1) with ESMTP id j347gZ2E008827
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 4 Apr 2005 09:42:35 +0200 (MEST)
-From: Stefan Roese <sr@denx.de>
-Date: Mon, 4 Apr 2005 09:42:34 +0200
-To: "ML linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200504040942.34922.sr@denx.de>
-Subject: Re: Platform bus/ppc sys model - [Fwd: bi_recs and u-boot ppcboot.h]
+	Mon,  4 Apr 2005 18:19:48 +1000 (EST)
+To: Jon Masters <jonathan@jonmasters.org>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 04 Apr 2005 08:32:09 BST."
+	<4250ED79.6010304@jonmasters.org>
+Date: Mon, 04 Apr 2005 10:19:27 +0200
+Sender: wd@denx.de
+Message-Id: <20050404081932.B8CD7C108D@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: [Fwd: Re: Platform bus/ppc sys model - [Fwd: bi_recs and u-boot
+	ppcboot.h]]
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,28 +25,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Jon,
+In message <4250ED79.6010304@jonmasters.org> you wrote:
+>
+> | The CPCI405 supports switching the boot-cs between its 2 flash chips with the
+> | DIP-switch 4. You could copy the current ppcboot version into the 2nd flash
+> | chip as a fallback (please test it once).
+> 
+> Oooh. I didn't know that (don't have the schematics here :P) - cheers.
 
-On Thursday 31 March 2005 14:36, Jon Masters wrote:
+BTW: I will attach the BDI2000 to the CPCI405 tomorrow or so, so  you
+can continue debugging in our virtual lab, too.
 
-> ( basically, I've got ppcboot on an old CPCI405 here but it's not
-> trivial to fix if I break it
+> FWIW Stefan, I am just setting up a similar power cycler setup to what
+> you guys have there - found a cheap supplier of wireless 13A mains
+> socket automation kits (<15EUR) in the local electronics store,
+> butchered remote control unit, sufficient for a cheapo cycler.
 
-The CPCI405 supports switching the boot-cs between its 2 flash chips with the
-DIP-switch 4. You could copy the current ppcboot version into the 2nd flash
-chip as a fallback (please test it once).
-
-Please make sure to use the "CPCI405" U-Boot make-target and _not_ CPCI4052
-for a revision 1.x board. To be sure what version of the board you have,
-please take a look at the FPGA. If it's a Spartan 05 then it's a revision 1.x
-board, if it's a Spartan 2 15 it's a revision 2.x board.
-
-> and I don't know much about whether u-boot
-> supports chaining in to a new u-boot loaded from within itself...but it
-> probably does, I guess. Bah, it's late, I'm rambling...).
-
-I am pretty sure that the current versions of U-Boot work without problems on
-the CPCI405 boards (even revision 1.x).
+Can you please send me some more details?
 
 Best regards,
-Stefan
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+There are certain things men must do to remain men.
+	-- Kirk, "The Ultimate Computer", stardate 4929.4
