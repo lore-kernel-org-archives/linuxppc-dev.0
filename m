@@ -1,117 +1,54 @@
-From: "Chris Hallinan" <clh@net1plus.com>
-To: <jeffrey.d.kowing@nasa.gov>,
-	"Brian Waite" <waite@skycomputers.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: NFS root manipulation without being superuser?
-Date: Fri, 15 Nov 2002 15:24:30 -0500
-Message-ID: <NEBBKJPFOLJNBMFNKBIIGEHGDCAA.clh@net1plus.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <15829.20978.564041.583906@igor.jsc.nasa.gov>
+Date: Fri, 15 Nov 2002 15:10:01 -0600
+From: "William A. Gatliff" <bgat@billgatliff.com>
+To: GOTZON ASTONDOA <gastondoa@fagorautomation.es>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Fast shutdown
+Message-ID: <20021115151001.I5906@saturn.billgatliff.com>
+Reply-To: bgat@billgatliff.com
+References: <CA78D1B723D8D411AF0300508BDCF74FF0C566@NTCORREO>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CA78D1B723D8D411AF0300508BDCF74FF0C566@NTCORREO>; from gastondoa@fagorautomation.es on Tue, Nov 12, 2002 at 04:04:39PM +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Maybe this is just too simple, but I always have my target file
-system under my home directory or under /opt with user:group ==
-me:swdev, or something like that, and who cares what the target
-thinks the user:group is, because I always login as root on my
-target.  So, that way, I can do what you seek: 1) have the Power of
-God on my own development workstation's 'target file system' to make
-changes as I see fit, 2) not risk wiping out something on my
-workstation (which I've done, yes :) and 3) modify the target fs
-from my target, as well!
+On Tue, Nov 12, 2002 at 04:04:39PM +0100, GOTZON ASTONDOA wrote:
+>
+> Hi all:
+>
+> 	Our custom board has to microprocessors: 68K and PowerPC. We have
+> instaled Linux in the PowerPc side.
+> 	When the user suddenly shutdowns the board, the 68K sends an
+> interrupt to the PowerPC.We have more or less 8 mSeg to close all the Linux
+> system (it has hard disk, ethernet, ftp and our own application).
+>
+> 	Can somebody tell me any idea to close the Linux system in the
+> fastest way? We are thinking in capture the interrupt signal, but, is it
+> enough fast?
 
-I *NEVER, NEVER, NEVER work routinely as root!  <grin>
 
-Does that make sense?
+You'll probably want to dump /sbin/init, at least.
 
--Chris Hallinan
-DS4.COM, Inc.
+Just throwing something out for starters....
 
-> -----Original Message-----
-> From: owner-linuxppc-embedded@lists.linuxppc.org
-> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On
-> Behalf Of Jeff
-> Kowing
-> Sent: Friday, November 15, 2002 2:59 PM
-> To: Brian Waite
-> Cc: linuxppc-embedded@lists.linuxppc.org
-> Subject: Re: NFS root manipulation without being superuser?
->
->
->
-> Brian Waite writes:
->  > you could export the fs from the dev host as
-> no_root_squash an insecure
->  > for example
->  > /home   *(rw,insecure,no_root_squash)
->  >
->  > That will allow the embedded host to modify files on
-> the NFS filesystem as
->  > root. Does tha accomplish what you need?
->
-> Thanks Brain for the reply.  No, that is not really what
-> I mean.  I
-> want to be able to manipulate/create/alter the target's root
-> filesystem (exported from the development workstation) from the
-> _development_ workstation.  I want to be able to do so
-> without having
-> to change to superuser privleges on the development workstation.
->
-> For example, say I export an NFS root filesystem to my
-> target.  This
-> filesystem on my development machine is located within my home
-> directory.  For example:
->
-> /home/me/target
-> /home/me/target/bin
-> /home/me/target/root
-> /home/me/target/lib
-> /home/me/target/dev
-> ... you get the idea.
->
-> Now, from my development workstation, as user "me", I
-> would like to be
-> able to install a program to the target's NFS root filesystem.  I
-> would like that program to appear as having root ownership to the
-> target.  For example, user "me" installs the program "foo" to:
->
-> /home/me/target/bin/foo
->
-> On the development machine this would look like:
-> developmentt$ ls -l /home/me/target/bin/foo
-> -rwxr-xr-x    1 me  me          48 Nov 15 10:59 foo
->
-> On the target machine this would look like:
-> target$ ls -l /bin/foo
-> -rwxr-xr-x    1 root  root      48 Nov 15 10:59 foo
->
-> I guess maybe I thought there might be a way to do some
-> sort of NFS
-> user/group mapping so that you could "trick" the target
-> into thinking
-> files were owned by root whereas on the development
-> machine they are
-> in reality owned by user "me".  Or some sort of tricks
-> that could be
-> played using fakeroot and those kinds of programs.
->
-> I guess what I really want is a way, from my development
-> workstation,
-> to have the "power" of root to manipulate the target's filesystem
-> (i.e., the files under /home/me/target directory) WITHOUT
-> having the
-> "power" to screw up the development workstation's system
-> files.  Does
-> this make sense to anyone or is the caffeine affecting my
-> thinking?
->
-> --
-> Jeff Kowing
-> jeffrey.d.kowing@nasa.gov
->
+You could have an interrupt handler watching the signal from the 68k,
+and sending a message via named pipe (perhaps) to a userspace program.
+The userspace program would signal all your other programs, sync(),
+then wait for powerdown.
 
+I think you'll want all your processes doing synchronous i/o, so that
+you don't have much in the way of unwritten disk data to worry with.
+You'll probably also want a journaled filesystem, for those times when
+8ms just isn't enough...
+
+Hope this gives you a good starting point,
+
+
+b.g.
+--
+Bill Gatliff
+Embedded systems and Free Software.  Yea, it *is* all that!
+See http://billgatliff.com for details.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
