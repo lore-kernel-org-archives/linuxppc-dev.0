@@ -1,15 +1,39 @@
-Message-ID: <38D6842A.E01E5204@embeddededge.com>
-Date: Mon, 20 Mar 2000 15:03:54 -0500
-From: Dan Malek <dan@netx4.com>
+From: "Jason Wohlgemuth" <jsw-embedded@mindspring.com>
+To: "Dan Malek" <dan@netx4.com>, "Steve Rossi" <srossi@ccrl.mot.com>
+Cc: "Embedded Linux PPC List" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Question on QSPAN Driver
+Date: Mon, 20 Mar 2000 21:07:52 -0500
+Message-ID: <NCBBKJKKGDLPHKDPAFFMMEIPCDAA.jsw-embedded@mindspring.com>
 MIME-Version: 1.0
-To: Steve Rossi <srossi@ccrl.mot.com>
-CC: Dan Malek <dan@netx4.com>,
-        Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Question on QSPAN Driver
-References: <38D64A54.D5A8E8BA@ccrl.mot.com> <38D66069.AA538C28@embeddededge.com> <38D67FA3.D00A5110@ccrl.mot.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <38D6842A.E01E5204@embeddededge.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Dan and Steve,
+
+The way we got the qspan up and running was to check a GPIO pin to see
+whether or not the Qspan was present, inside pci_init or pcibios_init (I did
+this a while ago), and if it was present we intialized the qspan and scanned
+the bus then, this prevented the majority of the problems of running the
+pci_scanner code from the bootrom since the linux exception vectors are
+there.  I am glad to hear that people are using the Qspan II, since we
+intend to shift to that chip soon, so any issues that you all run into I
+would love to hear about or assist you.
+
+Jason
+
+-----Original Message-----
+From: owner-linuxppc-embedded@lists.linuxppc.org
+[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Dan
+Malek
+Sent: Monday, March 20, 2000 3:04 PM
+To: Steve Rossi
+Cc: Dan Malek; Embedded Linux PPC List
+Subject: Re: Question on QSPAN Driver
+
 
 
 Steve Rossi wrote:
@@ -41,5 +65,6 @@ development.  Another thing for the list.....
 
 
 	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
