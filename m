@@ -1,49 +1,27 @@
-Date: Thu, 26 Oct 2000 10:23:58 -0400
-From: Josh Huber <huber@mclx.com>
-To: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
+Message-ID: <39F83FEB.5FC4051@mpifr-bonn.mpg.de>
+Date: Thu, 26 Oct 2000 16:30:03 +0200
+From: Albrecht Dre_ <ad@mpifr-bonn.mpg.de>
+MIME-Version: 1.0
+To: Josh Huber <huber@mclx.com>
+CC: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: lombard ethernet
-Message-ID: <20001026102358.B12571@missioncriticallinux.com>
-References: <20001026095459.A12571@missioncriticallinux.com> <20001026071006.C4741@opus.davidb.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-md5;
-	protocol="application/pgp-signature"; boundary="ADZbWkCsHQ7r3kzd"
-In-Reply-To: <20001026071006.C4741@opus.davidb.org>; from linux-kernel@davidb.org on Thu, Oct 26, 2000 at 07:10:06AM -0700
+References: <20001026095459.A12571@missioncriticallinux.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---ADZbWkCsHQ7r3kzd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Josh Huber wrote:
+> I'm having trouble with my Lombard's ethernet.  Every once in a while
+> it seems to lock up.  bringing the interface down and then up fixes
+> the problem.
 
-On Thu, Oct 26, 2000 at 07:10:06AM -0700, David Brown wrote:
-> I began experiencing the same problem on my Lombard as soon as I switched
-> to a 100Base-T hub.  It expecially seems to happen when I transfer a lot =
-of
-> data.  I'm using a fixed IP address, so it doesn't seem to be related to
-> anything like that.  I think the driver itself stops either sending or
-> receiving packets.
+I have exactly the same problem with the Lombard. The Pismo at least _had_ the
+same problem, but I did not see it for a while; maybe it has been fixed
+recently.
 
-Hmm, that's interesting.  I hadn't thought about that.  At home I have
-a 10b-t network and things work fine there.
+Albrecht.
 
-At work, I'm hooked up to a 100 b-t switch on my desk, and this is
-where things die.
-
-Maybe as a test I could force the bmac driver to use 10bt?
-
-ttyl,
-
---=20
-Josh Huber                               | huber@nightshade.org |
-1024D/6B21489A 61F0 6138 BE7B FEBF A223  E9D1 BFE1 2065 6B21 489A
-
---ADZbWkCsHQ7r3kzd
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
-
---ADZbWkCsHQ7r3kzd--
+--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
