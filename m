@@ -1,56 +1,56 @@
-Message-ID: <3D3D6FB6.6030804@embeddededge.com>
-Date: Tue, 23 Jul 2002 11:01:10 -0400
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: Pavel Bartusek <pba@sysgo.de>
-Cc: Jean-Denis Boyer <jdboyer@mediatrix.com>,
-	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: MDIO clock speed computation
-References: <2702075D4DE2B043BF5EB82E9CFAD45B093B0D@mail1.mediatrix.com> <3D3C6233.3090007@embeddededge.com> <3D3D2E49.8000309@sysgo.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: IGOR LURI <iluri@fagorautomation.es>
+Cc: =?ISO-8859-1?Q?EMBEDDED_LINUXPPC_=28Correo_electr=F3nico=29?= <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Direct IDE on PCMCIA port 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 23 Jul 2002 16:22:24 +0200."
+             <CA78D1B723D8D411AF0300508BDCF74F3F6D37@NTCORREO>
+Date: Tue, 23 Jul 2002 17:20:56 +0200
+Message-Id: <20020723152101.6930210875@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Pavel Bartusek wrote:
+Dear Igor,
 
-> I thing that system clock and bus clock can be different (in terminology
-> of the MPC855T user manual)
+in message <CA78D1B723D8D411AF0300508BDCF74F3F6D37@NTCORREO> you wrote:
 >
-> MPC855T manual, section Clocks and Power Control:
-> "
-> GCLK1C/GCLK2C - Basic clocks supplied to the core, the data and
-> instruction caches, and MMUs.
-> GCLK1_50/GCLK2_50 - Optionally divided versions of GCLK1/GCLK2, which
-> are used to clock the GPCM and UPM in the memory controller and to
-> provide the CLKOUT output for the external bus.
+> We have a custom board based on mpc823 with Linux 2.4.4 from Denx Software
+> Engineering and we want to initialize the PCMCIA interface as True IDE mode.
 
-Notice in all of the descriptions there is no definition of "system clock."
-I carefully read all of the 8xx manuals, and there are a few references
-to "system clocks", especially around power management and frequency
-control.  There are a couple of references to peripheral clocks being
-derived from a "system clock", which from the context appears to be the
-same as the core clock, not the CLKOUT that would be supplied to the rest
-of the "system."
+Forget about this terminology. It's only marketing.  Driverwise,  the
+PCMCIA  interface  of the typical PCCard Adapters for CF medial looks
+like an IDE controller anyway.
 
-It appears the MII clock must be derived from the core clock speed, so
-my code change suggestion the other day was wrong. :-)
+>  We want to use "MPC8xx Direct IDE support on PCMCIA port" option of the
 
+Are you sure? Probably you  what  you  really  want  to  use  is  the
+8xx_PCCARD option - this is what we use on most boards with CF.
 
+> kernel to acces a Compact Flash or a PC IDE HardDisk. To use this option,
+> the firmware has to initialize the PCMCIA interface.
 
->>>   (((bd->bi_intfreq + (2 * 2500000 - 1 )) / 2500000 / 2) & 0x3F) << 1;
->>
->>
-> OK. It is more correct.
+PPCboot does this fine on a couple of boards.
 
-try this (since the problem is the divisor register truncation):
+> I have seen in the PPCBoot source code a function called "ide_init" that
+> initialize PCMCIA interface as a common memory space . The Compact Flash can
+> work as a common memory space but a PC IDE HarDisk only supports True IDE
+> mode.
 
-(((((bd->bi_intfreq + 500000) / 2500000) + 1) / 2 ) & 0x3F ) << 1;
+No. The Code as present in PPCBoot works with real IDE  devices  (ATA
+or ATAPI interfaces) and with CF etc.
 
-Thanks.
+> Someone knows how can we initialize PCMCIA registers to acces a disk
+> (Compact Flash or IDE HarDisk) in True IDE mode?
 
+What's wrong with the PPCBoot way? It works...
 
-	-- Dan
+Wolfgang Denk
 
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+God made the integers; all else is the work of Man.       - Kronecker
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
