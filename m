@@ -1,27 +1,39 @@
-Date: 7 Aug 2002 13:28:57 -0000
-Message-ID: <20020807132857.17253.qmail@webmail6.rediffmail.com>
-MIME-Version: 1.0
-From: "navinb" <ppc4@rediffmail.com>
-Reply-To: "navinb" <ppc4@rediffmail.com>
+Date: Wed, 7 Aug 2002 18:02:32 +0200
+From: Gunnar Larisch <la@softing.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: microcode patch requires dreq1 for sof generation ..?
-Content-type: text/plain;
-	format=flowed
+Subject: Oops during initializing ip-stack and receiving ethernet packets
+Message-ID: <20020807180232.A15922@w-la.dhcp.softing.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Hello,
 
-i amn't able to answer a question pointed by somebody regarding
-usb host 8xx (rpxite ) microcode patch.
+on a PPC 855T with fec-ethernet and Linux 2.4.4 (version of denx) I get
+sometimes an oops message in ip_route_input() because of accessing
+rt_hash_table, when an ethernet package is received and just before
+the structure rt_hash_table in function ip_rt_init() is half initialized.
 
-it requires a one khz signal to pc15 ( dreq1)for sof generation.
-but dreq1 is employed by for IDMA request as per mpc8xx manual.
-my question is why microcode patch requires dreq1 for sof
-generation ?
+On the console there is the following output:
 
-is there something special about this..?
+...
+eth0: FEC ENET Version 0.2, FEC irq 3, MII irq 6, addr 00:06:71:01:02:03
+RAMDISK: Compressed image found at block 0
+eth0: Phy @ 0x1f, type AM79C874 (0x0022561b)
+...
+NET4: Linux TCP/IP 1.0 for NET4.0
+IP Protocols: ICMP, UDP, TCP, IGMP
+Oops: kernel access of bad area, sig: 11
+...
 
+This can be reproduced easier with "arp -s .." and "ping -f".
+
+The problem is that interrupts of ethernet are enabled before IP-stack
+is initialized. What is the best way to fix this?
+
+Thanks,
+Gunnar
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
