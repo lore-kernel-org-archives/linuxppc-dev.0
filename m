@@ -1,53 +1,31 @@
-Message-ID: <39A680AC.545B9ADF@raleigh.ibm.com>
-Date: Fri, 25 Aug 2000 10:20:28 -0400
-From: Ralph Blach <rcblach@raleigh.ibm.com>
+Message-ID: <39A6AE48.57526AE5@mvista.com>
+Date: Fri, 25 Aug 2000 17:35:04 +0000
+From: Scott Anderson <sanders@mvista.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: es1371 driver just make noise
-Content-Type: multipart/mixed;
- boundary="------------824CC4B425B4BB36E823A438"
+To: "Whitney, John" <johnw@aiinet.com>
+CC: "'greyham@research.canon.com.au'" <greyham@research.canon.com.au>,
+        kd@flaga.is, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: ext2fs or ramdisk problems......
+References: <7283DE19D141D111AD0E00A0C95B195502C5F605@mail2.aiinet.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------824CC4B425B4BB36E823A438
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+"Whitney, John" wrote:
+>
+> I have had odd results using ext2 on the ramdisk (in my case, a 16MB
+> ramdisk).  Using the 2.2.13, ramdisks I created using ext2 would boot
+> up just fine on the system, but after use the filesystem would declare
+> that it was out of space, even though "df" showed several megabytes
+> free on that filesystem.
 
-I am working trying to get an es1371 device driver working on MontaVista
-port of linux to a IBM405gp.
+My guess is that you ran out of inodes.  Examine the output of dumpe2fs
+and see if it gives you any clues.
 
-The playback works ok, but when I try to record, I just get noise.  Yes,
-I put in the flushes but this did not seem to make a difference.  Does
-anybody have sound card working on and PPC embedded linux?  If so, which
-one?
-
-Thanks
-
-Chip
---------------824CC4B425B4BB36E823A438
-Content-Type: text/x-vcard; charset=us-ascii;
- name="rcblach.vcf"
-Content-Description: Card for Ralph Blach
-Content-Disposition: attachment;
- filename="rcblach.vcf"
-Content-Transfer-Encoding: 7bit
-
-begin:vcard
-n:Blach;Ralph
-tel;work:919-543-1207
-x-mozilla-html:TRUE
-url:www.ibm.com
-org:IBM MicroElectronics
-adr:;;3039 Cornwallis		;RTP;NC;27709;USA
-version:2.1
-email;internet:rcblach@raleigh.ibm.com
-x-mozilla-cpt:;24544
-fn:Ralph Blach
-end:vcard
-
---------------824CC4B425B4BB36E823A438--
-
+    Scott Anderson
+    scott_anderson@mvista.com	MontaVista Software Inc.
+    (408)328-9214		490 Potrero Ave.
+    http://www.mvista.com	Sunnyvale, CA  94086
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
