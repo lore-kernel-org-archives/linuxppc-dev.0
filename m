@@ -1,65 +1,57 @@
-Message-ID: <1541.206.104.177.96.1022091123.squirrel@nevil.org>
-Date: Wed, 22 May 2002 13:12:03 -0500 (CDT)
-Subject: No Input from SMC1 on MPC860T - Resolved
-From: "Daris A Nevil" <dnevil@snmc.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Cc: <sjl@dent.vctlabs.com>
-Reply-To: dnevil@snmc.com
+Message-ID: <9A9C83C019F35D47A570460E87D5D8AB0125EAB9@racerx.ixiacom.com>
+From: Dan Kegel <dkegel@ixiacom.com>
+To: "'Conn Clark '" <clark@esteem.com>,
+	"'May Ling List '" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: What problems are there with floating point emulation in the
+	kernel?
+Date: Wed, 22 May 2002 12:27:54 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I wrote to the list about a month ago with a problem I experienced while
-porting Linux 2.4.18 to a custom MPC860T based board.  The problem related
-to the console port SMC1.  The console worked fine in PPCBoot, but once in
-Linux the console would output data.  The bash/sash shell could not see
-input from SMC1.
+Since it's very easy to avoid the use of floating point in
+the kernel, it has not been a big issue.
 
-My associate Stephanie Lockwood solved the problem.  In her words:
+Do you need to use floating point in the kernel for some reason?
+- Dan
 
-> After much tracing through kernel source and an insightful comment from
-> my husband (who happens to be a diagnostics engineer), I now have a
-> kernel with reliable terminal input.
-> The key was to not enable the FRZ signal when setting up the timerbase;
-> apparently I was getting a spurious freeze signal which was turning off
-> my timer interrupts partway through. The keyboard interrupts kept
-> coming, but the back-end routine to drain the buffer into the user
-> program stopped running.
->
-
-I felt this info might be useful to others involved in porting the latest
-kernel to new hardware.
+-----Original Message-----
+From: Conn Clark
+To: May Ling List
+Sent: 4/24/2002 9:56 AM
+Subject: What problems are there with floating point emulation in the
+kernel?
 
 
-Here is the patch:
+Hello everyone,
 
---- arch/ppc/kernel/m8xx_setup.c.old        Fri May 10 16:07:23 2002
-+++ arch/ppc/kernel/m8xx_setup.c        Mon May 13 19:05:11 2002
-@@ -184,10 +184,12 @@
-          * (or from the other point of view, to get decrementer interrupts
-          * we have to enable the timebase).  The decrementer interrupt
-          * is wired into the vector table, nothing to do here for that.
-+         *
-+         * Do NOT enable the FRZ signal, it stops timer intr -- SJL
-          */
-         ((volatile immap_t *)IMAP_ADDR)->im_sit.sit_tbscr =
-                                 ((mk_int_int_mask(DEC_INTERRUPT) << 8) |
--                                         (TBSCR_TBF | TBSCR_TBE));
-+                                         TBSCR_TBE);
+	I've been told on this list that there are problems fpu
+emulation
+in the kernel. I was curoius as to what the errors are and the aftermath
+(pun intended) that occurs when they are encountered. ( Like are the
+values off a little bit or a lot, does it cause a kerel panic, does it
+block interupts, does it unleash a terible monster that will destroy the
+universe, etc... .)
 
-         if (request_8xxirq(DEC_INTERRUPT, timebase_interrupt, 0, "tbint",
-NULL) != 0)
-                 panic("Could not allocate timer IRQ!");
+	I'm also very supprised that Motorola and IBM haven't dedicated
+some resources to address these problems since their fpu-less chips are
+often used in linux designs.
 
+thanks in advance,
 
-Regards,
-Daris Nevil
-Simple Network Magic Corporation
-
-
+	Conn
 --
+
+*****************************************************************
+  If you live at home long enough, your parents will move out.
+*****************************************************************
+
+Conn Clark
+Engineering Stooge				clark@esteem.com
+Electronic Systems Technology Inc.		www.esteem.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
