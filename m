@@ -1,38 +1,31 @@
-Date: Sat, 10 Mar 2001 15:26:44 +0000
-Subject: Re: provision of "driver" type facilities from user-space
+Date: Sat, 10 Mar 2001 17:53:58 +0000
+Subject: UPDATE dmasound to 2.4.3p3
 From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-Cc: linuxppc-dev@lists.linuxppc.org
+To: linuxppc-dev@lists.linuxppc.org
+Cc: paulus@linuxcare.com.au, haworth@ncal.verio.com
 Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
-Message-Id: <20010310152647.A49E12EFE9@apollo.valhalla.net>
+Content-type: text/plain; charset="utf-8"
+Message-Id: <20010310175406.BD7E02EFE3@apollo.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+hi all,
 
->> I want to put a layer in between user-space and a driver (dmasound).
->>
->> The reason is - that I want to provide facilities (transparently) to
->> applications and these facilities cannot be (sensibly) placed in the driver
->> [e.g. rate conversion and so on].
->
-> Isn't this what esd and arts do?
+I've updated the dmasound (_all) patch to 2.4.3p3.
 
-yes... in a way.
+The only real change is in the way the Makefile is done (this patch should
+also apply cleanly to Paulus rsync tree - but I didn't test that yet ;-)
 
-I was hoping to avoid running a separate daemon...
+I have another 4 changes in the pipeline - but this will keep anyone who's
+using them from having to mess with merging.
 
-but, well, maybe that's the only way to achieve it.
+against 2.4.3.p3 BK as of 16:00 GMT/UTC today.
 
-I thought the question worth asking.
+ftp://ftp.penguinppc.org/users/iain/kernel/2_4_x/2.4.3p3-dmasound/dmasnd-2.4
+.3p3_all.diff.bz2
 
-a sort of attempt to Keep It Simple...
-
-...and then there's the "favourite" way of doing things issue...
-
-ah well.
-
+ciao,
 Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
