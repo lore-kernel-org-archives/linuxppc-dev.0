@@ -1,55 +1,19 @@
-Message-ID: <3E3567A3.5010600@esteem.com>
-Date: Mon, 27 Jan 2003 09:08:51 -0800
-From: Conn Clark <clark@esteem.com>
+From: xiaogeng_jin@agilent.com
+Message-ID: <9153F74610B7D311B83900902771C871124D938B@axcs07.cos.agilent.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Halt command
+Date: Mon, 27 Jan 2003 12:41:33 -0700
 MIME-Version: 1.0
-To: Steven Scholz <steven.scholz@imc-berlin.de>
-Cc: May Ling List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: gcc-3.2 and MPC8xx
-References: <3E34F6A0.2040209@imc-berlin.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Steven Scholz wrote:
->
-> Hi there,
->
-> I read that MontaVista released a 3.0 with gcc 3.2.
->
-> Does it make sense to switch from 2.95.3/4 to gcc 3.2 for MPC8xx PowerPC?
->
-> Are there any big advantages when building u-boot, kernel, drivers,
-> busybox and
-> multithreaded applications?
->
-> Thanks a million,
->
-> Steven
->
->
->
->
->
+How can a HALT command just halt the system not to reboot the system? My system is a MPC8xx custom board and I'm using Busybox.
 
-I don't know about using gcc 3.2 on PPC but on X86 its wonderful. 3.2.X
-(mabey even 3.1.x) has two features called profile-arcs and
-branch-probabilities that can boost speed quite a bit. Read the gcc man
-page on how to use these options.
+I checked the source code of HALT command in busybox. And it just sends a SIGUSR1 to init but behaves just like REBOOT which sends a SIGTERM to init. Thanks in advance for your thoughts.
 
-Good Luck
-
-	Conn
---
-
-*****************************************************************
-   If you live at home long enough, your parents will move out.
-  (Warning they may try to sell their house out from under you.)
-*****************************************************************
-
-Conn Clark
-Engineering Stooge				clark@esteem.com
-Electronic Systems Technology Inc.		www.esteem.com
-
+- shawn.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
