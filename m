@@ -1,68 +1,45 @@
-Message-ID: <3DEB7A88.1030205@intracom.gr>
-Date: Mon, 02 Dec 2002 17:21:44 +0200
-From: Pantelis Antoniou <panto@intracom.gr>
+Message-ID: <000e01c29a17$46cfbd20$faffa8c0@VISHWANATH>
+From: "Vishwanath" <vishwanath@mistralsoftware.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Cc: <akuster@mvista.com>
+Subject: Device Accessing Problem in 440GP
+Date: Mon, 2 Dec 2002 20:57:08 +0530
 MIME-Version: 1.0
-To: joakim.tjernlund@lumentis.se
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: QMC driver for 860?
-References: <IGEFJKJNHJDCBKALBJLLEEHBFIAA.joakim.tjernlund@lumentis.se>
-In-Reply-To: <IGEFJKJNHJDCBKALBJLLEEHBFIAA.joakim.tjernlund@lumentis.se>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Joakim Tjernlund wrote:
+Hi All,
 
->>OK
->>
->>You asked for it ;).
->>
->>The file netvia_tsa.c is the actual QMC + stuff driver.
->>The file netvia_bri.c is an example driver.
->>The header files are the QMC definitions.
->>
->>Linux kernel version is 2.4.20.
->>
->>Don't hesitate to ask for any explanations.
->>
->>Pantelis
->>
->>
->
->Thanks a lot!
->
->I have just browsed the driver and I noticed that there is room for performance
->improvements in netvia_tsa.c w.r.t memcpy(). You can avoid the memcpy() call
->for received packets by using invalidate_dcache_range(). I did this for
->the 8xx_io/enet.c driver a few weeks ago(it's not in BK yet).
->
->See http://lists.linuxppc.org/linuxppc-embedded/200210/msg00317.html
->and
->http://lists.linuxppc.org/linuxppc-embedded/200210/msg00272.html
->
->   Jocke
->
->
->
->
->
-Yes, I know the trick. I'm looking forward to see your changes
-make it in. As it stands I'm not tracking the BK PPC tree, but
-the Linus tree. Being behind the company firewall, BK is not
-very useful.
+I am working on IBM 440GP based proprietry board using MVL 2.1 linux. I have
+a device siiting on the EBC at 0x100100000 and I want to access it from the
+user space. I use mmap call of my driver to do that. I have not initialized
+the device. I have set the access parameters and controller registers of EBC
+appropriately to access the device.
 
-In this driver case since I'm reading the packet in a non-cachable
-area, and not directly in a skb, I'm not convinced that
-the invalidate_dcache_range will be a great win.
+But when I make ioremap() call using,
 
-If you do any performance testing I'm very interested in
-your results.
+ ioremap64(0x100100000, 0x2000),
 
-Pantelis
+the function returns a  valid pointer. But when I do a sample write and
+read, I am not getting correct values. While I was debigging, I couldn't
+find the TLB entry for the real address.
 
-P.S. Is there anyone in the list interested in this?
-Should I clean it up, and submit it?
+When I try to access the returned mmap() pointer, kernel says ,
+do_wp_page: bogus page at address xxxx (page yyyy)
 
+VM: killing process xxx
+
+Does anyone know what could be the reason?
+
+1. Do I  have to initialize the device in setup_arch function ?
+2. Do I have to explicitly create a TLB entry for the device ?
+
+Hoping to get a response. I am stuck in the middle.
+
+Thanks and regards,
+Vishwa
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
