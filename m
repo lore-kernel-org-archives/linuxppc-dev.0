@@ -1,47 +1,39 @@
-Message-ID: <C7FFFEA58B43D311920D0004ACE5333F10E4F316@amer25.avnet.com>
-From: "Kerl, John" <John.Kerl@Avnet.com>
-To: "'Ashwin Bihari'" <raz0redge@hotmail.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Linux boot args with PReP image
-Date: Fri, 31 Oct 2003 14:05:15 -0700
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: "Ashwin Bihari" <raz0redge@hotmail.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Linux boot args with PReP image 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 31 Oct 2003 13:28:49 EST."
+             <BAY9-F64QUsi6dnG8Cq0008719d@hotmail.com>
+Date: Fri, 31 Oct 2003 22:22:56 +0100
+Message-Id: <20031031212301.0CE3EC59E4@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-The old mbxboot boot wrapper had such a prompt for command line.
-You could dig it out of source control.
+In message <BAY9-F64QUsi6dnG8Cq0008719d@hotmail.com> you wrote:
+>
+> This, of course, means that if we decide to change the location of root, or
+> more appropriately decide to have two separate roots between which we would
+> have switch back and forth, I'll have to recompile the kernel with the new
+> string and then put that onto the PReP partition.
 
------Original Message-----
-From: Ashwin Bihari [mailto:raz0redge@hotmail.com]
-Sent: Friday, October 31, 2003 11:29 AM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Linux boot args with PReP image
+This was one of the reasons why I started to develop U-Boot  (ok,  by
+then the name was still PPCBoot).
 
+> Has anyone done anything similar or have any tips for me?
 
+Porting U-Boot to a new board is not that much work...
 
-Greetings,
+Best regards,
 
-I'm using a PrPMC800 with Motorola's PPC7-BUG> to boot Linux. I've got a
-working kernel and everything works fine. I've used the default boot args
-of: console=ttys0,9600 console=tty0 root=/dev/hde2 noinitrd.
+Wolfgang Denk
 
-This, of course, means that if we decide to change the location of root, or
-more appropriately decide to have two separate roots between which we would
-have switch back and forth, I'll have to recompile the kernel with the new
-string and then put that onto the PReP partition.
-
-What I would ideally like to do is have a Linux: prompt appear after I boot
-into the PReP partition to allow me to have a default string and then change
-it if I decided to chagne root on the fly..
-
-Has anyone done anything similar or have any tips for me?
-
-Regards,
-
-~Ashwin Bihari
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+As far as we know, our computer has never had an undetected error.
+		                                           -- Weisert
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
