@@ -1,21 +1,19 @@
-Return-Path: <srinivas.surabhi@wipro.com>
-Received: from wip-ectls-mx3.wipro.com (wip-ectls-mx3.wipro.com
-	[203.101.113.41])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "wip-ectls-mx3.wipro.com",
-	Issuer "certserv.wipro.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id D271467A7C
+Return-Path: <Steffen.Rumler@siemens.com>
+Received: from thoth.sbs.de (thoth.sbs.de [192.35.17.2])
+	by ozlabs.org (Postfix) with ESMTP id 3F1C567A75
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Feb 2005 14:19:04 +1100 (EST)
+	Wed, 16 Feb 2005 20:56:34 +1100 (EST)
+Message-ID: <421318C2.6040908@siemens.com>
+Date: Wed, 16 Feb 2005 10:56:18 +0100
+From: Steffen Rumler <Steffen.Rumler@siemens.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Wed, 16 Feb 2005 08:48:58 +0530
-Message-ID: <EF9B29C78F41FA488927FCBC7750AF0E011DA5D1@hyd-mdp-msg.wipro.com>
-From: <srinivas.surabhi@wipro.com>
-To: <wd@denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: Mounta Vista Linux prompt on serial console 
+To: Dan Malek <dan@embeddededge.com>
+References: <4202408A.7050200@siemens.com>
+	<754ecc31c2497b32a0c3f6df5ce21881@embeddededge.com>
+In-Reply-To: <754ecc31c2497b32a0c3f6df5ce21881@embeddededge.com>
+Content-Type: multipart/mixed; boundary="------------000201090301020101050106"
+Cc: linuxppc <linuxppc-embedded@ozlabs.org>
+Subject: Re: uart.c: avoid changing parameter RAM on-the-fly for the console
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,122 +24,124 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
+--------------000201090301020101050106
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
->> Do not ignore this error. How big is your cramfs image? How  much
-RAM
->> do you have?
+Dan Malek wrote:
+> 
+> On Feb 3, 2005, at 10:17 AM, Steffen Rumler wrote:
+> 
+>> According to Motorola this is _NOT_ allowed and dangerous.
+> 
+> 
+> :-)  yeah, ok ...
+> 
+>> I suggest to do this inside rs_8xx_init() and startup() as shown
+>> in the patch below.
+> 
+> 
+> would you please read Documentation/CodingStyle and
+> try sending the patch again?
+> 
+> Although it doesn't make too much difference in this case,
+> 2.4.20 is pretty old and it helps to get patches against
+> the latest kernels.
+> 
+>> With this fix, the modules hanging before can boot now.
+> 
+> 
+> I suspect there is something else amiss, but I'll take a
+> look at it.  What is the speed of the processor and the
+> baud rate?
 
-cramfs is 2.7MB where as the RAM size is 32MB. While building ofcourse
-the RAMDISK size was told as 8MB. This I mentioned in the devrocket
-kernel configuration.
+Hi Dan,
 
-Just FYI. Kernel Image was 640KB.
+have you checked this problem in detail now ?
 
-Here I have one doubt while building the uBoot image using mkImage with
-multi option where was the FileSystem image getting downloaded ? and how
-the downloaded location was known to the kernel Image for pointing out
-the File System image location. The options -a and -e are applicable
-only for first image, isn't it? First image I mean the kernel Image. I
-was giving -a 0x0 and -e 0x0 since while building the kernel the kernel
-base address was mentioned 0.
+Unfortunately, I have forgotten the 'INIT RX TX' inside
+my patched startup() (see new patch attached).
+Sorry.
 
-...
->> Is there any chance that you built your cramfs image on a x08 (or any
->> other little-endian) system and forgot  to  give  the  "-r"  (reverse
->> endian-ness of filesystem) option to mkcramfs??
-
-YES. You are right I am building the image on x86 (Windows platform).
-But I checked the build log it used the -r option. The default build was
-cpio format and after that using fstool converting to CRAMS and the
-option -r was present .I believe that devrocket of MountaVista has
-makefiles specific to OS i.e for Windows, because while installation it
-asks for what type of OS do you want to have the Image Development
-environment.
-
-Thanks & Regards
-Surabhi Srinivas
-
-
------Original Message-----
-From: wd@denx.de [mailto:wd@denx.de]=0D
-Sent: Wednesday, February 16, 2005 1:30 AM
-To: Srinivas Surabhi (WT01 - EMBEDDED & PRODUCT ENGINEERING SOLUTIONS)
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Mounta Vista Linux prompt on serial console=0D
-
-In message
-<EF9B29C78F41FA488927FCBC7750AF0E011DA5CB@hyd-mdp-msg.wipro.com> you
-wrote:
->=0D
-> My replies in blue tagged with surabhi
-
-Don't do this. Email is a plain text medium only.
-
-Read the netiquette, and quote properly.
-
-> [surabhi --- start] could you please guide me how to provide a working
-> file system on SDRAM before decompressing the Linux Image on SDRAM. Is
-> it really related to init process failed.
-
-It is obviously related -there was a clear  error  message  that  the
-uncompressing of the cramfs filesystem failed.
-
-> Is the below doesn't mean that the mounted one is working one ?
-> "VFS: Mounted root (cramfs filesystem) readonly.
->  Mounted devfs on /dev "
-
-No, not at all. You can for example mount an empty  filesystem  -  it
-will mount perfectly fine, but it still doesn't work.
+Thank you for help. The serial driver is rather complex.
+Please, can you look into this (ignoring coding style at this time).
 
 
-You should also read my message until the end; I asked:
+Steffen
 
-
->> Do not ignore this error. How big is your cramfs iage? How  much  RAM
->> do you have?
-
-cramfs is 2.7MB where as the RAM size is 32MB. While building ofcourse
-the RAMDISK size was told as 8MB. This I mentioned in the devrocket
-kernel configuration.
-
-...
->> Is there any chance that you built your cramfs image on a x08 (or any
->> other little-endian) system and forgot  to  give  the  "-r"  (reverse
->> endian-ness of filesystem) option to mkcramfs??
-
-YES. You are right I am building the image on x86 (Windows platform).
-But I checked the build log it used the -r option. The default build was
-cpio format and after that using fstool converting to CRAMS and the
-option -r was present .I believe that devrocket of MountaVista has
-makefiles specific to OS i.e for Windows, because while installation it
-asks for what type of OS do you want to have the Image Development
-environment.
-
-Thanks & Regards
-Surabhi Srinivas
-
-
-=0D
-
-Best regards,
-
-Wolfgang Denk
-
---=0D
-See us @ Embedded World, Nuremberg, Feb 22 - 24,  Hall 10.0 Booth 310
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Looks clean and obviously correct to me, but then _everything_ I
-write always looks obviously correct to me.  - Linus Torvalds in
-<Pine.LNX.4.10.10012090054360.791-100000@penguin.transmeta.com>
+-- 
 
 
 
-Confidentiality Notice=0D
 
-The information contained in this electronic message and any attachments to=
- this message are intended
-for the exclusive use of the addressee(s) and may contain confidential or=
- privileged information. If
-you are not the intended recipient, please notify the sender at Wipro or=
- Mailadmin@wipro.com immediately
-and destroy all copies of this message and any attachments.
+
+
+--------------000201090301020101050106
+Content-Type: text/plain;
+ name="patch"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="patch"
+
+ZGlmZiAtTmF1ciBvbGQvYXJjaC9wcGMvOHh4X2lvL3VhcnQuYyBuZXcvYXJjaC9wcGMvOHh4
+X2lvL3VhcnQuYwotLS0gb2xkL2FyY2gvcHBjLzh4eF9pby91YXJ0LmMJV2VkIEZlYiAxNiAx
+MDo0MzoyNCAyMDA1CisrKyBuZXcvYXJjaC9wcGMvOHh4X2lvL3VhcnQuYwlXZWQgRmViIDE2
+IDEwOjQyOjAxIDIwMDUKQEAgLTExOSw2ICsxMTksMTEgQEAKIHN0YXRpYyBpbnQgIHVhcnRf
+YnVmX3JlYWRfcHJvYyAgICAoY2hhciAqLCBjaGFyICoqLCBvZmZfdCwgaW50LCBpbnQgKiwg
+dm9pZCAqKTsKICNlbmRpZgogCisjaWZkZWYgQ09ORklHX1NFUklBTF9DT05TT0xFCitzdGF0
+aWMgdm9pZCBmdWxsX3NlcV9zbWNfc3RvcCAoaW50IHBvcnQpOworc3RhdGljIHZvaWQgc21j
+X2luaXRfcnhfdHggKGludCBwb3J0KTsKKyNlbmRpZgorCiAvKgogICogU2VyaWFsIGRyaXZl
+ciBjb25maWd1cmF0aW9uIHNlY3Rpb24uICBIZXJlIGFyZSB0aGUgdmFyaW91cyBvcHRpb25z
+OgogICovCkBAIC04MzEsMTAgKzgzNiwxNyBAQAogCWVsc2UgewogCQlzbWNwID0gJmNwbXAt
+PmNwX3NtY1tpZHhdOwogCisjaWZkZWYgQ09ORklHX1NFUklBTF9DT05TT0xFCisgICAgICAg
+ICAgICAgICAgLyogIHN0b3AgU01DIGluIHRoZSBjb3JyZWN0IHdheSwgYmVmb3JlIHJlLWNv
+bmZpZ3VyaW5nIGl0CisgICAgICAgICAgICAgICAgICovCisJCWlmICgoKHN0YXRlIC0gcnNf
+dGFibGUpID09IENPTkZJR19TRVJJQUxfQ09OU09MRV9QT1JUKSl7CisgICAgICAgICAgICAg
+ICAgICAgIGZ1bGxfc2VxX3NtY19zdG9wKFBPUlRfTlVNKGluZm8tPnN0YXRlLT5zbWNfc2Nj
+X251bSkpOworICAgICAgICAgICAgICAgIH0KKyNlbmRpZgorCiAJCS8qIEVuYWJsZSBpbnRl
+cnJ1cHRzIGFuZCBJL08uCiAJCSovCiAJCXNtY3AtPnNtY19zbWNtIHw9IChTTUNNX1JYIHwg
+U01DTV9UWCk7Ci0JCXNtY3AtPnNtY19zbWNtciB8PSAoU01DTVJfUkVOIHwgU01DTVJfVEVO
+KTsKIAogCQkvKiBXZSBjYW4gdHVuZSB0aGUgYnVmZmVyIGxlbmd0aCBhbmQgaWRsZSBjaGFy
+YWN0ZXJzCiAJCSAqIHRvIHRha2UgYWR2YW50YWdlIG9mIHRoZSBlbnRpcmUgaW5jb21pbmcg
+YnVmZmVyIHNpemUuCkBAIC04NDgsNiArODYwLDE3IEBACiAJCXVwLT5zbWNfbXJibHIgPSBS
+WF9CVUZfU0laRTsKIAkJdXAtPnNtY19tYXhpZGwgPSBSWF9CVUZfU0laRTsKIAkJdXAtPnNt
+Y19icmtjciA9IDE7CS8qIG51bWJlciBvZiBicmVhayBjaGFycyAqLworCisjaWZkZWYgQ09O
+RklHX1NFUklBTF9DT05TT0xFCisgICAgICAgICAgICAgICAgaWYgKCgoc3RhdGUgLSByc190
+YWJsZSkgPT0gQ09ORklHX1NFUklBTF9DT05TT0xFX1BPUlQpKXsKKworICAgICAgICAgICAg
+ICAgICAgICBzbWNfaW5pdF9yeF90eChQT1JUX05VTShpbmZvLT5zdGF0ZS0+c21jX3NjY19u
+dW0pKTsKKyAgICAgICAgICAgICAgICAgICAgaW5mby0+cnhfY3VyID0gaW5mby0+cnhfYmRf
+YmFzZTsKKyAgICAgICAgICAgICAgICAgICAgaW5mby0+dHhfY3VyID0gaW5mby0+dHhfYmRf
+YmFzZTsKKyAgICAgICAgICAgICAgICB9CisjZW5kaWYKKworCQlzbWNwLT5zbWNfc21jbXIg
+fD0gKFNNQ01SX1JFTiB8IFNNQ01SX1RFTik7CiAJfQogCiAJaW5mby0+ZmxhZ3MgfD0gQVNZ
+TkNfSU5JVElBTElaRUQ7CkBAIC0yNjk0LDYgKzI3MTcsNDYgQEAKICAgCiB9IC8qIGVuZCB1
+YXJ0X3JlbW92ZVByb2NFbnRyaWVzKCkgKi8KIAorCisjaWZkZWYgQ09ORklHX1NFUklBTF9D
+T05TT0xFCitzdGF0aWMgdm9pZCBmdWxsX3NlcV9zbWNfc3RvcCAoaW50IHBvcnQpCit7Cisg
+ICAgdm9sYXRpbGUgY3BtOHh4X3QgKmNwPWNwbXA7CisgICAgdm9sYXRpbGUgc21jX3QgKnNw
+OworICAgIHVzaG9ydCBjaGFuOworICAgIHVuc2lnbmVkIGxvbmcgZmxhZ3M7CisKKyAgICBz
+cCAgID0gJmNwLT5jcF9zbWNbcG9ydF07CisgICAgY2hhbiA9IHNtY19jaGFuX21hcFtwb3J0
+XTsKKworICAgIGxvY2FsX2lycV9zYXZlKGZsYWdzKTsKKworICAgIHdoaWxlIChjcC0+Y3Bf
+Y3BjciAmIENQTV9DUl9GTEcpOworICAgIGNwLT5jcF9jcGNyID0gbWtfY3JfY21kKGNoYW4s
+IENQTV9DUl9TVE9QX1RYKSB8IENQTV9DUl9GTEc7CisgICAgd2hpbGUgKGNwLT5jcF9jcGNy
+ICYgQ1BNX0NSX0ZMRyk7CisgICAgc3AtPnNtY19zbWNtciAmPSB+KFNNQ01SX1JFTiB8IFNN
+Q01SX1RFTik7CisKKyAgICBsb2NhbF9pcnFfcmVzdG9yZShmbGFncyk7CisKK30gIC8qIGZ1
+bGxfc2VxX3NtY19zdG9wICovIAorCitzdGF0aWMgdm9pZCBzbWNfaW5pdF9yeF90eCAoaW50
+IHBvcnQpCit7CisgICAgdW5zaWduZWQgbG9uZyBmbGFnczsKKyAgICB2b2xhdGlsZSBjcG04
+eHhfdCAqY3A9Y3BtcDsKKyAgICB1c2hvcnQgY2hhbjsKKworICAgIGNoYW4gPSBzbWNfY2hh
+bl9tYXBbcG9ydF07CisKKyAgICBsb2NhbF9pcnFfc2F2ZShmbGFncyk7CisgICAgd2hpbGUg
+KGNwLT5jcF9jcGNyICYgQ1BNX0NSX0ZMRyk7CisgICAgY3AtPmNwX2NwY3IgPSBta19jcl9j
+bWQoY2hhbiwgQ1BNX0NSX0lOSVRfVFJYKSB8IENQTV9DUl9GTEc7CisgICAgd2hpbGUgKGNw
+LT5jcF9jcGNyICYgQ1BNX0NSX0ZMRyk7CisgICAgbG9jYWxfaXJxX3Jlc3RvcmUoZmxhZ3Mp
+OworCit9ICAvKiBzbWNfaW5pdF9yeF90eCAqLworI2VuZGlmICAvKiBDT05GSUdfU0VSSUFM
+X0NPTlNPTEUgKi8KKwogLyoKICAqIFRoZSBzZXJpYWwgZHJpdmVyIGJvb3QtdGltZSBpbml0
+aWFsaXphdGlvbiBjb2RlIQogICovCkBAIC0yOTA1LDYgKzI5NjgsMTUgQEAKIAkJCX0KIAkJ
+CWVsc2UgewogCQkJCXNwID0gJmNwLT5jcF9zbWNbaWR4XTsKKworI2lmZGVmIENPTkZJR19T
+RVJJQUxfQ09OU09MRQorICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAvKiAgc3Rv
+cCBTTUMgaW4gdGhlIGNvcnJlY3Qgd2F5LCBiZWZvcmUgcmUtY29uZmlndXJpbmcgaXQKKyAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICovCisgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgIGlmIChpID09IENPTkZJR19TRVJJQUxfQ09OU09MRV9QT1JUKXsKKyAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGZ1bGxfc2VxX3NtY19zdG9wKGlk
+eCk7CisgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIH0KKyNlbmRpZgorCiAJCQkJ
+dXAgPSAoc21jX3VhcnRfdCAqKSZjcC0+Y3BfZHBhcmFtW3N0YXRlLT5wb3J0XTsKIAkJCQl1
+cC0+c21jX3JiYXNlID0gZHBfYWRkcjsKIAkJCX0K
+--------------000201090301020101050106--
