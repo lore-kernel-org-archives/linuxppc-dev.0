@@ -1,83 +1,51 @@
-Date: Fri, 28 Sep 2001 21:23:57 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Vinod Kurup <vkurup@massmed.org>
-Cc: <debian-powerpc@lists.debian.org>, <benh@kernel.crashing.org>,
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "David A. Gatwood" <dgatwood@apple.com>,
 	<linuxppc-dev@lists.linuxppc.org>
-Subject: 2.4.10 Lombard IDE fix (was: Re: ide disk no longer found (rsync-benh))
-In-Reply-To: <Pine.LNX.4.33.0109281954320.10557-100000@opal.biophys.uni-duesseldorf.de>
-Message-ID: <Pine.LNX.4.33.0109282108570.13578-100000@opal.biophys.uni-duesseldorf.de>
+Subject: Re: Problem serial.c on module
+Date: Sat, 29 Sep 2001 13:50:59 +0200
+Message-Id: <20010929115059.28787@smtp.wanadoo.fr>
+In-Reply-To: <08F1F38A-B438-11D5-9814-003065B90BBC@apple.com>
+References: <08F1F38A-B438-11D5-9814-003065B90BBC@apple.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 28 Sep 2001, Michael Schmitz wrote:
+>That's disgusting.  This should be doing the Linux equivalent of setjmp
+>and trapping the machine check and returning 0.  Hardware probes
+>shouldn't need hacks like this.  Just my $0.02.
 
-> > I'd place my bet on some voodoo in the generic IDE mess that changed.
->
-> Actually I take that back. hda and hdb are probed but found not present.
-> Seems ide0 doesn't get enabled properly ...
+I definitely don't like it neither.
 
-Patch to apply a quick fix for this, use at your own risk etc., don't
-yell at me if it doesn't work:
+Currently, we have a "feature" if inb/outb (IO macros), Machine Checks
+caused by these are caught, and inb returns 0xff when the IO fails.
 
---- arch/ppc/kernel/pmac_feature.c.org	Fri Sep 28 23:02:14 2001
-+++ arch/ppc/kernel/pmac_feature.c	Fri Sep 28 23:01:42 2001
-@@ -179,9 +179,10 @@
- 	struct macio_chip*	macio;
- 	unsigned long		flags;
+However, we don't do that for MMIO (readb/writeb & friends, in_le32/be32,
+..).
 
--	macio = macio_find(node, macio_ohare);
-+	macio = macio_find(node, type);
- 	if (!macio)
- 		return -ENODEV;
-+
- 	LOCK(flags);
- 	if (value)
- 		MACIO_BIS(reg, mask);
-@@ -423,10 +424,10 @@
- {
- 	switch(param) {
- 	    case 0:
--		return simple_feature_tweak(node, macio_ohare,
-+		return simple_feature_tweak(node, macio_unknown,
- 			HEATHROW_FCR, HRW_IDE0_ENABLE, value);
- 	    case 1:
--		return simple_feature_tweak(node, macio_ohare,
-+		return simple_feature_tweak(node, macio_unknown,
- 			HEATHROW_FCR, HRW_BAY_IDE_ENABLE, value);
- 	    default:
- 	    	return -ENODEV;
-@@ -438,10 +439,10 @@
- {
- 	switch(param) {
- 	    case 0:
--		return simple_feature_tweak(node, macio_ohare,
-+		return simple_feature_tweak(node, macio_unknown,
- 			HEATHROW_FCR, HRW_IDE0_RESET_N, !value);
- 	    case 1:
--		return simple_feature_tweak(node, macio_ohare,
-+		return simple_feature_tweak(node, macio_unknown,
- 			HEATHROW_FCR, HRW_IDE1_RESET_N, !value);
- 	    default:
- 	    	return -ENODEV;
+For one thing, I beleive we could add explicit "probe" verions of these
+functions that return an error code and can be used in the "probe" part
+of those drivers.
 
-Comments: simple_feature_tweak shouldn't ignore the type argument it got
-passed. And requesting macio_unknown in the heathrow IDE functions is just
-a hack really, to make macio_find not care about the particular chip
-type. The Lombard would need macio_paddington, true heathrow based
-machines will need macio_heathrow here.
+But that wouldn't help in all cases. Things like legacy drivers (serial.c
+is one) will try to tweak "legacy" x86 IO ports. The above workaround will
+help not crashing immediately. But you are not protected against having
+a real PCI device mapping IOs in this location. In this case, you'll end
+up writing to this card's IOs, possibily causing all sorts of bad things.
 
-macio_find either needs to check for compatible types, or we need to add
-another set of paddington specific functions that use macio_paddington
-instead of macio_ohare above (though I guess macio_ohare won't work on
-heathrow either?). Kind of defeats the whole abstraction purpose.
+One workaround here would be to hack in the pmac PCI code to mark the
+first 64k of IO space reserved and remap any PCI device that was mapped
+in this location by OF.
 
-Leave it to BenH or Paulus to find a proper fix for this. I could test
-this on Lombard only, no idea what macio type the Wallstreet uses.
+Another one (I'd prefer) would be for such drivers to be dynamically
+configured by the arch code instead of relying on a compile-time table
+of known IO ports. There is a facility to hack into the compile-time
+table from arch in serial.c, but I'm not sure it completely match
+our needs. Other legacy drivers (like floppy.c) would need the same
+tweak.
 
-	Michael
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
