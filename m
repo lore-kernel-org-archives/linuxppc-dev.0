@@ -1,47 +1,53 @@
-Date: Mon, 10 May 1999 21:08:29 +0200 (CEST)
-From: Gerd Knorr <kraxel@goldbach.in-berlin.de>
+Message-ID: <19990510213309.43528@ibrium.se>
+Date: Mon, 10 May 1999 21:33:09 +0200
+From: Samuel Rydh <samuel@ibrium.se>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: iMac + IrDA
-Message-ID: <Pine.LNX.4.05.9905102101220.9969-100000@macintoy.masq.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-user@lists.linuxppc.org
+Subject: Mac-on-linux is now working...
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 
-  Hi !
+Mac-on-linux is an open source emulator which 
+runs Mac OS on linuxPPC machines. Since the
+processor is running unemulated it is very fast
+(about 95% according to speedometer specmarks
+on a 8500).
 
-Anyone tried to use the IrDA port of the Rev. A+B iMacs?  According to the
-IrDA people I should see some packages coming in if I look at the port
-while some other IrDA device tries to connect.  But I see nothing with
-minicom.
+Currently Mac OS boots on the 7200 and 8500
+without a ROM-image. Other machines should be 
+able to run the software using a ROM-image 
+from one of those two computers (G3 machines may
+or may not boot Mac OS).
 
-The IrDA port is /dev/ttyS1, the device-tree entry looks like this:
+Brief status summary:
 
-macintoy kraxel /proc/device-tree/pci/mac-io/escc/ch-b# proc
-name                      : ch-b\0
-device_type               : serial\0
-compatible                : chrp,es3\0
-built-in                  : 
-reg                       : \0\x010\0\0\0\0\x01\0\x010\x10\0\0\0\x01\0\x010@\0\0\0\x01\0\0\x86\0\0\0\x01\0\0\0\x87\0\0\0\x01\0
-interrupts                : \0\0\0\x10\0\0\0\x06\0\0\0\x07
-AAPL,interrupt-vectors    : \0\0\0\x17\0\0\0\x01\0\0\0\0
-AAPL,interrupt-priorities : \0\0\0\x04\0\0\0\x04\0\0\0\x04
-AAPL,interrupts           : \0\0\0\x15\0\0\0\x16\0\0\0\x17
-interrupt-parent          : \xff\x86G\x10
-slot-names                : \0\0\0\x01IrDA\0
-AAPL,address              : \x80\x810\0\x80\x810\x10\x80\x810@\x80\x80\x86\0\x80\x80\x87\0
-driver-ist                : \0\x05\x91\xa0\0\0\0\x0b\0\x05\x91\xa0\0\0\0\x0c\0\x05\x91\xa0\0\0\0\x0d
+video:		full-screen video working
+mouse/keyboard:	working
+scsi:		working
+floppy:		working
+sound:		not implemented
+ethernet:	not implemented (yet)
+serial:		hack allowing OF interaction
 
-/dev/ttyS0 (the buildin modem) works fine with minicom.  Any hints where
-to look / what to check?
+More information (and the source code) can be found 
+at <http://www.ibrium.se/linux/mac_on_linux.html>.
 
-  Gerd
+The project could have use a few more developers, so
+please join the mac-on-linux team!
+
+
+/Samuel Rydh
 
 -- 
-system("logout");
 
+----------------------------------------------------------
+  E-mail <samuel@ibrium.se>  WWW: <http://www.ibrium.se>
+    Phone/fax: (home) +46 4418431, (work) +46 7908470   
+----------------------------------------------------------
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
