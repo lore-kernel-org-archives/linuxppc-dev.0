@@ -1,25 +1,21 @@
-Message-Id: <199905111614.SAA52596@dv.ba.dlr.de>
-Date: Tue, 11 May 1999 17:15:58 +0000
-Subject: missing button pressing/release in 2.2.7
-From: "Oliver Neukum" <Oliver.Neukum@lrz.uni-muenchen.de>
-To: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Date: Tue, 11 May 1999 11:21:55 -0600
+From: Cort Dougan <cort@attis.cs.nmt.edu>
+To: Leif Lindholm <Leif.Lindholm@uab.ericsson.se>
+Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: [PATCH] Softemu 8xx implementation of LFS
+Message-ID: <19990511112155.A1764@attis.cs.nmt.edu>
+References: <373824A6.26FDBA2C@uab.ericsson.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <373824A6.26FDBA2C@uab.ericsson.se>; from Leif Lindholm on Tue, May 11, 1999 at 02:37:58PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Developers,
+Looks good.  I'll merge it in.
 
-i am experiencing missing pressing or releasing of the mouse button on the
-touchpad of
-my G3 Powerbook. This happens on 2.2.7 under Xpmac, it does not happen under
-2.1.125.
-This leads me to the conclusion that the problem is kernel related.
-How can i look into this ? (drivers/char/adbmouse.c ?)
-
-Greetings
-Oliver Neukum
+There's a soft floating-point emulation library floating around if you need
+more complete support.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
