@@ -1,28 +1,26 @@
-Date: Thu, 29 Jun 2000 19:34:09 -0400 (EDT)
-From: Robert Thompson <rothomp3@corvette.me.vt.edu>
+Date: Fri, 30 Jun 2000 17:24:04 +0200
+From: Claus <cl.en@gmx.net>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: AirPort?
-Message-ID: <Pine.LNX.3.96.1000629193348.9306A-100000@corvette.me.vt.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Robert Thompson <rothomp3@corvette.me.vt.edu>
+Subject: Re: AirPort?
+Message-ID: <20000630172404.C4526@olis.north.de>
+Reply-To: cl.en@gmx.net
+References: <Pine.LNX.3.96.1000629193348.9306A-100000@corvette.me.vt.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.3.96.1000629193348.9306A-100000@corvette.me.vt.edu>; from Robert Thompson on Thu, Jun 29, 2000 at 07:34:09PM -0400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hey, does anybody know about the current status on support for the AirPort
-with iBooks/G4's? Because, see, I have one of each of those, and it'd be
-nice to be able to use the wireless networking under Linux, not just MacOS
-X and MacOS 9. I know there is a driver for the PCMCIA WaveLan card that
-the AirPort is based on....
+ >: with iBooks/G4's? Because, see, I have one of each of those, and it'd be
+ >: nice to be able to use the wireless networking under Linux, not just MacOS
+ >: X and MacOS 9. I know there is a driver for the PCMCIA WaveLan card that
+ >: the AirPort is based on....
 
-On another note (this question should probably be directed at a USB
-mailing list, if such exists, but oh well): I have a USB hard drive that
-uses an ATAPI system. It doesn't show up with the USB-SCSI drivers, in
-other words, and even needs special drivers under MacOS 9. Any ideas on
-that?
+<http://www.roelle.com/wvlanPPC/index.html>
 
-Thanks,
-Robbie Thompson
-
+--
+Yours, ce
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
