@@ -1,47 +1,47 @@
-Message-ID: <39681DFA.57D95536@wanadoo.fr>
-Date: Sun, 09 Jul 2000 08:38:50 +0200
-From: Martin Costabel <costabel@wanadoo.fr>
+Message-ID: <39682BD2.C34BE171@amulet.co.jp>
+Date: Sun, 09 Jul 2000 16:37:54 +0900
+From: Hollis Blanchard <hollis@amulet.co.jp>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: pmac-time.c bug in 2.4.0-test3
-References: <200007071603.RAA18464@hyperion.valhalla.net> <3965F335.42ABEEFD@erols.com>
-Content-Type: text/plain; charset=us-ascii
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+CC: yellowdog-devel@lists.yellowdoglinux.com, linuxppc-dev@lists.linuxppc.org
+Subject: Re: RFC: Changing default partition type for linux/ppc
+References: <Pine.LNX.4.10.10007071754400.28685-100000@opal.biophys.uni-duesseldorf.de>
+Content-Type: text/plain; charset=iso-2022-jp
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Symptom: Booting a recent 2.4.0-test3 kernel from bitkeeper gives me a
-wrong system time. The corresponding boot message is, for example
-Jul  7 06:54:51 chezmoi kernel: GMT Delta read from XPRAM: 0 minutes,
-DST: off
-This is 2 hours off.
+Michael Schmitz wrote:
+>
+> >
+> > Well, they don't at this point. For example in partitioning tool in
+> > LinuxPPC 2000, LinuxPPC Inc decided it would be better to use the type
+> > "Linux_PPC". This works (in that nothing gets overwritten, corrupted,
+> > etc) but has the disadvantage that no other software knows anything
+> > about that type.
+>
+> So can we get all distributions to agree on this partition type scheme?
+[snip]
+> LinuxPPC 1999 used the same type, and I think the 2000 change is a bad
+> thing. What are YellowDog and SuSE using?
 
-Booting with  2.2.17pre10 gives me the correct message
-Jul  8 12:10:05 chezmoi kernel: GMT Delta read from XPRAM: 120 minutes,
-DST: on
+I agree. So far the Linux "standard" has been to pretend to be A/UX
+partitions. To my knowledge, every distribution with the exception of
+LinuxPPC 2000 uses Apple_UNIX_SVR2. (And I'm not sure that alteration
+was especially well thought out.)
 
-Looking through my log files, I find that this has been the same
-situation since the changes in pmac-time.c were introduced:
+> Benh: are you maintaining the official version of pdisk now?
 
-In Paul's pmac-stable 2.2.16 and then in 2.2.17-pre5 from bk (patch of
-21 June, according to bk sccstool), this XPRAM stuff showed up and
-worked correctly.
+That would be Eryk Vershen <eryk@cfcl.com>, who recently resurfaced in
+February
+(http://lists.linuxppc.org/listarcs/linuxppc-user/200002/msg01471.html).
 
-In the bk linuxppc_2_3 tree, this showed up in 2.4.0-test3 on 27/28 June
-(according to my logs), and it did not work correctly. In addition to
-the wrong reading of the initial system time, I get the following
-message every 61 (!) seconds
-Jun 29 01:27:31 chezmoi kernel: pmac_set_rtc_time: got 3 byte reply
-Jun 29 01:28:32 chezmoi kernel: pmac_set_rtc_time: got 3 byte reply
-Jun 29 01:29:33 chezmoi kernel: pmac_set_rtc_time: got 3 byte reply
-and so on.
 
-I tried to set CONFIG_PPC_RTC to y or n, but this didn't seem to have an
-influence. Other ideas for debugging?
 
-My system is still the old Pmac 6400.
+So now that the conversation's died down, it seems like everybody's
+happy with "Linux" (Mark Hatle's suggestion was for "Linux_*") and
+"Linux_swap".
 
---
-Martin
+-Hollis
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
