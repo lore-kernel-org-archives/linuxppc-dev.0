@@ -1,26 +1,32 @@
-Date: Sat, 28 Aug 1999 13:30:41 +0200 (CEST)
+Date: Sat, 28 Aug 1999 13:58:49 +0200 (CEST)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Martin Costabel <costabel@wanadoo.fr>
-cc: Franz Sirl <Franz.Sirl@munich.netsurf.de>, linuxppc-dev@lists.linuxppc.org,
-        Paul.Mackerras@cs.anu.edu.au
-Subject: Re: vger-2.3.15 on pmac
-In-Reply-To: <37C6CA26.49441879@wanadoo.fr>
-Message-ID: <Pine.LNX.4.10.9908281329170.8134-100000@mercator.cs.kuleuven.ac.be>
+To: "David D. Kilzer" <ddkilzer@computer.org>
+cc: linuxppc-dev@lists.linuxppc.org,
+        Linux/mac68k List <linux-mac68k@mac.linux-m68k.org>,
+        Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: mac-2.3.14.diff: adb
+In-Reply-To: <v0313030db3ece7c8caa1@[192.168.1.1]>
+Message-ID: <Pine.LNX.4.10.9908281358000.8134-100000@mercator.cs.kuleuven.ac.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 27 Aug 1999, Martin Costabel wrote:
-> The other kernel panics arrived at the end of the boot process or during
-> login. The message was "kernel stack overflow, in swapper task, not
-> syncing", many lines of "page fault in interrupt handler, addr=c". The
-> kernel addresses given were all init_task_union + offset.
+On Fri, 27 Aug 1999, David D. Kilzer wrote:
+> Jes doesn't want to patch anything into drivers/macintosh.  He believes
+> that ADB code should be split into the bus code (drivers/adb) and into
+> device code (drivers/char/adb or drivers/char) and that drivers/macintosh
+> should go away.
+> 
+> I'm afraid that the m68k stuff is going to appear in drivers/[char/]adb
+> while the PPC stuff is going to remain in drivers/macintosh, and we'll be
+> worse off than we were before the merge!
+> 
+> Do we need to raise this issue on linux-kernel to get it resolved,
+> especially since the NeXT port (another m68k-based system) uses ADB as well?
 
-I saw the `page fault in interrupt handler, addr=c' too (first call `addr=0'),
-until I found out that strcmp() was passed a NULL pointer in
-fs/proc/proc_devtree.c. I have no idea why it didn't happen before.
+Hence ADB bus stuff must be moved to drivers/adb/.
 
 Greetings,
 
