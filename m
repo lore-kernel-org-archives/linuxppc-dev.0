@@ -1,77 +1,41 @@
-Date: Tue, 27 Apr 2004 13:25:02 +0400
-From: Sergey Urvanov <abs@dts.ru>
-Reply-To: Sergey Urvanov <abs@dts.ru>
-Message-ID: <466383553.20040427132502@dts.ru>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: ioperm
+Message-ID: <408E2AF4.2050907@fh-landshut.de>
+Date: Tue, 27 Apr 2004 11:42:12 +0200
+From: Oliver Korpilla <okorpil@fh-landshut.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Marius Groeger <mgroeger@sysgo.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Initrd and PPCbug, can it work?
+References: <Pine.LNX.4.58.0404211503050.20798@ppcproject1> <20040426220944.GI19246@smtp.west.cox.net> <408E000A.6040303@fh-landshut.de> <Pine.LNX.4.56.0404270913230.2035@mag.sysgo.com> <408E1ED0.4050404@fh-landshut.de> <Pine.LNX.4.56.0404271119270.2567@mag.sysgo.com>
+In-Reply-To: <Pine.LNX.4.56.0404271119270.2567@mag.sysgo.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi
-Anybody seen this error?
-I'm getting it while trying to compile  for a ppc405EP based board,
-using the ELDK 2.1 toolchain (ppc_4xx).
+Marius Groeger wrote:
+> On Tue, 27 Apr 2004, Oliver Korpilla wrote:
+>
+>
+>>TCP: Hash tables configured (established 2048 bind 2048)
+>>NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+>>cramfs: wrong magic
+>>Kernel panic: VFS: Unable to mount root fs on 01:00
+>>  <0>Rebooting in 180 seconds..
+>
+>
+> Now -- is it cramfs or ext2 that you want to boot? It looks like you haven't
+> configured ext2 in your kernel!?
+>
 
-I have a problem with next test code:
+This was the first I checked - CONFIG_EXT2_FS is set to y. Besides, I
+tried doing the same with a cramfs initrd - won't work either. Cannot
+say whether I configured that right.
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <errno.h>
-#include <asm/io.h>
+Maybe this is an endianess problem in my initrds?
 
-#define BASEPORT 0x378
+I don't know. :(
 
-
-int main (int   argc,
-          char  *argv[])
-{
-        int kz=0;
-        if (ioperm(BASEPORT, 3, 1))
-         {
-                perror ("ioperm");
-                exit (1);
-         }
-        outb(0, BASEPORT);
-        printf ("status 1 %d\n", kz);
-        usleep (100000);
-        kz=inb(BASEPORT+1);
-        printf ("status 2 %d\n", kz);
-        if (ioperm(BASEPORT, 3, 0))
-         {
-                perror ("ioperm");
-                exit (1);
-         }
-        printf ("Stop \n");
-        return 0;
-}
-
-
-I try to make:
-
-/opt/eldk/usr/ppc-linux/bin/gcc -c -O2 test.c
-/opt/eldk/usr/ppc-linux/bin/gcc -o test test.o
-
-And in the answer:
-
-test.o: In function `main':
-test.o(.text+0x2c): undefined reference to `ioperm'
-test.o(.text+0x2c): relocation truncated to fit: R_PPC_REL24 ioperm
-test.o(.text+0x54): undefined reference to `outb'
-test.o(.text+0x54): relocation truncated to fit: R_PPC_REL24 outb
-test.o(.text+0x78): undefined reference to `inb'
-test.o(.text+0x78): relocation truncated to fit: R_PPC_REL24 inb
-test.o(.text+0x98): undefined reference to `ioperm'
-test.o(.text+0x98): relocation truncated to fit: R_PPC_REL24 ioperm
-collect2: ld returned 1 exit status
-
-Any help would be appreciated.
-
-Thanx and regards
-Sergey Urvanov
-
+With kind regards,
+Oliver Korpilla
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
