@@ -1,30 +1,31 @@
-Date: Wed, 27 Jan 1999 08:50:35 -0500 (EST)
-From: Tom Rini <tmrini@ntplx.net>
-To: Brad Midgley <brad@pht.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: imac and kernel 2.2.0
-In-Reply-To: <Pine.LNX.3.95.990126234841.88A-100000@pacific.pht.com>
-Message-ID: <Pine.SUN.4.02.9901270847090.21720-100000@sea.ntplx.net>
+Date: Wed, 27 Jan 1999 22:09:58 -0700 (MST)
+From: Cort Dougan <cort@persephone.cs.nmt.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: clearinghouse for your patches - I want your patches!
+Message-ID: <Pine.LNX.3.96.990127220455.22171B-100000@persephone.cs.nmt.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 26 Jan 1999, Brad Midgley wrote:
+There are a lot of patches to linux/ppc that I can't absorb into the main
+tree quickly enough.  It'll be increasingly difficult for me to change
+things now that 2.2 is out.
 
-> 
-> what combination of patches is required to get a 2.2.0 kernel to work on
-> imac?
+I get a lot of requests for the very features that a lot of these patches
+provide so I'd like to give some space to them at linuxppc.cs.nmt.edu.
+Web and ftp so people can find what they need easily and quickly.
 
->From a vger 2.2.0? (snapshot please cort?) uusbd 19990124 (no patch from
-Paul yet I can see...) and the kbd patch there (should apply to vger's
-mac_keyb.c w/ ben's fixes (suorce of your last probs i -think-)
+I'd also like to be able to look through the patches often so I don't
+stomp on the changes they make or redo the work.  It'll also help
+synchronize things since several people out there are doing the same
+things and it's a lot easier for you to sync among yourselves rather than
+me communicate with all of you individually :)
 
---
-Tom Rini (TR1265)
-http://dobbstown.yeti.edu/
-
+Can the people out there with patches please send me mail?  I'd like to
+set you up with some web/ftp space and an account so you can drop things
+off easily.
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
