@@ -1,84 +1,43 @@
-Date: Wed, 18 Jul 2001 23:44:00 +0200 (CEST)
-From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+Date: Wed, 18 Jul 2001 16:54:48 -0500
+From: "Joseph P. Garcia" <jpgarcia@execpc.com>
 To: Bastien Nocera <hadess@hadess.net>
-Cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-	Iain Sandoe <iain@sandoe.co.uk>,
-	"Joseph P. Garcia" <jpgarcia@execpc.com>, benh@kernel.crashing.org,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.4 - buttons, temperature, ictc
+Cc: schmitz@opal.biophys.uni-duesseldorf.de, iain@sandoe.co.uk,
+	benh@kernel.crashing.org, linuxppc-dev@lists.linuxppc.org
+Subject: powermac (other ppc?) events
+Message-Id: <20010718165448.4d7a879b.jpgarcia@execpc.com>
 In-Reply-To: <3B55FB76.8080909@hadess.net>
-Message-ID: <Pine.LNX.4.10.10107182324190.27335-100000@zirkon.biophys.uni-duesseldorf.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+References: <Pine.LNX.4.33.0107182204380.2441-100000@opal.biophys.uni-duesseldorf.de>
+	<3B55FB76.8080909@hadess.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> >Yep. Plus any other power status change events. /proc/pmu has got nothing
-> >to do with it, neither has /proc/apm.
-> >
-> I mean that we could strip the code of pmu by half, using /proc/pmu
-> instead of poking /dev/pmu directly (which is broken).
-> The OS is supposed to give applications an abstraction layer on top of
-> the hardware. pmud attacking the hardware directly is broken (and the
-> amount of code needed to do this in the kernel is minimum).
+Ok.  here's what I gather:
 
-This depends - does /proc/pmu allow me to poll for 'new' data, or will it
-always return with the same data immediately? I'd rather use /dev/pmu and
-rely on getting one reply every second.
+- Buttons exist for brightness, volume, and now eject on the normal powermac keyboard.
+- we also have other events we may consider to add, such as headphone insert, lid close(polled?), power key, and pmu-change (interrupt on nw)
+- popular opinion is that to reduce kernel bloat, assocated reactions should be handled outside of kernel space.
+- to get them out of kernel space, we should use events. (polling sucks)
+- we *can* extend the normal keyboard to generate some if not all of these events
+- we can also create a new event device using the very same interface (afaik)
+   - this route is only appealing if we dont want/like the preconceptions of using keyboard events.
+- those handled as an actual key should be handled by user programs.  prehandling the keyboard in userspace is messy (extending shells, window managers, etc.  redundant code)
+- those handled as an event device of our creation will need a userspace daemon.
 
-> >Nope. Not power related. Not 'PMU'd.
-> >
-> Let's make "pmud" mean "PowerMac Uber Daemon" then...
+These are what I percieve as the facts.  Corrections welcome.
 
-Sigh. That's hard to understand, isn't it? Let's do pmud one job
-(monitoring the battery status, plus the remotely related lid switch) and
-do that well. Let's not make it do anything a Powerbook user might want
-due to the special hardware features. How do you translate 'eierlegende
-Wollmilchsau' in English?
+Once those are clarified, we should choose which events should be keys and which should be a powermac-daemon (i dont know if that's a PC name) handled event.  I hate to start a debate, but it should also be decided what in this daemon should be static, and what should be user-configurable.  It might be nice to keep unique concepts to different daemons, but maybe it would be better to have our new event device have a set of feature bits, and the daemon can be kept clean so the unused features only makes things a little bigger, but not slower.  Open to some debate, but which is more bloated, many interfaces with many daemons, or one daemon with no redundant code?  if its a fast/clean ship...
 
-But this is only my preference. If you want a Powermac bloat daemon, write
-and maintain it. If users want the added features they'll use it.
+Consider the fact that there are probably other archetectures which could use this, and it is highly likely that this implementation will be expanded as hardware gets even weirder.
 
-> >>- volume keypress event would be a bad idea to implement inside pmud
-> >>because that's the kind of thing you want visual feedback for, and there
-> >>are a lot of different sound implementations that this could be built on
-> >>top of. (aRts/alsa/oss)
-> >>
-> >
-> >Nope. See above.
-> >
-> Huh, are you agreeing with me there ?
+I figured we need a plan at this, since as programmers, interfaces tend not to be our strong suit IMHO.
 
-For a different reason. I don't give a damn about how you implement volume
-control but I don't want to bother pmud with it. Not its job.
+I'm willing to help with coding, since I kinda started this thread.  The occational punching bag if need be.
 
-> >Neither. Again, see above. Write a general purpose all powerful event
-> >daemon for this. Don't bloat pmud because of some unspecific desire for
-> >feeping creaturitis. This is Linux (Unix), not MockOS.
-> >
-> I don't see the problem there... Bloat of pmud ? hmm, maybe a more
-> general-purpose daemon would be interesting, even for x86'ers.
-
-Doing many unrelated things badly is the problem I see. But the general
-purpose event handler might even run on x86. Thanks for supporting my
-side of this argument :-)
-
-> >Nope, not longer an option (kernel bloat, even worse than app bloat).
-> >
-> Hahaha, this was a good one. If the kernel doesn't recognize the key
-> (ie. it doesn't generate a keycode), we can't make anything out of it.
-> We *have* to have these keys in the usb and adb keycodes translation tables.
-
-Sure, but handling of these keys goes in user space. So far it's in the
-kernel as well, and if I understand Franz right that's going to change
-(because now there's a nice generic interface, no special ADB hacks). The
-new input code is a chance to implement things in a generic, portable way,
-let's do it right. Otherwise the whole thing wouldn't be worth the hassle
-(and hassle we had plenty, with breaking interfaces in an incompatible
-way in the stable kernel series)
-
-	Michael
-
+--
+Joseph P. Garcia
+http://www.execpc.com/~jpgarcia
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
