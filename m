@@ -1,35 +1,24 @@
-Date: Thu, 2 Aug 2001 16:51:02 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Val Henson <val@nmt.edu>
-Cc: linuxppc-commit@source.mvista.com,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: Incoming to hostme.bitkeeper.com:/ua/repos/p/ppc/bk/linuxppc_2_4_devel
-Message-ID: <20010802165102.N13516@opus.bloom.county>
-References: <20010802230759.9D6AE106D6@hostme.bitkeeper.com> <20010802162546.M13516@opus.bloom.county> <20010802174236.A3183@boardwalk>
+Date: Fri, 3 Aug 2001 11:46:08 -0500
+From: Hollis Blanchard <hollis@austin.ibm.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: [PATCH] IBM PReP power down
+Message-ID: <20010803114608.A9987@austin.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010802174236.A3183@boardwalk>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Aug 02, 2001 at 05:42:36PM -0600, Val Henson wrote:
+This patch allows IBM PReP machines to power down (instead of 'while (1);') on
+poweroff. It works on 7248-43P, and should work on the other Carolina
+machines: 6070 and 6050 (which are still having serious i8259 problems).
+Because all the older IBM systems seem to have an identical power management
+system, it should also work on the 7043-140 (Tiger 1) in PReP mode and
+probably most other IBM PReP machines.
 
-> Didn't we just have a huge arch/ppc/boot reorganization?
+The patch is against _2_4, but applies with slight offsets to _2_4_devel as
+well. Please commit to both?
 
-Who said it's done?  We made it a lot less of a problem, and at least a
-bit less ugly.  Now I'm getting around to finishing it up.  For example,
-there's no reason really that pmon, pcore, spruce, menf1, pp3 and sandpoint
-along with 'PReP' and quite probably even gemini can't share the same
-very early init code.  8xx/4xx can use almost all of head.S and probably
-other code too.  So why should we have 6-7 different copies of the same
-code?  For example, the L1 bits that everyone copied weren't wholly
-correct.  This wasn't noticed until Dan Malek did some sandpoint work and
-I got him to look at others.  With everyone sharing the same file(s) everyone
-gets the same fixes.
-
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+-Hollis
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
