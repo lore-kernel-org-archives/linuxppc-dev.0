@@ -1,38 +1,26 @@
-Date: Fri, 21 Sep 2001 06:55:42 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Dan Malek <dan@mvista.com>,
-	Stefan Roese <stefan.roese@esd-electronics.com>,
-	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>,
-	Linuxppc-Commit <linuxppc-commit@source.mvista.com>
-Subject: Re: CPCI-405 port (PPC405GP)
-Message-ID: <20010921065542.E17555@cpe-24-221-152-185.az.sprintbbd.net>
-References: <20010920145632.A17555@cpe-24-221-152-185.az.sprintbbd.net> <Pine.GSO.4.21.0109210903000.3006-100000@mullein.sonytel.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.GSO.4.21.0109210903000.3006-100000@mullein.sonytel.be>
+Message-ID: <41EDEC3C1B88D51186EB00A0C9CFADF702FA81@AMWMAIL>
+From: Cindy Peters <cinpet@adaptivemicro.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Upgrading to kernel 2.4.6 with old init program
+Date: Fri, 21 Sep 2001 15:29:29 -0500
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Sep 21, 2001 at 09:04:32AM +0200, Geert Uytterhoeven wrote:
-> On Thu, 20 Sep 2001, Tom Rini wrote:
-> > On Thu, Sep 20, 2001 at 05:43:10PM -0400, Dan Malek wrote:
-> > > Tom Rini wrote:
-> > > > .... In some parts of the PPC world, we can't/don't for various
-> > > > reasons (technical and/or ingrained).
-> > >
-> > > I can't think of any that don't......Help me remember :-).
-> >
-> > heh.  Well, chrp and pmac really should use yaboot or something similar.
->
-> Do you use yaboot on your LongTrail?
+I am upgrading my Linux kernel from 2.2.13 to 2.4.6 on an MPC823. When the
+kernel startup process gets to running the sbin/init program I am getting a
+usage error for ld.so and then a kernel panic. It looks like it is
+attempting to run ld.so. I am still using an old ramdisk with old versions
+of executables that ran successfully on Linux 2.2.13. Have the file formats
+changed somehow? Do I need to get the source for the executables and rebuild
+them with the latest libraries? If so, where can I get them?
 
-I was working on it at one point.  It might work.  I'm pretty sure that other
-bigger chrp boxes do work tho.
+Thanks,
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Cindy Peters
+Adaptive Micro-Ware, Inc.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
