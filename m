@@ -1,40 +1,46 @@
-Message-ID: <20030103064756.27142.qmail@web13405.mail.yahoo.com>
-Date: Thu, 2 Jan 2003 22:47:56 -0800 (PST)
-From: "Suresha H.M" <hm_suresha@yahoo.com>
-Subject: Re: Info needed
+Date: Fri, 3 Jan 2003 16:26:47 -0700
+From: Rob Baxter <robb@phx.mcd.mot.com>
 To: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20030103053115.12565.qmail@web13409.mail.yahoo.com>
-MIME-Version: 1.0
+Subject: PPC 7455 bogomips calculation
+Message-ID: <20030103162647.A25677@phx.mcd.mot.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello Jim Chapman,
+Hello,
 
-While serching I came to know that you have a perl
-script which will do the same thing as VxWorks
-'binToAsm' can you mail me more details about that
-script.
+I have a PPC 7455 based system running a 2.4.19 kernel.  I would
+like to know what others are seeing, as far as the bogomips calculation,
+on other PPC 7455 based systems.
 
-Thanks,
--suresha
+I'm seeing a bogomips calculation that is equivalent to the processor
+core frequency.  With systems based on pre 745x PPCs, normally one
+would see a bogomips calculation of twice the processor core frequency.
 
---- "Suresha H.M" <hm_suresha@yahoo.com> wrote:
->
-> Hello,
->
-> Can any body know about how to convert bin to
-> assembly
-> in linux? Similar to 'binToAsm' tool of VxWorks.
-> Please let me know.
->
-> Thanks,
-> with regards,
-> -suresha
->
->
->
+I understand that it's just a calculation and not a benchmark and/or
+performance measurement.  I'm trying to understand why it's half of
+what we have been seeing.
 
+The delay loop that is utilized is this:
+
+
+        .align  5
+_GLOBAL(__delay)
+        cmpwi   0,r3,0
+        mtctr   r3
+        beqlr
+1:      bdnz    1b
+        blr
+
+
+After some review of the PPC 7455 user's manual, it looks like the
+branch prediction logic has changed a bit from earlier versions
+(e.g., PPC 750, PPC 7400, PPC 7410).  This may account for the difference
+in the bogomips calculation.
+
+
+Rob Baxter
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
