@@ -1,86 +1,41 @@
-Message-ID: <40CA25B8.8050809@mvista.com>
-Date: Fri, 11 Jun 2004 14:35:52 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-Cc: Pantelis Antoniou <panto@intracom.gr>,
-	David Woodhouse <dwmw2@infradead.org>,
-	Meriin Michael-BMM063 <Meriin@motorola.com>,
-	"'Ricardo DIz'" <rdiz@alumni.deec.uc.pt>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: U-Boot and kernel 2.6
-References: <20040611144323.F293AC109F@atlas.denx.de>
-In-Reply-To: <20040611144323.F293AC109F@atlas.denx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Date: Fri, 11 Jun 2004 14:40:54 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Stephen Williams <612dlag102@sneakemail.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Head of linuxppc-2.4 broekn by davem patch
+Message-ID: <20040611214054.GB925@smtp.west.cox.net>
+References: <1086934906.4820.2.camel@lucy.pep-kaufbeuren.de> <29963-82182@sneakemail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <29963-82182@sneakemail.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
+On Fri, Jun 11, 2004 at 09:07:13AM -0700, Stephen Williams wrote:
 
->In message <40C9BED6.3010809@intracom.gr> you wrote:
+> Stefan Nickl Stefan.Nickl-at-kontron.com |PPC Linux Embedded| wrote:
+> >I already sent this patch to the list and to "davem" who
+> >commited the faulty version, but nobody seems to care...
 >
->
->>OK, lets look at the very simple problem of having two
->>ethernet interfaces. From where do I get the ethernet
->>mac addresses? Modifying bd_t with defines is gross.
->>
->>
->
->This is hardware dependend. For  example,  on  some  boards  the  MAC
->addresses are simply sequential - so you just add one :-)
->
->
->
->>Putting everything on the kernel command line results in
->>an unreadable command line.
->>
->>
->
->Agreed. The command  line  is  another  bad  solution  to  pass  such
->information.
->
->
->
->>Yeah, having the bi_recs interface actually working
->>would be ideal, but at the present time nothing is
->>working and as AFAIK no-one is working on it.
->>
->>
->
->Mark A. Greer made a  nice  proposal  more  than  2  years  ago.  See
->discussion  that  started  as  "EV-64260-BP & GT64260 bi_recs" around
->March 19, 2002.
->
->I'd be happy to see this accepted.
->
-Hey, thanks for the plug Wolfgang!  :)
+> Here is the exact same patch, packaged slightly differently
+> and re-sent, just in case it got lost in someone's inbox.
+> It is also possible that davem is thinking in terms of
+> changing the sk_buff definition t match this file. Either
+> way, something must be done.
 
-Here are some thoughts that don't directly address the bi_rec (or
-whatever) issue but they are related...
+I've gotten around to updating the linuxppc-2.4 repository to match the
+current state of linux-2.4 again.  If there's still a problem, I would
+suggest reproducing it with an i386 config (or CONFIG_ALL_PPC config)
+and posting to lkml (linux-kernel@vger.kernel.org) and cc'ing Marcelo
+and whomever made the broken change.  The problem in question didn't
+come from us PPC folks, so fixing it in our tree is, IMHO, pointless
+(the fix will either become obsolete and introduce minor pain when a fix
+comes in upstream or the change will be reverted, again probably causing
+us pain merging this in).
 
-Some things have changed since that thread.  In particular, the "On Chip
-Peripheral" or OCP support has been added to the kernel.  Matt Porter
-has spent a lot of time working on the OCP and has it looking/working
-well.  If you're not familiar with it, its worth a look.
-
-We can use the OCP to pass information from the platform-specific kernel
-code to drivers.  We still have the issue of getting info into the
-kernel in the first place so we still need to resolve that issue.
-However, I would rather have drivers look in the OCP for info instead of
-directly at bi_recs (or whatever we chose).
-
-So for example, a network driver does not have to worry about where to
-get a MAC address, it just looks in the OCP.  The board-specific code
-can deal with getting the MAC addr from a bi_rec, the cmd line, an I2C
-SROM somewhere, conjuring one up using incrementing MAC addrs, or
-whatever.  After all, where to get the MAC addr really is platform (&
-firmware) specific.  The OCP provides a single, clean interface to pass
-info into drivers.
-
-I think its something worth considering.
-
-Mark
-
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
