@@ -1,54 +1,44 @@
-To: "Robert P. J. Day" <rpjday@mindspring.com>
+Date: Mon, 28 Jun 2004 06:50:13 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+To: Wolfgang Denk <wd@denx.de>
 Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: loading the kernel and root FS separately from flash? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 28 Jun 2004 06:19:36 EDT."
-             <Pine.LNX.4.60.0406280615400.3259@localhost.localdomain>
-Date: Mon, 28 Jun 2004 12:48:17 +0200
-Message-Id: <20040628104822.6C3BFC109F@atlas.denx.de>
+In-Reply-To: <20040628104159.87EEDC109F@atlas.denx.de>
+Message-ID: <Pine.LNX.4.60.0406280642220.4278@localhost.localdomain>
+References: <20040628104159.87EEDC109F@atlas.denx.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <Pine.LNX.4.60.0406280615400.3259@localhost.localdomain> you wrote:
+On Mon, 28 Jun 2004, Wolfgang Denk wrote:
+
+> In message <Pine.LNX.4.60.0406280600140.3259@localhost.localdomain> you wrote:
+
+>> that it could be read-only).  how hard would it be to automatically
+>> have that root FS copied from JFFS2 to RAM and mounted from there?
 >
-> it was more the response time from flash as opposed to RAM that was an
-> issue for me.  that's why i was asking about having the root FS loaded
-> from flash into RAM at boot time.  we'd probably be happy about
-> sacrificing boot time response (copying all of the root FS into RAM)
-> for better run time performance, although i don't know the differences
-> in performance at the moment.
+> This makes just no sense to me.
 
-Where is your ramdisk image coming from? Being loaded from flash?
+ok, i'm probably getting confused about something fundamental here.
+what i'm after is to have my root filesystem in persistent storage and
+available for updates on the fly, hence the notion of partitioning off
+a part of the system flash for the JFFS2 version of the root
+filesystem.  i've done that, so i've solved that problem -- i have a
+root filesystem i can mount from a running system and modify.
 
-So what's the difference between loading the image as a whole  before
-startup,  or  loading the files step by step when needed? If you need
-everything in your ramdisk the  difference  in  time  is  very  small
-(except  from  measurable changes in the start-up sequence, wher eyou
-can have the first code running actually faster from  a  flash  based
-filesystem);  if  you don't use all the stuff in your ramdisk all the
-time than the flash based filesystem may be faster, too.
+now, i could just mount that JFFS2 version of the root fs straight out
+of flash, but i get the impression that that would cause a performance
+hit.  so i was wondering about the feasibility about copying that
+entire flash FS into RAM at boot time, and running out of RAM.  this
+would mean, of course, that if i wanted to make mods to the root FS,
+i'd do them in flash and they'd only take effect at the next reboot,
+which is fine with me.
 
-We got the fastest boot and run times using a  read-only  ext2  file-
-system in a MTD partition.
+or am i just hopelessly confused about what is and is not a reasonable
+option here?  i get the feeling i'm missing something important.
 
-And using an overlay mounto to a JFFS2 partition you can still update
-the files. [Or, for  occasional  updates,  you  can  remount  rw  the
-filesystem,  perform  the  updates,  and  remount  ro again - an ext2
-filesystem on a flash partition is obviously not optimal, but if  you
-just  need  to  change  2  files  every year or so it will still work
-fine.]
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"An open mind has but one disadvantage: it collects dirt."
-                                                    - a saying at RPI
+rday
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
