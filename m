@@ -1,87 +1,60 @@
-From: kris_kelvin@excite.com
+Date: Fri, 16 Jul 1999 20:52:22 -0500
+Subject: Beige UW crashes
+From: "Chris Clark" <cclark@ticnet.com>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: MBX860, initrd, problems
-Message-Id: <932163450.18283.993@excite.com>
-Date: Fri, 16 Jul 1999 15:17:30 PDT
-MIME-Version: 1.0
-Content-Type: text/plain
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
+Message-Id: <E115JdS-000146-00@smtp.ticnet.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi everybody.
+I have been having the worst time trying to get LinuxPPC (both r4 and r5) to
+work with my 333MT beige MAc with the Apple supplied UW card.  I have tried
+bootx 1.1 and 1.1.1 as well as numerous kernels with support for the ncr
+(ATTO) UW card.  I have tried vmlinux4, and several of the kernels from
+skinnydesign.  I have yet to find a stable combination.  I am beginning to
+believe that I have a hardware problem.  I replaced my keyboard and mouse
+cables (explanation in a moment), removed (and switched) ram from the
+machine and disconnected all other peripherals.
 
-I am new to this list (although I think I have done my
-homework), so please accept my apologies if my questions
-sound annoying to you.
+The problem I am having is the machine kernel panics either during the boot
+sequence (right as it's probing the UW drive or during the first few min of
+operation (usually not more than five min).  Somtimes, however, I can keep
+it running for a while, but that is only if I don't move the mouse or type
+anything (hence changing the cables...I also switched keboards and mice, to
+no avail)  The kernel panic is allways the exactly the same regardless of
+how long the machine is up or when it panics (at boot or after) and I was
+wondering if anyone could shed some light as to what may be the problem.
 
-I am planning to run Linux on a custom 860 board (which is
-being built at the moment). For now, I am going to use an
-MBX860 board for experiments.
+I am thinking of buying a 2940UW hoping that will fix the problem but I
+wanted to get some feed back from someone who may could help diagnose the
+problem so I don't waste my money.
 
-I have downloaded some of the files available at
-ftp://linuxppc.cs.nmt.edu/pub/linuxppc/embedded and
-I have read embedded_notes and mbxnotes.
-My development platform includes an old 7200/75 Macintosh
-on which I have installed Release 4 of PowerPC Linux - to
-be used for compiling the kernel and programs for the
-board - as well as a few PCs.
+An exerpt of the message is:
 
-I have connected the board to my local Ethernet and plugged
-its serial port to a serial port of one of my PCs.
+machine check    trap: 0200
+Task=C0181fd8[0] 'swapper' mm->pgd C017f000
+LAst sys call: 112
+Last Math: c5dc000
+call backtrace C01A0000 C00003A80 C001C6FC C0005AB4
+C0005ADC C000388C 0C0B53D0
+Kernel panic - swapper task not syncing
 
-My first problem is that I cannot compile the 2.2.5 kernel
-that I downloaded from linuxppc.cs.nmt.edu. It gives me the
-following compilation errors:
+This has to be one of the most frustrating things I have ever dealt with
+with linux.  Just as soon as I think I have the problem fixed....it boots, I
+log in and type for a couple of min or click on a window and *crash* , never
+more than 10 min use.
 
-==================
-m8xx_setup.c: In function `m8xx_init_IRQ':
-m8xx_setup.c:280: warning: implicit declaration of function
-`cpm_interrupt_init'
-m8xx_setup.c:285: `i8259_pic' undeclared (first use this function)
-m8xx_setup.c:285: (Each undeclared identifier is reported only once
-m8xx_setup.c:285: for each function it appears in.)
-m8xx_setup.c:287: warning: implicit declaration of function
-`i8259_init'm8xx_setup.c:288: `mbx_i8259_action' undeclared (first use this
-function)
-m8xx_setup.c: In function `m8xx_ide_insw':m8xx_setup.c:300: too few
-arguments to function `ide_insw'm8xx_setup.c:300: warning: left-hand operand
-of comma expression has no effect
-m8xx_setup.c:300: parse error before `)'
-m8xx_setup.c: In function `m8xx_ide_check_region':m8xx_setup.c:325: parse
-error before `}'m8xx_setup.c:325: warning: control reaches end of non-void
-function
-make[1]: *** [m8xx_setup.o] Error 1
-==================
+If anyone could give me a hand, especially those with similar machines (how
+long does everyone elses 333/UW stay up?) I would be eternally gratefull.  I
+have some work I need to do with this machine and I would really like to do
+it with Linux.
 
-Now, when I look at the source, m8xx_setup.c appears to be
-messy with many syntactic errors. What is going on? I though
-that 2.2.5 was the recommended kernel. If this isn't the
-case, perhaps somebody can point me to the place where I
-can find the correct version.
+Thank you in advance,
 
-On the other hand, I have managed to compile and boot the
-2.2p7 kernel from linuxppc.cs.nmt.edu. Well, I could use
-it as the target system, but I see that initrd support
-(which I need) is missing from 2.2p7 (there's no mbxboot
-directory in arch/ppc). So what should I do?
-
-Some people on this list have successfully installed initrd
-kernels on their boards. Perhaps they could point me to the
-kernel they started with. Any hints will be much
-appreciated. I don't want to get a free ride (I am prepared
-to spend some effort on this project) but at least I would
-like to know that I have started from the right place.
-
-Thanks in advance and best regards,
-
-Kris Kelvin
-
-
-
-
-_______________________________________________________
-Get your free, private email at http://mail.excite.com/
+Chris Clark
+cclark@ticnet.com
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
