@@ -1,21 +1,21 @@
-Date: Sun, 6 Feb 2000 01:17:37 -0800 (PST)
+Date: Sun, 6 Feb 2000 01:56:10 -0800 (PST)
 From: Brad Midgley <brad@turbolinux.com>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: 24 bitplanes in X? (openh323 videoconf)
-Message-ID: <Pine.LNX.4.20.0002060113280.15781-100000@mail.turbolinux.com>
+Subject: CPiA usb camera
+Message-ID: <Pine.LNX.4.20.0002060154500.16011-100000@mail.turbolinux.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-is anyone having success with specifying 24 bitplanes in their xconfig?
+has anyone on this list experimented with the CPiA usb cameras under
+linux? i haven't gotten to the point that i can try openh323 yet, but when
+i try to run xawtv it reports
 
-apparently this is the only way one can use openh323's videoconferencing
-but on my bronze powerbook, the screen is messed up (there are 4 mini
-duplicates of the main screen appearing at the top of the screen)
+ open /dev/video: Cannot allocate memory
 
-i'm using xfree 3.3.6 (dev-rel-1.1), bootx, and rsync-benh.
+this is using xawtv 2.43, rsync-paul kernel on a bronze pb.
 
 Brad
 brad@turbolinux.com | http://www.turbolinux.com/~brad/
