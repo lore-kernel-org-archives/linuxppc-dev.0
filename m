@@ -1,18 +1,16 @@
-Return-Path: <stefan.nickl@kontron.com>
-Received: from kom-mail1.kontron-modular.com (unknown [62.159.155.196])
-	by ozlabs.org (Postfix) with ESMTP id 335472BF18
+Return-Path: <vijay_padiyar@hotmail.com>
+Received: from hotmail.com (bay1-dav7.bay1.hotmail.com [65.54.244.111])
+	by ozlabs.org (Postfix) with ESMTP id 7FE252BF0E
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Jan 2005 21:29:47 +1100 (EST)
-From: Stefan Nickl <Stefan.Nickl@kontron.com>
-To: Steffen Rumler <Steffen.Rumler@siemens.com>
-In-Reply-To: <41E4E1EB.6080903@siemens.com>
-References: <41E4E1EB.6080903@siemens.com>
-Content-Type: multipart/mixed; boundary="=-FH+VcV7So46jJ9J2R09z"
-Date: Wed, 12 Jan 2005 11:29:35 +0100
-Message-Id: <1105525776.10942.4.camel@lucy.pep-kaufbeuren.de>
-Mime-Version: 1.0
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: Kernel boot hangs by parallel flood pings
+	Wed, 12 Jan 2005 21:54:47 +1100 (EST)
+Message-ID: <BAY1-DAV73031B6EE6F449E9ED3AD8B890@phx.gbl>
+From: "Vijay Padiyar" <vijay_padiyar@hotmail.com>
+To: "LinuxPPC Support" <linuxppc-embedded@ozlabs.org>
+Date: Wed, 12 Jan 2005 16:07:09 +0530
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: Some issues with kernel 2.6 for MPC8260 target
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,95 +21,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi all
 
---=-FH+VcV7So46jJ9J2R09z
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+I wish to discuss some strange issues that I faced with respect to the Linux
+2.6.8 kernel (downloaded from kernel.org). Firstly, I wish to know whether
+this has been known to work on an MPC8260 PowerPC target.
 
-On Wed, 2005-01-12 at 09:38 +0100, Steffen Rumler wrote:
-> I'm using a 2.4.20 kernel (PPC).
-> 
-> When I run multiple 'ping -f' directed to my board
-> during the kernel boots, sometimes it hangs with
-> the following messages:
+Secondly, when I tried to compile the Linux kernel with my toolchain (built
+with Dan Kegel's crosstool for the PowerPC 603e core, which is what my
+processor has), I got some errors which I found to rather queer after
+investigation. Firstly, let me state the errors that I got:
 
-> I have checked this with the BDI2000 and found that the
-> kernel loops anywhere inside ip_route_input().
+------------------------------------------------------
 
-This is a long-standing bug in the cpm and cmp2 drivers.
-I think it's also present in 2.6 as far as I remember.
+  LD      init/built-in.o
+  LD      .tmp_vmlinux1
+arch/ppc/8260_io/built-in.o(.text+0x103c): In function `mii_queue_relink':
+arch/ppc/8260_io/fcc_enet.c:1254: undefined reference to `schedule_task'
+arch/ppc/8260_io/built-in.o(.text+0x1074): In function `mii_queue_config':
+arch/ppc/8260_io/fcc_enet.c:1263: undefined reference to `schedule_task'
 
-I sent my own fix some time ago, you may find it in the
-archives as "[patch] Race condition #2 in arch/ppc/cpm2_io/fcc_enet.c".
+------------------------------------------------------
 
-Greetings,
+On further investigation, I find that 'schedule_task()' is simply not
+defined anywhere in the 2.6.8 kernel sources. This is quite wierd! However,
+it is defined in a file 'context.c' (linux-src/kernel) in the 2.4.27 kernel
+sources, which we were using earlier. How is it that a function is being
+called but its definition has been removed from the sources?
 
--- 
-Stefan Nickl
-Kontron Modular Computers
+Another such example is with the structure 'tq_struct'. It is referred to in
+the file 'fcc_enet.c' (linux-src/arch/ppc/8260_io) but it's not defined
+anywhere! Again, after checking in the 2.4.27 sources, I find that it's
+defined in the file 'tqueue.h' (linux-src/include/linux)!
 
+A third thing is that the 2.4.27 kernel source file 'uart.c'
+(linux-src/arch/ppc/cpm2_io) is not present in the corresponding folder in
+the 2.6.8 source (linux-src/arch/ppc/8260_io). There is one 'uart.c' in the
+folder '8xx_io', but it doesn't get compiled during the kernel build
+process. Will my UART work correctly with this build?
 
---=-FH+VcV7So46jJ9J2R09z
-Content-Disposition: attachment; filename=fcc_enet-mdio_race.patch
-Content-Type: text/x-patch; name=fcc_enet-mdio_race.patch; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Can someone please tell me if there's some explanation for this that I'm
+unaware of? Which would be the proper forum to report this? Again I would
+like to ask: Has the 2.6.8 kernel been tested successfully on the MPC8260
+PowerPC platform?
 
---- linuxppc-2.4/arch/ppc/cpm2_io/fcc_enet.c	2004-08-09 08:32:28.000000000 +0200
-+++ fcc_enet.c	2004-11-25 18:28:56.000000000 +0100
-@@ -2095,10 +2095,10 @@ mii_send_receive(fcc_info_t *fip, uint c
- 		for (i = 0, off = 15; i < 16; i++, off--)
- 		{
- 			FCC_PDATC_MDC(1);
-+			udelay(1);
- 			retval <<= 1;
- 			if (io->iop_pdatc & fip->fc_mdio)
- 				retval++;
--			udelay(1);
- 			FCC_PDATC_MDC(0);
- 			udelay(1);
- 		}
+Lastly, where can I get the latest stable Linux kernel source for the
+PowerPC platform?
 
---=-FH+VcV7So46jJ9J2R09z
-Content-Disposition: attachment; filename=fcc_enet-startup_race.patch
-Content-Type: text/x-patch; name=fcc_enet-startup_race.patch;
-	charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Regards
 
---- linuxppc-2.4/arch/ppc/cpm2_io/fcc_enet.c	2004-08-09 08:32:28.000000000 +0200
-+++ fcc_enet.c	2004-11-25 18:41:22.000000000 +0100
-@@ -2008,16 +2008,6 @@ init_fcc_startup(fcc_info_t *fip, struct
-         *(volatile uint *)(BCSR_ADDR + 4) &= ~BCSR1_FETHIEN;
-         *(volatile uint *)(BCSR_ADDR + 4) |=  BCSR1_FETH_RST;
- #endif
--
--#if defined(CONFIG_USE_MDIO) || defined(CONFIG_TQM8260)
--	/* start in full duplex mode, and negotiate speed
--	 */
--	fcc_restart (dev, 1);
--#else
--	/* start in half duplex mode
--	 */
--	fcc_restart (dev, 0);
--#endif
- }
- 
- #ifdef	CONFIG_USE_MDIO
-@@ -2155,6 +2145,16 @@ fcc_enet_open(struct net_device *dev)
- {
- 	struct fcc_enet_private *fep = dev->priv;
- 
-+#if defined(CONFIG_USE_MDIO) || defined(CONFIG_TQM8260)
-+	/* start in full duplex mode, and negotiate speed
-+	 */
-+	fcc_restart (dev, 1);
-+#else
-+	/* start in half duplex mode
-+	 */
-+	fcc_restart (dev, 0);
-+#endif
-+
- #ifdef	CONFIG_USE_MDIO
- 	fep->sequence_done = 0;
- 	fep->link = 0;
-
---=-FH+VcV7So46jJ9J2R09z--
+Vijay Padiyar
