@@ -1,67 +1,49 @@
-Message-Id: <200003041016.LAA00502@piglet.grunz.lu>
-Date: Sat, 4 Mar 2000 11:16:19 +0100 (CET)
+Message-Id: <200003041030.LAA00512@piglet.grunz.lu>
+Date: Sat, 4 Mar 2000 11:30:30 +0100 (CET)
 From: Michel Lanners <mlan@cpu.lu>
 Reply-To: mlan@cpu.lu
-Subject: Re: PCI I/O address problems on B&W G3
-To: tas@mindspring.com
-cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <v04220801b4daa2e26f84@[10.0.0.42]>
+Subject: RE: [Linux1394-devel] Re: FireWire + Apple PB G3: some success
+To: mknecht@controlnet.com
+cc: andreas.bombe@munich.netsurf.de, maxim@storagecraft.com,
+        ad@mpifr-bonn.mpg.de, linux1394-devel@eclipt.uni-klu.ac.at,
+        linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <F14842317963D111817100805F0DFE4D4FFF9A@server1.controlnet.com>
 MIME-Version: 1.0
 Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Tim,
+Hi all,
 
-A few more details on this issue (I've already responded to a later
-mail in this thread, but I'm still struggling with my 3-weeks
-800-message backlog ;-)
+On  24 Feb, this message from Mark Knecht echoed through cyberspace:
+> According to the LV23 spec the IO_ENB bit is read only, so one would presume
+> that writing the a 1 to the IO_ENB ( I presume that this is what is actually
+> happening with PCI_COMMAND_IO) would not cause any problems.
 
-On  24 Feb, this message from Timothy A. Seufert echoed through cyberspace:
-> I'm having a problem with the assignment of I/O addresses to devices.
-> Multiple PCI devices end with the same I/O port address base,
-> presumably because OF didn't fully initialize them.  I am using
-> Michael Lanner's PCI patch (applied to kernel 2.2.15-pre5 from cvs a
-> while back).  After reading the patch, it looks like it only tries to
-> correct base addresses for being behind a bridge, so I don't think it
-> is either helping or hurting.
+No idea here.... PCI_COMMAND_IO in general enables a PCI device to
+listen (and maybe react) to IO cycles on the PCI bus.
 
-My patch corrects base addresses because the _host_ bridge isn't
-address-transparent for IO regions. Memory regions are always
-untranslated, and PCI-to-PCI bridges in Macs (as far as I've read
-Apple's doc) don't do any address translation.
+> As for some of the performance issues, is the Memory Write and Invalidate
+> bit in the same PCI register turned off or is it getting turned on? The
+> default state is OFF.
 
-I've made the patch because I use a PCI IDE controller, and I was
-annoyed by the fact that the PMac IDE code applies that translation for
-PCI IO addresses in it's IO access macros. I think this translation
-should be handled by PCI fixup code. Plus, you sometimes don't even
-have a single translation, if you have multiple host bridges (that's
-the case as well for UNI-North machines, even though all buses are PCI
-0).
+On PowerMacs in general, OpenFirmware (the BIOS, if you prefer) should
+set the Memory Write and Invalidate bit, as the Mac's PCI bus
+implementation is optimised for these cycles. However....
 
-> So it would seem to me that we need some kind of a scheme for
-> allocating I/O port base addresses if OF didn't do it.  I'm vaguely
-> familiar with the concepts behind PCI address space allocation,
-> having looked at it from the hardware design POV a while back, but
-> I'm not familiar enough with the kernel code yet to tackle this
-> problem (or to even be sure that I'm on the right track here).
+> If not, then DMA writes from the OHCI controller could
+> potentially be causing cache flushes and slowing the system down. I am
+> presuming here that all or some of the memory addressed by OHCI is marked as
+> cacheable which may or may not be the case...)
 
-That should be handled by the new, 2.3 PCI code with dynamic resurce
-allocation. I've just discovered that part, however, and am not at all
-familiar with it. I'm RTFS'ing...
+By default, all memory that is not real RAM is marked as
+cache-inhibited. So, to get the maximum performance here, one has to
+change cache settings on PCI space. However, I think that this means
+you need to bother about cache coherency yourself, i.e. doing cache
+flushes by hand. And that's beyond me...
 
-> PCI: Correcting IOaddress 0 on device 01:18, now fe000001.
-> PCI: Enabling I/O for device 01:18
-> PCI: setting IRQ 25 on device 01:20.
-> PCI: Correcting IOaddress 0 on device 01:20, now fe000001.
-> PCI: Correcting IOaddress 0 on device 01:21, now fe000001.
-> PCI: setting IRQ 28 on device 01:30.
-
-This is OF not initialising the IO spaces, and my patch not checking
-for unassigned IO regions.
-
-Michel
+Michel, sometimes working on PowerMac PCI issues
 
 -------------------------------------------------------------------------
 Michel Lanners                 |  " Read Philosophy.  Study Art.
