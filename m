@@ -1,27 +1,17 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 868742BDF2
+Return-Path: <galak@somerset.sps.mot.com>
+Received: from motgate8.mot.com (motgate8.mot.com [129.188.136.8])
+	by ozlabs.org (Postfix) with ESMTP id 5D6DA2BDB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 14 Jan 2005 12:00:18 +1100 (EST)
-Date: Thu, 13 Jan 2005 17:00:16 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: J?rn Engel <joern@wohnheim.fh-wedel.de>
-Message-ID: <20050114010016.GA16635@gate.ebshome.net>
-References: <FC6D9B81-5514-11D9-8D51-000393C30512@freescale.com>
-	<A3A281FF-5525-11D9-80ED-000393C30512@freescale.com>
-	<20050106070245.GA6539@gate.ebshome.net>
-	<61A37C72-659C-11D9-8D70-000393C30512@freescale.com>
-	<20050113212152.GA16041@gate.ebshome.net>
-	<20050113215808.GA15124@wohnheim.fh-wedel.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050113215808.GA15124@wohnheim.fh-wedel.de>
-Cc: Netdev <netdev@oss.sgi.com>,
-	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-Subject: Re: [RFC] Patch to Abstract Ethernet PHY support (using driver
-	model)
+	Fri, 14 Jan 2005 14:35:41 +1100 (EST)
+Date: Thu, 13 Jan 2005 21:35:32 -0600 (CST)
+From: Kumar Gala <galak@somerset.sps.mot.com>
+To: greg@kroah.com
+Message-ID: <Pine.LNX.4.61.0501132130580.27720@blarg.somerset.sps.mot.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-kernel@vger.kernel.org, sensors@Stimpy.netroedge.com,
+	linuxppc-embedded@ozlabs.org
+Subject: [PATCH] I2C-MPC: Convert to platform_device driver
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,27 +22,258 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 13, 2005 at 10:58:08PM +0100, J?rn Engel wrote:
-> On Thu, 13 January 2005 13:21:52 -0800, Eugene Surovegin wrote:
-> > 
-> > It's a standard, period. If there is a PHY which isn't compliant I
-> > guess it will not work anyway, but in this case, yes, we can use
-> > PHY-specific link detection, but only in this case. I suspect you'll
-> > have a hard time finding such PHY :)
-> 
-> http://www.broadcom.com/collateral/pb/5325-PB05-R.pdf
-> 
-> With some thinking and very little code, you can use this neat chip
-> almost like a normal phy.
+Converted the driver to work as either a OCP or platform_device driver.  
+The intent in the future (once we convert all PPC sub-archs from OCP to 
+platform_device) is to remove the OCP code.
 
-Yeah, but why would I want to? If you connect your MAC to any 5 PHYs 
-my statement still stands, if directly to MII you don't need any PHY 
-stuff at all, because link is always ON and speed/duplex is fixed.
-
-In fact, we use different switch chips connected to PPC4xx directly. 
-In this situation, in my NAPI IBM EMAC driver I just have special 
-"PHY-less" case which is trivial "fixed settings" one. And all this 
-PHY lib is completely unneeded bloat.
+Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 
 --
-Eugene
+
+diff -Nru a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
+--- a/drivers/i2c/busses/Kconfig	2005-01-13 21:27:38 -06:00
++++ b/drivers/i2c/busses/Kconfig	2005-01-13 21:27:38 -06:00
+@@ -208,7 +208,7 @@
+ 
+ config I2C_MPC
+ 	tristate "MPC107/824x/85xx/52xx"
+-	depends on I2C && FSL_OCP
++	depends on I2C && PPC
+ 	help
+ 	  If you say yes to this option, support will be included for the
+ 	  built-in I2C interface on the MPC107/Tsi107/MPC8240/MPC8245 and
+diff -Nru a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
+--- a/drivers/i2c/busses/i2c-mpc.c	2005-01-13 21:27:38 -06:00
++++ b/drivers/i2c/busses/i2c-mpc.c	2005-01-13 21:27:38 -06:00
+@@ -1,12 +1,12 @@
+ /*
+  * (C) Copyright 2003-2004
+  * Humboldt Solutions Ltd, adrian@humboldt.co.uk.
+- 
++
+  * This is a combined i2c adapter and algorithm driver for the
+  * MPC107/Tsi107 PowerPC northbridge and processors that include
+- * the same I2C unit (8240, 8245, 85xx). 
++ * the same I2C unit (8240, 8245, 85xx).
+  *
+- * Release 0.7
++ * Release 0.8
+  *
+  * This file is licensed under the terms of the GNU General Public
+  * License version 2. This program is licensed "as is" without any
+@@ -20,7 +20,13 @@
+ #include <linux/init.h>
+ #include <linux/pci.h>
+ #include <asm/io.h>
++#ifdef CONFIG_FSL_OCP
+ #include <asm/ocp.h>
++#define FSL_I2C_DEV_SEPARATE_DFSRR FS_I2C_SEPARATE_DFSRR
++#define FSL_I2C_DEV_CLOCK_5200 FS_I2C_CLOCK_5200
++#else
++#include <linux/fsl_devices.h>
++#endif
+ #include <linux/i2c.h>
+ #include <linux/interrupt.h>
+ #include <linux/delay.h>
+@@ -50,10 +56,11 @@
+ 
+ struct mpc_i2c {
+ 	char *base;
+-	struct ocp_def *ocpdef;
+ 	u32 interrupt;
+ 	wait_queue_head_t queue;
+ 	struct i2c_adapter adap;
++	int irq;
++	u32 flags;
+ };
+ 
+ static __inline__ void writeccr(struct mpc_i2c *i2c, u32 x)
+@@ -79,7 +86,8 @@
+ 	u32 x;
+ 	int result = 0;
+ 
+-	if (i2c->ocpdef->irq == OCP_IRQ_NA) {
++	if (i2c->irq == 0)
++	{
+ 		while (!(readb(i2c->base + MPC_I2C_SR) & CSR_MIF)) {
+ 			schedule();
+ 			if (time_after(jiffies, orig_jiffies + timeout)) {
+@@ -92,7 +100,7 @@
+ 		writeb(0, i2c->base + MPC_I2C_SR);
+ 	} else {
+ 		/* Interrupt mode */
+-		result = wait_event_interruptible_timeout(i2c->queue, 
++		result = wait_event_interruptible_timeout(i2c->queue,
+ 			(i2c->interrupt & CSR_MIF), timeout * HZ);
+ 
+ 		if (unlikely(result < 0))
+@@ -130,12 +138,11 @@
+ 
+ static void mpc_i2c_setclock(struct mpc_i2c *i2c)
+ {
+-	struct ocp_fs_i2c_data *i2c_data = i2c->ocpdef->additions;
+ 	/* Set clock and filters */
+-	if (i2c_data && (i2c_data->flags & FS_I2C_SEPARATE_DFSRR)) {
++	if (i2c->flags & FSL_I2C_DEV_SEPARATE_DFSRR) {
+ 		writeb(0x31, i2c->base + MPC_I2C_FDR);
+ 		writeb(0x10, i2c->base + MPC_I2C_DFSRR);
+-	} else if (i2c_data && (i2c_data->flags & FS_I2C_CLOCK_5200))
++	} else if (i2c->flags & FSL_I2C_DEV_CLOCK_5200)
+ 		writeb(0x3f, i2c->base + MPC_I2C_FDR);
+ 	else
+ 		writel(0x1031, i2c->base + MPC_I2C_FDR);
+@@ -287,6 +294,7 @@
+ 	.retries = 1
+ };
+ 
++#ifdef CONFIG_FSL_OCP
+ static int __devinit mpc_i2c_probe(struct ocp_device *ocp)
+ {
+ 	int result = 0;
+@@ -296,7 +304,9 @@
+ 		return -ENOMEM;
+ 	}
+ 	memset(i2c, 0, sizeof(*i2c));
+-	i2c->ocpdef = ocp->def;
++
++	i2c->irq = ocp->def->irq;
++	i2c->flags = ((struct ocp_fs_i2c_data *)ocp->def->additions)->flags;
+ 	init_waitqueue_head(&i2c->queue);
+ 
+ 	if (!request_mem_region(ocp->def->paddr, MPC_I2C_REGION, "i2c-mpc")) {
+@@ -312,16 +322,20 @@
+ 		goto fail_map;
+ 	}
+ 
+-	if (ocp->def->irq != OCP_IRQ_NA)
++	if (i2c->irq != OCP_IRQ_NA)
++	{
+ 		if ((result = request_irq(ocp->def->irq, mpc_i2c_isr,
+ 					  0, "i2c-mpc", i2c)) < 0) {
+ 			printk(KERN_ERR
+ 			       "i2c-mpc - failed to attach interrupt\n");
+ 			goto fail_irq;
+ 		}
++	} else
++		i2c->irq = 0;
+ 
+ 	i2c->adap = mpc_ops;
+ 	i2c_set_adapdata(&i2c->adap, i2c);
++
+ 	if ((result = i2c_add_adapter(&i2c->adap)) < 0) {
+ 		printk(KERN_ERR "i2c-mpc - failed to add adapter\n");
+ 		goto fail_add;
+@@ -348,9 +362,9 @@
+ 	i2c_del_adapter(&i2c->adap);
+ 
+ 	if (ocp->def->irq != OCP_IRQ_NA)
+-		free_irq(i2c->ocpdef->irq, i2c);
++		free_irq(i2c->irq, i2c);
+ 	iounmap(i2c->base);
+-	release_mem_region(i2c->ocpdef->paddr, MPC_I2C_REGION);
++	release_mem_region(ocp->def->paddr, MPC_I2C_REGION);
+ 	kfree(i2c);
+ }
+ 
+@@ -380,6 +394,101 @@
+ 
+ module_init(iic_init);
+ module_exit(iic_exit);
++#else
++static int fsl_i2c_probe(struct device *device)
++{
++	int result = 0;
++	struct mpc_i2c *i2c;
++	struct platform_device *pdev = to_platform_device(device);
++	struct fsl_i2c_platform_data *pdata;
++	struct resource *r = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++
++	pdata = (struct fsl_i2c_platform_data *) pdev->dev.platform_data;
++
++	if (!(i2c = kmalloc(sizeof(*i2c), GFP_KERNEL))) {
++		return -ENOMEM;
++	}
++	memset(i2c, 0, sizeof(*i2c));
++
++	i2c->irq = platform_get_irq(pdev, 0);
++	i2c->flags = pdata->device_flags;
++	init_waitqueue_head(&i2c->queue);
++
++	i2c->base = ioremap((phys_addr_t)r->start, MPC_I2C_REGION);
++
++	if (!i2c->base) {
++		printk(KERN_ERR "i2c-mpc - failed to map controller\n");
++		result = -ENOMEM;
++		goto fail_map;
++	}
++
++	if (i2c->irq != 0)
++		if ((result = request_irq(i2c->irq, mpc_i2c_isr,
++					  0, "fsl-i2c", i2c)) < 0) {
++			printk(KERN_ERR
++			       "i2c-mpc - failed to attach interrupt\n");
++			goto fail_irq;
++		}
++
++	i2c->adap = mpc_ops;
++	i2c_set_adapdata(&i2c->adap, i2c);
++	i2c->adap.dev.parent = &pdev->dev;
++	if ((result = i2c_add_adapter(&i2c->adap)) < 0) {
++		printk(KERN_ERR "i2c-mpc - failed to add adapter\n");
++		goto fail_add;
++	}
++
++	mpc_i2c_setclock(i2c);
++	dev_set_drvdata(device, i2c);
++	return result;
++
++      fail_add:
++	if (i2c->irq != 0)
++		free_irq(i2c->irq, 0);
++      fail_irq:
++	iounmap(i2c->base);
++      fail_map:
++	kfree(i2c);
++	return result;
++};
++
++static int fsl_i2c_remove(struct device *device)
++{
++	struct mpc_i2c *i2c = dev_get_drvdata(device);
++
++	dev_set_drvdata(device, NULL);
++	i2c_del_adapter(&i2c->adap);
++
++	if (i2c->irq != 0)
++		free_irq(i2c->irq, i2c);
++
++	iounmap(i2c->base);
++	kfree(i2c);
++	return 0;
++};
++
++/* Structure for a device driver */
++static struct device_driver fsl_i2c_driver = {
++	.name = "fsl-i2c",
++	.bus = &platform_bus_type,
++	.probe = fsl_i2c_probe,
++	.remove = fsl_i2c_remove,
++};
++
++static int __init fsl_i2c_init(void)
++{
++	return driver_register(&fsl_i2c_driver);
++}
++
++static void __exit fsl_i2c_exit(void)
++{
++	driver_unregister(&fsl_i2c_driver);
++}
++
++module_init(fsl_i2c_init);
++module_exit(fsl_i2c_exit);
++
++#endif /* CONFIG_FSL_OCP */
+ 
+ MODULE_AUTHOR("Adrian Cox <adrian@humboldt.co.uk>");
+ MODULE_DESCRIPTION
