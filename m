@@ -1,39 +1,31 @@
-Message-ID: <3980DC45.554DB39D@ivey.uwo.ca>
-Date: Thu, 27 Jul 2000 21:05:09 -0400
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+Message-ID: <3980DEAF.ACFB0C43@embeddededge.com>
+Date: Thu, 27 Jul 2000 21:15:27 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: problems with linuxthreads under your latest glibc 15C rpms
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Altivec on 2.4.xx?
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Franz,
+Anyone out there using Altivec with a 2.4.0 kernel?  Maybe this
+is the wrong list to ask....suggestions welcome.
 
-Whoops I forgot to attach the patch to fix this (against your latest
-glibc-2.1.3-15c src rpm).
+There is a bug in the Instruction fault handler that interprets the
+Altivec enabled flag in the MSR as a write attempt to a protected
+instruction page.  It is because we commonly use the DSISR and SRR1,
+and call it 'error_code' in do_page_fault.  The 0x02000000 is the
+Altivec enabled flag in SRR1.
 
---- linuxthreads/mutex.c.prev   Thu Jul 27 20:57:28 2000
-+++ linuxthreads/mutex.c        Thu Jul 27 20:59:06 2000
-@@ -50,7 +50,9 @@
-   switch(mutex->__m_kind) {
-   case PTHREAD_MUTEX_FAST_NP:
-     retcode = __pthread_trylock(&mutex->__m_lock);
--    mutex->__m_owner = thread_self();
-+    if (retcode == 0) {
-+      mutex->__m_owner = thread_self();
-+    }
-     return retcode;
-   case PTHREAD_MUTEX_RECURSIVE_NP:
-     self = thread_self();
+This should also break 2.2.xx (unless Altivec enabled is managed
+differently and I don't know that).
+
+Right now, I am just removing this as part of the exception handler,
+so this function never finds this bit set for instruction faults.
+Anyone else?
 
 
-I will let you know if I find any more funny things.
-
-Thanks,
-
-Kevin
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
