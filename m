@@ -1,52 +1,39 @@
-Message-ID: <40E97EB5.2040008@fh-landshut.de>
-Date: Mon, 05 Jul 2004 18:15:49 +0200
-From: Oliver Korpilla <okorpil@fh-landshut.de>
+From: Lissimore <Darren_Lissimore@telus.net>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: CerfCube 405EP... any upgraded kernels out there ?
+Date: Mon, 5 Jul 2004 09:43:53 -0700
 MIME-Version: 1.0
-To: okorpil@fh-landshut.de
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: [more info - please help!] MPC7455 DMA buffer strangeness 
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200407050943.53071.Darren_Lissimore@telus.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I checked my Page Table Entries (PTEs) for the MPC7455 and MPC8240 after the
-remap_page_range() took place.
+Good day all,
 
-Except for the RPN part (the physical address of the page) the PTEs match,
-ending with the last 11 Bits (flags as in arch/ppc/mm/pgtable.h):
+        Currently, I am involved in a project that is trying to use CerfCube
+405EP
+devices for firewalling activities. These devices made by Intrinsyc use the
+ibm 405EP ppc processor.
 
-Kernel space: 0x581
-User   space: 0x72D
+        I'm looking for any advice / help / assistance in trying to get the
+kernels
+on these  Cubes from 2.4.21 (Intrinsyc default kernel)  up to either a 2.4.26
+or a 2.6 kernel.  I would like to here from anyone who has had success in
+getting updated kernels up and running.
 
-(for user space this does mean - from least significant to most significant:
-Page present: 	no,
-Hashed PTE: 	yes,
-User mode: 	yes,
-Guarded: 	yes,
-Coherent: 	no,
-Inihibited: 	yes,
-Write-Through:	no,
-Changed:	no,
-Referenced:	yes,
-Exec:		yes,
-Read-Write:	yes.)
+        Searching the email list archives, and websearching has reveiled very
+little
+information.
 
-This does look correct for my application. But it does yield different results
-on the two processors, while both seem to definitely match the same physical
-address (the 1st 21 bits do match in the Linux PTEs).
+        I've got the Yaffs file system driver compiling on a 2.4.26 kernel ,
+and I'm
+now looking at trying to get Intrinsyc's  icecube device configuration
+ported.
 
-How are these Linux PTEs mapped to the MMU PTEs (64 bit wide descriptors)?
-
-The "Programming Environments Manual For 32-Bit Implementations of the PowerPC
-Architecture", the MPC603e and MPC7450 reference manuals depict a completely
-different format, so how and where are these converted? (Hopefully not in
-assembler! ;) )
-
-I'm so confused by this! It doesn't seem logical that I cannot access those
-buffers correctly!
-
-Thanks in advance,
-Oliver Korpilla
+Darren Lissimore
+--
+Slowly and surely the unix crept up on the Nintendo user ...
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
