@@ -1,122 +1,104 @@
-Date: Mon, 28 Feb 2000 02:29:42 +0200 (EET)
-From: Kostas Gewrgiou <gewrgiou@imbc.gr>
-To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to work on ppc
- with r128
-In-Reply-To: <v03110700b4dd777b032a@[209.183.136.166]>
-Message-ID: <Pine.LNX.4.21.0002280213230.19278-100000@idd-01.imbc.gr>
+Message-ID: <38BA302A.5F85FB55@mpifr-bonn.mpg.de>
+Date: Mon, 28 Feb 2000 09:22:02 +0100
+From: Albrecht Dreﬂ <ad@mpifr-bonn.mpg.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Lensing, Britta" <Lensing.Britta@BONN.DIHT.DE>
+CC: LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>,
+        "Mackerras, Paul" <paulus@linuxcare.com>
+Subject: [Fwd: iMac Mouse Three Button Emulation: a solution]
+Content-Type: multipart/mixed;
+ boundary="------------876FF003C8D9EEC47F6A85D0"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 26 Feb 2000, Kevin B. Hendricks wrote:
+This is a multi-part message in MIME format.
+--------------876FF003C8D9EEC47F6A85D0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 
- Thats the responces i got back from the xfree list about the usb mouse
-problems in 3.9.18, the bit about drivers/usb/mouse.c not setting the
-the bit 3 correctly in the first data byte seems intresting, maybe the
-problem is in our side ?
+Albrecht Dre=DF wrote:
+> I wrote a patch for linux-pmac-stable, version 2.2.15pre-something whic=
+h
+> enables an emulation for the 2nd and 3rd mouse button for the iMac sing=
+le
+> button mouse (and possibly other machines with both USB keyboard and mo=
+use).
 
-  Kostas
+I am afraid, the tabs/spaces got mixed up in prevoius post, so I try to a=
+ttach a
+gzip'ed version...
 
-----------------------------------------------------------------------
+Sorry for the inconvenience, Albrecht.
 
->From yokota@zodiac.mech.utsunomiya-u.ac.jp Mon Feb 28 02:12:31 2000
-Date: Sat, 26 Feb 2000 16:22:32 +0900
-From: Kazutaka YOKOTA <yokota@zodiac.mech.utsunomiya-u.ac.jp>
-Reply-To: devel@XFree86.Org
-To: devel@XFree86.Org
-Cc: yokota@zodiac.mech.utsunomiya-u.ac.jp
-Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to work on ppc
-     with r128 (fwd)
+-- =
 
-linuxppc doesn't have the PS/2 mouse port, does it?  Then, why do they
-want to use the IMPS/2 protocol on the linuxppc machine?  If they are
-trying to use the USB version of IntelliMouse, they shouldn't be needing
-IMPS/2.
++------------------------------------------------------------------------=
+-----+
+| Dr.-Ing. Albrecht Dre\ss                                     ----      =
+     |
+| Max-Planck-Institut f\"ur Radioastronomie   |\       /      /o  o\     =
+     |
+| Abteilung f\"ur Infrarot-Interferometrie    |  \    /      |  /   |    =
+     |
+| Auf dem H\"ugel 69                          |    \ |        \ ---/     =
+     |
+| D-53121 Bonn (Germany)          ------------+------+-------------------=
+     |
+|                                             |    / |                   =
+     |
+| Phone (+49) 228 525 319                     |  /  /                    =
+     |
+| Fax   (+49) 228 525 411                     |/   /                     =
+     |
+| Mail  ad@mpifr-bonn.mpg.de                                             =
+     |
++-------------- electrical engineers do it with less resistance ---------=
+-----+
+--------------876FF003C8D9EEC47F6A85D0
+Content-Type: application/octet-stream;
+ name="USB-Patch-2.2.15.gz"
+Content-Disposition: attachment;
+ filename="USB-Patch-2.2.15.gz"
+Content-Transfer-Encoding: base64
 
-Anyway, if they somehow do use the PS/2 version of the IntelliMouse on
-the PS/2 mouse port...
-
-We need to know exact model of his mouse.  Some mice are not very
-compatible with the others.  I have genuine MS IntelliMouse,
-IntelliMouse Explorer, Wheel Mouse, IntelliMouse Trackball, and they
-are all fine with 3.9.18.  But, as there are quite a number of
-slightly different models of IntelliMouse, there may be some which
-aren't so compatible with the others.
-
-He is talking about the IMPS/2 spec.  AFAIK, Microsoft has not
-released the official document describing the IntelliMouse protocol.
-If he has the official spec, I would like to see it.
-
-In any case, does anybody else has IntelliMouse which worked in 3.9.17
-or before, but not in 3.9.18?  We broke IMPS/2 support somewhere
-around 3.9.17d and it wasn't (supposedly) fixed until 3.9.17Z.  I
-would like to believe 3.9.18 is OK with IMPS/2.
-
-# Aha, maybe their mouse driver is trying to emulate the IMPS/2
-# protocol, and does not quite get it right...
-
->But according to my specs on IMPS/2 the first character has the following bina
->ry
->format:
->
->0b00xy0321  with xy indicating movement in positive x or y direction of mouse
->and 321 being the mouse buttons.  The later characters determine the dx, dy, a
->nd
->dz values.
-
-The first byte from the original IBM PS/2 mouse is
-
-   bit 7  Y overflow
-       6  X overflow
-       5  sign Y
-       4  sign X
-       3  always 1
-       2  always 0 (many 3 button PS/2 mouse uses this bit to indicate
-          the middle button status)
-       1  right butten
-       0  left button
-
-There have been some mice which do NOT set the bit 3, or use it
-for other purposes.  But, IntelliMouse seem to always set the bit 3...
-
-I wonder what document he is referring to and how he obtained it...
-
-Kazu
-
-----------------------------------------------------------------------
-
->  Hmm, what version of LinuxPPC is this? That probably is an old, twitchy
->USB stack. There will be a new version released shortly which should be
->better. The old versions only did imps2.
-
-Ok, old code may be buggy.
-
->Could the bit3 not getting set
->be an endian issue?
-
-Absolutely not.  It is definitely a emulator issue.
-
-[...]
->  I'll see about slapping together a linux-usb input driver this weekend.
->That should make everybody happier.
-
-I had a quick glance at Linux input driver suite 0.4.4 by Voltech
-Pavlik.  It appears that it emulates IMPS/2 all right in mousedev.c;
-we can expect this driver will work with the XFree86 mouse code.
-
-In contrast, Linux 2.3.29's original drivers/usb/mouse.c does NOT set
-the bit 3 correctly in the first data byte.  People in the linux/PPC
-mailing list must have complained because of this...
-
-I don't have a Linux/PPC box or Linux/i386 box here.  So, I cannot
-verify the above findings.  But, I believe I am not very badly beside the
-mark.
-
-Kazu
+H4sICA0vujgCA1VTQi1QYXRjaC0yLjIuMTUAxVhZc5tIEH5Gv6Ljzdo6kATIpxQlPiQnXsdH
+2XGltrIuFsFgTQkGwuFjHe9v354ZEEiWEr2t7AIx090z3f3114OazSZ4lKWPbcpo0vYtylq2
+chYwOCYjMHTQ9K6+1d3SwdA0rdJoNKR4M41HzdBK7PFixV3Qdru60e1oUnF/H5qdzY66DQ1+
+24P9/Qr8Rl2HuHB0cX588tE8GByeXdxcDytAHhMSMbgPqAOWMzL9II2JGZMkDav22IqgHieR
+CpQlUMdLXOuhLcIc6lYaszZvrg9NYdQ8vPliDs9uPlcaZevoRWad+KlnJdkqsGyZRrbM3Na/
+Dr7M7vrBSVbbL4/L3u4mj8ve7k4el4WLFPFRnmGNx2WUJknA4v6aOh8meFGne10hJNwgD0XJ
+4LLIoOEl+/v85fJI7s1LQpvb4PdCrTmFmhPRexLFbVyjfRQwl961KFO+EgcGxAbDAG27q2td
+/KLv7e0tBN1iE7PwMxCB2yX46QJ9ehZkO/B9ghnZwIDguvfUJvFGBfDjkNBMIhon6DVsAHCB
+cTqCOA3DIEqgekW+pzQizpvaRjmqn24O4W3xvNSWCGtubeNVXmZsNNAGdeEbrL2dl1uDN31Y
+Y2tw24NkTJiQxc8oCDy+FMCQWSOP4GRESFPmFmQ2acA2fgYIVHbpUgc+XUJsW4yRaKEXny7N
+66OD8/Ph1UrhmJCnUWBFzkJbp4eDlYwcpA4NFlo4uBmcXMzYWAzEfBvIYtdWAn9YDABhtNVF
+BuzsLae/JTZ+yoTbmqob0MBbZ0eA8QUZAf9WKNV2HUsTKyUJslQSMJjT7mD8CmzJXLcALUId
+uWHfD6kbNUcBYy0/vGs5RAVj0nbJqG1sQ709JUVOUbzy85rPCKH3SkBOGCZ6bAcOWSbQeS0g
++NG1JsQsxKDK1eR3U+S1xLUNjAwfo7bQrQjzk5Fjji3meISvUE1ZTO8YhkXQLY5ItnWCB1ar
+wLOAjRjhuOX7gb5YszY15lvhN9S77WWybjUXrcmR51WyA9kHszS27MmiLGUet1otEfhcA4u8
+uiDysL4O1Wqx6/6i6Nfgxw8kcW5mieg0D7VarVjzOVPKojufgxiDpPUyGT7pW/GEB+6X2/kA
+m9AFA3VzbfROJkM+w9xCP/rCeL4Y8WKyRHK9D/+WRV8haUa8lotF2IUi1it8f5np5ayU17OD
+I/N0+OfhxcHVoAJFfgq31+HyCInJPB8OB9fmUKsVYs9L2EXUJdLCcUQFtSAtICdghzL01agl
+N1Dmlb2uvtPVSryyY/AWh1d9U9AKFk5ImRfYEzMpdXQ+gHm8vjw5Nz9fHJ2aN+f8Nhz0/lcO
+WkI+GQqXMA/O7ug9WXL0zLK7wFIfhIdlm3NlgFq7s1p/9zeEQk46lXJVyLDR6LvgKQEtVRJZ
+3UTTrkuy451HWD7hkHuTOpJ9lDI71R0rsXADuWZPpE7XNtUdaOg6Jm8rS57Cd+fy5l4+N+AG
+Y7AE05IoSsNEFe0f4sAnyZiyO2BBQh6wD46f0AY66adxgnx0T/AShoTvRLj663Oh3MADmeY5
+y4kKI36CiQjHQBKk9hhGNAENAuY9CePKEkKTDCBcab4vMlydG1kH7VHbRmJD3sBwfdNucUgX
+5Twlh1dGCklUdkUH4bKgrCIpuSAXdR6hkYnpeL7COIjvt0BjkMlUMeAYeHzGUE9i7nSh/QTN
+TNuQ2k9N6xFF8T8ivKZlCgqFf6YKndsMEJ0tXsz6lq4a8sSqSBIDHcv0ZeVK5QQJVt52cHGE
+KX7hoOLIhweOHTwzJrilB5qMofwi8Pj4KOs3pj71ELw83VwzRsBbo+Ce8Fyv2NIrDd5w8FUo
+tfOSkme4ukR2H9ZlzZmlyR6IJiKBaGU14OPCsdwtC9AbgtQZJ4Qh+FVs+hywthWRD3x2CsY3
+WawtO0Fa5ThUpl1BroCvKm3bI+gmghmTJaOUo8alxJOFo6wAX11gt+x/julSE8q0ImIhYvqY
+WAWNW46TBSDCA07gMxLH1fkF3r0DY7MGjenKiCAcw/cdPsh9U2T7rBaQxPldPjuFeE16/iAy
+F5pTQqH41lBdz8QeLJqIuuMxzMZcK35itgjhhHqeKZ9nZ1W4Pvl4csFVX5bQqhSUzgq4uLyq
+JD5cim8udbyGklmD7CCn8AfM273lyTrZNLZ5nWxub6nYEzPizCpFE5XSWK1SBM5PEl6jtuV5
+WA4Z907w2Eo8Pl4uEz4zVyrCQhDytysV64oiK6ISlknKmxBn5pn3nTyXRRsVBsrtM8b+eT22
+fOIhCJBZ4yTAFgNuFPhiA/jaj2PYRvA4+fM+eyz6LJdBAJsm/9HGTTFnP/sZZPGPF1kdczjw
+Z06j7/sc73xUWdzAhaCOgvJAWSiLMV0gSVnc3TOxWTW5pjGv15nXMwq9Jb1IUcIIRSdQPR1e
+nZsn58cXsIZp6k5b3kw+ZO5xlRh+d7ALO3hr/cXWVFlyC1xQFx7DxbZeyqWBsJ3LBacihlng
+wwL8/wH2+tXZrRMAAA==
+--------------876FF003C8D9EEC47F6A85D0--
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
