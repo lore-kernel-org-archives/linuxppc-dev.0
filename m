@@ -1,65 +1,34 @@
-Message-ID: <A0899AFEE588D411A4930008C7094B990F7E62@postoffice2.teltronics.com>
-From: Tom Miles <tmiles@teltronics.com>
-To: "'Daniel Furse'" <daniel.furse@iptest.com>
-Cc: "'Linux Embedded List (E-mail)'"
-	 <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Embedded planet CLLF boards
-Date: Thu, 5 Oct 2000 11:30:13 -0400 
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-Id: <200010051604.SAA13962@denx.local.net>
+To: Daniel Furse <daniel.furse@iptest.com>
+cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Embedded planet CLLF boards 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 05 Oct 2000 15:46:24 BST."
+             <0D9416AE7F95D411A8710008C7332F3F0E38@GUILDFORD4_NT>
+Date: Thu, 05 Oct 2000 18:04:31 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Dan,
+In message <0D9416AE7F95D411A8710008C7332F3F0E38@GUILDFORD4_NT> Daniel Furse wrote:
+>
+> seems to be impossible. The worry we have about the TQM8xxL module is
+> the cost of purchasing one for every one of our boards that we ship.
+> What would
+> the typical selling price be for production volumes?
 
-I have recently gone through the same exercise as you.  We obtained a CLLF
-860T board and got the Hardhat Linux CDK from Montavista
-http://www.mvista.com.  I had Linux booting via TFTP in pretty short order.
-However, as you've already discovered Embedded Planet boards are not
-reference designs (i.e. they will not release schematics, etc. for any
-price).  They would rather sell you lots of their little boards.
-
-We've subsequently decided to go to the 8260 instead of the 860.  Have
-recently obtained a SBC8260 board which is a reference design from EST (now
-Windriver HSI).  I'm just getting started with it, but Montavista CDK has
-support for this board as well.
-
-Good luck with your efforts.
-
-Tom Miles, Staff Engineer
-Teltronics, Inc.
-4275 Kellway Circle, Suite 166
-Addison, TX 75001-4213
-214-346-2216
-tmiles@teltronics.com
-http://www.teltronics.com
+This is becoming too commercial for this list. If anybody else is
+interested, too: Please send email directly to me or to
+office@denx.de
 
 
+Wolfgang Denk
 
-
------Original Message-----
-From: Daniel Furse [mailto:daniel.furse@iptest.com]
-Sent: Thursday, October 05, 2000 3:47 AM
-To: Linux Embedded List (E-mail)
-Subject: Embedded planet CLLF boards
-
-
-
-Hi all,
-
-I am currently assessing the options for a real-time embedded linux
-controller, based on a PowerPC 860T chip.
-
-Initially, we purchased a FADS860T boards, but we had little success
-with this target. Can anyone recommend an 860T-based board, which has
-both a fast ethernet and a PCMCIA interface? So far, the board that gets
-closest to this spec is the embedded planet CLLF board. However, this is
-a production-ready board, and we are looking to design our own product
-once we have proven the technology can do the task.
-
-Dan
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Lots of folks confuse bad management with destiny.   -- Frank Hubbard
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
