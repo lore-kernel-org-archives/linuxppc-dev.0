@@ -1,39 +1,27 @@
-Message-ID: <39AFE665.52007B94@embeddededge.com>
-Date: Fri, 01 Sep 2000 13:24:53 -0400
-From: Dan Malek <dan@netx4.com>
+Message-ID: <F9102D41F595D311ACA7009027DE2C84967344@c3po.heurikon.com>
+From: "Johnson, Stephen B." <stevebj@artesyncp.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: emacs and X on embedded Linux
+Date: Fri, 1 Sep 2000 12:41:42 -0500 
 MIME-Version: 1.0
-To: Alex Shnitman <alexsh@hectic.net>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Where is the embedded-ppc ftp site ???
-References: <39AF5AD7.B23D0FA3@ctam.com.au> <39AFCB13.D6E49F5C@embeddededge.com> <20000901200634.C2265@hectic.net>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Alex Shnitman wrote:
+I've only seen one version of embedded Linux the runs emacs & X on the PPC
+architecture. I used it on the Artesyn PM/PPC running a distribution from
+Protologos (www.protologos.com).  I know the guys at Protologos and they had
+to fix some things in the kernel to get it all working, but it only took a
+couple of hours to get everything working.
 
-> Except for some MontaVista changes that hasn't gone in yet, such as
-> the Sandpoint support.
+In this case, everything can be done with a native PPC instead of the cross
+development involved with Monte Vista.
 
-That is one example, but there are changes from lots of people that
-haven't gone into well known source trees.  You can pick these up from
-the address published by the authors.
-
-> Are there any plans to converge all these repositories so that there's
-> *one* place for LinuxPPC kernels, instead of three?
-
-Oh yeah.  Lots of plans, no consensus.  Part of the problem today
-is we didn't stabilize 2.4 quickly and cut a 2.5 tree so people wouldn't
-have to wait to check them in to a single tree.
-
-> NOTE: if this message has reached you in error, or if you would simply
-> like to be removed from our mailing list, please call the 800 number
-> listed above
-
-You didn't list the 800 number (I should be removed from this list :-).
+Doesn't anybody else want this capability?
 
 
-	-- Dan
+SBJ
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
