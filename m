@@ -1,23 +1,44 @@
-From: "Kwansuk Kim" <kskim@neowave.co.kr>
-To: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Compiling apache for Linux PPC
-Date: Sat, 5 Aug 2000 09:45:23 +0900
-Message-ID: <NEBBKFENMLEDKDHMEHPJEEBPCBAA.kskim@neowave.co.kr>
+Message-ID: <005601bffe7f$9acd22e0$0401a8c0@hoangmobile>
+From: "Nguyen Xuan Hoang" <hoang_nguyen@smartstors.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+References: <380658298.965240776157.JavaMail.root@web621-wrb.mail.com> <39888816.AEA4C307@mvista.com> <001101bffd79$167e2860$0401a8c0@hoangmobile>
+Subject: Usb slave API
+Date: Fri, 4 Aug 2000 18:50:59 -0700
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="ks_c_5601-1987"
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I'm trying to implement embedded linux router.
+Hi,
 
-So I tried to cross-compile apache on x86 linux machine.
+Could anyone please spend few minutes to give me advices. I have no clue
+about this.
 
-I changed the compiler name from 'gcc' to 'powerpc-linux-gcc'
+Thanks in advance
+Hoang
 
-But when I ran make there was an error. Of course compile with gcc, it works well.
+----- Original Message -----
+From: "Nguyen Xuan Hoang" <hoang_nguyen@smartstors.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Sent: Thursday, August 03, 2000 11:31 AM
+Subject: Usb slave API
 
-Is there any options? It seems there is no use of configure option '--tartget=powerpc-linux'
+
+>
+> Hi All,
+>
+> From my understanding the usb slave driver (not host) was done for MPC823
+> and MPC850, but I can't  find where it is nor what is the API for it (In
+> official linux kernel there's a API  for USB host function). Am I right or
+> too stupid?  I hope some people in this maillist can give a point.
+>
+> Thank in advance
+> Hoang
+>
+>
+>
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
