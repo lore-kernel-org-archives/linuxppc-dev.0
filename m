@@ -1,53 +1,28 @@
-Message-ID: <20001120050245.2300.qmail@kunk.jriver.com>
-Subject: Re: controlfb and X (fixed)
-In-Reply-To: <200011191036.LAA00685@piglet.grunz.lu> "from Michel Lanners at
-	Nov 19, 2000 11:36:30 am"
-To: mlan@cpu.lu
-Date: Sun, 19 Nov 2000 22:39:44 -0600 (CST)
-From: Robert E Brose II <bob@kunk.jriver.com>
-CC: linuxppc-devel@lists.linuxppc.org
+Message-ID: <3A18F5B4.1487E2E3@inf.ethz.ch>
+Date: Mon, 20 Nov 2000 10:58:12 +0100
+From: Leonhard Jaschke <jaschke@inf.ethz.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: G4 internal modem
+References: <3A13D8D9.20F0F22@denise.shiny.it> <v04220800b63946df2900@[10.0.0.42]>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-User Michel Lanners says:
->
-> > Which 2.4.0 kernel source are YOU using?
->
-> I'm running BenH's 2.5 kernel, that's the only one I was able to boot on
-> my 7600. Paulus' 2.4 kernels lock my machine 90% of the time at boot. I
-> haven't found what's wrong with them, though...
->
-> BenH's kernel is at:
->
-> rsync -arvz penguinppc.org::linux-benh-devel .
->
-> Happy compiling ;-)
+Hello!
 
-FINALLY got the 2.4.0-test10 benh kernel going.
-I had to turn off a bunch of stuff to get it to run (i.e. to avoid
-the black screen of death on boot) and I'm not sure the
-PPP async driver works yet, had to compile it as a module.
+Just wanted to thank everybody who helped me with my internal G4
+modem/minicom problem. It was an old version of minicom that caused the
+problem (mincom told me that it was not able to access the device
+/dev/ttyS0). Actually it seemed to me that the problem was not solved
+before version 1.83 of minicom. And that is a rather new version of
+minicom.
 
-The controlfb driver now senses the 4m video memory properly
-on the 7500.
+Anyway: another problem solved. Thank you.
 
-XFree4.01 runs (though the keyboard is messed up. I have to investigate
-the new input layer)
-
-The stock XFree86 (XFree86-3.3.6-11.2) also works in 24/32 bits now!!!
-HOORAY!! Hopefully the changes will eventually make it to the stock
-trees.
-
-Thanks Michel!
-
-Bob
---
-Robert E. Brose II    N0QBJ
-http://www.jriver.com/~bob/
-bob@kunk.jriver.com
+Regards
+	Leonhard
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
