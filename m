@@ -1,38 +1,31 @@
-Date: Mon, 22 Nov 1999 11:52:54 -0700
-From: Cort Dougan <cort@ppc.kernel.org>
-To: Dan Malek <dmalek@jlc.net>
-Cc: Neil Blackwood <nb@terrafix.co.uk>, sorin@nitechinc.com,
-        linuxppc-embedded@lists.linuxppc.org
-Subject: Re: IDE on MBX board
-Message-ID: <19991122115254.A29168@chimaera.ppc.kernel.org>
-References: <99111909331400.01435@splash.nitechinc.com> <000a01bf34db$79773180$6401a8c0@everyone> <383975BE.A9B2A487@jlc.net>
-Mime-Version: 1.0
+Message-ID: <383993F5.BCE4A507@pplmail.com>
+Date: Mon, 22 Nov 1999 14:05:25 -0500
+From: Francois Guimond <fguimond@pplmail.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Linux ppc newbie boot sequense
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <383975BE.A9B2A487@jlc.net>; from Dan Malek on Mon, Nov 22, 1999 at 11:56:30AM -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Would you mind using the stock 2.2.x from Linus?  Right now the current
-patch level is 2.2.14pre7 from Alan.  It'll be easier to merge your patches
-in for me if you work with that tree.
+Excuse me for de obivious question, but I am a newbie...
 
-The problem I was having in the MBX IDE was much the same as you're seeing
-now.  I couldn't find the drive.  One of the big problems was tracking down
-the interrupt routing for IDE on the MBX.  If you check to see if you're
-getting any interrupts at all on the 8259 that may give you a good place to
-start.
+I am trying to install a linux kernel on MPC8240 cpu in a limited flash
+space.
+(Motorola sandpoint evaluation platform 512kb flash 32MB ram and dink32
+software)
 
-I don't have an IDE drive for my MBX anymore but would like to have it
-working again.  Let me know if you want to work together on it.
+I have got a PPC zImage compiled.
 
-} That's a good point.....To follow up on my last message, if you want
-} to try IDE on MBX, use a 2.2.x kernel that I have not updated :-).  That
-} is, use the stuff in the CVS tree, not something I have as a tar
-} image on ppc.kernel.org.
-} 
-} I really do want to get this correct.  It is likely to happen when
-} I finish the pcmcia-cs for the 8xx, as that will use the standard IDE
-} (with appropriate 8xx modifications) for the ATA Flash.
+My question is what do I put at First Instruction?
+Do I need Lilo?
+Where is the first instruction of the kernel in a zImage?
+
+I want only serial console first.
+
+Because there is no CPM  in it, I wanted to postpone the networking
+features.
+It means no root over nfs...
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
