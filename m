@@ -1,21 +1,20 @@
-Return-Path: <vitorio@digitel.com.br>
-Received: from hermes.digitel.com.br (hermes.digitel.com.br [200.198.105.36])
-	by ozlabs.org (Postfix) with ESMTP id 0CB302BF07
+Return-Path: <geert@linux-m68k.org>
+Received: from witte.sonytel.be (witte.sonytel.be [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id 2D1192BF07
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  4 Jan 2005 02:32:41 +1100 (EST)
-Received: from [10.10.10.160] by hermes.digitel.com.br (GMS
-	9.01.3158/NU1492.00.9f6ce814) with ESMTP id hkygibaa for
-	linuxppc-embedded@ozlabs.org; Mon, 3 Jan 2005 13:27:16 -0200
-From: =?ISO-8859-1?Q?Lu=EDs_Vit=F3rio?= Cargnini <vitorio@digitel.com.br>
-To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-2dmQTvC4gijgya6+K0gv"
-Date: Mon, 03 Jan 2005 13:20:58 +0000
-Message-Id: <1104758458.14925.5.camel@vitorio>
-Mime-Version: 1.0
-Subject: Making a serial multiplexer (new driver)
-Reply-To: vitorio@digitel.com.br
+	Tue,  4 Jan 2005 03:17:42 +1100 (EST)
+Date: Mon, 3 Jan 2005 17:17:36 +0100 (MET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Sender: geert@sonycom.com
+To: =?ISO-8859-1?Q?Lu=EDs_Vit=F3rio?= Cargnini <vitorio@digitel.com.br>
+In-Reply-To: <1104758458.14925.5.camel@vitorio>
+Message-ID: <Pine.GSO.4.61.0501031717080.27452@waterleaf.sonytel.be>
+References: <1104758458.14925.5.camel@vitorio>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-559023410-1914471406-1104769056=:27452"
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: Making a serial multiplexer (new driver)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,34 +25,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
---=-2dmQTvC4gijgya6+K0gv
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+---559023410-1914471406-1104769056=:27452
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 
-Hi i need to write a driver that must multiplex an serial channel my
-driver will have  3 interfaces and i must communicate with another
-interface  (midleware) like /dev/ttyS2 for example, how could i write a
-driver that will communicate with my existing uart ???
+On Mon, 3 Jan 2005, [ISO-8859-1] Luís Vitório Cargnini wrote:
+> Hi i need to write a driver that must multiplex an serial channel my
+> driver will have  3 interfaces and i must communicate with another
+> interface  (midleware) like /dev/ttyS2 for example, how could i write a
+> driver that will communicate with my existing uart ???
+> 
+> i have a component that could be multiplexed in 3 logical channels throw
+> my single physical channel that are accessed with a normal serial
+> interface using uart, how could this be possible ?
+> this is necessary to be transparent to software user level.
 
-i have a component that could be multiplexed in 3 logical channels throw
-my single physical channel that are accessed with a normal serial
-interface using uart, how could this be possible ?
-this is necessary to be transparent to software user level.
---=20
-Lu=EDs Vit=F3rio Cargnini <vitorio@digitel.com.br>
-Digitel S/A
+Do it in userspace using fifos?
 
---=-2dmQTvC4gijgya6+K0gv
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+Gr{oetje,eeting}s,
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.6 (GNU/Linux)
+						Geert
 
-iD8DBQBB2Ua4yHSZZ0hdDzQRAn3aAJ4pAmVCKaaSnNBMlTXxrUsvSRDsDgCgn1KW
-ramVzaVvZTd2l2icH9mpZ5Y=
-=Ajh+
------END PGP SIGNATURE-----
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
---=-2dmQTvC4gijgya6+K0gv--
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+---559023410-1914471406-1104769056=:27452--
