@@ -1,53 +1,43 @@
-Message-Id: <200003090658.HAA00456@piglet.grunz.lu>
-Date: Thu, 9 Mar 2000 07:58:03 +0100 (CET)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: Grabbing an Interrupt for a Brain-dead PCI Device
-To: geert@linux-m68k.org
-cc: grant@borg.umn.edu, mmporter@home.com, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.LNX.4.05.10003082011320.8208-100000@callisto.of.borg>
+Date: Thu, 9 Mar 2000 08:33:59 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Sean Harding <sharding@dogcow.org>
+cc: David Edelsohn <dje@watson.ibm.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: compiler optimization? something else?
+In-Reply-To: <Pine.GSO.4.05.10003081359150.17227-100000@ophelia.dogcow.org>
+Message-ID: <Pine.LNX.4.05.10003090827380.4093-100000@callisto.of.borg>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On   8 Mar, this message from Geert Uytterhoeven echoed through cyberspace:
->> Also, regarding memory address space resources, is there a routine I can
->> call that says "Assign this card some resource space because it hasn't
->> been assigned one yet"?
->
-> Yes there is, somewhere in drivers/pci/. I don't know yet whether it works.
+On Wed, 8 Mar 2000, Sean Harding wrote:
+> On Wed, 8 Mar 2000, David Edelsohn wrote:
+> (FWIW, another metric...It took 41 minutes to compile a kernel on the
+> powermac. It took just over 6 minutes on my PII 350 desktop. The pentium
+> was compressing an mp3 at the same time).
 
-I doubt it will work on a PowerMac; see what the resource 'checking'
-code finds as parent resources (r is a mem resource, pr is its parent
-resource):
+I assume the PPC compiled a PPC kernel and the ia32 compiled an ia32 kernel?
+Then your benchmark is irrelevant since it hides the complexity difference for
+generating good code between ia32 and PPC.
+Please redo the timings cross-compiling a PPC kernel on the ia32 or
+cross-compiling an ia32 kernel on the PPC.
 
-Mar  9 07:24:29 piglet kernel:    Resources: r.start=f2000400, r.end=f200043f,
-pr.start=00000000, pr.end=ffffffff.
+BTW, if you do timings for integer wavelet transforms, you'll find out that the
+PPC is about as fast (or faster) than the PII 350. For this particular case my
+200 MHz 604e outperformed all PCs and Suns I had access to at the university
+(SMP doesn't count).
 
-As far as I can tell, parent resource would be the memory region held
-by the parent bridge, out of which this region was allocated. A bit
-huge, this region, isn't it?
+Gr{oetje,eeting}s,
 
-Then again, Apple's host bridges might not conform entirely to the PCI
-spec in the way they advertise their resources available for
-assignment...
+						Geert
 
-Those with the PCI spec at hand out there, is there such a thing as
-resource registers in bridges (be it P2P or host) that inform about
-what is available to devices behind this particular bridge?
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Maybe there's another job for the fixup code...
-
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
