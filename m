@@ -1,50 +1,46 @@
-Date: Thu, 14 Jan 1999 12:12:51 -0500 (EST)
-From: Jon Howell <jonh@cs.dartmouth.edu>
+From: supas100@astrophysik.uni-kiel.de (Derek Homeier)
+Message-Id: <199901141731.SAA11562@juliet.astrophysik.uni-kiel.de>
+Subject: Re: Apple's cdrom driver & non Apple CDROM drives
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: AtyFB problem solved -> should go into a FAQ or something
-In-Reply-To: <199901140800.CAA24661@lists.linuxppc.org>
-Message-ID: <Pine.GSO.3.96.990114103025.1036C-100000@shovel.cs.dartmouth.edu>
+Date: Thu, 14 Jan 1999 18:31:04 +0100 (MET)
+Cc: martins1@col.bsf.alcatel.fr
+In-Reply-To: <199901140800.CAA24661@lists.linuxppc.org> from "owner-linuxppc-dev-digest@lists.linuxppc.org" at Jan 14, 99 02:00:02 am
+Reply-to: Derek Homeier <homeier@astrophysik.uni-kiel.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Date: Wed, 13 Jan 1999 09:20:21 +0100
-> Subject: AtyFB problem solved -> should go into a FAQ or something
+On Wed, 13 Jan 1999 16:00:22, Alexandre MARTINS MELO <martins1@col.bsf.alcatel.fr>
+wrote:
 
-So it's been a while since I've given the faqomatic sales pitch. :v)
-(This is addressed to the whole community, not the original author
-above.)
+> Hi,
+>  
+> does anybody know what CDROM drive models & constructors are supported
+> by the apple cdrom driver ?
+> I have a PM7200/75 and a Nec CDR222. Since I formatted my HD in HFS+, the
+> cdrom driver seems to have problems with its cache file. It works, but
+> very, very slowly.
+>  
+> With LinuxPPC, there's no problem, but I would like to play a bit with
+> Lara Croft...
+somewhat off topic, really, but look at the recent (or, meanwhile, perhaps 
+'previous') news section at macintouch for two links describing a patch to 
+the apple cdrom and dvd drivers to make them work with non-apple drives. 
+One is at c't magazine:
+	http://www.heise.de/ct/english/98/26/188/
+the other one improves a bit on this in that it supports both apple and non-
+apple drives with the same driver, but I don't have it at hand right now.
 
-A couple years ago, I had an answer to a ppp question that I
-thought "should go into a FAQ or something." But I was too lazy to start
-a FAQ, or even to track down the maintainer of a FAQ. So, instead, I
-wrote the faqomatic, so that everybody who comes up with an answer
-that "should go into a FAQ or something" can just stuff the answer
-in there and forget about it.*
+Hope this helps,
+							Derek
 
-If you've used the linux/powerpc faqomatic, maybe you didn't notice,
-but you can add new answers. Find an appropriate category, click [Show
-Edit Commands], click [New Answer] at the top of the page. If you
-haven't used it before, you will need to create a password (to verify
-that your email address is real); then it will ask you for the question
-and its answer.
-
-Thanks to all who have contributed to the faqomatic. If everybody puts
-in one or two answers, then all of us get to be lazy. :v)
-
-	--Jon
-
-* There are also moderators who watch over various categories in the
-FAQ, and make some effort to see that they stay organized. This is much
-less effort than a typical FAQ, since you don't have to actually *add*
-any answers. If you are interested in moderating a category of the FAQ,
-just ask the moderator of the next section up (turn on "show moderator"
-in the Appearance page), or ask me.
-
- Jon Howell  jonh@cs.dartmouth.edu     finger jonh@cs.dartmouth.edu | pgp -kaf
- http://www.cs.dartmouth.edu/~jonh     170AE827  ADAB6559  9C2E3DB3  37BD72EC
+-- 
+Derek Homeier                                           Tel: +49-431-880-4103
+Institut fuer Theoretische Physik und Astrophysik       Fax: +49-431-880-4100
+der Christian-Albrechts-Universitaet                    Feet:        Room 142
+D-24098 Kiel, Germany		      email:  homeier@astrophysik.uni-kiel.de
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
