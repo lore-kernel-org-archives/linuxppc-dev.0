@@ -1,30 +1,37 @@
-Message-ID: <3B3C0ECD.BB633095@mvista.com>
-Date: Fri, 29 Jun 2001 01:14:53 -0400
-From: Dan Malek <dan@mvista.com>
+Date: Fri, 29 Jun 2001 01:21:25 -0400 (EDT)
+From: "Justin (Gus) Hurwitz" <ghurwitz@dyndns.com>
+To: Dan Malek <dan@mvista.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: (allocating non-cachable memory) (or More on the i82596)
+In-Reply-To: <3B3C30CD.34B20F02@mvista.com>
+Message-ID: <Pine.LNX.3.95.1010629011928.2623B-100000@november.bhjjh.erols.com>
 MIME-Version: 1.0
-To: machael thailer <dony.he@huawei.com>
-Cc: karanthk@lycos.com, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Uncompressing......
-References: <BEOODLLCEMKDDCAA@mailcity.com> <001b01c0feb4$6d9dcb40$8021690a@huawei.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-machael thailer wrote:
+On Fri, 29 Jun 2001, Dan Malek wrote:
 
-> The above relocate messages seems to be wrong.
+>
+> jtm@smoothsmoothie.com wrote:
+>
+> > .... The buffer memory will get filled
+> > via DMA, and therefore must not be cached.
+>
+> Huh????  The 8260 is cache coherent, you don't need to do that.
+>
+> For processors that are not cache coherent (4xx and 8xx), there
+> are standard 'consistent_alloc()' functions available.
+>
 
-Yes.
+Are those functions in the code for the 6xx proceesors? I have a 603e with
+a broken memory controller- it does everything (or so I am assured) except
+support atomic functions (ie, no memory coherency). If they are not in the
+codo, are they at least portable to the 6xx?
 
-> Try to link your kernel at 0x400000, this may solve your problem.
+Thanks,
+--Gus
 
-No, they way to solve the problem is to leave the Makefiles and
-all of the addresses alone, that is just as they are in the original
-sources.  Simply build the zImage, load the image at address 0x200000
-and jump to it.
-
-
-	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
