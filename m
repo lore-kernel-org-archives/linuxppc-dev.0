@@ -1,12 +1,12 @@
-Date: Sat, 3 Jun 2000 17:09:17 -0700
-From: Daniel Jacobowitz <drow@false.org>
-To: Michel Lanners <mlan@cpu.lu>, linuxppc-dev@lists.linuxppc.org
+Date: Sat, 3 Jun 2000 17:31:10 -0700 (PDT)
+From: Ani Joshi <ajoshi@shell.unixbox.com>
+To: Michel Lanners <mlan@cpu.lu>
+cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: [patch] VRAM detection in controlfb
-Message-ID: <20000603170917.A11644@quaketop.them.org>
-References: <Pine.LNX.3.96LJ1.1b7.1000531195040.22480A-101000@ofey.inetnebr.com> <200006030628.IAA00691@piglet.grunz.lu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200006030628.IAA00691@piglet.grunz.lu>; from mlan@cpu.lu on Sat, Jun 03, 2000 at 08:28:25AM +0200
+In-Reply-To: <20000603170917.A11644@quaketop.them.org>
+Message-ID: <Pine.LNX.4.10.10006031728230.9136-100000@shell.unixbox.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
@@ -17,14 +17,15 @@ On Sat, Jun 03, 2000 at 08:28:25AM +0200, Michel Lanners wrote:
 > gets assigned which framebuffer device, that might help in certain
 > situations...
 
-Yes, sounds like a great idea.
+I believe you can set which driver gets init'ed first by using the args:
 
-Dan
+video=foo:blah video=bar:blah
 
-/--------------------------------\  /--------------------------------\
-|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
-|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
-|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
-\--------------------------------/  \--------------------------------/
+foo's _init will be called first, and bar's next, (therefore being fb0 and
+fb1 respectively).
+
+
+ani
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
