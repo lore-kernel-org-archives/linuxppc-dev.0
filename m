@@ -1,51 +1,33 @@
-Message-ID: <20020416161037.59707.qmail@web14303.mail.yahoo.com>
-Date: Tue, 16 Apr 2002 09:10:37 -0700 (PDT)
-From: Chirag Kantharia <chyrag@yahoo.com>
-Subject: Source & status of usb drivers for mpc823 & mpc850
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: tom.elam@timesys.com
+Message-ID: <3CBC5625.9020000@mvista.com>
+Date: Tue, 16 Apr 2002 09:49:41 -0700
+From: Matthew Locke <mlocke@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Jacky Wang <jacky@premierme.com.tw>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Does anyone port m8xx_pcmcia driver to Linux Kernel successfully?
+References: <NFBBLKLHNAGPKBMPDMALEEHMKAAA.jacky@premierme.com.tw>
+Content-Type: text/plain; charset=Big5
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Forwarded message from Tom Elam-
+Jacky Wang wrote:
 
-Hi.
+>Hi everyone,
+>
+>I am interesting about how to port m8xx_pcmcia driver to linux kernel w/ MPC850.
+>
+>Would you mind to share your successful experience with me?
+>
+I did (w/ the help of others). It is on its way upstream now. If you
+need it soon, let me know and I can make it available.
 
-Please excuse me for asking something that might seem obvious.
-
-I have been reading a few score of messages on this topic & still
-haven't
-found a central, official-looking repository for these drivers.  I have
- picked up Brad Parker's m8xxhci.c from www.heeltoe.com and read the
-note
- that it's no longer available on the bitkeeper site and not in the 2.5
- kernel sources.  I also noticed the copyright date is 2000 for the
-code.
-
-What would you say is the current status of the code (under
-development,
-alpha, unstable, etc.)?  Are there also other promising GPL or
-similarly
-licensed USB drivers for these processors?
-
-I have searched the Motorola site looking for microcode patches, but
-come up with nothing.  Do you know where I can get them along with
-the information about which processors need them?
-
-I guess I may just have to try m8xxhci.c.  It looks like people have
-got it
- to work on some of Embedded Planet the boards we are working with,
-namely
- the RPX Lite 823 and 850.
-
-Thanks.
-
-
-=====
-Chirag Kantharia <chyrag@yahoo.com>
+>
+>
+>Best Regards
+>Jacky Wang
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
