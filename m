@@ -1,43 +1,36 @@
-Message-ID: <39358FA0.3C765982@embeddededge.com>
-Date: Wed, 31 May 2000 18:18:08 -0400
-From: Dan Malek <dan@netx4.com>
+Message-ID: <39359499.7B652D91@lucent.com>
+Date: Wed, 31 May 2000 17:39:21 -0500
+From: Tom Roberts <tjroberts@lucent.com>
 MIME-Version: 1.0
-To: "Gessner, Matt" <mattg@aiinet.com>
-CC: "'Linux PPC'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: EST SBC8260 & abatron
-References: <7283DE19D141D111AD0E00A0C95B195502581D61@mail2.aiinet.com>
+To: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: allocating non-cacheable regions
+References: <39104A07.D997B6C5@ccrl.mot.com> <3910838C.986942D6@embeddededge.com> <39357BC5.A0B3E713@ccrl.mot.com> <39358E65.145F7EA3@embeddededge.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-"Gessner, Matt" wrote:
->
-> A long subject...
->
-> I'm having trouble accessing the upper 8MB of the 16MB SDRAM SIMM on this
-> board.
-> I'm wondering if I don't have something configured wrong in my BDI2000
-> config file.
+Dan Malek wrote:
+> You need to invalidate the data cache for this address and the TLB
+> entry for this address when you set the flag.
 
-Didn't we discuss this once before?  There were some suggestions posted.
-
-> Also, we're trying to load the linux kernel into this system.
-> How are the folks out there doing that?  Via ftp?  Via a bootloader on the
-> 2MB FLASH
-> chip on the board tied to /CS0?  What exactly?
-
-I am using a high speed serial S-record downloader.  I guess I will
-be posting the boot rom and the loader for the EST8260 when I get
-a chance later this week.  I then load and flash a kernel the same
-way.  I have some flash utilities that run from Linux and just reflash
-kernels into different areas for testing.  I have just finished a
-program to hack the zImage header so the VxWorks boot rom will load
-it.  I only spent about half an hour, so it needs a little cleaning up,
-but it seems to work.  I am hoping someone will provide a TFTP loader
-for the code I post.......
+That is probably his problem.
 
 
-	-- Dan
+> You also need to ensure you are not
+> multiple mapping the same physical address....
+
+No, that is not necessary, as long as your program is aware of the
+multiple mapping. In certain cases (com buffers shared by two non-
+snooping CPUs) this is quite useful -- use the uncached addrs for the
+queue pointers and the cached addrs for the data (being careful to
+manually flush the cache before reading and after writing).
+
+You do need to ensure you are not mapping the same _virtual_ address
+(i.e. the effective address, in the language of Motorola's manuals),
+but the kernel routines will probably take care of that for you....
+
+
+Tom Roberts	tjroberts@lucent.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
