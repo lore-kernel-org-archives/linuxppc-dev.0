@@ -1,35 +1,34 @@
-From: jonb@marel.is
-Subject: 8xxFADS and SingleStep BDM
-To: psosuser@isi.com, linuxppc-embedded@lists.linuxppc.org
-Date: Mon, 21 Feb 2000 11:39:12 +0000
-Message-ID: <OF9754FB8B.2B42D5DE-ON0025688C.003AFCD8@marel.is>
+Message-ID: <000b01bf7c93$7477aca0$65daa8c0@pcclub04>
+From: "Ilya Gindentuller" <igin@vrcomm.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Bootloader with debug monitor functions.
+Date: Mon, 21 Feb 2000 09:45:34 -0800
 MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="utf-8"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi
+Hi, everybody!
 
-Is anyone using SDS SingleStep BDM with the 823FADS board from Motorola?
-I am having some problems with this combination.  I get a connection
-and I can read/write registers, initialize DRAM and read/write DRAM.
-But when I try downloading an ELF file the result is always the same,
-memory and registers are filled with garbage data after the download.
+We are new to Linux development, so all help is greatly appreciated !
 
-I would also like to use the SingleStep BDM flash programming tool, which
-works successfully on our custom 821 board, but the flash programming tool
-does not succeed in programming the 8xxFADS flash.
+We have our new target board based on MPC860T almost ready and now we are
+trying to
+cross-compile and build Linux kernel 2.2.13 using x86 PC.
 
-Does anyone have these tools working with 8xxFADS ?
+The problem is that we do not have any bootloader and/or debug monitor to
+boot Linux
+image - only BDM debugger.
 
-I would be interested in sharing the config files.
+If somebody could  give us his bootloader/monitor source code so that we
+could build it,
+that would really help.
 
+Thanks in advance,
 
-Regards,
-
-Jon Benediktsson
-Marel hf.
+Ilya Gindentuller
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
