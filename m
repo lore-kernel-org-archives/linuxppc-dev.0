@@ -1,30 +1,33 @@
-Date: Mon, 17 Jun 2002 10:20:18 -0400
-Message-Id: <200206171420.g5HEKII01583@hyper.wm.sps.mot.com>
-From: Peter Barada <pbarada@mail.wm.sps.mot.com>
-To: vandana_mehtani123@rediffmail.com
-Cc: linuxppc-embedded@lists.linuxppc.org, Sukesh.Acharya@siritech.com
-In-reply-to: <20020615093055.30142.qmail@webmail9.rediffmail.com>
-	(vandana_mehtani123@rediffmail.com)
-Subject: Re: linker linux
-References: <20020615093055.30142.qmail@webmail9.rediffmail.com>
+Date: Mon, 17 Jun 2002 08:32:55 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Steven Scholz <steven.scholz@imc-berlin.de>
+Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: board specific defines in commproc.h !?!?
+Message-ID: <20020617153255.GS13541@opus.bloom.county>
+References: <3D0DA9C2.D78C43E5@imc-berlin.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3D0DA9C2.D78C43E5@imc-berlin.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->hello everybody,
->i wanted to know where to find the address where  the
->linker links whan i link it,,
->or what is the address where linker places the code
->after linking..
+On Mon, Jun 17, 2002 at 11:20:02AM +0200, Steven Scholz wrote:
 
-You could always look at the linker map. (Add -Wl,-Map,vmlinux.map to the gcc
-command line that links together vmlinux to have the linker generate
-the map in vmlinux.map)
+> Hi there,
+>
+> I think we should move the board specific defines such as
+>
+> /***  RPXCLASSIC  *****************************************************/
+[snip]
+> etc. out of ./include/asm-ppc/commproc.h into the board specific header
+> files like ./arch/ppc/platforms/xxx.h
 
+Yes, we should.  Patches vs linuxppc-2.5 (note, you won't be able to
+boot 8xx unless you perform some other updates) happily accepted.
 
 --
-Peter Barada                                   Peter.Barada@motorola.com
-Wizard                                         781-852-2768 (direct)
-WaveMark Solutions(wholly owned by Motorola)   781-270-0193 (fax)
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
