@@ -1,34 +1,55 @@
-To: cjohnson@gcctech.com
-Cc: Daniel Jacobowitz <drow@false.org>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: powerpc gdb and gdbserver 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 18 Dec 2003 15:37:49 EST."
-             <3FE2101D.6000005@gcctech.com>
-Date: Fri, 19 Dec 2003 21:35:20 +0100
-Message-Id: <20031219203525.E090BC5F5F@atlas.denx.de>
+Date: Sat, 20 Dec 2003 14:09:07 +0100
+From: Harald Welte <laforge@gnumonks.org>
+To: prism54-devel@prism54.org, linuxppc-dev@lists.linuxppc.org
+Subject: [PATCH 2.6] fix pci_update_resource() / IORESOURCE_UNSET on PPC
+Message-ID: <20031220130907.GA15552@obroa-skai.de.gnumonks.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message <3FE2101D.6000005@gcctech.com> you wrote:
->
-> As I mentioned, the library doesn't exist.  I need to build it, but I'm
-> not sure where it comes from (glibc I think) or how to get it built.
+Hi!
 
-You can also just download the ELDK and use  the  ready-to-run  tools
-(which include some extra fixes and extensions).
+The prism54 (http://prism54.org) driver for my cardbus adapter works
+with 2.4.x, but not 2.6.x on a Titanium G4 Powerbook IV.
 
-Best regards,
+On 2.6.x the error message was
+PCI:0001:02:00.0 Resource 0 [00000000-00001fff] is unassigned
 
-Wolfgang Denk
+After investigating differences in the PCI code of 2.4.x and 2.6.x, i
+noticed that 2.4.x/arc/ppc/kernel/pci.c:pcibios_update_resource()
+contained a couple of lines that unset the IORESOURCE_UNSET bitflag.
+
+In 2.6.x, this is handled by the generic PCI core in
+drivers/pci/setup-res.c:pci_update_resource() code.  However, the code
+is missing the 'res->flags &= ~IORESOURCE_UNSET' part.
+
+The below fix re-adds that section from 2.4.x.
+
+I'm not sure wether this belongs into the arch-independent PCI api.
+Anyway, on PPC it seems to be needed for certain cardbus devices.
+
+Any comments welcome.
+
+diff -Nru linuxppc25bh-031214-plain/drivers/pci/setup-res.c linuxppc25bh-031214-orinoco_monitor/drivers/pci/setup-res.c
+--- linuxppc25bh-031214-plain/drivers/pci/setup-res.c	2003-12-05 02:37:16.000000000 +0100
++++ linuxppc25bh-031214-orinoco_monitor/drivers/pci/setup-res.c	2003-12-15 12:08:11.000000000 +0100
+@@ -84,6 +84,10 @@
+ 			       pci_name(dev), resno, new, check);
+ 		}
+ 	}
++	res->flags &= ~IORESOURCE_UNSET;
++	printk(KERN_INFO "PCI: moved device %s resource %d (%lx) to %x\n",
++		dev->slot_name, resno, res->flags,
++		new & ~PCI_REGION_FLAG_MASK);
+ }
+
+ int __init
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Life would be so much easier if we could  just  look  at  the  source
-code.                                                   -- Dave Olson
+- Harald Welte <laforge@gnumonks.org>               http://www.gnumonks.org/
+============================================================================
+Programming is like sex: One mistake and you have to support it your lifetime
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
