@@ -1,33 +1,44 @@
-To: Marc Leeman <marc.leeman@barco.com>
-Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: http sharing in linux 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 14 May 2004 09:29:49 +0200."
-             <20040514072949.GD4043@smtp.barco.com>
-Date: Fri, 14 May 2004 17:46:07 +0200
-Message-Id: <20040514154612.AABE3C108D@atlas.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <20040514155816.1679.qmail@web15206.mail.bjs.yahoo.com>
+Date: Fri, 14 May 2004 23:58:16 +0800 (CST)
+From: Song Sam <samlinuxppc@yahoo.com.cn>
+Subject: Re: mpc8xx linux maintenance
+To: David Ho <DavidHo@nanometrics.ca>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <OFB9E33748.A397083B-ON85256E94.004FB37A-85256E94.004FF18D@nanometrics.ca>
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20040514072949.GD4043@smtp.barco.com> you wrote:
->
-> > recommend me some opensource solutions?
->
-> solution=(embedded)?boa:apache;
+David Ho <DavidHo@nanometrics.ca> wrote:
+> Please don't mind correcting me on what I said here. I would love
+> to hear some feedback from the community, and possibly the folks at
+> Motorola, Timesys, Montavista.
 
-Ummm... depending on requirements, Mbedthis AppWeb, GoAhead,  khttpd,
-and others come to mind, too.
+I am not from above famous vendors.Just know their
+names and their products.But still want to add sth
+here on you topic.
+
+> > Just wondering, do we have a person from Motorola or well known
+> > embedded linux company that actively ensures the operation of the
+> > Linux kernel on mpc8xx, 2.6 in particular?
+
+So 2.6 porting on mpc8xx isn't a cinch at all.There
+were some discussions on the thread but still no
+result.If I remember right,it's Dan Malek stopped the
+discussion and let others waitting for his porting
+work.I also want to know the improvement.
+
+> > Wolfgeng mentioned in his interview with Linux > Device (
+> http://linuxdevices.com/articles/AT2240586951.html) that 2.6 may be
+> slow,
+
+Thanks for giving this nice interview.
 
 Best regards,
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-I program, therefore I am.
+Sam
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
