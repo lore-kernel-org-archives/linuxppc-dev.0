@@ -1,35 +1,35 @@
-Message-ID: <20010627013301.19777.qmail@venus.postmark.net>
-Mime-Version: 1.0
-From: Rajneesh Kumar <rajneesh@postmark.net>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Setup for IBM 405GP board on HHL
-Date: Wed, 27 Jun 2001 01:33:01 +0000
-Content-Type: text/plain; charset="iso-8859-1"
+Message-ID: <001b01c0feb4$6d9dcb40$8021690a@huawei.com>
+From: "machael thailer" <dony.he@huawei.com>
+To: <karanthk@lycos.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <BEOODLLCEMKDDCAA@mailcity.com>
+Subject: Re: Uncompressing......
+Date: Wed, 27 Jun 2001 10:54:04 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi there,
+>
+> Iam using mpc823, Iam able to load the compressed image at 0x00200000, iam
+trying to boot through NFS it shows the following message,
+>
+> Boot
+>
+> loaded at : 00000000 000141B4
+> board data at : 00202344 00202374
+> zimage at : 0038A000 0007E0B1
+> avail ram : 002141B4 0038A000
+>
+The above relocate messages seems to be wrong.
 
-I have stepped in the Linux world and now going to develop the device
-driver for the IBM 405GP based board on Hard Hat Linux from
-MontaVista. Now I am using the x86 based Red Hat Linux 6.2. I want to
-know if someone can let me plan the setup for the development of the
-device driver. I mean please let me know what development environment
-I need and also what tools I need to have to streamline my
-development. Also if someone can suggest me the up to the point
-literature for the specific board and how to write the device driver
-for the board.
+Try to link your kernel at 0x400000, this may solve your problem.
+Also try to look inside arch/ppc/mbxboot/misc.c=>decompress_kernel()
+carefully, where you should relocate your compressed image at proper place.
 
-Please help me as I have very little time with me and I dont have any
-idea about the development environment. Shall I go in for the
-Development Kit from Embedded Planets or the GNU cross compilation is
-sufficient and finally how can I transfer the code to the board's
-memory.
+machael
 
-Please let me know as much as you can.
-
-Thanks and regards
-Rajneesh
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
