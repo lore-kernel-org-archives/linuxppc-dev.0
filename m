@@ -1,40 +1,45 @@
-To: "Omanakuttan" <omanakuttan@tataelxsi.co.in>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: debugging using bdi2000, unable to proceed. 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 17 Apr 2003 18:40:30 +0530."
-             <3E9EA7C6.2020605@tataelxsi.co.in>
-Date: Thu, 17 Apr 2003 15:45:39 +0200
-Message-Id: <20030417134544.300A5C58B9@atlas.denx.de>
+Date: Thu, 17 Apr 2003 16:25:22 +0200
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: JFFS2 on the Host
+In-reply-to: <20030417131517.66513.qmail@web41813.mail.yahoo.com>
+To: cedric_aubert@yahoo.fr, linuxppc-embedded@lists.linuxppc.org
+Reply-To: tglx@linutronix.de
+Message-id: <200304171625.22677.tglx@linutronix.de>
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+References: <20030417131517.66513.qmail@web41813.mail.yahoo.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3E9EA7C6.2020605@tataelxsi.co.in> you wrote:
+On Thursday 17 April 2003 15:15, Cedric Aubert wrote:
+> Hi,
 >
-> We are using bdi200 for debugging linux kernel (2.4.1 and 2.4.17).
-> our target board is mpc8260ADS, with ppcboot 2.0.0
+> I have read some documentation about jffs2 but I don't
+> find what I want (may be I am to difficult !! :-).
 >
-> we are using http://www.ultsol.com/PDFS/Tool%20Talk%2002-001a.pdf as a
-> refernce to get bdi 2000 setup running.
-> Connections are made as per the document.
-> bdisetup is run from the host. Using the configuration file.
-> We used format IMAGE and file zImage and the image file  loaded to
-> 0x400000 using bdi2000.
+> I found how configure my flash on the target and by
+> the
+> target.
+>
+> Kernel configuration OK -> Next Eraseall
+> -> mount or make a jffs2 image and cp it before mount
+>
+> it's ok. But How can I make a full Binary Image of my
+> flash partition (good size) on my host and after
+> transfer it on the target at the right
+> place with my loader (u-boot for example) ??
 
-Don't do this. Build a PPCBoot image as usual using the mkimage tool,
-and use PPCboot to download and start the kernel. Use the BDI2000 for
-debugging only.
-
-
-Wolfgang Denk
+The mtd tool you need is mkfs.jffs2, which is available in the MTD source code
+from http://linux-mtd.infradead.org. It's in directory utils. There is a man
+page too. Be aware of endianess switches for mkfs.jffs2!
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-It all seemed, he thought, to be rather a lot of  trouble  to  go  to
-just sharpen a razor blade.  - Terry Pratchett, _The Light Fantastic_
+Thomas
+________________________________________________________________________
+linutronix - competence in embedded & realtime linux
+http://www.linutronix.de
+mail: tglx@linutronix.de
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
