@@ -1,29 +1,31 @@
-From: "Bradley A. Bosch" <bbosch@iphase.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15955.61193.448312.568754@lachman.com>
-Date: Wed, 19 Feb 2003 14:54:33 -0600
+From: brian.auld@adic.com
+Message-ID: <995FF289C9D69747A09E42992644595405B23678@penguin.adic.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Cc: bclemens@iphase.com
-Subject: MPC107 I2C slave driver code
+Subject: PowerMac vs. Intel for PowerPC Development Host
+Date: Wed, 19 Feb 2003 13:52:58 -0800
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Greetings,
+A while back I wrote an email to this list regarding development kit
+suggestions. Based mainly on feedback from this email, I am currently moving
+in the Intel/ELDK direction.
 
-We need to support I2C slave mode on an MPC8241 so we can exchange
-messages with another processor asynchronously via I2C.  Adrian's
-timely announcement of his new driver was greatly appreciated, but it
-doesn't (yet) support slave mode.
+Out of all the feedback I received, only one person suggested developing on
+a PowerMac based Linux box, thus eliminating the need for cross-compiling. I
+have become more interested in this option as some people in our company
+have noted that cross-compiling embedded linux presented problems on past
+projects when it came to building certain 3rd party applications.
 
-Is anyone else working on a driver for slave mode using the I2C
-controller in the MPC107, MPC8245 or MPC8241?  If so, we would like to
-hear from you and perhaps help, or at least help test your code.
+In the Intel vs. Mac debate for a linux development host for embedded ppc
+development, if money was not an issue, would I get more PowerMac
+recommendations??
 
 Thanks,
 
---Brad Bosch
-Interphase Corp.
+-- Brian
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
