@@ -1,50 +1,45 @@
-Message-ID: <39043F06.CDED1B99@pop.agri.ch>
-Date: Mon, 24 Apr 2000 14:33:13 +0200
-From: Andreas Tobler <toa@pop.agri.ch>
-Reply-To: toa@pop.agri.ch
+Date: Mon, 24 Apr 2000 05:43:44 -0700 (PDT)
+From: Matthew Dharm <mdharm-usb@one-eyed-alien.net>
+To: Brad Hards <bradh@dynamite.com.au>
+cc: Daniel Gonzalez <daniel.gonzalez@pandora.be>,
+        Sheldon Easterbrook <sheldie@hotmail.com>,
+        linuxppc-dev@lists.linuxppc.org, linux-usb@suse.com
+Subject: Re: [linux-usb] Close to a solution. Please help !
+In-Reply-To: <3904DA19.E105A181@dynamite.com.au>
+Message-ID: <Pine.LNX.4.10.10004240542590.12997-100000@ziggy.one-eyed-alien.net>
 MIME-Version: 1.0
-To: Bernhard Reiter <bernhard@intevation.de>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Serial driver problem (modem Lombard)
-References: <20000422123747.B8503@cheops.usf.Uni-Osnabrueck.DE> <3901D09B.4B25722F@pop.agri.ch> <20000424125228.A15804@cheops.usf.Uni-Osnabrueck.DE>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Bernhard Reiter wrote:
->
-> > Now I can report a clean, more or less, well ppp operation.
-> As I wrote, it always works on the first try.
-> It sometimes fials on the second and following tries with 2.2.15pre19.
-> It always works with the 2.2.15pre3 which does not have ir support build
-> in.
+On Mon, 24 Apr 2000, Brad Hards wrote:
 
-I'm not sure, is it possible to disable IR in the kernel build? worth a try.
+> Daniel Gonzalez wrote:
+> > After a very long week, I think I am close to actually access my 250 Usb Zip drive.
+> > I have now 2.3.99-pre6.
+> You should feel priviliged. It took me months on and off to think I
+> might be close.
+> I do have some bad news though - you probably should have stayed with
+> Paulus' tree,
+> since Matt did think that there was some endian bugs, and I am pretty
+> sure
+> Paul had at least a floppy disk working.
 
-> If wvdialconf scans the ir port ttyS1 on 2.2.15pre19, die machine bombs.
+Unfortunately, floppies work through completely different code paths than
+Zips do.
 
-have you tried with something other than wvdial? (which I don't know), I
-use netcfg.
+Once I have the logs, I should be able to fix this.
 
-> > > wvdail cannot open /dev/ttyS0 twice with 2.2.51pre19.
-> > > After I ctrl-ced wvdial to interrupt the network connection
-> > > I get an I/O error when I try to open it again.
-> >
-> > Do you have the module option in char/devices/serial on? (dumb serial device)
->
-> Not that I know of. I admit that I have to learn a bit more about
-> kernel configuration to be sure, though.
+Matt Dharm
 
-This makes only sense when you have a pcmcia/cadbus modem.
+--
+Matthew Dharm                              Home: mdharm@one-eyed-alien.net
+Senior Engineer, QCP Inc.                        Work: mdharm@qualcomm.com
 
-> Most interestingly right now I cannot reproduce the I/O error.
-> So it works, most of the time. I hate this kind of errors.
-> So a hardware problem is still possible with this machine.
-
-:-((
-
-Andreas
+I could always suspend a few hundred accounts and watch what happens.
+					-- Tanya
+User Friendly, 7/31/1998
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
