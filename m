@@ -1,26 +1,39 @@
-Message-ID: <20020403214207.92576.qmail@web9503.mail.yahoo.com>
-Date: Wed, 3 Apr 2002 13:42:07 -0800 (PST)
-From: Pete McCormick <pete261@yahoo.com>
-Subject: porting linux kernel to Motorola MPC8260ADS board
+Date: Thu, 4 Apr 2002 09:34:10 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
 To: linuxppc-embedded@lists.linuxppc.org
-MIME-Version: 1.0
+Subject: Re: Workaround for USB DMA bugs
+Message-ID: <20020403233410.GE21034@zax>
+References: <20020403024321.GN1026@zax> <3CAABAB0.5030000@pacbell.net> <3CAB40C1.8000909@embeddededge.com> <3CAB6955.6000103@routefree.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3CAB6955.6000103@routefree.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Looking for some info on what changes you have to make to the generic linux
-kernel (let's say, 2.4.18) in order to get things running on the Motorola
-MPC8260ADS board.
+On Wed, Apr 03, 2002 at 12:43:01PM -0800, David Blythe wrote:
+>
+> What he said!  We ended up making all of the changes to move buffers,
+> align them, etc for both USB and skbuffs, as well as fixing the overly
+> aggressive prefetches in memcpy that overlapped previously
+> cache-invalidated memory, etc.  The end result is an ugly set of
+> changes, but at least the board works reliably now.  We also found one
+> nasty problem with an Epson USB printer where after request buffers were
+> bloated to cache line aligned length and the bloated length passed to
+> the device, that the device doesn't like the bloated length.  So we
+> hacked up the control path a little to get at the original length  too.
+>  This sort of stuff is a real pain to fix correctly to deal nicely with
+> non-coherent systems.
 
-Seems that the board is not supported explicitly.  Anyone know why, seeing as
-how this is a standard evaluation board that has been around for a while...
+That sounds closer to the correct way of fixing this.  The USB folks
+do consider this a bug, and I heard murmurs that suggested this had
+already been fixed in 2.5.
 
-Thanks in advance,
+--
+David Gibson			| For every complex problem there is a
+david@gibson.dropbear.id.au	| solution which is simple, neat and
+				| wrong.  -- H.L. Mencken
+http://www.ozlabs.org/people/dgibson
 
-Pete
-
-Yahoo! Tax Center - online filing with TurboTax
-http://taxes.yahoo.com/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
