@@ -1,9 +1,9 @@
-Date: Wed, 12 May 1999 19:30:29 -0500 (CDT)
+Date: Wed, 12 May 1999 19:36:33 -0500 (CDT)
 From: Derek Moeller <moeller@networksplus.net>
 To: linuxppc-dev@lists.linuxppc.org
 Subject: Re: linuxppc tree with uusbd
 In-Reply-To: <Pine.LNX.4.05.9905122015180.651-100000@pc.wackyland.com>
-Message-ID: <Pine.LNX.3.96.990512192847.11500A-100000@ns1.networksplus.net>
+Message-ID: <Pine.LNX.3.96.990512193518.11500B-100000@ns1.networksplus.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
@@ -32,9 +32,8 @@ On Wed, 12 May 1999, Tom Rini wrote:
 > All in all, getting the new stack working is much more important then
 > putting the old one in. (in the long run anyhow.)
 
-Isn't OHCI support really shaky for the new stack though? I know they've
-got UHCI support down pretty well, but I don't know how the iMac would
-fare with the current new stack drivers.
+Nevermind the last message; I saw Tom's previous one regarding OHCI.
+I'll stop the upload now, unless someone wants it.
 
 --
 
