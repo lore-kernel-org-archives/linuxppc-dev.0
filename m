@@ -1,67 +1,58 @@
-From: "Brian Padalino" <bpadalino@perigee.com>
-To: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: More on Ebony and Ethernet
-Date: Fri, 18 Jul 2003 14:25:11 -0400
-Message-ID: <DGEEIPOFGGPOACEFBGGCCEIBCAAA.bpadalino@perigee.com>
+Message-ID: <75DF04AC5ED4D511A9810090273CB4163F5DED@rokonet-e.rokonet.co.il>
+From: Eli Brin <elib@rokonet.co.il>
+To: "'Dan Malek'" <dan@embeddededge.com>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: 8xx SCC's as uart
+Date: Sun, 20 Jul 2003 10:52:01 +0200
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am able to give a bit more information about my ethernet experience with
-the Ebony board.  I am still having a lot of trouble getting the IBM OCP
-ethernet drivers to work correctly.  It appears that it will transmit
-packets just fine, but it does not recieve them properly at all.
+Hello Dan,
 
-I see this by configuring my Ebony board with the IP 192.168.0.238 and ping
-a development machine at 192.168.0.130.  On the development machine, I have
-tcpdump running sniffing for packets coming from or going to the Ebony
-board.
+Originally I was referring to both kernel.org and Denx.  But I was referred
+to a patched 2.4.20 version from Denx that enables SCC1 and SCC4 as uarts
+including RTS, CTS, DCD and DTR pin configuration.
 
-I find that after about 8 packets are sent from pings, the driver just stops
-sending packets out at all!!
+I believe this should go into the kernel from kernel.org.  If one chooses to
+use the 860(T/DT) or 855(T) processors why shouldn't he use SSC1 and 4 as
+uarts.  The limitation of the 857 should not limit other processors.  Look
+at the 852(T), it can use SCC4 as a uart.
 
-Here is my ifconfig eth0:
+Regarding the baud rate generators, we can configure the to more then one
+uart, if those uarts use the same baud rate.  So, perhaps the BRG's should
+be decoupled from the uart in the configuration.  This will go to the 8xx
+CPM configuration witch is processor specific in the first place (FEC, SCC
+and Ethernet and other 8xx processor variant stuff).
 
-# ifconfig eth0
-eth0      Link encap:Ethernet  HWaddr 00:04:AC:E3:22:DA
-          inet addr:192.168.0.238  Bcast:192.168.0.255  Mask:255.255.255.0
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:27 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:100
-          RX bytes:0 (0.0 b)  TX bytes:1134 (1.1 kb)
-          Interrupt:60
+Thank you,
+Eli Brin
 
-The rx packets for the lo device will increase as I keep doing the pings,
-but after 8 pings out -- the driver for eth0 comes up with nothing.
 
-14:25:26.413840 arp who-has 192.168.0.130 tell 192.168.0.238
-14:25:26.413876 arp reply 192.168.0.130 is-at 0:3:47:b7:54:0
-14:25:27.397956 arp who-has 192.168.0.130 tell 192.168.0.238
-14:25:27.397981 arp reply 192.168.0.130 is-at 0:3:47:b7:54:0
-14:25:28.397962 arp who-has 192.168.0.130 tell 192.168.0.238
-14:25:28.397988 arp reply 192.168.0.130 is-at 0:3:47:b7:54:0
-14:25:37.547904 arp who-has 192.168.0.130 tell 192.168.0.238
-14:25:37.547931 arp reply 192.168.0.130 is-at 0:3:47:b7:54:0
-14:25:38.538544 arp who-has 192.168.0.130 tell 192.168.0.238
-14:25:38.538576 arp reply 192.168.0.130 is-at 0:3:47:b7:54:0
-14:25:39.538543 arp who-has 192.168.0.130 tell 192.168.0.238
-14:25:39.538573 arp reply 192.168.0.130 is-at 0:3:47:b7:54:0
-14:25:43.487944 arp who-has 192.168.0.130 tell 192.168.0.238
-14:25:43.487971 arp reply 192.168.0.130 is-at 0:3:47:b7:54:0
-14:25:44.477924 arp who-has 192.168.0.130 tell 192.168.0.238
-14:25:44.477947 arp reply 192.168.0.130 is-at 0:3:47:b7:54:0
 
-I am working off of the linuxppc_2_4_devel tree, my next step is to go for
-strictly the linuxppc_2_4 standard tree and see if that works out.
+-----Original Message-----
+From: Dan Malek [mailto:dan@embeddededge.com]
+Sent: Friday, July 18, 2003 6:28 PM
+To: Eli Brin
+Cc: 'linuxppc-embedded@lists.linuxppc.org'
+Subject: Re: 8xx SCC's as uart
 
-Does anyone else have ANY ideas?
 
-Thanks,
-Brian
+Eli Brin wrote:
 
+> I have noticed, in kernel 2.4.20, that SCC1 and SCC4 cannot be
+> configured as uarts.
+
+Ummmm....2.4.20 from where?
+
+The linuxppc 2.4 development tree was updated by Gary Thomas a while back to
+allow all possible SMC/SCC configurations within the resource limitations of
+the particular processor variant.  This included the baud rate generator
+restrictions on the 857.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
