@@ -1,39 +1,72 @@
-Date: Fri, 1 Sep 2000 22:13:40 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: "Hendricks, Kevin" <khendricks@ivey.uwo.ca>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: asm statement in include/asm not ansi conform
-In-Reply-To: <20000901161432.8125@mailhost.mipsys.com>
-Message-ID: <Pine.LNX.4.10.10009012212420.1349-100000@cassiopeia.home>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Sat, 02 Sep 2000 13:18:46 +1100
+Message-ID: <8893.967861126@ocs3.ocs-net>
+From: Keith Owens <kaos@ocs3.ocs-net>
+Subject: 2.4.0 do_fork() change, all architectures - take 2
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 1 Sep 2000, Benjamin Herrenschmidt wrote:
-> >Without a real xf86 card with a bios present to play with, there is really no
-> >way to try and devise a better test.  Even if a bios is present, wouldn't OF
-> >still do the initialization?
->
-> I don't think OF will do anything but assign base addresses.
+------- Blind-Carbon-Copy
 
-And even that depends on the OF. Not all versions assign all base addresses
-for `unrecognized' cards.
+X-Mailer: exmh version 2.1.1 10/15/1999
+From: Keith Owens <kaos@ocs.com.au>
+To: linux-kernel@vger.kernel.org
+Subject: 2.4.0 do_fork() change, all architectures - take 2
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Sat, 02 Sep 2000 13:18:46 +1100
+Message-ID: <8893.967861126@ocs3.ocs-net>
 
-Let's hope the kernel will do soon :-)
+DaveM pointed out that my 2.4.0-test8-pre1 do_fork patch would generate
+better sparc assembler if the extra parameter to do_fork was added at
+the end instead of in the middle.  So change all do_fork(flags,sp,0,&regs)
+to do_fork(flags,sp,&regs,0);
 
-Gr{oetje,eeting}s,
+I'm not going to mail the complete patch again, you can get it from
+ftp://ftp.ocs.com.au/pub/do_fork-2.4.0-test8-take2.gz.  The only
+significant difference is this bit to IA64, untested.
 
-						Geert
+Index: 0-test8-pre1.1/arch/ia64/kernel/entry.S
+- --- 0-test8-pre1.1/arch/ia64/kernel/entry.S Tue, 15 Aug 2000 17:50:48 +1000 kaos (linux-2.4/c/c/16_entry.S 1.3.1.1.1.2 644)
++++ 0-test8-pre1.2(w)/arch/ia64/kernel/entry.S Sat, 02 Sep 2000 12:49:16 +1100 kaos (linux-2.4/c/c/16_entry.S 1.3.1.1.1.2 644)
+@@ -68,8 +68,8 @@
+ 	mov loc1=r16				// save ar.pfs across do_fork
+ 	UNW(.body)
+ 	mov out1=in1
+- -	mov out2=in2
+- -	adds out3=IA64_SWITCH_STACK_SIZE+16,sp	// out3 = &regs
++	mov out3=in2
++	adds out2=IA64_SWITCH_STACK_SIZE+16,sp	// out2 = &regs
+ 	mov out0=in0				// out0 = clone_flags
+ 	br.call.sptk.few rp=do_fork
+ .ret1:	UNW(.restore sp)
+@@ -87,8 +87,8 @@
+ 	mov loc1=r16				// save ar.pfs across do_fork
+ 	UNW(.body)
+ 	mov out1=in1
+- -	mov out2=0
+- -	adds out3=IA64_SWITCH_STACK_SIZE+16,sp	// out3 = &regs
++	mov out3=0
++	adds out2=IA64_SWITCH_STACK_SIZE+16,sp	// out2 = &regs
+ 	mov out0=in0				// out0 = clone_flags
+ 	br.call.sptk.few rp=do_fork
+ .ret2:	UNW(.restore sp)
+Index: 0-test8-pre1.1/arch/ia64/ia32/ia32_entry.S
+- --- 0-test8-pre1.1/arch/ia64/ia32/ia32_entry.S Tue, 15 Aug 2000 17:50:48 +1000 kaos (linux-2.4/c/c/25_ia32_entry 1.3.1.1 644)
++++ 0-test8-pre1.2(w)/arch/ia64/ia32/ia32_entry.S Sat, 02 Sep 2000 12:49:58 +1100 kaos (linux-2.4/c/c/25_ia32_entry 1.3.1.1 644)
+@@ -91,8 +91,8 @@
+ 	UNW(.body)
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+ 	mov out1=0
+- -	mov out2=0
+- -	adds out3=IA64_SWITCH_STACK_SIZE+16,sp
++	mov out3=0
++	adds out2=IA64_SWITCH_STACK_SIZE+16,sp	// out2 = &regs
+ 	br.call.sptk.few rp=do_fork
+ .ret3:	mov ar.pfs=loc1
+ 	UNW(.restore sp)
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
+------- End of Blind-Carbon-Copy
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
