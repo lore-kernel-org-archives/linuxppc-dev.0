@@ -1,47 +1,32 @@
-Date: Sun, 31 Jan 1999 15:24:20 +0100 (MET)
+Date: Sun, 31 Jan 1999 15:36:27 +0100 (MET)
 From: Geert Uytterhoeven <geert@geert.cs.kuleuven.ac.be>
 Reply-To: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Gerd Knorr <kraxel@goldbach.in-berlin.de>
-cc: linuxppc-dev@lists.linuxppc.org
+To: "dhiltgen@toocool.calpoly.edu" <dhiltgen@toocool.itslab.calpoly.edu>
+cc: Owen Waller <O.Waller@ee.qub.ac.uk>, mlan@cpu.lu,
+        Petr Vandrovec <VANDROVE@vc.cvut.cz>, linuxppc-dev@lists.linuxppc.org
 Subject: Re: matroxfb, anybody? (More details...)
-In-Reply-To: <199901310938.KAA06173@goldbach.masq.in-berlin.de>
-Message-ID: <Pine.LNX.4.02.9901311514590.2341-100000@cassiopeia.home>
+In-Reply-To: <19990130153420.A970@toocool.calpoly.edu>
+Message-ID: <Pine.LNX.4.02.9901311514420.2341-100000@cassiopeia.home>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 31 Jan 1999, Gerd Knorr wrote:
-> In lists.linuxppc.dev you write:
-> 
-> >I apologize for the length, but I don't want to leave anything
-> >out that might be critical....
-> 
-> >Let me open with two quick questions.  A while back on linux-kernel
-> >someone said that they had ported X_SVGA with Matrox acceleration
-> >to FB, and Geert asked the guy for a copy of the patch.
-> 
-> Thats me.  The patch is available from
-> 	http://www.in-berlin.de/User/kraxel/xfree86/
-> 
-> >What are the odds that I could get a hold of that, and that it would
-> >compile and possibly run under PPC?  Slim to none I bet, but 
-> >it would be nice...
-> 
-> As far I know, Geert got it to compile on ppc, but it's not working yet.
+On Sat, 30 Jan 1999, dhiltgen@toocool.calpoly.edu wrote:
+> It appears that the issue is that somehow the kernel is using fb0
+> sometimes, and others it's using FRAMEBUFFER, or the "-fb" argument.
+> When I try to change settings using fbset it's like both frame buffers
+> get set at once, and one of them gets confused since the timings are only
+> valid for one of the cards.  ...or, the FB code in the kernel _really_
+> isn't very clean when it comes to multiple heads right now, and some
+> code just assumes /dev/fb0 is console and uses it without checking for
+> the proper state information.  I guess the whole thing is complicated 
+> by the fact that sometimes it's user space stuff, other times it's kernel 
+> space stuff messing with the fb.
 
-It crashes with a bus error. That is, the unaccelerated version. I don't have a
-Matrox, and I had to disable the ATI code because it contains inline ia32
-assembler.
-
-I think the bus error is related to trying to map the frame buffer using
-/dev/mem instead of /dev/fb0. I know that shouldn't give a bus error, but I saw
-a similar thing with my (still experimental) program to get some useful video
-out of my S3 Vision968. Last time I tried, it crashed with a bus error when
-writing to the VRAM. Unfortunately I can't be 100% sure yet that it's a bug in
-recent kernels, since I had to recompile that test program after I migrated to
-Debian, which uses glibc-2.1pre.
+There are known problems with multiheadness. Unfortunately I can't `see' what's
+wrong until I get my second video board working. Yes, I'm embarassed by that.
 
 Greetings,
 
