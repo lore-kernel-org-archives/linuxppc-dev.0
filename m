@@ -1,47 +1,43 @@
-To: schmitz@opal.biophys.uni-duesseldorf.de
-Cc: ajoshi@shell.unixbox.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: [ANN] New XFree86-pmac rsync tree
-From: Kohkichi Hosoda <khosoda@venus.dti.ne.jp>
-In-Reply-To: <3977018F.35968D3A@biophys.uni-duesseldorf.de>
-References: <Pine.LNX.4.10.10007171100220.22569-100000@opal.biophys.uni-duesseldorf.de>
-	<20000720221208U.kohkichi@venus.dti.ne.jp>
-	<3977018F.35968D3A@biophys.uni-duesseldorf.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Message-Id: <20000722122107S.kohkichi@venus.dti.ne.jp>
-Date: Sat, 22 Jul 2000 12:21:07 +0900
+Date: Sat, 22 Jul 2000 16:10:39 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Josh Huber <huber@mclx.com>
+cc: Iain Sandoe <iain@sandoe.co.uk>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: problems about __cli()
+In-Reply-To: <20000720114423.A20249@mclx.com>
+Message-ID: <Pine.LNX.4.10.10007221608490.430-100000@cassiopeia.home>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> On Thu, 20 Jul 2000 15:41:35 +0200, Michael Schmitz <schmitz@mail.biophys.uni-duesseldorf.de> said:
+On Thu, 20 Jul 2000, Josh Huber wrote:
+> On Thu, Jul 20, 2000 at 02:45:56PM +0100, Iain Sandoe wrote:
+> > I guess I *must* have one of those broken derivatives... and it doesn't work
+> > for me without that step...  Admittedly, this is mostly an issue between
+> > 2.2.xx and 2.4.0 - but I do have to remember to change it back between
+> > whiles... a better way would be ?
+>
+> Well...hmm, what doesn't work?  You mean you can't build a kernel
+> unless you make /usr/src/linux point to the kernel source you're
+> building?  This is odd, as I haven't done that...ever!  In fact,
+> there's no directories in /usr/src on my machine.
 
-Schmitz> You will need fbbpp = 16 for 15 bit. And Ani's
-Schmitz> latest (yesterday's) source has no color or accel
-Schmitz> problems whatsoever for me.
+IIRC, there was a time (long before 2.0) that kernel builds did look for
+includes in /usr/include/, so you had to unpack (or symlink) your kernel in
+/usr/src/linux/. Fortunately the include path was changed to put
+root_of_build/include first.
 
-Great!!
-I did rsync today, and all my problems vanished without
-changing my XF86Config.
+Gr{oetje,eeting}s,
 
-The result of x11perf -scroll500 is;
+						Geert
 
-Sync time adjustment is 0.1772 msecs.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-    400 reps @  15.3786 msec (    65.0/sec): Scroll 500x500 pixels
-    400 reps @  15.2951 msec (    65.4/sec): Scroll 500x500 pixels
-    400 reps @  15.2642 msec (    65.5/sec): Scroll 500x500 pixels
-    400 reps @  15.2559 msec (    65.5/sec): Scroll 500x500 pixels
-    400 reps @  15.2519 msec (    65.6/sec): Scroll 500x500 pixels
-   2000 trep @  15.2891 msec (    65.4/sec): Scroll 500x500 pixels
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
-So, X on my iMac runs about three times faster than it used
-to with fbdev.
-
-Thank you very much.
-
-Kohkichi Hosoda
-
-E-mail address: khosoda@venus.dti.ne.jp
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
