@@ -1,47 +1,33 @@
-To: "Muaddi, Cecilia" <cecilia.muaddi@alloptic.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: BDI-2000 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 08 Jan 2003 16:21:51 PST."
-             <885489B3B89FB6449F93E525DF78777F064537@srvnt506.ALLOPTIC.COM>
-Date: Thu, 09 Jan 2003 01:33:21 +0100
-Message-Id: <20030109003326.AE16EC608E@atlas.denx.de>
+Date: Thu, 9 Jan 2003 13:23:26 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Hollis Blanchard <hollis@austin.ibm.com>
+Cc: embedded list <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: 405LP - Beech with SSX firmware
+Message-ID: <20030109022326.GB6569@zax.zax>
+References: <1040427361.1096.27.camel@granite.austin.ibm.com> <1042053852.1207.176.camel@granite.austin.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1042053852.1207.176.camel@granite.austin.ibm.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Cecilia,
-
-in message <885489B3B89FB6449F93E525DF78777F064537@srvnt506.ALLOPTIC.COM> you wrote:
+On Wed, Jan 08, 2003 at 01:23:56PM -0600, Hollis Blanchard wrote:
+> On Fri, 2002-12-20 at 17:36, Hollis Blanchard wrote:
+> > Hi, this patch (copied from Arctic) allows Beech to boot with SSX
+> > firmware. If there's a way to detect OpenBIOS vs PIBS (I've asked for
+> > confirmation) then I think the Beech and Arctic ifdefs could be combined
+> > in the file. There may not be though, and in the meantime this works.
 >
->
-> You are right, my ethernet mac address was not passed in properly.
-> Furthermore, I had
-> too many ethernet device configured for this board.  Should be only one
-> ethernet devices.
-> Once I fixed the problem, my linux kernel is now up and running on the
-> custom board.
+> There is currently no way to detect PIBS, though I think I talked the
+> developer into including "PIBS" string in the future.
 
-Congratulations!
-
-> As to the PPC native gdb, i don't see it in my distribution from timeSys.
-> Do you
-> have a suggestion as to where can i get a copy?
-
-Ummm.. since you mentioned you're running under RH, this  will  be  a
-x86 host, so you need a cross-GDB. I have no idea what it's called in
-TimeSys'  toolchain;  common names are ppc_8xx-gdb, powerpc-linux-gdb
-or similar...
-
-Best regards,
-
-Wolfgang Denk
+I've applied the patch to 2_4_devel.
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Hindsight is an exact science.
+David Gibson			| For every complex problem there is a
+david@gibson.dropbear.id.au	| solution which is simple, neat and
+				| wrong.
+http://www.ozlabs.org/people/dgibson
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
