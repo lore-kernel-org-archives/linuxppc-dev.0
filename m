@@ -1,20 +1,25 @@
+From: lhirlimann@itsoft.fr
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: linuxppc-dev@lists.linuxppc.org, linux-kernel@vger.rutgers.edu
+Message-ID: <C12567CA.0032E40E.00@france.itsoft.fr>
+Date: Wed, 11 Aug 1999 11:15:51 +0200
 Subject: Re: HFS+ support?
-To: b.kidder@ericsson.com (Brian Kidder)
-Date: Wed, 11 Aug 1999 09:41:33 +0100 (BST)
-Cc: linux-kernel@vger.rutgers.edu, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <im1n1vz8a8x.fsf@chimera.sd.us.am.ericsson.se> from "Brian Kidder" at Aug 10, 99 04:51:58 pm
-Content-Type: text
-Message-Id: <E11ETx3-0003xt-00@the-village.bc.nu>
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Mime-Version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Are there current efforts to make this filesystem available?  If so,
-> where can I find more information and possibly assist?  If not, what's
-> the right way to start such an effort?
 
-Have Apple put out any HFS+ documentation yet ?
+
+>Have Apple put out any HFS+ documentation yet ?
+
+Right Here :
+http://developer.apple.com/technotes/tn/tn1150.html
+
+
+Ludo
+http://www.multimania.com/softkid
 
 
 
