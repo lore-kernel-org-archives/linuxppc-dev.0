@@ -1,82 +1,74 @@
-Message-ID: <3B37189D7A56D511B404000629EE15D8437730@4rf_nz.local.4rf.com>
-From: Richard Laing <Richard.Laing@4rf.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Leonardo Pereira Santos <lsantos@pd3.com.br>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: bi_record and initrd
-Date: Thu, 28 Nov 2002 10:00:41 +1300
+Subject: simple PCMCIA questions
+Date: Thu, 28 Nov 2002 16:47:22 -0200
 MIME-Version: 1.0
-Content-Type: text/plain
+Message-Id: <200211281647.24872.lsantos@pd3.com.br>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-The following is a diff context patch for misc-embedded.c, it fixes a
-problem where the initrd ramdisk image is corrupted during the boot process.
-It is based on the untested patch from Tom Rini for misc-simple.c. The patch
-corrects a bug in the Tom's original patch. The patch is against the current
-linuxppc_2_4_devel branch. The only change from the original patch the
-memcpy line
 
-memcpy((void *)initrd_loc, &__ramdisk_begin, initrd_size);
+Hello Everybody!
+	I've got a few pcmcia questions and would apreciate if someone could give me
+some directions. Ok, I have a BK 2.4.20-pre11 kernel compiled with built-in
+PCMCIA support (NO cardbus). If I insert a wifi card in my board's slot and
+use pcmcia-cs' cardctl info, it'll answer me. Next I try to load the card's
+driver, so I insmod then in order (I got the card working in a PLX adapter in
+my PC and it uses theses drivers) : hermes, orinoco and orinoco_cs. Until
+now, so far so good. The first weird thing is that if I do a lsmod, it'll
+answer me this:
 
-I have tested this patch with my build and it works fine...
+# lsmod
+Module                  Size  Used by
+orinoco_cs              5472   0  (unused)
+orinoco                31648   0  [orinoco_cs]
+hermes                  5840   0  [orinoco_cs orinoco]
 
-Cheers
-Richard
+Ok, who should use the orinoco_cs module?
+In my /etc/modules.conf I have the following line:
 
+alias eth1 orinoco_cs
 
-*** arch/ppc/boot/simple/old.c	2002-11-28 09:00:08.000000000 +1300
---- arch/ppc/boot/simple/misc-embedded.c	2002-11-28
-09:50:21.000000000 +1300
-***************
-*** 83,88 ****
---- 83,89 ----
-  	char *cp, ch;
-  	int timer = 0, zimage_size;
-  	unsigned long initrd_size;
-+ 	unsigned long initrd_loc;
+So I assumed that if I brought up eth1, everything should work in some degree,
+but when I type ifconfig eth1 up, I just got the message saying
 
-  	/* First, capture the embedded board information.  Then
-  	 * initialize the serial console port.
-***************
-*** 145,150 ****
---- 146,162 ----
-  		puts("initrd at:     ");
-  		puthex((unsigned long)(&__ramdisk_begin));
-  		puts(" "); puthex((unsigned
-long)(&__ramdisk_end));puts("\n");
-+
-+ 		if ((_ALIGN((unsigned long)(zimage_size) + (1 << 20) - 1,
-+ 			(1 << 20))) <= (unsigned long)(&__ramdisk_end)) {
-+ 			initrd_loc = _ALIGN((unsigned long)(initrd_size) +(2
-<< 20) - 1, (2 << 20));
-+ 			 memcpy((void *)initrd_loc, &__ramdisk_begin,
-initrd_size);
-+ 			 puts("relocated to:  "); puthex(initrd_loc);
-+ 			 puts(" "); puthex(initrd_loc + initrd_size);
-+ 			 puts("\n");
-+ 		} else {
-+ 			initrd_loc = (unsigned long)(&__ramdisk_begin);
-+ 	        }
-  	}
+eth1: unknown interface: No such device
 
-  	/*
-***************
-*** 225,231 ****
+What gives?
+At least shouldn't I be able to bring up a interface?
 
-  		if ( initrd_size ) {
-  			rec->tag = BI_INITRD;
-! 			rec->data[0] = (unsigned long)(&__ramdisk_begin);
-  			rec->data[1] = initrd_size;
-  			rec->size = sizeof(struct bi_record) + 2 *
-  				sizeof(unsigned long);
---- 237,243 ----
+As a last step, I try to load cardmgr, it then fires up a lot of functions but
+it'll results in a kernel panic:
 
-  		if ( initrd_size ) {
-  			rec->tag = BI_INITRD;
-! 			rec->data[0] = initrd_loc;
-  			rec->data[1] = initrd_size;
-  			rec->size = sizeof(struct bi_record) + 2 *
-  				sizeof(unsigned long);
+Kernel panic: request_irq
+ <0>Rebooting in 180 seconds..
+
+I read in a message from Matthew Locke (
+http://lists.linuxppc.org/linuxppc-embedded/200104/msg00133.html)
+
+That 8xx socket driver before CS 3.1.26 wouldn't pass the assined irq number
+to CS. But BK's m8xx_pcmcia.c  has a copyright line from Locke himself from
+2002, and the message's from april, 2001. So, is this still an issue? By the
+message's contents, I figured out that this bug would lead just to a
+non-functioning card, not ot a kerl-panic crash.
+As a last question, why BK's kernel has a very old CS version (3.1.22), when
+the current on is 3.2.3? I mean, the kernel's CS should work, doesn't it?
+Does someone now where can I get a recent kernel with a more recent version
+of CS (assuming that that would fix my problem). Thanks for bearing with me
+so far and any help is kindly apreciated.
+
+- --
+"All things are ready, if our minds be so"
+The Life Of King Henry V - William Sharespeare
+
+Leonardo Pereira Santos
+Engenheiro de Projetos
+PD3 Tecnologia
+av. Pará 330/202
+(51) 3337 1237
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
