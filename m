@@ -1,48 +1,45 @@
-Date: Fri, 26 Mar 2004 15:18:20 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: John Whitney <jwhitney-linuxppc@sands-edge.com>
-Cc: linuxppc-dev@lists.linuxppc.org,
-	Paul Mackerras <paulus@samba.org>
-Subject: Re: OpenPIC and the 2.6 kernel
-Message-ID: <20040326221820.GA22801@smtp.west.cox.net>
-References: <78197CD6-7F72-11D8-9FF0-000A95A07384@sands-edge.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <78197CD6-7F72-11D8-9FF0-000A95A07384@sands-edge.com>
+To: =?iso-8859-1?q?Michel_D=E4nzer?= <daenzer@debian.org>
+Cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
+	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
+Subject: Re: PREEMPT on PPC
+References: <Pine.LNX.4.44.0403261442210.3900-100000@opal.biophys.uni-duesseldorf.de>
+	<1080329240.17435.293.camel@thor.asgaard.local>
+From: Mathieu Segaud <matt@minas-morgul.org>
+Date: Sat, 27 Mar 2004 10:14:26 +0100
+In-Reply-To: <1080329240.17435.293.camel@thor.asgaard.local> (Michel
+ =?iso-8859-1?q?D=E4nzer's?= message of "Fri, 26 Mar 2004 20:27:20 +0100")
+Message-ID: <871xneabyl.fsf@minas-morgul.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Mar 26, 2004 at 05:11:02PM -0500, John Whitney wrote:
+Michel Dänzer <daenzer@debian.org> writes:
 
-> I am working on upgrading a board support package from the 2.4.25
-> kernel to the 2.6.5, and I noticed that it looks like the OpenPIC
-> support has taken a step BACK in the 2.6 kernel.
+> On Fri, 2004-03-26 at 18:48, Michael Schmitz wrote:
+>>
+>> Works fine here on 2.6.5-rc2-ben0 . Including disk suspend.
 >
-> In the 2.4 tree, openpic_hookup_cascade() exists, allowing non-8259
-> cascades to IRQs other than 0.  This seems to be totally missing from
-> the 2.6 kernel (82c59 is the ONLY supported cascade type there).  As my
-> board uses a custom PLD interrupt controller cascaded to an MPC107,
-> this is a problem.
->
-> Have I gotten the wrong repository for LinuxPPC 2.6?  I'm using
-> ppc.bkbits.net/linuxppc-2.5, which shows up as the 2.6.5-rc1 kernel.
-> If not, is there a reason this feature is now missing for the OpenPIC
-> driver?
+> Have you hit swap with it? The problems with preempt usually only
+> started at that point here.
 
-This is intentional behavior.  During 2.5 development, and I think
-around when openpic_hookup_cascade() went into 2.4, I asked Paul what he
-thought, and he wanted something more robust I believe.  Sadly, nothing
-further happened on this front.
-
-Paul, what do you think about re-introducing openpic_hookup_cascade(irq,
-name, cascade_fn(pt_regs)) in 2.6?  Or outlining a better way to handle
-the problems of aribtrared controllers on OpenPIC irqs (both the custom
-board described above, and Sandpoint X2 support) need something along
-these lines.
+here I hit swap on my iBook2.2, and GCC gives ICE segfault every 5 minutes in a
+kernel compilation. And X does not last longer than one hour.
+Seems to be some other races.
 
 --
-Tom Rini
-http://gate.crashing.org/~trini/
+Mathieu Segaud
+
+"This, btw, is not something I would suggest you do in your living room.
+ Getting a penguin to pee on demand is _messy_. We're talking yellow spots
+ on the walls, on the ceiling, yea verily even behind the fridge. However.
+ I would also advice against doing this outside - it may be a lot easier to
+ clean up, but you're likely to get reported and arrested for public
+ lewdness Never mind that you had a perfectly good explanation for it all."
+
+ 	- Linus Torvalds on sprinkling holy penguin pee
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
