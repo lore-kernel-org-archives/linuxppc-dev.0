@@ -1,29 +1,32 @@
-Date: Wed, 14 Jan 2004 17:11:07 +0100
-From: valvoline <valvoline@vrlteam.org>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Broadcom BCM94306
-Message-ID: <20040114161107.GM2658@adapter.n0skillz.org>
-Reply-To: valvoline@vrlteam.org
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <115601c3dabc$06d9cdf0$3cc8a8c0@ANOSP>
+From: "Colin Leroy" <colin@colino.net>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: Ibook G4 modem
+Date: Wed, 14 Jan 2004 17:32:39 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-hi all,
+Hi,
 
-after googling for broadcom based wifi cards and ppc supports,
-i've reached a link regarding ndiswrapper from sourceforge and mandrake-ppc.
-Seems that mdk's developers have done a porting of ndiswrapper for ppc based archs.
+Anyone knows what's the modem in the iBook G4 ? It doesn't even appear in
+`lspci` nor `lsusb`.
+in the device-tree, however, there's an escc node (compatible:
+"chrp,es0"), with ch-a and ch-b (but they have empty "slot-names").
+There's also an i2c-modem node (compatible: "minidash2").
 
-anybody know about this?, also if this porting is really working...what kind
-of drivers are required? i think that simple win32-drivers cannot work
-properly in a different architecture with different *endian.
+Googling for minidash2 returns nothing...
+Linuxant scripts to detect chipsets don't find anything, either.
 
-regards
+Anyone knows something about it ?
+
+thanks,
 --
-[ valvoline :: VRL Team :: s0ftpj :: freaknet Medialab :: GPG key available  ]
-[ key fingerprint :: - :: B7E2 48BC 705F AE8F 9ABE  E422 076A 2561 1D67 B4DD ]
-[ GPG key available on keyserver :: pgp.mit.edu :: with keyID :: 1D67B4DD :: ]
+Colin
+Ne disez pas disez, mais disez dites
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
