@@ -1,37 +1,58 @@
-Date: Wed, 8 Nov 2000 23:02:30 +1100
-From: Chris Leishman <masklin@debian.org>
-To: "D.J. Barrow" <barrow_dj@yahoo.com>
-Cc: Chris Leishman <masklin@debian.org>, Rod Stewart <stewart@lab43.org>,
-        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Airport debug (was Re: airport woes?)
-Message-ID: <20001108230230.A4113@nina.dev.fol>
-References: <20001106153722.12662.qmail@web219.mail.yahoo.com>
+Date: Wed, 8 Nov 2000 03:24:27 -0900
+From: Ethan Benson <erbenson@alaska.net>
+To: Steven Hanley <sjh@wibble.net>
+Cc: Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: how to pass kernel command line arguments?
+Message-ID: <20001108032427.Z2367@plato.local.lan>
+References: <20001108214245.A31388@wibble.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20001106153722.12662.qmail@web219.mail.yahoo.com>; from barrow_dj@yahoo.com on Mon, Nov 06, 2000 at 07:37:22AM -0800
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="TX8FgYyhBart40Z+"
+In-Reply-To: <20001108214245.A31388@wibble.net>; from sjh@svana.org on Wed, Nov 08, 2000 at 09:42:45PM +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Nov 06, 2000 at 07:37:22AM -0800, D.J. Barrow wrote:
->
-> Hi,
-> I don't have an Airport but am familiar with
-> programming linux network device drivers.
->
-> This symtom sounds like a it could be a classic tbusy
-> (transmit busy ) getting  stuck on in the driver in
-> the network device structure.
->
+--TX8FgYyhBart40Z+
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: quoted-printable
 
-Actually - I don't think this is the problem, since it only locks up the send
-_for the single TCP connection_.  Other TCP connections, or new ones, work
-fine.
+On Wed, Nov 08, 2000 at 09:42:45PM +1100, Steven Hanley wrote:
+>=20
+> All
+>=20
+> Okay I shall be more specific, how do I pass kernel command line arguments
+> (say for example a video=3Dwhatever) to the kernel when booting the kerne=
+l on
+> the hfs floppy disk image that comes with debian potato. Does anyone know?
 
-It is interesting that I only ever get the problem when accessing distant
-systems (where the link is slower and less reliable) - and then it happens
-very consistantly.
+hexeditor /mnt/floppy/.resource/System
 
-Chris
+there is a resource in there somewhere that has the kernel arguments,
+ive heard its not too hard to find and edit in a hex editor.
+unfortunatly miboot really badly needs a text based configuration file...
+
+> I suspect the .rootinfo may have something to do with the bootup for linu=
+x,
+> though not sure and I dont know where to find docs on this stuff either.
+
+no .rootinfo is a hfs thing, don't mess with it, all you would likely
+end up doing is trashing the filesystem. =20
+
+if you have access to macos and resedit/resourcerer you might find
+those simpler to edit the System file.  (beware that MacOS may make
+the floppy unbootable if you mount it read-write on macos.  (ive heard
+its more forgiving of floppies then disk partitions though, ymmv as
+usual))
+
+--=20
+Ethan Benson
+http://www.alaska.net/~erbenson/
+
+--TX8FgYyhBart40Z+
+Content-Type: application/pgp-signature
+
+
+--TX8FgYyhBart40Z+--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
