@@ -1,31 +1,27 @@
-Message-ID: <3C15194C.8020807@humboldt.co.uk>
-Date: Mon, 10 Dec 2001 20:21:32 +0000
-From: Adrian Cox <adrian@humboldt.co.uk>
+Message-ID: <3C151A0C.60862796@linux-m68k.org>
+Date: Mon, 10 Dec 2001 21:24:44 +0100
+From: Roman Zippel <zippel@linux-m68k.org>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Machine Check / Blue Smoke
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Michel =?iso-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
+Cc: Kevin Hendricks <khendricks@ivey.uwo.ca>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: unkillable zombies from using gdb and kernel 2.4.15 and higher?
+References: <CF1E527E-ED77-11D5-8C12-0030654D6A26@ivey.uwo.ca> <1008013153.17478.28.camel@pismo>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I've just posted an updated version of my machine check patch:
+Hi,
 
-http://www.humboldt.co.uk/ppc_patches.html
+"Michel Dänzer" wrote:
 
-I'd appreciate any feedback on this - I'm not happy with the current
-approach taken to machinecheck on PPC. My experience of burn-in test on
-7400 hardware suggests that internal machine checks indicate genuine
-hardware failures.
+> AFAIR zombies have died but are waiting for their return value to be
+> read out of the process table. I'd like to know myself how that can
+> happen when their parents are gone...
 
-My patch attempts to ensure that if an internal machine check occurs,
-none of the potentially corrupt data in memory gets written out to disk.
-It also provides a place for platform handlers to deal with the external
-causes of machine check, as used on Powermac and Qspan. It includes an
-example handler to provide ECC memory support on the MPC107.
+They are reparented to init, which should take care of them.
 
---
-Adrian Cox   http://www.humboldt.co.uk/
-
+bye, Roman
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
