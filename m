@@ -1,71 +1,67 @@
-Date: Tue, 17 Oct 2000 13:37:58 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Samuel Rydh <samuel@ibrium.se>
-cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>, bh40@calva.net,
-        linux-fbdev@vuser.vu.union.edu
-Subject: Re: [linux-fbdev] Re: Video driver bug
-In-Reply-To: <20001017002037.A26630@ibrium.se>
-Message-ID: <Pine.LNX.4.10.10010171332540.394-100000@cassiopeia.home>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <v04003a01b611f5a4fcda@[24.70.162.14]>
+In-Reply-To: <19340911041012.13299@192.168.1.2>
+References: <200010170601.IAA06906@piglet.grunz.lu>
+ <200010170601.IAA06906@piglet.grunz.lu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Tue, 17 Oct 2000 07:34:33 -0500
+To: Benjamin Herrenschmidt <bh40@calva.net>, <mlan@cpu.lu>,
+        <linuxppc-dev@lists.linuxppc.org>
+From: Tony Mantler <nicoya@apia.dhs.org>
+Subject: Re: linux-pmac-stable SMP issues
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 17 Oct 2000, Samuel Rydh wrote:
-> On Mon, Oct 16, 2000 at 05:22:58PM -0700, James Simmons wrote:
-> > > > > Well, my understanding is that MOL needs to be able to "probe" for all
-> > > > > supported mode. Doing so on a visible console would definitely be hell.
-> > > > > It does that in order to setup the MacOS-side driver mode list.
-> > > >
-> > > > According to Samuel's last post, MOL needs both var and fix for probing.
-> >
-> > Yes this is really bad. The way most drivers are written is that testing
-> > var does not change fix. If you grab fix after testing the video mode it
-> > will be for the current set resolution. Not the one you are testing
-> > for. For most drivers you need to physically set the mode to change
-> > fix. Sometimes the information in fix can only be obtained from the
-> > hardware and this requires a video mode change.
+At 5:38 AM -0500 10/17/2000, Benjamin Herrenschmidt wrote:
+>>It might not work as you want for dual booting, but you might want to
+>>try OF booting with quik. It's rather manual, but it may bring up your
+>>second processor...
 >
-> What MOL needs from the fix structure is the bytes_per_line field and
-> the page_offset of framebuffer. This information is necessary in order
-> to make it possible to switch seamlessly (by using the MMU) from a
-> RAM based framebuffer to the physical one.
+>Yup, try miBoot or quik. The problem here is that new versions of MacOS
+>have a small SMP nanokernel that is taking over the second CPU before
+>BootX can react.
 
-OK.
+Ah, that would appear to be it. I booted with an 8.1 CD + BootX and I get
+the full twin-penguins and everything. Spiff.
 
-> What I'd like to see is good way to obtain these parameters without
-> actually setting the video mode. And, of course, it would be nice
+I would think it should be possible to have BootX hijack the second CPU in
+a way that would make it un-stuck-able for when linux starts. I'd do this
+myself but BootX doesn't build in MPW and I don't have codewarrior.
 
-Currently that's possible, but it will no longer be in the future. But I guess
-it's only a few modes (640x400, 800x600, 1024x768, 1280x1024), so it won't
-cause too much annoyance?
+As much as I hate codewarrior, anyone care to make a donation? :)
 
-Alternatively you can get the info once and store it in a config file in the
-user's homedir. If it later turns out to be invalid (e.g. due to dual-head
-issues, or because you changed your video card), you can offer to reprobe when
-restarting MOL the next time.
 
-> if they were guaranteed to be constant for a given video mode.
+merida:~$ cat /proc/cpuinfo
+get_cpuinfo(): ran out of cpu nodes.
+processor	: 0
+cpu		: 604e
+clock		: 200MHz
+revision	: 2.2
+bogomips	: 398.95
 
-That depends on the hardware. When you're running on the second head of e.g. a
-Matrox G400, it cannot be guaranteed.
+processor	: 1
+cpu		: 604e
+clock		: 200MHz
+revision	: 2.2
+bogomips	: 398.95
 
-So MOL should test whether those values are still valid when switching from X
-to the console, and return to X when they are no longer valid.
+total bogomips	: 797.90
+zero pages	: total 0 (0Kb) current: 0 (0Kb) hits: 0/282 (0%)
+machine		: Power Macintosh
+motherboard	: AAPL,9500 MacRISC
+L2 cache	: 512K unified
+memory		: 64MB
+pmac-generation	: OldWorld
+get_cpuinfo(): ran out of cpu nodes.
 
-Is this acceptable?
 
-Gr{oetje,eeting}s,
+Cheers - Tony 'Nicoya' Mantler :)
 
-						Geert
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Tony "Nicoya" Mantler - Renaissance Nerd Extraordinaire - nicoya@apia.dhs.org
+Winnipeg, Manitoba, Canada           --           http://nicoya.feline.pp.se/
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
