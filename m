@@ -1,54 +1,71 @@
-From: clark@esteem.com
-Message-Id: <5.0.0.25.1.20001228172655.00a6f940@pop.esteem.com>
-Date: Thu, 28 Dec 2000 17:33:48 -0800
-To: "Navin Boppuri" <nboppuri@trinetcommunication.com>
+Date: Fri, 29 Dec 2000 01:03:16 -0500 (EST)
+From: "Mark S. Mathews" <mark@absoval.com>
+To: Cal Erickson <cal_erickson@mvista.com>
+cc: Navin Boppuri <nboppuri@trinetcommunication.com>,
+        linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Neighbour Table Overflow on NFS Server
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <002f01c070de$15248760$4a1f76d8@washington>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+In-Reply-To: <3A4BB95A.2F467DA3@mvista.com>
+Message-ID: <Pine.LNX.3.96.1001229010201.1702B-100000@tristar.cc.absoval.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+I may be completely off-base here, but I seem to recall getting some of
+these a long time ago.  At the time I think it was cause by a lack of a
+loopback device and routes.
 
-         Have you recompiled your kernel lately? You might have changed the
-SCC number for your Ethernet interface by accident. I did this once and
-went nuts trying to figure out what was wrong. Try changing it and see if
-it works. If not change it back and continue to go nuts. ;-)
+-Mark
 
-         Good Luck
+On Thu, 28 Dec 2000, Cal Erickson wrote:
 
-
-At 02:54 PM 12/28/00 +0000, you wrote:
-
->Hello,
 >
->I have been debugging my custom 823 board. I have an NFS Server setup on
->which my kernel on the board mounts. I have using this server without any
->problems for more than a month. All of the sudden, my NFS Server complains
->of "Neighbour Table overflow" . The NFS Server was not modified, nor
->restarted. The error also says that the Server returned error -5.  Can
->someone suggest any remedy for this problem?
+> Navin,
+>  The message "neighbour table overflow" is the result of some
+> changes to the IP stack software in Linux version 2.2.x +. This
+> simply means that you are unable to connect to your NFS
+> server.  It may be related to the driver, but it may also be
+> related to other issues, such as NFS server not running or
+> incorrectly installed, no physical connectivity to NFS server,
+> etc.  Check the configuration of your NFS server and IP
+> network before diving into the driver.
 >
->Sincerely,
->Navin Boppuri
+> Cal Erickson
+>
+> Navin Boppuri wrote:
+>
+> > Hello,
+> >
+> > I have been debugging my custom 823 board. I have an NFS Server setup on
+> > which my kernel on the board mounts. I have using this server without any
+> > problems for more than a month. All of the sudden, my NFS Server complains
+> > of "Neighbour Table overflow" . The NFS Server was not modified, nor
+> > restarted. The error also says that the Server returned error -5.  Can
+> > someone suggest any remedy for this problem?
+> >
+> > Sincerely,
+> > Navin Boppuri
+> >
+>
+> --
+> ===========================================================================
+> Cal Erickson                 MontaVista Software Inc.
+> Linux Consultant             1237 E. Arques Ave.
+> Phone (408) 328-0304         Sunnyvale CA 94085
+> Fax   (408) 328-9204         web http://www.mvista.com
+> ===========================================================================
 >
 >
+>
 
-*****************************************************************
-   If you live at home long enough, your parrents will move out.
-*****************************************************************
 
-Conn Clark
-Engineering Stooge				clark@esteem.com
-Electronic Systems Technology Inc.		www.esteem.com
+Mark S. Mathews
 
-Stock Ticker Symbol				ELST
-
-"clark@esteem.com" Copyright 2000 all rights reserved. May not be sold or
-used for advertisements.
+AbsoluteValue Systems      Web:    http://www.linux-wlan.com
+P.O. Box 941149            e-mail: mark@linux-wlan.com
+Maitland, FL 32794-1149    Phone:  407.644.8582
+USA                        Fax:    407.539.1294
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
