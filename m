@@ -1,57 +1,50 @@
-Date: Thu, 18 Sep 2003 11:28:32 -0700
+Date: Thu, 18 Sep 2003 11:31:46 -0700
 From: Tom Rini <trini@kernel.crashing.org>
 To: Brian Waite <waite@skycomputers.com>
 Cc: Steven Scholz <steven.scholz@imc-berlin.de>,
 	LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: BOOT_TARGET pImage & uImage ???
-Message-ID: <20030918182832.GE6692@ip68-0-152-218.tc.ph.cox.net>
-References: <3F65917D.1020502@imc-berlin.de> <3F699255.4050000@imc-berlin.de> <20030918180834.GC6692@ip68-0-152-218.tc.ph.cox.net> <200309181422.32546.waite@skycomputers.com>
+Message-ID: <20030918183146.GF6692@ip68-0-152-218.tc.ph.cox.net>
+References: <3F65917D.1020502@imc-berlin.de> <20030915150935.GB29517@ip68-0-152-218.tc.ph.cox.net> <3F699255.4050000@imc-berlin.de> <200309180952.29699.waite@skycomputers.com>
 Mime-Version: 1.0
-In-Reply-To: <200309181422.32546.waite@skycomputers.com>
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200309180952.29699.waite@skycomputers.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Sep 18, 2003 at 02:22:28PM -0400, Brian Waite wrote:
-> > What I want is three things:
-> > 1) The 'mkimage' target must be done in such a fashion that it will
-> > never run into a 'cannot execute' problem. My suggestion is to have
-> > the Makefile do a:
-> > @chmod +x mkimage.sh
-> > Or so. In 2.5/2.6, the build system will handle this for you,
-> > automagically, on .sh files I believe. For 2.4, you must handle this
-> > explicitly.
+On Thu, Sep 18, 2003 at 09:52:29AM -0400, Brian Waite wrote:
+
+> Here  is the patch I have been using myself. I am embarrassed to say that I
+> was the 2nd person to ask and I forgot to post the patch for inclusion. I
+> don;t have a version for 2.5/6 but this works for 2.4 (based on
+> 2.4.22-pre10). Tom, I am not sure this is exactly what yoou wanted when we
+> initially talked about it so let me know if you would like a better method.
+
+That looks alright.  I've got one comment:
+[snip]
+> diff -Nru a/arch/ppc/boot/Makefile b/arch/ppc/boot/Makefile
+> --- a/arch/ppc/boot/Makefile	Thu Sep 18 09:45:53 2003
+> +++ b/arch/ppc/boot/Makefile	Thu Sep 18 09:45:53 2003
+> @@ -17,7 +17,7 @@
+>  AFLAGS	+= -D__BOOTER__
+>  OBJCOPY_ARGS = -O elf32-powerpc
 >
-> Altough messy, I make this happen in the patch I supply. I can change
-> it to do the straight chmod in the scrip[ts directory if that is
-> cleaner.
-
-I think what your patch does is the 2.6 logic, so that's probably best.
-
-> > 2) Do we really need 'pImage' and 'uImage' or can we just have
-> > 'uImage' ?
+> -MKIMAGE				:= ./utils/mkimage.wrapper
+> +MKIMAGE				:= $(TOPDIR)/scripts/mkuboot.sh
 >
-> I think uImage is enough. Wolfgang strongly discourages any use of
-> PPCBoot these days and it just seems silly.
-
-That what I figured at this point.
-
-> > 3) I really (really!) want a patch for 2.4 and 2.5/2.6 at the same
-> > time.
+>  lib/zlib.a: lib/zlib.c
+>  	$(MAKE) -C lib
+> @@ -67,12 +67,18 @@
+>  	gzip $(GZIP_FLAGS) images/vmapus
+>  endif
 >
-> This was one of the reasons for not supplying the patch previously. I
-> will try to pull together a 2.5/2.6 patch but I have not worked under
-> 2.5/2.6 at all. When I initially did the 2.4 patch I pulled the 2.5
-> tree but I didn't have time to understand the layout. Also, unless
-> someone has a board that will boot a uImage target I can only supply
-> an untested patch. I'll take some time and see if I can pull something
-> I am comfortable with in the next few days. Is there anyone who could
-> help with testing?
+> +mkuboot: $(MKIMAGE)
+> +	cp $< $@
+> +	chmod 755 $@
 
-'Untested' is fine here, since all you have to do to test is have the
-'uImage' target work.  A minimal config based on arch/ppc/defconfig
-should suffice for this.
+Add this to the clean target, and then don't rm it at the end of
+'uImage' so that we only 'build' this once.
 
 --
 Tom Rini
