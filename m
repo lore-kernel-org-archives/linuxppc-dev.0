@@ -1,30 +1,33 @@
-Date: Sun, 28 Oct 2001 03:34:20 -0900
-From: Ethan Benson <erbenson@alaska.net>
-To: linuxppc-dev@lists.linuxppc.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+To: Ani Joshi <ajoshi@shell.unixbox.com>,
+	Derrik Pates <dpates@dsdk12.net>
 Subject: Re: GeForce on PPC == _no work_
-Message-ID: <20011028033420.Q22102@plato.local.lan>
-References: <Pine.LNX.4.33.0110271844230.15267-100000@andromeda.dsdk12.net>
-Mime-Version: 1.0
-In-Reply-To: <Pine.LNX.4.33.0110271844230.15267-100000@andromeda.dsdk12.net>; from dpates@dsdk12.net on Sat, Oct 27, 2001 at 06:56:47PM -0600
-Content-Type: text/plain; charset=us-ascii
+Date: Sun, 28 Oct 2001 07:52:39 -0500
+Cc: <linuxppc-dev@lists.linuxppc.org>
+References: <Pine.BSF.4.32.0110271946440.10582-100000@shell.unixbox.com>
+In-Reply-To: <Pine.BSF.4.32.0110271946440.10582-100000@shell.unixbox.com>
+MIME-Version: 1.0
+Message-Id: <20011028125007.MHAN10438.tomts12-srv.bellnexxia.net@there>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Oct 27, 2001 at 06:56:47PM -0600, Derrik Pates wrote:
->
-> Is there any hope for this system? Or is this an exercise in futility
+Hi Ani,
 
-I suggest going to ebay and finding a Rage128 Mac edition.   I found
-quite a few there when i was tasked with setting up a Silver G4 for
-someone, i even got two Rage128s so i would have an extra just in case
-i would be able to afford one those nice machines in the near future.
+On October 27, 2001 10:48, Ani Joshi wrote:
+> Well, the problem is you are using a fp with the ADC port.  This isn't
+> supported as there is no documentation on how I am supposed to powerup
+> and run the DVI port.  On ppc, rivafb only supports the VGA port right
+> now unless some secret docs are leaked out of nvidia, same goes with X.
 
-the Rage128 works very well in those machines, the mac edition is
-needed since you want to be able to see OpenFirmware.
+Has anyone looked in the latest Darwin release?  Is there code there that
+supports flat panels on both Radeon and Nvidia?  If so, where would one
+look for it?
 
---
-Ethan Benson
-http://www.alaska.net/~erbenson/
+Thanks,
+
+Kevin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
