@@ -1,35 +1,29 @@
-Date: Mon, 16 Dec 2002 09:46:50 +0100 (CET)
-From: Marius Groeger <mag@sysgo.de>
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Arctic-2 MTD driver
-In-Reply-To: <20021216020922.GH4981@zax.zax>
-Message-ID: <Pine.LNX.4.40.0212160945060.1222-100000@mag.devdep.sysgo.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3DFD9E2F.CA7417EF@c-s.fr>
+Date: Mon, 16 Dec 2002 10:34:39 +0100
+From: "LEROY Christophe" <christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: liste ppc embedded <linuxppc-embedded@lists.linuxppc.org>
+Cc: TRINH-THAI Florent <florent.trinh-thai@c-s.fr>,
+	POLI Herve <herve.poli@c-s.fr>,
+	GUICHARD Michel <michel.guichard@c-s.fr>
+Subject: Can we use all SCCs with MPC860
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello David,
+Hello,
 
-On Mon, 16 Dec 2002, David Gibson wrote:
+I have a board (home made) with a MPC862 running Montavista Linux 2.1
+(kernel 2.4.17).
+I'd like to use the four SCCs as serial ports, but it seems that only
+SCC2 and SCC3 can be configured as serial ports.
+Does someone have any idea on how to configure SCC1 and SCC4 as serial
+ports also with that kernel ?
 
-> Having committed the core support code for the Arctic-2, here come
-> some drivers for it.  Below is an MTD map for the Arctic-2, derived
-> from beech-mtd.c.  Essentially all it does is provide suitable
-> hardwired partitions.
-
-Can you also post this to the linux-mtd folks?
-
-Thanks,
-Marius
-
------------------------------------------------------------------------------
-Marius Groeger           SYSGO Real-Time Solutions AG       mgroeger@sysgo.de
-Software Engineering     Embedded and Real-Time Software    www.sysgo.de
-Voice: +49-6136-9948-0   Am Pfaffenstein 14                 www.osek.de
-FAX:   +49-6136-9948-10  55270 Klein-Winternheim, Germany   www.elinos.com
+Thanks
+C. Leroy
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
