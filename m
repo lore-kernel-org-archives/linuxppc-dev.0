@@ -1,65 +1,45 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: "Manuel Tovar Dall'Orso" <mtovar@tcc.com.pe>
-Reply-To: mtovar@tcc.com.pe
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: MPC823 -  serial input problem in LCD
-Date: Fri, 8 Feb 2002 13:01:37 -0500
-MIME-Version: 1.0
-Message-Id: <02020813013700.01872@id05.tcc.com>
+Date: Fri, 8 Feb 2002 10:35:57 -0800
+From: andrew may <acmay@acmay.homeip.net>
+To: Stefan Roese <stefan.roese@esd-electronics.com>
+Cc: linuxppc-embedded@lists.linuxppc.org, Armin <akuster@pacbell.net>
+Subject: Re: PPC405gp enet Soft Reset
+Message-ID: <20020208103557.A27732@ecam.san.rr.com>
+References: <20020207191741.A26185@ecam.san.rr.com> <EFEAIMDCOOOHIEPHDNFJOEJBDKAA.stefan.roese@esd-electronics.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <EFEAIMDCOOOHIEPHDNFJOEJBDKAA.stefan.roese@esd-electronics.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-We have an embedded TQM823 system working with a TFT Prime View V16C6448, in
-ppcboot-1.1.3 after settings the lcd.c file the system display the info in
-the LCD and our input comes from the Keyboard of the PC attached to the STK
-by a SMC1 (serial line).  When we configure the system for mounting rootp
-artition by NFS in linux, the output works fine but our input for keyboard
-fails.
+On Fri, Feb 08, 2002 at 11:03:59AM +0100, Stefan Roese wrote:
+> Andrew
+>
+> > I seem to be having a problem with the soft reset of EMAC
+> > mode register when I have no ethernet connection to by phy.
+>
+> We have the same problem (CPCI-405 with Intel LXT971 PHY).
 
+It is good to see that the problem is known.
 
+> > After this code in init_ppc405_enet(void) the SRST bit does
+> > not clear until after I stick in a cable.
+>
+> See Chapter 19.7.1 in PPC405GP User Manual (EMAC0_MR0):
 
-Description
-===========
-Source --->    kernel 2.4.4-2002-01.19
-adding ld.so.1 from ftp://ftp.denx.de/pub/LinuxPPC/usr/src/ld.so.1.tar.bz2
-CrossCompiler -> CDK from denx, LinuxPPC-2.2.13 for TQM823L(27_Jan_2000)
+The prelim hard copies I have been looking at failed to mention
+the clocks need to be active, but I did check the pdf and it is
+in there, so I guees I will try to look more at the soft copy these
+days.
 
-Our STK8xx (TQM823L_module) have been setup for TFT Prime View V16C6448AC
-compatibility, in ppcboot-1.1.3 the TFT output, and PC Keyboard input works
-perfect in the communications made by SMC1
+> It seems that we can't reset and setup the EMAC correctly without cable
+> connected (no cable == no PHY clock!). So what do we do when this occurs?
+> Disable the driver?
 
-
-
-
-NFS-Compiling
-=============
-For compiling:    > make TQM823L_LCD_config
-
-Addings:  > Plataform Suport   -> standalone shell = /bin/sash
-
-              > MPC8xx CPM Options -> Type of LCD Display
-
-                           arch/ppc/8xx_io/lcd823.c
-                           arch/ppc/8xx_io/Config.in
-                            (modify for our TFT like ppcboot)
-
-we setup /dev/console->tty0
-
-That works OK, the system initialize and we got the prompt in the TFT, but we
-don't have access to the system by the keyboard of the PC connected to the
-STK by the serial line SMC1.
-
-
-Question
-=======
-
-We need to configure another thing in the kernel for working with that serial
-imput ?
-
-
-
-Regards Manuel
+Your joking right? To do that is less than a 10 line hack, that I had to do
+to stop the driver from doing a panic or crashing, but I would not feel
+good about sending that as a patch. The driver needs to be able to handle
+this, but it will take some rework and it would be nice to know if there
+is really a reason to do the SoftReset before probing the phy.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
