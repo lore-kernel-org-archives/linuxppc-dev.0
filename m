@@ -1,34 +1,44 @@
-Message-ID: <3FCEEC38.4010608@dgt-lab.com.pl>
-Date: Thu, 04 Dec 2003 09:11:36 +0100
+Message-ID: <3FCEF441.2030808@dgt-lab.com.pl>
+Date: Thu, 04 Dec 2003 09:45:53 +0100
 From: Wojciech Kromer <krom@dgt-lab.com.pl>
 MIME-Version: 1.0
 To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: cached memory
+Subject: Re: memory problem with fec on 8250
+References: <3FCD956B.8030604@gazeta.pl>
+In-Reply-To: <3FCD956B.8030604@gazeta.pl>
 Content-Type: text/plain; charset=ISO-8859-2; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-how to change strategy of using cached memory?
+U¿ytkownik Kromer napisa³:
 
-this is a shot from top program on my board
-==========================================
-  7:31pm  up 18:31,  2 users,  load average: 2.46, 1.89, 1.17
-28 processes: 25 sleeping, 3 running, 0 zombie, 0 stopped
-CPU states:  0.1% user, 99.8% system,  0.0% nice,  0.0% idle
-Mem:   127888K av,  124880K used,    3008K free,       0K shrd,       0K
-buff
-Swap:       0K av,       0K used,       0K free                   58936K
-cached
+>
+> hi there
+>
+> i have some problems with using fec device on my custom 8250 board
+> while sending a lot of data (at least 300MB) through this device causes
+> lack of memory
+> sending same amount of data through loopback works fine
+>
+> i'm using 2.4.19 kernel
+> any idea?
 
-  PID USER     PRI  NI  SIZE  RSS SHARE STAT %CPU %MEM   TIME COMMAND
-  768 root      14   0 10740  500   388 R    96.7  0.3   3:17 dd
-  522 root       9   0  1264 1264   932 D     1.1  0.9   0:09 ftp
-==========================================
+cached memory keeps growing slowly, and free is going down same way,
+after putting ~300MB ftp data (from 8250 board to another host), VM
+starts killing some applications
 
-in some cases there are "out of memory" errors in my applications,
-esspecialy when system has high load, free memory slowy goes down
-there are no new allocs in applications, but cache keeps growing
+same situation is with latest linuxppc_2_4_devel kernel from denx.de,
+but there is additional information from kernel
+
+<5>__alloc_pages: 0-order allocation failed (gfp=0x1d2/0)
+<5>__alloc_pages: 0-order allocation failed (gfp=0x1d2/0)
+<5>__alloc_pages: 0-order allocation failed (gfp=0x1d2/0)
+<5>__alloc_pages: 0-order allocation failed (gfp=0x1d2/0)
+<5>__alloc_pages: 0-order allocation failed (gfp=0x1d2/0)
+<4>VM: killing process sshd
+
+what's wrong ???
 
 
 --
