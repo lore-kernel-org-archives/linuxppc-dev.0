@@ -1,80 +1,78 @@
-Date: Tue, 10 Dec 2002 10:49:11 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Pantelis Antoniou <panto@intracom.gr>
-Cc: Dan Malek <dan@embeddededge.com>,
-	Paul Mackerras <paulus@au1.ibm.com>, joakim.tjernlund@lumentis.se,
-	Matt Porter <porter@cox.net>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Regarding consistent_alloc
-Message-ID: <20021210174911.GB14786@opus.bloom.county>
-References: <20021206085909.B17918@home.com> <IGEFJKJNHJDCBKALBJLLCEJGFIAA.joakim.tjernlund@lumentis.se> <15857.15826.513311.884408@argo.ozlabs.ibm.com> <3DF45D05.5030003@intracom.gr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3DF45D05.5030003@intracom.gr>
+From: "Stephan Linke" <Stephan.Linke@epygi.de>
+To: <joakim.tjernlund@lumentis.se>
+Cc: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: 8xx_io/enet.c
+Date: Tue, 10 Dec 2002 18:52:16 +0100
+Message-ID: <FCEAKDJJAPHPLJFINDAJMENLCLAA.Stephan.Linke@epygi.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-reply-to: <IGEFJKJNHJDCBKALBJLLMELCFIAA.joakim.tjernlund@lumentis.se>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Dec 09, 2002 at 11:06:13AM +0200, Pantelis Antoniou wrote:
+Hi,
 
-[snip]
-> Since I'm the one that started this thread let me make a few points.
+> -----Original Message-----
+> From: Joakim Tjernlund [mailto:joakim.tjernlund@lumentis.se]
+> Sent: Dienstag, 10. Dezember 2002 16:47
+> To: Stephan Linke
+> Subject: RE: 8xx_io/enet.c
 >
-> 1. The comment that consistent_alloc is tied to the PCI bus is valid,
-> since the dma_handle is returned by a call to virt_to_bus(), with
-> the virt_to_bus() being:
 >
-> /*
-> * The PCI bus is inherently Little-Endian.  The PowerPC is being
-> * run Big-Endian.  Thus all values which cross the [PCI] barrier
-> * must be endian-adjusted.  Also, the local DRAM has a different
-> * address from the PCI point of view, thus buffer addresses also
-> * have to be modified [mapped] appropriately.
-> */
-> extern inline unsigned long virt_to_bus(volatile void * address)
-> {
-> #ifndef CONFIG_APUS
->        if (address == (void *)0)
->                return 0;
->        return (unsigned long)address - KERNELBASE + PCI_DRAM_OFFSET;
-> #else
->        return iopa ((unsigned long) address);
-> #endif
-> }
-
-This is typically used by PCI, but look at the code for the !CONFIG_APUS
-(ie just about every machine, including all 8xx) case.  This is the
-iopa, that if classes haven't made me even more incoherent, that has
-been mentioned throught the thread.
-
-> Also the consistent_sync() takes as a direction argument values like
-> PCI_DMA_FROMDEVICE.
-
-This is unfortunate, but 'expected' for now.  These constants really
-have nothing to do with PCI DMA, but DMA in general.  There was a hope
-of fixing that in 2.5, but I don't recall if it happened (it might
-have) yet.
-
-> It has something obviously to do with a PCI bus. My board, and I believe
-> most of the boards with a 8xx do not have a PCI bus.
+> >
+> > Hi,
+> >
+> > just checked the mailing list for the patches. Looks like you
+> mean the 'copy
+> > large buffers' patch.
+> > I took the second version and applied it to fec.c too.
+> > It works fine on both devices. The only thing that confused me was the
+> > discussion about the possibility of inconsistent data.
 >
-> Is it possible to modify consistent_alloc to be something more
-> generic?
+> Thats the one. However there is a small bug in version 2 w.r.t when the
+> invalidate_dcache_range call is made. In the second version the
+> call is made
+> AFTER the buffer has been received as opposed in my first version
+> where the
+> call is made BEFORE handing over the buffer to the CPM. That may in some
+> rare case corrupt the packet. See
+> http://lists.linuxppc.org/linuxppc-embedded/200211/msg00120.html
+>
+> This is only relevant for 8xx, 82xx don't have to invalidate.
+>
+> > But we didn't noticed
+> > any performance impact when testing it with IP packets.
+>
+> Didn't you get any performace increase after appling my patch?
+> If you did, could you send me your performace numbers?
+> Did you try the first version also? If so,any performance
+> difference compared with version 2?
+>
+>   Jocke
 
-It is already generic, it's just not obvious :(
+Indeed we had a better performance with the patch applied to fec.c
+(100base-Tx). Unfortunately I don't have the results at the moment. At
+enet.c I didn't noticed mutch of a difference since handling 10base-T
+traffic isn't that mutch of a problem at the moment and I didn't spend time
+to figure out the exact CPU load.
+I remember that someone said he had an performance impact at small packets.
+I didn't noticed any (even though there must be a slight on caused by the
+additinal if-statement).
+I can post some of our results results after I did some more tests but that
+may take a while since I am buisy with other stuff at the moment.
 
-> 2. I have a requirement to have my drivers loaded as modules.
-> m8xx_cpm_hostalloc has a very simplistic implementation, which
-> makes it unsuitable for something like that. I have some patches
-> that fix both m8xx_cpm_hostalloc and 8xx_cpm_dpalloc by implementing
-> a proper heap, with free space management and coalescing.
-> What is the proper way to push them, and to whom?
 
-<buck passing mode=on>Dan Malek still knows the most about the
-8xx-specific portions of the kernel, so he should really speak up here
-when he gets a moment</buck passing>
+  Stephan
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+>
+> PS.
+>    Any perticular reason not to cc the embedded list also? Others would
+>    probably be intressted also.
+>
+Well, there is a 'reason'. I simply didn't payed attention to the fact that
+a simple reply doesn't reply to the list.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
