@@ -1,42 +1,35 @@
-Message-ID: <37D30C0C.94E29FF0@dgs.monash.edu.au>
-Date: Mon, 06 Sep 1999 10:34:20 +1000
-From: Brendan Simon <brendan@dgs.monash.edu.au>
-Reply-To: brendan@dgs.monash.edu.au
+Message-ID: <37D36242.9A70B7F2@cable.a2000.nl>
+Date: Mon, 06 Sep 1999 08:42:10 +0200
+From: Otto Moerbeek <otto@cable.a2000.nl>
 MIME-Version: 1.0
-To: linux-embedded <linux-embedded@waste.org>,
-        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: embedded linux: initrd root file-system in flash.
+To: Linux PPC Developer List <linuxppc-dev@lists.linuxppc.org>,
+        Linux PowerMac List <linux-pmac@samba.anu.edu.au>
+Subject: 2.2.12 and USB on a B&W G3
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hi,
 
-I want to boot linux on a PowerPC embedded system WITHOUT using NFS.
->From what I can tell, initrd seems to be the best way of doing this.
-All the docs I have read regarding initrd refer to LOADLIN or LILO.  I
-am not using either as they assume some kind of disk like filesystem.
-There are two methods that I can think of to use an initrd image stored
-in flash.
+I recently tried to compile the 2.2.12 tree, and it boots fine on my B&W
+G3 (rev2, no scsi) IF I disable the USB driver. If I enable the USB
+driver a kernel panic occurs, with a stack trace that leads to one of
+the USB interrupt handlers.
 
-1) Store it at a known location seperate from the kernel.  eg.
-0x400000.  I think I like this option as the root filesystem can be
-updated without touching the kernel/boot code and the start address is
-always fixed.  Does anyone know how to tell the kernel where the
-location of the initrd image is and how big it is ?  I assume that the
-initrd image has to be uncompressed first or does the kernel assume it
-is compressed if the root filesystem is /dev/ram ?
+It looks like some USB work that Paul Mackerras did is not included in
+the 2.2.12 tree. Is someone (Paul?) working on merging these patches
+into 2.2.12?
 
-2) Store it as a seperate section in the kernel image.  This is what is
-done with the mbx boot code.  The compressed kernel is stored as a
-separate section of the boot code image.  I guess same questions for 1)
-apply for this method.  The build processes can work out where to store
-the initrd image in the resultant loadable image.  This information
-would have to be passed to the kernel.  Any idea how this would be done
-?
+If not, I can give it a try...
 
-Thanks,
-Brendan Simon.
+Is there an "offfical" opinion if vanilla 2.2.12 should work on B&W
+G3's? Where should I be looking to find this info?
 
+Regards, Otto
+
+-- 
+Otto Moerbeek
+otto@cable.a2000.nl
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
