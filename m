@@ -1,45 +1,43 @@
-Date: Sat, 7 Sep 2002 08:29:25 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: "Dayton, Dean" <deand@aiinet.com>
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Irq 0 problem
-Message-ID: <20020907152925.GA917@opus.bloom.county>
-References: <638AA0336D7ED411928700D0B7B0D75B0189BAFA@aimail.aiinet.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <638AA0336D7ED411928700D0B7B0D75B0189BAFA@aimail.aiinet.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Sat, 07 Sep 2002 18:59:02 +0200
+From: o_y <o_yahav@netvision.net.il>
+Subject: MPC860T FEC problem
+To: linuxppc-embedded@lists.linuxppc.org
+Message-id: <MBBBIOFIICDAPDMKHBDEKEDLCAAA.o_yahav@netvision.net.il>
+MIME-version: 1.0
+Content-type: text/plain; charset=windows-1255
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Sep 06, 2002 at 01:32:12PM -0400, Dayton, Dean wrote:
+Hello to all.
+I'm trying to port linux 2.2.14 on MPC860T and busybox as initrd.
+The eth0 device is working so i have network capability.
+Now i'm trying to get the FEC device working.
+In the booting process the FEC is initialized ok (or so i belive),
+IRQ(FEC)=3.
+The problem is : when i use the FEC as my network device there is no
+interrupts
+from this device (unlike when i use the eth0 device as my net device).
+The LINK led and the TX led are on constantly when i connect the FEC to a
+100TXBase switch.
+I have not seen any initializetion of the BCSR4 so i initialize it with the
+value
+that ppcboot uses , so the ENABLE led is on too.
+The device isn't working even when i use ppcboot (i configured ppcboot to
+use it).
 
-> I have been trying to port Linux 2.4.18-pre2 to the MPC8266ADS board. I
-> grabbed the SCC uart.c from 2.5.31.
+1. Why there is no initializetion of BCSR4 in the original code?
+2. If BCSR4 must be initialized , what is the correct value?
+3. Is any one have a code that succeeded getting FEC device to work?
+4. IVEC(ILEVEL) bits of the FEC are initialized but when i read the value of
+this
+   register i get 0x00000000 . Is this the problem ? and if so how can i fix
+it ?
 
-Why did you grab a file from 2.5.31?  And is there any reason you aren't
-using 2.4.18 final or 2.4.19 final instead ?
+thank you for your help
+oshri.
+o_yahav@netvision.net.il
 
-> The kernel loads and runs, the ramdisk is uncompressed and mounted. Then I
-> take an interrupt with SIVEC=0. SIVEC is now 0 everytime it is read, this
-> causes do_IRQ() to go into an endless loop.
-[snip]
-> -		if (irq >= 0)
-> +		if (irq > 0)
-> 			ppc_irq_dispatch_handler()
-[snip]
-> This appears to solve (or at least hide) my problem. Has anyone else run
-> into this? I think it is occuring during the open of the console port (SCC
-> 1). I ran into the same thing while trying to run on an EST8260 using an SMC
-> as the console. Am I simply covering up a problem with a misconfigured
-> device driver?
-
-I think the problem is you're using a kernel which doesn't have the 8260
-irq function updated to return -1 when there's nothing pending..  Can
-you verify that this is a problem with 2.4.19 or 2.4.18 ?
-
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
