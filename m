@@ -1,66 +1,40 @@
-Date: Fri, 30 Jul 2004 09:55:50 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Adrian Cox <adrian@humboldt.co.uk>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [PATCH] I2C driver for MPC107/824x/85xx/52xx
-Message-ID: <20040730165550.GO16468@smtp.west.cox.net>
-References: <1091201612.987.25.camel@localhost>
+Message-ID: <31912.1091207368623.SLOX.WebMail.wwwrun@donald.sysgo.com>
+Date: Fri, 30 Jul 2004 19:09:28 +0200 (CEST)
+From: Pavel Bartusek <Pavel.Bartusek@sysgo.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: nfs server not responding
+Cc: mporter@kernel.crashing.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1091201612.987.25.camel@localhost>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Jul 30, 2004 at 04:33:32PM +0100, Adrian Cox wrote:
+Hello all,
 
-> This is the latest version of my driver for the I2C controller in the
-> MPC107 and related chips.
->
-> Since last posting the driver has been tested on MPC5200, where it works
-> only when interrupts are disabled. I have positive results for MPC107
-> and MPC8540. There's also a bug fix in error detection on I2C reads,
-> updated timer handling, and clock initialisation is now done only once.
->
-> I plan to send this version to Greg KH unless I hear objections in the
-> next few days.
+I am using the latest kernel from bk://source.mvista.com/linux-2.5-ocp
+on the Ocotea board and the default Ocotea config file which comes with
+the kernel plus the following
+CONFIG_CMDLINE="ip=on console=ttyS0,115200 root=/dev/nfs rw"
+CONFIG_DEVFS_FS=y
+CONFIG_DEVFS_MOUNT=y
 
-I'll throw in a nit:
+I have root filesystem mounted via nfs. During writing of a file occurs
+the
+following error:
+bash-2.05a# dd if=/dev/zero of=/x bs=1M count=10
+nfs: server 129.168.1.87 not responding, still trying
 
-> diff -Nru a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
-[snip]
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License as
-> + * published by the Free Software Foundation; either version 2 of
-> + * the License, or (at your option) any later version.
-...
+>From this state is not possible to recover and get the shell prompt. The
+problem
+occurs only in the half duplex mode. When the ethernet operates at full
+duplex
+all seems to be OK. The same problem is on the Ebony. My investigation
+points it is caused by the ethernet driver. The old 2.4.21 ppc kernel
+worked fine with the Ebony.
 
-This can be condensed down to:
- * <YEAR> (c) <COMPANY>. This file is licensed under
- * the terms of the GNU General Public License version 2. This program
- * is licensed "as is" without any warranty of any kind, whether express
- * or implied.
+Pavel Bartusek
+SYSGO AG
 
-Or so our lawyers claim.
-
-[snip]
-> +#include <linux/kernel.h>
-[snip]
-> +#ifdef CONFIG_I2C_DEBUG_BUS
-> +#define DPRINTK(args...) printk(KERN_DEBUG __FILE__": " args)
-> +#else
-> +#define DPRINTK(args...)
-> +#endif
-
-<linux/kernel> provides pr_debug (and a few others) that just depend on
-DEBUG, fwiw.
-
-And maybe Lindent the sources? :)
-
-But as I said, merely nits.
-
---
-Tom Rini
-http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
