@@ -1,32 +1,57 @@
-Message-Id: <200007311221.NAA04559@hyperion.valhalla.net>
-Date: Mon, 31 Jul 2000 13:22:03 +0100
-Subject: Re: Stealth port problems
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: "Timothy A. Seufert" <tas@mindspring.com>
-CC: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Message-Id: <v04003a01b5ab20fe3205@[24.66.67.194]>
+In-Reply-To: <Pine.LNX.3.96.1000731055118.16733A-100000@mklinux.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Mon, 31 Jul 2000 07:31:26 -0500
+To: David Gatwood <dgatwood@mklinux.org>,
+        mklinux-announce@public.lists.apple.com,
+        mklinux-setup@public.lists.apple.com
+From: Tony Mantler <nicoya@apia.dhs.org>
+Subject: Re: MKL-ANN: Performa 52xx/53xx/62xx/63xx Support
+Cc: linuxppc-dev@lists.linuxppc.org, linuxppc-users@lists.linuxppc.org,
+        port-macppc@netbsd.org, port-mac68k@netbsd.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  Mon, Jul 31, 2000, I wrote...
-> On  Mon, Jul 31, 2000, Timothy A. Seufert wrote:
->> At 10:11 AM +0100 7/31/00, Iain Sandoe wrote:
->>
->>>BTW st SCC-XXdma stuff *is* enabled on my G3 by default.
->>
->> Beige or blue?  On my B&W G3 it's not enabled, I only see the plain
->> non-DMA RX and TX interrupts.
+At 1:06 AM -0500 7/31/2000, David Gatwood wrote:
+>Apologies in advance for the cross-post.
 >
-> Beige - but I was burbling (again) - I build all my own kernels... so YMMV
+>As of July 31, 2000, the PowerMac 5200/5300/6200/6300 family of
+>computers, and their Performa equivalents, are officially
+>supported in MkLinux.  Please NOTE that only the 6214 has been
+>tested, so there may be some small snags in some of the others.
+>Barring any surprises, though, it should "just work".
 
-FWIW:
-With the same kernel...
-On my Lombard - the SCC XXdma does *not* show
-On my 9600 - it does.
+Sweet! I knew I set aside 1gig on my 5200's hd a year ago for a reason. :)
 
-Config options supplied if you like :-)
-Iain.
+
+[...]
+>      * SCSI is working, but rather slow.  It's partially hardware
+>        at fault, and partially a lack of pseudo-DMA code.  Oh well.
+>        It "mostly works."  As always, your mileage may vary.
+
+Hehehe. If you thought the IDE ints were messed up, you're gonna just
+*love* SCSI PDMA.
+
+
+[...]
+>      * Tony Mantler (of mac68k-land) for assistance in tracking down a
+>        lost IDE interrupt.
+[...]
+
+8)
+
+
+Can't wait to get home this evening to install it. You're the man, David!
+
+
+Cheers - Tony :)
+
+
+--
+Tony Mantler       Renaissance Nerd Extraordinaire     nicoya@apia.dhs.org
+Winnipeg, Manitoba, Canada                     http://nicoya.feline.pp.se/
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
