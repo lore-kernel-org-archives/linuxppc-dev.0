@@ -1,53 +1,55 @@
-Message-ID: <21A8AE56EBB6D411A4520060973D360101A9F739@PEPINTERCOM>
-From: Claus Gindhart <Claus.Gindhart@kontron.com>
-To: "'Gallant, John'" <jgallant@vanteon.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Assistance with using /dev/fb0 and No X windows
-Date: Tue, 14 Jan 2003 08:46:56 +0100
-MIME-Version: 1.0
+Subject: Re: Control-C in bash ???
+From: Alex Zeffertt <ajz@cambridgebroadband.com>
+To: markc@mail.com
+Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <200301131409.00113.markc@mail.com>
+References: <200301131409.00113.markc@mail.com>
 Content-Type: text/plain
+Date: 14 Jan 2003 13:31:45 +0000
+Message-Id: <1042551106.8605.109.camel@zambia>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello John,
+Hi Mark,
 
-i assume you want to see console output on the framebuffer
-device.
-To achieve this, you need
-the framebuffer driver
-  from your mail i conclude, that You have a framebuffer driver
-a keyboard driver
-  the dummy keyboard driver is o.k., if you dont have a physical kbd
-Additionally you have to enable CONFIG_VT and CONFIG_VT_CONSOLE
-on your system.
-Please remove console=ttyS0 from the kernel command line. Put a console=xxx
-command, which is appropriate for your framebuffer driver (see sourcecode
-of framebuffer driver)
+I had exactly the same problem with ash (busybox version), but I found
+it went away when I replaced
 
------Original Message-----
-From: Gallant, John [mailto:jgallant@vanteon.com]
-Sent: Montag, 13. Januar 2003 17:23
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Assistance with using /dev/fb0 and No X windows
+ttyS0::respawn:-/bin/sh
 
-    I have managed to get the "default" VGA/FB support to access my graphics
-device on the onboard PCI bus.  We a SMI LynxEM chip on the board.  I have
-the vga init() code properly accessing the device and the on chip frame
-buffer.  I have used fbset to determine if /dev/fb0 can be accessed, and the
-driver is called.  I also tried "ls -l > /dev/fb0" this also gets into the
-vga16fb_get_fix() code.
+in /etc/inittab with
 
-    What I need to do, and here is my lack of understanding, is to have some
-program access the /dev/fb0 device and display on the CRT.  I do not have
-any X support, only whatever came with the MVL distribution.  I am wondering
-what is necessary to use mingetty, or some other display method.
+ttyS0::respawn:/sbin/login
 
-    Added wrinkles:  No keyboard yet, but I do have the console=ttyS0
-working.
+I have no idea why....
 
-    So any advice on what I could use or what I may have missed in my
-Xconfig settings?
-[...]
+Alex
+
+
+
+On Mon, 2003-01-13 at 19:09, Mark Chambers wrote:
+>
+> On a PC, I can, for instance, enter "ping 192.168.1.4", then hit Control-C
+> and stop the ping.  For the life of me, I can't figure out how to do the
+> same on my MPC860 system!!!
+>
+> I have an MPC860 running 2.4.19, with a mostly unmodified eldk distribution
+> from Wolfgang Denx.  I did modify the init script to use /dev/console instead
+> of /ttyx (standard driver using SMC1).  I'd not only like a solution, I want
+> to undertand how cancelling a shell command is supposed to work  - I've poked
+> around and I can't figure out what's supposed to happen - Does the shell
+> generate a SIGINT, or the uart driver, or what?  Any enlightenment will be
+> greatly appreciated...
+>
+> Mark Chambers
+> markc@mail.com
+>
+> -------------------------------------------------------
+>
+>
+>
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
