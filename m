@@ -1,35 +1,101 @@
-In-Reply-To: <199903242312.KAA31937@tango.anu.edu.au>
-Date: Thu, 25 Mar 1999 13:10:50 +0100
-To: Paul.Mackerras@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: Blue G3 and machine check
-Message-Id: <19990325131050.003668@mail.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <36FA6863.50817162@business.wm.edu>
+Date: Thu, 25 Mar 1999 11:46:27 -0500
+From: "Kevin B. Hendricks" <kbhend@business.wm.edu>
+Reply-To: kbhend@business.wm.edu
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Apple Job Posting and Good News for LinuxPPC developers
+References: <Pine.HPP.3.96.990325105034.1078R-100000@gra-ux1.iram.es>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Mar 25, 1999, Paul Mackerras <paulus@cs.anu.edu.au> wrote:
+Hi,
 
->Did the original poster say whether the machine checks were on config
->space accesses or I/O or memory space accesses?  It's common enough
->for drivers written for intel linux to go probing I/O ports to try to
->find devices to talk to.
+Just in case anyone missed this.  Apple is hiring someone whose job description
+will include making it easier for people to get enough hardware info to get
+Linux PPC to run on Apple's new hardware.
 
-The original poster wrote that the machine check happens when reading
-config space on a non-existent device thru the PCI<->PCI bridge. The
-proposed fix was simply to add two globals "machine_check_expected" and
-"machine_check_received". The first one set to true before the probe, and
-the machine check exception handler incrementing the second one when the
-first one is true.
+We should get one of our own into this role and get a leg up on helping apple
+open up its hardware specs for Linux PPC
 
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+What do you think?
+
+Kevin
 
 
 
+
+
+                      Title: Technology Manager-Linux
+                      Location: Santa Clara Valley,CA
+                      Technology Manager – Linux Support. Responsible for making
+                      Linux developers who support Apple’s hardware more
+successful.
+                      Strengthens relationships with established developers such
+as
+                      TerraSoft and others. Works independently and in close
+                      collaboration with sales and marketing and fellow
+Technology and
+                      Partnership Managers. Builds strong internal and external
+                      relationships in order to effectively deliver Apple's
+message to
+                      Linux developers and champion their needs and issues
+within
+                      Apple. Works to help Linux developers get seeded with new
+Apple
+                      hardware to guarantee support for our new CPUs. Maintains
+high
+                      level of technical and market expertise. Communicates
+Apple
+                      product and marketing messages to assigned developers and
+the
+                      developer community at large in both one-on-one and
+                      one-to-many settings. Position requires a very high level
+of
+                      experience related to all flavors of Linux and UNIX, and
+requires
+                      excellent relationship skills. Expertise in the following
+is a must:
+                      Macintosh hardware, Linux (LinuxPPC, MkLinux, etc) and
+UNIX.
+                      Persuasiveness and the ability to deliver presentations to
+                      audiences of various sizes are required. The successful
+candidate
+                      will be results driven and possess a world-class attention
+to detail,
+                      remarkable follow-through, and an ability to totally focus
+on
+                      customer service. Normally requires BA/BS in scientific,
+                      engineering discipline or business, marketing, or
+communications
+                      plus 8-9 yr. exp. (or MA/MS/MBA plus 6-7 yr.) or
+equivalent
+                      experience. 
+
+
+                      For consideration on this position send your resume
+indicating
+                      appropriate Attn code to: 
+
+                      Apple Computer, Inc. 
+                      1 Infinite Loop, MS:38-3CE 
+                      Cupertino, CA 95014 
+                      Attn:CG1003963NET 
+
+                      FAX: 408-974-5691 
+                      email: applejobs@apple.com (Please email resume by pasting
+                      resume into email message document area - do not attach
+                      enclosures) 
+
+                      Principals only. No phone calls please. 
+
+                      Apple Computer has a corporate commitment to the principle
+of
+                      diversity. In that spirit, we welcome applications from
+all
+                      individuals.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
