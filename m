@@ -1,44 +1,32 @@
-Message-ID: <20000529234501.A10933@lx.c-side.com>
-Date: Mon, 29 May 2000 23:45:01 -0700
-From: Neil Russell <caret@c-side.com>
-To: zzh <david-1z@263.net>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Floating point in 8260
-References: <39333333.13669@mta5>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <39333333.13669@mta5>; from zzh on Tue, May 30, 2000 at 11:19:15AM +0800
+From: Daniel Wu <Daniel.Wu@alcatel.com.au>
+Subject: Re: Porting LinuxPPC
+To: linuxppc-embedded@lists.linuxppc.org
+Message-Id: <00May30.174931est.115248@border.alcanet.com.au>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+References: <20000519051051.236093C972@elph.research.canon.com.au>
+ <39253A48.24B90117@snmc.com> <39253D0B.F9AF86EE@raleigh.ibm.com>
+ <392562CE.A71A4F49@embeddededge.com> <392A3147.3A9AC5C2@alcatel.com.au>
+Date: Tue, 30 May 2000 17:49:30 +1000
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-As I understand it, there is no production 8260 without an FPU.  Current
-production chips are rev A.1 which have an FPU, and new production are rev B
-which will also have an FPU.  You probably have no choice for production, so
-you should upgrade your test board if it has old an CPU.
+Hi,
 
+I'm still having problems with booting the kernel - I've got to the point where the
+compressed image has been successfully decompressed and starts to execute code in
+kernel/head.S, which sets up the TLBs. However, as soon as the code turns on the
+mmu, the code crashes!
 
-Neil.
+I'm running this under a BDM monitor, could this be the source of the problem? One
+thing I noticed is that the kernel uses virtual addresses starting at c0000000 and
+the BDM monitor fails to do the translation. Is there any way to get around this?
 
+Thanks in advance.
 
+Regards,
+Daniel
 
-On Tue, May 30, 2000 at 11:19:15AM +0800, zzh wrote:
->
-> I make a port to motorola 8260 ads based on 2.2 kernel.
-> Now i am sure the kernel is fuctional,because i can run a
-> simple program that fork process and write to stdout.
-> I use simple assembly to make system call and does not
-> use any c lib.
-> When i try to run bash,8260 loops inside FPunavailble
-> exception.The 2.2 kernel support 603 with a FP,but
-> how should i do with 603e.
-> >From this lists,i learned that someone else encounter
-> similar problem,they upgrade to a 8260 with FP.
-> I do not want to upgrade,how should i do?
-> Should i recompile the bash and c lib.How should i treat
-> float point.BTW,i have a apple G3,should i compile
-> these stuff on this machine?
-
---
-Neil Russell <caret@c-side.com>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
