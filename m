@@ -1,115 +1,77 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Real time clock seems stuck
-Date: Thu, 31 Oct 2002 07:45:41 -0500
-Message-ID: <C6D44AA99ECEB540A5498F15F92DA07D228E3C@amperion01.amperion.com>
-From: "Jeff David" <jdavid@amperion.com>
-To: "Dr. Craig Hollabaugh" <craig@hollabaugh.com>,
-	<linuxppc-embedded@lists.linuxppc.org>
+To: "Jeff David" <jdavid@amperion.com>
+Cc: "Dr. Craig Hollabaugh" <craig@hollabaugh.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Real time clock seems stuck 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 31 Oct 2002 07:45:41 EST."
+             <C6D44AA99ECEB540A5498F15F92DA07D228E3C@amperion01.amperion.com>
+Date: Thu, 31 Oct 2002 14:04:14 +0100
+Message-Id: <20021031130419.E106D10158@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-You may be loading the code too low.  See the comments for the
-CFG_BOOTMAPSZ parameter in CONFIG_WALNUT405.h and cmd_bootm.c.  Try
-loading at 0x800000 instead.
+In message <C6D44AA99ECEB540A5498F15F92DA07D228E3C@amperion01.amperion.com> you wrote:
+>
+> You may be loading the code too low.  See the comments for the
+> CFG_BOOTMAPSZ parameter in CONFIG_WALNUT405.h and cmd_bootm.c.  Try
+> loading at 0x800000 instead.
 
-Jeff
+No; loading at 400000 (= 4 MB) leaves enough room for the  kernel  to
+uncompress; also, the kernel is booting fine until it get's stuck.
+
+> > Kernel command line: console=ttyS0,9600 root=/dev/ram
+> > Warning: real time clock seems stuck!
+
+This is a common problem on boards that don't have a RTC at  all,  or
+only  one which becomes available only later during the boot process,
+for example after loading the I2C drivers.
+
+You can find a fix in rev. 1.6 of kernel/time.c in the  2.4.4  source
+tree  on  our  CVS  server;  here is the relevant pert (omitting many
+lines  that  only  contain  white  space  changes  due  to   changing
+indentation):
 
 
-> -----Original Message-----
-> From: Dr. Craig Hollabaugh [mailto:craig@hollabaugh.com]
-> Sent: Thursday, October 31, 2002 7:30 AM
-> To: linuxppc-embedded@lists.linuxppc.org
-> Subject: Real time clock seems stuck
->
->
->
-> Folks,
->
-> I'm trying to get a walnut board booted. I'm using
-> linuxppc_2_4_devel pulled from denx yesterday. I'm getting
-> the "Real time clock seems stuck" message then nothing, no
-> messages after that. I found a brief thread about this.
->
-> http://lists.linuxppc.org/linuxppc-embedded/200106/msg00113.html
->
-> Have the changes suggested been put in the devel tree? If so,
-> can someone offer some advice on how to proceed?
->
-> Here's some console output.
->
-> PPCBoot 1.2.0 (Oct 20 2002 - 19:03:26)
->
-> CPU:   IBM PowerPC 405GP Rev. D at 200 MHz (PLB=100, OPB=50,
-> EBC=50 MHz)
->            PCI sync clock at 33 MHz, internal PCI arbiter enabled
->            16 kB I-Cache 8 kB D-Cache
-> Board: ### No HW ID - assuming WALNUT405
-> I2C:   ready
-> DRAM:  32 MB
-> FLASH: 512 kB
-> In:    serial
-> Out:   serial
-> Err:   serial
-> KGDB:  kgdb ready
-> ready
-> BEDBUG:ready
->
-> => tftpboot 400000 p1
-> ENET Speed is 100 Mbps - FULL duplex connection
-> ARP broadcast 1
-> TFTP from server 192.168.1.11; our IP address is
-> 192.168.1.111 Filename 'p1'. Load address: 0x400000
-> Loading:
-> #################################################################
->          ############################################
-> done
-> Bytes transferred = 557872 (88330 hex)
-> => imi 400000
->
-> ## Checking Image at 00400000 ...
->    Image Name:   Linux-2.4.20-pre11
->    Created:      2002-10-31  12:17:56 UTC
->    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
->    Data Size:    557808 Bytes = 544.7 kB
->    Load Address: 00000000
->    Entry Point:  00000000
->    Verifying Checksum ... OK
-> => bootm 400000
-> ## Booting image at 00400000 ...
->    Image Name:   Linux-2.4.20-pre11
->    Created:      2002-10-31  12:17:56 UTC
->    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
->    Data Size:    557808 Bytes = 544.7 kB
->    Load Address: 00000000
->    Entry Point:  00000000
->    Verifying Checksum ... OK
->    Uncompressing Kernel Image ... OK
-> Linux version 2.4.20-pre11 (root@tbdev1) (gcc version 2.95.4
-> 20010319 (prerelease/franzo/20011204)) #12 Thu Oct 31
-> 05:13:53 MST 2002 IBM Walnut port (C) 2000-2002 MontaVista
-> Software, Inc. (source@mvista.com) On node 0 totalpages: 1295
-> zone(0): 1295 pages.
-> zone(1): 0 pages.
-> zone(2): 0 pages.
-> Kernel command line: console=ttyS0,9600 root=/dev/ram
-> Warning: real time clock seems stuck!
->
->
->
-> then nothing after that.
->
-> Any ideas? I've searched the archives for walnut boot
-> problems. It seems like most people just get it running and
-> that's that.
->
-> Thanks
-> Craig
->
->
+Index: kernel/time.c
+===================================================================
+RCS file: /cvsroot/linux-2.4/arch/ppc/kernel/time.c,v
+retrieving revision 1.5
+retrieving revision 1.6
+diff -u -w -r1.5 -r1.6
+--- kernel/time.c       16 Apr 2001 19:29:07 -0000      1.5
++++ kernel/time.c       11 Jun 2002 22:05:26 -0000      1.6
+@@ -310,6 +310,7 @@
+         * makes things more complex. Repeatedly read the RTC until the
+         * next second boundary to try to achieve some precision...
+         */
++       if (ppc_md.get_rtc_time) {
+        stamp = get_native_tbl();
+        sec = ppc_md.get_rtc_time();
+        elapsed = 0;
+@@ -331,6 +332,8 @@
+        /* No update now, we just read the time from the RTC ! */
+        last_rtc_update = xtime.tv_sec;
+        write_unlock_irqrestore(&xtime_lock, flags);
++       }
++
+        /* Not exact, but the timer interrupt takes care of this */
+        set_dec(tb_ticks_per_jiffy);
 
+
+Then make sure that your board sets ppc_md.get_rtc_time to NULL.
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Am I your nanny? The kernel is there to support  user  programs,  but
+it's a _resource_ handler, not a baby feeder.     - Linus Torvalds in
+      <Pine.LNX.3.91.960425074845.22041C-100000@linux.cs.Helsinki.FI>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
