@@ -1,39 +1,35 @@
-Date: Thu, 6 Jul 2000 07:38:01 -0700 (PDT)
-From: Matt Brubeck <mbrubeck@hmc.edu>
-To: Iain Sandoe <iain@sandoe.co.uk>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Multi-boot advice.
-In-Reply-To: <200007052323.AAA07099@hyperion.valhalla.net>
-Message-ID: <Pine.GSO.4.21.0007060724510.17224-100000@turing.cs.hmc.edu>
+Message-ID: <396499F3.491EA41@erols.com>
+Date: Thu, 06 Jul 2000 10:38:43 -0400
+From: Nelson Abramson <pogtal@erols.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Giuliano Pochini <pochini@shiny.it>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: bG3+damaged CD=crash
+References: <XFMail.000706092421.pochini@shiny.it>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 6 Jul 2000, Iain Sandoe wrote:
+Giuliano Pochini wrote:
 
-> I've just got a G4/500 - and I want to configure it to boot:
->
-> LinuxPPC.
-> MacOS (9)
-> MacOS (X) / Darwin
->
-> Does anyone know if there is one boot method that will do all three?
+> My blue-G3 hangs completely when I try to read a CDROM with some
+> errors. The whole system freezes and the only cure is reboot (no
+> logs, no errors, no panics, no oops). My older 7300 simply told
+> it couldn't read the disk. Is it a known bug ?
 
-Yes. New-world machines like yours have a built-in graphical multibooter.
-Hold down option during boot, and you get a button for each bootable
-volume found by open firmware. For this to work with Linux, you must be
-using an OF-bootable partition with yaboot, such as the one set up by ybin
-<http://www.alaska.net/~erbenson/ybin/>. In the latest version, there's
-even a cute penguin icon for the yaboot button.
+Maybe it's a bad CD?  Chances are if it crashes one machine and another
+won't read it, that the CD-ROM itself is bad, not the reader....  If you
+purchased the CD (as opposed to burning it yourself), get in contact with
+the LinuxPPC people and ask for an exchange...
 
-This method is somewhat slow, and you *must* hold down option to boot into
-any OS other than your default. Because I rarely boot out of Linux,
-however, I use it on my iMac 350 to tri-boot with MacOS 9 and Darwin.
+> Perhaps I'll buy a SCSI CD, I hate IDE junk.
 
-I believe this should work on the iBook, AGP G4, slot-loading iMacs, and
-Firewire PowerBooks. Can anyone verify or correct this?
+Your 7300 (I think, and AppleSpec backs me up) has a SCSI CD-ROM, so it's
+probably not the drives.
+
+HTH
+--Nelson Abramson
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
