@@ -1,56 +1,44 @@
-Message-ID: <001001c0b0e0$3190a5e0$8021690a@huawei.com>
-From: "dony" <dony.he@huawei.com.cn>
-To: "Amit D Chaudhary" <amitc@brocade.com>
-Cc: "Dan Malek" <dan@mvista.com>,
-	<linuxppc-embedded@lists.linuxppc.org>
-References: <006401c0af6f$4d1c39e0$8021690a@huawei.com> <3AB6A1C2.60802@brocade.com>
-Subject: Re: shell prompt cannot appear after "Freeing unused kernel memory:..."
-Date: Tue, 20 Mar 2001 09:50:51 +0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-Id: <200103201258.NAA23409@scully.gams.co.at>
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+cc: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+Subject: Re: losing interrupts - printk is bad 
+In-reply-to: Your message of "Mon, 19 Mar 2001 18:12:50 +0100."
+             <3AB63E12.6D38973E@esd-electronics.com>
+Reply-To: mike@gams.at
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Tue, 20 Mar 2001 13:58:40 +0100
+From: Mike Neuhauser <mike@gams.at>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Is your nfs rootfs correct? Check for /sbin/init, /etc/inittab, etc
+In message <3AB63E12.6D38973E@esd-electronics.com>, Matthias Fuchs writes:
 
-Yes, they are OK. I only use sash as my shell .
-The same rootfs can work on linux2.2.13+860 .
+  [stuff about losing interrupts during printk to serial console deleted]
 
-Any ideas?
-machael
->
-> michael wrote:
->
-> > Hello:
-> >     I use ppcboot and can boot kernel with NFS filesystems on my custom
-> > board now. But problem occurs ...
-> >    When it shows the following:
-> > ####################################
-> >          ...........................
-> >         "VFS:Mounted root(nfs filesystem)".
-> >         Freeing unused kernel memory:44k init
-> > ####################################
-> >
-> > At this moment I should have seen "sash#" ,but  nothing happens . I
-cannot
-> > see anything.
-> >
-> > I remember that there is a patch for this when I boot kernel on my 860
-based
-> > custom board last year(linux-2.2.13+860).
-> > I don't know if this can work for my 8260 based custom board
-> > now(linux-2.4.1+8260).
-> > Can you help me?
-> >
-> > Thank you very much.
-> >
-> > michael
-> >
-> >
->
->
+> Second, could anybody explain t ome, what klogd is doing ? It would be
+> glad to get klogd read all the debugging output from the kernel and
+> output the data from user space (well buffered and not blocking the
+> whole system). It seems that klogd cannot do that, am I right ?
+
+klogd reads the kernel log messages (i.e. printk messages) either via syscall
+or /proc interface and hands them over to syslogd.
+
+Syslogd in turn writes them to a terminal, file, another host on
+the network ...
+
+So if you use klogd and syslogd together you can have kernel log message (also
+on console if you like) and the other interrupts are not blocked by
+printk.
+
+Mike
+
+--
+Dr. Michael Neuhauser                        Phone: +43(1)8958499/17
+g.a.m.s. edv-dienstleistungen gmbh           Fax:   +43(1)8958499/60
+Stiegergasse 15-17/8                         Email: mike@gams.at
+A-1150 Vienna/Austria/Europe
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
