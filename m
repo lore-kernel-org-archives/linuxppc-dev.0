@@ -1,30 +1,34 @@
-Mime-Version: 1.0
-Message-Id: <v04220800b54ea5999d6c@[10.0.0.42]>
-In-Reply-To: <20000521211720.Q7243@plato.local.lan>
-References: <Pine.SOL.4.10.10005191236120.4329-100000@ncal.verio.com>
- <200005200850.JAA28869@copper.dcs.qmw.ac.uk>
- <v04220802b54dfb36e27a@[10.0.0.42]> <20000521211720.Q7243@plato.local.lan>
-Date: Mon, 22 May 2000 01:58:39 -0700
-To: Ethan Benson <erbenson@alaska.net>
-From: "Timothy A. Seufert" <tas@mindspring.com>
-Subject: Re: Pismo status
-Cc: linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Message-ID: <39291807.E4FFB4A6@relog.ch>
+Date: Mon, 22 May 2000 13:20:39 +0200
+From: Michel Dänzer <daenzer@relog.ch>
+Reply-To: daenzerm@student.ethz.ch
+MIME-Version: 1.0
+To: Jørgen Tietze <qrulf@e-hund.dk>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: XFree86-4.0-0.12a
+References: <200005220500.AAA28740@lists.linuxppc.org> <p04310101b54ea0d89813@[7.7.7.7]>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 9:17 PM -0800 5/21/00, Ethan Benson wrote:
+Jørgen Tietze wrote:
+>
+> >      New XFree 4.0 rpms (-0.12a) are available for linuxppc. These
+> >rpms and the srpm are available at either...
+>
+> Is there support for the iBook's display? (Rage Mobility with TFT)
 
->then look at the heat sync on a G4 -- friggen monster about the size
->of a video tape ;-)
+Probably only via the fbdev driver (don't forget to specify that bus ID!)
 
-That particular heatsink was designed to allow the processor to
-survive if the computer's main air circulation fan dies.  It doesn't
-actually have to be that large for normal operation.  (G4 ZIF socket
-upgrades for G3 Macs don't come with a huge heatsink as far as I
-know, and they do fine.)
 
-   Tim Seufert
+Michel
+
+
+--
+The problem with religious texts is that the answers aren't in the back.
+______________________________________________________________________________
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
