@@ -1,24 +1,38 @@
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Mon, 17 Mar 2003 23:14:25 -0700
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Add support for Motorola Computer Group HXEB100 board
-Message-ID: <20030318061425.GA25641@rover.farnsworth.org>
-References: <20030318030516.GA25081@rover.farnsworth.org> <20030318041536.GA25237@rover.farnsworth.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20030318041536.GA25237@rover.farnsworth.org>
+From: "Robert E. Brose II" <bob@kunk.qbjnet.com>
+Date: Wed, 19 Mar 2003 05:22:37 +0000 (UTC)
+Message-ID: <b58uqt$a7r$1@kunk.qbjnet.com>
+References: <mailman.73.1047742214.1628.linuxppcdev@lists.qbjnet.com>
+To: linuxppcdev@lists.qbjnet.com
+Subject: Re: Escala & linux
+List-Help: <mailto:linuxppcdev-request@lists.qbjnet.com?subject=help>
+List-Post: <mailto:linuxppcdev@lists.qbjnet.com>
+List-Subscribe: <http://lists.qbjnet.com/mailman/listinfo/linuxppcdev>,
+	<mailto:linuxppcdev-request@lists.qbjnet.com?subject=subscribe>
+List-Unsubscribe: <http://lists.qbjnet.com/mailman/listinfo/linuxppcdev>,
+	<mailto:linuxppcdev-request@lists.qbjnet.com?subject=unsubscribe>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Mar 18, 2003 at 04:15:36AM +0000, linuxppc-dev@lists.linuxppc.org wrote:
-> > The following patch, vs linuxppc_2_4_devel, adds support for
-> > the Motorola Computer Group HXEB100 board.
+<WHarms@bfs.de>(walter wrote:
 
-In case the patch doesn't make it through, here's a url:
+What model? The ppc based Bulls are repackaged RS6000's IIRC..
 
-<http://www.farnsworth.org/linuxppc/hxeb100.patch>
+Bob
 
--Dale
+> Hi list,
+> a PPC-based Bull Escala is going into retirement here.
+> any change getting linux running on that beast ?
+
+> 	walter
+
+
+
+
+--
+/~\ The ASCII       | Robert E. Brose II    N0QBJ
+\ / Ribbon Campaign | http://www.qbjnet.com/
+ X  Help cure       | mailto:bob@qbjnet.com
+/ \ HTML Email      | public key at http://www.qbjnet.com/key.html
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
