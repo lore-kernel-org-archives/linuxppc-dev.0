@@ -1,45 +1,34 @@
-Date: Tue, 30 May 2000 12:12:39 -0600
-Subject: Re: IBM PowerPC - Linux Connections?
-From: Mark Morrill <mmorrill@powersurfr.com>
-To: LinuxPPC Embedded List <linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <B55960B7.706C%mmorrill@powersurfr.com>
-In-Reply-To: <Pine.BSF.4.21.0005300940410.44658-100000@invalid.ed.ntnu.no>
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Message-ID: <3934086C.87BF893@lucent.com>
+Date: Tue, 30 May 2000 13:29:00 -0500
+From: Tom Roberts <tjroberts@lucent.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Do you have your minimum ramdisk image which can provide basic
+ network services ?
+References: <020e01bfc93f$5dc075c0$db52df8d@helsinki>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-on 5/30/00 01:51, Geir Frode Raanes at geirfrs@invalid.ed.ntnu.no wrote:
-> On Mon, 29 May 2000, Mark Morrill wrote:
->> http://www.chips.ibm.com/products/powerpc/linux/
->> [snip]
->
-> Which one - the IBM 405GP Evaluation Kit [hint] or the
-> PC-in-disguise; PowerPC Open Platform reference design?
->
-> To have the latter I suppose you could just as well lay
-> your hands on one of the demised PReP/CHRP machines.
-> Small wonder Apple Just Said No.
-> [snip]
+SangTae Ha wrote:
+> I already downloaded full image file at > ftp://ftp.ppc.kernel.org/pub/linuxppc/embedded/mbxroot.full.tgz
 
-hmmm.
+I just downloaded that file, too. As you say, it is HUGE (133 MB
+gzipped).
 
-Ok, do I call IBM to get my hands on the IBM 405GP Evaluation Kit?  If so
-where do I start?
+Unfortunately, it is also incomplete. In particular, it is missing:
+	init		(/etc/telinit is a link to init, but no init)
+	inetd
 
-I was thinking that the PC-in-disguise was a good option for me...  But you
-don't seem to hold it in great favor...
+I had been hoping to simply build up an initrd image from selected
+pieces of it, because I now have the Linux kernel, console, and
+initrd-ramdisk up and running on my hardware (Hurrah!). But I'm
+having difficulty building a sufficient initrd image to actually use
+the network driver I have written (:-(). So far, I cannot even ping
+myself using the loopback device (no inetd, I suppose).
 
-What I want is a very basic PowerPC computer (ethernet, harddrive, power,
-ram, etc) that'll run Linux that I can prototype a system on and attach a
-couple of PCI cards to.  And when I get my system running, I can take the
-box to a manufacturer for production :)
 
-Mark
-
-PS.  Thanks to all who have emailed me information - it has given me a lot
-to think about!
-
+Tom Roberts	tjroberts@lucent.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
