@@ -1,28 +1,37 @@
-Date: Tue, 30 Mar 1999 23:51:39 -0700
-From: Cort Dougan <cort@ppc.kernel.org>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-Cc: linuxppc-dev@lists.linuxppc.org, Cort Dougan <cort@ppc.kernel.org>
-Subject: Re: Yesterday vger and ioremap
-Message-ID: <19990330235139.A9072@persephone.ppc.kernel.org>
-References: <19990330035423.A6273@persephone.ppc.kernel.org> <19990330125854.000150@mail.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <19990330125854.000150@mail.mipsys.com>; from Benjamin Herrenschmidt on Tue, Mar 30, 1999 at 12:58:54PM +0200
+Date: Wed, 31 Mar 1999 09:12:56 +0200 (CEST)
+From: Erik Karlberg <flash@sdf.nu>
+To: "David A. Gatwood" <marsmail@globegate.utm.edu>
+cc: Gabriel Paubert <paubert@iram.es>, Dave Weis <djweis@plconline.com>,
+        David Edelsohn <dje@watson.ibm.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: modifying boot loader 
+In-Reply-To: <Pine.LNX.3.96.990330084840.8189B-100000@globegate.utm.edu>
+Message-ID: <Pine.BSF.4.05.9903310910530.37247-100000@mj0lkchoklad.sdf.nu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-The ioremap problems should be fixed now.  Please try it again.  If it
-isn't fixed let me know.
+On Tue, 30 Mar 1999, David A. Gatwood wrote:
+> I'm not sure about the non-Mac parts of the code, but keep in mind that
+> the PowerMac 7500, and I think the 7200 (not sure about the 7300...) use
+> a PPC 601.  I haven't studied the LinuxPPC arch to see how that's
+> organized or how much overlap there is between the pmac-specific and the
+> non-pmac code, so I can't say much more than that. 
 
-} vger tree from yesterday gives me tons of warnings of the style:
-} "__ioremap(). Overlap detected and handled for PA xxxxxxx VA xxxxxxxx"
-} when booting.
+The PowerMac 7300 uses a PPC 604e...
+The PowerMac 7200 uses a PPC 601 and can not be upgraded.
+The PowerMac 7500 uses a PPC 601 and can be upgraded to a 604/604e.
 
-Those were just debugging messages until the ioremap changes were done.
+Regards,
 
-} (I didn't look at actual source code changes, the problem seems to be
-} harmless, just those messages in the console).
+Erik 
+
+-------------
+flash@sdf.nu
+http://sdf.nu/flash/
+-------------
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
