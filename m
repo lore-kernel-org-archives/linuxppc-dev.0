@@ -1,62 +1,18 @@
-Message-ID: <DB0585C9F6F9D411BE8F00D0B7896A4CC060E2@SNCMAIL>
-From: James Don <JDon@spacebridge.com>
-To: "'Rod Boyce'" <rod_boyce@stratexnet.com>
-Cc: James Don <JDon@spacebridge.com>,
-	linuxppc-embedded@lists.linuxppc.org
+Date: Tue, 21 Jan 2003 20:56:06 -0500 (EST)
+From: jgdon <jgdon@gomba.ca>
+To: Rod Boyce <rod_boyce@stratexnet.com>
+Cc: "'James Don'" <JDon@spacebridge.com>,
+	"" <linuxppc-embedded@lists.linuxppc.org>
 Subject: RE: My Memory map ... how do i pick the virtual address (Aside fr
-	 om i mmr and sdram)
-Date: Tue, 21 Jan 2003 20:45:58 -0500
+ om i mmr and sdram)
+In-Reply-To: <8D7C5F56B409554D9D46AC22195807F3061C21@exchwenz01.dmcwave.co.nz>
+Message-ID: <Pine.LNX.4.50.0301212052210.30811-100000@gomba.ca>
+References: <8D7C5F56B409554D9D46AC22195807F3061C21@exchwenz01.dmcwave.co.nz>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
-
-I found my answers ...
-
-I did find this in a post from a guy called Dan Malek (m-vista I think):
-
-"As I have explained before, the IMMR and possibly a few other
-board control registers must have physical addresses above
-0x80000000. This is because the early kernel initialization
-will map these 1:1 virtual to physical. They are needed before
-the kernel VM allocator has been initialized. If they are
-below this address, they clash with the user virtual space,
-so depending upon the loading of programs and libraries, you
-left a big virtual hole into kernel managed hardware."
-
-And I found this great post on how to pick your map ...
-http://lists.linuxppc.org/linuxppc-embedded/200010/msg00153.html
-
-Jim
-
------Original Message-----
-From: Rod Boyce [mailto:rod_boyce@stratexnet.com]
-Sent: Tuesday, January 21, 2003 8:05 PM
-To: 'jgdon'
-Cc: 'James Don'; linuxppc-embedded@lists.linuxppc.org
-Subject: RE: My Memory map ... how do i pick the virtual address (Aside fr
-om i mmr and sdram)
-
-I can tell you now the mapping between physical and virtual not as important
-as you make out.  I have Linux running on a board I described to you and
-there is no RAM mapped at 0xc0000000.  I suggest you read your chip manual
-more carefully.  In my 860 PowerQUICC Users manual chapters 13,14 and 16.
-
-I also remember reading somewhere at IO should be mapped above 0x80000000
-but I have not been able to find where I read it in the last two years so
-that could be another urban myth that need the cold light of day on it.
-
-Regards,
-Rod Boyce
-
- -----Original Message-----
-From: 	jgdon [mailto:jgdon@gomba.ca]
-Sent:	Wednesday, 22 January 2003 2:56 p.m.
-To:	Rod Boyce
-Cc:	'James Don'; linuxppc-embedded@lists.linuxppc.org
-Subject:	RE: My Memory map ... how do i pick the virtual address
-(Aside fr om i mmr and sdram)
 
 Hi,
 I think the the mapping of virtual to physical address may be important
@@ -76,8 +32,7 @@ On Wed, 22 Jan 2003, Rod Boyce wrote:
 
 >
 > I think you have the wrong end of the stick.  Our boards have 32MB of RAM
-> located at 0.  We have placed IMMR at 0xfa200000.  The address of
-0xc0000000
+> located at 0.  We have placed IMMR at 0xfa200000.  The address of 0xc0000000
 > is a virtual address it does not have to have any relation to a physical
 > address this is done by the memory manager.  The only constant is that the
 > boot flash MUST be connected to chip select 0.  Everything else is mostly
