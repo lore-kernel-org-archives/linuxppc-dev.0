@@ -1,64 +1,41 @@
-Message-Id: <4.3.2.20000920073056.00b6dee0@falcon.si.com>
-Date: Wed, 20 Sep 2000 07:37:30 -0400
-To: linuxppc-embedded@lists.linuxppc.org
-From: Jerry Van Baren <vanbaren_gerald@si.com>
-Subject: Re: rebooting with the FADS
-In-Reply-To: <39C7E54D.AFBD3412@mvista.com>
-References: <001701c01e61$958ed240$0a00010a@paoloweb>
+Message-ID: <39C8AE7A.88A53FBA@sxb.bsf.alcatel.fr>
+Date: Wed, 20 Sep 2000 14:32:58 +0200
+From: Christian Batt <Christian.Batt@sxb.bsf.alcatel.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+To: "linuxppc-embedded@lists.linuxppc.org"
+ <linuxppc-embedded@lists.linuxppc.org>
+Subject: MPC8xx DPRAM : m8xx_cpm_hostalloc
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-There currently is no formal convention for restarts (i.e. it isn't
-defined in the EABI :-), but PPC implementations that I've been
-associated with use the convention of 0xFFF00104 being the restart
-location.  The first instruction executed is at 0xFFF00100 and is set
-to be a jump to the cold start location.  The next instruction is then
-a jump to the restart location.  Many (all?) PPCs and/or their
-associated hardware require different handling based on whether they
-have been initialized before or not.
+Hello
 
-I strongly advocate adopting this convention.  It is much cleaner than
-the alternative of trying to leave flags laying around in RAM.
+I am currently working with a MPC860 (Linux kernel 2.2.13)
+and I need more DPRAM space for my BD/buffers, than the
+space between IMMR+0x2800 - IMMR+0x2F00 (1792 bytes).
 
-gvb
+I know the 860 has 5K of DPRAM : 4K + 1K of parameter RAM.
 
+So, I have tried to modify the value of
+    CPM_DATAONLY_BASE   from 0x0800 to 0x0000
+    CPM_DATAONLY_SIZE     from 0x0700 to 0x1000
+but my kernel (compiled with those values) stucks early at boot time :
 
-At 03:14 PM 9/19/00 -0700, Pete Popov wrote:
+...
+Uncompressing Linux... done.
+Now booting the kernel
+    -(and no more)-
 
->Paolo Scaffardi wrote:
-> >
-> > on my FADS, i see that it is not possible to reboot from software:
-> you must
-> > press the reset buttons to do this.
-> >
-> > But, i sometimes have reboot problems. I see BCSRx registers have
-> strange
-> > values and the bootrom seems to stop downloading the kernel
-> randomly. This
-> > of because of erroneous values into memory configuration registers.
-> >
-> > how can i make a soft-reboot?
-> > how can i resolve this problem with strange register-values on reboot?
->
->I've had soft reboot problems with the 850 on a custom board, where the
->firmware would crash shortly after the reboot.  I had to modify the boot
->code to not reinitialize the UPMs (I don't remember if I had to do
->anything else) after a soft reboot.  You might have to modify your boot
->code to get this to work correctly.  If you'll be developing a custom
->board, I suggest you wait and fix the problem on your custom board,
->instead of worrying about the FADS.
->
->Keep in mind also that the FADS board is not the best hardware design
->out there.  There's a number of signals left floating which shouldn't be
->floating.  If you replace the cpu that comes with the board with a
->different mask cpu, chances are the bdm port might not work at all
->(unless you freeze it with some spray).
->
->Pete
->
+Does anybody have an idea why it seems I cannot use the space
+between IMMR+0x2000-IMMR+0x2800 for my module ?
+
+Thanks for any help
+
+Regards
+
+Christian
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
