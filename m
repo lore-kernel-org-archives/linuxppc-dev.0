@@ -1,22 +1,21 @@
-Return-Path: <steve@icarus.com>
-Received: from icarus.com (icarus.icarus.com [64.105.89.2])
-	by ozlabs.org (Postfix) with ESMTP id 7E7C52BC0F
+Return-Path: <soar.wu@utstar.com>
+Received: from szsmtp.utstar.com.cn (szsmtp.utstar.com.cn [210.21.224.29])
+	by ozlabs.org (Postfix) with ESMTP id A09882BDA0
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 27 Oct 2004 06:59:30 +1000 (EST)
-Received: from icarus.com (wing [192.168.1.7]) (authenticated)
-	by icarus.com (8.11.6/8.11.6) with ESMTP id i9QKxQe28325
-	for <linuxppc-embedded@ozlabs.org>; Tue, 26 Oct 2004 13:59:26 -0700
-Message-ID: <417EBAAE.5080603@icarus.com>
-Date: Tue, 26 Oct 2004 13:59:26 -0700
-From: Stephen Williams <steve@icarus.com>
+	Wed, 27 Oct 2004 13:47:31 +1000 (EST)
+Received: from SZ3Gsoarw (sz_3g_soarw.cn.utstarcom.com [172.19.19.228] (may be
+	forged))
+	by szsmtp.utstar.com.cn (8.11.6/8.11.1) with SMTP id i9R3lFj22631
+	for <linuxppc-embedded@ozlabs.org>; Wed, 27 Oct 2004 11:47:15 +0800
+From: "soar.wu" <soar.wu@utstar.com>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Wed, 27 Oct 2004 11:48:59 +0800
+Message-ID: <PCEFKKAFFIJFPILJEMCHAEAPCGAA.soar.wu@utstar.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-References: <1098701468l.31592l.0l@ipnnarval>
-	<417D2B5E.8050200@xilinx.com>	<35fb2e59041025140776cfe174@mail.gmail.com>
-	<417DE312.6070405@xilinx.com>
-In-Reply-To: <417DE312.6070405@xilinx.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Subject: Re: uboot and ppc405
+Content-Type: text/plain;
+	charset="gb2312"
+In-Reply-To: <PCEFKKAFFIJFPILJEMCHMEAOCGAA.soar.wu@utstar.com>
+Subject: RE: Help!
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,33 +26,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Peter Ryser wrote:
-
->> btw Peter, I've been moaning about the weird interrupt behaviour of
->> the SysACE on e.g. the Memec board for some time (see archives for
->> various other people's experiences too) - and I've spoken to several
->> folks at Xilinx without getting very far. If there's a fundamental
->> problem then it probably makes sense for us to help get it fixed.
->>
-> Hmm, I'm not aware of any interrupt problems with System ACE CF. For 
-> Linux it works for a long time unchanged as published in the 
-> linuxppc_2_4_devel and linuxppc-2.4 repositories. I'm operating my own 
-> web and mail server on a V2P based board using a 1GB MicroDrive through 
-> System ACE CF as the root and swap filesystems. The system is up and 
-> running for months now. No special tricks or hacks just a 
-> straight-forward EDK FPGA design with a MVL kernel.
-
-The SystemACE in the linuxppc-2.4 kernel works fine for me on
-our JSE board. We keep a lightly used ext3 partition for root,
-and a FAT partition in the beginning for boot and ACE files.
-The Xilinx HAL, though ugly as sin, has not given us trouble.
-
-We use a PPC405GPr with the SystemACE connected to a peripheral
-bus. No VIIPro here. this is surely different from the ML300,
-yet it works.
-
--- 
-Steve Williams                "The woods are lovely, dark and deep.
-steve at icarus.com           But I have promises to keep,
-http://www.icarus.com         and lines to code before I sleep,
-http://www.picturel.com       And lines to code before I sleep."
+DQoNCi0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQpGcm9tOiBzb2FyLnd1IFttYWlsdG86c29h
+ci53dUB1dHN0YXIuY29tXQ0KU2VudDogMjAwNMTqMTDUwjI3yNUgMTE6NDgNClRvOiBNYXJrIENo
+YW1iZXJzOyBsaW51eHBwYy1lbWJlZGRlZEBvemxhYnMub3JnDQpTdWJqZWN0OiBSRTogSGVscCEN
+Cg0KDQoNClRoZSBhdHRhY2hlZCBmaWxlIGlzIHRoZSBocGlfdWxfbWVtY3B5X2RzcDJoKCkgZnVu
+Y3Rpb24uDQoNClllcywgdGhlICdIUEknIC0gYXJlIGNvbm5lY3RlZCB0byBhIFQuSS4gRFNQLCA2
+NDE2IHR5cGUuDQoNCkFib3V0IHRoZSBIUEkgcHJvYmxlbSBwcm9ncmVzcy4NCm5vdyB3ZSBoYXZl
+IHRoZSBmb2xsb3dpbmcgcmVzb2x2ZSBtZXRob2Q6DQoNCjEsIElmIHdlIHVzZSBhIHRlbXAgdmFy
+aWFibGUgdG8gc3RvcmUgdGhlIHJlYWQgb3V0IGRhdGEsIHRoZW4gc3RvcmUgdGhlIGRhdGEgdG8g
+U0RSQU0sIGl0IGlzIE9LLCB0aGVyZSBpcyBubyBob3AuDQogICAgIHRtcFJlYWRSc3QgPSBSRUFE
+X1VMX0hQSV9SRUcoVUxfSFBJREFfQUREUik7DQogICAgKnBfY3VyID0gdG1wUmVhZFJzdDsNCiAg
+ICAgcF9jdXIrKzsNCg0KMiwgSWYgd2UgZG9ub3QgbW9kaWZ5IHRoZSBzb3VyY2UgY29kZXMsIGJ1
+dCB3ZSB1c2UgdGhlIG9wdGltaXphdGlvbiBPMyB0byBjb21waWxlIHRoZSBzb3VyY2UgY29kZXMs
+IGl0IGlzIE9LLg0KCSpwX2N1ciA9IFJFQURfVUxfSFBJX1JFRyhVTF9IUElEQV9BRERSKTsNCglw
+X2N1cisrOw0KDQozLCBJZiB3ZSBhZGQgYSBzeW5jIGluc3RydWN0aW9uIHRvIHRoZSBzb3VyY2Ug
+IGNvZGVzLCBpdCBpcyBPSy4NCgkqcF9jdXIgPSBSRUFEX1VMX0hQSV9SRUcoVUxfSFBJREFfQURE
+Uik7DQogICAgICAgICAgICBfX2FzbV9fKCIgIGVpZWlvOyBzeW5jIik7DQoJcF9jdXIrKzsNCg0K
+NCwgSWYgd2UgbW9kaWZ5IHRoZSBCU1AsIHVwZGF0ZSB0aGUgbWVtb3J5IG9wZXJhdGlvbiBvcHRp
+b24sDQpmcm9tIDoNClBIWVNfTUVNX0RFU0Mgc3lzUGh5c01lbURlc2MgW10gPQ0Kew0KLi4uDQog
+ICAgLyphbGwgdGhlIG90aGVyIHNtYWxsIGNoaXAqLw0KICAgIHsNCiAgICAodm9pZCAqKSAweDUw
+MDAwMDAwLA0KICAgICh2b2lkICopIDB4NTAwMDAwMDAsDQogICAgMHgwODAwMDAwMCwgICAgIA0K
+ICAgIFZNX1NUQVRFX01BU0tfVkFMSUQgfCBWTV9TVEFURV9NQVNLX1dSSVRBQkxFIHwgVk1fU1RB
+VEVfTUFTS19DQUNIRUFCTEUsDQogICAgVk1fU1RBVEVfVkFMSUQgICAgICB8IFZNX1NUQVRFX1dS
+SVRBQkxFICAgICAgfCBWTV9TVEFURV9DQUNIRUFCTEVfTk9UDQogICAgfSwNCi4uLg0KdG86DQpQ
+SFlTX01FTV9ERVNDIHN5c1BoeXNNZW1EZXNjIFtdID0NCnsNCi4uLg0KICAgIC8qYWxsIHRoZSBv
+dGhlciBzbWFsbCBjaGlwKi8NCiAgICB7DQogICAgKHZvaWQgKikgMHg1MDAwMDAwMCwNCiAgICAo
+dm9pZCAqKSAweDUwMDAwMDAwLA0KICAgIDB4MDgwMDAwMDAsICAgICANCiAgICBWTV9TVEFURV9N
+QVNLX1ZBTElEIHwgVk1fU1RBVEVfTUFTS19XUklUQUJMRSB8IFZNX1NUQVRFX01BU0tfQ0FDSEVB
+QkxFIHwgVk1fU1RBVEVfTUFTS19HVUFSREVELA0KICAgIFZNX1NUQVRFX1ZBTElEICAgICAgfCBW
+TV9TVEFURV9XUklUQUJMRSAgICAgIHwgVk1fU1RBVEVfQ0FDSEVBQkxFX05PVCB8IFZNX1NUQVRF
+X0dVQVJERUQNCiAgICB9LA0KLi4uDQoNCldlIGFkZGVkIHRoZSBvcHRpb24gVk1fU1RBVEVfVk1f
+TUFTS19HVUFSREVEIGFuZCBWTV9TVEFURV9HVUFSREVELA0Kc3RpbGwgdXNlIHRoZSBvbGQgc291
+cmNlIGNvZGVzOg0KCSpwX2N1ciA9IFJFQURfVUxfSFBJX1JFRyhVTF9IUElEQV9BRERSKTsNCglw
+X2N1cisrOw0KDQpOb3cgV2UgZmluZCB0aGVyZSBpcyBubyBob3AuIEl0IGlzIE9LDQoNCg0KNSwg
+SWYgd2UgdXNlIHRoZSBtZW1vcnkgd2hpY2ggaXMgYWxsb2NhdGVkIGJ5IGZ1bmN0aW9uIGNhY2hl
+RG1hTWFsbG9jKCksIA0KdGhlIGhvcCBzdGlsbCBleGlzdCwgYnV0IHRoZSBudW1iZXIgb2YgIGhv
+cCBpcyBsaXR0bGUgdGhhbiB3aGVuIHdlIHVzZSBtYWxsb2MoKS4NCg0KRG8geW91IHRlbGwgbWUg
+dGhlIHJlYXNvbj8/DQoNCldhaXQgZm9yIHlvdXIgcmVwbHkuDQoNCkJlc3QgUmVnYXJkcywNClNv
+YXIgV3UNCg0KLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCkZyb206IE1hcmsgQ2hhbWJlcnMg
+W21haWx0bzptYXJrY0BtYWlsLmNvbV0NClNlbnQ6IDIwMDTE6jEw1MIyNsjVIDIyOjEzDQpUbzog
+c29hci53dTsgbGludXhwcGMtZW1iZWRkZWRAb3psYWJzLm9yZw0KU3ViamVjdDogUmU6IEhlbHAh
+DQoNCg0KQ2xlYXIgRGF5PkZpcnN0bHkgd2Ugd2lsbCB3cml0ZSBkYXRhIHRvIHRoZSBIUEksDQo+
+dGhlbiByZWFkIGRhdGEgZnJvbSB0aGUgSFBJIHRvIHRoZSBTRFJBTSh0aGlzIFNEUkFNIGlzIGNv
+bm5lY3RlZCB3aXRoDQo2MHgtQlVTKS4NCj5UaGUgbGFzdCB3ZSB3aWxsIHJlYWQgdGhlIGRhdGEg
+ZnJvbSB0aGUgU0RSQU0gdG8gY29tcGFyZSB0aGUgZGF0YSB3aGljaCBpcw0Kd3JpdGUgPnRvIEhQ
+SS4NCg0KQ2FuIHlvdSBzaG93IHRoZSBlbnRpcmUgc291cmNlIGZvciBocGlfdWxfbWVtY3B5X2Rz
+cDJoKCk/DQoNCkFsc28sIHlvdSBzYXkgJ0hQSScgLSBhcmUgY29ubmVjdGVkIHRvIGEgVC5JLiBE
+U1A/ICBXaGljaCBvbmU/DQoNCk1hcmsgQ2hhbWJlcnMNCg==
