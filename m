@@ -1,34 +1,55 @@
-Date: Fri, 28 Jan 2000 14:28:46 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Holger Bettag <hobold@Informatik.Uni-Bremen.DE>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 604r
-In-Reply-To: <8xya9amjgo.fsf@s62.informatik.uni-bremen.de>
-Message-ID: <Pine.LNX.4.05.10001281428170.439-100000@callisto.of.borg>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: ramp@oddjob.uchicago.edu
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Updated Mozilla M13 Release Build Available
+In-reply-to: Your message of "Fri, 28 Jan 2000 09:15:56 CST."
+             <Pine.LNX.4.10.10001280907150.2865-100000@xpol.uchicago.edu>
+References: <Pine.LNX.4.10.10001280907150.2865-100000@xpol.uchicago.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Fri, 28 Jan 2000 09:38:55 -0600
+From: Kevin Puetz <puetzk@iastate.edu>
+Message-Id: <E12EDU8-0002IT-00@puetz.penguinpowered.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 28 Jan 2000, Holger Bettag wrote:
-> Geert Uytterhoeven <geert@linux-m68k.org> writes:
-> > Suddenly my CPU type changed with 2.3.41 from `604e rev 18.3' to `604r rev
-> > 2.3'. Is this OK?
-> >
-> What clock speed does your specific 604e run at? The faster ones (was it the
-> range 233 to 300MHz?) were indeed labeled "604r", although the marketing name
-> remained "604e".
+****
 
-200 MHz. It's an old one.
+Before I answer thes, are there any people with positive reports? I need to
+hear from you if it installed perfectly as well as if you had problems. Please
+be sure you include me directly in the replies to this message. I'm cc'ing the
+list in case anyone else is interested in simplebrowser.
 
-Gr{oetje,eeting}s,
---
-Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
+****
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+ramp@oddjob.uchicago.edu said:
+> Well I'm still having problems. I do have libstdc++-2.10.0 and it
+> still  seems to not do anything. Maybe part of this has something to
+> do with ldconfig. What is a typical /etc/ld.so.conf look like. Mine is
+
+I'm afraid you may just not have enough RAM for mozilla. While a lot faster
+and more stable than communicator was, it's still a big browser, with quite an
+appetite for RAM (and/or swap). You chould give simplebrowser a try -
+
+ cd ..../package
+./run-mozilla.sh ./simplebrowser
+
+This is the raptor (mozilla) layout engine, but with much of the browser
+eye-candy stripped away. It runs in about 8 megs here to mozilla's 25+(numbers
+are somewhat misleading because of shared libs, segments shared with the
+Xserver, etc, but still comparable), so it's probably more likely to work.
+Good luck.
+
+> $ cat /etc/ld.so.conf /usr/X11R6/lib
+
+No, /usr/lib (and /lib, and maybe others) were compiled into ld.so. the config
+file serves to add others after the fact.
+
+> However I noticed that there are libraries in /usr/lib. Do those
+> needed need to be added as well?
+
+> Sorry for these newbie questions, Ramprasad
+That's fine, they have too be asked by everyone at least once :-)
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
