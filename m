@@ -1,35 +1,47 @@
-Message-Id: <l03130302b5145fe8d18f@[209.122.247.115]>
-In-Reply-To: <38EE7EDE.612EB99F@denise.shiny.it>
-References: <l03130302b4fd80d3a908@[216.164.130.191]>
- <l03130304b50c8e1b783f@[216.164.131.253]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Sat, 8 Apr 2000 00:05:56 -0400
-To: Giuliano Pochini <pochini@denise.shiny.it>
-From: "DeRobertis" <derobert@erols.com>
-Subject: Re: stty crtscts < /dev/ttyS1
-Cc: linuxppc-dev@lists.linuxppc.org
+Message-ID: <38EF05F9.B7417C7D@iiic.ethz.ch>
+Date: Sat, 08 Apr 2000 12:12:09 +0200
+From: Michel Dänzer <michdaen@iiic.ethz.ch>
+MIME-Version: 1.0
+To: "Michael A. Peters" <mpeters@mac.com>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Building X 3.3.6 (non-distributor environment)
+References: <v04220801b513d68f9145@[192.168.0.2]>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 8:35 PM -0400 on 4/7/00, Giuliano Pochini wrote:
+"Michael A. Peters" wrote:
+>
+> I'm running the Linux From Scratch project
+> (http://www.linuxfromscratch.org) and its all working swell except X
+> won't build.
+>
+> When I unpack X3.3.6 and try "make World" it very quickly quits with
+> an error from gcc. Funny thing is, the build *does* complete under
+> LinuxPPC (gcc 2.95.2, glibc 2.1.3 if it matters) from the same source.
+>
+> Opinion among people who have used the LFS howto on x86 and also
+> built X on other platforms is that my problem is that the make World
+> script doesn't know my compiler is gcc. Yes, I do have cc symlinked
+> to gcc
+>
+> I've even tried make CC=gcc World with same result.
+>
+> However, under LinuxPPC it compiles no problem.
+>
+> Any of you know what the problem is (if its something else) or how to
+> set up the non-distribution linux so that it DOES know the compiler
+> is gcc?
 
->What is connected to the serial port ?  When I enable RTS/CTS on ttyS1
->and there is my Epson 740 attached, the whole system freezed.
+In xc/config/cf there's a bunch of config files, the important ones for you
+are probably xf86site.cf and linux.cf.
 
-Same thing attached.
+Set everything concerning Gcc (and maybe other stuff as well) to reflect your
+system and you should be fine.
 
->I don't
->know why this happen exactly. It seems that the printer changes continuosly
->with very high frequency  the state of CTS, which cause the serial driver
->to loop indefinitely.
 
-Ouch! Broken hardware... how can I document this is happening, so that
-I can demand an answer from Epson?
-
-Or maybe I should just hack the serial driver to ignore this. And WTF
-is the serial driver doing looking at CTS on a port with no data?!
+Michel
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
