@@ -1,50 +1,46 @@
-Date: Sun, 25 Mar 2001 21:21:20 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Guillaume Laures <guillaume.laures@noos.fr>
-Cc: Tony Mantler <nicoya@apia.dhs.org>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: st corruption
-In-Reply-To: <200103251635.KAA16519@lists.linuxppc.org>
-Message-ID: <Pine.LNX.4.05.10103252120020.13875-100000@callisto.of.borg>
+Message-ID: <3ABE49FF.8DD46595@denise.shiny.it>
+Date: Sun, 25 Mar 2001 21:41:51 +0200
+From: Giuliano Pochini <pochini@denise.shiny.it>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Iain Sandoe <iain@sandoe.co.uk>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Sound skips
+References: <20010324194439.431FB2EFE9@apollo.valhalla.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 25 Mar 2001, Guillaume Laures wrote:
-> > merida:/home/nicoya# md5sum testfile
+Iain Sandoe wrote:
 >
-> 13b37214355ea84d906a54bb14c1c0be  testfile
+> > When I play music under high load the sound has a lot of
+> > short interruptions. It seems not to be related with I/O. I tried
+> > Alsaplayer
 >
-> > merida:/home/nicoya# tar -c testfile >/dev/st0
-> > merida:/home/nicoya# mv testfile testfile.1
-> > merida:/home/nicoya# tar -x </dev/st0
-> > merida:/home/nicoya# md5sum testfile
+> this is with Takashi Iwai's driver (it's the only one AFAIK)
 >
-> 13b37214355ea84d906a54bb14c1c0be  testfile
+[...]
 >
-> uname -a :
-> Linux shiner.gom.net 2.2.18-snd-bkport #26 Wed Feb 28 23:19:57 CET 2001
-> ppc unknown
+> which OSS driver are you using?
+> dmasound?
+
+Yes.
+
+> with or without my patches ?
+
+Plain 2.4.2. I'm d/l-ing your patches now. I'll let you know.
+
+> > I don't know what causes that (ints kept disabled too much time ?)
+> > but if someone has a patch to try I'me here.
 >
-> So no prob here either with close hardware.
+> there are a variety of things that can block for between 16 & 300 ms (not
+> necessarily IRQs).
+>
+> what size fragments are you using?
 
-Thanks! Do you also have a 2.4.x kernel around?
+2K. I have to rise it to 8KB to work fine. My friend with the G4 still have
+very few interruptions even with 8KB.
 
-Or perhaps I should try 2.2.18... No idea whether 2.2.18 works on LongTrail,
-though. I switched to 2.3.x a long time ago...
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+Bye.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
