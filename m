@@ -1,49 +1,30 @@
-Message-ID: <4084FFEE.4070308@dgt-lab.com.pl>
-Date: Tue, 20 Apr 2004 12:48:14 +0200
-From: Wojciech Kromer <krom@dgt-lab.com.pl>
-MIME-Version: 1.0
-To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: console terminal on mpc8xx
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Message-Id: <200404201305.IAA27777@lists.linuxppc.org>
+Date: Tue, 20 Apr 2004 21:03:48 +0800
+From: "leo" <leo_guo@jisung.cn>
+To: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: DOC2000 unstable problem!!!
+Mime-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-i have mpx8xx custom board with console on SMC1
+Hi all,
+I am porting linux to my MPC852 board, and linux now can runs ok, but it
+seems that the DOC2000 is unstable! My system config as follows:
 
-but there are some problems using it as a terminal with minicom
+MCU: MPC852T 80M
+SDRAM: 32MB
+FLASH: 2MB
+DOC2000: 32MB
 
-here is some otputs:
+I make a EXT2 file system on DOC2000, but sometimes, turn off the
+board's power when linux is running, and then turn on the power, the
+linux can't mount the root filesystem!
 
+Could you give me some advices? And I want know between the NAND flash
+and DOC, which is the better selection?
 
-# stty -a
-speed 115200 baud; rows 0; columns 0;
-intr = ^C; quit = ^\; erase = ^?; kill = ^U; eof = ^D; eol = <undef>;
-eol2 = <undef>; start = ^Q; stop = ^S; susp = ^Z; rprnt = ^R; werase = ^W;
-lnext = ^V; flush = ^O; min = 1; time = 0;
--parenb -parodd cs8 hupcl -cstopb cread clocal -crtscts
--ignbrk brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr icrnl ixon
--ixoff
--iuclc -ixany imaxbel
-opost -olcuc -ocrnl onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0
-vt0 ff0
-isig icanon iexten echo echoe echok -echonl -noflsh -xcase -tostop -echoprt
-echoctl echoke
-#
-
-and programs using stdandard \e[x;yH command to set cursor position
-displays correct only first two lines
-
-TERM is set to vt102 booth on minicom and console
-
-and:
--setting  'stty rows 24 columns 80 this'  changes nothing
--same program on telnet session works fine
-
-
-Q:
- -where the problem is (kernel, minicom, program, tty setings, or whatever)?
-- how to correct this problem?
-
+BRs!
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
