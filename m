@@ -1,24 +1,39 @@
-Message-ID: <395CF719.1CDF8043@aiinet.com>
-Date: Fri, 30 Jun 2000 15:38:01 -0400
-From: Matt Gessner <mattg@aiinet.com>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: <cl.en@gmx.net>, <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: AirPort?
+Date: Sat, 1 Jul 2000 11:30:54 +0200
+Message-Id: <20000701093054.26086@192.168.1.10>
+In-Reply-To: <20000630172404.C4526@olis.north.de>
+References: <20000630172404.C4526@olis.north.de>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: EST SBC8260 and PCI?
-Content-Type: text/plain; charset=us-ascii
-Sender: owner-linuxppc-embedded@lists.linuxppc.org
-List-Id: <linuxppc-embedded@lists.linuxppc.org>
+Content-Type: text/plain; charset=US-ASCII
+Sender: owner-linuxppc-dev@lists.linuxppc.org
+List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Has anyone done any work with this?
-Does this work at all?
+On Fri, Jun 30, 2000, Claus <cl.en@gmx.net> wrote:
 
-TIA,
+> >: with iBooks/G4's? Because, see, I have one of each of those, and it'd be
+> >: nice to be able to use the wireless networking under Linux, not just
+MacOS
+> >: X and MacOS 9. I know there is a driver for the PCMCIA WaveLan card that
+> >: the AirPort is based on....
+>
+><http://www.roelle.com/wvlanPPC/index.html>
 
+Unfortunately, this will probably not work out of the box.
 
---
-Matt Gessner, mattg@aiinet.com--NOSPAM
-Senior Software Engineer, R&D
-Applied Innovation, Inc.
-614-798-2000
+The wvlan_cs driver expects a PCMCIA card (and uses the PCMCIA card
+services to detect and get the card's config) but the Apple Airport card
+is not really one, it's plugged on an Apple custom IO bus which is not
+handled by the pcmcia tools at all.
 
-** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
+There is also need to tweak some undocumented IO bits here or there to
+get it working.
+
+I'm working on a port of the wvlan_cs driver to the Airport card, I'll
+post more news when it's done.
+
+Ben.
+
+** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
