@@ -1,16 +1,40 @@
-Message-ID: <313680C9A886D511A06000204840E1CF08F4303E@whq-msgusr-02.pit.comms.marconi.com>
+Message-ID: <313680C9A886D511A06000204840E1CF08F4303F@whq-msgusr-02.pit.comms.marconi.com>
 From: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
-To: "'Benjamin Herrenschmidt'" <benh@kernel.crashing.org>,
-	"'wd@denx.de'" <wd@denx.de>
-Cc: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
-Subject: Seg fault when configuring starting cross-compiling linux-2.6.7 f
-	or PPC on Intel platform (windows XP) using cygwin
-Date: Tue, 20 Jul 2004 10:14:03 -0400
+To: "'dank@kegel.com'" <dank@kegel.com>,
+	"'trevor_scroggins@hotmail.com'" <trevor_scroggins@hotmail.com>
+Cc: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>,
+	"'Benjamin Herrenschmidt'" <benh@kernel.crashing.org>,
+	"'wd@denx.de'" <wd@denx.de>,
+	"'crossgcc@sources.redhat.com'" <crossgcc@sources.redhat.com>
+Subject: RE: Seg fault when configuring starting cross-compiling linux-2.6
+	.7 for PPC on Intel platform (windows XP) using cygwin
+Date: Tue, 20 Jul 2004 10:58:01 -0400
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
+
+
+http://sources.redhat.com/ml/crossgcc/2004-05/msg00242.html
+Re: Crosstool / SH / Linux 2.6.6
+
+Hi,
+
+We are hitting the same problem using cygwin ...
+Any luck with having it fixed ?
+
+Thanks,
+Best Regards,
+Alex
+
+-----Original Message-----
+From: Povolotsky, Alexander
+Sent: Tuesday, July 20, 2004 10:14 AM
+To: 'Benjamin Herrenschmidt'; 'wd@denx.de'
+Cc: 'linuxppc-dev@lists.linuxppc.org'
+Subject: Seg fault when configuring starting cross-compiling linux-2.6.7
+for PPC on Intel platform (windows XP) using cygwin
 
 
 Hi,
