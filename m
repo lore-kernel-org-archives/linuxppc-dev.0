@@ -1,46 +1,69 @@
-Message-ID: <001401c44188$07d6c590$0301a8c0@chuck2>
-From: "Mark Chambers" <markc@mail.com>
-To: "Venkatesh Savithri Mahesh" <vsmahesh@cdotb.ernet.in>,
-	<linuxppc-embedded@lists.linuxppc.org>
-References: <Pine.OSF.4.21.0405241202110.19979-100000@ws9.cdotb.ernet.in>
-Subject: Re: Query about KERNELLOAD. 
-Date: Mon, 24 May 2004 08:09:54 -0400
+Message-ID: <40B1FB42.1040306@intracom.gr>
+Date: Mon, 24 May 2004 16:40:18 +0300
+From: Pantelis Antoniou <panto@intracom.gr>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Dan Malek <dan@embeddededge.com>
+Cc: Joakim Tjernlund <joakim.tjernlund@lumentis.se>,
+	Tom Rini <trini@kernel.crashing.org>, Wolfgang Denk <wd@denx.de>,
+	Kumar Gala <kumar.gala@motorola.com>,
+	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: [PATCH] Driver for FECs on motorola DUET (87x/88x)
+References: <40A38968.6060701@intracom.gr> <40A4C04A.8060508@intracom.gr> <F8A7B640-A5F0-11D8-9559-003065F9B7DC@embeddededge.com>
+In-Reply-To: <F8A7B640-A5F0-11D8-9559-003065F9B7DC@embeddededge.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Venkatesh,
+Dan Malek wrote:
 
-I think your problem is with the emulator setup.  You don't ever want to
-change KERNELLOAD unless you are a very advanced user.  0xc0000000 is a
-virtual address - when the processor puts out an address in this range it is
-translated by the MMU to an actual memory address.  So when you change to
-0x0600000 you are running without the MMU translation.  So some things work,
-but the kernel will never work properly this way.
-
-Your emulator has to be smart enough to know how to translate
-virtual-to-physical addresses in the linux kernel.  Not all emulators can do
-this, I don't think TRACE32 does (but check with manufacturer!). The
-emulator that has the most support from linux is Abatron:  www.abatron.ch
-Also, once you get your kernel to boot, don't forget that you can use gdb
-and gdbserver.  You may be able to do some debugging by just realizing that
-the physical address is usually the virtual address minus 0xc0000000.  So if
-the debugger shows 0xc0012345 the physical address is 0x12345.
-
-Good luck,
-Mark Chambers
-
->   I am a novice, please forgive me if this is very trivial.
 >
->   I am trying to run 2.4.16 kernel on a custom 8260 board with 128MB
-> sdram. I am using the TRACE32 JTAG emulator from Lauterbach.
+> On May 14, 2004, at 8:49 AM, Pantelis Antoniou wrote:
 >
->   I am unable to load with KERNELLOAD=0xc0000000.
+>> Any mm hackers over there have any idea?
 >
->   When the KERNELLOAD is changed to some other value, say 0x06000000
+>
+> I have some ideas.  There are some "generic" functions
+> doing some lazy processing that isn't likely to be valid
+> on the 8xx, in particular the way demand zero pages
+> are handled.  Anyway, that's as far as I've traced it.
+> Sometimes it appears to work, but it could be that what
+> is happening still isn't correct, it just doesn't crash/hang.
+> There are few other things that caught my attention where
+> we used to execute generic PPC MM code without any
+> ill side effects, but when these were ported to 2.6 we
+> are now doing the wrong things on the 8xx.  We just have
+> to work our way though it with some applications and
+> testing.
+
+I have made some progress...
+
+I have ported the CPM UART driver by Kumar Gala to the 8xx.
+
+It works correctly but still the same problem persists...
+
+It correctly mounts the NFS root, and after the first write
+by init it hangs.
+
+By breaking in using my BDI2000 I see it stuck at default_idle.
+
+Networking & interrupts appear OK, since I can still ping.
+
+It seems that for some reason no user space scheduling takes place.
+
+Apparently the scheduling is controlled by the _TIF_NEED_RESCHED
+flag which is no where to be found in head_8xx.S.
+
+Before I submerge into the assembly of head_8xx.S does anyone have any
+ideas?
+
+>
+>     -- Dan
+>
+>
+Regards
+
+Pantelis
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
