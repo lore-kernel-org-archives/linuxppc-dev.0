@@ -1,70 +1,57 @@
-Date: 25 Jun 2002 14:22:49 -0000
-Message-ID: <20020625142249.2724.qmail@webmail15.rediffmail.com>
-MIME-Version: 1.0
-From: "navinb" <ppc4@rediffmail.com>
-Reply-To: "navinb" <ppc4@rediffmail.com>
-To: "Dan Malek" <dan@embeddededge.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: some lead in scc2 conflict with usb?
-Content-type: text/plain;
-	format=flowed
+Date: Tue, 25 Jun 2002 07:39:37 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: linuxppc-embedded@lists.linuxppc.org,
+	Paul Mackerras <paulus@samba.org>,
+	David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: consistent_free()
+Message-ID: <20020625143937.GN3489@opus.bloom.county>
+References: <20020614042928.GK26146@zax> <20020614055711.GA1124@zax> <20020624021538.GX9087@zax>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20020624021538.GX9087@zax>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-SCC2 doesn't coflicts with USB ,I just have found the code in
-enet.c that is causing problem for USB .
-
-
-          cp->cp_sicr &= ~SICR_ENET_MASK;
-          cp->cp_sicr |=  SICR_ENET_CLKRT;
-
-if you are enabling USB before ENET then after initialising sicr
-with SICR_ENET_MASK
-USB is just able to recognise the RESET/IDLE events.
-
-consequently when you put SICR_ENET_CLKRT USB becomes lifeless .
-
-these are defined as ,
-
-#ifdefined CONFIG_RPXLITE
-#define SICR_ENET_MASK  ((uint)0x0000ff00)
-#define SICR_ENET_CLKRT ((uint)0x00003d00)
-
-In usb we are using the following for sicr initialisation
-#define SICR_USB_MASK   ((uint)0x000000ff)
-#define SICR_USB_CLKRT  ((uint)0x00000020) /* CLK1 */
-
-how the ordering ( USB after ENET) matters here..?
-
-Best Regards,
-
-On Mon, 24 Jun 2002 Dan Malek wrote :
+On Mon, Jun 24, 2002 at 12:15:38PM +1000, David Gibson wrote:
 >
->navinb wrote:
+> On Fri, Jun 14, 2002 at 03:57:11PM +1000, David Gibson wrote:
+> >
+> > On Fri, Jun 14, 2002 at 02:29:28PM +1000, David Gibson wrote:
+> > >
+> > > In attempting to make consistent_alloc/free() work sensibly on
+> > > processors which are cache coherent I ran into a problem.
+> > > consistent_free() doesn't take a size argument.  We don't need it in
+> > > the case of not cache coherent processors - in that case
+> > > consistent_alloc() sets up a vm_area() so there's enough information
+> > > to get the size.  However for cache coherent processors we probably
+> > > want consistent_alloc() to degenerate to __get_free_pages(), in which
+> > > case consistent_free() must degenerate to free_pages(), which takes a
+> > > size argument.
+> > >
+> > > I suggest we change consistent_free() to take the virtual addresss,
+> > > size and the physical address (dma_addr_t), which will make our
+> > > consistent_free() match the one on ARM.  I know we don't need the
+> > > third argument in any existing situation.
+> > >
+> > > Patch coming...
+> >
+> > As promised...
+> >
+> > This boots up fine on my EP405PC board, and I'm sending this mail from
+> > my TiBook running 2_4_devel with this patch and also the 40x large
+> > page PMD patch.
 >
->>problem being faced is that usb (scc1 addres space) works when
->>my
->>CPM ENET is not either at SCC1 or SCC2.
->
->How does USB conflict with SCC2 in Ethernet mode?  The default
->configuration should just build this way, since the only thing
->you can run on SCC1 is USB.  On an 823, the default (and about
->the only configuration) is USB on SCC1, Ethernet on SCC2 and
->console
->on SMC1.  Not all parts have SCC3.
->
->Thanks.
->
->
->-- Dan
->
->
->
+> Again, silence reigns.  Anyone who would object to this being applied
+> to the linuxppc-2.5 tree, speak up now.
 
-_________________________________________________________
-There is always a better job for you at Monsterindia.com.
-Go now http://monsterindia.com/rediffin/
+If we're going to touch this, can you look at the current ARM version of
+it and grab all of the goodies they've got now?  I almost had this going
+(and I can shoot you the patch off the list if you like) but haven't had
+time to go back to it.
 
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
