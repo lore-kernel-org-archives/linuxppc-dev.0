@@ -1,45 +1,31 @@
-Message-ID: <38993D7F.B0964A77@dalim.de>
-Date: Thu, 03 Feb 2000 09:34:07 +0100
-From: Stephane GEORGES <sg@dalim.de>
+Date: Thu, 3 Feb 2000 02:10:29 -0800 (PST)
+From: Patrik Jonsson <patrik@ucolick.org>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: lidstdc++ string problems
+In-Reply-To: <38993D7F.B0964A77@dalim.de>
+Message-ID: <Pine.GSO.4.03.10002030203260.27105-100000@isis.ucolick.org>
 MIME-Version: 1.0
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Speed tests - G4-400 and PIII-600
-References: <88732CD95EB64875C125687900681C6E.00681C98C1256879@kehl.dalim.de>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I've made speed tests on programs running on my LinuxPPC on G4-400 Mhz AGP,
-and on Pentium III 600 Mhz.
+Hi everyone,
 
-Both machines have same disks performances (with hdparm, about 20 Mo/s).
+I wonder if there is a known problem with the c++ string class? (I just
+upgraded to gcc 2.95.2, but it didn't help.) What happens is that I read
+into a string from a char* using a strstream as " strstream >> string".
+This works on other machines, but on linuxppc the resulting string
+contains junk at the end that is in another string object defined earlier.
+It's like it doesn't properly define what the length is. If I look at it
+in gdb, the "dat" field contains the right char*, but when reading it more
+stuff appears at the end. It's HIGHLY annoying, it's plain impossible to
+make anything work! Is this known / is there a fix or something? It seems
+bad if we can't trust the standard library... :(
 
-GCC versions:
-    - on Intel : egcs-1.1.2-24
-    - on PowerPC: egcs-1.1.2-12c
+Any hints would be much appreciated,
 
-Bogomips:
-    - on Intel : ~ 600
-    - on PowerPC: ~ 800
-
-The test programs are dealing with run-length images processing.
-
-I was disapointed by the fact that the Intel machine ran 25% faster
-than the PowerPC machine.
-
-I thought that a G4-400 was worth a PIII-800 ...
-Maybe gcc including Alvitec patches will provide better performances ...
-
---
-
-/====================================================================/|
-| Stephane GEORGES                     |                             ||
-| DALiM SOFTWARE GmbH      R&D         |    Tel: +49 7851 9196 40    ||
-| Strassburger Str.6                   |    Fax: +49 7851 7357 6     ||
-| D-77696                              |                             ||
-| Kehl-Sundheim (Germany)              |    E-mail: sg@dalim.de      ||
-|____________________________________________________________________|/
+	/Patrik
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
