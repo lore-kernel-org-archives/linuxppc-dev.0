@@ -1,71 +1,234 @@
-Message-Id: <200212200830.CAA05240@lists.linuxppc.org>
-From: "=?GB2312?Q?=D3=DA=E6=BA?=" <yuj@mail.ndsc.com.cn>
-To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: kgdb compile error
-Mime-Version: 1.0
-Content-Type: text/plain
-Date: Fri, 20 Dec 2002 16:35:6 +0800
+Message-ID: <3E02E984.8090904@intracom.gr>
+Date: Fri, 20 Dec 2002 11:57:24 +0200
+From: Pantelis Antoniou <panto@intracom.gr>
+MIME-Version: 1.0
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: New style dpalloc/hostalloc routines (diff).
+References: <3E006C94.2090503@intracom.gr> <15874.23846.177956.192840@argo.ozlabs.ibm.com>
+In-Reply-To: <15874.23846.177956.192840@argo.ozlabs.ibm.com>
+Content-Type: multipart/mixed;
+ boundary="------------020903050801070409010809"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi!
-  I want to debug the kernel with kgdb,so I build the kernel with CONFIG_KGDB.While there are something wrong with it.The error is listed below:
-/////////
-ppc_74xx-ld -T arch/ppc/vmlinux.lds -Ttext 0xc0000000 -Bstatic arch/ppc/kernel/head.o init/main.o init/version.o \
- --start-group \
- arch/ppc/kernel/kernel.o arch/ppc/platforms/platform.o arch/ppc/mm/mm.o arch/ppc/lib/lib.o kernel/kernel.o mm/mm.o fs/fs.o ipc/ipc.o \
-  drivers/char/char.o drivers/block/block.o drivers/misc/misc.o drivers/net/net.o drivers/media/media.o drivers/ide/idedriver.o drivers/scsi/scsidrv.o drivers/cdrom/driver.o drivers/pci/driver.o drivers/macintosh/macintosh.o \
- net/network.o \
- /home/yujing/mykernel/kernel/lib/lib.a \
- --end-group \
- -o vmlinux
-ppc_74xx-ld: Dwarf Error: Could not find abbrev number 106.
-ppc_74xx-ld: Dwarf Error: Could not find abbrev number 97.
-ppc_74xx-ld: Dwarf Error: Line offset (33554432) bigger than line size (223020).
-ppc_74xx-ld: Dwarf Error: Could not find abbrev number 95.
-ppc_74xx-ld: Dwarf Error: Could not find abbrev number 95.
-ppc_74xx-ld: Dwarf Error: Could not find abbrev number 95.
-ppc_74xx-ld: Dwarf Error: Could not find abbrev number 95.
-ppc_74xx-ld: Dwarf Error: Could not find abbrev number 95.
-ppc_74xx-ld: Dwarf Error: Could not find abbrev number 99.
-arch/ppc/kernel/kernel.o: In function `_get_L2CR':
-arch/ppc/kernel/entry.S(.text+0x89fc): undefined reference to
-'getDebugChar'
-arch/ppc/kernel/entry.S(.text+0x89fc): relocation truncated to fit: R_PPC_REL24 getDebugChar
-arch/ppc/kernel/entry.S(.text+0x8a30): undefined reference to `getDebugChar'
-arch/ppc/kernel/entry.S(.text+0x8a30): relocation truncated to fit: R_PPC_REL24 getDebugChar
-arch/ppc/kernel/entry.S(.text+0x8a4c): undefined reference to `getDebugChar'
-arch/ppc/kernel/entry.S(.text+0x8a4c): relocation truncated to fit: R_PPC_REL24 getDebugChar
-arch/ppc/kernel/entry.S(.text+0x8a5c): undefined reference to `getDebugChar'
-arch/ppc/kernel/entry.S(.text+0x8a5c): relocation truncated to fit: R_PPC_REL24 getDebugChar
-arch/ppc/kernel/entry.S(.text+0x8a7c): undefined reference to `putDebugChar'
-arch/ppc/kernel/entry.S(.text+0x8a7c): relocation truncated to fit: R_PPC_REL24 putDebugChar
-arch/ppc/kernel/entry.S(.text+0x8a88): undefined reference to `putDebugChar'
-arch/ppc/kernel/entry.S(.text+0x8a88): relocation truncated to fit: R_PPC_REL24 putDebugChar
-arch/ppc/kernel/entry.S(.text+0x8aa0): undefined reference to `putDebugChar'
-arch/ppc/kernel/entry.S(.text+0x8aa0): relocation truncated to fit: R_PPC_REL24 putDebugChar
-arch/ppc/kernel/entry.S(.text+0x8aac): undefined reference to `putDebugChar'
-arch/ppc/kernel/entry.S(.text+0x8aac): relocation truncated to fit: R_PPC_REL24 putDebugChar
-arch/ppc/kernel/entry.S(.text+0x8b20): undefined reference to `putDebugChar'
-arch/ppc/kernel/entry.S(.text+0x8b20): relocation truncated to fit: R_PPC_REL24 putDebugChar
-arch/ppc/kernel/kernel.o(.text+0x8b3c):arch/ppc/kernel/entry.S: more undefined references to `putDebugChar' follow
-arch/ppc/kernel/kernel.o: In function `_get_L2CR':
-arch/ppc/kernel/entry.S(.text+0x8b3c): relocation truncated to fit: R_PPC_REL24 putDebugChar
-arch/ppc/kernel/entry.S(.text+0x8b58): relocation truncated to fit: R_PPC_REL24 putDebugChar
-arch/ppc/kernel/entry.S(.text+0x8b68): relocation truncated to fit: R_PPC_REL24 putDebugChar
-arch/ppc/kernel/entry.S(.text+0x8b78): relocation truncated to fit: R_PPC_REL24 putDebugChar
-arch/ppc/kernel/entry.S(.text+0x8b7c): undefined reference to `getDebugChar'
-arch/ppc/kernel/entry.S(.text+0x8b7c): relocation truncated to fit: R_PPC_REL24 getDebugChar
-arch/ppc/kernel/entry.S(.text+0x8df4): undefined reference to `kgdb_interruptible'
-arch/ppc/kernel/entry.S(.text+0x8df4): relocation truncated to fit: R_PPC_REL24 kgdb_interruptible
-arch/ppc/kernel/entry.S(.text+0x9388): undefined reference to `kgdb_interruptible'
-arch/ppc/kernel/entry.S(.text+0x9388): relocation truncated to fit: R_PPC_REL24 kgdb_interruptible
-make: *** [vmlinux] Error 1
- ///////
-What's the problem?Wait for your help!
-Thanks in advance!
-                                                                         yujing
-                                                                           yuj@mail.ndsc.com.cn
+This is a multi-part message in MIME format.
+--------------020903050801070409010809
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+
+Paul Mackerras wrote:
+
+>Pantelis Antoniou writes:
+>
+>
+>
+>>+# Support new type of routines, usable from modules
+>>+bool 'Use new type dpalloc routines()' CONFIG_NEW_DPALLOC
+>>+bool 'Use new type hostalloc routines()' CONFIG_NEW_HOSTALLOC
+>>+if [ "$CONFIG_NEW_DPALLOC" = "y" -o "$CONFIG_NEW_HOSTALLOC" = "y" ]; then
+>>+  define_bool CONFIG_CPM_RHEAP y
+>>+fi
+>>
+>>
+>
+>I don't want to see config options that select between different
+>internal implementations of the same thing.  Either your new routines
+>are better, and we'll use them, or they are worse, and we'll use the
+>old ones.  Having a config option just leads to tons of ifdefs
+>throughout the code, which makes it harder to read and understand.
+>Having two implementations of the same thing is just bloat.
+>
+>Similarly, I don't like the way all your new routines have a "new_"
+>prefix on the name.  You should be thinking of replacing the existing
+>routines rather than providing an alternative implementation with a
+>different name.  Where you have changed the API, either fix the
+>drivers or provide a compatibility routine.
+>
+>The way it looks at the moment, it seems that you don't really have
+>the conviction that your code is better than what is there already.
+>Please redo your patch so that it just replaces the old routines.  And
+>please don't send it as a bkpatch since they are impossible to read, a
+>plain diff -u is much better.
+>
+>Paul.
+>
+>
+>
+>
+>
+>
+OK
+
+Here is the updated patch in diff format as per your suggestions.
+
+Any more suggestions?
+
+Pantelis
+
+
+
+
+--------------020903050801070409010809
+Content-Type: application/x-gunzip;
+ name="linuxppc_2_4_devel-dpalloc.patch.gz"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="linuxppc_2_4_devel-dpalloc.patch.gz"
+
+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
+V/usmRLzggAA
+--------------020903050801070409010809--
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
