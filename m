@@ -1,56 +1,43 @@
-Date: Mon, 24 Sep 2001 09:58:31 -0700 (PDT)
-From: John Tyner <jtyner@cs.ucr.edu>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: problem with include/linux/highmen.h ?
-Message-ID: <Pine.LNX.4.30.0109240956260.13435-100000@hill.cs.ucr.edu>
+Message-Id: <200109241907.OAA30214@lists.linuxppc.org>
+From: "Boerner, Brian" <bmb@pirus.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: MMU: address translation for 0x00001100 failed
+Date: Mon, 24 Sep 2001 15:11:12 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-We're trying to build for i386 and PPC machines under the same tree, but
-one section of code is giving us some problems...
+I get the above message when attempting to step through the
+time_init function on a walnut using the BDI2000.
 
-linuxppc_2_4_devel/include/linux/highmem.h
+I set a hard break at 0x0 at the bdi prompt and the continue.
+ppcboot passes control to linux at 0x0 and the bdi stops the
+execution. I then change the break type to soft but will try hard.
+I can then connect via gdb and set a break at start_kernel.
+Everything is working fine. I can see the start_kernel code and gdb
+appears to be happy with respect to setting other breaks. Once it
+stops in time_init and then branches off to ppc4xx_time_init I get
+the following messages on my BDI console:
+*** MMU: address translation for 0x00001100 failed
+*** MMU: address translation for 0x00001100 failed
+*** MMU: address translation for 0x00001100 failed
+*** MMU: address translation for 0x00001100 failed
 
------------------
+continuing from here pretty much hangs gdb in the emacs window
+and I've taken some kind of exception because if you stop it
+with the bdi console I can see I'm sitting in panic(). I'm
+guessing but it's probably either a machine check or a program.
 
-/*
-#ifndef __HAVE_ARCH_USER_PAGE
-static inline void clear_user_page(struct page *page, unsigned long vaddr)
-{
-        void *addr = kmap_atomic(page, KM_USER0);
-        clear_page(addr, vaddr);
-        kunmap_atomic(addr, KM_USER0);
-}
+Has anyone seen this message before? If so, what was done to resolve
+them? Thanks in advance for any assistance.
 
-static inline void copy_user_page(struct page *to, struct page *from,
-unsigned long vaddr)
-{
-        char *vfrom, *vto;
+-bmb
 
-        vfrom = kmap_atomic(from, KM_USER0);
-        vto = kmap_atomic(to, KM_USER1);
-        copy_user_page(vto, vfrom, vaddr);
-        kunmap_atomic(vfrom, KM_USER0);
-        kunmap_atomic(vto, KM_USER1);
-}
-#endif
-*/
-
-------------------
-
-As you can see, we've commented it out, which causes the kernel to build
-correctly for both arch's, but the clear_page macro only takes one
-parameter from what I can see and we get _all_ kinds of parse errors
-starting with the line immediately following the #ifndef.
-
-Any ideas?
-
---
-John Tyner
-jtyner@cs.ucr.edu
-
+Brian Boerner
+Member of Technical Staff
+Pirus Networks
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
