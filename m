@@ -1,67 +1,46 @@
-Message-ID: <975932158.3a2b8afe69611@rascal.ums.easynet.net>
-Date: Mon, 04 Dec 2000 12:15:58 +0000
-To: linuxppc-dev@lists.linuxppc.org
-From: "Simon Stapleton" <simon@tufty.co.uk>
+Message-Id: <200012041243.GAA30852@localhost.localdomain>
+Date: Mon, 4 Dec 2000 06:43:46 -0600 (CST)
+From: jpgarcia@execpc.com, UNEXPECTED_DATA_AFTER_ADDRESS@.SYNTAX-ERROR
 Subject: Re: No Backlight Control in 2.2.18pre21
+To: Simon Stapleton <simon@tufty.co.uk>
+cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <975932158.3a2b8afe69611@rascal.ums.easynet.net>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Subject says it: with current linux-pmac-stable kernels, the
-> backlight control via [Fn-]F{1,2} does not work, neither
-> dimming nor turning off the LCD altogether, on a PB Lombard
-> at least.
-> Might have been this way since the CONFIG_PMAC section appeared,
-> in any case, in 2.4.0-test11 there is a CONFIG_PMAC_BACKLIGHT
-> option, and backlight control is working (I've set it to "=y",
-> of course).
+On  4 Dec, Simon Stapleton wrote:
+> Thoughts, comments, flames?
 
-Funny you should mention this.  I was about to pen a missive along
-the same lines.  I noticed it this very weekend when getting back
-to hacking together ADB Wacom support (not necessarily coming
-any time soon, BTW)
+http://www.execpc.com/~jpgarcia/sys.html
 
-The problem appears, to me at least, that if you use the USB
-backport code the powerbook buttons stuff doesn't get included.
-I think somewhere a CONFIG_PMAC_BACKLIGHT is being missed, but
-I may well be wrong.  Changing CONFIG_PMAC_BACKLIGHT to
-CONFIG_PMAC_PBOOK seems to fix the problem (and seems to make
-more sense as we're dealing with powerbook button devices here.
-Or are we?  What about the buttons on the front of some of the
-older pmacs, and on the apple monitors?  I assume these are all
-ADB devices.  I can't test the monitor stuff as my 1710 decided
-it doesn't want to start up recently.  Bah.)
+at the above URL, i have some links to kernel patches.  One is a patch
+to implement new input layer support for the volume/mute buttons using
+ a similar method to the backlight controls. The 2.4 version I wrote is
+ incomplete, and the 2.2 version uses the 2.4 dmasound backport.  An
+ older one is more of an update from a patch that was posted to this
+ list months ago.
 
-In a related note, I've been looking at the code that does this.
-I had a patch under 2.2.17 to make the volume and mute buttons work
-on my wallstreet, and was wanting to reinstate it - the original
-patch won't work but the coding seems (relatively) simple.
+The new layer one also tries to feature NIL volume keys (they're in the
+header), but I don't think I did it right.
 
-So - a couple of questions.
+Beware, I consider these patches to be 'my personal stash', and are
+rather messy in places.
 
-1: What is labelled as the 'contrast' button is actually the
-   wallstreet volume control.  Is this the case for other Pbooks?
-   (I can probably get hold of a 3400 to test, but kangas, lombards
-   and the like are all unreachable).  If this _is_ the case, could
-   we rename the constant?
-2: Getting to the sound device.  This is probably a stupid question,
-   but here goes anyway... The sound device is controllable from
-   userland via the /dev/mixer ioctl, as far as I can see.  Can I
-   use this from within the kernel, or is that a big no-no?  I don't
-   like the idea of putting extra helpers in the sound code (or even
-   using existing ones directly), as there's no guarantee that sound
-   support has been built in.  And I _really_ don't like lots more
-   #ifdef's in the code.
+If anyone wants me to work on them more, or work on them themselves,
+just say so.
 
-Thoughts, comments, flames?
-
-Simon
+My standing is, the buttons are there, lets use them.  iBooks and
+Pismos still have them built into the keyboard too.  Do we want these
+controlled kernel level, or send a keystroke so X (or something else)
+can catch it?  If I can get to fixing the newer 2.2 patch, it could do
+either way.
 
 --
-Your mouse has moved.  You must reboot Windows NT for these changes to be
-recognised.
+Joseph P. Garcia
+http://www.execpc.com/~jpgarcia
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
