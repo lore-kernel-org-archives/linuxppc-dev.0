@@ -1,22 +1,16 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id AE7312BF06
+Return-Path: <samlinuxppc@yahoo.com.cn>
+Received: from web15602.mail.cnb.yahoo.com (web15602.mail.cnb.yahoo.com
+	[202.165.102.56]) by ozlabs.org (Postfix) with SMTP id 3147F2BDA0
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Oct 2004 12:02:29 +1000 (EST)
-Date: Thu, 21 Oct 2004 19:02:26 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Hiroshi DOYU <Hiroshi_DOYU@montavista.co.jp>
-Message-ID: <20041022020226.GC22069@gate.ebshome.net>
-References: <20041022085733.0c5289c8.Hiroshi_DOYU@montavista.co.jp>
-	<20041022013320.GB22069@gate.ebshome.net>
-	<20041022103859.50e2b2f6.Hiroshi_DOYU@montavista.co.jp>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20041022103859.50e2b2f6.Hiroshi_DOYU@montavista.co.jp>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [BUG] IBM440GX works too slow under nfsroot
+	Fri, 22 Oct 2004 12:45:50 +1000 (EST)
+Message-ID: <20041022024537.15206.qmail@web15602.mail.cnb.yahoo.com>
+Date: Fri, 22 Oct 2004 10:45:37 +0800 (CST)
+From: Sam Song <samlinuxppc@yahoo.com.cn>
+To: linuxppc-embedded@ozlabs.org
+In-Reply-To: <20041022020004.A2D442BF0F@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=gb2312
+Subject: Does 2.6.x work for MPC5200?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,28 +21,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 22, 2004 at 10:38:59AM +0900, Hiroshi DOYU wrote:
-> On Thu, 21 Oct 2004 18:33:20 -0700
-> Eugene Surovegin <ebs@ebshome.net> wrote:
-> 
-> > On Fri, Oct 22, 2004 at 08:57:33AM +0900, Hiroshi DOYU wrote:
-> > > Now I am strugging with booting vanilla(2.4.2x) on ibm440gx and
-> > > I could succeed to boot it but, after nfs mounted, it's behavior 
-> > > seems too slow. I guess, it looks like the system is running 
-> > > half duplex. 
-> > 
-> > Yeah, driver thinks it's connected to 10Mb hub. How the board is 
-> > actualy connected to the network?
-> 
-> 10Mb hub.
-> 
+Hi, 
 
-Wow, I really had to spend some time to find such ancient hw :). I'll 
-try 2.4.27 with this hub during next couple of days (I'm a little busy 
-right now) and let you know. I suspect nobody really tested EMAC driver 
-in 10Mb HDX mode.
+I have one LITE5200 version II board at hand. Yeah, I
+knew U-Boot and denx 2_4_devel can support it. Does
+2.6 work on it?
 
-You can also bug Matt Porter, maybe he'll help you sooner :).
+Thanks a lot!
 
---
-Eugene
+=====
+Best regards,
+
+Sam
+
+_________________________________________________________
+Do You Yahoo!?
+150万曲MP3疯狂搜，带您闯入音乐殿堂
+http://music.yisou.com/
+美女明星应有尽有，搜遍美图、艳图和酷图
+http://image.yisou.com
+1G就是1000兆，雅虎电邮自助扩容！
+http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
