@@ -1,33 +1,40 @@
-Date: Wed, 16 Dec 1998 16:52:27 -0600 (CST)
-From: Troy Benjegerdes <hozer@drgw.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: RFC: PPC boot/Milo/OpenBios merge?
-Message-ID: <Pine.LNX.4.04.9812161642260.30336-100000@narn.local.drgw.net>
+Date: Thu, 17 Dec 1998 10:21:03 +1100 (EST)
+From: Nathan Hurst <njh@cs.monash.edu.au>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: linuxppc-dev@lists.linuxppc.org, paulus@cs.anu.edu.au
+Subject: Re: BootX, ramdisk and root device
+In-Reply-To: <19981215143756.003692@mail.mipsys.com>
+Message-ID: <Pine.LNX.3.96.981217095027.10484A-100000@central>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-First, take a look at:
+On Tue, 15 Dec 1998, Benjamin Herrenschmidt wrote:
 
-http://www.freiburg.linux.de/OpenBIOS/
+> I was wondering: Is there any case where a user may want to have both
+> "Use RamDisk" and a specified root device ? 
+I don't think so.
 
-With recent talk of how nicely Milo works (and all the problems PReP
-machines have with bootloaders), what about merging Milo, all the wacky
-variations of PPC boot code, and possibly the OpenBios code together?
+> Should I ignore the content of the root device field when ram disk is
+> used ? 
 
-Apparently the OpenBios people are considering using Milo. According to
-the Web page, some have even advocated a GPL OF implementation. I don't
-know how seriously though.
+This would make sense.
 
-Am I off in la-la land, or is this a good idea to look into?
+> (It still possible to
+> force it by typing the parameter manually in the kernel args anyway).
 
---------------------------------------------------------------------------
-| Troy Benjegerdes    |    troybenj@iastate.edu    |    hozer@drgw.net   |
-|    Unix is user friendly... You just have to be friendly to it first.  |
-| This message composed with 100% free software.    http://www.gnu.org   |
---------------------------------------------------------------------------
+Hence, if people know what they're doing, they can add it, but the rest of
+us who just forgot to clear the field wont have problem.
+
+> Similar issue: should I lookup and remove any "video=xxxx" option from
+> the kenrnel args prior to booting the kernel when "no video driver" is
+> checked or is this harmless ?
+
+I think that anyone who puts this in will know what they're doing.
+
+njh
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
