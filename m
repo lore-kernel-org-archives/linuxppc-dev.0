@@ -1,74 +1,101 @@
-Date: Fri, 18 Jun 2004 12:20:44 +0200
-To: Sven Luther <sven.luther@wanadoo.fr>
-Cc: Alan Cox <alan@www.pagan.org.uk>, Nicolas DET <nd@bplan-gmbh.de>,
-	linux-usb-devel@lists.sourceforge.net,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: [linux-usb-devel] [Patch] for UHCI driver (from kernel 2.6.6).
-Message-ID: <20040618102044.GA32161@pegasos>
-References: <40CDC05B.9020708@bplan-gmbh.de> <1087241757.5996.3.camel@localhost.localdomain> <20040617173454.GA5971@pegasos>
+Date: Fri, 18 Jun 2004 14:02:50 +0200
+From: Sebastian Henschel <linux@kodeaffe.de>
+To: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: [PATCH] cpufreq support for 7447A on 2004 iBooks
+Message-ID: <20040618120250.GA8657@fuchi>
+References: <200406051846.50718.toojays@toojays.net> <200406102105.27654.toojays@toojays.net> <1086883926.2977.145.camel@gaston> <200406161204.30453.toojays@toojays.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20040617173454.GA5971@pegasos>
-From: Sven Luther <sven.luther@wanadoo.fr>
+Content-Type: multipart/mixed; boundary="gKMricLos+KVdGMg"
+In-Reply-To: <200406161204.30453.toojays@toojays.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Jun 17, 2004 at 07:34:54PM +0200, Sven Luther wrote:
-> On Mon, Jun 14, 2004 at 08:38:52PM +0100, Alan Cox wrote:
-> > On Llu, 2004-06-14 at 16:12, Nicolas DET wrote:
-> > > Also, we replace spin_lock_irqxxx/spin_unlock_irq by spin_lock/unlock
-> > > (for SMP/PREEMPT kernel) + stop/start_interrupt.
+hello john..
+
+* John Steele Scott <toojays@toojays.net> [2004-06-16 09:24 +0200]:
+
+> On Fri, 11 Jun 2004 01:42 am, Benjamin Herrenschmidt wrote:
+> > > I have made a new patch for this, available from:
+> > > http://www.toojays.net/~toojays/misc/7447a_cpufreq_20040610.patch
 > >
-> > This requires a lot of care to do right. Remember that on PC systems
-> > interrupts can be substantially posted. A "stop_interrupt" may prevent
-> > IRQ issue but if an IRQ is already on the PC APIC bus it will kill you
-> > later on because the IRQ delivery and PCI bus access on the PC class
-> > machines are totally asynchronous
+> > Looks good except for some coding style issues ;)
+> >
+> > Use spaces between } and else for example, there's also an if
+> > without a space before the ( and please, name the low level asm
+> > function low_* like the other ones, for consistency.
 >
-> And what about the other part of the patch ? The one about the
-> alignement of the buffer descriptors ? Does it seem sound, should we
-> ward it with ppc specific stuff ? Is it fit to be included in the main
-> kernel ?
+> A new patch which addresses these issues is at:
+> http://www.toojays.net/~toojays/misc/7447a_cpufreq_20040616.patch
+>
+> This is functionally identical to the previous patch.
 
-Mmm, it seems that inversing the remove_list and the list also makes the
-problem go away, or at least be less important, in :
+thanks a lot for your patch, it seems to work, according to info from
+cpufreqd, bogomips and /proc/cpuinfo. though i had to tweak it a little
+bit for the alu powerbook g4 2nd generation 12" aka powerbook6,4:
 
-struct uhci_td {
-        /* Hardware fields */
-        __u32 link;
-        __u32 status;
-        __u32 token;
-        __u32 buffer;
+--- arch/ppc/platforms/pmac_cpufreq.c.old	2004-06-18 12:33:37.000000000 +0200
++++ arch/ppc/platforms/pmac_cpufreq.c	2004-06-18 12:34:32.000000000 +0200
+@@ -411,6 +411,7 @@ static int __init pmac_cpufreq_setup(voi
 
-        /* Software fields */
-        dma_addr_t dma_handle;
+ 		/*  Check for 7447A based iBook G4 */
+ 		if (machine_is_compatible("PowerBook6,5") ||
++		    machine_is_compatible("PowerBook6,4") ||
+ 		    machine_is_compatible("PowerBook5,4")) {
+ 			/* OF only reports the high frequency */
+ 			hi_freq = cur_freq;
 
-        struct usb_device *dev;
-        struct urb *urb;
+i also added an entry in the "feature"-table for 6,4 and 5,4 (which you
+might have forgotten at this place). the 5,4 is the alu powerbook g4 2nd
+generation 15" which i had worked on two weeks ago (but cannot anymore).
 
-        struct list_head list;          /* P: urb->lock */
-        struct list_head remove_list;   /* P: uhci->td_remove_list_lock */
+--- arch/ppc/platforms/pmac_feature.c.orig	2004-06-18 12:28:44.000000000 +0200
++++ arch/ppc/platforms/pmac_feature.c	2004-06-18 12:32:39.000000000 +0200
+@@ -2135,6 +2135,10 @@ static struct pmac_mb_def pmac_mb_defs[]
+ 		PMAC_TYPE_UNKNOWN_INTREPID,	intrepid_features,
+ 		PMAC_MB_HAS_FW_POWER | PMAC_MB_MOBILE,
+ 	},
++	{	"PowerBook5,4",			"PowerBook G4 15\"",
++		PMAC_TYPE_UNKNOWN_INTREPID,	intrepid_features,
++		PMAC_MB_HAS_FW_POWER | PMAC_MB_MOBILE,
++	},
+ 	{	"PowerBook6,1",			"PowerBook G4 12\"",
+ 		PMAC_TYPE_UNKNOWN_INTREPID,	intrepid_features,
+ 		PMAC_MB_HAS_FW_POWER | PMAC_MB_MOBILE,
+@@ -2147,6 +2151,10 @@ static struct pmac_mb_def pmac_mb_defs[]
+ 		PMAC_TYPE_UNKNOWN_INTREPID,	intrepid_features,
+ 		PMAC_MB_HAS_FW_POWER | PMAC_MB_MOBILE,
+ 	},
++	{	"PowerBook6,4",			"PowerBook G4 12\"",
++		PMAC_TYPE_UNKNOWN_INTREPID,	intrepid_features,
++		PMAC_MB_HAS_FW_POWER | PMAC_MB_MOBILE,
++	},
+ 	{	"PowerBook6,5",			"iBook G4",
+ 		PMAC_TYPE_UNKNOWN_INTREPID,	intrepid_features,
+ 		PMAC_MB_HAS_FW_POWER | PMAC_MB_MOBILE,
 
-        int frame;                      /* for iso: what frame? */
-        struct list_head fl_list;       /* P: uhci->frame_list_lock */
-} __attribute__((aligned(16)));
+since there are several entries for PowerBook G4 12", 15" and there will
+presumably be a new entry to be made for the current generation 17",
+would it be sensible to differentiate the short descriptions a little
+bit more? like:
 
-Could it be possible that the warning in :
+"PowerBook6,4", "PowerBook G4 12\", Alu 2nd Generation"
+"PowerBook5,4", "PowerBook G4 15\", Alu 2nd Generation"
 
-/*
- * The documentation says "4 words for hardware, 4 words for software".
- *
- * That's silly, the hardware doesn't care. The hardware only cares that
- * the hardware words are 16-byte aligned, and we can have any amount of
- * sw space after the TD entry as far as I can tell.
+i personally own a powerbook5,2 which is the first alu generation, could
+that be:
 
-be still important, at least on G4 powerpc ? remove_list is the 5th
-software word here. Strange, because supposedly it works on x86 and
-other uhci using arches, and it works on the G3, but not on the G4.
+"PowerBook5,2", "PowerBook G4 15\", Alu 1st Generation"
 
-Friendly,
+or do the titanium powerbooks g4 also come with the id 5,2?
 
-Sven Luther
+thanks,
+ sebastian
+--
+::: .O.
+::: ..O
+::: OOO
+::: lynx -source http://www.kodeaffe.de/shensche.pub | gpg --import
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
