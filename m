@@ -1,18 +1,28 @@
-Return-Path: <jan.damborsky@devcom.cz>
-Received: from swip.net (mailfe04.swip.net [212.247.154.97])
-	by ozlabs.org (Postfix) with ESMTP id 9DD1467A64
+Return-Path: <srinivas.surabhi@wipro.com>
+Received: from wip-ectls-mx1.wipro.com (wip-ectls-mx1.wipro.com
+	[203.101.113.37])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "wip-ectls-mx1.wipro.com",
+	Issuer "VeriSign Trust Network" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 1D08067A78
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 15 Feb 2005 00:37:28 +1100 (EST)
-Message-ID: <42109B82.9070604@devcom.cz>
-Date: Mon, 14 Feb 2005 13:37:22 +0100
-From: Jan Damborsky <jan.damborsky@devcom.cz>
+	Tue, 15 Feb 2005 01:39:09 +1100 (EST)
+Received: from wip-ectls-mx1.wipro.com (localhost.localdomain [127.0.0.1])
+	by localhost (Postfix) with ESMTP id 6068B2200E3
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 14 Feb 2005 19:56:22 +0530 (IST)
+Received: from blr-ec-bh1.wipro.com (blr-ec-bh1.wipro.com [10.200.50.91])
+	by wip-ectls-mx1.wipro.com (Postfix) with ESMTP id 54BBC220003
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 14 Feb 2005 19:56:22 +0530 (IST)
 MIME-Version: 1.0
-To: Markus Westergren <markus.westergren@biologigrand.ac>
-References: <Pine.LNX.4.50.0502131246140.3196-100000@220a.licentiaten.umea.hsb.se>
-In-Reply-To: <Pine.LNX.4.50.0502131246140.3196-100000@220a.licentiaten.umea.hsb.se>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Support for Adder875 in Linux 2.4
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Mon, 14 Feb 2005 19:55:35 +0530
+Message-ID: <EF9B29C78F41FA488927FCBC7750AF0E011DA5A1@hyd-mdp-msg.wipro.com>
+From: <srinivas.surabhi@wipro.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Mounta Vista Linux prompt on serial console 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,30 +33,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Markus Westergren wrote:
 
->Hi,
->
->I'm working on a project which will use hardware based on Analogue & Micro
->Adder875 module together with Linux 2.4.
->
->I use RedBoot as bootloader and kernel 2.4.27-pre1, both came with the Adder
->module.
->
->The project require:
->
-> - dual ethernet support with AM79C874 PHY
->   The driver I've found (fec.c) only supports one ethernet. I'v started
->	modifying a newer version of this driver which have support for my PHY. I
->	have made some progress but it's not working yet. Found out that the first
->	FEC is used to communicate with both PHY's. Both devices are detected
->	correctly and the first seems to work but the second hangs the kernel when
->	the first packet is sent or received.
->  
->
-We use our proprietary board with MPC880, dual ethernet + Am79C874 PHY.
-Kernel 2.4.25  (linuxppc_2_4_devel checked out from www.denx.de). Original
-source tree supports only one FEC, but with minor ugly hack we utilize 
-both MPC880 FECs
-without problem. If interested, I can send you a patch for get 2nd FEC 
-working.
+
+Our target is somewhat like this. It has PPC8270, Flash and SDRAM. We
+are using the uboot for booting. Successfully built the linux kernel and
+Ramdisk images using devrocket. The problem is that the kernel and
+Ramdisk images although getting extracted successfully to 0M location of
+SDRAM from Flash with the help of uboot, the serial console says nothing
+except "uboot ist nicht tot..."
+
+The command used is bootm "kernelImageLocation in Flash" "RAMdisk Image
+in Flash"
+
+i.e bootm 0xfe080000 0xff080000
+
+
+1. How do I know that the control was given to linux kernel?
+
+2. Is it that the linux kernel got the control but unable to put the
+prompt on the serial line? FYI.  I modified the inittab to reflect the
+console to come on the serial line.
+
+3. Is there any documentation which gives the detailed debugging of the
+linux kernel from the loading of kernel?
+
+
+-Thanks=0D
+SS
+
+
+
+
+Confidentiality Notice=0D
+
+The information contained in this electronic message and any attachments to=
+ this message are intended
+for the exclusive use of the addressee(s) and may contain confidential or=
+ privileged information. If
+you are not the intended recipient, please notify the sender at Wipro or=
+ Mailadmin@wipro.com immediately
+and destroy all copies of this message and any attachments.
