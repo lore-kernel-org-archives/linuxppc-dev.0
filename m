@@ -1,38 +1,40 @@
-Date: Fri, 2 Apr 2004 08:42:05 +0200
-From: Marc Leeman <marc.leeman@barco.com>
-To: Rune Torgersen <runet@innovsys.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Insmod trouble
-Message-ID: <20040402064205.GB22365@smtp.barco.com>
-Reply-To: Marc Leeman <marc.leeman@barco.com>
-References: <DCEAAC0833DD314AB0B58112AD99B93B06DAAE@ismail.innsys.innovsys.com>
-Mime-Version: 1.0
-In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B06DAAE@ismail.innsys.innovsys.com>
-Content-Type: text/plain; charset=iso-8859-15
+Message-ID: <000c01c4188a$a2ce7790$0a14050a@JACKYLAM>
+From: "Jacky Lam" <jackylam@astri.org>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Buggy mmap()??
+Date: Fri, 2 Apr 2004 16:15:17 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="big5"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> proc_sysinfo: Unknown symbol __fixsfsi
-> proc_sysinfo: Unknown symbol __subsf3
-> proc_sysinfo: Unknown symbol __extendsfdf2
-> proc_sysinfo: Unknown symbol __floatsisf
-> proc_sysinfo: Unknown symbol __muldf3
-> proc_sysinfo: Unknown symbol __truncdfsf2
-> proc_sysinfo: Unknown symbol __mulsf3
-> proc_sysinfo: Unknown symbol __addsf3
+Dear all,
 
-I would assume that these functions are not compiled in the kernel.
-While compiling them as modules, the compiler assumes (via the include
-file) that they are external and will not complain about these.
+    Currently,I write a small program to access /dev/mem. However, I find
+that the data I get from mmap() is different from what I get from normal
+read(). I have heard about there is some bug in mmap() in PPC. Is there any
+patch to solve this? (I am using Monvista vista 3.0 kernel and libraries)
 
-Double check if the source files that contain this functionality are
-compiled and linked in the code. You can try to quick-'fix' it by static
-inlining these functions in you module.
+    The program I used is:
 
-Maybe these functions assume some architecture and are in a conditional
-ifdef CONFIG_XXX flag.
+    void main(void)
+    {
+        int fd;
+        char *addr;
+        char c;
 
-  marc.
+        fd=open("/dev/mem", O_RDONLY);
+        addr=mmap(NULL, 0x00100000, PROT_READ, MAP_SHARED, fd, 0x00300000);
+        printf("%x\n", *addr);
+
+        lseek(fd, 0x00300000, SEEK_SET);
+        read(fd, &c, 1);
+        printf("%x\n", c);
+
+        close(fd);
+    }
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
