@@ -1,47 +1,45 @@
-Message-Id: <4.3.2.20000428145304.04030b10@mail.munich.netsurf.de>
-Date: Fri, 28 Apr 2000 15:10:19 +0200
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-Subject: Re: the problem with kernel format
-Cc: Rolf Liu <rolfl@sc23.sc.mcel.mot.com>, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.LNX.4.10.10004281340260.13173-100000@opal.biophys.uni
- -duesseldorf.de>
-References: <005201bfb0ca$c075ef20$bf0102c8@dell191.sc.mcel.mot.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-ID: <39099239.307199E6@student.ethz.ch>
+Date: Fri, 28 Apr 2000 15:29:29 +0200
+From: Michel Dänzer <daenzerm@student.ethz.ch>
+MIME-Version: 1.0
+To: root <whschult@uncc.edu>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Latest XFree86 v4.0 crashing (possible culprit sawmill)
+References: <200004270502.AAA08920@lists.linuxppc.org>
+	 <39090775.BFEECFA1@uncc.edu> <39092CEA.1321BC79@student.ethz.ch> <3909892A.41387BC1@uncc.edu>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 13:42 28.04.00, Michael Schmitz wrote:
+root wrote:
 
-> > How I can translate the ELF to BIN( BDX...)????????
-> > By the way, the visionPROBE provides a converter , which can
-> > only translate the usual ELF to BIN(BDX).
-> > But the kernel file is a compressed one(including vmlinux,bootloader,
-> > and other initializing code).So the converter can't translate the
-> compressed
-> > one to BIN(BDX).
->
->There should be a file called 'vmlinux' in the top level directory of your
->kernel source. This is the kernel image, uncompressed, without boot loader
->or decompressor, in ELF format. Seems your converter should like that file
->better than zImage.
+> I'm roughly familiar with gdb, but not enough to really know what I
+> should be doing to help.  Where should I expect to find the core file,
 
-Yes, that should work better, the toplevel vmlinux is a pure ELF file with
-debug information included. Be careful though that you need the very latest
-binutils-2.9.5.0.37, a current snapshot or a cvs checkout of binutils to
-generate a 100% (?) valid ELF file, a bug in this area was fixed just
-recently. Otherwise the ELF converter/loader may choke on the debug
-information. If you use gcc-2.95.2 (which you really should) to compile the
-kernel, you can change the debug flag in the CFLAGS from -g to -gdwarf-2 to
-get a lot more and very valuable debug information.
+The server doesn't normally dump core. I suggest you build a server with
+'#define DoLoadableServer NO' uncommented in either
+xc/config/cf/{xf86site,host}.def and run the server from gdb.
 
-<employee hat on>
-I shouldn't help you with that "tool" ;-))
-<employee hat off>
+Beware that you'll most probably have to do that from a remote machine as you
+won't have access to gdb's console otherwise.
 
-Franz.
+
+> and what information do you need?
+
+Where it crashes :)
+
+Hint: Rebuild the file(s) it shows with makeg to see the actual code in gdb.
+
+
+> Which log file do you need?
+
+/var/log/XFree86.0.log
+
+But sadly it's only rarely helpful in such cases.
+
+
+Michel
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
