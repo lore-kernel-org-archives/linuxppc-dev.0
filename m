@@ -1,68 +1,52 @@
-Message-Id: <4.3.2.7.2.20000803145431.0367e100@mail.munich.netsurf.de>
-Date: Thu, 03 Aug 2000 15:08:35 +0200
-To: Gabriel Paubert <paubert@iram.es>
-From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-Subject: Re: Where does ppc define __start___ksymtab? 
-Cc: Keith Owens <kaos@ocs.com.au>, paulus@linuxcare.com.au,
-        linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.HPX.4.10.10008031350200.9070-100000@gra-ux1.iram.es>
-References: <31474.965303015@ocs3.ocs-net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+From: bob@kunk.jriver.com
+Message-ID: <20000803131142.5183.qmail@kunk.jriver.com>
+Subject: Re: Ethernet problem on 7200
+To: brucea@spacestar.net (Bruce Anderson)
+Date: Thu, 3 Aug 2000 08:11:42 -0500 (CDT)
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <B5AE9BDF-3472C5@192.168.2.21> from "Bruce Anderson" at Aug 03, 2000 03:47:38 AM
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 14:01 03.08.00, Gabriel Paubert wrote:
-
->On Thu, 3 Aug 2000, Keith Owens wrote:
->
-> > On Thu, 3 Aug 2000 11:58:36 +0200 (METDST),
-> > Gabriel Paubert <paubert@iram.es> wrote:
-> > >What I hate in all this is that the combination of 2 bugs (no
-> > >ksymtab/kstrtab in vmlinux.lds and no definition of the start and stop
-> > >symbols) ends up in something working through behind the scenes black
-> > >magic. Perhaps names should be chosen such that they will never clash with
-> > >the ones the linker feels free to generate ?
+User Bruce Anderson says:
+> On Wed, Aug 2, 2000 11:03 PM, bob@kunk.jriver.com
+> <mailto:bob@kunk.jriver.com> wrote:
 > >
-> > Given that the vmlinux.lds scripts go into minute detail about
-> > placement of sections in the kernel, why are we even letting the linker
-> > store orphan sections?  I think that all vmlinux.lds ought to end with
-> > this.
+> >The driver problem I'm having with the MACE is NOT the one described
+> >below or in the apple article. I have the problem on 2 different
+> >motherboards, on a 75 and one a 90. BOTH have the "missing" clock
+> >hardware. I've also see it on another. The packet size doesn't matter,
+> >sometimes it dies on pings (64 bytes). It works PERFECTLY in MacOs.
 > >
-> >   /DISCARD/ : { *(*) }       /* Discard all other sections */
+> >Bob
+> >
 >
->No problem.
+> The missing clock hardware also affects PCI bus timing and devices
+> on the PCI bus. Apple has a INIT that tries to fix the problem.
 >
-> > If we want anything in the kernel then we put it there, and say where
-> > we want it.  Anything not explicitly listed is discarded.  I just did
-> > this with ix86 and vmlinux shrank by 9K, mainly in .bss.  It would not
-> > boot afterwards so obviously some part of that 9K is required but right
-> > now it works by some "magic" storing the unknown sections.  I'm going
-> > to track down which sections are not being explicitly placed.
->
->I have trouble parsing this, since the bss by definition does not occupy
->any space in vmlinux.
->
->objdump --head lists all the sections and it's quite easy to see which
->ones have unexpected names (the orphans by definition).  Also ppc
->vmlinux.lds includes a lot of section which are probably never needed:
->AFAICT the plt/got have no meaning in a statically linked image and the
->ctors is C++ only. It needs a serious cleanup IMHO...
+> 2.2.13 kernel works for me.
+> Next time you have a problem
+> Write down the bogomips and see if it changes over boots.
+> Next time you have a problem you might see a change.
+> That might be a clue that the kernel is geting the
+> software delay timing wrong.
 
-With newer binutils the tool I prefer for this is readelf -a.
+I'm sorry that my comment wasn't very clear, both of my 7200's HAVE the
+clock hardware (according to the til). A 20 mhz can right next to the
+ethernet chip and the 50 pin scsi connector.
 
-Also note that binutils up to about 2.9.5.0.30 has a bug in the section
-handling (which is still there in the official 2.10, but fixed in hjl's
-releases). So for serious testing I would recommend to use
-binutils-2.10.0.9 or 2.10.0.18 or later (?).
-And if you plan to program the kernel into a flash, you'll need my
-gcc-2.95.3-2c or later gcc, otherwise some data initialized by constructors
-may wrongly end up in .rodata. Yes, gcc can produce constructors even in
-plain C if you use some extensions (eg. some methods to init a struct),
-which happen to be used in the kernel. So please keep the .ctors sections :-).
+So... the problems still appear to be in the drivers.. When I get some
+time I'm going to move from a switch to a hub and put tcpdump on another
+machine to see what's up when the mace stops working. In previous testing
+it appeared that the 7200 was ignoring the INCOMING packets. We'll see...
 
-Franz.
-
+Bob
+--
+Robert E. Brose II    N0QBJ
+http://www.jriver.com/~bob/
+bob@kunk.jriver.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
