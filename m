@@ -1,69 +1,67 @@
-Message-ID: <39A3D9B2.2EED3005@uncc.edu>
-Date: Wed, 23 Aug 2000 10:03:30 -0400
-From: "William H. Schultz" <whschult@uncc.edu>
+Date: Wed, 23 Aug 2000 16:11:11 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Ronald Wahl <rwa@peppercon.de>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: allocating uncachable memory
+In-Reply-To: <Pine.LNX.4.21.0008231540530.12497-100000@goliath.issistance.de>
+Message-ID: <Pine.HPX.4.10.10008231558250.29062-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Control fb problem on 8500
-References: <Pine.LNX.4.10.10008221850420.377-100000@cassiopeia.home>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Geert Uytterhoeven wrote:
->
-> On Tue, 22 Aug 2000, William H. Schultz wrote:
-> > For all of you saying that controlfb is broken...  I rsynced the
-> > bitkeeper tree a few days ago, got it to compile, booted, etc...
-> > however:  I have a voodoo3 card, and it is set as my main display.  The
-> > voodoo3 was ignored, and the video went straight to the built in
-> > controlfb on my 8500.  It worked just fine, and it worked the best it's
-> > worked in quite some time.  I had no video artifacts at all, and
-> > everything worked...  nice and smooth...  etc....  etc...
-> >
-> > But the only way for me to use the voodoo3 (which is the card supporting
-> > my BIG monitor) is to completely disable the video drivers from Boot
-> > X...  odd quirk...
->
-> So your voodoo3 does work with offb (video=ofonly or `no video driver')?
->
-> In that case I'd expect it to work as well without `no video driver', since
-> that would mean controlfb takes the control hardware, and offb takes what's
-> left (i.e. the voodoo3).
->
-> Or are you using the 2.2.x bk tree and not 2.3.x?
->
-> Gr{oetje,eeting}s,
->
->                                                 Geert
->
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
->
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
->                                                             -- Linus Torvalds
+On Wed, 23 Aug 2000, Ronald Wahl wrote:
 
-I'm using the 2.3 tree --  2.4.0-test7 (yesterday's rsync).
+>
+> Hi,
+>
+> I'm writing a driver for a PCI controller in a PPC system. That driver
+> "exports" a bit of local ram into the PCI space. Now if some PCI device is
+> writing into this memory the local system won't notice it in all cases
 
-While booting, it seems to recognize that there are two video cards--it
-lists /dev/fb0 and /dev/fb1 during bootup, but /proc/fb only lists the
-one currently being used.
+Yes, it will notice, unless there is a _serious_ bug in the host bridge.
+Accesses from the bridge to memory are snooped by the processor and the
+relevant cache lines are invalidated if necessary.
 
-The way I had it originally set to boot up was video=tdfxfb and it's
-settings (which probably defaulted back to offb anyway).  With test7,
-that little bit of text that pops up before the penguin shows up on the
-voodoo, but it then swaps over to control.  Everything completes from
-there and X starts up.  When I choose 'no video driver' I get my voodoo.
+The sequence is the following:
 
-They both work, and it seems that if someone only had the built in
-hardware (on the 8500) that it would work fine.  On the other hand, the
-kernel no longer fully accepts that there are two frame buffers.
-Several versions back, X was able to start up on both screens, but it no
-longer will--and I think /proc/fb may have the explanation.
+- the PCI device requests the bus,
+
+- the PCI device becomes the master on the bus,
+
+- it puts an address and then data onto the (multiplexed) PCI bus,
+
+- the host bridge writes the data to system RAM at the specified address
+(beware of the difference between kernel, physical and PCI bus addresses),
+but before doing this the bridge signals the processor to invalidate or
+push to memory the corresponding cache lines.
+
+There is still a race with this kind of protocol: you need to read a
+register of you device in order to flush the buffers which might hold
+data on its way to memory in the host bridge.
+
+Note that many devices (network and disk interfaces to start with) just do
+this, they write directly to system RAM through the host bridge.
+
+> since this memory is cached. How can i allocate uncached memory in linux?
+
+You don't need to, note that on some architectures you would have to flush
+the cache to avoid stale data. It's not the case on PPC.
+
+> Or if this does not work how can I remap it as non-cachable. I already
+> tried ioremap_nocache but this does not work for real memory. It would be
+> nice if someone could give me a short code fragment...
+
+Here is the code, guaranteed 100% bug-free ;-):
+
+========================== CUT here ======================================
+
+========================== CUT here ======================================
 
 
-Hank
+	Regards,
+	Gabriel.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
