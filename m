@@ -1,33 +1,34 @@
-Date: Wed, 8 May 2002 15:40:27 +0200
-From: Harald Welte <laforge@gnumonks.org>
-To: 
-To: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: xmon over firewire on PPC
-Message-ID: <20020508154027.Q5242@sunbeam.de.gnumonks.org>
-References: <20020504185506.6940@smtp.wanadoo.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020504185506.6940@smtp.wanadoo.fr>; from benh@kernel.crashing.org on Sat, May 04, 2002 at 07:55:06PM +0100
+Reply-To: <acurtis@onz.com>
+From: "Allen Curtis" <acurtis@onz.com>
+To: "Dan Malek" <dan@embeddededge.com>
+Cc: <linuxppc-dev@lists.linuxppc.org>
+Subject: RE: 8260 and skb implementation
+Date: Wed, 8 May 2002 07:18:23 -0700
+Message-ID: <NCBBIINEHIPFGJPLBEIFCEKODGAA.acurtis@onz.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <3CD8BCF7.1090102@embeddededge.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, May 04, 2002 at 07:55:06PM +0100, Benjamin Herrenschmidt wrote:
 >
-> Ok, it's sorta working ;)
+> > ... Do you believe moving SKB to local RAM has merit?
+>
+> ...I don't think SK bufs will because of the high processor core access.
 
-Hey cool!! Thanks for implementing this feature.  I've had this in mind for
-more than a year, but never actually got around implementing it :)
+I am not sure what you are saying here?
 
-Firewire with it's remote-DMA capability can be used for lots of evil stuff :)
+> > ... Any oppinion
+> > about the impact on the zero-copy implementation?
+>
+> We should make the change to the receive side so this happens.  The
+> transmit doesn't copy.  I just copied the code from the 8xx long ago
+> and never made the change.  We can't properly do zero copy receive
+> on processors that don't have coherent caches due to alignment and
+> other information potentially shared in a cache line.
 
-> Ben.
-
---
-Live long and prosper
-- Harald Welte / laforge@gnumonks.org               http://www.gnumonks.org/
-============================================================================
-GCS/E/IT d- s-: a-- C+++ UL++++$ P+++ L++++$ E--- W- N++ o? K- w--- O- M+
-V-- PS++ PE-- Y++ PGP++ t+ 5-- !X !R tv-- b+++ !DI !D G+ e* h--- r++ y+(*)
+You would think that alignment was a common implementation concern.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
