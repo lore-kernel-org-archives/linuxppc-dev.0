@@ -1,52 +1,39 @@
-To: Paul Ruhland <pruhland@rochester.rr.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: powerpc cross tools question 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 25 Mar 2002 17:03:13 EST."
-             <200203251703.13296.pruhland@rochester.rr.com>
-Date: Mon, 25 Mar 2002 23:18:22 +0100
-Message-Id: <20020325221827.B1CBF109F3@denx.denx.de>
+Message-ID: <004701c1d44e$3d643700$6401a8c0@attbi.com>
+Reply-To: "Greg Griffes" <ggg@ieee.org>
+From: "Greg Griffes" <ggg@ieee.org>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Memory map on custom MPC7400 board
+Date: Mon, 25 Mar 2002 17:41:43 -0500
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <200203251703.13296.pruhland@rochester.rr.com> you wrote:
->
-> The only thing I'm not satisfied with at this point is I still need to make a
-> link on my target file system with the full path to the CDK lib directory as
-> on my host...
+Hello,
 
-This is simple to solve; see "Solution 2" on
-http://www.denx.de/tips+tricks-en.html#libpath
+I am porting the kernel.org 2.4.18 kernel to a custom PowerPC board
+based on the MPC7400 processor.  I am using the gnu.org gcc-2.95.3
+and binutils-2.11.2 tools and cross-compiling on i686.
 
-You can simply add this to the compiler's "spec" file:
+My questions deal with memory mapping in the machine dependent layer
+in (my)_setup.c - platform_init().  To provide hardware support for the
+RTC and IRQ functions I need to use two DBATs to map a range of
+384Mb.  The rtc and irq hardware lies between phys 0xE000_0000
+and 0xF800_0000.  I plan to use DBAT2 and DBAT3 to map this
+memory 1:1.  DBAT0 and DBAT1 are used to map 16Mb of RAM
+from 0x0 (phys) to 0xC000_0000 (virt) for the kernel (this is the way
+it came from kernel.org). Does anyone foresee any problems with this
+approach?
 
-...
-*link:
--m elf32ppclinux %{G*} %{shared:-shared} %{!shared: %{!static: -R/lib %{rdynamic:-export-dynamic} %{!dynamic-linker:-dynamic-linker /lib/ld.so.1}} %{static:-static}}
-ort-dynamic} %{!dynamic-linker:-dynamic-linker /lib/ld.so.1}} %{static:-static}}
-...
+On our board, there is 256Mb RAM at physical 0x0. Is there any reason why
+I should not change the kernel to map all 256Mb of RAM at phys 0x0 to virt
+0xC000_0000 with a single IBAT and DBAT?  This would allow me to use
+a DBAT to map additional PCI bus space.
 
-> required patch to glibc may be in there...or someone who knows what the fix
-> is may chime in here :)
+Thanks in advance for your help.
 
-* ** *** Dongggggg *** ** *
-
-> If you still need help I would be happy to send you my scripts ( yes, I did
-> the whole thing in bash scripts...as a exercise mostly...would be just as
-> easy/easier to modify the denx makefiles.
-
-Don't waste your time on this old stuff any more;  there  will  be  a
-replacement soon :-)
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Quote from the Boss... "I didn't say it was your fault.  I said I was
-going to blame it on you."
+Greg Griffes
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
