@@ -1,18 +1,17 @@
-Return-Path: <g.jaeger@sysgo.com>
-Received: from mailgate.sysgo.de (ns.sysgo.de [213.68.67.98])
-	by ozlabs.org (Postfix) with ESMTP id CB2BF2BDA1
+Return-Path: <peri@aqua.aspd.pwr.wroc.pl>
+Received: from aqua.aspd.pwr.wroc.pl (aqua.aspd.pwr.wroc.pl [156.17.17.24])
+	by ozlabs.org (Postfix) with ESMTP id E04ED2BDA1
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 28 Sep 2004 18:02:38 +1000 (EST)
-From: Gerhard Jaeger <g.jaeger@sysgo.com>
-To: linuxppc-embedded@ozlabs.org, linux-kernel@vger.kernel.org
-Date: Tue, 28 Sep 2004 09:38:55 +0200
+	Tue, 28 Sep 2004 19:57:52 +1000 (EST)
+Date: Tue, 28 Sep 2004 11:57:44 +0200 (CEST)
+From: Piotr Perak <peri@aqua.aspd.pwr.wroc.pl>
+To: Matt Porter <mporter@kernel.crashing.org>
+In-Reply-To: <20040927065758.B25288@home.com>
+Message-ID: <Pine.LNX.4.21.0409281116130.12901-100000@aqua.aspd.pwr.wroc.pl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200409280938.55734.g.jaeger@sysgo.com>
-Cc: 
-Subject: [PATCH][PPC32] Fix PFC1_EPS and PFC1_EPS_SHIFT definitions for
-	IBM440GX
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: 2.6.x on 405CR
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,39 +22,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Matt,
 
-while writing some BSP code for a 440GX custom board, I noticed, that
-the DCRN_SDR_PFC1_EPS and DCRN_SDR_PFC1_EPS_SHIFT definitions are wrong and
-therefore the functions ibm440gx_get_eth_grp() and ibm440gx_set_eth_grp() 
-won't 
-work correctly.
-This patch will fix this, please apply.
+On Mon, 27 Sep 2004, Matt Porter wrote:
 
-TIA,
-  Gerhard
+> Since you are failing in ocp_add_one_device() and you have a
+> processor which doesn't have a chip definition in 2.6, the
+> problem is probably somewhere there.  Doublecheck your
+> arch/ppc/platforms/4xx/ibm405cr.c (you do have one, right?)
+> against a known good one in arch/ppc/platforms/4xx/ibm405gp.c
 
-PPC440GX: Fix DCRN_SDR_PFC1_EPS and DCRN_SDR_PFC1_EPS_SHIFT definitions
+Because I use ibm405cr.c which works good with 2.4.23 I think that's not
+the problem. Remember the call stack?
 
-Signed-off-by: Gerhard Jaeger <gjaeger@sysgo.com>
+setup_arch() - arch/ppc/kernel/setup.c
+  -> ocp_early_init() - arch/ppc/syslib/ocp.c
+    -> ocp_add_one_device() - arch/ppc/syslib/ocp.c
+      ->  alloc_bootmem MACRO calling __alloc_bootmem_core() -
+mm/bootmem.c
 
---- linux-2.6.9-rc2/include/asm-ppc/ibm44x.h.orig       2004-09-22 
-16:41:30.000000000 +0200
-+++ linux-2.6.9-rc2/include/asm-ppc/ibm44x.h    2004-09-28 09:08:11.000000000 
-+0200
-@@ -94,8 +94,8 @@
- #define DCRN_SDR_CONFIG_DATA   0xf
- #define DCRN_SDR_PFC0          0x4100
- #define DCRN_SDR_PFC1          0x4101
--#define DCRN_SDR_PFC1_EPS      0x1c000000
--#define DCRN_SDR_PFC1_EPS_SHIFT        26
-+#define DCRN_SDR_PFC1_EPS      0x1c00000
-+#define DCRN_SDR_PFC1_EPS_SHIFT        22
- #define DCRN_SDR_PFC1_RMII     0x02000000
- #define DCRN_SDR_MFR           0x4300
- #define DCRN_SDR_MFR_TAH0      0x80000000      /* TAHOE0 Enable */
-	
--- 
-Gerhard Jaeger <gjaeger@sysgo.com>            
-SYSGO AG                      Embedded and Real-Time Software
-www.sysgo.com | www.elinos.com | www.osek.de | www.imerva.com
+When I comment line calling ocp_early_init() I fail in:
+ 
+setup_arch() - arch/ppc/kernel/setup.c
+  -> paging_init() - arch/ppc/mm/init.c
+    -> free_area_init() - arch/ppc/mm/page_alloc.c
+      -> free_area_init_node() - arch/ppc/mm/page_alloc.c
+        -> alloc_bootmem_node() MACRO calling __alloc_bootmem_node -
+mm/bootmem.c
+          -> __alloc_bootmem_core() - mm/bootmem.c
+
+As you can see again __alloc_bootmem_core. So maybe there's some
+problem with memory?
+
+Forgive me if I ask stupid questions, but this the first time I have
+something to do with the kernel (not counting compiling for my home PC).
