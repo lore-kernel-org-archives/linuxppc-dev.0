@@ -1,52 +1,38 @@
-Date: Wed, 6 Sep 2000 21:32:48 +0200
-From: Olaf Hering <olh@suse.de>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: newer xfree86 4.0.1 patches
-Message-ID: <20000906213248.A3749@suse.de>
-Reply-To: linuxppc-dev@lists.linuxppc.org
-Mime-Version: 1.0
+Message-ID: <39B6A7A5.3EAF964F@mvista.com>
+Date: Wed, 06 Sep 2000 13:23:01 -0700
+From: Frank Rowand <frank_rowand@mvista.com>
+Reply-To: frowand@mvista.com
+MIME-Version: 1.0
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+CC: Geert Uytterhoeven <geert@linux-m68k.org>,
+        Rolf Liu <rolfl@sc23.sc.mcel.mot.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: question about 'r2' !!!
+References: <Pine.LNX.4.10.10009061819050.23404-100000@opal.biophys.uni-duesseldorf.de>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Michael Schmitz wrote:
+>
+> > > I am currently engaged in compiling Linux-ppc source tree using a CC other
+> > > than GCC.
+> >
+> > May I ask you _why_ you want to do that?!?
+>
+> The mind fairly boggles. Anyway, once upon a time, current wasn't kept in
+> a register but in memory. And if r2 won't do, just pick another register
+> and tell the compiler not to touch it. Hope your compiler of choice has
+> such a thing as --fixed-r2 ...
+>
+>         Michael
+>
 
-you can find a newer ajoshi patch against xf4.0.1 at www.penguinppc.org/~olaf/
+And if you want to use kgdb to debug your kernel, gdb knows that current is r2...
 
-It contains a driver for Matrox cards, the B50 works fine now. Ken Aaker
-from IBM did the work.
-
-There is also a keycode file for ps/2 based machines like PReP and CHRP,
-called "powerpcps2". It is a workaround, the arrow keys and the page
-up/down block are dead as example. I guess it is a kernel bug.
-
-Please let me know if the international maps work for you. I created
-some maps in symbols/macintosh/*.
-
-The (xf4) keyboard section might look like that:
-
-Section "InputDevice"
-  Driver        "keyboard"
-  Identifier    "Keyboard[0]"
-  Option        "Protocol"      "Standard"
-  Option        "XkbLayout"     "de"
-#  Option        "XkbVariant"    "nodeadkeys"
-  Option        "XkbModel"      "macintosh"
-  Option        "XkbRules"      "xfree86"
-EndSection
-
-Replace the "macintosh" with "powerpcps2" when you have a ps/2 keyboard.
-Be sure to disable the Xmodmap stuff in ~/.Xmodmap and
-/usr/X11R6/lib/X11/Xmodmap.
-
-
-Gruss Olaf
-
+-Frank
 --
- $ man clone
-
-BUGS
-       Main feature not yet implemented...
+Frank Rowand <frank_rowand@mvista.com>
+MontaVista Software, Inc
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
