@@ -1,32 +1,32 @@
-Message-ID: <39EDC4A7.D759048A@mvista.com>
-Date: Wed, 18 Oct 2000 11:41:27 -0400
-From: Dan Malek <dan@mvista.com>
+Date: Wed, 18 Oct 2000 18:11:47 +0200 (CEST)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Jean-Jacques.Levy@inria.fr
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: video mirroring mode + acrobat reader
+In-Reply-To: <200010181539.RAA23713@margaux.inria.fr>
+Message-ID: <Pine.LNX.4.10.10010181808580.31628-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-CC: paulus@linuxcare.com.au, Tilmann Bitterberg <tibit-ibm@bitterberg.de>,
-        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: HIGHMEM now working
-References: <200010180727.JAA13865@denx.local.net>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
+> I already asked several times, but maybe I missed a message.
+>
+> Can we have the video mirroring mode working on a PB G3 1999 (Lombard)?
+> Simple mirroring mode, not multi-head, with same resolution on both
+> LCD screen and video monitor/projector. (I run 2.2.17pre20-ben3)
 
-> What do you think about including IMMR in the board  info  structure,
+Just leave the VGA cable disconnected on boot, and plug it in later.
+Voila, mirroring mode.
 
-That is a good idea.  I started doing that on the 8260s because you
-can't find the IMMR in any special register.  Next, I am going to change
-all of the ((immr_t *)IMMR)-> to use a global immr variable.  Then I
-am going to remove the IMMR TLB entry, finish the support for large,
-wired TLB entries, and have this initialized as part of the m8xx set up.
+Works with yaboot only, but that's what you should use anyway.
 
+(to answer the logical next question: get the necessary specs from ATI,
+f.e. by signing up as XFree developer, and start coding real video
+mirroring support, and other fancy things).
 
-	-- Dan
+	Michael
 
---
-
-	I like MMUs because I don't have a real life.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
