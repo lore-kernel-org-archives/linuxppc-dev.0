@@ -1,40 +1,36 @@
-From: Aain_Devarenne%ZODIAC@zodiac.com
-Subject: Using MVL with multicast
-To: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <OFAC0A3504.25D3C40C-ONC1256DEA.0050B12A@zodiac-intranet>
-Date: Wed, 26 Nov 2003 15:42:29 +0100
-MIME-Version: 1.0
-Content-type: text/plain; charset=iso-8859-1
+To: Jon Masters <jonathan@jonmasters.org>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: ppc405 floating point emulation 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 26 Nov 2003 14:38:04 GMT."
+             <3FC4BACC.6000606@jonmasters.org>
+Date: Wed, 26 Nov 2003 15:48:41 +0100
+Message-Id: <20031126144846.791C1C5F5F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello there,
+In message <3FC4BACC.6000606@jonmasters.org> you wrote:
+>
+> Can someone tell me what they think the status of the mathemu on ppc405
+> currently is? I am faced with a situation in which we will probably
+> require some kind of library or kernel emulation support and all around
+> people suggest not to even go there :-).
 
-my question is related to multicast.
-An application working under RedHat 8.0 on a PC can send UDP packets to a
-multicast group.
-The same application compiled to PPC target (IBM Walnut derived custom
-board) running under MVL control cannot do the same job:
-- sockets are created and packets send with sendto(). At that time I get a
-"Unreachable network" message
-- changing the multicast group address to a more common unicast address
-allows sendto() working fine
-- trying to ping the multicast group address produces a "connect" error
-message
+Library support (i. e. using "-msoftfloat") works fine.
 
-I saw some fields to enable multicast capabilities in Kernel configuration
-but I'm not sure about my choices. May be some packages are requested too.
+Kernel emulation is available, but makes little sense to use as it is
+awfully slow.
 
-Thanks for your help to deal with that goal : what is mandatory requested
-to get this application working on our target the way it works under RH ?
+Best regards,
 
+Wolfgang Denk
 
-MARTZ Gérard / DEVARENNE Alain
-IN-SNEC/Bord
-5 Avenue des Andes
-91943 Les Ulis
-0169827912
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+panic: kernel trap (ignored)
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
