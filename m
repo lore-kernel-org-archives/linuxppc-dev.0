@@ -1,43 +1,38 @@
-Subject: Re: Do I shoot myself in the foot first or HEAD.S?
-To: clark@esteem.com
-Date: Wed, 19 Jul 2000 11:30:06 +1000 (EST)
+To: Pavel Roskin <proski@gnu.org>
 Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <1.5.4.32.20000719011945.006845c0@pop.esteem.com> from "clark@esteem.com" at Jul 18, 2000 06:19:45 PM
-MIME-Version: 1.0
+Subject: Re: Linux-2.4.0-test4 - problems in memory management? 
+In-reply-to: Your message of "Tue, 18 Jul 2000 20:15:22 -0400"
+             <Pine.LNX.4.21.0007182007220.6653-100000@sunapee.transcept.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-Id: <20000719013006.DDA67211@elph.research.canon.com.au>
-From: greyham@research.canon.com.au (Graham Stoney)
+Date: Wed, 19 Jul 2000 11:49:20 +1000
+Message-ID: <17738.963971360@msa.cmst.csiro.au>
+From: Murray Jensen <Murray.Jensen@cmst.csiro.au>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Conn,
+On Tue, 18 Jul 2000 20:15:22 -0400 (EDT), Pavel Roskin <proski@gnu.org> writes:
+>After going all the way down from fread() to __copy_tofrom_user() it
+>appears that the later is at fault. It fails to copy large amounts of data
+>(216 bytes is enough to be a problem) to the pages that have just been
+>mmap'ed.
 
-I'll have a shot at the ones I know about:
+Hi Pavel, check out the thread "Help with string.S" in the linuxppc-dev
+mailing list - it begins with this message:
 
-clark@esteem.com writes:
->         Any tips for a new guy? I just about ready to start trying to port
-> linux to our custom MPC850 board.
+http://lists.linuxppc.org/listarcs/linuxppc-dev/200007/msg00155.html
 
-You mentioned head.S; you shouldn't need to modify it at all. We didn't on our
-custom 855T design.
+In particular, check out this message:
 
-> 1. Is there a FAQ or Doc on porting the kernel to a new design? (please mail
-> or direct me to it)
+http://lists.linuxppc.org/listarcs/linuxppc-dev/200007/msg00153.html
 
-There's the HOWTO at:
-    http://members.xoom.com/greyhams/linux/PowerPC-Embedded-HOWTO.html
+Cheers!
+								Murray...
+--
+Murray Jensen, CSIRO Manufacturing Sci & Tech,         Phone: +61 3 9662 7763
+Locked Bag No. 9, Preston, Vic, 3072, Australia.         Fax: +61 3 9662 7853
+Internet: Murray.Jensen@cmst.csiro.au  (old address was mjj@mlb.dmt.csiro.au)
 
-...
-> 3. What do I need to do in the ROM before jumping to HEAD.S other than
-> programming the ram timmings in the UPM( I assume HEAD.S is where everything
-> starts )?
-
-I suggest porting PPCBOOT to it rather than starting from scratch yourself.
-See:
-    http://ppcboot.sourceforge.net/
-
-Regards,
-Graham
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
