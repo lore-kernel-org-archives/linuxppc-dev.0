@@ -1,43 +1,36 @@
-Date: Wed, 10 Jan 2001 17:43:18 +0100
-Subject: Kernel 2.4.0 and Netatalk
-From: Chris Boot <bootc@worldnet.fr>
-To: LinuxPPC Dev <linuxppc-dev@lists.linuxppc.org>
-Message-ID: <B6824E71.8287%bootc@worldnet.fr>
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Date: Wed, 10 Jan 2001 13:51:40 -0500 (EST)
+From: Rod Stewart <stewart@lab43.org>
+To: Calum Selkirk <cselkirk@sophix.uklinux.net>
+cc: LinuxPPC Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: /proc/sys/net/ipv4/ip_always_defrag
+In-Reply-To: <20010110114626.I27006@sophix.uklinux.net>
+Message-ID: <Pine.LNX.4.21.0101101348410.2610-100000@dystopia.lab43.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Wed, 10 Jan 2001, Calum Selkirk wrote:
+> Chris Boot [bootc@worldnet.fr] wrote:
+>
+> > One minor problem though, is that when I boot up (from a LinuxPPC 2000
+> > installation), after the "Entering non-interactive startup" message, I
+> > get a message stating that it could not find the file
+> > "/proc/sys/net/ipv4/ip_always_defrag", which it tries to set to "1" by
+> > echoing to it.  Can this be ignored?  Is there a way of either getting
+> > this proc entry back or removing the script code that echoes to it?  I
+> > must admit that I haven't looked at any of the files in /etc/rc.d with
+> > great detail...
+>
+> this is controlled by /etc/sysctl.conf
 
-After I upgraded to kernel 2.4.0 (bk linuxppc_2_4), I found that netatalk
-could not access my Zip drive.  This worked in the 2.2 series kernels.  If I
-add my zip drive's mount point to my .AppleVolumes file, when the zip is not
-mounted, all works fine, but if a zip disk is mounted and I try to log in,
-when I try to mount a volume, my computer complains that it lost the
-connection.
+That only works with kernel 2.2.  This was changed sometime in 2.4.  I'm
+almost positive it now defaults to on.  I seem to remember a comment from
+Rusty Russell about not wanting to get e-mail from people who setup their
+machine wrong.  Although I could be remembering something else.
 
-If I look in /var/log/messages, all I see is messages like this:
-Jan 10 18:29:05 tequila afpd[594]: login bootc (uid 500, gid 500)
-Jan 10 18:29:05 tequila afpd[568]: server_child[1] 594 killed
+-Rms
 
-The volume appears in the volume list.
-
-I originally thought that this may be due to an incompatibility with autofs,
-which I had been using, but even if I disable it, the messages are exactly
-the same.  I'm mounting with mount options "fork=netatalk,uid=500,gid=500".
-
-Is there any way I can make this work?  Would upgrading to the latest
-development release of netatalk help?
-
-Thanks for any information,
-
---
-    .-.        Chris Boot
-    /v\     bootc@worldnet.fr
-   // \\
-  /(   )\   L   I   N   U   X
-   ^^-^^   >Phear the Penguin<
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
