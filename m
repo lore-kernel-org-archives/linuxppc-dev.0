@@ -1,33 +1,24 @@
-Date: Mon, 12 Feb 2001 15:33:18 +0100 (CET)
+Date: Mon, 12 Feb 2001 15:35:33 +0100 (CET)
 From: Marius Groeger <mag@sysgo.de>
-To: "Ross A. Osborn" <rosborn@GI.com>
+To: =?iso-8859-1?Q?S=E9bastien=20C=F4t=E9?= <scote1@matrox.com>
 Cc: <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: Progress - new problem
-In-Reply-To: <20010212095429.E8453@gi.com>
-Message-ID: <Pine.LNX.4.30.0102121526160.10064-100000@mag.devdep.sysgo.de>
+In-Reply-To: <3A87F956.82DF0B3F@matrox.com>
+Message-ID: <Pine.LNX.4.30.0102121533230.10064-100000@mag.devdep.sysgo.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Ross,
+On Mon, 12 Feb 2001, Sébastien Côté wrote:
 
-On Mon, 12 Feb 2001, Ross A. Osborn wrote:
+> Believe me, I'd really like to do the doorstop thing but support for
+> 74xx is very difficult to find.  Abatron doesn't seem to be an
+> exception... :-(
 
-> I have been fighting with an old Nohau BDM debugger and was trying to
-> get information together to talk my boss into ordering the BDI2000.  I
-> could not find any price information on there web site.
-
-I believe the BDI2000 sells for about 2000 Euro. I can only recommend to buy
-one, the units are definitely worth the money. They have a very compentent
-and helpful support staff. Today they sent me a new firmware update, without
-having been asked for it.
-
-> So, the right thing to do is to send you a message to a quote?  Is it
-> just me or is this an odd way to conduct business?
-
-Try Abatron's phone or mail contact, they are usually very responsive.
+Check out http://www.abatron.ch/News/news.html. The latest version of
+the firmware, V1.07 supports the MPC7400.
 
 Regards,
 Marius
