@@ -1,38 +1,33 @@
-To: cedric_aubert@yahoo.fr
-Cc: LinuxPPC Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: uClibc Compiling problem 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 14 Apr 2003 08:22:33 PDT."
-             <20030414152233.13543.qmail@web41803.mail.yahoo.com>
-Date: Mon, 14 Apr 2003 17:50:26 +0200
-Message-Id: <20030414155031.AA22AC58B9@atlas.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <406B9D084FAFD4118C980008C79FADB901B57FF7@ALBMAIL>
+From: "Yang, Bo" <bo.yang@transcore.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Kernel Debugging
+Date: Mon, 14 Apr 2003 15:38:32 -0600
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20030414152233.13543.qmail@web41803.mail.yahoo.com> you wrote:
->
-> Does anyone known why the file crtbeginS.o is absent
-> in the
-> ELDK 2.0.2 cross compiling tools (mpc860) ?
+Hi Everyone,
 
-If you installed the  ELDK  (at  least  the  ppc_8xx  package)  under
-/opt/eldk, there should be a file
+I am trying to debug the linux kernel using remote GDB via serial port on
+MPC8xxFADS board. I built the kernel (2.4.4 from denx) with "kernel
+hacking-->Include kgdb kernel debugger" turned on. (I am not sure that
+turning on this flag is enough to support kernel debugging).
 
-/opt/eldk/ppc_8xx/usr/lib/gcc-lib/ppc-linux/2.95.4/crtbeginS.o
+I got a bunch of ????? marks on serial console once the kernel gets run from
+"ppcboot", and then I start GDB with cmd "target remote /dev/ttyS0" on the
+host. The GDB got messages like "Ignoring packet error, continuing..." and
+then timeed out to close connection.
 
-on your system. Please check again.
+Who can tell me what I am missing? Is it possible to debug linux kernel
+without any BDM/JTAG debugger?
 
-Best regards,
+Any useful feedbacks are appreciated.
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-It is surely a great calamity for  a  human  being  to  have  no  ob-
-sessions.                                                - Robert Bly
+Bo Yang
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
