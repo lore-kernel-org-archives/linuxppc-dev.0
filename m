@@ -1,57 +1,64 @@
-Date: Fri, 27 Aug 2004 15:34:54 +0400
-From: Andrey Volkov <avolkov@varma-el.com>
-Reply-To: Andrey Volkov <avolkov@varma-el.com>
-Message-ID: <927068331.20040827153454@varma-el.com>
+Date: Fri, 27 Aug 2004 13:59:04 +0200 (MEST)
+From: "Patrick Huesmann" <tricknology@gmx.de>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: [RFC] Remove G2_LE core decl from CLASSIC_PPC part of arch/ppc/kernel/cputable.c
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: Kernel oops when initializing ethernet driver
+Message-ID: <15261.1093607944@www2.gmx.net>
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello all,
+Hi,
 
-Since G2_LE is NOT a "classic" core ( in particular - true little-endian),
-may be now is time to remove it from CLASSIC_PPC part of
-arch/ppc/kernel/cputable.c, and move it to itself part.
-I bear in mind next:
+I'm getting a kernel oops that's triggered by the device driver
+initialization code (Xilinx VirtexII-Pro on-chip ethernet).
 
-from arch/ppc/kernel/cputable.c:
+It crashes when executing the code
+XIIF_V123B_RESET(InstancePtr->BaseAddress);
+(line 554, function XEmac_Reset() in drivers/net/xilinx_enet/xemac.c)
 
-#if CLASSIC_PPC
-.....
-    {   /* All G2_LE (603e core, plus some) have the same pvr */
-        0x7fff0000, 0x00820000, "G2_LE",
-        CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_CAN_DOZE | CPU_FTR_USE_TB |
-        CPU_FTR_CAN_NAP | CPU_FTR_HAS_HIGH_BATS,
-        COMMON_PPC,
-        32, 32,
-        __setup_cpu_603
-    },
-....
-#endif /* CLASSIC_PPC */
+The oops message looks like this:
+> Instruction machine check in kernel mode.
+> Oops: machine check, sig: 7
+> NIP: C00BBA78 XER: C000005F LR: C00BBA6C SP: C1FEFF20 REGS: c1fefe70 TRAP:
+0200    Not tainted
+> MSR: 00009030 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+> TASK = c1fee000[1] 'swapper' Last syscall: 120
+> last math 00000000 last altivec 00000000
+> GPR00: 0000000A C1FEFF20 C1FEE000 00000020 00001030 00000001 0000068D
+C015377F
+> GPR08: 00000000 C3000000 00000034 C1FEFE30 C0160000 00003104 00000000
+00000000
+> GPR16: 00000000 00000000 00000000 FFFFC430 00000000 FFFFC488 FFFFC420
+FFFFC4A0
+> GPR24: 00000000 08100000 00000000 C0130A60 C1FD7560 00000000 C0160000
+C1FD75E8
+> Call backtrace:
+> C00BBA6C C00BB5E0 C0162890 C0162AA4 C015A618 C00024B0 C0006BD4
 
-May be better like this:
+I don't know jack about kernel oopses, but I learned that this is probably a
+access violation (Address not mapped in MMU, or whatever).
 
-#if CONFIG_G2_LE
-    {   /* All G2_LE (603e core, plus some) have the same pvr */
-        0x7fff0000, 0x00820000, "G2_LE",
-        CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_CAN_DOZE | CPU_FTR_USE_TB |
-        CPU_FTR_CAN_NAP | CPU_FTR_HAS_HIGH_BATS,
-        COMMON_PPC,
-        32, 32,
-        __setup_cpu_603
-    },
-#endif
+The address that the driver wants to access is 0xc3000040, which is the
+virtual address of some ethernet softcore register. The physical registers
+of the NIC begin at 0x80000000, and IIRC they are mapped to 0xc3000000 by
+cfg->BaseAddress = (u32) ioremap(lp->save_BaseAddress, remap_size);
+in the module's probe() function in xilinx_enet/adapter.c
+where remap_size is well above 0x40 (it's 0x4000, AFAIK)
 
-With that move we'll conserve some memory of kernel,
-but need some explanations which PPCs based on
-it, for modify Kconfig ( I know MPC52xx and MPC82xx based on it).
+Does anybody know what could be the problem? Do I have to do some I/O
+mapping by hand, before the driver's init routine is invoked? Do I have to
+configure the FPGA bitstream in some magic way, before the Linux drivers can
+be used?
 
---
-Best regards,
- Andrey Volkov
+I'm using the linuxppc_2_4_devel tree from Montavista and a gcc-3.3.2
+toolchain.
+I'm linking the ethernet driver straight into the kernel (not as loadable
+module).
+
+Thanks in advance,
+Patrick
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
