@@ -1,37 +1,40 @@
-From: Eric.Oosterhof@radisys.com
-Subject: RE: diff, patch, and symbolic links
-To: "Ruhland, Paul" <PRuhland@microwavedata.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Message-ID: <OF97E48CDE.74B2B7E9-ON88256BA5.0065B1DB@radisys.com>
-Date: Wed, 24 Apr 2002 11:34:01 -0700
+Date: Wed, 24 Apr 2002 20:56:36 +0200 (MEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Eric.Oosterhof@radisys.com
+Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: diff, patch, and symbolic links
+In-Reply-To: <OFD9450AAE.A65F3031-ON88256BA5.006340E2@radisys.com>
+Message-ID: <Pine.GSO.4.21.0204242055460.1203-100000@vervain.sonytel.be>
 MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Paul Ruhland suggests:
->Eric,
->
->I always do a 'make mrproper' and then an 'rm -f .config*' ( from the root
->of the linux tree of course ) before generating any patch files.  Just be
->sure to save your '.config' somewhere before you remove it.
->
->This way all generated files including the 'include/asm' symlink are
->removed.
->
->--
->Paul Ruhland
-I did a 'make mrproper' prior, and I still have the symlink.  I also
-deleted it by hand, but that didn't help.  In fact, I even have that
-symlink in the original tree.  Is that the root of all evil?  Lastly, when
-I deleted the .config, and then do the diff and patch, patch complains that
-it wants to erase the .config in the ORIGINAL tree, which is totally wrong!
-I absolutely can't have the patch trying to affect the original tree - why
-does that even begin to occur?
+On Wed, 24 Apr 2002 Eric.Oosterhof@radisys.com wrote:
+> I have a customized kernel tree, and am trying to create the appropriate
+> patch file.  I use diff -ruN, and then subsequently use patch -p0 to apply
+> the patch.  When I apply the patch, the files that I have changed in the
+> include/asm-ppc directory cause conflicts with the include/asm symbolic
+> links to the same files.  I think that I can resolve this by editing the
+> patch file to remove any reference to changes in the include/asm tree, but
+> the exclude file that I created that listed all the include/asm files
+                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+> should have worked.  At any rate, I am looking for the "right" solution.
 
+AFAIK you cannot exclude files using their full path names. Just using `asm'
+works, though.
 
-Eric Oosterhof
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
