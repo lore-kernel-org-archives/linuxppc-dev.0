@@ -1,36 +1,28 @@
-Subject: Re: Oops on core dumping
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Vincent Bernat <bernat@free.fr>
-Cc: "Whitney, John" <John.Whitney@timesys.com>,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
-	Paul Mackerras <paulus@samba.org>
-In-Reply-To: <m3wu5qtuap.fsf@neo.loria>
-References: <3D848382FB72E249812901444C6BDB1D1D189F@exchange.timesys.com>
-	 <1072840969.730.3.camel@gaston> <m31xnyv9jd.fsf@neo.loria>
-	 <1079074747.9739.335.camel@gaston>  <m3wu5qtuap.fsf@neo.loria>
-Content-Type: text/plain
-Message-Id: <1079075711.24360.340.camel@gaston>
-Mime-Version: 1.0
-Date: Fri, 12 Mar 2004 18:15:11 +1100
+From: "challaharikumar" <challaharikumar@tataelxsi.co.in>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: How to get the exact source code from this clone of linux tree:bitkeeper
+Date: Fri, 12 Mar 2004 12:53:27 +0530
+Message-ID: <001b01c40802$ea7e2970$3401080a@telxsi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 2004-03-12 at 18:10, Vincent Bernat wrote:
-> OoO En cette aube  naissante  du vendredi  12  mars 2004, vers  07:59,
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> disait:
->
-> >> The bug is still here. Is there any problem making you not applying
-> >> the correction on your tree ?
->
-> > Didn't find the time to dive into it, do you have a patch ready
-> > to apply ? :)
->
-> Err, no, I don't have a SMP system. :)
+Hi!
+everybody,
 
-And ? You can still compile and run an SMP kernel...
+I've downloaded the linux treee from bit keeper source control ... I am not
+able to get the exact source code ...
+How i've to get the entire source code from the bitkeeper .. it gives me a
+clone of linux treee...
+How to get the exact source code from this clone of linux tree.. Any help
+would be highly appreciated
+Thanks in Advance
 
-Ben.
+regards
+Hari :-)
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
