@@ -1,43 +1,63 @@
-Date: Wed, 17 May 2000 18:38:01 -0400 (EDT)
-From: Pavel Roskin <pavel_roskin@geocities.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Another useful piece of code lost
-Message-ID: <Pine.LNX.4.21.0005171815010.32437-100000@sunapee.transcept.com>
+Subject: Re: Linuxppc + MPC860T + Ethernet
+To: zimmer_n@gmx.de
+Date: Thu, 18 May 2000 10:51:54 +1000 (EST)
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <3922914E.9EC23A6@gmx.de> from "Norbert Zimmermann" at May 17, 2000 02:32:14 PM
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Message-Id: <20000518005154.AEDE93C976@elph.research.canon.com.au>
+From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello!
+Hi Norbert,
 
-The kernel that Dan Malek wrote for us in Transcept, Inc. had the
-following lines in include/asm-ppc/ide.h :
+Norbert Zimmermann writes:
+> has anybody experienced using the Motorola MPC860T with Linuxppc and
+> 10BeseT / 100BaseTX in terms of drivers, accessing drivers, etc?
 
-/*
- * The following are not needed for the non-m68k ports
- */
-#if 0
-#define ide_ack_intr(base, irq)         (1)
-#else
-static __inline__ void ide_ack_intr(unsigned int base, unsigned int irq)
-{
-        ((immap_t *)IMAP_ADDR)->im_pcmcia.pcmc_pscr = ~0;
-}
-#endif
+Yes, many of us I suspect. Ethernet driver access is via standard Berkeley
+sockets. You can probably tap in lower if you really want, but you probably
+compromise the portability advantage of using Linux in the first place.
 
-Strictly speaking, this is wrong because this code assumes that all PPC
-machines, even PowerMac's use PCMCIA.
+> My key questions are (@ the mom):
+> - How difficult is it to get the Ethernet side of the MPC860T to work.
 
-But from the practical point of view, this code makes it possible to
-support ATA Flash at least on RPX/Lite, so the comment is wrong - there
-are non-m68k ports depending on non-trivial ide_ack_intr().
+Very easy, especially if you use an off-the-shelf board which is already
+fully supported. For a complete list, see the HOWTO mentioned below.
 
-The MontaVista kernels don't include anything like that. This is one of
-the reasons why they don't support ATA Flash on RPX/Lite.
+> - Where can I get Linuxppc Ethernet-Drivers for that purpose from?
+
+In the MontaVista kernel.
+
+> - Where can I get fully documented protocoll stacks, like UDP or TCPIP,
+> from?
+
+It's the same protocol stack as any other Linux distribution, so any doco
+you find on Linux's internals will apply. You probably don't need to delve
+that deeply though; just socket(), bind(), listen(), accept(), read()/write()
+from user space and you're away.
+
+> - How do I drive the external bus of the MPC860T using Linuxpppc?
+
+Sounds like you'll either need to write a device driver to interface to the
+rest of your system, or (if you're a hero like Dan) dive at it direct from
+user space. Depends how complex your device is, and how well you want to
+encapsulate/partition it.
+
+For answers to these any many other questions you haven't thought of yet, see
+the Linux for PowerPC Embedded Systems HOWTO at:
+    http://members.xoom.com/greyhams/linux/PowerPC-Embedded-HOWTO.html
+
+(Dan, have you got write access back to www.ppc.kernel.org yet?)
 
 Regards,
-Pavel Roskin
-
+Graham
+--
+Graham Stoney
+Principal Hardware/Software Engineer
+Canon Information Systems Research Australia
+Ph: +61 2 9805 2909  Fax: +61 2 9805 2929
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
