@@ -1,31 +1,27 @@
-Date: Sat, 10 Nov 2001 18:57:47 -0500
+Date: Sat, 10 Nov 2001 21:34:01 -0500
 From: Joseph Manojlovich <manojlov@cse.psu.edu>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Gxt2000p Patch
-Message-ID: <20011110185747.D28196@cardassian.cse.psu.edu>
+Subject: Hopefully final post on my issues
+Message-ID: <20011110213401.J28196@cardassian.cse.psu.edu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Here's the patch which I think fixes the video card issues I described
-in my last email.
+I was able to get BOTH my video card and my pci problems fixed just now
+with a quick patch from Olaf Hering <olh@suse.de>. Patch is at
+ftp.suse.com/pub/suse/ppc/kernel/BETA/patches/70__mmporter_prep_pci-2.4.7-1.fix.gz.
 
+I made 3 quick modifications: every instance of _MACH_prep was changed
+to _MACH_chrp.
+
+Sorry for all the emails. I'm just glad this is finally working.
+
+--
 Joe Manojlovich
 manojlov@cse.psu.edu
-
---- linuxppc/drivers/video/offb.c	Sat Nov 10 18:04:42 2001
-+++ offb.c	Sat Nov 10 18:43:36 2001
-@@ -393,7 +393,8 @@
-     unsigned long res_size = pitch*height*depth/8;
-
-     if (!request_mem_region(res_start, res_size, "offb"))
--	return;
-+		if (!(dp && device_is_compatible(dp, "pci1014,b7")))
-+        	return;
-
-     printk(KERN_INFO "Using unsupported %dx%d %s at %lx, depth=%d, pitch=%d\n",
- 	   width, height, name, address, depth, pitch);
+"And a thermostat on a home furnace... is that supposed to go to
+ 5000 degrees, do you think?"
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
