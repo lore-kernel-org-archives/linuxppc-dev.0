@@ -1,39 +1,45 @@
-To: "somshekar chandrashekar kadam" <ppclinux@rediffmail.com>
-Cc: linuxppc-embedded@lists.linuxppc.org,
-	"Lin,     Nan-Hung" <carl@fiberlogic.com>
-Subject: Re: ramdisk problem 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "13 Jun 2002 13:43:34 -0000."
-             <20020613134334.24727.qmail@webmail21.rediffmail.com>
-Date: Thu, 13 Jun 2002 15:54:40 +0200
-Message-Id: <20020613135445.2C07E102F8@denx.denx.de>
+Message-Id: <sd08c3de.074@mail.frequentis.com>
+Date: Thu, 13 Jun 2002 16:09:34 +0200
+From: "Gerhard TAEUBL" <Gerhard.TAEUBL@frequentis.com>
+To: <grave@ipno.in2p3.fr>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: debian installation on an embedded system
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20020613134334.24727.qmail@webmail21.rediffmail.com> you wrote:
->
-> after compiling zImage i give command make zImage.initrd
-> so that r4,r5 contain initrd offset and size
-> i am getting initrd offset as 9099b
->
-> initrd_load routine is called ,he is checking at this loaction for
-> start of ramdisk image ,he is not getting it, so he says couldnt
-> find valid ramdisk image
->
-> what can be the problem
+Hi!
 
-How do you load the image? Linux uses a special segment  in  the  ELF
-file  for the initrd image; maybe your bot loader does not understand
-this, and drops it?
+Well this seems to be OK. But I think it doesn't start the scripts stored in /etc/rc2.d. It printed Entering Init level 2 (or similar...)  and then the login apears.
 
-Wolfgang Denk
+Gerhard
 
+>>> Xavier Grave <grave@ipno.in2p3.fr> 06/13/02 02:50pm >>>
+
+Le jeu, 13 jun 2002 08:18:11, Gerhard TAEUBL a écrit :
+>
+> Hi!
+>
+> I try to do this like Kenneth described it (see
+> http://lists.linuxppc.org/linuxppc-embedded/200103/msg00106.html).
+> I used an own design with an mpc860Tand the console on SCC2.
+>
+> It works fine till the login. If I enter root the login apears again, and
+> so on, no request for password. The system is stored on an IMac, so I use
+> the password file from the mac (debian 2.2).
+>
+> Any ideas?
+Hi,
+
+Did you check the file /etc/securetty ?
+Perhaps this is a security problem..
+
+O+ xavier
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"Have you lived in this village all your life?"        "No, not yet."
+33 (0) 1 69 15 79 59
+De chacun selon ses forces, a chacun selon ses besoins
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
