@@ -1,56 +1,51 @@
-To: Dan Malek <dan@embeddededge.com>
-Cc: OTAVIO ISAMU SUGENO <otavio.sugeno@siemens.com.br>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: How to configure 2 ethernet devices 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 15 May 2002 12:00:19 EDT."
-             <3CE28613.8090206@embeddededge.com>
-Date: Wed, 15 May 2002 20:31:28 +0200
-Message-Id: <20020515183133.3A6101196A@denx.denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: bitkeeper question
+Date: Wed, 15 May 2002 14:34:54 -0500
+Message-ID: <45B36A38D959B44CB032DA427A6E10640167CFCE@cceexc18.americas.cpqcorp.net>
+From: "Cameron, Steve" <Steve.Cameron@hp.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Hi,
 
-in message <3CE28613.8090206@embeddededge.com> Dan Malek wrote:
->
-> The purpose of IP-Config is to provide a minimal network configuration
-> as to allow a network booting feature.  It will not completely initialize
-> a network environment suitable for little more than the NFS connection itself.
+I'm not sure if this is the right place
+to ask.  I'm wondering about how (and if) tags
+are being used for the bk://ppc.bkserver.net/linuxppc_2_4_devel
+tree.
 
-...but it comes in very handy for embedded systems  that  don't  need
-the  overhead  (memory  footprint) for tools like ifconfig and route.
-And for most simple configurations (where you just  need  to  set  IP
-address, netmask, and default router) it is completely sufficient.
+I would like to be able to clone and
+export a "known" state (lets call it "state_1")
+of the tree, then later be able to get another
+known state of the tree ("state_2") and have
+(or be able to generate) a patch that can take
+me from "state_1" to "state_2".
 
-> > IP-Config: Got RARP answer form 10.0.0.10, my address is 10.0.0.100
-> >
-> > I guess this is to the eth0 interface.
->
-> The IP-Config sends requests on all configured interfaces and accepts the
-> first one that replies.
+I guess I can do this by doing
 
-You can restrict the chioce of interfaces  by  using  an  "ip="  boot
-argument.
+bk export -r state_1 state_1
 
-> You need to run the real user-land network configuration scripts and utilities
-> to properly configure a network on any system.  It should also be done even
-> when you are using IP-Config and network booting.
+then, later after some "bk pulls" have been done,
 
-Ummm... what for? I never do this, and the systems are  just  working
-fine.  I  never  saw any deficiency in the IP autoconfiguration stuff
-(except that it doesn't accept more than one "ip=" option, so we  can
-configure only one interface that way). What am I missing?
+bk export -r state_2 state_2
 
-Wolfgang Denk
+provided that "state_1" and "state_2" are
+the two tags.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"Out of register space (ugh)"
-- vi
+But, i don't know what the tags are that people
+are using, if any.  Or am I grossly misunderstanding
+bitkeeper?  Is it up to me to tag my own clone of
+the repository whenever I want, and just use "bk pull"
+to get "the latest stuff", whatever that might be?
+If there is a regular tagging scheme already in use,
+I think I'd rather just use those existing tags, as
+long as I can stay reasonably up to date that way.
+
+Thanks for any info.
+
+-- steve
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
