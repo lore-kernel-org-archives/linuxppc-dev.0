@@ -1,39 +1,35 @@
-Message-ID: <3EA667D7.8020201@tataelxsi.co.in>
-Date: Wed, 23 Apr 2003 15:45:51 +0530
-From: "Omanakuttan" <omanakuttan@tataelxsi.co.in>
+Message-ID: <3EA66C39.70B34B50@cdotd.ernet.in>
+Date: Wed, 23 Apr 2003 04:34:33 -0600
+From: Rahul Dev <rahuld@cdotd.ernet.in>
 MIME-Version: 1.0
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: some execve related queries....
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: stack and .bss of bootprom code
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-We use linux kernel version 2.4.1 on a custom derivative board of
-mpc8260ads.
-Kernel is booting up without any problem uptil the init call in
-init/main.c In the main.c file, there are four execve calls succeeded by
-a panic().
+Dear all,
 
-Now thequestions are
-1. As far as I know execve is usually called only from userspace. A grep
-on System.map gave me an entry for execve. I am a little confused by
-this.I know that init is pid 0, which runs as a kernel thread. Is it
-possible to call execve from a kernel thread? How does this work?
+      I  am porting  linux2.4  over my  own  custom board (powerpc
+8260).
+ I have  got my own boot prom code that provides support for debugging
+ and loading  of  kernel.
 
-2. I could not find execve function in the kernel at all. As far as I
-know, kernel supplied sys_exec and stdlib converts the arguments of
-execve to those of sys_execve.
-(In i386, processor registers are used for parameter passing, but in
-ppc, i see all parameters are passed as function params).
-In kernel, sys_execve is executed, which calls do_execve(). In ppc, out
-of 7 parameters only 3 are used. Why to pass other params at all?
+ My ram is mapped at address 0x00000000 and its size is 128MB.
+ I m using  KERNELBASE  as 0xc0000000.
 
-Any ideas/ pointers?
+ The problem is that i m not able to decide where should i keep the
+stack and
+ .bss  areas of  my bootprom code in RAM??
 
-Thanks,
-Om.
+  Also,  what should be the value of  bi_memsize  in  m8260_setup.c
+file?
+
+  thanx in advance for any  help.
+
+  regards,
+  -rd
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
