@@ -1,184 +1,43 @@
-Date: Mon, 29 Apr 2002 18:40:01 -0700
-From: andrew may <acmay@acmay.homeip.net>
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: [PATCH]for multiple 4xx boards
-Message-ID: <20020429184001.D6106@ecam.san.rr.com>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="rJwd6BRFiFCcLxzm"
+Message-ID: <004e01c1eff0$50f70500$1a11efcb@industrialDiv.hanasys.co.kr>
+Reply-To: "Sangmoon Kim" <dogoil@etinsys.com>
+From: "Sangmoon Kim" <dogoil@etinsys.com>
+To: =?ks_c_5601-1987?B?wPzH/b+1?= <hychon@corebell.co.kr>,
+	<linuxppc-embedded@lists.linuxppc.org>
+References: <001201c1efdd$301e7d80$3200a8c0@genetelhychon>
+Subject: Re: looking for source files for MPC8xx --- help me~~~
+Date: Tue, 30 Apr 2002 11:39:56 +0900
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="ks_c_5601-1987"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---rJwd6BRFiFCcLxzm
-Content-Type: text/plain; charset=us-ascii
+Hi,
 
-This is a first cut on just getting things to compile, link and boot
-correctly to support multiple 405 board types in the same kernel.
+> 1. Could you tell me how to find the sources ??
+>
+> and I read a following message in mailling web site ( http://lists.linuxppc.org/linuxppc-embedded/200003/msg00077.html )
+> I go to the http://www.mvista.com site , but I can't anyting source
+>
+>
+Montavista's Hardhat Linux is not available on internet any more. If you're gonna make a ramdisk or nfs root for linux root file system. I think Wolfgang denk's CDK and SELF is a good starting point. You can find them at...
+ftp://ftp.denx.de/pub/LinuxPPC/usr/src/
 
-The basic idea is to change the functions in ppc4xx_setup so they
-are defaults or helper functions. So ppc4xx_setup does not make calls
-to board_xxx functions instead the board functions are called from
-ppc_md.xx directly and they may call ppc4xx functions if needed.
-
-The intention is that things can still be build for just one board
-if wanted, but some things will have to change in each board file.
-The walnut.c is at least done but I can't test the other so I would
-prefer for someone else to do/test those.
-
-The multi405.c file will also switch the OpenBIOS bd_t stucture
-to a PPCBoot bd_t struct so the same build can support both the
-OpenBIOS and PPCBoot. You still need to do both the zImage and
-pImage though.
-
-The mkimage.wrapper & arch/ppc/kernel/setup.c parts of the patch can
-be ignored. I don't really want the snic.c/h files included yet but
-I have include them as a refrence.
-
-We really should be able to get the board type from bootloader but
-right now we just check some things in walnut_setup and snic_probe
-to see if that board type matches.
-
---rJwd6BRFiFCcLxzm
-Content-Type: application/octet-stream
-Content-Disposition: attachment; filename="multi405.patch.gz"
-Content-Transfer-Encoding: base64
-
-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
-XFPxbpIMBby/A7LYynW+ZQAA
-
---rJwd6BRFiFCcLxzm--
+> 2. and I found some source for bash-xxx.tar.gz ..etc  from gnu.org
+> when I complile the sources using powerpc-linux compiler  ( gcc-2.95 , glibc-2.2.3 )
+> it's giving error  that
+>
+> checking  whetehr setvbuf argument are reserved... configure: error cannot run test program while cross compiling
+>
+>
+> I was compiled following option
+> #./configure --host=poweprc-linux --build=i386-linux
+>
+> what's problem?? I'm not understanding.....
+>
+I encountered the same error before. I don't think bash support cross compiling.
+Good Luck
+- Sangmoon Kim -
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
