@@ -1,27 +1,43 @@
-Date: Thu, 6 May 1999 16:43:26 +0200 (CEST)
+Date: Thu, 6 May 1999 16:48:21 +0200 (CEST)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: "Jens Ch. Restemeier" <jenschrr@post.uni-bielefeld.de>
-cc: John L Grantham <jgrantha@hannover.sgh-net.de>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Partitions > 2GB?
-In-Reply-To: <3731824C.3600@post.uni-bielefeld.de>
-Message-ID: <Pine.LNX.4.10.9905061642580.3082-100000@mercator.cs.kuleuven.ac.be>
+To: Mike Ladwig <mike@twinpeaks.prc.com>
+cc: linuxppc-dev@lists.linuxppc.org, tmrini@ntplx.net
+Subject: Re: atyfb and 8500+ATI RagePro
+In-Reply-To: <37318C55.FD33BC88@twinpeaks.prc.com>
+Message-ID: <Pine.LNX.4.10.9905061647180.3082-100000@mercator.cs.kuleuven.ac.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 6 May 1999, Jens Ch. Restemeier wrote:
-> > It at least _used_ to be so that the various PPC Linuxen couldn't handle
-> > partitions larger than 2 GB. Is that still the case as of LinuxPPC R4 and
-> > newer?
+On Thu, 6 May 1999, Mike Ladwig wrote:
+> I wrote:
+> > > Recently, I came across a post my Hugy Caley about a "hacked" atyfb
+> > > driver from Abe White.  I thought I'd give it a try.  Using the
+> > > parameter line, "video=atyfb:vmode:19,cmode:16", I actually get a
+> > > somewhat reasonable display
 > 
-> I don't know where rumors like that come from... I'm running LinuxPPC on
-> a 5 GB partition of a 10 GB IBM harddisk...
+> Since writing this, I have found the single key line to the Abe White
+> patch
+> that helps me.  I noticed that in the 104 version of atyfb that
+> RagePro LT stuff similar to the hack was added in, so I thought I'd
+> focus on
+> what wasn't added.
+> 
+> If I add an immediate 'return' to aty_set_pll_ct, my
+> system will boot with BootX parameter "video=atyfb:vmode:19,cmode:16". 
 
-Once upon a time, there was a bug in fdisk preventing it to work with disks
-larger than 2 GiB on PPC.
+Hence the problem lies within the programming of the pixel and memory clocks.
+
+> I believe
+> the atyfb driver is at least somewhat working here, because I can run
+> Xconfigurator and get an FB_Dev X server up, so long as I pick a display
+> mode close to
+> vmode:19,cmode:16.  X doesn't work outside of Xconfigurator, but I hope
+
+Indeed, then you cannot change the pixel clock so you must choose modes that
+are close enough.
 
 Greetings,
 
