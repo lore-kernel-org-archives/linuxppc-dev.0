@@ -1,45 +1,68 @@
+Message-ID: <7283DE19D141D111AD0E00A0C95B195502581F18@mail2.aiinet.com>
+From: "Gessner, Matt" <mattg@aiinet.com>
+To: "'Srinivas Rao.M'" <msrao@vxl.co.in>
+Cc: "'Linux PPC'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: PowerPC assembly
+Date: Thu, 29 Mar 2001 08:36:37 -0500
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-Subject: RE: how to get the size of a code section.
-Date: Thu, 29 Mar 2001 10:00:50 -0000
-Message-ID: <EADB10BAC266A14A85ECBF8686A73E310A9123@kolkrabbi.flaga.is>
-From: =?iso-8859-1?B?S+FyaSBEYXbt8HNzb24=?= <kd@flaga.is>
-To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am not aware of one, your connection from elf file to application is
-Elf32_Ehdr in elf.h.
-An example on how to use this structure is in the binary loader in the
-kernel, fs/binfmt_elf.c
-and you can  read the spec (just do a search for it on google.com).
+Check out the objdump utility that goes along with your compiler.
+I'm assuming you're using a gcc-like compiler suite (cygwin maybe).
 
-If you just want to "manage" some elf file sections check out objcopy
-and objdump in the binutils package.
+HTH
 
-K.D.
+Matt
 
 > -----Original Message-----
 > From: Srinivas Rao.M [mailto:msrao@vxl.co.in]
-> Sent: 29. mars 2001 08:25
-> To: linuxppc-embedded@lists.linuxppc.org
-> Subject: how to get the size of a code section.
+> Sent: Wednesday, March 28, 2001 11:17 PM
+> To: Madhuri Jones
+> Cc: linuxppc-embedded@lists.linuxppc.org
+> Subject: Re: PowerPC assembly
 >
 >
 >
-> Hello to all,
+> Hi,
+>  Is there any utility to dis assemble the .o file (something like dis
+> available in sco) that can run on WindowsNT. I have a cross
+> development
+> platform WinNT. I am compiling code form MPC860. I just want
+> to know if i
+> can dis assemble a .o file.
 >
+> -srini...
 >
->  I want to know how do you know the size of a section. suppose if i
-> declare a section ".code_in_cache" , is there any C instruction or
-> Assembly instruction to know the size of this section. ??
+> On Wed, 28 Mar 2001, Madhuri Jones wrote:
 >
-> thanks in advance,
-> Srini...
->
->
+> >
+> > Hello,
+> >
+> > I am novice in Power PC assembly code and I am trying
+> > compile in following code (written by someone else)  into
+> head_8xx.S.
+> >
+> > This function has instruction like
+> >
+> > mfspr r3, IC_CST
+> > LA r4, IC_CST_LEN
+> >
+> > However the hardhat assembler doesn't understand the
+> mnemonic LA, is LA same
+> > as add immediate instruction?
+> > addi r4, r4, IC_CST_LEN
+> >
+> > Please help!!
+> >
+> > Thanks.
+> >
+> > M.J.
+> >
+> >
 >
 > --
 >
@@ -52,8 +75,6 @@ K.D.
 > future can be produced by our present actions; so we have to
 > know how to act.
 > -Swami Vivekananda
->
->
 >
 >
 
