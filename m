@@ -1,48 +1,46 @@
-Message-ID: <001901c3f784$72edb2b0$0400a8c0@portatile>
-Reply-To: "Ing.Gianfranco Morandi (LAN)" <gianfranco.morandi@euro-studio.it>
-From: "Ing.Gianfranco Morandi (LAN)" <gianfranco.morandi@euro-studio.it>
-To: <linuxppc-embedded@lists.linuxppc.org>,
-	"Karsten Jeppesen" <kj-list@jeppesens.com>
-References: <321DD189-631A-11D8-B915-000393D57FEE@jeppesens.com>
-Subject: Re: Simple module question
-Date: Fri, 20 Feb 2004 08:37:51 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: "Thamarai Selvan" <Thamarai.Selvan@lntinfotech.com>
+Cc: "RamanaYV" <venkataramana_y@mic.co.in>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: PPCBOOT in customised MPC860T board 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 20 Feb 2004 10:23:47 +0530."
+             <OF6966D76E.A0BB8139-ON65256E40.001AB153@lntinfotech.com>
+Date: Fri, 20 Feb 2004 10:01:52 +0100
+Message-Id: <20040220090157.76C89C108D@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Look at the "Linux Device Driver" By A.Rubini & J.Corbett, there are a lot
-of suggestions and examples.
+In message <OF6966D76E.A0BB8139-ON65256E40.001AB153@lntinfotech.com> you wrote:
+>
+> check out the following link
+> http://www.uclinux.org/~bkuhn/Platforms/Coldfire/tarifa/20020526/README
+> if ur still interested with ppcboot this will give u a good idea ;-)-
 
-Gianfranco
+This is very, very misleading information.
 
----- Original Message -----
-From: "Karsten Jeppesen" <kj-list@jeppesens.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Sent: Thursday, February 19, 2004 9:28 PM
-Subject: Simple module question
+First, the link points to a  very  old  document.  Many  things  have
+changed in the last 2 years.
+
+Second, the ColdFire is still one of the "new" processors  which  are
+supported  by  U-Boot, and obviously it was much worse two years ago.
+On the other hand, the MPC860  was  the  very  first  processor  ever
+supported by U-Boot and it's predecessor PPCBoot.
 
 
->
-> Aren't they all......
->
->
-> I am doing some heavy work in a write function.
-> But I have a poll wait loop (waiting for flash program end) where a lot
-> of time is wasted.
-> How do I tell the scheduler that I would like t surrender the CPU for
-> others to use?
-> I tried calling scheduler(), but that only crashed the kernel.
-> What is the correct way?
->
-> Sincerely,
-> Karsten
->
->
->
->
+If you're looking for up-to-date information about U-Boot you should
+rather read the manual at
+http://www.denx.de/twiki/bin/view/DULG/Manual
 
+Best regards,
+
+Wolfgang Denk
+
+--
+See us @ Embedded World, Nuremberg, Feb 17 - 19,  Hall 12.0 Booth 440
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+grep me no patterns and I'll tell you no lines.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
