@@ -1,44 +1,41 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <20021010100901.9814.qmail@web8005.mail.in.yahoo.com>
-Date: Thu, 10 Oct 2002 03:09:01 -0700 (PDT)
-From: rekha gvv <rekhagvvc@yahoo.co.in>
-Subject: how to buitl ramdisk image..
-To: linuxppc-embedded@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <5.1.0.14.2.20021010062618.0221d928@falcon.si.com>
+Date: Thu, 10 Oct 2002 06:29:04 -0400
+To: <linuxppc-embedded@lists.linuxppc.org>
+From: Jerry Van Baren <vanbaren_gerald@si.com>
+Subject: Re: /dev/console and mknod question
+In-Reply-To: <0B0A39652BB0D411BCCF00508B9512EC08AEB466@tx14exm05.ftw.mot
+ .com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello all,
-I am using linux2.4.4 for fads860T
-can anyone tell me how to build an ramdisk.image.gz
-I made
-> make  zImage.initrd
+mknod is a generic unix command, used to make device controlling entries
+(nodes) in the /dev tree.
 
-but it gave this error
+gvb
 
-powerpc-linux-ld -T ../vmlinux.lds -Ttext 0x00180000
--o zvmlinux.tmp head.o misc.o ../coffboot/zlib.o
-m8xx_tty.o
-powerpc-linux-objcopy -O elf32-powerpc -R .comment
---add-section=image=../coffboot/vmlinux.gz \
-        zvmlinux.tmp zvmlinux
-rm zvmlinux.tmp
-powerpc-linux-ld -T ../vmlinux.lds -Ttext 0x00180000
--o zvmlinux.initrd.tmp1 head.o misc.o
-../coffboot/zlib.o m8xx_tty.o
-powerpc-linux-objcopy -O elf32-powerpc -R .comment \
-        --add-section=initrd=ramdisk.image.gz \
-        --add-section=image=../coffboot/vmlinux.gz \
-        zvmlinux.initrd.tmp1 zvmlinux.initrd1
-powerpc-linux-objcopy: cannot stat: ramdisk.image.gz:
-No such file or directory
-make[1]: *** [zvmlinux.initrd] Error 1
-make[1]: Leaving directory
-`/usr/src/linux-2.4.4-2002-03-21/arch/ppc/mbxboot'
-_______________________________________________________
-bye!
+
+At 10:21 PM 10/9/2002 -0500, Yu Bo-BOYU1 wrote:
+
+>Finally I got the linux work on my custom board. At first I encountered
+>"unable to open an initial console" problem. I created /dev/console then it
+>worked.
+>
+>But I am still wondering how this /dev/console works ? Why mknod (which I
+>think
+>is a native intel platform command) can create a device that cross platform
+>powerpc linux
+>can understand ?
+>
+>Thanks.
+>
+>Bo Yu
+>Motorola, GTSS
+>1-817-245-6725
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
