@@ -1,64 +1,40 @@
-Message-ID: <20031021160024.27655.qmail@web41507.mail.yahoo.com>
-Date: Tue, 21 Oct 2003 09:00:24 -0700 (PDT)
-From: bhupinder sahran <bhup_sah@yahoo.com>
-Subject: Re: PCI on MPC8265
-To: Tamas Bara <tba@mixed-mode.de>,
-	"Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <3F95161F.1080206@mixed-mode.de>
+Message-ID: <3F955DCE.40907@kegel.com>
+Date: Tue, 21 Oct 2003 09:24:46 -0700
+From: Dan Kegel <dank@kegel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: "Matthew S. McClintock" <mattsm@arlut.utexas.edu>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Problem cross-compiling for MPC860T on x86 host
+References: <5.2.0.9.0.20031020095633.0271dec0@172.16.15.10>	 <20031020110913.30a1ac6d.damm@opensource.se> <1066750425.28407.9.camel@chuck.arlut.utexas.edu>
+In-Reply-To: <1066750425.28407.9.camel@chuck.arlut.utexas.edu>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi
+Matthew S. McClintock wrote:
+>>"L. Puneeth Rao" <puneeth_l@roc.co.in> wrote:
+>>>         I have a MPC860T evaluation board, and i would like to load
+>>>linux2.4 kernel. For this i have used a x86 system as host machine and
+>>>followed the procedure prescribed in
+>>>http://penguinppc.org/embedded/cross-compiling/. i have obtained 2.4.18
+>>>kernel sources and applied the suggested patch ppc-patch-2.4.18 and
+>>>additional tools used are gcc-core-3.3.1 and binutils-2.11.90.0.8. ...
+>>>/usr/src/linux/include/asm/unistd.h:413: error: asm-specifier for variable
+>>>`__sc_4' conflicts with asm clobber list
+>
+> I saw these warnings when I tried to use a compiler that was too new to
+> compile to kernel. For the that was gcc 3.3.1 compiling linux 2.4.19.
+> You may be seeing the same problem.
 
-I think problen is with the idselect on pci back
-plane.
-Looks like same card is connected to more than one
-ideselect, so when kernel is doing enumertaion for
-different idselect, same card is responding and kernel
-thinks that you have multiple card sitting on pci back
-plane. In place of changing the kernel, you shall fix
-your hardware....that is a better solution...
+Yes.  See http://gcc.gnu.org/PR9379
+A fix is included in linux-2.4.21, I think.
+- Dan
 
-Bhupi
-
-Linux +Hypertransport --> Silicon
-www.gdatech.com
-
-
-
-
---- Tamas Bara <tba@mixed-mode.de> wrote:
->
-> Hi,
->
-> I´m running Linux 2.4.4 on a TQM8260 board with
-> an MPC8265 on it and an Ethernet controller on
-> the PCI Bus.
->
-> When Linux scans the PCI Bus it detects the
-> controller multiple times. I could change the for
-> loop to devfn < 9 since I only got the internal
-> host bridge and the controller on the bus:
->
-> /* Go find them, Rover! */
-> for (devfn = 0; devfn < 0x100; devfn += 8) {
-> 	dev0.devfn = devfn;
-> 	pci_scan_slot(&dev0);
-> }
->
-> This works, but I don´t want to change the kernel.
-> So I´m looking for a different solution.
->
-> How does the kernel know that it already detected
-> a device before?
->
-> Thanks
->
->
->
+--
+Dan Kegel
+http://www.kegel.com
+http://counter.li.org/cgi-bin/runscript/display-person.cgi?user=78045
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
