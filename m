@@ -1,29 +1,47 @@
-Date: Mon, 19 Jun 2000 14:36:18 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Michael Lundkvist <ml@epact.se>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Ramix PMC 233
-In-Reply-To: <qpzool1qla.fsf@erbium.epact.se>
-Message-ID: <Pine.HPX.4.10.10006191435360.6769-100000@gra-ux1.iram.es>
+Message-ID: <7BF58A904536D411ADD400508BC97B850477F8@xover1.hjinc.com>
+From: "Clayton, Mark" <mclayton@netplane.com>
+To: "'Navin Boppuri'" <nboppuri@myiagent.com>,
+        linuxppc-embedded@lists.linuxppc.org
+Subject: RE: mpc8bug : application error on WinNT
+Date: Mon, 19 Jun 2000 11:01:47 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On 16 Jun 2000, Michael Lundkvist wrote:
+I use it on an NT machine with SP6 (or is it SP5?).
+I do not use the latest version.  According to Mot
+tech support, version 1.5 is the one to use on NT.
 
+Mark
+--
+Mark Clayton                       mclayton@netplane.com
+NetPlane Systems Inc               http://www.netplane.com
+888 Washington Street              Tel: (781) 329-3200
+Dedham MA 02026                    Fax: (781) 329-4148
+--
+[root@hjinc mclayton] /sbin/insmod stddisclaimer.o
+
+
+> -----Original Message-----
+> From: Navin Boppuri [mailto:nboppuri@myiagent.com]
+> Sent: Monday, June 19, 2000 4:57 AM
+> To: linuxppc-embedded@lists.linuxppc.org
+> Subject: mpc8bug : application error on WinNT
 >
-> I've gotten my hands on a Ramix PMC 233 harddisk and now I would like
-> to use it under Linux on a MVME 2400. Has anyone done this? Are there
-> any drivers available?
 >
-> http://www.ramix.com/products/storage/pmc233.html
-
-Doesn't it  look like a standard IDE interface ?
-What does lspci -vvxxx report ?
-
-	Gabriel.
-
+>
+> Has anyone got the mpc8bug software to work on the Windows
+> NT(I have service
+> pack 6.0 installed) or Windows 98? I keep getting application
+> errors when I
+> run the software.
+>
+> Navin
+>
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
