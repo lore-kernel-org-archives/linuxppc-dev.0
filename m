@@ -1,28 +1,32 @@
-From: Michael Norton <mnorton@cisco.com>
-Message-Id: <200010202217.PAA03521@cisco.com>
-Subject: COPTS for Makefile LinuxPPC 2000
+Message-ID: <20001021060725.8637.qmail@kunk.jriver.com>
+Subject: 2.4.0-test10 & iMac video failure
 To: linuxppc-dev@lists.linuxppc.org
-Date: Fri, 20 Oct 2000 15:17:26 -0700 (PDT)
+Date: Sat, 21 Oct 2000 01:07:24 -0500 (CDT)
+From: Robert E Brose II <bob@kunk.jriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-hi,
+If I build a kernel from the penguinppc dev tree (as of 10-21) and
+use bootx 1.2 for booting, it will not bring up the iMac
+rev C mach64 properly. The bootx parameters are the same that
+work fine with 2.2.17 (single,video=atyfb:vmode=17:cmode=32). If the
+"no video driver" box is UNchecked, the screen goes blank on
+boot and stays that way. If the box is checked I get the debug messages
+but nothing after the boot exit.
 
-I am trying to build the OpenGL Heretic game and there are compiler options in t
-he Makefile for m68k but not for the PPC.
+The machine continues to boot works fine via telnet. At first look
+through the messages, it appeared related to the PowerBook 2.4.10
+vid bug which had been fixed so I guess that's not it...
 
-COPT.m68k = -m68020-60 -O2 -fomit-frame-pointer -D__BIG_ENDIAN__ -D__32BIT__ \
-        -DHAVE_ALLOCA_H
+Any ideas?
 
-
-was should this statement read if I am going to compile a PPC image on my G4?
-
-thanks,
-
-Mike
-
+Bob
+--
+Robert E. Brose II    N0QBJ
+http://www.jriver.com/~bob/
+bob@kunk.jriver.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
