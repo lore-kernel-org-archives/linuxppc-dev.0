@@ -1,56 +1,50 @@
-Message-ID: <6B546A602AD2D211BFF00008C7A4288905843FFE@hrtades2.atea.be>
-From: Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>,
-	"'inuxppc-dev@lists.linuxppc.org'" <inuxppc-dev@lists.linuxppc.org>
-Subject: DECLARE_WAIT_QUEUE_HEAD; structure badly initialized...
-Date: Wed, 27 Feb 2002 10:30:32 +0100
+Date: Wed, 27 Feb 2002 12:46:44 +0100 (CET)
+From: Christian Pellegrin <chri@infis.univ.trieste.it>
+To: Geir Frode Raanes <geirfrs@invalid.ed.ntnu.no>
+Cc: Jerry Van Baren <vanbaren_gerald@si.com>,
+	<linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: custom mpc8240 student project (long)
+In-Reply-To: <20020225115719.P58832-100000@invalid.ed.ntnu.no>
+Message-ID: <Pine.LNX.4.44.0202271237380.8890-100000@sole.infis.univ.trieste.it>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+On Mon, 25 Feb 2002, Geir Frode Raanes wrote:
 
-I write in my code:
+>
+>
+> > The software, which is the part covered by the NDA, you can download
+> > from Macraigor for _FREE_ so quicherbitchin:
+>
+> The first shot is, as we know, always free.
+>
 
-This should initialize the structure so that .task_list.next and
-.task_list.prev point ot its own .task list, but the pointers seem to point
-4 bytes to far...
+not true. I had to use JTAG on arm7tdmi project and the tool from
+Macraigor it's not free. I mean the module and the .so that drives the
+raven are propietary (object only, no warranty) software. I didn't managed
+to make it working for parport problems, kernel symbols incompatibility
+and such. I gave up, build a parport-jtag adaptor myself and wrote an
+(open-source 100%) jtag downloader and basic debugger. Someday I hope to
+have enough time to integrate it with gdb.
 
-I added this test-code:
+>
+> I do not disagree. It is just that I am cut of from JTAG.
+> Which means I've got to stay at 8xx series with BDM. This pisses me off.
 
-DEBUG("TEST: %x %x\n",&f_SCBlockReadQueue.task_list,
-f_SCBlockReadQueue.task_list.next);
-f_SCBlockReadQueue.task_list.next = &f_SCBlockReadQueue.task_list;
-f_SCBlockReadQueue.task_list.prev = &f_SCBlockReadQueue.task_list;
-DEBUG("TEST: %x %x\n",&f_SCBlockReadQueue.task_list,
-f_SCBlockReadQueue.task_list.next);
+I agree 100% with you.
 
-And this results in:
-FPGADrv >> TEST: c3044754 c3044758	==> WRONG
-FPGADrv >> TEST: c3044754 c3044754	==> CORRECT
+>
+> But of cause, if noone wants such an EPROM emulator then there
+> is no point in me designing and testing one, is there?
+>
 
-After the code corrected the the pointers, the driver starts behaving as
-expected.
+Be aware that I read on an italian electronic magazine that eprom
+emulation is patented ..... patents madness :-((((
 
-The preprosessor converts "DECLARE_WAIT_QUEUE_HEAD(f_SCBlockReadQueue);" to:
-wait_queue_head_t  f_SCBlockReadQueue  = {	lock:		(spinlock_t)
-{ 0 }  ,	task_list:	{ &(f_SCBlockReadQueue).task_list,
-&(f_SCBlockReadQueue).task_list },	 }  ;
-This looks ok to me
-
-When using
-init_waitqueue_head(&f_SCBlockReadQueue);
-it works.
-
-So when the structure is initialized in code it works nicely, when it is
-initialized at compile-time it fails. Does anybody know why?
-
-The compiler is 2.95.3 (HHL2.0)
-
-Thanks,
-Frederic
+Bye!
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
