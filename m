@@ -1,51 +1,49 @@
-Date: Wed, 28 Nov 2001 10:14:38 +0100 (MET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
-	Debian GNU/Linux PPC <debian-powerpc@lists.debian.org>,
-	ajoshi@unixbox.com, lethal@chaoticdreams.org, dan@debian.org,
-	Martin Costabel <costabel@wanadoo.fr>
-Subject: Re: [PATCH] Minor changes to control/imstt/platinum/valkyrie/atyfb
-In-Reply-To: <20011127143058.R13091@cpe-24-221-152-185.az.sprintbbd.net>
-Message-ID: <Pine.GSO.4.21.0111281012090.15842-100000@mullein.sonytel.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Mime-Version: 1.0
+Message-Id: <p05101000b82a6b5266c7@[10.0.0.42]>
+In-Reply-To: <20011127155855.G10071@plato.local.lan>
+References: <20011126231944.E10071@plato.local.lan>
+ <20011127172847.33B512B54A@marcus.pants.nu>
+ <20011127155855.G10071@plato.local.lan>
+Date: Wed, 28 Nov 2001 02:40:09 -0800
+To: Ethan Benson <erbenson@alaska.net>,
+	linuxppc <linuxppc-dev@lists.linuxppc.org>
+From: "Timothy A. Seufert" <tas@mindspring.com>
+Subject: Re: TiBook, 1394, iPod working (sort of  ;-)
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 27 Nov 2001, Tom Rini wrote:
-> Hello all.  The following patches make slight changes to the vmode/cmode
-> logic on a few fb drivers.  Now everone consistantly only tries to get
-> these modes from nvram if CONFIG_NVRAM is defined (otherwise a
-> compile-time error on everyone but atyfb).  On imsttfb I made the logic
-> only executed on CONFIG_ALL_PPC, and removed USE_NV_MODES (which
-> shouldn't be needed now).  However, I have none of this hardware, and I
-> remember some of these drivers being very touchy.  So could people with
-> this hardware apply the patch and let me know if it works still?
+At 3:58 PM -0900 11/27/01, Ethan Benson wrote:
+>On Tue, Nov 27, 2001 at 09:28:47AM -0800, Brad Boyer wrote:
+>>
+>>  Well, according to Apple's documentation, the only version of HFS+
+>>  is version 4, so I have no idea what's up with that...
+>
+>well it also doesn't document things like the permission bits, it just
+>says they are unused and reserved, obviously this is not the case
+>given OSX, apple just has not updated this document.
+>
+>that means theres a bit of reverse engineering involved as well since
+>apple is using a newwer version of HFS+ which is not entirely
+>documented.
 
-I _think_ the right solution is to hide the NVRAM vmode/cmode stuff in
-macmodes.c, so all drivers will automagically use it for the default video
-mode.
+The documentation is the source now, it would seem.  (just like much
+of Linux :)  See:
 
-The same with MAC monitor sense information, just pass it to mac_find_mode().
+   xnu-9-1/bsd/hfs/
 
-So mac_find_mode() should do this:
+in the Darwin kernel (aka "xnu") source.  hfs_format.h defines the
+on-disk layout, including the structure used for storage of
+permission bits.
 
-  - if default mode specified, try that
-  - if MAC monitor sense specified, try that
-  - if NVRAM, try that
-  - fall back to default mode database walking
+ From the information in that file it looks like the HFS+ version is
+still 4, BTW.
 
-Gr{oetje,eeting}s,
-
-						Geert
-
+Looks like it should even be possible to figure out how Apple did the
+hard- and soft-link hacks.  Maybe one day Linux will be able to boot
+directly from HFS+ just as Darwin does.  That would be perverse.  :)
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Tim Seufert
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
