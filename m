@@ -1,5 +1,5 @@
-Message-ID: <3B4E3CF3.22F568AE@mvista.com>
-Date: Thu, 12 Jul 2001 17:12:35 -0700
+Message-ID: <3B4E3DA8.AA59B2CA@mvista.com>
+Date: Thu, 12 Jul 2001 17:15:36 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
 To: Torben Mathiasen <torben@kernel.dk>
@@ -23,12 +23,9 @@ Torben Mathiasen wrote:
 >
 > I'm using the 01-04-12 mvista kernel, so I'll give 01-03-03 a try.
 
-Did this work?
+Duhhh, forget my last msg, I'm still trying to wake up from vacation.
 
-I made a few changes a couple weeks ago, maybe I messed something up.
-I'll look again.
-
-Mark
+Did the older version work?
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
