@@ -1,30 +1,25 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <8D4C69676E66D511A1CB00508BBBB1921BCF0C@ranmx1.ran.harris.com>
-From: "Walser, Martin" <mwalser@harris.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: enet rx doesn't work
-Date: Tue, 12 Mar 2002 10:42:22 -0500
-MIME-Version: 1.0
-Content-Type: text/plain
+From: ghannon@cspi.com
+To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <85256B7A.005649E4.00@pine.cspi.com>
+Date: Tue, 12 Mar 2002 10:47:50 -0500
+Subject: MVME5100, IPMC761 and SCSI
+Mime-Version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+If anyone is using the MVME5100, with the IPMC761 and using the P2 scsi
+connector off the back of the VME,  could you please email me a .config
+file and let me know what kernel version it applies to.
 
-I've tried to use the enet over the LXT905. Tx seems to work, but I'm not able
-to receive data from it.
-I've measured the rxd, rclk and rena pins (the RENA signal is aktive high), but
-they seems to be ok too.
+I am still getting SCSI bus reset has occurred.
+I would like to compare what I'm doing to a known good configuration.
+I have a new IPMC761 coming in a few weeks from now, but I would like to
+do this in the meantime.
 
-But I get no rx interrupt, the scc_enet_interrupt is never called when receiving
-data.
-
-I'm using kernel 2.4.4 from denx.
-
-Any ideas?
-
-Martin
+Thanks very much,
+G. Hannon
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
