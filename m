@@ -1,33 +1,30 @@
-Subject: Re: kernel panic on mcp750
-To: stevebj@inxpress.net (Stephen B Johnson)
-Date: Mon, 4 Sep 2000 12:22:09 +1100 (EST)
+Subject: Re: DC290 linux support(note: I don't mean linux connectivity :)
+To: njh@hawthorn.csse.monash.edu.au (Nathan Hurst)
+Date: Mon, 4 Sep 2000 12:36:42 +1100 (EST)
 Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <39B28BB4.A52E1E69@inxpress.net> from "Stephen B Johnson" at Sep 03, 2000 12:34:44 PM
+In-Reply-To: <Pine.LNX.4.10.10009041007280.16113-100000@hawthorn.csse.monash.edu.au> from "Nathan Hurst" at Sep 04, 2000 10:10:35 AM
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-Id: <20000904012209.57872C2@elph.research.canon.com.au>
+Message-Id: <20000904013642.AF3D0208@elph.research.canon.com.au>
 From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Stephen B Johnson writes:
-> I'm observing a kernel panic when booting the kernel on a Motorola
-> MCP750.  The panic indicates "Kernel panic: No init found.  Try passing
-> init= option to kernel."
+Nathan Hurst writes:
+>   I'm wondering if anyone has tried booting linux on a Digita series
+> camera?  I've looking at the firmware(you can download the ROM off the
+> kodak site) and the chipset, and it almost seems doable.
+>
+>   I doubt there would be much point in running linux, but hey, it would a
+> fun hack.
 
-Look in init/main.c:init, where the kernel tries to exec an init program.
-One of the steps is failing.  You can add printfs to find out which one.
+Oh come on, this would be an excellent project!  Check the developer info at
+the MAME site:
+    http://digita.mame.net/
 
-Check the following:
-    - Do you have CONFIG_SASH set?
-	If so:
-	    - does CONFIG_SASH_PATH exist?
-	    - Is it statically linked?
-	    - Do you have /dev/console on you root filesystem?
-
-    - Do any of /sbin/init, /etc/init, /bin/init, /bin/sh exist?
-    - Are the shared libraries set up to run the above correctly?
+And:
+    http://graphics.lcs.mit.edu/~aisaksen/projects/cameras/kodak/gcc.html
 
 Regards,
 Graham
