@@ -1,39 +1,60 @@
-Date: Thu, 28 Jun 2001 02:46:00 -0400 (EDT)
-From: "Justin (Gus) Hurwitz" <ghurwitz@dyndns.com>
-To: Michael Habermann <MHabermann@gmx.de>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Segmentation fault while dynamic linking
-In-Reply-To: <5.0.2.1.0.20010628105509.02f18120@pop.gmx.de>
-Message-ID: <Pine.LNX.3.95.1010628024351.5112B-100000@november.bhjjh.erols.com>
+Message-ID: <E69FF45ADA3BD511A25900047623CC4F12AA76@JUPITER>
+From: Neil Wilson <NWILSON@Airspan.com>
+To: "'Mark A. Greer'" <mgreer@mvista.com>,
+	Neil Wilson <NWILSON@Airspan.com>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Sandpoint 3 + MPC7450 + HHL2
+Date: Thu, 28 Jun 2001 07:51:14 +0100
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, 28 Jun 2001, Michael Habermann wrote:
+Got it working now....
 
+Not sure if these fixes are just Sandpoint3 or MPC7450 or the combination,
+but...
+
+1) The openpic_init call in sandpoint_init_IRQ needs the offset argument to
+get the SIO int setup.
+
+2) I also needed to add a enable of the TBEN in HID0 (bit 0x04000000) just
+to get the kernel to think about booting at all - I put this in the
+decompress_kernel function.
+
+Do these sort of changes need pushing into the source tree ?, and if so
+would anyone care to explain how a newcommer does this, thanks.
+
+Neil
+
+> -----Original Message-----
+> From:	Mark A. Greer [SMTP:mgreer@mvista.com]
+> Sent:	Wednesday, June 27, 2001 5:48 PM
+> To:	Neil Wilson
+> Cc:	'linuxppc-embedded@lists.linuxppc.org'
+> Subject:	Re: Sandpoint 3 + MPC7450 + HHL2
 >
-> At 10:08 AM 6/27/2001 -0700, Matthew Locke wrote:
+> Neil Wilson wrote:
 >
-> >There are two places cacheline size affects glibc.  The one above that
-> >you already found and in the glibc ppc optimized memset or memcpy (don't
-> >remember which one).  you can just delete the ppc specific memset and
-> >configure will pull in the generic memset.
+> > Hi,
+> >
+> > I managed to get the JourneyMan 2 82XX booting up on my Sandpoint3
+> MPC7450 -
+> > after adding a enable for the TimeBase - however when a ramdisk is
+> mounted
+> > up I get very slow serial response, like several seconds to print a
+> string,
+> > does anyone have some ideas of what I could look at to resolve this, I
+> have
+> > an Abatron bdi etc but a lot of this is new to me so any help would be
+> very
+> > welcome. Thanks.
 >
-> Yeah, deleting memset.S solved my problem.
+> I'll virtually guarantee you that its an interrupt-related problem.
+> Either the
+> routing is wrong or the IRQ isn't enabled or...
 >
-> Thanks to you and the guys who answered by private mail.
-
-Could you post a quick summary of what yo had to do to get this to work
-(ie, which source you downloaded, which patches you downloaded and
-applied, and which flags you used to compile)?
-
-I've been trying to get uClibc to work, but am having IO errors with it,
-so I'm thinking of giving glibc another try.
-
-Thanks,
---Gus
-
+> Mark
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
