@@ -1,35 +1,22 @@
 Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3C59EB31.3FE82EE1@carts.com>
-Date: Thu, 31 Jan 2002 17:11:14 -0800
-From: Kevin Fry <kevin@carts.com>
 MIME-Version: 1.0
-To: linuxppc emb3dd3d list <linuxppc-embedded@lists.linuxppc.org>
-Subject: 8260 + L2 Cache
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: Running external clock at 1/2 
+Date: Thu, 31 Jan 2002 20:23:04 -0600
+Message-ID: <D3A72C5007329A4F991C0DD87202259F096A49@sekhmet.ad.newisys.com>
+From: "Navin Boppuri" <navin.boppuri@newisys.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello all, a few questions if I may..
+Hello,
 
-We have a custom board with an MPC8260 and 1MB of L2
-cache. The cache is controlled (flushed, invalidated, inhibited,
-and locked) by 4 signals which are tied to GPIOs on the 8260.
-We are booting with PPCBoot 1.1.2 and are using version 2.4.17
-of the Linux kernel.
+I would like to the run the CLKOUT at half the frequency of the memory bus clock on an 855T processor. I do this by setting EBDF to 01 as the manual says. But it looks like the memory bus is also set to half here. Is this correct? Is there no way I can get the CLKOUT set to 1/2 of VCCOUT without also setting the bus clock to half? Am I missing something here?
 
-At boot time the L2 inhibit signal is asserted and remains so
-until we toggle a bit in the Port D register. Doing so manually
-results in Linux crashing (no big surprise). So the question is:
-where in Linux should we be enabling the cache? At the same
-time the L1 cache is enabled? Or should it be done before
-Linux boots? I would think it should be done in Linux since that
-is where the data cache is turned on, but I could be wrong.
+Thanks in advance.
 
-Any help is greatly appreciated.
-
-Thanks!
-Kevin Fry
-
+Navin Boppuri
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
