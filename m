@@ -1,27 +1,27 @@
-Message-ID: <404760A1.5000702@embeddededge.com>
-Date: Thu, 04 Mar 2004 12:00:17 -0500
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
+Date: Thu, 4 Mar 2004 09:28:13 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
 To: Steven Scholz <steven.scholz@imc-berlin.de>
 Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: uncached user space mapping with mmap() ???
-References: <40473464.8010203@imc-berlin.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Message-ID: <20040304172813.GB1559@gate.ebshome.net>
+References: <2C1BAF8F8E1DD611862B0002A5D4C3FC02B6CFC6@renexch3.rennes.thmulti.com> <40473EC2.1010400@imc-berlin.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <40473EC2.1010400@imc-berlin.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Steven Scholz wrote:
+On Thu, Mar 04, 2004 at 03:35:46PM +0100, Steven Scholz wrote:
+> >There's no need to implement kernel side stuff. /dev/mem is enough.
+>
+> So why will people need their own mmap() driver if this kind of things
+> can be done via /dev/mem ???
 
-> How could I do this on an MPC8xx?
+There are CPUs (e.g. PPC440) where you cannot use /dev/mem to
+map I/O memory. In case of PPC440 it isn't in 4GB address space that
+/dev/mem can access.
 
-Open /dev/mem and just map the physical address of your
-registers.  You don't even need your own driver.  If you
-are mapping outside of the range of real memory, the mem
-driver will automatically give you uncached access.
-
-
-	-- Dan
-
+Eugene.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
