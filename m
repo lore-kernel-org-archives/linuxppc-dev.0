@@ -1,15 +1,31 @@
-Date: Mon, 18 Dec 2000 20:07:55 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Torsten Rissel <torsten.rissel@t-online.de>
-cc: Matt Porter <mporter@mvista.com>,
-        "Linuxppc-Embedded (E-Mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: AW: MVME 5100
-In-Reply-To: <01C0692A.FCFDAC80@NB1>
-Message-ID: <Pine.HPX.4.10.10012181958430.3991-100000@gra-ux1.iram.es>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <01C06932.30CD0E00@NB1>
+From: torsten.rissel@t-online.de (Torsten Rissel)
+To: "'Gabriel Paubert'" <paubert@iram.es>,
+        Torsten Rissel
+	 <torsten.rissel@t-online.de>
+Cc: Matt Porter <mporter@mvista.com>,
+        "Linuxppc-Embedded (E-Mail)"
+	 <linuxppc-embedded@lists.linuxppc.org>
+Subject: AW: AW: MVME 5100
+Date: Mon, 18 Dec 2000 20:36:23 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Yeah,
+
+that's exactly what I am working on in the moment.
+
+Thanks,
+Torsten
+
+-----Ursprungliche Nachricht-----
+Von:	Gabriel Paubert [SMTP:paubert@iram.es]
+Gesendet am:	Montag, 18. Dezember 2000 20:08
+An:	Torsten Rissel
+Cc:	Matt Porter; Linuxppc-Embedded (E-Mail)
+Betreff:	Re: AW: MVME 5100
+
 
 
 On Mon, 18 Dec 2000, Torsten Rissel wrote:
@@ -31,6 +47,5 @@ this vital information.
 
 	Regards,
 	Gabriel.
-
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
