@@ -1,57 +1,25 @@
-Message-ID: <00d901c1b592$37e34b20$14211eac@intransa.com>
-From: "David Chen" <ldchen@yahoo.com>
-To: "Magnus Damm" <damm@opensource.se>, "Wolfgang Denk" <wd@denx.de>
-Cc: "David Marqvar (DAM)" <DAM@tt.dk>,
-	<linuxppc-embedded@lists.linuxppc.org>,
-	"Laurits Lassen Petersen (LLP)" <LLP@tt.dk>
-References: <20020212182133.53CF3109D7@denx.denx.de>
-Subject: Re: Kernel 2.4.4 
-Date: Thu, 14 Feb 2002 12:00:14 -0800
+Message-ID: <E1836A7F3557D311A14000805F9F36FC0151885E@usdfo011.usac.danfoss.net>
+From: "Pergola, Michael" <MichaelPergola@Danfoss.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Setting i2c_i2brg 
+Date: Thu, 14 Feb 2002 21:38:00 +0100
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I just got an Embedded Planet RPX Classic (ppc860) board.   I don't have a
-BDM tool.
-Will I be able to install PPCBoot on there?  Can someone give me
-instructions on how to
-do that?
+All,
+I am using an Embedded Planet MPC823e platform attempting to get I2C
+operational. How do you relate setting the SCL clock speed with the
+following variable i2c->i2c_i2brg ? It is currently set to 7 but I can find
+no documentation showing what speed this runs the I2C I/F or what the
+choices for the bus would be.
 
-
-david chen
-
-
------ Original Message -----
-From: "Wolfgang Denk" <wd@denx.de>
-To: "Magnus Damm" <damm@opensource.se>
-Cc: "David Marqvar (DAM)" <DAM@tt.dk>;
-<linuxppc-embedded@lists.linuxppc.org>; "Laurits Lassen Petersen (LLP)"
-<LLP@tt.dk>
-Sent: Tuesday, February 12, 2002 10:21 AM
-Subject: Re: Kernel 2.4.4
-
-
->
-> In message <3C695395.7DEC4A71@opensource.se> you wrote:
-> >
-> > And, you may want to boot PPCBoot from Miniboot.
-> > This will make it possible to update PPCBoot
-> > without any BDM.
->
-> Ummm... as soon as you have PPCBoot running on a system you  can  use
-> this  to  install  any  new  version of PPCBoot, too. No need for BDM
-> then, either.
->
-> Wolfgang Denk
->
-> --
-> Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-> Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-> See us @ Embedded Systems Nuremberg, Feb 19-21, Hall 12 K01 (with TQ)
->
+Regards,
+     Michael Pergola
+     Software Engineer
+     Baltimore, MD  21236     (410) 931-6778 x4259
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
