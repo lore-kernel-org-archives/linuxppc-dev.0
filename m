@@ -1,31 +1,45 @@
-Date: Wed, 27 Feb 2002 13:04:37 -0800
-From: David Ashley <dash@xdr.com>
-Message-Id: <200202272104.g1RL4bv06375@xdr.com>
-To: dan@embeddededge.com
-Subject: Re: Linux 2.4.17 bug, mmap of /dev/mem
+Message-ID: <3C7D4A56.9000308@embeddededge.com>
+Date: Wed, 27 Feb 2002 16:06:30 -0500
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: David Ashley <dash@xdr.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Linux 2.4.17 bug, mmap of /dev/mem
+References: <200202272104.g1RL4bv06375@xdr.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I've traced the problem down to arch/ppc/mm/hashtable.S. When
-there is a page fault, the function hash_page gets called. This does
-some hashing and writes the hash values into a table located at
-0xc0180000. That is the default value, before patching. These writes are
-what is corrupting the linux kernel, because they are on top of linux
-itself.
+David Ashley wrote:
 
-In arch/ppc/mm/ppc_mmu.c the function MMU_init_hw is called, but
-since the 8260 doesn't have the CPU_FTR_HPTE_TABLE feature, the
-hash table is never allocated and the hash_page_patch_* never get updated.
+> I've traced the problem down to arch/ppc/mm/hashtable.S. When
+> there is a page fault, the function hash_page gets called.
 
-Turning on the CPU_FTR_HPTE_TABLE for the 8260 doesn't fix the problem.
+In the case of a 603 core, hash_page is called for DSI (Data Access)
+faults.  However, if the feature indicates there is no HPTE, the
+hash_page function is patched to simply return.  You can't look at
+the code in hashtable.S and know how it is going to work for a particular
+implementation because it is patched at initialization to change
+it's behavior.
 
-I'm out of my depth here. This is a bug in linux, I know that much. But I
-don't know what is supposed to happen during a page fault. So I need help
-in resolving this.
+> .....This does
+> some hashing and writes the hash values into a table located at
+> 0xc0180000.
 
-Thanks--
-Dave
+When your kernel boots, does it print a message to indicate it has allocated
+a hash table?
+
+> In arch/ppc/mm/ppc_mmu.c the function MMU_init_hw is called, but
+> since the 8260 doesn't have the CPU_FTR_HPTE_TABLE feature, the
+> hash table is never allocated and the hash_page_patch_* never get updated.
+
+
+Oh, I just looked at a variety of different versions back to 2.4.11, and it
+is patched just as I described above.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
