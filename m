@@ -1,34 +1,53 @@
-To: Dan Kegel <dank@kegel.com>
-Cc: Brian Padalino <bpadalino@perigee.com>, zjzhou@newrocktech.com,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: how to use busybox to make a ramdisk? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 29 Aug 2003 07:50:01 PDT."
-             <3F4F6819.1090002@kegel.com>
-Date: Fri, 29 Aug 2003 16:52:43 +0200
-Message-Id: <20030829145248.C000EC59E4@atlas.denx.de>
+From: "Brian Padalino" <bpadalino@perigee.com>
+To: <zjzhou@newrocktech.com>, <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: how to use busybox to make a ramdisk?
+Date: Fri, 29 Aug 2003 12:42:12 -0400
+Message-ID: <DGEEIPOFGGPOACEFBGGCEEAECBAA.bpadalino@perigee.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <000701c36d4a$455483c0$9702a8c0@newrock2>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3F4F6819.1090002@kegel.com> you wrote:
->
-> Stock genext2fs doesn't handle ramdisks bigger than 8MB, but
-> there are patches that fix this, and I've been using them happily
-> for about nine months.  (Maybe they're in the mainline now; not sure.)
+John,
 
-A patched & extended version  (based  on  Erik  Andersen's  work)  is
-included with the ELDK.
+I kind of cheated and used the DENX ELDK (http://www.denx.de) ramdisk that
+came with his stuff (mainly for the /dev entries).
 
-Best regards,
+But there is also a good tutorial on how to create ramdisk images.
 
-Wolfgang Denk
+http://www.linux.org/docs/ldp/howto/Bootdisk-HOWTO/buildroot.html
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-365 Days of drinking Lo-Cal beer.                       = 1 Lite-year
+The only thing that I do differently is that I use a loopback device like
+so:
+  mount -t ext2 filename /mnt/image -o loop
+This stops mount from complaining to me and I like that.
+
+Hope this helps and good luck!
+
+Cheers,
+Brian Padalino
+
+
+-----Original Message-----
+From: owner-linuxppc-embedded@lists.linuxppc.org
+[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of John
+Zhou
+Sent: Thursday, August 28, 2003 5:54 AM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: how to use busybox to make a ramdisk?
+
+
+
+Hi all,
+
+I want to get some detail documents about how to use busybox to make a
+ramdisk!!  Does anybody know? Is it to use mkinitrd ?
+
+Thanks & Regards
+John Zhou
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
