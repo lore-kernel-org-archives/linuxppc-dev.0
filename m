@@ -1,30 +1,69 @@
-Subject: Re: Interfaces supported on PPC860?
-To: jason_wohlgemuth@gilbarco.com (Wohlgemuth, Jason)
-Date: Fri, 7 Apr 2000 11:16:15 +1000 (EST)
-Cc: DBrown03@harris.com ("'Brown, David (dbrown03)'"),
-        linuxppc-embedded@lists.linuxppc.org ('linuxppc-embedded@lists.linuxppc.org')
-In-Reply-To: <200004061620.MAA07501@hoover.gilbarco.com> from "Wohlgemuth, Jason" at Apr 06, 2000 12:20:54 PM
+Subject: A couple of minor sys/types.h changes
+To: dan@netx4.com (Dan Malek)
+Date: Fri, 7 Apr 2000 13:10:03 +1000 (EST)
+Cc: linuxppc-embedded@lists.linuxppc.org (LinuxPPC Embedded Mailing List)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-Id: <20000407011615.C0BD63C9C8@elph.research.canon.com.au>
+Message-Id: <20000407031003.A76213C9A8@elph.research.canon.com.au>
 From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wohlgemuth, Jason writes:
-> Off the top of my head, I am pretty sure that you will not be able to
-> support RTS/CTS flow control over the  SMC/SCC's, I believe that at one time
-> we thought that the SCC's could do it but it isn't truely done in hardware.
+Hi Dan,
 
-I know SMC flow control isn't supported because the CPM hardware doesn't
-support SMC flow control, but I was under the impression that SCC flow control
-was supported.
+We've recently stumbled on a couple of sys/types.h references in your 2.2.13
+kernel under arch/ppc/mbxboot which we think should be to linux/types.h.
 
-Can anyone elaborate on this for me please?
+Here's a patch:
 
-Thanks,
-Graham
+Index: embed_config.c
+===================================================================
+retrieving revision 1.1.1.2
+retrieving revision 1.2
+diff -u -r1.1.1.2 -r1.2
+--- embed_config.c	2000/01/04 03:38:39	1.1.1.2
++++ embed_config.c	2000/04/06 05:47:19	1.2
+@@ -2,7 +2,7 @@
+ /* Board specific functions for those embedded 8xx boards that do
+  * not have boot monitor support for board information.
+  */
+-#include <sys/types.h>
++#include <linux/types.h>
+ #include "asm/mpc8xx.h"
+
+
+Index: pci.c
+===================================================================
+retrieving revision 1.1.1.1
+retrieving revision 1.2
+diff -u -r1.1.1.1 -r1.2
+--- pci.c	1999/12/30 05:56:23	1.1.1.1
++++ pci.c	2000/04/06 05:47:19	1.2
+@@ -1,6 +1,6 @@
+ /* Stand alone funtions for QSpan Tundra support.
+  */
+-#include <sys/types.h>
++#include <linux/types.h>
+ #include <linux/pci.h>
+ #include <asm/mpc8xx.h>
+
+Index: qspan_pci.c
+===================================================================
+retrieving revision 1.1.1.1
+retrieving revision 1.2
+diff -u -r1.1.1.1 -r1.2
+--- qspan_pci.c	1999/12/30 05:56:24	1.1.1.1
++++ qspan_pci.c	2000/04/06 05:47:19	1.2
+@@ -9,7 +9,7 @@
+  * I don't know what to do about interrupts (yet).
+  */
+
+-#include <sys/types.h>
++#include <linux/types.h>
+ #include <linux/pci.h>
+ #include <asm/mpc8xx.h>
+
 --
 Graham Stoney
 Principal Hardware/Software Engineer
