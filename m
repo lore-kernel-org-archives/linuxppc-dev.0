@@ -1,25 +1,24 @@
-From: Gérard Guével <gguevel@interfaceconcept.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Don't find KGDB howto
-Date: Wed, 4 Oct 2000 18:40:42 +0200
-Message-ID: <000001c02e21$f1a69ac0$2901a8c0@none>
+Message-ID: <39DB683C.84E66EA3@nexus-tech.net>
+Date: Wed, 04 Oct 2000 13:26:21 -0400
+From: Kyle Harris <kharris@nexus-tech.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: BrytePort
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hi All,
 
-I don't find any KGDB howto on web site.
-Perhaps I don't ask the right question.
+I'm looking to run Linux on the PPC reference design BrytePort (for
+WinCE). Info is at:
 
-Any help would be welcome
+http://www.brytelogic.com/bryteport/default.htm
 
-Thanks
+Is anyone familiar with this product? I'm assuming that if it supports
+WinCE, it should also support Linux. Is this a valid assumption?
 
-Gérard
-
+Thanks for any advice. Kyle.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
