@@ -1,93 +1,109 @@
-Message-ID: <40C9EA31.2070408@ru.mvista.com>
-Date: Fri, 11 Jun 2004 21:21:53 +0400
-From: Andrei Konovalov <akonovalov@ru.mvista.com>
 MIME-Version: 1.0
-To: Stephen Williams <612dlag102@sneakemail.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Configure tweaks for SystemACE without CONFIG_XILINX_OCP
-References: <27972-80808@sneakemail.com> <19720-17858@sneakemail.com>
-In-Reply-To: <19720-17858@sneakemail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="utf-8"
+Subject: RE: Compiling assembler file with ppc_405-gcc 
+Date: Fri, 11 Jun 2004 10:47:18 -0700
+Message-ID: <E8E581FE5C58614B85A22AF2A495C64909E415@uschd00mx11usr.AVNET.COM>
+From: "Kerl, John" <John.Kerl@Avnet.com>
+To: "Kerl, John" <John.Kerl@Avnet.com>, "Wolfgang Denk" <wd@denx.de>,
+	=?utf-8?B?R2FyY2lhIErDqXLDqW1pZQ==?= <GARCIAJ@3il.fr>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-The patch is OK for me.
+Resending as plain text:
 
-Thanks,
-Andrei
-
-Stephen Williams wrote:
+> No Wolfgang, read it again: he is running ppc_4xx-gcc.  It's in a
+> variable named $(AS), but he is running the C compiler.  It is
+> reasonable to expect #include and #define statements to work --
+> after all, the Linux build does this all the time!  As does the
+> u-boot build:
 >
-> Stephen Williams 612dlag102-at-sneakemail.com |PPC Linux Embedded| wrote:
+> $ cd /opt/gx/u-boot
+> $ make
+> ...
+> ppc_4xx-gcc -Wa,-gstabs -D__ASSEMBLY__ -g  -Os   -fPIC
+> -ffixed-r14 -meabi
+> -D__KERNEL__ -DTEXT_BASE=0xFFF80000 -I/opt/gx/u-boot/include
+> -fno-builtin
+> -ffreestanding -nostdinc -isystem
+> /opt/eldk/usr/lib/gcc-lib/ppc-linux/2.95.4/include
+> -pipe  -DCONFIG_PPC -D__powerpc__ -DCONFIG_4xx -ffixed-r2
+> -ffixed-r29 -mstring
+> -Wa,-m405 -mcpu=405 -msoft-float -DCONFIG_440=1 -c -o init.o
+> /opt/gx/u-boot/board/avnet_440gx_eval/init.S
 >
->> In order to get CONFIG_XILINX_SYSACE to define, the unmodified
->> source requries that CONFIG_XILINX_OCP is defined. I created this
->> patch to alloc SYSACE on by board:
->
->
-> I've made a patch that demonstrates what I have in mind, and
-> should work in general. With this patch, a configuration can
-> enable CONFIG_XILINX_OCP and enable CONFIG_XILINX_SYSACE and
-> not have ppc405gpr pci setup or PIC setup messed with.
->
-> Patch is relative the ppc.bkbits.net linuxppc-2.4 tree. I'm
-> guessing Andrei is the authority for this aspect.
->
-> --
-> Steve Williams                "The woods are lovely, dark and deep.
-> steve at XXXXXXXXXX           But I have promises to keep,
-> http://www.XXXXXXXXXX         and lines to code before I sleep,
-> http://www.picturel.com       And lines to code before I sleep."
+> The gentleman has a legitimate request.
 >
 >
-> ------------------------------------------------------------------------
 >
-> # This is a BitKeeper generated diff -Nru style patch.
-> #
-> # ChangeSet
-> #   2004/06/10 18:45:08-07:00 steve@wing.XXXXXXXXXX
-> #   Condition Xilinx on-chip processor config with
-> #   CONFIG_VIRTEX_II_PRO
-> #
-> # arch/ppc/kernel/ppc405_pci.c
-> #   2004/06/10 18:45:06-07:00 steve@wing.XXXXXXXXXX +1 -1
-> #   Condition Xilinx on-chip processor support with
-> #   CONFIG_VIRTEX_II_PRO
-> #
-> # arch/ppc/kernel/Makefile
-> #   2004/06/10 18:45:06-07:00 steve@wing.XXXXXXXXXX +1 -1
-> #   Condition Xilinx on-chip processor support with
-> #   CONFIG_VIRTEX_II_PRO
-> #
-> # BitKeeper/etc/ignore
-> #   2004/06/10 18:45:06-07:00 steve@wing.XXXXXXXXXX +4 -0
-> #   Added arch/ppc/boot/images/uImage arch/ppc/boot/images/vmlinux.UBoot arch/ppc/boot/images/vmlinux.gz arch/ppc/kernel/ppc_defs.h to the ignore list
-> #
-> diff -Nru a/arch/ppc/kernel/Makefile b/arch/ppc/kernel/Makefile
-> --- a/arch/ppc/kernel/Makefile	2004-06-10 19:57:40 -07:00
-> +++ b/arch/ppc/kernel/Makefile	2004-06-10 19:57:40 -07:00
-> @@ -61,7 +61,7 @@
->  obj-$(CONFIG_PPC_OCP)		+= ocp.o
->  obj-$(CONFIG_40x)		+= ppc4xx_setup.o
->  obj-$(CONFIG_4xx)		+= todc_time.o idle_4xx.o
-> -ifeq ($(CONFIG_XILINX_OCP),y)
-> +ifeq ($(CONFIG_XILINX_OCP)$(CONFIG_VIRTEX_II_PRO),yy)
->  obj-$(CONFIG_40x)		+= xilinx_pic.o
->  else
->  obj-$(CONFIG_40x)		+= ppc4xx_pic.o
-> diff -Nru a/arch/ppc/kernel/ppc405_pci.c b/arch/ppc/kernel/ppc405_pci.c
-> --- a/arch/ppc/kernel/ppc405_pci.c	2004-06-10 19:57:40 -07:00
-> +++ b/arch/ppc/kernel/ppc405_pci.c	2004-06-10 19:57:40 -07:00
-> @@ -132,7 +132,7 @@
->  	setup_indirect_pci(hose_a, PPC405_PCI_CONFIG_ADDR,
->  			   PPC405_PCI_CONFIG_DATA);
 >
-> -#ifdef CONFIG_XILINX_OCP
-> +#if defined(CONFIG_XILINX_OCP) && defined(CONFIG_VIRTEX_II_PRO)
->  	/* Eliminate "unused variable" warning for pcip.  Optimizer removes. */
->  	pcip = NULL;
->  	new_pmm_min = PPC405_PCI_LOWER_MEM;
+> > -----Original Message-----
+> > From: owner-linuxppc-embedded@lists.linuxppc.org
+> > [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf
+> > Of Wolfgang
+> > Denk
+> > Sent: Friday, June 11, 2004 9:26 AM
+> > To: Garcia Jérémie
+> > Cc: linuxppc-embedded@lists.linuxppc.org
+> > Subject: Re: Compiling assembler file with ppc_405-gcc
+> >
+> >
+> >
+> > In message
+> > <85E6ED5B5EC32F439702305CC417E12D9E2A78@email.3il.fr> you wrote:
+> > >
+> > > To compile this, I use the following lines in a makefile:
+> > ...
+> > > ppcsiafn.o:
+> > >       $(AS) $(CFLAGS_AS) -c
+> > $(SRC_PATH)/startup/init/ppcsiafn.s -o ppcsiafn.o
+> > ...
+> > > After a lot of tests, here are my conclusions: the
+> > different "#include" are not considered by the compiler.
+> > Indeed, I tried to introduce compilation errors in the
+> > different ".h" files --> no difference in the result
+> >
+> > You don't call a compiler. You just run the assembler.  The
+>  assember
+> > does  nothing else but assemble your code. It does NOT
+> include things
+> > like running a preprocessore or so.
+> >
+> > > So I guess that but I don't know why : the character "#" is
+> > understood as a comment (equivalent to /* ...*/).
+> >
+> > Maybe you want to check assembler syntax?
+> >
+> > > To conclude : is there a specific compil option to give to
+> > gcc for it to understand the #include command?
+> >
+> > "gcc" does know how to run a preprocessor. But you're not
+> > running  "gcc",
+> > you're running "as" only.
+> >
+> > > I checked the different linux assembler file and the
+> > #include is used. So why am I not able to use it?
+> >
+> > Because your build rule is inappropriate for what you want to do?
+> >
+> > Best regards,
+> >
+> > Wolfgang Denk
+> >
+> > --
+> > Software Engineering:  Embedded and Realtime Systems,
+> Embedded Linux
+> > Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email:
+> wd@denx.de
+> > Generally speaking, there are other ways to accomplish
+> whatever it is
+> > that you think you need ...                               -
+> Doug Gwyn
+> >
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
