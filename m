@@ -1,44 +1,36 @@
-Date: Tue, 27 Nov 2001 15:20:51 -0800
-From: Ira Weiny <iweiny@acm.org>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: TiBook, 1394, iPod working (sort of  ;-)
-Message-Id: <20011127152051.65abd20b.iweiny@acm.org>
-In-Reply-To: <20011127221834.23360@smtp.wanadoo.fr>
-References: <B499780B-E362-11D5-9B27-003065B90BBC@apple.com>
-	<20011127221834.23360@smtp.wanadoo.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: Dan Malek <dan@embeddededge.com>
+Cc: paulus@samba.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: include/asm-ppc/platforms/ 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 27 Dec 2001 09:59:59 EST."
+             <3C2B376F.9070508@embeddededge.com>
+Date: Wed, 28 Nov 2001 00:44:41 +0100
+Message-Id: <20011127234446.79B93F9BA@denx.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 27 Nov 2001 23:18:34 +0100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-
+In message <3C2B376F.9070508@embeddededge.com> you wrote:
 >
-> No, you didn't ;) In fact, I even think recent MacOS (or is it MacOS X ?)
-> may create pure HFS+ volumes without the wrapper.
->
-> The main reason for the wrapper was for machines running non-HFS+ capable
-> filesystem to display something (where are all my files gone ?) instead
-> of proposing you to format the disk, and for the system to be able to
-> boot from HFS+ since OldWorld ROMs didn't understand it. Basically, the
-> wrapper contains a slim-fast MacOS System file which contains the necessary
-> HFS+ support to mount the real volume and continue booting from that.
->
+> That's a pretty good idea, and I have another one.  Name the
+> directory include/asm-ppc/ppc-platforms or something, then
+> have a symbolic link
+> 	include/asm/platform -> include/asm-ppc/ppc-platforms/<board-file>
 
-I think this makes sence because with Linux the HFS+ partition on my HD shows
-up with the "where are all my files gone?" thing.  (Which BTW dropped me into
-xmon when I vim'ed it...)  But the iPod did not show up with anything
-intelligable.
+Isn't that redundand?
 
-Must be that the iPod is "pure" HFS+ when the other is a wrapper.
+IMHO "include/asm/platform -> include/asm-ppc/platforms/<board-file>"
+would do just fine - I don't expect anyone to create a
+include/asm-ppc/i386-platforms/ directory?
 
-To quote a pointy eared character "Fascinating."
 
-Thanks for the info,
-Ira Weiny
-iweiny@acm.org
+Wolfgang Denk
 
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+People with narrow minds usually have broad tongues.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
