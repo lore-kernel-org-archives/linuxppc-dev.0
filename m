@@ -1,32 +1,42 @@
-Date: Wed, 15 Sep 1999 17:03:40 -0600 (MDT)
-From: Dan Burcaw <dburcaw@terraplex.com>
-To: Ethan Benson <erbenson@alaska.net>
-cc: "David A. Gatwood" <dgatwood@mvista.com>, Kevyn Shortell <kevyn@apple.com>,
-        Benjamin Herrenschmidt <bh40@calva.net>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: New booter
-In-Reply-To: <v04210104b405d0536083@[192.168.0.1]>
-Message-ID: <Pine.LNX.4.10.9909151702360.17147-100000@newhope.terraplex.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <199909152310.BAA15260@denx.local.net>
+To: linuxppc-dev@lists.linuxppc.org
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: New booter 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 15 Sep 1999 14:37:35 -0800."
+             <v04210102b405ce2cdefb@[192.168.0.1]>
+Date: Thu, 16 Sep 1999 01:10:08 +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> these tools along with BootX are fine for some situations, but you 
-> forget to mention LILO which works more then 90% of the time on intel 
-> hardware, it does not require windows, it does not require its own 
-> dedicated partition.  it works very very well.
+In message <v04210102b405ce2cdefb@[192.168.0.1]> Ethan Benson
+<erbenson@alaska.net> wrote:
+> 
+[about LILO]:
+> it boots very cleanly on x86, booting linux instead of windows is 
+> complete non issue there.
+> 
+> BIOS loads the bootblock from boot disk or if one does not exist it 
+> looks for a partition marked bootable in the partition table and 
+> loads the bootblock from that.  the BIOS knows NOTHING about ANY 
+> filesystem not ext2 not FAT, NTFS, DOSfs, not HFS.  lilo works 
+> wonderfully, and does not require its very own partition in a 
+> specific filesystem format to work. *I* think this is a very clean 
+> way to boot it allows the replacement of the filesystem without 
+> anything more then a update to lilo at most.  not a whole new machine 
 
-Listen, these are issues we've been working on and this is the logical and
-WORKING answer. 
+Furthermore, LILO provides with a lot of interesting  options  rarely
+used  but  very  powerful  (and  *very* useful for embedded systems):
+password protection,  selection  of  alternate  boot  arguments  with
+automatic fallback if booting fails etc.
 
-Dan
+Wolfgang Denk
 
-Terra Soft Solutions, Inc.
-   Yellow Dog Linux
-   "The Ultimate Companion for a Dedicated Server"
-   http://www.yellowdoglinux.com/
-
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Old programmers never die, they just branch to a new address.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
