@@ -1,34 +1,42 @@
-Date: Sun, 28 Oct 2001 09:40:57 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Driver Hell: was Re: GeForce on PPC == _no work_
-Message-ID: <20011028094057.H15768@cpe-24-221-152-185.az.sprintbbd.net>
-References: <20011028125007.MHAN10438.tomts12-srv.bellnexxia.net@there> <20011028145435.7084@smtp.wanadoo.fr> <20011028151111.JZNC28233.tomts15-srv.bellnexxia.net@there>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20011028151111.JZNC28233.tomts15-srv.bellnexxia.net@there>
+Date: Sun, 28 Oct 2001 11:57:47 -0700 (MST)
+From: Derrik Pates <dpates@dsdk12.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
+	Ani Joshi <ajoshi@shell.unixbox.com>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: GeForce on PPC == _no work_
+In-Reply-To: <20011028145435.7084@smtp.wanadoo.fr>
+Message-ID: <Pine.LNX.4.33.0110281153080.24940-100000@andromeda.dsdk12.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, Oct 28, 2001 at 11:13:44AM -0500, Kevin B. Hendricks wrote:
+On Sun, 28 Oct 2001, Benjamin Herrenschmidt wrote:
 
-> - new driver for adaptec scsi drivers does not work (old ones do)
->
-> - the new tulip ethernet driver does not really support Lite-On PNIC2
->   negotiation (seems to have been hardwired to 100mb?).    Again, at
->   least the old becker driver did work at 10baseT-HD.
+> The video drivers are among the things Apple didn't open source as part
+> of Darwin :(
 
-These are unrelated to Darwin anyhow.  The second one is because the
-tulip driver isn't being as heavily tested as it used to be and Jeff
-Garzik is (was) in the process of moving.  2.4.5-final or so broke tulip
-on numerous cards, x86 and ppc.  CONFIG_DE4X5 should still work tho.
+How nice.
 
-You're having no luck w/ the old aic7xxx driver?
+> This includes all drivers not entirely owned by Apple (ATI, nVidia, Adaptec,
+> Airport, ...) and some Apple drivers they didnt want to open source for
+> various (bad) reasons (PMU, ieee1394 controllers).
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Hm. Yay. All hail Apple and their "open-source" (with 50,000 or so
+exceptions) operating system. Bah. Oh, and hooray for nVidia, too. :p
+
+Tried talking to Mark Vojkovich, and unfortunately, he doesn't have any
+info to give me either. I'm now disgusted. And of course, no binary
+drivers for nVidia boards on PPC (hooray for binary drivers too), so I'm
+disgusted and stuck.
+
+I don't suppose anyone knows if there's any hope of reverse-engineering
+the MacOS 9 or OS X nVidia drivers?
+
+Derrik Pates      |   Sysadmin, Douglas School   |    #linuxOS on EFnet
+dpates@dsdk12.net |     District (dsdk12.net)    |    #linuxOS on OPN
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
