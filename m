@@ -1,78 +1,61 @@
-Date: Wed, 28 Mar 2001 13:47:48 +0300 (EEST)
-From: Kostas Gewrgiou <gewrgiou@imbc.gr>
-To: Iain Sandoe <iain@sandoe.co.uk>
-Cc: Takashi Oe <toe@unlserve.unl.edu>,
-	"Michael R. Zucca" <mrz5149@acm.org>, <phandel@cise.ufl.edu>,
-	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Date: Wed, 28 Mar 2001 11:55:03 +0100
 Subject: Re: Sound stoppage: TRIAL code to re-start DEAD dma
-In-Reply-To: <20010328083727.6F528DB9E9@atlas.valhalla.net>
-Message-ID: <Pine.LNX.4.31.0103281320010.21214-100000@idd-01.imbc.gr>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: Kostas Gewrgiou <gewrgiou@imbc.gr>
+Cc: Takashi Oe <toe@unlserve.unl.edu>,
+	"Michael R. Zucca" <mrz5149@acm.org>, phandel@cise.ufl.edu,
+	"linuxppc-dev" <linuxppc-dev@lists.linuxppc.org>
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
+Message-Id: <20010328105501.E28EEDBA11@atlas.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 28 Mar 2001, Iain Sandoe wrote:
+ Wed, Mar 28, 2001, Kostas Gewrgiou wrote:
+> On Wed, 28 Mar 2001, Iain Sandoe wrote:
 
+>> attached is a replacement for the dmasound_awacs tx_irq routine to test out
+>> Takashi's idea of clearing the DEAD status and then re-starting dma.
+>>
+>> it is *not* a diff - you will have to replace the routine by cut-and-paste
+>>
+>> (I've done it this way because my current tree has lots of other changes
+>> which aren't relevant to this test).
+>>
+>> I checked it builds - but can't test 'cos I don't have a PowerComputing
+>> machine.
+>>
+>> Please try it with big-ish fragments - so that there is a chance of hearing
+>> whether resumed blocks repeat sound.
 >
-> Hi,
->
-> attached is a replacement for the dmasound_awacs tx_irq routine to test out
-> Takashi's idea of clearing the DEAD status and then re-starting dma.
->
-> it is *not* a diff - you will have to replace the routine by cut-and-paste
->
-> (I've done it this way because my current tree has lots of other changes
-> which aren't relevant to this test).
->
-> I checked it builds - but can't test 'cos I don't have a PowerComputing
-> machine.
->
-> Please try it with big-ish fragments - so that there is a chance of hearing
-> whether resumed blocks repeat sound.
+> With a quick look it doesn't seem that it will work, you only need to return
+> if you restart the frame otherwise the driver will deadlock,
 
-With a quick look it doesn't seem that it will work, you only need to return
-if you restart the frame otherwise the driver will deadlock, here is what i
-do at the moment, its not perfect but its the best we can do i think without
-the emergency dbdma_cmd.
+we do restart the frame - with the:
 
-Do we need the in_le32(&awacs_txdma->status) & RUN check ? isn't dbdma
-already inactive at that point ?
+    /* may as well try anyway - I guess all bets are off now */
+    out_le32(&awacs_txdma->control, ((RUN|WAKE) << 16) + (RUN|WAKE));
 
+the difference from what you did is that I don't re-load the cmdptr register
+- we are just going to see if the current state can be resumed.
 
-  Kostas
+It might lock up - but it's worth a try.
 
-.....
-#define DEADFRAME_RESTART 1
-                if ( ((stat & ACTIVE) == 0) ) {
-                        if( stat & DEAD ) {
-                                int req_count, res_count;
+> Do we need the in_le32(&awacs_txdma->status) & RUN check ? isn't dbdma
+> already inactive at that point ?
 
-                                req_count = ld_le16(&cp->req_count);
-                                res_count = ld_le16(&cp->res_count);
+maybe - I think that the ACTIVE bit will be cleared.
 
-                                /*
-                                printk("dmasound: status = 0x%x\n",stat);
-                                printk("dmasound: req_count = %d\n",req_count);
-                                printk("dmasound: res_count = %d\n",res_count);
-                                */
+but maybe not the RUN bit - because I think the transition *in the on-chip
+register* from RUN to ~RUN acknowledges the clearing of the DEAD status.
 
-                                out_le32(&awacs_txdma->control, (RUN|PAUSE|FLUSH|WAKE|DEAD) << 16);
-                                st_le16(&cp->xfer_status, 0);
+then the command above restarts it...
 
-#if(DEADFRAME_RESTART)
-                                st_le16(&cp->req_count, res_count);
-                                out_le32(&awacs_txdma->cmdptr, virt_to_bus(cp));
-#endif
+well, that's what we're trying anyway - I've coded the emergency dbdma
+method - so if this fails I'll post that instead.
 
-                                out_le32(&awacs_txdma->control, ((RUN|WAKE) << 16) + (RUN|WAKE));
-
-#if(DEADFRAME_RESTART)
-                                return;
-#endif
-                        } else {
-........
-
+ciao,
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
