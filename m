@@ -1,26 +1,33 @@
-Date: Mon, 10 Feb 2003 13:28:02 +0100
+Date: Mon, 10 Feb 2003 15:29:51 +0100
 From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
 Subject: RE: [PATCH] arch/ppc/8xx_io/enet.c, version 3
-In-reply-to: <3E4793BE.3010803@imc-berlin.de>
-To: Steven Scholz <steven.scholz@imc-berlin.de>,
-	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+In-reply-to: <3E4788BA.3060007@intracom.gr>
+To: Pantelis Antoniou <panto@intracom.gr>
+Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
 Reply-To: joakim.tjernlund@lumentis.se
-Message-id: <IGEFJKJNHJDCBKALBJLLEEBMFKAA.joakim.tjernlund@lumentis.se>
+Message-id: <IGEFJKJNHJDCBKALBJLLGECAFKAA.joakim.tjernlund@lumentis.se>
 MIME-version: 1.0
 Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> has someone actually ported Jocke's patch to 8xx FEC !?
+> Hi guys,
+>
+> I have created a patch that applies cleanly to the head of
+> linuxppc_2_4_devel
+> and it works great.
+>
+> Keep up the good work!
+>
+> Pantelis
 
-I just did a port, but the patch is on my home computer. I can send
-it later ...
+Hi Pantelis
 
-It's not tested at all since I don't have the FEC connected on my boards.
+I don't follow you here. Didn't my patch apply cleanly against linuxppc_2_4_devel?
+I generated my patch against linuxppc_2_4_devel(I think).
 
-
- Jocke
+    Jocke
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
