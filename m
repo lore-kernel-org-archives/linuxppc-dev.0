@@ -1,56 +1,28 @@
-Date: Wed, 19 Sep 2001 16:01:01 -0700 (PDT)
-From: John Tyner <jtyner@cs.ucr.edu>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: building multiple kernels under linuxppc_2_4_devel
-Message-ID: <Pine.LNX.4.30.0109191555210.12262-100000@hill.cs.ucr.edu>
+Message-ID: <3BA9241B.4322817A@mvista.com>
+Date: Wed, 19 Sep 2001 19:02:51 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Stefan Roese <stefan.roese@esd-electronics.com>,
+	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>,
+	Linuxppc-Commit <linuxppc-commit@source.mvista.com>
+Subject: Re: CPCI-405 port (PPC405GP)
+References: <20010918115722.A5967@cpe-24-221-152-185.az.sprintbbd.net> <EFEAIMDCOOOHIEPHDNFJCEKKDCAA.stefan.roese@esd-electronics.com> <20010919071751.B8132@cpe-24-221-152-185.az.sprintbbd.net> <3BA8DF9E.FD235CF6@mvista.com> <20010919155742.D8132@cpe-24-221-152-185.az.sprintbbd.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-We're trying to build for i386 and PPC machines under the same tree, but
-one section of code is causing us some problems...
+Tom Rini wrote:
 
-linuxppc_2_4_devel/include/linux/highmem.h
+> Er, yes.  But if there's nothing specific to the CPCI405, why add in an
+> empty file and the
 
------------------
 
-/*
-#ifndef __HAVE_ARCH_USER_PAGE
-static inline void clear_user_page(struct page *page, unsigned long vaddr)
-{
-        void *addr = kmap_atomic(page, KM_USER0);
-        clear_page(addr, vaddr);
-        kunmap_atomic(addr, KM_USER0);
-}
+There _must_ be something in that file.  At a minimum it has
+to define the board information structure.
 
-static inline void copy_user_page(struct page *to, struct page *from,
-unsigned long vaddr)
-{
-        char *vfrom, *vto;
 
-        vfrom = kmap_atomic(from, KM_USER0);
-        vto = kmap_atomic(to, KM_USER1);
-        copy_user_page(vto, vfrom, vaddr);
-        kunmap_atomic(vfrom, KM_USER0);
-        kunmap_atomic(vto, KM_USER1);
-}
-#endif
-*/
-
-------------------
-
-As you can see, we've commented it out, which causes the kernel to build
-correctly for both arch's, but the clear_page macro only takes one
-parameter from what I can see and we get _all_ kinds of parse errors
-starting with the line immediately following the #ifndef.
-
-Any ideas?
-
---
-John Tyner
-jtyner@cs.ucr.edu
-
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
