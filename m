@@ -1,40 +1,32 @@
-Date: Fri, 22 Sep 2000 16:25:51 -0400 (EDT)
-From: Henry Worth <haworth@ncal.verio.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Linux keycodes and left cursor on Pismo
-Message-ID: <Pine.SOL.4.10.10009221556010.17778-100000@ncal.verio.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <200009222036.QAA26082@mal-ach.watson.ibm.com>
+To: Ryan T Boder <rboder@grn.georet.net>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: PowerPC simulator 
+In-Reply-To: Message from Ryan T Boder <rboder@grn.georet.net>
+   of "Thu, 21 Sep 2000 21:33:34 EDT." <39CAB6ED.B7D4A3E0@mail.georet.net>
+Date: Fri, 22 Sep 2000 16:36:38 -0400
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michel Ddnzer <daenzerm@student.ethz.ch> wrote:
+>>>>> Ryan T Boder writes:
 
->After switching to Linux keycodes (and Debian's i386 us keymap), the left
->cursor key doesn't generate a keycode anymore. Interestingly, it works in
->X
->with Xkb, but not without.
->
->Anyone else sees this?
->
+Ryan> What's available to use for playing with assembly language on my G4? I
+Ryan> am familiar with MIPS and IA/32 but not PowerPC. Is there a simulator
+Ryan> for LinuxPPC? I have used SPIM on Solaris before but that's about it.
 
-Check the dev and user archives, I think this has been discussed a
-few times since the new input layer backport went in.
+	PSIM, written by Andrew Cagney, is distributed with GDB.  A number
+of architecture simulators are distributed in the gdb "sim" subdirectory.
 
->
->Also, what is the key combination for the Magic Sysrq on a Pismo?
->
+	There also is a PowerPC version of Stanford's SimOS simulator
+developed by IBM's Austin Research Lab which we are working to get
+released.
 
-For xmon it's <cmd><Power>. I'm not sure the Linux SysReq facility
-is supported for PPC, I've never seen it enabled in Ben's .config
-files and there is no sign of it in the archives.
-
-However, invoking xmon once X (at least Xpmac 10) is running
-will result in a microscopic xmon text session replicated 4 times
-across the screen (even if you switch back to a text VT first).
-
-Henry
-
+David
+===============================================================================
+David Edelsohn                                      T.J. Watson Research Center
+dje@watson.ibm.com                                  P.O. Box 218
++1 914 945 4364 (TL 862)                            Yorktown Heights, NY 10598
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
