@@ -1,35 +1,48 @@
-Date: Tue, 24 Aug 1999 14:35:33 +1000
-Message-Id: <199908240435.OAA05026@tango.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: linuxppc-dev@lists.linuxppc.org
-In-reply-to: <19990823163610.A31129@mango.genunix.net> (message from anthony
-	tong on Mon, 23 Aug 1999 16:36:10 -0500)
+Date: Tue, 24 Aug 1999 00:52:11 -0400 (EDT)
+From: Tom Rini <trini@disparity.net>
+To: Jerry Quinn <jquinn@nortelnetworks.com>
+cc: brad allison <jackal@aol.net>, rshaw@inficad.com,
+        Benjamin Herrenschmidt <bh40@calva.net>,
+        linuxppc-dev@lists.linuxppc.org, puetzk@iastate.edu
 Subject: Re: BootX enhancement request
-Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <Pine.SGI.4.00.9908231613030.7470-100000@osiris.office.aol.com> <Pine.BSF.3.96.990823162311.86405K-100000@silver.teardrop.net> <19990823163610.A31129@mango.genunix.net>
+In-Reply-To: <14273.46467.61746.180371@gargle.gargle.HOWL>
+Message-ID: <Pine.BSF.3.96.990824005043.86405M-100000@silver.teardrop.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-anthony tong <atong@uiuc.edu> wrote:
+On Mon, 23 Aug 1999, Jerry Quinn wrote:
 
-> If you have a version of MacOS that saves the monitor mode in nvram,
-> you shouldn't need to give any kernel arguments. Alternatively you
-> can use the linuxpmac tool nvvideo to set this.
+> >> "Tom" == Tom Rini <trini@disparity.net> writes:
+> 
+>  Tom> So you want BootX to be able to do what Monitors & Sound can do.  Either
+>  Tom> pick a mode there and use BootX from MacOS, or once 2.4.0 rolls around,
+>  Tom> specify video=aty128fb:1024x768@75 (or so).  There is no need for BootX
+>  Tom> to do this.
+> 
+> Probably more to the point, we should strive to provide some easy way of doing
+> it.  How do MacOS and Windows deal with the problem of different monitors and
+> resolutions?  I know on the Mac so far, I automatically get the available
+> resolutions, although Apple-style monitors have extra sense pins to provide
+> the info.
 
-Yep.  There are two problems at the moment, which I should get off my
-butt and fix. :-)
+Don't they both stick you at 640x480@60, and make you choose up from
+there?  (I know I've seen waaay to many  640x480 PCs around in these dorms
+lately).  There are ways to sense modes, and it is implemented in some
+drivers (most, iirc)
 
-The first is that the current machines use a different structure for
-nvram, based on the CHRP spec, which means that just using a fixed
-offset in nvram doesn't work.  In fact it seems like macos adds a OF
-property with a really strange encoding to store arbitrary bits of
-information for the device drivers for arbitrary devices.
+> Ideally, I shouldn't have to ever think about my monitor or have to add
+> command line args to the kernel.  Such twiddling should be as rare as
+> possible. 
 
-The second is that macos is now using mode numbers > 20.  I haven't
-worked out the correspondence yet.
+So set something in MacOS. :)
 
-Paul.
+---
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
