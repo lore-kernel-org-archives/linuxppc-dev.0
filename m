@@ -1,29 +1,34 @@
-Subject: Re: HZ in 2.6 on PPC32
+Subject: Re: linuxppc-2.5 fixlets
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+To: Ernst Persson <ernstp@mac.com>
 Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <1061654591.1251.34.camel@thor.holligenstrasse29.lan>
-References: <1061654591.1251.34.camel@thor.holligenstrasse29.lan>
-Content-Type: text/plain; charset=ISO-8859-1
-Message-Id: <1061657994.772.6.camel@gaston>
+In-Reply-To: <8088727.1061649011686.JavaMail.ernstp@mac.com>
+References: <8088727.1061649011686.JavaMail.ernstp@mac.com>
+Content-Type: text/plain
+Message-Id: <1061708975.786.23.camel@gaston>
 Mime-Version: 1.0
-Date: Sat, 23 Aug 2003 18:59:54 +0200
+Date: Sun, 24 Aug 2003 09:09:35 +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 2003-08-23 at 18:03, Michel Dänzer wrote:
-> Why is this still defined to 100? I'm running at 1000 now, and it makes
-> a huge difference for interactivity. Moreover, CONFIG_PREEMPT now makes
-> things even better instead of worse. :)
->
-> If the reason is the slow PPC32 CPUs still around, maybe make it a
-> config option?
+On Sat, 2003-08-23 at 16:30, Ernst Persson wrote:
+> >> Alsa does not seem to produce any sound, whatever I try to do
+> >> (including messing around with mute), and dmasound doesn't compile at
+> >> all.
+> >>
+> >> Used kernel is 2.6.0-test3, via rsync from
+> >> source.mvista.com::linuxppc-2.5, as of around 10AM CET (8AM UTC).
+> >
+> >Typically enough, I was just pointed to a fix for this problem (for
+> >alsa) a few minutes after sending this mail.
+> >
+> >According to
+> >http://www.ussg.iu.edu/hypermail/linux/kernel/0308.2/0288.html
+> >reloading i2c-keywest after loading the alsa-modules initialised things
+> >so that demuting works. There's also a patch included.
 
-A config option would probably be a better idea, I doubt lots of embedded
-or low end configs wants HZ at 1000... Regarding CONFIG_PREEMPT, it's
-really weird that it "makes things worse" for you with HZ at 100. But
-that may also be the 2.6-test scheduler suckyness...
+Please forward these to the Alsa maintainer Takashi Iwai <tiwai@suse.de>
 
 Ben.
 
