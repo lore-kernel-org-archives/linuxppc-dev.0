@@ -1,46 +1,30 @@
-Date: Tue, 11 May 1999 16:21:35 -0400 (EDT)
-From: Tom Rini <tmrini@ntplx.net>
-To: michael cardenas <michael_cardenas@deneba.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: USB Development
-In-Reply-To: <3738793B.416467E2@deneba.com>
-Message-ID: <Pine.LNX.4.05.9905111618250.654-100000@pc.wackyland.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <199905112039.OAA01269@moses.odi.ca>
+Date: Tue, 11 May 1999 14:38:07 -0600
+Subject: Re: Anyone playing with Darwin 0.2 binary yet?
+From: "Darron Froese" <darron@calgary.westworld.ca>
+To: Nathan Ingersoll <ningerso@d.umn.edu>,
+        "Kevin B. Hendricks" <kbhend@business.wm.edu>
+CC: linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 11 May 1999, michael cardenas wrote:
+> I think that it only works with G3 or newer machines.
 
-> But, I am a programmer, and I'm very interested in helping develop
-> linux.
+Not quite correct - some people have reported success (on the Darwin
+Development Mailing List) installing it on other machines - machines that
+were initially supposed to run "Rhapsody" but ended up not being officially
+supported by Mac OS X Server - PCI based Power Macs that aren't G3's: the
+7500, 7600, 8500, 8600, 9500 and 9600 all come to mind.
 
-yay. :)
-
-> My question is, where can I get the kernel source to get started and
-> what compiler do I use? Is there a kernel build faq? I recently
-> purchased the 4.1 cd, but I already had 4.1 installed.
-
-Well.  4.1 ships w/ BootX (and a recent kernel then, yes? 2.1.125?).  Goto
-http://cvs.on.openprojects.net (I think that's it) and see howto checkout
-the kernel source there.  It's the most current for ppc.
-
-> I'd be willing to install pre r5 if I need to to work on the usb source.
-
-Not needed..  R5 is nice tho <g>.
-
-There are a few "problem" right now.  The current USB dev is being done on
-Linus' USB stack.  OHCI (what's in most non-intel chipset based computers)
-doesn't work.  OHCI is the main controller.  There is some hope tho.
-linux-usb@suse.com is the current list.
-http://soap.suitenine.com/usb/ has the current USB-ohci work and links to
-the other OHCI driver for Linus' stack (merging soon).
-
----
-Tom Rini (TR1265)
-http://dobbstown.yeti.edu/
-
+I'm gonna try it on my 7600 when I've got a spare disk I can use.
+--
+Darron
+darron@odi.ca
+<http://i.am/darron/>
+PGP Key: http://pgp.ai.mit.edu:11371/pks/lookup?op=get&search=0xAF31C682
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
