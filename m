@@ -1,44 +1,43 @@
-From: "dong in kang" <dkang@east.isi.edu>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: zImage.initrd: when the compressed RAM file system is decompressed and installed?
-Date: Wed, 23 Jul 2003 11:41:04 -0400
-Message-ID: <002101c35130$d43e2b30$45a97241@Minjoo>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3F1F16BF.4010208@esteem.com>
+Date: Wed, 23 Jul 2003 16:14:07 -0700
+From: Conn Clark <clark@esteem.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-reply-to: <20030723090317.C192EC6D82@atlas.denx.de>
+To: May Ling List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Motorola finally anounces the MPC5200
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
- Hello,
+Hi everybody,
 
- I'm using MV Linux 2.1 with Linux kernel version 2.4.17.
-I compiled the kernel with initrd to make zImage.initrd.
-I configured RAM file system is used.
-I loaded the kernel at 0x800000 and run the code.
-Kernel decompression and start_kernel routine works fine (with a little
-problem).
-pciauto_bus_scan() causes problem when I do not use gdb.
-At early_read_config_byte (), machine check exception occurs.
-Howerver, when I use gdb and step through the early_read_config_byte()
-routine, it goes well beyond that.
-When I use gdb and step through "pciauto_bus_scan()", it runs remaining
-routines such as
-init_IRQ(), sched_init(), ..., rest_init() --> idled() --> schedule().
-When it tries to switch to new thread by calling "_switch(old_thread,
-new_thread)", it dies.
-Gdb "step" function doesn't work. And when I stop the process, the PC is in
-0xFFF033CC.
+	Motorola finally officialy anounced the MPC5200 .
 
- I don't know why the kernel cannot go more.
-However, I'm curious that before it dies it doesn't decompress initrd nor
-install the RAM file system.
-Is RAM file system installation done after that?
+http://www.motorola.com/mediacenter/news/detail/0,1958,2788_2266_23,00.html
+http://e-www.motorola.com/files/abstract/overview/SPSMPC5200.htm
+http://e-www.motorola.com/webapp/sps/site/prod_summary.jsp?code=MPC5200&releaseLevel=Preview
 
- I'll appreciate you help.
+I had given up hope of them ever releasing it. I know some people were
+working on the MGT5100 ( the MPC5200's cousin ) . Where are the
+development trees hosted? Any status on stability/maturity of the
+peripheral drivers?
 
- Dong-In
+Does anybody know off hand if it will support more than one PCI device?
+
+Thanks
+
+	Conn
+--
+
+*****************************************************************
+   If you live at home long enough, your parents will move out.
+  (Warning they may try to sell their house out from under you.)
+*****************************************************************
+
+Conn Clark
+Engineering Stooge				clark@esteem.com
+Electronic Systems Technology Inc.		www.esteem.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
