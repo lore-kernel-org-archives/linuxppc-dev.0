@@ -1,37 +1,37 @@
-Date: Wed, 20 Sep 2000 10:34:23 +0200 (MET DST)
-From: Roman Zippel <zippel@fh-brandenburg.de>
-To: Paul Mackerras <paulus@linuxcare.com.au>
-cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: __ioremap_at() in 2.4.0-test9-pre2
-In-Reply-To: <14791.61311.118516.747495@argo.linuxcare.com.au>
-Message-ID: <Pine.GSO.4.10.10009201023340.21745-100000@zeus.fh-brandenburg.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: PCMCIA card eject does not work?
+In-Reply-To: <39C78056.EF7C45A9@mpifr-bonn.mpg.de>
+References: <39C78056.EF7C45A9@mpifr-bonn.mpg.de>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <20000920174030P.tkoba@ike-dyn.ritsumei.ac.jp>
+Date: Wed, 20 Sep 2000 17:40:30 +0900
+From: "T.R. Kobayashi" <tkoba@ike-dyn.ritsumei.ac.jp>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+> I am currently playing with PCMCIA/Cardbus stuff on several machines. On the
+> Wallstreet, there is no "manual" way to eject a card (except with a paper clip).
+> I added a patch by Harald Roelle to the pcmcia package which talks to the pmu to
+> do this (see http://www.roelle.com/wvlanPPC/data/pcmcia-3.1.17-pmac.patch).
+> Although the software talks to the PMU (I added a few debug lines to via_pmu.c),
+> the card is _not_ ejected. Were there any recent changes in the pmu stuff? I use
+> Ben's latest stable test kernel (2.2.17pre20-ben3). Any ideas how I could track
+> down the problem?
 
-> For
-> example, inb(0x3f8) won't access the first serial port (this is on
-> machines such as prep and some chrp which have a lot of PC-style
-> devices).
+Harald Roelle's pcmcia-3.1.17-pmac.patch does not work well on my PB2400c.
+I fixed this problem and wrote usb_cb.c for CardBus USB OHCI cards.
+These functions may be available, as you use following sources.
 
-You know that the serial driver supports pci cards? So it's somehow a bad
-example and even for broken drivers it shouldn't be that much of a problem
-to add:
+http://www.ike-dyn.ritsumei.ac.jp/~tkoba/linuxppc/patches/2.2.18pre4-pb-mol-usb.diff
+against Ben's kernel
+http://kernel.xorsis.com/source/linux-pmac-benh.tar.gz (Sep. 12 2000)
 
-#if __broken__
-#define xxx_inb(base, port) inb(port)
-#else
-#define xxx_inb(base, port) readb(base + port)
-#endif
+http://www.ike-dyn.ritsumei.ac.jp/~tkoba/linuxppc/patches/pcmcia-cs-3.1.20-usb-pmac.tar.bz2
 
-All the 8390 based drivers do something like this. (Although currently
-they abuse inb/outb for that.)
-
-bye, Roman
+==============
+T. R. Kobayashi
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
