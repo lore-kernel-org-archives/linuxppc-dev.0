@@ -1,30 +1,53 @@
-Date: Sat, 19 Dec 1998 11:13:17 -0700 (MST)
-From: Jeff Rugen <jrugen@primenet.com>
-To: Cort Dougan <cort@cs.nmt.edu>
-cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: ns16550.[hc]
-In-Reply-To: <Pine.BSI.3.96.981218070058.2404A-100000@usr07.primenet.com>
-Message-ID: <Pine.BSI.3.96.981219111012.1556A-100000@usr01.primenet.com>
+Message-ID: <367C0A9A.39575D8@jlc.net>
+Date: Sat, 19 Dec 1998 15:20:43 -0500
+From: Dan Malek <dmalek@jlc.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Mark S. Mathews" <mark@absoval.com>
+CC: Corey Minyard <minyard@acm.org>, linuxppc-dev@lists.linuxppc.org,
+        Cort Dougan <cort@persephone.cs.nmt.edu>
+Subject: Re: Restructure of arch/ppc/kernel and include/asm-ppc, part 2
+References: <Pine.LNX.3.96.981217133832.9446E-100000@tristar.cc.absoval.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I'm building on a Motorola PowerStack from the vger tree.  The Makefile and
-misc.c in arch/ppc/boot are looking for the files ns16550.h and ns16550.c,
-but they don't seem to be in vger.  (I'm compiling with serial console on
-and a non-MTX board -- I think those are the conditional flags that
-select/deselect it).  Should those files be in vger or do I have to get them
-elsewhere, or do I have a problem with my cvs setup or something?  I've did
-a cvs update -A -d yesterday.
+Mark S. Mathews wrote:
+
+> Would it be possible to keep in mind that the MBX is _not_ the only....
+
+There have been many changes placed into the baseline and
+many more to come that address these configuration issues.
+When I first did the MPC8xx port almost one year ago, I used
+the 860 MBX board for that work.  I tried to keep processor
+and board modifications separate, but didn't always succeed.
+
+Now that I have ported Linux to several different versions of
+the 8xx and as many boards, I can say there is a better method
+soon to come.  However, the flexibility of the 8xx will always
+guarantee there is something not done correctly to someone's
+taste.
+
+An issue I had with the 8xx port that still exists is the amount
+of kernel baggage that has to be carried along that is simply
+not needed.  Some of it is thrown away as 'init' sections, but
+too much still hangs around with no use.  Another souce of
+the conditional compilation for 8xx is due to its not prep/chrp
+or OF architecture.
 
 
-----------------------------------------------------------------------------
-Jeff Rugen                      jrugen@primenet.com
+> Perhaps have separate config options for the 8xx processor and the board
+> design.
 
-..Had this been an actual emergency, we would have fled in terror, and you 
-would not have been informed.
+I don't know what baseline you are using, but the latest
+ones have certainly addressed this.  It should now be
+pretty clear what is processor specific and what is board
+specific (at least I though I submitted all of that ;-).
+
+
+
+    -- Dan
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
