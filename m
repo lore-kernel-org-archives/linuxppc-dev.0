@@ -1,29 +1,64 @@
-Message-ID: <3C867302.7080202@embeddededge.com>
-Date: Wed, 06 Mar 2002 14:50:26 -0500
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-Cc: laurent.pinchart@capflow.com,
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <A3E34B558F5CD211B4980008C7A4A9900242418D@sparrow.gso.mcs.marconi.com>
+From: "Banks, Kelly" <kelly.banks@gilbarco.com>
+To: "'Andres Chamorro Morillas'" <achamorro@prodys.net>,
 	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: linux-2.4.18 & copy-back cache mode
-References: <20020306170947.078ED109EB@denx.denx.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: RE: MPC860 onchip WatchDog
+Date: Wed, 6 Mar 2002 17:01:30 -0500 
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
+I just did this last week.  My test load is cooking in the test oven now.
+You need to tickle the WD at several places within the kernel.  For me, it
+worked by putting the tickle code in kernel/sched.c &
+arch/ppc/boot/simple/misc-embedded.c.  Granted, there is likely a better
+place to put chip specific code than in kernel/sched.c, but it did get the
+job done.
 
-> There are no differences AFAIK. It's just a faster CPU that allows 66
-> or even 76 MHz with 1:1 CPU/bus clock mode.
+I'm curious to know if there are any 'proper conventions' for doing this
+sort of thing.
 
-Interesting.  Faster than 50 MHz cores used to require the 2:1 bus
-clock division.  I don't remember timing parameters that would
-exceed 50 MHz.  Yes, the part will let you do that, but I thought that
-was outside of the part specification.  I guess I'll have to take a look.
+Kelly
+
+-----Original Message-----
+From: Andres Chamorro Morillas [mailto:achamorro@prodys.net]
+Sent: Wednesday, March 06, 2002 6:57 PM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: MPC860 onchip WatchDog
 
 
-	-- Dan
+
+Hi, I trying to use the MPC860 onchip WatchDog.I compile ppcboot-1.1.4
+with include/config_MBX.h ( I have a MBX860 board) I compile the
+linux-2.4.4-2002-02-14 kernel by denx. I activate the WatchDog support
+for
+MPC860.Well, I make tftpboot then I tray to boot the
+kernel but...
+Loading .text @ 0x00180000 (23052 bytes)
+Loading .rodata @ 0x00185a10 (2320 bytes)
+Loading .data @ 0x00187000 (808bytes)
+Loading __ex_table @ 0x00187328 (24 bytes)
+## Starting application at 0x00180000...
+loaded at:  00210000 0021B59C
+relocated to:  00180000 0018B59C
+board data at: 043A0288 043A02BC
+relocated to:  00200100 00200134
+zimage at:  00218000 002A95D8
+avail ram:  002AA000 04400000
+Linux/PPC load:root=/dev/nfs rw
+Uncompressing Linux...done.
+Now booting the kernel
+
+And reset.
+Thats mean that WD works fine but I can't boot.
+What can I do???
+Modify the kernel code to service the watchdog????
+Which part of kernel I have to modify???
+Thanks a lot.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
