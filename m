@@ -1,44 +1,46 @@
-To: "Dick Read (SkyLynx)" <dread@skylynx.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: quad uart driver for 852T 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 08 Dec 2003 14:29:44 PST."
-             <NGBBKDOAELJBKFGCBALKCEMLCEAA.dread@skylynx.com>
-Date: Tue, 09 Dec 2003 00:07:10 +0100
-Message-Id: <20031208230715.DFC1AC5F5F@atlas.denx.de>
+Message-ID: <A3240F62EF3C2749B1A25D3BC9548F4103094F@ExchWENZ02.wenz.global.vpn>
+From: Rod Boyce <rod_boyce@stratexnet.com>
+To: "Dick Read (SkyLynx)" <dread@skylynx.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: quad uart driver for 852T
+Date: Mon, 8 Dec 2003 15:08:33 -0800 
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <NGBBKDOAELJBKFGCBALKCEMLCEAA.dread@skylynx.com> you wrote:
->
-> Hello.  I am new to Embedded Linux and wish to find a driver or code for a
-> quad uart chip that I can use with the Analogue & Micro Adder II (MPC852T)
-> reference board.  I have never done a Linux driver before but am willing to
-> take the plunge here if I have to.  I see that someone as worked with a
-> 16C554 on this mailing list and might have it working by now.  Besides the
+This driver is supported nativly by the Linux kernel see
+drivers/char/serial.c and include/asm/serial.h
 
-We are working on such a thing, too (although  with  a  very  special
-hardware  interface;  the  chip  is attached to the PCMCIA controller
-ports ...). We'll check it in on our CVS server  within  the  next  4
-weeks or so.
+All you have to do is ioremap the address of the quad UART, fill out the
+structure in include/asm/serial.h and add the interrupt connection code from
+your hardware interrupt to the serial interrupt in serial.c
 
-> suggestions for the UART code, what is the etiquette for asking people about
-> their work?  I have often heard Linux has tons of drivers but how do you
-> find the ones you need?
+Rod
 
-Google, then ask.
+-----Original Message-----
+From: Dick Read (SkyLynx) [mailto:dread@skylynx.com]
+Sent: Tuesday, December 09, 2003 11:30 AM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: quad uart driver for 852T
 
-Best regards,
 
-Wolfgang Denk
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-You Don't Have To Be 'Damned' To Work Here, But It Helps!!!
-                                             - Terry Pratchett, _Eric_
+Hello.  I am new to Embedded Linux and wish to find a driver or code for a
+quad uart chip that I can use with the Analogue & Micro Adder II (MPC852T)
+reference board.  I have never done a Linux driver before but am willing to
+take the plunge here if I have to.  I see that someone as worked with a
+16C554 on this mailing list and might have it working by now.  Besides the
+suggestions for the UART code, what is the etiquette for asking people about
+their work?  I have often heard Linux has tons of drivers but how do you
+find the ones you need?
+
+Thank you.
+Dick Read
+Skylynx Communications
+206-780-5754
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
