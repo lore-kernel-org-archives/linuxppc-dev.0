@@ -1,78 +1,64 @@
-Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
-Date: Wed, 26 Mar 2003 08:41:42 -0500
-From: Daniel Jacobowitz <drow@mvista.com>
-To: Vladimir Gurevich <vag@paulidav.org>
-Cc: Kalpesh Jasapara <kjasapara@yahoo.com>, gdb@sources.redhat.com,
-	linuxppc-dev@lists.linuxppc.org, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: GDB server and threaded application
-Message-ID: <20030326134141.GA32522@nevyn.them.org>
-References: <20030326035830.20755.qmail@web14601.mail.yahoo.com> <3E813CF5.9090001@paulidav.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3E813CF5.9090001@paulidav.org>
+To: Daniel Jacobowitz <drow@mvista.com>
+Cc: Vladimir Gurevich <vag@paulidav.org>,
+	Kalpesh Jasapara <kjasapara@yahoo.com>, gdb@sources.redhat.com,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: GDB server and threaded application 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 26 Mar 2003 08:41:42 EST."
+             <20030326134141.GA32522@nevyn.them.org>
+Date: Wed, 26 Mar 2003 17:13:41 +0100
+Message-Id: <20030326161346.18A0AC58BA@atlas.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Mar 25, 2003 at 09:39:01PM -0800, Vladimir Gurevich wrote:
+Daniel,
+
+in message <20030326134141.GA32522@nevyn.them.org> you wrote:
 >
-> Kalpesh Jasapara wrote:
-> >I am having a problem with remote gdb debugging
-> >using gdbserver to work with multi threads.
-> >The command "info threads" shows only one thread.
->
-> Here is a relevant excerpt from Wolfgang Denk's
-> posting from ppc-embedded:
+> As usual, Wolfgang's answer is somewhat biased.  GDB 5.3's
 
-As usual, Wolfgang's answer is somewhat biased.  GDB 5.3's
-multithreaded debug support is complete, and works very well once you
-have it set up.  The only thing missing in the FSF tree is the little
-"[New thread 21211]" messages, which are purely cosmetic; I never came
-to an agreement about how to implement them in the current protocol.
+As usual? C'me on!
 
-Neither the version originally in HHL 2.0 nor gdb 5.2.1 supported it
-however.  Kalpesh said he was trying gdb 5.3, which does.
+> Neither the version originally in HHL 2.0 nor gdb 5.2.1 supported it
+> however.  Kalpesh said he was trying gdb 5.3, which does.
 
-I would also like to offer Wolfgang a BIG KICK IN THE HEAD.  I have
-looked at the relevant path on his FTP site that you referenced below;
-despite his name as the only name on the "ChangeLog entry" in the
-README and the claim of "we spend some work", it is my work.  I wrote
-just about every line of that patch.
+It was not me who pointed to "our" version of the patch.
 
-As usual proper credit would be appreciated.
+In my original posting which Vladimir quotet I  answered  a  question
+which  was  exactly  about the GDB version in HHL 2.0 and gdb[server]
+5.2.1.
 
-> >in message <20020820144703.16442.qmail@web20107.mail.yahoo.com> you wrote:
-> >
-> >>I'm trying to debug a multi-threaded application using
-> >>gdbserver on the remote/target side and I`m having
-> >>some problems, the output I got is depicted below:
-> >
-> >I'm not surprised. This is broken in most versions of GDB / gdbserver
-> >floating around.
-> >
-> >>I'm using gdbserver5.2.1 (I tried the one from HHL-2.0
-> >>Journeyman and didn`t worked too) compiled by myself
-> >>using Mvista HHL 2.0 tools and gdb 5.2.1 on my i386.
-> >>Am I doing something wrong or remote thread debugging
-> >>is not supported by gdb? I have read something about
-> >
-> >Let's say the support is incomplete :-)
-> >
-> >>problems with multi-thread application debugging but I
-> >>thought that it may be OK at this time...
-> >>Could someone explain to me what`s happening?
-> >
-> >Check out our ELDK  (see  http://www.denx.de/ELDK);  it  contains  an
-> >extended  /  bug  fixed  version  of  GDB  / gdbserver; remote target
-> >debugging of MT applications was one of the areas where we spend some
-> >work.
-> >
-> >If you're just looking for the patches: these can be found on our FTP
-> >server; the README including description of the test procedure is at
-> >ftp://ftp.denx.de/pub/ppc/patches/README-GDB-MT-Support
+> I would also like to offer Wolfgang a BIG KICK IN THE HEAD.  I have
+> looked at the relevant path on his FTP site that you referenced below;
+> despite his name as the only name on the "ChangeLog entry" in the
+> README and the claim of "we spend some work", it is my work.  I wrote
+> just about every line of that patch.
+
+It is based on your patch, right. But your patch was against the  (by
+then)  TOT  of  the GDB CVS. It was not very hard to back port to GDB
+version 5.2 and even to 5.1.1. But yes, we _did_ spend some  work  on
+this.  Basic  functionality  of remote multi-thread debugging (namely
+things  as  thread  selection,  stack  backtraces,  thread  variables
+printouts)  worked  okay.  But  if  I  remember right there were some
+features though that were not working yet. Most notably,  these  were
+asynchronous  thread  notification  (that  is, when gdbserver receive
+signals upon creation of a new thread or death of an existing thread,
+etc.), and single-stepping within a thread.  Again,  "we  spend  some
+work".
+
+> As usual proper credit would be appreciated.
+
+Of course. Added to the README. Is this  OK  for  you  now?  If  not,
+please send me a diff containing the text you want to see added.
+
+Wolfgang Denk
 
 --
-Daniel Jacobowitz
-MontaVista Software                         Debian GNU/Linux Developer
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+ The software required `Windows 95 or better', so I installed Linux.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
