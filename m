@@ -1,32 +1,42 @@
-Content-Type: text/plain
+Message-ID: <3B8DED0C.5529E64E@elettra.trieste.it>
+Date: Thu, 30 Aug 2001 09:36:44 +0200
+From: Lorenzo Pivetta <lorenzo.pivetta@elettra.trieste.it>
 MIME-Version: 1.0
-Message-ID: <5G989169895353.06904@webmail1.inner-21cn.com>
-Date: Thu, 30 Aug 2001 10:46:46 +0800 (CST)
-From: "yah" <hay8888@21cn.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Cc: 
-Subject: MCP750 ROMBoot
+Subject: MVME5100 disk boot
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I use MCP750,linuxppc_2_4 from penguinppc. I rebuild the kernel,and can boot the board via NFS correctly. But when I fill kernel in Bank A(ff000000,onboard flash) and use ROMBoot, it appears:
+Hi,
 
-Linux/PPC load: root=nfs rw ip=on
-Uncompressing Linux...inflate returned FFFFFFFD
-exit
+I'm running linuxppc_2_4_devel (kernel 2.4.7) on a MVME5100.
+Everithing works quite fine (network boot, flash boot etc) but
+to boot from disk I *have* to use the complete pboot command,
+(i.e. "pboot 10 0 1" on my system), and this works.
+I tried to store the default boot paths either in the environment
 
-my kernel is about 840k,is it too big?
+PPC6-Bug>env
+...
+Auto Boot Controller LUN   = 00?
+10
+Auto Boot Device LUN       = 00?
+0
+Auto Boot Partition Number = 00? 1
+...
 
-I realy thank the mailing list and the person who answer me.They give me great help.
+or with the "iot" command. Running "pboot;v" to simulate the
+AutoBoot feature wont work, trying to boot from CLUN =00, DLUN =00
+instead of CLUN =10, DLUN =00. It seems not to store the desired
+boot LUNS (am I missing some steps?).
+Any suggestions?
 
--------------------------------
-玩转衣食住行一条街
-http://adinfo.21cn.com
-21CN短信想点就点
-http://www.21cn.com/21cnhtm/duanxin/index.html
-足不出户，享受专业邮箱服务
-http://www.21cn.net/extend/gb/Charge.htm
+Thanks, Lorenzo.
 
+--
+Ing. Lorenzo Pivetta       \ e-mail: lorenzo.pivetta@elettra.trieste.it
+                            \ tel.:  040 - 3758361 - fax: 040 - 9380902
+Sincrotrone Trieste S.C.p.A. \ url:  http://www.elettra.trieste.it
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
