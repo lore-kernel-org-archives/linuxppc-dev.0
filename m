@@ -1,47 +1,26 @@
-Date: Thu, 18 Nov 1999 01:14:40 +0000 (   )
-From: John Buswell <johnb@one.net>
-Reply-To: webmaster@imaclinux.net
-To: imac-linux-announce@egroups.com
-cc: linuxppc-dev@lists.linuxppc.org,
-        yellowdog-general@lists.yellowdoglinux.com,
-        yellowdog-devel@lists.yellowdoglinux.com, imac-linux-devel@egroups.com,
-        imac-linux@egroups.com
-Subject: iMac 350/DV/DV SE Linux HowTo
-Message-ID: <Pine.LNX.3.96.991118010730.21026K-100000@shell>
+From: Paul Mackerras <paulus@linuxcare.com>
+To: linuxppc-dev@lists.linuxppc.org, Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Kernel debugging??
+Date: Thu, 18 Nov 1999 13:37:13 +1100
+Content-Type: text/plain
+References: <Pine.LNX.4.05.9911172207200.25661-100000@callisto.of.borg>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <99111813390003.04211@argo.linuxcare.com.au>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-The team at iMac Linux (http://www.imaclinux.net) has managed to get the
-iMac DV to boot linux to a usable point. We have put together a small
-howto on how to achieve this Open Firmware boot and how to kludge a root
-file system onto your iMac.
+On Thu, 18 Nov 1999, Geert Uytterhoeven wrote:
 
-You can find the HowTo at:
+> Are you sure about the version? I just checked out this tree, and it's 2.3.22,
+> according to the Makefile. Perhaps I made a mistake? This is the first time I
+> used rsync (`rsync -auvz samba.anu.edu.au::linux-pmac-devel .').
 
-http://www.imaclinux.net:8080/content/942890525/index_html
+There is a 2.3.28 tree in linuxcare.com.au::linux-pmac-devel, which boots
+and runs for me but has some sort of major memory leak.  The tree on samba
+is old, maybe I should just remove it.  I will be putting stuff on
+linuxcare.com.au (== ftp.linuxcare.com.au) generally from now on.
 
-The iMac DV currently has ethernet (through the Dec Tulip device driver)
-and USB support, and appears to function quite fast as well!
-
-For those interested here is /proc/cpuinfo
-
-processor       : 0
-cpu             : 750
-temperature     : 0 C
-clock           : 400MHz
-revision        : 2.2
-bogomips        : 797.90
-zero pages      : total 0 (0Kb) current: 0 (0Kb) hits: 0/146 (0%)
-machine         : PowerMac2,1
-motherboard     : PowerMac2,1 MacRISC Power Macintosh
-L2 cache        : 512K unified
-memory          : 128MB
-
-
-Please feel free to visit the site.
-
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
