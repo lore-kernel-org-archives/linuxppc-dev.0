@@ -1,34 +1,46 @@
-Date: Wed, 27 Feb 2002 09:42:00 +0100 (MET)
-From: Gerard Basler <gbasler@ee.ethz.ch>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: I2C RTC
-Message-ID: <Pine.GSO.4.43.0202270920180.6136-100000@tardis-a01.ee.ethz.ch>
+Date: 27 Feb 2002 09:27:26 -0000
+Message-ID: <20020227092726.8147.qmail@mailFA9.rediffmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: "Sarnath  Kannan" <sparc64@rediffmail.com>
+Reply-To: "Sarnath  Kannan" <sparc64@rediffmail.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: RPXLITE 823 problems
+Content-type: text/plain;
+	format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+Hi,
+   I booted Linux 2.4.7 on the the RPX-Lite-823 and ran
+overnight tests on it. After running for about 8 hrs it
+stops/hangs saying
+"nfs: server not responding"
 
-I should write a driver for the M41T00 real time clock which is
-connected over the I2C bus to the PPC405GP processor.
-To write a replacement for the /dev/rtc driver is not so difficult, but
-I've found out that the kernel reads/writes time directly to the CMOS
-bypassing such a driver.
-I received a similar driver for an ARM platform. It's based on the
-driver acorn/char/pcf8583.c.
-My problem is that I don't know what the ppc_md.set_rtc_time /
-ppc_md.get_rtc_time calls are good for and when they are called (from
-interrupt?). The ARM driver changes a similar pointer
-"set_rtc" defined in arch/arm/kernel/time.c, to it's own routine as soon
-as the driver is ready. (This looks like a bad hack...)
-Must I do a the same with the pointers in ppc_md?
-What's the meaning of the variable xtime?
-(Why is the time not stored in cpu internal counters?)
+   However when the same tests were run on RPX-Lite-850
+they ran for 65hrs without any problems!
 
-Thanks for any hint that could help
+   The tests that we ran are,
+   1. while true { kernel_compilation }, in one telnet
+      window
+   2. while true { find / } on the serial console
+   3. from the nfs server "ping the rpx-lite-823"
+      infinitely
+   the above 3 were run in parallel
 
-Gerard
+   But I am able to ping the target (i.e. the rpx). When
+i sent a AYT (are you there) query from the telnet window
+it responds with a "yes"
+
+   Any idea as to what is happening ? Are there any
+differences between 823 and 850 which could cause this.
+
+The board that we are using are RPX-Lite_DW.
+Note that this not the MontaVista kernel and no microcode
+patches of any kind were applied.
+
+
+Thanks for any help
+Sarnath
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
