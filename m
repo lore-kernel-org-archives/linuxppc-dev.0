@@ -1,33 +1,57 @@
-Date: Sun, 26 Sep 1999 22:10:00 +0200 (MET DST)
-From: Geert Uytterhoeven <geert@sonycom.com>
-To: Anirudh Joshi <ajoshi@Glue.umd.edu>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: SndConfig for Linux/PPC
-In-Reply-To: <Pine.GSO.4.10.9909241353170.4557-100000@digital.eng.umd.edu>
-Message-ID: <Pine.GSO.4.10.9909262208590.11268-100000@begonia.sonytel.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: linuxppc-user@lists.linuxppc.org,
+        yellowdog-general@lists.yellowdoglinux.com,
+        linuxppc-dev@lists.linuxppc.org, mklinux-setup@public.lists.apple.com
+Subject: Re: XFree86-3.3.5-1.6.0b
+References: <Pine.LNX.4.10.9909251336400.8691-100000@opus.bloom.county>
+Reply-To: minyard@acm.org
+From: minyard@acm.org
+Date: 26 Sep 1999 16:21:04 -0400
+In-Reply-To: Tom Rini's message of "Sat, 25 Sep 1999 13:57:23 -0700 (MST)"
+Message-ID: <m2u2oh77bj.fsf@morse.concentric.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 24 Sep 1999, Anirudh Joshi wrote:
-> 	heh... funny you bring this up, cause just yesterday i decided
-> (was coaxed rather) to rewrite the awacs driver.  hopefully when i'm
-> finished, it'll be out of dmasound.c and awacs.c will be done The Right
-> Way (or whatever way i think is Right :).  anyhow, it'll have all the
-> goodies like mixer support, etc...
+It's not working on my Lombard in 24-bit mode.  15-bit mode works
+fine.  Specifically, the server says:
 
-Why remove the AWACS code from damsound.c? In't it better to enhance
-dmasound.c, so Amiga/Atari users benefit from your enhancements as well?
+   No valid modes found
 
-Greetings,
+at startup when 24bpp is specified.  It doesn't say why it is not
+valid, it just doesn't work.  Since it works in 15bpp mode, that seems
+rather odd.
 
-						Geert
+Also, my font server stopped working.  It would lock the machine up at
+startup.  Actually, the machine wasn't locked up, but it wouldn't
+finish booting since xfs didn't "daemonize" properly, it seems. I had
+to remove it from the rc directories.
 
---
-Geert Uytterhoeven ----------------- Sony Suprastructure Center Europe (SUPC-E)
-Geert.Uytterhoeven@sonycom.com ------------------- Sint Stevens Woluwestraat 55
-Phone +32-2-7248648 Fax +32-2-7262686 ---------------- B-1130 Brussels, Belgium
+Also, starting the screen saver causes the following:
+
+  Fatal server error:
+  fbdevUpdateColormap: FBIOPUTCMAP failed (Function not implemented)
+
+That would be nice to have fixed.  This did the same thing for 3.3.3.
+
+
+Tom Rini <trini@kernel.crashing.org> writes:
+
+> Hello again all.
+> 
+> I've uploaded XFree86-3.3.5-1.6.0b rpms to
+> ftp://devel.linuxppc.org/users/trini/XFree86-3.3.5
+> If you installed 3.3.5-1.6.0a, and use FBDev, you only need to update that
+> particular RPM.  If you use Xpmac, nothing should have changed.  This
+> should fix most of the invalid depth/etc problems when trying to do >16.
+> 
+> Compiling w/ egcs 1.1.2-12f did not fix at least the main accel bug
+> (crash), so this is built vs 2.95.x as well.  More feedback/etc is
+> welcome.
+> 
+> ---
+> Tom Rini (TR1265)
+> http://gate.crashing.org/~trini/
+> 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
