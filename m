@@ -1,42 +1,29 @@
-Date: Mon, 31 May 1999 13:43:03 +0200 (CEST)
-From: Philipp Tomsich <mac@mars.zserv.tuwien.ac.at>
-To: Martin Costabel <costabel@wanadoo.fr>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: OF booting news
-In-Reply-To: <374456FE.F3AD5501@wanadoo.fr>
-Message-ID: <Pine.LNX.4.03.9905311339270.6986-100000@mars.zserv.tuwien.ac.at>
+Message-ID: <37529A7D.5E28E8ED@americasm01.nt.com>
+Date: Mon, 31 May 1999 10:19:41 -0400
+From: "Jerry Quinn" <jquinn@nortelnetworks.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Kernel sources
+References: <374E4267.5BF46F98@wanadoo.fr> <37512D45.1088A55A@wanadoo.fr>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+I'm a little confused about what the correct kernel sources are for
+linuxppc.
 
+There are the main sources from Linus at kernel.org mirrored
+everywhere.  There is the vger CVS tree.  And there are sources at
+ftp.linuxppc.org for several kernels. Can someone please fill me in on
+how things are operating?
 
-On Thu, 20 May 1999, Martin Costabel wrote:
+Thanks,
 
-> I am curious: Has anyone ever compared the actual booting times for OF
-> booting and BootX booting (I can't, because my 6400 doesn't OF boot
-> anymore). I suspect the difference is less than 10 seconds. On a total
-> booting time of more than 60 seconds, this is really minimal.
-> 
-> I just rebooted, and the total time of 110 seconds (from typing "reboot"
-> until the login prompt) was spent as follows:
-> 
-> 35 sec: shutdown
-> 23 sec: starting MacOS and BootX extension, hitting the button, waiting
-> for the  
->         penguin to show up and the kernel messages to start scrolling by
-> 52 sec: rest of linux boot procedure.
-
-I upgraded a PowerMac 8500 based PPC target system to YDL-1.0 and
-compared the boot times last week. My findings make a rather strong
-argument for OF booting: while BootX booting (using MacOS 8.6) takes about
-30 secs, the kernel is loaded and started from OF in typically 3 seconds
-(stopwatch timing).
-
-
-
+-- 
+Jerry Quinn                             Tel: (514) 761-8737
+jquinn@nortelnetworks.com               Fax: (514) 761-8505
+Speech Recognition Research
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
