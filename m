@@ -1,71 +1,50 @@
-Message-ID: <39353143.DFE4BBB8@snmc.com>
-Date: Wed, 31 May 2000 10:35:32 -0500
-From: Daris Nevil <Daris.Nevil@snmc.com>
-MIME-Version: 1.0
-To: Tom Roberts <tjroberts@lucent.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Do you have your minimum ramdisk image which can provide basic
- network services ?
-References: <020e01bfc93f$5dc075c0$db52df8d@helsinki> <3934086C.87BF893@lucent.com> <39340AC7.689BFF86@snmc.com> <39351781.B4B61265@lucent.com>
-Content-Type: text/plain; charset=us-ascii
+Date: Wed, 31 May 2000 12:55:49 -0600
+Subject: Re: IBM PowerPC - Linux Connections?
+From: Mark Morrill <mmorrill@powersurfr.com>
+To: LinuxPPC Embedded List <linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <B55ABC54.71C6%mmorrill@powersurfr.com>
+In-Reply-To: <Pine.BSF.4.21.0005310930470.52906-100000@invalid.ed.ntnu.no>
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Tom,
+on 5/31/00 02:21, Geir Frode Raanes at geirfrs@invalid.ed.ntnu.no wrote:
 
-I'm not sure what the Resolver Error 0 zero is either. I don't
-remember seeing that one.
+> There are many defenitions of "embedded." One of my favorites is
+> the negation form "not a workstation." You do not speak of an
+> embedded system. Most embedded systems do not have expansion
+> slots even if they do use the PCI bus. Some systems, like those
+> targeted for telecom do have slots, but these slots are of
+> industrial quality like VME or CompactPCI.
+>
+> When we say embedded we mean the kind of things that control your
+> toaster - and thus can fit into a toaster. We are not speaking of
+> full desktop systems squeezed into a mini-ATX box. Please adjust
+> your consept of scale. Harddrives have movable parts inside and
+> are as such not popular in the embedded world.
 
-However, I do know that you don't need inetd for ping.  If you
-want to use ping the way it is then you will need the nss
-libraries in addition to your /etc/protocols file.  I cheated and
-hacked ping.c and hard-coded the icmp protocol number.  The
-patch for the hack is included below.
+I know I'm not really looking for an embedded system.  I suppose I really
+should be looking in the Intel world - there it seems so easy to build a
+box.  However, I'm also looking for something that won't double as a toaster
+by virtue of the heat the chip puts out.  Ultimately, I want my system to
+run in a smallish box, say, 3" x 12" x 10".  And I don't want a big noisy
+fan.
 
-Daris Nevil
-SiSIC Inc/SNMC
+I brought my questions to the embedded list in the hope that I could get
+leads to a kit that would allow me to prototype a system with off the shelf
+components.  I've got a bit of the software research already happening on a
+Lombard running LinuxPPC.  But I don't think I could take the PowerBook to a
+manufacturer and say, "Make one of these, please"!  :)
 
-----------------------------------------------
+> As to your idea of what it takes to to ready a system for
+> production... Could we take that in private mail exchange?
 
+That would be great!  I've got lots of software experience but mostly on the
+Mac.  So you can imagine how hardware illiterate I am!  :)
 
-Patch for ping.c that removes the need for /etc/protocols and nss
-libraries.
-By Daris Nevil (dnevil@snmc.com)
-To patch:
-        cd netkit-base-0.10/ping
-        patch -Np1 < ping-no-protocols.patch
-
-
---- ping.old    Tue May 30 22:26:48 2000
-+++ ping.c      Tue May 30 22:26:54 2000
-@@ -87,6 +87,7 @@
-  */
- #ifdef __linux__
- #define SAFE_TO_DROP_ROOT
-+#define NO_PROTOCOLS   // Elimnates the need for /etc/protocols and nss
-libs
- #endif
-
- #if defined(__GLIBC__) && (__GLIBC__ >= 2)
-@@ -223,13 +224,16 @@
-        /*
-         * Pull this stuff up front so we can drop root if desired.
-         */
-+#ifdef NO_PROTOCOLS
-        setprotoent(0);  // Leave the /etc/protocols file open
-
-        if (!(proto = getprotobyname("icmp"))) {
-                (void)fprintf(stderr, "ping: unknown protocol icmp.\n");
-                exit(2);
-        }
--
-+#else
-+       proto->p_proto = 1; // ICMP, from /etc/protocols
-+#endif
-        if ((s = socket(AF_INET, SOCK_RAW, proto->p_proto)) < 0) {
-                if (errno==EPERM) {
-                        fprintf(stderr, "ping: ping must run as root\n");
+Mark
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
