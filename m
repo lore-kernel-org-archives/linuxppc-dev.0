@@ -1,75 +1,78 @@
-Subject: Re: [PATCH] Adding support for LXT971/2 PHYs
-To: dan@netx4.com (Dan Malek)
-Date: Fri, 5 May 2000 11:10:37 +1000 (EST)
-Cc: linuxppc-embedded@lists.linuxppc.org (LinuxPPC Embedded Mailing List)
-In-Reply-To: <39119F4D.FD8C4DD1@embeddededge.com> from "Dan Malek" at May 04, 2000 12:03:25 PM
+Message-ID: <39123B16.945B1E6E@embeddededge.com>
+Date: Thu, 04 May 2000 23:08:06 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
+To: Graham Stoney <greyham@research.canon.com.au>
+CC: LinuxPPC Embedded Mailing List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: [PATCH] Adding support for LXT971/2 PHYs
+References: <20000505011037.B41DA3C97D@elph.research.canon.com.au>
 Content-Type: text/plain; charset=us-ascii
-Message-Id: <20000505011037.B41DA3C97D@elph.research.canon.com.au>
-From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Dan,
+Graham Stoney wrote:
 
-Dan Malek writes:
-> Oooops, you almost missed out :-).  I have received a couple of these
-> lately, all implemented slightly differently.  I am going to shake-n-bake
-> all of these and see what falls out of the bag.......
+> Hmmm. Ours is the first patch for this I've seen posted to the mailing list,
 
-Hmmm. Ours is the first patch for this I've seen posted to the mailing list,
-unless there's another list somewhere I'm not aware of. We don't want to be
-re-inventing the wheel; we'd rather contribute something useful that other
-people aren't also doing. It would help if people posted stuff like this on
-the list, so we know what's coming in the pipeline.
+There is lots of stuff that comes straight to me for merging into
+sources.......
 
-> I'll put it into the 2.3.99 tree first, then into one of the 2.2.xx
-> releases.
 
-OK. How do those of us without BitKeeper access grab your 2.3.99 tree?
+> OK. How do those of us without BitKeeper access grab your 2.3.99 tree?
 
-> I think the #ifdefs for 8xx are soon going to be gone, replaced with
-> a significantly larger board information structure.  Things like this
-> will go there.  The #define IMMR is going to disappear, replaced with
-> a memory pointer, among other things.
+If you want to do this kind of stuff, I would suggest anonymous
+BitKeeper pulls to keep you up to date.  It shows up in kernel.org
+rather quickly......
 
-Are you sure we want to do that? I kind of like being able to define a
-minimal board info structure, where the board info structure only contains
-stuff that can potentially vary between models of the same board. My ideal
-solution to the problem of supporting multiple board types is to move the
-magic numbers like the PHY interrupt pin and the PxPAR/PxDIR/etc values into
-each board-specific header file, giving definitions like:
+In this specific case, it wouldn't matter.  For some reason, this
+must have been Fast Ethernet week, as I received several patches
+over the last few days :-).
 
-    #define PAPAR_VALUE	0x....
-    #define PADIR_VALUE	0x....
 
-Doing this exhaustively (for all boards) would allow all the '#ifdef
-CONFIG_boardname's to be replaced with generic macro usages which allow new
-board types to be added by simply writing the new board.h file, and adding the
-#include for it in include/asm-ppc/mpc8xx.h. The other advantage over
-complicating the board info structure is that there's no runtime code size
-overhead this way. Keep it simple and all that. The only problem is that the
-support for existing boards only goes part way towards doing this at present.
+> Are you sure we want to do that?
 
-We took this approach with our new custom board, and haven't had to add a
-single #ifdef CONFIG_ourboardname outside the one which chooses our
-board-specific header in mpc8xx.h. Of course we'll go with the flow, but I
-think we can do a better job of multiple board support without a complex board
-info structure. On the other hand, the mimimal-size approach runs counter to
-the potential goal of having a single kernel config which runs on anything.
-I personally don't think that's desirable, but it may be another motivation
-behind the put-it-all-in-board-info approach.
+I don't have a solution yet, just several completely different approaches
+from people.  Something has to give, because I agree it is getting too
+complicated.  It's OK for me, because I have been living it for years
+and know what it all means, but it doesn't help someone looking at it
+for the first time.
 
-I can post the relevant sections of our board.h file if an example help
-illustrate this better.
 
-Regards,
-Graham
---
-Graham Stoney
-Principal Hardware/Software Engineer
-Canon Information Systems Research Australia
-Ph: +61 2 9805 2909  Fax: +61 2 9805 2929
+> .......... My ideal
+> solution to the problem of supporting multiple board types is to move the
+> magic numbers like the PHY interrupt pin and the PxPAR/PxDIR/etc values into
+> each board-specific header file,
+
+
+I understand your point, but the other side of the argument is when you
+don't keep things like this together, people don't realize how many
+examples of how to do it exist.  They also don't realize how their
+change may affect someone else.
+
+
+> complicating the board info structure is that there's no runtime code size
+> overhead this way.
+
+Yes, but this is only initialization, not run time overhead.
+
+> We took this approach with our new custom board, and haven't had to add a
+> single #ifdef CONFIG_ourboardname outside the one which chooses our
+> board-specific header in mpc8xx.h.
+
+I do that with lots of custom boards.  Most are simple derivative of
+what is already there.  In fact, some have even choose the same I/O
+pins for Ethernet (there aren't many options, and most have been used :-),
+so we don't even need to add anything but another conditional on an
+#ifdef.
+
+Anyway, this has kind of gone down a rat hole...I have a bunch of
+code from several people I am trying to sort out right now.  I want
+to use it all, and I am choosing the best from all of it.  Don't
+worry, I'll use some of yours too :-).  It's just not as easy as
+getting a patch and checking it in.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
