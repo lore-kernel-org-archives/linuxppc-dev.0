@@ -1,28 +1,40 @@
-Date: Sun, 29 Oct 2000 19:46:25 -0500 (EST)
-From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-To: Robert E Brose II <bob@kunk.jriver.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Flash for PPC
-In-Reply-To: <20001029225338.17005.qmail@kunk.jriver.com>
-Message-ID: <Pine.SOL.3.96L.1001029194415.28066B-100000@unix15.andrew.cmu.edu>
+Message-Id: <200010300050.e9U0oej23495@shell.faradic.net>
+Date: Sun, 29 Oct 2000 19:50:36 -0500
+From: jingai <jingai@floatingpenguins.com>
+To: "linuxppc-dev" <linuxppc-dev@lists.linuxppc.org>
+Subject: USB keyboard & 2.2.18pre17
+Reply-To: jingai@floatingpenguins.com
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 29 Oct 2000, Robert E Brose II wrote:
->
-> Yes I've heard  plugins don't work in PPC linux however if the flash code
-> was ported perhaps that would be an incentive?
+Hello list, got a bit of a problem.  I just rsync'ed both Paul's and Ben's
+stable tree, 2.2.18pre17, and with both my USB keyboard no longer
+works.  With verbose debugging output enabled, I see that the
+keyboard, mouse, and printer are all detected, but for some reason
+the keyboard is not attached as a keyboard device.  I have a feeling
+it may have something to do with the new ADB keyboard/mouse
+drivers, because I also have an ADB keyboard and mouse connected,
+both of which work.  However, my USB mouse and printer function
+properly, so I'm thinking the new input layer stuff is seeing the ADB
+keyboard first and it doesn't attempt to attach the USB keyboard
+because it's already found one (ie, bug).
 
-I thought RealPlayer would have been an incentive...
+I'll try to have a look over the code and find the bug myself, but I
+was just wondering if anyone else has noticed this, and if there is
+already a patch available..
 
-I think the fate of Netscape plugins rests in Daniel Puertas's hands. In
-the meantime, I've heard that Konqueror supports Netscape plugins - anyone
-care to confirm?
+BTW, the keyboard works fine with 2.2.17 and 2.4.0-test10, although
+with 2.2.17 it would sporadically lose my keyboard entirely, but it
+doesn't happen *too* often.
 
--Hollis
+Also, the keyboard is a Macally iKey (the blue one to match the
+blue G3s..)
+
+Regards,
+Jonathan
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
