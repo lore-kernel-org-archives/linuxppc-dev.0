@@ -1,66 +1,113 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Date: Fri, 02 Apr 2004 12:34:56 -0500
-From: Jeff Tucker <jeff@jltnet.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Need help booting linux on IBM 405EP eval board
-Message-ID: <1866383.1080909296@[192.168.0.230]>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <15270-14190@sneakemail.com>
+References: <15270-14190@sneakemail.com>
+Mime-Version: 1.0 (Apple Message framework v613)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <30B3D487-84CC-11D8-A2BE-000A959CAB7C@mvista.com>
+Cc: linuxppc-embedded@lists.linuxppc.org,
+	Andrei Konovalov <akonovalov@ru.mvista.com>
+From: Scott Anderson <scott_anderson@mvista.com>
+Subject: Re: SystemACE but not V2PRO
+Date: Fri, 2 Apr 2004 09:35:53 -0800
+To: "Stephen Williams" <612dlag102@sneakemail.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi, guys.
+Hi there,
+The current ML300 maintainer is Andrei Konovalov
+<akonovalov@ru.mvista.com>
+(cc'ed on this message).  I'm guessing he didn't reply to your message
+last week because he's swamped, but hopefully having this directly
+addressed to him will prompt a response.
 
-I sent a message like this to the U-Boot mailing list last night. I've been
-told this is definitely not a U-Boot problem, so I'm hoping that the people
-on this list can help me.
+   Scott
 
-I'm having a hard time getting U-Boot to boot Linux on an IBM 405EP
-evaluation board. Here's what I've tried:
+On Apr 1, 2004, at 6:38 PM, Stephen Williams wrote:
 
-First, I think my kernels are fine. I can compile 2.4.18 from an older
-version of the ELDK or I can compile 2.4.24 from the latest released ELDK.
-I'm using ELDK tools for all of my builds. Using the IBM bootloader that
-comes on the board and the "treeboot" image file format, I can get the IBM
-board to tftp my kernel over the lan and run it. So, I think the kernel is
-working fine.
+>
+> The attached patch is my spin at getting the existing xsysace
+> block driver working on systems that have SystemACE chips, but
+> do not use Virtex-II-Pro chips. The adapter.c file assumes that
+> the system ace halt will halt the processor. This is not the
+> case in general, so this patch ifdefs that part of the code out
+> using CONFIG_VIRTEX_II_PRO.
+>
+> This is only part of the story for getting the systemace
+> working in general, but the remaining bits are configuration
+> issues, not code/driver support.
+>
+> Question: Who is the maintainer for this section of code? It
+> is maybe MonteVista?
+> --
+> Steve Williams                "The woods are lovely, dark and deep.
+> steve at XXXXXXXXXX           But I have promises to keep,
+> http://www.XXXXXXXXXX         and lines to code before I sleep,
+> http://www.picturel.com       And lines to code before I sleep."
+> Index: drivers/block/xilinx_sysace/adapter.c
+> ===================================================================
+> RCS file:
+> /cvsroot/linuxppc_2_4_devel/drivers/block/xilinx_sysace/adapter.c,v
+> retrieving revision 1.3
+> diff -p -u -r1.3 adapter.c
+> --- drivers/block/xilinx_sysace/adapter.c	30 Oct 2003 00:32:49
+> -0000	1.3
+> +++ drivers/block/xilinx_sysace/adapter.c	2 Apr 2004 02:27:37 -0000
+> @@ -74,7 +74,9 @@ MODULE_LICENSE("GPL");
+>  static const int dont_spin = 0;
+>
+>  static u32 save_BaseAddress;	/* Saved physical base address */
+> +#ifdef CONFIG_VIRTEX_II_PRO
+>  static void (*old_restart) (char *cmd) = NULL;	/* old ppc_md.restart
+> */
+> +#endif
+>
+>  static unsigned char heads;
+>  static unsigned char sectors;
+> @@ -277,6 +279,13 @@ proc_cleanup(void)
+>  }
+>  #endif
+>
+> +#ifdef CONFIG_VIRTEX_II_PRO
+> +/*
+> + * The XSysAce_ResetCfg function causes the SystemACE to reset the
+> + * Xilinx chain that is attached to it. If I am a Virtex II Pro, then
+> + * presumably that includes me. Thus, The ResetCfg will ultimately
+> + * reset me, the processor, end of story.
+> + */
+>  static void
+>  xsysace_restart(char *cmd)
+>  {
+> @@ -285,6 +294,7 @@ xsysace_restart(char *cmd)
+>  	/* Wait for reset. */
+>  	for (;;) ;
+>  }
+> +#endif
+>
+>  /*
+>   * The code to handle the block device starts here.
+> @@ -725,8 +735,10 @@ cleanup(void)
+>  	iounmap((void *) cfg->BaseAddress);
+>  	cfg->BaseAddress = save_BaseAddress;
+>
+> +#ifdef CONFIG_VIRTEX_II_PRO
+>  	if (old_restart)
+>  		ppc_md.restart = old_restart;
+> +#endif
+>  }
+>
+>  static int __init
+> @@ -837,9 +849,11 @@ xsysace_init(void)
+>  	       DEVICE_NAME, save_BaseAddress, cfg->BaseAddress, XSA_IRQ,
+>  	       size / 2);
+>
+> +#ifdef CONFIG_VIRTEX_II_PRO
+>  	/* Hook our reset function into system's restart code. */
+>  	old_restart = ppc_md.restart;
+>  	ppc_md.restart = xsysace_restart;
+> +#endif
+>
+>  	if (proc_init())
+>  		printk(KERN_WARNING "%s: could not register /proc interface.\n",
 
-I also don't have any problem running U-Boot. I compiled 1.0.2 and
-installed it on the board. U-Boot runs fine and I can make it tftp a file
-over the network as well. Using iminfo, I can see that it read what I
-expect. However, no matter what I try, I can't get the kernel to actually
-boot.
-
-In the older kernel, I'm using a "make pImage" and in the newer kernel I do
-"make uImage". I've also tried running the mkimage tool manually with
-various options to see if I could get a kernel to boot. iminfo says the
-kernel is fine and I get to the "Uncompressing Linux Kernel ... OK" stage
-but it stops there.
-
-I'm aware that the denx.de site has a FAQ which appears to address this
-issue:
-<http://www.denx.de/twiki/bin/view/DULG/LinuxHangsAfterUncompressingKernel>
-
-However, the structure mentioned there (bd_info) doesn't even seem to apply
-for a 405EP-based board. The ppcboot.h file isn't included by the files
-used when building a 405EP kernel for the 405EP evaluation board.
-
-It still could be a problem passing parameters to the kernel, I suppose,
-but I am not sure how those are defined in the first place.
-
-I searched the mailing list archives but couldn't find anyone who had a
-similar problem. So, if someone is using U-Boot to boot a kernel on the
-405EP evaluation board would be willing to give me some pointers, I'd
-appreciate it.
-
-Thanks
-Jeff
-
-
-
---
-Jeff Tucker
-jeff@jltnet.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
