@@ -1,26 +1,34 @@
-Date: Tue, 9 Apr 2002 23:36:45 -0400
-From: Bill Fink <billfink@mindspring.com>
-To: LinuxPPC Developers <linuxppc-dev@lists.linuxppc.org>
-Cc: Bill Fink <billfink@mindspring.com>
-Subject: Re: dmasound audio patch
-Message-Id: <20020409233645.78550d1d.billfink@mindspring.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: Jesse McCrosky <mccrosky@ualberta.ca>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: xfs working in benh kernel
+References: <64EAEAA6-4C1F-11D6-841B-003065ABC1E2@ualberta.ca>
+Reply-To: Jens Schmalzing <jens.schmalzing@physik.uni-muenchen.de>
+From: Jens Schmalzing <jens.schmalzing@physik.uni-muenchen.de>
+Date: 10 Apr 2002 08:29:53 +0200
+In-Reply-To: <64EAEAA6-4C1F-11D6-841B-003065ABC1E2@ualberta.ca>
+Message-ID: <hh1ydorrq6.fsf@theorie.physik.uni-muenchen.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 8 Apr 2002, Ethan Benson wrote:
+Hi,
 
-> On Mon, Apr 08, 2002 at 09:52:00PM -0400, Bill Fink wrote:
-> > I understand that ALSA is now available for PPC. I'll have to take a
-> > closer look at it when I get a chance. When do you think ALSA will be
-> > an integral part of the stable kernel?
->
-> when 2.5 becomes the next stable kernel (2.6 or 3.0).
+Jesse McCrosky writes:
 
-I was afraid that was what someone would say.  :-)
+> I have managed to get xfs (the filesystem, not the font server) working
+> in benh's 2.4.19-pre6 kernel.  I'm new to this list, so I'll just ask:
+> is this the sort of thing that is worth putting together a patch for?
 
-				-Bill
+When I upgrade the kernel on my Pismo, I just apply the XFS patch to
+Ben's tree without modifications.  This has worked for me for such a
+long time that I don't remember when I started.
+
+Regards, Jens.
+
+--
+J'qbpbe, le m'en fquz pe j'qbpbe!
+Le veux aimeb et mqubib panz je pézqbpbe je djuz tqtaj!
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
