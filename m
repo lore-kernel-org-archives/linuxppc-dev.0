@@ -1,20 +1,22 @@
-Return-Path: <chris@alcor.co.uk>
-Received: from mizar.alcor-electronics.co.uk (alcor.demon.co.uk [62.49.62.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 00DB42BDEB
+Return-Path: <jonmasters@gmail.com>
+Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.192])
+	by ozlabs.org (Postfix) with ESMTP id D0CF52BDEB
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 14 Nov 2004 08:11:29 +1100 (EST)
-From: "Chris Down" <chris@alcor.co.uk>
-To: <wd@denx.de>
-Date: Sat, 13 Nov 2004 21:11:18 -0000
-Message-ID: <000601c4c9c5$514b34c0$0101a8c0@alcor1>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <20041113192802.C6DFEC1430@atlas.denx.de>
+	Sun, 14 Nov 2004 10:12:25 +1100 (EST)
+Received: by rproxy.gmail.com with SMTP id f1so413537rne
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat, 13 Nov 2004 15:12:21 -0800 (PST)
+Message-ID: <35fb2e5904111315122b94e49e@mail.gmail.com>
+Date: Sat, 13 Nov 2004 23:12:21 +0000
+From: Jon Masters <jonmasters@gmail.com>
+To: "Mukund JB." <mukundjb@esntechnologies.co.in>
+In-Reply-To: <4EE0CBA31942E547B99B3D4BFAB348111ECE24@mail.esn.co.in>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+References: <4EE0CBA31942E547B99B3D4BFAB348111ECE24@mail.esn.co.in>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: Problem bringing up Linux on Custom MPC852 Board 
+Subject: Re: Problem Executing thread.
+Reply-To: jonathan@jonmasters.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,18 +27,13 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> ...
-> > At this point it stops executing in arch_kernel_thread.
-> 
-> I bet some beer that this is actually a FAQ - see 
-> http://www.denx.de/twiki/bin/view/DULG/LinuxCrashesRandomly
-> 
-> This phenomenon is typical for a novice's port of U-Boot.
-> 
+On Thu, 11 Nov 2004 18:10:46 +0530, Mukund JB.
+<mukundjb@esntechnologies.co.in> wrote:
 
-Wolfgang, thanks for your reply. I will re-check the SDRAM initialisation and
-UPM programming.
+> I have a query regarding the threads in Linux.
 
-Regards
+You didn't send all of the code and had hand altered what you posted
+since both functions had the same name by the time you posted it to
+the list - please resend it all.
 
-Chris Down
+Jon.
