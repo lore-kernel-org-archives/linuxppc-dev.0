@@ -1,42 +1,45 @@
-Date: Mon, 7 Dec 1998 14:56:07 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Martin Costabel <costabel@lie.univ-rennes1.fr>
-cc: linuxppc-dev@lists.linuxppc.org
+To: linuxppc-dev@lists.linuxppc.org
 Subject: Re: XF68_FBDev under MkLinux?
-In-Reply-To: <199812071315.NAA07323@lie.univ-rennes1.fr.maths>
-Message-ID: <Pine.LNX.4.03.9812071453440.31794-100000@mercator.cs.kuleuven.ac.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Kohkichi Hosoda <khosoda@venus.dti.ne.jp>
+In-Reply-To: Your message of "Sun, 6 Dec 1998 16:13:38 +0100 (MET)"
+	<Pine.LNX.4.02.9812061549490.323-100000@cassiopeia.home>
+References: <Pine.LNX.4.02.9812061549490.323-100000@cassiopeia.home>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <19981207225752U.khosoda@venus.dti.ne.jp>
+Date: Mon, 07 Dec 1998 22:57:52 +0900
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 7 Dec 1998, Martin Costabel wrote:
-> >What about the XF68_FBDev from XFree86 3.3.3?
-> 
-> I must confess that I am a bit lost among the many different versions of 
-> XF68_FBDev. For the one from XFree86 3.3.3, do I have to install all of 
-> XFree86 3.3.3, or does it work with XFree86 3.3.2 which is in linuxppc-pre-R5?
-> I tried several versions, and both on R4 and on pre-R5, the result was the same.
-> Except that some versions did not want to run on pre-R5.
+>>>>> On Sun, 6 Dec 1998 16:13:38 +0100 (MET), Geert Uytterhoeven <geert@geert.cs.kuleuven.ac.be> said:
 
-The X server doesn't use any of the X11 shared libs. All it needs is libc and
-libm. So if you have to correct glibc, it's supposed to work.
+>> Did you fix the problem with the non-working option (alt)
+>> keys?  In the XF68_FBDev of the new R5beta linuxppc, it
+>> is still there.  For me (PM6400, standard Apple keyboard
+>> and 1-button mouse), XF68_FBDev is pretty much useless.
 
-> If XF68_FBDev is going to be the standard for everybody, one should make sure
-> that it works on PowerMacs, too.
+Geert> What about the XF68_FBDev from XFree86 3.3.3?
 
-Sure it has to!
+Hi,
 
-Greetings,
+I just installed Xfree86-3.3.3 and XF68_FBDev on PowerMac
+8500/120 (standard Apple keyboard, 1-button mouse and
+linuxpmac 2.1.125).  The situation was the same as Martin.
+So, I added adb_buttons=1 in boot-file and restarted the
+system.  Then it seems to me that option key itself acts
+like right button.  However, there is no middle button
+emulation.
 
-						Geert
+Somebody in this list I can't remember (sorry) wrote that
+adb_buttons=1 option enable the right option- and control-
+keys to emulate mouse buttons.  Unfortunately, my standard
+Apple keyboard has left option- and control- keys but does
+not have right ones. :-(
 
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
+Kohkichi Hosoda
 
+E-mail address: khosoda@venus.dti.ne.jp
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
