@@ -1,33 +1,46 @@
-Date: Wed, 1 Aug 2001 17:41:58 -0500
-From: "Joseph P. Garcia" <jpgarcia@execpc.com>
-To: Bastien Nocera <hadess@hadess.net>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: special adb buttons don't survive sleep
-Message-Id: <20010801174158.2b4e3d5d.jpgarcia@execpc.com>
-In-Reply-To: <3B688167.9010906@hadess.net>
+Message-ID: <001801c11b22$557edce0$5b9e8aa3@cello>
+From: "kenji mac" <kenji114@mac.com>
+To: <linuxppc-dev@lists.linuxppc.org>
 References: <3B688167.9010906@hadess.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: POS 2.4G card
+Date: Thu, 2 Aug 2001 16:11:21 +0900
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 01 Aug 2001 23:23:35 +0100
-Bastien Nocera <hadess@hadess.net> wrote:
-> Joseph's code for the special adb buttons doesn't survive sleep, the
-> event device just isn't present anymore when coming back from sleep. All
-> the other event devices are present (/dev/input/eventX).
+Hi, I am new to this list.
 
-One of my patches attempts to fix this.  Upon wakeup, all adb input devices are deregistered, probed, and registered.  Any device that is open at the time is left safely dangling when deregistered, and if still open upon a register, skipped over.  so if device 2 of 0,1,2,3 is open, post sleep, 2 will be 3, and 3 will be 4 (0,1,_,3,4).
+now i am porting the driver for 2.4G POS PCI cards to linuxppc.
+and succeeded!
 
-My modification changes it so it re-registers devices when found and are different, registers if new, and lastly, deregisters anything that was there, but wasn't found in the probe.  All still existing hardware is re-inited, but their NIL hooks are untouched.  I don't know if its safe though.  Recently, my keyboard has been vanishing.  X runs fine, but need to login to do anything.  last I tried, a panic right after unmounting fs's.  but I'm using XF4.1, which still seems to have issues with my ati ever since the silken cursor was added. (OT)
+but i will never be able to see the max transmisson performance as
+the developing environment is on the PowerMacintosh 8500/150 ;-(
+(kernel 2.2.17 Vinelinux2.1CR)
 
-It still seems like the best idea.  Better than telling the daemon something happened.  Sleep really shouldn't be in a keyboard event handler's vocabulary imo.
+actually the output of netperf test is about 180Mbps while it could be
+2.3Gbps on Intel/Linux driver.
 
-Franz might know of any pitfalls in my method.
+so i made up my mind to buy the fastest machine to test the max performance
+on linuxppc.
 
---
-Joseph P. Garcia
-http://www.lycestra.com/
+and, I have a simple question. I think new Apple G4 is the fastest machine,
+having
+some troubles about Geforce video cards for booting linuxppc.
+then, Can I take the story below for boot linuxppc on Apple new G4?
+
+1) put yaboot files in System folder , using Geforce. and shutdown.
+2) change the video card to supported video cards in
+(http://linuxppc.org/hardware/videocards/index.php3?css_ok=1)
+3) then boot linuxppc install cd.
+
+Is it Okay??
+
+I think it's great to realize the 2.4G transmission on PowerMac(linuxppc)!!
+
+kenji in japan.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
