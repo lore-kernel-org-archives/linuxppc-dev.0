@@ -1,25 +1,132 @@
-Message-ID: <3AB80453.3BF880CD@mvista.com>
-Date: Tue, 20 Mar 2001 20:30:59 -0500
-From: Dan Malek <dan@mvista.com>
+To: =?ISO-8859-1?Q?K=E1ri_Dav=ED=F0sson?= <karid@flaga.is>
+Subject: Re: More USB questions (for the MPC8xx)
+Message-ID: <985166123.3ab8712b0b3c7@imp.imms.de>
+Date: Wed, 21 Mar 2001 10:15:23 +0100 (MET)
+From: Christian Schroeder <christian.schroeder@imms.de>
+Cc: "Linux Embedded ppc (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+References: <EADB10BAC266A14A85ECBF8686A73E3108AFEA@kolkrabbi.flaga.is>
+In-Reply-To: <EADB10BAC266A14A85ECBF8686A73E3108AFEA@kolkrabbi.flaga.is>
 MIME-Version: 1.0
-To: Ralph Blach <rblach@intrex.net>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: es1371.o sound module on a IBM 405 walnut platform
-References: <3AB4E3BA.AF71AFE6@intrex.net> <3AB52248.D2411FF2@mvista.com> <3AB65B72.F77A0760@raleigh.ibm.com> <3AB65FCD.44826199@mvista.com> <3AB7FF89.3DC97EB2@intrex.net>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Ralph Blach wrote:
+Quoting Kári Davíðsson <karid@flaga.is>:
 
-> This would allow one to allocate noncached buffers for usb and SCSI work.
+>
+> Hi,
+>
+> I managed to get the m8xxhci with the TIMER1 patch to sort of work with
+> my board.
+> I.e. the SOF seem to be genrated normally and there seem to be some
+> traffic on
+> the usb bus when I plug in keyspan_pda USB device. Althoug the
+> initialization of
+> the keyspan_pda fails.
+> I have also tried a MS USBMouse but then the m8xxhci is totally silent
+> and there
+> is no traffic on the USB.
+>
+> What kind of USB devices have you used to plug to a MPC8xx in HIC mode?
+>
 
-Ummmm....I added those at the request of the people doing the usb
-work.  If they aren't correct or sufficient, the usb wouldn't be
-working on the 4xx or 8xx processors.
+Hi,
 
 
-	-- Dan
+I have similar experiences. I use a TQM823L board and applied Roman Weiss-
+gaerbers patches. The microcode patch seems to work, because I can see the
+SOF packets every 1 ms between D+ and GND. If I disconnect /DREQ1, the
+SOFs disappear. So far so good. Now I tried to connect USB devices.
+
+First I connected an USB mouse and got:
+
+rh::int:0 2 1 301 1
+m8xxhci_alloc_dev(usb_dev=c0fcca00)
+hub.c: USB new device connect on bus1/1, assigned device number 2
+usb_control/bulk_msg: timeout
+unlink_urb(urb=c04b5f50,qtype=2) status -115
+unlink_urb(urb=c04b5f50) done
+usb.c: USB device not accepting new address=2 (error=-110)
+m8xxhci_free_dev(usb_dev=c0fcca00)
+m8xxhci_free_dev(dev=c0fcca00) done
+m8xxhci_alloc_dev(usb_dev=c0fcca00)
+hub.c: USB new device connect on bus1/1, assigned device number 3
+usb_control/bulk_msg: timeout
+unlink_urb(urb=c04b5f50,qtype=2) status -115
+unlink_urb(urb=c04b5f50) done
+usb.c: USB device not accepting new address=3 (error=-110)
+m8xxhci_free_dev(usb_dev=c0fcca00)
+m8xxhci_free_dev(dev=c0fcca00) done
+
+The SOFs disappear completely and I cannot see any traffic
+between D+ and GND. The D+ Line goes up (about 3 V).
+
+If I connct a Thunderbird 4-port USB hub, I get:
+
+rh::int:0 2 2 101 1
+m8xxhci_alloc_dev(usb_dev=c0fcca00)
+hub.c: USB new device connect on bus1/1, assigned device number 2
+rx err sc (status 0x1c54)
+complete urb c04b5f50, actual_length 0, status -1
+unlink_urb(urb=c04b5f50,qtype=2) status -110
+unlink_urb(urb=c04b5f50) done
+complete urb c04b5f50, actual_length 0, status -1
+unlink_urb(urb=c04b5f50,qtype=2) status -110
+unlink_urb(urb=c04b5f50) done
+complete urb c04b5f50, actual_length 0, status -1
+unlink_urb(urb=c04b5f50,qtype=2) status -110
+unlink_urb(urb=c04b5f50) done
+complete urb c04b5f50, actual_length 0, status -1
+unlink_urb(urb=c04b5f50,qtype=2) status -110
+unlink_urb(urb=c04b5f50) done
+complete urb c04b5f50, actual_length 0, status -1
+unlink_urb(urb=c04b5f50,qtype=2) status -110
+unlink_urb(urb=c04b5f50) done
+usb.c: USB device not responding, giving up (error=-110)
+m8xxhci_free_dev(usb_dev=c0fcca00)
+m8xxhci_free_dev(dev=c0fcca00) done
+m8xxhci_alloc_dev(usb_dev=c0fcca00)
+hub.c: USB new device connect on bus1/1, assigned device number 3
+complete urb c04b5f50, actual_length 8, status -1
+unlink_urb(urb=c04b5f50,qtype=2) status -110
+unlink_urb(urb=c04b5f50) done
+complete urb c04b5f50, actual_length 8, status -1
+unlink_urb(urb=c04b5f50,qtype=2) status -110
+unlink_urb(urb=c04b5f50) done
+complete urb c04b5f50, actual_length 8, status -1
+unlink_urb(urb=c04b5f50,qtype=2) status -110
+unlink_urb(urb=c04b5f50) done
+complete urb c04b5f50, actual_length 8, status -1
+unlink_urb(urb=c04b5f50,qtype=2) status -110
+unlink_urb(urb=c04b5f50) done
+rx err sc (status 0x1c44)
+complete urb c04b5f50, actual_length 0, status -1
+unlink_urb(urb=c04b5f50,qtype=2) status -110
+unlink_urb(urb=c04b5f50) done
+usb.c: USB device not responding, giving up (error=-110)
+m8xxhci_free_dev(usb_dev=c0fcca00)
+m8xxhci_free_dev(dev=c0fcca00) done
+
+The SOFs disappear too!
+
+In some rare cases (when I connect a HUB), the SOFs don't
+disappear. In this cases the 4-port HUB is recognized
+partially.
+
+
+Christian Schroeder
+
+Dr.-Ing. Christian Schroeder
+Institut fuer Mikroelektronik- und Mechatronik-Systeme
+Langewiesener Strasse 22
+98693 Ilmenau
+Telefon: +49 3677 678315
+Telefax: +49 3677 678337
+Mobil:   +49 173 5789172
+e-mail:  christian.schroeder@imms.de
+www:     http://www.imms.de/~christi/cs.html
+pgp:     finger christi@finger.imms.de
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
