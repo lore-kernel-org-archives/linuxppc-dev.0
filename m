@@ -1,45 +1,45 @@
-Message-ID: <4F7C25239E293B4A80E2533CF88DB61B0109F36F@tarexch01.tamest.terayon.com>
-From: "Baevsky, Igal" <igal.baevsky@terayon.com>
-To: "'Benjamin Herrenschmidt'" <benh@kernel.crashing.org>,
-	Tim Seufert <tas@mindspring.com>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
-	"Baevsky, Igal" <igal.baevsky@terayon.com>
-Subject: RE: pmac_halt() bug
-Date: Tue, 11 Nov 2003 14:03:32 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Tue, 11 Nov 2003 08:36:58 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Christian <evil@g-house.de>
+Cc: linas@austin.ibm.com, linuxppc-dev@lists.linuxppc.org
+Subject: Re: ppc32 lockups with 2.6
+Message-ID: <20031111153658.GH8584@ip68-0-152-218.tc.ph.cox.net>
+References: <3FA5698A.9000905@g-house.de> <3FAABE62.4090804@g-house.de> <20031110125044.A22030@forte.austin.ibm.com> <3FB01392.60500@g-house.de> <20031110175740.A32176@forte.austin.ibm.com> <3FB02C85.6090400@g-house.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3FB02C85.6090400@g-house.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-When in MacOS I can just unplug the power cable and put it back and the
-system will power on. On linux it's not working - after power cable is back,
-the system is not powering on.
-After playing with /etc/init.d/halt script I managed to bring system to the
-state where all processes are stoped and all FS are unmounted but the system
-is still up.
-As I understand, I need some module or tool to write something to the MAC
-bios or eeprom whatever, during linux startup. Can somebody tell me what can
-I use ?
-Thanks,
-Igal.
+On Tue, Nov 11, 2003 at 01:25:41AM +0100, Christian wrote:
+>
+> linas@austin.ibm.com wrote:
+> >
+> >kdb is a built-in kernel debugger. gdb is useless for this case,
+> >although kgdb could be another alternative.
+>
+> yes, i thought so. i'm still a bit confused if "kdb" and "kgdb".
+>
+> as http://kgdb.sourceforge.net/whichdebugger.html points out, kdb would
+> be the better choice here, but i don't see any "kdb" within the kernel
+> config nor does it seem to be a user space-tool. anyway, i have
+>
+> CONFIG_DEBUG_KERNEL=y
+> CONFIG_DEBUG_SLAB=y
+> CONFIG_MAGIC_SYSRQ=y
+> CONFIG_KGDB=y
+> CONFIG_KGDB_TTYS1=y
+> CONFIG_XMON=y
+> CONFIG_DEBUG_INFO=y
+> CONFIG_BOOTX_TEXT=y
 
------Original Message-----
-From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org]
-Sent: Tue, November 11, 2003 10:25
-Subject: Re: pmac_halt() bug
+Note that with XMON and KGDB both enabled, you'll get xmon instead,
+which again I _think_ works on PReP (but it was long ago when I tested)
+and here I think you'll be better off with KGDB.
 
-> That's precisely it. Some (all?) pmacs with server mode don't
-> automatically turn on after an intentional shutdown, only after power
-> is lost. So the idea is to have the UPS signal the computer to halt,
-> and then have the UPS cut power once it's safe. Later the UPS switches
-> power back on and the computer will automatically boot.
-
-Ok, 2 things:
-
-- How does the UPS knows it's "safe" ?
-- And right, I need to disable server mode to be able to shut down :) So
-I indeed to that on those machines
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
