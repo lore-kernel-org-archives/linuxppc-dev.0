@@ -1,33 +1,28 @@
-From: John_McRoberts@Mitel.COM
-To: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <85256ADA.00556FC9.00@kanmta01.software.mitel.com>
-Date: Wed, 3 Oct 2001 16:34:54 +0100
-Subject: reading hard disk partition
-Mime-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Message-ID: <3BBB35A2.C2708418@mvista.com>
+Date: Wed, 03 Oct 2001 11:58:26 -0400
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
+To: Nguyen Trung Thanh <jaringuyentrungthanh@yahoo.com>
+Cc: "'Linuxppc-Embedded '" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: USB Isochronous for MPC823
+References: <619D608DD3F0D311882C009027732E1A8B1779@ntserver.act.domain> <004001c14bf3$7c326c60$b480a984@int.serialsystem.com.sg>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I can't seem to read the hard disk partitions. The hardware is custom hardware
-based on a PPC860 and a hardware IDE interface implemented in an FPGA. As can be
-seen from the output the hard disk is recognised.
+Nguyen Trung Thanh wrote:
 
-Any ideas??
+> I've tried to use m8xxhci.c from Hardhat2.0,
+> but I saw that it still has a bunch of errors.
+
+The USB on 8xx isn't going to work properly without the
+proper chip revision, matching microcode patch, and specific
+board modification (8xx pin loopbacks).  Have you read the
+Motorola errata, USB application notes, and properly followed
+those?
 
 
-output from linux kernel
-
-ide: Assuming 50MHz system bus speed for PIO modes; override with idebus=xx
-probing for hda: present=0, media=32, probetype=ATA
-hda: Ritek Corporation, ATA DISK drive
-hda: Ritek Corporation, ATA DISK drive
-hda: 250368 sectors (128 MB) w/2KiB Cache, CHS=978/8/32
-ide-floppy driver 0.97
-Partition check:
- hda: hda1
-hd: unable to get major 3 for hard disk
-<============================ error
-
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
