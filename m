@@ -1,50 +1,34 @@
-Message-ID: <393579E0.F387D31F@mandrakesoft.com>
-Date: Wed, 31 May 2000 16:45:20 -0400
-From: Jeff Garzik <jgarzik@mandrakesoft.com>
+Date: Wed, 31 May 2000 22:46:30 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: mesh in 2.4.0-test1
+Message-ID: <Pine.LNX.4.05.10005312242300.2148-100000@callisto.of.borg>
 MIME-Version: 1.0
-To: Josh Huber <huberj@wpi.edu>
-CC: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Lite-On ethernet controller
-References: <20000531094520.B652@mclinux.com> <Pine.LNX.4.05.10005312154030.2148-100000@callisto.of.borg> <20000531163210.E652@mclinux.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Josh Huber wrote:
->
-> On Wed, May 31, 2000 at 10:10:56PM +0200, Geert Uytterhoeven wrote:
-> > Later the card seemed to work fine with the updated tulip driver, as you
-> > probably remember.  However, I just got a problem with the updated driver
-> > (2.3.99-pre3) for the first time:
-> [snip]
->
-> After updating to the newer tulip driver in the devel kernels, my problems
-> with my real tulip card went away.  I've been having trouble getting two
-> other cards working however -- the lite-on card that I mentioned before, and
-> another tulip clone (Kingston).  The kingston card was much worse -- it
-> dropped ~30% of packets under light load, and completely locked up under
-> medium-heavy load.
->
-> > Note that Josh is using a similar box as me, a CHRP LongTrail. In fact all
-> > people with LongTrails seem to have problems with Tulip chips. So it might be a
-> > motherboard problem.
-> Yeah, which would be unfortunate... :(
+Is there anyone who is succesfully using SCSI devices connected to MESH SCSI
+with 2.4.0-test1 (or late 2.3.99-preX, e.g. pre9)?
 
-That would REALLY suck because I was looking forward to throwing my PNIC
-and PNIC II test cards into this old PMac 7200 which I use for testing
-drivers on PPC.  If it is a general endian bug in the PNIC* codepath,
-testing there should hopefully expose the problem.
+On my CHRP box (with sym53c875 and MESH), no devices at all are detected on the
+MESH chain. I haven't tried to remove the sym53c8xx driver (which is scsi0)
+from my kernel yet to see whether this is perhaps a more generic problem with
+multiple SCSI adapters.
 
-If not, I have a feeling Josh and I will be exchanging e-mail... :)
+It worked fine in 2.3.99-pre3 from March 21. Anyone with a clue, before I start
+diving into the (big) diff between 2.3.99-pre3 and -pre9?
 
-	Jeff
+Gr{oetje,eeting}s,
 
-
+						Geert
 
 --
-Jeff Garzik              | Liberty is always dangerous, but
-Building 1024            | it is the safest thing we have.
-MandrakeSoft, Inc.       |      -- Harry Emerson Fosdick
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
