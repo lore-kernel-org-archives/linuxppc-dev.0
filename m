@@ -1,58 +1,37 @@
-Message-ID: <8D7C5F56B409554D9D46AC22195807F3157073@exchwenz01.dmcwave.co.nz>
-From: Richard Williams <richard_williams@stratexnet.com>
-To: linux <linuxppc-embedded@lists.linuxppc.org>
-Subject: 8xx uart driver problems
-Date: Wed, 8 Oct 2003 09:23:48 +1300 
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3F83C3BE.60608@imc-berlin.de>
+Date: Wed, 08 Oct 2003 09:58:54 +0200
+From: Steven Scholz <steven.scholz@imc-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Status of MPC5200 ???
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hi there,
 
-I have been investigating a problem with the 8xx_io/uart.c driver included
-in Denx's 2.4.4 kernel. We have a system where under certain circumstances,
-the MPC855's SCC locks up when a large amount of noise is received by it.
-The problem occurs just after pppd opens the SCC port.
+I wonder to which extend Motorola's MPC5200 is supported by now.
 
-I can prevent the lock up by either of the following modifications to the
-driver.
+I know www.denx.de has a tree in its CVS server. Is everything supported yet?
 
-1. In rs_8xx_interrupt(), move the clearing of events from after the
-transmit_chars() function to before receive_chars(). Previously, if a new rx
-buffer is filled while in transmit_chars(), the interrupt will be lost. If
-the buffers are full when this interrupt is lost, no more interrupts will be
-generated and serial rx will be stalled.
+What about BitKeeper? Will there be support for this processor in the 2.4 series?
 
-2. Enable the BUSY interrupt and process rx buffers when one occurs.
+Which compiler do I need to use its floating point capabilities in an user land
+application?
 
-		events = sccp->scc_scce;
-		sccp->scc_scce = events;   // <- Clear events here
-		if (events & (SCCM_RX | SCCM_BSY)) //Process rx when busy
-occurs
-			receive_chars(info);
-		if (events & SCCM_TX)
-			transmit_chars(info);
-		// sccp->scc_scce = events;     <- Old clear events position
+Thanks a million!
 
+--
+Steven Scholz
 
-Either of these changes fixes the lock up problem so I implemented both for
-the sake of completeness. But another problem has appeared. If the SCC is
-subjected to noise when opening, the driver/CPM can sometimes get in to a
-state where some of the buffers are either repeated or received out of
-order. After the noise is replaced by good data, ppp gets horribly confused
-and the channel is unusable.
+imc Measurement & Control		imc Meßsysteme GmbH
+Voltastr. 5				Voltastr. 5
+13355 Berlin				13355 Berlin
+Germany					Deutschland
+fon: +49 30 467090-0			Tel: 030 / 467090-0
+fax: +49 30 4631576			fax: 030 / 4631576
 
-Incidentally, when noise is received most characters have framing errors and
-an interrupt is generated for each received character. So at 38400 baud up
-to 3800 interrupts/sec occur.
-
-My questions are;
-Are there any good reasons for NOT making either of the above changes?
-Are there any known problems caused by receiving noise on SCC's?
-
-Regards,
-Richard
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
