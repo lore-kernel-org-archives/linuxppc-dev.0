@@ -1,23 +1,29 @@
-Content-Type: text/plain;
-  charset="iso-8859-15"
-From: Rakesh jagota <j.rakesh@gdatech.co.in>
-Reply-To: j.rakesh@gdatech.co.in
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Opera browser on IBM405PPC based board
-Date: Wed, 9 Jul 2003 18:57:40 +0530
 MIME-Version: 1.0
-Message-ID: <rr3k67iy2ewnknp.090720031847@gda-server>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: kernel system calls
+Date: Wed, 9 Jul 2003 09:07:13 -0500
+Message-ID: <45E73EE17E678C4081B8A09E651628D234ACD1@atlas.info-engineering.com>
+From: "Collins, Steve" <Steve.Collins@dynetics.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
-I am working on custom design board based on IBM405 pwerpc. I want to port
-opera browser on this board. Did anyone try it out.
+Hello,
 
-Thanks & Regards,
+When I #define __KERNEL_SYSCALLS__ in my driver in order to use system
+level calls within kernel space and recompile my code I receive the
+following errors within the unistd.h header file:
 
-Rakesh
+In function 'pause':
+'errno' undeclared
 
+This error repeats for every system call within the #ifdef area of
+KERNEL_SYSCALLS in unistd.h.  Any comments or suggestions for a fix will
+be appreciated.
+
+Thanks,
+Steve
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
