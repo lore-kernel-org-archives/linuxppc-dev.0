@@ -1,27 +1,45 @@
-Message-ID: <367C1476.9F7402A2@jlc.net>
-Date: Sat, 19 Dec 1998 16:02:46 -0500
-From: Dan Malek <dmalek@jlc.net>
+Date: Sat, 19 Dec 1998 18:05:41 -0600 (CST)
+From: Troy Benjegerdes <hozer@drgw.net>
+To: Cort Dougan <cort@cs.nmt.edu>
+cc: Cc: ;
+Subject: Starting second CPU on Dual MTX
+Message-ID: <Pine.LNX.4.04.9812191754510.17803-100000@narn.local.drgw.net>
 MIME-Version: 1.0
-To: kd@flaga.is
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: MPX860 : MBX_IMAP_ADDR undefined
-References: <002566DF.004E489D.00@notes.flaga.is>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-kd@flaga.is wrote:
+I've finally gotten to playing around with SMP, and I have managed to
+start the second processor, which then seems to insist on executing the
+PPCBug init code.
 
-> Well, the file is named linux-2.1.131.tar.bz2 and it was downloaded from
-> ftp.kernel.org.
-> So I assume it is the real thing 8-).
+I am trying to do this by soft-resetting the second CPU via the OpenPIC.
+I figured I'd just change the soft-reset exeception vector in head.S to:
 
-Um, probably not.  The only "real thing" for PPC development
-kernels is the CVS tree.
+	.0x100
+	bl __secondary_start
 
-    -- Dan
+However, I don't seem to be able to make the second CPU use the Linux
+reset vectors (which are loaded at 0x0, etc) instead of the ones in flash
+ROM at 0xFFF00000.
 
+There are functions provided by PPCbug (.forkmpu, .forkmpur, .idlempu)
+which would allow me to do this, but since PPCbug isn't used for anything,
+I decided against it at first.
+
+My next idea is to use the PPCbug functions in the bootloader to set the
+IP bit in the MSR of CPU1 to 0, so as to use the Linux reset vectors when
+reset.
+
+Does anyone have any ideas/suggestions what would be the best way to do
+this? Thanks.
+
+--------------------------------------------------------------------------
+| Troy Benjegerdes    |        troy@microux.com    |    hozer@drgw.net   |
+|    Unix is user friendly... You just have to be friendly to it first.  |
+| This message composed with 100% free software.    http://www.gnu.org   |
+--------------------------------------------------------------------------
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
