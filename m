@@ -1,65 +1,65 @@
-Date: Sun, 7 Mar 1999 19:14:21 -0600 (CST)
-From: Troy Benjegerdes <hozer@drgw.net>
-To: "David Mentr\\'e" <David.Mentre@irisa.fr>
-cc: linuxppc-dev@lists.linuxppc.org
+Date: Mon, 8 Mar 1999 12:17:36 +1100
+Message-Id: <199903080117.MAA05033@tango.anu.edu.au>
+From: Paul Mackerras <paulus@cs.anu.edu.au>
+To: David.Mentre@irisa.fr
+CC: linuxppc-dev@lists.linuxppc.org
+In-reply-to: <wd8d82m7cjn.fsf@parate.irisa.fr> (David.Mentre@irisa.fr)
 Subject: Re: [Linux SMP FAQ] Info request for SMP PPC systems Linux support
-In-Reply-To: <wd8d82m7cjn.fsf@parate.irisa.fr>
-Message-ID: <Pine.LNX.4.04.9903071902330.25081-100000@narn.local.drgw.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Reply-to: Paul.Mackerras@cs.anu.edu.au
+References: <wd8d82m7cjn.fsf@parate.irisa.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 6 Mar 1999, David Mentr\'e wrote:
+David Mentr\\'e <David.Mentre@irisa.fr> wrote:
 
-> 
-> [ as I'm not on this list, so please Cc: to me any answer. Thanks. ]
-> 
->  Hello all LinuxPPC developpers,
-> 
 > I'm the maintainer of the Linux SMP FAQ (see pointer below if you want
 > to have a look). Right know, this FAQ is very x86 centric but I plan to
 > change that. Looking at linuxppc.org, it seems that :
 > 
 >  - support is beeing developed (by lead programmer Cort Dougan )for
 >    PowerSurge boards. This includes the UMAX s900.
-> 
->  - support for SMP PowerMac is working.
 
-Let me add: 
+Cort did the initial work to put in the SMP support, I've hacked on it
+a bit too to get it working on my SMP powermac (a powermac 7600
+upgraded with a dual-processor CPU card).
 
-Motorola MTX (and probably dual CPU MVME boards) have early (working)
-support for SMP. Dual CPU have two 604e chips running at 300, 333, or 400
-mhz, fyi.
+BTW, "lead programmer" is Cort's designation for himself.  As the
+person who did most of the powermac port and is primarily responsible
+for its maintenance, that seems a little grandiose to me.  Not that I
+want to detract from Cort's enormous contribution, particularly in the
+area of Linux for PReP and embedded systems.
 
-Support for the MTX isn't fully complete, the MTX board I use is
-reasonably stable. It will, however crash with more than 2 or 3 large
-compiles running.
-
-> So here are my questions :
-> 
->  1. what is the current status of SMP support for LinuxPPC? any table? 
-> 
 >  2. is there any specific things to do to make a PPC SMP system?
 >     (kernel compilation, boot, etc.)
 
-PowerMac SMP is similiar to standard PowerMac. The MTX booting process is
-somewhat involved, and the MTX SMP code is not in the mainline kernel yet.
- 
+Booting is the same as UP.  To compile a kernel, you have to select
+CONFIG_SMP and `make clean', then make vmlinux.
+
+If you want to be able to boot either an SMP or UP kernel, you have to
+have a separate set of modules for each.  I do this by having
+/lib/modules/2.2.2-UP and /lib/modules/2.2.2-SMP (for example) and the
+startup scripts make /lib/modules/2.2.2 a symlink to one or the other,
+depending on which kernel I have booted.
+
 >  3. is there a mailing-list I should subscribe to to have further info
 >     on this subject (i.e. SMP && PPC && Linux)?
-> 
+
+There isn't any specific mailing list for SMP Linux/PPC, partly
+because SMP PPC systems are rare - only the highest-end powermacs were
+SMP, and there aren't any SMP powermacs being made by Apple at present
+AFAIK.  There are PPC-based RS/6000 machines which are SMP but AFAIK
+they are not supported by Linux/PPC currently.
+
 >  4. any bench result of SMP system?
 
-Do you have any suggested benchmarks?
+What would you like?  I could try an lmbench run.  It won't give
+terribly impressive numbers on my SMP machine, though, since it's a >3
+year old motherboard with a relatively slow memory system.  (In fact
+my iMac running Linux/PPC can compile a kernel faster than my SMP
+box. :-)
 
---------------------------------------------------------------------------
-| Troy Benjegerdes    |       troy@microux.com     |    hozer@drgw.net   |
-|    Unix is user friendly... You just have to be friendly to it first.  |
-| This message composed with 100% free software.    http://www.gnu.org   |
---------------------------------------------------------------------------
-
+Paul.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
