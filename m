@@ -1,54 +1,33 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: Skip Gaede <sgaede@attbi.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Memory leak
-Date: Fri, 21 Jun 2002 22:22:56 -0400
-References: <200206200352.32895.sgaede@attbi.com>
-In-Reply-To: <200206200352.32895.sgaede@attbi.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Etsushi Kato <ekato@ees.hokudai.ac.jp>,
+	Gabriel Paubert <paubert@iram.es>
+Cc: <linuxppc-dev@lists.linuxppc.org>, <paulus@samba.org>
+Subject: Re: tlbia and PPC603
+Date: Mon, 24 Jun 2002 06:02:40 +0200
+Message-Id: <20020624040240.17519@192.168.4.1>
+In-Reply-To: <20020625234314J.ekato@ees.hokudai.ac.jp>
+References: <20020625234314J.ekato@ees.hokudai.ac.jp>
 MIME-Version: 1.0
-Message-Id: <200206212222.56162.sgaede@attbi.com>
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thursday 20 June 2002 03:52, Skip Gaede wrote:
-> Folks,
+>I learned ppc603 software hash table some extent.  And I finally
+>noticed the bug in current arch/ppc/mm/ppc_mmc.c.  In old code, there
+>was blr at hash_page[0] and did flush_icache_range() from hash_page[0]
+>to hash_page[1].  But in current code, this code is removed when
+>comparing CPU_FT_HPTE_TABLE.
 >
->
-> I'm looking for a recipe on how to track where my memory
-> is disappearing to. I am running kernel
-> 2.4.19-pre10-ben0, patched for the nubus-pmac platform. I
-> have 40 MB RAM and a 100 MB swap file on the local hard
-> disk.
->
-OK, I recompiled the kernel with CONFIG_DEBUG_SLAB. The
-memory is being consumed by the size-2048 cache, which I
-believe is being used for network traffic.
+>Adding this to current ppc_mmu.c have solved random crash both in
+>Nubus Performa and UMAX C500.  And isync before tlbie and mtsrin seems
+>to be not necessary.
 
-I have two scenarios:
+Good catch !
 
-1) boot the system off the local hard drive and run X -query
-192.168.0.1
+We'll fix it asap.
 
-2) boot the kernel+initrd off the local hard drive and mount
-root via NFS, then run X -query ...
+Ben.
 
-In the first case, the 2048 cache works well. After 30
-minutes of continuous network traffic,
-
-size-2048      5   50  2048    3    25  1
-
-In the second case, after only 15 minutes
-
-size-2048   187 228  2048  94  114  1  (15 min)
-size-2048   918 928  2048 460 464  1  (60 min)
-
-So the number of active buffers is much higher and it
-continues to grow. Does anyone have any idea as to why this
-is happening, or how to debug it?
-
-Thanks,
-Skip
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
