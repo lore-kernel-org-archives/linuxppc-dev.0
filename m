@@ -1,103 +1,74 @@
-From: brian.auld@adic.com
-Message-ID: <995FF289C9D69747A09E42992644595405B23656@penguin.adic.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Kernel build: not recognizing 'tlbre' instruction
-Date: Fri, 7 Feb 2003 08:23:43 -0800 
+Message-ID: <A60FFE6CA339C742BE11C311EA8BFF540164DD@mdsms2.inside.mdsroc.com>
+From: "Ruhland, Paul" <PRuhland@microwavedata.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: [PATCH] 8xx_io/uart.c
+Date: Fri, 7 Feb 2003 11:54:11 -0500 
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Using ELDK to run embedded linux on 440GP eval board.
+The pasting into the console bug is actually caused in
+'drivers/char/n_tty.c' (standard tty line discipline) by not handling a
+failed call to 'opost(...)' (if returns -1 if tx buffer is full and char
+must be retried) in 'echo_char()'.  The pasted data is received fine....just
+the echo fails.
 
-After getting the above running, I decided to test the waters with a custom
-kernel another group in our company has used on a custom 440GP board
-(Ultimately, the directive from mgmt is to leverage the work done on this
-other custom board). This group used a Mac as their development server as
-opposed to cross-developing on an x86.
+>From 'drivers/char/n_tty.c':
+================================================
+/* Must be called only when L_ECHO(tty) is true. */
 
-When I try to build this 'custom kernel', I get the following error:
+static void echo_char(unsigned char c, struct tty_struct *tty)
+{
+	if (L_ECHOCTL(tty) && iscntrl(c) && c != '\t') {
+		put_char('^', tty);
+		put_char(c ^ 0100, tty);
+		tty->column += 2;
+	} else
+		opost(c, tty);
+}
+===============================================
 
-...
-Unrecognized opcode: 'tlbre' in the file arch/ppc/kernel/misc.S
-...
 
-I diffed the custom kernel against the kernel I'm successfully running on
-ebony (ELDK kernel), and have attached it below. It seems the the previous
-version of misc.S (1.76) had a smattering of 'tlbre' commands, but in 1.77
-they are gone.
 
-Any thoughts or background? I read some background info on the mailing list
-about the use of mcpu=403/405 for ppc_4xx. I also read the documentation for
-the 405 and compared it to the 440GP, and they both support the tlbre
-opcode.
+-----Original Message-----
+From: Dan Malek [mailto:dan@embeddededge.com]
+Sent: Friday, February 07, 2003 11:09 AM
+To: joakim.tjernlund@lumentis.se
+Cc: Linuxppc-Embedded@Lists. Linuxppc. Org
+Subject: Re: [PATCH] 8xx_io/uart.c
 
-Why is the ELDK not recognizing this opcode? I also tried cross-compiling
-this kernel with a backup 'made by hand' gnu tool-chain and I got the same
-error.
 
-General question: Is there a way to get previous versions of
-linuxppc_2_4_devel kernels?
 
-==========================================================================
---- linuxppc/arch/ppc/kernel/misc.S	2003-02-04 10:02:50.000000000 -0500
-+++ custom-kernel/arch/ppc/kernel/misc.S	2003-02-06
-06:56:16.000000000 -0500
-@@ -1,5 +1,5 @@
- /*
-- * BK Id: SCCS/s.misc.S 1.77 10/09/02 10:47:02 paulus
-+ * BK Id: SCCS/s.misc.S 1.76 09/20/02 07:53:45 trini
-  */
- /*
-  * This file contains miscellaneous low-level functions.
-@@ -478,6 +478,42 @@
- #endif /* CONFIG_40x */
- 	blr
+Joakim Tjernlund wrote:
 
-+
-+/*
-+ * invalidate_dcache_range(unsigned long start, unsigned long stop)
-+ */
-+_GLOBAL(invalidate_icache_range)
-+	li	r5,L1_CACHE_LINE_SIZE-1
-+	andc	r3,r3,r5
-+	subf	r4,r3,r4
-+	add	r4,r4,r5
-+	srwi.	r4,r4,LG_L1_CACHE_LINE_SIZE
-+	beqlr
-+	mtctr	r4
-+
-+1:	icbi	0,r3
-+	addi	r3,r3,L1_CACHE_LINE_SIZE
-+	bdnz	1b
-+	sync				/* wait for icbi's to get to ram */
-+	blr
-+
-+
-+/*
-+ * void get_tlb(int* entry, int index)
-+ */
-+_GLOBAL(get_tlb)
-+        tlbre	r0, r4, 0
-+	stw	r0, 4(r3)
-+	mfspr	r0, SPRN_MMUCR
-+	andi.	r0, r0, PPC440_MMUCR_TID
-+	stw	r0, 0(r3)
-+        tlbre	r0, r4, 1
-+	stw	r0, 8(r3)
-+        tlbre	r0, r4, 2
-+	stw	r0, 12(r3)
-+	blr
-+
-+
- /*
-  * Flush instruction cache.
-  * This is a no-op on the 601.
-============================================================================
+> Found a bug in the serial driver. my_console_write() uses the wrong
+address in early console writes.
+> Removed some warnings as well.
 
-Thanks
+Well......console write doesn't get called this early.  The purpose
+of these address modifications in other parts of the driver are for
+kgdb using the serial port for early debugging.
 
--- Brian
+I'd really like some supporting documentation (like a kernel panic
+or other reproducable error) before you declare something a "bug",
+along with showing the same test fixed the problem.
+
+> Please can you change TX_NUM_FIFO to 8 and TX_BUF_SIZE to 96,
+> since chars are lost when pasting text into the console otherwise.
+
+What makes 96 a big enough number?  If you want to do this locally,
+that's fine, but only flow control can guarantee you won't overflow
+a serial port of any fifo depth.  I don't want to arbitrarily make
+this fifo so large as there are other processing/latency/memory
+tradeoffs.  The SMC is not a high performance interface and it
+consumes lots of CPM cycles.
+
+Thanks.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
