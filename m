@@ -1,39 +1,31 @@
-Message-ID: <20000222083924.6809.qmail@web204.mail.yahoo.com>
-Date: Tue, 22 Feb 2000 00:39:24 -0800 (PST)
-From: Sebastien Articlaux <sebastien_articlaux@yahoo.com>
-Subject: Boot process - Crash in serial_init fonction
-To: embedded linuxppc <linuxppc-embedded@lists.linuxppc.org>
-MIME-Version: 1.0
+From: Raphael Bossek <raphael.bossek@solutions4linux.de>
+Date: Tue, 22 Feb 2000 11:48:56 +0100
+To: jonb@marel.is
+Cc: psosuser@isi.com, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 8xxFADS and SingleStep BDM
+Message-ID: <20000222114856.B2743@raphael.bossek.home>
+References: <OF9754FB8B.2B42D5DE-ON0025688C.003AFCD8@marel.is>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <OF9754FB8B.2B42D5DE-ON0025688C.003AFCD8@marel.is>; from jonb@marel.is on Mon, Feb 21, 2000 at 11:39:12AM +0000
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all!
+hi Jon,
 
-When going through the fonction serial_init of the
-bootloader, I access to the address FA100000 but it
-doesn't correspond to anything in our mapping.
-So the program stops.
-But for a MBX board this correspond to MBX status/
-control registers.
-My board is customize so I don't have this.
-Do you think I will modify serial_init source code?
-I've found this fonction in m8xxtty.c and in mbxtty.c
+> Does anyone have these tools working with 8xxFADS ?
+yes, we use SingleStep Debugger throught the BDM interface connencted to
+MPC823e PILOT board successfully :) i also used the FlashUtility to get
+the 8xxROM working with the 823e stuff so it should not be the problem!
 
-The mapping of our memory is the following one:
+> I would be interested in sharing the config files.
+some screenshot will help perhaps too but at the moment i don't have
+access to the configuration (ill at home :( so be patient...
 
-RAM     0        to   7FFFFFF
-FLASH   8000000  to   803FFFF
-IMMR    FF000000
-
-I've seen that for MBX board the mapping for FLASH
-starts at FE000000 and for IMMR at FA200000.
-Should I use this?
-
-Thank you in advance.
-
-Sebastien ARTICLAUX
-
+--
+Raphael Bossek <raphael.bossek@solutions4linux.de> [ICQ #40047651]
+PGP fingerprint: DF 6F 2C 76 46 1E B4 1C  5B A5 2E 1B FC E0 D3 F6
+PGP public key: http://www.solutions4linux.de/private/pgpkey.asc
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
