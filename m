@@ -1,45 +1,42 @@
-Date: Tue, 8 May 2001 01:40:09 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Eli Chen <eli@routefree.com>
-Cc: Dan Malek <dan@mvista.com>, brian.kuschak@skystream.com,
-	linuxppc-embedded@lists.linuxppc.org
+Message-ID: <040a01c0d754$1bf6d5c0$4b00000a@foolio1>
+From: "Eli Chen" <eli@routefree.com>
+To: "Dan Malek" <dan@mvista.com>
+Cc: "Gabriel Paubert" <paubert@iram.es>,
+	<brian.kuschak@skystream.com>, <linuxppc-embedded@lists.linuxppc.org>
+References: <Pine.HPX.4.10.10105072359470.22253-100000@gra-ux1.iram.es> <3AF72CA8.52163E55@mvista.com> <03a001c0d74e$60022c70$4b00000a@foolio1> <3AF73161.26986237@mvista.com>
 Subject: Re: dcache BUG()
-In-Reply-To: <03a001c0d74e$60022c70$4b00000a@foolio1>
-Message-ID: <Pine.HPX.4.10.10105080133000.22253-100000@gra-ux1.iram.es>
+Date: Mon, 7 May 2001 17:16:20 -0700
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, 7 May 2001, Eli Chen wrote:
+> F**K...that's what I was looking for.  What manual is that in?
+> Everything I have handy (older UISA books), state the granularity
+> is implementation dependent.  I couldn't find any 4xx manual that
+> stated the granularity of the reservation.  I thought 6xx/7xx at
+> least checked cache line granularity in addition to a single
+> reservation bit.
 
-> > How can this happen?  The reservation for the lwarx in 1) has
-> > long been broken, so this swtcx. will fail.....
-> >
-> > -- Dan
->
-> Because reservation is held per processor in the "Reservation bit", and it
-> doesn't seem like the 405GP checks the reservation address.
+The book is titled "PowerPC Microprocessor Family: The Programming
+Environments".  It's greenish-blue, dated 3/21/2000.  The quote is from the
+stwcx. instruction description.  In section 5-4 however, it has this note:
 
-I don't think any PPC checks the reservation address on stwcx.; the
-reservation address is checked on snoops to clear the reservation
-bit, but having the reservation bit set is a necessary and
-sufficient condition for stwcx. to actually perform the store.
+"When a reservation is made to a word in memory by the lwarx instruction, an
+address is saved and a reservation is set.  Both of these are necessary for
+the memory coherence mechanism, however, some processors do not implement
+the address compare for the stwcx. instruction.  Only the reservation need
+be established in order of the stwcx. to be successful.  This requires that
+exception handlers clear reservations if control is passed to another
+program.  Programmers should read the specifications for each individual
+processor."
 
->
-> >From the PPC manual:
-> "Because the hardware doesn't compare reservation address when executing the
-> stwcx. instruction, operating systems software MUST reset the reservation if
-> an exception or other types of interrupt occurs to insure atomic memory
-> references of lwarx and stwcx. pairs."
+I searched through the 405GP user manual, and it makes no mention of if it
+checks the reservation address or not, just like you said.
 
-Indeed, but as I said this means that you have to clear the reservation on
-_return_ from an interrupt in case a dangling reservation is left.
-Clearing the reservation on entry is not necessary since the interrupt
-handler will never execute a stwcx. without an earlier lwarx.
-
-	Gabriel.
+Eli
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
