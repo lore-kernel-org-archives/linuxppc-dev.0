@@ -1,43 +1,66 @@
-Date: Wed, 7 Apr 1999 15:46:57 +0200
-To: linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Keyboard and keymaps
-Message-Id: <19990407154657.012380@mail.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: a sun <asun@saul9.u.washington.edu>
+Cc: linuxppc-dev@lists.linuxppc.org, Roy Wood <roy@centricsystems.ca>,
+        "David A. Gatwood" <marsmail@globegate.utm.edu>,
+        Dave Weis <djweis@plconline.com>, bh40@calva.net
+Subject: Re: Resurrecting mkLinux
+References: <199904070826.BAA23922@saul9.u.washington.edu>
+From: Jesper Skov <jskov@cygnus.co.uk>
+Date: 07 Apr 1999 15:15:42 +0100
+In-Reply-To: a sun's message of "Wed, 7 Apr 1999 01:26:40 -0700 (PDT)"
+Message-ID: <ooyak4ikj4.fsf@lassi.cygnus.co.uk>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-While I'm working on ADB, I would like to also fix the problem of
-linux-pmac lacking international keymaps for all Apple keyboards.
+>> once a working boot loader is done, it actually shouldn't be too
+>> difficult to get things working. the hairiest part will probably be
+>> the tweaking that head.S needs. however, the apus code actually
+>> fiddles with the exception table and copies its virttophys constant
+>> into a specific memory location. i think we should be able to do
+>> something similar with the nubus powermac code as well to deal with
+>> memory holes if need be.
 
-Basically, I plan to build some kind of conversion tool that takes Apple
-KCHRs and build the appropriate linux keymaps.
+I decided to skip support for multiple memory segments on APUS since
+memory other than the one on the main board is horrendously slow
+(comparatively).  People use the Amiga Zorro device which allows other
+memory segments to be used as a swap device.
 
-Could someone point me to the appropriate documentation or how-to's about
-linux keybaord handling, I must admit I'm a little bit lost. If I
-undestand things correctly, keymaps are somewhat "compiled" and then
-copied inside the kernel by the userland tools from the kbd package. Is
-there some specific documentation about this or should I just spend more
-time reading the source ? Are the tables in mac_keyb.c the ones that are
-replaced by userland, or is there a 2-tables indirection ?
+>> beyond that, using the m68k drivers should pretty much work as the
+>> apus stuff needs to do that anyway. from my look at the code, we
+>> should be able to replace CONFIG_APUS with a CONFIG_M68KPPC.
 
-How does linux handle dead keys and things like that ?
+Sounds good to me.
 
-And finally, I think there's a different mecanism for X. I would
-appreciate if someone could point me to the correct documentations for
-all this or give me a quick explanation on the "big picture", I can then
-figure out the details from the source.
+>> anyways, feel free to dive in if you have time. i've been using the
+>> absence of a working boot loader as an excuse not to do much with
+>> it. just create a mach_m68k directory in arch/ppc, stick the amiga
+>> directory in there, create a mac subdirectory and maybe a common
+>> directory, and merge away. the more files that end up being links
+>> to a slightly modified m68k code base the better.
 
+I am waiting for 2.3.x to be unleashed so I can start working
+again. 
 
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+My top priority is to get away from having an Amiga directory under
+arch/ppc (or arch/ppc/mach_m68k). I would prefer to move all mach
+drivers into a new mach hierarchy (so there would be e.g. mach/amiga
+in the root of the kernel sources just as we now have arch/m68k).
 
+The main motivation is obviously to avoid maintaining two different
+sets of sources that do the same thing. Most of the ppc/amiga sources
+are just 
 
+ #include "../../m68k/amiga/foobar.c"
 
+which works OK, but is a bit daft. 
 
+Also, the files that do not look like that are so because Jes (m68k
+maintainer) didn't like '#ifdef __powerpc__' or CONFIG_APUS in
+arch/m68k specific files... Which I agree with (kind of). With the
+mach hierarchy, though, both arguments becomes moot and I'll fix up
+the sources to my liking ;)
+
+Jesper
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
