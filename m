@@ -1,25 +1,28 @@
+Message-ID: <20030430160017.96863.qmail@web41213.mail.yahoo.com>
+Date: Wed, 30 Apr 2003 09:00:17 -0700 (PDT)
+From: Prakash kanthi <pkanthi@yahoo.com>
+Subject: Two ramdisks
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: How to setup writethrough cache
-Date: Wed, 30 Apr 2003 15:47:50 +0200
-Message-ID: <9367F79C9DBB8147AD58A96C933F008603BDF4@men-exch.intra.men.de>
-From: "Klaus Popp" <Klaus.Popp@men.de>
-To: <linuxppc-embedded@lists.linuxppc.org>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Hi folks,
 
-does anybody know how to map I/O space into kernel space with "cache write through" attributes?
-I need it to speed up reads from graphics memory.
+Is there a way i can use two ramdisks with linux? What
+i want to do is, to have the files that do not change
+often in one ramdisk and the once that change
+frequently in another ramdisk. My board is does not
+have Ethernet port, hence is the trouble. I tried to
+use SLIP/PPP. Looks like it is little more complex
+than i thought.
 
-AFAIK, there is no difference between ioremap() and ioremap_nocache() on PPC. Any hints?
+Any help is appreciated.
 
-Klaus Popp
-MEN Mikro Elektronik GmbH
-Klaus.Popp@men.de
-www.men.de
+Thanks,
+Prakash
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
