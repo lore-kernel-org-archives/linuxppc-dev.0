@@ -1,27 +1,26 @@
-Date: 19 Jul 2002 05:09:48 -0000
-Message-ID: <20020719050948.10739.qmail@webmail16.rediffmail.com>
+Date: 19 Jul 2002 12:01:24 -0000
+Message-ID: <20020719120124.31361.qmail@webmail18.rediffmail.com>
 MIME-Version: 1.0
 From: "vandana  mehtani" <vandana_mehtani123@rediffmail.com>
 Reply-To: "vandana  mehtani" <vandana_mehtani123@rediffmail.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: ELF reader
+Subject: elf reader
 Content-type: text/plain;
 	format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hello Everybody,
-I am in the midst of trouble..
-if somebody could help me it really is nice..
-i have made the crosscompiler for powerpc...
-i have a compiled a normal c program printf "hello world"
-with the cross compiler..
-when i try to download it to single step powerpc simulator..
-i get the following error
-"aborting due to failure of ELF reader"
-what cld be possible cause of error..
-thanking you all in advance..
+Hello everybody,
+i am trying to download the ELf image compiled on linux using a
+cross compiler for powerpc on to SDS powerPC simulator in
+windows..
+the error that it is giving is
+"aborting due to failure of ELF reader"..
+
+
+it would really be nice if u could solve my problem.
+thanks in advance
 regards
 vandana
 
