@@ -1,55 +1,49 @@
-Message-ID: <00ee01c2a28c$9758de20$0700a8c0@pc005>
-Reply-To: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
-From: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
-To: "Omanakuttan" <omanakuttan@tataelxsi.co.in>,
-	<linuxppc-embedded@lists.linuxppc.org>
-References: <3DF8BC91.3010104@tataelxsi.co.in>
-Subject: Re: mcc support on mpc8260
-Date: Fri, 13 Dec 2002 10:47:03 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Subject: Re: Support for Arctic platform (405LP based)
+From: Gary Thomas <gary@mlbassoc.com>
+To: Cort Dougan <cort@fsmlabs.com>
+Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <20021212215126.V23952@duath.fsmlabs.com>
+References: <20021213043628.GI21319@zax.zax>
+	<20021212215126.V23952@duath.fsmlabs.com>
+Content-Type: text/plain
+Date: 13 Dec 2002 07:26:02 -0700
+Message-Id: <1039789562.7542.14781.camel@hermes.chez-thomas.org>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have promised to Pete of releasing some code for such driver. We will
-provide to perform such task during the next days.
-
-Actually we are writing some documents to better describe the driver and how
-to lock it to the kernel tree.
-We will inform the community when the driver will be available.
-
-Anyway on the Motorola site, You can find some example on how program the
-mcc.
-
-Be aware do not use the mcc with the silicon revision older than B.1.
-
-Regards
-
-Gianfranco
-
------ Original Message -----
-From: "Omanakuttan" <omanakuttan@tataelxsi.co.in>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Sent: Thursday, December 12, 2002 5:42 PM
-Subject: mcc support on mpc8260
-
-
+On Thu, 2002-12-12 at 21:51, Cort Dougan wrote:
 >
-> Hi,
-> We are developing device drivers for E1/T1 (8 channels) and E3/T3 framer
-> chipset (XRT84L38 and XRT7250 ) on mpc8260.
-> I don't find any documents on mcc programming for E1/T1. The linux
-> kernel lacks support for that too. (At least I could not find any in the
-> 2.4.17 kernel)
-> for E3/T3, we could find some sample code. But helpless in E1/T1.
+> Would you be able to commit them to _2_4 instead so they're not in the
+> wildly divergent _2_4_devel tree?  That would definitely be handy when
+> trying to find where the working trees are.
 >
-> Any pointers are welcome.
-> Om.
->
->
->
+> } The patch below adds support for IBM's Arctic-II development system,
+> } based on the 405LP processor.  For now this is just the core support,
+> } more drivers coming soon.  Are there any objections, or suggestions
+> } for doing things better before I commit this to linuxppc_2_4_devel?
+> }
+
+This brings up some really good questions.  I have support for three new
+platforms based on the _2_4_devel tree which I'd like to get submitted
+soon [so far, I've just been following along]  So,
+ * Which tree should be best for new development/ports/etc?
+ * What's the best process for proposing changes?  I've seen many
+   patches come along on this list, but it's not clear to me if/when
+   they made it to any particular tree.
+
+Thanks.
+
+--
+------------------------------------------------------------
+Gary Thomas                 |
+MLB Associates              |  Consulting for the
++1 (970) 229-1963           |    Embedded world
+http://www.mlbassoc.com/    |
+email: <gary@mlbassoc.com>  |
+gpg: http://www.chez-thomas.org/gary/gpg_key.asc
+------------------------------------------------------------
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
