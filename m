@@ -1,45 +1,41 @@
-Message-ID: <20011022181106.29532.qmail@web13107.mail.yahoo.com>
-Date: Mon, 22 Oct 2001 11:11:06 -0700 (PDT)
-From: Dave Ray <g4tinker@yahoo.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Dave Ray <g4tinker@yahoo.com>, <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: idebus=133 ?
-To: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20011022131938.21190@smtp.adsl.oleane.com>
+Date: Mon, 22 Oct 2001 21:29:39 +0200
+Message-Id: <20011022192939.26005@smtp.wanadoo.fr>
+In-Reply-To: <20011022181106.29532.qmail@web13107.mail.yahoo.com>
+References: <20011022181106.29532.qmail@web13107.mail.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Ben and Tom,
-
-Thanks for the replies. The reason I ask is that when
-I use "idebus=66" in the boot argument, the syslog
-shows bootup message "using 66MHz bus speed.." rather
-than "assuming 33MHz bus speed..". So I assumed the
-inclusion of the boot argument sped up the computer.
-Are the appearances of these messages in the syslog
-fictitious? Or should I simply not go over 66?
-
--Dave
-
---- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-wrote:
-> >
-> >It's my understanding the Mac G4 towers run at a
-> bus
-> >speed of 133 MHz. However the kernel argument for
-> >idebus=xx apparently only allows values up to 66.
-> Is
-> >this intentional?
 >
-> I don't think this value has any meaning on macs.
-> It's
-> related to the IDE bus frequency, which is 66Mhz on
-> Apple "UDMA capable" HW and 33 on older chipsets,
-> but
-> the ide-pmac.c code does all the calculations
-> internally
-> and shouldn't rely on the generic idebus value.
+>Thanks for the replies. The reason I ask is that when
+>I use "idebus=66" in the boot argument, the syslog
+>shows bootup message "using 66MHz bus speed.." rather
+>than "assuming 33MHz bus speed..". So I assumed the
+>inclusion of the boot argument sped up the computer.
+>Are the appearances of these messages in the syslog
+>fictitious? Or should I simply not go over 66?
+
+Actually, it's a bit more annoying than what I though,
+as some drivers will use the speed. It's used by those
+drivers to calc. some timings, and so should be properly
+defined to the speed of the bus those controllers are
+connected to.
+
+The Apple controllers don't need it, they already know
+the bus timings of the various revision of Apple chips.
+However, the CMD 6xx, aec, and maybe other drivers
+use that informations.
+
+For now, those are PCI based exclusively and Apple's
+PCI bus connectors are always 33Mhz. But we should
+keep an eye on that.
+
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
