@@ -1,33 +1,51 @@
-From: ghannon@cspi.com
-To: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <85256C01.006330D5.00@pine.cspi.com>
-Date: Thu, 25 Jul 2002 14:16:43 -0400
-Subject: VME driver (Universe II)
+Date: Thu, 25 Jul 2002 11:21:01 -0700
+From: Matt Porter <porter@cox.net>
+To: Khai Trinh <kqtrinh@yahoo.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: driver for 440GP
+Message-ID: <20020725112101.B24858@home.com>
+References: <20020724220610.37041.qmail@web11503.mail.yahoo.com>
 Mime-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20020724220610.37041.qmail@web11503.mail.yahoo.com>; from kqtrinh@yahoo.com on Wed, Jul 24, 2002 at 03:06:10PM -0700
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Greetings,
+On Wed, Jul 24, 2002 at 03:06:10PM -0700, Khai Trinh wrote:
+>
+> Hi folks,
+>
+> I am trying to write a driver for the 440GP peripheral
+> device with physical memory map of 0x1xxxxxxxx (total
+> of 36 bits) on the PLB address space.
+>
+> When I get to do:
+>
+> request_mem_region() and then
+> ioremap64()
+>
+> Don't I need a 64 bit request_mem_region() call? Is
+> there such a kernel call before I call ioremap64()?
 
-Has the universe II driver been updated against the 2_4_devel tree?
+Two options for now:
 
-I have found the patches from Gabriel Paubert, against 2_2.
-Should I attempt to merge that into the 2.4.11 area to get a
-driver for VME?   It would be a learning experience for me, but
-one that I'd rather avoid if possible.
+1) Use the least significant 32-bits of the physical address to
+   do the region manipulation.
 
-The board is MVME-5100 using 2.4.11 from the devel tree.
+2) Don't register the region.  We don't really do a good job
+   of this in most PPC code anyway.
 
-Any pointers would be appreciated.
+In 2.5, we can make resource start/end u64's, but it's intrusive
+enough that I can't imagine it going into 2.4 (I certainly
+wouldn't ask for it).  The region manipulation API would now use
+u64's and printk formatting has to be handled since a u64 is
+a different type on 32/64 platforms.
 
-Thanks,
-Gary
-
-Gary Hannon
-CSPI
-(978)663-7598 x1509
-
+Regards,
+--
+Matt Porter
+porter@cox.net
+This is Linux Country. On a quiet night, you can hear Windows reboot.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
