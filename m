@@ -1,31 +1,49 @@
-Message-ID: <3C640134.3090705@embeddededge.com>
-Date: Fri, 08 Feb 2002 11:47:48 -0500
+Message-ID: <3C640532.5000708@embeddededge.com>
+Date: Fri, 08 Feb 2002 12:04:50 -0500
 From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: Jim Thompson <jim@musenki.com>
-Cc: Adrian Cox <adrian@humboldt.co.uk>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MPC107 I2C
-References: <20020208094057.799c099a.adrian@humboldt.co.uk>	<3C63F5A4.5070608@embeddededge.com>	<20020208162309.395f7c2f.adrian@humboldt.co.uk> <15459.65390.787694.577725@gargle.gargle.HOWL>
+To: bart@ardistech.com
+Cc: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>,
+	dmalek@jlc.net
+Subject: Re: MPC823: i2c-algo-8xx read interrupt?
+References: <3C63EC39.ACEECA08@ardistech.com>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Jim Thompson wrote:
+bart@ardistech.com wrote:
 
 
-> No linux drivers, but the moto code (for the 8240) is in the ppcboot
-> tree these days, and I know that gbios has enough of i2c up to read
-> SODIMMs.
+> When testing with i2c reading an eeprom on a MPC823e I get the message "IIC
+> read; complete but rbuf empty".
 
-Thanks.
+What speed processor and what kernel?
 
-> Did my question about EUMBBAR and the 8245's serial port(s) not make
-> it out to the list?
+> .... IMHO this is because the interrupt in the TX
+> buffer is enabled intead of the the interrupt of the RX buffer. Is this a bug
+> or is there a reason behind this?
 
-Yes, and you can _pay_ me for 30 second responses to e-mail :-).  If
-you want free help you need to wait until someone is free to respond.
+The transmit and receive run concurrently on the I2C controller.  This is why
+the transmit interrupt is always used.  Basically, on a read the transmit
+buffer contains the device information to be written, and when the bus is
+turned around the received data ends up in the receive buffer.  The transmit
+provides all of the timing for the bus, which is why you need a "dummy"
+transmit buffer that includes the length you want to receive.
+
+A couple of things could be happening.  One is that the latency of clearing
+the receive BD ready flag is longer than the interrupt processing overhead, but
+I don't believe this is the case except that you say when you wait for the
+receive interrupt it works OK.  Another is that the device isn't properly
+terminating the I2C transfer (you tell it to transfer more bytes that the
+dummy transmit clocks out), so you have to wait for a recieve time out to
+close the BD.  If you wait for the receive interrupt, are there any errors
+posted in the BD?  Does the receive buffer contain the proper data even when
+the transmit complete occurs?
+
+One of the reasons for using the transmit interrupt is when there are receive
+errors, you still get an interrupt to go looking at the receive BD.  Maybe
+the newer parts work differently and we need to accomodate this.
 
 Thanks.
 
