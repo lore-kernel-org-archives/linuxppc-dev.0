@@ -1,55 +1,42 @@
-Message-Id: <4.2.2.19991130110534.00b563b0@mail.lauterbach.com>
-Date: Tue, 30 Nov 1999 11:58:19 +0100
-To: Jason Kim <jwk2@EECS.Lehigh.EDU>
-From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-Subject: Re: patch for problem with va-ppc.h included with egcs and
-  gcc-2.95.2
-Cc: linuxppc-dev@lists.linuxppc.org, gcc-patches@gcc.gnu.org
-In-Reply-To: <38436801.81D6CE60@eecs.lehigh.edu>
+In-Reply-To: <38431D61.4977E59B@netx4.com>
+Date: Tue, 30 Nov 1999 16:44:39 +0100
+To: Dan Malek <dan@netx4.com>, paulus@linuxcare.com,
+        linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: dmasound problems
+Message-Id: <19991130164439.032538@mailhost.mipsys.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 07:00 30.11.99 , Jason Kim wrote:
->Agreed, ssh2 code isn't necessarily the cleanest in the world, but then again
->the varargs situation in PPC world is a bit peculiar.
->
->
->typedef struct A {
->   char foo;
->   char *bar;
->} B[1], C[1];
->
->typedef C D;
->
->
->void tst(D d1)
->{
->   D d2;
->   d1 = d2; // this is legal
->   // d2 = d1; // this is not
->}
->
->declaring arrays of fixed size seems a bit strange for a type which will 
->be used
->by user code, since it makes d1 and d2 be different types sometimes. Not to
->mention, having struct _va_list_tag  AS va_list seem to fix the problems 
->neatly.
->
->Is there a technical reason for keeping va_list as an array of 1 element?
->(instead of just a single element??)
+On Mon, Nov 29, 1999, Dan Malek <dan@netx4.com> wrote:
 
-1. this behaviour is mandated by the ABI
-2. it nicely spots a common programming error
+>If these are actually a power and reset to the audio codec, there
+>are timing constraints.  Usually, you have to power up and hold
+>reset at least 50 milliseconds before releasing reset (Crystal
+>codec specs).
+>
+>This is why it may work with XMON if you set/clear bits
+>individually, but not work when you run the code.
 
-I see nothing peculiar about it :-).
+This was indeed a couple of timing issue (not only with those FCR bits
+BTW). I traced MacOS and it sets both bits almost at the same time, so I
+beleive this is not a reset issue, but I have to wait 1 sec
+(mdelay(1000)) after setting the power bit and before programming the
+chip if I want it to work. I tried various smaller delays, but 1s seems
+the correct value. (with lower delays, I could still access the chip
+registers and read the revision number, but I had no sound).
 
-BTW, it would be nice if you could fix your spam filter, my last message 
-was rejected, even though there was no faked IP in it.
+I still have one problem with the console beep not coming back after
+sleep (if I launch mpg123, it plays fine and my beep is back. Also,
+sleeping while mpg123 is playing correctly resume the play). This chip
+seems to be very sensitive to timings in general.
 
-Franz.
+A fix will be with my other patches (ibook, ...). Also, the sound chip is
+now correctly powered off when the machine goes to sleep (or when
+dmasound module is removed).
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
