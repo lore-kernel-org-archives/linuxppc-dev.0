@@ -1,11 +1,9 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <008901c1beb1$409cc7f0$1a11efcb@industrialDiv.hanasys.co.kr>
-Reply-To: "Sangmoon Kim" <dogoil@etinsys.com>
-From: "Sangmoon Kim" <dogoil@etinsys.com>
-To: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
-References: <003101c1bea6$52edcf90$6801a8c0@gaoxg>
-Subject: execve system call question
-Date: Tue, 26 Feb 2002 19:35:04 +0900
+Message-ID: <69AB2E42243FD511920200805FE64EAD0E36CF@zbr01exm01.spo.br.mot.com>
+From: Borracini Evandro-R45188 <Evandro.Borracini@motorola.com>
+To: "'gao xiaoguo'" <gaoxg@guoguang.com.cn>,
+	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: monitor in mpc860fads
+Date: Tue, 26 Feb 2002 09:00:10 -0300
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="gb2312"
@@ -13,40 +11,39 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi!
-I'm debugging a custom MPC755 board
-with linuxppc_devel from montavista rsync,
-and /opt/hardhat/devkit/ppc/7xx/target for NFS root.
-It booted and stoped after the message.
+Hi,
 
---------------------------------------------------------
-NET4: Linux TCP/IP 1.0 for NET4.0
-IP Protocols: ICMP, UDP, TCP
-IP: routing cache hash table of 1024 buckets, 8Kbytes
-TCP: Hash tables configured (established 8192 bind 8192)
-IP-Config: Complete:
-      device=eth0, addr=203.239.17.200, mask=255.255.255.0, gw=203.239.17.57,
-     host=dogoil, domain=, nis-domain=(none),
-     bootserver=203.239.17.57, rootserver=203.239.17.57, rootpath=
-NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
-Looking up port of RPC 100003/2 on 203.239.17.57
-Looking up port of RPC 100005/1 on 203.239.17.57
-VFS: Mounted root (nfs filesystem).
-Freeing unused kernel memory: 76k init
---------------------------------------------------------
+Fads boards don't have any native monitor. You need to flash one on your board.
+If you intend to run Linux on your fads, I recommend you using ppcboot as bootloader.
 
-I traced the code and the point of stopping is after calling
-execve("/sbin/init", argv_init, envp_init)
-in init/main.c
+You can find ppcboot at http://ppcboot.sourceforge.net
+Also, take a look at the "Linux for PowerPC embedded Systems Howto" at http://penguinppc.org/embedded/howto/PowerPC-Embedded-HOWTO.html. That is a very good guide.
 
-I was trying to trace more, but it was impossible
-because of the complexity of the code.
+regards
 
-Is there any method to debug this?
-I'm debugging it for a month.
+Evandro
 
-Please help me.
-
-- Sangmoon Kim -
+> -----Original Message-----
+> From: gao xiaoguo [mailto:gaoxg@guoguang.com.cn]
+> Sent: Terça-feira, 26 de Fevereiro de 2002 06:17
+> To: linuxppc-embedded
+> Subject: monitor in mpc860fads
+>
+>
+>
+> hi,
+>
+> now i have a mpc860fads board, maybe there is a debug monitor
+> inside it.
+> but i dont know how to check it. i also dont know what i need
+> on host end to communicate with the monitor. some guide book
+> is appreciated.
+>
+> I am newbie in this area, hope some expertise point out a way for me.
+>
+> thanks
+>
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
