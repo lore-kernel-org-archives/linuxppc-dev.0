@@ -1,72 +1,41 @@
-To: priyadk@future.futsoft.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Rpxlite Booting 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 20 Aug 2002 19:37:53 +0530."
-             <000501c24852$fa3e4be0$1106140a@future.futsoft.com>
-Date: Tue, 20 Aug 2002 17:24:41 +0200
-Message-Id: <20020820152446.6F29D10DF8@denx.denx.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: jim <jduey@ccc-dcs.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Question about ppc4xx_dma.h
+Date: Tue, 20 Aug 2002 15:26:18 +0000
+MIME-Version: 1.0
+Message-Id: <20020820203619.A456239211@server.weathercom.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <000501c24852$fa3e4be0$1106140a@future.futsoft.com> you wrote:
->
->    I am trying to recompile the Hardhat kernel for Embedded Planet rpxlite
-> board and boot the target. But I have problems.
+I've been trying to get DMA working on the 405GP and I've run across
+something in ppc4xx_dma.h.
 
-... which are  probably  caused  by  not  reading  the  mailing  list
-archives and other documentation.
+In the function 'enable_dma' the following piece of code appears:
 
->    1) Are there any specific options I need to set/change while compiling
-> the Hardhat kernel (with menuconfig or the compiler options)?
+(begin excerpt)
+	/* for other xfer modes, the addresses are already set */
+	control = mfdcr(DCRN_DMACR0);
+	control &= ~(DMA_TM_MASK | DMA_TD);	/* clear all mode bits */
+	if (p_dma_ch->mode == DMA_MODE_MM) {
+		/* software initiated memory to memory */
+		control |= control | DMA_ETD_OUTPUT | DMA_TCE_ENABLE;
+	}
+	control |= (p_dma_ch->mode | DMA_CH_ENABLE);
+	mtdcr(DCRN_DMACR0, control);
+(end excerpt)
 
-I guess you mean the Linux kernel.
+It looks to me like this code will always read/write the control register for
+DMA channel 0 regardless of the channel specified by the parameter 'dmanr'
+that is passed to the function.  Is this observation correct?  What would the
+fix be, if so?
 
->       One of the compiler options is mcpu=860. The Rpxlite board is based on
-> MPC823e. Should the mcpu option be changed for it?
+Also, does anyone have a short piece of code that shows how to start a DMA
+read on the 405?
 
-No.
-
-ALl you need to do to get a working default configuration is:
-
-	bash$ make mrproper
-	bash$ make rpxlite_config
-	bash$ make oldconfig
-	bash$ make dep
-	bash$ make pImage
-
-The last step assumes that you have PPCBoot enabled  kernel  sources;
-I'm  not  sure  what version of kernel tree you're using, so I cannot
-comment on this.
-
->    2) What is the bfdformat of the image expected by the rpxlite board?
-
-This depends on the boot loader you use.
-
-> Should I build the kernel image in S record format?
-
-If your bootloader needs S-records, then yes.
-
->    3) If so can I compress the image using gzip? Should the compression be
-> done before mkimage or after mkimage?
-
-Since you mention "mkimage" I assume you use PPCBoot as boot loader -
-and actually this is the only reason I reply at all.
-
-Why don't you just read the README that comes with PPCBoot?
-
-If there is anything in this README file which is  not  clear  please
-let me know, and I will try to improve it.
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-It all seemed, he thought, to be rather a lot of  trouble  to  go  to
-just sharpen a razor blade.  - Terry Pratchett, _The Light Fantastic_
+Thanks,
+Jim
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
