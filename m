@@ -1,21 +1,18 @@
-Return-Path: <g.jaeger@sysgo.com>
-Received: from mail.sysgo.com (mail.sysgo.com [62.8.134.5])
-	by ozlabs.org (Postfix) with ESMTP id E425667A67
+Return-Path: <kumar.gala@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 06F2367A64
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  4 Mar 2005 18:17:20 +1100 (EST)
-From: Gerhard Jaeger <g.jaeger@sysgo.com>
-To: =?iso-8859-1?q?J=F6rn_Engel?= <joern@wohnheim.fh-wedel.de>
-Date: Fri, 4 Mar 2005 08:17:15 +0100
-References: <46110262C7A0BF418DE9C9A5BD73F92807F2F94C@cceexc23.americas.cpqcorp.net>
-	<200503030923.22677.g.jaeger@sysgo.com>
-	<20050303230541.GA7274@wohnheim.fh-wedel.de>
-In-Reply-To: <20050303230541.GA7274@wohnheim.fh-wedel.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200503040817.15639.g.jaeger@sysgo.com>
+	Fri,  4 Mar 2005 18:34:44 +1100 (EST)
+In-Reply-To: <4227E990.5050604@semicircular.net>
+References: <4227E990.5050604@semicircular.net>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <3230bc3ecd1bc416a32ffd532c6e8a42@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Fri, 4 Mar 2005 01:34:32 -0600
+To: "Adam Kent" <adam@semicircular.net>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Building a Kernel for the AMCC PPC440EP Bamboo Board
+Subject: Re: [PATCH] PCI bridge support for MPC8272 and PQ2FADS
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,21 +23,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Friday 04 March 2005 00:05, J=F6rn Engel wrote:
-> On Thu, 3 March 2005 09:23:22 +0100, Gerhard Jaeger wrote:
-> > >=20
-> > Could not confirm that so far! Ebony and Ocotea are working out of the
-> > box, using these defconfig files! (pristine kernel 2.6.11)
->=20
-> With PIBS and on a bamboo?  If I was just too stupid and made some
-> silly mistake, that would be great news.
-=20
-I'm in doubt about having red my post carefully! I talked about EBONY
-and OCOTEA, ebony with OPENBIOS, ocotea with PIBS!!!! NO BAMBOO!!!!!
+Adam,
 
-Gerhard
+I'm not aware of any such patches (unless Vitaly has some).  If you do 
+this, please port it against linux-2.5 instead of linuxppc-2.5.  Also, 
+if you send me the patches and I will ensure they get pushed upstream 
+into the stock kernel.
 
-=2D-=20
-Gerhard Jaeger <gjaeger@sysgo.com>           =20
-SYSGO AG                      Embedded and Real-Time Software
-www.sysgo.com | www.elinos.com | www.pikeos.com | www.osek.de=20
+thanks
+
+- kumar
+
+On Mar 3, 2005, at 10:52 PM, Adam Kent wrote:
+
+> Vitaly Bordug wrote:
+>  > This patch adds PCI bridge support for MPC8272 and PQ2FADS to the
+>  > current linuxppc-2.4 tree. Actually it has been tested with 8272, 
+> but
+>  > PQ2 _should_ also work, though it will complain that host bridge ID 
+> is
+>  > unrecognized.
+>
+> This patch is against the linuxppc-2.4 tree, but it seems there is
+>  also no support for the MPC8272ADS / PQ2FADS PCI bridge in the
+> linuxppc-2.5 kernel tree.
+>
+> Before I go and "forward" port it myself, are there any other patches
+> out there that add support for PCI for the 8272ADS under the 2.6 
+> kernel?
+>
+> Thanks,
+>  Adam Kent
+>  _______________________________________________
+> Linuxppc-embedded mailing list
+>  Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
