@@ -1,77 +1,33 @@
-Message-ID: <3A6CE872.F89B0B25@mvista.com>
-Date: Mon, 22 Jan 2001 18:12:02 -0800
-From: Frank Rowand <frank_rowand@mvista.com>
-Reply-To: frowand@mvista.com
-MIME-Version: 1.0
-To: Dan Malek <dan@mvista.com>
-CC: frowand@mvista.com, linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: context overflow
-References: <3A68F7A0.693639F1@mvista.com> <3A6CDA97.A9C3FFE2@mvista.com> <3A6CDC43.A18641DC@mvista.com>
-Content-Type: text/plain; charset=us-ascii
+Date: Mon, 22 Jan 2001 20:28:21 -0600
+Subject: Re: [Dri-devel] PPC Lockup (ati-pcigart-branch)
+From: Takashi Oe <toe@unlserve.unl.edu>
+To: Dan Malek <dan@mvista.com>, Roman Zippel <zippel@fh-brandenburg.de>
+CC: Jeff Hartmann <jhartmann@valinux.com>, <michdaen@iiic.ethz.ch>,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Gareth Hughes <gareth@valinux.com>, <linuxppc-dev@lists.linuxppc.org>,
+        <dri-devel@lists.sourceforge.net>,
+        Paul Mackerras <paulus@linuxcare.com>
+Message-ID: <B6924864.5CF1%toe@unlserve.unl.edu>
+In-Reply-To: <3A6CCF31.C44706E2@mvista.com>
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dan Malek wrote:
->
-> Frank Rowand wrote:
->
-> > ....The only "context_overflow" I
-> > find is mmu_context_overflow() in arch/ppc/mm/init.c.  You obviously
-> > aren't talking about the 8xx version of this function.
->
-> That's the one.  As part of the 4xx merge I made the 8xx work as
-> well, so there is now only this one function for all PowerPC ports.
->
-> > This is the code we are talking about, correct?  The reason I'm
-> > confused is that I was being literal in my reading of "current->mm"
-> > as opposed to "tsk->mm".
->
-> The code you posted looks pretty old.  This function has more guts
-> to it now, including a 'set_context' of 'current->mm', the source
-> of the bug we are discussing.
->
->         -- Dan
+On 1/22/01 6:24 PM, Dan Malek wrote:
 
-Thanks!  I'm back on the right page now...
+> The PowerPC port, except for a couple of processors (4xx and 8xx again)
+> could never use virt_to_phys on any dynamically allocated (vmalloc()'ed)
+> space.  All of the drivers/devices that used these macros were using
+> ioremapped() or static buffers.  Perhaps the PCI mapping functions are
+> implementing some of this, and I need to take a look.
 
-The code I posted was from a pull of linuxppc_2_5 as of last night.  I
-was just a little confused because I didn't see any "if (current->mm != NULL)"
-in it.  The problem was that it was gone already.
-
-However, as of last night there is still an 8xx version (paraphrasing quite
-a bit):
+Is it really true that virt_to_phys on vmalloc'd memory is broken 6xx?  I
+wonder why planb works at all....
 
 
-#ifndef CONFIG_PPC_CPU_PPC_8xx
-local_flush_tlb_all()
-{
-}
-local_flush_tlb_mm()
-{
-}
-local_flush_tlb_page()
-{
-}
-local_flush_tlb_range()
-{
-}
-mmu_context_overflow()
-{
-}
+Takashi Oe
 
-#else /* CONFIG_PPC_CPU_PPC_8xx */
-void
-mmu_context_overflow(void)
-{
-        atomic_set(&next_mmu_context, -1);
-}
-#endif /* CONFIG_PPC_CPU_PPC_8xx */
-
-
--Frank
---
-Frank Rowand <frank_rowand@mvista.com>
-MontaVista Software, Inc
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
