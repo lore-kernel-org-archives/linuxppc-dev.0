@@ -1,50 +1,70 @@
-Message-ID: <39340AC7.689BFF86@snmc.com>
-Date: Tue, 30 May 2000 13:39:03 -0500
-From: Daris Nevil <Daris.Nevil@snmc.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <39340E4A.2E0893C9@lucent.com>
+Date: Tue, 30 May 2000 13:54:02 -0500
+From: Tom Roberts <tjroberts@lucent.com>
 MIME-Version: 1.0
-To: Tom Roberts <tjroberts@lucent.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Do you have your minimum ramdisk image which can provide basic
- network services ?
-References: <020e01bfc93f$5dc075c0$db52df8d@helsinki> <3934086C.87BF893@lucent.com>
+To: Daniel Wu <Daniel.Wu@alcatel.com.au>
+Subject: Re: Porting LinuxPPC
+References: <20000519051051.236093C972@elph.research.canon.com.au>
+	 <39253A48.24B90117@snmc.com> <39253D0B.F9AF86EE@raleigh.ibm.com>
+	 <392562CE.A71A4F49@embeddededge.com> <392A3147.3A9AC5C2@alcatel.com.au> <00May30.174931est.115248@border.alcanet.com.au>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Tom,
-
-The quick-and-dirty way of enabling your loopback device
-is:
-
-    ifconfig lo 127.0.0.1
-
-Daris
-
-SiSIC Inc/SNMC
-www.snmc.com
-
-Tom Roberts wrote:
-
-> SangTae Ha wrote:
-> > I already downloaded full image file at > ftp://ftp.ppc.kernel.org/pub/linuxppc/embedded/mbxroot.full.tgz
+Daniel Wu wrote:
+> I'm still having problems with booting the kernel - I've got to the point where the
+> compressed image has been successfully decompressed and starts to execute code in
+> kernel/head.S, which sets up the TLBs. However, as soon as the code turns on the
+> mmu, the code crashes!
 >
-> I just downloaded that file, too. As you say, it is HUGE (133 MB
-> gzipped).
->
-> Unfortunately, it is also incomplete. In particular, it is missing:
->         init            (/etc/telinit is a link to init, but no init)
->         inetd
->
-> I had been hoping to simply build up an initrd image from selected
-> pieces of it, because I now have the Linux kernel, console, and
-> initrd-ramdisk up and running on my hardware (Hurrah!). But I'm
-> having difficulty building a sufficient initrd image to actually use
-> the network driver I have written (:-(). So far, I cannot even ping
-> myself using the loopback device (no inetd, I suppose).
->
-> Tom Roberts     tjroberts@lucent.com
->
+> I'm running this under a BDM monitor, could this be the source of the problem?
 
+I know nothing about BDM, but I did just last week get the linux kernel
+up on our board (this one is a single-CPU PPC604 with 48 MB DRAM).
+
+The linux kernel expects to be loaded at physical address 0 and for
+execution to start at address 0, in real mode (i.e. MMU disabled).
+Depending upon configuration, the kernel may expect registers
+r3-r7 to contain valid memory pointers, or it may expect there
+to be a Mackintosh boot ROM available, or it may actually expect to
+have been loaded at 0x00100000 and will relocate itself to physical
+address 0, etc. -- you probably need to go through head.S with a
+fine-toothed comb, and make sure you have configured the kernel
+correctly for your hardware. In my case I basically copied the
+CONFIG_PREP code, adding appropriate CONFIG_LSPS code in most places
+("LSPS" is the name of our board). I also added "LSPS" to config.in
+so I could configure it. So far I have touched 10 kernel source
+files, and have added 2 files for my lsps_setup and lsps_driver.
+
+
+>  One
+> thing I noticed is that the kernel uses virtual addresses starting at c0000000 and
+> the BDM monitor fails to do the translation. Is there any way to get around this?
+
+I don't think so -- that looks pretty basic to me, throughout the PPC
+port. But your boot monitor should not need to do the translation --
+load the kernel image at 0 and jump to addr 0, all in real mode of your
+boot monitor. But you do need to configure the Linux kernel with device
+drivers which can talk to your hardware....
+
+	And you may need to configure that option to load at 0x00100000
+	if your boot monitor uses the memory at addr 0....
+
+
+Note if you load a compressed kernel you need to load it higher than
+0x00100000 or so and jump to its first instruction -- it will
+decompress the kernel to addr 0 and jump to it there. I have not
+gotten a compressed image to work, and I am booting vmlinux directly
+(but for me it's not an issue -- it takes just 3.1 seconds from the
+<CR> of my boot command to a bash prompt from the board).
+
+	HEY -- IS THAT A RECORD??? has anyone ever booted Linux faster
+	than 3.1 seconds? Of course this is a _VERY_ bare-bones system
+	with just a console and a 4 MB initrd-ramdisk.
+
+
+Tom Roberts	tjroberts@lucent.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
