@@ -1,66 +1,80 @@
-Message-Id: <199812181410.PAA23866@kieray1>
-Date: Fri, 18 Dec 1998 15:10:48 +0100 (MET)
-From: Magnus Damm <eramdam@kieray1.p.y.ki.era.ericsson.se>
-Reply-To: Magnus Damm <eramdam@kieray1.p.y.ki.era.ericsson.se>
-Subject: Re:MPX860 : MBX_IMAP_ADDR undefined
-To: linuxppc-dev@lists.linuxppc.org
-Cc: kd@flaga.is
+Date: Fri, 18 Dec 1998 07:11:29 -0700 (MST)
+From: Jeff Rugen <jrugen@primenet.com>
+To: Gabriel Paubert <paubert@iram.es>
+cc: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>,
+        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>,
+        Cort Dougan <cort@cs.nmt.edu>
+Subject: Re: ioremap and related
+In-Reply-To: <Pine.HPP.3.96.981218122416.12103E-100000@gra-ux1.iram.es>
+Message-ID: <Pine.BSI.3.96.981218070058.2404A-100000@usr07.primenet.com>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Fri, 18 Dec 1998, Gabriel Paubert wrote:
 
->I could not find patch that adds this symbol, so I wanted to ask if sombody
->knows where to find a patch?
+> > > Now, in the clgenfb driver, it doesn't seem to like me using ioremap to set
+> > > up the registers for the Cirrus chip -- if I hard-code the registers to be
+> > > relative to 0x80000000, everything works fine (this is the memory location
+> > > mmaped in in Xbh server), but if I use ioremap, it doesn't work.
+> > > (By working, I mean it sets the video mode and sets/reads the color
+> > > registers... not working means I get a panic when starting to
+> > > initizliaze the hardware and can't detect the video memory size). 
+> 
+> The registers in the I/O area should be accessed with in[bwl]/out[bwl], or
+> am I missing something ? 
 
-I haven't found any patch, but here's my changes to make 2.1.130 to work
-on my MBX860 board.
+I've gotten this working to some extent (on my computer anyway) so I'm
+mainly looking for understanding.  I'm using in[bw]/out[bw] to access the
+registers in the I/O area.  What's confusing is I have to ioremap the memory
+map area (at 0xC0000000) but I don't have to ioremap the I/O area (at
+0x80000000).  I don't understand why though.
 
-edit Makefile, arch/ppc/Makefile, arch/ppc/coffboot/Makefile
+For that matter, once I ioremap the memory map area, I have to use
+virt_to_phys() to convert it to a memory location that I save to give back
+to the framebuffer code, just because the framebuffer code uses
+phys_to_virt() to convert it back to a value it can use.  None of the other
+framebuffer drivers need to do this, so it feels like a hack.
 
-errors:
+<snip>
 
-arch/ppc/kernel/irq.c		MBX_IMAP_ADDR -> IMAP_ADDR
-				corrected in 1.87
+> > pci10 is PCI_BASE_ADDRESS_0, the register that defines where the base address
+> > of the first memory space is located. Hmm, writing 0 to it puts it at address
+> > zero. Weird... On my CHRP box, all PCI memory spaces are located at addresses
+> > 0xc0000000 and up. PReP is different. Gabriel? Cort?
+> 
+> Yeah, but on PreP the MMIO addresses are offset by 0xc0000000 by the host
+> bridge, so that if this register is set to 0, the processor has to
+> generate physical address 0xc0000000 to access it, so you have to ioremap
+> at 0xc0000000 (unless we modify ioremap, but I'm still wondering as to
+> what the right way to do it is, as said earlier).
+> 
+> Howvever, setting it to zero is bad for at least 2 reasons:
+> 
+> - it may conflict with some ISA devices, making them inaccessible because
+> of the subtractive decoding nature of the PCI<->ISA bridge.
+> 
+> - PCI specifications 2.1 state that setting a base address register to 0 
+> disables the corresponding decoder. Many devices are buggy in this
+> respect however.
+> 
 
-arch/ppc/kernel/process.c	prom_print(buf); -> //prom_print(buf);
-				//?
+I'm currently using pcibios_(write|read)_config_dword to do the above.  In
+the PCI structure, base_address[0] is already set to 0 however, so possibly
+I don't need to touch pci10 -- which may make the code work on more machines
+if I understand the rest of what was said :-)
 
-arch/ppc/kernel/mbx_setup.c	mbx_cpm_reset() -> m8xx_cpm_reset()
-				* cort added adbdev_init and powermac_init *
-				corrected in 1.4
+Would it be worth my posting the snippet of code that sets up the memory
+locations of the I/O registers and memory map and enables PCI access to
+both?
 
-arch/ppc/kernel/setup.c		the good-old &res -> res
-				corrected in 1.119
+----------------------------------------------------------------------------
+Jeff Rugen                      jrugen@primenet.com
 
-arch/ppc/kernel/time.c		MBX_IMAP_ADDR -> IMAP_ADDR
-				the good-old &res -> res
-				corrected in 1.38
-
-arch/ppc/kernel/Makefile	feature.o not used by mbx
-				corrected in 1.45
-
-arch/ppc/mm/init.c		MBX_IMAP_ADDR -> IMAP_ADDR
-				MBX_IMAP_SIZE -> IMAP_SIZE
-				the good-old &res -> res
-				corrected in 1.134
-
-arch/ppc/8xx_io/enet.c		MBX_IMAP_ADDR -> IMAP_ADDR
-				mbx_cpm_dpalloc() -> m8xx_cpm_dpalloc()
-				corrected in 1.8
-
-drivers/char/mem.c		adbdev_init - CONFIG_PPC fault.
-
-init/main.c			powermac_init(); -> //powermac_init();
-				1.162
-
-
-Good luck!
-
-/ Magnus
-
+...Had this been an actual emergency, we would have fled in terror, and you 
+would not have been informed.
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
