@@ -1,34 +1,42 @@
-Message-Id: <200010051604.SAA13962@denx.local.net>
-To: Daniel Furse <daniel.furse@iptest.com>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Embedded planet CLLF boards 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 05 Oct 2000 15:46:24 BST."
-             <0D9416AE7F95D411A8710008C7332F3F0E38@GUILDFORD4_NT>
-Date: Thu, 05 Oct 2000 18:04:31 +0200
+Message-ID: <39DCB4AF.B9A144AD@nexus-tech.net>
+Date: Thu, 05 Oct 2000 13:04:47 -0400
+From: Kyle Harris <kharris@nexus-tech.net>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Embedded planet CLLF boards
+References: <0D9416AE7F95D411A8710008C7332F3F0E38@GUILDFORD4_NT>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <0D9416AE7F95D411A8710008C7332F3F0E38@GUILDFORD4_NT> Daniel Furse wrote:
+Daniel Furse wrote:
 >
-> seems to be impossible. The worry we have about the TQM8xxL module is
-> the cost of purchasing one for every one of our boards that we ship.
-> What would
-> the typical selling price be for production volumes?
+> >>>Interesting... Do you have RT-Linux or  RTAI  already  running  on  a
+> >>>MPC8xx? This is something we still have in the queue, but we're stuck
+> >>>with problems very early in interrupt handling...
+>
+> Sorry, no. We're not that far into development. We're still trying to
+> select a suitable board, having been delayed by the problems with the
+> first board we chose (a FADS860T).
+>
+> >>>Maybe the TQM8xxL modules can be used. You could use the starter  kit
+>
+> I have looked at the TQM8xxL modules, and they look almost ideal.
+>
+> >>>let me know if you want a quote on prices.
+>
+> We were hoping to find a complete evaluation board, which we could
+> replicate
+> royalty-free (which is why we selected the FADS card initially), but
+> that seems to be impossible.
 
-This is becoming too commercial for this list. If anybody else is
-interested, too: Please send email directly to me or to
-office@denx.de
+Have you looked at the BrytePort board? Hardware is not available until
+12/1. But it is a reference design.  Not sure what the exact terms are
+(not my department).
 
+http://www.brytelogic.com/bryteport/default.htm
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Lots of folks confuse bad management with destiny.   -- Frank Hubbard
+Kyle.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
