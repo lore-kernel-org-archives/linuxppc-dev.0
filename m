@@ -1,51 +1,40 @@
-Message-Id: <200301280810.JAA19807@hzsms01.nl.lucent.com>
-Date: Tue, 28 Jan 2003 09:10:19 +0100 (MET)
-From: Jaap-Jan Boor <jjboor@lucent.com>
-Reply-To: Jaap-Jan Boor <jjboor@lucent.com>
-Subject: Re: C++ Library recommendations ...
-To: linuxppc-embedded@lists.linuxppc.org, jimdon@sympatico.ca
+Message-ID: <3E365DA5.7060201@elitedvb.net>
+Date: Tue, 28 Jan 2003 11:38:29 +0100
+From: Felix Domke <tmbinc@elitedvb.net>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: C++ Library recommendations ...
+References: <200301280810.JAA19807@hzsms01.nl.lucent.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Jim,
+Jaap-Jan Boor wrote:
+> I just use libstd++ coming with gnu g++, it's not too big (shared ~300k)
+> compared to glibc (shared ~1.2 M)
 
-I just use libstd++ coming with gnu g++, it's not too big (shared ~300k)
-compared to glibc (shared ~1.2 M)
+problem is that the STL is a template library, so a lot of code is
+produced when using these tamplates.
 
-when linking statically, the linker normally only takes what you need,
-so this will be less.
+i highly recommend to use normal lists and cast pointers (like in good
+old C times) again, even with the need of allocating two chunks per list
+item (pointer and data itself).
+Using STL makes your application MUCH bigger, and, often slower.
+STL is optimized for huge data structures, but for most things
+memcpy'ing (and using for example an array/vector) is much faster than
+using a list or hash, which has optimal - for example linear or even log
+- complexity. The thing the STL guy forgot is to keep in mind than
+1000*linear (list insertions... ) is still worse than 1*exp (memcpy when
+doing vector insertions... but take this only as an example) when your
+list has, for example, 5 entries.
 
-Jaap-Jan
+and most of the lists are NOT accessed ten thousand times, do NOT have
+one million entries where 1000*linear is a LOT more than 1*exp complexity.
 
->
-> Hello,
->
-> I have currently have some applications running with glibc/ulibc ...
->
-> For porting purposes I would find it nice if there were some nice and
-> small C++ libs supporting basic STL features (sets, vectors, lists) and
-> things like iosstreams ...
->
-> Anyone have any recommendations ...
->
-> I believe last time I checked most C++ libs are rather large ??
->
-> Any advice would be great ... thanks ...
->
-> Jim
->
->
->
+just my 2 cent...
 
----
-J.G.J. Boor
-Lucent Technologies Nederland b.v.	Room:  BE-525
-Optical Networking Group TMS Data 	Phone: +31 (0)35 687 4721
-Larenseweg 50, P.O. Box 1168, 		Fax:   +31 (0)35 687 5976
-1200 BD, Hilversum, The Netherlands	mailto:jjboor@lucent.com
+felix
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
