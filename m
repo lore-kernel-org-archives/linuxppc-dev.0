@@ -1,41 +1,63 @@
-Message-ID: <3C03E2EC.5020102@humboldt.co.uk>
-Date: Tue, 27 Nov 2001 19:01:00 +0000
-From: Adrian Cox <adrian@humboldt.co.uk>
+Message-ID: <3C03E5E9.A9C49A4A@mvista.com>
+Date: Tue, 27 Nov 2001 12:13:45 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-To: Michael Sokolov <msokolov@ivan.Harhan.ORG>
+To: paulus@samba.org
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: VT82C686B IDE and Linux/PPC woes
-References: <0111271827.AA24645@ivan.Harhan.ORG>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Re: gratuitous complexity
+References: <15363.33009.545085.87868@gargle.gargle.HOWL>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michael Sokolov wrote:
+Paul Mackerras wrote:
 
-> Adrian Cox <adrian@humboldt.co.uk> wrote:
+> I was innocently browsing through include/asm-ppc/gt64260.h when I
+> came across this:
+>
+> #ifndef TRUE
+> #define TRUE    (0 == 0)
+> #endif
+>
+> #ifndef FALSE
+> #define FALSE   (0 != 0)
+> #endif
+>
+> I nearly lost my dinner!  It's just not fair to spring something that
+> awful on people without at least a warning for those with weak
+> stomachs. :)
+>
+> Seriously though, it is unnecessarily complex.  If you want to use TRUE
+> and FALSE, define them as 1 and 0.  The C language standard specifies
+> that 0 is false and anything non-zero is true.
 
+Hmm, yeah, not sure why that ended up in there but I'll get rid of it.
 
+> I also wonder why we need so many functions to access the gt64260 -
+> there are 19 different functions of the form gt64250*_set_*, which
+> seems completely over the top to me.  How many of them actually get
+> used?
 
-> P.S. When I took the pciauto_bus_scan() calls out, it saw the drive, but hung
-> on the partition check. Disabling the VIA82CXXX support .config and leaving
-> only the generic PCI IDE support made it really work. I guess the VIA82CXXX
-> fast modes code still has issues to be worked out. Maybe it's because it
-> assumes there is a BIOS and in my case there isn't one. (My minimalist firmware
-> does not touch any VT82C686B IDE stuff at all, and yet if I want I can pull the
-> IDE register addresses out of the BARs and see the drive there using ancient
-> WD100x code.)
+Well, the gt64260 is a complicated bridges/chip with many windows to
+different "entities" only one type of which are to the PCI buses (and lots
+of other things).  There are also windows from each PCI bus back to each
+of the other "entities" PLUS a P2P bridge between the 2 PCI buses.  Each
+window has its own quirks so there is a separate routine for each type of
+window.
 
+Yes, many of the gt64260_*_set_* routines are used but some aren't.  I
+provided all of them because there will undoubtedly be someone who wants
+to use ones not used now.  I provided gt64260_bridge_init() that would do
+what I expect to be a typical bridge set up but there is certainly no
+requirement to use that routine.
 
-The driver assumes that the BIOS has correctly probed for cable types. I
-believe this is because the board designer gets to choose which GPIO on
-the 686B they wire the cable detection to. You'll need to check the
-layout, and study that section of the 686B manual.
+I'm open to suggestions, if you have some.
 
+Also, if you still don't like what I did, perhaps you should take a look
+at what was available before... :)
 
-
---
-Adrian Cox   http://www.humboldt.co.uk/
+Mark
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
