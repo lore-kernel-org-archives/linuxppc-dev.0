@@ -1,45 +1,58 @@
-Message-Id: <200008281426.QAA29658@denx.local.net>
-To: Christopher Huffine <huffine@wopr.nrl.navy.mil>
+Message-ID: <7283DE19D141D111AD0E00A0C95B195502C5F607@mail2.aiinet.com>
+From: "Whitney, John" <johnw@aiinet.com>
+To: "'Scott Anderson'" <sanders@mvista.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 823 ports access question 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 28 Aug 2000 07:18:55 EDT."
-             <Pine.LNX.3.96.1000828071718.5707A-100000@wopr.nrl.navy.mil>
-Date: Mon, 28 Aug 2000 16:26:04 +0200
+Subject: RE: ext2fs or ramdisk problems......
+Date: Mon, 28 Aug 2000 10:27:26 -0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <Pine.LNX.3.96.1000828071718.5707A-100000@wopr.nrl.navy.mil> you wrote:
+Well, I'd believe that, but...
+
+If I copy a file, such as /bin/vim, into new files until they fill up
+the unused ramdisk space, delete the copies, and start copying them
+again, I get the "out of space" error (actually, I don't think I even
+have to fill up the space before I can get this to happen).  If it were
+inode related, I'd think that it was the *number* of files and that for
+each file I deleted, I could create a new one (which isn't the case).
+
+I saw the problem in each kernel from the standard 2.2.13 up to 2.2.15
+(I was trying to see if newer kernels fixed the problem).  I'm not sure
+what is causing it or if anyone else has been troubled by it, but I
+thought I'd bring it up to the group.
+
+John Whitney
+johnw@aiinet.com
+
+-----Original Message-----
+From: Scott Anderson [mailto:sanders@mvista.com]
+Sent: Friday, August 25, 2000 1:35 PM
+To: Whitney, John
+Cc: 'greyham@research.canon.com.au'; kd@flaga.is;
+linuxppc-embedded@lists.linuxppc.org
+Subject: Re: ext2fs or ramdisk problems......
+
+
+
+"Whitney, John" wrote:
 >
-> Sorry to write another simplistic question; hopefully
-> there is a simplistic answer as well:
+> I have had odd results using ext2 on the ramdisk (in my case, a 16MB
+> ramdisk).  Using the 2.2.13, ramdisks I created using ext2 would boot
+> up just fine on the system, but after use the filesystem would declare
+> that it was out of space, even though "df" showed several megabytes
+> free on that filesystem.
 
-There is :-)
+My guess is that you ran out of inodes.  Examine the output of dumpe2fs
+and see if it gives you any clues.
 
-> PPC ports.  For example, the Bright Star
-> ipEngine I have has LEDs connected to the LCD ports
-> from the PowerPC.  I'm looking for the right
-> sequence to actually write to these ports and
-> get these LEDs to turn on and off.
->
-> I've looked in 8xx_immap.h and I start to see
-> what I need to make this work (im_lcd), but I'm missing
-> the bigger picture.  Anyone have any example
-> code for anything like this?
+    Scott Anderson
+    scott_anderson@mvista.com	MontaVista Software Inc.
+    (408)328-9214		490 Potrero Ave.
+    http://www.mvista.com	Sunnyvale, CA  94086
 
-See the tqm_led demo driver code under
-http://www.denx.de/solutions-en.html#drivers
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"Do we define evil as the absence of goodness? It seems only  logical
-that shit happens--we discover this by the process of elimination."
-                                                        -- Larry Wall
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
