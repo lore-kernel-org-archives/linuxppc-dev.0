@@ -1,48 +1,36 @@
-Date: Wed, 5 May 1999 13:50:41 -0400 (EDT)
-From: Tom Rini <tmrini@ntplx.net>
-To: Sriranga Veeraraghavan <ranga@CSUA.Berkeley.EDU>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: USB under LinuxPPC 
-In-Reply-To: <199905050555.WAA23579@soda.CSUA.Berkeley.EDU>
-Message-ID: <Pine.LNX.4.05.9905051349460.667-100000@pc.wackyland.com>
+Message-ID: <03E3E0690542D211A1490000F80836F4877E30@zcard00f.ca.nortel.com>
+From: "Jim Somerville" <somer@nortelnetworks.com>
+To: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
+Subject: Strange mapping at 0xffc00000
+Date: Wed, 5 May 1999 16:48:19 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 4 May 1999, Sriranga Veeraraghavan wrote:
+I have started using the 2.2.5 kernel from 2.1.24 previously, and have found
+a
+new 4 Meg mapping up at 0xffc00000 that was not there before.  This mapping
+is
+setup in arch/ppc/kernel/pmac_setup.c, in routine pmac_setup_arch with the
+following line:
 
-> 
-> > Er, SMP uusbd?  uusbd currently doesn't have all the locking requires for
-> > SMP to work. Linus' simple USB code might work on SMP, but doens't have an
-> > OHCI driver that works yet.
->  
-> I tried to make some simple patches to the uusb code to support
-> locking using the same locking strategy as the vmscan.c and other
-> kernel files, but there were too many things to fix.
-> 
-> Where can I pick up a copy of Linus's USB driver? It does not seem to
-> be included with my 2.2.5 kernel sources.
+        __ioremap(0xffc00000, 0x400000, pgprot_val(PAGE_READONLY));
 
-It's in 2.2.7.  But it does not have a OHCI controler (ie everything
-that's not from intel).
+It may be related to SMP support on some Macs (9600?) but the comments near
+it
+are vague.  I have not enabled SMP in the kernel via config, and this
+mapping
+does not look "config" optional.  I removed this line, rebuilt the kernel,
+and
+everything is fine, at least on the 7300.  This mapping interferes with a
+large
+emulator application that I maintain...I don't want junk returned when
+dereferencing a bad pointer that happens to point up there.  Can anyone shed
+some light, or provide a link to an explanation?  Thanks.
 
-> I am about to reveal my limited knowledge of USB, but what is the OHCI
-> driver and will I need it to use a USB mouse or keyboard?
-
-It's the controller you plug your keyboard/mouse into. :)
-
-> Anyway, I wish I had the time to do a complete patch. I really would
-> like to get usb running on my 7600. But if it is a tradeoff between
-> SMP and USB, I'll pick 800 bogoMIPS over a three button mouse. :-)
-
-Yeah, that's a bit of a shame..
-
----
-Tom Rini (TR1265)
-http://dobbstown.yeti.edu/
-
+-Jim
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
