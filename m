@@ -1,110 +1,96 @@
-Date: Wed, 15 Sep 1999 22:21:59 -0600 (MDT)
-From: Dan Burcaw <dburcaw@terraplex.com>
-To: Ethan Benson <erbenson@alaska.net>
-cc: erik cameron <cameron@senta.uchicago.edu>,
-        Kevyn Shortell <kevyn@apple.com>,
-        Benjamin Herrenschmidt <bh40@calva.net>,
-        linuxppc-dev@lists.linuxppc.org
+Date: Wed, 15 Sep 1999 22:42:04 -0700 (PDT)
+From: "David A. Gatwood" <dgatwood@mvista.com>
+To: Sean <picasso@madflower.com>
+cc: Tom Rini <trini@kernel.crashing.org>, Ethan Benson <erbenson@alaska.net>,
+        Peter Bierman <bierman@apple.com>, linuxppc-dev@lists.linuxppc.org
 Subject: Re: New booter
-In-Reply-To: <v04210104b40612fb095b@[192.168.0.1]>
-Message-ID: <Pine.LNX.4.10.9909152212520.19873-100000@newhope.terraplex.com>
+In-Reply-To: <37E06BB2.27916B03@madflower.com>
+Message-ID: <Pine.LNX.3.96.990915223308.1458C-100000@mvista.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Thu, 16 Sep 1999, Sean wrote:
 
-> BOTH options should be available, for some syslinux/loadlin is more 
-> convenient, for others LILO is a much nicer solution, especially in 
-> its ability to load an arbitrary OS it knows nothing about by simply 
-> loading that OSes bootblock!
+> *plays the devil's advocate*
 > 
-> > > I disagree
-> >
-> >maybe not some versions, currently.  and maybe at some point it won't be
-> >kludgy at all.  but what's more kludgy, BootX or a small HFS partition that
-> >nobody knows is there?  parts of linux *are* still kludgy; this is true.  I
-> >disagree with the assertation that it is "more kludgy than anything else
-> >on the planet," but i'd prefer it to be ugly and work than beautiful and
-> >useless.
+> "David A. Gatwood" wrote:
+> > 
+> > On Wed, 15 Sep 1999, Tom Rini wrote:
+> > 
+> > > > >So I'm not sure what you mean then by the "bootblock of the disk".
+> > > >
+> > > > on intel machines disks are typically use the very first 512 bytes on
+> > > > a disk as a bootblock and partition table, the bootblock portion of
+> > > > this is something like 446 bytes long, the BIOS when booting the
+> > > > machine has a boot device specified all it does it load that 446
+> > > > bytes into memory and execute it that code could be the NT loader the
+> > > > old DOS/win95 loader or it could be LILO, that code then can do
+> > > > whatever it need to do.  in lilos case it loads its second stage
+> > > > loader from the root filesystem and that takes care of loading the
+> > > > kernel, if you replace ext2fs with xfs all that needs updating is
+> > > > possibly the second stage LILO.  no specific partition or filesystem
+> > > > is needed and the BIOS does not care what filesystem you use.
+> > >
+> > > But a good loader knows how to deal w/ FSes.  The FreeBSD loader is
+> > > wonderful, and can boot any kernel on the disk, unlike lilo.
 > 
-> Linux does have kludges, I do not deny that, but for the most part 
-> the kludges are unavoidable, and often accompanied by very colorful 
-> comments in the source leading to censorship issues in australia :-)
+> How many times do you compile your Linux kernel under say windows or the
+> macos so it would actually be on a different type of FS where this would
+> actually be an issue? *ponders*
+
+Build... never.  Download... frequently.
+
+
+> > Any booter that doesn't understand filesystems and has to have a list of
+> > blocks is a serious kludge.  For instance, who is to say that you want to
+> > boot off a block device at all?  And what if I wanted to replace a kernel
+> > from within another OS?  Can you say pain in the...
 > 
-> the point it Linus and most linux developers PREFER to do things 
-> right, to implement the cleanest and most efficient way that can be 
-> done, but often times hardware makers leave stupid bugs in or create 
-> a shortsighted design that simply does not work well in the long term 
-> or does not work well outside of the small context the maker had in 
-> mind, those are places where linux has to kludge its way in, but its 
-> not prefered and only done if there is no other option.
+> if you dont have a block device, and your not going to boot from it than
+> why would you worry about whether you have a bootloader installed on a
+> block device? 
+
+True enough.
+
+
+> weird i have installed on dozens of systems and lilo has worked
+> flawlessy, although I have had problems with WD E-Z drive writing over
+> the boot block stuff a few times(but only windows people are stupid
+> enough to use it), and I have had to wrestle with some scsi drives, though.
+
+Try making it share a large disk with FreeDOS, and you'll find one
+problem.  Try using a large ramdisk and you'll find a second.  Those are
+the ones that come to mind immediately.
+
+
+> >Depending on
+> > a particular block to be always unused is more than a kludge, it's
+> > downright dangerous.  What if two architectures share a drive?  What if
+> > they happen to pick the same critical boot block?  Baaaad idea.  At least
+> > if it's a filesystem at a particular location, you can read it and say
+> > "hey, that's not a valid fs" or "hey, that partition table is bogus".
+> > With a boot block, there are no second chances.  You just crash.
 > 
-> my objections are twofold:
-> 
-> 1) I want ALL avenues of true OF booting by way of the bootblock to 
-> be explored before giving up and implementing the second best 
-> alternative, which is partitions and fake macos et al.
+> Lilo, can handle at least 3 OS's.
 
-Not going to happen. Do you think we've come to this conclusion for any
-other reason then because it's the best solution that we can come up with?
-Are responses from Apple engineers not proof enough that this is the best
-bet?
+I was referring more to setting up  a system in which a driveis shared
+between different machine types, like PPC and x86, for example.  Probably
+not a good example, and difficult to do in practice, at least with current
+hardware.
 
-> 2) I am simply very frustrated that apple is being so shortsighted in 
-> its design of OF and its boot process, they make it so specific to 
-> MacOS they themselves have challenges getting OSX to boot on their 
-> own machines! and later on HFS+ will be a obsolete filesystem and 
-> they will want to replace it again the desisions to make the boot 
-> process so dependant on HFS is going to haunt them as much as it 
-> gives migraines to developers of alternative OSes.
 
-Well complain to them, not us.. leadership@apple.com. 
+> and it also gives errors as best it
+> can when it crashes.
 
-> I am not yet convinced there are no other options, the options have 
-> hardly been explored, if there is indeed NO POSSIBLE WAY IN HELL to 
-> boot these machines without a partition hack then fine, but I am not 
-> yet satisfied we are to that point, I have been spending alot of time 
-> investigating this myself, but everytime i try and enlist any 
-> assistence to explore the issue further everyone seems to just say 
-> `use bootx' or `just make a kludge partition'  those options are fine 
-> for some situations and if fixing quik is indeed futile, but I just 
-> want to make SURE there is not a BETTER way!
+LI
 
-We've been exploring the possibilities since the first new world box came
-out (iMac). Don't you think Apple would have done it "that way" if it was
-possible? I don't know why they designed OF how they did, nor am I
-justifying the implimentation, but it's what we have to work with, period.
-If there IS a better way, the two Apple engineers on this list which have
-been participating in this discussion don't know about it. 
+;-)
 
-> > > the bootstrap process should have NO reliance on a specific filesystem!
-> >
-> >and the more vehemently you criticize, the more people are expecting to see
-> >you post a workaround that meets your aesthetic standards.
-> 
-> I have already stated several times how I think the boot process 
-> should be designed so that it can be truely filesystem agnostic and 
-> allow a LILO like system with all the niceties like password 
-> protection, multibooting, multiple images, all in a nice clean 
-> asthetically pleasing way.
 
-LILO is asthetically pleasing and clean? 
-
-I'm not arguing with you, just pointing out the fact that some of us have
-been there, done that as far as researching this topic. Ben began work on
-miBoot because this is the logical and best solution with what we have to
-work with. (and there is an obvious need for a working bootloader for old
-& new world boxes)
-
-Regards,
-Dan
-
-Terra Soft Solutions, Inc.
-   Yellow Dog Linux
-   "The Ultimate Companion for a Dedicated Server"
-   http://www.yellowdoglinux.com/
+David
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
