@@ -1,29 +1,33 @@
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Sleep broken on iBook 2.2 since test7-benh
-From: Michael Shields <shields@msrl.com>
-Date: Fri, 31 Oct 2003 18:08:17 +0000
-Message-ID: <87brrxfffy.fsf@mulligatwani.msrl.com>
+Message-ID: <00a801c381e8$090f4fa0$0700a8c0@eurostudio.local>
+Reply-To: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
+From: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
+To: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
+Subject: unhandled Intterrupt
+Date: Tue, 23 Sep 2003 17:33:27 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: owner-linuxppc-dev@lists.linuxppc.org
-List-Id: <linuxppc-dev@lists.linuxppc.org>
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Sender: owner-linuxppc-embedded@lists.linuxppc.org
+List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Sometime between test7 and yesterday, the linuxppc-2.5-benh tree has
-stopped sleeping on my iBook 2.2.  It blanks the screen but does not
-actually suspend.  It cannot be woken up from this state; I have to
-use control-command-power.
+I to all,
 
-The config I'm using is at:
-http://www.msrl.com/~shields/config-2.6.0-test9
+We are currently using a deamon to control some activities on a custom
+ppc8260 board running on ELDK 2.0.2 environment. We are also able to start
+and stop its fuctionality at run time by issuing start and stop (or restart)
+command.
+Sometime during a deamon restart We observed the message "unhandled
+Interrupt 0, disabled". This message is issued by the
+ppc_irq_dispath_handler routine located into arch/ppc/kernel/irq.c and
+should be referred to an interrupt request without source (referring to
+MPC8260 Power QuiccII user manual 4.2.4).
 
-I've tried disabling CPU frequency scaling, since there were recently
-problems with that, and I've also tried backing out changeset 1.1180,
-which provides an additional delay when sleeping (there was already
-one below it, which I've left in).  I didn't immediately see anything
-else that looked like it might cause problems.
---
-Shields.
+Anybody knowns why this happens? Who can generate this error?
+
+Many thanks in advance
+
+Gianfranco
 
 
-** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
+** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
