@@ -1,44 +1,48 @@
-Message-ID: <A33AEFDC2EC0D411851900D0B73EBEF7262672@NAPA>
-From: Hua Ji <hji@netscreen.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: About PPC page table
-Date: Mon, 19 Mar 2001 16:17:49 -0800
+Message-ID: <3AB6A1C2.60802@brocade.com>
+Date: Mon, 19 Mar 2001 16:18:10 -0800
+From: Amit D Chaudhary <amitc@brocade.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: michael <dony.he@huawei.com.cn>
+Cc: Dan Malek <dan@mvista.com>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: shell prompt cannot appear after "Freeing unused kernel memory:..."
+References: <006401c0af6f$4d1c39e0$8021690a@huawei.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+Hi,
 
+Is your nfs rootfs correct? Check for /sbin/init, /etc/inittab, etc
 
-Hi, folks,
+Amit
 
-A quick question today. Thanks in advance.
+michael wrote:
 
-For PowerPC, say, 750 architecture, does every process maintains its own
-page table?
->From documents, Looks like the system will only maintain one page table
-space, pointed by **SDR1*** register.
-Am I correct? Looks to me, this is very different from the two level page
-directory in x86 architecture.
+> Hello:
+>     I use ppcboot and can boot kernel with NFS filesystems on my custom
+> board now. But problem occurs ...
+>    When it shows the following:
+> ####################################
+>          ...........................
+>         "VFS:Mounted root(nfs filesystem)".
+>         Freeing unused kernel memory:44k init
+> ####################################
+>
+> At this moment I should have seen "sash#" ,but  nothing happens . I cannot
+> see anything.
+>
+> I remember that there is a patch for this when I boot kernel on my 860 based
+> custom board last year(linux-2.2.13+860).
+> I don't know if this can work for my 8260 based custom board
+> now(linux-2.4.1+8260).
+> Can you help me?
+>
+> Thank you very much.
+>
+> michael
+>
+>
 
->From powerpc manual, a 2M space needed to be reserved for mapping 256M
-physical memory. So, if every process maintain its own page table, that
-would be cost too much and is not feasible, from my view.
-
-My current thought is:
-
-* All system only have one page table area.
-* All PTE entry updating/deleting will operating on the predefined page
-table area, by using primary hash and second hash functions.
-
-* Every process will maintain its own VSID(closely related to its PID). So,
-when do the context switch, the
-all **segment registers** will be saveed and updated?
-
-Please let me know if you can help me clearify my ideas. Thanks in advance,
-
-Mike
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
