@@ -1,42 +1,36 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Why ack interrupt before calling handler?
-From: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
-To: Kent Borg <kentborg@borg.org>
-Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <20030606142939.B15725@borg.org>
-References: <20030606142939.B15725@borg.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: 11 Jun 2003 12:33:42 +0200
-Message-Id: <1055327622.26152.70.camel@spawn>
-Mime-Version: 1.0
+To: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
+Cc: Kent Borg <kentborg@borg.org>,
+	"linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Why ack interrupt before calling handler? 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "11 Jun 2003 12:33:42 +0200."
+             <1055327622.26152.70.camel@spawn>
+Date: Wed, 11 Jun 2003 13:28:34 +0200
+Message-Id: <20030611112839.5C306C5FD7@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, 2003-06-06 at 20:29, Kent Borg wrote:
+In message <1055327622.26152.70.camel@spawn> you wrote:
 >
-> I am confused by something in ppc_irq_dispatch_handler().  It looks to
-> me that the interrupt is ack-ed before the handler is called.  Maybe I
-> am misunderstanding, but doesn't the ack only reset the interrupt
-> controller?  If so, the interrupting hardware could still be
-> presenting a level-triggered interrupt.  Wouldn't it make more sense
-> to let the interrupt routine get service the hardware first, then
-> reset the interrupt controller?
->
+> ps. and never ever use edge triggered interrupts
 
-I don't know what code you are looking at but generally you want to
-first ack to avoid the race condition that would otherwise be present if
-you first run your interrupt routine then ack. How would you know that
-it was in fact not a new interrupt condition that you have not taken
-care of you just removed.
+Oops? Why not?
 
-ps. and never ever use edge triggered interrupts
+We use them all the time, and find  that  they  are  much  easier  to
+handle than level triggered interrupts.
+
+
+Best regards,
+
+Wolfgang Denk
 
 --
-Kenneth Johansson
-Ericsson AB                       Tel: +46 8 719 70 20
-Tellusborgsvägen  90              Fax: +46 8 719 29 45
-126 25 Stockholm                  ken@switchboard.ericsson.se
-
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+How many QA engineers does it take to screw in a lightbulb? 3:  1  to
+screw it in and 2 to say "I told you so" when it doesn't work.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
