@@ -1,34 +1,43 @@
-Message-ID: <39CCD01E.CCEDB059@charter.net>
-Date: Sat, 23 Sep 2000 10:45:34 -0500
-From: "Dan A. Dickey" <ddickey@charter.net>
+Message-ID: <2F67A63DFFB1D31185D90090278CBB2D01679D7D@apmail6.chn.agilent.com>
+From: "ZHANG,HAI-TAO (Non-A-China,ex1)" <hai-tao_zhang@non.agilent.com>
+To: Zhaobin Zhu <zzhu@emc.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Sandpoint/PPMC750 MPPMC7400
+Date: Mon, 25 Sep 2000 10:14:36 +0800
 MIME-Version: 1.0
-To: Manav Mediratta <manav@nimbus.tenet.res.in>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Problems with ppcboot
-References: <Pine.LNX.4.10.10009221804530.17865-100000@astra.tenet.res.in>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="gb2312"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Manav Mediratta wrote:
-> Hi folks
-> Iam trying to boot my FADS with ppcboot and I have downloaded the files
-> which support FADS ,from the CVS tree at Sourceforge but it seems fads.h
-> isn't complete hence Iam not able to compile ppcboot for fads , although
-> it compiles peacefully for TQM8xx .In case any of you folks have a work
-> around for this then please let me know  .
+Hi,
 
-Manav,
-Interesting that... fads.h.  I didn't realize it was there I guess.
-However, doing as the instruction say:
-	$ make FADS850SAR_config
-	$ make
-works well here.  What sort of problems are you having?
-If it is one of porting to new FADS hardware, then you will probably
-want to work on one of the include/config_FADS* files, or create a
-new one using the config_FADS850SAR.h as a model.  The 860T config
-file has not been tested, and does not work.
-	-Dan
+> -----Original Message-----
+> From: Zhaobin Zhu [mailto:zzhu@emc.com]
+> Sent: Friday, September 22, 2000 11:47 PM
+> Cc: linuxppc-embedded@lists.linuxppc.org
+> Subject: Sandpoint/PPMC750 MPPMC7400
+> Hi,
+>
+> I has been trying to boot Hardhat (CDK1.2)linux kernel on
+> Sandpoint/PPMC750. Everytime the boot gets stuck at
+> .......
+> >Uncompressing Linux...done.
+> >Now booting the kernel
+Do you use 2.3.16 kernel ? The kernel stops here may be caused by MMU_init,
+please check the arch/ppc/kernel/head.S and arch/ppc/mm/init.c. (you can use
+ppc_md.progress for printing messages)
+
+>
+> Also what COP-based debug tools are available for
+> PPMC750/7400 on sandpoint.
+> Somebody mentioned Arbitron and EST.
+> Did anybody have experience with them and what you recommend ?
+Here we have Arbitiron BDI2000, it is a little bit helpful but I think that
+reading the kernel source is the most useful way, or you can try xmon.
+
+Thanks,
+Haitao Zhang
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
