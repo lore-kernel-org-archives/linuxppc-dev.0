@@ -1,54 +1,39 @@
-Date: Wed, 21 Feb 2001 12:10:27 -0600 (CST)
-From: Grant Erickson <erick205@UMN.EDU>
-To: Miquel van Smoorenburg <miquels@cistron.nl>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: SysVInit, /etc/TIMEZONE, getty_ps, telnet, and rsh
-In-Reply-To: <20010219231450.A23090@cistron.nl>
-Message-Id: <Pine.SOL.4.20.0102211206530.17275-100000@garnet.tc.umn.edu>
+Message-ID: <3A9489C7.42E0DBFD@mvista.com>
+Date: Wed, 21 Feb 2001 19:38:47 -0800
+From: Mark Hatle <fray@mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Masahide Tomita <tomita@itl.nyc.co.jp>
+CC: Prashant Patel <pmpatel@trinetcommunication.com>,
+        linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Kernel panic: Kernel Mode Software FPU Emulation
+References: <001901c09c64$6cda91a0$4d1f76d8@kennedy> <200102220218.LAA10422@itl.nyc.co.jp>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, 19 Feb 2001, Miquel van Smoorenburg wrote:
-> According to Grant Erickson:
-> > The problem I am having, which may be due to inappropriate hacking of
-> > sysvinit, is that sometimes processes of which 'init' is a parent do not
-> > inherit the environment variables exported:
+Masahide Tomita wrote:
 >
-> They probably do inherit the environment, but simply reset the
-> environment internally ignoring whatever was set by the parent.
+> Hi,
 >
-> > Has anyone else modified sysvinit in this way? Any success? Did I miss
-> > something key in my patch?
+> On Wed, 21 Feb 2001 18:14:30 -0600
+> I was just working on traslating a document "Linux for PowerPC Embedded Systems HOWTO" into Japanese, and I just finished a part titled same as the subject of message you sent.
 >
-> I think you need to study the source code of those misbehaving programs.
+> The part of the document might not contain very helpful infos, or probably you already checked this document, but if you want, see:
+>
+> http://members.nbci.com/greyhams/linux/PowerPC-Embedded-HOWTO.html
 
-Thanks, that was a worthy exercise. Neither 'getty_ps' nor 'in.rlogind'
-pass the "-p" flag to the 'login' program resulting in the behavior
-environment-clearing behavior I had seen. Unfortunately, adding the "-p"
-flag will have some other side effects such as HOME, PATH, and HIST not
-being set correctly under 'getty_ps', so this requires a bigger fix than
-I'd hoped.
+Just an FYI, if you want to look at it without the mass of
+advertisements go to it's home page at:
 
-> BTW, you could have achieved the same by using /etc/initscript. Could
-> be a shell script, but could be a small compiled executable too that
-> sets TZ.
+http://penguinppc.org/usr/embedded/howto/PowerPC-Embedded-HOWTO.html
 
-Thanks. I need to address the above issue first and then will look at that
-as an alternative to my original patch.
+:)  Both sites work, but penguinppc.org is the new home site for it.
 
-Thanks again!
+Masahide Tomita: when you are done w/ the translation it would be cool
+if we could put up a copy on penguinppc.org as well.
 
-Regards,
-
-Grant Erickson
-
-
---
- Grant Erickson                       University of Minnesota Alumni
-  o mail:erick205@umn.edu                                 1996 BSEE
-  o http://www.umn.edu/~erick205                          1998 MSEE
+Thanx!
+--Mark
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
