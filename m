@@ -1,36 +1,22 @@
-Return-Path: <mroos@linux.ee>
-Received: from smtp1.it.da.ut.ee (smtp1.it.da.ut.ee [193.40.5.66])
-	by ozlabs.org (Postfix) with ESMTP id 0D30F67A76
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Feb 2005 02:49:12 +1100 (EST)
-Received: from sun5.it.da.ut.ee (sun5.it.da.ut.ee [193.40.5.164])
-	by smtp1.it.da.ut.ee (Postfix) with ESMTP id A30674C03A39
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Feb 2005 17:49:08 +0200 (EET)
-Received: from sun5.it.da.ut.ee (localhost [127.0.0.1])
-	by sun5.it.da.ut.ee (8.12.10+Sun/8.12.10) with SMTP id j1OFmCNS021733
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Feb 2005 17:48:18 +0200 (EET)
-Received: from sun5.it.da.ut.ee ([127.0.0.1])
-	by sun5.it.da.ut.ee (SMSSMTP 4.0.0.59) with SMTP id
-	M2005022417473408874
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Feb 2005 17:48:16 +0200
-Received: from math.ut.ee (math.ut.ee [193.40.5.125])
-	by sun5.it.da.ut.ee (8.12.10+Sun/8.12.10) with ESMTP id j1OFlXrx021628
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Feb 2005 17:47:34 +0200 (EET)
-Date: Thu, 24 Feb 2005 17:47:15 +0200 (EET)
-From: Meelis Roos <mroos@linux.ee>
-Sender: mroos@math.ut.ee
-To: Sven Luther <sven.luther@wanadoo.fr>
-In-Reply-To: <20050224074728.GA31434@pegasos>
-Message-ID: <Pine.SOC.4.61.0502241746450.21289@math.ut.ee>
-References: <20041206185416.GE7153@smtp.west.cox.net>
-	<Pine.SOC.4.61.0502221031230.6097@math.ut.ee>
-	<20050224074728.GA31434@pegasos>
+Return-Path: <jchapman@katalix.com>
+Received: from ptb-relay02.plus.net (ptb-relay02.plus.net [212.159.14.213])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id CCD4D67A7D
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Feb 2005 02:50:49 +1100 (EST)
+Message-ID: <421DF7D0.2050803@katalix.com>
+Date: Thu, 24 Feb 2005 15:50:40 +0000
+From: James Chapman <jchapman@katalix.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: Tom Rini <trini@kernel.crashing.org>, Sven Hartge <hartge@ds9.gnuu.de>,
-	Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Christian Kujau <evil@g-house.de>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2.6.10-rc3][PPC32] Fix Motorola PReP (PowerstackII Utah)
- PCI IRQ map
+To: Tom Rini <trini@kernel.crashing.org>
+References: <421CEC19.2010703@katalix.com>
+	<20050223222534.GM345@smtp.west.cox.net>
+	<421D97FE.4080100@katalix.com>
+	<20050224141809.GP345@smtp.west.cox.net>
+In-Reply-To: <20050224141809.GP345@smtp.west.cox.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: PATCH: add ppc PVR register values for 7447A and 7457 CPUs
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,11 +26,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Can you try :
->
->  http://people.debian.org/~luther/d-i/images/daily/powerpc/netboot/vmlinuz-prep.initrd
+Tom Rini wrote:
 
-Unfortunately there are only floppy and floppy-2.4 dirs under powerpc.
+> Is there something you can't get from cur_cpu_spec[0] ?  That's why all
+> of the PVR definitions _should_ be unneeded now.
+
+No, I'll use cur_cpu_spec[]. Thanks
 
 -- 
-Meelis Roos (mroos@linux.ee)
+James Chapman
+PGP key : http://www.katalix.com/~jchapman/pgpkey.txt
