@@ -1,44 +1,43 @@
-Message-ID: <6DF87017DA95D611AC6000606730DE9B0BD764@BLREXSR>
-From: Sanjeev Manral <sanjeevm@sanyo.co.in>
-To: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
-Subject: pcmcia- config.opts, cis and pci
-Date: Wed, 28 Aug 2002 15:30:14 +0530
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Subject: RE: Cross compile helper patch
+From: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
+To: acurtis@onz.com
+Cc: Dan Malek <dan@embeddededge.com>, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <NCBBIINEHIPFGJPLBEIFOEEKDLAA.acurtis@onz.com>
+References: <NCBBIINEHIPFGJPLBEIFOEEKDLAA.acurtis@onz.com>
+Content-Type: text/plain
+Date: 28 Aug 2002 14:01:09 +0200
+Message-Id: <1030536069.28699.14.camel@spawn>
+Mime-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+On Wed, 2002-08-28 at 06:22, Allen Curtis wrote:
+>
+> > It only goes in your local version of this file.  Everyone has a different
+> > way they want their cross compilation to work, and those of us that use
+> > native systems don't like this in the Makefile.  This is the historically
+> > consistent response to everyone that has submitted a similar
+> > patch over the years.
+>
+> A two line change to a make file is not exactly cluttering anything up. If
+> you are doing native development then you use the distribution as it is
+> provided. Only if you are doing cross development do you need to create
+> these files. Just a nice logical in the developers face solution to a
+> problem that has been solved a 1000 time before.
+>
 
-I'm using pcmcia-cs-3.2.0 my kernel is 2.4.17. It's a ppc405 board.
+This is what I do when cross compiling
 
-pcmcia-cs is not able to detect ide_cs card and telling it a Blank card.
+make ARCH=ppc CROSS_COMPILE=powerpc-linux-
 
-I've tried many options in /etc/pcmcia/config.opts but nothing is working.
+Needs no changes to the makefile.
 
-I'm having one more doubt. there is no PCI brige in manual of my hardware.
-It is using coreconnect architecture and PCMCIA controller is directly
-connected to processor local bus. In hardware there is not a single mention
-of pci-plb bridge.
-
-If I disable "pci" in "make xconfig" "card bus support" is also disabling
-and there are no sockets.
-shall I enable "pci" and "card bus support"( I'm trying this, IS IT
-CORRECT?)
-
-I debugged it with enable "pci" and "card bus support". driver is not able
-to get a valid cis. and trying to load a blank card driver( memory_cs )
-instead of ide_cs.
-
-Is it a problem with only config.opts or some other problem.
-
-I don't know where to proceed. if somebody knows how and where to get a
-valid config.opts please let me know.
-
-thanks,
-Sanjeev
+--
+Kenneth Johansson
+Ericsson AB                       Tel: +46 8 404 71 83
+Borgafjordsgatan 9                Fax: +46 8 404 72 72
+164 80 Stockholm                  kenneth.johansson@etx.ericsson.se
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
