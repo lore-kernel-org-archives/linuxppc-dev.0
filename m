@@ -1,18 +1,19 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao06.cox.net (fed1rmmtao06.cox.net [68.230.241.33])
-	by ozlabs.org (Postfix) with ESMTP id B22772BDAB
+Return-Path: <rpjday@mindspring.com>
+Received: from mailhost.rdmcorp.com (world.rdmcorp.com [204.225.180.10])
+	by ozlabs.org (Postfix) with ESMTP id 65D6F2BC0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  8 Oct 2004 01:45:58 +1000 (EST)
-Date: Thu, 7 Oct 2004 08:45:57 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Message-ID: <20041007154557.GF14773@smtp.west.cox.net>
-References: <Pine.LNX.4.60.0410060908520.8324@dell.enoriver.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.60.0410060908520.8324@dell.enoriver.com>
-Cc: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] 2.6.9(?) kernel, replacing ucode patch infrastructure
+	Fri,  8 Oct 2004 02:07:30 +1000 (EST)
+Date: Thu, 7 Oct 2004 12:00:35 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+To: Tom Rini <trini@kernel.crashing.org>
+In-Reply-To: <20041007154029.GE14773@smtp.west.cox.net>
+Message-ID: <Pine.LNX.4.60.0410071158320.5191@dell.enoriver.com>
+References: <1096517265.27208.18.camel@localhost.localdomain>
+	<20041007154029.GE14773@smtp.west.cox.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] remove obsolete arch/ppc/8xx_io/uart.c
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,18 +24,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Oct 06, 2004 at 09:15:56AM -0400, Robert P. J. Day wrote:
+On Thu, 7 Oct 2004, Tom Rini wrote:
 
-> 
->   ok, one more time, here's a patch that should apply cleanly to the 
-> latest bk repo for linuxppc-2.5.  the purpose is to create a cleaner 
-> and more extensible microcode patch infrastructure, so that all you 
-> need to do is *select* the 8xx-relevant patch you want from the config 
-> menu under "MPC8xx" options.
+> On Thu, Sep 30, 2004 at 06:07:45AM +0200, Andreas Oberritter wrote:
+>
+>> Hi Dan,
+>>
+>> this patch for linuxppc-2.5 removes the old uart driver which doesn't
+>> work since a long time and has already been replaced by
+>> drivers/serial/cpm_uart/*.
+>
+> Can you please re-do this patch vs a linux-2.6 tree?  Thanks.
 
-This doesn't apply cleanly, even if I tell patch to ignore whitespace
-changes.  Please re-generate, thanks.
+at the risk of jumping on on this, this patch would be affected by the 
+changes i made to Kconfig, and i've already listed (to myself) the 
+changes that are represented by this fix.  (see previous post, in 
+which i asked a few more annoying questions. :-)
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+if you want, i can throw together the patch for this.  as i see it, 
+the changes are
+
+   1) modify Kconfig to remove choice of "Use UART"
+   2) modify Makefile to remove inclusion of uart.o
+   3) remove uart.c entirely
+
+is that about it?
+
+rday
