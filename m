@@ -1,19 +1,15 @@
-Return-Path: <panto@intracom.gr>
-Received: from mailserv.intranet.gr (mailserv.intranet.GR [146.124.14.106])
-	by ozlabs.org (Postfix) with ESMTP id 2659B2BD3C
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Sep 2004 23:41:48 +1000 (EST)
-Received: from mailserv.intranet.gr (localhost [127.0.0.1])
-	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id i8EDfrb2016085
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Sep 2004 16:41:54 +0300 (EEST)
-Message-ID: <4146F3C3.2090100@intracom.gr>
-Date: Tue, 14 Sep 2004 16:36:03 +0300
-From: Pantelis Antoniou <panto@intracom.gr>
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (unknown [24.220.19.6])
+	by ozlabs.org (Postfix) with ESMTP id 9CD112BD71
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Sep 2004 05:34:59 +1000 (EST)
 MIME-Version: 1.0
-To: Linux PPC Dev <linuxppc-dev@ozlabs.org>,
-	Tom Rini <trini@kernel.crashing.org>
-Content-Type: multipart/mixed; boundary="------------070007040909080700070802"
-Cc: 
-Subject: [PATCH] Trivial warning fix patch
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Tue, 14 Sep 2004 14:22:52 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B06DB67@ismail.innsys.innovsys.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: 8260 FCC Ethernet problem
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,65 +19,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------070007040909080700070802
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+I just found that there is a problem in the FCC driver.
+This was fixed in some versions of the 2.4 source....
 
-Hi
+Th Local Protect Bit is not set when enterring Full Duplex mode. This
+causes the=20
+FCC to turn off the transmitter when packets are received, and also
+causes=20
+NonOctet frame errors and CRC errors (late collission)
 
-The following patch removes some annoying warnings produced
-by the latest gccs.
+This diff is agains the 2.6.7 sources, but should apply cleanly against
+top of source.
 
-Regards
+=3D=3D=3D=3D=3D arch/ppc/8260_io/fcc_enet.c 1.20 vs edited =
+=3D=3D=3D=3D=3D
+--- 1.20/arch/ppc/8260_io/fcc_enet.c    2004-07-06 16:44:29 -05:00
++++ edited/arch/ppc/8260_io/fcc_enet.c  2004-09-10 14:44:05 -05:00
+@@ -2013,9 +2013,9 @@
+        fccp =3D fcp->fccp;
 
-Pantelis
+        if (duplex)
+-               fccp->fcc_fpsmr |=3D FCC_PSMR_FDE;
++               fccp->fcc_fpsmr |=3D FCC_PSMR_FDE | FCC_PSMR_LPB;
+        else
+-               fccp->fcc_fpsmr &=3D ~FCC_PSMR_FDE;
++               fccp->fcc_fpsmr &=3D ~(FCC_PSMR_FDE | FCC_PSMR_LPB);
 
---------------070007040909080700070802
-Content-Type: text/x-patch;
- name="rheap.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="rheap.patch"
+        /* Enable transmit/receive */
+        fccp->fcc_gfmr |=3D FCC_GFMR_ENR | FCC_GFMR_ENT;
 
-diff -Nur --exclude=RCS --exclude=CVS --exclude=SCCS --exclude=BitKeeper --exclude=ChangeSet linuxppc_2.5/arch/ppc/lib/rheap.c linuxppc_2.5-intracom/arch/ppc/lib/rheap.c
---- linuxppc_2.5/arch/ppc/lib/rheap.c	2004-07-16 10:03:07 +03:00
-+++ linuxppc_2.5-intracom/arch/ppc/lib/rheap.c	2004-09-14 12:58:48 +03:00
-@@ -216,7 +216,7 @@
- 
- 	/* Grow the after block backwards */
- 	if (before == NULL && after != NULL) {
--		(int8_t *) after->start -= size;
-+		after->start = (int8_t *)after->start - size;
- 		after->size += size;
- 		return;
- 	}
-@@ -407,7 +407,7 @@
- 	/* blk still in free list, with updated start and/or size */
- 	if (bs == s || be == e) {
- 		if (bs == s)
--			(int8_t *) blk->start += size;
-+			blk->start = (int8_t *)blk->start + size;
- 		blk->size -= size;
- 
- 	} else {
-@@ -471,7 +471,7 @@
- 	newblk->owner = owner;
- 
- 	/* blk still in free list, with updated start, size */
--	(int8_t *) blk->start += size;
-+	blk->start = (int8_t *)blk->start + size;
- 	blk->size -= size;
- 
- 	start = newblk->start;
-@@ -535,7 +535,7 @@
- 	/* blk still in free list, with updated start and/or size */
- 	if (bs == s || be == e) {
- 		if (bs == s)
--			(int8_t *) blk->start += size;
-+			blk->start = (int8_t *)blk->start + size;
- 		blk->size -= size;
- 
- 	} else {
 
---------------070007040909080700070802--
+Rune Torgersen
+System Developer
+Innovative Systems LLC
+1000 Innovative Drive
+Mitchell, SD 57301
+Ph: 605-995-6120
+www.innovsys.com
