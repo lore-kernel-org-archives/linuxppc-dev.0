@@ -1,28 +1,37 @@
-Date: Wed, 29 Nov 2000 10:30:47 +0100 (CET)
-From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-To: "Timothy A. Seufert" <tas@mindspring.com>
-cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-        Stefan Jeglinski <jeglin@4pi.com>, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: "Timothy A. Seufert" <tas@mindspring.com>,
+        <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: usb wheel mouse, XF4.0
+Date: Wed, 29 Nov 2000 14:10:42 +0100
+Message-Id: <19341024064226.19088@192.168.1.2>
 In-Reply-To: <v04220801b64a66c6a467@[10.0.0.42]>
-Message-ID: <Pine.LNX.4.10.10011291029180.4900-100000@zirkon.biophys.uni-duesseldorf.de>
+References: <v04220801b64a66c6a467@[10.0.0.42]>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> >Wrong: support for USB PCI cards not being built into the stable kernel.
-> >Support for recent Mac builtin USB controllers (OHCI) is just fine.
 >
-> Wrong.  PCI USB cards are exactly the same thing as built-in
-> controllers, because the built-in controllers are PCI devices too.
+>The OHCI driver should support literally any standards compliant OHCI
+>USB controller found on PCI, whether it's integrated into a
+>multifunction IO chip or on a card.  If it doesn't work, there's a
+>bug somewhere, either in the hardware (in which case it probably
+>doesn't comply to the standard) or in the driver (most likely
+>initialization related).
 
-Thanks for the clarification. Are there known issues with IRQ sharing on
-PPC, or would the missing interrupt rather be a PCI-PCI bridge
-initialization problem?
+There are various HW bugs in the first revisions of OHCI controllers that
+appeared (and so the first USB PCI cards for macs). Looking at Apple driver,
+they have a list of vendorIDs/deviceIDs/rev with, for each one, a bitmask of
+known "workarounds" to apply depending on the controller. We don't have
+such thing in Linux.
 
-	Michael
+>The same principle applies to UHCI.  UHCI could work on PPC, but
+>nobody has ever bothered, because the installed base of UHCI
+>controllers on PPC boxes approximates zero.  Apple's built-in USB is
+>always OHCI, and their MacOS drivers only support OHCI, so anybody
+>who wants to market a PCI USB card for Macs uses a OHCI chip to take
+>advantage of the drivers written by Apple.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
