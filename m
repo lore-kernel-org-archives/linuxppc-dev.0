@@ -1,39 +1,42 @@
-Message-ID: <3BE9B389.7F02F21F@mvista.com>
-Date: Wed, 07 Nov 2001 14:19:53 -0800
-From: Frank Rowand <frank_rowand@mvista.com>
-Reply-To: frowand@mvista.com
-MIME-Version: 1.0
-To: paulus@samba.org
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: The Plan
-References: <15337.7275.266062.777161@cargo.ozlabs.ibm.com>
-		<Pine.GSO.4.21.0111071246050.11631-100000@mullein.sonytel.be> <15337.8185.840818.69643@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=us-ascii
+Date: Wed, 7 Nov 01 14:43:28 PST
+From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
+Message-Id: <0111072243.AA06516@ivan.Harhan.ORG>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: RFC: i8259.c cleanup
+Cc: Sven.Dickert@planb.de, davidm@amberdata.demon.co.uk,
+	hollis@austin.ibm.com, paubert@iram.es
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Paul Mackerras wrote:
->
-> Geert Uytterhoeven writes:
->
-> > Why not move platform-specific files to arch/ppc/<platform>/ instead?
-> >
-> > Your solution reduces the clutter only by a factor of 2, while creating
-> > platform-specific directories reduces it by a factor of n.
->
-> But adds n extra directories, most of which would only have 2 or 3
-> files in them, thereby cluttering up arch/ppc.
+Gabriel Paubert <paubert@iram.es> wrote:
 
-One advantage of having arch/ppc/<platform>/ is that it allows for
-the possibility of arch/ppc/platform/, which is a link to the
-specific <platform> which is being built.  This would be similar
-to the way that include/asm/ is a link to include/asm-<architecture>/
+> > Would you say poking the 8259 directly is more "right" than using 0xbffffff0
+> > (or equivalent)?
+>
+> Certainly not. Most ISA bridges (which are the part which contains the
+> dual 8259 Pathetic Interrupt Controller), are tested in an x86
+> environment, which generate PCI interrupt acknowledge cycles. So hitting
+> hardware bugs is much less likely than with polling.
 
--Frank
---
-Frank Rowand <frank_rowand@mvista.com>
-MontaVista Software, Inc
+In the PPC world, however, this requires the following assumptions:
+
+1. That the 8259 pair is in a PCI-to-ISA south bridge.
+
+2. That the above bridge is connected to the PPC-to-PCI host bridge by an
+   uninterrupted PCI bus. PCI-to-PCI bridges in between may not pass Interrupt
+   Acknowledge cycles. There is an SBS board coming up that will have a GT64260
+   host bridge, a VT82C686B south bridge, and a P2P bridge in between. I don't
+   know if the P2P bridge will pass Interrupt Acknowledge cycles, but I don't
+   think there is a requirement that it does. If it does, great, but if it
+   doesn't, I'm not going to tell the hardware engineers to change their
+   design. We've proven the VT82C686B working on the Adirondack, and the
+   Adirondack port in the current linuxppc_2_4_devel works beautifully with the
+   i8259.c code using polls.
+
+3. The host bridge must allow you to generate Interrupt Acknowledge cycles, and
+   you have to know how it does it, as all host bridges do it differently.
+
+MS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
