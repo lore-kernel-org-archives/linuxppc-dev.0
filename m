@@ -1,46 +1,45 @@
-From: benh@kernel.crashing.org
-To: <mlan@cpu.lu>
-Cc: <dan_bethe@yahoo.com>, <nicoya@apia.dhs.org>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: 9600 maturity?
-Date: Tue, 16 Apr 2002 01:54:25 +0100
-Message-Id: <20020416005425.14127@mailhost.mipsys.com>
-In-Reply-To: <E16xLzp-00008q-00@piglet.grunz.lu>
-References: <E16xLzp-00008q-00@piglet.grunz.lu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Mon, 15 Apr 2002 18:59:54 -0600
+From: Val Henson <val@nmt.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: [PATCH] Allow OpenPIC irq 0 to be used
+Message-ID: <20020415185954.J17647@boardwalk>
+References: <20020415134322.E15153@boardwalk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20020415134322.E15153@boardwalk>; from val@nmt.edu on Mon, Apr 15, 2002 at 01:43:22PM -0600
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hm, in retrospect, I didn't state the actual bug very clearly.  On
+Synergy boards, devices can't get interrupts on irq 0 because it is
+never initialized.  This patch fixes that, hopefully without
+introducing bugs in other boards.
+
+-VAL
+
+On Mon, Apr 15, 2002 at 01:43:22PM -0600, Val Henson wrote:
 >
->But is there something in place now in the PCI code to handle the IO
->space of multiple host bridges now? When I was working on the chaos PCI
->code, you had plans to implement that part...
+> Synergy boards do not have an i8259 hooked up to irq 0, instead we
+> actually use it as a normal irq line.  Yes, I know, bad idea, but
+> we're stuck with it.  The following patch is ugly, but illustrates the
+> general idea in a way which might possibly be compatible with other
+> OpenPIC boards.
 >
->IIRC, you wanted to move both IO spaces into a continous segment and
->provide some way to find the ber-bus base of IO space...
-
-it is implemented in 2.4, but a bit differently. Each host has it's own
-IO space ioremapped separately. One is picked up as the "primary" IO space
-and gets all 0-based IOs (basically it's where _IO_BASE points to).
-Then, IO resources of PCI devies on other busses are fixed up by the
-kernel to be offseted by (io_bus_virt - _IO_BASE) (that is the virtual
-address of the IO space of this bus minus the virtual address of IO space
-of the primary bus), thus allowing inx/outx functions to work.
-
-That means though that there isn't a convenient way to access fixed
-(ie. legacy) IO locations on other busses, except by using platform
-specific routines to find out the real bus virtual IO base. But at
-least, IO resources provided by BARs will work on other busses provided
-that the driver uses the pci_dev->resource fields properly.
-
-However, I haven't yet verified if it works properly for busses like
-bandit that don's issue a 0-based (bus view) IO range, but an "offseted"
-one like it is, I think, the case for second bandit. On UniNorth, each
-host has a 0 based 0...16Mb IO space.
-
-Ben.
-
+> -VAL
+>
+> ===== arch/ppc/kernel/open_pic.c 1.47 vs edited =====
+> --- 1.47/arch/ppc/kernel/open_pic.c	Tue Feb  5 03:10:24 2002
+> +++ edited/arch/ppc/kernel/open_pic.c	Mon Apr 15 13:42:12 2002
+> @@ -366,7 +366,7 @@
+>  	}
+>
+>  	/* Init all external sources */
+> -	for (i = 1; i < NumSources; i++) {
+> +	for (i = offset ? 1 : 0; i < NumSources; i++) {
+>  		int pri, sense;
+>
+>  		if (ISR[i] == 0)
+>
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
