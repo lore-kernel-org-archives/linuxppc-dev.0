@@ -1,34 +1,49 @@
 From: benh@kernel.crashing.org
-To: Stefan Jeglinski <jeglin@4pi.com>,
+To: <msokolov@ivan.Harhan.ORG>, <mgreer@mvista.com>
+Cc: <linux-galileo@source.mvista.com>,
 	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: 2.4.19pre3 boot problem with ext SCSI
-Date: Wed, 20 Mar 2002 11:56:04 +0100
-Message-Id: <20020320105604.14401@mailhost.mipsys.com>
-In-Reply-To: <p05100301b8bdb1fe0b79@[66.26.75.241]>
-References: <p05100301b8bdb1fe0b79@[66.26.75.241]>
+Subject: Re: EV-64260-BP & GT64260 bi_recs
+Date: Wed, 20 Mar 2002 14:19:24 +0100
+Message-Id: <20020320131924.29210@mailhost.mipsys.com>
+In-Reply-To: <0203200043.AA08228@ivan.Harhan.ORG>
+References: <0203200043.AA08228@ivan.Harhan.ORG>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->This is on a 6500 with an external SCSI (mesh) Yamaha CDRW. With
->2.4.19pre3 I fall into the mon debugger during boot as long as the
->CDRW is powered on (and no keyboard control, as usual for me with
->mon). This does not happen with 2.4.18, both rsynced from
->source.mvista.com::linuxppc_2_4. With the CDRW powered off (but still
->connected), no boot freeze.
 >
->I want to remember someone ranting here about a simple mesh patch
->that was again and again being not added to the tree, but I can no
->longer find that message. Was thinking it might be my solution. Any
->clues as to that patch?
+>I disagree. I don't see how a generic BI_ETH_CFG is possible. See how I've
+>implemented BI_GT64260_ETH_CFG in arch/ppc/kernel/setup.c:parse_bootinfo: it
+>injects the information from this record directly into the gt64260_eth
+driver,
+>which is where this information is needed.
 
-First, please tell me what you get in the debugger (at least NIP and LR)
-that you can lookup in System.map so I know where it dies.
+This is the wrong approach. What we should do instead is have the gt eth
+driver
+do some kind of find_bi_rec(BI_GT64260_ETH_CFG). setup.c doesn't have to be
+changed each time a new birec is added, and your approach seem wrong if
+that driver ever becomes a module.
 
-Also, if you use my rsync, you can put the kernel arg. "adb_sync", that
-may help having working kbd in xmon.
+What I have not yet decided regarding what to do of birec's in 2.5.
+That is either providing some structure to them so they represent devices
+with all the mapping & routing information needed (flexible enough to
+accomodate
+most embedded needs), that is some kind of lightweight device-tree, or if
+we just
+stay to what we have now (minus bd_t), that is everybody defines it's own
+set of
+bi_recs.
+
+I've started writing a draft of what the first option could be last year, I'll
+see if I can still find it and post it for you guys to fight over some
+material ;)
+
+The _important_ point however is that the common arch code and the common
+CPU code mustn't have to care (or be modified) when a bi_rec is added and
+then later used by whatever driver you want to pass it to.
+
 
 Ben.
 
