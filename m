@@ -1,63 +1,46 @@
-Message-ID: <3C52ADC0.20409@pacbell.net>
-Date: Sat, 26 Jan 2002 13:23:12 +0000
-From: Armin <akuster@pacbell.net>
+From: "gguevel" <gguevel@interfaceconcept.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Blocking functions and interrupt protection
+Date: Mon, 28 Jan 2002 19:29:37 +0100
+Message-ID: <000001c1a829$be44f400$3101a8c0@DOMAIN>
 MIME-Version: 1.0
-To: ChangYl Lee <bluecafe@sgi21.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Booting linux-2.4.18-pre7 with IBM405GP(rev E)
-References: <002501c1a649$ef2b4ba0$74b0f8cb@bluecafe>
-Content-Type: text/plain; charset=x-windows-949
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-ChangYl Lee wrote:
+Hi,
 
-> Hi all..!
-> I'm going to develop new board based on a IBM405GP(rev. E) processor and I cloned linux_2_4_devel and tested it.
->
-> kernel version is 2.4.18-pre7 and default config is set to walnut_defconfig.
->
-> Attempting to debug, I've found out my kernel is stopped or hung at real address 0.
-> Before jumping address 0, it seems to be nice and I can see my debug character with serial console.
-> but I can't see my debug character start of "start_here:" at arch/ppc/kernel/head_4xx.S
->
-> I've read posted message titled "booting HardHat on IBM405GP" but still I can't understand.
-> The output of the booting message looks like this:
-> -----------------
-> MON> go
-> Linux porting start.... press any key..
->
-> loaded at:     00250000 002E8238
-> board data at: 002E5168 002E51A8
-> relocated to:  002E5128 002E5168
-> zimage at:     00255B30 002E4CCB
-> avail ram:     002E9000 04000000
->
-> Linux/PPC load: console=ttyS0,115200 root=/dev/ram rw debug ram=64m
-> Uncompressing Linux...done.
-> Now booting the kernel
-> ----------------
->
-> Any help is greatly appreciated.
->
-> ------------------------------------------------------------
-> Be happy..!
-> ChangYl, Lee : bluecafe@sgi21.com
->
->
->
->
+I works on an embedded linux ppc pci target board in a linux PC.
 
-Chang,
+I have a process on the PC  which sends ioctl commands to the target via a
+write
+in a pci doorbell register then sleeps on. The target must reply with a pci
+interrupt.
 
-First of all, what type of bootloader are you using and is it a walnut?
-The memory locactions are not correct for a walnut.  The load addr
-starts @ 500000 and uses treeboot.
+The problem is that the target replies so fast that if the process is
+interrupted between the
+doorbell write function and the sleep function, the interrupt event from the
+target may try to
+awake a process which is not sleeping. The event is lost and the ioctl
+command is locked
+forever.
 
-I just tried it on my walnut and have no problems.
+How can I protect the process to be interrupted between the start of the
+doorbell write
+function and the end of the sleep function.
 
--armin
+This problem is a general case, not specific to my driver. It may happen in
+all drivers wich
+communicates with fast board which generates asynchronous interrupt events.
+
+Any help would be welcome.
+
+Thanks
+Sorry for my poor english language.
+
+Gérard Guével
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
