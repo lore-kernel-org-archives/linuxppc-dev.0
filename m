@@ -1,17 +1,19 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id CED0567A67
+Return-Path: <wd@denx.de>
+Received: from mailout10.sul.t-online.com (mailout10.sul.t-online.com
+	[194.25.134.21]) by ozlabs.org (Postfix) with ESMTP id BD34F67A67
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  9 Mar 2005 08:16:55 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Tue, 8 Mar 2005 15:16:52 -0600
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B8592EA@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: "Matt Porter" <mporter@kernel.crashing.org>
+	Wed,  9 Mar 2005 08:28:15 +1100 (EST)
+To: "Stephen Warren" <SWarren@nvidia.com>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 08 Mar 2005 12:16:12 PST."
+	<DBFABB80F7FD3143A911F9E6CFD477B0056A92E3@hqemmail02.nvidia.com>
+Date: Tue, 08 Mar 2005 22:27:49 +0100
+Sender: wd@denx.de
+Message-Id: <20050308212754.E35A5C1510@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: Lots of memory on 826x
+Subject: Re: MPC5200 kernel with IDE *and* FEC? 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,55 +24,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-What about moving the VMALLOC_START and VMALLOC_END #defines to
-something else (like start at 0x80000000 and end at 0xc0000000), or will
-that break some assumptions in the kernel about the position of the
-vmalloc area?
+In message <DBFABB80F7FD3143A911F9E6CFD477B0056A92E3@hqemmail02.nvidia.com> you wrote:
+>
+> http://www.denx.de/twiki/bin/view/DULG/DebianOnPowerpcInstallationHowto 
+> 
+> That could save a lot of time, but is this kernel 2.4-based? The docs
+> there imply that (buildling a kernel natively section references paths
+> with 2_4 in them).
 
-> -----Original Message-----
-> From: Matt Porter [mailto:mporter@kernel.crashing.org]=20
-> Sent: Tuesday, March 08, 2005 14:33
-> To: Rune Torgersen
-> Cc: Kumar Gala; linuxppc-embedded@ozlabs.org
-> Subject: Re: Lots of memory on 826x
->=20
-> On Tue, Mar 08, 2005 at 12:37:33PM -0600, Rune Torgersen wrote:
-> > Ok... Got a little closer....
-> >=20
-> > I have PCI (outbound) mapped in the area 0x80000000-0x8fffffff
-> > (prefetch/non-prefetch and IO)
-> > IMMR of cource is at 0xf0000000
-> >=20
-> > So I map the IO as following:
-> > 	/* Map IMMR region to a 256MB BAT */
-> > 	addr =3D (cpm2_immr !=3D NULL) ? (uint)cpm2_immr : CPM_MAP_ADDR;
-> > 	io_block_mapping(addr, addr, 0x10000000, _PAGE_IO);
-> >=20
-> > 	io_block_mapping(0x80000000, 0x80000000, 0x10000000, _PAGE_IO);
-> >=20
-> > Now I can almost boot....:
-> > It craches when trying to read from harddisk
-> > (only happens with more than 512MB)
->=20
-> That's expected if you are going to 768MB. You have kernel lowmem
-> being mapped at 0xc0000000+<size_of_system_memory>. With 768MB that
-> takes you all the way to where you have the IMMR mapped 1:1 I
-> guess. This leaves no room for vmalloc space.  With 768MB of ram
-> the kernel will calculate VMALLOC_START at 0xf1000000 which is a
-> problem.
->=20
-> A few options are:
->=20
-> * Move the IMMR much higher to allow vmalloc space
-> * Modify maximum low memory to limit to 512MB using the advanced
->   options menu
-> * Modify KERNELBASE to something like 0xa0000000 using the advanced
->   options menu
->=20
-> All of these methods will provide addition vmalloc space.
->=20
-> Don't forget to turn on HIGHMEM to use everything above MAX_LOW_MEM.
->=20
-> -Matt
->=20
->=20
+Yes, it is.
+
+> We already have a 2.4-based MontaVista, but we're trying to get a 2.6
+> kernel up and running with NPTL to compare the pthreads performance
+> differences...
+
+You can probably use  the  2.4  kernel  for  installation  (or  -  as
+mentioned  before  -  just use another PPC box and transfewr the disk
+drive).
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+When properly administered, vacations do not  diminish  productivity:
+for every week you're away and get nothing done, there's another when
+your boss is away and you get twice as much done.  -- Daniel B. Luten
