@@ -1,39 +1,39 @@
-To: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
-Cc: "'Embedded Linux PPC List'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: 823 Video Controller Driver - where ? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 19 Dec 2002 09:01:53 EST."
-             <D73A25AA6E54D511AD74009027B1110F3C04F5@ORION>
-Date: Thu, 19 Dec 2002 15:55:16 +0100
-Message-Id: <20021219145521.755EFC6289@atlas.denx.de>
+Subject: STB04500 - smart card readers support?
+From: Honza Petrous <hop@unibase.cz>
+To: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
+Content-Type: text/plain
+Message-Id: <1040309729.20474.26.camel@elrond.unibase.cz>
+Mime-Version: 1.0
+Date: 19 Dec 2002 15:55:29 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <D73A25AA6E54D511AD74009027B1110F3C04F5@ORION> you wrote:
-> Actually I found lcd823.c and lcdvideo.h in arch/ppc/8xx_io of your
-> linux-2.4.4-2002-03-21 :)
+Hi,
 
-But lcd823.c / lcdvideo.h is - as the  name  "lcd..."  suggests  -  a
-driver  for the LCD controller of the MPC823 CPU; it does not support
-the video controller - and this was what the OP asked for:  a  driver
-for the _video_ controller.
+I'm pretty new in embeded environment, so sorry
+if my question is rather stupid.
 
-I think there once was such a beast, probably in
-ftp://ftp.mvista.com/pub/Area51/embedded-planet/video.tgz
+It seems that IBM provides development info
+only for their customers and so I'm not able
+to get some info how the STB04500's smart
+card reader controllers should be programmed.
 
-Maybe you happen to know if this is still available somewhere?
+I would like to develop such driver if it
+already doesn't exist. I tried to find some
+info about support of STB04500 in kernel
+tree but found only support for serial
+ports and ethernet card.
 
-Best regards,
+Can somebody point me to right source
+for some docs?
 
-Wolfgang Denk
+I must note, that I'm a freetime programmer,
+so subscription is no way for me :(
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-If A equals success, then the formula is A = X + Y + Z. X is work.  Y
-is play. Z is keep your mouth shut.                 - Albert Einstein
+With regards.
+
+/Honza Petrous.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
