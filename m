@@ -1,20 +1,16 @@
-Return-Path: <mgreer@mvista.com>
-Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
-	by ozlabs.org (Postfix) with ESMTP id 4787E2BEA0
+Return-Path: <RKumar@nvidia.com>
+Received: from hqemgate00.nvidia.com (hqemgate00.nvidia.com [216.228.112.144])
+	by ozlabs.org (Postfix) with ESMTP id 652E02BDB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 Nov 2004 05:49:43 +1100 (EST)
-Message-ID: <41A234BD.1020207@mvista.com>
-Date: Mon, 22 Nov 2004 11:49:33 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
+	Tue, 23 Nov 2004 06:28:43 +1100 (EST)
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-References: <419E6900.5070001@mvista.com>
-	<20041120162622.GA19099@infradead.org>
-In-Reply-To: <20041120162622.GA19099@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: akpm <akpm@osdl.org>, lkml <linux-kernel@vger.kernel.org>,
-	linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH][PPC32] Marvell host bridge support (mv64x60)
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C4D0C9.441C3339"
+Date: Mon, 22 Nov 2004 11:27:12 -0800
+Message-ID: <8E5ACAE05E6B9E44A2903C693A5D4E8A023EC8C1@hqemmail02.nvidia.com>
+From: "Ratin Kumar" <RKumar@nvidia.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: MPC5200 target name
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,23 +21,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Christoph Hellwig wrote:
+This is a multi-part message in MIME format.
 
->Just looking through this and you should share some more code with mips,
->e.g. the mavell register layout should move from asm-mips/marvell.h and
->your file to linux/marvell.h or something, especially as another ppc
->plattform (pegasosII) needs it aswell.  
->
+------_=_NextPart_001_01C4D0C9.441C3339
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Yes, and there is already include/linux/mv643xx.h that has a bunch of 
-64340 definitions which share offset with the 64360 (and some with the 
-64260).  However, to be correct, there needs to be a lot of munging.  
-mv643xx.h should be renamed to mv64xxx.h and all of the MV64340 macros 
-need to be renamed as well.  This ripples into the mips code which I 
-didn't want to battle with right now.  I would prefer that this patch go 
-in and then submit a separate patch that fixes and combines the hdr 
-files & macros they contain.  Doing it that way, there is one patch for 
-the ppc bridge support and one patch for the hdr file clean up.  That's 
-cleaner than mixing the two (IMHO).  It is on the todo list.
+Is this -mppc=3D82xx??
 
-Mark
+------_=_NextPart_001_01C4D0C9.441C3339
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7226.0">
+<TITLE>MPC5200 target name</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/rtf format -->
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">Is this -mppc=3D82xx??</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C4D0C9.441C3339--
