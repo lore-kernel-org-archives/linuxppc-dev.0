@@ -1,33 +1,31 @@
-Message-ID: <3DFDE41E.5040300@mvista.com>
-Date: Mon, 16 Dec 2002 07:33:02 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-MIME-Version: 1.0
-To: Roland Dreier <roland@topspin.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Discovery II (was Re: Support for Arctic platform (405LP based))
-References: <20021213043628.GI21319@zax.zax>	<20021212215126.V23952@duath.fsmlabs.com>	<20021213151808.GI19456@opus.bloom.county>	<20021215121526.M30941@duath.fsmlabs.com>	<15869.5023.549830.146265@argo.ozlabs.ibm.com>	<20021215174120.E30568@duath.fsmlabs.com>	<20021216150442.GJ6095@opus.bloom.county>	<20021216150839.GK6095@opus.bloom.county>	<52smwyorqi.fsf_-_@topspin.com> <3DFDCB00.7060509@mvista.com> <52fzsxpww2.fsf@topspin.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Date: Mon, 16 Dec 2002 07:43:49 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Arctic-2 MTD driver
+Message-ID: <20021216144349.GG6095@opus.bloom.county>
+References: <20021216020922.GH4981@zax.zax>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20021216020922.GH4981@zax.zax>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Roland Dreier wrote:
+On Mon, Dec 16, 2002 at 01:09:22PM +1100, David Gibson wrote:
 
-> Thanks... my next question is where is the linux-galileo tree?  (I'm
->sure this is well-known to people working with Discovery II but please
->forgive my ignorance as I'm just starting to look at this platform)
+> Having committed the core support code for the Arctic-2, here come
+> some drivers for it.  Below is an MTD map for the Arctic-2, derived
+> from beech-mtd.c.  Essentially all it does is provide suitable
+> hardwired partitions.
 >
->
-No problem, I should have included that.  These should get you started...
+> Again, any comments before I commit this?
 
-http://source.mvista.com/pipermail/linux-galileo/2002-January/000002.html
-http://source.mvista.com/
+Only that it reminded me that drivers/mtd/maps/Config.in needs some
+cleanups for PPC32, I'll be commiting those momentarily.  But other than
+that, it looks fine.
 
-and, IIRC for anon bk:
-
-bk clone bk://source.mvista.com/linuxppc_2_4_galileo
-
-Mark
-
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
