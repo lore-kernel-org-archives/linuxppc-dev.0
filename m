@@ -1,29 +1,24 @@
-Message-ID: <3A22BFAE.997F20C6@mvista.com>
-Date: Mon, 27 Nov 2000 15:10:22 -0500
+Message-ID: <3A22C31A.877006B6@mvista.com>
+Date: Mon, 27 Nov 2000 15:24:58 -0500
 From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Kyle Harris <kharris@nexus-tech.net>
-CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: fb on mpc823
-References: <3A22BB86.92419741@nexus-tech.net>
+To: Dan Jankins <DJankins@communica.com>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MP8240 UART
+References: <NEBBKDMDALNLPJILFLLOCEBFCAAA.DJankins@communica.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Kyle Harris wrote:
+Dan Jankins wrote:
 
-> ... I'm a little confused (not unusual :). Which device should
-> /dev/fb0 be? fbmem.c opens a device using major 29. But lcd823.c....
+> Is there a UART in the MP8240?
 
-The confusion is probably not your fault this time :-).  Don't use
-the old lcd driver that has my name in it.  That was just something
-I hacked together one day for testing.  I posted it so someone that
-knew something about frame buffers would really write one.
+No.  This is an external part that wasn't populated on any boards
+I have seen.
 
-Fortunately, someone did.  I believe it was Joe Green from MontaVista
-that did a real framebuffer driver.  Go to the MontaVista web site
-and find the CDK 1.2 with the 2.2.14 kernel.
+The 8245 has an internal uart.
 
 
 	-- Dan
