@@ -1,36 +1,22 @@
-Date: Wed, 17 Mar 1999 16:25:18 +0100
-To: linuxppc-dev@lists.linuxppc.org, Paul Mackerras <paulus@cs.anu.edu.au>
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Apple Open Source: the drivers
-Message-Id: <19990317162518.010351@mail.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <36EFCF5D.8892052A@nc.com>
+Date: Wed, 17 Mar 1999 08:50:53 -0700
+From: Rick Meier <rmeier@nc.com>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: L2CR for upgrade cards.
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Ok, I finally found where the driver are hidden: In the kernel archive,
-in bsd/dev/ppc. They are mostly objective C drivers. Among other things,
-there are drivers for the PowerMac ATA with apparently all the timing
-stuffs, and for the CMD646 controller in the blue G3.
+Has anyone actually seen the a G3 upgrade card working with the backside
+cache under LinuxPPC?  I have tried a NewerTECH G3/300 w/512k and a
+PowerLogix 400/200.  I was never able to get the cache working.  I am
+using BootX 1.0.2 and kernel 2.2.4 (checked out from vger).  I never see
+the "override" statement in my dmesg and when I look at
+/proc/sys/kernel/l2cr is shows the cache disabled.
 
-There's a PMU driver with apparently up-to-date command length tables and
-lots of comments about the commands ;-) An interesting thing that I've
-not seen in the LinuxPPC driver: When sending read commands to
-non-existing devices, the PMU may never answer, and so there's need for
-some kind of timeout. I didn't find infos about putting the PowerBook to
-sleep, maybe MacOS X Server cannot sleep...
-
-Finally, the MESH driver is a piece of anthology, but I'll let interested
-people discover it by themselves ;-)
-
-
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
-
-
-
+Any Ideas?
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
