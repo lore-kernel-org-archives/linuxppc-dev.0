@@ -1,55 +1,47 @@
-Message-ID: <013a01bfc3cf$9ced0990$69f001dc@sjzhu.sps.mot.com>
-From: "Shuangjun Zhu" <r44089@email.sps.mot.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: PCMCIA support for 860
-Date: Mon, 22 May 2000 17:24:58 +0800
+To: Seungdong Lee <sdlee@da-san.com>
+Cc: Dan Malek <dan@netx4.com>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 8240 BogoMIPS
+References: <39263EA0.69C60AA9@da-san.com> <3926CD15.441C87AB@embeddededge.com> <vehfbtasi8.fsf@lipta.cendio.se> <39289DA5.F0A5B8FF@da-san.com>
+From: Marcus Sundberg <marcus@cendio.se>
+Date: 22 May 2000 11:34:57 +0200
+In-Reply-To: Seungdong Lee's message of "Mon, 22 May 2000 11:38:29 +0900"
+Message-ID: <vevh07dj26.fsf@lipta.cendio.se>
 MIME-Version: 1.0
-Content-Type: text/plain;	charset="gb2312"
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In arch/ppc/mm/init.c, I have iorempa(_IO_BASE,_IO_BASE_SIZE),
-which _IO_BASE = 0x80000000,
+Seungdong Lee <sdlee@da-san.com> writes:
 
-in macro SELECT_DRIVE in drivers/block/ide-probe.c: do_probe()
-OUT_BYTE((drive)->select.all, hwif->io_ports[IDE_SELECT_OFFSET])
-equal to OUT_BYTE((drive)->select.all, 0x80000000),
-then system illegal access, so what's wrong?
+> Marcus Sundberg wrote:
+> > I'm not very familiar with 82x0 processors, but doesn't 8240 use a
+> > 603-core? When I worked with a 603ev running at 200 MHz I got
+> > something like 133 BogoMIPS, so then the above value would be correct.
+> >
+>
+> Good information.
+> But, why it is 133 BogoMIPS?
 
-Thanks in advanced!
+Because that's what a 200 MHz PowerPC 603 gives you.
+Checking the BogoMIPS howto will show you one report of a 603,
+running at 100 MHz and giving 66 BogoMIPS, which is at par with
+our results.
 
->
->Hi,
->
->
->
->I recompiled the kernel (2.2.13, including fpu, damm, bossek patches) and
->restarted it.
->Then I used the rc.pcmcia to set the modules up. It fails because of...
->
->I found that system acess the illegal address 0x80000000,
->in macro SELECT_DRIVE in drivers/block/ide-probe.c: do_probe()
->
->--------------------------------------------------------------------------
->bash# ./rc.pcmcia start
->Starting PCMCIA services: modulesLinux PCMCIA Card Services 3.1.10
->  kernel build: 2.2.13 #496 Fri May 19 11:14:29 CST 2000
->  options:  none
->m8xx_pcmcia: Version 0.03, 14-Feb-2000, Magnus Damm
->m8xx_pcmcia: FADS using SLOT_B with IRQ 13.
-> cardmgr.
->H<30>Jan  1 00:35:21 cardmgr[131]: starting, version is 3.1.10
->bash# A<30>Jan  1 00:35:22 cardmgr[131]: watching 1 sockets
->A<30>Jan  1 00:35:22 cardmgr[131]: initializing socket 0
->I<30>Jan  1 00:35:22 cardmgr[131]: socket 0: ATA/IDE Fixed Disk
->a<30>Jan  1 00:35:22 cardmgr[131]: executing: 'insmod
->/lib/modules/2.2.13/pcmci'
->probing for hda: present=0, media=32, probetype=ATA
->
->
->
->
+> I still think that the correct value is 400.
 
+Unless you have tried other 603-based sytems you have no reason to
+think so. I repeat my statement from the previous post:
+
+> > The BogoMIPS can be used for rough sanity-checks when comparing
+> > processors with identical cores and different clocks. For anything
+> > else it's completely useless.
+
+//Marcus
+--
+-------------------------------+-----------------------------------
+        Marcus Sundberg        |       Phone: +46 707 452062
+  Embedded Systems Consultant  |      Email: marcus@cendio.se
+       Cendio Systems AB       |       http://www.cendio.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
