@@ -1,28 +1,23 @@
-From: "Stefan Roese" <stefan.roese@esd-electronics.com>
-To: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>,
-	"Linuxppc-Commit" <linuxppc-commit@source.mvista.com>
-Subject: AW: AW: CPCI-405 port (PPC405GP)
-Date: Wed, 12 Sep 2001 15:12:31 +0200
-Message-ID: <EFEAIMDCOOOHIEPHDNFJCEGMDCAA.stefan.roese@esd-electronics.com>
+Message-ID: <002a01c13b93$72b3c5a0$0200a8c0@aiwa>
+From: "qiuqingjun" <qiuqingjun@263.net>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: In initrd, init program is needed or not?
+Date: Wed, 12 Sep 2001 22:01:41 +0800
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <3B9E4FA1.8C477AAD@mvista.com>
+	charset="gb2312"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> >   no, I pulled this morning and the walnut works fine.  I am using nfs
-> > root with HHL2.0 userland.
->
-> I fixed it last night......
+Hi, all
+I am a newbie in ramdisk, I could not find the answers of the following questions in the previous maillists.
 
-Ahhh, this fix has done it. Now our userland seems to work too ;-)
+There is a program, called init, in some ramdisk.image.gz. however in SIMPLE-ramdisk.image.gz, I did not find it.
+I could not understand what the init programe does?
 
-Thank's again for the good work!
-
-Best regards
-Stefan.
+BTW, if I want to access /proc/... , what files should I add in ramdisk. Should I add a program called MOUNT in /bin? who exec rc and fstab script , shell(bash , ash) or kernel?
+Thank you in advance.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
