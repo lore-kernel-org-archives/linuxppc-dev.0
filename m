@@ -1,54 +1,69 @@
-Date: Tue, 13 Jan 2004 10:32:48 +0100 (MET)
-Message-Id: <200401130932.i0D9WmBh027467@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@csd.uu.se>
-To: evil@g-house.de
-Subject: Re: perfctr-2.6.4 released with PPC32 support
-Cc: linuxppc-dev@lists.linuxppc.org
+Date: Tue, 13 Jan 2004 10:56:38 +0100
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Rob Baxter <robb@synergymicro.com>,
+	Sven Luther <sven.luther@wanadoo.fr>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: multiple separate pci bridges ...
+Message-ID: <20040113095638.GA7633@iliana>
+References: <1073338095.9497.70.camel@gaston> <20040105214239.GA20252@iliana> <1073340725.9497.105.camel@gaston> <20040106073955.GF735@iliana> <1073376024.26508.220.camel@gaston> <20040106081143.GA1644@iliana> <Pine.GSO.4.58.0401061533510.5752@waterleaf.sonytel.be> <20040106144545.GA7261@iliana> <20040106153305.GA6251@synergy> <1073425055.784.3.camel@gaston>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1073425055.784.3.camel@gaston>
+From: Sven Luther <sven.luther@wanadoo.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 13 Jan 2004 00:04:31 +0100, Christian <evil@g-house.de> wrote:
->Mikael Pettersson wrote:
->> Version 2.6.4 of perfctr, the Linux performance
->> monitoring counters driver, is now available at the usual
->> place: http://www.csd.uu.se/~mikpe/linux/perfctr/
->>
->> Three architectures are now supported: x86, AMD64, and PPC32.
->>
->> Since I only have a PPC750, I'm looking for testers with 74xx
->> or 604 processors. Even if you don't intend to use the driver,
+On Wed, Jan 07, 2004 at 08:37:36AM +1100, Benjamin Herrenschmidt wrote:
 >
->kernel patches applied with no fuzz to 2.4.24, but compiling the library
->gives:
+> > Here's the code from our pcibios_fixup:
+> >
+> > 	dev = NULL;
+> > 	while ((dev = pci_find_device(PCI_VENDOR_ID_GALILEO,
+> > 				PCI_DEVICE_ID_GALILEO_GT64260, dev))) {
+> > 		for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
+> > 			dev->resource[i].flags = 0;
+> > 			dev->resource[i].start = 0;
+> > 			dev->resource[i].end = 0;
+> > 		}
+> > 	}
 >
->[...]
->make[4]: Leaving directory `/usr/local/src/perfctr-2.6.4/examples/perfex'
->make[4]: Entering directory `/usr/local/src/perfctr-2.6.4/examples/signal'
->gcc -O2 -fomit-frame-pointer -Wall -I../../linux/include -I../../usr.lib
->  -c -o ppc.o ppc.c
->ppc.c: In function `mcontext_pc':
->ppc.c:15: error: structure has no member named `regs'
->make[4]: *** [ppc.o] Error 1
+> pcibios_fixup isn't the right place to do that ;) You should do this
+> from a pci quirk imho.
 
-Hmm, must be a glibc or kernel headers version problem.
-I'm running YDL3.0.1 with glibc-2.3.1.
+Mmm, what do you mean by a pci quirk ?
 
-What version of glibc do you have? How does it define an
-mcontext_t (struct sigcontext_struct)?
+Anyway, i did that from pcibios_fixup, as well as blocking all pci
+writes to device 0 on both buses and reads to all functions of device 0
+on both bus, except function 0, for which i allow reads of the first 15
+bytes, and return 0 for the others, as i am told i should do by the
+hardware guys.
 
->evil@sheep:/usr/local/src/perfctr-2.6.4$ cat /proc/cpuinfo
->processor       : 0
->cpu             : 604r
->clock           : ???
->revision        : 49.2 (pvr 0009 3102)
->bogomips        : 299.00
->machine         : PReP Utah (Powerstack II Pro4000)
->l2 cache        : 512KiB, parity disabled SRAM:synchronous, pipelined,
->no parity
+This works fine for the fbdev, but X is not at all happy with it, well,
+it seems to work, but there is nothing outputed on the screen :(, but
+that is something i probably have to solve with XFree86.
 
-Nothing in dmesg?
+> note that there's still a problem with XFree which will "see"  those
+> BARs and, according to the log posted by Sven, shoke. Sven, can you
+> try "hiding" the host bridge completely from the config ops and see
+> if that helps with XFree ? That's not a very good solution though,
+> we'll have to do something different about it. Now if only XFree
+> stopped mucking with the PCI bus...
 
-/Mikael
+So, yes, that does help with XFree86, altough i get a strange message i
+have to search the origin for :
+
+  (WW) ****INVALID IO ALLOCATION**** b: 0x1000 e:0x10ff correcting
+
+Also, with voodoo 3 cards, the tdfx driver dies with :
+
+  (EE) TDFX(0): No valid PIO address in PCI config space
+
+But Radeon works.
+
+Friendly,
+
+Sven Luther
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
