@@ -1,93 +1,61 @@
-Message-ID: <XFMail.990407081744.gdt@linuxppc.org>
-Content-Type: text/plain; charset=us-ascii
-MIME-Version: 1.0
-In-Reply-To: <B0002009499@icamail.ica.net>
-Date: Wed, 07 Apr 1999 08:17:44 +0100 (BST)
-From: Gary Thomas <gdt@linuxppc.org>
-To: Trevor Woerner <twoerner@ica.net>
-Subject: RE: [LinuxPPC] Gary Thomas' libc sources
-Cc: Developer LinuxPPC <linuxppc-dev@lists.linuxppc.org>
-Cc: Developer LinuxPPC <linuxppc-dev@lists.linuxppc.org>,
-        Users LinuxPPC <linuxppc-user@lists.linuxppc.org>
+Date: Wed, 7 Apr 1999 01:26:40 -0700 (PDT)
+Message-Id: <199904070826.BAA23922@saul9.u.washington.edu>
+From: a sun <asun@saul9.u.washington.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Resurrecting mkLinux
+CC: Roy Wood <roy@centricsystems.ca>,
+        "David A. Gatwood" <marsmail@globegate.utm.edu>,
+        Dave Weis <djweis@plconline.com>, bh40@calva.net
+In-Reply-To: <Pine.LNX.3.95.990406200339.14652L-100000@catbert.desm.plconline.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 
-On 07-Apr-99 Trevor Woerner wrote:
-> dear friends,
-> 
-> i was looking into compiling glibc for myself so i downloaded
-> Gary Thomas' sources from ftp.linuxppc.com under the subdir
-> /linuxppc/users/gdt/redhat/SRPMS/. i downloaded glibc-961212-1o.src.rpm.
-> 
-> once on my system i did a:
->  
->   root# rpm -i <...glibc-961212...>
-> 
-> and in my /usr/src/redhat/SOURCES directory (or something like that)
-> i ended up with a whole pile of stuff that i'm not sure what to
-> do with. i would appreciate some guidance.
-> 
-> i ended up with the following:
->    axp-extras-960810.tar.gz
->    libc-961117-ldd.patch
->    libc-961212-ewt.tar.gz
->    libc-fsstnd-4.diff.gz
->    libc-rev1i.patch
->    libc-rev1j.patch
->    libc-rev1k.patch
->    libc-rev1l.patch
->    libc-rev1m.patch
->    libc.works-ppc.patch
->    libc.zic.synlink.hack.diff.gz
->    nsswitch.conf
-> 
-> what the heck are all of these :-? so i unzipped and untarred the 
-> libc-961212-ewt.tar.gz (since it seemed, out of this bunch to be
-> the most obvious, even though i'm not sure what an "ewt" is...)
-> and it created a libc.works directory (or something like that) which
-> had thousands of files: 90% of which were zero-length!
-> 
-> could someone tell me what's going on? what do i need to compile libc?
-> have the patches already been applied (if not now would i do that)?
-> what is the "conf" file for? or the "symlink.hack" for? etc... etc...
-> etc...
-> 
+   We got around a lot of this in the linux-ma68k port. I think these
+   series of powermacs are pretty similar to the top-of-the-line
+   68k's. I've put more comments below.
 
-To build an RPM from the SRPM file:
+benh and i have been talking about this off and on. both of our
+schedules have been pretty busy though. anyways, here's the scoop on
+what's been happening:
+  1) bootx needs to be modified to boot on nubus powermacs and pass in
+     chunks of memory (ala the m68k booter) either because memory is
+     discontiguous or video memory is sitting at 1MB. 
 
-  # cd /usr/src/redhat/SPECS
-  # rpm -i <SRPM-file>
-  # rpm -ba <SPEC-file>    // You need to figure out this file name
-                           // there is no standard and it will appear
-                           // in this directory after the previous step.
+  2) the APUS code needs modifications to allow use by the
+     powermac. in case you don't already know, the APUS platform is
+     basically an m68k platform with a PPC card in it. sound familiar?
+     as a result, things just need to be generalized a bit for
+     powermacs. for example, i already have some of the interrupt
+     glue. 
 
-That's it.  The last step (-ba) takes care of all of the unpacking, patching,
-building, installing, ...
+     so, most of the work essentially ends up being changes to the
+     m68k code base to add in "newer" models. in addition, the mm code
+     needs to be a little less restrictive. it already handles memory
+     chunks, but the apus code doesn't use it that way.
 
-If you want to install this [potentially new] package "live" on your
-system, just use the normal install runes:
+once a working boot loader is done, it actually shouldn't be too
+difficult to get things working. the hairiest part will probably be
+the tweaking that head.S needs. however, the apus code actually
+fiddles with the exception table and copies its virttophys constant
+into a specific memory location. i think we should be able to do
+something similar with the nubus powermac code as well to deal with
+memory holes if need be.
 
-  # rpm -ivUh ../RPMS/ppc/<RPM-file>  // Created by the -ba step
+beyond that, using the m68k drivers should pretty much work as the
+apus stuff needs to do that anyway. from my look at the code, we
+should be able to replace CONFIG_APUS with a CONFIG_M68KPPC.
 
-BTW - I've just uploaded version "1p" of the GLIBC package.  You should
-work from that.
+anyways, feel free to dive in if you have time. i've been using the
+absence of a working boot loader as an excuse not to do much with
+it. just create a mach_m68k directory in arch/ppc, stick the amiga
+directory in there, create a mac subdirectory and maybe a common
+directory, and merge away. the more files that end up being links to a
+slightly modified m68k code base the better.
 
-For more details, look at my tutorial:
-
-  http://www.chez-thomas.demon.co.uk/RPMS/RPM_tutorial.html
-
-
-------------------------------------------------------------------------
-Gary Thomas                              |
-email: gdt@linuxppc.org                  | "Fine wine is a necessity of
-   ... opinions expressed here are mine  |        life for me"
-       and no one else would claim them! |
-                                         |      Thomas Jefferson
-------------------------------------------------------------------------
-
-
+-a
+asun@u.washington.edu
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
