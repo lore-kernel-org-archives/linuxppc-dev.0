@@ -1,37 +1,33 @@
-Message-ID: <3C62F74F.DE090C2C@mvista.com>
-Date: Thu, 07 Feb 2002 14:53:19 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-MIME-Version: 1.0
-To: Val Henson <val@nmt.edu>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev@lists.linuxppc.org
+Date: Thu, 7 Feb 2002 14:56:20 -0700
+From: Val Henson <val@nmt.edu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: Highmem on PPC?
-References: <20020205115618.D6834@boardwalk> <20020205193316.19866@smtp.wanadoo.fr> <20020207144308.C19569@boardwalk>
+Message-ID: <20020207145620.E19569@boardwalk>
+References: <20020207144308.C19569@boardwalk> <20020207215105.3897@smtp.wanadoo.fr>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20020207215105.3897@smtp.wanadoo.fr>; from benh@kernel.crashing.org on Thu, Feb 07, 2002 at 10:51:05PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Val Henson wrote:
+On Thu, Feb 07, 2002 at 10:51:05PM +0100, Benjamin Herrenschmidt wrote:
+>
+> >as a result.  Any ideas for stressing the system harder?
+>
+> Well, I don't know what your previous kernel had, but recent _devel
+> has my fix to limit lowmem to what can be mapped by BATs on SMP.
+> That may help with the 7410. If the machine ends up beeing really
+> stable, then I'll have to look into CPU bugs for my 7450 problems.
 
-> Also, I don't think this was a particularly good test of highmem since
-> I don't think many bounce buffers were used, or that the kernel had
-> much reason to map/unmap many highmem pages.  Unfortunately, my SCSI
-> controller isn't working quite right and I can't test with a hard disk
-> as a result.  Any ideas for stressing the system harder?
+The previous kernel was 2.4.12 based, with a hack from me to limit
+lowmem to 512MB.  And I was using SCSI, which has hardware bugs on my
+board, in addition to exercising bounce buffers much more strongly.
+In summary, I don't have the faintest idea what was causing the
+hangs.  I'll try booting my old 2.4.12 kernel NFS root and see if it's
+just as stable.
 
-You could try lowering max_low_mem.  You can do this by setting "Code
-maturity level option"/"Prompt for advanced kernel configuration options"
-and then going under where you selected HIGH_MEM and setting max_low_mem
-size to something small.
-
-It will likely take some trial and error to get it stressed enough.
-You'll have to start a bunch or processes and look at where they're
-getting their memory
-
-I'd be interested in hearing how it goes.
-
-Mark
-
+-VAL
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
