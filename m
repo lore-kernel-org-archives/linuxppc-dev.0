@@ -1,24 +1,21 @@
-Return-Path: <joerg@dorchain.net>
-Received: from Redstar.dorchain.net (153-133-088-212.ip-addr.teresto.net
-	[212.88.133.153])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2268167A2C
-	for <linuxppc-dev@ozlabs.org>; Sun, 23 Jan 2005 08:20:38 +1100 (EST)
-Date: Sat, 22 Jan 2005 22:20:32 +0100
-From: Joerg Dorchain <joerg@dorchain.net>
-To: Guido Guenther <agx@sigxcpu.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Message-ID: <20050122212032.GA31025@Redstar.dorchain.net>
-References: <20050119101448.GA1374@Redstar.dorchain.net>
-	<20050120095546.GD5810@bogon.ms20.nix>
-	<20050120105026.GG27077@Redstar.dorchain.net>
+	by ozlabs.org (Postfix) with ESMTP id A7E5167A80
+	for <linuxppc-dev@ozlabs.org>; Sun, 23 Jan 2005 11:45:33 +1100 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Mikael Pettersson <mikpe@csd.uu.se>
+In-Reply-To: <200501221723.j0MHN6eD000684@harpo.it.uu.se>
+References: <200501221723.j0MHN6eD000684@harpo.it.uu.se>
+Content-Type: text/plain
+Date: Sun, 23 Jan 2005 11:43:56 +1100
+Message-Id: <1106441036.5387.41.camel@gaston>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="qMm9M+Fa2AknHoGS"
-In-Reply-To: <20050120105026.GG27077@Redstar.dorchain.net>
-Subject: [PATCH] nvram driver as module (was Re: nvram driver not possible
-	as a module)
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: BUG: 2.6.11-rc2 and -rc1 hang during boot on PowerMacs
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,147 +25,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sat, 2005-01-22 at 18:23 +0100, Mikael Pettersson wrote:
+> Kernels 2.6.11-rc2 and -rc1 hang during boot on my Beige PowerMac G3.
+> The last kernel message on the console is:
+> 
+> adb: starting probe task...
+> 
+> At this point the kernel hangs and doesn't respond to any attempt
+> to invoke SYSRQ or XMON. Normally the subsequent messages would be:
+> 
+> adb devices: [2]: 2 5 [3]: 3 1
+> ADB keyboard at 2, handler set to 3
+> Detected ADB keyboard, type ISO, swapping keys.
+> input: ADB keyboard on adb2:2.05/input
+> ADB HID on ID 3 not yet registered
+> ADB mouse at 3, handler set to 2
+> input: ADB mouse on adb3:3.01/input
+> adb: finished probe task...
+> 
+> The 2.6.11-rc1 kernel also hung on an eMac (G4). On that machine it
+> appears the hang occurred in radeonfb: the screen flickers off/on
+> during radeonfb initialisation, but with 2.6.11-rc1 the screen just
+> went black. Afterwards the eMac did not respond to any keyboard or
+> network activity, so I have to assume it hung hard.
+> 
+> I've traced the cause of the hangs to a local_irq_disable() added to
+> init/main.c:rest_init() in 2.6.10-bk12. Removing it eliminates the
+> hangs on both the G3 and the eMac:
 
---qMm9M+Fa2AknHoGS
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I know about this problem, I'm working on a proper fix. Thanks for your
+report.
 
-On Thu, Jan 20, 2005 at 11:50:26AM +0100, Joerg Dorchain wrote:
-> > Does this help:
-> [...]
->=20
-> Most likely, if there wasn't a specific reason to use bootmem.
->=20
-> I'll try tonight.
-
-Well, it did not crash. The following does even work ;-)
-
-Signed-off-by: Joerg Dorchain <joerg@dorchain.net>
-
---- ./include/asm-ppc/system.h.orig	2005-01-22 21:30:19.000000000 +0100
-+++ ./include/asm-ppc/system.h	2005-01-22 21:28:48.335018120 +0100
-@@ -69,7 +69,7 @@
- #define _set_L3CR(val)	do { } while(0)
- #endif
- extern void via_cuda_init(void);
--extern void pmac_nvram_init(void);
-+extern int pmac_nvram_init(void);
- extern void read_rtc_time(void);
- extern void pmac_find_display(void);
- extern void giveup_fpu(struct task_struct *);
---- arch/ppc/platforms/pmac_nvram.c.orig	2005-01-22 20:46:21.000000000 +0100
-+++ arch/ppc/platforms/pmac_nvram.c	2005-01-22 22:15:10.000000000 +0100
-@@ -75,8 +75,8 @@
-  * Read and write the non-volatile RAM on PowerMacs and CHRP machines.
-  */
- static int nvram_naddrs;
--static volatile unsigned char *nvram_addr;
--static volatile unsigned char *nvram_data;
-+static volatile unsigned char *nvram_addr =3D NULL;
-+static volatile unsigned char *nvram_data =3D NULL;
- static int nvram_mult, is_core_99;
- static int core99_bank =3D 0;
- static int nvram_partitions[3];
-@@ -88,7 +88,7 @@
- static int (*core99_write_bank)(int bank, u8* datas);
- static int (*core99_erase_bank)(int bank);
-=20
--static char *nvram_image __pmacdata;
-+static char *nvram_image __pmacdata =3D NULL;
-=20
-=20
- static unsigned char __pmac core99_nvram_read_byte(int addr)
-@@ -467,7 +467,7 @@
- #endif
- }
-=20
--void __init pmac_nvram_init(void)
-+int __init pmac_nvram_init(void)
- {
- 	struct device_node *dp;
-=20
-@@ -476,7 +476,7 @@
- 	dp =3D find_devices("nvram");
- 	if (dp =3D=3D NULL) {
- 		printk(KERN_ERR "Can't find NVRAM device\n");
--		return;
-+		return -ENODEV;
- 	}
- 	nvram_naddrs =3D dp->n_addrs;
- 	is_core_99 =3D device_is_compatible(dp, "nvram,flash");
-@@ -486,12 +486,16 @@
-=20
- 		if (nvram_naddrs < 1) {
- 			printk(KERN_ERR "nvram: no address\n");
--			return;
-+			return -ENODEV;
- 		}
-+#ifdef MODULE
-+		nvram_image =3D kmalloc(NVRAM_SIZE, GFP_KERNEL);
-+#else
- 		nvram_image =3D alloc_bootmem(NVRAM_SIZE);
-+#endif
- 		if (nvram_image =3D=3D NULL) {
- 			printk(KERN_ERR "nvram: can't allocate ram image\n");
--			return;
-+			return -ENODEV;
- 		}
- 		nvram_data =3D ioremap(dp->addrs[0].address, NVRAM_SIZE*2);
- 		nvram_naddrs =3D 1; /* Make sure we get the correct case */
-@@ -550,8 +554,10 @@
- 	} else {
- 		printk(KERN_ERR "Don't know how to access NVRAM with %d addresses\n",
- 		       nvram_naddrs);
-+		return -ENODEV;
- 	}
- 	lookup_partitions();
-+	return 0;
- }
-=20
- int __pmac pmac_get_partition(int partition)
-@@ -579,6 +585,29 @@
- 	ppc_md.nvram_write_val(xpaddr + offset, data);
- }
-=20
-+static void pmac_nvram_exit(void)
-+{
-+#ifdef MODULE
-+	if (ppc_md.nvram_sync)
-+		ppc_md.nvram_sync();
-+	if (nvram_addr)
-+		iounmap(nvram_addr);
-+	if (nvram_data)
-+		iounmap(nvram_data);
-+	if (nvram_image)
-+		kfree(nvram_image);
-+	nvram_addr=3DNULL;
-+	nvram_data=3DNULL;
-+	nvram_image=3DNULL;
-+	ppc_md.nvram_read_val	=3D NULL;
-+	ppc_md.nvram_write_val	=3D NULL;
-+	ppc_md.nvram_sync	=3D NULL;
-+#endif
-+}
-+
-+MODULE_LICENSE("GPL");
-+module_exit(pmac_nvram_exit);
-+module_init(pmac_nvram_init);
- EXPORT_SYMBOL(pmac_get_partition);
- EXPORT_SYMBOL(pmac_xpram_read);
- EXPORT_SYMBOL(pmac_xpram_write);
-
---qMm9M+Fa2AknHoGS
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-
-iD8DBQFB8sOgjY4+4PdzvOARAis+AJ9exyt0gmb1wRuvxCM4t8NJR86lCACfcb7X
-O+PBUu/QaQ2JE4CQHHhCLtI=
-=5NWh
------END PGP SIGNATURE-----
-
---qMm9M+Fa2AknHoGS--
+Ben.
