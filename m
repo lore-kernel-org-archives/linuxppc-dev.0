@@ -1,42 +1,40 @@
-Date: Fri, 6 Dec 2002 11:29:01 -0700
+Date: Fri, 6 Dec 2002 11:30:07 -0700
 From: Matt Porter <porter@cox.net>
-To: Dan Malek <dan@embeddededge.com>
+To: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
 Cc: Matt Porter <porter@cox.net>,
-	Joakim Tjernlund <joakim.tjernlund@lumentis.se>,
 	Pantelis Antoniou <panto@intracom.gr>,
 	linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Regarding consistent_alloc
-Message-ID: <20021206112901.A18257@home.com>
-References: <3DF0A4D9.4030603@intracom.gr> <IGEFJKJNHJDCBKALBJLLCEJFFIAA.joakim.tjernlund@lumentis.se> <20021206085909.B17918@home.com> <3DF0D6B6.2050307@embeddededge.com>
+Message-ID: <20021206113007.B18257@home.com>
+References: <20021206085909.B17918@home.com> <IGEFJKJNHJDCBKALBJLLCEJGFIAA.joakim.tjernlund@lumentis.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3DF0D6B6.2050307@embeddededge.com>; from dan@embeddededge.com on Fri, Dec 06, 2002 at 11:56:22AM -0500
+In-Reply-To: <IGEFJKJNHJDCBKALBJLLCEJGFIAA.joakim.tjernlund@lumentis.se>; from joakim.tjernlund@lumentis.se on Fri, Dec 06, 2002 at 05:08:22PM +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Dec 06, 2002 at 11:56:22AM -0500, Dan Malek wrote:
-> Matt Porter wrote:
+On Fri, Dec 06, 2002 at 05:08:22PM +0100, Joakim Tjernlund wrote:
+> >
+> > On Fri, Dec 06, 2002 at 03:25:48PM +0100, Joakim Tjernlund wrote:
+> > > If you implement the performance improvement I suggested earlier, I don't think
+> > > you need them. Another thing with consistent_xxx() is that you can not use
+> > > __pa() and __va() on addresses returned by the consistent_alloc et. al.
+> >
+> > Um, well if you are doing a consistent_alloc() then surely you are
+> > keeping the dma_handle around which is your physical address.  If you
+> > want the kernel virtual address then you can apply __va to that.  So,
+> > you have the cache inhibited mapping in vmalloc space returned to you,
+> > the physical address provided in dma_handle, and a kernel virtual address
+> > that can be trivially generated.
 >
->  > ....  If you
-> > want the kernel virtual address then you can apply __va to that.
->
-> Errr....no, you can't.  That would give you the cached mapping.
-> You need to hang on to both the dma_handle (the phys address token)
-> and the virtual address returned by the function.  That's why both
-> are returned.
+> m8xx_cpm_hostalloc() does not keep the DMA handle and __pa() does not work
+> on addresses returned by m8xx_cpm_hostalloc(). I just found that out the
+> hard way when upgrading from MV 2.4.2 to linuxppc_2_4_devel 2.4.20. My SPI driver
 
-That's what I said...but you clipped it out.  Once again,
-consistent_alloc provides the caller everything they need.
-An uncached mapping, a phys address, and from that you can use
-__va() to get the cached mapping.
+that's a problem with m8xx_cpm_hostalloc() (or how you are using it) if
+it doesn't keep around the values you need.
 
-Seemed clear enough to me the first time.  My definition of a
-"kernel virtual address" is the lowmem cached mapping.  If
-I meant the uncached mapping I would have said it was a "kernel
-vmalloc address" or something. :)
-
-Regards,
 --
 Matt Porter
 porter@cox.net
