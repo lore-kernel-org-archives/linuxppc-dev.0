@@ -1,48 +1,50 @@
-From: Wulf Hofbauer <wh@echo.chem.TU-Berlin.DE>
-Subject: IDE/ATAPI driver broken in newer kernels
-To: linuxppc-dev@lists.linuxppc.org
-Date: Fri, 22 Jan 1999 17:22:08 +0100 (MEZ)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Message-ID: <"mail.zrz.T.556:22.01.99.16.29.10"@TU-Berlin.DE>
+Date: Fri, 22 Jan 1999 10:41:17 -0600 (CST)
+From: Troy Benjegerdes <hozer@drgw.net>
+To: Pink X <PinkX@earthlink.net>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Embedded ppc project
+In-Reply-To: <199901220857.AAA10924@avocet.prod.itd.earthlink.net>
+Message-ID: <Pine.LNX.4.04.9901221036500.12144-100000@narn.local.drgw.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Fri, 22 Jan 1999, Pink X wrote:
 
-Kernels since at least 2.1.120 lock up on my PowerMac 4400 when booting
-from Open Firmware/quik. The interrupt handler for the ATAPI interface on IRQ
-14 doesn't seem to do it's job right. Right after installation of the
-IRQ handler, IRQ14 is enabled and taken. The IRQ handler however never
-seems to clear the interrupt condition, so the machine will lock up
-running the IRQ handler permanently.
+> 
+> 
+> Can someone give me  a brief overview of how the boot process works for 
+> linuxppc on non-mac, non-open firmware hardware?
 
-The problem seems to go away when booting via BootX. I suspect that the
-IRQ-generating condition (media changed?) is cleared by MacOS. I'm not familiar
-enough with IDE/ATAPI to solve the problem on my own. I described the
-problem some months ago, but noone seems to care to fix it. Isn't anyone
-willing to look into this?
+Most things with Motorola's PPCBug work pretty well.. The firmware loads a
+boot loader, which then needs to uncompress the gziped kernel into low
+memory.
+ 
+> For instance, we're looking at a custom processor board for a project... 
+> basically it will have a CPU, a DiskOnChip of about 24MB, RAM and a 
+> drive.   Will it be hugely difficult to get linuxppc to boot out of the 
+> DoC (with a kernal and compress root ramdisk in the DiskOnChip)  Does the 
+> kernel make assumptions about there being certain types of hardware or a 
+> open firmware roms being there?  Will it be hugely difficult for (very 
+> experienced programmers who have worked on unix but not linux 
+> specifically) to get the kernal hacked to our hardware formfactor (not 
+> counting any I/O work, just booting in this environment.)
+> 
+> Any advice appreciated!  We may go with the RPCLite board, but we kinda 
+> need a 603e level of power.  (So any 603e @200+MHz embedded boards would 
+> be great to hear about, we've not found any yet.)
 
-As a sidenote, I find that atyfb is broken for most resolutions and bit depths.
-Is this a known problem?
+Have you looked at Motorola's MTX/MVME boards? You can get all the way up
+to a dual 604e/300. Or are they too big (physically)?
 
-Last note: newer kernels quite often won't even compile without correcting
-some blatant bugs in the header files. (In 2.1.132, some jerk tries to assign/
-increment/decrement a struct in softirq.h.) I know it's a hackers kernel,
-but I'd expect correct C syntax from it anyway.
-Who is changing the ppc-specific headers without even trying to rebuild the
-kernel afterwards? I've got the impression some people are actively trying to
-destabilize LinuxPPC...
+--------------------------------------------------------------------------
+| Troy Benjegerdes    |       troy@microux.com     |    hozer@drgw.net   |
+|    Unix is user friendly... You just have to be friendly to it first.  |
+| This message composed with 100% free software.    http://www.gnu.org   |
+--------------------------------------------------------------------------
 
-- Wulf
-
--- 
- ________________________________________________________
-! Dipl. Phys. Wulf Hofbauer  (wh@echo.chem.tu-berlin.de) !
-! Max-Volmer-Institut     Technische Universitaet Berlin !
-! Strasse des 17. Juni 135     10623 Berlin      Germany !
-!________________________________________________________!
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
