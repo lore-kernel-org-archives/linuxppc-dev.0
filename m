@@ -1,64 +1,63 @@
-Message-ID: <393D3D63.E3504DE9@embeddededge.com>
-Date: Tue, 06 Jun 2000 14:05:23 -0400
+Message-ID: <393D5996.4004845C@embeddededge.com>
+Date: Tue, 06 Jun 2000 16:05:42 -0400
 From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: Tom Montgomery <tmontgom@miranda.com>
-CC: "linuxppc-embedded@lists.linuxppc.org"
- <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Running from ROM
-References: <200006052137.RAA29282@rome.wavemark.com> <393C23CC.3289DD1F@mvista.com> <00060516034300.24189@minotaur.mvista.com> <200006061339.JAA30741@rome.wavemark.com> <393D06BD.ADEDF247@miranda.com>
+To: Murray Jensen <Murray.Jensen@cmst.csiro.au>
+CC: Dan Malek <dan@netx4.com>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 8xx MMU Table Walk Base (was Re: kernel crashes at
+ InstructionTLBMiss )
+References: <23333.960273068@msa.cmst.csiro.au>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Tom Montgomery wrote:
+Murray Jensen wrote:
+
+> I use the linuxppc_2_3 bitkeeper repository at hq.fsmlabs.com as the
+> base for my local changes.
+
+This has not run correctly on the 8xx for quite some time.  It won't
+boot since the addition of the IBM403 changes.
+
+> .... (including the I/O mappings, which are different
+> to the MBX in that they reside in the lower half of the address space which
+> required me to use ioremap() correctly by setting ioremap_base and saving
+> its return value and using this to access my devices) and some other minor
+> changes, which I believe are not relevant.
+
+Not again......Did you read any of my past postings about memory
+mapping on the 8xx?  You can't change ioremap_base, and any memory
+mapping change is highly relevant.
+
+> I checked this out again, and one other change was moving most of the code
+> at _start in head_8xx.S
 
 
-> .... What I have gathered from
-> lurking here is that embedded linux operates like PC linux, and that is
-> not the model we are looking for.
+Oh geeze.....Let me quickly paraphrase what I have written in the past.
+You should not be changing _any_ code in head_8xx.S.  This code will
+minimally map some memory and the IMMR.  This is all that is required
+to boot the kernel into further initialization functions.  If there
+are some devices that you must use early (such as board control/status
+registers), you ioremap() these in arch/ppc/mm/init.c.  These physical
+hardware addresses must reside outside of the user and kernel text/data
+virtual addresses.
 
-Hmmm.  It is quite different from a workstation version from my
-perspective.  On the other hand, the workstation version of Linux
-contains many features we can (and want to) utilize.
 
-If you want to make Linux look like a primitive RTOS, you can hard
-code a bunch of variables and write some simple kernel threads and
-be done.  Most people are tired of primitive RTOS environments and
-want something with the features and configurability of a workstation
-in a smaller package.  That's probably why embedded Linux appears to
-look like a workstation to you.  Why not utilize those features when
-it is beneficial?
+> ..... to after the exception handlers because the extra
+> mappings required for the Cogent devices caused this code to exceed 0x100
+> bytes.
 
-> .... Running from ROM makes sense to us,
-> too.
+All of this mapping should be done inside of the device drivers, not
+part of the early kernel initialization.
 
-OK, explain this to me.  It doesn't make any sense to me for the
-following reasons:
+> These are all 2.2.x, no? I believe I need 2.[34].x because I want to use
+> the latest RT-Linux stuff eventually, which only works with the 2.3.x, or
+> later, kernels.
 
-	Flash ROM is more expensive than equivalent sized DRAM
-	Flash ROM is more difficult to acquire
-	I can compress the kernel and file system into a single
-		8-bit device, saving substantial board space.
-	Flash ROM is typically slower access than DRAM
-	Small DRAM parts are getting harder to find and more
-		expensive, so you may as well use more DRAM
-	Running the kernel from flash may save 600K or so of RAM
-		and require an additional 500K of Flash ROM (because it
-		isn't compressed any more)
-
-I have seen some very versatile and cost effective systems that use
-a tiny Flash rom and Compact Flash for storage.  Above some size (like
-16 Mbytes or so), Compact Flash is more economical than soldered on
-board flash.  It is also much easier to manage and adds product
-flexibility.
-
-Execution from Flash ROM is harder to debug and configure, increasing
-development time.
-
-I like learning new things.....explain why running from Flash is better
-for your system.
+Yes, but 2.4.xx doesn't work right now.  I am trying to get that
+working among other things.  You have to back up to a much older
+version of 2.3.xx if you want to use this baseline right now.
 
 
 	-- Dan
