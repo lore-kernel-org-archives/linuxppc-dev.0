@@ -1,47 +1,46 @@
-Message-Id: <200107051529.LAA29124@makai.watson.ibm.com>
-To: Holger Bettag <hobold@Informatik.Uni-Bremen.DE>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-	Kaoru Fukui <k_fukui@highway.ne.jp>, Jean-Jacques.Levy@inria.fr,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: __divdi3 unresolved + X pointer blocks 
-In-Reply-To: Message from Holger Bettag <hobold@Informatik.Uni-Bremen.DE>
-   of "05 Jul 2001 13:48:41 +0200." <8xr8vv61gm.fsf@s62.informatik.uni-bremen.de>
-Date: Thu, 05 Jul 2001 11:29:01 -0400
-From: David Edelsohn <dje@watson.ibm.com>
+Date: Fri, 6 Jul 2001 01:40:49 +1000
+From: Steven Hanley <sjh@svana.org>
+To: Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: unexpected interrupt
+Message-ID: <20010706014049.A1308@wibble.net>
+Reply-To: Steven Hanley <sjh@wibble.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> Holger Bettag writes:
+All
 
-Holger> And: 'arithmetic shift right' is _not_ the same as signed divide, because the
-Holger> rounding of negative operands or results may differ.
+anyone know what this means, on a computer that locks up hard unless I have
+ide0=reset ide1=reset in the kernel arguments.
 
-	Exactly!  For a 32-bit operand, a signed divide by an exact power
-of two is equivalent to:
+Uniform Multi-Platform E-IDE driver Revision: 6.31
+ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
+hda: QUANTUM FIREBALL ST2100A, ATA DISK drive
+ide0: reset
+hdc: MATSHITA CR-585, ATAPI CD/DVD-ROM drive
+ide1: reset
+ide0 at 0xc618a000-0xc618a007,0xc618a160 on irq 13
+ide1: unexpected interrupt, status=0x00, count=1
+ide1 at 0xc618e000-0xc618e007,0xc618e160 on irq 14
+hda: Enabling MultiWord DMA 2
+hda: 4201344 sectors (2151 MB) w/81KiB Cache, CHS=4168/16/63, (U)DMA
 
-srawi
-addze
+is there some reason this is unxpected and that the kernel wont work without
+the reset?
 
-	For synthesized 64-bit operand, this is more complicated, which is
-why GCC calls __divdi3 instead of open-coding it.
+this is 2.4.6-pre3 benh on a powermac 7220/200
 
-	Will all of the people posting INCORRECT information about logical
-versus arithmetic shift and converting signed divide into shift, please
-stop.  You are propagating bad information.
+        See You
+            Steve
 
-	If one converts a divide into a shift, one is assuming more
-information than one has informed the compiler.
-
-	This whole discussion thread is confusing two issues.  If one
-wants GCC to produce a shift, one needs to write the code so that GCC
-safely can convert the divide into a shift.  If the shift is not safe,
-then the Linux kernel needs to provide __divdi3.
-
-	The two suggestions of writing the divide as a shift and linking
-with libgcc.a BOTH ARE WRONG.
-
-David
+--
+sjh@wibble.net http://wibble.net/~sjh/
+Look Up In The Sky
+   Is it a bird?  No
+      Is it a plane?  No
+         Is it a small blue banana?
+YES
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
