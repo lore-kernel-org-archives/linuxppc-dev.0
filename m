@@ -1,79 +1,66 @@
-Message-ID: <3C0E2113.779E89DF@laposte.net>
-Date: Wed, 05 Dec 2001 14:28:51 +0100
-From: Phil <ibm405.linux@laposte.net>
-MIME-Version: 1.0
-To: frowand@mvista.com
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: More walnut boottime "fun" and BDI2000 
-References: <20011127103042.A11612@cse.unsw.edu.au> <20011126221728.D13091@cpe-24-221-152-185.az.sprintbbd.net> <20011127050754.B15728@cx258813-a.chnd1.az.home.com> <3C0CD3C6.ECB0E61B@laposte.net> <20011204141147.GD17651@cpe-24-221-152-185.az.sprintbbd.net> <3C0CDCB1.9F3A9423@laposte.net> <3C0D06F8.57DD8837@mvista.com>
-Content-Type: text/plain; charset=iso-8859-1
+Subject: Re: ATM switching in MPC8260
+From: James Campbell <jcampbell@omnigon.com>
+To: Rudolf Ladyzhenskii <rudolf.ladyzhenskii@act-aus.net>
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <B164B53F5BD6D511888D009027732E1A0249AA@ntserver.act.domain>
+References: <B164B53F5BD6D511888D009027732E1A0249AA@ntserver.act.domain>
+Content-Type: text/plain
+Date: 05 Dec 2001 08:18:37 -0800
+Message-Id: <1007569117.1270.2.camel@mordja.omnigon.com>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Frank Rowand a écrit :
->
-> Phil wrote:
-> >
-> > I resync the kernel sources today at 7:15 am GMT.
-> > Any idea ?
-> >
-> > Tom Rini a écrit :
-> > >
-> > > On Tue, Dec 04, 2001 at 02:46:46PM +0100, Phil wrote:
-> > >
-> > > > I'am trying to boot the latest linuxppc_2_4_devel kernel version
-> > > > (2.4.27-pre2).
-> > >
-> > > What date?  This isn't a problem anymore, at least on a few walnuts I've
-> > > gotten people to test.
->
-> Rev 1.731 of linuxppc_2_4_devel(mid-day California time yesterday) boots
-> fine on my walnut.
->
-> HHL2.0 toolchain and ibm OpenBios.
->
-> I used an almost default configuration (I was working on a KGDB
-> problem so I enabled KGDB):
->
->    make walnut_config
->    make menconfig
->         select KGDB
->         select CONFIG_MORE_COMPILE_OPTIONS
->    make dep
->    make zImage
->
-> (I needed to fix config.in to allow CONFIG_MORE_COMPILE_OPTIONS - see
-> the patch I posted yesterday.)
->
-> You shouldn't have to enable KGDB.
->
-> Do you have KGDB enabled by mistake?  If you do, it will sit at the
-> "Now booting the kernel" console message until KGDB connects to the
-> target.
+Hello,
+
+Its techincally possible.  We have two versions of our 8260/PMC-Sierra
+SAR board.  One that directly talks to the control lines of the PMC
+chip, and one that uses full 8260 atm support under linux (ported from
+the 860 SAR).  Both work well.
+
+Cheers,
+
+James Campbell
 
 
-Thanks Frank
-You're right. It works fine with
-    make walnut_config
-    make menconfig
-    make dep
-    make zImage
-and the ibm openbios
-but i want to use my BDi 2000  Abatron debugger to debug the kernel.
-So, i select the following options :
-         select CONFIG_BDI_SWITCH
-         select CONFIG_MORE_COMPILE_OPTIONS
-I download the kernel with the debugger(latest 1.07 firmware). It works
-fine (i can put for
-example a breakpoint in start_kernel or in do_init_bootmem, it stops at
-the right address)
-If i continue, nothing happened, the 405GP seems locked in the __udelay
-routines.
-Is it a debugger config file pb ?
-Any idea ? Thanks
+On Tue, 2001-12-04 at 20:30, Rudolf Ladyzhenskii wrote:
+>
+> Hi, all
+>
+> I have to do some ATM traffic switching using MPC8260. Preferable without
+> processing data by the 603 core.
+> AAL2 microcode can do that for AAL2
+> MPC8260 manual says that it is possible to do it on AAL0
+>
+> Does anyone know if this is possible for AAL5?
+>
+> Thanks,
+>
+> /************************/
+> Rudolf Ladyzhenskii
+> DSP Engineer
+> Advanced Communication Technologies
+> ph.  +61 3 8080 8215
+> fax. +61 3 9672 8800
+> Level 9, 190 Queen Street,
+> Melbourne, 3000
+> Australia
+> /***********************/
+>
+>
+>
+--
+James Campbell          -|-   Embedded Systems Engineer
+jcampbell@omnigon.com   -|-     Omnigon International
+pgp:  C323 70EC 6E2D 61CB 4692 14E4 4F79 3530 D49F A9CE
+work: +1.760.804.8884 x 332       cell: +1.760.492.1176
+--
+"Computer games don't affect kids; I mean if Pac-Man
+affected us as kids, we'd all be running around darkened
+rooms, munching magic pills and listening to repetitive
+electronic music."
+         -Kristian Wilson, Nintendo, Inc. 1989
 
--Phil.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
