@@ -1,58 +1,32 @@
-Date: Wed, 31 Oct 2001 11:22:20 +0100 (CET)
-From: Roman Zippel <zippel@linux-m68k.org>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: small cleanup
-In-Reply-To: <20011030190809.F16202@cpe-24-221-152-185.az.sprintbbd.net>
-Message-ID: <Pine.LNX.4.33.0110311113100.31795-100000@serv>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Wed, 31 Oct 2001 16:26:02 +0100
+From: Bernhard Reiter <bernhard@intevation.de>
+To: debian@jones.dk
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: [Debian] Irda can work
+Message-ID: <20011031162602.A24896@intevation.de>
+References: <20011031145005.L22319@intevation.de> <Pine.LNX.4.33.0110311520150.10525-100000@auryn.jones.dk>
+Mime-Version: 1.0
+In-Reply-To: <Pine.LNX.4.33.0110311520150.10525-100000@auryn.jones.dk>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Wed, Oct 31, 2001 at 03:24:31PM +0100, Jonas Smedegaard wrote:
+> and btw: I recommend kernel from BenH from 30/10 - it runs flawlessly on
+> my machine, and has ide performance optimizations it seems (but don't know
+> if it is TiBook related though)
 
-On Tue, 30 Oct 2001, Tom Rini wrote:
+We have some problems with DMA on BenH's kernel from yesterday (30.10.2001),
+(maybe we've got it later).
 
-> > - pcibios_make_OF_bus_map depends on CONFIG_ALL_PPC
->
-> This should just be a warning, since gcc will optmize it out (it'll
-> always be false on !CONFIG_ALL_PPC.  It'd almost be preferable to do
-> something like:
-> #define pcibios_make_OF_bus_map do { } while(0)
->
-> Someplace...
+Same problem with as described in
+http://lists.linuxppc.org/linuxppc-dev/200110/msg00371.html
 
-That function is in the same file...
-
-> > - removed duplicate definition of isa_io_base/isa_mem_base/pci_dram_offset
-> > (note: these variables are protected with CONFIG_PCI in ppc_ksyms.c, but
-> > not in the include files, so there are unconditional now)
->
-> This will break 4xx I think...  Can you try doing a
-> walnut+CONFIG_405_DMA=y compile (in _devel..)
-
-I can try it (when I get home).
-
-> > - removed nested __KERNEL__ ifdefs in io.h, one even outside of the
-> > recursive protection (bad style).
->
-> Correct, but it's usually
-> #ifdef __KERNEL__
-> #ifndef __FILE_H__
-> #define __FILE_H__
-> ...
-> #endif
-> #endif
->
-> Or so.
-
-I would do it the other way around. gcc looks for a ifndef/define/endif
-sequence to decide whether it needs to rescan that file next time, but I'm
-not sure if gcc finds it in this case.
-
-bye, Roman
-
+Anybody know what is causing this problem or how to get an older,
+but more stable BenH tree without it?
+	Bernhard
+ps.: cc to linuxppc-dev, though I am not on the linuxppc-dev list,
+	please cc relecant replies.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
