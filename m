@@ -1,21 +1,17 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id A652C67A6E
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Apr 2005 02:21:50 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	j35GO1Ux010332
-	for <linuxppc-dev@ozlabs.org>; Tue, 5 Apr 2005 09:24:01 -0700 (MST)
-Received: from [10.82.244.138] ([10.82.244.138])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id j35GNuZ6006823
-	for <linuxppc-dev@ozlabs.org>; Tue, 5 Apr 2005 11:23:56 -0500 (CDT)
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Message-Id: <17e04050dd77805d8dd464fd6a1af284@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-To: Linux/PPC Development <linuxppc-dev@ozlabs.org>
-From: Andy Fleming <afleming@freescale.com>
-Date: Tue, 5 Apr 2005 11:21:52 -0500
-Subject: Perfmon feature
+Return-Path: <cfriesen@nortel.com>
+Received: from zcars04e.nortelnetworks.com (zcars04e.nortelnetworks.com
+	[47.129.242.56]) by ozlabs.org (Postfix) with ESMTP id 6BD4767A6D
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Apr 2005 02:44:12 +1000 (EST)
+Message-ID: <4252C04A.8020407@nortel.com>
+Date: Tue, 05 Apr 2005 10:43:54 -0600
+From: Chris Friesen <cfriesen@nortel.com>
+MIME-Version: 1.0
+To: Fillod Stephane <stephane.fillod@thomson.net>
+References: <1CFEB358338412458B21FAA0D78FE86D4F0D2D@rennsmail02.eu.thmulti.com>
+In-Reply-To: <1CFEB358338412458B21FAA0D78FE86D4F0D2D@rennsmail02.eu.thmulti.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: somewhat OT -- trying to build code on the fly then run it
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,23 +21,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I'm adding oprofile support for 7450 (and derivative) processors, and 
-I'm considering adding a couple PPC_FEATURE bits (one for classic, and 
-one for fsl-book-e perfmon).
+Fillod Stephane wrote:
+> Chris Friesen wrote: 
+> 
+>>I'm writing a testcase to test some code we wrote to allow userspace
+> to flush the whole dcache and invalidate the whole icache.  
+> 
+> 
+> Your testcase sounds like this kernel module for RT load generator:
+> 
+> 	http://rtai.dk/cgi-bin/gratiswiki.pl?Latency_Killer/Flushy
 
-Reasons:
-1) The need to distinguish between Freescale Book-E processors with 
-performance monitor support, Classic PPC processors with perfmon 
-support, and processors without perfmon support.  (ie - 7450 parts will 
-have support, but 7410 parts will not for now).
+Unfortunately that code calls flush_instruction_cache(), which doesn't 
+work on the 970 in the ppc tree, and doesn't even exist anymore in the 
+ppc64 tree.
 
-2) Applications could determine if these features were present, and 
-decide between using mfspr and mfpmr instructions to read the counters 
-from user-space.
-
-Thoughts, objections?
-
-
-Andy Fleming
-Open Source Team
-Freescale Semiconductor, Inc
+Chris
