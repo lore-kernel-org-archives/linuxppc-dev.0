@@ -1,35 +1,34 @@
-Message-ID: <3F3D4B2B.9000700@laurelnetworks.com>
-Date: Fri, 15 Aug 2003 17:05:47 -0400
-From: "Michael J. Accetta" <mja@laurelnetworks.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: u-boot-users@lists.sourceforge.net
+Subject: hang up after start_here
 MIME-Version: 1.0
-To: Stephen Williams <612dlag102@sneakemail.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Hardware Requrements for Linux on 405GPr
-References: <21518-79162@sneakemail.com> <3F3BEE49.4050806@mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Message-ID: <OFE8EA1A87.9A7B8A06-ONC1256D86.0028950A-C1256D86.002D5CE3@se.wavetek.com>
+From: "Laurent Mohin" <laurent.mohin@acterna.com>
+Date: Mon, 18 Aug 2003 09:54:51 +0200
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Mark Hatle wrote:
+Hello all,
 
-> An RTC is not required for Linux. Many designs I have seen do not have
-> one. However, an RTC is an excellent device to have available! Various
-> applications and services may require a consistant, ever increasing
-> time. NFS is the one that comes to mind immediatly. If the device is
-> rebooted and the time goes back to default, NFS may have problems.
+I'm designing a custom board build around a 405GPr processor. I'm in my
+third prototype phase, and I've problem with one board which hang during
+Linux booting.
+I've debugged and found that the board hangs in start_here function and
+doesn't reach the early_init function.
 
-You can defintely run into problems with NFS and no RTC. We have a setup
-like this and without a RTC, NFS would end up allocating (I think)
-request id's based on the time that might be cached on the server to
-handle replay. With the time always starting at 0, different requests
-with the same id could be issued from the card across boot sessions and
-the server would have cached the old request, producing some confusing
-results when it replied to the cached rather than new request. Our
-solution was to add a TIME protocol probe in the ipv4 BOOTP path so the
-card always got the right time before continuing the boot.
+Because the problem appears on only one of my boards out of 16, I suspect
+a hardware problem, and because it occurs just after mmu initialisation
+and caches enabling, I suspect more especially sdram accesses.
 
-Mike Accetta
+I want to know if anybody has encountered a similar problem and if the
+diagnostic was the same.
 
+Kernel version is 2.4.18 from Montavista.
+
+Thanks for help,
+
+Laurent
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
