@@ -1,44 +1,65 @@
-Date: Mon, 22 Mar 2004 11:02:14 +0100
-Message-ID: <4057CCD40002AF4E@mssbzhh-int.msg.bluewin.ch>
-In-Reply-To: <005a01c40fbf$27f738a0$ee00a8c0@CAT>
-From: "Wolfgang Grandegger" <wolfgang.grandegger@bluewin.ch>
-Subject: RE: [PATCH] fix compile of denx rtai ppc with gcc 3.3.2 
-To: "Andrew Dennison" <andrew.dennison@motec.com.au>,
-	linuxppc-embedded@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
+Subject: Re: SystemACE, but I'm not a V2Pro
+From: Jeff Angielski <jeff@theptrgroup.com>
+To: Stephen Williams <612dlag102@sneakemail.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <10183-36126@sneakemail.com>
+References: <10183-36126@sneakemail.com>
+Content-Type: text/plain
+Message-Id: <1079968679.20420.13.camel@localhost.localdomain>
+Mime-Version: 1.0
+Date: 22 Mar 2004 10:17:59 -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->-- Original Message --
->From: "Andrew Dennison" <andrew.dennison@motec.com.au>
->To: <linuxppc-embedded@lists.linuxppc.org>
->Subject: [PATCH] fix compile of denx rtai ppc with gcc 3.3.2
->Date: Mon, 22 Mar 2004 14:38:35 +1100
->
->
->I had a few problems compiling Denx RTAI for ppc with gcc 3.3.2. Attached
->patches seem to fix this - at least the examples run on my MPC5200. Changes
->still compile ok on 2.95.4.
->
->For linuxppc_devel patched with
->patch-denx-linuxppc_2_4_devel-LABEL_2003_12_22_1500-ltt:
->
->Change formatting of __asm__ in ltt_clear_bit to be similar to ltt_set_bit
->to fix compile error.
->
->For rtai-24.1.12-denx.tar.bz2:
->
->Fix clobber list to fix compile error on gcc 3.3.2.
+Hi Stephen,
 
-Thanks for the patches. I'm going to verify and commit them
-into the RTAI 24.x and 3.x CVS repositories a.s.a.p.
+Here is the simple change that what worked for me:
 
-This issue is off-topic on this list. Please send RTAI related
-mails to rtai@rtai.org.
+static void
+xsysace_restart(char *cmd)
+{
+        XSysAce_ResetCfg(&SysAce);
 
-Wolfgang.
+        /* also call the machdep restart */
+        if( old_restart )
+                old_restart(cmd);
+
+        /* Wait for reset. */
+        for (;;) ;
+}
+
+
+Jeff
+
+
+On Sun, 2004-03-21 at 21:00, Stephen Williams wrote:
+> I'm successfully using the existing System ACE adapter driver
+> to mount my compact flash devices, and that's great. But I'm
+> getting some baggage I don't want. Specifically, in adapter.c
+> the xsysace_init function replaces the ppc_md.restart function
+> with xsysace_restart, which breaks reboot on my PPC405GPr based
+> board.
+>
+> The brute force method is for me to #ifdef out that bit of
+> code with something like "#ifndef CONFIG_JSE" (my board is
+> a JSE board) but that seems klunky.
+>
+> It seems to me there may be others who have SystemACE boards
+> without V2Pro chips. Would it be safe and reasonable for me
+> to use the CONFIG_VIRTEX_II_PRO config define to ifdef that
+> bit of code *in*?
+>
+> (I'm asking because I'd like to integrate my board support
+> into the main tree someday, so I want a generally clean patch.)
+>
+> --
+> Steve Williams                "The woods are lovely, dark and deep.
+> steve at XXXXXXXXXX           But I have promises to keep,
+> http://www.XXXXXXXXXX         and lines to code before I sleep,
+> http://www.picturel.com       And lines to code before I sleep."
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
