@@ -1,25 +1,61 @@
-Date: Thu, 5 Jul 2001 18:55:58 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: David Edelsohn <dje@watson.ibm.com>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: __divdi3 unresolved + X pointer blocks 
-In-Reply-To: <200107051529.LAA29124@makai.watson.ibm.com>
-Message-ID: <Pine.LNX.4.33.0107051849390.2824-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <3B460601.6A3AA7D9@acm.org>
+Date: Fri, 06 Jul 2001 11:40:01 -0700
+From: Ira Weiny <iweiny@acm.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: IBM Microdrive PCCard on TiBook (ide-cs module)
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> 	The two suggestions of writing the divide as a shift and linking
-> with libgcc.a BOTH ARE WRONG.
+I have spent a little more time tracking down why the PCCard adapter for
+my Microdrive causes the TiBook to shutdown.  But I need some help in
+interpreting the information I have found.
 
-I haven't seen anyone suggest we link the kernel with libgcc.a. Just 'the
-kernel needs to provide __divdi3'. As in: the kernel needs to provide a
-hell of a lot of libgcc.a stuff on the various architectures (ashldi3,
-ashrdi3, lshrdi3 come to mind, m68k and sparc). It's been done for ages.
+1) I was able to catch with xmon a stack trace before it shutdown.  This
+showed a stack trace as follows:
 
-	Michael
+ide-cs.c:ide_config
+ide.c:ide_register
+ide.c:ide_register_hw
+ide.c:ide_probe_module
+ide-probe.c:ideprobe_init
+ide-probe.c:probe_hwif
+ide-probe.c:do_probe
+ide-probe.c:try_to_identify
+ide-probe.c:actual_try_to_identify  <== shutdown somewhere here??
 
+2) I am assuming at this point it is writing to registers which are
+mapped incorrectly (probably to the PMU) which cause it to shutdown.
+
+3) I have found that the io_base addresses is 0x1000 (as set in my
+config.opts file) and this is what is passed to the ide_register
+function.  Changing this address does not seem to change it's behavior
+though.  (??)
+
+4) ide_register calls ide_init_hwif_ports with these addresses which
+have a "pmac_" specific call.  So I am assuming that it would "ioremap"
+these as appropriate.  (However, I don't see it modifying this address
+at all?)
+
+5) ide_register_hw calls "ide_probe_module" which takes me into the
+ide-probe.c file.  But I see a specific "pmac_ide_probe" which is called
+at init time.
+
+
+My conclusion is that I should either be calling this pmac_ide_probe
+rather than the generic ide_probe module (and making it _not_ an init
+function).  OR I need to modify the ide_probe module to handle the
+proper maping of the addresses such that I don't write to the PMU.
+
+Unfortunatly I have not found any examples of the later in the pcmcia
+drivers I have looked at so I am worried that I am totally off base.  If
+I am "barking up the wrong tree" I hope someone can tell me such that I
+can start looking elsewhere.
+
+Thanks in advance,
+Ira Weiny
+iweiny@acm.org
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
