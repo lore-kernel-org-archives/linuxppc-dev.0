@@ -1,34 +1,29 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: <cl.en@gmx.net>, <linuxppc-dev@lists.linuxppc.org>,
-        Michael Schmitz
- <schmitz@opal.biophys.uni-duesseldorf.de>
+Date: Thu, 2 Nov 2000 16:43:33 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: cl.en@gmx.net, linuxppc-dev@lists.linuxppc.org
 Subject: Re: Lombard Sleep Crash (Was: 2.2.18pre17 again)
-Date: Thu, 2 Nov 2000 16:35:37 +0100
-Message-Id: <19340927090721.10201@192.168.1.2>
-In-Reply-To: <20001102160728.B371@olis.north.de>
-References: <20001102160728.B371@olis.north.de>
+In-Reply-To: <19340927090721.10201@192.168.1.2>
+Message-ID: <Pine.LNX.4.10.10011021638110.31372-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> >:
-> >: I attach the kernel .config and the relevant part from /var/log/
->messages, and as
-> >: always, any help is _really_ welcome!
 >
->if you panic'ed with the CD module inserted, would you try to snooze
->without it?
+> Well, the kernel sleep code is supposed to take care of that, but
+> apparently, that code is also causing the panic...
 >
->or try this one:
+> Michael, any clue ?
 
-Well, the kernel sleep code is supposed to take care of that, but
-apparently, that code is also causing the panic...
+Not at this time. My 2.2.18pre14 behaves as expected (CD inserted but not
+mounted). I'll yet have to try pre17.
 
-Michael, any clue ?
+Side note: the ide revalidate patch is in Alan's pre18 now, so you can
+start feeding him the related wakeup patches...
 
-Ben.
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
