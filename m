@@ -1,14 +1,17 @@
-Return-Path: <kmilligan@austin.polycom.com>
-Received: from ausexch00.austin.polycom.com (unknown [216.54.148.81])
-	by ozlabs.org (Postfix) with ESMTP id 906F02BEA0
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Nov 2004 07:20:55 +1100 (EST)
-Message-ID: <F3CF3D25A7F8F44BB59BC7A2CA83E30B02322252@ausexch00.austin.polycom.com>
-From: "Milligan, Keath" <kmilligan@austin.polycom.com>
-To: linuxppc-dev@ozlabs.org
-Date: Thu, 18 Nov 2004 14:05:36 -0600
-MIME-Version: 1.0
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2B04A2BF07
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Nov 2004 18:00:45 +1100 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>,
+	linuxppc-dev@ozlabs.org, gentoo-ppc-user@gentoo.org
 Content-Type: text/plain
-Subject: Large PCI region mapping 8272
+Date: Fri, 19 Nov 2004 17:56:50 +1100
+Message-Id: <1100847411.25521.42.camel@gaston>
+Mime-Version: 1.0
+Subject: TEST: Sleep suppport for iBook G4 & Aluminium PowerBooks (ATI based)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,26 +21,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
+(Message cross-posted to several lists, please do _NOT_ reply to all of
+them).
 
-I am having trouble getting PCI devices mapped correctly under Linux 2.4.22
-running on an MPC8272ADS evaluation board.
+NOTE: Owners of _OTHER_ Apple laptops that could already sleep, like
+earlier iBooks, or Titanium PowerBooks, please test this patch as well
+for regression. More specifically, test if sleep still works, X/DRI, and
+backlight control as I have made significant changes to radeonfb in ways
+that could affect those areas.
 
-I have multiple PCI-attached devices with a total of 512MB of prefetchable
-memory and about 200MB of non-prefetchable memory address spaces in various
-block sizes. All of the devices are behind a PCI-to-PCI bridge that is
-plugged into the ADS.
+NOTE2: This is still quite experimental, be careful if something goes
+wrong (like lots of oopses or crashes on wakeup), you'd rather
+hard-restart the machine right away than let corrupted memory buffers be
+written back to your disk ;)
+ 
+First, let's give credit where it's due, as a lot of the work on the
+original Aluminium PowerBook sleep code was done by Paul Mackerras,
+happy owner of one of these beasts, and thanks to Rob Weir too who gave
+me his iBook G4 for a few days, just long enough to get the stuff
+working...
 
-At this stage in my project, these devices are initializing themselves to
-base addresses that need to be moved when Linux boots on the 8272. The
-problem I am having is that Linux is trying to remap everything, but is
-unable to allocate regions for everything, so I end up with most of the
-devices mapped to the same (invalid) address.
+So here's the new patch, it replaces the previous one for Aluminium
+PowerBooks, and is still against 2.6.9. I'll do something against 2.6.10
+when that one is out (it's a bit late to get that merged with Linus,
+2.6.10 is in freeze mode now) and I hope to get all of that in 2.6.11.
 
-I've tried hacking the kernel PCI initialization to manually set all the
-base addresses, but it seems to be ignoring that for the most part.
+The support for sleep on desktop G4s & dual CPU machines, including
+support for "hotplug CPU" (allowing to put a CPU to sleep dynamically)
+for dual machines isn't in this patch neither, it will be coming
+spearately. It will only support one desktop video card at first anyway,
+though it will be possible to extend that over time.
 
-Could someone point me in the right direction to getting everything
-initialized and mapped correctly?
+Get it at:
 
-Thanks
+http://gate.crashing.org/~benh/albook-ibookg4-sleep.diff
+
+Enjoy !
+
+Ben.
