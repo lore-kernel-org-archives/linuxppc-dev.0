@@ -1,53 +1,54 @@
-Message-Id: <v03110700b4f2ab8adc01@[129.100.29.243]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Mon, 13 Mar 2000 09:45:43 -0500
-To: linuxppc-dev@lists.linuxppc.org
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Subject: Here are some Rage128Pro video timing info from Mac Side
+Date: Mon, 13 Mar 2000 18:24:18 +0200 (EET)
+From: Kostas Gewrgiou <gewrgiou@imbc.gr>
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+cc: Michel Dänzer <michdaen@iiic.ethz.ch>,
+        "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to work
+ onppcwithr128
+In-Reply-To: <Pine.LNX.4.10.10003131401510.32105-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <Pine.LNX.4.21.0003131530380.1561-100000@idd-01.imbc.gr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Mon, 13 Mar 2000, Michael Schmitz wrote:
 
-Just in case these might be of some value to others.  I have used the
-DeviceNameRegistry program under MacOS and have collected the following
-timing info for my G4 450 which has a Rage128Pro PF card installed:
+> >   Without the BusID line the XServer will disable the pci memory/io
+> > for the card, it doesn't matter if fbdev_open_pci is used or not.
+> > What probably happens is that even with the BusID defined the xserver
+> > still disables your card.
+>
+> We'll see if that's a problem; right now it hangs earlier.
+>
 
-In all cases, the color depth was set to millions of colors:
-
-(all values are in hexadecimal/decimal)
-
-           	1280x1024-75	1152x870-75	1024x768-85	832x624-75
-		------------	-----------	-----------	----------
-XCLK		0x36d5/14037	0x36d5/14037	0x36d5/14037	0x36d5/14037
-
-MCLK		0x2e18/11800	0x2e18/11800	0x2e18/11800	0x2e18/11800
-
-VCLK		0x34bc/13500	0x2710/10000	0x24ea/9450	0x165d/5725
-
-REF		0x0b86/2950	0x0b86/2950	0x0b86/2950	0x0b86/2950
-
-DotClock	0x34bc/13500	0x2710/10000	0x24ea/9450	0x165d/5725
+  Earlier than what ? The Xserver does its pci magic (badly in this
+case it seems) very early, by the time you reach fbdevHWModeInit
+its already done.
 
 
-And in all cass the AAPL,addresses for the card were:
+> > The PCI warnings that you get most likely will tell us where the problem
+> > is, can you send the logfile over ?
+>
+> Relevant log excerpt:
+>
+> (II) Loading /usr/X11R6/lib/modules/linux/libfbdevhw.a
+> (II) Module fbdevhw: vendor="The XFree86 Project"
+> 	compiled for 4.0, module version = 0.0.1
+> (II) FBDev(1): using default device
+> (**) FBDev(1): claimed PCI slot 0:17:0
+> (WW) ****INVALID MEM ALLOCATION**** b: 0x81000000 e: 0x81ffffff correcting
+> own
+>         [0] -1  0x81fff000 - 0x81ffffff (0x1000) MXB
+> 	[1] -1  0x00000c00 - 0x00000cff (0x100) IXB
+> (WW) ****INVALID IO ALLOCATION**** b: 0xc00 e: 0xcff correcting
 
-94000000
-90020000
-90000000
+    Here is the problem, for some reason the xserver doesn't like
+the pci mem/io mappings for the card and "corrects" them :(
 
-So with this info, I will modify aty128fb.c to use these values if it
-identifies the chip as a Rage128Pro RF (0x5046).
+  Kostas
 
-Hopefully this will help fix the split panes issues.
-
-If anyone wants/needs more info from the MacOS device registry on any of
-the items in the tree, just ask.
-
-Thanks,
-
-Kevin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
