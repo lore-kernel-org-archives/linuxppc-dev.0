@@ -1,39 +1,37 @@
 Mime-Version: 1.0
-Message-Id: <a04310105b8e0d35b581e@[199.170.89.81]>
-In-Reply-To: <20020415075754.31208@mailhost.mipsys.com>
-References: <a04310101b8e0b0f04111@[199.170.89.178]>
- <20020415075754.31208@mailhost.mipsys.com>
-Date: Mon, 15 Apr 2002 14:01:32 -0500
+Message-Id: <p05100303b8e0cf886762@[63.220.231.138]>
+In-Reply-To: <v04003a05b8e0b64c8a51@[24.70.162.28]>
+References: <v04003a04b8e03cacee74@[24.70.162.28]>
+ <v04003a05b8e0b64c8a51@[24.70.162.28]>
+Date: Mon, 15 Apr 2002 15:03:13 -0400
 To: linuxppc-dev@lists.linuxppc.org
-From: Jeff Walther <trag@io.com>
-Subject: Re: PPB Bug in PowerSurge:  was: 9600 maturity
+From: Stefan Jeglinski <jeglin@4pi.com>
+Subject: ATI 7000 and dual-monitor X? (was Re: 9600 maturity?)
 Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 08:57 +0100 04/15/2002, benh@kernel.crashing.org wrote:
+>#3: Newer video. Radeon7000 PCI is a good choice. This obviously isn't a
+>factor when the system is to be used as a server though.
 
->>Do you have suggestions on where I might begin a hunt for such an OF
->>patch?  I assume this is something that one could load in NVRAM under
->>any OS that will take care of the bug until the next time the NVRAM
->>is reset?
->
->Yes. DTS provides one for some machines (for example the 6400) if you
->ask. Some PCI card vendors with a pci<->pci bridge on their card need
->it.
+http://www.ati.com/shopati/promotions/maccombo/index.html
 
-I suspect I'm going to feel silly for needing to ask this, but how do
-I contact DTS and what does it stand for?
+Seems like the 7000 would be a nice addition to spruce up my old
+9500/G3 workhorse. It would free up 2 slots as I now have a Twin
+Turbo, an ixTV, and an old Matrox card in there now.
 
-I was aware that there was a patch for the 6400.   Does that same
-patch solve the multi-level PPB problem in PowerSurge as well?
+1. Is the Radeon 7000 supported in XFree86? Rather, the real question
+is, does anyone know of any gotchas trying to run it in accelerated
+mode?
 
-Thank you again.  I'm ecstatic to have received this info from you.
-I wasn't expecting to ever get any info on this issue.  Most people
-don't seem to know about it, or aren't willing to discuss it, maybe.
+2. What about the included USB TV - any hope for that working in X?
 
-Jeff Walther
+3. What is the status of dual monitors in XFree86? Last I remember,
+it could be made to work but only with fbdev - that running dual
+accelerated monitors was not really working.
 
+
+Stefan Jeglinski
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
