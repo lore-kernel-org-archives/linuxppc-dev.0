@@ -1,162 +1,169 @@
-Message-Id: <199909171347.PAA25269@denx.local.net>
-To: Magnus Damm <damm@kieraypc01.p.y.ki.era.ericsson.se>
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Cleanup thought. 
+Message-Id: <199909171404.QAA25414@denx.local.net>
+To: Dan Malek <dmalek@jlc.net>
+cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Problems with initrd on linux-2.3.18
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 17 Sep 1999 11:01:56 +0200."
-             <37E20384.BD066E8C@switchboard.ericsson.se>
-Date: Fri, 17 Sep 1999 15:47:14 +0200
+Date: Fri, 17 Sep 1999 16:04:10 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <37E20384.BD066E8C@switchboard.ericsson.se> Magnus Damm
-wrote:
-> 
-> I would like to take up the question about configuration again.
+Hi,
 
-Thanks!
+I'm trying to get linux-2.3.18 running on  a  MPC850  system;  should
+this be working, or should I better stick with embedded-2.2.5?
 
-> I believe that the situation is the same for a lot of people 
-> out here: Get Linux working on some kind of new 8xx hardware.
-> 
-> Today we need to modify and add #ifdefs to different files.
+The main problem I'm strugging with is loading the initrd.
 
-Right, and it is always  pretty  cumbersome,  because  the  necessary
-consfiguration is distributed over a lot of unrelated files.
+My modified boot loader works, the kernel starts and finds all  para-
+meters and memory, it finds the compressed initrd image, uncompresses
+it,  but  then  it  does  not  run /linuxrc, nor can it find /init or
+/bin/sh, so it crashes with `Kernel panic: No init found'.
 
-> I like the idea of some kind of central board specific file.
+The  problem  seems  to  be  in  drivers/block/rd.c:  the  gunzip  in
+crd_load()  returns  ok,  so  crd_load() return 0 to rd_load_image(),
+where we `goto successful_load'. There infile.f_op->release points to
+initrd_release(), which is  called:  it  releases  the  initrd,  sets
+initrd_start=0,  and  this  causes  init/main.c  to think there is no
+initrd.
 
-Or (maybe better) a group of "BSP" (Board Support Package) files.
-
-> I suggested the following code to Dan Malek a while ago, and he didn't 
-> like the idea with a lot of inline code in one .h file, right Dan? 
-> 
-> Anyone else out there with another idea how to solve this problem?
-
-To be honest: I don't like this code much either.
-
-Ok, let's talk about the Motorola MPC8xx family only  (first  because
-this is the one I know best, second because that seems to be the most
-popular);  maybe someone with better knowledge of other architectures
-can help generalizing some ideas:
-
-Let's assume we follow the way some commercial RTOS vendors have gone
-and create `BSP's for the different  Linux  configurations:  The  BSP
-name would be one option to select in the `make config' process.
-
-* Boot loader:
-
-  The current version of  arch/ppc/mbxboot/head.S  is  aready  pretty
-  hard  to  read,  and I found it pretty difficult to add two or more
-  new boards. It was simpler for me to use it as a starting point  to
-  write my own specialized version.
-
-  I   suggest   to   rename   `head.S'   into    `head_mbx.S',    use
-  `head_<BSP-Name>.S'  for  all  systems that are not very similar to
-  the ones already supported by `head_mbx.S'. The Makefile would then
-  select the right version.
-
-* Hardware initialization: there are probably two parts for this: one
-  part during very early system initalization,  before  the  MMU  has
-  been turned on, and another one, when the MMU is on.
-
-  Things that would  be  done  in  the  first  group:  disabling  the
-  watchdog, initializing other peripherals on the board (for instance
-  any slave 68360's :-), ...
-
-  Things  for  the  second  part  of  initialization:  DEC/TB/RTC/PIT
-  initialization,  port configuration, mapping of BSP specific memory
-  regions (FLASH, SRAM, ...), ...
-
-* Device drivers: we should have a clean way to  configure  how  many
-  serial  ports  we have, which port they are on, and what parameters
-  to use. Same for Ethernet and  other  drivers.  The  real  code  to
-  enable  or  disable  ports  should  be  separated  from the generic
-  source, since this is different from BSP to BSP: here  you  have  a
-  Board Control Register, there it's just a special port bin, etc.
-
-  For instance, I thing there could be functions used like this:
-
-  bsp_eth_init (DEV_SCC2, CPM_CLK1, CPM_CLK3); /* port, Rx clock, Tx clock */
-  bsp_eanble_receiver (DEV_SMC1);
-  bsp_disable_transmit (DEV_SCC1);
-  etc.
-
-  Basicly this means introducing "logical device names" for the  CPM,
-  and  using  these as parameters for generalized functions. The code
-  of these functions would be a bit bigger, but a lot can be done  by
-  just  shifting  the  corresponding  bits  into the right positions,
-  using the "device" number as a shift offset.
-
-* General: wherever we identify parts of the code that depend on  the
-  hardware  configuration, we should move this code into a BSP layer.
-  Thus we would have generic code (that calls BSP functions), and BSP
-  code that needs to be adapted for new hardware.
-
-* Driver configuration: I don't like the idea  of  modifying  generic
-  source  files  just  to  add  or  remove  a  serial  port  from the
-  configuration. We could define some generic parameter structures to
-  be used by the drivers, that just need to be filled out.
-
-  Example 1 - serial port configuration:
-
-  	typedef struct tty_info_s {
-		int	device;
-		int	clock;
-		int	speed;
-		... more parameters if needed (for instance line mode
-		settings, erase character, ...)
-	} tty_info_t;
-
-  Then all that's needed to configure serial ports on SMC2  and  SCC1
-  would be:
-
-  tty_info_t tty_configuration[] = {
-  	{ DEV_SMC2, CPM_BRG2, B115200); },
-	{ DEV_SCC1, CPM_BRG1, B9600);	},
-  };
-
-  Example 2: same for Ethernet; here we would problably configure the
-  device, the Rx and Tx clock sources, and maybe the number  of  BD's
-  used for this port:
-
-  eth_info_t eth_configuration[] = {
-  	{ DEV_SCC2, CPM_CLK1, CPM_CLK3, 32, 32 },
-  };
-
-
-  I guess you  got  what  I  mean:  just  extract  the  configuration
-  information  from  the generic source files and create a set of BSP
-  specific configuration files.
-  
-  Two more ideas:
-  
-  If needed, these config structs could contain pointers  to  special
-  functions   initialize,   enable,   disable,   and  shut  down  the
-  corresponding ports (in case it's too difficult to come up  with  a
-  generic port pin initializaton).
-
-  I have a board in mind with one MPC860 and 3 additional MC68360 (in
-  slave mode to add more I/O channels).  This  needs  some  generali-
-  zation for the header files, but I have done this befor for another
-  RTOS  and maybe I would like to do this for Linux. too. And I guess
-  it won't take very long before we have the first boards  with  more
-  than  one  82xx.  So maybe we could/should add another parameter to
-  these initializatin struct specifying which CPU this port is on?
+Any ideas what's going on here?
 
 
 
-Ok, this was just a rough  draft  without  much  thinking  about  the
-details - any comments?
+Another, less important question: this  system  has  the  console  on
+SMC2;  there seem to be some bugs in the relevant code for a 850: the
+following patch works for me - any comments?
+
+--- uart.c.ORIG	Tue Sep 14 19:23:43 1999
++++ uart.c	Thu Sep 16 22:24:50 1999
+@@ -47,7 +47,11 @@
+ /* this defines the index into rs_table for the port to use
+ */
+ #ifndef CONFIG_SERIAL_CONSOLE_PORT
++# ifdef CONFIG_TQM850L
++#define CONFIG_SERIAL_CONSOLE_PORT	1	/* TQM850L uses SMC2 */
++# else
+ #define CONFIG_SERIAL_CONSOLE_PORT	0
++# endif
+ #endif
+ #endif
+ 
+@@ -91,7 +95,7 @@
+  * want the SMC to work as a uart :-)..
+  * The "type" field is currently set to 0, for PORT_UNKNOWN.  It is
+  * not currently used.  I should probably use it to indicate the port
+- * type of CMS or SCC.
++ * type of SMC or SCC.
+  * The SMCs do not support any modem control signals.
+  */
+ #define smc_scc_num	hub6
+@@ -2360,13 +2364,24 @@
+ 	/* Configure SMCs Tx/Rx instead of port B parallel I/O.
+ 	*/
+ #if USE_SMC2
+-	cp->cp_pbpar |= 0x00000cc0;
++# ifdef	CONFIG_MPC850
++	/* This will enable SMC1 and SMC2 Tx/Rx
++	*/
++	immap->im_ioport.iop_papar |=  0x00C0;
++	immap->im_ioport.iop_padir &= ~0x00C0;
++	immap->im_ioport.iop_paodr &= ~0x00C0;
++	cp->cp_pbpar |=  0x000000c0;
++	cp->cp_pbdir &= ~0x000000c0;
++	cp->cp_pbodr &= ~0x000000c0;
++# else
++	cp->cp_pbpar |=  0x00000cc0;
+ 	cp->cp_pbdir &= ~0x00000cc0;
+ 	cp->cp_pbodr &= ~0x00000cc0;
++# endif
+ #else
+ 	/* This will only enable SMC1 if you want SMC2 for something else.
+ 	*/
+-	cp->cp_pbpar |= 0x000000c0;
++	cp->cp_pbpar |=  0x000000c0;
+ 	cp->cp_pbdir &= ~0x000000c0;
+ 	cp->cp_pbodr &= ~0x000000c0;
+ #endif
+@@ -2374,13 +2389,13 @@
+ 	/* Configure SCC2 and SCC3 instead of port A parallel I/O.
+ 	 */
+ #if defined(CONFIG_MPC860) || defined(CONFIG_MPC860T)
+-#ifndef CONFIG_MBX
++# ifndef CONFIG_MBX
+ 	/* The "standard" configuration through the 860.
+ 	*/
+ 	immap->im_ioport.iop_papar |= 0x003c;
+ 	immap->im_ioport.iop_padir &= ~0x003c;
+ 	immap->im_ioport.iop_paodr &= ~0x003c;
+-#else
++# else
+ 	/* On the MBX, SCC3 is through Port D.
+ 	*/
+ 	immap->im_ioport.iop_papar |= 0x000c;	/* SCC2 on port A */
+@@ -2388,7 +2403,7 @@
+ 	immap->im_ioport.iop_paodr &= ~0x000c;
+ 
+ 	immap->im_ioport.iop_pdpar |= 0x0030;	/* SCC3 on port D */
+-#endif
++# endif	/* CONFIG_MBX */
+ 
+ 	/* Since we don't yet do modem control, connect the port C pins
+ 	 * as general purpose I/O.  This will assert CTS and CD for the
+@@ -2402,7 +2417,7 @@
+ 	 */
+ 	cp->cp_sicr &= ~0x00ffff00;
+ 	cp->cp_sicr |= 0x001b1200;
+-#endif
++#endif	/* CONFIG_MPC860, CONFIG_MPC860T */
+ 
+ 	/* Wire BRG1 to SMC1 and BRG2 to SMC2.
+ 	*/
+@@ -2641,6 +2656,7 @@
+ 	volatile	cpm8xx_t	*cp;
+ 	volatile	smc_t		*sp;
+ 	volatile	smc_uart_t	*up;
++	volatile	immap_t		*immap;
+ 
+ #ifndef CONFIG_MBX
+ 	bd_t				*bd;
+@@ -2670,7 +2686,15 @@
+ 	 * from dual port ram, and a character buffer area from host mem.
+ 	 */
+ 	up = (smc_uart_t *)&cp->cp_dparam[ser->port];
++#ifdef CONFIG_TQM850L
++	asm( "mfspr %0,638": "=r"(immap) : );
++
++	immap->im_ioport.iop_papar |=  0x00c0;	/* Enable SMC2 */
++	immap->im_ioport.iop_padir &= ~0x00c0;
++	immap->im_ioport.iop_paodr &= ~0x00c0;
++#else
+ 	cp->cp_pbpar = 0x00c0;	/* Enable SMC1 instead of Port B I/O */
++#endif
+ 
+ 	/* Allocate space for two buffer descriptors in the DP ram.
+ 	*/
+@@ -2707,7 +2731,11 @@
+ 
+ 	/* Send the CPM an initialize command.
+ 	*/
++#ifdef CONFIG_TQM850L
++	cp->cp_cpcr = mk_cr_cmd(CPM_CR_CH_SMC2, CPM_CR_INIT_TRX) | CPM_CR_FLG;
++#else
+ 	cp->cp_cpcr = mk_cr_cmd(CPM_CR_CH_SMC1, CPM_CR_INIT_TRX) | CPM_CR_FLG;
++#endif
+ 	/*
+ 	 * delay for a bit - this is necessary on my board!
+ 	 *  -- Cort
 
 Wolfgang
 
 -- 
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-panic: can't find /
+The game of life is a game of boomerangs.  Our  thoughts,  deeds  and
+words return to us sooner or later with astounding accuracy.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
