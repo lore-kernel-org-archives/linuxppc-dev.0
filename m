@@ -1,56 +1,55 @@
-Message-ID: <3813AFA8.FF28094F@drgw.net>
-Date: Sun, 24 Oct 1999 20:17:28 -0500
-From: Troy Benjegerdes <hozer@drgw.net>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <bh40@calva.net>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: need Open PIC infos
-References: <19991016191421.027499@smtp.calvacom.fr>
+Message-ID: <19991025101727.A4528@maxime.u-strasbg.fr>
+Date: Mon, 25 Oct 1999 10:17:27 +0200
+From: Sven LUTHER <luther@maxime.u-strasbg.fr>
+To: Gabriel Paubert <paubert@iram.es>, Sean Chitwood <darkmane@w-link.net>
+Cc: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Modern PowerPC Assembly?
+Reply-To: luther@dpt-info.u-strasbg.fr
+References: <Pine.LNX.4.10.9910221357090.676-100000@darkmane.w-link.net> <Pine.HPX.4.10.9910230020330.21757-100000@gra-ux1.iram.es>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.HPX.4.10.9910230020330.21757-100000@gra-ux1.iram.es>; from Gabriel Paubert on Sat, Oct 23, 1999 at 12:34:21AM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
+On Sat, Oct 23, 1999 at 12:34:21AM +0200, Gabriel Paubert wrote:
 > 
-> Hi !
 > 
-> I'm working on support for new UMA machines (beginning with iBook). I
-> have already figured out a lot of things and am now coding a very
-> preliminary support (I'm not sure yet the PMU99 will work out of the box
-> or not, but it looks similar to the old PMU from an interface point of view).
 > 
-> However, the new Apple ASICs contains an Open PIC interrupt controller
-> (advertised as beeing a "chrp,open-pic" controller). After looking at the
-> various docs I have and a quick search on Altavista, I couldn't find any
-> relevant documentation on the chip.
-> There's already some OpenPIC support in the kernel, but I'll have to
-> change it a little bit since, for example, Apple hardware is not a good
-> place to search for a 8259 master ;)
-> I'd like some docs in order to have better understanding of the chip.
+> On Fri, 22 Oct 1999, Sean Chitwood wrote:
 > 
-> Anyone knows if such a doc exist ? Apparently, if the register map is not
-> completely bogus, the current code returns an OpenPIC versio 1.2, and the
-> timer freq is 0x80000000 (ouch !).
+> > 
+> > Can anyone recommend a book or website for PPC Assembly Programming? 
+> > 
+> 
+> It depends on what you exactly mean and your level. For smart tricks look
+> for the Compiler Writer's Guide somewhere on IBM's site. I've personnally
+> learnt PPC assembly from reading the architecture specification and got
+> some more useful tricks from the Compiler Writer's Guide.
+> 
+> <Shameless plug> 
+> 
+> For an example of a fairly large (but still comprehensible IMHO) assembly
+> program, you may have a look at my em86 program on ftp://vlab1.iram.es.
+> 
+> This is an emulator for x86 BIOSes which allows me to initialize my S3.
+> It's quite heavily commented and the emulation of flags has been designed
+> to make clever use of rlwimi and cntlzw instructions. OTOH the decoding
+> of addressing modes is quite awful spaghetti (but this was faster than 
+> indirect branches). Plus the mixture of little and big endian made it very
+> funny to write...
+> 
 
-You might try the programmers manual for the Motorola MTX series
-motherboard, which has an OpenPIC (and an 8259, unfortunately). I believe
-arch/ppc/kernel/openpic.c is a mostly complete implementation. Last I
-checked (about kernel 2.2.5 or so) the only major thing missing was some
-interprocessor interrupt support.
+Gabriel, ...
 
-If you haven't already, you might check out the PReP and CHRP specific
-kernel code, since both CHRP and some PReP machines use it.
+Do you think it would be possible to use your emulator to have a ppc
+based dosemu ?
 
-Hope this helps. 
+Not that i have time for it right now, but ...
 
-Troy-- Anxiously awaiting a Sawtooth G4 to start hacking on
+Friendly,
 
--- 
---------------------------------------------------------------------------
-| Troy Benjegerdes    |  troy@blacklablinux.com    |    hozer@drgw.net   |
-|    Unix is user friendly... You just have to be friendly to it first.  |
-| This message composed with 100% free software.    http://www.gnu.org   |
---------------------------------------------------------------------------
+Sven LUTHER
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
