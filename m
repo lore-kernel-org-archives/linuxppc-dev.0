@@ -1,27 +1,23 @@
-Message-ID: <3AB7FFF6.EB575041@mvista.com>
-Date: Tue, 20 Mar 2001 20:12:22 -0500
+Message-ID: <3AB80453.3BF880CD@mvista.com>
+Date: Tue, 20 Mar 2001 20:30:59 -0500
 From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: nunninger@web.de
+To: Ralph Blach <rblach@intrex.net>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: strange problem while booting
-References: <3AB7E349.8AC5A1B0@enst.fr>
+Subject: Re: es1371.o sound module on a IBM 405 walnut platform
+References: <3AB4E3BA.AF71AFE6@intrex.net> <3AB52248.D2411FF2@mvista.com> <3AB65B72.F77A0760@raleigh.ibm.com> <3AB65FCD.44826199@mvista.com> <3AB7FF89.3DC97EB2@intrex.net>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Stefan Nunninger wrote:
+Ralph Blach wrote:
 
->  loaded at:     00100000 00100000
+> This would allow one to allocate noncached buffers for usb and SCSI work.
 
-You have to load the bits into memory at or above 0x200000...NO, don't
-change anything in the Makefile, just load the resulting bits like
-this.  The zImage decompressor has to relocate itself to 0x100000.
-There
-isn't any bss space allocated between the end of the data and the start
-of the zImage/initrd in the downloaded image.  Your decompressor code is
-likely writing over the images.
+Ummmm....I added those at the request of the people doing the usb
+work.  If they aren't correct or sufficient, the usb wouldn't be
+working on the 4xx or 8xx processors.
 
 
 	-- Dan
