@@ -1,43 +1,68 @@
-Date: Wed, 7 Nov 2001 17:30:53 -0300
-From: Ricardo Scop <scop@vanet.com.br>
-Reply-To: Ricardo Scop <scop@vanet.com.br>
-Message-ID: <9729.011107@vanet.com.br>
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: lehder@lists.linuxppc.org, mercio@lists.linuxppc.org
-Subject: Linuxppc and MPC8255 routing performance
-Mime-Version: 1.0
+Return-Path: <bouncefilter+linuxppc-embedded=wd=denx.de@lists.linuxppc.org>
+Message-ID: <3BE9BD14.FD9D9DA8@midrivers.com>
+Date: Wed, 07 Nov 2001 16:00:36 -0700
+From: Mark Pilon <mpilon@midrivers.com>
+MIME-Version: 1.0
+To: list <linuxppc-embedded@lists.linuxppc.org>
+Subject: 405GP interrupts tip and looking for a little console help
+References: <3BE7E505.DC9DE6E8@laposte.net> <3BE82BF7.5010207@mvista.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Hi,
 
-I'm using Linux for PPC in a proprietary MPC8255-based hardware as an
-embedded router system. I've been trying both Denx's kernel (as of
-2001-07-23) and linuxppc_2_4 (last week's version), and everything
-goes smoothly (thanks to all contributing guys...).
+I'm bringing up the _devel kernel on a custom ppc405 board and
+wanted to offer a little tip which might save some of you some
+time.
 
-I have some performance numbers which I'd like to share and confront,
-if possible. Core clock is 132 MHZ, and bus clock 33 Mhz.
-Our hardware does not have a secondary (L2) cache (and I
-wonder if it should...):
+if your boot rom doesn't have much to do w/ interrupts (and mine
+doesn't) nothing will set the UIC polarity register so that the
+UIC responds correctly to on-chip interrupts.  I mention the boot
+rom as it seems linux depends upon this setup happening upstream
+of it.
 
-       - FTP transfer ratio through the router - 0.5 to 1.5 Mbytes/s;
-       - # of packets per second (best case): 2000
+In my case, failing to set all the UIC_PR bits for on-chip peripherals
+to 1 meant I kept getting unexpected interrupts.  the first
+occasion of this was initing the ethernet controller ...
 
-All tests were accomplished using two fast ethernet interfaces.
-Best performances where obtained with data cache disabled (yes, we
-had to hack linuxppc_2_4 for that...).
+in any case, write the correct value for your processor to
+DCRN_UICPR -- w/ a mask of 1s for each on-chip peripheral.
 
-Does that sound ok, compared to other 8260 systems? (8255 is almost
-identical to 8260)
+AND I'd appreciate a little help on getting my console to
+talk w/ me -- I boot, mount a remote target filesystem w/ nfs,
+and get console messages right up to:
 
-Any numbers or other feedbacks will be highly appreciated!
+NET4: Unix domain sockets 1.0/SMP for Linux
+NET4.0.
+Looking up port of RPC 100003/2 on
+192.168.200.4
+Looking up port of RPC 100005/1 on
+192.168.200.4
+VFS: Mounted root (nfs
+filesystem).
+Freeing unused kernel memory: 56k
+init
+echo
+*
+^^^^^^----- I typed this last line and it echo'd,
+I passed in a command init=/sbin/sash, but don't get its prompt,
 
-Best regards,
+I debugged it to the point of seeing the exec of /bin/sash,
+and would appreciate any views as to what I've forgotten here.
 
-Scop, Ricardo                          mailto:scop@vanet.com.br
+thanks,
 
+Mark
+
+--
+Mark Pilon
+
+Minolta-QMS
+P.O. Box 37
+Fallon, MT.  59326-0037
+
+1-406-853-0433
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
