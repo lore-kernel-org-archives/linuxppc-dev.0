@@ -1,42 +1,31 @@
-Message-ID: <81A66F72DCACD511B0600002A551BFCB4E9D5E@kuumex05.barco.com>
-From: "Callebaut, Benoit" <benoit.callebaut@barco.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <81A66F72DCACD511B0600002A551BFCB4E9D5F@kuumex05.barco.com>
+From: =?iso-8859-1?Q?=22Callebaut=2C_Beno=EEt=22?= <benoit.callebaut@barco.com>
 To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RT RE: kernel boot on mpc8245, internal UART
-Date: Fri, 7 Mar 2003 08:52:23 +0100 
+Subject: standalone boot problem with cramfs (kernel crash)
+Date: Fri, 7 Mar 2003 10:46:43 +0100 
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-2022-jp"
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-THe interrupt numbers are configured in the IVPRs( Interrupt Vector
-Proiority Registers).
-Those registers configure a particular interrupt ( sense,
-level,enable,vector,priority)
-The purpose of the vector is to map a physical register to a logical
-interrupt "channel". Keep those settings, there are good.
+Hello,
+I have a	 working system (MPC8245 based) booted up via NFS( kernel in
+flash,root filesystem on network use of ppcboot 2.0.0).
+ I try to make it boot from its flash.
+I enabled the cramfs, MTD(working), MTDBlock device
+disabled bootp,NFS.
+I changed the kernel  parameters root to /dev/mtdblock0
+I use no initrd and the devfs support is enabled.
 
-> I noticed. And few people use the internal ones :(
+The kernel crash in the rd_load function before the rd_load_image (I think
+since it is nerver executed).
+What can be the problem (bad root_dev type ? )
 
-This doesn'tmatter normally since these UART are fully 16C550 compliant, you
-can use and I think the code use the standard driver for the 16C550 UART.
-The only thing that changes is the address of the UART given in the table.
+Best regards,
 
-The whole description is in the documentation of Motorola Chapter 12
-(MPC8245SUM.pdf)
-
-You will heve to do some research yourself because the standard driver
-assume an external UART, so there is also the PCI bus stuff to access it.
-But normally
-this should not be a problem with the patch and some experience in driver
-writing.
-
-Try the Montavista patch. It is based on a 2.4.17 kernel and should work
-since the Hardhat distribution is merely a standard distribution with a
-custom toolchain.
-
-Best regards.
 ----------------------------------------------------------------------------
 ------
 Benoit Callebaut
