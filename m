@@ -1,49 +1,37 @@
-Message-ID: <3AF43F7E.E3F2C682@iiic.ethz.ch>
-Date: Sat, 05 May 2001 19:59:26 +0200
-From: Michel =?iso-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
-MIME-Version: 1.0
-To: "Jason E. Stewart" <jason@openinformatics.com>
-Cc: debian-powerpc@lists.debian.org, linuxppc-dev@lists.linuxppc.org
+Date: Sat, 5 May 2001 20:49:08 +0200 (CEST)
+From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+	Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+	linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org
 Subject: Re: Success! (was Re: External Monitor under Pismo)
-References: <20010404092143.EFE4C2F01B@apollo.valhalla.net>
-		<3ACB537B.99B851B9@netfall.com>
-		<87hf0433qs.fsf@amadeus.openinformatics.com>
-		<3ACB6167.3B2E0242@iiic.ethz.ch>
-		<878zlg31mw.fsf@amadeus.openinformatics.com>
-		<3ACB9611.C95D16A2@iiic.ethz.ch>
-		<87ae5w1ce3.fsf@amadeus.openinformatics.com>
-		<3ACB9EB3.2661FFCE@iiic.ethz.ch>
-		<87u242zz7y.fsf@amadeus.openinformatics.com>
-		<3ACCFFBB.58CC75D2@iiic.ethz.ch>
-		<87itjmf7lf.fsf_-_@amadeus.openinformatics.com>
-		<3AEDEF2D.4B823134@iiic.ethz.ch>
-		<87wv7x984o.fsf@amadeus.openinformatics.com>
-		<3AF1D91F.7030801@iiic.ethz.ch>
-		<87hez1pjm1.fsf@amadeus.openinformatics.com>
-		<3AF29AF6.9AC80F3E@iiic.ethz.ch>
-		<87hez1hw97.fsf@amadeus.openinformatics.com>
-		<3AF35975.30456155@iiic.ethz.ch> <87wv7wjfu4.fsf@amadeus.openinformatics.com>
-Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20010505010318.5183@mailhost.mipsys.com>
+Message-ID: <Pine.LNX.4.10.10105052046290.26350-100000@zirkon.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"Jason E. Stewart" wrote:
+> >Please do - I tried Ben's mirror utility on the Lombard but no success.
+> >And I still have no aty docs to look up the details in.
 >
-> "Michel Dänzer" <michdaen@iiic.ethz.ch> writes:
->
-> > It's using the 4.0.3 modules... did you give it the (correct) -modulepath
-> > option?
->
-> Damn. Sorry. Wrong log file.
->
-> This is the correct one.
+> Well, if you do that, it may be interesting to impement the same
+> ioctls I have in my aty128fb version (I'll send it to you later
+> if you don't want to rsync down my entire tree).
 
-Still mostly 4.0.3 modules. Try with all 4.0.99.3 .
+Please do; I'll have to re-sync eventually but I wouldn't mind a preview.
 
+> I beleive you can do something very similar by just toggling the
+> CRT & LCD enable bits on the first CRT. No need for CRTC 2 for
+> simple mirroring. "Smart" mirroring (with higher refresh rate) would
+> require use of CRTC2 however.
 
---
-Earthling Michel Dänzer (MrCooper)    \   Debian GNU/Linux (powerpc) developer
-CS student, Free Software enthusiast   \        XFree86 and DRI project member
+I tried to tweak the CRT and LCD regs on the first CRT before, based on
+what I could guess from the mirror source and the kernel headers. Needless
+to say - no success.
+
+	Michael
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
