@@ -1,69 +1,61 @@
-Message-ID: <3C4EEFAA.1108DF1B@midrivers.com>
-Date: Wed, 23 Jan 2002 10:15:22 -0700
-From: Mark Pilon <mpilon@midrivers.com>
+Message-ID: <3C4F0441.8070905@bluewin.ch>
+Date: Wed, 23 Jan 2002 19:43:13 +0100
+From: Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch>
 MIME-Version: 1.0
-To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: gdb / gdbserver part 2
+To: jdweyer@rockwellcollins.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: /dev/vme Permissions for users other than root...
+References: <OFEA27A9BB.3CE5E820-ON86256B49.007E0567@collins.rockwell.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I've made some progress but have hit a strange snag and would
-appreciate any context / suggestions you might have.
+Hi JoAnna,
 
-I'm able to run gdbserver on the target,
-connect to it w/ target remote ...
-list a small test program being debugged,
-set multiple breakpoints,
-and (c)ontinue -- the first breakpoint is hit.
+I think the following code fragments in the ioctl function of the VME driver
+simply prevent normal users from doing "bad" things:
 
-but when I step or next or continue, subsequent breakpoints aren't
-hit.
+                /* Is this the right capability to use ? Everybody seems
+to use
+                 * CAPS_SYS_ADMIN as a default to replace suser().
+                 */
+                error = -EPERM;
+                if (!capable(CAP_SYS_ADMIN)) break;
 
-I've set debug remote 1 to see the packets being sent to gdbserver
-and find that trap instructions are being written to both breakpoint
-locations ('M' packets).
+Hope it helps,
 
-when that first breakpoint is hit then both locations are rewritten
-w/ their original contents, not just the first breakpoint (as I would
-expect)
+Wolfgang.
 
-when I continue, expecting to hit the next breakpoint, the 2'nd trap
-instruction isn't there and the program executes to completion.
-< nothing re-writes TRAP to the 2'nd breakpoint location when I
-  (c)ontinue>
 
-if I manually rewrite a trap to the second break location I get:
+jdweyer@rockwellcollins.com wrote:
 
-Child terminated with signal = 4
+>(disregard prior email; subject was not included)
+>
+>Greetings,
+>
+>We are using Linux version 2.2.12 with Gabriel Paubert's patches for the
+>Motorola MVME2600 platform.   I have
+>my application working opening /dev/vme and then doing ioctl calls to set
+>the attributes.  It works
+>fine only when I am root.  When another user tries to run the application,
+>the ioctl (not the open) fails.
+>I have changed the permissions of /dev/vme to rw for all (ugo) and have
+>even gone as far as
+>changing ownership and group to the user's instead of root, but to no
+>avail.  The permissions
+>of /dev/vme are crwxrwxrwx.  I realize the execute (x) permission is
+>ineffective, but I'm trying everything.
+>
+>Do you have any ideas of what to try?
+>
+>Thanks for any help you can provide,
+>
+>JoAnna Weyer
+>
+>
+>
+>
 
-Child terminated with signal = 0x4
-GDBserver exiting
-/tmp #
-
--- as though the kernel is left in the wrong state and not handling
-the trap as a debug exception.
-
-As I said, I am not wise in the ways of gdb so all high-level
-explanations appreciated.  I'm using a snapshot of the development
-kernel (2.4.14 ...) which is a bit old but this is the first I've
-tried debugging applications.  debugging the kernel w/ the abatron
-works fine.
-
-I'm running on a ppc405pm and have left trap.c alone.  I think.
-
-thanks,
-
-Mark
-
---
-Mark Pilon
-
-Minolta-QMS
-P.O. Box 37
-Fallon, MT.  59326-0037
-1-406-486-5539 (primary voice line)
-1-406-853-0433 (cell)
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
