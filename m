@@ -1,41 +1,38 @@
-In-Reply-To: <Pine.LNX.3.96.990118095104.18478A-100000@persephone.cs.nmt.edu>
-Date: Mon, 18 Jan 1999 20:26:00 +0100
+Message-ID: <19990118194738.18206.rocketmail@send204.yahoomail.com>
+Date: Mon, 18 Jan 1999 11:47:38 -0800 (PST)
+From: j k <j_kn@yahoo.com>
+Subject: ppp problem
 To: linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Choosing an Ethernet controller...
-Message-Id: <19990118202600.009236@mail.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I know this is a little bit out-of-topic, but I'm sure someone on this
-list can answer and I didn't really know how to actually ask this...
+May be a little out of date but wonder if any one found same problem
+in R5.
 
-For an embedded developement, I have to choose among 3 different PCI
-ethernet controllers. A DEC/Intel 21143 (Tulip), an AMD79C971 (PCNet32)
-or a SMC83C171 (Epic100).
+I erased my June/97 installation and made a clean install of R4-lite
+on a powercenter 150. Then I found the ppp doesn't work as well as
+before: the machine recieves a lot packets even nothing is being
+transfered (it happens on a random base). Using communicator4.05,
+which comes with the R4-lite, the machine got frozen very often. Is
+this a known problem? Anyway I can get into kernel debug mode to make
+a dump? Or if is there  still some way to kill the X-window? (not KDE
+but fvwm2. I disabled KDE)
 
-The processor will not be a PPC but a StrongARM. (we proposed a PPC, but
-the client wanted a StrongARM).
-All three seems to be supported by Linux, I will use a 2.0.x kernel at
-first, on a StrongARM, but we plan to move to 2.2 once it's stable enough.
-
-Are there any known problems with one of those chips ? Is someone aware
-of any specific problem with one of those beasts or it's linux driver ? 
-
-Which one would you choose ?
-
-Thanks !
+I am not on this mail list so please send email directly to me if you
+have any info.
 
 
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+Thanks a lot.
+
+Jun Kong
 
 
-
+_________________________________________________________
+DO YOU YAHOO!?
+Get your free @yahoo.com address at http://mail.yahoo.com
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
