@@ -1,73 +1,40 @@
-Date: Tue, 9 Mar 1999 17:33:20 +0100 (MET)
-From: David De Ridder <s970707@uia.ua.ac.be>
-Reply-To: David De Ridder <david.de.ridder@bitsmart.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: On the BOOTP ``root path'' option
-Message-ID: <Pine.SO4.4.05.9903091703410.10681-100000@hsins.uia.ac.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <199903091638.LAA14811@all-night-tool.mit.edu>
+To: Hollis R Blanchard <hollis+@andrew.cmu.edu>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: No-IDE kernel compile link errors 
+In-Reply-To: Your message of "Mon, 08 Mar 1999 23:12:18 EST."
+             <Pine.LNX.3.96L.990308225823.26298C-100000@unix48.andrew.cmu.edu>
+Date: Tue, 09 Mar 1999 11:38:44 EST
+From: "Charles E. Leiserson, Jr." <locutus@MIT.EDU>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-[A few days ago, there was some confusion on how the root path option
- provided by BOOTP was supposed to be interpreted by the BOOTP sequence
- of a kernel. I promised to do some research in the RFCs. This is the
- result.]
+-----BEGIN PGP SIGNED MESSAGE-----
 
-The main question was : should the BOOTP ``rp'' (root path) option be
-NFS-style, e.g. nfsserver:/export/path, or does the kernel have to
-expect /export/path, and contact its TFTP server as NFS server ?
 
-(Note : this discussion was unrelated to the ``nfsaddrs'' kernel boot
-        argument ; so we'll disregard it here. Only BOOTP, TFTP and
-        NFS are involved).
+> Awesome. Of course it can't find those symbols - I haven't compiled (and don't
+> want) any IDE stuff.
 
-1) RFC 1395, which defines the root path option, didn't prove very 
-   useful on defining its correct syntax. This is stated :
+I seem to recall having read something about the 2.2 kernels not compiling if 
+IDE isn't set.  I had the same problem, so I just compiled in IDE support, 
+even though I have no IDE devices or bus.
 
-   "A string to specify a pathname to mount as a root disk."
-   
-   Not much, heh ?
+Feel free to correct me if I'm wrong.
 
-2) RFC 1533, isn't very conclusive either :
 
-   "This option specifies the path-name that contains the client's root
-    disk.  The path is formatted as a character string consisting of
-    characters from the NVT ASCII character set."
+					- Ricky
 
-    BTW, ``NVT ASCII'' seems to be (Network Virtual Terminal) 7-bit ASCII. 
 
-3) RFC 2132 has the same info (or lack of) as RFC 1533.
+-----BEGIN PGP SIGNATURE-----
+Version: 2.6.2
 
-So, still searching for a conclusive answer. However, I also looked for
-a positive statement that root path should be resident on the TFTP
-server. This was stated in no RFC, at least not in the ones I scanned
-through. ==> Yes, it makes sense to use the TFTP as NFS server, since
-the syntax of Root Path seems to be undefined. But no, it isn't an
-obligation -- Root Path may be interpreted as you want (I think).
-
-My personal opinion : if a BOOTP client sees a normal path, it should
-contact its TFTP server as NFS server ; however, if it sees and NFS-style
-path, it should extract the NFS server from the path. (This would require
-an "intelligent" client - seems like the right job for Linux ! ;-)
-
-If anyone can shed some light on this whole syntax matter, please do.
-
-Remarks, suggestions, ... fire away !
-
-Regards,
-
-+-----------------------------------------------------------------+
-|   David 'Septimus' De Ridder   | "Never underestimate the       |  
-|                                |  power of the soul unleashed." |
-| <david.de.ridder@bitsmart.com> |   - 'Essence Flare', M:TG      |
-+-----------------------------------------------------------------+
-
---
-"Every dog has its day, and today's mine."
- Terry Borer after winning the Masters finals at the New York M:TG Pro Tour 
-
+iQCVAwUBNuVOk/o7QJfqAx6RAQHquQQAt4t0gsatGCnvVpwvLJQZh7a7Vj2rISNP
+I+pYrvhDN9SyIAr4rTZNnrObB9zM8JntGAxmq8fQQOULcymNJTE+33ll9kLvbJFg
+OdHIfQFgn5phshEPKoo1S5P16Ss76fzGTqhJIbF/NQk+jHJpjU9k8q21yBXJJ1Zs
+73wqg6a++To=
+=TBjn
+-----END PGP SIGNATURE-----
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
