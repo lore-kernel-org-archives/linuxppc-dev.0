@@ -1,20 +1,20 @@
-Return-Path: <shawnxjin@gmail.com>
-Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.194])
-	by ozlabs.org (Postfix) with ESMTP id CABFB67A8B
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 547C067A9D
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 Feb 2005 14:14:25 +1100 (EST)
-Received: by rproxy.gmail.com with SMTP id 1so5038rny
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 22 Feb 2005 19:14:24 -0800 (PST)
-Message-ID: <c3d0340b050222190712ee7dff@mail.gmail.com>
-Date: Tue, 22 Feb 2005 19:07:44 -0800
-From: Shawn Jin <shawnxjin@gmail.com>
-To: uboot <u-boot-users@lists.sourceforge.net>,
-	ppcembed <linuxppc-embedded@ozlabs.org>
+	Wed, 23 Feb 2005 15:22:40 +1100 (EST)
+Date: Tue, 22 Feb 2005 20:22:34 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Shawn Jin <shawnxjin@gmail.com>
+Message-ID: <20050223042234.GA31255@gate.ebshome.net>
+References: <c3d0340b050222190712ee7dff@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Subject: Ethernet doesn't work in linux for PPC440GP?
-Reply-To: Shawn Jin <shawnxjin@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <c3d0340b050222190712ee7dff@mail.gmail.com>
+Cc: ppcembed <linuxppc-embedded@ozlabs.org>
+Subject: Re: Ethernet doesn't work in linux for PPC440GP?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,49 +25,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Tue, Feb 22, 2005 at 07:07:44PM -0800, Shawn Jin wrote:
+> zmii0: input 0 in SMII mode
+> eth0: IBM emac, MAC 00:04:ac:e3:1b:bb
+> eth0: Found Generic MII PHY (0x08)
+> zmii0: input 1 in RMII mode
+> eth1: IBM emac, MAC FF:FF:FF:FF:FF:FF
+> eth1: Found Generic MII PHY (0x09)
 
-First please forgive me for the cross-list post. I do believe this
-topic is related to both lists.
+I already told you that this is wrong, why are you asking again? 
+Please, if you asking questions, spend some time reading answers 
+given to you, before asking again.
 
-I'm playing with UBoot and Linux 2.6.10 on IBM PPC440GP evaluation
-board (Ebony) and have some issue with ethernet. With Rom Monitor
-linux 2.6.10 was running successfully using default configuration for
-Ebony. Here the scree dump for ethernet dection.
+ZMII bridge cannot have inputs in different modes (SMII and RMII).
 
-emac: IBM EMAC Ethernet driver, version 2.0
-Maintained by Benjamin Herrenschmidt <benh@kernel.crashing.org>
-zmii0: input 0 in RMII mode
-eth0: IBM emac, MAC 00:04:ac:e3:1b:bb
-eth0: Found Generic MII PHY (0x08)
-zmii0: input 1 in RMII mode
-eth1: IBM emac, MAC 00:04:ac:e3:1b:bc
-eth1: Found Generic MII PHY (0x09)
+Ebony uses RMII, so SMII is obviously wrong. Most probably your 
+firmware doesn't set correct mode and autodetection in the EMAC driver 
+fails.
 
-However with Uboot, the emac driver cannot read MAC addresses from VPD
-correctly. The original 2.6.10 code didn't recognize uboot's bd_info.
-After some hack eth0 gets its MAC address from uboot's bd_info and
-seems initialized correctly. But somehow booting an NFS root fs
-failed. So I suspect it's due to the ethernet driver. BTW, the same
-image is used in the two
-
-emac: IBM EMAC Ethernet driver, version 2.0
-Maintained by Benjamin Herrenschmidt <benh@kernel.crashing.org>
-zmii0: input 0 in SMII mode
-eth0: IBM emac, MAC 00:04:ac:e3:1b:bb
-eth0: Found Generic MII PHY (0x08)
-zmii0: input 1 in RMII mode
-eth1: IBM emac, MAC FF:FF:FF:FF:FF:FF
-eth1: Found Generic MII PHY (0x09)
-
-I know there was discussion about what a linux ethernet driver should
-expect from boot loader. In fact the driver shouldn't expect anything
-from a boot loader. Wolfgang has the same opinion in his DULG. What I
-don't know is if this EMAC driver expects something configured by boot
-loader? It seems to me that Rom Monitor did configure something for
-ethernet that the EMAC driver expected.
-
-Anyone has the similar problem before?
-
-Thanks,
--Shawn.
+--
+Eugene.
