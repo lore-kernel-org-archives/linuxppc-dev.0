@@ -1,31 +1,31 @@
-Subject: 405GP cat /proc/interrupts
-To: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <OF8E67EA1A.B526D51D-ON85256AED.0064781F@raleigh.ibm.com>
-From: "John F Davis" <johndavi@us.ibm.com>
-Date: Mon, 22 Oct 2001 14:24:44 -0400
+Message-ID: <3BD4681C.C3FE8A8C@mvista.com>
+Date: Mon, 22 Oct 2001 14:40:28 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+To: John F Davis <johndavi@us.ibm.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 405GP cat /proc/interrupts
+References: <OF8E67EA1A.B526D51D-ON85256AED.0064781F@raleigh.ibm.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello
+John F Davis wrote:
 
-I am using linux kernel 2.4.2_hhl20 (pre 2.0 CDK) with a custom modified
-arch/ppc/kernel/ppc4xx_pic.c so that
-it uses level, positive interrupts.  Note, I have tweaked the mtdcr calls
-so it modifies UIC0_PR, TR, and CR to match
-our hardware.  With that said, why does cat /proc/interrupts say that I am
-using Edge Sensitive interrupts when I have
-modified the TR register to be Level sensitive?
+> ....  With that said, why does cat /proc/interrupts say that I am
+> using Edge Sensitive interrupts when I have
+> modified the TR register to be Level sensitive?
 
-I am asking this, because I have a problem where I am missing interrupts
-when they are generated quickly.  I am hoping that
-the /proc/interrupts mismatch is a clue that I have not completed the Edge
-to Level interrupt modification.  If you know of a file
-besides ppc4xx_pic.c which needs to be modified, please let me know.
+Because the information printed by /proc/interrupts doesn't come directly
+from the hardware registers, but rather (and irrelevant in this case) part
+of the irq descriptor structure.  You could set a bit in the irq descriptor
+to make the print out pretty, but it won't have any effect on the system.
+The proper solution is to set the the information in the irq descriptor,
+and have the controller initialization read this and program the hardware
+registers properly.  You just skipped to the last step.
 
-John
 
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
