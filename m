@@ -1,36 +1,45 @@
-Date: Fri, 16 May 2003 10:27:19 -0500 (CDT)
-From: Bret Indrelee <Bret.Indrelee@qlogic.com>
-Reply-To: Bret Indrelee <Bret.Indrelee@qlogic.com>
-To: Steven Rothweiler <Stevenr@raritan.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Best Linux/PPC compiler ?
-In-Reply-To: <159C486347C8D3119B1D005004A4694002069176@olive.raritan.com>
-Message-ID: <Pine.LNX.4.44.0305161024550.3545-100000@spider.ancor.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Fri, 16 May 2003 14:24:07 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: "David M?ller (ELSOFT AG)" <d.mueller@elsoft.ch>
+Cc: Tom Guilliams <tguilliams@sbs.com>,
+	Linux PPC Embedded List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: linuxppc_2_4_devel: 2.4.20 rc2 - where's pImage build?
+Message-ID: <20030516212406.GB15392@ip68-0-152-218.tc.ph.cox.net>
+References: <1052969438.14900.8.camel@aurora.rr.com> <20030515185953.GC11565@ip68-0-152-218.tc.ph.cox.net> <3EC49817.9080106@elsoft.ch>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3EC49817.9080106@elsoft.ch>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, 16 May 2003, Steven Rothweiler wrote:
-> What is the best Linux/PPC compiler?
+On Fri, May 16, 2003 at 09:49:43AM +0200, "David M?ller (ELSOFT AG)" wrote:
+> Hello
 >
-> Specifically, we're using MPC8270.  We are coming from Linux/x86
-> platform, where Intel has a nice compiler that blows the doors
-> off of gcc, performance-wise.  I'm wondering if anyone knows if
-> there have been any studies comparing various Linux/PPC compilers.
-[ snip ]
+> Tom Rini wrote:
+> > On Wed, May 14, 2003 at 08:30:38PM -0700, Tom Guilliams wrote:
+> >
+> >
+> >>Anyone know why the BOOT_TARGET define for "pImage" in arch/ppc/Makefile
+> >>was taken out?  Are we not going to support the build rule for
+> >>U-Boot/PPCBoot anymore other than building it manually (gzip vmlinux
+> >>then use "mkimage").
+> >
+> >
+> > Probably a bad merge.  Wasn't there a patch / request a while back to
+> > update things (or just add it for 2.5?  I forget) that never got back to
+> > me.  Anyhow, I'll try and put this back next week (finals week this
+> > week) and see if I can get it up to Marcelo, provided someone else can
+> > verify that it works right.
+> >
+>
+> This patch adds support for PPCBoot and U-Boot (PPCBoot's successor).
 
-I don't know if you can do the cross-compiles, but xlc for AIX is
-the best PPC compiler I know of. You might try looking at SPEC,
-see what compilers have been used for SPECmark for various PPC
-systems.
-
--Bret
+And I again repeat:
+http://www.geocrawler.com/archives/3/8358/2002/11/0/10241415/
 
 --
-Bret Indrelee                 QLogic Corporation
-Bret.Indrelee@qlogic.com      6321 Bury Drive, St 13, Eden Prairie, MN 55346
-
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
