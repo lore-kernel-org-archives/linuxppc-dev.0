@@ -1,39 +1,25 @@
-Date: Mon, 3 Nov 2003 22:30:11 +0100 (CET)
-From: Mich Lanners <mlan@cpu.lu>
-Reply-To: Mich Lanners <mlan@cpu.lu>
 Subject: Re: IRQS on 6 Slot Macs
-To: linuxppc-dev@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Message-Id: <E1AGmH5-0000CV-00@piglet.grunz.lu>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Bob Brose <bob@kunk.qbjnet.com>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <20031103141125.10229.qmail@kunk.qbjnet.com>
+References: <20031103141125.10229.qmail@kunk.qbjnet.com>
+Content-Type: text/plain
+Message-Id: <1067895546.692.26.camel@gaston>
+Mime-Version: 1.0
+Date: Tue, 04 Nov 2003 08:40:55 +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On   3 Nov, this message from Geert Uytterhoeven echoed through
-cyberspace:
->> > I don't know what's up with the DRM not liking your interrupt. I
->> > can answer for the sharing of USB, symbios and firewire interrupts:
->> > all 3 slots share one interrupt because of bad motherboard design
->> > :) Basicallly, what they did when designing that machine was to use
->> > a standard powersurge design with 3 slots and replace one of them
->> > with a PCI<->PCI bridge. Since they didn't "know" how to get more
->> > interrupt lines out of Grand Central, they just also stuffed all
->> > interrupt lines together for those 4 slots (I'm pretty sure GC do
->
-> Tsss... They could at least have `swizzled' the lines...
+> I suppose then that I should reorder the cards so that the ones generating
+> the most interrupts would be in the first 2 slots? It's pretty funny
+> having the possibility of the use of lots of irqs then ending up with
+> x86 style sharing. :(
 
-Sure, but it's indeed totally not understandable why they didn't use the
-other lines on GrandCentral, since the 9500/9600 design includes six PCI
-slots with each a dedicated IRQ line. Weird...
+Yup :(
 
-Michel
+Ben.
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
