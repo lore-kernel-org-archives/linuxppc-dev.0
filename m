@@ -1,67 +1,41 @@
-Message-ID: <20010308155428.6682.qmail@dag.newtech.fi>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: PCI confusion
-Mime-Version: 1.0
+Subject: Firewire/SBP-2 working
+From: Daniel Berlin <dberlin@redhat.com>
+Date: 08 Mar 2001 13:10:53 -0500
+Message-ID: <m2hf14t9le.fsf@dynamic-addr-83-177.resnet.rochester.edu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Date: Thu, 08 Mar 2001 17:54:28 +0200
-From: Dag Nygren <dag@newtech.fi>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+scsi_info /dev/sda
 
-just spent some hours going through all
-postings in the mailing list about PCI-setup,
-but now i am even more confused....
+SCSI_ID="0,0,0"
+MODEL="WDIGTL WDxxxA001RTL"
+FW_REV="52.1"
 
-The setup is:
+df
+Filesystem           1k-blocks      Used Available Use% Mounted on
+/dev/hda12             4810912   3627940   1036308  78% /
+/dev/hda10               10235       333      9902   3% /mac/boot
+/dev/build_space2/lvol1
+                      43953472    450760  43502712   1% /buildspace2
 
-Nonsupported (sofar) VME board with
-a PreP address map and MPC107.
-
-I have the board booting but the PCI-drivers
-are all working through the I/O space and cannot see
-the memoryspace of the PCI devices.
-
-The questions I have are:
-
-1. The I/O BAT:s are setup as follows:
-BAT 0: 0x10000000@0x80000000 to virtual 0x80000000
-BAT 1: 0x10000000@0xc0000000 to virtual 0xe0000000
-ioremap_base = 0xe0000000
-Are these OK ?
-
-2. What is the right value for hose->pci_mem_offset ?
-    The physical 0xc0000000 or the address the processor sees
-    0xe0000000.
-
-3. the driver I am using for testing (for the Tundra Universe) uses
-  the following construction:
-  baseaddr = ioremap(pci_resource_start(uni_pci_dev,0),
-		pci_resource_len (uni_pci_dev, 0));
-  Then request_mem_region() for the same resources.
-   Then pci_enable_device()
-   Then pci_set_master()
-   After this a access: temp = readl(baseaddr) will generate
-   an Oops with illegal access....
-  What am I doing wrong ?
-
-My kernel is a stock 2.4.2 from ftp.kernel.org.
-
-Many thanks for reading this
-BRGDS
+(For those who can't tell, /dev/sda==/dev/build_space2/lvol1 is a 45 gig firewire drive
+attached to my powerbook pismo).
 
 
+Due to various stupidity (some of the firewire drive bridges,
+including this one, have a 128k max transfer size limitation, and do
+the wrong thing when presented with larger transfers), i'm only
+getting 7 meg a second on the drive right now.
+It'll improve.
 
 
+But, look at the linux1394-devel list for all of my patches to
+ohci1394, and the SBP-2 patches you'll need.
 
---
-Dag Nygren                               email: dag@newtech.fi
-Oy NewTech Ab                            phone: +358 9 8024910
-Trasktorpet 3                              fax: +358 9 8024916
-02360 ESBO                                 GSM: 0400-426312
-FINLAND
-
+--Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
