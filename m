@@ -1,20 +1,17 @@
-Return-Path: <Gerald.VanBaren@smiths-aerospace.com>
-Received: from smtp2.smiths.com (smtp2.smiths.com [192.208.34.51])
-	by ozlabs.org (Postfix) with ESMTP id 8E87D2BDA1
+Return-Path: <annamaya@yahoo.com>
+Received: from web53808.mail.yahoo.com (web53808.mail.yahoo.com
+	[206.190.36.203]) by ozlabs.org (Postfix) with SMTP id 63B282BDA1
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 13 Oct 2004 22:53:49 +1000 (EST)
-Received: from COSSMGIMS04.email.corp.tld (unknown [10.225.225.147])
-	by smtp2.smiths.com (Postfix) with ESMTP id 9A3421C01599
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 13 Oct 2004 06:24:15 -0600 (MDT)
+	Thu, 14 Oct 2004 00:49:13 +1000 (EST)
+Message-ID: <20041013144909.388.qmail@web53808.mail.yahoo.com>
+Date: Wed, 13 Oct 2004 07:49:09 -0700 (PDT)
+From: annamaya <annamaya@yahoo.com>
+To: Dan Malek <dan@embeddededge.com>
+In-Reply-To: <61D85700-1C95-11D9-91B5-003065F9B7DC@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Wed, 13 Oct 2004 06:24:12 -0600
-Message-ID: <065ACD8E84315E4394C835E398C8D5EB864FBD@COSSMGMBX02.email.corp.tld>
-From: "VanBaren, Gerald (AGRE)" <Gerald.VanBaren@smiths-aerospace.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: RE: Embedded linux port for PowerPC ?
+Content-Type: text/plain; charset=us-ascii
+Cc: Sam Song <samlinuxppc@yahoo.com.cn>, linuxppc-embedded@ozlabs.org
+Subject: Re: Booting Linux using a PlanetCore BootLoader 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,70 +22,75 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Thanks for the reply Dan. Just before I got your mail,
+I was going through the fcc ethernet driver from
+mvista and I noticed the BCSR hack code to make the
+PHY work on an EP8260. I went back to the manual for
+the EP8280 and realized that they did something
+similar on this board, just as you guessed. I will add
+code to manage the PHY using these bits later.
 
->
->	From: linuxppc-embedded-bounces@ozlabs.org
-[mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of Mukund JB.
-> 	Sent: Wednesday, October 13, 2004 6:45 AM
-> 	To: linuxppc-embedded@ozlabs.org
-> 	Subject: Embedded linux port for PowerPC ?
-> =0D
->	Hello all,
->
->	This is my first visit to the mailists.=0D
->	I have assigned to port Embedded Linux to PowerPC Board.
->	=0D
->	Where do I get the Embedded Linux kernel & Source code for
-PowerPC?
->	Can you provide me with some documents related to porting
-Embedded Linux to PowerPC Board?
->	How do I know the available Embedded Linux ports for PowerPC?
->
->	Regards,
->
->	Mukund jampala
+Meanwhile, this board also has BCSR bits to control
+enabling and powering on the PHY. I was able to add a
+bit of code to  my ethernet driver and I can now see
+the blinking lights on the ethernet port, similar to
+the ones I see during tftp transfers from the boot
+monitors. Interestingly, the boot monitor turns off
+all the PHYs while the ethernet port is not being
+access from the boot monitor. I fail to understand the
+reasoning.
 
-See
-  <http://denx.de/e/index1.php?head=3Dsolution-se-head>
+Anyways, I am able to enable and power the PHY device
+and it looks like the port is seeing ethernet
+activity. But my driver doesn't work and complains
+about a TX timeout. I am sure I am missing something.
+Can you suggest something that I could try?
 
-Download the Embedded Linux Development Kit (ELDK) from
-<http://www.denx.de>
-=0D
-http://denx.de/e/index1.php?head=3Ddocs-head&main=3Ddocs&subnav=
-=3Ddocs-subnav&
-logo=3Dlogo-se&mainnav=3Ddocsnav&bottom=3Dbottom-se
-This is the #1 easiest solution (in my book at least) to a cross
-development environment.
+Thank you.
+--- Dan Malek <dan@embeddededge.com> wrote:
 
-Read the documentation there DENX U-Boot and Linux Guide (DULG) -- while
-it says 8xx, it generally applies to all PowerPCs.
-  <http://www.denx.de/twiki/bin/view/DULG/Manual>
+> 
+> On Oct 12, 2004, at 5:02 PM, annamaya wrote:
+> 
+> > I am now trying to do an NFS mount of the root
+> file
+> > system. Looks like the EP8280 uses LXT971A PHY
+> device.
+> 
+> I have one of their first 8260 boards that I used to
+> do
+> the initial Linux port long ago.  At that time, they
+> had
+> some weird CPLD implementation of MDIO that I could
+> never get to work properly.  Not a bad idea, just
+> didn't
+> seem to be implemented properly.  I know they have
+> done a second revision of this board, and I suspect
+> the 8280 is just a glue into the same location
+> design.
+> 
+> With that board you should have received sufficient
+> information to determine what to do, although they
+> have always been quite secretive about releasing
+> enough information to successfully write software.
+> 
+> In the interim, just compile the driver without any
+> MDIO control, hack the call to fcc_restart() at the
+> end of init_fcc_startup() to just force half or full
+> duplex (0 or 1) based upon the switch you are using.
+> 
+> 
+> Good Luck.
+> 
+> 
+> 	-- Dan
+> 
+> 
 
-If you need a boot loader (quite likely), look at u-boot.  Download it
-and read the README file for instructions on how to port it to your
-hardware.  U-boot is also associated with Wolfgang Denks (denx.de).
-  <http://sourceforge.net/projects/u-boot>
 
-Good luck and read carefully.  There is a wealth of good information in
-those resources.
 
-gvb
-
-******************************************
-The following messages are brought to you by the Lawyers' League of
-IdioSpeak:
-
-******************************************
-The information contained in, or attached to, this e-mail, may contain=
- confidential information and is intended solely for the use of the=
- individual or entity to whom they are addressed and may be subject to=
- legal privilege.  If you have received this e-mail in error you should=
- notify the sender immediately by reply e-mail, delete the message from=
- your system and notify your system manager.  Please do not copy it for any=
- purpose, or disclose its contents to any other person.  The views or=
- opinions presented in this e-mail are solely those of the author and do=
- not necessarily represent those of the company.  The recipient should=
- check this e-mail and any attachments for the presence of viruses.  The=
- company accepts no liability for any damage caused, directly or=
- indirectly, by any virus transmitted in this email.
-******************************************
+		
+__________________________________
+Do you Yahoo!?
+Y! Messenger - Communicate in real time. Download now. 
+http://messenger.yahoo.com
