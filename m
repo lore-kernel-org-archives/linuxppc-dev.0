@@ -1,209 +1,57 @@
-From: jlquinn@us.ibm.com
-To: linuxppc-dev@lists.linuxppc.org
-Message-ID: <852568A2.007C5808.00@D51MTA03.pok.ibm.com>
-Date: Tue, 14 Mar 2000 17:38:14 -0500
-Subject: Patch for keyboard on Mac-clones for linuxppc
-Mime-Version: 1.0
-Content-type: multipart/mixed;
-	Boundary="0__=0BZysqfmfeZtrbDSq7xENymGEvrP20a4ZyBo80yWDIs1G65WAYFtjRWJ"
+Date: Tue, 14 Mar 2000 23:59:23 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+cc: Benjamin Herrenschmidt <bh40@calva.net>, linux-fbdev@vuser.vu.union.edu,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: [linux-fbdev] [PATCH 2.3.x] fbdev reversion
+In-Reply-To: <Pine.GSO.4.10.10003141104380.15255-100000@dandelion.sonytel.be>
+Message-ID: <Pine.HPX.4.10.10003141156530.16776-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---0__=0BZysqfmfeZtrbDSq7xENymGEvrP20a4ZyBo80yWDIs1G65WAYFtjRWJ
-Content-type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-Hi all.  I've been using for some time a patch to fix the behavior of the
-capslock key on Powercomputing keyboards.  It even allows capslock to be
-remapped to control with xmodmap.  The trick is to have a single piece of
-code that doesn't stomp on Apple keyboards.
-
-Based on conversations with Ben Herrenschmidt, this patch tests register 2
-of adb keyboards during bootup.  I don't have any apple keyboards to test
-with myself, so could some kind souls apply this patch and see if their
-capslock key behaves well?   The patch is against stock 2.2.14, but should
-probably appply to other kernels as well.
-
-In particular, the Apple keyboards that Ben has return 0xff in the second
-byte of the reply at runtime.  But I don't know about during boot - PCC
-keyboards return a different value during boot than during runtime.  So,
-please try starting with capslock pressed as well as with it unpressed.  If
-the capslock doesn't behave, can you send me the reg 2 data which should
-have been saved into the messages log file?
-
-Thanks,
-Jerry Quinn
-jlquinn@us.ibm.com
-
----------------------- Forwarded by Jerome L Quinn/Watson/IBM on 03/14/2000
-05:35 PM ---------------------------
-
-Jerry Quinn <jerome.lyle.quinn.adv91@sneezy.dartmouth.org> on 03/13/2000
-06:59:36 PM
-
-To:   Jerome L Quinn/Watson/IBM@IBMUS
-cc:
-Subject:  Re: Patch for keyboard on Mac-clones for linuxppc
 
 
+On Tue, 14 Mar 2000, Geert Uytterhoeven wrote:
 
->Date: Fri, 3 Mar 2000 00:28:42 -0500
->To: BenH <bh40@calva.net>
->From: Jerry Quinn <jerome.lyle.quinn.adv91@pop.dartmouth.org>
->Subject: Re: Patch for keyboard on Mac-clones for linuxppc
->Cc:
->Bcc:
->X-Attachments: :System/Apps backup:2:pcccaps.patch1.txt:
->
->Could you try out this patch against vanilla 2.2.14?  In particular, I'd
->like to see if it identifies Apple keyboards correctly as such.  I'm
->reading reg2 of the keyboard during initialization, when it's apparently
->safer.
->
->On my PCC keyboards, during boot, reg2 returns FFC3 and FFFB respectively.
->If Apple keyboards return FFFF during boot, then the rest of the code will
->do the right thing.
->
->Jerry
->
->jlquinn@us.ibm.com
->
->
+> > I can code those fixes, but I'm not sure what solution has most chances
+> > of beeing accepted (especially changing /poc/bus/pci semantics). The
+> > problem is that exporting an IO address alone (without the iobase) has
+> > really no meaning on arch that don't have a x86-like separate IO space at
+> > the CPU level.
 
-(See attached file: pcccaps.patch1.txt)
+Indeed, there is one and only one CPU address space on _all_ architectures
+except x86 (even HP's IA64 has does not have the silly I/O space). This
+makes /proc/ioports an heresy while /proc/iomem is reasonable. How do you
+handle I/O accesses in a machine with several bridges which have
+independant PCI I/O spaces which a) appear at discontiguous physical
+addresses b) map to the same or overlapping range of I/O addresses c)
+support drivers which access hardwired I/O addresses ?
 
+That's simple, there is no solution ;-)(especially if, god forbid, several
+buses have an ISA bridge) So you have to select your goals:
 
---0__=0BZysqfmfeZtrbDSq7xENymGEvrP20a4ZyBo80yWDIs1G65WAYFtjRWJ
-Content-type: application/octet-stream;
-	name="pcccaps.patch1.txt"
-Content-Disposition: attachment; filename="pcccaps.patch1.txt"
-Content-Description: Text - character set unknown
-Content-Transfer-Encoding: base64
+- support non-transparent bridges, which is what PPC bridges are,
+as "transparently" as possible, this will give support for non transparent
+bridges (DEC21554) used in clusters almost for free
 
-LS0tIG1hY19rZXliLmMub3JpZwlNb24gRmViIDI4IDIyOjMwOjI1IDIwMDANCisrKw0KbGludXgv
-ZHJpdmVycy9tYWNpbnRvc2gvbWFjX2tleWIuYwlGcmkgTWFyICAzIDAwOjA4OjQwIDIwMDANCkBA
-IC0xNiw3DQorMTYsNyBAQA0KICAqDQogICogLSBTdGFuZGFyZCAxIGJ1dHRvbiBtb3VzZQ0KICAq
-IC0gQWxsIHN0YW5kYXJkIEFwcGxlDQpFeHRlbmRlZCBwcm90b2NvbCAoaGFuZGxlciBJRCA0KQ0K
-LSAqIC0gbW91c2VtYW4gYW5kIHRyYWNrbWFuIG1pY2UgJg0KdHJhY2tiYWxscw0KKyAqIC0gbW91
-c2VtYW4gYW5kIHRyYWNrbWFuIG1pY2UgJiB0cmFja2JhbGxzIA0KICAqIC0gUG93ZXJCb29rDQpU
-cmFja3BhZCAoZGVmYXVsdCBzZXR1cDogZW5hYmxlIHRhcHBpbmcpDQogICogLSBNaWNyb1NwZWVk
-IG1vdXNlICYgdHJhY2tiYWxsDQoobmVlZHMgdGVzdGluZykNCiAgKiAtIENIIFByb2R1Y3RzIFRy
-YWNrYmFsbCBQcm8gKG5lZWRzIHRlc3RpbmcpDQpAQCAtMjI3LDExDQorMjI3LDEyIEBADQogc3Rh
-dGljIHZvaWQga2JkX3JlcGVhdCh1bnNpZ25lZCBsb25nKTsNCiBzdGF0aWMgc3RydWN0DQp0aW1l
-cl9saXN0IHJlcGVhdF90aW1lciA9IHsgTlVMTCwgTlVMTCwgMCwgMCwga2JkX3JlcGVhdCB9Ow0K
-IHN0YXRpYyBpbnQNCmxhc3Rfa2V5Y29kZTsNCitzdGF0aWMgaW50IGxhc3RfaWQ7DQogDQogc3Rh
-dGljIHZvaWQgbWFja2V5Yl9wcm9iZSh2b2lkKTsNCiANCg0Kc3RhdGljIHZvaWQga2V5Ym9hcmRf
-aW5wdXQodW5zaWduZWQgY2hhciAqLCBpbnQsIHN0cnVjdCBwdF9yZWdzICosDQppbnQpOw0KLXN0
-YXRpYyB2b2lkIGlucHV0X2tleWNvZGUoaW50LCBpbnQpOw0KK3N0YXRpYyB2b2lkIGlucHV0X2tl
-eWNvZGUoaW50LA0KaW50LCBpbnQpOw0KIHN0YXRpYyB2b2lkIGxlZHNfZG9uZShzdHJ1Y3QgYWRi
-X3JlcXVlc3QgKik7DQogc3RhdGljIHZvaWQNCm1hY19wdXRfcXVldWUoaW50KTsNCiANCkBAIC0y
-NjIsNiArMjYzLDEyIEBADQogc3RhdGljIHN0cnVjdCBhZGJfaWRzDQptb3VzZV9pZHM7DQogc3Rh
-dGljIHN0cnVjdCBhZGJfaWRzIGJ1dHRvbnNfaWRzOw0KIA0KKy8qIEtpbmQgb2Yga2V5Ym9hcmQN
-CmNhcHNsb2NrICovDQorI2RlZmluZSBBREJLQkRfQ0FQU19BUFBMRQkwCS8qIFN0YW5kYXJkIGFw
-cGxlIGxvY2tpbmcNCmNhcHNsb2NrICovDQorI2RlZmluZSBBREJLQkRfQ0FQU19QQ0MJCTEJLyog
-UG93ZXJjb21wdXRpbmcNCmtleWJvYXJkIGNhcHNsb2NrICovDQorDQorc3RhdGljIGludCBhZGJf
-a2JkY2Fwc19raW5kc1sxNl07DQorDQogLyogS2luZCBvZg0KbW91c2UgICovDQogI2RlZmluZSBB
-REJNT1VTRV9TVEFOREFSRF8xMDAJMAkvKiBTdGFuZGFyZCAxMDBjcGkNCm1vdXNlIChoYW5kbGVy
-IDEpICovDQogI2RlZmluZSBBREJNT1VTRV9TVEFOREFSRF8yMDAJMQkvKiBTdGFuZGFyZA0KMjAw
-Y3BpIG1vdXNlIChoYW5kbGVyIDIpICovDQpAQCAtMzA2LDcgKzMxMyw3IEBADQogDQogaW50DQpt
-YWNrYmRfdW5leHBlY3RlZF91cCh1bnNpZ25lZCBjaGFyIGtleWNvZGUpDQogew0KLQlyZXR1cm4g
-MHg4MDsNCisNCglyZXR1cm4gMHg4MDsNCiB9DQogDQogc3RhdGljIHZvaWQNCkBAIC0zMTYsMTcg
-KzMyMyw5MCBAQA0KIAlpZiAobmIgIT0gMw0KfHwgKGRhdGFbMF0gJiAzKSAhPSBLRVlCX0tFWVJF
-RykNCiAJCXJldHVybjsJCS8qIGlnbm9yZQ0KaXQgKi8NCiAJa2JkX3B0X3JlZ3MgPSByZWdzOw0K
-LQlpbnB1dF9rZXljb2RlKGRhdGFbMV0sIDApOw0KKw0KCWlucHV0X2tleWNvZGUoKGRhdGFbMF0+
-PjQpLCBkYXRhWzFdLCAwKTsNCiAJaWYgKCEoZGF0YVsyXSA9PQ0KMHhmZiB8fCAoZGF0YVsyXSA9
-PSAweDdmICYmIGRhdGFbMV0gPT0gMHg3ZikpKQ0KLQ0KCWlucHV0X2tleWNvZGUoZGF0YVsyXSwg
-MCk7DQorCQlpbnB1dF9rZXljb2RlKChkYXRhWzBdPj40KSwNCmRhdGFbMl0sIDApOw0KIH0NCiAN
-CiBzdGF0aWMgdm9pZA0KLWlucHV0X2tleWNvZGUoaW50IGtleWNvZGUsIGludA0KcmVwZWF0KQ0K
-K2lucHV0X2tleWNvZGUoaW50IGlkLCBpbnQga2V5Y29kZSwgaW50IHJlcGVhdCkNCiB7DQorCXN0
-YXRpYyBpbnQNCnBjY19jYXBzX3N0YXRlID0gMDsNCisNCiAJc3RydWN0IGtiZF9zdHJ1Y3QgKmti
-ZDsNCiAJaW50IHVwX2ZsYWc7DQogDQorDQorDQoJLyogS2x1ZGdlIHRvIHRyeSB0byBmaXggY2Fw
-c2xvY2sgYmVoYXZpb3IgZm9yIHBvd2VyY29tcHV0aW5nDQorDQprZXlib2FyZHMuICBPbiB0aGVz
-ZSwgMHhiOSBpcyByZXR1cm5lZCBvbiBhbHRlcm5hdGluZw0KKwkgICBjYXBzbG9jayBkb3duDQpl
-dmVudHMuICBjYXBzbG9jayB1cCByZXR1cm5zIDB4ODAgLSB0aGUgc2FtZQ0KKwkgICBhcyBBLiAg
-RnVuIGZ1bi4gICovDQorDQoJLyogVGhpcyBpcyBhIHN0YXRlIG1hY2hpbmUgdG8gdW50YW5nbGUg
-Y2Fwc2xvY2sgdXANCisJICAgYW5kICdhJw0KdXAgb24gcG93ZXJjb21wdXRpbmcga2V5Ym9hcmRz
-ICovDQorCWlmIChhZGJfa2JkY2Fwc19raW5kc1tpZF0gPT0NCkFEQktCRF9DQVBTX1BDQykgew0K
-KwkJc3dpdGNoIChrZXljb2RlKSB7DQorCQljYXNlDQoweDM5Og0KKwkJY2FzZSAweGI5Og0KKwkJ
-CXN3aXRjaCAocGNjX2NhcHNfc3RhdGUpIHsNCisNCgkJCWNhc2UgMDoNCisNCglwY2NfY2Fwc19z
-dGF0ZSA9IDI7DQorCQkJCWJyZWFrOw0KKw0KCQljYXNlIDE6DQorCQkJCXBjY19jYXBzX3N0YXRl
-ID0NCjM7DQorCQkJCWJyZWFrOw0KKwkJCWNhc2UgNDoNCisNCgkJCQlwY2NfY2Fwc19zdGF0ZSA9
-IDU7DQorDQoJYnJlYWs7DQorCQkJZGVmYXVsdDoNCisNCglicmVhazsNCisJCQl9DQorCQkJa2V5
-Y29kZSA9DQoweDM5OwkvKiBDaGFuZ2UgdG8gY2Fwc2xvY2sgZG93biAqLw0KKwkJCWJyZWFrOw0K
-Kw0KCWNhc2UgMHgwMDoNCisJCQlzd2l0Y2ggKHBjY19jYXBzX3N0YXRlKSB7DQorDQoJCWNhc2Ug
-MDoNCisJCQkJcGNjX2NhcHNfc3RhdGUgPQ0KMTsNCisJCQkJYnJlYWs7DQorCQkJY2FzZSAyOg0K
-Kw0KCQkJY2FzZSA0OgkvKiBXZSBndWVzc2VkIHJpZ2h0IGluIHJldHVybmluZyBBIHVwDQpwcmV2
-aW91c2x5ICovDQorCQkJCXBjY19jYXBzX3N0YXRlID0gMzsNCisNCgkJYnJlYWs7DQorCQkJZGVm
-YXVsdDoNCisNCgkJYnJlYWs7DQorCQkJfQ0KKw0KCWJyZWFrOw0KKw0KKwkJCS8qIFRoaXMgaXMg
-dGhlIGJyb2tlbiAweDgwIHJldHVybg0KY29kZSBmcm9tIGNhcHNsb2NrDQorCQkJICAgb3IgQS4g
-IFdlIGFsd2F5cyBhc3N1bWUgQQ0KcmVsZWFzZSBmaXJzdC4gKi8NCisJCWNhc2UgMHg4MDoNCisJ
-CQlzd2l0Y2gNCihwY2NfY2Fwc19zdGF0ZSkgew0KKwkJCWNhc2UgMDoNCisNCgljYXNlIDE6CQkv
-KiBBIHVwICovDQorDQoJcGNjX2NhcHNfc3RhdGUgPSAwOw0KKwkJCQlicmVhazsNCisNCgkJY2Fz
-ZSAyOgkJLyogQ2Fwc0xvY2sgdXAgKi8NCisNCglwY2NfY2Fwc19zdGF0ZSA9IDA7DQorCQkJCWtl
-eWNvZGUgPSAweGI5Ow0KKw0KCQkJCWJyZWFrOw0KKwkJCWNhc2UgMzoNCgkvKiBBc3N1bWUgQSB1
-cCAtIHdlIGRvbid0IHJlYWxseSBrbm93ICovDQorDQoJcGNjX2NhcHNfc3RhdGUgPSA0Ow0KKwkJ
-CQlrZXljb2RlID0gMHg4MDsNCisNCgkJCQlicmVhazsNCisJCQljYXNlIDQ6DQoJLyogTm93IGFz
-c3VtZSBDYXBzTG9jayB1cCAqLw0KKw0KCXBjY19jYXBzX3N0YXRlID0gMDsNCisJCQkJa2V5Y29k
-ZSA9IDB4Yjk7DQorDQoJCQkJYnJlYWs7DQorCQkJY2FzZSA1Og0KCS8qIFJldHVybiBhbiBBIHVw
-ICovDQorCQkJCXBjY19jYXBzX3N0YXRlID0NCjQ7DQorCQkJCWtleWNvZGUgPSAweDgwOw0KKw0K
-CWJyZWFrOw0KKwkJCX0NCisJCQlicmVhazsNCisNCgkJZGVmYXVsdDoNCisJCQlicmVhazsNCisJ
-CX0NCisNCgl9DQorCQkgIA0KICAJa2JkID0ga2JkX3RhYmxlICsgZmdfY29uc29sZTsNCiAJdXBf
-ZmxhZyA9DQooa2V5Y29kZSAmIDB4ODApOw0KIAlrZXljb2RlICY9IDB4N2Y7DQpAQCAtMzc3LDYg
-KzQ1Nyw3IEBADQogCWlmDQooa2JkLT5rYmRtb2RlICE9IFZDX1JBVykgew0KIAkJaWYgKCF1cF9m
-bGFnICYmDQohZG9udF9yZXBlYXRba2V5Y29kZV0pIHsNCiAJCQlsYXN0X2tleWNvZGUgPSBrZXlj
-b2RlOw0KKw0KCQkJbGFzdF9pZCA9IGlkOw0KDQoJcmVwZWF0X3RpbWVyLmV4cGlyZXMgPSBqaWZm
-aWVzICsgKHJlcGVhdD8gSFovMTU6IEhaLzIpOw0KDQoJCWFkZF90aW1lcigmcmVwZWF0X3RpbWVy
-KTsNCiAJCX0NCkBAIC0zODYsMTkNCis0NjcsMjggQEANCiAJCSAqIGdlbmVyYXRpbmcgYW4gdXAv
-ZG93biBldmVudCBmb3IgZWFjaCB0aW1lIGNhcHMNCg0KCQkgKiBpcyBwcmVzc2VkL3JlbGVhc2Vk
-LiBBbHNvLCBtYWtlcyBzdXJlIHRoYXQgdGhlDQoNCgkgKiBMRURhcmUgaGFuZGxlZC4gIGF0b25n
-QHVpdWMuZWR1DQorCQkgKg0KKwkJICogU2tpcCB0aGUNCmNhcHMgbG9jayBrbHVkZ2UgZm9yIHBv
-d2VyY29tcHV0aW5nIGtleWJvYXJkcy4gIFdlDQorCQkgKiBkZWFsDQp3aXRoIGl0IHdpdGggdGhl
-IHN0YXRlIG1hY2hpbmUgYXQgdGhlIGJlZ2lubmluZyBvZiB0aGUNCisJCSAqDQpmdW5jdGlvbi4g
-ICBqbHF1aW5uQHVzLmlibS5jb20NCiAJCSAqLw0KLQkJIHN3aXRjaA0KKGtleWNvZGUpIHsNCi0J
-CSAvKmNhc2UgMHhiOToqLw0KLQkJIGNhc2UgMHgzOToNCi0NCgkJaGFuZGxlX3NjYW5jb2RlKDB4
-MzksIDEpOw0KLQ0KCWhhbmRsZV9zY2FuY29kZSgweDM5LCAwKTsNCi0NCgltYXJrX2JoKEtFWUJP
-QVJEX0JIKTsNCi0JCSAJcmV0dXJuOw0KLQ0KY2FzZSAweDQ3Og0KLQkJIC8qY2FzZSAweGM3Oiov
-DQotDQoJbWFya19iaChLRVlCT0FSRF9CSCk7DQotCQkgCWJyZWFrOw0KLQ0KfQ0KKwkJDQorCQlz
-d2l0Y2ggKGtleWNvZGUpIHsNCisJICAgICAgICAvKmNhc2UNCjB4Yjk6Ki8NCisJCWNhc2UgMHgz
-OToNCisJCQlpZg0KKGFkYl9rYmRjYXBzX2tpbmRzW2lkXSAhPSBBREJLQkRfQ0FQU19QQ0MpIHsN
-CisNCgloYW5kbGVfc2NhbmNvZGUoMHgzOSwgMSk7DQorDQoJaGFuZGxlX3NjYW5jb2RlKDB4Mzks
-IDApOw0KKw0KCW1hcmtfYmgoS0VZQk9BUkRfQkgpOw0KKwkJCQlyZXR1cm47DQorDQoJCX0NCisJ
-CQltYXJrX2JoKEtFWUJPQVJEX0JIKTsNCisNCglicmVhazsNCisJCWNhc2UgMHg0NzoNCisJCS8q
-Y2FzZSAweGM3OiovDQorDQoJCQltYXJrX2JoKEtFWUJPQVJEX0JIKTsNCisJCSAgCWJyZWFrOw0K
-Kw0KCQl9DQogCX0NCiANCiAJaGFuZGxlX3NjYW5jb2RlKGtleWNvZGUsICF1cF9mbGFnKTsNCkBA
-DQotNDExLDcgKzUwMSw3IEBADQogDQogCXNhdmVfZmxhZ3MoZmxhZ3MpOw0KIAljbGkoKTsNCi0N
-CglpbnB1dF9rZXljb2RlKGxhc3Rfa2V5Y29kZSwgMSk7DQorCWlucHV0X2tleWNvZGUobGFzdF9p
-ZCwNCmxhc3Rfa2V5Y29kZSwgMSk7DQogCXJlc3RvcmVfZmxhZ3MoZmxhZ3MpOw0KIH0NCiANCkBA
-IC01MTYsNiArNjA2LDExIEBADQoNCgkJZGF0YVsyXSA9IChkYXRhWzJdICYgMHg3ZikgfCAoKGRh
-dGFbM10gJiAweDAxKSA8PCA3KTsNCg0KCWRhdGFbM10gPSAoZGF0YVszXSAmIDB4NzcpIHwgKChk
-YXRhWzNdICYgMHgwMikgPDwgNik7DQoNCglicmVhazsNCisJICAgIGNhc2UgQURCTU9VU0VfTVNf
-QTM6DQorCQlkYXRhWzFdID0NCihkYXRhWzFdICYgMHg3ZikgfCAoKGRhdGFbM10gJiAweDAxKSA8
-PCA3KTsNCisJCWRhdGFbMl0gPSAoZGF0YVsyXQ0KJiAweDdmKSB8ICgoZGF0YVszXSAmIDB4MDIp
-IDw8IDYpOw0KKwkJZGF0YVszXSA9ICgoZGF0YVszXSAmIDB4MDQpDQo8PCA1KTsNCisJCWJyZWFr
-Ow0KIAl9DQogDQogCWlmDQooYWRiX21vdXNlX2ludGVycnVwdF9ob29rKQ0KQEAgLTcyNyw3ICs4
-MjIsNyBAQA0KIHsNCiAJc3RydWN0IGFkYl9yZXF1ZXN0DQpyZXE7DQogCWludCBpOw0KLQ0KK2lu
-dCBqOw0KICNpZmRlZiBDT05GSUdfQURCTU9VU0UNCg0KCWFkYl9yZWdpc3RlcihBREJfTU9VU0Us
-IDAsICZtb3VzZV9pZHMsIG1vdXNlX2lucHV0KTsNCiAjZW5kaWYgLyoNCkNPTkZJR19BREJNT1VT
-RSAqLw0KQEAgLTc1NCw2ICs4NDksMjUgQEANCiAJCQlwcmludGsoIkFEQg0Ka2V5Ym9hcmQgYXQg
-JWQsIGhhbmRsZXIgc2V0IHRvIDNcbiIsIGlkKTsNCiAJCWVsc2UNCg0KCXByaW50aygiQURCIGtl
-eWJvYXJkIGF0ICVkLCBoYW5kbGVyIDFcbiIsIGlkKTsNCisNCisJCS8qDQpUcnkgdG8gZGV0ZWN0
-IGEgUG93ZXJjb21wdXRpbmcga2V5Ym9hcmQgKi8NCisJCWFkYl9yZXF1ZXN0KCZyZXEsDQpOVUxM
-LCBBREJSRVFfU1lOQyB8IEFEQlJFUV9SRVBMWSwgMSwNCisJCQkgICAgQURCX1JFQURSRUcoaWQs
-DQoyKSk7DQorCQlwcmludGsoIkFEQiBrZXlib2FyZCBhdCAlZCwgcmVnIDIgcmV0dXJucyAlZCBi
-eXRlczoiLCBpZCwNCnJlcS5yZXBseV9sZW4pOw0KKwkJZm9yKGo9MTsgajxyZXEucmVwbHlfbGVu
-OyBqKyspDQorDQoJICBwcmludGsoIiAleCIsIHJlcS5yZXBseVtqXSk7DQorCQlwcmludGsoIlxu
-Iik7DQorDQorDQoJCWlmIChyZXEucmVwbHlfbGVuID09IDMgJiYgcmVxLnJlcGx5WzFdID09IDB4
-ZmYgJiYgDQorDQoJICAgIHJlcS5yZXBseVsyXSAhPSAweGZmKSB7DQorDQoJYWRiX2tiZGNhcHNf
-a2luZHNbaWRdID0gQURCS0JEX0NBUFNfUENDOw0KKw0KCXByaW50aygiQURCIGtleWJvYXJkIGF0
-ICVkIGlzIFBvd2VyY29tcHV0aW5nXG4iLCBpZCk7DQorCQl9DQorDQoJCWVsc2Ugew0KKwkJCWFk
-Yl9rYmRjYXBzX2tpbmRzW2lkXSA9DQpBREJLQkRfQ0FQU19BUFBMRTsNCisJCQlwcmludGsoIkFE
-QiBrZXlib2FyZCBhdCAlZCBpcw0KQXBwbGVcbiIsIGlkKTsNCisJCX0NCisNCiAJfQ0KIA0KIAkv
-KiBUcnkgdG8gc3dpdGNoIGFsbCBtaWNlDQp0byBoYW5kbGVyIDQsIG9yIDIgZm9yIHRocmVlLWJ1
-dHRvbg0KQEAgLTEwMDIsNCArMTExNiw0IEBADQogIA0KDQoJYWRiX3JlcXVlc3QoJnJlcSwgTlVM
-TCwgQURCUkVRX1NZTkMsIDEsIEFEQl9GTFVTSChpZCkpOw0KICB9DQotIA0KKw0K
+- get rid of iobase since the number of instructions which load iobase
+into a register in an average kernel is far from negligible and this will
+save a few pages: in some sequences it's about 30% of the instructions
 
---0__=0BZysqfmfeZtrbDSq7xENymGEvrP20a4ZyBo80yWDIs1G65WAYFtjRWJ--
+- maintain maximum compatibility with existing code (don't need to modify
+most drivers),
+
+I think this is possible provided you accept to kill condition c) above,
+forcing to modify many ISA drivers. This probably makes it a 2.5 task...
+
+I might even give it a try because it would make inserting my VME driver
+and devices inside the resource tree feasible, while it's currently a
+mess.
+
+	Gabriel.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
