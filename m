@@ -1,47 +1,27 @@
-Message-ID: <20010214100858.15856.qmail@dag.newtech.fi>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Porting framework ?
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Wed, 14 Feb 2001 12:08:58 +0200
-From: Dag Nygren <dag@newtech.fi>
+Message-ID: <00933BFA237CD2119B3400409543582704A2B8@MEV01>
+From: Ian Abbott <abbotti@mev.co.uk>
+To: Embedded Linux list <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: WaitQueues.
+Date: Wed, 14 Feb 2001 10:56:53 -0000
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+On Tuesday, February 13, 2001 3:13 PM, Ralph Blach wrote:
 
-As I  just fairly successfully have ported the a Linux
-kernel (2.2.17) to a PPC board, I would like to make
-some suggestions:
+> Is there anyway to contionally initialize a wait queue. I
+> want to test a
+> wait queue to see if has been initialized not initialize it.  If not,
+> how do I serialize an access to a set location so that I can
+> atomically
+> test and increment that location?
 
-1. What about putting our "clever" heads together
-and creating a framework for porting Linux to
-a PPC board.
-  - Splitting up the  code for the Mac:s to make it work wo.
-   Open Firmware, or creating a stub's file for usage in
-   the embedded ports. Now it is fairly difficult to use ie.
-   the PCI-code in 2.4.x wo. the OF stuff, at least it needs
-   some duplicated work.
+Can't you just initialize it on driver startup or via a C initialiser
+(for a statically allocated wait queue) or when you create it (for a
+dynamically allocated wait queue)?
 
-2. Then documenting this fairly well.... Some kind of
-  PPC porting guide ?
-3. Making an effort in commenting the code we have already done.
-4. Doing a centralized administration for this and getting
-  it into Linus's main branch.
-
-Is this going on already or should we do something about
-it ?.
-
-BRGDS
-
-
---
-Dag Nygren                               email: dag@newtech.fi
-Oy NewTech Ab                            phone: +358 9 8024910
-Trasktorpet 3                              fax: +358 9 8024916
-02360 ESBO                                 GSM: 0400-426312
-FINLAND
-
+Look in <asm/atomic.h> for atomic operations.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
