@@ -1,67 +1,67 @@
-To: "rick.liu" <dovi@eyou.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Why my console output nothing 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "13 May 2003 16:05:15 +0800."
-             <20030513160515.79677.qmail@eyou.com>
-Date: Tue, 13 May 2003 15:46:07 +0200
-Message-Id: <20030513134612.89CB7C6092@atlas.denx.de>
+Message-ID: <20030514051548.90794.qmail@web11008.mail.yahoo.com>
+Date: Tue, 13 May 2003 22:15:48 -0700 (PDT)
+From: Xupei Liang <tliang@yahoo.com>
+Subject: IDE driver support in PPC440
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: tliang@yahoo.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Rick,
+Hi,
 
-in message <20030513160515.79677.qmail@eyou.com> you wrote:
->
->       I am using ELDK to port linux to a simple MPC860T board. I use SMC1 to
-> connect to the serial port and as the console.But I can't go any further
-> because when i powerup,the console doesnot show any message.List my steps
-> here:
->       1. edit ~/.kermrc as what was shown in <Denx ppcboot and linux
-> Guide(tqm8xxl)>.
->       2. modify several line of  'TQM860L.h'.
->       3. modify my UPM table and register OR1/BR1 to OR4/BR4(my sdram uses
-> cs4) in the file tqm8xx.c.
->       4. bash>make distclean.
->       5. bash>make TQM860L_config.
->       7. bash>make all
->       8. use a flash programmer to burn the u-boot.bin to my boot flash.
+I am working on a PPC440 board that supports
+a PCI-IDE device, and I am experiencing an
+interrupt handling problem.
 
+The PCI-IDE controller uses External Interrupt 7 and
+the controller interrupt line is wired to the
+processor directly. When the IDE device is
+being initialized, I can see that the interrupt
+goes off. But the code is stuck in the
+ISR and can not get out. Here are the screen
+debug messages:
 
-Only now it becomes clear that you are not talking about Linux at all.
+<Linux booting up>
+ide1: CMD649 Bus-Master DMA disabled (BIOS)
+disabling irq 50 defensively
+ppc405_uic_disable - irq 50 word 1 bit 0x12
+hda: SanDisk SDCFB-128, ATA DISK drive
+ppc405_uic_enable - irq 50 word 1 bit 0x12
+ppc405_uic_enable - irq 50 word 1 bit 0x12
+ide0 at 0x2000-0x2007,0x3002 on irq 50
+hda: 250880 sectors (128 MB) w/1KiB Cache,
+CHS=980/8/32
+Partition check:
+ hda:ppc405_pic_get_irq - irq 50 bit 0x2000
+ppc405_uic_disable_and_ack - irq 50 word 1 bit 0x12
+ppc405_pic_get_irq - irq 64 bit 0x0
+ppc405_pic_get_irq - irq 64 bit 0x0
+-------------
 
-Your posting is off topic in the linuxppc-embedded mailing list.
+I am able to retrieve a stack trace when the
+console is displaying the above messages. It is
+shown as follows.
 
-Chances for useful  replies  are  much  better  in  the  u-boot-users
-mailing list instead.
+-----------
+#8  0xc0004950 in do_IRQ (regs=0xc02b68a4) at
+irq.c:585
+#9  0xc00037cc in ret_from_fork () at entry.S:97
+#10 0xc0004730 in ppc_irq_dispatch_handler
+(regs=0xc02a522f, irq=3178)
+    at irq.c:477
+#11 0xc0004938 in do_IRQ (regs=0xc01dbf30) at
+irq.c:583
+------------
 
-Chances for useful replies would be even better  if  you  provided  a
-little more information. "modify several line of ..." is not really a
-precise description of what you did.
+Does anybody have an explaination on what is
+going on? Thank you for your help.
 
+Regards,
 
-Porting U-Boot to new hardware requires more  than  just  tweaking  a
-line  here  and there. It will require both an in-depth understanding
-of the hardware and U-Boot.
+Terry
 
-> It's my first time to build a embedded linux project,wish u can help me out.
-
-Did you read the README that comes with U-Boot?
-
-Finally: did you order your BDI2000 yet? You will  probably  need  it
-soon.
-
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-If all you have is a hammer, everything looks like a nail.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
