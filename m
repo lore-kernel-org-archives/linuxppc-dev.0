@@ -1,40 +1,26 @@
-Message-ID: <41EA756DBC9FD0118CFC0020AFDB5C5A188E10@tcint1ntsrv>
-From: Zehetbauer Thomas <TZ@link.topcall.co.at>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: RE: kernel ftp ?
-Date: Mon, 23 Jul 2001 11:44:02 +0200
-MIME-Version: 1.0
-Content-Type: text/plain
+Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
+Date: Mon, 23 Jul 2001 08:38:10 -0700
+From: Larry McVoy <lm@bitmover.com>
+To: Zehetbauer Thomas <TZ@link.topcall.co.at>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: kernel ftp ?
+Message-ID: <20010723083810.C7502@work.bitmover.com>
+References: <41EA756DBC9FD0118CFC0020AFDB5C5A188E10@tcint1ntsrv>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <41EA756DBC9FD0118CFC0020AFDB5C5A188E10@tcint1ntsrv>; from TZ@link.topcall.co.at on Mon, Jul 23, 2001 at 11:44:02AM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-BitKeeper is commercial software and therefore not very like to succeed
-in the path of kernel devlopment. I think we've had this discussion a
-thousand times on lkml. The reasons are numerous even if BitKeeper is
-licensed for free to open source developers.
+On Mon, Jul 23, 2001 at 11:44:02AM +0200, Zehetbauer Thomas wrote:
+> [BK flame]
 
-Firstly it is unlikely to be distributed with your favourite linux
-distribution. You have to find and download the software first. Of
-course I agree that this is a problem of every third party software.
-
-As it is unlikely that a package or at least a binary for your favourite
-linux distribution is available it is a maintenance nightmare to track
-down library problems and do release upgrades or uninstall it.
-
-To start working with the software you will need to learn another set of
-commands, options and parameters.
-
-If are working on some not to be public changes you will have to buy
-BitKeeper or use a second source code control system.
-
-And finally if I encounter a problem at 3am in the morning there is no
-sourcecode to track it down, I will have to wait until the next day to
-call and pay for support.
-
-These are the main reasons I would definitely prefer CVS/FTP/rsync
-access to the kernel tree!
-
-Tom
+Thomas, sorry you feel that way.  List, if you have any questions about
+our take on Thomas' statements, some of which we feel are inaccurate,
+contact me privately.
+--
+---
+Larry McVoy            	 lm at bitmover.com           http://www.bitmover.com/lm
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
