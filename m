@@ -1,45 +1,32 @@
-Message-ID: <387BEF87.25EC6A2A@charter.net>
-Date: Tue, 11 Jan 2000 21:05:43 -0600
-From: Dan Dickey <ddickey@charter.net>
-MIME-Version: 1.0
-To: Grant Erickson <grant@borg.umn.edu>
-CC: "linuxppc-embedded@lists.linuxppc.org"
- <linuxppc-embedded@lists.linuxppc.org>,
-        Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: My cookbook approach to building a cross compiler for the powerpc on
- an intel x86 Linux box
-References: <200001100522.XAA07318@congo.borg.umn.edu>
-Content-Type: text/plain; charset=us-ascii
+To: iweiny@pacbell.net
+Cc: linuxppc-dev@lists.linuxppc.org (linuxdev)
+Subject: Re: User level Macros for Endianess
+References: <200001120832.AAA10014@batcave2.localdomain>
+From: Jesper Skov <jskov@cygnus.co.uk>
+Date: 12 Jan 2000 10:11:03 +0100
+In-Reply-To: iweiny@pacbell.net's message of "Wed, 12 Jan 2000 00:32:11 -0800 (PST)"
+Message-ID: <othfgj64ew.fsf@thinktwice.zoftcorp.dk>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Grant Erickson wrote:
-> 
-> Also, consider the documentation at:
-> 
->      http://www.lcse.umn.edu/~grant/Linux/cross.html
-> 
-> Regards,
-> 
-> Grant Erickson
+>>>>> "iweiny" == iweiny  <iweiny@pacbell.net> writes:
 
-Grant,
-thanks for the pointer!
-This is fantastic!  I believe that it would have saved me at least
-an hour last Saturday had I known about your page.  Ah well.
+iweiny> What Macros should I be using to key off of for this?  I have
+iweiny> looked through /usr/include/endian.h and
+iweiny> /usr/include/bits/endian.h.  BYTE_ORDER (without the leading
+iweiny> underscores) is only defined if __USE_BSD is defined.  BOTH
+iweiny> __BIG_ENDIAN and __LITTLE_ENDIAN are defined as are BIG_ENDIAN
+iweiny> and LITTLE_ENDIAN.  I'm so confused?
 
-It looks like your page is a good reference for building
-a "straight" cross-compiler environment.  Building applications
-based on glibc that will actually run on the target machine with
-Linux as the OS.
-What I was trying to do to begin with was a bit simpler - just
-build a cross environment to allow code to run on one of the
-PPC boards that are available.  No OS yet, certainly not glibc.
+#include <asm/byteorder.h>
 
-What I imagined is having one environment for building the
-"simple" environment, and a later one for actually building
-the applications to run on Linux with glibc.
-	-Dan
+then use __le32_to_cpu and friends (see
+/usr/include/linux/byteorder/generic.h)
+
+I'm not sure if that's the Proper Way(TM) to do it from user land
+though.
+
+Jesper
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
