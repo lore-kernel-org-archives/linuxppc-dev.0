@@ -1,33 +1,28 @@
-From: Jes Sorensen <jes@wildopensource.com>
+Message-ID: <3CDA9296.1020907@embeddededge.com>
+Date: Thu, 09 May 2002 11:15:34 -0400
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15578.36338.672739.748599@trained-monkey.org>
-Date: Thu, 9 May 2002 10:55:46 -0400
-To: Anton Blanchard <anton@samba.org>
-Cc: Bill Fink <billfink@mindspring.com>,
-	LinuxPPC Developers <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: 2.4.19-pre8-ben0 acenic driver and 867 MHz G4 sound problems
-In-Reply-To: <20020509145005.GP10468@krispykreme>
-References: <20020509103702.528f1a7c.billfink@mindspring.com>
-	<20020509145005.GP10468@krispykreme>
+To: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+Cc: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>,
+	"'nanogui@linuxhacker.org'" <nanogui@linuxhacker.org>
+Subject: Re: IRQ's
+References: <D73A25AA6E54D511AD74009027B1110F2C829F@ORION>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> "Anton" == Anton Blanchard <anton@samba.org> writes:
+Steven Blakeslee wrote:
 
->> Unfortunately, I now have a new problem as the acenic driver is now
->> broken (using a NetGear GA620 NIC).  The previously working version
->> was from a 2.4.17-pre2-ben0 kernel.  I can send a diff between the
->> two sources if that would be of any help.
+ > ... Is there anything else
+> involved in assigning and using an IRQ?  I would appreciate any advice
+> anyone could give.
 
-Anton> Does this patch help?
+You need to configure the processor pin multiplex in the SIU depending
+upon the hardware design.
 
-Anton> Jes could you please send this patch on to Marcelo/Linus, they
-Anton> want your OK before taking it.
 
-Sure will do. Sorry about the delay, I went off to Europe for 10 days.
+	-- Dan
 
-Jes
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
