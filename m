@@ -1,40 +1,60 @@
-Message-ID: <3B9F8260.DA1C7EA@mvista.com>
-Date: Wed, 12 Sep 2001 11:42:24 -0400
-From: Dan Malek <dan@mvista.com>
+Message-ID: <3B9F880D.3CE65C1A@mvista.com>
+Date: Wed, 12 Sep 2001 09:06:37 -0700
+From: Armin Kuster <akuster@mvista.com>
 MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-embedded@lists.linuxppc.org,
-	Paul Mackerras <paulus@samba.org>
-Subject: Re: Some more 4xx exception fixes
-References: <20010912133344.S4823@zax>
+To: andrew may <acmay@acmay.homeip.net>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: another set of ppc405_enet changes
+References: <20010911202712.B8620@ecam.san.rr.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David Gibson wrote:
+andrew may wrote:
+>
+> I wanted to limit this patch to be just a rework of the static var's but I
+> ended up changing more things. I will attempt a summary of the changes.
+> I did not compile/fix the stuff ifdef'd out by default.
+>
+> I attached the output from some runs with nttcp before and after the changes.
+> It does not appear like there is any noticable change in performace from these
+> changes. "-u" is for UDP "-r" is Rx'd on the 405GP Tx'd by my x86 box, "-t" is
+> Tx'd by the 405GP Rx'd by the x86.
+> One thing to look into would be the diff between UDP tx packets to the
+> number rx'd on the other side. I don't know where the packets are being dropped
+> now.
+>
+> Config.ini changed to CONFIG_PPC405_ENET to be tristate instead of just bool.
+>
+> Change NUM_RX to 32 and NUM_TX to 8. Doesn't change performace noticablely.
+> Moved probe1 code into init function.
+>
+> kfree of private struct on module unload or failure to register netdevice.
+>
+> Used skb->len instead of tail-head in places.
+>
+> For both tx/rx eob int's clear reg first then loop through, instead of loop
+> clear, goto top of loop again.
+>
+> Moved tx stat counts into tx eob from hard_xmit. In tx_eob moved netif_wake
+> outside of loop.
+>
+> In rx_eob wait untill end of function to refill slots instead of after
+> each packet. Also did skb_put instead of += tail and len. Put in check
+> for dev_alloc_skb failure but still no recovery when OOM.
+>
 
-> The problem was that the DSI handler would not call do_page_fault()
-> for zone protection faults which were writes
 
-The real problem is the zone protection isn't set up properly
-on the kernel space.  The normal logic of the DSI will work
-correctly without testing specifically for a zone protection error
-if the zone is properly configured.  I noticed this error the other
-day while fixing the other MMU problems, but it wasn't detrimental
-to simply making the kernel run, so I'm fixing it today.
+Andrew;
 
-> The wart is that the ISI handler passed SRR1 (i.e. saved MSR) to
-> do_page_fault(), whereas the comment above do_page_fault() says that
-> do_page_fault() should be passed 0 for instruction faults on 4xx.
+This look very similar to a previous patch from last week. Provide a
+patch that represents addition work since then.  I have applied most of
+your previous patches.  Please be patient,  this does not happen over
+night.
 
-I guess....this is left over from a common exception handler I
-suppose.  The only bit position tested is ESR_DST, which for the
-last few years has always been reserved and zero in the MSR.  This
-is a larger problem on other processors, where we overload this
-code into the fault handler with bits that do mean something......
+regards,
 
-
-	-- Dan
+Armin
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
