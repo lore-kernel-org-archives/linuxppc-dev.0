@@ -1,85 +1,101 @@
-Message-ID: <001701c3099e$c1f900f0$370da8c0@aman>
-From: "Aman" <aman@mistralsoftware.com>
-To: "Mark Hatle" <fray@mvista.com>, "Martin Hicks" <mort@bork.org>
-Cc: "linuxppc embedded" <linuxppc-embedded@lists.linuxppc.org>
-References: <001301c3093d$ad9c69f0$370da8c0@aman> <20030423123015.GI553@bork.org> <3EA68E1E.7090201@mvista.com>
-Subject: Re: Serial Console Login Fails
-Date: Wed, 23 Apr 2003 19:16:35 +0530
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-Id: <sea6b726.000@mail.frequentis.com>
+Date: Wed, 23 Apr 2003 15:54:07 +0200
+From: "Gerhard TAEUBL" <Gerhard.TAEUBL@frequentis.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: PCMCIA Porting
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Martin
+Hi!
 
-I have the etc/securetty file with entry ttyS0. Actually I cant see the log
-messages since the linux boots up and gets struck in the login itself . Is
-there any other way to get the log messages. In my board , I don't have
-network support. So each I time I have to modify the ramdisk image and run
-it. I tried putting in /bin/login, however I getting the following error
-"/bin/login: error while loading shared libraries: cannot open shared object
-file
-: cannot load shared object file: No such file or directory"
-I think the related shared libraries is not there , how to find related
-shared libraries for any file.
+The last 2 weeks I worked full time on PCMCIA. We have a custom board with a MPC860T 10/100MBit Ethernet one PCMCIA slot 8MB flash and 32MB RAM.
 
-Thanking you in advance
-Regards
-Aman
+First at all: It works now fine. And I want to thank everyone who posted information to this issue (Magnus Damm, Matthew Locke, Wolfgang Denk and all others). But this the point for my mail:
+It was/is very difficult to get all needed information, to get it to work, so I want to list my steps there, that it is maybe easier to do this work again.
 
+O.K. here is a history of my work:
 
------ Original Message -----
-From: "Mark Hatle" <fray@mvista.com>
-To: "Martin Hicks" <mort@bork.org>
-Cc: "Aman" <aman@mistralsoftware.com>; "linuxppc embedded"
-<linuxppc-embedded@lists.linuxppc.org>
-Sent: Wednesday, April 23, 2003 6:29 PM
-Subject: Re: Serial Console Login Fails
+I linked the pcmcia stuff directly to the kernel (driver/pcmcia), because I think I understand it right Wolfgang, your PCMCIA onyl works if PPCBoot setup the PCMCIA port. But we don't use PPCBoot (shame about that .... ) and it seems to be to complicated/more work to add the whole stuff into our boot up sequence. I know that we loose the possibilty to mount root from a flash card, but we could live with that. Maybe Wolfgang has another hint for me ... :-)
 
+However, I start of course where everyone startet:
 
-> Martin Hicks wrote:
-> > On Wed, Apr 23, 2003 at 07:41:40AM +0530, Aman wrote:
-> >
-> >>"T0:23:respawn:/sbin/getty -L ttyS0 9600 vt100"
-> >>Bcos of which during the linux bootup , there wont be console message on
-the
-> >>screen , after some time , there is a login prompt
-> >><none>login:
-> >>If I try login then it waits for some seconds and then display the same
-i.e
-> >><none>login:
-> >
-> >
-> > You don't have "ttyS0" in /etc/securetty
->
-> Actually if that was the case you'd get a login denied message of some
-type..
-> If you don't have an /etc/securetty then it allows all logins.. (that is
-the
-> typical setup of systems we recommend for our customers development
-systems..)
->
-> The problem is that they are missing either the pam libraries or they are
-> missing /bin/login.  Turn on syslogd, set a console to go right to a shell
-and
-> look at the output of /var/log/messages.  This will tell you what is
-missing.
-> It is usually /bin/login is missing, secondary cause is PAM (or a module)
-is
-> missing, or that your /etc/passwd and/or /etc/group files are missing or
-corrupt.
->
-> (I wonder if we should create a FAQ for this list and post it once a
-month..
-> this question/answer come up at _LEAST_ once a week.. doesn't anyone read
-the
-> list archives?)
->
-> --Mark
->
->
+http://lists.linuxppc.org/linuxppc-embedded/200002/msg00093.html and http://lists.linuxppc.org/linuxppc-embedded/200005/msg00227.html.
+
+We portet also the mvista kernel 2.4.2 to the denx kernel 2.4.4
+Then I add the _IO_BASE etc to the board specific h file and ioremap it as desribed (arch/ppc/kernem/mm/init.c)
+
+-Fine-
+
+Next step was to add the m8xx_pcmcia.c file to drivers/pcmcia and adapt the Config.in and Makefile. Then I do the board specific stuff for power supply in m8xx_pcmcia.c. Till now everything works fine.
+
+But from this point on it becomes difficult, because from now on the interrupts comes up.
+
+The first issue was in cs.c in drivers/pcmcia in the function pcmcia_request_irq
+
+     /* Short cut: if there are no ISA interrupts, then it is PCI */
+#if 0
+    if (!s->cap.irq_mask) {
+	irq = s->cap.pci_irq;
+	ret = (irq) ? 0 : CS_IN_USE;
+        printk("Uhu: %08x %08x\n",s->cap.irq_mask,s->cap.pci_irq);
+#endif
+    if (s->cap.irq_mask == (1 << s->cap.pci_irq)) {
+	irq = s->cap.pci_irq;
+        printk("Uhu: %08x %08x\n",s->cap.irq_mask,s->cap.pci_irq);
+#ifdef CONFIG_ISA
+    } else if (s->irq.AssignedIRQ != 0) {
+	/* If the interrupt is already assigned, it must match */
+	irq = s->irq.AssignedIRQ;
+	if (req->IRQInfo1 & IRQ_INFO2_VALID) {
+	    u_int mask = req->IRQInfo2 & s->cap.irq_mask;
+	    ret = ((mask >> irq) & 1) ? 0 : CS_BAD_ARGS;
+	} else
+	    ret = ((req->IRQInfo1&IRQ_MASK) == irq) ? 0 : CS_BAD_ARGS;
+    } else {
+	ret = CS_IN_USE;
+	if (req->IRQInfo1 & IRQ_INFO2_VALID) {
+	    u_int try, mask = req->IRQInfo2 & s->cap.irq_mask;
+	    for (try = 0; try < 2; try++) {
+		for (irq = 0; irq < 32; irq++)
+		    if ((mask >> irq) & 1) {
+			ret = try_irq(req->Attributes, irq, try);
+			if (ret == 0) break;
+		    }
+		if (ret == 0) break;
+	    }
+	} else {
+	    irq = req->IRQInfo1 & IRQ_MASK;
+	    ret = try_irq(req->Attributes, irq, 1);
+	}
+#else /* Right now m8xx specific */
+    } else if (s->irq.AssignedIRQ != 0) {
+	/* If the interrupt is already assigned, it must match */
+	irq = s->irq.AssignedIRQ;
+	if (req->IRQInfo1 & IRQ_INFO2_VALID) {
+	    mask = req->IRQInfo2 & s->cap.irq_mask;
+	    ret = ((mask >> irq) & 1) ? 0 : CS_BAD_ARGS;
+	} else
+	    ret = ((req->IRQInfo1&IRQ_MASK) == irq) ? 0 : CS_BAD_ARGS;
+    } else {
+	    ret = 0;
+	    irq = 7; //SIU_LEVEL4
+#endif
+    }
+
+The #if 0 and #if CONFIG_ISA tree is the original one, and the #else /*Right now m8xx specific */ part was taken from sourceforge pcmcia-cs 3.2.4.
+
+The last point was the request_irq function. I don't change the defines in the h files, I change the function itself: arch/ppc/kernel/ppc8xx_pic.c. There (in request_irq) I call always the request_8xxirq function.
+
+>From now on it works. I used for the first steps the file system from the eldk and copy then the necessary files (cardctl, cardmgr, scripts) to our filesystem.
+
+I hope I didn't forget anything, please tell me if I've done a lot of nonsense, and I hope this will help in future if anyone has to do these steps anyway
+
+best regards
+Gerhard
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
