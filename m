@@ -1,31 +1,22 @@
-Message-Id: <199910211928.VAA20201@denx.local.net>
-To: linuxppc-dev@lists.linuxppc.org
-From: Wolfgang Denk <wd@denx.de>
-Subject: Probing for (non-existing) memory?
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-Date: Thu, 21 Oct 1999 21:28:01 +0200
+Date: Thu, 21 Oct 1999 14:42:01 -0500
+From: anthony tong <atong@uiuc.edu>
+To: luther@dpt-info.u-strasbg.fr
+Cc: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: SuSE Rage 128 Xserver Source and XFree 3.3.6
+Message-ID: <19991021144201.A17030@mango.genunix.net>
+References: <v03110700b433ca16486c@[209.183.133.114]> <19991020150502.A2198@mango.genunix.net> <19991021124450.A22613@maxime.u-strasbg.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <19991021124450.A22613@maxime.u-strasbg.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Sven LUTHER (Thu, Oct 21, 1999 at 12:44:50PM +0200):
+> So is the Rqge 128 driver stuff already in 3.9.16 ?
 
-please excuse the silly question: is there a standard way to probe an
-address if it is readable/writable memory? Ideally something that  is
-portable across all architectures?
+Nope.
 
-[For those familiar with LynxOS: what I'm looking  for  is  something
-like recoset() / noreco().]
-
-Thanks in advance,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"Never give in.  Never give in.  Never. Never. Never."
-- Winston Churchill
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
