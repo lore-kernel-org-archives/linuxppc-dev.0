@@ -1,19 +1,16 @@
-Return-Path: <jonmasters@gmail.com>
-Received: from mproxy.gmail.com (rproxy.gmail.com [64.233.170.199])
-	by ozlabs.org (Postfix) with ESMTP id BB08C2BDB4
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao07.cox.net (fed1rmmtao07.cox.net [68.230.241.32])
+	by ozlabs.org (Postfix) with ESMTP id 4360E2BDB6
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  5 Oct 2004 08:28:28 +1000 (EST)
-Received: by mproxy.gmail.com with SMTP id 76so4830858rnk
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 04 Oct 2004 15:28:26 -0700 (PDT)
-Message-ID: <35fb2e5904100415285979b343@mail.gmail.com>
-Date: Mon, 4 Oct 2004 23:28:26 +0100
-From: Jon Masters <jonmasters@gmail.com>
-To: linuxppc-embedded@ozlabs.org
+	Tue,  5 Oct 2004 09:24:23 +1000 (EST)
+Date: Mon, 4 Oct 2004 16:24:11 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: akpm@osdl.org
+Message-ID: <20041004162411.B13777@home.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Subject: smc91111
-Reply-To: jonathan@jonmasters.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-embedded@ozlabs.org
+Subject: [PATCH][PPC32] Sync ppcboot.h with U-Boot
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,22 +21,71 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+This puts us back in sync with current U-Boot CVS tree
+board info definition. Please apply.
 
-I've got a hacked version of the smc91111 driver from an old arm tree
-that I'm happily using on my board at work - I'll post patches for it
-in due course as we use a custom 16bit bus that physically looks and
-acts like ISA (but really is cunningly slightly different in timing
-and spec as it's a soft core implemented bridge bodged together to
-work on a dev board. mmmmmm.).
+Signed-off-by: Matt Porter <mporter@kernel.crashing.org>
 
-Today I had to add some ethtool support to the driver to support using
-howl (anybody else use that to do Zero Conf?) and was debating fixing
-up http://criticalmass.sourceforge.net/kernel/smc91x/ to work with odd
-bus types like ours (it's a lot of work and testing compared with a
-quick hack to get this done on time so this question is more
-hyperthetical when I'm done with the immediate problem).
-
-Who is using the SMC91111 family of MACs and if so which driver do you use?
-
-Jon.
+===== include/asm-ppc/ppcboot.h 1.8 vs edited =====
+--- 1.8/include/asm-ppc/ppcboot.h	2004-07-29 06:08:44 -07:00
++++ edited/include/asm-ppc/ppcboot.h	2004-09-19 23:34:07 -07:00
+@@ -30,20 +30,6 @@
+ #ifndef __ASSEMBLY__
+ #include <linux/types.h>
+ 
+-typedef void (interrupt_handler_t)(void *);
+-
+-typedef struct monitor_functions {
+-	int	(*getc)(void);
+-	int	(*tstc)(void);
+-	void	(*putc)(const char c);
+-	void	(*puts)(const char *s);
+-	void	(*printf)(const char *fmt, ...);
+-	void	(*install_hdlr)(int, interrupt_handler_t *, void *);
+-	void	(*free_hdlr)(int);
+-	void	*(*malloc)(size_t);
+-	void	(*free)(void *);
+-} mon_fnc_t;
+-
+ typedef struct bd_info {
+ 	unsigned long	bi_memstart;	/* start of DRAM memory */
+ 	unsigned long	bi_memsize;	/* size	 of DRAM memory in bytes */
+@@ -75,7 +61,7 @@
+ 	unsigned long   bi_pcifreq;     /* PCI Bus Freq, in MHz */
+ #endif
+ 	unsigned long	bi_baudrate;	/* Console Baudrate */
+-#if defined(CONFIG_405GP)
++#if defined(CONFIG_4xx)
+ 	unsigned char	bi_s_version[4];	/* Version of this structure */
+ 	unsigned char	bi_r_version[32];	/* Version of the ROM (IBM) */
+ 	unsigned int	bi_procfreq;	/* CPU (Internal) Freq, in Hz */
+@@ -86,12 +72,26 @@
+ #if defined(CONFIG_HYMOD)
+ 	hymod_conf_t	bi_hymod_conf;	/* hymod configuration information */
+ #endif
+-#if defined(CONFIG_EVB64260) || defined(CONFIG_85xx)
+-	/* the board has three onboard ethernet ports */
++#if defined(CONFIG_EVB64260) || defined(CONFIG_44x) || defined(CONFIG_85xx)
++	/* second onboard ethernet port */
+ 	unsigned char	bi_enet1addr[6];
++#endif
++#if defined(CONFIG_EVB64260) || defined(CONFIG_440GX) || defined(CONFIG_85xx)
++	/* third onboard ethernet ports */
+ 	unsigned char	bi_enet2addr[6];
+ #endif
+-	mon_fnc_t	*bi_mon_fnc;	/* Pointer to monitor functions	*/
++#if defined(CONFIG_440GX)
++	/* fourth onboard ethernet ports */
++	unsigned char	bi_enet3addr[6];
++#endif
++#if defined(CONFIG_4xx)
++	unsigned int	bi_opbfreq;		/* OB clock in Hz */
++	int		bi_iic_fast[2];		/* Use fast i2c mode */
++#endif
++#if defined(CONFIG_440GX)
++	int		bi_phynum[4];		/* phy mapping */
++	int		bi_phymode[4];		/* phy mode */
++#endif
+ } bd_t;
+ 
+ #endif /* __ASSEMBLY__ */
