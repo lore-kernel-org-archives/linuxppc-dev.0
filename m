@@ -1,57 +1,59 @@
-To: "Mike G." <gohas@actinium.org>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Autoboot in U-boot 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "18 Jul 2003 10:33:02 +0800."
-             <1058495583.1183.8.camel@localhost.localdomain>
-Date: Fri, 18 Jul 2003 09:10:43 +0200
-Message-Id: <20030718071048.82F6EC6D82@atlas.denx.de>
+Message-ID: <3F17A7DD.4080607@dgt-lab.com.pl>
+Date: Fri, 18 Jul 2003 09:55:09 +0200
+From: Adam Kaczynski <kaczor@dgt-lab.com.pl>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Previous by DateDate IndexNext by Date List Index Previous by ThreadThread
+ IndexNext by Thread
+	Re: Re: looking for mpc8260 mcc driver example for
+ linux
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Mike,
+This is a description how I understand the difference between net and
+character drivers for HDLC:
 
-in message <1058495583.1183.8.camel@localhost.localdomain> you wrote:
->
-> Can someone help me on this autoboot? I successfully configured the
-> u-boot-0.4.0 for mpc857 custom board but somehow the bootcommand and
+The HDLC is basically a L2 protocol used to carry frames over a
+synchronous channel like a timeslot/group of timeslots on a TDM
+interface (it is used in modem protocols too but it is off-topic here).
 
-This is not a linux question, and thus off topic  here.  Please  post
-such questions to the u-boot-users mailing list instead.
+The HDLC protocol can be used therefore as a lower sublayer for
+synchronous-PPP or Cisco HDLC or Frame Relay (or X.25) protocol. A
+specific hardware-based HDLC driver in Linux is connected then to a
+generic upper-sublayer HDLC driver which takes care on frame headers,
+service frames and timers. The sources of the generic driver and some
+particular lower-level (HW-dependant) drivers are in /linux/drivers/net/wan/
 
-> boot arg would not run, it just skip the autoboot and goes to prompt. so
-> help!!!
+The net driver for MPC860 is available from our web-site.
 
-What do you get when you run the "printenv" command?
+Additionally the HDLC protocol is widely used in telecommunication
+protocols like ISDN, V5.1,V5.2, GR.303 and SS-7. It can be also used for
+internal communication inside a phone switch etc. Usually the upper
+layer is LAP-D. It can be easier to implement the processing of these
+protocols in User Space than in kernel. The simpliest way of presenting
+raw framed data to User Space (in Linux) is using read/write/(poll or
+fasync) methods on a character device inode.
 
-> #define CONFIG_BOOTDELAY	3	/* autoboot after 5 sec	*/
+This is probably the reason why the driver
+https://sourceforge.net/projects/mcc8260/
+is a character one.
 
-I consider it very bad programming style if the code and the comments
-disagree.
+NB. I was not aware of this project and I've developed my own (very
+simple) character-device driver for HDLC/transparent channels on 8260
+MCC. Many thanks to mailto:omanakuttan@tataelxsi.co.in for his howto and
+his help!
 
-> Reserving 512k for U-Boot at: 00f80000
+Now the driver is finished and will be released under GPL soon, after
+passing tests. If someone wants to see the code now, please let me know.
 
-Why is this 512 kB? U-Boot is needs much less memory!
+If someone wants to wrap the driver to fit into the "net" domain, I can
+advice how to do it.
 
-> So i don't understand... where did the autoboot go??
+Regards,
 
-Maybe you have a deeper  problem  with  your  environment  variables.
-Where  are  they  stored? In flash? Embedded with the U-Boot image or
-separate?
+Adam
 
-[Followup tu u-boot-users, please]
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-What nonsense people talk about happy marriages! A man can  be  happy
-with any woman so long as he doesn't love her.         -- Oscar Wilde
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
