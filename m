@@ -1,29 +1,42 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Wolfgang Haeuptli <whaeuptli@bluewin.ch>,
-        <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Need testers with MESH SCSI
-Date: Fri, 22 Dec 2000 18:18:03 +0100
-Message-Id: <19341116104947.29047@192.168.1.2>
-In-Reply-To: <00122217123800.00661@lobo.localnet>
-References: <00122217123800.00661@lobo.localnet>
+Date: Fri, 22 Dec 2000 21:54:19 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Josh Huber <huber@mclx.com>
+cc: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: ethernet issue with lombard
+In-Reply-To: <20001219220143.C6309@missioncriticallinux.com>
+Message-ID: <Pine.LNX.4.10.10012222028040.27072-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+> It seems to be easier to kill the network on a 10Mbit connection,
+> rather than a 100Mbit connection.
 >
->Well, would have been a nice christmas present... BUT STILL:
->(after applying the new mesh_init() to scsi/mesh.c)
+> I can kill the network easily with ping -f <ip of local host>
 >
->mesh: target 6 aborted
->
->which means that my UMAX Astra 1200S Scanner still does not work under
->linuxppc...
+> There aren't any helpful messages in any logs (actually, nothing
+> relating to ethernet).  No errors are shown in ifconfig eth0.
 
-Can you try increasing the udelay() calls in mesh_init() to see if it
-helps ? There maybe something else going on, but it's worth trying.
+One thing I could notice is quite high packet drop rates that start at
+packet sizes above about 560 (580 gives a slow increase of the dots, 768
+has them running rather fast). It took extended periods of flooding at
+560 bytes to bring the interface down (on the order of 600k packets) and
+up to that point it logged a large number of TX overruns but no RX errors.
+The hangup has the packet counts frozen but shows just a few RX errors
+which slowly accumulated. The connection appears to freeze even before the
+dots start running wild.
 
-Ben.
+There's one clear pattern I can see: After each freeze and subsequent
+restart of the network adapter, both the dropped packet and frame error
+count increased by one. Does the BMAC require special treatment after a
+frame error?
+
+That's with 2.2.18pre18 on a switched 100 Mibt network (3com 3300) with no
+load worth mentioning.
+
+	Michael
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
