@@ -1,24 +1,25 @@
-Message-ID: <3C214290.D6D1B53A@carts.com>
-Date: Wed, 19 Dec 2001 17:44:48 -0800
-From: Kevin Fry <kevin@carts.com>
+Message-ID: <3C214A48.4080508@embeddededge.com>
+Date: Wed, 19 Dec 2001 21:17:44 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: allocating non-cacheable memory
-Content-Type: text/plain; charset=us-ascii
+To: Kevin Fry <kevin@carts.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: allocating non-cacheable memory
+References: <3C214290.D6D1B53A@carts.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-What is the best way to allocate some non-cacheable memory for I/O use?
-Right now we are going to setup a BAT table with a non-cacheable memory
-region and use that for all I/O, but does linux have a nice neat
-function to grab a page and set it up non-cacheable for us?
-I was reading in the archives that the #define PAGE_NOCACHE doesn't
-work.
+Kevin Fry wrote:
 
-thanks!
+> What is the best way to allocate some non-cacheable memory for I/O use?
+> Right now we are going to setup a BAT table with a non-cacheable memory
 
-Kevin
+If you have a processor with BAT, why do you need non-cached memory?
+
+
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
