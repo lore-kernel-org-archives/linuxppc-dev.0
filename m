@@ -1,54 +1,44 @@
-Message-ID: <3BAA0E6F.5050503@mc.com>
-Date: Thu, 20 Sep 2001 11:42:39 -0400
-From: Mark Salisbury <mbs@mc.com>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: ppc LE questions (seeking help hand info pointers)
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Thu, 20 Sep 2001 08:58:25 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Mark Salisbury <mbs@mc.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: ppc LE questions (seeking help hand info pointers)
+Message-ID: <20010920085825.F13721@cpe-24-221-152-185.az.sprintbbd.net>
+References: <3BAA0E6F.5050503@mc.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3BAA0E6F.5050503@mc.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I am familiar with the fact that little endian ppc linux is an unpopular
-concept, but I would like to discuss it and ask a few questions about it
-anyway. I do _NOT_ want to start a flame war, so if you feel the need to
-flame me for this, pleas flame me directly offline and do not pollute
-the list.
+On Thu, Sep 20, 2001 at 11:42:39AM -0400, Mark Salisbury wrote:
 
+> question 1.  are there already existing patch sets (rejected from
+> mainline inclusion) available for use as a starting point?
 
-assume I have a valid reason for wanting to run ppc's in LE mode
+There was a bit of work, just for the kernel.  Nothing on the toolchain
+side.
 
-assume I already have a (non-linux) ppc OS running LE mode (actually
-compiles and runs in either mode, which you run depends on which flavor
-of our hardware you use)  the differences in the code are limited to a
-few header files, some startup code and some context switch code.
-(to get an idea of the hardware see www.mc.com)
+> question 2.  if 1, what is the primary reason for rejection.
 
-assume I am also aware of the limitations of the chip in LE mode, and
-the intended target is 7400+ processors
+Being a LE & BE arch becomes a giant PITA for no gain.
 
-question 1.  are there already existing patch sets (rejected from
-mainline inclusion) available for use as a starting point?
+> question 3.  is there a general issue of endian safety in linux (I would
+> think not) or just in the ppc-specific code?
 
-question 2.  if 1, what is the primary reason for rejection.
+In theory the generic code is endian safe, by and large.  The arch/ppc and
+include/asm-ppc stuff assumes BE.
 
-question 3.  is there a general issue of endian safety in linux (I would
-think not) or just in the ppc-specific code?
+> question 4. assuming I was willing to deliver a clean, complete LE
+> enabling patch (including devices that are relevant to me), as a compile
+> time config option and maintain that patch, what would be the primary
+> obstacle to inclusion in the main line.
 
-question 4. assuming I was willing to deliver a clean, complete LE
-enabling patch (including devices that are relevant to me), as a compile
-time config option and maintain that patch, what would be the primary
-obstacle to inclusion in the main line.
-
-thanks for your time,
-
-		Mark
+The objection to being an arch that attempts to support both LE and BE.
 
 --
-/*------------------------------------------------**
-**   Mark Salisbury | Mercury Computer Systems    **
-**   mbs@mc.com     | System OS - Kernel Team     **
-**------------------------------------------------*/
-
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
