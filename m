@@ -1,51 +1,51 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: Paul Ruhland <pruhland@microwavedata.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: root=/dev/ram0
-Date: Thu, 26 Jul 2001 16:45:37 -0400
-References: <3B607757.6D4BFE4A@seranoa.com>
-In-Reply-To: <3B607757.6D4BFE4A@seranoa.com>
+Message-ID: <3B608CA5.2A774BD9@seranoa.com>
+Date: Thu, 26 Jul 2001 17:33:25 -0400
+From: Andrew Dixon <andrew.dixon@seranoa.com>
 MIME-Version: 1.0
-Message-Id: <01072616453702.25105@sarge>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: root=/dev/ram0
+References: <3B607757.6D4BFE4A@seranoa.com> <01072616453702.25105@sarge>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Andrew,
-
-First make sure you are passing the correct boot args to the kernel:
-
-   root=/dev/ram0
-
-Is this echoed by the kernel during boot?
-
-Also, make sure you have 'Second extended filesystem' support
-('CONFIG_EXT2_FS=y' in .config) compiled into your kernel.
-
-That's really all I can suggest without more information.
-
-
-On Thursday 26 July 2001 04:02 pm, you wrote:
-> Hi All,
-> I'm trying to mount a compressed ramdisk image on /dev/ram0 and run my
-> root filesystem from there.  My problem is that when I try to boot I get
-> the following error:
+Paul Ruhland wrote:
 >
->     VFS: Cannot open root device "ram0" or 01:00
->     Please append a correct "root=" boot option
+> Andrew,
 >
-> earlier in the boot process the ram disks are recognized:
+> First make sure you are passing the correct boot args to the kernel:
 >
->     RAMDISK driver initialized: 16 RAM disks of 4096K size 1024
-> blocksize
+>    root=/dev/ram0
 >
-> I'm using kernel 2.4.5-pre3 from Ben H's source.
+> Is this echoed by the kernel during boot?
+
+Yup.
+
 >
-> Anyone know why the kernel isn't able to open /dev/ram0?
+> Also, make sure you have 'Second extended filesystem' support
+> ('CONFIG_EXT2_FS=y' in .config) compiled into your kernel.
 >
-> Thanks,
-> Andy
+
+I definitely do
+
+> That's really all I can suggest without more information.
 >
+
+What other informatin would be useful?  This has got me stumped.  The
+ramdisk support in the kernel seems to be working OK.  I booted the
+system up with an nfs mounted root partition and did the following:
+
+	#dd if=/dev/zero of=/dev/ram0 bs=1k count=4096
+	#dd if=/fs of=/dev/ram0    (fs is my filesystem image)
+
+This went off without a hitch so I tried mounting /dev/ram0:
+
+	#mount /dev/ram0 /mnt
+
+also fine and when I look in /mnt the filesystem looks OK too.
+
+Thanks,
+Andy
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
