@@ -1,79 +1,41 @@
-Message-ID: <B25E2E5A003CD311B61E00902778AF2A0148B611@server1.skystream.com>
-From: Subodh Nijsure <SNijsure@SkyStream.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'"
-	 <linuxppc-embedded@lists.linuxppc.org>
-Subject: Connecting to powerpc target via wiggler.
-Date: Sat, 9 Dec 2000 20:30:38 -0800 
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-Id: <200012100836.eBA8a3W15391@denx.local.net>
+To: Subodh Nijsure <SNijsure@SkyStream.com>
+cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Connecting to powerpc target via wiggler. 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Sat, 09 Dec 2000 20:30:38 PST."
+             <B25E2E5A003CD311B61E00902778AF2A0148B611@server1.skystream.com>
+Date: Sun, 10 Dec 2000 09:36:02 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Has anybody been successful in connecting to the powerpc board
-using the BDM wiggler from MACRAIGOR system?
+In message <B25E2E5A003CD311B61E00902778AF2A0148B611@server1.skystream.com> you wrote:
+>
+> Has anybody been successful in connecting to the powerpc board
+> using the BDM wiggler from MACRAIGOR system?
 
-I have gdb-5.0 which I have compiled with OCD and BDM4GDB targets.
+AFAIK the wiggler comes with its own software; I don't know if a  GDB
+compatible version is available.
 
-I am unable to connect to the ocd using command like
+> I have gdb-5.0 which I have compiled with OCD and BDM4GDB targets.
 
-	target ocd wiggler /dev/parport0
+The BDM4GDB target will only work with the BDM4GDB adapter;  see  the
+BDM4GDB project at Sourceforge.
 
-I have also tried building the BDM4GDB and connecting using
-that target, without any luck.
+> I have also tried building the BDM4GDB and connecting using
+> that target, without any luck.
 
+There is very little chance that this might work.
 
-/Subodh Nijsure
+Wolfgang Denk
 
-
-./powerpc-linux-gdb -x MPCBDM/mpc.init /root/ppcboot/ppcboot
-GNU gdb 5.0
-Copyright 2000 Free Software Foundation, Inc.
-GDB is free software, covered by the GNU General Public License, and you are
-welcome to change it and/or distribute copies of it under certain
-conditions.
-Type "show copying" to see the conditions.
-There is absolutely no warranty for GDB.  Type "show warranty" for details.
-This GDB was configured as "--host=i686-pc-linux-gnu
---target=powerpc-linux"...
-(no debugging symbols found)...
-MPCBDM version 1.2 / 2000.11.05
-got access rights for printer port 0x378..0x37A
-disabled power at port
-Port status: DATA=0x00 STAT=0x47 CTRL=0xC0
-Port active lines: 'VDD1 '
-unknown STAT
------------------->>>>> I turned on the power here for the board.
-Port status: DATA=0x00 STAT=0x17 CTRL=0xC0
-Port active lines: 'VDD2 '
-found adapter version 1 at port, powered from mpc, turn on power at target
-adapter version 1 initialized
-please turn on power at target
-
-^C
-Couldn't establish connection to remote target
-Quit
-MPCBDM/mpc.init:264: Error in sourced command file:
-Failed to connect to target 'mpcbdm'
-(gdb) help target
-Connect to a target machine or process.
-The first argument is the type or protocol of the target machine.
-Remaining arguments are interpreted by the target protocol.  For more
-information on the arguments for a particular protocol, type
-`help target ' followed by the protocol name.
-
-List of target subcommands:
-
-target async -- Use a remote computer via a serial line
-target cisco -- Use a remote machine via TCP
-target exec -- Use an executable file as a target
-target extended-async -- Use a remote computer via a serial line
-target extended-remote -- Use a remote computer via a serial line
-target mpcbdm -- Use On-Chip Debugging on MPC's via parallel port BDM
-interface
-target ocd -- Use a remote target with On-Chip Debugging
-target remote -- Use a remote computer via a serial line
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Perl already has an IDE.  It's called Unix.
+                      -- Tom Christiansen in 375bd509@cs.colorado.edu
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
