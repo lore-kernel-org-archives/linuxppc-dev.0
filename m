@@ -1,57 +1,51 @@
-Message-ID: <20040128061326.19345.qmail@web11003.mail.yahoo.com>
-Date: Tue, 27 Jan 2004 22:13:26 -0800 (PST)
-From: Xupei Liang <tliang@yahoo.com>
-Subject: IDE status timeout
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-Id: <6.0.1.1.1.20040128085052.01b12d40@192.168.2.1>
+Date: Wed, 28 Jan 2004 09:25:40 +0100
 To: linuxppc-embedded@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Matteo Bortolin <matteo.bortolin@wawnet.biz>
+Subject: Problem with i2c-algo-ibm_ocp driver on ppc405 board
+Cc: llandre@wawnet.biz
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hi all,
 
-I have a customed board that is running Linux 2.4.19
-and XFS and that has a compactFlash card. The
-compactFlash card is running in true IDE mode. I ran
-into the following error once in a while. It is very
-difficult to reproduce.
+I've developed an RTC driver that uses i2c core and for a PPC405-based
+board (PPChameleonEVB).
+The i2c-Algorithm driver is the i2c-algo-ibm_ocp.c and the i2c-adapter is
+the i2c-adap-ibm_ocp.c
+The problem is in timer_interrupt() function (/arch/ppc/kernel/time.c) with
+CONFIG_RTC_11_MINUTE_MODE enabled.
+Into this function there is a call to a ppc_md.set_rtc_time  that is a
+pointer to a my set_rtc_device function that in turn
+calls the i2c_master_send().
+The problem is that kernel crashes (kenrel panic) when ppc_md.set_rtc_time
+is called.
+Debugging the coed,  I've seen that kernel crashes into iic_sendbytes()
+function (i2c-algo-ibm_opc.c) .
 
->hda: status timeout: status=0xd0 { Busy }
->hda: no DRQ after issuing WRITE
->ide0: reset timed-out, status=0x80
->hda: status timeout: status=0x80 { Busy }
->hda: drive not ready for command
->ide0: reset timed-out, status=0x80
->end_request: I/O error, dev 03:02 (hda), sector 71472
+After debugging inside of  iic_sendbytes() function I asked to me:
 
->end_request: I/O error, dev 03:02 (hda), sector 71480
+As in the time_interrupt() function, interrupt are disabled,
+i2c-algo-ibm_ocp.c cannot work properly.
 
->end_request: I/O error, dev 03:02 (hda), sector 77264
+This would mean that a kernel that use  i2c-algo-ibm_ocp.c and a i2c
+RTC-driver cannot work properly
+with CONFIG_RTC_11_MINUTE_MODE!!!
 
->end_request: I/O error, dev 03:02 (hda), sector 77272
+Is this correct?
 
->end_request: I/O error, dev 03:02 (hda), sector
-115537
->I/O error in filesystem ("ide0(3,2)") meta-data dev
-0x302 block 0x1c351
->
+If yes, how can I solve my problem?
 
-I read some discussions on a similar (or same?)
-problem in another forum.
 
-http://www.ussg.iu.edu/hypermail/linux/kernel/0312.3/index.html#1111
 
-But my problem seems to be different because even a
-soft reset can not reset the card and the problem
-happens very randomly. The compactFlash card seems to
-be stuck. Has anybody seen this problem before?
 
-Thank you in advanced for your input.
+Matteo Bortolin
 
-Regards,
-
-Terry Liang
+DAVE Srl
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
