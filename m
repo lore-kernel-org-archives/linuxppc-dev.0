@@ -1,42 +1,46 @@
-Message-ID: <3C67E711.2108C6DD@ardistech.com>
-Date: Mon, 11 Feb 2002 16:45:21 +0100
-From: "bart@ardistech.com" <bart@ardistech.com>
-Reply-To: bart@ardistech.com
-MIME-Version: 1.0
-To: Dan Malek <dan@embeddededge.com>
+Message-ID: <E1836A7F3557D311A14000805F9F36FC01518835@usdfo011.usac.danfoss.net>
+From: "Pergola, Michael" <MichaelPergola@Danfoss.com>
+To: "'Dan Malek'" <dan@embeddededge.com>, bart@ardistech.com
 Cc: Alex Zeffertt <ajz@cambridgebroadband.com>,
 	Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>,
 	dmalek@jlc.net
-Subject: Re: MPC823: i2c-algo-8xx read interrupt?
-References: <3C63EC39.ACEECA08@ardistech.com> <3C640532.5000708@embeddededge.com> <3C640C11.4080407@cambridgebroadband.com> <3C6776CC.634AB65D@ardistech.com> <3C67E38C.2020304@embeddededge.com>
-Content-Type: text/plain; charset=us-ascii
+Subject: RE: MPC823: i2c-algo-8xx read interrupt?
+Date: Mon, 11 Feb 2002 16:49:36 +0100
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek wrote:
+	>> The way I interpret the data sheet (I assume the 823 and 860 are
+similar) is that I get the TX
+	>> interrupt when the I2C address is sent plus the two character
+times. The rest of the TX buffer
+	>> is just a place holder and will not be sent.
 
->
-> How do you know when you have received the proper number of bytes?  Are we
-> always changing the value of mrblr (I don't remember the code anymore)?
->
-I knew about the TX counter being used for the number of RX'd bytes, but expected
-the RX interrupt to be the last one, after the RX buffer was closed (This often
-seems to be the case, as long as the RX interrupt does not dissapear).
+	>Not correct.  The data isn't sent on the data lines, but the CPM
+decrements the
+	>counter and uses it to time the receive transfer.  The I2C thinks
+it is sending
+	>something, but the bits just fall off the sand into a bucket.  It
+is used to generate
+	>the timing of the clock and count how many receive bytes you wish
+to acquire.
 
->
-> You could just poll the receive buffer for about two plus a little character
-> times.  If you don't get the empty flag cleared in this time report some error.
->
-I think that's the best solution.
+According to the MPC823e User's Manual:
 
-> The interesting thing about any I2C controller is the overhead of trying to
-> manage this thing is higher than just clocking bits in software.  I seldom
-> use the I2C controller, just a few lines of C code to do the job. Think about it.
->
-You're right, but spending XX$ on a fast PPC chip and after that let it run
-busy loops to time the I2C control makes me feel bad :)
+"The I2C receiver and transmitter are double-buffered, which corresponds to
+an effective
+FIFO size of 2 characters. The MPC823e I2C bit 0 (MSB) is shifted out
+first." pg. 16-456
 
-	Bart
+I interpret this to account for the additional two character clock times
+you'll need to do.
+
+Just my $.02,
+     Michael Pergola
+     Software Engineer
+     Baltimore, MD  21236     (410) 931-6778 x4259
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
