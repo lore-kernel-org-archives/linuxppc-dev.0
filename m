@@ -1,65 +1,68 @@
-Date: Tue, 21 Mar 2000 15:55:12 -0600 (CST)
-From: Don Holmgren <djholm@fnal.gov>
-Reply-To: Don Holmgren <djholm@fnal.gov>
-To: Wolfgang Denk <wd@denx.de>
-cc: "Stephan Ruettiger (r0337c)" <r0337c@email.sps.mot.com>,
-        linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: root nfs boot problems
-In-Reply-To: <200003211928.UAA20238@denx.local.net>
-Message-ID: <Pine.SGI.3.95.1000321154553.11833B-100000@hppc.fnal.gov>
+Message-ID: <38D8236B.C27DE94B@huawei.com.cn>
+Date: Wed, 22 Mar 2000 09:35:39 +0800
+From: dony <dony.he@huawei.com.cn>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Dan Malek <dan@netx4.com>,
+        linuxppc-embed <linuxppc-embedded@lists.linuxppc.org>
+Subject: Does mpc8xx-2.2.13 support "Enable loadable module support"?
+References: <NCBBKJKKGDLPHKDPAFFMMEIPCDAA.jsw-embedded@mindspring.com> <38D6E781.884AA846@embeddededge.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, 21 Mar 2000, Wolfgang Denk wrote:
+Hi,
+     I have a question as the subject asks:
+    Notes that I disable "pci support" and "Qscan pci" in both cases which  I
+describe below.
+     If I compile the kernel without "Enable loadable module support" , then it
+works successfully. But if  I do again with "Enable loadable module support", then
+some errors occur:
+Does someone know why?
 
->
-> In message <Pine.SGI.3.95.1000321111628.2421C-100000@hppc.fnal.gov> you wrote:
-> >
-> > I don't believe the "neighbour table overflow" errors are the problem.  I
-> > get them frequently but otherwise have success.
->
-> I have never seen such errors when the ethernet  inrface  is  working
-> correclty.
+##################################################
+ powerpc-linux-ld -T arch/ppc/vmlinux.lds -Ttext 0xc0000000 -Bstatic
+arch/ppc/kernel/head.o init/main.o init/version.o \
+ --start-group \
+ arch/ppc/kernel/kernel.o arch/ppc/mm/mm.o arch/ppc/lib/lib.o kernel/kernel.o
+mm/mm.o fs/fs.o ipc/ipc.o \
+ fs/filesystems.a \
+ net/network.a \
+ drivers/block/block.a drivers/char/char.a drivers/misc/misc.a drivers/net/net.a
+drivers/macintosh/macintosh.a arch/ppc/8xx_io/8xx_io.a drivers/net/net.a \
+ /usr/src/linux/lib/lib.a \
+ --end-group \
+ -o vmlinux
+drivers/macintosh/macintosh.a(adb.o): In function `adbdev_init':
+adb.o(.text+0xfa8): multiple definition of `adbdev_init'
+arch/ppc/kernel/kernel.o(.text.init+0x31c): first defined here
+powerpc-linux-ld: Warning: size of symbol `adbdev_init' changed from 4 to 116 in
+adb.o
+arch/ppc/kernel/kernel.o(__ksymtab+0x90): undefined reference to `isa_io_base'
+arch/ppc/kernel/kernel.o(__ksymtab+0x98): undefined reference to `isa_mem_base'
+arch/ppc/kernel/kernel.o(__ksymtab+0xa0): undefined reference to `pci_dram_offset'
 
->From a boot this morning on an MVME-2307:
+arch/ppc/kernel/kernel.o(__ksymtab+0xc0): undefined reference to `_prep_type'
+arch/ppc/kernel/kernel.o(__ksymtab+0xc8): undefined reference to `ucSystemType'
+arch/ppc/kernel/kernel.o(__ksymtab+0x308): undefined reference to `find_devices'
+arch/ppc/kernel/kernel.o(__ksymtab+0x310): undefined reference to
+`find_type_devices'
+arch/ppc/kernel/kernel.o(__ksymtab+0x318): undefined reference to
+`find_compatible_devices'
+arch/ppc/kernel/kernel.o(__ksymtab+0x320): undefined reference to
+`find_path_device'
+arch/ppc/kernel/kernel.o(__ksymtab+0x328): undefined reference to `find_phandle'
+arch/ppc/kernel/kernel.o(__ksymtab+0x330): undefined reference to `get_property'
+arch/ppc/kernel/kernel.o(__ksymtab+0x338): undefined reference to `pci_io_base'
+arch/ppc/kernel/kernel.o(__ksymtab+0x340): undefined reference to `pci_device_loc'
 
-  eth0: DC21140 at 0x11000 (PCI bus 0, device 14), h/w address 08:00:3e:2a:1d:42,
-      and requires IRQ18 (provided by PCI BIOS).
-  de4x5.c:V0.544 1999/5/8 davies@maniac.ultranet.com
-  Looking up port of RPC 100003/2 on 131.225.84.99
-  neighbour table overflow
-  eth0: media is TP.
-  Looking up port of RPC 100005/1 on 131.225.84.99
-  VFS: Mounted root (NFS filesystem) readonly.
-  . . .
-
-I almost always get this single "neighbour table overflow" message, but
-subsequently no ethernet problems.
-
-
->
-> > It looks like a problem on your nfs server.  The "unable to get nfsd port
-> > number from server" and "unable to get mountd port number from server"
-> > messages indicate that at minimum, the portmapper is not running on your
-> > server.  Perhaps mountd and/or nfsd are also not running.
->
-> Well, IMHO it's more likely that no packets were  ever  sent  to  the
-> ethernet  at  all.  This  type  of problemppens for instance when the
-> Transmit Enable signal is not asserted.
->
-> It might be useful to check with a sniffer if the box is transmitting
-> at all...
->
-> Wolfgang Denk
->
-
-I definitely agree.  tcpdump on the nfs server (or strace on
-rpc.mountd/rpc.nfsd tasks) would do the trick.
-
-Don Holmgren
+arch/ppc/kernel/kernel.o(__ksymtab+0x348): undefined reference to `feature_set'
+arch/ppc/kernel/kernel.o(__ksymtab+0x350): undefined reference to `feature_clear'
+arch/ppc/kernel/kernel.o(__ksymtab+0x358): undefined reference to `feature_test'
+arch/ppc/kernel/kernel.o(__ksymtab+0x370): undefined reference to
+`device_is_compatible'
+make: *** [vmlinux] Error 1
+#############################
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
