@@ -1,52 +1,35 @@
-Date: Tue, 13 Apr 1999 15:08:21 -0400 (EDT)
-From: satadru pramanik <satadru@umich.edu>
-To: Niels Roest <N.P.Roest@ITS.TUDelft.NL>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: ggi and frame buffer
-In-Reply-To: <Pine.HPP.3.95.990413182812.17396A-100000@elektron.et.tudelft.nl>
-Message-ID: <Pine.LNX.4.10.9904131507570.9430-100000@beer.pub.umich.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <03E3E0690542D211A1490000F80836F4877DEC@zcard00f.ca.nortel.com>
+Date: Tue, 13 Apr 1999 21:28:35 +0200
+To: Jim Somerville <somer@nortelnetworks.com>, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: quik vs. bootx
+Message-Id: <19990413212835.023110@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I'm specifically looking to see if anybody has it working under the
-console.
+On Tue, Apr 13, 1999, Jim Somerville <somer@nortelnetworks.com> wrote:
 
-On Tue, 13 Apr 1999, Niels Roest wrote:
+>None of my systems have MacOS on them...I'm using quik.  I have no desire
+>to reinstall MacOS just so I can boot linux.  Will quik work with the 2.2
+>kernel, or will I be screwed here?  I'm currently using 2.1.24 on all my
+>systems.
 
-On Mon, 12 Apr 1999, satadru pramanik wrote:
+This should be added to the FAQ... 
 
-> 
-> Since linuxppc defaults to using a FB-device, ggi should work, right?  So
-> I compiled the latest snapshit, and when I tried to run a demo, ie
-> "cube3d" I got this:
-> cube3d: error in loading shared libraries: /usr/local/lib/libgg.so.0:
-> R_PPC_REL2
-> 4 relocation out of range
-> 
-> Any clues to what this is?  Has anybody gotten libgii and libggi to work
-> successfully on LinuxPPC, especially pre-rel5?
-> 
-> 
-I did compile it on pre-rel5, the one with libc-2.0.108, and kernel 2.2.1,
-on an 7600 (that's with a control chip if that matters)
-It was a while ago, I rm-ed the sources, but I tried
-it on linux-heretic (I compiled both xheretic and ggiheretic)
-and it still works ok. Note: this is not on console, but in X.
-I didn't try it in console. so ggi on X works.
-Niels
+BootX is not meant to _replace_ quik. Since OF is not working well enough
+on a lot of Macs, BootX may be your only choice, but if quik works for
+you and you like it, then use it, it's hopefully still working. OF
+booting is better from a "theorical" point of view ;-)
+
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
 
 
-----
-satadru pramanik `satadru@umich.edu'
-"Put your hand on a hot stove for a minute, and it seems like an hour. Sit
-with a pretty girl for an hour, and it seems like a minute. THAT'S
-relativity." 
--Albert Einstein
----
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
