@@ -1,44 +1,41 @@
-Message-ID: <39D60B3C.297B12A@mvista.com>
-Date: Sat, 30 Sep 2000 11:48:12 -0400
-From: Dan Malek <dan@mvista.com>
+Message-ID: <003101bff189$9ac1f800$084da8c0@uranus>
+From: "Heiko Jakob" <buffalo@the7lg.de>
+To: "Neil Russell" <caret@c-side.com>, "David Riley" <oscar@the-rileys.net>,
+        <linuxppc-dev@lists.linuxppc.org>,
+        "Timothy A. Seufert" <tas@mindspring.com>
+References: <39FB3C16.3359BC41@the-rileys.net><20001028172451.A10220@lx.c-side.com> <v04220803b622eb4a1108@[10.0.0.42]>
+Subject: Re: PPC byte ordering
+Date: Wed, 19 Jul 2000 15:59:43 +0200
 MIME-Version: 1.0
-To: Ruedi.Hofer@ascom.ch
-CC: linuxppc-embedded@lists.linuxppc.org, kernel@linux01.hasler.ascom.ch
-Subject: Re: Antwort: Re: VxWorks bootloader & PowerQUICC II, Booting the kernel
-References: <0G1N00BGQJM2C8@pmdf-it.hasler.ascom.ch>
-Content-Type: text/plain; charset=us-ascii
-Sender: owner-linuxppc-embedded@lists.linuxppc.org
-List-Id: <linuxppc-embedded@lists.linuxppc.org>
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Sender: owner-linuxppc-dev@lists.linuxppc.org
+List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Ruedi.Hofer@ascom.ch wrote:
-
-> The gdb tells me:
+> At 5:24 PM -0700 10/28/00, Neil Russell wrote:
 >
->   75         shp = (Elf32_Shdr *) dbuf;
->   76         sp = (char *)shp;
->   77         for (i=0; i<nsscns; i++) {
-> > 78                 if (shp->sh_addr)
->   79                         shp->sh_addr += 0x500000;
->   80                 if (i == 5)
->   81                         imagesize = shp->sh_size;
+> >It would in theory be possible to have the kernel run big-endian as it is
+> >and have certain user programs run little endian by setting the LE bit in
+> >the MSR register for the process in question.  The real problem here is
+> >that you have to add a *lot* of code to system calls to make this work.
+> >There are a few system calls that this would be real difficult, such
+> >as ioctl().  I once looked into doing this for the MIPS with SVR4 UNIX.
 >
-> Program received signal SIGSEGV, Segmentation fault.
+> The other real problem is that Linus Torvalds has already said that
+> he will never ever in a million years accept a patch which attempts
+> to do such a thing, so you'd have to fork the kernel to do it.
+> According to Linus, architectures are either big or little-endian,
+> not both.  A sane position considering the syscall ugliness you
+> mention
 
-I don't know why this happened, but I discovered that line 80 should
-be:
-	if (i== 6)
+How do the linux-mips people handle with big- and  little-endian code ?
+Maybe they know a good solution, which allows both big- and little-endian
+code to execute.
+The PPC is big-endian by nature, and what for we do need little-endian code
+to be executed on a PPC ?
 
-> I tried to play around with vxhack.c but I didn't succeed...
-
-It's a pretty trivial program.  All it does is update the vma/lma
-in the headers and add the image size to the data section of the
-file.  A nice addition would be to locate the "image" by name instead
-of just knowing the header number.  When I originally wrote it, I
-needed it _now_, and didn't care about what it looked like :-).  Just
-use it as an example of what needs to be done, not as the way to do it.
+MfG
 
 
-	-- Dan
-
-** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
+** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
