@@ -1,31 +1,29 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Dan Bethe <dan_bethe@yahoo.com>, <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: powerbook doubles as a frying pan
-Date: Mon, 5 Feb 2001 13:46:47 +0100
-Message-Id: <19341231061831.26946@mailhost.mipsys.com>
-In-Reply-To: <20010203030351.28012.qmail@web1003.mail.yahoo.com>
-References: <20010203030351.28012.qmail@web1003.mail.yahoo.com>
+Date: Mon, 5 Feb 2001 20:28:21 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Robert E Brose II <bob@kunk.jriver.com>
+cc: <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: SOLVED: mesh SCSI bus locks hard on 7500 when burning a CD-R in
+In-Reply-To: <20010205023918.21795.qmail@kunk.jriver.com>
+Message-ID: <Pine.LNX.4.30.0102051934180.18886-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->	The second point is that I heard that about 1 week before Macworld
->Expo, somebody checked in Macintosh power management code to Darwin's
->CVS.  :)
+> Thanks Daniel for digging this stuff out. A fix for the 53c94
+> disconnect problem would sure make the 7200 a  better platform.
 
-There have been bits of power management in Darwin CVS since public beta.
-PB could put some (but not all) powerbooks to sleep, had temperature/ICTC
-control, etc...
+Unless Paul had specific reasons not to use the generic NCR53C9x driver
+code for the mac53c94 driver, I'd say we should start from scratch using
+the generic driver code base. I know it looks messy and a lot of the Sparc
+cruft should be stripped out (IIRC Sparc still uses esp.c) but it might be
+worth the trouble.
 
-However, AFAIK, the current Darwin CVS lacks all the support for recent
-machines. Looks like almost all of the "platform expert" code that
-contains driver for the Apple custom ASICs have been removed from the
-kernel tree (it's beeing moved to separate drivers) and didn't yet show
-up in the IO tree.
+Problem is, the only Powermacs I could use for testing are a 7100 and a G3
+(233 MHz desktop). Which one of these does use the 53C94?
 
-Ben.
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
