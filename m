@@ -1,160 +1,49 @@
-Message-ID: <62490.213.107.143.228.1048622492.squirrel@www.solinno.co.uk>
-Date: Tue, 25 Mar 2003 20:01:32 -0000 (GMT)
+Date: Tue, 25 Mar 2003 17:07:31 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Leigh Brown <leigh@solinno.co.uk>
+Cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: [RFC][PATCH] Put PReP boot arguments in a fixed location in the boot image
-From: "Leigh Brown" <leigh@solinno.co.uk>
-To: <trini@kernel.crashing.org>
-In-Reply-To: <20030324201134.GA14264@ip68-0-152-218.tc.ph.cox.net>
-References: <61347.213.107.143.228.1048365078.squirrel@www.solinno.co.uk>
-        <20030324201134.GA14264@ip68-0-152-218.tc.ph.cox.net>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="----=_20030325200132_83559"
+Message-ID: <20030326000731.GB20145@ip68-0-152-218.tc.ph.cox.net>
+References: <61347.213.107.143.228.1048365078.squirrel@www.solinno.co.uk> <20030324201134.GA14264@ip68-0-152-218.tc.ph.cox.net> <62490.213.107.143.228.1048622492.squirrel@www.solinno.co.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <62490.213.107.143.228.1048622492.squirrel@www.solinno.co.uk>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-------=_20030325200132_83559
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-
-Tom Rini said:
-> On Sat, Mar 22, 2003 at 08:31:18PM -0000, Leigh Brown wrote:
->> I have been using this patch very successfully for ages.  Having the
->> boot arguments in a fixed location in the boot image makes it trivial
->> to write a program to set the arguments.
->>
->> Please take a look at the patch and let me know what you think.  If
->> there are no negative comments I shall post it again for inclusion.
->> The patch should apply against linuxppc_2_4 and linuxppc_2_4-devel.
+On Tue, Mar 25, 2003 at 08:01:32PM -0000, Leigh Brown wrote:
+> Tom Rini said:
+> > On Sat, Mar 22, 2003 at 08:31:18PM -0000, Leigh Brown wrote:
+> >> I have been using this patch very successfully for ages.  Having the
+> >> boot arguments in a fixed location in the boot image makes it trivial
+> >> to write a program to set the arguments.
+> >>
+> >> Please take a look at the patch and let me know what you think.  If
+> >> there are no negative comments I shall post it again for inclusion.
+> >> The patch should apply against linuxppc_2_4 and linuxppc_2_4-devel.
+> >
+> > The changes to 'mkprep' I _think_ would break non-'PReP' systems using
+> > that.  Please modify simple/head.S (and related) in a similar fashion,
+> > and present this is a patch against 'linux-2.4' (GNU or BK patch is fine
+> > with me).  Thanks.
 >
-> The changes to 'mkprep' I _think_ would break non-'PReP' systems using
-> that.  Please modify simple/head.S (and related) in a similar fashion,
-> and present this is a patch against 'linux-2.4' (GNU or BK patch is fine
-> with me).  Thanks.
+> Hi Tom,
+>
+> Thanks for looking at the patch.  I hadn't realised that mkprep was used
+> to build non-prep images (how silly of me ;-) ).  I looked at the simple/
+> head.S and I'm a bit afraid to change it because I don't know anything
+> about that code, and couldn't ever test it and so on.
 
-Hi Tom,
+All of the 'simple' code is based on 'prep'.  And the prep/ subdir will
+die soon, as the needed changes to sanely 'hook' things into
+decompress_kernel has gotten into Marcelo's tree.  What was prep/head.S
+is simple/head.S and common/relocate.S.  Please give things a shot in
+either a current linux-2.4 tree, or the linuxppc-2.4 tree (IIRC, it
+should be rsync'able, if not, ping me off-list and I'll fix it).
 
-Thanks for looking at the patch.  I hadn't realised that mkprep was used
-to build non-prep images (how silly of me ;-) ).  I looked at the simple/
-head.S and I'm a bit afraid to change it because I don't know anything
-about that code, and couldn't ever test it and so on.
-
-Soooooo, how about the attached patch instead (not tested yet), which
-changes mkprep to accept an additional -entry parameter to tell it to
-use a non-default entry point, and is used only for zImage.prep?
-
-However, if you're sure that simple/head.S can be changed in the same
-way as I did for prep/head.S, I will do so, if you prefer.
-
-Cheers,
-
-Leigh.
-
-
-
-------=_20030325200132_83559
-Content-Type: application/octet-stream; name="010-boot-args-2.diff"
-Content-Disposition: attachment; filename="010-boot-args-2.diff"
-Content-Transfer-Encoding: base64
-
-ZGlmZiAtdXJOWCAvaG9tZS9sZWlnaC8uZGlmZmV4IGxpbnV4cHBjXzJfNC9hcmNoL3BwYy9ib290
-L3ByZXAvaGVhZC5TIGxpbnV4cHBjXzJfNF9hcmdzL2FyY2gvcHBjL2Jvb3QvcHJlcC9oZWFkLlMK
-LS0tIGxpbnV4cHBjXzJfNC9hcmNoL3BwYy9ib290L3ByZXAvaGVhZC5TCTIwMDMtMDMtMjEgMjI6
-MDA6MjguMDAwMDAwMDAwICswMDAwCisrKyBsaW51eHBwY18yXzRfYXJncy9hcmNoL3BwYy9ib290
-L3ByZXAvaGVhZC5TCTIwMDMtMDMtMjUgMTk6NDQ6NDMuMDAwMDAwMDAwICswMDAwCkBAIC0xNCw2
-ICsxNCwxNyBAQAogICogICAgICBKdW1wIHRvIHRoZSBrZXJuZWwgZW50cnkKICAqICAgICAgICAg
-ICAgLS0gQ29ydAogICovCisKKyNkZWZpbmUgQ01EX0JVRl9MRU4JMjU2CisJLmdsb2JsCWNtZF9i
-dWYJCS8qIGNtZF9idWYgaXMgaGVyZSBzbyB0aGF0IGl0IGNhbiBlYXNpbHkgKi8KK2NtZF9idWY6
-CQkJLyogYmUgbW9kaWZpZWQgYnkgYW4gZXh0ZXJuYWwgdG9vbCAgICAgICAqLworI2lmZGVmIENP
-TkZJR19DTURMSU5FCisJLmFzY2l6CUNPTkZJR19DTURMSU5FCisJLmJhbGlnbgkyNTYsMAorI2Vs
-c2UKKwkuc3BhY2UJQ01EX0JVRl9MRU4sMAorI2VuZGlmCisKIAkuZ2xvYmwJc3RhcnQKIHN0YXJ0
-OgogCWJsCXN0YXJ0XwpAQCAtNDQsOCArNTUsOCBAQAogCW10bXNyCXIzCiAKIAkvKiBjb21wdXRl
-IHRoZSBzaXplIG9mIHRoZSB3aG9sZSBpbWFnZSBpbiB3b3Jkcy4gKi8KLQlsaXMJcjQsc3RhcnRA
-aAotCW9yaQlyNCxyNCxzdGFydEBsCisJbGlzCXI0LGNtZF9idWZAaAorCW9yaQlyNCxyNCxjbWRf
-YnVmQGwKIAlsaXMJcjUsZW5kQGgKIAlvcmkJcjUscjUsZW5kQGwKIAlhZGRpCXI1LHI1LDMJCS8q
-IHJvdW5kIHVwICovCkBAIC01Niw3ICs2Nyw3IEBACiAJLyogY2hlY2sgaWYgd2UgbmVlZCB0byBy
-ZWxvY2F0ZSBvdXJzZWx2ZXMgdG8gdGhlIGxpbmsgYWRkciBvciB3ZXJlCiAJICogd2UgbG9hZGVk
-IHRoZXJlIHRvIGJlZ2luIHdpdGggLS0gQ29ydCAqLwogCW1mbHIJcjMKLQlzdWJpCXIzLHIzLDQJ
-CS8qIHdlIGdldCB0aGUgbmlwLCBub3QgdGhlIGlwIG9mIHRoZSBicmFuY2ggKi8KKwlzdWJpCXIz
-LHIzLENNRF9CVUZfTEVOKzQJLyogYWRqdXN0IG5pcC0+aXAsICsgY21kX2J1ZiBsZW5ndGggKi8K
-IAltcglyOCxyMwogCWNtcAkwLHIzLHI0CiAJYmVxCXN0YXJ0X2xkcgkvKiBJZiAwLCB3ZSBkb24n
-dCBuZWVkIHRvIHJlbG9jYXRlICovCkBAIC02NCwxMSArNzUsMTEgQEAKICAqIG5vIG1hdHRlciB3
-aGVyZSB3ZSdyZSBsb2FkZWQsIG1vdmUgb3Vyc2VsdmVzIHRvIC1UdGV4dCBhZGRyZXNzCiAgKi8K
-IHJlbG9jYXRlOgotCW1mbHIJcjMJCS8qIENvbXB1dGUgY29kZSBiaWFzICovCi0Jc3ViaQlyMyxy
-Myw0CisJbWZscglyMwkJCS8qIENvbXB1dGUgY29kZSBiaWFzICovCisJc3ViaQlyMyxyMyxDTURf
-QlVGX0xFTis0CS8qIGFkanVzdCBuaXAtPmlwLCArIGNtZF9idWYgbGVuZ3RoICovCiAJbXIJcjgs
-cjMKLQlsaXMJcjQsc3RhcnRAaAotCW9yaQlyNCxyNCxzdGFydEBsCisJbGlzCXI0LGNtZF9idWZA
-aAorCW9yaQlyNCxyNCxjbWRfYnVmQGwKIAltcglyNSxyNwkJLyogR2V0IHRoZSAjIG9mIGxvbmd3
-b3JkcyBhZ2FpbiAqLwogCW10Y3RyCXI1CQkvKiBTZXR1cCBmb3IgbG9vcCAqLwogCWxpCXI2LDAK
-ZGlmZiAtdXJOWCAvaG9tZS9sZWlnaC8uZGlmZmV4IGxpbnV4cHBjXzJfNC9hcmNoL3BwYy9ib290
-L3ByZXAvTWFrZWZpbGUgbGludXhwcGNfMl80X2FyZ3MvYXJjaC9wcGMvYm9vdC9wcmVwL01ha2Vm
-aWxlCi0tLSBsaW51eHBwY18yXzQvYXJjaC9wcGMvYm9vdC9wcmVwL01ha2VmaWxlCTIwMDMtMDMt
-MjEgMjI6MDQ6MDAuMDAwMDAwMDAwICswMDAwCisrKyBsaW51eHBwY18yXzRfYXJncy9hcmNoL3Bw
-Yy9ib290L3ByZXAvTWFrZWZpbGUJMjAwMy0wMy0yNSAxOTo0NjowMC4wMDAwMDAwMDAgKzAwMDAK
-QEAgLTU0LDcgKzU0LDcgQEAKIAkJLi4vY29tbW9uL2R1bW15Lm8gaW1hZ2UubwogCSQoTEQpICQo
-TERfQVJHUykgLW8gJEAgJChvYmoteSkgaW1hZ2UubyAkKExJQlMpCiAJJChPQkpDT1BZKSAkKE9C
-SkNPUFlfQVJHUykgJEAgJEAgLVIgLmNvbW1lbnQgLVIgLnN0YWIgLVIgLnN0YWJzdHIKLQkkKE1L
-UFJFUCkgLXBicCAkQCAuLi9pbWFnZXMvJEAucHJlcAorCSQoTUtQUkVQKSAtcGJwIC1lbnRyeSAw
-eDUwMCAkQCAuLi9pbWFnZXMvJEAucHJlcAogCXJtIC1mICRACiAKIHpJbWFnZS5pbml0cmQ6ICQo
-b2JqLXkpICQoTElCUykgLi4vbGQuc2NyaXB0IC4uL2ltYWdlcy92bWxpbnV4Lmd6ICQoTUtQUkVQ
-KSBcCmRpZmYgLXVyTlggL2hvbWUvbGVpZ2gvLmRpZmZleCBsaW51eHBwY18yXzQvYXJjaC9wcGMv
-Ym9vdC9wcmVwL21pc2MuYyBsaW51eHBwY18yXzRfYXJncy9hcmNoL3BwYy9ib290L3ByZXAvbWlz
-Yy5jCi0tLSBsaW51eHBwY18yXzQvYXJjaC9wcGMvYm9vdC9wcmVwL21pc2MuYwkyMDAzLTAzLTIx
-IDIyOjAwOjI3LjAwMDAwMDAwMCArMDAwMAorKysgbGludXhwcGNfMl80X2FyZ3MvYXJjaC9wcGMv
-Ym9vdC9wcmVwL21pc2MuYwkyMDAzLTAzLTI1IDE5OjQ0OjQzLjAwMDAwMDAwMCArMDAwMApAQCAt
-MjEsMTIgKzIxLDYgQEAKICNpbmNsdWRlICJub25zdGRpby5oIgogI2luY2x1ZGUgInpsaWIuaCIK
-IAotI2lmZGVmIENPTkZJR19DTURMSU5FCi0jZGVmaW5lIENNRExJTkUgQ09ORklHX0NNRExJTkUK
-LSNlbHNlCi0jZGVmaW5lIENNRExJTkUgIiIKLSNlbmRpZgotCiAjaWYgZGVmaW5lZChDT05GSUdf
-U0VSSUFMX0NPTlNPTEUpIHx8IGRlZmluZWQoQ09ORklHX1ZHQV9DT05TT0xFKQogI2RlZmluZSBJ
-TlRFUkFDVElWRV9DT05TT0xFCTEKICNlbmRpZgpAQCAtNDYsOCArNDAsNyBAQAogZXh0ZXJuIGNo
-YXIgX19yYW1kaXNrX2JlZ2luLCBfX3JhbWRpc2tfZW5kOwogZXh0ZXJuIGNoYXIgX2VuZFtdOwog
-Ci1jaGFyIGNtZF9wcmVzZXRbXSA9IENNRExJTkU7Ci1jaGFyIGNtZF9idWZbMjU2XTsKK2V4dGVy
-biBjaGFyIGNtZF9idWZbMjU2XTsKIGNoYXIgKmNtZF9saW5lID0gY21kX2J1ZjsKIAogaW50IGtl
-eWJfcHJlc2VudCA9IDE7CS8qIGtleWJvYXJkIGNvbnRyb2xsZXIgaXMgcHJlc2VudCBieSBkZWZh
-dWx0ICovCkBAIC0zMDMsNyArMjk2LDYgQEAKIAogCXB1dHMoIlxuTGludXgvUFBDIGxvYWQ6ICIp
-OwogCWNwID0gY21kX2xpbmU7Ci0JbWVtY3B5IChjbWRfbGluZSwgY21kX3ByZXNldCwgc2l6ZW9m
-KGNtZF9wcmVzZXQpKTsKIAl3aGlsZSAoICpjcCApCiAJCXB1dGMoKmNwKyspOwogI2lmZGVmIElO
-VEVSQUNUSVZFX0NPTlNPTEUKZGlmZiAtdXJOWCAvaG9tZS9sZWlnaC8uZGlmZmV4IGxpbnV4cHBj
-XzJfNC9hcmNoL3BwYy9ib290L3V0aWxzL21rcHJlcC5jIGxpbnV4cHBjXzJfNF9hcmdzL2FyY2gv
-cHBjL2Jvb3QvdXRpbHMvbWtwcmVwLmMKLS0tIGxpbnV4cHBjXzJfNC9hcmNoL3BwYy9ib290L3V0
-aWxzL21rcHJlcC5jCTIwMDMtMDMtMjEgMjI6MDA6MzMuMDAwMDAwMDAwICswMDAwCisrKyBsaW51
-eHBwY18yXzRfYXJncy9hcmNoL3BwYy9ib290L3V0aWxzL21rcHJlcC5jCTIwMDMtMDMtMjUgMTk6
-NDU6NDUuMDAwMDAwMDAwICswMDAwCkBAIC03Nyw3ICs3Nyw3IEBACiAjZGVmaW5lIFN5c3RlbVBy
-ZXAJMHg0MQogCiB2b2lkIGNvcHlfaW1hZ2UoaW50ICwgaW50KTsKLXZvaWQgd3JpdGVfcHJlcF9w
-YXJ0aXRpb24oaW50ICwgaW50ICk7Cit2b2lkIHdyaXRlX3ByZXBfcGFydGl0aW9uKGludCAsIGlu
-dCwgdW5zaWduZWQgbG9uZyApOwogdm9pZCB3cml0ZV9hc21fZGF0YSggaW50IGluLCBpbnQgb3V0
-ICk7CiAKIHVuc2lnbmVkIGludCBlbGZoZHJfc2l6ZSA9IDY1NTM2OwpAQCAtODgsMTAgKzg4LDEx
-IEBACiAgIGludCBhcmdwdHIgPSAxOwogICB1bnNpZ25lZCBpbnQgcHJlcCA9IDA7CiAgIHVuc2ln
-bmVkIGludCBhc21vdXRwdXQgPSAwOworICB1bnNpZ25lZCBsb25nIGVudHJ5X3BvaW50ID0gMHg0
-MDA7CiAKLSAgaWYgKCAoYXJnYyA8IDMpIHx8IChhcmdjID4gNCkgKQorICBpZiAoIChhcmdjIDwg
-MykgfHwgKGFyZ2MgPiA2KSApCiAgIHsKLSAgICBmcHJpbnRmKHN0ZGVyciwgInVzYWdlOiAlcyBb
-LXBicF0gWy1hc21dIDxib290LWZpbGU+IDxpbWFnZT5cbiIsYXJndlswXSk7CisgICAgZnByaW50
-ZihzdGRlcnIsICJ1c2FnZTogJXMgWy1wYnBdIFstYXNtXSBbLWVudHJ5IDxlbnRyeT5dIDxib290
-LWZpbGU+IDxpbWFnZT5cbiIsYXJndlswXSk7CiAgICAgZXhpdCgtMSk7CiAgIH0KIApAQCAtMTEx
-LDYgKzExMiwxNyBAQAogICAgIGFyZ3B0cisrOwogICB9CiAKKyAgLyogY2hlY2sgZm9yIC1lbnRy
-eSAqLworICBpZiAoICFzdHJjbXAoIGFyZ3ZbYXJncHRyXSwgIi1lbnRyeSIgKSApCisgIHsKKyAg
-ICBhcmdwdHIrKzsKKyAgICBpZiAoIGFyZ3ZbYXJncHRyXSAmJiAqYXJndlthcmdwdHJdICkKKyAg
-ICAgIGVudHJ5X3BvaW50ID0gc3RydG9sKCBhcmd2W2FyZ3B0cl0sIE5VTEwsIDAgKTsKKyAgICBl
-bHNlCisgICAgICBleGl0KC0xKTsKKyAgICBhcmdwdHIrKzsKKyAgfQorCiAgIC8qIGlucHV0IGZp
-bGUgKi8KICAgaWYgKCAhc3RyY21wKCBhcmd2W2FyZ3B0cl0sICItIiApICkKICAgICBpbl9mZCA9
-IDA7CQkJLyogc3RkaW4gKi8KQEAgLTEzMyw3ICsxNDUsNyBAQAogICAKICAgLyogd3JpdGUgcHJl
-cCBwYXJ0aXRpb24gaWYgbmVjZXNzYXJ5ICovCiAgIGlmICggcHJlcCApCi0JICB3cml0ZV9wcmVw
-X3BhcnRpdGlvbiggaW5fZmQsIG91dF9mZCApOworCSAgd3JpdGVfcHJlcF9wYXJ0aXRpb24oIGlu
-X2ZkLCBvdXRfZmQsIGVudHJ5X3BvaW50ICk7CiAKICAgLyogd3JpdGUgaW5wdXQgaW1hZ2UgdG8g
-Ym9vdGltYWdlICovCiAgIGlmICggYXNtb3V0cHV0ICkKQEAgLTE0NCw3ICsxNTYsNyBAQAogICBy
-ZXR1cm4gMDsKIH0KIAotdm9pZCB3cml0ZV9wcmVwX3BhcnRpdGlvbihpbnQgaW4sIGludCBvdXQp
-Cit2b2lkIHdyaXRlX3ByZXBfcGFydGl0aW9uKGludCBpbiwgaW50IG91dCwgdW5zaWduZWQgbG9u
-ZyBlbnRyeV9wb2ludCkKIHsKICAgdW5zaWduZWQgY2hhciBibG9ja1s1MTJdOwogICBwYXJ0aXRp
-b25fZW50cnlfdCAqcGUgPSAocGFydGl0aW9uX2VudHJ5X3QgKikmYmxvY2tbMHgxQkVdOwpAQCAt
-MTYyLDEwICsxNzQsMTAgQEAKICAKICAgLyogc2V0IGVudHJ5IHBvaW50IGFuZCBib290IGltYWdl
-IHNpemUgc2tpcHBpbmcgb3ZlciBlbGYgaGVhZGVyICovCiAjaWZkZWYgX19pMzg2X18KLSAgKmVu
-dHJ5ID0gMHg0MDAvKis2NTUzNiovOworICAqZW50cnkgPSBlbnRyeV9wb2ludC8qKzY1NTM2Ki87
-CiAgICpsZW5ndGggPSBpbmZvLnN0X3NpemUtZWxmaGRyX3NpemUrMHg0MDA7CiAjZWxzZQotICAq
-ZW50cnkgPSBjcHVfdG9fbGUzMigweDQwMC8qKzY1NTM2Ki8pOworICAqZW50cnkgPSBjcHVfdG9f
-bGUzMihlbnRyeV9wb2ludC8qKzY1NTM2Ki8pOwogICAqbGVuZ3RoID0gY3B1X3RvX2xlMzIoaW5m
-by5zdF9zaXplLWVsZmhkcl9zaXplKzB4NDAwKTsKICNlbmRpZiAvKiBfX2kzODZfXyAqLwogCg==
-
-------=_20030325200132_83559--
-
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
