@@ -1,35 +1,35 @@
-Date: Mon, 2 Aug 2004 06:57:52 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Daren Hayward <darenh@4bridgeworks.com>
-Cc: "'Matt Porter'" <mporter@kernel.crashing.org>,
-	"'Ralph Siemsen'" <rsiemsen@rossvideo.com>,
-	Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: early UART mapping in head_44x.S
-Message-ID: <20040802065752.A28244@home.com>
-References: <C18BA5DDB58DD511BD0700C0DF0DD45011C475@NTSERVER4>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <C18BA5DDB58DD511BD0700C0DF0DD45011C475@NTSERVER4>; from darenh@4bridgeworks.com on Mon, Aug 02, 2004 at 01:30:10PM +0100
+In-Reply-To: <1091328813.7394.47.camel@gaston>
+References: <1091291276.987.57.camel@localhost> <1091328813.7394.47.camel@gaston>
+Mime-Version: 1.0 (Apple Message framework v618)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <8516762F-E497-11D8-939F-000393DBC2E8@freescale.com>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
+	Adrian Cox <adrian@humboldt.co.uk>
+From: Kumar Gala <kumar.gala@freescale.com>
+Subject: Re: [PATCH] Workaround for 745x data corruption bug
+Date: Mon, 2 Aug 2004 10:20:43 -0500
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Aug 02, 2004 at 01:30:10PM +0100, Daren Hayward wrote:
+Ben,
+
+Do you plan on also back porting your patch to 2.4?
+
+thanks
+
+- kumar
+
+On Jul 31, 2004, at 9:53 PM, Benjamin Herrenschmidt wrote:
+
 >
-> Hi,
+> I have a more complete patch addressing another errata as well, will
+> be up rsn...
 >
-> I have been having the same problems with the head_44x.S, what does the
-> patch do just remove the duplicate entries?
+> Ben.
+>
+>
 
-Yes, it removes the repeated code.
-
-> Where can I browse the PPC BK tree online?
-
-Most PPC subarches don't use the old linuxppc-2.5 tree any longer.
-The latest 4xx bit are in mainline.
-
-http://linux.bkbits.net:8080/linux-2.5
-
--Matt
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
