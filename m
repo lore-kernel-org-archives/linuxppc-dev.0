@@ -1,47 +1,24 @@
-To: sruel@oerlikon.ca
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: looking for a nice root filesystem image 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 26 Oct 2001 16:51:15 EDT."
-             <3BD9CCC3.1030704@oerlikon.ca>
-Date: Sat, 27 Oct 2001 00:18:52 +0200
-Message-Id: <20011026221857.DD65110CDB@denx.denx.de>
+Message-ID: <B2FEA4881D7DD411BFDC000629A819D802BC2D4A@POSTAL>
+From: "Martin, Tim" <tim.martin@viasat.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Multiple MPC8xx SCC ethernets
+Date: Fri, 26 Oct 2001 15:36:06 -0700
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3BD9CCC3.1030704@oerlikon.ca> you wrote:
->
-> Now i'm looking for a "a bit bigger" root filesystem with typical
-> utilities like: umount, ifconfig, etc. that could fit in around 8 MBytes
-> of Flash. Is there some image available somewhere on the Net?
+I'm looking for patches to allow multiple SCC based ethernets on MPC8xx
+based boards.  The 2.4 kernel releases only allow selection of either SCC1,
+SCC2, or SCC3, but not all three at the same time.
 
-Have a look at "SELF" (our Simple Embedded  Linux  Framework");  it's
-based  on Busybox, provides a lot of tools including remote access to
-your target using FTP and telnet and fits in <840 kB of flash (kernel
-not included).
+Twice in the last few months, there's been a thread discussing this but I've
+never seen any code posted to the list.  Could someone send me / point me to
+any available patches?
 
-You can get it even smaller when you "optimize" your  libs  (see  the
-running thread).
-
-Hope it helps.
-
-Umm, yes, before I forget it: you find SELF in
-ftp://ftp.denx.de/pub/LinuxPPC/usr/src/SELF/
-There is even a short README ;-)
-
-Hope it helps,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-You could end up being oddly sad and full of a strange, diffuse  com-
-passion  which would lead you to believe that it might be a good idea
-to wipe out the whole human race and start again with amoebas.
-                                 - Terry Pratchett, _Guards! Guards!_
+Thanks,
+Tim
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
