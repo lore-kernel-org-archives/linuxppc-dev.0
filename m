@@ -1,57 +1,42 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Martin Costabel <costabel@wanadoo.fr>, <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Keyboard trouble with XF 4.0.1
-Date: Mon, 23 Oct 2000 14:32:46 +0200
-Message-Id: <19340917060430.2614@192.168.1.2>
-In-Reply-To: <39F36680.65D1BF06@wanadoo.fr>
-References: <39F36680.65D1BF06@wanadoo.fr>
+Message-ID: <39F4351D.646B972F@physik.uni-marburg.de>
+Date: Mon, 23 Oct 2000 14:55:00 +0200
+From: Henning Lvser <henning.loeser@physik.uni-marburg.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org, Olaf Hering <olh@suse.de>
+Subject: gpm and XF401 (Re: ADB-Mouse)
+References: <200010210500.AAA23065@lists.linuxppc.org>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hi,
+thanks I got my mouse working again ... well at least sort of, I do
+echo "1"  > /proc/sys/dev/mac_hid/keyboard_sends_linux_keycodes   and
+echo "1"  > /proc/sys/dev/mac_hid/mouse_button_emulation.
+Then the keyboard works with the .../i386/qwertz/de-latin-nodeadkeys.map.gz and even displays the 'Umlaute' in Emacs :-).
+The mouse moves now but the buttons only work sort of. If I mark something in the console to copy it, it scrambles the underlying text (intead of highlithing it) and only the scrambeled text gets copied. For example it makes "n~3" from "not" and ASCII
+code 'hex 02' from blanks ... Under X the mouse buttons behave funny aswell, instead of moving a window it looks as if it is resized, it's just that the part that is moved doesn't get drawn any more. If I do a xrefresh it turns out that the window was
+indeed moved ... This is propably a more X related problem, I have compiled the X401 from the sources with Ani Joshies xfree86 tree and Franz's xf4-kbdppc4.patch.
+
+Any sufggestions?
+
+Henning
+
+> Date: Fri, 20 Oct 2000 12:18:26 +0200
+> From: Olaf Hering <olh@suse.de>
+> Subject: Re: ADB-Mouse
 >
->OK, this argument is relevant for the case of "linux" keycodes, where
->the same keymaps are now supposedly used on PCs and on Pmacs.
+> On Fri, Oct 20, Topi Kanerva wrote:
 >
->For the case of ADB keycodes, this argument is empty. Or are there other
->machines than Pmacs that now use the mac_keycodes[] translation table
->and macintosh keymaps and that didn't use macintosh keymaps before? It
->is in this case that the backwards compatibility problem appears. For
->the "old" input layer, one needed different keymaps for ADB and USB
->keyboards (differing by swapping those 2 keys).
-
-That's more complicated. Some ADB keyboard have the same layout as
-equivalent PC keyboard. Some have not. (Depending on the country). The
-"swapping" of the corner key depends on ISO vs. ANSI keyboard and is now
-handled by the driver, so an identical keymap should be used in both cases.
-With the Linux keycodes, a "standard" keymap should work for any USB
-keyboard or any ADB keyboard with a "standard" layout. For those having a
-specific "Apple" layout, you still need a specific keymap (like French),
-but one single keymap should now handle all cases for the "corner" key.
-
->Now with the new input layer one needs the same keymap, and the decision
->is whether this is the old ADB keymap or the old USB keymap. Right now,
->it is the old USB keymap. If I understand this correctly, it suffices to
->swap the numbers "10" and "50" in the mac_keycodes[] table in
->drivers/input/keybdev.c to obtain compatibility with the old ADB
->keymaps. Or maybe one additionally needs to swap the positions 10 and 50
->(the numbers "41" and "86") in adb_to_linux_keycodes[] in
->drivers/macintosh/adbhid.c? I am too tired now to understand this.
-
-The linux keycodes are completely different keycodes. (based on PS/2
-keycodes currently). The "old" keycodes are ADB keycodes as they used to
-be. When enabling ADB keycodes, both ADB and USB keycodes are converted
-to Linux keycodes and then back to ADB keycodes with the abdhid.c. That's
-a bit hackish, but it ensures consistency, and we expect everybody to
-switch to linux keycodes over time.
-
->Anyway, there are more important problems to solve :-)
-
-Yup ;)
-
-Ben.
-
+> > guys, how exactly do you make it to work?
+>
+> Put that in boot.local:
+>
+> echo "1"  > /proc/sys/dev/mac_hid/mouse_button_emulation
+> echo "87" > /proc/sys/dev/mac_hid/mouse_button3_keycode # F11
+> echo "88" > /proc/sys/dev/mac_hid/mouse_button2_keycode # F12
+>
+> Gruss Olaf
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
