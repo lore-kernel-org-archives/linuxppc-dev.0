@@ -1,36 +1,46 @@
-Date: Tue, 17 Apr 2001 15:55:40 +0100
-Subject: Re: boot params
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
-Message-Id: <20010417145530.189392F008@apollo.valhalla.net>
+Message-Id: <200104171531.RAA00992@piglet.grunz.lu>
+Date: Tue, 17 Apr 2001 17:31:12 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: Rsync access through NAT?
+To: jsmith@ash.penguinppc.org
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.LNX.4.33.0104170144460.14396-100000@ash.penguinppc.org>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Apr 17, 2001, Ethan Benson wrote:
-> On Tue, Apr 17, 2001 at 04:03:45PM +0200, Michel Lanners wrote:
->>
->> You sure your backup battery is OK? It's not completely dead, I think
->> otherwise the box wouldn't boot; but you may test it anyhow.
->>
->> Also, you could add an nvsetenv script on shutdown as a workaround.
->
-> well on some machines the MacOSROM resets the nvram, so you must never
-> allow it to boot.
+Hi again,
 
-I think this is the case with 9600 - it's always behaved this way and I've
-no (other) reason to be suspicious of the battery (you usually get a warning
-in that several power button presses are required to start it).
+To the list: for some time now, I've had problems accessing
+penguinppc.org from my PPC machines (I've noticed it with rsync... for
+www I use a proxy on i386).
 
-Anyway all my machines power are on & active 24/7 - even those running MacOS
-;-?
+Turns out the problem only occurs with 2.4 kernels:
 
-One day I might try to figure out something that will work - because it _is_
-possible to change the vars using BootVars and get one 'reboot' into OF
-screen/kbd with the new params.
+[mlan@piglet ~]$ uname -a
+Linux piglet 2.4.3-pre3 #4 Thu Apr 12 01:47:59 CEST 2001 ppc unknown
+(benh's tree)
 
-Iain
+and 2.4.4-pre1 from benh on the TiBook.
+
+Anyone else seen this? Note, with a 2.2 kernel, all is OK. I've not had
+a chance to test a 2.4 kernel on i386 to see whether it's the same over
+there.
+
+I hope it doesn't matter, but I'm accessing the net through a NAT router
+(which is configured OK, thanks for asking ;-)
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
