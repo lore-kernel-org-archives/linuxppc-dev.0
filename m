@@ -1,59 +1,40 @@
-Date: Mon, 17 Jul 2000 15:03:11 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Andreas Tobler <toa@pop.agri.ch>
-cc: Martin Costabel <costabel@wanadoo.fr>,
-        Benjamin Herrenschmidt <bh40@calva.net>,
-        Linux Frame Buffer Device Development <linux-fbdev@vuser.vu.union.edu>,
-        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: cards initialized from offb (was: Re: [linux-fbdev] Re: [patch]VRAM
-  detection in controlfb)
-In-Reply-To: <3971A48E.64668BE9@pop.agri.ch>
-Message-ID: <Pine.LNX.4.10.10007171410530.449-100000@cassiopeia.home>
+Message-ID: <3973274F.F305D3FD@biophys.uni-duesseldorf.de>
+Date: Mon, 17 Jul 2000 17:33:35 +0200
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+Reply-To: schmitz@opal.biophys.uni-duesseldorf.de
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+CC: Alain RICHARD <alain.richard@equation.fr>,
+        Benjamin Herrenschmidt <bh40@calva.net>,
+        Paul Mackerras <paulus@linuxcare.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: MacSerial and Serial driver cohabitation
+References: <Pine.LNX.4.10.10007171426170.449-100000@cassiopeia.home>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 16 Jul 2000, Andreas Tobler wrote:
-> Geert Uytterhoeven wrote:
-> > This patch moves the initialization of some frame buffer devices from offb.c
-> > to fbmem.c. It also reorders the initialization calls in fbmem.c.
-> >
-> > The patch mainly affects the users of the following frame buffer devices on
-> > PowerMac and CHRP:
+Geert Uytterhoeven wrote:
+> And CHRP boxes, which may have both 16550 and 8530 serial ports on the
+> motherboard. Never tried my 8530 ports, though.
 >
-> >   - platinumfb
->
-> ^^^^^^^^^^^^^^^^^
-> pm7200
->
-> > Except for a simple compile test (except for the new ofonly logic), it is
-> > untested. Please test it!! Many many thanks!
->
-> I applied it with some massive handwork to a 2.4.0-test4 from
-> hq.fsmlabs.com. So far I can't see some oddities.
-> Afterstep runs....
->
-> Do yu have some special testcases?
+> To me it would sound logical to start counting serial ports from ttyS0 in one
+> driver, and continue counting in a second driver, and so on. We had that on
+> m68k, but the PC guys didn't like it and want to keep the current scheme (one
+> major device for 16550 serial, and one for each type of multiserial board on
+> the market).
 
-If it works as before, everything is fine. Please also verify that offb is
-used instead of platinumfb if the option `video=ofonly' is passed to the
-kernel (or `no video driver' is checked in BootX).
+I think the fight was rather about other design decisions in the m68k
+driver, not as much about the device numbering. As far as I recall, the
+proposed solution was to have the 'builtin' serials at least on m68k use
+the default (16550) major but cut out the midlevel abstraction. I never
+understood what was supposed to perform hardware abstraction though.
 
-In /proc/iomem you should see which memory regions are in used by the frame
-buffer device driver you are using (platinumfb or offb, in your case).
+I'd say agree on a fixed order of probing, allocate minors in that order
+(with the possible exception of allowing a driver to allocate specific
+minors out of order if someone wants to make sure their driver always
+gets the same minors).
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+	Michael
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
