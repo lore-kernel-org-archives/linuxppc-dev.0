@@ -1,57 +1,44 @@
-To: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <wn58yd5p7og.fsf@linhd-2.ca.nortel.com>
+References: <10A74DE9-DFF7-11D8-96F8-003065F9B7DC@embeddededge.com> <wn58yd5p7og.fsf@linhd-2.ca.nortel.com>
+Mime-Version: 1.0 (Apple Message framework v618)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <DAD37954-E008-11D8-96F8-003065F9B7DC@embeddededge.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+From: Dan Malek <dan@embeddededge.com>
 Subject: Re: BAT mapping exported to user-space
-References: <10A74DE9-DFF7-11D8-96F8-003065F9B7DC@embeddededge.com>
-From: "Linh Dang" <linh@linhdang.home>
-Date: Tue, 27 Jul 2004 15:32:47 -0400
-In-Reply-To: <10A74DE9-DFF7-11D8-96F8-003065F9B7DC@embeddededge.com> (Dan
- Malek's message of "Tue, 27 Jul 2004 14:02:03 -0400")
-Message-ID: <wn58yd5p7og.fsf@linhd-2.ca.nortel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Date: Tue, 27 Jul 2004 16:09:24 -0400
+To: "Linh Dang" <linh@linhdang.home>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek <dan@embeddededge.com> wrote:
+On Jul 27, 2004, at 3:32 PM, Linh Dang wrote:
 
->
-> On Jul 27, 2004, at 1:34 PM, Dang, Linh [CAR:2X23:EXCH] wrote:
->
->>> cat /proc/ppc_htab
->> PTE Hash Table Information
->
-> You misunderstand.  This is the PPC Hash table, not Linux PTEs.
-> There are lots and lots and lots of Linux PTEs are are eventually
-> loaded into the PPC hash table for the processor to fetch.
+> Thanx for pointing that out. I have to dig further. I guess it would
+> come down to how much pressure using pages for mapping our asics
+> (instead of BATs) would have on the TLBs.
 
-Thanx for pointing that out. I have to dig further. I guess it would
-come down to how much pressure using pages for mapping our asics
-(instead of BATs) would have on the TLBs.
+As I pointed out in one of the very first messages, you can write
+a custom device driver to implement various mapping schemes
+based upon your requirements.  However, this could result in
+something not portable to another kernel version.
 
-Just to clarify things, I'm trying to sell Linux to management (we're
-a VxWorks shop) and trying to tell them that Linux's
-RT-performance/efficiency is adequate and Linux would bring in a lot
-more robustness/stability.
+> Just to clarify things, I'm trying to sell Linux to management (we're
+> a VxWorks shop) and trying to tell them that Linux's
+> RT-performance/efficiency is adequate and Linux would bring in a lot
+> more robustness/stability.
 
-
-> What processor are you using?
-
-7447 at 1 GHz (the bottle of the system is the I/O to the
-memory-mapped ASICs)
-
->
->> I though the kernel (2.6) only use pages for vmalloc.
->
-> There is lots of kernel space allocated through vmalloc(), plus
-> other specialized spaces depending upon the processor core
-> that are allocated through page tables.
-
-Hmm, i though most of kernel's objects (socket's buffer included) are
-allocated thru the slab-allocator. slab, AFAIK, doesn't use neither
-vmalloc nor pages.
+I've been involved in too many of this discussions to realize this
+is never an engineering trade off.  Linux can do this VxWorks can't,
+VxWorks can do things Linux can't, and there is a whole bunch
+of computing where they do equally well.   The discussion we've
+had is irrelevant to the choice.  Find some features worthy of
+discussion and use them to make the decision. You can solve
+any OS challenge with Linux, you just have to find the people
+with the knowledge and be willing to do it.
 
 
---
-Linh Dang
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
