@@ -1,10 +1,10 @@
-Message-ID: <009201c06519$e83418d0$1e894b82@pc30>
-From: "Nils Hagge" <Nils.Hagge@stud.uni-hannover.de>
-To: "Jari Nguyen Trung Thanh" <jari.nguyen@serialsystem.com.sg>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <006c01c0650f$73b65d60$1e894b82@pc30> <976717249.3a3785c2030de@mail.serialsystem.com.sg>
-Subject: Re: Kernel panic: No init found.
-Date: Wed, 13 Dec 2000 16:32:30 +0100
+Message-ID: <004801c0651d$3a7d96e0$e3e8b2c6@hawk>
+From: "Mike Hill" <mhill@bustech.com>
+To: "Nils Hagge" <Nils.Hagge@stud.uni-hannover.de>,
+        <linuxppc-embedded@lists.linuxppc.org>
+References: <006c01c0650f$73b65d60$1e894b82@pc30>
+Subject: Re: Kernel panic: No init found.  
+Date: Wed, 13 Dec 2000 10:55:17 -0500
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -12,88 +12,107 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Jari,
+I believe I have seen the same problem.  As I recall, we first started
+seeing this problem when we removed a symlink (/opt/hardhat/devkit to /)
+that was included in the MontaVista target directory.  We were told that we
+had it add it back because some of the MontaVista libraries were built
+incorrectly.  You may want to check to see if you have that symlink in your
+target directory.
 
-thank for your fast answer. I examined the problem I little bit further,
-maybe you find something, that can help me further with this new
-piece of information.
-> you should see if you have the link sbin -> bin in the target dir or not..
-bash-2.03# dir -l
-total 100
-drwxr-xr-x   2 root     root         8192 Dec  5 02:55 bin
-drwxr-xr-x   2 root     root         4096 Dec  5 03:14 boot
-drwxr-xr-x   2 root     root         4096 Dec  5 02:54 dev
-drwxr-xr-x   6 root     root         4096 Dec 13 07:14 etc
-drwxr-xr-x   3 root     root         4096 Dec  5 02:54 home
-drwxr-xr-x   3 root     root         4096 Dec  5 02:54 include
--rwxrwxrwx   1 root     root        30344 Dec  8 06:39 init
-drwxr-xr-x   4 root     root         4096 Dec  5 02:55 lib
-drwxr-xr-x   6 root     root         4096 Dec  5 02:55 man
-drwxr-xr-x   2 root     root         4096 Aug  9 21:17 mnt
-drwxr-xr-x   3 root     root         4096 Dec  5 02:54 opt
-drwxr-xr-x   2 root     root         4096 Aug  9 21:17 proc
-lrwxrwxrwx   1 root     root            3 Dec  5 02:54 sbin -> bin
-drwxr-xr-x   4 root     root         4096 Dec  5 02:55 share
-drwxr-xr-x   2 root     root         4096 Aug  9 21:17 tmp
-drwxr-xr-x   5 root     root         4096 Dec  5 02:54 usr
-drwxr-xr-x   8 root     root         4096 Dec  5 02:55 var
-drwxr-xr-x  10 root     root         4096 Dec  5 02:55 web
-Sure. This link exists. But even if it didnt, it should work nevertheless,
-if you take a look at the source file....
+-Mike
 
-> the best thing I can show that you should look to the file: /init/main.c
-> in your kernel source
-....that I nearly know by heart
+----- Original Message -----
+From: "Nils Hagge" <Nils.Hagge@stud.uni-hannover.de>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Sent: Wednesday, December 13, 2000 9:17 AM
+Subject: Kernel panic: No init found.
 
- if (open("/dev/console", O_RDWR, 0) < 0)
-  printk("Warning: unable to open an initial console.\n");
 
- (void) dup(0);
- (void) dup(0);
-
- /*
-  * We try each of these until one succeeds.
-  *
-  * The Bourne shell can be used instead of init if we are
-  * trying to recover a really broken machine.
-  */
-
- if (execute_command)
-  printk("Suchen nach %s ", execute_command),
-execve(execute_command,argv_init,envp_init),
-                printk("%d\n", errno);
- printk("Suchen nach /sbin/init "),
-execve("/sbin/init",argv_init,envp_init),         <---here /sbin/init is
-tried to be loaded
-        printk("%d\n", (errno));
- printk("Suchen nach /etc/init "), execve("/etc/init",argv_init,envp_init),
-<----- /etc/init
- printk("%d\n", (errno));
- printk("Suchen nach /bin/init "), execve("/bin/init",argv_init,envp_init),
-<----- /bin/init
- printk("%d\n", (errno));
- printk("Suchen nach /bin/sh "), execve("/bin/sh",argv_init,envp_init),
-<----- /bin/sh
- printk("%d\n", (errno));
- panic("No init found.  Try passing init= option to kernel.");
-}
-
-I added the "printk" statements in order to see the error codes.
-And the output is the following:
-[....]
-VFS: Mounted root (NFS filesystem).
-Freeing unused kernel memory: 36k init
-Suchen nach /bin/init 2
-Suchen nach /sbin/init 2
-Suchen nach /etc/init 2
-Suchen nach /bin/init 2
-Suchen nach /bin/sh 2
-[...]
-Thus the error is always no. 2, which is according to
-"include/asm-ppc/errno.h" equal to
-"No such file or directory".
-And this is definitely not true. The files do all exist and are readable and
-executable for all (u-g-o).
+>
+> Hi,
+>
+> I try to run Hard Hat Linux from Montavista as described in the CDK 1.2
+> manual on an RPX lite board.
+> Unfortunately, the installation procedure is only for hosts with Red Hat
+> Linux, I hoped this would work for SuSE, too.
+>
+> The problem has to do with the NFS filesystem. I can successfully download
+a
+> precompiled
+> Hard Hat Linux boot-image via TFTP and monitor this with the serial port.
+>
+> The following is the output over the serial port...
+>
+>  target IP address : 824B8932
+>  target file name  : rpxlite.srec
+>  address bias      : 0
+> Starting tftp download:
+> inetARP(): OK
+> .1.2.4.8.16.32.64.128.256.512.1024.2048.4096.8192
+> load_tftp(): OK
+> 1087283 data bytes, 13764 S-records, 2124 tftp blocks, 0 repeated blocks
+> start address = 00200000
+> load_tftp_toMem(): OK
+> Transferring control to downloaded program
+> loaded at:     00200000 0020B1FC
+> relocated to:  00180000 0018B1FC
+> board data at: 001801C8 001801E4
+> relocated to:  00200100 0020011C
+> zimage at:     00206000 0026A4C4
+> avail ram:     0026B000 01000000
+>
+> Linux/PPC load: root=/dev/nfs rw
+nfsroot=/opt/hardhat/devkit/ppc/8xx/target
+> Uncompressing Linux...done.
+> Now booting the kernel
+> Linux version 2.2.14 (root@rodan.mvista.com) (gcc version 2.95.2 19991030
+> (2.95.
+> 3 prerelease/franzo)) #1 Tue Aug 8 02:01:27 PDT 2000
+> Boot arguments: root=/dev/nfs rw
+nfsroot=/opt/hardhat/devkit/ppc/8xx/target
+> time_init: decrementer frequency = 240000000/60
+> Calibrating delay loop... 63.69 BogoMIPS
+> Memory: 15152k available (740k kernel code, 456k data, 36k init)
+> [c0000000,c1000
+> IP Protocols: ICMP, UDP, TCP
+> TCP: Hash tables configured (ehash 16384 bhash 16384)
+> Initializing RT netlink socket
+> Starting kswapd v 1.5
+> CPM UART driver version 0.03
+> ttyS00 at 0x0280 is a SMC
+> ttyS01 at 0x0380 is a SMC
+> pty: 256 Unix98 ptys configured
+> RAM disk driver initialized:  16 RAM disks of 4096K size
+> loop: registered device at major 7
+> eth0: CPM ENET Version 0.2, 00:10:ec:00:1b:fb
+> PPP: version 2.3.7 (demand dialling)
+> TCP compression code copyright 1989 Regents of the University of
+California
+> PPP line discipline registered.
+> Sending BOOTP requests.... OK
+> IP-Config: Got BOOTP answer from 130.75.137.50, my address is
+130.75.137.59
+> Looking up port of RPC 100003/2 on 130.75.137.50
+> Looking up port of RPC 100005/1 on 130.75.137.50
+> VFS: Mounted root (NFS filesystem).
+> Freeing unused kernel memory: 36k init
+> Kernel panic: No init found.  Try passing init= option to kernel.
+> Rebooting in 180 seconds..
+>
+> ----snip----
+>
+> The filesystem seems to be mounted, but it does not find any files in
+there
+> although the full "linux tree" is available. I also tried adding
+>   init=/bin/init   init=bin/init    init=/opt/.../target/bin/init
+> to the boot arguments, but nothing helped.
+>
+> Do you know that problem or have an idea? Any help is welcome. Thank in
+> advance.
+>
+> Nils Hagge
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
