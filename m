@@ -1,35 +1,39 @@
-From: acmay@acmay.homeip.net
-Date: Wed, 5 Sep 2001 09:25:36 -0700
-To: jpeters@mvista.com
-Cc: andrew may <acmay@acmay.homeip.net>,
-	John Tyner <jtyner@cs.ucr.edu>, linuxppc-commit@source.mvista.com,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ppc405 enet changes (fwd)
-Message-ID: <20010905092536.C621@sink.san.rr.com>
-References: <Pine.LNX.4.30.0109031513110.21186-200000@hill.cs.ucr.edu> <3B9557CA.D76C70E2@mvista.com> <20010904152608.B14548@ecam.san.rr.com> <3B9632EB.51904875@mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3B9632EB.51904875@mvista.com>; from jpeters@mvista.com on Wed, Sep 05, 2001 at 07:12:59AM -0700
+To: weiwu <weiwu@isdn.iscas.ac.cn>
+Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: flash !a questionof block-driver 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 05 Sep 2001 13:05:52 +0800."
+             <200109050504.NAA24541@isdn.iscas.ac.cn>
+Date: Wed, 05 Sep 2001 20:37:47 +0200
+Message-Id: <20010905183753.0B8B910CC5@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Sep 05, 2001 at 07:12:59AM -0700, jpeters@mvista.com wrote:
-> In addition, many of the embedded system boards around are still
-> not what you would call blindingly fast.  The 405 chips I had would
-> do a maximum of 200 Mhz and the additional software cache
-> coherency code made it look a lot slower.  In a situation like
-> this anything to reduce instruction count speeds up execution.
-> Especially if it is code that runs at interrupt level.
+In message <200109050504.NAA24541@isdn.iscas.ac.cn> you wrote:
+>
+> The ftp://ftp.denx.de/pub/LinuxPPC/usr/src/CDK.tar.gz sources also include a
+> flash translation layer (ftl.c) so flash can be used as a read/write
 
-So did you chose the vars that were to be static and the ones in
-dev->priv for speed? If so it would be nice to see how you decided
-which ones when where.
+This is old, no: ancient stuff. Please forget that you ever saw it ;-)
 
-I would think that it would be best to keep all the vars as close
-together in mem as possible, to keep them on the fewest number of
-cache-lines. By splitting them between two sections I would think
-it hurts more than it helps.
+> I have Intel 28F320J5(4MBytes, 8bit) flash memory!
+> where can I found it if you know,and can I use my intel flash memory for your flash device
+> driver if you have driver!
 
+A character device driver is included with our sources, see for instance
+ftp://ftp.denx.de/pub/LinuxPPC/usr/src/linux-2.4.4-2001-07-23.tar.bz2
+
+The standard solution is to use MTD, which is part of recent kernels, too.
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Karl's version of Parkinson's Law: Work expands to  exceed  the  time
+alloted it.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
