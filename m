@@ -1,44 +1,72 @@
-Date: Thu, 12 Jun 2003 13:45:19 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Christoph Hellwig <hch@lst.de>
-Cc: akuster@mvista.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: GPL inconsistency in arch/ppc/ocp/xlinx/
-Message-ID: <20030612134519.C4693@home.com>
-References: <20030524201213.GA8256@lst.de> <20030612203205.GA23017@lst.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20030612203205.GA23017@lst.de>; from hch@lst.de on Thu, Jun 12, 2003 at 10:32:05PM +0200
+Date: Thu, 12 Jun 2003 23:44:00 -0600 (MDT)
+From: Terry Greeniaus <tgree@phys.ualberta.ca>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: pismo upgraded to 750fx not detected correctly
+In-Reply-To: <200306130459.XAA18908@lists.linuxppc.org>
+Message-ID: <Pine.LNX.4.10.10306122335280.3129-100000@pneuma.phys.ualberta.ca>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Jun 12, 2003 at 10:32:05PM +0200, Christoph Hellwig wrote:
->
-> On Sat, May 24, 2003 at 10:12:13PM +0200, Christoph Hellwig wrote:
-> > Hi Armin,
-> >
-> > you seem to have added the the directory in the topic to the LinuxPPC
-> > trees.  Unfortunately they have a license consitency that basically
-> > makes them illegal to distribute, they claim to be under GPL but have
-> > the following notice:
-> >
-> > *     Xilinx products are not intended for use in life support appliances,
-> > *     devices, or systems. Use in such applications are expressly prohibited.
-> >
-> > Could you please contact Xilinc to clarify the license and/or remove
-> > those files from the tree?  Thanks.
->
-> As there hasn't been any answer yet I think these files should be
-> remove to ensure the linuxppc tree is legally distributable.
+On Thu, 12 Jun 2003, Chris Studholme wrote:
 
-Multiple people have found that Armin in no longer answering linuxppc
-related email so this doesn't really mean anything...he's disappeared
-from the community.  I'll query a couple folks in mvista, I would
-have thought the "right" person would see this here.
+> I have a Powerbook G3 (Pismo) 400MHz that I've been running Linux on for
+> almost 3 years now.  It has been working great, but to ensure that it
+> continues to serve me well, I purchased the Powerlogix BlueChip G3 900MHz
+> upgrade <http://www.powerlogix.com/products2/bcg3pismo/index.html>.  The
+> machine still runs Linux ok, but I have a few problems.
+>
+> First off, the new processor is an IBM 750FX, but it is recognized as a
+> 740/750.
+>
+>   $ cat /proc/cpuinfo
+>   cpu             : 740/750
+>   temperature     : 20 C (uncalibrated)
+>   clock           : 550MHz
+>   revision        : 2.2 (pvr 0008 0202)
+>   bogomips        : 1795.68
+>   machine         : PowerBook3,1
+>   motherboard     : PowerBook3,1 MacRISC2 MacRISC Power Macintosh
+>   detected as     : 70 (PowerBook Pismo)
+>   pmac flags      : 00000007
+>   L2 cache        : 1024K unified
+>   memory          : 256MB
+>   pmac-generation : NewWorld
+>
+> I believe pvr should be 7000 0202.  Also, the clock speed is 900MHz, not
+> 550MHz.  I have verified, using some numerical cpu bound programs I have,
+> that this machine is running at least twice as fast as it did before the
+> upgrade.  Also, note that the bogomips value seems to imply the machine is
+> actually running at 900MHz.  Finally, the L2 cache is now only 512K, but
+> included on the processor die running at 900MHz.
 
-Regards,
---
-Matt Porter
-mporter@kernel.crashing.org
+[mega-snip]
+
+The PowerLogix 900 MHz bluechips are 750FX CPUs, however they have been
+strapped so that the PVR reports itself as 0x0008nnnn instead of
+0x7000nnnn, so that Apple's OpenFirmware can better support them (in
+particular, to automatically enable the L2 cache).  The correct way (on
+these boards, anyhow) to determine if this is a 750FX is by writing to
+the HID1 register and seeing if it changed.  I have a code snippet to do
+this if anyone wants it, although it isn't LinuxPPC-specific.  This is
+backwards-compatible with normal 750 CPUs, they don't take an exception
+if you try to write to the HID1 register.
+
+As for why it is showing up as 1MB L2 cache, I'm not sure except that
+the firmware writes to the 750FX L2CR as though it were a 1MB 750 L2
+cache, and then Linux may be reading that value back later on.  It's
+harmless since those other bits in the 750FX L2CR don't do anything, but
+it might be confusing the kernel.
+
+As for why your test program didn't ramp up/down in speed as you changed
+the PLL ratio, I don't know, but I didn't look over it very carefully.
+These CPUs definitely support it, so you were probably doing something
+incorrectly, or maybe the code wasn't allowing it because it thinks it
+is a 750 and not a 750FX CPU.
+
+TG
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
