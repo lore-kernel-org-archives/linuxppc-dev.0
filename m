@@ -1,38 +1,47 @@
-Message-ID: <20000622230254.29672.qmail@ww184.netaddress.usa.net>
-Date: 22 Jun 00 18:02:54 CDT
-From: jeramy b smith <ultrapenguin@netscape.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Time to review the Developer's Directory
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <F14441D40E5AD3118886005004607AD10BDD30@mail.libra.de>
+From: "Halfmann, Klaus" <khalfmann@libra.de>
+To: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
+Subject: Status of hfs support as of 2.4.0-test1-ac21
+Date: Fri, 23 Jun 2000 11:57:55 +0200
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-The developer's directory has gotten a bit dated and since it will be a part
-of the new linuxppc.org site, we need to make sure it is fairly up to date.
+I played around with hfs support in this developer kernel and
+penetrated my hfs partion with some paralell cp-s and rm-s
+(I copied "the linux kernel" documentation around :-)
+After every step I rebootet into MacOs and ran DiskFirstAid (DFA)
+but nothing was found. cp and rm complained about problems with the
+.finderinfo and .resource directories, but I expected it this way.
+I used my iBook for testing.
 
-URL of the test site:
-http://penguinppc.org
-URL of the developers area:
-http://penguinppc.org/devzone/
-URL of the the developers directory:
-http://penguinppc.org/devzone/devdir
+Is there anything else i _must_ check for a fs to be considered
+stable ?
 
-The formatting of the directory will change to accomodate readability but for
-now we need to make sure that it is up to date. Developer's who are no longer
-active need to be dropped and projects need to be brought up to current.
+In case anyone reports a bug to me in this area I'll try to fix
+it.
 
-Remember, once this site becomes linuxppc.org and starts getting a lot of
-hits; you don't want to have your name misspelled or have the wrong project in
-your credit.
+Meanwhile I'll have a look at the hfsutils
+( http://www.mars.org/home/rob/proj/hfs/ ) and will start
+moving them to HFS+.
 
--Jeramy
+I found however some bugs not related to hfs and may reproduce
+them in detail in case someone asks:
+  - the console driver messed up some pixels while editing
+  - hdparm did not always work correctly
+    (I use pmud and it calls hdparm depending on the battery load)
+    Sometimes I got stuck with the message "hda interrupt lost"
+    or similar.
 
-PS: If someone wants space for a section of development information on the
-site, just email me. The embedded section was only added because someone
-_asked_. If you think you have info other developer's can use and are willing
-to maintain it yourself, send me a mail.
 
+Greetings,
+
+|       |                   Klaus Halfmann    khalfmann@libra.de
+|       |
+|    i  | --.  r---  --- |  Libra Software    Tel +49 (0)621 41997-0
+|    |  b-- |  |    a--- |  Erzbergerstr. 17  Fax +49 (0)621 41997-30
+L--- |  --- |  |    .----.  68165 Mannheim
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
