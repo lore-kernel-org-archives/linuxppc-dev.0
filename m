@@ -1,33 +1,25 @@
-From: "Ron Bianco" <ronb@junction.net>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: custom mpc8240 student project (long)
-Date: Thu, 21 Feb 2002 14:40:05 -0800
-Message-ID: <001401c1bb28$b5363880$4d012ac7@warp-speed>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <15477.22880.141084.768742@zaphod.musenki.com>
+Date: Thu, 21 Feb 2002 16:56:21 -0800
+From: andrew may <acmay@acmay.homeip.net>
+To: =?iso-8859-1?Q?David_M=FCller_=28ELSOFT_AG=29?= <d.mueller@elsoft.ch>
+Cc: andrew may <acmay@acmay.homeip.net>, Armin <akuster@pacbell.net>,
+	Stefan Roese <stefan.roese@esd-electronics.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 405 MII-PHY communication problem (was: Re: PPC405gp enet Soft Reset)
+Message-ID: <20020221165621.A21452@ecam.san.rr.com>
+References: <20020207191741.A26185@ecam.san.rr.com> <EFEAIMDCOOOHIEPHDNFJOEJBDKAA.stefan.roese@esd-electronics.com> <20020208103557.A27732@ecam.san.rr.com> <3C63AE1A.7000907@pacbell.net> <20020208120140.B27732@ecam.san.rr.com> <3C67B119.4080702@elsoft.ch> <20020211164906.A1822@ecam.san.rr.com> <3C6A25BC.7010704@elsoft.ch> <3C723F98.7050402@elsoft.ch>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <3C723F98.7050402@elsoft.ch>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-My $.02:
+On Tue, Feb 19, 2002 at 01:05:44PM +0100, David Müller (ELSOFT AG) wrote:
+> Hi
+>
+> The problem with the even-numbered PHY register addresses seems to be
+> caused by a too weak or totally missing pullup resistor on the MDIO line.
 
-Why don't you just use a regular old EPROM to hold your ppcboot monitor image.?
-IIRC, it has a serial driver and provision for downloading linux kernels to
-SDRAM.
-I'm not sure if it has provision for R/W of flash, but maybe.
-
-You're planning to run at a very low clock speed on your wire-wrapped board.
-Ugh!
-Better check the 8240 datasheet, there may be lower limits to what's allowed.
-
-You'll be very handicapped by not having a BDI2000, which, BTW, uses JTAG port
-for fast downloads to SDRAM.
-Surely your school has a budget for development tools?  The BDI would have other
-uses besides just your 8240 project.
-
-Good luck, Ron
-
+Yep, that seems to solve it here as, well. The phy wants a 1.5k pull up.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
