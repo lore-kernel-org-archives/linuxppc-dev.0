@@ -1,62 +1,132 @@
-Date: Tue, 6 Jan 2004 08:14:12 +0100
-To: Marcus Barrow <mbarrow@sangate.com>
+Date: Tue, 6 Jan 2004 08:39:55 +0100
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Sven Luther <sven.luther@wanadoo.fr>,
-	linuxppc-dev@lists.linuxppc.org
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
+	Rob Baxter <robb@synergymicro.com>
 Subject: Re: multiple separate pci bridges ...
-Message-ID: <20040106071412.GB735@iliana>
-References: <20040101181145.GA27294@iliana> <1073016223.1502.179.camel@gaston> <20040102074049.GA2032@iliana> <1073029796.1501.228.camel@gaston> <20040104210335.GA858@iliana> <1073252724.780.5.camel@gaston> <20040104220608.GA1667@iliana> <20040105164038.GA16158@iliana> <1073338730.9456.2487.camel@boat.sangate.com>
+Message-ID: <20040106073955.GF735@iliana>
+References: <1073016223.1502.179.camel@gaston> <20040102074049.GA2032@iliana> <1073029796.1501.228.camel@gaston> <20040104210335.GA858@iliana> <1073252724.780.5.camel@gaston> <20040104220608.GA1667@iliana> <20040105164038.GA16158@iliana> <1073338095.9497.70.camel@gaston> <20040105214239.GA20252@iliana> <1073340725.9497.105.camel@gaston>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1073338730.9456.2487.camel@boat.sangate.com>
+In-Reply-To: <1073340725.9497.105.camel@gaston>
 From: Sven Luther <sven.luther@wanadoo.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Jan 05, 2004 at 04:38:50PM -0500, Marcus Barrow wrote:
+On Tue, Jan 06, 2004 at 09:12:06AM +1100, Benjamin Herrenschmidt wrote:
 >
-> 	Hi Sven:
+> > Mmm, will look into this. Actually, linux should not write to those, but
+> > read access should be ok.
 >
-> 	I think there is some basic brokeness in the Discovery
-> 	specific code. I've been meaning to go and look at some
-> 	of the original code, to see if some stuff was left on
-> 	the floor.
+> If the BARs contain address ranges that will confuse linux resource
+> management (like RAM location), then you have to hide them completely.
 
-Mmm. What code are you speaking about here ?
+Mmm, will check.
 
-> 	On our evalution boards the P2P registers are not set
-> 	up. So you indeed have two PCI bus 0. The P2P register
-> 	for PCI bus 1 should be initialized to identify it as
-> 	bus 1, or whatever the right value is considering
-> 	any more bridges found on bus 0.
+BTW, X has problems with pci config space access. It simply opens the
+/proc/bus/pci/<bus>/<dev>.<func> stuff, and is not happy with the
+result.
 
-Mmm, i understand that the 2.6.x pci domain will make this not
-necessary. I might be wrong though.
+Is the above just a plain ioremap of config space or something such, or
+does the reads there use the pci access functions ?
 
-> 	If you insert pci cards which contain bridges on them,
-> 	they only work on the bus 0 slots...
+> > Well, i tried ioremapping 0x10000, but without much success
+> > (cfg_addr/data is at cf8/cfc, and this magic stuff is at f118/f11c). I
+> > just got a sig 11 OOPS, so ...
+>
+> I don't fully understand... If you are doing IO cycles, there's no
+> ioremapping needed at all at this point, just use the one that is done
+> once for the bridge IO space. neither cf8/cfc not f118 look like
+> addresses that can be ioremap'ed anyway...
 
-bus 1 is used as an agp bus anyway, and i doubt there are many agp
-graphic cards out there with pci bridges on them. When i inserted my
-Appian Jeronimo 2000 in that board, it refused to powerup at all, but
-then, maybe it is drawing too much power or something. After all, it has
-a 3dlabs gamma and two permedia3 on it.
+Well, it is f1000cf8/cfc and f100f118/f11c naturally, and the second is
+needed to enable a hardware kludge to make the second pci bus look like
+agp. I don't really have the details of such, but i need to write to the
+f118/f11c before/after each pci access to the second pci bus, as well as
+disable the CPU interrupts for doing the access.
 
-> 	Do you have something like ppcboot or uboot starting
-> 	your system or just a kernel? If you are using a real
+> > > just ioremap that in a global once... I do that for a few things in
+> > > pmac_feature.c, like the northbridge registers.
+> >
+> > Yeah, i have seen.
+> >
+> > > > Also, i had to manually set hose->bus_offset = 0x10, since that didn't
+> > > > seem to be set automatically. I don't know why though.
+> > >
+> > > Why do you need hose->bus_offset ? For indirect_pci ? Well... that's
+> >
+> > Nope, i checked, and it was trying to read the bus 0x10, while the bus
+> > is in reallity 0. That said, if i understood stuff correctly, it should
+> > be ok, since type 0 config ignores bus and device, right ?
+>
+> Yes. And for type 1, just issue a cycle to (bus - hose->first_busno)
 
-Well, there is a customized SmartFirmware OpenFirmware on the board. I
-even have (non-free though) access to the source of it. The board is
-mostly a CHRP design.
+How are the config access functions told that they shall do a type 0 or
+1 access ? I have seen there is something in the pci_indirect functions
+that do this, but not sure i can do it here.
 
-> 	boot rom, you could try initializing the p2p registers
-> 	by hand, then booting...
+> > > a kludge, you should rather fix indirect_pci to use first_busno
+> > > instead... I don't know where this bus_offset comes from in the first
+> > > place, it's defined in pci_controller but not used at all in 2.6...
+> >
+> > Yeah, nor in 2.4, if my grep is correct. I can't use indirect_pci for
+> > the second bus though.
+> >
+> > > (BTW. You should really work on 2.6, not 2.4...)
+> >
+> > Ah, yes, but 2.4 means suppoprt for debian-installer. Once that works, i
+> > will work on 2.6.x. Also, 2.4 provides me a known working base.
+>
+> I still don't like the idea of new dev. beeing done on 2.4...
 
-The Firmware guy told me don't touch it though.
+Well, once i get it working, i will go on to 2.6, promised :))
 
-> 	I'm hoping to work on this in the next few days.
+That said, i was a bit disapointed by 2.6. If you remember, i had some
+problems with 2.4, since the second IDE bus uses a different interrupt
+than the first one, so i used a kludge in the via-ide driver to make it
+work. The 2.6 ide driver has per ide channel setup, but still does get
+the primary ide interrupt for the second channel too.
 
-Ok, great.
+> > This is which bewilders me, the bridge spec speak about type 0 and type
+> > 1, and using the last 2 bits for this.
+>
+> Yes. Usually, you don't put the last 2 bits of the offsets in cfg_addr,
+> you crop that value to the closest 32 bits boundary (or 64 bits in some
+> chips), and then you "offset" the cfg_data access.
+>
+> For example, for a 8 bits access at an offset of 7, you would use 4
+> as the offset in cfg_addr, and then do a 8 bits access at cfg_data + 3
+
+Ok, understand better now.
+
+> > The Marvell Discovery II has (one, two or three) gigabit ethernets
+> > included, these do not appear on the pci bus, but need to be programmed
+> > directly with the NB registers. On the other hand, the sk98 driver
+> > provides driver for various Marvell gigabit ethernet.
+>
+> Argh ????? They don't appear on PCI ? What piece of SHIT is this bridge ?
+
+Well, the Discovery II use a internal crossbar switch, and the ethernet
+are on the same level as the pci buses. This makes for very efficient
+networking i guess, but has problems. In fact, each of these ones has
+the same priority as each pci bus.
+
+I believe it should be possible to have each of these appear as an
+independent pci bus or something ?
+
+> Really totally insane.
+
+Well, i am no hardware guy, so i cannot make judgement on this, but i
+guess there are worse hardware out there.
+
+> I strongly suggest you still match them as PCI devices, eventually using
+> the bridge device itself as the match for the driver.... The DMA mapping
+> ops are designed to work with PCI anyway.
+
+Mmm. Will have to look into that.
+
+Again, thanks for your help,
 
 Friendly,
 
