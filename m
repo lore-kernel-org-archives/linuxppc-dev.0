@@ -1,33 +1,36 @@
-From: Steffen Haeuser <SteffenH@hyperion-software.de>
-Reply-To: SteffenH@hyperion-software.de
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-CC: Iain Sandoe <iain@sandoe.co.uk>, daenzerm@student.ethz.ch,
+Date: Wed, 26 Jul 2000 21:28:08 +0200 (CEST)
+From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+To: Michel Dänzer <daenzerm@student.ethz.ch>
+cc: Steffen Haeuser <SteffenH@hyperion-software.de>,
         linuxppc-dev@lists.linuxppc.org
-Date: Wed, 26 Jul 2000 13:59:08 -0500
-Message-ID: <yam8242.441.146608920@mail.lf-online.de>
-In-Reply-To: <Pine.LNX.4.10.10007252047110.1490-100000@cassiopeia.home>
 Subject: Re: sound again [was: Re: xf4 bug report]
+In-Reply-To: <397F3271.FE3C0310@student.ethz.ch>
+Message-ID: <Pine.LNX.4.10.10007262055580.29744-100000@zirkon.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Am 25-Jul-00 schrieb Geert Uytterhoeven:
+> > All I've got configured so far is a (PowerMac/PReP/CHRP) Machine Type
+> > combination. Not what I asked for, as you will no doubt notice.
+>
+> When Jesper Skov was the strong leader of APUS development, he worked on
+> making that possible, but he hasn't succeeded. Not that I think it's really
+> needed...
 
-Hi!
+:-) Jesper's another one from the m68k port. I don't think it's really
+needed for PPC either, all I wanted to point out that it's been possible
+on m68k, because it was designed that way in the first place. And to
+support what Geert said in response to the silly Amiga/Atari topic - for a
+long time, the kernels that were released by the m68k maintainer had
+support for both, mainly because he was too lazy to compile twice. I've
+benefited far too much from the joint efforts from Amiga and Atari hackers
+to be told there's no way these would ever work together.
 
->Why not? Linux/m68k first ran on the Amiga, then on the Atari, and only much
+Sorry for veering so far off topic.
 
-Some people might feel upset :)
-
->later on the Mac. You can even compile a kernel that will run on both Amiga
->and Atari! :-)
-
-Would be only a 68k Kernel then though and not use the PowerPC Board in case
-of the Amiga...
-
-Steffen
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
