@@ -1,41 +1,43 @@
-Message-ID: <39AED82E.9D9FFA56@emc.com>
-Date: Thu, 31 Aug 2000 18:11:58 -0400
-From: Zhaobin Zhu <zzhu@emc.com>
+Message-ID: <39AF15FE.3DDE5D49@m2tech.co.nz>
+Date: Fri, 01 Sep 2000 14:35:42 +1200
+From: ben bodley <benb@m2tech.co.nz>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: General question on how to port linux kernel ?
+To: embedded list <linuxppc-embedded@lists.linuxppc.org>
+Subject: grey area open-source issues..
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello all,
+hello all,
 
-I am a newbie to Linux kernel port.
+i have a few questions regarding the publishing of linux kernel source
+code.. i know its a little off topic, but i'm sure many developers here
+will have experienced some sort of issues when it comes to a customer
+paying for kernel development, and wanting to keep certain ip in-house..
 
-Just want to ask some general questions regarding porting linux kernel.
+the thing is, i have ported a lot of code over to linux, that has an
+object only license (ie. we cannot give away the source code, but object
+code is fine).. the linux kernel however is under the GPL license, and
+having modified parts of it, i must make this code available publically
+with the product..
 
-1) I have experiences porting pSOS kernel on different custom board.
-     Usually what I did is to bring the board to a known state and
-provide
-      some required parameters and I/O interfacces, then call an entry
-point
-      of the kernel. That is it.
+the code i have ported has to be compiled into the kernel..
 
-      Is Linux porting similar to this process ? If yes ,
+i can't give it away as i break one license, but break another if i dont
+make it public..
 
-2)  Is there a well-defined known state before jumping into linux kernel
-?
 
-3)  Is linux kernel modulized ?  For example, to integrate a different
-PCI
-       bridge controller, which .c and .h files should I change ?
 
-Thanks,
+what is the story here??, and is there exceptions for modules??
+
+cheers for any insights,
+
+ben
 
 --
- Zhaobin Zhu
- zzhu@emc.com
+/\\------------------------------------------------------------------
+ben.bodley/.m2technologyltd.nz/.benb@m2tech.co.nz/.64.9.4448307ext130
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
