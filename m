@@ -1,52 +1,62 @@
-Message-ID: <20000928053628.1115.qmail@dag.newtech.fi>
-To: greyham@research.canon.com.au (Graham Stoney)
-cc: dag@newtech.fi (Dag Nygren), linuxppc-embedded@lists.linuxppc.org,
-        dag@newtech.fi
-Subject: Re: Crosscompiler broken ? 
-In-Reply-To: Message from greyham@research.canon.com.au (Graham Stoney)
-   of "Thu, 28 Sep 2000 10:58:28 +1100." <20000927235828.E93B5ED@elph.research.canon.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Thu, 28 Sep 2000 08:36:28 +0300
-From: Dag Nygren <dag@newtech.fi>
+From: Ruedi.Hofer@ascom.ch
+Date: Thu, 28 Sep 2000 08:51:27 +0100 (CED)
+Subject: Re: Re: VxWorks bootloader & PowerQUICC II, Booting the kernel
+To: dan@mvista.com, linuxppc-embedded@lists.linuxppc.org
+Cc: kernel@linux01.hasler.ascom.ch
+Message-id: <0G1L0010X4GL0O@pmdf-it.hasler.ascom.ch>
+MIME-version: 1.0
+Content-type: MULTIPART/MIXED; BOUNDARY="Boundary_(ID_iPTVGucqr+vB7AqeeyJXVQ)"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Dag Nygren writes:
-> > The  compilation of the kernel is done with a crosscompiler
-> > on an Intel x86 system and strange things are happening:
+--Boundary_(ID_iPTVGucqr+vB7AqeeyJXVQ)
+Content-type: TEXT/PLAIN
+Content-Transfer-Encoding: 7BIT
+
+Hi Dan
+
+I guess I found the message which points to the tool mentioned in your
+answer below:
+
+>I wrote a program that will hack the headers such that the stupid
+>VxWorks TFTP loader would load the zImage (like other properly
+>written loaders will do without any hacks).  I don't know if this
+>will help anyone else.  You can find it on
+>       ftp://ftp.embeddededge.com/pub/vxhack.c
 >
-> What version of the compiler and kernel are you using?
-
-Sorry, should of course have included that:
-Compiler: 2.95.1
-Kernel: 2.2.15
-
 >
-> > printk("dentry_hashtable(0.5)(addr = 0x%lx) = 0x%lx\n", &dentry_hashtable,
-> > dentry_hashtable);   /* DEBUG */
->
-> I couldn't reproduce this problem.  However, you might want to get into the
-> habit of using the correct format specifiers.  It doesn't make a difference in
-> this instance, but it will trip you up eventually.  Use %p to print pointers,
-> not %lx.
+>       -- Dan
 
-Yep, changed that later on and it really makes no difference.
-The %lx comes from a time when I learned C-programming,
-at that point there were no %p in printf() etc.
+Unfortunately, this link doesn't work anymore! Do you mind sending
+a copy of this file directly to me?
 
-Also upgraded to 2.95.2. No change.
-
-BRGDS
+Thank you, Ruedi
 
 
---
-Dag Nygren                               email: dag@newtech.fi
-Oy NewTech Ab                            phone: +358 9 8024910
-Trasktorpet 3                              fax: +358 9 8024916
-02360 ESBO                                 GSM: 0400-426312
-FINLAND
 
+
+
+
+dan@mvista.com on 27.09.2000 19:36:24
+An: Ruedi.Hofer@ascom.ch @ MailGate
+Kopie: linuxppc-embedded@lists.linuxppc.org @ MailGate, vanbaren_gerald@si.com @ MailGate, kernel@linux01.hasler.ascom.ch @ MailGate
+Thema: Re: VxWorks bootloader & PowerQUICC II, Booting the kernel
+
+
+Ruedi.Hofer@ascom.ch wrote:
+
+> I try to boot the Linux kernel on a SBC8260 evaluation board using
+> the VxWorks bootloader.
+
+Somewhere (and you can look through the archives as well as I can :-),
+I posted a program that will hack a zImage so the VxWorks boot loader
+will properly load and start it.....
+
+
+
+
+
+--Boundary_(ID_iPTVGucqr+vB7AqeeyJXVQ)--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
