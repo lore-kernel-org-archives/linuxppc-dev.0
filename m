@@ -1,44 +1,34 @@
-Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
-To: Val Henson <val@nmt.edu>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: EV-64260-BP & GT64260 bi_recs 
-In-Reply-To: Message from Val Henson <val@nmt.edu>
-   of "Sun, 24 Mar 2002 12:09:30 PDT." <20020324120930.A14640@boardwalk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Mon, 25 Mar 2002 11:44:10 +1100
-Message-ID: <16802.1017017050@msa.cmst.csiro.au>
-From: Murray Jensen <Murray.Jensen@cmst.csiro.au>
+Date: Sun, 24 Mar 02 20:19:58 PST
+From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
+Message-Id: <0203250419.AA26599@ivan.Harhan.ORG>
+To: linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
+Subject: Re: [Linux-galileo] Re: EV-64260-BP & GT64260 bi_recs
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 24 Mar 2002 12:09:30 -0700, Val Henson <val@nmt.edu> writes:
->How about one BI_IGNORE type, and driver writers and firmware authors
->can put whatever they feel like inside that bi_rec?
+Nye Liu <nyet@zumanetworks.com> wrote:
 
-The kernel should simply ignore any bi_rec it doesn't know about. You don't
-need a special record tag for this. Any bi_recs within bi_recs are all ignored
-in one fell swoop, since the outer record tag is unknown.
+> Mike S: I would also be VERY interested in any work you may have already
+> done in the mpsc or eth drivers; especially with regards to SMP and
+> cache coherency.
 
->It should be a way of passing
->information that only a bootloader can know, such as the location of a
->ramdisk, or the command line that the user typed into the bootloader.
+I already wrote about this in my long posting.
 
-Why only that? Why not use it to pass anything that the bootloader knows
-so that you don't have to duplicate effort in the Linux kernel?
+> i would
+> still like other GT EVB users lurking here to stress test the _galileo
+> tree as best they can, since right now, I seem to be the only active
+> developer with an EVB contributing to _gal.
 
-And anticipating the obvious answer, if a boot loader does not support bi_recs
-and/or cannot provide some required information, then you need a piggy back
-loader in arch/ppc/boot. Cheers!
-								Murray...
---
-Murray Jensen, CSIRO Manufacturing Sci & Tech,         Phone: +61 3 9662 7763
-Locked Bag No. 9, Preston, Vic, 3072, Australia.         Fax: +61 3 9662 7853
-Internet: Murray.Jensen@csiro.au
+Well, EV-64260 is completely broken in the 2_4_galileo tree, and has been so
+from the moment I first looked at it through now inclusive. Since 2_4_devel
+works so much better for me and is closer to my goal of stable support in 2.4
+release tarballs on kernel.org, I really have no incentive to mess with the
+2_4_galileo crap.
 
-Hymod project: http://www.msa.cmst.csiro.au/projects/Hymod/
+Just to tell everyone honestly how I really feel, IMHO 2_4_galileo is Nye's
+play tree and I strongly recommend against anyone other than Nye using it.
 
+MS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
