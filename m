@@ -1,36 +1,70 @@
-Date: Fri, 12 Feb 1999 01:13:04 -0800
-From: Rick Kwan <kenobi@coruscant.lightsaber.com>
-Message-Id: <199902120913.BAA14181@coruscant.lightsaber.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: platform specs (was: PReP spec)
+Date: Fri, 12 Feb 1999 13:16:50 +0100 (MET)
+From: Niels Roest <N.P.Roest@ITS.TUDelft.NL>
+Subject: Re: Adventures with KDE-1.1
+In-reply-to: <Pine.LNX.4.00.9902111928330.4101-100000@blackcat.cat.syr.edu>
+Cc: linuxppc-dev@lists.linuxppc.org
+Message-id: <Pine.HPP.3.95.990212131032.17563B-100000@elektron.et.tudelft.nl>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Thanks to Ken Robert's reply to my PReP spec query, I found the
-PowerPC FAQ, dated 27 February 1997 at
-    http://www.mot.com/SPS/PowerPC/library/ppc_faq/ppc_faq.html
-and from there, found my way to
-    ftp://ftp.austin.ibm.com/pub/technology/spec
-In this FTP site, the PReP documents are dated Oct 28, 1994, but
-there is a "chrp" directory there with documents dated Nov 20, 1995
-thru Oct 2, 1996.
 
-In my sporadic reading, it does indeed appear that CHRP has
-superceded PReP.  However, the above CHRP specs seem either pretty
-old or pretty stable.  Or am I looking in the wrong place?
 
->From the FAQ, I also made the journey to Yellowknife, at
-    http://www.mot.com/SPS/PowerPC/teksupport/refdesigns/yk.html
-The design manual is dated 98 Feb 20, and clearly states that it
-is a PowerPC/CHRP reference design.
+On Thu, 11 Feb 1999, Fred Dushin wrote:
 
-A list of current CHRP machines would indeed be interesting,
-if for nothing else, to show the breadth and flexibility of the
-architecture.  (Or lack thereof.)
+> 
+> 
+> In case anyone is interested...
+> 
+> I downloaded the kde 1.1 tarballs and had a go building.
+> But first I updated egcs as much as I could off of linuxppc.org.
+> 
+> BTW, is this the place to look for bleeding edge stuff?  Doesn't
+> look like it, by the dates.
+> 
+> [root@blackcat /downloads]# rpm -qa | grep egcs
+> egcs-as-gcc-1.1-0a
+> egcs-c++-1.1-0a
+> egcs-libstdc++-2.8.0-2b
+> egcs-1.1-0a
+> egcs-libstdc++-devel-2.8.0-2b
+> [root@blackcat /downloads]# rpm -qa | grep glibc
+> glibc-devel-0.961212-1l
+> glibc-info-0.961212-1h
+> glibc-static-0.961212-1l
+> glibc-0.961212-1l
+> 
+> qt-1.42 built without a hitch.
 
---Rick Kwan, Lightsaber Computing
-  rick.kwan@lightsaber.com
+I downloaded kde 1.1 tarballs too. I seem to have newer
+versions altogether, rpm -qa | grep egcs gives
+egcs-1.1.1-1c
+egcs-c++-1.1.1-1c
+egcs-g77-1.1.1-1c
+egcs-objc-1.1.1-1c
+and rpm -qa | grep glibc
+glibc-2.0.108-1c
+glibc-debug-2.0.108-1c
+glibc-devel-2.0.108-1c
+glibc-profile-2.0.108-1c
+cause I upgraded to pre-R5 (daring!!)
+I think I got qt-1.42 there too.
+My kernel (thus my linux & asm headers) is 2.2.1.
+
+<snip some problems>
+> Turned off HAS_ARGZ in config.h.
+> Further down, I ran into a mess of problems, mostly around header
+<snip>
+> Thanks,
+> Fred
+
+I had no problems whatsoever.
+So Fred, it seems upgrade would solve it.
+
+Niels
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
