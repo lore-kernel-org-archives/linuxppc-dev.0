@@ -1,104 +1,67 @@
-Message-ID: <36DEBCB0.7A98EB80@business.wm.edu>
-Date: Thu, 04 Mar 1999 12:02:40 -0500
-From: "Kevin B. Hendricks" <kbhend@business.wm.edu>
-Reply-To: kbhend@business.wm.edu
-MIME-Version: 1.0
-To: gdt@linuxppc.org, sbb@gnu.org, linuxppc-dev@lists.linuxppc.org,
-        egcs@egcs.cygnus.com
-Subject: Problem with egcs and denormalized constants?
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <199903041808.TAA18295@mitra.phys.uit.no>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Removing speaker hiss on PB G3
+From: Alvin Brattli <Alvin.Brattli@phys.uit.no>
+Date: Thu, 04 Mar 1999 19:08:10 +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
 
-The LinuxPPC port of JDK 1.2 can't pass the Java Compatibility Kit runtime-vm
-tests because of some sort of error which is related to having very small
-de-nromalized float constants.
+With the current 2.2.1 kernel, there is a lot of hiss in the speakers
+and headphones on the PowerBook G3.  The hiss starts immediately when
+booting, and does not disappear until a beep has been sounding.  When I
+was implementing my patch for the volume and mute buttons for the PB G3,
+I added some code in the function dmasound_init() in
+drivers/sound/dmasound.c to stop the beep immediately after the sound
+chips have been initialized.  I first tried using PMacSilence() and
+sound_silence(), but these do not do the trick.  Not knowing enough
+about the underlying hardware (and not having any documentation on it,
+beside the kernel code), I conjured up this code.
+What it does, is simply to issue a short beep of length one tick
+and with zero volume immediately after initializing the sound hardware,
+and then restoring the volume, effectively stopping the hiss.
 
-I don't know whether this is an egcs problem (it happens with both egcs 1.1.1
-and egcs 1.0.2), glibc problem (tested with the very latest glibc 1.99 rpm from
-Gary) but it is an error.  
-
-Will someone please compile and try the follwoing very simple test program and
-help me understand what is happening here.  Is this an egcs problem?
-
-[root@kbhend fltbug]# cat t3.c
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-
-
-float flMin (int i)
- {
-   float fl;
-   if (i == 0) fl = 1.4023984e-37F;
-   if (i == 1) fl = 1.4023984e-38F;
-   if (i == 2) fl = 1.4023984e-39F;
-   if (i == 3) fl = 1.4023984e-40F;
-   if (i == 4) fl = 1.4023984e-41F;
-   if (i == 5) fl = 1.4023984e-42F;
-   if (i == 6) fl = 1.4023984e-43F;
-   if (i == 7) fl = 1.4023984e-44F;
-   if (i == 8) fl = 1.4023984e-45F;
-   return fl;
- }
+This patch is ugly, but it works (at least for my PowerBook).  What
+really should be done, I think, is to change PMacSilence() so it does a
+better job of making sure the sound hardware is making no sound.
+However, without understanding the inner workings of the sound hardware,
+I cannot do this.  Can anyone give me any hints on what I need to do?
 
 
-int main(int argc, char** argv)
-{
-  int i;
-  float f;
-
-  for (i=0;i<9;i++) {
-     f = flMin(i);
-     fprintf(stdout,"flmin(%1d) is %20.13e\n",i,f);
-  }
-  fprintf(stdout,"But flmin(7)/10.0F is %20.13e\n",(flMin(7)/10.0F));
-}
-
-
-Here is the output from my LinuxPPC box:
-
-[root@kbhend fltbug]# ./t3
-flmin(0) is  1.4023984275674e-37
-flmin(1) is  1.4023983434895e-38
-flmin(2) is  1.4023984836193e-39
-flmin(3) is  1.4023914771270e-40
-flmin(4) is  1.4024195030963e-41
-flmin(5) is  1.4026997627891e-42
-flmin(6) is  1.4012984643248e-43
-flmin(7) is  1.4012984643248e-44
-flmin(8) is  0.0000000000000e+00
-But flmin(7)/10.0F is  1.4012984643248e-45            
-
-
-Here is the correct output from my AIX box using an old version of gcc:
-
-kbhend$ gcc -ot3 -O0 t3.c
-kbhend$ ./t3
-flmin(0) is  1.4023984275674e-37
-flmin(1) is  1.4023983434895e-38
-flmin(2) is  1.4023984836193e-39
-flmin(3) is  1.4023914771270e-40
-flmin(4) is  1.4024195030963e-41
-flmin(5) is  1.4026997627891e-42
-flmin(6) is  1.4012984643248e-43
-flmin(7) is  1.4012984643248e-44
-flmin(8) is  1.4012984643248e-45
-But flmin(7)/10.0F is  1.4012984643248e-45
+--- drivers/sound/dmasound.c.orig	Mon Mar  1 19:21:46 1999
++++ drivers/sound/dmasound.c	Thu Mar  4 18:51:27 1999
+@@ -4840,6 +4840,7 @@
+ 	int has_sound = 0;
+ #ifdef CONFIG_PPC
+ 	struct device_node *np;
++	int beep_volume_tmp;
+ #endif
+ 
+ #if defined(__mc68000__) || defined(CONFIG_APUS)
+@@ -4974,6 +4975,14 @@
+ #ifdef MODULE
+ 	irq_installed = 1;
+ #endif
++
++#ifdef CONFIG_PPC
++	/* Remove hiss from PowerBook speakers */
++	beep_volume_tmp = beep_volume;
++	beep_volume = 0;
++	awacs_mksound(750, 1);
++	beep_volume = beep_volume_tmp;
++#endif /* CONFIG_PPC */
+ 
+ 	printk(KERN_INFO "DMA sound driver installed, using %d buffers of %dk.\n",
+ 	       numBufs, bufSize);
 
 
-Notice the difference in the value of flmin(8) when loaded from a constant.
 
-I looked at the assmebler and the constant for that value is correctly
-identified and present.
 
-What do you think?
 
-Kevin
+aLViN
+-- 
+:r .signature
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
