@@ -1,64 +1,62 @@
-Message-ID: <002801c1346a$553b1e40$2000a8c0@private>
-From: =?ks_c_5601-1987?B?wLG1v7yu?= <manulsan@daintelecom.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: How to make ramdisk ? 
-Date: Mon, 3 Sep 2001 20:19:43 +0900
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ks_c_5601-1987"
+Date: Mon, 3 Sep 2001 13:32:34 +0200
+From: Xavier Grave <grave@ipno.in2p3.fr>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Xavier Grave <grave@ipno.in2p3.fr>,
+	embarque ppc <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: mvme5100 one more time...
+Message-ID: <20010903133234.A2611@ipnpcu5.in2p3.fr>
+References: <20010830170043.A8047@ipnpcu5.in2p3.fr> <20010830091936.N18618@cpe-24-221-152-185.az.sprintbbd.net> <20010831111629.A29808@ipnpcu5.in2p3.fr> <20010831075046.E27811@cpe-24-221-152-185.az.sprintbbd.net> <20010831173634.C8764@ipnpcu5.in2p3.fr> <20010831084927.F27811@cpe-24-221-152-185.az.sprintbbd.net> <20010831180336.A13543@ipnpcu5.in2p3.fr> <20010831110938.A3472@cpe-24-221-152-185.az.sprintbbd.net> <20010831162904.M27811@cpe-24-221-152-185.az.sprintbbd.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <20010831162904.M27811@cpe-24-221-152-185.az.sprintbbd.net>; from trini@kernel.crashing.org on sam, sep 01, 2001 at 01:29:04 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-³×Æ®¿öÅ©Hi
+Le sam, 01 sep 2001 01:29:04, Tom Rini a écrit :
 
-I'am trying to Hard Hat linux 1.2  on custom MPC8240 Board
-modifying  Sandpointing8240  SDK.
-I want to use ramdisk  so I did " make  zImage.initrd"
-but there are errors.  followings are error messages
-=================================================================
-.
-.
-mlinux:                 59.5% -- replaced with vmlinux.gz
-make[2]: Leaving directory `/opt/hardhat/devkit/lsp/motorola-sandpoint/linux-2.4.2_hhl20/arch/ppc/boot/images'
-make -C sandpoint zImage.initrd
-make[2]: Entering directory `/opt/hardhat/devkit/lsp/motorola-sandpoint/linux-2.4.2_hhl20/arch/ppc/boot/sandpoint'
-ppc_82xx-ld -T /opt/hardhat/devkit/lsp/motorola-sandpoint/linux-2.4.2_hhl20/arch/ppc/vmlinux.lds -Ttext 0x00800000 -o zvmlinux.initrd.tmp head.o ../common/misc-common.o ../common/misc-simple.o ../common/ns16550.o ../common/string.o ../lib/zlib.a
-ppc_82xx-objcopy -O elf32-powerpc -R .comment \
-        --add-section=initrd=../images/ramdisk.image.gz \
-        --add-section=image=../images/vmlinux.gz \
-        zvmlinux.initrd.tmp zvmlinux.initrd
-ppc_82xx-objcopy: cannot stat: ../images/ramdisk.image.gz:  no such file or directory
-make[2]: *** [zvmlinux.initrd] Error 1
-make[2]: Leaving directory `/opt/hardhat/devkit/lsp/motorola-sandpoint/linux-2.4.2_hhl20/arch/ppc/boot/sandpoint'
-make[1]: *** [zImage.initrd] Error 2
-make[1]: Leaving directory `/opt/hardhat/devkit/lsp/motorola-sandpoint/linux-2.4.2_hhl20/arch/ppc/boot'
-make: *** [zImage.initrd] Error 2
-=================================================================
+> And if this fails, I just thought of one more thing (I need some hw I can
+> test this on locally...).
+> Look for:
+> 	bl	flush_instruction_cache
+> And add #if 0/#endif around that and try again...
 
-Question ]
-    At cimpile time, ramdisk.image.gz is needed .
+I have done a pull this morning and applied your patchs. I have the same
+results even
+after the bl	flush_instruction_cache suppression.
 
-   1) How do I make ramdisk.image.gz ?
+Here is the result :
+Network Boot File load in progress... To abort hit <BREAK>
 
+Bytes Received =&701661, Bytes Loaded =&701661
+Bytes/Second   =&701661, Elapsed Time =1 Second(s)
 
-Thanks in advance.
-                                                DongSeak Yoon
+Exception: Program (Illegal Instruction)
+SRR0 =001F0000 SRR1 =00083040 Vector-Offset =00700
+IP     =001F0000 MSR    =00003040 CR     =00000000 FPSCR  =00000000
+R0     =00000000 R1     =03F00000 R2     =00000000 R3     =00000000
+R4     =00000000 R5     =49504C01 R6     =00007000 R7     =001F0000
+R8     =03F0CF54 R9     =03F0CD54 R10    =03F0CD60 R11    =03F0CE54
+R12    =03F0CE54 R13    =00000000 R14    =00000000 R15    =00000000
+R16    =00000000 R17    =00000000 R18    =00000000 R19    =00000000
+R20    =00000000 R21    =00000000 R22    =00000000 R23    =00000000
+R24    =00000000 R25    =00000000 R26    =00000000 R27    =00000000
+R28    =00000000 R29    =00000000 R30    =00000000 R31    =00000000
+SPR0   =00000000 SPR1   =00000000 SPR8   =00000000 SPR9   =00000000
+001F0000 00040000  WORD        $00040000
 
-Question ]
+The board don't have any disk or system for the moment, perhaps this is the
+problem ?
+I just want to try to boot now... Because I have also a mvme2303 with a
+whole debian
+system on it. So if I have a kernel for the mvme5100 I will only need to
+put my
+SCSI PMC to have a complete system.
 
-   1) Do I have to make ramdisk.image.gz ?
-   2) if so , how can I make it  ?
+O+ xavier
 
-
-Thanks in advance.
-                                                DongSeak Yoon
-
-
-
-
-E-mail  : manulsan@daintelecom.com
-Mobil   : 016-208-9568
-Fax     : 82-2-581-2805
+--
+33 (0) 1 69 15 79 59
+De chacun selon ses forces, a chacun selon ses besoins
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
