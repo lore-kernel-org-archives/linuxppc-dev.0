@@ -1,88 +1,91 @@
-Subject: Re: IBM 440GX, Ocotea...
+Subject: Re: usb hub problem on 8270
 From: Jaap-Jan Boor <jjboor@aimsys.nl>
-To: Wolfgang Denk <wd@denx.de>
-Cc: Tolunay Orkun <listmember@orkun.us>,
-	linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <20040323164441.06AA0C1157@atlas.denx.de>
-References: <20040323164441.06AA0C1157@atlas.denx.de>
+To: Nigel Rudgley <nrudgley@consultronics.co.uk>
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <008901c410bd$93e0c0a0$2002a8c0@gadget>
+References: <935CBD11-6322-11D8-89E5-000A95B15278@aimsys.nl>
+	 <008901c410bd$93e0c0a0$2002a8c0@gadget>
 Content-Type: text/plain
-Message-Id: <1080061066.8019.70.camel@linpc003.aimsys.nl>
+Message-Id: <1080062587.8019.82.camel@linpc003.aimsys.nl>
 Mime-Version: 1.0
-Date: Tue, 23 Mar 2004 17:57:47 +0100
+Date: Tue, 23 Mar 2004 18:23:08 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang,
+Nigel,
 
-In addition to this nice tree discussion, I've a question:
-from what 'official ppc' tree do patches eventually get into the
-official linux kernel tree(s) at kernel.org?
-only linuxppc-2.4? Or all?
+On Tue, 2004-03-23 at 10:59, Nigel Rudgley wrote:
+> Hi Jaap-Jan
+>
+>
+> We're trying to bring up UBS host on the PQFADS board (8280 based) and have
+> recently got it running on an Adder-II board (870 based)
+>
+>
+> Maybe our experience with 870 can help - your problem looks a lot like what
+> we saw with the Adder board, some transmits, detecting a hub, then...
+> nothing.
+>
+> The CPM has been altered slightly from the 823/850 and will now effect a
+> graceful stop when it receives a nak or stall response, you now have to
+> restart it manually after these are detected.
+>
+> In original m8xxhci.c, this needs to be done in process_done_txbds()
+> around line 2183, inside "if (nak & BD_USB_NAK)"
+> around line 2197, inside "if ((nak & BD_USB_STAL))"
+> around line 2213, inside "if (nak)"
+>
+> calling restart_endpoint() at these three points should work to wake up the
+> cpm :-)
+
+yes, thanks!
+you're right (as stated in 8280 addendum table 7-18)
+
+>
+> I can send a complete patch file but other changes won't be so relevant for
+> you, they're for 870.
+>
+>
+> On the other hand you look further on with the 8270 than we are with the
+> 8280, we're not seeing SOFs :-( Do we need a microcode patch on the 82xx?
+
+No, I didn't needed one. I only connected TOUT3 (from timer3) to DREQ0
+and DREQ1.
 
 thanks,
 
 Jaap-Jan
 
-On Tue, 2004-03-23 at 17:44, Wolfgang Denk wrote:
-> Dear Tolunay,
+> Do the IDMAs need setting up to get DREQs in the right configuration or does it
+> just work with the external wire connected?
 >
-> in message <12605.216.110.51.8.1080057816.squirrel@www.orkun.us> you wrote:
+>
+> Cheers
+>
+> Nigel
+> nrudgley@consultronics.co.uk
+>
+>
+> ----- Original Message -----
+> From: "Jaap-Jan Boor" <jjboor@aimsys.nl>
+> To: <linuxppc-embedded@lists.linuxppc.org>
+> Sent: Thursday, February 19, 2004 9:28 PM
+> Subject: usb hub problem on 8270
+>
+>
 > >
-> > > A more up-to-date implementation seems to be in the
-> > > "linuxppc-2.4" tree. Are there some open issues or known
-> > > problems? I realized that the L2 cache has been disabled
-> > > recently:
+> > Hi,
 > >
-> > Regarding penguinppc.org BitKeeper trees, I was told that
-> > linuxppc_2_4_devel tree is now dead and all commits are done against
-> > linuxppc-2.4. Perhaps maintainers can clarify that in more detail. My
-> > 405GP snapshot is coming from linuxppc-2.4.
->
-> Officially linuxppc-2.4 is the official tree ;-) But  then  it  seems
-> that  there  is  still a lot of difference between linuxppc_2_4_devel
-> and linuxppc-2.4, and I think you can find new features in both trees
-> that are not (yet?) present in the other tree.
->
-> > There is also another linuxppc_2_4_devel tree maintained by DENX. I don't
->
-> I guess Wolfgang Grandegger is aware of this. His other email address
-> is <wg@denx.de> :-)
->
-> But there are so many other trees. There is things like  the  ameslab
-> tree or the Linux-Tiny Tree or CELinux source tree or ...
->
->
-> > know the sync state between these two trees. It is my understanding that
-> > DENX tree has some fixes that might not be in the BK trees.
->
-> Our linuxppc_2_4_devel tree is in sync with the BK linuxppc_2_4_devel
-> tree. But there is lots of additional stuff in out  tree  that  never
-> made  it into the "official trees". So many of our contributions were
-> rejected or delayed or ignored that I finally gave up.
->
-> > IMHO, the community would be best served by single set of sources...
->
-> Indeed. But I think this is as likely as a world without war :-(
->
-> I would be perfectly happy if there was some plan or roadmap or  just
-> a  description of the current state which says which tree is in which
-> state, if it is maintained and by whom,  and  how  long  it  will  be
-> maintained, and when or why or by whom it might be declared as "dead"
-> (as  happened  with  the  linuxppc_2_4_devel  tree), or if anybody is
-> actually taking care of the known problems, and when, etc.
->
->
-> Best regards,
->
-> Wolfgang Denk
->
-> --
-> Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-> Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-> Inside every old person is a young person wondering what happened.
->                               - Terry Pratchett, _Moving Pictures_
->
+> > I found some time to adapt m8xxhci.c (for 823/850) to the 8270 with
+> > limited success.
+> > We use TOUT3 (from timer3) to DREQ0/1 to enable SOF transmitting which
+> > works
+> > more or less as one of my hubs is detected but after the host driver
+> > received the hub's
+> > device description, I get a time-out and, well that's it. Even after
+> > resetting the 8270 and cpm
+> > I'm unable to communicate to the hub:
 --
 J.G.J. Boor                       Anton Philipsweg 1
 Software Engineer                 1223 KZ Hilversum
