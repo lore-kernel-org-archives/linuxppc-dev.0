@@ -1,43 +1,32 @@
-In-Reply-To: <199908310148.LAA14647@tango.anu.edu.au>
-Date: Tue, 31 Aug 1999 19:20:04 +0200
-To: Paul.Mackerras@cs.anu.edu.au
-CC: linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: A few sleep patches
-Message-Id: <19990831192004.022815@mailhost.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Wed, 1 Sep 1999 10:07:05 +1000
+Message-Id: <199909010007.KAA17780@tango.anu.edu.au>
+From: Paul Mackerras <paulus@cs.anu.edu.au>
+To: costabel@wanadoo.fr
+CC: ddkilzer@computer.org, linuxppc-dev@lists.linuxppc.org
+In-reply-to: <37CBFD6B.DB0182B6@wanadoo.fr> (message from Martin Costabel on
+	Tue, 31 Aug 1999 18:06:03 +0200)
+Subject: Re: SMP support for Daystar 604e 200MHz dual-processor card
+Reply-to: Paul.Mackerras@cs.anu.edu.au
+References: <v03130301b3f116a864e2@[192.168.1.1]> <v03130300b3f1774818a8@[192.168.1.1]> <37CBFD6B.DB0182B6@wanadoo.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Martin Costabel <costabel@wanadoo.fr> wrote:
 
-At:
+> (On the other hand, I see that Paul M. has CONFIG_SERIAL=m in his
+> standard config files. Does this mean that the serial.c stuff is
+> supposed to work on the PPC?)
 
-<http://calvaweb.calvacom.fr/bh40/test.html>
+Only with some awful hacks to disable the probing of I/O ports and to
+make it start at ttyS2 instead of ttyS0.  This hack is in my rsync
+trees and in the precompiled kernels I've done.  (I could post a patch
+if necessary.)
 
-You'll find a few patches to apply to your latest stable tree. I've
-changed a bit of things in the media bay code (increasing reset timer and
-a few more hacks to make sure the states goes to MB_NO before switching
-to a new device, just in case...), it looks a lot more reliable on my
-wallstreet (no more CD badly inserted printk, at least not today ;-)
+It's not a good long-term solution but I needed something so I could
+use the PC-card modem on my 3400. :-)
 
-I've added the sleep code for media bay, macserial (untested) and fixed a
-minor thing in the sleep code for video (added a chipid, enabled FB
-backup (we may be able to get rid of it, I'm not sure for LP_CHIP_ID)).
-
-There may be one or two more things, I don't remember if I included my
-root partition detect fix (actually, I don't remember if my mkpatch
-script did diff drivers/block/genhd.c and can't test now).
-
-Tell me if it causes trouble on your machine, I'll try to do more tests
-tomorrow.
-
--- 
-           Perso. e-mail: <mailto:bh40@calva.net>
-           Work   e-mail: <mailto:benh@mipsys.com>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
-
+Paul.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
