@@ -1,23 +1,24 @@
-Message-ID: <37169C34.558710D9@icu.ac.kr>
-Date: Fri, 16 Apr 1999 11:11:01 +0900
-From: =?iso-8859-1?Q?=B1=E8=BB=F3=B9=FC?= <ksb@ns.icu.ac.kr>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: About linux porting on MPC 750...
-Content-Type: text/plain; charset=us-ascii
+Date: Fri, 16 Apr 1999 09:05:18 +0200
+From: "Jens Ch. Restemeier" <jenschrr@mail.uni-bielefeld.de>
+Subject: Re: Embedded 8xx 2.2.5 kernel tarball
+To: Dan Malek <dmalek@jlc.net>
+Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Reply-to: jenschrr@mail.uni-bielefeld.de
+Message-id: <3716E12E.69C7@post.uni-bielefeld.de>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+References: <37164E34.9B29EDBE@jlc.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-My team is going to port Linux on Motorola YellowKnife board composing
-of a PPC 750 ,  MPC 106 PCI bus, and some other hardware. I want to know
+Hi !
 
-whether my work is possible. If it is possible, how can I do this? Or
-where can I find the source?
+Is there a homepage or somthing, where I can find information about
+available 8xx board designs ?
 
-My team and I are beginners in Linux porting. Please send your comment
-to me.
-Thank you.
+Jens
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
