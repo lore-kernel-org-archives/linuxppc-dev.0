@@ -1,52 +1,29 @@
-Date: Wed, 23 Jun 1999 15:17:42 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Kevin Puetz <kp11901@cedarnet.org>
-cc: Justin Vallon <vallon@mindspring.com>,
-        Hollis R Blanchard <hollis+@andrew.cmu.edu>,
-        LinuxPPC-Dev List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: dl-load.c (ld.so) bug??
-In-Reply-To: <199906231258.HAA25989@www.cedarnet.org>
-Message-ID: <Pine.LNX.4.10.9906231517130.23991-100000@mercator.cs.kuleuven.ac.be>
+Message-ID: <3770E666.BE940A92@americasm01.nt.com>
+Date: Wed, 23 Jun 1999 09:51:34 -0400
+From: "Jerry Quinn" <jquinn@nortelnetworks.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "sean o'malley" <somalley@ed.mde.state.mi.us>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Project ?
+References: <v04003a00b39506f352e3@[204.22.210.180]>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 23 Jun 1999, Kevin Puetz wrote:
-> Umm... just thought of this - a segfault in __libc_start_main is the symptom
-> of an old R4 binary on a glibc2.1 system... did ElectricFence not get
-> updated (just a thought)? Then - if both libraries load - it segfaults when
-> electricfence initializes _it's_ glibc dynamic link. One could try
-> rebuilding the SRPM and see...
-> 
-> Possible? Or am I on crack (don't know much about efence or glibc internals,
-> so... probably the latter.)
+There's a site dedicated to free software projects that have a bounty
+attached.  I can't find the reference at the moment, but I believe Eric
+Raymond posts it on comp.os.linux.announce periodically.
 
-I don't think so:
+Perhaps if the sniping is removed, it can get posted there and someone
+would take it on.
 
-| callisto$ dpkg -s electric-fence
-| Package: electric-fence
-| Status: install ok installed
-| Priority: standard
-| Section: devel
-| Installed-Size: 48
-| Maintainer: Debian QA Group <debian-qa@lists.debian.org>
-| Version: 2.1-1
-| Depends: libc6 (>= 2.1)
-           ^^^^^^^^^^^^^^
-| Description: A malloc(3) debugger
-|  Use virtual memory hardware to detect illegal memory accesses.
+I also have no clue about the issues involved :-)
 
-Greetings,
-
-						Geert
-
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
-
+-- 
+Jerry Quinn                             Tel: (514) 761-8737
+jquinn@nortelnetworks.com               Fax: (514) 761-8505
+Speech Recognition Research
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
