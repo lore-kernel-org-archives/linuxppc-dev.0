@@ -1,67 +1,51 @@
-Message-ID: <3C63AE1A.7000907@pacbell.net>
-Date: Fri, 08 Feb 2002 10:53:14 +0000
-From: Armin <akuster@pacbell.net>
+Message-ID: <3C63EC39.ACEECA08@ardistech.com>
+Date: Fri, 08 Feb 2002 16:18:17 +0100
+From: "bart@ardistech.com" <bart@ardistech.com>
+Reply-To: bart@ardistech.com
 MIME-Version: 1.0
-To: andrew may <acmay@acmay.homeip.net>
-Cc: Stefan Roese <stefan.roese@esd-electronics.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: PPC405gp enet Soft Reset
-References: <20020207191741.A26185@ecam.san.rr.com> <EFEAIMDCOOOHIEPHDNFJOEJBDKAA.stefan.roese@esd-electronics.com> <20020208103557.A27732@ecam.san.rr.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>,
+	dmalek@jlc.net
+Subject: MPC823: i2c-algo-8xx read interrupt?
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-andrew may wrote:
+Hi,
 
-> On Fri, Feb 08, 2002 at 11:03:59AM +0100, Stefan Roese wrote:
->
->>Andrew
->>
->>
->>>I seem to be having a problem with the soft reset of EMAC
->>>mode register when I have no ethernet connection to by phy.
->>>
->>We have the same problem (CPCI-405 with Intel LXT971 PHY).
->>
->
-> It is good to see that the problem is known.
->
->
->>>After this code in init_ppc405_enet(void) the SRST bit does
->>>not clear until after I stick in a cable.
->>>
->>See Chapter 19.7.1 in PPC405GP User Manual (EMAC0_MR0):
->>
->
-> The prelim hard copies I have been looking at failed to mention
-> the clocks need to be active, but I did check the pdf and it is
-> in there, so I guees I will try to look more at the soft copy these
-> days.
->
->
->>It seems that we can't reset and setup the EMAC correctly without cable
->>connected (no cable == no PHY clock!). So what do we do when this occurs?
->>Disable the driver?
->>
->
-> Your joking right? To do that is less than a 10 line hack, that I had to do
-> to stop the driver from doing a panic or crashing, but I would not feel
-> good about sending that as a patch. The driver needs to be able to handle
-> this, but it will take some rework and it would be nice to know if there
-> is really a reason to do the SoftReset before probing the phy.
->
->
->
->
+When testing with i2c reading an eeprom on a MPC823e I get the message "IIC
+read; complete but rbuf empty". IMHO this is because the interrupt in the TX
+buffer is enabled intead of the the interrupt of the RX buffer. Is this a bug
+or is there a reason behind this?
 
-Andrew & Stefan,
+Best regards,
+		Bart Thissen,	Ardis Technologies bv
 
-The softrest could probably be removed from the _init.  its dup'd in _open.
+
+i2c-algo-8xx.c: cpm_iic_read
+
+Original (with TX interrupt and warning)
+
+	tbdf->cbd_datlen = count + 1;
+	tbdf->cbd_sc =
+		BD_SC_READY | BD_SC_INTRPT | BD_SC_LAST |
+		BD_SC_WRAP | BD_IIC_START;
+
+	rbdf->cbd_datlen = 0;
+	rbdf->cbd_bufaddr = __pa(buf);
+	rbdf->cbd_sc = BD_SC_EMPTY | BD_SC_WRAP;
 
 
 
---armin
+With RX interrupt (without warning):
 
+	tbdf->cbd_datlen = count + 1;
+	tbdf->cbd_sc =
+		BD_SC_READY | BD_SC_LAST |
+		BD_SC_WRAP | BD_IIC_START;
+
+	rbdf->cbd_datlen = 0;
+	rbdf->cbd_bufaddr = __pa(buf);
+	rbdf->cbd_sc = BD_SC_EMPTY | BD_SC_WRAP | BD_SC_INTRPT;
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
