@@ -1,15 +1,18 @@
-Return-Path: <nico-linux-ppc@schottelius.org>
-Received: from scice.schottelius.org (ns.schottelius.org [213.146.113.242])
-	by ozlabs.org (Postfix) with SMTP id E93C52BF0C
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Dec 2004 21:39:08 +1100 (EST)
-Date: Thu, 16 Dec 2004 11:33:25 +0100
-From: Nico Schottelius <nico-linux-ppc@schottelius.org>
-To: linuxppc-dev@ozlabs.org
-Message-ID: <20041216103325.GA6713@schottelius.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="yrj/dFKFPuw6o+aM"
-Subject: Error compiling 40x ppc kernels (walnut)
+Return-Path: <g.jaeger@sysgo.com>
+Received: from david.siemens.de (david.siemens.de [192.35.17.14])
+	by ozlabs.org (Postfix) with ESMTP id 997AF2BF10
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Dec 2004 00:03:46 +1100 (EST)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Gerhard Jaeger <g.jaeger@sysgo.com>
+To: Nico Schottelius <nico-linux-ppc@schottelius.org>
+Date: Thu, 16 Dec 2004 13:18:37 +0100
+References: <20041216103325.GA6713@schottelius.org>
+In-Reply-To: <20041216103325.GA6713@schottelius.org>
+MIME-Version: 1.0
+Message-Id: <200412161318.37998.g.jaeger@sysgo.com>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: Error compiling 40x ppc kernels (walnut)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,62 +22,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
---yrj/dFKFPuw6o+aM
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thursday 16 December 2004 11:33, Nico Schottelius wrote:
+>I am trying to build a 40x / Walnut Linux (only for testing), but
+>the compile process always breaks:
+>
+>1. walnut build with ibm emac network card enabled
+>2. walnut build without ibm emac network card enabled
+>
+>I am currently using
+>
+>make ARCH=3Dppc CROSS_COMPILE=3Dpowerpc-linux-uclibc-
+>
+>on my x86 machine as my ibook is currently at home.
+>Do you know why those errors occur and can you help me fix them?
+>
+from what I see from your config file, you have enabled a lot of stuff,
+I'm pretty sure which won't build correctly for the walnut.
+I.e. the whole framebuffer stuff is not needed - switch it off.
+(This is also your problem here!)
+I suggest to go through all of your configuration and disable all of
+the stuff, which you do not really need:
+- frame-buffer
+- usb
+- all of the crypto stuff
+- IPv6
+=2E
+=2E
+=2E
 
-Good morning!
+Set at least only processor, platform and serial console support on
+(and of course correctly) then try again. Never start with a full=20
+or overloaded config set ;)
 
-I am trying to build a 40x / Walnut Linux (only for testing), but
-the compile process always breaks:
-
-1. walnut build with ibm emac network card enabled
-2. walnut build without ibm emac network card enabled
-
-I am currently using
-
-make ARCH=3Dppc CROSS_COMPILE=3Dpowerpc-linux-uclibc-
-
-on my x86 machine as my ibook is currently at home.
-
-Do you know why those errors occur and can you help me fix them?
-
-The config and the two error messages can be found at
-http://schotteli.us/~nico/ppc/walnut/.
-
-Nico
-
-P.S.:=20
-I'll try to work through the Oak problem the next weeks, if I have
-some free time (Gerhard Jaeger sent me some tips howto fix it).
+Ciao,
+Gerhard
 
 --=20
-Keep it simple & stupid, use what's available.
-Please use pgp encryption: 8D0E 27A4 is my id.
-http://nico.schotteli.us | http://linux.schottelius.org
-
---yrj/dFKFPuw6o+aM
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.5 (GNU/Linux)
-
-iQIVAwUBQcFkc7OTBMvCUbrlAQKSfxAAjk11VELYzF5Ed3JDaOYw/W4s1H462Eew
-fUYNNQL1tDXL7RPPgk3LLOdrxVtj8C4UTcDCNkI6TfmzIXXYXRI3BmOv/ReeEm1V
-QsYjJ3fZ0xPtYic6kEXdktnuHvuelXgrrTryj40d5RcxxGc4cCeikO9X1XiCLo4y
-KBSw/GviwsM4csarINEz81oPEmRWjsiO1ZGpL/rkbu2XgUSIVguOXPWy92nUqAV3
-fx1j3fpp9uMY28dPNOAiy1d503/t5lRXHjwWExvMb2jrDF43BvgXd+0Ji6zKAJAI
-7+JyTHKHDDH6R5Vahe9jPHKgU+vWtymIfQRDICmIMKSOn2eXhB/2IlfWcQ9NPS62
-JDE+boFiV81ZHTbvPfo2mDK3Zqkbm9crtPorRM608RIiviHKabnnDrn1feaSzUTl
-EG4rE136HG8P8niNYJtXXZcVSMYLDf7f5eVSlMC3QmtzK5XhV5O9/7J39N0+4pIn
-jehGOr+lHnaTjCGwkYXEodcIB7/ZxGJRag/c4lIGIiegJiNq0IUqQ8DoyUfDu0WQ
-s/ympG26RPwRbS48/feLRCbs2POLLwPLQ9KdQE+SoqNuFgHdOTcyViIrNwhNlSE5
-HZzooQTXFluXf5eFOs/Wf4acx1gSYm4FE8dgTH0QjCkc/t3Q6F8onliYVKeI3uUe
-k8nGPlPtngY=
-=iZND
------END PGP SIGNATURE-----
-
---yrj/dFKFPuw6o+aM--
+Gerhard Jaeger                             g.jaeger@sysgo.com
+SYSGO AG                      Embedded and Real-Time Software
+www.sysgo.com | www.elinos.com | www.osek.de | www.imerva.com
