@@ -1,55 +1,65 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Paul Mackerras <paulus@samba.org>, <msokolov@ivan.Harhan.ORG>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: CONFIG_GENERIC_PPC32
-Date: Sun, 7 Apr 2002 10:04:21 +0100
-Message-Id: <20020407090421.11429@smtp.wanadoo.fr>
-In-Reply-To: <Pine.GSO.4.21.0204071026160.2567-100000@lisianthus.sonytel.be>
-References: <Pine.GSO.4.21.0204071026160.2567-100000@lisianthus.sonytel.be>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Sun, 7 Apr 2002 16:33:12 +0200
+From: Albrecht Dre? <albrecht.dress@arcor.de>
+To: mlan@cpu.lu
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Kernel Gurus: Module insertion deadlock? [Was: SCSI system freeze w/2.4.18]
+Message-ID: <20020407143312.GA927@regulus>
+References: <E16tZUq-00007a-00@piglet.grunz.lu>
+Mime-Version: 1.0
+Content-Type: text/plain; format=flowed; charset=ISO-8859-1
+In-Reply-To: <E16tZUq-00007a-00@piglet.grunz.lu>; from mlan@cpu.lu on Fre, Apr 05, 2002 at 21:35:34 +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->On Sat, 6 Apr 2002, Benjamin Herrenschmidt wrote:
->> I've looked at the patch in the meantime and it makes much sense. I want
->> to do something around those lines:
->>
->>  - Completely rip off CONFIG_ALL_PPC in favor of CONFIG_GENERIC_PPC32
->>  - Each board model has it's own CONFIG_xxx entry (like Michael patch),
->>    which means adding "back" CONFIG_PMAC, CONFIG_CHRP, CONFIG_PREP, but
->>    those will only control which set of .c file will get in the makefile
->>    and the toplevel switch/case on platform_init. That is you will be able
->>    to select an arbitrary set of boards.
+Am 05.04.02 21:35:34 schrieb(en) Michel Lanners:
 >
->Good, starts to look like m68k again, where you always were able to compile a
->generic kernel (except for Sun-3 (not 3x) due to the different MMU)!
->Now start moving platform specific files to arch/ppc/$platform/ again. Dan is
->right, we're running in circles :-)
+> Hey,
+>
+> On   4 Apr, this message from Albrecht Dre? echoed through cyberspace:
+> > I upgraded my PowerMac 7300 from 2.4.6-pre3 to (stock) 2.4.18, and since
+> > then I have a nasty scsi problem: Trying to read data from the cd drive
+> > without a cd loaded (e.g. "dd if=/dev/scd0 of=/dev/null bs=1 count=1")
+> > freezes the machine.
+>
+> Hmm, I tried your dd command on my 7600 this morning, and I see weird
+> things as well.
+>
+> In fact, the system doesn't do _any_ disk access as long as the dd
+> command sits there waiting for the cdrom. dd is unkillable, and it seems
+> no other disk access is possible as long as dd waits.
+[snip]
+> Inserting a CD makes the dd command complete, and the system unfreezes.
 
-No, we aren't ;)
+O.k., this was more a "user panic", as the script hung upon system shutdown,
+and after a while I simply powered off...
 
-In some way, all those new board brought us back to the pre-CONFIG_ALL_PPC
-days since they all have their own config option and can't live in a
-generic kernel. Mostly for no reason except maybe detecting the board
-at boot time (which can be done in the wrapper now if there is no other
-way).
+I played a little more with this, and got the following picture:
 
-The other way, iirc, making the generic (CONFIG_ALL_PPC) kernel from
-split pmac/chrp/prep was necessary to get the non-platform specific code
-really non-platform specific (at that time, we had the "common" irq, pci
-etc... code diff'ing between platforms or #ifdef'ed in places).
+* scsi cd support built into the kernel: the access works without a cd in
+   the drive
 
-So we aren't circling here. We are slowly moving toward an arch where the
-common code is really common and no crippled with platform ifdefs, and
-a platform is just a set of functions behind ppc_md along with appropriate
-drivers beeing in the Makefile. It's a logical step to do the (few) Makefile
-and Config.in work to make those individual platforms be selectable
-in arbitrary sets.
+* scsi cd support built as module
+   - do a "modprobe sr_mod" (which inserts sr_mod.o and cdrom.o): access
+     works like support built fixed into the kernel;
+   - remove sr_mod (cdrom.o may still be loaded): access leads to the hang as
+     described.
 
-Ben.
+So I think there is some kind of deadlock between dd and the module
+insertion (which includes a disk access to read/load the module). As I do
+not see this on an iMac with a ide cd drive, it might be a problem either in
+sr_mod or in the scsi stuff. However, the iMac has two separate ide busses
+for the cd and the disk, so the hang might be "same bus" related. Maybe some
+of the kernel gurus know more about that?
 
+Thanks,
+
+	Albrecht.
+
+--
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Albrecht Dreﬂ  -  Johanna-Kirchner-Straﬂe 13  -  D-53123 Bonn (Germany)
+        Phone (+49) 228 6199571  -  mailto:albrecht.dress@arcor.de
+_________________________________________________________________________
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
