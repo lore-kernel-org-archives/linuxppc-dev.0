@@ -1,34 +1,33 @@
-Message-Id: <9907299332.AA933270325@smtplink.dscc.dk>
-Date: Thu, 29 Jul 1999 18:43:59 +0200
-From: "RTHEANDE"<rtheande@dscc.dk>
-To: <linuxppc-dev@lists.linuxppc.org>
-Subject: 860T Cooling problem
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Thu, 29 Jul 1999 09:57:01 -0700
+From: Ron Chmara <ron@Opus1.COM>
+Subject: Re: G3 Upgrade Questions....
+To: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
+Message-id: <37A087DD.D896B257@opus1.com>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-     
-     Hi there,
-     
-     Anyone with a 860T (50 MHz) board. How hot is the CPU supposed to be? 
-     Is extra cooling needed?
-     
-     My specific problem is that the kernel is _very_ unstable at normal 
-     near idle operation. The CPU is not that hot - you can touch it 
-     without problems. It looks like RAM problems, but when the CPU is 
-     cooled down (cooling spray or _big_ heatsink), the problems go away.
-     
-     I have to mention that the CPU in question has suffered 5V Vcc for a 
-     time by accident (shorted power planes...)
-     
-     The question: is it normal for these things to run hot and need 
-     external cooling to work or has the 5V experience damaged it?
-     
-     TIA,
-     
-     Robin.
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+On Thu, 29 Jul 1999, Chris Ridd wrote:
+> On 29 Jul 1999 14:12:30 +0200, Stefan Berndtsson wrote:
+> > That's not true either.. a friends G3/300 (some stationary thing), reports $> > bogomips.. unless something's screwed with _that_ setup.
+> Well they *are* *BOGO*mips after all ;-) 
+
+http://linux.com/howto/mini/BogoMips.html#toc1     
+http://linux.com/howto/mini/BogoMips-2.html
+http://linux.com/howto/mini/BogoMips-9.html
+
+There aren't many entries for the 750 series (okay, there's one), so
+maybe
+we need to send some info off to baron@clifton.hobby.nl, so he can
+update
+the howto's.
+
+-Bop
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
