@@ -1,40 +1,52 @@
-Date: Thu, 24 Apr 2003 10:58:44 -0400
-From: Callebaut Benoit <callebaut@mailandnews.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Linux & DMA transfer (applied to 8245)
-Message-ID: <3EB17B45@mailandnews.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
+Message-ID: <3EA8035E.3040705@mail.utexas.edu>
+Date: Thu, 24 Apr 2003 10:31:42 -0500
+From: Chris Heintzelman <heintz@mail.utexas.edu>
+MIME-Version: 1.0
+To: Dale Farnsworth <dale@farnsworth.org>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: booting MGT5100?
+References: <3EA70BDE.9080609@mail.utexas.edu> <20030424020846.GA1283@rover.farnsworth.org>
+In-Reply-To: <20030424020846.GA1283@rover.farnsworth.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi ,
-I am implementing DMA transfers initiated by the processor for the MPC8245.
-Since the standard pci_alloc_consistent take only a pci_dev structure but no
-addresses, I added a configuration function to set the target address (PCI)
-and the other parameters.
-I can see that the DMA transfer is started, and finished (an interrupt is
-generated) but I don't see the data copied on the target device ( DSP with a 4
-MB memory window on PCI bus.)
-My question is : What type of addreess must I give to configure the DMA
-controller.
-Are there also caching issues that may prevent good read/write operation
-s? I suppose that the flushing og the cache done in pci_alloc_consistent is
-enough.
-Thanks
-------------------------------------------------------------------------------
-----
-Benoit Callebaut
-Software Development Engineer
-Barco | Control Rooms
-Noordlaan 5, 8520 Kuurne, Belgium
+Thanks for the info!  I'm also using an icecube board.  I'll grab the
+code from mv when you post it there.
+Do you use a bootloader or do you just use dbug to run a zImage?
 
-Tel 	+32(0)56 36 84 28
-Fax 	+32(0)56 36 86 05
+-Chris H.
 
-mailto:benoit.callebaut@barco.com
-http://www.barcocontrolrooms.com
+>On Wed, Apr 23, 2003 at 09:55:42PM +0000, Chris Heintzelman wrote:
+>
+>
+>>I noticed that a few months ago someone mentioned booting Linux on one
+>>of these boards (MGT5100).  There didn't seem to be much discussion
+>>though; I have one of these boards and would also like to boot linux on
+>>it, I'm wondering if anyone can point me to a good starting point on
+>>this?  Any help is appreciated.  I've got a toolchain and kernel built
+>>but am having no luck with it.
+>>
+>>Thanks,
+>>Chris H.
+>>
+>>
+>
+>I've been working with Kent Borg to bring up linux on the mgt5100.
+>As Peter said, they're running it on an icecube, while I have a glacier
+>system.  The serial driver seems reasonably solid.  I've been working
+>on an ethernet driver and started testing it today.  It has sent and
+>received a few packets but lots of cleanup remains.  I plan to put up a
+>bk repository on source.mvista.com in a couple of weeks.  I could send
+>you a tarball if you'd rather not wait.
+>
+>-Dale Farnsworth
+>
+>
+>
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
