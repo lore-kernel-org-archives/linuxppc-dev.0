@@ -1,66 +1,65 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: <linux-usb@suse.com>
-Cc: "Dunlap, Randy" <randy.dunlap@intel.com>,
-        <linuxppc-dev@lists.linuxppc.org>
-Subject: RE: [linux-usb] USB problems on Lombard Powerbook ... and more
-Date: Thu, 20 Apr 2000 16:27:31 +0200
-Message-Id: <20000420142732.6194@mailhost.mipsys.com>
-In-Reply-To: <D5E932F578EBD111AC3F00A0C96B1E6F0545CA3E@orsmsx31.jf.intel.com>
-References: <D5E932F578EBD111AC3F00A0C96B1E6F0545CA3E@orsmsx31.jf.intel.com>
+Message-ID: <38FF1565.99905655@chpc.utah.edu>
+Date: Thu, 20 Apr 2000 08:34:14 -0600
+From: Lou Langholtz <ldl@chpc.utah.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: MiniDin9 serial pin outs to talk to DB9 UPS?
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Apr 19, 2000, Dunlap, Randy <randy.dunlap@intel.com> wrote:
+Hello folks,
 
->> (kernel 2.2.15pre17 compiles fine, with usb modules. I think
->> the kernel I am using
->> has a USB backport coming from 2.3. Actually I got these sources from
->> linuxcare - see point 2)
->
->Some things below make me think that whatever you have
->is not very recent, so the Linux USB Guide and
->current email threads don't necessarily apply to your
->USB source code.
+I'm trying to connect the serial communications up between my PowerMac
+7500 and my new BestPower Fortress 1050 UPS to get all the fancy smart
+features going but it's not working. Anybody know what I'm doing wrong
+or have any ideas? I tried looking again at the macserial.c kernel code
+to see if I could make anything out from that but couldn't. Perhaps
+someone who know this code better could however. Here's the details...
 
-The "current" stable kernel used on PowerMacs is Paul Mackerras tree and
-contains an old backport of the 2.3.x USB stack (one of the last version
-to use Greg old ohci.c driver). We use it because it's stable and appear
-to work fine with keyboards and mice on all macs out there. That mean
-that machines with USB-only kbds and mice could at least be used, which
-was a progress over previous stacks ;)
+I'm using the PowerMac 7500 MiniDin9 serial printer port and connecting
+it to a DB9 serial connector on my UPS. Unfortunately the setups I've
+tried so far don't work. At best, the user and system load go high when
+I try and talk with the UPS using the supplied ups terminal program. At
+worst, ps hangs and can't be Ctrl-Z or Ctrl-C'd and then the system
+can't finish an init 6 reboot without my power-cycling the Mac.
+Apparantly the program seems to cycle waiting for something to happen
+which I'm guessing needs to be fixed by connecting some other pin(s).
 
-However, it's definitely not complete enough to be used for anything
-else. (Well, a few drivers actually work, but that's not the point).
+The cable I've made basically connects as follows:
 
-The recent 2.3.x stack appear to work quite well on macs too, now that
-the biggest OHCI problems were ironed out, but has not yet been
-"tortured" enough for us to backport it into our stable 2.2.x series.
+ UPS (DB9)                          PowerMac7500 (MiniDin9)
+ pin 1             recieve data     pin 3             TxD-
+ pin 2             transmit data    pin 5             RxD-
+ pin 4             common           pin 4             Gnd/Shield
 
->Yes (centralized).  Yes (several wandering around).
->Linus maintains the blessed tree for all architectures.
->Development trees can and do also exist elsewhere,
->like PPC, Sparc, ARM, etc.  They will eventually get merged
->back into the Linus tree.
+The other UPS (DB9) pin outs are:
 
-In the case of the macs, we have a quite huge batch of changes that has
-not been merged in the 2.2.x tree yet, mostly because those changes (that
-concern new machines support) were finished too late for inclusing in
-2.2.14, and Alan wants only bug fixes in 2.2.15.
-Also, since we use this weird USB backport that may never end up in the
-"official" 2.2.x series, PowerMac users usually rely on kenrels
-maintained by Paul Mackerras (who is _the_ maintainer of the PowerMac port).
+pin 3: normally open on battery contact
+pin 5: normally open low battery alarm
+pin 6: plug and play sense for Windows 95
+pin 7: remote shutdown
+pin 8: normally closed on battery contact
+pin 9: unused
 
-For 2.3.x series, the work is done on our "specific" PPC trees (Paul's
-tree and hq.fsmlabs.com bitkeeper tree) and regulary merged in Linus main
-one. Ideally, when 2.4 is final, all the PowerMac specific stuffs will be
-up-to-date.
+The other PowerMac 7500 (MiniDin9) pin outs are (and I had a hard time
+finding this info from an Apple web site):
 
-For more infos about PowerMac kernels, one can consult Paul's page at:
+pin 1: SCLK(out)   ---- I'm assuming this is DTR
+pin 2: Sync(in)/SCLK(in) ---- I'm assuming this is CTS
+pin 6: TxD+
+pin 7: Wakeup/TxHS ---- I'm assuming this is DCD
+pin 8: RxD+
+pin 9: +5V (power to pod) ---- what's a 'pod'?
 
-http://linuxcare.com.au/paulus/kernels.html
+I was told that the PC serial cable connects similarly sparsely except
+that pins 4 and 6 on the PC end are jumpered together. That seems to be
+a short between TxD+ and DTR. I tried doing the same for the
+Mac MiniDin9 by jumpering MiniDin9 pins 1 and 6 together. This didn't
+work. Nor did jumpering 1 to 8 or 1 to 7.
+
+Thanks for any help!     --Lou
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
