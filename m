@@ -1,69 +1,37 @@
-Date: Wed, 27 Jun 2001 11:25:42 -0500
-From: Stephen R Marenka <stephen@marenka.net>
-To: Takashi Oe <toe@unlserve.unl.edu>
-Cc: Tom Rini <trini@kernel.crashing.org>, benh@kernel.crashing.org,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: Crash on BenH's latest rsync (2.4.6-pre3)
-Message-ID: <20010627112542.A486@marenka.net>
-References: <20010626121003.D31231@opus.bloom.county> <20010626205147.26310@smtp.wanadoo.fr> <20010626162913.3dc483d8.toe@unlserve.unl.edu> <20010626151346.F31231@opus.bloom.county> <20010626173123.13f2b3bf.toe@unlserve.unl.edu>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="mP3DRpeJDSE+ciuQ"
-In-Reply-To: <20010626173123.13f2b3bf.toe@unlserve.unl.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Support for Marvell's GT-64260 system controller
+From: Josh Huber <huber@mclx.com>
+Date: 27 Jun 2001 16:47:13 -0400
+Message-ID: <87d77pbqge.fsf@mclinux.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---mP3DRpeJDSE+ciuQ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Over here at Mission Critical we've been working on ports for both
+ppcboot and the kernel to the GT-64260 (Discovery) system controller.
 
-On Tue, Jun 26, 2001 at 05:31:23PM -0500, Takashi Oe wrote:
->=20
-> On Tue, 26 Jun 2001 15:13:46 -0700, Tom Rini wrote:
->=20
-> > On Tue, Jun 26, 2001 at 04:29:13PM -0500, Takashi Oe wrote:
-> >
-> > > BootX support on your rsync tree and linuxppc_2_4_devel tree is
-> > > broken.  I guess no one with BootX bothered to try
-> > > linuxppc_2_4_devel..
-> >
-> > Does this work as well?
->=20
-> It sure does, though we might as well do:
->=20
-> 	if (boot_infos) {
-> 		_machine =3D _MACH_Pmac;
-> 		relocate_nodes();
-> 	}
->=20
-> or similar as calling intuit_machine_type() is silly on BootX ;)
+This is just a heads-up, since we're to the point of usability and
+have made the sources available for download via our Open Source
+Software web site:
 
-If I understand correctly, this failed for me because this causes=20
-relocate_nodes to get called again if have_of.
+http://oss.mclx.com/projects/marvell/
 
-The following does work for me.
+>From there you can grab the 1.0.1 version of ppcboot, Linux kernel
+sources and a sample root filesystem (based on Debian GNU/Linux).  The
+changes required have already made it into the stock version of
+ppcboot, and I hear that the kernel source changes are on their way
+in.
 
- 	if (boot_infos) {
- 		_machine =3D _MACH_Pmac;
-                if ( !have_of )
- 		    relocate_nodes();
- 	}
+This code has been known to run on the Marvell Evaluation Board
+(EVB-64260), modifications will (of course) be necessary to support a
+custom board.
 
-Thanks,
+Have a nice day,
 
-Stephen
+--
+Josh Huber
 
---=20
-Stephen R. Marenka     If life's not fun, you're not doing it right!
-<stephen@marenka.net>
-
---mP3DRpeJDSE+ciuQ
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
-
---mP3DRpeJDSE+ciuQ--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
