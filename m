@@ -1,30 +1,31 @@
-In-Reply-To: <20040331181852.GA20127@lst.de>
-References: <49B568CB-832A-11D8-9FF0-000A95A07384@sands-edge.com> <20040331181852.GA20127@lst.de>
-Mime-Version: 1.0 (Apple Message framework v613)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <A973047C-8357-11D8-9FF0-000A95A07384@sands-edge.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-From: John Whitney <johnw@sands-edge.com>
-Subject: Re: Proposed changes to io.h
-Date: Wed, 31 Mar 2004 16:09:13 -0500
-To: Christoph Hellwig <hch@lst.de>
-Sender: owner-linuxppc-dev@lists.linuxppc.org
-List-Id: <linuxppc-dev@lists.linuxppc.org>
+Message-ID: <4019681F012FDFDC@mta1.wss.scd.yahoo.com> (added by postmaster@mail.san.yahoo.com)
+From: "Phil Shepard" <phil@artismicro.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Jumbo Frames and MPC8540
+Date: Sun, 29 Feb 2004 10:56:41 -0600
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Sender: owner-linuxppc-embedded@lists.linuxppc.org
+List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->> 1. Modifications to virt_to_bus, bus_to_virt, virt_to_phys, and
->> phys_to_virt.  With the use of fully virtual addresses for
->
-> These are all obsolete interface and you're not supposed to use them
-> for new plattforms or drivers at all.
->
+Hi,
 
-pci_map_single() (include/asm-ppc/pci.h) and dma_map_single()
-(include/asm-ppc/dma-mapping.h) use virt_to_bus().  Shouldn't some care
-be taken to ensure that ANY virtual address passed to these routines
-maps to the correct physical (bus) address?
+   I'm working with a MPC8540 trying to measure the performance of the built
+in GigE.  I'm running 2.4.25 on the PPC.  On the other end is a Dell
+Precision M60 laptop with it's Broadcom 5705 GigE Chip I'm running RH9 and
+can't seem to get the MTU much larger than 1500.  I'd like to simply
+transfer 8192 byte jumbo frames from the Dell to the MPC8540 running an echo
+server.
 
-John
+Any suggestions?  Is there a better list for this type of question?
+
+Phil
+---------------------------------------
+Phil Shepard
+Applications Engineer
+Artis Microsystems
 
 
-** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
+** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
