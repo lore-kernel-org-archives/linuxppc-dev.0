@@ -1,46 +1,47 @@
-Date: Sat, 1 Dec 2001 15:41:53 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Dan Malek <dan@embeddededge.com>
-Cc: frowand@mvista.com, paulus@samba.org,
-	Ralph Blach <rcblach@us.ibm.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: include/asm-ppc/platforms/
-Message-ID: <20011201154153.F7819@cpe-24-221-152-185.az.sprintbbd.net>
-References: <OF04BCE99E.8AF57CF2-ON85256B14.00425D94@raleigh.ibm.com <15368.891.368917.13579@argo.ozlabs.ibm.com> <3C0814AC.455D6FEA@mvista.com> <3C084F22.3030505@embeddededge.com> <3C091F3C.7176C145@mvista.com> <3C095837.6090302@embeddededge.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3C095837.6090302@embeddededge.com>
+Message-ID: <3C099A81.6040506@waitaki.otago.ac.nz>
+Date: Sun, 02 Dec 2001 16:05:37 +1300
+From: Bryce McKinlay <bryce@waitaki.otago.ac.nz>
+MIME-Version: 1.0
+To: Jeff Koftinoff <jeffk@jdkoftinoff.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Byte order in sound drivers
+References: <9A5DA94E-E647-11D5-8040-003065709198@jdkoftinoff.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Dec 01, 2001 at 05:22:47PM -0500, Dan Malek wrote:
->
-> Frank Rowand wrote:
->
->
->
-> >If I understand correctly, you are talking only about the configuration
-> >structure, not the header file structure -- so a different topic than
-> >what this thread has been.
->
-> I'm talking about both.  Yes, I know the configuration has been mostly
-> changed, but today the ibm4xx.h file includes ibm405gp.h which then
-> includes walnut.h.  This is totally backward.
+Jeff Koftinoff wrote:
 
-It used to be like that.  It's now ibm4xx.h -> board.h -> proc.h
+> XMMS has endian problems with wav files, but not mp3 files - It is
+> listed as a bug as well for sparc.  The problem solely lies with
+> applications that are written incorrectly.
 
-> The ibm4xx.h file (and the mpc8xx.h file) should be replaced by an
-> appropriate platform.h file which would remove all of the ifdefs we
-> currently have in the include lists of the C files and some of the
-> problems with multiple definitions these ifdefs are in place to solve.
 
-Maybe we can do this in 2.5.  We've already got the bits around for
-making symlinks from CONFIG_FOO -> foo.h, and an empty foo.h if it
-doesn't exist.  So we could do CONFIG_8xx -> symlink
-include/asm-ppc/platform to mpc-8xx, and so on..
+The most recent release of XMMS (0.9.5) works correctly for me for both
+MP3 and WAV files, but not CD audio for which the input plugin returns
+sound in the native endian-ness.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+But, since that release, the following change was made in XMMS CVS:
+
+Thu Jul  5 12:25:51 CEST 2001  Håvard Kvålen  <havardk@xmms.org>
+
+    * Output/OSS/audio.c (oss_set_audio_params): Do endian/sign
+    conversion if necessary.
+
+
+This breaks it on LinuxPPC 2.4.14-ben0 with both the dmasound and
+usb/audio drivers (but, amusingly, fixes the CD audio). Another
+application, mplayer, also seems to have the same problem - it says
+something like "big endian detected, byte conversion enabled" and
+doesn't work, except for 8-bit sound files.
+
+What I want to know is whether these applications are wrong to do this -
+does the Linux PPC audio drivers expect audio to be little endian?
+
+regards
+
+Bryce.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
