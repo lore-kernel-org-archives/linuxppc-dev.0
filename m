@@ -1,25 +1,28 @@
-Subject: Curious high_memory difference between platforms
-Date: Mon, 23 Jul 2001 19:19:24 -0700
-Message-ID: <8A098FDFC6EED94B872CA2033711F86F033AA1@orion.ariodata.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-From: "David C. Chiu" <dchiu@ariodata.com>
+Message-ID: <007301c11401$0cc53c60$1701a8c0@paulplanet>
+From: "Paul Chu (Accusys)" <paulchu@accusys.com.tw>
 To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: kernel 2.4.6 fail to mount 2.2.x root fs
+Date: Tue, 24 Jul 2001 13:25:25 +0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-We are currently developing a module to service DMA-able buffer for our
-PPC 405GP custom board and are using Monta Vista's 2.4.2 Kernel. We are
-"rolling" our own allocation by using mem=xyz boot arguments followed by
-a module implementing scheme similar to allocator module by Rubini
-(Linux Device Drivers, O'Reilly.)
+Hi,
 
-As with the allocator module, our module ioremap() the high_memory
-pointer and does a write-verify to determine if valid memory exists.
-Under x86 the high_memory reflects the memory size specified by mem=xyz,
-but under PPC high_memory always reflect the total physical memory
-installed. Is this normal?
+    I'm porting official linux kernel 2.4.6 to our MPC8240 borad.
+The kernel boot up, detect SCSI disks, and mount root filesystem
+on the disk without any error messages. But after opening cosole
+(COM1) and executing "/sbin/init", kernel hangs without any
+messages. However, the console will echo any keys I press on my
+virtual terminal. My root filesystem on the disk is installed from
+LinuxPPC 2000 and can be used well when I use my previous port
+kernel 2.2.17. Do I need to recompile the init programs for 2.4.x ?
+Or where can I get a root filesystem image for 2.4.x ?
+    Thank you !!
+
+Best Regards,
+Paul Chu
+Email: paulchu@accusys.com.tw
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
