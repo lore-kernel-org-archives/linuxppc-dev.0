@@ -1,45 +1,37 @@
-Message-ID: <393D4D15.7CF12E4E@execpc.com>
-Date: Tue, 06 Jun 2000 14:12:21 -0500
-From: Joseph Garcia <jpgarcia@execpc.com>
+Date: Tue, 6 Jun 2000 21:25:35 +0200 (CEST)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: Michel Dänzer <daenzerm@student.ethz.ch>,
+        Takashi Oe <toe@unlserve.unl.edu>, Michel Lanners <mlan@cpu.lu>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: [patch] VRAM detection in controlfb
+In-Reply-To: <Pine.LNX.4.05.10006031120360.1278-100000@callisto.of.borg>
+Message-ID: <Pine.LNX.4.10.10006062123240.1984-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-To: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-CC: Michel Ddnzer <daenzerm@student.ethz.ch>,
-        Francois
-	Felix Ingrand <felix@ingrand.net>,
-        Stephan Leemburg <stephan@jvc.nl>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Debian pmud package available
-References: <Pine.LNX.4.10.10006062043470.29453-100000@zirkon.biophys.uni-duesseldorf.de>
-Content-Type: text/plain; charset=iso-2022-jp
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michael Schmitz wrote:
-> > How? At least the gkrellm pmud plugin doesn't show the charge level here.
+> > > Probably XF4 handles fix.smem_start being not on a page boundary
+> > > incorrectly.
+> >
+> > What would it have to do to handle it?
 >
-> You need the -a flag for pmud to switch on apm support, plus the plugin
-> needs to read from /etc/power/apm instead from /proc somewhere.
+> Round down smem_start and mmap() it, and readd the offset. Cfr.
+>
+>     addr = (unsigned long)mmap(NULL, ati_smem_len, PROT_READ | PROT_WRITE,
+> 				MAP_SHARED, fb_fd, 0);
+>
+>     ati_smem = addr+ati_smem_offset;
+>
 
-the GKrellM PMU plugin uses PMUD directly rather than using the APM-frontend.
-What PMU_VERSION id does the Pismo have?  the plugin is written to support up to
-12 (keylargo/iBook).  My page lists Pismo as unsupported because I know nothing
-about how PMUD handles it.  Looking at the code, it appears as if it is just
-another smart battery.  But there is no evidence to a PMU_VERSION relating to
-it.  Does Batmon display for Pismo systems?  I could update it to support Pismo
-ASAP if I get some input.
+Basically what we do in fbdev.c since two years or so (first happened on
+Mac68k). But I don't think that's it: mmap would have barfed if you feed
+it a start address that isn't page aligned.
+Maybe a timing problem with the monitor?
 
-For plugins like this, should the pmud.h be put in a public location, like
-/usr/include/pmud?  It has useful info, like PMU_VERSION and related strings,
-which dont need to be in several places.  also makes a nice dependancy to make
-sure PMUD is installed.
+	Michael
 
-Thanks.
-
---
-Joseph P. Garcia      jpgarcia@execpc.com      jpgarcia@lidar.ssec.wisc.edu
-CS Undergraduate                      Student Employee - Systems Programmer
-University of Wisconsin - Madison                            UW Lidar Group
-
-An error occurred while booting.  Please try again.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
