@@ -1,25 +1,26 @@
-Date: Tue, 26 Jun 2001 12:04:41 -0700
+Date: Tue, 26 Jun 2001 12:10:03 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: "Albert D. Cahalan" <acahalan@cs.uml.edu>
-Cc: linuxppc-commit@ppcbk.mvista.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: ppc @ ppc.bitkeeper.com
-Message-ID: <20010626120441.C31231@opus.bloom.county>
-References: <200106261813.f5QID0l244185@saturn.cs.uml.edu>
+To: Michel Lanners <mlan@cpu.lu>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Crash on BenH's latest rsync (2.4.6-pre3)
+Message-ID: <20010626121003.D31231@opus.bloom.county>
+References: <200106252029.WAA00806@piglet.grunz.lu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200106261813.f5QID0l244185@saturn.cs.uml.edu>
+In-Reply-To: <200106252029.WAA00806@piglet.grunz.lu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Jun 26, 2001 at 02:13:00PM -0400, Albert D. Cahalan wrote:
+On Mon, Jun 25, 2001 at 10:29:13PM +0200, Michel Lanners wrote:
 
-> bzip2 -dc patches-are-better.bz2 | patch -p1 -E -s
+> Anyone seen this? Anyone want me to look further into debugging this?
 
-Troy B. wrote a script that makes patches of the BK tree to the
-latest Linus tree merged in.  I should go and bug him about moving
-that over to source.mvista.com or something :)
-They're currently at http://penguinppc.org/~hozer/patches, iirc
+Not this one in particular, but I'm tracking 2 different oopses w/
+the tree on a new iBook right now.  2.4.5-pre3 is rock solid too :)
+
+How did you get that oops?  There seems to be a problem w/ inserting
+power to a sleeping 'book.  Or at least w/ this one.
 
 --
 Tom Rini (TR1265)
