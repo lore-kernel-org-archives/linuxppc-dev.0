@@ -1,24 +1,26 @@
-Date: 16 Mar 2002 01:43:38 -0000
-Message-ID: <20020316014338.10199.qmail@mailFA1.rediffmail.com>
 MIME-Version: 1.0
-From: "sanjay k k" <fren00@rediffmail.com>
-Reply-To: "sanjay k k" <fren00@rediffmail.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Kernel module debugging for Walnut board
-Content-type: text/plain;
-	format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: M-Systems DiskOnChip Millennium Plus
+Date: Sun, 17 Mar 2002 12:40:51 -0500
+Message-ID: <FF6CF34C346E724596A2FB5CAAB2C49707FA4C@voyager.ops.infiniswitch.com>
+From: "Curry, Diane" <dcurry@infiniswitch.com>
+To: "Linuxppc Newsgroup (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi folks,
+Hello,
+  Is anyone using the M-Systems DiskOnChip Millennium Plus on a 2_4_14
+or more kernel on an IBM 405GP
+based board?  If so, other than a re-compilation, were there changes
+required to the linux driver supplied by M-Systems?
+If anyone has had any experience with the DOC in this environment, I'd
+appreciate hearing your opinion.
 
-Can anybody tell me what are the set up reqd. to debug keenel
-module on Walnut board (PPC405). I am using Monta vista HardHat
-linux.
+Thank you.
 
-Thanks in advance,
+Diane Curry
 
-Sanjay
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
