@@ -1,41 +1,101 @@
-Message-ID: <3AA8480F.F5E09C8E@ncal.verio.com>
-Date: Thu, 08 Mar 2001 19:03:43 -0800
-From: Henry Worth <haworth@ncal.verio.com>
-MIME-Version: 1.0
-To: Michel =?iso-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
+Message-Id: <200103090705.IAA00721@piglet.grunz.lu>
+Date: Fri, 9 Mar 2001 08:05:40 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: 2.4 not booting on 7600 (was: Re: 2.4.2 USB and "mon>")
+To: benh@kernel.crashing.org
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Pismo Aty128fb problem in 2.4.3-pre*?
-References: <3AA41B77.73470672@ncal.verio.com> <3AA5113F.A0B78521@ncal.verio.com> <3AA621D3.755358F7@iiic.ethz.ch>
-Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20010307121954.29343@mailhost.mipsys.com>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michel Dänzer wrote:
->
-> Henry Worth wrote:
-> >
-> > Narrowed down the problem a bit more. Specifying
-> > "video=aty128fb:mode:17" works; also without the mode.
-> > But, adding a depth parm (8,16,24, or 32) causes the
-> > fb init failure. It defaults to 8 and fbset works for
-> > 8,15,16,32 but 24 causes a blurry image.
->
-> The last is - *tadda* - an endianness error. aty128fb incorrectly enables byte
-> swapping for 24 bit, which can easily be fixed; look for CONFIG_CNTL .
->
+Hi all,
 
-Great, one more bug bites the dust. On the first I had picked
-up the incorrect keyword somewhere ("depth" instead of "cmode"),
-and had been using it from day one. On 2.2 it was ignored and
-the display left at 8bpp, in 2.4 it now causes init to leave
-the display in a strange state. If that doesn't help you
-find it, I'll dig into the code in a couple of days. With cmode
-all is fine.
+On   7 Mar, this message from Benjamin Herrenschmidt echoed through cyberspace:
+>>I've been unable to boot _any_ 2.3/2.4 kernels on my machine since
+>>around 2.3.99 or a bit earlier. Some revisions would boot part of the
+>>time, but most of them not at all. Symtom is always the same: hang
+>>before initializing the framebuffer, i.e. still on the OF screen.
 
-Is there any hope that the ATI 128 DRI stuff is going to
-get reenabled soon?
+I should have added that there are some 2.4 kernels that _did_ boot
+reliably: benh's 2.5 rsync tree (that's now dead, right?).
 
-Henry
+>>I get the 'retunring 0x... from prom_init' string, but nothing after
+>>that.....
+>
+> That's weird ? I suppose you tried removing/moving PCI cards ?
+
+No, because I have no reason to suspect a PCI card problem. I never had
+those; I had non-functional cards because of the Io port trouble; but
+never did any PCI problem lock up the box. Especially not that early in
+the boot process....
+
+But than again, I have a Matrox Millenium and a Promise IDE controller
+in there; I could try removing the Matrox and see..
+
+Also, this box has a G3 upgrade card, and seems to be weird in some
+respect. I seem to be the only ne that couldn't boot from the internal
+(MESH) bus with one specific hard disk; slowing the processor through
+ICTC solved that problem....
+
+> You can also try to hack printk so that it calls prom_prinf (or xmon_printf),
+> that may help figure out where it goes wrong.
+
+I'll get back to debugging. However, from my last tries in
+November/December, I remember it hanging somewhere in the early stages
+of init/main.c, in one of these files (this is from the patch with my
+debuggiong printk's):
+
+arch/ppc/kernel/pmac_pic.c
+arch/ppc/kernel/pmac_time.c
+arch/ppc/mm/init.c
+
+This is the relevant part in init/main.c:
+
+        lock_kernel();
+        printk(linux_banner);
+        setup_arch(&command_line);
++if ( ppc_md.progress ) ppc_md.progress("main: setup_arch done", 0x3eab);
+        printk("Kernel command line: %s\n", saved_command_line);
++if ( ppc_md.progress ) ppc_md.progress("main: 1", 0x3eab);
+        parse_options(command_line);
++if ( ppc_md.progress ) ppc_md.progress("main: 2", 0x3eab);
+        trap_init();
++if ( ppc_md.progress ) ppc_md.progress("main: 3", 0x3eab);
+        init_IRQ();
++if ( ppc_md.progress ) ppc_md.progress("main: 4", 0x3eab);
+        sched_init();
++if ( ppc_md.progress ) ppc_md.progress("main: 5", 0x3eab);
+        time_init();
++if ( ppc_md.progress ) ppc_md.progress("main: 6", 0x3eab);
+        softirq_init();
++if ( ppc_md.progress ) ppc_md.progress("main: 7", 0x3eab);
+
+Also, I've found that it would lock up at _different_ stages in early
+boot, not at one specific step.
+
+This led me to conclude that 2.4 kernels do something different in early
+processor, memory or cache setup, which _may_ break something else
+somewhere later.
+
+But I'll try again and do some more debugging. Also, I'll try a boot
+with the original 604/132 processor, to see whether that makes any
+difference.
+
+For the record, tried the latest bk tree yesterday evening: same hang.
+
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
