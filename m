@@ -1,43 +1,43 @@
-Message-ID: <01C156FF.63187140.svacca@valcom.com>
-From: Steven Vacca <svacca@valcom.com>
-Reply-To: "svacca@valcom.com" <svacca@valcom.com>
-To: "LinuxEmbeddedMailList (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: initrd offset in zImage getting mis-aligned?
-Date: Wed, 17 Oct 2001 11:32:21 -0400
+From: Joe Green <jgreen@mvista.com>
+To: Wolfgang Denk <wd@denx.de>, Michael Habermann <MHabermann@gmx.de>
+Subject: Re: Reducing glibc with mklibs.sh
+Date: Wed, 17 Oct 2001 09:28:41 -0700
+Content-Type: text/plain
+Cc: linuxppc-embedded@lists.linuxppc.org
+References: <20011017123040.23ED310889@denx.denx.de>
+In-Reply-To: <20011017123040.23ED310889@denx.denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Message-Id: <01101709304900.12705@minotaur.mvista.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am porting a version of Redhat's embedded linux kernel to
-a new custom designed bd with the mpc860.  I am using a
-local RAM disk on this new bd.
+Wolfgang Denk wrote:
+> In message <5.1.0.14.0.20011017155249.03548ec0@pop.gmx.de> you wrote:
+> >
+> > If you know any other tools to do this task, please let me know. Seems that
+> > LIPO (Lineo) and LOT(HardHat) are not free.
+>
+> What makes you think so?
+>
+> The MV Library Optimizer at
+> http://sourceforge.net/projects/libraryopt/ it's under GPL.
 
-The zImage (boot loader + zipped KERNEL + zipped RAM disk)
-is downloaded into RAM, starts the BOOT loader,
-unzips the kernel to 0x0000.0000, executes the initial kernel
-code, unzips the RAM disk, starts booting the
-kernel code, and then tarnsfers control to the app.
+Yes, but it's not well documented yet...I need to improve that and add
+a mailing list.
 
-I can modify any of the stuff in the initrd, /sbin/init or
-/sbin/app, for example, and the app runs.
+Michael Habermann wrote:
+> I tried to reduce the size of my self-compiled glibc 2.2.2, with the debian
+> script mklibs.sh, but it terminates with the following output:
+> ---
+> /usr/local/powerpc-linux/bin/ld: /tmp/,mklibs.21079/lib-so: undefined
+> versioned symbol name sys_siglist@@GLIBC_2.1
 
-But, if I modify the boot loader code or the kernel code,
-then there may or may not be a problem loading initrd.
-It's as though that adding or deleting code such as a printk()
-from these cause the initrd to be moved forward or backward
-and possibly losing alignment in the zImage, thus causing the
-gunzip to bomb.  I used to get, after the compressed initrd was
-located, error msgs such as "invalid compressed image".  But
-by merely adding a printk() to start_kernel(), for instance, the
-compressed initrd is located un unzipped and code execution is
-allowed to continue on to the app.
+This looks like a problem with COPY relocation types, which was seen and
+fixed for the LOT.
 
-Thanks,
-
-Steven Vacca
-Valcom, Inc.
-Roanoke, Virginia
+--
+Joe Green <jgreen@mvista.com>
+MontaVista Software, Inc.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
