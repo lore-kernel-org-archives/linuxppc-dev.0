@@ -1,90 +1,33 @@
-Date: Wed, 5 Apr 2000 04:16:55 -0800
-From: Ethan Benson <erbenson@alaska.net>
-To: Tim Wojtulewicz <Tim.Wojtulewicz@NAU.EDU>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Setting up yaboot
-Message-ID: <20000405041655.B421@plato.localdomain.local>
-References: <200004040459.XAA03713@lists.linuxppc.org> <38EA7D15.C453ED94@uncc.edu> <38EACD97.113001FE@dana.ucc.nau.edu> <20000405083212.B7710@suse.de> <a04301800b510a9fc6322@[134.114.64.240]>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="/WwmFnJnmDyWGHa4"
-In-Reply-To: <a04301800b510a9fc6322@[134.114.64.240]>; from Tim.Wojtulewicz@NAU.EDU on Wed, Apr 05, 2000 at 01:34:42AM -0700
+Message-ID: <38EB6A36.1A8D24C1@erols.com>
+Date: Wed, 05 Apr 2000 12:30:46 -0400
+From: Nelson Abramson <pogtal@erols.com>
+MIME-Version: 1.0
+To: haffner@astro.wisc.edu
+CC: Linux Dev List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: XFree 4 & sound problems
+References: <38EAD4E8.61CD5BCA@astro.wisc.edu>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---/WwmFnJnmDyWGHa4
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: quoted-printable
+Matt Haffner wrote:
 
-On Wed, Apr 05, 2000 at 01:34:42AM -0700, Tim Wojtulewicz wrote:
->=20
-> If I boot into OF, then type 'boot' at the prompt, I get the
-> following error message:
->=20
-> boot load-size=3D196 adler32=3D2e0879a0
->=20
-> DEFAULT CATCH, code=3D70 at %SRR0: ff80b320  %SRR1:0000b030
+> If I just let things go and don't touch anything, it plays fine. The
+> freeze requires a reset button reboot--the machine is not reachable at
+> all (i.e. it's not just X).
 
-ain't OF great ;-)
+Could you maybe check what parameters you have enabled on your disk via
+hdparm?  I have had a few hard freezes, and I think they are related to a
+small bug in either multiword dma or irq masking.  If I have those options
+enabled, I occasionally get a machine freeze, caused by xmms (once by
+slocate via cron)...(that's what the xmon debugger says anyways)
 
-> Here's what I have for a os-chooser script:
+--Nelson Abramson
 
-this probably isn't it given the above gibberish, but try adding
-PowerBook3,1 to the <COMPATIBLE> line below.=20
+--
+Shouldn't people be arrested and persecuted for engaging in their
+constitutional rights?  http://www.opendvd.org
 
-if that does not work try loading this script directly (or just load
-yaboot directly) like so:
-
-boot ultra0:10,ofboot.b (or whatever its called)
-
-or=20
-
-boot ultra0:10,yaboot  <-- this one should work if not something is
-really borked.
-
-> <CHRP-BOOT>
-> <COMPATIBLE>
-> iMac,1 PowerMac1,1 PowerBook1,1 PowerMac2,1 PowerMac3,1 PowerBook2,1
-> </COMPATIBLE>
-> <DESCRIPTION>
-> Linux/PPC Yaboot bootloader
-> </DESCRIPTION>
-> <BOOT-SCRIPT>
-> " get-key-map" " keyboard" open-dev $call-method
-> dup 20 dump
-> 5 + c@ 08 =3D if
-> " Booting MacOS ..." cr " boot ultra0:9,\\:tbxi" eval
-> else
-> " Booting Yaboot ..." cr " boot ultra0:10,\\yaboot" eval
-> then
-> </BOOT-SCRIPT>
-> </CHRP-BOOT>
->=20
-> As before, my MacOS partition is #9, and my boot partition is #10.
->=20
-> Thanks.
->=20
-> Tim
->=20
->=20
-
---=20
-Ethan Benson
-http://www.alaska.net/~erbenson/
-
---/WwmFnJnmDyWGHa4
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.0.1 (GNU/Linux)
-Comment: For info see http://www.gnupg.org
-
-iEYEARECAAYFAjjrLrcACgkQJKx7GixEevxMZwCdHc7u1DMb9BcrtD2PxLHhqNZ7
-yh4An3fWkAOuPfISXhRKDnBldWYAWr07
-=o8Ae
------END PGP SIGNATURE-----
-
---/WwmFnJnmDyWGHa4--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
