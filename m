@@ -1,28 +1,40 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Date: Thu, 12 Aug 2004 07:47:53 -0500
-From: "Cordes, Aaron M" <aaron.m.cordes@lmco.com>
-Subject: Linux 2.4.27-pre6-bk hangs on MPC8540 board
-To: linuxppc-embedded@lists.linuxppc.org
-Message-id: <EE7CAF713952AC4A970DD7CD8B4C12A042DCA7@emss09m06.us.lmco.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=US-ASCII
+To: Eli Brin <eli.brin@rokonet.co.il>
+Cc: "'VanBaren, Gerald (AGRE)'" <Gerald.VanBaren@smiths-aerospace.com>,
+	"'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Watchdog timer reset 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 12 Aug 2004 14:35:08 +0200."
+             <023EF71CB65AA949A2C510353690C86B027FB4@rokonet-e.rokonet.co.il>
+Date: Thu, 12 Aug 2004 14:52:16 +0200
+Message-Id: <20040812125221.482DDC109F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-We are bringing up an 8540-based board, and are getting hangs at random
-spots when booting Linux.  Sometimes the hangs occur while the kernel is
-initializing, sometimes the boot gets far enough where I can log in and
-run a couple of programs.  Eventually the board locks up with no oopses
-or panics.  If I connect to the board with a debugger, the processor is
-usually stopped in the Data miss exception handler, and there is usually
-memory corruption in the kernel code.
+In message <023EF71CB65AA949A2C510353690C86B027FB4@rokonet-e.rokonet.co.il> you wrote:
+>
+> But, strangely, if I don't do any printk() and printf() no resets.
+>
+> Can the printing to console from kernel/user "block" the kernel for so long?
 
-I ran memory tests using both Edink and U-boot and they all passed, so
-I'm reluctant to blame hardware for the memory corruption.  Has anyone
-seen similar behavior, or have any suggestions of things I might try?
+Yes, printk() can block the kernel for a long  time.  Try  increasing
+the  console  baudrate,  and  or not using output to a serial port at
+all.
 
-Thanks in advance
-Aaron Cordes
+> Where is the MMU support?
+
+What do you mean?
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+It is dangerous to be right on a subject  on  which  the  established
+authorities are wrong.                                    -- Voltaire
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
