@@ -1,66 +1,56 @@
-Message-ID: <3CF51E31.6000302@embeddededge.com>
-Date: Wed, 29 May 2002 14:30:09 -0400
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: Neil Wilson <nwilson@airspan.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: pci_consistent_alloc & mpc107 snoop
-References: <002101c20736$bb52f640$7c99883e@m5axc>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Wed, 29 May 2002 13:48:22 -0500
+From: Stephen Cameron <steve.cameron@hp.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Unrecognized opcode: `mtdcr'
+Message-ID: <20020529134822.A4429@zuul.cca.cpqcorp.net>
+Reply-To: steve.cameron@hp.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Neil Wilson wrote:
+Hi,
 
-> I hope someone can enlighten me .....
+I just started trying to play with my new Ebony board...
 
-Heh :-)
+I noticed now 'as' complains: Unrecognized opcode: `mtdcr'
+when I do this:
+	make ebony_config
+	make mrproper
+	make menuconfig
+	make dep
+	make zImage
 
-> Am I right in thinking that pci_consistent_alloc gets me
-> uncached memory ?, if not is there an easy way to modify the pages allocated
-> ?
+But, if I do this:
+	make walnut_config
+	make mrproper
+	make menuconfig
+	make dpe
+	make zImage
 
-It's gets memory for you that is dma consistent, not necessarily uncached.
-It will be uncached on processors that don't have cache snooping, but
-it will be cached on processors that are known to snoop the bus.
+I can make a zImage just fine.
 
+Of course I can manually add '-Wa,-m405' into my CFLAGS in
+the Makefile, and it will build ok, but I'm thinking that's
+not what I want to do.
 
-> Our hardware designer therefore wants the pci ethernet to use uncached
-> buffers &
-> also to have the 107 pci snoop disabled.
+My 'as' says:
 
-Linux usually assumes major hardware features work :-)  There are working
-boards with 7450/107 combinations.  I don't know what your fpga may be
-doing that causes problems.
+[scameron@zuul sslinux]$ /usr/local/powerpc-linux/bin/as --version
+GNU assembler 2.12
+Copyright 2002 Free Software Foundation, Inc.
+This program is free software; you may redistribute it under the terms of
+the GNU General Public License.  This program has absolutely no warranty.
+This assembler was configured for a target of `powerpc-linux'.
 
-> ....  I have disabled snoop in the boot
-> code (ppcboot) and the ethernet card still works, but now it does not work
-> under Linux (it used to be fine with snoop enabled, nfs etc all worked).
+I also tried binutils 2.12.1, with the same results.
 
-You need to tell Linux the processor doesn't support snooping.  There is
-a configuration option CONFIG_NOT_COHERENT_CACHE that we use on processors
-that don't have cache snooping, but I don't know how well it will work
-in your case.  I know the cache management functions are not designed to
-work with L2 and L3 caches, so there will be lots of work needed to keep
-the caches on a 74xx consistent.
+Any ideas?
 
+Thanks,
 
-> Any ideas ....?
-
-I would certainly verify this "errata" is causing the trouble before making
-the software changes necessary to support a non-snooping 74xx processor.
-I'm not sure how much of an "errata" this is or simply the desire to eliminate
-some backward compatibility to improve bus performance.  I would also find
-a way to measure the performance impact of such a system design, as the
-multiple level caches and bus snooping appear to be a significant part of
-the system performance.  It seems weird to invest in the power of the 7450 and
-then cripple it by not using these features.
-
-Good luck.
-
-
-	-- Dan
+-- steve
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
