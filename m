@@ -1,51 +1,30 @@
-Message-Id: <200002010753.IAA28148@denx.local.net>
-To: Ruedi.Hofer@ascom.ch
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: RomFS
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 01 Feb 2000 07:55:45 +0100."
-             <0FP80082UOL8BN@pmdf-it.hasler.ascom.ch>
-Date: Tue, 01 Feb 2000 08:53:42 +0100
+Message-ID: <819E3E914E0AD11194DE00805F0D100B010882D5@fbi.infocom.dk>
+From: Karl Pálsson <KPA@infocom.dk>
+To: "'linuxppc-embedded@lists.linuxppc.org'"
+	 <linuxppc-embedded@lists.linuxppc.org>
+Subject: Linuxppc and the 821 processor
+Date: Tue, 1 Feb 2000 09:03:55 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <0FP80082UOL8BN@pmdf-it.hasler.ascom.ch> you write:
->
-> I think i've seen a posting before by a guy alex@signum.se who has written
-> a flash file system, you might be able to steal some code from him.
-> Search the linuxppc-dev and linuxppc-embedded lists.
+Hi all,
 
-Right, but he told me that he does not  maintain  this  code,  and  I
-found  several  problems  with it. I fixed those for the systems I am
-using (TQM8xxL modules). I  have  both  character  device  and  block
-device  drivers  for  the FLASH memory on these systems. It works for
-me, YMMV.
+We are designing a CPU board based on the 821 processor. Has someone had any
+experience running LinuxPPC on the 821?
+Are there any known problems? Any advice?
 
-If my time permits I am willing to help if anybody is going  to  test
-this  code  on  other  systems  as well - it will need a bit of work,
-though.
 
-You can find my current code as oatch  against  the  original  2.2.13
-kernel  in  the  files  FLASH.patch  (for  the  character device) and
-FTL.patch (for the block device) which are included in
-ftp://ftp.denx.de/pub/LinuxPPC/usr/src/CDK.tar.gz
 
-Not however, that this block device driver  re-uses  the  FTL  (Flash
-Translation Layer) code from the PC-Card (PCMCIA) implementation. You
-can  use  the charatcer device driver to put a new raw file (with any
-filesystem image you like in it) into FLASH memory, but the FTL  code
-is  probably  too difficult to include into 8xxrom - and you need it,
-since it uses specal formatting of the erase  regions  used  for  the
-block device.
+Best regards,
+Karl Palsson, B.Sc.E.E.
+Infocom Defence Systems A/S
+Ellegaardsvej 25
+6400 Soenderborg
+Tel: +45-73 12 30 00
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Contrary to popular belief, thinking does not cause brain damage.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
