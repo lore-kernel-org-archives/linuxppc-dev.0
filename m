@@ -1,15 +1,31 @@
-Subject: Re: insmod / add-symbol-file
+Message-ID: <6B546A602AD2D211BFF00008C7A42889041D6CE0@hrtades2.atea.be>
+From: Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be>
+To: "'Frank Przybylski '" <fp@vas-gmbh.de>,
+	Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be>,
+	"'linuxppc-embedded@lists.linuxppc.org '" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: insmod / add-symbol-file
+Date: Fri, 7 Dec 2001 13:05:54 +0100 
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-Date: Fri, 7 Dec 2001 12:24:21 +0100
-Message-ID: <566C53CBBECCFF4D8D31B380F7B345FB01666A@PICARD.nc1701.de>
-From: "Frank Przybylski" <fp@vas-gmbh.de>
-To: "Goddeeris Frederic" <Frederic.Goddeeris@siemens.atea.be>,
-	<linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
+
+When I use -O, I still have the same problems.
+
+Without optimization, insmod complains that in_8 and out_8 are unresolved. I
+removed the code that needs this, so that it could load. But unfortunately,
+the same problem. :-<<
+
+Thanks,
+Fred
+
+-----Original Message-----
+From: Frank Przybylski
+To: Goddeeris Frederic; linuxppc-embedded@lists.linuxppc.org
+Sent: 12/7/01 12:24 PM
+Subject: Re: insmod / add-symbol-file
 
 Hi Goddeeris,
 
