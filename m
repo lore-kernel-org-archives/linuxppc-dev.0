@@ -1,22 +1,18 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao07.cox.net (fed1rmmtao07.cox.net [68.230.241.32])
-	by ozlabs.org (Postfix) with ESMTP id EF6F12BC0F
+Return-Path: <samlinuxppc@yahoo.com.cn>
+Received: from web15604.mail.cnb.yahoo.com (web15604.mail.cnb.yahoo.com
+	[202.165.102.58]) by ozlabs.org (Postfix) with SMTP id 4F1FA2BDA0
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 23 Oct 2004 08:22:46 +1000 (EST)
-Date: Fri, 22 Oct 2004 15:22:44 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Hiroshi DOYU <Hiroshi_DOYU@montavista.co.jp>
-Message-ID: <20041022152244.F28106@home.com>
-References: <20041022085733.0c5289c8.Hiroshi_DOYU@montavista.co.jp>
-	<20041022013320.GB22069@gate.ebshome.net>
-	<20041022103859.50e2b2f6.Hiroshi_DOYU@montavista.co.jp>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20041022103859.50e2b2f6.Hiroshi_DOYU@montavista.co.jp>;
-	from Hiroshi_DOYU@montavista.co.jp on Fri, Oct 22, 2004 at
-	10:38:59AM +0900
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [BUG] IBM440GX works too slow under nfsroot
+	Sat, 23 Oct 2004 10:56:34 +1000 (EST)
+Message-ID: <20041023005630.26319.qmail@web15604.mail.cnb.yahoo.com>
+Date: Sat, 23 Oct 2004 08:56:30 +0800 (CST)
+From: Sam Song <samlinuxppc@yahoo.com.cn>
+To: Tom Rini <trini@kernel.crashing.org>
+In-Reply-To: <20041022201449.GC7471@smtp.west.cox.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=gb2312
+Cc: Andrew Dennison <andrew.dennison@motec.com.au>,
+	linuxppc-embedded@ozlabs.org
+Subject: Re: Does 2.6.x work for MPC5200?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,26 +23,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 22, 2004 at 10:38:59AM +0900, Hiroshi DOYU wrote:
-> On Thu, 21 Oct 2004 18:33:20 -0700
-> Eugene Surovegin <ebs@ebshome.net> wrote:
-> 
-> > On Fri, Oct 22, 2004 at 08:57:33AM +0900, Hiroshi DOYU wrote:
-> > > Now I am strugging with booting vanilla(2.4.2x) on ibm440gx and
-> > > I could succeed to boot it but, after nfs mounted, it's behavior 
-> > > seems too slow. I guess, it looks like the system is running 
-> > > half duplex. 
+Tom Rini <trini@kernel.crashing.org> wrote：
+> On Fri, Oct 22, 2004 at 04:04:51PM +0800, Sam Song
+> wrote:
+> > Andrew Dennison <andrew.dennison@motec.com.au>
+> > wrote??
 > > 
-> > Yeah, driver thinks it's connected to 10Mb hub. How the board is 
-> > actualy connected to the network?
+> > > Sylvain Munaut maintains some information and a
+> > > bk tree for 2.6 on 5200. 
+> > > See http://246tnt.com/mpc52xx/
+> > 
+> > Thank you so much! I'd like to test it when
+> > available.
 > 
-> 10Mb hub.
+> This is already in linux-2.6.9, albiet I think only
+> ramdisks are
+> supported for root right now.  But I could be wrong.
 
-Well, I'm seeing awful half duplex performance on a 10/100Mbps hub
-that has negotiated 100Mbps...this is on one hub at home.  At the
-office, with a different hub, I seem not to have the problems.  I
-will try a 10Mbps hub next.
+Thanks. I will report the support status of these two
+trees for MPC5200 so far as I can.
 
-This is on 440GX EMAC0 w/ current BK 2.6.
+=====
+Best regards,
 
--Matt
+Sam
+
+_________________________________________________________
+Do You Yahoo!?
+150万曲MP3疯狂搜，带您闯入音乐殿堂
+http://music.yisou.com/
+美女明星应有尽有，搜遍美图、艳图和酷图
+http://image.yisou.com
+1G就是1000兆，雅虎电邮自助扩容！
+http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
