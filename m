@@ -1,54 +1,31 @@
-Date: Sat, 14 Oct 2000 14:24:40 +0200
-From: Samuel Rydh <samuel@ibrium.se>
-To: geert@linux-m68k.org
-Cc: linuxppc-dev@lists.linuxppc.org, linux-fbdev@vuser.vu.union.edu,
-        bh40@calva.net
-Subject: Re: [linux-fbdev] Re: Video driver bug
-Message-ID: <20001014142440.A2104@ibrium.se>
-References: <19340907141507.13024@192.168.1.10> <Pine.LNX.4.10.10010141208290.570-100000@cassiopeia.home>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.10.10010141208290.570-100000@cassiopeia.home>; from geert@linux-m68k.org on Sat, Oct 14, 2000 at 12:09:37PM +0200
+Message-ID: <39E855BE.2D8AB848@dynamite.com.au>
+Date: Sat, 14 Oct 2000 12:46:54 +0000
+From: Brad Hards <bradh@dynamite.com.au>
+MIME-Version: 1.0
+To: Michel Dänzer <daenzerm@student.ethz.ch>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: bk_2_3: USB mouse weirdness
+References: <39E73C23.650F6BE2@student.ethz.ch>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Oct 14, 2000 at 12:09:37PM +0200, Geert Uytterhoeven wrote:
-> On Fri, 13 Oct 2000, Benjamin Herrenschmidt wrote:
-> > >That's for 2.5.0. I think the first thing we need to do in 2.5.0 is to remove
-> > >all `mess with non-visible VCs' support, so /dev/fb* works on the _current_
-> > >video mode.
-> >
-> > Well, my understanding is that MOL needs to be able to "probe" for all
-> > supported mode. Doing so on a visible console would definitely be hell.
-> > It does that in order to setup the MacOS-side driver mode list.
->
-> Wouldn't it be sufficient to run MOL in only one mode, cfr. the X server?
+Michel Dänzer wrote:
+> However, there is one oddity: When I quit my GNOME session, the USB mouse
+> doesn't work anymore. The same if I switch from X to console. Un- and
+> replugging the mouse resurrects it. The trackpad works fine all the time, also
+> via the input layer.
 
-Well, that would cripple MOL considerably. A lot of MacOS applications
-(admittedly most of these are games) expect to be able to change
-the resolution or the depth. But the really imporant reason is that
-in order to allow switching between MOL-in-a-window and console video
-(which is much faster), several resolutions must be supported since
-running MOL in a X-window with the same size as the screen is not very useful.
+This is not a PPC problem, it is a USB problem - I've also seen it on my
+i386 scratch box.
 
-The main problem is that MacOS wants to know all the details
-about the available video modes at startup. This information is also
-necessary in order to make a transition possible from X to the
-console.
+Gunther Mayer posted a patch for this problem on the linux-usb-devel
+mailing list, see:
+http://www.geocrawler.com/lists/3/SourceForge/2571/25/4487408/
 
-Thus, if the API is going to change, I would really like to see a
-possibility to obtain both the var and the fix information for
-any supported video mode.
+I haven't tried the fix yet, YMMV.
 
-Cheers,
-
-/Samuel
-
-
-----------------------------------------------------------
- E-mail <samuel@ibrium.se>  WWW: <http://www.ibrium.se>
-  Phone/fax: (home) +46 8 4418431, (work) +46 8 7908470
-----------------------------------------------------------
+Brad
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
