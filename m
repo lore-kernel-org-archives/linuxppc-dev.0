@@ -1,51 +1,29 @@
-From: Kevin Hendricks <khendricks@ivey.uwo.ca>
-Reply-To: khendricks@ivey.uwo.ca
-To: linuxppc-dev@lists.linuxppc.org,
-        Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-Subject: bug in glibc 2.1.2 new semaphore functions in libpthread?
-Date: Sun, 22 Aug 1999 11:09:01 -0400
-Content-Type: text/plain
-References: <99080116025601.00416@ns1102.munich.netsurf.de>
+Message-ID: <37C0364C.AB1A638@cable.a2000.nl>
+Date: Sun, 22 Aug 1999 19:41:28 +0200
+From: Otto Moerbeek <otto@cable.a2000.nl>
+Reply-To: otto@cable.a2000.nl
 MIME-Version: 1.0
-Message-Id: <99082211183400.10683@localhost.localdomain>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: General purpose serial PCI driver available for testing
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Hi to you all,
 
-Has anyone tested the new semaphore functions in glibc 2.1.2 in libpthreads? 
+I have a patch for the serial driver available for testing on my
+homepage. The patch should provide support for any "dumb" serial PCI
+card with very little effort (just filling in some entries in a table).
+Take a look at <http://people.a2000.nl/omoerbe/> for more information
+and the patch. Any feedback is very welcome!
 
-If I link the native threads version of the jdk with sem_wait@@GLIC_2.0,
-sem_post@@GLIBC_2.0, etc, they work fine. 
+Regards,
+Otto
 
-If I link the native threads version of the jdk with the new semaphore
-functions sem_wait@@GLIBC_2.1, sem_post@@GLIBC_2.1 then nothing works at all.
-
-I found this out because I had two binariies from the same source, one of which
-works and the other doesn't and the only difference was that the first (working
-one) was built under an earlier glibc 2.1 while the latter was built with
-Franz's latest glibc 2.1.2.
-
-Upon further investigation with nm I found  that the only difference was in
-which semaphore functions got linked in from libpthread.so.
-
-If it matters, this is in a high signal environment (thread interrupts, thread
-suspension for garabage collection, etc).
-
-I had to drop back to glibc 2.1.1 and rebuild to get the
-native_threads to start working again (so that they would link with the old
-sem_* functions and not the new).
-
-Has anyone really tested the new semaphore functions?  Are they known to be
-broken?  
-
-Any ideas here?
-
-Thanks,
-
-Kevin
-
+-- 
+Otto Moerbeek
+otto@cable.a2000.nl
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
