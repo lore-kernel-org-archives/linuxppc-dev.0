@@ -1,23 +1,92 @@
-Message-ID: <3FCD956B.8030604@gazeta.pl>
-Date: Wed, 03 Dec 2003 08:48:59 +0100
-From: Kromer <krom@gazeta.pl>
-MIME-Version: 1.0
-To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: memory problem with fec on 8250
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Wed, 03 Dec 2003 00:16:55 -0800
+From: Peter Ryser <Peter.Ryser@xilinx.com>
+Subject: Re: [Fwd: ppc4xx Ports]
+In-reply-to: <3FC68039.4080206@jonmasters.org>
+To: Jon Masters <jonathan@jonmasters.org>
+Cc: Peter Vandenabeele <peter.vandenabeele@mind.be>,
+	linuxppc-embedded@lists.linuxppc.org
+Message-id: <3FCD9BF7.1000901@xilinx.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii; format=flowed
+References: <3FB416F9.7080303@jonmasters.org>
+ <20031114002023.GA9509@gate.ebshome.net> <3FB423AB.80805@jonmasters.org>
+ <20031114004805.GA9585@gate.ebshome.net> <20031126165238.O7373@mind.be>
+ <3FC68039.4080206@jonmasters.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi there
+The TLB errata for the Virtex-II Pro FPGA was not pushed out to the
+source trees because there have basically no chips been shipped to
+customers that will expose this problem. Newer mask sets of the
+Virtex-II Pro FPGA have this problem fixed.
 
-i have some problems with using fec device on my custom 8250 board
-while sending a lot of data (at least 300MB) through this device causes
-lack of memory
-sending same amount of data through loopback works fine
+Solution record 14052 explains the problem, provides a work-around, has
+a link to a Linux kernel patch, and lists the PVR values of chips for
+which the problem might occur. Please note that even if you have a chip
+with a matching PVR it is very unlikely that you will actually see the
+problem.
 
-i'm using 2.4.19 kernel
-any idea?
+- Peter
+
+
+Jon Masters wrote:
+
+>
+>
+> Peter Vandenabeele wrote:
+>
+> | On Thu, Nov 13, 2003 at 04:48:05PM -0800, Eugene Surovegin wrote:
+> | [...]
+> |
+> |>I don't have any PTE/TLB related problems on 405GP/405GPr.
+> |
+> |
+> | On the PowerPC 405 in the Virtex-II Pro, we needed to turn off
+> | half of the TLB entries as per "Solution 12" on
+> |
+> http://support.xilinx.com/xlnx/xil_ans_display.jsp?iLanguageID=1&iCountryID=1&getPagePath=14052
+>
+> |
+> | "... Limit TLB depth to 32 entries by only using even entries in the
+> TLB ...."
+> |
+> | Peter
+> |
+>
+> Hi there,
+>
+> I think I mentioned before that I already fixed that for the port I am
+> working on by incrementing next TLB entry by 2 if on Virtex II Pro.
+> Actually if you check a post I made to comp.arch.fpga over the summer...
+> I call it CONFIG_BROKEN_XILINX_TLB or something like that (other ports
+> are now starting to fix that too) - several other errata too.
+>
+> [ Like I said before we have two similar ports now so once I can release
+> the modifications then we should look at how this can help us. The stuff
+> I am working on at the moment is not going out yet and for various
+> commercial reasons I prefer not to disclose who it is for, etc. ]
+>
+> The problem I currently have was traced when using the dynamic linker
+> library from my Powerbook Debian on my test NFS filesystem and then
+> running up something compiled against the main normal libc with floating
+> point register save restore context stuff. So this leads me on to...
+>
+> ...there is something wrong with the trapping and handling of stfd and
+> similar operations on my port when the kernel tries to do the
+> copy_to_user to actually change the saved floating point register set.
+> Now that I know where the bug is I can fix it next week[0].
+>
+> Jon.
+>
+> [0] I work a 3 day week but take work home with me too much so tracked
+> this down today when debugging in Starbucks without the hardware but
+> with my Powerbook and various printouts...using 9600bps dialup proxied
+> through my Zaurus wifi because no IR on Powerbook revision. ;-).
+>
+>
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
