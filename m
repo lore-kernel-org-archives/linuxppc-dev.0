@@ -1,34 +1,49 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: <daenzerm@student.ethz.ch>, <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: sound again [was: Re: xf4 bug report]
-Date: Wed, 26 Jul 2000 13:09:23 +0200
-Message-Id: <20000726110923.9381@mailhost.mipsys.com>
-In-Reply-To: <397EB684.592827BD@relog.ch>
-References: <397EB684.592827BD@relog.ch>
+Date: Wed, 26 Jul 2000 13:54:16 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: [ANN] IRQ Latency tool 0.1.3 release.
+In-Reply-To: <20000725213953.24969@192.168.1.10>
+Message-ID: <Pine.LNX.4.10.10007261351040.443-100000@cassiopeia.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> Just wanted to tell that after putting earphones to the Mac, the sound
->> comes. Appearently it is only the internal speaker which does not work.
+On Tue, 25 Jul 2000, Benjamin Herrenschmidt wrote:
+> >> I still haven't found the "hard-block" that is effecting the overall audio
+> >> latency performance... ah well, back to the drawing board...
+> >
+> >Do you have IDE? The IDE driver turned out to be the major interrupt messing
+> >problem on m68k, since it can disable interrupts for quite a while.
 >
->Just for the record:
->
->My Pismo shows the same behaviour, the 'compatible' file in /proc/device-tree
->says 'screamerawacs'.
+> We have some great IRQ blockers in Linux currently. IDE is one,
+> especially in PIO mode where it disables IRQs by default during
+> transferts (AFAIK), but I think also in the fbdevs where, I think, a
+> bunch of lenghtly things like scrolling are done with IRQs disabled.
 
-I'm not completely sure, but some of these machines have the sound output
-routed to an external I2C "SRS"/ampilfier module that drives the
-speakers. We have code to set it up via Cuda on older machines, but not
-for newer Core99 machines.
+> I don't know how the fbdev case can be improved, I beleive James has some
+> plans about that for 2.5...
 
-An interesting note also: When using this external module, Darwin driver
-"fix" the AWACS volume to a constant value and uses the amplifier volume
-control via I2C.
+There's indeed a global lock on the console, to prevent multiple accesses to
+the console at once. This solves some problems, one being that some graphics
+hardware crashes when both the CPU and the graphics accelerator touch the video
+RAM at the same time.
 
-Ben.
+Interrupts in fbdev would be nice for some high-end hardware, which can
+trigger an interrupt when a bunch of graphics processing was done.
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
