@@ -1,50 +1,40 @@
-Message-Id: <200108231929.VAA00718@piglet.grunz.lu>
-Date: Thu, 23 Aug 2001 21:29:16 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
+Message-ID: <20010823194337.10575.qmail@kunk.jriver.com>
 Subject: Re: 2.4.9-benh0 problems and kudos
-To: bob@kunk.jriver.com
+In-Reply-To: <20010823095805.I14302@cpe-24-221-152-185.az.sprintbbd.net>
+ "from Tom Rini at Aug 23, 2001 09:58:05 am"
+To: Tom Rini <trini@kernel.crashing.org>
+Date: Thu, 23 Aug 2001 14:43:37 -0500 (CDT)
+From: Robert E Brose II <bob@kunk.jriver.com>
 Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20010823164256.8751.qmail@kunk.jriver.com>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  23 Aug, this message from Robert E Brose II echoed through cyberspace:
-> On the positive side it looks like the 7500 chaos PCI bus fixes
-> have been incorporated as well as the planb fixes and the
-> controlfb enhancements.
+User Tom Rini says:
+> On Thu, Aug 23, 2001 at 11:42:56AM -0500, Robert E Brose II wrote:
 
-Hooray ;-)
-
-> I've run into a couple of small problems however....
+> > Next, when pppoe, ax25 or netrom are compiled as modules, trying to
+> > insmod them gives the following...
 >
-> planb.c has a problem in 2074.
-> pb->lock = 0;
+> Don't use insmod.  Use modprobe.
+> --
+> Tom Rini (TR1265)
+> http://gate.crashing.org/~trini/
 
-Yep.
+#/sbin/modprobe pppoe
+/lib/modules/2.4.9-benh0/kernel/drivers/net/pppoe.o: unresolved symbol sk_run_filter
+/lib/modules/2.4.9-benh0/kernel/drivers/net/pppoe.o: insmod /lib/modules/2.4.9-benh0/kernel/drivers/net/pppoe.o failed
+/lib/modules/2.4.9-benh0/kernel/drivers/net/pppoe.o: insmod pppoe failed
 
-> pb->lock is defined as a semaphore so this gives the following
-> compiler error...
->
-> planb.c: In function `init_planb':
-> planb.c:2074: incompatible types in assignment
+Same thing with respect to sk_run_filter
 
-Just remove that line 2074. I've sent a patch off to BenH; it should
-appear in his tree RSN.
 
-Cheers
-
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
-
+Bob
+--
+Robert E. Brose II    N0QBJ
+http://www.jriver.com/~bob/
+bob@kunk.jriver.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
