@@ -1,28 +1,37 @@
-Message-Id: <5.1.0.14.2.20030410094232.02cff008@mail.ebshome.net>
-Date: Thu, 10 Apr 2003 09:47:39 -0700
-To: Graf Alex <alex.graf@siemens.com>
-From: Eugene Surovegin <ebs@ebshome.net>
-Subject: Re: parse error before `{', stray '\' in program
+Message-ID: <3E95E275.1050002@kegel.com>
+Date: Thu, 10 Apr 2003 14:30:29 -0700
+From: Dan Kegel <dank@kegel.com>
+MIME-Version: 1.0
+To: jack.sun@bmrtech.com
 Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <791B3205DB661A42B4BFE5464A7D1D02010E44F3@chzugexch02.zug.c
- h.abatos.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Subject: re: Linux crash when big application executing on PPC405GP board
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 02:23 AM 4/10/2003, you wrote:
+jack.sun@bmrtech.com wrote:
+> Board: CSB272 IBM PPC405GP
+> Linux kernel version: 2.4.17
+> Linux kernel can boot nfs root filesystem on the board. Shell works
+> correctly.
+> However the system will oops when execute big applications, such as
+> copying a file which is larger than 2MBytes.
+> The following is ksymoops:
+>
+> The size of vmlinux.srec is 2.076Mbytes.
+> root@192.9.200.145:/# cp vmlinux.srec vmlinux.srec.bak
+>
+> Oops: kernel access of bad area, sig: 11
 
->The troubles are coming from the dos <cr><lf> at line end. With gcc 3.2
->(from host) I don't have this problems.
->I don't want to remove the <cr>s (dos2unix), because these files have to be
->used on Windows too.
+Where did you get your kernel?
+What compiler did you use to build it?
+- Dan
 
-There is an old patch (dated 1999) for preprocessor which solves this problem.
-Search the net or use the distribution which has this patch applied e.g. MVL.
-
-Eugene
+--
+Dan Kegel
+http://www.kegel.com
+http://counter.li.org/cgi-bin/runscript/display-person.cgi?user=78045
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
