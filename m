@@ -1,53 +1,40 @@
-Message-ID: <40E4618A.902@mvista.com>
-Date: Thu, 01 Jul 2004 12:10:02 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
+Message-ID: <40E463E5.1060401@246tNt.com>
+Date: Thu, 01 Jul 2004 21:20:05 +0200
+From: Sylvain Munaut <tnt@246tnt.com>
 MIME-Version: 1.0
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: linux-emb <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: mv6360 support in mv64x60.c (was Re: GT64260_eth (Ethernet)	Driver)
-References: <40E1E94B.9060204@mvista.com> <1088691201.14216.2977.camel@hades.cambridge.redhat.com>
-In-Reply-To: <1088691201.14216.2977.camel@hades.cambridge.redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Adrian Cox <adrian@humboldt.co.uk>
+Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>,
+	kumar.gala@freescale.com, mcclintock@freescale.com
+Subject: Re: [PATCH][RFC]Updated MPC I2C driver
+References: <1088705955.28598.168.camel@localhost>
+In-Reply-To: <1088705955.28598.168.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David Woodhouse wrote:
+Adrian Cox wrote:
 
->More progress... the IRQ code works a bit better if it's ic_bh->v_addr
->is at offset zero in the chip instead of the 0xc18 which is correct only
->for the GT64260.
->
-Yep.  Added to the list.
+ > This version should support MPC8540 as well as MPC8245 and MPC107.
+ > I don't have MPC85xx hardware, so I'd like feedback from people who
+ > do.
+ >
+ > To use it on MPC107/824x requires the OCP patch that went by on the
+ > list on Tuesday. The support for MPC85xx is already in the kernel.
+ >
+ > If nobody has any complaints I'm ready to send it to Greg K-H.
 
-> The host bridge itself appears on the bus as device #3,
->which is why we couldn't autodetect it by looking at vendor/device of
->device #0.
->
-Ah, I see the problem.  PCI regs are being accessed before
-mv64x60_enumerate_buses() is called which sets the hose bus & device
-numbers.  Actually, I never expected fw to ever change the dev number
-from zero so I was only really concerned about setting the bus number in
-that routine.  For some reason, your firmware must be changing it to 3.
 
-FYI, look at the "PCI P2P Configuration" register
-(MV64x60_PCI[01]_P2P_CONFIG (0x1d14/0x1d94)).  Apparently your firmware
-sets the device number of your hoses to 3 for some reason (default is 0
-for PCI, 0x1f for PCI-X).
+Interesting, it really looks like the MPC5200 I2C controller.
+Unfortunatly :
+ - On the MPC5200, all the status/controls bits are in the MSBs ( so
+the consts would need to be << 24 )
+ - And there is a interrupt control register I don't see in your code.
+It's shared by the two I2C controllers onboard.
 
-Added to the list.
+I'll try to see if I can make it work on the lite5200 board.
 
->
->∃ an Ethernet driver for the MV64340 (the MIPS version of the chip). It
->doesn't use OCP though -- there's no OCP on MIPS. Can someone explain
->why OCP is used instead of the generic platform_device functionality
->provided by the kernel? Should we convert MIPS to OCP?
->
->
->
-I think Matt answered this one.
-
-Mark
+Sylvain Munaut
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
