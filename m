@@ -1,99 +1,53 @@
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: Problem setting up a telnet server on a custom 8260 board (using Busybox)
-Date: Fri, 9 Jan 2004 14:15:52 -0500
-Message-ID: <8529B5552D4EAA4DAEDF49650C64B2B437137C@tarpon.mangrovesystems.com>
-From: "Muhammad Sarwar" <msarwar@mangrovesystems.com>
-To: "Joao Vicente" <joao.vicente@spectel.com>,
-	<linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: TLB and CSSBAR problems with MPC8540 and BDI2000
+From: "Matthew S. McClintock" <mattsm@arlut.utexas.edu>
+To: Dan Malek <dan@embeddededge.com>
+Cc: fabidi@ultsol.com, linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <3FFEEAD9.80308@embeddededge.com>
+References: 
+	 <704F2B356FCC3E49A909C625BD9E5C4002143D@ultsol01.tewks.ultsol.local>
+	 <3FFEEAD9.80308@embeddededge.com>
+Content-Type: text/plain
+Message-Id: <1073677509.10794.14.camel@chuck.arlut.utexas.edu>
+Mime-Version: 1.0
+Date: Fri, 09 Jan 2004 13:45:09 -0600
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Check if your inetd daemon is running. It may be part of your rcS script.
+ So more specifically, if the bdi2000 init section moves the CCSRBAR and
+maps a TLB to the location the CCSRBAR was moved too you can't just
+moved the CCSRBAR back to its default location? One would also need to
+remap the TLB entry to CCSRBAR?
 
+        Could anyone familiar with that workaround listed below verify
+that
+this could be causing the CPU to freeze/crash?
 
-Regards,
- 
-Muhammad Sarwar
-Mangrove Systems Inc.
+Thanks,
+Matthew
 
-
------Original Message-----
-From: Joao Vicente [mailto:joao.vicente@spectel.com]
-Sent: Friday, January 09, 2004 2:06 PM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Problem setting up a telnet server on a custom 8260 board (using Busybox)
-
-
-Dear all
-
-I am trying to set up a telnet server on a custom 8260 based board.
-
-my xinetd.conf file is as shown below
-
-#####################################################
-#
-# Simple configuration file for xinetd
-#
-# Some defaults, and include /etc/xinetd.d/
-
-defaults
-{
-        instances               = 60
-        log_type                = SYSLOG authpriv
-        log_on_success          = HOST PID
-        log_on_failure          = HOST
-        cps                     = 25 30
-}
-
-includedir /etc/xinetd.d
-#######################################################
-
-My etc/xinetd.d/telnet config file is as follows
-
-######################################################
-# default: on
-# description: The telnet server serves telnet sessions; it uses \
-#       unencrypted username/password pairs for authentication.
-service telnet
-{
-        flags           = REUSE
-        socket_type     = stream
-        wait            = no
-        user            = root
-        server          = /usr/sbin/in.telnetd
-        log_on_failure  += USERID
-        disable         = no
-}
-#######################################################
-
-On inittab I am calling xinetd as follows:
-######################################################
-...
-::once:/usr/sbin/xinetd
-...
-#####################################################
-
-My telnet server is in:
-/usr/sbin/in.telnetd
-
-When I try to telnet from another machine I get the following
-'telnet: connect to address 10.121.10.24: Connection refused'
-
-When I try running telnet on locally 'telnet 127.0.0.1' I get the following message:
-'telnet: Unable to connect to remote host: Connection refused'
-
-I can ping my board from the machine I want to telnet from.
-
-I cannot see the xinetd process running when I type 'ps -A'
-
-I would apreciate if somebody could give me a 'push' in the right direction.
-
-Thanks
-
-Joao Vicente
+On Fri, 2004-01-09 at 11:54, Dan Malek wrote:
+> Fahd Abidi wrote:
+>
+> > I think my problem is all centered around TLB's and the CCSRBAR.
+>
+> Yes, it is.
+>
+> The debug control registers are part of the CCSRBAR space.  The
+> BDI2000 tracks modifications it makes if the space is moved, however,
+> if your software moves that space the BDI2000 doesn't know it and
+> can't access the registers.
+>
+> If you are debugging code, like u-boot here, you have to make
+> several code modifications so the CCSR space isn't moved during your
+> debugging (among other things).
+>
+>
+> 	-- Dan
+>
+>
+--
+Matthew S. McClintock <mattsm@arlut.utexas.edu>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
