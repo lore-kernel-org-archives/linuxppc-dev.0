@@ -1,52 +1,40 @@
-Date: Thu, 24 Dec 1998 14:57:53 +1100
-Message-Id: <199812240357.OAA06229@tango.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: Geert.Uytterhoeven@cs.kuleuven.ac.be
-CC: davem@dm.cobaltmicro.com, linuxppc-dev@lists.linuxppc.org,
+Date: Wed, 23 Dec 1998 23:36:53 -0800
+Message-Id: <199812240736.XAA06955@dm.cobaltmicro.com>
+From: "David S. Miller" <davem@dm.cobaltmicro.com>
+To: alan@cymru.net
+CC: Geert.Uytterhoeven@cs.kuleuven.ac.be, Paul.Mackerras@cs.anu.edu.au,
+        linuxppc-dev@lists.linuxppc.org, linux-m68k@lists.linux-m68k.org,
         VANDROVE@vc.cvut.cz
-In-reply-to: 
-	<Pine.LNX.4.03.9812231013310.18310-100000@mercator.cs.kuleuven.ac.be>
-	(message from Geert Uytterhoeven on Wed, 23 Dec 1998 10:14:44 +0100
-	(CET))
+In-reply-to: <199812232158.VAA21083@snowcrash.cymru.net> (message from Alan
+	Cox on Wed, 23 Dec 1998 21:58:04 +0000 (GMT))
 Subject: Re: TCPv4 checksum errors
-Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <Pine.LNX.4.03.9812231013310.18310-100000@mercator.cs.kuleuven.ac.be>
+References: <199812232158.VAA21083@snowcrash.cymru.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be> wrote:
+   From: Alan Cox <alan@cymru.net>
+   Date: Wed, 23 Dec 1998 21:58:04 +0000 (GMT)
 
-> In the mean time I got this from a `new' PPC hacker. I haven't tried it yet
-> (still have to manually calculate checksums for my bad packets, too, sigh).
+   The classic bad packet error is a frame that ends up with
 
-> diff -ur linux/include/asm-ppc/checksum.h linux/include/asm-ppc/checksum.h
-> --- linux/include/asm-ppc/checksum.h Thu Apr 23 02:35:41 1998
-> +++ linux/include/asm-ppc/checksum.h    Tue Dec 22 16:19:49 1998
-> @@ -83,13 +83,13 @@
->                            unsigned int sum)
->  {
->      __asm__("
-> -   add %0,%0,%1
-> -   add %0,%0,%2
-> -   add %0,%0,%0
-> -   addi %0,%0,0
-> +   addc %0,%0,%1
-> +   adde %0,%0,%2
-> +   adde %0,%0,%3
-> +   addze %0,%0
->     "
->     : "=r" (sum)
-> -   : "r" (daddr), "r"(saddr), "r"((ntohs(len)<<16)+proto*256), "0"(sum));
-> +   : "r" (daddr), "r"(saddr), "r"((proto<<16)+len), "0"(sum));
->      return sum;
->  }
+   checksum =FFFF end around carry left =1
 
-Aargh, I checked arch/ppc/lib/checksum.S thoroughly but I missed this
-one!  Of course it needs to be addc/adde/adde/addze.  Kudos to Petr
-Vandrovec (good spotting, as Linus would say).
+I challenge you to generate a packet which will create this condition,
+it is impossible as far as I have tried....
 
-Paul.
+However, I'm very very interested in being proved wrong.  Because if I
+am, then every single checksum implementation in the kernel would need
+to be fixed and we should therefore settle this asap.
+
+Instead of tiring one's brain like I did, to find if the case even
+exists, better would probably be to put a piece of debugging code
+which checked for this condition and printed out a nice message and
+dumped the packet contents when triggered.
+
+Later,
+David S. Miller
+davem@dm.cobaltmicro.com
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
