@@ -1,34 +1,31 @@
-Message-ID: <3A8C5ECE.29670E5A@mvista.com>
-Date: Thu, 15 Feb 2001 17:57:18 -0500
-From: Dan Malek <dan@mvista.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Ian Reinhart Geiser <geiseri@msoe.edu>
+To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: mirror video on the pismo powerbook
+Date: Thu, 15 Feb 2001 17:38:35 -0600
 MIME-Version: 1.0
-To: Troy Benjegerdes <hozer@drgw.net>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: calling giveup_altivec on machine with no altivec!?
-References: <20010215160658.P26702@altus.drgw.net>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <01021517383500.30184@elysium.linuxppc.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Troy Benjegerdes wrote:
+Greetings,
+	A while ago I had to give a presentation with my powerbook under linux, and
+i ran across the program mirror.  It was only in binary format and very
+simple.  It worked perfectly on the 2.2.18 kernel, but now it will not work
+on the 2.4.2 kernels.  I cannot find the source and cannot figure out what it
+does.  Has anyone ever seen this program before?
 
-> Somehow prev->thread.regs->msr & MSR_VEC turned out true. I'm suspecting
-> something got overwritten somewhere..
-
-Crap....
-
-> This is an SMP machine so I'm wondering if there wasn't a race condition
-> on something with task structs..
-
-Ahhhh, wait a minute......does SMP do the lazy Altivec or does it
-always switch it?  On uP systems, MSR_VEC isn't set unless you get an
-Altivec trap, but I seem to remember comments about always switching it
-on SMP systems.  On an SMP system, if you don't really have Altivec
-you probably shouldn't enable it in the configuration.....no common
-config here :-).
-
-
-	-- Dan
+Thanks
+	-ian reinhart geiser
+--
+===================================================
+First, we reload the gun. Then, pointing to our feet, we shoot.
+Now we think that oughta hurt, but hey - we saw this coming!
+===================================================
+Ian Reinhart Geiser
+LinuxPPC & KDE Developer
+LinuxPPC Inc
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
