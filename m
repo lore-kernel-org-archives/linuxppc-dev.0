@@ -1,54 +1,34 @@
-In-Reply-To: <OFDCF8FB00.DE8D6095-ON85256E94.004352D9-85256E94.00445CD8@nanometrics.ca>
-Subject: Re: mpc8xx linux maintenance
-To: David Ho <DavidHo@nanometrics.ca>
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <OFB9E33748.A397083B-ON85256E94.004FB37A-85256E94.004FF18D@nanometrics.ca>
-From: David Ho <DavidHo@nanometrics.ca>
-Date: Fri, 14 May 2004 10:33:11 -0400
+Message-ID: <40A4DC36.1000707@intracom.gr>
+Date: Fri, 14 May 2004 17:48:22 +0300
+From: Pantelis Antoniou <panto@intracom.gr>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+To: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	Joakim Tjernlund <joakim.tjernlund@lumentis.se>,
+	Dan Malek <dan@embeddededge.com>, Wolfgang Denk <wd@denx.de>,
+	sanjeevr@myw.ltindia.com
+Subject: Re: [PATCH] Driver for FECs on motorola DUET (87x/88x)
+References: <40A38968.6060701@intracom.gr> <40A4C04A.8060508@intracom.gr>
+In-Reply-To: <40A4C04A.8060508@intracom.gr>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Please don't mind correcting me on what I said here.  I would love to hear
-some feedback from the community, and possibly the folks at Motorola,
-Timesys, Montavista.
+Progress report.
 
-Regards,
+Got it to move even further.
 
-David Ho
-Nanometrics, Inc
+No longer crashes but it seems stuck in something related
+to the serial console.
 
+Still responds to pings, so I'm very hopefull.
 
->
-> Hi all,
->
-> Just wondering, do we have a person from Motorola or a well known
-embedded
-> linux company that actively ensures the operation of the Linux kernel on
-> mpc8xx, 2.6 in particular?
->
-> I noticed that is a lot of work being done by Montavista on the IBM
-PowerPC
-> chips and Timesys is working heavily on the Motorola 82xx for the 2.6
-> kernel.  But not that much noise is made from these companies in regard
-to
-> the mpc8xx.  Should this be a concern?
->
-> Wolfgeng mentioned in his interview with Linux Device (
-> http://linuxdevices.com/articles/AT2240586951.html) that 2.6 may be slow,
-> but if there are so many 2.6 features that are beneficial to embedded
-> development (http://www.linuxjournal.com/article.php?sid=7477), why is
-> mpc8xx , as I see it, being somewhat left behind.
->
-> Regards,
->
-> David Ho
-> Nanometrics, Inc
->
->
->
+Come Monday I'll probably get it to work...
+
+Regards
+
+Pantelis
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
