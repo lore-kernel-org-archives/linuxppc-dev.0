@@ -1,50 +1,36 @@
-Date: Wed, 29 May 2002 12:05:44 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Stephen Cameron <steve.cameron@hp.com>
-Cc: linuxppc-embedded@lists.linuxppc.org,
-	Matt Porter <mporter@mvista.com>
-Subject: Re: Unrecognized opcode: `mtdcr'
-Message-ID: <20020529190544.GO5997@opus.bloom.county>
-References: <20020529134822.A4429@zuul.cca.cpqcorp.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020529134822.A4429@zuul.cca.cpqcorp.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: Unrecognized opcode: `mtdcr'
+Date: Wed, 29 May 2002 14:30:16 -0500
+Message-ID: <45B36A38D959B44CB032DA427A6E10640167CFD8@cceexc18.americas.cpqcorp.net>
+From: "Cameron, Steve" <Steve.Cameron@hp.com>
+To: "Tom Rini" <trini@kernel.crashing.org>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, May 29, 2002 at 01:48:22PM -0500, Stephen Cameron wrote:
+[..snip...]
 >
-> Hi,
+> I think we need to change arch/ppc/Makefile from:
+> ifdef CONFIG_40x
+> CFLAGS := $(CFLAGS) -Wa,-m405
+> endif
 >
-> I just started trying to play with my new Ebony board...
->
-> I noticed now 'as' complains: Unrecognized opcode: `mtdcr'
-> when I do this:
-> 	make ebony_config
-[snip]
-> But, if I do this:
-> 	make walnut_config
-[snip]
-> Any ideas?
+> To:
+> ifdef CONFIG_4xx
+> CFLAGS := $(CFLAGS) -Wa,-m405
+> endif
 
-I think we need to change arch/ppc/Makefile from:
-ifdef CONFIG_40x
-CFLAGS := $(CFLAGS) -Wa,-m405
-endif
+Ok, this worked for me.  Thanks!  (I guess I wasn't so
+far off track after all.)
 
-To:
-ifdef CONFIG_4xx
-CFLAGS := $(CFLAGS) -Wa,-m405
-endif
+> For the moment.  Until there's some 440-specific opcodes we use (are
+> there any?) which means we'll need to do -Wa,-m440.
 
-For the moment.  Until there's some 440-specific opcodes we use (are
-there any?) which means we'll need to do -Wa,-m440.
-
-Matt, do you want to do this or shall I?
-
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+When I had tried "-Wa,-m440" before, it wasn't recognized as an option.
+(but perhaps by "do -Wa,-m440", you mean enhance the C compiler and/or
+assembler.)
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
