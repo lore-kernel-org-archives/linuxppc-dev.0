@@ -1,28 +1,27 @@
-Message-ID: <007301c11401$0cc53c60$1701a8c0@paulplanet>
-From: "Paul Chu (Accusys)" <paulchu@accusys.com.tw>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: kernel 2.4.6 fail to mount 2.2.x root fs
-Date: Tue, 24 Jul 2001 13:25:25 +0800
+Mime-Version: 1.0
+Message-Id: <a04320408b782e9f37ccd@[192.168.10.144]>
+Date: Tue, 24 Jul 2001 18:09:57 +0900
+To: linuxppc-embedded@lists.linuxppc.org
+From: Masahide Tomita <tomita@itl.nyc.co.jp>
+Subject: Where in the kernel source system clock is defined?
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Hi,
 
-    I'm porting official linux kernel 2.4.6 to our MPC8240 borad.
-The kernel boot up, detect SCSI disks, and mount root filesystem
-on the disk without any error messages. But after opening cosole
-(COM1) and executing "/sbin/init", kernel hangs without any
-messages. However, the console will echo any keys I press on my
-virtual terminal. My root filesystem on the disk is installed from
-LinuxPPC 2000 and can be used well when I use my previous port
-kernel 2.2.17. Do I need to recompile the init programs for 2.4.x ?
-Or where can I get a root filesystem image for 2.4.x ?
-    Thank you !!
+I'm still trying to configure HardHatLinux 1.2 for our custom board, and I
+could get the kernel through compiled.
+But it doesn't run and emulator said error like "Machine Check Exception"
+which means system clock is set correctly.
+I looked for system clock setting code in the source but I couldn't find
+how and where to set the system clock for custom board.
 
-Best Regards,
-Paul Chu
-Email: paulchu@accusys.com.tw
+Thanks in advance.
+
+
+Masahide Tomita
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
