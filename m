@@ -1,106 +1,76 @@
-Date: Sun, 18 Jan 2004 13:07:22 +0100
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Sven Luther <sven.luther@wanadoo.fr>,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: OF properties access ?
-Message-ID: <20040118120722.GA4603@iliana>
-References: <20040113114625.GA9294@iliana> <1074131387.818.43.camel@gaston> <20040115074439.GB14039@iliana> <1074310140.8360.27.camel@gaston>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1074310140.8360.27.camel@gaston>
-From: Sven Luther <sven.luther@wanadoo.fr>
+Date: Sun, 18 Jan 2004 13:14:07 +0100 (MET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Sven Luther <sven.luther@wanadoo.fr>
+Cc: Debian PowerPC List <debian-powerpc@lists.debian.org>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 2.4.21-ben2 issues: RTC, Thermal and RTAS
+In-Reply-To: <20040113171606.GA13923@iliana>
+Message-ID: <Pine.GSO.4.58.0401181310240.2808@waterleaf.sonytel.be>
+References: <20030823171845.GA1963@dat.etsit.upm.es> <20031217011849.GA26643@iliana>
+ <Pine.GSO.4.58.0312171042530.24864@waterleaf.sonytel.be> <20031217095241.GD2283@iliana>
+ <Pine.GSO.4.58.0312171056030.24864@waterleaf.sonytel.be> <20031217100358.GA2655@iliana>
+ <Pine.GSO.4.58.0312171112040.24864@waterleaf.sonytel.be> <20040113151230.GA12089@iliana>
+ <Pine.GSO.4.58.0401131806560.9060@waterleaf.sonytel.be> <20040113171606.GA13923@iliana>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Jan 17, 2004 at 02:48:11PM +1100, Benjamin Herrenschmidt wrote:
->
+On Tue, 13 Jan 2004, Sven Luther wrote:
+> On Tue, Jan 13, 2004 at 06:09:38PM +0100, Geert Uytterhoeven wrote:
+> > On Tue, 13 Jan 2004, Sven Luther wrote:
+> > > On Wed, Dec 17, 2003 at 11:13:58AM +0100, Geert Uytterhoeven wrote:
+> > > > On Wed, 17 Dec 2003, Sven Luther wrote:
+> > > > > On Wed, Dec 17, 2003 at 10:57:07AM +0100, Geert Uytterhoeven wrote:
+> > > > > > It uses the PC-style RTC driver (genrtc.o is not loaded).
+> > > > >
+> > > > > Mmm, what was your box again ? a chrp no ?
+> > > >
+> > > > Yep, CHRP LongTrail. It has a Winbond/Symphony Labs W83C553 SouthBridge.
+> > >
+> > > Could you tell me the content of your rtc OF node ? In particular i am
+> > > interested in the reg value (probably 70/71 in isa space or so), and of
+> > > the compatible stuff (i have ds1385-rtc).
 > >
-> > But this doesn't reply me on why my attempts to read back integer values
-> > from OF property only result in the machine hanging, and since it is
-> > really early on, i don't even get serial console output to have an idea
-> > why :/
+> > /proc/device-tree/pci/isa@1/rtc/ has:
 > >
-> > in particular i cloned the code reading l2cr-value, and changed it to
-> > l2cr and instead of reading the value, i got only kernel silently dying.
+> > total 0
+> > -r--r--r--    1 root     root           11 Jan 13 18:06 compatible
+> > -r--r--r--    1 root     root            4 Jan 13 18:06 device_type
+> > -r--r--r--    1 root     root            4 Jan 13 18:06 linux,phandle
+> > -r--r--r--    1 root     root            4 Jan 13 18:06 name
+> > -r--r--r--    1 root     root           12 Jan 13 18:06 reg
+> >
+> > compatible:	pnpPNP,b00			(ASCII)
+> > device_type:	rtc				(ASCII)
+> > linux,phandle:	ff86 2aa4			(hexdump)
+> > name:		rtc				(ASCII)
+> > reg:		0000 0001 0000 0070 0000 0002	(hexdump)
 >
-> Show me the code and the relevant device-tree bits.
+> Ok. So, this is almost the same as me, except i have a ds1385-rtc
+> compatible version, and some interrupt stuff.
+>
+> Can you confirm that the GEN_RTC driver works for you ?
 
-Ok, here is the code that dies :
+To my surprise, genrtc in 2.4.23 does not work on my LongTrail!
+The kernel crashes in init/do_mounts.c:mount_block_root() right after the call
+to sys_chdir(), because current->fs is a NULL pointer. Weird, and it doesn't
+really look genrtc-related, although the same source tree works fine if I
+disable genrtc and build in rtc.
 
-void pegasos_set_l2cr(void) {
-        struct device_node *root = find_path_device("/");
-        char *machine;
-        struct device_node *np;
+I also tried 2.6.0, and there it works fine, both in the builtin and modular
+case: the kernel got the correct time, and hwclock works.
 
-        /* On Pegasos, enable the l2 cache if needed, as the OF forgets * it */
-        machine = get_property(root, "model", NULL);
-        if (strncmp(machine, "Pegasos", 7) == 0) {
-                /* Enable L2 cache if needed */
-                np = find_devices ("cpus");
-                if (np == 0)
-                        np = find_type_devices("cpu");
-                if (np != 0) {
-                        unsigned int *l2cr = (unsigned int *)
-                                get_property (np, "l2cr", NULL);
-                        if (!(l2cr & 0x80000000)) {
-                                _set_L2CR(0);
-                                _set_L2CR(l2cr | 0x80000000);
-                        }
-                }
-        }
-}
+Gr{oetje,eeting}s,
 
-Called from just after chrp_find_bridges in chrp_setup_arch.
+						Geert
 
-This has been mirrored from the code in pmac_setup_artch, in pmac_setup.c :
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-        /* Checks "l2cr-value" property in the registry */
-        if (cur_cpu_spec[0]->cpu_features & CPU_FTR_L2CR) {
-                struct device_node *np = find_devices("cpus");
-                if (np == 0)
-                        np = find_type_devices("cpu");
-                if (np != 0) {
-                        unsigned int *l2cr = (unsigned int *)
-                                get_property(np, "l2cr-value", NULL);
-                        if (l2cr != 0) {
-                                ppc_override_l2cr = 1;
-                                ppc_override_l2cr_value = *l2cr;
-                                _set_L2CR(0);
-                                _set_L2CR(ppc_override_l2cr_value);
-                        }
-                }
-        }
-
-Launching a kernel with this small changes only results with him dying
-silently, without syncing back to the fbdev console and providing
-output, nor showing anything on the serial console, but this is to be
-expected given the place where it happens.
-
-A, yes, you wanted the device-tree bit also, i have (from linux) :
-
-$ ls /proc/device-tree/cpus/PowerPC,74x7
-altivec             d-cache-sets  external-control    i-tlb-sets	name                      tlb-size
-available           d-cache-size  general-purpose     i-tlb-size	performance-monitor       tlb-split
-bus-frequency       d-tlb-sets    graphics            l2-cache  	reg translations
-clock-frequency     d-tlb-size    i-cache-block-size  l2cr		reservation-granule-size
-cpu-version         data-streams  i-cache-line-size   l3-cache		state
-d-cache-block-size  device_type   i-cache-sets        l3cr		timebase-frequency
-d-cache-line-size   existing      i-cache-size        linux,phandle	tlb-sets
-
-And :
-
-$ ls -l /proc/device-tree/cpus/PowerPC,74x7/l2cr
--r--r--r--    1 root     root            4 Jan 18 13:06 /proc/device-tree/cpus/PowerPC,74x7/l2cr
-
-And finally :
-
-$ hexdump /proc/device-tree/cpus/PowerPC,74x7/l2cr
-0000000 0000 0000
-0000004
-
-Friendly,
-
-Sven Luther
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
