@@ -1,52 +1,52 @@
-To: "XOL" <xol@mail.ru>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Re[4]: initrd problem. CRC Error. 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 09 Jun 2003 17:05:55 +0400."
-             <E19PMLT-000Hhi-00.xol-mail-ru@f16.mail.ru>
-Date: Mon, 09 Jun 2003 22:21:27 +0200
-Message-Id: <20030609202132.A0579C5FD7@atlas.denx.de>
+Message-Id: <5.0.2.1.0.20030609124155.024df050@10.2.0.2>
+Date: Mon, 09 Jun 2003 13:35:44 -0700
+To: Ron Bianco <ronb@lcsaudio.com>,
+	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+From: Jochen Roth <jochen@znyx.com>
+Subject: Re: Has anyone made the 8240 do burst reads from PCI memory?
+In-Reply-To: <000401c32c64$dc6a4690$4d00a8c0@warp-speed>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <E19PMLT-000Hhi-00.xol-mail-ru@f16.mail.ru> you wrote:
->
-> I think I found out what is a problem
-> The thread bi_record and initrd
-> http://lists.linuxppc.org/linuxppc-embedded/200211/msg00286.html
->
-> Discuss the problem of corrupting initrd by bi_record - board info record.
-> As I have no good background in bootloading could you please let me know
-> 1. What is a current status of fixing the bug. Are there any
-> new kernel version there it was fixed
+At 12:50 PM 6/6/03 -0700, Ron Bianco wrote:
+>FYI, although not a PCI expert, I'm trying to determine if we need to upgrade
+>our CPLD code in order to successfully support memory read cycles with
+>more than
+>one data phase.
 
-Don't know. Never ran into this problem.
+It's been a while that I worked on this, but here are some things I remember:
 
-> 2. Does this problem depends on bootloader. Will u-boot fix it?
+You implemented the PCI Read Line/Multiple commands in the CPLD, I assume.
+Check
+the PCI spec for details on the protocol.
 
-Yes, it probably depends on the bootloader. More exactly, itt depends
-on the interface between the bootloader and the Linux kernel.
+You then will have to set up things like the PCI command used by the 8240 and
+the PCI latency register.
 
-U-Boot works fine if your kernel is configured for U-Boot. I  am  not
-aware of a problem that needs fixing.
+Check the DBAT settings used for accessing your CPLD memory space. If you
+use the
+generic MMIO mapping provided in the kernel, then caching is disabled for those
+accesses. If I remember correctly, the 603 core will not burst in that case.
 
-> 3. Does anybody succeded to use 2.4.18 with initrd? How?
+>Even with sequential reads in groups of 8 words, ( or writes for that matter )
+>we are unable to get the 8240 to do other than single (beat) word read PCI
+>cycles.  One 'strange' thing in particular is that the 8240 as PCI
+>initiator is
+>keeping !FRAME asserted only very briefly.
+>It also de-asserts !IRDY very soon after the first data phase
+>completes.  It may
+>be that the 8240 is just indicating a wait and we need to handle that better.
 
-Yes, we did. Many times. We use  U-=Boot,  and  make  sure  that  the
-kernel interface fits.
+Did you check the CBE lines for the PCI command issued by the 8240? If it was a
+generic single word read, then what you describe would be normal, I think.
 
-Best regards,
+Regards,
 
-Wolfgang Denk
+Jochen Roth
+ZNYX Networks
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"That unit is a woman."
-"A mass of conflicting impulses."
-	-- Spock and Nomad, "The Changeling", stardate 3541.9
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
