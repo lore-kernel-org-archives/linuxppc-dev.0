@@ -1,58 +1,54 @@
-Subject: Re: pmdisk working on ppc (WAS: Help port swsusp to ppc)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-	Hugang <hugang@soulinfo.com>,
-	Patrick Mochel <mochel@digitalimplant.org>,
-	Nigel Cunningham <ncunningham@users.sourceforge.net>,
-	ncunningham@clear.net.nz,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <20040127104701.GB18666@elf.ucw.cz>
-References: <1075154452.6191.91.camel@gaston>
-	 <Pine.LNX.4.44.0401271130010.23778-100000@opal.biophys.uni-duesseldorf.de>
-	 <20040127104701.GB18666@elf.ucw.cz>
-Content-Type: text/plain
-Message-Id: <1075200963.17953.198.camel@gaston>
-Mime-Version: 1.0
-Date: Tue, 27 Jan 2004 21:56:04 +1100
+Message-ID: <4016760E.50009@g-house.de>
+Date: Tue, 27 Jan 2004 15:30:38 +0100
+From: Christian Kujau <evil@g-house.de>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: linux-2.4-benh compiling error
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> What is "PMU locking"? Is there some part of powermac harware that
-> kills machine if you sleep too long with interrupts disabled?
 
-The PMU is the "Power Management Unit". It's a microcontroller
-that does a bunch of things, some PM related, but also the ADB
-emulation for the keyboard & trackpad on laptops, the real time
-clock, battery management, etc...
+hi,
 
-We communicate with it via an SPI, it's asynchronous (interrupt
-driven) protocol (banging things to a shit register basically).
+i was about to compile linux-2.4-benh (fresh tree fetched via rsync)
+when errors occured:
 
-The kernel is continuously talking to the PMU. If for some reason
-communication stops in the middle of a message exchange, the PMU
-can time out and shuts the box down.
+[...]
+make[3]: Entering directory
+`/data/MP3/scratch/kernel/linux-2.4-benh/drivers/char'
+gcc -D__KERNEL__ -I/data/MP3/scratch/kernel/linux-2.4-benh/include -Wall
+- -Wstrict-prototypes -Wno-trigraphs -O2 -fno-strict-aliasing -fno-common
+- -fomit-frame-pointer -I/data/MP3/scratch/kernel/linux-2.4-benh/arch/ppc
+- -fsigned-char -msoft-float -pipe -ffixed-r2 -Wno-uninitialized
+- -mmultiple -mstring   -nostdinc -iwithprefix include
+- -DKBUILD_BASENAME=defkeymap  -c -o defkeymap.o defkeymap.c
+defkeymap.c:1: error: parse error before "defkeymap"
+In file included from
+/data/MP3/scratch/kernel/linux-2.4-benh/include/linux/types.h:15,
+~                 from defkeymap.c:6:
+/data/MP3/scratch/kernel/linux-2.4-benh/include/linux/posix_types.h:38:
+warning: type defaults to `int' in declaration of `__kernel_fd_set'
+/data/MP3/scratch/kernel/linux-2.4-benh/include/linux/posix_types.h:38:
+warning: data definition has no type or storage class
 
-"PMU suspend" is a hook I added to the driver that completes
-pending requests and stops answering to "event" interrupts (those
-interrupts are sent by the PMU when we need to read it's incoming
-event messages, like keystrokes, environement events, etc...).
+line-wrapping sucks, heres the full log and more info:
 
-When we get such an interrupt, we send a command to read the
-event and get the data in the reply. The PMU can timeout in the
-middle of that exchange, but won't timeout if we don't ask for
-the data at all...
+http://nerdbynature.de/bits/sheep/2.4.24-benh/make.log
+http://nerdbynature.de/bits/sheep/2.4.24-benh/config
+http://nerdbynature.de/bits/sheep/2.4.24-benh/ver_linux
 
-On suspend-to-RAM, since the PMU driver drives the whole suspend
-process, there is no real problem, it does things the right way.
+i was told the 2.4-benh tree could fix some PReP annoyances (sp?) too,
+so i wanted to try it out.
 
-But with suspend-to-disk, it's just yet-another device, and so we
-need to make sure we properly stop pending communication. The quick
-hack I did (added a sysdev with suspend/resume hooks for it) may not
-be perfect yet :)
+Thank you for your time,
+Christian.
 
-Ben.
+- --
+BOFH excuse #259:
 
+Someone's tie is caught in the printer, and if anything else gets
+printed, he'll be in it too.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
