@@ -1,18 +1,22 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from motgate3.mot.com (motgate3.mot.com [144.189.100.103])
-	by ozlabs.org (Postfix) with ESMTP id DADCE2BDEB
+Return-Path: <chris@alcor.co.uk>
+Received: from mizar.alcor-electronics.co.uk (alcor.demon.co.uk [62.49.62.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BBCC62BDF2
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 13 Nov 2004 03:27:25 +1100 (EST)
-In-Reply-To: <NFBBJCNFKLFMBACPKDKCCEANELAA.jdomogala@acmepacket.com>
-References: <NFBBJCNFKLFMBACPKDKCCEANELAA.jdomogala@acmepacket.com>
-Mime-Version: 1.0 (Apple Message framework v619)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <28CBA210-34C4-11D9-8B98-000393DBC2E8@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Fri, 12 Nov 2004 10:01:48 -0600
-To: <jdomogala@acmepacket.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: PowerPC MMU questions
+	Sat, 13 Nov 2004 22:54:44 +1100 (EST)
+Received: from alcor1 ([192.168.1.1])
+	by mizar.alcor-electronics.co.uk with esmtp (Exim 4.30)
+	id 1CSwUB-0002GZ-4l
+	for linuxppc-embedded@ozlabs.org; Sat, 13 Nov 2004 11:54:31 +0000
+From: "Chris Down" <chris@alcor.co.uk>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Sat, 13 Nov 2004 11:54:31 -0000
+Message-ID: <000d01c4c977$8951b0e0$0101a8c0@alcor1>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: Problem bringing up Linux on Custom MPC852 Board
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,65 +27,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Oops typo in the original subject line :-)
 
-On Nov 11, 2004, at 9:36 PM, Jeff Domogala wrote:
+I am trying to bring up Linux (latest linuxppc-2.4 tree) on a custom =
+MPC852
+Board. The board has 8MByte SDRAM and 8MByte Flash.=20
+I have ported u-boot, modified Linux to add a new board config and added =
+the
+board specific definitions in arch/ppc/platforms.=20
+U-Boot and Linux were built using the ppc_8xx compiler from ELDK 3.0.
 
-> Folks,
->
-> I am dealing with a PowerPC 7455.=A0 Here is my understanding =
-regarding=20
-> the
->  MMU translation order:=A0 If the address is covered in a BAT, that =
-BAT
-> translation is in effect.=A0 If there is no BAT entry, then the page=20=
+When I boot Linux I get the following:-
 
-> tables
->  are used to translate the address.=A0 If there is no page table =
-entry,=20
-> an
->  exception is thrown and the exception handler for the miss needs to=20=
+## Booting image at 00100000 ...
+   Image Name:   Linux-2.4.28-pre3-cdd1
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    664920 Bytes =3D 649.3 kB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+Linux version 2.4.28-pre3-cdd1 (chris@alioth) (gcc version 3.2.2 =
+20030217 (Yello
+w Dog Linux 3.0 3.2.2-2a_1)) #3 Fri Nov 12 09:46:59 GMT 2004 On node 0
+totalpages: 2048
+zone(0): 2048 pages.
+zone(1): 0 pages.
+zone(2): 0 pages.
+Kernel command line:
+Decrementer Frequency =3D 187500000/60
+Calibrating delay loop... 49.76 BogoMIPS
+Memory: 6508k available (1176k kernel code, 344k data, 56k init, 0k =
+highmem)=20
+Dentry cache hash table entries: 1024 (order: 1, 8192 bytes)=20
+Inode cache hash table entries: 512 (order: 0, 4096 bytes)=20
+Mount cache hash table entries: 512 (order: 0, 4096 bytes)=20
+Buffer cache hash table entries: 1024 (order: 0, 4096 bytes)=20
+Page-cache hash table entries: 2048 (order: 1, 8192 bytes) POSIX =
+conformance
+testing by UNIFIX
 
-> add a
->  new PTE.=A0 So, correct me if I'm wrong in my translation.
->
-> Now, The system starts up with BAT entries to get the system off the=20=
+At this point it stops executing in arch_kernel_thread.
 
-> ground.
->  I have equivalent BAT entries for the instruction and data sides.=A0 =
-I=20
-> also
->  have the L1 I and D caches on as well as the L2 cache (I and D=20
-> mode).=A0 The
->  reason for using the BATs is to create non-cached I/O regions until=20=
+As I am new to this I could do with some pointers as to what to do next. =
+Any
+help would be gratefully appreciated.
 
-> the MMU
->  PTEs are populated.=A0 Once the MMU PTEs are setup, the caches are=20
-> flsuhed and
->  disabled, the MMU is disabled, the BATS disabled, the MMU re-enabled=20=
 
-> and the
->  caches re-enabled.=A0 So here are my questions:
->
-> 1. Is it ok to have the same I and D BAT entries?
+Regards
 
-Yes, the I-BAT will be used for translations on instruction fetches,=20
-the D-BAT will be used on data accesses (ld/st instructions).
-
->  2. Is it ok to setup the initial MMU PTEs with the BATs enabled or=20
-> should
->  the caches be disabled and MMU disabled during the PTE setup?
-
-There should be no harm setting up MMU PTEs with BATs enabled, as you=20
-said the BATs will take preference over the PTEs
-
->  3. Is there some other esource out there (mailing list or otherwise)=20=
-
-> that I
->  should be addressing these questions to?
-
-This is as good as any, assuming your using linux :)  Also, the=20
-Freescale website has a number of App Notes on the various PPC MMUs and=20=
-
-an email support address risc10@freescale.com
-
-- kumar
+Chris Down
