@@ -1,98 +1,43 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
-To: Ani Joshi <ajoshi@shell.unixbox.com>,
-	"Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Subject: Re: new G4 dual 1 gig is here - how to install?
-Date: Fri, 15 Feb 2002 06:08:18 -0500
-Cc: linuxppc-dev@lists.linuxppc.org,
-	<yellowdog-devel@lists.yellowdoglinux.com>
-References: <Pine.BSF.4.44.0202131947110.42574-100000@shell.unixbox.com>
-In-Reply-To: <Pine.BSF.4.44.0202131947110.42574-100000@shell.unixbox.com>
+From: Paul Mackerras <paulus@samba.org>
 MIME-Version: 1.0
-Message-Id: <20020215110330.PVOP20323.tomts20-srv.bellnexxia.net@there>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15468.64269.8252.644104@argo.ozlabs.ibm.com>
+Date: Fri, 15 Feb 2002 23:11:57 +1100 (EST)
+To: linuxppc-dev@lists.linuxppc.org
+Subject: 2.5 development
+Reply-To: paulus@samba.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Ani,
+Now that Linus has started using BK for 2.5 development, I have set up
+a new linuxppc-2.5 tree on ppc.bkbits.net.  Its parent is Linus' tree,
+which means that we can pull in Linus' changes using BK, instead of
+having to apply patches.  The linux_2_5 and linuxppc_2_5 trees are
+dead, and I will remove them once we are sure we have all the changes
+from linuxppc_2_5 committed to the linuxppc-2.5 tree.
 
-A couple of problems.
+The linuxppc-2.5 tree is intended to be a working tree for us in the
+same way that the linuxppc_2_4_devel tree was.  I have checked in
+most of the changes from linuxppc_2_4_devel into linuxppc-2.5.
 
-1. Checking the BIOS scratch register
+The current limitations of BK mean that we will not be able to take
+changesets directly from the linuxppc-2.5 tree and send them to
+Linus.  I would suggest that if any of you are working on stuff which
+can be isolated as a discrete unit, you can set up a clone of
+linux-2.5 where you check in all of the changes for that stuff.  Then
+pull from there into your linuxppc-2.5 clone to compile and test, and
+push to the linuxppc-2.5 tree on ppc.bkbits.net when you are ready for
+the rest of us to look at it.  When it is time for those changes to go
+to Linus, we can get Linus to pull from your repository which has just
+those changes (or I can pull and get Linus to pull from my tree).
 
- tmp = INREG(RADEON_BIOS_4_SCRATCH);
+I have also created for-linus-ppc and for-linus-ppcdrivers trees which
+I will use to send stuff to Linus, so I don't want anyone except
+myself pushing to those trees.  There is also a for-linus-ppc64 tree
+which Anton Blanchard will be using to send ppc64 stuff to Linus, so
+please don't push to that one either.
 
-        if (rinfo->hasCRTC2) {
-                /* primary DVI port */
-                if (tmp & 0x08)
-                        rinfo->dviDisp_type = MT_DFP;
-
-To determine which port on a 7500 is actualy being used does not work on
-PPC, so we have to use the OF names and look in the tree to dtermine which
-port is working somehow.  Question is how?
-
-2. For some reason I keep getting the following failure message:
-
-                         default:
-                                printk("radeonfb: Failed to detect DFP
-panel size\n");
-                                return 0;
-
-which means:
-
-        if (radeon_dfp_parse_EDID(rinfo))
-                radeon_update_default_var(rinfo);
-
-        if (!rinfo->got_dfpinfo) {
-
-Somehow rinfo->got_dfpinfo is not being set (yet a received no warning
-messages about EDID not being detected).
-
-The OF device tree does have the "EDID" block but for some reason it is
-not being found properly (the dual head issue of the 7500 leading to two
-different device tree nodes?) or not being parsed properly.
-
-But I never received the following message:
-
-        if (!radeon_get_EDID_OF(rinfo))
-                RTRACE("radeonfb: could not retrieve EDID from OF\n");
-
-
-And I never received this message either:
-
-        printk("radeonfb: detected DFP panel size from EDID: %dx%d\n",
-                rinfo->panel_xres, rinfo->panel_yres);
-
-        rinfo->got_dfpinfo = 1;
-
-
-And instead I always get just The "Failed to detect DFP panel size"
-
-I can't figure it out.
-
-I will add some more debug print statements so that I can actually see
-what is messing up.
-
-Thanks,
-
-Kevin
-
-On February 13, 2002 10:53, Ani Joshi wrote:
-> On Wed, 13 Feb 2002, Kevin B. Hendricks wrote:
-> > 2.  The bad news is that my ATI 7500 with my flat panel display simply
-> > goes black so I can't tell exactly what is detected or not.
->
-> You will need to check if the OpenFirmware pll probing code I use in
-> radeonfb works on 7500.  Look in the device-tree node and see what the
-> reference clock is.  If you look in radeon_get_pllinfo() you can see the
-> OF probe code there.  IIRC on x86 7500 boards, the xclk is ~ 22000, the
-> ref div is 12 and reference clock is 2700 i belive.  The 7500 is
-> supported on x86 btw.
->
-> If you can log in and get a bootlog that would be helpful.
->
->
-> ani
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
