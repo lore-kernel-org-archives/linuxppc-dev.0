@@ -1,109 +1,65 @@
-From: deepesh@india.tejasnetworks.com
-Date: Sat, 16 Nov 2002 09:20:49 +0530 (IST)
-To: bhupinder sahran <bhup_sah@yahoo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Cache Enabling
-In-Reply-To: <20021112044053.32962.qmail@web20706.mail.yahoo.com>
-Message-ID: <Pine.LNX.4.21.0211160914590.22513-100000@deepesh.india.tejasnetworks.com>
+Message-ID: <3DD8014B.D88A6C34@paradyne.com>
+Date: Sun, 17 Nov 2002 15:51:23 -0500
+From: "Mark D. Studebaker" <mds@paradyne.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: joakim.tjernlund@lumentis.se
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	linuxppc-embedded@lists.linuxppc.org, sensors@stimpy.netroedge.com
+Subject: Re: 8xx i2c refers to unspecified chip errata
+References: <IGEFJKJNHJDCBKALBJLLMEFNFHAA.joakim.tjernlund@lumentis.se>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Tom + Joakim,
+we're doing a release soon over here at sensors/i2c,
+do you want this checked in as-is, with mods, or not at all?
 
- I was able to solve this problem with the help of some one in the company
-itself.
-
-      One of my devices was mmaped. And when cache was enabled, the
-cache of this device was also getting enabled. I had to selectively
-disable the cache. This was done by adding some more flags to the
-input parameter for "protection, (pgprot_t) which is part of the vma
-area structure" in the driver's mmap function. The flags to be added are
-"PAGE_NO_CACHE, PAGE_GUARDED and PAGE_WRITETHRU". With this every thing
-started working!!!!!!!!!!!!!!!
-
-
-Deepesh
-
-
-On Mon, 11 Nov 2002, bhupinder sahran wrote:
-
-> hi
-> U will have to play with ur bat registers.
-> U can map ur devices non cachable through bat
-> registers.
+Joakim Tjernlund wrote:
 >
-> u will be having a function in arch/ppc/kernel/(ur
-> arch)setup.c  .
->
-> see there & use the bats
-> if still have problem send me ur setup file
->
-> thanx
-> Bhupi
-> Linux+Hypertransport --->Silicon
-> www.gdatech.com
->
->
->
->
-> --- deepesh@india.tejasnetworks.com wrote:
-> >
-> > I had enabled the Data Cache. I forgot to mention
-> > that.
-> >
-> > Deepesh
-> >
-> >
-> >
-> >
-> > On Mon, 11 Nov 2002 deepesh@india.tejasnetworks.com
-> > wrote:
-> >
 > > >
-> > >
-> > > Dear All,
-> > >
-> > >
-> > > I am using Power PC. The system which I am using
-> > takes 2 minutes more than
-> > > usual for the software in the system to come up
-> > without cache
-> > > enabling. These 2 minutes are really crucial.
-> > > But there are problems when I enabled cache. The
-> > devices which I am using
-> > > are mmapped. I do not want cache to be enabled for
-> > the memory mapped
-> > > devices. When cache is enabled, none of the
-> > mmapped devices work in the
-> > > usual way. How do I selectively disable the cache
-> > for the mmapped devices?
-> > >
-> > >
-> > > Thank you,
-> > > Deepesh
-> > >
-> > >
+> > > Here is a patch against the PPC 2.4 devel tree for the i2c-algo-8xx.c
 > >
-> > --
-> >
-> > D.Deepesh
-> > R&D Engineer,
-> > Tejas Networks
-> >
-> >
-> >
+> > Can you please split this into logical chunks, or give me a list of each
+> > fix in here?  Thanks.
 >
+> ohh, kind of hard to remember all that went into that patch. The path
+> has evoled over many days, but I can try summarize. I have tested this code
+> pretty well it does not fail for me. Speed has been between 10-150KHz. The
+> old code fails as soon you start to stress it a little.
 >
+>  - replace invalidate_dcache_range with flush_dcache_range, since buffers are
+>    NOT cache aligned. flush will write to memory AND invalidate the cache.
 >
-
---
-
-D.Deepesh
-R&D Engineer,
-Tejas Networks
-
+>  - move the chip errata stuff from irq routine into read/write routines. Made
+>    it default off since it causes lock ups on my I2C device. I think it causes
+>    a too short STOP condition. If enabled I2C will behave better than before, but
+>    may still cause problems if the read/write is interrupted with a signal while
+>    microcode is enabled.
+>
+>  - set default speed to 60 KHz instead.
+>
+>  - missing/faulty initialization of parameter ram when I2C micro patch is active.
+>
+>  - replaced assingments with mask operations with relevant bits. Example:
+>       /* Shut down IIC. */
+>       i2c->i2c_i2mod = 0;
+>         i2c->i2c_i2mod &= ~1;
+>
+>  - When reading from I2C device, let the receive BD generate interrupt instead of
+>    the dummy trasmit. This is important since the TX interrupt will be too early sometimes, before
+>    the RX BD has closed. There is one case where the RX irq is before the TX irq, if iic_mrblr is set
+>    to match the number of bytes to read. Therefore must the iic_mrblr be one byte larger than
+>    the expected number of bytes.
+>
+>  - busy wait for small transfers since it's faster.
+>
+>  - save_flags(flags); cli(); cleanups
+>
+>  - interruptible_sleep_on_timeout() instead of interruptible_sleep_on() so it won't hang forever if an
+>    irq is lost.
+>
+>  Jocke
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
