@@ -1,71 +1,51 @@
-Message-ID: <3BD6AB69.5010704@elsoft.ch>
-Date: Wed, 24 Oct 2001 13:52:09 +0200
-From: "David =?ISO-8859-1?Q?M=FCller?= (ELSOFT AG)" <d.mueller@elsoft.ch>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3BD6ADD9.64C99491@imc-berlin.de>
+Date: Wed, 24 Oct 2001 14:02:33 +0200
+From: Steven Scholz <steven.scholz@imc-berlin.de>
 MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
+To: laurent.pinchart@capflow.com
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [PATCH] Various patches against linuxppc_dev-2.4.13-pre6
-References: <3BD50D4E.6060401@elsoft.ch> <20011023073258.B30012@cpe-24-221-152-185.az.sprintbbd.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Re: MPC8xx IDE
+References: <3BD6AA4D.1050502@capflow.com>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Tom Rini wrote:
+Hi Laurent,
 
-> On Tue, Oct 23, 2001 at 08:25:18AM +0200, David M?ller (ELSOFT AG) wrote:
->
->
->>Hello again
->>
->>The attached patch fixes the following issues:
->>
->>  - arch/ppc/mm/fault.c
->>     missing get_pteptr() prototype
->>
->
-> Applied.
->
->
->>  - arch/ppc/kernel/i8259.c
->>     consistent nameing (rather cosmetic change)
->>
->
-> Not sure about.  Why either of those changes?
->
+> While trying to find an easy way to add non-volatile storage on a
+> custion MPC860 board, I noticed that there was some support for IDE on
+> the PCMCIA interface in the Linux kernel.
 
+There are actually at least three ways for connecting an IDE HDD. See
+ide-m8xx.c:
 
-The first patch is just a prettyprint fix. At least on my system
-it looks better this way ;-)
+---
+  8xx_PCCARD uses the 8xx internal PCMCIA interface in combination
+             with a PC Card (e.g. ARGOSY portable Hard Disk Adapter),
+             ATA PC Card HDDs or ATA PC Flash Cards (example: TQM8xxL
+             systems)
 
-Everywhere in the i8259.[ch] files the chip is called "i8259" with the
-exception of one place which is fixed by the second patch. But as
-i said, it's more of a cosmetic change.
+  8xx_DIRECT is used for directly connected IDE devices using the 8xx
+             internal PCMCIA interface (example: IVMS8 systems)
 
+  EXT_DIRECT is used for IDE devices directly connected to the 8xx
+             bus using some glue logic, but _not_ the 8xx internal
+             PCMCIA interface (example: IDIF860 systems)
+---
 
->
->>  - arch/ppc/ppc_ksyms.c
->>     missing flush_dcache_all() export
->>
->
-> This only exists on CONFIG_NOT_CACHE_COHERENT, fixed and applied.
->
->
->>  - arch/ppc/kernel/ppc4xx_setup.c
->>     added "l" format flag to sprintf() to make compiler happy
->>     (cosmetic)
->>
->>  - arch/ppc/kernel/ppc405_pci.c
->>     adjust include file name
->>
->
-> Applied.
->
-> Thanks!
->
->
+I am probably the only one using EXT_DIRECT. ;-)
 
-Dave
+Drop me a line if you need schematics.
 
+Cheers,
+
+Steven Scholz
+
+imc Meﬂsysteme GmbH
+Voltastr. 5
+13355 Berlin
+Germany
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
