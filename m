@@ -1,23 +1,47 @@
-Message-ID: <36B5C31F.AC048909@d.umn.edu>
-Date: Mon, 01 Feb 1999 09:07:14 -0600
-From: Nathan Ingersoll <ningerso@d.umn.edu>
-MIME-Version: 1.0
-To: Cort Dougan <cort@persephone.cs.nmt.edu>
-CC: Beecher Greenman <rbg6038@ritvax.isc.rit.edu>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: EGCS upgrade?
-References: <Pine.LNX.3.96.990131230125.11192A-100000@persephone.cs.nmt.edu>
-Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
+Message-Id: <199902011532.PAA25411@go.hannover.sgh-net.de>
+Subject: Greetin's an' felicitations
+Date: Mon, 1 Feb 99 16:32:04 +0100
+From: John L Grantham <jgrantha@hannover.sgh-net.de>
+To: <linuxppc-dev@lists.linuxppc.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Is vger back up now? I just tried it last night, and it refused my
-connection.
+Hi all,
 
-Cort Dougan wrote:
+Thought I would introduce myself, seein's how I've just joined ye olde 
+LinuxPPC list.
 
-> Check the latest out via anon cvs :)
+I'm an American living in Hannover, Germany (home of CeBIT), 27 years 
+old, long-time Mac user (since about two weeks after the first Mac Super 
+Bowl ad) and started using Linux on the Mac with MkLinux DR2.1 about a 
+year and a half ago, later started using LinuxPPC once the G3-able kernel 
+came out, and have used SuSE Linux on PCs for about two years. I'm a 
+graphic and Web designer by profession, also do some Apache server 
+administration. Married, no kids.
+
+I also run a German-language Website about Linux on the Mac (MkLinux and 
+LinuxPPC), which can be found at http://linux.macnews.de/. Mainly 
+concentrates on helping people get started, rather than big-shot support 
+or anything like that. I'm considering adding an English-language section 
+in the near future, but am not yet sure about it.
+
+Being a (relative) newbie with LinuxPPC, I'll try to refrain from stupid 
+questions, I promise... ;-)
+
+Hope to have some fun here...let the games begin.
+
+rgds
+
+John
+
+
+
+John Grantham | Dipl.-Designer (FH)
+              | Linux am Mac FAQ: http://linux.macnews.de/
+              | Homepage: http://surf.to/multimedia
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
