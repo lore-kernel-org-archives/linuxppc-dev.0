@@ -1,52 +1,40 @@
-Mime-Version: 1.0
-Message-Id: <p05100300b781995764c0@[10.0.1.111]>
-In-Reply-To: <Pine.LNX.4.05.10107230857310.14709-100000@callisto.of.borg>
-References: <Pine.LNX.4.05.10107230857310.14709-100000@callisto.of.borg>
-Date: Mon, 23 Jul 2001 02:28:56 -0700
-To: Geert Uytterhoeven <geert@linux-m68k.org>,
-	Larry McVoy <lm@bitmover.com>
-From: "Timothy A. Seufert" <tas@mindspring.com>
-Subject: Re: kernel ftp ?
-Cc: linuxppc-dev@lists.linuxppc.org
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Message-ID: <41EA756DBC9FD0118CFC0020AFDB5C5A188E10@tcint1ntsrv>
+From: Zehetbauer Thomas <TZ@link.topcall.co.at>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: RE: kernel ftp ?
+Date: Mon, 23 Jul 2001 11:44:02 +0200
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 9:07 AM +0200 7/23/01, Geert Uytterhoeven wrote:
->On Sun, 22 Jul 2001, Larry McVoy wrote:
->>  > fact, BK takes MORE bandwidth than rsync on a 'clone' operation because it
->>  > has to ship the complete revision history along.
->>
->>  Wow.  Amazing insight, that.  You could say "copying 100MB takes MORE
->>  bandwidth than copying 50MB because you have to ship the second 50MB",
->>  and that would be an equally amazing insight.
->
->Yes, indeed we're comparing apples to oranges (I think that's how
->you say it in
->English, in Dutch we compare apples to lemons :-)
->
->We developers do want the extra 50 MB, but mere mortals don't. They
->just want a
->copy of the latest version of the tree. Hacking is beyond their capabilities.
+BitKeeper is commercial software and therefore not very like to succeed
+in the path of kernel devlopment. I think we've had this discussion a
+thousand times on lkml. The reasons are numerous even if BitKeeper is
+licensed for free to open source developers.
 
-Larry, would it be even remotely feasible to add a feature to bk that
-checks out just the current state of the tree with no revision
-history?  Or do repositories have to be identical up to the branching
-point of the last mutual push/pull?  Maybe it could be done by
-creating a special kind of repository that can only pull things from
-the parent?
+Firstly it is unlikely to be distributed with your favourite linux
+distribution. You have to find and download the software first. Of
+course I agree that this is a problem of every third party software.
 
-I'm thinking something along the lines of the client having no SCCS
-files, sort of like doing a bk export from the server repository to
-the client's machine.  Unlike export there would also be tag
-information for future reference when the server needs to figure out
-what's new for the client.  You could call the client side command
-"bk rsync".  :)
+As it is unlikely that a package or at least a binary for your favourite
+linux distribution is available it is a maintenance nightmare to track
+down library problems and do release upgrades or uninstall it.
 
-I'm way out of my depth here so I have no idea if this is possible or
-how much work it would entail.
---
-Tim Seufert
+To start working with the software you will need to learn another set of
+commands, options and parameters.
+
+If are working on some not to be public changes you will have to buy
+BitKeeper or use a second source code control system.
+
+And finally if I encounter a problem at 3am in the morning there is no
+sourcecode to track it down, I will have to wait until the next day to
+call and pay for support.
+
+These are the main reasons I would definitely prefer CVS/FTP/rsync
+access to the kernel tree!
+
+Tom
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
