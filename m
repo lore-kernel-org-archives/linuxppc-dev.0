@@ -1,30 +1,25 @@
-Message-ID: <38DFAD63.3D937773@embeddededge.com>
-Date: Mon, 27 Mar 2000 13:50:11 -0500
+Message-ID: <38DFC2EF.9F3BB501@embeddededge.com>
+Date: Mon, 27 Mar 2000 15:22:07 -0500
 From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: Steven Hein <ssh@sgi.com>
+To: Tom Miles <tmiles@teltronics.com>
 CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ppc.kernel.org problems
-References: <38DA36A3.3A384DD7@sgi.com>
+Subject: Re: Swap space on Embedded Planet CLLF 860
+References: <7143C7BA3BFAD2119AAC0008C7094B9965043A@postoffice2.teltronics.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Steven Hein wrote:
+Tom Miles wrote:
+>
+> I have my CLLF 860 coming up via TFTP boot with a NFS mounted root file
+> system.  The kernel crashes after a short while always in relation to a page
+> swap.
 
-> I'm working on a MBX-based 860T board, and I'd like to move from the
-> 2.2.13 kernel in the HardHat package to the latest 2.3.x kernel.
-> (We need it for the USB drivers).
-
-I am working on the 2.3.xx kernel right now.  There have been lots of
-generic changes that need integration for 8xx.  Keep looking at the
-tree over the next few days, it should come together.
-
-> I have BitKeeper access and I grabbed the latest Linux/PPC kernel tree,
-> but it doesn't have updated FEC or UART drivers in arch/ppc/8xx_io,
-
-That should have all been there last week......
+What kernel are you running and what patches did you apply?  This
+happens when you screw up a PTE, and some of the MMU patches floating
+around can cause this.
 
 
 	-- Dan
