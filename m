@@ -1,45 +1,47 @@
-Date: Sun, 30 Jan 2000 07:25:58 -0800 (PST)
-From: Brad Midgley <brad@turbolinux.com>
-To: Dan Bethe <dan_bethe@yahoo.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: HFS+ format
-In-Reply-To: <20000130101504.11105.qmail@web1004.mail.yahoo.com>
-Message-ID: <Pine.LNX.4.20.0001300714140.21387-100000@mail.turbolinux.com>
+Message-ID: <20000130191924.10880.qmail@web1001.mail.yahoo.com>
+Date: Sun, 30 Jan 2000 11:19:24 -0800 (PST)
+From: Dan Bethe <dan_bethe@yahoo.com>
+Subject: coexisting with Darwin (Mac-on-Linux and microkernel Linux/BSD), was Re: resizing macos partition
+To: LinuxPPC Developer <linuxppc-dev@lists.linuxppc.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-i'll bet there is an implementation of hfs+ in the mach layer.
+> my computer problems]).  I generally do not mind taking chances with
+> screwing something up when I am 'on a mission' to complete some goal.
 
-mach needs to understand the filesystem well enough to load the server
-from it. i ported hfsutils (yes, the userland stuff) to the mach layer's
-bootstrap code back when the only way to install mklinux was with a macos
-util and a tarball.  i'll bet mach has an hfs+ implementation (albeit
-read-only) in its bootstrap section in darwin.
+	Go get em, bro!  :)
 
-i realize you're right that the read/write implementation would be in the
-bsd layer as i think about it...
+> hard drive (I only have one on my Macintosh).  So I installed Darwin which
+> reformats/partitions the drive to create one MOSX partition, several other
+> partitions (I do not know what they do), and the rest of the drive becomes
 
-the best route may be to enhance hfsutils for hfs+ support. you don't have
-to worry about the complexity of multiple readers/writers that way but you
-get a useful, practical result. then jump into writing the kernel code
-after it works satisfactorily.
+	So does Darwin now have a "normal" installer, rather than the original
+"filesystem restore" approach?  When I tried it, it required a physically
+separate source and target device, because it was going to basically
+automatically format and unpackage itself in one piece like a monolithic
+'restore' utility.
+	Can Mac-on-Linux boot any OS other than MacOS 8.x?
+	What would the odds be of MkLinux working with this BSD?  How would it be
+integrated in terms of user experience?  Would we have to switch to two virtual
+terminals?  Can Linux be the host interface, with BSD in a box?  How does
+networking work -- do you assign an IP address to each OS like a multihomed
+system?  If so, we could use MkLinux as the host interface and 'remotely' log
+into Darwin.
+	I cast my vote for the above to happen!  If anyone developing Mac-on-Linux or
+Darwin needs any non-programming motivation like money, self esteem, or to
+fulfill their last dying wish, toss it out and I'll see what I can do!
 
-brad
+> also a lot of fun and a great experience.  Never underestimate the power of
+> a fresh hard drive.
 
-> --- Brad Midgley <brad@turbolinux.com> wrote:
-> > dan,
-> >
-> > > 	Is there any tool or technique to help port BSD source to Linux?  Perhaps
-> > a
-> >
-> > are you sure darwin's hfs+ filesystem lies entirely in the bsd layer? (i
-> > haven't looked at darwin source)
+	Amen, brother!
 
-Brad
-brad@turbolinux.com | http://www.turbolinux.com/~brad/
 
+=====
+"Don't expect your own messiah; this neverworld which you desire is
+only in your mind." -- http://www.dreamtheater.net/songb4.htm#IV5
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
