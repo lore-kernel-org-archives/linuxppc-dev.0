@@ -1,40 +1,58 @@
-Date: Mon, 22 Feb 1999 09:36:46 -0500 (EST)
-From: Tom Vier <nester@erols.com>
-Reply-To: Tom Vier <thomassr@erols.com>
-To: Tom Vier <thomassr@erols.com>
-cc: mklinux-development-system@public.lists.apple.com,
-        mklinux-setup@public.lists.apple.com, linuxppc-dev@lists.linuxppc.org
-Subject: egcs-1.1.1-1c bug (was Re: major ksyms problem)
-In-Reply-To: <Pine.LNX.4.05.9902220432430.2138-100000@localhost.erols.com>
-Message-ID: <Pine.LNX.4.05.9902220928100.405-100000@localhost.erols.com>
+Message-ID: <19990222143657.28939.rocketmail@send206.yahoomail.com>
+Date: Mon, 22 Feb 1999 06:36:57 -0800 (PST)
+From: "D.J. Barrow" <barrow_dj@yahoo.com>
+Subject: I believe I found a bug in /arch/ppc/kernel/signal.c
+To: Gary Thomas <gdt@linuxppc.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-it's an egcs bug. i think it's not aligning instructions properly, cuz
-i believe the 601 is more strict about alignment. is anyone having
-problems using bsd_comp.o, ppp_deflate.o, and hfs.o on a non-601
-machine built under pre-R5 (egcs-1.1.1-1c)?
+Hi Gary/Others,
+I'm currently using 2.1.123 ( yup I know this is old but the bug on
+reading the source is still in 2.1.124 DR4 ) & possibly is still
+there. Unfortunately my net connection isn't good enough to download
+the latest 2.2 stuff in less than a few hours.
 
-i rebuilt bsd_comp.o and ppp_deflate.o w/ egcs-1.0-2e from dr3 and
-they worked perfectly.
+The bug manifested itself in tftp, when longjmp'ing out
+of the signal handler on timeouts.
 
-egcs-1.1.1-1c failed using -O0, -O2, and -O3 with all combinations of
--mcpu=601, -mcpu=604, and -fno-schedule-insns. -fpic did work, however
-it addes an offset table symbol that makes insmod complain.
+Resulting in....
+a )sys_sigreturn not get called 
+b) signals queued & trampoline stuff on the user stack being trashed.
+c) SIGALRM being blocked forever.
 
-is this a know problem?
+The stuff works on intel & it also works if I kludge handle signal not
+to block SIGALRM.
 
-> > Feb 21 09:36:18 zero insmod: /lib/modules/2.0.37-osfmach3/net/bsd_comp.o:
-> > Unhandled relocation of type 26 for .L343
+I originally thought fixing longjmp with a syscall would be a good
+idea on conversing with other hackers it isn't.
 
---
-Tom Vier - 0x82B007A8
-thomass@erols.com        | goto the Zero Page at:
-Tortured Souls Software  | http://www.erols.com/thomassr/zero/
+The code here I believe can be simplified if you didn't do all the
+queueing in handle_signal & remove the while/dequeue loop from
+do_signal & make do_signal also work as sys_sigreturn & unblock the
+signals just before sending them, this way I don't think you'll lose
+any ( however I haven't fully investigated any possible problems
+caused unblocking signals before sending them ). As sys_sigreturn is
+getting called for every signal delivered, there is no benefit gained
+by queueing them in the first place.
 
+If you still aren't maintaining signal.c anymore could someone forward
+on this bug report.
+
+Also could you tell me a good place where I can find some info on the
+rt_signal stuff & tell me if a fix gets/already is posted....
+
+
+
+
+
+
+_________________________________________________________
+DO YOU YAHOO!?
+Get your free @yahoo.com address at http://mail.yahoo.com
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
