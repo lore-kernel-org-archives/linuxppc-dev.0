@@ -1,53 +1,44 @@
-Date: Thu, 12 Aug 2004 17:07:30 -0500
-From: "Cordes, Aaron M" <aaron.m.cordes@lmco.com>
-Subject: RE: Linux 2.4.27-pre6-bk hangs on MPC8540 board
-To: "VanBaren, Gerald (AGRE)" <Gerald.VanBaren@smiths-aerospace.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Message-id: <EE7CAF713952AC4A970DD7CD8B4C12A042DCAD@emss09m06.us.lmco.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=US-ASCII
+In-Reply-To: <EE7CAF713952AC4A970DD7CD8B4C12A042DCAC@emss09m06.us.lmco.com>
+References: <EE7CAF713952AC4A970DD7CD8B4C12A042DCAC@emss09m06.us.lmco.com>
+Mime-Version: 1.0 (Apple Message framework v618)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <9D37F37A-ECAC-11D8-916A-000393DBC2E8@freescale.com>
+Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
+From: Kumar Gala <kumar.gala@freescale.com>
+Subject: Re: Linux 2.4.27-pre6-bk hangs on MPC8540 board
+Date: Thu, 12 Aug 2004 17:11:52 -0500
+To: "Cordes, Aaron M" <aaron.m.cordes@lmco.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I completely disabled L1 and L2 cache in the processor and I am not
-seeing the memory corruption anymore.  So, good news is board is now
-booting, bad news is it's dog slow and we have a memory design to debug.
-Thanks to everyone for your prompt and helpful advice.
+See you are still having issues.  A few questions:
+1. What version of the silicon do you have?
+2. What board is this on (customer, ADS, etc.)?
+3. What firmware/bootloader (and if u-boot, what version)
 
-Aaron
+thanks
 
+- kumar
 
------Original Message-----
-From: VanBaren, Gerald (AGRE)
-[mailto:Gerald.VanBaren@smiths-aerospace.com]
-Sent: Thursday, August 12, 2004 3:32 PM
-To: Cordes, Aaron M
-Subject: RE: Linux 2.4.27-pre6-bk hangs on MPC8540 board
+On Aug 12, 2004, at 2:38 PM, Cordes, Aaron M wrote:
 
-
-
-On 8xx and 82xx and, I presume, 85xx processors, disabling cache
-inhibits burst mode.  It is the cache line filling  and flushing that
-causes burst accesses.  Note that DMA also causes bursts, but that
-becomes a problem much later.
-
-gvb
-
-
+>
+> I should mention that our SDRAM is connected to the 8540's DDR
+> controller, not LocalBus.
+>
+> Aaron
+>
 > -----Original Message-----
-> From: owner-linuxppc-embedded@lists.linuxppc.org
-> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of
-> Cordes, Aaron M
-> Sent: Thursday, August 12, 2004 3:34 PM
-> To: wd@denx.de
+> From: Cordes, Aaron M
+> Sent: Thursday, August 12, 2004 2:34 PM
+> To: 'wd@denx.de'
 > Cc: linuxppc-embedded@lists.linuxppc.org
 > Subject: RE: Linux 2.4.27-pre6-bk hangs on MPC8540 board
 >
 >
->
-> Is there a way in Linux or the 8540 to prevent burst accesses, in
-> order to test whether they are the problem?  I scanned the processor's
+> Is there a way in Linux or the 8540 to prevent burst accesses, in order
+> to test whether they are the problem?  I scanned the processor's
 > reference manual, but I didn't see anything that would let me do this.
 >
 > Thanks
@@ -66,30 +57,22 @@ gvb
 > In message
 > <EE7CAF713952AC4A970DD7CD8B4C12A042DCA7@emss09m06.us.lmco.com> you
 > wrote:
-> >
-> > We are bringing up an 8540-based board, and are getting hangs at
-> > random spots when booting Linux.  Sometimes the hangs occur
-> while the
-> > kernel is initializing, sometimes the boot gets far enough
-> where I can
+>>
+>> We are bringing up an 8540-based board, and are getting hangs at
+>> random spots when booting Linux.  Sometimes the hangs occur while the
+>> kernel is initializing, sometimes the boot gets far enough where I can
 >
-> > log in and run a couple of programs.  Eventually the board locks up
-> > with no oopses or panics.  If I connect to the board with a
-> debugger,
-> > the processor is usually stopped in the Data miss exception handler,
-
-> > and there is usually memory corruption in the kernel code.
+>> log in and run a couple of programs.  Eventually the board locks up
+>> with no oopses or panics.  If I connect to the board with a debugger,
+>> the processor is usually stopped in the Data miss exception handler,
+>> and there is usually memory corruption in the kernel code.
 >
 > That's it: memory problems.
 >
-> > I ran memory tests using both Edink and U-boot and they all
-> passed, so
+>> I ran memory tests using both Edink and U-boot and they all passed, so
+>> I'm reluctant to blame hardware for the memory corruption.  Has anyone
 >
-> > I'm reluctant to blame hardware for the memory corruption.
-> Has anyone
->
-> > seen similar behavior, or have any suggestions of things I
-> might try?
+>> seen similar behavior, or have any suggestions of things I might try?
 >
 > All those memory tests only can test simple read and write  accesses;
 > they  all  fail to access burst mode accesses, which will happen when
@@ -111,7 +94,8 @@ gvb
 > --
 > Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 > Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-> If this is a service economy, why is the service so bad?
+> If
+> this is a service economy, why is the service so bad?
 >
 
 
