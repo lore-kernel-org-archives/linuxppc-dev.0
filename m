@@ -1,36 +1,39 @@
-Message-Id: <199911090521.GAA02917@denx.local.net>
-To: kris_kelvin@excite.com
-cc: linuxppc-embedded@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Looking for glibc-0.961212-1o.src.rpm 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 08 Nov 1999 15:33:37 PST."
-             <942104017.13033.909@excite.com>
-Date: Tue, 09 Nov 1999 06:21:22 +0100
+Message-ID: <38281D7F.CC9914C@snom.de>
+Date: Tue, 09 Nov 1999 14:11:27 +0100
+From: Nicolas Pohland <pohland@snom.de>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+CC: devel@gate.crashing.org
+Subject: MMU Initialization Problem
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message <942104017.13033.909@excite.com> you write:
-> 
-> I wonder if somebody can point me to a place where I can
-> find glibc-0.961212-1o.src.rpm. I have tried a few
-> obvious places and the best I've been able to
-
-Try the obvious search engines, for instance
-http://ftpsearch.ntnu.no/ftpsearch; you will find (among others)
-
-ftp://ftp.kddlabs.co.jp/.9/Linux/linuxppc/users/gdt/redhat/SRPMS/glibc-0.961212-1o.src.rpm
-ftp://ftp.task.gda.pl/vol/d33/ftp.linuxppc.org/linuxppc/users/gdt/redhat/SRPMS/glibc-0.961212-1o.src.rpm
-ftp://ftp.uniroma2.it/%7bA/Linux/linuxppc/linuxppc/users/gdt/redhat/SRPMS/glibc-0.961212-1o.src.rpm
 
 
-Wolfgang Denk
+Hi Mark,
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-God may be subtle, but He isn't plain mean.         - Albert Einstein
+I have the same problem on a FADS board and 2.3.10. I do not have a
+solution yet, but maybe able to describe the
+problem in more detail.
+
+
+I can unzip the kernel at location 0 and then this space is mapped to
+0xc0000000 in 1 8Mb page.
+Then the start_here routine and in it the MMU_init function called.
+
+This is what I found strange:
+
+a. The level 1 descriptors in the table are made up of effective
+addresses (or virtual) and
+NOT of physical addresses. 
+
+b. The valid bit (LSB) of the descriptor is not set to 1.
+
+Have I missed something here ?
+
+Ciao,
+Nicolas
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
