@@ -1,46 +1,43 @@
-Date: Tue, 8 Feb 2000 18:09:30 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org,
-        linux-fbdev@vuser.vu.union.edu
-Subject: Re: [linux-fbdev] Retrace
-In-Reply-To: <Pine.LNX.4.05.10002081749540.27293-100000@callisto.of.borg>
-Message-ID: <Pine.HPX.4.10.10002081756400.1866-100000@gra-ux1.iram.es>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <200002082006.VAA12025@denx.local.net>
+To: Joseph Garcia <jpgarcia@execpc.com>
+cc: Josh Huber <huberj@wpi.edu>,
+        Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: BMAC eth problems...
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 08 Feb 2000 07:22:45 CST."
+             <38A018A5.FD10C45D@execpc.com>
+Date: Tue, 08 Feb 2000 21:06:22 +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hi,
 
+in message <38A018A5.FD10C45D@execpc.com> you write:
+>
+> My wallstreet/300 has a similar, possibly related problem.  any FTP transfer
+> originating from my powerbook in Linux (under any client or server) has a max
+> transfer under 100k.  This is a BMAC driver problem.  my brother's lombard
 
-On Tue, 8 Feb 2000, Geert Uytterhoeven wrote:
+Same problem for me. Incoming traffic is fast and reliable,  outgoing
+data  is  slow  (usually  around  80  k/s)  and large transfers often
+contain garbage (bad data, but I cannot see any errors reported).
 
-> The BAR values in PCI config space may be the same, but the BAR values in
-> struct pci_dev can be made different by the machine-specific fixup code.
+> MacOS has no problems with my ethernet card; incoming FTP transfers work normal;
 
-Yes, but it becomes a mess when you try to call alloc_resource if you need
-to: you would like to directly write the values returned by
-alloc_resource innto the registers for hotplugging and whatnots (I know a
-device, namely the Universe PCI<->VME bridge which has additional BAR not
-in the standard PCI header for very good reasons:
+Same here.
 
-- there are 9 such regions (and 2 in the standard header space), 11
-regions are somewhat hard to shoehorn in 6 BARs...
+Wolfgang Denk
 
-- 8 of these 9 regions have a variable (actually programmable) size which
-is not even necessarily a power of 2.
-
-so I would have to know the offset in the host bridge if
-pci_alloc_resource returned values as seen from the processors. I prefer
-the solution I've suggested in another post (fill the resource with hte
-return value, write it into the register and then access it with
-ioremap(ioremap_ptr(resource)) or better define a function called
-ioremap_resource(resource) which hides all these ugly details and walks
-the resource tree to do its job.
-
-	Regards,
-	Gabriel.
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+				 EARTH
+			     smog  |   bricks
+			 AIR  --  mud  --  FIRE
+			soda water |   tequila
+				 WATER
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
