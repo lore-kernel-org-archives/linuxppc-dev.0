@@ -1,53 +1,56 @@
-Date: Fri, 5 May 2000 16:49:04 -0400
-From: Daniel Jacobowitz <drow@false.org>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Help with cross-endian bitfields?
-Message-ID: <20000505164904.A29233@drow.res.cmu.edu>
-References: <852568D6.006ADE94.00@D51MTA03.pok.ibm.com>
-Mime-Version: 1.0
+Message-ID: <39135108.89AF7D74@mac.com>
+Date: Fri, 05 May 2000 18:54:07 -0400
+From: Andy <lordpixel@mac.com>
+Reply-To: lordpixel@mac.com
+MIME-Version: 1.0
+To: Florent <flobo@iname.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Re : 5 button mouse and XFree86 vers 4
+References: <20000504224403.5E5A528E66@postfix1.free.fr>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <852568D6.006ADE94.00@D51MTA03.pok.ibm.com>; from jlquinn@us.ibm.com on Fri, May 05, 2000 at 03:27:21PM -0400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, May 05, 2000 at 03:27:21PM -0400, jlquinn@us.ibm.com wrote:
+Florent wrote:
 >
-> Hi, all.  I'm working on getting the Advansys driver working and what
-> appears to be the final stumbling block is a difference in the layout of
-> bitfields between little-endian and big-endian systems.  In particular,
-> there are structs like the following:
+> ----------
+> >Andrew Thompson <lordpixel@mac.com> wrote:
 >
-> struct blah {
->   uchar a : 3;
->   uchar b : 3;
->   uchar c : 2;
-> }
+> > What I'm trying to do now is get all 5 buttons working on my
+> > Kensington Mouseworks USB mouse.
 >
-> On a little endian machine, this works like I expect.  (blah & 0x07) ==
-> blah.a is true.  On linuxppc (and apparently MacOS as well), this is NOT
-> true.  blah.a refers to the 3 most significant bits.  The linuxppc behavior
-> seems counterintuitive to me because I expected each successive member in a
-> struct to be the next physical piece of data I encounter.
+> 3 buttons and 2 for the wheel ?
+
+Nope 4 real buttons, and the wheel itself is a clickable button too...
+
+
+> > I tried adding this lines to my XF86Config
+> >         Option      "Buttons" "5"
+> >
+> > But no dice. Has anytone had any luck with > 3 buttons so far?
 >
-> Can someone tell me what's going on here?  Am I going to have to have
-> ifdef's on these structs, or resort to mask macros, or is there a
-> reasonable solution here.
+> Yes, I am using a Logitech USB wheel mouse and it works great with a few
+> softwares (especially gtk-based ones)
+>
+> > Can someone enlighten me as to the story with USB mice on linux ppc? Are we
+> > somehow shimying them so they appear as PS/2 or ADB?
+> > Why isn't USB support on in the above RPMs? If I get the source RPM and
+> > build it myself can I turn in on maybe?
+>
+> Since kernel 2.2.10 (if i remember), the USB mouse driver tries to emulate
+> an IMPS/2 mouse (PS/2 Microsoft intellimouse), that is, 3 buttons and a
+> wheel. So there is no need for softwares to support anything else than
+> IMPS/2 to make use of your USB mouse.
 
-As Dan Malek said, there is no defined ordering.  The compiler is free
-to do whatever it wishes.  You can't assume that.  (I think.)
+Sigh. I was afraid of that. Yet the XFree86 version 4 specifically
+mentions direct support for USB and for choosing "USB" as your protocol...
+yet when I try this in the version I got from the RPM this protocol is unknown.
 
-Also, by your intuition, the obvious thing IS happening.  Remember that
-we are big-endian - the first thing in memory is big-endian.  Thus, it
-follows logically that a should be in the first three (most
-significant) bits.
+Unfortunately since I have > 3 real buttons it looks like I do need more
+than generic IMPS/2 support.
 
-Dan
+Maybe I'll tru building XFree86 from source and see what happens...
 
-/--------------------------------\  /--------------------------------\
-|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
-|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
-|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
-\--------------------------------/  \--------------------------------/
+AndyT
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
