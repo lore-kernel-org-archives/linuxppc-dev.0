@@ -1,84 +1,78 @@
-Subject: Re: Radeon problems
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Giuliano Pochini <pochini@shiny.it>
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20030722212344.11c895f1.pochini@shiny.it>
-References: <20030722212344.11c895f1.pochini@shiny.it>
-Content-Type: text/plain
-Message-Id: <1058909248.535.0.camel@gaston>
-Mime-Version: 1.0
-Date: 22 Jul 2003 23:27:29 +0200
+Message-Id: <5.1.0.14.2.20030723141505.03528ef8@falcon.si.com>
+Date: Wed, 23 Jul 2003 14:21:05 -0400
+To: linuxppc-dev@lists.linuxppc.org
+From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
+Subject: Re: EP8260 
+In-Reply-To: <1058882554.3f1d43faafee2@pop-mail.india.tejasnetworks.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 2003-07-22 at 23:23, Giuliano Pochini wrote:
-> >> Problem #1: Radeonfb sets a video mode that isn't supported by my LCD
-> >> monitor. I have to blindly type "/usr/sbin/fbset -a 1280x1024-60 -depth 16"
-> >> at the root console every time (*if* it boots, because I make the box
-> >> crash quite often :( ). Is there a boot option to set the right video mode ?
-> >
-> > Can you send me a dmesg dump (with the wrong video mode) and
-> > a dump of /proc/device-tree/pci@f0000000 ?
->
-> Yes, these are the relevant lines:
->
-> ----
-> Kernel command line: ro video=radeonfb:1024x768-8@75
-> Console: colour dummy device 80x25
-> radeonfb: ref_clk=2700, ref_div=12, xclk=24975 from OF
-> Console: switching to colour frame buffer device 80x30
-> radeonfb: ATI Radeon 9000 If DDR SGRAM 64 MB
-> radeonfb: DVI port no monitor connected
-> radeonfb: CRT port CRT monitor connected
-> ----
->
-> Hmm, I just noticed that it believes I connected a CRT monitor. It's wrong,
-> I have an non-Apple LCD display connected to the DVI port. 80x30 means the
-> resolution is still 640x480.
+a) What Wolfgang said :-).
 
-Tried booting with video=radeon:dfp to force flat panel detection ?
+b) What does your EP8260 config file have in it for CONFIG_BAUDRATE?  Did
+you override it in the environmental variables and inadvertently switch to
+a different baud rate?  Did you try different baud rates with minicom to
+see if you could find the one the EP8260 is using?
 
-> This a dir of /proc/device-tree/pci@f0000000, but I don't see how can it be
-> useful. Is there a tool to extract more info ?
+ANSI vs. VT100 isn't going to do much for you (that is escape
+sequences).  It looks like a baud rate mismatch.  It might be 7 bit vs. 8
+bit or parity, but not likely.
 
-Just tarball that dir, it contains some useful stuffs, beleive me :)
 
-> [Giu@Jay pci@f0000000]$ dir
-> total 0
-> dr-xr-xr-x    4 root     root            0 lug 22 21:09 .
-> dr-xr-xr-x   21 root     root            0 lug 22 21:09 ..
-> lrwxrwxrwx    1 root     root           20 lug 22 21:13 @10 -> ATY,PheonixParent@10
-> -r--r--r--    1 root     root            4 lug 22 21:13 #address-cells
-> lrwxrwxrwx    1 root     root           20 lug 22 21:13 ATY,PheonixParent -> ATY,PheonixParent@10
-> dr-xr-xr-x    4 root     root            0 lug 22 21:13 ATY,PheonixParent@10
-> lrwxrwxrwx    1 root     root           15 lug 22 21:13 @b -> uni-north-agp@b
-> -r--r--r--    1 root     root           10 lug 22 21:13 built-in-names
-> -r--r--r--    1 root     root            8 lug 22 21:13 bus-range
-> -r--r--r--    1 root     root            4 lug 22 21:13 clock-frequency
-> -r--r--r--    1 root     root           10 lug 22 21:13 compatible
-> -r--r--r--    1 root     root            4 lug 22 21:13 device_type
-> -r--r--r--    1 root     root            4 lug 22 21:13 #interrupt-cells
-> -r--r--r--    1 root     root           28 lug 22 21:13 interrupt-map
-> -r--r--r--    1 root     root           16 lug 22 21:13 interrupt-map-mask
-> -r--r--r--    1 root     root            4 lug 22 21:13 interrupt-parent
-> -r--r--r--    1 root     root            8 lug 22 21:13 interrupts
-> -r--r--r--    1 root     root            4 lug 22 21:13 linux,phandle
-> -r--r--r--    1 root     root           14 lug 22 21:13 model
-> -r--r--r--    1 root     root            4 lug 22 21:13 name
-> -r--r--r--    1 root     root           72 lug 22 21:13 ranges
-> -r--r--r--    1 root     root            8 lug 22 21:13 reg
-> -r--r--r--    1 root     root            4 lug 22 21:13 #size-cells
-> -r--r--r--    1 root     root           11 lug 22 21:13 slot-names
-> lrwxrwxrwx    1 root     root           15 lug 22 21:13 uni-north-agp -> uni-north-agp@b
-> dr-xr-xr-x    2 root     root            0 lug 22 21:13 uni-north-agp@b
-> -r--r--r--    1 root     root            0 lug 22 21:13 write-combining
+gvb
+
+
+At 07:32 AM 7/22/2003 +0530, deepesh@india.tejasnetworks.com wrote:
+
+>Hi,
 >
+>   I loaded my EP8260 board with UBOOT. This was working fine. Then I loaded a
+>binary into RAM using tftp. Then tried copying the stuff to flash. When I
+>could
+>not copy things into flash directly, I erased a few sectors randomly and then
+>copied the binary to flash. Then when I reset the board, it did not come up.
 >
-> --
-> Bye.
->    Giuliano.
---
-Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>I put back the u-boot into the flash using BDI2000. But now I am getting weird
+>characters on the screen. I have looked at the minicom settings-- It is 115200
+>and 8N1. These were the settings with which I was working before also.
+>What I am
+>not able to understand is the reason for the weird characters.
+>
+>I am attaching the weird character file. The last line seems to be the U-BOOT
+>prompt. I tried changing the TERMINAL SETTINGS to ANSI from VT100, but it did
+>not help.
+>------------------------------------------------------------------------
+>?åêáó`*m,ïïô`0nsnp`hSõì rr`r0ps`m@qrzs2zrvi
+>
+>??fxrv0`?åóåô`?ôáôõóz@?øôåòîáì`?ïæôl ?øôåòîáì`Èáòä
+>
+>??fxrvp fìïãë`fïîæéçõòáôéïî
+>`m`,õómôïmfïòå`?õìô`snuøl`-f?`?éö rl`v0ø`,õó`?òåñ``sp-xu`l fïòå ?òåñ qppm3pp
+>`m`äæâòç`q,`ãïòåãîæ`0øqål`âõóäæ`rl`ãðíäæ`ql`ðììäæ`ql`ðììíæ`r
+>`m`öãïYïõô``qyxppp0ppl`óããYãìë```tyupppppl`âòçYãìë```1rswup0p
+>`m`ãðõYãìë` rsqpppppp,`ãðíYãìë`@`yyp0ppppL`âõóYãìë```vvp0pppp
+>
+>f?*z`` ??fxrvp`h?åö`q4l`?áóë`?n0h?i`r<ru?)`áô`2sq`?Èú
+>,ïáòäz ?íâåääåä`?ìáîåô`??x2vpl`?åöéóéïî`p.p
+>?2fz`` òåáäù
+>????z `vt`?,
+>????^:`qv ?,
+>jjj`-áòîéîç`m`âáä`f?fl`õóéîç`äåæáõìô`åîöéòïîíåîô
+>
+>?îz` ``óåòéáì
+>?õôz ``óåòéáì
+>?òòz ``óåòéáì
+>?Åôz```?ffs`??^?????
+>,??,*?zòåÁäù
+>}~`
+>--------------------------------------------------------------------------
+>
+>Thank you,
+>Deepesh
+>
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
