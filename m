@@ -1,57 +1,46 @@
-From: Kevin Hendricks <khendricks@ivey.uwo.ca>
-Reply-To: khendricks@ivey.uwo.ca
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Ways to contribute back
-Date: Thu, 9 Dec 1999 11:34:53 -0500
-Content-Type: text/plain
+Message-ID: <XFMail.991209110250.gdt@linuxppc.org>
+Content-Type: text/plain; charset=us-ascii
 MIME-Version: 1.0
-Message-Id: <99120911475701.00928@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.10.9912090723100.23296-100000@shell.unixbox.com>
+Date: Thu, 09 Dec 1999 11:02:50 -0700 (MST)
+From: Gary Thomas <gdt@linuxppc.org>
+To: Ani Joshi <ajoshi@shell.unixbox.com>
+Subject: RE: Mozilla preM12 ppc rpms...
+Cc: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
 
-I am looking for some way to contribute back to Linux.
+On 09-Dec-99 Ani Joshi wrote:
+> 
+> 
+> I have placed a preM12 snapshot at
+> 
+> ftp://devel.linuxppc.org/users/ajoshi/{RPMS,SRPMS}
+> 
+> This build includes Franz Sirl's XPTCall port.  
+> Please let me know how it well it fares for everyone as we have not 
+> tested it much.
+> 
 
-As I understand things, the following people have taken responsibility for the
-following projects:
+Where can I find all of the required pieces?
 
-kernel / drivers	- Paul and Cort and many others (especially if
-		you count embedded, and YDL guys and LinuxPPC guys
+[root@icarus gary]# rpm -ivUh /tmp/mozilla-5.0-M11.ppc.rpm 
+error: failed dependencies:
+        glibc >= 2.1.3-0h is needed by mozilla-5.0-M11
+        libIDL-0.6.so.0 is needed by mozilla-5.0-M11
+        libgtkmozilla.so.0 is needed by mozilla-5.0-M11
+        libstdc++-libc6.1-2.so.3 is needed by mozilla-5.0-M11
+        libc.so.6(GLIBC_2.1.3) is needed by mozilla-5.0-M11
 
-glibc 		- Geoff 
-
-gcc, binutils 	- Franz, David, Richard, etc
-
-gdb		- Kevin B., Franz?
-
-mozilla		- Ani Joshi, (Franz?)
-
-XFree86	- Anthony and Tom 
-
-Do we have or need people working with GNOME?  KDE? Specific Drivers?
-
-Are there other projects we should get our finger into to make sure they work
-well with PowerPC?
-
-If I have missed anyone, I apologize, I just wanted to get a more organized
-list for other developers to see for contacts and things.  
-
-Please post additions and/or changes to this list and lets get it posted on the
-www.linuxppc.org site (since it is becoming a developer site) with maybe a place
-for needy projects or lazy developers to get together.
-
-That way if a desirable project would like to port to LinuxPPC and needs help
-with the port they can get in touch with people who can provide that help.
-
-Ideas?
-
-Comments?
-
-Thanks, 
-
-Kevin
+------------------------------------------------------------------------
+Gary Thomas                              |
+email: gdt@linuxppc.org                  | "Fine wine is a necessity of
+   ... opinions expressed here are mine  |        life for me"
+       and no one else would claim them! |
+                                         |      Thomas Jefferson
+------------------------------------------------------------------------
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
