@@ -1,58 +1,49 @@
-Message-ID: <3B708C81.DE87DDC2@iiic.ethz.ch>
-Date: Wed, 08 Aug 2001 02:49:05 +0200
-From: Michel =?iso-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
-Reply-To: daenzer@debian.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Hollis <hollis@austin.rr.com>
+To: Matt Porter <mporter@mvista.com>
+Subject: PReP and generic PCI resource assignment
+Date: Wed, 8 Aug 2001 00:11:20 -0500
+Cc: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: R Shapiro <reshapiro@mediaone.net>, Olaf Hering <olh@suse.de>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: lcd17 kernel patches?
-References: <Pine.LNX.4.05.10108070947420.5836-100000@callisto.of.borg>
-Content-Type: text/plain; charset=iso-8859-1
+Message-Id: <01080800112002.00491@silence.internal>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Geert Uytterhoeven wrote:
->
-> On Mon, 6 Aug 2001, Michel Dänzer wrote:
-> > R Shapiro wrote:
-> > > Olaf Hering writes:
-> > >  > The correct fix is either "video=1280x1024-8@60" as kernel arg (that
-> > >  > may work)
-> > >
-> > > OK, I just had time to rebuild 2.4.8-pre3-ben0 with the patch undone.
-> > > This video arg with that kernel doesn't solve the problem.  I still
-> > > get no video on boot.
-> >
-> > Wouldn't it have to be video=aty128fb:1280x1024-8@60 anyway, and is the
-> > modedb
->
-> video=mode specifies the global mode, for all fbdevs that use modedb.
+I'm trying to boot _2_4_devel on a Thinkpad 850. The only problem comes when
+the video controller's PCI resource 1 (mapped by the firmware to
+0x0..0x00ffffff) is relocated to 0xc1000000..0xc1ffffff. [The symptom is that
+all new VGA text is drawn backwards-endian, which I would not have expected
+but is very visible.] That's way out of bounds for PReP IO memory, which in
+bus addresses can only be 0x0..0x40000000 (in CPU addresses that's
+0xc0000000..0xfeffffff or so).
 
-Ah, cool. So what's your theory on why it didn't work for R?
+How did it get moved that drastically? The problem comes from generic PCI
+code, starting with pci_assign_resource (called from
+pcibios_assign_resources). The actual bad line of code is in
+kernel/resource.c find_resource():
+	new->start = root->start;
+where it starts the new resource at the bottom of the parent resource's
+range.
 
+The problem is that root in this case is the PCI memory resource of the host
+bridge, which correctly starts at 0xc0000000... but NOT in bus terms. In bus
+terms it starts at 0x0. (CPU physical 0xc0000000 = PCI bus 0x0 [IO mem].) So
+the new resource is assigned 0xc1000000, which is written back to the BAR
+with pcibios_update_resource... which is way wrong.
 
-> > even used on PPC yet?
->
-> That's not the right question :-) Modedb doesn't depend on the architecture,
-> but on the driver.
+Now if resources could be assigned properly in the first place this code path
+wouldn't be taken, but quite a few things fail (request_resource's and
+pci_find_parent_resource's) and it's proving difficult to track down why
+(maybe I've been staring at this too long).
 
-I meant to say 'in aty128fb on PPC'. Last time I looked, the call to find a
-mode was disabled for PPC.
+Anyways, when I change "root->start" above to be 0, the symptom is fixed, but
+that's clearly a hack. I don't see how anything PReP (system IO nor IO
+memory) could escape generic resource assignment unscathed though.
 
-> Yes, atyfb was the first one to have modedb. Remember, I have a RAGE II+ in
-> my LongTrail :-)
+Thoughts?
 
-Didn't mean to question that.
-
-> PowerMac/CHRP has even extra modedb support in macmodes.
-
-Would that explain the disabled direct call?
-
-
---
-Earthling Michel Dänzer (MrCooper)    \   Debian GNU/Linux (powerpc) developer
-CS student, Free Software enthusiast   \        XFree86 and DRI project member
+-Hollis
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
