@@ -1,37 +1,34 @@
-Message-Id: <200101191711.f0JHBXm09695@denx.local.net>
-To: Jeff Hartmann <jhartmann@valinux.com>
-cc: michdaen@iiic.ethz.ch, dri-devel@lists.sourceforge.net,
+Message-ID: <3A687848.B7BE3116@mvista.com>
+Date: Fri, 19 Jan 2001 12:24:24 -0500
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
+To: Gareth Hughes <gareth@valinux.com>
+CC: michdaen@iiic.ethz.ch, dri-devel@lists.sourceforge.net,
         linuxppc-dev@lists.linuxppc.org
-Subject: Re: [Dri-devel] PPC Lockup (ati-pcigart-branch) 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 19 Jan 2001 09:40:30 MST."
-             <3A686DFE.9030308@valinux.com>
-Date: Fri, 19 Jan 2001 18:11:33 +0100
+Subject: Re: [Dri-devel] Re: PPC Lockup (ati-pcigart-branch)
+References: <3A67B401.8282A00F@relog.ch> <3A67BAC3.94EFEA3A@mvista.com> <3A67E467.74544C4C@valinux.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message <3A686DFE.9030308@valinux.com> Jeff Hartmann wrote:
->
-> I dunno if the kgdb patch works on powerpc, but you might try it.  You
-> could single step through this code since your not at a point where
-> interrupts are disabled.
->
-> Unfortunately kdb (built-in kernel debugger) does not work on the
-> powerpc.  It is REALLY useful when your debugging code when interrupts
+Gareth Hughes wrote:
 
-OTOH on many PPC systems you can just hook up a BDM / JTAG  debugger,
-which  provides  a  tool  which  is even more powerful (since you can
-freeze the whole CPU, including all internal timers etc.).
+> Pages is definitely the number of pages (at least when I wrote the
+> code...).
 
-Wolfgang Denk
+Hmmm....vmalloc() definitely works fine, we use it all of the
+time in the kernel.  The only way it would hang is if you call
+it too soon, or if the number of pages was too large.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Only in our dreams we are free. The rest of the time we neeed  wages.
-                                    - Terry Pratchett, _Wyrd Sisters_
+> .....and we really should be using
+> vmalloc_32(...) instead (which will result in exactly the same code, but
+> it is cleaner).
+
+It's no longer the same.  Linux has the "highmem" configuration now,
+and vmalloc() allows that to be used, while vmalloc32() does not.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
