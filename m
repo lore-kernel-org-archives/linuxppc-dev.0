@@ -1,41 +1,51 @@
-Date: Tue, 9 Feb 1999 11:55:28 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Michael Meissner <meissner@cygnus.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Booting a PowerStack-II on a serial line
-In-Reply-To: <199902071501.KAA01352@wogglebug.cygnus.com>
-Message-ID: <Pine.HPP.3.96.990209114817.21099S-100000@gra-ux1.iram.es>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <199902090234.TAA26936@mx0-smtp.goodnet.com>
+Date: Tue, 9 Feb 1999 12:02:08 +0100
+To: Kyle Nesbit <kyle.nesbit@asu.edu>, linuxppc-dev@lists.linuxppc.org
+From: BenH <bh40@calva.net>
+Subject: Re: L2CR
+Message-Id: <19990209120208.022074@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+The up-to-date l2cr code should be in vger now, we disabled the
+command-line option for now (it required changes in non-arch specific
+sources, and we wanted to avoid this because of the merge). The l2cr
+value can still be passed by BootX using the device-tree. Just open bootx
+preferences with resedit, add an "L2CR" resource ID 0 which is 4 bytes
+long, and stuff your L2CR value in it. This will enable the "Set G3
+cache" option in BootX.
+
+Future version of PowerLogix software may be able to set BootX
+Preferences directly. I'll write a tool for capturing MacOS current L2CR
+value real soon now.
 
 
-On Sun, 7 Feb 1999, Michael Meissner wrote:
+On Mon, Feb 8, 1999, Kyle Nesbit <kyle.nesbit@asu.edu> wrote:
 
-> 
-> Is there any way I can tell at the shell level whether or not the
-> PowerStack-II machine was booted via a serial line or with a
-> monitor/keyboard?  I normally boot the machine via the serial line,
-> and discovered that the gettys for the virtual console were respawning
-> without end.  I edited the inittab to remove them, and put a normal
-> login at 9600 baud on /dev/ttyS0 on runlevel 3, but was wondering if
-> there was a way to switch automatically.
+>I am currently looking for some more info on how to get my L2 backside cache
+>running.  I am using a powerlogix card.
+>
+>I have used the powerlogix/Ben patch posted in the mailing list during Dec.
+>The kernel compiled without and error.  When I try to pass the l2cr kernel
+>argument I get nothing.  my /proc/sys/kernel/l2cr is 00000000: disabled,
+>etc...
+>
+>Another thing that is strange is in /proc/cpuinfo the clock rate of my chip
+>is off by over 100 MHZ.
+>
+>I would greatly appreciate if someone could point me to more info on the
+>subject.
 
-I don't think so. inittab is quite inflexible in this respect. I had
-similar problems, tried to find a solution and failed. 
 
-> Also, I found I can't compile with the console on a serial line and
-> mac serial option (ie, can't use the common pmac/prep/mxb mode, I had
-> to use the prep/mxb mode) due to both trying to define the same
-> function.
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
-I never enable mac serial support so I can't tell. But the pmac keyboard
-has to be set to get the damned thing to compile unless CONFIG_VT is off.
 
-	Gabriel.
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
