@@ -1,21 +1,24 @@
-Date: Sat, 21 Apr 2001 15:34:57 -0600
-From: Cort Dougan <cort@fsmlabs.com>
+From: "alex daniloff" <alex_daniloff@mail.ru>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Linux/PPC patches on kernel.org
-Message-ID: <20010421153457.O10314@ftsoj.fsmlabs.com>
+Subject: Qspan driver
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Reply-To: "alex daniloff" <alex_daniloff@mail.ru>
+Content-Type: text/plain; charset=koi8-r
+Message-Id: <E14rbTK-000PMz-00@f5.mail.ru>
+Date: Mon, 23 Apr 2001 12:13:26 +0400
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Linux/PPC snapshots and patches against Linus' trees are available from:
+I'm looking for embedded driver for Qspan.
+I've found only drivers for host or pc not for embedded OS.
+My configuration:Motorola CPV3060 board with MPC860
+MPC860 <==Qbus==> Qspan <==PCI==> PMC modules
 
-ftp://ftp.fsmlabs.com/pub/linuxppc/
+I tried to read from PMC PCI configuration space but I've got Machine Check.
+If you can, help me.
 
-ftp://ftp.kernel.org/pub/linux/kernel/people/cort and its mirrors
+Thanks, Alex
 
-I'll be keeping the 2.2 and 2.4 snapshots and patches up-to-date on both
-sites.  Please use the kernel.org (and mirror) sites first.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
