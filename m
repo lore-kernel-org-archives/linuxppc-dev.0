@@ -1,45 +1,40 @@
-From: Kevin Hendricks <khendricks@ivey.uwo.ca>
-Reply-To: khendricks@ivey.uwo.ca
-To: Gabriel Paubert <paubert@iram.es>,
-        Franz Sirl <Franz.Sirl@munich.netsurf.de>
-Subject: Re: Fwd: Re: still no accelerated X ($#!$*)
-Date: Thu, 20 Jan 2000 14:36:44 -0500
-Content-Type: text/plain
-Cc: David Edelsohn <dje@watson.ibm.com>, khendricks@ivey.uwo.ca,
-        linuxppc-dev@lists.linuxppc.org
-References: <Pine.HPX.4.10.10001202018380.18916-100000@gra-ux1.iram.es>
-In-Reply-To: <Pine.HPX.4.10.10001202018380.18916-100000@gra-ux1.iram.es>
+Date: Thu, 20 Jan 2000 20:42:15 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Logan Hall <warrior514@worldnet.att.net>
+cc: ian reinhart geiser <geiseri@msoe.edu>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: need old Logo.gif
+In-Reply-To: <38875A79.56490450@worldnet.att.net>
+Message-ID: <Pine.LNX.4.05.10001202041070.23608-100000@callisto.of.borg>
 MIME-Version: 1.0
-Message-Id: <00012014395300.05824@localhost.localdomain>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
-
-> Actually if base_addr can be reused by the compiler for other accesses
-> to the same area (byte or big endian), it should be written as:
+On Thu, 20 Jan 2000, Logan Hall wrote:
+> ian reinhart geiser wrote:
+> > A long long time ago there was a TUX logo in LinuxPPC that
+> > had tux holding a beer.  Is there anyone out there in TV land
+> > with this gif any more?
+> >
+> > is so please email it to me.
 >
-> "stwbrx %0,%1,%2": : "r" (regdata), "b" (base_addr), "r" (regindex)
->
-> with a volatile qualifier on the asm statement but I disagree on the
-> "memory" clobber if this does not access areas the compiler will ever
-> touch and does not have side effect.
->
-> There are already too many memory clobbers out there, they are bad because
-> they basically tell the compiler that it can not keep a single variable
-> in a register.
+> It shows up on my comp when i boot with a bit depth of 16 (2.2.14, Beige
+> G3, ATI Rage3d pro built in).  If you can tell me where the file is i
+> will email it.
 
-In this particular case, the base address can change (but very very rarely
-such as writing to one Aperature or Another on the Rage 128 card) and all of
-the writes are made to either the card memory mapped io or the frame buffer
-itself.
+The 16 color logo (used on 15/16 bpp as well) still has the beer since the
+American puritans al have 8 bpp or 24/32 bpp displays :-)
 
-Should I not include the : "memory" clobber in this case?  Will it hurt
-performance much?
+The logos are hidden inside linux/include/linux/linux_logo.h
 
-Thanks,
+Gr{oetje,eeting}s,
+--
+Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
 
-Kevin
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
