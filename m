@@ -1,40 +1,49 @@
-Message-ID: <3C94FB7B.5040007@amberdata.demon.co.uk>
-Date: Sun, 17 Mar 2002 20:24:27 +0000
-From: David Monro <davidm@amberdata.demon.co.uk>
-MIME-Version: 1.0
-To: Dan Malek <dan@embeddededge.com>
-Cc: Michael Sokolov <msokolov@ivan.Harhan.ORG>,
-	linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: [PATCH] My GT-64260 enhancements
-References: <0203170703.AA00587@ivan.Harhan.ORG> <3C94D78E.3010100@embeddededge.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Message-Id: <l03130300b8bba63e55e4@[192.168.1.2]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Mon, 18 Mar 2002 09:15:39 -0500
+To: benh@kernel.crashing.org
+From: "Michael R. Zucca" <mrz5149@acm.org>
+Subject: Re: 2.4.18 and dmasound and rebooting
+Cc: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dan Malek wrote:
- >
- > Michael Sokolov wrote:
- >
- >> But Troy's personal preferences shouldn't affect the public tree, should
- >> they? If 9600 is the default baud rate for all of Linux, why
- >> should one port be different?
- >
- >
- > I didn't know there was a "default" baud rate for Linux.  I think
- > the lowest I have ever seen is 9600, but I certainly wouldn't call
- > it a default.  It seems every one of the boards I have uses
- > something different,
- >
-The default for just about any unix box (and an awful lot of other
-things - network switches etc) seems to be 9600 8N1, partly because even
-ancient terminals can cope with that (a lot of older ones don't go past
-38400 for example). Allowing an override is fine, but leaving the
-default at 9600 will follow the 'path of least surprise'.
+> Can you try this patch and tell me if it helps ?
+>
+> ===== drivers/sound/dmasound/dmasound_awacs.c 1.21 vs edited =====
+> --- 1.21/drivers/sound/dmasound/dmasound_awacs.c        Tue Feb  5
+>09:58:03 2002
+> +++ edited/drivers/sound/dmasound/dmasound_awacs.c      Mon Mar  4
+>11:32:36 2002
+> @@ -963,7 +963,9 @@
+>                         st_le16(&cp->res_count, 0);
+>                         st_le16(&cp->xfer_status, 0);
+>                         st_le32(&cp->phy_addr, phy);
+> -                       st_le16(&cp->command, OUTPUT_MORE + INTR_ALWAYS);
+> +                       st_le32(&cp->cmd_dep, virt_to_bus
+> (&awacs_tx_cmds[(i+1)%write_sq.max_count]));
+> +                       st_le16(&cp->command, OUTPUT_MORE | BR_ALWAYS |
+>INTR_ALWAYS);
+> +
+>                        /* point at our patched up command block */
+>                         out_le32(&awacs_txdma->cmdptr, virt_to_bus(cp));
+>                        /* we must re-start the controller */
 
-Cheers,
+Ok, sorry for getting back so slowly.
 
-	David
+I tried compiling this in and it worked great. It eliminated some popping
+that would happen on the DMA-dead recovery before.
+
+I haven't yet tried compiling this into a kernel module yet to see if it
+fixes the problem of the kernel module version of this not working.
+
+----------------------------------------------
+ Michael Zucca - mrz5149@acm.org
+----------------------------------------------
+ "I'm too old to use Emacs." -- Rod MacDonald
+----------------------------------------------
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
