@@ -1,45 +1,54 @@
-Date: Fri, 17 May 2002 23:07:50 -0400 (EDT)
-From: Jack Howarth <howarth@bromo.med.uc.edu>
-Message-Id: <200205180307.XAA10288@bromo.msbb.uc.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: alsa recording
+Date: Sat, 18 May 2002 10:53:18 -0700
+Subject: Re: 2.4 kernel on briQ - Available
+From: Karsten Jeppesen <kj-list@jeppesens.com>
+To: Christopher Murtagh <christopher.murtagh@MCGILL.CA>,
+	<linuxppc-dev@lists.linuxppc.org>
+Cc: <tech@TOTALIMPACT.COM>
+Message-ID: <B90BE31D.131F6%kj-list@jeppesens.com>
+In-Reply-To: <Pine.LNX.4.33.0204092230310.25004-100000@blues.wcg.mcgill.ca>
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-    For anyone interested, the current alsa cvs now has working
-audio recording. At least on a Powermac G4/AGP with screamer chipset.
-You will need to have alsa-drivers, alsa-libs and alsa-utils built
-and installed from the cvs. Also make sure you have mic boost in alsamixer
-set to 0 or you will easily overload you inputs while recording.
-    I have confirmed that recording works with both the alsa and oss
-compatibility interfaces. To test the alsa interface the following works...
+Sorry for the long delay, but the Open Firmware had to be improved to allow
+the BriQ its full potential as a CHRP computer.
 
-make a .asoundrc in your home dir with...
+Ben and I have been working very hard on this and successfully implemented
+the BriQ into the 2.4 kernel tree.
 
-pcm.copy {
-  type plug
-  slave {
-  pcm hw
-  }
-  route_policy copy
-}
+I have uploaded all necessary software to
+<http://www.tornado.totalimpact.com> also called the tornado site from which
+it can be downloaded.
 
-and record with...
+It includes 3 parts in 2 files.
 
-arecord -d 10 -f cd -t wav -D copy foobar2.wav
+- A preliminary manual (but they always are)
+- The flash prom updater and the system software builder.
 
-which can be played back with...
 
-aplay -c 2 -t raw -r 44100 -f mu_law foobar2.wav
 
-I have also confirmed the oss recording/playback using the
-'snd' scheme based sound editor program that uses oss. I was
-able to record 1 and 2 channel wav recordings with that.
-Of course all of the above was done with the esd daemon killed.
-There have been a slew of updates for Tumbler so it may work
-as well. Good luck.
-                          Jack
+Sincerely,
+
+Dr. Karsten Jeppesen
+VP of Technology
+Total Impact
+<kj@totalimpact.com>     Phn: (805) 987-8704     Fax: (805) 484-9469
+-----------------------------------------------------------------------
+Confidence is the feeling you have before you understand the situation.
+-----------------------------------------------------------------------
+
+
+
+
+>
+> Just wondering if anyone has gotten a 2.4 kernel to compile and run on a
+> briQ with 1GB of RAM?
+>
+> I have 4 of them that I have been playing with and would like to go into
+> production very soon, and I'm just wondering if I should wait a little
+> longer or stick with a 2.2 kernel and only 512 MB for now.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
