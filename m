@@ -1,45 +1,57 @@
-Message-ID: <2702075D4DE2B043BF5EB82E9CFAD45B093B12@mail1.mediatrix.com>
-From: Jean-Denis Boyer <jdboyer@mediatrix.com>
-To: "'Dan Malek'" <dan@embeddededge.com>
-Cc: Pavel Bartusek <pba@sysgo.de>,
-	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: MDIO clock speed computation
-Date: Tue, 23 Jul 2002 15:41:28 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: "OTAVIO ISAMU SUGENO" <otavio.sugeno@siemens.com.br>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: CPU performance measurement 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 23 Jul 2002 17:56:57 -0300."
+             <B7AC573479F05C438F232539B961A168095007@CUR1006V.br002.siemens.net.br>
+Date: Tue, 23 Jul 2002 23:14:04 +0200
+Message-Id: <20020723211409.9635F10875@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan,
+Dear OtavioOtavio,
 
-> I never expected to see someone run something like 46.5 MHz.
-
-I agree, this might be impossible to achieve, since the PLL gain is an
-integer. But the externcal clock does not necessarily have a frequency which
-is a multiple of 1MHz.
-
-For example, some of our 860T based boards have an external clock of
-4096kHz, which is multiplied by 12, and yields a core clock of 49152MHz.
-
-I don't know much about clock devices, but I guess there are many
-possibilities.
-
-> Will this work for all cases? :
+in message <B7AC573479F05C438F232539B961A168095007@CUR1006V.br002.siemens.net.br> you wrote:
 >
-> ((((bd->bi_intfreq + 4999999) / 2500000) / 2 ) & 0x3F ) << 1;
+> >>You did mount the /proc filesystem, didn't you?
+> I though /proc filesystem was mounted but it is not. My custom board is
 
-I hope so ;-)
+Ummm.. I guess you have a login or any other way to access a shell on
+your board? You can (and should) manually check which filesystems are
+mounted, and mount anything that may be missing.
 
+> running a 6MB ramdisk and I receive the following message when Linux
+> goes up:
+>
+> EXT-f2 warning: mounting unchecked fs, running e2fsck is recommended
 
---------------------------------------------
- Jean-Denis Boyer, B.Eng., System Architect
- Mediatrix Telecom Inc.
- 4229 Garlock Street
- Sherbrooke (Québec)
- J1L 2C8  CANADA
- (819)829-8749 x241
---------------------------------------------
+This is harmless - just an indication that  your  way  to  build  the
+ramdisk image is more or less broken.
+
+> VFS: Mounted root (ext2 filesystem)
+> Freeing unused kernel memory: 60k init 4k openfirmware
+> INIT; version 2.78 booting
+> Checking all file systems...
+> Parallelizing fsck version 1.19(13-jul-2000)
+> Mounting local filesystems...
+> Not mounted anuthing
+
+To me this seems pretty much overkill for a ramdisk  of  an  embedded
+system;  have  a  look  how  we  do this in our Simple Embedded Linux
+Framework, see ftp://ftp.denx.de/pub/LinuxPPC/usr/src/SELF/
+
+> I tried to run e2fsck but no success. Any idea what can I do to fix fs?
+
+Fix the the build process for your ramdisk image.
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+I used to be indecisive, now I'm not sure.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
