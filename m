@@ -1,40 +1,36 @@
-From: Thomas Graichen <news-innominate.list.linux.ppc.dev@innominate.de>
-Reply-To: Thomas Graichen <graichen@innominate.de>
-Subject: XFree86 4.0 auf imac dv
-Date: 15 Sep 2000 08:46:32 GMT
-Message-ID: <news2mail-8psnl8$1gb$5@mate.bln.innominate.de>
-Reply-To: thomas.graichen@innominate.de
-To: linuxppc-dev@lists.linuxppc.org
+Message-ID: <39C1E470.ACE122F@student.ethz.ch>
+Date: Fri, 15 Sep 2000 10:57:20 +0200
+From: Michel Dänzer <daenzerm@student.ethz.ch>
+MIME-Version: 1.0
+To: Martin Costabel <costabel@wanadoo.fr>
+CC: mlan@cpu.lu, linuxppc-dev@lists.linuxppc.org
+Subject: Re: per-fb mmap for platinumfb and valkyriefb in 2.4 (and 2.2)
+References: <200009140546.HAA00808@piglet.grunz.lu> <39C155BF.1A150162@wanadoo.fr>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-does anyone here have XFree86 4 running suscessfully on a imac dv (or
-blueberry which should be basically the same)? - i ask because i tried
-the DRI test server from michael daenzer and get problems with the
-screen: it shows only the left half and also shows this half again
-on the right side - the mousecursor is moving fine over the full
-screen btw.
+Martin Costabel wrote:
 
-some more details about the setup: latest paulus kernel, XF86Config
-standard for a r128 card (the card is an 8mb r128 rl) - if you need
-any more information please let me know ...
+> In fact, I don't see any difference between the situation before and after
+> the patch. For x11perf --scroll500, I get exactly as before 36.2/sec for
+> 1024x768 at 8bit. This is with XFree68-4.0.1; used to be 13/sec with older X
+> servers.
 
-so has anyone else seen this too or has it working on a similar
-machine ... i just wanted to know this before i start looking
-deeper
+X 4.x has ShadowFB, which shadows the framebufer in RAM and avoids reads from
+VRAM.
 
-a lot of thanks in advance
+I think Michel (the other one ;) either uses X 3.3.x or no ShadowFB.
 
-t
 
-p.s.: i think this is more a generic xf4 and r128 problem than having
-      anything to do with the dri stuff
+Michel
+
+
+PS: My Rage128 Mobility gives me 578.0/sec :)
 
 --
-thomas.graichen@innominate.de
-technical director                                       innominate AG
-clustering & security                                networking people
-tel: +49.30.308806-13  fax: -77                   http://innominate.de
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and The DRI Project
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
