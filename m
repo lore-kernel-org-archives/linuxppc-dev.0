@@ -1,82 +1,48 @@
-Date: Wed, 31 Oct 2001 08:42:33 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: small cleanup
-Message-ID: <20011031084233.A18493@cpe-24-221-152-185.az.sprintbbd.net>
-References: <20011030190809.F16202@cpe-24-221-152-185.az.sprintbbd.net> <Pine.LNX.4.33.0110311113100.31795-100000@serv>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.33.0110311113100.31795-100000@serv>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jonas Smedegaard <js@debian.org>
+Cc: <linuxppc-dev@lists.linuxppc.org>, <debian@jones.dk>
+Subject: Re: [Debian] Irda can work
+Date: Wed, 31 Oct 2001 17:03:13 +0100
+Message-Id: <20011031160313.7048@smtp.adsl.oleane.com>
+In-Reply-To: <Pine.LNX.4.33.0110311636080.10961-100000@auryn.jones.dk>
+References: <Pine.LNX.4.33.0110311636080.10961-100000@auryn.jones.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Oct 31, 2001 at 11:22:20AM +0100, Roman Zippel wrote:
-> Hi,
->
-> On Tue, 30 Oct 2001, Tom Rini wrote:
->
-> > > - pcibios_make_OF_bus_map depends on CONFIG_ALL_PPC
-> >
-> > This should just be a warning, since gcc will optmize it out (it'll
-> > always be false on !CONFIG_ALL_PPC.  It'd almost be preferable to do
-> > something like:
-> > #define pcibios_make_OF_bus_map do { } while(0)
-> >
-> > Someplace...
->
-> That function is in the same file...
+>> On Wed, Oct 31, 2001 at 03:24:31PM +0100, Jonas Smedegaard wrote:
+>> > and btw: I recommend kernel from BenH from 30/10 - it runs flawlessly on
+>> > my machine, and has ide performance optimizations it seems (but
+don't know
+>> > if it is TiBook related though)
+>>
+>> We have some problems with DMA on BenH's kernel from yesterday
+(30.10.2001),
+>> (maybe we've got it later).
+>>
+>> Same problem with as described in
+>> http://lists.linuxppc.org/linuxppc-dev/200110/msg00371.html
+>>
+>> Anybody know what is causing this problem or how to get an older,
+>> but more stable BenH tree without it?
 
-Yes, and compiled only on CONFIG_ALL_PPC.  But the if statement will
-always be false on !CONFIG_ALL_PPC, so while the compiler will warn
-about an implicit declaration, it won't cause a link error.  Eg:
---- 1.34/arch/ppc/kernel/pci.c  Sat Oct  6 11:16:41 2001
-+++ edited/pci.c        Wed Oct 31 08:40:26 2001
-@@ -743,6 +743,9 @@
-                ranges += np;
-        }
- }
-+#else
-+/* Kill a warning */
-+#define pcibios_make_OF_bus_map do { } while(0)
- #endif /* CONFIG_ALL_PPC */
+I rewrote the IDE timing code a few days ago, and well... it wasn't
+completely bug free ;) Well, it should be ok now, the timings put
+into the controller are the same as Darwin and MacOS 9 use for
+a given disk, except for some older machines (OHare based) where
+I suspect some HW problems and so limited the MDMA cycle time to
+150ns (which is approx MDMA1).
 
- void __init
+Except from that, my kernel got no major change lately, only small
+fixes here or there.
 
-> > > - removed duplicate definition of isa_io_base/isa_mem_base/pci_dram_offset
-> > > (note: these variables are protected with CONFIG_PCI in ppc_ksyms.c, but
-> > > not in the include files, so there are unconditional now)
-> >
-> > This will break 4xx I think...  Can you try doing a
-> > walnut+CONFIG_405_DMA=y compile (in _devel..)
->
-> I can try it (when I get home).
+Note that you should probably post diffs against _2_4_devel, they
+would be a lot smaller :) My tree is a "child" of _devel and
+my changes are regulary pushed upstream.
 
-Thanks.
+Ben.
 
-> > > - removed nested __KERNEL__ ifdefs in io.h, one even outside of the
-> > > recursive protection (bad style).
-> >
-> > Correct, but it's usually
-> > #ifdef __KERNEL__
-> > #ifndef __FILE_H__
-> > #define __FILE_H__
-> > ...
-> > #endif
-> > #endif
-> >
-> > Or so.
->
-> I would do it the other way around. gcc looks for a ifndef/define/endif
-> sequence to decide whether it needs to rescan that file next time, but I'm
-> not sure if gcc finds it in this case.
-
-By and large we do it the way I said anyhow.  Is this in current gcc or
-when we get the precompiled headers bits?
-
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
