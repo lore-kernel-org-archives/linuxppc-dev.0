@@ -1,12 +1,12 @@
-Date: Thu, 3 Aug 2000 19:33:20 -0500 (CDT)
+Date: Thu, 3 Aug 2000 19:40:22 -0500 (CDT)
 From: Takashi Oe <toe@unlserve.unl.edu>
 To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-cc: Gabriel Paubert <paubert@iram.es>, Benjamin Herrenschmidt <bh40@calva.net>,
-        Martin Costabel <costabel@wanadoo.fr>, linuxppc-dev@lists.linuxppc.org,
-        Iain Sandoe <iain@sandoe.co.uk>
-Subject: Re: rtc again...
-In-Reply-To: <4.3.2.7.2.20000804015504.00c65c40@mail.munich.netsurf.de>
-Message-ID: <Pine.LNX.3.96LJ1.1b7.1000803193136.650D-100000@ofey.earthlink.net>
+cc: David Edelsohn <dje@watson.ibm.com>,
+        Thomas Graichen <graichen@innominate.de>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: shifts on 64bit ints 
+In-Reply-To: <4.3.2.7.2.20000804014852.00dc3f00@mail.munich.netsurf.de>
+Message-ID: <Pine.LNX.3.96LJ1.1b7.1000803193713.650E-100000@ofey.earthlink.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
@@ -15,32 +15,13 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 On Fri, 4 Aug 2000, Franz Sirl wrote:
 
-> At 01:33 04.08.00, Takashi Oe wrote:
->
-> >On Thu, 3 Aug 2000, Gabriel Paubert wrote:
-> >
-> > > ===== arch/ppc/kernel/pmac_time.c 1.2 vs 1.5 =====
-> > > --- 1.2/arch/ppc/kernel/pmac_time.c   Mon Jun 19 19:59:36 2000
-> > > +++ 1.5/arch/ppc/kernel/pmac_time.c   Mon Jul 31 11:28:27 2000
-> >[...]
-> > >  int pmac_set_rtc_time(unsigned long nowtime)
-> > >  {
-> > > -     return 0;
-> > > +#ifdef CONFIG_ADB
-> > > +     struct adb_request req;
-> > > +#endif
-> > > +     nowtime += RTC_OFFSET - sys_tz.tz_minuteswest * 60;
-> >         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> >This needs to be changed to
-> >
-> >+       nowtime += RTC_OFFSET - sys_tz.tz_minuteswest * 60 +
-> >(sys_tz.tz_dsttime? 3600: 0);
->
-> No, don't handle DST in the kernel!! hwclock handles this in userland, see
-> the hwclock source for details.
+> Oh no!! It's even worse! The kernel implementation of ashldi3, ashrdi3 and
+> lshrdi3 seems broken, see this code in arch/ppc/kernel/misc.S:
 
-Oh, "nowtime" is UTC + DST fix up then???  If so, that seems to be broken
-to me.
+The brokenness of those implementations has been noted by Gabriel a long
+time ago, and I believe he even sent a fix to this list once.  For some
+unknown reasons, it has largely been ignored.  I think I can dig out his
+patch if I try hard though.
 
 
 Takashi Oe
