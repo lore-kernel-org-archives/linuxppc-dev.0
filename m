@@ -1,24 +1,33 @@
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <16544.1344.359606.598912@cargo.ozlabs.ibm.com>
-Date: Tue, 11 May 2004 08:42:08 +1000
+Message-ID: <16544.4592.978105.177882@cargo.ozlabs.ibm.com>
+Date: Tue, 11 May 2004 09:36:16 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: Olaf Hering <olh@suse.de>
-Cc: akpm@osdl.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: [PATCH] export clear_pages on ppc32
-In-Reply-To: <20040510153624.GA9214@suse.de>
-References: <20040510153624.GA9214@suse.de>
+To: Amit Shah <amitshah@gmx.net>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: IBM 750GX SMP on Marvell Discovery II or III?
+In-Reply-To: <c7nb0l$5e3$1@sea.gmane.org>
+References: <c7nb0l$5e3$1@sea.gmane.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Olaf Hering writes:
+Amit Shah writes:
 
-> ext3 as module is not possible in 2.6.6, clear_pages, called from
-> clear_page, is not exported.
+> I was wondering if SMP is supported for the 750 GX processor built on the
+> Marvell Discovery boards.
 
-clear_page is an inline function now, we should remove its export.
+SMP is not supported for 750 processors.
+
+> If not, what's the problem in getting it supported? An older mail by Cort
+> Dougan said it was because of TLB invalidate information not being
+> broadcasted, but it was a really old mail, has anyone come up with any
+> workarounds?
+
+The real killer is that the cache management instructions are not
+broadcast.  The fact that the TLB invalidations are not broadcast is
+painful but it can be worked around in the kernel.  In contrast, the
+cache management instructions are used in userspace.
 
 Paul.
 
