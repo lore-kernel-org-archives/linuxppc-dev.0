@@ -1,97 +1,47 @@
-Message-ID: <3992F340.F9F6314B@motorola.com>
-Date: Thu, 10 Aug 2000 13:24:00 -0500
-From: Jeffrey Hawkins <Jeffrey.F.Hawkins@motorola.com>
-MIME-Version: 1.0
-To: Jeffrey Hawkins <Jeffrey_Hawkins-CJH016@email.mot.com>
-CC: Franz.Sirl-kernel@lauterbach.com, linuxppc-dev@lists.linuxppc.org
+Message-Id: <v03110702b5b8b58b5cb8@[216.209.101.72]>
+In-Reply-To: <3992EAE6.27CF4490@motorola.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Thu, 10 Aug 2000 15:43:04 -0400
+To: Jeffrey Hawkins <Jeffrey.F.Hawkins@motorola.com>,
+        Franz.Sirl-kernel@lauterbach.com, linuxppc-dev@lists.linuxppc.org
+From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
 Subject: Re: PPC Versions of Glibc and GCC Status
-References: <3992EAE6.27CF4490@motorola.com>
-Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Franz,
+Hi,
 
-I noticed after sending you the e-mail, that I addressed
-you as Frank, rather than Franz.  My apologies, I guess
-I have Frank on the brain, since I work closely with a
-Frank...
+There is a mutex bug in the glibc 15d rpms that Blackdown found and sent to
+the libc-alpha list.  It prevented linuxthread 15c and 15d rpms from
+working correctly.  Please try with Franz's glibc-2.1.3-5a rpms, they work
+fine for the jdk.  I will pass the patch along to Franz and hopefully there
+will be a 15e rpm set out that should work fine for you (it does for the
+JDK anyway).
 
-Jeff
+I have attached the patch which you can use to make your own 15e rpm until
+Franz gets a chance.
 
+Hope this helps.
 
-Jeffrey Hawkins wrote:
->
-> Frank,
->
-> I am currently utilizing your current versions of GCC
-> 2.95.3-2c and GLIB2.1.3-15d for my development.  Thanks
-> for all the hard work....
->
-> I am experiencing a few issues with LinuxThreads, which upon
-> querying the GNU developers/lists, I have found the issues
-> may have been fixed in the 2.1.9x and 2.2-beta versions.
-> The required fixes are in the LinuxThreads Library, as well
-> as, in other Libraries.
->
-> Are you currently integrating/migrating your
-> 2.1.3 versions with 2.1.9x or 2.2.x ?  If you are not
-> planning on doing this, have the changes you have made,
-> or the changes by other LinuxPPC Developers, both to the
-> GCC and GLIBs, been submitted and incorporated in the GNU
-> running changes ?
->
-> I am just starting the process of going through the Source
-> for 2.1.91 and checking the differences with the 2.1.3-15d.
-> I am querying you on your efforts, and others, so that I don't
-> waste time duplicating what has already been done.  I was
-> hoping to use GLIB 2.1.91 off the shelf, but I know this
-> will probably not be the case.
->
-> Any feedback, or tips on things to look out for (such as
-> Libraries/Modules you had to make extensive updates to, #ifdefs
-> and #defines that need to be added for PowerPC), would be
-> appreciated.  I will be making the Source Tarballs and RPMs
-> available once I have completed this task.
->
-> Jeff
->
-> --
-> ********************************************************
->
-> Jeffrey Hawkins
->
-> Senior Staff Software Engineer
-> Motorola Wireless Data Solutions Engineering
->
-> Address: DEPT:  DQ525
->          MS:    IL-02-1055A
->          1301 East Algonquin Road
->          Schaumburg, IL 60196
->
-> Phone:   (847)576-7463
-> FAX:     (847)576-7737
->
-> ********************************************************
->
+Kevin
 
---
-********************************************************
+RCS file: /cvs/glibc/libc/linuxthreads/mutex.c,v
+retrieving revision 1.9.2.4
+diff -u -r1.9.2.4 mutex.c
+--- mutex.c     2000/07/31 15:31:21     1.9.2.4
++++ mutex.c     2000/08/09 21:43:57
+@@ -109,8 +109,8 @@
+ {
+   switch (mutex->__m_kind) {
+   case PTHREAD_MUTEX_FAST_NP:
+-    __pthread_unlock(&mutex->__m_lock);
+     mutex->__m_owner = NULL;
++    __pthread_unlock(&mutex->__m_lock);
+     return 0;
+   case PTHREAD_MUTEX_RECURSIVE_NP:
+     if (mutex->__m_count > 0) {
 
-Jeffrey Hawkins
-
-Senior Staff Software Engineer
-Motorola Wireless Data Solutions Engineering
-
-Address: DEPT:  DQ525
-         MS:    IL-02-1055A
-         1301 East Algonquin Road
-         Schaumburg, IL 60196
-
-Phone:   (847)576-7463
-FAX:     (847)576-7737
-
-********************************************************
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
