@@ -1,10 +1,10 @@
-Date: Fri, 20 Apr 2001 11:10:33 +0200 (METDST)
+Date: Fri, 20 Apr 2001 11:46:19 +0200 (METDST)
 From: Gabriel Paubert <paubert@iram.es>
 To: Steven Hein <ssh@sgi.com>
 Cc: Dan Malek <dan@mvista.com>, linuxppc-embedded@lists.linuxppc.org
 Subject: Re: 860 RTC support
-In-Reply-To: <3ADF3F32.C42D6D6E@sgi.com>
-Message-ID: <Pine.HPX.4.10.10104201048060.11443-100000@gra-ux1.iram.es>
+In-Reply-To: <3ADF4386.3DCF6725@sgi.com>
+Message-ID: <Pine.HPX.4.10.10104201111430.11443-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
@@ -13,39 +13,38 @@ List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 On Thu, 19 Apr 2001, Steven Hein wrote:
 
-> I looked through the source, and the difference between the 2.2.x
-> (2.2.13
-> and 2.2.14 mvista kernels) and the 2.4.3 kernel is that, in the
-> 2.2.x kernel, the set_rtc_time function in timer_interrupt()
-> can only be called if (time_status & STA_UNSYNC) != 0, where
-> in the 2.4.x kernel set_rtc_time can only be called if the
-> (time_status & STA_UNSYNC) == 0.  As I see it, the STA_UNSYNC bit
-> is always set, so the RTC will never be updated!
+> I know this isn't under your control, but......
 >
-> At first I suspected just a bug in the PPC code regarding this bit,
-> but I glanced through the time code in some of the other arch's
-> (sh, sparc, arm, etc.) and saw the identical logic:
->     - a call to do_settimeofday() *always* sets the
->       STA_UNSYNC bit in time_status
->     - the RTC is only updated when STA_UNSYNC is *not* set
-> And I don't see any way that STA_UNSYNC gets cleared (unless it's
-> cleared by adjtimex() or something like that......
+> If this is the case (that setting the RTC is properly done through
+> /dev/rtc using hwclock, etc.), then doing a "date --set" no longer
+> sets the RTC, correct?  And it will never cause the RTC to be set?
 
-Right, I modified time handling to work like ther other archs when
-rewriting the timer code, mostly to make it more robust, keeping time
-despite bad-behaved code which masks interrupts long enough to lose ticks
-(framebuffer at the time, it's claimed to be fixed now, and also printk on
-serial consoles).
+stime/settimeofday never set the RTC on other archs, PPC was the
+exception and as such the one to change.
 
-Indeed, only adjtimex can clear STA_UNSYNC. ntp does it as soon as it
-acquires lock, don't ask me about adjtimex(8), I never used it.
+> .....Seems to me that separating the setting of the RTC from setting
+> the kernel/system time is a Bad Idea.....There's probably more to it
+> than that, or maybe "date --set" isn't considered a proper way to
+> manipulate the system clock anymore (maybe it never was   :).
 
-> I had printk's in m8xx_set_rtc, and they never printed.
-> (even after an hour or more).  Again, it looks like it all boils down
-> to the value of the STA_UNSYNC bit in 'time_status' and how
-> that gets manipulated.
+It never was, and actually it's better like this. You have the RTC and the
+kernel notion of time which are not necessarily the same. Explicit
+synchronization is better than implicit one, especially for tests.
 
-Correct.
+While it's over now, two years ago people were setting the clock at
+1999/12/31 23:xx:xx to check for Y2K effects. In this case you didn't want
+the RTC be updated to be able to use clock -s when tests are finished and
+you're back to fixing problems (unless you enjoy wrong timestamps on your
+files and confusing Make). Besides that some old RTC had problems on
+their own AFAIR, but not updating them kept the problems separate.
+
+Right now, for astronomical source tracking I am going to test leap second
+handling, so I need to set the date just before midnight after setting the
+right flags, run some code touching as few files as possible, and using
+ntpdate to go back to normal while hacking. I certainly prefer the RTC not
+to be updated back and forth for these tests (they involve kernel code, in
+case of crash early rc scripts would be executed with the wrong date and
+play havoc with my logs/whatever).
 
 	Regards,
 	Gabriel.
