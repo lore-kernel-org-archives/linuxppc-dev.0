@@ -1,55 +1,65 @@
-Date: Thu, 17 Dec 1998 09:46:30 -0600 (CST)
-From: nathan ingersoll <ningerso@d.umn.edu>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: linuxppc-dev@lists.linuxppc.org, paulus@cs.anu.edu.au
-Subject: Re: BootX, ramdisk and root device
-In-Reply-To: <19981215143756.003692@mail.mipsys.com>
-Message-ID: <Pine.SO4.4.02.9812170944030.9640-100000@ub.d.umn.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <9812159137.AA913779792@ccmail.ray.ca>
+Date: Thu, 17 Dec 1998 19:38:27 +0100
+To: linuxppc-dev@lists.linuxppc.org
+CC: Paul Mackerras <paulus@cs.anu.edu.au>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: Small error?? in IDE dma processing?
+Message-Id: <19981217193827.008878@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->From my experience, using the "No Video" option cancels out any video
-arguments passed to the kernel. In fact, when I first started using BootX
-I was passing "video=atyfb" then I decided to try the No Video option. I
-didn't remove the video argument, but the screen came up like it was
-suppoed to with the option checked. Using XF68 also says that the video
-driver is OFfb.
+Hi Paul !
 
-Hope this helps,
+On the linux kernel mailing list, I've catched the following message :
 
-Nathan
+On Tue, Dec 15, 1998,  <jason.harp@mail.ray.ca> wrote:
+
+>   Can you confirm an error in the following code for dma_intr(): (2.0)
+>     
+>     
+>             dma_stat = inb(dma_base+2);             /* get DMA status */
+>             outb(inb(dma_base)&~1, dma_base);     /* stop DMA operation */
+>             stat = GET_STAT();                      /* get drive status */
+>     
+>     
+>     Should this not be:
+>     
+>     
+>             outb(inb(dma_base)&~1, dma_base);      /* stop DMA operation*/
+>             dma_stat = inb(dma_base+2);             /* get DMA status */
+>             stat = GET_STAT();                      /* get drive status */
+>     
+>      
+>     Similar for (2.1) the DMA status is retrieve before you stop the DMA 
+>     operation.
+
+The error was then confirmed I think by Andre M. Hedrick.
+
+Then, I looked at our ide-dma.c and ide-pmac.c, and it looks like we have
+the same kind of issue:
+
+ide-pmac.c, line 301:
+
+    case ide_dma_end:
+        drive->waiting_for_dma = 0;
+        dstat = in_le32(&dma->status);
+        out_le32(&dma->control, ((RUN|WAKE|DEAD) << 16));
+        /* verify good DMA status */
+        return (dstat & ((RUN|DEAD|ACTIVE)) != RUN;
+
+shouldn't we do the same split and reverse the status read and the
+control write ?
+
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
 
-On Tue, 15 Dec 1998, Benjamin Herrenschmidt wrote:
 
-> 
-> Hi All !
-> 
-> A couple of questions for which I would like feed-back before changing BootX:
-> 
-> I've seen users having troubles because they both checked the "Use RAM
-> Disk" box and wrote some incorrect infos in the /dev/xxx edit field of BootX.
-> 
-> I was wondering: Is there any case where a user may want to have both
-> "Use RamDisk" and a specified root device ? Should I ignore the content
-> of the root device field when ram disk is used ? (It still possible to
-> force it by typing the parameter manually in the kernel args anyway).
-> 
-> Similar issue: should I lookup and remove any "video=xxxx" option from
-> the kenrnel args prior to booting the kernel when "no video driver" is
-> checked or is this harmless ?
-> 
-> -- 
->            E-Mail: <mailto:bh40@calva.net>
-> BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
-> 
-> 
-> 
-> 
-> 
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
