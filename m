@@ -1,54 +1,63 @@
-Date: Mon, 7 Aug 2000 21:09:12 +0300 (EEST)
-From: Kostas Gewrgiou <gewrgiou@imbc.gr>
-To: Michel Dänzer <daenzerm@student.ethz.ch>
-cc: dri-devel@lists.sourceforge.net, linuxppc-dev@lists.linuxppc.org
-Subject: Re: [Dri-devel] Re: Kind of success! (r128 on PPC (Re: LinuxPPC X
- Server))
-In-Reply-To: <398E61C2.BF0ED1ED@student.ethz.ch>
-Message-ID: <Pine.LNX.4.21.0008072058480.21201-100000@idd-01.imbc.gr>
+Date: Mon, 7 Aug 2000 15:18:21 -0400 (EDT)
+From: Henry Worth <haworth@ncal.verio.com>
+To: Iain Sandoe <iain@sandoe.co.uk>
+cc: Takashi Oe <toe@unlserve.unl.edu>, linuxppc-dev@lists.linuxppc.org,
+        matthias pfisterer <matthias.pfisterer@gmx.de>
+Subject: Re: CDDA playback on Pismo (and other newer models)
+In-Reply-To: <200008070903.KAA25166@hyperion.valhalla.net>
+Message-ID: <Pine.SOL.4.10.10008071429060.8244-100000@ncal.verio.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-7
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 7 Aug 2000, Michel [iso-8859-1] Dänzer wrote:
+On Mon, 7 Aug 2000, Iain Sandoe wrote:
 
->
-> Kostas Gewrgiou wrote:
->
-> > > The remaining problems are:
-> > >
-> > > 16 bit doesn't work neither with fbdev (colors completely off - does
-> > > aty128fb still use 15 bit in fact?) nor without (at least the grey tones
-> > > are right there - wrong endianness?)
+> On  Mon, Aug 7, 2000,  Henry Worth  wrote:
 > >
-> > Yes aty128fb still doesn't support 16 bit, you could run the r128 driver
-> > without fbdev to get 16 bits, but the code to switch the framebuffer to do
-> > byteswapping is missing so the colors will be wrong
+> > The esd daemon sets the output to native endiness, so on an x86
+> > everyone is little endian and all should be well, but I haven't
+> > tried it.
 >
-> Yep, that's the second thing I was referring to.
+> so long as the last thing in the chain (i.e. the one that talks to /dev/dsp)
+> is prepared to:
 >
-> > (easy to add though).
+> *either* re-set the AFMT of /dev/dsp
+>        (depending on the format of the stream presented to it)
+> *or* leave /dev/dsp AFMT at one setting
+>        AND do the necessary conversions
 >
-> Where and how?
+> everything will be OK.
+
+In the case of the esd daemon it does the ioctls to set the format
+to signed native endiness, and they even do some error checking.
+
+>
+> Of course, there are other solutions - but these would depend on each app
+> "knowing" that the server only accepts input in format "XXX" which seems
+> broken to me... (although it has a certain simplicity - if there's a way of
+> telling the client apps that this is the case).
+>
+> Iain.
 >
 
-  Somewhere in R128ModeInit (or the functions that get called from it) will
-do fine i think.
-About how now look at the following code from aty128fb that does the same
-thing.
+It looks like esd is going for simplicity. Since they are mixing
+digital sound streams to integrate sound sources on the desktop,
+they ultimately need to get all the incoming data streams into native
+endiness to do the mixing. I assume they just chose to put the
+burden on the clients (I'll be charitable and not assume LE blindness
+and that the setting to native endiness was a quick hack when the
+endiness issue was brought to their attention). They would also
+need common sample rates, but I haven't looked into how much the
+daemon will do to up/down-convert, but expect that is limited as
+well.
 
-    config = aty_ld_le32(CONFIG_CNTL) & ~3;
-#if defined(__BIG_ENDIAN)
-    if (par->crtc.bpp >= 24)
-        config |= 2;    /* make aperture do 32 byte swapping */
-    else if (par->crtc.bpp > 8)
-        config |= 1;    /* make aperture do 16 byte swapping */
-#endif
-    aty_st_le32(CONFIG_CNTL, config);
+I'll put together a patch for the XMMS esd plugin, but I
+need to look into portability issues for the endiness test and
+optimal byte swapping, any suggestions?  It could also
+use an unsigned->signed conversion.
 
-  Kostas
-
+Henry
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
