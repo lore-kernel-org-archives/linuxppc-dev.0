@@ -1,45 +1,55 @@
-Message-ID: <85C62C3F8121D211BA290000F847A7DC1BAB@MGRSEX02.thu.gr.admin.ch>
-From: Christen Andreas <Andreas.Christen@gr.admin.ch>
-To: "'linuxppc-users@lists.linuxppc.org'"
-	 <linuxppc-users@lists.linuxppc.org>,
-        "'linuxppc-user-digest@lists.linuxppc.org'"
-	 <linuxppc-user-digest@lists.linuxppc.org>,
-        "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>,
-        "'linuxppc-announce@lists.linuxppc.org'"
-	 <linuxppc-announce@lists.linuxppc.org>
-Subject: SAP R/3 under LinuxPPC!!!
-Date: Wed, 3 Mar 1999 07:25:32 +0100 
+Message-Id: <199903030711.IAA28369@piglet.cpu.lu>
+Date: Wed, 3 Mar 1999 08:11:35 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: 2.2.x kernels and u grading software to minimum req.
+To: barretp@mcmail.cis.mcmaster.ca
+cc: linuxppc-user-digest@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <v04003a00b302028aecdb@[10.0.0.2]>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-We are thinking of running SAP R/3 Applicationservers under Linux in the
-near future. As a user of LinuxPPC I will, if possible, try to convince
-management to buy Macs instead of Intels as performance will be higher. So
-does anyone know or has already tried out a SAP-Kit for Linux? Or any ftp
-site where I could grab a beta-version? What about Oracle 8.x for Linux,
-does this work under LinuxPPC?? Where can I find this? I know SAP is under
-construction and will be available in the 3rd quarter..but I'm afraid maybe
-only for Intels.
-Any news or commentary is very much appreciated!
+On   2 Mar, this message from Paul Barrette echoed through cyberspace:
+> I have 2.2.2 running on R4.  I read the
+> /usr/src/linux/Documentation/Changes file and noticed that there are a
+> number of updates needed (see below).
+[snip]
+> I also noticed that the following pkgs need to be updated from the standard
+> R4 dist:
+> insmod (I compiled 2.1.121 a while ago), egcs-2.90.25 980302, ld,
+> libc-1.99.so, procps 1.2.7, pstree 16, net-tools1.432, NFS 2.2beta29,
+> util-linux 2.6
 
-Thanks, Andreas 
+.... which brings up a big question: Shouldn't there be upgrade areas
+for LinuxPPC's releases, like there are for normal RedHat releases? It
+seems to me that R4 still contains all the way old ackages, and that
+the only updates available are from september last year or so...
 
-~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ 
-Andreas Christen             Sysadmin Unix-R/3-Oracle 
-RUAG Suisse                  Feuerwerkerstr. 39 
-CH-3602 Thun                 Switzerland 
-Phones:++41 
-Work           Fax           Pager 
-33 2282479     33 2283039    74 0324624 
-Work:      andreas.christen@gr.admin.ch 
-Private:  aendu_vero@datacomm.ch 
-Knowing languages may bring you love and happiness. 
-It'll enrich your life and widen your horizon. 
-Think about it...I know why!!
+Then, this sparks a second question: how about actuallay changing the
+packages list in the distribution, so that if I net-install LinuxPPC, I
+will always have the latest&greatest, but also bug- and
+security-problem-free instal _without_ doing manual upgrades later on?
+
+> Now the $10 question, are there rpms around?  I had a look at
+> ftp.linuxppc.org, no luck except for egcs and libc (which I will download
+> and re try compilation.)
+
+I had no problem upgrading most (and all the critical ones) from the
+mentioned packages, though by getting the maintainer's official and
+latest release (not .src.rpm's).
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
