@@ -1,36 +1,43 @@
-Date: Thu, 20 Sep 2001 09:07:33 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Josh Huber <huber@alum.wpi.edu>
+Message-ID: <3BAA14FF.C7B7DBA1@mvista.com>
+Date: Thu, 20 Sep 2001 11:10:39 -0500
+From: Mark Hatle <fray@mvista.com>
+MIME-Version: 1.0
+To: Tom Rini <trini@kernel.crashing.org>
 Cc: Dan Malek <dan@mvista.com>,
-	Stefan Roese <stefan.roese@esd-electronics.com>,
 	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>,
 	Linuxppc-Commit <linuxppc-commit@source.mvista.com>
 Subject: Re: CPCI-405 port (PPC405GP)
-Message-ID: <20010920090733.G13721@cpe-24-221-152-185.az.sprintbbd.net>
-References: <EFEAIMDCOOOHIEPHDNFJCEKKDCAA.stefan.roese@esd-electronics.com> <20010919071751.B8132@cpe-24-221-152-185.az.sprintbbd.net> <3BA8DF9E.FD235CF6@mvista.com> <20010919155742.D8132@cpe-24-221-152-185.az.sprintbbd.net> <3BA9241B.4322817A@mvista.com> <20010919163101.E8132@cpe-24-221-152-185.az.sprintbbd.net> <3BA96CA2.20EC30C8@mvista.com> <871yl1zz4j.fsf@mclinux.com> <3BAA0DCC.122CE6CB@mvista.com> <87sndhyhw1.fsf@mclinux.com>
-Mime-Version: 1.0
+References: <20010918115722.A5967@cpe-24-221-152-185.az.sprintbbd.net> <EFEAIMDCOOOHIEPHDNFJCEKKDCAA.stefan.roese@esd-electronics.com> <20010919071751.B8132@cpe-24-221-152-185.az.sprintbbd.net> <3BA8DF9E.FD235CF6@mvista.com> <20010919155742.D8132@cpe-24-221-152-185.az.sprintbbd.net> <3BA9241B.4322817A@mvista.com> <20010919163101.E8132@cpe-24-221-152-185.az.sprintbbd.net> <3BA96CA2.20EC30C8@mvista.com> <20010920075537.A13721@cpe-24-221-152-185.az.sprintbbd.net> <3BAA0C91.42E0910D@mvista.com> <20010920085109.E13721@cpe-24-221-152-185.az.sprintbbd.net>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87sndhyhw1.fsf@mclinux.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Sep 20, 2001 at 11:57:34AM -0400, Josh Huber wrote:
-> Dan Malek <dan@mvista.com> writes:
+Tom Rini wrote:
 >
-> > Why are you doing this?  Why can't you just use a standard zImage
-> > format and bootloader like all other systems use?  It just seems to
-> > me you are coding yourselves deeper into a hole where every little
-> > kernel interface change means a new boot rom.
+> On Thu, Sep 20, 2001 at 11:34:41AM -0400, Dan Malek wrote:
+> >
+> > Tom Rini wrote:
+> >
+> > > Well, because it keeps us from duplicating 4 lines in the makefile.
+> >
+> > OK.
+> >
+> > > .....  CONFIG_TREEBOOT could probably die, unless
+> > > someone revives Oak or TiVo uses it.
+> >
+> > Walnut and Spruce use it.  Get it?  TREEboot?
 >
-> Well, I was under the impression that the whole point of using bi_recs
-> was to avoid changes in the future.  Isn't that the point?  (a
-> consistant interface that's forward/backward compatible)
+> heh.  You're assuming that I get to see docs on these boards.  I forgot
+> spruce uses it.  oak.h's board_info is the same as walnut, minus the PCI
+> line.  And I dunno what TiVo uses...
 
-But the bi_recs in 2.5 won't look like 2.4.current.
+The TiVo uses TREEBoot, with slight modification.  (There are some magic
+values and such that have to be in the right place in the
+bootloader....)
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+(The TiVo is an Oak reference board on steroids..)
+
+--Mark
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
