@@ -1,19 +1,18 @@
-Return-Path: <markc@mail.com>
-Received: from relay04.roc.ny.frontiernet.net (relay04.roc.ny.frontiernet.net
-	[66.133.131.37]) by ozlabs.org (Postfix) with ESMTP id E48352BDAB
+Return-Path: <rpjday@mindspring.com>
+Received: from scaup.mail.pas.earthlink.net (scaup.mail.pas.earthlink.net
+	[207.217.120.49]) by ozlabs.org (Postfix) with ESMTP id 6F3932BDB3
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 29 Sep 2004 03:26:56 +1000 (EST)
-Message-ID: <196401c4a57c$b0e3bfa0$0301a8c0@chuck2>
-From: "Mark Chambers" <markc@mail.com>
-To: "Piotr Perak" <peri@aqua.aspd.pwr.wroc.pl>
-References: <20040928064442.A31883@home.com><Pine.LNX.4.21.0409281735560.6394-100000@aqua.aspd.pwr.wroc.pl>
-	<20040928094327.B1532@home.com>
-Date: Tue, 28 Sep 2004 13:00:32 -0400
+	Wed, 29 Sep 2004 03:27:53 +1000 (EST)
+Date: Tue, 28 Sep 2004 13:21:16 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+To: Wolfgang Denk <wd@denx.de>
+In-Reply-To: <20040928152214.CC499C1430@atlas.denx.de>
+Message-ID: <Pine.LNX.4.60.0409281317590.11302@localhost.localdomain>
+References: <20040928152214.CC499C1430@atlas.denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: 2.6.x on 405CR
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Subject: Re: I2C/SPI/SMC relocation patch works for both SMC 1 and 2? 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,14 +23,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> 
-> Is this a hobby project or a "for profit" project? If it's for profit,
-> then consider investing in a JTAG emulator (like BDI2000)...it'll pay
-> for itself many times over.
-> 
+On Tue, 28 Sep 2004, Wolfgang Denk wrote:
 
-And if you're poor, the Wiggler from ocdemon.net is a big help, and
-only $150.  I've only used the Wiggler under Windows, but they
-have free code and gdb ports that works under linux, too.  
+> In message <Pine.LNX.4.60.0409280836340.9825@localhost.localdomain> you wrote:
+>>
+>>    but the PDF file doesn't refer explicitly to SMC1, just to the
+>> generic SMC(UART).  does this mean that the same instructions to
+>
+> It relates to the SMC which parameter RAM  location  is  in  conflict
+> with the SPI/I2C parameter RAM, i. e. SMC1.
 
-Mark Chambers
+huh?  what does SMC1 relocation have to do with either of I2C or SPI? 
+i'm looking at the PRAM memory map right now, and whether or not you 
+choose to relocate SMC1 seems independent from whether you choose to 
+relocate both (or either) of I2C or SPI.
+
+i don't see how SMC1 can be "in conflict with the SPI/I2C parameter 
+RAM" as you claim.  can you explain that?
+
+rday
