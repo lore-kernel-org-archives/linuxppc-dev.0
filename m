@@ -1,21 +1,16 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from www.linux.org.uk (parcelfarce.linux.theplanet.co.uk
-	[195.92.249.252])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E10A92BC0F
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Oct 2004 14:03:07 +1000 (EST)
-Date: Fri, 15 Oct 2004 23:13:53 -0300
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: Dan Malek <dan@embeddededge.com>
-Message-ID: <20041016021353.GA6388@logos.cnet>
-References: <EA78B62757AF1E4799828249310AC4CA071D281F@stca206a.bus.sc.rolm.com>
-	<28F2CE72-0BF0-11D9-97DC-003065F9B7DC@embeddededge.com>
-	<20041015154946.GB3957@logos.cnet>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20041015154946.GB3957@logos.cnet>
-Cc: linuxppc-dev@ozlabs.org, 'Song Sam' <samlinuxppc@yahoo.com.cn>
+Return-Path: <samlinuxppc@yahoo.com.cn>
+Received: from web15603.mail.cnb.yahoo.com (web15603.mail.cnb.yahoo.com
+	[202.165.102.57]) by ozlabs.org (Postfix) with SMTP id 2369E2BC0F
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Oct 2004 19:08:46 +1000 (EST)
+Message-ID: <20041016090843.91768.qmail@web15603.mail.cnb.yahoo.com>
+Date: Sat, 16 Oct 2004 17:08:43 +0800 (CST)
+From: Sam Song <samlinuxppc@yahoo.com.cn>
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>,
+	Dan Malek <dan@embeddededge.com>
+In-Reply-To: <20041016021353.GA6388@logos.cnet>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=gb2312
+Cc: linuxppc-dev@ozlabs.org
 Subject: Re: Linux 2.6.x on 8xx status
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,38 +21,94 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 15, 2004 at 12:49:46PM -0300, Marcelo Tosatti wrote:
-> On Tue, Sep 21, 2004 at 01:03:29PM -0400, Dan Malek wrote:
-> > 
-> > On Sep 21, 2004, at 7:59 AM, Smith, Craig wrote:
-> > 
-> > >Genius. That patch appears to work for me as well.
-> > 
-> > The fact this works indicates a subtle memory management
-> > problem elsewhere.  I don't know what that is at this
-> > point.  This hack is in a piece of generic code that works
-> > properly on all other PowerPC cores, so it isn't going to
-> > ever appear in the public sources.
-> > 
-> > I suggested this change to a few people hoping the information
-> > would lead them to finding the real problem, not that it
-> > should be perpetuated as a "fix" to make 8xx work.
-> > I don't personally have time to work on this right now,
-> > so anyone using 8xx should be looking for the real
-> > cause and solution, not using this to create products.
-> 
-> Do you know the real cause Dan ?
-> 
-> As I told you, we are porting our sub-sub-architecture 
-> to v2.6, and need that bug fixed at some time.
-> 
-> Lots of other people do.
+Marcelo Tosatti <marcelo.tosatti@cyclades.com> wrote£∫
+> I know Pantelis seems to have necessary knowledge to
+> it. Pantelis?
 
-I can try to fix it if you dont have time, do you know what is 
-wrong and requires fixing? I'm not familiar with low-level PowerPC
-memory management, but I can try.
+On 8xx porting, Tom, Pantelis, Dan, Ben and Kumar all
+involved a lot. Ten days more no see Pantelis online
+both on ppc list and u-boot list. Perhaps on vacation?
 
-Can you help, or are you planning on fixing this yourself (who
-was the necessary knowledge, as soon as time allows) ?
+BTW, out of curiousness, I just pulled from linux-2.4
+and compiled 2.4.28-pre4 on 8xx but end with some
+making errors as follows. Did you encounter it? Some
+guys like me are more interested in 2.4.x on 8xx. Any
+plan to make linuxppc_2_4_devel alive?
 
-I know Pantelis seems to have necessary knowledge to it. Pantelis?
+Thanks a lot!
+......
+       net/network.o \
+        /bk/linux-2.4/lib/lib.a \
+        --end-group \
+        -o vmlinux
+drivers/net/net.o: In function `mace_probe':
+drivers/net/net.o(.text.init+0x18): undefined
+reference to `find_devices'
+drivers/net/net.o(.text.init+0x18): relocation
+truncated to fit: R_PPC_REL24 find_devices
+drivers/net/net.o: In function `mace_probe1':
+drivers/net/net.o(.text.init+0xdc): undefined
+reference to `get_property'
+drivers/net/net.o(.text.init+0xdc): relocation
+truncated to fit: R_PPC_REL24 get_property
+drivers/net/net.o(.text.init+0x144): undefined
+reference to `request_OF_resource'
+drivers/net/net.o(.text.init+0x144): relocation
+truncated to fit: R_PPC_REL24 request_OF_resource
+drivers/net/net.o(.text.init+0x180): undefined
+reference to `release_OF_resource'
+drivers/net/net.o(.text.init+0x180): relocation
+truncated to fit: R_PPC_REL24 release_OF_resource
+drivers/net/net.o(.text.init+0x18c): undefined
+reference to `release_OF_resource'
+drivers/net/net.o(.text.init+0x18c): relocation
+truncated to fit: R_PPC_REL24 release_OF_resource
+drivers/net/net.o(.text.init+0x198): undefined
+reference to `release_OF_resource'
+drivers/net/net.o(.text.init+0x198): relocation
+truncated to fit: R_PPC_REL24 release_OF_resource
+drivers/net/net.o(.text.init+0x1b0): undefined
+reference to `request_OF_resource'
+drivers/net/net.o(.text.init+0x1b0): relocation
+truncated to fit: R_PPC_REL24 request_OF_resource
+drivers/net/net.o(.text.init+0x1d4): undefined
+reference to `request_OF_resource'
+drivers/net/net.o(.text.init+0x1d4): relocation
+truncated to fit: R_PPC_REL24 request_OF_resource
+drivers/net/net.o(.text.init+0x4d4): undefined
+reference to `machine_is_compatible'
+drivers/net/net.o(.text.init+0x4d4): relocation
+truncated to fit: R_PPC_REL24 machine_is_compatible
+drivers/net/net.o(.text.init+0x520): undefined
+reference to `get_property'
+drivers/net/net.o(.text.init+0x520): relocation
+truncated to fit: R_PPC_REL24 get_property
+drivers/net/net.o: In function `mace_cleanup':
+drivers/net/net.o(.text.exit+0x68): undefined
+reference to `release_OF_resource'
+drivers/net/net.o(.text.exit+0x68): relocation
+truncated to fit: R_PPC_REL24 release_OF_resource
+drivers/net/net.o(.text.exit+0x74): undefined
+reference to `release_OF_resource'
+drivers/net/net.o(.text.exit+0x74): relocation
+truncated to fit: R_PPC_REL24 release_OF_resource
+drivers/net/net.o(.text.exit+0x80): undefined
+reference to `release_OF_resource'
+drivers/net/net.o(.text.exit+0x80): relocation
+truncated to fit: R_PPC_REL24 release_OF_resource
+make: *** [vmlinux] Error 1
+[root@shu linux-2.4]#
+
+=====
+Best regards,
+
+Sam
+
+_________________________________________________________
+Do You Yahoo!?
+150ÕÚ«˙MP3∑ËøÒÀ—£¨¥¯ƒ˙¥≥»Î“Ù¿÷µÓÃ√
+http://music.yisou.com/
+√¿≈Æ√˜–«”¶”–æ°”–£¨À—±È√¿Õº°¢—ﬁÕº∫Õø·Õº
+http://image.yisou.com
+1GæÕ «1000’◊£¨—≈ª¢µÁ” ◊‘÷˙¿©»›£°
+http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
