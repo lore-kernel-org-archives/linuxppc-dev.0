@@ -1,44 +1,34 @@
-Message-ID: <3AEEF8F3.8EDB36A7@mvista.com>
-Date: Tue, 01 May 2001 10:57:07 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
+Message-ID: <3AEF0F8B.836C77A7@mvista.com>
+Date: Tue, 01 May 2001 15:33:31 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: ashish anand <ashisha@india.infogain.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: sandpoint spurious interrupt problem.
-References: <12D7808A.BAC6DDED@india.infogain.com> <3AEEF8BC.FE7CFAC@mvista.com>
+To: ashish anand <ashisha@india.infogain.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: placing of ioremap ?
+References: <12D7C6A4.AE725CC6@india.infogain.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-BTW, the linuxppc_2_5 should "just work" for the 750 if you have the switch
-settings correct.
-
-Mark
---
-
-"Mark A. Greer" wrote:
-
-> Did you start with the sandpoint port that is a part of linuxppc_2_5?  If not,
-> you should.
-> If so, double-check your switch settings.
+ashish anand wrote:
 >
-> Mark
-> --
->
-> ashish anand wrote:
->
-> > I am working towards porting linux on sandpoint with mpc750
-> > I face the problem of continious spurious interrupts on booting
-> > as per the base code SIOint is cascaded to EPIC in level triggered
-> > mode , problem vanishes when i change it to edge triggered mode
-> > also recall written in some intel document that external interrupts from
-> > 8259 or equivalent pic's should be cascaded to APIC in edge triggered
-> > mode only
-> > why this requirement for cascading the interrupts from 8259 or other pic's
-> > to APIC/EPIC
-> > any comment on this will help me much
-> >
+> I have one question regarding the placing of ioremap call
+> suppose i have done ioremap call inside the mm/init.c
+> for pci i/o or memory space
 
+Well, you really shouldn't.......The PCI I/O space could be
+done there so the usual inb/outb and friends work.  PCI memory
+space should not be mapped there, it is done by the driver.
+
+> in case my bios has not done the resource allocation
+> i have to just write the proper values in PCI_BASE_ADDRESS
+> registers of that pci card. Am I Correct?
+
+You should include the Linux PCI auto config function.  It will
+do this plus properly assign the interrupts.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
