@@ -1,32 +1,31 @@
-Message-ID: <3968D162.535DC1FE@student.ethz.ch>
-Date: Sun, 09 Jul 2000 21:24:18 +0200
-From: Michel Dänzer <daenzerm@student.ethz.ch>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: <guillaume.laures@noos.fr>, <mlan@cpu.lu>
+Cc: <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Trying to enable backside on a G4
+Date: Sun, 9 Jul 2000 22:34:37 +0200
+Message-Id: <20000709203437.29766@192.168.1.10>
+In-Reply-To: <3968A9E4.256BDDBA@noos.fr>
+References: <3968A9E4.256BDDBA@noos.fr>
 MIME-Version: 1.0
-To: Gwyn Judd <b.judd@xtra.co.nz>
-CC: Iain Sandoe <iain@sandoe.co.uk>,
-        LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: X still locks up
-References: <200007090058.BAA22277@hyperion.valhalla.net> <20000709222954.A1240@thislove.dyndns.org>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Gwyn Judd wrote:
+>
+>So I attached a correct (I think) user-space script called L2BS_enable.sh
+>which I'm going to
+>propagate on linuxppc-users, tell me what you think about. I will try to
+>work on kernel space then.
+>
+>I'm just unsure of the behaviour of :
+>while test 1 = $((`cat /proc/sys/kernel/l2cr | awk -F : '{print
+>$1}'`&0x00000001)); do wait; done
 
-> When I tried to play an mp3 through xmms X locked up completely although I
-> was able to change VT's, however I was unable to kill X or reboot properly.
+I'd rather fix the kernel code. The set_L2CR function in the kernel is
+supposed to already handle all that work of waiting for the cache,
+invalidating, etc...
 
-Strange, if X hangs you actually shouldn't be able to switch VT...
-
-
-Michel
-
-
---
-Software is like sex; it's better when it's free  - Linus Torvalds
-______________________________________________________________________________
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
+Ben.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
