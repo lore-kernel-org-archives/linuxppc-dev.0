@@ -1,45 +1,33 @@
-Date: Mon, 30 Aug 1999 18:23:48 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Takashi Oe <toe@unlserve.unl.edu>
-cc: Kevin Puetz <puetzk@iastate.edu>,
-        Ira K Weiny <iweiny@falcon.csc.calpoly.edu>, lambert@jeol.com,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Communicator Crashes X II
-In-Reply-To: <Pine.LNX.3.96LJ1.1b7.990830105621.10779A-100000@selq119.unl.edu>
-Message-ID: <Pine.LNX.4.10.9908301823010.27650-100000@mercator.cs.kuleuven.ac.be>
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+Message-Id: <199908301627.SAA10148@amber.biophys.uni-duesseldorf.de>
+Subject: Re: mac-2.3.14.diff: adb
+In-Reply-To: <199908301552.RAA23128@lxp03.cern.ch> from Jes Sorensen at "Aug 30, 1999 05:52:45 pm"
+To: Jes.Sorensen@cern.ch (Jes Sorensen)
+Date: Mon, 30 Aug 1999 18:27:43 +0200 (CEST)
+Cc: ddkilzer@computer.org, linux-mac68k@mac.linux-m68k.org,
+        linuxppc-dev@lists.linuxppc.org, paulus@cs.anu.edu.au
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 30 Aug 1999, Takashi Oe wrote:
-> On Mon, 30 Aug 1999, Kevin Puetz wrote:
-> > A serial port buffer issue is behind the 'FB. overflow ####' crash, also 
-> > often exposed during VT changes while PPP is running.
+> Michael> I agree - IIRC Paul created drivers/macintosh as a quick fix to
+> Michael> get the Mac drivers integrated. I've suggested to move things
+> Michael> to other places, but Alan sait this would be 'a 2.3 thing' at
+> Michael> that time. Seems a bit late for that now.
 > 
-> I think this crash will occur less often, once serial DMA support is
-> present.  I've just started writing the necessary DMA code, and I hope to
-> get something working within a few weeks for the receiving side.
+> IMHO there is still time, I doubt Linus would object to patch for this
+> at the moment.
 > 
-> > This could be related. Or it might not. I really don't know the subsystem
-> > well enough to say.
-> 
-> I don't really know either, but kernel may be spending too much time in
-> the interrupt handling section of the serial driver.
+> Wouldn't it be natural to move the Mac 8530 serial driver to
+> drivers/char and the rest to drivers/adb? or is the via stuff not adb
+> related?
 
-Perhaps the kernel spends too much time in the interrupt handling section of
-the IDE driver? We saw similar things on m68k.
+The general VIA stuff isn't ADB related via-cuda and via-pmu are the low
+level ADB drivers though.
 
-Greetings,
-
-						Geert
-
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
-
+	Michael
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
