@@ -1,41 +1,31 @@
-From: clark@esteem.com
-Message-Id: <1.5.4.32.20000719011945.006845c0@pop.esteem.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Tue, 18 Jul 2000 18:19:45 -0700
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Do I shoot myself in the foot first or HEAD.S?
+Message-ID: <397502B7.9FE5C6C8@routefree.com>
+Date: Tue, 18 Jul 2000 18:21:59 -0700
+From: "Nikhil G. Daddikar" <ngd@routefree.com>
+MIME-Version: 1.0
+To: LinuxPPC list <linuxppc-embedded@lists.linuxppc.org>
+Subject: Enabling Video on the IBM PowerPC 405GP walnut system
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-        Hey,
-
-        Any tips for a new guy? I just about ready to start trying to port
-linux to our custom MPC850 board.
-
-        This is where I stand right now. I have at my disposal a MBX860
-which I have managed to get linuxPPC to boot on. I have a copy of Hard Hat
-Linux Journeyman Edition. I also have an EST VisionICE in circuit emulator.
-
-        Now for the questions.
-
-1. Is there a FAQ or Doc on porting the kernel to a new design? (please mail
-or direct me to it)
-
-2. Does anyone know if Hard Hat has any problems with Mandrake 7.0 linux?
-
-3. What do I need to do in the ROM before jumping to HEAD.S other than
-programming the ram timmings in the UPM( I assume HEAD.S is where everything
-starts )?
-
-4. Has any one managed to get an EST VisionICE in circuit emulator to work
-with linuxPPc? If so How? Would I be better off using the GNU Debuger?
+I have successfully booted up Monta Vista 6/29 linux kernel on this
+board. I  now want to get the video card to work. Any ideas/pointers
+would be helpful. Also, I think the address space is not configured
+correctly, can somebody confirm this?
+Thanks.
 
 
-Many many thanks if you can answer any of these questions for me.
-
-        Conn Clark
-
+/proc/pci reports :
+PCI devices found:
+  Bus  0, device   0, function  0:
+    Host bridge: PCI device 1014:0156 (IBM) (rev 1).
+      Master Capable.  Latency=12.  Max Lat=60.
+      Prefetchable 32 bit memory at 0x0 [0x7fffffff].
+  Bus  0, device   4, function  0:
+    VGA compatible controller: S3 Inc. ViRGE/DX or /GX (rev 1).
+      IRQ 31.
+      Master Capable.  Latency=12.  Min Gnt=31.Max Lat=60.
+      Non-prefetchable 32 bit memory at 0x0 [0x3ffffff].
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
