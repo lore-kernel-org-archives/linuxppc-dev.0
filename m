@@ -1,27 +1,22 @@
-From: "Florian Schirmer" <jolt@tuxbox.org>
-To: "'Dan Malek'" <dan@embeddededge.com>,
-	"'Pantelis Antoniou'" <panto@intracom.gr>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: RE: 2.5 on MPC823
-Date: Thu, 12 Jun 2003 08:27:46 +0200
-Message-ID: <000a01c330ab$bd8189f0$0100a8c0@space.taytron.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-In-Reply-To: <3EDF65BE.4000501@embeddededge.com>
+Date: Thu, 12 Jun 2003 13:35:44 +0200
+From: Felix von Leitner <felix-kernel@fefe.de>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: smc91111 on redwood-5?
+Message-ID: <20030612113544.GA25541@codeblau.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+I am trying to cross-compile a recent 2.5 kernel to redwood-5 (ppc 4xx).
+My reference board apparently has an SMC91111 chip on-board, and the
+kernel contains a driver for it, but it's not visible in make
+menuconfig.
 
->OK, OK.  I'll spend some more time on it this weekend :-)
+Is this driver working for anyone?  I don't see any Kconfig integration
+for it.
 
-Thanks for your help! I really appreciate that. Please let us know if you
-made any progress.
-
-Regards,
-  Florian
-
+Felix
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
