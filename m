@@ -1,51 +1,144 @@
-Message-ID: <38E371AA.B371660E@embeddededge.com>
-Date: Thu, 30 Mar 2000 10:24:26 -0500
-From: Dan Malek <dan@netx4.com>
+Date: Thu, 30 Mar 2000 11:36:22 -0500 (EST)
+From: "Jo-Ellen F. Mathews" <joellen@absoval.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: PCMCIA Test for Wireless
+Message-ID: <Pine.LNX.3.96.1000330105550.21002A-100000@tristar.cc.absoval.com>
 MIME-Version: 1.0
-To: "Brown, David (dbrown03)" <DBrown03@harris.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Another try at the run-from-Flash issue for MPC8xx/MBX/custom
-References: <BE1C564723B3D21191FD0000F840E39801D81482@rfcmx2.rfc.comm.harris.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-"Brown, David (dbrown03)" wrote:
->
-> I agree, 40 seconds is too long: he must be doing something wrong.
-> But even 5 seconds is annoyingly long for an embedded system.
+Greetings,
 
-That's for compressed kernel and initrd.  I wanted to compare apples
-to apples.
+First, I'd like to thank MontaVista, Magnus Damm and Embedded Planet for
+all your wonderful help in getting modules and pcmcia card services
+working on our RPX Lite 823.
 
-You can put an uncompressed kernel and ROM file system in the Flash.
-Just copy the kernel (or kernel data) to RAM and you are all set.  That
-should boot pretty fast.
+We're still working on the port of our 11Mb wireless lan driver for Prism2
+cards to the Power Mac and RPX platforms.  However, I've been using our
+old 2Mb wireless driver to work out the module and pcmcia card services
+issues I was experiencing.
 
-The trouble with using Linux is you have lots of choices.  You actually
-have to _think_ about which is best for you and how you want to
-implement the solution.  I don't particularly like other software
-packages that proclaim "we did it for you", hide the code in a binary
-somewhere, and you spend your time working around their rules.
+Below is the beginning of the capture file (I'm using minicom) from the
+RPX serial port when I ran a test.  The test results are the same
+regardless of whether the wireless driver is compiled into the kernel or
+loaded as a modules using pcmcia card services.
 
-With all of the GUIs and "click here to make it happen", people have
-forgotten (or never learned) to think for themselves.  I have yet to
-find a (reasonable) product requirement that can't be solved with Linux.
+The test scenario is this:
+* Station1 is a wireless station on the wireless network 192.168.151.0
 
-I implement what is useful to me and my customers.  If you want
-something else, and it isn't there, just do it.  I'm not going to
-guess at what you may want.  My challenges have been systems with
-lots of RAM and not much Flash ROM.  If you can actually purchase
-the flash ROM and are happy with the high prices, go ahead and load
-it up.
+* Station2 is a wired station on the wired network 192.168.100.0
 
-(I am not picking on you David, this is just a summary of past
-messages :-).
+* RPXLite823 is a station on both networks and routes the traffic
+between the two networks.  Its root file system is mounted on wired
+station 192.168.100.160.
 
+We have a test script that repeatedly performs a 2MB ftp-get using wget.
 
+I ran the test script simultaneously on both Station1 (ftp-get from
+Station2) and Station2 (ftp-get from Station1) with RPXLite823 routing the
+traffic between them.
 
+The following partial capture shows some odd stuff I saw on the serial
+port while the test was running up to the point where the ethernet
+interface began failing.  Once the ethernet interface failed, the results
+were the same for as long as the test ran with the occasional 'neighbour
+table overflow' appearing.
 
-	-- Dan
+The "exit" and "ping" commands appearing in the capture WERE NOT typed by
+me or anyone else.  They were "automagically" pulled from the shell
+history as the test was running.
+
+Any comments on the strange serial behavior and why the ethernet interface
+failed are welcome.  We're currently not too worried about all this for
+this particular driver.  However, if the same behavior continues when we
+complete the port of our 11Mb wireless driver to the RPX Lite 823, we'll
+have a serious problem (ok, to be honest, we'll have an anxiety attack
+;-).
+
+Many thanks,
+Jo-Ellen
+
+---------------------------------------------------------
+Jo-Ellen F. Mathews
+
+AbsoluteValue Software     Web:    http://www.absoval.com
+P.O. Box 941149            e-mail: joellen@absoval.com
+Maitland, FL 32794-1149    Phone:  407.644.8582
+USA                        Fax:    407.539.1294
+---------------------------------------------------------
+ttyS0: 1 input overrun(s)
+exit
+sh-2.03#
+sh-2.03# ttyS0: 1 input overrun(s)
+CPM ENET: BSY can't happen.
+ttyS0: 2 input overrun(s)
+ping 192.168.100.120ttyS0: 2 input overrun(s)
+sh-2.03# ttyS0: 2 input overrun(s)
+ttyS0: 2 input overrun(s)
+ttyS0: 2 input overrun(s)
+ttyS0: 2 input overrun(s)
+ttyS0: 4 input overrun(s)
+ping 192.168.151.90eth0: transmit timed out.
+ Ring data dump: cur_tx fa2028e8 (full) cur_rx fa2028c0.
+9c00 05ea 009f7812
+9c00 05ea 009f7012
+9c00 05ea 00a04812
+9c00 05ea 009f6812
+9c00 0042 0095ceb2
+9c00 05ea 009f6012
+9c00 05ea 00bb1012
+bc00 00a6 00196da2
+9c00 05ee 001db000
+9c00 05ee 001db800
+9c00 0046 001da000
+9c00 05ee 001da800
+9c00 05ee 001d9000
+9c00 05ee 001d9800
+9c00 05ee 001d8000
+bc00 05ee 001d8800
+eth0: tx queue full!.
+nfs: server 192.168.100.160 not responding, still trying
+eth0: transmit timed out.
+ Ring data dump: cur_tx fa2028e8 (full) cur_rx fa202890.
+9c00 05ea 009f7812
+9c00 05ea 009f7012
+9c00 05ea 00a04812
+9c00 05ea 009f6812
+9c00 0042 0095ceb2
+9c00 05ea 009f6012
+9c00 05ea 00bb1012
+bc00 00a6 00196da2
+9c00 05ee 001db000
+9c00 05ee 001db800
+9c00 0046 001da000
+9c00 05ee 001da800
+9c00 05ee 001d9000
+9c00 05ee 001d9800
+9c00 05ee 001d8000
+bc00 05ee 001d8800
+eth0: tx queue full!.
+eth0: transmit timed out.
+ Ring data dump: cur_tx fa2028e8 (full) cur_rx fa202898.
+9c00 05ea 009f7812
+9c00 05ea 009f7012
+9c00 05ea 00a04812
+9c00 05ea 009f6812
+9c00 0042 0095ceb2
+9c00 05ea 009f6012
+9c00 05ea 00bb1012
+bc00 00a6 00196da2
+9c00 05ee 001db000
+9c00 05ee 001db800
+9c00 0046 001da000
+9c00 05ee 001da800
+9c00 05ee 001d9000
+9c00 05ee 001d9800
+9c00 05ee 001d8000
+bc00 05ee 001d8800
+eth0: tx queue full!.
+neighbour table overflow
+neighbour table overflow
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
