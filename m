@@ -1,75 +1,49 @@
-To: Geoff Wyche <GWyche@DATUM.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: SELF/busybox problems? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 05 Nov 2001 15:30:32 PST."
-             <607BF0A2B4F3D411A09500508BC225427E833F@mailctx.datum.com>
-Date: Tue, 06 Nov 2001 00:55:10 +0100
-Message-Id: <20011105235516.2087A10CDD@denx.denx.de>
+Message-ID: <3BE7E505.DC9DE6E8@laposte.net>
+Date: Tue, 06 Nov 2001 14:26:29 +0100
+From: ibm405gp <ibm405.linux@laposte.net>
+MIME-Version: 1.0
+To: list <linuxppc-embedded@lists.linuxppc.org>
+Subject: Abatron Bdi2000 and 405GP
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Geoff,
+Hello,
 
-in message <607BF0A2B4F3D411A09500508BC225427E833F@mailctx.datum.com> you wrote:
->
-> I'm currently using this little patch of my own in arch/ppc/8xx_io/uart.c:
->
-> #define CONFIG_SERIAL_CONSOLE_PORT 1
-> #if 1
-> static struct serial_state rs_table[] = {
->         /* UART CLK   PORT          IRQ      FLAGS  NUM   */
->         { 0,     0, PROFF_SCC1, CPMVEC_SCC1,   0,    (NUM_IS_SCC | 0) },
-> /* SCC1 ttyS0 */
->         { 0,     0, PROFF_SCC2, CPMVEC_SCC2,   0,    (NUM_IS_SCC | 1) },
-> /* SCC2 ttyS1 */
-> };
-> #else
-> ...
+How can i read back (or write) for example, the FPGA registers from the
+walnut board (at @OxFO300000) with abatron.
+I can read this memory area just after the ioremap operation (in
+walnut.c) when the entry for 0XF0300000 is present
+in the TLB without any problem (0xF0300000 -> 0xF0300000). With the
+abatron debugger, i should be able to read any virtual adress, even if
+this adress is not present in the TLB. Am i right ? Any suggestion ?
+Thanks.
 
-Should be fine if your console is on SCC2 = /dev/ttyS1
+I'am using the latest version of bdiGdb (1.07), with the folllowing
+config file :
 
-> First, when I run the SELF distribution with a dynamically linked BusyBox,
-> it crashes with a "software check" at address 0x30015f78.  I haven't been
-> able to figure out what's loaded at linear address 0x30000000.  My guess is
-> there's something wrong with my glibc-2.2.3
->
-> If I then recompile busybox with DO_STATIC=true, the CPU seems to hang, but
-> my debugger (visionCLICK 7.0 under windows NT via BDM port) is no longer
-> able to communicate with the processor.  If I then issue a CPU reset via the
-> BDM, the CPU reboots after a bit (software watchdog timeout?) and runs past
-> where it would hang before.
+[INIT]
+; Setup MMU info
+WM32    0x000000f4  0x00000000  ;invalidate kernel  page table base
+WM32    0x000000f8  0x00000000  ;invalidate process page table base
+WM32    0x000000f0  0xc00000f4  ;invalidate page table base
 
-AFAIK visionCLICK does not support the MMU - I  guess  it  just  gets
-mighty  confused with all these strange virtual addresses ;-) You may
-consider to get a BDI2000 instead...
+[TARGET]
+MMU         XLAT 0xC0000000     ;enable virtual address mode
+PTBASE      0x000000f0          ;address where kernel/user stores
+pointer to page table
 
-> I then get a proper busybox shell prompt.  This sequence (boot, hang, issue
-> reset, boot, nohang) happens repeatably.  It hangs very shortly after
-> starting /sbin/init, but the second time, it runs.  Always.
+the hhl 2.0 from monta vista with the following head_4xx.S
 
-Did you try running your board without visionCLICK attached?
-
-> The second problem is with the serial console line.  Once per second, BB's
-> init program wakes up and checks for respawns or respawns something.
-> Whatever that something is (/bin/application?) opens and closes the console.
-
-Well - modify your inittab so it just starts an interactive shell  on
-the console, and nothing else.
-
-> Every time it opens and closes the console, it somehow steals characters
-> from the serial port buffer.
-
-I guess you have your console definitions (SCC1 / SCC2 ?) mixed up...
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"No matter where you go, there you are..."          - Buckaroo Banzai
+	/* Add helper information for the Abatron bdiGDB debugger.
+	*/
+	lis	r5, abatron_pteptrs@ha
+	ori	r5, r5, abatron_pteptrs@l
+	stw	r5, 0xf0(r0)	/* This much match your Abatron config */
+	lis	r6, swapper_pg_dir@h
+	ori	r6, r6, swapper_pg_dir@l
+	tophys(r5, r5)
+	stw	r6, 0(r5)
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
