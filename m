@@ -1,55 +1,31 @@
-Message-ID: <390FFDD3.410A690C@mondonet.net>
-Date: Wed, 03 May 2000 12:22:11 +0200
-From: Mario Scarpa <m.scarpa@mondonet.net>
+Date: Wed, 3 May 2000 12:27:52 +0200 (CEST)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Steven Hanley <sjh@wibble.net>
+cc: Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 2.3.99-pre6 sound hfs
+In-Reply-To: <390FE6E2.1DDB8599@wibble.net>
+Message-ID: <Pine.LNX.4.10.10005031223420.18207-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-CC: Gabriel Ricard <g_ricard@yahoo.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Lombard hard freeze (still there)
-References: <Pine.LNX.4.10.10005022156240.13541-100000@opal.biophys.uni-duesseldorf.de>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michael Schmitz wrote:
+> > Your point being?
 >
-> > I am wondering if any of the developers who do kernel
-> > related work on LinuxPPC have any suggestions for us
-> > on how to deal with this. If I knew how to do the
-> > debugging work and trace the problem to its root I
-> > would.
->
-> It's a bit tough to debug kernel stuff on a machine like the Lombard if it
-> has no serial port to attach a console terminal or even a kernel debugger
-> to. It's even harder to remote debug such a machine over a mailing list
-> :-)
+> I was replying to Scott Knight <scott@re-104-1.read.indiana.edu>
 
-Indeed ;-)
+Sorry, missed that.
 
-Here's my setup: Lombard with 6GB HD and 64MB RAM (just like yours
-I guess); my probs started with USB support compiled in the kernel:
-even if it does not lead to a total freeze so often (would say very
-seldom indeed), I still get mouse freeze under X when heavy network
-activity is being made (last time 5 mins ago getting a big attachment).
-Some other times I get a kernel panic during the boot when initializing
-the serial interfaces (no, I have NOT support for standard serial
-but only MAC serial compiled into the kernel).
-This is why I was thinking about some USB/serial code problem but I
-agree we need some debug output to work on.
+> pointing out why hfs is not working, as he obviously was under the
+> assumption it was supposed to work in the latest devel kernels.
 
-Using Debian 2.2 and XF86_FBDev with kernel 2.2.15pre20 from Paul's
-tree.
+So was I until I saw Alan's laundry list. I haven't followed 2.3
+development lately but I recall mention of further changes to the VFS.
+Maybe a diff between 2.3.<last working> and 2.3.<recent> vfat or ext2 code
+shows up something.
 
-Thinking about the debug way you suggest, it comes to my mind another
-question not so related to the prob: is there a USB->serial converter
-around ? Is there one of this devices supported by Linux ? On PPC ?
+	Michael
 
-Ciao,
-
---
-Mario Scarpa
-
-Mondonet NOC
-Phone: +39 06 52.47.37.02
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
