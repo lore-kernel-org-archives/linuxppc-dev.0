@@ -1,38 +1,42 @@
-Mime-Version: 1.0 (Apple Message framework v613)
-In-Reply-To: <000001c41b9e$8ca8c530$d100000a@sbs2003.local>
-References: <bf46dbbf4188.bf4188bf46db@jhumail.jhu.edu> <000001c41b9e$8ca8c530$d100000a@sbs2003.local>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <6AC6540F-88A3-11D8-8C20-000A95DC1AB2@macdiscussion.com>
-From: Mark Guertin <mguertin@macdiscussion.com>
-Subject: Re: 4way smp on ppc32
-Date: Wed, 7 Apr 2004 10:54:05 -0400
-To: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-Sender: owner-linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <8A34C28B-8426-11D8-9FF0-000A95A07384@sands-edge.com>
+References: <20040331230620.ACC3BC10A4@atlas.denx.de> <812363C6-8371-11D8-9FF0-000A95A07384@sands-edge.com> <Pine.GSO.4.58.0404011035190.12755@waterleaf.sonytel.be> <8A34C28B-8426-11D8-9FF0-000A95A07384@sands-edge.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	format=flowed;
+	charset="US-ASCII"
+Message-ID: <000001c41cb1$2595f430$d100000a@sbs2003.local>
+Cc: "Geert Uytterhoeven" <geert@linux-m68k.org>,
+	"Linux/PPC Development" <linuxppc-dev@lists.linuxppc.org>,
+	"Wolfgang Denk" <wd@denx.de>
+From: "Kumar Gala" <kumar.gala@motorola.com>
+Subject: Re: Proposed Kconfig update patch for help text 
+Date: Wed, 7 Apr 2004 16:01:03 +0100
+To: <Administrator@popmail.space.net>
+Sender: <owner-linuxppc-dev@lists.linuxppc.org>
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 6-Apr-04, at 2:15 AM, Benjamin Herrenschmidt wrote:
+I'm trying to figure how how I would fit the e500 core and 85xx into
+your descriptions.
 
->
->> I'm mostly cross-compiling the kernels with gcc 3.3.2.  The userland
->> is an old Debian, but I'll upgrade that as soon as I get a kernel
->> booting.
->>
->> Do you have recommendations of gcc/kernel combos that should work?
->> I'm also starting to wonder if my h/w is bad (it did come from eBay.
->> . .)
->
-> Could well be bad RAM or bad cache
->
-> Ben.
->
+- kumar
 
-I was going to mention the same thing, to run some hardware testing if
-you could.  The only time I've seen any real ICE problems was with gcc
-3.1.x and projects that weren't really adjusted for gcc 3.x yet, other
-than that things have been fine for my setup.
+On Apr 1, 2004, at 3:50 PM, John Whitney wrote:
 
-Mark
+> Here's the latest Kconfig help-text patch for your consideration.  I
+> considered enumerating each chip supported, but that will be a
+> maintenance headache, and I'm not even sure I could list them all.  I'm
+> fairly sure that the 8250 is supported, but it isn't listed in
+> arch/ppc/kernel/cputable.c, so I'm guessing its PVR is covered by the
+> 8260 entry.  I don't want to figure out which ones are supported but
+> not explicitly covered, so I went with the "##xx" method.
+>
+> Let me know what you think...
+>
+> John
+>
+>
+> <Kconfig.patch>
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
