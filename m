@@ -1,45 +1,39 @@
-Message-ID: <397D9E3B.51E31B0E@ivey.uwo.ca>
-Date: Tue, 25 Jul 2000 10:03:39 -0400
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+Message-ID: <397DA319.D7342DA2@relog.ch>
+Date: Tue, 25 Jul 2000 16:24:25 +0200
+From: Michel Dänzer <daenzer@relog.ch>
+Reply-To: daenzerm@student.ethz.ch
 MIME-Version: 1.0
-To: tom_gall@vnet.ibm.com
+To: SteffenH@hyperion-software.de
 CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: diff to tonight's kaffe cvs tree to work on ppc
-References: <200007250345.VAA22028@faith.cs.utah.edu> <397D926F.111AF60E@ivey.uwo.ca> <397D9744.31E6BDC6@vnet.ibm.com>
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: xf4 bug report
+References: <yam8241.1767.147753120@mail.lf-online.de>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Tom,
+Steffen Haeuser wrote:
 
-Good to hear from you again!
+> >> >> All fullscreen modes (1024x769, 640x481 and 800x601 ( :) ) ) start
+> >> >> directly, the monitor makes click and there they are. Just only the
+> >> >> 1024x768 (or x769 :) ) mode displays correctly.
+>
+> >I think this is a known bug...
+>
+> Ah. Which one, BTW, the "vertical one to high" or the "displayed screwed up"
+> one ?
 
->   This is only true as far as the 64 bit systems running on the 32 bit kernel,
-> which is all there is at the moment.
+The latter. Don't know about the other one. At least no other X developer has
+replied on the Xpert list...
 
-I am confused.  Which of the following is true on a 64 bit system running on a
-32 bit kernel?
 
-A).  sizeof(unsigned int) > sizeof(void *)
+Michel
 
-or
 
-B). sizeof(unsigned int) < sizeof(void *)
-
-If A) is true, then my stack alignment macro will still work.  If B) is true, I
-am in trouble.
-
->   Work has started on the 64 bit PowerPC Linux kernel, if Kaffe is compiled as a
-> 64 bit app for that kernel then sizeof(unsigned long) = sizeof(void *) will be
-> true. Certainly not a big deal at this stage, but thought you'd be interested
-> none the less.
-
-Sounds good!  When IBM is ready to start giving 64bit systems to help
-developers, let me know! ;-)
-
-Take care,
-
-Kevin
+--
+Men are from Earth. Women are from Earth. Deal with it.
+______________________________________________________________________________
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
