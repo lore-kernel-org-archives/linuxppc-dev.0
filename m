@@ -1,58 +1,30 @@
-Subject: Re: glibc 2.2.2  error
-From: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
-To: rekha gvv <rekhagvvc@yahoo.co.in>
-Cc: Linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <20021118122042.74002.qmail@web8001.mail.in.yahoo.com>
-References: <20021118122042.74002.qmail@web8001.mail.in.yahoo.com>
-Content-Type: text/plain
-Date: 18 Nov 2002 14:21:51 +0100
-Message-Id: <1037625711.27283.22.camel@spawn>
+Date: Mon, 18 Nov 2002 07:10:42 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Joakim Tjernlund <Joakim.Tjernlund@lumentis.se>
+Cc: "Mark D. Studebaker" <mds@paradyne.com>,
+	linuxppc-embedded@lists.linuxppc.org, sensors@stimpy.netroedge.com
+Subject: Re: 8xx i2c refers to unspecified chip errata 
+Message-ID: <20021118141042.GA15279@opus.bloom.county>
+References: <IGEFJKJNHJDCBKALBJLLMEFNFHAA.joakim.tjernlund@lumentis.se> <3DD8014B.D88A6C34@paradyne.com> <001101c28e82$88d2bc40$0200a8c0@telia.com>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <001101c28e82$88d2bc40$0200a8c0@telia.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-If you read the INSTALL file you would know that --with-headers should
-point to the linux kernel headers. I guess the path could be right but
-most probably not.
+On Sun, Nov 17, 2002 at 10:44:40PM +0100, Joakim Tjernlund wrote:
 
+> > Tom + Joakim,
+> > we're doing a release soon over here at sensors/i2c,
+> > do you want this checked in as-is, with mods, or not at all?
+>
+> As-is for me. No problems reported to me.
 
-On Mon, 2002-11-18 at 13:20, rekha gvv wrote:
->
-> Hello,
-> I am setting up glibc for powerpc target but It gives
-> me errors ..
-> I have set the options
-> CC=powerpc-linux-gcc
-> ./configure --build=powerpc-linux \
-> > --enable-add-ons=linuxthreads \
-> > --with-headers=/usr/local/powerpc-linux/include
->
-> But when u compile  it is not able to find the headers
-> there ...
-> it gives these errors ...
-> so can anyone specify the right options to configure
-> glibc.
->
->
-> In file included from ../posix/bits/posix1_lim.h:126,
->                  from :1:
-> ../linuxthreads/sysdeps/unix/sysv/linux/bits/local_lim.h:36:26:
-> linux/limits.h: No such file or directory
-> make[1]: *** [../bits/stdio_lim.st] Error 1
-> make[1]: Leaving directory `/usr/src/glibc-2.2.2/csu'
-> make: *** [csu/subdir_lib] Error 2
->
->
-> thankyou!
->
->
->
+Works for me then.
+
 --
-Kenneth Johansson
-Ericsson AB                       Tel: +46 8 404 71 83
-Borgafjordsgatan 9                Fax: +46 8 404 72 72
-164 80 Stockholm                  kenneth.johansson@etx.ericsson.se
-
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
