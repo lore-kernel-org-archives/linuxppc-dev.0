@@ -1,48 +1,40 @@
-Date: Sat, 17 Nov 2001 01:10:02 +0000 (GMT)
-From: Phillip Lougher <phillip@lougher.demon.co.uk>
-To: Shie Erlich <shie_e@elbit.co.il>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: a general bootloader question
-In-Reply-To: <Pine.LNX.4.21.0111170017120.1293-100000@lougher.demon.co.uk>
-Message-ID: <Pine.LNX.4.21.0111170109000.1293-100000@lougher.demon.co.uk>
+Message-ID: <3BF5B94C.2000404@embeddededge.com>
+Date: Fri, 16 Nov 2001 20:11:40 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-embedded@lists.linuxppc.org,
+	Paul Mackerras <paulus@samba.org>
+Subject: Re: Organisation of 4xx initialization code
+References: <20011116164625.K673@zax> <3BF542D4.10706@embeddededge.com> <20011117114724.H12763@zax>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Sat, 17 Nov 2001, Phillip Lougher wrote:
+David Gibson wrote:
 
-> The linux image should be a pure binary image (not with the ELF header).
-> See objdump concerning how to string the vmlinux file.
-                                ^^^^^^
 
-string should be strip.
 
-Phillip
+> ..........  create a new ppc4xx.c which
+> will probably have a lot of code copied out of ppc4xx_setup.c,
 
->
-> Hope this helps.
->
-> Phillip
->
-> ----
-> Phillip Lougher,
-> Zarlink Semiconductor,
-> Chepstow,
-> Wales.
->
-> >
-> > 		thanks in advance,
-> > 			Shie Erlich
-> >
-> >
-> >
-> >
-> >
->
->
->
+Oh great, even more new files names......
+
+> Gradually move each of the other 4xx machines over to the new scheme
+> and finally remove ppc4xx_setup.c
+
+How about you just do them all at once so we don't have a mess with
+some old and some new methods?  Even if you can't test the changes,
+contact someone that can and offer to do the best at changes.  Nothing
+is worse than making major changes to only some of the files, leaving
+someone else to do the remainder when they are busy trying to accomplish
+something else.
+
+Thanks.
+
+
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
