@@ -1,62 +1,41 @@
-Message-ID: <20011105191454.25617.qmail@dag.newtech.fi>
-To: Dan Malek <dan@mvista.com>
-Cc: Dag Nygren <dag@newtech.fi>, linuxppc-dev@lists.linuxppc.org,
-	dag@newtech.fi
-Subject: Re: RFC 8259 handling suggestion and MPC107 in openpic 
-In-Reply-To: Message from Dan Malek <dan@mvista.com>
-   of "Mon, 05 Nov 2001 14:04:22 EST." <3BE6E2B6.3010401@mvista.com>
-Mime-Version: 1.0
+Message-ID: <3BE78CB0.54E8C9F8@wanadoo.fr>
+Date: Tue, 06 Nov 2001 01:37:08 +0100
+From: Martin Costabel <costabel@wanadoo.fr>
+MIME-Version: 1.0
+To: hemphill@drea.dnd.ca
+Cc: yellowdog-general@lists.yellowdoglinux.com,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: Ti Powerbooks and YDL 2.1 - Problems
+References: <3BE74DCD.3070407@drea.dnd.ca>
 Content-Type: text/plain; charset=us-ascii
-Date: Mon, 05 Nov 2001 21:14:54 +0200
-From: Dag Nygren <dag@newtech.fi>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Dag Nygren wrote:
+Gavin Hemphill wrote:
 >
->
-> > Seems like everyone having an i8259 wants to use it ;-)
->
-> You often must use it.  If device interrupts are wired to
-> it, you don't have a choice.
->
-> > for ( i =i8259_pic.irq_offset  ; i < i8259_pic.irq_offset +
-> > NUM_8259_INTERRUPTS  ; i++ )
-> >         irq_desc[i].handler = &i8259_pic;
->
-> Argh....you are just implementing what we had many years ago
-> when we attempted a multi-level interrupt controller design.
+> Well I've just spent an interesting two days documenting a problem with
+> the Ti Powerbooks and the 2.4 series kernels.  I have access to two
+> 500Mhz Ti's with the Matshita DVD-ROM SR-8187 drives.  When I tried to
+> follow Dan Burcaw's experimental instructions on doing a yup update of
+> YDL2.0 to 2.1 I ran into the problem that a mount of any CD returned the
+> error message "wrong media type" (I hadn't used the CD at all since
+> moving to the 2.4 series kernels).
 
-Just hate to see the same code duplicated 5-10 times in the different
-xxxx_setup.c files.
+Did you try to mount it via the loop device:
 
-> We have recently been discussing this on the embedded ppc list
-> as well.  IMHO, we should have a properly designed multi-level
-> interrupt controller software structure that maps to a hardware
-> design.  All interrupt controllers start numbering their interrupts
-> from zero, to some maximum number supported.  We should have
-> software objects and functions that understand and support this,
-> along with cascading controllers to any arbitrary interrupt at
-> a higher level.  Once we have this in place, we can place a "virtual"
-> layer (or anything else) on top to provide the useful abstractions
-> we need when using interrupts in the system.
+ mount -o loop -t hfs /dev/cdrom /mnt/wherever
 
-You are quite right, but until we have this abstraction we could have
-the above code in the i8259 "module".
-Thus saving the porting guys some code duplication.
+If this works, then you hit a kernel bug that was discussed 2 weeks ago
+on linuxppc-dev
+(thread "hfs cdrom broken in 2.4.13-pre" in
+http://lists.linuxppc.org/linuxppc-dev/200110/threads5.html). It seems
+to have been introduced around 2.4.10 and IIRC the result of the
+discussion was that nobody was going to fix it.
 
-> From our experience, by trying to merge these virtual abstractions
-> into the lowest level (irq_offset + NUM_INTERRUPTS kind of thing)
-> gives us a solution (hack :-) for one board but doesn't provide any
-> design flexibility that will be useful in a subsequent board port.
+Just a guess, could be something else entirely, of course.
 
-Would my revised open_pic be a starting point ?
-Even if I did not think as far as you suggest now.
-
-
-
-Dag
-
+--
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
