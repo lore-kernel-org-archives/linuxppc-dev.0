@@ -1,87 +1,169 @@
-Message-ID: <EFB813091B18D511BD3600508B644F820A617EF3@tx14exm06.ftw.mot.com>
-From: Zajac Adam-AAZ004 <Adam.Zajac@motorola.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Summary: Question on the fs choice (long)
-Date: Wed, 19 May 2004 17:59:18 -0500
-MIME-Version: 1.0
-Content-Type: text/plain
+Message-Id: <4.2.2.20040519160201.04c25830@bhawley.mailhost.luminex.com>
+Date: Wed, 19 May 2004 16:09:13 -0700
+To: Eugene Surovegin <ebs@ebshome.net>
+From: Brian Hawley <bhawley@luminex.com>
+Subject: Re: Ebony Board, PPC440GP and NFS time out
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <20040519234228.GF13351@gate.ebshome.net>
+References: <4.2.2.20040519145943.04c28200@bhawley.mailhost.luminex.com>
+ <4.2.2.20040519143346.04c41220@bhawley.mailhost.luminex.com>
+ <4.2.2.20040519134735.04c20180@bhawley.mailhost.luminex.com>
+ <4.2.2.20040519132218.050b0df0@bhawley.mailhost.luminex.com>
+ <4.2.2.20040519123513.05074da0@bhawley.mailhost.luminex.com>
+ <4.2.2.20040519101456.0509d340@bhawley.mailhost.luminex.com>
+ <4.2.2.20040519123513.05074da0@bhawley.mailhost.luminex.com>
+ <4.2.2.20040519132218.050b0df0@bhawley.mailhost.luminex.com>
+ <4.2.2.20040519134735.04c20180@bhawley.mailhost.luminex.com>
+ <4.2.2.20040519143346.04c41220@bhawley.mailhost.luminex.com>
+ <4.2.2.20040519145943.04c28200@bhawley.mailhost.luminex.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thank y'all for providing a valuable input into the discussion on working
-with the CF cards in embedded environment and selecting an appropriate FS.
+Thanks Eugene.
 
-To wrap things up I'd like to address some of the concerns that you were
-expressing most frequently.
+We've been sniffing that for several weeks now.  That Mac address
+does not send out any packages once it moves to the BOOTP stage.
 
-1. CF card may end up at a random state upon power failure (data gets lost
-in a random manner).
-	The solution we're gonna pursue is based on SanDisk recommendation
-to provide some power back-up for a 100ms period after the main power goes
-down. We decided to introduce some modification to that method and supply
-the power to the CF card ONLY with some extra capacitors.
-Statistically speaking, the card is most vulnerable to the power failure
-when the internal controller performs its write cycles to the memory array
-(it's only presented to the external interface as cyl/head/sect layout).
-When we go over the actual compact flash access protocol (ATA mode) it takes
-at least 3 (16-bit mode) to 7 (8-bit mode) writes to the controller
-registers before  you can start pumping the data to the CF data register to
-let the internal controller populate the card's sector (it's always one
-sector at a time). So, even if this protocol is broken by some power failure
-the card's controller should have enough time to finish its internal
-operation (100ms) and remain in a sane condition. The only data that would
-be lost is the sector that was being written to. Since, we don't provide the
-back-up power to the CPU, any interference from that side is eliminated.
-Besides, under sunny day operation the longest delay that's required for the
-ATA-based access protocol is 450ns after accessing a command register (again
-100ms provides a good safety margin).
+We can get past this point, if we manually set the default boot args and fill
+in all the root/nfsroot/ip= args and not do auto config.  At that point we get
+past IP-Config, but then no traffic after that...and, it appears that in
+all cases,
+the board is not responding to any 'ping's once it hits the BOOTP request or
+RPC lookup stage.  We must be missing something extremely obvious.
 
-2. Modern compact flash cards (e.g. SDCFB-xx-201 series) can be safely used
-as a main storage medium for commercial applications.
-	Wolfgang advised me to be careful with making such statements and I
-have to agree with him. I need to re-phrase that sentence and I'm gonna say
-that "SOME of the modern compact flash cards  can be used as a main storage
-medium for commercial applications, BUT they need to be very CAREFULLY
-selected".
-I think it's a very deceitful advertising that some commercial platforms
-(digital cameras, pocket PC's etc.) work with all CF cards. Yes, for most of
-the time any card will do its job of storing data just fine. But there's
-this one power failure or glitch that separates good from bad and ugly
-(someone responded to my email that digital cameras want you to reformat the
-card).
-To me selecting the right components is the main principle of designing a
-reliable embedded platform. If we want to provide some level of reliability
-we just can't physically support all types of cards manufactured worldwide.
-Like I said, the user can use any CF card that fits the socket, but it's
-always at her/his own risk (of potentially loosing data).
-This is similar to building your home PC. The users who want it to be a
-solid rock machine, usually resort to better components or well-known
-brands, although any no-name PS, motherboard and HD theoretically should
-work with one another.
+Loading file "/zImage.ebony.nfs" ...
+Sending tftp boot request ...
+Transfer Complete ...
+Loaded successfully ...
+Entry point at 0x500000 ...
+loaded at: 00500000 005D11DC
+relocated to: 01000000 010D11DC
+zimage at: 010058BB 010CDC4F
+avail ram: 00400000 00800000
+Linux/PPC load: root=/dev/nfs rw nfsroot=162.10.98.2:/eldk/ppc_4xx
+ip=162.10.98.190:162.10.98.2:162.10.98.1:255.255.255.
+0:ebony:eth0:off
+Uncompressing Linux...done.
+Now booting the kernel
+Linux version 2.6.5 (bnh-engr@feimer) (gcc version 3.3.3) #2 Wed May 19
+16:33:55 PDT 2004
+IBM Ebony port (MontaVista Software, Inc. (source@mvista.com))
+On node 0 totalpages: 32768
+DMA zone: 32768 pages, LIFO batch:8
+Normal zone: 0 pages, LIFO batch:1
+HighMem zone: 0 pages, LIFO batch:1
+Built 1 zonelists
+Kernel command line: root=/dev/nfs rw nfsroot=162.10.98.2:/eldk/ppc_4xx
+ip=162.10.98.190:162.10.98.2:162.10.98.1:255.255
+.255.0:ebony:eth0:off
+PID hash table entries: 1024 (order 10: 8192 bytes)
+Memory: 127488k available (1280k kernel code, 440k data, 92k init, 0k
+highmem)
+Calibrating delay loop... 598.01 BogoMIPS
+Dentry cache hash table entries: 16384 (order: 4, 65536 bytes)
+Inode-cache hash table entries: 8192 (order: 3, 32768 bytes)
+Mount-cache hash table entries: 512 (order: 0, 4096 bytes)
+POSIX conformance testing by UNIFIX
+NET: Registered protocol family 16
+PCI: Probing PCI hardware
+Serial: 8250/16550 driver $Revision: 1.90 $ 6 ports, IRQ sharing enabled
+ttyS0 at MMIO 0x0 (irq = 0) is a 16550A
+ttyS1 at MMIO 0x0 (irq = 1) is a 16550A
+RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
+mal0: Initialized, 4 tx channels, 2 rx channels
+emac: IBM EMAC Ethernet driver, version 2.0
+Maintained by Benjamin Herrenschmidt <benh@kernel.crashing.org>
+zmii0: input 0 in SMII mode
+eth0: IBM emac, MAC 00:04:ac:e3:23:b2
+eth0: Found Generic MII PHY (0x08)
+zmii0: input 1 in RMII mode
+eth1: IBM emac, MAC 00:04:ac:e3:23:b3
+eth1: Found Generic MII PHY (0x09)
+mice: PS/2 mouse device common for all mice
+NET: Registered protocol family 2
+IP: routing cache hash table of 1024 buckets, 8Kbytes
+TCP: Hash tables configured (established 8192 bind 16384)
+NET: Registered protocol family 1
+NET: Registered protocol family 17
+eth0: Link is Up
+eth0: Speed: 100, Full duplex.
+IP-Config: Complete:
+device=eth0, addr=162.10.98.190, mask=255.255.255.0,
+gw=162.10.98.1,
+host=ebony, domain=, nis-domain=(none),
+bootserver=162.10.98.2, rootserver=162.10.98.2, rootpath=
+Looking up port of RPC 100003/2 on 162.10.98.2
 
-3. FS selection and root file system setup
-I appreciated the comments from Gerald and David regarding the FS operation
-details.
-We're using the CF to store some large images and for most of the time I can
-have the card mounted as read-only. However, we need to have a capability of
-upgrading these images occasionally.
-I think I may pursue the setup similar to the one described by Stephen
-Mattin and have my CF mounted as read-only for most of the time and re-mount
-it to read-write only when the software upgrades are needed. We also have a
-16MB bulk flash on the card that I may use for these root file system
-directories that would require persistent changes (using JFFS2).
-Right now I'm running ext2 and we still haven't decided if we should switch
-to ext3. David pointed out that multiple writes of the journal may shorten
-the lifetime of the card. It's a very legitimate argument that I can't
-ignore. I also find an idea of setting RAID-3, RAID-5 very interesting but
-just don't know how I could practically implement it and if it would be
-beneficial to the system setup.
 
-Thank you again for all your responses.
-Best regards,
 
-Adam Zajac
+
+At 04:42 PM 5/19/04 -0700, Eugene Surovegin wrote:
+>On Wed, May 19, 2004 at 03:19:54PM -0700, Brian Hawley wrote:
+> > Loading file "/zImage.ebony" ...
+> > Sending tftp boot request ...
+> > Transfer Complete ...
+> > Loaded successfully ...
+> > Entry point at 0x500000 ...
+> > loaded at: 00500000 005C81DC
+> > relocated to: 01000000 010C81DC
+> > zimage at: 01005847 010C4136
+> > avail ram: 00400000 00800000
+> > Linux/PPC load: ip=on
+> > Uncompressing Linux...done.
+> > Now booting the kernel
+> > Linux version 2.6.5 (bnh-engr@feimer) (gcc version 3.3.3) #1 Wed May 19
+> > 15:41:31 PDT 2004
+> > IBM Ebony port (MontaVista Software, Inc. (source@mvista.com))
+> > On node 0 totalpages: 32768
+> > DMA zone: 32768 pages, LIFO batch:8
+> > Normal zone: 0 pages, LIFO batch:1
+> > HighMem zone: 0 pages, LIFO batch:1
+> > Built 1 zonelists
+> > Kernel command line: ip=on
+> > PID hash table entries: 1024 (order 10: 8192 bytes)
+> > Memory: 127584k available (1212k kernel code, 428k data, 84k init, 0k
+> > highmem)
+> > Calibrating delay loop... 598.01 BogoMIPS
+> > Dentry cache hash table entries: 16384 (order: 4, 65536 bytes)
+> > Inode-cache hash table entries: 8192 (order: 3, 32768 bytes)
+> > Mount-cache hash table entries: 512 (order: 0, 4096 bytes)
+> > POSIX conformance testing by UNIFIX
+> > NET: Registered protocol family 16
+> > PCI: Probing PCI hardware
+> > Serial: 8250/16550 driver $Revision: 1.90 $ 6 ports, IRQ sharing enabled
+> > ttyS0 at MMIO 0x0 (irq = 0) is a 16550A
+> > ttyS1 at MMIO 0x0 (irq = 1) is a 16550A
+> > mal0: Initialized, 4 tx channels, 2 rx channels
+> > emac: IBM EMAC Ethernet driver, version 2.0
+> > Maintained by Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > zmii0: input 0 in SMII mode
+> > eth0: IBM emac, MAC 00:04:ac:e3:23:b2
+> > eth0: Found Generic MII PHY (0x08)
+> > zmii0: input 1 in RMII mode
+> > eth1: IBM emac, MAC 00:04:ac:e3:23:b3
+> > eth1: Found Generic MII PHY (0x09)
+> > mice: PS/2 mouse device common for all mice
+> > NET: Registered protocol family 2
+> > IP: routing cache hash table of 1024 buckets, 8Kbytes
+> > TCP: Hash tables configured (established 8192 bind 16384)
+> > NET: Registered protocol family 1
+> > NET: Registered protocol family 17
+> > eth0: Link is Up
+> > eth0: Speed: 100, Full duplex.
+> > Sending BOOTP requests ...... timed out!
+> > IP-Config: Retrying forever (NFS root)...
+> > eth0: Speed: 100, Full duplex.
+> > Sending BOOTP requests ...
+>
+>Looks fine until BOOTP stage. Use any sniffer to check whether BOOTP requests
+>are coming out.
+>
+>Please, check that your DHCP server allows BOOTP clients.
+>
+>Eugene.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
