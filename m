@@ -1,10 +1,8 @@
-Message-ID: <3A6C5015.AA99E37@pop.agri.ch>
-Date: Mon, 22 Jan 2001 16:22:04 +0100
-From: Andreas Tobler <toa@pop.agri.ch>
-Reply-To: toa@pop.agri.ch
+Message-ID: <3A6C5038.CB3AAE28@mpifr-bonn.mpg.de>
+Date: Mon, 22 Jan 2001 16:22:32 +0100
+From: Albrecht Dre_ <ad@mpifr-bonn.mpg.de>
 MIME-Version: 1.0
-To: Uwe Steinmann <steinm@majestix.fernuni-hagen.de>
-CC: linuxppc-dev@lists.linuxppc.org
+To: linuxppc-dev@lists.linuxppc.org
 Subject: Re: pcmcia on pismo: PCI irq 58 test failed
 References: <20010122134226.A7757@gehtnix.fernuni-hagen.de>
 Content-Type: text/plain; charset=us-ascii
@@ -13,34 +11,22 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 Uwe Steinmann wrote:
->
-> Hi,
->
-> I'm trying to make pcmcia 3.1.22 support work on a pismo with
-> kernel 2.2.18-pre17-ben1. I was able to talk to a serial model card
-> but ran into problems with an AVM fritz!card though the necessary patch
-> for this card has been applied to the pcmcia package.
->
-> By looking at the syslog messages I feel like the problem is rather caused
-> by the pcmcia support than by this particular pcmcia card.
-> In the syslog I found a message
->
+[snip]
+> Jan 19 20:33:06 pb kernel: Linux PCMCIA Card Services 3.1.22
+> Jan 19 20:33:06 pb kernel:   kernel build: 2.2.18pre17-ben1 #1 Fri Nov 3 11:06:07 CET 2000
+> Jan 19 20:33:06 pb kernel:   options:  [pci] [cardbus]
+> Jan 19 20:33:06 pb kernel: Intel PCIC probe:
+> Jan 19 20:33:06 pb kernel:   TI 1211 rev 00 PCI-to-CardBus at slot 00:1a, mem 0x80080000
+> Jan 19 20:33:06 pb kernel:     host opts [0]: [serial pci & irq] [pci irq 58] [lat 16/32] [bus 1/1]
 > Jan 19 20:33:06 pb kernel:     PCI irq 58 test failed
->
-> which somewhat bother me.
->
-> Is this a proper behaviour? Could this be the reason that the avm pcmcia card
-> cannot request an irq?
->
+> Jan 19 20:33:06 pb kernel:     *NO* card interrupts, polling interval = 1000 ms
+[snip]
 
-Have you read this page : http://www.mpifr-bonn.mpg.de/div/iri/Archiv/LinuxPPC/PCMCIA.html
+Please see http://www.mpifr-bonn.mpg.de/div/iri/Archiv/LinuxPPC/PCMCIA.html. A
+litte outdated, but it might still help...
 
-You may can update to pcmcia-cs-3.1.24. Without the ppc patches.
+Albrecht.
 
-I don't own such a card, but these steps may help....
-
-Cheers
-
-Andreas
+--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
