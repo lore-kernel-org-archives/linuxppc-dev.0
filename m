@@ -1,50 +1,58 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: "Timothy A. Seufert" <tas@mindspring.com>,
-        <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: MacOS X and yaboot wars.
-Date: Sat, 23 Sep 2000 12:16:00 +0200
-Message-Id: <19340818034744.27131@192.168.1.10>
-In-Reply-To: <v04220800b5f21601b44d@[10.0.0.42]>
-References: <v04220800b5f21601b44d@[10.0.0.42]>
+Date: Sat, 23 Sep 2000 14:34:46 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Paul Mackerras <paulus@linuxcare.com.au>
+cc: Dan Malek <dan@mvista.com>,
+        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: __ioremap_at() in 2.4.0-test9-pre2
+In-Reply-To: <14794.54989.87038.231729@argo.linuxcare.com.au>
+Message-ID: <Pine.LNX.4.10.10009231430200.413-100000@cassiopeia.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->
->Interestingly enough, I noticed this tidbit in their BootX script:
->
->-------------------------------------------
->if 0 0 then
->
->
->
->
->
->
->
->
->
->
->
->-------------------------------------------
->
->Implying that they may be doing something with ext2 support.
+On Fri, 22 Sep 2000, Paul Mackerras wrote:
+> No, it's correct.  I was going through my old emails yesterday and I
+> found this email from Dave Miller to linux-kernel:
 
-You "tidbit" was empty ;)
+I remember that one :-)
 
-They have indeed ext2 support in their "BootX". They have ELF support.
-They have almost everything needed to boot the Linux kernel as well. I
-need to implement the necessary support in the kernel itself to get it
-working.
->
->The only major problem I've got is that whenever I boot plain old
->MacOS by itself, it ruthlessly deblesses the MacOS X partition,
->rendering it unable to boot.  I have to use System Disk if I want to
->boot into MacOS X again, and since it blows away my boot-device
->setting I have to force the machine into OF to set it again if I want
->to use the ofboot boot menu.  Annoying, but not a new problem.
+> >    Does this means that there is no way to mmap the PCI IO space on
+> >    any platform other than ia32?
+> >
+> > One needs to be a bit more specific for me to give you an
+> > answer :-)
+> >
+> > Inside the kernel:
+> >
+> > 1) PCI I/O space is accessed by obtaining the base address via the
+> >    appropriate pci_dev->resource[xxx] value, and feeding that directly
+> >    into inb/inw/inl and friends.
+> >
+> > 2) PCI MEM space is accessed by obtaining the opaque MEM base cookie
+> >    in pci_dev->resource[xxx], mapping it with ioremap(cookie), and
+> >    feeding what you obtain from that to readw and friends.  When
+> >    done with the MEM space area, you iounmap it.
 
+Life would be much simpler if PCI I/O space used a similar opaque IO base
+cookie with a corresponding ioportremap(cookie) function (looks a lot like
+Dan's tell_me_where() function, which I didn't realize until now :-), before
+feeding everything to inb() and friends. On ia32, ioportremap() would evaluate
+to the identity.
+
+No way we can convince The Others to use this approach? It does sound logical
+:-)
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
