@@ -1,36 +1,73 @@
-In-Reply-To: <411B9AF9.12494.1DA4A94@localhost>
-References: <411B9AF9.12494.1DA4A94@localhost>
-Mime-Version: 1.0 (Apple Message framework v619)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <66FD1720-EC80-11D8-8A46-003065F9B7DC@embeddededge.com>
-Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-From: Dan Malek <dan@embeddededge.com>
-Subject: Re: MPC82xx enet on SCC3
-Date: Thu, 12 Aug 2004 12:55:23 -0400
-To: "Oliver Fuchs" <olivers.lists@gmx.net>
+Date: Thu, 12 Aug 2004 14:34:18 -0500
+From: "Cordes, Aaron M" <aaron.m.cordes@lmco.com>
+Subject: RE: Linux 2.4.27-pre6-bk hangs on MPC8540 board
+To: wd@denx.de
+Cc: linuxppc-embedded@lists.linuxppc.org
+Message-id: <EE7CAF713952AC4A970DD7CD8B4C12A042DCAB@emss09m06.us.lmco.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Aug 12, 2004, at 10:29 AM, Oliver Fuchs wrote:
+Is there a way in Linux or the 8540 to prevent burst accesses, in order
+to test whether they are the problem?  I scanned the processor's
+reference manual, but I didn't see anything that would let me do this.
 
-> as far as I understand, my kernel (2.4.24 from ELDK3.0) is not
-> prepared for Ethernet on SCC3 of the MPC82xx.
+Thanks
+Aaron
 
-It depends completely on how you chose the multiplex
-the IO pins.  There are quite a few combinations, the
-well known ones (for currently supported configurations)
-are already part of the file.
+Aaron Cordes
 
-> It seems to be necessary to modify arch/ppc/8260_io/enet.c
-> Am I right?
-> Is there anyone who has done this already?
-
-An #ifdef and two lines of #defines should be all you need,
-unless you have some special BSCR or other set up needed.
+-----Original Message-----
+From: wd@denx.de [mailto:wd@denx.de]
+Sent: Thursday, August 12, 2004 9:08 AM
+To: Cordes, Aaron M
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Linux 2.4.27-pre6-bk hangs on MPC8540 board
 
 
-	-- Dan
+In message
+<EE7CAF713952AC4A970DD7CD8B4C12A042DCA7@emss09m06.us.lmco.com> you
+wrote:
+>
+> We are bringing up an 8540-based board, and are getting hangs at
+> random spots when booting Linux.  Sometimes the hangs occur while the
+> kernel is initializing, sometimes the boot gets far enough where I can
 
+> log in and run a couple of programs.  Eventually the board locks up
+> with no oopses or panics.  If I connect to the board with a debugger,
+> the processor is usually stopped in the Data miss exception handler,
+> and there is usually memory corruption in the kernel code.
+
+That's it: memory problems.
+
+> I ran memory tests using both Edink and U-boot and they all passed, so
+
+> I'm reluctant to blame hardware for the memory corruption.  Has anyone
+
+> seen similar behavior, or have any suggestions of things I might try?
+
+All those memory tests only can test simple read and write  accesses;
+they  all  fail to access burst mode accesses, which will happen when
+Linux starts runing, and which are failing.
+
+Your SDRAM initialization is bad, and  the  system  crashes  when  it
+tries to fetch instructions from RAM. Note that simple read and write
+accesses may still work, it's the burst mode that is failing.
+
+It is NOT sufficient to program the memory controller  of  your  CPU;
+each  SDRAM  chip  also  requires  a specific initialization sequence
+which you must adhere  to  to  the  letter  -  check  with  the  chip
+manufacturer's manual.
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de If
+this is a service economy, why is the service so bad?
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
