@@ -1,32 +1,31 @@
-To: Junita Ajith <junita_ppc@yahoo.com>
+To: "Mark Chambers" <markc@mail.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: How to boot U-Boot from RAM 
+Subject: Re: JTAG debug mechanism 
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 12 Aug 2004 22:20:42 PDT."
-             <20040813052042.77792.qmail@web53703.mail.yahoo.com>
-Date: Fri, 13 Aug 2004 19:11:06 +0200
-Message-Id: <20040813171111.C5ED0C109F@atlas.denx.de>
+In-reply-to: Your message of "Fri, 13 Aug 2004 10:55:44 EDT."
+             <004301c48145$a072a150$0301a8c0@chuck2>
+Date: Fri, 13 Aug 2004 19:18:56 +0200
+Message-Id: <20040813171901.77C64C109F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20040813052042.77792.qmail@web53703.mail.yahoo.com> you wrote:
+In message <004301c48145$a072a150$0301a8c0@chuck2> you wrote:
 >
-> I am trying to have a different version of UBoot with some utilities
-> added to it. So I'm trying to figure out a way to check if that upgraded
-> version of UBoot works fine, without copying it to the default location
-> where my original UBoot resides in the flash. I am using a 8540 board.
+> Motorola does not release all the information about the debug interface on
+> all their processors.  However, the
 
-Please read the U-Boot mailing list archive (searchable @ gmane), and
-let's continue this discussion (if at all) on the U-Boot-Users list.
+Well, they do (or it would be impossible to build  devices  like  the
+BDI2000), but only under NDA.
 
->      All I need to know is how do we run the UBoot from RAM, without
-> using flash. Any help would be appreciated.
+> BDM interface is well documented, and there is an open source project called
+> bdm4gdb.sourceforge.net, which
 
-We don't. Period. This has been explained on the  mailing  list  many
-times before. Please read the mailing list archive.
+...and this NDA also prevents us from implementing  COP  support  for
+BDM4GDB  [at  least when basing the software on GDB which requires it
+to be GPLed] :-(
 
 Best regards,
 
@@ -35,7 +34,7 @@ Wolfgang Denk
 --
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-There are very few personal problems that cannot be solved through  a
-suitable application of high explosives.
+Heavier than air flying machines are impossible.
+                    -- Lord Kelvin, President, Royal Society, c. 1895
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
