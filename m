@@ -1,31 +1,26 @@
-Message-ID: <002f01c032c7$7e311340$0a00010a@airvent.it>
-From: "Paolo Scaffardi" <arsenio@tin.it>
-To: "linuxppc-emb" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Booting the kernel... how?
-Date: Tue, 10 Oct 2000 16:36:26 +0200
+Message-ID: <39E341BC.9D8FD69B@mvista.com>
+Date: Tue, 10 Oct 2000 12:20:12 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Gabriel Paubert <paubert@iram.es>
+CC: clark@esteem.com, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Hanging in the Delay loop
+References: <Pine.HPX.4.10.10010101011400.16113-100000@gra-ux1.iram.es>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I cannot run the kernel from PPCBOOT on my FADS and i dont know why.
+Gabriel Paubert wrote:
 
-I configured bd_t on my 'fads.h' to look the same of 'ppcboot.h', i created
-the image using the same procedure explained on the README of PPCBOOT
-(getting a zImage.initrd) but after compressing the kernel, nothing happens
-to the terminal, and ethernet leds start flashes red.
+> Hmmm..., actually all processors have a TBEN pin (except the 601) and many
+> chipsets have a register which is designed to control this.
 
-I tried as Dan Dickey said, but nothing happened, too.
+Cool.  I didn't know most systems have external hardware to control
+this.  The embedded processors have software control in some
+internal registers.
 
-Where did i wrong?
 
-- may the pinguin b with u -
-
-Have a nice day,
-Paolo Scaffardi.
-AIRVENT SAM s.p.a. - RIMINI - ITALY
-
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
