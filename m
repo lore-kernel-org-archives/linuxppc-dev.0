@@ -1,37 +1,52 @@
-Message-Id: <200007300505.BAA23374@mal-ach.watson.ibm.com>
-To: bob@kunk.jriver.com
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: RS/6000 Model 170 Boots Linux 
-In-Reply-To: Message from bob@kunk.jriver.com
-   of "Sat, 29 Jul 2000 15:32:15 CDT." <20000729203215.23597.qmail@kunk.jriver.com>
-Date: Sun, 30 Jul 2000 01:05:15 -0400
-From: David Edelsohn <dje@watson.ibm.com>
+Message-Id: <200007301031.LAA32665@hyperion.valhalla.net>
+Date: Sun, 30 Jul 2000 11:31:33 +0100
+Subject: Re: Stealth port problems
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: Giuliano Pochini <pochini@denise.shiny.it>,
+        linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> bob  writes:
+Sun, Jul 30, 2000,   Giuliano Pochini wrote:
+> Giuliano Pochini wrote:
+>>
+>> > >Hi!  I have troubles with my stealth port on a G3-blue. When it runs at
+>> > 115200
+>> > >ifconfig
+>> > >shows a lot of overruns. At 57600 it works fine, but it's slow :-((
+>
+> The problem is definitely X.  I made a lot of tests: with dma and non-dma
+> serial driver, X accelerated, non accelerated, X bare.bone (started with
+> xinit). The problem is X. When X is running the serial ports looses packets
+> :-((
+> Am I the only one who is having this problem ???  Why does X cause overruns ??
 
-bob> The Power 3 in the 170 is running in 32 bit mode I assume?
+If you can try 2.2.17pre10ben2 or pre13ben2 (linuxcare linux-pmac-benh) then
+you can apply the IRQ latency test and see if it is that which is blocking
+you.  Scan the dev list for "[ANN} IRQ".
 
-	Yes, the system is running a 32-bit kernel.
+It is possible (there was a discussion in the ANN thread about fb IRQ
+blocks) - X may aggravate this.
 
-bob> Also with reference to the PPC linux system running on the Beta Power 4
-bob> is this also in 32 bit mode?
+I have seen 2ms of IRQ blocking on the Lombard (using IDE CDROM) and around
+450-750 us of IRQ blocking on my other machines (SCSI). [when heavily
+loaded].
 
-	Yes, the test system was running a 32-bit kernel.
+The RX buffer in an 85230 (which is actually the chip - IIRC - an enhanced
+8530) is 8 characters deep - so any more that about 700 us IRQ block will
+cause a drop out at 115200 continuous...
 
-bob> The Power 3,  RS6000-III and Power 4 are all 64 bit chips from what I
-bob> understand and IBM's literature makes me think that AIX is indeed running
-bob> in 64 bit mode with the ability to run 32 bit apps.
+So it looks like music might not be the only pressure to tune the IRQ
+latencies :-)
 
-	The AIX 4.3 kernel is running in 32-bit mode on 64-bit processors
-supporting 32-bit and 64-bit user applications.
+Note that an x86 kernel guru said on the lad list "a well tuned kernel
+should not exhibit more than about 60 us worst-case IRQ block"
 
-David
-===============================================================================
-David Edelsohn                                      T.J. Watson Research Center
-dje@watson.ibm.com                                  P.O. Box 218
-+1 914 945 4364 (TL 862)                            Yorktown Heights, NY 10598
+we have a ways to go to get to that.
+
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
