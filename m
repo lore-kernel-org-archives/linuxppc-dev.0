@@ -1,22 +1,36 @@
-Message-ID: <20083A3BAEF9D211BDB600805F8B14F3010A15A6@NTSERVER>
-From: Tzahi Oved <tzahio@voltaire.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: ppcboot 1.1.4 & linuxppc 2.4.10
-Date: Sun, 24 Feb 2002 21:16:15 +0200
+Message-ID: <3C794F36.2040400@pacbell.net>
+Date: Sun, 24 Feb 2002 20:38:14 +0000
+From: Armin <akuster@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="windows-1255"
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: EP405 PCI interrupt mapping
+References: <20020225014743.GD15788@zax>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-I'm trying to put together the ppcboot and linuxppc on the Galileo EV64260.
-After succeeding in loading the ppcboot, I'm tring to load the linuxppc in
-image mode (after using the mkimage utility on the vmlinux.gz file). After
-the ppcboot decompresses the kernel image it get's stack and doesn't even
-get to the Linux version printing.
-Any suggestions ??
-thanks
+David Gibson wrote:
+> Is the current PCI interrupt mapping stuff for the EP405
+> (i.e. ppc405_map_irq() in ep405.c) expected to work, or has it just
+> been copied from walnut and never updated for ep405?  It looks bogus
+> to me.
+>
+> --
+> David Gibson			| For every complex problem there is a
+> david@gibson.dropbear.id.au	| solution which is simple, neat and
+> 				| wrong.  -- H.L. Mencken
+> http://www.ozlabs.org/people/dgibson
+>
+>
+>
+>
+>
+
+AFAIK it was just copied.
+
+--armin
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
