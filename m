@@ -1,40 +1,27 @@
-Date: Wed, 3 Feb 1999 17:54:38 -0700 (MST)
-From: Brad Midgley <brad@pht.com>
-Reply-To: Brad Midgley <brad@pht.com>
-To: Daniel Jacobowitz <drow@false.org>
-cc: Paul.Mackerras@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org,
-        geiseri@msoe.edu
+Date: Thu, 4 Feb 1999 12:42:05 +1100
+Message-Id: <199902040142.MAA03853@tango.anu.edu.au>
+From: Paul Mackerras <paulus@cs.anu.edu.au>
+To: brad@pht.com
+CC: drow@false.org, linuxppc-dev@lists.linuxppc.org, geiseri@msoe.edu
+In-reply-to: <Pine.LNX.3.95.990203174811.1985A-100000@pacific.pht.com>
+	(message from Brad Midgley on Wed, 3 Feb 1999 17:54:38 -0700 (MST))
 Subject: Re: scsi hangs [drow@cs.cmu.edu: Re: CD-writers] (fwd)
-In-Reply-To: <Pine.LNX.3.95.990118132148.32489A-100000@pacific.pht.com>
-Message-ID: <Pine.LNX.3.95.990203174811.1985A-100000@pacific.pht.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Reply-to: Paul.Mackerras@cs.anu.edu.au
+References: <Pine.LNX.3.95.990203174811.1985A-100000@pacific.pht.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-i did a successful burn today! woohoo!
+Brad Midgley <brad@pht.com> wrote:
 
-cdrecord: fifo was 0 times empty and 13164 times full, min fill was 92%.
+> so... the 53c94 driver currently doesn't allow enough access to regular
+> hard drives when you're using the generic device. i don't know how this
+> relates to disconnect/reconnect or the scheduler. 
 
-the solution was to move the hard drive with the data on it to the
-internal scsi bus on my 7500. the burner (a ricoh) is still on the
-53c94. 
+IIRC, the mac53c94.c driver doesn't support disconnect/reconnect.  I
+presume it can but I don't know how you make it do it.
 
-so... the 53c94 driver currently doesn't allow enough access to regular
-hard drives when you're using the generic device. i don't know how this
-relates to disconnect/reconnect or the scheduler. 
-
-it isn't going to be an option for everybody to move their source drives
-to another bus but at least we know burning works in some configurations. 
-
-brad
-
->the author of cdrecord suggests we look at:
-> Disabled disconnect/reconnect on the SCSI bus
-> A bug in the scheduler or pager in the kernel.
-
-
+Paul.
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
