@@ -1,21 +1,22 @@
-Return-Path: <mgreer@mvista.com>
-Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
-	by ozlabs.org (Postfix) with ESMTP id AC38C67A6B
+Return-Path: <jchapman@katalix.com>
+Received: from ptb-relay01.plus.net (ptb-relay01.plus.net [212.159.14.212])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A28D167A6E
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 11 Mar 2005 03:45:32 +1100 (EST)
-Received: from mvista.com (av [127.0.0.1])
-	by av.mvista.com (8.9.3/8.9.3) with ESMTP id IAA19034
-	for <linuxppc-embedded@ozlabs.org>; Thu, 10 Mar 2005 08:45:30 -0800
-Message-ID: <423079A9.3030009@mvista.com>
-Date: Thu, 10 Mar 2005 09:45:29 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
+	Fri, 11 Mar 2005 10:01:20 +1100 (EST)
+Message-ID: <4230D1AC.5070506@katalix.com>
+Date: Thu, 10 Mar 2005 23:01:00 +0000
+From: James Chapman <jchapman@katalix.com>
 MIME-Version: 1.0
-To: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-References: <42307939.5060301@mvista.com>
-In-Reply-To: <42307939.5060301@mvista.com>
+To: Andy Fleming <afleming@freescale.com>
+References: <1107b64b01fb8e9a6c84359bb56881a6@freescale.com>	<1110334456.32556.21.camel@gaston>	<20050308194229.41c23707.davem@davemloft.net>	<1110340214.32524.32.camel@gaston>
+	<57a429f8eb807987d88b06129861d507@freescale.com>
+In-Reply-To: <57a429f8eb807987d88b06129861d507@freescale.com>
 Content-Type: text/plain; charset=us-ascii; format=flowed
-Subject: Re: [PATCH 2.6.12] PPC32: Add rtc hooks to katana + fw bug
-	workaround
+Cc: linuxppc-embedded@ozlabs.org, "David S. Miller" <davem@davemloft.net>,
+	netdev@oss.sgi.com
+Subject: Re: RFC: PHY Abstraction Layer II
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,6 +27,64 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Sorry again for the spam.
+Hi Andy,
 
-Mark
+Can you elaborate on why this phy abstraction is needed?
+
+In your original post, you mentioned that you were going to post a
+patch to show how your code would be hooked up in an existing net
+driver. Did I miss it? It would help in understanding the pros and cons
+of using genphy over using plain old mii.c.
+
+btw, I recently posted a patch to add GigE support to mii.c which is
+in Jeff's netdev-2.6 queue. Some register definitions were added in
+mii.h that will collide with yours.
+
+/james
+
+Andy Fleming wrote:
+
+> 
+> On Mar 8, 2005, at 21:50, Benjamin Herrenschmidt wrote:
+> 
+>> On Tue, 2005-03-08 at 19:42 -0800, David S. Miller wrote:
+>>
+>>> On Wed, 09 Mar 2005 13:14:16 +1100
+>>> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+>>>
+>>>> I'll have a closer look when I find some time, see if it makes sense to
+>>>> adapt sungem or not.
+>>>
+>>>
+>>> Especially because of the Broadcom PHYs I bet it doesn't.
+>>>
+>>> Too many chips have to reset the MAC, or do other fancy stuff
+>>> when programming the PHY to make this genphy thing very useful.
+>>
+>>
+>> Oh, I think genphy is just a generic driver, but his layer has hooks for
+>> other PHY drivers (wasn't it based on sungem_phy in the first place ?)
+> 
+> 
+> Definitely.  Much of this code was culled from the sungem and ibm_emac 
+> drivers, with some input from mii.c.  The genphy driver is just one of 
+> the 6 PHY drivers in the patch I sent (the others are Marvell, Davicom, 
+> Cicada, QS, LXT).  Actually, several of those files have multiple 
+> drivers in them.  The genphy driver is the fallback driver.  It exists 
+> for those PHYs which never get a driver, but don't need special attention.
+> 
+>>
+>> I discussed several steps of the design with Andy, the idea was to have
+>> something a bit like sungem_phy.c with addditional common library for
+>> doing the link polling & fallback stuff etc... that could be easily
+>> shared by drivers.
+> 
+> 
+> Yup.  I look forward to your input on how well the code meshes with what 
+> people need for their drivers.
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
