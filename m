@@ -1,71 +1,40 @@
-Message-ID: <39F5F96E.AAE39677@mvista.com>
-Date: Tue, 24 Oct 2000 14:04:46 -0700
+Message-ID: <39F5FFCE.6C94AAEC@mvista.com>
+Date: Tue, 24 Oct 2000 14:31:58 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
 Reply-To: mgreer@mvista.com
 MIME-Version: 1.0
-To: Topi Kanerva <tkanerva@ees2.oulu.fi>
-CC: Zhaobin Zhu <zzhu@emc.com>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: <kernel-image-name>
-References: <Pine.GSO.4.21.0010231622560.25586-100000@stekt8>
+To: "ZHANG,HAI-TAO (Non-A-China,ex1)" <hai-tao_zhang@non.agilent.com>
+CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: root filesystem over nfs
+References: <2F67A63DFFB1D31185D90090278CBB2D017D2A39@apmail6.chn.agilent.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Topi,
+"ZHANG,HAI-TAO (Non-A-China,ex1)" wrote:
 
-I don't know what you're nfs problems are.
+> Hi,
+>
+> I tried to change one line in eepro100.c and now the 2.4.0-test9 boot is ok.
+>
+> $ diff eepro100.c eepro100.c.orig
+> 1098c1098
+> <       outl(TX_RING_ELEM_DMA(sp, sp->dirty_tx % TX_RING_SIZE),
+> ---
+> >       outl(cpu_to_le32(TX_RING_ELEM_DMA(sp, sp->dirty_tx % TX_RING_SIZE)),
+>
+> It seems like the endianess is changed twice so the kernel hangs up. Maybe
+> we should define some macros like outl for CONFIG_SANDPOINT.
+>
+> Thanks,
+> Haitao Zhang
 
-initrd is broken.  In the 2.4.0-test kernel (and probably others), some
-necessary lines were removed from arch/ppc/boot/head.S.  I believe they have
-been added back in the more recent source.  Here is a patch:
-
---- /opt/hardhat/devkit/lsp/sp8240/linux-2.4.0-test2/arch/ppc/boot/head.S
-Sat Nov 27 16:41:59 1999
-+++ head.S      Tue Oct 24 13:44:56 2000
-@@ -112,6 +112,14 @@
-        cmpi    0,r2,0
-        bne     00b
-
-+       /* r4,r5 have initrd_start, size */
-+       lis     r2,initrd_start@h
-+       ori     r2,r2,initrd_start@l
-+       lwz     r4,0(r2)
-+       lis     r2,initrd_end@h
-+       ori     r2,r2,initrd_end@l
-+       lwz     r5,0(r2)
-+
-        /* tell kernel we're prep */
-        /*
-         * get start address of kernel code which is stored as a coff
-
-
-
-Also, the sandpoint_setup_arch() routine in arch/ppc/kernel/sandpoint_setup.c
-needs to be fixed.  Change the SCSI_CDROM_MAJOR to RAMDISK_MAJOR.
-
-These hacks should get your ramdisk going...
+Hmmm, I thought I had this change in the latest sanpoint source that I put on
+the ftp server.  In fact, I thought there was a discussion on this in this
+mailing list a few weeks ago.  Anyway, sounds like its fixed now...
 
 Mark
---
-
-
-> Linux/PPC load: root=/dev/ram
->
-> Any ideas what I'm doing wrong here? I've been up all day so when you're
-> really tired, there's something really stupid I'm forgetting right now...
->
-> I don't know why, but I seem to be the only one that cannot even make the
-> damn stupid sandpoint to boot at *all*. Maybe I should get a job cleaning
-> toilets instead...
->
-> -topi
-
---
-Mark A. Greer (mgreer@mvista.com; 480-517-0287)
-MontaVista Software, Inc.
-2141 E. Broadway Road, Suite 108
-Tempe, AZ  85282
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
