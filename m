@@ -1,8 +1,8 @@
-Message-ID: <20000128225436.15080.qmail@web1001.mail.yahoo.com>
-Date: Fri, 28 Jan 2000 14:54:36 -0800 (PST)
+Message-ID: <20000128225831.14202.qmail@web1006.mail.yahoo.com>
+Date: Fri, 28 Jan 2000 14:58:31 -0800 (PST)
 From: Dan Bethe <dan_bethe@yahoo.com>
 Subject: Re: Making an HFS+ Filesystem
-To: Brian Kidder <b.kidder@ericsson.com>, linuxppc-dev@lists.linuxppc.org
+To: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
@@ -10,19 +10,17 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 
+> What single-user-centric file system would make a good example?  I'm
+> assuming that ext2 and ext3 would make good multi-user-centric file
+> system examples.
 
---- Brian Kidder <b.kidder@ericsson.com> wrote:
-
-> I've been unable to locate any current effort to make Apple's HFS+
-> format available to Linux, so I'm considering making a stab at it.
-
-http://developer.apple.com/technotes/tn/tn1150.html
-
-	Consider this link!
-	Thanks for your work!  Hopefully you'll make a filesystem worthy of becoming a
-single modern filesystem for the sharing of all data on a single machine
-between reboots of MacOS 8, 9, 10, and Linux!  ;)
-	I'm not a programmer but I'll help you test it.
+	Oh.  Have you looked at FAT, VFAT, and UMSDOS?  How about HPFS and Amiga FFS?
+These are all Linux-supported single-user-centric fs's, to varying degrees of
+modernness and completeness.
+	If I was you, I'd go look in /usr/src/linux/fs/ and
+/usr/src/linux/Documentation/filesystems.
+	Or maybe you're way beyond that and I have no clue, but I'm still giving you a
+pat on the back :)
 
 =====
 "Don't expect your own messiah; this neverworld which you desire is
