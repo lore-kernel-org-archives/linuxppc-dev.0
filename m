@@ -1,92 +1,61 @@
-Message-ID: <37495F9D.5E8B980@fi.infn.it>
-Date: Mon, 24 May 1999 16:18:05 +0200
-From: Simone Piccardi <Simone.Piccardi@fi.infn.it>
+Message-Id: <199905241534.KAA24850@lists.linuxppc.org>
+Date: Mon, 24 May 1999 17:14:49 +0200 (CEST)
+From: laures@esiea.fr
+Subject: Initio miles tests :-(
+To: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-To: Gabriel Paubert <paubert@iram.es>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: MVME2431: how to use vme?
-References: <Pine.HPP.3.96.990524121053.13293E-100000@gra-ux1.iram.es>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Gabriel,
-thanks for the help, I had already found the solution looking at the
-code.
-My universe.c now looks like:
+OK so far it's not really good...
 
-        /* Set up an A32/D32 image with BLT for tests */
-        SET_REG(0xd8000000 - universe.bus_delta, LSI_BS(2));
-        SET_REG(0xdc000000 - universe.bus_delta, LSI_BD(2));
-        SET_REG(universe.bus_delta, LSI_TO(2));
-        SET_REG(UNIVERSE_SLAVE_EN | UNIVERSE_VAS_A32 | UNIVERSE_VDW_32 
-                /*| UNIVERSE_BLT*/ ,
-                LSI_CTL(2));
+Let's begin by what's working...
 
-that is quite the same that you say me; and it work. I have just a
-question, there is any drawback to set the region addresses directly
-inside the BS and BD registers, or I have to put the different offset
-like you did? Has I said I'm quite new to VME, and also if now I'm
-beginning to understand some things, all these addresses stuffs are
-still a little bit too complex for me.
+mke2fs /dev/disk-on-miles is ok
+fsck too
 
-I also had to modify the VME_attr declaration as:
+mount -t hfs
+mount -t ext2 as well
 
-        VME_attr memdesc = {
-          base:  0xdaffe000, 
-          limit: 0xdafff000, 
-          flags: VME_AM_A32(32) | VME_USE_MAP 
-        };       
-and in this way mmap work (I can access the board after the mmap by some
-*(mp)=0x5 or val[i]=*mp); I used this declaration (a page size) way
-because using limit: 0xdaffe020 make mmap not working. I'll try your
-values to see if everything is OK.
+cp a 2M file (kernel) ok, not corrupted when cp back to mesh (gzip'ed
+and de-gzip'ed succesfully)
 
-A second question is about the BLT flag, as I understand is used to
-enable block tranfer. Now we don't need it because the board that we use
-has only a readout address that take values stored inside internal FIFO;
-this lead to about 700ns to read one word, but our hardware people are
-thinking about to make a new board, putting everything inside a buffer,
-so if I'll had to use this how I have to read? For what I undertand
-block tranfer tranfer on read a whole block of data but how can I
-specify the size? 
+umount ok after cping this small file.
 
-Just a last thing, I tried to compile the driver removing the 
-#undef  UNIVERSE_DEBUG
-line to use debugging info, but after I did this with make modules when
-it try to compile the module I get:
 
-universe.c:856: parse error before
-`{'                                          
-universe.c:856: `tmp' undeclared (first use in this
-function)                   
-universe.c:856: (Each undeclared identifier is reported only
-once               
-universe.c:856: for each function it appears
-in.)                               
-universe.c:856: parse error before
-`,'                                          
-universe.c: At top
-level:                                                       
-universe.c:856: parse error before
-`,'                                          
-universe.c:857: parse error before
-`:'                                          
-universe.c:857: warning: type defaults to `int' in declaration of
-`tmp'         
-universe.c:857: `tmp' used prior to
-declaration                                 
+Now what doesn't work...
 
-and a lot of this (line number could be different from your original
-code, because I put some debugging printk inside the code), I'm missing
-some other declaration?
+pdisk /dev/disk-on-miles destroy the partition map if re-written, even
+just renaming a partition
 
-bye 
-(and thanks for writing the driver!!!)
+mke2fs -c gives a kernel panic ("kernel stack overflow")
+
+cp /usr/src/linux/* /mnt/disk-on miles/ goes ok few... and then I got
+this kind of lines (several times):
+scsi: aborting command due to timeout: pid 20175, scsi1, channel 0,
+id5, lun0, Write (6) 04 9C 45 80 00
+SCSI bus is being reset for host 1 channel 0
+the kernel "panics" soon after
+
+I got his behaviour also when cping 10 megs of files (/boot/*) and
+issuing umount when done.
+
+Finally hdparm -Tt gives a kernel panic, or smth just under
+
+Each time the ext2 partition is completely screwed, I must reformat to
+continue tests, the hfs is screwed once over 2.
+I think I will go on with a ramdisk !
+
+So I guess the patch wasn't enough...
+
+Any way of investigation someone ?
+
+
 -- 
-Simone Piccardi
-Microsoft is NOT the answer. Microsoft is the Question.
-The answer is: "NO!"
+Guillaume Laurès - student @ ESIEA (www.esiea.fr)
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
