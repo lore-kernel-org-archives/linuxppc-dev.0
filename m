@@ -1,41 +1,38 @@
-Message-ID: <20000209033740.16824.qmail@web1701.mail.yahoo.com>
-Date: Tue, 8 Feb 2000 19:37:40 -0800 (PST)
-From: Gabriel Ricard <g_ricard@yahoo.com>
-Subject: PowerPC Open Platform
-To: linuxppc-dev@lists.linuxppc.org
+Message-ID: <38A1008D.BB560C55@netx4.com>
+Date: Wed, 09 Feb 2000 00:52:13 -0500
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
+To: Peter Allworth <linsol@zeta.org.au>
+CC: Jesper Skov <jskov@redhat.com>, linuxppc-embedded@lists.linuxppc.org,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: more Re: Low memory problems in 8xx Linux
+References: <20000201235813.4F5611B51A@elph.research.canon.com.au> <38977960.40E014A1@zeta.org.au> <ot1z6of1ws.fsf@thinktwice.zoftcorp.dk> <38A0BED6.AD2E336C@zeta.org.au>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I had a chance to talk with some IBM folks at LWCE
-last week about the PowerPC Open Platform reference
-boards. For some reason this time around there were no
-IBM employees on hand, who were working on the
-project, displaying information about it. At the last
-LWCE they had one of the boards there, literature, and
-knowledgeable folks ready to answer questions. This
-time... nada.
+Just a note to let you guys know you are getting just a little
+carried away here.....
 
-Anyways... The first guy I talked with thought I was
-asking about RS/6000s, and so I had to find someone
-else. But when I talked with the both of them the most
-information that I could get was that, to the
-knowledge of these two employees, the POP boards have
-already been licensed to mainboard manufacturers and
-it is just a matter of time until we start seeing them
-pop up.
+You are placing things in the TLB specific handler that are
+supposed to be handled generically in places like arch/ppc/mm/fault.c.
 
-I don't know if anyone else can verify this
-information, but I would be very pleased if I were
-able to purchase a POP board and build myself a nice
-PPC box at some point this year.
+Yes, it may be a little bit of a speed improvement, but you
+are placing code in the TLB miss handler that logically should
+be executed as part of the TLB Error handler.  In some cases,
+it is appropriate to store something in the TLB that will cause
+a subsequent fault into the TLB Error handler (i.e. a pte that
+doesn't look valid).  If you continue down this path, you will
+end up exceeding the space allocated for the trap handler, and
+simply re-implement code found elsewhere.
+
+While some of the updates are genuine bugs that should be corrected,
+some of the other stuff isn't proper, so don't be surprised when
+it doesn't show up in the real kernel sources.
 
 
 
-=====
-Gabriel Ricard
-g_ricard@yahoo.com
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
