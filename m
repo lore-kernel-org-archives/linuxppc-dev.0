@@ -1,43 +1,36 @@
-To: David de =?iso-8859-1?Q?Andr=E9s=20Mart=EDnez?= <ddandres@disca.upv.es>
+To: g.ramakrishna@exgate.tek.com
 Cc: linuxppc-embedded@lists.linuxppc.org
 From: Wolfgang Denk <wd@denx.de>
-Subject: Re: libc.so.6 error but not in Montavista 
+Subject: Re: Can not boot linux-2.4.4 using ppcboot-1.0.4 
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sat, 14 Apr 2001 09:23:36 +0200."
-             <3AD7FAF8.44670189@disca.upv.es>
-Date: Sun, 23 Sep 2001 20:00:22 +0200
-Message-Id: <20010923180027.B704A1009E@denx.denx.de>
+In-reply-to: Your message of "Fri, 21 Sep 2001 01:30:15 PDT."
+             <301A812E6528D511A8F70008C71E578616C92E@AP-BANG-M02>
+Date: Sun, 23 Sep 2001 20:00:27 +0200
+Message-Id: <20010923180032.CA7D81009E@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3AD7FAF8.44670189@disca.upv.es> you wrote:
+In message <301A812E6528D511A8F70008C71E578616C92E@AP-BANG-M02> you wrote:
 >
-> I have built the CDK withouth any problems and so the ramdisk.
-> But when I try to boot the system, I obtain the following error:
-> ....
-> init: error in loading shared libraries: libc.so.6: cannot open shared
-> object fi
-> le: No such file or directory
-...
-> If your shared libraries are (as usual) in the "/lib" directory, add the
-> following option to the GCC command line when linking your binary:
-> -Wl,-R/lib
-> --------
-> In fact, I don't know where to add this option.
+> I am trying to boot Linux-2.4.4 kernel using ppcboot-1.0.4.
+> It hangs after printing "## Transferring control to Linux (at address
+> 00000000) ..."
 
-There is a patch for our old version of the cross tools; see
-ftp://ftp.denx.de/pub/LinuxPPC/usr/src/patches/specs.tar.bz2
+This is a FAQ. See the PPCBoot mailing list archive.
 
-This fixes the compiler "specs" files to automatically add this option.
+The usual reason is that you missed to adapt your board  header  file
+used  in  the  LInux  kernel  to  match the definition of the bd_info
+structure as passed by PPCBoot. Usually  you  can  just  delete  this
+definition  from  your  board header file and include <asm/ppcboot.h>
+instead.
 
 Wolfgang Denk
 
 --
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Harrison's Postulate:
-	For every action, there is an equal and opposite criticism.
+I'd rather be led to hell than managed to heaven.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
