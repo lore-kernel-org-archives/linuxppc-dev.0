@@ -1,35 +1,31 @@
-Date: Mon, 27 Sep 1999 09:07:16 +0200 (MET DST)
-From: Geert Uytterhoeven <geert@sonycom.com>
-To: Randall R Schulz <rrschulz@cris.com>
-cc: mlan@cpu.lu, linuxppc-user@lists.linuxppc.org,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Inbound TCP Circuits over PPP Stall; MTUs and Kppp
-In-Reply-To: <v04210104b4143d523d32@[206.173.234.127]>
-Message-ID: <Pine.GSO.4.10.9909270906510.11511-100000@begonia.sonytel.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: Re: XFree86-3.3.5-1.6.0b
+From: MATSUURA Takanori <t-matsuu@protein.osaka-u.ac.jp>
+To: linuxppc-dev@lists.linuxppc.org
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <19990927172712I.t-matsuu@protein.osaka-u.ac.jp>
+Date: Mon, 27 Sep 1999 17:27:12 +0900
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 26 Sep 1999, Randall R Schulz wrote:
-> Yes, I, too, have the hunch that the problem is data sensitive and 
-> may relate to checksum generation. There were 17 messages in 
-> LinuxPPC-Dev (topic: "TCPv4 checksum errors") late last December 
-> about checksum generation problems, but the thread ended and it 
-> appeared that either the problem was fixed or was deemed spurious to 
-> begin with.
+Me too. xfs cannot work with port -1. In my G3/DT233, manual operation
+by root with port 7100 (xfs default port) can work.
 
-The bug in the checksum routines was fixed (by Petr Vandrovec, IIRC).
+Date: 26 Sep 1999 16:21:04 -0400
+From: minyard@acm.org
+Subject: Re: XFree86-3.3.5-1.6.0b
 
-Greetings,
+> Also, my font server stopped working.  It would lock the machine up at
+> startup.
+> Actually, the machine wasn't locked up, but it wouldn't
+> finish booting since xfs didn't "daemonize" properly, it seems. I had
+> to remove it from the rc directories.
 
-						Geert
 
---
-Geert Uytterhoeven ----------------- Sony Suprastructure Center Europe (SUPC-E)
-Geert.Uytterhoeven@sonycom.com ------------------- Sint Stevens Woluwestraat 55
-Phone +32-2-7248648 Fax +32-2-7262686 ---------------- B-1130 Brussels, Belgium
-
+MATSUURA Takanori @ Division of Protein Chemistry, 
+                     Institute for Protein Research, Osaka University, Japan
+E-Mail: t-matsuu@protein.osaka-u.ac.jp
+Web Page: http://www.protein.osaka-u.ac.jp/chemistry/matsuura/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
