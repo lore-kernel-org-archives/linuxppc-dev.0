@@ -1,30 +1,24 @@
-From: "Elan Feingold" <elan@nxnetworks.com>
-To: "Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Most stable kernel?
-Date: Mon, 6 Aug 2001 10:52:48 -0500
-Message-ID: <NDBBLJKOJGKDOFBHNPGEAEGDCEAA.elan@nxnetworks.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
+Subject: kernel hangs at my_console_write
+Date: Mon, 6 Aug 2001 11:18:54 -0500
+Message-ID: <3A494DE356A49A40B37442E1E0D9F3B5063406@ptah.ad.newisys.com>
+From: "Navin Boppuri" <navin.boppuri@newisys.com>
+To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hello,
 
-As mentioned in previous posts, we're using 8260 boards (EST currently, soon
-to be custom) and we're using 2.4.5 + patches.  This kernel doesn't seem to
-be completely stable, with kernel hangs when using strace and gdb.  I'm
-interested in hearing what people out there consider to be a good stable
-kernel to use (perhaps one of the stock HardHat kernels?).  Our only major
-requirement is JFFS2, and we'd like to stick with the 2.4 series for their
-fast networking.
+I am using the Hardhat 1.2 kernel from MVista on my custom board with
+MPC855T. The kernel executes and hangs at my_console_write routine. I
+did see someone else have a similar problem with the kernel. But I've
+not seen any solution for the problem. The 1.1 from Hardhat works just
+fine.
 
-Any insight would be much appreciated.
-
-Best regards,
-
--elan
-
+Thank you,
+Navin Boppuri
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
