@@ -1,30 +1,34 @@
-Message-ID: <3DF0D6B6.2050307@embeddededge.com>
-Date: Fri, 06 Dec 2002 11:56:22 -0500
-From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: Matt Porter <porter@cox.net>
-Cc: Joakim Tjernlund <joakim.tjernlund@lumentis.se>,
-	Pantelis Antoniou <panto@intracom.gr>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Regarding consistent_alloc
-References: <3DF0A4D9.4030603@intracom.gr> <IGEFJKJNHJDCBKALBJLLCEJFFIAA.joakim.tjernlund@lumentis.se> <20021206085909.B17918@home.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: boot flash problem,
+Date: Fri, 6 Dec 2002 12:41:26 -0500
+Message-ID: <2702075D4DE2B043BF5EB82E9CFAD45B093B99@mail1.mediatrix.com>
+From: "Jean-Denis Boyer" <jdboyer@mediatrix.com>
+To: "Li Xiangrong" <lixiangrong@china.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Matt Porter wrote:
+> bdi configuration file:
+> ..
+> WM32    0xFF000100      0xFFE00801      ;BR0
+> WM32    0xFF000104      0xFFC00160      ;OR0 : 2MB, all
 
- > ....  If you
-> want the kernel virtual address then you can apply __va to that.
+If you use a flash of 4MB, then move the base address from 0xFFE00000 to 0xFFC00000.
+Set the base address in BR0 to 0xFFC0, not 0xFFE0.
 
-Errr....no, you can't.  That would give you the cached mapping.
-You need to hang on to both the dma_handle (the phys address token)
-and the virtual address returned by the function.  That's why both
-are returned.
+Your BDI probably programmed the boot loader at the wrong place.
 
-
-	-- Dan
-
+Regards,
+--------------------------------------------
+ Jean-Denis Boyer, B.Eng., Technical Leader
+ Mediatrix Telecom Inc.
+ 4229 Garlock Street
+ Sherbrooke (Québec)
+ J1L 2C8  CANADA
+ (819)829-8749 x241
+--------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
