@@ -1,8 +1,8 @@
-Message-ID: <7143C7BA3BFAD2119AAC0008C7094B9965043A@postoffice2.teltronics.com>
+Message-ID: <7143C7BA3BFAD2119AAC0008C7094B9965043B@postoffice2.teltronics.com>
 From: Tom Miles <tmiles@teltronics.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Swap space on Embedded Planet CLLF 860
-Date: Wed, 22 Mar 2000 16:02:54 -0500
+Subject: Checksum error on last record - Embedded Planet TFTP 
+Date: Wed, 22 Mar 2000 16:14:38 -0500
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -10,12 +10,23 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have my CLLF 860 coming up via TFTP boot with a NFS mounted root file
-system.  The kernel crashes after a short while always in relation to a page
-swap.  As near as I can tell I do not have any swap space set up and am not
-sure how to do so in this environment.
+I have corrected the checksum error on the last record when doing TFTP
+downloads to a Embedded Planet CLLF board.  The zsrec program is putting a
+''S9" record at the end of the file.  Apparently the Embedded Planet monitor
+doesn't like "S9" records.
 
-Do I somehow use ramdisk or can I just turn of swapping somehow?
+In zsrec.c, I replaced the following line:
+
+	printf("S904000000FB\n");
+
+with this line:
+
+	printf("S70500200000DA\n");
+
+This record (a start address record) then allows you to use the "T" command
+in the "L"oad menu.  Which will load the image via TFTP and then start
+execution at the address specified (i.e. 0x200000).
+
 
 Tom Miles, Staff Engineer
 Teltronics, Inc.
