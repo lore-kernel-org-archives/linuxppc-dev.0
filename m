@@ -1,29 +1,38 @@
-From: benh@kernel.crashing.org
-To: Christopher Murtagh <christopher.murtagh@mcgill.ca>
-Cc: <linuxppc-dev@lists.linuxppc.org>, <tech@totalimpact.com>
-Subject: Re: 2.4 kernel on briQ
-Date: Wed, 10 Apr 2002 16:24:12 +0100
-Message-Id: <20020410152413.13794@mailhost.mipsys.com>
-In-Reply-To: <Pine.LNX.4.33.0204100945320.25920-100000@blues.wcg.mcgill.ca>
-References: <Pine.LNX.4.33.0204100945320.25920-100000@blues.wcg.mcgill.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Wed, 10 Apr 2002 12:08:33 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Michael Sokolov <msokolov@ivan.Harhan.ORG>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: CONFIG_GENERIC_PPC32
+Message-ID: <20020410190833.GN26754@opus.bloom.county>
+References: <20020409145929.GC710@opus.bloom.county> <0204091952.AA24042@ivan.Harhan.ORG>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <0204091952.AA24042@ivan.Harhan.ORG>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>I'm working on it. Though I don't have 1Gb of RAM, I expect it to work ;)
->>
->>Hopefully, by next week I will have something. I've been a bit too busy
->>lately to give it time.
+On Tue, Apr 09, 2002 at 12:52:40PM -0700, Michael Sokolov wrote:
 >
-> Awesome. Thanks Ben. I might be able to send/lend you the RAM if it would
->help at all. Let me know if it would.
+> Tom Rini <trini@kernel.crashing.org> wrote:
+>
+> > > I don't see it as ugly, I think it's quite beautiful.
+> >
+> > Adding an #ifdef per board?
+>
+> Yes. It's a lot more beautiful than getting link errors about platform_init
+> multiply defined or <x>_init undefined.
 
-Well, if you have problem with it once I release the kernel, then yes, I will
-need the RAM.
+And neither are as nice as doing some ELF tricks like what Paul
+mentioned.  If you do something ala __init which marks a function as
+going into .text.platform.init or so, change <x>_init to have a check to
+make sure it's on the right board and then have early_init call a
+function that goes and runs all of the functions marked as
+.text.platform.init, a 1-board kernel is almost no different, and adding
+new boards to GENERIC_PPC32 means touching one less file.
 
-Ben.
-
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
