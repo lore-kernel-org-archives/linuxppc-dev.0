@@ -1,33 +1,24 @@
-Message-ID: <3BA3D432.350C697@mvista.com>
-Date: Sat, 15 Sep 2001 18:20:34 -0400
-From: Dan Malek <dan@mvista.com>
+Message-ID: <20010916055800.9866.qmail@web15003.mail.bjs.yahoo.com>
+Date: Sun, 16 Sep 2001 13:58:00 +0800 (CST)
+From: =?gb2312?q?=B2=FD=20=D6=DC?= <zjuzhou@yahoo.com.cn>
+Subject: What embedded database works better?
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-To: Michael Habermann <MHabermann@gmx.de>
-Cc: Wolfgang Denk <wd@denx.de>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MMU and BDI2000
-References: <Your message of "Fri, 14 Sep 2001 17:58:29 +0800." <5.1.0.14.0.20010914174808.026db880@pop.gmx.de> <5.1.0.14.0.20010915223300.02bef9f0@pop.gmx.de>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=gb2312
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Michael Habermann wrote:
-
-> How do I get the swapper_pg_dir? Is it the constant address from System.map?
-
-Ooops...You shouldn't have seen any version of the software that makes
-any
-reference to swapper_pg_dir.....
-
-The configuration file you attached looks fine for the recent 2.4
-kernels.
-If you want to backtrace into the currently running application (useful
-for system call parameters), ensure you enable the 'CONFIG_BDI_SWITCH'
-option.  I left it disabled by default because it adds three
-instructions
-to the context switch overhead.
+hello all.
+   What embedded databse software works better now?
+Is it opensource software? How can i get or but it?
 
 
-	-- Dan
+
+_________________________________________________________
+Do You Yahoo!? 登录免费雅虎电邮! http://mail.yahoo.com.cn
+
+<font color=#6666FF>无聊？郁闷？高兴？没理由？都来聊天吧！</font>——
+雅虎全新聊天室! http://cn.chat.yahoo.com/c/roomlist.html
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
