@@ -1,32 +1,30 @@
-Date: Sun, 19 Jan 2003 17:33:33 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: b y <by012345@yahoo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: openpic and serial interupt mode of mpc107
-Message-ID: <20030120003333.GG888@opus.bloom.county>
-References: <20030119031516.68349.qmail@web41505.mail.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20030119031516.68349.qmail@web41505.mail.yahoo.com>
+From: Jaap-Jan Boor <jjboor%lucent-dot-com@hzsms01.nl.lucent.com>
+Message-Id: <200301201143.MAA03934@hzsms01.nl.lucent.com>
+Date: Mon, 20 Jan 2003 12:43:18 +0100 (MET)
+Reply-To: Jaap-Jan Boor <jjboor@denx.de>
+Subject: Re: make menuconfig fails.
+To: linuxppc-embedded@lists.linuxppc.org, denis@rouleau.com
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Sat, Jan 18, 2003 at 07:15:16PM -0800, b y wrote:
+> I am following the instructions on penguin PPC ( HYPERLINK
+> "http://penguinppc.org/embedded/cross-compiling/"
+> http://penguinppc.org/embedded/cross-compiling/) and I am getting an error:
+> during make menuconfig
+>
+> checklist.c:24 dalog.h: no such file or directory
+>
+> I do have the file in /usr/src/linux-2.2.14/scripts/lxdialog
+>
+> My kernel sources for PPC are under /usr/linuxppc_2_4
+>
+> What am I missing?
 
-> I am using Monta Vista Preview 2.1 kit for a customer
-> board that used mpc107 serial interrupt mode only.
-> Does anyone know if Monta Vista Preview 2.1 supports
-> serial mode in interrupt implementation ? If not,
-> where should i get patch if any as I found several old
-> messages mentioned patch for mpc107 serial interrupt
-> mode before.
+you may have problems with your ncurses installation
 
-Yes, see how the Motorola LoPEC (arch/ppc/platforms/lopec_*.c) is
-handled.  And the Sandpoint as well.
-
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Jaap-Jan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
