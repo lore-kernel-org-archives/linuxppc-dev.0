@@ -1,17 +1,20 @@
-Return-Path: <krypton@ulrich-teichert.org>
-Received: from arbas.nms.ulrich-teichert.org (i3ED64D7B.versanet.de
-	[62.214.77.123]) by ozlabs.org (Postfix) with ESMTP id 769D22BF07
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Jan 2005 19:10:55 +1100 (EST)
-Message-Id: <200501050807.j0587L5J026680@arbas.nms.ulrich-teichert.org>
-To: mikemartin@linux.ca
-Date: Wed, 5 Jan 2005 09:07:20 +0100 (MET)
-In-Reply-To: <855e88d005010420367a92617a@mail.gmail.com> from "Mike Martin" at
-	Jan 04, 2005 11:36:49 PM
-From: Ulrich Teichert <krypton@ulrich-teichert.org>
-MIME-Version: 1.0
+Return-Path: <sven.luther@wanadoo.fr>
+Received: from smtp2.wanadoo.fr (smtp2.wanadoo.fr [193.252.22.29])
+	by ozlabs.org (Postfix) with ESMTP id 39F692BF07
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Jan 2005 19:54:57 +1100 (EST)
+Date: Wed, 5 Jan 2005 10:03:18 +0100
+To: Leigh Brown <leigh@solinno.co.uk>
+Message-ID: <20050105090318.GA12317@pegasos>
+References: <33721.82.10.231.190.1104781370.squirrel@82.10.231.190>
+	<200501032211.j03MB7A1021340@arbas.nms.ulrich-teichert.org>
+	<20050104222854.GA30919@pegasos>
+	<33151.82.10.231.190.1104878355.squirrel@82.10.231.190>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <33151.82.10.231.190.1104878355.squirrel@82.10.231.190>
+From: Sven Luther <sven.luther@wanadoo.fr>
 Cc: Ulrich Teichert <krypton@ulrich-teichert.org>, linuxppc-dev@ozlabs.org,
-	debian-powerpc@lists.debian.org, Philippe Guyot <pguyot@cvf.fr>
+	mikemartin@linux.ca, debian-powerpc@lists.debian.org
 Subject: Re: 43p-140 install issues
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,37 +25,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Tue, Jan 04, 2005 at 10:39:15PM -0000, Leigh Brown wrote:
+> Sven Luther said:
+> > On Mon, Jan 03, 2005 at 11:11:06PM +0100, Ulrich Teichert wrote:
+> >> Hi,
+> >>
+> >> >Delete the "console=tty0", so you end up with:
+> >> >
+> >> > Linux/PPC load: console=ttyS0,9600 root=/dev/ram
+> >> >
+> >> >and try again!
+> >> [del]
+> >>
+> >> Right, then the installer knows what to do. I think this should go into
+> >> the Debian installation docs, there are a lot of boxes with graphic
+> >> cards
+> >> out which are not supported by Linux.
+> >
+> > Err, it should default to vga tedxt mode if the graphic card fbdev is not
+> > builtin, at least it does it here.
+> 
+> The PReP specs says that the cards should be initialised to a
+> minimum resolution of 640x480 iirc.  The boot loader has code to
+> manually reprogram the card *back* into VGA text mode, but only
+> for a very limited number of cards.  So, if your card is not
+> supported by fbdev, and isn't one of the very few supported
+> cards in the boot loader, it simply won't work under PReP.
 
-[del]
->Done - no difference. Same message. Written multiple images, multiple
->times on multiple machine. Each one with the same result. At least I'm
->not completely alone, I found this:
->http://wikihip.cern.ch/twiki/bin/view/RS6000/KernelTestsOn43P240 exact
->same error.
+Ah, ok ... Well i have a cirrus logic card also, and it seems to work. I have
+anot yet tried the matrox cards though. Do they need to be special cards with
+forth rom, or will any do ? 
 
-Perhaps there are two different board revisions of -140's out? I'll check
-what's written on the system board when I'm home again today.
+BTW, i have another question. I am trying to fix debian-installer to create
+the prep partition, but i would like to have some info on the expected
+constraints of said partition. Some tell it has to be entirely in the first
+8MB, others the first 5MB, and my powerstack has a 17MB boot partition right
+now.
 
->> > I am begining to believe that there is some sort of hardware problem with your
->> > box or it is an upgraded version which was a -140 in it's previous life, but my
->> > -140 is rock solid with Leigh's 2.4.19 kernel - once it's up, that is.
->> > I will leave it running tonight to see what happens,
-[del]
+I guess it is really not all that important what the size of the partition is,
+it just needs to be first, and the kernel needs to fit in what the firmware
+supports.
 
-Still running fine:
+This goes for various prep boxes, but also for later IBM chrp machines,
+including current pseries. It may be problematic, though if the size is too
+small, as debian uses an initrd kernel, and altough the kernel itself is
+rather small (around 1MB compressed), the current initrd generation method is
+not all that fine-grained.
 
-wehrle:~> uname -a
-Linux wehrle 2.4.19 #3 Sun Aug 4 08:28:30 BST 2002 ppc unknown
-wehrle:~> uptime
- 08:58:25 up 13:08,  1 user,  load average: 0.00, 0.00, 0.00
+Ah, another thing. I am about to make a new kernel upload, which fixes the
+powerstack II (utah) pci irq issue (backported from 2.6.10), but i hear about
+problems with other systems, among them the popular 43p-140. Do you know of
+any other patch that needs to be applied ? We use a 2.6.8 kernel as basis, so
+the stuff will need to be backported, and i think i saw a bunch of prep fixes
+in 2.6.9. What about the patches which enables prep-tool ? 
 
-I did a kernel compile with a parallel scp transfer as well to put the box
-under a bit of load before, no issues.
+Friendly,
 
-HTH,
-Uli
--- 
-Dipl. Inf. Ulrich Teichert|e-mail: Ulrich.Teichert@gmx.de
-Stormweg 24               |listening to: Suicide Drive (The Deep Eynde)
-24539 Neumuenster, Germany|Public Pervert (Interpol) Clé De Contact (Metal Urbain)
+Sven Luther
