@@ -1,37 +1,39 @@
-Message-ID: <39842A00.B22F6C1F@student.ethz.ch>
-Date: Sun, 30 Jul 2000 15:13:36 +0200
-From: Michel Dänzer <daenzerm@student.ethz.ch>
+Date: Sun, 30 Jul 2000 09:01:11 -0500 (CDT)
+From: Takashi Oe <toe@unlserve.unl.edu>
+To: Iain Sandoe <iain@sandoe.co.uk>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Stealth port problems
+In-Reply-To: <200007301300.OAA07050@hyperion.valhalla.net>
+Message-ID: <Pine.LNX.3.96LJ1.1b7.1000730083557.1508G-100000@ofey.inetnebr.com>
 MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-CC: Roman Zippel <zippel@fh-brandenburg.de>,
-        Linux/PPC on APUS <linux-apus-devel@lists.sourceforge.net>,
-        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: bogus dmasound.o module (was: Re: 2.4.0-test4 success (Re: affs))
-References: <Pine.LNX.4.10.10007291437400.1201-100000@cassiopeia.home>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Geert Uytterhoeven wrote:
+On Sun, 30 Jul 2000, Iain Sandoe wrote:
 
-> > 'make modules_install' tries to install dmasound.o (which doesn't exist
-> > anymore) instead of dmasound_paula.o and dmasound_core.o
+> > Ok, this is a news to me.  I'm certain that SCC on oldworld pmacs is
+> > 85C30.  When did the change to 85230 occur?  If I remember correctly,
+> > some DMA setup codes in macserial.c need to know about it if it's dealing
+> > with 85230 rather than 85C30.
 >
-> Does this help? IIRC, I have it in my tree since a while, but I forgot about
-> it.
+> OK - I don't know for certain - but the code refers to an "ESCC" which is
+> the name of the 85230 - the 8530 should just be called "SCC".
 
-Yes it helps, but the dmasound_* modules get installed in misc, not sound - is
-that intended?
+It's not 8530.  I got an impression from Zilog's manual that ESCC refers
+to both 85230 and 85C30 loosely.  Actually, on some pages, the term was
+used to refer to functionalities only available on 85230, and, on other
+pages, it was used to describe something 8530 doesn't support but both
+85C30 and 85230 do.  AMD's usage of the term ESCC is yet slightly
+different, IIRC.
+
+Anyway, Apple's documentation uses the term ESCC and 85C30
+interchangeably, and I think the driver's usage of the term "ESCC" comes
+from there.
 
 
-Michel
+Takashi Oe
 
-
---
-Intel: where Quality is job number 0.9998782345!
-______________________________________________________________________________
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
