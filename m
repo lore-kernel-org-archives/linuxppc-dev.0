@@ -1,39 +1,40 @@
-Message-ID: <3BAB189F.5B5B19CD@raleigh.ibm.com>
-Date: Fri, 21 Sep 2001 06:38:23 -0400
+Message-ID: <3BAB1D7E.F408AF7C@raleigh.ibm.com>
+Date: Fri, 21 Sep 2001 06:59:10 -0400
 From: Ralph Blach <rcblach@raleigh.ibm.com>
 MIME-Version: 1.0
-To: Holger Bettag <hobold@Informatik.Uni-Bremen.DE>
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+To: Dan Malek <dan@mvista.com>
+Cc: "Albert D. Cahalan" <acahalan@cs.uml.edu>,
+	linuxppc-dev@lists.linuxppc.org, mbs@mc.com
 Subject: Re: ppc LE questions (seeking help hand info pointers)
-References: <20010920171002.37DCA2B54A@marcus.pants.nu>
-		<3BAA363B.5010400@mc.com> <8xlmj9psnw.fsf@s62.informatik.uni-bremen.de>
+References: <200109210528.f8L5SBb443059@saturn.cs.uml.edu> <3BAAD9DC.CE99A11@mvista.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-One the 405 processors, with the endian bit set, the data is will be
-true little endian.
+Dan,
+
+The 4xx has true little endian support.
 
 Chip
 
-Holger Bettag wrote:
+Dan Malek wrote:
 >
-> Mark Salisbury <mbs@mc.com> writes:
+> "Albert D. Cahalan" wrote:
 >
-> [... linux in ppc little endian mode ...]
-> > well, this is in the context of a multi-CPU type (x86/ppc, sparc/ppc,
-> > ppc/ppc, mips/ppc) shared memory multicomputer.
-> >
-> > when dealing w/ direct mapped, shared memory, uniformity of endian-ness
-> > makes many multicomputer problems easier to solve.(not to mention easier
-> > for the customer to program...)
-> >
-> You are aware that a PPC in little endian mode is merely tricking with the
-> low order address bits, but does not actually lay out its data in a little
-> endian fashion in physical memory?
+> > Quit spreading FUD. The 7450 has _better_ LE support than the 7400
+> > and 7410 did.
 >
->   Holger
+> If you say so.....I grabbed my 740 manual, which seems to indicate
+> only alignment errors caused alignment faults.  The 7540 actually
+> lists instructions that entirely fault in LE mode.  Didn't seem
+> like an improvement to me.  Sorry I didn't look at the 7400.....
+> I guess I'll let the LE experts decide what to do since I don't
+> know anything about it.
+>
+> Thanks.
+>
+>         -- Dan
 >
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
