@@ -1,67 +1,43 @@
-Reply-To: <joakim.tjernlund@lumentis.se>
-From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
-To: "Dan Malek" <dan@embeddededge.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: WRITE_THRU  on 8xx missing
-Date: Thu, 5 Sep 2002 09:28:19 +0200
-Message-ID: <IGEFJKJNHJDCBKALBJLLGEDDFGAA.joakim.tjernlund@lumentis.se>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-reply-to: <3D76BD7D.8060102@embeddededge.com>
+To: Tom Stefanski <tom.stefanski@seranoa.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Can't disassemble my device driver 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 04 Sep 2002 18:19:58 EDT."
+             <3D76870E.5244CED5@seranoa.com>
+Date: Thu, 05 Sep 2002 09:29:07 +0200
+Message-Id: <20020905072912.88A9711836@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->
-> Joakim Tjernlund wrote:
->
-> > I just noticed that _PAGE_WRITETHRU is defined in the linuxppc_2_4 tree but not in
-> > the linuxppc_2_4_devel tree, which is the one I am using :-(. Has this "function" been removed ,
-> > never to return or is the devel tree in a flux now for mpc8xx?
->
-> I don't know what we will do.  We always seems to be running out of control bits
-> in the PTE, so this is the first one to go if we need one for something else.
-> The writethrough mode is also a pain to support dynamically because it requires
-> special code in the tlb miss exception to load/clear bits in the PMD/L1 descriptor.
-> Adding this code nearly doubles the size of the exception handler, when you want
-> minimal instructions, for a feature (almost) no one uses.  At best, the writethrough
-> mode may return when I finish the large pages someday, and will be a special case
-> that covers a modulo 4M space on a 4M boundary (which I don't yet know how we
-> would allocate).
+Hi Tom,
 
-I see, I can live with that. If you do impl. this
-4M space on a 4M boundary is fine by me. My flashes are much bigger.
-
+in message <3D76870E.5244CED5@seranoa.com> you wrote:
 >
-> For burst flash, I suggest you read the archives for a discussion where you
-> double map the cache into a copyback mode space read and an uncached space
-> for write.  You will then invalidate during a write operation.  This would
-> maximize performance and require no VM or cache management changes.
+> I have a adatron bdi 2000 connected to my target board and have
+> successfully load the linux kernel and set breakpoint in schedule
+> However when I load my device driver, it's text section is a 0xD11D6060
+> and the kernel is a 0xC00xxxxx. When is disassemble any routine in my
+> driver, I get all zeros.
 
-Yes I known, but I was hoping to avoid that.
+See the hints (and utility scripts) in  section  "8.2.2.  Dynamically
+Loaded   Device   Drivers   (Modules)"   of   our   documentation  at
+http://www.denx.de/doc/TQM8xxL/debugging.html
 
->
->
-> >>I want to use this mapping to do burst reads but single writes for a flash device.
->
-> Are you sure writethough mode will do this?  I don't think it will as I believe
-> any cache enabled mode will burst.  To prevent burst you have to run with
-> caches disabled or have it inhibited in the memory controller.  Check it out.
+>  I have MMU xlate set in the config file and I program the mmu correctly
+> since I can break a schedule. Any help would be apprecciated
 
-Well, the 860 User's Manual chapter 6.3 say so(In my opinion) and I asked Motorola
-also and they confirmed that. If you think about it is the only way to operate since
-the write needs to update the memory immediatly.
+You also have to use PTBASE in combination with a kernel that updates
+these pointers. See the BDI2000 documentation.
 
-BTW, Motorola informs me that if you set the GUARD bit, I/O will be ordered. That way you can
-avoid using mb() or wmb().
+Wolfgang Denk
 
->
-> Thanks.
->
-   Thanks for your reply
-
-           Jocke
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+In theory, there is no difference between  theory  and  practice.  In
+practice, however, there is.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
