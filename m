@@ -1,35 +1,30 @@
-From: James Petterson <jpetterson@PARKS.com.br>
-Reply-To: James Petterson <jpetterson@PARKS.com.br>
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: Liu HongXun-a16975 <a16975@motorola.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Subject: Re: Is there ATM driver for MPC860 available?
-Date: Thu, 1 Nov 2001 18:37:11 -0200
-References: <01139FC052A0D411900B00508B9535FC03B1689E@ZCH07EXM04.corp.mot.com>
-In-Reply-To: <01139FC052A0D411900B00508B9535FC03B1689E@ZCH07EXM04.corp.mot.com>
+Message-ID: <3BE1E04D.9000609@mvista.com>
+Date: Thu, 01 Nov 2001 18:52:45 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Message-Id: <01110118371100.01844@jpetterson.parks.com.br>
+To: Cindy Peters <cinpet@adaptivemicro.com>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: TX errors on eth0
+References: <41EDEC3C1B88D51186EB00A0C9CFADF702FAE0@AMWMAIL>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Liu,
+Cindy Peters wrote:
 
-You can find a utopia driver that implements RFC1483 IP Encapsulation over
-AAL5 in ftp://ftp.qslinux.org/pub/qslinux/qslinux_08032001.tgz.
-It is for kernel 2.2.5, but I've made some modifications to make it work on
-2.4.4. It's still unstable, but I can send you I copy if you want.
+> .... I am assuming that it is a
+> problem with the way the transmit statistics is getting updated. Has anyone
+> else seen this problem?
 
-James
+Proper assumption.
 
-On Tuesday 30 October 2001 07:00, Liu HongXun-a16975 wrote:
-> Hi, all,
-> Is there ATM driver for MPC860?
-> Thanks
->
-> Rolf Liu
->
->
+> Does anyone know how to fix it?
+
+Use a newer kernel, or perhaps a driver from one, or just ignore it :-).
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
