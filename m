@@ -1,17 +1,18 @@
-Return-Path: <telkimcs@empal.com>
-Received: from tx8.empal.com (unknown [220.90.209.158])
-	by ozlabs.org (Postfix) with ESMTP id 592132BDEB
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Nov 2004 12:19:48 +1100 (EST)
-Received: from empal.com ([10.151.12.144])
-	by tx8.empal.com (8.11.6/8.11.6) with ESMTP id iA51DMu00349
-	for <linuxppc-dev@ozlabs.org>; Fri, 5 Nov 2004 10:13:22 +0900
-Message-ID: <20041105101321.418ad3b10004e1e600056bfc.1290@empal.com>
-From: =?ks_c_5601-1987?B?IrHoIMOivcQi?= <telkimcs@empal.com>
-To: <linuxppc-dev@ozlabs.org>
-Date: Fri, 5 Nov 2004 10:13:21 +0900
-MIME-Version: 1.0
-Content-Type: text/html; charset="ks_c_5601-1987"
-Subject: micropatch for mpc852t
+Return-Path: <kumar.gala@freescale.com>
+Received: from ftpbox.mot.com (ftpbox.mot.com [129.188.136.101])
+	by ozlabs.org (Postfix) with ESMTP id 54B962BDEB
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Nov 2004 10:02:24 +1100 (EST)
+In-Reply-To: <418FF992.8040604@mvista.com>
+References: <418FF992.8040604@mvista.com>
+Mime-Version: 1.0 (Apple Message framework v619)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <32E32A44-31DA-11D9-9BE7-000393DBC2E8@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Mon, 8 Nov 2004 17:02:01 -0600
+To: "Mark A. Greer" <mgreer@mvista.com>
+Cc: akpm <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
+	lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH][PPC32] Add setup_indirect_pci_nomap() routine
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,34 +22,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-PEhUTUw+PEhFQUQ+DQo8TUVUQSBjb250ZW50PSJNU0hUTUwgNi4wMC4yODAwLjE0NzYiIG5hbWU9
-R0VORVJBVE9SPg0KPFNUWUxFPlAgew0KCU1BUkdJTjogNXB4IDBweA0KfQ0KPC9TVFlMRT4NCjwv
-SEVBRD4NCjxCT0RZIHN0eWxlPSJGT05ULVNJWkU6IDEwcHQ7IENPTE9SOiBibGFjazsgRk9OVC1G
-QU1JTFk6ILG8uLIiPg0KPFA+SGVsbG8gc2lyLjwvUD4NCjxQPkkgcmVhZCBhIHlvdXIgbWVzc2Fn
-ZSBpbiBsaW51eCBsaXN0LjwvUD4NCjxQPkkgd291bGQgbGlrZSB0byBoZWxwIGZvciBtaWNyb3Bh
-dGNoIGluIG1wYyA4NTJ0LiA8L1A+DQo8UD5JIHVzZWQgdG8gdXNlIGxpbnV4LWtlcm5lbCAyLjQu
-MTguIEkgdHJ5IHRvIG1pY3JvcGF0Y2ggYnV0IGl0IGRpZG4ndCB3b3JrLjwvUD4NCjxQPndoZXJl
-IGRpZCB5b3UgbW9kaWZ5IGluIG1pY3JvcGF0Y2guYyBhbmQgdWFydC5jID88L1A+DQo8UD5QbGVh
-c2Ugc2VuZCBtYWlsIHRvIG1lLjwvUD4NCjxQPlRoYW5rIGZvciByZWFkaW5nIGEgbWFpbC48L1A+
-DQo8UD4mbmJzcDs8L1A+DQo8UD5TaW5jZXJlbHksJm5ic3A7Y3NraW08QlI+PEJSPiZuYnNwOzwv
-UD4KPHN0eWxlIHR5cGU9InRleHQvY3NzIj4KdGQsZm9udCxhCXtmb250LXNpemU6OXB0OyBmb250
-LWZhbWlseTq1uL/yOyB3b3JkLWJyZWFrOmJyZWFrLWFsbDt9CmEJCXtjdXJzb3I6aGFuZH0KPC9z
-dHlsZT4KCjx0YWJsZSBib3JkZXI9MCBjZWxscGFkZGluZz0wIGNlbGxzcGFjaW5nPTAgd2lkdGg9
-NjYwIHN0eWxlPSJib3JkZXItdG9wOmRhc2hlZCAxcHggI0ZGQ0YwMCI+Cjx0cj4KPHRkIHZhbGln
-bj10b3Agc3R5bGU9InBhZGRpbmc6MTAgMTAgMCAzcHgiIHdpZHRoPTEwMT48YSBocmVmPSJodHRw
-Oi8vd3d3LmVtcGFzLmNvbSIgdGFyZ2V0PV9ibGFuaz48aW1nIHNyYz0iaHR0cDovL2liLmVtaW1n
-LmNvbS9lbXBhbC9zbG9nYW4vbG9nb19hZG1haWwuZ2lmIiBib3JkZXI9MD48L2E+PC90ZD4KPHRk
-IHN0eWxlPSJwYWRkaW5nLXRvcDoxMHB4IiB2YWxpZ249dG9wPgoKCTx0YWJsZSBib3JkZXI9MCBj
-ZWxscGFkZGluZz0wIGNlbGxzcGFjaW5nPTAgd2lkdGg9MTAwJT4KCTx0cj48dGQ+PGZvbnQgc3R5
-bGU9Y29sb3I6RkY1OTAwOz6wy7v2xvfF0CC6zrmuILG5sKGw7bC0uLjBt7W1IDSz4iC/rLzTIDHA
-pzwvZm9udD48YnI+PC90ZD48L3RyPgoJPHRyPjx0ZCBzdHlsZT0icGFkZGluZy10b3A6MnB4Ij48
-Zm9udCBjb2xvcj0zMzMzMzM+v6XGxL26ILS6vbogLSA8YSBocmVmPSJodHRwOi8vbmV3cy5lbXBh
-cy5jb20vbW9uaXRvcnByLmh0bWwiIHRhcmdldD1fYmxhbms+J7jwtM/Fzbi1JyC9xcO7x8+46Swg
-x8+35yAxNSwwMDCwxyC0ur26tbbBoSE8L2E+PC9mb250PjwvdGQ+PC90cj4KCTwvdGFibGU+Cgo8
-L3RkPgo8dGQgc3R5bGU9InBhZGRpbmctdG9wOjdweCIgYWxpZ249cmlnaHQ+PGEgaHJlZj0iaHR0
-cDovL2Jsb2cuZW1wYXMuY29tLyIgdGFyZ2V0PV9ibGFuaz48aW1nIHNyYz0iaHR0cDovL2liLmVt
-aW1nLmNvbS9lbXBhbC9zbG9nYW4vYmxvZ19ta3kuZ2lmIiBib3JkZXI9MD48L2E+PC90ZD4KPC90
-cj4KPC90YWJsZT4KCjwvQk9EWT48L0hUTUw+PGltZyB3aWR0aD0xIGhlaWdodD0xIHNyYz0iaHR0
-cDovL21haWwuZW1wYXMuY29tL3JzZC9lbXBhbHJjcHQuaHRtbC9uSFF3dG1acWFtWmthQS9Tc1dY
-QTRtUnlZRS8zdWpoeXNhVzVsZUhCd2MyMGtaV1p3VDJwOFlXSmpmaTlpZDIvZm9vLmdpZiI+DQoN
-Cg==
+Mark,
+
+Out of interest, why would we not want to ioremap the cfg addr/data 
+registers?
+
+- kumar
+
+On Nov 8, 2004, at 4:56 PM, Mark A. Greer wrote:
+
+> This patch adds a routine that sets up indirect pci config space access
+> but doesn't ioremap the config space addr/data registers.
+>
+> Signed-off-by: Mark Greer <mgreer@mvista.com>
+> <indirect_pci.patch>
