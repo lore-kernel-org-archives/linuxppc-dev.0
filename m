@@ -1,66 +1,67 @@
-Date: Wed, 9 Oct 2002 12:10:31 +1000
+Date: Wed, 9 Oct 2002 12:14:03 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Allen Curtis <acurtis@onz.com>
-Cc: Matt Porter <porter@cox.net>,
-	Andrew May <acmay@acmay.homeip.net>,
-	linuxppc-embedded@lists.linuxppc.org
+To: Todd Poynor <tpoynor@mvista.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: very minor 405GP and 405GPr PCI difference
-Message-ID: <20021009021031.GP32555@zax>
-References: <20021008041419.GF32555@zax> <NCBBIINEHIPFGJPLBEIFOEPEDMAA.acurtis@onz.com>
+Message-ID: <20021009021403.GQ32555@zax>
+References: <20021002014219.GF1848@zax> <NCBBIINEHIPFGJPLBEIFEEMFDMAA.acurtis@onz.com> <20021002053422.GL1848@zax> <20021002100312.A2240@home.com> <20021003011044.GB1102@zax> <20021003081439.C4643@home.com> <20021004024832.GG1933@zax> <3D9DDEE9.5070909@mvista.com> <20021008041758.GG32555@zax> <3DA3347B.1000004@mvista.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <NCBBIINEHIPFGJPLBEIFOEPEDMAA.acurtis@onz.com>
+In-Reply-To: <3DA3347B.1000004@mvista.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Oct 07, 2002 at 11:19:31PM -0700, Allen Curtis wrote:
+On Tue, Oct 08, 2002 at 12:39:39PM -0700, Todd Poynor wrote:
 >
-> > As Matt says, this would fall out naturally from a better control
-> > structure.  Howeever, I tend to think that leaving things like this to
-> > the bootloader/firmware is a bad idea:
+> David Gibson wrote:
+>
+> >>Rainier (NP4GS3) PMM1 is setup specially in the existing code, is this
+> >>no longer needed?
 > >
-> > The kernel has to know how PCI addresses are mapped anyway, so this
-> > becomes yet another point at which the kernel and firmware are bound
-> > together.  Why should the kernel have code to deal with umpteen
-> > different cases of how PCI might have been set up, or not set up by
-> > the firmware/bootloader, when it can just take control of the host
-> > bridge and reprogram it how it wants?  Once the debugging cruft comes
-> > out, it should only be a couple of hundred bytes of code.
+> >
+> >Well, I don't know if it's necessary - it's not there, because I
+> >didn't notice the difference in the Rainier code before.  Now that I
+> >do look at it, I'm confused: it appears to be setting up both PMM0 and
+> >PMM1 to map from the same PLB addresses, but the manual specifically
+> >prohibits overlapping PMM ranges.
 >
-> I believe that there are many cases where the kernel code is much too
-> aggressive with configuration. Personally I believe that all BIOS code
-> should totally initialize the processor state so you always have a known
-> starting point. (whether you boot Linux or not) Many times I have had to
-> track down where the kernel thinks it "knows" the proper configuration and
-> unravels the work done by the BIOS. I am not sure how to solve this problem
-> but I believe the kernel should attempt to detect and use a configuration
-> before reconfiguring any hardware. I have implemented this technique in our
-> UART and Ethernet configuration stuff on the 8260 with good success.
+> And the code used for MontaVista's products has diverged somehow; it has
+> an empty bios_fixup but code in a different place that does something
+> different:
+>
+> 	/* plb address 0x8000 0000 will be set to pci address 0x8000 0000
+> 	which
+> 	   corresponds to PCI 9030 Dev 0x10 BAR4 */
+> 	out_le32((void*)PMM1LA,0x80000000);
+> 	out_le32((void*)PMM1MA,0xFFFE0001);    /* PLB range is 128KB */
+> 	out_le32((void*)PMM1PCILA,0x80000000);
+> 	out_le32((void*)PMM1PCIHA,0x00000000);
 
-This is a nice idea in principle, but IMO it is flawed in practice.
-The unfortunate truth is that firmwares are all too frequently broken
-in one or more ways (this is not only true for embedded - think APM or
-ACPI, or the many buggy OF implementations).  So we need code to
-handle (at least some) cases where the firmware setup is incomplete,
-or the firmware provides incorrect information.  Worse, in many cases
-a new revision of the firmware will remove some bugs but add some new
-ones - which mean workarounds tailored to doing a minimum fixup for a
-particular BIOS are very fragile.
+Well, it may be in a different place, but it looks like it has the
+same problem.  It is still establishing a PCI window at PLB address
+0x80000000, which is the same address used for the PMM0 window - or is
+that also different in the MV kernel?
 
-Given that, how much is really to be gained by carefully tailoring a
-kernel to the brokenness or lack thereof of a particular platform's
-firmware - as opposed to just always handling the setup ourselves,
-putting the device into a known state.
+> I'll try to figure out the story on this, but everything NP4GS3-related
+> seems to be murky...  NP4GS3 will probably need a custom bios_fixup that
+> does the above (among other things), can worry about that platform later.
 
-Incidentally the case of a UART is quite different from PCI: you can
-use a UART without knowing how it is configured, that way you can
-leave the selection of baud rate (for example) up to firmware
-configuration and just use its setup - i.e. in this case there is a
-tangible benefit from leaving the work up to the firmware.  In the
-case of PCI we have to know what the windows are in order to use the
-device, so we must know precisely how the firmware has set the bridge
-up, in which case why don't we just set it up that way ourselves.
+I'd be trying to work out what that mapping's actually for, first.  I
+still can't see how it can possibly work - if there are overlapping
+PMM windows, what actually happens to accesses in that (PLB) range?
+
+> >>This code is fragile and tends to break on certain platforms in ways
+> >>that can't be explained by the available documentation.  I can help test
+> >>the unified version on Walnut/Sycamore/Ash if needed.
+> >
+> >
+> >Do you mean the existing code, or my proposed patch (or both).  That
+> >would be great if you could test the code on those machines -  I don't
+> >have a Sycamore or Ash, and I'd have to drag the Walnut out again to
+> >test on it.
+>
+> Yes, I can test your proposed code on those machines.
 
 --
 David Gibson			| For every complex problem there is a
