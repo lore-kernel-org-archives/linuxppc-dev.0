@@ -1,116 +1,64 @@
-From: Arun Dharankar <ADharankar@attbi.com>
-To: "Wright, David" <dwright@infiniswitch.com>,
-	<linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Linux kernel panics and core dumps.
-Date: Tue, 8 Apr 2003 23:38:50 -0400
-References: <3D296C067098F149B11A8F4FC37C054685D898@EXVS1.ops.infiniswitch.com>
-In-Reply-To: <3D296C067098F149B11A8F4FC37C054685D898@EXVS1.ops.infiniswitch.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <000d01c2fe74$83264520$1464a8c0@sjeng3>
+From: "El Topo" <ElTopo@myrealbox.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+References: <200304081158.29606.ADharankar@ATTBI.Com>
+Subject: ppcboot 2.0.0 + ppclinux2.4.devel, network weirdo
+Date: Wed, 9 Apr 2003 01:46:27 -0700
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200304082338.50592.ADharankar@ATTBI.Com>
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David, thanks for your inputs!
+Hi guys:
 
-The working Linux kernel version for me is 2.4.20. After applying
-the patch and following the steps you outlined, the kernel boots
-ok. However,  just as the user processes startup, there are kernel
-exceptions for all the processes, and the system eventually panics.
+I have ppclinux 2.4.devel (2.4.20) running on my 440gp ebony board
+with ppcboot 2.0.0.  Normally I use tftp to get the compressed kernel
+image to 440gp and bootm from memory. So far I have these issues:
 
-The nearest patch for Linux kernel I could get from MCLX site is
-for 2.4.17. Even so, the patch failed only for init/main.c and
-kernel/panic.c. Manually making the changes did not seem to
-need anything significant.
+1. for some reason, linux kernel sees the two eth interfaces but fails
+to get the correct MAC addresses, thus when system fully boots up
+"ifconfig" shows two eth0/eth1 with MAC addr as ff:ff:ff:ff:ff:ff, because
+this is same as brd, many network services won't work.
+I checked kernel source code and found that, in include/asm-ppc/ibm440.h,
+there's a structure "board_info" holds MAC addresses of the two enet
+interfaces. According to this header file: "Ebony firmware stores MAC
+addresses in the F/W VPD area. The firmware must store the other dynamic
+values in NVRAM like on the previous 40x systems so they  should be
+accessible if we really want them."
+So, my question is: how can I get ibm440's EMAC info? from NVRAM?
+the kernel I am using now does not support NVRAM for ppc yet.
 
+2. to temporarily solve the problem in 1., I modifed
+drivers/net/ibm_ocp/ibm_ocp_enet.c:ocp_enet_probe(),
+when reading the MAC address, I simply assigned some fake MAC addrs
+to dev->dev_addr, and the network part is working now, I can telnet
+into my 440gp, also ftp out from it.
+I did relatively enough tests using tftp from my server to get the kernel
+image loaded to 440gp and bootm to bring the system up, everything
+looked fine. Then I decided that I want to copy the memory area of
+kernel image to flash and boot from there. the booting seemed OK,
+no errors reported, except that after the system fully booted up I found
+I could not ping the network from/into 440gp box.
+Several minutes later I found if I tftp something, let's see, a 1-byte
+file, or even a non-existent file, then bootm from flash would bring
+up working network interfaces. It looked like "tftp" does some
+initialization
+for the network interfaces.
+I read ppcboot-2.0.0/common/cmd_net.c:netboot_common(), which
+calls net/net.c:NetLoop(), in which I see functions like eth_halt(),
+eth_init(bd) get called.
+Here's my 2nd question: is it a good idea that I modify ppcboot to
+include these network initialization functions just before booting my
+kernel image? Maybe this is not necessary but I really could not figure
+out why the "tftp" before loading kernel image made the difference
+on the network.
 
-I have not gone through the patch completely and have only some
-understanding of it. So didn't understand what you meant by "The
-code in do_init_bootmem() is trying to work in bytes, not in frames.".
-Could you elaborate, please? May be this is where I have done
-the changes correctly.
+Thanks,
 
+El.
 
-Best regards,
--Arun.
-
-On Tuesday 08 April 2003 12:20 pm, Wright, David wrote:
-> I looked at the SGI project, but it wasn't suitable for our
-> platform, as we didn't have the right sort of disk setup.
->
-> I ported the MCLX code to a 405-based platform.  The code as
-> originally distributed had a few bugs in it, but I don't think
-> they ever fixed the bugs -- I fed changes back to them, and those
-> changes may have made it to IBM.  Or at least they told me IBM
-> was interested in the project.
->
-> If you do use their code, ignore the program that uncompresses
-> the crash dumps -- as implemented, it's incredibly slow, and
-> although that can be fixed, it's pointless, since crash can read
-> the compressed dumps just fine (and can't read the uncompressed
-> ones, just as a final irony).
->
-> I don't have a complete list of the changes I needed to make, but
-> here are a few:
->
-> Makefile didn't specify compiling crash.c
-> crash.c (machine-specific) specified "regs" instead of "gprs"; also
->   specified tss.ksp instead of thread.ksp; also must #define
->   PFN_PHYS() itself.
-> The code in do_init_bootmem() is trying to work in bytes, not in
->   frames.
->
-> Anyway, once I got these various problems ironed out, plus a few
-> in crash(1), the facility worked fine.  The main problem you're
-> apt to run into is having enough physical memory to run your
-> system, hold the dump, and copy the dump from RAM into some file.
-> NFS can be very useful here.
->
-> The dump facility did prove to be quite useful and we did use it
-> on live systems to track down problems.  One thing to watch out
-> for is diags that scrub memory, since they'll scrub out your dump,
-> too.
->
-> > -----Original Message-----
-> > From: Arun Dharankar [mailto:ADharankar@attbi.com]
-> > Sent: Tuesday, April 08, 2003 11:58 AM
-> > To: linuxppc-embedded@lists.linuxppc.org
-> > Subject: Linux kernel panics and core dumps.
-> >
-> > On x86 architectures there seem to be at least two ways of
-> > producing  Linux kernel panic dumps. These projects are
-> > hosted at
-> >
-> >     "http://lkcd.sourceforge.net/" (originated in SGI), and
-> >
-> >     "http://oss.missioncriticallinux.com/projects/mcore/"
-> >         (originated in MCLX).
-> >
-> > Of the two, the second one seems to work quite well on x86
-> > PCs. I dont know how much of it is actively supported on
-> > PowerPCs. So, the first question is:
-> >
-> >     Has anyone tried this on PowerPC, specifically Linux
-> >     kernel versions 2.4.x? The code for PowerPC seems to
-> >     be there, but the Makefiles dont seem to be up-to-date,
-> >     and could be broken.
-> >
-> > Further more, this same project has some documentation
-> > which has a good discussion on different approaches to Linux
-> > kernel memory dumps. One item in this discussion is about
-> > the BIOS/bootloader support.
-> >
-> > Essentially, if PPCBoot/U-Boot was to recognize the Linux
-> > kernel memory layout, a much more reliable scheme could
-> > be implemented. For example, under all panic or hang
-> > conditions (watchdog), the system could just be rebooted.
-> > During the startup, PPCBoot/U-Boot along with Linux, could
-> > save the Linux kernel dump reliably. MCLX scheme seems
-> > to follow this approach, but does not rely on the bootloader.
-> >
-> >   Has anyone investigated this? Or anything already done,
-> >   and cares to share it? Any thoughts on this?
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
