@@ -1,22 +1,25 @@
-Message-ID: <3BA66A11.101@mvista.com>
-Date: Mon, 17 Sep 2001 14:24:33 -0700
-From: Matthew Locke <mlocke@mvista.com>
-MIME-Version: 1.0
+Date: Mon, 17 Sep 2001 14:25:47 -0700 (PDT)
+From: John Tyner <jtyner@cs.ucr.edu>
 To: Peter Barada <pbarada@mail.wm.sps.mot.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
+Cc: <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: walnut configuration
-References: <200109172115.f8HLFCc20783@hyper.wm.sps.mot.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <200109172115.f8HLFCc20783@hyper.wm.sps.mot.com>
+Message-ID: <Pine.LNX.4.30.0109171423430.3695-100000@hill.cs.ucr.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I don't think your bk pull worked.  walnut_setup.c is gone from the
-tree.  Also, the default configuartion builds and runs fine for me, but
-I don't cross-compile.
+I compiled the linuxppc_2_4_devel tree last week (2.4.10-pre8, I believe)
+for our 405GP without incident. However, I didn't do the 'make mrproper',
+'make oldconfig', and I did 'make zImage.initrd' instead of just 'make'.
 
-Peter Barada wrote:
+John
 
+On Mon, 17 Sep 2001, Peter Barada wrote:
+
+>
 > Has *anyone* gotten the linuxppc_2_4_devel tree to build for a walnut board?
 > If so, what did you have to do... I've tried the following:
 >
@@ -102,6 +105,14 @@ Peter Barada wrote:
 > Wizard                                         781-852-2768 (direct)
 > WaveMark Solutions(wholly owned by Motorola)   781-270-0193 (fax)
 >
+>
+
+--
+John Tyner
+jtyner@cs.ucr.edu
+Alumnus, Computer Science
+University of California, Riverside
+http://www.cs.ucr.edu/~jtyner/
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
