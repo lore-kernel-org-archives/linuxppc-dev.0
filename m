@@ -1,41 +1,60 @@
-Date: Thu, 19 Oct 2000 10:00:20 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Tom Rini <trini@kernel.crashing.org>
-cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-        Thomas Graichen <graichen@innominate.de>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: openoffice on ppc anyone?
-In-Reply-To: <20001018172044.E15104@opus.bloom.county>
-Message-ID: <Pine.LNX.4.10.10010190955320.28045-100000@opal.biophys.uni-duesseldorf.de>
+Date: Thu, 19 Oct 2000 12:05:43 +0200 (MET DST)
+From: Henning Loeser <Henning.Loeser@Physik.Uni-Marburg.DE>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: ADB-Mouse
+Message-ID: <Pine.OSF.4.02.10010190958400.3355-100000@ax1305.physik.uni-marburg.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > > 2.1.3, Linux only exists on Intel and Sparc, ...). Basically, it sucks.
-> >                               ^^^^^^^^^^^^^^^
-> > Look at the bright side: at least the code should be endianness and 64-bit
-> > clean :-)
->
-> Well, maybe anyways.  Are you sure it's Linux/x86 and Linux/sparc not
-> Linux/x86 and Solaris/sparc and Solaris/x86? :)  Anyways,
+Hi,
+I just digged through the maillinglist but didn't come up with a solution,
+so what did I miss ?
+I compiled a linuxppc_2_3.snap from fmlabs from October 17th and it
+compiled ok, booted, recognized my Acard AEC 6260M ide card, accepted my
+l2cr setting and the voodoo3 card, booted from the ide-partition to
+console login. The keyboard works ok (apple extended kb II) but the mouse
+doesn't (ADB-mouse) /dev/adbmouse doesn't exist (claims gpm and X11).
+dmesg reads the following:
+Kernel command line: root=/dev/hda7 adb_buttons=111,55
+video=tdfx:1024x768-8@60 l2cr=0xb9010000 video=ofonly
+l2cr set to b9010000
+[snip]
+Macintosh CUDA driver v0.5 for Unified ADB.
+[snip]
+input0: Macintosh mouse button emulation
+[snip]
+adb devices: [2]: 2 5 [3]: 3 1
+ADB keyboard at 2, handler set to 3
+Detected ADB keyboard, type ISO, swapping keys.
+input1: ADB HID on ID 2:2.05
+ADB mouse at 3, handler set to 2
+input2: ADB HID on ID 3:3.01
+Macintosh non-volatile memory driver v1.0
+usb.c: registered new driver usbdevfs
+usb.c: registered new driver hub
+usb.c: registered new driver hid
+event0: Event device for input2
+event1: Event device for input1
+event2: Event device for input0
+keybdev.c: Adding keyboard: input1
+mouse0: PS/2 mouse device for input2
+mouse1: PS/2 mouse device for input0
+mice: PS/2 mouse device common for all mice
 
-I'm sure its Linux and (Intel or sparc). My perl skills are next to
-non-existing but nested ifs do suggest something to me :-)
+I do have /proc/device-tree/bandit/gc/via-cuda/adb/mouse/device_type
+.../name and .../reg so I would think the mouse should be there, ...
+shouldn't it?
+Do I have to create a new /dev/adbmouse entry ? It works with 2.4.0-t2 ...
 
-> http://porting.openoffice.org/ implies anwyays the src for the tools should be
-> around.  Finally, gcc 2.95.2 (or 2.95.3) and glibc 2.1.3 are good for you.
-> JDK 1.2.2 should be fine (Kevin?)
+Henning
 
-The day I tried (Oct. 13) nothing besides the raw source tarball was up on
-the site. I'll check again though. I've read to different and conflicting
-build instructions (one suggested JDK 1.1.8, the other 1.2.2).
-
-I'm already using a recent gcc 2.95.3 but libc upgrades always freak me
-out ...
-
-	Michael
+--------------------------------------------------------------------------
+Henning Loeser					      Fachbereich Physik
+email: henning.loeser@physik.uni-marburg.de	      AG Oberflaechen
+						      Philipps-Uni Marburg
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
