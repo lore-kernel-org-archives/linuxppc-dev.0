@@ -1,49 +1,59 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Hubert Figuiere <hub-linux-ppc@trantor.staff.proxad.net>
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <1064493093.17039.44.camel@trantor.staff.proxad.net>
-References: <1064493093.17039.44.camel@trantor.staff.proxad.net>
-Message-Id: <1064497450.702.12.camel@gaston>
-Mime-Version: 1.0
-Date: Thu, 25 Sep 2003 15:44:11 +0200
 Subject: Re: kernel panic in slab.c
-Content-Type: text/plain
+From: Hubert Figuiere <hub-linux-ppc@trantor.staff.proxad.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <1064497450.702.12.camel@gaston>
+References: <1064493093.17039.44.camel@trantor.staff.proxad.net>
+	 <1064497450.702.12.camel@gaston>
+Content-Type: text/plain; charset=iso-8859-15
+Message-Id: <1064499264.17038.70.camel@trantor.staff.proxad.net>
+Mime-Version: 1.0
+Date: Thu, 25 Sep 2003 16:14:24 +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 2003-09-25 at 14:31, Hubert Figuiere wrote:
-> Hi,
+Hi,
+
+On Thu, 2003-09-25 at 15:44, Benjamin Herrenschmidt wrote:
+
+> Nice to see you using Linux again :)
+
+I never stopped :-)
+
 >
-> I'm getting kernel panics (during boot up or 5 minutes after, it depends
-> of the wind, the external temperature, or how old is the captain ;-) )
-> when I activate CONFIG_SLAB_DEBUG.
->
-> Here is the output:
-> kernel BUG at slab.c:1263!
-> Oops: Exception in kernel mode, sig: 4
->
-> Anybody have had the same problem ?
-> Disabling DEBUG is fine, but I was really wondering why I was getting
-> this.
->
-> kernel is linux-2.4-devel BK tree in version 2.4.23-pre5
+> What machine is this ?
 
-Hi Hubert !
+Custom network hardware with a PrPMC750 Motorola board as MPU. We have a
+few tiny patches for our custom devices, but nothing important here
+IMHO.
 
-Nice to see you using Linux again :)
 
-What machine is this ?
+> The bug shows that the poison checker found that a freed block got
+> overriden. It didn't display more infos about the kind of pattern
+> it found and/or a backtrace ? That would be helpful.
 
-The bug shows that the poison checker found that a freed block got
-overriden. It didn't display more infos about the kind of pattern
-it found and/or a backtrace ? That would be helpful.
+I might investigate.
 
-I've been trying to track down such kind of memory corruption for
-some time now, so if you have a good handle on it, I'm interested,
-as I suspect something wrong is going on in recent 2.4s
+> I've been trying to track down such kind of memory corruption for
+> some time now, so if you have a good handle on it, I'm interested,
+> as I suspect something wrong is going on in recent 2.4s
 
-Ben.
+Fine, then I feel like investigating it since memory corruption are
+probably the worst bugs. I don't have a good handle on the problem. I
+often crash while running either "bird" or "swapper" (uptime don't
+exceed 5 or 10 minutes). Even worse, sometime it crashes during boot up.
+The only thing I'm sure is that it is fully reproducible as it plagged
+me for quite sometime. I first thaught that hardware was at fault (like
+defective MPU), but my co-workers don't have the problem, and in fact
+disabled debugging.
 
+
+Thanks
+
+Hub
+--
+Hubert Figuière - Freebox SA. - +33 1 73 50 2 563
+AIM/Yahoo!: hfiguiere, ICQ: 307453487
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
