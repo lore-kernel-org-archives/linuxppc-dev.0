@@ -1,25 +1,24 @@
-Message-Id: <199909281727.KAA04210@soda.CSUA.Berkeley.EDU>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.2.13 build OOB?; need for some standardization here? 
-In-Reply-To: Your message of "Tue, 28 Sep 1999 18:48:37 +0200."
-             <Pine.GSO.4.10.9909281846490.73-100000@begonia.sonytel.be>
-Date: Tue, 28 Sep 1999 10:27:24 -0700
-From: Sriranga Veeraraghavan <ranga@CSUA.Berkeley.EDU>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <14320.64895.396152.367163@ipa.ne.mediaone.net>
+Date: Tue, 28 Sep 1999 13:40:15 -0400 (EDT)
+From: R Shapiro <reshapiro@mediaone.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: XFree86-3.3.5-1.6.0b
+In-Reply-To: <171516264@toto.iv>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+MATSUURA Takanori writes:
+ > Me too. xfs cannot work with port -1. In my G3/DT233, manual operation
+ > by root with port 7100 (xfs default port) can work.
 
-> Note that LinuxPPC is not identical to RH 5.0 on ia32.
+On my rev.b beige G3 dt, xfs runs fine on (unix) port -1, using Tom
+Rini's 3.3.5 packages.
 
-I realize that there are differences, but at this point it pretty
-close; much better than when R4 first came out.
-
-The problem with debian (for me) is that it is different from most
-other versions of UNIX I have ever run across. I had it running for a
-while on my IIci as a novelty.
-
-----ranga <ranga@soda.berkeley.edu>
+-- 
+reshapiro@mediaone.net
+rshapiro@bbn.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
