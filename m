@@ -1,46 +1,48 @@
-Date: Fri, 14 Mar 2003 21:56:36 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Tom Rini <trini@kernel.crashing.org>,
+Date: Fri, 14 Mar 2003 15:37:20 -0600
+Mime-Version: 1.0 (Apple Message framework v551)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Subject: PowerPC Performance Interrupt
+From: Andrew Fleming <afleming@motorola.com>
+To: oprofile-list@lists.sourceforge.net,
 	linuxppc-dev@lists.linuxppc.org
-Subject: Re: ppc: Update to ppc specific makefiles
-Message-ID: <20030314205636.GA28130@mars.ravnborg.org>
-References: <20030314194427.GA18790@mars.ravnborg.org> <20030314202148.GA7230@ip68-0-152-218.tc.ph.cox.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20030314202148.GA7230@ip68-0-152-218.tc.ph.cox.net>
+Message-Id: <227DFA1D-5665-11D7-8667-000393C30512@motorola.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Mar 14, 2003 at 01:21:48PM -0700, Tom Rini wrote:
-[Tom's original reply will not show up at linuxppc-dev becasue my initial
-mail contained the wrong address, and I just bounced it to linuxppc-dev]
+I think I have a better idea of how oprofile works on ia64 and x86
+architectures, now.  In ia64, oprofile grabs the performance monitor
+interrupt using request_irq().  In x86, it makes use of the nmi.  I'm
+pretty sure that these two solutions are unavailable for PowerPC.  If
+I'm wrong, please tell me.
 
-> > The kernel builds and when a rebuild is made no files are compiled again.
-> > arch/ppc/boot/{openfirmware,prep,simple}/Makefile could use more
-> > attention - but wanted to see this applied first.
->
-> I'm open to ideas for how to clean those up.  Please CC me with those
-> (I'll read it quicker, most likley :)
+So, it seems to me that in PowerPC, we need to get the
+already-installed PerfMon exception handler to call into oprofile.
+But, in order to make it so other profiling systems could be used
+without further modifying and recompiling the kernel, it seems to me
+that there needs to be some way to register to receive the PerfMon
+interrupts.
 
-I will give the most simple one a spin then [prep].
-Hold on applying this for a while.
+One way would be to have a register function which functions much like
+request_irq, but specific to performance monitors.  Functionality could
+be provided to lock out others from taking control of the counters,
+though there would need to be a way to override the lock (in the event
+that the controlling app died).  This would allow oprofile to get
+called on interrupt.
 
-> Maybe I'm missing something, but won't this cause all of host-progs to
-> be compiled on any build?  They're small / quick enough to build that I
-> suppose it wouldn't kill anyone to build extra tools they don't need,
-> but in that case, the tools- stuff could die in arch/ppc/boot/Makefile,
-> right?
+Another method would be to register the pid of a control app (perhaps
+in /proc), and then have the PerfMon interrupt send a SIG_PROF to
+whichever app was registered.  I'm not sure what the consequences are
+of there being an interrupt after the monitoring program dies.  Does a
+sent signal with a bad destination cause problems?  Anyway, this, too,
+should allow oprofile to be informed of the interrupt, though
+presumably with higher overhead.
 
-It is rather me who missed something I'm afraid.
-The Makefile in ppc/boot/utils is not needed at all and can be deleted.
-The "host-prog := " in ppc/boot/Makefile is all what is needed.
-[tools/ shall be removed from subdir- := in boot/makefile]
+Any thoughts?
 
-I would like to delete all the tool selection stuff in boot/Makefile.
-As you say it does not matter for the total build time.
-OK with you?
+Right now, the interrupt is just unhandled.
 
-	Sam
+Andy Fleming
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
