@@ -1,70 +1,91 @@
-Message-ID: <3CD087B5.26B41130@esteem.com>
-Date: Wed, 01 May 2002 17:26:29 -0700
-From: Conn Clark <clark@esteem.com>
+Message-ID: <37D0F88E70D96C428C19EEB865701A38D74275@buda902a.siemens.hu>
+From: =?ISO-8859-1?Q?M=E9sz=E1ros_Lajos?= <ludwigm@siemens.hu>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: looking for source files for MPC8xx --- help me~~~
+Date: Thu, 2 May 2002 09:13:49 +0200 
 MIME-Version: 1.0
-To: May Ling List <linuxppc-embedded@lists.linuxppc.org>
-Subject: excessive ram usage?
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/mixed;
+	boundary="----_=_NextPart_000_01C1F1A8.E824CC50"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello all,
+This message is in MIME format. Since your mail reader does not understand
+this format, some or all of this message may not be legible.
 
-	I am running into a problem of running out of ram. I don't
-know if its a problem with the way I think things should be happening
-or if I don't have things configured right.
-
-	The way I think things should happen is this. When I login
-through a telnet session Linux should load a copy of bash and use some
-ram for the environment and our menu. When I login through a second
-telnet sesion linux should use the code segment of bash and allocate new
-data and stack segments for this instance of bash and our menu, then
-allocate some more ram for this sessions environment.
-
-	The way I think things are actually happening is this. When I
-login through a telnet session linux loads a copy of bash and use some
-ram for the environment and our menu. When I login through second telnet
-session linux appears to be loading another complete copy of bash and
-our menu as well as some more ram for the environment. The reason I
-think this is it consumes about 600-700K more of ram which is the amount
-that I would expect if linux was loading a complete copy of bash, our
-menu and more ram for the environment.
-
-	I am running kernel 2.2.13 . I think I saw somewhere that I had
-to have virtual memory enabled to enable code sharing amongst program
-instances but I don't know where if I did. If this is the case how do I
-go about enabling it? (I only have a ramdisk to put a swapfile on)
-
-	I sure many of you will say "replace bash and install uClib"
-however we want to use bash and are not quite ready to use uClib.
-
-	Also I was also wondering if there was a way to keep the kernel
-from caching the ram disk.
+------_=_NextPart_000_01C1F1A8.E824CC50
+Content-Type: text/plain;
+	charset="ISO-8859-1"
 
 
-PS.
-BONUS QUESTION FOR AN EXTRA Thank You
+Bash DO support cross compiling but not all target and not correctly.
 
-What does the -O option do in the linker ld? I know it optimizes, but
-how and what does changing the diferent levels do? I can't find this
-documented anywhere.
+I have bumped into this problem, amended *.in files and sent the patch(2.05)
+to Chet Ramey, CWRU at http :// cnswww. cns. cwru. edu/ ~chet/ . It is the
+patch here!
 
-
-Many Many Many Thanks,
-
-	Conn
+	Ludwig
 
 
---
+------_=_NextPart_000_01C1F1A8.E824CC50
+Content-Type: application/octet-stream;
+	name="2send.tar.gz"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+	filename="2send.tar.gz"
 
-*****************************************************************
-  If you live at home long enough, your parents will move out.
-*****************************************************************
+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
 
-Conn Clark
-Engineering Stooge				clark@esteem.com
-Electronic Systems Technology Inc.		www.esteem.com
-
+------_=_NextPart_000_01C1F1A8.E824CC50--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
