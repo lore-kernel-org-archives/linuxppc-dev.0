@@ -1,64 +1,43 @@
-Date: Thu, 6 Jun 2002 13:09:02 -0400 (EDT)
-From: Christopher Murtagh <christopher.murtagh@mcgill.ca>
-To: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: SMP/HIGHMEM/7450 status ?
-In-Reply-To: <20020606060812.19068@mailhost.mipsys.com>
-Message-ID: <Pine.LNX.4.33.0206061251190.20358-100000@blues.wcg.mcgill.ca>
+Message-ID: <3CFF9903.9000203@embeddededge.com>
+Date: Thu, 06 Jun 2002 13:16:51 -0400
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: acurtis@onz.com
+Cc: Ppc Developers <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 8260 Network Performance update
+References: <NCBBIINEHIPFGJPLBEIFCEECDIAA.acurtis@onz.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 6 Jun 2002 benh@kernel.crashing.org wrote:
->Xserve uses 7455 (like newer dual G4s), which doesn't seem to exhibit
->the problem.
+Allen Curtis wrote:
 
- Damn... does this mean that the 7450 machines are lemons (wouldn't
-surprise me if the answer was a resounding 'yes')?
+> There is a slight improvement when you increase the number of buffers from
+> 16 (default) to 32. There does not appear to be any benefit beyond that.
 
- BTW, Ben, I'm not sure if you are aware of this (and I hope you don't
-mind)...
+That isn't the number of buffers, it's the number of buffer pages, so don't
+go overboard allocating these.  The 8260 is going to fill buffers and shove
+packets up the IP stack as fast as they appear on the wire.  Adding buffers
+at the driver level will just cover up processing latencies by the application.
 
- All of our production servers have been named after people that we admire
-and/or we feel have made an important contribution in the computing world.
-For example, our authentication machine (signin.mcgill.ca) is
-turing.wcg.mcgill.ca from Alan Turing. Some of these include:
+> I am guessing that the problem is not in the driver unless the driver is
+> suppose to enforce some soft of fair usage algorithm. Is there a network
+> usage scheduler of some kind?
 
- lovelace.wcg.mcgill.ca
- babbage.wcg.mcgill.ca
- wall.wcg.mcgill.ca
- torvalds.wcg.mcgill.ca
- ritchie.wcg.mcgill.ca
+The only thing that will happen is the IP stack will start tossing packets
+if there is a memory shortfall.
 
- and recently, our 4 node briQ cluster:
+> ..... I do not have this problem on a x86 RedHat
+> system...
 
- kernighan.wcg.mcgill.ca
- gosling.wcg.mcgill.ca
- wozniak.wcg.mcgil.ca
- herrenschmidt.wcg.mcgill.ca
-
- Currently, lovelace and babbage (which are web servers with a number of
-v-hosts) have colophons if you go to their real names
-(http://lovelace.wcg.mcgill.ca). We want to do something similar with all
-of our machines as well some time this summer.
-
-Cheers,
-
-Chris
+Are you doing _exactly_ the same thing?  It still looks like you have a
+hardware configuration problem on the link, because I know other boards
+will operate with the same software at the limit of the 10 or 100 Mbit
+throughput.
 
 
---
-
-Christopher Murtagh
-Webmaster / Sysadmin
-Web Communications Group
-McGill University
-Montreal, Quebec
-Canada
-
-Tel.: (514) 398-3122
-Fax:  (514) 398-2017
+	-- Dan
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
