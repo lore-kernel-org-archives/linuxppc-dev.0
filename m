@@ -1,32 +1,24 @@
-Message-ID: <39BC3731.D03B47E7@arcavia.com>
-Date: Sun, 10 Sep 2000 21:36:49 -0400
-From: Ariel Rios <ariel@arcavia.com>
+Message-ID: <014201c01b9f$1ab36b90$bf0102c8@sc.mcel.mot.com>
+From: "Rolf Liu" <rolfl@sc23.sc.mcel.mot.com>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: a little question about 'OF' 
+Date: Mon, 11 Sep 2000 11:19:32 +0800
 MIME-Version: 1.0
-To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Roles for distributions
-References: <v03110706b5e196db363a@[64.229.14.120]>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"Kevin B. Hendricks" wrote:
+Hi, all ,
+I meet a comment in /arch/ppc/kernel/head.S,
+which is "We have to do any OF calls before we map ourselves to KERNELBASE
+".
+What does the 'OF' mean in this comment?
+Thanks a lot .
 
->
->
-> And what about the other key projects: mozilla, helix/gnome, KDE, galeon,
-> apache, etc?
->
-
-I don't work with any linuxppc distro but I have been developing gnome in my
-imac for some time now.
-Currently I'm working to get bonobo, evolution and nautilus to work properly
-under PPC.
-
-Be sure you'll always have a gnome inside ppc
-
-ariel
+BRs
+Rolf
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
