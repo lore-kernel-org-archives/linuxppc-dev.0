@@ -1,16 +1,16 @@
-Return-Path: <kylej@aiinet.com>
-Received: from aiexchange.ai.aiinet.com (ai181-196.aiinet.com
-	[205.245.181.196]) by ozlabs.org (Postfix) with ESMTP id D51C867AAC
+Return-Path: <annamaya@yahoo.com>
+Received: from web53804.mail.yahoo.com (web53804.mail.yahoo.com
+	[206.190.36.199]) by ozlabs.org (Postfix) with SMTP id 4AF3167A83
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 25 Jan 2005 03:00:17 +1100 (EST)
+	Tue, 25 Jan 2005 05:28:15 +1100 (EST)
+Message-ID: <20050124182811.39192.qmail@web53804.mail.yahoo.com>
+Date: Mon, 24 Jan 2005 10:28:11 -0800 (PST)
+From: annamaya <annamaya@yahoo.com>
+To: ning <ningmin@yahoo.co.jp>, linuxppc-embedded@ozlabs.org
+In-Reply-To: <20050123085652.42295.qmail@web605.mail.yahoo.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Mon, 24 Jan 2005 11:00:35 -0500
-Message-ID: <C0170D0AF1277849A4B4518034F855DD0F90CC@aiexchange.ai.aiinet.com>
-From: "Jordan, Kyle" <kylej@aiinet.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: MPC8XX with an ISP1362 USB host controller in burst mode
+Content-Type: text/plain; charset=us-ascii
+Subject: Re: Serial console problem on MPC8272ADS board 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,14 +21,64 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-We are currently planning to use an ISP1362 USB host controller with a
-Freescale (Motorola) MPC8xx.  Our plan is to use the hcd-1161.c driver
-for the 2.4 kernel for this device.  I was wondering if anyone out there
-has used this combination operating in either bust mode or with burst
-mode turned off.  We are running into some hardware design issues and we
-did not know if we would suffer a large performance hit by not running
-in burst mode with this particular driver.  If anyone has any experience
-with this, I would greatly appreciate your advice.
+I do not know much about the MPC82702ADS but are you
+sure that the SCC4 is actually hooked up to an
+external serial port on this board? It may be that the
+SCC4 may not even be used on this board. Take a look
+at the datasheet for the board and see if SCC4 is used
+at all.
 
-Thanks,
-  Kyle Jordan
+--- ning <ningmin@yahoo.co.jp> wrote:
+
+> Hello to all
+> 
+> I am trying to use ttyS1(SCC4) as Linux serial
+> console
+> port on on MPC8272ADS board.
+> but it doesn't work. 
+> My linux kernel is 2.4.22,and using u-boot-1.1.1 as
+> a
+> bootload.
+> Linux kernel doesn't output any log information
+> after
+> u-boot's message:
+>  Uncompressing kernel Image ...  OK
+>  
+> If I use ttyS0(SCC1) as a serial console port,Linux
+> will
+> startup successfully.
+> 
+>   CPM UART driver version 0.01
+>   ttyS0 at 0x8000 is a SCC
+>   ttyS1 at 0x8300 is a SCC
+>   ...
+> 
+> I found serial console port seems be defined in
+> /arch/ppc/8260_io/uart.c,
+> but it doesn't work enen if I change
+> CONFIG_SERIAL_CONSOLE_PORT to 1 (default:0) 
+> 
+> I wonder serial console port only can be set to
+> ttyS0(SCC1) on MPC8272ADS?
+> 
+> Thanks.
+> 
+> __________________________________
+> Do You Yahoo!?
+> Upgrade Your Life
+> http://bb.yahoo.co.jp/
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+>
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
+
+
+
+		
+__________________________________ 
+Do you Yahoo!? 
+Yahoo! Mail - 250MB free storage. Do more. Manage less. 
+http://info.mail.yahoo.com/mail_250
