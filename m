@@ -1,25 +1,21 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 20BBE67A6E
+Return-Path: <martin@egholm-nielsen.dk>
+Received: from softscan.infopaq.dk (softscan.infopaq.dk [213.150.59.22])
+	by ozlabs.org (Postfix) with SMTP id 3731C67A33
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 31 Mar 2005 18:22:41 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	j2V8PVkN023706 for <linuxppc-embedded@ozlabs.org>;
-	Thu, 31 Mar 2005 01:25:31 -0700 (MST)
-Received: from zch01exm40.ap.freescale.net (zch01exm40.ap.freescale.net
-	[10.192.130.11])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id j2V8OIbU014292
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 31 Mar 2005 02:24:19 -0600 (CST)
-Message-ID: <9FCDBA58F226D911B202000BDBAD46730117355F@zch01exm40.ap.freescale.net>
-From: Li Yang-r58472 <LeoLi@freescale.com>
-To: Eugene Surovegin <ebs@ebshome.net>
-Date: Thu, 31 Mar 2005 16:22:26 +0800
+	Thu, 31 Mar 2005 18:23:22 +1000 (EST)
+Received: from unknown (HELO [10.131.226.169]) ([212.130.19.66])
+	(envelope-sender <martin@egholm-nielsen.dk>)
+	by mail.freepaq.dk (qmail-ldap-1.03) with SMTP
+	for <linuxppc-embedded@ozlabs.org>; 31 Mar 2005 08:23:12 -0000
+Message-ID: <424BB36B.1000900@egholm-nielsen.dk>
+Date: Thu, 31 Mar 2005 10:23:07 +0200
+From: Martin Egholm Nielsen <martin@egholm-nielsen.dk>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>
-Subject: RE: Problem running Linux 2.6.11 on MPC8272ADS
+To: linuxppc-embedded@ozlabs.org
+References: <42416091@webmail>
+In-Reply-To: <42416091@webmail>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Re: Overcommit (OOM) problem on embedded device (PPChameleon)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,50 +26,112 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Good point.
-There is also IMMR need to be passed from bootloader to kernel.  We can make more use of the u-boot bd_info mechanism.  But it binds ppc linux to u-boot boot loader.  I don't know if we should make it a porting convention.
+Hi Per,
 
-Best Regards,
-Leo
+> I think your main problem is that the stock 2.4.x kernel doesn't support
+> ovecommit_memory type 2 (i believe)...
+Doooh! You're so right!
+I read the docs on overcommit_memory from 2.6 - stupid me!
 
-> -----Original Message-----
-> From: Eugene Surovegin [mailto:ebs@ebshome.net]
-> Sent: Thursday, March 31, 2005 11:27 AM
-> To: Li Yang-r58472
-> Cc: Walter L. Wimer III; Gala Kumar K.-galak; Linux PPC Embedded list
-> Subject: Re: Problem running Linux 2.6.11 on MPC8272ADS
+> Look in mm/mmap.c and search for overcommit_memory, then do same
+> in the sources for your redhat kernels.
+I'll look into RH kernel to see if it isn't like you say :-)
+
+> Perhaps there's a patch for it floating around somewhere? ;-)
+Now, that would be really nice.
+Though I have no idea of where to look!?
+
+Thanks for clearing my mind!
+
+BR,
+  Martin
+
 > 
-> On Thu, Mar 31, 2005 at 11:03:00AM +0800, Li Yang-r58472 wrote:
-> > Well, it seems to be a historic problem.  Freescale BSP was
-> > originally ported from u-boot-1.0.0 and linux-2.4.22.  So the BCSR
-> > was freely chosen as 0xf8000000.  Later, we updated them to
-> > u-boot-1.1.1 and linux-2.4.26, and make the BCSR consistent to older
-> > version.  However the sourceforge u-boot-1.1.1 support for
-> > MPC8272ADS
-> > was committed by Arabella guys, they chose BCSR mapping to
-> > 0xf4500000.  Kumar's MPC8272 support which is in 2.6.11 source was
-> > developed using sourceforge u-boot-1.1.1 seemingly.
-> >
-> > This might brought up a question that if we need a convention or
-> > something to define the recommended memory mapping for PowerPC BSPs.
-> > As there are different groups of people around the world developing
-> > BSPs for PowerPC platforms, and often the communication between them
-> > is very limited.
-> >
-> > For now using kernel and u-boot released from the same vendor is recommended.
-> >
 > 
-> There is trivial solution which will work regardless on which version
-> of U-Boot and kernel you are using.
+>>===== Original Message From Martin Egholm Nielsen <martin@egholm-nielsen.dk> 
 > 
-> DO NOT hardcode such stuff in TWO DIFFERENT places, do this only in
-> one, in this case it should be firmware (e.g. U-Boot).
+> =====
 > 
-> In kernel just read BRx register for that chip select and use this
-> address for accesses from the kernel. This is how I do on all my
-> board ports.
+>>Hi there,
+>>
+>>I hope this is the place to go...
+>>
+>>I have a some problems figuring out the OOM-killer and configuring the
+>>overcommit_memory parameter. Hope someone here can guide me in the right
+>>directions...
+>>
+>>Specs:
+>>I'm having an embedded Linux system running on a PPC405EP (PPChameleon)
+>>with 64 megs of RAM, some flash, but (ofcourse) no swap space. It runs a
+>>2.4.20 kernel patched with drivers for my device.
+>>
+>>Problem:
+>>I have an application that is killed by the OOM (I guess) when it tries
+>>to "use" more memory than present on the system.
+>>Bolied down, memory is allocated with "sbrk" and then touch'ed (see
+>>test-application below).
+>>
+>>With "/proc/sys/vm/overcommit_memory" set to 2, I expected that "sbrk"
+>>would return "-1L" (0xFFFFFFFF), but it doesn't, hence is
+>>terminated/killed by the kernel.
+>>
+>>However, both my desktop Linux (RH 7.3)/2.4.18-10/i386 and Linux
+>>(FC2)/2.6.5/i386 did what I expected:
+>>
+>># ./exhaust_mem
+>>...
+>>ffffffff
+>>
+>>Out of memory
+>># #Yeaaaah!
+>>
+>>Having searched the web, I see that this may be related with the fact
+>>that there is no swap enabled on the embedded device.
+>>However, I tried disabling the swap (commented in fstab), but the
+>>desktop linux still behaves "correct".
+>>
+>>Can I do anything in order to get it the way I expected?
+>>
+>>Best regards,
+>> Martin Egholm
+>>
+>>=== exhaust_mem.c ===
+>>
+>>#include <unistd.h>
+>>#include <stdio.h>
+>>#define SIZE 1000000
+>>
+>>int main( int i )
+>>{
+>>  while ( 1 ) {
+>>    char *v = sbrk( SIZE );
+>>    char *p;
+>>
+>>    printf( "%x\n\n", v );
+>>
+>>    if ((long)v < 0) {
+>>      fprintf(stderr, "Out of memory\n");
+>>      exit(1);
+>>    } // if
+>>
+>>    for (p = v; p < v + SIZE; ++p) {
+>>      *p = 42;
+>>    } // for
+>>
+>>  } // while
+>>} // main
+>>
+>>
+>>
+>>
+>>
+>>
+>>_______________________________________________
+>>Linuxppc-embedded mailing list
+>>Linuxppc-embedded@ozlabs.org
+>>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 > 
-> No need to establish any artificial conventions on memory map, etc.
 > 
-> --
-> Eugene
+> 
+> 
+> 
