@@ -1,38 +1,46 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Dan Malek <dan@mvista.com>,
-	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: status of linuxppc_2_4_devel for ppc405gp
-Date: Fri, 24 Aug 2001 12:28:31 +0200
-Message-Id: <20010824102831.14636@smtp.adsl.oleane.com>
-In-Reply-To: <3B85E0D2.21BC306E@mvista.com>
-References: <3B85E0D2.21BC306E@mvista.com>
+Message-ID: <3B862F69.38E9F20C@raleigh.ibm.com>
+Date: Fri, 24 Aug 2001 06:41:45 -0400
+From: Ralph Blach <rcblach@raleigh.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: Dan Malek <dan@mvista.com>
+Cc: "Marti, Felix" <fmarti@desanasystems.com>,
+	"'Troy Benjegerdes'" <hozer@drgw.net>,
+	Linix PPC Emmbedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: using the little endian bit 4xx mmu
+References: <1DF71FB881F4D311A6B700C04FA06A1AC437B4@orca.desanasystems.com> <3B85D758.572A0AD8@mvista.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Some more progress (well, no much luck actually)
+Dan,
 
-After discussing with Paulus,
+Because its there, and its been hacked in here and the people here have
+found it VERY useful and convienent.  4xx specific or not, the people
+found it extremely convienent.
 
-I've removed the special case for flush_icache_page() in pgtable.h
-for 4xx, and moved the flush to set_pte. The PG_arch_1 bit is used
-to determine if a page is cache clean or not, so we use it.
 
-We should even be able to not flush all the cache here but only
-the possible "synonyms" as we know the real address.
+Chip
 
-It still doesn't work :(
-
-When I try to boot a MV "Journeyman" distro, it dies in ld.so, with
-the error
-
-BUG IN DYNAMIC LINKER ld.so: rtld.c: 614: dl_main: Assertion
-'dl_rtld_map.l_libname' failed!
-
-I still have to look in the ld.so source what it means exactly,
-but something is definitely wrong here.
-
+Dan Malek wrote:
+>
+> "Marti, Felix" wrote:
+> >
+> > I hacked it in a few hours:
+> > in arch/ppc/kernel/head_4xx.S
+>
+> Ugh....we have discussed this in the past.  What is the advantage
+> of using this feature?  All of the existing drivers and I/O macros
+> are designed to handle mixing of endian modes depending upon the
+> processor and I/O device.  All this does is complicate a standard
+> set of programming interfaces that everyone expects to work as they
+> have in the past.
+>
+> The ability to set a feature flag in the PTE and transfer that to
+> the TLB isn't a solution to anything.  You are going to have to
+> rewrite all of the standard functions, macros, and device drivers
+> to utilize this feature, and we haven't seen any benefit to doing this.
+>
+>         -- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
