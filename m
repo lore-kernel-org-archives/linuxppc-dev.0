@@ -1,27 +1,34 @@
-Date: Thu, 16 Oct 2003 16:11:38 +0200
-From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
-Subject: RE: Problem of concurrency in arch/ppc/8260_io/uart.c
-In-reply-to: <3F8E8817.5ACD7ACB@siemens.com>
-To: Agostino Sette ICN-CNX-RD-SW3 <Agostino.Sette@siemens.com>
-Cc: Jean-Denis Boyer <jdboyer@m5t.com>,
-	Steffen Rumler <Steffen.Rumler@siemens.com>,
-	linuxppc <linuxppc-embedded@lists.linuxppc.org>
-Reply-To: joakim.tjernlund@lumentis.se
-Message-id: <IGEFJKJNHJDCBKALBJLLMEGNGAAA.joakim.tjernlund@lumentis.se>
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
+Subject: Re: /proc problem
+From: Toni Van Remortel <t.vanremortel@ha.be>
+Reply-To: t.vanremortel@ha.be
+To: "Guy M. Streeter" <streeter@redhat.com>
+Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <1066313452.1033.1.camel@jarjar.hsv.redhat.com>
+References: <1066306828.735.29.camel@toni>
+	 <1066313452.1033.1.camel@jarjar.hsv.redhat.com>
+Content-Type: text/plain
+Message-Id: <1066314292.735.32.camel@toni>
+Mime-Version: 1.0
+Date: Thu, 16 Oct 2003 16:24:53 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> I had a similar problem on my_console_write. Here I wite down two version of the code, the first one is the old
-> and the second one is the new with the modification. As you can see, there was a spin_unlock without a spink_lock
-> ;this hangs the startup in calibration loop.
+[unresolved symbol __extendsfdf2]
 
-Agostino,
-check out the new 8xx_io/uart.c in BK. I wrote a patch that fixes the locking problems
-but minimizes the lock time.
+Op do 16-10-2003, om 16:10 schreef Guy M. Streeter:
+> You're trying to do floating-point math. The kernel doesn't do
+> floating-point.
 
-   Jocke
+Hmm. Is there a work-around? Because the control interface (written with
+FLTK) does use floating points and works.
+
+--
+                           Toni Van Remortel
+              Wetenschappelijk Medewerker - D-science lab
+  Real time Linux for embedded systems: http://linemb.d-sciencelab.com
+              Tel: +32 3 205 61 72 - Fax: +32 3 205 61 95
+                      E-mail: t.vanremortel@ha.be
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
