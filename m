@@ -1,33 +1,60 @@
-Date: Thu, 24 Feb 2000 23:00:52 -0500 (EST)
-From: Pavel Roskin <pavel_roskin@geocities.com>
-To: dony <dony.he@huawei.com.cn>
-cc: Ruedi.Hofer@ascom.ch, linuxppc-embedded@lists.linuxppc.org
+To: Ruedi.Hofer@ascom.ch
+Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: LinuxPPC2000 on MPC860
-In-Reply-To: <38B5D3E0.F89E6490@huawei.com.cn>
-Message-ID: <Pine.LNX.4.21.0002242256560.780-100000@localhost.localdomain>
+References: <0FQH0010T6SWW5@pmdf-it.hasler.ascom.ch>
+From: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
+Date: 25 Feb 2000 13:35:24 +0100
+In-Reply-To: Ruedi.Hofer@ascom.ch's message of "Fri, 25 Feb 2000 08:42:14 +0100 (CET)"
+Message-ID: <kfywvntv4s3.fsf@kieraypc07.p.y.ki.era.ericsson.se>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello!
+Ruedi.Hofer@ascom.ch writes:
 
-> > >tty_io.c: process 1 (swapper) used obsolete /dev/cua0 - update software to use /dev/ttyS0
-> >
-> > I found out that the kernel generates this error message in drivers/char/tty_io.c .
-> >
-> > Does someone know what this error message means? How to avoid it?
+> Changing the following values from
+>
+> >linux01:/usr/nfs/tftpboot/dev # l cua0 console ttyS0
+> >crw-------   1 root     tty        5,   1 Feb 25 08:18 console
+> >crw-------   1 root     tty        5,  64 Feb 25 08:05 cua0
+> >crw-------   1 root     tty        4,  64 Feb 23 11:44 ttyS0
+>
+> to
+>
+> >linux01:/usr/nfs/tftpboot/dev # l cua0 console ttyS0
+> >crw-------   1 root     tty        4,  64 Feb 25 08:26 console
+> >crw-------   1 root     tty        4,  64 Feb 25 08:26 cua0
+> >crw-------   1 root     tty        4,  64 Feb 23 11:44 ttyS0
+>
+> or to
+>
+> >linux01:/usr/nfs/tftpboot/dev # l cua0 console ttyS0
+> >lrwxrwxrwx   1 root     root            5 Feb 25 08:29 console -> ttyS0
+> >lrwxrwxrwx   1 root     root            5 Feb 25 08:29 cua0 -> ttyS0
+> >crw-------   1 root     tty        4,  64 Feb 23 11:44 ttyS0
+>
+> didn't help, unfortunately. Only the first (and original) setting produced
+> an output at all!
 
-It's a bug in the kernel. Workaround is to make /dev/console a symlink
+The first version is the only correct one.
+The "tty_io.c: process 1 (swapper) used obsolete /dev/cua0 - update software to use /dev/ttyS0"
+is a non-harmful bug in uart.c. Just ignore it or change the first
+occurence of TTYAUX_MAJOR to TTY_MAJOR.
 
->        Check you nfs root file, and make sure that the "/dev/console" is a symbol link to
-> "/dev/ttyS0", instead of "/dev/cua0" .
+> Does someone know where the initial stdin, stdout settings are configured??
 
-Actually /dev/console should not be a symlink.
-It's a character device, major 5, minor 1 on every decent system.
+They point to /dev/console, which is your boot-console.
 
-Pavel Roskin
+> The /dev/stdin points somewhere to /proc/self/fd/0. At this time of boot, /proc
+> is not mounted yet !!!
 
+/dev/stdin, /dev/stdout and /dev/stderr doesn't have anything to do
+with anything.
+
+//Marcus
+--
+Signature under construction, please come back later.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
