@@ -1,40 +1,32 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <002701c13134$584f58a0$a66d34c0@zaz>
-From: "Lionel TAILLURAT" <lionel.TAILLURAT@ecrin.com>
-To: "ppc_mailing_list" <linuxppc-embedded@lists.linuxppc.org>
-Subject: How to download the devel PPC linux kernel tree ?
-Date: Thu, 30 Aug 2001 11:15:33 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-Id: <4.2.2.20010830111127.02d754d0@qisrael.qi.qualcomm.com>
+Date: Thu, 30 Aug 2001 12:19:52 +0300
+To: linuxppc-embedded@lists.linuxppc.org
+From: Alexander Kolesnikov <akolesni@qualcomm.com>
+Subject: USB support in the HardHet Linux 2.4.2 on the IBM Walnut
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear,
+Hi All,
 
-I would like to download the latest linux PPC kernel tree.
+We have problems with different USB chips on the Walnut board:
 
-Is there is a tutorial somewhere which explain how to do that ?
-Which kernel should I download ?
+1.Using of a OHCI chip causes to kernel crash. This problem is famous but
+we really need to know whether does any "on the shelf" solution for the
+particular case exist.
+
+2.When a UHCI chip is used, the USB device connecting to it causes to the
+following error messages:
+
+	usb_control/buk_msg:timeout
+	usb.c:USB device not accepting new address = XX (error=-110)
+
+The used USB hubs and devices work properly with another OS on the PC
+platform.
 
 Thanks in advance.
-
-Lionel
-
---
-
-+-------------------------------+-------------------------+
-| Lionel TAILLURAT              | ECRIN AUTOMATISMES      |
-| Development & Support Service | Rue du pré-de-l'Horme   |
-|                               | B.P 15                  |
-| Tel :(33) 4 76 92 20 01       | 38921 CROLLES CEDEX     |
-| Fax :(33) 4 76 08 03 18       | FRANCE                  |
-|                               | http://www.ecrin.com    |
-+-------------------------------+-------------------------+
-|Email: Lionel.TAILLURAT@ecrin.com                        |
-|Email: support@ecrin.com                                 |
-+---------------------------------------------------------+
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
