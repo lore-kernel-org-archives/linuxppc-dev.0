@@ -1,30 +1,32 @@
-Date: Thu, 23 Mar 2000 18:19:29 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Jeff Garzik <jgarzik@mandrakesoft.com>
-cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Tulip on PPC :-)
-Message-ID: <Pine.LNX.4.05.10003231817520.29617-100000@callisto.of.borg>
+Message-ID: <38DA5D9F.53A48659@execpc.com>
+Date: Thu, 23 Mar 2000 12:08:31 -0600
+From: Joseph Garcia <jpgarcia@execpc.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Derek Homeier <supas100@astrophysik.uni-kiel.de>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Synchronous SCSI at 10MB/s on Lombard? (fwd)
+References: <Pine.SOL.3.95.1000323150218.25787A-100000@juliet>
+Content-Type: text/plain; charset=iso-2022-jp
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-	Hi Jeff,
+Derek Homeier wrote:
+> Has anyone tried to set the rate for synchronous SCSI tranfer for the MESH
+> controller in the G3 series Powerbooks to 10? The kernel docs claim it does
+> 10 MB/sec on machines where the bus is internal only:
 
-The latest Tulip driver (2.3.99-pre3-pre7) works fine on the DEC21041 card in
-my PPC box.  Great job!
-
-Gr{oetje,eeting}s,
-
-						Geert
+I have tried it on my PDQ/300.  My SyQuest worked fine, but according to /proc,
+it was still running at 5.  however, my yamaha cdrw did not work.  set 5, it
+reports its sync speed is 4.2.  when MESH is told to max at 10, my RW is still
+recognized, reports 8.4, but does not respond to mounting, reading, nor
+writing.  It could be that the 6.6 you have achieved is still doable, but my 8.4
+is not. so setting MESH to 7 or 8 may be a safer fast speed.  havent tried it
+though.
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+Joseph P. Garcia      jpgarcia@execpc.com      jpgarcia@lidar.ssec.wisc.edu
+CS Undergraduate                      Student Employee - Systems Programmer
+University of Wisconsin - Madison                            UW Lidar Group
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
