@@ -1,26 +1,27 @@
-Message-ID: <20031230035922.51496.qmail@web40404.mail.yahoo.com>
-Date: Mon, 29 Dec 2003 19:59:22 -0800 (PST)
-From: Raghu <raghu_dk@yahoo.com>
-Subject: Dual Phy support
-To: linuxppc-dev@lists.linuxppc.org
+Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
+Reply-To: <zjzhou@newrocktech.com>
+From: "John Zhou" <zjzhou@newrocktech.com>
+To: "'Mailing List: linuxppc-dev'" <linuxppc-dev@lists.linuxppc.org>
+Subject: A question on kernel clock:
+Date: Tue, 30 Dec 2003 14:34:36 +0800
+Message-ID: <000301c3ce9e$ff345440$b702a8c0@newrock2>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <1072237883.699.34.camel@gaston>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 Dear All,
-I have a MPC852T processor based board. And a Dual
-BCM5222 Ethernet Phy accessed from MDIO interface of
-the FEC ( fec.c ). But since this is a dual phy the
-phyaddr needs to be taken care of. Is there an
-upgraded support for dual phys already ?
+
+A question on kernel clock:
+
+Normally, which is kernel clock source? Can we use any one of BRG1-8? Can we use bus clock?	Which is good for choice?
+
+Can anyone give me some suggestions?
 
 Regards,
-Raghu.
-
-
-Find out what made the Top Yahoo! Searches of 2003
-http://search.yahoo.com/top2003
+John
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
