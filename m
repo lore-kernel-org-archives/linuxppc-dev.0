@@ -1,37 +1,25 @@
-Message-ID: <3C425D1A.B65DC58E@attbi.com>
-Date: Sun, 13 Jan 2002 20:22:50 -0800
-From: C S Rosenmund <gnuman@attbi.com>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
+Date: Mon, 14 Jan 2002 13:35:55 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: C S Rosenmund <gnuman@attbi.com>
+Cc: <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: A few questions on older Macintosh Powerbooks
-References: <3C41F3C2.E35D4E2C@attbi.com>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3C41F3C2.E35D4E2C@attbi.com>
+Message-ID: <Pine.LNX.4.33.0201141334110.8470-100000@opal.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-C S Rosenmund wrote:
->
+> Would someone tell me what the latest monolithic kernel and patch
+> available for a NuBus PPC would be and where they can be found? I'm
+> working with the 2.4.5 sources (and the patch-2.4.5-Nubus patch), and it
+> works *almost*. . .
 
->
-> If that is the latest, is there an expansion bay patch available, and if
-> so, where?
-> same question concerning the PCMCIA services. . .
->
+I'm using 2.4.6-pre3 from the SF site on a 6100 here, and it seems to work
+fine. nubus-pmac.sourceforge.net should be the site to look at.
 
-It seems that I need the MMU patch as well, if someone would be so kind
-as to post a pointer to them?
+	Michael
 
-> Hardware in question is a PowerBook 1400c
->
-> OS I'm using is Debian-PPC 2.2
->
-> any reference material you could send me would be greatly appreciated.
-> Thanks in advance.
->
-> Sanjay
-> gnuman@attbi.com
-> gnuman0@pacbell.net
->
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
