@@ -1,37 +1,40 @@
-Message-ID: <D73A25AA6E54D511AD74009027B1110F5BB139@ORION>
-From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
-To: "'Jos Beck'" <jos_beck@euronet.nl>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Preferred Phy for MPC8260
-Date: Fri, 26 Mar 2004 10:21:44 -0500
+Message-ID: <406455E9.90809@embeddededge.com>
+Date: Fri, 26 Mar 2004 11:10:17 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Jos Beck <jos_beck@euronet.nl>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Preferred Phy for MPC8260
+References: <406448EC.5030009@euronet.nl>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-intel lxt971
+Jos Beck wrote:
 
------Original Message-----
-From: Jos Beck [mailto:jos_beck@euronet.nl]
-Sent: Friday, March 26, 2004 10:15 AM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Preferred Phy for MPC8260
+> Would anyone of you know a preferred 10/100baseT phy for the MPC8260?
+> Or specific brands/types to avoid?
+> Or does it really not matter what we use?
+
+It depends completely on your system requirements.  There are many different
+PHYs supported in the software right now, and it is relatively easy to
+add new ones.  Some of the features you may want to consider are whether
+you want single or multiple PHYs in one package, and take a look at the
+detail of how they may interrupt the processor on link changes and if
+that is suitable for your product.  For software compatibility, it's
+more important how the PHY is connected to the pins of the processor
+(due to its flexibility) than which one is used.
+
+In typical fashion, when the LXT parts changed hands there were some
+subtle differences from the original that has made them a PITA, so they
+aren't high on my list, but something still makes them attractive to use :-)
+My preference is AMD networking products.
+
+Good Luck. :-)
 
 
-
-Hi,
-
-I hope I am not too much off-topic in this mail list .. but
-
-Would anyone of you know a preferred 10/100baseT phy for the MPC8260?
-Or specific brands/types to avoid?
-Or does it really not matter what we use?
-
-Thanks,
-
-Jos
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
