@@ -1,27 +1,43 @@
-Message-ID: <38FC86C6.21EBC05C@embeddededge.com>
-Date: Tue, 18 Apr 2000 12:01:10 -0400
-From: Dan Malek <dan@netx4.com>
+Message-ID: <001901bfa9a9$2a7c0040$efc5dba8@sec.samsung.co.kr>
+From: "kim sook young" <icekim@sec.samsung.co.kr>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Error: Building glibc
+Date: Wed, 19 Apr 2000 11:44:21 +0900
 MIME-Version: 1.0
-To: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
-CC: Graham Stoney <greyham@research.canon.com.au>, Dan Malek <dan@netx4.com>,
-        LinuxPPC Embedded Mailing List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Bizarre initrd problem on CLLF860T
-References: <20000418075704.C3E833C970@elph.research.canon.com.au> <kfybt37pyzg.fsf@kieraypc01.p.y.ki.era.ericsson.se>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="ks_c_5601-1987"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Marcus Sundberg wrote:
+Hi, all
+While building glibc, I got an error like the following
 
-> I'd suggest keeping the C-version of set_dec() in ppc/kernel/time.h
-> where it used to be and change it to the followingcode :
+---------------------------------------------------------------------------------
+.......................................................
+In file included from ../sysdeps/unix/sysv/linux/powerpc/profil-counter.h:2,
+                 from ../sysdeps/posix/profil.c:54,
+                 from ../sysdeps/unix/sysv/linux/profil.c:3:
+../sysdeps/unix/sysv/linux/i386/profil-counter.h: In function `profil_counter':
+../sysdeps/unix/sysv/linux/i386/profil-counter.h:26: structure has no member named `regs'
+../sysdeps/posix/profil.c:39: warning: inlining failed in call to `profil_count'
+../sysdeps/unix/sysv/linux/i386/profil-counter.h:26: warning: called from here
+make[2]: *** [/home/icekim/Cross-Compiler/Glibc/glibc-2.1.3/build/gmon/profil.o] Error 1
+make[2]: Leaving directory `/home/icekim/Cross-Compiler/Glibc/glibc-2.1.3/gmon'
+make[1]: *** [gmon/subdir_lib] Error 2
+make[1]: Leaving directory `/home/icekim/Cross-Compiler/Glibc/glibc-2.1.3'
+make: *** [all] Error 2
+---------------------------------------------------------------------------------
+I think glibc(as you can see:2.1.3) and compiler(2.95.2) versions are the latest ones. I also perfomed the following configuration to build glibc. ( Actually  in order to install Binutils, Gcc and LibC, I followed the instructions only except for  building linux/ppc kernel )
 
-I just use whatever comes from the Linux/PPC development tree.  It
-seems to move around depending upon what compiler bugs exist at the time.
-It may also be necessary to make this a real function for RT/Linux support.
 
+CC=powerpc-linux-gcc AR=powerpc-linux-ar RANLIB=powerpc-linux-ranlib ../configure --host=powerpc-linux --with-headers=/usr/src/linux/include --enable-add-ons=crypt, linuxthreads --prefix=/usr/local/powerpc-linux
 
-	-- Dan
+What's wrong in the environment? What should I do solve the problem? Should I have built the linux/ppc kernel which might be related with this error?
+
+Please help me out..
+
+e-mail: icekim@sec.samsung.co.kr
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
