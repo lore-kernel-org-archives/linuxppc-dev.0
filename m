@@ -1,59 +1,33 @@
-Message-ID: <3C17548A.5AEEDC5B@multitech.co.in>
-Date: Wed, 12 Dec 2001 18:28:50 +0530
-From: srinivas pulipati <srinivasp@multitech.co.in>
-MIME-Version: 1.0
-To: Mark Hatle <fray@mvista.com>
-Cc: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: how to cross complile helloworld.c
-References: <3C15FD95.5F348883@multitech.co.in> <3C162FE2.2D26113E@mvista.com>
+Date: Wed, 12 Dec 2001 07:08:06 -0700
+From: Matt Porter <mporter@mvista.com>
+To: Tom Rini <trini@kernel.crashing.org>,
+	ppclist <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: r3 and bd_t
+Message-ID: <20011212070806.A21676@cx258813-a.chnd1.az.home.com>
+References: <3C164F4B.E9A4FCA2@seranoa.com> <20011211183430.GQ22045@cpe-24-221-152-185.az.sprintbbd.net> <20011212171457.GA20492@shamus.smoothsmoothie.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20011212171457.GA20492@shamus.smoothsmoothie.com>; from jtm@smoothsmoothie.com on Wed, Dec 12, 2001 at 11:14:57AM -0600
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi mark,
-
-yes i built the gcc after compling glibc only.
-
-just now i figured out the problem.
-
-after compiling glibc..
-
-i edited the file <path where you put glibc/lib/libc.so  and  changed
-
-GROUP ( /lib/libc.so.6 /lib/libc_nonshared.a )
-to:
-GROUP ( <path where you put glibc>/lib/libc.so.6 <path where you put
-glibc>/lib/libc_nonshared.a )
-
-now powepc-linux-gcc is able to compile hello.c file without any error.
-
-thanks
-srinivas
-
-Mark Hatle wrote:
-
-> srinivas pulipati wrote:
-> >
-> > hi,
-> >
-> > i have compiled glibc for powerpc-linux.
-> > when i try to compile a sample file helloworld.c
-> > it is saying undefined  reference to printf.
-> > looks like it is not taking proper library.
-> >
-> > can anyone help me?
-> >
-> > thanks
-> > srinivas
+On Wed, Dec 12, 2001 at 11:14:57AM -0600, jtm@smoothsmoothie.com wrote:
+>
+> On Tue, Dec 11, 2001 at 11:34:30AM -0700, Tom Rini wrote:
 > >
 >
-> After compiling glibc, did you rebuild you compiler set?  Without doing
-> a recompile gcc is still going to use newlib and will have no knowledge
-> of the installed glibc.
+> > arch/ppc/kernel/head_8xx.S saves this and passes it onto early_init()
+> > iirc, which will pass it along to platform_init(), which copies it for
+> > safe keeping.
 >
-> --Mark
->
+> I think the 8260 uses arch/ppc/kernel/head.S instead of head_8xx.S.
 
+It has to, it's a 603 core.
+
+--
+Matt Porter
+MontaVista Software, Inc.
+mporter@mvista.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
