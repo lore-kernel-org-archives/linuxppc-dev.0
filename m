@@ -1,28 +1,42 @@
-Message-ID: <39821DD7.ED0DA0A2@embeddededge.com>
-Date: Fri, 28 Jul 2000 19:57:11 -0400
-From: Dan Malek <dan@netx4.com>
+Date: Fri, 28 Jul 2000 20:47:50 -0400 (EDT)
+From: James Simmons <jsimmons@acsu.buffalo.edu>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: Takashi Oe <toe@unlserve.unl.edu>, Benjamin Herrenschmidt <bh40@calva.net>,
+        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
+        Linux Frame Buffer Device Development <linux-fbdev@vuser.vu.union.edu>
+Subject: Re: [linux-fbdev] Re: [ANN] IRQ Latency tool 0.1.3 release.
+In-Reply-To: <Pine.LNX.4.10.10007281606400.423-100000@cassiopeia.home>
+Message-ID: <Pine.LNX.4.10.10007282043200.681-100000@maxwell.futurevision.com>
 MIME-Version: 1.0
-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: CONFIG_PPC != Mac
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Or vice versa....
+> > Would it be difficult to make the lock per fbdev thing?  If the
+> > CPU/accelerator clash is the only reason for the global lock, we can
+> > certainly remove that for hardware which doesn't have that kind of
+> > problem, can't we?
+>
+> There could indeed be separate locks per fbdev. But the global console lock
+> (console_lock) would still be there. It is needed because the console subsystem
+> is not re-entrant (yet). Since fbdev is called from the console subsystem, it
+> runs under the same lock (i.e. with interrupts disabled).
 
-So, the 2.4.0 PowerPC tree is now Mac workstation only?  Please,
-we can't make the assumption that CONFIG_PPC is a Macintosh.  It
-breaks all PowerPC embedded systems (or anything that isn't a recent
-Mac with USB).  There is a CONFIG_MAC, isn't that enough to do the same
-thing?
+I will be testing for re-entrant ability next week with code I have in
+CVS. Their should be a semaphore for each struct console. Also their
+should be a semaphore for each VT where on semephore is shared between the
+VT console and struct console. Why a semephore. Eventually we will run
+into hardware that runs only by interrupts. So a hardware independent why
+to lock the console system is needed.
 
-Can we quickly resolve this?  The BK tree doesn't build for many
-systems right now.
+Q: Why did they deprecate a.out support in linux?
+A: Because a nasty coff is bad for your elf.
 
-Thanks.
-
-
-	-- Dan
+James Simmons  [jsimmons@linux-fbdev.org]               ____/|
+fbdev/console/gfx developer                             \ o.O|
+http://www.linux-fbdev.org                               =(_)=
+http://linuxgfx.sourceforge.net                            U
+http://linuxconsole.sourceforge.net
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
