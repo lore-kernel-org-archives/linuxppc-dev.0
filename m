@@ -1,43 +1,26 @@
-Message-Id: <200104172137.XAA00843@piglet.grunz.lu>
-Date: Tue, 17 Apr 2001 23:37:46 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: TiBook trackpad in benh's kernel?
-To: costabel@wanadoo.fr
+To: mlan@cpu.lu
 Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <3ADCB6A6.D2DBE9AC@wanadoo.fr>
+Subject: Re: TiBook trackpad in benh's kernel?
+References: <200104162121.XAA01103@piglet.grunz.lu>
+From: gtgj@pacbell.net (Gregorio Gervasio Jr.)
+Date: 17 Apr 2001 14:49:47 -0700
+In-Reply-To: <200104162121.XAA01103@piglet.grunz.lu>
+Message-ID: <m3elurci2s.fsf@adsl-63-196-7-48.dsl.snfc21.pacbell.net>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  17 Apr, this message from Martin Costabel echoed through cyberspace:
-> Michel Lanners wrote:
->>
->> Hi all,
->>
->> Anyone else seen this? I can't get the trackpad on my TiBook working
->> with benh's latest tres (rsync'ed a few days ago).
->
-> Can it be that the old "booting cmode 32 kills trackpad" bug is still
-> alive and bit you? Did you try booting using cmode:16 or cmode:8 ?
+>>>>> On Mon, 16 Apr 2001 23:21:50 +0200 (CEST), Michel Lanners <mlan@cpu.lu> said:
 
-Yeah, exactly right. cmode:32 and cmode:16 kill the trackpad; cmode:8
-works OK. Plus, I am able to run XF4 in 32 bpp, even with cmode:8 set.
+m> Anyone else seen this? I can't get the trackpad on my TiBook working
+m> with benh's latest tres (rsync'ed a few days ago).
 
-Go figure...
+        Seems to work for me.  I'm using his 2.4.4-pre1 tree rsync'ed
+on April 12.  I am using cmode:32, too.
 
-Cheers
-
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
-
+Gregorio Gervasio, Jr.
+gtgj@pacbell.net
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
