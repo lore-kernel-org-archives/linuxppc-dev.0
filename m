@@ -1,36 +1,91 @@
-Message-ID: <3E3BA83F.6060002@bluewin.ch>
-Date: Sat, 01 Feb 2003 11:58:07 +0100
-From: Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch>
+From: brian.auld@adic.com
+Message-ID: <995FF289C9D69747A09E42992644595405B2363F@penguin.adic.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Ebony/440GP boot problems
+Date: Sat, 1 Feb 2003 09:38:38 -0800 
 MIME-Version: 1.0
-To: OHMURA Yutaka <ohmura@co-nss.co.jp>
-Cc: acurtis@onz.com, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: How to use EP8260 MTD device?
-References: <NCBBIINEHIPFGJPLBEIFOEKEEBAA.acurtis@onz.com> <20030201153711K-Z0vd@co-nss.co.jp>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On 02/01/2003 07:37 AM OHMURA Yutaka wrote:
->> > By the way, TSL uses DEC register for timer, is this same in pure
->> > PPC-Linux?
->> > I could't find pure PPC-Linux 2.4.7 source code...
->>
->> It is there, you have to learn how to use bitkeeper.
->>
->
-> Hmmm,
->
-> I searched under http://www.kernel.org/pub/linux/kernel/ports/ppc/, but the
-> oldest patch for PPC was made for 2.4.10 kernel. Did I search wrong place?
+To recap:
 
-Check http://www.penguinppc.org/dev/kernel.shtml. The patches you
-mentioned are against the linuxppc_2_4 tree but for a lot of embedded
-boards the linuxppc_2_4_devel tree is the better choice.
+I am trying to get embedded linux running on the Ebony 440GP eval board with
+u-boot as the boot loader.
 
-Good luck,
+I believe I've successfully programmed u-boot into the upper 0.5MB of the
+32bit memory map. I don't want to print out the entire memory dump, but I'll
+attach the beginning and end of the top 0.5MB chunk of memory (i.e. u-boot).
 
-Wolfgang.
+When I reset the board, the serial console is dead. I've tried every
+imaginable baud rate and the serial console is still dead. Even if I had the
+wrong baud, I'd at least expect to see jibberish on the serial console,
+which I don't.
 
+Any suggestions? The third clip below, showing the top 256 bytes of the boot
+area, has data content of 0x4bfff004. In what I have gotten so far out of
+440GP manuals, this address is the reset vector. Well, if that's the case,
+0x4bfff0004 does not sound like a good number, does it. Or, am I looking in
+the wrong place. I thought the contents of addr 0xfffffffc would point to
+the start of u-boot at addr 0xfff80000, which it doesn't appear to.
+
+========= Clip of bdi console on reset  ==========
+BDI>reset
+- TARGET: processing user reset request
+- TARGET: reseting target passed
+- TARGET: processing target startup ....
+- TARGET: processing target startup passed
+BDI>
+==================================================
+
+
+========= bottom 256 bytes of boot area ==========
+BDI>md 0xfff80000
+fff80000 : 27051956 552d426f 6f742030 2e322e30  '..VU-Boot 0.2.0
+fff80010 : 20284a61 6e203331 20323030 33202d20   (Jan 31 2003 -
+fff80020 : 30353a31 323a3535 29000000 00000000  05:12:55).......
+fff80030 : 00000000 00000000 00000000 00000000  ................
+fff80040 : 00000000 00000000 00000000 00000000  ................
+fff80050 : 00000000 00000000 00000000 00000000  ................
+fff80060 : 00000000 00000000 00000000 00000000  ................
+fff80070 : 00000000 00000000 00000000 00000000  ................
+fff80080 : 00000000 00000000 00000000 00000000  ................
+fff80090 : 00000000 00000000 00000000 00000000  ................
+fff800a0 : 00000000 00000000 00000000 00000000  ................
+fff800b0 : 00000000 00000000 00000000 00000000  ................
+fff800c0 : 00000000 00000000 00000000 00000000  ................
+fff800d0 : 00000000 00000000 00000000 00000000  ................
+fff800e0 : 00000000 00000000 00000000 00000000  ................
+fff800f0 : 00000000 00000000 00000000 00000000  ................
+BDI>
+====================================================
+
+
+
+============ Top 256 bytes of boot area ============
+BDI>md 0xffffff00
+ffffff00 : ffffffff ffffffff ffffffff ffffffff  ................
+ffffff10 : ffffffff ffffffff ffffffff ffffffff  ................
+ffffff20 : ffffffff ffffffff ffffffff ffffffff  ................
+ffffff30 : ffffffff ffffffff ffffffff ffffffff  ................
+ffffff40 : ffffffff ffffffff ffffffff ffffffff  ................
+ffffff50 : ffffffff ffffffff ffffffff ffffffff  ................
+ffffff60 : ffffffff ffffffff ffffffff ffffffff  ................
+ffffff70 : ffffffff ffffffff ffffffff ffffffff  ................
+ffffff80 : ffffffff ffffffff ffffffff ffffffff  ................
+ffffff90 : ffffffff ffffffff ffffffff ffffffff  ................
+ffffffa0 : ffffffff ffffffff ffffffff ffffffff  ................
+ffffffb0 : ffffffff ffffffff ffffffff ffffffff  ................
+ffffffc0 : ffffffff ffffffff ffffffff ffffffff  ................
+ffffffd0 : ffffffff ffffffff ffffffff ffffffff  ................
+ffffffe0 : ffffffff ffffffff ffffffff ffffffff  ................
+fffffff0 : ffffffff ffffffff ffffffff 4bfff004  ............K...
+BDI>
+========= Clip of bdi console on reset  ==========
+
+Any suggestions would be appreciated.
+
+-- Brian
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
