@@ -1,25 +1,38 @@
-Date: Fri, 15 Jan 1999 15:04:30 -0700 (MST)
-From: Cort Dougan <cort@persephone.cs.nmt.edu>
-To: Michael Meissner <meissner@cygnus.com>
-cc: Alois Fertl <alois_fertl@mucmot.muenchen.europe.mcd.mot.com>,
-        linux-kernel@vger.rutgers.edu, linuxppc-dev@lists.linuxppc.org,
-        gdt@cygnus.com
-Subject: Re: Booting 2.2.0-pre6 on a PowerStack-II (Net 4000/200)
-In-Reply-To: <19990115165805.A28318@tiktok.cygnus.com>
-Message-ID: <Pine.LNX.3.96.990115150135.11410A-100000@persephone.cs.nmt.edu>
+Message-Id: <199901152240.QAA07784@lists.linuxppc.org>
+Date: Fri, 15 Jan 1999 17:40:47 -0500 (EST)
+From: "Jim Somerville" <somer@nortelnetworks.com>
+Reply-To: "Jim Somerville" <somer@nortelnetworks.com>
+Subject: Re: MCP750 and CPX2000 System Scsi Woes
+To: Gabriel Paubert <paubert@iram.es>
+cc: linuxppc-dev@lists.linuxppc.org, valette@crf.canon.fr,
+        "Corey Minyard" <minyard@nortelnetworks.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-His gets it from the OF.  There's no OF code used in the prep bootloader
-in the current kernels.
+In message "Re: MCP750 and CPX2000 System Scsi Woes", 
+"Gabriel Paubert" <paubert@iram.es> writes:
+>Not very surprising, which is the actual interrupt used for SCSI
+>(it should be in the doc and in the residual data).
+>
+>Tell me if the zImage-2.2.0-pre5 on ftp://vcorr1.iram.es/pub/ works
+>better. Early boot messages will be different and it will try to use
+>the OpenPIC (that's the image running on my MVME2600 right now).
+>I'm completely reorganizing my source code and patches, hopefully
+>I'll be able to make it available during the week-end. 
 
-Are you netbooting or floppy booting?
+Gabriel, it worked!  SCSI devices were found successfully.  It died at the
+end trying to mount the non-existent root partition.  If you have a
+ramdisk image that contains an installer, it would be appreciated.  :-)
+I'll look for your source on Monday.
 
-}Also, Gary Thomas's 2.0.32 kernel seemed to have no problem in sizing memory,
-}so I presume it is able to pick up the residual data.
+Thanks again,
+
+-Jim
+
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
