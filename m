@@ -1,95 +1,57 @@
-Message-ID: <20040519232252.10109.qmail@web11604.mail.yahoo.com>
-Date: Wed, 19 May 2004 16:22:52 -0700 (PDT)
-From: Shamile Khan <shamile@yahoo.com>
-Subject: Xilinx EMAC - cannot ping
+Message-Id: <4.2.2.20040519163955.04c3a390@bhawley.mailhost.luminex.com>
+Date: Wed, 19 May 2004 16:40:48 -0700
 To: linuxppc-embedded@lists.linuxppc.org
-Cc: shamile@yahoo.com
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Brian Hawley <bhawley@luminex.com>
+Subject: Re: Ebony Board, PPC440GP and NFS time out
+In-Reply-To: <20040520001929.GG13351@gate.ebshome.net>
+References: <20040519234228.GF13351@gate.ebshome.net>
+ <4.2.2.20040519134735.04c20180@bhawley.mailhost.luminex.com>
+ <4.2.2.20040519132218.050b0df0@bhawley.mailhost.luminex.com>
+ <4.2.2.20040519123513.05074da0@bhawley.mailhost.luminex.com>
+ <4.2.2.20040519101456.0509d340@bhawley.mailhost.luminex.com>
+ <4.2.2.20040519123513.05074da0@bhawley.mailhost.luminex.com>
+ <4.2.2.20040519132218.050b0df0@bhawley.mailhost.luminex.com>
+ <4.2.2.20040519134735.04c20180@bhawley.mailhost.luminex.com>
+ <4.2.2.20040519143346.04c41220@bhawley.mailhost.luminex.com>
+ <4.2.2.20040519145943.04c28200@bhawley.mailhost.luminex.com>
+ <20040519234228.GF13351@gate.ebshome.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Thanks.  I checked out the linux-2.5-ocp using the site you recommended
+before.  Perhaps
+there have been some patches in the last couple months...
 
-I have a Memec FG456 evaluation board with P160 module. I
-am using Xilinx ethernet core (with default configuration
-in mhs file) and the open source linux driver for Xilinx
-EMAC. It seems that the ethernet device is detected
-correctly but I cannot seem to ping any machine in my
-network. I can ping myself though. Here are some diagnostic
-results.
+However, I will also download from kernel.org's kernel since the ocp stuff
+has been merged in.
 
-1) insmod the driver
-bash-2.05# insmod a.out
-eth0: Xilinx EMAC #0 at 0xFEFE8000 mapped to 0xC3008000,
-irq=31
+At 05:19 PM 5/19/04 -0700, Eugene Surovegin wrote:
+>On Wed, May 19, 2004 at 04:42:28PM -0700, Eugene Surovegin wrote:
+>
+>[snip]
+>
+> > > mal0: Initialized, 4 tx channels, 2 rx channels
+> > > emac: IBM EMAC Ethernet driver, version 2.0
+> > > Maintained by Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > > zmii0: input 0 in SMII mode
+>
+>This is quite suspicious (SMII) ^^^^
+>
+> > > eth0: IBM emac, MAC 00:04:ac:e3:23:b2
+> > > eth0: Found Generic MII PHY (0x08)
+> > > zmii0: input 1 in RMII mode
+>
+>... and this (RMII)   ^^^^
+>
+>[snip]
+>
+>Please, make sure you are using the latest linux-2.5-ocp or just latest
+>kernel.org's kernel (OCP stuff was just merged in).
+>
+>Eugene
 
-2)  ifconfig
-bash-2.05# ifconfig eth0 192.168.0.55
-bash-2.05# ifconfig -a
-eth0      Link encap:Ethernet  HWaddr 00:60:08:27:11:7B
-          inet addr:192.168.0.55  Bcast:192.168.0.255
-Mask:255.255.255.0
-          inet6 addr: fe80::260:8ff:fe27:117b/10 Scope:Link
-          UP BROADCAST RUNNING  MTU:1500  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0
-frame:0
-          TX packets:7 errors:0 dropped:0 overruns:0
-carrier:0
-          collisions:0 txqueuelen:100
-          RX bytes:0 (0.0 b)  TX bytes:414 (414.0 b)
-          Interrupt:31
-
-lo        Link encap:Local Loopback
-          LOOPBACK  MTU:16436  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0
-frame:0
-          TX packets:0 errors:0 dropped:0 overruns:0
-carrier:0
-          collisions:0 txqueuelen:0
-          RX bytes:0 (0.0 b)  TX bytes:0 (0.0 b)
-
-sit0      Link encap:IPv6-in-IPv4
-          NOARP  MTU:1480  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0
-frame:0
-          TX packets:0 errors:0 dropped:0 overruns:0
-carrier:0
-          collisions:0 txqueuelen:0
-          RX bytes:0 (0.0 b)  TX bytes:0 (0.0 b)
-
-3) bash-2.05# mii-tool -v
-eth0: negotiated 100baseTx-FD flow-control, link ok
-  product info: vendor 00:10:18, model 30 rev 4
-  basic mode:   autonegotiation enabled
-  basic status: autonegotiation complete, link ok
-  capabilities: 100baseTx-FD 100baseTx-HD 10baseT-FD
-10baseT-HD
-  advertising:  100baseTx-FD 100baseTx-HD 10baseT-FD
-10baseT-HD flow-control  link partner: 100baseTx-FD
-100baseTx-HD 10baseT-FD 10baseT-HD flow-control
-
-4) interrupts
-bash-2.05# cat /proc/interrupts
-           CPU0
- 30:       8046     Xilinx INTC  Level  serial
- 31:          7     Xilinx INTC  Level  eth0
-BAD:          0
-
-5) Running ethereal on host which I am pinging to, I can
-see ARP requests from my linux target sent to the host but
-nothing is sent back to target.
-
-Any ideas on the source of the problem?
-
-Regards,
-Shamile
-
-
-
-
-Yahoo! Domains – Claim yours for only $14.70/year
-http://smallbusiness.promotions.yahoo.com/offer
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
