@@ -1,57 +1,62 @@
-From: acurtis@directvinternet.com
-Reply-To: <acurtis@directvinternet.com>
-To: "Pantelis Antoniou" <panto@intracom.gr>,
-	<joakim.tjernlund@lumentis.se>
-Cc: <acurtis@directvinternet.com>,
-	"Tom Rini" <trini@kernel.crashing.org>,
-	"Dan Malek" <dan@embeddededge.com>,
-	"Paul Mackerras" <paulus@au1.ibm.com>,
-	"Matt Porter" <porter@cox.net>,
-	<linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Regarding consistent_alloc
-Date: Wed, 11 Dec 2002 06:41:58 -0800
-Message-ID: <NCBBIINEHIPFGJPLBEIFCEPEDPAA.acurtis@directvinternet.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-reply-to: <3DF70C55.3010709@intracom.gr>
+To: joakim.tjernlund@lumentis.se
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: PWM on the MPC850 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 11 Dec 2002 14:55:42 +0100."
+             <IGEFJKJNHJDCBKALBJLLAELKFIAA.joakim.tjernlund@lumentis.se>
+Date: Wed, 11 Dec 2002 15:50:54 +0100
+Message-Id: <20021211145059.27DECC613A@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> >>m8xx_cpm_hostalloc(), if it is anything like the 8260 version,
-> enables you
-> >>to allocation memory from dual-port RAM. (which could be handy and/or
-> >>required for certain CPM related operations) _va() and _pa()
-> only work for
-> >>main memory addresses. For all other address ranges the iopa()
-> function must
-> >>be used. (I hope this is helpful)
-> >>
-
-snip
-
+In message <IGEFJKJNHJDCBKALBJLLAELKFIAA.joakim.tjernlund@lumentis.se> you wrote:
 >
-> Each platform which is based on 8xx defines the amount of uncached
-> memory that is expected
-> to be used by it's drivers. It's not hard to make a rough estimation
-> since most people
-> that use the 8xx have very tight control of the hardware.
-> We organize then the memory in a heap, which is able to do allocations and
-> deallocations properly. That allows drivers that are loaded as modules
-> to operate
-> correctly and does not fragment (much) the memory.
+> > But be warned: do NOT use any of the port B pins for I/O  in  such  a
+> > setup. There is a race condition within all MPC8xx CPUs.
+>
+> hmm, we access a few port B I/O pins from user space. What/where is the
+> race in kernel?
 
-I almost missed the context change here... Changing xxx_cpm_hostalloc() to
-be consistent with other main memory allocation routines would probably be a
-good thing. However there is still a need to manage the dual-port RAM, i.e.
-xxx_cpm_dpalloc(), where this requirement is probably not practical. The
-only way to make this happen is to force all memory regions to be contiguous
-both virtually and physically to enable the "simpler" address translation
-routines to function properly.
+It's not in the kernel, it's in the MPC8xxL.
 
-As for a iova() routine, ioremap() will return a previously configured
-virtual address when asked to map the same physical memory space.
+The RISC timers are implemented in softtware (microcode)  running  on
+the  CPM.  To  toggle  a PWM output pin, the CPM will read the port B
+data register, modify the bit, and rewrite the port B data  register,
+This  access is NOT synchronized against any accesses by the CPU. You
+can test this by toggeling a port B pin with software running on  the
+CPU:  after  each write to the port B data register read the register
+back for a couple of times. You will find that,  as  soon  as  a  PWM
+timer is running, the value you write will not "stick".
 
+It's a classical race condition: the CPM reads PBDAT to modify a  PWM
+pin, then the CPU writes a new value (modifying a different bit), the
+the  CPM writes his copy back - and the value written by the CPU gets
+lost. You can see this on an oscilloscope: the data  written  by  the
+CPU will be actually there onthe outputs for some 15...25 ns (nano!),
+and then drop back to the old state.
+
+Moto never officially confirmed the problem, but the  MPC823E  UM  (I
+didn't find this anywhere else) contains the traitorous words:
+
+    [16.2.6.4.4 PWM Mode] ... Because the CPM has to read the
+    data register, modify it and then write it back, you cannot
+    use open drain output with the PWMs if the output can be
+    forced to 0 by external devices.
+
+This is IMHO related to the same problem.
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Writing a book is like washing an elephant: there's no good place  to
+begin  or  end,  and  it's  hard to keep track of what you've already
+covered.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
