@@ -1,44 +1,39 @@
-Message-ID: <389537D2.D4642F0A@wanadoo.fr>
-Date: Mon, 31 Jan 2000 08:20:50 +0100
-From: Martin Costabel <costabel@wanadoo.fr>
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Low memory problems in 8xx Linux
+From: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
+Date: 31 Jan 2000 16:02:01 +0100
+Message-ID: <kfy3drel1xy.fsf@kieraypc07.p.y.ki.era.ericsson.se>
 MIME-Version: 1.0
-To: ramp@oddjob.uchicago.edu
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: devel kernels 2.3.41
-References: <Pine.LNX.4.10.10001302151040.3009-100000@xpol.uchicago.edu>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-The 2.3.41 final kernel is broken on most non-intel architectures (dma
-code changed completely). I would think (and hope) the PPC kernel
-developers are too busy fixing this right now to answer your question.
+Hi,
 
-And many people, even on intel hardware, are seeing file system
-corruption with 2.3.x kernels. Plus, the new USB code probably doesn't
-work yet.
+is anybody else experiencing severe problems when free memory gets low
+in Linux? And I'm not talking about _out of memory_, just simply low
+on RAM...
 
-So for non-kernel-developers this means to be patient for a while.
+Even with 96 MB swap on ATA flash, and 26MB of memory in the cache
+(ie not really in use), as soon as free pages hit the minimum limit
+the system will lock solid. This happens before any swap is starting
+to get used, and afterwards the system wont even answer to ping.
 
-ramp@oddjob.uchicago.edu wrote:
->
-> Hi everyone,
->
-> I hope I'm not the only one having problems getting a working
-> 2.3.41 kernel. I downloaded the stock 2.3.41 from kernel.org.
-> This one didn't even compile. There were some problems with
-> pci.h. I then decided to go back to 2.3.40 and apply the
-> pre-patches [1..4] where 4 is the final 2.3.41. I was able
-> to successfully compile a 2.3.41pre3. However on boot I was
-> unable to use my keyboard/mouse. The boot messages seemed to
-> indicate that the keyboard and mouse were recognized. Any ideas
-> and fixes? 2.3.41pre2 also compiled successfully. On boot this
-> led to disk errors and I was asked to fsck. This was a total loss
-> since I could not type anything with the keyboard and mouse not
-> even recognized. I'm now back to my 2.2.14 and things seem OK.
+At some occasions all processes (including init) will simply crash
+with an illegal instruction or segfault, and the kernel seems to
+live on.
 
+This happens with kernels 2.2.5, 2.2.10, 2.2.12, 2.2.13, 2.2.14 and
+2.2.15pre5 + Rik's boobytrap2 patch, on MBX, ADS, FADS, RPX Lite and
+custom boards. (2.2.12 and earlier based on Dan Malek's 2.2.5, 2.2.13
+and later based on his 2.2.13).
+
+So, has anyone else experienced problems like this?
+
+//Marcus
 --
-Martin
+Signature under construction, please come back later.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
