@@ -1,241 +1,100 @@
-Message-ID: <3EB024EA.4060909@mvista.com>
-Date: Wed, 30 Apr 2003 12:32:58 -0700
-From: Randy Vinson <rvinson@mvista.com>
+Message-ID: <003601c2f827$b0aa50c0$af85efcb@qhavm>
+From: "Q-ha Park" <qhpark@jchyun.com>
+To: "Q-ha Park" <qhpark@jchyun.com>,
+	<linuxppc-embedded@lists.linuxppc.org>
+References: <dz3lcmje/linuxppc-embedded@lists.linuxppc.org/qhpark@jchyun.com>
+Subject: does in_be32{twi, isync} cause a bus error?
+Date: Tue, 1 Apr 2003 17:21:25 +0900
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Bi_rec "Library"
-Content-Type: multipart/mixed;
- boundary="------------040805070900070407070501"
-Sender: owner-linuxppc-dev@lists.linuxppc.org
-List-Id: <linuxppc-dev@lists.linuxppc.org>
-
-
-This is a multi-part message in MIME format.
---------------040805070900070407070501
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-
-Greetings,
-   I was looking at all of the current bi_rec creation code and noticed
-that there seemed to be a lot of work/code used to create the bi_recs. I
-thought it would be relatively easy to create a bi_rec "library" to
-clean things up and hide the messy details of bi_rec creation. I've
-attached a patch which adds the library (boot/common/bootinfo.c) and
-modified decompress_kernel in misc-simple.c to use it as an example. I
-realize that there may not be much interest at this point, but I thought
-I'd send it out anyway.
-
-			Randy Vinson
-
---------------040805070900070407070501
 Content-Type: text/plain;
- name="bi_rec.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="bi_rec.patch"
-
-diff -Nru a/arch/ppc/boot/common/bootinfo.c b/arch/ppc/boot/common/bootinfo.c
---- /dev/null	Wed Dec 31 16:00:00 1969
-+++ b/arch/ppc/boot/common/bootinfo.c	Wed Apr 30 12:26:32 2003
-@@ -0,0 +1,69 @@
-+/*
-+ * arch/ppc/common/bootinfo.c
-+ *
-+ * General bootinfo record utilities
-+ * Author: Randy Vinson <rvinson@mvista.com>
-+ *
-+ * 2002 (c) MontaVista Software, Inc. This file is licensed under the terms
-+ * of the GNU General Public License version 2. This program is licensed
-+ * "as is" without any warranty of any kind, whether express or implied.
-+ */
-+
-+#include <linux/types.h>
-+#include <asm/bootinfo.h>
-+
-+#include "nonstdio.h"
-+
-+static struct bi_record * birec = NULL;
-+
-+static struct bi_record *
-+__bootinfo_build(struct bi_record *rec, unsigned long tag, unsigned long size,
-+		 void *data)
-+{
-+	/* set the tag */
-+	rec->tag = tag;
-+
-+	/* if the caller has any data, copy it */
-+	if (size)
-+		memcpy(rec->data, (char *)data, size);
-+
-+	/* set the record size */
-+	rec->size = sizeof(struct bi_record) + size;
-+
-+	/* advance to the next available space */
-+	rec = (struct bi_record *)((unsigned long)rec + rec->size);
-+
-+	return rec;
-+}
-+
-+void
-+bootinfo_init(struct bi_record *rec)
-+{
-+
-+	/* save start of birec area */
-+	birec = rec;
-+
-+	/* create an empty list */
-+	rec = __bootinfo_build(rec, BI_FIRST, 0, NULL);
-+	(void) __bootinfo_build(rec, BI_LAST, 0, NULL);
-+
-+}
-+
-+void
-+bootinfo_append(unsigned long tag, unsigned long size, void * data)
-+{
-+
-+	struct bi_record *rec = birec;
-+
-+	/* paranoia */
-+	if ((rec == NULL) || (rec->tag != BI_FIRST))
-+		return;
-+
-+	/* find the last entry in the list */
-+	while (rec->tag != BI_LAST)
-+		rec = (struct bi_record *)((ulong)rec + rec->size);
-+
-+	/* overlay BI_LAST record with new one and tag on a new BI_LAST */
-+	rec = __bootinfo_build(rec, tag, size, data);
-+	(void) __bootinfo_build(rec, BI_LAST, 0, NULL);
-+}
-diff -Nru a/arch/ppc/boot/common/misc-simple.c b/arch/ppc/boot/common/misc-simple.c
---- a/arch/ppc/boot/common/misc-simple.c	Wed Apr 30 12:26:32 2003
-+++ b/arch/ppc/boot/common/misc-simple.c	Wed Apr 30 12:26:32 2003
-@@ -96,7 +96,7 @@
- #endif
- 	char *cp;
- 	struct bi_record *rec;
--	unsigned long rec_loc, initrd_loc, TotalMemory = 0;
-+	unsigned long initrd_loc, TotalMemory = 0;
-
- 	serial_fixups();
- 	com_port = serial_init(0, NULL);
-@@ -223,16 +223,13 @@
- 	gunzip(0, 0x400000, zimage_start, &zimage_size);
- 	puts("done.\n");
-
--	/*
--	 * Create bi_recs for cmd_line and initrds
--	 */
--	rec_loc = _ALIGN((unsigned long)(zimage_size) +
--			(1 << 20) - 1, (1 << 20));
--	rec = (struct bi_record *)rec_loc;
-+	/* get the bi_rec address */
-+	rec = bootinfo_addr(zimage_size);
-
- 	/* We need to make sure that the initrd and bi_recs do not
- 	 * overlap. */
- 	if ( initrd_size ) {
-+		unsigned long rec_loc = (unsigned long) rec;
- 		initrd_loc = (unsigned long)(&__ramdisk_begin);
- 		/* If the bi_recs are in the middle of the current
- 		 * initrd, move the initrd to the next MB
-@@ -248,38 +245,24 @@
- 		 	puts("\n");
- 		}
- 	}
--
--	rec->tag = BI_FIRST;
--	rec->size = sizeof(struct bi_record);
--	rec = (struct bi_record *)((unsigned long)rec + rec->size);
--
--	if ( TotalMemory ) {
--		rec->tag = BI_MEMSIZE;
--		rec->data[0] = TotalMemory;
--		rec->size = sizeof(struct bi_record) + sizeof(unsigned long);
--		rec = (struct bi_record *)((unsigned long)rec + rec->size);
--	}
-
--	rec->tag = BI_CMD_LINE;
--	memcpy( (char *)rec->data, cmd_line, strlen(cmd_line)+1);
--	rec->size = sizeof(struct bi_record) + strlen(cmd_line) + 1;
--	rec = (struct bi_record *)((unsigned long)rec + rec->size);
-+	bootinfo_init(rec);
-+	if ( TotalMemory )
-+		bootinfo_append(BI_MEMSIZE, sizeof(int), (void*)&TotalMemory);
-
--	if ( initrd_size ) {
--		rec->tag = BI_INITRD;
--		rec->data[0] = initrd_loc;
--		rec->data[1] = initrd_size;
--		rec->size = sizeof(struct bi_record) + 2 *
--			sizeof(unsigned long);
--		rec = (struct bi_record *)((unsigned long)rec +
--				rec->size);
--	}
-+	bootinfo_append(BI_CMD_LINE, strlen(cmd_line)+1, (void*)cmd_line);
-+
-+	/* add a bi_rec for the initrd if it exists */
-+	if (initrd_size) {
-+		unsigned long initrd[2];
-
--	rec->tag = BI_LAST;
--	rec->size = sizeof(struct bi_record);
--	rec = (struct bi_record *)((unsigned long)rec + rec->size);
-+		initrd[0] = initrd_loc;
-+		initrd[1] = initrd_size;
-+
-+		bootinfo_append(BI_INITRD, sizeof(initrd), &initrd);
-+	}
- 	puts("Now booting the kernel\n");
- 	serial_close(com_port);
-
--	return (struct bi_record *)rec_loc;
-+	return rec;
- }
-diff -Nru a/arch/ppc/boot/simple/Makefile b/arch/ppc/boot/simple/Makefile
---- a/arch/ppc/boot/simple/Makefile	Wed Apr 30 12:26:32 2003
-+++ b/arch/ppc/boot/simple/Makefile	Wed Apr 30 12:26:32 2003
-@@ -16,7 +16,7 @@
-
- # Normally, we use the 'misc-simple.c' file for decompress_kernel and
- # whatnot.  Sometimes we need to override this however.
--MISC				:= ../common/misc-simple.o
-+MISC				:= ../common/misc-simple.o ../common/bootinfo.o
- # Additionally, we normally don't need to mess with the L2 / L3 caches
- # if present on 'classic' PPC.
- ifeq ($(CONFIG_6xx),y)
-diff -Nru a/include/asm-ppc/bootinfo.h b/include/asm-ppc/bootinfo.h
---- a/include/asm-ppc/bootinfo.h	Wed Apr 30 12:26:32 2003
-+++ b/include/asm-ppc/bootinfo.h	Wed Apr 30 12:26:32 2003
-@@ -10,6 +10,7 @@
- #define _PPC_BOOTINFO_H
-
- #include <linux/config.h>
-+#include <asm/page.h>
-
- #if defined(CONFIG_APUS) && !defined(__BOOTER__)
- #include <asm-m68k/bootinfo.h>
-@@ -32,9 +33,18 @@
- #define BI_BOARD_INFO		0x1018
-
- extern struct bi_record *find_bootinfo(void);
-+extern void bootinfo_init(struct bi_record *rec);
-+extern void bootinfo_append(unsigned long tag, unsigned long size, void * data);
- extern void parse_bootinfo(struct bi_record *rec);
- extern unsigned long boot_mem_size;
-
-+static inline struct bi_record *
-+bootinfo_addr(unsigned long offset)
-+{
-+
-+	return (struct bi_record *)_ALIGN((offset) + (1 << 20) - 1,
-+					  (1 << 20));
-+}
- #endif /* CONFIG_APUS */
+	charset="ks_c_5601-1987"
+Sender: owner-linuxppc-embedded@lists.linuxppc.org
+List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+I noticed that in_be32 in 2.4.21 has been changed from 2.4.17 kernel.
+In io.h in 2.4.17,
+extern inline unsigned in_be32(volatile unsigned *addr)
+{
+    unsigned ret;
 
---------------040805070900070407070501--
+    __asm__ __volatile__("lwz%U1%X1 %0,%1; eieio" : "=r" (ret) : "m" (*addr));
+    return ret;
+}
+
+whereas io.h in 2.4.21 is,
+
+extern inline unsigned in_be32(volatile unsigned *addr)
+{
+    unsigned ret;
+
+    __asm__ __volatile__("lwz%U1%X1 %0,%1;\n"
+                 "twi 0,%0,0;\n"
+                 "isync" : "=r" (ret) : "m" (*addr));
+    return ret;
+}
+
+and with this in_be32, I get "data machine check in kernel mode" and the kernel oops sending "SIGBUS" to the process.
+
+Oops: machine check, sig: 7
+NIP: C500A0A4 XER: 00000000 LR: C500A090 SP: C39B7EE0 REGS: c39b7e30 TRAP: 0200    Not tainted
+MSR: 00009030 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c39b6000[111] 'a.out' Last syscall: 3
+last math 00000000 last altivec 00000000
+PLB0: bear= 0x00000000 acr=   0x00000000 besr=  0x00000000
+PLB0 to OPB: bear= 0x40060000 besr0= 0x03c00000 besr1= 0x00000000
+
+GPR00: C500A090 C39B7EE0 C39B6000 00000056 00001030 00000001 00000030 C0190000
+GPR08: 000022DC C5010000 00000000 C500D000 48000868 10019824 00000000 00000000
+GPR16: 00000000 00000000 00000000 00000000 00009032 039B7F40 00000000 C00049B0
+GPR24: C0004720 10001240 3002A7CC 0FFEA818 7FFFFD28 00000004 7FFFFD28 05050505
+Call backtrace:
+C500A090 C500A1F0 C0038BAC C000477C 10000A38 100010F0 0FED5FDC
+00000000
+
+can someone explain me why this change was made and suggest me what I should do to work around this problem? ("don't use 'in_be32', just dereference the pointer and eieio"....)
+
+any help would be GREATLY appreciated...
+
+Q-ha Park
+
+----- Original Message -----
+From: "Q-ha Park" <qhpark@jchyun.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Sent: Friday, March 21, 2003 12:48 PM
+Subject: kernel oops when trying to read/write the ioremapped GPIO address.
 
 
-** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
+>
+> Hi,
+> I have a 405 based custom board (STB04xxxx), and I've been using the 2.4.17-mvl21 kernel that came with mvista
+> preview kit.
+>
+> I wrote a gpio driver that gives userland apps to control gpio ports. (no, i didn't use the IBM OCP gpio driver) It
+> simply ioremaps the gpio's physical address and read and write registers by calling in_be32, out_be32. is this
+> something i shouldn't do? anyways, it worked well with 2.4.17 kernel.
+>
+> however, with the kernel version 2.4.21-pre4, it oops on calling in_be32 or out_be32. the same once happened with
+> the kernel 2.4.2 that also came with the monta vista preview kit.
+>
+> right before the kernel oops, it gives a message, "Data machine check in kernel mode", which i didn't see before.
+> and NIP is at ">>NIP; c300a0a4 <[gpio_driver-dbg]__module_license+38/13c>" after examining the output of ksymoops. i
+> don't know why it's at "__module_license"
+>
+> not only that this driver doens't work, also a couple of other drivers (not all) don't work (causing oops) anymore
+> after the kernel is upgraded to 2.4.21-pre4 from 2.4.17. it's funny that other drivers that failed to be insmoded
+> are  failed at __module_license..
+>
+> hmmm, i'm clueless as to why this happens.. can someone help me with this?
+>
+> your help would be greatly appreciated.
+>
+> thanks in advance.
+>
+>
+> Q-ha Park
+>
+>
+>
+
+** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
