@@ -1,72 +1,61 @@
-Date: Sat, 18 Nov 2000 15:09:48 -0500 (EST)
-From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-To: Stefan Jeglinski <jeglin@4pi.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: aic7xxx panic in 2.2.18pre21
-In-Reply-To: <p04330100b63c8a1a240a@[192.168.0.1]>
-Message-ID: <Pine.LNX.3.96L.1001118150530.15284H-100000@MOTRIN.WEH.ANDREW.CMU.EDU>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <v04003a0ab63c64ca91fe@[24.70.162.12]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Sat, 18 Nov 2000 14:49:28 -0600
+To: <linuxppc-dev@lists.linuxppc.org>
+From: Tony Mantler <nicoya@apia.dhs.org>
+Subject: 5200 needs a good home
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 18 Nov 2000, Stefan Jeglinski wrote:
->
-[snip]
->
-> C000F508:
-> 	c000f4f4 T ioremap
-> 	c000f518 T __ioremap
->
-> C013CAC8:
-> 	c013b454 t aic7xxx_load_seeprom
-> 	c013c444 T aic7xxx_detect
-> 	c013d9f8 t aic7xxx_allocate_negotiation_command
->
-> C01FABC0:
-> 	c01fab0c T scsi_init
-> 	c01fad08 T st_setup
->
-> C01FA8EC:
-> 	c01fa840 T scsi_luns_setup
-> 	c01fa884 T scsi_dev_init
-> 	c01fab0c T scsi_init		[yes, same as above]
->
-> C01F6058:
-> 	c01f6038 T device_setup
-> 	c01f61ec T rd_init
->
-> C01EC9E4:
-> 	c01ec910 t do_basic_setup
-> 	c01ecafc T pmac_display_supported
->
-> C0004434:
-> 	c0004420 t init
-> 	c00045c8 T machine_restart
->
-> C00095EC:						[last in backtrace]
-> 	c00095c0 T kernel_thread
-> 	c00095f8 T idle
->
-[snip]
-> As you may have guessed, I'm not in front of the box at this moment
-> to check it directly, but can I do a search through the source to
-> find, for example, "aic7xxx_detect"?
->
-> It almost looks like it went -through- the scsi setup fine and went
-> on to something else related to the display? Or is it possible that
-> my problems started all the way back at ioremap and finally caught up
-> with me?
+Due to the time constraints of getting a Real Job[tm] shortly after
+originally inheriting my Performa 5200 from my mother a while back
+(originally owned by my sister), I haven't been able to follow through on
+my goal of porting linux to it.
 
-The backtrace is in reverse order; the topmost item is the most recent
-function called. So ioremap is crashing near the end, after being called
-by aic7xxx_detect.
+With the recent aquisition of my shiny-happy 9600/200mp, I no longer have
+any use for this 5200. Therefore, I'm offering it for sale to a PPC Linux
+developer in hopes that my original thought to get it running the
+mainstream linux kernel won't be lost for ever.
 
-And yes, you can find aic7xxx_detect() in the
-sources, probably in linux/drivers/scsi/aic7xxx.c
+For those of you too young to remember this particular model of powermac,
+here's a quick rundown of the specs:
 
--Hollis
+75 MHz PowerPC 603e, attached to 2 72 pin SIMM sockets (non-interleaved) by
+a blazingly fast 152 meg/sec (according to my calculator) system bus.
+
+My particular unit has 48 megs of ram, and no HD (IDE HDs are cheap and
+plentiful). It has a 2x CDRom, 15" screen that can be driven by the
+internal Valkyrie video at 832x624x8. It doesn't have any of the tuner or
+video options, but these can occasionally be found on ebay.
+
+It currently has an LC-PDS ethernet card installed (RJ-45, of course), and
+has room for an adittional ComSlot-I ethernet card, making it a great
+option for a firewall/nat system with a built-in display.
+
+It has no NuBus slots, no PCI slots, no OpenFirmware. It is effectivley a
+Quadra 630 with a PowerPC upgrade, and has little resemblance to either PCI
+powermacs or NuBus powermacs.
+
+It can run the latest MacOS and MkLinux. I would like to see it in the
+hands of someone who can make it run regular mainstream Linux. (NetBSD
+would be second best, if any beasties read this list)
+
+So, if you're a serious PPC Linux developer, and think you can make use of
+this machine for some porting work, email me what you think this system is
+worth. (please note that I'm selling the system only, no
+mouse/keyboard/modem/whatever. Also remember to factor shipping costs from
+Winnipeg, MB (R2L 1J7) to wherever you are, the package is roughly 60 lbs
+and rather large)
+
+
+Cheers - Tony 'Nicoya' Mantler :)
+
+
+--
+Tony "Nicoya" Mantler - Renaissance Nerd Extraordinaire - nicoya@apia.dhs.org
+Winnipeg, Manitoba, Canada           --           http://nicoya.feline.pp.se/
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
