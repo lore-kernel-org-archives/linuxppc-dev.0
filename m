@@ -1,48 +1,45 @@
-Message-ID: <3685BC4F.EB0D2158@jlc.net>
-Date: Sat, 26 Dec 1998 23:49:19 -0500
-From: Dan Malek <dmalek@jlc.net>
-MIME-Version: 1.0
+Date: Sat, 26 Dec 1998 23:59:04 -0700 (MST)
+From: Jeff Rugen <jrugen@primenet.com>
 To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Need ld.so help
-Content-Type: text/plain; charset=us-ascii
+Subject: fbcon + X Server + Cirrus/Powerstack
+Message-ID: <Pine.BSI.3.96.981226234556.25149A-100000@usr09.primenet.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I discovered the problem I am having with the embedded 8xx
-processors and cache is that there are several assumptions
-about cache block size in various functions.  The 8xx processors
-have a 4 word (16 byte) cache line while other PPCs have
-a 8 word line.  This causes problems when trying to flush and
-invalidate caches.
+I'm having a couple problems using X Servers with the clgenfb framebuffer
+console on the Motorola Powerstack and was wondering if anyone else had
+similar problems with other framebuffers/X Server combinations.  I have the
+clgenfb console as the only console in the kernel right now, and it works
+fine as a console.
 
-One place this is done is dynamic linking functions of ld.so,
-where it is assumed a cache line is 8 words.  Unfortunately,
-I have been unable to build ld.so from the glibc SRPM.  I am
-using the 961212-1h SRPM from the linuxppc.org server, and
-the appropriate egcs and binutils.  All of the other libraries
-I build from this SRPM are fine.  From looking at the RPM of
-the same version, all of the resulting *.so files appear to be
-nearly identical, except for ld.so which is much larger than
-found in the RPM.
+1) When I try to use XF68_FBDev from the XFree 3.3.3 binaries, I get a while
+screen.  However, everything seems to be running fine -- the window manager
+and X Server, etc are included in the list of running processes. My first
+guess is the XF86Config file, but it could be something else.  Where isa
+good location to get a simple, basic XF86Config file that defaults to  
+640x480x8 or similar?  (Or if you have a clue that it could be another
+problem with something in the clgenfb driver to look at?)
 
-The details....I have tracked it down to the elf_get_dynamic_info()
-function, called from _dl_start().  The failure occurs following
-the 'while' loop.  It appears info[DT_RELA] is OK, or at least
-not NULL.  However, info[DT_RELAENT] is NULL, causing the
-program to segfault at this point.
+2) I can run Xbh normally, and exit it back to the framebuffer console.
+However, the 1st time I run Xbh, the cursor is garbage (basically a large
+square, but not all the bits are set).  When I quit Xbh and run it again,
+the cursor looks normal.
 
-I don't understand enough about the libraries to know where to
-look from here, so I need some help :-)
+3) If I set the console to 1024x768, I get a lot more rows on the screen.
+However, if I run gpm, it doesn't allow me to highlight text on the entire
+screen -- I think it only allows it on the original 80 column by 24 (?) row
+size.  Has anyone fixed this or looked into it yet?
 
-Oh yeah, the SRPM didn't build quite right.  I had to hand patch
-stdlib/exit.c.....
+Thanks for any pointers/assistance/etc.  
 
-Thanks.
+----------------------------------------------------------------------------
+Jeff Rugen                      jrugen@primenet.com
 
-
-    -- Dan
-
+...Had this been an actual emergency, we would have fled in terror, and you 
+would not have been informed.
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
