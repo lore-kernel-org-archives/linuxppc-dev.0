@@ -1,38 +1,35 @@
-Message-ID: <3D04D6C0.9090202@embeddededge.com>
-Date: Mon, 10 Jun 2002 12:41:36 -0400
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: Christian Schroeder <christian.schroeder@imms.de>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MPC850 USB
-References: <1023715551.3d04a8dfbc9c4@imp.imms.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Tue, 11 Jun 2002 14:39:26 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Armin Kuster <akuster@mvista.com>
+Cc: linuxppc-embedded@lists.linuxppc.org,
+	Paul Mackerras <paulus@samba.org>
+Subject: ppc4xx_pm.c
+Message-ID: <20020611043926.GW25800@zax>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Christian Schroeder wrote:
+I've just been looking at this file.  As far as I can tell it's almost
+completely pointless.  First most of the interesting stuff is only
+enabled with CONFIG_APM, which is an x86 specific config option,
+instead of CONFIG_PM.  If CONFIG_APM ever was defined it wouldn't
+compile.  Second the callback function registered by pm_register()
+does nothing except demultiplex the power management callback, we have
+no default power management stuff.  The only thing which uses it is
+the GPIO driver.  Anything which wants to do power management might as
+well call pm_register() directly itself.
 
-> does anybody know, if the mpc850 (Mask rev. A, XPC850xxZTA) works
-> as a usb hostcontroller or do I need at least mask rev. B ?
+The only function with any use at all is ppc4xx_pm_init(), which
+should probably move into ppc4xx_setup.c.  Also a bunch of the #ifdefs
+could be removed from it - just turn most things off here, then the
+driver can turn them back on when it starts.
 
-Well, "works" is a relative term.  The USB interfaces on these parts
-were never really designed to be host controllers.  Depending upon
-the application and the amount of software you want to write, you
-can make them work.  There are some closed product, Rev. A parts using
-the USB as a host controller.
-
-Motorola listened to us (complaining :-), and did make some changes in
-the Rev. B parts to reduce the software overhead, in particular the SOF
-timing and the lower speed bus.  If you want to support a generic host
-interface, you will have to use these parts along with the proper hardware
-modifications outlined in their application notes.  There is Linux support
-for these parts with these modifications.
-
-Have fun!
-
-
-	-- Dan
-
+--
+David Gibson			| For every complex problem there is a
+david@gibson.dropbear.id.au	| solution which is simple, neat and
+				| wrong.  -- H.L. Mencken
+http://www.ozlabs.org/people/dgibson
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
