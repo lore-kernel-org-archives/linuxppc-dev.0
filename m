@@ -1,40 +1,36 @@
-Message-ID: <3B8AB925.D2DB3E90@minolta-qms.com>
-Date: Mon, 27 Aug 2001 15:18:29 -0600
-From: Mark Pilon <mark.pilon@minolta-qms.com>
-MIME-Version: 1.0
+Date: Mon, 27 Aug 2001 14:51:38 -0700
+From: andrew may <acmay@acmay.homeip.net>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: how to dump other regs via abatron-bdi / gdb ?
+Cc: Dan Malek <dan@mvista.com>, jpeters@mvista.com,
+	John Tyner <jtyner@cs.ucr.edu>
+Subject: Re: ppc405 enet changes (moving thread from commit)
+Message-ID: <20010827145138.D10302@ecam.san.rr.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I'm accustomed to printing general purpose registers: print $r0
-and the like --
+Just moving a thread over from the commit mailing list on changes to
+the 405GP ethernet driver.
 
-bringing up a board (before establishing an exception vector table)
-I'm getting some unknown exception -- how do I print the ESR (and
-other SPRs for that matter ) ??
+----- Forwarded message from andrew may <acmay@acmay.homeip.net> -----
+On Mon, Aug 27, 2001 at 06:34:35PM -0400, Dan Malek wrote:
+> andrew may wrote:
+>
+> > The COMMAC can handle packets that are across multiple buffer descriptors.
+>
+> Sure, most contemporary hardware can do this.
+>
+> > So the ethernet hardware should be able to handle skb frags.
+>
+> Have you ever seen these?  You certainly don't get them for transmit.
 
-I'm using montavista ppc_4xx-gdb -- GNU gdb 5.0 and abatron bdi/gdb:
-BDI Type : BDI2000 (SN: 93170608)
-Loader   : V1.04
-Firmware : V1.05 bdiGDB for PPC400
-Logic    : V1.01 PPC400
+Well you have to set dev->features to get them otherwise the net core
+will call skb_linearize and you will never see them. Then you have to
+have something in the stack generate them, like sendfile.
 
-I suspect the problem is an incomplete bdi board config file,
-but it'd help to be able to figure out what's missing ...
 
-thanks,
-
-Mark
---
-Mark Pilon
-
-Minolta-QMS
-5661 Airport Blvd, Ste A.
-Boulder, CO  80301
-
-1-303-443-5505 ext. 326; fax: 303-443-7107
+----- End forwarded message -----
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
