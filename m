@@ -1,16 +1,22 @@
-Mime-Version: 1.0
-Message-Id: <p05101505b8da65e8b244@[10.8.16.89]>
-In-Reply-To: <scb46c71.006@mx.amx.com>
-References: <scb46c71.006@mx.amx.com>
-Date: Wed, 10 Apr 2002 17:05:30 -0500
-To: "Chuck Partridge" <Chuck_Partridge@amx.com>
-From: Greg Allen <gallen@arlut.utexas.edu>
+Message-Id: <scb472f8.096@mx.amx.com>
+Date: Wed, 10 Apr 2002 17:14:08 -0500
+From: "Chuck Partridge" <Chuck_Partridge@amx.com>
+To: <gallen@arlut.utexas.edu>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: MPC8245 Internal Duart and Linux
-Cc: linuxppc-embedded@lists.linuxppc.org
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
+
+I'm using the South Bridge's 8259 controllers and putting the 8245 EPIC in pass through mode, so all internal 8245 interrupts are routed out the L_INT pin to one of the ALI's PCI_IRQ pins.
+
+Does this seem like something very wrong?
+
+I originally thought this would be the easiest way to handle this from an IRQ standpoint, but now know that I have never seen anyone else do this.
+
+>>> Greg Allen <gallen@arlut.utexas.edu> 04/10/02 05:05PM >>>
 
 >{ 0, BASE_BAUD_8245_DUART, AMX2275_SERIAL_2, 9, STD_COM_FLAGS, /* ttyS2 */ \
 >   iomem_base: (u8 *)AMX2275_SERIAL_2,                             \
@@ -40,5 +46,6 @@ L8r,
   Gregory E. Allen, MSEE Engineering Scientist
   Applied Research Laboratories:
   The University of Texas at Austin
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
