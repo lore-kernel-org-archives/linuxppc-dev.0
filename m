@@ -1,40 +1,80 @@
-From: dale@farnsworth.org
-Date: Sat, 3 May 2003 06:26:21 -0700
-To: Chris Heintzelman <heintz@mail.utexas.edu>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Early linuxppc_2_4 MGT5100 tree available
-Message-ID: <20030503132621.GB22716@rover.farnsworth.org>
-References: <3EA70BDE.9080609@mail.utexas.edu> <20030424020846.GA1283@rover.farnsworth.org> <3EA8035E.3040705@mail.utexas.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3EA8035E.3040705@mail.utexas.edu>
+Reply-To: <jwalden@digitalatlantic.com>
+From: "Jerry Walden" <jwalden@digitalatlantic.com>
+To: "Linux PPC embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Stack Frame Calc Problem in head_4xx.S
+Date: Sat, 3 May 2003 17:20:51 -0400
+Message-ID: <EGEGIJHKDKJGAJMGIDPNGEOPCLAA.jwalden@digitalatlantic.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-As I said earlier, I've started to port linux to the Motorola MGT5100
-processor.  I've put up a bk tree based on linuxppc_2_4_devel at
-source.mvista.com.  See <http://source.mvista.com> or
-<bk://source.mvista.com/linuxppc_2_4_mgt5100>.
+Greetings:
 
-It includes drivers for the on-chip serial and ethernet controllers.
-I have a Glacier system, so that's what I've been testing on.  Kent Borg
-provided support for the Icecube system, but I've made changes since
-so blame any problems on me.
+I am having trouble understanding what is happening to my stack pointer.
 
-The serial driver seems solid.
+At line 1 r1 = 0x03f9_ebe8
 
-The ethernet driver is usable.  I'm having problems with the interface
-to the SmartComm/SmartDMA engine ethernet task code.  So far, I have
-to slow down ethernet performance to get reliability, but I expect to
-resolve this soon.  The ethernet driver doesn't have MII support yet,
-so it is not expected to work, as is, with the Icecube.
+After line 15 executes r1 = 0xc00f4ff0
+which seems fine so far (according to the map file it is pointing to the
+proper location)
 
-Please send suggestions and/or patches.
+After line 16 executes r1=0xc00f6ff0
+which is still within the bounds of init_task_union
 
-I thank MontaVista for supporting me in this work and for encouraging
-me to share it with the community.
+After line 17 execute r1 = 0xc00f6fe0 which seems like a problem to me,
+because it is not with the
+bounds of init_task_union - (see map file below)
 
--Dale Farnsworth
+I would expect r1 to be within the bounds of init_task_union after this code
+is executed -
+is my guess correct?  If so how is it possible that line 17 comes up with
+the result
+that it did?
+
+TASK_UNION_SIZE = 8192
+STACK_FRAME_OVERHEAD = 16
+
+Thanks for any help
+
+Jerry
+
+1 start_here:
+2
+3	/* ptr to current */
+4	lis	r2,init_task_union@h
+5	ori	r2,r2,init_task_union@l
+6
+7	/* ptr to phys current thread */
+8	tophys(r4,r2)
+9	addi	r4,r4,THREAD	/* init task's THREAD */
+10	mtspr	SPRG3,r4
+11	li	r3,0
+12	mtspr	SPRG2,r3	/* 0 => r1 has kernel sp */
+13
+14	/* stack */
+15	addi	r1,r2,TASK_UNION_SIZE
+16	li	r0,0
+17	stwu	r0,-STACK_FRAME_OVERHEAD(r1)
+
+
+c00f4ff0 D init_task_union
+c00f6ff0 d aligninfo
+c00f70f0 D cpuinfo_op
+c00f7100 D cpu_specs
+c00f7280 D ppc_htab_operations
+
+
+
+Jerry Walden
+Program Manager
+Digital Atlantic Inc
+http://www.digitalatlantic.com
+jwalden@digitalatlantic.com
+1-877-494-6073 x407
+cell - 703-431-2413
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
