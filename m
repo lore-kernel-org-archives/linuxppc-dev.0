@@ -1,36 +1,38 @@
-Message-ID: <38F3C93A.5BEDC95F@amberdata.demon.co.uk>
-Date: Wed, 12 Apr 2000 01:54:18 +0100
-From: David Monro <davidm@amberdata.demon.co.uk>
+Message-ID: <38F3F9B9.9DB92F87@worldnet.att.net>
+Date: Tue, 11 Apr 2000 21:21:13 -0700
+From: Logan Hall <warrior514@worldnet.att.net>
 MIME-Version: 1.0
-To: Linux/ppc Dev List <linuxppc-dev@lists.linuxppc.org>
-Subject: Prep interrupt routing (carolina-type board)
+To: linuxppc-dev@lists.linuxppc.org
+Subject: 2.3.99-pre5 compile problems
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+hi-
+I just downloaded the 2.3.99-pre5 kernel in hopes of getting my
+/dev/mixer working.  This is on a G3 beige tower.  It apears to have
+problems with the dma sound for ppc.  here is the error:
 
+dmasound_core.c: In function `dmasound_init':
+dmasound_core.c:1196: `irq_installed' undeclared (first use in this
+function)
 
-Does anybody know for sure if the ibm8xx_pci_IRQ_map structure in
-prep_pci.c is correct? I'm trying to use an ncr53c825 board in one of
-the PCI slots, and I'm getting the exact symptoms I used to get on my
-intel box when the PCI bios screwed up and assigned the wrong irq to it
-(it goes into an endless loop:
+So far 2.3.99-pre3 has worked well for me.  It has alowed me to use my
+usb trackball and my entrega 4 port usb pci card, but my ethernet no
+longer works, and my /dev/mixer apears broken as all sound come out
+faint from the internal speaker and not from the av monitors speakers.
+I have tried several mixer apps and they all fail with errors relating
+to /dev/mixer.  This worked in 2.2.14.  Also as for the etherent, it
+apears from the kernel routeing table and the boot mesages that the
+ethernet is recongized and set up but the link light on the hub never
+lights up and no data can be transfered, this too worked in 2.2.14.  Any
+ideas if 2.3.99-pre5 will fix either of these issues.  I am encouraged
+by the fact that the sound driver has been changed sence pre3 so I hope
+this will help my sound.  Thanks.
+--
 
-scsi : aborting command due to timeout : pid 0, scsi0, channel 0, id 0,
-lun 0 Te
-st Unit Ready 00 00 00 00 00
-ncr53c8xx_abort: pid=0 serial_number=1 serial_number_at_timeout=1
-
-
-etc...)
-
-Should the PCI interrupts turn up in the residual data in one of these
-boards?
-
-Cheers,
-
-	David
+----
+Logan Hall
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
