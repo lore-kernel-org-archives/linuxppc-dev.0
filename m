@@ -1,33 +1,26 @@
-Message-ID: <39C382DF.772F2B99@mvista.com>
-Date: Sat, 16 Sep 2000 10:25:35 -0400
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: Holger Bettag <hobold@Informatik.Uni-Bremen.DE>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: recent fixes in devel tree
-References: <14786.65401.393966.936283@argo.linuxcare.com.au> <8xk8cch9i7.fsf@s63.informatik.uni-bremen.de>
-Content-Type: text/plain; charset=us-ascii
+From: jween@som.llu.edu (Jon Erick Ween)
+To: linuxppc-dev@lists.linuxppc.org
+Subject: ati fb memory assignment on Lombard
+Date: Sat, 16 Sep 2000 08:13:37 -0700
+Message-ID: <7736F9DF539.AAA1702@som.llu.edu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Holger Bettag wrote:
+Hello everyone.
 
-> P.S.: BTW, is there a general consensus wether or not AltiVec
->       enhancements in the kernel would be a good thing.....
+Can anyone tell me if there are any problems with overlapping memory
+assignments for the ATY Mach64 chip on a Lombard PB? I'm having trouble
+getting my 4.0.1 Xserver to detect the device although the system seems to
+detect the chip alright at bootup. I've been through the Xpert list at
+XFree86 and we've groud to a halt.
 
+Thanks
 
-What kind of enhancements?  I do a fair amount of audio/video
-processing on my G4 with the current gcc/Altivec tools.  I found only
-one minor bug in the exception handler that I fixed a while back.
+Jon Erik Ween, MD
+Assistant Professor
+Cognitive and Cerebrovascular Neurology
+Loma Linda University School of Medicine
 
-We have been discussing some of the vector load/store/touch as both
-enhancements to the kernel and glibc.  It is a little more challenging
-in the kernel because we would have to then keep some of the vector
-context around for the kernel, but in a very constrained case we could
-probably get some speed ups with that.
-
-
-	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
