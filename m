@@ -1,41 +1,51 @@
-Date: Tue, 26 Oct 1999 17:43:50 -0500 (CDT)
-From: Kumar Gala <kumar@chaos.ph.utexas.edu>
-To: Jim Terman <terman@ddi.com>
-cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: question about altivec registers
-In-Reply-To: <199910262152.OAA02956@sade.ddi.com>
-Message-ID: <Pine.LNX.4.10.9910261733160.10102-100000@chaos.ph.utexas.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Tue, 26 Oct 1999 19:03:25 -0400
+From: Bob Toxen <bob@roger.realminfo.com>
+Message-Id: <199910262303.TAA26743@roger.realminfo.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Nested stdarg broken?
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->
-> Will the linuxppc kernal as it is right now save the AltiVec registers
-> if we enable the MSR VEC bit.  I've been trying to follow the other messages
-> on this subject, but I'm not clear.
-> 
+My application uses stdarg (#include <stdarg.h>, va_start, and friends)
+in a function that then calls vfprintf which also uses stdarg.
 
-No, the kernel does not know anything about the AltiVec registers,
-unlike the x86 platform on interrupts only two registers and saved and
-restored typically.  SRR0 and SRR1, one contains the MSR settings and the
-other the PC to return two.  On an rfi values are copied out of these
-registers.
+The variable args get garbled by the time they get to vfprintf.  The
+fmt arg does not get garbled.
 
-The AltiVec registers have to be saved and restore explicitly, if you look
-at /arch/ppc/kernel/head.S and look for load_up_fp you will see how the
-floating point unit is handled on exceptions.  Essential what is done is
-there are some checks done, and a pointer is kept to the last
-process using the FP unit (last_task_used_fp) which then if needed the FP
-regs are saved in to that processes context and the FPs for the incoming
-are restored.
+Note that the documentation specifies that this should work.  My application
+works fine on Linux on Intel and other platforms.  The PowerPC is the first
+big endian platform but I am quite sure that the bug is not in my code.
 
-- kumar
+My code (simplified) looks like
 
+#include <stdio.h>
+#include <stdarg.h>
 
+logmsg(int out, const char *fmt, ...)
+{
+	FILE	*fp;
+	char	*p;
+	int	ret	= 0;
+	char	buf[512];
+	va_list	ap;	/* May need to be last arg. */
 
-ignorance is bliss.
+	va_start(ap, fmt);
+	fflush(stdout);		/* Flush "the other" output. */
+	fp = fopen(logfile, "a");
+	if (!fp || vfprintf(fp, fmt, ap) < 1)
+		ret = -1;
+	if (fp && fclose(fp) == EOF)
+		ret = -1;
+	va_end(ap);
+	return ret;
+}
 
+THANKS for any insight.  Presently I'm IFDEFing it to not use stdargs on
+the PowerPC platform.
+
+Bob Toxen
+bob@roger.realminfo.com
+Error #152, Windows not found: (C)heer, (P)arty, (D)ance
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
