@@ -1,32 +1,39 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Derrik Pates <dpates@dsdk12.net>,
-	Stefan Piger <piger@rvs.uni-hannover.de>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Again with the firewire
-Date: Thu, 22 Nov 2001 19:21:11 +0100
-Message-Id: <20011122182111.9961@mailhost.mipsys.com>
-In-Reply-To: <Pine.LNX.4.40.0111220058320.14868-100000@andromeda.dsdk12.net>
-References: <Pine.LNX.4.40.0111220058320.14868-100000@andromeda.dsdk12.net>
+From: Paul Mackerras <paulus@samba.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15357.26322.107051.143144@cargo.ozlabs.ibm.com>
+Date: Fri, 23 Nov 2001 07:57:54 +1100 (EST)
+To: Armin Kuster <akuster@mvista.com>
+Cc: ppcdevel <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: New API for non cache coherent ppc cpu's
+In-Reply-To: <3BFAB960.DAA72239@mvista.com>
+References: <3BFAB960.DAA72239@mvista.com>
+Reply-To: paulus@samba.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Armin Kuster writes:
+
+> To all NOT_COHERENT_CACHE users
 >
->I actually just had the same thing happen, only the entire console froze,
->X and all. I don't know if the kernel was still working or not, I didn't
->have another machine connected at the time. However, this is actually an
->improvement for me - the ohci1394 module doesn't lock the PMU up and cause
->the system to suddenly shutdown (this is a FireWire iBook). If I boot the
->system with the FireWire device - a QPS CD-RW drive - plugged in, all is
->fine.
+> About a month ago a new API made its way into the ppc,
+> consistent_sync_page.  For CONFIG_NOT_COHERENT_CACHE  processors,
+> requires
+> proper flushing of the page being used.  Please review and provide feed
+> back
 
-In Stefan's case, it appears to be the transmit DMA of the chip stalling
-for some unknown reason. I suggest moving that discussion to the
-linux1394-devel list as I really don't know what may be going on.
+If we have to have a consistent_sync_page, it should be purely a local
+function in our implementation of the official DMA mapping API - see
+Documentation/DMA-mapping.txt.  Drivers should be using functions such
+as pci_alloc_consistent, pci_map_single, pci_dma_sync_single,
+pci_unmap_single, etc.  The implementation of those routines should do
+the correct cache flushing - if it doesn't then we need to fix it.
 
-Ben.
+If you're talking about non-PCI devices, use the pci DMA API but just
+pass NULL for the dev (we need to make sure that will work ok on the
+non-cache-coherent cpus).
 
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
