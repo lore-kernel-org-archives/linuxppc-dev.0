@@ -1,45 +1,52 @@
-To: "Lin, Nan-Hung" <carl@fiberlogic.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Which evaluation board to buy for MPC82xx ? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 24 Apr 2001 11:57:34 +0800."
-             <3AE4F9AE.B31BFE34@fiberlogic.com>
-Date: Tue, 24 Apr 2001 09:03:46 +0200
-Message-Id: <20010424070351.CF5042792B@denx.denx.de>
+Date: Tue, 24 Apr 2001 12:11:35 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Dan Malek <dan@mvista.com>
+Cc: Cort Dougan <cort@fsmlabs.com>, Alexandre.Nikolaev@matrox.com,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: ppc little-endian port
+In-Reply-To: <3AE4E93E.AC7C788C@mvista.com>
+Message-ID: <Pine.HPX.4.10.10104241134560.2724-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3AE4F9AE.B31BFE34@fiberlogic.com> you wrote:
+On Mon, 23 Apr 2001, Dan Malek wrote:
+
 >
-> I will buy an evaluation board for MPC82xx to run PPCBoot and
-> Linux kernel 2.4.3.
+> Cort Dougan wrote:
+> >
+> > Why?
 >
-> Which board to buy for MPC8260/8255 ?    and
+> Yeah, we really don't care about little-endian.  Like I always
+> say, getting a kernel built and booted is the easy part.  The
+> entire world runs big endian tools, libraries and applications.
+> Making all of that work is a task no one is going to tackle.
 
-How about the TQM8260 Module and/or Starter Kit?
-See http://www.tq-group.de/tqc/tqc_produktdaten_030201.html
+Indeed...
 
-Or PM826 module?
-See http://www.microsys.de/html/pm826.html
+> While refreshing my PowerPC history the other day, I found a UISA
+> book from 1991.....The Little-Endian Byte Ordering chapter introduction
+> has this to say:
 
-> Which board to buy for MPC8240 ?
+1991 ? I though PPC came in 1993. First Power systems were announced and
+delivered in 1990 AFAIR.
 
-How about the CU824 or CU84 boards?
-See http://www.microsys.de/html/cu824.html
-resp. http://www.microsys.de/html/cpu84.html
-[not exaclty eval boards, though].
+> Later in the text it states "There are 24 ways to specify the
+> ordering of four bytes withing a word, but only two of these
+> orderings are sensible."
 
-Feel free to contact me for quotes :-)
+Indeed the PDP was a nightmare, like VAX floating-point formats BTW...
 
-Wolfgang Denk
+> I contend there is only one sensible ordering, and we are already
+> using it.........
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Documentation is the castor oil of programming.
-Managers know it must be good because the programmers hate it so much.
+Right, unfortunately so many people have been brainwashed by the
+niadne-elttil side and are unable to think on their own.
+
+	Regards,
+	Gabriel.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
