@@ -1,42 +1,33 @@
-Message-Id: <200010201524.RAA05556@denx.local.net>
-To: "Prashant Patel" <pmpatel@trinetcommunication.com>
-cc: linuxppc-embedded@lists.linuxppc.org
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Porting 2.4-test9 to MPC823 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 20 Oct 2000 09:36:00 CDT."
-             <001d01c03aa3$10f5ac30$4d1f76d8@kennedy>
-Date: Fri, 20 Oct 2000 17:24:01 +0200
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <39F0983D.1FEE3672@snmc.com>
+Date: Fri, 20 Oct 2000 14:08:45 -0500
+From: Daris A Nevil <dnevil@snmc.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: HDLC/PPP Driver
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Prashant,
+I have receive several requests for information regarding the HDLC/PPP
+driver in QSLinux.  In response I have put together a small white paper
+describing the driver, and it is located at:
 
-in message <001d01c03aa3$10f5ac30$4d1f76d8@kennedy> you wrote:
->
->       I am new to this embedded linux field. So i want to know that has
-> latest kernel 2.4.*  been ported to MPC 823 or not ? If not, then can
+http://qslinux.org/docs/snmc/hdlc/index.html
 
-Not really the latest, but 2.4.0-test5 is running stable  on  several
-MPC823E based systems (TQM823L, SPD823TS, and others).
-
-> anybody tell  me about the porting process ( how to port kernel to MPC823 )
-> ?  Anytype of help would be appreciated.
-
-You can find our source tree including all the modifications for
-TQM8xxL at
-
-ftp://ftp.denx.de/pub/LinuxPPC/usr/src/linux-2.4-2000-08-01.tar.bz2
-
-Wolfgang Denk
+Regards,
+Daris
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Far back in the mists of ancient time, in the great and glorious days
-of the former Galactic Empire, life was wild, rich  and  largely  tax
-free.         - Douglas Adams, _The Hitchhiker's Guide to the Galaxy_
+Daris A Nevil
+Simple Network Magic Corporation
+401 Kentucky Lane
+McKinney, TX 75069
+214-793-7757
+dnevil@snmc.com
+www.snmc.com
+quickstack.com
+qslinux.org
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
