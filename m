@@ -1,27 +1,32 @@
-Message-ID: <003501c4582b$93efa290$2700000a@jmartin>
-From: "jmartin" <jmartin@prodys.net>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: idma problems
-Date: Tue, 22 Jun 2004 09:36:05 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Subject: Re: WindRiver PowerQUICC III SBC8560 support.
+From: David Woodhouse <dwmw2@infradead.org>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Kumar Gala <kumar.gala@freescale.com>,
+	linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <20040621232921.GD8561@smtp.west.cox.net>
+References: <1087563278.19489.3156.camel@hades.cambridge.redhat.com>
+	 <205EB944-C12D-11D8-ACD7-000393DBC2E8@freescale.com>
+	 <1087827285.18627.66.camel@hades.cambridge.redhat.com>
+	 <20040621232921.GD8561@smtp.west.cox.net>
+Content-Type: text/plain
+Message-Id: <1087897386.4520.63.camel@imladris.demon.co.uk>
+Mime-Version: 1.0
+Date: Tue, 22 Jun 2004 10:43:06 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi again,
+On Mon, 2004-06-21 at 16:29 -0700, Tom Rini wrote:
+> That sounds like a bug.
 
-    i'm studing idma problems on mpc8xx. When i active idma i lost console.
-machine registers show:
+The whole thing's a bug. I'd rather just stop using it, and call
+serial_8250_console_init() from setup_arch() instead.
 
-    TESR     0x00002010 (it means instruction fetch externally terminated by
-TEA)
-    SDSR     shows     0x80
-    SDAR    shows     A8A21111
+There's no reason why we have to wait for console_init() to start up
+consoles.
 
-machine hang. Any ideas?
-thanks
+--
+dwmw2
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
