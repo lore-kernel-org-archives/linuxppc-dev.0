@@ -1,50 +1,42 @@
-Message-Id: <200112042332.SAA17067@missioncriticallinux.com>
-From: mod+linuxppc-dev@MissionCriticalLinux.com
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Status of linuxppc support for Galileo GT64260
-Date: Tue, 04 Dec 2001 18:32:12 -0500
+Subject: Re: Rage128 support for resolutions less than panel resolution?
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
+To: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20011204175547.WVJL16262.tomts14-srv.bellnexxia.net@there>
+References: <Pine.LNX.4.40.0112041017530.8200-100000@andromeda.dsdk12.net>
+	<20011204175547.WVJL16262.tomts14-srv.bellnexxia.net@there>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: 05 Dec 2001 00:47:45 +0100
+Message-Id: <1007509665.21511.38.camel@pismo>
+Mime-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I'm working with older linuxppc sources
-that run on a box designed around
-the Galileo GT64260 and I'm thinking
-about merging forward to the current
-linuxppc code base, so I'm wondering:
-what's the current status of the code
-that got checked in as the official
-PPClinux code for the Galileo GT64260?
+On Tue, 2001-12-04 at 18:58, Kevin B. Hendricks wrote:
 
-I'm asking because I recall seeing
-messages on these lists saying that
-code had been checked in with interrupt
-problems, PCI problems, no integrated-Enet
-driver and generally in "needs work"
-condition.  I notice that there is now a
-(strangely familiar) driver included for
-the integrated Enet, but (except for the
-recent exchange about how the GT64260 and
-VT82C686B don't play so nice together) I
-don't find much 64260-related discussion
-here except one terse followup message
-stating that PCI works.
+> However if you have the correct timing info, you should be able to write a
+> mode to use and then use fbset to set rage128 frame buffer to that mode.
+>
+> This should work to change your resolution to whatever you want as long as
+> the "scaling register code" patch I saw fly by recently (a couple of weeks
+> ago) actually made it into the aty128fb.c code yet.
+>
+> If it did you should be in luck.  Just take the timing from the the full
+> native resolution and just change the x and y resolution and leave all of
+> the rest untouched.  The scaling registers code should figure out the rest.
+> as long as the real native panel resolution is known by the driver.
 
-So, is anybody using the current code?
-Would I be wrong to interpret the fact
-that it wouldn't compile when I tried it
-today as indication that not much has
-happened since the initial checkin by
-MontaVista?  Are the interrupt problems
-alluded to at the time of that initial
-checkin (could somebody characterize
-them for me?) still an issue?  Does
-the PCI support seem solid?  Anything
-in particular I need to watch out for?
+Thanks for these instructions Kevin! I'm now able to use 800x600 and
+640x480 on my Pismo without any flickering and artifacts.
 
-Thanks.
-          Michael O'Donnell
-        Mission Critical Linux
+One thing I noticed is that when I use the timings from 1024x768-60 for
+640x480, the vertical refresh is shown as 130 Hz. That doesn't harm the
+panel?
 
+
+--
+Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
+XFree86 and DRI project member   /  CS student, Free Software enthusiast
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
