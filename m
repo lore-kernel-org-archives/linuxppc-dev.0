@@ -1,65 +1,49 @@
-Message-ID: <3ADEE023.7BCFCD29@raleigh.ibm.com>
-Date: Thu, 19 Apr 2001 08:54:59 -0400
-From: Ralph Blach <rcblach@raleigh.ibm.com>
-MIME-Version: 1.0
-To: iweiny@pacbell.net
-Cc: linuxemb <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Walnut IDE support
-References: <200104182216.PAA02532@batcave2.batcave>
-Content-Type: multipart/mixed;
- boundary="------------61D6C1B9F51C2B71C5E570CB"
+From: acmay@acmay.homeip.net
+Date: Thu, 19 Apr 2001 08:05:45 -0700
+To: Stefan Roese <stefan.roese@esd-electronics.com>
+Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: PPC405GPWalnutPciBusMaster
+Message-ID: <20010419080545.C1111@sink.san.rr.com>
+References: <20010418193652.B19053@ecam.san.rr.com> <EFEAIMDCOOOHIEPHDNFJOEFGCMAA.stefan.roese@esd-electronics.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <EFEAIMDCOOOHIEPHDNFJOEFGCMAA.stefan.roese@esd-electronics.com>; from stefan.roese@esd-electronics.com on Thu, Apr 19, 2001 at 10:07:55AM +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------61D6C1B9F51C2B71C5E570CB
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-
-Ira,
-
-You might want to try the latest MontaVista kernel.  I had to use
-hda=swapdata to get it to function.
-
-Chip
-
-iweiny@pacbell.net wrote:
+On Thu, Apr 19, 2001 at 10:07:55AM +0200, Stefan Roese wrote:
 >
-> I am trying to get a Promise Ultra66 IDE card running on the Walnut board.
-> The kernel recognizes the card but gives the following errors.
+> > On Thu, Apr 19, 2001 at 10:44:08AM +0900, Hideo Noda wrote:
+> > > Has anyone tried PCI cards with BUS MASTER operations for Walnut
+> > > PPC405GP?
+> >
+> > I have tried and failed. I have other things to work on right now
+> > so I have just delayed looking into it anymore until the 2.0 CDK
+> > comes out. I think that should be by the end of the month.
+> >
+> > I think there is a problem with the virt_to_phys matching the
+> > PTM1/BAR1. In the preliminary 405gp docs that I have Fig 17-59
+> > on page 17-62 give a good overview on how things need to be
+> > setup on the chip, but I am not sure on what the values
+> > need to be.
 >
-> PDC20262: IDE controller on PCI bus 00 dev 08
-> PDC20262: device not capable of full native PCI mode
-> PDC20262: device disabled (BIOS)
->
-> Is there a configuration setting or kernel param I am missing?
->
-> Thanks,
-> Ira Weiny
->
---------------61D6C1B9F51C2B71C5E570CB
-Content-Type: text/x-vcard; charset=us-ascii;
- name="rcblach.vcf"
-Content-Description: Card for Ralph Blach
-Content-Disposition: attachment;
- filename="rcblach.vcf"
-Content-Transfer-Encoding: 7bit
+> Which bootloader/firmware are you using? The pci configuration should be
+> done within the bootloader. If you are using PPCBoot, I am not shure if the
+> configuration is correct regarding the busmaster setup (although I did the
+> port based on the IBM OpenBios). The bus master functionality was never
+> tested - sorry for that.
 
-begin:vcard
-n:Blach;Ralph
-tel;work:919-543-1207
-x-mozilla-html:TRUE
-url:www.ibm.com
-org:IBM MicroElectronics
-adr:;;3039 Cornwallis		;RTP;NC;27709;USA
-version:2.1
-email;internet:rcblach@raleigh.ibm.com
-x-mozilla-cpt:;15936
-fn:Ralph Blach
-end:vcard
-
---------------61D6C1B9F51C2B71C5E570CB--
+I am just using the OpenBios for now. We will be spinning our own board
+within the year so I was going to delay looking into doing the PPCBoot
+code until then. I was able to look at the PCI registers when the kernel
+booted and they appeared to be OK. For the hell of it I tried to change them
+in the kernel and it hung during boot. I did not see in the docs the constraints
+on when I could change those registers. Is it possible to do it very early in
+the Linux boot code?
+Thanks
+--
+Andrew May
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
