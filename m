@@ -1,30 +1,36 @@
-Message-ID: <3BE17D1F.649716F9@cambridgebroadband.com>
-Date: Thu, 01 Nov 2001 16:49:35 +0000
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
+Message-ID: <3BE182BF.60009@mvista.com>
+Date: Thu, 01 Nov 2001 12:13:35 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Liu HongXun-a16975 <a16975@motorola.com>
+To: Sarnath Kannan <sparc64@rediffmail.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Is there ATM driver for MPC860 available?
-References: <01139FC052A0D411900B00508B9535FC03B1689E@ZCH07EXM04.corp.mot.com>
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: "OpenPIC versus EPIC" in MPC8240 !
+References: <20011101101302.15843.qmail@mailweb11.rediffmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Yes, I'm doing it.
+Sarnath Kannan wrote:
 
-Liu, I'll send this to you directly rather than to the whole list as it's quite big.  If anyone else
-wants a copy they can write to me.
+> Dear reader,
+>  I am trying to enable interrupts on the sandpoint X2
+> board hosting MPC8240, in Mode 1.
 
-Alex
+The Sandpoint interrupt structure for both X2 and X3 are supported
+in the linuxppc kernel.  The MPC107/EPIC are supported on other boards
+as well. Due to the way Linux supports interrupts, only one Sandpoint
+board interrupt mode is supported.  Read the comments in
+arch/ppc/kernel/sandpoint_setup.c for instructions.
 
-Liu HongXun-a16975 wrote:
->
-> Hi, all,
-> Is there ATM driver for MPC860?
-> Thanks
->
-> Rolf Liu
->
+There are many features of EPIC that are not currently supported using
+the current OpenPIC functions, but it does work as a standard interrupt
+controller on Sandpoint.
+
+Thanks.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
