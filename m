@@ -1,66 +1,93 @@
-Message-ID: <3C0BE2DA.53C39E1B@seranoa.com>
-Date: Mon, 03 Dec 2001 15:38:50 -0500
-From: Andrew Dixon <andrew.dixon@seranoa.com>
+Message-ID: <3C0BE612.51F79C59@intldata.ca>
+Date: Mon, 03 Dec 2001 15:52:34 -0500
+From: Heather Peterson <hpeterson@intldata.ca>
 MIME-Version: 1.0
-To: ppclist <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: programming ppcboot onto an sbc8260 with a vision ice
-References: <3C0BD4F1.DB6591F3@seranoa.com> <3C0BDBB4.68EB3E72@chinook.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: linuxrc thread doesn't terminate
 Content-Type: text/plain; charset=us-ascii
+Reply-To: hpeterson@intldata.ca
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Peter Desnoyers wrote:
->
-> You need to take the ELF file, ppcboot, and convert it into a .bin file
-> using the vision ICE convert utility.
->
-> The file format referred to as "BIN" in the visionICE documentation
-> isn't a real binary image - it has a special header.
->
+Hi,
 
-OK.  When I try that it tells me:
+I'm relatively new to linux.  I hope this isn't a repeat
+question, but I tried searching through the old postings
+and couldn't find an answer.
 
-Conversion Failed: no data was extracted from the selected address
-range.
+I'm using an 860P custom board running the 2.2.14 kernel
+from HardHat.  I got it working using both NFS and with an
+initial ramdisk.  However, now I want to start up with a
+small initrd and then mount the real root filesystem off a
+compact flash card.
 
-Where the address ranges are:
-/var/opt/visionXD/bin/convert  -w ppcboot -b
-convert v7.8A Copyright (c) 1996-2001 Wind River HSI
-convert ELF file ppcboot to BDX file ppcboot.bdx
-Extracting image from 'ppcboot'
-Writing binary download image to 'ppcboot.bdx'
-Maximum packet size: 0x100
-Lower address: 0x0
-Upper address: 0xffffffff
-Execution address: 0x40000000
-Image written
-Processing time: 0.011 seconds
+My system is configured with CONFIG_BLK_DEV_INITRD and
+my boot argument is root=/dev/cfda2 (my compact flash
+device).  My initrd has a linuxrc file that loads the
+drivers neccessary to access the compact flash device.
 
-Lower Image Address: 0xfe000000
-Upper Image Address: 0xfe020000
+I put print statements in init/main.c
 
+    pid = kernel_thread(do_linuxrc, "/linuxrc", SIGCHLD);
 
-I also tried:
+    printk("My printk: launched thread to call linuxrc,
+            pid = %d\n", pid);
 
-/var/opt/visionXD/bin/convert  -w ppcboot -b
-convert v7.8A Copyright (c) 1996-2001 Wind River HSI
-convert ELF file ppcboot to BDX file ppcboot.bdx
-Extracting image from 'ppcboot'
-Writing binary download image to 'ppcboot.bdx'
-Maximum packet size: 0x100
-Lower address: 0x0
-Upper address: 0xffffffff
-Execution address: 0x40000000
-Image written
-Processing time: 0.011 seconds
+    if (pid>0)
+        while (pid != wait(&i));
 
-which gives me a file "ppcboot.bdx".  VisionXD still complains that it's
-not a flat binary though.
+    printk("\nMy printk: Thread terminated\n");
 
-Any thoughts?
+Here is my linuxrc file:
+    #!/bin/sh
+
+    echo 'Loading compact flash drivers.'
+    insmod ports.o
+    insmod i2c.o
+    insmod cfd.o
+    echo 'End of linuxrc.'
+
+When it runs I see the first print statement, I see the
+output from my linuxrc script, but I never see the second
+print statement.  Is the thread not terminating properly?
+How can I tell?
+
+I also tried adding a counter to the loop and using waitpid
+instead of wait:
+    pid = kernel_thread(do_linuxrc, "/linuxrc", SIGCHLD);
+    printk("My printk: launched thread to call linuxrc,
+            pid = %d\n", pid);
+    rc = 0;
+    loopCount = 0;
+    if (pid>0)
+    {
+        printk("My printk: waiting:\n");
+        while ((pid != rc) && (loopCount++ < 80000))
+        {
+            current->policy |= SCHED_YIELD;
+            schedule();
+            rc = waitpid(pid, &i, WNOHANG);
+        }
+    }
+    if (rc == pid)
+        printk("\nMy printk: Thread terminated\n");
+    else
+        printk("\nMy printk: continuing without
+                  termination of linuxrc thread\n");
+
+This seems to work.  My drivers load from the linuxrc
+script and then I see the print statement "continuing
+without termination of linux rc thread", and it goes on
+to call change_root().  Any ideas why wait and waitpid
+never return with the pid of the linuxrc thread?  What
+am I doing wrong?
+
+Any help would be greatly appreciated.
 
 Thanks,
-Andy
+
+Heather
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
