@@ -1,53 +1,51 @@
-Date: Thu, 3 Aug 2000 13:45:24 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: rtc again...
-In-Reply-To: <20000803111422.1301@mailhost.mipsys.com>
-Message-ID: <Pine.HPX.4.10.10008031331030.9070-100000@gra-ux1.iram.es>
+Date: Thu, 3 Aug 2000 13:52:26 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+cc: Martin Costabel <costabel@wanadoo.fr>,
+        Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
+        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: New input layer and ADB (Was Re: CONFIG_PPC != Mac)
+In-Reply-To: <Pine.LNX.4.10.10008030011181.14639-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <Pine.LNX.4.10.10008031350010.425-100000@cassiopeia.home>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 3 Aug 2000, Benjamin Herrenschmidt wrote:
+On Thu, 3 Aug 2000, Michael Schmitz wrote:
+> > > Sometimes after a console switch, I end up in capslock mode. Switching
+> > > capslock on then gives lowercase letters (except the letter "L"). After
+> > > a further console switch, things return to normal.
+> >
+> > That's normal. With PC keyboards, the LED state of the Caps Lock key is
+> > controlled by Linux, while Mac (and Amiga) keyboards remember the Caps Lock
+> > state in the keyboard. Hence if you do a VC switch to a VC where Caps Lock is
+>
+> Wrong for Mac. We explicitly set LED state from the keyboard bottom half
+> if necessary (though it stopped working consistently sometime in 2.1
+> IIRC).
 
-> Most "sane" RTCs are in UTC. On PReP and CHRP, this is not a problem,
-> they use, I think, legacy RTC hardware and so you just need to set it up
-> correctly in UTC.
+IIRC, the only (borrowed) ADB keyboard I ever connected to my CHRP box (when I
+used Xpmac) had no Caps Lock LED, but a mechanical Caps Lock indicator (key
+stays up or down). I'm afraid you can control those mechanics by software :-)
 
-Once upon a time, there was also NT for PowerPC, anyway using anything
-else than UTC in this world is simply madness (it gives ambiguous dates
-close to DST transition and is a mess in a connected world).
+> The CapsLock on ADB keyboards is worth a million laughs actually. It
+> is sticky by hardware, and never sends a key up event, only key down. See
+> mac_keyb.c.
 
-I'm now fighting problems with possible ambiguous timestamps around leap
-seconds (only 1 every 18 months or so but they may be a killer in my
-case), and trying to build a clean interface to get non ambiguous
-timestamps at 23:59:60 when it happens. (See what the kernel does in this
-case in kernel/timer.c about leap second processing, it simply sets the
-clock back one second and sets the TIME_OOP flag but there are additional
-problems if you want to get a non ambiguous timestamp in an interrupt
-between the timer interrupt and the following bottom-half).
+I know, cfr. amikeyb.c :-)
 
-RTC in CHRP and PreP are varied and far between. I'm still waiting for the
-new Motorola MVME boards in which they have increased the NVRAM size and
-the RTC is at the end, another set of quirks in perspective.
+Gr{oetje,eeting}s,
 
-> On Macs, it's slightly different. MacOS expects the RTC to be in local
-> time and stores the timezone and DSL state in PRAM. I recently added
-> fixup code in pmac_time.c for reading that value and correctly setting
-> the kernel timezone at boot from it. Paul improved on my code by adding
-> the ability to save modified timezone back to PRAM. I think there's still
-> an issue with DST. There's a field for storing it in the kernel tz
-> structure, but I'm not sure it's fully defined or used. I beleive this
-> could be easily fixed by looking at what hwclock does, and eventually
-> fixing it.
+						Geert
 
-Do you have to change the clock every spring and autumn in MacOS ? Or is
-it automatic ?
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-	Gabriel.
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
