@@ -1,163 +1,57 @@
-From: Jan.Rovins@radisys.com
-To: "Chuck Partridge" <Chuck_Partridge@amx.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: AMD Flash Interface for updating boot flash
-MIME-Version: 1.0
-Message-ID: <OF680CB3D8.0536364E-ON85256BE4.007B3668@radisys.com>
-Date: Wed, 26 Jun 2002 19:00:09 -0400
-Content-Type: text/plain; charset="us-ascii"
+Date: Thu, 27 Jun 2002 10:41:44 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Scott Anderson <scott_anderson@mvista.com>
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	Armin Kuster <akuster@mvista.com>,
+	linuxppc-embedded@lists.linuxppc.org,
+	Paul Mackerras <paulus@samba.org>
+Subject: Re: Trivial cleanup in ocp_uart.c
+Message-ID: <20020627004144.GR9087@zax>
+References: <20020620073440.GC20689@zax> <20020620155026.GE16052@opus.bloom.county> <20020621005216.GH20689@zax> <20020621143903.GO16052@opus.bloom.county> <20020624074019.GA9087@zax> <3D19F965.86668872@mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3D19F965.86668872@mvista.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Chuck,
-
-The newer MTD versions may have more/different config options than  the
-documented examples floating around.
-but here is some tips off the top of my head:
-
-You should set :
-CONFIG_MTD_CFI
-CONFIG_MTD_AMDSTD
-and choose the geometry support for the buswidth/interleave of your flash
-bank.
-
-set CONFIG_MTD_CHAR for raw access,
-CONFIF_MTD_BLOCK if you want to mount a flash file system
-
-and specify a Mapping.
-Basically, if your board is from a well known vendor, there may be a
-"Mapping Driver" already written for it,
-so you should go with that.
-
-if you have a custom board, you may be able to go without a mapping driver
-if you specify the correct physical mapping
-CONFIG_MTD_PHYSMAP and fill in the details of your hardware
-
-If you just need to store a single image, you wont need partitions, if you
-want a boot image and a flash file system, or backup
-copies of the previous boot image, then partitions are the way to go.
-
-If you need to have partitions, you will have to write your own mapping
-driver, because the partition sizes are specified there,
-just pick a pre-existing mapping driver that is close to your board/flash
-then cut & paste & hack away.
-(There may be newer versions of MTD that let you specify partitions from
-the .config file, I am not sure of this)
-
-
-After you try the above, and MTD still cant find your flash, the folks on
-the MTD list can take it from there.
-
-one last warning:
-certain versions of the 2.4 kernel have non stable versions of mtd,  you
-may be guided to download a stable
-snapshot from their website.
-
-Jan
-
-
-
-
-"Chuck Partridge" <Chuck_Partridge@amx.com>
-Sent by: owner-linuxppc-embedded@lists.linuxppc.org
-06/26/2002 04:23 PM
-
-
-        To:     <Michael@KSWaves.com>, <Jan.Rovins@radisys.com>
-        cc:     <linuxppc-embedded@lists.linuxppc.org>
-        Subject:        Re: AMD Flash Interface for updating boot flash
-
-
-
-Where do you set this up? If I want to use partitions, where do I put the
-info on how it is partitioned?
-
-I modified the kernel .config and it gives me the following startup
-messages:
-
-physmap flash device: 80000 at fff00000
-CFI: Found no Physically mapped flash device at location zero
-
-I'll check out the MTD list.
-
-Chuck
->>> <Jan.Rovins@radisys.com> 06/26/02 02:49PM >>>
-I agree that MTD is the way to go, but with one small change to Michael's
-instructions.
-
-configure MTD for  char driver support, and do
-dd if=bootloader of=/dev/mtd0
-
-/dev/mtd0 is a raw char device that is best to write a binary boot image
-to flash,
-/dev/mtdblock0 is a block device that is best for file system images,
-which can then be mounted.
-
-You can get expert advice from the MTD list:
-
-http://lists.infradead.org/mailman/listinfo/linux-mtd/
-
-Jan
-
-
-
-
-"Michael Meriin" <Michael@KSWaves.com>
-Sent by: owner-linuxppc-embedded@lists.linuxppc.org
-06/26/2002 12:17 PM
-
-
-        To:     "Chuck Partridge" <Chuck_Partridge@amx.com>,
-<linuxppc-embedded@lists.linuxppc.org>
-        cc:
-        Subject:        Re: AMD Flash Interface for updating boot flash
-
-
-
-Just define your flash as a MTD device and then, from user space use dd
-command to copy your bootloader to flash:
-
-dd if=bootloader of=/dev/mtdblock0
-
-Best Regards,
-                     Michael Meriin
-
-
------ Original Message -----
-From: "Chuck Partridge" <Chuck_Partridge@amx.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Sent: Wednesday, June 26, 2002 17:09
-Subject: AMD Flash Interface for updating boot flash
-
-
+On Wed, Jun 26, 2002 at 10:27:01AM -0700, Scott Anderson wrote:
 >
-> Hello all,
+> David Gibson wrote:
+> > Basically there are two quite distinct approaches either of which
+> > would make sense (for any given peripheral/bus type):
+> >         a) Register each device as it is discovered.  Register each
+> > driver as the appropriate module loads.  Whenever either event happens
+> > the common code calls init or probe callbacks in a driver to connect
+> > it to any devices of appropriate type.
+> >         b) No registration.  When a driver loads, it searches for all
+> > devices of appropriate type, and initializes each of them in turn.
+> >
+> > Examples of (a) include the new PCI interface, PCMCIA, and the 2.5
+> > unified device model.  Examples of (b) include the old PCI interface
+> > (pci_find_device()) and (some?/all?) non-PCI devices on OF machines
+> > (e.g. Airport).
+> >
+> > Approach (a) is clearly needed to handle hotplug.  But that's not an
+> > issue for OCPs (indeed device (not driver) registration will always be
+> > degenerate) so either approach would do.  Frankly (a) seems overkill
+> > for OCPs, but it does have the advantage of being easily integrated
+> > into the unified device model.
 >
-> I have been searching the archives and I am a bit confused, so bear with
-me if this is too simple a question.
->
-> I need to provide a way to update my boot flash from user space.
-> Our user application will download an boot flash image and save it (to a
-file or a buffer), we must then write the flash.
-> I have seen references in the archives to Denx's
-drivers/char/amd_flash.c
-and to MTD drivers, or I can
-> implement my own driver, but I'm not sure of the best (i.e. easiest and
-cleanest) way.
->
-> I don't need to put a file system on the flash.  All it does is hold the
-PPCBoot image.  The flash part is an AMD
-> 29LV004B and is setup for 8 bit interface.  I am running a 2.4.17 kernel
-on an 8245.
->
-> Any suggestions?
->
-> Thanks,
->
-> Chuck
->
->
+> I wouldn't be quite so quick to dismiss the issue of hotplug from OCP.
+> I have heard rumblings of people having FPGAs with on-chip processors
+> wanting to reprogram the FPGAs on the fly with different sets of
+> peripherals.
 
+Eek, wibble.  It still seems somewhat unlikely to me that you'd be
+changing the peripherals "on the fly" in a real life embedded
+application.  Especially considering that reboots are likely to be
+much less of an issue on an embedded system than on a big server.
+
+--
+David Gibson			| For every complex problem there is a
+david@gibson.dropbear.id.au	| solution which is simple, neat and
+				| wrong.  -- H.L. Mencken
+http://www.ozlabs.org/people/dgibson
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
