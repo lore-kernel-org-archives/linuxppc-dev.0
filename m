@@ -1,69 +1,63 @@
-Message-ID: <3CE2C260.5070307@mvista.com>
-Date: Wed, 15 May 2002 13:17:36 -0700
-From: Jun Sun <jsun@mvista.com>
+Message-ID: <3CE2F854.1020908@csiro.au>
+Date: Thu, 16 May 2002 10:07:48 +1000
+From: James Gunning <James.Gunning@csiro.au>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@transmeta.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, ralf@oss.sgi.com,
-	linux-mips@oss.sgi.com, linuxppc-dev@lists.linuxppc.org
-Subject: [PATCH] smp sched typo
-Content-Type: multipart/mixed;
- boundary="------------000503080306050607030009"
+To: yellowdog-general@lists.terrasoftsolutions.com,
+	linuxppc-dev@lists.linuxppc.org
+Subject: IBM jdk needs kernel patch to fix floating stacks problem? LD_ASSUME_KERNEL
+References: <20020515212704.714BF1FC2D@newhope.terraplex.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------000503080306050607030009
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Hi ppc'ers
+        From discussion on the ibm.software.java.linux newsgroup
+---snipped-- below, it's clear
+we ppc users need some kernel patch to get the IBM jdk's (1.3.0, 1.3.1)
+to work.
+Anybody got any  ideas if this is possible? Where to get the patch? Is
+there a patch?
+
+Any views welcome,
+                                      James.
+
+-----snipped from ibm.software.java.linux -----
+
+> Hi all,
+>
+> When trying to use the pSeries JDK with Tomcat v4.0.3, it bombs out on
+> startup like so:
+>
+> **Out of memory, aborting**
+>
+> *** panic: JVMST058: Cannot allocate memory in initGcHelpers(3)
+>
+> It then leaves a 60MB or so core file, and exits.
+>
+> I have tried all sorts of combinations of -X options to do with memory,
+> none of them make any difference.
+>
+> The target platform is LinuxPPC v2.4.19-pre7 (v2.4.18 has same problem)
+> under YDL v2.2, with glibc 2.2.5-0.19a.
+>
+> Anyone shed any clue? Is anyone from IBM interested in the core dump so
+> it can be debugged?
+>
+> Regards,
+> Graham
+
+As I have just posted on another thread:
 
 
-Linus,
+It looks very much like the floating stack thing.  If YellowDog don't
+give you the LD_ASSUME_KERNEL patch, then you can compile
+glibc with floating stacks disabled.  This course of action is only open
+to the brave and the foolish.
 
-I found this bug in 2.4 kernel. I have verified that the bug exists on MIPS
-SMP and PPC SMP, but not on i386 SMP.  See the detailed explanation inside the
-patch.
+Neil
 
-2.5 sched.c has been re-written quite a bit and does not have this problem.
-
-
-http://linux.junsun.net/patches/generic/submitted/020515-2.4.18-smp-sched-typo.patch
-
-Jun
-
-
---------------000503080306050607030009
-Content-Type: text/plain;
- name="020515-2.4.18-smp-sched-typo.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="020515-2.4.18-smp-sched-typo.patch"
-
-
-Gcc will optimizie out the whole 'if' branch on platforms where
-cycles_t is not unsigned long long (such as MIPS, PPC).
-
-The symptom for this bug is not fatal - perhaps that is ther reason
-why nobody has found it so far.  Higher priority process will be delayed
-to start its execution.  One of my tests shows on a heavy-loaded system
-the delay is about 5 to 6 jiffies.
-
-Jun, 020515
-
-diff -Nru link/kernel/sched.c.orig link/kernel/sched.c
---- link/kernel/sched.c.orig	Fri Dec 21 09:42:04 2001
-+++ link/kernel/sched.c	Wed May 15 12:38:12 2002
-@@ -282,7 +282,7 @@
- 				target_tsk = tsk;
- 			}
- 		} else {
--			if (oldest_idle == -1ULL) {
-+			if (oldest_idle == (cycles_t)-1) {
- 				int prio = preemption_goodness(tsk, p, cpu);
-
- 				if (prio > max_prio) {
-
---------------000503080306050607030009--
+-----snipped from ibm.software.java.linux -----
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
