@@ -1,76 +1,43 @@
-Message-Id: <200004051909.VAA00311@piglet.grunz.lu>
-Date: Wed, 5 Apr 2000 21:09:14 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: l2cr= command line and bogomips
-To: linuxppc-dev@lists.linuxppc.org
-cc: paulus@linuxcare.com
+Message-ID: <38EBE21E.FEA62A2C@rochcivictheatre.org>
+Date: Wed, 05 Apr 2000 20:02:22 -0500
+From: Tom Gall <gall@rochcivictheatre.org>
 MIME-Version: 1.0
-Content-Type: MULTIPART/mixed; BOUNDARY="134392852-1804289383-954961754=:310"
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Printing to the OF command line
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---134392852-1804289383-954961754=:310
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+Hi All,
 
-Hi list,
+  This is an act of desperation on my part. But what the heck.
 
-For all those with G3-upgraded machines booting directly via OF, here
-is a small patch that actually enables the 'l2cr=' kernel command line
-option.
+  I'm trying to bring up a the 2.2.15pre14 kernel on an unsupported box.
+It's a 7043 43P 140 RS 6000. It's a labor of love.
 
-Paul, if you agree, can you add this to your tree? Thanks.
+  Anyway, I've been having trouble even getting the kernel up any
+distance to even be able to puts to the screen. Something is dieing ...
+somewhere.
 
-The code to handle the option was present; but it was never called. I've
-also made it more secure when enabling the cache.
+  in arch/ppc/boot/of1275.c it would seem one should be able to perhaps
+open up some of device and print directly to the of command line without
+having to get into display adaptor issues. I would hope this would allow
+debugging in very difficult environments. (Which I'm in)
 
-The main reason I wanted to have this as a command line option is to
-get tha cache enabled _before_ calculating the bogomips value, in order
-to get the delay loop calibrated for a correct value, which is not the
-case if you enable the cache later only (via /proc/sys/kernel/l2cr).
+  Has anyone ever done this with this particular API? Is it even
+possible?
 
-However, I've noticed that in 2.3 the bogomips value is 'correct'
-whether the cache is enabled or not, whereas in 2.2 it varies from
-single to double without/with cache.
+  Thanks!
 
-Any explanation? Is the loop tighter now, so it runs in L1? Does 2.3
-always enable the cache (but how does it know the correct settings
-then)?
 
-Michel
+--
+Hakuna Matata,
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+Tom
 
---134392852-1804289383-954961754=:310
-Content-Type: TEXT/plain; CHARSET=US-ASCII
-Content-Description: l2cr-cmdline.diff
-
---- linux-2.3.paul/arch/ppc/kernel/setup.c	Tue Mar 21 06:12:14 2000
-+++ linux/arch/ppc/kernel/setup.c	Wed Apr  5 20:58:33 2000
-@@ -633,10 +633,14 @@
- 	{
- 		unsigned long val = simple_strtoul(str, NULL, 0);
- 		printk(KERN_INFO "l2cr set to %lx\n", val);
--		_set_L2CR(0);
--		_set_L2CR(val);
-+		val |= 0x200000;		/* perform global invalidate */
-+		_set_L2CR(0); 			/* disable cache */
-+		_set_L2CR(val & ~0x80000000);	/* set cache parameters */
-+		_set_L2CR(val);			/* and enable it */
- 	}
- }
-+
-+__setup("l2cr=", ppc_setup_l2cr);
-
- void __init ppc_init(void)
- {
-
---134392852-1804289383-954961754=:310--
+-----------------------------------------------------------
+Linux Guy          "My heart is human, my blood is boiling,
+tgall@uswest.net    my brain IBM" -- Mr Roboto, Styxx
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
