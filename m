@@ -1,76 +1,112 @@
-Date: Thu, 20 Sep 2001 15:22:46 -0800
-From: Ethan Benson <erbenson@alaska.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.linuxppc.org,
-	Debian PowerPC <debian-powerpc@lists.debian.org>, dan@debian.org
-Subject: Re: [ANN] yaboot maintainer change
-Message-ID: <20010920152246.B14835@plato.local.lan>
-References: <20010920150939.32251@smtp.adsl.oleane.com>
 Mime-Version: 1.0
-In-Reply-To: <20010920150939.32251@smtp.adsl.oleane.com>; from benh@kernel.crashing.org on Thu, Sep 20, 2001 at 05:09:39PM +0200
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <p05100304b7d00bd21d35@[10.0.0.42]>
+In-Reply-To: <3BAA4F46.1020002@mc.com>
+References: <20010920171002.37DCA2B54A@marcus.pants.nu>
+ <3BAA363B.5010400@mc.com> <8xlmj9psnw.fsf@s62.informatik.uni-bremen.de>
+ <3BAA4F46.1020002@mc.com>
+Date: Thu, 20 Sep 2001 18:46:37 -0700
+To: Mark Salisbury <mbs@mc.com>,
+	Holger Bettag <hobold@Informatik.Uni-Bremen.DE>,
+	linuxppc-dev@lists.linuxppc.org
+From: "Timothy A. Seufert" <tas@mindspring.com>
+Subject: Re: ppc LE questions (seeking help hand info pointers)
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Sep 20, 2001 at 05:09:39PM +0200, Benjamin Herrenschmidt wrote:
-> Hi all !
+At 4:19 PM -0400 9/20/01, Mark Salisbury wrote:
+>Holger Bettag wrote:
 >
-> The maintenance of yaboot releases & packaging will now be handled by
-> Ethan Benson. He should shortly release 1.3 (which is the same as 1.2.5
-> code wise for those who caught it), the version bump is here to avoid
-> confusion with versions I released.
+>>  You are aware that a PPC in little endian mode is merely tricking with the
+>>  low order address bits, but does not actually lay out its data in a little
+>>  endian fashion in physical memory?
 >
-> The archives of older versions on my page will remain, users should
-> however now get their versions from Ethan, I'll let him explain that all.
+>not according to section 3.1 of the motorola ppc "green book"
+>
+>according to that it is a sort of munged le representation,
 
-Basically the main goal of this is to merge ybin and yaboot into a
-single unified source tree.  In the past yaboot contained virtually no
-documentation and no userland installation and configuration tools,
-those were only part of the ybin distribution.  Now both ybin and
-yaboot are part of the same source tree, which I will call yaboot.
+Nope.  Read section 3.1 very carefully.  Data in memory is still
+organized in BE order.  Another reference: 9.3.2 in the MPC7400
+manual.
 
-The distribution pages will be:
+The "munging" plays with low order address bits in an attempt to make
+porting LE software easier.  When software tries to access a
+multibyte data item with a granularity other than that native to the
+data (e.g. a library routine for printing FP numbers which accesses
+floats & doubles a byte at a time), it assumes either LE or BE
+offsets within the larger data item.  Munging makes it possible to
+run software that assumes LE internal offsets even though the
+processor and memory layout are BE.
 
-http://www.alaska.net/~erbenson/yaboot
+>which thanks to a "one trick pony" PCI bridge looks like standard LE to
+>the PCI based  x86 host.
 
-and http://penguinppc.org/usr/yaboot
+As a hardware guy, I recommend that (if you have not done so already)
+you get with your hardware guys and make Really, Really Sure that the
+PCI bridge actually can translate PPC pseudo-LE address munging to
+real LE.  It will have to demunge/munge addresses that travel through
+the bridge *and* swap bytes.
 
-the old ~erbenson/ybin and /usr/ybin links will continue to work
-indefinitly, you will however get the exact same page (they are just
-symlinks now).
+IMO, munging is likely to make your life (and that of all who use
+your platform with munging turned on) harder rather than easier.
 
-Before ybin-X.Y.Z.tar.gz required no compilation since ybin is writtin
-in sh rather then C, now that this is a single tree containing yaboot,
-you will have to compile the source to get binaries, if this is
-impossible i have also provided a binary tarball dist
-yaboot-binary-X.Y.Z.tar.gz.  I highly recommend compiling and
-installing from the source tarball over the binary tarball however.
+Actually, even just swapping in the bridge is likely to do that too,
+unless you have enough control over when the bridge swaps to restrict
+it to very specific things.  (e.g. if you can tell it "swap
+everything in this address region with a granularity of 32 bits",
+that's useful, but "swap everything" is likely to be a pain.)
 
-the source tree is in the yaboot-1.3.tar.gz tarball, precompiled
-binary dist is in yaboot-binary-1.3.tar.gz
+>understand please that what I am proposing is a config option. as a
+>sub-architecture port.  it would not affect any code that it didn't
+>absolutely need to, and would only be compiled if sombody selected that
+>particular config.
 
-Distributions who have in the past distributed separate ybin and
-yaboot packages should merge them into a single yaboot package.
+I don't think anybody had assumed otherwise, but the thing is that
+given the way it works, PPC LE would require large changes in the
+kernel tree regardless.  Linux has the infrastructure needed to
+support LE and BE architectures, but has none for anything like PPC
+LE mode.  I submit that the changes necessary are unlikely to be
+accepted into standard trees, because it will uglify huge swaths of
+code in order to support a CPU mode that can best be described as a
+bizarre hack.
 
-As I have done in the past these tarballs are signed with my GnuPG
-key, verifying these signatures is as always highly recommended.
+(Specifically: in order to support PPC-LE, all the hardware drivers
+needed for your platform will need to be rewritten to be aware of
+munging.  The alternative is to make the kernel run in regular BE
+mode while some or all of userspace runs in the hack mode, but *that*
+requires an astounding ugliness: a translation layer sitting between
+the kernel and userland.)
 
-The current web page is still mostly the same as the ybin page, I will
-eventually redo this, and probably rewrite the README (which is also
-pretty much just ybin's).  these are non-technical merging issues
-however.
+I'm pretty certain PPC-LE would require modifications to the toolchain too.
 
-I have released version 1.3, it's available at the above URLs.  I will
-probably release a 1.3.1 within the next day or two to change a couple
-aspects about the binary dist tarball (don't include ./etc/yaboot.conf).
 
-comments and suggestions are welcome, flames should go to /dev/null.
 
-Enjoy.
+Finally, Book E has been mentioned.  I read through the relevant
+stuff and it looks to me like Book E PowerPC does offer a useful
+feature: a TLB entry bit (bit 'E' for endian) which marks a page as
+little endian.  The semantics are that a regular load/store whose
+effective address lies inside a page with bit E set operates like a
+byteswapping form of the same load/store instruction, and vice versa.
+Advantage compared to simply using the byteswapping forms of the
+instructions: you get the full range of load/store instructions
+rather than just the subset that have explicit byteswapping variants,
+and no use of assembly or funky compiler tricks is required when
+writing code to access such a memory region.
 
+Unfortunately, Book E does not guarantee that the 'E' TLB entry bit
+is really supported in hardware: the CPU may have to take exceptions
+to emulate it.  Even when hardware support is there, they still allow
+for implementations that must take an exception to perform a static
+mode switch whenever a page differing in endianness from the last
+memory access is touched.
+
+But so far as I can tell, the 750, 7400, 7450, etc. are not Book E
+PowerPC, so the only thing they have is the MSR[LE] mode bit (address
+munging).
+
+Too bad this part of Book E wasn't in the architecture from the start...
 --
-Ethan Benson
-http://www.alaska.net/~erbenson/
+Tim Seufert
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
