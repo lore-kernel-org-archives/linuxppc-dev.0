@@ -1,16 +1,40 @@
-Message-ID: <040a01c0d754$1bf6d5c0$4b00000a@foolio1>
-From: "Eli Chen" <eli@routefree.com>
-To: "Dan Malek" <dan@mvista.com>
-Cc: "Gabriel Paubert" <paubert@iram.es>,
-	<brian.kuschak@skystream.com>, <linuxppc-embedded@lists.linuxppc.org>
-References: <Pine.HPX.4.10.10105072359470.22253-100000@gra-ux1.iram.es> <3AF72CA8.52163E55@mvista.com> <03a001c0d74e$60022c70$4b00000a@foolio1> <3AF73161.26986237@mvista.com>
-Subject: Re: dcache BUG()
-Date: Mon, 7 May 2001 17:16:20 -0700
+Message-ID: <B25E2E5A003CD311B61E00902778AF2A02044642@SERVER1>
+From: Brian Kuschak <brian.kuschak@skystream.com>
+To: "'Eli Chen'" <eli@routefree.com>, Dan Malek <dan@mvista.com>
+Cc: Gabriel Paubert <paubert@iram.es>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: dcache BUG()
+Date: Mon, 7 May 2001 17:40:48 -0700 
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+The PPC 405GP manual (Aug 2000) from IBM's website states this in Table A1 -
+Instruction Syntax Summary:
+
+stwcx.	RS, RA, RB
+Store word (RS) in memory at EA=(RA|0) + (RB) only if reservation bit is
+set.
+if RESERVE = 1 then
+	MS(EA,4) <- (RS)
+	RESERVE <- 0
+	(CR[CR0]) <- 0 || 1 || XERso
+else
+	(CR[CR0]) <- 0 || 1 || XERso
+
+Looks like the reservation address is not used for the 405.
+-Brian
+
+
+-----Original Message-----
+From: Eli Chen [mailto:eli@routefree.com]
+Sent: Monday, May 07, 2001 5:16 PM
+To: Dan Malek
+Cc: Gabriel Paubert; Brian Kuschak; linuxppc-embedded@lists.linuxppc.org
+Subject: Re: dcache BUG()
 
 
 > F**K...that's what I was looking for.  What manual is that in?
@@ -37,6 +61,5 @@ I searched through the 405GP user manual, and it makes no mention of if it
 checks the reservation address or not, just like you said.
 
 Eli
-
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
