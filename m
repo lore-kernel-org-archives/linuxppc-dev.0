@@ -1,41 +1,25 @@
-Message-ID: <20000524160640.E9100@lx.c-side.com>
-Date: Wed, 24 May 2000 16:06:40 -0700
-From: Neil Russell <caret@c-side.com>
-To: Dan Malek <dan@netx4.com>
-Cc: diekema_jon <diekema@bucks.si.com>, all@cideas.com,
-        linuxppc-embedded@lists.linuxppc.org
+Message-Id: <m12ukeM-001SyaC@bucks>
+From: diekema@bucks.si.com (diekema_jon)
 Subject: Re: Floating Point problems with Linux on the EST SBC8260
-References: <20000524134257.A9100@lx.c-side.com> <m12uikI-001SyaC@bucks> <20000524150506.D9100@lx.c-side.com> <392C5713.1C921311@embeddededge.com>
-Mime-Version: 1.0
+To: caret@c-side.com (Neil Russell)
+Date: Wed, 24 May 2000 19:33:18 -0400 (EDT)
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <20000524150506.D9100@lx.c-side.com> from "Neil Russell" at May 24, 2000 03:05:06 PM
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <392C5713.1C921311@embeddededge.com>; from Dan Malek on Wed, May 24, 2000 at 06:26:27PM -0400
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, May 24, 2000 at 06:26:27PM -0400, Dan Malek wrote:
-> You should be able to lift the driver from the 2.3.99 kernel and make
-> a couple of minor modifications.  There are just a couple of obvious
-> places where the kernel/driver interface changes (synchronization points),
-> and then add the 8260 interrupt and cache snooping changes.  It may be
-> easier to take the 8xx enet.c driver from 2.2.13 and apply 8260 changes.
+From: Neil Russell <caret@c-side.com>
 
-I'm taking the 2.2 version and going from there, as I did with the SMC driver.
+> My development environment is a G3 blue and white MAC, running Linux 1999 Q3.
+> I compile the kernel native on that machine.  All applications that I
+> use are directly from that CD.  I make a RAM disk image that I download
+> to the board.  This RAM disk has very little in it.
 
-> Are you using SMC1 for the console?  Is this a custom board?
+What files are contained in the RAM disk image, and how big is it?  Do
+you statically link your application to avoid packaging the libraries?
 
-console = SMC1.  First ported to SBC8260 (EST board), then to custom h/w.
-The custom h/w has an IDE interface;  I hope to get the whole linux-1999 Q3
-working on it;  that should be interesting.
-
-> Do you want any of the work patched into 2.2.15 or 2.3.99?
-
-Sure!  It might be a few weeks though...
-
-
-Neil.
-
---
-Neil Russell <caret@c-side.com>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
