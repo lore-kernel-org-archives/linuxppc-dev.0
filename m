@@ -1,35 +1,43 @@
-Message-ID: <19991208230549.2008.qmail@web302.mail.yahoo.com>
-Date: Wed, 8 Dec 1999 15:05:49 -0800 (PST)
-From: Brian Kuschak <bkuschak@yahoo.com>
-Subject: Re: PowerPC 4xx Port Progress
-To: Grant Erickson <grant@lcse.umn.edu>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Good embedded board to start with
+To: mak@icon.fi (Mika Kuoppala)
+Date: Thu, 9 Dec 1999 11:09:36 +1100 (EST)
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <Pine.LNX.4.10.9912082231580.21860-100000@atom.icon.fi> from "Mika Kuoppala" at Dec 8, 99 11:17:57 pm
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Message-Id: <19991209000936.55B7D118BA@elph.research.canon.com.au>
+From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->   POSIX conformance testing by UNIFIX
-> 
-> Then it runs off into nowhere land which isn't too
-> surprising considering
-> that there are a lot of holes yet.
+Mika Kuoppala writes:
+> What would be a good board to purchase just to 
+> get newbie's feet wet in this embedded ppc world ?
 
->   o Timer code is probably wrong, BogoMIPS seems
-> low.
+We're using a couple of Embedded Planet CLLF boards for this kind of
+evaluation/development work. They give you a nice small complete CPU subsystem
+which you can plug a custom daughter card into if you've got special hardware.
+No need to re-invent the wheel. The Bright Star IP Engine has an onboard FPGA
+and was our second choice, but it doesn't support the 860T so we went with the
+CLLF. Either one would meet the requirements you listed. There's a learning
+curve but it's not steep if you already know Linux. For the most part this
+stuff "just works" and the people on the mailing list are incredibly helpful.
 
-Grant,
+> If things get much easier by buying some ppc based development
+> machine to compile things for the board (some mac or imac or other ppc
+> workstation), it is an option too.
 
-I'm not familiar with the 4xx core, but I ran into
-similar trouble with the 8xx CPUs.  I found that I
-wasn't setting the ICTRL and DER registers.  The core
-is serialized by default, which could explain the low
-Bogomips rating (see the ICTRL reg).  If the DER is
-set incorrectly, you may enter debug mode instead of
-your exception vectors for various exceptions.  This
-caused my target to crash.
+If all other things are equal, a PPC based development machine will save you
+cross-compiling and let you run the same binaries on the board, lessening your
+development pain. For various reasons we've chosen to cross-develop from
+Linux x86, and it's certainly still doable either way.
 
-Brian
+> Am i totally in too deep waters with this ?
 
+No way; go for it!
+
+Regards,
+Graham
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
