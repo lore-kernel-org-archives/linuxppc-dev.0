@@ -1,46 +1,28 @@
-Message-ID: <382FD386.5BCEBF84@agelectronics.co.uk>
-Date: Mon, 15 Nov 1999 09:33:58 +0000
-From: Adrian Cox <apc@agelectronics.co.uk>
+Message-ID: <382FDE6B.4A758279@schweiz.ch>
+Date: Mon, 15 Nov 1999 11:20:38 +0100
+From: Andreas Tobler <a.tobler@schweiz.ch>
+Reply-To: a.tobler@schweiz.ch
 MIME-Version: 1.0
-To: "David W. Patmore" <dwp@bluesteelnet.com>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: G4 + Linux + PCI device + x86 driver = 0
-References: <NDBBKOPFGLPEGICBJFDIAEDMCCAA.dwp@bluesteelnet.com>
+To: Linux -Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: kernel 2.3.27/28 ?
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"David W. Patmore" wrote:
-[snip]
-> The original x86 (Redhat 6.0) driver uses virt_to_bus() to get the address
-> to write to.  In LinuxPPC, that function is not available (not in name
-> table).  I guess that I'm supposed to use ioremap(), but that doesn't seem
-> to do it for me either.
+Hi,
 
-You should include <asm/io.h>. But virt_to_bus(), phys_to_virt(), and
-their relatives, only apply to RAM.
+has anybody had success with a kernel 2.3.27/28 on a PowerMac?
+I can build both after some modifications in driver/net/setup.c. But it
+doesn't boot. It hangs with saying 'booting...' On a 7200 and on a
+wallstreet I.
+A 2.3.26 I got to boot. But now I don't know where to look for the boot stuff.
+When hanging in the beginning, which part of code is responsible for
+that? Is it in pmac_setup init etc? 
 
-> Code snip:
->         ul_reg_addr = p_dev->base_address[0];
-> 
->         pul_remapped =ioremap( ul_reg_addr, 32 );
-> 
->         printk( "pcidrv: base addr %08X \n", ul_reg_addr );
->         printk( "pcidrv: pul_remapped %08X \n", pul_remapped );
->         printk( "pcidrv: remapped data: %08X \n", *pul_remapped );
-> 
->         iounmap( pul_remapped );
+Thanks for any hint.
 
-Note that as a general principal of cross platform Linux programming,
-the thing returned by ioremap is not a true pointer, and should only be
-used with readl(), writel(), etc.
 
-These are not your problem - the problem is most likely the device not
-being enabled by the boot firmware. This may mean that 
-(1) The PCI fixup code is broken on the G4s.
-(2) The device has unusual startup requirements.
-
-- Adrian Cox, AG Electronics
+Andreas
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
