@@ -1,53 +1,47 @@
-Message-Id: <200006212008.WAA24859@denx.local.net>
-To: Lucinda Schafer <lucsch@adaptivemicro.com>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Software Emulation Kernel Panic--specific information 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 21 Jun 2000 12:26:58 CDT."
-             <A109131318C4D1119AC20060088DECE330F493@amwmail.adaptivemicro.com>
-Date: Wed, 21 Jun 2000 22:08:27 +0200
+Message-ID: <20000622010704.23884.qmail@web2105.mail.yahoo.com>
+Date: Wed, 21 Jun 2000 18:07:04 -0700 (PDT)
+From: Wentao Xu <xuwentao@yahoo.com>
+Subject: About redwood
+To: benb@m2tech.co.nz
+Cc: linuxppc-embedded@lists.linuxppc.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <A109131318C4D1119AC20060088DECE330F493@amwmail.adaptivemicro.com>
-Lucinda Schafer wrote:
->
-> The NIP, LR, and TRAP always seem to be set to the same values (others
-> vary). I assume those values are physical addresses.
+Ben,
 
-No. All these are virtual addresses.
+It is great to get your msg. Yes, my board is
+redwood3.
+It has these components:
 
-> If so, from System.map, the NIP seems to be between c0001f00 t Trap_1f and
-> c0002000 T transfer_to_handler.
+• Philips IC (Smartcard) Card Interfaces (TDA8002 and
+TDA8004)
+• Crystal Semiconductor Multi Standard Infrared
+Transceiver (CS8130)
+• 4M x 16 DRAM Chips (2 components are used for 32 bit
+mode, 1 for 16 bit mode)
+• SDRAM Memory Chips (4M x 16, 2 chips)
+• 2 AMD Am29F800B 1MB Flash ROMs for a total of 2 MB
+(socket for 1 Flash in 16 bit
+mode)
+• National Ethernet Controller (DP83902AV)
+• Programmable Logic
+– Xilinx FPGA (XC5210 and XC3142)
+– PLD (XC9536) - controls IDE and Ethernet interfaces
+• Xicor 2KB I2C EEPROM (X24165S)
+• 27 MHz VCXO
+• IBM31T1100A IR transceiver
+• Siemens SFH 506-38: IR receiver/38 KHz demodulator
+• MAXIM MAX562: Serial RS-232 level conversion for
+16550 UART2
+• Rockwell 2400 baud socket modem SF224ATF
+• ATMEL AT45D021 2MB Serial FLASH
 
-It should be obvious that 0xCxxxxxxx is a virtual address.
+I am looking forward to your further help.
 
-> I can't make sense of this, since I don't fully understand what the
-> relationship of NIP and LR are.  Does the LR address refer to the return
-> address after the exception? Does this mean the exception happened in the
-> Decrementer timer interrupt? Why is the NIP set to a value between Trap_1f
-> and transfer_to_handler?
+Wentao
 
-NIP means "Next Instruction Pointer" and contains the address of  the
-statement following the one that caused the exception; LR is the link
-register and contains the return address = the address where executun
-continues when you return from the current function.
-
-So in simple words: NIP-4 gives the IP (Intruction  Pointer)  aka  PC
-(Program  Counter), and LR-4 is the place where your current function
-was called.
-
-Hope this helps,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-To get something done, a committee should consist  of  no  more  than
-three men, two of them absent.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
