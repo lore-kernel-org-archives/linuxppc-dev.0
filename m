@@ -1,18 +1,18 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.173]) by ozlabs.org (Postfix) with ESMTP id 10D9967A84
+Return-Path: <typedef@eircom.net>
+Received: from eurodubx.europlex.local (mail.europlex.ie [83.141.76.10])
+	by ozlabs.org (Postfix) with ESMTP id 9011967A7F
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 29 Mar 2005 18:35:01 +1000 (EST)
-Message-ID: <42491419.4070405@anagramm.de>
-Date: Tue, 29 Mar 2005 10:38:49 +0200
-From: Clemens Koller <clemens.koller@anagramm.de>
+	Tue, 29 Mar 2005 20:17:22 +1000 (EST)
+Message-ID: <42492C93.2060906@eircom.net>
+Date: Tue, 29 Mar 2005 11:23:15 +0100
+From: Bryan O'Donoghue <typedef@eircom.net>
 MIME-Version: 1.0
-To: "Wimer, Walt" <walt.wimer@timesys.com>,
-	linuxppc-embedded@ozlabs.org
-References: <1111705036.15834.29.camel@excalibur.timesys.com>
-In-Reply-To: <1111705036.15834.29.camel@excalibur.timesys.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Subject: Re: PCI support under 2.6.11.4 on MPC8272ADS ???
+To: bdonadt@arabellasw.com
+References: <NEBBIHDFOLIPIPJAKJAMMELCGEAA.bdonadt@arabellasw.com>
+In-Reply-To: <NEBBIHDFOLIPIPJAKJAMMELCGEAA.bdonadt@arabellasw.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: 'linuxppc-embedded ' <linuxppc-embedded@ozlabs.org>
+Subject: Re: MPC885 CryptoApi support.
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,60 +23,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Walt!
+Bruce Donadt wrote:
 
-> Using Vitaly's 2.4-based patch below as a starting point, I've been
-> adding PCI support to 2.6.11.4 for the MPC8272ADS board.
+> To answer the original question. The code is provided under a GPL license to
+> companies that purchase a subscription to the Arabella Linux distribution.
+> We have invested many man months in developing a commercial grade security
+> solution for the PowerQUICCs and all of it has been written from the ground
+> up. You are correct when you say that none of this is included in our "free"
+> evaluation kit.
 > 
-> The good news is that I think I have PCI interrupts pretty well sorted
-> out, and I see *something* half-way reasonable from "lspci".
+> Best Regards,
 > 
-> The bad news is that neither of the ethernet cards that I'm trying will
-> actually work, and I see some very weird behavior with PCI configuration
-> space:
-> 
->   Card 1:  Some Realtek RTL8139D-based card
->   Card 2:  NETGEAR FA311 (National Semi DP83815 chip)
-> 
-> With either card installed alone, both U-Boot and my kernel identify the
-> cards correctly in PCI configuration space.
-> 
-> With *both* cards installed, both U-Boot and my kernel see the Realtek-
-> based card correctly, but the NETGEAR card has a corrupted Vendor ID
-> (e.g. 0x1000 or 0x1003 instead of the correct 0x100b).  This happens
-> regardless of which PCI slots I use for the cards (I've tried virtually
-> every combination).  This smells of a power problem or something to me.
+> Bruce
 
-Check your ADx-IDSEL connections (resistors, 220 Ohms) on the PCI Bus.
-I had _two_ AD lines connected to _one_ IDSEL which means that two
-AD lines are 'shorted' over 440Ohm which lead to data corruption on the 
-PCI bus. Check your schematics and the boards.
+Don't mean to start an argument or unnecessarily continue a discussion, 
+Bruce, but, GPL=/the right to fork/.
 
-Maybe one of your card's PCI pad drive strength (like with the SM501
-Voyager GX (where it is programmable)) isn't strong enough to drive
-against the resistors in between the AD lines (which would explain that 
-the problems get worse with 'more' cards plugged in).
+If it is the case that you have provided a GPL-Arabella-Linux-Kernel, to 
+a customer and all the code is GPL compliant, then that customer, is 
+*free* to fork and/or redistribute that code, which seems like a bit of 
+an oxymoron, for a commercial offering !
 
-> And again, even with either card alone, the drivers have serious
-> problems talking to the cards.  I get various error messages from
-> the drivers and I see badly mangled packets on the wire.  It's also
-> not uncommon for the whole system to freeze...
 
-Smells like data corruption on the bus... the behaviour you describe
-is exactly as on mine system. (MPC8540 with SM501 Graphics Board
-and Promise IDE Ctrl. on PCI)
-
-Best greets,
-
--- 
-Clemens Koller
-_______________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Str. 45/1
-81379 Muenchen
-Germany
-
-http://www.anagramm.de
-Phone: +49-89-741518-50
-Fax: +49-89-741518-19
+--
+Best
+Bryan
