@@ -1,14 +1,36 @@
-Message-ID: <C08678384BE7D311B4D70004ACA3710511194662@amer22.avnet.com>
-From: "Kerl, John" <John.Kerl@Avnet.com>
-To: "'brian.auld@adic.com'" <brian.auld@adic.com>,
-	"'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <8D7C5F56B409554D9D46AC22195807F3061C1F@exchwenz01.dmcwave.co.nz>
+From: Rod Boyce <rod_boyce@stratexnet.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
 Subject: RE: Need IDE for embedded Linux project
-Date: Tue, 21 Jan 2003 15:14:17 -0700
+Date: Wed, 22 Jan 2003 11:26:07 +1300
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+There is much more administration to a development machine than a server.
+You also have to know how to restart dead tasks.  Find out why you keep
+running out of message queues.  Cope with funny sockets.  I'm a device
+driver developer who also looks after the administration.  We were a window
+shop in the beginning but many of us have Linux experience from home and
+other jobs.  I would check around the developers and IT staff you might be
+surprised the depth of Linux knowledge you actually have.
+
+Also I cannot recommend enough the RedHat system administration courses.  I
+went from a talented armature to a good sysadmin.  I also have the sysadmin
+down to about 4 hours a week.  Cron is your friend you will end up using it
+in unusual ways to solve little querks.
+
+Regards,
+Rod Boyce
+
+ -----Original Message-----
+From: 	Kerl, John [mailto:John.Kerl@Avnet.com]
+Sent:	Wednesday, 22 January 2003 11:14 a.m.
+To:	'brian.auld@adic.com'; 'linuxppc-embedded@lists.linuxppc.org'
+Subject:	RE: Need IDE for embedded Linux project
 
 
 An important issue to address (perhaps the most important,
