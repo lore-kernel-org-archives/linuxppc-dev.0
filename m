@@ -1,37 +1,56 @@
-Message-ID: <39CBAA3C.2CC16A34@wanadoo.fr>
-Date: Fri, 22 Sep 2000 20:51:40 +0200
-From: Martin Costabel <costabel@wanadoo.fr>
+Message-ID: <39CBBBA9.38DB93DF@mvista.com>
+Date: Fri, 22 Sep 2000 13:06:01 -0700
+From: Frank Rowand <frank_rowand@mvista.com>
+Reply-To: frowand@mvista.com
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-CC: Benjamin Herrenschmidt <benh@mipsys.com>
-Subject: Re: Re; 2.4.0-test9 on B&W G3
-References: <20000922164705.32547@mail.mipsys.com>
+To: Dan Malek <dan@mvista.com>
+CC: Geert Uytterhoeven <geert@linux-m68k.org>, paulus@linuxcare.com.au,
+        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: __ioremap_at() in 2.4.0-test9-pre2
+References: <Pine.LNX.4.10.10009221356470.377-100000@cassiopeia.home> <39CBA90A.58092A25@mvista.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
+Dan Malek wrote:
 >
-> >I have also been seeing the same old 'lost interrupt' problem when trying
-> >to boot a B&W G3 using the latest yaboot (0.8) on the latest pmac-devel
-> >rsync kernel.  I was wondering if this was a know bug with the latest 2.4
-> >tree kernel's.  I also booted the same kernel on a new G4/450 with no
-> >problems.
+> Geert Uytterhoeven wrote:
 >
-> I have a fix for that too. I'll push it as soon as I have access to bk again.
-> In the meantime, apply enclosed changeset to the current linuxppc_2_3 bk tree.
+> > But you suggested the use of the MMU to map all I/O spaces from all bridges
+> > into one merged and consecutive universal I/O space.
+>
+> Well, Paul is suggesting that, I don't really care and I think it
+> is a detail that doesn't matter.  I prefer the approach:
+>
+>         addr_to_use = tell_me_where()
+>         inb(addr_to_use)
+>
+> but I guess I am wrong on this :-).  Everyone seems to like hacking
+> addresses either in the PCI resources structures or within the macros
+> rather than doing it as a one time operation in some well contained
+> platform specific function.  I already know I can't use a simple
 
-Glad to hear that the linuxppc_2_3 bk tree is not dead. I was just going
-to ask about it, because since 2 weeks it has remained at -test8 which
-is feared for its terrible mailbox-eating habits.
+I've been staying out of this discussion because I didn't want to just add
+noise.  But what the heck...  I think that the flexibility of the
+tell_me_where() approach is very appealing.  It allows for arbitrary future
+designs of hardware topologies, including complex fabrics.  (OK, so I don't
+know of any planned fabric designs for PowerPC, just other architectures.)
 
-On the other hand, I am running a kernel obtained from this tree by
-applying just the "official" test9-pre1 patch, and I have now an uptime
-of 4 days, 22:02. This is the longest uptime I ever had with a 2.3/4
-kernel. No spontaneous freezes so far <knocking on wood>.
+I do know that the IBM 405 processors have split PCI I/O space into two
+non-contigous blocks in the physical address map.  My current implementation
+only allows access to the first block.  Adding the second block is going
+to be a bit "painful" (extra code complexity, etc) for me.
 
+
+> mapping/arithmetic solution on a platform I have, so I am going to
+> pay a high penalty for people using in/out on PCI I/O space.  Fortunately,
+> I can use drivers for devices that have PCI memory, although I will
+> have to modify them, and most of the drivers will be new and unique.
+
+-Frank
 --
-Martin
+Frank Rowand <frank_rowand@mvista.com>
+MontaVista Software, Inc
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
