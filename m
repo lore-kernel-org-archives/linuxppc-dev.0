@@ -1,19 +1,19 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao07.cox.net (fed1rmmtao07.cox.net [68.230.241.32])
-	by ozlabs.org (Postfix) with ESMTP id A880967A46
+Return-Path: <kato.takeharu@jp.fujitsu.com>
+Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
+	by ozlabs.org (Postfix) with ESMTP id 7DDFC67A6B
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Mar 2005 10:18:06 +1100 (EST)
-Date: Wed, 16 Mar 2005 16:18:00 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Kumar Gala <kumar.gala@freescale.com>
-Message-ID: <20050316231800.GD8345@smtp.west.cox.net>
-References: <20050316221402.GA8345@smtp.west.cox.net>
-	<97927672280934c417f3e8fceb7a144b@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <97927672280934c417f3e8fceb7a144b@freescale.com>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: 440EP FPU patch
+	Thu, 17 Mar 2005 11:36:52 +1100 (EST)
+Message-ID: <4238D118.1000608@jp.fujitsu.com>
+Date: Thu, 17 Mar 2005 09:36:40 +0900
+From: Takeharu KATO <kato.takeharu@jp.fujitsu.com>
+MIME-Version: 1.0
+To: Tom Rini <trini@kernel.crashing.org>
+References: <42331CA8.3030400@ybb.ne.jp>
+	<20050316222215.GC8345@smtp.west.cox.net>
+In-Reply-To: <20050316222215.GC8345@smtp.west.cox.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: galak@freescale.com, linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] compilation failure due to confliction of time_offset
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,15 +24,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 16, 2005 at 04:52:00PM -0600, Kumar Gala wrote:
+Tom:
 
-> I dont have either of these readily available at this point.
+Sorry, I did misunderstand about it.
+I'll fix this if nobody is working on this problem.
+
+Tom Rini wrote:
 > 
-> If you dont mind running it through when you get a chance.  However, is 
-> this going to test anything but FP?
-
-It's more of a funkiness test, just in case.
+> 
+> Are you certain that the 'time_offset' referenced in <linux/timex.h> is
+> what wants to be used in arch/ppc/kernel/time.c ?  Thanks.
+> 
 
 -- 
-Tom Rini
-http://gate.crashing.org/~trini/
+Takeharu KATO
+Fujitsu Limited
+Email:kato.takeharu at jp.fujitsu.com
