@@ -1,35 +1,97 @@
-To: Meriin Michael-BMM063 <Meriin@motorola.com>
-Cc: Estevam Fabio-R49496 <Fabio.Estevam@freescale.com>,
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <40BC1DBF.6050108@intracom.gr>
+Date: Tue, 01 Jun 2004 09:10:07 +0300
+From: Pantelis Antoniou <panto@intracom.gr>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Dan Malek <dan@embeddededge.com>,
+	Tom Rini <trini@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>,
 	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Internal Address multiplexing for MCP852 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sun, 30 May 2004 10:42:36 +0300."
-             <0F48024310E5D6118D200002B3A440DB08B07A15@zil01exm08.mcil.comm.mot.com>
-Date: Tue, 01 Jun 2004 01:57:01 +0200
-Message-Id: <20040531235706.1BA37C109F@atlas.denx.de>
+Subject: Re: [PATCH] fix TLB handling for 8xx on linuxppc-2.5
+References: <40BB42EF.10805@intracom.gr> <1086040829.1930.66.camel@gaston>
+In-Reply-To: <1086040829.1930.66.camel@gaston>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <0F48024310E5D6118D200002B3A440DB08B07A15@zil01exm08.mcil.comm.mot.com> you wrote:
+Benjamin Herrenschmidt wrote:
+
+>On Tue, 2004-06-01 at 00:36, Pantelis Antoniou wrote:
 >
-> I hope you are using U-boot as a bootloader.
-> So just try this SDRAM init (see attachment).
+>>Hi
+>>
+>>The following patch fixes the problems of 8xx with the latest
+>>linuxppc-2.5 tree.
+>>
+>>With it user space progresses properly.
+>>Lots of gray areas remain and MM handling for 8xx is
+>>mighty inefficient IMO.
+>>
+>>Dan could you please take a look?
+>>
+>
+>Ok, looks a bit weird on the edges.
+>
+>
+I agree :)
 
-Seemes you removed some code, including the write to the  mamr  which
-enables  the  refresh? The while init sequence seams a bit simplified
-to me - are you sure about this?
+>>Pantelis
+>>
+>>
+>>______________________________________________________________________
+>>diff -Nur --exclude=RCS --exclude=CVS --exclude=SCCS --exclude=BitKeeper --exclude=ChangeSet linuxppc_2.5/arch/ppc/kernel/head_8xx.S linuxppc_2.5-intracom/arch/ppc/kernel/head_8xx.S
+>>--- linuxppc_2.5/arch/ppc/kernel/head_8xx.S	Mon May 31 10:52:29 2004
+>>+++ linuxppc_2.5-intracom/arch/ppc/kernel/head_8xx.S	Mon May 31 17:24:05 2004
+>>@@ -157,6 +157,24 @@
+>> 	SAVE_2GPRS(7, r11)
+>>
+>> /*
+>>+if ((val & (_PAGE_HWWRITE | _PAGE_RW | _PAGE_DIRTY)) == (_PAGE_RW | _PAGE_DIRTY))
+>>+	val |= _PAGE_HWWRITE;
+>>+else if ((val & (_PAGE_HWWRITE | _PAGE_RW | _PAGE_DIRTY)) == _PAGE_HWWRITE)
+>>+	val &= ~_PAGE_HWWRITE;
+>>+*/
+>>
+>
+>I don't like the above. Things should be dealt with differently.
+>
+>The TLB handler itself should only care about _setting_ _PAGE_HWWRITE I
+>think when it's missing (oh, and dirty of course). The clearing should
+>be done on a per-PTE basis in ptep_get_and_clear_*, ptep_clear_*, etc...
+>along with the necessary TLB invalidate (hrm... can we invalidate
+>selectively instead of the whole thing ?)
+>
+Just setting HWWRITE is simple.
 
-Best regards,
+>
+>The tlbia in update_mmu_cache() doesn't look good. More like a
+>workaround for breakage in the implementation.
+>
+It is :)
 
-Wolfgang Denk
+When I tried a selective TLB invalidate it crashed
+in a spectacular way.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-I mean, I . . . think to understand you, I just don't know  what  you
-are saying ...                        - Terry Pratchett, _Soul Music_
+That lazy TLB stuff just gave the mm system a good shake and
+it came apart.
+
+>
+>Paul, any comment ?
+>
+>Ben.
+>
+>
+Regards
+
+Pantelis
+
+P.S.
+
+Perusing the headers I came across a comment that said swap is
+broken on 8xx. For some reason I need to fix it.
+Where can I go about looking?
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
