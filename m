@@ -1,32 +1,37 @@
-Reply-To: <acurtis@onz.com>
-From: "Allen Curtis" <acurtis@onz.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: ibm_ocp_enet.c - PHY implementation requirements?
-Date: Tue, 7 May 2002 07:15:19 -0700
-Message-ID: <NCBBIINEHIPFGJPLBEIFEEJNDGAA.acurtis@onz.com>
+Message-ID: <3CD7ED38.448C21D1@etx.ericsson.se>
+Date: Tue, 07 May 2002 17:05:28 +0200
+From: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: acurtis@onz.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: IBM ocp I2C circular dependency
+References: <NCBBIINEHIPFGJPLBEIFMEJMDGAA.acurtis@onz.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-We have an 405GP design, very similar to the Walnut LSP. One of the major
-differences is that we have a BroadCom 9-port switch instead of a dedicated
-PHY for Ethernet. Supporting the switch is much easier than a dedicated PHY
-because you can always assume:  100Mb, Full-Duplex and you do not have to
-handle disconnect and mode change interrupts. The problem is that the OCP
-Ethernet implementation has become much more complex and it is not obvious
-what must be supported when adding a new interface and what could be a stub.
-(and its expected result)
+Would that kind of problem not hang the process?? I don't see that.
 
-Another issue is that the switch supports both the MII and SPI interfaces.
-These are mutually exclusive, determined by first access to the device. Our
-design requires the use of the SPI interface. All currently supported PHY
-are MII, which is expected. Do you forsee any problems using SPI within
-ibm_ocp_phy.c?
+Allen Curtis wrote:
+>
+> I can not speak toward the modularization issue but if the i2c is anything
+> like the old 8260 version, change the interruptible_sleep_on() to
+> interruptible_sleep_on_timeout(). IMHO this is the easiest fix.
+>
+> -----Original Message-----
+> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Kenneth
+> Johansson
+> Also I found a problem with the code when I access a i2c memory from
+> userspace and no chip is present at that address. After that it's not
+> possible to access anything else on the I2C bus. Works OK as long as I use
+> addresses that have a device that answers (I think).
+>
 
-TIA
-
+--
+Kenneth Johansson
+Ericsson AB                       Tel: +46 8 404 71 83
+Borgafjordsgatan 9                Fax: +46 8 404 72 72
+164 80 Stockholm                  kenneth.johansson@etx.ericsson.se
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
