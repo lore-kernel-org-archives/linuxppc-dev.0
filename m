@@ -1,49 +1,29 @@
-Message-ID: <000a01c07601$5c3b7820$bf0102c8@sc.mcel.mot.com>
-From: "Rolf Liu" <rolfl@sc.mcel.mot.com>
-To: "Gary Thomas" <gthomas@redhat.com>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-References: <XFMail.20010103201404.gthomas@redhat.com>
-Subject: Re: separate kernel as code segment and data segment for linux p
-Date: Thu, 4 Jan 2001 11:49:36 +0800
+Message-ID: <3A53F52A.9F49CCAD@iiic.ethz.ch>
+Date: Thu, 04 Jan 2001 04:59:38 +0100
+From: Michel Dänzer <michdaen@iiic.ethz.ch>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-dev@lists.linuxppc.org
+Subject: problems when recompiling dmasound modules
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
------ Original Message -----
-From: Gary Thomas <gthomas@redhat.com>
-To: Rolf Liu <rolfl@sc.mcel.mot.com>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Sent: Thursday, January 04, 2001 11:14 AM
-Subject: RE: separate kernel as code segment and data segment for linux p
+Whenever I rebuild my linux-pmac-devel tree when the kernel version changed I
+get bitten by this:
+
+The sound modules don't get rebuilt so their version doesn't match the kernel
+version and they can't be insmoded.
+
+I can investigate to find a solution myself but I figured it should be easier
+for Geert or one of the other dmasound hackers to fix it.
 
 
->
-> On 04-Jan-2001 Rolf Liu wrote:
-> >
-> > Hi,all,
-> > I am planning to run linux-ppc on ppc823 FADS board.
-> > As all know, the kernel is resided in flash rom, then upon power-on,
-kernel
-> > is copied to RAM.
-> > I wonder if I can just put data segment to ram and leave code segment to
-> > FLASH, just as uClinux
-> > has done. such method will save some ram space, which makes sense on
-> > embedded solutions.
-> > Can you give me a hint how to realize it ?
-> > Any suggestion is appreciated !
->
-> This method is called XIP (for execute in place) and is available on
-> some other architectures.  I don't know what it would take for the PPC,
-> but you could look at the work done on the Hitachi SH - I know it's
-supported
-> there.
-Thanks a lot !
-but where can I find the work about "Hitachi SH - " ?
-Is there some data accessable through www ?
-Best Regards
+Michel
 
+
+--
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and The DRI Project
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
