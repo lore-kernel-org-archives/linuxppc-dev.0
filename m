@@ -1,64 +1,145 @@
-Date: Wed, 15 Sep 1999 18:15:24 -0500
-From: erik cameron <cameron@senta.uchicago.edu>
-To: Ethan Benson <erbenson@alaska.net>
-Cc: Kevyn Shortell <kevyn@apple.com>, Benjamin Herrenschmidt <bh40@calva.net>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: New booter
-Message-ID: <19990915181524.C10558@senta.uchicago.edu>
-References: <19990915113905.031280@mailhost.mipsys.com> <v04210108b4051bfbea54@[192.168.0.1]> <v04210103b4058cbb5883@[17.203.21.242]> <v04210102b405ce2cdefb@[192.168.0.1]>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <v04210102b405ce2cdefb@[192.168.0.1]>
+Message-Id: <v04210106b405d3d533a4@[192.168.0.1]>
+In-Reply-To: <v0313030ab405d00a6b8a@[17.202.21.235]>
+References: <v03130302b40589d1f8f6@[17.202.21.235]>
+ <v04011701b404e6cd4493@[199.174.193.101]>
+ <v04011701b404e6cd4493@[199.174.193.101]>
+ <v03130302b40589d1f8f6@[17.202.21.235]>
+ <v0313030ab405d00a6b8a@[17.202.21.235]>
+Date: Wed, 15 Sep 1999 15:19:40 -0800
+To: Peter Bierman <bierman@apple.com>, linuxppc-dev@lists.linuxppc.org
+From: Ethan Benson <erbenson@alaska.net>
+Subject: Re: New booter
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Sep 15, 1999 at 02:37:35PM -0800, Ethan Benson wrote:
-> anything more then a update to lilo at most.  not a whole new machine 
-> or a kludge like creating dedicated partitions just to bootstrap your 
-> OS.
+On 15/9/99 Peter Bierman wrote:
 
-i think people were referring to the syslinux/loadlin type setup, rather 
-than using lilo straight out off of a bootable partition.
+>The bootblock on a Macintosh is specified as a structure in an HFS filesystem.
 
-> >Linux as a OS, has more kludge factor than anything else on the planet
-> >and it works, people use it, life goes on.
-> 
-> I disagree
+therein lies the problem....
 
-maybe not some versions, currently.  and maybe at some point it won't be
-kludgy at all.  but what's more kludgy, BootX or a small HFS partition that
-nobody knows is there?  parts of linux *are* still kludgy; this is true.  I
-disagree with the assertation that it is "more kludgy than anything else 
-on the planet," but i'd prefer it to be ugly and work than beautiful and 
-useless.
+>So I'm not sure what you mean then by the "bootblock of the disk".
 
-> unless you keep an old crufty HFS partition laying around wasting 
-> space to boot.
+on intel machines disks are typically use the very first 512 bytes on 
+a disk as a bootblock and partition table, the bootblock portion of 
+this is something like 446 bytes long, the BIOS when booting the 
+machine has a boot device specified all it does it load that 446 
+bytes into memory and execute it that code could be the NT loader the 
+old DOS/win95 loader or it could be LILO, that code then can do 
+whatever it need to do.  in lilos case it loads its second stage 
+loader from the root filesystem and that takes care of loading the 
+kernel, if you replace ext2fs with xfs all that needs updating is 
+possibly the second stage LILO.  no specific partition or filesystem 
+is needed and the BIOS does not care what filesystem you use.
 
-a machine running ODS does the same thing to store metadevice info; if you're 
-booting off of a metadevice, (and god only knows why you would be, but it happens
-a lot) you're doing the same thing.  i've seen a lot of machines that could
-hardly called kludgy using this setup exactly.  the point is simply that if it
-works, it works, and it makes the machine run better in the long run, it's better
-than nothing at all, and certainly better as a "for-now" fix.  i really don't 
-think that there is a huge performance/storage space issue at stake; i mean, we're
-not talking about booting a commodore 64 here.  it really seems that this is 
-an ugly vs. not ugly debate, and purely academic, as there are no other choices.
+>There's an Apple partition map, which contains a driver map, and other
+>helpful info. But there's no executable code stored in the partition map.
+>And the drivers on the disk are loaded by Classic Mac OS (not X).
 
-> the bootstrap process should have NO reliance on a specific filesystem!
+in this case all that is needed is the bootblock on the root 
+filesystem which ext2 and hfs both leave room for, a 1024 byte 
+nothing at the very beginning of the partition, OF should simply have 
+the boot device specified and it should look in the partition table 
+for the bootable partition and load the first 1024 bytes of that 
+partition into memory and execute it that code can then do whatever 
+it needs to do.  this is exactly how quik works or rather worked on 
+non newworld macs.  it did not require its own parition and did not 
+require HFS.
 
-and the more vehemently you criticize, the more people are expecting to see
-you post a workaround that meets your aesthetic standards.
+>But the end result is that OpenFirmware on OldWorld machines is not
+>flashable, and the OF on those machines will boot the Apple ROM on those
+>machines when result to factory defaults. (Like zapping PRAM).
 
-I agree with you in principle, but I thought the point was to come up with 
-a functional booter rather than simply flame apple...  if we were just here
-to flame operating system manufacturers, this would be a radically different
-list.  :)
+I agree that is a great deficency of OF.  it should have a interface 
+like the PC bios does that does not require a forth programmer to 
+configure.
 
--- 
-erik cameron  unix systems administrator
-jfi/mrsec @ the university of chicago
-e-cameron@uchicago.edu
+>So unless you want the user to have a rescue CD around for when they zap
+>PRAM, you need to have *something* on the disk that the Mac OS ROM thinks
+>is bootable. That's what Ben H. is working on. You don't actually need a
+>Mac OS System, you just need bits that are in the right place for the ROM
+>to think they're a System enough to jump into your code.
+
+this is where I take issue with the design of the macintosh boot 
+process, it should not be looking for a file on a filesystem.  the 
+nvram should only have teh boot device specified, not a specific OS 
+dependant file, macos should have installed a bootblock on the disk 
+that OF loaded that took care of finding and loading the MacOS rom 
+image, this way you could replace macos with linux or OSX on the same 
+disk and never touch OF.
+
+>And part of that "looking like a Mac OS System" is residing on an HFS or
+>HFS+ disk. Because (once again) when you zap PRAM, OF boots the ROM,
+>period. It's too late for OF booting then.
+
+see above
+
+>
+> >requiring a dedicated partition for the BOOTSTRAP is ridiculous.
+> >and so is chaining oneself to a single filesystem (HFS)
+>
+>NewWorld machines have flashable firmware, and OF can then be updated to
+>understand different filesystems.
+
+filesystem code does not belong in the firmware.  its not needed 
+either if the boot process is done like it is on intel machines, 
+which works pretty darn well if you ask me.
+
+>But I still have to support the ability to boot *before* OF gets updated.
+>So for UFS systems on NewWorld machines, we have an HFS volume that
+>contains all of the OF patches we need, and the booter to find and launch
+>the kernel from the UFS volume.
+
+fine maybe you need this on older machines, but the newer machines 
+should fix this deficiency, and sport a filesystem INDEPENDANT boot 
+process, this way linux and BSD folks don't have to go though such a 
+large pain to get their OSes to boot.
+
+>HFS systems on NewWorld machines will just boot directly from the root volume.
+
+if the root volume is HFS, I don't want to use HFS, I like UFS just 
+fine, and what if I add xfs or someother filesystem support to darwin 
+how do it boot it now? I have to go back to this messy bootstrap 
+partition junk.
+
+can you see why relying on HFS or any specific filesystem is inconvenient???
+>
+>I haven't used quik, but I'm guessing it patches OF so that OF can read a
+>booter somewhere? This would be similar to System Disk for OldWorld
+>machines, which patches OF, and then points it at a loader partition which
+>contains an expanded XCOFF binary (the same binary as the booter, just in a
+>format that OldWorld OF can load and execute.)
+
+it does not patch OF at all, here is what quik does:
+
+installs a first stage loader that OF can execute in the first 1024 
+bytes of the root filesystem, this code knows how to read the ext2fs 
+to find the second stage load that knows how to load the kernel, all 
+that needs to be done to OF is this:
+
+setenv boot-device hd:
+or if OF cannot seem to figure out what partition is bootable
+setenv boot-device hd:7
+
+the problem is something is goofy with the newworld OF where it 
+either wont load the bootblock anymore or its just more picky about 
+what kinds of scripts it will execute and does not like the quik 
+first stage loader at the moment.  quik did work fine on many of the 
+pre newworld macs, I think the beige g3s were among them.  (all OSX 
+supports anyway)
+
+if you cannot get around the partition hack on older machnes fine use 
+it there, but for the newworld flashable macs and all future please 
+make a filesystem agnostic boot process.  that is really all I am 
+asking of apple.
+
+
+
+Best Regards,
+Ethan Benson
+To obtain my PGP key: http://www.alaska.net/~erbenson/pgp/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
