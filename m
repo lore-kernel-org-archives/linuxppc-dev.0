@@ -1,31 +1,29 @@
-Message-ID: <00bc01bfd866$5769d280$4a1f76d8@washington>
-From: "Navin Boppuri" <nboppuri@trinetcommunication.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: USB Traffic Generator
-Date: Sat, 17 Jun 2000 15:14:25 +0100
+Message-ID: <39D59806.9AE0F189@serialsystem.com.sg>
+Date: Sat, 30 Sep 2000 14:36:38 +0700
+From: Jari <jari.nguyen@smartstors.com>
+Reply-To: jari.nguyen@smartstors.com
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Memory map?
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello everyone,
+Hello,
 
-I was looking at the USB controller in the MPC823 Manual. At the end of that
-topic, there is an example program. The program accepts "IN" token and takes
-some action. But they said that tokens may be generated using a USB traffic
-generator(16-369). Does anyone know what this is? I did find one USB traffic
-generator on the net but it is very expensive. Is there no other way to test
-a USB controller?
+After booting kernel, I want to access the physical address in rom ,
+for example:
+my rom begins at 0xFE00 0000, and I want to read 1 byte at this address.
 
-Also, at the beginning of the topic, it is mentioned that the MPC823 USB
-host controller programming model is not compatable to OHCI or UHCI standard
-(16-344). It has its own end-point interface which is said to be simpler?
-Did I get this correct?
+currently, the MMU has been turned on, the RAM begin at 0x0C00 0000,
+and I don't know what the address of the ROM is.
 
+what do I have to do?
+is there anybody know how to take the address of the ROM?
+
+Help me, pls.
 Thank you,
-Navin Boppuri
-
+Jari
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
