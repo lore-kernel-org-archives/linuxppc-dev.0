@@ -1,29 +1,28 @@
-Date: Tue, 12 Oct 1999 00:23:37 -0700 (PDT)
-From: Patrik Jonsson <patrik@ucolick.org>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Bizarre g++ problem
-In-Reply-To: <3802DE1E.37E49762@chpc.utah.edu>
-Message-ID: <Pine.GSO.4.03.9910120015540.5402-100000@isis.ucolick.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <4.2.1.10.19991012124937.00c9b310@mail.munich.netsurf.de>
+Date: Tue, 12 Oct 1999 12:50:53 +0200
+To: darkmane@w-link.net
+From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+Subject: Re: glibc....
+Cc: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <Pine.LNX.4.10.9910111344060.1730-100000@darkmane.w-link.ne
+ t>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hey everyone,
-I'm having a very weird problem with my code:
+At 22:47 11.10.99 , Sean Chitwood wrote:
 
-cout << xs << '\n';  //(xs is an int class member)
-double e2=xs;
-cout << e2 << '\n';
+>Hi-
+>         I'm working to try and get mozilla compiling on LinuxPPC again. 
+> Has anyone had any success getting glibc-2.1.2 to compile? There seems to 
+> be a bug in the current version of glibc(2.1.1-6c) and I was wondering if 
+> anyone had updated glibc?
 
-produces:
- 200
- -4.5036e+15
+<ftp://devel.linuxppc.org/users/fsirl/>
 
-as output. What the @#$@# is going on?
-
-	/Patrik
+Franz.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
