@@ -1,35 +1,28 @@
-Message-ID: <002701c39381$dbb5e0e0$2803050a@JackyLam>
-From: "Jacky Lam" <jackylam@astri.org>
-To: "Xiaoshan Zuo" <xzuo@vinesystech.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <001d01c39133$20f088a0$2803050a@JackyLam> <3F8B7B3B.60302@vinesystech.com> <004e01c39217$4446ce60$2803050a@JackyLam> <3F8D85A5.8060300@vinesystech.com>
-Subject: Re: Walnut PCI bridge can't be detected
-Date: Thu, 16 Oct 2003 09:07:21 +0800
+Message-ID: <3F8E43D8.6090904@imc-berlin.de>
+Date: Thu, 16 Oct 2003 09:08:08 +0200
+From: Steven Scholz <steven.scholz@imc-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="big5"
+To: Lokesh Kumar <kumar.lokesh@wrx-us.com>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: mpc8xx memory mapped 16550A uart garbage
+References: <3439AB3A99ECD5409F3A52ACF814744D158DA1@norcom2.norcom.net>
+In-Reply-To: <3439AB3A99ECD5409F3A52ACF814744D158DA1@norcom2.norcom.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Xiaoshan,
+Lokesh,
+
+> I did measure the bit width and that is around 104us, which is correct.
+> Anything else?
+
+Hmm. I suppose you tried sending only character again and again and verified
+that your board is indeed sending this character over the lines by looking at
+the scope...
 
 
-> Also you need to remove the #ifndef line in the function
-pci_hose_scan_bus()
-> #ifndef CONFIG_405GP /* don't skip host bridge on ppc405gp */
-> /* Skip our host bridge */
-> if ( dev == PCI_BDF(hose->first_busno,0,0) )
-> continue;
-> #endif
->
-> It causes PCIC0_CMD[MA]=0 on the bridge, so it doens't respond to request.
->
-        That's what I want. It works!!!!! Really thanks to you. Your mail
-will surely help many beginners on Walnut platform.
-
-Best regards,
-Jacky
+Steven
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
