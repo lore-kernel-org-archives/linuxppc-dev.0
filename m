@@ -1,51 +1,44 @@
-To: "Wolfgang Denk" <wd@denx.de>
-Cc: "Embedded Linux PPC list" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: list of 2.6-related migration issues for embedded programmers?
-References: <20040720134221.93224C109F@atlas.denx.de>
-From: "Linh Dang" <linhd@nortelnetworks.com>
-Date: Tue, 20 Jul 2004 12:07:28 -0400
-In-Reply-To: <20040720134221.93224C109F@atlas.denx.de> (Wolfgang Denk's
- message of "Tue, 20 Jul 2004 09:42:16 -0400")
-Message-ID: <wn5acxu8xxb.fsf@linhd-2.ca.nortel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: dma_alloc_init badness ??
+From: David Woodhouse <dwmw2@infradead.org>
+To: "Demke, Torsten" <Torsten.Demke@fci.com>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <9CFB9DA5261CD611A29B00508B7890480B842F73@ex-deu-munich02.force.de>
+References: 
+	 <9CFB9DA5261CD611A29B00508B7890480B842F73@ex-deu-munich02.force.de>
+Content-Type: text/plain
+Date: Tue, 20 Jul 2004 18:00:57 -0400
+Message-Id: <1090360857.9473.7.camel@localhost.localdomain>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On 20 Jul 2004, wd@denx.de wrote:
-
-> In message <wn5vfgi9arw.fsf@linhd-2.ca.nortel.com> you wrote:
->>
->> But you don't have to. What ever you can do with the good-old
->> initrd image you can do with the new initramfs (really cpio
->> archive) image. The main difference is the creation: genext2fs vs
->> cpio.
+On Tue, 2004-07-20 at 13:26 +0200, Demke, Torsten wrote:
+> Hello all,
 >
-> How do I populate a initramfs with custom device nodes?  Without
-> having root permission, I mean.
-
-You have a point here, I guess with initramfs you have to:
-
- - use devfs (which was deprecated in 2.6)
- - use udev
- - grok-sysfs-yourself (which is pretty easy)
-
+> Im currently porting our application from 2.4.22 to 2.6.
+> CPU is MPC852T and the bootloader is u-boot.
 >
-> And how can I tell a Linux kernel where to find the initramfs data
-> when they are not linked together?
+> The kernel boot prints a warning in dma_alloc_init,
+> but Im not sure what that exactly means, and how to solve
+> the problem:(
+> Can anybody here please give me some help?
 
-Well, the same way as with the good old-initrd. the initramfs root-fs
-IS an INITRD in compressed-cpio format (instead of fs format such as
-ext2).
+	...
 
+> Badness in dma_alloc_init at arch/ppc/kernel/dma-mapping.c:342
 
-me think I'm still missing something about initrd.
+The warning at line 342 of dma-mapping.c is:
 
+		WARN_ON(!pmd_none(*pmd));
 
-Regards
+It's bitching that there's already a page table entry at the virtual
+address you've given as CONFIG_CONSISTENT_START. The range specified by
+CONFIG_CONSISTENT_START and CONFIG_CONSISTENT_SIZE must be a range of
+_virtual_ addresses which are unused in your kernel.
 
 --
-L.D.
+dwmw2
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
