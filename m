@@ -1,29 +1,31 @@
-Return-Path: <bouncefilter+linuxppc-embedded=wd=denx.de@lists.linuxppc.org>
-From: quan.zechang@zte.com.cn
-Subject: any one can help me? problem about install ELDK 
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <OF4261606D.01F5B29B-ON48256DC0.00245225@com.cn>
-Date: Wed, 15 Oct 2003 14:42:37 +0800
-MIME-Version: 1.0
-Content-type: text/plain
+Message-Id: <sf8d0c4a.082@mail.frequentis.com>
+Date: Wed, 15 Oct 2003 08:58:43 +0200
+From: "Gerhard TAEUBL" <Gerhard.TAEUBL@frequentis.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Patch fec.c
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi ,every one:
+Hi!
 
-  when i am installing the ELDK ,the install software print the error
-message:
-any one can tell me the method resolving the problem?thank you !
+I found following message:
+http://lists.linuxppc.org/linuxppc-embedded/200305/msg00255.html
 
-Do you really want to install into /home/achang/program_files/eldk
-directory[y/n]?: y
+There Jean-Denis states:
 
-Installing cross RPMs
+2 - Or, the worst, in function mdio_read called through the ioctl,
+which would hang the calling process.
 
-/bin/sh: line 1: /home/achang/program_files/eldk/bin/rpm: No such file or
-directory
-ln: `ppc-rpm': File exists
-[root@localhost eldk]#
+We have an MPC860T custom board and uses DENX kernel 2.4.4.
+In our project we use also a second ethernet pcmcia card, and we have to bound both ethernet cards as backup medium. We updsate the bounding.c file and compile it as module. It works, but if we enable the mii check on the bounding module the kernel crash. Our hardware has an hardware watchdog, so it resets within one second.
+
+Does anyone have any idea how to patch the code to prevent this 'failure'?
+
+best regards
+Gerhard
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
