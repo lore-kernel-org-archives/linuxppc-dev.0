@@ -1,77 +1,123 @@
-Message-ID: <381A6CF9.67FE83E2@wanadoo.fr>
-Date: Sat, 30 Oct 1999 05:58:49 +0200
-From: Martin Costabel <costabel@wanadoo.fr>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: linux-2.2.13pre15 stability w/ head.S patch
-References: <3818908A.8A6539B6@chpc.utah.edu> <19991028212456.B13879@chimaera.ppc.kernel.org> <3819E3D7.B9D7E4F3@chpc.utah.edu>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <v04003a00b44016e13b4c@[216.81.20.101]>
+In-Reply-To: <Pine.HPX.4.10.9910291404240.18743-100000@gra-ux1.iram.es>
+References: <v04003a00b43e690932c6@[216.81.26.227]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Fri, 29 Oct 1999 23:14:19 -0500
+To: Gabriel Paubert <paubert@iram.es>
+From: Tony Mantler <eek@escape.ca>
+Subject: Re: question about altivec registers
+Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Lou Langholtz wrote:
-> 
-> Cort Dougan wrote:
-> 
-> > The Linus tree is in sync with by the 2.2 and 2.3 right now.  Have you
-> > tried 2.3.24 and/or 2.3.13?
-> 
-> That's great news. My bandwidth is so limited that checking this fact is
-> impracticle. So this helps a lot to know. I haven't tried 2.3.24 or 2.3.13 or
-> 2.2.13 out yet either. Seems like 2.2.14's due out soon and I figured I'd just
-> wait.
+At 7:49 AM -0500 10/29/99, Gabriel Paubert wrote:
+>On Thu, 28 Oct 1999, Tony Mantler wrote:
+>
+>> I suppose I'm a bit too used to 68k stuff, where sorting register usage
+>> takes a back seat to efficient register re-use. However, with the size of
+>> the data in the Altivec registers, I would expect a bit of optimization to
+>> slant away from cases where the registers can be easily sorted and packed.
+>
+>Things are different when all registers are identical and instructions
+>have separate operands for inputs and the output. I've programmed 68k to
+>and it's often painful (Intel is worse, to be fair).
 
-Sorry to spoil the fun, but I personally feel that the linux kernel
-sources for the pmac are in a rather sorry state right now. Both the
-vger cvs and the samba rsync archives have gone into hibernation, and
-the kernel.org kernels just don't work. After having spent many hours
-during the last couple of days trying unsuccessfully to compile a recent
-kernel for a B&W G3, I and the colleague for whose G3 this was meant (he
-has a self-compiled 2.2.10 kernel, but the USB mouse doesn't work, so I
-suggested naively to try a more recent kernel) are rather disappointed.
+I haven't found it too bad. It's rather sensibly designed for it's intended
+applications, and considering that it was originally laid out way back in
+the early 80's (iirc), it's stood the test of time rather well.
 
-On my 6400, I have a 2.2.13 kernel from the vger cvs archive that works,
-but these sources don't contain the right USB keyboard stuff nor the
-aty128fb driver.
 
-I also have a working (on the 6400) 2.3.22 kernel from Paul M's rsync
-archive on samba. This one doesn't boot on the G3 either. To compile it
-on the G3, we had to patch some mutilated files (I think
-include/asm/keyboard.h) that are still not corrected, although this fact
-has been mentioned on the list weeks ago (keyword "retureycode"). 
+[...]
+>> I think saving registers in a subroutine is a pain no matter how it's
+>> implemented. If the VRSAVE is used as a count, the subroutine still has to
+>> save the old value, save the overwritten registers, calculate what the
+>> proper new value is (think new < old = oops!) then restore the overwritten
+>> registers and old VRSAVE value when it exits.
+>
+>In the end a bitmap seems the best, since the code can be free of
+>conditionals and fairly compact:
+>- at start of routine (register numbers chosen randomly):
+>	mfspr	r12,vrsave
+>	oris	r0,r12,0x....	# mask of used bits
+>	ori	r0,r0,0x....	# mask of used bits (only is using vr16-vr31)
+>	stw	r12,somewhere on the stack
+>	mtspr	vrsave,r0
+>
+>and the end:
+>	lwz	r12,somewhere on the stack
+>	mtspr	vrsave,r12
 
-We also had to switch on CONFIG_PMAC_PBOOK, because some mediabay stuff
-is outside of #ifdef CONFIG_PMAC_PBOOK clauses. This latter bug persists
-in the kernel.org 2.3.{23|24} sources. 
+Looks clean enough to me.
 
-The USB keyboard stuff had to be patched for non-US keyboards (this
-shouldn't be necessary in the kernel, right?). Also the
-drivers/usb/mkmap.adb script is not executable, so compilation stops
-there, and one has not only to chmod +x this file, but to remove the
-resulting keymap-mac.c file which otherwise is not regenerated.
 
-The aty128fb driver exists in the rsync 2.3.22 kernel, but it cannot be
-compiled in, because the config and makefiles don't know about it. In
-the kernel.org sources, the config and makefiles are corrected and allow
-you to choose the aty128fb driver, but it doesn't compile, because
-FB_ACCEL_ATI_RAGE128 has been forgotten in include/linux/fb.h.
+[...]
+>Yes, cntlzw on a vrsave copy (after a few simple manipulations) is your
+>friend. Besides this the ABI separates two ranges: R0 to R13 and R14
+>to R31 (I could be off by one). Optimize for the common case, find the
+>first set bit with index >=14 and last set bit with index <=13 and save
+>only these 2 ranges. Optimizing for more complex cases is not worth the
+>trouble, just ensure that they work properly.
 
-There are a couple of other such problems (like the init/main.c that
-doesn't compile with initrd configured, probably some kind of weird
-Finnish humor), so that it took us hours to get one of these kernels to
-compile. And then none of them boots. After the first few lines ("kernel
-xxx booting ...") they just sit there. No error message that would give
-any hint. 
+Indeed.
 
-I never got any of the kernel.org 2.3.{23|24} kernels to boot on my 6400
-either.
 
-In the good old days (like 2 months ago :-() when the vger cvs tree was
-still actively maintained and was used to collect all the right patches
-for the pmac, life was definitely better.
+>> Doing it that way would also somewhat optimize VRSAVE=0, since both the
+>> leftmost and rightmost bits are 0, it would pass right through the
+>> left-save and right-save half of the optimized register save.
+>
+>I would also optimize speecifically for the vrsave=0, a compare and a
+>conditional branch are not that costly, especially if the branch is done
+>well after the branch, with all the bitmap manipulation in between:
+>
+>	mfspr	r3,vrsave
+>	cpmwi	cr1,r3,0
+>	andis.	r4,r3,0,0xfffc
+>	rlwinm	r5,r3,0,0x0003ffff
+>	neg	r6,r4
+>	cntlzw	r5,r5		# first register of r14..r31 to save
+>	and	r4,r4,r6
+>	cntlzw	r4,r4		# last register of r0..r13 to save
+>	beq	cr1,nothing_to_save
+>
+>It's not finished: you've to setup registers to addres the save area and
+>compute a branch inside the save routine to actually perform the save
+>(backwards for r0..r13, forwards for r14..r31).
+
+Yeah, one extra branch certainly won't kill anyone.
+
+
+[.. clearing unused registers ..]
+>Well, after having a moore detailed look at Altivec, I missed a shift
+>by immdieate amount in bits to make the code as compact as possible. There
+>are probably tricks to work around this, I might have started with the
+>wrong idea on the way to implement this...
+
+Hmm, I just re-read the altivec spec sheet and, though I wouldn't call
+myself an expert on PPC, it would seem that there's 3 ways to clear the
+registers.
+
+The first way would be to use a bunch of branch conditionals, which we
+probably want to avoid.
+
+The second way would be to calculate a 0 or -1 entirely within the vector
+unit, which would both use a bunch of vector registers, and probably be
+rather messy, as it's not really what the vector unit is designed for.
+
+The third would be to calculate a 0 or -1 in the GPRs, then copy and splat
+it into a vector register. Unfortunaltey it would appear that copying a
+value from a GPR to a Vector register can only be done by writing the value
+to memory, then reading it back in again, which isn't very pretty at all.
+
+
+Oh well, time to watch Southpark, filmed in hella-cool ((( Spooooky-vision
+))) ;)
+
 
 --
-Martin
+Tony Mantler         Renaissance Nerd Extraordinaire         eek@escape.ca
+Winnipeg, Manitoba, Canada                       http://www.escape.ca/~eek
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
