@@ -1,31 +1,35 @@
-Reply-To: <smith@appliedmicro.ns.ca>
-From: "Frank Smith" <smith@appliedmicro.ns.ca>
-To: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Ramdisk in 2.3.x
-Message-Id: <00Jan26.130811ast.7304@dragon.appliedmicro.ns.ca>
+Message-ID: <388F3D65.3B420FED@ctam.com.au>
+Date: Thu, 27 Jan 2000 05:31:01 +1100
+From: Brendan John Simon <Brendan.Simon@ctam.com.au>
+Reply-To: Brendan.Simon@ctam.com.au
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Date: Wed, 26 Jan 2000 13:08:08 -0400
+To: Dan Malek <dmalek@jlc.net>
+CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: linuxppc-embedded: main kernel tree
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+Hi Dan,
 
-Hi,
+How seperate is the Linux/PPC kernel tree to the main kernel tree ?
 
-I've been working in a linux-pmac-devel 2.3.29 tree from
-linuxcare, and I have the problem that reading from a file
-on a ramdisk returns all zeroes. I can open and fstat files
-OK tho.
+I download linux-2.2.14 and there is only support for MBX (no BSEIP and
+others).  I'm not sure if the MBX is the latest either.  I suspect it
+hasn't changed much anyway.
 
-I've searched the mailing lists, and it appears that ramdisk
-support is broken in 2.3.x.
+Can support for all the embedded ports be put into the main kernel
+source tree.
+That way we can all use the latest stable kernel without having to wait
+for you (or someone else) to create a package on the ftp server.  It
+also reduces the re-porting of board support packages.
 
-Is there a 2.3.x tree with a working ramdisk?
-
+How often is the Linux/PPC kernel for workstations (PowerMacs, etc)
+committed to the main kernel tree ?
 
 Thanks,
-Frank.
+Brendan Simon.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
