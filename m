@@ -1,51 +1,99 @@
-Message-ID: <33774.216.110.51.8.1078964058.squirrel@www.orkun.us>
-In-Reply-To: <1078936213.16427.27.camel@spawn.uab.ericsson.se>
-References: <16763.216.110.51.8.1078873137.squirrel@www.orkun.us>
-    <1078936213.16427.27.camel@spawn.uab.ericsson.se>
-Date: Wed, 10 Mar 2004 18:14:18 -0600 (CST)
-Subject: Re: PPC405GP: Spurious interrupt during handing level triggered
-     interrupts
-From: "listmember@orkun.us" <listmember@orkun.us>
-To: "Kenneth Johansson" <kenneth.johansson@etx.ericsson.se>
-Cc: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <002901c40705$65697ee0$5e1312ac@yang>
+From: "yang" <wchyang_hn@sina.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Can't set the schedual parameter of threads in linux
+Date: Thu, 11 Mar 2004 09:06:54 +0800
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Kenneth,
+Hello,
+    I encounter a problem when I transplant application.
+    There is no effect to the pthread when I call pthread_setschedparam() function in test program,  and it's policy and priority are stilll zero, not what I expected, after call pthread_getschedparam(). The codes  is as the follow:
 
-Thanks for replying. I was happy to find your earlier thread during my
-list archive search. I though about using something like your sequence
-below but finally settled in ack_irq().
+#include <sched.h>
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <linux/ipc.h>
+#include <linux/msg.h>
+#include <errno.h>
+#include <stddef.h>
+#include <string.h>
 
-> /* We have to do this manually as enable do not do this for us */
-> void mask_SR(int dev_irq){
->
-> 	int bit;
-> 	bit = (dev_irq-17) +25;
->
-> 	mtdcr(DCRN_UIC_SR(UIC0), (1 << (31 - bit)));
-> }
-> --
-> basically parts of what irq_ack would do (dev_irq is a privat number
-> local to this driver)
->
-> Perhaps the enable code should reset this bit also?? everyone that dose
-> this type of userspace driver is going to hit this problem.
+void * func()
+{
+        while (1);
+    return;
+}
 
-I think for edge triggered interrupts this would not be desirable if a
-driver has sections that it cannot handle interrupts safely and disables
-interrupts during such processing. If an interrupt arrived when interrupts
-were disabled and enable actually reset the bit the interrupt would be
-lost.
+int main()
+{
+    pthread_attr_t tattr;
+    pthread_t tid;
+    int policy;
+    int ret;
+    int newprio = 20;
+    struct sched_param param;
 
-However, I think, code could be enhanced to reset the SR bit, "only" for
-level triggered interrupts and leave edge triggered interrupts alone. This
-would require looking at UIC0_TR register as well.
+    ret = pthread_attr_init (&tattr);
+    if (ret != 0)
+    {
+        printf("Error in init: %s\n", strerror(errno));
+    }
 
-Best regards,
-Tolunay
+    ret = pthread_attr_getschedparam (&tattr, &param);
+    if (ret != 0)
+    {
+        printf("Error in get after init: %s\n", strerror(errno));
+    }
+    ret = pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_DETACHED);
+   if (ret != 0)
+    {
+        printf("Error in setdea: %s\n", strerror(errno));
+    }
+    ret = pthread_attr_setschedpolicy(&tattr, SCHED_RR);
+    if (ret != 0)
+    {
+        printf("Error in setpolicy: %s\n", strerror(errno));
+    }
+
+    param.sched_priority = newprio;
+    ret = pthread_attr_setschedparam (&tattr, &param);
+    if (ret != 0)
+    {
+        printf("Error in set: %s\n", strerror(errno));
+    }
+
+    ret = pthread_create (&tid, &tattr, (int*) func, NULL);
+    if (ret != 0)
+    {
+        printf("Error in create: %s\n", strerror(errno));
+    }
+
+    param.sched_priority = -1;
+    ret = pthread_getschedparam (tid, &policy, &param);
+    if (ret != 0)
+    {
+        printf("Error in get after create: %d %s\n", ret, strerror(errno));
+    }
+
+    printf("policy: %d\tpriority: %d\n", policy, param.sched_priority);
+
+    return 0;
+
+}
+
+    The output is :
+    policy: 0    priority: 0
+
+    Would you like to tell me how to set the policy and priority to pthreads in Red Hat.? Thank you very much!
+    Best regards,
+                                     yang
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
