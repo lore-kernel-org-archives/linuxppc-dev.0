@@ -1,52 +1,33 @@
-Message-ID: <40B7318F.3020309@intracom.gr>
-Date: Fri, 28 May 2004 15:33:19 +0300
-From: Pantelis Antoniou <panto@intracom.gr>
+In-Reply-To: <40B711A6.1080603@intracom.gr>
+Subject: RTC no longer exist on the 866/87x/88x
+To: Pantelis Antoniou <panto@intracom.gr>
+Cc: Dan Malek <dan@embeddededge.com>,
+	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>,
+	Tom Rini <trini@kernel.crashing.org>
+Message-ID: <OFA7FE93B3.1BAFEB05-ON85256EA2.0044EB60-85256EA2.00457969@nanometrics.ca>
+From: David Ho <DavidHo@nanometrics.ca>
+Date: Fri, 28 May 2004 08:38:50 -0400
 MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: newly-updated linuxppc-2.5 tree compiles but fails to boot
-References: <Pine.LNX.4.58.0405280746270.26869@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.58.0405280746270.26869@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Robert P. J. Day wrote:
+Hi 8xx gurus,
 
->  just this morning, i did a fresh checkout of the linuxppc-2.5 BK repo
->and, using the same .config file as i have for a while, got a clean
->compile (yee ha), building for 8xx.
->
->  sadly, unlike previous times where i could then boot that kernel up to
->user space, this kernel hung almost immediately:
->
->Linux/PPC load: console=ttyS0,9600 rw root=/dev/ram0 init=/bin/sh
->Uncompressing Linux...done.
->Now booting the kernel
->
->... and that was it.  just as i head back to check things out more
->carefully, would any of the recent changes require any obvious mods to the
->config file?  sorry i'm not enough of a kernel expert to know how to dig
->into this further, but i'm working on it.
->
->
->rday
->
->
->
->
->
-Hold your horses.
+I just noticed the RTC is no longer documented/tested/supported on the
+duet.  How does this impact the current 2.4 8xx tree?
 
-While my tree based on 2.6.6 is working as of the last update to
-2.6.7-rc1 it is broken.
+I know the /dev/rtc still uses RTC on the processor, it appears to work
+fine, but I wouldn't bet my life on it for production units.
 
-Currently investigating...
+How about the kernel's timing service and scheduling, does it use the
+timebase register instead?  Are these services effected at all?
 
-Regards
+Thanks a lot,
 
-Pantelis
+David Ho
+Nanometrics Inc.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
