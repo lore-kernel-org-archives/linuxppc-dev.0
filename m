@@ -1,52 +1,25 @@
-Subject: Re: random ramblings on 8xx patches (long and tedious :-)
-From: Jaap-Jan Boor <jjboor@aimsys.nl>
-To: Dan Malek <dan@embeddededge.com>
-Cc: "Wells, Charles" <Charles.Wells@nielsenmedia.com>,
-	"'Robert P. J. Day'" <rpjday@mindspring.com>,
-	Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <75D875A6-DC05-11D8-9220-003065F9B7DC@embeddededge.com>
-References: 
-	 <762A181C0D966E459A2EB3B810142C7703861518@nmrusdunsx12.nmrlan.net>
-	 <75D875A6-DC05-11D8-9220-003065F9B7DC@embeddededge.com>
-Content-Type: text/plain
-Message-Id: <1090572504.4399.86.camel@linpc003.aimsys.nl>
-Mime-Version: 1.0
-Date: Fri, 23 Jul 2004 10:48:25 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: Hang in send() to a socket
+Date: Fri, 23 Jul 2004 11:55:03 +0200
+Message-ID: <42A622EB18325843894BB8E1040E3DF50227A4@sinaexchf>
+From: =?iso-8859-1?Q?I=F1igo_Lopez_Barranco?= <ilopez@albatros-sl.es>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, 2004-07-22 at 19:35, Dan Malek wrote:
-> On Jul 22, 2004, at 1:10 PM, Wells, Charles wrote:
->
-> > ....... The real problem is that the
-> > MPC850 USB controller was designed for target-mode applications and not
-> > host-mode applications.
+Hi. I'm testing a program to send files thru a TCP socket on an MPC5200. The program itself is quite simple: reads block from file, adds headers for a custom protocol, and sends the packet to the socket.
+This works without problems on x86 architecture, but in PPC, the programs stops forever in one of the writings to the socket after having sent a random number of packets. Strace says that it stops on a send(), and netstat shows that the connection is stablished, and stays this way:
+Proto Recv-Q Send-Q Local Address           Foreign Address         State
+tcp        0  63903 160.100.100.169:12700   160.100.100.189:41097   ESTABLISHED
+Until the kernel destroys the socket. The program isn't hanged, and it detects when the socket closes (Connection timed out) if you wait enough, and exits properly. It just stops in send().
 
-And even in target mode I see unexpected underruns, handshake timeouts
-and a stucking interrupt endpoint. The software can recover from these
-errors though.
+Is there any know problem with this on the MPC5200?
+The platform is a Lite5200, and kernel linuxppc_2_4_devel from Denx CVS.
+Thanks
 
-> There are Linux versions of software that work fine in many
-> applications.
-> USB in general doesn't rate high on my list of engineering successes.
-
-very much right. It works, we don't know why :)
-
-> I'm never surprised when I plug something in to any kind of system
-> and it doesn't work.
->
->
-> 	-- Dan
-
-Jaap-Jan
-
-
---
-J.G.J. Boor                       Anton Philipsweg 1
-Software Engineer                 1223 KZ Hilversum
-AimSys bv                         tel. +31 35 689 1941
-Postbus 2194, 1200 CD Hilversum   mailto:jjboor@aimsys.nl
-
+Iñigo
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
