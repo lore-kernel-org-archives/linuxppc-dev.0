@@ -1,40 +1,63 @@
+Message-ID: <3B7815BC.8F2F180C@mvista.com>
+Date: Mon, 13 Aug 2001 11:00:28 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: NFS with FEC problems - Hardhat 1.2 target file system
-Date: Mon, 13 Aug 2001 12:03:32 -0500
-Message-ID: <3A494DE356A49A40B37442E1E0D9F3B5063416@ptah.ad.newisys.com>
-From: "Navin Boppuri" <navin.boppuri@newisys.com>
-To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+To: Matt Porter <mporter@mvista.com>
+Cc: Andrew Johnson <anj@aps.anl.gov>, Dan Malek <dan@mvista.com>,
+	James F Dougherty <jfd@GigabitNetworks.COM>,
+	linuxppc-embedded@lists.linuxppc.org, cort@cs.nmt.edu,
+	jfd@cs.stanford.edu
+Subject: Re: MPC8240 EPIC Driver (Attached)
+References: <200108110718.AAA01730@krakatoa.gigabitnetworks.com> <3B75C40B.8BCDDD2B@mvista.com> <3B77F899.5964F88F@aps.anl.gov> <20010813055451.A22232@cx258813-a.chnd1.az.home.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello all,
+Matt Porter wrote:
 
-I have the 2.4 kernel (Hardhat 1.2) from MVista running on my custom
-board. When I NFS mount the sample target file system from the Hardhat
-1.1 version, everything works just fine. Now, when I try and mount the
-new sample target file system that comes with the Hardhat 1.2 version,
-the file system is mounted. But after all the init scripts are run, I
-get messages like
+> On Mon, Aug 13, 2001 at 10:56:09AM -0500, Andrew Johnson wrote:
 
-'nfs server x.x.x.x not responding'
+> > Then there's the problem of accessing the 8240's interrupts for I2C, 2 DMA
+> > channels and Message Unit, which are highly dis-contiguous with the other
+> > interrupts; these would appear at IRQs 129, 130, 131 and 134 in the
+> > current scheme (needing a rather large and sparse interrupt senses
+> > table).  Oh, and the 4 Global timer interrupts would have to appear at
+> > negative IRQ numbers, so it's a good thing Linux doesn't need to use
+> > these.
+> >
+> > I haven't looked at James' code, but the OpenPIC stuff certainly does need
+> > some changes to be truly universal.
+>
+> There's a hack in the OpenPIC code for HHL 2.0 to allow for some of
+> the above situations.  The hack was rejected in the public tree in
+> favor of a not yet implemented clean way to handle this stuff.
+>
+> If somebody has time to abstract the OpenPIC code for EPIC correctly,
+> it will get in the tree.
 
-I have an FEC driver running on my custom board. I was able to duplicate
-the problem with FEC running on the RPXClassic board. With SCC driver
-selected on the RPXClassic, there are NO such problems.
+Yes, there should be better support for 8240/107 interrupt ctlrs in the openpic code.
+However, as long as they are used in direct interrupt mode, the openpic code will work
+as is for the most part (except for the negative irq's :).  Note that to use the
+openpic_init()/initsenses table as it is, you need to skip the first 16 irq's no
+matter what (i.e., even if you don't have an 8259).  DO NOT set the offset to anything
+but 0 in the openpic_init() call.
 
-Something executed during the init scripts is messing up the FEC .......
-But I am not exactly sure what and where the problem lies.
+The changes to the openpic code for supporting serial interrupt mode are very minor.
 
-I am able to get rid of the problem by replacing the inittab file and
-not doing most of the initialization that the new target file system
-inittab does. But I would like to know the real cause of this behaviour.
+I sent out an email many moons ago about expanding the "initsenses" table but I never
+really had to time to follow thru on it...I should have.  I still think that's the way
+to go.
 
-Any suggestions or input?
+What I mean is a table where you specify the irq, the offset fo the regs from the base
+address, the sensitivity, and the polarity all separately.  Also the appropriate
+extensions to support serial interrupt mode (e.g., MVME2100 uses that).  With a table
+format something like that, you can avoid the sparse and negative irq's on the
+8240/107 and still keep things pretty clean looking.
 
-Thanks a lot.
-Navin.
+Anyway, someone needs to take the time to do it...
+
+Mark
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
