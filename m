@@ -1,72 +1,47 @@
-To: "Dejan Jovanovic" <dejanj@erlangtech.com>
+Date: Fri, 16 Aug 2002 13:50:24 -0700
+From: Matt Porter <porter@cox.net>
+To: Khai Trinh <kqtrinh@yahoo.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Linux on SBC8260 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 14 Aug 2002 11:03:06 CDT."
-             <00e301c243ac$14182dc0$db00000a@dejanj>
-Date: Fri, 16 Aug 2002 21:09:33 +0200
-Message-Id: <20020816190938.B2A2410DF4@denx.denx.de>
+Subject: Re: 440 PCI adapter card DMA question
+Message-ID: <20020816135024.A2119@home.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <00e301c243ac$14182dc0$db00000a@dejanj> you wrote:
+[Please, always start a new mail when starting a new thread.  Don't
+ reply to an old one and change the subject, it messes up people
+ using mailbox threading.]
+
+On Fri, Aug 16, 2002 at 11:39:15AM -0700, Khai Trinh wrote:
+> On one of your response email to me, you said the
+> 440GP maps PCI<->PLB 1:1 and I can use the PCI bus
+> address directly as a PLB address to program the 440GP
+> DMA controller.
 >
-> I am trying to run Linux on a EST's SBC8260 board.
->
-> First thing I have tried is using ppcboot to load the Linux kernel image.
-> - ppcboot version is 1.1.6
-> - Linux version is 2.4.4 - the one that comes with ELDK from Wolfgang. (as a
-> side question - is it enough if I do the 'make est8260_config' or I need to do
-> menuconfig as well after that?)
+> The thing is that the DMA high and low register only
+> allows 36-bit programming whereas the PCI bus address
+> given to me by the Host is 64-bit.
 
-The general procedure is always the same:
+I was answering with respect to the Ebony PCI-X host bridge
+configuration.
 
-	make est8260_config
-	make oldconfig              or make menuconfig
-	make dep
-	make pImage
+> Don't I have to manually setup the PCI-PLB mapping
+> before I can program the DMA controller? OR the 440
+> kernel has already handle that?
 
-"make oldconfig" is good if you don't  want  to  change  the  default
-configuration  (which is probably a good idea to get a system running
-first), while "make menuconfig" is goot to modify  the  configuration
-to  your  specific  needs (you should know what you're doing then, of
-course).
+The PCI-X host bridge configuration in the Ebony port is
+implemented for host operation only (i.e. it has set up
+windows and controls BAR assignment within a controlled
+PCI address space).  If you need a special translation
+for your particular adapter application, you will need
+to modify that setup accordingly.
 
-> First I have used the Linux kernel image, one in arch/ppc/coffboot and converted
-> using mkimage tool (with parameters -a 0x0000_0000 and -e 0x0000_0000)
-
-This is done automatically with "make pImage".
-
-> After that I have executed ppcboot 'bootm' command, and got the message
-> 'Loading Kernel Image OK' -- (?? this is strange though - should it not say here
-> Uncompressing Kernel Image ?)
-
-This depends. If you use an uncompressed  kernel  image  (build  with
-mkimage  option  "-C  none")  you'll  see  " Loading %s ... ", with a
-compressed image you'll get " Uncompressing %s ... ".
-
-> After that nothing happens on my serial console.
-
-Probably you made some errors when building the image  -  that's  why
-there is the "pImage" make target, to provide a working solution.
-
-> So I tried to use the BDI2000 to debug this.
-> I skipped the ppcboot, and loaded the Linux Kernel Image (now the one from
-> arch/ppc/mbxboot) into the RAM directly.
-> After setting the PC and doing a 'go' I got the message that the 'Target has
-
-You cannot (simply) do this.  The  Linux  kernel  expects  a  lot  of
-hardware initialization before it can run, and even then it expects a
-couple of arguments passed to it.
-
-Wolfgang Denk
-
+Regards,
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-EMACS belongs in <sys/errno.h>: Editor too big!
+Matt Porter
+porter@cox.net
+This is Linux Country. On a quiet night, you can hear Windows reboot.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
