@@ -1,40 +1,29 @@
-Date: Sun, 19 Jan 2003 17:31:37 -0700
+Date: Sun, 19 Jan 2003 17:33:33 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: Dan Malek <dan@embeddededge.com>
-Cc: Pantelis Antoniou <panto@intracom.gr>,
-	Paul Mackerras <paulus@samba.org>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: New style dpalloc/hostalloc routines (diff).
-Message-ID: <20030120003137.GF888@opus.bloom.county>
-References: <3E006C94.2090503@intracom.gr> <15874.23846.177956.192840@argo.ozlabs.ibm.com> <3E02E984.8090904@intracom.gr> <20021223164928.GF15397@opus.bloom.county> <3E076D09.8020807@embeddededge.com>
+To: b y <by012345@yahoo.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: openpic and serial interupt mode of mpc107
+Message-ID: <20030120003333.GG888@opus.bloom.county>
+References: <20030119031516.68349.qmail@web41505.mail.yahoo.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3E076D09.8020807@embeddededge.com>
+In-Reply-To: <20030119031516.68349.qmail@web41505.mail.yahoo.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Dec 23, 2002 at 03:07:37PM -0500, Dan Malek wrote:
-> Tom Rini wrote:
->
-> >Also, Dan Malek, any comments on all of this?
->
-> I've had some life distractions for the past couple of weeks.
-> I'll have some time to look at this over the next few days.
+On Sat, Jan 18, 2003 at 07:15:16PM -0800, b y wrote:
 
-So, have you had time to look at all of this yet?
+> I am using Monta Vista Preview 2.1 kit for a customer
+> board that used mpc107 serial interrupt mode only.
+> Does anyone know if Monta Vista Preview 2.1 supports
+> serial mode in interrupt implementation ? If not,
+> where should i get patch if any as I found several old
+> messages mentioned patch for mpc107 serial interrupt
+> mode before.
 
-> When are we going to stop using 2.4 as our development tree?
-> Things like this should first be developed and proven in the 2.5
-> tree then moved into 2.4 after we agree it's necessary.
-
-Mainly because no one with the indepth knowledge of 8xx (*hint*hint* :))
-has gone and fixed the very low level issues on 8xx which need to be
-fixed, such as some MM thing or another from 2.5.5/2.5.10 timeframe and
-the exception handling stuff ne3ds a look at, at a minimum based on what
-Paul has done for 'classic' and what Paul and/or David and others have
-done for 40x.  At which point the more trivial things like fixing up
-drivers can happen. :)
+Yes, see how the Motorola LoPEC (arch/ppc/platforms/lopec_*.c) is
+handled.  And the Sandpoint as well.
 
 --
 Tom Rini (TR1265)
