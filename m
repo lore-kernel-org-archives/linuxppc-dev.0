@@ -1,65 +1,35 @@
-From: "Chris Hallinan" <clh@net1plus.com>
-To: "Rudolf Ladyzhenskii" <rudolf.ladyzhenskii@act-aus.net>
-Cc: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Problem setting breakpoints with BDI2000
-Date: Mon, 20 May 2002 23:25:35 -0400
-Message-ID: <NEBBKJPFOLJNBMFNKBIIAEPNCNAA.clh@net1plus.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <B164B53F5BD6D511888D009027732E1A4D11CC@ntserver.act.domain>
+To: "zhongqx" <zhongqx@guoguang.com.cn>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Probelm for linux booting 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 21 May 2002 08:45:06 +0800."
+             <001301c20060$cb3bf5c0$7301a8c0@zhongqx>
+Date: Tue, 21 May 2002 08:24:13 +0200
+Message-Id: <20020521062418.DAB461196D@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Rudolf Ladyzhenskii wrote
-> Hi, all
+In message <001301c20060$cb3bf5c0$7301a8c0@zhongqx> you wrote:
 >
-> I have BDI2000 with software version v1.11
-> I have problems setting a breakpoint. I am trying to set
-> a breakpoint in the
-> start_kernel() function to debug misbehaving kernel.
-> So, at command line I type:
-> bi 0xXXXXXXXX, where 0xXXXXXXXX is address of
-> start_kernel out of map file.
-> BDI does not stop there, it passes this breakpoint. IO
-> tried it with HARD
-> and SOFT breakpoints.
+>      I have FADS860T board,I want to use ppcboot-1.1.5 to boot linux 2.2.4 kernel.
+> ppcboot-1.1.5 is ok,but when i use bootm command,
+> it uncompressed ok and load ramdisk image then nothing happend,  can you meet this
+> problem before? can you give me some advise? Should I need to change configure file
+> of FADS860_defconfig ? Console is SMC1 and baudrate is 115200 bps.
 
-It's hard to answer your questions without knowing your target
-processor type, and it would be useful to know the kernel version
-and boot loader you are using.
+Probably you are just wasting your  time  on  broken  hardware.  FADS
+boards  (especially  the  older  ones  like  yours)  are not the most
+reliable type of hardware.
 
-If I am not mistaken, addresses entered using the BDI-2000 telnet
-interface are physical addresses for certain target processors.  You
-are entering virtual addresses from the system.map file.
+Wolfgang Denk
 
-> I know that my kernel gets into infinite loop in timer
-> interrupt. So I put a
-> breakpoint there -- same! Nothing happens.
-
-This is a common problem.  I'm guessing your decrementer is set
-wrong, causing the interrupt to happen many times faster than it is
-supposed to.  That is, as soon as you exit from the decrementer
-exception, you are immediately entering it again, making it _look_
-like an infinite loop :)
-
-> I tried to connect to BDI with DDD. I can successfully
-> load the kernel and
-> start the kernel. When it freezes, I can halt BDI2000 and
-> single step the
-> kernel. I can now use breakpoints freely -- all works.
-
-Is this through telnet or gdb??  This is the way it's supposed to
-work :)
-
-> Basically, if I start kernel, BDI does not react to any
-> of the breakpoints.
-> It starts to react on them once it was stopped at least once.
-
-Make sure the MMU setting in your .cfg file is set properly.
-
--Chris Hallinan
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+As far as we know, our computer has never had an undetected error.
+		                                           -- Weisert
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
