@@ -1,34 +1,24 @@
-Date: Thu, 29 Jan 2004 09:11:04 +0100 (CET)
-From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-	Pavel Machek <pavel@ucw.cz>, Hugang <hugang@soulinfo.com>,
-	Patrick Mochel <mochel@digitalimplant.org>,
-	Nigel Cunningham <ncunningham@users.sourceforge.net>,
-	<ncunningham@clear.net.nz>,
+Date: Thu, 29 Jan 2004 10:17:34 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Colin Leroy <colin@colino.net>
+Cc: Hugang <hugang@soulinfo.com>,
 	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: pmdisk working on ppc (WAS: Help port swsusp to ppc)
-In-Reply-To: <1075326924.5658.299.camel@gaston>
-Message-ID: <Pine.LNX.4.44.0401290908290.16923-100000@zirkon.biophys.uni-duesseldorf.de>
+In-Reply-To: <076b01c3e5c0$b94452d0$3cc8a8c0@epro.dom>
+Message-ID: <Pine.LNX.4.44.0401291015380.2221-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > OK. I put a mdelay(100) between the PMU_SYSTEM_READY request and the
-> > pmu_suspend() call in pmu_sys_resume and it seems to work so far. Side
-> > note: if you are saving a large system and have multiple swap files, play
-> > with swap priorities to make sure the pages are swapped out to the file
-> > _not_ used for suspend.
+> > Can you try with swsusp2 ppc port, if you have time.
 >
-> Ah ? What's up ? suspend trashes the swap ? That's very bad...
+> It would be really nice if you could provide a unique diff, would be
+> easier to test ;-)
 
-Nope; freeing memory puts everything in the highest priority swap (happens
-to be the first one), and suspend doesn't find enough room in that swap
-area. The calculation of free swap done by pmdisk is bogus, it calculates
-total free swap, not free swap in the area that pmdisk is going to use for
-the snapshot.
+Seconded. And I'd like to have it all in one single diff - I started
+losing track of what patch to apply on top of the first one already.
 
 	Michael
 
