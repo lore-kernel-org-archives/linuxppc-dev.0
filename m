@@ -1,48 +1,34 @@
-Date: Tue, 15 Jul 2003 09:25:07 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Eugene Surovegin <ebs@ebshome.net>
-Cc: linuxppc-embedded@lists.linuxppc.org
+Message-Id: <5.1.0.14.2.20030715092123.02ef0d20@mail.ebshome.net>
+Date: Tue, 15 Jul 2003 09:27:10 -0700
+To: Matt Porter <mporter@kernel.crashing.org>
+From: Eugene Surovegin <ebs@ebshome.net>
 Subject: Re: [RFC] consistent_sync and non L1 cache line aligned buffers
-Message-ID: <20030715162506.GR1211@ip68-0-152-218.tc.ph.cox.net>
-References: <5.1.0.14.2.20030714210220.0308a070@mail.zultys.com> <5.1.0.14.2.20030714210220.0308a070@mail.zultys.com> <5.1.0.14.2.20030715091031.029e37b0@mail.ebshome.net>
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <20030715091731.C6208@home.com>
+References: <5.1.0.14.2.20030714210220.0308a070@mail.zultys.com>
+ <5.1.0.14.2.20030714210220.0308a070@mail.zultys.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5.1.0.14.2.20030715091031.029e37b0@mail.ebshome.net>
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Jul 15, 2003 at 09:20:24AM -0700, Eugene Surovegin wrote:
-> At 08:46 AM 7/15/2003, Tom Rini wrote:
-> >Well, one thing that is worth noting is that the USB people knew this
-> >was a problem, and it was / should have been fixed in the 2.5 cycle.
-> >Similarly, SCSI was cleaned up a lot, so perhaps this has been fixed
-> >there.  I think it's generally known that doing DMA off of the stack is
-> >a bad idea, and should be fixed when found.
->
-> I agree this is VERY bad idea but the fact is that there is a code which
-> does such nasty things.
->
-> I truly hope all this will/was fixed in 2.5 but frankly I wouldn't be so
-> sure :)
+At 09:17 AM 7/15/2003, Matt Porter wrote:
+>I'll agree that it's a better hack, but since the offending areas in
+>the SCSI subsystem are easily located, it seems wiser to fix upstream.
 
-Well, I would be, of the USB code.  SCSI might have had it fixed, and
-others that we haven't found yet may or may not.  But the important
-point is that doing this is a driver bug and it's OK to beat driver
-authors over the head with patches to fix the behavior. :)
+Matt, the problem is it wasn't that *easy* to locate this, at least for me :)
+I'm not sure that this is the only place..
 
-> Unfortunately, for production 2.5 is unusable and will be for some time.
-> A lot of people (I think majority) still use 2.4. And 2.4 (as of
-> 2.4.22-pre6) is still broken in this respect...
+>We still need someone with interest AND time to properly fix the
+>consistent alloc from irq issue. :)  All of the patches post to date
+>are incomplete bandaids.
 
-Yes, the changes to USB and SCSI probably won't be backported for some
-time, if ever.  So there is still a question of should we workaround
-this in 2.4 (Or, more to the point, do we leave it up to every
-$(EMBEDDED VENDOR) to do it, or bite the bullet and commit it to the 2.4
-mainline.
+Uhh, I switched to solution which uses pre allocated consistent memory (10
+pages are enough for sym53c8xx_2).
+It's still not a generic solution, but at least it's safe :)
 
---
-Tom Rini
-http://gate.crashing.org/~trini/
+Eugene
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
