@@ -1,49 +1,49 @@
-Date: Wed, 24 Apr 2002 21:25:01 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: diff, patch, and symbolic links
-To: Eric.Oosterhof@radisys.com
-Cc: PRuhland@microwavedata.com, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <OF97E48CDE.74B2B7E9-ON88256BA5.0065B1DB@radisys.com>
+Message-ID: <3CC79510.BF265F98@timesys.com>
+Date: Thu, 25 Apr 2002 11:03:04 +0530
+From: ashish anand <ashish.anand@timesys.com>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
-Message-Id: <E170SO4-000076-00@piglet.grunz.lu>
+To: steven blakeslee <thesbman@msn.com>, nanogui@linuxhacker.org,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: [nanogui] question concerning accessing RAM
+References: <F22iAkAagmQ5WTaYeVs000056bc@hotmail.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  24 Apr, this message from Eric.Oosterhof@radisys.com echoed through cyberspace:
->>I always do a 'make mrproper' and then an 'rm -f .config*' ( from the root
->>of the linux tree of course ) before generating any patch files.  Just be
->>sure to save your '.config' somewhere before you remove it.
->>
->>This way all generated files including the 'include/asm' symlink are
->>removed.
->>
-> I did a 'make mrproper' prior, and I still have the symlink.  I also
-> deleted it by hand, but that didn't help.  In fact, I even have that
-> symlink in the original tree.  Is that the root of all evil?  Lastly, when
-> I deleted the .config, and then do the diff and patch, patch complains that
-> it wants to erase the .config in the ORIGINAL tree, which is totally wrong!
-> I absolutely can't have the patch trying to affect the original tree - why
-> does that even begin to occur?
+check if by any chance you have missed ioremapping the lcd framebuffer
 
-Because your 'original' tree has the symlink also. Do a 'make mrproper'
-in _both_ trees. That has always worked for me....
-
-At any rate, there's no reason to have build files (symlinks, .config's
-et al) in your 'original' tree.
-
-Cheers
-
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
-
+steven blakeslee wrote:
+>
+> I'm working on a driver for embedded Linux 2.4 on a ppc board to use a 640
+> by 480 LCD.  I've been able to set up the lcd registers and register the new
+> frame buffer.  The problem is every time I try to use the frame buffer I get
+> an error.
+>
+> Oops: kernel access of bad area, sig: 11
+> NIP: C0107D7C XER: 00000000 LR: C0107D30 SP: C3AD7E70 REGS: c3ad7dc0 TRAP:
+> 0300
+> MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+> DAR: C0111380, DSISR: 82000000
+> TASK = c3ad6000[80] 'nano-X' Last syscall: 5
+> last math 00000000 last altivec 00000000
+> GPR00: C0111380 C3AD7E70 C3AD6000 00000000 00000000 00000000 C3BD9AEC
+> C3BD9010
+> GPR08: 0000001B C0111370 C3AD6000 38635619 24000022 10044D98 00000000
+> 00000000
+> GPR16: 00000000 00000000 00000000 00000000 00009032 03AD7F40 00000000
+> C0002BC8
+> GPR24: C00028E0 00000000 C01E6750 C3BD9A90 00000000 C025DA14 00000000
+> C0262248
+> Call backtrace:
+> C0107D30 C00A5088 C00573AC C00572B0 C0057800 C0002984 7C0802A6
+>
+> I use alloc_bootmem_pages(PAGE_SIZE*75) to allocate the memory, I do this in
+> m8xx_setup.c.  I get a pointer and use a for loop to modify the memory I
+> just allocated, when the kernel initializes the lcd registers the
+> appropriate color shows on the LCD.  The problem is after the kernel boots I
+> am unable to modify this ram again.  I have tried using the frame buffer and
+> also I have tried several modules.  If anyone can give advice I would
+> appreciate it.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
