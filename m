@@ -11,9 +11,9 @@ In-Reply-To: <Pine.LNX.4.44.0401281707260.21460-100000@opal.biophys.uni-duesseld
 References: 
 	 <Pine.LNX.4.44.0401281707260.21460-100000@opal.biophys.uni-duesseldorf.de>
 Content-Type: text/plain
-Message-Id: <1075326899.30500.297.camel@gaston>
+Message-Id: <1075326924.5658.299.camel@gaston>
 Mime-Version: 1.0
-Date: Thu, 29 Jan 2004 08:55:00 +1100
+Date: Thu, 29 Jan 2004 08:55:25 +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
@@ -31,8 +31,7 @@ On Thu, 2004-01-29 at 03:09, Michael Schmitz wrote:
 > with swap priorities to make sure the pages are swapped out to the file
 > _not_ used for suspend.
 
-Hrm... Remove the PMU_SYSTEM_READY, it's a bug to call it on a 101...
-And it's not needed anyway.
+Ah ? What's up ? suspend trashes the swap ? That's very bad...
 
 Ben.
 
