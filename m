@@ -1,44 +1,46 @@
-Date: Tue, 30 May 2000 10:03:15 +0200 (CEST)
-From: Geir Frode Raanes <geirfrs@invalid.ed.ntnu.no>
-To: Neil Russell <caret@c-side.com>
-cc: zzh <david-1z@263.net>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Floating point in 8260
-In-Reply-To: <20000529234501.A10933@lx.c-side.com>
-Message-ID: <Pine.BSF.4.21.0005300954100.44658-100000@invalid.ed.ntnu.no>
+Message-ID: <3933C1AE.F252A488@mvista.com>
+Date: Tue, 30 May 2000 08:27:11 -0500
+From: Jim Lewis <jlewis@mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: zzh <david-1z@263.net>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Floating point in 8260
+References: <39333333.13669@mta5>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, 29 May 2000, Neil Russell wrote:
+If you are dead-set against upgrading the CPU, you can run a root filesystem
+that is COMPLETELY without FP instructions (built to use soft-float). The
+MontaVista 8xx CDK should work fine.  Just make sure you don't mix it (the 8xx
+CDK) with other binaries.
 
-> As I understand it, there is no production 8260 without an FPU.  Current
-> production chips are rev A.1 which have an FPU, and new production are rev B
-> which will also have an FPU.  You probably have no choice for production, so
-> you should upgrade your test board if it has old an CPU.
+-Jim
+zzh wrote:
 
-I suppose I can tell since currently shipping 8260 come with FPU.
-Early 8260 are just like the early 486SX - it does contain a FPU,
-but it is disabled. But unlike the 486SX the 8260 FPU can be
-reenabeled by some microcode patch - wich I do not have myself.
-This is as much I know of this. If you are really nice to
-Motorola then perhaps they will let you have this patch.
-
-> > Should i recompile the bash and c lib.How should i treat
-> > float point.BTW,i have a apple G3,should i compile
-> > these stuff on this machine?
-
-configure & make xgcc -nfp?
-Then recompile GLibC (with soft float) I suppose.
-
---
-  ******************************************************
-  Never ever underestimate the power of human stupidity.
-  -Robert Anson Heinlein
-
-		GeirFRS@invalid.and.so.forth
-  ******************************************************
+> I make a port to motorola 8260 ads based on 2.2 kernel.
+> Now i am sure the kernel is fuctional,because i can run a
+> simple program that fork process and write to stdout.
+> I use simple assembly to make system call and does not
+> use any c lib.
+> When i try to run bash,8260 loops inside FPunavailble
+> exception.The 2.2 kernel support 603 with a FP,but
+> how should i do with 603e.
+> >From this lists,i learned that someone else encounter
+> similar problem,they upgrade to a 8260 with FP.
+> I do not want to upgrade,how should i do?
+> Should i recompile the bash and c lib.How should i treat
+> float point.BTW,i have a apple G3,should i compile
+> these stuff on this machine?
+>
+>  Best Regards.
+>
+> _____________________________________________
+> 一路上有你，苦一点也愿意！
+> --为你喜爱与支持的263首都在线（http://www.263.net）投一票！
+> 我要投票！（http://fsurvey.cnnic.net.cn/survey/index.html）
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
