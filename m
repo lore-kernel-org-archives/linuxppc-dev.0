@@ -1,64 +1,27 @@
-To: Darin.Johnson@nokia.com
+Date: Fri, 30 May 2003 08:52:19 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: ?????? <jfg@ndsc.com.cn>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: embedded gcc PPC toolchain questions 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 30 May 2003 00:11:37 PDT."
-             <F0B628F30F48064289D8CCC1EE21B7A80C4884@mvebe001.americas.nokia.com>
-Date: Fri, 30 May 2003 09:41:17 +0200
-Message-Id: <20030530074122.BAD54C5492@atlas.denx.de>
+Subject: Re: compiling error when compile kgdb on ppc 74XX
+Message-ID: <20030530155219.GB3299@ip68-0-152-218.tc.ph.cox.net>
+References: <7A7A7A38134E244784EDAC428C538AE90C6FC0@mail.ndsc.com.cn>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <7A7A7A38134E244784EDAC428C538AE90C6FC0@mail.ndsc.com.cn>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <F0B628F30F48064289D8CCC1EE21B7A80C4884@mvebe001.americas.nokia.com> you wrote:
-> > Actually it should be no big surprise. I  think  every  (?)  standard
-> > conforming  C  compiler  will  put  uninitialized  data  into the BSS
-> > segment (usually .bss in the linker scripts).
->
-> Is BSS, or sections, a part of the C standard?  Lots of data ends
-> up in .sbss.
+On Fri, May 30, 2003 at 09:34:07AM +0800, ?????? wrote:
 
-No. The C standard does not mention BSS or other linker sections. But
-it contains requirements that may  be  (and  often  are)  implemented
-using such sections, for example:
+>      I am a novice in Linux. I am trying to build kernel 2.4.17 for ppc on i386 using ppc_74xx-gcc cross compiler.  And the version of GCC is 2.96. The configuration compiles fine when I exclude kernel hacking options. Once kgdb option of the kernel hacking options is included, kernel compilation fails with the following:
 
-        All objects with static storage duration shall be initialized
-        (set to their initial values) before program startup.
-
-in detail:
-
-	6.2.4 Storage durations of objects
-	...
-        3 An object whose identifier is declared with external or
-          internal linkage, or with the storage-class specifier
-          static has static storage duration. Its lifetime is the
-          entire execution of the program and its stored value is
-          initialized only once, prior to program startup.
-	...
-        ... If an object that has static storage duration is not
-        initialized explicitly, then:
-	- if it has pointer type, it is initialized to a null pointer;
-        - if it has arithmetic type, it is initialized to (positive
-          or unsigned) zero;
-        - if it is an aggregate, every member is initialized
-          (recursively) according to these rules;
-        - if it is a union, the first named member is initialized
-          (recursively) according to these rules.
-	...
-
-One method to implement this is to put uninitialized (or better:  not
-explicitly initialized) static data into a BSS segment, which will be
-cleared (set to zero) befor estarting the program.
-
-Best regards,
-
-Wolfgang Denk
+2.4.17 on PPC, from kernel.org, only supports KGDB on 8xx.  If you need
+kgdb on a 74xx board, I suggest you check out the linuxppc_2_4_devel
+tree (see http://penguinppc.org/dev/kernel.shtml)
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Remember that Beethoven wrote his first symphony in C ...
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
