@@ -1,155 +1,190 @@
-Date: Thu, 8 Aug 2002 20:56:36 +0200 (CEST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Tr: xtime_lock
-In-Reply-To: <20020719143525.3334@192.168.4.1>
-Message-ID: <Pine.LNX.4.21.0208082010460.580-100000@ltgp.iram.es>
+Content-Type: text/plain; charset=iso-8859-1
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+To: linuxppc-dev@lists.linuxppc.org
+Cc: benh@kernel.crashing.org, mporter@cox.net
+From: acurtis@onz.com
+Subject: PCI revisited 2.4.17
+Date: Thu, 08 Aug 2002 13:25:20 -0700 (PDT)
+Message-Id: <20020808132524.10304.h002.c007.wm@mail.directvinternet.com.criticalpath.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 19 Jul 2002, Benjamin Herrenschmidt wrote:
+I have made the recommended modifications and getting the same results. Look
+below for the new configuration and boot log information. Any suggestions are
+welcome.
 
-> I'm forwarding your message to linuxppc-dev mailing list
+PS: Take a look at the `lspci -v` output at the bottom. The host controller
+output is interesting.
 
-I'm just back from holidays trying to redice my email backlog.
+==========================
 
+Our board:
+Host phys: 0x40000000 - 0x47ffffff =>
+Host virt: 0xe0000000 - 0xe0007fff =>
+PCI I/O space 0x00000000 - 0x00007fff
 
->
-> ---------------- Début du message transmis ----------------
-> Sujet: xtime_lock
-> Envoyé: vendredi 19 juillet 2002 15:31
-> De: Jeroen T. Vermeulen <jtv@xs4all.nl>
-> À: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->
-> Hi Ben,
->
-> I was just trying to learn a bit more about the kernel's locking
-> primitives and execution model, when I came across xtime_lock and your
-> comment about wanting to get rid of it (arch/ppc/kernel/time.c).
->
-> So here's my question: would it be feasible (and/or pointful) to replace
-> the xtime_lock in do_gettimeofday() by a simple optimistic approach?  If
-> the machine is fast enough compared to timer resolution, I imagine one
-> could just read the clock twice and compare the results to verify that
-> you got consistent data.  Of course whether that saves you any time is
-> another matter; perhaps it would make sense with SMP but not for
-> uniprocessor machines, or something.
+Host phys: 0x48000000 - 0x4fffffff =>
+PCI Memory space 0x00000000 - 0x07ffffff
 
-I had started something like this and then got distracted as always,
-but the solution I wanted is not exactly the same: you need two copies
-of the variables needed to compute current time and a version number.
-[I'm writing this on my notebook which is getting a new disk, no
-sources yet, so I'm working from memory, variable names are not
-correct etc]
+PCI phys: 0x40000000 - 0x47ffffff =>
+Host Memory 0x00000000 - 0x07ffffff
 
-unsigned xtime_version;
-struct timevar {
-	unsigned  version;
-	unsigned  last_tb_stamp;
-	struct timeval time_at_stamp;
-	/* and other variables needed by gettimeofday */
-	...
-} timevars[2];
+Host Memory:
+phys: 0x00000000
+virt: 0xc0000000
+size: 0x08000000
 
-with preferably each timevar struct aligned and padded to a cache line.
+PCI BAR: (only 1 bus)
+Memory: 0x00000000
+I/O: 0x00000000
 
-Then gettimeofday should do:
+======================
 
-	struct timevar *p;
+/* Changed I/O map initilization as follows:
+ *  virtual address:  0xe0000000
+ *  virtual size:     0x00007fff
+ *  PCI memory not mapped at startup, only 32K I/O
+ */
+isa_io_base 0xe0000000, isa_mem_base 0x48000000, pci_dram_offset 0x40000000
+Memory BAT mapping: BAT2=128Mb, BAT3=0Mb, residual: 0Mb
+m8260_map_io() - io_block_mapping()
+Linux version 2.4.17_mvl21-sbc8260 (iseries@HardHat21) (gcc version 2.95.3
+20010312
+est8260_pci:in sbs8260_find_bridges()
 
-	do {
-		unsigned v=xtime_version;
-		p = timevars + (v&1);
-		/* copy needed variables to local, all architectures have
-		 * more than enough registers to perform this, unless you
-		 * believe that x86 deserves to be called an architecture.
-		 */
-		read_barrier();
-	} while (v!=p->version); /* or unlikely(v!=p->version) */
-	/* compute the current second/microsecond from
-	 * fetched variables and timebase, fill the
-	 * timeval structure and you're done.
-	 */
+est8260_pci:powerspan_bridge_init
+PowerSpan_Bridge_Init()
+Setup PCSR registers
+setup_powerspan_pci (in): cfg_addr=0xfe800290  cfg_data=0xfe800294
+setup_powerspan_pci (out): hose->cfg_addr=0xfe800290  hose->cfg_data=0xfe800294
+powerspan_bridge_init() complete.
+est8260_pci: do pciauto_bus_scan()
+PCI Autoconfig: Device 15, Vendor 0x1000, Class 0x1000001
+PCI Autoconfig: Found Bus 0, Device 15, Function 0
+PCI Autoconfig: BAR 0x10, I/O, size=0x100, address=0x7f00
+PCI Autoconfig: BAR 0x14, Mem size=0x400, address=0x7fffc00
+PCI Autoconfig: BAR 0x18, Mem size=0x2000, address=0x7ffc000
+est8260_pci:pciauto_bus_scan done
+est8260_pci:powerspan_bridge_init
+  PCI_ISA_IO_ADDR  0xe0000000   /* new virtual address */
+  PCI_ISA_IO_SIZE  0x00008000   /* new virtual size */
+  PCI_ISA_MEM_ADDR 0x48000000
+  PCI_ISA_MEM_SIZE 0x08000000
+  PCI_DRAM_OFFSET  0x40000000
+  _ISA_MEM_BASE    0x48000000
+  _IO_BASE         0xe0000000
+  hose->io_resource.start  0x00000000
+  hose->io_resource.end    0x00007fff
+  hose->io_space.start     0x00000000
+  hose->io_space.end       0x00007fff
+  hose->io_base_phys       0x40000000
+  hose->io_base_virt       0xe0000000
+  isa_io_base              0xe0000000
+  hose->mem_resources[0].start    0x48000000
+  hose->mem_resources[0].end      0x4fffffff
+  hose->mem_space.start           0x00000000
+  hose->mem_space.end             0x07ffffff
+  hose->pci_mem_offset            0x48000000
+  isa_mem_base                    0x48000000
+  pci_dram_offset                 0x40000000
+PCI: Probing PCI hardware
+pcibios_fixup_resources()
+Fixup res 1 (200) of dev 00:00.0: 30000000 -> 78000000
+Fixup res 2 (1208) of dev 00:00.0: 40000000 -> 88000000
+pcibios_fixup_resources()
+/*
+ * Note: No I/O fixup here !
+ */
+Fixup res 1 (200) of dev 00:0f.0: 7fffc00 -> 4ffffc00
+Fixup res 2 (200) of dev 00:0f.0: 7ffc000 -> 4fffc000
+pcibios_fixup_bus()
+Installing Powerspan ERROR handler
 
-the read barrier is necessary, but I'd rather not use a sync
-(expensive). My idea would be to have a way to ensure that
-all variables have been read by having the read barrier take
-a parameter, for example if you define:
+PCI ERRCS: MultiErr Cmd: 0xa AERR:0x0002000c
+  P1CSR: Rcv_MstrAbort
+  P1err: PB_ERR
+pcibios_allocate_bus_resources()
+pcibios_allocate_bus_resources()
+pcibios_allocate_resources()
+PCI:00:00.0: Resource 1: 78000000-78000fff (f=200)
+PCI: Cannot allocate resource region 1 of device 00:00.0
+PCI:00:00.0: Resource 2: 88000000-97ffffff (f=1208)
+PCI: Cannot allocate resource region 2 of device 00:00.0
+PCI:00:0f.0: Resource 0: 00007f00-00007fff (f=101)
+PCI:00:0f.0: Resource 1: 4ffffc00-4fffffff (f=200)
+PCI:00:0f.0: Resource 2: 4fffc000-4fffdfff (f=200)
+pcibios_allocate_resources()
+pcibios_assign_resources()
+  PCI class: 0x0680
+pcibios_update_resource()
+/*
+ * Not sure what this is about
+ */
+PCI: Failed to allocate resource 2(50000000-4fffffff) for 00:00.0
 
-	ensure_read_done(val);
+  PCI class: 0x0100
+/*
+ * sym53c8xx - version 2 initialization output
+ */
+SCSI subsystem driver Revision: 1.00
+sym.0.15.0: setting PCI_COMMAND_PARITY...
+sym0: <895a> rev 0x1 on pci bus 0 device 15 function 0 irq 19
+sym0: No NVRAM, ID 7, Fast-40, LVD, parity checking
+CACHE TEST FAILED: DMA error (dstat=0x81).sym0: CACHE INCORRECTLY CONFIGURED.
+sym0: giving up ...
+/*
+ * sym53c8xx - version 1 initialization output
+ *             (different build, not in same kernel)
+ */
+SCSI subsystem driver Revision: 1.00
+sym53c8xx: at PCI bus 0, device 15, function 0
+sym53c8xx: 0x07fffc00 = pci_get_base_address(base)
+sym53c8xx: 0x07ffc000 = pci_get_base_address(base_2)
+sym53c8xx: setting PCI_COMMAND_PARITY...(fix-up)
+sym53c8xx: 53c895a detected
+sym53c895a-0: rev 0x1 on pci bus 0 device 15 function 0 irq 19
+sym53c8xx: device->slot.base = 0x07fffc00
+sym53c8xx: device->slot.base_2 = 0x07ffc000
+sym53c895a-0: ID 7, Fast-40, Parity Checking
+sym53c8xx: 0x404ba000 = vtobus(0xc04ba000)
+sym53c8xx: 0x404bd800 = vtobus(0xc04bd800)
+sym53c8xx: np->base2_ba = 0x07ffc000
+sym53c8xx: 0xc9002000 = remap_pci_mem(0x4fffc000, 0x00002000)
+sym53c8xx: ncr_script_copy_and_bind(src 0xc04f7ce0, dst 0xc04be054)
+sym53c8xx: ncr_script_copy_and_bind(src 0xc04f7ce0, dst 0xc04be054)
+sym53c8xx: 0xf0ccff07 = cpu_to_scr(0x07ffccf0)
+sym53c8xx: enter ncr_regtest()
+sym53c8xx: snooptest() pc = 0x404bddc0, np->reg = 0xc9000c00
+CACHE TEST FAILED: DMA error (dstat=0x81).
+  snooptest = 0x404bddc0, pc = 0x404bc008, end = 0x404bdde0
+  dmode = 0x00, dcntl = 0x00, ccntl0 = 0x00, ccntl1 = 0x00
+CACHE INCORRECTLY CONFIGURED.
+sym53c895a-0: giving up ...
 
-to expand to:
+/*
+ * Look at the bridge resource list....?
+ */
+root@191.1.1.30:~# lspci -v
+00:00.0 Bridge: Tundra Semiconductor Corp. CA91L8200 [PowerSpan]
+        Subsystem: Unknown device babe:bead
+        Flags: bus master, 66Mhz, medium devsel, latency 0, IRQ 19
+        [virtual] Memory at 48000000 (32-bit, non-prefetchable) [size=4K]
+        Memory at 50000000 (32-bit, prefetchable)
+        Capabilities: [e4] #06 [0000]
 
-	asm ("twne %0,%0; isync": : "r" (val): "memory");
+00:0f.0 SCSI storage controller: Symbios Logic Inc. (formerly NCR) 53c895a (rev
+01)
+        Subsystem: Symbios Logic Inc. (formerly NCR): Unknown device 1000
+        Flags: bus master, medium devsel, latency 128, IRQ 19
+        I/O ports at 7f00 [size=256]
+        Memory at 4ffffc00 (32-bit, non-prefetchable) [size=1K]
+        Memory at 4fffc000 (32-bit, non-prefetchable) [size=8K]
+        Capabilities: [40] Power Management version 2
 
-and replace the read_barrier() earlier with
-
-	ensure_read_done(tb_stamp^sec^usec^...)
-
-then i believe that the PPC architecture guarantees that the variables
-entering the val expression are guaranteed to be read before p->version.
-Tis is because the twne (conditional trap) instruction will block
-the processor from going past the isync since one of the guarantees of
-isync is that it has been determined that all previous instructions have
-progressed past the point where they can cause an exception.
-
-Note that you can use any operator in the expression instead of xor, I
-just happen to like xor in this context, it looks like you compute a hash
-of all the variables you need. I don't like the ensure_read_done name very
-much either, so feel free to suggest a better name.
-
->
-> A detail that could make it more feasible AFAICS is that you don't
-> need to re-read the least significant--and most volatile!--part of the
-> time value for the "second opinion" check, because you only get an
-> actual inconsistent result if there's been a rollover while you were
-> reading.  Or am I forgetting to take nonlinear clock changes into
-> account?  OTOH they mean you get weird results anyway...
-
-Note that the code I suggest means that you can change all the parameters
-of the clock, including the tb_to_us conversion factor. This is useful
-because it would allow to reduce the update frequency of this structure,
-which reduces the probability of having to loop getting the variables.
-
-Ideally, the update frequency of the structure should be a power of 2
-since other values force dubious hacks in the NTP PLL algorithm and it
-should be as low as possible. I consider 4 Hz as the best compromise.
-
-After this jiffies are something completely independent of gettimeofday,
-I never understood the logic which forced us to use the lost jiffies in
-gettimeofday.
-
-Note also that once we have such a lockless code, it can be mapped
-readonly to user space along with relevant data to make gettimeofday
-extremely cheap since syscall overhead is eliminated.
-
-Finally you could even consider this suggestion a kind of RCU
-(read-copy-update) specifically optimized for gettimeofday().
-
-
->
-> Oh, and on a side note, why the loop to convert "superfluous" usecs to
-> secs?  Is this because the number of iterations is so low that the
-> conditional is faster than a division plus a remainder operation?
-
-Indeed, actually if you iterate more than once your system is likely to be
-toast (means you've not been able to run timer_bh for about 1 second). I'd
-rather say (can't remember the BUG/BUG_ON syntax but you get the idea):
-
-	if (usec>=1000000) {
-		sec++;
-		usec-=1000000;
-		if (unlikely(usec>=1000000)) BUG();
-	}
-
-
-
-	Regards,
-	Gabriel.
-
+------------------------------------------------------------
+Allen Curtis              |  All good things come to those
+Ones and Zeros, Inc.      |  who wait. Some of us have to
+mailto:acurtis@onz.com    |  wait a little longer.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
