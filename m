@@ -1,66 +1,44 @@
-Subject: 405LP EBC setup fix
-From: Hollis Blanchard <hollis@austin.ibm.com>
-To: embedded list <linuxppc-embedded@lists.linuxppc.org>
-Date: 17 Dec 2002 12:51:18 -0600
-Message-Id: <1040151079.1100.119.camel@granite.austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="=-GrKr/RkqVBf3ooYs9AcY"
+To: James Don <JDon@spacebridge.com>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: How Do I: Make My Own /root file system 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 17 Dec 2002 13:42:20 EST."
+             <DB0585C9F6F9D411BE8F00D0B7896A4CC05F40@SNCMAIL>
+Date: Tue, 17 Dec 2002 20:02:46 +0100
+Message-Id: <20021217190251.9A0B5C6139@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---=-GrKr/RkqVBf3ooYs9AcY
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+In message <DB0585C9F6F9D411BE8F00D0B7896A4CC05F40@SNCMAIL> you wrote:
+>
+> I just finished getting a basic bash shell running on my embedded PPC
+> platform using a standard RAM file system from www.denx.de.
+>
+> Are there any instructions on line as to how I would go about making my own
+> RAM FS? ... most online info seem to point to commercial distro's ... and I
+> wouldn't mind learning the do's and don'ts for my self.
 
-EBC0_B0CR should be set as 16-bit; through an ifdef merging typo it is
-currently set incorrectly as 8-bit. This prevents 405LP wakeup from
-succeeding and needs to be fixed.
+There is the our SELF (Simple Embedded Linux  Framework)  package  at
+ftp://ftp.denx.de/pub/LinuxPPC/usr/src/SELF  ,  and there is the SELF
+RPM in our ELDK which is where the tarball you're using  comes  from.
+You  can  download  the  build script (especially the SELF.spec file)
+from our CVS server.
 
-Please apply to _2_4_devel and 2.5.
+> In the mean time I will keep dogging for information.
 
--Hollis
---=20
-PowerPC Linux
-IBM Linux Technology Center
+There is more projects of "Linux on a flopy disk"  than  I  can  name
+here. They all can be used as a starting point.
 
---=-GrKr/RkqVBf3ooYs9AcY
-Content-Disposition: attachment; filename=405LP-EBC0_B0CR-2.4.diff
-Content-Type: text/plain; name=405LP-EBC0_B0CR-2.4.diff; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Best regards,
 
-=3D=3D=3D=3D=3D arch/ppc/platforms/beech.c 1.9 vs edited =3D=3D=3D=3D=3D
---- 1.9/arch/ppc/platforms/beech.c	Thu Dec 12 17:06:37 2002
-+++ edited/arch/ppc/platforms/beech.c	Tue Dec 17 11:29:58 2002
-@@ -180,7 +180,7 @@
- 	    (mfdcri(DCRN_EBC0, BnCR(0)) & EBC0_BnCR_MASK);
- 	cr.fields.bs =3D BEECH_BANK0_EBC_SIZE;
- 	cr.fields.bu =3D EBC0_BnCR_BU_RW;
--	cr.fields.bw =3D EBC0_BnCR_BW_8;
-+	cr.fields.bw =3D EBC0_BnCR_BW_16;
- 	mtdcri(DCRN_EBC0, BnCR(0), cr.reg);
-=20
- 	ap.reg =3D mfdcri(DCRN_EBC0, BnAP(0)) & EBC0_BnAP_MASK;
+Wolfgang Denk
 
---=-GrKr/RkqVBf3ooYs9AcY
-Content-Disposition: attachment; filename=405LP-EBC0_B0CR-2.5.diff
-Content-Type: text/plain; name=405LP-EBC0_B0CR-2.5.diff; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-=3D=3D=3D=3D=3D arch/ppc/platforms/4xx/beech.c 1.9 vs edited =3D=3D=3D=3D=
-=3D
---- 1.9/arch/ppc/platforms/4xx/beech.c	Thu Dec 12 17:06:37 2002
-+++ edited/arch/ppc/platforms/4xx/beech.c	Tue Dec 17 11:29:58 2002
-@@ -180,7 +180,7 @@
- 	    (mfdcri(DCRN_EBC0, BnCR(0)) & EBC0_BnCR_MASK);
- 	cr.fields.bs =3D BEECH_BANK0_EBC_SIZE;
- 	cr.fields.bu =3D EBC0_BnCR_BU_RW;
--	cr.fields.bw =3D EBC0_BnCR_BW_8;
-+	cr.fields.bw =3D EBC0_BnCR_BW_16;
- 	mtdcri(DCRN_EBC0, BnCR(0), cr.reg);
-=20
- 	ap.reg =3D mfdcri(DCRN_EBC0, BnAP(0)) & EBC0_BnAP_MASK;
-
---=-GrKr/RkqVBf3ooYs9AcY--
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+You can observe a lot just by watchin'.                  - Yogi Berra
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
