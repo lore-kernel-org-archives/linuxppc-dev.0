@@ -1,22 +1,28 @@
 Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: Running external clock at 1/2 
-Date: Thu, 31 Jan 2002 20:23:04 -0600
-Message-ID: <D3A72C5007329A4F991C0DD87202259F096A49@sekhmet.ad.newisys.com>
-From: "Navin Boppuri" <navin.boppuri@newisys.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: 8260ADS Startup
+From: Bruno Coudoin <bcoudoin@anfora.fr>
+To: linuxppc emb3dd3d list <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <3C59EB31.3FE82EE1@carts.com>
+References: <3C59EB31.3FE82EE1@carts.com>
+Content-Type: text/plain
+Date: 01 Feb 2002 09:57:43 +0100
+Message-Id: <1012553894.3247.7.camel@bruno>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Hi,
 
-I would like to the run the CLKOUT at half the frequency of the memory bus clock on an 855T processor. I do this by setting EBDF to 01 as the manual says. But it looks like the memory bus is also set to half here. Is this correct? Is there no way I can get the CLKOUT set to 1/2 of VCCOUT without also setting the bus clock to half? Am I missing something here?
+I have a Motorola MPC8260ADS Board with a CopRaven JTag cable.
+I would like to load PPC Boot on our flash board but I can't find the
+process to achieve that.
 
-Thanks in advance.
+Has anybody already done this and could give a desciption of how to do
+this.
 
-Navin Boppuri
+Thanks in advance,
+Bruno Coudoin.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
