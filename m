@@ -1,39 +1,51 @@
-To: linuxppc-dev@lists.linuxppc.org
+Date: Sun, 22 Apr 2001 23:42:48 +0100
+Subject: Re: Sound problem on Blue G3
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: Christian Groessler <cpg@aladdin.de>,
+	linuxppc-dev@lists.linuxppc.org
 Cc: cpg@aladdin.de
-Subject: Sound problem on Blue G3
-From: Christian Groessler <cpg@aladdin.de>
-Date: 23 Apr 2001 00:23:08 +0200
-Message-ID: <878zksmv5f.fsf@gibbon.cnet.aladdin.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
+Message-Id: <20010422224336.0F7ED2F03D@apollo.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Hi Christian,
 
-I'm rather new to linuxppc and Macs.
-I have now 2 Macs, a Beige G3 and a Blue G3 Tower.
+I take it from the first part of your message that sound is OK on the
+g3/beige (I certainly hope so - that's the machine I test most on ;-)
 
-The first one was the beige. The beige G3 can only boot with BootX,
-but everything else seems to work. I use Debian 2.2 and stock Linux
-2.4.3.
+> I tried the current PPC patches from kernel.org (patch-2.4.4-pre4.bz2
+> and linuxppc2.4_vs_v2.4.4-pre4.patch.bz2), but except for a rename of
+> the sound driver module (dmasound_awacs -> dmasound_pmac) nothing
+> changed (I.e. the sound still doesn't work!)
 
-I set up the same configuration (Debian 2.2 and 2.4.3) on the blue G3,
-and it works despite of the sound. The driver loads (modprobe
-dmasound_awacs) but it is silent.
+Hmm.  can you send me the output of "cat /dev/sndstat" please. and tell me
+if you have the "burgundy" sound chip (I think you do).
 
-I tried the current PPC patches from kernel.org (patch-2.4.4-pre4.bz2
-and linuxppc2.4_vs_v2.4.4-pre4.patch.bz2), but except for a rename of
-the sound driver module (dmasound_awacs -> dmasound_pmac) nothing
-changed (I.e. the sound still doesn't work!)
+> How can I get the sound working on the Blue G3?
 
-How can I get the sound working on the Blue G3?
+well, you could try applying the following two patches (I updated earlier
+this pm):
 
-Thanks for your help,
+ftp://ftp.penguinppc.org/users/iain/kernel/2_4_x/2.4.4p4-dmasound/dmas-2.4.4
+p4-1.diff.bz2
 
-regards,
-chris
+and
 
+ftp://ftp.penguinppc.org/users/iain/kernel/2_4_x/2.4.4p4-dmasound/dmas-2.4.4
+p4-2.diff.bz2
+
+(both need to be applied)... you should be able just to "make dep modules"
+and "make modules_install" and go from there.
+
+what desktop?
+could you make sure that things aren't getting futzed by the mixer - I know
+this sounds a little dumb - but could you try adjusting the levels of
+speaker and input... even if they look like they are OK.
+
+ciao,
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
