@@ -1,33 +1,55 @@
-Subject: Re: crash loadin bash after booting linux on a MPC860ADS
-To: t.shantha.laxmi@exgate.tek.com
-Date: Wed, 17 May 2000 09:55:53 +1000 (EST)
-Cc: linuxppc-embedded@lists.linuxppc.org (LinuxPPC Embedded Mailing List)
-In-Reply-To: <21F9768AF088D211BF1C0008C71E5786EEFF62@ap-bang-m02.india.tek.com> from "t.shantha.laxmi@exgate.tek.com" at May 16, 2000 05:49:42 AM
+Message-ID: <3922046E.D77E156@charter.net>
+Date: Tue, 16 May 2000 21:31:10 -0500
+From: "Dan A. Dickey" <ddickey@charter.net>
 MIME-Version: 1.0
+To: Nicolas-Peter Pohland <pohland@snom.de>
+CC: "linuxppc-embedded@lists.linuxppc.org"
+ <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: How to get rom code to go on FADS?
+References: <391B220F.9838E70F@charter.net> <391C3273.4BBF0884@motorola.com> <391C3945.9E0A439F@charter.net> <391C5416.15ADA181@motorola.com> <391D5E99.D14A02F2@charter.net> <39201DD2.2135361E@motorola.com> <39202D2C.385DD3B@charter.net> <3920AA9F.2DCA0B2E@charter.net> <3920ED16.A2D26629@snom.de> <3921B844.572E3C63@charter.net>
 Content-Type: text/plain; charset=us-ascii
-Message-Id: <20000516235553.C15D13C962@elph.research.canon.com.au>
-From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-t.shantha.laxmi@exgate.tek.com writes:
-> page fault in interrupt handler, addr=c0002578
-> NIP: C005EE64 XER: 0000B86D LR: C005EE44 REGS: c00c99c0 TRAP: 0300
-...
-> Kernel panic: kernel access of bad area pc c005ee64 lr c005ee44 address
-> C0002578
+"Dan A. Dickey" wrote:
+>
+> Nicolas-Peter Pohland wrote:
+> >
+> > Did you try "rms der 0" (assuming you have the ADI board and MPC8bug SW)
+>
+> Nope, haven't tried that.  I'll look at it later tonight; thanks
+> for the tip.
 
-Looks like one of your interrupt handlers is causing a page fault. Disassemble
-your vmlinux with objdump --disassemble, and find the instruction at C005EE64.
-It's the one causing the fault.
+Good!  Fantastic tip.
+This helps tremendously, especially in the fact that now I can
+actually boot and run the kernel on my fads... while the ADI &
+mpc8bug are connected.  Before that, I would always get the
+InstructionTLBMiss exception - and of course, mpc8bug didn't
+really know anything about the address.
 
-By the way, do any other list members know of any references on the 'net that
-give some PowerPC-specific tips to decoding oops messages?  If I can find
-something more applicable than Documentation/oops-tracing.txt, I'd like to
-include a link to it in the HOWTO.
+Also, I'm also now running in "stand alone" mode - with the
+ADI & mpc8bug disconnected.  Straight from the flash.
 
-Regards,
-Graham
+For me, this is great news.  I know that most of you don't
+give a hoot!  :)
+
+So, I'm attributing this recent success to:
+	A)  Setting SYPCR in the rom code fairly early on.
+	B)  Issuing a "rms der 0" to mpc8bug when it is connected.
+
+I'm a happy camper at the moment.  Mostly.  :)
+I just need to get my regular system setup to allow bootp and
+host an nfs root for the fads.
+Also, I just noticed - the kernel couldn't mount root, so it's
+doing its "Rebooting in 180 seconds.." act.  However, about
+all I'm seeing after that is a:
+	<0>Kernel panic: Kernel Mode Software FPU Emulation
+and then the duo is repeating every 180 seconds...
+Not quite what I call a reboot.  I would think it would at
+least manage to restart the rom initialization code.
+Anyways, thats relatively minor...
+have a good night!
+	-Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
