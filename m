@@ -1,33 +1,60 @@
-From: Ryan Nielsen <ran@krazynet.com>
-Date: Thu, 24 Jun 1999 12:41:38 -0700
-To: =?iso-8859-1?Q?Albrecht_Dre=DF?= <ad@MPIfR-Bonn.MPG.de>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Help: Porting PCI driver from Linux/Intel -> PPC
-Message-ID: <19990624124138.A1051@gondolin.asf>
-References: <3771D987.C59A9374@mpifr-bonn.mpg.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: =?iso-8859-1?Q?=3C3771D987=2EC59A9374=40mpifr-bonn=2Empg=2Ede=3E=3B_from?=
- =?iso-8859-1?Q?_Albrecht_Dre=DF_on_Thu=2C_Jun_24=2C_1999_at_09:08:55AM_+?=
- =?iso-8859-1?Q?0200?=
+From: nyet@nbase.com (Nye Liu)
+Message-Id: <199906242015.NAA28109@beavis.nbase.com>
+Subject: 8240 Sandpoint
+To: doyle@primenet.com
+Date: Thu, 24 Jun 1999 13:15:16 -0700 (PDT)
+Cc: linuxppc-dev@lists.linuxppc.org, nyet@internal.nbase.com (Nye Liu, x248, )
+In-Reply-To: <199906242009.NAA28078@beavis.nbase.com> from "Nye Liu" at Jun 24, 99 01:09:45 pm
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Albrecht Dreß wrote:
-> Now I try to insmod my driver, which reads the configuration space (using calls
-> to pci_read_config_dword) and dumps it, reads irq and board revision, reads the
-> base adresses of the five io regions, and reads one io address via inl().  The
-> last operation leads to a panic:
+> > I have just started work on the MPC8240 Sandpoint platform (its
+> > basically an 603e with some integrated peripherals) but this is my first
+> > try at embedded linux devel. I have plenty of experience getting psos
+> > and vxworks running on a few different processors, but I am unfamiliar
+> > with the internals of how linux is booted.
+> 
+> I've got one too.  I'm a newbie with the ppc so this is my platform to
+> learn things.  I've mostly got a working VGA display configured and
+> running...
 
-you might need to enable memory with somthing like:
-	u16 cmd;
+Could you send me patches vs. a known kernel tarball, or a link to the
+changes you made? Also, what kind of VGA card are you using? I can't
+even get my board booted.
 
-	/* on OpenFirmware machines (PowerMac at least), PCI memory cycle */
-	/* response on cards with no firmware is not enabled by OF */
-	pci_read_config_word(dev, PCI_COMMAND, &cmd);
-	cmd |= PCI_COMMAND_MEMORY;
-	pci_write_config_word(dev, PCI_COMMAND, cmd);
+> > I'm using ESTC's cheapo visionICE emulator solution, and would
+> > appriciate any help with getting this thing up and running.
+> 
+> The jury is still out on the ESTC emulator...
+
+I can get it to load kernels to RAM and to FLASH, but I have yet
+to build a kernel that doesn't go off into space and crash the board.
+
+>  Dink does all that for you.  How 'bout booting linux from dink
+>  until linux is running?  Then go back remove dink and fix the
+>  startup stuff.
+
+I tried loading via DINK... same thing as above. I really think I dont
+have a good build yet ;) Also, its TERRIBLY slow compared to the ESTC
+loader (since its serial only).
+
+>  I couldn't find docs on National's website for the '87308 but I was
+>  able to get the floppy going by just reading the dink code.  Anybody
+>  know where to get docs?
+
+UGH. i was looking for this too: no luck. I will contact mot as well and
+see if i cant get some docs from our FAE.
+
+>  I was considering patching dink to add a command that would copy a
+>  floppy into memory.  That might ease hacking.
+
+Yes yes that would be a nice feature.
+
+Nye Liu
+nyet@nbase.com
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
