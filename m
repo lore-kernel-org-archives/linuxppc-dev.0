@@ -1,39 +1,29 @@
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: sleep on Pismo, Ben's tree
-References: <4v7kiw5t6m.fsf@pc203b.fzu.cz>
-	<20020813063318.17261@smtp.wanadoo.fr>
-From: Jiri Masik <masik@pc203b.fzu.cz>
-Date: 20 Aug 2002 11:03:59 +0200
-In-Reply-To: <20020813063318.17261@smtp.wanadoo.fr>
-Message-ID: <4v3ct9dhq8.fsf@pc203b.fzu.cz>
-MIME-Version: 1.0
+Date: Tue, 20 Aug 2002 07:38:37 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Harald Welte <laforge@gnumonks.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: linuxppc-2.5 rsync tree broken
+Message-ID: <20020820143837.GA891@opus.bloom.county>
+References: <20020819200140.A9590@sunbeam.de.gnumonks.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20020819200140.A9590@sunbeam.de.gnumonks.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+On Mon, Aug 19, 2002 at 08:01:40PM +0200, Harald Welte wrote:
 
-> >'ve upgraded to
-> >Linux version 2.4.19-ben0 (root@pbuk) (gcc version 2.95.4 20011002
-> >(Debian prerelease)) #12 Wed Aug 7 14:27:13 CEST 2002
-> >and since then my powerbook can't be waken up after sleep. It happened
-> >three times -  the LCD is off so no error messages on console nor xmon
-> >prompt can be seen. Log files are empty after reboot.
-> >Any idea what's wrong?
-> >cheers
-> >        Jiri
+> The current (at least yesterday and today) linuxppc-2.5 tree at
+> source.mvista.com is broken.
 >
-> What is the latest tree that worked ?
->
-> Ben.
+> It is totally missing the directories sound/core and drivers/usb/core.
 
-Hi Ben,
+What flags are you passing to rsync?  Both of those directories exist in
+the tree rsync serves from.
 
-I can confirm 2.4.19-rc3-ben0 (Jul 29) and earlier kernels are working
-fine.
-
-Jiri
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
