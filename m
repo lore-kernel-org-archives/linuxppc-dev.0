@@ -1,23 +1,15 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 0FF8D2BF0E
+Return-Path: <robin@india.tejasnetworks.com>
+Received: from pop-mail.india.tejasnetworks.com (india.tejasnetworks.com
+	[164.164.94.83]) by ozlabs.org (Postfix) with SMTP id A465D2BF07
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  6 Jan 2005 18:02:48 +1100 (EST)
-Date: Wed, 5 Jan 2005 23:02:45 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Andy Fleming <afleming@freescale.com>
-Message-ID: <20050106070245.GA6539@gate.ebshome.net>
-References: <FC6D9B81-5514-11D9-8D51-000393C30512@freescale.com>
-	<A3A281FF-5525-11D9-80ED-000393C30512@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <A3A281FF-5525-11D9-80ED-000393C30512@freescale.com>
-Cc: Netdev <netdev@oss.sgi.com>,
-	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-Subject: Re: [RFC] Patch to Abstract Ethernet PHY support (using driver
-	model)
+	Thu,  6 Jan 2005 21:04:07 +1100 (EST)
+Message-ID: <4229EDFB.2040402@india.tejasnetworks.com>
+From: Robin <robin@india.tejasnetworks.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org,
+	Linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: TZ variable setting for denx 2.4.20
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,38 +19,38 @@ List-Post: <mailto:linuxppc-embedded@ozlabs.org>
 List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+Date: Thu, 06 Jan 2005 10:04:09 -0000
 
-On Thu, Dec 23, 2004 at 03:00:13PM -0600, Andy Fleming wrote:
-> 
-> >Adds a Phy Abstraction Layer which allows ethernet controllers to 
-> >manage their PHYs without knowing the details of how the particular 
-> >PHY device operates.  This code steals heavily from BenH's  sungem 
-> >driver, and got some stuff out of Jason McMullan's patch.
+Hi all,
+I am trying to find a way of setting TZ environment variable with DST
+support for southern hemisphere countries. Its giving a strange problem.
+In southern hemisphere countries, DST starts around Oct and ends around
+March. The DST time seems to be applicable from Oct until Dec31,19:00hrs.
+Then it reverts back to standard time.
 
-Some random notes from quick look at the code:
+For northern hemisphere countries, its working perfectly.(Here DST starts
+around March and ends around Oct. There is no year crossing DST period.)
 
-1) IMO if we can extract some info from the PHY using _standard_ 
-registers we should use them, even if the PHY provides some custom 
-ones. 
+I am sending the system timezone at various times..
 
-I suspect that _all_ XXX_read_status functions for different PHYs in 
-your patch can be easily handled by generic IEEE 802.3 compliant code 
-(you need to update genphy_read_status to properly handle GigE of 
-course).
+bash> export TZ="xxx5:30yyy4:30,M10.1.1,M2.1.1"
+bash> date 10010159
+Mon Oct  1 01:59:00 xxx 2001
+bash> date
+Mon Oct  1 01:59:47 xxx 2001
+bash> date
+Mon Oct  1 03:00:10 yyy 2001
+bash> date 12311900
+Mon Dec 31 19:00:00 yyy 2001
+bash> date 12311959
+Mon Dec 31 18:59:00 xxx 2001 <----------- problem. It should have
+reverted to xxx only in feb.
 
-2) genphy can be changed to handle GigE speeds as well.
+Please give me some idea for setting time zone for southern hemisphere
+countries.
 
-3) I think it's better for the genphy case to _detect_ PHY features 
-instead of hard coding PHY_BASIC_FEATURES. In this case you can easily 
-handle 10/100 and 10/100/1000 PHYs by genphy code.
+I am using 2.4.20 linux kernel from denx.I am running date command from
+busybox version 0.6 which in is using strftime. The processor is ppc860T.
 
-4) Pause negotiation/advertising is completely missing.
-
-5) PHY interrupt sharing looks broken. Although you request_irq using 
-SA_SHIRQ flag, in the handler itself you don't detect whether this 
-interrupt is for this PHY or not, and return IRQ_HANDLED. This will 
-result in first registered PHY hijacking IRQs from other PHYs (or 
-devices) sharing the same IRQ line.
-
---
-Eugene
+Regards,
+Robin Mathew
