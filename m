@@ -1,39 +1,38 @@
-Message-ID: <3F5DFFBA.3000309@kegel.com>
-Date: Tue, 09 Sep 2003 09:28:42 -0700
+Message-ID: <3F5E0489.4070301@kegel.com>
+Date: Tue, 09 Sep 2003 09:49:13 -0700
 From: Dan Kegel <dank@kegel.com>
 MIME-Version: 1.0
-To: t.vanremortel@ha.be
+To: =?ISO-8859-1?Q?Andr=E9_L=E4mmer?= <alaemmer@fh-konstanz.de>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Cross compilation question
-References: <1063093493.12979.4.camel@toni>
-In-Reply-To: <1063093493.12979.4.camel@toni>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Re: Compiling Kernel 2.6 for ppc32
+References: <000001c376ed$eef95430$0f21258d@fhkonstanz.de>
+In-Reply-To: <000001c376ed$eef95430$0f21258d@fhkonstanz.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Toni Van Remortel wrote:
-> Hi all,
+André Lämmer wrote:
+> I tried to compile the kernel 2.6. test 4 for PowerPC. I used the cross
+> compile tool chain ELDK V2.1 from Denx http://www.denx.de/. I am not
+> able to make the kernel, because I get the following error.
 >
-> I've installed ELDK as compiler-set, and it is successfully used to
-> compile linuxppc_2_4_devel, rtai and FLTK for my EP405 board.
->
-> Now I have a FLTK-based program which I like to cross-compile, but I get
-> stuck to one error I cannot solve right now:
->
-> ppc_4xx-g++ -static -g test.cxx -I/ppc/fltk-1.1.4rc2 -o test
-> -L/opt/eldk/ppc_4xx/lib -L/opt/eldk/ppc_4xx/usr/lib
-> -L/ppc/fltk-1.1.4rc2/lib -L/opt/PPC_X/usr/X11R6/lib -L/opt/PPC_X/usr/lib
-> -lfltk -lXext -lX11
-> /opt/eldk/usr/ppc-linux/bin/ld: cannot find -lstdc++
-> collect2: ld returned 1 exit status
->
-> As far as I know, is libstdc++.so in /opt/eldk/ppc_4xx/usr/lib, which is
-> added as -L.
+> In file included from include/asm/system.h:8,
+>                  from include/linux/list.h:8,
+>                  from include/linux/signal.h:4,
+>                  from arch/ppc/kernel/asm-offsets.c:12:
+> include/linux/kernel.h:10: stdarg.h: Datei oder Verzeichnis nicht
+> gefunden
 
-Do you have a libstdc++.a?  You'd need that to satisfy the -static.
+There are quite a few mentions of this problem on google.
+e.g.
+http://www.cs.helsinki.fi/linux/linux-kernel/2003-11/0090.html
+
+Does it build if you do
+export LANG=C
+unset LC_ALL
+first?
 - Dan
-
 
 --
 Dan Kegel
