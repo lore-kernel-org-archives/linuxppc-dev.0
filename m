@@ -1,24 +1,25 @@
-Date: Thu, 30 May 2002 21:29:41 -0700
+Date: Thu, 30 May 2002 21:31:05 -0700
 From: Matt Porter <porter@cox.net>
 To: Khai Trinh <kqtrinh@yahoo.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Is an RTC (Real Time Clock) required for a linux based PCI adapter board?
-Message-ID: <20020530212941.A5671@home.com>
-References: <20020530234959.92242.qmail@web11501.mail.yahoo.com>
+Subject: Re: Is there ppcboot support for Ebony (440GP)
+Message-ID: <20020530213105.B5671@home.com>
+References: <20020530222834.82903.qmail@web11505.mail.yahoo.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020530234959.92242.qmail@web11501.mail.yahoo.com>; from kqtrinh@yahoo.com on Thu, May 30, 2002 at 04:49:59PM -0700
+In-Reply-To: <20020530222834.82903.qmail@web11505.mail.yahoo.com>; from kqtrinh@yahoo.com on Thu, May 30, 2002 at 03:28:34PM -0700
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, May 30, 2002 at 04:49:59PM -0700, Khai Trinh wrote:
+On Thu, May 30, 2002 at 03:28:34PM -0700, Khai Trinh wrote:
+>
+> Does anybody enable ppcboot support for the IBM Ebony
+> board out there yet?
 
-If you are asking if a battery backed RTC/NVRAM device is necessary
-for the kernel...no.
-
-You might need it for whatever your application is.  Only you
-can answer that.
+The ppcboot-users list where you posted this a while back is
+generally the best place to get this information.  We try to
+just discuss embedded Linux on this list.
 
 Regards,
 --
