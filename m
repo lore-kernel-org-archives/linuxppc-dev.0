@@ -1,50 +1,115 @@
-Message-ID: <397CDA75.3790A3DB@home.com>
-Date: Mon, 24 Jul 2000 19:08:21 -0500
-From: Jordan <ledzep37@home.com>
+Message-ID: <397CFE99.9DC56D0F@ivey.uwo.ca>
+Date: Mon, 24 Jul 2000 22:42:33 -0400
+From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
 MIME-Version: 1.0
-To: Linuxppc Developer <linuxppc-dev@lists.linuxppc.org>
-Subject: Errors while compiling 2.4.0test5 from BitKeeper
-Content-Type: text/plain; charset=us-ascii
+To: linuxppc-dev@lists.linuxppc.org, gback@cs.utah.edu
+Subject: diff to tonight's kaffe cvs tree to work on ppc
+Content-Type: multipart/mixed;
+ boundary="------------71F12940FC02051B3087963B"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I have been compiling my own kernels for a while now, lately though the
-2.2 series gives me machine check errors and panics every time I start
-up no matter which version I compile, so I decided to start trying the
-2.4 series.  For about the past two weeks now I have been trying to
-figure out how to get the kernel to finish compiling and not gives the
-following errors:
+This is a multi-part message in MIME format.
+--------------71F12940FC02051B3087963B
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-ld -T arch/ppc/vmlinux.lds -Ttext 0xc0000000 -Bstatic
-arch/ppc/kernel/head.o init/main.o init/version.o \
-        --start-group \
-        arch/ppc/kernel/kernel.o arch/ppc/mm/mm.o arch/ppc/lib/lib.o
-kernel/kernel.o mm/mm.o fs/fs.o ipc/ipc.o arch/ppc/xmon/x.o \
-        drivers/block/block.o drivers/char/char.o drivers/misc/misc.o
-drivers/net/net.o drivers/parport/parport.a  drivers/ide/idedriver.o
-drivers/scsi/scsidrv.o drivers/cdrom/cdrom.a
-drivers/sound/sounddrivers.o drivers/pci/pci.a
-drivers/macintosh/macintosh.o drivers/video/video.o \
-        net/network.o \
-        /usr/src/linux/lib/lib.a \
-        --end-group \
-        -o vmlinux
-arch/ppc/kernel/kernel.o: In function `pmac_set_rtc_time':
-arch/ppc/kernel/kernel.o(.text+0x8ff8): undefined reference to
-`pmu_request'
-arch/ppc/kernel/kernel.o(.text+0x8ff8): relocation truncated to fit:
-R_PPC_REL24 pmu_request
-arch/ppc/kernel/kernel.o(.text+0x9008): undefined reference to
-`pmu_poll'
-arch/ppc/kernel/kernel.o(.text+0x9008): relocation truncated to fit:
-R_PPC_REL24 pmu_poll
-make: *** [vmlinux] Error 1
+To those of you who requested my kaffe patch, (and Godmar)
+(and to get it stored in the mailing list archives!).
 
-I would like to try this kernel to see if I can get it to boot on my
-PowerMac G3 Beige Mini-Tower; however, until I can get this thing
-figured out it looks like I am stuck.  Thanks for any help.
+Attached is the patch to tonight's kaffe cvs tree to to work better with linux
+ppc.
+With this patch in place, kaffe can pass the CaffeineMark 3 benchmark test.
 
-Jordan Breeding
+This patch should be clean enough to check right into the cvs tree if anyone has
+write access.
+
+The patch is attached.
+
+Have fun!
+
+Kevin Hendricks
+khendricks@ivey.uwo.ca
+--------------71F12940FC02051B3087963B
+Content-Type: application/x-gzip;
+ name="kaffe_ppc.patch.gz"
+Content-Disposition: inline;
+ filename="kaffe_ppc.patch.gz"
+Content-Transfer-Encoding: base64
+
+H4sICMv7fDkAA2thZmZlX3BwYy5wYXRjaADtGmt308bys/wrpqYBO5YdS7aDcRpKCIECAXJw
+2p57KceVpVWsRJZ09XCS0v73O7O7essh3NP7rSbY0uzs7Oy892E5tg39JHwPV4Zts765ifYM
+0/FMN7HYYD0W4BKo1e/3t2Ar5wmDl2wJ2gS06Qz/hlPQh8Nhq9frNZBS3vkevElc0MegazN9
+MhtPBP6zZ9CfjMbqY+iJn2fPWvAAzldOBOskimHJ4NTxkhs4OX05aIFLz/0LL9nttgDANCIG
+7e9XfhQvzCBpg+O1+gCGG6yMXfgTnN3pPv5EgRGau9Bt9ba2/QmBf83CgKMBfVwkuVlYLHCd
+ZbQwV8y8WqxZvPKtw8CIooXhunBwQLi7sscDuEBcE5IAYh/0gTbQwPJZBJ4fQ8BC2w/XEPlr
+BiFzfdOIHd+LAEVz9PFdy2rUEKG5Rf2kgJp20gblfJXAC2YC6KDpJOuJBtqTJ09KusmwK5rZ
+n2njgmZ0oRn9H81UNGP6nu1c7L0zrpjtuGzgeFK09YaKpuoIDRrTqxpr6DVPpOZGoOvoUDNt
+mGtupGvqPvToR2hOQWE6kbm3CpKbvbU1MOG3OnBVBMarkBlWxIE9kB+pCuRnvfa9tIMEGs6N
+ZHRgh8ZFrS0ftgwkKncIORsT9SrUvAgCE3uVRLMNq1n827CVX5nFdTEip5kNh/iHD/sNuthK
+ouhSw9lkTOrMFDNUh9DTVF2fkFp6e7so212IbiM052Ok9C6j1Dk+Oj3tgrMOXLZmXsyNEtBS
+hashBnXl3Y/94DZ0LlYxdMwumc6UwMpbtkG7fD6An5hnhY55FQEcoW9w1AhNPWLhhlmDjI7l
+RHHoLJMYhZB4FgshXjF4dXaKQ5rMixhh7bV6km8Q0cBOPJPzFoeGF7lGjH5F/dpvSVxtIAE5
+3gWg3DY4D8J0PHRDjnPc5oQacJIIuUD+PZz4hoEQcTSAOWO8K/lBJDpLY1TB8CyIkiDwwxjt
+g2TleOTbQnZGBHJYxwsSdHwjNJAsC5GMmBbwue3BAwvdzGNgLS8Wa99ioFHDA8eGIf2IxAZt
+aeyrdh3Yj2KruWHN1pWGS88pQ37AzkaIhJ+W+rsY3IR9VAnEtwGLKkDDNFlUBfrLS2bGdcai
+2PDiKvISY/gxDVqj7fr+VRJUgCwM/bCKyW5MFpD0K/DI9WvjrQ1zhVKvYqb6LONWZeA0yYDd
+oHY9zHRlsAhttTmhgwgYuotjk8Y3vmM1O6cMiWYGfY2Ghp7IfRb2djFSopGTB/nA/aCCyv3o
+C7c5wn7OTAMNHnyb2+cZxRY4O27wiwiukZafuBZlYMp32C65yQ2aHGfpxyt08gt0auKDxMMd
+hDwVx0CVm1cDOPfBRGnE3KkkHd6UUwMDEWhYj6FL0q9/DREFpltM2jxfMuAVhey/wQxiLF0a
+w8dEwASpT8jqH59xGCMGR4QIBGRzvjQ2hhxZkums/ZDYMjxgnp9crKgkMFkXrleOueJywCZ/
+w8Lr0BETKIsg9gdCwvh578dsJgLWFWNBhPEF7NBfw8rYkISD0EeO1yheB8VGUSwUc8pmE1WJ
+CS2E7D+Jg3yK2gL0XfRcPq9rP7Qiml0uSDE9Lk5JyRGTJz0jJ1haGd4t2K5vFMMTdJwBGwgw
+Cg6LABrN91D+WkqIRktVy/MUEB+AwVx00CU/aBgVxTqiU0n3NmFAPuFzRMBw4JjgWNhlxXDC
+Dg+nZLUXQfhp+pniq5GpnJPG2CsJ8IidxAn22xhuwrhgUuPEXDQiWiGWMGRjaGUUu1PBqClv
+PLw7a8c1Qpy6fceo9fEkCRyVi5GrnFy0wIStERP2VOQRLiUCRCzGQXDeqZf5aMjCujNtSq6X
+txnThCyTCn0SL3IuPERxfRxZCOyAGtD5U+aJb2xJ+VHRGLhNhaM+SYaocVqWn9Dwdk5Efiq0
+7AZatta3pzkpEoBXJFEg5SXrJdoISgyZIssMAuQ/QhpGWKZgf5WCfQcFLpHdoE6jHEVzqyWP
+RyVeC9GXODG3cEIaoQiIMVM6OyVHtMJSb/QYx7o5qPVOueBlS8G5jDA0bmt6sUIWH1RJxGyN
+WcwIb/NyCdGS0JPmWZYGxpNY5d/6QaMBiYDa0Xc7okzsP/VCYqnb07qfDzKrIx2gnJZoBh7J
+EC3f4hZ6nLOB3RKqL0XAzAwoY8iDQximXNjFFyEuCclHJH/B8GQUlZclnGrwyYZZLIxovVjg
+78bH6IvFHb50sIyxLAd2hqqmTtswg/Zh2IZO0MVHPjlRypEeoVubN5YpaPSrkOcOhtVFNlnu
+4ZQ7L7AYjckecBWIMSX287UOw0TAuEeqZL8qyLAiAkPGvagLRcFoddKKsZsKLAhRCHYHKzo/
+idU2GSIlUUoyOxY3o9+8tlrR4kFzb2hLm+GmvGOK/LljFSkgBrWq+TyyTwGFOmajYDpFs+1I
+df4AFWbgS4FWjSNEQQ5mwoxnsHOTMpUySczVmRGDqdlYNNInAfw8cLPZkLiIXtrUQKmISkOm
+qNn08uF6vRT2Vypg202ilZxNt9Gw82oQvllaYCKRDgqs27mLzaxHhHaBVkqruC8FMN9MefTi
+0aymUhFbSNCYjWX8yVxKftA6OzYyOq3wlurzk93rfSY+m1RhIXsKlxgwF7n4Il8l3U6HwlEX
+0CEfwrib083R8BPkgi/yzeNNtTiqco8fDHLp1Lo40FZOodYz6B3q2QTKrUv036uDmpBffk3I
+ojYjLhUOpoISAwlGlUiUtrJKw/jAYymjOINl2kiHJUaatEwTWUSyVkgmFJdEhWzz4l6sgatC
+QrkdqxCt5DIgJZOZAB9FKdYf32oLglC3WdT2VqNAiVCp6OHCCytOXLqgVDI2RdlIq0ougvlt
+BL/A0fPXKlWpg8FASvX/bV1p17pZfXXSVfOC3iF8o4G9qRtYwbp4chcFUYMXeygGrQseThgU
+nuNw1cNwYYhqYCKHU2X5GdMLLidkxedbVl7jNlP94RD2mwxiVyhAMoRyeUjkvc/drU54WReS
+V/TBvzmIVDncHh0u/5bocPpopigFdV2GDPmnXYJdYjuTrgKVD/axaYmXFiPk5riutVzaiyKl
+FRSTPWBNYSRuPGtUWbMLc/1IFy5VjFuM2rnLkwMXV9ul7YIt0blcm96lBqdRDb0DuFsN8vWv
+gkKE4dRSa7FYIDNF/+zWsn+5HvhL4R+iTRubMBf1K01a7kgV1oikOMfb+FdyEzKtovNQ21zI
+4vza+F9xr/9QRqoy7OyMuun7WFXGxfeJqkyL7/uqoulFwGME7BcBU1XRSySfIKBEUxsiJKdq
+W4rGuRhn7zofNX8fiUFywFjQzAHI50gvApDRcYkmMjouEUVGJxnRdWzGobIzoeclProciBBk
+bZQ+I1tjerbpBSehkST5QsDGhQCttbqqXBU41Re9y80KkQmCvkGt9Gjnj2Q7/aepHrMOwza2
+j+hrTF8T+tqnr8f0NaWvJ/SlcURN49+62MyWKxHxjAZ1RnswK1Za8KW7LmLbnnvaIPOurGqE
+SlWfRaRyoZi6Cw9SQ5jxSVRDDk99Ioz98mgm/S11MCUrMWXDLuTJscgFcsbXt839Xxb7y0qp
+2l3Au3eReVMkUw0uFXKOIFOKSBQZ7urWhR7l0cNshV1mIo+723hoZKFERIYrilj3OdpKj9Oa
+T5hk61eOsiTW/3KElXYtnwZP9Nl4WD+6GhVPrmo8ivMoehG72LSJzUdLQkOe/WQnMtnJU3UZ
+DZ3Fgp9yLRZYEzzMVteLhRwP4bKLh20gsQNsEIwskJH0EKexUQz3/uTkxaK6v186Gqkc7rUz
+skq1mzyv236UV1xKNj3xf/cwFj6b0kFro1JraHebTw2dH0tzY0AbGM0mj2f6uHrJ46s0ygal
+7c+0wsWPEV0uGKVXC1rwNr0tcCgJpiA/OuSkW/3jl6dHr+aH7f4F9G3hk31zZYSol2LTB73a
+DK3+g8wgabcWa21nadsO3ymtmUCfNmgWAuPwlkWt3+C9j/2uaUkDGNYYHaTY/BASdZhRzi4V
+8KOSu0boFUfw/Psrnh+Y3yF+ar+PqglPmeNU6CIP8Is8+ng21u+lY9G5dANhpM+0J7lyNZ20
+i99PhHozT009WPj32kJvhNxVm1qLDlmNN20iXW3Mri6gWWB3SoXiqoo8q6ETA9eJY159O7Fj
+uE5kpGUciEND4Gd/1Ixc8BIfs/o9lJRfm2gUX9Z8t4oyNH7V6p0R8mg+nmnD2WQkT/i3aSjv
+W7mJMJ2NHhcURBdE6IvUg9EcCtG8wCVC53QRBwSMds+rETzttg0FKXPqtWsK+yp9P1bFhBBF
+OacrBBsnjBPDhXNmrjzf9S8cFqnw2jMHW+4v8Ok8VrURTgh/0imRMtNo/fP8ZPH6/fnJx/dH
+p4vznz6eHL2Y86Ag2yXo/Oj47fz1v08UpTPSkWVtqFOtuh1L06cZGmRynPPFkm/bEYv5/MXB
+ozz1FPD8EgS+XK4DWCaozBCu+S5JYcM8PXyIOCGxpzSQdy/Wxi1trJBdYi8vFhvL+euHOR1b
+8pVpNtX52eLDy5fzk3NF+bHVL29f3yft1ugAvxVB68fGxh+zJAfyd7sb0Xld0ajxvdFREF60
+bm3CrXvSHLsqyHTPbTyb7OeuMNV5KhI/ZDstOEMVH706OeR0yFB+Ofk4f/3h/aE2GA72W73y
+K3agg1wWxdD+/fjF2dH5T4czkqBpwfdRaFpOSG/BtfV7G747RCTx+PAhv5/GO/btFDXNoKj/
+OIkOyBY8YeNTjV/Ik7//3Mgr2IVQOP/erPcw3cZsHe0lnnPTv5ThbE8+DEwoYN+3T8UOv6kv
+r8nfYLrUNRiOZsNxVljntvptBAu5dzidDak+K4T2ES73KbrTrzYUFwDXbG0Gtx2sYXhcUcF3
+LfnEA9ri+MPZvzDHSSelpPmdaHj18cOv88XPZzw7fnu8oA2z9PKInxS2sNFeMfPydRW+Ydgu
+7i6lfJZ2sqiWo+VXbW8rxaYdxOGNLT7Dbn58AwrGosX8rHMZO1b/KfM2ajYETZpXKNkECPf5
+Wbf1Xw+3po43LQAA
+--------------71F12940FC02051B3087963B--
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
