@@ -1,43 +1,57 @@
-Date: Tue, 27 Jan 2004 15:32:26 +0100 (CET)
-From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-	Pavel Machek <pavel@ucw.cz>, Hugang <hugang@soulinfo.com>,
-	Patrick Mochel <mochel@digitalimplant.org>,
-	Nigel Cunningham <ncunningham@users.sourceforge.net>,
-	<ncunningham@clear.net.nz>,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: pmdisk working on ppc (WAS: Help port swsusp to ppc)
-In-Reply-To: <1075199877.5659.190.camel@gaston>
-Message-ID: <Pine.LNX.4.44.0401271400530.5220-100000@zirkon.biophys.uni-duesseldorf.de>
+Message-ID: <40168C3E.7010903@g-house.de>
+Date: Tue, 27 Jan 2004 17:05:18 +0100
+From: Christian Kujau <evil@g-house.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: linuxppc trees / BK help
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > I don't mind the wait for memory being freed. Copying more pages with
-> > interrupts disabled would mean a higher chance for PMU lockup, won't it?
->
-> It's also possible that there is a bug and it just crashes :)
->
-> Also, I do suspend devices before the page copy, and I quickly hacked a
-> PMU sysdev that should suspend ADB interrupts (at least) so that should
-> be fine, except if you have a brightness request in flight maybe ?
 
-I haven't. I've added another pmu_suspend/pmu_resume around the bulk of
-pmdisk_save, that seems to have improved things (but not completely). It's
-executed outside your sysdev calls, so it shouldn't really improve things.
+hello,
 
-> The whole PMU suspend thing must be reworked I suppose. (And the battery
-> monitoring thing "paused" as well, we must wait for async PMU requests,
-> that is at least battery requests and backlight ones to stop)
+after reading the recent threads about the different ppc trees (and much
+BK stuff i still have to learn) i am still wondering if there are CVS
+trees from say 2.4.24-benh or linuxppc-2.5-benh available.
 
-Battery requests might have been underway; pmud is running. If I read
-pmu_suspend() right, pending battery requests should result in pmu_suspend
-waiting for them to finish?
+there is a BK2CVS gateway, but my cloning always results only in
+"strange trees". as seen on http://penguinppc.org/dev/kernel.shtml i do
 
-	Michael
+bk clone bk://source.mvista.com/linuxppc-2.5-benh linuxppc-2.5-benh-BK
+
+after passing the consistency check, a sourcetree shows up  but
+filenames are different from normal:
+
+evil@sheep:/data/MP3/scratch/kernel$ ls linuxppc-2.5-benh-BK/
+BitKeeper  Documentation  SCCS  arch  crypto  drivers  fs  include  init
+~ ipc  kernel  lib  mm  net  scripts  security  sound  usr
+evil@sheep:/data/MP3/scratch/kernel$
+
+- --> there are no files in the directory, only dirs.
+
+evil@sheep:/data/MP3/scratch/kernel$ ls -w10 linuxppc-2.5-benh-BK/kernel/
+SCCS
+power
+evil@sheep:/data/MP3/scratch/kernel$
+
+yes, there are files somewhere too, e.g.
+
+linuxppc-2.5-benh-BK/sound/pci/cs46xx/SCCS/s.dsp_spos.h
+
+is there, but it is some kind of changelog or so. as you can imagine,
+compiling fails :-(
+
+someone there to enlighten me what´s going on here?
+
+Thank you,
+Christian.
+- --
+BOFH excuse #259:
+
+Someone's tie is caught in the printer, and if anything else gets
+printed, he'll be in it too.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
