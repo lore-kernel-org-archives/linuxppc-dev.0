@@ -1,24 +1,20 @@
-Return-Path: <MGIA2172@motorola.com>
-Received: from motgate8.mot.com (motgate8.mot.com [129.188.136.8])
-	by ozlabs.org (Postfix) with ESMTP id B74992BDD4
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id ADE602BDDA
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 19 Oct 2004 11:41:36 +1000 (EST)
-Received: from il06exr03.mot.com (il06exr03.mot.com [129.188.137.133])
-	by motgate8.mot.com (Motorola/Motgate8) with ESMTP id i9J1gfG2026912
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 18 Oct 2004 18:42:41 -0700 (MST)
-Received: from pa06exm02.e1.bcs.mot.com (pa06exm02.e1.bcs.mot.com
-	[168.84.156.53])
-	by il06exr03.mot.com (Motorola/il06exr03) with ESMTP id i9J1fJLw011469
-	for <linuxppc-embedded@ozlabs.org>; Mon, 18 Oct 2004 20:41:20 -0500
-Message-ID: <852DAFF1FD3BD611B68000D0B76FE77409F47A1C@pa06exm01.e1.bcs.mot.com>
-From: Mar James-MGIA2172 <MGIA2172@motorola.com>
-To: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
-Date: Mon, 18 Oct 2004 21:41:17 -0400
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C4B57C.B8E86D4E"
-Subject: 2.6.x IPsec
+	Tue, 19 Oct 2004 11:51:24 +1000 (EST)
+Date: Mon, 18 Oct 2004 18:51:20 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Zajac Adam-AAZ004 <Adam.Zajac@motorola.com>
+Message-ID: <20041019015120.GA6252@gate.ebshome.net>
+References: <EFB813091B18D511BD3600508B644F820A6181E9@tx14exm06.ftw.mot.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <EFB813091B18D511BD3600508B644F820A6181E9@tx14exm06.ftw.mot.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Help on tuning the Linux kernel for soft real-time requiremen ts
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,33 +25,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This message is in MIME format. Since your mail reader does not understand
-this format, some or all of this message may not be legible.
+On Mon, Oct 18, 2004 at 05:44:52PM -0500, Zajac Adam-AAZ004 wrote:
+> It sounds like you're doing exactly what we've been trying to achieve.
+> We're trying to meet soft real-time deadlines that are in order of seconds
+> (2sec).
 
-------_=_NextPart_001_01C4B57C.B8E86D4E
-Content-Type: text/plain
+Hmm, 2s is a lot. You shouldn't have any problems with getting 2 
+second accuracy.
 
-Has anyone gotten IPsec to work on 2.6.x ppc?
-In particular, success in compiling ipsec-tools.
- 
-Jim
+> The only differences between our systems are:
+> - kernel 2.4.20
+> - HZ = 100
+> - Compact Flash
 
-------_=_NextPart_001_01C4B57C.B8E86D4E
-Content-Type: text/html
-Content-Transfer-Encoding: base64
+And O(1) scheduler + SCHED_FIFO instead of round-robin (I don't like 
+this scheduling policy :), SCHED_FIFO is true priority based 
+scheduling.
 
-PCFET0NUWVBFIEhUTUwgUFVCTElDICItLy9XM0MvL0RURCBIVE1MIDQuMCBUcmFuc2l0aW9uYWwv
-L0VOIj4NCjxIVE1MPjxIRUFEPg0KPE1FVEEgSFRUUC1FUVVJVj0iQ29udGVudC1UeXBlIiBDT05U
-RU5UPSJ0ZXh0L2h0bWw7IGNoYXJzZXQ9VVMtQVNDSUkiPg0KPFRJVExFPk1lc3NhZ2U8L1RJVExF
-Pg0KDQo8TUVUQSBjb250ZW50PSJNU0hUTUwgNi4wMC4yODAwLjE0NTgiIG5hbWU9R0VORVJBVE9S
-PjwvSEVBRD4NCjxCT0RZPg0KPERJVj48Rk9OVCBmYWNlPUFyaWFsIHNpemU9Mj48U1BBTiBjbGFz
-cz0xMjQxNjM2MDEtMTkxMDIwMDQ+SGFzIGFueW9uZSBnb3R0ZW4gDQpJUHNlYyB0byB3b3JrIG9u
-IDIuNi54IHBwYz88L1NQQU4+PC9GT05UPjwvRElWPg0KPERJVj48Rk9OVCBmYWNlPUFyaWFsIHNp
-emU9Mj48U1BBTiBjbGFzcz0xMjQxNjM2MDEtMTkxMDIwMDQ+SW4gcGFydGljdWxhciwgDQpzdWNj
-ZXNzIGluIGNvbXBpbGluZyBpcHNlYy10b29scy48L1NQQU4+PC9GT05UPjwvRElWPg0KPERJVj48
-Rk9OVCBmYWNlPUFyaWFsIHNpemU9Mj48U1BBTiANCmNsYXNzPTEyNDE2MzYwMS0xOTEwMjAwND48
-L1NQQU4+PC9GT05UPiZuYnNwOzwvRElWPg0KPERJVj48Rk9OVCBmYWNlPUFyaWFsIHNpemU9Mj48
-U1BBTiANCmNsYXNzPTEyNDE2MzYwMS0xOTEwMjAwND5KaW08L1NQQU4+PC9GT05UPjwvRElWPjwv
-Qk9EWT48L0hUTUw+DQo=
+BTW, we have systems with CF card, writing to it doesn't seem to 
+affect real-time threads either.
 
-------_=_NextPart_001_01C4B57C.B8E86D4E--
+> We tried to do a similar thing to the scenario you described where we were
+> running all other threads with SCHED_OTHER, and the thread with real-time
+> priority with RoundRobin scheduler policy. We keep experiencing the greatest
+> slips for such file system intensive operations like gzip and tar.
+> Also, for an experiment, we tried to turn disk caching off, which helped
+> meeting the deadlines a little but slowed down all file transfers
+> unacceptably.
+> To eliminate the question on the compact flash performance we tried using
+> NFS. Using NFS  yielded similar results (missed deadlines) to performing the
+> transfers with the cflash card.
+> 
+> Did you have to set anything special at your kernel config file (.config)?
+
+Nothing special I can think of.
+
+> Did you need to apply low-latency patch separately or the MV kernel you have
+> came pre-patched?
+
+I applied _all_ patches myself, although I used MV kernel as a 
+reference in some cases, e.g. where rml PPC preempt patches were 
+buggy.
+
+--
+Eugene
