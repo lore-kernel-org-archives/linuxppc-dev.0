@@ -1,45 +1,34 @@
-Message-ID: <007401c18912$d0b58c20$1a11efcb@industrialDiv.hanasys.co.kr>
-From: "Sangmoon Kim" <dogoil@etinsys.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-References: <3C214290.D6D1B53A@carts.com>
-Subject: Re: allocating non-cacheable memory
-Date: Thu, 20 Dec 2001 13:57:23 +0900
+Message-ID: <3C2173E3.6070001@ixiacom.com>
+Date: Wed, 19 Dec 2001 21:15:15 -0800
+From: Bryan Rittmeyer <bryan@ixiacom.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: ppc750 eval boards?
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi
-Setting up a BAT by some asembler code is good.
-Or you can use io_block_mapping.
-For example
-io_block_mapping(0x78000000, 0x78000000, 0x08000000, _PAGE_IO);
-It maps phisical address 0x78000000 ~ 0x7FFFFFFF to effective address  0x78000000 ~ 0x7FFFFFFF, No cache.
-- Sangmoon Kim -
+Hi,
 
------ Original Message -----
-From: "Kevin Fry" <kevin@carts.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Sent: Thursday, December 20, 2001 10:44 AM
-Subject: allocating non-cacheable memory
+I'm working on some custom PPC750 hardware and would like a reference
+platform to aid in debugging/initial bringup... does anybody have
+comments on the following IBM PPC750 evbs:
 
+* IBM Spruce
+* SBS K2
+* Force CPCI6750
+* [anything else]
 
->
-> What is the best way to allocate some non-cacheable memory for I/O use?
-> Right now we are going to setup a BAT table with a non-cacheable memory
-> region and use that for all I/O, but does linux have a nice neat
-> function to grab a page and set it up non-cacheable for us?
-> I was reading in the archives that the #define PAGE_NOCACHE doesn't
-> work.
->
-> thanks!
->
-> Kevin
->
->
->
->
+Which work well with the Abatron BDI2000?
+
+Regards,
+
+Bryan
+
+--
+Bryan Rittmeyer
+mailto:bryan@ixiacom.com
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
