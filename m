@@ -1,15 +1,20 @@
-Return-Path: <det.nicolas@free.fr>
-Received: from smtp3.wanadoo.fr (smtp3.wanadoo.fr [193.252.22.28])
-	by ozlabs.org (Postfix) with ESMTP id 0805967A79
+Return-Path: <Bjorn.Ostby@combitechsystems.com>
+Received: from ms-101.aerotechtelub.se (ms-101.aerotechtelub.se
+	[192.176.33.163]) by ozlabs.org (Postfix) with ESMTP id 886EB67A89
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  7 Mar 2005 21:57:11 +1100 (EST)
-From: Nicolas DET <det.nicolas@free.fr>
-To: Sven Luther <sven.luther@wanadoo.fr>,
-	linuxppc-embedded@ozlabs.org
-Date: 07 Mar 2005 11:56:38 +0100
-In-Reply-To: <20050307065210.GA21270@pegasos>
-Message-Id: <20050307105707.ED89F1C003DA@mwinf0303.wanadoo.fr>
-Subject: Re: mv64x60 updates
+	Mon,  7 Mar 2005 22:05:23 +1100 (EST)
+Received: from ratatosk.combitechsystems.com (unverified) by
+	ms-101.aerotechtelub.se (Clearswift SMTPRS 5.0.4) with ESMTP id
+	<T6f895075adc0b021a1fd8@ms-101.aerotechtelub.se> for
+	<linuxppc-embedded@ozlabs.org>; Mon, 7 Mar 2005 12:05:21 +0100
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C52305.1F6077D0"
+Date: Mon, 7 Mar 2005 12:02:15 +0100
+Message-ID: <004B1D7A5257174C9044A1B7BD0E60ED0178CBF5@ratatosk.combitechsystems.com>
+From: =?iso-8859-1?B?Qmr2cm4g1nN0Ynk=?= <Bjorn.Ostby@combitechsystems.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Read TCN-register in user space
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,44 +25,73 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello Sven,
 
-On 07/03/2005, you wrote:
+This is a multi-part message in MIME format.
 
-> But i hear Nicolas has done some useful work yesterday evening, i will
-> review it as soon as he is back from dreamland :)
+------_=_NextPart_001_01C52305.1F6077D0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-You can find the patch against 2.6.11 from kernel.org here:
-http://powernico.free.fr/patch_2.6.11_mv64x60.diff.bz2
+I'm currently using ELDK 3.0 (kernel 2.4.25) and a mpc823e trying to do =
+some latency measurements for my final thesis project.
 
-This patch shouldn't break mv code for others platform (non PegasosII), and
-fix Pegasos II init...
+I'm wondering if there is any possibility to read the Timer Counter =
+Register (TCN1) in user space. I have initially used gettimeofday(), =
+which provides sufficient resolution (usec), but I suppose that solution =
+probably adds on some kind of unknown context-switch latency. Does =
+anyone have a clue on how to access this in user space? Could inline =
+assembler or perhaps mmap() do the trick (I'm using C as programming =
+language)?.
 
-Basicly, I added mv64360_ispegasos2() in include/asm-ppc/mv64x60.h. Then:
 
-in arch/ppc/syslibs/mv64360_pic.c, I skip the IRQ init code
-in arch/ppc/syslibs/mv64x60.c, I skip all the chip init & patch the
-ressources tables for Pegasos II hardware (register base & IRQ).
-in include/asm-ppc/mv64x60.h: added mv64360_ispegasos2()
-in arch/ppc/kernel/chrp_setup.c, rename/added pegasos2_stuff() and call
-mv64x60_init() if CONFIG_MV64x60
-in drivers/net/mv64xx_eth.c, use SA_SHIRQ instead of SA_INTERRUPT for
-request_irq if pegasos II detected
+Regards,
+Bjorn=20
 
-The only thing to do is to add mv64360_ispegasos2() in include/asm-mips/...
-because I use this function to use the correct flags in the ethernet
-driver.
 
-Of course, this patch may be discuss as there are several architecture
-using Marvell chipsets and each requieres some specific code.
-I don't know where it's the best to place mv64360_ispeasos2(), maybe this
-func could even be renamed mv64x60_ispegasos2()..
 
-Please, people from others MV64x60 architectures review this patch, modify
-if it neeeded and check it doesn't break your architecture (I shouldn't but
-for MIPS ethernet).
 
-Regards
--- 
-Nicolas DET
-MorphOS & Linux developer
+
+------_=_NextPart_001_01C52305.1F6077D0
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.0.6249.1">
+<TITLE>Read TCN-register in user space</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/rtf format -->
+
+<P><SPAN LANG=3D"sv"><FONT SIZE=3D2 FACE=3D"Arial">I'm currently using =
+ELDK 3.0 (kernel 2.4.25) and a mpc823e trying to do some latency =
+measurements for my final thesis project.</FONT></SPAN></P>
+
+<P><SPAN LANG=3D"sv"><FONT SIZE=3D2 FACE=3D"Arial">I'm wondering if =
+there is any possibility to read the Timer Counter Register (TCN1) in =
+user space. I have initially used gettimeofday(), which provides =
+sufficient resolution (usec), but I suppose that solution probably adds =
+on some kind of unknown context-switch latency. Does anyone have a clue =
+on how to access this in user space? Could inline assembler or perhaps =
+mmap() do the trick (I'm using C as programming =
+language)?.</FONT></SPAN></P>
+<BR>
+
+<P><SPAN LANG=3D"sv"><FONT SIZE=3D2 =
+FACE=3D"Arial">Regards,</FONT></SPAN>
+
+<BR><SPAN LANG=3D"sv"><FONT SIZE=3D2 FACE=3D"Arial">Bjorn </FONT></SPAN>
+</P>
+<BR>
+<BR>
+<BR>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C52305.1F6077D0--
