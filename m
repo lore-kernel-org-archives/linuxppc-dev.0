@@ -1,34 +1,45 @@
-Message-ID: <3B8E099B.30703@humboldt.co.uk>
-Date: Thu, 30 Aug 2001 10:38:35 +0100
-From: Adrian Cox <adrian@humboldt.co.uk>
+Message-Id: <200108301400.KAA09451@orchid.cspi.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Brian Waite <bwaite@cspi.com>
+Reply-To: bwaite@cspi.com
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MCP750 ROMBoot
+Date: Thu, 30 Aug 2001 09:52:25 -0400
+References: <85256AB8.000FA622.00@pine.cspi.com>
+In-Reply-To: <85256AB8.000FA622.00@pine.cspi.com>
 MIME-Version: 1.0
-To: Alexander Kolesnikov <akolesni@qualcomm.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: USB support in the HardHet Linux 2.4.2 on the IBM Walnut
-References: <4.2.2.20010830111127.02d754d0@qisrael.qi.qualcomm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Alexander Kolesnikov wrote:
+I saw this during a flurry of work on MVME2400 and MVME5100 boards. I can't
+tell you if it was a kernel version problem or a config problem, but it has
+since gone away. Go through your .config with a FINE tooth comb and make sure
+everything looks good. Then try a different kernel version. Oh also just make
+sure you are using the correct boot image and are flashing the whole image! I
+have gotten bit by the copy and paste bug where my kernel size changed and I
+stopped FLASHing the whole image.
+Just a few thoughts.
 
 
-> 2.When a UHCI chip is used, the USB device connecting to it causes to the
-> following error messages:
->
->     usb_control/buk_msg:timeout
->     usb.c:USB device not accepting new address = XX (error=-110)
+On Wednesday 29 August 2001 10:50 pm, you wrote:
+I use MCP750,linuxppc_2_4 from penguinppc. I rebuild the kernel,and can
+boot the board via NFS correctly. But when I fill kernel in Bank
+A(ff000000,onboard flash) and use ROMBoot, it appears:
 
+Linux/PPC load: root=nfs rw ip=on
+Uncompressing Linux...inflate returned FFFFFFFD
+exit
 
-This is most likely either an endianess problem in the UHCI controller
-code, or an interrupt problem. The UHCI code in recent 2.4 kernels
-(2.4.6 and onwards, I think) supports big-endian hosts. The UHCI code in
-the mainstream 2.4.2 did not support big-endian hosts, and I don't think
-the HardHat kernel was any different.
+my kernel is about 840k,is it too big?
 
+I realy thank the mailing list and the person who answer me.They give me
+great help.
 --
-Adrian Cox   http://www.humboldt.co.uk/
+Brian Waite
 
+Looking for a TeraFLOP in a closet
+www.fastcluster.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
