@@ -1,50 +1,35 @@
-Message-ID: <3D3C3E88.4080807@sysgo.de>
-Date: Mon, 22 Jul 2002 19:19:04 +0200
-From: Pavel Bartusek <pba@sysgo.de>
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: MDIO clock speed computation
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: "OTAVIO ISAMU SUGENO" <otavio.sugeno@siemens.com.br>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: CPU performance measurement 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 22 Jul 2002 08:01:37 -0300."
+             <B7AC573479F05C438F232539B961A1686C4CF0@CUR1006V.br002.siemens.net.br>
+Date: Mon, 22 Jul 2002 19:27:16 +0200
+Message-Id: <20020722172721.8D8AD10874@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi there,
+In message <B7AC573479F05C438F232539B961A1686C4CF0@CUR1006V.br002.siemens.net.br> you wrote:
+>
+> I would like to measure the cpu performance in my custom board.
+> Basically to know how many of cpu performance each process or driver is
+> spending, something like TOP command in PCs.
+>
+> Anyone has already this experience or can give me suggestion?
 
-I found a little problem with computation of MDIO clock speed in
-linux/arch/ppc/8xx_io/fec.c
-The MPC855T users manual: "The MII_SPEED field must be programmed with a
-value to provide an MDC frequency of less than or equal to 2.5 MHz to
-comply with the IEEE MII specification."
-The code produces ie. value 0x18 to the MII Speed Control Register for
-64MHz system clock it means 2.67Mhz MDIO clock.
+Why don't you simply run "top" on your board, then?
 
-This patch will repair it.
+Or read /proc/stat?
 
-
-        /* Set MII speed to 2.5 MHz
-        */
-        fecp->fec_mii_speed = fep->phy_speed =
--               (( (bd->bi_intfreq + 500000) / 2500000 / 2 ) & 0x3F ) << 1;
-+               (( (bd->bi_intfreq + (2500000-1)) / 2500000 / 2 ) & 0x3F
-) << 1;
- #else
-        fecp->fec_mii_speed = 0;        /* turn off MDIO */
- #endif /* CONFIG_USE_MDIO */
+Wolfgang Denk
 
 --
-
-----------------------------------------------------------------------
-|                          Pavel Bartusek                            |
-|                                                                    |
-| Sysgo RTS GmbH,                     phone: +49 (0) 6136 9948-722   |
-| Am Pfaffenstein 14                  fax:   +49 (0) 6136 9948-10    |
-| D-55270 Klein-Winternheim           email: pba@sysgo.de            |
-| Germany                                                            |
-|                                                                    |
-|       http://www.sysgo.de           http://www.elinos.com          |
-|                                                                    |
-----------------------------------------------------------------------
-
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Put your Nose to the Grindstone!
+                 -- Amalgamated Plastic Surgeons and Toolmakers, Ltd.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
