@@ -1,16 +1,18 @@
-Return-Path: <Jan.Schneider@honeywell.com>
-Received: from az18nt142.honeywell.com (az18nt142.honeywell.com [199.64.7.142])
-	by ozlabs.org (Postfix) with ESMTP id 8E3BC2BE83
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao02.cox.net (fed1rmmtao02.cox.net [68.230.241.37])
+	by ozlabs.org (Postfix) with ESMTP id 98EBA2BF0E
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 17 Dec 2004 01:13:18 +1100 (EST)
-Message-ID: <938F1554888BD71194E100B0D0FCD97201AAD7F7@ge51smail2.ge51.honeywell.de>
-From: "Schneider, Jan (GE51)" <Jan.Schneider@honeywell.com>
-To: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
-Date: Thu, 16 Dec 2004 06:44:57 -0700
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: saving registers on task switch
+	Fri, 17 Dec 2004 01:57:07 +1100 (EST)
+Date: Thu, 16 Dec 2004 07:57:03 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: tglx@linutronix.de
+Message-ID: <20041216145703.GB25810@smtp.west.cox.net>
+References: <20041216112511.1.patchmail@tglx>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20041216112511.1.patchmail@tglx>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] Make OpenPIC serial clock configurable
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,15 +23,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
+On Thu, Dec 16, 2004 at 11:25:13AM +0100, tglx@linutronix.de wrote:
 
-I have a MPC855t and using the Kernel 2.4.18.
-I want to make some changes in the kernel to use the MPC855's Debug
-Registers.
-Where is the part in the sources where the registers of one process are
-being saved on the stack? 
-Is it possible to add there the DebugRegisters?
+> Make OpenPIC serial clock configurable
+> 
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
-thank you for any suggestions
+I'd like to wait on this at least until the code for a board that uses
+this comes out.
 
-Jan
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
