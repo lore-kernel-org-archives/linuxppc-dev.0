@@ -1,29 +1,24 @@
-Date: Tue, 14 Sep 1999 11:10:53 +0200
-To: Andreas Bogk <andreas@andreas.org>, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <19990913163755.A310@them.org>
+Date: Tue, 14 Sep 1999 11:15:20 +0200
+To: Daniel Jacobowitz <drow@false.org>, linuxppc-dev@lists.linuxppc.org
 From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: New booter
-Message-Id: <19990914111053.003150@mailhost.mipsys.com>
+Subject: Re: hfs resource forks in Linux
+Message-Id: <19990914111520.021034@mailhost.mipsys.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Sep 13, 1999, Andreas Bogk <andreas@andreas.org> wrote:
+On Mon, Sep 13, 1999, Daniel Jacobowitz <drow@false.org> wrote:
 
->> I forgot to mention that the kernel args can be changed by editing the
->> CMDL resource in the System file with resedit. Don't forget the trailing
->> 0, it's a C string !
->
->What's the point of a boot application that works without MacOS when
->yu need MacOS to modify the kernel args?
+>Not quite what I was talking about.  These let us touch the resource
+>fork, and deal with hfs volumes, not manage a specific file's resource
+>fork on the resource level.
 
-Hey, wait ! This is just a first prototype ;-)
+The resource fork format is not terribly complex. If noone does it, I'll
+look into writing a couple of tools for managing them one of those days.
 
-Hopefully, when finished, all those infos will be in a separate text
-file. I also need to make some kind of installer that lays out the small
-HFS partition, fills the boot blocks and mark the root directory
-"blessed" (in MacOS terminology, that means it contains a valid System file).
 
 -- 
            Perso. e-mail: <mailto:bh40@calva.net>
