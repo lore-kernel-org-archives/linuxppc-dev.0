@@ -1,64 +1,47 @@
-Mime-Version: 1.0
-Message-Id: <v04210104b3e769b9cab0@[209.239.164.143]>
-In-Reply-To: <14273.46467.61746.180371@gargle.gargle.HOWL>
-References: 
- <Pine.SGI.4.00.9908231613030.7470-100000@osiris.office.aol.com>
- <Pine.BSF.3.96.990823162311.86405K-100000@silver.teardrop.net>
- <14273.46467.61746.180371@gargle.gargle.HOWL>
-Date: Mon, 23 Aug 1999 14:27:05 -0700
-To: linuxppc-dev@lists.linuxppc.org
-From: Peter Chang <weasel@cs.stanford.edu>
+Date: Mon, 23 Aug 1999 16:36:10 -0500
+From: anthony tong <atong@uiuc.edu>
+To: Tom Rini <trini@disparity.net>
+Cc: brad allison <jackal@aol.net>, rshaw@inficad.com,
+        Benjamin Herrenschmidt <bh40@calva.net>,
+        linuxppc-dev@lists.linuxppc.org, puetzk@iastate.edu
 Subject: Re: BootX enhancement request
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Message-ID: <19990823163610.A31129@mango.genunix.net>
+References: <Pine.SGI.4.00.9908231613030.7470-100000@osiris.office.aol.com> <Pine.BSF.3.96.990823162311.86405K-100000@silver.teardrop.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.BSF.3.96.990823162311.86405K-100000@silver.teardrop.net>; from Tom Rini on Mon, Aug 23, 1999 at 04:27:46PM -0400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Note: I'm not really active on the linuxppc-dev list (read: lurker), 
-but I assume that all of the people on the 'to' list are on the list 
-so I've trimmed it back to just the list.
+Tom Rini (Mon, Aug 23, 1999 at 04:27:46PM -0400):
+> > I think you missed my point.  Don't get me wrong, that's cool to know.
+> > But I was thinking more along the lines of a drop down menu to set the
+> > resolution from BootX rather than cryptic kernel arguements.
+> 
+> So you want BootX to be able to do what Monitors & Sound can do.  Either
+> pick a mode there and use BootX from MacOS, or once 2.4.0 rolls around,
+> specify video=aty128fb:1024x768@75 (or so).  There is no need for BootX to
+> do this.
 
-> >> "Tom" == Tom Rini <trini@disparity.net> writes:
->
-> Tom> So you want BootX to be able to do what Monitors & Sound can do.  Either
-> Tom> pick a mode there and use BootX from MacOS, or once 2.4.0 rolls around,
-> Tom> specify video=aty128fb:1024x768@75 (or so).  There is no need for BootX
-> Tom> to do this.
+If you have a version of MacOS that saves the monitor mode in nvram,
+you shouldn't need to give any kernel arguments. Alternatively you
+can use the linuxpmac tool nvvideo to set this.
 
-I agree w/ this, if mostly because bootX would either need to do a 
-lot of querying to determine what the board/monitor combo could do or 
-there would be yet another list of supportable modes that might get 
-out of sync w/ what's already in the X config stuff.
+It should be simple to add modedb support for the time being as well.
 
-At 16:56 -0400 08.23.1999, Jerry Quinn wrote:
->How do MacOS and Windows deal with the problem of different monitors and
->resolutions?  I know on the Mac so far, I automatically get the available
->resolutions, although Apple-style monitors have extra sense pins to provide
->the info.
+> > It seems the 2.2.10 kernel will not sync to the video settings at all
+> > without the kernel arguements.
 
-W/ the coming of win9x, the pnp stuff wants to load 'extra' 
-information about monitors etc taht it detects. This information 
-'overrides' any monitor sense stuff that might be present (I've never 
-seen a pc monitor like this), and restricts the list of availible 
-modes presented to the user. I've since lost the brain cells involved 
-(thank goodness), but you can 'hand edit' the .inf file (or whatever) 
-to get modes that you know the monitor supports but that are not 
-advertised. (Well, my co-workers at 3dfx and I would do this because 
-we 'knew' our brand new viewsonic monitors could do a lot more than 
-whatever appeared in the list).
+The default (without kernel arguments) is 640x480-60, unless you have
+a video mode already set in nvram.
 
-I think that the lack of sense pins for normal vga connectors is part 
-of the reason why windows still asks if the test pattern appears 
-correctly on the monitor. It knows what the card can support, but not 
-whether the user is using some crappy monitor that can't synch.
+> What, aty128fb?  It's beta and not done.  You're prolly better off using
+> No Video Driver, unles you're gonna play w/ the source (Anthony, speak up
+> if i'm wrong). :)
 
-\p
+If it works, use it, if not, send me an email. :)
 
----
-We all enter this world in the same way:
-naked; screaming; soaked in blood.
-But if you live your life right, that kind of
-thing doesn't have to stop there. -- Dana Gould
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
