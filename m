@@ -1,66 +1,61 @@
-To: "rick.liu" <dovi@eyou.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Why my console output nothing 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "14 May 2003 15:27:00 +0800."
-             <20030514152700.68497.qmail@eyou.com>
-Date: Wed, 14 May 2003 10:10:37 +0200
-Message-Id: <20030514081042.2C117C6092@atlas.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Subject: RTAI module install problem
+From: Toni Van Remortel <t.vanremortel@ha.be>
+Reply-To: t.vanremortel@ha.be
+To: linuxppc-embedded@lists.linuxppc.org
+Content-Type: text/plain
+Message-Id: <1052901595.7115.5.camel@toni>
+Mime-Version: 1.0
+Date: 14 May 2003 10:39:55 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Hi all.
 
-in message <20030514152700.68497.qmail@eyou.com> you wrote:
->
-> you mean it's not the problem of my console configuration but the u-boot
-> program?
+I'll first tell you in short what I use.
 
-That might be the case. But obviously I can only speculate.
+Kernel: linuxppc_2_4_devel (from CVS on may 7th 2003)
+RTAI Patch: ppc_devel_patch_2003_05_04_1125
+Patch went perfect.
 
-> But I thought it might at least output some message of the board before it can
-> output the prompt "=>",is that right? Listing all my chang in the TQM860L.h
+Cross-compiler: ELDK ppc_4xx
+Target: EP405
+Host: x86
+INSTALL_MOD_PATH: /tmp/rmdisk_large
 
-This is correct. But you need to get a couple of things right  before
-you see a single character onthe console.
+Config and vmlinux-compile don't give errors, RTAI is enabled.
+Modules compile OK.
+When installing the modules, I get this error:
 
-> and in tqm8xx.c,I did like this:
+cd /tmp/rmdisk_large/lib/modules/2.4.20-rthal5; \
+mkdir -p pcmcia; \
+find kernel -path '*/pcmcia/*' -name '*.o' | xargs -i -r ln -sf ../{}
+pcmcia
+if [ -r System.map ]; then /sbin/depmod -ae -F System.map -b
+/tmp/rmdisk_large -r 2.4.20-rthal5; fi
+depmod: ELF file
+/tmp/rmdisk_large/lib/modules/2.4.20-rthal5/kernel/drivers/i2c/i2c-core.o not for this architecture
+depmod: ELF file
+/tmp/rmdisk_large/lib/modules/2.4.20-rthal5/kernel/drivers/i2c/i2c-dev.o
+not for this architecture
+depmod: ELF file
+/tmp/rmdisk_large/lib/modules/2.4.20-rthal5/kernel/drivers/i2c/i2c-proc.o not for this architecture
+...
+depmod: ELF file
+/tmp/rmdisk_large/lib/modules/2.4.20-rthal5/kernel/net/ipv4/netfilter/iptable_filter.o not for this architecture
+depmod: ELF file
+/tmp/rmdisk_large/lib/modules/2.4.20-rthal5/kernel/net/ipv4/netfilter/iptable_nat.o not for this architecture
+make: *** [_modinst_post] Error 1
 
-You should not change existing files in an incompatible way.  Instead
-you  should  add  your  own set of files for your hardware. Otherwise
-there will not be any chance to include your modifications  intot  he
-public source tree.
+OK, this tells me that I'm using a somewhat wrong architecture (probably
+wrong configured).
+Does anybody know how I can solve this?
 
-> 1.changed upm_table according to my sdram;
-> 2.modify the register's value in the function initdram()
-
-I have no way to tell if your modifications might work. But  this  is
-not  (yet)  relevant.  You will see output on the console long before
-RAM is accessed.
-
-> :-),I am trying to learn,would u  recommend some helpful material about
-> u-boot?
-
-Read the sources :-)
-
-> >Finally: did you order your BDI2000 yet? You will  probably  need  it
-> >soon.
->
-> I know that,and I will try to persuade my "boss".
-
-Tell him that you are stuck and cannot continue without the right tool.
-
-Best regards,
-
-Wolfgang Denk
-
+Thnx.
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-All a hacker needs is a tight PUSHJ, a loose pair of UUOs, and a warm
-place to shift.
+Toni Van Remortel <t.vanremortel@ha.be>
+D-science lab
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
