@@ -1,39 +1,40 @@
-To: "Omanakuttan" <omanakuttan@tataelxsi.co.in>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: installing ncurses for cross compiling 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sat, 08 Mar 2003 01:24:58 +0530."
-             <3E68F912.7000602@tataelxsi.co.in>
-Date: Fri, 07 Mar 2003 21:30:24 +0100
-Message-Id: <20030307203029.335B2C6E0C@atlas.denx.de>
+Message-ID: <3E6A42A1.9080503@tataelxsi.co.in>
+Date: Sun, 09 Mar 2003 00:51:05 +0530
+From: "Omanakuttan" <omanakuttan@tataelxsi.co.in>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org,
+	linux-india-programmers@lists.sourceforge.net
+Subject: how to allocate physically contiguous memory in kernel.
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3E68F912.7000602@tataelxsi.co.in> you wrote:
->
-> I want to write some programs for our serial console using ncurses. I
-> have written and tested the apps in i386, now I want to cross compile it.
-> I ahave Monta vista linux and ncurses is not available on i386.
+Hi,
+We are using mpc8260 for our communication application.
+In our application, we have to allocate contiguous memory of size 1536
+bytes. These memory will be used in the buffer descriptors for DMA.
+These will be later freed from another driver in the kernel. For DMA we
+require physically contiguous addresses.
 
-You can find cross-development  versions  of  the  ncurses-devel  and
-ncurses RPM's as part of our ELDK, see http://www.denx.de/re/ELDK.html
+We are currently allocating 1536 bytes using dev_alloc_skb non interrupt
+context and skb_alloc(x, GFP_ATOMIC) in terrupt context. The doubt is
+that will a dev_alloc_skb()/skb_alloc call allocate 1536 bytes within
+page boundary? My understanding of kmem allocation is that kernel keeps
+free buffers of size 512k, 256k ... (buddy system) upto 1 page, and
+whenver a request arises, contiguous memory is allocated from the
+nearest large page frame block. If there is no page frame block to
+satisfy this request, it will fail.
+In this context can I safely asssume that a dev_alloc_skb() request will
+return memory which is contiguous physical memory within a page ?
 
+if not what should be the approach I should take? I cannot allocate 1
+page for 1536 bytes, which will cause huge over heads. shall I redefine
+PAGE_SIZE to 2048 and allocate one page for 1536 bytes and do a skb_put
+on the data?
 
-Note that you must install the cross development environment,  i.  e.
-it will not work to use just these 2 RPM's with a native compiler.
+Any help is appreciated.
+Om.
 
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-If I don't document something, it's usually either for a good reason,
-or a bad reason.  In this case it's a good reason.  :-)
-                 - Larry Wall in <1992Jan17.005405.16806@netlabs.com>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
