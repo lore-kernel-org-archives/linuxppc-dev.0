@@ -1,52 +1,31 @@
-To: curt brune <curt@acm.org>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: wireless lan PCMCIA card advice 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 06 Jan 2003 18:35:17 PST."
-             <20030106183517.E24490@curtisb.com>
-Date: Tue, 07 Jan 2003 09:07:13 +0100
-Message-Id: <20030107080718.1BFDBC608E@atlas.denx.de>
+Message-ID: <DB0585C9F6F9D411BE8F00D0B7896A4CC05FC8@SNCMAIL>
+From: James Don <JDon@spacebridge.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Whats the "standard" embedded C lib?
+Date: Tue, 7 Jan 2003 16:12:09 -0500 
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Curt,
+Hi there,
 
-in message <20030106183517.E24490@curtisb.com> you wrote:
->
-> I am running ELDK 2.0.2 which does have RPMs for pcmcia-cs and
-> wireless-tools.  I also see my target installation has the "iwconfig"
-> program installed in /sbin.  The target also has /etc/pcmcia/* and
-> /etc/rc.d/init.d/pcmcia.
+I am just looking at compiling "busybox". And am now at a point where I need
+to consider more than just the kernel and my bootloader.
 
-OK.
+I have build my gcc 2.95.3 using newlib (from redhat I believe) ...
 
-> >From your email I gather all I need to do is recompile my kernel to
-> include support for the wireless LAN (CONFIG_NET_RADIO) .  Is that
-> correct ?
+I am having some troubles building busy box ... as I need to sort our which
+'headers' to include etc ...
 
-Right, but you need a  recent  kernel  (from  our  CVS).  The  kernel
-specific  parts  (stuff like drivers/pcmcia/m8xx_pcmcia.c) were added
-after the release of  ELDK  2.0.2  [and  some  more  extensions  like
-simultaneous  support  for  both  PCMCIA  slots on MPC860 systems was
-added even later].
+I think I am on the right track to completing this but I read something in
+the busy box makefile that kind of stirred my confidence ... it said uClib
+is best with busy box ... is this the same as newlib?
 
-Don't forget to run
+What embedded C lib do you folks recommend? (for PPC 860 if that matters)
 
-	bash$ make modules
-	bash$ make modules_install INSTALL_MOD_PATH=/opt/eldk/ppc_8xx
-
-when building your kernel.
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Of course there's no reason for it, it's just our policy.
+Regards,
+Jim
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
