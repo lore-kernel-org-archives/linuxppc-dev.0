@@ -1,32 +1,62 @@
-Date: Tue, 10 Aug 1999 10:10:54 +1000
-Message-Id: <199908100010.KAA19153@tango.anu.edu.au>
+Date: Tue, 10 Aug 1999 11:00:29 +1000
+Message-Id: <199908100100.LAA28784@tango.anu.edu.au>
 From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: mlan@cpu.lu
-CC: drow@false.org, mj@ucw.cz, linuxppc-dev@lists.linuxppc.org
-In-reply-to: <199908092023.WAA00328@piglet.cpu.lu> (message from Michel
-	Lanners on Mon, 9 Aug 1999 22:23:25 +0200 (CEST))
-Subject: Re: Trying a Promise Ultra/66 on powerpc
+To: Geert.Uytterhoeven@cs.kuleuven.ac.be
+CC: linuxppc-dev@lists.linuxppc.org, linux-fbdev@vuser.vu.union.edu
+In-reply-to: 
+	<Pine.LNX.4.10.9908091008460.25523-100000@mercator.cs.kuleuven.ac.be>
+	(message from Geert Uytterhoeven on Mon, 9 Aug 1999 10:17:17 +0200
+	(CEST))
+Subject: Re: readl() and friends and eieio on PPC
 Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <199908092023.WAA00328@piglet.cpu.lu>
+References: <Pine.LNX.4.10.9908091008460.25523-100000@mercator.cs.kuleuven.ac.be>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michel Lanners <mlan@cpu.lu> wrote:
+Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be> wrote:
 
-> I'd vote for making I/O ports a memory addresss like any other, and
-> making sure drivers get this address right. See my other post for
-> details..
+> Jes Sørensen pointed out to me that readl() and friends should not use eieio on
+> PPC. On other architectures (e.g. AXP) this isn't done neither.
 
-The problem is, there are PCI device drivers which assume you can get
-an address in I/O space from a PCI device (either directly from the
-config-space base address registers or from the pci_dev struct) and
-then just do inb and outb on that port address.  That's why inb/outb
-add _IO_BASE to the port number.
+Readl/writel etc. are intended for "memory" space, but this could be
+either memory-mapped device registers or plain ordinary memory.  The
+intel folks don't make the distinction because ia32 doesn't allow
+reordering of memory accesses AFAIK.
 
-One way might be to adjust the base addresses in all the pci_dev
-structs and then make sure all drivers use the address from the
-pci_dev struct rather than reading config space themselves.
+> Hence both inl() and readl() protect against reordering. This is not necessary
+> for readl(). Drivers that need to protect against reordering should use
+> wmb()/rmb()/mb() theirselves.
+
+Linus made the point in a recent post to linux-kernel that people
+shouldn't necessarily expect inb/outb/readb/writeb etc. to be usable
+on every kind of bus - it's quite reasonable to define other access
+methods on other cpus or buses.
+
+> If readl() and friends don't do eieio, the fbcon-* routines won't be slowed
+> down by using readl() and friends (but we're still having the byte swapping
+> then).
+
+Do you have any numbers to show how much the eieios slow you down?
+
+If you take out the eieios, you will break other drivers, starting
+with the OHCI USB host driver.  Can we think of another way around the
+problem?  You could use le32_to_cpup for loading from the frame
+buffer, but there isn't currently an equivalent for stores,
+unfortunately (one could be invented, though).
+
+> And atyfb should use readl()/writel() instead of aty_{ld,st}_le32(), so we can
+> get rid of the inline assembler. Note that this will probably break on Atari,
+
+I thought the point of the aty_ld/st* routines was to avoid one add
+instruction each time by using the PPC indexed addressing mode.
+Anyway, IMO the aty_ld/st* routines *should* include the eieio.  That
+would mean you wouldn't need the explicit eieio() calls scattered
+through the rest of the driver.  I guess it's just luck that it works
+where you do a sequence of aty_st_le32's to set up some drawing
+command and then call wait_for_fifo (or wait_for_idle) which does an
+aty_ld_le32.  Or doesn't it matter if the load gets done before all of
+the stores have completed?
 
 Paul.
 
