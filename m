@@ -1,31 +1,23 @@
-Message-ID: <3D46E96B.1020504@dslextreme.com>
-Date: Tue, 30 Jul 2002 12:30:51 -0700
-From: akuster <akuster@dslextreme.com>
-Reply-To: akuster@dslextreme.com
+Message-ID: <20020730215100.22006.qmail@web11504.mail.yahoo.com>
+Date: Tue, 30 Jul 2002 14:51:00 -0700 (PDT)
+From: Khai Trinh <kqtrinh@yahoo.com>
+Subject: device driver for ibm 440GP
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-To: Hollis Blanchard <hollis@austin.ibm.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: __cli on 4xx - MSR:CE?
-References: <1028054814.13540.131.camel@granite.austin.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hollis Blanchard wrote:
-> Shouldn't __cli on 4xx disable the MSR CE bit as well as EE?
->
-> -Hollis
->
->
->
->
->
->
+Hi folks,
 
-It should.  Critical interrupts are currently not enabled in the kernel
+Is there a 405GP/440GP char device driver sample out
+there I can use as a starting point for my custom
+driver? I am interrested in configuring the DMA
+controller code.
 
-armin
+Thanks,
+--Khai
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
