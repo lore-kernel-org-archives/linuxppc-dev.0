@@ -1,39 +1,36 @@
-Message-ID: <377B9D8E.FFDC6EB2@msoe.edu>
-Date: Thu, 01 Jul 1999 11:55:42 -0500
-From: ian reinhart geiser <geiseri@msoe.edu>
-MIME-Version: 1.0
-To: Rand <rand@mail.org>,
-        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: nsfd problem after building 2.2.10
-References: <199907011645.MAA23749@mail1.lig.bellsouth.net>
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <BFC0587634C3D111AACB00805FA766FA02C1C5FC@exchny12.ny.smb.com>
+From: "Velasquez, Carlos" <carlos.velasquez@ssmb.com>
+To: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
+Subject: kernel args for video mode..
+Date: Thu, 1 Jul 1999 13:04:52 -0400 
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Rand wrote:
+Hello,
 
-> ian reinhart geiser geiseri@msoe.edu
->
-> Thanks Ian,
->   Maybe someone will have an answer..or maybe there is a bug in 2.2.10.
-> I tried building NFS and NFSD both with modules and not and get the error
-> in either case.  Not using nfs so it doesn't really matter, but I'm
-> curious as to why it doesn't work.  My kernel is about 1MG smaller than
-> the one delivered on the CD, so there is lots of other things that they
-> selected that I didn't need.  Maybe one of them has something to do with
-> this.
->
-> Rand
->
+How do I specify to the kernel (via bootX) what video card I have and the
+modes I wish to use. I have an ixMicro 8 meg video card on my s900 mac
+clone. Is the card known as tt128mb8 or is it     tt128m-b1? The latter is
+what comes up on the twin turbo control panel on the MacOS side when I want
+to tweak the bit depth or resolution.
 
-    i have noticed that network transfers are also not as stable as they use to
-    be.  i kernel paniced when my rommate tried to FTP a 40Meg file off of my
-    box.  it finished the download and died....
+So how do I specify it as kernel arguments? should I say:
+video=tt128mb8 , vmode = XX , cmode =YY  (where XX and YY are the resolution
+and bit depth respectively) or instead of commas, do I use semi-colons or
+colons or what?
 
+Also, do I uncheck the "Don't use Video driver" choice box? What happens if
+I keep it checked ? Finally, how (if possible) do I change video and color
+modes once I am already booted up? Can I do this on the fly?
 
-    i am startig to think it is network related
+Carlos
 
+______________________________________________________________________
+C.F. Velasquez
+Asst. Vice President
+Global Database and Technology Division
+Salomon Smith Barney, Inc.
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
