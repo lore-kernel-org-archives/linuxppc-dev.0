@@ -1,46 +1,44 @@
-Message-ID: <3713E45B.60335A75@airways.com>
-Date: Tue, 13 Apr 1999 17:42:03 -0700
-From: "D. Lance Robinson" <lancer@airways.com>
-Reply-To: lancer@airways.com
+Date: Tue, 13 Apr 1999 23:19:45 -0700 (MST)
+From: Matt Porter <mmporter@home.com>
+To: Simone Piccardi <piccardi@fi.infn.it>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: LinuxPPC on a Motorola MVME2400
+In-Reply-To: <371338D4.4FCAF400@fi.infn.it>
+Message-ID: <Pine.LNX.3.96.990413231440.12330L-100000@liberty.chnd1.az.home.com>
 MIME-Version: 1.0
-To: linux-raid <linux-raid@vger.rutgers.edu>,
-        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Memory buffer corruption with Raid on PPC
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I have linux 2.2.3 with raid014519990309.. patch.
+On Tue, 13 Apr 1999, Simone Piccardi wrote:
 
-On a PPC (Mac G3) system, I am getting what seems to be memory buffer
-courruption when using raidstart. The same kernel source run with i386
-architecture seems to be fine.
+> thanks for the info. I was trying to build the cross-compiler (so still
+> I do not even try to boot the system). I look at your page, but I find a
+> broken link for binutils. 
 
-To show the problem, I do something like the following...
+I fixed the build instructions on my page for binutils and egcs, but have
+not tested or updated the binary packages to match yet.  glibc
+instructions are not updated at this time because alpha.gnu.org is down
+and I can't verify the latested glibc version.
 
-#  cd ~me
-#  gcc source_a.c 
-#  raidstart /dev/md0 ; gcc source_a.c 
-#  raidstop  /dev/md0 ; gcc source_a.c 
-#  raidstart /dev/md0 ; gcc source_a.c 
-#  raidstop  /dev/md0 ; gcc source_a.c 
-#  raidstart /dev/md0 ; gcc source_a.c 
-#  raidstop  /dev/md0 ; gcc source_a.c 
-#  raidstart /dev/md0 ; gcc source_a.c 
-#  raidstop  /dev/md0 ; gcc source_a.c 
+> I have also another question, I'm using RedHat 5.2 that has egcs 1.0.3
+> (but not for gcc, must I switch to Debian?). 
+> I find some rpm for egcs 1.1.2, but in the page you are using 1.1.1,
+> must I find this release ? 
 
-Usually doing this will cause the compile to have a problem. Such as:
-"Illegal Instruction", or some compile error. This indicates some sort
-of memory buffer corruption since the gcc is all done out of memory.
+My page was just outdated.  I've been using the older versions since I'm
+just working kernel issues and it is has been faster to build kernels on
+an available PII/400.  rpms for egcs you're finding are most likely native
+compilers.  There is no need to switch dists.  Also, I will update my
+binary packages soon and the Debian should be available on the next
+official Debian release.
 
-The problem seems to be in the raidstart area. It shows up after
-starting the array, but once the array is started (and passes the gcc
-test,) it works fine.
+--
+Matt Porter
+mmporter@home.com
+This is Linux Country. On a quiet night, you can hear Windows reboot.
 
-Any ideas ?
-
-Thanks, <>< Lance.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
