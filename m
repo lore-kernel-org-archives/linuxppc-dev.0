@@ -1,63 +1,29 @@
-Date: Fri, 26 Mar 1999 10:26:35 -0500
-From: "Paul J. Schinder" <schinder@pobox.com>
-To: John L Grantham <jgrantha@hannover.sgh-net.de>
+Message-Id: <9903261613.AA48254@marc.watson.ibm.com>
+To: Gabriel Paubert <paubert@iram.es>
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: MySQL?
-Message-ID: <19990326102635.A3899@pobox.com>
-References: <199903261322.NAA15082@go.hannover.sgh-net.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <199903261322.NAA15082@go.hannover.sgh-net.de>; from John L Grantham on Fri, Mar 26, 1999 at 02:22:46PM +0100
+Subject: Re: Apple Job Posting and Good News for LinuxPPC developers 
+In-Reply-To: Message from Gabriel Paubert <paubert@iram.es>
+   of "Fri, 26 Mar 1999 12:31:59 +0100." <Pine.HPP.3.96.990326121245.1078X-100000@gra-ux1.iram.es>
+Date: Fri, 26 Mar 1999 11:13:31 -0500
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Mar 26, 1999 at 02:22:46PM +0100, John L Grantham wrote:
-} 
-} Hi all,
-} 
-} Sorry if this question has been asked before. Is there a PPC-precompiled 
-} version of MySQL available, and if not, will there be one? Has anyone 
-} succeeded in installing MySQL from source with LinuxPPC R4?
+>>>>> Gabriel Paubert writes:
 
-Yes, people have succeeded installing from source:
+Gabriel> Do 64 bit PPC processors that can be bought as chips (not in a system) 
+Gabriel> exist (i.e., can you buy a Power3 in a BGA package and the chipset that
+Gabriel> goes with) ? 
 
-linux% mysqladmin version
-mysqladmin  Ver 7.8 Distrib 3.22.20a, for unknown-linux-gnu on powerpc
-TCX Datakonsult AB, by Monty
+	 I doubt it.  The Power3 comes from the server organization and is
+intended for their use.  IBM, however, does understand customer demand:
+if there was "enough" market interest, I am sure that it would find a way
+to sell it.  The Power3 processor price is nowhere near a PPC750 or G4 and
+does not include AltiVec.
 
-Server version          3.22.20a-log
-Protocol version        10
-Connection              Localhost via UNIX socket
-UNIX socket             /tmp/mysql.sock
-Uptime:                 3 days 15 hours 17 sec
+David
 
-Threads: 1  Questions: 5  Slow queries: 0  Opens: 6  Flush tables: 1  Open tables: 2
-
-It's as easy as ./configure;make;make install.
-
-But you need an up-to-date R4 glibc and egcs.  Those you can get from
-Gary Thomas' area at ftp.linuxppc.org.  The exact URL has been given
-many times on this list.
-
-} 
-} Hope to hear from you soon... ;-)
-} 
-} TIA,
-} 
-} John
-} 
-} 
-} 
-} John Grantham | Dipl.-Designer (FH)
-}               | Linux am Mac FAQ: http://linux.macnews.de/
-}               | Homepage: http://surf.to/multimedia
-} 
-} 
-
--- 
-Paul Schinder
-schinder@pobox.com
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
