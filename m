@@ -1,43 +1,66 @@
-To: "Rupesh S" <rupeshs@myw.ltindia.com>
-Cc: "linuxppc-embedded" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Linux booting on FADS823 board 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 22 May 2003 18:01:56 PDT."
-             <001901c320c6$e8440090$6706a8c0@SPLENDOR>
-Date: Thu, 22 May 2003 20:08:59 +0200
-Message-Id: <20030522180904.C156EC6162@atlas.denx.de>
+Message-ID: <3ECD5B1E.4070805@mvista.com>
+Date: Thu, 22 May 2003 16:19:58 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+MIME-Version: 1.0
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: linuxppc_2_4_devel patch to arch/ppc/kernel/setup.c
+Content-Type: multipart/mixed;
+ boundary="------------040309070803000006060501"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Rupesh,
+This is a multi-part message in MIME format.
+--------------040309070803000006060501
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-in message <001901c320c6$e8440090$6706a8c0@SPLENDOR> you wrote:
->
-> I have a problem booting Linux with u-boot.
-> Here are my configurations
+This is a minor patch to move the default setting of the default
+loops_per_jiffy to before the call to platform_init().  This would be
+necessary if someone required a reasonable value for loops_per_jiffy so
+that their progress output would work (e.g., polled UART I/O that
+required a udelay() call).  Ideally, this should never be necessary
+since the board-specific platform_init() should set it up correctly.
+This is just in case.
 
-Why do you ask again?
+Mark
 
-You asked on the U-Boot mailing list already, and  received  a  reply
-semi-immediately.  Only  7 minutes after your first posting you asked
-again.
-
-And now you post the same stuff a third time on linuxppc-embedded?
-
-
-As long as you are asking for free support you should show  a  little
-more  patience. [And even with commercial support you probably cannot
-get guaranteed solutions in less than 5 minutes.]
-
-
-Wolfgang Denk
-
+P.S., I would almost prefer just getting rid of the default
+loops_per_jiffy setup.  Anyone else?
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Mistakes are often the stepping stones to utter failure.
+
+--------------040309070803000006060501
+Content-Type: text/plain;
+ name="setup.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="setup.patch"
+
+===== arch/ppc/kernel/setup.c 1.119 vs edited =====
+--- 1.119/arch/ppc/kernel/setup.c	Mon Apr 21 17:13:07 2003
++++ edited/arch/ppc/kernel/setup.c	Thu May  8 17:43:26 2003
+@@ -513,6 +513,9 @@
+ 	strcpy(cmd_line, CONFIG_CMDLINE);
+ #endif /* CONFIG_CMDLINE */
+
++	/* so udelay does something sensible, assume <= 1000 bogomips */
++	loops_per_jiffy = 500000000 / HZ;
++
+ 	platform_init(r3, r4, r5, r6, r7);
+
+ 	if (ppc_md.progress_init)
+@@ -558,9 +561,6 @@
+ 	extern char _etext[], _edata[];
+ 	extern char *klimit;
+ 	extern void do_init_bootmem(void);
+-
+-	/* so udelay does something sensible, assume <= 1000 bogomips */
+-	loops_per_jiffy = 500000000 / HZ;
+
+ #ifdef CONFIG_ALL_PPC
+ 	/* This could be called "early setup arch", it must be done
+
+--------------040309070803000006060501--
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
