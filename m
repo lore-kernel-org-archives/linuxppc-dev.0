@@ -1,137 +1,95 @@
-Message-Id: <v03130300b2c93cc809b5@[159.134.229.118]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Mon, 18 Jan 1999 20:16:32 +0000
-To: linuxppc-dev@lists.linuxppc.org
-From: Brian Foley <brianfoley@tinet.ie>
-Subject: Patch for sound on the iMac
+Date: Mon, 18 Jan 1999 13:29:38 -0700 (MST)
+From: Brad Midgley <brad@pht.com>
+Reply-To: Brad Midgley <brad@pht.com>
+To: Daniel Jacobowitz <drow@false.org>
+cc: Paul.Mackerras@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org
+Subject: Re: scsi hangs [drow@cs.cmu.edu: Re: CD-writers] (fwd)
+In-Reply-To: <19990117152914.A12471@drow.res.cmu.edu>
+Message-ID: <Pine.LNX.3.95.990118132148.32489A-100000@pacific.pht.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi there,
+hi,
 
-below is a patch against 2.2.0-pre7 that seems to get audio, and the
-console beep working on the iMac. The main change that was needed is to
-support the fact that the Burgundy chip in the iMac can only output sound
-at 44.1KHz.
-I've tested it out with a G3 Series PowerBook as well, and it doesn't seem
-to introduce any problems there.
+the author of cdrecord suggests we look at:
 
-I have, however, found one issue. On my iMac (rev A), it works fine if
-Linux is loaded by the BootX INIT, but if I use the BootX app from within
-MacOS, the sound never gets initialised properly. I think it is probably
-MacOS setting up Burgundy after loading INITs, and not resetting it
-properly during shutdown. At the moment, I'm at a loss as to how to fix it.
+Disabled disconnect/reconnect on the SCSI bus
+A bug in the scheduler or pager in the kernel.
 
-Also I'm trying to see if I can get the driver to automatically switch
-output to the headphone socket if you plug in headphones, and possibly the
-SRS support assuming its not part of MacOS.
+full message is below.
 
-I've spent a while trying to find some documentation on the AWACS. The
-closest I've found so far is the AWACS driver in MkLinux, which I don't
-understand very well. I've seen references to the 'IT&T ASCO 2300
-Audio-Stereo Codec Specification' in several of Apple's Hardware docs, does
-anyone know where I might find this on the net?
+brad
 
-Any comments, bug reports, etc would be welcome, but be gentle please, its
-my first kernel patch :-)
+From: Joerg Schilling <schilling@fokus.gmd.de>
 
-Anyhow, enjoy!
+>From brad@pht.com Sun Jan 17 03:47:57 1999
 
-Brian.
+>i use cdrecord on linux on both pc and ppc. the recent ppc kernels have a
+>problem and i hope you can offer insight so i can locate and hopefully fix
+>the problem in the kernel. 
 
---- drivers/sound/dmasound.c	Fri Jan 15 00:53:19 1999
-+++ drivers/sound/dmasound.c	Mon Jan 18 18:50:31 1999
-@@ -230,10 +230,12 @@
- 	-269,	-245,	-218,	-187,	-153,	-117,	-79,	-40,
- };
+>i can use v1.6 on pc (kernel 2.0.35) without problems; but on the ppc,
+>v1.6, which used to work on v2.1.24, now dies consistently after writing
+>less than 10M using v2.2.0pre5. i've tried the current version of cdrecord
+>with the same result: 
 
--#define BEEP_SPEED	2	/* 22050 Hz sample rate */
- #define BEEP_BUFLEN	512
- #define BEEP_VOLUME	15	/* 0 - 100 */
+>Executing 'write_g1' command on Bus 1 Target 4, Lun 0 timeout 40s
+>CDB:  2A 00 00 00 27 00 00 00 10 00
+>cdrecord: I/O error. write_g1: scsi sendcmd: retryable error
+>CDB:  2A 00 00 00 27 00 00 00 10 00
+>status: 0x2 (CHECK CONDITION)
+>Sense Bytes: 70 00 05 00 00 00 00 0A 00 00 00 00 10 02 00 00
+>Sense Key: 0x5 Illegal Request, Segment 0
+>Sense Code: 0x10 Qual 0x02 (id crc or ecc error) [No matching qualifier]
+>Fru 0x0
 
-+int beep_speed = 2; /* 22050 Hz sample rate */
-+int beep_rate = 22050;
-+
- static int beep_volume = BEEP_VOLUME;
- static int beep_playing = 0;
- static short *beep_buf;
-@@ -3019,6 +3021,7 @@
- static int awacs_freqs[8] = {
- 	44100, 29400, 22050, 17640, 14700, 11025, 8820, 7350
- };
-+int awacs_is_valid_freq[8] = {1, 1, 1, 1, 1, 1, 1, 1};
+>this is a ricoh connected to the ppc's 53C94 bus.
 
- static void PMacInit(void)
- {
-@@ -3044,7 +3047,8 @@
- 	i = 8;
- 	do {
- 		tolerance = catchRadius * awacs_freqs[--i] / 100;
--	} while (sound.soft.speed > awacs_freqs[i] + tolerance && i > 0);
-+	} while ((sound.soft.speed > awacs_freqs[i] + tolerance && i > 0)
-|| !awacs_is_valid_freq[i]);
-+
- 	if (sound.soft.speed >= awacs_freqs[i] - tolerance)
- 		sound.trans = &transAwacsNormal;
- 	else
-@@ -3226,6 +3230,7 @@
- 	while (in_le32(&awacs->codec_ctrl) & MASK_NEWECMD)
- 		;	/* XXX should have timeout */
- 	out_le32(&awacs->codec_ctrl, val | (awacs_subframe << 22));
-+	eieio();
- }
+>the complete -v -v -V log is at http://pht.com/~brad/cdrecord/ but it's
+>too long to include here. 
 
- static void awacs_nosound(unsigned long xx)
-@@ -3247,7 +3252,7 @@
- static void awacs_mksound(unsigned int hz, unsigned int ticks)
- {
- 	unsigned long flags;
--	int srate = awacs_freqs[BEEP_SPEED];
-+	int srate = awacs_freqs[beep_speed];
- 	int period, ncycles, nsamples;
- 	int i, j, f;
- 	short *p;
-@@ -3308,7 +3313,7 @@
- 		out_le32(&awacs_txdma->control, (RUN|WAKE|FLUSH|PAUSE) << 16);
- 		out_le32(&awacs->control,
- 			 (in_le32(&awacs->control) & ~0x1f00)
--			 | (BEEP_SPEED << 8));
-+			 | (beep_speed << 8));
- 		out_le32(&awacs->byteswap, 0);
- 		out_le32(&awacs_txdma->cmdptr, virt_to_bus(beep_dbdma_cmd));
- 		out_le32(&awacs_txdma->control, RUN | (RUN << 16));
-@@ -4525,6 +4530,29 @@
- 			if (sfprop != 0 && *sfprop >= 0 && *sfprop < 16)
- 				awacs_subframe = *sfprop;
- 		}
-+
-+		/*
-+		 * Some Macs have AWACS variants that can only output sound
-+		 * at a subset of the 8 frequencies supported by AWACS. The
-+		 * burgundy chip, for instance, can only play at 44.1KHz.
-+		 * On at least the iMac, the OpenFirmware compatible property
-+		 * is set correctly. This lets us to find out which IC is
-+		 * used and then only allow the relevant frequencies. If we
-+		 * don't know what chip is used, we assume all 8 frequencies
-+		 * are supported.
-+		 */
-+
-+		if (sound !=0 && sound->parent == np) {
-+			if (device_is_compatible(sound, "burgundy")) {
-+				int i;
-+				printk("AWACS: burgundy IC\n");
-+				for(i=1; i<8; i++)
-+					awacs_is_valid_freq[i] = 0;
-+				beep_speed = 0;
-+			}
-+		}
-+
-+
- 	}
- 	if (np != NULL && np->n_addrs >= 3 && np->n_intrs >= 3) {
- 		int vol;
+
+As the Sense Key 0x5 (illegal request is illegal in combination
+with sense code 0x10, I would guess that this is a buffer underrun.
+A buffer underrun usually ends up in an illegal request key as the
+next write operation after the underrun will use an illegal
+sector address from the point of view of the drive.
+
+Now lets discussw why a buffer underrun may occur:
+
+1)	Disabled disconnect/reconnect on the SCSI bus
+
+2)	Incorrect termination on the SCSI bus
+
+3)	A bug in the scheduler or pager in the kernel.
+
+>ps it might be worth mention in the docs: a suggestion with regard to
+>shmmax settings and cdrecord. it appears that the shmmax value can be
+>changed at runtime from the default < 4M to a value more optimal for
+>cdrecord:
+
+>echo 6000000 >/proc/sys/kernel/shmmax
+
+
+Interesting, it is not included 2.1.118 for Intel.
+
+Jörg
+
+ EMail:joerg@schily.isdn.cs.tu-berlin.de (home) Jörg Schilling D-13353 Berlin
+       js@cs.tu-berlin.de		(uni)  If you don't have iso-8859-1
+       schilling@fokus.gmd.de		(work) chars I am J"org Schilling
+ URL:  http://www.fokus.gmd.de/usr/schilling   ftp://ftp.fokus.gmd.de/pub/unix
+
+--------
+
+I don't have the exact messages, but attempting to use an external CDR
+(boot drive on MESH, burner on 53c94) locks up with a bunch of illegal
+sense requests.  Then it tries to reset the external bus, times out,
+claims to try harder, and more or less locks up.
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
