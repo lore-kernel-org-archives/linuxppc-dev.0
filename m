@@ -1,72 +1,55 @@
-Message-Id: <200005220447.GAA13376@denx.local.net>
-To: Brent <bimhoff@ns1.planetspork.com>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MBX boot problems 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sun, 21 May 2000 18:28:35 MDT."
-             <Pine.GSO.4.05.10005211739380.9894-100000@ns1.planetspork.com>
-Date: Mon, 22 May 2000 06:47:14 +0200
+Message-ID: <013a01bfc3cf$9ced0990$69f001dc@sjzhu.sps.mot.com>
+From: "Shuangjun Zhu" <r44089@email.sps.mot.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: PCMCIA support for 860
+Date: Mon, 22 May 2000 17:24:58 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;	charset="gb2312"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <Pine.GSO.4.05.10005211739380.9894-100000@ns1.planetspork.com> you wrote:
+In arch/ppc/mm/init.c, I have iorempa(_IO_BASE,_IO_BASE_SIZE),
+which _IO_BASE = 0x80000000,
+
+in macro SELECT_DRIVE in drivers/block/ide-probe.c: do_probe()
+OUT_BYTE((drive)->select.all, hwif->io_ports[IDE_SELECT_OFFSET])
+equal to OUT_BYTE((drive)->select.all, 0x80000000),
+then system illegal access, so what's wrong?
+
+Thanks in advanced!
+
 >
-> So I've searched the archives and read the readme's, and it still won't
-> boot. :)
+>Hi,
+>
+>
+>
+>I recompiled the kernel (2.2.13, including fpu, damm, bossek patches) and
+>restarted it.
+>Then I used the rc.pcmcia to set the modules up. It fails because of...
+>
+>I found that system acess the illegal address 0x80000000,
+>in macro SELECT_DRIVE in drivers/block/ide-probe.c: do_probe()
+>
+>--------------------------------------------------------------------------
+>bash# ./rc.pcmcia start
+>Starting PCMCIA services: modulesLinux PCMCIA Card Services 3.1.10
+>  kernel build: 2.2.13 #496 Fri May 19 11:14:29 CST 2000
+>  options:  none
+>m8xx_pcmcia: Version 0.03, 14-Feb-2000, Magnus Damm
+>m8xx_pcmcia: FADS using SLOT_B with IRQ 13.
+> cardmgr.
+>H<30>Jan  1 00:35:21 cardmgr[131]: starting, version is 3.1.10
+>bash# A<30>Jan  1 00:35:22 cardmgr[131]: watching 1 sockets
+>A<30>Jan  1 00:35:22 cardmgr[131]: initializing socket 0
+>I<30>Jan  1 00:35:22 cardmgr[131]: socket 0: ATA/IDE Fixed Disk
+>a<30>Jan  1 00:35:22 cardmgr[131]: executing: 'insmod
+>/lib/modules/2.2.13/pcmci'
+>probing for hda: present=0, media=32, probetype=ATA
+>
+>
+>
+>
 
-Well, let's see...
-
-> At this point, things go bad.  I've tried two things. 1) hitting enter and
-> letting things fall as they may.  This didn't work since there seemed to
-> be a problem with it dropping the middle digit of the first octet of the
-> src/dst IP addresses in the boot args.  2)  explicitly defining the boot
-> arguments with appropriate settings.
-
-Graham Stoney commented on # 2, so I'll give a try on # 1 :-)
-
-There  once  was  a   bug   with   the   IP   address   handling   in
-arch/ppc/mbxboot/misc.c   ;   if   you   can   find   a  place  where
-"nfsaddrs_string" you should be able to figure out how to replace the
-existing code with the following snippet:
-
-		...
-		dp = nfsaddrs_string;		/* nfsaddrs=x.x.x.x:y.y.y.y	*/
-		while (*dp) {
-			putc(*cp++ = *dp++);
-		}
-		/* add IP addresses as <my_ip>:<serv_ip> */
-		for (i=0; i<4; ++i, ++byte) {
-			unsigned char outbuf[4];	/* 3 digits + '\0' */
-			unsigned char *optr = &outbuf[sizeof(outbuf)-1];
-
-			*optr = '\0';
-
-			do {
-				*--optr = (*byte % 10) + '0';
-				*byte /= 10;
-			} while (*byte);
-
-			while (*optr) {
-				putc (*cp++ = *optr++);
-			}
-
-			if (i<3) {
-				putc(*cp++ = '.');
-			}
-		}
-		putc(*cp++ = ':');
-		...
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"Today's robots are very primitive, capable of understanding  only  a
-few  simple  instructions  such  as 'go left', 'go right', and 'build
-car'."                                                  - John Sladek
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
