@@ -1,41 +1,32 @@
-Date: Fri, 28 Feb 2003 19:03:23 +0100 (CET)
-From: Marius Groeger <mag@sysgo.de>
-To: Kamaraj P <kamarajp@future.futsoft.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Information about Library Optimizer 
-In-Reply-To: <000001c2df25$1a61db80$3c06140a@future.futsoft.com>
-Message-ID: <Pine.LNX.4.52.0302281859120.25295@mag.devdep.sysgo.de>
-References: <000001c2df25$1a61db80$3c06140a@future.futsoft.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: Question about modules
+Date: Fri, 28 Feb 2003 13:27:26 -0500
+Message-ID: <2702075D4DE2B043BF5EB82E9CFAD45B093BC7@mail1.mediatrix.com>
+From: "Jean-Denis Boyer" <jdboyer@mediatrix.com>
+To: "Ibon Gotxi Garcia" <igotxi@jazzfree.com>
+Cc: "Linux PPC embedded" <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, 28 Feb 2003, Kamaraj P wrote:
+> Everything works, till I try to insmod it: I get m8xx_cpm_alloc and
+> m8xx_cpm_hostalloc as unresolved symbols.
 
->      Does Any body Used Library Optimizer ?
-> if so , can any one  give some example how to use it ..
+In commproc.c, add the following line:
+  EXPORT_SYMBOL(m8xx_cpm_hostalloc);
 
-I have strong doubts about tools like this - amazingly well though how
-it may actually do the job in a certain setup. Building a monolithic
-block of software first, and then rip it apart again just doesn't seem
-right to me.
-
-> Is there any other way to reduce the library size ..
-
-If you're really short on memory, you should consider using an
-alternative library solution like uClibc.
-
-Just my 2 cents.
 
 Regards,
-Marius
 
------------------------------------------------------------------------------
-Marius Groeger           SYSGO Real-Time Solutions AG       mgroeger@sysgo.de
-Software Engineering     Embedded and Real-Time Software    www.sysgo.de
-Voice: +49-6136-9948-0   Am Pfaffenstein 14                 www.osek.de
-FAX:   +49-6136-9948-10  55270 Klein-Winternheim, Germany   www.elinos.com
+--------------------------------------------
+ Jean-Denis Boyer, B.Eng., Technical Leader
+ Mediatrix Telecom Inc.
+ 4229 Garlock Street
+ Sherbrooke (Québec)
+ J1L 2C8  CANADA
+ (819)829-8749 x241
+--------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
