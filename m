@@ -1,47 +1,52 @@
-Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
-Message-ID: <3BFE747D.4080908@embeddededge.com>
-Date: Fri, 23 Nov 2001 11:08:29 -0500
-From: Dan Malek <dan@embeddededge.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: David Given <dg@tao-group.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Strange FPU/threads problem
+Date: Fri, 23 Nov 2001 17:08:47 +0000
+References: <0111201816350A.15049@pearl>
+In-Reply-To: <0111201816350A.15049@pearl>
 MIME-Version: 1.0
-To: paulus@samba.org
-Cc: Armin Kuster <akuster@mvista.com>,
-	ppcdevel <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: New API for non cache coherent ppc cpu's
-References: <3BFAB960.DAA72239@mvista.com>	<15357.26322.107051.143144@cargo.ozlabs.ibm.com>	<3BFD8520.5060105@embeddededge.com> <15357.42818.227392.566129@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Message-Id: <01112317084703.18383@pearl>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Paul Mackerras wrote:
+On Tuesday 20 November 2001 18:16, David Given wrote:
+[...]
+> However, if I compile it so that it *does* use threads, it bails with a
+> SIGFPE the first time in encounters a floating point instruction. And I
+> don't know why.
+[...]
+
+I've done some more research. The thing that's causing the exception is
+arch/ppc/kernel/traps.c+291 (for Linux version 2.4.15), claiming an IEEE FP
+exception. The relevant code is:
+
+        if (regs->msr & 0x100000) {
+                /* IEEE FP exception */
+                _exception(SIGFPE, regs);
+        }
+
+Now, my copy of the 601 manual claims that only bits 27 to 16 of the MSR are
+defined, which translates to bits 5 to 15 in the real world, because the 601
+manual numbers the bits the wrong way round throughout[1]. Which means that
+bit 20, above, is undefined. MSR turns out to be:
+
+	00010F930
+
+What *is* that bit 20? According to the MSR, the FPU is enabled, FE0=FE1=1
+(precise mode)... could the processor be generating the exception because the
+thing being loading into the FPU isn't a valid double? In which case, how
+come my code works when threads are disabled?
+
+I could really use some help here.
 
 
-> To go with pci_map_page and pci_unmap_page.  These give you the
-> ability to do DMA to highmem pages without using bounce buffers.
+[1] DIE DIE DIE
 
-IIRC, there was a virt_to_bus in the code at one time, making it
-unusable for highmem pages, which is why I couldn't understand
-the appearance of the function.
-
-
-> My preference would be to make the one set of functions work
-> everywhere.
-
-Mine, too.  I just wish this was a common concept across a variety
-of our I/O interfaces.
-
-> ....  OTOH these non-PCI devices you're talking about are
-> presumably very specific to PPC embedded chips so maybe it doesn't
-> matter so much.
-
-That is always a challenge with the embedded parts.  It is often
-very convenient to make the (promper, IMHO) assumption this software
-isn't going to be used outside of these parts.
-
-Thanks.
-
-
-	-- Dan
-
+--
+David Given
+dg@tao-group.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
