@@ -1,26 +1,18 @@
-Return-Path: <Alexander.Povolotsky@marconi.com>
-Received: from mailgate.pit.comms.marconi.com (mailgate.pit.comms.marconi.com
-	[169.144.68.6]) by ozlabs.org (Postfix) with ESMTP id E212B67A75
+Return-Path: <mgreer@mvista.com>
+Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
+	by ozlabs.org (Postfix) with ESMTP id B62DE67A71
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 Feb 2005 06:03:34 +1100 (EST)
-Received: from mailman.pit.comms.marconi.com (mailman.pit.comms.marconi.com
-	[169.144.2.12])
-	by mailgate.pit.comms.marconi.com (8.12.10+Sun/8.12.10) with ESMTP id
-	j1MJ3WmZ011285 for <linuxppc-embedded@ozlabs.org>;
-	Tue, 22 Feb 2005 14:03:32 -0500 (EST)
-Received: from uspitsmsgrtr01.pit.comms.marconi.com
-	(uspitsmsgrtr01.pit.comms.marconi.com [169.144.2.221])
-	by mailman.pit.comms.marconi.com (8.9.3/8.9.3) with ESMTP id OAA03084
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 22 Feb 2005 14:03:32 -0500 (EST)
-Message-ID: <313680C9A886D511A06000204840E1CF0A64766A@whq-msgusr-02.pit.comms.marconi.com>
-From: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
-To: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
-Date: Tue, 22 Feb 2005 14:03:29 -0500
+	Wed, 23 Feb 2005 08:04:37 +1100 (EST)
+Message-ID: <421B9E61.6000202@mvista.com>
+Date: Tue, 22 Feb 2005 14:04:33 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ISO-8859-1"
-Subject: RE:  PPC32 8xx MPC880  Linux 2.6 Interrupt storm 
+To: "Mark A. Greer" <mgreer@mvista.com>
+References: <4219A711.80204@gamebox.net> <421B666B.205@mvista.com>
+In-Reply-To: <421B666B.205@mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Subject: Re: kernel with marvell 64360 support
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,14 +23,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-- I forgot to mention in my post that i2c-algo-8xx.c and i2c-algo-8xx.h,
-which I am using, were "taken" from Linux 2.4.26 ...
-until some time ago, even bulding of 8xx with I2C configured was broken.
-I copied i2c-algo-8xx.h from Linux 2.4.26
- into 2.6.10-rc3 code source and made couple small changes
-to allow building of the 8xx code with I2C configured, please see: 
-http://archives.andrew.net.au/lm-sensors/msg28725.html
- 
-Could there be some incompatibility between the way how i2c-algo-8xx.c 
-("taken" from Linux 2.4.26 )
- handles interrupt vs how it is "expected to be " by Linux 2.6 ?
+Mark A. Greer wrote:
+
+> Suresh Chandra Mannava wrote:
+>
+>> Hi,
+>>
+>> We designed a power-pc 7410 board with galileo mv64360 bridge.
+>> We are interested in porting linux on to that board.
+>>
+>> Where can I  download the linux kernel with 64360 (serial, ethernet, 
+>> PCI etc)
+>> drivers.
+>> please provide the pointers for the same.
+>
+>
+>
+> You can get the latest code minus 3 patches and the enet driver from 
+> the latest linux-2.5 tree on bkbits.net/kernel.org. The 3 patches are 
+> in the linuxppc-embedded mail archive.  AFAIK, the enet driver is 
+> queued to go into the mainline tree but I don't know when that'll 
+> happen.  If you need it now, you can contact Dale Farnsworth 
+> <dfarnsworth@mvista.com>.
+
+
+I failed to mention that there is an i2c driver queued to go in at: 
+http://archives.andrew.net.au/lm-sensors/msg29471.html
+
+Mark
