@@ -1,19 +1,17 @@
-Return-Path: <pevnev@juno.com>
-Received: from outbound-mail.lax.untd.com (outbound-mail.lax.untd.com
-	[64.136.28.164]) by ozlabs.org (Postfix) with SMTP id BEF4E67A2C
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Feb 2005 23:47:39 +1100 (EST)
-Received: from outbound29-sr.lax.untd.com (webmail17.lax.untd.com
-	[10.131.27.157])
-	by smtpout02.lax.untd.com with SMTP id AABBABUSHAYD9LYS
-	for <linuxppc-dev@ozlabs.org> (sender <pevnev@juno.com>);
-	Wed,  2 Feb 2005 04:39:35 -0800 (PST)
-Mime-Version: 1.0
-From: "Alex" <pevnev@juno.com>
-Date: Wed, 2 Feb 2005 12:38:40 GMT
-To: linuxppc-dev@ozlabs.org, 'linuxppc-embedded@ozlabs.org'
-Content-Type: text/plain
-Message-Id: <20050202.043920.25841.77096@webmail17.lax.untd.com>
-Subject: 2.6.10-rc3 8xx (MPC 880) i2c driver - "about to sleep" 
+Return-Path: <rsiemsen@rossvideo.com>
+Received: from server06.rossvideo.com (unknown [209.87.241.202])
+	by ozlabs.org (Postfix) with ESMTP id A0B1C67A2C
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Feb 2005 02:44:53 +1100 (EST)
+Message-ID: <4200F296.4070100@rossvideo.com>
+Date: Wed, 02 Feb 2005 10:32:38 -0500
+From: Ralph Siemsen <rsiemsen@rossvideo.com>
+MIME-Version: 1.0
+To: Sanjay Bajaj <sbajaj@tsi-telsys.com>
+References: <0007F077BB3476449151699150E8FEA205922F@exchange.tsi-telsys.com>
+In-Reply-To: <0007F077BB3476449151699150E8FEA205922F@exchange.tsi-telsys.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: How to enable TAH on PPC 440GX un lk 2.4.x?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,44 +21,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Sanjay Bajaj wrote:
+> Please share any information on enabling TCP/IP Acceleration Hardware on IBM PPC 440GX processor based board.
 
-Hi,
+Matt answered this question for you when you asked it on the 
+linuxppc-embedded list last week.  There is no TAH support in 2.4, but 
+the IBM EMAC ethernet driver 2.6 does support TAH mode.  You would need 
+to backport this driver to use it with 2.4.  Nobody has done this work 
+as far as I know, all of the current development effort is focused on 
+2.6.  So your options are either to do the work to backport the driver, 
+or else use 2.6.
 
-Sorry for bothering you  again - I will appreciate your opinion/advise/guidance !
-
-What is your interpretation of entries I found in the log buf with regards to I2C driver ? 
-.....
-<6>i2c /dev entries driver.
-<7>device class 'i2c-dev': registering.
-<7>bus i2c:add driver dev_driver.
-<7>i2c-core: driver dev_driver registered
-<6>i2c-rpx: i2c MPC8xx driver.
-<7>DEV: registering device: ID ='i2c-0'.
-<7>CLASS: registering class device: ID= 'i2c-0'.
-<7>i2c_adapter i2c-0:Registered as minor 0.
-<7>CLASS:registering class device: ID = 'i2c-0'
-<7>i2c_adapter i2c-0: registered as adapter #0.
-<4>cpm_iic_init() - iip=fa203c80.
-<4>cpm_iic_init[132] Install ISR for IRQ 16.
-<6>CPM interrupt c0105d90 replacing c01f7a8c.
-<3>request_irq() returned -22  for CPM vector 32.
-<6> i2c-algo-8xx.o: scanning bus m8xx........
-<4>cpm_iic_tryaddress(cpm=c019b9f8,addr=0).
-<4>iip fa203c80, dp_addr 0x800.
-<4>iic_tbase 2048, r_tbase 2048
-<4>about to sleep
-........
-BOOTING HANGS FROM HERE !!!!
-
-The board is equipped with M24Cxx-x Serial I2C bus EEPROM 
-- does above means that the EEPROM device was not detected on the I2C bus ?
-Do I need to supply in the code the addresses to be scanned ?
-
-Thanks,
-Alex
-
-
-___________________________________________________________________
-Speed up your surfing with Juno SpeedBand.
-Now includes pop-up blocker!
-Only $14.95/month -visit http://www.juno.com/surf to sign up today!
+Regards
+-Ralph
