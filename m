@@ -1,52 +1,26 @@
-Date: Mon, 15 Sep 2003 15:30:29 +0200
-From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
-Subject: RE: Problem of concurrency in arch/ppc/8260_io/uart.c
-In-reply-to: <3F6591E2.5070205@siemens.com>
-To: Steffen Rumler <Steffen.Rumler@siemens.com>,
-	linuxppc <linuxppc-embedded@lists.linuxppc.org>
-Reply-To: joakim.tjernlund@lumentis.se
-Message-id: <IGEFJKJNHJDCBKALBJLLEEEOFPAA.joakim.tjernlund@lumentis.se>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
+Message-ID: <1063638237.3f65d4dd7005b@webmail.technion.ac.il>
+Date: Mon, 15 Sep 2003 18:03:57 +0300
+From: shagitgy@techst02.technion.ac.il
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: atm8260-1.0.1 
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Hi,
+Hi
+I have an mpc8260 board and Linux running on it (I uses Lineo's BSP with kernel
+2.4.1). I want to run the atm8260-1.0.1 on my board. My phy is s/uni pm 5350-
+rc.
+My question is:
+Can I use the package from:  https://sourceforge.net/projects/atm8260/ as is?
+How can I use it? should I compile it with the kernel, or can I insert it as a
+loadable module (I didnt find the module_init() call).
 
-Hi Steffen.
+Any answer will be very helpful!!!
+Thanks a lot,
+Hagit Guy
 
->
-> I have seen a similar problem for the 2.4.20.
->
-> When I force a lot of console output via the following command:
->
->    while true; do cd /; ls -R; done
->
-> and type-in some letters in parallel, the console
-> becomes crazy.
-
-My custom mpc860 also becomes crazy or just locks up when I do this. The
-drivers are pretty the same, so this is no surprise.
-
->
-> I have added some instrumentation in order to dump the
-> TX Buffer Descriptor Table. I have found that the
-> hardware pointer (TBPTR) and the software pointer (tx_cur)
-> are not more synchronized together:
-> Inside uart.c, there are the following output routines:
-[SNIP]
->
->    rs_8xx_put_char()
->    rs_8xx_write()
->    rs_8xx_send_xchar()
->    my_console_write()
->
-> I think there must be a synchronization accessing the
-> TX BD table. I suggest the patch attached.
-
-Hmm, don't you turn off irq's for a long time with this patch?
-
- Jocke
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
