@@ -1,46 +1,30 @@
-Date: Wed, 20 Oct 1999 10:40:30 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: "David N. Welton" <davidw@linuxcare.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Kernel questions
-In-Reply-To: <19991018121353.D17058@bassano.linuxcare.com>
-Message-ID: <Pine.HPX.4.10.9910201032360.16476-100000@gra-ux1.iram.es>
+Message-ID: <380DA996.C6F3E84A@schweiz.ch>
+Date: Wed, 20 Oct 1999 13:37:58 +0200
+From: Andreas Tobler <a.tobler@schweiz.ch>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Dev-Linux <linuxppc-dev@lists.linuxppc.org>
+Subject: Working developer Kernle?
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hi,
 
+which is the latest working 2.3.x kernel? Which I can get from
+ftp.kernel.org?
+On Geert side I saw 2.3.18 he has installed. Is there still any higher
+working?
 
-On Mon, 18 Oct 1999, David N. Welton wrote:
+Openproject is still dead....
 
-> There are a few options:
-> 
-> PowerMac
-> Prep/MTX
-> CHRP
-> PowerMac/PReP/CHRP
-> Gemini
-> APUS
+Thanks
+Andreas
 
-Actually I had the impression that the first three should disappear and
-you should use the common PMAC/PreP/CHRP for these machines. I'm using
-MVME boards (closer to MTX) with this option and a few patches since it
-boots in PreP moe and I remap it to CHRP for VME addressing capability
-reasons.
-
-
-> 
-> I'm compiling as CHRP, and since ADB is selectable as an option, it
-> seems it could be added in anyway, pmac or not?
-
-I don't think that I have ADB compiled in (I'll check again). The only
-problem is that I'm looking for a clock program which assumes that you are
-on a PowerMac.
-
-	Regards,
-	Gabriel.
-
+-- 
+| Andreas Tobler				
+| CH-8004 Zuerich 							
+| E-Mail: andreas.tobler@alcatel.ch	| a.tobler@schweiz.ch
+-----------------------------------------------------------
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
