@@ -1,51 +1,55 @@
-In-Reply-To: <199902090234.TAA26936@mx0-smtp.goodnet.com>
-Date: Tue, 9 Feb 1999 12:02:08 +0100
-To: Kyle Nesbit <kyle.nesbit@asu.edu>, linuxppc-dev@lists.linuxppc.org
-From: BenH <bh40@calva.net>
-Subject: Re: L2CR
-Message-Id: <19990209120208.022074@mail.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-Id: <199902091212.NAA23161@kieray1>
+Date: Tue, 9 Feb 1999 13:12:53 +0100 (MET)
+From: Magnus Damm <eramdam@kieray1.p.y.ki.era.ericsson.se>
+Reply-To: Magnus Damm <eramdam@kieray1.p.y.ki.era.ericsson.se>
+Subject: FADS860 nfsroot
+To: linuxppc-dev@lists.linuxppc.org
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-The up-to-date l2cr code should be in vger now, we disabled the
-command-line option for now (it required changes in non-arch specific
-sources, and we wanted to avoid this because of the merge). The l2cr
-value can still be passed by BootX using the device-tree. Just open bootx
-preferences with resedit, add an "L2CR" resource ID 0 which is 4 bytes
-long, and stuff your L2CR value in it. This will enable the "Set G3
-cache" option in BootX.
+Anyone else with embedded 860 linux that has problems with nfsroot?
 
-Future version of PowerLogix software may be able to set BootX
-Preferences directly. I'll write a tool for capturing MacOS current L2CR
-value real soon now.
+The zImage.fads-2.1.127 hangs for me right when it's supposed to display 
+"bash#"
 
+My MBX-board works just fine with nfsroot connected to the same server.
 
-On Mon, Feb 8, 1999, Kyle Nesbit <kyle.nesbit@asu.edu> wrote:
+I haven't made any deep investigation about the FADS case above yet,
+but I suspect that it is the same problem as I've got with my ADS board. 
 
->I am currently looking for some more info on how to get my L2 backside cache
->running.  I am using a powerlogix card.
->
->I have used the powerlogix/Ben patch posted in the mailing list during Dec.
->The kernel compiled without and error.  When I try to pass the l2cr kernel
->argument I get nothing.  my /proc/sys/kernel/l2cr is 00000000: disabled,
->etc...
->
->Another thing that is strange is in /proc/cpuinfo the clock rate of my chip
->is off by over 100 MHZ.
->
->I would greatly appreciate if someone could point me to more info on the
->subject.
+It booted with initrd and I could even mount nfs with "mount -t nfs".
+But nfsroot didn't work.
 
+I've made some printouts to see what happens when "/bin/sh" is loaded,
+and run the new kernel on both the MBX and the ADS board.
+They start doing the same thing but after a while the ADS code goes wild
+and opens some directory and differs completly from the MBX board.
+Then it hangs.
 
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+I've thought that my crosscompiler 
+(ppc-linux-gnu-gcc -dumpversion gives egcs-2.91.57)
+was a bit buggy, but now when I've downloaded the zImage directly from the
+embedded directory and my board hangs, I don't know what to belive...
 
+It might be my FADS board that sucks? 
+I've got a PILOT motherboard and a PILOT 860Tboard.
 
+On the list the 12-Jan Dan Malek tells us that his FADS board has problems
+using anything else than initrd. 
 
+I'm using a hacked version fadsrom which uses a msdos partitiontable
+instead of OSF to boot the zImage.fads-2.1.127 from a compact flash card.
+
+Anyone with similar problems?
+
+Anyone out there with a ADS-board?
+
+TIA /
+
+Magnus 
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
