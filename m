@@ -1,40 +1,52 @@
-Date: Thu, 6 Nov 2003 07:50:11 +0100
-From: Michael Westermann <michael@dvmwest.de>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Bull Escalla D or IBM 7013 J
-Message-ID: <20031106065011.GZ1642@dvmwest.dvmwest.de>
-References: <C5F6D704-0FCA-11D8-9B6E-000A95A0560C@us.ibm.com> <Pine.LNX.4.44.0311052038260.14775-100000@charmed.internetsolver.com>
+Date: Wed, 5 Nov 2003 23:07:16 -0800
+From: Brad Boyer <flar@allandria.com>
+To: Jeff Walther <trag@io.com>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: IRQS on 6 Slot Macs
+Message-ID: <20031106070716.GB17235@pants.nu>
+References: <1067842481.17970.8.camel@gaston> <a04310106bbcd1501d614@[199.170.89.118]> <1067937269.680.92.camel@gaston> <a04310102bbcda40d92fc@[199.170.89.159]> <1067985081.707.124.camel@gaston> <a04310101bbce0854283b@[199.170.89.118]> <1068000383.692.132.camel@gaston> <a04310100bbce446f4c17@[199.170.89.149]> <1068016722.12704.148.camel@gaston> <a04310103bbcedf04902a@[199.170.89.149]>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.44.0311052038260.14775-100000@charmed.internetsolver.com>
+In-Reply-To: <a04310103bbcedf04902a@[199.170.89.149]>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello,
-
-On Wed, Nov 05, 2003 at 08:39:14PM -0600, Dave Weis wrote:
+On Wed, Nov 05, 2003 at 11:39:33AM -0600, Jeff Walther wrote:
+> At 18:18 +1100 11/05/2003, Benjamin Herrenschmidt wrote:
+> >> The SCSI cell in CURIO is a 53C94, but CURIO provides SCSI, ethernet
+> >> and serial port support all in one chip.   So the pinout of the 53C94
+> >> doesn't tell one about the pinout of CURIO, except it does identify
+> >> some of the pins which must be present on CURIO somewhere.
 >
-> On Wed, 5 Nov 2003, Hollis Blanchard wrote:
-> > On Wednesday, Nov 5, 2003, at 08:14 US/Central, Michael Westermann
-> > wrote:
-> > > I've a Bull Escalla D with Dual-PPC 604 and MCA. I was found this
-> > > Box as IBM 7013J. I want use this box with Linux. I will work
-> > > on a kernel-patch for this box.
-> >
-> > The only work I've ever heard of on MCA RS/6000 can be found at
-> > http://www.sjdjweis.com/linux/rs6k/ . As you can see, it didn't get
-> > very far. :)
+> CURIO is an interesting chip.   It has the unenhanced SCSI (53C94),
+> MACE and ESCC all on one chip.   It's an AMD chip and has no Apple
+> markings on it at all, which implies that it is a generally available
+> AMD product.   Checking their listings of datasheets, one finds
+> several similar chips and a part number series that would include the
+> 79C950 but no listing for the datasheet for the CURIO/79C950.
+> Usually when Apple has a chip made just for Apple it has Apple
+> markings on it somewhere.   So I'm uncertain what the deal is with
+> CURIO.
 >
-> Well, there is a boot disk that will write to the 3 digit display. I have
-> switched web servers and the disk isn't currently downloadable, but I will
-> get it back on.
-Work the PPC-Cpu or the 68000 Bump to the display ?
-The Display and the Disk-Drive is Controlled by the IO Card.
+> Anyway, it wasn't a case of splitting an ASIC.   As closely as GC and
+> CURIO work together that's a reasonable conclusion.   But CURIO was
+> used in the x100 NuBus PowerMacs before they put it in the x500
+> series.   So CURIO had a couple of years of history before GC showed
+> up.
 
-Thank's
+I just looked, and the Quadra 840AV has a chip on the motherboard with
+an AMD logo and the part number AM79C950KC. And as a noteworthy fact,
+the AV models were the only 68k models to have a number of features,
+including using the MACE ethernet and having DMA on the serial ports.
+All the other 68k Macs with onboard Ethernet use the sonic driver.
+Supposedly the AV models also had an AMD chip controlling the floppy
+drive, but this is the only AMD labelled chip. Perhaps it has more
+features than SCSI, Ethernet, and serial? There are several very
+large Apple ASICs, tho...
 
-Michael
+	Brad Boyer
+	flar@allandria.com
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
