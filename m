@@ -1,28 +1,23 @@
-Message-ID: <47EE8DCFB8C6D311A23700508B8BAD5903DAF7@THEBRAIN2>
-From: "Karaaslan, Utku" <UKaraasl@drs.ca>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: A Question on Physical Memory Access from Applications
-Date: Wed, 8 Aug 2001 09:38:02 -0400 
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3B714732.E4D67708@yahoo.com>
+Date: Wed, 08 Aug 2001 19:35:39 +0530
+From: Kapil Konde <kapilkk@yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: linuxppclist <linuxppc-embedded@lists.linuxppc.org>
+Subject: Error loading kernel
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello All,
+Hi All,
+        When I load the rtlinux kernel on my mpc860 mdppro board using
+debugger and try to boot kernel it gives me error "bad gzipped data".
+Can anybody please tell me what is this error. And what I may be doing
+wrong.
 
-I have ported the Linux bootloader/kernel to our home-made boards
-(Motorola 860) and they have been running well up to now. However,
-I have a problem: we've got a number of ADA applications which are
-using direct memory access to certain hardware registers. Under
-VxWorks, this is not a problem as it lacks kernelspace/userspace
-separation. Under Linux, I know I can do direct memory access (through
-/dev/mem), but in this case I want to use the applications as they are,
-with no change to the ADA code. Is there any way to do physical memory
-access transparently wrt the application? Many thanks in advance.
+Ragards,
+Kapil.
 
-Regards,
-
-Utku
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
