@@ -1,29 +1,24 @@
-Message-ID: <3A4E1112.B3A090B0@denise.shiny.it>
-Date: Sat, 30 Dec 2000 11:45:06 -0500
-From: Giuliano Pochini <pochini@denise.shiny.it>
+Message-ID: <002401bfcd4f$01a738f0$4a1f76d8@washington>
+From: "Navin Boppuri" <nboppuri@trinetcommunication.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Help with an SPI driver
+Date: Sat, 3 Jun 2000 12:29:40 +0100
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: panic loading 3c509.o
-Content-Type: text/plain; charset=us-ascii
-Sender: owner-linuxppc-dev@lists.linuxppc.org
-List-Id: <linuxppc-dev@lists.linuxppc.org>
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Sender: owner-linuxppc-embedded@lists.linuxppc.org
+List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I tried to use a 3com eth card on my G3 without success. Kernel
-panics when I load the modules with this error:
+Hello,
 
-Machine check, Unknown value srr1
-...
-Task "modprobe" mm->pgd  Last syscall: 128
-...
+I have a custom board running an mpc823. It has uart connected to SMC1 which
+runs just fine with the available driver. The other 3 uarts are connected to
+the SPI controller. I am not an embedded engineer and have no experience
+writing device drivers. I was wondering if somone can help me start off
+writing one to make the 3 uarts works using the SPI
 
-Some time ago I had no problems to make linux see and configure
-the same card (a 3com 595) with a 2.2.x kernel (I don't remember
-the version, sorry).
+Thank you,
+Navin
 
-(Linux 2.2.18, gcc 2.95.3, bw-G3)
-
-Bye.
-
-
-** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
+** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
