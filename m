@@ -1,84 +1,33 @@
-Message-ID: <3AD78DB3.6077A539@routefree.com>
-Date: Fri, 13 Apr 2001 16:37:23 -0700
-From: David Blythe <blythe@routefree.com>
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: 4xx tlbmiss renables interrupts while in kgdb
-Content-Type: multipart/mixed;
- boundary="------------4B5179B0DCB57D1E28D5909B"
+To: byf <byfmail@yeah.net>
+Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: how put ppcboot on flash rom 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 12 Apr 2001 09:19:22 +0800."
+             <20010412012003.9520B1CA16D68@smtp2.yeah.net>
+Date: Sat, 14 Apr 2001 19:50:32 +0200
+Message-Id: <20010414175037.38EA428417@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------4B5179B0DCB57D1E28D5909B
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+In message <20010412012003.9520B1CA16D68@smtp2.yeah.net> you wrote:
+>
+> Hello, Can you help me How can I make ppcboot running on my walnut 405GP?
 
-The 4xx tlbmiss handler reenables interrupts while handling a page
-fault.  Sometimes kgdb generates faults (that are ignored) while
-grubbing around in memory for backtraces and such and has the side
-effect of leaving interrupts enabled.  Makes debugging drivers more
-entertaining.
+You will have better response from the PPCBoot mailing list!
 
-Here is a small, but not particularly elegant patch to fix it (against
-the mvista 010216 release for the 405).
-	david
---------------4B5179B0DCB57D1E28D5909B
-Content-Type: text/plain; charset=us-ascii;
- name="patch7"
-Content-Disposition: inline;
- filename="patch7"
-Content-Transfer-Encoding: 7bit
+> or the first step how can I put ppcboot on flash rom?  Thank you!
 
-Index: arch/ppc/mm/4xx_tlb.c
-===================================================================
-diff -u -r1.2 4xx_tlb.c
---- arch/ppc/mm/4xx_tlb.c	2001/03/16 20:18:16	1.2
-+++ arch/ppc/mm/4xx_tlb.c	2001/04/13 23:27:12
-@@ -50,6 +50,9 @@
+Use a BDM / JTAG debugger - I recommend the BDI2000.
 
+Wolfgang Denk
 
- /* Global Variables */
-+#if defined(CONFIG_XMON) || defined(CONFIG_KGDB)
-+extern void (*debugger_fault_handler)(struct pt_regs *);
-+#endif
-
- static pin_entry_t    pin_table[PPC4XX_TLB_SIZE];
- static unsigned long  tlb_next_replace = 0;
-@@ -347,6 +350,10 @@
- 	dtlb_miss_count++;
-
- 	if (tlbMiss(regs, badaddr, wasWrite, 1)) {
-+#if defined(CONFIG_XMON) || defined(CONFIG_KGDB)
-+		/* don't enable interrupts while in the debugger */
-+		if (!debugger_fault_handler)
-+#endif
- 		sti();
- 		do_page_fault(regs, badaddr, wasWrite);
- 		cli();
-@@ -362,6 +369,9 @@
- 	itlb_miss_count++;
-
- 	if (!current) {
-+#if defined(CONFIG_XMON) || defined(CONFIG_KGDB)
-+		if (!debugger_fault_handler)
-+#endif
- 		sti();
- 		bad_page_fault(regs, regs->nip);
- 		cli();
-@@ -369,6 +379,9 @@
- 	}
-
- 	if (tlbMiss(regs, regs->nip, 0, 1)) {
-+#if defined(CONFIG_XMON) || defined(CONFIG_KGDB)
-+		if (!debugger_fault_handler)
-+#endif
- 		sti();
- 		do_page_fault(regs, regs->nip, 0);
- 		cli();
-
---------------4B5179B0DCB57D1E28D5909B--
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+A consultant is a person who borrows your watch, tells you what  time
+it is, pockets the watch, and sends you a bill for it.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
