@@ -1,33 +1,30 @@
-Date: Tue, 16 Sep 2003 13:54:40 -0500 (CDT)
-Message-Id: <200309161854.h8GIseaF011976@sullivan.realtime.net>
-To: Tom Rini <trini@kernel.crashing.org>,
-	Scott Anderson <scott_anderson@mvista.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: boot udelay asm fix
-Cc: linuxppc-dev@lists.linuxppc.org
+Date: Wed, 17 Sep 2003 08:15:19 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Milton Miller <miltonm@bga.com>
+Cc: Scott Anderson <scott_anderson@mvista.com>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: boot udelay asm fix
+Message-ID: <20030917151519.GC14509@ip68-0-152-218.tc.ph.cox.net>
+References: <200309161854.h8GIseaF011976@sullivan.realtime.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200309161854.h8GIseaF011976@sullivan.realtime.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Tom, Scott
+On Tue, Sep 16, 2003 at 01:54:40PM -0500, Milton Miller wrote:
 
-A feature of the assembler is to not check our instruction selection.
-Looks like this one gets the rounding wrong without the fix.  Patch
-against marcello 2.4 head, but is needed on all trees.
+> Hi Tom, Scott
+>
+> A feature of the assembler is to not check our instruction selection.
+> Looks like this one gets the rounding wrong without the fix.  Patch
+> against marcello 2.4 head, but is needed on all trees.
 
-milton
+Fixed in the trees that Linus and Marcelo pull from.  *sigh*.
 
-===== arch/ppc/boot/common/util.S 1.5 vs edited =====
---- 1.5/arch/ppc/boot/common/util.S	Mon Sep 15 10:45:58 2003
-+++ edited/arch/ppc/boot/common/util.S	Tue Sep 16 13:29:43 2003
-@@ -198,7 +198,7 @@
- 	 *  timebase_period_ns defaults to 60 (16.6MHz) */
- 	lis	r5,timebase_period_ns@ha
- 	lwz	r5,timebase_period_ns@l(r5)
--	addi	r4,r4,r5
-+	add	r4,r4,r5
- 	addi	r4,r4,-1
- 	divw	r4,r4,r5	/* BUS ticks */
- 1:	mftbu	r5
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
