@@ -1,38 +1,32 @@
-Date: Thu, 23 Nov 2000 14:36:44 +0100 (CET)
+Date: Thu, 23 Nov 2000 14:54:56 +0100 (CET)
 From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Avery Pennarun <apenwarr@worldvisions.ca>
+To: Hadess <hadess@writeme.com>
 cc: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
-        daenzerm@student.ethz.ch, Hadess <hadess@writeme.com>,
+        Avery Pennarun <apenwarr@worldvisions.ca>,
         debian-powerpc@lists.debian.org, linuxppc-dev@lists.linuxppc.org
 Subject: Re: apmd and other archs
-In-Reply-To: <20001123033108.B13703@worldvisions.ca>
-Message-ID: <Pine.LNX.4.10.10011231431070.3480-100000@opal.biophys.uni-duesseldorf.de>
+In-Reply-To: <974986581.3a1d1d55698b0@imp.free.fr>
+Message-ID: <Pine.LNX.4.10.10011231439040.3480-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> On Thu, Nov 23, 2000 at 12:15:32PM +0100, Michael Schmitz wrote:
->
-> > Re: mounting /etc readonly: how do you handle /etc/mtab in that case? :-)
->
-> Symlink it to /proc/mounts, of course. :)
+> We have here a big fat hardware difference. A PMU's a PMU, and an APM BIOS's an
+> APM BIOS. I'm now working (with help from Joseph Garcia) on an APM library for
+> PMUD. It hides PMUD from the libapm-using battery applets. I posted last week a
+> first "socket" version that uses the TCP socket on the loopback interface to get
+> its information. And I could compile some programs from the apmd distribution
+> and battstat with it.
 
-Good answer. I'd have used a symlink to some writeable directory on the
-root fs, mainly because using /proc all over the place tends to confuse
-Unix admins with no Linux experience. Let's not fall into the Solaris trap
-(you are in a maze of twisty little config files, all different from the
-rest of Unix').
+Glad you mention it again - I didn't follow up on that on the spot and had
+already forgotten this.
 
-> /etc/mtab has always been evil, and not just because it's in the wrong
-> directory.  It's about equivalent to the "route" or "ipchains" commands
-> keeping track of what _they_ thought the kernel settings were, and then if
-> you tried to list the routes or firewall rules, they would just cat the
-> file.  Yuck.
-
-It's not elegant, more something of a historic wart ... Unix is full of
-that :-)
+It seems this apm-pmud glue library would solve our problem in user space
+entirely (except for apps that directly cat /proc/apm). The battery status
+commands to the PMU are sent via /dev/adb and I'm not sure how this can
+be safely done from kernel code.
 
 	Michael
 
