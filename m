@@ -1,45 +1,36 @@
-Date: Mon, 24 Apr 2000 05:43:44 -0700 (PDT)
-From: Matthew Dharm <mdharm-usb@one-eyed-alien.net>
-To: Brad Hards <bradh@dynamite.com.au>
-cc: Daniel Gonzalez <daniel.gonzalez@pandora.be>,
-        Sheldon Easterbrook <sheldie@hotmail.com>,
-        linuxppc-dev@lists.linuxppc.org, linux-usb@suse.com
-Subject: Re: [linux-usb] Close to a solution. Please help !
-In-Reply-To: <3904DA19.E105A181@dynamite.com.au>
-Message-ID: <Pine.LNX.4.10.10004240542590.12997-100000@ziggy.one-eyed-alien.net>
+Date: Mon, 24 Apr 2000 15:31:29 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Michel Lanners <mlan@cpu.lu>
+cc: linuxppc-dev@lists.linuxppc.org, drow@false.org
+Subject: Re: aty128 and offb and linux-2.3.99pre6
+In-Reply-To: <200004240651.IAA00313@piglet.grunz.lu>
+Message-ID: <Pine.LNX.4.10.10004241530520.316-100000@cassiopeia.home>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 24 Apr 2000, Brad Hards wrote:
+On Mon, 24 Apr 2000, Michel Lanners wrote:
+> On  19 Apr, this message from Geert Uytterhoeven echoed through cyberspace:
+> > What about other frame buffer devices, like e.g. matroxfb? Does it still work
+> > after this patch? If yes, we can get rid of matrox_of_init() as well.
+>
+> It does work... but it changes the order my fbs are detected. Grrr....
+> ;-)
 
-> Daniel Gonzalez wrote:
-> > After a very long week, I think I am close to actually access my 250 Usb Zip drive.
-> > I have now 2.3.99-pre6.
-> You should feel priviliged. It took me months on and off to think I
-> might be close.
-> I do have some bad news though - you probably should have stayed with
-> Paulus' tree,
-> since Matt did think that there was some endian bugs, and I am pretty
-> sure
-> Paul had at least a floppy disk working.
+But now you can throw out offb, right? :-) (unless you have controlfb, ...)
 
-Unfortunately, floppies work through completely different code paths than
-Zips do.
+Gr{oetje,eeting}s,
 
-Once I have the logs, I should be able to fix this.
-
-Matt Dharm
+						Geert
 
 --
-Matthew Dharm                              Home: mdharm@one-eyed-alien.net
-Senior Engineer, QCP Inc.                        Work: mdharm@qualcomm.com
+Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
 
-I could always suspend a few hundred accounts and watch what happens.
-					-- Tanya
-User Friendly, 7/31/1998
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
