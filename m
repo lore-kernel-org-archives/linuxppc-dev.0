@@ -1,31 +1,40 @@
-Message-ID: <20000307081925.14102.qmail@www0p.netaddress.usa.net>
-Date: 7 Mar 00 02:19:25 CST
-From: jeramy b smith <ultrapenguin@netscape.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Kernel Bug Report-Jeram
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <38C4D42A.1D0C19B3@fadata.bg>
+Date: Tue, 07 Mar 2000 11:04:26 +0100
+From: Momchil Velikov <velco@fadata.bg>
+MIME-Version: 1.0
+To: Shuangjun Zhu <r44089@email.sps.mot.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linuxppc-dev@lists.linuxppc.org,
+        linux-kernel@vger.rutgers.edu
+Subject: Re: Kernel debug about Linux for PowerPC
+References: <005601bf87e6$32f88980$69f001dc@sjzhu.sps.mot.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I wrote to linuxppc user to get some feedback on a kernel error I was running
-into. Specifically, when booting 2.2.15pre3 directly (yaboot); my Lombard 333
-hangs when it enables multiword dma for hda. It gives the message that it
-enables multiword dma , gives the specs of the drive twice, and duly hangs.
+Shuangjun Zhu wrote:
+>
+> Hello,
+>
+> I want to use the gdb to debug the kernel version 2.2.13 for my MPC860
+> board.
+> So I set the compiler configuration parameter CONFIG_KGDB = YES,
+> but when I re-compile the kernel, it complains that
+>
+> arch/ppc/kernel/kernel.o(.text+0x68ac): undefined reference to
+> `getDebugChar'
+> arch/ppc/kernel/kernel.o(.text+0x6934): undefined reference to
+> `putDebugChar'
+>
+> PROBLEM:
+> what's wrong? I find no define for function "getDebugChar" in arch/ppc
+> directory.
 
-1. If I boot from a a linuxppc cdrom this does not occur.
+You have to write these functions yourself. The stub uses them to
+communicate with the debugger through whatever device is available on
+the board. See 'Targets' -> 'Remote' -> 'Remote Serial' in GDB docs.
 
-2. If I warm reboot after booting from a Linux cdrom and mounting the drives
-or booting from a macos cdrom, then the direct boot succeeds.
-
-3. If I boot from a bootx extension, this does not occur.
-
-4. If I direct boot the newer kernel in cs 1.2 (pre8?), multiword dma is
-successfully initialized for hda but then I get two messages that multiword is
-enabled for hdc followed by a nice hang.
-
--Jeramy
-
+Regards,
+-velco
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
