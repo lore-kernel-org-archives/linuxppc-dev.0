@@ -1,35 +1,33 @@
-Message-ID: <38D22E64.B3CA4366@uncc.edu>
-Date: Fri, 17 Mar 2000 08:08:52 -0500
-From: "William H. Schultz" <whschult@uncc.edu>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: XFree86 4.0 Compiles, doesn't run
-References: <200003170559.XAA22325@lists.linuxppc.org>
-Content-Type: text/plain; charset=us-ascii
+Date: Fri, 17 Mar 2000 13:34:57 -0500
+Subject: KDE install (2000)
+From: "James B. Parker" <pajama1@mindspring.com>
+To: LinuxPPC Developer <linuxppc-dev@lists.linuxppc.org>
+Message-ID: <B4F7E501.1C2C%pajama1@mindspring.com>
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello all.
+This is my second install of Linux 2000.  Both times I have noticed KDE was
+not working (everything shows up in the little task bar but nothing runs).
+Also, at login, if I choose KDE never ever happens and I have to do a
+control-power-backspace to bring me back to login.  This has occurred after
+two installations of ALL packages (except the foreign language choice).
 
-I've recently downloaded and compiled the xfree86 4.0
-source, as I have a dual monitor setup and would love to get
-it running under Linux.  The card I primarily use is a
-Voodoo3 2000.  Xpmac from 4.0 will run--I get the gray
-screen with the X mouse when I run it by hand, however, none
-of the scripts will boot into a useable interface.
+So both times I tried to do an install from the command line:
+rpm -ivh k*
 
-I ran the stuff just like the instructions said:   make
-World...   make install...   make install.man...
+and I get messages for several of the packages that look like:
 
-This very clearly installs the software, but I can't get a
-useable X interface.
+kde (whatever) requires libqt.so.1
 
+If I installed everything from the CD and the CD contains the most recent
+packages, what is going on?  I tried to re-install the qt package and I got
+the message that the package was already installed.
 
-Any ideas?  Anyone have it working?
-
-
-Hank
+Any info is appreciated!
+James B. Parker
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
