@@ -1,32 +1,102 @@
 From: mlocke@jps.net
-Message-ID: <3A37B3D5.70D6E406@jps.net>
-Date: Wed, 13 Dec 2000 09:37:25 -0800
+Message-ID: <3A37B5CF.ADB8E1DD@jps.net>
+Date: Wed, 13 Dec 2000 09:45:51 -0800
 Reply-To: mlocke@mvista.com
 MIME-Version: 1.0
-To: Nguyen Xuan Hoang <jerry.nguyen@serialsystem.com.sg>
-CC: linuxppc-embedded@lists.linuxppc.org, support@mvista.com
-Subject: Re: PCMCIA have machine check
-References: <3A37867B.2070606@galileo.co.il> <000801c06595$5f102540$ef0fa8c0@hoangmobile>
+To: Nils Hagge <Nils.Hagge@stud.uni-hannover.de>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Kernel panic: No init found.
+References: <006c01c0650f$73b65d60$1e894b82@pc30>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-forgot one thing.  Once you have the new bootloader, you will need to
-disable the BMT in the SYPCR register.
+you really should contact MV support for this kind of stuff (if you have
+a support contract).
 
-Nguyen Xuan Hoang wrote:
+Ot is something with your basic setup.  Did you add the /opt.../target
+directory to /etc/exports ? if so, did you restart the nfs server?  is
+the nfs server running?
+
+Nils Hagge wrote:
 >
 > Hi,
 >
-> I am trying to run Wireless Lan PCMCIA on RPXLite board,  but the system
-> just randomly crash (a machine check error).  I have trace the error, it
-> happen when we read or write the I/O port on the wireless LAN. It seems the
-> PCMCIA controller not set correctly. Have anyone experience about this
-> problem, please give me some advice.
+> I try to run Hard Hat Linux from Montavista as described in the CDK 1.2
+> manual on an RPX lite board.
+> Unfortunately, the installation procedure is only for hosts with Red Hat
+> Linux, I hoped this would work for SuSE, too.
 >
-> Thank in advance
-> Jerry
+> The problem has to do with the NFS filesystem. I can successfully download a
+> precompiled
+> Hard Hat Linux boot-image via TFTP and monitor this with the serial port.
 >
-
+> The following is the output over the serial port...
+>
+>  target IP address : 824B8932
+>  target file name  : rpxlite.srec
+>  address bias      : 0
+> Starting tftp download:
+> inetARP(): OK
+> .1.2.4.8.16.32.64.128.256.512.1024.2048.4096.8192
+> load_tftp(): OK
+> 1087283 data bytes, 13764 S-records, 2124 tftp blocks, 0 repeated blocks
+> start address = 00200000
+> load_tftp_toMem(): OK
+> Transferring control to downloaded program
+> loaded at:     00200000 0020B1FC
+> relocated to:  00180000 0018B1FC
+> boart
+ata at: 001801C8 001801E4
+> relocated to:  00200100 0020011C
+> zimage at:     00206000 0026A4C4
+> avail ram:     0026B000 01000000
+>
+> Linux/PPC load: root=/dev/nfs rw nfsroot=/opt/hardhat/devkit/ppc/8xx/target
+> Uncompressing Linux...done.
+> Now booting the kernel
+> Linux version 2.2.14 (root@rodan.mvista.com) (gcc version 2.95.2 19991030
+> (2.95.
+> 3 prerelease/franzo)) #1 Tue Aug 8 02:01:27 PDT 2000
+> Boot arguments: root=/dev/nfs rw nfsroot=/opt/hardhat/devkit/ppc/8xx/target
+> time_init: decrementer frequency = 240000000/60
+> Calibrating delay loop... 63.69 BogoMIPS
+> Memory: 15152k available (740k kernel code, 456k data, 36k init)
+> [c0000000,c1000
+> IP Protocols: ICMP, UDP, TCP
+> TCP: Hash tables configured (ehash 16384 bhash 16384)
+> Initializing RT netlink socket
+> Starting kswapd v 1.5
+> CPM UART driver version 0.03
+> ttyS00 at 0x0280 is a SMC
+> ttyS01 at 0x0380 is a SMC
+> pty: 256 Unix98 ptys configured
+> RAM disk driver initialized:  16 RAM disks of 4096K size
+> loop: registered device at major 7
+> eth0: CPM ENET Version 0.2, 00:10:ec:00:1b:fb
+> PPP: version 2.3.7 (demand dialling)
+> TCP compression code copyright 1989 Regents of the University of California
+> PPP line discipline registered.
+> Sending BOOTP requests.... OK
+> IP-Config: Got BOOTP answer from 130.75.137.50, my address is 130.75.137.59
+> Looking up port of RPC 100003/2 on 130.75.137.50
+> Looking up port of RPC 100005/1 on 130.75.137.50
+> VFS: Mounted root (NFS filesystem).
+> Freeing unused kernel memory: 36k init
+> Kernel panic: No init found.  Try passing init= option to kernel.
+> Rebooting in 180 seconds..
+>
+> ----snip----
+>
+> The filesystem seems to be mounted, but it does not find any files in there
+> although the full "linux tree" is available. I also tried adding
+>   init=/bin/init   init=bin/init    init=/opt/.../target/bin/init
+> to the boot arguments, but nothing helped.
+>
+> Do you know that problem or have an idea? Any help is welcome. Thank in
+> advance.
+>
+> Nils Hagge
+>>bN
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
