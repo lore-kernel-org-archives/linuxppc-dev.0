@@ -1,46 +1,31 @@
-Message-Id: <20010401003513.Postino-002933@smtp01.highway.ne.jp>
-Date: Sun, 1 Apr 2001 00:35:13 +0900
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-From: Kaoru Fukui <k_fukui@highway.ne.jp>
-Subject: Re: Fwd: CPU features
-In-Reply-To: <20010331091615.3225@smtp.wanadoo.fr>
-References: <20010331091615.3225@smtp.wanadoo.fr>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Samuel Rydh <samuel@ibrium.se>, <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: I-cache flushing on the 7400
+Date: Sat, 31 Mar 2001 19:07:01 +0200
+Message-Id: <20010331170701.14967@smtp.wanadoo.fr>
+In-Reply-To: <20010331153031.A10946@ibrium.se>
+References: <20010331153031.A10946@ibrium.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: <linuxppc-dev@lists.linuxppc.org>
-Subject: Fwd: CPU features
-Date: Sat, 31 Mar 2001 11:16:15 +0200
+>did not work properly on a G4s (but it did work flawlessly on my G3).
+>To make the i-cache flush effective, I had to insert an extra
+>'sync' before the last isync. Consulting my Motorola manuals,
+>the recommended sequence for the 7400 (but not for the 750) did have
+>that extra sync. Looking at the 2.4.3-pre8 BK source, I discovered
+>the 'sync' was sometimes missing (in flush_icache_range and in a
+>few places in head.S). Shouldn't the sync really be added?
 
->
-> I finally finished my cpu table & features stuff. It's in my rsync
-> kernel at penguinppc::linux-2.4-benh. It may still need some fixes
-> for 4xx/8xx and power3/4, so please, look at it and send me patches ;)
->
+Well, if you had a problem without it and if moto says it's needed, then
+I'd go for it, especially since it's not much overhead since this routine
+is not used very often.
 
-Please fix your typo in arch/ppc/kernel/feature.c
-it's in void feature_core99_kick_cpu(int cpu_nr)
+I'll push that to my tree asap and to bk soon.
 
-
-void
-feature_core99_kick_cpu(int cpu_nr)
-<snip>
-     if (!keylargo_base || nr > 3 )    <-- cpu_nr ?
-
-
-I guess, that nr is your typo.
-Is it cpu_nr   ?
-
-Please fix it where compile stop.
-
-
-Thanks
-Kaoru
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
