@@ -1,20 +1,20 @@
-Return-Path: <wd@denx.de>
-Received: from mailout05.sul.t-online.com (mailout05.sul.t-online.com
-	[194.25.134.82]) by ozlabs.org (Postfix) with ESMTP id 38BCD2BDA0
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao12.cox.net (fed1rmmtao12.cox.net [68.230.241.27])
+	by ozlabs.org (Postfix) with ESMTP id 276902BDA0
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 23 Oct 2004 06:14:34 +1000 (EST)
-To: Zajac Adam-AAZ004 <Adam.Zajac@motorola.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 22 Oct 2004 13:59:54 CDT."
-	<EFB813091B18D511BD3600508B644F820A618204@tx14exm06.ftw.mot.com>
-Date: Fri, 22 Oct 2004 21:10:54 +0200
-Sender: wd@denx.de
-Message-Id: <20041022191059.ECE5AC146A@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Help on tuning the Linux kernel for soft real-time requiremen
-	ts
+	Sat, 23 Oct 2004 06:14:50 +1000 (EST)
+Date: Fri, 22 Oct 2004 13:14:49 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Sam Song <samlinuxppc@yahoo.com.cn>
+Message-ID: <20041022201449.GC7471@smtp.west.cox.net>
+References: <003f01c4b7f6$ea38df10$ee00a8c0@CAT>
+	<20041022080451.51504.qmail@web15610.mail.cnb.yahoo.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20041022080451.51504.qmail@web15610.mail.cnb.yahoo.com>
+Cc: Andrew Dennison <andrew.dennison@motec.com.au>,
+	linuxppc-embedded@ozlabs.org
+Subject: Re: Does 2.6.x work for MPC5200?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,27 +25,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Adam,
-
-in message <EFB813091B18D511BD3600508B644F820A618204@tx14exm06.ftw.mot.com> you wrote:
+On Fri, Oct 22, 2004 at 04:04:51PM +0800, Sam Song wrote:
+> Andrew Dennison <andrew.dennison@motec.com.au> wrote??
 > 
-> What I referred to as "missed deadlines" were slips in order of +/- 20
-> seconds. This was way out of line.
+> > Sylvain Munaut maintains some information and a bk
+> > tree for 2.6 on 5200. See http://246tnt.com/mpc52xx/
+> 
+> Thank you so much! I'd like to test it when available.
 
-20 seconds? 
-
-> Do you know if sysstat RPM is available for PPC?
-> It'd be nice to have tools like sar and iostat for debugging my problem.
-
-It is included with YDL (for YDL 3.0 it was on CD # 3 in file
-YellowDog/RPMS/sysstat-4.0.5-3.ppc.rpm )
-
-Best regards,
-
-Wolfgang Denk
+This is already in linux-2.6.9, albiet I think only ramdisks are
+supported for root right now.  But I could be wrong.
 
 -- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"Who is the oldest inhabitant of this village?"
-"We haven't got one; we had one, but he died three weeks ago."
+Tom Rini
+http://gate.crashing.org/~trini/
