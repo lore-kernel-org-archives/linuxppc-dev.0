@@ -1,33 +1,32 @@
-Date: Fri, 26 Oct 2001 12:52:37 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Mark Pilon <mpilon@midrivers.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: will the real ppc kernel please stand up
-Message-ID: <20011026125237.A14005@cpe-24-221-152-185.az.sprintbbd.net>
-References: <3BD9B30C.929F4747@midrivers.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3BD9B30C.929F4747@midrivers.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3BD9CCC3.1030704@oerlikon.ca>
+Date: Fri, 26 Oct 2001 16:51:15 -0400
+From: Sebastien Ruel <sruel@oerlikon.ca>
+Reply-To: sruel@oerlikon.ca
+MIME-Version: 1.0
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: looking for a nice root filesystem image
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Oct 26, 2001 at 01:01:32PM -0600, Mark Pilon wrote:
+Finally a got a working system (RPX-CLLF), booting from Flash, with
+minimal root filesystem (Thanks to M. Denk).
 
-> naively hoping to get something stable, I pulled linuxppc_2_4, configured
-> it for ppc4xx / walnut and attempted to build it.  no luck:
+Now i'm looking for a "a bit bigger" root filesystem with typical
+utilities like: umount, ifconfig, etc. that could fit in around 8 MBytes
+of Flash. Is there some image available somewhere on the Net?
 
-The '2_4' tree doesn't have working 4xx support.
+I have tried to strip down the "target" directory from the Hardhat Linux
+CDK 1.2, but it became a nightmare with libraries. PAM security is using
+to much disk space, and it's not easy to remove it. My embedded system
+does not need all that security.
 
-[snip]
-> does anyone know where & how to get a reasonably recent snapshot of
-> the development tree which builds?
+Thanks
 
-linuxppc_2_4_devel should be fine.  linuxppc_2_4 has never had working
-4xx support.
+Sebastien Ruel, eng.
+Oerlikon Contraves
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
