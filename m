@@ -1,37 +1,28 @@
-Date: Wed, 7 Feb 2001 11:51:59 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-cc: Iain Sandoe <iain@sandoe.co.uk>, Takashi Oe <toe@unlserve.unl.edu>,
-        bob@kunk.jriver.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: SOLVED: mesh SCSI bus locks hard on 7500 when burning a CD-R
- in
-In-Reply-To: <Pine.LNX.4.30.0102061347320.14864-100000@opal.biophys.uni-duesseldorf.de>
-Message-ID: <Pine.LNX.4.05.10102071150480.8230-100000@callisto.of.borg>
+Message-ID: <3A8189F1.8E6AA8C2@mvista.com>
+Date: Wed, 07 Feb 2001 12:46:25 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Roman Zippel <zippel@fh-brandenburg.de>
+CC: paulus@linuxcare.com.au, Gabriel Paubert <paubert@iram.es>,
+        tom_gall@vnet.ibm.com, linuxppc-commit@hq.fsmlabs.com,
+        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: context overflow
+References: <Pine.GSO.4.10.10102071016080.23505-100000@zeus.fh-brandenburg.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 6 Feb 2001, Michael Schmitz wrote:
-> > > 7100.  G3 desktop comes with mesh.
->
-> Too bad. I don't think I have space for yet another kernel tree on my
-> Lombard, or the stomach to get involved with the Nubus kernel.
+Roman Zippel wrote:
 
-Come on, Michael! The Nubus kernel is just a mix of what you're used to. And
-food got mixed in the stomach anyway :-)
+> Somewhere I lost you, could you explain it a bit more (maybe with an
+> example)? What has CONFIG_HIGHMEM to do with the pci mapping???
 
-Gr{oetje,eeting}s,
+The only thing they have in common is the desire to consume kernel
+virtual space.  They were just two examples of the reason I am trying
+to find methods of increasing the kernel virtual space.
 
-						Geert
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
