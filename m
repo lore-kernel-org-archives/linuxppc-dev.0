@@ -1,56 +1,42 @@
-Date: 29 May 2002 17:17:50 -0000
-Message-ID: <20020529171750.3874.qmail@webmail14.rediffmail.com>
+Message-ID: <002101c20736$bb52f640$7c99883e@m5axc>
+Reply-To: "Neil Wilson" <nwilson@airspan.com>
+From: "Neil Wilson" <nwilson@airspan.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: pci_consistent_alloc & mpc107 snoop
+Date: Wed, 29 May 2002 18:31:43 +0100
 MIME-Version: 1.0
-From: "navinb" <ppc4@rediffmail.com>
-Reply-To: "navinb" <ppc4@rediffmail.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Problems in USB initialisation..
-Content-type: text/plain;
-	format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Hi,
 
-I just want to get USB up in slave mode for 823/850 .
+I hope someone can enlighten me .....
 
-usb controller partially seems to be initialised.
+Am I right in thinking that pci_consistent_alloc gets me
+uncached memory ?, if not is there an easy way to modify the pages allocated
+?
 
-A.
-I am able to observe interrupts when it is attached to PC
-also when the IDLE state of bus is changed ..relevant
-bit is set in USBER(event register) to reflect the event.
+The reason being is that we have an mpc7450/mpc107 board with a custom
+pci ethernet card (it runs a modified pcnet32 driver) and also a soft
+ethernet
+port in an fpga.  The hardware designer reckons we are getting stung with a
+motorola 7450 errata (#46 if anyone is interested), where the 7450 can hang
+during signalling retries with the 107.
 
-1 ms timer interrupt and hence SOF generation is also o.k.
+Our hardware designer therefore wants the pci ethernet to use uncached
+buffers &
+also to have the 107 pci snoop disabled.  I have disabled snoop in the boot
+code (ppcboot) and the ethernet card still works, but now it does not work
+under Linux (it used to be fine with snoop enabled, nfs etc all worked).
 
-B.
-what not working is when i connect to PC to test the slave mode
-the dmesg o/p on my PC is always
+Any ideas ....?
 
-hub.c: USB new device connect on bus1/1, assigned device number
-105
-usb-uhci.c: interrupt, status 2, frame# 1973
-usb.c: USB device not accepting new address=105 (error=-110)
+Thanks.
 
-Interrupt, status 2 is defined as "interrupt due to error" in
-usb-uhci.h.
-I am not able to interpret whether this error is on pc side or
-mpc823 side.
-
-secondly never I got the bit set in USBER to indicate any frame
-has been received though all those events are enabled.
-
-may be all the frame would have been ignored..
-I have tried to debug it by dumping all the rx and tx buffer ring
-indexes and all other relevant registers but
-still with no clue.
-
-in the tcrc (traspernt crc ) and tptr(tx internal data pointer) i
-always observe a byte pattern of "dead" and
-"deaddead" respectively.
-
-Best Regards,
+Neil
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
