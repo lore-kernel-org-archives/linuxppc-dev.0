@@ -1,26 +1,41 @@
-Date: Tue, 13 Nov 01 13:45:01 PST
-From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
-Message-Id: <0111132145.AA21341@ivan.Harhan.ORG>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Current linuxppc_2_4_devel breakage
+Date: Tue, 13 Nov 2001 15:10:24 -0800 (PST)
+From: James Simmons <jsimmons@transvirtual.com>
+To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: 2.5.X work
+Message-ID: <Pine.LNX.4.10.10111131509560.19489-100000@transvirtual.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi there,
+Hi!
 
-Current linuxppc_2_4_devel is broken on the Adirondack and I presume a bunch of
-other platforms. After making it compile again (after the cpuinfo change), I
-found that it dies as soon as it tries to perform a PCI config cycle in
-find_bridges. Now this is after it has called setup_indirect_pci() to tell it
-how to make these cycles. On the Adirondack I don't currently use a static
-mapping for the CPC710 registers, and when I call setup_indirect_pci I pass it
-physical addresses. setup_indirect_pci does its own ioremaps on both addresses
-(CONFIG_ADDR and CONFIG_DATA), and it always worked before. It doesn't work
-right now, however. Hacking the port to map the CPC710 registers virtual=
-physical with io_block_mapping() in my ppc_md.setup_io_mappings() makes it
-work, so I know the problem is there.
+   As some of you know I have been working on a new console system for
+2.5.X. Now that 2.5.X is very very close I really like to work together
+with various people from various trees to pull this together. The two
+biggest changes I have done is:
 
-MS
+1) A new fbdev api with is much simpler and allows fbdev devices to exist
+   without a console system. Nice for embedded devices.
+
+2) We also will be moving the various input devices including keyboards
+   over to the input api.
+
+3) Also I plan to work on a new serial api based on Russell King's work to
+   work nicely with the input layer. The serial layer will be more like
+   the parallel port layer.
+
+So what I need is the latest drivers from people so they can be ported
+over. I also want to know what people needed for the fbdev layer as well
+as the input layer. I see some email about DDC support for example. Please
+let me know what you need. Thank you.
+
+
+
+_______________________________________________
+http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
+Please visit the above address for information on this list.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
