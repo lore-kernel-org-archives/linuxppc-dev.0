@@ -1,46 +1,30 @@
-Message-ID: <3D120573.4000305@embeddededge.com>
-Date: Thu, 20 Jun 2002 12:40:19 -0400
-From: Dan Malek <dan@embeddededge.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Dan Malek <dan@embeddededge.com>,
+	Tom Rini <trini@kernel.crashing.org>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: [PATCH and RFC] Remove request_8xxirq
+Date: Thu, 20 Jun 2002 18:58:49 +0200
+Message-Id: <20020620165849.23834@smtp.wanadoo.fr>
+In-Reply-To: <3D12513E.1000905@embeddededge.com>
+References: <3D12513E.1000905@embeddededge.com>
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	Steven Scholz <steven.scholz@imc-berlin.de>,
-	LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: board specific defines in commproc.h !?!?
-References: <20020619221532.F3C7A10301@denx.denx.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
+>The other problem is the "namespace" of request_irq() usually assumes
+>numbers 0 to 15 are an 8259, and many legacy devices are hardcoded to
+>use these numbers.
 
+Not that much actually. Look at pmac, I have nothing even close to
+the 0..15 ISA namespace. Of course, a few crappy legacy ISA drivers
+are broken, but we don't use them on PMAC, and you can eventually
+hack them if you need them on embedded until a proper fix gets done.
 
-> So what is your suggestion if I want to provide a patch that supports
-> some new hardware?
+BTW. At least serial.c is beeing redesigned by Russel King (ARM) ;)
 
-I personally always do it first in the new, development tree (2.5 in
-this case), then move it into the current stable tree.  It isn't that
-you don't ever put new things into the stable tree, you just can't treat
-it as a development tree.  Any "cosmetic" changes shouldn't be done in
-a stable tree.
-
-
-> ..... And often enough the hardware is instable enough,
-> so I don't need the additional thrill of an instable Linux kernel.
-
-Well, that is a challenge but you are likely to have some similar hardware
-that will provide a stability reference.  Anything new won't work better
-than something that is proven.  The main reason I like doing the new hardware
-in 2.5 is that way it is carried along as the software evolves.  I have seen
-lots of updates lost in newer kernels because someone decided to "do it later",
-then when it becomes the next stable kernel everyone is in a panic to get
-their updates done :-)
-
-Thanks.
-
-
-	-- Dan
+Ben.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
