@@ -1,24 +1,27 @@
-Message-ID: <004a01bfc368$5166cd10$be4a1d18@elvis>
-From: "Myles" <myles@nycap.rr.com>
-To: <linuxppc-dev@lists.linuxppc.org>
-Subject: KENSINGTON Turbo Mouse 5.0 and 2.2.15
-Date: Sun, 21 May 2000 17:05:39 -0400
+Date: Sun, 21 May 2000 16:28:45 -0500 (CDT)
+From: ian reinhart geiser <geiseri@msoe.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Rawhide SRPMS
+In-Reply-To: <v04220802b54dfb36e27a@[10.0.0.42]>
+Message-ID: <Pine.LNX.4.10.10005211627270.811-100000@sleepchamber.apt5.msoe.edu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This beast only works as a 1-button mouse under 2.2.15  Does anyone have a
-hacked mac_keyb.c that'll give this 3-button functionality?
+I heard that KRASH was available as SRPM as a part
+of the rawhide package.  Can anyone point me to
+a good URL to find these SRPMS.
 
-Also, does this device have two adb addresses, or is there a problem with
-adb.c's detection routine?
+Thanks.
+	-ian reinhart geiser
 
---
-Regards,
-Myles
+-------------------------------------------------
+Ian Reinhart Geiser <geiseri@msoe.edu>
+DEC Unix Systems Adimistrator and
+	Computer Engineering Student
+http://www.msoe.edu/~geiseri/finger.phtml
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
