@@ -1,35 +1,27 @@
-Message-ID: <3AA92A2C.1BC447B4@mvista.com>
-Date: Fri, 09 Mar 2001 14:08:28 -0500
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: Giuliano Pochini <pochini@shiny.it>
+Date: Fri, 9 Mar 2001 15:01:12 -0500 (EST)
+From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
+To: Iain Sandoe <iain@sandoe.co.uk>
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [OT] 7450
-References: <XFMail.010309095914.pochini@shiny.it>
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: provision of "driver" type facilities from user-space
+In-Reply-To: <20010309181506.CB5212F00E@apollo.valhalla.net>
+Message-ID: <Pine.LNX.4.21L.0103091500230.2701-100000@unix47.andrew.cmu.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Giuliano Pochini wrote:
+On Fri, 9 Mar 2001, Iain Sandoe wrote:
 >
-> I read many msg about 7450 performance problems.
+> I want to put a layer in between user-space and a driver (dmasound).
+>
+> The reason is - that I want to provide facilities (transparently) to
+> applications and these facilities cannot be (sensibly) placed in the driver
+> [e.g. rate conversion and so on].
 
->From who?  People that are actually running hardware or
-speculating from rumors based on documentation that doesn't exist?
+Isn't this what esd and arts do?
 
-> .... Are there any
-> test results made with Linux ?
+-Hollis
 
-Not yet.  Any of us with actual hardware are bound by NDAs
-that would prohibit discussing such things.
-
-> .... Will GCC have optiminazions
-> (workarounds?) for the 7450's longer pipeline ?
-
-People are working on it.
-
-
-	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
