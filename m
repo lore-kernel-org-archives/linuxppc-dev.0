@@ -1,39 +1,28 @@
-Message-ID: <38BE8538.23D168B5@jlc.net>
-Date: Thu, 02 Mar 2000 10:14:00 -0500
-From: Dan Malek <dmalek@jlc.net>
+Message-ID: <38BE909C.E16D7940@netx4.com>
+Date: Thu, 02 Mar 2000 11:02:36 -0500
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: duyrat1 <duyrat1@col.bsf.alcatel.fr>
-CC: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>,
-        Laurent Barbero <barbero@cabs40>
-Subject: Re: reset of the CPM
-References: <38BE22E0.69E80DE5@col.bsf.alcatel.fr>
+To: Frank Przybylski <Frank.Przybylski@vas-gmbh.de>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: PCMCIA-IDE for mpc8xx-linux-2.2.13
+References: <38BD140B.A82C085B@vas-gmbh.de>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-duyrat1 wrote:
+Frank Przybylski wrote:
 >
-> hy,
+> Hi,
 >
-> In linux v2.2.12 release (and till in 2.3.47):
+> I'm trying to connect an IDE disk to the mpc860, on a TQM-860L Module
+> running linux-2.2.13.
+> According to Dan Malek it should be possible to use the PCMCIA port as a
+> simple IDE interface (as stated also in m8xx_setup.c).
 
-> What is the role of this patch?
-
-This one in particular is on the MBX860 board.  It relocates the
-I2C parameter ram when SCC1 is used for Ethernet.
-
-I have since become smarter, and I am now making Linux install
-it's own microcode patches.  This is necessary because drivers have
-to be modified to know such patches exist, as the programming
-interface physically and logically changes.  It is now appropriate
-to reset the CPM and remove all existing configurations.
-
-> and then on a reset or when a NMI exception is generated, does that
-> mean  that no reset of the CPM must ever be done.
-
-I don't remember the effect of external resets on the CPM.  I am
-travelling right now and don't have the book handy.
+Hang on.....When I get back to the office from travelling this
+week I will create a patch and post it this weekend.  There are
+still a couple of minor changes needed.
 
 
 	-- Dan
