@@ -1,50 +1,35 @@
-Date: Thu, 29 Nov 2001 17:11:11 +0100 (MET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: 'make rpm' Failing due to i386 bug
-In-Reply-To: <20011129082734.S29541@cpe-24-221-152-185.az.sprintbbd.net>
-Message-ID: <Pine.GSO.4.21.0111291710090.6747-100000@mullein.sonytel.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Thu, 29 Nov 2001 10:20:28 -0600
+From: "Joseph P. Garcia" <jpgarcia@execpc.com>
+To: paulus@samba.org
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: ide_init_hwif_ports
+Message-Id: <20011129102028.7222155f.jpgarcia@execpc.com>
+In-Reply-To: <15365.51839.327359.844495@gargle.gargle.HOWL>
+References: <15365.51839.327359.844495@gargle.gargle.HOWL>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 29 Nov 2001, Tom Rini wrote:
-> On Wed, Nov 28, 2001 at 10:10:45PM -0900, Ethan Benson wrote:
-> > On Wed, Nov 28, 2001 at 08:19:49PM -0700, Tom Rini wrote:
-> > > > no we have a zImage target, not bzImage which is a i386 specific hack
-> > > > to work around that braindamaged architecture.
-> > >
-> > > No, we as of 2.4.10ish have a 'bzImage' target which calls 'zImage'
-> > > since most of the docs are braindead and say "Now type 'bzImage' or
-> > > 'bzdisk'".
-> >
-> > hrm, i would have made it echo something like:
-> >
-> > 	bzImage is a i386 specific hack, it is not supported by any other
-> > 	architecure.  Use make zImage instead.
-> >
-> > rather then just silently perpetuate further ignorance.
+On Thu, 29 Nov 2001 16:41:19 +1100 (EST)
+Paul Mackerras <paulus@samba.org> wrote:
+> So I am proposing to drop ppc_md.ide_init_hwif_ports and change the
+> definition of ide_init_hwif_ports in include/asm-ppc/ide.h to the one
+> above.
 >
-> Well, there's precidence since arm I think does the same thing.  And on
-> m68k 'bzImage' creates a bzip2'ed vmlinux. :)
+> Comments?
 
-Which has a very questionable purpose, since AFAIK no m68k booter knows how to
-decompress bzip2ed kernel images. All they support are plain and gzipped
-kernel images.
+I'm not sure about details, so bare with my ignorance. :)
 
-Gr{oetje,eeting}s,
+Will a call to ide.c:ide_register() then be using a generic ide_init_hwif_ports?
 
-						Geert
+If so, since the pmac mediabay has a pmac port arrangement, it will need a modification.  It's call to ide_register() would be replaced with a direct call to pmac_ide_init_hwif_ports() followed by ide_register_hw().
+
+While ide_pmac.c registers mediabay's inserted before booting, anything hotswapped is handled by mediabay.c.  There was a time (maybe still now) that some source trees made the pmac's entry in ppc.md_ide_init_hwif_ports generic, breaking the existing code in mediabay.
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+Joseph P. Garcia
+http://www.lycestra.com/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
