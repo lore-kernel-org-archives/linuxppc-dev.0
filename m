@@ -1,25 +1,32 @@
-Date: Wed, 3 Jan 2001 14:33:17 +0100 (CET)
-From: Holger Waechtler <holger@yacoub.de>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: MPC8xx lcd driver for 2.4 kernels
-Message-ID: <Pine.LNX.4.10.10101031425580.26834-100000@Q.yacoub.de>
+Message-ID: <3A5362B0.2800C8FC@mvista.com>
+Date: Wed, 03 Jan 2001 12:34:40 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Holger Waechtler <holger@yacoub.de>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MPC8xx lcd driver for 2.4 kernels
+References: <Pine.LNX.4.10.10101031425580.26834-100000@Q.yacoub.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi everybody,
+Holger Waechtler wrote:
 
-I wrote a framebuffer kernel driver (2.4) for the MPC8xx LCD controller.
-It supports all usual features and uses the default framebuffer API. I
-don't know if such a driver is already included in the HardHat sources
-(Before I startet it was not - ).
+> .... I
+> don't know if such a driver is already included in the HardHat sources
+> (Before I startet it was not - ).
 
-If anybody is interested, please contact me.
-I'm not subscribed on this list -- please CC me in replies.
+It is in the 2.2.14 kernel (CDK 1.2 for 8xx processors like RPX-Lite,
+Linux Planet, BSE-IP) and we just sort of "moved" it into 2.4.
 
-- Holger
+> If anybody is interested, please contact me.
 
+Send me what you have, and I will merge the two into something better.
+
+Thanks.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
