@@ -1,47 +1,48 @@
-Message-ID: <38EF05F9.B7417C7D@iiic.ethz.ch>
-Date: Sat, 08 Apr 2000 12:12:09 +0200
-From: Michel Dänzer <michdaen@iiic.ethz.ch>
-MIME-Version: 1.0
-To: "Michael A. Peters" <mpeters@mac.com>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Building X 3.3.6 (non-distributor environment)
-References: <v04220801b513d68f9145@[192.168.0.2]>
-Content-Type: text/plain; charset=iso-8859-1
+Message-Id: <38EF50E4.872D76ED@w-d.org>
+Date: Sat, 08 Apr 2000 11:32:16 -0400
+From: John Doty <jpd@yami.w-d.org>
+Reply-To: jpd@yami.w-d.org
+Mime-Version: 1.0
+Cc: rshaw@linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: Blue & White & SCSI & Ultra 2 SCSI & Kernel > 2.2.10 -> No Disks
+Content-Type: text/plain; charset=iso-2022-jp; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"Michael A. Peters" wrote:
->
-> I'm running the Linux From Scratch project
-> (http://www.linuxfromscratch.org) and its all working swell except X
-> won't build.
->
-> When I unpack X3.3.6 and try "make World" it very quickly quits with
-> an error from gcc. Funny thing is, the build *does* complete under
-> LinuxPPC (gcc 2.95.2, glibc 2.1.3 if it matters) from the same source.
->
-> Opinion among people who have used the LFS howto on x86 and also
-> built X on other platforms is that my problem is that the make World
-> script doesn't know my compiler is gcc. Yes, I do have cc symlinked
-> to gcc
->
-> I've even tried make CC=gcc World with same result.
->
-> However, under LinuxPPC it compiles no problem.
->
-> Any of you know what the problem is (if its something else) or how to
-> set up the non-distribution linux so that it DOES know the compiler
-> is gcc?
+My Yosemite G3 (Rev 2) has *two* SCSI cards: an Adaptec 2930CU, and an
+Adaptec 2940U2B (Ultra 2 Wide). Last summer, my son Matt (who
+occasionally posts here on comp.os.linux.powerpc) set it up as a
+LinuxPPC machine with a 2.2.10 kernel from Robert Shaw's site.  As a
+compute/file server, it has been great.
 
-In xc/config/cf there's a bunch of config files, the important ones for you
-are probably xf86site.cf and linux.cf.
+However,  attempts to upgrade to a more recent kernel invariably
+encountered SCSI problems. The most common symptom was an inability to
+mount the root  filesystem.
 
-Set everything concerning Gcc (and maybe other stuff as well) to reflect your
-system and you should be fine.
+We have finally gotten partway to the bottom of this. Apparently, if the
+2930 controller is present the kernel cannot find the 2940 controller
+(and the 2940 has the disks on it). With the 2930 pulled (I don't really
+need it the way I'm currently using the system), SCSI works fine with
+the newer kernels.
 
+Finding this took quick eyes, as the evidence scrolls off the screen
+before failure is obvious , but you can't do a dmesg until you're up.
 
-Michel
+Matt also speculated that it had to do with the slot order of the
+controllers, so I switched them. That didn't help: the kernel still only
+found the 2930.
+
+I'm now running a Yellow Dog 1.2 system.
+
+I think the lesson to be learned here is that if your machine is loaded
+up with optional hardware, it might make sense to strip it down to
+something simpler if you encounter problems.
+
+--
+John Doty  "You can't confuse me, that's my job."
+Home: jpd@w-d.org
+Work: jpd@space.mit.edu
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
