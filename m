@@ -1,33 +1,43 @@
-Message-ID: <40F56540.9070303@ru.mvista.com>
-Date: Wed, 14 Jul 2004 20:54:24 +0400
-From: Andrei Konovalov <akonovalov@ru.mvista.com>
+Message-ID: <40F65985.9090905@fh-landshut.de>
+Date: Thu, 15 Jul 2004 12:16:37 +0200
+From: Oliver Korpilla <okorpil@fh-landshut.de>
+Reply-To: okorpil@fh-landshut.de
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: Gennadiy Kurtsman <gkurtsman@ru.mvista.com>
-Subject: [PATCH]  for linuxppc-2.4 tree: Gigabit Ethernet driver for Xilinx
- ML300
-References: <4034C37D.20909@ru.mvista.com> <405B2C46.90108@ru.mvista.com> <40A8FED6.9000809@ru.mvista.com>
-In-Reply-To: <40A8FED6.9000809@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: =?ISO-8859-1?Q?I=F1igo_Lopez_Barranco?= <ilopez@albatros-sl.es>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Little survey: SCM systems?
+References: <42A622EB18325843894BB8E1040E3DF5022792@sinaexchf>
+In-Reply-To: <42A622EB18325843894BB8E1040E3DF5022792@sinaexchf>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Iñigo Lopez Barranco wrote:
+>
+>I would like to know which software configuration system (SCM) have
+>you people tried. I found a nice comparison between different systems
+>in http://better-scm.berlios.de/comparison/ and Vesta seems really
+>interesting. Anyone has tried it?
 
-Here is the Gigabit Ethernet driver for Xilinx ML300.
+No, sorry.
 
-The patch affects Xilinx ML300 board only.
+>We're using CVS right now, but it has some limitations wich can become
+>quite bothering. Also, we have to compile for several different
+>platforms, using different toolchains, etc. Any SCM that you would
+>recommend for this kind of development.
 
-The patch itself can be found here:
-http://source.mvista.com/~ank/xilinx_xgige_update.040629.diff
+I currently used Subversion, after being disappointed with the usability
+of CVS. Somehow everything works in SVN as it should have in CVS - I
+mean, what I disliked about CVS, or found counter-intuitive, is
+different with SVN.
 
-The patch is against the kernel version 2.4.27-pre6.
+Disclaimer: I've only used it for a "small scale" driver port and
+platform port project.
 
-The patch author is Gennadiy Kurtsman.
+But it seems to do quite well and I'm more efficient with it than with CVS.
 
-Best regards,
-Andrei Konovalov
-
+With kind regards,
+Oliver Korpilla
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
