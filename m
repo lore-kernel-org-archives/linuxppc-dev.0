@@ -1,54 +1,59 @@
-Date: Wed, 19 Sep 2001 17:12:48 -0700
-From: Tom Rini <trini@mvista.com>
-To: Matt Porter <mporter@mvista.com>
-Cc: Steven Scholz <steven.scholz@imc-berlin.de>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: BitKeeper and linuxppc_2_4_devel
-Message-ID: <20010919171248.G17996@entropy.crashing.org>
-References: <3BA86732.363312A4@imc-berlin.de> <20010919033824.B5042@cx258813-a.chnd1.az.home.com>
-Mime-Version: 1.0
+Message-ID: <3BA96CA2.20EC30C8@mvista.com>
+Date: Thu, 20 Sep 2001 00:12:18 -0400
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Stefan Roese <stefan.roese@esd-electronics.com>,
+	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>,
+	Linuxppc-Commit <linuxppc-commit@source.mvista.com>
+Subject: Re: CPCI-405 port (PPC405GP)
+References: <20010918115722.A5967@cpe-24-221-152-185.az.sprintbbd.net> <EFEAIMDCOOOHIEPHDNFJCEKKDCAA.stefan.roese@esd-electronics.com> <20010919071751.B8132@cpe-24-221-152-185.az.sprintbbd.net> <3BA8DF9E.FD235CF6@mvista.com> <20010919155742.D8132@cpe-24-221-152-185.az.sprintbbd.net> <3BA9241B.4322817A@mvista.com> <20010919163101.E8132@cpe-24-221-152-185.az.sprintbbd.net>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010919033824.B5042@cx258813-a.chnd1.az.home.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Sep 19, 2001 at 03:38:24AM -0700, Matt Porter wrote:
-> On Wed, Sep 19, 2001 at 11:36:50AM +0200, Steven Scholz wrote:
-> > But "bk clone http://source.mvista.com/linuxppc_2_4_devel linux/"
-> >
-> > results today (!?) in
-> >
-> > drainErrorMsg: Unexpected response:
-> > <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
-> >
-> > Has anyone else the same problem?
->
-> Yes.  Just noticed it yesterday...somebody will get it fixed.
+Tom Rini wrote:
 
-Okay.  This specific problem has a simple cause.  source.mvista.com runs
-an actual webserver.  So, if you're behind a strict proxy:
-bk pull http://ppc.bkserver.net/tree_name
-If there's enough interest and people affected willing to test, I'll
-see if we can setup some automagic redirect, but I suspect this will
-fail since data would still be on port 14360.
+> ....  We
+> now define CONFIG_TREEBOOT and CONFIG_EMBEDDEDBOOT for 4xx.
 
-> > BTW which one has the most recent source: ppc.bkserver.net oder
-> > source.mvista.com???
->
-> source.mvista.com is a mirror of ppc.bkserver.net.  I'm using
-> ppc.bkserver.net for now.
+Why?  The Makefile can just as easily select this based upon board
+type.  That's all the configuration script does....
 
-Okay.  Regarding the flakiness Matt noticed, I upgraded bk again, and
-if you don't get something similar to this:
-$ bk version
-BitKeeper/Free version is bk-2.0pre3.1 20010918150405 for x86-glibc22-linux
-Built by: lm@glibc22.bitmover.com
-Built on: Tue Sep 18 10:48:28 PDT 2001
+The only thing unique about treeboot is the way the board information
+is gathered from the boot rom, which doesn't justify configuration
+variables like this.  Take a look at the 8xx for an example.  It
+configures board information based upon board type, which could be
+gathered from a variety of places.  You guys need to look at what
+is currently done, understand it, and realize it has likely been
+done before.  This is easy, don't keep complicating it by inventing
+something new all of the time.
 
-Go ahead and upgrade and try again.
 
---
-Tom
+> ....  Lets add in
+> CONFIG_PPCBOOT,
+
+No, let's not.  All of this stuff is on the way out.  We should be
+making modifications so the embedded boards support bi_recs....
+All you are doing is inventing a new way to do the same thing that
+has always worked.  Yes, you are _way_ over engineering.
+
+The PPCboot folks are going to have to do some major revamping
+of the way it works.  I've warned them (and everyone) about the
+dependency of always using the compressed image and the bootloaders.
+It's time to convert all of this stuff, not promote all of these
+different boot methods and formats further into the kernel.
+
+
+> Or not, 8xx currently does #include <asm/ppcboot.h> in lots of its files.
+
+Crap, I hope not.....It's time for all of that to disappear, along with
+all of the board information stuff in all of the other 8xx files.....
+
+Thanks.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
