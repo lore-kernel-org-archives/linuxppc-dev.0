@@ -1,39 +1,37 @@
-From: "LEROY Christophe" <christophe.leroy@c-s.fr>
-To: Dan Malek <dan@embeddededge.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Kernel BOOT (kernel 2.4.16)
-Date: Sat, 22 Dec 2001 20:59:46 +0100
-Message-ID: <7746B3AB173A.AAA45B0@hermes17.si.c-s.fr>
+Message-ID: <42AB6BE23C29D511831E0002B3202488199A86@messenger.radlan.co.il>
+From: Ofer Rashuk <OferR@Radlan.co.il>
+To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: signals from interrupt
+Date: Sun, 23 Dec 2001 09:18:47 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="windows-1255"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek <dan@embeddededge.com> wrote:
->LEROY Christophe wrote:
->
->
->> Can someone help me ?
->> io_block_mapping(IMAP_ADDR,...) fails because mem_pieces_find() can find
+I am running MontaVista hardhat 2.4.2. linux kernel on a MPC8240 cpu with
+a pci bus,NVRAM device ,64M ram and 32M rom (flash).
+basically my application is running very well i have created all the threads
+i needed and all other initialization are almost done.
+the last problem i have regards interrupts.
+on my target i have a dual UART 16550 device, one of it's ports used by the
+kernel (kprintf,etc...) the other port i need to use for my own application.
+in order to use it i need to receive an interrupt (mean RX interrupt), now
+since there are no interrupts available out side of the kernel i thought of
+using signals.
+what i wanted to do is to get the interrupt with in the kernel and to send a
+signal to the application, the problem is that every method i tried to
+implement that did not succeed, can any body help me dealing with this
+issue.
 
->> any piece.
->
->What code are you looking at?	The io_block_mapping is simply going to
->force a map_page() operation and update the PTE tables.  How do you see
->mem_pieces_find() involved in this path?
->
->Thanks.
->
+thanks in advance.
 
-map_page() calls pte_alloc()
-pte_alloc() calls pte_alloc_one()
-pte_alloc_one() calls early_get_page()
-early_get_page() calls mem_pieces_find()
-I'm sure that it come here because when I add a call to m8xx_restart() just
-before the panic() call in mem_pieces_find(), the board restarts.
 
-Thanks.
 
-C.Leroy
+
+Ofer Rashuk-Rosenthal.
+mailto:oferr@radlan.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
