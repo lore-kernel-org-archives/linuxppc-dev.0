@@ -1,29 +1,27 @@
-To: acurtis@onz.com
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: BDI2000 mail list? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 05 Jun 2002 06:40:04 PDT."
-             <NCBBIINEHIPFGJPLBEIFGECKDIAA.acurtis@onz.com>
-Date: Wed, 05 Jun 2002 15:59:42 +0200
-Message-Id: <20020605135947.C6070102F2@denx.denx.de>
+Message-ID: <3CFE1E1E.5010104@mandrakesoft.com>
+Date: Wed, 05 Jun 2002 10:20:14 -0400
+From: Jeff Garzik <jgarzik@mandrakesoft.com>
+MIME-Version: 1.0
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	Leigh Brown <leigh@solinno.co.uk>, Paul Mackerras <paulus@samba.org>,
+	Peter De Schrijver <p2@mind.be>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: S3 trio config
+References: <Pine.GSO.4.21.0206050948450.27487-100000@vervain.sonytel.be>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message <NCBBIINEHIPFGJPLBEIFGECKDIAA.acurtis@onz.com> you wrote:
->
-> What is the appropriate list for obtaining BDI2000 support?
+Here's some code people can play with, too:
+http://gtf.org/garzik/kernel/files/s3fb/
 
-This list is as good as any other; just ask your question.
+There is a cyberfb attempt to get working on PCI (ppc, x86, ...) and
+also an attempt to get a brand new s3fb going for PCI.  Both need
+debugging :( but in theory one could replace S3triofb
 
-Wolfgang Denk
+    Jeff
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Everyting looks interesting until you do it. Then you find it's  just
-another job.                     - Terry Pratchett, _Moving Pictures_
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
