@@ -1,20 +1,20 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao01.cox.net (fed1rmmtao01.cox.net [68.230.241.38])
-	by ozlabs.org (Postfix) with ESMTP id EB3B72BF12
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 064F52BF07
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  6 Jan 2005 04:37:00 +1100 (EST)
-Date: Wed, 5 Jan 2005 10:36:58 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Message-ID: <20050105173658.GE4213@smtp.west.cox.net>
-References: <313680C9A886D511A06000204840E1CF0A647421@whq-msgusr-02.pit.comms.marconi.com>
-	<1104256077.20042.125.camel@localhost.localdomain>
+	Thu,  6 Jan 2005 04:41:57 +1100 (EST)
+Date: Wed, 5 Jan 2005 09:41:54 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Laurent Lagrange <lagrange@fr.oleane.com>
+Message-ID: <20050105174154.GB14485@gate.ebshome.net>
+References: <000001c4f32b$cfe37470$5201a8c0@GEG2400>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1104256077.20042.125.camel@localhost.localdomain>
-Cc: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>,
-	linuxppc-embedded@ozlabs.org
-Subject: Re: simple bootloader 2.6.10-rc3 8xx
+In-Reply-To: <000001c4f32b$cfe37470$5201a8c0@GEG2400>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: MPC8260 strange virtual addresses returned by kmalloc()
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,33 +25,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Dec 28, 2004 at 12:47:57PM -0500, Steven Rostedt wrote:
-> On Tue, 2004-12-28 at 12:28 -0500, Povolotsky, Alexander wrote:
-> > Hi! (Thanks !) 
-> > 
-> > I guess I need some more education - since I am getting my problem right at
-> > the boot - is 
-> > I-Cache enabled (by default ?) for 8xx on 2.6 at the booting ? - I do not
-> > see anything in .config 
-> > which controls it (or I am missing it there ?) 
-> > How (where and at what point during the boot)-) I could disable I-Cache ?
+On Wed, Jan 05, 2005 at 02:38:12PM +0100, Laurent Lagrange wrote:
+> Hi and Happy New Year to all,
 > 
-> Since you where able to get to the prekernel portion (that was
-> relocated) I don't think you have a problem with caches, unless for some
-> reason the pre-kernel can relocate itself, but it doesn't know to
-> refresh the cache after relocating the actual kernel.
+> I use a Linux 2.4.25 kernel on a MPC8260 custom board with 128MB of RAM.
+> PCI is activated and my drivers are loaded as modules.
+> The RAM is mapped at 0xC0000000 as usual.
+> 
+> On MPC8XX I used kmalloc and iopa to get the physical addresses of the
+> allocated buffers.
+> On MPC82XX I used kmalloc and __pa for the same thing and it worked fine
+> with previous kernel.
+> 
+> But now, when I want to use kmalloc, I get addresses like 0xC9xxxxxx.
+> The __pa gives me physical addresses 0x09xxxxxx which are out of my physical
+> RAM.
+> I tried old iopa function and got some real physical addresses and the
+> module works.
+> The virt_to_bus gives me too addresses like  0x09xxxxxx
+> (ie substract kernel base address 0xC0000000 as usual).
+> 
+> I don't understand why I get virtual addresses which seem to be out of my
+> memory and why it runs.
 
-The in-kernel bootwrapper codes does indeed relocate itself (overlap
-isn't a problem either, except for a small window.  All of this can be
-avoided if you link the kernel where it will be loaded into memory by
-the firmware as well), but it should also do all needed cache flushing.
+Yeah, this looks strange, please, check that this address is really 
+from kmalloc and not from vmalloc.
 
-But as has been said before, since the CPU15 errata doesn't exist with
-i-cache disabled, the simple workaround would be to disable the i-cache
-as quickly as possible from the head.S portions of the in-kernel
-bootwrapper and make sure we don't re-enable it later on (I _think_ we
-do for speed reasons).
+Also, check that PAGE_OFFSET is really 0xc000'0000.
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+> More, I have a global variable which is a little buffer. It is also mapped
+> at a 0xC9xxxxxx address.
+
+Is this global variable in the loaded module? If yes, this is normal, 
+because modules are loaded into vmalloced space and you cannot use 
+__pa for such addresses.
+
+--
+Eugene
