@@ -1,51 +1,54 @@
-Mime-Version: 1.0 (Apple Message framework v612)
-Message-Id: <27203D60-5B28-11D8-A96D-000A95B30208@vrlteam.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-To: linuxppc-dev@lists.linuxppc.org
-From: Costantino Pistagna <cpistagna@vrlteam.org>
-Subject: ibook G4 Status Report
-Date: Mon, 9 Feb 2004 18:48:22 +0100
+Subject: Re: XServe G5 and Linux ?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Harald Welte <laforge@gnumonks.org>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <20040209103652.GM18913@obroa-skai.de.gnumonks.org>
+References: <20040208180539.GG18479@sunbeam.de.gnumonks.org>
+	 <1076299574.887.118.camel@gaston>
+	 <20040209103652.GM18913@obroa-skai.de.gnumonks.org>
+Content-Type: text/plain
+Message-Id: <1076360199.835.1.camel@gaston>
+Mime-Version: 1.0
+Date: Tue, 10 Feb 2004 07:57:10 +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+On Mon, 2004-02-09 at 21:36, Harald Welte wrote:
 
-i'm currently using an ibook G4 with Radeon9200 OnBoard.
+> I see.  It's just that the XServe G5 is sold cheaper than the XServe G4
+> (at least the dealers have a lower price).  That's why I somehow feel
+> reluctand of buying an old machine.
 
-Some months ago, i've wrote in this list asking about the status of the
-driver
-for both Xfree and framebuffer. Actually i'm using the system with
-framebuffer
-and Xfree, running a 2.6.1-ben1 kernel, but no support for dualhead
-and/or
-multiple screens.
+Well, I don't quite recommend G4s in general any more ;)
 
-Since my ibook is a 12" equipped, i really need to use the video output
-with my 17" LCD.
+> Also, I can positively confirm that we've had a G5 XServe at the 20C3
+> (CCC Chaos Communication Congress) at the end of december.  It was used
+> to relay the A/V streams of the lecture halls into the congress network.
 
-Any clues ? and/or usefull start point ?. i've tried to look inside
-xfree drivers sources,
-but without any good results. Seems that radeon9200 does not provide,
-any type of
-multiple screen support.
+Strange... I'm quite sure they are only due to shipping about now.
 
-A minor request is about the status of Broadcom BCM94306 driver. Looking
-around i've noticed that many new Centrino-Based laptop are equipped
-with
-this wificard. After some minutes of googling i've reached a sf.net
-hosted project
-about a .vxd/Windows drivers wrapper; it successfully use the windows
-drivers
-for the above card under x86/linux. is there any way to use this method
-under
-linuxppc ?. Another time: any clues? and/or usefull start point ?
+> So either the CCC has received an unreleased machine, or they are
+> already sold.
+>
+> > > 1) Does anybody have experience running linux on the current G5
+> > > Xserve?
+> >
+> > I expect the kernel to mostly work, +/- minor adaptations that should
+> > be fairly trivial hopefully, except maybe for the thermal control.
+> > But then it depends what they changed of the chipset. The above is
+> > assuming the chipset is just the new northbridge rev and same IO chip.
+>
+> mh. Unfortunately you're in .au now.  This means I cannot just buy one
+> of them and ship it to you for getting that initial work done.
+> Shipping, Taxes, Customs Offices, ... would definitely over-complicate
+> everything.
 
-cheers,
---
-[ Costantino Pistagna (PhD) :: unict :: dmi ]
-[ s0ftpj ::: Vrl Team ::: freaKnet MediaLab ]
-[ gpg key on pgp.mit.edu :: keyid  1d67b4dd ]
+Right, on the other hands, there are chances that it just work :) And I
+will probably get access to one soon anyway.
+
+
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
