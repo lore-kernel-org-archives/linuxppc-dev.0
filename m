@@ -1,17 +1,19 @@
-Return-Path: <emrekara2002@yahoo.co.uk>
-Received: from web25701.mail.ukl.yahoo.com (web25701.mail.ukl.yahoo.com
-	[217.12.10.173]) by ozlabs.org (Postfix) with SMTP id 57D5667A6D
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 18 Mar 2005 21:25:32 +1100 (EST)
-Message-ID: <20050318102530.84315.qmail@web25701.mail.ukl.yahoo.com>
-Date: Fri, 18 Mar 2005 10:25:29 +0000 (GMT)
-From: emre kara <emrekara2002@yahoo.co.uk>
-To: Eugene Surovegin <ebs@ebshome.net>
-In-Reply-To: 6667
+Return-Path: <nlv11891@natlab.research.philips.com>
+Message-ID: <002901c52ba9$02dad390$9c9c9182@ddns.htc.nl.philips.com>
+From: "S. van Beek" <nlv11891@natlab.research.philips.com>
+To: "Peter Ryser" <Peter.Ryser@xilinx.com>,
+	"S. van Beek" <nlv11891@natlab.research.philips.com>
+References: <002001c52aef$d29dbb70$9c9c9182@ddns.htc.nl.philips.com>
+	<4239A41E.7040200@xilinx.com>
+	<001501c52b0a$0ee36ca0$9c9c9182@ddns.htc.nl.philips.com>
+	<4239C6AE.3050803@xilinx.com>
+Date: Fri, 18 Mar 2005 11:55:34 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: PPC 440GX kernel 2.6 NAPI driver
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Cc: Linuxppc-embedded@ozlabs.org
+Subject: Re: Problems with MontaVista Linux on a Memec Virtex-II pro ff672
+	board
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,49 +24,137 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I have patched emac_3-2.6-9.diff against kernel 2.6.11
-release version and fixed the rejections, but the
-problem that I faced is not only from the .rej files,I
-have succeeded to compile the kernel and load the
-target, but it take long time to boot and there was
-some errors printed on the console, I think the patch
-corrupted some other files
-And also tested ethernet performance with the patched
-kernel, it was not as good as 2.4 version, especialy
-there was a huge performance decrease on the receive
-side.
-Second (big) problem is, I dont know how to log on to
-BK tree :) 
-Maybe I can patch emac_3-2.6-8.diff against kernel
-2.6.11, but I dont have this file(It is not on your
-web site at the present.), where can I download it?
-Thanks alot.
-Emre
+We've booted the first kernel on the hardware with Flash, and that works
+fine. So the hardware doesn't seem to be the problem.
+We have a JTAG port, debugging and viewing the log_buf address after the
+crash just gave us 8 zero's so no usefull hints there..
+The kernel probably crashes before it can write anything to that buffer, or
+before its initialized?
+
+I'll also include the output we get here, maybe its helpfull:
+
+loaded at:     00400000 004A11E0
+board data at: 0049E138 0049E150
+relocated to:  004052D4 004052EC
+zimage at:     0040589F 0049D91C
+avail ram:     004A2000 02000000
+
+Linux/PPC load: root=/dev/nfs rw ip=on
+Uncompressing Linux...done.
+Now booting the kernel
+
+And then it halts..
+
+Any other suggestions would be welcome :)
+
+Regards
+Sander
+
+----- Original Message ----- 
+From: "Peter Ryser" <Peter.Ryser@xilinx.com>
+To: "S. van Beek" <nlv11891@prle>
+Cc: <Linuxppc-embedded@ozlabs.org>
+Sent: Thursday 17 March 2005 19:04
+Subject: Re: Problems with MontaVista Linux on a Memec Virtex-II pro ff672
+board
 
 
---- Eugene Surovegin <ebs@ebshome.net> wrote:
-> On Fri, Mar 18, 2005 at 09:41:43AM +0000, emre kara
-> wrote:
-> > but I can't patch the file for
-> > kernel 2.6.11 (emac_3-2.6-9.diff)(on kernel.org).
-> > Some .rej files created by patch.(ie mii.rej).
-> Which
-> > kernel source must I use as base?
-> 
-> emac_3-2.6-9.diff is against 2.6 BK tree as of
-> 2005-03-07 11:01pm PST.
-> I'll try to find some time this weekend and re-diff
-> (if needed) 
-> against latest BK, in the meantime, try resolving
-> those rejects - 
-> mii.rej shouldn't be very difficult.
-> 
-> If you applying patch to the 2.6.11 _release_ (not
-> current BK tree), 
-> try emac_3-2.6-8.diff.
-> 
-> --
-> Eugene
-> 
-
-Send instant messages to your online friends http://uk.messenger.yahoo.com 
+> Also try to boot the first Linux kernel (the one without the Flash
+> support) on the EDK design with Flash support. It will help narrow down
+> the problem to the HW or the SW.
+>
+> - Peter
+>
+>
+> S. van Beek wrote:
+>
+> >>How did you add the Flash (EMC) peripheral? Did you use the Base System
+> >>Builder to generate your hardware?
+> >>
+> >>
+> >
+> >Yes, we started a new project using the base system builder with the same
+> >options as the previous (working) project and flash, so the address range
+> >should be ok. I'll check tomorrow, right now its time to go home ;)
+> >
+> >Regards,
+> >Sander
+> >
+> >----- Original Message ----- 
+> >From: "Peter Ryser" <Peter.Ryser@xilinx.com>
+> >To: "S. van Beek" <nlv11891@prle>
+> >Cc: <Linuxppc-embedded@ozlabs.org>
+> >Sent: Thursday 17 March 2005 16:37
+> >Subject: Re: Problems with MontaVista Linux on a Memec Virtex-II pro
+ff672
+> >board
+> >
+> >
+> >
+> >
+> >>How did you add the Flash (EMC) peripheral? Did you use the Base System
+> >>Builder to generate your hardware?
+> >>
+> >>If you configure the hardware manually and use the OPB EMC make sure
+> >>that you add the address range to the PLB2OPB bridge.
+> >>
+> >>- Peter
+> >>
+> >>
+> >>S. van Beek wrote:
+> >>
+> >>
+> >>
+> >>>Hello there,
+> >>>
+> >>>This is our first post on this list, hi all!
+> >>>We're two Dutch students working with a Virtex-II pro ff672 board from
+> >>>Memec with the Communications 2 module. We've compiled a simple kernel
+> >>>wich comes with MontaVista Linux 3.1 (2.4.20) with ethernet and a
+> >>>serial port. It mounts its root filesystem over NFS and everything
+> >>>seems to work nicely. The next step we wanted to make was
+> >>>adding support for the Flash on the com board. We added the IP to the
+> >>>hardware and loaded the new bitstream in the FPGA. Next thing, we
+> >>>enabled support for MTD devices in the kernel. After that, the kernel
+> >>>did not seem to boot anymore. It stopped at the message 'Now booting
+> >>>the kernel'. So we read some documentation about debugging. We
+> >>>recompiled this kernel with the -g -ggdb options and removed the -O
+> >>>(optimalization) flag. Then we did not even see the ppc boot loader
+> >>>messages anymore when trying to boot. So we tried to compile the first
+> >>>kernel (with only serial and ethernet support) -wich worked fine
+> >>>before- with debugging and it gave us the same result.. no output at
+> >>>
+> >>>
+> >all.
+> >
+> >
+> >>>Can anyone give us some hints on what we can try more to find out what
+> >>>is going wrong?
+> >>>
+> >>>Regards,
+> >>>Sander van Beek
+> >>>Daniel van Os
+> >>>
+>
+>>>------------------------------------------------------------------------
+> >>>
+> >>>_______________________________________________
+> >>>Linuxppc-embedded mailing list
+> >>>Linuxppc-embedded@ozlabs.org
+> >>>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> >>>
+> >>>
+> >>>
+> >>
+> >>
+> >>
+> >
+> >
+> >
+> >
+> >
+> >
+>
+>
+>
+>
