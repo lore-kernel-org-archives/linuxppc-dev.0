@@ -1,36 +1,37 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Matthias Pfisterer <Matthias.Pfisterer@gmx.de>,
-        Iain Sandoe
- <iain@sandoe.co.uk>, <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: internal speakers on Pismo
-Date: Sat, 29 Jul 2000 00:16:34 +0200
-Message-Id: <20000728221634.5701@192.168.1.10>
-In-Reply-To: <3981F1F7.9314DAD3@gmx.de>
-References: <3981F1F7.9314DAD3@gmx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-Id: <200007282223.XAA13499@hyperion.valhalla.net>
+Date: Fri, 28 Jul 2000 23:19:43 +0100
+Subject: IRQ Blocking Test 0.1.3
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Ok, I got it working here too. I've pushed changes in my rsync tree
-(dmasound 2.2, I'll take care of 2.4 later, I'll send you patches, Iain).
+Well I've applied this across the machines I've got that boot linux (still
+haven't commissioned the G4).
 
-Basically, clearing the additional registers is not what made it work as
-I originally expected ! What made it work was _not_ to enable the
-parallel port output. However, it is needed on some machines. So what I
-did was to enable it conditionally in a way similar to what Darwin does.
-I also fixed up detection of screamer chips.
+Using Ben's 2.2.17pre13ben2. + IRQ_blocking patch + dmasound patch (separate
+message)
 
-Oddly, the master volume doesn't work (but the speaker volume does).
-Also, Apple code has some weird thing: They detect two different device-
-id's for new iMacs (DV/SE). One is an inverted version. But they only
-enable the parallel output one of them. I don't know if it's normal or if
-it's actually a bug in their code. I did the same thing but left the case
-of normal iMacDV in comments, so users of this machine can try and see if
-it helps. I suspect that like other iMacs, there's an I2C amplifier/SRS
-module that needs to be setup too, but I'm not completely sure.
+The good news - is that it's stable & OK on
+G3 beige minitower,
+G3 Lombard
+604e 9600/233
 
-Ben.
+The bad news is that there are high interrupt latencies across the board:
+
+As Ben suggested would be the case, the Lombard is worst (it's the only one
+based on ide) but
+all three produce >250 us blocks quite easily (ll_rw_blk.c)
+
+and the
+9600 (which *was* until two weeks ago my studio machine - quite capable of
+recording 12 channels of 44k audio direct to disk under MacOS) produces
+400-700 us in scsi without really trying to load it.
+
+Ah well.
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
