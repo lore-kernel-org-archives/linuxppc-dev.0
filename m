@@ -1,38 +1,53 @@
-From: Christian =?iso-8859-1?q?Tr=F6ster?= <c.troester@gmx.de>
+Date: Fri, 02 Apr 2004 17:09:55 -0500
+From: Jeff Tucker <jeff@jltnet.com>
 To: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Need help booting linux on IBM 405EP eval board
-Date: Fri, 2 Apr 2004 23:40:44 +0200
-References: <1866383.1080909296@[192.168.0.230]> <5357473.1080912787@[192.168.0.230]>
-In-Reply-To: <5357473.1080912787@[192.168.0.230]>
+Message-ID: <18366018.1080925795@[192.168.0.230]>
+In-Reply-To: <20040402185107.B77E5C109F@atlas.denx.de>
+References: <20040402185107.B77E5C109F@atlas.denx.de>
 MIME-Version: 1.0
-Message-Id: <200404022340.44604.c.troester@gmx.de>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+--On Friday, April 02, 2004 8:51 PM +0200 Wolfgang Denk <wd@denx.de> wrote:
 
-Am Friday 02 April 2004 20:33 schrieb Jeff Tucker:
-> I've re-built U-Boot in debug mode so I can see what is going on. Here's
-> what it spits out before the board locks up:
-[snip]
-> procfreq    = 266.666 MHz
-> plb_busfreq = 133.333 MHz
-> pci_busfreq = 33.333 MHz
-> ethaddr     = 00:04:AC:E3:24:A7
-> IP addr     = 192.168.0.91
-> baudrate    =   9600 bps
-> No initrd
-> ## Transferring control to Linux (at address 00000000) ...
 >
-> Any ideas?
-If you're connected via a serial console make sure to append the correct
-bootoptions to the kernel to get your output to /dev/ttySx.
+> In message <1866383.1080909296@[192.168.0.230]> you wrote:
+>>
+>> I sent a message like this to the U-Boot mailing list last night. I've
+>> been
+>
+> And you have received replies thaty pointed to the problem.
+>
 
-Bye, Christian
+Indeed, as my later email indicated, I found that the Linux build is using
+the file arch/ppc/platforms/evb405ep.[c/h] and that file has a board_info
+struct, separate and different from the ppcboot.h file which is in a
+totally different directory. I've made evb405ep.h match U-Boot's u-boot.h,
+but that hasn't helped my problem.
 
-- --
-| mailto:c.troester@gmx.de | http://www.christian.myfen.de/ |
+I guess I have two questions then:
+- Does the build environment (from ELDK 3.0) for the 405EP evaluation board
+use the file mentioned above? Is that the place where I have to make the
+board_info struct match the struct in U-Boot
+(u-boot/include/asm-ppc/u-boot.h)?
+
+- Has the Linux/build environment already been ported for this particular
+board? It's in the Makefile and there are certainly board-specific files
+available in the above directory. So, I figured that I wouldn't have to go
+through a porting process to boot Linux. And, again, the IBM bootloader
+loads and boots kernels just fine.
+
+Does anyone out there use this evaluation board, Linux 2.4 and U-Boot or am
+I really the first?
+
+Thanks
+Jeff
+
+--
+Jeff Tucker
+jeff@jltnet.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
