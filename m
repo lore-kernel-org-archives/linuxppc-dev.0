@@ -1,37 +1,68 @@
-Message-ID: <39FDE67D.AD28BA91@noos.fr>
-Date: Mon, 30 Oct 2000 22:22:05 +0100
-From: Guillaume Laures <guillaume.laures@noos.fr>
+Date: Mon, 30 Oct 2000 23:10:25 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: __{pmac,prep,chrp,apus,openfirmware}func()
+Message-ID: <Pine.LNX.4.10.10010302304320.413-100000@cassiopeia.home>
 MIME-Version: 1.0
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Keyboard trouble with XF 4.0.1R
-References: <200010292209.XAA02779@piglet.grunz.lu>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michel Lanners wrote:
+Since __initfunc() was removed in 2.3.16, we should remove the PPC-specific
+variants as well.
 
-> Hi all,
->
-> Just to add to this thread, I wonder whether anybody has noticed that
-> Apple Extended keyboards don't get switched to a different ADB
-> handler,
-> in order to enable right and left modifier keys to send different
-> keycodes.
+At least arch/ppc/ and drivers/macintosh/ don't contain files that use any of
+these definitions anymore.
 
-Hopefully they are back wtih the linux keycodes.
-I mapped R & L ctrl to Control.
-L alt to Mode_switch (the key we use in MacOS to modify the meaning of
-keys, eg l-> |).
-R & L Apple to meta
-R alt to "I dunno what" but this is the key that allows to switch from X
-to console (with alt + Fx), needs to be fixed to Mode_switch as well,
-and use both Apple to switch from X to console
+--- linux-2.4.0-test10-pre7/include/asm-ppc/init.h.orig	Mon Oct 30 22:52:59 2000
++++ linux-2.4.0-test10-pre7/include/asm-ppc/init.h	Mon Oct 30 23:04:21 2000
+@@ -5,33 +5,18 @@
 
+ #define __pmac __attribute__ ((__section__ (".text.pmac")))
+ #define __pmacdata __attribute__ ((__section__ (".data.pmac")))
+-#define __pmacfunc(__argpmac) \
+-	__argpmac __pmac; \
+-	__argpmac
+-
++
+ #define __prep __attribute__ ((__section__ (".text.prep")))
+ #define __prepdata __attribute__ ((__section__ (".data.prep")))
+-#define __prepfunc(__argprep) \
+-	__argprep __prep; \
+-	__argprep
+
+ #define __chrp __attribute__ ((__section__ (".text.chrp")))
+ #define __chrpdata __attribute__ ((__section__ (".data.chrp")))
+-#define __chrpfunc(__argchrp) \
+-	__argchrp __chrp; \
+-	__argchrp
+
+ #define __apus __attribute__ ((__section__ (".text.apus")))
+ #define __apusdata __attribute__ ((__section__ (".data.apus")))
+-#define __apusfunc(__argapus) \
+-	__argapus __apus; \
+-	__argapus
+
+ /* this is actually just common chrp/pmac code, not OF code -- Cort */
+ #define __openfirmware __attribute__ ((__section__ (".text.openfirmware")))
+ #define __openfirmwaredata __attribute__ ((__section__ (".data.openfirmware")))
+-#define __openfirmwarefunc(__argopenfirmware) \
+-	__argopenfirmware __openfirmware; \
+-	__argopenfirmware
+-
++
+ #endif /* _PPC_INIT_H */
+
+Gr{oetje,eeting}s,
+
+						Geert
 
 --
-GoM
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
