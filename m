@@ -1,40 +1,46 @@
-Message-ID: <40E9CF45.7020009@246tNt.com>
-Date: Mon, 05 Jul 2004 23:59:33 +0200
-From: Sylvain Munaut <tnt@246tnt.com>
 MIME-Version: 1.0
-To: iida <iida@ztec.com.br>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <16617.59368.202493.36547@cargo.ozlabs.ibm.com>
+Date: Tue, 6 Jul 2004 09:44:40 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Oliver Korpilla <okorpil@fh-landshut.de>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: bestcomm and i2c
-References: <40E9C6D3.5020708@ztec.com.br>
-In-Reply-To: <40E9C6D3.5020708@ztec.com.br>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Re: [more info - please help!] MPC7455 DMA buffer strangeness 
+In-Reply-To: <40E97EB5.2040008@fh-landshut.de>
+References: <40E97EB5.2040008@fh-landshut.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-iida wrote:
+Oliver Korpilla writes:
 
- >
- > I  am to use the bestcomm API with 2.4.25 denx to control the i2c
+> I checked my Page Table Entries (PTEs) for the MPC7455 and MPC8240 after the
+> remap_page_range() took place.
+>
+> Except for the RPN part (the physical address of the page) the PTEs match,
+> ending with the last 11 Bits (flags as in arch/ppc/mm/pgtable.h):
+>
+> Kernel space: 0x581
+> User   space: 0x72D
+>
+> (for user space this does mean - from least significant to most significant:
+> Page present: 	no,
+> Hashed PTE: 	yes,
 
-Are you really sure you want to do that ?
-Your peripheral really require such I2C bandwidth that you just can't
-use the actual code ?
+No, you have _PAGE_PRESENT set and _PAGE_HASHPTE clear there (which
+looks correct).
 
- > Someone already used it ? Could provide a example /
+> How are these Linux PTEs mapped to the MMU PTEs (64 bit wide descriptors)?
+>
+> The "Programming Environments Manual For 32-Bit Implementations of the PowerPC
+> Architecture", the MPC603e and MPC7450 reference manuals depict a completely
+> different format, so how and where are these converted? (Hopefully not in
+> assembler! ;) )
 
-Well, my last attempt was just to use interrupt to know when a
-transfer was done instead of busy waiting. And I never got any
-interrupts for the second I2C controller ( the one wired on the
-lite5200 board ) unless I init both I2C controllers. I haven't yet
-figured why ...
+Yes, in assembler. :)  For the 74xx, it's done by create_hpte() in
+arch/ppc/mm/hashtables.S, and for the 603 (and the 8240) it's done by
+DataLoadTLBMiss or DataStoreTLBMiss in arch/ppc/kernel/head.S.
 
-To get back at your original question, IIRC the BestCommAPI
-package(Some big zip freescale will send you if you ask several times
-;) ) has some code example of all devices, somewhere in a "validation"
-directory. I can't send it, it's (c) Freescale.
-
-Sylvain
-
+Paul.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
