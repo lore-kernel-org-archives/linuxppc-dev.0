@@ -1,25 +1,41 @@
-Message-ID: <20000130192135.18931.qmail@web1002.mail.yahoo.com>
-Date: Sun, 30 Jan 2000 11:21:35 -0800 (PST)
-From: Dan Bethe <dan_bethe@yahoo.com>
-Subject: Re: HFS+ format
-To: linuxppc-dev@lists.linuxppc.org
-Cc: linuxppc-dev@lists.linuxppc.org
+From: ramp@oddjob.uchicago.edu
+Date: Sun, 30 Jan 2000 22:04:25 -0600 (CST)
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: devel kernels 2.3.41
+In-Reply-To: <200001300356.WAA12189@marcus.pants.nu>
+Message-ID: <Pine.LNX.4.10.10001302151040.3009-100000@xpol.uchicago.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> the best route may be to enhance hfsutils for hfs+ support. you don't have
-> to worry about the complexity of multiple readers/writers that way but you
-> get a useful, practical result. then jump into writing the kernel code
-> after it works satisfactorily.
 
-	So you can start with the userspace app and then port that to the kernel?  And
-is it already GPL?  Cool.  Who wants to start on that?  :^)
+Hi everyone,
 
-=====
-"Don't expect your own messiah; this neverworld which you desire is
-only in your mind." -- http://www.dreamtheater.net/songb4.htm#IV5
+I hope I'm not the only one having problems getting a working
+2.3.41 kernel. I downloaded the stock 2.3.41 from kernel.org.
+This one didn't even compile. There were some problems with
+pci.h. I then decided to go back to 2.3.40 and apply the
+pre-patches [1..4] where 4 is the final 2.3.41. I was able
+to successfully compile a 2.3.41pre3. However on boot I was
+unable to use my keyboard/mouse. The boot messages seemed to
+indicate that the keyboard and mouse were recognized. Any ideas
+and fixes? 2.3.41pre2 also compiled successfully. On boot this
+led to disk errors and I was asked to fsck. This was a total loss
+since I could not type anything with the keyboard and mouse not
+even recognized. I'm now back to my 2.2.14 and things seem OK.
+
+Any suggestions/comments/ideas/patches will be most welcome.
+
+Thanks - Ramprasad
+
+The following table summarizes  ---
+
+  Kernel           Compiles      Boots
+ 2.3.41               No
+ 2.3.41pre3          Yes          Yes (No keyboard/mouse)
+ 2.3.41pre2          Yes          no (led to fsck/ No kbd/mouse)l
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
