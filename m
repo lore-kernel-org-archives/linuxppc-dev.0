@@ -1,30 +1,35 @@
-To: Christian Kujau <evil@g-house.de>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: rsync'ed sources out of date?
-References: <40925BBF.1010708@g-house.de>
-Reply-To: Jens Schmalzing <j.s@lmu.de>
-From: Jens Schmalzing <j.s@lmu.de>
-Date: 30 Apr 2004 17:23:56 +0200
-In-Reply-To: <40925BBF.1010708@g-house.de>
-Message-ID: <hh65bh4hgz.fsf@alsvidh.mathematik.uni-muenchen.de>
+Message-ID: <409274FC.8040309@g-house.de>
+Date: Fri, 30 Apr 2004 17:47:08 +0200
+From: Christian Kujau <evil@g-house.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+To: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: rsync'ed sources out of date?
+References: <40925BBF.1010708@g-house.de> <hh65bh4hgz.fsf@alsvidh.mathematik.uni-muenchen.de>
+In-Reply-To: <hh65bh4hgz.fsf@alsvidh.mathematik.uni-muenchen.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
 
-Christian Kujau writes:
+Jens Schmalzing schrieb:
+| Hi,
+|
+| Christian Kujau writes:
+|
+|
+|>so where do i get the most current copy of a 2.4/2.6 kernel for ppc?
+|
+|>From kernel.org.
 
-> so where do i get the most current copy of a 2.4/2.6 kernel for ppc?
+despite my assumption that something "rsync'ed" would be more current, i
+shall go now with the things from kernel.org...ok.
 
->From kernel.org.
+thanks,
+Christian.
+- --
+BOFH excuse #380:
 
-Regards, Jens.
-
---
-J'qbpbe, le m'en fquz pe j'qbpbe!
-Le veux aimeb et mqubib panz je pézqbpbe je djuz tqtaj!
+Operators killed when huge stack of backup tapes fell over.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
