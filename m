@@ -1,38 +1,31 @@
-Message-ID: <3ED3BDA0.3030208@embeddededge.com>
-Date: Tue, 27 May 2003 15:33:52 -0400
-From: Dan Malek <dan@embeddededge.com>
+Subject: RE: PATCH: arch/ppc/8xx_io_fec.c
 MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Jean-Denis Boyer <jdboyer@m5t.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: PATCH: arch/ppc/8xx_io_fec.c
-References: <AB5AF73EAF23304EA1B932174137CED702FB6D@m5tmail.m5t.com> <20030527165824.GG3453@ip68-0-152-218.tc.ph.cox.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Tue, 27 May 2003 15:47:04 -0400
+Message-ID: <AB5AF73EAF23304EA1B932174137CED7030368@m5tmail.m5t.com>
+From: "Jean-Denis Boyer" <jdboyer@m5t.com>
+To: "Dan Malek" <dan@embeddededge.com>,
+	"Tom Rini" <trini@kernel.crashing.org>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Tom Rini wrote:
+> Yes.  There are silicon revisions that require the FEC to
+> be enabled for the MDIO to operate.
 
-> Dan, do you see any problems with this?
+I tested on revisions B3 and D4, and did not see any problem.
+Anyway, fec_stop was already disabling the FEC,
+so if it was a problem, it would have broken there.
 
-Yes.  There are silicon revisions that require the FEC to
-be enabled for the MDIO to operate.  I don't remember if it was
-listed in errata or in some of the early supplements.  This code
-change may work in this particular case, but I know it's required
-for some parts.  I have not looked at the detail of the patch
-and the code it moves to see if this is done elsewhere.
+> The code formatting looks like crap, so that needs to be fixed.
 
-The code formatting looks like crap, so that needs to be fixed.
+Do you mean for the mixed tabs/spaces? :-( Sorry for that one...
+I will fix and resubmit as soon as everyone agree on the changes.
 
-It would be nice to hear from other people that have recently made
-changes for specific board/PHY combinations to see if this patch
-affects them.
+Regards,
 
-Thanks.
-
-
-	-- Dan
-
+Jean-Denis Boyer
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
