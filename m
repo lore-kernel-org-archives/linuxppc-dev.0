@@ -1,40 +1,26 @@
-Reply-To: <joakim.tjernlund@lumentis.se>
-From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
-To: "'Wolfgang Denk'" <wd@denx.de>,
-	"'Demke, Torsten'" <Torsten.Demke@fci.com>
-Cc: "'Linuxppc-Embedded (E-mail)'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: problem with standard libc on 8xx 
-Date: Fri, 27 Feb 2004 11:18:33 +0100
-Message-ID: <006301c3fd1b$0e58a2a0$0a01a8c0@LUMENTIS02>
+Message-ID: <903E17B6FF22A24C96B4E28C2C0214D70146BE7E@SR-BNG-EXC01.fci.com>
+From: "Hegde, Ashok" <Ashok.Hegde@fci.com>
+To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: How to test Serial data transfer beyond 115k up to 1.5Mbps
+Date: Fri, 27 Feb 2004 15:55:28 +0530
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-In-Reply-To: <20040227094329.89EFCC0655@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> In message
-> <9CFB9DA5261CD611A29B00508B78904807F880ED@ex-deu-munich02.forc
-> e.de> you wrote:
-> >
-> > I created my own root-fs for a MPC8xx platform
-> > using standard Debian packages (including libc).
-> > When I start the system, the init scripts hangs
-> ...
-> > I guess that the Debian libc uses floating point - which
->
-> Thi sis definitely one cause of the problem.  Another  one  might  be
-> optimization  for  a  incorrect  cache  line  size  (32 instead of 16
-> bytes).
+Hi All,
 
-Also, you must make sure you don't use any cache instructions such
-as dcbz. I believe the optimized memset function i glibc uses dcbz.
+I want to test my serial driver at higher speeds, How to test serial data
+transfer  up to 1.5Mbps speed.
+Is it zmodem protocol supports this speed?
+I am able to test it (using zmodem protocol )up to 115K, beyond this I am
+facing problem.
 
-The mpc8xx CPU has a HW bug which makes the TLB exceptions fail
-for most cache instructions. There is a workaround for this, but it
-is somewhat ugly. Search the embedded archives if you want to known more.
+Thanks in advance
 
-   Jocke
+Regards,
+Ashok
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
