@@ -1,41 +1,33 @@
-To: quan.zechang@zte.com.cn
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: any one can help me? problem about install ELDK 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 15 Oct 2003 14:42:37 +0800."
-             <OF4261606D.01F5B29B-ON48256DC0.00245225@com.cn>
-Date: Wed, 15 Oct 2003 15:12:03 +0200
-Message-Id: <20031015131208.659E9C59E4@atlas.denx.de>
+Message-ID: <3439AB3A99ECD5409F3A52ACF814744D158DA0@norcom2.norcom.net>
+From: Lokesh Kumar <kumar.lokesh@wrx-us.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: mpc8xx memory mapped 16550A uart garbage
+Date: Wed, 15 Oct 2003 09:42:04 -0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <OF4261606D.01F5B29B-ON48256DC0.00245225@com.cn> you wrote:
->
->   when i am installing the ELDK ,the install software print the error
-> message:
-> any one can tell me the method resolving the problem?thank you !
->
-> Do you really want to install into /home/achang/program_files/eldk
-> directory[y/n]?: y
->
-> Installing cross RPMs
->
-> /bin/sh: line 1: /home/achang/program_files/eldk/bin/rpm: No such file or
-> directory
+Hi,
+I got the serial.c from DENX linuxppc_2.4._devel tree which has support for
+16550A as memory mapped uart, and am using it as a module. I made
+modifications to match my board. When I start it, it correctly recognizes
+that I have a 16550A and at correct IRQ. However, when I open and send
+something through the port (I just do cat>/dev/ttySe0), I get garbage on the
+other side. My 16550 has a crystal of 3.6864MHz and the processor runs at
+49MHz. I thought that this kind of garbage problem is generally due to baud
+rate not set correctly. I see the divisor correctly calculated as
+3686400/16/9600 = 24 and being sent to 16550. What else could I be doing
+wrong?
 
-Obviously you did not download all the required files. At  least  the
-file "bin/rpm" seems to be missing.
 
-Best regards,
+Thanks
 
-Wolfgang Denk
+Lokesh Kumar
+Wireless Matrix USA Inc.
+703-262-4032
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Today is the yesterday you worried about tomorrow.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
