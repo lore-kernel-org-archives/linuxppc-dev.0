@@ -1,24 +1,22 @@
 Return-Path: <panto@intracom.gr>
 Received: from mailserv.intranet.gr (mailserv.intranet.GR [146.124.14.106])
-	by ozlabs.org (Postfix) with ESMTP id 4BE0767A6F
+	by ozlabs.org (Postfix) with ESMTP id F147467AC5
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  6 Apr 2005 16:12:09 +1000 (EST)
+	Wed,  6 Apr 2005 16:14:31 +1000 (EST)
 Received: from mailserv.intranet.gr (localhost [127.0.0.1])
-	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id j366G8g0012224
+	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id j366IVSP013378
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 6 Apr 2005 09:16:10 +0300 (EEST)
-Message-ID: <42537B19.70206@intracom.gr>
-Date: Wed, 06 Apr 2005 09:00:57 +0300
+	Wed, 6 Apr 2005 09:18:32 +0300 (EEST)
+Message-ID: <42537BA8.9060104@intracom.gr>
+Date: Wed, 06 Apr 2005 09:03:20 +0300
 From: Pantelis Antoniou <panto@intracom.gr>
 MIME-Version: 1.0
-To: Dan Malek <dan@embeddededge.com>
-References: <20050404191718.GA30281@logos.cnet>
-	<ba633c3356ff1ec71f53d4a0998132ff@embeddededge.com>
-In-Reply-To: <ba633c3356ff1ec71f53d4a0998132ff@embeddededge.com>
+To: Rune Torgersen <runet@innovsys.com>
+References: <DCEAAC0833DD314AB0B58112AD99B93B85933A@ismail.innsys.innovsys.com>
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B85933A@ismail.innsys.innovsys.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Paul Mackerras <paulus@samba.org>,
-	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: 8xx v2.6 TLB problems and suggested workaround
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: FCC Ethernet startup crash
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,52 +27,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dan Malek wrote:
+Rune Torgersen wrote:
+>>From: Dan Malek [mailto:dan@embeddededge.com] 
+>>On Apr 5, 2005, at 12:41 PM, Rune Torgersen wrote:
+>>
+>>
+>>>Without calling fcc_restart in the start, I get lots of 
+>>
+>>"eth0: tx queue
+>>
+>>>full!." messages.
+>>
+>>Do you tftp boot your kernel using the boot rom?  Does the
+>>boot rom disable the Ethernet before calling the kernel?
 > 
-> On Apr 4, 2005, at 3:17 PM, Marcelo Tosatti wrote:
 > 
->> Problem is that the "dcbst" instruction will, _sometimes_ (the 
->> failure/success rate is about 1/4
->> with my test application) fault as a _write_ operation on the data.
-> 
-> 
-> Oh, geeze .... It's all coming back to me now ....
-> 
-> The 8xx cache operations don't always operate as defined in the PEM.
-> There are likely to be some archive discussions within the Freescale
-> knowledge data base that describe the different behaviors I've seen
-> with the chip variants and revisions.  I can't find any of those e-mail
-> discussions, so I'll try to recall from memory.
-> 
-> The PEM cache instructions are all implemented in a microcode that
-> uses the 8xx unique cache control SPRs.  Depending upon the state
-> of the cache and MMU, it seems in some cases the EA translation is
-> subject to a "normal" protection match instead of a load operation match.
+> Yes, I tftp the kernel, using U-Boot (1.1.2 CVS Head as of 11-20-04).
+> Haven't looked at the code, but I think it disablesd the FCC Ethernets
+> (Have seen discussions about htat on u-boot mailing list before)
 > 
 
-OK, maybe we should make 8xx specifics cache flushing functions, that
-use the SPR, and forget about this mess.
+U-boot definately disables the ethernets. Or at least it must.
 
-However is this problem also triggered by user space? If it is we should
-try to maintain compatibility...
-
-> The behavior of these operations isn't consistent across all of the 8xx
-> processor revisions, especially with early silicon if people are still
-> using those.  During conversations with Freescale engineers, it seems
-> the only guaranteed operation was to use the 8xx unique SPRs, but
-> I think I only did that in 8xx specific functions.
-> 
-> We have way too much code in the TLB exception handlers already,
-> so let's just try a tlbia of the EA in the update_mmu_cache, with an #ifdef
-> for the 8xx.  It seems if the dcbst causes a TLB miss during execution,
-> it does the right thing.  We may want to make the dcbxxx instructions some
-> kind of macro, so on 8xx we can include such operations in otherwise
-> "standard" software.
-> 
-> Thanks for the great work!
-> 
-> 
->     -- Dan
+> The patch Stefan Nickl gave to me works perfectly, and all it does is
+> basically move the fcc_restart.
+> The kernel was still calling fcc_restart twiche per FCC at startup (one
+> time on init_fcc_startup, and then again in fcc_open), now it just calls
+> it twice in fcc_open. Seems to work.
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 > 
 > 
 > 
