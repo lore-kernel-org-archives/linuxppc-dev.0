@@ -1,66 +1,35 @@
-Message-ID: <3BF0355D.6512A283@iiic.ethz.ch>
-Date: Mon, 12 Nov 2001 21:47:25 +0100
-From: Michel =?iso-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
-Reply-To: daenzer@debian.org
+Message-ID: <3BF0371F.8040575B@linux-m68k.org>
+Date: Mon, 12 Nov 2001 21:54:55 +0100
+From: Roman Zippel <zippel@linux-m68k.org>
 MIME-Version: 1.0
-To: "Jason E. Stewart" <jason@openinformatics.com>
-Cc: linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org
-Subject: Re: IrDA-patched binaries
-References: <Pine.LNX.4.33.0111012312360.888-100000@auryn.jones.dk>
-		<87y9lc6h13.fsf@openinformatics.com> <3BEF9DA6.14AF8E49@iiic.ethz.ch> <87vggg2bbu.fsf@openinformatics.com>
-Content-Type: text/plain; charset=iso-8859-1
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Jun Sun <jsun@mvista.com>,
+	"Maciej W. Rozycki" <macro@ds2.pg.gda.pl>,
+	Linux/MIPS Development <linux-mips@oss.sgi.com>,
+	Linux/m68k <linux-m68k@lists.linux-m68k.org>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
+	rz@linux-m68k.org
+Subject: Re: [RFC] generic MIPS RTC driver
+References: <Pine.GSO.4.21.0111122055010.10720-100000@mullein.sonytel.be>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"Jason E. Stewart" wrote:
+Hi,
+
+Geert Uytterhoeven wrote:
+
+> > Geert, what is the abstraction they used?
 >
-> "Michel Dänzer" <michdaen@iiic.ethz.ch> writes:
->
-> > "Jason E. Stewart" wrote:
-> > >
-> > > "Jonas Smedegaard" <dr@jones.dk> writes:
-> > >
-> > > > I have made available kernel and irda-packages with the
-> > > > irda-hacks added to make .
-> > >
-> > > I was totally thrilled to see this. Because of reiserfs, I need to
-> > > compile my own kernel, so I grabbed the patches a couple of weeks
-> > > ago. I just had time to look at them and it seems that
-> > > parameters.h has changed a *lot* since this patch was made.
-> > >
-> > > >From BenH's latest kernel:
-> > >
-> > > typedef union {
-> > >         char   *c;
-> > >         __u32   i;
-> > >         __u32 *ip;
-> > > } irda_pv_t;
-> >
-> > Yup, 2.4.15-pre2 has my better fix. :)
->
-> sorry Michel, I don't understand. Is the irda_pv_t listed above your
-> fix?
+> At first sight, we only use get_rtc_time() and mach_hwclk().
 
-Yes, it's in Linus' 2.4.15-pre2 and thus of course also in Ben's.
+Over the weekend I changed it into set_rtc_time()/get_rtc_time(), which
+are now defined in <asm/rtc.h>, so mach_hwclk() is gone in the generic
+part.
+Another feature is the emulation of the timer interrupt, although I have
+no idea which program is using this. Richard?
 
-
-> > Now we're working on fixing macserial such that the 'cat /dev/ttyS1
-> > trick' isn't needed anymore...
->
-> Hmmm.. Sorry, must have missed that one. What is the trick, and why is
-> it needed?
-
-The macserial driver was missing a delay so you had to open the device
-(most easily with cat) for a while before running irattach, or it
-wouldn't work.
-
-I've verified an idea from Ben for a possible solution today, he'll
-hopefully integrate something soon.
-
-
---
-Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
-XFree86 and DRI project member   /  CS student, Free Software enthusiast
+bye, Roman
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
