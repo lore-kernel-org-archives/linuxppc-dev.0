@@ -1,90 +1,28 @@
-Date: Fri, 9 Feb 2001 18:28:40 -0500 (EST)
-From: Hans - Dulimarta <dulimart@egr.msu.edu>
-To: Hua Ji <hji@netscreen.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: About eabi and stack
-In-Reply-To: <A33AEFDC2EC0D411851900D0B73EBEF7063EB6@NAPA>
-Message-ID: <Pine.GSO.4.30.0102091820340.6-100000@mulder>
+Message-ID: <3A847F6E.245B3625@softhome.net>
+Date: Fri, 09 Feb 2001 17:38:22 -0600
+From: Naushit Sakarvadia <naushit@softhome.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linux PPC embedded mailing group <linuxppc-embedded@lists.linuxppc.org>
+Subject: Little Endian to Big Endian 
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, 9 Feb 2001, Hua Ji wrote:
+Hello,
 
-> Date: Fri, 9 Feb 2001 15:08:05 -0800
-> From: Hua Ji <hji@netscreen.com>
-> To: linuxppc-embedded@lists.linuxppc.org
-> Subject: About eabi and stack
->
->
->  I got confused by the EABI stack usage. Help needed. Thanks in advance.
->
-> What I did is:
->
-> * Wrote a dummy c function and got its asm codes like below with objdump
-> utility.
+I am in need to write most efficint little endian to big endian
+conversion function.
+I know it can be done best in assembly with one instruction. can
+somebody tell me what instruction will do that?
 
-> * From EABI convention, I can understand that testStack function first
-> move its stack pointer %r1 16 words down and meantime save the old
-> stack position onto the lowest address. However, I can't understand
-> where it puts the lr(link register). I can't understand the "stw r0,
-> 20(r1)" instruction. I THOUGHT, we **only** moved the stack pointer
-> **-16** down. How can we save the lr value with "20(r1)"??
->
-> Hua
->
-> ---------------------------------
->
->  void testStack(){
->
->
-> 	testFunction();
-> }
->
-> ---------------------------------
->  <testStack>:
->
->  2b8:	94 21 ff f0 	stwu	r1,-16(r1)
->  2bc:	7c 08 02 a6 	mflr	r0
->  2c0:	93 e1 00 0c 	stw	r31,12(r1)
->                         ***************
->  2c4:	90 01 00 14 	stw	r0,20(r1)   ???? Where 20(r1) will point
-> to??
->                         ***************
+if possible if you can write small assebly fuction for me then it would
+be great because I dont know anything in Powerpc assembly nor I have
+some sample code to follow..
 
-
-According to the EABI standard, LR will be saved in the caller's stack
-frame (that is the function which calls testStack()).
-
-Before entry to testStack() SP points to the top of testStack() caller.
-Suppose that this addr is A. After execution of stwu, SP will point to
-A-16 (4 words "above" [lower addr] the caller's stack frame).
-
-The stw at 2c4 will store the LR to A + 20 - 16 (= A+4) which is one word
-below the top of the caller's stack frame.
-
-
->  2c8:	7c 3f 0b 78 	mr	r31,r1
->  2cc:	48 00 00 01 	bl	2cc <testStack+0x14>
->
-> /* Below is to restrore stack and lr*/
->  2d0:	81 61 00 00 	lwz	r11,0(r1)
->  2d4:	80 0b 00 04 	lwz	r0,4(r11)
->  2d8:	7c 08 03 a6 	mtlr	r0
->  2dc:	83 eb ff fc 	lwz	r31,-4(r11)
->  2e0:	7d 61 5b 78 	mr	r1,r11
->  2e4:	4e 80 00 20 	blr
->
->
-
---
-Hans Dulimarta, Ph.D. |                dulimart@computer.org
-Research Associate    |     http://www.egr.msu.edu/~dulimart
-P: 517-432-7589       |     http://corelinux.sourceforge.net
-F: 760-281-7691     http://freshmeat.net/projects/snapsource
-Elec. & Comp. Engg., Mich. State Univ., E. Lansing, MI 48824
+Thanks
+Regards,
+Naushit
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
