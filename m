@@ -1,30 +1,42 @@
-Message-ID: <000701c39911$53d15f70$4844900a@hydingnb1>
-From: "hyding" <nari_dhy@nari-china.com>
-To: "linuxppc-embed" <linuxppc-embedded@lists.linuxppc.org>
-Subject: mount root on the ml300 board
-Date: Thu, 23 Oct 2003 10:56:59 +0800
+Message-Id: <200310230755.h9N7tLIr024281@blooper.utfors.se>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Joakim Tjernlund <Joakim.Tjernlund@lumentis.se>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: __restore_flags shows in kernel profile
+Date: Thu, 23 Oct 2003 09:55:21 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi,
-    I am debugging MontaVista linux pro3.0(kernel 2.4.28) on the ml300
-board. I use IBM MicroDrive 1GB card to configure the FPGA and act as
-root fs. But the boot stops and displays the following:
-...
-block: 128 slots per queue, batch=32
-Partition check:
- xsysacea: xsysacea1 xsysacea2 xsysacea3
-System ACE at 0xCF000000 mapped to 0xC900F000, irq=9, 1052352KB
-Kernel panic: I have no root and I want to scream
- <0>Rebooting in 180 seconds..
-    There are 3 partitions in the CF card. The 1st is the fat12. The 2st
-is swap and the 3rd is the root. Kernel command line: console=ttyS0,9600
-root=/dev/sysace3 rw
-    Did someone have the problem? Any hints will be appreciable.
+I did a kernel profile(included below) of the bootup of my custom MPC862 board and I
+noticed that __restore_flags gets a very high count. I am suprised that such a small
+assembler routine gets such a high count. __cli, _save_flags_ptr and __sti are much lower.
+A small test program with a tight select loop on fds 0,1 or 2 also makes __restore_flags
+go wild.
+Anyone know why?
 
-Thanks!
+Also, I don't understand what all these nops in __restore_flags,
+__save_flags_ptr, __cli and __sti are for. Anyone know?
+
+  Jocke
+
+[SNIP]
+    3 __cli                                      0.0375
+    3 __save_flags_ptr                     0.0375
+    32 __sti                                     0.4000
+[SNIP]
+    82 memcpy                                     0.6833
+   101 zlib_inflate_blocks                        0.0309
+   108 __flush_dcache_icache                  3.0000
+   115 __restore_flags                            1.0648
+   139 cpm_iic_read                               0.1746
+   181 copy_page                                  2.2625
+   262 huft_build                                 0.1845
+   401 crc32_le                                   1.4120
+   714 zlib_inflate_fast                          0.5833
+  6186 idled                                    110.4643
+  9649 total                                      0.0078
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
