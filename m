@@ -1,30 +1,24 @@
-From: Dave Pegler <dwp@cambridgebroadband.com>
+Message-ID: <39D35D6C.E7542B4E@mvista.com>
+Date: Thu, 28 Sep 2000 11:02:04 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
+To: Ruedi.Hofer@ascom.ch
+CC: linuxppc-embedded@lists.linuxppc.org, kernel@linux01.hasler.ascom.ch
+Subject: Re: VxWorks bootloader & PowerQUICC II, Booting the kernel
+References: <0G1L0010X4GL0O@pmdf-it.hasler.ascom.ch>
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <14803.23469.74630.600419@localhost.localdomain>
-Date: Thu, 28 Sep 2000 15:54:37 +0100 (BST)
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: mbxroot.min.tgz and mbxroot.full.tgz
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Can anyone tell me where I can get the minimal and complete root file
-systems from. I've tried from :
+Ruedi.Hofer@ascom.ch wrote:
 
-ftp://linuxppc.cs.nmt.edu/pub/linuxppc/embedded/
+> Unfortunately, this link doesn't work anymore! Do you mind sending
+> a copy of this file directly to me?
 
-but the "linuxppc" directory seems to have vanished
+Sorry, try ftp.mvista.com/pub/Area51/ppc-8xx/vxhack.c
 
-I've also tried :
 
-http://www.ppc.kernel.org/pub/linuxppc/embedded/
-
-but the machine is non-existent.
-
-Thanks,
-
-Dave.
-
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
