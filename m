@@ -1,30 +1,29 @@
-Mime-Version: 1.0
-Message-Id: <v04210100b57281368226@[212.6.77.10]>
-In-Reply-To: <20000617105556.A20227@drow.them.org>
-References: <20000617010541.B508@olis.north.de>
- <20000616233416.1720@mailhost.mipsys.com>
- <20000617022046.C508@olis.north.de> <20000617105556.A20227@drow.them.org>
-Date: Sun, 18 Jun 2000 15:48:54 +0200
+Date: Sun, 18 Jun 2000 09:53:03 -0500 (CDT)
+From: Ramprasad Rao <ramp@oddjob.uchicago.edu>
 To: linuxppc-dev@lists.linuxppc.org
-From: Claus Enneper <cl.en@gmx.net>
-Subject: Re: quik-1.3.1and 2.2.16_pmac-stable ?
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Subject: 2.4.0 - kernel status Q?
+Message-ID: <Pine.GSU.4.05.10006180944010.22030-100000@oddjob.uchicago.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->
->
->Grab the .orig.tar.gz and .diff.gz from a Debian mirror (under
->dists/potato/main/source/base/*).
+I was wondering if any of active ppc kernel developers can give a
+brief summary on the status of the 2.4.0 test kernel vis-a-vis the
+2.2.15pre kernels on linux-pmac-stable. My question is the following -
 
-yes, did it, patched, and compiled fine.
-but I did not check the source, so got errors like 'unable to open filesystem'.
-is it possible that quik moved to chrp in an pmac_pb3400_incompatible manner?
-anyway, for me user it's not usable ( I was happy with quik since 1998);
-I will give bootx-1.2.2 a try .
+Are the changes to the ppc tree on linux-pmac-stable incorporated into
+the linux-pmac-devel?
 
---
-Yours, ce
+I'm currently very happy with the kernels I compile from pmac-stable.
+My only complaint is with the USB backport which is near 2.3.37 I
+believe. This does not seem to support the usb-storage devices very
+well. However the pmac-devel kernel did boot fine and I was able to
+mount a USB zip 250, format to it and write to it as well without
+a problem.
+
+Thanks in advance - Ramprasad
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
