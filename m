@@ -1,97 +1,146 @@
-Date: Fri, 5 Jan 2001 10:49:15 +0530 (IST)
-From: "Srinivas Rao.M" <msrao@vxl.co.in>
-To: Jerry Van Baren <vanbaren_gerald@si.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Critical section - pSOS+
-In-Reply-To: <4.3.2.20010104155613.00be8a20@falcon.si.com>
-Message-ID: <Pine.SCO.3.91.1010105104420.9387A-100000@vayudoot>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Fri, 5 Jan 2001 10:13:23 +0100
+From: christophe barbe <christophe.barbe@inup.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: gcc, floating point and linux kernel module
+Message-ID: <20010105101323.B9136@pc8.inup.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Jerry,
-Thanks for your reply.
-   I have the splx() routine given from pSOS+, I am also having the
-wrapper code which calls the psos 's system call to disable the
-preemption of the task. I can do this successfully. But My problem is,
-how can i implement the interrupts enabling/disabling mechanism at the
-task level.
+Hello,
 
- Present mechanism has got a loophole: whenever we disable interrupts any
-other task enables it. I want to have a mechanism, which is there UNIX.
-something like splnet,splclock,splhigh,splimp,splx, at each task level.
+I'm compiling a kernel module for the linux 2.2.18 on a PPC target (MPC750) with the following gcc :
+gcc version egcs-2.91.66 19990314 (egcs-1.1.2 release)
 
-any suggestions...
--Srini...
+The resulting object uses FPU opcode to do optimization for 64 bits variables. I've add at the end of this mail the command line to compile one of the object included in the module which uses FPU, the guilty part of the code and the generated asm.
 
+It's a bad thing to use FPU in the kernel mode (under linux), so my question is is there a way to turn of FPU usage ?
 
+Thanks,
+Christophe
 
-On Thu, 4 Jan 2001, Jerry Van Baren wrote:
+--------------------
 
->
-> I forgot if splx() returns the current value of the interrupt enable
-> bit.  If it doesn't, modify it to do so.  If I recall correctly, the
-> routine is in the BSP (been a little while since I messed with PPC
-> pSOS).  If I recall wrongly, you may need to write your own version of
-> splx(), naming it something else to avoid name collisions, and use it
-> instead of the provided splx().
->
-> Once your splx() routine returns the current value of the EE flag, save
-> it in a variable, and restore the value when you exit your critical region.
->
-> Something like...
->
-> void foo()
-> {
->      int ee;
->
->      ee = splix(1);      /* mask interrupts */
->      bar()
->      splx(ee);           /* restore the interrupt level */
-> }
->
-> gvb
->
->
-> At 09:37 AM 1/4/01 +0530, Srinivas Rao.M wrote:
->
-> >Hi to all,
-> >
-> >  I am sorry, This question is not releated to the list directly.
-> >
-> >  We have a custom board built using MPC860 processor and running the
-> >pSOS+ kernel. We are running a multitasking application on this. we are
-> >facing a problem with the critical section.
-> >we have in pSOS+, splx(1) and splx(0) calls for disabling and enabling the
-> >interrupts respectively. Having multiple tasks running on the kernel,
-> >suppose if one task disables the interrupt by calling splx(1),
-> >The other task can enable the interrupts back to the old posture by
-> >calling splx(0). Hence the critical section code is left in the non
-> >critical section area. Unlike UNIX, pSOS+ doesnot provide, the interrupts
-> >locking (and unlocking) mechanism at the task level.
-> >In such contexts how can we solve this problem.
-> >
-> >Thanks in advance.
-> >Srini...
-> >
-> >--
-> >
-> >The beginning of knowledge is the discovery of something we do not
-> >understand.
-> >-Frank Herbert
-> >(contributed by Chris Johnston)
-> >
->
->
->
+gcc -I"required_include_path" -D__KERNEL__ -DMODULE -O -g -DDEBUG -Wall -Wstrict-prototypes -c dir.c -o dir.o
+
+--------------------
+
+STATIC int do_filldir(gfs_inode_t *dip, int64 *f_pos, void *dirent,
+		      gfs_filldir_t filldir, osi_buf_t *bh, int index, uint64 leaf_no)
+{
+  gfs_dirent_t *dent;
+  gfs_leaf_t *leaf = NULL;
+  int type, len, error;
+  gfs_dirent_t **sorted_dents; /* Entries from current dent are sorted and
+				  run throught the filldir fxn */
+  uint16 dent_no, cur_dent_no;
+  uint32 entries = 0;
+  /* variables used to calculate things for the linked leaves */
+  osi_buf_t *leafbh;
+  uint64 orig_leaf_no = leaf_no;           << -- here comes the problem
+
+  type = gfs_dirent_first(bh, &dent);
+
+...
+    leaf_no = orig_leaf_no;                << -- here's why
+
+...
+
+  return 0;
+
+}
+
+--------------------
+
+do_filldir:
+.stabn 68,0,1281,.LM659-do_filldir
+.LM659:
+	stwu 1,-144(1)
+	mflr 0
+	mfcr 12
+	stfd 31,136(1)
+	stw 18,80(1)
+	stw 19,84(1)
+	stw 20,88(1)
+	stw 21,92(1)
+	stw 22,96(1)
+	stw 23,100(1)
+	stw 24,104(1)
+	stw 25,108(1)
+	stw 26,112(1)
+	stw 27,116(1)
+	stw 28,120(1)
+	stw 29,124(1)
+	stw 30,128(1)
+	stw 31,132(1)
+	stw 0,148(1)
+	stw 12,76(1)
+	mr 28,3
+	mr 24,4
+	mr 21,5
+	mr 20,6
+	mr 26,7
+	mr 22,8
+	mr 30,9
+	mr 31,10
+.stabn 68,0,1282,.LM660-do_filldir
+.LM660:
+.LBB115:
+.stabn 68,0,1288,.LM661-do_filldir
+.LM661:
+	li 27,0
+.stabn 68,0,1291,.LM662-do_filldir
+.LM662:
+	stw 30,48(1)
+	stw 31,52(1)
+	lfd 0,48(1)     << ------------------  FPU
+	fmr 31,0        << ------------------  FPU
+.stabn 68,0,1295,.LM663-do_filldir
+.LM663:
+	mr 3,26
+	addi 4,1,20
+	bl gfs_dirent_first
+	mr 25,3
+
+...
+
+.L1011:
+.stabn 68,0,1453,.LM749-do_filldir
+.LM749:
+.LBE115:
+	lwz 0,148(1)
+	lwz 12,76(1)
+	mtlr 0
+	lwz 18,80(1)
+	lwz 19,84(1)
+	lwz 20,88(1)
+	lwz 21,92(1)
+	lwz 22,96(1)
+	lwz 23,100(1)
+	lwz 24,104(1)
+	lwz 25,108(1)
+	lwz 26,112(1)
+	lwz 27,116(1)
+	lwz 28,120(1)
+	lwz 29,124(1)
+	lwz 30,128(1)
+	lwz 31,132(1)
+	lfd 31,136(1)  << - FPU : the variable is placed in a FP register
+	mtcrf 32,12
+	la 1,144(1)
+	blr
 
 --
 
-There is one thing even more vital to science than intelligent methods; and
-that is, the sincere desire to find out the truth, whatever it may be.
--Charles Sanders Pierce
-
+Christophe Barbé
+Software Engineer
+Lineo High Availability Group
+42-46, rue Médéric
+92110 Clichy - France
+phone (33).1.41.40.02.12
+fax (33).1.41.40.02.01
+www.lineo.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
