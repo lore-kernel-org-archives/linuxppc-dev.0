@@ -1,49 +1,39 @@
-Reply-To: <zjzhou@newrocktech.com>
-From: "John Zhou" <zjzhou@newrocktech.com>
-To: "'Wolfgang Denk'" <wd@denx.de>,
-	"'Dale Harris'" <rodmur@maybe.org>
-Cc: "'Mailing List: linuxppc-dev'" <linuxppc-dev@lists.linuxppc.org>
-Subject: RE: A question on kernel clock: 
-Date: Wed, 31 Dec 2003 12:15:50 +0800
-Message-ID: <000201c3cf54$c70bd5f0$b702a8c0@newrock2>
+Message-ID: <014f01c3cf82$81fc4e80$3cc8a8c0@ANOSP>
+From: "Colin Leroy" <colin@colino.net>
+To: <linuxppc-dev@lists.linuxppc.org>,
+	<debian-powerpc@lists.debian.org>
+Subject: Userland tool for mouse buttons emulation
+Date: Wed, 31 Dec 2003 10:43:12 +0100
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-In-reply-to: <20031230214037.77A1CC12DD@atlas.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Sorry! It should be usleep() used in user space!
+Hi everyone,
 
-Best Regards,
-John
+I once submitted a patch about mouse button emulation, and BenH
+told me that this emulation shouldn't be done in the kernel but
+rather by a userland tool.
 
-> run on the board. But, my "nsleep()" is not exactly. So, I want to
-> realize the timer mechanism of Linux used.
+I wrote a little mouseemu program to do that. It replaces the
+kernel emulation (be sure to
+echo 0 > /proc/sys/dev/mac_hid/mouse_button_emulation
+before testing it ;-)).
 
-> (1) which timer is used for nsleep?
+You can specify a modifier+key for both middle and right buttons,
+which means that you can use Command-click or Ctrl-click or whatever
+you want instead of just a key.
 
-I have not the slightest idea. I don't know of any  standard  funtion
-with that name - neither in user space nor in kernel code.
+(btw, it works only with kernel 2.6 yet).
 
------Original Message-----
-From: Wolfgang Denk
-Sent: Wednesday, December 31, 2003 5:41 AM
-Subject: Re: A question on kernel clock:
+You can download it at
+http://www.geekounet.org/powerbook/files/mouseemu.tar.gz
 
-In message <20031230210713.GC5005@maybe.org> you wrote:
->
-> > > (1) which timer is used for nsleep?
-> >
-> > I have not the slightest idea. I don't know of any standard funtion
-> > with that name - neither in user space nor in kernel code.
->
-> Perhaps he means nanosleep().
-
-Perhaps. But then the definition of nanosleep() says that it will cause
-a delay of "at least the time specified in *req", i. e. the upper bound
-is not even specified. But the OP seemed to assume a strict timing, so
-maybe it was yet another function.
+Hoping this helps,
+--
+Colin
+Ne disez pas disez, mais disez dites
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
