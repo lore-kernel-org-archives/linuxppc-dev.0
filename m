@@ -1,135 +1,82 @@
-Message-Id: <199901091329.OAA26473@denx.muc.de>
-To: linuxppc-dev@lists.linuxppc.org
-From: Wolfgang Denk <wd@denx.muc.de>
-Subject: Re: MBX860: How to boot with initrd ? 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sat, 09 Jan 1999 00:49:17 +0100."
-             <199901082349.AAA13864@denx.muc.de>
-Date: Sat, 09 Jan 1999 14:29:20 +0100
+Date: Sat, 9 Jan 1999 18:19:15 +0100
+To: Paul Mackerras <paulus@cs.anu.edu.au>, linuxppc-dev@lists.linuxppc.org,
+        cort@persephone.cs.nmt.edu
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Interesting stuffs & feature bits
+Message-Id: <19990109181915.002685@smtp.calvacom.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-F'up to my own message:
+I've done some hacking with MacsBug on MacOS today to understand
+something related to the serial ports when I found those things:
 
-In message <199901082349.AAA13864@denx.muc.de> I wrote:
-> 
-> I'm trying to boot with `initrd' support on a MBX860 system.  I  know
-...
-> 	Linux/PPC load: console=tty0 console=ttyS0,9600n8
-> 	Uncompressing Linux...done.
-> 	Now booting the kernel
-> 
-> Then the system hangs, and I have to reset it.
+ - The FCR bits in ohare.h for SCC channel A and B enable seems to be
+wrong for the wallstreet (heathrow) and eventually other machines too.
+They are currently defined this way:
 
-I guess I should have mentioned that I know that  I  have  to  add  a
-"root=/dev/ram"  to  the  command  line  when  booting when using the
-generic code. I have modified arch/ppc/boot/misc.c a bit; maybe  this
-in of general interest:
+#define OH_SCCA_IO		0x2000
+#define OH_SCCB_IO		0x4000
+#define OH_SCC_ENABLE		0x200
 
---- arch/ppc/boot/misc.c.ORIG	Thu Dec 17 11:39:53 1998
-+++ arch/ppc/boot/misc.c	Sat Jan  9 14:05:25 1999
-@@ -51,7 +51,15 @@
- char	*cmd_line = cmd_buf;
- 
- #if defined(CONFIG_MBX) || defined(CONFIG_FADS)
-+#if defined(CONFIG_ROOT_NFS)
- char	*root_string = "root=/dev/nfs";
-+#else
-+# if defined(CONFIG_BLK_DEV_INITRD)
-+char	*root_string = "root=/dev/ram";
-+# else
-+char	*root_string = "";
-+# endif
-+#endif
- char	*nfsaddrs_string = "nfsaddrs=";
- char	*nfsroot_string = "nfsroot=";
- char	*defroot_string = "/sys/mbxroot";
+Apparently, on mt heathrow-based PowerBook, channel A is 0x4000 and
+channel B is 0x8000 but MacOS always enable bit at 0x2000 when setting
+one of those.
+So, in the array of feature, the mask for channel A should be 0x00004200
+and for channel B, it should be 0x00008200. So I guess this bit is wrong
+too. The result for heathrow would be:
 
+#define HEATHROW_SCCA_IO		0x4000
+#define HEATHROW _SCCB_IO		0x8000
+#define HEATHROW _SCC_ENABLE		0x2000
 
-And, which makes things even more interesting: there was one kernel
-where I was able to boot from the initrd; however, I got some error
-messages from the hard disk:
+ - For port B (infra-red), MacOS sends a PMU command when opening and
+closing the port. This is the 0x11 command, currently defined as
+PMU_BACKLIGHT_CTRL. It looks like this command can be used to control the
+power of some pieces of the motherboard. I think it's the IR LED power
+which is controlled this way. The command sent by MacOS has one parameter
+which is 0x84 when opening the port and 0x04 when closing it. This value
+is not calculated from a previous value with a mask or anything like
+that, so it's probably not a bitmask of things to enable/disable. I think
+the top-most bit means enable/disable, the bottom bits mean what to
+enable/disable: 0x4 for the IR port, and 0x1 for the backlight power (at
+least on Paul's 3400, I didn't test it here).
+We should rename the constant to PMU_POWER_CTRL.
 
-    Linux/PPC load: console=tty0 console=ttyS0,9600n8 root=/dev/ram
+I'm preparing some patches with some of those changes and more macserial
+fixes (I found bugs in the way I turn the modem on/off). I would however
+like someone with a OHard based machine to check the FCR bits. In my
+patches, I will only change the heathrow ones until someone have tested
+(both are separated in features.c)
 
-    XXX Linux/PPC load: console=tty0 console=ttyS0,9600n8 root=/dev/ram
-    Uncompressing Linux...done.
-    Now booting the kernel
-    Linux version 2.2.0-pre5 (wd@denx.muc.de) (gcc version egcs-2.91.60 19981201 (egcs-1.1.1 release)) #3 Sat Jan 9 11:43:50 MET 1999
-    Boot arguments: console=tty0 console=ttyS0,9600n8 root=/dev/ram root=/dev/nfs nfsroot=/sys/mbxroot
-    time_init: decrementer frequency = 150000000/60
-    Calibrating delay loop... 39.63 BogoMIPS
-    Memory: 34996k available (592k kernel code, 744k data, 28k init) [c0000000,c2400000]
-    POSIX conformance testing by UNIFIX
-    PCI: Probing PCI hardware
-    Linux NET4.0 for Linux 2.2
-    Based upon Swansea University Computer Society NET3.039
-    NET4: Unix domain sockets 1.0 for Linux NET4.0.
-    NET4: Linux TCP/IP 1.0 for NET4.0
-    IP Protocols: ICMP, UDP, TCP, IGMP
-    Starting kswapd v 1.5 
-    CPM UART driver version 0.02
-    ttyS00 at 0x0280 is a SMC
-    ttyS01 at 0x0380 is a SMC
-    ttyS02 at 0x0100 is a SCC
-    ttyS03 at 0x0200 is a SCC
-    pty: 256 Unix98 ptys configured
-    RAM disk driver initialized:  16 RAM disks of 4096K size
-    hdc: probing with STATUS(0x80) instead of ALTSTATUS(0x08)
-    hdc: probing with STATUS(0x80) instead of ALTSTATUS(0x08)
-    hdc: no response (status = 0x80), resetting drive
-    hdc: probing with STATUS(0x80) instead of ALTSTATUS(0x08)
-    hdc: no response (status = 0x80)
-    hdg: probing with STATUS(0x24) instead of ALTSTATUS(0x08)
-    hdg: probing with STATUS(0x24) instead of ALTSTATUS(0x08)
-    hdg: no response (status = 0xa1), resetting drive
-    hdg: probing with STATUS(0x24) instead of ALTSTATUS(0x08)
-    hdg: no response (status = 0xa1)
-    hdh: probing with STATUS(0x24) instead of ALTSTATUS(0x08)
-    hdh: probing with STATUS(0x24) instead of ALTSTATUS(0x08)
-    hdh: no response (status = 0xa1), resetting drive
-    hdh: probing with STATUS(0x24) instead of ALTSTATUS(0x08)
-    hdh: no response (status = 0xa1)
-    hdc: probing with STATUS(0x80) instead of ALTSTATUS(0x08)
-    hdc: probing with STATUS(0x80) instead of ALTSTATUS(0x08)
-    hdc: no response (status = 0x80), resetting drive
-    hdc: probing with STATUS(0x80) instead of ALTSTATUS(0x08)
-    hdc: no response (status = 0x80)
-    hdg: probing with STATUS(0x24) instead of ALTSTATUS(0x08)
-    hdg: probing with STATUS(0x24) instead of ALTSTATUS(0x08)
-    hdg: no response (status = 0xa1), resetting drive
-    hdg: probing with STATUS(0x24) instead of ALTSTATUS(0x08)
-    hdg: no response (status = 0xa1)
-    hdh: probing with STATUS(0x24) instead of ALTSTATUS(0x08)
-    hdh: probing with STATUS(0x24) instead of ALTSTATUS(0x08)
-    hdh: no response (status = 0xa1), resetting drive
-    hdh: probing with STATUS(0x24) instead of ALTSTATUS(0x08)
-    hdh: no response (status = 0xa1)
-    CPM ENET Version 0.1, 08:00:3e:26:38:4a
-    RAMDISK: Compressed image found at block 0
-    EXT2-fs warning: checktime reached, running e2fsck is recommended
-    VFS: Mounted root (ext2 filesystem).ê
+If you want to test on your machine, use MacsBug, break on the traps
+AOn(), AOff(), BOn() and BOff() (they control the enabling of the serial
+port). I suggest using the TVB command for breaking in PPC code. Then,
+open the serial ports, and trace.
+For stepping, you have to step-into (Cmd-S in macsbug) until you reach
+the code that plays with the SCC. On my machine running MacOS 8.5.1, it
+looks like this:
 
-    ### Initial RAM disk starting interactive shell ###
-    bash# 
+ - First, you break into a PPC glue that calls CallOSTrapUniversalProc.
+Step _into_ this function
+ - You get in 68k code. Obviously, it looks like code that test the
+function selector and jumps to appropriate code via an indexed JSR (the
+JMP is easy to find, on my machine, it's indexed on A0 and D1). Step into
+it and continue stepping until you reach a second indexed JSR. Step into
+it again and that's it.
 
-Ok, so I removed the IDE support from  the  configuration  because  I
-don't  need  it right now; the kernel did not boot any more. Restored
-the old configuration - didn't boot either.
+Once you have found the code for AOn(), the others (AOff(), BOn() and
+BOff()) are just after (I don't remember in which order).
 
-Since then, all kernels hang the same way, and I don't have an idea
-what might be wrong..
-
-Wolfgang
 
 -- 
-Phone:  (+49)-89-95720-110   Fax: (+49)-89-95720-112   wd@denx.muc.de
-Office: (+49)-89-722-27328               Wolfgang.Denk@ICN.Siemens.DE
-Harrisberger's Fourth Law of the Lab:
-	Experience is directly proportional to the
-	amount of equipment ruined.
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
