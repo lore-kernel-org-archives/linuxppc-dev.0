@@ -1,40 +1,27 @@
-Message-Id: <199904132025.QAA00936@mail-2.global2000.net>
-Date: Tue, 13 Apr 1999 16:25:30 -0400
-Subject: Re: quik vs. bootx
-From: "AArthur" <arthur99@global2000.net>
-To: Jim Somerville <somer@nortelnetworks.com>
-CC: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+From: Gerd Knorr <kraxel@goldbach.in-berlin.de>
+Date: Tue, 13 Apr 1999 22:43:58 +0200
+Message-Id: <199904132043.WAA01310@macintoy.masq.in-berlin.de>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: ggi and frame buffer
+In-Reply-To: <Pine.LNX.4.10.9904122007520.23848-100000@beer.pub.umich.edu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> None of my systems have MacOS on them...I'm using quik.  I have no desire
-> to reinstall MacOS just so I can boot linux.  Will quik work with the 2.2
-> kernel, or will I be screwed here?  I'm currently using 2.1.24 on all my
-> systems.
+In lists.linuxppc.dev, you wrote:
+> 
+> Since linuxppc defaults to using a FB-device, ggi should work, right?  So
+> I compiled the latest snapshit, and when I tried to run a demo, ie
+> "cube3d" I got this:
+> cube3d: error in loading shared libraries: /usr/local/lib/libgg.so.0:
+> R_PPC_REL2
+> 4 relocation out of range
 
-Of course all newish (not the earliest ones though, at least the current
-quik) Monolithic PowerPC Kernels support Quik. Quik will continue to be a
-important option in both LinuxPPC, and will continued to be compatible with
-all kernels in the future. (How else do you boot a non-macintosh PowerPC
-system into Linux?)
+Turning off the usage of mmap() for malloc with mallopt(M_MMAP_MAX,0)
+might fix this.
 
-Quik is here to stay, you can rest assured. Many people still use it often,
-especially in the case of LinuxPPC-only boxes or machines without MacOS.
+  Gerd
 
-This has been discussed before, and just in case your wondering, both
-LinuxPPC R5 and the next version of Yellowed Dog Linux will support it,
-according to Haaz of LinuxPPC, Inc and the future support of Yellow Dog
-according to that webpage. Yellow Dog Linux Server version 2.0 plans to
-offer a enhanced setup wizard of open firmware, so as you can see quik is
-here to stay.
-
-Thanks,
-
-A_Arthur
-arthur99@global2000.net
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
