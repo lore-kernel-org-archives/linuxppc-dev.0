@@ -1,36 +1,37 @@
-Message-Id: <200003270627.IAA00302@piglet.grunz.lu>
-Date: Mon, 27 Mar 2000 08:27:39 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Colors in X in 2.3.99-pre3?
-To: linuxppc-dev@lists.linuxppc.org
+Date: Mon, 27 Mar 2000 10:57:26 +0200 (CEST)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: Gabriel Paubert <paubert@iram.es>, Benjamin Herrenschmidt <bh40@calva.net>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: LongTrail PCI resource assignment
+In-Reply-To: <Pine.LNX.4.05.10003251432500.11322-100000@callisto.of.borg>
+Message-ID: <Pine.LNX.4.10.10003271050560.31313-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi list,
+> The code I posted for the LongTrail does assign missing/conflicting resources.
+> Please adapt it for PowerMac.
 
-Anybody seen this? With Paul's latest kernel (2.3.99-pre3), I'm having
-colormap problems in X (actually, Xpmac). I'm on a 7600 using controlfb.
+Applying Geerts patch (minus the PCIBIOS_MIN_MEM patch) plus the following
+one solves my PCI address conflict for the Mach64 by reallocating the MMIO
+aperture, and allows XFree86 4.0 to run on my Lombard.
 
-Console is ok, but X has weired colours. Switching back and forth
-doesn't help, nor restarting X. No messages on startup neither...
+	Michael
 
-I've looked around a bit, but found no obvious difference between
-2.3.52 (working ok) and 2.3.99 that could be causing this.
-
-Thanks for any help or idea
-
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+--- arch/ppc/kernel/pci.c.org	Sun Mar 26 14:08:53 2000
++++ arch/ppc/kernel/pci.c	Sun Mar 26 14:09:16 2000
+@@ -231,7 +231,7 @@
+ 				if (!pr || request_resource(pr, r) < 0) {
+ 					printk(KERN_ERR "PCI: Cannot allocate resource region %d of device %s\n", idx, dev->slot_name);
+ 					/* We'll assign a new address later */
+-					r->start -= r->end;
++					r->end -= r->start;
+ 					r->start = 0;
+ 				}
+ 			}
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
