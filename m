@@ -1,37 +1,59 @@
-From: kbhend <kbhend@business.wm.edu>
-To: linuxppc-dev@lists.linuxppc.org
+From: "Kevin Buettner" <kev@primenet.com>
+Message-Id: <990801202455.ZM22552@redrock.lan>
+Date: Sun, 1 Aug 1999 20:24:54 +0000
+In-Reply-To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+        "Re: gdb broken under linuxppc r5 tools" (Aug  1,  9:03pm)
+References: <14244.17697.552036.29509@ipa.ne.mediaone.net>
+	<v03110700b3ca439d2553@[209.183.130.185]>
+	<99080121250000.02221@ns1102.munich.netsurf.de>
+To: "Kevin B. Hendricks" <kbhend@business.wm.edu>,
+        Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
+        linuxppc-dev@lists.linuxppc.org
 Subject: Re: gdb broken under linuxppc r5 tools
-Date: Sun, 1 Aug 1999 16:12:32 -0400
-Content-Type: text/plain
-References: <99080121250000.02221@ns1102.munich.netsurf.de>
 MIME-Version: 1.0
-Message-Id: <99080116170800.00474@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 01 Aug 1999, Franz Sirl wrote:
->
-> Kevin, as a first measure, do you pass LD_BIND_NOW=1 in the environment?
+On Aug 1,  9:03pm, Franz Sirl wrote:
+
+> Am Son, 01 Aug 1999 schrieb Kevin B. Hendricks:
+> >Hey,
+> >
+> >Does anyone know what's up with gdb lately?  It used to be quite stable but
+> >since I upgraded to the glibc, binutils, egcs, gdb from Linuxppc R5 cd, I
+> >can't seem to set any breakpoints in shared libraries (or they show up
+> >someplace else at random).  Functions are missing (or don't show up) and if
+> >I try to disassemble one function in a shared library, I often get another.
+> >
+> >I really need a working stable gdb.
+> >
+> >Has anyone else run into this.  If so, exactly what versions of gdb, glibc,
+> >binutils, egcs are stable together, especially when working with shared
+> >libraries?
 > 
-> Franz.
+> Well, you've hit one of our weakest points here. AFAIK there's currently nobody
+> taking care of gdb on Linux/PPC. In fact we are lucky that Kevin Buettner's old
+> patch could be converted to 4.17.x. Unfortunately it's still not integrated
+> into gdb's mainline due to copyright issues, so we have to reintegrate the patch
+> in every new version :-(.
+> 
+> So, is someone willing to take care of gdb on Linux/PPC?
 
-Yes, that is the default we set with the jdk.  Unfortunately it is no help.
-Could this be kernel related?  I saw this problem with some of Paul's kernels
-under R4 and then all problems with gdb went away.  Everything worked fine
-under YDL but since my upgrade to LinuxPPC R5 and Paul's 2.2.10 kernel, the old
-problems have re-appeared.
+Kevin, Franz, et.al,
 
-It is like some piece of cache is not being properly flushed.
-
-By the way, I noticed from disassembling some code from egcs 1.1.2-12c that the
-stwu instruction is being used again.  I thought Gary Thomas patched the egcs
-source to prevent stwu from being generated becuase of some serious problems
-with it being used in certain combinations on 604e systems.  Any info on this?
-
-Thanks,
+Earlier this year, Metrowerks and I signed the copyright assignments
+required by the FSF.  Beginning August 9, I will be starting work at
+Cygnus as a GDB engineer.  One of the things that I'll work on is a
+merge of my patches into the current gdb mainline.  It'll be my goal
+to get a solid, usable gdb up and running on Linux/PPC again.
 
 Kevin
+
+-- 
+Kevin Buettner
+kev@primenet.com
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
