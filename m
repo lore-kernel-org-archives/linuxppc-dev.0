@@ -1,45 +1,41 @@
-Date: Fri, 25 Jun 1999 09:36:38 -0700 (PDT)
+Date: Fri, 25 Jun 1999 10:57:34 -0700 (PDT)
 From: "David A. Gatwood" <dgatwood@mvista.com>
-To: Daniel Jacobowitz <drow@false.org>
-cc: LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>, ad@MPIfR-Bonn.MPG.de
-Subject: Re: Help: Porting PCI driver from Linux/Intel -> PPC
-In-Reply-To: <19990624220307.A9159@drow.res.cmu.edu>
-Message-ID: <Pine.LNX.3.96.990625093158.20726C-100000@mvista.com>
+To: "Kevin B. Hendricks" <kbhend@business.wm.edu>
+cc: Paul.Mackerras@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org,
+        "Conrad M. Hirano" <placebo2@pobox.com>
+Subject: Re: Machine Check in Kernel Mode with Paul's 2.2.10 on B+W G3
+In-Reply-To: <v03110702b399351bdfdd@[209.183.128.103]>
+Message-ID: <Pine.LNX.3.96.990625105241.20726O-100000@mvista.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 24 Jun 1999, Daniel Jacobowitz wrote:
+On Fri, 25 Jun 1999, Kevin B. Hendricks wrote:
 
-> > Caused by (from msr): regs c24d7ca0 Unknown values in msr 
-> > NIP: C483CFA0 XER: 00000000 LR: C483CF54 REGS: c24d7ca0 TRAP: 0200 
-> 
->                                                                 ^^^^
+> I know what DMA mode is and how it works, but I don't know what PIO mode
 
-> What I highlighted above is your clue.  I don't remember off the top of
-> my head which 0200 is, but I'm willing to bet it's Open Firmware's data
-> access exception - attempting to access physical memory unmapped by the
-> MMU.
+Polled (Programmed) I/O.  It means no DMA and no interrupts.  Just raw
+hardware access, complete with the need for predictable timing and
+interrupts turned off, generally.  It's really not suitable for anything
+beyond testing to see if the drive supports DMA and for early bootstrap
+before interupts are turned on.  I would expect a massive performance hit. 
+There's a happy medium in there somewhere, though.  It should be possible
+to do interrupt driven IDE w/o DMA.  It probably would require a driver
+hack, though.
 
-Actually, 0x200 (machine check) is caused by a TEA, which is generally
-caused by attempting to access physical memory that's not decoded in
-hardware but _is_ mapped by the MMU (if MMU on), assuming that MSR[ME] is
-set to 1 (otherwise it goes into a checkstop state, presumably for
-hardware debugging).  IOW, trying to access a physical address for which
-there is no device.
+> is?  What impact on MacOS performance will moving the cable have?  Isn't
+> DMA mode the fastest way to transfer blocks of data to and from memory?
+> Will PIO mode have much of a performance penalty (I have to use this
+> machine under MacOS as much or more than I do under LinuxPPC).
 
-0x300 is the attempt to access memory that's not been mapped, IIRC.
-
-
->  Along with the other suggestion for enabling memory, be very sure
-> about endianness issues - that's the major porting pitfall.  Where are
-> you inl()'ing from?
-
-It very much sounds like an endianness issue, yeah.
+I would imagine that the performance impact would be dramatic.  I could be
+wrong, though.  The G3 and its busses might be fast enough to not be
+horrible at PIO.  No way to know w/o trying it, I suppose.
 
 
+Later,
 David
 
 
