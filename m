@@ -1,28 +1,24 @@
-Message-ID: <3DBBDC56.AF3500EE@denise.shiny.it>
-Date: Sun, 27 Oct 2002 13:30:14 +0100
-From: Giuliano Pochini <pochini@denise.shiny.it>
+Date: Tue, 29 Oct 2002 11:21:01 -0600 (CST)
+From: vinai <vroopcha@mcw.edu>
+To: Debian PowerPC List <debian-powerpc@lists.debian.org>
+Cc: "LinuxPPC Developers' List" <linuxppc-dev@lists.linuxppc.org>
+Subject: Sonnet G4 800 in 1st gen PCI mac + linux ...
+Message-ID: <Pine.LNX.4.44.0210291117140.311-100000@kaiso.biophysics.mcw.edu>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Status of 2.5.X kernels on PPC Linux, anyone working with NPTL?
-References: <8B16CEB0-DB99-11D6-BCE2-0030654D6A26@ivey.uwo.ca>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Kevin Hendricks wrote:
+Hey Folks,
 
-> Also, is anyone here actively working on Ulrich Drepper's New Posix
-> Thread Library (NPTL) to add in support for ppc Linux?  Has anyone
-> decided on what register will be used for Thread Local Storage on PPC
-> (32bit)?  (Is this r13 on ppc64?).  Have the necessary modifications to
-> the ABI/compiler been made to support a dedicated thread local storage
-> register?
+I posted a note to one of the mac sites with this question and I thought
+I'd ask here as well.  Is anyone using (or has tried to use) one of the
+new Sonnet G4 CPU's in a 1st generation PCI mac (7300 to 9600) with any
+degree of success ?  I'm considering trying this in my 8500 ...
 
-Ehm, sorry for my silly question, but why it is necessary to keep
-a register reserved for TLS ?  Where can I find detailed infos about TLS ?
+Thanks
+vinai
 
-
-Bye.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
