@@ -1,9 +1,8 @@
-Message-ID: <F1BED55F35F4D3118C0F00E0295CFF4D414C39@mail.mediatrix.com>
-From: Jean-Denis Boyer <jdboyer@mediatrix.com>
-To: "'RSR - Piero Dominioni'" <pdominioni@rsr.it>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: NFS mount for TQM823L
-Date: Tue, 9 Oct 2001 11:57:29 -0400 
+Message-ID: <638AA0336D7ED411928700D0B7B0D75BB32349@aimail.aiinet.com>
+From: "Gessner, Matt" <mattg@aiinet.com>
+To: "'Linux PPC'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Odd behaviour with 860P and LXT970
+Date: Tue, 9 Oct 2001 16:23:37 -0400 
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -11,62 +10,34 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> I send you in attach the 'rpc' and 'services' files I loaded
-> on the target (I hand-wrote them first, unsuccessfully:
-> I copied then these ones from the host).
+Greetings,
 
-This is a good approach. The files seem to be correct.
-(BTW, I think the rpc file comes with the glibc distribution).
+We're using an 860P's FEC with an LXT970 PHY.
+We're seeing something odd and would like to know
+if anyone has either seen the same behaviour or
+(hopefully) knows how to fix it.
 
+We're using 2.2, but when I compare it to the 2.4
+version, there are really no significant differences
+(outside of things like 'struct device' vs. 'struct net_device').
+In fact, what we're running is the same thing, just modified
+to fit into 2.2.
 
-> (Note that I type the 'mountd' command, but it doesn't
-> appear in the ps -aux output list!)
+The behaviour is that when we are connected to a hub
+that can auto-negotiate speed and duplex and we change
+the link speed (unplug off 100Mb/half and plug into 10Mb/half)
+the link does not work.  We get the interrupts and the status
+reads correctly, but we can't use the interface any longer.
 
-I guess it died, even after successfully registered with the portmapper.
-Here are some ideas I have to verify everything.
+If we unplug it from 100Mb/half and plug it back into the same
+port it works just fine; likewise for 10Mb.  It's the switching
+rates that causes the problem.
 
-1) Does it produce a core file?
+We appreciate any ideas.
 
-2) You may start mountd with the following options:
-     mountd --debug all --foreground
-   This will start mountd in foregroud, turning on debugging information.
-   I hope it will help...
+Regards,
 
-3) You may also start the syslog daemon, to be sure you don't miss important
-information.
+Matt Gessner
 
-4) Also, is the file /etc/exports present?
-
-5) I see that the nfs startup script performs a 'exportfs -r' before
-starting the daemons.
-   Could it help?
-
-
-> While if I type the same command for the host the
-> mountd uses a different port number...
-
-This is correct, since the port number is assigned randomly, unless you use
-the command line option '-p' to force mountd to bind to a specific port. The
-rpc port number should be identical, and correspond to what is in /etc/rpc.
-
-
-> while, exactly meantime, the following message appears
-> on the target's console:
->
-> svc: unknown program 100005 (me 100021)
-
-The mountd process (rpc port 100005) is not in the process table, because it
-unexpectedly died, even if the registration still appears in the portmap...
-as if you kill mountd with a SIGKILL (9) :-(
-
-Good luck!
---------------------------------------------
- Jean-Denis Boyer, B.Eng., Technical Leader
- Mediatrix Telecom Inc.
- 4229 Garlock Street
- Sherbrooke (Québec)
- J1L 2C8  CANADA
- (819)829-8749 x241
---------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
