@@ -1,90 +1,26 @@
-Message-ID: <3C7F74FB.1BC24793@lvl7.com>
-Date: Fri, 01 Mar 2002 07:32:59 -0500
-From: Neil Horman <nhorman@lvl7.com>
+Message-ID: <20020301170127.49909.qmail@web20107.mail.yahoo.com>
+Date: Fri, 1 Mar 2002 09:01:27 -0800 (PST)
+From: Owen Green <owenjinggreen@yahoo.com>
+Subject: RE: gdbserver ppc8xx
+To: Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be>,
+	"'Christian Pellegrin '" <chri@infis.univ.trieste.it>
+Cc: "'linuxppc-embedded@lists.linuxppc.org '" <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <6B546A602AD2D211BFF00008C7A4288905844007@hrtades2.atea.be>
 MIME-Version: 1.0
-To: Magnus Damm <damm@opensource.se>
-Cc: laurent.pinchart@capflow.com,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Development tools version
-References: <3C7E3471.4080708@capflow.com> <3C7E372A.7B4E5F0@lvl7.com> <3C7F3507.1060702@capflow.com> <3C7F6654.25F7E0FE@lvl7.com> <3C7F7319.1BCECF7E@opensource.se>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Really!  Is there a patch available or are the problems persistent?  I ask
-because we have had interesting behavior differences on occasion between
-stripped and unstripped versions of some software we are working on.  Thanks!
-Neil :)
+Thank you all guys for the tips,
+gdbserver was not working because linbss_files.so.2
+was not present on my  system /lib.
+By the way, why this was not shown when I typed:
+readelf gdbserver -d ?
 
+Thanks in advance,
 
-Magnus Damm wrote:
->
-> FYI,
->
-> strip in binutils-2.11.2 has problems...
-> Not very important maybe, but annoying.
->
-> http://sources.redhat.com/ml/bug-binutils/2001-q3/msg00108.html
->
-> / magnus
->
-> Neil Horman wrote:
-> >
-> > Yes, binutils 2.11.2.  Sorry about my fat fingers... :)
-> >         Say....Speaking of those memory faults.  I never got around to researching
-> > them.  Can you or anyone else provide general notes on exactly what those
-> > patches fix?  I'd certainly appreciate it, as I always wanted to track those
-> > down, but never quite found the time.  Thanks!
-> >
-> > Laurent Pinchart wrote:
-> > >
-> > > >
-> > > >
-> > > >I think that the Hard Hat tools will probably be the easiest for you to get up
-> > > >and running with.  They have probably been the most throughly debugged for the
-> > > >8xx.   Although if your looking to put together your own tools for the 860
-> > > >series, we here have built the following, with a reasonably good deal of
-> > > >success.  See the notes for details:
-> > > >
-> > > >Binutils:
-> > > >       2.1.2 - no problems at all.  Download and build them for powerpc-linux and away
-> > > >you go
-> > > >
-> > > >GCC:
-> > > >       2.95.3 - again no real problems.
-> > > >
-> > > >GLIBC:
-> > > >       2.2.4 - relatively easy.  Some issues with memory faults on occasion, which I
-> > > >have not yet traked down.
-> > > >
-> > > >GDB:
-> > > >       5.1.1 - no problems
-> > > >
-> > > >General notes:
-> > > >       I've personally been following the embedded cross-gcc mini howto available on
-> > > >penguinppc.com and I've been more or less happy with the results.  hope that
-> > > >helps!
-> > > >
-> > > Thanks Neil.
-> > >
-> > > I've been able to succesfully use the Hard Hat binaries (actually that's
-> > > so simple that I wouldn't have dared asking questions in this mailing
-> > > list if I hadn't :-), but I'd like to recompile from the sources, in
-> > > order not to depend on a binary release, and also to be able to modify
-> > > the tools if needed.
-> > >
-> > > I tried to compile the tools from the sources without patching them a
-> > > few months ago, and experienced memory faults and a lot of other
-> > > problems with dynamically linked executables (is that a known issue ?).
-> > >
-> > > Recompiling from the SRPMS shouldn't be a hard job, so that's what I'll
-> > > try. All the patches are supposed to be included in there...
-> > >
-> > > Just to make sure, did you mean binutils 2.11.2 ?
-> > >
-> > > Laurent Pinchart
-> >
->
+Owen.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
