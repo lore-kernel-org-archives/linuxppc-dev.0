@@ -1,16 +1,19 @@
-Return-Path: <samlinuxppc@yahoo.com.cn>
-Received: from web15605.mail.cnb.yahoo.com (web15605.mail.cnb.yahoo.com
-	[202.165.102.59]) by ozlabs.org (Postfix) with SMTP id 695DC2BDA0
+Return-Path: <rpjday@mindspring.com>
+Received: from mailhost.rdmcorp.com (world.rdmcorp.com [204.225.180.10])
+	by ozlabs.org (Postfix) with ESMTP id 3BF3C2BC0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Oct 2004 05:40:11 +1000 (EST)
-Message-ID: <20041013193959.57540.qmail@web15605.mail.cnb.yahoo.com>
-Date: Thu, 14 Oct 2004 03:39:59 +0800 (CST)
-From: Sam Song <samlinuxppc@yahoo.com.cn>
-To: linuxppc-embedded@ozlabs.org
-In-Reply-To: <20041013191012.47D9A2BDD3@ozlabs.org>
+	Thu, 14 Oct 2004 05:47:54 +1000 (EST)
+Date: Wed, 13 Oct 2004 15:40:55 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+To: Eugene Surovegin <ebs@ebshome.net>
+In-Reply-To: <20041013193423.GA28349@gate.ebshome.net>
+Message-ID: <Pine.LNX.4.60.0410131539150.23288@localhost.localdomain>
+References: <Pine.LNX.4.60.0410131423540.12426@localhost.localdomain>
+	<20041013193423.GA28349@gate.ebshome.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
-Subject: Meaning of BSP and LSP
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Subject: Re: "I2C" versus "IIC"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,28 +24,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+On Wed, 13 Oct 2004, Eugene Surovegin wrote:
 
-I'd like to make sure about the meaning of BSP and
-LSP. There is sth unclear in my mind, I am afraid.
+> On Wed, Oct 13, 2004 at 02:26:23PM -0400, Robert P. J. Day wrote:
+> >
+> >   i was just about to rename some of my variables and macros to be
+> > consistent with what i *thought* was the standard nomenclature of
+> > "IIC" as opposed to "I2C".  just checked include/asm-ppc, and grepped
+> > for case-insensitive instances of both strings ... oh, god.  there's
+> > really no preferred usage, is there?
+>
+> Philips' documentation uses I2C, not IIC, so I guess this is
+> _official_ name of the _bus_.
+>
+> Some vendors (like IBM in their 4xx parts) use IIC to name I2C
+> _interface_ to distinguish it from I2C _bus_ (they specifically
+> mention this in the chip manual).
+>
+> For example, in the corresponding 4xx driver I used "iic" because it
+> was written for IBM IIC _interface_.
 
-IMHO, BSP includes Board's Hardware Scheme and Boot
-Loader Code in Binary format or Source code. LSP
-should be composed of Development Kit like ELDK and
-Linux Kernel Source for special Board. I am right?
+i'm starting to regret having brought this up. :-)  initially, i
+thought it was going to involve only my deciding what i wanted to name
+my own variables, to be consistent with common usage.  now i see that
+it's nowhere near that straightforward.
 
+i'm going to leave this to wiser heads to mull over.
 
-
-=====
-Best regards,
-
-Sam
-
-_________________________________________________________
-Do You Yahoo!?
-150万曲MP3疯狂搜，带您闯入音乐殿堂
-http://music.yisou.com/
-美女明星应有尽有，搜遍美图、艳图和酷图
-http://image.yisou.com
-1G就是1000兆，雅虎电邮自助扩容！
-http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
+rday
