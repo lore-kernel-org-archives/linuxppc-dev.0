@@ -1,52 +1,14 @@
-From: "Jason Wohlgemuth" <jsw-embedded@mindspring.com>
-To: "Steve Rossi" <srossi@ccrl.mot.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: QSPAN PCI wierdness
-Date: Thu, 20 Apr 2000 19:09:08 -0400
-Message-ID: <NCBBKJKKGDLPHKDPAFFMOECDCEAA.jsw-embedded@mindspring.com>
+Message-ID: <38FF95C5.DEBB683A@ccrl.mot.com>
+Date: Thu, 20 Apr 2000 18:41:57 -0500
+From: Steve Rossi <srossi@ccrl.mot.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <38FF95C5.DEBB683A@ccrl.mot.com>
+To: Gabriel Paubert <paubert@iram.es>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: QSPAN PCI wierdness
+References: <Pine.HPX.4.10.10004202325400.19933-100000@gra-ux1.iram.es>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
-
-
-Steve,
-
-I got the Qspan going from the mpc8xx-2.2.13 distribution.  If you are
-compiling the kernel with gcc 2.95.2 there is an issue with the inline
-assembly assuming an important register is not used and the value is thrown
-away, ... it was posted in a previous message by me, I just dug it up, here
-it is.  If you are not using gcc2.95.2, then let us know and we can all
-ponder this some more.
-
-Anyone trying to build in pci support to the kernel using GCC 2.95.2 may
-find this patch helpful.
-
-It seems that in the inline-assembly in qspan_pci.c the compiler doesn't
-recognize that the first argument to the assembly may be modified.  This
-resulted in a register getting trashed where it shouldn't have.  To fix the
-problem I modified the in-line assembly to tell the compiler that this
-register has been changed.
-
-86c86
-<               : "=r"(x) : "r"(addr) : "%0")
----
->               : "=r"(x) : "r"(addr))
-
-Jason <jwohlgem@mindspring.com>
-
-
------Original Message-----
-From: owner-linuxppc-embedded@lists.linuxppc.org
-[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Steve
-Rossi
-Sent: Thursday, April 20, 2000 7:42 PM
-To: Gabriel Paubert
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: QSPAN PCI wierdness
-
 
 
 This is way before the kernel has even booted so MMU is still
