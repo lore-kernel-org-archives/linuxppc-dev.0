@@ -1,25 +1,45 @@
-Date: Thu, 31 Dec 1998 14:55:15 -0700 (MST)
-From: Cort Dougan <cort@persephone.cs.nmt.edu>
-To: jhaas@linuxppc.org
-cc: Multiple recipients of list <linux-pmac@samba.anu.edu.au>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.2-pre2 kernel posted
-In-Reply-To: <368BBBF9.E9824C8B@madison-web.com>
-Message-ID: <Pine.LNX.3.96.981231145425.14374B-100000@persephone.cs.nmt.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <Pine.LNX.3.96.981231144829.14374A-100000@persephone.cs.nmt.edu>
+Date: Thu, 31 Dec 1998 23:24:53 +0100
+To: linuxppc-dev@lists.linuxppc.org, Cort Dougan <cort@persephone.cs.nmt.edu>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: grackle, patches, MMU, ...
+Message-Id: <19981231232453.013798@smtp.calvacom.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Where did this kernel come from?  Can you use the code in VGER moved into
-the pre 2.2.0 tree instead?  It'll build there now.  That way we can get
-coherent bug reports.
+On Thu, Dec 31, 1998, Cort Dougan <cort@persephone.cs.nmt.edu> wrote:
 
-}We've put a new 2.2 development kernel up on ftp.linuxppc.org.  It
-}should run on any machine. 
-}
-}ftp://ftp.linuxppc.org/linuxppc/linuxppc-pre-R5/RedHat.installer/vmlinux-2.2.0-pre2
+
+>The # of free bats depends on the machine.  We'd only have all the bats
+>free if we map without the BATS entirely.  We don't to switch between
+>mapping with and without BATS on the kernel depending on the process.
+
+Ok. I knew for the variable number of BATs. So currently, the BATs are
+set once
+for all for the kernel, and stay this way in user mode. Getting them
+beeing switched on a per-process basis would require changes still beyond
+my current knowledge about the kernel. I'll try to understand all this
+and I'll eventually code some test stuffs. Once BATs are switched, we can
+use them for large ioremaps.
+
+>PCI is a lot bigger than one bat.  On prep we map all the pci space we use
+>with a bat.
+
+Yep, of course, I was thinking about what is currently allocated, and
+this is usually fine for one BAT.
+
+For the curious, MacOS uses BATs too, but it can only use BATs for PCI,
+no pages :-( This makes things quite funny when trying to use several
+cacheable regions on a board.
+
+
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
