@@ -1,50 +1,108 @@
-Subject: Re: EP405 GPIO signal problem
-From: Toni Van Remortel <t.vanremortel@ha.be>
-Reply-To: t.vanremortel@ha.be
-To: Eugene Surovegin <ebs@ebshome.net>
-Cc: Embedded PPC <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <20031120181921.GA3365@gate.ebshome.net>
-References: <1069336934.1290.6.camel@toni>
-	 <20031120181921.GA3365@gate.ebshome.net>
-Content-Type: text/plain
-Message-Id: <1069402906.4172.6.camel@toni>
-Mime-Version: 1.0
-Date: Fri, 21 Nov 2003 09:21:46 +0100
+Message-ID: <D73A25AA6E54D511AD74009027B1110F3C0B2D@ORION>
+From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+To: "'Jeff Mintz'" <jmintz@ghs.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Network problem when using jtag debugger on EP8260
+Date: Fri, 21 Nov 2003 08:34:35 -0500
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Op do 20-11-2003, om 19:19 schreef Eugene Surovegin:
-> On Thu, Nov 20, 2003 at 03:02:15PM +0100, Toni Van Remortel wrote:
-> > I have an RTAI powered kernel module which outputs 32 bits data via the
-> > EP405 GPIO ports from the IBM 405GP CPU. These outputs are multiplexed
-> > with other signals.
-> > Problem: when I output the 32 bits as one like this:
-> > writel( buffer, (u32)gpio_base_addr+GPIO0_OR );
-> > (where buffer is of u32 type)
->
-> One thing which looks strange to me. Are you sure you can use 32 GPIO
-> pins?
+I've used an Abatron on the EP8260 and I never saw any network problems.
 
-Ain't possible, I know.
+-----Original Message-----
+From: Jeff Mintz [mailto:jmintz@ghs.com]
+Sent: Thursday, November 20, 2003 8:17 PM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Network problem when using jtag debugger on EP8260
 
-> This is impossible because 405GP has only 23, and I doubt you can use
-> even this number, because some of the pins are shared with IRQ and
-> PerCSx lines.
 
-You can set all 23 GPIO's as output. I actually only use 17 of them (2 x
-8bit position and 1 on/off).
-Now I've taken a deeper look at the problem, it might be caused by the
-EP405 itself. My DAC settles at 70ns.
-I still have to check if the signals are outputted all at the same time.
-Should go and fetch a logic analyzer somewhere ;)
 
---
-                           Toni Van Remortel
-              Wetenschappelijk Medewerker - D-science lab
-  Real time Linux for embedded systems: http://linemb.d-sciencelab.com
-              Tel: +32 3 205 61 72 - Fax: +32 3 205 61 95
-                      E-mail: t.vanremortel@ha.be
+I am attempting to debug the Linux Kernel on an Embedded Planet 8260
+board,
+using a COP JTAG debugger.  I am encountering a behavior where when I
+halt
+the kernel, and resume, the kernel's ability to access the network seems
+to
+be disturbed.  I am wondering if anyone has seen something like this
+before.
+
+Let me clarify the problem:
+
+[Case 1]
+- I boot the Linux kernel (version 2.4.22, obtained from Embedded
+Planet)
+- When I get to the prompt, I halt the target using the debugger.  The
+target always seems to halt at address 0x904.
+- I resume the target.  A network access (such as "ls") takes about 7
+seconds, instead of being instantaneous.  (I'm not using a ramdisk, so
+ls
+uses NFS).
+- If I halt and resume again, network access is slowed down even
+further, certainly to the point of being unusable.
+
+[Case 2]
+- When I get to the prompt, I issue the command "while(true); do true;
+done" which sets the kernel off and running infinitely (until I stop it
+with Ctrl-C).
+- Using the debugger, I halt the target.  I am not at 0x904, but
+somewhere else, either in the kernel code, or in what seems to be a user
+
+application page.
+- I can stop, singlestep, resume, set and hit breakpoints using the
+debugger.  When I finally stop the while loop, the network is fine.  All
+
+of my debugging activity did nothing to disturb network access.
+
+[Case 3]
+- Same as Case 2.  This time, after halting the target, I set a
+breakpoint on the first line in the function fcc_enet_rx.  I resume the
+target.  This breakpoint is hit about 15 times, and then it is not hit
+anymore.  When I attempt to stop the while loop, the network access has
+been disturbed.
+
+[Case 4]
+- Same as Case 1.  This time, before I halt the target using the
+debugger,
+I unplug the ethernet cable.  Then I halt the target, and it is again
+at 0x904.
+- Now I resume the target using the debugger.
+- Now I plug in the ethernet cable to the target again.
+- Network accesses (i.e. ls) works fine.
+
+
+My primary goal is to fix Case 1.  I do not want to lose network access
+when I halt the kernel when it is idle.  Case 2 gives me hope that this
+is possible, because this is a case where I can halt the Linux kernel
+without disturbing the network access.
+
+The JTAG debugger I am using is a Green Hills Probe.  I have also tried
+with
+an Agilent E5900B Emulation Probe and seen similar behavior.
+
+Some questions:
+- Has anyone seen this before?  If so, is there a known remedy or
+workaround?  (For example, is there a kernel patch?  Is there a way to
+recover from this slowed network state?)  If not, does anyone have
+a theory to explain why I am seeing this behavior?
+- Does this occur on the BDI2000 debugger?  I don't have access to one
+of
+those, but I hear that is the best JTAG debugger for Linux.  If anyone
+can
+easily try some of these test cases on other debuggers and let me know
+the
+results, that would be helpful.
+- Is there any reason to think that the scenario I described in Case 1,
+halting the target while at the shell prompt, is something that users
+typically don't do (and hence, I shouldn't worry about it)?
+
+
+Thanks in advance,
+Jeff Mintz
+Green Hills Software
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
