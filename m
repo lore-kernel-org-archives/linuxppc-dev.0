@@ -1,35 +1,53 @@
-Message-ID: <39A6B196.CDF1228@mvista.com>
-Date: Fri, 25 Aug 2000 10:49:10 -0700
-From: Matthew Locke <mlocke@mvista.com>
+Message-ID: <39A6E93C.54BA9C60@mvista.com>
+Date: Fri, 25 Aug 2000 14:46:36 -0700
+From: Cal Erickson <cal_erickson@mvista.com>
+Reply-To: cal_erickson@mvista.com
 MIME-Version: 1.0
-To: Dan Winkler <dantwinkler@yahoo.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: RPX Lite programming
-References: <20000825025003.23151.qmail@web512.mail.yahoo.com>
+To: Nguyen Xuan Hoang <hoang_nguyen@smartstors.com>
+CC: linuxppc-embedded@lists.linuxppc.org, support@mvista.com,
+        Jeff Maddox <support@hmi.com>
+Subject: Re: BDM problem
+References: <00ba01c00f0c$abd41100$0401a8c0@hoangmobile>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Winkler wrote:
->
-> Newbie alert!!!  I've just started developing on the
-> RPX lite board from embedded-planet.  I am currently
-> trying to write some i2c code that just reads the
-> temperature registers from the temperature sensor and
-> thermal monitor (TCN75).  I was wondering where
-> someone like myself could find some example code to
-> get me started.  I found the i2c driver from the
+Hoang,
+When you are trying to use the Avocet Systems HMI BMD device
+have you built a kernel with Kernel Hacking disabled? It appears
+from your description the it is still enabled. When kgdb is enabled
+through kernel hacking, it starts and immediately hits a breakpoint.
+If you at this time set a breakpoint further on then you should be
+able to proceed. If you want to use the HMI BMD then you need
+to un-select kernel hacking and rebuild your kernel.
+Cal Erickson
 
-there is already a i2c driver for the 8xx in the kernel.  It only has
-read capabilities, but it works fine (at least for reading the eeprom).
-There are several drivers for the 8xx in the kernel that you can use for
-examples.  Also EP wrote a different i2c driver with write.  the EP i2c
-driver has not made it to our ftp site yet, so ask EP tech support for
-it.
+Nguyen Xuan Hoang wrote:
 
-Matthew Locke
-Montavista Software
-http://www.mvista.com
+> Hi All, I have problem when running Linux kernel using BDM. It seems
+> not a new problem, from this mail list I can learn some thing: Before
+> run the debugger: - Set DER to 0 using BDM command:                X
+> DER                30002400f                0- Set ICTRL to 7 using
+> BDM command:                X ICTRL
+> 00000000                7- Run the debugger: g However, the BDM auto
+> stop right after the kernel execute: (perhaps it turn on the virtual
+> mode here)            execve("/sbin/init",argv_init,envp-init);  in
+> file /init/main.c The BDM show that an breakpoint occur (the PC =
+> 0xFEEDDA8),but of course I didn't set any breakpoint. My system is:
+> RPX LITE + HMI BDM + SOURCE GATE II Could anyone please point me a
+> solution. Thank in advancesHoang
+
+--
+===========================================================================
+Cal Erickson                 MontaVista Software Inc.
+Customer Support Engineer    490 Potrero Avenue
+Phone (408) 328-0304         Sunnyvale CA 94085
+Fax   (408) 328-9204         e-mail cal_erickson@mvista.com
+Pager 877-566-2012           support 1-800-759-8888 pin 202-7489
+web http://www.mvista.com    support e-mail: support@mvista.com
+eCode: http://cal@work.com.ecode.com
+===========================================================================
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
