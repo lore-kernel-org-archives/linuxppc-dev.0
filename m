@@ -1,43 +1,65 @@
-Message-ID: <394DE207.84B4153F@pop.agri.ch>
-Date: Mon, 19 Jun 2000 11:04:10 +0200
-From: Andreas Tobler <toa@pop.agri.ch>
-Reply-To: toa@pop.agri.ch
+Message-ID: <394DE426.C03781F3@student.ethz.ch>
+Date: Mon, 19 Jun 2000 11:13:10 +0200
+From: Michel Dänzer <daenzerm@student.ethz.ch>
 MIME-Version: 1.0
-To: mlan@cpu.lu
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Problems handling large files??
-References: <200006182257.AAA00912@piglet.grunz.lu>
-Content-Type: text/plain; charset=us-ascii
+To: Hollis Blanchard <hollis@amulet.co.jp>
+CC: arcane@verinet.com, yellowdog-general@lists.yellowdoglinux.com,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: Need for Cross Platform Updates Distribution
+References: <Pine.LNX.4.10.10006190106010.30352-100000@bamboo.verinet.com>
+	 <394DD78F.AD49931@amulet.co.jp> <394DDB66.62A97110@student.ethz.ch> <394DE1CA.509F24DC@amulet.co.jp>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michel Lanners wrote:
->
-> Hi all,
->
-> I've come across another problem in the 2.3.99 kernels (I've not had a
-> chance to try 2.4.0-test). This is with 2.3.99-pre9 from Paul's rsync.
->
-> Whenever a file larger than a few megabytes is created, the system will
-> report 'out of memory' errors at random file syizes, while writing the
-> file.
-[snip]
-> So the 'Cannot allocate memory' comes from the system (libc? system
-> call?).
->
-> Anybody know what's going on? Can you verify this on a 2.4.0-test
-> kernel? FWIW, bonnie _was_ working OK on 2.2.13 (later unverified) and
-> 2.3.48 (latest benchamrk I have).
->
-> Clues?
+Hollis Blanchard wrote:
 
-As reported before, an update to 2.4.0-test1-ac19 wouldn't be a bad idea.
-I tried bonnie a few minutes ago on a fsmlabs tree 2.4.0-test-ac19 which
-still reports as ac18. And I had no problems so far. Bonnie ended with
-giving me some ? results. I did it two times with a 100MB file on a
-wallstreet. One try without hdparm tuning the other one with.
+> Of course you usually *can* get a foreign rpm to install,
 
-Andreas
+I know, I've updated a few hopelessly outdated packages on the SuSE 6.4 at
+work using RedHat RPMs.
+
+
+> it's just that it's not unusual for it not to work with your system (or may
+> break other things in your system). Since neither company is testing their
+> software packages for compatibility with the other, this is not unexpected.
+
+Thanks, I think I understand the problem.
+
+
+> linuxbase.org needs to be a little better about organizing their website it
+> seems...
+
+Sorry, forgot to mention www.freestandards.org
+
+
+> > > I should also note that Debian packages also don't work well with other
+> > > distributions.
+> >
+> > But at least there aren't incompatible flavours of debs - you find a deb
+> > somewhere, you install it, it works.
+>
+> Debian is of course a single organization (and honestly I don't know
+> anything about Corel or Storm or any compatibility issues there - isn't
+> Corel using an old glibc?).
+
+The .deb dependancy system won't let you install a package which wouldn't work
+unless you really really want to.
+
+
+> If only RedHat used RPM, you can bet any rpm you could find would work.
+
+True. A good point for .deb IMHO ;)
+
+
+Michel
+
+
+--
+Why drink & drive when you can smoke and fly???
+______________________________________________________________________________
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
