@@ -1,45 +1,64 @@
-Date: Thu, 13 Mar 2003 22:17:29 -0500
+Date: Thu, 13 Mar 2003 22:29:01 -0500
 From: Bill Fink <billfink@mindspring.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.linuxppc.org
+To: LinuxPPC Developers <linuxppc-dev@lists.linuxppc.org>
+Cc: erbenson@alaska.net, Bill Fink <billfink@mindspring.com>
 Subject: Re: Serial Console on XServe and yaboot???
-Message-Id: <20030313221729.220873a5.billfink@mindspring.com>
-In-Reply-To: <1047476566.18957.61.camel@zion.wanadoo.fr>
-References: <20030311223353.00f9a059.billfink@mindspring.com>
-	<1047455184.18956.27.camel@zion.wanadoo.fr>
-	<20030312081931.2cafbb86.billfink@mindspring.com>
-	<1047476566.18957.61.camel@zion.wanadoo.fr>
+Message-Id: <20030313222901.79512cfc.billfink@mindspring.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 12 Mar 2003, Benjamin Herrenschmidt wrote:
+Hi Ethan,
 
-> On Wed, 2003-03-12 at 14:19, Bill Fink wrote:
+On Tue, 11 Mar 2003, Ethan Benson wrote:
+
+> On Tue, Mar 11, 2003 at 10:33:53PM -0500, Bill Fink wrote:
 > >
-> > On 12 Mar 2003, Benjamin Herrenschmidt wrote:
+> > I'd like to use the serial port on the XServe as a serial console.
+> > I enabled CONFIG_SERIAL_CONSOLE in a 2.4.20-0.7b (YDL 2.3) kernel,
+> > set the OF input-device and output-device parameters to ttya, and
+> > booted with the kernel argument "console=ttyS0,38400".
 > >
-> > > iirc, there is something weird with the OF params for the console
-> > > on the xserve. Try changing these:
-> > >
-> > > intput-device    "scca"
-> > > output-device    "scca"
-> > > input-device-1   "scca"
-> > > output-device-1  "scca"
-> >
-> > Thanks for the idea, but unfortunately it had no effect, as I saw
-> > no yaboot screens show up when I did a reboot.  Is it possible that
-> > the initial OF uses a different baud rate than 38400 (although I
-> > didn't even see any garbage show up)?
+> > This actually works once the system starts booting. My problem
+> > is that I never get a chance to interact with yaboot and thus for
 >
-> Hrm... I did manage to get it last time I played with an xserve. I
-> don't remember the baudrate though (maybe 57600...)
+> you will need to use a different first stage (magicboot) or none at
+> all (if OF will boot that way, some models refuse to autoboot
+> binaries without the CHRP bootinfos). the default ofboot script
+> installed with yaboot forces the output to screen to work around
+> stupid hacks in apple OF to prevent `archaic peecee text' from
+> appearing on the screen.
+>
+> > example can't select a different Linux kernel to boot. Is there
+> > any way to accomplish this, for example by some suitable modification
+> > to the ofboot.b file in the boot partition? Or is this just not
+>
+> never modify the bootstrap partition, edit the magicboot= line in
+> /etc/yaboot.conf to point to an alternate script. you can make a copy
+> of the /usr/lib/yaboot/ofboot file, then find and change the line:
+>
+> " screen" output
+>
+> to
+>
+> " ttya" output
+>
+> later im going to fix this so it won't have this problem.
 
-I determined it is indeed 57600.  Does anyone know of any OpenFirmware
-parameter on the XServe to set the baud rate of the serial port?
-Unfortunately my current console server maxes out at 38400.
+Thanks a bunch for the info!  Using this method, with scca instead
+of ttya, and a baud rate of 57600 (using a laptop), I was able to
+verify this basically works.  The initial menu that asks you what
+you want to boot (Linux, MacOS 9, MacOS X, etc) still goes to the
+screen (at least it does if you have a screen attached) but the
+yaboot menu where you select the Linux kernel to boot does show
+up on the serial port of the XServe, and this is what I'm most
+interested in.  Now if I can just figure out how to set the baud
+rate of the serial console for OF to 38400 or less to make my
+console server happy, I'd be in business.  If nothing else I can
+use the laptop approach which is at least a lot easier than toting
+a big monitor around.
 
 						-Bill
 
