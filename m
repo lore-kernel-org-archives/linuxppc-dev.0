@@ -1,23 +1,20 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx015.isp.belgacom.be (outmx015.isp.belgacom.be
-	[195.238.2.87]) by ozlabs.org (Postfix) with ESMTP id E0DD72BF13
+Return-Path: <chris@alcor.co.uk>
+Received: from mizar.alcor-electronics.co.uk (alcor.demon.co.uk [62.49.62.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7FD412BF13
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 19 Nov 2004 21:32:34 +1100 (EST)
-Received: from outmx015.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx015.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
-	ESMTP id iAJAWSag023516
-	for <linuxppc-embedded@ozlabs.org>; Fri, 19 Nov 2004 11:32:28 +0100
-	(envelope-from <tnt@246tNt.com>)
-Message-ID: <419DCBB4.6010201@246tNt.com>
-Date: Fri, 19 Nov 2004 11:32:20 +0100
-From: Sylvain Munaut <tnt@246tNt.com>
+	Fri, 19 Nov 2004 23:43:47 +1100 (EST)
+From: "Chris Down" <chris@alcor.co.uk>
+To: <wd@denx.de>
+Date: Fri, 19 Nov 2004 12:43:33 -0000
+Message-ID: <000001c4ce35$6194b260$0101a8c0@alcor1>
 MIME-Version: 1.0
-To: roger blofeld <blofeldus@yahoo.com>
-References: <20041118202213.20094.qmail@web53504.mail.yahoo.com>
-In-Reply-To: <20041118202213.20094.qmail@web53504.mail.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <000601c4c9c5$514b34c0$0101a8c0@alcor1>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Lite5200 FEC Driver on linux 2.6 broken? (fixed again)
+Subject: RE: Problem bringing up Linux on Custom MPC852 Board 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,26 +25,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-roger blofeld wrote:
+.
+> > > At this point it stops executing in arch_kernel_thread.
+> >=20
+> > I bet some beer that this is actually a FAQ - see
+> > http://www.denx.de/twiki/bin/view/DULG/LinuxCrashesRandomly
+> >=20
+> > This phenomenon is typical for a novice's port of U-Boot.
+> >=20
+>=20
+> Wolfgang, thanks for your reply. I will re-check the SDRAM=20
+> initialisation and UPM programming.
+>=20
 
->Adding a call 
->
->    flush_dcache_range((u32)skb->data, (u32)skb->data + skb->len);
->
-> just before spin_lock_irq() in fec_hard_start_xmit() removes the
->remaining transmission checksum errors for me.
->-rb
->
->  
->
-Mmmm.
+Wolfgang,
+The solution was a lot simpler, there was no problem with the SDRAM
+initialisation. The cause was due to the fact that I had a BDI2000 =
+connected and
+the SYSIE bit was enabled in the DER for flash programming. Clearing =
+this bit
+solved the problem, probably a typical novice error :-)
 
-That should not be needed.
+Regards
 
-What tree are you exactly using ?
-In mainstream XLB snooping is not configured so if you have the 
-mainstream + added DMA,
-the problem may come from this.
-
-
-    Sylvain
+Chris Down
