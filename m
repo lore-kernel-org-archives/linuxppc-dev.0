@@ -1,41 +1,32 @@
-Date: Fri, 11 Jun 2004 10:35:02 -0300
-Message-Id: <HZ5CEE$AB58D6D6E1D4B27E5EB20145E6922465@bol.com.br>
-Subject: Lite5200 from RS232 to RS485
+Message-ID: <20040611134910.14601.qmail@web15214.mail.bjs.yahoo.com>
+Date: Fri, 11 Jun 2004 21:49:10 +0800 (CST)
+From: Song Sam <samlinuxppc@yahoo.com.cn>
+Subject: Re: How to set current time to 8xx RTC through Linux application?
+To: Graf Alex <alex.graf@siemens.com>
+Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <791B3205DB661A42B4BFE5464A7D1D0204B36ECA@chzugexch01.abatos.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-From: "saurosalomoni" <saurosalomoni@bol.com.br>
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: iida@ztec.com.br
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello.
+Graf Alex <alex.graf@siemens.com> wrote£º
+> If you did implement the Linux rtc interface, you should be able to
+> read/write the time with IOCTLs from your app.
+>
+> fRtc = open("/dev/rtc", O_RDWR, 0);
+> ioctl(fRtc, RTC_RD_TIME, &tm );
+> ioctl(fRtc, RTC_SET_TIME, &tm);
+>
+> Be carefull, System time is NOT equal RTC time! You have to sync it
+> periodical.
 
-I need to switch between RS232 and RS485 in my Lite5200,
- but I realized it's a little bit more dificult than I
-thought at first...
-Well,  as far as I'm concerned, I can do that just by
-controling the RTS pin of my ttyS0 device to activate
-the 485 module (is it 100% right?).
+Thanks for your input.It did make me more flexible to
+set RTC.
 
-I began trying to control it with TIOCMGET/TIOCMSET
-ioctl(),  but the driver does not support hardware
-handshake.. (tahnx,  Denk)
-So now I think I'll have to write a small driver that
-uses GPIO to handle the proper PSC register.
+Best regards,
 
-MPC5200 Users Manual states that you can set/clear the
-RTS pin with bit 7 of the OutputPort 0 (op0, offset 0x3C).
-
-My questions:
-- Is this information I gathered correct?..
-- Which PSC register I need to use to control ttyS0?
-- If it's easyer to do it by extending an existing
-driver, wich file should I look for?
-- Is there any other way to accomplish that?
-
-Thanks in advance.
-
+Sam
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
