@@ -1,74 +1,85 @@
-Date: Wed, 7 Jun 2000 11:21:18 -0500 (CDT)
-From: Seanano <sto9013@ksu.edu>
-To: Bernhard Reiter <bernhard@intevation.de>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Powerbook hard freeze summary (sort of)
-In-Reply-To: <20000608013517.A30902@freeonline.com.au>
-Message-ID: <Pine.GSO.4.21L.0006071107400.2240-100000@unix1.cc.ksu.edu>
+Date: Wed, 7 Jun 2000 21:11:07 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Ryuichi Oikawa <roikawa@rr.iij4u.or.jp>
+cc: mlan@cpu.lu, schmitz@opal.biophys.uni-duesseldorf.de,
+        daenzerm@student.ethz.ch, toe@unlserve.unl.edu,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: [patch] VRAM detection in controlfb
+In-Reply-To: <20000608005823P.roikawa@rr.iij4u.or.jp>
+Message-ID: <Pine.LNX.4.05.10006072108230.30676-100000@callisto.of.borg>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-  As I said before, I'm running a 400mhz lombard with 192 Megs of RAM
-without any problems.  I've run multiple compiles at the same time for
-upwards of an hour without any problem.  Let's sit back and examine this
-for a minute.  So far I've seen maybe 4 reports of this problem.  Yet I
-see a lot of peole on this list and the linuxppc-user list have lombards
-and pismos matching the description for machines that may have this
-problem that never report it.  It would seem that the problem then does
-not lie in a "sloppy driver" or something universally wrong with the
-pismo/lombard but rather something specific to those machines. at least,
-IMHO...
+On Thu, 8 Jun 2000, Ryuichi Oikawa wrote:
+> From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> > That's not sufficient (perhaps it is in this case, though): both fix.smem_start
+> > and fix.smem_len may be not page aligned. To catch all cases, you have to use
+> Can't /dev/fb mmap handle this case?  I just thought I saw some page
+> handling code which adds extra page in fbmem.c. I'm using this for /dev/mem:
+>
+>   int pages, trailer_page = 0;
+>
+>   if(basePhys & (PAGE_SIZE - 1))
+>     ++trailer_page;
+>   pages = (memSize + PAGE_SIZE - 1)/PAGE_SIZE + trailer_page;
+>   *baseVirt = (pointer)mmap(0, pages*PAGE_SIZE, PROT_READ|PROT_WRITE,
+> 			    MAP_SHARED, fd, basePhys & PAGE_MASK);
+>   *baseVirt += basePhys & (PAGE_SIZE - 1);
+>
+> > the formula from my previous posting.
 
-Sean
+>From a first look, that looks very similar to my formula.
 
+> > > But looking through the XF4 fbdev support code I saw two more mistakes
+> > > causing potential problem. One is a confusion of virtual screen width
+> > > with screen pitch:
+> > >
+> > > fbdev.c
+> > > 	pScrn->displayWidth = pScrn->virtualX; /* FIXME: might be wrong */
+> > >
+> > > Yes, this is wrong as the authur noted, but interestingly this code spreads
+> > > over the all drivers supporting fbdev, though I can't distinguish which is
+> > > the original :^)  Maybe polite solution is to fix each driver, but quick
+> > > fix will be
+> > >
+> > > +	pScrn->displayWidth = fPtr->fix.line_width /
+> > > +				(fPtr->var.bits_per_pixel >> 3)
+> >
+> > Typo: the field is called `line_length', not `line_width'.
+>  Ah, I see, but I simply cut & pasted it.... where this comes?
+>
+> > And that formula is valid for chunky displays only, not for interleaved
+> > bitplanes (I suppose pScrn->displayWidth is the width of one line in memory,
+> > counted in pixel units?).
+> Yes, it is used calculate video memory address from the x, y coordinate.
+> How is displayWidth used for planar architecture? Is setting
+> displayWidth == xres_virtual necessary to work properly?
 
+For non-interleaved bitplanes, the same formula as for chunky pixels is valid.
+For interleaved bitplanes, displayWidth == xres_virtual (assumed you can
+display the full xres_virtual).
 
-On Thu, 8 Jun 2000, Chris Leishman wrote:
+> > If line_length is 0, you must fallback to xres_virtual / bytes_per_pixel.
+> Like this?
+> +	if(fPtr->fix.line_width)
+> +		pScrn->displayWidth = fPtr->fix.line_width /
+> +				(fPtr->var.bits_per_pixel >> 3)
 
->
-> On Wed, May 24, 2000 at 04:18:37PM +0200, Bernhard Reiter wrote:
-> > Okay, we have a couple of people running stable Lombards with
-> > more than 64 MB.
-> >
-> > On the other hand, we have people having hard freezes with
-> > Lombard and Pismos even with 64 MB.
-> >
-> > So my analysis is as follows:
-> >
-> > High bus speed (400 Mhz) seems to be necessary to trigger this hard
-> > freeze.
-> > More memory makes it more likely for hard freezes to appear.
-> >
-> > If there is a problem with the memory it is more likely that it is with the
-> > original 64 MB.
-> >
-> >
-> > Is there somebody out there having a >=400 Mhz Lombard
-> > and Pismo who is _not encountering hard freezes_ under high pressure?
-> > (Preferably with more that 64MB. Because I never got the hard freeze
-> > when I only used 64MB with the mem=64MB switch.)
-> >
-> > It might as well be a design problem of the Powerbooks. Can any of the
-> > hardware kernel hackers comments on the differences in architecture
-> > for powerbooks and the other G3s? Maybe a linux driver is written sloppy
-> > in this area not taking in account how the hardware actually works?
-> >
-> > 	Bernhard
-> >
-> > ps.: Just I reminder: I am not subscribed ot the list.
->
->
-> Just to let you know that I'm also running a Pismo with 192 megs ram,
-> and it seems very stable.  I'm compiled kernels and run tripwire over the
-> filesystem (lots of IO doing that) and no problems.  I'm running the
-> linux-pmac-stable kernel.
->
-> Chris
->
->
+Yes. But ilbm (interleaved bitplanes) still has to use a different formula.
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
