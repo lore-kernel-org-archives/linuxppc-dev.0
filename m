@@ -1,39 +1,28 @@
-Message-ID: <3F6BCBA6.3000405@kegel.com>
-Date: Fri, 19 Sep 2003 20:38:14 -0700
-From: Dan Kegel <dank@kegel.com>
+Date: Mon, 22 Sep 2003 10:13:26 -0500 (CDT)
+From: Bret Indrelee <Bret.Indrelee@qlogic.com>
+Reply-To: Bret Indrelee <Bret.Indrelee@qlogic.com>
+To: Linux PPC Embedded mailing list <linuxppc-embedded@lists.linuxppc.org>
+Subject: Any restrictions on DMA address boundry?
+Message-ID: <Pine.LNX.4.44.0309221006580.30267-100000@spider.ancor.com>
 MIME-Version: 1.0
-To: Todd <to_dd@yahoo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: exernalizing module functions to user space
-References: <20030919192939.31485.qmail@web40412.mail.yahoo.com>
-In-Reply-To: <20030919192939.31485.qmail@web40412.mail.yahoo.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Todd wrote:
-> I would like to make certain functions in my driver
-> available to user space applications.  At first it
-> seemed that EXTERN_SYMBOL was the solution, but this
-> appears to externalize the functions only to other
-> modules.
-> I considered adding specialized entries in the
-> file_operations structure...but this does not seem
-> appropriate.  Can anyone explain the proper method of
-> acheiving this??
+Are there alignment restrictions on the address boundry your can
+start a DMA with when using the pci_map_single() / pci_unmap_single()
+calls?
 
-Yes.  This is an extremely basic question, you may wish
-to grab a book or two on linux kernel programming.
-The kernel is in a different address space than user code,
-so you can't use direct calls.
-Write a syscall, an ioctl, a driver, or create /proc entries.
-- Dan
+For some reason, I thought they had to be cache line aligned, but when
+I went back through the documentation I couldn't find any such
+restriction.
+
+-Bret
 
 --
-Dan Kegel
-http://www.kegel.com
-http://counter.li.org/cgi-bin/runscript/display-person.cgi?user=78045
+Bret Indrelee                 QLogic Corporation
+Bret.Indrelee@qlogic.com      6321 Bury Drive, St 13, Eden Prairie, MN 55346
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
