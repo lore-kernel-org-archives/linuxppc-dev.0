@@ -1,53 +1,31 @@
-To: Cort Dougan <cort@persephone.cs.nmt.edu>
-Cc: Troy Benjegerdes <hozer@drgw.net>, Dan Malek <dmalek@jlc.net>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: PReP RTC vs Decrementer accuracy...
-References: <Pine.LNX.3.96.981209012238.14552A-100000@persephone.cs.nmt.edu>
-Reply-To: minyard@acm.org
-From: Corey Minyard <minyard@acm.org>
-Date: 09 Dec 1998 17:52:04 -0600
-In-Reply-To: Cort Dougan's message of Wed, 9 Dec 1998 01:25:21 -0700 (MST)
-Message-ID: <m2btlcnaaj.fsf@wf-rch.cirr.com>
+Message-ID: <19981209200520.A7128@bleck.ksu.ksu.edu>
+Date: Wed, 9 Dec 1998 20:05:20 -0600
+From: Zach Metzinger <wizkid@ksu.edu>
+To: Randy Gobbel <gobbel@andrew.cmu.edu>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: New XF68_FBDev
+References: <Pine.LNX.4.03.9812041504560.26444-100000@mercator.cs.kuleuven.ac.be> <ML-3.4.913235228.9383.gobbel@gamera.psy.cmu.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <ML-3.4.913235228.9383.gobbel@gamera.psy.cmu.edu>; from Randy Gobbel on Wed, Dec 09, 1998 at 03:27:08PM -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Cort Dougan <cort@persephone.cs.nmt.edu> writes:
-
-> No, this would tend to make it slower if anything.
+On Wed, Dec 09, 1998 at 03:27:08PM -0500, Randy Gobbel wrote:
 > 
-> }Okay, would this cause the clock to be fast? (mine was about 45 minutes
-> }fast) (And, is it feasable to make it 'impossible' to miss a decr?)
-> 
-> Rebooting a lot would affect it.  Are you running the code that sync's the
-> rtc with the system clock every 11 minutes?  If so, turning it off and
-> seeing which clock was accurate after a while would be a useful
-> experiment.
-> 
-> }I have also rebooted the machine quite a bit.. This may also be the
-> }reason.
-> 
+> Using XF68_FBDevv-accel-ppc-19981204-2, I'm seeing some trashed pixels when
+> doing solid window moves and when scrolling, at both 8 and 16 bpp.  It looks to
+> me like the BITBLTs are picking up bits from the framebuffer rather than from
+> the window.  xrefresh puts things back in order.
 
-I'm having this same problem on an MVME2700 (233MHZ 750).  With the
-default configuration the clock gains about 1.5 seconds every 30
-minutes.  LinuxPPC on my PowerMac keeps great time.
+Well, bitblt's do pick up bits from the framebuffer and not from the system
+memory. That's why it's called acceleration, the video card's graphics
+engine does the moving of data within the framebuffer memory on behalf of
+the X server. No idea why it does this, however, since -accel-ppc exits
+on signal 11 (Segv) on my machine.
 
-I removed the hardcoding of the decrementer setting but the computed
-values stayed pretty much the same.  I have modified the hardcoded
-frequency value to be 999950000 (after some experimentation with
-xntpd) from the old value of 998700000.  This keeps time pretty well
-(<16ppm error) and the stability is very good.
-
-Also, I'm not seeing the time being written to the RTC at all.  I just
-left my card up all day and it made no difference in the time in the
-RTC, it is about 600 seconds off (and that value is growing quite
-rapidly, probably 30 seconds a day, which might explain why the
-calculated value is so far off).  But why isn't the RTC being written?
-Maybe I'll look at this tomorrow.
-
--- 
-Corey Minyard               Internet:  minyard@acm.org
-  Work: minyard@nortel.ca       UUCP:  minyard@wf-rch.cirr.com
+--- Zach
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
