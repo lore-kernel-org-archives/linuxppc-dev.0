@@ -1,25 +1,31 @@
-Date: Fri, 7 Jul 2000 21:29:58 +0200
-From: Claus Enneper <enneper@olis.north.de>
-To: linuxppc-dev@lists.linuxppc.org
-Cc: Iain Sandoe <iain@sandoe.co.uk>
-Subject: Re: 2.2.17pre10-ben1 & dmasound & atfb driver
-Message-ID: <20000707212958.E1640@olis.north.de>
-Reply-To: cl.en@gmx.net
-References: <200007071603.RAA18464@hyperion.valhalla.net> <3965F335.42ABEEFD@erols.com>
-Mime-Version: 1.0
+Message-ID: <39662FCC.49A3E523@erols.com>
+Date: Fri, 07 Jul 2000 15:30:20 -0400
+From: Nelson Abramson <pogtal@erols.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <bh40@calva.net>
+CC: yellowdog-devel@lists.yellowdoglinux.com, linuxppc-dev@lists.linuxppc.org,
+        Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+Subject: Re: RFC: Changing default partition type for linux/ppc
+References: <Pine.LNX.4.10.10007071754400.28685-100000@opal.biophys.uni-duesseldorf.de> <20000707221950.20980@192.168.1.10>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3965F335.42ABEEFD@erols.com>; from Nelson Abramson on Fri, Jul 07, 2000 at 11:11:49AM -0400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
- >:
- >: I can't find the message in my archive, but here's the skinny (mainly quoted
- >: from BenH--I wrote it down :-) ):
+Benjamin Herrenschmidt wrote:
 
-<http://home.munich.netsurf.de/Franz.Sirl/inputppc.html>
+> >
+> >Benh: are you maintaining the official version of pdisk now?
+>
+> No, I'm not. I don't know if someone actually maintains it
 
---
-Yours, ce
+I believe one of the original (the original?) creator(s) of pdisk is now
+part of the Linux/PPC community.  IIRC, he was working on upgrading pdisk
+and fixing the problems that were highlighted previously in the list
+archives.  I haven't heard anything recently, so I have no idea what the
+status is.
+
+--Nelson Abramson
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
