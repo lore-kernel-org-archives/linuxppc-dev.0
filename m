@@ -1,22 +1,22 @@
-Return-Path: <olh@suse.de>
-Received: from Cantor.suse.de (mail-ex.suse.de [195.135.220.2])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "mail.suse.de",
-	Issuer "SuSE Linux AG internal IMAP-Server CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id C922567A86
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Feb 2005 19:29:53 +1100 (EST)
-Date: Mon, 7 Feb 2005 09:29:48 +0100
-From: Olaf Hering <olh@suse.de>
-To: Tom Rini <trini@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
-	Sam Ravnborg <sam@ravnborg.org>
-Message-ID: <20050207082948.GB29823@suse.de>
-References: <20050206124014.GA5880@suse.de>
-	<20050206215131.GF7686@smtp.west.cox.net>
-	<20050206225323.GA16821@mars.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20050206225323.GA16821@mars.ravnborg.org>
-Subject: Re: make -j12 all fails in uImage target
+Return-Path: <cfriesen@nortel.com>
+Message-ID: <42077EE0.2060505@nortel.com>
+Date: Mon, 07 Feb 2005 08:44:48 -0600
+From: Chris Friesen <cfriesen@nortel.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <41FECA18.50609@nortelnetworks.com>	
+	<1107243398.4208.47.camel@laptopd505.fenrus.org>	
+	<41FFA21C.8060203@nortelnetworks.com>	
+	<1107273017.4208.132.camel@laptopd505.fenrus.org>	
+	<20050204203050.GA5889@dmt.cnet> <4203D793.1040604@nortel.com>
+	<1107595148.30302.5.camel@gaston>
+In-Reply-To: <1107595148.30302.5.camel@gaston>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc64-dev <linuxppc64-dev@ozlabs.org>,
+	Arjan van de Ven <arjan@infradead.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: question on symbol exports
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,87 +26,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- On Sun, Feb 06, Sam Ravnborg wrote:
-
-> Something like this may do the trick:
+Benjamin Herrenschmidt wrote:
+>>It turns out that to call ptep_clear_flush_dirty() on ppc64 from a 
+>>module I needed to export the following symbols:
+>>
+>>__flush_tlb_pending
+>>ppc64_tlb_batch
+>>hpte_update
 > 
-> $(obj)/images: $(addprefix $(obj)/,$(subdir-y) $(bootdir-y))
-> 	$(Q)$(MAKE) $(build)=$@
 > 
-> And then delete the assignment of images to subdir-y
+> Any reason why you need to call that from a module ? Is the module
+> GPL'd ?
 
-That still doesnt work right, I touched one .c file which lead to a new
-vmlinux, now zImage.rs6k is too small:
+I explained this at the beginning of the thread, but I'll do so again. 
+The module will be released under the GPL.
 
-diff -purNx tags ../linux-2.6.11-rc3.orig/arch/ppc/boot/Makefile ./arch/ppc/boot/Makefile
---- ../linux-2.6.11-rc3.orig/arch/ppc/boot/Makefile     2005-02-03 02:56:10.000000000 +0100
-+++ ./arch/ppc/boot/Makefile    2005-02-07 09:24:38.713179331 +0100
-@@ -17,8 +17,10 @@ BOOT_TARGETS = zImage zImage.initrd znet
- 
- bootdir-y                      := simple
- bootdir-$(CONFIG_PPC_OF)       += openfirmware
--subdir-y                       := lib common images
-+subdir-y                       := lib common
- subdir-$(CONFIG_PPC_OF)                += of1275
-+$(obj)/images: $(addprefix $(obj)/,$(subdir-y) $(bootdir-y))
-+       $(Q)$(MAKE) $(build)=$@
- 
- # for cleaning
- subdir-                                += simple openfirmware
+The basic idea is that we want to be able to track pages dirtied by a 
+userspace process.  The system has no swap, so we use the dirty bit for 
+this.  On demand we look up the page tables for an address range 
+specified by the caller, store the addresses of any dirty pages, then 
+mark them clean so that the next write causes them to get marked dirty 
+again.  It is this act of marking them clean that requires the 
+additional exports.
 
-  CHK     include/linux/version.h
-make[2]: `arch/ppc/kernel/asm-offsets.s' is up to date.
-  CHK     include/asm-ppc/offsets.h
-  CHK     usr/initramfs_list
-  CHK     include/linux/compile.h
-  CC      arch/ppc/platforms/chrp_nvram.o
-  LD      arch/ppc/platforms/built-in.o
-  GEN     .version
-  CHK     include/linux/compile.h
-  UPD     include/linux/compile.h
-  CC      init/version.o
-  LD      init/built-in.o
-  LD      .tmp_vmlinux1
-  KSYM    .tmp_kallsyms1.S
-  AS      .tmp_kallsyms1.o
-  LD      .tmp_vmlinux2
-  KSYM    .tmp_kallsyms2.S
-  AS      .tmp_kallsyms2.o
-  LD      vmlinux
-  SYSMAP  System.map
-  SYSMAP  .tmp_System.map
-  OBJCOPY arch/ppc/boot/images/vmlinux.bin
-  GZIP    arch/ppc/boot/images/vmlinux.gz
-  AS      arch/ppc/boot/simple/head.o
-  AS      arch/ppc/boot/simple/relocate.o
-  CC      arch/ppc/boot/simple/prepmap.o
-  GEN     arch/ppc/boot/openfirmware/image.o
-  CC      arch/ppc/boot/simple/misc.o
-  GEN     arch/ppc/boot/images/miboot.image
-  COFF    arch/ppc/boot/openfirmware/coffboot
-  ELF     arch/ppc/boot/images/vmlinux.elf-pmac
-  CHRP    arch/ppc/boot/images/zImage.chrp
-  CC      arch/ppc/boot/simple/misc-prep.o
-  CC      arch/ppc/boot/simple/mpc10x_memory.o
-  COFF    arch/ppc/boot/images/vmlinux.coff
-  ADDNOTE arch/ppc/boot/images/zImage.chrp-rs6k
-  kernel: zImage is ready (arch/ppc/boot/images/vmlinux.coff)
-...
-../O-2.6.11-rc3-b50/arch/ppc/boot/images/:
-total 6.2M
-drwxr-xr-x  2 olaf users  496 2005-02-07 09:26 ./   
-drwxr-xr-x  9 olaf users  224 2005-02-07 09:25 ../  
--rw-r--r--  1 olaf users  256 2005-02-07 09:26 .uImage.cmd
--rw-r--r--  1 olaf users  100 2005-02-07 09:26 .vmlinux.bin.cmd
--rw-r--r--  1 olaf users  119 2005-02-07 09:26 .vmlinux.gz.cmd
--rw-r--r--  1 olaf users  49K 2005-02-07 09:26 miboot.image
--rwxr-xr-x  1 olaf users 2.8M 2005-02-07 09:26 vmlinux.bin*
--rwxr-xr-x  1 olaf users  79K 2005-02-07 09:26 vmlinux.coff*
--rwxr-xr-x  1 olaf users 146K 2005-02-07 09:26 vmlinux.elf-pmac*
--rw-r--r--  1 olaf users 1.3M 2005-02-07 09:26 vmlinux.gz
--rwxr-xr-x  1 olaf users 575K 2005-02-07 09:26 zImage.bugboot*
--rwxr-xr-x  1 olaf users 146K 2005-02-07 09:26 zImage.chrp*
--rw-r--r--  1 olaf users 146K 2005-02-07 09:26 zImage.chrp-rs6k
--rwxr-xr-x  1 olaf users 639K 2005-02-07 09:26 zImage.elf*
-lrwxrwxrwx  1 olaf users   12 2005-02-07 09:26 zImage.pmac -> vmlinux.coff*
--rwxr-xr-x  1 olaf users 576K 2005-02-07 09:26 zImage.prep*
+I've included the current code below.  If there is any way to accomplish 
+this without the additional exports, I'd love to hear about it.
+
+Chris
+
+
+
+
+
+
+
+
+Note: this code is run while holding &mm->mmap_sem and &mm->page_table_lock.
+
+
+for(addr=start&PAGE_MASK; addr<=end; addr+=PAGE_SIZE) {
+	pte_t *ptep=0;
+
+	ptep = va_to_ptep_map(mm, addr);
+	if (!ptep)
+		goto unmap_continue;
+
+	if (!pte_dirty(*ptep))
+		goto unmap_continue;
+
+	/* We have a user readable dirty page.  Count it.*/
+	dirty_count++;
+
+	if (dirty_count <= entries) {
+		__put_user(addr, buf);
+		buf++;
+		ptep_clear_flush_dirty(find_vma(mm, addr), addr, ptep);
+
+		/* Handle option to stop early. */
+		if ((dirty_count == entries) &&
+			(options & STOP_WHEN_BUF_FULL))
+			addr=end+1;
+	}
+
+unmap_continue:
+	if (ptep)
+		pte_unmap(ptep);		
+}
