@@ -1,35 +1,35 @@
-Message-Id: <m117EQ0-0000WZC@tri-yann.crf.canon.fr>
-Date: Thu, 22 Jul 1999 10:41:32 +0200 (CEST)
-From: "VALETTE Eric" <valette@crf.canon.fr>
-To: Geert.Uytterhoeven@cs.kuleuven.ac.be
-CC: mmporter@home.com, jpeters@phx.mcd.mot.com,
-        linuxppc-dev@lists.linuxppc.org
-In-reply-to: 
-	<Pine.LNX.4.10.9907221012590.18625-100000@mercator.cs.kuleuven.ac.be>
-	(message from Geert Uytterhoeven on Thu, 22 Jul 1999 10:14:24 +0200
-	(CEST))
-Subject: Re: Is the vger 2.2 kernel branch dead
-References: <Pine.LNX.4.10.9907221012590.18625-100000@mercator.cs.kuleuven.ac.be>
+Message-ID: <3796DC8A.817D0E98@pop.agri.ch>
+Date: Thu, 22 Jul 1999 10:55:38 +0200
+From: Andreas Tobler <toa@pop.agri.ch>
+MIME-Version: 1.0
+To: Dev-Linux <linuxppc-dev@lists.linuxppc.org>
+Subject: kernel 2.2.10 & ac-pathces?
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> "Geert" == Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be> writes:
+Hi,
 
-Geert> AFAIK Cort is not on vacation. He checks in patches at vger on a daily base.
+I have an old MO drive which wasn't (isn't) supported by the actual
+kernel 2.2.10. After some searches on this topic I got an answer from a
+italian guy which mentioned to have similar problems. He suggested to me
+that I need at least Alan Cox patches >=2.2.10.ac5. There the problem
+should be solved.
+Now I have access to these patches but I don't know if it is or how it
+is possible to apply them to a cvs'ed kernel from
+http://cvs.on.openprojects.net/?
+Can I simply patch them against the kernel sources or are there unkown
+(to me) troubles awating me?
 
-So why did I get no single comment on patches I submitted?
-The Prep IDE handling is broken...
+Thanks for any hint
 
+Andreas
 -- 
-   __                 
-  /  `                   	Eric Valette
- /--   __  o _.          	Canon CRF - Communication Dept
-(___, / (_(_(__         	Rue de la touche lambert
-				35517 Cesson-Sevigne  Cedex
-				FRANCE
-Tel: +33 (0)2 99 87 68 91	Fax: +33 (0)2 99 84 11 30
-E-mail: valette@crf.canon.fr	http://www.crf.canon.fr
+| Andreas Tobler				
+| CH-8004 Zuerich 							
+| E-Mail: andreas.tobler@alcatel.ch	| a.tobler@schweiz.ch
+-----------------------------------------------------------
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
