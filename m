@@ -1,23 +1,16 @@
-Return-Path: <joern@wohnheim.fh-wedel.de>
-Received: from moskovskaya.fh-wedel.de (mail.fh-wedel.de [213.39.232.198])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 98F9667A7D
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 6E80267A6D
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  4 Mar 2005 10:05:41 +1100 (EST)
-Date: Fri, 4 Mar 2005 00:05:41 +0100
-From: =?iso-8859-1?Q?J=F6rn?= Engel <joern@wohnheim.fh-wedel.de>
-To: Gerhard Jaeger <g.jaeger@sysgo.com>
-Message-ID: <20050303230541.GA7274@wohnheim.fh-wedel.de>
-References: <46110262C7A0BF418DE9C9A5BD73F92807F2F94C@cceexc23.americas.cpqcorp.net>
-	<200503011737.22205.g.jaeger@sysgo.com>
-	<20050302215308.GA6511@wohnheim.fh-wedel.de>
-	<200503030923.22677.g.jaeger@sysgo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <200503030923.22677.g.jaeger@sysgo.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Building a Kernel for the AMCC PPC440EP Bamboo Board
+	Fri,  4 Mar 2005 12:04:01 +1100 (EST)
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <fd5eb84defe2c51141e872390eefc9a1@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Thu, 3 Mar 2005 19:03:51 -0600
+To: Paul Mackerras <paulus@samba.org>
+Cc: ppcembed Linux list <linuxppc-embedded@ozlabs.org>
+Subject: Allowing i-side updates of TLB on 4xx/book-e
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,16 +21,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, 3 March 2005 09:23:22 +0100, Gerhard Jaeger wrote:
-> > 
-> Could not confirm that so far! Ebony and Ocotea are working out of the
-> box, using these defconfig files! (pristine kernel 2.6.11)
+Paul,
 
-With PIBS and on a bamboo?  If I was just too stupid and made some
-silly mistake, that would be great news.
+I know its been forever since you looked at ppc32 and even longer for 
+4xx/booke :)  I did have a question regarding some code on the i-side 
+TLB faults in do_page_fault:
 
-Jörn
+                 /* Since 4xx/Book-E supports per-page execute 
+permission,
+                  * we lazily flush dcache to icache. */
+                 ptep = NULL;
+                 if (get_pteptr(mm, address, &ptep) && 
+pte_present(*ptep)) {
+                         struct page *page = pte_page(*ptep);
 
--- 
-I don't understand it. Nobody does.
--- Richard P. Feynman
+                         if (! test_bit(PG_arch_1, &page->flags)) {
+                                 flush_dcache_icache_page(page);
+                                 set_bit(PG_arch_1, &page->flags);
+                         }
+                         pte_update(ptep, 0, _PAGE_HWEXEC);
+                         _tlbie(address);
+                         pte_unmap(ptep);
+                         up_read(&mm->mmap_sem);
+                         return 0;
+                 }
+
+Is there a reason we don't allow preloading of the I-side TLB entry 
+that we just updated, rather than doing the _tlbie?  We have to figure 
+that we are about to take another I-TLB miss to reload the entry we 
+just got this InstructionStorage fault for.  Is there something I'm 
+missing?
+
+thanks
+
+- kumar
