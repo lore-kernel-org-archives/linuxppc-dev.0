@@ -1,56 +1,61 @@
-From: benh@kernel.crashing.org
-To: Dan Malek <dan@embeddededge.com>, <acurtis@onz.com>
-Cc: Paul Mackerras <paulus@samba.org>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: eieio rule-of-thumb?
-Date: Thu, 23 May 2002 19:44:25 +0100
-Message-Id: <20020523184426.19045@mailhost.mipsys.com>
-In-Reply-To: <3CED26BB.2080700@embeddededge.com>
-References: <3CED26BB.2080700@embeddededge.com>
+Message-ID: <3CED3CB2.1080803@embeddededge.com>
+Date: Thu, 23 May 2002 15:02:10 -0400
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: Chris Thomson <cmt@bivio.net>
+Cc: acurtis@onz.com, "'Paul Mackerras'" <paulus@samba.org>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: eieio rule-of-thumb?
+References: <000001c20281$a98be6b0$9502a8c0@cthomson59>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->
->What doesn't make sense is why we use eieio at all......All of the
->mapped I/O space is marked uncached 'guarded' in the PTE, which enforces
->in-order load/store operations.  This should also prevent store gathering in
->bridges since they shouldn't see a burst write from a processor store
->operation.
+Chris Thomson wrote:
 
-Regarding eieio on uncached, Paul or Anton can tell you more about it,
-I think there is still a case where guarded doesn't prevent a load
-from moving accross a store.
+> Eieio instructions are needed for CPUs based on the 745x core.
+> These are the 7445, 7450, 7451 and 7455.
 
-Regarding the bridge, the while point of store gathering in bridges
-is to make bursts when the CPU doesn't. That's what most bridges call
-'write combine'. It's done, for example, but UniNorth rev >= 1.5 on
-macs when targeting the AGP bus.
+The eieio is needed on many of the processors, I just got lucky
+on some of them :-)
 
->If you want higher peformance programmed I/O access, then you should cache
->some of the space, and at that time you must use eieio if there are cached
->areas subject to out of order access problems.
+> Earlier PPC implementations never reordered guarded, or even
+> uncached, accesses.  Motorola made a big deal about this in its
+> embedded sales.  All you had to do was set the WIMG bits right.
 
-And beware that eieio won't be a barrier between cacheable and non cacheable
-space. So if you need your cacheable stores to be complete before you write
-to non-cacheable space (a register for example), you need to use sync.
+The 74xx is a little confusing, but I don't think it really changed
+any semantics.  Loads from uncached and guarded spaces are still
+performed in order.  Writes to such spaces are not gathered and are
+performed in order.  I think there was some fine tuning of pipelines
+that may cause writes to hang around in a buffer longer than they
+did on previous processors (and there is this funny description of
+a cache line load if all of them would be executed).  The only
+confusing part is how the cache inhibit or guarded attribute controls
+this behavior.  The eieio is still necessary to ensure a load doesn't
+cross a pending store.
 
->On the 8xx and 8260 family, all of the I/O (including the internal memory
->space) is mapped uncached and guarded.  I've never used eieio nor seen
->any reason it was necessary.
+The eieio further performs a broadcast bus operation which can be
+used by external bridges to prevent them from performing a store
+gathering (write combining as Ben said :-) if necessary.
 
-I think it is on desktop CPUs, but again, here, Paul and Anton have more
-knowledge than I do.
+I know there is something a little different with the 74xx, because
+when I received one of the first 7450s for my Sandpoint the PCI I/O
+didn't work exactly correct.  A couple of minor bug fixes suitable to
+all processors cured it.
 
->Where you will see problems, especially on 4xx and potentially on 8xx,
->is the use of "regular" memory for control structures and special registers
->for other control.  You can write to memory, which gets stuck in pipelines,
->then whack a DCR (which seems to have some magical fast path update) causing
->the peripheral to start up before the pipelined writes have made it to
->memory.  I'm wondering if we aren't just lucky with the eieio side effects
->when a 'sync' would be the logically correct operator.
+> Evidently Motorola decided that getting the extra performance
+> of reordering was needed to keep the Apple account.
+
+You could probably say that of Altivec, but I don't see any difference
+with the reordering behavior of the processors.  Anything we see is likely
+to be an effect of significantly improving the performance of the normal
+superscalar mode of operation.
+
+Thanks.
+
+
+	-- Dan
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
