@@ -1,41 +1,40 @@
-Date: Tue, 1 Aug 2000 14:03:59 -0700
+Date: Tue, 1 Aug 2000 14:06:42 -0700
 From: Daniel Jacobowitz <drow@false.org>
 To: linuxppc-dev@lists.linuxppc.org
 Subject: Re: LinuxPPC X Server
-Message-ID: <20000801140359.A24586@drow.them.org>
-References: <200007301959.UAA25203@hyperion.valhalla.net> <3984708A.D2D39371@student.ethz.ch> <20000730201214.A11467@drow.them.org> <39852D5F.22135576@relog.ch>
+Message-ID: <20000801140642.B24586@drow.them.org>
+References: <39853D27.8F4F5500@relog.ch> <Pine.LNX.4.21.0008011508360.4803-100000@idd-01.imbc.gr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <39852D5F.22135576@relog.ch>; from daenzer@relog.ch on Mon, Jul 31, 2000 at 09:40:15AM +0200
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.21.0008011508360.4803-100000@idd-01.imbc.gr>; from gewrgiou@imbc.gr on Tue, Aug 01, 2000 at 03:54:37PM +0300
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Jul 31, 2000 at 09:40:15AM +0200, Michel Dänzer wrote:
-> Daniel Jacobowitz wrote:
-> >
-> > On Sun, Jul 30, 2000 at 08:14:35PM +0200, Michel D?nzer wrote:
-> > > Before building, you should have copied xc/config/cf/{xf86site,host}.def
-> > >
-> > > Then edit the newly created host.def - you probably only want to build the
-> > > server and drivers, and choose the drivers you want.
-> > >
-> > > For DRI, you may have to edit even more files in config/cf/, AFAIK DRI is only
-> > > built on i386 by default.
-> >
-> > DRI won't build on powerpc at present.  The first place it dies is in
-> > the makefiles for libOSmesa, where $(SUBDIRS) becomes empty.
+On Tue, Aug 01, 2000 at 03:54:37PM +0300, Kostas Gewrgiou wrote:
+> The mb() should be enough in r128_dma.c (we might not need it at all though
+> but it shouldn't hurt). The R128_WRITE/R128_READ macros in r128_drv.h will
+> need to do byteswapping also i imagine.
 >
-> Which tree and version?
+> The writes to the CCE ring buffer might be a problem also you might need
+> to do different swaps depending on where the buffer lives (host memory or
+> in the framebuffer) since the framebuffer writes get swapped depending on
+> the current depth. (voodoo3 has this problem)
 >
-> I was playing around with stock X 4.0.1 on the train about an hour ago, and
-> apart from the /dev entries missing (anyone has the majors/minors handy? :),
-> everything _seemed_ to at least load fine...
+> The drm modules need some asm code as well, look at my patches in
+> dri.sourceforge.net (patch_id 100488,100568) the code is almost a copy
+> from the glibc sources (i know next to nothing about ppc asm) but they
+> work well with my voodoo3.
 >
-> I'll report the definite result after more testing.
+> Also note that the DRI drivers don't get build by default in PPC
+> you have to #define BuildXF86DRI YES in xf config files *AND*
+> patch xc/lib/GL/mesa/src/drv/Imakefile to enable the dri drivers
+> to build under ppc.
+>
+> Unfortunately i don't have an r128 card so i can't do anything here :(
 
-Straight 4.0.1.  I turned on BuildXF86DRI in linux.cf in an attempt to
-build libOSmesa, and failed.
+What sort of patch do we need to that Imakefile?  I couldn't figure out
+what to do.
 
 Dan
 
