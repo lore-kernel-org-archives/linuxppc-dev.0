@@ -1,42 +1,38 @@
-To: "somshekar chandrashekar kadam" <ppclinux@rediffmail.com>
-Cc: linuxppc-embedded@lists.linuxppc.org,
-	"Lin,     Nan-Hung" <carl@fiberlogic.com>
-Subject: Re: ramdisk problem 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "13 Jun 2002 11:14:32 -0000."
-             <20020613111432.22212.qmail@webmail27.rediffmail.com>
-Date: Thu, 13 Jun 2002 13:49:38 +0200
-Message-Id: <20020613114943.A4936102F8@denx.denx.de>
+Date: Thu, 13 Jun 2002 14:50:32 +0200
+From: Xavier Grave <grave@ipno.in2p3.fr>
+To: Gerhard TAEUBL <Gerhard.TAEUBL@frequentis.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: debian installation on an embedded system
+Message-ID: <20020613145032.C4925@ipnpcu5.in2p3.fr>
+References: <sd085559.000@mail.frequentis.com>
+Mime-Version: 1.0
+Content-Type: text/plain; format=flowed; charset=ISO-8859-1
+In-Reply-To: <sd085559.000@mail.frequentis.com>; from Gerhard.TAEUBL@frequentis.com on jeu, jun 13, 2002 at 08:18:11 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20020613111432.22212.qmail@webmail27.rediffmail.com> you wrote:
+Le jeu, 13 jun 2002 08:18:11, Gerhard TAEUBL a écrit :
 >
-> when i am booting its saying ,couldnt find valid ramdisk image ,i
-> am using pRamdisk from denx site which u have sent me the link
+> Hi!
+>
+> I try to do this like Kenneth described it (see
+> http://lists.linuxppc.org/linuxppc-embedded/200103/msg00106.html).
+> I used an own design with an mpc860Tand the console on SCC2.
+>
+> It works fine till the login. If I enter root the login apears again, and
+> so on, no request for password. The system is stored on an IMac, so I use
+> the password file from the mac (debian 2.2).
+>
+> Any ideas?
+Hi,
 
-As I wrote you have to strip the PPCBoot header if you are not  using
-PPCBoot as boot loader.
+Did you check the file /etc/securetty ?
+Perhaps this is a security problem..
 
-Did you do this?
-
->    he is calling PAGE ALIGN
->   i dont what it does  but i mostly think
->     it computes the offset after after zImage
->   as it is given as a parameter
-
-I cannot make sense out of this. What exactly did you do? How did you
-build your zImage.initrd image?
-
-Wolfgang Denk
-
+O+ xavier
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-It would seem that evil retreats when forcibly confronted
-	-- Yarnek of Excalbia, "The Savage Curtain", stardate 5906.5
+33 (0) 1 69 15 79 59
+De chacun selon ses forces, a chacun selon ses besoins
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
