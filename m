@@ -1,69 +1,80 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Reply-To: <tschaefer@giga-stream.de>
-From: =?iso-8859-1?Q?Thomas_Sch=E4fer?= <tschaefer@giga-stream.de>
+From: "Christos Pasalidis" <cpas@intracom.gr>
 To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: fw_setenv problem when calling from expect script
-Date: Tue, 8 Jun 2004 14:20:27 +0200
-Message-ID: <FIEJJAKAABLMHFKFECNJCEHIHBAA.tschaefer@giga-stream.de>
+Subject: kernel 2.6.6 on ppc405 ?
+Date: Tue, 8 Jun 2004 16:32:33 +0300
+Message-ID: <NFBBKGCEICKODMJLGDABCEHACIAA.cpas@intracom.gr>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
+	charset="windows-1253"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hi
 
-I'm using MVL 3.0 (kernel 2.4.18) on a PPC 405GPr custom board. Flash memory
-on the board is located in 2 AMD641DH flash chips, which are concatenated on
-the mtd layer to one large flash memory area. The flash is divided into 5
-partitions (bootloader u-boot, 2 bootloader environment partitions, kernel,
-rootfs).
+Has anyone managed to run the v2.6.6_linuxppc kernel on a ppc405 based
+system ? (e.g Dreambox ) My attempt does not work when it tries to mount
+/proc. Then mount receives SIGSEGV.
 
-When using the fw_setenv tool that comes with u-boot on the linux console, I
-can write the bootloader environment sectors without problems. When calling
-fw_setenv from an expect script, which also does some write accesses on the
-rootfs partition, I get the following error message when trying to write the
-bootloader environmen afterwards:
+If you have any idea, about what could be wrong, i 'd love to look at it...
 
-[root@SERVICE update]# Set the bootloader to flash mode ...
-/mnt/install/fw_setenv  "rootfs flash" "kernel flash"
-"serverip 192.10.11.95" "ipaddr 10.0.3.14"  "netmask 255.255.255.0"
-"gatewayip 10.0.3.25"
-Unlocking flash ... Done
-Erasing old environment ... Done
-CRC write error on /dev/mtd1: Input/output error
-Error: can't write fw_env to flash
-Writing environment to /dev/mtd1 ... [root@SERVICE update]# ... Timeout.
-(child process exited abnormally)
+Thanks in advance,
+Christos
 
-The respective environment sector has been erased, but writing the new
-environment didn't work.
+cnp: trying to strace mount proc
+execve("/bin/mount", ["mount", "-t", "proc", "proc", "/proc"], [/* 10 vars
+*/])0
+brk(0)                                  = 0x10023000
+open("/etc/ld.so.preload", O_RDONLY)    = -1 ENOENT (No such file or
+directory)
+open("/etc/ld.so.cache", O_RDONLY)      = 3
+fstat64(3, {st_mode=S_IFREG|0644, st_size=4614, ...}) = 0
+mmap(NULL, 4614, PROT_READ, MAP_PRIVATE, 3, 0) = 0x30017000
+close(3)                                = 0
+open("/lib/libc.so.6", O_RDONLY)        = 3
+read(3, "\177ELF\1\2\1\0\0\0\0\0\0\0\0\0\0\3\0\24\0\0\0\1\0\1\310"..., 1024)
+= 4
+fstat64(3, {st_mode=S_IFREG|0755, st_size=11432222, ...}) = 0
+mmap(0xfea5000, 1353160, PROT_READ|PROT_EXEC, MAP_PRIVATE, 3, 0) = 0xfea5000
+mprotect(0xffd6000, 103880, PROT_NONE)  = 0
+mmap(0xffe5000, 24576, PROT_READ|PROT_WRITE|PROT_EXEC,
+MAP_PRIVATE|MAP_FIXED, 30
+mmap(0xffeb000, 17864, PROT_READ|PROT_WRITE|PROT_EXEC,
+MAP_PRIVATE|MAP_FIXED|MA0
+close(3)                                = 0
+mprotect(0xfea5000, 1249280, PROT_READ|PROT_WRITE) = 0
+mprotect(0xfea5000, 1249280, PROT_READ|PROT_EXEC) = 0
+munmap(0x30017000, 4614)                = 0
+brk(0)                                  = 0x10023000
+brk(0x10024000)                         = 0x10024000
+umask(033)                              = 022
+open("/dev/null", O_RDWR|O_LARGEFILE)   = 3
+close(3)                                = 0
+getuid()                                = 0
+geteuid()                               = 0
+lstat64("/etc/mtab", {st_mode=S_IFREG|0644, st_size=0, ...}) = 0
+stat64("/sbin/mount.proc", 0x7ffffbc8)  = -1 ENOENT (No such file or
+directory)
+--- SIGSEGV (Segmentation fault) @ 0 (0) ---
++++ killed by SIGSEGV +++
 
-If I insert a 'sync' command between writing on the rootfs partition and the
-fw_setenv call, writing of the environment sector works, but this is not
-really a solution???
 
-When trying the same procedure on another custom board with PPC405GP but
-only one flash device and same partition scheme (no concatenation
-necessary), everything works without a problem.
+-----------------------------------------------
+ Christos Pasalidis, MSc
+ Software Engineer
 
-Any ideas, comments?
+ INTRACOM S.A.
+ Hellenic Telecommunications & Electronics Industry
+ New Technologies Dept.
+ Embedded Systems Group
+ P.O. Box 68, 19.5 km Markopoulo Ave.
+ 190 02 Peania, Athens, GREECE
+ Tel.: (+30 1) 667 4711, 667 9000
+ Fax.:(+30 1) 667 7101
+ email: cpas@intracom.gr
+ URL: www.intracom.gr
 
-Best regards,
-
-Thomas Schäfer
-
-____________________________________
-
-GIGA STREAM GmbH
-
-Konrad-Zuse-Str. 7
-66115 Saarbrücken
-
-Tel.: + 49 (0)681 / 95916 - 203
-Fax:  + 49 (0)681 / 95916 - 100
-E-mail: tschaefer@giga-stream.de
+My opinions are mine
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
