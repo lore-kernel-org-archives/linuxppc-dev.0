@@ -1,41 +1,33 @@
-Message-ID: <3A37B2E4.B3944354@mvista.com>
-Date: Wed, 13 Dec 2000 12:33:24 -0500
-From: Dan Malek <dan@mvista.com>
+From: mlocke@jps.net
+Message-ID: <3A37B380.DFAAA77@jps.net>
+Date: Wed, 13 Dec 2000 09:36:00 -0800
+Reply-To: mlocke@mvista.com
 MIME-Version: 1.0
-To: Arto Vuori <avuori@ssh.com>
-CC: Graham Stoney <greyham@research.canon.com.au>,
-        Brian Ford <ford@vss.fsi.com>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 2.5 or 2.4 kernel profiling
-References: <20001212182856.A8336@brixi.research.canon.com.au> <Pine.GSO.4.21.0012120933330.24199-100000@eos> <20001213121554.B17129@brixi.research.canon.com.au> <3A37A048.46E692A0@mvista.com> <3A37B08A.3FE08AF7@ssh.com>
+To: Nguyen Xuan Hoang <jerry.nguyen@serialsystem.com.sg>
+CC: linuxppc-embedded@lists.linuxppc.org, support@mvista.com
+Subject: Re: PCMCIA have machine check
+References: <3A37867B.2070606@galileo.co.il> <000801c06595$5f102540$ef0fa8c0@hoangmobile>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Arto Vuori wrote:
+You probably have the old RPX bootloader.  It sets the Bus Montior timeout
+which causes machine checks for every IO operation.  Contact EP tech support
+and request PlanetCore, the new bootloader.
+Nguyen Xuan Hoang wrote:
 
-> We also found and fixed some problems including:
+> Hi,
+>
+> I am trying to run Wireless Lan PCMCIA on RPXLite board,  but the system
+> just randomly crash (a machine check error).  I have trace the error, it
+> happen when we read or write the I/O port on the wireless LAN. It seems the
+> PCMCIA controller not set correctly. Have anyone experience about this
+> problem, please give me some advice.
+>
+> Thank in advance
+> Jerry
+>
 
-I have been pushing driver updates into the BK linuxppc_2_5 tree,
-but not into the linuxppc_2_3 tree as we are trying to stablize
-that for 2.4.  All of these you mentioned, and others have been
-updated.  The MII interface is still broken for some PHYs.
-
-Once the linuxppc_2_5 driver is better, I will push it into the 2.4
-baseline.
-
-For all processors, the BK linuxppc_2_5 tree has many more updates
-than the more visible 2_3 tree.
-
-Send me any patches you have as you create them.  It is lots easier
-to add a few lines here and there than to get a bunch of changes
-from an old baseline.
-
-
-	-- Dan
-
---
-
-	I like MMUs because I don't have a real life.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
