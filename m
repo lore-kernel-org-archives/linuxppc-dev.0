@@ -1,10 +1,10 @@
-Date: Tue, 2 Feb 1999 09:29:41 +0100 (MET)
+Date: Tue, 2 Feb 1999 09:41:19 +0100 (MET)
 From: Gabriel Paubert <paubert@iram.es>
-To: Michael Lundkvist <ml@epact.se>
+To: Bryan Christianson <bryanc@ihug.co.nz>
 cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: LinuxPPC on MVME 2306 board
-In-Reply-To: <qpbtjdlx7u.fsf@erbium.epact.se>
-Message-ID: <Pine.HPP.3.96.990202092146.16636H-100000@gra-ux1.iram.es>
+Subject: Re: I/O Port Conflicts with PCI devices?
+In-Reply-To: <l03130300b2dbb10d21bc@[172.16.10.14]>
+Message-ID: <Pine.HPP.3.96.990202093717.16636I-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
@@ -13,76 +13,35 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 
-On 1 Feb 1999, Michael Lundkvist wrote:
+On Tue, 2 Feb 1999, Bryan Christianson wrote:
 
-> I just tried this out on one of our MVME2307 cards. No go, but I'm
-> probably doing something wrong. 
-
-That's probably my fault, perhaps the serial port is non standard or
-something similar.
-
-> Network Boot File load in progress... To abort hit <BREAK>
->  
-> Bytes Received =&462440, Bytes Loaded =&462440
-> Bytes/Second   =&231220, Elapsed Time =2 Second(s)
+> The following listing of /proc/pci shows that I have 2 devices reporting an
+> I/O port of 0x400. Is this possible or am I not seeing the whole truth
+> here? When I try to access the port (with inl() or outl()), the machine
+> panics. I published this panic on the list last week and had no response.
 > 
-> ------------END SESSION---------------------------------------
+> I notice that GPR00 contains the address of the port plus my offset
+> (0x043c), offset by 0xFE000000, which from my reading of the kernel source
+> is the remapping done for PCI devices during initialisation.
 > 
-> No response after that.
+> I have tried kernels 2.1.130, 2.2.0 and 2.2.1, all with the same result. If
+> there are any PCI gurus out there who can help, I would dearly love to get
+> this to work.
 > 
-> If I do an nbh ionstead of an nbo and step through the code with t it
-> stops after the following code.
-> 
-> -------------BEGIN SESSION----------------------------------
-> 
-> PPC1-Bug>
-> IP     =001F0454 MSR    =00003040 CR     =00400000 FPSCR  =00000000
-> R0     =0000C082 R1     =001F0190 R2     =00000000 R3     =00000000
-> R4     =00000000 R5     =49504C01 R6     =00007000 R7     =001F0000
-> R8     =03FF9134 R9     =03FF8F34 R10    =03FF8F49 R11    =03FF9034
-> R12    =03FF9034 R13    =00000000 R14    =00000000 R15    =00000000
-> R16    =00000000 R17    =00000000 R18    =00000000 R19    =00000000
-> R20    =00000000 R21    =00000000 R22    =00000000 R23    =00000000
-> R24    =00000000 R25    =00000000 R26    =00000000 R27    =00000000
-> R28    =00003440 R29    =00000082 R30    =00264110 R31    =00000000
-> SPR0   =00000000 SPR1   =00000000 SPR8   =001F0418 SPR9   =00000000
-> 001F0454 4C00012C  ISYNC       
-> PPC1-Bug>
-> IP     =001F0458 MSR    =00003040 CR     =00400000 FPSCR  =00000000
-> R0     =0000C082 R1     =001F0190 R2     =00000000 R3     =00000000
-> R4     =00000000 R5     =49504C01 R6     =00007000 R7     =001F0000
-> R8     =03FF9134 R9     =03FF8F34 R10    =03FF8F49 R11    =03FF9034
-> R12    =03FF9034 R13    =00000000 R14    =00000000 R15    =00000000
-> R16    =00000000 R17    =00000000 R18    =00000000 R19    =00000000
-> R20    =00000000 R21    =00000000 R22    =00000000 R23    =00000000
-> R24    =00000000 R25    =00000000 R26    =00000000 R27    =00000000
-> R28    =00003440 R29    =00000082 R30    =00264110 R31    =00000000
-> SPR0   =00000000 SPR1   =00000000 SPR8   =001F0418 SPR9   =00000000
-> 001F0458 7C10FBA6  MTSPR       1008,R0
-> PPC1-Bug>
-> 
-> -------------END SESSION-----------------------------------
-> 
-> Any ideas?
+> PCI devices found:
+>   Bus  0, device   0, function  0:
+>     Host bridge: Motorola MPC106 Grackle (rev 64).
+>       Fast devsel.  Fast back-to-back capable.  Master Capable.  No bursts.
 
-Yes, this is normal. You can't trace through PPCBUG with the dcache
-enabled, this instruction enables the caches, so you can't rely on
-debugging with PPCBUG until you get the first message on the serial port.
+I'd rather have the output of lspci -vx, this allows to check more details
+like enabled or disabled I/O and memory space response. If you don't have
+lspci, the following should be sufficient: 
 
-This was perhaps the most tricky part to get the early boot working: there
-is a relatively long period during which you can't rely on anything. 
+	od -tx1 -Ax /proc/bus/pci/00/0e.0
+	od -tx1 -Ax /proc/bus/pci/00/12.0
+	
 
-Anyway if you change r0 to 0x8082 before the isync, you should be eable to
-trace further. 
-
-	Gabriel.
-
-P.S: I just see that r3 is 0, meaning that no residual data is available,
-please try again after answering yes to Network PreP boot mode enable in
-the ENV command. Residual data is currently critical to early boot
-operation (I'm trying to get rid of it, but it's not that easy and close
-to impossible for interrupt routing).
-
+	Gabriel
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
