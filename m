@@ -1,47 +1,24 @@
-Message-ID: <3AF7F4A4.2ADC6059@raleigh.ibm.com>
-Date: Tue, 08 May 2001 09:29:08 -0400
-From: Ralph Blach <rcblach@raleigh.ibm.com>
+From: Todd_Tomaino@vnci.net
+Subject: User I/O from Console
+To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <OF3A0AAE22.28C852E7-ON85256A46.00495C33@vnci.net>
+Date: Tue, 8 May 2001 06:40:22 -0700
 MIME-Version: 1.0
-To: Embedded Linux list <linuxppc-embedded@lists.linuxppc.org>
-Subject: null console
-Content-Type: multipart/mixed;
- boundary="------------D57500100001B07F306D206F"
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------D57500100001B07F306D206F
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Hello,
 
-Want to create a linux port with a null console.  This is for a box with
-one serial port that will be used
-for a ppp connection.  How is this done?
+I would like to setup some application control from the console on the
+RPX-lite board running Montavista .  I looked for the 'iostreams.h' or
+other equivalent library containing cin and cout, but couldn't locate
+anything.  I was wondering if someone could give me some insight which
+commands are used in Linux to read in user keystrokes.
 
-Chip
---------------D57500100001B07F306D206F
-Content-Type: text/x-vcard; charset=us-ascii;
- name="rcblach.vcf"
-Content-Description: Card for Ralph Blach
-Content-Disposition: attachment;
- filename="rcblach.vcf"
-Content-Transfer-Encoding: 7bit
-
-begin:vcard
-n:Blach;Ralph
-tel;work:919-543-1207
-x-mozilla-html:TRUE
-url:www.ibm.com
-org:IBM MicroElectronics
-adr:;;3039 Cornwallis		;RTP;NC;27709;USA
-version:2.1
-email;internet:rcblach@raleigh.ibm.com
-x-mozilla-cpt:;15936
-fn:Ralph Blach
-end:vcard
-
---------------D57500100001B07F306D206F--
+best regards,
+Todd
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
