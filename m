@@ -1,46 +1,35 @@
-Date: Thu, 13 Sep 2001 14:41:43 +0200
-From: Xavier Grave <grave@ipno.in2p3.fr>
-To: dev ppc <linuxppc-dev@lists.linuxppc.org>
-Subject: mvme5100 hawk configuration problem ?
-Message-ID: <20010913144143.A4634@ipnpcu5.in2p3.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Timothy A. Seufert" <tas@mindspring.com>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: PCMCIA issues
+Date: Thu, 13 Sep 2001 14:54:02 +0200
+Message-Id: <20010913125402.29847@smtp.adsl.oleane.com>
+In-Reply-To: <p05100300b7c6188b0203@[10.0.0.42]>
+References: <p05100300b7c6188b0203@[10.0.0.42]>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+>
+>Sep 13 01:08:38 localhost cardmgr[259]: socket 1: Anonymous Memory
+>Sep 13 01:08:38 localhost kernel: cs: unable to map card memory!
+>Sep 13 01:08:38 localhost kernel: cs: unable to map card memory!
+>Sep 13 01:08:39 localhost cardmgr[259]: executing: 'modprobe memory_cs'
+>Sep 13 01:08:39 localhost cardmgr[259]: + modprobe: Can't locate
+>module memory_cs
+>Sep 13 01:08:39 localhost cardmgr[259]: modprobe exited with status 255
+>Sep 13 01:08:39 localhost cardmgr[259]: module
+>/lib/modules/2.4.10-pre8/pcmcia/memory_cs.o not available
+>Sep 13 01:08:40 localhost cardmgr[259]: get dev info on socket 1
+>failed: Resource temporarily unavailable
 
-I have two board with a 2.4.10 kernel (bk tree) :
-on the mvme2303 cat /proc/iomem gives :
-c0000000-feffffff : PCI host bridge
-  effeef80-effeefff : Digital Equipment Corporation DECchip 21140
-[FasterNet]
-  effef000-effeffff : Tundra Semiconductor Corp. CA91C042 [Universe]
-  fc000000-fc03ffff : Motorola Raven
-on the mvme5100 cat /proc/iomem gives :
-00000000-ffffffff : <BAD>
-  f3f00000-f3f1ffff : Intel Corporation 82559ER (#2)
-  f3f3d000-f3f3dfff : Intel Corporation 82559ER (#2)
-    f3f3d000-f3f3dfff : eepro100
-  f3f3e000-f3f3efff : Symbios Logic Inc. (formerly NCR) 53c895
-  f3f3ff00-f3f3ffff : Symbios Logic Inc. (formerly NCR) 53c895
-  f3f40000-f3f5ffff : Intel Corporation 82559ER
-  f3f7e000-f3f7efff : Intel Corporation 82559ER
-    f3f7e000-f3f7efff : eepro100
-  f3f7f000-f3f7ffff : Tundra Semiconductor Corp. CA91C042 [Universe]
+Not sure for the details as I'm not a PCMCIA expert, but I know
+paulus fixes some issues with pcmcia resource allocation. His patch
+haven't make it upstream yet but is in my tree.
 
-I have written a module driver for the vme chip real-time and non-real-time
-(it is very inspired from the one from
-Gabriel Paubert), the modules load without problem on the mvme 2303 but not
-on the mvme5100 ?
-Any idea of the problem ? I will have a look on the mvme5100_setup.c and
-mvme5100_pci.c files.
+Ben.
 
-O+ xavier
-
---
-33 (0) 1 69 15 79 59
-De chacun selon ses forces, a chacun selon ses besoins
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
