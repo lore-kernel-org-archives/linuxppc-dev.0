@@ -1,18 +1,23 @@
-Return-Path: <Hans.Schillstrom@lgpallgon.com>
-Received: from aseit003.allgon.net (mail.lgpallgon.com [193.235.198.4])
-	by ozlabs.org (Postfix) with ESMTP id 09C4867A5C
+Return-Path: <clemens.koller@anagramm.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.176]) by ozlabs.org (Postfix) with ESMTP id 218EB67A46
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Jan 2005 22:00:55 +1100 (EST)
-From: Hans Schillstrom <hans.schillstrom@pwav.com>
-To: annamaya <annamaya@yahoo.com>
-In-Reply-To: <20050119220819.24822.qmail@web53805.mail.yahoo.com>
-References: <20050119220819.24822.qmail@web53805.mail.yahoo.com>
-Content-Type: text/plain
-Message-Id: <1106218826.7900.405.camel@hawk.allgon.net>
-Mime-Version: 1.0
-Date: Thu, 20 Jan 2005 12:00:26 +0100
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Input to the timerclk on the MPC8280
+	Thu, 20 Jan 2005 22:21:45 +1100 (EST)
+Received: from [212.227.126.207] (helo=mrelayng.kundenserver.de)
+	by moutng.kundenserver.de with esmtp (Exim 3.35 #1)
+	id 1CraNj-0006dr-00
+	for linuxppc-embedded@ozlabs.org; Thu, 20 Jan 2005 12:21:43 +0100
+Received: from [217.228.220.126] (helo=[192.168.1.10])
+	by mrelayng.kundenserver.de with asmtp (Exim 3.35 #1)
+	id 1CraNi-0006XV-00
+	for linuxppc-embedded@ozlabs.org; Thu, 20 Jan 2005 12:21:42 +0100
+Message-ID: <41EF94DB.4090604@anagramm.de>
+Date: Thu, 20 Jan 2005 12:24:11 +0100
+From: Clemens Koller <clemens.koller@anagramm.de>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Instruction Cache Parity Error / 2.6.10 on MPC8540
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,80 +28,57 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
-I have the same problem on MPC8270,
-and solved it two parts in u-boot:
-- Setup you PC[26] to somtething else than TMCLK ex. g,p. I/O
-    then you an automatic selecttion of BRG1 as source.
-    
-- Write a proper value in BRGC1 and make shure that 
-    bit 16-17 is 0 for selection of CPM as clock source.
+Hello,
 
-and then you have to "move around the brgs" in (2.6.10)
-drivers/serial/cpm_uart/cpm_uart_cpm2.c
+Well, I made good progress with Kernel 2.6.10 on my target (PM854, 
+Microsys) which is very similar to the MPC8540_ads configuration.
+But now, after working for several minutes, I ran into the following
+Oops:
 
-I moved smc 1&2 to brg7 & 8
-scc1 to brg2 etc
-scc4 ext clk (48MHz for USB)
+-----8<-------------------------------------------------------------
+root@PM854:~/openssh-3.9p1$ Machine check in kernel mode.
+Caused by (from MCSR=40000000): Instruction Cache Parity Error
+Oops: machine check, sig: 7 [#1]
+PREEMPT
+NIP: C00054F8 LR: C01F8348 SP: C0263E70 REGS: c0232f50 TRAP: 0202    Not 
+tainted
+MSR: 00021000 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 00
+TASK = c0233720[0] 'swapper' THREAD: c0262000
+Last syscall: 120
+GPR00: C01F8348 C0263E70 C0233720 C0233720 C054C400 00000000 00000351 
+00000000
+GPR08: 00000000 00000003 C054C400 0000473A 0000AE53 00000000 10000700 
+007FFF93
+GPR16: 00000000 00000001 007FFF00 C02B0000 C02C0000 C0233884 3B9ACA00 
+C02B5C78
+GPR24: 000000F4 C02B5C78 C0233720 C054C400 C02AED00 00000000 00000000 
+C0263E90
+NIP [c00054f8] __switch_to+0x14/0x9c
+LR [c01f8348] schedule+0x318/0x704
+Call trace:
+  [c01f8348] schedule+0x318/0x704
+  [c00026c8] resume_kernel+0x38/0x5c
+  [c00039f8] cpu_idle+0x28/0x40
+  [c0001afc] rest_init+0x28/0x38
+  [c0264804] start_kernel+0x16c/0x1a4
+  [c0000364] skpinv+0x294/0x2d0
+Kernel panic - not syncing: Attempted to kill the idle task!
+  <0>Rebooting in 180 seconds..
+-----8<-------------------------------------------------------------
 
-void smc1_lineif(struct uart_cpm_port *pinfo)
-{
-	volatile iop_cpm2_t *io = &cpm2_immr->im_ioport;
+Does this look familiar to anybody? Any ideas where to start
+debugging?
 
-	/* SMC1 is only on port D */
-	io->iop_ppard |= 0x00c00000;
-	io->iop_pdird |= 0x00400000;
-	io->iop_pdird &= ~0x00800000;
-	io->iop_psord &= ~0x00c00000;
-#ifndef CONFIG_RCB8270
-	/* Wire BRG1 to SMC1 */
-	cpm2_immr->im_cpmux.cmx_smr &= 0x0f;
-	pinfo->brg = 1;
-#else
-        /* Wire BRG7 to SMC1 */
-        cpm2_immr->im_cpmux.cmx_smr &= 0x0f;
-        cpm2_immr->im_cpmux.cmx_smr |= 0x10;  /* BRG 7 */
-        pinfo->brg = 7;
-#endif
-}
+Best greets,
 
-I guess you can do it in many ways ...
+Clemens Koller
+_______________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Str. 45/1
+81379 Muenchen
+Germany
 
-Any one that knows why SMC1 & SMC2 gets the same BRG as SCC1 & SCC2
-
-Regards
-/Hans
- 
-On Wed, 2005-01-19 at 23:08, annamaya wrote:
-> I've asked this question on this forum before but it
-> did not get answered. I tried asking the same question
-> in the U-Boot forum with no results. So, I am going to
-> try this again.
-> 
-> According to section 4.1.2 on Page 4-4 in the MPC8280
-> User's Manual, one should be able to use a combination
-> of  external clocks on Port C pins 25, 26, 27 and 29,
-> the CPM cloak and BRG1 to generate a 32KHz or a 4MHz
-> clock. I am unable to find  any code in u-boot or any
-> other place that initializes any of these pins to be
-> external clocks. And as for BRG1, I believe it is
-> being used for the SMC clock.
-> 
-> I am unable to understand how this is done. Can we
-> have a timerclk input WITHOUT an external clock
-> signal? Can I just use the CPM clock to generate this?
-> How is this being done in U-Boot now?
-> 
-> Thanks much for your help. I really need an answer to
-> this. 
-> 
-> 
-> 		
-> __________________________________ 
-> Do you Yahoo!? 
-> Yahoo! Mail - now with 250MB free storage. Learn more.
-> http://info.mail.yahoo.com/mail_250
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+http://www.anagramm.de
+Phone: +49-89-741518-50
+Fax: +49-89-741518-19
