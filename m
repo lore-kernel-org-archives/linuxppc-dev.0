@@ -1,5 +1,5 @@
-Message-ID: <3BE9D4B8.6A2E8603@mvista.com>
-Date: Wed, 07 Nov 2001 17:41:28 -0700
+Message-ID: <3BE9D64E.78067EED@mvista.com>
+Date: Wed, 07 Nov 2001 17:48:14 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
 To: paulus@samba.org
@@ -11,10 +11,15 @@ Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Paul,
+ok, last one:
 
-I would move harrier.c and pplus_common.c to the "kernel" dir since they
-are both bridge related files (kinda like the mpc10x_common.c file).
+My guess is to also move cpc700*, cpc710*, sleep.S (in addition to pplus*
+and harrier*).
+
+A separate question...isn't prep_time.c obsolete with todc_time.c?  What
+about chrp_time.c and others?
+
+YES, I need to make it mp-safe (as Tom requested).  I will do that soon.
 
 Mark
 
