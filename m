@@ -1,36 +1,61 @@
-Subject: Re: EP405 linker error.
-From: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
-To: Toni Van Remortel <t.vanremortel@ha.be>
-Cc: Eugene Surovegin <ebs@ebshome.net>,
-	"linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <20030331113552.58ceec69.t.vanremortel@ha.be>
-References: <20030331111051.74af0790.t.vanremortel@ha.be>
-	<5.1.0.14.2.20030331011506.02cd4d78@mail.ebshome.net>
-	<20030331113552.58ceec69.t.vanremortel@ha.be>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: 31 Mar 2003 14:44:24 +0200
-Message-Id: <1049114664.31297.208.camel@spawn>
+Message-Id: <5.1.1.6.0.20030331142706.00a83268@192.168.2.1>
+Date: Mon, 31 Mar 2003 15:01:34 +0200
+To: Chris Zimman <chris@cryptoapps.com>
+From: llandre <r&d@wawnet.biz>
+Subject: Re: Script for BDI2000 for IBM 405EP Eval. Board
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <20030331010848.GA20162@mail.cryptoapps.com>
+References: <5.1.1.6.0.20030330184543.00a832e0@dns.struinfo.it>
+ <5.1.1.6.0.20030330184543.00a832e0@dns.struinfo.it>
 Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, 2003-03-31 at 11:35, Toni Van Remortel wrote:
 >
-> I didn't know that there was an ATI RADEON on this EP405 ;-) How come that it seeks for that? Wrong .config?
+>According to what I see here, you never set up the SDRAM contoller via
+>the BDI.  Without that, writing flash using WORKSPACE is pretty unlikely
+>to work.
 >
+> > ; Setup SDRAM Controller
+> > ;WDCR   16      0x00000080      ;Select SDTR1
+> > ;WDCR   17      0x0086400D      ;SDTR1: SDRAM Timing Register
+> > ;WDCR   16      0x00000040      ;Select MB0CF
+> > ;WDCR   17      0x00046001      ;MB0CF: 16MB @ 0x00000000
+> > ;WDCR   16      0x00000048      ;Select MB2CF
+> > ;WDCR   17      0x01046001      ;MB2CF: 16MB @ 0x01000000
+> > ;WDCR   16      0x00000030      ;Select RTR
+> > ;WDCR   17      0x05F00000      ;RTR: Refresh Timing Register
+> > ;WDCR   16      0x00000020      ;Select MCOPT1
+> > ;WDCR   17      0x80800000      ;MCOPT1: Enable SDRAM Controller
+> >
+> > ; Setup MMU info
+> > ;WM32    0x000000f4  0x00000000  ;invalidate kernel  page table base
+> > ;WM32    0x000000f8  0x00000000  ;invalidate process page table base
+> > ;WM32    0x000000f0  0xc00000f4  ;invalidate page table base
+>
+>In the interim, you can disable the SDRAM scratch workspace and
+>you should hopefully be able to write to flash.
+>
+>At some point though, you're going to have the get the SDRAM setup for
+>your board done.
+>
+>--Chris
 
-The check is done in runtime not when you compile and you can have the
-card  on any system with a pci bus.
+First I disabled the scratch workspace and Flash programming was ok.
+Then I enabled the workspace again, I set the SDRAM controller with the
+same values computed by U-Boot algorithm but it did not work. The same
+test  with the values computed by the IBM ROM monitor (Openbios) completed
+the programming successfully.
+After I fixed the U-Boot code in order to use these correct values but
+unfortunately the weird crash still occurs. I'll keep working on it.
 
-For now just remove the line and everything will be OK since you did not
-have the card.
+Thanks again for your help and best regards.
 
---
-Kenneth Johansson
-Ericsson AB                       Tel: +46 8 719 70 20
-Tellusborgsvägen  90              Fax: +46 8 719 29 45
-126 25 Stockholm                  ken@switchboard.ericsson.se
+
+
+llandre
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
