@@ -1,30 +1,37 @@
-Date: Thu, 20 Mar 2003 23:36:44 -0600 (CST)
-From: "Milton D. Miller II" <miltonm@realtime.net>
-Message-Id: <200303210536.h2L5aibc078332@sullivan.realtime.net>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re:  Linux console on virtual Uart?
-Cc: James.Dang@gdcanada.com
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: 8250 IDMA BD Len?
+Date: Thu, 20 Mar 2003 22:01:53 -0800
+Message-ID: <BD92DBD34D62AC4FA034933E33E53F7E1724F2@grog>
+From: "Penn, John" <jpenn@magisnetworks.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At least for the archives, I will point out the the hvc console (located
-at drivers/char/hvc_console.c) is a polling mode driver for a serial style
-console, that calls a function to read up to 16 bytes at a time from some
-other buffer.  This might be easier to adapt (just write a pair of
-hvc_{get_put}_chars functions) ...
+Does anybody know why the length field
+of an 8250 IDMA BD would not contain the
+number of bytes transferred before /DONE
+is asserted.
 
+This is a dual memory transfer from
+the local bus to 60x memory.  I am
+initially setting the BD length to 1752.
+I can see the correct length in the bd_cnt
+field in the parameter ram after /DONE has
+asserted and the IDMA has invalidated the BD.
 
+What I get is the original length I programmed
+in, 1752.  The data is there and good.
 
-Regarding your questions, I don't know why you aren't getting a prompt,
-but the line
+DMA_WRAP = 64
+SS_MAX = 32
+STS = 4
+DTS = 32
 
-init: asdf: command not found
+Thanks for the help.
 
-can be explained becaues the kernel calls the "init" program with argv[0] =
-"init", and the shell is using this name (or the part after the last / if
-present) to explain itself.
-
-milton
+John Penn
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
