@@ -1,9 +1,9 @@
-Message-ID: <3C9968B3.8090307@netian.com>
-Date: Thu, 21 Mar 2002 13:59:31 +0900
+Message-ID: <3C999B47.1040708@netian.com>
+Date: Thu, 21 Mar 2002 17:35:19 +0900
 From: Kim young-kyun <elecguy@netian.com>
 MIME-Version: 1.0
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: [Q] kernel-compile error for walnut with 2.4.18 ?
+Subject: [Q] Kernel-compile error for walnut with 2.4.18 ?
 Content-Type: text/plain; charset=EUC-KR
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
@@ -11,8 +11,7 @@ List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 Hi, all.
 
-I try to comile kernel 2.4.18 for walnut(IBM PowerPC 405GP) board on
-Red-Hat 7.1.
+I try to comile kernel 2.4.18 for walnut(IBM PowerPC 405GP) board on Red-Hat 7.1.
 I met below error message and I cannot solve this problem.
 
 powerpc-linux-gcc -D__KERNEL__
@@ -45,7 +44,7 @@ make; make install
 linux-2.4.18 with ppc-patch-2.4.18
 *in Makefile
 ARCH := ppc
-CROSS_COMPILE=powerppc-linux-
+CROSS_COMPILE=powerpc-linux-
 AFLAGS := -D__ASSEMBLY__ $(CPPFLAGS) -Wa,-m403
 *in arch/ppc/Makefile
 CFLAGS := (Original flags)... -Wa,-m403
