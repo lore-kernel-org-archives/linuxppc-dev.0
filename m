@@ -1,61 +1,143 @@
+Message-ID: <3FBD4E10.9080905@arlut.utexas.edu>
+Date: Thu, 20 Nov 2003 17:28:16 -0600
+From: Benjamin Davis <bmdavis@arlut.utexas.edu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: RAMDISK problem 
-Date: Thu, 20 Nov 2003 13:10:17 -0700
-Message-ID: <8039970AF146314597457D3B51A68B382DC11B@cossmgmbx02.email.corp.tld>
-From: "VanBaren, Gerald (AGRE)" <Gerald.VanBaren@smiths-aerospace.com>
-To: <linuxppc-embedded@lists.linuxppc.org>,
-	"Joao Vicente" <joao.vicente@spectel.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: mvme powersave during idle, and note on autoboot
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> -----Original Message-----
-> From: Wolfgang Denk [mailto:wd@denx.de]
-> Sent: Thursday, November 20, 2003 11:27 AM
-> To: Joao Vicente
-> Cc: linuxppc-embedded@lists.linuxppc.org
-> Subject: Re: RAMDISK problem
->
->
->
-> In message
-> <DEF39A0710293E489D45B10E06645CBD02671CA2@dub-msx1.spectelcorp
-> .com> you wrote:
-> >
-> > My problem is that I dont really know what address the core
-> is trying to write to when the exception occurs.
-> > As I mentioned in the previous message, the write() calls
-> _syscall3() macro which will perform the write operation, but
-> early  in that macro the assembly 'sc' instruction is called.
-> > As I cannot step through 'sc', I cannot go further on
-> investigating at what write access the exception occurs.
->
-> But you can set a breakpoint in the sc exception handler.
->
-> > How do I even find out what is the start address of the
-> file associated with the file descritor?
->
-> Analyze at which offset the file starts  in  your  filesystem  image;
-> find  out  the  load  address of the filesystem image in RAM; add the
-> offset.
->
-> Best regards,
->
-> Wolfgang Denk
+I am running an mvme5500 board with linux-2.4.20 kernal with motorola
+patches.  The patches do nothing for power managment though. Each board
+uses something like 35-40 watts of power, with only watt or two
+difference for idle verses heavy usage.  Does this bother anyone else?
+I know the mpc7455 is capable of going into multiple powersaving modes,
+i believe this processor was used in previous versions of the
+powerbooks.  One feature I have noticed that is not utilized is the
+powersave_nap flag, which would cause the processor to go to its nap
+state while in idle.  This seems to save around 10 watts of power, thats
+over 20%.  however it does havoc(locks up) to the nfs loading.  Is
+anyone else out there looking at this???
 
-Hi Joao,
 
-I assume you get a crash dump including the registers when it crashes.  If not, you need a better debugger (BDI2000).  If so, look at SRR0, SRR1, etc.  Please read the PowerPC 603e User's Manual (assuming that is applicable: I forgot which processor you are using).  For the 82xx (PPC603e core):
-  SRR0 = effective address for resuming program execution
-  SRR1 = MSR with some error identification bits
 
-When you find the failure location, disassemble the memory leading up to the failure.  Figure out which registers are being used for a memory access when the crash occurred, and find what those registers contained in the crash dump.  That will tell you why the crash occurred (I'm guessing TEA, bit 13 in SRR1) and which address was at fault (load or store into a memory location, said memory location being one of the GPRs).
 
-If your tools don't give you this information, you need to buy better tools.
+Auto Boot
 
-gvb
+Auto Boot provides an independent mechanism for booting an operating
+system where no console is required. MOTLoad does not provide an
+explicit Auto Boot command, flag, or parameter. Instead, Auto Boot is
+established by appropriately defining the mot-script-boot Global
+Environment Variable (GEV). Refer to the Reserved Global Environment
+Variables appendix for more information on GEVs used by MOTLoad.
+
+Upon start-up, MOTLoad checks mot-script-boot in the GEV section of
+NVRAM for boot commands. Boot commands that MOTLoad recognizes are:
+
+    diskBoot
+    netBoot
+
+Upon detection of either command, Motload performs the selected
+boot command using arguments specified either from the command-line
+argument (stored in mot-script-boot along with the command) or
+from a GEV. If neither provides the requisite arguments, MOTLoad
+uses default values which can be viewed using the help command
+on diskBoot/netBoot. Since not all command arguments can be
+specified by GEV variables, defaults values are used in the
+cases where mot-script-boot does not contain the argument's
+value.
+
+To Auto Boot from a floppy, disk, or CD-ROM use the diskBoot command.
+MOTLoad selects the boot device from a scan list provided as part of
+the command-line arguments (if stored in mot-script-boot) or from the
+diskBoot's corresponding GEV variable: mot-boot-path. Refer to the
+Reserved Global Environment Variables appendix for additional
+information on this GEV variable.
+
+To Auto Boot across the ethernet use the netBoot command. The
+command-line parameters that can be specified by GEVs are
+listed in the Reserved Global Environment Variables appendix.
+
+To create the GEVs to use with either boot command, MOTLoad
+provides the gevEdit command. Existing GEVs can be viewed using
+either gevList or gevShow.
+
+When using MOTLoad's Auto Boot mechanism, MOTLoad delays
+execution of the commands by the amount of time (in seconds)
+defined in mot-script-delay. If mot-script-delay is not defined,
+the default of 7 seconds is used. During this time the boot process
+can be cancelled to return MOTLoad back to its normal boot-up sequence
+by pressing the ESC key.
+
+The following depicts an example of setting up an Auto Boot from disk:
+
+    MVME5500>gevEdit mot-script-boot
+    (Blank line terminates input.)
+    diskBoot<cr>
+    <cr>
+    MVME5500>
+
+    MVME5500>gevEdit mot-boot-path
+    (Blank line terminates input.)
+    /dev/scsi0/hdisk0\1\\boot\os.bin<cr>
+    <cr>
+    MVME5500>
+
+In the above example MOTLoad downloads the file to the user download
+area by default. The execution address offset is 0, also by default.
+The boot file is located on device "/dev/scsi0/hdisk0", in partition 1,
+under the /boot directory, and the file's name is os.bin.
+
+This could also have been accomplished by specifying the GEVs as
+follows:
+
+   mot-script-boot : diskBoot -f/dev/scsi0/hdisk0\1\\boot\os.bin
+   mot-boot-path   : <leave undefined>
+
+Here is an example of Auto Booting across a network:
+
+    MVME5500>gevEdit mot-script-boot
+    (Blank line terminates input.)
+    netBoot -d/dev/enet0 -a0x04000000<cr>
+    <cr>
+    MVME5500>
+
+    MVME5500>gevEdit mot-/dev/enet0-cipa
+    (Blank line terminates input.)
+    144.191.27.143
+    <cr>
+    MVME5500>
+
+    MVME5500>gevEdit mot-/dev/enet0-sipa
+    (Blank line terminates input.)
+    144.191.13.33
+    <cr>
+    MVME5500>
+
+    MVME5500>gevEdit mot-/dev/enet0-file
+    (Blank line terminates input.)
+    /tftpBoot/bootFile.rom
+    <cr>
+    MVME5500>
+
+In this example MOTLoad downloads the file from device "enet0" to the
+location in memory at 0x04000000. The IP address of "enet0" is
+144.191.27.143; the IP address of the source is 144.191.13.33. The
+execution address offset is 0 by default. The boot file is located in
+the /tftpBoot directory and the boot file name is bootFile.rom.
+
+In both examples above, Auto Boot is initiated on the next reset or
+power cycle of the board.
+
+To disable Auto Boot, simply use gevEdit or gevDelete to modify
+mot-script-boot appropriately. Note: placing the board in safe-
+start does not disable the Auto Boot mechanism.
+
+--
+--
+Benjamin Davis
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
