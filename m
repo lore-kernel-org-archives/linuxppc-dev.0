@@ -1,26 +1,23 @@
-Message-ID: <3B8170B9.97299F47@mvista.com>
-Date: Mon, 20 Aug 2001 16:19:05 -0400
-From: Dan Malek <dan@mvista.com>
+From: Jim Thompson <jim@SmallWorks.COM>
 MIME-Version: 1.0
-To: Kevin Fry <kevin@carts.com>
-Cc: linuxppc emb3dd3d list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: HZ to MHZ, 2.4.2 kernel / update on my progress
-References: <3B7D6D89.2524D838@carts.com> <3B816F4F.E3633B0C@carts.com>
 Content-Type: text/plain; charset=us-ascii
+Message-ID: <15233.29427.916592.303283@zaphod.smallworks.com>
+Date: Mon, 20 Aug 2001 15:28:35 -0500
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: 8245 built-in serial ports
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Kevin Fry wrote:
+Does anyone have the DUART that is built-in to the 8245 working yet?
 
-> Couldnt have done it w/o you guys either, thanks again
+Note that this/these are different than the ones on the Sandpoint
+board.
 
-I wish they were all this easy :-).
+Jim
 
-By the way, I pushed a bunch of new stuff for 8260 into the
-linuxppc_2_4_devel tree last night.
-
-
-	-- Dan
+--
+C++ is like jamming a helicopter inside a Miata and expecting some
+sort of improvement.       -- Drew Olbrich
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
