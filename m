@@ -1,36 +1,132 @@
-Message-ID: <36889B26.35B8C562@cybernex.net>
-Date: Tue, 29 Dec 1998 09:04:38 +0000
-From: John Droggitis <johnd@CYBERNEX.NET>
+Date: Tue, 29 Dec 1998 17:53:47 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+To: Alan Cox <alan@cymru.net>
+cc: Linux kernel <linux-kernel@vger.rutgers.edu>,
+        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: 2.2.0pre-1 sound fixes
+Message-ID: <Pine.LNX.4.03.9812291752200.11294-100000@mercator.cs.kuleuven.ac.be>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <bh40@calva.net>
-CC: linuxppc-dev@lists.linuxppc.org, Cort Dougan <cort@ladron.cs.nmt.edu>,
-        Paul Mackerras <paulus@cs.anu.edu.au>
-Subject: Re: New patches & test kernel
-References: <19981228180118.022846@mail.mipsys.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
+	Hi Alan,
 
-> Hi All !
->
-> I'm uploading a test kernel with new patches to my web page. It contains
-> all diffs between this morning's vger and some of my latest patches. Not
-> all or them are functional (wallstreet sleep still doesn't work and uses
-> an horrible hack I made at the end of irq.c so you can avoid all irq.c
-> and via-pmu.c patches).
+This patch allows me to run 2.2.0-pre1 (with a few PPC specific mods) on my
+CHRP box.
 
-A bit of a feedback here:  This is the first kernel EVER that I've booted
-that recognizes my kensington orbit trackball as a three-button mouse.  The
-left button acts as the left button, and the right one acts as middle.  And
-for anyone using XF68, there's an option that lets you chord to emulate the
-third button:  In XF86Config, in the "Pointer" section, on a line by itself
-say: ChordMiddle.  To be honest, I just found this option and haven't tried
-it yet, but for anyone with a two-button mouse this is worth a try.
+--- chrp/drivers/sound/ad1848.c.orig	Tue Dec 29 10:58:23 1998
++++ chrp/drivers/sound/ad1848.c	Tue Dec 29 17:20:45 1998
+@@ -1204,16 +1204,20 @@
+ 	{
+ 		int             tmout;
+ 		
++#ifdef CONFIG_PCI_QUIRKS
+ 		if(!isa_dma_bridge_buggy)
+ 		        disable_dma(audio_devs[dev]->dmap_in->dma);
++#endif
+ 
+ 		for (tmout = 0; tmout < 100000; tmout++)
+ 			if (ad_read(devc, 11) & 0x10)
+ 				break;
+ 		ad_write(devc, 9, ad_read(devc, 9) & ~0x02);	/* Stop capture */
+ 
++#ifdef CONFIG_PCI_QUIRKS
+ 		if(!isa_dma_bridge_buggy)
+ 		        enable_dma(audio_devs[dev]->dmap_in->dma);
++#endif
+ 		devc->audio_mode &= ~PCM_ENABLE_INPUT;
+ 	}
+ 
+@@ -1240,16 +1244,20 @@
+ 	{
+ 		int             tmout;
+ 
++#ifdef CONFIG_PCI_QUIRKS
+ 		if(!isa_dma_bridge_buggy)
+ 		        disable_dma(audio_devs[dev]->dmap_out->dma);
++#endif
+ 
+ 		for (tmout = 0; tmout < 100000; tmout++)
+ 			if (ad_read(devc, 11) & 0x10)
+ 				break;
+ 		ad_write(devc, 9, ad_read(devc, 9) & ~0x01);	/* Stop playback */
+ 
++#ifdef CONFIG_PCI_QUIRKS
+ 		if(!isa_dma_bridge_buggy)
+ 		       enable_dma(audio_devs[dev]->dmap_out->dma);
++#endif
+ 
+ 		devc->audio_mode &= ~PCM_ENABLE_OUTPUT;
+ 	}
+--- chrp/drivers/sound/dmabuf.c.orig	Wed Dec 23 19:36:55 1998
++++ chrp/drivers/sound/dmabuf.c	Tue Dec 29 17:24:13 1998
+@@ -631,8 +631,10 @@
+ 		f=claim_dma_lock();
+ 		clear_dma_ff(chan);
+ 		
++#ifdef CONFIG_PCI_QUIRKS
+ 		if(!isa_dma_bridge_buggy)
+ 			disable_dma(dmap->dma);
++#endif
+ 		
+ 		pos = get_dma_residue(chan);
+ 		
+@@ -654,8 +656,10 @@
+ 		if (pos >= dmap->bytes_in_use)
+ 			pos = 0;
+ 		
++#ifdef CONFIG_PCI_QUIRKS
+ 		if(!isa_dma_bridge_buggy)
+ 			enable_dma(dmap->dma);
++#endif
+ 			
+ 		release_dma_lock(f);
+ 	}
+@@ -1023,12 +1027,16 @@
+ 		
+ 		f=claim_dma_lock();
+ 		
++#ifdef CONFIG_PCI_QUIRKS
+ 		if(!isa_dma_bridge_buggy)
+ 			disable_dma(dmap->dma);
++#endif
+ 		clear_dma_ff(chan);
+ 		pos = dmap->bytes_in_use - get_dma_residue(chan);
++#ifdef CONFIG_PCI_QUIRKS
+ 		if(!isa_dma_bridge_buggy)
+ 			enable_dma(dmap->dma);
++#endif
+ 		release_dma_lock(f);
+ 		
+ 		pos = pos / dmap->fragment_size;	/* Actual qhead */
+@@ -1120,12 +1128,16 @@
+ 		unsigned long f;
+ 		
+ 		f=claim_dma_lock();
++#ifdef CONFIG_PCI_QUIRKS
+ 		if(!isa_dma_bridge_buggy)
+ 			disable_dma(dmap->dma);
++#endif
+ 		clear_dma_ff(chan);
+ 		pos = dmap->bytes_in_use - get_dma_residue(chan);
++#ifdef CONFIG_PCI_QUIRKS
+ 		if(!isa_dma_bridge_buggy)
+ 			enable_dma(dmap->dma);
++#endif
+ 		release_dma_lock(f);
+ 
+ 		pos = pos / dmap->fragment_size;	/* Actual qhead */
 
---John
+Greetings,
+
+						Geert
+
+--
+Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
+Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
+Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
