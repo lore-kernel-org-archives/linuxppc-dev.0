@@ -1,26 +1,45 @@
-Message-Id: <200003200257.VAA26624@mal-ach.watson.ibm.com>
-To: Gabriel Paubert <paubert@iram.es>
-cc: Florian Lohoff <flo@rfc822.org>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: PPC/MCA RS/6000 port ? 
-In-Reply-To: Message from Gabriel Paubert <paubert@iram.es>
-   of "Mon, 20 Mar 2000 01:20:32 +0100." <Pine.HPX.4.10.10003200116330.28648-100000@gra-ux1.iram.es>
-Date: Sun, 19 Mar 2000 21:57:45 -0500
-From: David Edelsohn <dje@watson.ibm.com>
+Message-ID: <20000320034345.24572.qmail@web1004.mail.yahoo.com>
+Date: Sun, 19 Mar 2000 19:43:45 -0800 (PST)
+From: Dan Bethe <dan_bethe@yahoo.com>
+Subject: Re: Auto update
+To: linuxppc-dev@lists.linuxppc.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-	I do not have any hardware specs for these machines offhand, but
-the interrupt controller may very well be PC-like cascaded 8259s.
+--- "James B. Parker" <pajama1@mindspring.com> wrote:
+>
+> Is there some sort of auto-update feature in Linux?
+> Like some program I can run that checks my currently installed
+> package
+> versions versus what is available and informs me if a newer version
+> exists?
+> Or should I just memorize the version of every package I have
+> installed?
 
-	The PPC601 was a POWER architecture chip with additional user-mode
-PowerPC instructions.  It was based on the existing RSC (RIOS Single Chip)
-processor that IBM already was using and allowed the first PowerPC chip
-implementation to be developed and deployed very rapidly.  The supervisor
-state of the chip was all POWER architecture, not PowerPC Books II and
-III.  The direct store segments were a way to access special devices on
-the I/O bus.
+	Get rpmfind.  You can find it at www.rpmfind.org or
+ftp://rpmfind.net/linux/yellowdog/champion-1.2/ppc/YellowDog/RPMS/rpmfind-1.4-2.ppc.rpm
+might work.
+	Then use the following:
 
-David
+for i in `rpm -qa` ; do rpmfind --latest $i ; done
+
+	That's really quick & dirty  :)
+	If anyone thinks that this is a bad idea, perhaps if it is a waste of
+global resources, then let us know!  I don't know how
+resource-intensive rpmfind is.
+	I don't understand why people say that RPM can't do automatic
+retrievals and updates.  Usually, people compare it to Debian, saying
+that Debian can do that and RPM can't.  You can substitute an ftp or
+http URL just as easily as a filename, for any of RPM's operations --
+getting info, installing, querying, and more.  And RPM can find them
+for you in the first place.
+
+=====
+"Don't expect your own messiah; this neverworld which you desire is
+only in your mind." -- http://www.dreamtheater.net/songb4.htm#IV5
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
