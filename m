@@ -1,59 +1,73 @@
-Message-ID: <3A7DC4E7.38588294@mvista.com>
-Date: Sun, 04 Feb 2001 16:08:55 -0500
-From: Dan Malek <dan@mvista.com>
+Date: Sun, 4 Feb 2001 22:37:28 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Paul Mackerras <paulus@linuxcare.com.au>
+cc: Daniel Eisenbud <eisenbud@cs.swarthmore.edu>,
+        LinuxPPC Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: SOLVED: mesh SCSI bus locks hard on 7500 when burning a CD-R in
+ dao mode
+In-Reply-To: <14971.34502.222006.311092@diego.linuxcare.com.au>
+Message-ID: <Pine.LNX.4.30.0102042212020.7438-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-To: Tom Gall <tom_gall@vnet.ibm.com>
-CC: Troy Benjegerdes <hozer@drgw.net>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Power3/4 Was: Re: Fast Altivec
-References: <3A7AE117.628B22A6@mvista.com> <20010202125143.D31120@altus.drgw.net> <3A7D8C19.B829A8D0@mvista.com> <3A7DB6B5.7370D32D@vnet.ibm.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tom Gall wrote:
+> As I said, it's been a while, and what I don't remember is whether the
+> mesh gives you a phase mismatch interrupt if you tell it to receive
+> data (do an IN operation) when the target also expects to receive data
+> (i.e. do an OUT operation).  I have a vague idea that it might do so
+> in PIO mode but not in DMA mode or something.  It's quite believable
+> that the whole thing would lock up in this situation.
 
-> .... At the moment it is nice
-> that one define handles issues for the entire family of boxes.
+You probably check for this explicitly in PIO mode. Phase mismatch usually
+happens if the target goes from data to message phase due to errors (I
+haven't seen the MESH specs so I'm speculating here).
 
-I learned years ago when I did a processor port it was important to
-separate the processor and platform specific configuration definitions.
-When you do that second platform that uses the same processor you will
-discover how badly it was integrated :-).
+> The 53c94 is another story; I never found any decent documentation for
+> it, I just had to work from the open firmware methods for it plus some
+> other drivers which seemed to be for similar chips.  I got the
+> mac53c94 driver to the stage where it seemed to work mostly but I
+> never had the time and the motivation to stress-test it and to
+> implement things like disconnect/reconnect.
 
-> .... But you are right
-> it could be split and I can see the case for making the split.
+Disconnect and reselect are implemented in the ESP driver which was used
+as template for the 68k Mac 53C9x driver at one time. Maybe take a
+page or two from these drivers to implement disconnect. That driver uses a
+trick that might help avoiding the data direction lockup with MESH as
+well: the chip is programmed for the whole arbitration/selection/command
+phases but will interrupt right before data phase, at which point you
+could check the data direction before setting up the DMA (assuming the
+target asserts the data direction after seeing the command byte). One
+additional interrupt taken. No additional overhead if you skip this step
+for some well known commands like WRITE_* and READ_* :-)
 
-It seems like these are CHRP machines with some kind of extended address
-bus mapping?  We either need to devise a new configuration name or
-integrate the changes with some "CHRP extension" that isn't based on
-the POWERx configuration.
+> > 3)	It continues to be worrisome that the mesh driver doesn't handle
+> > aborts right or retry lost arbitration (nor does mac53c94.)  Is there
+> > anywhere that the way to do these things is documented?  I'm willing to
+> > try my hand at fixing them.
+>
+> I was never sure exactly how the higher levels of the scsi code
+> expected the host adaptor drivers (like mesh.c) to do aborts.  At the
 
->   Which set of changes are you interested in using for the 7450? You say the chip
-> has 36 bit addressing, how does that work?
+The main pitfall used to be that active and disonnected commands needed
+to be removed  from the host adapter queue on a bus or host reset, and
+their completion routine had to be called to terminate the command with
+error (thereby stopping the midlevel timeout).
+Plain command aborts are tricky because you need to act differently for
+commands that are in the process of being sent to the device,
+disconnected, or actively transfering data (removing commands from the
+host queue that haven't been issued yet is rather trivial). The easiest
+course of action (read: cop-out) for a command that's being issued or
+transfering data is to reset the bus.
 
-It can use a 36-bit physical address bus, so any processor register that
-holds a physical address (SDR, page tables, etc) has "extended" bits
-that
-can be used when the proper configuration bits are set in the HID0.
+The new SCSI error handling code was/is supposed to simplify all of this,
+I just never got around to figuring out how it works. If someone could
+point me to a SCSI errorhandling HOWTO that'd be much appreciated.
 
-I was going to use some of the I/O mapping functions (often with
-comments
-like "big hack" in them :-), to support this as well.  Generally, I am
-looking at some VM changes that allow us to support beyond 4G
-virtual/physical
-with 32-bit processors (other than using the HIGHMEM hack).  Some of the
-things in BRIDGE64 and POWERx are appropriate to use but seem to have
-knowledge of the underlying platform, so a slightly different
-configuration
-name and minor code changes would be useful.  I just started looking and
-still have lots of work to do here.
+	Michael
 
->   6392 messages yet to read... ug!  Boy am I behind in mail since LinuxWorld...
+P.S:: Daniel, I can send a copy of the SCSI-2 spec if you need it.
 
-Heh...
-
-
-	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
