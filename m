@@ -1,39 +1,31 @@
-Message-ID: <394F6ED1.AD287707@relog.ch>
-Date: Tue, 20 Jun 2000 15:17:05 +0200
-From: Michel Dänzer <daenzer@relog.ch>
-Reply-To: daenzerm@student.ethz.ch
-MIME-Version: 1.0
-To: "Kevin M. Myer" <kevin_myer@iu13.k12.pa.us>
-CC: yellowdog-devel@lists.yellowdoglinux.com,
-        yellowdog-general@lists.yellowdoglinux.com,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: dmasound module and AWACS errors
-References: <Pine.LNX.4.21.0006200827480.1155-100000@pegmatite.iu13.k12.pa.us>
-Content-Type: text/plain; charset=iso-8859-1
+Date: Tue, 20 Jun 2000 15:25:09 +0200
+From: De Schrijver Peter <schrijvp@rc.bel.alcatel.be>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
+        Linux/MIPS Development <linux@cthulhu.engr.sgi.com>
+Subject: Re: Proposal: non-PC ISA bus support
+Message-ID: <20000620152509.O1177@rc.bel.alcatel.be>
+References: <Pine.GSO.4.10.10006201254290.8592-100000@dandelion.sonytel.be> <20000620122329.13473@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20000620122329.13473@mailhost.mipsys.com>; from bh40@calva.net on Tue, Jun 20, 2000 at 02:23:29PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"Kevin M. Myer" wrote:
+Hi,
 
-> I go home at night with the machine running Linux and I come to work in the
-> morning with the machine rebooted into MacOS.  Or sometimes, the machine is
-> just frozen and nothing except a reboot will bring it back.  I've noticed on
-> several occasions that there is a problem with the sound module.  When the
-> dmasound module is loaded, the following error message is logged:
+> We still can decide (and that's what I currently do in the kernel) that
+> IO space is only supported on one of those 3 busses (the one on which the
+> external PCI is). This prevents however use of IOs on the AGP slot, which
+> is a problem for things like XFree who may try to use VGA addresses on
+> the card.
 >
-> AWACS error: f
 
-Wonder if this might be related to the Powerbook lockups?
+Is this really a problem ? I would expect AGP cards to be fully addresseable via
+the I/O space assigned in the PCI IO resource base ?
 
-
-Michel
-
-
---
-The computer revolution is over. The computers won.
-______________________________________________________________________________
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
+Peter.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
