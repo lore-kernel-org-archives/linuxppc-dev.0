@@ -1,20 +1,33 @@
-Return-Path: <jonathan@jonmasters.org>
-Received: from smtp.mailbox.co.uk (smtp.mailbox.co.uk [195.82.125.32])
-	by ozlabs.org (Postfix) with ESMTP id 3640B2BC0F
+Return-Path: <robin.gilks@tait.co.nz>
+Received: from gatekeeper.tait.co.nz (unknown [202.37.96.21])
+	by ozlabs.org (Postfix) with ESMTP id 887F82BC0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 30 Sep 2004 05:49:49 +1000 (EST)
-Message-ID: <415AC52E.8010507@jonmasters.org>
-Date: Wed, 29 Sep 2004 15:22:38 +0100
-From: Jon Masters <jonathan@jonmasters.org>
-MIME-Version: 1.0
-To: Mark Chambers <markc@mail.com>
-References: <20040928094327.B1532@home.com><Pine.LNX.4.21.0409291256250.3154-100000@aqua.aspd.pwr.wroc.pl>
-	<35fb2e59040929045822511b4b@mail.gmail.com>
-	<002001c4a627$7575db50$0301a8c0@chuck2>
-In-Reply-To: <002001c4a627$7575db50$0301a8c0@chuck2>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Piotr Perak <peri@aqua.aspd.pwr.wroc.pl>, linuxppc-embedded@ozlabs.org
-Subject: Re: 2.6.x on 405CR
+	Thu, 30 Sep 2004 10:32:06 +1000 (EST)
+Received: from gatekeeper.tait.co.nz (merlin.tait.co.nz [127.0.0.1])
+	by localhost.tait.co.nz (Postfix) with ESMTP id AE12310BA0D
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 30 Sep 2004 12:08:00 +1200 (NZST)
+Received: from sunstrike.tait.co.nz (unknown [172.25.40.92])
+	by gatekeeper.tait.co.nz (Postfix) with ESMTP id 2087B10B919
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 30 Sep 2004 12:08:00 +1200 (NZST)
+Received: from conversion-daemon.sunstrike.tait.co.nz by sunstrike.tait.co.nz
+	(Sun Java System Messaging Server 6.1 (built Apr 28 2004))
+	id <0I4T00B01TIMPV00@sunstrike.tait.co.nz>
+	(original mail from robin.gilks@tait.co.nz) for
+	linuxppc-embedded@ozlabs.org; Thu, 30 Sep 2004 12:05:25 +1200 (NZST)
+Received: from [172.25.108.12] by sunstrike.tait.co.nz
+	(Sun Java System Messaging Server 6.1 (built Apr 28 2004))
+	with ESMTP id <0I4T00B3HUX0NC10@sunstrike.tait.co.nz> for
+	linuxppc-embedded@ozlabs.org; Thu, 30 Sep 2004 12:05:24 +1200 (NZST)
+Date: Thu, 30 Sep 2004 12:07:59 +1200
+From: Robin Gilks <robin.gilks@tait.co.nz>
+To: ppc embedded list <linuxppc-embedded@ozlabs.org>
+Message-id: <415B4E5F.6040107@tait.co.nz>
+MIME-version: 1.0
+Content-type: text/plain; format=flowed; charset=us-ascii
+Subject: Status of uart driver on mpc8xx in 2.6
+Reply-To: robin.gilks@tait.co.nz
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,21 +38,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Mark Chambers wrote:
+Greetings
 
-> And just to make the point - it's not the JTAG hardware which is or is not
-> VM capable, it's the debugger using the hardware which must be smart
-> enough to read the MM tables and do the translations for you.
+Could anyone point me to a uart driver for mpc8xx as the one in 2.6.8.1 
+obviously has not been hacked from the 2.4 variant since it still 
+contains references to DECLARE_TASK_QUEUE and other things that have 
+changed.
 
-Yes of course :-).
+I'm sure there is a ppc 'special' tree that has all the necessary fixes 
+but with this list disappearing for a while I've rather lost track of 
+what is where!!
 
-> Maybe if you post what hardware you have somebody would know of a gdb port that
-> supports it.  Don't let them blow you off on this - they're wasting your
-> time and their money if you don't have a proper debugger.  Just tell them we all
-> said you need one.
+-- 
+Robin Gilks
+Senior Design Engineer          Phone: (+64)(3) 357 1569
+Tait Electronics                Fax  :  (+64)(3) 359 4632
+PO Box 1645 Christchurch        Email : robin.gilks@tait.co.nz
+New Zealand
 
-I've managed so far without one but agree it's a good idea to get one.
-
-;-).
-
-Jon.
+=======================================================================
+This email, including any attachments, is only for the intended
+addressee.  It is subject to copyright, is confidential and may be
+the subject of legal or other privilege, none of which is waived or
+lost by reason of this transmission.
+If the receiver is not the intended addressee, please accept our
+apologies, notify us by return, delete all copies and perform no
+other act on the email.
+Unfortunately, we cannot warrant that the email has not been
+ altered or corrupted during transmission.
+=======================================================================
