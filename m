@@ -1,49 +1,33 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3CFF63A7.375F0644@icn.siemens.de>
-Date: Thu, 06 Jun 2002 15:29:11 +0200
-From: Steffen Rumler <Steffen.Rumler@icn.siemens.de>
+Message-ID: <3CFF6EDD.9060602@thales-bm.com>
+Date: Thu, 06 Jun 2002 16:17:01 +0200
+From: Julien Eyries <julien.eyries@thales-bm.com>
 MIME-Version: 1.0
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: GDB/GDBSERVER and remote Thread Debugging
-Content-Type: text/plain; charset=us-ascii
+Subject: kernel command line for CRAMFS root filesystem 
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+hello !
 
-I'm looking for a stable GDB/GDBSERVER extension
-suitable for (remote) Debugging multiple threads.
-
-It should also possible to attach already running
-threads.
-
-Actually I'm working with the GDB 5.0, but
-I have problems with it. Sometimes breakpoints
-are not hit, sometimes all threads seem to
-be hanging in the debugging case only.
-
-Is there a stable extension for the GDB/GDBSERVER
-providing thread debugging ?
+i have a cramfs image in flash, at address 0xfe100000 (length of image
+is 2MBytes).
+what is the kernel command line "root=..." to use this image as root
+filesystem ?
 
 
-Thank you for help
+Greetings,
 
-
-Steffen Rumler
+Julien.
 
 --
+Julien Eyries
+R&D engineer
+Thales Broadcast & Multimedia (ex-thomcast)
+email: julien.eyries@thales-bm.com
+fax: 33(0) 1 34 90 31 10
+tel: 33(0) 1 34 90 31 01
 
-
---------------------------------------------------------------
-
-Steffen Rumler
-ICN ON PNE SB 4
-Siemens AG
-Hofmannstr. 51                 Email: Steffen.Rumler@icn.siemens.de
-D-81359 Munich                 Phone: +49 89 722-44061
-Germany                        Fax  : +49 89 722-36703
-
---------------------------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
