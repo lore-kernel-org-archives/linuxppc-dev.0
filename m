@@ -1,33 +1,40 @@
+Message-ID: <3FCEEC38.4010608@dgt-lab.com.pl>
+Date: Thu, 04 Dec 2003 09:11:36 +0100
+From: Wojciech Kromer <krom@dgt-lab.com.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <16334.33020.624995.521330@cargo.ozlabs.ibm.com>
-Date: Thu, 4 Dec 2003 11:34:04 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: the door is closing for 2.4
+To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: cached memory
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Guys,
+how to change strategy of using cached memory?
 
-Marcelo has announced that as of 2.4.25, the official 2.4 tree is
-going into maintenance-only mode.  There is still a lot of stuff in
-the linuxppc-2.4 and linuxppc_2_4_devel trees which hasn't gone into
-the official 2.4 tree.  Most of that is board ports for various
-embedded boards, and for many of those boards, it's not clear whether
-anyone cares whether they are supported by the official 2.4 or not.
+this is a shot from top program on my board
+==========================================
+  7:31pm  up 18:31,  2 users,  load average: 2.46, 1.89, 1.17
+28 processes: 25 sleeping, 3 running, 0 zombie, 0 stopped
+CPU states:  0.1% user, 99.8% system,  0.0% nice,  0.0% idle
+Mem:   127888K av,  124880K used,    3008K free,       0K shrd,       0K
+buff
+Swap:       0K av,       0K used,       0K free                   58936K
+cached
 
-So if you have a board that you want to see supported by the official
-2.4 tree, and it isn't already, let me know.  I will need someone to
-commit to maintaining the port on an ongoing basis before I send it to
-Marcelo, though.
+  PID USER     PRI  NI  SIZE  RSS SHARE STAT %CPU %MEM   TIME COMMAND
+  768 root      14   0 10740  500   388 R    96.7  0.3   3:17 dd
+  522 root       9   0  1264 1264   932 D     1.1  0.9   0:09 ftp
+==========================================
 
-We also need people to start moving their embedded board ports to
-2.6, along with all the related device drivers, etc.  We are already
-past the point where new development should all be done in 2.5/2.6.
+in some cases there are "out of memory" errors in my applications,
+esspecialy when system has high load, free memory slowy goes down
+there are no new allocs in applications, but cache keeps growing
 
-Paul.
+
+--
+* * * * * * * * * * * *
+* per pedes ad astra! *
+* * * * * * * * * * * *    mailto:krom@dgt-lab.com.pl
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
