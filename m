@@ -1,33 +1,48 @@
-Message-ID: <375D3258.54D3694B@fi.infn.it>
-Date: Tue, 08 Jun 1999 17:10:16 +0200
-From: Simone Piccardi <Simone.Piccardi@fi.infn.it>
-MIME-Version: 1.0
-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: How to boot VME from HD?
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <3.0.6.32.19990608182608.0089b480@sins.uia.ac.be>
+Date: Tue, 08 Jun 1999 18:26:08 +0200
+To: Gabriel Paubert <paubert@iram.es>
+From: David De Ridder <david.de.ridder@bitsmart.com>
+Subject: Re: 2.2.9 patch for Motorola support.
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.HPP.3.96.990607140855.27048C-100000@gra-ux1.iram.es>
+References: <Pine.LNX.3.96.990526163555.23472S-100000@fwrsl-11.phx.mcd.mot.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
-I just got a new disk for our MVME2431 board. Up to now I was booting
-trough NFS using a kernel image and a root filesystem on a linux PC.
-Then I just copied all the files from the NFS root directory on the PC
-to the new disk, and after few adjustement (correction on fstab) I could
-have the root filesystem on the HD, uding it after boot.
-Now I would like to go further and boot directly from the HD, removing
-the needing of the PC; I looked into PPCBUG manual, finding the PBOOT
-command; but it require a bootable partition and a boot record, and I
-think that lilo did not work in these board, there is an equivalent
-tool? Or I can simply put the kernel image inside the NV Ram and start
-from there? 
-Ok, the problem is not serious, all the other things are working well; I
-only would like to have a faster way to boot.
-Bye
--- 
-Simone Piccardi
-Microsoft is NOT the answer. Microsoft is the Question.
-The answer is: "NO!"
+I have a suggestion for your PRePboot patches. (I don't know whether you've
+already incorporated it in the latest patch, since I don't have access to
+the patched source tree right now).
+
+It's something that could make people using root NFS on MVME boards (like
+the MVME230x series) happy and their lives easier ;-)
+
+You could do something like (in pseudo-C) :
+
+#ifdef CONFIG_ROOT_NFS
+ strcpy(kernelarguments,"console=ttyS0 root=/dev/nfs");
+#else
+ strcpy(kernelarguments,"console=ttyS0");
+#endif
+
+As I said, I don't have the sources right now, but I think
+you see what I mean. This way people who use NFS for their
+root file system do not have to type "root=/dev/nfs".
+It's hardly a 'patch', but it could make life easier...
+
+Kind regards,
+
++-----------------------------------------------------------------+
+  David 'Septimus' De Ridder       <david.de.ridder@bitsmart.com> 
+
+"I want you to find happiness."
+ - Marilyn Monroe in 'Gentlemen prefer Blondes'
+
++-----------------------------------------------------------------+
+  
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
