@@ -1,40 +1,30 @@
-Message-ID: <3E64DB91.4050508@embeddededge.com>
-Date: Tue, 04 Mar 2003 12:00:01 -0500
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: joakim.tjernlund@lumentis.se
-Cc: Daniel Jacobowitz <drow@false.org>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: Improved copy_page() function, about 30% speed up for mpc860!
-References: <IGEFJKJNHJDCBKALBJLLMEMJFKAA.joakim.tjernlund@lumentis.se>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+From: "Dale Farnsworth" <dale@farnsworth.org>
+Date: Tue, 4 Mar 2003 12:04:22 -0700
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Trivial patch to add PVR_7455
+Message-ID: <20030304190421.GA4490@rover.farnsworth.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Joakim Tjernlund wrote:
+Bringing up a board with a pair of 7455s.
+Need this patch.
 
-> Does this workaround also work for dcbz on kernel addresses?
+Thanks,
+-Dale
 
-It may, depending upon the silicon revision. :-)
-
-IIRC, the real reason for this code is to work around errata in
-some silicon versions where the DAR isn't loaded  properly.  In
-addition, this also helps when we use kernel debuggers for setting
-breakpoints when the text area is write enabled.
-
-> Also, will the Pinned TLB feature for 860 help here?
-
-It will only for the static data area of the kernel.  If you have
-vmalloc()'ed pages you can stumble across the same errors.
-
-> Yes I am sure it's very hard to debug and probably over my head :-(
-> I will try a litte bit more though and see very it takes me.
-
-If nothing else, you are learning more than you bargained for. ;-)
-
-
-	-- Dan
-
+===== include/asm-ppc/processor.h 1.80 vs edited =====
+--- 1.80/include/asm-ppc/processor.h	Thu Feb 27 13:22:28 2003
++++ edited/include/asm-ppc/processor.h	Tue Mar  4 11:02:35 2003
+@@ -687,6 +687,7 @@
+ #define	PVR_7400	0x000C0000
+ #define	PVR_7410	0x800C0000
+ #define	PVR_7450	0x80000000
++#define	PVR_7455	0x80010000
+ /*
+  * For the 8xx processors, all of them report the same PVR family for
+  * the PowerPC core. The various versions of these processors must be
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
