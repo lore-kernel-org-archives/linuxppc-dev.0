@@ -1,21 +1,31 @@
-Date: Thu, 23 Sep 1999 10:02:24 -0500 (CDT)
-From: Jason Haas <jhaas@www.linuxppc.org>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: 2.2.10 kernels in /contrib?
-Message-ID: <Pine.LNX.4.04.9909231001040.20087-100000@www.linuxppc.org>
+Message-ID: <37EA6709.DAD02422@cornell.edu>
+Date: Thu, 23 Sep 1999 10:44:41 -0700
+From: Stephen Travis Pope <stp9@cornell.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: LinuxPPC equivalent of LocationManager ???
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Anyone here post the 2.2.10 kernels in ftp.linuxppc.org/contrib? They were
-uploaded in July and August, respectively.
+Hello all,
 
-Cheers,
+I use LinuxPPC on a Lombard/Bronze PowerBook and *love* it. I also move
+between several sites (home, office, campus, etc.) and (in the Mac
+world) have several LocationManager setups for networking (PPP vs.
+10BaseT connection, different IP addresses, domains, name servers,
+etc.).
 
-Jason Haas,  jhaas@linuxppc.com
-LinuxPPC Inc,  www.linuxppc.com
+Does anyone have a set of scripts for managing multiple sets of /etc/*
+config files for simulating LocationManager on LinuxPPC???
 
+...any reply appreciated...
+
+-- 
+stp
+
+Stephen Travis Pope  --  http://www.create.ucsb.edu/~stp
+stp@expertcity.com   --  stp9@cornell.edu
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
