@@ -1,24 +1,30 @@
-From: "Lee Rhodes" <daddy_rhodes@hotmail.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: kernel thread and NULL active_mm (MPC860)
-Date: Mon, 17 May 2004 15:18:58 +0100
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed
-Message-ID: <BAY19-F29apzhad2VqK000110bf@hotmail.com>
+From: desrice@comcast.net
+To: mporter@kernel.crashing.org, linuxppc-embedded@lists.linuxppc.org
+Subject: Ethernet Driver
+Date: Mon, 17 May 2004 17:40:51 +0000
+Message-Id: <051720041740.24419.40A8F923000C6ADF00005F6322007511500A0C079D9C0A0B@comcast.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Dan,
-Thanks for taking up the gauntlet.
+HI Guys
 
->It would help if you indicate what versions of kernel you are using in both
->cases and where you got them.
-On my PPC-based hardware, I'm using 2.4.19 which I got from kernel.org. The
-same code works fine on an i386-based desktop machine running various
-kernels including 2.4.18, 2.4.20 and 2.4.21.
+I'm wonder if anyone has seen this problem and can maybe help. I'm
+working with the IBM 405H ( on our custom board ) processor and Monta
+Vista Linux Kernel of linux-2.4.17_mvl21. I have updated the Ethernet
+driver to support two Ethernet Interfaces, which use EMAC 0 and EMAC 2
+(This is where our two Phys are physically connected to.). The problem
+I'm seeing is that on interface 2 ( EMAC 2 ) when a line rate of 3% ,
+with 64 byte packet size , is exceeded, MAL0 RX descriptor errors are
+continuously generated. This failure has two types of symptoms when the
+traffic to the port is removed :
 
-Lee
+1. The MAL0 descriptor errors cease soon after the traffic is removed,
+and the system recovers
+2. The MAL0 descriptor errors never cease and the system is continuously
+handling the error.
 
+Thanks in Advance
+Des
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
