@@ -1,25 +1,22 @@
-Message-ID: <3BB34D1C.21A99870@mvista.com>
-Date: Thu, 27 Sep 2001 12:00:28 -0400
+Message-ID: <3BB34D7F.3EB0ADB2@mvista.com>
+Date: Thu, 27 Sep 2001 12:02:07 -0400
 From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: James F Dougherty <jfd@GigabitNetworks.COM>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MPC824x
-References: <200109270630.XAA14171@krakatoa.gigabitnetworks.com>
+To: Rudolf Ladyzhenskii <rudolf.ladyzhenskii@act-aus.net>
+Cc: "PPC-Linux list (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: KGDB for PPC in 2.4.6
+References: <619D608DD3F0D311882C009027732E1A836259@ntserver.act.domain>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-James F Dougherty wrote:
->
-> Also, has anyone gotten the MPC107/MPC8240 I2C driver
-> to work?
+Rudolf Ladyzhenskii wrote:
 
-I believe the code is lurking around somewhere.  I have
-not personally used it, although I have been contemplating
-using something in the piggyback loader to properly determine
-the memory size on the Sandpoint board.
+> Is there a patch for PPC (8260)?
+
+MontaVista HHL 2.0.  It's on my list (relatively low) to get this
+checked into the 2_4_devel tree, but have not reached that yet.
 
 
 	-- Dan
