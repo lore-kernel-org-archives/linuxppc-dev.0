@@ -1,15 +1,18 @@
-Return-Path: <alebas@televes.com>
-Received: from tvesnat.televes.com (unknown [212.163.42.137])
-	by ozlabs.org (Postfix) with ESMTP id D619A2BDF2
+Return-Path: <kumar.gala@freescale.com>
+Received: from motgate3.mot.com (motgate3.mot.com [144.189.100.103])
+	by ozlabs.org (Postfix) with ESMTP id DADCE2BDEB
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 13 Nov 2004 00:06:16 +1100 (EST)
-Message-ID: <1100264953.4194b5f9eab0f@webmail.televes.com:443>
-Date: Fri, 12 Nov 2004 14:09:13 +0100
-From: alebas@televes.com
-To: linuxppc-embedded@ozlabs.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: [patch] Solves syslib/m8260_setup.c ROOT_DEV problem
+	Sat, 13 Nov 2004 03:27:25 +1100 (EST)
+In-Reply-To: <NFBBJCNFKLFMBACPKDKCCEANELAA.jdomogala@acmepacket.com>
+References: <NFBBJCNFKLFMBACPKDKCCEANELAA.jdomogala@acmepacket.com>
+Mime-Version: 1.0 (Apple Message framework v619)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Message-Id: <28CBA210-34C4-11D9-8B98-000393DBC2E8@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Fri, 12 Nov 2004 10:01:48 -0600
+To: <jdomogala@acmepacket.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: PowerPC MMU questions
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,54 +23,65 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
 
-This patch applies against head versions of both linuxppc-2.5 in ppc.bkbits.net
-and linux-2.5 in linux.bkbits.net
+On Nov 11, 2004, at 9:36 PM, Jeff Domogala wrote:
 
-I don't now if this has been corrected in some other tree.
+> Folks,
+>
+> I am dealing with a PowerPC 7455.=A0 Here is my understanding =
+regarding=20
+> the
+>  MMU translation order:=A0 If the address is covered in a BAT, that =
+BAT
+> translation is in effect.=A0 If there is no BAT entry, then the page=20=
 
-The patch corrects the following error during compilation
+> tables
+>  are used to translate the address.=A0 If there is no page table =
+entry,=20
+> an
+>  exception is thrown and the exception handler for the miss needs to=20=
 
-  LD      arch/ppc/lib/built-in.o
-  CC      arch/ppc/syslib/m8260_setup.o
-arch/ppc/syslib/m8260_setup.c: In function `m8260_setup_arch':
-arch/ppc/syslib/m8260_setup.c:56: `ROOT_DEV' undeclared (first use in this
-function)
-arch/ppc/syslib/m8260_setup.c:56: (Each undeclared identifier is reported only
-once
-arch/ppc/syslib/m8260_setup.c:56: for each function it appears in.)
-arch/ppc/syslib/m8260_setup.c:56: `Root_RAM0' undeclared (first use in this
-function)
-arch/ppc/syslib/m8260_setup.c: In function `m8260_show_cpuinfo':
-arch/ppc/syslib/m8260_setup.c:149: warning: unsigned int format, long unsigned
-int arg (arg 5)
-arch/ppc/syslib/m8260_setup.c:149: warning: int format, long unsigned int arg
-(arg 6)
-arch/ppc/syslib/m8260_setup.c:149: warning: unsigned int format, long unsigned
-int arg (arg 7)
-arch/ppc/syslib/m8260_setup.c:149: warning: unsigned int format, long unsigned
-int arg (arg 8)
-arch/ppc/syslib/m8260_setup.c:149: warning: unsigned int format, long unsigned
-int arg (arg 9)
-make[1]: *** [arch/ppc/syslib/m8260_setup.o] Error 1
-make: *** [arch/ppc/syslib] Error 2
+> add a
+>  new PTE.=A0 So, correct me if I'm wrong in my translation.
+>
+> Now, The system starts up with BAT entries to get the system off the=20=
 
-Here, arch was ppc and configuration was ads8272_defconfig.
+> ground.
+>  I have equivalent BAT entries for the instruction and data sides.=A0 =
+I=20
+> also
+>  have the L1 I and D caches on as well as the L2 cache (I and D=20
+> mode).=A0 The
+>  reason for using the BATs is to create non-cached I/O regions until=20=
 
-Best regards,
+> the MMU
+>  PTEs are populated.=A0 Once the MMU PTEs are setup, the caches are=20
+> flsuhed and
+>  disabled, the MMU is disabled, the BATS disabled, the MMU re-enabled=20=
 
-Alex
+> and the
+>  caches re-enabled.=A0 So here are my questions:
+>
+> 1. Is it ok to have the same I and D BAT entries?
 
+Yes, the I-BAT will be used for translations on instruction fetches,=20
+the D-BAT will be used on data accesses (ld/st instructions).
 
---- arch/ppc/syslib/m8260_setup.c.orig  2004-11-12 11:55:32.000000000 +0100
-+++ arch/ppc/syslib/m8260_setup.c       2004-11-12 13:55:00.000000000 +0100
-@@ -16,6 +16,9 @@
- #include <linux/slab.h>
- #include <linux/init.h>
- #include <linux/initrd.h>
-+#ifdef CONFIG_BLK_DEV_INITRD
-+#include <linux/root_dev.h>
-+#endif
- #include <linux/seq_file.h>
- #include <linux/irq.h>
+>  2. Is it ok to setup the initial MMU PTEs with the BATs enabled or=20
+> should
+>  the caches be disabled and MMU disabled during the PTE setup?
+
+There should be no harm setting up MMU PTEs with BATs enabled, as you=20
+said the BATs will take preference over the PTEs
+
+>  3. Is there some other esource out there (mailing list or otherwise)=20=
+
+> that I
+>  should be addressing these questions to?
+
+This is as good as any, assuming your using linux :)  Also, the=20
+Freescale website has a number of App Notes on the various PPC MMUs and=20=
+
+an email support address risc10@freescale.com
+
+- kumar
