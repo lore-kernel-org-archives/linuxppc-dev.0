@@ -1,45 +1,63 @@
-To: linuxppc-dev@lists.linuxppc.org
-Cc: Dan Malek <dan@embeddededge.com>
-Subject: Re: "slow" ports on MPC8255 ? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 17 Jun 2003 22:47:03 +0200."
-Date: Wed, 18 Jun 2003 16:24:03 +0200
-Message-Id: <20030618142408.8C4BAC5FD7@atlas.denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <16113.6008.29477.779178@cargo.ozlabs.ibm.com>
+Date: Thu, 19 Jun 2003 11:52:56 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: [PATCH] 2.4.21 fixes
+In-Reply-To: <Pine.GSO.4.21.0306141056270.14234-100000@vervain.sonytel.be>
+References: <Pine.GSO.4.21.0306141056270.14234-100000@vervain.sonytel.be>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello,
+Geert Uytterhoeven writes:
 
-I wrote:
+>   - arch/ppc/kernel/checks.c: Kill warning about undeclared printf() by
+>     including <stdio.h> _after_ all other includes (including it first doesn't
+>     work)
 
-> has anybody of you experienced problems with accesses  to  port  data
-> registers on a MPC8255 yet?
-...
-> - writing port A data register (as 32  bit  word)  and  then  looping
->   reading  it back will show that it takes some time for the write to
->   take effect, i. e. we can read the old  value  for  some  time  and
->   then, bit for bit, the new value becomes visible.
+checks.c is broken for cross-compiling anyway, I would rather just
+remove it.
 
-Problem solved. The solution was simple. Looking closer I found  that
-the  effect  showed only up for bits changing from 0 to 1. Then I saw
-that ports pins in  question  are  configured  as  open  drain.  When
-switching  a  pin  to 1 the level would rise slow enough that reading
-the data register would pick up a low (0) for several cycles.
+>   - arch/ppc/kernel/open_pic.c: Kill warning about unused openpic_reset(). An
+>     alternative is to add an #ifdef, but since it's never used before its
+>     definition, just removing the forward declaration looks better to me
 
-So actually it was no problem at all, just some slow circuitry and  a
-fast  CPU.  Don't  know why the MPC8260 behaves differently (internal
-pull-ups?).
+OK.
 
+>   - arch/ppc/kernel/ppc_ksyms.c, arch/ppc/kernel/setup.c: Define and export
+>     screen_info unconditionally, so vga16fb can be built as a module. An
+>     alternative is to make the definition dependent on CONFIG_FB_VGA16 ||
+>     CONFIG_FB_VGA16_MODULE, and the export on CONFIG_FB_VGA16_MODULE, but this
+>     is ugly.
+>
+>     Another reason is that screen_info is referenced in
+>     arch/ppc/platforms/prep_setup.c on the following (complex) condition:
+>
+>     #if defined(CONFIG_PREP_RESIDUAL) && \
+>         (defined(CONFIG_FB_VGA16) || defined(CONFIG_FB_VGA_16_MODULE) || \
+> 	         defined(CONFIG_FB_VESA))
+>
+>     which causes a link failure with the current code, too. The alternative
+>     #ifdef solution would clutter this even more...
 
-Wolfgang Denk
+I think we could make this depend on CONFIG_FB.  I don't think we want
+to make it depend on CONFIG_FB_VGA_16_MODULE since that would mean
+that you couldn't set CONFIG_FB_VGA_16=m and make a module that would
+work with an existing kernel that had been compiled with
+CONFIG_FB_VGA_16=n.  The screen_info structure is only 52 bytes so
+it's not that big a deal to have it always included if CONFIG_FB=y.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-The human mind ordinarily operates at only ten percent of its capaci-
-ty - the rest is overhead for the operating system.
+>   - include/asm-ppc/posix_types.h: Kill warning about incorrect printf()-style
+>     format in the ext2 code by making __kernel_ino_t unsigned long, like on
+>     most other architectures.
+
+Yes, good idea.
+
+I'll send this stuff to Marcelo in due course.
+
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
