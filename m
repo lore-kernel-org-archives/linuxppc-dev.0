@@ -1,47 +1,63 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-From: hjzgq@sohu.com
-Message-ID: <116411.1086934938680.JavaMail.postfix@mx27.mail.sohu.com>
-Date: Fri, 11 Jun 2004 14:22:18 +0800 (CST)
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Re: Change FEC and SCC1 sequence,But SCC1 not work? 
-Cc: <wd@denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain
+From: Graf Alex <alex.graf@siemens.com>
+To: "'Song Sam'" <samlinuxppc@yahoo.com.cn>,
+	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <791B3205DB661A42B4BFE5464A7D1D0204B36ECA@chzugexch01.abatos.com>
+Subject: AW: How to set current time to 8xx RTC through Linux application?
+Date: Fri, 11 Jun 2004 08:41:36 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang Denk:
-       Thanks a lot!
-       My bootargs is "setenv bootargs root=/dev/ram ip=10.32.5.17:10.32.5.15::255.255.0.0:bug
-:::off"
-       Today,I found fec device down when linux kernel running ,but I can see "eth1(fec ethernet)"  status with "ifconfig" command,I checked linux kernel and found fec device down when kernel running.
+If you did implement the Linux rtc interface, you should be able to
+read/write the time with IOCTLs from your app.
 
-       After debugging,I found linux kernel close the device when  running "ip_auto_config()" function  in "net/ipv4/ipconfig.c",then, I deleted "ic_open_devs()" funtions, AND EVERYING
-WORKS WELL!
+fRtc = open("/dev/rtc", O_RDWR, 0);
+ioctl(fRtc, RTC_RD_TIME, &tm );
+ioctl(fRtc, RTC_SET_TIME, &tm);
 
-      But why  do it be added to Linux kernel?
+Be carefull, System time is NOT equal RTC time! You have to sync it
+periodical.
 
-      Best regards,
-      Michael.  Z.
------  Original Message  -----
-From: Wolfgang Denk
-Subject: Re: Change FEC and SCC1 sequence,But SCC1 not work?
-Sent: Fri Jun 11 01:17:56 CST 2004
+Cheers
 
-> In message <5357004.1086858754080.JavaMail.postfix@mx27.mail.sohu.com> you wrote:
-> >
-> > Briefly, my platform is MPC860T from Motorola. I'm using ppcboot
-> > 1.1.16 to tftp the kernel 2.4.4 through FEC and then load
-> > NFS/RAMDISK. If I configure the kernel with only FEC, then
-> > everything works well(NFS works and ping through eth0 works). If I
-> > configure the kernel with both FEC(as eth0) and SCC1(as eth1),it
-> > works well too,but when I configure ther kernel with both SCC1(eth0)
-> > and FEC(as eth1) (net/setup.c)! . I try to ping out through
-> > FEC(eth1), I get ring buffer dumps and no ping response:
->
-> Please post the "Kernel command line" as printed when your kernel
-> boots. You did include a network device parameter in your ip= boot
-> argument, didn't you?
+Alex
+
+
+-----Ursprüngliche Nachricht-----
+Von: Song Sam [mailto:samlinuxppc@yahoo.com.cn]
+Gesendet: Mittwoch, 9. Juni 2004 15:14
+An: Linuxppc-Embedded
+Cc: samlinuxppc@yahoo.com.cn
+Betreff: How to set current time to 8xx RTC through Linux application?
+
+
+
+Hi,
+
+I added 8xx RTC driver both on U-Boot and Linux
+kernel.And I could set current time right under
+U-Boot.But I have no idea on making it through Linux
+application?I could read it with following code but
+how to set it?
+
+#include <time.h>
+
+     time_t t;
+     struct tm * tm;
+
+     time(&t);
+     tm=localtime(&t);
+
+     printf("\nThe corrent time is : %02d.%02d.%02d
+%02d:%02d:%02d\n",tm->tm_year+1900,tm->tm_mon+1,tm->tm_mday,tm->tm_hour,tm->
+tm_min,tm->tm_sec);
+
+Thanks in advance!
+
+Sam
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
