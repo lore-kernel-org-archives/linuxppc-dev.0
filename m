@@ -1,36 +1,35 @@
-Message-Id: <4.2.0.25.19990322190038.03b07d60@mail.lauterbach.com>
-Date: Mon, 22 Mar 1999 19:08:44 +0100
-To: Paul Barrette <barretp@mcmail.cis.mcmaster.ca>
-From: Franz Sirl <Franz.Sirl@munich.netsurf.de>
-Subject: Re: VRAM not recognized! platinumfb, kernel 2.2.2
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <v04003a00b31ae22dc5ae@[10.0.0.2]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-ID: <36F69C36.9D5373CE@business.wm.edu>
+Date: Mon, 22 Mar 1999 14:38:30 -0500
+From: "Kevin B. Hendricks" <kbhend@business.wm.edu>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: smbfs and smbmount and Paul's 2.2.1 kernel
+References: <199903182331.KAA23199@tango.anu.edu.au>
+	 <19990319001614.001351@mail.mipsys.com>
+	 <19990319001614.001351@mail.mipsys.com> <4.2.0.25.19990322185247.036b2990@mail.lauterbach.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 19:08 21.03.99 , Paul Barrette wrote:
->It was suggested that I hack the video driver to force it to use 2mb for
->vram (platinumfb.c file?).  Here is where I would guess to set it:
->bank0 = 1; /* builtin 1MB vram, always there */
->bank1 = info->base_frame_buffer[0x100000] == 0x34;
->
->****can I just set "bank1=1;" and get away with it?  Or does the kernel
->have to find it?
+Hi,
 
-yes, you can simply set bank1=1. But as I modified this code a while ago to 
-fix this, I would like you to try some things:
+In order to prove the Linuxppc port of the JDK is correct I need to mount NT
+filesystems on my LinuxPPC system using smbmount and smbumount which are part of
+the smbfs rpm (Sun's JDK on an NT box provides a reference system to run the JCK
+against).
 
-- does it work if you replace the "dcbi" assembler instruction a few lines 
-before in the invalidate_cache() macro with "dcbf"?
-- or if you add a 2nd eieio after dcbi/dcbf?
+To make smbfs work (I grabbed the src rpm and built it) I need to compile SMB
+_FS into the kernel.  I grabbed Paul's latest kernel source and dot.config file
+and noticed there was no support for SMB included in his kernel by default.
 
-BTW, which compiler version are you using?
+Before I go and roll my own, has anyone played with mounting NT filesystems
+using smbmount and smbumount commands?  Is this stable on linuxppc?  Are there
+any gotchas I should look out for with this filesystem?
 
-Franz.
+Thanks,
 
+Kevin
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
