@@ -1,33 +1,35 @@
-Subject: Head of linuxppc bk broken
-From: Stefan Nickl <Stefan.Nickl@kontron.com>
-To: davem@nuts.davemloft.net
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: [PATCH] Take two of the new serial uart driver.
+From: David Woodhouse <dwmw2@infradead.org>
+To: Pantelis Antoniou <panto@intracom.gr>
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	Kumar Gala <kumar.gala@motorola.com>,
+	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <40C428AD.8020707@intracom.gr>
+References: <40BF3206.8030705@intracom.gr>
+	 <1086426744.4588.121.camel@imladris.demon.co.uk>
+	 <20040605192221.GT15195@smtp.west.cox.net>
+	 <1086472929.4862.12.camel@localhost.localdomain>
+	 <40C42337.20209@intracom.gr>
+	 <1086597379.29255.13.camel@localhost.localdomain>
+	 <40C428AD.8020707@intracom.gr>
 Content-Type: text/plain
-Message-Id: <1086597896.5981.9.camel@lucy.pep-kaufbeuren.de>
+Date: Mon, 07 Jun 2004 09:53:12 +0100
+Message-Id: <1086598392.29255.15.camel@localhost.localdomain>
 Mime-Version: 1.0
-Date: Mon, 07 Jun 2004 10:44:57 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Some "sk_"'s too much...
+On Mon, 2004-06-07 at 11:34 +0300, Pantelis Antoniou wrote:
+> Hmm, just multiply by 3 in udelay instead of 2.
+>
+> What is your baud rate? 9600?
 
---- /tmp/tcp_input.c    2004-06-07 10:39:25.000000000 +0200
-+++ net/ipv4/tcp_input.c        2004-06-07 10:39:55.000000000 +0200
-@@ -476,8 +476,8 @@
-                                  16 + sizeof(struct sk_buff));
-                        space *= rcvmem;
-                        space = min(space, sysctl_tcp_rmem[2]);
--                       if (space > sk->sk_rcvbuf)
--                               sk->sk_rcvbuf = space;
-+                       if (space > sk->rcvbuf)
-+                               sk->rcvbuf = space;
-                }
-        }
+Yeah. Why must we pick numbers out of the air instead of actually
+waiting for the hardware to say it's finished?
 
 --
-Stefan Nickl
-Kontron Modular Computers
+dwmw2
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
