@@ -1,54 +1,37 @@
-In-Reply-To: <0B0A39652BB0D411BCCF00508B9512EC106D80BE@tx14exm05.ftw.mot.com>
-References: <0B0A39652BB0D411BCCF00508B9512EC106D80BE@tx14exm05.ftw.mot.com>
-Mime-Version: 1.0 (Apple Message framework v618)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <91628297-D9A3-11D8-AE55-000393C30512@freescale.com>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-From: Andy Fleming <afleming@freescale.com>
-Subject: Re: ethtool on gianfar ethernet driver on MPC85xx platform
-Date: Mon, 19 Jul 2004 11:49:14 -0500
-To: Guo Eileen-QEG000 <QEG000@motorola.com>
+Subject: PPC750 cPCI Hotplug
+From: Matt Dew <mattd@seakr.com>
+To: linuxppc-dev@lists.linuxppc.org
+Content-Type: text/plain
+Message-Id: <1090262208.29910.254.camel@mattd.seakr.com>
+Mime-Version: 1.0
+Date: Mon, 19 Jul 2004 12:36:48 -0600
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I just got back from vacation, and have sent a similar message to
-chau.duong@motorola.com:
+Hi all,
+I've searched the archives, the web and every thing else I can think of
+to no avail.   I'm hoping someone here might be able to help me out.
 
-Hmmm...  Could you tell me what version of the kernel you have?  In
-other words, when/where did you get this code?
+I have a Motorola PPC750 with a Raven chipset in a compact PCI test
+rack.  I've got the 2.4.19 kernel with the ppc patch applied and it
+works very well.
 
-Have you ifconfig-ed eth0?
+The problem is that I can not get PCI hotplugging to work.
 
-I will look into it in the meantime to see if 1.8 works with my kernel.
+I'm using Xilinx FPGAs on some other boards in the test rack. The FPGAs
+have PCI cores but when I configure them after powerup, the kernel does
+not see them.  I have hotplug support compiled in the kernel.
 
-Andy Fleming
+I've tried several different kernels, with no luck.
 
-On Jul 14, 2004, at 09:15, Guo Eileen-QEG000 wrote:
+I've noticed there is no CONFIG_HOTPLUG_PCI option for ppc like there is
+for other architectures, just CONFIG_HOTPLUG.
 
->
-> All,
->
-> I am using the gianfar ethernet driver on MPC8540 platform.
-> The gianfar driver itself includes code that supports ethtool
-> (gianfar_ethtool.c)
-> We downloaded the ethtool.c utility program version 1.8 and tried to
-> access
-> the ethtool on gianfar driver.  Here is what we received when
-> entering the ethtool commands:
->> ethtool -i eth0
-> Cannot get driver information:  Operation not supported
->> ethtool -d eth0
-> Cannot get driver information:  Operation not supported
->
-> Does anyone know how to access the ethtool on the gianfar driver?
->
-> thanks,
->
->
-> Eileen Guo
->
->
+Does anyone have hotplug working on a ppc750? Is it even possible?
+
+thanks for any help,
+Matt
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
