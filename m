@@ -1,17 +1,21 @@
-Return-Path: <dale@farnsworth.org>
-Received: from xyzzy.farnsworth.org (unknown [65.200.49.142])
-	by ozlabs.org (Postfix) with SMTP id 788C067A46
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao10.cox.net (fed1rmmtao10.cox.net [68.230.241.29])
+	by ozlabs.org (Postfix) with ESMTP id D8FC267A2F
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 12 Mar 2005 07:48:26 +1100 (EST)
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Fri, 11 Mar 2005 13:48:23 -0700
-To: Sylvain Munaut <tnt@246tNt.com>, linuxppc-embedded@ozlabs.org
-Message-ID: <20050311204823.GA11928@xyzzy>
-References: <4231F9F9.5080506@246tNt.com> <4231FABA.2030809@246tNt.com>
+	Sat, 12 Mar 2005 08:00:54 +1100 (EST)
+Date: Fri, 11 Mar 2005 14:00:52 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Sylvain Munaut <tnt@246tNt.com>
+Message-ID: <20050311210052.GC3098@smtp.west.cox.net>
+References: <4231F9F9.5080506@246tNt.com>
+	<be4da82f8d12e20b54050e15fd27df36@freescale.com>
+	<423203EC.1070003@246tNt.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4231FABA.2030809@246tNt.com>
-Subject: Re: [PATCH 2/2] MPC52xx updates : PCI Support
+In-Reply-To: <423203EC.1070003@246tNt.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH 1/2] MPC52xx updates : sparse clean-ups
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,34 +26,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-The first hunk of arch/ppc/platforms/lite5200.c looks corrupted.
-See the line beginning "fdef CONFIG_PCI".
+On Fri, Mar 11, 2005 at 09:47:40PM +0100, Sylvain Munaut wrote:
 
--Dale
+[snip]
+> static struct hw_interrupt_type mpc52xx_ic = {
+> -       "MPC52xx",
+[snip]
+> +       .typename       = "MPC52xx",
 
-On Fri, Mar 11, 2005 at 08:08:26PM +0000, Sylvain Munaut wrote:
-> And here's the second patch :
+Shouldn't that be "  MPC52xx  ", or is that another field I'm thinking
+of?
 
-[ deleted lines ]
-
-> diff -Nru a/arch/ppc/platforms/lite5200.c b/arch/ppc/platforms/lite5200.c
-> --- a/arch/ppc/platforms/lite5200.c     2005-03-11 20:41:56 +01:00
-> +++ b/arch/ppc/platforms/lite5200.c     2005-03-11 20:41:56 +01:00
-> @@ -35,6 +35,8 @@
-> #include <asm/ocp.h>
-> #include <asm/mpc52xx.h>
-> 
-> +#include <syslib/mpc52xx_pci.h>
-> +
-> 
-> extern int powersave_nap;
-> 
-> fdef CONFIG_PCI
-> +static int
-> +lite5200_map_irq(struct pci_dev *dev, unsigned char idsel,
-> +                 unsigned char pin) {
-> +       return (pin == 1) && (idsel==24) ? MPC52xx_IRQ0 : -1;
-> +}
-> +#endif
-
-[ more deleted lines ]
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
