@@ -1,57 +1,54 @@
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <16493.61242.908659.82167@cargo.ozlabs.ibm.com>
-Date: Sat, 3 Apr 2004 08:54:50 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: John Whitney <jwhitney-linuxppc@sands-edge.com>
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Problems with dma_alloc_coherent()
-In-Reply-To: <D7F4C570-84C5-11D8-9FF0-000A95A07384@sands-edge.com>
-References: <9EB527A2-83F5-11D8-9FF0-000A95A07384@sands-edge.com>
-	<20040401100546.A27472@home.com>
-	<4317F0F4-8405-11D8-9FF0-000A95A07384@sands-edge.com>
-	<20040401181926.GA3630@gate.ebshome.net>
-	<406C658E.10500@embeddededge.com>
-	<20040401185956.GB3786@gate.ebshome.net>
-	<2C2F00BD-8410-11D8-9FF0-000A95A07384@sands-edge.com>
-	<20040401191715.GC3786@gate.ebshome.net>
-	<406C8104.9050609@acm.org>
-	<20040401220018.GA4130@gate.ebshome.net>
-	<D7F4C570-84C5-11D8-9FF0-000A95A07384@sands-edge.com>
+Subject: Re: Proposed changes to io.h
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: John Whitney <johnw@sands-edge.com>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <43B0E668-84BC-11D8-9FF0-000A95A07384@sands-edge.com>
+References: <49B568CB-832A-11D8-9FF0-000A95A07384@sands-edge.com>
+	 <1080787943.1434.47.camel@gaston>
+	 <209F76E4-838B-11D8-9FF0-000A95A07384@sands-edge.com>
+	 <1080790433.1433.59.camel@gaston>
+	 <43B0E668-84BC-11D8-9FF0-000A95A07384@sands-edge.com>
+Content-Type: text/plain
+Message-Id: <1080961463.1426.82.camel@gaston>
+Mime-Version: 1.0
+Date: Sat, 03 Apr 2004 13:04:24 +1000
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-John Whitney writes:
-
-> As an exemplification of the problem I am having with the current
-> DMA/PCI API:
+On Sat, 2004-04-03 at 01:41, John Whitney wrote:
+> > No, you are not supposed to pass an address coming from
+> > pci_alloc_consistent() to pci_map_single(), period.
+> >
 >
-> I am developing a Generic DMA driver.  DMA providers register
-> themselves with it.  Clients ask the DMA core driver to please have a
-> registered driver transfer the data from one location to another, and
-> call them back when it is complete.
+> Why take that stance, when a simple change to virt_to_phys() makes all
+> virtual addresses coming from any routine work correctly?  Would that
+> be far simpler system under which to implement code, with less prone to
+> error (no need to worry about making sure you have the "correct"
+> virtual memory type for a given routine - all virtual memory addresses
+> would work).  This just sounds entirely political, and very little
+> practical.
 
-It sounds like you have the model of a DMA controller that is separate
-from any I/O device that needs to transfer data to/from memory, and
-you want to use it to transfer data from one memory location to
-another.  Just like in the bad old days of the PC/XT. :)
+No. virt_to_phys() operates on the linear mapping only, that has
+always been the case, doing otherwise would be non portable anyway.
 
-That is not the model that PCI/DMA API is designed for.  The model it
-is designed for is one where you have a bridge, often with an IOMMU
-that remaps bus addresses to memory addresses on a page granularity,
-and behind that you have a bus-master capable device.  Thus the
-PCI/DMA API takes care of setting up an appropriate translation in the
-IOMMU (if any) and returning the bus address that the driver should
-use.  The way that the driver gives the bus address to the device is
-very device-dependent and isn't handled by the API.
+I think we should deprecate virt_to_phys() anyway and use __pa in
+the arch code, that would avoid people trying to use it for what it
+is not.
 
-If you want to write code to handle a separate DMA controller, go
-ahead.  You will need to design your own separate API for it.  I
-wouldn't try to make it too general, though, since there are very few
-systems these days that have DMA controllers (as distinct from
-bus-master capable I/O devices).
+Regarding pci_map_single(), it's semantics are clear regarding the
+kind of memory it can map. Doing a ppc only hack to make the nonsense
+work (passing it memory obtained by pci_alloc_consistent) would be
+letting drivers writers do the wrong thing on ppc and break whenever
+they port the driver to a platform that enforce that limitation.
 
-Paul.
+We could add a runtime check to pci_map_single() to verify it gets
+passed an address within the linear mapping though. That would catch
+the bugs you are afraid of.
+
+(Oh, and let's keep those discussions on-list).
+
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
