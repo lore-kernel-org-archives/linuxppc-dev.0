@@ -1,22 +1,17 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao03.cox.net (fed1rmmtao03.cox.net [68.230.241.36])
-	by ozlabs.org (Postfix) with ESMTP id C2ABD2BF0B
+Return-Path: <awilliam@nortelnetworks.com>
+Received: from zcars04f.nortelnetworks.com (zcars04f.nortelnetworks.com
+	[47.129.242.57]) by ozlabs.org (Postfix) with ESMTP id A66AE2BF09
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  5 Nov 2004 01:28:33 +1100 (EST)
-Date: Thu, 4 Nov 2004 07:28:28 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Vladimir <vova-ks@yandex.ru>
-Message-ID: <20041104072828.A11524@home.com>
-References: <200411031241.40681.vova-ks@yandex.ru>
-	<200411031717.55398.vova-ks@yandex.ru>
-	<20041103073630.A3485@home.com>
-	<200411040134.23806.vova-ks@yandex.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200411040134.23806.vova-ks@yandex.ru>;
-	from vova-ks@yandex.ru on Thu, Nov 04, 2004 at 01:34:23AM +0300
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: kgdb on 405GP walnut-like board.
+	Fri,  5 Nov 2004 01:34:05 +1100 (EST)
+Message-ID: <713043CE8B8E1348AF3C546DBE02C1B401C11C22@zcarhxm2.corp.nortel.com>
+From: "Andrew Williams" <awilliam@nortelnetworks.com>
+To: Peter Asemann <peter.asemann@web.de>,
+	linuxppc-embedded@ozlabs.org
+Date: Thu, 4 Nov 2004 09:16:49 -0500 
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C4C278.ECBDF834"
+Subject: RE: Am I on the right list here?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,19 +22,59 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Nov 04, 2004 at 01:34:23AM +0300, Vladimir wrote:
-> On Wednesday 03 November 2004 17:36, Matt Porter wrote:
-> > The patch is against the current 2.6 BK tree, try patching a recent kernel
-> > release like 2.6.10-rc1.
-> I've tried 2.6.10-rc1-bk13 from kernel.org. Is it already include this patch ?
-> It successfully compiles, but at breakpoint() it fails to connect to host's 
-> gdb. I've grab /dev/ttyS1 traffic and see that kgdb stub sends to host a lot 
-> of zeros - nothing more. May be this is bug in serial port initialization ? 
-> How can I deal with it ?
+This message is in MIME format. Since your mail reader does not understand
+this format, some or all of this message may not be legible.
 
-Check what your firmware sets the default baud rate to on the second
-UART. I had to set remotebaud 57600 on walnut, IIRC...I'm a little
-hazy since that's not my primary devel platform. I think you are
-on a different board anyway.
+------_=_NextPart_001_01C4C278.ECBDF834
+Content-Type: text/plain;
+	charset="ISO-8859-1"
 
--Matt
+
+Peter, here's an article that I found to be a great 
+"starting point". With regards to your boot loader,
+look to U-boot (u-boot.sourceforge.net), and read
+the (length) README document.
+
+http://www.tldp.org/LDP/cpg/Custom-Porting-Guide.pdf
+
+Best of luck
+
+
+------_=_NextPart_001_01C4C278.ECBDF834
+Content-Type: text/html;
+	charset="ISO-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3DISO-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+5.5.2658.2">
+<TITLE>RE: Am I on the right list here?</TITLE>
+</HEAD>
+<BODY>
+<BR>
+
+<P><FONT SIZE=3D2>Peter, here's an article that I found to be a great =
+</FONT>
+<BR><FONT SIZE=3D2>&quot;starting point&quot;. With regards to your =
+boot loader,</FONT>
+<BR><FONT SIZE=3D2>look to U-boot (u-boot.sourceforge.net), and =
+read</FONT>
+<BR><FONT SIZE=3D2>the (length) README document.</FONT>
+</P>
+
+<P><FONT SIZE=3D2><A =
+HREF=3D"http://www.tldp.org/LDP/cpg/Custom-Porting-Guide.pdf" =
+TARGET=3D"_blank">http://www.tldp.org/LDP/cpg/Custom-Porting-Guide.pdf</=
+A></FONT>
+</P>
+
+<P><FONT SIZE=3D2>Best of luck</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C4C278.ECBDF834--
