@@ -1,17 +1,17 @@
-Return-Path: <galak@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id BC4F167A2F
+Return-Path: <Stefan.Nickl@kontron.com>
+Received: from kom-mail1.kontron-modular.com (unknown [62.159.155.196])
+	by ozlabs.org (Postfix) with ESMTP id 511CD67A64
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Mar 2005 17:28:39 +1000 (EST)
-Date: Wed, 30 Mar 2005 01:28:25 -0600 (CST)
-From: Kumar Gala <galak@freescale.com>
-To: Andrew Morton <akpm@osdl.org>
-Message-ID: <Pine.LNX.4.61.0503300126320.17828@blarg.somerset.sps.mot.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-kernel@vger.kernel.org,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH] ppc32: Fix MPC8555 & MPC8555E device lists (updated)
+	Wed, 30 Mar 2005 17:44:27 +1000 (EST)
+From: Stefan Nickl <Stefan.Nickl@kontron.com>
+To: Kumar Gala <kumar.gala@freescale.com>,
+	Andrew Morton <akpm@osdl.org>
+Content-Type: multipart/mixed; boundary="=-Nx3SdYs/ziFRUTmfVjP4"
+Date: Wed, 30 Mar 2005 09:44:24 +0200
+Message-Id: <1112168665.12794.24.camel@lucy.pep-kaufbeuren.de>
+Mime-Version: 1.0
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: [PATCH] MPC8555 CPM2 size/pointers for FCCs aka "All-ones problem"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,56 +22,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Andrew,
 
-(As I decide how long to keep the paper bag on this time, here is an 
-updated patch.  This one actually reduces the number of devices as well as 
-removes the device from the lists which makes things work better :)
+--=-Nx3SdYs/ziFRUTmfVjP4
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-Removed the FCC3 device from the lists of devices on MPC8555 & MPC8555E
-since it does not exist on these processors.
+I've seen that MPC8555 support also made it into linux-2.6 by now.
 
-Signed-off-by: Jason McMullan <jason.mcmullan@timesys.com>
-Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+I don't have hardware and time to test, but it looks like this bug has
+made it over from the linuxppc-2.4 tree. The 8541/8555 has a smaller CPM
+DPRAM than the standard CPM2, just like the 8272.
 
----
+Unfortunately, the manual recommends you to use a segment of CPM DPRAM
+that is not implemented in the 8541/55. If the smaller DPRAM is not
+taken into account, fcc_enet.c will initialise the internal CPM buffer
+pointers (fcc_riptr/fcc_tiptr) to invalid offsets, with the result that
+all the FCC will ever send and receive are 0xff-en.
 
-diff -Nru a/arch/ppc/syslib/mpc85xx_sys.c b/arch/ppc/syslib/mpc85xx_sys.c
---- a/arch/ppc/syslib/mpc85xx_sys.c	2005-03-30 01:23:14 -06:00
-+++ b/arch/ppc/syslib/mpc85xx_sys.c	2005-03-30 01:23:14 -06:00
-@@ -80,7 +80,7 @@
- 		.ppc_sys_name	= "8555",
- 		.mask 		= 0xFFFF0000,
- 		.value 		= 0x80710000,
--		.num_devices	= 20,
-+		.num_devices	= 19,
- 		.device_list	= (enum ppc_sys_devices[])
- 		{
- 			MPC85xx_TSEC1, MPC85xx_TSEC2, MPC85xx_IIC1,
-@@ -88,7 +88,7 @@
- 			MPC85xx_PERFMON, MPC85xx_DUART,
- 			MPC85xx_CPM_SPI, MPC85xx_CPM_I2C, MPC85xx_CPM_SCC1,
- 			MPC85xx_CPM_SCC2, MPC85xx_CPM_SCC3,
--			MPC85xx_CPM_FCC1, MPC85xx_CPM_FCC2, MPC85xx_CPM_FCC3,
-+			MPC85xx_CPM_FCC1, MPC85xx_CPM_FCC2,
- 			MPC85xx_CPM_SMC1, MPC85xx_CPM_SMC2,
- 			MPC85xx_CPM_USB,
- 		},
-@@ -97,7 +97,7 @@
- 		.ppc_sys_name	= "8555E",
- 		.mask 		= 0xFFFF0000,
- 		.value 		= 0x80790000,
--		.num_devices	= 21,
-+		.num_devices	= 20,
- 		.device_list	= (enum ppc_sys_devices[])
- 		{
- 			MPC85xx_TSEC1, MPC85xx_TSEC2, MPC85xx_IIC1,
-@@ -105,7 +105,7 @@
- 			MPC85xx_PERFMON, MPC85xx_DUART, MPC85xx_SEC2,
- 			MPC85xx_CPM_SPI, MPC85xx_CPM_I2C, MPC85xx_CPM_SCC1,
- 			MPC85xx_CPM_SCC2, MPC85xx_CPM_SCC3,
--			MPC85xx_CPM_FCC1, MPC85xx_CPM_FCC2, MPC85xx_CPM_FCC3,
-+			MPC85xx_CPM_FCC1, MPC85xx_CPM_FCC2,
- 			MPC85xx_CPM_SMC1, MPC85xx_CPM_SMC2,
- 			MPC85xx_CPM_USB,
- 		},
+See also "All-ones problem with FCC1 on MPC8541" ~October 2004 on
+linuxppc-embedded.
+
+Signed-off-by: Stefan Nickl <Stefan.Nickl@kontron.com>
+
+-- 
+Stefan Nickl
+Kontron Modular Computers
+
+
+--=-Nx3SdYs/ziFRUTmfVjP4
+Content-Disposition: attachment; filename=cpm2_8555.patch
+Content-Type: text/x-patch; name=cpm2_8555.patch; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+
+--- linux-2.5/include/asm-ppc/cpm2.h.old	2005-03-30 08:49:54.000000000 +0200
++++ linux-2.5/include/asm-ppc/cpm2.h	2005-03-30 08:56:07.000000000 +0200
+@@ -86,7 +86,7 @@
+  */
+ #define CPM_DATAONLY_BASE	((uint)128)
+ #define CPM_DP_NOSPACE		((uint)0x7fffffff)
+-#ifdef CONFIG_8272
++#if defined(CONFIG_8272) || defined(CONFIG_MPC8555)
+ #define CPM_DATAONLY_SIZE	((uint)(8 * 1024) - CPM_DATAONLY_BASE)
+ #define CPM_FCC_SPECIAL_BASE	((uint)0x00009000)
+ #else
+
+--=-Nx3SdYs/ziFRUTmfVjP4--
