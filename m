@@ -1,42 +1,37 @@
-From: Thomas Graichen <news-innominate.list.linux.ppc.dev@innominate.de>
-Reply-To: Thomas Graichen <graichen@innominate.de>
-Subject: Re: shifts on 64bit ints
-Date: 4 Aug 2000 07:16:55 GMT
-Message-ID: <news2mail-8mdql7$4g0$1@mate.bln.innominate.de>
-References: <Pine.LNX.3.96LJ1.1b7.1000803193713.650E-100000@ofey.earthlink.net> <Pine.LNX.3.96LJ1.1b7.1000803194918.650F-100000@ofey.earthlink.net>
-Reply-To: thomas.graichen@innominate.de
-To: linuxppc-dev@lists.linuxppc.org
+Date: Fri, 4 Aug 2000 10:06:26 +0200 (CEST)
+From: Ronald Wahl <rwa@peppercon.de>
+To: Matt Porter <mporter@mvista.com>
+cc: Geert Uytterhoeven <geert@linux-m68k.org>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: iounmap
+In-Reply-To: <20000803155911.A6226@cx258813-a.chnd1.az.home.com>
+Message-ID: <Pine.LNX.4.21.0008041003040.653-100000@goliath.issistance.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Takashi Oe <toe@unlserve.unl.edu> wrote:
+On Thu, 3 Aug 2000, Matt Porter wrote:
 
-> On Thu, 3 Aug 2000, Takashi Oe wrote:
+> On Thu, Aug 03, 2000 at 02:44:12PM +0200, Geert Uytterhoeven wrote:
+> >
+> > On Thu, 3 Aug 2000, Ronald Wahl wrote:
+> > > I'm currently writing a device driver for an pci controller and have to
+> > > map very large amounts of pci memory and i/o ranges via ioremap. The
+> > > problem is that there is no iounmap and ioremap returns NULL after some
+> > > insmod/rmmod cycles. When gets this implemented?
+> >
+> > When someone steals some spare time and writes the code.
+>
+> Done.  The hot swap PCI kernel patches from MCG have iounmap implemented.
+> Very useful when ripping a PCI peripheral out of its slot. :)
+>
+> See them at http://www.mcg.mot.com/linux under HA Linux/Downloads.
 
->> On Fri, 4 Aug 2000, Franz Sirl wrote:
->>
->> > Oh no!! It's even worse! The kernel implementation of ashldi3, ashrdi3 and
->> > lshrdi3 seems broken, see this code in arch/ppc/kernel/misc.S:
->>
->> The brokenness of those implementations has been noted by Gabriel a long
->> time ago, and I believe he even sent a fix to this list once.  For some
->> unknown reasons, it has largely been ignored.  I think I can dig out his
->> patch if I try hard though.
+Call me blind, but I havn't seen an implementation of iounmap in these
+patches.
 
-> Ok, found it:
+ron
 
-> http://lists.linuxppc.org/listarcs/linuxppc-dev/199904/msg00189.html
-
-nks - i'll try (think and hope :-) that this fixes the problems with
-xfs ... will mail the result here later
-
-t
-
---
-thomas.graichen@innominate.de
-Technical Director                                       innominate AG
-Clustering & Security                                networking people
-tel: +49.30.308806-13  fax: -77                   http://innominate.de
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
