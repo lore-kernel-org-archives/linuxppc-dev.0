@@ -1,34 +1,28 @@
-Subject: Re: X engine over Video Controller
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-To: Rupesh S <rupeshs@myw.ltindia.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <004c01c331d2$0975bcb0$6706a8c0@SPLENDOR>
-References: <Pine.LNX.4.44.0306121603120.1349-100000@ike>
-	 <004c01c331d2$0975bcb0$6706a8c0@SPLENDOR>
-Content-Type: text/plain; charset=iso-8859-1
-Message-Id: <1055689938.1863.187.camel@thor.holligenstrasse29.lan>
+Date: Sun, 15 Jun 2003 19:39:15 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Larry McVoy <lm@bitmover.com>
+Cc: akuster@mvista.com, linuxppc-dev@lists.linuxppc.org
+Subject: Re: GPL inconsistency in arch/ppc/ocp/xlinx/
+Message-ID: <20030615173915.GA4511@lst.de>
+References: <20030524201213.GA8256@lst.de> <20030612203205.GA23017@lst.de> <20030612204444.GA19453@work.bitmover.com>
 Mime-Version: 1.0
-Date: 15 Jun 2003 17:12:18 +0200
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20030612204444.GA19453@work.bitmover.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 2003-06-13 at 19:34, Rupesh S wrote:
->
-> I work with FADS823 board running PPC-Linux.
-> Now that I plan to put a X-Engine over my Video Controller inbuilt in MPC823
-> and supported by FADS board.
-> Need help in selecting the X-Engine and the feasibility of the same with the
-> above mentioned board.
-> Also I would like to know if I can get any ind of reference for the same....
+On Thu, Jun 12, 2003 at 01:44:44PM -0700, Larry McVoy wrote:
+> You might want to be careful about advertising why you want these files
+> removed because the Xilinx clause is just covering their butt.  If someone
+> uses Linux in some life support system and someone dies, the fact that
+> the community removed these files because of that clause could be construed
+> as a statement that Linux was suitable for life support systems.  It gives
+> the lawyers ammo.
 
-By 'X engine' do you mean an X server? If so, the easiest way might be
-to get a framebuffer device going and use an X server on top of that.
-
-
---
-Earthling Michel Dänzer   \  Debian (powerpc), XFree86 and DRI developer
-Software libre enthusiast  \     http://svcs.affero.net/rm.php?r=daenzer
+The issue is not what you, I or Xilinx think is a good idea to do with
+the code, the issue is that the GPL doesn't allow to further restrict
+the rights it gives.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
