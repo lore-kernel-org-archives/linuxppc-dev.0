@@ -1,57 +1,56 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <20685-04823@sneakemail.com>
-Date: Wed, 07 Jul 2004 15:08:06 -0700
-From: "Stephen Williams" <612dlag102@sneakemail.com>
+Message-ID: <40EC7CFC.3010400@246tNt.com>
+Date: Thu, 08 Jul 2004 00:45:16 +0200
+From: Sylvain Munaut <tnt@246tnt.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: rpm for embedded system
-References: <21704-45627@sneakemail.com> <40EC4D3E.5090405@bluewin.ch> <1138-00007@sneakemail.com> <40EC682F.5090004@bluewin.ch>
-In-Reply-To: <40EC682F.5090004@bluewin.ch>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Dan Malek <dan@embeddededge.com>
+Cc: ppc linux embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Getting rid of static IO mapping
+References: <40EB1C28.3000402@246tNt.com> <40EC2DC8.5020400@246tNt.com> <17EAD0B0-D057-11D8-9E83-003065F9B7DC@embeddededge.com>
+In-Reply-To: <17EAD0B0-D057-11D8-9E83-003065F9B7DC@embeddededge.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang Grandegger wolfgang.grandegger-at-bluewin.ch |PPC Linux
-Embedded| wrote:
+Hi
 
->>Almost. That is instructions for remaking the ELDK packages
->>from the src.rpms. But I want to take the existing binary
->>rpms and install them on my owh root. This does *not* work:
->>
->>   ppc_4xx-rpm --root=/mnt/flash foo.ppc.rpm
->>
->>I want to do something like that with the packages, so that
->>I can install individual existing ppc.rpm packages from the
->>ELDK disk onyl by flash card.
+> The use of BATs is a significant performance advantage.  It's
+> relatively easy to create an ioremap() function that can see if
+> a BAT covers a space we want and return an appropriate
+> mapped address.  The converse, creating an ioremap() function
+> that is smart enough to track all of the I/O usage and determine
+> how best to use BATs, is very challenging.
+
+Yes, sure.
+
+> Due to the way we have to access memory and devices for
+> initialization (when vm mapping through ioremap() isn't available)
+> and the constraints on the kernel VM space, I find it easy to
+> just declare the BAT values and let ioremap() work as it does in 2.4.
+
+> If you look outside of the traditional PowerPC cores (to things
+> like 8xx, 4xx, and 85xx) you will find even more challenging
+> early or efficient mapping problems.
 >
->
-> Hm, have a look to the ELDK CDROM, especially check the ".list" files in
-> /mnt/cdrom/etc. They actually define the packages to be installed. You
-> might copy parts of the tree to disk and tailor the list files according
-> to your needs. Then you should be able to install the RPM packages with
-> the "install" utility as usual. Nevertheless, a root file system built
-> this way is very large, too large for most embedded systems.
+> Just set the BATs according to the board configurations, keep
+> the functions simple, and move on.  These functions are
+> currently working fine for many of the 603 core platforms.  I'd
+> suggest changing your board setup functions to work with
+> the common code already present instead of trying to fix
+> something that isn't broken.
 
-Indeed, I really only want 3 or 4 rpms (glibc, e2fsprogs, maybe
-a few others) and a few rpms of my own.
+Well, I certainly never meant to change any standard functions.
+I just wanted to avoid being dependent on it, so it works with or
+without it. But I've dropped it. As you said, there are multiples
+register that need to be accessed at init while other things just don't
+work yet.
 
-It would be ideal to be able to do something like:
+Just a remaining question. I got one call to ioremap() before
+mem_init_done, it works as expected and returns a valid pointer. I just
+wonder if the mapping it has done will remain valid after vm init. I
+guess so but I'd rather not discover it the hard way.
 
-    rpm --root=/mnt/flash --initdb
-    rpm --root=/mnt/flash -ivh glibc-common-X.ppc.rpm
-    rpm --root=/mnt/flash -ivh e2fsprogs-X.ppc.rpm
-    rpm --root=/mnt/flash -ivh my-jse-initscripts-X.ppc.rpm
 
-and so on. (As an aside, I may be wanting to allow for
-running rpm on the target device itself to update in the
-field. Getting fancy, eh?)
-
---
-Steve Williams                "The woods are lovely, dark and deep.
-steve at XXXXXXXXXX           But I have promises to keep,
-http://www.XXXXXXXXXX         and lines to code before I sleep,
-http://www.picturel.com       And lines to code before I sleep."
-
+Sylvain Munaut
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
