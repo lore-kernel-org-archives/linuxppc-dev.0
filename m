@@ -1,50 +1,76 @@
-From: Atro Tossavainen <atossava@cc.helsinki.fi>
-Message-Id: <200403230727.i2N7RUFg013662@kruuna.Helsinki.FI>
-Subject: Re: Root Drive Mirroring and LVM.
-In-Reply-To: <20040204122317.K27780@forte.austin.ibm.com> from "linas@austin.ibm.com"
- at "Feb 4, 2004 12:23:17 pm"
-To: linas@austin.ibm.com
-Date: Tue, 23 Mar 2004 09:27:30 +0200 (EET)
-Cc: Neil Brown <neilb@cse.unsw.edu.au>, Atro.Tossavainen@helsinki.fi,
-	linuxppc-dev@lists.linuxppc.org, linux-raid@vger.kernel.org,
-	tas@mindspring.com
-Reply-To: Atro.Tossavainen@helsinki.fi
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Tue, 23 Mar 2004 12:17:36 +0100
+From: Marc Leeman <marc.leeman@barco.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: PCI Memory mapping
+Message-ID: <20040323111736.GJ1446@smtp.barco.com>
+Reply-To: Marc Leeman <marc.leeman@barco.com>
+References: <20040316114030.GB7133@smtp.barco.com> <1079455175.4184.25.camel@localhost.localdomain> <20040322074833.GY7133@smtp.barco.com>
+Mime-Version: 1.0
+In-Reply-To: <20040322074833.GY7133@smtp.barco.com>
+Content-Type: text/plain; charset=iso-8859-15
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 4 Feb 2004 12:23:17 -0600, linas@austin.ibm.com wrote:
+>   +------+       +--------+     +------------+
+>   | user |------>| kernel |---->| pci-mapped |
+>   +------+       +--------+     +------------+
 
-> On Wed, Jan 28, 2004 at 12:42:18PM +1100, Neil Brown wrote:
->
-> > I personally think auto-detect is the wrong approach and have no
-> > desire to extend it to other partition types (I cannot remove it from
-> > DOS partitions as that breaks back-compatability).
-> > Just use "md=..."
->
-> What's wrong with autodetect?  Its saved my butt a number of times.
->
-> My recurring nightmare is involves a failed ide controller.  If the
-> failed controller is on the motherboard, then plugging in a store-bought
-> ide controller causes the BIOS to "randomly" renumber to hard drives.
-> (yes, sorry this is a PC issue, but I would guess that similar issues
-> lurk in open firmware, etc).
+Hm, I'm not quite out of the woods yet it seems :-/
 
-Indeed.  Speaking for myself only, the whole issue has only come about
-because somewhere after 2.4.20, the handling of Promise add-on IDE
-controllers was changed so that where the Promise hard drives on the
-Apple Xserve were previously /dev/hde to /dev/hdh and the "mainboard"
-IDE (which only handles the CD-ROM) was /dev/hda to /dev/hdd, their
-internal order is now reversed, and for some reason I am unable to get
-the metadevice to work after the change (so am effectively unable to
-update my kernel as root is on md).
+The system contains (amongst other components) a MPC8245 PPC and a
+TMS320C6415 DSP. The PPC handles incoming data and passes it along to
+the DSP. Partially due to a problem on the DSP, we want the DMA to be
+initiated by the DSP.
+
+As such, we prepare a kernel buffer:
+if(!(driver_data.device[i]->kern_addr= \
+  pci_alloc_consistent(driver_data.dev,PCI_TRANSFER_SIZE,\
+  &(driver_data.device[i]->bus_addr)))){...}
+
+that links/maps it on the PCI memory range. This dma_t (bus address) is
+passed to the DSP. The DSP then reads the data over the PCI buss and
+acknowledges this to the (currently polling) PPC.
+
+The PPC prepares the data, and calls an ioctl that copies part of the
+user buffer into kernel space (driver_data.device[i]->kern_addr);
+following this, the DSP is warned that new data is available.
+
+ ioctl(...,MAP_CONSISTENT,...);
+
+ while(ptr<end){
+   movebuftokernel(ptr,size); /* ioctl */
+   ptr+=size;
+ }
+
+ ioctl(...,MAPOFF_CONSISTENT,...);
+
+This process is repeated until the entire userspace buffer has been
+processed.
+
+Even though documentation indicates that consistent DMA mapping should
+not have caching issues we have a problem that reflects this very much:
+
+When data is passed to the DSP and every buffer is confirmed with an
+[Enter] (i.e. __very__ slow_), data is passed correctly. When we try to
+pass the same data without user intervention (comment out
+waitforenter()),
+parts of the transferred data are copied from other locations: most of
+the time, part of the buffer (e.g. 2048 bytes) is not update yet (old
+data).
+
+e.g.
+
+8 * 32 bit: correct
+96 * 32 bit: wrong
+... rest is OK.
+
+Any ideas what might go wrong since consistent mappings 'should' not
+have problems with caching...
 
 --
-Atro Tossavainen (Mr.)               / The Institute of Biotechnology at
-Systems Analyst, Techno-Amish &     / the University of Helsinki, Finland,
-+358-9-19158939  UNIX Dinosaur     / employs me, but my opinions are my own.
-< URL : http : / / www . helsinki . fi / %7E atossava / > NO FILE ATTACHMENTS
+  Marc Leeman                          Hardware R&D Engineer
+  Barco Controlrooms Division Noordlaan 5, B-8520 Kuurne (BE)
+  Tel. +32 56 368 428        http://www.barcocontrolrooms.com=20
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
