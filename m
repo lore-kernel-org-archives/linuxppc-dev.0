@@ -1,33 +1,44 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: =?ISO-8859-1?Q?J=F6rn=20Nettingsmeier?= <nettings@folkwang-hochschule.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Daniel Berlin <dan@cgsoftware.com>
+Subject: Re: DFP support for kernel radeonfb.c added
+Date: Wed, 14 Nov 2001 16:54:54 -0500
 Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: AGP : ATI128,powerpc
-Date: Wed, 14 Nov 2001 22:38:15 +0100
-Message-Id: <20011114213815.8222@smtp.wanadoo.fr>
-In-Reply-To: <3BF2E0E9.920DBE17@folkwang-hochschule.de>
-References: <3BF2E0E9.920DBE17@folkwang-hochschule.de>
+References: <Pine.LNX.4.33.0111141518370.25545-100000@www.cgsoftware.com> <20011114212415.18586@smtp.wanadoo.fr>
+In-Reply-To: <20011114212415.18586@smtp.wanadoo.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-Id: <20011114215212.IFBL3045.tomts12-srv.bellnexxia.net@there>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->i've been using ben's tree for a powerbook for quite some time, and
->i used to see the same error, so i disabled agp and dri.
+Hi,
+
+I did some reading up on it and it seems to change the sync(?) signal to
+simulate a serial line and pass 9 bit bytes (with parity?) which are
+collected to form the EDID block.   Hopefully it won't be too complicated.
+
+I don't understand if this is only done on monitor powerup or if it can be
+done at any time by request or is it just sent continuously by the monitor.
+
+Kevin
+
+
+
+
+On November 14, 2001 04:24, Benjamin Herrenschmidt wrote:
+> >No, I mean using i2c to grab it.
 >
->has this been fixed lately ?
-
-Yes.
-
->i'm desperate for faster video. 2d performance under x is pathetic,
->and scrolling is a major pita.
+> I think OF uses the Radeon "GPIO" registers to probe the panel type
+> based on a wired panel ID and a table of EDIDs in the driver. At least,
+> it did it that way on mach64. I dumped a disassembly of the Rage M3
+> (r128 base) MacOS 9 driver of my Pismo and started tracing it, it seem
+> to play with GPIOs as well. I didn't yet figure out the exact algorithm
+> though.
 >
->does anyone know how to speed up a pismo powerbook x server ?
-
-XFree 4.1 should work fine. AGP won't help 2D accel, make sure
-you use the "ati" driver and not "fbdev".
-
-Ben.
+> Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
