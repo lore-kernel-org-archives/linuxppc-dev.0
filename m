@@ -1,41 +1,38 @@
-Message-ID: <369645E8.1E56FCF8@jlc.net>
-Date: Fri, 08 Jan 1999 12:52:41 -0500
-From: Dan Malek <dmalek@jlc.net>
-MIME-Version: 1.0
-To: Marc.Pavese@hec.utah.edu
-CC: linuxppc-user@lists.linuxppc.org,
-        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: pcmcia?
-References: <Pine.SGI.3.96.990107172913.51198G-100000@voth4.hec.utah.edu>
-Content-Type: text/plain; charset=us-ascii
+Date: Fri, 08 Jan 1999 16:40:03 -0500
+From: Beecher Greenman <rbg6038@ritvax.isc.rit.edu>
+Subject: Pre-Rc Install
+To: linuxppc-dev@lists.linuxppc.org
+Message-id: <01J6AZH6MVB2GM3Y0P@ritvax.isc.rit.edu>
+MIME-version: 1.0
+Content-type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Marc Pavese wrote:
+I'm on a rev3 G3/300 desktop with the standard video (though I put four 
+more megs of VRAM in it), 64 MB RAM, and 128M swap. I'm trying to install 
+LinuxPPC Pre-R5 on an internal 2 GB hard drive which already has R4 
+installed (I can stand to format the drive if need be). Anyway, when I 
+went to try running the installer, I ren into a few problems...
 
-> Hi, All -
->
-> Is there a tarball or rpm of the precompiled pcmcia modules...
+1) The kernel rejects the live installer out of hand. It claims there's 
+something wrong with the ramdisk image, giving about 5 gazillion errors 
+to that effect and then halting the boot process (though the kernel does 
+not appear to freeze).
+2) FTP install doesn't work from ftp.linuxppc.org or biggi.linuxppc.org, 
+under DHCP or static IP.
+3) I managed to download the RedHat directory from biggi.linuxppc.org and 
+put it on an external SCSI hard drive. When I try to mount it in the 
+installer, however, I get an "invalid argument" error and can't proceed 
+any further. Note that when running under LinuxPPC R4 this drive mounts 
+just fine.
 
-I have built the pcmcia-cs-3.0.3 modules for the 2.1.130 kernel.
-It just happened to be from one of the SRPMs I had around.
-I can upload a tarball of the kernel modules when someone points
-me to a server.  You will have to get the rest of the software
-from another RPM.  Just load up the 2.1.125 or 127 RPM and
-copy these modules into the /lib directory.
+After seeing the large number of e-mails about this install process on 
+the list, I figured I'm doing something wrong, but none of the mails 
+appear to match up with this situation. Anyone have any ideas? Also, is 
+there a HOWTO anywhere on the Net about this? Thanks!
 
-I (and others I believe) are working on the 3.0.7 version of
-the pcmcia package.
-
-I only have a pcmcia modem and flash cards, so my testing
-is limited.  All I really care about it running PPP on the modem :-).
-The 3.0.3 version works OK for that.
-
-
-    -- Dan
-
-
+-Beecher Greenman
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
