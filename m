@@ -1,36 +1,27 @@
-Message-ID: <371788C8.71A9F14@fi.infn.it>
-Date: Fri, 16 Apr 1999 21:00:24 +0200
-From: Simone Piccardi <Simone.Piccardi@fi.infn.it>
+From: Brad Boyer <flar@cegt201.bradley.edu>
+Message-Id: <199904170150.UAA29787@cegt201.bradley.edu>
+Subject: Snooping serial ports in MacOS
+To: linuxppc-dev@lists.linuxppc.org
+Date: Fri, 16 Apr 1999 20:50:22 -0500 (CDT)
 MIME-Version: 1.0
-To: David De Ridder <david.de.ridder@bitsmart.com>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: First attempt for LinuxPPC on a MVME2400
-References: <3.0.6.32.19990416174803.008106a0@hsins.uia.ac.be>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi David, 
-thanks for the advice, I'll keep in my mind.
-I tried the test that you suggested in the previuos mail, but I got no
-answer from the board. In any case I still have to set up a root tree,
-so the nfs cannot work in any case. We have also to buy a disk for the
-board, but this will be a further step.
-It seems that the crash is a problem of the Hawk chip, from PPCBug the
-board is capable to ping, and also to connect to the tftp daemon and
-load the kernel image.
-Now I'm triyng to set up the cross-copiler using the procedure given by
-Matt Porter in his web page, but the CVS repository changed location,
-and the downloading procedure; for people tha can need this information
-the new site is http://cvs.on.openprojects.net/ 
-I just finished the download. I'll try some compilation, I'm quite far
-from getting the board working, but at least I'm on my way.
-Thanks again
--- 
-Simone Piccardi
-Microsoft is NOT the answer. Microsoft is the Question.
-The answer is: "NO!"
+
+Does anyone know of a good way to watch the settings and/or the data
+being passed through a serial port while in the MacOS?  I have a
+Personal Laserwriter 300 which I am attempting to use under Linux, but
+I don't really have much to start from, other than the fact that it is
+a "Quickdraw Printer" like the Stylewriter line.  However, I tried to
+use lpstyl to talk to it, and it can't talk to the printer at all.
+Thanks for any help you can give.  Also, if anyone else has one of
+these things and would like to help in any way, it would be
+appreciated.
+
+	     Brad Boyer
+	     flar@cegt201.bradley.edu
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
