@@ -1,38 +1,65 @@
 From: Paul Mackerras <paulus@au1.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <15857.15826.513311.884408@argo.ozlabs.ibm.com>
-Date: Sat, 7 Dec 2002 11:16:18 +1100
-To: <joakim.tjernlund@lumentis.se>
-Cc: "Matt Porter" <porter@cox.net>,
-	"Pantelis Antoniou" <panto@intracom.gr>,
-	<linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Regarding consistent_alloc
-In-Reply-To: <IGEFJKJNHJDCBKALBJLLCEJGFIAA.joakim.tjernlund@lumentis.se>
-References: <20021206085909.B17918@home.com>
-	<IGEFJKJNHJDCBKALBJLLCEJGFIAA.joakim.tjernlund@lumentis.se>
+Message-ID: <15857.16374.833902.735605@argo.ozlabs.ibm.com>
+Date: Sat, 7 Dec 2002 11:25:26 +1100
+To: Matt Porter <porter@cox.net>
+Cc: Dan Malek <dan@embeddededge.com>,
+	Joakim Tjernlund <joakim.tjernlund@lumentis.se>,
+	Pantelis Antoniou <panto@intracom.gr>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Regarding consistent_alloc
+In-Reply-To: <20021206112901.A18257@home.com>
+References: <3DF0A4D9.4030603@intracom.gr>
+	<IGEFJKJNHJDCBKALBJLLCEJFFIAA.joakim.tjernlund@lumentis.se>
+	<20021206085909.B17918@home.com>
+	<3DF0D6B6.2050307@embeddededge.com>
+	<20021206112901.A18257@home.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Joakim Tjernlund writes:
+Matt Porter writes:
 
-> m8xx_cpm_hostalloc() does not keep the DMA handle and __pa() does not work
-> on addresses returned by m8xx_cpm_hostalloc(). I just found that out the
-> hard way when upgrading from MV 2.4.2 to linuxppc_2_4_devel 2.4.20. My SPI driver
-> hung as soon you tried to read something.
+> On Fri, Dec 06, 2002 at 11:56:22AM -0500, Dan Malek wrote:
+> > Matt Porter wrote:
+> >
+> >  > ....  If you
+> > > want the kernel virtual address then you can apply __va to that.
+> >
+> > Errr....no, you can't.  That would give you the cached mapping.
+> > You need to hang on to both the dma_handle (the phys address token)
+> > and the virtual address returned by the function.  That's why both
+> > are returned.
+>
+> That's what I said...but you clipped it out.  Once again,
+> consistent_alloc provides the caller everything they need.
+> An uncached mapping, a phys address, and from that you can use
+> __va() to get the cached mapping.
 
-Then m8xx_cpm_hostalloc should be changed so it returns the DMA
-address along with the virtual address (of the uncached mapping).
+Matt, you know this I'm sure, but other people reading this might not:
 
-An alternative which will work, at least at present, is to use iopa()
-on the virtual address.  However, that assumes that DMA bus addresses
-are identical to CPU physical addresses.  That is true at the moment
-on all embedded PPC platforms that I know of currently, but there is
-no guarantee that it will always be true.  That is why I think it is
-better to make a practice of saving the DMA address that you get back
-from consistent_alloc and using that.
+You should NOT use the cached mapping unless you really know *exactly*
+what you are doing.
 
+The PowerPC architecture specifies that accessing a given physical
+address through an uncached mapping, when there exists a copy of that
+physical location in cache, is a programming error.  Different
+implementations will do different things in this case.
+
+> Seemed clear enough to me the first time.  My definition of a
+> "kernel virtual address" is the lowmem cached mapping.  If
+> I meant the uncached mapping I would have said it was a "kernel
+> vmalloc address" or something. :)
+
+A "kernel virtual address" is, to me (and to Dan as well, I expect),
+any virtual address in the kernel portion of the address space
+(i.e. above TASK_SIZE).  (Of course, you are free to adopt Humpty
+Dumpty's attitude in Through the Looking Glass: "'When I use a word,
+Humpty Dumpty said in rather a scornful tone, 'it means just what I
+choose it to mean - neither more nor less.'" ;-)
+
+Regards,
 Paul.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
