@@ -1,25 +1,75 @@
-Message-ID: <BE684E2C997AD51199530002A56B2079066241@MCHH2A1E>
-From: Babic Stefano <Stefano.Babic@icn.siemens.de>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Lockup problem with 8260
-Date: Mon, 7 Jan 2002 10:10:09 +0100 
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ISO-8859-1"
+From: laurent.mohin@acterna.com
+To: =?iso-8859-1?Q?=22David_M=FCller_=28ELSOFT_AG=29=22?= <d.mueller@elsoft.ch>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <C1256B3A.0034ACD5.00@magnus.eni.wago.de>
+Date: Mon, 7 Jan 2002 10:31:29 +0100
+Subject: Re: 405GP + SouthBridge
+Mime-Version: 1.0
+Content-type: multipart/mixed;
+	Boundary="0__=rMeXPrz58Q2W9gJfB35Xk9wLdAuNPZQZfEhQ2fZmXBW9ddBb3y6OCCrp"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Also Wolfgang in another thread said he thinks that could be
-> a problem with
-> the A.1 mask of the 8260 we're using, but I suspect it's not
-> that simple,
-> this cache trouble is so pervasive it has to be something
-> misconfigured.
+--0__=rMeXPrz58Q2W9gJfB35Xk9wLdAuNPZQZfEhQ2fZmXBW9ddBb3y6OCCrp
+Content-type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-transfer-encoding: quoted-printable
 
-I can confirm the problems with the A.1 mask. According to Motorola, bus snooping is not working. The fcc_enet driver turns on bus snooping, but in our extensive tests we found a lot of problems (system locked up, wrong frame was sent,...).
-For this reason we changed the driver disabling bus snooping and using not cached buffers for DMA (sigh !). The A.1 mask has other big problems, too: the MCC controller simply does not work (confirmed by Motorola). We upgraded to B.3 mask, but we are still using local buffers for DMA.
 
--Stefano
+
+
+Thanks for your link, David
+It's a very valuable ressource.
+
+Laurent
+
+
+
+
+"David M=FCller (ELSOFT AG)" <d.mueller@elsoft.ch> on 05/01/2002 09:59:=
+49
+
+To:   Laurent Mohin/SE/Wavetek@Global
+cc:
+Subject:  Re: 405GP + SouthBridge
+
+
+=
+
+--0__=rMeXPrz58Q2W9gJfB35Xk9wLdAuNPZQZfEhQ2fZmXBW9ddBb3y6OCCrp
+Content-type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+
+Hi
+
+I hope the following links helps a little bit. The product is using a
+PIIX4 chip to implement IDE, USB, ISA, ...
+
+[commercial on]
+http://www.mpl.ch/2460.html
+[commercial off]
+
+laurent.mohin@acterna.com wrote:
+
+> Hello,
+>
+> Has anybody tried to connect a SouthBridge (Intel PIIX4E type) to a 405GP PCI
+> interface?
+> Any pointer or tip about this subject is welcome.
+>
+> Thanks,
+>
+> Laurent
+>
+
+Dave
+
+
+
+
+--0__=rMeXPrz58Q2W9gJfB35Xk9wLdAuNPZQZfEhQ2fZmXBW9ddBb3y6OCCrp--
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
