@@ -1,20 +1,14 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 04FCD2BD7B
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Sep 2004 07:31:28 +1000 (EST)
-In-Reply-To: <Pine.LNX.4.60.0409171634340.5645@localhost.localdomain>
-References: <Pine.LNX.4.60.0409171634340.5645@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v619)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <3280513A-08F1-11D9-829B-003065F9B7DC@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Fri, 17 Sep 2004 17:33:21 -0400
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Linuxppc-dev mailing list <linuxppc-dev@ozlabs.org>
-Subject: Re: where to find explanation of CP "RISC controller trap
-	registers"?
+Return-Path: <frannk_m1@yahoo.com>
+Received: from web13803.mail.yahoo.com (web13803.mail.yahoo.com
+	[216.136.175.13]) by ozlabs.org (Postfix) with SMTP id 38DAA2BD7B
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Sep 2004 07:57:02 +1000 (EST)
+Message-ID: <20040917215020.72936.qmail@web13803.mail.yahoo.com>
+Date: Fri, 17 Sep 2004 14:50:20 -0700 (PDT)
+From: Frank <frannk_m1@yahoo.com>
+To: linuxppc-dev@ozlabs.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Subject: cascading 8259 interrupts
 List-Id: "Linux on PowerPC \(Including Embedded\) Developers Mail List"
 	<linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,19 +19,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Sep 17, 2004, at 4:42 PM, Robert P. J. Day wrote:
-
->   it all looks fairly straightforward, except in a couple cases where 
-> the CP RISC controller trap registers are set to, allegedly, enable 
-> the traps to get to [the patch].
-
-They are not generally documented.  As I have said in the past, along 
-with
-the microcode is also documentation that explains how to use the patch.
-The documentation states the order of initialization of various 
-undocumented
-CPM locations/registers and the values to write.  You just do it.
+I am having problems getting the 8259 interrupts setup on my
+mpc8245 based board. here is what I have:
+EPIC interrupt 0: ethernet controller
+EPIC interrupt 1: unused at this time
+EPIC interrupt 2: 8259 PIC controller
+EPIC interrupt 3: internal uart
 
 
-	-- Dan
+I have the ethernet and urat working just fine. I can NFS mount
+my root directory accross the network and I console I/O working
+just fine. The problem is when I try to cascade the 8259 PIC to
+interrupt 2, Linux hangs when booting. I have tried using the
+sandpoint board as a model but it doesn't cacscade 8259
+interrupts to EPIC interrupt2, it uses EPIC interrupt 0
+according to the comments. 
+How can I cacscade the 8259 to my EPIC interrupt 2???
+Here's my code in my baord_setup.c:
+
+   openpic_set_sources(0, 2, OpenPIC_Addr + 0x10200);
+   openpic_set_sources(2, 1, OpenPIC_Addr + 0x10240);
+   openpic_set_sources(3, 1, OpenPIC_Addr + 0x11120);
+
+   openpic_init(NUM_8259_INTERRUPTS);
+   openpic_hookup_cascade(18, "8259 cascade to EPIC",
+&i8259_irq);
+
+        for ( i = 2 ; i < 3 ; i++ )
+             irq_desc[i].handler = &i8259_pic;
+        i8259_init(0xfef00000);
+
+
+
+
+		
+__________________________________
+Do you Yahoo!?
+New and Improved Yahoo! Mail - Send 10MB messages!
+http://promotions.yahoo.com/new_mail 
