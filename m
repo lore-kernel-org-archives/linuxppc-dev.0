@@ -1,51 +1,54 @@
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: altivec
-References: Sacha Varma's message of Fri, 09 Jul 1999 12:29:35 +0100
-	<3785DD1F.B853E731@ssl.co.uk> <v04020a00b3aba2034899@[192.168.0.2]>
-From: Holger Bettag <hobold@Informatik.Uni-Bremen.DE>
-Date: 09 Jul 1999 17:33:41 +0200
-In-Reply-To: Mike DeSimone's message of Fri, 9 Jul 1999 08:04:03 -0500
-Message-ID: <8xyagpbzxm.fsf@s53.informatik.uni-bremen.de>
+Message-Id: <4.2.0.58.19990709161235.03b8de80@mail.lauterbach.com>
+Date: Fri, 09 Jul 1999 17:43:48 +0200
+To: Tom Rini <trini@disparity.net>
+From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+Subject: Re: platinum video makes me cry...
+Cc: Hollis R Blanchard <hollis+@andrew.cmu.edu>,
+        Mark Abene <phiber@radicalmedia.com>, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.BSF.3.96.990709093050.70746F-100000@silver.teardrop.n
+ et>
+References: <Pine.LNX.3.96L.990708142815.2134H-100000@unix47.andrew.cmu.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Mike DeSimone <Hot-Wire@mail.utexas.edu> writes:
+At 15:32 09.07.99 , Tom Rini wrote:
 
-> 
-> 
-> >> 2. would it be possible to trap altivec instructions on a non-altivec
-> >>    processor and reroute them through code using generic instructions?
+>On Thu, 8 Jul 1999, Hollis R Blanchard wrote:
+>
 > >
-> >Possible - yes. Dead slow - absolutely. (Apple's simulator is strictly a
-> >development tool, nothing more.)
-> 
-> It shouldn't be dead slow, but it will be much slower than it would be on
-> Altivec processors (esp. since cache pipelining won't work nearly the
-> same).  Basically, most Altivec instructions can be replaced with for
-> loops.  So long as the iteration count of the loop is high, the overhead
-> from the illegal instruction trap activity should be minimized, so it
-> should boil down to about the same time as an assembly-coded loop.
-> 
-Well, if you do instruction-by-instruction emulation, the iteration count is
-at most 16 (16 bytes in a vector). Furthermore, the overhead of a context
-switch into privileged mode and back again is not negligible (at the very
-least a pipeline flush and some saving/restoring of registers). Finally,
-keeping the emulated vector registers somewhere in memory means that you will
-quite often be limited by the availability of 'only' one load/store unit.
-
-[...]
+> > On Thu, 8 Jul 1999, Mark Abene wrote:
+> > >
+> > > The good news is that I finally got around to installing 
+> linuxppc-1999 (R5)
+> > > on my 7200.  The BAD news is that much to my chagrin, the changes I 
+> made to
+> > > fix the platinum video driver in the newer kernels (which I submitted 
+> to the
+> > > code maintainer nearly a month ago, if not more) are NOT present in R5!
+> > > I was greeted by the sickly-looking psychedelic arch-nemesis of Tux the
+> > > penguin.
+> > > Suffice to say, gnome came up looking like a bad acid trip.
+> >
+> > Strangely enough, the kernel the installer uses was right. I was very
+> > pleasently surprised to see Tux in the correct colors when I went to 
+> install.
+> > Of course, the kernel the installer actually installs is screwed up in this
+> > respect.
 >
-> I'm also wondering what has been done on this issue on the Intel side of
-> the fence, since KNI and 3Dnow! are similar to Altivec in concept and, at
-> least for 3Dnow!, implementation.
->
-Similar? Please forgive my ranting, but AltiVec is feature-complete,
-orthogonal, and implemented without compromises. MMX, 3DNow!, and ISSE have
-none of the above three qualities. They were available sooner, but that's
-about it.
+>Well, 1) Did the installer endup using no video driver? (I still don't
+>have a CD pair, have to bug jeff again once i settle in) 2) iirc, about a
+>month ago Geert (the video maintainer) was working towards his PhD and
+>could have easily lost the mail. 3) Where is the patch anyhow, there'll no
+>doubt be a kernel upgrade "soon" :)
 
-  Holger
+The fix is in 2.2.10vger (and was in later 2.2.9vger as well). Geert 
+accepted it nearly immediately, but probably feeding it to 2.2.10linus 
+didn't happen in time.
+
+Franz.
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
