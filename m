@@ -1,14 +1,17 @@
-In-Reply-To: <Pine.HPX.4.10.10002081020040.1866-100000@gra-ux1.iram.es>
-Date: Tue, 8 Feb 2000 15:56:37 +0100
-To: Gabriel Paubert <paubert@iram.es>
-CC: linuxppc-dev@lists.linuxppc.org, linux-fbdev@vuser.vu.union.edu
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: [linux-fbdev] Retrace
-Message-Id: <20000208155637.001939@mailhost.mipsys.com>
+Message-Id: <v03007803b4c5ee0f6704@[208.211.82.60]>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
+Date: Tue, 8 Feb 2000 08:00:40 -0800
+To: amarder@peregrine.com
+From: Andy <andy@softbook.com>
+Subject: Re: [linux-fbdev] Retrace
+Cc: linuxppc-dev@lists.linuxppc.org, linux-fbdev@vuser.vu.union.edu
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
+
+
+
+
 
 
 On Tue, Feb 8, 2000, Gabriel Paubert <paubert@iram.es> wrote:
