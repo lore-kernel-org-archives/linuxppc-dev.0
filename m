@@ -1,56 +1,62 @@
-To: Norm Legare <normlegare@yahoo.com>
+Message-ID: <3DB58D93.50008@embeddededge.com>
+Date: Tue, 22 Oct 2002 13:40:35 -0400
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: Hans Feldt <Hans.Feldt@uab.ericsson.se>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Flash setup 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 22 Oct 2002 07:45:13 PDT."
-             <20021022144513.36073.qmail@web13401.mail.yahoo.com>
-Date: Tue, 22 Oct 2002 19:36:25 +0200
-Message-Id: <20021022173630.9F90E10148@denx.denx.de>
+Subject: Re: 8260 CPM commands, need better resource ctrl?
+References: <3DB57883.4040109@uab.ericsson.se>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Norm,
+Hans Feldt wrote:
 
-in message <20021022144513.36073.qmail@web13401.mail.yahoo.com> you wrote:
->
-> I would like to powerup my board and have Linux come up automatically
-> to the prompt.  To do this I would like to store ppcboot in partition
-> 1, the kernel in partition 2, and the root fs in partition 3 and have
+> Isn't there a need for a central place to handle CPM commands?
 
-What do you mean with "root fs" ? If this is  a  ramdisk  image,  you
-don;t need any flash support in the Linux kernel at all.
+You could make it an inline function or macro, but I'm not sure
+it's worth it.  All CPM drivers must have knowledge of how they
+may affect others and take care to ensure incorrect operation
+doesn't occur.  In this case, there isn't a consistent use of
+sending CPM commands, as you mentioned in your message.  There are
+different contexts in which drivers send these commands.  It
+doesn't make sense for a driver to continue without waiting for
+the command to complete, so there isn't any need to wait for this
+prior to sending a command.
 
-> ppcboot transfer control to Linux through some environment settings.
-> I have searched the archives and found an email that seems to outline
-> this, it says, that the kernel config should have CONFIG_FLASH and
-> CONFIG_AMD_FLASH turned on, as well as, adding a definition to file
-> drivers/char/flash_config.c for my board (board = MBX860 and the
-> definition is the same as TQM8xx).  Then a dd command can write the
-> images to the partitions.  I have done this, but I get the following
-> problem:
+> m8260_cpm_cmd(...)
+>     disable ints
+>     bounded wait until FLG is clear
+>     if not clear => ???
+>     write to CPCR
+>     enable ints
 
-This refers to our (old) character device flash driver. It  does  not
-help  you  at  all  when you're trying to mount a filesystem - you'll
-need a block device than - i. e. support for MTD.
+A more proper order of operation would be:
+	disable ints
+	write CPCR
+	bounded wait until FLG is clear
+	enable ints
+	return status
 
-> See below for the contents of my dev subdir.  Also, is it possible to
-> do a serial download of the images from a host to the flash with a
-> target root filesystem utilizing busybox?
+In some cases, it could be argued for a performance benefit to actually
+perform other operations while waiting for the CPM command to finish.
 
-Yes, of course this is possible.
 
-Best regards,
+> ....Disabling irqs in the
+> atm driver around CPCR handling seems to fix that problem.
 
-Wolfgang Denk
+Then....that's what you should do.  It isn't always appropriate to
+generally disable/enable interrupts in a common function because of
+the driver context when the CPCR is accessed.  We also have to be
+careful about making a generic and abstract CPM interface, since the
+overhead of such functions would have a negative affect in an area
+where we are sensitive to performance.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Why don't you have a Linux partition installed so you can be  working
-in  a  programmer-friendly environment instead of a keep-gates'-bank-
-account-happy one? :-)                            -- Tom Christiansen
+Thanks.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
