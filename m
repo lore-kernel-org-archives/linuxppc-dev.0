@@ -1,43 +1,26 @@
-Date: Tue, 7 Mar 2000 14:39:55 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Tim Riker <TimR@CalderaSystems.com>
-cc: Kazunori Aoshima <aoshimak@mail.cc.tohoku.ac.jp>,
-        linuxppc-dev@lists.linuxppc.org,
-        linuxppc-workstation@lists.linuxppc.org
-Subject: Re: bootloader ideas
-In-Reply-To: <38C42165.3F7A6FEE@CalderaSystems.com>
-Message-ID: <Pine.HPX.4.10.10003071435100.22162-100000@gra-ux1.iram.es>
+Message-ID: <38C51F12.3E6A0E08@netx4.com>
+Date: Tue, 07 Mar 2000 10:24:02 -0500
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Momchil Velikov <velco@fadata.bg>
+CC: Shuangjun Zhu <r44089@email.sps.mot.com>,
+        Alan Cox <alan@lxorguk.ukuu.org.uk>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Kernel debug about Linux for PowerPC
+References: <005601bf87e6$32f88980$69f001dc@sjzhu.sps.mot.com> <38C4D42A.1D0C19B3@fadata.bg>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Momchil Velikov wrote:
+
+> You have to write these functions yourself.
+
+No, you don't.  Just download the kernel sources for
+linuxplanet-2.2.13 from MontaVista (ftp.mvista.com).
+It has the kgdb support.
 
 
-On Mon, 6 Mar 2000, Tim Riker wrote:
-
->
-> I also believe that we need to move most of the platform-specific fixup
-> code into a boot loader. I am looking into GRUB at this point:
->
-> http://www.gnu.org/software/grub/
->
-> The stage1 loader would need to have new ppc support, but this would
-> allow for complete fs support in the stage2 loader.
->
-> I will will look more at the other choices out there, but I've been real
-> happy with grub on x86 and it is fairly clean code. stage2 is in C and
-> shares much of the kernel FS code.
-
-Most of the code is probably fine, with the probably non trivial problem
-that stage1 uses the BIOS to load stage2. And even stage2 might still use
-the BIOS to load the kernel. That's the major problem since depending on
-the PPC machine the firmware services are very different (PPCBUG, ARC,
-Open Firmware), when they can be made to work. Otherwise you've to add
-additional device drivers.
-
-	Gabriel.
-
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
