@@ -1,29 +1,30 @@
-Date: Wed, 15 Jan 2003 15:26:19 -0700
+Date: Wed, 15 Jan 2003 15:48:57 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: Pantelis Antoniou <panto@intracom.gr>
-Cc: linuxppc-embedded@lists.linuxppc.org,
-	Dan Malek <dan@embeddededge.com>
-Subject: Re: 2.5 and request_8xxirq
-Message-ID: <20030115222619.GA21424@opus.bloom.county>
-References: <3E253735.8040300@intracom.gr>
+To: Anders Blomdell <anders.blomdell@control.lth.se>
+Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Booting Linux from an already running linux
+Message-ID: <20030115224857.GB21424@opus.bloom.county>
+References: <8CD0F4AF-23B1-11D7-98E2-0003931C2BFA@control.lth.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3E253735.8040300@intracom.gr>
+In-Reply-To: <8CD0F4AF-23B1-11D7-98E2-0003931C2BFA@control.lth.se>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Jan 15, 2003 at 12:25:57PM +0200, Pantelis Antoniou wrote:
+On Thu, Jan 09, 2003 at 10:05:50AM +0100, Anders Blomdell wrote:
+>
+> Now that I have a Linux running with networking on a PrPMC800 running as
+> NON-MONARCH, I wonder if anybody knows about a program that can start a
+> fresh linux kernel from the filesystem. The reason I need this, is that the
+> PrPMC800 PPC-Bug does not support network booting for NON-MONARCH operation
+> (neither have I found any alternative that does), and downloading megabytes
+> over the serial line is not very tempting.
 
-> I'm in the process of porting my board based on a MPC850
-> from 2.4 to 2.5 and it appears that request_8xxirq is gone.
-
-request_8xxirq is not yet gone in 2.5, but it will be in 2.4 very shortly
-now (IIRC, it has made its way to Marcelo) as there were hopes of trying
-to replace it with something more agreeable to Dan Malek as well as
-everyone else.
-But be warned, if you're going to try and use 2.5 on 8xx, it will not
-work without changes to the interrupt handler and some minor MM things.
+The other option here, is to put a kernel into FLASH.  Google around
+for bugboot, but IIRC, it's just a matter of 'make zImage', and then
+normal mojo for writing a binary into the FLASH to boot, ensuring you
+use zImage.bugboot, not zImage.prpmc800, or whatever.
 
 --
 Tom Rini (TR1265)
