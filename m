@@ -1,74 +1,56 @@
-Message-ID: <XFMail.990212142111.gdt@linuxppc.org>
-Content-Type: text/plain; charset=us-ascii
-MIME-Version: 1.0
-In-Reply-To: <Pine.A41.3.95a.990212095621.87402B-100000@rsplus13.cern.ch>
-Date: Fri, 12 Feb 1999 14:21:11 -0000 (GMT)
-From: Gary Thomas <gdt@linuxppc.org>
-To: Marc Dejardin <Marc.Dejardin@cern.ch>
+Date: Fri, 12 Feb 1999 16:18:52 +0100 (MET)
+From: Marc Dejardin <Marc.Dejardin@cern.ch>
+To: Gary Thomas <gdt@linuxppc.org>
+cc: Marc Dejardin <Marc.Dejardin@cern.ch>, linuxppc-dev@lists.linuxppc.org
 Subject: RE: Problem with 2.2.1 compilation
-Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <XFMail.990212142111.gdt@linuxppc.org>
+Message-ID: <Pine.A41.3.95a.990212160439.43344B-100000@rsplus06.cern.ch>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I don't want to get into or repeat a *very lengthy* discussion here, but this
-is an artifact of EGCS and inline functions.  It basically boils down to the
-fact that running without -On and inline functions (the way they are used
-by the Linux kernel) just doesn't jive.
+On Fri, 12 Feb 1999, Gary Thomas wrote:
 
-Is there some reason (other than your instability which I understand) that
-you want to do this?  BTW - Linux 2.2.1 is incredibly stable on my PreP box,
-so I have little fear in the compiler, at least for the non-PowerMac specific
-stuff.
-
-On 12-Feb-99 Marc Dejardin wrote:
+> I don't want to get into or repeat a *very lengthy* discussion here, but this
+> is an artifact of EGCS and inline functions.  It basically boils down to the
+> fact that running without -On and inline functions (the way they are used
+> by the Linux kernel) just doesn't jive.
 > 
-> Hello,
-> 
-> For a long time now I encountered regularly kernel panics with recent kernels.
-> Every thing was incredibly stable with 2.1.24.
-> 
-> To make some tests I am trying to compile the kernel 2.2.1 with -O0 option
-> instead of -O2. Then I got the message :
-> 
-> make[1]: Leaving directory `/mnt/extra2/scratch/linux-pmac/arch/ppc/lib'
-> ld -T arch/ppc/vmlinux.lds -Ttext 0xc0000000 -Bstatic arch/ppc/kernel/head.o
-> init/main.o init/version.o \
->         --start-group \
->         arch/ppc/kernel/kernel.o arch/ppc/mm/mm.o arch/ppc/lib/lib.o
-> kernel/kernel.o mm/mm.o fs/fs.o ipc/ipc.o \
->         fs/filesystems.a \
->         net/network.a \
->         drivers/block/block.a drivers/char/char.a drivers/misc/misc.a
-> drivers/net/net.a drivers/scsi/scsi.a drivers/cdrom/cdrom.a
-> drivers/sound/sound.a drivers/pci/pci.a drivers/macintosh/macintosh.a
-> drivers/video/video.a \
->         /tmp/scratch/linux-pmac/lib/lib.a \
->         --end-group \
->         -o vmlinux
-> init/main.o: In function `calibrate_delay':
-> init/main.o(.text.init+0x608): undefined reference to `__delay'
-> init/main.o(.text.init+0x6e4): undefined reference to `__delay'
-> make: *** [vmlinux] Error 1
-> 
-> at the end ... I don't get such a message with -O2 or -O1 option.
-> 
-> Do I make a mistake somewhere ??? is it not possible to remove optimisation in
-> kernel building ?
-> 
-> Thanks in advance,
->                                  Marc Dejardin
-> 
+> Is there some reason (other than your instability which I understand) that
+> you want to do this?  BTW - Linux 2.2.1 is incredibly stable on my PreP box,
+> so I have little fear in the compiler, at least for the non-PowerMac specific
+> stuff.
 > 
 
-------------------------------------------------------------------------
-Gary Thomas                              |
-email: gdt@linuxppc.org                  | "Fine wine is a necessity of
-   ... opinions expressed here are mine  |        life for me"
-       and no one else would claim them! |
-                                         |      Thomas Jefferson
-------------------------------------------------------------------------
+Thanks for the answer !
 
+My problem is that I have regural crashes (kernel panic) with recents kernels
+when I run Xpmac or XF68_FBDev. (see January archive)
+It seems that I am the only people in this situation on this earth, so I am
+trying to solve my problem with my own and humble capacities.
+Since I am not a guru neither an expert, I just play with only tuning
+capapbilities I got. Compiler optimiser is one of them.
+
+By the way, I have not crashed since I run with the 2.2.1 kernel compile with
+-O1 option. Ok It is just 10 hours old but it smells better than before.
+
+I agree that it could hide some other problems like hardware ones... but if the
+problem is a timing problem with hardware, running a little bit slower could
+help. In fact I am more or less convince that my problem is linked to harware
+due to the fact that I have never succeeded to make the virtual memory
+working correctly with MacOS (7-5-3 to 8-5-1). But if I send my old 8500/180 to
+repair it will cost me the price of a new iMac... and I am even not sure that it
+will work correctly after.
+
+What bothers me is that it was working like a charm with 2.1.24 (just normal
+shut down for hollidays and no crash for weeks). The point is that it seems
+that X seems to work slightly faster with recent kernel ... Is it just an
+illusion ?
+
+Best regards, 
+                                 Marc Dejardin
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
