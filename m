@@ -1,29 +1,37 @@
-Message-ID: <17B78BDF120BD411B70100500422FC63079F5F@IIS000>
-From: Patrick Lerda <Lerda@microprocess.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'"
-	 <linuxppc-embedded@lists.linuxppc.org>,
-        "'linux-kernel@vger.rutgers.edu'"
-	 <linux-kernel@vger.rutgers.edu>
-Subject: Linux 2.3.99-pre5 fail on PowerPC 823, and work on PowerPC 740
-Date: Tue, 25 Apr 2000 17:17:53 +0200
+Message-ID: <3905C8E4.98081DBB@embeddededge.com>
+Date: Tue, 25 Apr 2000 12:33:40 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Kim Jørgensen <KIJ@infocom.dk>
+CC: "'linuxppc-embedded@lists.linuxppc.org'"
+ <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Problems with serial ports
+References: <819E3E914E0AD11194DE00805F0D100B0138B83C@fbi.infocom.dk>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Linux seems to boot on PPC823, but no executable seems to be executed
-properly, the partition is properly
-mounted and nothing. I can ping the board, linux don't crash but execute
-nothing. Probably a bug already in
-the 2.3 tree for some times. I've tested Linux 2.3.99-pre5 with
-the same configuration on a PowerPC 740, here all is ok, the board boot
-properly after patching the NFS code.
+Kim Jørgensen wrote:
 
-A bug specific to the PPC823 (PPC860 ?) seems to be present here. If you
-have an idea how to fix it.
+> Linux runs fine on the board using smc1 as console, but I can't receive or
+> transmit anything on smc2 and scc2.
+
+The SCC2 is used for Ethernet, and SMC2 is probably reserved for the
+Embedded Planet TDM audio codec.  If you don't use Ethernet, you can
+enable SCC2 for serial use.  You have to manually edit the
+arch/ppc/8xx_io/uart.c port table.  I am working on a configurable
+version, just haven't found anything terribly fool-proof yet.  I also
+have a very different new driver I am testing for the uart.
 
 
-Patrick LERDA
+> Btw. There is a problem in m8xx_cpm_setbrg in commproc.c. I can't set any
+> serial port to run any lower than 1200 baud.
+
+OK......You are the first to ask :-).  I'll check this into the code.
+
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
