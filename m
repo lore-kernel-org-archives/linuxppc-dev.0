@@ -1,58 +1,30 @@
 Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-From: robdlg@att.net
-Message-Id: <200310061051.FAA10075@lists.linuxppc.org>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: popt, ELDK 2.0.2
-Date: Mon, 06 Oct 2003 10:51:44 +0000
+Message-ID: <2C1BAF8F8E1DD611862B0002A5D4C3FC01BC0692@renexch3.rennes.thmulti.com>
+From: Fillod Stephane <stephane.fillod@thomson.net>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Cross compiling : problem linking 
+Date: Mon, 6 Oct 2003 15:09:19 +0200 
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I was experimenting with the popt library in the ELDK 2.0.2, and I received
-the following errors.  The same compiler invocation is successful when used
-with gcc under Red Hat Linux 7.3.  The source code follows the error
-messages.  How do I properly compile and link this file?
+Dear Wolfgang,
 
-ppc_82xx-gcc -Wall -lpopt -o popt_test main.c
-/tmp/ccMrZmW2.o: In function `main':
-/tmp/ccMrZmW2.o(.text+0x60): undefined reference to `poptGetContext'
-/tmp/ccMrZmW2.o(.text+0x60): relocation truncated to fit: R_PPC_REL24
-poptGetContext
-/tmp/ccMrZmW2.o(.text+0x70): undefined reference to `poptGetNextOpt'
-/tmp/ccMrZmW2.o(.text+0x70): relocation truncated to fit: R_PPC_REL24
-poptGetNextOpt
-/tmp/ccMrZmW2.o(.text+0x94): undefined reference to `poptFreeContext'
-/tmp/ccMrZmW2.o(.text+0x94): relocation truncated to fit: R_PPC_REL24
-poptFreeContext
-collect2: ld returned 1 exit status
-make: *** [all] Error 1
+> Then you can edit / add to the U-Boot and Linux Guide at
+> http://www.denx.de/twiki/bin/view/DULG/WebHome yourself...
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <popt.h>
+It seems like I have no permission to mess with DULG,
+so I've added it to PPCEmbedded HOWTO:
+ http://www.denx.de/twiki/bin/view/PPCEmbedded/DeviceDrivers
 
-int main(int argc, char *argv[])
-{
-	int rc;
+Feel free to move it around as needed.
 
-	/* command-line arguments */
-	struct poptOption options[] = {
-		{ "help", 'h', POPT_ARG_NONE, NULL, 1 },
-		{ NULL, 0, 0, NULL, 0 }
-	};
-	poptContext context;
+Regards,
+Stephane
 
-	context = poptGetContext(NULL, argc, (const char **)argv, options,
-0);
-	rc = poptGetNextOpt( context );
-
-	printf("%d\n", rc);
-
-	poptFreeContext( context);
-
-	return 0;
-}
-
-/* eof */
+PS: still sorry for the RFC2822 and References, should be fixed after xmas.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
