@@ -1,69 +1,32 @@
-Message-ID: <20030524230241.82225.qmail@web41505.mail.yahoo.com>
-Date: Sat, 24 May 2003 16:02:41 -0700 (PDT)
-From: bhupinder sahran <bhup_sah@yahoo.com>
-Subject: Re: slow in user space?
-To: John Ma <kwma@avantwave.com>,
-	linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <3ECDD7C0.80401@avantwave.com>
+Message-ID: <20030526061601.60728.qmail@web12701.mail.yahoo.com>
+Date: Mon, 26 May 2003 08:16:01 +0200 (CEST)
+From: =?iso-8859-1?q?vincent=20poirson?= <poirsonv@yahoo.fr>
+Subject: [MPC8260] accessing I/Os while MMU is off
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi
->From the inputs u have given, looks like Interrupt are
-nor settled properly. After mounting the ramdisk
-console driver (serial port in ur case)starts working
-in interrupt mode. If serial port interrupt are not
-set properly, It will work on timer based & system
-will be slow.
+Hello,
 
-It may help......................
+I want to change my PDATC value while in
+HardwareInterrupt code (in kernel/head.S) where MMU is
+off. So I simply do :
+li r13, 0x0d50
+addis r13, 0xf001
+stw r14, 0(r13)
+// where 0xf0010d50 is my PDATC adress and r14 the
+value I want to store
+I do not understand why my kernel crahes and goes in
+machine exception. Surprisingly, I can change PDATC
+with BDI2000 but not with assembler code. Is this an
+adress translation problem ?
+Am I missing something obvious ? Any help will be
+appreciated.
 
-Bhupi
-www.gdatech.com
-Linux+Hypertransport -> Silicon
-www.gdatech.com
-Good after beer -- Linux
-
---- John Ma <kwma@avantwave.com> wrote:
->
-> Hi all,
->     I have a MPC8241 board and  running ppc kernel
-> 2.4.21-pre7 on it.
-> Serial console is enabled and a small ramdisk is
-> mounted as root.  The
-> board is running at 200M Hz.  The kernel seems to be
-> ok during bootup
-> (just a few seconds).  But after the root filesystem
-> is mounted and
-> /sbin/init is started, the system becomes very slow.
->  I need to wait
-> several minutes for the login console.
->     My board has no rtc.  So I assume that
-> tb_ticks_per_jiffy is equal
-> to be 25M/HZ (25M is the memory clock frequency).
-> tb_ticks_per_jiffy
-> will set the decrementer register which will control
-> how long the timer
-> interrupt occurs.  is it correct to set this value?
->     I have ever tried some smaller values for it and
-> I found that the
-> speed becomes faster.  But the time on the board
-> becomes faster also
-> (uptime on the board is several hours but I power on
-> it just several
-> minutes).
->     Does anyone have suggestions on it?
->
-> Thanks.
->
-> Best Regards
-> John
->
->
->
+Thanks in advance.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
