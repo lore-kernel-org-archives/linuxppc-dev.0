@@ -1,30 +1,37 @@
-Message-Id: <199903311905.VAA02355@student.physik.uni-mainz.de>
-To: Andreas Bogk <andreas@andreas.org>
-Subject: Re: LinuxPPC ABI documentation?
-Cc: linuxppc-dev@lists.linuxppc.org
-Date: Wed, 31 Mar 1999 20:53:58 CEST
-From: "Christian Bauer" <cbauer@student.physik.uni-mainz.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Reply-To: cbauer@student.physik.uni-mainz.de
+Message-Id: <199904010804.IAA18628@go.hannover.sgh-net.de>
+Subject: Help make yet another Linux dist for PPC?
+Date: Thu, 1 Apr 99 10:04:25 +0200
+From: John L Grantham <jgrantha@hannover.sgh-net.de>
+To: <linuxppc-dev@lists.linuxppc.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi!
+Hi all,
 
->I'm searching for a document specifying the ABI used by LinuxPPC,
->e.g., the calling conventions etc. Can anybody help me out with that?
+The members of another mailing list from Macnews.de and "Linux am Mac" 
+are looking to put together a new German Linux distribution for PowerPC 
+Macs, based on LinuxPPC. It would be provided free from Macnews.de's FTP 
+servers or at cost on CD-ROM.
 
-You find it in:
-http://www.mot.com/SPS/ADC/pps/download/8XX/SVR4abippc.pdf
+If you speak halfway decent German and want to help, then truck on over 
+to http://linux.macnews.de/ for some info, or visit 
+http://www.macnews.de/mailinglisten/ein_linux-am-mac.html to join the 
+list. Things are still in an early phase right now, and we're in the 
+middle of planning (plotting? scheming?), so you have a big chance to 
+shape it's destiny...
 
-Bye,
-Christian
+TIA,
 
--- 
-  / Coding on PowerPC and proud of it
-\/ http://www.uni-mainz.de/~bauec002/
+John
+
+
+
+John Grantham | Dipl.-Designer (FH)
+              | MacLinux: http://linux.macnews.de/
+              | Homepage: http://surf.to/multimedia
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
