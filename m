@@ -1,27 +1,28 @@
-Subject: Re: also the problem of creating jffs2
-From: David Woodhouse <dwmw2@infradead.org>
-To: aa aaa <linux_powerpc@hotmail.com>
-Cc: wd@denx.de, linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <BAY13-F27OgmJKtBmmg00011537@hotmail.com>
-References: <BAY13-F27OgmJKtBmmg00011537@hotmail.com>
-Content-Type: text/plain
-Message-Id: <1084832912.6607.604.camel@imladris.demon.co.uk>
-Mime-Version: 1.0
-Date: Mon, 17 May 2004 23:28:33 +0100
+In-Reply-To: <20040517221618.EBFB8C109F@atlas.denx.de>
+References: <20040517221618.EBFB8C109F@atlas.denx.de>
+Mime-Version: 1.0 (Apple Message framework v613)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <4BAD66F5-A859-11D8-9D08-003065F9B7DC@embeddededge.com>
+Cc: Kumar Gala <kumar.gala@freescale.com>,
+	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>,
+	Stefan Nickl <Stefan.Nickl@kontron.com>,
+	Yuji Nishimura <yujin@pp.iij4u.or.jp>
+From: Dan Malek <dan@embeddededge.com>
+Subject: Re: Stability of network/io on MPC8540ADS? 
+Date: Mon, 17 May 2004 19:24:08 -0400
+To: Wolfgang Denk <wd@denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, 2004-05-14 at 10:12 +0800, aa aaa wrote:
-> root@172.16.115.7:/# eraseall /dev/mtd3
-> eraseall: /dev/mtd3: No such device
-> what is wrong?
+On May 17, 2004, at 6:16 PM, Wolfgang Denk wrote:
 
-Check /dev/mtd3 has correct major/minor number (90, 6) and you have
-CONFIG_MTD_CHAR enabled.
+> Sorry, not yet. It's still sitting in my inbound queue.
 
---
-dwmw2
+Jon posted the patches, they apply just fine if someone is in
+a big rush.
+
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
