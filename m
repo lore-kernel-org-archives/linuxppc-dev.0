@@ -1,41 +1,32 @@
-Date: Mon, 16 Apr 2001 13:54:58 -0800
-From: Ethan Benson <erbenson@alaska.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: boot params
-Message-ID: <20010416135458.L2127@plato.local.lan>
-References: <20010416115854.9A1722F09A@apollo.valhalla.net> <20010416040553.J2127@plato.local.lan> <3ADB35C9.9113AC3A@denise.shiny.it>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="nwdm+gty0IHWQzA9"
-In-Reply-To: <3ADB35C9.9113AC3A@denise.shiny.it>; from pochini@denise.shiny.it on Mon, Apr 16, 2001 at 08:11:21PM +0200
+Message-ID: <3ADB6FFB.C40B3574@mvista.com>
+Date: Mon, 16 Apr 2001 18:19:39 -0400
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
+To: Iain Sandoe <iain@sandoe.co.uk>
+Cc: Gabriel Paubert <paubert@iram.es>,
+	linuxppc-dev@lists.linuxppc.org, Samuel Rydh <samuel@ibrium.se>
+Subject: Re: [PATCH] gettimeofday stability
+References: <20010416160035.777CF2F0D3@apollo.valhalla.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---nwdm+gty0IHWQzA9
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Iain Sandoe wrote:
+>
+> > I still object strongly to anything touching the timebase, however.
+>
+> I'd prefer if it wasn't touched too...
 
-On Mon, Apr 16, 2001 at 08:11:21PM +0200, Giuliano Pochini wrote:
->=20
-> Not a good choice. Often it happens you can't type anything in the
-> OF boot menu script, so you can't choose what OS start up (or at
-> least my 7300 with OF v1.0.5 had this problem). It also happens on
-> a 2nd-half-2000-series G4 where the ofboot script refuse to accept
-> keyboard input 80% of the times.
+As I recall, "touching" the TB simply means reading it and computing
+elapsed ticks since the last read.  I don't remember anything changing
+the value in the timebase registers (which isn't possible outside
+of the kernel).
 
-everyone i know running quik doesn't have any problems. =20
-
---=20
-Ethan Benson
-http://www.alaska.net/~erbenson/
-
---nwdm+gty0IHWQzA9
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+I regularly use the TB for user application event timing, and
+haven't seen anything abnormal (other than the code I was testing :-).
 
 
---nwdm+gty0IHWQzA9--
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
