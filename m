@@ -1,38 +1,42 @@
-From: Jesper Skov <jskov@cygnus.co.uk>
-Message-ID: <13982.64423.455552.730846@lassi.cygnus.co.uk>
-Date: Fri, 15 Jan 1999 08:26:15 +0000 (GMT)
-To: Cort Dougan <cort@persephone.cs.nmt.edu>
-Cc: Alan Cox <alan@cymru.net>, linuxppc-dev@lists.linuxppc.org,
-        Jes.Sorensen@cern.ch, linux-apus@sunsite.auc.dk
-Subject: Re: Synchronization [was Re: The Magic Show: kernel_map() disappearing]
-In-Reply-To: <Pine.LNX.3.96.990114145156.7359A-100000@persephone.cs.nmt.edu>
-References: <199901142052.UAA24588@snowcrash.cymru.net>
-	<Pine.LNX.3.96.990114145156.7359A-100000@persephone.cs.nmt.edu>
+Message-ID: <369EFD00.7233BA20@col.bsf.alcatel.fr>
+Date: Fri, 15 Jan 1999 09:32:00 +0100
+From: Alexandre MARTINS MELO <martins1@col.bsf.alcatel.fr>
+MIME-Version: 1.0
+To: Derek Homeier <homeier@astrophysik.uni-kiel.de>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Apple's cdrom driver & non Apple CDROM drives
+References: <199901141731.SAA11562@juliet.astrophysik.uni-kiel.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> "Cort" == Cort Dougan <cort@persephone.cs.nmt.edu> writes:
+Derek Homeier wrote:
 
-Cort> That's my rationale for doing the sync and eieio in the mb().
-Cort> That way, we're guaranteed no races no matter what assumptions
-Cort> someone makes about the x86 when adding barriers to their driver
-Cort> code.  Is that unreasonable?
+> On Wed, 13 Jan 1999 16:00:22, Alexandre MARTINS MELO <martins1@col.bsf.alcatel.fr>
+> wrote:
+>
+> somewhat off topic, really, but look at the recent (or, meanwhile, perhaps
+> 'previous') news section at macintouch for two links describing a patch to
+> the apple cdrom and dvd drivers to make them work with non-apple drives.
+> One is at c't magazine:
+>         http://www.heise.de/ct/english/98/26/188/
+> the other one improves a bit on this in that it supports both apple and non-
+> apple drives with the same driver, but I don't have it at hand right now.
+>
+> Hope this helps,
+>                                                         Derek
 
-Cort> Alan} x86 and most other processors dont have the notion of a store
-Cort> Alan} barrier and an i/o barrier beign different
+The hack that supports both Apple and non-Apple drives is explained at :
+                http://www.ResExcellence.com/12-21-98.shtml
 
-IMHO, it is unreasonable. Why should the majority of PPC drivers run
-with suboptimal performance because of bad programmer assumptions?
+I tried it yesterday and it works fine, even with a french version of MacOS 8.5.
 
-I'd suggest changing mb() (or whatever an appropriate name would be)
-to 'eieio'. MP code and generic drivers that expect inter-CPU
-synchronization to happen when using this macro should be fixed.
+Thanks,
+
+Alex.
 
 
-...but then, what do I know? :)
-
-Jesper
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
