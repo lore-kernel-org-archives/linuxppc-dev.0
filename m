@@ -1,75 +1,41 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: <linuxppc-dev@lists.linuxppc.org>
-Cc: Dan Malek <dan@embeddededge.com>, <paulus@samba.org>
-Subject: 7450 bugs & fixes
-Date: Thu, 29 Nov 2001 16:00:47 +0100
-Message-Id: <20011129150047.11980@mailhost.mipsys.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Thu, 29 Nov 2001 08:26:25 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.linuxppc.org, kaos@ocs.com.au
+Subject: Re: include/asm-ppc/platforms/
+Message-ID: <20011129082625.R29541@cpe-24-221-152-185.az.sprintbbd.net>
+References: <15363.31192.101536.919771@gargle.gargle.HOWL> <3C2B376F.9070508@embeddededge.com> <15364.32906.728532.676746@gargle.gargle.HOWL> <3C0482F6.1050307@embeddededge.com> <15366.8350.416601.229303@gargle.gargle.HOWL>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <15366.8350.416601.229303@gargle.gargle.HOWL>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-After reading the 7450 errata book, I'm now trying to figure out
-what need to be done for our kernel to work properly on these.
-I'd appreciate any input from other people here as some of the
-errata exact consequences aren't that clear to me.
+On Thu, Nov 29, 2001 at 10:48:46PM +1100, Paul Mackerras wrote:
 
-I've figured out so far that we need to handle 7450's as far as
-rev 2.0 included. Apple seem to be the company who used the earliest
-ones in released products and according to the infos I got from them,
-they used rev 2.0 on uniprocessor desktop machines only, and rev. 2.1
-on SMP machines & laptops. They also seem to have developed a HW
-workaround for errata #38 making safe the use of the HW hashtable
-loopkups on rev. 2.1 CPUs. (at least according to an Apple engineer
-I contacted on the Darwin mailing list).
+> The only reason for having include/asm-ppc/platforms under
+> include/asm-ppc is so that serial.h can include the right
+> blah_serial.h file.  We can get around that by using
+> early_serial_setup except that that doesn't work if the serial driver
+> is built as a module.  The boot stuff also needs to get at the first
+> serial port but we can manage that by requiring the platform.h file to
+> define e.g. BOOT_SERIAL_ADDRESS, BOOT_SERIAL_REG_SHIFT, etc., if it
+> wants to use a serial port in the boot wrapper.  The boot wrapper code
+> then just does #include <platform.h>.
 
-Here are the errata I think we are concerned about. I didn't list
-errata for things I beleive we don't use so far, like L3 flush assist,
-but those may have impacts I didn't foresee.
+What would <asm/serial.h> contain here?  Keep in mind that some ports
+'just work' with the default <asm/serial.h>.
 
- - errata 15: mismatched lwarx/stwcx. pairs can cause loss of
-   atomicity. That errata basically says we mustn't issue an
-   stwcx. if we didn't have a previous lwarx. That mean our
-   instance of stwcx. in the return from exception path should
-   be added an lwarx. Any other candidate spotted ?
+> Alternatively we can add a -Iarch/$(ARCH) flag for cc and put
+> platform.h in arch/ppc and the platform headers in
+> arch/ppc/platforms.  This is Keith's preferred solution and it feels
+> right to me too.
 
- - errata 18: seem to imply NAP/SLEEP can't be used for us on rev 2.0
-   Well, that's weird as it seem that darwin has specific workarounds
-   for another rev 2.0 errata related to NAP/SLEEP (L1 coherency lost),
-   I'll ask my Apple contact about this one. I didn't find the exact
-   errata for the L1 issue though....
+This would probably be better.
 
- - errata 23: Not sure how that one can affect us. I don't think we do
-   explicit cache flush on locations subject to snooping from external
-   HW, at least not on UP (and rev 2.0 isn't used on SMP setups afaik)
-
- - errata 28: dcbst reserving L2 cache lines. That one is bad, as afaik,
-   it could be used by userland code to kill the L2 cache. We should
-   probably replace use of dcbst by dcbf in the kernel.
-
- - errata 29: do we ever switch MSR:IR off via an mtmsr ? If yes, we
-   need to add a sync, but I don't think we do.
-
- - errata 31: BTIC corruption. This one affect only rev 2.0 which isn't
-   used on SMP. So only the UP case matters. I'm not sure what a proper
-   fix would be, maybe the isync recommended workaround. Paul ?
-
- - errata 38: Should be worked around in HW by Apple on SMP macs using
-   7450 2.1. Other machines may need to implement software tablewalk
-   instead though (beware of other erratas related to using software
-   tablewalk then ;)
-
- - errata 39: We must stop doing any DOZE/NAP in idle.c when we have an
-   L3 cache.
-
- - errata 47: dcbz vs. snoop hang. I need some more input on this one
-   we may have to disable store gathering when we have an L3 cache...
-
-That's all for now (pfffeww....), I'd recommend anybody who want some
-cold fever to read that errata document, available from moto web site.
-
-Ben.
-
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
