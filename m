@@ -1,15 +1,14 @@
-Return-Path: <wd@denx.de>
-To: Ryan Wilkins <ryan@elevated-networks.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sun, 24 Oct 2004 16:33:44 EDT."
-	<002D5C38-25FC-11D9-BA35-0050E4B0DC64@elevated-networks.com>
-Date: Sun, 24 Oct 2004 22:45:50 +0200
-Sender: wd@denx.de
-Message-Id: <20041024204555.C38ECC1430@atlas.denx.de>
+Return-Path: <ryan@elevated-networks.com>
+In-Reply-To: <20041024215018.26468.qmail@web13802.mail.yahoo.com>
+References: <20041024215018.26468.qmail@web13802.mail.yahoo.com>
+Mime-Version: 1.0 (Apple Message framework v619)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <77988B3D-260C-11D9-BA35-0050E4B0DC64@elevated-networks.com>
+From: Ryan Wilkins <ryan@elevated-networks.com>
+Date: Sun, 24 Oct 2004 18:31:37 -0400
+To: Frank <frannk_m1@yahoo.com>
 Cc: linuxppc-embedded@ozlabs.com
-Subject: Re: MPC850 and GDB help 
+Subject: Re: MPC850 and GDB help
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,34 +19,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <002D5C38-25FC-11D9-BA35-0050E4B0DC64@elevated-networks.com> you wrote:
-> 
-> What about running the Linux kernel from ram?  Will I encounter the 
-> same difficulties?
+Ahh yes.. I wanted to get u-boot loaded into RAM and running from 
+there.  The reason being, I'm having a bit of a hard time writing a 
+flash chip definition file in the MPCBDM Flash.def format for the Intel 
+DA28F320J5 flash chip.  My thought was to boot u-boot from ram and then 
+see if it had better luck at detecting my flash chip and then try to 
+coerce it into writing u-boot to flash for me.
 
-No, this is what Linux is designed for.
+As for the "running Linux from ram" thing it was another fleeting 
+thought.  Something along the lines of if I can't get u-boot to run 
+from ram maybe I could get Linux to boot from ram and then go from 
+there.
 
-But this doesn't help you. Before Linux can run, you need  a  working
-boot loader to initialize the hardware.
+Anyway, as you can tell I'm in way over my head but I'll figure 
+something out.  I've got a bit of raw programming experience with 8-bit 
+micros but nothing 32-bit.  I hate to have this MPC850 sitting here 
+doing nothing.
 
-Before you start you should ask yourself if  you  have  all  required
-documentation  available.  You will need a detailed hardware descrip-
-tion, which documents which pins of the MPC8xx  are  used  for  which
-purpose,  what  board control registers, CPLDs etc. are there and how
-they are expected to be initialized, etc.
+Answer me this if you would.. Does the MPC850 have some sort eeprom or 
+parameter RAM on-chip that would be remembered in the event of a hard 
+reset or power cycle and preclude the chip from booting from flash if 
+certain registers were changed?
+I'm looking through the manual for the 850 now but don't see anything 
+jumping out at me.
 
-With all the documentation available, you will need to get a thorough
-understanding of the hardware. Only then you  should  try  porting  a
-boot loader.
+On Oct 24, 2004, at 5:50 PM, Frank wrote:
 
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Carelessly planned projects take three times longer to complete  than
-expected.  Carefully  planned  projects  take  four  times  longer to
-complete than expected, mostly  because  the  planners  expect  their
-planning to reduce the time it takes.
+> I think I may have confused you a little. When I said running
+> u-boot from ram, I meant booting it from ram as if it had boot
+> from flash. Normally, at some point, u-boot _will_ run from ram
+> by copying itslef there and continung to run. But getting it to
+> run from ram it's reset vector (first linked address + 0x100) is
+> totally different.
+> I'm not sure what you mean by "running Linux from ram". Although
+> the kernel may reside in flash, it is at some point unzipped,
+> copied to ram and then runs from there. Someone on this list may
+> be able to help you more here. Maybe you will have beteer luck
+> then me getting an answer from these guys. They don't seem to
+> respond to my questions.:-(
