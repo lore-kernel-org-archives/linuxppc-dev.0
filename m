@@ -1,59 +1,48 @@
-Message-ID: <384248F0.751F2136@agelectronics.co.uk>
-Date: Mon, 29 Nov 1999 09:35:44 +0000
-From: Adrian Cox <apc@agelectronics.co.uk>
-MIME-Version: 1.0
-To: Jonathan Brauer <brauer@texmemsys.com>
+In-Reply-To: <Pine.LNX.3.96L.991129022729.5302C-100000@unix47.andrew.cmu.edu>
+Date: Mon, 29 Nov 1999 10:45:24 +0100
+To: Hollis R Blanchard <hollis+@andrew.cmu.edu>,
+        linuxppc-user@lists.linuxppc.org
 CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: New port
-References: <199911270059.SAA07621@sun92.texmemsys.com>
-Content-Type: text/plain; charset=us-ascii
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: BootX-1.2b2 problem?
+Message-Id: <19991129104524.002317@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Jonathan Brauer wrote:
-> 
-> I am looking on information on porting linux to a new ppc platform.  The short
-> version of my efforts are to port linux to a custom 603 sbc. 
-> Essentialy from this my questions would be
-> 1.  Is there a correct mode to start running head.S in (ie. translation on/off?)
+On Mon, Nov 29, 1999, Hollis R Blanchard <hollis+@andrew.cmu.edu> wrote:
 
-Off is better.
+>MHz-specific? :) I don't think so, but certainly not all bugs may not show up
+>on all machines...
+>
+>I think this problem manifests before the kernel starts going, though I don't
+>know because I haven't seen it firsthand. At any rate, this isn't the only
+>problem I've heard of with 1.2b2 (want to reduce your BogoMips by a factor of
+>ten?), so I'd be wary of it. (Again, "not all bugs...".)
 
-> 2.  Where should the stack be started at?
+The problem with BootX 1.2b2 is the new IDE reset code (for fixing the
+MacOS 9 driver issue). Some ATAPI devices (CDROMs/DVDs) will hang the
+machine during this reset. (ATAPI devices do not accept an ATA reset).
 
-Anywhere there's room (eg. top of memory). The stack will be moved by
-the kernel once it know what memory it has.
+I tried asking MacOS to reset the bus but this apparently doesn't work. I
+can use the IDE reset HW wires but I only know how to access them on some
+machines ("heathrow" based machines). So that's really a tricky issue...
+I'm trying to find a way to detect which devices are ATA and which are
+ATAPI and trigger the reset only for ATA. The problem is that the ATA
+device is likely not to be responding to identify command (because of the
+driver problem we are trying to work around).
 
-> 3.  Where should the code be downloaded to?
+The BogoMIPS/Slow kernel problem is beyond my understanding for now and
+until I can reproduce it on one of my machines here (basically a
+wallstreet, an iBook and a 8500). I really so no reason why BootX would
+cause this and I'm thinking about a possible side effect of something in
+MacOS triggered by BootX, but frankly, it's weird. It's still possible
+that something gets wrong with the VIA which is used for calibration, can
+someone with this problem try reverting the calibration code not to use
+the VIA ?
+(I think It's in arch/ppc/kernel/pmac_time.c or pmac_support.c)
 
-Ideally physical address 0 (virtual address c0000000), but it should
-relocate itself.
-
-> 4.  Is an uncompressed kernel better than a compressed one?
-
-Yes. An uncompressed kernel is a normal ELF file.
-
-> 5.  If we load the kernel at address 0, should we change KERNELBASE?
-
-Physical 0, virtual c0000000. Don't touch KERNELBASE.
-
-> 6.  It appears that after kludging up to identify machine we tend to die.
-
-You need to add your own machine type, by using an existing one as
-example. As your board is probably weird, I'd suggest basing your port
-on something else weird, like the APUS.
-
-> 7.  Enabling the caching seems to throw us for a loop as well.
-
-Remember that you can't do memory mapped IO between the point where
-caches are enabled and when Linux enables memory translation. This is
-actually a very long time, and a complicated code path.
-
-> 8.  What values does the kernel assume are passed in by a boot loader and how?
-
-Different for each machine type. Define your own, and pass them in.
-
-- Adrian Cox, AG Electronics
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
