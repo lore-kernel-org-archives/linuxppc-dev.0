@@ -1,43 +1,54 @@
-Date: Mon, 27 Mar 2000 23:12:54 +0200
-From: Martin Mares <mj@ucw.cz>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: LongTrail PCI resource assignment
-Message-ID: <20000327231254.K359@albireo.ucw.cz>
-References: <Pine.GSO.4.10.10003220927550.29557-100000@dandelion.sonytel.be>
+Date: Mon, 27 Mar 2000 15:32:16 -0600
+From: erik cameron <cameron@senta.uchicago.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: [cameron@senta.uchicago.edu: external video on powerbook g3 (lombard)]
+Message-ID: <20000327153216.D14029@senta.uchicago.edu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.GSO.4.10.10003220927550.29557-100000@dandelion.sonytel.be>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi!
+sent this to linuxppc-user the other day, and i'm starting to wonder
+whether i should have sent it to -dev to begin with.  is there a
+way to drive an external monitor from a lombard powerbook under
+linux that i've missed, or is the code just not there?  (i'm assuming
+that the usb and/or sleeping code just doesn't support waking from
+an external usb keyboard.)
 
->   - There are machine dependent things related to PCI resource assignment,
->     namely PCIBIOS_MIN_IO and PCIBIOS_MIN_MEM in include/asm-ppc/pci.h. On the
->     LongTrail, PCI memory space is from 0xc0000000 until 0xf7000000, so I had
->     to change PCIBIOS_MIN_MEM to make sure allocation starts at 0xc0000000. I
->     think we need
->
-> 	#define PCIBIOS_MIN_IO	ppc_md.pcibios_min_io
-> 	#define PCIBIOS_MIN_MEM	ppc_md.pcibios_min_mem
->
->     and solve this in the machine specific setup code.
->
->     Martin, do you think it makes sense to have PCIBIOS_MAX_IO and
->     PCIBIOS_MAX_MEM to pass to allocate_resource() as the upper limits?
+----- Forwarded message from erik cameron <cameron@senta.uchicago.edu> -----
 
-   Better define resources for the root bus itself and let resources of the
-other devices to be allocated from these root resources.
+Date: Thu, 23 Mar 2000 17:35:23 -0600
+From: erik cameron <cameron@senta.uchicago.edu>
+To: linuxppc-user@lists.linuxppc.org
+Subject: external video on powerbook g3 (lombard)
+X-Mailer: Mutt 1.0pre3i
 
-   Also, for the PPC you probably don't need all the multipass resource magic
-we do on the PC.
+hi all...
 
-				Have a nice fortnight
+i'd like to run my powerbook g3 lid closed, with an external monitor,
+keyboard and mouse; i haven't found any docs on doing this, and my
+efforts haven't met with any success.  the "normal" way of doing this
+under macos (sleep, plug in monitor/keys/mouse, wake from ext. keys)
+hasn't worked, as it doesn't seem the machine is able to wake from
+an external usb keyboard.  i'm running the 2.2.15pre11 kernel from
+paul mackerras's linux-pmac-stable tree, and using the OFfb video
+device.  ("no video driver" checked in bootx.)  tia...
+
+e
+
 --
-Martin `MJ' Mares   <mj@ucw.cz>   http://atrey.karlin.mff.cuni.cz/~mj/
-Faculty of Math and Physics, Charles University, Prague, Czech Rep., Earth
-"Whoa...I did a 'cp /vmlinuz /dev/audio' and I think I heard God..."
+erik cameron  unix systems administrator
+jfi/mrsec @ the university of chicago
+e-cameron@uchicago.edu
+http://senta.uchicago.edu/gnupg for public key
+
+----- End forwarded message -----
+
+--
+erik cameron  unix systems administrator
+jfi/mrsec @ the university of chicago
+e-cameron@uchicago.edu
+http://senta.uchicago.edu/gnupg for public key
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
