@@ -1,72 +1,57 @@
-Date: Sat, 22 Apr 2000 12:31:07 +0200
+Date: Sat, 22 Apr 2000 12:37:47 +0200
 From: Bernhard Reiter <bernhard@intevation.de>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Lombard hard freeze
-Message-ID: <20000422123107.A8503@cheops.usf.Uni-Osnabrueck.DE>
+Subject: Serial driver problem (modem Lombard)
+Message-ID: <20000422123747.B8503@cheops.usf.Uni-Osnabrueck.DE>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="M9NhX3UHpAaciwkO"
+	protocol="application/pgp-signature"; boundary="CdrF4e02JqNVZeln"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---M9NhX3UHpAaciwkO
+--CdrF4e02JqNVZeln
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: quoted-printable
 
-Hello Linuxppc developers,
+There is a difference in modem device behaviour
+between 2.2.15pre3(coming with LinuxPPC2000) and 2.2.15pre19(after=20
+Paul M's stable tree, build myself using his .config).
 
-I encounter hard freezes with my lombard G3/400 Powerbook.
-Though I cannot completely rule out hardware problems, it might
-be the software. The system never stopped running in MacOS 8.6
-I tried the TechTool Deluxe tests and the Gauge Pro Ram Check
-under MacOS without revealing any problems.
+wvdail cannot open /dev/ttyS0 twice with 2.2.51pre19.
+After I ctrl-ced wvdial to interrupt the network connection
+I get an I/O error when I try to open it again.
 
-The freezes occurr randomly when heavy compiling is done.
-(Like I cannot compile gnomehack 1.0.5 three times, it usually
-happens in the second compile attempt.) If you want to try
-ftp://intevation.de/users/bernhard has the .src.rpm right now.
+Running wvdialconf it started scanning ttyS1 and
+then jumped into the system monitor:
 
-It does not matter if it is cold or warm, X11 running or pmud running.
-I tested Kernel versions 2.2.14 2.2.15-pre3 2.2.15-pre19
-together with the LinuxPPC 2000 install and the upgraded LinuxPPC 1999
-install (on two different partitions).
-I upgraded glibc, binutils and gcc.
+vector:200 at pc=3Dd0849344 msr=3D1030, sp=3Dc7bf3ce0 [c7bf3ce0]
+current=3Dc7bf2000, pid 745 comm=3Dinsmod
 
-This powerbook has a 10 GB harddisc and 192 Mb ram, so it does not even
-swap for this compile.
-
-Another little detail hints towards a software problem:
-Even if I give the computer breaks after, let's say the first
-gnomehack compile, it chances to run through the next one is not higher.
-It looks like disorder somewhere in the kernel piles up, still it is
-a matter of time to lock up the machine.
-
-I would be glad if someone could help me to track the problem
-down further. I was told that this is the right place to ask.
+Maybe that is an irport error and unrelated to the first problem.
+I have not enquired further, though.
 
 Regards,
 	Bernhard
-ps.: Please carbon copy relevant replies to me.
-
+ps: Please carbon copy relevant replies to me.
 --=20
 Professional Service around Free Software                (intevation.net) =
 =20
 The FreeGIS Project				            (freegis.org)
 Association for a Free Informational Infrastructure            (ffii.org)
 
---M9NhX3UHpAaciwkO
+--CdrF4e02JqNVZeln
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.0.1 (SunOS)
 Comment: For info see http://www.gnupg.org
 
-iEYEARECAAYFAjkBf2oACgkQh9ag3dpKERb3IgCfXrw5TwqGkHhtGZ06C+nZVIk3
-f5YAoM1fJbbPHOI+iLBHZ5SQpU7ZUdSh
-=5ZhE
+iEYEARECAAYFAjkBgPoACgkQh9ag3dpKERahBQCgqQHw4Gl6SIAi5E05JrNbrW2l
+hRkAn1ozCcWWakj34/ZrvXfWPNIuMo4D
+=dMPj
 -----END PGP SIGNATURE-----
 
---M9NhX3UHpAaciwkO--
+--CdrF4e02JqNVZeln--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
