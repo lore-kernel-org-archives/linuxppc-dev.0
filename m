@@ -1,45 +1,46 @@
-Message-ID: <83E3831A88E65844B01DB1A73FB66F9314082F@CSDNT99.cdcgy.com>
-From: "Dang, James" <James.Dang@gdcanada.com>
-To: "'Yang, Bo'" <bo.yang@transcore.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: serial console lost when linux kernel boots up
-Date: Fri, 11 Apr 2003 14:12:17 -0600
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Eugene Surovegin <ebs@ebshome.net>
+Cc: Ron Flory <ron.flory@adtran.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: parse error before `{', stray '\' in program 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 11 Apr 2003 12:04:55 PDT."
+             <5.1.0.14.2.20030411115316.0416be20@mail.zultys.com>
+Date: Fri, 11 Apr 2003 22:17:48 +0200
+Message-Id: <20030411201754.042DBC5877@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Run ELDK_MAKEDEV in your dev directory to create devices.
+In message <5.1.0.14.2.20030411115316.0416be20@mail.zultys.com> you wrote:
+>
+>          1. Physical source file multibyte characters are mapped,
+>             in an implementation-defined manner, to the source character set
+>             (introducing new-line characters for end-of-line indicators)
+>              if necessary.
+>              ....
 
-James Dang
-
------Original Message-----
-From: Yang, Bo [mailto:bo.yang@transcore.com]
-Sent: Friday, April 11, 2003 1:50 PM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: serial console lost when linux kernel boots up
+"\r\n" is not a  multibyte  character  but  a  sequence  of  the  two
+characters C and NL.
 
 
+>          2. Each instance of a backslash character (\) immediately
+>             followed by a new-line character is deleted, splicing physical
+>             source lines to form logical source lines.
+>             ....
 
-Hello,
+This sentence contains the word "immediat" which does not  allow  for
+an  additional  CR  character between the backslash character and the
+new-line character.
 
-I am trying to run linux kernel (Linux version 2.4.4 downloaded from DENX)
-on MPC8XXFADS (CPU:860T) board. The root file system is mounted via NFS.
-The root file system I used is the one coming with DENX's ELDK package (I
-use ELDK cross compile tools).
+Best regards,
 
-The problem is that once the linux kernel boots up I lose serial
-console(e.g. no loggin prompt). There is one warning message as the last
-printout on my console terminal:
-"Warning: unable to open an initial console". I look at the root file system
-on my host linux box and found out that there is no device file populated
-under "opt/eldk/ppc_8xx/dev".
-I wonder the root file system I used may not be a complete file system. Any
-ideas? Thanks for any hints.
+Wolfgang Denk
 
-Bo Yang
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Our business is run on trust.  We trust you will pay in advance.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
