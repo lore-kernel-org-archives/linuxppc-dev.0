@@ -1,31 +1,38 @@
-Message-ID: <3BAAF0AD.4A978E3B@mvista.com>
-Date: Fri, 21 Sep 2001 03:47:57 -0400
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Fri, 21 Sep 2001 09:50:37 +0200 (MEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Dan Malek <dan@mvista.com>
 Cc: "Timothy A. Seufert" <tas@mindspring.com>,
 	Mark Salisbury <mbs@mc.com>,
 	Holger Bettag <hobold@Informatik.Uni-Bremen.DE>,
 	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: ppc LE questions (seeking help hand info pointers)
-References: <Pine.GSO.4.21.0109210922040.3006-100000@mullein.sonytel.be>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3BAAF0AD.4A978E3B@mvista.com>
+Message-ID: <Pine.GSO.4.21.0109210950130.3006-100000@mullein.sonytel.be>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Geert Uytterhoeven wrote:
+On Fri, 21 Sep 2001, Dan Malek wrote:
+> Geert Uytterhoeven wrote:
+> > Anyone who knows how this differs from the similar bit on UltraSPARC?
+>
+> Hmmm...I guess it's time to go fishing again in another architecture.
+> I haven't visited SPARC for a while.  Do they actually use it in Linux?
 
-> Anyone who knows how this differs from the similar bit on UltraSPARC?
+AFAIK they do, for PCI accesses.
 
-Hmmm...I guess it's time to go fishing again in another architecture.
-I haven't visited SPARC for a while.  Do they actually use it in Linux?
+Gr{oetje,eeting}s,
 
-> Good! We can use some help to keep the old platforms alive...
+						Geert
 
-...and I have old platforms :-).  I'm afraid to apply power to some of them.....
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
-	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
