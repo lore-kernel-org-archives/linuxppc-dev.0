@@ -1,18 +1,22 @@
-Return-Path: <clark@esteem.com>
-Received: from mail5.hsphere.cc (mail5.hsphere.cc [216.157.145.25])
-	by ozlabs.org (Postfix) with SMTP id F36DB67A6B
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao07.cox.net (fed1rmmtao07.cox.net [68.230.241.32])
+	by ozlabs.org (Postfix) with ESMTP id 48B2E67A67
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  3 Mar 2005 04:48:21 +1100 (EST)
-Message-ID: <4225FADC.8060604@esteem.com>
-Date: Wed, 02 Mar 2005 09:41:48 -0800
-From: Conn Clark <clark@esteem.com>
-MIME-Version: 1.0
-To: Andriy Korud <a.korud@vector.com.pl>
-References: <60E856FD577CC04BA3727AF4122D3F1611352E@3bit.vector.com.pl>
-In-Reply-To: <60E856FD577CC04BA3727AF4122D3F1611352E@3bit.vector.com.pl>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Looking for prebuilt PPC board with miniPCI slot
+	Thu,  3 Mar 2005 04:52:18 +1100 (EST)
+Date: Wed, 2 Mar 2005 10:52:01 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Takeharu KATO <takeharu1219@ybb.ne.jp>
+Message-ID: <20050302105201.C31614@cox.net>
+References: <421CD2B3.4020805@ybb.ne.jp> <421CD669.1040002@ybb.ne.jp>
+	<20050223142720.C13087@cox.net> <421D1085.5080602@ybb.ne.jp>
+	<421D1375.5000904@ybb.ne.jp>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <421D1375.5000904@ybb.ne.jp>;
+	from takeharu1219@ybb.ne.jp on Thu, Feb 24, 2005 at 08:36:21AM
+	+0900
+Cc: ppcembed <linuxppc-embedded@ozlabs.org>
+Subject: Re: PowerPC4xx Watchdog
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,42 +27,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Andriy Korud wrote:
-> Hi,
-> we are looking for a embedded board with at least one miniPCI slot and Ethernet port with performance at AMCC 405EP@333 level and Linux 2.6 support. 
-> Have anybody heard about something like this preferably in Europe?
+On Thu, Feb 24, 2005 at 08:36:21AM +0900, Takeharu KATO wrote:
+> Hi
 > 
-> Thanks in advance,
-> 
-> --
-> 
-> Andriy Korud
-> software engineer,
-> 
-> http://www.vector.com.pl
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
+> >> Are you looking for the old "ppc405 watchdog" driver that simply
+> >> hooked into the generic PPC heartbeat facility? Or are you looking
+> >> for a driver that utilizes the 4xx/booke hardware watchdog facility?
+> >>
+> > I am looking for a driver that utilizes the 4xx/booke hardware watchdog 
+> > facility.
+> > 
+> > 
+> FYI, I wrote a driver uses 4xx/booke hardware watchdog.
+> BTW, is hooking PPC heartbeat facility obsoleted?
 
-There is the Inrinsyc Cerf Cube 405EP 
-http://www.intrinsyc.com/products/mob_ref_sys/cerfcube_405_ep/  . It has 
-a MiniPCI slot and uses the 405EP . I don't know where it stands as far 
-as 2.6 kernel support. I'm pretty sure nobody is actively supporting it 
-with the current 2.4 kernel at this time though. You might have to call 
-them to find out where software development stands. They might be able 
-to make you some with a 333MHz part.
+I see.  The ppc_md.heartbeat facility isn't going anywhere as there
+are multiple users.  It's possible to take the "ppc405_wdt" driver
+with a rename and minor cleanup have it be a generic timebase driven
+watchdog driver that is compliant with the familiar WD interface.
 
--- Conn Clark
+What do you see as the advantage to having a watchdog driver
+that uses the booke hardware watchdog facility over a generic
+timebase driven driver?
 
-*****************************************************************
-Give a man a match and you heat him for a moment. Set him on fire
-and you'll heat him for life.
-*****************************************************************
-
-Conn Clark
-Engineering Stooge				clark@esteem.com
-Electronic Systems Technology Inc.		www.esteem.com
-
-Stock Ticker Symbol				ELST
+-Matt
