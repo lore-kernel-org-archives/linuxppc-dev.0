@@ -1,23 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 661D72BDB8
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Oct 2004 17:31:52 +1000 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Guido Guenther <agx@sigxcpu.org>
-In-Reply-To: <20041005065828.GB8169@bogon.ms20.nix>
+Return-Path: <toojays@toojays.net>
+Received: from smtp3.adl2.internode.on.net (smtp3.adl2.internode.on.net
+	[203.16.214.203]) by ozlabs.org (Postfix) with ESMTP id BA34D2BDCF
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Oct 2004 18:13:36 +1000 (EST)
+Received: from nev.toojays.net (ppp48-50.lns1.adl2.internode.on.net
+	[150.101.48.50])
+	by smtp3.adl2.internode.on.net (8.12.9/8.12.9) with ESMTP id
+	i958DTOU019915
+	for <linuxppc-dev@ozlabs.org>; Tue, 5 Oct 2004 17:43:29 +0930 (CST)
+From: John Steele Scott <toojays@toojays.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Tue, 5 Oct 2004 17:42:31 +0930
 References: <20041004112105.GA5637@bogon.ms20.nix>
-	<1096897172.23141.87.camel@gaston>
-	<20041004135108.GB5637@bogon.ms20.nix>
-	<1096899251.15766.101.camel@gaston>
-	<20041004151259.GC5637@bogon.ms20.nix>
-	<1096931912.23141.107.camel@gaston>
-	<20041005065828.GB8169@bogon.ms20.nix>
-Content-Type: text/plain
-Message-Id: <1096961184.24537.38.camel@gaston>
-Mime-Version: 1.0
-Date: Tue, 05 Oct 2004 17:26:25 +1000
+	<200410050737.59754.toojays@toojays.net>
+	<1096932475.9516.119.camel@gaston>
+In-Reply-To: <1096932475.9516.119.camel@gaston>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1496019.gIeOqalaAy";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200410051742.36917.toojays@toojays.net>
 Cc: linuxppc-dev@ozlabs.org
 Subject: Re: [agx@sigxcpu.org: [PATCH]: swsusp on linux-2.6.9-rc3]
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -29,28 +29,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2004-10-05 at 16:58, Guido Guenther wrote:
-> On Tue, Oct 05, 2004 at 09:18:33AM +1000, Benjamin Herrenschmidt wrote:
-> > On Tue, 2004-10-05 at 01:12, Guido Guenther wrote:
-> > > On Tue, Oct 05, 2004 at 12:14:11AM +1000, Benjamin Herrenschmidt wrote:
-> > > > A hack I wrote a while ago that allows to run the MacOS "ndrv" video
-> > > > driver within a userland "shell" in linux. It works with old-style
-> > > > 'ndrv's that ATI still uses but not with the newer nVidia 'fully native'
-> > > > drivers and it can spy all IOs done by the driver
-> > 
-> > > Nice. Can you think of a way to monitor calls of MacOS X into the OF?
-> > 
-> > It has nothing to do with OF. We need to spy the IO accesses. Roughly
+--nextPart1496019.gIeOqalaAy
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> Well at least the nv driver uses the cards OF code to reiinitialize it
-> after resume
+On Tue, 5 Oct 2004 08:57 am, Benjamin Herrenschmidt wrote:
+> > Presumably this same technique could be used to figure out sleep for the
+> > M9 in the iBook G4s? I've been hanging out for that feature for some
+> > time.
+>
+> Yes, I have some traces from the driver on this one already. I'll compare
+> them to what we got on the M10 and see if I can produce something useful,
+> but I'll need volunteers to test :)
 
-They built a full OF interpreter in their driver ? We know how to
-"locate" the card's OF, but it relies on a lot of stuffs, unless they
-have this part of the code in a very self-contained limited portion of
-their f-code which is easy to interpret ? It would be useful to have
-more details from whoever told you that, knowing that they don't need to
-tell us how to locate the card OF (I know there's some issues releasing
-that information), just tell us what they do once they have it :)
+Anything I can do to help, just let me know. There's a few others I can thi=
+nk=20
+of from the Gentoo forums who'd be willing to give it a shot as well.
 
-Ben.
+cheers,
+
+John
+
+--nextPart1496019.gIeOqalaAy
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
+Comment: Messages with missing or bad signatures may have been forged or modified in transit!
+
+iD8DBQBBYld00BW7kPcXjRURAqQTAJ46cW5AzrdahxOmd42exSXpoiGjLwCfd9sX
+yAS5zgApWU6R713L7N1P2UI=
+=IHDc
+-----END PGP SIGNATURE-----
+
+--nextPart1496019.gIeOqalaAy--
