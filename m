@@ -1,28 +1,27 @@
-Date: Sun, 13 Feb 2000 17:42:23 -0800 (PST)
-From: howarth@bromo.med.uc.edu (Jack Howarth)
-Message-Id: <200002140142.RAA49857@bromo.med.uc.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: usb problems in 2.3.45pre2
+From: Paul Mackerras <paulus@linuxcare.com>
+To: howarth@bromo.med.uc.edu (Jack Howarth), linuxppc-dev@lists.linuxppc.org
+Subject: Re: linux-pmac-devel
+Date: Mon, 14 Feb 2000 13:43:50 +1100
+Content-Type: text/plain
+References: <200002140006.QAA49713@bromo.med.uc.edu>
+MIME-Version: 1.0
+Message-Id: <00021413444901.00486@argo.linuxcare.com.au>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Building the rsync'ed linux-pmac-devel tree tonight gave the following
-boot errors. This kernel was built taking all the config defaults
-except for DE4x5 which should be set as a default for G4s to have
-ethernet. The boot gives the following...
+On Mon, 14 Feb 2000, Jack Howarth wrote:
 
-usb_control/bulk_msg: timeout
-usb_ohci.c: unlink ORB timeout!
-usb.c: USB device not accepting new address (error=-110)
-INIT: version 2.77 booting
-usb.c: USB new device connect, assigned device number 2
-page fault in interrupt handler, addr=f2100000
+> I think there is error somewhere in the config scripts in the 2.3.xx
+> tree. When I rsync, do a make clean and then make config I get...
 
-(more dump deleted)
+I just updated the tree to 2.3.45-pre2, maybe you were rsyncing out of it
+while I was updating it?  Try rsyncing again and see if it still happens.
 
-This occurs booting on a Sawtooth G4/450 with an external USB powered hub
-and using yaboot 0.5 to boot. Any ideas how to fix this?
-       Jack
+--
+Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
++61 2 6262 8990 tel, +61 2 6262 8991 fax
+paulus@linuxcare.com.au, http://www.linuxcare.com.au/
+Linuxcare.  Support for the revolution.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
