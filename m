@@ -1,40 +1,25 @@
-Date: Sun, 24 Oct 1999 14:34:37 -0400 (EDT)
-From: Claude Robitaille <crobitaille@videotron.ca>
-Subject: Re: NFS Root - I am further ahead
-In-reply-to: <38133E10.BEDBA1CF@netx4.com>
-To: Dan Malek <dan@netx4.com>
-Cc: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>,
-        linuxppc-embedded@lists.linuxppc.org
-Message-id: <Pine.LNX.4.10.9910241427510.3857-100000@modemcable220.93-200-24.mtl.mc.videotron.net>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+Subject: Re: Console on SMC2 (was: Re: MPC823 Serial ports)
+To: erammsu@kieraypc01.p.y.ki.era.ericsson.se (Marcus Sundberg)
+Date: Mon, 25 Oct 1999 11:35:31 +1000 (EST)
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <kfypuy4sz1p.fsf_-_@kieraypc01.p.y.ki.era.ericsson.se> from "Marcus Sundberg" at Oct 24, 99 02:50:26 pm
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Message-Id: <19991025013531.7E210705@elph.research.canon.com.au>
+From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+Hi Marcus,
 
+Marcus Sundberg writes:
+> TTYAUX_MAJOR corresponds to the /dev/cua* devices, which are obsolete.
 
-> 
-> Normally, at this point I find the console device isn't working
-> correctly.  That is, the NFS server isn't properly handling things
-> in /dev, the symbolic link of /dev/console is wrong, or the
-> /dev/console node itself isn't correct.
-> 
-I am using the dev directory found in mbxroot_min_tgz so I am 
-assuming this is ok.
+Could you please clarify what you mean here? Are you saying that the /dev/cua*
+devices are obsolete? If so, what's the replacement?
 
-Does any one know if all of a program's dynamic libraries are loaded
-upon startup of it or are they just loaded when needed? I think it is
-the later so the clue of not seeing all the library read (looking at
-tcpdump) does not tell anything.
-
-I try to put a printf at the beginning of init but it does not
-show up. I guess this does not say much...
-
-Other idea(s)?
-
-Claude
-
+Thanks,
+Graham
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
