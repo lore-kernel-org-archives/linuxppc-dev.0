@@ -1,41 +1,37 @@
-Date: Sat, 6 Jan 2001 10:45:27 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Michael Holzt <kju@fqdn.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Bugs in 2.4.0-ac2 in ppc
-Message-ID: <20010106104527.C1400@opus.bloom.county>
-References: <20010105210627.D1095@fqdn.org>
+Message-Id: <v04003a00b67d11e70825@[24.70.162.12]>
+In-Reply-To: <20010106104247.A1400@opus.bloom.county>
+References: <20010106055922.Y29805@plato.local.lan>; from
+ erbenson@alaska.net on Sat, Jan 06, 2001 at 05:59:22AM -0900
+ <200101051455.f05Et0v06700@ashley.ivey.uwo.ca>
+ <20010105083740.B14321@opus.bloom.county>
+ <20010105154015.R29805@plato.local.lan> <3A572925.4A791E05@iiic.ethz.ch>
+ <20010106055922.Y29805@plato.local.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010105210627.D1095@fqdn.org>; from kju@fqdn.org on Fri, Jan 05, 2001 at 09:06:28PM +0100
+Content-Type: text/plain; charset="us-ascii"
+Date: Sat, 6 Jan 2001 12:22:19 -0600
+To: Tom Rini <trini@kernel.crashing.org>, linuxppc-dev@lists.linuxppc.org
+From: Tony Mantler <nicoya@apia.dhs.org>
+Subject: Re: status of ppc support in official 2.4.0 or Alan's 2.4.0-ac1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Jan 05, 2001 at 09:06:28PM +0100, Michael Holzt wrote:
+At 11:42 AM -0600 1/6/2001, Tom Rini wrote:
+[...]
+>In short, what I think we'll need soon is what 2.4.0 needs now.  People other
+>than the usual gang of testers to try it out and find bugs.
 
->  - function set_pgdir disappeared somewhere late in the 2.4.0test
->    series. I had to copy the source from an older kernel to get the
->    kernel to compile.
+For the record, where is an rsync/tgz for the current 'needs testing' tree?
+I haven't had a bootable kernel on my 9600/200mp since 2.4.0-test11
+linux-pmac-devel rsync.
 
-The proper fix is to remove the if (..) set_pgdir.
 
->  - And third the worst problem: Since one of the latest test series
->    kernels i'm unable to use modules:
->
->    For all modules i try i get unresolved symbols - for trivial functions:
->
->    bash-2.03# insmod ./loop.o
->    ./loop.o: unresolved symbol memset
->    ./loop.o: unresolved symbol int_control_R58a1efa3
->    ./loop.o: unresolved symbol __copy_tofrom_user_Re410a3dd
->    ./loop.o: unresolved symbol memcpy
->    ./loop.o: unresolved symbol strncpy_R328a05f1
+Cheers - Tony 'Nicoya' Mantler :)
 
-Can you please email me privately your .config file?  I will look into this.
 
 --
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Tony "Nicoya" Mantler - Renaissance Nerd Extraordinaire - nicoya@apia.dhs.org
+Winnipeg, Manitoba, Canada           --           http://nicoya.feline.pp.se/
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
