@@ -1,20 +1,27 @@
-Return-Path: <joakim.tjernlund@lumentis.se>
-Received: from dmz.lumentis.net (unknown [212.105.56.244])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 345CE2BDB5
+Return-Path: <afleming@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 0406C2BF0E
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 15 Jan 2005 06:51:50 +1100 (EST)
-From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
-To: "Tom Rini" <trini@kernel.crashing.org>
-Date: Fri, 14 Jan 2005 20:51:44 +0100
-Message-ID: <JPEALJAFNGDDLOPNDIEEEECGDAAA.joakim.tjernlund@lumentis.se>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-reply-to: <20050114180511.GC28724@smtp.west.cox.net>
-Cc: "Linuxppc-Embedded@Ozlabs. Org" <linuxppc-embedded@ozlabs.org>
-Subject: RE: [PATCH] Handle I-TLB Error and Miss separately on 8xx
+	Sat, 15 Jan 2005 08:00:43 +1100 (EST)
+In-Reply-To: <20050114145518.GA21418@wohnheim.fh-wedel.de>
+References: <FC6D9B81-5514-11D9-8D51-000393C30512@freescale.com>
+	<A3A281FF-5525-11D9-80ED-000393C30512@freescale.com>
+	<20050106070245.GA6539@gate.ebshome.net>
+	<61A37C72-659C-11D9-8D70-000393C30512@freescale.com>
+	<20050113212152.GA16041@gate.ebshome.net>
+	<20050113215808.GA15124@wohnheim.fh-wedel.de>
+	<20050114010016.GA16635@gate.ebshome.net>
+	<20050114145518.GA21418@wohnheim.fh-wedel.de>
+Mime-Version: 1.0 (Apple Message framework v619)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <4D217F72-666F-11D9-8D70-000393C30512@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+Date: Fri, 14 Jan 2005 15:00:20 -0600
+To: =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@wohnheim.fh-wedel.de>
+Cc: Netdev <netdev@oss.sgi.com>,
+	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Subject: Re: [RFC] Patch to Abstract Ethernet PHY support (using driver
+	model)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,26 +32,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> 
-> On Fri, Jan 14, 2005 at 06:56:58PM +0100, Joakim Tjernlund wrote:
-> > > > Your patch will fix this. 
-> > > > I havn't seen it go in yet, will you submit the patch to Linus/Marcelo?
-> > > 
-> > > I was hoping Marcelo would pick this up since I thought he was on the
-> > > list.  I'll re-poke him.  For 2.6, the app in question crashes
-> > > differently, prior to hitting this bug, but I do want to get it pushed
-> > > out.  I've just been swamped lately.
-> > 
-> > Is 2.6 on 8xx stable for you(except for this app)? I was under the impression that
-> > 2.6 was a bit flaky due to an unidentified MM bug.
-> 
-> No, I don't believe it's very stable (this wa the first chance I've had
-> in a while to fire up my rpxlite).
+>> In fact, we use different switch chips connected to PPC4xx directly.
+>> In this situation, in my NAPI IBM EMAC driver I just have special
+>> "PHY-less" case which is trivial "fixed settings" one. And all this
+>> PHY lib is completely unneeded bloat.
+>
+> Wrt. the proposed PHY lib, I agree.  Didn't even bother to look at the
+> code, it's mere size said enough.
 
-BTW, there is a simpler fix to the TLB Miss problem.
-In the TLB Miss handlers, just move the 2: label a few instr. upwards to
-the same line as the "li	r21, 0x00f0". That way you will force a 
-TLB error. You can do this for both Data and Instr. Miss handlers.
-The code after where the 2: label used to be can be deleted. 
+Hmm... Before I spend too much time revising based on previous comments 
+ebs made, is there a general consensus that the code is much too large? 
+  I know there's a lot in there, but the goal is to simplify PHY 
+management for all ethernet drivers, new and old, and thus reduce code 
+size, overall.  Is this code heading in the right direction?  Does it 
+do too much?  Too little?
 
- Jocke
+
+Andy Fleming
+Open Source Team
+Freescale Semiconductor, Inc
