@@ -1,64 +1,36 @@
-Message-ID: <20010304210838.2272.qmail@kunk.jriver.com>
-Subject: unregister netdevice problem in 2.4.x
-To: linuxppc-dev@lists.linuxppc.org
-Date: Sun, 4 Mar 2001 15:08:38 -0600 (CST)
-From: Robert E Brose II <bob@kunk.jriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Sun, 4 Mar 2001 17:30:17 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: sym53c875 in 2.4.2
+Message-ID: <20010304173017.A903@opus.bloom.county>
+References: <Pine.LNX.4.05.10103021932200.480-100000@callisto.of.borg> <20010303191920.A2396@opus.bloom.county>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20010303191920.A2396@opus.bloom.county>; from trini@kernel.crashing.org on Sat, Mar 03, 2001 at 07:19:20PM -0700
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I'm having a problem with rebooting the 2.4 kernels. As it going
-down, it gets all the way to the reboot then spits out the following:
+On Sat, Mar 03, 2001 at 07:19:20PM -0700, Tom Rini wrote:
+>
+> On Fri, Mar 02, 2001 at 07:51:21PM +0100, Geert Uytterhoeven wrote:
+>
+> > I just tried the current bk linuxppc_2_4 on my CHRP LongTrail with Sym53c875
+> > card. The Sym53c8xx driver fails downloading the SCSI scripts, and keeps trying
+> > ad infinitum.
+> >
+> > At first sight, the kernel seems to work when I disable the Sym53c8xx driver
+> > with `sym53c8xx=excl:0x1400'. It boots to a shell from the MESH.
+>
+> Er, the very current 2_4?  Paulus just commited some changes which boil down
+> to we have phys_to_bus (or so) and can use the stock driver.
 
-Please Standby While Rebooting the System.
-unregister_netdevice: waiting for ax3 to become free: usage count=24
-.
+And, the 2_4/2_5 merged tree i've got locally and will be pushing into 2_5
+shortly works w/ my 53c895 anyways (Booted and got 3 disks on 2 buses).
 
-Repeats the unregister message once evey 10 secs or so.
-Needless to say it never reboots. The usage count varies and
-seems fairly random.
-
-Now this kernel is using the ax25 driver and with the
-latest versions of ax25 tools and utils. The system normally
-has about 600 entries in the routing tables (it's a amprnet gateway).
-There are 2 ethernet interfaces, 4 ax25 interfaces, a tunnel
-interface and a ppp async interface.
-
-Here is the ax25 exit code...
-
-static void __exit ax25_exit(void)
-{
-        proc_net_remove("ax25_route");
-        proc_net_remove("ax25");
-        proc_net_remove("ax25_calls");
-        ax25_rt_free();
-        ax25_uid_free();
-        ax25_dev_free();
-
-        ax25_unregister_sysctl();
-        unregister_netdevice_notifier(&ax25_dev_notifier);
-
-        dev_remove_pack(&ax25_packet_type);
-
-        sock_unregister(PF_AX25);
-}
-
-and a comment from net/core/dev.c
-
- *              Andrew Morton   :       Make unregister_netdevice wait indefinitely on dev->refcnt
-
-
-I'm wondering if this is pointing to a deeper problem that I need
-to dig out instead of doing the easy hack.
-
-Any suggestions?
-
-Bob
 --
-Robert E. Brose II    N0QBJ
-http://www.jriver.com/~bob/
-bob@kunk.jriver.com
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
