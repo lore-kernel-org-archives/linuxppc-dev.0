@@ -1,26 +1,50 @@
-Date: Wed, 6 Jan 1999 17:01:33 +1100
-Message-Id: <199901060601.RAA00588@tango.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: tas@mindspring.com, linuxppc-dev@lists.linuxppc.org
-In-reply-to: <199901052239.JAA04790@tango.anu.edu.au> (message from Paul
-	Mackerras on Wed, 6 Jan 1999 09:39:13 +1100)
+Message-ID: <36932B99.20AE3AA4@mpifr-bonn.mpg.de>
+Date: Wed, 06 Jan 1999 10:23:37 +0100
+From: "Albrecht =?iso-8859-1?Q?Dre=DF?=" <ad@mpifr-bonn.mpg.de>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <bh40@calva.net>
+CC: LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: Strange PMAC IDE performance problem
-Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <v04011700b2b76717bf6b@[209.86.156.101]> <199901052239.JAA04790@tango.anu.edu.au>
+References: <19990105234815.008275@smtp.calvacom.fr>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I found a register at 0xf3020200 on my powermac G3 which affects the
-speed of disk transfers.  This is at offset 0x200 from the base
-address of the IDE interface and it is a 32-bit little-endian
-register.  After booting Linux, it has 0x2f8526 in it, but under MacOS
-it has 0x211025.  Putting 0x211025 in (with xmon) increased the speed
-reported by hdparm -tT /dev/hda from 1.89MB/s to 9.7MB/s !  The disk
-is a WDC 24300ACL (as reported by hdparm -i /dev/hda).  The other
-hdparm settings were -d1 -u1 -m16.
+Benjamin Herrenschmidt wrote:
+[snip]
+> Is there some common denominator with all those problems ? For example, I
+> never connect anything to my PowerBook's MESH. Did the people with the
+> problem have something connected to it ? never ? always ? both ? Maybe we
+> could collect the disk models to see if the seem to be related. Also, are
+> the problem similar when booting with OF and BootX or are there any
+> differences ?
 
-Paul.
+I use the latest test kernel form your web page (2.1.130 with patches; btw. the
+trackpad patch is REALLY great!!) and boot with BootX 1.0.1. Bogus interrupts
+appear both with nothing attached to external SCSI and with a tape drive. I get
+very few bogus irq's from via_pmu_interrupt (c01d43fc, c01d4410) and LOTS from
+do_IRQ (c0005518) in both cases. According to /proc/interrupts, doing a dd of
+200 MBytes form /dev/zero to the internal hd resulted in 31 bad irq's from
+do_IRQ (and a transfer rate of 1.71 MB/s).
+
+Some time ago I compiled a 2.1.130 kernel WITHOUT SCSI/MESH SUPPORT (also booted
+via BootX), but got exactly the same results as with the "normal" kernels.
+
+Yours, Albrecht.
+
+-- 
++-----------------------------------------------------------------------------+
+| Dr.-Ing. Albrecht Dre\3                                      ----           |
+| Max-Planck-Institut f"ur Radioastronomie    |\       /      /o  o\          |
+| Technische Abt. Optische Interferometrie    |  \    /      |  /   |         |
+| Auf dem H"ugel 69                           |    \ |        \ ---/          |
+| D-53121 Bonn (Germany)          ------------+------+-------------------     |
+|                                             |    / |                        |
+| Phone (+49) 228 525 319                     |  /  /                         |
+| Fax   (+49) 228 525 411                     |/   /                          |
+| Mail  ad@mpifr-bonn.mpg.de                                                  |
++-------------- electrical engineers do it with less resistance --------------+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
