@@ -1,38 +1,48 @@
-Date: Thu, 30 Mar 2000 14:24:10 +0200
-From: Olaf Hering <olh@suse.de>
-To: Tim Wojtulewicz <Tim.Wojtulewicz@NAU.EDU>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: LinuxPPC and Pismo Powerbook
-Message-ID: <20000330142410.A29754@suse.de>
-Reply-To: linuxppc-dev@lists.linuxppc.org
-References: <200003291920.LAA08359@shell1.ncal.verio.com> <20000329183654.D27338@plato.localdomain.local> <38E2DE84.72E7297A@dana.ucc.nau.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <38E2DE84.72E7297A@dana.ucc.nau.edu>
+Message-ID: <20000330135042.892.qmail@web1205.mail.yahoo.com>
+Date: Thu, 30 Mar 2000 15:50:42 +0200 (CEST)
+From: Indra Gunawan Harijono <indragho1@yahoo.de>
+Subject: Problem: Hangs on pthread_allocate_stack during pthread_create
+To: linuxppc-dev@lists.linuxppc.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Mar 29, Tim Wojtulewicz wrote:
+Hi,
 
->
-> So I take it from this lengthy discussion that there is no concrete list of
-> steps to install LinuxPPC on a Pismo Powerbook.  If there is one, could
-> someone post it, since my brand spankin new pb is arriving Friday :-).
-> Thanks.
+Did someone have the problem, that pthread_create
+hangs on function pthread_allocate_stack (exacly in
+memset(new_thread,'\0'sizeof(*new_thread)) ?? this
+happens without running with gdb etc, I just compiled
+the programs under Examples and run them on the MPC86
+board.
 
-Just create four partitions, one for MacOS, one small for Linux Boot in
-HFS (32MB), one Linux Swap 128MB, one for Linux.
-Then reinstall MacOS and play with it until the new install instructions
-arrive at www.suse.com/ppc.
+memset itself seems to work corrently (uses
+glib-2.1.3/sysdep/powerpc/memset.S).
+
+Unfortunately I do not have gdb on the board.
+
+Following is the configuration, I uses:
+Glibc-2.1.3,
+powerpc running under MPC860,
+gcc-2.95.2,
+
+that I cross compiled under intel PC.
 
 
-Gruss Olaf
+Can someone point me the sites how to build the gdb
+for the board using the cross compiler?
 
---
- $ man 1 current_release
 
-BUGS
-       Users never read manuals...
+I will appreciate, if one can give me hints or infos.
+
+Thank you.
+
+
+indra
+
+Gesendet von Yahoo! Mail - http://mail.yahoo.de
+Yahoo! Mail auf Ihrem Handy? - http://mobil.yahoo.de
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
