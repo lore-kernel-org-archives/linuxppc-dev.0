@@ -1,40 +1,47 @@
-Message-ID: <3B97984C.CCE09FE7@mvista.com>
-Date: Thu, 06 Sep 2001 10:37:48 -0500
+Message-ID: <3B9799AB.58924366@mvista.com>
+Date: Thu, 06 Sep 2001 10:43:39 -0500
 From: Mark Hatle <fray@mvista.com>
 MIME-Version: 1.0
-To: Navin Boppuri <navin.boppuri@newisys.com>
-Cc: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Ctrl-C does not work
-References: <3A494DE356A49A40B37442E1E0D9F3B506343E@ptah.ad.newisys.com>
+To: Bryan Rittmeyer <bryan@ixiacom.com>
+Cc: linuxppc-embedded@lists.linuxppc.org, dan@mvista.com
+Subject: Re: pthread support in ppc405 gdb
+References: <3B96BA46.6040604@ixiacom.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Navin Boppuri wrote:
+Bryan Rittmeyer wrote:
 >
-> Hello everyone,
+> Hi,
 >
-> Ctrl-C does on work on my serial console when I use the sample file
-> system from Hardhat 1.0 toolkit. It , however, works with the Hardhat
-> 1.2 toolkit sample file system. I am using the same kernel to test both
-> the file systems. What could be different between these two file
-> systems?
+> * gdb 5.0
+>    gdb 5.0 included with HHL 2.0 does not support
+>    debugging multi-threaded (pthread) applications.
 >
-> Thank you,
-> Navin
+> What are the problem areas that prevent gdb 5.0 from debugging
+> threaded applications on the ppc405? Is anyone on the
+> list or within MontaVista willing to work with me to fix
+> threading support in gdb?
+>
+> We are willing to do whatever it takes to get x86-workstation-quality
+> gdb on the embedded ppc405 (and, tangentially, the sh4).
 
-Actually control-c should _NOT_ be working on Cross Dev Kit 1.0, or
-1.2.  If it does work in one you are lucky.  There is a problem with the
-way the serial consoles are started on CDK 1.0 and 1.2, it was left up
-to the serial driver to turn on or off the control-c activation.
+The problem is that gdb 5.0 does not have thread support.  This is not
+something that is "easily" added to 5.0.  The gdb 5.1 coming out (from
+my understanding, I'm not working specifically on gdb, so if I am wrong
+I appologize in advance) does have thread support.  From my
+understanding it is a pretty significant change.  We have gdb 5.1
+testing in house on a few platforms, but I'm not sure about 405.
 
-Under HHL 2.0, this problem has been resolved by using getty and login
-to start a serial connection.  login has a patch that ensures that the
-control-c stuff is enabled.
+AFAIK "real" gdb 5.0 on x86 also does not have thread support.  RedHat
+or another distro vendor may have grafted x86 thread support in, or it
+may partially work... but gdb 5.1 will be the first gdb version to be
+released with thread support.
 
-I would highly recommend that you move forward to HHL 2.0 if you can, it
-has a lot of these minor annoyances fixed.
+If you have a MontaVista support contract, contact us.  Otherwise, I
+don't believe we are planning on releasing the gdb 5.1 work we have done
+so far until our next release.
 
 --Mark Hatle
 MontaVista Software, Inc.
