@@ -1,9 +1,9 @@
-Message-ID: <20000306120817.16546.qmail@web118.yahoomail.com>
-Date: Mon, 6 Mar 2000 04:08:17 -0800 (PST)
-From: Salvador Fandino <sfandino@yahoo.com>
-Subject: Recommend me a PPC single board computer
-To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <38C3A7DE.E6E4FB40@ocegr.fr>
+Date: Mon, 06 Mar 2000 13:43:10 +0100
+From: Zirong WANG <zirong.wang@ocegr.fr>
 MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: IDE disk problem with MTX 603
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
@@ -11,35 +11,31 @@ List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 Hi everybody,
 
+I am trying hardly to make work my ide disk on my MTX 603 machine,
+---> without success.
 
-I'm thinking about buying a PPC single board computer
-to play with it, just for fun.
+I have installed 2.2.10 on my MTX 603 on a SCSI disk. I compiled
+the kernel with ide support enabled and reboot with PPCBug
 
-I have been looking at motorola website but really I
-get lost and can not imagine which board is the better
-for me so could you give me some advice?
+What I get during the boot time is something like:
 
-I want to run Linux on it and although I'm ready to
-hack around a bit I don't own a lab so I need a board
-easy to setup without special hardware.
-
-Some things I will like to do are:
-  - connecting a CD-ROM or a DVD
-  - playing with sound so some A/D and D/A converters
-will be good
-  - networking via ethernet 10Mb (or at least a serial
-port)
-  - controlling it with an infrared device
-  - and maybe some video output
-
-Oh, and I have a limited budget so it should be
-cheap...
-
-Can somebody help me?
+  IDE timing: 00000909, resetting to PIO0 timing
+  IDE control/status register: 00ff0091
+  hda: Conner Peripherals 1275MB - CFS1276A, ATA DISK drive
+  ide0: Disabled unable to get IRQ 16.
+  hda: ERROR, PORTS ALREADY IN USE
 
 
-Thank you
+By the way, when using kernel 2.2.14, the IDE disk detection seems to
+go further, but the scsi disk detection enters a infinite
+timeout/reset loop.
 
-- Salvador Fandiño
+So I am stuck,
+
+any suggestion?
+
+Thanks
+---------------------------------------------------------------------
+Zirong WANG  Oce Industries  1, rue Jean Lemoine 94015 Creteil France
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
