@@ -1,33 +1,32 @@
-Date: Thu, 20 Feb 2003 12:36:11 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Kent Borg <kentborg@borg.org>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Bringing up Motorola MGT5100
-Message-ID: <20030220193611.GB24845@ip68-0-152-218.tc.ph.cox.net>
-References: <20030220142703.A24949@borg.org>
+From: Cort Dougan <cort@fsmlabs.com>
+Date: Thu, 20 Feb 2003 12:40:29 -0700
+To: Paul Mackerras <paulus@samba.org>
+Cc: brian.auld@adic.com, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: PowerMac vs. Intel for PowerPC Development Host
+Message-ID: <20030220194029.GB9782@host109.fsmlabs.com>
+References: <995FF289C9D69747A09E42992644595405B23678@penguin.adic.com> <20030220010112.GB22880@f00f.org> <15956.11756.925757.532452@argo.ozlabs.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20030220142703.A24949@borg.org>
+In-Reply-To: <15956.11756.925757.532452@argo.ozlabs.ibm.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Feb 20, 2003 at 02:27:03PM -0500, Kent Borg wrote:
+A $600 Dell 1.8GHz builds the 2_4_devel 440 kernel in 2m 45s.  That's just
+great for our users.  The x86's are getting cheaper and faster, too.
 
-> I am working on bringing up Linux on a Motorola MGT5100 board.  It's
-> core is roughly a 603e, with lots of other devices on the chip.
->
-> I am using an Abatron and have a question about really early boot.
-> When the MMU is first turned and we are executing at 0xC-bazillion the
-> Abatron can't read the contents of those addresses.  Is this a dark
-> time when the Abatron isn't expected to be able to read that memory,
-> or do I have the MMU or Abatron set up wrong?  (I can single step and
-> put hardware breakpoints up there.)
+However, we do use the native builds for some whacky packages (like X) that
+are never going to cross-build properly.
 
-Bad config.  Can you post it please?
-
---
-Tom Rini
-http://gate.crashing.org/~trini/
+} As an actual data point: my measurements show that a dual 1GHz G4
+} powermac is more than twice as fast at compiling PPC kernels as a
+} 1.7GHz P4 (single cpu).
+}
+} You can't fairly compare compiling a PPC kernel on a PPC box with
+} compiling an x86 kernel on an x86 box.  GCC does more work compiling
+} for PPC than for x86.
+}
+} Paul.
+}
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
