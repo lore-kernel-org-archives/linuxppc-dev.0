@@ -1,41 +1,45 @@
-To: "David Woodhouse" <dwmw2@infradead.org>
-Cc: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: gdb and NPTL
-References: <1089072675.4636.1137.camel@imladris.demon.co.uk>
-From: "Linh Dang" <linhd@nortelnetworks.com>
-Date: Mon, 05 Jul 2004 23:06:28 -0400
-In-Reply-To: <1089072675.4636.1137.camel@imladris.demon.co.uk> (David
- Woodhouse's message of "Mon, 5 Jul 2004 20:11:15 -0400")
-Message-ID: <wn5y8lxltqj.fsf@linhd-2.ca.nortel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: MPC7455 DMA buffer strangeness
+From: Adrian Cox <adrian@humboldt.co.uk>
+To: okorpil@fh-landshut.de
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <Pine.LNX.4.58.0407051018590.388@corpster2>
+References: <Pine.LNX.4.58.0407051018590.388@corpster2>
+Content-Type: text/plain
+Message-Id: <1089102844.937.57.camel@localhost>
+Mime-Version: 1.0
+Date: Tue, 06 Jul 2004 09:34:04 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On 5 Jul 2004, dwmw2@infradead.org wrote:
-
-> On Mon, 2004-07-05 at 11:10 -0400, Linh Dang wrote:
->> We're migrating out target (proprietary ppc-7447/discovery based
->> board) from VxWorks to 2.6.7 and NPTL. Building/running
->> multi-threaded applications is fine but gdb (6.1,6.1.1,cvs) doesn't
->> work.
+On Mon, 2004-07-05 at 09:31, Oliver Korpilla wrote:
+> I'm mapping a DMA buffer allocated with pci_alloc_consistent() into user
+> space with a mmap hook like this:
 >
-> You are saying this in reply to Stefan's mail about a hardware
-> lockup.
+> int vme_mmap(struct file *file_ptr, struct vm_area_struct *vma)
+> {
+>         DPRINTF("Attempting to map %#lx bytes of memory at "
+>                 "physical address %#lx\n", vma->vm_end - vma->vm_start,
+>                 vma->vm_pgoff << PAGE_SHIFT);
 >
-> Please could you elaborate on why you think they're related.
+>         vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
 
-I must have pressed the wrong key ('f' instead of 'a'). I'd like to
-apologize if I offended/annoyed anyone on the list.
+The memory allocated by pci_alloc_consistent will be cacheable memory,
+as PowerPC 60x is a cache coherent architecture. You've set up a
+non-cacheable userspace mapping to the same address by using
+pgprot_noncached(). Two mappings of the same physical memory must have
+the same cache settings.
 
-I'd like to re-ask my question thought. Anyone managed to get
-gdbserver work with NPTL?
+> On the MPC7455, though, write accesses seem to be applied or not applied
+> in a somewhat random fashion. Sometimes an offsetted write into the buffer
+> is there, and sometimes not. Writing at the begin of the buffer seems to
+> disapper always.
 
-Thanx
+This probably only shows on the 7455 because the caches of the 7455 are
+much larger.
 
---
-Linh Dang
+- Adrian Cox
+Humboldt Solutions Ltd.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
