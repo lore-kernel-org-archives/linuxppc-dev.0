@@ -1,83 +1,78 @@
-Message-ID: <3FD83398.3020000@bluewin.ch>
-Date: Thu, 11 Dec 2003 10:06:32 +0100
-From: Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch>
-MIME-Version: 1.0
-To: Matt Porter <mporter@kernel.crashing.org>
+To: ARIBAUD Albert <a.aribaud@giat-industries.fr>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 405 TLB miss reduction
-References: <3FBD5348000912F8@mssbzhh-int.msg.bluewin.ch> <20031210090327.A18009@home.com>
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: Lost+Found directory (was: self image) 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 11 Dec 2003 08:59:29 +0100."
+             <158EF4B20EA8C84D9DC71A55216D2E1C066C5C@csy-exchange1.giat.intra>
+Date: Thu, 11 Dec 2003 10:22:40 +0100
+Message-Id: <20031211092245.BDD07C5F5F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On 12/10/2003 05:03 PM Matt Porter wrote:
-> On Wed, Dec 10, 2003 at 03:43:41PM +0100, Wolfgang Grandegger wrote:
->>
->> Hello,
->>
->> we are suffering from TLB misses on a 405GP processor, eating up to
->> 10% of the CPU power when running our (rather big) application. We
->> can regain a few percent by using the kernel option CONFIG_PIN_TLB
->> but we are thinking about further kernel modifications to reduce
->> TLB misses. What comes into my mind is:
->>
->>  - using a kernel PAGE_SIZE of 8KB (instead of 4KB).
->>  - using large-page TLB entries.
->>
->> Has anybody already investigated the effort or benefit of such
->> changes or knows about other (simple) measures (apart from
->> replacing the hardware)?
+In message <158EF4B20EA8C84D9DC71A55216D2E1C066C5C@csy-exchange1.giat.intra> you wrote:
 >
-> David Gibson and Paul M. implemented large TLB kernel lowmem
-> support in 2.5/2.6 for 405.  It allows for large TLB entries
-> to be loaded on kernel lowmem TLB misses.  This is better than
-> the CONFIG_PIN_TLB since it works for all of your kernel lowmem
-> system memory rather than the fixed amount of memory that
-> CONFIG_PIN_TLB covers.
+> > Your new filesystem is twice as big as the old one, so it  will  have
+> > more inode blocks etc. Also, you may notice that our filesystem image
+> > does not contain the (rather large) lost+found firectory.
+>
+> How come the lost+found directory is large, or even has a single entry
+> to begin with? I thought it was used by fsck to collect file data lost
+> due to file system corruption over time; so in a freshly built embedded
+> image, there shouldn't be any of that. Did I miss something?
 
-Ah, I will have a look to 2.5/2.6. Is there a backport for 2.4?
+When the filesystem is created (by mke2fs) special care is  taken  to
+create a big directory that allows for many entries to be reconnected
+without  need  to  grow  the directory which could be dangerous on an
+already corrupted filesystem. Have a look:
 
-> I've been thinking about enabling a variant of Andi Kleen's patch
-> to allow modules to be loaded into kernel lowmem space instead of
-> vmalloc space (to avoid the performance penalty of modular drivers).
-> This takes advantage of the large kernel lowmem 405 support above
-> and on 440 all kernel lowmem is in a pinned tlb for architectural
-> reasons.
+	# ls -l
+	total 12
+	drwx------    2 root     root        12288 Dec 11 10:14 lost+found
+	# df .
+	Filesystem           1K-blocks      Used Available Use% Mounted on
+	/tmp/rd                  63461        13     63448   1% /mnt/tmp
+	# rmdir lost+found/
+	# df .
+	Filesystem           1K-blocks      Used Available Use% Mounted on
+	/tmp/rd                  63461         1     63460   1% /mnt/tmp
 
-Is this patch available somewhere? It would be interesting to measure
-the improvement for our application.
+As you can see the "lost+found"  as  created  by  the  "mke2fs"  tool
+occupies 12kB of filesystem space which get freed when you remove the
+directory.
 
-> I've also been thinking about dynamically using large TLB/PTE mappings
-> for ioremap on 405/440.
+	# mkdir lost+found
+	# ls -l
+	total 1
+	drwxr-xr-x    2 root     root         1024 Dec 11 10:15 lost+found
+	# df .
+	Filesystem           1K-blocks      Used Available Use% Mounted on
+	/tmp/rd                  63461         2     63459   1% /mnt/tmp
 
-OK, I expect not so much benefit from this measure but it depends on the
-application, of course.
+If you manually create a directory it will occupy only 1 kB instead.
 
-> In 2.6, there is hugetlb userspace infrastructure that could be enabled
-> for the large page sizes on 4xx.
+In older times you used to run something like
+	for i in 0 1 2 3 4 5 6 7 8 9 ; do
+	  for j in 0 1 2 3 4 5 6 7 8 9 ; do
+	    for k in 0 1 2 3 4 5 6 7 8 9 ; do
+	      touch lost+found/${i}${j}${k}
+	done ; done ; done
+	rm -f lost+found/*
 
-But this sounds more promising. Same questing as above. Is there a
-backport for 2.4?
+to "blow up" the lost+found/ directory to allow  for  a  sufficiently
+large   number   of   directory   entries.  Today  mke2fs  does  this
+automagically (and people forget why it needs to be done).
 
-> Allowing a compile time choice of default page size would also be useful.
+Best regards,
 
-Increasing the page size from 4 to 8 kB should, in theory, halve the
-page misses (if no large TLB pages are used). Unfortunately, increasing
-the page size seem not straight forward as it's statically used in
-various places and maybe the GLIBC needs to be rebuild as well.
+Wolfgang Denk
 
-> Basically, all of these cases can provide a performance advantage
-> depending on your embedded application...it all depends on what your
-> application is doing.
-
-Of course, and tweaking the kernel for a dedicated application might not
-been worth the effort. Anyhow, I have now a better idea what else can be
-done.
-
-Thanks.
-
-Wolfgang.
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Why can you only have two doors on a chicken coop? If it had four  it
+would be a chicken sedan.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
