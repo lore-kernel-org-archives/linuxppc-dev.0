@@ -1,61 +1,45 @@
-Message-ID: <41EDEC3C1B88D51186EB00A0C9CFADF702FA6F@AMWMAIL>
-From: Cindy Peters <cinpet@adaptivemicro.com>
-To: "'Peter Desnoyers'" <pdesnoyers@chinook.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Problem during decompressing kernel routine
-Date: Mon, 10 Sep 2001 10:08:48 -0500
+Message-ID: <3B9CD8F1.D0BE6F61@mvista.com>
+Date: Mon, 10 Sep 2001 08:14:57 -0700
+From: Cal Erickson <cal_erickson@mvista.com>
+Reply-To: cal_erickson@mvista.com
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Anthony Tsui <Tsui_Anthony@hotmail.com>,
+	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Can hhl2.0 run on Redhat 7.1?
+References: <OE54iDd9D9DQVXwR1IM000013fe@hotmail.com> <20010910075048.A11013@cpe-24-221-152-185.az.sprintbbd.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I did add some print statements and it gets to the inflate() routine and
-does not return. I forgot to mention this. I printed the parameters for the
-inflate routine and they seem to be correct.
-
-	s.next_in =   0020533A
-	s.avail_in =  0007224A
-	s.next_out =  00000000
-	s.avail_out = 00400000
+All,
+An easier solution is to change the redhat-release file in /etc
+to read 7.0. Then do the install and change the file back.
+Cal
 
 
-Wolfgang wrote:
->Somewhere in the last version of the Linux kernel  they  changed  the
->clock from MHz to Hz. Check you version of the source, and modify the
->value passed in the bd_info structure as needed.
+Tom Rini wrote:
 
-I checked it and the value was correct.
-
-Thanks,
-
-Cindy Peters
-
------Original Message-----
-From: Peter Desnoyers [mailto:pdesnoyers@chinook.com]
-Sent: Monday, September 10, 2001 9:53 AM
-To: Cindy Peters
-Subject: Re: Problem during decompressing kernel routine
-
-
-You could try debugging with printouts in the decompression routine.  In
-arch/ppc/boot/mbx/misc.c, decompress_kernel() you'll find the following
-lines:
-
-        puts("\nUncompressing Linux...");
-
-        gunzip(0, 0x400000, zimage_start, &zimage_size);
-        puts("done.\n");
-        puts("Now booting the kernel\n");
-
-You're clearly going off into the weeds on the second line, and puts()
-is working so you can use it to debug.
+> On Mon, Sep 10, 2001 at 03:31:34AM +0200, Anthony Tsui wrote:
+>
+> >    Can hhl2.0 run on Redhat 7.1?
+>
+> Yes, but it's not supported.  Read the hhl-host-install script and look for
+> the bits which make sure it doesn't install on RH7.1
+>
+> --
+> Tom Rini (TR1265)
+> http://gate.crashing.org/~trini/
+>
 
 --
-.....................................................................
- Peter Desnoyers            (781) 457-1165   pdesnoyers@chinook.com
- Chinook Communications     (617) 661-1979   pjd@fred.cambridge.ma.us
- 100 Hayden Ave, Lexington MA 02421
+===========================================================================
+Cal Erickson                 MontaVista Software Inc.
+Linux Consultant             1237 E. Arques Ave.
+Phone (408) 328-0304         Sunnyvale CA 94085
+Fax   (408) 328-9204         web http://www.mvista.com
+===========================================================================
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
