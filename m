@@ -1,42 +1,42 @@
-Date: Wed, 17 Mar 1999 11:34:15 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Jes Sorensen <Jes.Sorensen@cern.ch>
-cc: Jeff Rugen <jrugen@primenet.com>,
-        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>,
-        Linux Framebuffer List <linux-fbdev@vuser.vu.union.edu>
-Subject: Re: [linux-fbdev] Xbh X server/adding acceleration to XF68_FBDev
-In-Reply-To: <d3oglscuxs.fsf@valhall.cern.ch>
-Message-ID: <Pine.LNX.4.03.9903171133050.8496-100000@mercator.cs.kuleuven.ac.be>
+Date: Wed, 17 Mar 1999 11:48:03 +0000 (/etc/localtime)
+From: Tim Carroll <tim@radcom.org>
+Reply-To: Tim Carroll <tim@radcom.org>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: clock/bogomips in cpuinfo
+In-Reply-To: <199903170559.XAA28720@lists.linuxppc.org>
+Message-ID: <Pine.LNX.3.96.990317111511.1153C-100000@radcom.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 17 Mar 1999, Jes Sorensen wrote:
-> >>>>> "Jeff" == Jeff Rugen <jrugen@primenet.com> writes:
-> Jeff> Now, the reason I included the Framebuffer list is I was
-> Jeff> interested in adding acceleration for the clgen framebuffer in
-> Jeff> the XF68_FBDev server.  What source should I use as a starting
-> Jeff> point?  (I have the 3.3.3 server-only source right now).  I'll
-> Jeff> also use that as an excuse to verify that 32-bit modes really
-> Jeff> work with clgenfb.  Thanks.
-> 
-> Use the Cirrus Logic accel code from the SVGA server, basically the
-> long term goal is to merge the FBDev and SVGA servers.
-
-More or less: the long term goal is to merge XF{68,86}_FBDev with XFree86, the
-single server binary in XFree86 4.0. Unfortunately there's quite some
-difference between XF86_SVGA 3.3.3.1 and XFree86 3.9x.
 
 Greetings,
 
-						Geert
+I just received a long-awaited CPU upgrade for my 9500. 
 
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
+It's the MacTell PowerJolt 400mHz/200mHz bus with 1024K cache.
+
+It works great and on the first try with Paul M's stock 2.2.1 kernel, but
+a peek at /proc/cpuinfo tells me clock : 195MHZ and bogomips : 403.87. 
+
+I'm a curious of what these terms might mean in this context and if it
+would be possible to effectively adjust these as settings somewhere. 
+
+Otherwise I would appreciate any pointers to discussions of the dynamics
+of G3 upgrade configuration or terminology, if these exist.
+
+Thank you,
+
+Tim Carroll
+
+
+
+
+
+
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
