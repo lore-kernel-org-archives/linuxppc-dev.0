@@ -1,44 +1,28 @@
-Message-ID: <3D234DA8.E18192F4@wvi.com>
-Date: Wed, 03 Jul 2002 12:16:56 -0700
-From: Jim Potter <jrp@wvi.com>
-Reply-To: jrp@wvi.com
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Kernel panics running from ramdisk
-Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
+Date: Wed, 3 Jul 2002 16:42:15 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: duey <jduey@ccc-dcs.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Walnut config in kernel tree
+Message-ID: <20020703234215.GB697@opus.bloom.county>
+References: <20020704001909.69DBF38D22@server.weathercom.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20020704001909.69DBF38D22@server.weathercom.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I'm building a ramdisk image for use with my embedded SMP ppc system,
-and I'm getting pernicious reoccurring (although seemingly random)
-kernel panics:
+On Wed, Jul 03, 2002 at 06:01:45PM +0000, duey wrote:
 
-    Kernel panic: Attempted to kill init!
-     <0>Rebooting in 180 seconds..
+> Has the make target to config the kernel tree for the walnut board changed?
+> I just cloned the latest tree from the mvista mirror and when I did a 'make
+> walnut_config' I got a 'no rule to make target' error message.
 
-Sometimes the panics occur when typing the first command, sometimes
-several minutes into the session.
-
-My goal is to assemble a flash-based ramdisk image that is a bit more
-full-featured than the minimal ones available in various places.  After
-copying and stripping various libraries and binaries from a recent YDL
-install I've got one that gzips down to around 3meg, and after running
-ldd on everything it looks like the libraries are in all the right
-places (/lib & /usr/lib).  I'm passing "init=/bin/sh" to the kernel.
-
-Has anyone found a cause for the "Attempted to kill init" panic that
-doesn't involve mis-placed (or missing) libraries?  According to ldd
-I've got the libraries sorted out.  Thanks, all.
+Did you do a 'bk -r get -q' first?  I'm not sure if the target will work
+if arch/ppc/configs/<name>_defconfig isn't checked out.
 
 --
-Sincerely,
-
-Jim Potter
-45th Parallel Processing
-
- Those that would give up a necessary freedom for
-  temporary safety deserve neither freedom nor safety.
-    -- Ben Franklin
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
