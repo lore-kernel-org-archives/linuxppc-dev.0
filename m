@@ -1,23 +1,16 @@
 From: Marco Schramel <Schramel.Linux@go.bartec.de>
-To: Wolfgang Denk <wd@denx.de>
-Subject: Zusatz zuRe: insmod trouble
-Date: Tue, 25 May 2004 13:30:03 +0200
-Cc: "PPC_LINUX" <linuxppc-embedded@lists.linuxppc.org>
-References: <20040525095554.A5EC4C109F@atlas.denx.de>
-In-Reply-To: <20040525095554.A5EC4C109F@atlas.denx.de>
+To: "PPC_LINUX" <linuxppc-embedded@lists.linuxppc.org>
+Subject: last thread
+Date: Tue, 25 May 2004 13:34:19 +0200
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200405251330.03231.Schramel.Linux@go.bartec.de>
+  charset="us-ascii"
+Message-Id: <200405251334.19131.Schramel.Linux@go.bartec.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Ich habe noch vergessen, Ihnen meine Compileroptionen zu sagen,
-"ppc_82xx-gcc -I /home/marco/linux-2.4.26/include -D __KERNEL__ -D MODULE -c Demodriver.c"
-Ohne Warnungen mit ELDK 3.0
-Gruﬂ
-Marco
+sorry for the mail i sent before .....
 
 
 --
