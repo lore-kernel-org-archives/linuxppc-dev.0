@@ -1,37 +1,34 @@
+Date: Fri, 26 Oct 2001 05:06:20 -0700
+From: Matt Porter <mmporter@home.com>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: [PATCH] Lots of changes to PReP booting
+Message-ID: <20011026050620.A14881@cx258813-a.chnd1.az.home.com>
+References: <20011025175915.A6439@cpe-24-221-152-185.az.sprintbbd.net>
 Mime-Version: 1.0
-Message-Id: <p05100301b7fea82467e1@[207.172.166.94]>
-In-Reply-To: <20011025100904.D29107@cpe-24-221-152-185.az.sprintbbd.net>
-References: <p04330100b7f7f805ef9a@[24.163.33.28]>
- <20011025.233136.74750056.tkoba@ike-dyn.ritsumei.ac.jp>
- <20011025083032.A29107@cpe-24-221-152-185.az.sprintbbd.net>
- <200110251653.f9PGrRd19727@pacific.somerset.sps.mot.com>
- <20011025100904.D29107@cpe-24-221-152-185.az.sprintbbd.net>
-Date: Thu, 25 Oct 2001 22:44:08 -0700
-To: linuxppc-dev@lists.linuxppc.org
-From: Erik van Roode <linuxppc@cthulhu.demon.nl>
-Subject: Re: 2.4.13-pre5 crash when mounting proc
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20011025175915.A6439@cpe-24-221-152-185.az.sprintbbd.net>; from trini@kernel.crashing.org on Thu, Oct 25, 2001 at 05:59:15PM -0700
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 10:09 -0700 10/25/01, Tom Rini wrote:
->On Thu, Oct 25, 2001 at 11:53:27AM -0500, Edward Swarthout wrote:
->>  Tom wrote:
->>  >
->>  > Um.  Is that _all_ that changed?  That really shouldn't have any effect
->>  > at all...  What compiler/binutils combo is this?
->>
->>  Well it's important for the COPY_16_BYTES_EXCODE macro to switch back to
->>  the .text section or any following code will go in the __ex_table section!
+On Thu, Oct 25, 2001 at 05:59:15PM -0700, Tom Rini wrote:
 >
->Well now I feel stupid...  This should be fixed now.
+> Hey all.  Can people _please_ go and test this (disk and net if
+> possible) and tell me if their machine still works?  The following
+> changes have been made:
+> 1) On 'znetboot' and 'znetboot.initrd', no longer give mkprep the -pbp
+> option.  This allows my PowerStack (PPCBUG) to netboot successfully.
+> This _hopefully_ won't break anyone else tho.
 
-   I updated my copy of the bk:linuxppc_2_4 tree to
-2.4.14-pre1 and it boots properly again on my G4.
-
-Erik
+Why?  You wanted to netboot from PPCBUG with PReP Network Boot disabled?
+My PowerStack's have been booting fine with the -pbp'ed image (one
+with the PReP header intact).  We've been doing it this way for years
+now.
 
 --
+Matt Porter
+mmporter@home.com
+This is Linux Country. On a quiet night, you can hear Windows reboot.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
