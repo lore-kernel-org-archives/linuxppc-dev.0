@@ -1,37 +1,28 @@
-Message-ID: <42AB6BE23C29D511831E0002B3202488199A86@messenger.radlan.co.il>
-From: Ofer Rashuk <OferR@Radlan.co.il>
-To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: signals from interrupt
-Date: Sun, 23 Dec 2001 09:18:47 +0200
+Message-ID: <3C263AB9.1040105@embeddededge.com>
+Date: Sun, 23 Dec 2001 15:12:41 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="windows-1255"
+To: LEROY Christophe <christophe.leroy@c-s.fr>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Kernel BOOT (kernel 2.4.16)
+References: <7746B3AB173A.AAA45B0@hermes17.si.c-s.fr>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am running MontaVista hardhat 2.4.2. linux kernel on a MPC8240 cpu with
-a pci bus,NVRAM device ,64M ram and 32M rom (flash).
-basically my application is running very well i have created all the threads
-i needed and all other initialization are almost done.
-the last problem i have regards interrupts.
-on my target i have a dual UART 16550 device, one of it's ports used by the
-kernel (kprintf,etc...) the other port i need to use for my own application.
-in order to use it i need to receive an interrupt (mean RX interrupt), now
-since there are no interrupts available out side of the kernel i thought of
-using signals.
-what i wanted to do is to get the interrupt with in the kernel and to send a
-signal to the application, the problem is that every method i tried to
-implement that did not succeed, can any body help me dealing with this
-issue.
-
-thanks in advance.
+LEROY Christophe wrote:
 
 
+> I'm sure that it come here because when I add a call to m8xx_restart() just
+> before the panic() call in mem_pieces_find(), the board restarts
+
+Then something is wrong with the way your bootloader is telling the
+kernel how much memory exists, although mapin_ram() should have
+failed before you attempted any io mapping.
 
 
-Ofer Rashuk-Rosenthal.
-mailto:oferr@radlan.com
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
