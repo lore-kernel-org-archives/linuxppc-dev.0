@@ -1,48 +1,40 @@
-Message-ID: <001a01c1e2cf$a36e3160$6401a8c0@attbi.com>
-Reply-To: "Greg Griffes" <ggg@ieee.org>
-From: "Greg Griffes" <ggg@ieee.org>
-To: "Krzysztof Jankowski" <kjankow@poczta.onet.pl>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <3CB6B3D7.8030007@poczta.onet.pl>
-Subject: Re: early stage boot progress indication
-Date: Sat, 13 Apr 2002 05:43:16 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Subject: Virtex II Pro/405GP
+From: James Campbell <jcampbell@omnigon.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Content-Type: text/plain
+Date: 13 Apr 2002 11:25:34 -0700
+Message-Id: <1018722334.3710.3.camel@skoll.omnigon.com>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Krzysztof ,
+Hello,
 
-> I know that at this stage kernel's addresses were remapped
-> from 0x0000xxxx to 0xc000xxxx (am I right?) due MMU being enabled by
+Does anyone have any experiance with the new Xilinx Virtex II Pro chip?
+It is a million+ gate FPGA device with embedded 405GP cores on the die.
 
-Yes, you are right.
+We've recently consolidated our MPC8260 and Virtex II fpgas into this
+single chip, and I'm curious about getting linux up on it.
 
-> 'turn_on_mmu'. So I remapped UART's memory space by 'io_block_mapping' - but
-this
-> didn't help.
+I know the dev kit comes with GNU software, but I was just curious if
+anyone had any comments on it (good or otherwise).
 
-You need to map this IO above the kernel.  Mine was mapped at 0xEC00_0000.
-I was advised to use ioremap instead of io_block_mapping (which limits the
-kernels
-mapping ability later on.)
+Cheers,
 
->
-> What's going on ? Why I'm not seeing characters now ? Did the kernel hang
-> somewhere in the middle or am I tottaly wrong in the early debugging idea ?
->
+James Campbell
 
-You are not wrong.  I did the exact same thing, however, it took some debugging
-to get it to work.  The kernel probably hung because you have a memory access
-violation from the MMU.  You can tell by looking in the log_buf area of memory
-(you need a jtag debugger to do that.)  It will give you the location you were
-running
-in when the violation occurred, the address you tried to access and all the ppc
-registers.  It's very nice if you can get to it.
-
-Greg
+--
+James Campbell          -|-   Embedded Systems Engineer
+jcampbell@omnigon.com   -|-     Omnigon International
+pgp:  DA57 E174 4769 1B9D D0DF 73E6 D639 D867 A576 A5AE
+work: +1.760.804.8884 x 332       cell: +1.760.803.8476
+--
+"Computer games don't affect kids; I mean if Pac-Man
+affected us as kids, we'd all be running around darkened
+rooms, munching magic pills and listening to repetitive
+electronic music."
+         -Kristian Wilson, Nintendo, Inc. 1989
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
