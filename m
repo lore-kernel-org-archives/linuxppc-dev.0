@@ -1,36 +1,33 @@
-Message-ID: <387C80DC.B6203081@mitre.org>
-Date: Wed, 12 Jan 2000 08:25:48 -0500
-From: Charles Lepple <clepple@mitre.org>
+Date: Wed, 12 Jan 2000 18:29:55 +0200 (EET)
+From: Kostas Gewrgiou <gewrgiou@imbc.gr>
+To: Jeff Garzik <jgarzik@mandrakesoft.com>
+cc: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Voodoo3 support?
+In-Reply-To: <387BC7FB.47922E7D@mandrakesoft.com>
+Message-ID: <Pine.LNX.4.21.0001121805440.875-100000@idd-01.imbc.gr>
 MIME-Version: 1.0
-To: iweiny@pacbell.net
-CC: linuxdev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: User level Macros for Endianess
-References: <200001120832.AAA10014@batcave2.localdomain>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-iweiny@pacbell.net wrote:
-> What Macros should I be using to key off of for this?  I have looked through
-> /usr/include/endian.h and /usr/include/bits/endian.h.  BYTE_ORDER (without the
-> leading underscores) is only defined if __USE_BSD is defined.  BOTH
-> __BIG_ENDIAN and __LITTLE_ENDIAN are defined as are BIG_ENDIAN and
-> LITTLE_ENDIAN.  I'm so confused?
+On Tue, 11 Jan 2000, Jeff Garzik wrote:
 
-You can take advantage of the fact that "network byte order" is
-big-endian, allowing you to use the hton?() and ntoh?() macros. I
-realize that this is specific to a big-endian device (such as the camera
-interface you have) but this is certainly easier than shoehorning an
-existing project into the GNU autoconf model.
+> 
+> Kostas Gewrgiou wrote:
+> > 
+> >   I am working on voodoo support, you can get a kernel/X in
+> > ftp://idd-01.imbc.gr/pub/voodoo3/ its not perfect yet but its getting
+> > closer :)
+> 
+> Does this package use tdfxfb, the fbdev driver for Voodoo cards?
+> 
 
-That said, you wouldn't want to use this hack for a new project -- an
-autoconf-style test would be cleaner (IMHO). I would welcome any
-suggestions, however.
+  Yes, its the xfree tdfx driver with support for tdfxfb, unfortunately
+with the tdfx driver being a moving target (because of dri) i haven't
+managed to merge my changes into the xfree tree yet. 
 
--- 
-Charles Lepple
-clepple@mitre.org
+  Kostas Gewrgiou
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
