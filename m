@@ -1,54 +1,37 @@
-Message-ID: <XFMail.990119132838.gdt@linuxppc.org>
-Content-Type: text/plain; charset=us-ascii
-MIME-Version: 1.0
-In-Reply-To: <19990119081330.A10519@tiktok.cygnus.com>
-Date: Tue, 19 Jan 1999 13:28:38 -0000 (GMT)
-From: Gary Thomas <gdt@linuxppc.org>
-To: Michael Meissner <meissner@cygnus.com>
-Subject: Re: Booting 2.2.0-pre6 on a PowerStack-II (Net 4000/200)
-Cc: Dan Malek <dmalek@jlc.net>, linuxppc-dev@lists.linuxppc.org,
-        Alois Fertl <alois_fertl@mucmot.muenchen.europe.mcd.mot.com>,
-        Johnnie Peters <jpeters@phx.mcd.mot.com>,
-        Cort Dougan <cort@persephone.cs.nmt.edu>,
-        Gary Thomas <gdt@linuxppc.org>
+Message-Id: <199901190430.MAA01225@mule.wantree.com.au>
+Subject: 15 partitions max prob revisited
+Date: Tue, 19 Jan 1999 15:00:04 -0000
+From: Keith Jacob <kjacob@wantree.com.au>
+To: "linuxppc-user list" <linuxppc-user@lists.linuxppc.org>,
+        "linuxppc-dev list" <linuxppc-dev@lists.linuxppc.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+When I first tried to install R4 (on a 7200/75) I ran into the prob of 
+having too many partitions on my HD. Since I only use HFS (not HFS+), I 
+partitioned my new 4GB drive into 8 Mac partitions (==max allowed by 
+Drive Setup) totalling 2GB, and left the last 2GB for Linux. However, 
+Linux would only allow me another 3 ext2 partitions, totalling 15 all up 
+(4 Mac driver/patch &c., 8 HFS, and 3 ext2).
 
-On 19-Jan-99 Michael Meissner wrote:
-> On Tue, Jan 19, 1999 at 10:27:30AM -0000, Gary Thomas wrote:
->> 
->> On 18-Jan-99 Cort Dougan wrote:
->> > Please ship that to me and I'll stick it in.
->> > 
->> > I like Garbriels bootloader and I think it may be worthwhile to make the
->> > MBX/PReP bootloader break sometime soon.  A relocatable bootloader for
->> > prep would solve a lot of problems.
->> > 
->> > }I'll try upgrading to 2.2.0p7 tonight and see how that works.
->> > }
->> 
->> Attached are my changes to add [minimal] residual data to PreP booting.
->> I've also had to make some minor compatability changes to get extended
->> partitions to work with old disks.
-> 
-> I see you added changes to set the initial cmd config.  Is there any way we can
-> add a configure line when building the kernel, so I can build a kernel with
-> different data (ie, my disk is /dev/sda2 and not /dev/sdb2, etc.).  That way it
-> has a better chance of working if rebooted in the middle of the night due to
-> power failure.
-> 
+So the question is: can I add more devices (e.g. sdb16, sdb17, ...), or 
+do I need to "reclaim" some HFS partitions if I want more ext2 ones? BTW, 
+it was the installer that choked on the extra partitions I had created, 
+so I would need to know how to fix that as well (if possible).
 
-I like this idea.  I'll see what I can do with it tonight.
+I'm sure this is not a Powermac/Linux prob, per se, but perhaps others 
+have had this problem and found a neat fix for it (although HFS+ is not a 
+solution for me until the Mac HFS+ disk tools improve).
 
-------------------------------------------------------------------------
-Gary Thomas                              |
-email: gdt@linuxppc.org                  | "Fine wine is a necessity of
-   ... opinions expressed here are mine  |        life for me"
-       and no one else would claim them! |
-                                         |      Thomas Jefferson
-------------------------------------------------------------------------
+Thanks in advance for any suggestions.
+
+--
+Keith Jacob
+kjacob@wantree.com.au
+
 
 
 
