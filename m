@@ -1,37 +1,25 @@
-Content-Type: text/plain;
-  charset="us-ascii"
-From: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re:[PATCH]: Bug in ppc32 ld.so
-Date: Fri, 10 May 2002 13:08:02 -0400
+Message-ID: <3CDBFFC9.205DB0A5@synergymicro.com>
+Date: Fri, 10 May 2002 10:13:46 -0700
+From: Bill Fincke <willy@synergymicro.com>
+Reply-To: willy@synergymicro.com
 MIME-Version: 1.0
-Message-Id: <200205101305.43423.kevin.hendricks@sympatico.ca>
-Cc: yellowdog-devel@lists.terrasoftsolutions.com,
-	linuxppc-dev@lists.linuxppc.org
+To: linuxppc-dev@lists.linuxppc.org
+Subject: "broken" GT64260 ethernet driver
+References: <200205100459.XAA27925@lists.linuxppc.org>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Anton,
+I have ported the gt64260_eth.c driver (from the MontaVista BK
+tree) to our board. The only modifications made were for our MAC
+address setup and interrupt connections. I have run all 3 ports
+under 2.4.12-SMP and have not yet seen a problem, but I haven't
+done anything too stressful.
 
-I saw:
-
-http://sources.redhat.com/ml/libc-alpha/2002-05/msg00052.html
-
-Thanks for posting that patch.  Have you by any chance alerted or sent
-similar mail to YDL dev lists, Debian dev lists, SuSE dev lists, and
-dev@linuxppc.
-
-This would be a nasty bug to track down and those distributions may want to
-know about this and get an udpated glibc-2.2.5 packages posted on their
-sites for those brave users who are using later 2.4 kernels?
-
-BTW, any idea when this change by Paul was introduced into the 2.4 kernel
-series (specifically which 2.4.XX kernel?).
-
-Thanks,
-
-Kevin
-
+But there have been a lot of "this driver is broken" comments
+on the thread. I agree it's ugly, but it seems to work. Can
+someone elaborate on exactly what is "broken", so I can test
+it more thoroughly?
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
