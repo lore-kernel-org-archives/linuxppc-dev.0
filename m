@@ -1,34 +1,38 @@
-Date: Fri, 16 Jul 1999 08:29:37 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Matt Porter <mmporter@home.com>
-cc: puetzk6715@uni.edu, Justin Vallon <vallon@mindspring.COM>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: altivec
-In-Reply-To: <Pine.LNX.3.96.990715090450.16549A-100000@liberty.chnd1.az.home.com>
-Message-ID: <Pine.LNX.4.10.9907160829200.3382-100000@mercator.cs.kuleuven.ac.be>
+Message-ID: <378EDC2F.D323B91B@cornell.edu>
+Date: Fri, 16 Jul 1999 00:16:10 -0700
+From: Stephen Travis Pope <stp9@cornell.edu>
+Reply-To: stp9@cornell.edu
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: USB on "Bronze" PowerBook?
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 15 Jul 1999, Matt Porter wrote:
-> Motorola or IBM will be happy to sell you a "non-apple non-MacOS PPC"
-> machine for Linux, it's just nobody wants to pay the price. :)  A startup
-> with a very low overhead could probably provide a reasonably priced mobo
-> with an MPC107 and MPC750@400+mhz.  They would want to then sell them to a
 
-Are the specs for the MPC107 public now?
+Hello all,
 
-Greetings,
+I use Linux PPC v5 on a 400 MHz "Lombard" PowerBook and it's *great* --
+my only problem is that I can't use an external USB keyboard and mouse. 
 
-						Geert
+Is there a kernel hacker out there who could enlighten me as to the
+issues involved in getting this to work? (I'm UNIX kernel literate, but
+haven't looked into USB support.)
 
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
+Are all Mac USB stacks made for the older interface chips? 
 
+Is anyone currently working on getting this to work? (If yes, do you
+want some help?)
+
+...any reply appreciated...
+
+-- 
+
+stp
+
+ Stephen Travis Pope -- http://www.create.ucsb.edu/~stp
+ stp@create.ucsb.edu (local) -- stp9@cornell.edu (permanent)
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
