@@ -1,47 +1,31 @@
-From: "\"Jeffrey D. Kowing\" <Jeff Kowing" <jeffrey.d.kowing@jsc.nasa.gov>
+Message-ID: <39DDF322.D48CE7AD@emc.com>
+Date: Fri, 06 Oct 2000 11:43:30 -0400
+From: Zhaobin Zhu <zzhu@emc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <14813.60363.648514.72914@igor.jsc.nasa.gov>
-Date: Fri, 6 Oct 2000 10:12:11 -0500 (CDT)
-To: Zhaobin Zhu <zzhu@emc.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Linux boot failed on Sandpoint under baudrate 38400
-In-Reply-To: <39DCEA5A.2E9DDE3C@emc.com>
-References: <39DCEA5A.2E9DDE3C@emc.com>
-Reply-To: jeffrey.d.kowing@jsc.nasa.gov
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Linux boot failed on Sandpoint under baudrate 38400
+References: <39DCEA5A.2E9DDE3C@emc.com> <14813.60363.648514.72914@igor.jsc.nasa.gov>
+Content-Type: text/plain; charset=gb2312
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-You can use a kernel option to override what I believe is the default
-of 9600 when the kernel opens the serial port for use as the console.
-I have "console=ttyS0,38400" in my #define CMDLINE in
-arch/ppc/boot/misc.c.
+"\"Jeffrey D. Kowing\"
 
-Zhaobin Zhu writes:
- >
- > Hi,
- >
- > Anybody tried booting Hardhat linux on Sandpoint/603e/755/7400
- > under Baudrate 38400 ?
- >
- > On my sp7400, the boot is ok under 9600, but gives garbled message
- > after "Now booting the kernel" under 38400.
- >
- > I change baudrate in arch/ppc/boot/ns16550.c
- >
- > Does the kernel change the baudrate in other place ?
- >
- > Thanks,
- >
- > --
- >  Zhaobin Zhu
- >  zzhu@emc.com
- >
- >
+> You can use a kernel option to override what I believe is the default
+> of 9600 when the kernel opens the serial port for use as the console.
+> I have "console=ttyS0,38400" in my #define CMDLINE in
+> arch/ppc/boot/misc.c.
+>
+
+This works.
+
+Thanks
 
 --
-Jeff Kowing
-jeffrey.d.kowing1@jsc.nasa.gov
+ Zhaobin Zhu
+ zzhu@emc.com 508-435-1000 x12823
+ Hardware Engineering, EMC Corporation
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
