@@ -1,53 +1,24 @@
-Date: Mon, 17 Mar 2003 07:03:04 -0700
-From: Tom Rini <trini@kernel.crashing.org>
+From: "Dale Farnsworth" <dale@farnsworth.org>
+Date: Mon, 17 Mar 2003 21:15:36 -0700
 To: linuxppc-dev@lists.linuxppc.org
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: ppc: Update to ppc specific makefiles
-Message-ID: <20030317140304.GB23106@ip68-0-152-218.tc.ph.cox.net>
-References: <20030314194427.GA18790@mars.ravnborg.org> <20030314202148.GA7230@ip68-0-152-218.tc.ph.cox.net> <20030314205636.GA28130@mars.ravnborg.org>
+Subject: Re: Add support for Motorola Computer Group HXEB100 board
+Message-ID: <20030318041536.GA25237@rover.farnsworth.org>
+References: <20030318030516.GA25081@rover.farnsworth.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20030314205636.GA28130@mars.ravnborg.org>
+In-Reply-To: <20030318030516.GA25081@rover.farnsworth.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Mar 14, 2003 at 09:56:36PM +0100, Sam Ravnborg wrote:
-> On Fri, Mar 14, 2003 at 01:21:48PM -0700, Tom Rini wrote:
-> [Tom's original reply will not show up at linuxppc-dev becasue my initial
-> mail contained the wrong address, and I just bounced it to linuxppc-dev]
->
-> > > The kernel builds and when a rebuild is made no files are compiled again.
-> > > arch/ppc/boot/{openfirmware,prep,simple}/Makefile could use more
-> > > attention - but wanted to see this applied first.
-> >
-> > I'm open to ideas for how to clean those up.  Please CC me with those
-> > (I'll read it quicker, most likley :)
->
-> I will give the most simple one a spin then [prep].
-> Hold on applying this for a while.
+On Mon, Mar 17, 2003 at 08:05:16PM -0700, Dale Farnsworth wrote:
+> The following patch, vs linuxppc_2_4_devel, adds support for
+> the Motorola Computer Group HXEB100 board.
 
-I'll wait for the next one. :)
+I should have noted that I appreciate the assistance of Mark Greer
+and Tom Rini in reviewing the above mentioned patch.  The patch is
+significantly better as a result of their feedback.
 
-> > Maybe I'm missing something, but won't this cause all of host-progs to
-> > be compiled on any build?  They're small / quick enough to build that I
-> > suppose it wouldn't kill anyone to build extra tools they don't need,
-> > but in that case, the tools- stuff could die in arch/ppc/boot/Makefile,
-> > right?
->
-> It is rather me who missed something I'm afraid.
-> The Makefile in ppc/boot/utils is not needed at all and can be deleted.
-> The "host-prog := " in ppc/boot/Makefile is all what is needed.
-> [tools/ shall be removed from subdir- := in boot/makefile]
->
-> I would like to delete all the tool selection stuff in boot/Makefile.
-> As you say it does not matter for the total build time.
-> OK with you?
-
-In the name of code cleanliness, yes, lets just build 'em all.
-
---
-Tom Rini
-http://gate.crashing.org/~trini/
+-Dale
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
