@@ -1,46 +1,45 @@
-Message-Id: <383A0E2E.9A261E81@ict.ac.cn>
-Date: Tue, 23 Nov 1999 11:46:54 +0800
-From: LiuTao <tliu@ict.ac.cn>
-Mime-Version: 1.0
-To: Dan Malek <dmalek@jlc.net>
-Cc: linuxppc <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: need suggestions
-References: <3839F122.3BF6FEDF@ict.ac.cn> <383A0E2D.CFACF894@jlc.net>
-Content-Type: text/plain; charset=us-ascii
+From: Michel Lanners <mlan@mcp.cpu.lu>
+Message-Id: <199911231139.MAA10910@mcp.cpu.lu>
+Subject: Re: Error accessing PCI config space
+To: bh40@calva.net (Benjamin Herrenschmidt)
+Date: Tue, 23 Nov 1999 12:39:25 MET
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <19991123120412.007803@mailhost.mipsys.com>; from "Benjamin Herrenschmidt" at Nov 23, 99 12:04 (noon)
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Dan:
+Hi Ben,
 
-Thanks for your advice.
-The bootloader that I am using with vxWorks uses FTP but not TFTP.
-And I don't have the source code of that bootloader. I think there
-are maybe some problems to use it download and boot linux. So I hope
-to find a TFTP source code and program a bootloader by myself.
-Of course, if anybody has a presented bootloader source code,
-that's great.
+> On Tue, Nov 23, 1999, Michel Lanners <mlan@cpu.lu> wrote:
+> 
+> >The error is that whenever I read from config space, I get the value of
+> >the previous read, however long ago that read occured. See this:
+> 
+> Could you try reading back the config address before actually reading the
+> value ? That's how I got the uni-north config space accesses to work.
 
-LiuTao
+Actually I've tried that (it's hinted at in some Apple documentation
+as the only way to make sure a PCI posted write has completed); however,
+I'm only getting garbage in that case. Or maybe I didn't look hard enough
+at the garbage to identify it ;-)
 
-Dan Malek wrote:
-> 
-> LiuTao wrote:
-> 
-> > ........ The board
-> > is running well with vxWorks now.
-> > I want to make a bootloader on the board.
-> 
-> How do you load vxWorks?  I have worked on several vxWorks projects,
-> and all of the systems had the vxWorks TFTP loader in the rom.  Use
-> the same thing (whatever that is) to load the Linux/PPC image.
-> 
-> The zImage is linked such that you can just treat it as a bag o' bits
-> to dump into memory.  Even with non-standard boot loaders, all you
-> need to do is write a simple program to strip the 64K ELF header, place
-> your own header on the top, make sure it gets loaded above 0x180000
-> and jump to the start of the image.
-> 
->         -- Dan
+> Also, there was a weird thing about the data location that had to be
+> offseted by modulo 8. If Apple used the same bits of ASIC design for it,
+> then it may work.  (Look at the uni-n code in my iBook patches).
+
+OK, I'll take a look at that when I'm back at home tonight. I'll also
+try whether older kernels didn't work correctly in thsi respect; maybe
+something in the system setup changed and broke this specific PCI access.
+
+On a related note, the PCI bus scanning code in drivers/pci/pci.c seems
+to get at least part of the config space right; as it gets vendor and
+device ID ok. I'll investigate...
+
+Thanks
+
+Michel
+-------------------------------------------------
+.signature at home
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
