@@ -1,19 +1,16 @@
-Return-Path: <gjaeger@sysgo.com>
-Received: from mailgate.sysgo.de (ns.sysgo.de [213.68.67.98])
-	by ozlabs.org (Postfix) with ESMTP id 0C0D32BDF2
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 27 Oct 2004 23:42:10 +1000 (EST)
-From: Gerhard Jaeger <gjaeger@sysgo.com>
-To: Matt Porter <mporter@kernel.crashing.org>
-Date: Wed, 27 Oct 2004 15:20:51 +0200
-References: <20041026135847.A16409@home.com>
-In-Reply-To: <20041026135847.A16409@home.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200410271520.51333.gjaeger@sysgo.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH][PPC32] Disable broken L2 cache on all 440GX revs
+Return-Path: <trini@kernel.crashing.org>
+Date: Wed, 27 Oct 2004 09:39:27 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Pantelis Antoniou <panto@intracom.gr>
+Message-ID: <20041027163927.GD4979@smtp.west.cox.net>
+References: <DCEAAC0833DD314AB0B58112AD99B93B06DB95@ismail.innsys.innovsys.com>
+	<20041026143514.GQ25154@smtp.west.cox.net>
+	<417F39EB.5010907@intracom.gr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <417F39EB.5010907@intracom.gr>
+Cc: Linuxppc-embedded@ozlabs.org
+Subject: Re: CPM2 uart early console
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,16 +21,56 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Dienstag 26 Oktober 2004 22:58, Matt Porter wrote:
-> Always disable L2 cache on PPC440GX. All revs/speeds of silicon
-> have parity error problems despite errata claims to the contrary.
-> Signed-off-by: Matt Porter <mporter@kernel.crashing.org>
+On Wed, Oct 27, 2004 at 09:02:19AM +0300, Pantelis Antoniou wrote:
+> Tom Rini wrote:
+> 
+> >On Fri, Oct 22, 2004 at 05:01:54PM -0500, Rune Torgersen wrote:
+> >
+> >>>From: Tom Rini [mailto:trini@kernel.crashing.org] 
+> >>>On Thu, Oct 21, 2004 at 04:57:56PM -0500, Rune Torgersen wrote:
+> >>>
+> >>>>BTW..
+> >>>>What are the device node numbers for ttyCPM[0..5] ?
+> >>>>
+> >>>204 42...45 (devices.txt in linuxppc-2.5, Pantelis ever 
+> >>>figure out what to do about the device # conflict with the 
+> >>>i.MX driver so we can push that small bit upstream ?)
+> >>>
+> >>Aparently not that simple.... I looked in the source, and it depends if 
+> >>an 8250 stype serial port is defined or not...
+> >>
+> >>#ifndef CONFIG_SERIAL_8250
+> >>#define SERIAL_CPM_MAJOR	TTY_MAJOR
+> >>#define SERIAL_CPM_MINOR	64
+> >>#else
+> >>#define SERIAL_CPM_MAJOR	204
+> >>#define SERIAL_CPM_MINOR	42
+> >>#endif
+> >>
+> >>Urgh...
+> >>
+> >
+> >That doesn't make sense.  Pantelis?
+> >
+> >
+> Well, it sure doesn't.
+> 
+> We should really try to find a generic solution to this
+> problem, i.e. that SoC like processors almost always have a number of serial
+> ports, and every single one ends up being of a different major/minor number.
 
-Hi Matt,
+I disagree, at least in the sense that this needs to involve the kernel.
+What Rune found is a real bug, in that sometimes we steal the
+major/minors of ttyS, and sometimes we don't.  What we need to do is to
+always use our own major/minor.
 
-is there any test, with which you can reproduce these failures?
-We have here custom boards based on the 440GX latest rev and 
-we need to use them with enabled L2 cache...
+> IMHO the best solution would be to allocate a single major number, and
+> then map to the minors in order, the possible serial ports.
 
-TIA,
-  Gerhard
+This isn't neccessary.  One could handle this rather trivially with udev
+so that /dev/ttyC[0-N], to use your names are just symlinks to ttyCPM0,
+ttyCPM1, ttyS0, ttyS1, and so on.
+
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
