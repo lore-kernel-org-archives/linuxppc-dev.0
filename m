@@ -1,56 +1,58 @@
-Message-ID: <3CD02066.5070800@pacbell.net>
-Date: Wed, 01 May 2002 10:05:42 -0700
-From: Armin <akuster@pacbell.net>
+Message-ID: <20020501170822.7469.qmail@web13005.mail.yahoo.com>
+Date: Wed, 1 May 2002 10:08:22 -0700 (PDT)
+From: Brian Kuschak <bkuschak@yahoo.com>
+Subject: initrd in 2.4.19
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-To: andrew may <acmay@acmay.homeip.net>
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: [PATCH] IBM ocp I2C
-References: <20020423200127.G20394@ecam.san.rr.com> <20020423200151.H20394@ecam.san.rr.com> <20020424112626.A22212@ecam.san.rr.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-andrew may wrote:
-> This patch is also needed to get it to compile. I forgot
-> to check things after I removed the stuff from the headers.
->
->
-> ------------------------------------------------------------------------
->
-> # This is a BitKeeper generated patch for the following project:
-> # Project Name: Linux 2.4 for PowerPC development tree
-> # This patch format is intended for GNU patch command version 2.5 or higher.
-> # This patch includes the following deltas:
-> #	           ChangeSet	1.966   -> 1.967
-> #	drivers/i2c/i2c-adap-ibm_ocp.c	1.2     -> 1.3
-> #
-> # The following is the BitKeeper ChangeSet Log
-> # --------------------------------------------
-> # 02/04/24	amay@infosec-server.infosec	1.967
-> # remove dead code
-> # --------------------------------------------
-> #
-> diff -Nru a/drivers/i2c/i2c-adap-ibm_ocp.c b/drivers/i2c/i2c-adap-ibm_ocp.c
-> --- a/drivers/i2c/i2c-adap-ibm_ocp.c	Wed Apr 24 11:21:27 2002
-> +++ b/drivers/i2c/i2c-adap-ibm_ocp.c	Wed Apr 24 11:21:27 2002
-> @@ -304,8 +304,6 @@
->        iic_ibmocp_data[i]->data = (struct iic_regs *)iic_ibmocp_adaps[i];
->        iic_ibmocp_data[i]->setiic = iic_ibmocp_setbyte;
->        iic_ibmocp_data[i]->getiic = iic_ibmocp_getbyte;
-> -      iic_ibmocp_data[i]->getown = 0;
-> -      iic_ibmocp_data[i]->getclock = 0;
->        iic_ibmocp_data[i]->waitforpin = iic_ibmocp_waitforpin;
->        iic_ibmocp_data[i]->udelay = 80;
->        iic_ibmocp_data[i]->mdelay = 80;
->
+I noticed initrd handling has changed recently in the
+kernel (init/do_mounts.c).  This new code is causing
+me problems.  Has anyone else run into this?
 
-Andrew,
+Using the 'new style' (not terminating linuxrc)
+/linuxrc runs the following sequence:
+  mount -o ro /dev/hda2 /new-root
+  cd /new-root
+  mkdir initrd
+  pivot_root . initrd
+  exec chroot . sbin/init dev/console 2>&1
+But /linuxrc seems to be runnnig as PID 10, and
+sbin/init doesn't start.
 
-the entier ibm_ibmocp_data has beeen removed, found other ways arround it
+Using the 'old style' (linuxrc terminates and kernel
+starts init):
+  mount -o ro /dev/hda2 /new-root
+  cd /new-root
+  mkdir initrd
+  echo 0x0302 > /proc/sys/kernel/real-root-dev
+  exit 0
+The mount fails with EBUSY in mount_block_root()
+because the root device is already mounted:
+
+Attempting to find a root file system on hda2...
+ hda1 hda2
+ hda: hda1 hda2
+XFS mounting filesystem ide0(3,2)
+Starting XFS recovery on filesystem: ide0(3,2) (dev:
+3/2)
+Ending XFS recovery on filesystem: ide0(3,2) (dev:
+3/2)
+VFS: busy inodes on changed media.
+err=-16, p=ext2, name=/dev/root  <--
+VFS: Cannot open root device "" or 03:02
+Please append a correct "root=" boot option
+Kernel panic: VFS: Unable to mount root fs on 03:02
 
 
-Armin
+For the old style to work, I have to not mount the
+filesystem at all in my /linuxrc. I'm using
+2.4.19-pre7 from bk (1.948)
+
+-Brian
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
