@@ -1,38 +1,31 @@
-Message-Id: <200007171653.SAA16824@denx.local.net>
-To: ajay.kunnath@exgate.tek.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Help with MPC port 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 17 Jul 2000 09:07:11 PDT."
-             <21F9768AF088D211BF1C0008C71E5786011B7913@ap-bang-m02.india.tek.com>
-Date: Mon, 17 Jul 2000 18:53:44 +0200
+Message-ID: <39733BC1.D0CC97E1@mvista.com>
+Date: Mon, 17 Jul 2000 10:00:49 -0700
+From: Mark Hatle <fray@mvista.com>
+MIME-Version: 1.0
+To: oliver.amft@ch.abb.com
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: GLibC cross compile for ppc-linux
+References: <4125691F.0034CFC3.00@mail1.ch.abb.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <21F9768AF088D211BF1C0008C71E5786011B7913@ap-bang-m02.india.tek.com> you wrote:
+I've been cross-compiling glibc-2.1.3 for ppc 7xx and 8xx for a while
+now.  I've yet to see any problems like that.  What if your host OS,
+(i.e. RedHat, debian etc? and it's version.)  And what are you
+targeting?
+
+--Mark
+
+oliver.amft@ch.abb.com wrote:
 >
-> I noticed in the m8xx_tty.c that the first few lines of code try to
-> access the structure immap_t. But, who initializes these structures ?
-> Is it the EPPCbug of MBX ? If so, how do I go about doing similar
-> thing on my proprietary board ?
-
-It's the CPU who initializes this struc :-)
-
-You see it's used like that: "((immap_t *)IMAP_ADDR)->..."; IMAP_ADDR
-is the (physical) address where the IMMR of your CPU  is  mapped,  so
-you're accessing hardware registers, not some data structures in RAM.
-
-Welcome to the world of low level, hardware related programming!
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Bradley's Bromide: If computers get too  powerful,  we  can  organize
-them into a committee - that will do them in.
+> Hi all,
+>
+> i'm trying to build the glibc 2.1.3 on a i686-linux machine for a powerpc-linux
+> embedded target. The make command works fine (...no errors) but somehow "make
+> check" stops in the "stdlib tests" part when it is invoking the "isomac" command
+> for the first time (after compiling it):
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
