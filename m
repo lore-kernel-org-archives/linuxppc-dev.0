@@ -1,30 +1,35 @@
-Date: Sun, 21 Dec 2003 22:52:57 -0500
-From: Daniel Jacobowitz <drow@false.org>
-To: Marius Groeger <mgroeger@sysgo.com>
-Cc: "Christopher R. Johnson" <cjohnson@gcctech.com>,
+Message-ID: <3FE6B2A5.2020609@embeddededge.com>
+Date: Mon, 22 Dec 2003 04:00:21 -0500
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: Paul Mackerras <paulus@samba.org>
+Cc: Tom Rini <trini@kernel.crashing.org>, org@stop.crashing.org,
 	linuxppc-dev@lists.linuxppc.org
-Subject: Re: powerpc gdb and gdbserver
-Message-ID: <20031222035257.GB7378@nevyn.them.org>
-References: <3FE0977B.7020504@gcctech.com> <20031218171010.GA16791@nevyn.them.org> <Pine.LNX.4.56.0312191032280.10154@mag.devdep.sysgo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.56.0312191032280.10154@mag.devdep.sysgo.com>
+Subject: Re: 8xx drivers for 2.6
+References: <20031211191854.GK23731@stop.crashing.org> <16358.4872.857438.957341@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Dec 19, 2003 at 10:37:23AM +0100, Marius Groeger wrote:
-> Also, the official GDB site at http://www.gnu.org/software/gdb tells about
-> some known issues with the 6.0 release. One is that the PPC targets had not
-> yet implemented "the new frame format". I'm a little bit puzzled about that.
-> Does anyone know what this is about?
+Paul Mackerras wrote:
 
-It's not a big deal.  It's an internal GDB architecture change that
-would improve the reliability of backtraces, and other related
-features.
+> Gaahhhh, I thought we had got rid of request_8xxirq.  I don't want to
+> see it come back.  And this sort of thing is just bad.
 
---
-Daniel Jacobowitz
-MontaVista Software                         Debian GNU/Linux Developer
+I don't know why in the hell this has irritated you so badly.
+It's 10 lines of code to allow people to use those legacy PC devices
+on boards like the MBX860 have have an 8259 controller.
+
+In any case, since the 2.4 was screwed up so badly when it was
+removed there, I have removed it from 2.6. I'm just building various
+configurations right now to ensure I didn't break some non-8xx stuff
+in the process.
+
+Thanks.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
