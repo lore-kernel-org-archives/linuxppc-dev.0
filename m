@@ -1,17 +1,17 @@
-Return-Path: <mgreer@mvista.com>
-Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
-	by ozlabs.org (Postfix) with ESMTP id 0295667A65
+Return-Path: <vijay_padiyar@hotmail.com>
+Received: from hotmail.com (bay1-dav14.bay1.hotmail.com [65.54.244.118])
+	by ozlabs.org (Postfix) with ESMTP id E89EA67A67
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 12 Mar 2005 11:41:18 +1100 (EST)
-Message-ID: <42323A97.5070105@mvista.com>
-Date: Fri, 11 Mar 2005 17:40:55 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
+	Sat, 12 Mar 2005 18:57:00 +1100 (EST)
+Message-ID: <BAY1-DAV14F92D2B45266ECD1105A48B540@phx.gbl>
+From: "Vijay Padiyar" <vijay_padiyar@hotmail.com>
+To: "Yuli Barcohen" <yuli@arabellasw.com>,
+	"LinuxPPC Support" <linuxppc-embedded@ozlabs.org>
+Date: Sat, 12 Mar 2005 13:27:26 +0530
 MIME-Version: 1.0
-To: dwmw2@infradead.org
-Content-Type: multipart/mixed; boundary="------------090506070708090904090209"
-Cc: linux-mtd@lists.infradead.org,
-	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH 2.6.12] mtd: Remove MTD map file for Chestnut platform.
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: problem opening I2C device on MPC8260
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,153 +22,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi there
 
-This is a multi-part message in MIME format.
---------------090506070708090904090209
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+I am running Linux-2.6.10 with BusyBox 1.0 on an MPC8260-based target. I'm
+having problems opening the I2C controller device on the MPC8260.
 
-Remove Chestnut mtd map file.
+I have now included I2C support in the kernel by setting the following
+options:
 
-The chestnut now sets up its MTD map from its platform-specific file so 
-the map file drivers/mtd/maps/chestnut.c is no longer needed.  This 
-patch removes the file & the Kconfig/Makefile hooks.
+CONFIG_I2C=y
+CONFIG_I2C_CHARDEV=y
 
-Please apply.
+CONFIG_I2C_ALGOBIT=y
 
-Signed-off-by: Mark A. Greer <mgreer@mvista.com>
--- 
+None of the options under "I2C Hardware Bus support" and "Hardware Sensor
+Chip support" are set. Do I need to enable any of these for MPC8260?
 
---------------090506070708090904090209
-Content-Type: text/plain;
- name="chestnut_mtd.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="chestnut_mtd.patch"
+I have also mounted the Sysfs filesystem using 'mount -t sysfs sysfs /sys'.
+When the kernel boots up, I can see the following message:
 
-diff -Nru a/drivers/mtd/maps/Kconfig b/drivers/mtd/maps/Kconfig
---- a/drivers/mtd/maps/Kconfig	2005-03-11 14:51:08 -07:00
-+++ b/drivers/mtd/maps/Kconfig	2005-03-11 14:51:08 -07:00
-@@ -405,14 +405,6 @@
- 	  Redwood board. If you have one of these boards and would like to
- 	  use the flash chips on it, say 'Y'.
- 
--config MTD_CHESTNUT
--	tristate "CFI Flash devices mapped on IBM 750FX or IBM 750GX Eval Boards"
--	depends on MTD_CFI && PPC32 && CHESTNUT && MTD_PARTITIONS
--	help
--	  This enables access routines for the flash chips on the IBM
--	  750FX and 750GX Eval Boards. If you have one of these boards and
--	  would like to use the flash chips on it, say 'Y'
--
- config MTD_CSTM_MIPS_IXX
- 	tristate "Flash chip mapping on ITE QED-4N-S01B, Globespan IVR or custom board"
- 	depends on MIPS && MTD_CFI && MTD_JEDECPROBE && MTD_PARTITIONS
-diff -Nru a/drivers/mtd/maps/Makefile b/drivers/mtd/maps/Makefile
---- a/drivers/mtd/maps/Makefile	2005-03-11 14:51:08 -07:00
-+++ b/drivers/mtd/maps/Makefile	2005-03-11 14:51:08 -07:00
-@@ -54,7 +54,6 @@
- obj-$(CONFIG_MTD_IMPA7)		+= impa7.o
- obj-$(CONFIG_MTD_FORTUNET)	+= fortunet.o
- obj-$(CONFIG_MTD_REDWOOD)	+= redwood.o
--obj-$(CONFIG_MTD_CHESTNUT)	+= chestnut.o
- obj-$(CONFIG_MTD_UCLINUX)	+= uclinux.o
- obj-$(CONFIG_MTD_NETtel)	+= nettel.o
- obj-$(CONFIG_MTD_SCB2_FLASH)	+= scb2_flash.o
-diff -Nru a/drivers/mtd/maps/chestnut.c b/drivers/mtd/maps/chestnut.c
---- a/drivers/mtd/maps/chestnut.c	2005-03-11 14:51:08 -07:00
-+++ /dev/null	Wed Dec 31 16:00:00 196900
-@@ -1,91 +0,0 @@
--/*
-- * drivers/mtd/maps/chestnut.c
-- *
-- * $Id: chestnut.c,v 1.1 2005/01/05 16:59:50 dwmw2 Exp $
-- *
-- * Flash map driver for IBM Chestnut (750FXGX Eval)
-- *
-- * Chose not to enable 8 bit flash as it contains the firmware and board
-- * info.  Thus only the 32bit flash is supported.
-- *
-- * Author: <source@mvista.com>
-- *
-- * 2004 (c) MontaVista Software, Inc. This file is licensed under
-- * the terms of the GNU General Public License version 2. This program
-- * is licensed "as is" without any warranty of any kind, whether express
-- * or implied.
-- */
--
--#include <linux/module.h>
--#include <linux/init.h>
--#include <linux/types.h>
--#include <linux/kernel.h>
--#include <asm/io.h>
--#include <linux/mtd/mtd.h>
--#include <linux/mtd/map.h>
--#include <linux/mtd/partitions.h>
--#include <platforms/chestnut.h>
--
--static struct map_info chestnut32_map = {
--   	.name 		= "User FS",
--   	.size 		= CHESTNUT_32BIT_SIZE,
--   	.bankwidth 	= 4,
--	.phys 		= CHESTNUT_32BIT_BASE,
--};
--
--static struct mtd_partition chestnut32_partitions[] = {
--	{
--		.name 	= "User FS",
--		.offset	= 0,
--		.size	= CHESTNUT_32BIT_SIZE,
--	}
--};
--
--static struct mtd_info *flash32;
--
--int __init init_chestnut(void)
--{
--	/* 32-bit FLASH */
--
--   	chestnut32_map.virt = ioremap(chestnut32_map.phys, chestnut32_map.size);
--
--   	if (!chestnut32_map.virt) {
--      		printk(KERN_NOTICE "Failed to ioremap 32-bit flash\n");
--		return -EIO;
--   	}
--
--	simple_map_init(&chestnut32_map);
--
--   	flash32 = do_map_probe("cfi_probe", &chestnut32_map);
--   	if (flash32) {
--   		flash32->owner = THIS_MODULE;
--   		add_mtd_partitions(flash32, chestnut32_partitions,
--					ARRAY_SIZE(chestnut32_partitions));
--   	} else {
--      		printk(KERN_NOTICE "map probe failed for 32-bit flash\n");
--		return -ENXIO;
--	}
--
--   	return 0;
--}
--
--static void __exit
--cleanup_chestnut(void)
--{
--   	if (flash32) {
--      		del_mtd_partitions(flash32);
--		map_destroy(flash32);
--   	}
--
--   	if (chestnut32_map.virt) {
--      		iounmap((void *)chestnut32_map.virt);
--	  	chestnut32_map.virt = 0;
--   	}
--}
--
--module_init(init_chestnut);
--module_exit(cleanup_chestnut);
--
--MODULE_DESCRIPTION("MTD map and partitions for IBM Chestnut (750fxgx Eval)");
--MODULE_AUTHOR("<source@mvista.com>");
--MODULE_LICENSE("GPL");
+"i2c /dev entries driver"
 
---------------090506070708090904090209--
+which is from the I2C module initialization function i2c_dev_init() in
+i2c-dev.c. This means that the I2C module has been loaded and initialized
+correctly. However, the /sys/class/i2c-dev folder is found to be *empty*.
+
+I have also created the following I2C device files in my /dev folder:
+
+mknod i2c-0 c 89 0
+mknod i2c0 c 89 0
+mknod i2c-1 c 89 1
+mknod i2c1 c 89 1
+
+When I try to open the I2C device from a user program in root mode, I get an
+error and the value of errno is ENODEV.
+
+if ((fd = open("/dev/i2c-0", O_RDWR)) < 0)
+{
+    printf ("Error: ");
+
+    if (errno == ENODEV)
+        printf ("No such device!\n");
+}
+
+Please tell me what I could be doing wrong? Is there anything I've missed in
+setting up my configuration to use I2C? Is there anything more I need to do?
+
+Regards
+
+Vijay Padiyar
+
+http://www.vijaypadiyar.eu.tf
