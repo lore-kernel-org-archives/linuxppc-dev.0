@@ -1,58 +1,40 @@
-Message-ID: <028801c1aea2$610d96a0$0900a8c0@Domain.invalid>
-From: "murali nagarajan" <muralin@gdatech.com>
-To: "David A. Gatwood" <dgatwood@gatwood.net>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-References: <Pine.LNX.3.96.1020205145050.16943C-100000@gatwood.net>
-Subject: Re: Problem with ping/telnet
-Date: Tue, 5 Feb 2002 16:08:02 -0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Subject: Re: two aty128 frame buffers?
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+To: Jeffery von Ronne <jronne@ics.uci.edu>
+Cc: Kaoru Fukui <k_fukui@highway.ne.jp>,
+	linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20020205151625.D761@reepicheep.ics.uci.edu>
+References: <20020204154626.C28199@reepicheep.ics.uci.edu>
+	<200202050524.OAA13555@mail.highway.ne.jp>
+	<20020204222214.A28746@reepicheep.ics.uci.edu>
+	<1012901313.734.210.camel@pismo>
+	<20020205151625.D761@reepicheep.ics.uci.edu>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: 06 Feb 2002 01:08:28 +0100
+Message-Id: <1012954108.1885.3328.camel@pismo>
+Mime-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello David,
+On Mit, 2002-02-06 at 00:16, Jeffery von Ronne wrote:
+> On Tue, Feb 05, 2002 at 10:28:33AM +0100, Michel Dänzer wrote:
+> > > Unfortunately, that was not my real problem.  I guess I forgot to mention
+> > > that it crashes with a "signal 11" after the error message; now it crashes
+> > > with a signal 11 and no error message.
+> >
+> > You need a hack like the attached one.
+>
+> I tried applying your hack to a virgin XF 4.2.0 source tree, and
+> I get a signal 11 crash.  The last output shows the X server loading
+> vgahw.
 
-With your info, I am able to do a telnet from my board to the host, only if
-I specify the port number. What surprises me is that the presence of both
-/etc/services (entry to telnet is available with a port number) and the
-/etc/protocols files. For some reason, may be the boot process is unable to
-read these information.  But when I want to do a telnet to my board from my
-host iMAc, I am unable to do. I get an error message "connection refused".
+Hmm, isn't info->VBIOS == NULL? If not, enforce the other route in that
+if construct. :)
 
-/proc file system is not mounted during the boot time and I mount it
-immediately after getting the "bash" prompt.
 
-With PING still looking for some leads...(I can ping from the host to my
-taget board)
-
-Any ideas?
-
-Thanks,
-Murali
--------------------------------------
-> > - PING command does not work
-> >   The erro message I get is   "ping: unknown protocol icmp"
->
-> Don't know.  Might be a kernel compile issue or something, or it might be
-> related to the second issue.  Not sure.
->
->
-> > - Telnet program does not work which tells me that the service is
-unknown.
-> >    The error message I get is "telnet: tcp/telnet: unknown service"
->
-> This one's easy.  Telnet explicitly asks the system for the default port
-> number for telnet service.  If you don't have a valid /etc/services file
-> (with telnet listed), it won't be able to do so, and it will fail.  If you
-> specify a port number by hand (e.g. telnet foo.com 23), it should work.
-> Or you can just put in an /etc/services file.
->
->
-> Later,
-> David
->
-
+--
+Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
+XFree86 and DRI project member   /  CS student, Free Software enthusiast
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
