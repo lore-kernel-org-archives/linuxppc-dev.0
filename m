@@ -1,31 +1,36 @@
-Date: Tue, 9 Jan 2001 16:11:26 -0700
-From: Cort Dougan <cort@fsmlabs.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Linux/PPC BitKeeper tree announcements
-Message-ID: <20010109161126.P18696@hq.fsmlabs.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Date: Tue, 09 Jan 2001 23:45:33 +0000
+Subject: Re: status of ppc support in official 2.4.0 or Alan's 2.4.0-ac1
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: Derek Homeier <supas100@astrophysik.uni-kiel.de>
+Cc: Linux PPC Developer Mailing List <linuxppc-dev@lists.linuxppc.org>
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
+Message-Id: <20010109235443.8FE65DBA32@atlas.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-We now have a mailing list for the commit messages for the 2.2 and 2.4
-trees.  If you want to keep up on Linux/PPC development take a look at
-http://www.fsmlabs.com/linuxppcbk.html and follow the subscription
-instructions.
+On Tue, Jan 9, 2001,  Derek Homeier  wrote:
+> On Mon, 8 Jan 2001, Iain Sandoe wrote:
+>> For now, I suggest that (unless you desperately need it), - you disable the
+>> OSS stuff in your .config.
 
-I'd like to keep the traffic low on these lists since we have plenty of
-other lists for general discussion.  This lists are just for following
-changes to the kernel and some discussion of those changes.
+> O.K., did that (I did not have ALSA enabled in the first place), and didn't
+> see the errors again. Nonetheless, xmms is still erring on the Bus
+> (i.e. crashes as soon it is started).
 
-The 2.3 trees are no longer available via anonymous access as they're been
-replaced with a new 2.4 repository.  The change was necessary to remove the
-80MB or so of deleted file (as a result cloning, checking out and committing
-changes is much faster).
+OK.  I'm getting back up to steam - just sorting out the bk stuff :-/
 
-For those of you who had work in copies of the 2_3 that you were accessing
-anonymously you need not fear your work is lost.  Just generate a diff
-against the last changeset in your repository and reapply it to the 2_4
-tree.
+You might trawl the list for xmms comments - I believe that there were
+issues that others resolved.  Which version of xmms?
+
+any way of you telling me where xmms is trashing in the dmaosund driver?
+
+- there were a couple of fixes I did in the back-port that might not be in
+the 2.4.0 version - I'll try and post those RSN.
+
+(AFAIK ksymoops is still broken for ppc)...
+
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
