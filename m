@@ -1,51 +1,36 @@
-Message-Id: <199903251819.MAA23996@wolfram.com>
-To: LinuxPPC-Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: bugs building stuff.. somewhere.. (was: back to gcc under pre-R5) 
-Date: Thu, 25 Mar 1999 12:19:07 -0600
-From: Brian Downing <bdowning@wolfram.com>
+Message-Id: <9903251912.AA56638@marc.watson.ibm.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Apple Job Posting and Good News for LinuxPPC developers 
+In-Reply-To: Message from "Kevin B. Hendricks" <kbhend@business.wm.edu>
+   of "Thu, 25 Mar 1999 11:46:27 EST." <36FA6863.50817162@business.wm.edu>
+Date: Thu, 25 Mar 1999 14:12:02 -0500
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-As a belated update to my own post:
+>>>>> "Kevin B Hendricks" writes:
 
-I've finally gotten this to work.
+Kevin> Just in case anyone missed this.  Apple is hiring someone whose job description
+Kevin> will include making it easier for people to get enough hardware info to get
+Kevin> Linux PPC to run on Apple's new hardware.
 
-"gcc -static -Wl,--relax ... -o binary" makes this link fine with
-egcs-1.1.2 and glibc-2.1.  The resulting binary runs on pre-R5, R4,
-and mklinux DR3.  I just wish I had a non-Mac to test it on.
+Kevin> We should get one of our own into this role and get a leg up on helping apple
+Kevin> open up its hardware specs for Linux PPC
 
--bcd
---
-**               Brian Downing
-**  UNIX Systems Administrator
-**        bdowning@wolfram.com
+	My group at IBM Research also is looking for someone with operating
+system development experience to join our project:
 
-On Wed, 17 Feb 1999 10:03:54 -0600, Brian Downing writes:
- > I've had similar problems building software.  I'm not sure where the
- > problem is, but I cannot compile this software statically.  I wouldn't
- > care, but for it to be useful, it must be able to run on all PPC
- > platforms.
- > 
- > When I link dynamically, everything works fine, everywhere that I've
- > built it - unfortunately binary portability is a little low.
- > 
- > When I try to link it statically, I get a bunch of ld errors from
- > libc.a about "tried to relocate __pthread_mutex_lock" and other various
- > __pthread_* calls.  No binary is generated.  I tried to compile a
- > non-reentrant version of glibc with no linuxthreads (since I'm building
- > statically and the software isn't threaded I figured it was worth a try).
- > Unfortunately glibc doesn't appear to build without linuxthreads anymore
- > - even with --disable-sanity-checks.  I've even gone so far as to ifdef
- > out the offending calls in glibc (for testing), and other similar errors
- > show up for different places in glibc.  I don't have the exact errors
- > on hand right now, but I can get them if anyone thinks they would help.
+	http://www.research.ibm.com/kitchawan/
 
-[snip]
+The project is targeted at multiprocessor systems utilizing 64-bit processors
+including PowerPC64.  An additional aspect is compatibility with glibc.
 
- > (Built on a PowerBook G3 266, with linuxppc-pre-r5, with egcs-1.1.1 and
- > the latest snapshot I could build, with glibc-2.0.108 and glibc-2.1,
- > and with some other variations made for the heck of it.)
+David
+===============================================================================
+David Edelsohn                                      T.J. Watson Research Center
+dje@watson.ibm.com                                  P.O. Box 218
++1 914 945 4364 (TL 862)                            Yorktown Heights, NY 10598
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
