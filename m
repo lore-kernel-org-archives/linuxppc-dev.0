@@ -1,54 +1,74 @@
-Message-ID: <407C1601.2080100@imc-berlin.de>
-Date: Tue, 13 Apr 2004 18:32:01 +0200
-From: Steven Scholz <steven.scholz@imc-berlin.de>
+Message-ID: <407C2524.2070807@lucent.com>
+Date: Tue, 13 Apr 2004 11:36:36 -0600
+From: Mike Wellington <wellington@lucent.com>
 MIME-Version: 1.0
-To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: kfree_skb on hard IRQ ???
-References: <407C065A.9010004@imc-berlin.de>
-In-Reply-To: <407C065A.9010004@imc-berlin.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Xilinx ML300 u-boot question
+References: <8039970AF146314597457D3B51A68B388F377F@cossmgmbx02.email.corp.tld>
+In-Reply-To: <8039970AF146314597457D3B51A68B388F377F@cossmgmbx02.email.corp.tld>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Steven Scholz wrote:
+Gerald (et al) -
+
+1)  kernel configuration  - tried changing the default
+kernel command line, but that didn't work.  The kernel
+started up, but did not set its "ip=" parameters as I
+specified.  This method would work fine, but I'd prefer
+to not have to keep a separate kernel around for each
+machine.
+
+2) conditional execution commands from u-boot - this sounds
+like a good option, I don't know anything about these commands.
+I guess I can distiguish one from another via the IP address.
+I'll persue this.  And thanks for saving me from wasting my
+time trying to make a RAM only u-boot.
+
+-mike wellington
+  wellington@lucent.com
+  platforms@bithead.com
+
+
+VanBaren, Gerald (AGRE) wrote:
+> You can build custom kernels with built-in values instead of using the boot line to set the values.  That would be simpler than chaining u-boot because u-boot expects a bare machine on start up.  To chain u-boot, you basically would have to make a "run from RAM" u-boot -- while not impossible, it takes time and effort and isn't a supported configuration (i.e. Wolfgang won't answer your questions in his usual thorough manner ;-).
 >
-> Hi there,
+> You should be able to use the command language built into u-boot to select linux bootline parameters.  You must be able to detect differences in the target systems in order to load a custom u-boot or linux -- why not use that with the u-boot conditional commands to select or build up the proper linux bootline?
 >
-> my HERMES-II drivers causes a lot of
+> gvb
 >
-> Warning: kfree_skb on hard IRQ c38c2168
 >
-> messages.
 >
-> What do they mean?
+>>-----Original Message-----
+>>From: owner-linuxppc-embedded@lists.linuxppc.org
+>>[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Mike
+>>Wellington
+>>Sent: Tuesday, April 13, 2004 11:29 AM
+>>To: linuxppc-embedded@lists.linuxppc.org
+>>Subject: Xilinx ML300 u-boot question
+>>
+>>
+>>
+>>Does anybody know what parameters I should use to
+>>load u-boot, using u-boot.    That's right, I want to
+>>build a generic u-boot that goes on the Microdrive of
+>>a Xilinx ML300 development board.  I have several of them
+>>to manage.  I want the generic u-boot to go and download
+>>a machine-specific u-boot that I can change on my workstation
+>>without having to write it to the microdrive.
+>>
+>>Or can I just have u-boot start the kernel with no parameters
+>>and have all the initial args for the kernel built into the
+>>kernel?
+>>
+>>-mike wellington
+>>  wellington@lucent.com
+>>
+>>
+>
+>
+>
 
-And what means
-
-alloc_skb called nonatomically from interrupt c00eb8d0
-kernel BUG at skbuff.c:174!
-Oops: Kernel Mode Software FPU Emulation, sig: 8
-NIP: C00E065C XER: 00000000 LR: C00E065C SP: C016BC80 REGS: c016bbd0 TRAP:
-1000    Not tainted
-MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
-TASK = c0169fa0[0] 'swapper' Last syscall: 120
-last math 00000000 last altivec 00000000
-...
-Kernel panic: Aiee, killing interrupt handler!
-In interrupt handler - not syncing
-  <0>Rebooting in 10 seconds..
-
-???
-
-Thanks a million!
-
-
---
-Steven Scholz
-
-imc Measurement & Control               imc Meﬂsysteme GmbH
-Voltastr. 5                             Voltastr. 5
-13355 Berlin                            13355 Berlin
-Germany                                 Deutschland
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
