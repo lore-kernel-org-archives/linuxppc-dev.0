@@ -1,22 +1,13 @@
-Return-Path: <jonmasters@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.199])
-	by ozlabs.org (Postfix) with ESMTP id 1BC462BDA0
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 26 Oct 2004 07:13:48 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id 43so92105wri
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 25 Oct 2004 14:13:47 -0700 (PDT)
-Message-ID: <35fb2e59041025140776cfe174@mail.gmail.com>
-Date: Mon, 25 Oct 2004 22:07:07 +0100
-From: Jon Masters <jonmasters@gmail.com>
-To: Peter Ryser <peter.ryser@xilinx.com>
-In-Reply-To: <417D2B5E.8050200@xilinx.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-References: <1098701468l.31592l.0l@ipnnarval> <417D2B5E.8050200@xilinx.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: uboot and ppc405
-Reply-To: jonathan@jonmasters.org
+Return-Path: <runet@innovsys.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="utf-8"
+Date: Mon, 25 Oct 2004 18:25:20 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B06DBA1@ismail.innsys.innovsys.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: <Linuxppc-embedded@ozlabs.org>
+Cc: dwmw2@shinybook.infradead.org
+Subject: Possible CPM2 SMC bug
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,23 +18,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, 25 Oct 2004 09:35:42 -0700, Peter Ryser <peter.ryser@xilinx.com> wrote:
-
-> please have a look at "Getting started with U-Boot and ML300"
-> http://www.xilinx.com/bvdocs/appnotes/xapp542.pdf that describes how to
-> use U-Boot with Xilinx Virtex-II Pro devices.
-
-This appnote assumes that he's using the ML300, has the Montavista
-tree, and a few other general assumptions that might well not be true
-here, but is otherwise interesting if they decide to heed our
-suggestions of using the SystemACE in the design.
-
-btw Peter, I've been moaning about the weird interrupt behaviour of
-the SysACE on e.g. the Memec board for some time (see archives for
-various other people's experiences too) - and I've spoken to several
-folks at Xilinx without getting very far. If there's a fundamental
-problem then it probably makes sense for us to help get it fixed.
-
-Cheers,
-
-Jon.
+VGhlIG91dHB1dCBmcm9tIElOSVQgKHN5c3Zpbml0IDIuODUpIGlzIGdhcmJsZWQgd2hlbiBydW5u
+aW5uIG9uIGtlcm5lbCAyLjYuOSBhbmQgdXNpbmcgU01DMSBhcyB0aGUgY29uc29sZSBwb3J0DQpX
+aGVuIHJ1bm5pZ24gU0NDMSBhcyBjb25zb2xlIHBvcnQsIG5vIGdhcmJsaW5nIG9jY3Vycy4NCk9u
+bHkgdGhlIG91dHB1dCBmcm9tIElOSVQgc2VlbXMgdG8gYmUgZ2FyYmxlZC4gQW5kIG9ubHkgb3V0
+cHV0IHRoYXQgZG9lcyBub3Qgc2hvdyB1cCBvbiBuZXRjb25zb2xlLg0KDQpUaGUgcHJvYmxlbSB3
+YXMgbm90IHByZXNlbnQgaW4gMi42LjcsIHdoaWNoIHVzZWQgdGhlIG9sZCBzbWMvc2NjIHVhcnQg
+ZHJpdmVycy4NCg0KT3V0cHV0IHdpdGggc2NjMSAodHR5Q1BNMSkNClNlcmlhbDogQ1BNIGRyaXZl
+ciAkUmV2aXNpb246IDAuMDEgJA0KdHR5Q1BNMCBhdCBNTUlPIDB4ZjAwMTFhODAgKGlycSA9IDQp
+IGlzIGEgQ1BNIFVBUlQNCnR0eUNQTTEgYXQgTU1JTyAweGYwMDExYTAwIChpcnEgPSA0MCkgaXMg
+YSBDUE0gVUFSVA0KLi4uDQpGcmVlaW5nIHVudXNlZCBrZXJuZWwgbWVtb3J5OiAyNzZrIGluaXQN
+CklOSVQ6IHZlcnNpb24gMi44NSBib290aW5nDQpBY3RpdmF0aW5nIGFsbCBzd2FwIGZpbGVzL3Bh
+cnRpdGlvbnMuLi5BZGRpbmcgMTAyODE1Mmsgc3dhcCBvbiAvZGV2L2hkYTIuICBQcmlvcml0eTox
+IGV4dGVudHM6MQ0KLi4uDQpTZXR0aW5nIGhvc3RuYW1lIHRvIGdvbGQ0X2NwdTEuLi4gICAgICAg
+WyAgT0sgIF0NCklOSVQ6IEVudGVyaW5nIHJ1bmxldmVsOiAzDQpTdGFydGluZyBzeXN0ZW0gbG9n
+IGRhZW1vbi4uLiAgIFsgIE9LICBdDQoNCg0KT3V0cHV0IHdpdGggU01DMSAodHR5Q1BNMCkNClNl
+cmlhbDogQ1BNIGRyaXZlciAkUmV2aXNpb246IDAuMDEgJA0KdHR5Q1BNMCBhdCBNTUlPIDB4ZjAw
+MTFhODAgKGlycSA9IDQpIGlzIGEgQ1BNIFVBUlQNCnR0eUNQTTEgYXQgTU1JTyAweGYwMDExYTAw
+IChpcnEgPSA0MCkgaXMgYSBDUE0gVUFSVA0KLi4uDQpWRlM6IE1vdW50ZWQgcm9vdCAoZXh0MyBm
+aWxlc3lzdGVtKS4NCklUOs6xZXJzaW9uIDIuODUgYm9vdGluZ2Vtb3J5OiAyNzZrIGluaeKWoA0K
+QWN0aXZhdGluZyBhbGwgc3dhcCBmaWxlcy9wYXJ0aXRpb25zLi4uQWRkaW5nIDEwMjgxNTJrIHN3
+YXAgb24gL2Rldi9oZGEyLiAgUHJpb3JpdHk6MSBleHRlbnRzOjENCk1vdW50aW5nIHByb2MgZmls
+ZSBzeXN0ZW0uLi4gICAgWyAgT0sgIF0NCi4uLg0KU2V0dGluZyBob3N0bmFtZSB0byBnb2xkNF9j
+cHUxLi4uICAgICAgIFsgIE9LICBdDQpJTklUOiBFbsKgcmluZyBydW5sZXZlbDogMw0KU3RhcnRp
+bmcgc3lzdGVtIGxvZyBkYWVtb24uLi4gICBbICBPSyAgXQ0KDQpSdW5lIFRvcmdlcnNlbg0KU3lz
+dGVtIERldmVsb3Blcg0KSW5ub3ZhdGl2ZSBTeXN0ZW1zIExMQw0KMTAwMCBJbm5vdmF0aXZlIERy
+aXZlDQpNaXRjaGVsbCwgU0QgNTczMDENClBoOiA2MDUtOTk1LTYxMjANCnd3dy5pbm5vdnN5cy5j
+b20NCg==
