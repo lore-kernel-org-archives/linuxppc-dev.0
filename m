@@ -1,38 +1,32 @@
-Message-ID: <394A6392.4C9FAAA0@wanadoo.fr>
-Date: Fri, 16 Jun 2000 19:27:46 +0200
-From: Martin Costabel <costabel@wanadoo.fr>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Dan Malek <dan@netx4.com>, <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Serial
+Date: Fri, 16 Jun 2000 21:31:13 +0200
+Message-Id: <20000616193113.4004@mailhost.mipsys.com>
+In-Reply-To: <394A5253.658D6BEF@embeddededge.com>
+References: <394A5253.658D6BEF@embeddededge.com>
 MIME-Version: 1.0
-To: "Timothy A. Seufert" <tas@mindspring.com>
-CC: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Interrupt hick ups
-References: <Pine.LNX.4.05.10006142236120.5007-100000@callisto.of.borg>
-	 <3949DDBD.331E255F@wanadoo.fr> <v04220804b56f910f22ca@[10.0.0.42]>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"Timothy A. Seufert" wrote:
+On Fri, Jun 16, 2000, Dan Malek <dan@netx4.com> wrote:
 
-> Have you made sure your HD is set up for DMA, etc.?  For example, do
-> "hdparm -d1 -u1 -m16 -p4 /dev/hda" and then run the -t throughput
-> test.  (Use the man pages to make sure those are sane options, that's
-> all from memory.)
+>> Does the "stealth" serial port for blue-G3 work with Linux ?
 >
-> I remember similar fluctuation in 2.2.x as automatic negotiation of
-> DMA and so forth was first put in then taken out of the IDE driver.
->
-> Also, to make sure buffers get flushed before a test (for repeatable
-> results) you should do hdparm -Tt, not just hdparm -t.
+>I use them in my old iMac, new iMac (rev. D), iMac DV, and in my G4
+>server.  If the blue-G3 uses the same kind of modem as any of these,
+>and if the Stealth folks claim it will work in the G3, I would suspect
+>it works fine.  There is a challenge with the iMac DV, because they
+>don't make a card specifically for that machine.  I used a G4 version,
+>removed the header pins and soldered the cable directly to the board.
+>Tight fit, but it works.
 
-Yes, I did all this, except the -d1 bit which doesn't do anything on my
-old drive. The numbers I gave were the maximum I could get with any kind
-of tweaking.
+I confirm, it works on the B&W G3, it's plugged on the good old SCCs of
+the mac-io "coffee-machine"
 
-Anyway, I am not really complaining (there are far more serious bugs in
--ac16), I guess it was just something too nice to stay for real.
+Ben.
 
---
-Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
