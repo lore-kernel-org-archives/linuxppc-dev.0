@@ -1,43 +1,39 @@
-Message-ID: <20000327175419.2957.qmail@www0s.netaddress.usa.net>
-Date: 27 Mar 00 10:54:19 MST
-From: Robert Shaw <rshawppc@netscape.net>
-To: Gabriel Ricard <g_ricard@yahoo.com>, Robert Shaw <rshawppc@netscape.net>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: [Re: PCI address collisions on 2.3.x kernels?]
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Mon, 27 Mar 2000 10:05:58 -0800 (PST)
+From: Ani Joshi <ajoshi@shell.unixbox.com>
+To: Ryuichi Oikawa <roikawa@rr.iij4u.or.jp>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Some issues to resolve with XFree 4.0 yet
+In-Reply-To: <20000328024133B.roikawa@rr.iij4u.or.jp>
+Message-ID: <Pine.LNX.4.10.10003270958530.10064-100000@shell.unixbox.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Gabriel Ricard <g_ricard@yahoo.com> wrote:
+On Tue, 28 Mar 2000, Ryuichi Oikawa wrote:
 
-> Did you copy your old .config to the new kernel src
-> dir and run make oldconfig? Or just choose the same
-> options? Are you sure you had the correct IDE support
-> built in?
+> BTW, I noticed an interesting x11perf score. x11perf -scroll500 marked ~300/sec
+> for ATI Rage128RE connected to 66MHz bus on B&W G3 rev.1, but ~600/sec for an
+> old Matrox Millennium II to 33MHz bus, measured at 32bpp/24bit depth.
 
-Initially, that's what I tried. Since then I have just gone in and made sure I
-had the same step selected that I did in the 2.2.15pre14 kernel that works for
-me. I'm positive I had the IDE support set properly (as compared to my working
-2.2.15 kernel). Unless there is some new option I don't know I need.
+are you using the patch I posted last week?  If not, then I suggest you
+do.  I fixed the improper load/stores in r128 and it shows a 200% increase
+in almost all x11perf tests.  example:
 
-Also, it appears to find my SCSI drive and CD-RW (SCSI) drive just fine, so I
-would expect any non-IDE systems would boot. I have not tried booting off the
-SCSI drive I have, but I can try that tonight and see if it gets any further.
+(jack howarth tested these on his g4/450 (rage 128pro?)):
 
+before:
+Scroll 500x500 pixels:	583.0/sec
 
-
-
+after:
+Scroll 500x500 pixels:	1060.0/sec
 
 
+> Ryuichi Oikawa
+> roikawa@rr.iij4u.or.jp
 
-
-
--Robert
- mailto:rshaw@linuxppc.org
- icq:45688313
- http://www.linuxppc.org/BlueG3/
+ani
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
