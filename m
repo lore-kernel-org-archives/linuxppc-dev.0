@@ -1,44 +1,43 @@
-Mime-Version: 1.0
-Message-Id: <p04330102b69d64c82c08@[24.163.36.97]>
-Date: Wed, 31 Jan 2001 02:04:56 -0500
-To: linuxppc-dev@lists.linuxppc.org
-From: Stefan Jeglinski <jeglin@4pi.com>
-Subject: continuing XF402 (atimisc) problems
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Date: Wed, 31 Jan 2001 08:10:45 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+cc: Daniel Eisenbud <eisenbud@cs.swarthmore.edu>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: mesh SCSI bus locks hard on 7500 when burning a CD-R in dao mode
+In-Reply-To: <Pine.LNX.4.10.10101302239070.27612-100000@zirkon.biophys.uni-duesseldorf.de>
+Message-ID: <Pine.LNX.4.05.10101310808540.30092-100000@callisto.of.borg>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I've been over this on the -user list and the YDL list, and cc-ed Ani
-a few times with it (no response). No one seems to have a clue as to
-the cause of the problem, which is described concisely at:
+On Tue, 30 Jan 2001, Michael Schmitz wrote:
+> > So the only points in common seem to be that the DVD drives are running
+> > on mac hardware and that the drivers are written by Paul Mackerras.  :-)
+> > I don't at all mean to impugn Paul's coding ability, which is obviously
+> > excellent, but the fact that he wrote both the drivers may mean that
+> > they share lots of code and possibly share the same bug.
+>
+> If so, the bug should have propagated to the m68k 53c9x driver. Wouldn't
+> be the 53c9x first weirdness - I never got it to accept a DAT drive (old
+> DDS-1, possibly Apple) without blowing up.
 
-<http://lists.linuxppc.org/listarcs/linuxppc-user/200101/msg00672.html>
+FYI, my DDS-1 worked with my MESH. Not perfectly, sometimes it gave a warning
+(lost arbitration, IIRC), which aborted the current reading/writing.
 
-(more detail available if necessary)
+Moving the DD-1 to the Sym53c875 solved the problem.
 
-This is on a 6500 (on-board RageII) with a RagePro PCI card. I have
-tried rolling my own XF402 build, with Ani's driver updates, and get
-the exact same XFree log result. I've also tried several of kfukui's
-402 rpms, including use of his "old drivers," again with exactly the
-same result.
+Gr{oetje,eeting}s,
 
-I've also done this with an old mix of LinuxPPC 1999 and YDL 1.2.1
-installations, and a clean LinuxPPC Q4 install. I've also tried it
-with kernels 2.2.17, 2.2.18, and 2.4.1. Again all the same result.
+						Geert
 
-I can run with fbdev no problem. I've also had no problem installing
-XF402 on 2 9500-class machines, so I believe my technique is OK. I'm
-pretty darn sure at this point that my Xfree86Config file is correct
-(correct driver, correct Bus ID).
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-The errors (unresolved symbols) do not seem like a program bug to me,
-more like a linker issue or a library issue? (I'm a bit out of my
-element here)
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
-If anyone can help me... well, you know the part about THANKS.
-
-
-Stefan Jeglinski
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
