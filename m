@@ -1,26 +1,23 @@
-Message-ID: <3AEFED47.A685E105@india.infogain.com>
-Date: Wed, 02 May 2001 16:49:35 +0530
-From: ashish anand <ashisha@india.infogain.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Giuliano Pochini <pochini@shiny.it>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: slow ZIP
+Date: Wed, 2 May 2001 13:32:17 +0200
+Message-Id: <20010502113217.25530@mailhost.mipsys.com>
+In-Reply-To: <XFMail.010502102553.pochini@shiny.it>
+References: <XFMail.010502102553.pochini@shiny.it>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: question about dynamic dma?
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I have a silly doubt about the pci-dma interface .
-Is there any relevance of pci-dma interface on a
-32 bit plateform? (though i understand its relevance on
-64 bit plateform)
-also in DMA-MAPPING.txt written that drivers using
-this interface , should no more use virt_to_bus and
-like stuffs.
-what is the special significance of this?
-Is it somewhere related to snooping during DMA
-(as part of cache consistency protocol) ?
-If anyone can explain this briefly , it will be
-much helpful.
-Regards..
+>Ok, but how can I enable DMA after boot ?  hdparm refuses to do it.
+
+Look for the code in ide-pmac.c that skips enabling DMA when the
+device is an ide floppy.
+
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
