@@ -1,30 +1,134 @@
-Message-ID: <3857F777.7B077271@email.sps.mot.com>
-Date: Wed, 15 Dec 1999 14:17:59 -0600
+Message-ID: <385807D7.8262398C@email.sps.mot.com>
+Date: Wed, 15 Dec 1999 15:27:51 -0600
 From: "Richard Hendricks" <ra6353@email.sps.mot.com>
 MIME-Version: 1.0
-To: bsimon@ctam.com.au
-CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>,
-        linux-embedded <linux-embedded@waste.org>
-Subject: Re: LinuxPPC and DiskOnChip
-References: <38543F4A.B529292C@ctam.com.au>
+To: Dan Malek <dan@netx4.com>
+CC: Alan Mimms <alan@packetengines.com>, Jim Chapman <jim.chapman@iname.com>,
+        bsimon@ctam.com.au,
+        linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: linuxppc-embedded: /bin/sh wont run from nfsroot.
+References: <19991215055541.23843.qmail@web301.mail.yahoo.com> <385725A3.A1C110DF@ctam.com.au> <385774B8.3405494B@iname.com> <99121511085505.00750@alan.corp.packetengines.com> <3857F56C.65411CA4@netx4.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Brendan,
-  I know of a MPC821 customer using the M-Systems DiskOnChip with
-Windows CE, so it *can* be done.  As for drivers, you're probably
-going to have to port the clean-room implementation, or harass
-M-Systems to write one for Linux.
 
-Brendan Simon wrote:
+
+Dan Malek wrote:
 > 
-> Has anyone used a DiskOnChip device with an embedded PowerPC processor
-> (MPC860/MPC8260) ?
-> Are there any drivers ?  Are they board specific ?
+> Alan Mimms wrote:
 > 
-> Thanks,
-> Brendan Simon.
+> > Can you elaborate on the CPU flavors that do and don't work?  I just bought a
+> > pair of RPXCLLF boards from Embedded Planet which have XPC860TZP50B3 on them.
+> 
+> Those are fine, except I am going to add the Rev. B.3 silicon
+> errata patches into the kernel (again).  I discovered the EP
+> design has finally encroached upon some of the errata due to
+> voltage/timing specs.
+> 
+> If they boot Linux/PPC, they will run fine.  If they don't, it
+> is likely this software workaround.
+> 
+> Just use them.  If you have trouble, let me know.
+
+Alan,
+  The B3 revision of the 860/821 had/has some problems related to 
+the data caches getting corrupted when certain registers were accessed.
+It's discussed in our errata document on our (MPC821) webpage.
+
+The MPC860 was rev'd to C to fix this, the MPC821 wasn't.  There's
+a long and sordid story about it I won't bore anyone here with.
+
+> > What is the issue with the "optimized" cache hardware?
+> 
+> Nothing for Linux.
+> 
+> > .....  Is it possible that they have gone to a newer more superscalar
+> > implementation of the 8xx core with the 8xxP parts that does more out of order
+> > operations?
+> 
+> Nope, just a bigger cache.  Some of the bits in the cache
+> registers now have meaning where they didn't before.
+
+Also, in one of the registers the bits are flipped around.  This
+was because the tags got smaller, and so a few bits somewhere ended
+up getting swapped around.  Don't ask me why, and I'll tell you no lies.
+
+:)
+ 
+> > ...  Or did simply doubling the cache size break something that had
+> > been lurking around waiting to bite us?  Do you know what is wrong?
+> 
+> Relax :-).  If there was trouble, I would be one of the first to
+> know and I would be working to correct it.
+
+The only possible problem I could see is if you had a routine that
+flushed the caches manually.  Of course, if you did, you probably
+needed to be slapped anyways.
+ 
+> > Dan, can you tell us if the DMA operations on the 8xx processors are cache
+> > coherent?
+> 
+> Yes, I can tell you, and no they are not.
+
+Dan's correct, they are not.  The caches sit between the CPU
+(really the MMUs) and the bus.  The DMA controller is part of the
+CPM, which also sits on the bus.  The 8xx family doesn't support
+any kind of snooping for those type of accesses.  You can either mark
+the locations you need to DMA non-cacheable (if you plan on writing to
+the memory), or as write-through (if you plan on reading from them).
+Just basic good system design.
+ 
+> > ..... so I have erred on the conservative side and in my drivers
+> > have done cache flushing operations before/after each DMA as appropriate for
+> > DMA direction.
+> 
+> What kind of drivers are you using?  The only thing likely to
+> perform DMA on the 8xx is the CPM.  There are already CPM functions
+> for managing this stuff, which is a combination of uncached
+> memory and cache management.  Try to use something that already
+> exists, or at least use it as a model for something special
+> you are doing.
+
+Being conservative never hurt anyone...Unless it seriously hurts your
+performance, I wouldn't worry to heavily about it.  BTW, you shouldn't
+be caching the internal memory map, including DPRAM, and memory
+areas the CPM writes to.  
+ 
+> > ....  MOT sent us 40 chips of which 4 or 5 were rev A.
+> 
+> Cool.  Make key chains out of them.  Seriously, depending upon
+> what you are trying to accomplish, the Rev. A parts should work
+> fine.  It may take a few software patches, but they will work.
+
+Really?  Wow.  Rev. A's.  Maybe you *should* make keychains out
+of them.  I can't remember which fixes went in between A and B3,
+but you should be able to find them on the website in the various
+errata.
+
+There were/are tons and tons of I2C errata.  Most related to
+multi-master
+mode.  Another long and sordid story, no doubt.
+ 
+> > wait for the boards to which rev A 850s had been nailed to be reworked (several
+> > days' turnaround) to get working boards so I can bring them up and give them to
+> > the other software folks.
+> 
+> There are advantages to working with people with Motorola connections.
+> 
+> > It also appears that there are a lot of errata associated with the MPC850 rev
+> > A parts which are ostensibly fixed (and, in my experience, ARE fixed) in rev B.
+> 
+> Every revision is better, but Rev. B still has some things to work
+> around.
+
+Really?  Hopefully nothing I need to worry about.  Figuring out the
+G14 errata for the MPC823 was a life-unaffirming experience.
+
+>         -- Dan
+
+BTW, Brendan, I work in Motorola supporting the MPC821/MPC823, 
+and I tend to lurk on this mailing list as well as comp.sys.powerpc.tech
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
