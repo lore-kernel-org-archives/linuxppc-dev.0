@@ -1,68 +1,61 @@
-Date: Mon, 16 Aug 1999 09:32:51 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Michel Lanners <mlan@cpu.lu>
-cc: mj@ucw.cz, paulus@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Various PMac PCI patches
-In-Reply-To: <199908150940.LAA00252@piglet.cpu.lu>
-Message-ID: <Pine.LNX.4.10.9908160924290.19649-100000@mercator.cs.kuleuven.ac.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Mime-Version: 1.0
+Message-Id: <v04210100b3dd6a1829b5@[63.192.35.210]>
+Date: Mon, 16 Aug 1999 01:10:43 -0700
+To: linuxppc-dev@lists.linuxppc.org
+From: Erwin Frise <erwin@fruitfly.BDGP.Berkeley.EDU>
+Subject: atyfb with ATI 264VT?
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 15 Aug 1999, Michel Lanners wrote:
-> >> - The IRQ fixup code already checks for the presence of interrupts, so
-> >> I'v changed Martin's comment. Also, I'm not sure if PMac PCI boards can
-> >> ever use more than one interrupt, as all PCI interrupt lines are OR'ed
-> >> together on the bridge....
-> > 
-> >    If they really are, just kill the whole comment, it's bogus.
-> 
-> OK, I'll do that. Paul, any idea whether the IRQ OR'ing is done on the
-> MPC106 as well? Geert, what about your board?
+After upgrading from R4 to R5, I have been trying to get accelerated 
+XFree86 on my Starmax 4200 with the onboard video chip (ATI 264VT) 
+using the atyfb and kernel 2.2.10 (precompiled from Paul), booting 
+via BootX 1.1.3.
 
-On the LongTrail, interrupts are controlled by the OpenPIC in the Hydra Mac
-I/O. This OpenPic has 20 inputs, of which 6 are used by PCI (asm-ppc/hydra.h):
+No matter what resolution/bit depth I choose I cannot get the kernel 
+atyfb to work: I get double text characters in 8 bit color mode, 
+totally screwed palette in 16 bit and a black screen with lots of 
+vertical lines everytime something gets written to the terminal in 
+24/32 bit (when starting XFree86, the results were similar). Playing 
+around with the mclk values didn't change anything at all. Out of 
+convenience I haven't used atyfb much since I started using BootX 
+(accelerated Xpmac worked "no video" checked too) but I believe that 
+atyfb was working fine with 2.1.24 in the early R4 release when I was 
+still using OF to boot.
 
-#define HYDRA_INT_EXT1          12      /* PCI IRQW */
-#define HYDRA_INT_EXT2          13      /* PCI IRQX */
-#define HYDRA_INT_EXT3          14      /* PCI IRQY */
-#define HYDRA_INT_EXT4          15      /* PCI IRQZ */
-#define HYDRA_INT_EXT5          16      /* IDE Primay/Secondary */
-#define HYDRA_INT_EXT6          17      /* IDE Secondary */
+Does anyone know what's going on or how to get the atyfb in the 
+current kernels to work with the ATI VT chip? Is there any obvious 
+problem/solution which I could try to do? At some point apparently 
+the VT chip worked, so what has changed since then? I saw that there 
+are still lots of references for the ATI VT chip in the atyfb.c 
+driver in the kernel code; however don't understand enough about 
+graphics chip programming to make any meaningful tweaks. I have been 
+following the discussion about the atyfb on the G3. Perhaps I could 
+also try to use Geert's atyfb_dsp_debug program but I'm a bit 
+reluctant to play around with parameters I don't understand and 
+perhaps fry my graphics chip.
 
-FYI, input 0 is used for the legacy ISA cascade.
+LinuxPCC has become a very important part of my daily work and 
+despite of those problems I wish to thank all the developers out 
+there. I'd be very grateful if someone could give me some clues, 
+guidelines or tips.
 
-IRQ[W-Z] are wired to INT #A-D in the 4 PCI slots using the standard interrupt
-line rotating technique. Full schematics at
-ftp://ftp.austin.ibm.com/pub/PPC_support/reference_designs/longtrail/ :-)
+TIA,
 
-The IDE interrupts are wired to the interrupt lines on the W83C553 PCI/ISA+IDE.
+Erwin
+-- 
 
-> >    No driver should touch PCI_INTERRUPT_LINE at all. If it does,
-> > it's buggy and should be fixed instead of working around it in generic
-> > PCI code. The only correct way how to get the interrupt number is to
-> > look at pci_dev->irq (on some architectures, the interrupt numbers
-> > are too large to fit in the interrupt line configuration register).
->
-> OK, then I'll only update pci_dev->irq. We'll see if any driver
-> breaks ;-)
+Erwin Frise
+Bioinformatics scientist
+Berkeley Drosophila Genome Project
+Life Science Addition #3200
+University of California
+Berkeley, CA 94072-3200
 
-On the LongTrail (and other PPC boxes with OpenPIC), pci_dev->irq is changed by
-the PCI fixup code since interrupts 1-16 are mapped to the legacy ISA
-interrupts for compatibility reasons, while 17-36 are the 20 OpenPIC
-interrupts.
-
-Greetings,
-
-						Geert
-
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
-
+Tel: (510) 643-0269
+Email: erwin@fruitfly.berkeley.edu
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
