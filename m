@@ -1,33 +1,38 @@
-Message-Id: <9905121524.AA32004@marc.watson.ibm.com>
-To: Richard Henderson <rth@cygnus.com>
-Cc: law@cygnus.com, Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
-        egcs-patches@egcs.cygnus.com, meissner@cygnus.com,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: PATCH: Fix 2 PPC/SYSV varargs problems 
-In-Reply-To: Message from Richard Henderson <rth@cygnus.com>
-   of "Tue, 11 May 1999 23:48:42 PDT." <19990511234842.A26784@cygnus.com>
-Date: Wed, 12 May 1999 11:24:15 -0400
-From: David Edelsohn <dje@watson.ibm.com>
+Message-ID: <3739A212.36A30431@deneba.com>
+Date: Wed, 12 May 1999 11:45:23 -0400
+From: michael cardenas <michael_cardenas@deneba.com>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: compiling GAIM
+Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> Richard Henderson writes:
+    I tried to compile gAim last night (Thats the gtk version of aol
+instant messenger) and got the following error at the end of the
+compilation
 
 
-Richard> On Wed, May 12, 1999 at 12:19:53AM -0600, Jeffrey A Law wrote:
->> Has this problem been fixed?  I see patch from Richard which looks like it
->> is related:
+gcc -DPACKAGE=\"gaim\" -DVERSION=\"0.8.0\" -DSTDC_HEADERS=1
+-DHAVE_SYS_WAIT_H=1 -DHAVE_FCNTL_H=1 -DHAVE_SYS_TIME_H=1
+-DHAVE_UNISTD_H=1 -DRETSIGTYPE=void -DHAVE_STRFTIME=1 -DHAVE_SOCKET=1
+-DHAVE_STRDUP=1 -DHAVE_STRSTR=1  -I. -I.       -c about.c
+In file included from /usr/include/gdk/gdktypes.h:25,
+                 from /usr/include/gdk/gdk.h:23,
+                 from /usr/include/gtk/gtk.h:23,
+                 from about.c:31:
+/usr/include/glib.h:22: glibconfig.h: No such file or directory
+make: *** [about.o] Error 1
+[root@(none) gaim-0.8.0]#
 
-Richard> No, this is a different, though related, problem.  I need to sit
-Richard> down with the ABI to properly evaluate the patch.  PPC SVR4 varargs
-Richard> seems needlessly complex.
+What exactly is glib.h or glibconfig.h and where can I get them?
 
-	That is an understatement!  PPC SVR4 varargs is a monstrosity that
-attempted to pack the registers as tightly as possible and created an
-endless mess as a result.
+Thanks...
 
-David
+I'll put my compiled binary up on my web page, or upload it to some
+sites for public consumption.
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
