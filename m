@@ -1,46 +1,64 @@
-Message-ID: <3FAC089B.1060203@2net.co.uk>
-Date: Fri, 07 Nov 2003 21:03:23 +0000
-From: Chris Simmonds <chris@2net.co.uk>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: PCI for mpc8270
-References: <3FA7A8C5.2020702@2net.co.uk> <008b01c3a339$5ddc7c20$4b01a8c0@shang> <3FA8536A.6080101@embeddededge.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: EST sbc8260 boot debug
+Date: Fri, 7 Nov 2003 15:11:29 -0700
+Message-ID: <8039970AF146314597457D3B51A68B382E042D@cossmgmbx02.email.corp.tld>
+From: "VanBaren, Gerald (AGRE)" <Gerald.VanBaren@smiths-aerospace.com>
+To: "li" <slowforce@21cn.com>, <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan,
+Wolfgang is sleeping right now so I'll try to recreate his standard response...
 
-Thanks, I have included that code in my kernel and it seems to be
-working ok - haven't really tested it yet but at least bus enumeration
-works.
+1) ppcboot is a dead project.  It has been replaced by u-boot.  Please switch to u-boot:
+      http://sourceforge.net/projects/u-boot/
 
-This code is based on the PCI 9 workaround for the bug in the 8265,
-which uses an IDMA channel for all access. Has anybody looked at doing a
-version without the woorkaround? Would it make any difference to the
-performance of the system?
+2) There is a u-boot email list that you can send questions to.  Please use that for u-boot questions.
+    http://lists.sourceforge.net/lists/listinfo/u-boot-users
 
-Bye for now,
-Chris.
+2) Running out of RAM is strongly discouraged.  u-boot (ppcboot) is intended to run out of flash as a boot program.  Running out of RAM is an unsupported option.  While you can run it out of RAM, you will have to understand your hardware and implications of hardware initialization that is performed by default by u-boot (ppcboot).  The fact that you are asking these questions indicates you have not considered the hardware problems.
+
+Please use your bdi2000 to program a standard unmodified sbc8260 build into flash and THEN ask questions on the u-boot list if it doesn't work.
+
+gvb
+
+P.S. IIRC, the standard sbc8260 configuration jumper is set to "boot low" (0000_0100).  The standard sbc8260 u-boot build is set to "boot high" (FFF0_0100).  You will want to change that jumper.
 
 
-
-Dan Malek wrote:
-
-> shanggao wrote:
->
->> If  mpc8270 has 60x bus,I think you can use
->> CPC710,MV64361....................
->
->
-> The 8270 has the internal PCI bridge, like the 8265/66.
-> The linuxppc_2_4_devel kernel has the PCI functions and setup
-> for the 8266 on the Motorola ADS board.  It would be a
-> starting point for you.
+> -----Original Message-----
+> From: li [mailto:slowforce@21cn.com]
+> Sent: Friday, November 07, 2003 11:49 AM
+> To: linuxppc-embedded@lists.linuxppc.org
+> Cc: linuxppc-embedded@lists.linuxppc.org
+> Subject: EST sbc8260 boot debug
 >
 >
->     -- Dan
+>
+> Hello all,
+> I have an EST sbc8260 board to boot. After connecting the BDI2000
+> with the board, and power on, everything seems ok. In the config file
+> for sbc8260, BR0 is set to 0xFE000801. Then, i modified ppcboot-1.1.6
+> for mpc8260, change the textbase from 0x40000000(flash address) to
+> 0x200000(sdram address) and also the FLASH base addr is set
+> to 0x200000.
+> At last, using "load 0x200000 ppcboot BIN" command, i download the
+> ppcboot image to sdram, and set pc to 0x200100 using "ti 0x200100"
+> command. when i using "ti" command, i can see that the pc is
+> increasing,
+> but when i get into the "board_init_r" function, there should be
+> something appears in the console, in fact nothing appeared.
+> Is there any problem with my procdure?
+>
+> PS: there is much switchs and JPs on the board, can anyone give an
+> proper setting for them under ppcboot environment?
+>
+> Thanks in advance
+> slowforce
+>
+>
 >
 
 
