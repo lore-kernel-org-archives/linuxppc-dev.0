@@ -1,21 +1,49 @@
-In-Reply-To: <19990106170222.030778>
-Date: Wed, 6 Jan 1999 18:21:16 +0100
-To: tas@mindspring.com, linuxppc-dev@lists.linuxppc.org,
-        Paul.Mackerras@cs.anu.edu.au
+Date: Wed, 6 Jan 1999 19:38:13 +0100
+To: debian-powerpc@lists.debian.org, linuxppc-user@lists.linuxppc.org,
+        linuxppc-dev@lists.linuxppc.org
 From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Great IDE perf (WAS: Strange PMAC IDE performance)
-Message-Id: <19990106182116.029161@mail.mipsys.com>
+Subject: [ANN] New test kernel available
+Message-Id: <19990106193813.032518@mail.mipsys.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I tested on the iMac, and we have also the same register with the same
-value. All three machines have the compatible property of the ide in the
-device tree set to "heathrow-ata". I'm building a test kernel along with
-other patches I made with a quick hack for this, I'll post it soon with
-diffs so people can play with it and do real testings.
+Hello !
+
+I've uploaded to my web page (see URL below) a new test kernel along with
+it's modules and diff's.
+
+This kernel contains some personal patches, some of them experimental,
+other quite robust, plus the IDE improvement suggested by Paul recently
+on the linuxppc-dev mailing list :
+
+ - Improve support for 3 buttons mice and PowerBook trackpad
+
+ - Implements L2CR (backside cache) setting via BootX for G3 upgrade cards
+   (needs BootX 1.0.1 minimum)
+
+ - Adds support for backlight buttons on PowerBook G3 Series (it also turns
+   off backlight when the console screen saver blanks the display). This
+   used to work only on older PowerBooks. Note: currently the backlight
+buttons
+   won't auto-repeat. The backlight value is stored in nvram in the same
+   location as MacOS and so should be compatible with MacOS setting. 
+ 
+ - Some cleanups here or there (gatwick interrupt fixing, power control
+of modem
+   in macserial.c, ...)
+
+ - Sets the correct value in the IDE controller to enable full speed of IDE
+   transfer on heathrow-based machines.
+
+
+Note: This kernel includes built-in Adaptec and NCR53C8XX drivers and
+DDP. The modules contains smbfs. PCMCIA is not included. 
+
+I tested it on a PowerBook G3 Series and a PowerMac G3/300 without
+problem. Be careful however since some of this stuff is experimental.
 
 
 -- 
