@@ -1,38 +1,39 @@
-In-Reply-To: <13981.45420.95483.559227@lassi.cygnus.co.uk>
-Date: Thu, 14 Jan 1999 14:27:52 +0100
-To: linuxppc-dev@lists.linuxppc.org
-CC: Cort Dougan <cort@persephone.cs.nmt.edu>, Jesper Skov <jskov@cygnus.co.uk>
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: Synchronization [was Re: The Magic Show: kernel_map() disappearing]
-Message-Id: <19990114142752.015604@mail.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Thu, 14 Jan 1999 09:47:52 -0500 (EST)
+From: satadru pramanik <satadru@umich.edu>
+To: Renaud Dreyer <rdreyer@math.berkeley.edu>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Accelerated XF68 on PowerMac 7300?
+In-Reply-To: <199901140836.AAA01359@fhloston>
+Message-ID: <Pine.LNX.4.05.9901140947290.21411-100000@beer.pub.umich.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Jan 14, 1999, Jesper Skov <jskov@cygnus.co.uk> wrote:
+Ditto for a 7600/132!
 
->We would want to use eieio for drivers and such accessing their
->controller in a strict serialized manner. We would want to use sync
->for SMP related stuff since it ensures, well, synchronization between
->multiple CPUs wrt memory access.
 
-And I'll add the usual warning: If the device is a PCI device and you
-need to make sure that the write actually reached the device (for example
-making sure the interrupt enable bits are set before re-enabling the
-interrupts on the CPU), you should add a read from the same device (from
-the same bus should be enough) to make sure tall the bridges in the path
-to the device completed their write.
-Remember that a write to PCI is usually a "posted write" and so is
-asynchronous, regardless of eieio or sync's done on the CPU.
+On Thu, 14 Jan 1999, Renaud Dreyer wrote:
 
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
+   Does the accelerated XF68 X-server support acceleration on the PowerMac
+7300? I've been trying to set-up XF68 with little success. All I can
+get is 8bpp and no acceleration. If someone has managed to make
+acceleration work on a 7300 (with stock video), I'd appreciate a copy
+of your XF68Config file. Thanks,
+
+           Renaud Dreyer
 
 
 
+----
+satadru pramanik `satadru@umich.edu'
+"Put your hand on a hot stove for a minute, and it seems like an hour. Sit
+with a pretty girl for an hour, and it seems like a minute. THAT'S
+relativity." 
+-Albert Einstein
+---
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
