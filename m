@@ -1,55 +1,72 @@
-Date: Thu, 17 Jun 1999 10:59:25 -0400 (EDT)
+Date: Thu, 17 Jun 1999 14:36:00 -0400 (EDT)
 From: satadru pramanik <satadru@umich.edu>
-To: a sun <asun@saul5.u.washington.edu>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [netatalk-admins] Re: RedHat 6.0 help
-In-Reply-To: <199906170202.TAA02208@saul5.u.washington.edu>
-Message-ID: <Pine.LNX.4.10.9906171056520.23679-100000@beer.pub.umich.edu>
+To: Inter Nut <internut@sie.com>
+cc: netatalk-admins@umich.edu, linuxppc-dev@lists.linuxppc.org
+Subject: Re: [netatalk-admins] help!
+In-Reply-To: <v04020a03b38ec4f2301e@[192.168.0.5]>
+Message-ID: <Pine.LNX.4.10.9906171434460.24433-100000@beer.pub.umich.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-I have netatalk 2.1.3 asun running on a vger cvs 2.2.7 kernel on a glibc
-2.1 system, I can't mount volumes though on a vger 2.2.10 system (The
-server appears in the chooser, but when I enter my auth information and
-the servers appear, clicking on them gives me a broken connection to the
-server.
-
-sat.
+This is exactly the problem I had when i moved from vger linux kernel
+2.2.7 to 2.2.10.   Moving back to 2.2.7 makes the problem go away
+completely.
 
 
-On Wed, 16 Jun 1999, a sun wrote:
+On Thu, 17 Jun 1999, Inter Nut wrote:
 
-   Does anyone actually have netatalk running on a 2.2.x kernel?
+Hi,
+I'm running an AMD 350 Mhz box with 64 megs ram and 2 internal UDMA hds
+(22gig & 14 gigs)  partitioned into 5 partitions (4  8gig partitions, 64
+meg swap, and  the remainder as a temp.)  Running Redhat Linux 5.2.   The
+NIC is a 3com 10/100 base T pci card.
 
-i'm running netatalk fine on a 2.2.9 kernel. i'm using glibc 2.0.7
-though, so that may be an issue.
+Everything works great - including Xwindows.
 
-- -a
+I want to make this box a Linux Appletalk & NT file server.  So I installed
+the latest netatalk RPMs from the redhat and/or
+http://thehamptons.com/anders/netatalk/  sites as well as Samba.
+
+The network consists of 8 powermacs running  systems 8.5-8.6  as well as a
+couple of pcs running NT 4.0 and 98.  At present there is a mac 8100
+running as a file server - but it's a DOG.  Figure it's time to go linux,
+huh?
+
+OK - now the fun part.
+
+I can telnet and ftp into the linux box with no problem.  My pcs running
+maclan see the linux box in the network neighborhood.  The macs all see the
+linux box in the chooser/network browser.   BUT....
+
+When I try to connect to the linux box from the macs - I get a  " (I/O
+error ) - "-1072"   "  or a  " connection to the specified server has been
+unexpectedly broken "  message and it won't let me in.  Likewise -  I
+cannot log in via the pc either due to  "An Appletealk errer has occured"
+message.
+
+I set up 3 users and made sure their passwords conform to the proper
+conventions (no I didn't try to log in as root).    Is there something
+special I need to do to these users other than run the following commands:?
+adduser  USERNAME
+passwd USERNAME
+
+What else can it be?
+
+Thanx a lot for any help.
 
 
 
-- ----
+
+----
 satadru pramanik `satadru@umich.edu'
 "Put your hand on a hot stove for a minute, and it seems like an hour. Sit
 with a pretty girl for an hour, and it seems like a minute. THAT'S
 relativity." 
-- -Albert Einstein
-- ---
-
------BEGIN PGP SIGNATURE-----
-Version: PGPfreeware 5.0i for non-commercial use
-Charset: noconv
-
-iQA/AwUBN2kNWEwK0JxvsXXVEQLbNwCfckjg6/caxPZQNSEzonxJhPerKAoAnAlq
-+5QVOhFDP6iMPN7SohAS3K6M
-=0AcN
------END PGP SIGNATURE-----
+-Albert Einstein
+---
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
