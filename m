@@ -1,49 +1,28 @@
-Date: Mon, 28 Jun 1999 14:01:11 -0400 (EDT)
-From: Peter Handel <phandel@cise.ufl.edu>
-To: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Problems with twm?
-Message-ID: <Pine.GSO.4.05.9906281359520.4357-100000@eclipse.cise.ufl.edu>
+Date: Mon, 28 Jun 1999 14:11:31 -0400 (EDT)
+From: Tom Rini <trini@disparity.net>
+To: Peter Handel <phandel@cise.ufl.edu>
+cc: "Jason S." <jhsterne@mindspring.com>, linuxppc-user@lists.linuxppc.org,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: HELP - I'm going mad: mp3/adb conflict
+In-Reply-To: <Pine.GSO.4.05.9906281353010.4022-100000@eclipse.cise.ufl.edu>
+Message-ID: <Pine.BSF.3.96.990628141044.38480G-100000@silver.teardrop.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
----------- Forwarded message ----------
-Date: Mon, 28 Jun 99 19:10:16 MESZ
-From: Wulf Hofbauer <wh@echo.chem.TU-Berlin.DE>
-To: Peter Handel <phandel@cise.ufl.edu>
-Subject: Re: Problems with twm?
+On Mon, 28 Jun 1999, Peter Handel wrote:
 
-> Since I upgraded to r5, my twm menus don't print the text unless I
-> roll the mouse over them; this exact same .twmrc worked perfectly
-> under r4.  Here's a segment of my .twmrc:
-> 
-> menu "hosts"
-> {
-> "Logins"        ("white":"DarkSlateGrey")       f.title
-> "Local Shell"   !"xterm &" #theres more here
-> ...
-> "-----"         f.title
-> "Exit"          ("white":"CornFlowerBlue") f.quit
-> }
-> 
-> Is this the same thing you're experiencing?
+> So what are the people doing who precompile kernels for us unwashed
+> masses differently?
 
-Yep. So it's not just me :). I suspect the X server tries to optimize
-away some expose events and screws up badly. I might check Xpmac to
-see if the problem persists.
+Hmm.  I'll post the config file I used for vmlinux4 "soon". 
+BTW, I changed email addys everybody. :)
 
-- Wulf
-
-
---
- ________________________________________________________
-! Dipl. Phys. Wulf Hofbauer  (wh@echo.chem.tu-berlin.de) !
-! Max-Volmer-Institut     Technische Universitaet Berlin !
-! Strasse des 17. Juni 135     10623 Berlin      Germany !
-!________________________________________________________!
-
+---
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
