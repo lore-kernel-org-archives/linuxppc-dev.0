@@ -1,27 +1,31 @@
-Message-ID: <3F2A5C17.4040007@windriver.com>
-Date: Fri, 01 Aug 2003 13:24:55 +0100
-From: Richard Danter <richard.danter@windriver.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: "Marco Schramel" <marco.schramel@go.bartec.de>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: PPC Boot for MPC8270 and MPC866
+Date: Mon, 4 Aug 2003 13:43:30 +0200
+Message-ID: <MFEGIPJEFHIKHGDLDACIGEOFCAAA.marco.schramel@go.bartec.de>
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 750/107 CHRP question
-References: <20030801121740.1D9ADC602D@atlas.denx.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
->>For complete MMU handling the debugger would need to know where to find
->>the mapping tables and remap it's symbol info. None of our debuggers can
->>do that yet.
->
->
-> Are there any plans to add such support?
+Hi all,
 
-Very good question. Unfortunately I do not know the answer. :(
+are there is a PPC BOOT supporting the new 8270 USB Host feature ? (UBOOT
+0.4.0 ?? )
+Is the new 866 still supported ?
+Is it difficult to implement new routines for some asics or is it better do
+wirte some device driver for it ?
 
-Rich
+Thanks in advance
 
+Marco Schramel
+__________________________________________________________
+
+Marco Schramel
+R&D
+BARTEC GmbH
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
