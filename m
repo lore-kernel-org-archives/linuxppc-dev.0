@@ -1,26 +1,35 @@
-Date: Fri, 1 Dec 2000 21:14:13 -0500 (EST)
-From: Rod Stewart <stewart@nexus.carleton.ca>
-To: R Shapiro <rshapiro@bbn.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: libstdc++-devel ??
-In-Reply-To: <14888.3762.258484.116617@esb.bbn.com>
-Message-ID: <Pine.LNX.4.21.0012012113050.17014-100000@nexus.carleton.ca>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: "Calum Selkirk" <cselkirk@sophix.uklinux.net>
+Date: Sat, 2 Dec 2000 03:20:58 +0000
+To: linuxppc-dev@lists.linuxppc.org
+Subject: quik + atyfb on powebook wallstreet
+Message-ID: <20001202032058.A427@sophix.uklinux.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 1 Dec 2000, R Shapiro wrote:
+Hi ..
 
-> Where can I get the package libstdc++-devel?  I can't find it anywhere
-> on the linuxppc ftp site and there's no src rpm on rpmfind.  I need it
-> to build doxygen (there's a src rpm for that at rpmfind).
+I have been trying to get quik booting working on a Powebook wallstreet
+using Apples System Disk to patch OF. I have been able to get linux to
+boot however I am getting a melting screen once atyfb is initialized.
+I know this was a problem from a while back, i've found a number of
+URL's / posts on the deb list relating to this, but I seem to recollect
+this being discussed on this list and that the issue was fixed. Is that
+correct or is quik booting with atyfb still a gray area on the wallstreet?
 
-Most people have merged libstdc++-devel into gcc-c++, so grab gcc-c++ and
-you should be off..
+I've attempted so far with 2.2.18pre17 and pre21
 
--Rms
+For what it's worth my primary interest for the OF booting was to see
+if is would solve the problem with XFree86-4.0.1 detecting the correct
+VRAM (4mb present .. but the logs show:  VideoRam: 3 kByte (OFF) )
 
+I've scanned the list archive but found nothing .. any pointers on this
+would be appreciated
+
+thanks in advance
+
+calum
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
