@@ -1,133 +1,59 @@
-Message-ID: <017401c291fe$67190990$e600a8c0@udtech.net>
-From: "Shen Rong" <rshen@udtech.com.cn>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: linuxppc_2_4_devel stability problem?
-Date: Fri, 22 Nov 2002 16:08:55 +0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
+Date: Fri, 22 Nov 2002 09:28:09 +0100
+From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
+Subject: RE: linuxppc_2_4_devel, rc1 and rc2 problem.
+In-reply-to: <IGEFJKJNHJDCBKALBJLLGEDFFIAA.joakim.tjernlund@lumentis.se>
+To: linuxppc-embedded@lists.linuxppc.org, dwmw2@infradead.org
+Reply-To: joakim.tjernlund@lumentis.se
+Message-id: <IGEFJKJNHJDCBKALBJLLAEDJFIAA.joakim.tjernlund@lumentis.se>
+MIME-version: 1.0
+Content-type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-   I have ported the latest linuxppc_2_4_devel from bk://ppc.bkbits.net
-to my mpc755(with mpc8250 as slave). I test a simple program, which
-does malloc&free variable length memory forever. I always get SIGSEGV
-shortly(less than 10 minutes) after I run the program. I have the problem with
-linuxppc-2.4.16 before, and I think it may be solved in the latest version, but
-it doesn't.
+>
+> Sending this to the embedded list as well.
+>
+>  Jocke
+> > On Wed, Nov 20, 2002 at 07:55:35PM +0100, Joakim Tjernlund wrote:
+> > >
+> > > > >
+> > > > > hmm, my i2c stuff got into rc2 (and uart too?). I see this on rc2 AND rc1, but NOT in pre8.
+> > > > > No, I have not tried to port it to vanilla 2.4.x. It requires some work to do that.
+> > > >
+> > > > They both made it in post rc1 I think, yes.  Try going back carefully
+> > > > via bk changes and bk export -tr1.xxxxx (find when
+> > > > /home/.../linuxppc_2_4 was merged into /home/.../linuxppc_2_4_devel).
+> > >
+> > > The error ocurres between changeset 1.1130 - 1.1137.
+> > > I forgot to mention that the error only happens on a 862,100Mhz, 16KB icache, 8KB dcache.
+> > > My 860,80Mz does not show the problem.
+> > >
+> > > Idea's ?
+> >
+> > Can you narrow down the ChangeSet it occured at a bit?
+>
+> Aaargh, now I am getting it in pre8 as well. However I have made
+> some progress:
+>
+> I have 2 custom boards one mpc862(100Mhz, 16KB icache, 8KB dcache) and a
+> mpc860(80Mz,4KB icache, 4KB dcache). If I overclock the mpc860 to 100MHz I get
+> the same problem. If I set the clock on both boards to 95MHz all is well. If I overclock
+> the mpc862 to 105 MHz it works fine.
+>
+> It turns out that syslog is actually running after the error. If I stop syslog and
+> start it again it works fine. If adjust my script so klogd is started before
+> syslogd all is well to.
+>
+> This looks like a race somewhere to me, but i have no clue as to where.
+>
+> Anyone?
+>
+>     Jocke
 
-  My mpc755 works under 400Mhz, with 64M SDRAM. Though the totoal
-memory I malloced is large than 64M sometime, since I don't use it but
-only remember the address the malloc returns, and free it with the address later.
-It will always failed when to free some a remembered address.
+hmm, if I upgrade the JFFS2 filesystem to CVS HEAD, the problem goes away.
 
-  I think linux won't alloc the real page until a reference to the memory occurs,
-with which a page fault will leads to a real page mapped. So where is the SIGSEGV
-from.  I am also not sure whether the libc is compatible with this version of linux or
-not. Anyway, I'd rather believe it's  the kernel problem.
+   Jocke
 
-  Does anybody have some ideas on it? Or, maybe you are interested in my test
-program, why not try! Here it is.
-
-BTW, I have wrote another program, it will crash the 2.4.16, and if you are interested
-too, I can mail to you for free:).
-
-Thanks
-Shenrong
-
-
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <signal.h>
-
-
-#define M_TIME 10240
-
-int i, j, k = 0;
-int size;
-char *p[M_TIME];
-
-char block[10240];
-
-int ii, jj = 0;
-struct sigaction sSEGVAction;
-
-void SEGVHandler (int iSignal)
-{
-     jj = 0;
-     printf("\nsig err: dump: \n\n");
-     printf("i=%d, j=%d, k=%d, p[i]=0x%08x\n", i, j, k, p[i]);
-
-#if 0
-     for(ii=0; ii<M_TIME; ii++) {
-       if(jj == 0)
-          printf("%04d ", ii);
-
-       printf(" %08x", p[ii]);
-       jj++;
-       if(jj == 10) {
-          printf("\n");
-          jj = 0;
-       }
-     }
-#endif
-
-    exit(-1);
-}
-
-
-int main(int argc, char **argv)
-{
-    sSEGVAction.sa_handler = SEGVHandler;
-    sSEGVAction.sa_flags   = SA_RESTART;
-    sigemptyset ( &sSEGVAction.sa_mask );
-    sigaction ( SIGSEGV, &sSEGVAction, NULL );
-
-    while(1) {
-    k++;
-    printf("%d round start\n\n", k);
-
-    for(j=1; j<10; j++) {
-        size = 0;
-
-        for(i=0; i<M_TIME; i++) {
-           p[i] = malloc(i * j);
-           if(!p[i]) {
-               printf("malloc failed at %d\n", i);
-               return -1;
-           }
-           size += i * j;
-#if 0
-           if(i * j > 0)
-    {
-               int len = i * j;
-               char *ptr = p[i];
-        int n;
-
-               memset(ptr, 0xaa, len);
-
-               for(n=0; n<len; n++) {
-                  if(ptr[n] != 0xaa) {
-                      printf("memory write check error: i=%d, j=%d, k=%d, p[i]=0x%08x, n=%d, err=%d\n", i, j, k, p[i], n, ptr[n]);
-                      exit(-1);
-                  }
-               }
-           }
-#endif
-        }
-
-        printf("loop %d: malloc %d bytes totally succeed...", j, size);
-
-        for(i=0; i<M_TIME; i++)
-           free(p[i]);
-
-        printf("freed\n");
-    }
-    }
-    return 0;
-}
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
