@@ -1,39 +1,29 @@
-Message-ID: <3CA1F048.6E1CD277@mvista.com>
-Date: Wed, 27 Mar 2002 11:16:08 -0500
+Message-ID: <3CA1F257.5133EA5F@mvista.com>
+Date: Wed, 27 Mar 2002 11:24:55 -0500
 From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-To: Michael Sokolov <msokolov@ivan.Harhan.ORG>
-Cc: linuxppc-dev@lists.linuxppc.org
+To: Michael Sokolov <msokolov@ivan.Harhan.ORG>,
+	linuxppc-dev@lists.linuxppc.org
 Subject: Re: EV-64260-BP & GT64260 bi_recs
-References: <0203271803.AA04513@ivan.Harhan.ORG>
+References: <0203271803.AA04513@ivan.Harhan.ORG> <3CA1F048.6E1CD277@mvista.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michael Sokolov wrote:
+"Mark A. Greer" wrote:
 
-> Mark A. Greer <mgreer@mvista.com> wrote:
->
-> > Okay, this may be it, attempt #4:
->
-> Looks fine, except for:
->
-> > [6] 0x00000000                          (NULL Termination of whole list)
->
-> Currently the entire bi_recs list starts with BI_FIRST (that's how we detect a
-> bi_recs list) and ends with BI_LAST (that's the terminator). We must maintain
-> compatibility.
+> Yeah, that's right, I messed up.  So what should be done for the nested ones?
+> What is we use the BI_DEVICE as a quasi-BI_FIRST and then add a BI_LAST to each
+> nested one?  This is what it would look like:
 
-Yeah, that's right, I messed up.  So what should be done for the nested ones?
-What is we use the BI_DEVICE as a quasi-BI_FIRST and then add a BI_LAST to each
-nested one?  This is what it would look like:
+I messed up the size on the BI_LAST struct, should be 12.  Attempt #5:
 
 Example for ev64260:
 --------------------
 
 [0] tag: BI_FIRST
-    size: 4
+    size: 12
     data: 0x00000000                    (don't care)
 
 [1] tag: BI_CMD_LINE
@@ -66,7 +56,7 @@ Example for ev64260:
           pad: 2
 
     [4.3] tag: BI_LAST
-          size: 4
+          size: 12
           data: 0x00000000              (don't care)
 
 [5] tag: BI_DEVICE                      (embedded enet cltr 1)
@@ -86,7 +76,7 @@ Example for ev64260:
           pad: 2
 
     [5.3] tag: BI_LAST
-          size: 4
+          size: 12
           data: 0x00000000              (don't care)
 
 [6] tag: BI_DEVICE                      (embedded enet cltr 2)
@@ -106,11 +96,11 @@ Example for ev64260:
           pad: 2
 
     [6.3] tag: BI_LAST
-          size: 4
+          size: 12
           data: 0x00000000              (don't care)
 
 [7] tag: BI_LAST
-    size: 4
+    size: 12
     data: 0x00000000                    (don't care)
 
 
