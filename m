@@ -1,36 +1,25 @@
-Date: Fri, 8 Jan 1999 09:49:54 +0100 (MET)
-From: Della Bianca Francesco <fdellabi@dsi.unive.it>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Installer pre-R5 in G3 233 
-Message-ID: <Pine.OSF.4.03.9901080945290.6120-100000@squit.dsi.unive.it>
+Message-ID: <c=AT%a=_%p=SND%l=S1-990108103639Z-51@s1.schoeller.co.at>
+From: Vogel Michael <vo@schoeller.at>
+To: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
+Subject: WG: X server with stripes...
+Date: Fri, 8 Jan 1999 11:36:39 +0100
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello
-	I cannot install the RedHat-pre-R5 in my G3
-when I configured the path root (/) in my disck hda7 and run installer
-packages, the installer show a error: " fatal error can open RPM database"
-
-how can I resolve this ?
-
-Please wrtite me
-
-	>>--------------------------------<<
-	<< Mister: Francesco Della Bianca >>
-	<< ______________________________ <<
-	>>  Riferimento per il Gulliver   >>
-	<<       sezione Macintosh        <<
-        !!         GURU LinuxPPC          !!
-  	>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<
-	||    Universita' di Ca'Foscari   ||
-	||   Dipartimento di Informatica  ||
-	=>          Tel. 042173216        <=
-	{         30026  Portogruaro       }
-	>>--------------------------------<< 
-
+>
+>Hi!
+>
+>My X server shows flickering white vertical stripes on my screen connected to
+>the Motorola PowerStack.
+>/usr/X11R6/bin/X to Xbh is linked, I tried also different screen resolutions
+>and -nommap parameter in the startx file, with no change.
+>
+>Any ideas ?
+>
+>
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
