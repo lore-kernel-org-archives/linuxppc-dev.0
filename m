@@ -1,78 +1,52 @@
-Subject: RE: ?Loading and debugging a linux kernel on a walnut board with a BDI2000 
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: MPC823 Single-Buffer Burst Fly-By Mode
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Tue, 3 Jul 2001 13:14:05 -0400
-Message-ID: <FF6CF34C346E724596A2FB5CAAB2C4971FEF19@voyager.ops.infiniswitch.com>
-From: "Wright, David" <dwright@infiniswitch.com>
-To: "Wolfgang Denk" <wd@denx.de>,
-	"ibm405gp" <ibm405.linux@laposte.net>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <OF6C4649C4.C40D1EAF-ONC1256A7F.002CD838@matrix-vision.de>
+From: "Howard Gray" <hgray@matrix-vision.de>
+Date: Wed, 4 Jul 2001 10:39:49 +0200
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-It's not difficult to use a BDI2000 with a treeboot image on
-a Walnut, if that's what you want to do.  Here are the steps:
+Has anyone had any success getting the "Single-Buffer Burst Fly-By Mode"
+(UM 16.6.3.11.4) on the MPC823 to work?
 
-1)  Build the image.
-2)  Reset the Walnut using the BDI2000.
-3)  Type "go" at the BDI2000 prompt.
-4)  Type "halt" at the BDI2000 prompt.  (I'm not sure what happens
-    with the code from the ROM, but you need to run it before you
-    boot your image.)
-5)  Load the image (BDI "LOAD" command).
-6)  Type "go" at the BDI2000 prompt.
+I am using our own hardware which with a recent revision CPU
+(XPC823EZT66B2) so I shouldn't need to download the IDMA microcode patch.
+I want to be able to DMA image data from a peripheral (CMOS sensor + FPGA)
+directly into main memory.
 
-The trick is to set up your BDI2000 configuration file properly.
-(Some of this I got from Abatron customer service, some of it I
-worked out.)  The treeboot image file is simply the runnable image
-with a 32-byte header stuck onto the front of it.  The runnable
-image is loaded at 0x400000.  So you need these lines in the config
-file:
+The parameter RAM organisation for Single-Buffer Burst Fly-By Mod is
+different than that used for other IDMA modes so the example in the
+Motorola Engineer's Toolbox doesn't help much.
 
-FORMAT      BIN 0x3FFFE0
-START       0x400000
+I've followed the instructions in the user manual i.e....
 
-in addition to the "FILE" line that specifies the image.  I think you
-must reboot the BDI to get it to reread its config file.
+1. Issued a STOP command to the CPCR and waited for the FLG flag to clear.
+2. Setup DCMR in the parameter RAM (non-interlaced mode, others except
+BAPR and BCR not needed ?)
+3. Set EIE to 1 and DR1M in the RCCR appropriately.
+4. Issued an INIT command to the CPCR and waited for the FLG flag to
+clear.
+5. Setup IDMR1 mask register to use the DONE bit and cleared it in IDSR1.
+6. Setup BAPR and BCR in the parameter RAM.
+7. Set DREQ1 bit to 1 in PCSO to enable IDMA.
 
-If you want to stop the kernel right after it's gone into virtual
-mode, you can set a hardware breakpoint at start_kernel.
+(It seems that I buffer descriptors are not used and don't need to be
+setup).
 
-  -- David Wright
+Nothing seems to happen. Nothing is transferred when *DREQ1 is asserted so
+that the DONE bit in the IDSR1 status register never appears.
 
+An interrupt-driven version without IDMA works already but I would like to
+try out IDMA (even though it has got some bad press in this list before).
+Any help would be appreciated.
 
+Thanks,
 
-> -----Original Message-----
-> From: Wolfgang Denk [mailto:wd@denx.de]
-> Sent: Tuesday, July 03, 2001 10:28 AM
-> To: ibm405gp
-> Cc: Scott Anderson; 'linuxppc-embedded@lists.linuxppc.org'
-> Subject: Re: ?Loading and debugging a linux kernel on a walnut board
-> with a BDI2000
->
->
->
-> In message <3B41F1F8.C88E0460@laposte.net> you wrote:
-> >
-> > but the boot sequence fails, the zImage is not extracted
-> > In arch/ppc/boot/tree/main.c, i put some debug printf, and i have
-> > "Memcopy Done " instead of "gunzip done"
-> > What means the condition "if (im[0] == 0x1f && im[1] == 0x8b) " ?
->
-> Seems it checks for the magic number which  gzip  inserts  into  it's
-> compressed files.
->
->
-> Wolfgang Denk
->
-> --
-> Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-> Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-> If you hear an onion ring, answer it.
->
->
->
+--
+Howard D. Gray
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
