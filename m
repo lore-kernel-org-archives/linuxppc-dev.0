@@ -1,61 +1,87 @@
-Date: Sun, 24 Sep 2000 20:00:05 -0600
-From: Cort Dougan <cort@fsmlabs.com>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-Cc: linuxppc-dev@lists.linuxppc.org, Geert Uytterhoeven <geert@linux-m68k.org>,
-        Paul Mackerras <paulus@linuxcare.com.au>
-Subject: Re: PCI rework & CHRP question
-Message-ID: <20000924200005.E20496@hq.fsmlabs.com>
-References: <19340818162914.6020@192.168.1.10>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <19340818162914.6020@192.168.1.10>; from Benjamin Herrenschmidt on Sun, Sep 24, 2000 at 12:57:30AM +0200
+From: "Geiser, Ian" <geiseri@msoe.edu>
+To: Alex Vallens <Vallens@Colorado.EDU>
+Cc: linuxppc mail list <linuxppc-dev@lists.linuxppc.org>
+Date: Sun, 24 Sep 2000 21:55:06 -0500 (CDT)
+Subject: Re: installing on a new PowerBook
+In-Reply-To: <39CEAB4D.C07E39A7@Colorado.EDU>
+Message-ID: <Pine.LNX.4.10.10009242152320.3052-100000@sleepchamber.geekcentral.msoe.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-} I'm working on a rework of our arch/pci.c (to properly handle multiple
-} host bridges, and various other cleanups).
-}
-} In the chrp_pci.c code, I found this code:
-}
-}         if ( !strncmp("MOT",
-}                       get_property(find_path_device("/"), "model", NULL),3) )
-}         {
-}                 pci_dram_offset = 0;
-}                 isa_mem_base = 0xf7000000;
-}                 isa_io_base = 0xfe000000;
-}                 set_config_access_method(grackle);
-}         }
-}
-} However, I found no way in the Grackle documentation to have isa_mem_base
-} at 0xf7000000. AFAIK, it's at 0xfd000000
+On Sun, 24 Sep 2000, Alex Vallens wrote:
+Dut to the fact that the new Pismo came out after LinuxPPC 2000
+there were some updates.
 
-I think I did this for the Cobra.  You can kill off the cobra.  I have two
-here that I don't boot anymore for testing and I don't think many people in
-the world have them.  Those that do have them aren't likely to care much
-about Linux.
+There were in fact some significant changes, so check out
+http://www.linuxppc.com/support/updates/product/?catagory=2000&subject=firewire_G3_portable
 
-} Also, the grackle access method expect a PCI bridge structure configured
-} with the ioremap'ed config space registers, which is not the case on
-} chrp. (They are defined only in pmac_pci.c).
-}
-} I'm fixing those along with my changes. I suppose Grackle on CHRP uses
-} memory map B ?
+also instead of there Boot image use mine at:
+ftp://ftp.linuxppc.org/users/geiseri/LinuxPPC_Boot.smi.hqx
 
-Actually, it seemed to use a memory map something entirely unlike A or B.
+-ian reinhart geiser
+>
+> I just got one of the brand new Pismo PowerBooks (supposedly identical
+> to the previous generation, but with larger HDs, 20 GB in my case). I
+> haven't been able to boot it at all. Everytime I boot, I get the
+> following kernel output regarding my drive:
+>
+> hda: IBM-DJSA-220, ATA DISK drive
+> ide0 at 0x8x01f000-0x8e01f007, 0x8e01f160 on irq 19
+> hda: Enabling Ultra DMA 4
+> hda: IBM-DJSA-220, 19077MB w/1874kB Cache, CHS=38760/16/63, (U)DMA
+> Partition check:
+>     hda:<7>ohci-control thread code for 0xc06370e0 code at 0xc0167d18
+> hda: lost interrupt
+> hda: lost interrupt
+> hda: lost interrupt
+> hda: lost interrupt
+>  hda1hda: lost interrupt
+>  hda2 hda3hda: lost interrupt
+>  hda4 hda5hda: lost interrupt
+>  hda6 hda7hda: lost interrupt
+>  hda8 hda9hda: lost interrupt
+>  hda10 hda11
+> RAMDISK: Compressed image found at block 0
+> EXZT-fs warning: maximal count reached, runing e2fsck is recommended
+> VFS: Mounted root (ext2 filesystem)
+>
+> hda: lost interrupt
+> hda: lost interrupt
+> hda: lost interrupt
+> hda: lost interrupt
+> hda: lost interrupt
+> hda: lost interrupt
+> hda: lost interrupt
+> hda: lost interrupt
+> <repeats indefinitely>
+>
+>
+> It finds the bus and the drive, but hangs trying to mount. So, I tried
+> to reinitialize the device map using pdisk. Unfortunately, pdisk run
+> under the MacOS is unable to recognize the device (I type "e
+> /dev/ata2.0" at the command prompt, but it says "pdisk: can't open file
+> '/dev/ata2.0'"). From the get info in MacOS, I know that the hard drive
+> is id 0 on bus 2 of the ata, so that command should be correct. pdisk,
+> however, only recognizes '/dev/ata0.0', which is the internal DVD-ROM
+> drive.
+>
+> How can I get Linux to recognize the drive? Will downloading the newest
+> dev. kernel from Paul M's site help, or am I stuck? Why doesn't pdisk
+> recongnize my drive?
+>
+> Alex
+>
+>
+>
 
-} Note (tell me if it's a problem), that I'm removing the various
-} xxx_setup_pci_ptrs(). Each host bridge has a pci_controler structure (the
-
-Good!  Thanks, those bastards have needed to die for a while.
-
-I still do want to be able to mix-and-match PCI controllers and not have
-any board<->chipset association except in the direction board->chipset but
-not chipset implies board.   This helps people with custom hardware get
-their boards going and helps us with new ports.
-
-} old bridge_data) that contains also the function pointers to the access
-} methods. Archs now call whatever xxx_find_bridges from their
-} xxx_setup_arch() function and all host-bridge dependent setup is done there.
+.---------------------------------------------------.
+| Ian Reinhart Geiser - Computer Engineering Student|
+| HOME: <geiseri@msoe.edu>                          |
+| WORK: <geiseri@linuxppc.com>                      |
+| WEB:  http://www.msoe.edu/~geiseri                |
+`---------------------------------------------------'
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
