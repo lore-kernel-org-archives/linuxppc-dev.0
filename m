@@ -1,52 +1,40 @@
-Date: 13 Nov 2001 08:17:39 -0000
-Message-ID: <20011113081739.29856.qmail@mailweb25.rediffmail.com>
-MIME-Version: 1.0
-From: "Sarnath  Kannan" <sparc64@rediffmail.com>
-Reply-To: "Sarnath  Kannan" <sparc64@rediffmail.com>
-To: "Dan Malek" <dan@embeddededge.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Ricardo Scop <scop@vanet.com.br>
+To: Ken Applebaum <applebaumk@embeddedplanet.com>
+Subject: Re: Linuxppc and MPC8255 routing performance
+Date: Tue, 13 Nov 2001 14:03:48 +0300
+References: <D73A25AA6E54D511AD74009027B1110F04F5E1@ORION>
+In-Reply-To: <D73A25AA6E54D511AD74009027B1110F04F5E1@ORION>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Re: IDE in Mode 1 (Sandpoint) how ?
-Content-type: text/plain;
-	charset=iso-8859-1
+MIME-Version: 1.0
+Message-Id: <01111314034801.01064@scop.digitel.com.br>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi Dan,
+Hi, Ken
 
-> Nope.  All of the kernel print out is polled I/O.
+On Monday 12 November 2001 18:28, Ken Applebaum wrote:
+> ricardo,
 >
-  yeah ! Thats right.
-
->me: .....  But thats
->me: not the case. Why should it be slow after INIT
->me:starts
->me: up ?
+> does your board have both banks of memory populated?
 >
-> Because it uses interrupt driven serial I/O.
 
-  I'am currently investigating that code path, Dan.
-  We have also come to the same conclusion as u.
-  But believe me, I had tried with all possible
-  Switch settings, S3,S4,S5,S6. :-( Its tantalising !
-  This means that all ISA interrupts are not
-  being routed properly. One more, I haven't
-  initialized the WinBond, coz reset values seem
-  meaninful. Could that be the reason for
-  this ?
->
-> Believe me, all of us using Sandpoints have seen this
-> before.
-> Your interrupt/arbitration routing switches on the
-> board are wrong.
+If you mean 'both banks" as a memory bank at the local bus and another at the
+60x bus, the answer is yes, our prototype hardware has them, for hardware
+debugging purposes. But I didn't enable the use of the local memory bank in
+Linux so far, because we didn't originally intend to use it in our final
+product...
 
-  Any suggestion from experienced people is welcome.
+Nevertheless, I'm aware that using local bus memory for I/O data flowing
+between CPM and CPU may improve performance in some Linux applications, so I
+would like to experiment with this. Unfortunatelly, I'm very new to Linux, so
+I don't know how to configure it for using local memory. If you have any
+ideas...
 
+Thanks.
 
-Is there any other switch, other than the S3,S4,S5,S6
-I need to worry about.
-
-sarnath
-
+~Ricardo
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
