@@ -1,57 +1,53 @@
-Date: Wed, 30 Dec 1998 12:22:25 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <Pine.LNX.4.03.9812301219080.15589-100000@mercator.cs.kuleuven.ac.be>
+Date: Wed, 30 Dec 1998 12:35:59 +0100
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>,
+        Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+From: Benjamin Herrenschmidt <bh40@calva.net>
 Subject: Re: grackle, patches, MMU, ...
-In-Reply-To: <19981230113716.015659@mail.mipsys.com>
-Message-ID: <Pine.LNX.4.03.9812301219080.15589-100000@mercator.cs.kuleuven.ac.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <19981230123559.019295@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 30 Dec 1998, Benjamin Herrenschmidt wrote:
-> I finally read the pmac_pci.c file and it looks like my grackle.h file
-> (which comes from experiments I made on MacOS some time ago for another
-> issue) is absolutely not needed, grackle is just device 0 on bus 0 and
-> it's register can be accessed by ordinary pci config accesses. However,
-> since I know no easy way of knowing which bridge in the list is actually
-> grackle, if we want to add power management support for it in idle.c,
-> we'll still have to hard code device 0 / bus 0 and hope it will always be
-> this way.
+On Wed, Dec 30, 1998, Geert Uytterhoeven
+<Geert.Uytterhoeven@cs.kuleuven.ac.be> wrote:
 
-Grackle is the host bridge, right? In that case it's always device 0 / bus 0.
+>Grackle is the host bridge, right? In that case it's always device 0 / bus 0.
 
-> So we have one free BAT (#1) only on pmac and chrp, but if we plan to
-> switch BATs along with process contexts (for mapping fbdevs with BATs for
-> example), then we would have all BATs free for user processes. Am I correct ?
+Yep.
 
-Note that we cannot map all frame buffers with BATs since there are less free
-BATs than possible frame buffers.
+>But for user space, we're still stuck with a normal mapping. And there speed
+>is
+>more important, I think, since most people (R5 installers? :-) run X and
+don't
+>use the text console that much.
 
-> I was wondering if, instead of using the remaining free BAT to map the
-> framebuffer for the kernel (to speed up console), why couldn't we use a
-> BAT to map the entire assigned PCI memory space for the kernel ? This
-> would speed-up accesses to all devices (including framebuffers). We
-> already map the entire mac-io (at least the first one on machines with
-> two of them).
+Yes, having a way to use BATs for large user-space mappings would be a
+benefit for framebuffer and also for other devices like frame grabbers.
+I'm not familiar enough yet with the user-side MM stuff to implement this
+now, but if no one does it, I'll try it as soon as I have undersood
+enough things there.
 
-I think they do this on SPARC64. And then ioremap() because a simple NULL
-operation.
+BTW. Geert: Since you are working on m68k too, do you know if linux-m68k
+uses the same adb code as linux-ppc ? I'm working on a new adb.c/.h,
+which cleans up things (especially "hook-like" entry points to the
+controller by exporting functions for registering hardware controllers
+(via a structure with function pointers)) and for registering devices
+(also a structure with function pointers with more entrypoint to allow
+proper re-probing when a bus reset is done for example) and I would like
+to know if there are risk I break m68k while doing so. Currently,
+adb.c/.h is in arch/ppc but I don't know if vger is the main repository
+for m68k too or not
 
-But for user space, we're still stuck with a normal mapping. And there speed is
-more important, I think, since most people (R5 installers? :-) run X and don't
-use the text console that much.
 
-Greetings,
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
-						Geert
 
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
