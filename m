@@ -1,21 +1,12 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 48B5267A71
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Feb 2005 04:54:43 +1100 (EST)
-Date: Tue, 22 Feb 2005 09:54:39 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Pavel Fedin <sonic_amiga@rambler.ru>
-Message-ID: <20050222175438.GF27891@gate.ebshome.net>
-References: <20050222121809.351088dc.sonic_amiga@rambler.ru>
-	<20050222093208.GE27891@gate.ebshome.net>
-	<20050222130646.25bc9520.sonic_amiga@rambler.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050222130646.25bc9520.sonic_amiga@rambler.ru>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] Non-DMA mode for floppy on PowerPC
+Return-Path: <awilliam@nortel.com>
+Message-ID: <713043CE8B8E1348AF3C546DBE02C1B402A020C6@zcarhxm2.corp.nortel.com>
+From: "Andrew Williams" <awilliam@nortel.com>
+To: Linuxppc-dev@ozlabs.org
+Date: Tue, 22 Feb 2005 13:08:52 -0500
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C51909.91665B01"
+Subject: Looking for LKCD ppc (not ppc64)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,22 +16,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Feb 22, 2005 at 01:06:46PM -0500, Pavel Fedin wrote:
-> On Tue, 22 Feb 2005 01:32:09 -0800
-> Eugene Surovegin <ebs@ebshome.net> wrote:
-> 
-> > Please, be patient and don't repost the same stuff every day.
-> 
->  Ok. How long does it take for a patch to get included into the 
-> kernel? I posted if two weeks ago for the first time and nothing 
-> happened. In LKML also nobody answers.
+This message is in MIME format. Since your mail reader does not understand
+this format, some or all of this message may not be legible.
 
-Don't know. Sometimes it takes days, sometimes months and sometimes 
-it never happens.
+------_=_NextPart_001_01C51909.91665B01
+Content-Type: text/plain
 
-But, posting your patch every day is not gonna make it faster. It will 
-only annoy people and you can end up in kill file and be ignored after 
-that completely.
+Has anyone done this yet? I've got an embedded board
+with a periodic oops (all over the map), and we want
+to generate a crashdump (or similar) when it occurs.
 
---
-Eugene
+There appear to have been a couple of attempts to do
+this, but no results had been announced/released.
+
+Thanks,
+Andrew
+
+------_=_NextPart_001_01C51909.91665B01
+Content-Type: text/html
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=us-ascii">
+<META NAME="Generator" CONTENT="MS Exchange Server version 5.5.2658.2">
+<TITLE>Looking for LKCD ppc (not ppc64)</TITLE>
+</HEAD>
+<BODY>
+
+<P><FONT SIZE=2>Has anyone done this yet? I've got an embedded board</FONT>
+<BR><FONT SIZE=2>with a periodic oops (all over the map), and we want</FONT>
+<BR><FONT SIZE=2>to generate a crashdump (or similar) when it occurs.</FONT>
+</P>
+
+<P><FONT SIZE=2>There appear to have been a couple of attempts to do</FONT>
+<BR><FONT SIZE=2>this, but no results had been announced/released.</FONT>
+</P>
+
+<P><FONT SIZE=2>Thanks,</FONT>
+<BR><FONT SIZE=2>Andrew</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C51909.91665B01--
