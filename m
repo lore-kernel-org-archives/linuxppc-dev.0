@@ -1,29 +1,25 @@
-From: Arturo Nunez <artnpp@cs.ucf.edu>
-Message-Id: <200103012140.QAA15546@iris.cs.ucf.edu>
-Subject: How to enable 2 ethernet ports ??
-To: linuxppc-embedded@lists.linuxppc.org (ppc)
-Date: Thu, 1 Mar 2001 16:40:53 -0500 (EST)
+Message-ID: <3A9EC368.23D57EFD@mvista.com>
+Date: Thu, 01 Mar 2001 16:47:20 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
+To: Arturo Nunez <artnpp@cs.ucf.edu>
+Cc: ppc <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: How to enable 2 ethernet ports ??
+References: <200103012140.QAA15546@iris.cs.ucf.edu>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello:
-	I have the following board:
-	RPX CLLF
-	Cpu:XPC860TZ
-	Part Number:cllf60tzb16eb1nabw
+Arturo Nunez wrote:
 
-	These Board has 2 ports:
-	10 and 100 mbps
-	I have a questions about these board:
-	- How to compile the kernel in orther to have both ports
-	recognized ??
+>         These Board has 2 ports:
+>         10 and 100 mbps
 
-	Regards
+The 10 Mbit port is SCC1, the 10/100 is FEC.  Just select them
+in the configuration process.
 
-	Arturo Nunez
 
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
