@@ -1,52 +1,43 @@
-Date: Sun, 16 Jun 2002 16:51:29 +0200
-From: Samuel Rydh <samuel@ibrium.se>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: sycall asm inline
-Message-ID: <20020616145129.GA11923@ibrium.se>
+Subject: LaCie USB HD not working...
+From: Bastien Nocera <hadess@hadess.net>
+To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Date: 18 Jun 2002 21:29:18 +0100
+Message-Id: <1024432158.509.8.camel@dozo>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I noticed that neither "memory" nor "cc" is listed in the clobber
-list of the _syscallN asm inline in asm/unistd.h. Is this safe?
-The macro looks like this:
+Hi,
 
-#define _syscall1(type,name,type1,arg1)                                 \
-type name(type1 arg1)                                                   \
-{                                                                       \
-        unsigned long __sc_ret, __sc_err;                               \
-        {                                                               \
-                register unsigned long __sc_0 __asm__ ("r0");           \
-                register unsigned long __sc_3 __asm__ ("r3");           \
-                                                                        \
-                __sc_3 = (unsigned long) (arg1);                        \
-                __sc_0 = __NR_##name;                                   \
-                __asm__ __volatile__                                    \
-                        ("sc           \n\t"                            \
-                         "mfcr %1      "                                \
-                        : "=&r" (__sc_3), "=&r" (__sc_0)                \
-                        : "0"   (__sc_3), "1"   (__sc_0)                \
-                        : __syscall_clobbers);                          \
-                __sc_ret = __sc_3;                                      \
-                __sc_err = __sc_0;                                      \
-        }                                                               \
-        __syscall_return (type);                                        \
-}
+I'm getting another stab at this. I've had this drive for about a year,
+never got it to work on my PPC boxes.
 
-where __syscall_clobbers is just r4-r12. At a later point, some syscalls
-are instantiated as inline functions:
+Here's the lowdown:
+LaCie USB 20G hard-drive, 0x59f/0xa601 ID (it's in the unusual_devs.h)
+Some people got it to work it seems:
+http://www.qbik.ch/usb/devices/showdev.php?id=68
 
-	static inline _syscall3(int,read,int,fd,char *,buf,off_t,count)
+Here's the log when I plug the device in:
+Jun 18 21:04:26 dozo kernel: hub.c: USB new device connect on bus1/1,
+assigned device number 2
+Jun 18 21:04:26 dozo kernel: usb.c: USB device 2 (vend/prod
+0x59f/0xa601) is not claimed by any active driver.
+Jun 18 21:04:27 dozo kernel: Initializing USB Mass Storage driver...
+Jun 18 21:04:27 dozo kernel: usb.c: registered new driver usb-storage
+Jun 18 21:04:30 dozo kernel: usb_control/bulk_msg: timeout
+Jun 18 21:04:33 dozo kernel: usb_control/bulk_msg: timeout
+Jun 18 21:04:33 dozo kernel: scsi0 : SCSI emulation for USB Mass Storage
+devicesJun 18 21:04:44 dozo kernel: usb_control/bulk_msg: timeout
 
-Of course, as long as the syscall reside in a separate function,
-the ABI guarantees that nothing bad will happen. But when the
-function is inlined the undeclared side effects could cause problems,
-or am I missing something?
+Did anybody got this drive to work on an OHCI controller or even better,
+on a PPC ?
 
-Cheers,
+Cheers
 
-/Samuel
+--
+/Bastien Nocera
+http://hadess.net
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
