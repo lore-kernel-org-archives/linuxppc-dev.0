@@ -1,34 +1,45 @@
-In-Reply-To: <4890.69.17.104.254.1089335444.squirrel@mail.theptrgroup.com>
-References: <4890.69.17.104.254.1089335444.squirrel@mail.theptrgroup.com>
-Mime-Version: 1.0 (Apple Message framework v618)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <A64364E3-D14D-11D8-B95B-003065F9B7DC@embeddededge.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-From: Dan Malek <dan@embeddededge.com>
-Subject: Re: 2.6.x on MPC82xx
-Date: Thu, 8 Jul 2004 22:14:03 -0400
-To: jeff@theptrgroup.com
+Date: Fri, 9 Jul 2004 15:48:45 +0800
+From: "hu" <hl76@263.net>
+To: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Oops:kernel access of bad area, sig:11
+Mime-Version: 1.0
+Content-Type: text/plain
+Message-Id: <20040709074636.D69842F7B3@smtp.263.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Jul 8, 2004, at 9:10 PM, Jeff Angielski wrote:
+1)environment
+Linux kernel 2.4.4-rthal5
+ppcboot 1.1.5
+MPC823 board
 
-> Does anybody have a 2.6.x series kernel working on their MPC82xx
-> boards?
+2)I'm running a device driver which read data from touchpanel which use
+SIU_IRQ2, but I often get message like that:
 
-Ah, yep.
+Oops: kernel access of bad area, sig: 11
+NIP: C000C4E8 XER: C000206F LR: C000C4E0 SP: C07FBEF0 REGS: c07fbe40 TRAP: 0300
+MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+DAR: 00000004,DISR: 0000013C
+last math 00000000   last altivec 00000000
+GPR00: 00000002 C07FBEF0 C07FA000 C07FBF08 00009032 C0C09E58 C0C08000 00000020
+GPR08: C01A9138 C0195364 C0C08000 C07FBF30 2F7B6A70 1007C2B8 40024400 00000000
+GPR16: 00000000 00000000 00000000 00000000 00000000 00003400 00580000 00002C7E
+GPR24: 00000000 0001C200 00000001 C07FBEF8 00000000 C07FBF00 00664BDA C07FBEF0
 
-> If so, did you start with the linuxppc-2.5 or another kernel tree?
+Call backtrace:
+  C000C468 C002B440 C0004DA8
 
-That's a good place to be.  linux-2.5 should work and I think the
-kernel.org kernels should work, too.
+3) I look through past document in linux-embedded, and I check
+/arch/ppc/kernel/m8xx_setup.c, it exists:
 
-Of course, there are a bunch of CPM changes going in right now,
-so it may be a little unstable until that settles down.
+fp = binfo->bi_intfreq * 1000000 / 16;
+and /arch/ppc/8xx_io/commproc.c, it exits:
+#define BRG_INT_CLK	(((bd_t *)__res)->bi_intfreq * 1000000 )
 
-
-	-- Dan
-
+------------------------------
+John Hu
+E-mail: hl76@263.net
+------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
