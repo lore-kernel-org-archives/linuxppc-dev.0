@@ -1,22 +1,18 @@
-Date: Tue, 22 Feb 2000 10:27:08 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Paul Mackerras <paulus@linuxcare.com>
-cc: FASSINO Jean-Philippe <jeanphilippe.fassino@cnet.francetelecom.fr>,
-        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Patch for optimize context switch
-In-Reply-To: <00022210165901.14669@argo.linuxcare.com.au>
-Message-ID: <Pine.HPX.4.10.10002221001530.4957-100000@gra-ux1.iram.es>
+Message-ID: <38B25749.2C4B0E1A@cnet.francetelecom.fr>
+Date: Tue, 22 Feb 2000 10:30:49 +0100
+From: FASSINO Jean-Philippe <jeanphilippe.fassino@cnet.francetelecom.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Paul Mackerras <paulus@linuxcare.com>
+CC: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Patch for optimize context switch
+References: <38B1183A.AC6214E0@cnet.francetelecom.fr> <00022210165901.14669@argo.linuxcare.com.au>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Paul Mackerras wrote:
 
-
-On Tue, 22 Feb 2000, Paul Mackerras wrote:
-
->
 > On Mon, 21 Feb 2000, FASSINO Jean-Philippe wrote:
 >
 > > The aim of this patch is to optimize context switch on PPC.
@@ -34,15 +30,21 @@ On Tue, 22 Feb 2000, Paul Mackerras wrote:
 > branch processing unit.  Also, it is very easy to predict whether a bdnz
 > will branch or not.
 
-Exactly, context switches are infrequent and should be benchmarked at
-least after having invalidated the code from the instruction cache
-(whether it should also be pushed out of the L2 cache is more questionable
-but I would also push it out since L2 cache is only direct mapped or 2 way
-set associative on most processors). Besides the time of the loop is
-dominated by the execution synchronized mtsrin. Actually the only
-processor on which it might be a clear win is the 601.
+There are two advantages of this patch :
+    - unrolling the loop (suppress the bdnz instructions),
+    - statically designate segment register (suppress one add per loop).
+The main disadvantage is :
+    - possibly increase i-cache misses (depend of function alignment)
 
-	Gabriel
+To conclude, i'm trying to run lmbench and when i got result i send it.
+
+Jean-Philippe
+
+--
+--------------------------------------------------------------------------
+Jean-Philippe FASSINO  Tel :  04 76 76 45 52
+CNET : DTL/ASR         mailto:jeanphilippe.fassino@cnet.francetelecom.fr
+--------------------------------------------------------------------------
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
