@@ -1,56 +1,45 @@
-Message-ID: <003101c4073e$fbddf250$0400a8c0@portatile>
-Reply-To: "Ing.Gianfranco Morandi (LAN)" <gianfranco.morandi@euro-studio.it>
-From: "Ing.Gianfranco Morandi (LAN)" <gianfranco.morandi@euro-studio.it>
-To: "Mark A. Greer" <mgreer@mvista.com>, "Wolfgang Denk" <wd@denx.de>
-Cc: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
-References: <20040310163731.437B2C0655@atlas.denx.de>
-Subject: Re: Marvell DB64360 
-Date: Thu, 11 Mar 2004 09:00:54 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: m.venkatraj@exgate.tek.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: problems with NFS root for ADS860 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 10 Mar 2004 22:03:18 PST."
+             <301A812E6528D511A8F70008C71E578601FCF557@ap-bang-m02.india.tek.com>
+Date: Thu, 11 Mar 2004 09:10:58 +0100
+Message-Id: <20040311081103.D58D4C0655@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Many thanks for the suggestions. Your experience would be absolutely useful.
+Dear Venkat,
 
-Regards
+in message <301A812E6528D511A8F70008C71E578601FCF557@ap-bang-m02.india.tek.com> you wrote:
+>
+> When the kernel tries NFS mount of the root file system, error 101 results,
+> followed by a message
+...
+> I verified with various sources on the net that the bootargs that I was
+> passing was in the correct format. Google led me to a lot of posts with the
+> same problem, but no leads.. Since I am relatively new around here, looking
+> up the kernel sources for the error 101 didn't lead me anywheer
 
-Gianfranco
+Instead of seaching the web a simple local lookup would have done:
 
------ Original Message -----
-From: "Wolfgang Denk" <wd@denx.de>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Cc: "Ing.Gianfranco Morandi (LAN)" <gianfranco.morandi@euro-studio.it>;
-"LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
-Sent: Wednesday, March 10, 2004 5:37 PM
-Subject: Re: Marvell DB64360
+-> grep 101 /usr/include/*/errno.h
+/usr/include/asm/errno.h:#define        ENETUNREACH     101     /* Network is unreachable */
+
+"Network is unreachable". Does that ring a bell?
 
 
-> In message <404F421B.2000602@mvista.com> you wrote:
-> >
-> > >I'm evaluating a new development based on PPC750FX and I would like to
-check
-> > >if there is some porting on the ELDK 3.0 package.
-> > >
-> > I'll defer to Wolfgang on this one.
->
-> I have little to contribute here. The ELDK is just a toolbox. You can
-> use it to build code for any board.
->
->
-> Best regards,
->
-> Wolfgang Denk
->
-> --
-> Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-> Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-> "Today's robots are very primitive, capable of understanding  only  a
-> few  simple  instructions  such  as 'go left', 'go right', and 'build
-> car'."                                                  - John Sladek
->
+Best regards,
 
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Q: What do you get when you cross an ethernet with an income statement?
+A: A local area networth.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
