@@ -1,47 +1,41 @@
-From: UkneeqFNG@aol.com
-Message-ID: <e2.3ff4493.2643caac@aol.com>
-Date: Fri, 5 May 2000 02:56:44 EDT
-Subject: Fwd: Using LinuxPPC as a bridge and the Bridge Config Utility
-To: linuxppc-dev@lists.linuxppc.org
+Message-ID: <391289B2.4060C2DF@mpifr-bonn.mpg.de>
+Date: Fri, 05 May 2000 10:43:30 +0200
+From: Albrecht Dre_ <ad@mpifr-bonn.mpg.de>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="part1_e2.3ff4493.2643caac_boundary"
+To: LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>
+Subject: Q: IO window remapping
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---part1_e2.3ff4493.2643caac_boundary
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
+Hi all!
 
-I posted this to the user group and haven't got an answer. I was wondering if anyone in this group would have info....
+I am currently trying to get the PCMCIA package working on a PISMO Powerbook.
+The problem it that the Cardbus bridge (a TI 1211) has a odd IO window
+definition (from lspci -vv):
 
-I was also reading information from http://ac2i.tzo.com/bridge_filter/
- that talks about a patch that will add the chain bridgein. Is this chain
- built in with the new kernels or do I still need to use the patch? Also with
- this do I still need the brcfg utility? Hopefully someone can answer my
- questions.
+00:1a.0 CardBus bridge: Texas Instruments: Unknown device ac1e
+	Subsystem: Unknown device 104c:ac1e
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping-
+SERR- FastB2B-
+	Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort-
+<MAbort- >SERR- <PERR-
+	Latency: 16 set, cache line size 08
+	Interrupt: pin A routed to IRQ 58
+	Region 0: Memory at 80080000 (32-bit, non-prefetchable)
+	Bus: primary=00, secondary=01, subordinate=01, sec-latency=32
+I/O window 0: 00001000-00000fff
+	BridgeCtl: Parity- SERR- ISA- VGA- MAbort- >Reset+ 16bInt+ PostWrite+
+	16-bit legacy interface ports at 0007
 
+As a result, any pcmcia package operation (like card insertion) fails as no io
+ports can be assigned.
 
+I hope this question is not too dumb: What is the correct range for this IO
+window?  Where should I fix it (probabely in arch/ppc/kernel/pmac_pci.c)?
 
---part1_e2.3ff4493.2643caac_boundary
-Content-Type: message/rfc822
-Content-Disposition: inline
+Thanks in advance, Albrecht
 
-Return-Path: <UkneeqFNG>
-Received: from  web40.aolmail.aol.com (web40.aolmail.aol.com [205.188.161.1]) by air-ir01.mx.aol.com (v70.20) with ESMTP; Sat, 29 Apr 2000 20:15:25 -0400
-Date: Sat Apr 29 20:15:25 2000
-From: UkneeqFNG@aol.com
-Subject: Using LinuxPPC as a bridge and the Bridge Config Utility
-To: <linuxppc-user@lists.linuxppc.org>
-X-Mailer: Unknown sub 1
-MIME-Version: 1.0
-
-Hello all,
-   I was wondering if any has used a linuxppc box as a bridge. I have read the how-to's and they say that you need a utility called "Bridge Config" (brcfg) and gives the ftp address of ftp://shadow.cabi.net/pub/Linux/BRCFG.tgz to get this utility. But that address is no longer valid or I just can't get to it. Anyone know where else to get this or if there is another utility? Any help is appreciated.
-
-Thanks,
-Fedil
-
---part1_e2.3ff4493.2643caac_boundary--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
