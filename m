@@ -1,25 +1,29 @@
-To: "Curtis, Allen" <Allen.Curtis@Thales-IFS.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: pci_unmap_single() and CONFIG_NOT_COHERENT_CACHE
-References: <FA06AA2C99BCD511951200005A99441001E3F16E@irvexch1.sextantifs.com>
-From: Roland Dreier <roland@topspin.com>
-Date: 09 May 2003 11:28:12 -0700
-In-Reply-To: <FA06AA2C99BCD511951200005A99441001E3F16E@irvexch1.sextantifs.com>
-Message-ID: <52el38km9v.fsf@topspin.com>
+Message-ID: <D73A25AA6E54D511AD74009027B1110F3C0849@ORION>
+From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+To: "'Curtis, Allen'" <Allen.Curtis@Thales-IFS.com>,
+	"'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: BDI2000 config repository
+Date: Fri, 9 May 2003 14:31:52 -0400 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-    Allen> I noticed in pci.h that pci_unmap_single() is a null
-    Allen> function. (essentially does nothing) Shouldn't is call
-    Allen> consistent_sync() so that flush_dcache_range() is called?
+ftp://ftp.denx.de/pub/BDI2000/
 
-No, the cache invalidate or flush has to happen when pci_map_single()
-is used.  There's nothing to do after the DMA is done (which is when
-pci_unmap_single() gets called).
 
- - Roland
+-----Original Message-----
+From: Curtis, Allen [mailto:Allen.Curtis@Thales-IFS.com]
+Sent: Friday, May 09, 2003 2:03 PM
+To: 'linuxppc-embedded@lists.linuxppc.org'
+Subject: BDI2000 config repository
+
+
+
+I know there was talk about this, is there a repository for BDI2000 platform
+configuration files?
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
