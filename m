@@ -1,36 +1,28 @@
-Message-ID: <01139FC052A0D411900B00508B9535FC048B108F@ZCH07EXM04.corp.mot.com>
-From: Liu HongXun-a16975 <a16975@motorola.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Question on the pcmcia module for ppc
-Date: Fri, 4 Jan 2002 18:36:37 +0800 
+Message-ID: <3C359973.1090102@humboldt.co.uk>
+Date: Fri, 04 Jan 2002 12:00:51 +0000
+From: Adrian Cox <adrian@humboldt.co.uk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
+To: Sangmoon Kim <dogoil@etinsys.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MPC755 and Am79C973 problem.
+References: <001501c194df$bdcf6cb0$0100a8c0@industrialDiv.hanasys.co.kr>
+Content-Type: text/plain; charset=x-windows-949
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi, all,
-I worked on the PCMCIA module for my MPC 857T based board.
-I downloaded the pcmcia-cs 3.1.29 and modified the file modules/m8xx_pcmcia.c.
-My board uses the SLOT B. What I did are just like the (F)ADS and RPXLite.
-I compiled the resulted pcmcia module and loaded them into linux kernel using "insmod".
-1. insmod pcmcia_core.o
-2. insmod m8xx_pcmcia.o
-3. insmod ds.o
-Here comes the problem.
-When I inserted ds.o, the driver tells me that "cs: socket 0 timed out during reset"
-I looked through the source code and the debug info.
-I found that a lot of the same messages as follows:
-GetStatus(0) = 0x190
-...
-Such info come from m8xx_pcmcia.c/m8xx_get_status. It seems that someone
-is not satisfied with the above return value and " get status " again and again.
-Then it quit.
+Sangmoon Kim wrote:
 
-Any suggestions are highly appreciated!
-Thanks a lot
 
-Rolf
+> Does Am79C973 (pcnet32) driver have any problem with powerpc?
+> I'm using linuxppc-2.4.16.
+
+
+I've been using this family of chips with Linux on PowerPC on a number
+of boards over the last two years, without any problems.
+
+--
+Adrian Cox   http://www.humboldt.co.uk/
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
