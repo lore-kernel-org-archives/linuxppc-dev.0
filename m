@@ -1,67 +1,102 @@
-Message-ID: <37E3CD97.638635DD@onsemi.com>
-Date: Sat, 18 Sep 1999 10:36:23 -0700
-From: "Dave Gomez (rvlr40)" <dave.gomez@onsemi.com>
-MIME-Version: 1.0
-To: Martin Costabel <costabel@wanadoo.fr>
-CC: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>,
-        Kazumitsu Hanai <hanai@koto.kpu-m.ac.jp>,
-        linuxppc-user <linuxppc-user@lists.linuxppc.org>
-Subject: Re: Ethernet Adapters that actually work!
-References: <37E3935C.720A5F60@wanadoo.fr>
-Content-Type: text/plain; charset=us-ascii
+To: mlan@cpu.lu
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: PowerDomain 3940UWD
+In-Reply-To: Your message of "Sun, 12 Sep 1999 23:02:09 +0200 (CEST)"
+	<199909122102.XAA00251@piglet.cpu.lu>
+References: <199909122102.XAA00251@piglet.cpu.lu>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <19990919040757F.roikawa@rr.iij4u.or.jp>
+Date: Sun, 19 Sep 1999 04:07:57 +0900
+From: Ryuichi Oikawa <roikawa@rr.iij4u.or.jp>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Martin,
-    They aren't really that old, but only recently, last 2 weeks, has the driver
-been updated, with bug fixes that have capped a fairly reliable solution.  The
-latest version is 0.91m, and it works nicely with the Asante 10/100, and also with
-a Netgear 10/100 FA310TX.  They do have to be built as modules, but work with
-2.2.6 & 2.2.10, and I believe on the 2.3.X, you can build it right in instead of a
-module, just update the specified source files.
+From: Michel Lanners <mlan@cpu.lu>
+Subject: Re: PowerDomain 3940UWD
 
-dave
+Sorry for very late response.
 
-Martin Costabel wrote:
+> > Is this patch below dangerous? I'd like to use MMIO on the PPC.
+> [patch snip'ed]
+> 
+> I'd qualify it dangerous, as it assumes that you can do MMIO on _any_
+> Adaptec chip in a PowerPC machine....
+ More precisely it assumes that we can _check_ if MMIO is actually accessible
+or not without causing machine check on any Adaptec card on a PPC, while the
+original code assumes that we can do normal IO on any Adaptec card, which
+made my card crashed. Which is more dangerous? Both? :-)
 
-> Kazumitsu Hanai wrote (not for the first time):
->
-> > All ethernet cards, the chipsets of which are DEC 21*4*, will work with tulip
-> > driver in LinuxPPC.  *BUT*, be careful, the tulip driver contained in the
-> > kernel
-> > source, even the latest, is very old, and this driver does not work in
-> > LinuxPPC
-> > at all.  You must download the latest tulip.c, or at least newer than v0.91
->
-> Is there a known reason why the kernel sources contain a stone-age
-> version of tulip.c? Is everyone supposed to use de4x5 instead or what?
-> (I can confirm that for my Farallon card with its DECchip 21041, both
-> de4x5 from the kernel sources and tulip.c:v0.91 from the site given by
-> Kazumitsu Hanai are working. The Neanderthal tulip.c from the kernel
-> sources doesn't).
->
-> From the 2.3.18 kernel in drivers/net/tulip.c:
->
->   static const char version[] = "tulip.c:v0.89H 5/23/98
-> becker@cesdis.gsfc.nasa.gov\n";
->
-> That's from the era of kernel version 2.1.103!
->
-> Even better is the "information" in Documentation/networking/tulip.txt:
->
->   This driver is designed to work with PCI Ethernet
->   cards which use the DECchip DC21x4x family. This driver hopefully
->   works with all of 1.2.x and 1.3.x kernels, but I tested only
->   with 1.2.13, 1.3.39, 1.3.49, 1.3.52, 1.3.57 and later.
->
-> Well, a little later it is honest enough to suggest
->
->   So, if your card is not a 9332dst, please try the de4x5.c driver
-> first.
->
-> --
-> Martin
 
+> Yeah, OF didn't assign any IO region to controller 1. That's weired....
+> I wonder whether OF was confused because of two identical PCI devices...
+$ hexdump /proc/bus/pci/01/04.0  (controller 1)
+0000000 0490 7882 0700 8002 0000 0001 0820 0000
+0000010 0100 0000 0000 8080 0000 0000 0000 0000
+        ^^^^^^^^^
+0000020 0000 0000 0000 0000 0000 0000 0000 0000
+0000030 0000 8280 0000 0000 0000 0000 0001 0808
+It looks like OF assined IO at 0x0000. Is '0' meaningless?
+Of course IO forwarding is disabled as
+$ hexdump /proc/bus/pci/00/0d.0
+0000000 1110 0100 0700 8002 0200 0406 0820 0100
+0000010 0000 0000 0000 0000 0001 0100 1010 8022
+                                      ^^^^
+0000020 8080 8080 8080 7080 0000 0000 0000 0000
+0000030 0000 0000 0000 0000 0000 0000 0000 0400
+
+> Right now, there are no methods implemented in Linux for assigning
+> resources to PCI devices _after_ startup; we're relying on the BIOS to
+> do that. If it does a bad job, then that has to be fixed in
+> pcibios_fixup(). However, there is work underway related to hotplug PCI
+> support, where dynamic resource assigment is a must.
+ That sounds intereting. Does that work like CardBus?
+Can I access the code?
+
+> pcibios_fixupbus() might be empty right now, but every machine type
+> under the PPC arch has it's own pcibios_fixup() routine; the one for
+> PowerMacs is in arch/ppc/kernel/pmac_pci.c. There is already some work
+> done there for fixing IRQ numbers; I'm workjing on adding even more
+> fixup. The IRQ problem you discovered is a good candidate for inclusion
+> as well.
+I never disagree that. You can do everything in _fixup(), but I wonder if
+there is any job rest for _fixupbus()...
+
+> I'm only wondering about the more general case of a device without
+> IRQ... Will this patch make interrupts appear on those devices?
+Unfortunately no in general, if
+ - the PCI card has more than one P2P bridge(what kind of card?)
+ - OF doesn't insert AAPL,slot-name property
+ - OF doesn't assign any IRQ to the card(how can we fix in this case??)
+
+
+> > 01:04.0 SCSI storage controller: Adaptec AIC-7882U
+> > 	Region 0: I/O ports at <unassigned>
+> 
+> ..... here OF didn't assign any IO region.
+0x0000?
+
+> > and list of /proc/device-tree:
+> > /proc/device-tree/bandit/pci-bridge:
+> > name             "pci-bridge"
+> >  
+> > /proc/device-tree/bandit/pci-bridge/ADPT,3940UW:
+> > name             "ADPT,3940UW"
+> > 
+> > /proc/device-tree/bandit/pci-bridge/pci9004,8278:
+> > name             "pci9004,8278"
+> 
+> That's the easy way to assign differing device names in OF... Although,
+> if I remeber right, the OF code onboard should generate differing names
+> by itslef, shouldn't it?
+ OF seems to simply assign vendor,device as a name for nameless(?)
+devie...
+
+
+Regards,
+
+Ryuichi Oikawa
+roikawa@rr.iij4u.or.jp
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
