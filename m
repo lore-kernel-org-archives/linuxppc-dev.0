@@ -1,42 +1,32 @@
-Message-ID: <389F09C2.18FD4AA5@agelectronics.co.uk>
-Date: Mon, 07 Feb 2000 18:06:58 +0000
-From: Adrian Cox <apc@agelectronics.co.uk>
-MIME-Version: 1.0
-To: Giuliano Pochini <pochini@denise.shiny.it>
-CC: LinuxPPC-Dev <linuxppc-dev@lists.linuxppc.org>,
-        Debian PowerPC <debian-powerpc@lists.debian.org>
-Subject: Re: Altivec and binary compatibility
-References: <389AAA06.CBCDB19A@agelectronics.co.uk> <389EE09A.571A6C26@denise.shiny.it>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.10.10002071812050.1142-100000@cassiopeia.home>
+Date: Mon, 7 Feb 2000 20:02:03 +0100
+To: Geert Uytterhoeven <geert@linux-m68k.org>, linuxppc-dev@lists.linuxppc.org
+CC: linux-fbdev@vuser.vu.union.edu
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: [linux-fbdev] Retrace
+Message-Id: <20000207200203.007111@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Giuliano Pochini wrote:
-Giuliano Pochini wrote:
+On Mon, Feb 7, 2000, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 
-> > As the jmp_buf is a different size in Altivec and non-Altivec code
->
-> Because with Altivec we need to save V registers, right ?  Well, I suppose
-> intel developers had the same problem with P-III "vector" unit. How did they
-> solve the problem ?
+>And now the bad news: the address you have to mmap() depends on the machine
+>type :-(
 
-As far as I can tell, by ignoring it, and making the assumption that
-only low-level libraries will use the vector registers.  I plan to take
-a similar approach, and warn users not to mix Altivec and exceptions.
+We need to find a solution for that one day or another. The iobase is not
+only arch-dependant (PReP, PowerMac, CHRP...) but also machine dependant,
+since it depends on the host bridge type.
 
-> > To add to the problem, throwing exceptions on an error is just what a
-> > modern C++ library is supposed to do.  Throwing or catching an exception
-> > in Altivec code will produce sequences that cannot execute on a G3
->
-> Why ?? (sorry for my ignorance...)
+Unfortunately, with weird host bridges like Apple Uni-N (that has 3
+busses with 3 different io bases but the same bus number), it's almost
+impossible to get it correct, or eventually by parsing /proc/device-tree.
 
-I haven't studied GCC's implementation of exceptions in great detail.
-The compiler saves and restores all the non-transient registers as part
-of the exception sequence. When generating Altivec code this produces
-stvx and lvx instructions, which will cause an illegal instruction
-exception on G3 processors.
+That means that getting code that need to do io's from userland is a real
+challenge. Even X is not completely correct in this regard. Ryuichi tried
+to fix it at least for PowerMacs, but gave up for Uni-N based machines.
 
-- Adrian Cox
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
