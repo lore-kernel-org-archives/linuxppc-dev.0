@@ -1,77 +1,57 @@
-Message-ID: <3F0B94B2.5090607@earthlink.net>
-Date: Tue, 08 Jul 2003 21:06:10 -0700
-From: Dean Matsen <deanmatsen@earthlink.net>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: [PATCH] Solves problems when PHY has no interrupts
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="MIMEStream=_0+106105_563697124402_802731020411"
+Date: Wed, 09 Jul 2003 16:51:53 +1200
+From: Dmytro Bablinyuk <dmytro.bablinyuk@tait.co.nz>
+Subject: Problem with starting up 2.4.21 kernel
+To: linuxppc mail list <linuxppc-embedded@lists.linuxppc.org>
+Message-id: <3F0B9F69.1030801@tait.co.nz>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---MIMEStream=_0+106105_563697124402_802731020411
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-Content-Transfer-Encoding: 7bit
+After "Transferring control to Linux (at address 00000000)" nothing seems happen (see below). From BDI2000 I discovered that it shorlty after locks at 0xc0092aec address (the MPC866ADS eval board used).
+I tried to turn on the kernel hacking options and turn off everything I don't need right now but it does not help a lot.
+Could anybody give me a clue what this could be about.
 
-Hello all,
+Thank you in advance for any help.
 
+### main_loop: bootcmd="bootm 0x2880000 0x2900000; setenv bootargs root=/dev/ram rw"
+Hit any key to stop autoboot:  0
+## Booting image at 02880000 ...
+   Image Name:   Linux-2.4.21-erik
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    489849 Bytes = 478.4 kB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+## Current stack ends at 0x0075BBE8 => set upper limit to 0x0075B3E0
+## cmdline at 0x0075B2E0 ... 0x0075B2F0
+bd address  = 0x0075BFC4
+memstart    = 0x00000000
+memsize     = 0x00800000
+flashstart  = 0x02800000
+flashsize   = 0x00200000
+flashoffset = 0x00025000
+sramstart   = 0x00000000
+sramsize    = 0x00000000
+immr_base   = 0x02200000
+bootflags   = 0x00000001
+intfreq     =     50 MHz
+busfreq     =     50 MHz
+ethaddr     = 00:24:20:10:18:6A
+IP addr     = 172.25.193.23
+baudrate    =  19200 bps
+## Loading RAMDisk Image at 02900000 ...
+   Image Name:   Simple Ramdisk Image
+   Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
+   Data Size:    859578 Bytes = 839.4 kB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+## initrd at 0x02900040 ... 0x029D1DF9 (len=859578=0xD1DBA)
+   Loading Ramdisk to 00689000, end 0075adba ... OK
+## Transferring control to Linux (at address 00000000) ...
 
-the enclosed patch applies to the Monta Vista 2.4.22-pre3 kernel
-or thereabouts.
-
-Our PPC implementations have no PHY IRQ support.  I notice that
-the file arch/ppc/8xx_io/fec.c now has a variable HAVE_PHY_INTERRUPT,
-which is something like what I originally did.  But, I had to
-make another change as well.
-
-Specifically, I had to move some initialization code around for the
-Ethernet to work properly after "ifconfig eth0 down ; ifconfig eth0 up".
-Without these changes, the Ethernet doesn't come back "up" :(
-
-The changes in this patch are done so that people WITH a PHY interrupt
-have things done in the original order (I can't verify my change
-against a system WITH PHY interrupts, so I preserved the order).
-In short, this fix should be safe for all systems, but maybe
-overly paranoid.
-
-Anyone care to inspect and comment on the viability of this patch?
-
-
-TIA
-Dean Matsen
-
-
---MIMEStream=_0+106105_563697124402_802731020411
-Content-Type: application/x-bzip2; name="fec.patch.bz2"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline; filename="fec.patch.bz2"
-
-QlpoOTFBWSZTWUfrSxYAAW1fgGgwW//////3/+6/7///UAUZ5hram7gAABwlTQpgInkBqNqA
-DQ0YjI0AAANAaZADSUA0BoA0AAAAaBkAANAaAANMoJNDSaNqGg0BkAaAAADQAAABzTEZGTTJ
-oBkNGQyZAAADI0yNAwhkCSQE0ARoNEKY0jR6jR6g0ZGj0gPUxBkAxqQAFbnCiC1UAE3hKDjc
-Yve8awgBzh8AYpkSSmQiC4pwVn7s33xgrNkggqMjnj9M1hzm96EszwfL2js3wzdnaPpYz+oc
-2OBhAdFwqpjy/22xhZbOZqo5mZVBR45BxATAG0DuBL0EK2XPMvO/0716NAzf3s8ekhRU6bn3
-6NyWMYxMx8Ni5tTaISxhpj6KUs21uvscLcNVKmNjGMZiLU0Md6fozIIqhJlNyBEMWHfaT3ll
-FBeAgMKUyVtioZpJfjLBBMR5E652PkRHrViGQXWJKdOCyOta46aZdYR1iWN156gH2CxpXnOk
-Cnbdxk0pAyXCsaVpoqFFwIX4SotScIidXUUcKlORh16ktetOUUkwRILaNfEgPW1ix9atRLMq
-VQYCUhFqcdRcV62y146sUNdzVHNTYhnX+RpvcOlX4g8AEmTDGbknjCOUSWpgTH+OeBb2nuyS
-Mes1h12Cz6vFrIJX9JmGMWBMwFOWjbZgge2dwu0xTzu97RC3h42GYvYkdE+g757UwY29R1PP
-C8QDDQy7FgZQgONreiZTjWiYvlTPL0XwiqEzKhMYbMFI+pBBxHIqBfTDpsSTNFpGnJn3sH7d
-pWihcKIILjBy0RBBEpLs/sIKusqJwNylAJxAIGyGIwYPJR/cXy9TIxjCaozUCbUAQd5N54tg
-uCoA7EGmsgDg6IA8jzHKoTlStBedqwWAHWWFR5t75AXE/mzQRErKkFF5GKCZv6FsN0CwoZTU
-MxTFCoBqymsWwU6tCgqwJohM1IXl8nwc9Jc3x6CvA/gZGY5B953/qHezy4F4fg8+1QUj6DzD
-8xioJBWm9dDr3z6y44qE15/cLSyKUSjeMcglFtZMgYMW/j/KsXpJnXkZDDJftIieU1XEJa05
-Nd4nPhQ4A4KitjBzh5YbFAiPW5FoplaucOPOw3SA5YYDopWp48YZk2iYMTczP3m4qWsiSLnE
-x7iR2D5Gre4pUUrGZjJAxWbCRtJpFbzaxev7VB07YJZK0SwukuFyYooHIMp2Ac1LkUM43g8Q
-YhisgZDAzivQpUSklyla6A4jI4vciu4rChQi7kmoxB8B2RvGkmQblo9Q8Ec9EETA9VYEhcDZ
-uuK3JZcbGAzW5uUDmjhRwenaNMqgcU2jIePLy9ZcxIZ5ubXv9XExtC0sgm1nUXYGqa5FxhoO
-kwSNyqHEhmmJnFhTgRLFrXAtTBtHF5NwMc9WcdUVd6yBKDQFoPHpQTlQmMQUEQEw87jybIMd
-ibR4wyxyCo02kCOMweiRqxduOJxkrqtRvLXAsqBwM9FliMsGI67AqdE7ZB3AmVEFa4YLLxwM
-xC4g9RLKA5KkDwwiKqAqhVMm3BoojsnsRbnORxrUx0ca7cGZiI8HDJv3gYj+0xt4YA6Vu86Y
-ljzNh044xxnIZMtHMhPB5ZUjEfcIcbCSiQUwo04k6B3SAdnsGN/Zn2GGKtwOQML12rFEs1GC
-SyGYtSGLFxnBFVygBqVx12x3iUVqiVlgKKFQIYpYn/F3JFOFCQR+tLFg
-
---MIMEStream=_0+106105_563697124402_802731020411--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
