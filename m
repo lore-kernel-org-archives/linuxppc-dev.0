@@ -1,30 +1,30 @@
-Date: Thu, 14 Nov 2002 08:10:39 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: ???? <yuj@mail.ndsc.com.cn>
-Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: motorola lopec mpc7410
-Message-ID: <20021114151038.GA14431@opus.bloom.county>
-References: <200211140848.CAA19190@lists.linuxppc.org>
-Mime-Version: 1.0
+Message-ID: <3DD3C747.8B7EE5CD@opensource.se>
+Date: Thu, 14 Nov 2002 16:54:47 +0100
+From: Magnus Damm <damm@opensource.se>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: bi_record and initrd
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200211140848.CAA19190@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Nov 14, 2002 at 04:50:34PM +0800, ???? wrote:
+Hi all,
 
->  I'm porting mvista linux 2.1 for the motorola lopec mpc7410 board.And I noticed that there are some differences between the board version described by mvista and motorola.Also,the version of PPCBug is different.I'm wondering why?
+The 2.4.19 kernel and the current rsync kernel from
+source.mvista.com::linuxppc_2_4 does not work with large initrds.
 
-For support for an MontaVista product, please contact your mvista sales
-rep (or perhaps your manager knows) to find out how to contact support.
+The bi_record setup code in linux/arch/ppc/boot/simple/misc-embedded.c
+doesn't care about the initrd size. So, if you are using a initrd that
+crosses a megabyte-boundary you will have your initrd overwritten with
+the bi_record. This results in crc error when unpacking the initrd.
 
-Having said that, I _believe_ the LoPEC I have running right now has
-PPC6Bug, so perhaps you should contact Motorola to find out how to
-upgrade the firmware.
+The quick fix is to add a offset to the boot-code and to
+arch/ppc/kernel/setup.c.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+So, what's the long term solution?
+Passing a pointer to the kernel?
+
+/ magnus
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
