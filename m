@@ -1,26 +1,77 @@
-Content-Type: text/plain
-MIME-Version: 1.0
-Message-ID: <q0989185889165.17564@webmail2.inner-21cn.com>
-Date: Tue, 14 Aug 2001 11:08:34 +0800 (CST)
-From: "yah" <hay8888@21cn.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: 
-Subject: NIC problem
+Date: Tue, 14 Aug 2001 00:43:16 -0700 (PDT)
+From: James F Dougherty <jfd@GigabitNetworks.COM>
+Message-Id: <200108140743.AAA05509@krakatoa.gigabitnetworks.com>
+To: anj@aps.anl.gov, mgreer@mvista.com
+Subject: Re: MPC8240 EPIC Driver (Attached)
+Cc: mporter@mvista.com, dan@mvista.com, jfd@GigabitNetworks.COM,
+	linuxppc-embedded@lists.linuxppc.org, cort@cs.nmt.edu,
+	jfd@cs.stanford.edu
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I use CDK1.2 from mvista. My custom board can work correctly via NFS. Now I rebuild the kernel with linuxppc_2_4 from penguinppc.org. When I use it to boot the board,it said 'PCI: unable to handle 64-bit address data...', and 'PCI: Unable to reserve I/O region #1:80@fffff00 for device 00:0e.0'. I can't use the ether net card. So I can't boot the system via NFS.
-  How can I do?
-  Thanks for any advice .
+Mark,
 
-Best regard,
-Amy
--------------------------------
-玩转衣食住行一条街
-http://adinfo.21cn.com
-21CN短信想点就点
-http://www.21cn.com/21cnhtm/duanxin/index.html
+Send me your changes and I'll
+gladly test them...
 
+
+		Thanks,
+		-James
+
+
+>
+> > "Mark A. Greer" wrote:
+> > >
+> > > The changes to the openpic code for supporting serial interrupt mode are
+very minor.
+> >
+> > Actually IIRC they're already present in the version shipped with
+> > HHL-2.0.  I don't remember making any changes for that at all on the
+> > MVME2100 support, but my memory has been known to be faulty.
+>
+> Well, there is no _explicit_ support for serial mode but there was an 'if'
+stmt added that
+> adjusts NumSources if it is less than OpenPIC_NumInitSenses.  That let's you
+proceed with
+> an initsenses with more irq's than the pic tells you it has.  Its not a
+complete, long-term
+> solution.
+>
+> Also, I'm trying to keep this discussion relative to 2_4_devel not hhlx.x
+>
+> > > What I mean is a table where you specify the irq, the offset fo the regs
+from the base
+> > > address, the sensitivity, and the polarity all separately.  Also the
+appropriate
+> > > extensions to support serial interrupt mode (e.g., MVME2100 uses that).
+With a table
+> > > format something like that, you can avoid the sparse and negative irq's on
+the
+> > > 8240/107 and still keep things pretty clean looking.
+> >
+> > That sounds right.  It could also use the NIRQ field of the Feature
+> > Reporting Register to cross-check that the table given is the correct size
+> > for the chip it's controlling, and have some way of specifying the
+> > presence or absensce of a cascaded i8259 (presumably with its own table).
+>
+> The NIRQ field is a part of the problem in serial mode.  You can have 16 lines
+hooked up in
+> serial mode and the NIRQ still tells you that there should only be 5, IIRC.
+>
+> The table changes are intended to solve more than just epic serial mode.
+They're intended
+> to make explicit--and flexible--all the assumptions that are currently buried
+in the
+> initsenses table (irq #, the offset of corresponding reg in pic, sensifivity
+and
+> polarity).  These aren't extensive changes, I should just do them, post a
+patch for review
+> & shut up...  :)
+>
+> Mark
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
