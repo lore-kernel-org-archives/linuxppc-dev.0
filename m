@@ -1,43 +1,45 @@
-Date: Fri, 21 Sep 2001 21:49:13 +0300 (EEST)
-From: Kostas Gewrgiou <gewrgiou@imbc.gr>
-To: <tahoward@ntrnet.net>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: gatos ati.2 with XClaim VR 128
-In-Reply-To: <Pine.LNX.4.33.0109211151230.929-100000@ranger>
-Message-ID: <Pine.LNX.4.33.0109212130360.7209-100000@idd-01.imbc.gr>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <200109211858.OAA22552@makai.watson.ibm.com>
+To: Ralph Blach <rcblach@raleigh.ibm.com>
+Cc: Dan Malek <dan@mvista.com>, linuxppc-dev@lists.linuxppc.org,
+	Holger Bettag <hobold@Informatik.Uni-Bremen.DE>,
+	Mark Salisbury <mbs@mc.com>,
+	"Timothy A. Seufert" <tas@mindspring.com>
+Subject: Re: ppc LE questions (seeking help hand info pointers) 
+In-Reply-To: Message from Ralph Blach <rcblach@raleigh.ibm.com>
+   of "Fri, 21 Sep 2001 13:01:49 EDT." <3BAB727D.C85E5CB@raleigh.ibm.com>
+Date: Fri, 21 Sep 2001 14:58:23 -0400
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 21 Sep 2001 tahoward@ntrnet.net wrote:
+>>>>> Ralph Blach writes:
 
-> I did a little poking in r128_video.c, and it seems the multimedia table
-> is never being initialized.  According to the XFree86 sources, there is no
-> video bios under ppc linux.  Once the R128InfoPtr makes it into
-> R128ReadMM_TABLE, the VBIOS field is null, and an attempt to dereference
-> it segfaults the server.  Josh Huber's patch allows the code to run, but
-> now I have a motionless black/green screen, and no sound.
->
-> If I just want to get this working and I'm right about this being the
-> problem, I could just hardcode the relevant info.  But where would I get
-> the right values for the multimedia table?
->
-> The bigger question is where the data for MM_TABLE is actually being
-> stored on the card, if not in the bios?  I believe initialization is
-> handled by open firmware, but what about card specific data?  Is it
-> somewhere else, or do vendors just have to make sure their drivers know
-> everything they need to know about their cards?
+Ralph> Although my knowledge of powerpc is
+Ralph> far from complete, I can tell everybody that from my experience that the
+Ralph> Book E architecture is superior.
 
-I don't have a non x86 r128 card so i never managed to look at what is
-available in the rom, its a good idea to take a look and see
-if the needed data for MM_TABLE is there, probably in a different offset
-than in the x86 side.
-But as i said i never had the chance to look at the OF code so i have
-no idea if you'll find anything usefull in it.
+Ralph> I believe that Book E processor which have been announced by both
+Ralph> Motorola and IBM will be VERY successful.
 
-Kostas
+	Let me clarify a point in my previous reply: the PowerPC Book E
+changes to the PowerPC Book I UISA affect 64-bit PowerPC only.  The 32-bit
+subset of PowerPC Book E is compatible with the rest of the PowerPC
+architecture family.  IBM's PowerPC 440GP implements the 32-bit PowerPC
+Book E architecture.
+
+	As I said in my original message, the supervisor and non-UISA
+changes are very useful and have a lot of support from the embedded
+PowerPC developer community.  The IBM PowerPC 440GP and other 32-bit
+PowerPC Book E chips implement the areas of agreement and compatibility
+which create broad support for the PPC 440GP chip and the PowerPC
+architecture.  I am happy when the various chip implementations in the
+PowerPC architecture family complement and reinforce each other.
+
+David
+
+	P.S. The above comments are my own opinion and are not intended to
+imply that they represent any company or organization.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
