@@ -1,82 +1,74 @@
-Date: Wed, 25 Aug 2004 18:40:13 +0200 (MEST)
-From: "Patrick Huesmann" <tricknology@gmx.de>
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: v2p@mind.be
+Message-ID: <412CC13A.2050009@eircom.net>
+Date: Wed, 25 Aug 2004 17:41:30 +0100
+From: Conor McLoughlin <cml3227@eircom.net>
 MIME-Version: 1.0
-Subject: ppc-linux still not booting on my virtexII board
-Message-ID: <24181.1093452013@www39.gmx.net>
-Content-Type: text/plain; charset="us-ascii"
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: Conor McLoughlin <cml3227@eircom.net>
+Subject: Anyone with MPC82xx PCI on kernel 2.6?
+References: <4124E315.9090009@eircom.net>
+In-Reply-To: <4124E315.9090009@eircom.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+I am trying to bring up a custom board which contains an MPC8250, a
+three-port PCI-PCI bridge and a few pci devices. I am using kernel
+2.6.8.1. I am having a number of problems.
 
-I traced down the problem a little further. Apparently the machine crashes
-on certain memory accesses.
+Currently I have just four devices hanging off one secondary bus of the
+pci-pci bridge. Apart from the bridge, I have no other devices hanging
+off bus 0.  I have nothing yet hanging off bus 2.
 
-early_init() in arch/ppc/kernel/setup.c calls
-memset_io(PTRRELOC(&__bss_start), 0, _end - __bss_start) to zero out the BSS
-section. I substituted memset_io with my own memset function and found out
-that the given parameters are ok, according to the symbol table. I then made
-up a "debug memset" like this:
+                 | bus 0
+                 |
+     ------------------
+     |                |
+   ============      ============
+   |bridge     |     | bridge    |
+   |device 0x10|     |device 0x10|
+   |function 0 |     |function 1 |
+   ============      ============
+       |bus 1             |bus 2
+       |                  |
+   ---------------------
+   |         |         |
+  device 1   device 2 device 3
 
-void mymemset(char *ptr, int c, int len)
-{
-  while (len--) {
-    <code that waits for uart rx>
-    hexout((int)ptr); // print the current address
-    *(ptr++) = c;
-  }
-}
+Initially, the bios initialization would not assign resources to my
+devices on bus 1. The reason appeared to be that in
+pci_read_bridge_bases it reads the memory base and limit registers
+from the bridge. As these are initially zero, it sets a limit
+of 1MB for the resources assigned to bus 1.
+My devices (DSP processors) look for a lot more memory space that that.
+I modified the function to assign sufficient resources for my needs
+and it now appears to assign memory resources to the devices correctly.
 
-then I found that the board crashes always at the same address (c00931c0),
-that is 0x01c0 bytes in the BSS section (which begins at c0093000).
+First question: Should the memory limit register be set in the bridge
+becore pci_read_bridge_bases? Is it perhaps assumed that the bios (boot
+code) sets this up?
 
-Then I incremented "ptr" by a fixed offset (0x80) at the beginning of
-mymemset(), to find out that the cpu then crashes when writing to the exact
-same location c00931c0 (therefore one could think that it depends on the
-absolute address, not on the number of bytes written).
+I still have an issue with I/O resources that I am ignoring for now.
+My primary concern right now is verifying the hardware.
 
-Now it's getting weird. Assuming that there is something wrong with the
-memory bus or memory controller, I wrote to that address using my
-(homegrown) ROM monitor. But that is no problem and I would read back the
-correct values from that address. The only difference is that the ROM
-monitor uses no MMU (therefore I used 0x000931c0 instead of 0xc00931c0).
+Now I try to access the devices on bus 1. I can read the configuration
+space no problem, but get bus error if I read the pci memory space.
+Checking everything obvious, I see that the the command register of
+the pci-pci bridge does not have the memory or I/O space bits set.
+Setting these bits eliminates the bus error.
 
-One could argue that there is something wrong with the initial MMU, but then
-I can't think of a reason why it should happen at such a "odd" address.
+Second question: What function should set the command register for
+the pci-pci bridge to enable access to the secondary bus for
+memory and I/O cycles?
 
-Then there is a possibility of cache problems. Someone on this list
-suggested that I better flush the caches before booting, using a code
-snippet like this:
+Now I am at the stage where I don't get a bus error, but I read all FFs
+no matter where I read from bus 1. It doesn't appear to matter if a
+device is configured at the address or not.
 
-for(i=0; i<16384; i+=32) {
-  asm("dccci 0,%0" :: "r"(i));
-}
-asm("iccci 0,0");
-asm("sync;isync");
+Next question: What should I look at now?  How do I tell if
+the device responded to the pci access?
 
-Ok, i inserted this code snippet at the beginning of early_init(), and then
-BANG! the board crashed immediately.
-
-I reproduced the memset() thing with both the denx kernel tree and the
-kernel port for memec V2P eval board, supplied by the kind people at
-mind.be.
-
-The kernel versions are 2.4.25 and 2.4.22, respectively. My toolchain is a
-powerpc-405-linux-gnu- with gcc version 3.3.2, which I downloaded in binary
-form at
-http://developer.osdl.org/dev/plm/cross_compile/powerpc-405-linux-gnu.tar.bz2
-(I suspect that it's a crosstool generated one).
-
-Perhaps someone who knows this weird processor better than me, can shed some
-light? I'm no dumbass when it comes to the low level stuff, but I only know
-some ARMs and PICs in this detail and this is my very first PPC project.
-Thank you very much.
-
-Regards,
-Patrick
-
+Any help would be much appreciated.
+Conor
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
