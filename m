@@ -1,50 +1,38 @@
-Message-ID: <20020207155723.63550.qmail@web20102.mail.yahoo.com>
-Date: Thu, 7 Feb 2002 07:57:23 -0800 (PST)
-From: Bruce <brc1995@yahoo.com>
-Subject: Re: Problems running PING, Telnet 
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Thu, 7 Feb 2002 19:24:02 -0600 (CST)
+From: Viktor Lapinskii <lapinski@pacific.ece.utexas.edu>
+Reply-To: lapinski@ece.utexas.edu
 To: linuxppc-embedded@lists.linuxppc.org
+Subject: kernel debugging in MontaVista Journeyman 2.0
+Message-ID: <Pine.A41.4.44.0202071800550.13790-100000@pacific.ece.utexas.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Murali,
+Hello!
 
-We had similar problems when we moved from an NFS
-mounted file system to a RAM Disk.
+We have Motorola Sandpoint with PPMC8240 and MontaVista Journeyman 2.0.
+Budget constraints do not allow us to have a full version of MontaVista
+Linux and I am trying to find some ways to do kernel debugging with the
+Journeyman version of linux-2.4.2_hhl20.
 
->> - PING command does not work
->>               The erro message I get is "ping:
-unknown protocol icmp"
+We need to perform some measurements on a network card driver.  Ideally,
+it would be great to obtain executuion traces (on the machine instruction
+level) of different components of that driver (eventaully with timestamps)
+and also (probably indirectly) measure DMA exchanges between the network
+card and RAM.  Setting breakpoints is also desirable.
 
->>                - Telnet program does not work which
-tells me that the service is unknown.
->>               The error message I get is "telnet:
-tcp/telnet: unknown service"
+Journeyman apparently does not have KGDB support and I would highly
+appreciate your advice on how such measurements / trace construction can
+be done (besides using occiloscope or printouts and pencil).  It's the
+first time I am trying to get deep into the kernel so any of your
+suggestions/references would be very helpful.
 
+Thank you,
 
-You didn't mention whether telnet and ping were
-working on the nfs mounted filesystem and
-then stopped working when you migrated to
-the RAM Disk.
+Viktor
 
-If that is the case, we found the strace tool to
-be indispensible. Bring the strace tool over to
-your target and execute
-
-strace ping
-
-System calls will be displayed on your terminal. The
-program will show if there are failures as it
-is trying to open shared libraries or other
-configuration files. It is not perfect, but it can
-really help to narrow down where the problem
-may reside.
-
-Bruce
-
-Send FREE Valentine eCards with Yahoo! Greetings!
-http://greetings.yahoo.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
