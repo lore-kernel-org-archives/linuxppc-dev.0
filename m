@@ -1,33 +1,24 @@
-Return-Path: <pari@gdatech.com>
-Received: from kings.gdatech.com (darwaza.gdatech.com [66.237.41.98])
-	by ozlabs.org (Postfix) with ESMTP id D410367A6F
+Return-Path: <panto@intracom.gr>
+Received: from mailserv.intranet.gr (mailserv.intranet.GR [146.124.14.106])
+	by ozlabs.org (Postfix) with ESMTP id 1A14F67A33
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  5 Apr 2005 13:33:20 +1000 (EST)
-Received: from kings.gdatech.com (localhost.localdomain [127.0.0.1])
-	by kings.gdatech.com (Postfix) with ESMTP id 0FA1161C0AA
+	Tue,  5 Apr 2005 17:19:46 +1000 (EST)
+Received: from mailserv.intranet.gr (localhost [127.0.0.1])
+	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id j357Ni4I029935
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  4 Apr 2005 20:05:39 -0700 (PDT)
-Received: from kings.gdatech.com ([192.168.200.118])
-	by localhost.localdomain ([127.0.0.1]) (port 7027) (Propel SE relay
-	0.1.0.2229 $Rev$) id r544200539D-00-1
-	for linuxppc-embedded@ozlabs.org; Mon, 04 Apr 2005 20:05:39 -0700
-Received: from sierra.gdatech.com (asg_mda [192.168.200.112])
-	by kings.gdatech.com (Postfix) with ESMTP id DE45761C0D0
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  4 Apr 2005 20:05:38 -0700 (PDT)
-Received: from sierra.gdatech.com (localhost.localdomain [127.0.0.1])
-	by gdatech.com (8.11.6/8.11.6) with SMTP id j35395t06994
-	for <linuxppc-embedded@ozlabs.org>; Mon, 4 Apr 2005 20:09:05 -0700
-From: "Pari Subramaniam" <pari@gdatech.com>
-To: "'linux-ppc-embedded'" <linuxppc-embedded@ozlabs.org>
-Date: Mon, 4 Apr 2005 20:14:50 -0700
-Message-ID: <00e401c5398d$a0ea5190$acc8a8c0@PARI>
+	Tue, 5 Apr 2005 10:23:46 +0300 (EEST)
+Message-ID: <4252397C.2050308@intracom.gr>
+Date: Tue, 05 Apr 2005 10:08:44 +0300
+From: Pantelis Antoniou <panto@intracom.gr>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-In-Reply-To: <b383dfd14d6dcc895297851a2424f319@freescale.com>
-Subject: PPC linux v2.6.11 network configuration hangs
-Reply-To: pari@gdatech.com
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+References: <20050404191718.GA30281@logos.cnet>
+	<20050404200922.GC30252@logos.cnet>
+In-Reply-To: <20050404200922.GC30252@logos.cnet>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Paul Mackerras <paulus@samba.org>,
+	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: 8xx v2.6 TLB problems and suggested workaround
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -38,45 +29,51 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Marcelo Tosatti wrote:
+> Hum,
+> 
+> The machine seems to be acting strange, but it boots normally 
+> and applications run (more importantly there is no TLB entry 
+> which could cause dcbst fault strangeness).
+> 
+> Some "dd" hangs till I press "ctrl+c", others just work. Really strange. 
+> 
+> G'night, I'll look at it tomorrow.
+>  
+> [root@(none) /]# time dd if=/dev/zero of=file bs=16k count=400
+> 400+0 records in
+> 400+0 records out
+>                                                                                         
+> real    0m4.261s
+> user    0m0.040s
+> sys     0m1.240s
+> [root@(none) /]# time dd if=/dev/zero of=file bs=32k count=400
+>                                                                                         
+>                                                                                         
+> real    0m50.369s
+> user    0m0.040s
+> sys     0m1.680s  (ctrl+c)
+> [root@(none) /]# 
+> 
+> 
 
-Hi,
+I can confirm that the patch works.
 
-We have 8540 based board running PPC port ver-2.4.30-pre1. when I tried =
-to
-upgrade to ver-2.6.11, the network interface loops (enabled TSEC alone)
-indefinitely in the gfar_probe() at the following while loop:
+I no longer need the tlbie in update_mmu_cache.
 
+/tmp # time dd if=/dev/zero of=file bs=16k count=400
+400+0 records in
+400+0 records out
+real    0m 0.55s
+user    0m 0.01s
+sys     0m 0.52s
 
-        /* Stop the DMA engine now, in case it was running before */
-        /* (The firmware could have used it, and left it running). */
-        /* To do this, we write Graceful Receive Stop and Graceful */
-        /* Transmit Stop, and then wait until the corresponding bits */
-        /* in IEVENT indicate the stops have completed. */
+/tmp is tmpfs
 
-        tempval =3D gfar_read(&priv->regs->dmactrl);
-        tempval &=3D ~(DMACTRL_GRS | DMACTRL_GTS);
-        gfar_write(&priv->regs->dmactrl, tempval);
+Well done Marcelo!
 
-        tempval =3D gfar_read(&priv->regs->dmactrl);
-        tempval |=3D (DMACTRL_GRS | DMACTRL_GTS);
-        gfar_write(&priv->regs->dmactrl, tempval);
-/*---------------------------------stays in this loop for
-ever--------------------------------*/
-        while (!(gfar_read(&priv->regs->ievent) & (IEVENT_GRSC | =
-IEVENT_GTSC)))
-                cpu_relax();
-/*-----------------------------------------------------------------------=
--------
---------------*/
+Regards
 
-MPC8540 based system running boot loader U-Boot version-1.1.2. The TSEC =
-port is
-tested from the boot loader. The same behavior observed in all the =
-boards.
+Pantelis
 
-I appreciate any help in this regard.
-
-Thanks in advance
-
-regards
--pari =20
+P.S. CPU errata perhaps?
