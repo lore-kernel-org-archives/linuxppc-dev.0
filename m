@@ -1,29 +1,33 @@
-Message-ID: <3BA7980B.EEBF1F5D@mvista.com>
-Date: Tue, 18 Sep 2001 14:52:59 -0400
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Errata 67/77 / walnut bugs (was: Re: Erratum 51 bugfix?)
-References: <20010917152316.O3851@zax> <3BA62583.55E48A97@mvista.com> <20010918102901.A1183@zax>
+Date: Tue, 18 Sep 2001 11:57:22 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Stefan Roese <stefan.roese@esd-electronics.com>
+Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>,
+	Linuxppc-Commit <linuxppc-commit@source.mvista.com>
+Subject: Re: CPCI-405 port (PPC405GP)
+Message-ID: <20010918115722.A5967@cpe-24-221-152-185.az.sprintbbd.net>
+References: <EFEAIMDCOOOHIEPHDNFJEEENDCAA.stefan.roese@esd-electronics.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <EFEAIMDCOOOHIEPHDNFJEEENDCAA.stefan.roese@esd-electronics.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David Gibson wrote:
+On Mon, Sep 10, 2001 at 06:36:47PM +0200, Stefan Roese wrote:
 
-> I suspect #77 is the cause of the problems I'm seeing on the walnut
-> now - it mostly works, but every so often a process will freeze up
-> immune to signals.
+> Please find attached a port to our CPCI-405 board (a CompactPCI board based
+> on the IBM PPC405GP). This  patch is based upon "Linux-2.4.10-pre6" from the
+> linuxppc_2_4_devel tree a few hour ago.
 
-Hmmm...We did tons of debugging on this one and pointed it out to
-IBM a while back.  The ATOMIC_SYNC_FIX configuration option was the
-solution to cure it.  As you can tell, it tries to address the
-pipeline issues surrounding the stwcx.  I kind of hope it is the
-problem, and a better silicon bug fix will solve it.
+This looks good, but I've got some minor questions.  First, does
+arch/ppc/kernel/cpci405.c need all of those includes?  (And is bios_fixup
+an init time only function?)  Also do we actually need
+include/asm-ppc/cpci405.h?  All it does is include ppcboot.h.  So I'm
+guessing this board only boots w/ PPCBOOT, which should include it's own
+version of this file.  So is this really needed?
 
-
-	-- Dan
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
