@@ -1,69 +1,43 @@
-Date: Fri, 4 Aug 2000 20:10:33 -0500 (CDT)
-From: Takashi Oe <toe@unlserve.unl.edu>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: rtc again...
-In-Reply-To: <20000804205524.383@192.168.1.10>
-Message-ID: <Pine.LNX.3.96LJ1.1b7.1000804195419.649B-100000@ofey.earthlink.net>
+From: Paul Mackerras <paulus@linuxcare.com.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <14731.43305.438998.169473@argo.linuxcare.com.au>
+Date: Sat, 5 Aug 2000 15:42:01 +1000 (EST)
+To: Benjamin Herrenschmidt <bh40@calva.net>
+Cc: Tom Gall <gall@rochcivictheatre.org>, <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Getting things in...  Was: Re: shifts on 64bit ints
+In-Reply-To: <20000804174953.16973@mailhost.mipsys.com>
+References: <398AEA0C.329AB669@rochcivictheatre.org>
+	<20000804174953.16973@mailhost.mipsys.com>
+Reply-To: paulus@linuxcare.com.au
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 4 Aug 2000, Benjamin Herrenschmidt wrote:
+Benjamin Herrenschmidt writes:
 
-> >Ok, the usage of "sys_tz" or "struct timezone" in general in kernel is not
-> >well defined or confused.  kernel/time.c seems to assume "tz_minuteswest"
-> >includes DST fix up, while fs/fat/misc.c uses "tz_minuteswest" for time
-> >zone and "tz_dsttime" for DST fix up.  The code in pmac_set_rtc_time()
-> >doesn't work if "tz_minuteswest" doesn't include the DST fix up, so, if
-> >that's the correct behaviour, the following code in pmac_time_init() needs
-> >to be tweaked for consistency in my opinion from:
-> >
-> >	sys_tz.tz_minuteswest = -delta/60;
-> >	/* I _suppose_ this is 0:off, 1:on */
-> >	sys_tz.tz_dsttime = dst;
-> >
-> >to
-> >
-> >	sys_tz.tz_minuteswest = -delta/60 - (dst? 60: 0);
-> >	sys_tz.tz_dsttime = dst;
->
-> Well, who is right ? time.c or fs/fat/misc.c ? Maybe we should query the
-> powers that be... Did you look at what the userland hwclock expects in
-> tz_dsttime ?
+> I'm an horribly bad web designer, but one cool thing to do if someone is
+> good at it, would be a web-pased patch repository. You send patches with
+> a web form (eventually an upload mecanism) along with your  email, a
+> comment, etc..., they get assigned a patch number automatically, anybody
+> can consult the database, and people with write access to BK can mark
+> them (accepted, refused, postponed, ... along with a comment) once they
+> have been handled.
 
-As Geert has pointed out, hwclock can give UTC or local time to /dev/rtc,
-why don't we just let userland deal with this local time issue.  What I
-mean is for pmac_set_rtc_time(), let's change:
+Sounds exactly like the jitterbug site that Andrew Tridgell set up for
+the Linux kernel.  Linus tried it for a while but unfortunately
+eventually decided he didn't like it enough.  But for the rest of us
+it was great.  Tridge even put in a "test patch" button for Linus that
+would rsync the current kernel tree, automagically unpack/decompress
+the patch, apply it and report any errors.  I could ask Tridge to set
+up something like this for us.
 
-	nowtime += RTC_OFFSET - sys_tz.tz_minuteswest * 60;
+Paul.
 
-to
-
-	nowtime += RTC_OFFSET;
-
-and we assume that userland will give us the correct local time.
-
-For pmac_time_init(), let's change:
-
-	sys_tz.tz_minuteswest = -delta/60;
-	/* I _suppose_ this is 0:off, 1:on */
-	sys_tz.tz_dsttime = dst;
-
-to
-
-	sys_tz.tz_minuteswest = -delta/60 - (dst? 60: 0);
-	sys_tz.tz_dsttime = 0;
-
-which is what's been done in hwclock source and a reasonable compromise, I
-think, so that both kernel/time.c and fs/fat/misc.c would be happy.
-
-How about it?
-
-
-Takashi Oe
-
+--
+Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
++61 2 6262 8990 tel, +61 2 6262 8991 fax
+paulus@linuxcare.com.au, http://www.linuxcare.com.au/
+Linuxcare.  Support for the revolution.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
