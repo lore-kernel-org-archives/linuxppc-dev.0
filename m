@@ -1,48 +1,60 @@
-In-Reply-To: <OFFCEBF3AF.F02EB770-ON85256EDF.005C805F-85256EDF.005D5409@nanometrics.ca>
-References: <OFFCEBF3AF.F02EB770-ON85256EDF.005C805F-85256EDF.005D5409@nanometrics.ca>
-Mime-Version: 1.0 (Apple Message framework v618)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <5E6876D2-E0C5-11D8-8139-003065F9B7DC@embeddededge.com>
-Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-From: Dan Malek <dan@embeddededge.com>
-Subject: Re: 8xx block address mapping...
-Date: Wed, 28 Jul 2004 14:38:50 -0400
-To: David Ho <DavidHo@nanometrics.ca>
+Message-ID: <20040729031902.69389.qmail@web60408.mail.yahoo.com>
+Date: Wed, 28 Jul 2004 20:19:02 -0700 (PDT)
+From: Dieu Morales <dieumorales@yahoo.com>
+Subject: Re: GT64260_eth (Ethernet) Driver
+To: "Mark A. Greer" <mgreer@mvista.com>,
+	Paul Mackerras <paulus@samba.org>,
+	Michael Morales <michael.morales@lmco.com>
+Cc: David Woodhouse <dwmw2@infradead.org>,
+	Dieu Morales <dieumorales@yahoo.com>,
+	linuxppc-embedded@lists.linuxppc.org,
+	Brian Waite <waite@skycomputers.com>
+In-Reply-To: <40DCD5C8.3080307@mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Jul 28, 2004, at 12:59 PM, David Ho wrote:
+All,
+I have had some success with making the gt64260_eth.c
+driver from the 2.4.26 dev tree work with the 2.6.7
+kernel.  I am able to see the ARP request and response
+messages via a network analyzer. However, the response
+messages appear not to generate an interrupt and I
+eventually timeout when mounting an NFS file system.
+My hardware maps a multi purpose pin from the
+Discovery 64260 to a cascaded pair of i8259's for all
+Ethernet and serial interrupts.  It is mapped to IRQ
+15 using INT E which is initialized by my ppcboot
+bootloader using the pciWriteConfigRegByte function.
+Also, I receive interrupts fine for the keyboard and
+mouse, so I feel all is OK with the i8259 driver
+etc... I do not have a 64260 dev manual so I am
+unclear if there is any special software
+initialization needed for my configuration that must
+take place in gt64260_eth.c or ev64260_setup.c or if I
+am simply overlook something .   A few areas of
+interest were:
 
-> I am just curious about how the 8xx does a block mapping (e.g. mapping
-> a
-> video frame buffer) without BATs.
+In gt64260_eth.c
 
-It doesn't.  Everything is mapped with 4K pages.
+/*
+ * enable relevant interrupts on GT
+*/
+gt_write(GT64260_ENET_E0IMR + gap, 0xb0ff010d);
 
-> - it allocates the smallest possible page size for the block requested.
-> i.e. it will have to allocate an 8-Myte page for the 2-Mbyte block,
-> very
-> wasteful it seems.
+In ev64260_setup.c.
 
-Worse than that.  Due to alignment the 8M page will open up lots of
-aliases and access problems.
+/* Set MPSC Multiplex RMII */
+/* NOTE: ethernet driver modifies bit 0 and 1 */
+gt_write(GT64260_MPP_SERIAL_PORTS_MULTIPLEX,
+0x00001102);
 
-> Could you shed some light on how this works.  It will help me assess
-> how
-> efficient block mapping is on the 8xx.
+Any insight is always appreciated.
 
-On the 860 (or other variants with the large number of TLBs), you can
-allocate a few pinned entries for the lower kernel memory and the IMMR
-space.
-
-I have some experimental code that would map larger spaces with big
-pages, but the complexity of the TLB miss handler badly hurt the
-performance
-of the typical 4K case.  I haven't found anything that works well, yet.
-
-
-	-- Dan
+Thanks,
+Michael Morales
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
