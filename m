@@ -1,49 +1,48 @@
-Message-ID: <B164B53F5BD6D511888D009027732E1A0249AF@ntserver.act.domain>
-From: Rudolf Ladyzhenskii <rudolf.ladyzhenskii@act-aus.net>
-To: "'Dan Malek'" <dan@embeddededge.com>,
-	Rudolf Ladyzhenskii <rudolf.ladyzhenskii@act-aus.net>
-Cc: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: ATM switching in MPC8260
-Date: Thu, 6 Dec 2001 09:18:25 +1100 
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Wed, 5 Dec 2001 19:41:13 -0300
+From: Ricardo Scop <scop@digitel.com.br>
+Reply-To: scop@digitel.com.br
+Message-ID: <12820.011205@digitel.com.br>
+To: Jean-Denis Boyer <jdboyer@mediatrix.com>
+Cc: linuxppc-embedded@lists.linuxppc.org,
+	Dan Malek <dan@embeddededge.com>, andy_lowe@mvista.com
+Subject: Re[2]: Kernel oops while routing
+In-reply-To: <F1BED55F35F4D3118C0F00E0295CFF4DFF9E7F@mail.mediatrix.com>
+References: <F1BED55F35F4D3118C0F00E0295CFF4DFF9E7F@mail.mediatrix.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-
-> > I have to do some ATM traffic switching
->
-> I'm not sure what you mean by "traffic switching."  The 603 core
-> needs to be involved for some management of the connections.  I've
-> done custom Ethernet bridging applications over ATM using the AAL5
-> and it has worked well.
+Jean-Denis,
 
 
-Management is fine, but I do not want core to process traffic. In case of
-AAL2, itcan be programmed to do switching and switching will happen
-automatically in CPM.
-For AAL0 this is from 8260 manual: "Automatic data forwardingcan be used to
-switch AAL0 cells from one ATM port to another without core intervention".
-(29.9.8 ATM-to-ATM Data Forwarding).
-No mention of AAL5, though.
+Wednesday, December 05, 2001, 3:01:28 PM, you wrote:
 
 
->
-> With AAL5 you just hand the CPM a PDU for transmit, and the receiver
-> returns the PDU in the receive buffer.  The CPM does all of the cell
-> fragmentation, CRC and length checks, and header processing.
->
-> There are many nice features of this ATM controller, including things
-> like bit rate and cell scheduling.  I suspect the whole of
-> the Linux ATM
-> software can be done by the CPM (and then some), all we need is a data
-> path and control interface.
+JDB> IMHO, I could suggest an easier patch, that would result in modifying only
+JDB> one line of code, without changing the 'tx_full' logic. In function
+JDB> fcc_enet_start_xmit, instead of checking the ready bit (which is bad), we
+JDB> could only check if cur_tx has reached dirty_tx, and then call
+JDB> netif_stop_queue. Does it make sense?
 
-Yes, ATM controller is very powerful and flexible. Motorola did a good job!
+Make sense to me. I'll try it out.
 
-Rudolf
+JDB> BTW, I worked hard last week in debugging the fcc_enet driver. It was not
+JDB> handling correctly some transmission errors, resulting in the transmitter
+JDB> completely stopping, without restarting. This is related to an errata
+JDB> (CPM37) from Motorola about the 8260, concerning the way of restarting the
+JDB> transmitter. If someone is interested, I can release a patch for that.
+
+I'm interested!
+
+Ricardo Scop                            mailto:scop@vanet.com.br
+R SCOP Consulting
+
+------------------------------------------------------------------
+"What's money? A man is a success if he gets up in the morning and
+goes to bed at night and in between does what he wants to do."
+~Bob Dylan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
