@@ -1,46 +1,32 @@
-Message-Id: <1071065435.2238948984@as03.coolgoose.com>
-From: "Nikhil Bhargava" <nikhilbhargav_nsit@coolgoose.com>
+Date: Wed, 10 Dec 2003 15:43:41 +0100
+Message-ID: <3FBD5348000912F8@mssbzhh-int.msg.bluewin.ch>
+From: "Wolfgang Grandegger" <wolfgang.grandegger@bluewin.ch>
+Subject: 405 TLB miss reduction
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: testing mechanism for protocol stack
-Date: Wed, 10 Dec 2003 06:10:35 -0800
+MIME-Version: 1.0
+Content-Type: text/plain; charset="ISO-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hello,
+Hello,
 
-I am looking for a test plan to test my protocol stacks. I am
-developing protoco stacks for umts network (http://www.3gpp.com).
+we are suffering from TLB misses on a 405GP processor, eating up to
+10% of the CPU power when running our (rather big) application. We
+can regain a few percent by using the kernel option CONFIG_PIN_TLB
+but we are thinking about further kernel modifications to reduce
+TLB misses. What comes into my mind is:
 
-My purpose it to first test the entire stack (all layers) on a single
-host and then cross compile the binary of the stack and port it to any
-target development board and target test the protocols on it for actual
-performance testing.
+ - using a kernel PAGE_SIZE of 8KB (instead of 4KB).
+ - using large-page TLB entries.
 
-Presently I am integrating all layers of one of the stack on to a
-single stack. I need a test plan for it. Precisely,
+Has anybody already investigated the effort or benefit of such
+changes or knows about other (simple) measures (apart from
+replacing the hardware)?
 
-1. Tools which help in tracking memeory leakes, stack flow and
-efficiency testing on host itself
+TIA.
 
-2. Mechanism or suggestions for testing any generic stack on a host
-environment. ( some documents or web material).
+Wolfgang.
 
-3. Suggestions for target testing the protocol stacks on the
-development board.
-
-I am currently evaluating some protocol analyzers and some freeware
-tools. Any suggestions would be highly appreciated.
-
-
-
-nikhil
-Cheers,
-
-Nikhil Bhargava,
-Research Engg.,
-IMT-2000,
-Center of Development of Telematics, CDOT,
-India.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
