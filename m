@@ -1,53 +1,51 @@
-Date: Tue, 29 Aug 2000 18:18:51 +0100
-From: Matthew Wilcox <matthew@wil.cx>
-To: "Halfmann, Klaus" <khalfmann@libra.de>
-Cc: "'Matthew Wilcox'" <matthew@wil.cx>, Roman Zippel <roman@augan.com>,
-        linuxppc-dev@lists.linuxppc.org, linux-fsdevel@vger.kernel.org
-Subject: Btree directories (Re: Status of HFS+ support)
-Message-ID: <20000829181851.D6395@parcelfarce.linux.theplanet.co.uk>
-References: <F14441D40E5AD3118886005004607AD10BDD7F@MAIL1>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <F14441D40E5AD3118886005004607AD10BDD7F@MAIL1>; from khalfmann@libra.de on Tue, Aug 29, 2000 at 06:40:08PM +0200
+Message-Id: <200008291737.TAA00677@piglet.grunz.lu>
+Date: Tue, 29 Aug 2000 19:37:07 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: asm in OF?
+To: linuxppc-dev@lists.linuxppc.org
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Aug 29, 2000 at 06:40:08PM +0200, Halfmann, Klaus wrote:
-> On the other hand: The hfs acces is normally not needed for heavy
-> concurrent acces. (Mhh, there might be AFP Servers publishing HFS
-> partions) For now it should be enough to have a global update
-> lock on the root of the node. Im not firm with kernel code yet, dont
-> ask me about the details :-)
+Hi all,
 
-It's not that easy.  Unfortunately, getdents is a nasty interface (I
-actually haven't seen a good one -- anyone know of one which doesn't
-suffer from this problem?)
+Does anybody know how to embed machine code into an OF script (into
+nvramrc, that is)? I suppose OF doesn't have an assembler built-in, so
+machine code would be the only option.
 
-You can lock while you're in a call, but eventually, you fill up the
-user's buffer and return.  At that point, you have to drop the lock
-because they might never call you again.  So you have to consider
-the case of a file being added or removed between calls to getdents.
-Current HFS doesn't even pretend to try.  It just stores an index (0
-.. n-1) and you pick up from there.  So sometimes you get files twice,
-sometimes files don't show up at all.
+For the curious, what I'm trying to do is get my box (7600 upgraded with
+G3/300) to boot again from my IBM disk on the MESH SCSI bus. Right now,
+it does that only if I run the G3 below 200 MHz, or the bus speed around
+40 MHz. Anything faster, and I can't access that disk on the MESH bus.
+The external (53c96) is o, however... but much slower.
 
-I suspect you need to store the key of the item you just found, and
-then continue filling in the buffer from there on subsequent calls.
-The trouble is that there frequently isn't enough space available to
-do that.  The proposed ext2 btree extensins needed 64 bits of space and
-there was only 32 bits available.  What size keys does HFS+ have?
+So, I wanted to check whether using the L1 cache throttling mechanism to
+slow down the CPU during boot would help anything... I can then release
+the brake later, once Linux is up (which doesn't have any problem with
+the MESH).
 
-Hmmm.. now the LFS patches have gone in and f_pos is now a 64-bit quantity,
-this sounds more plausible.  I'd be curious to hear from the ReiserFS
-people how they solved this problem.
+To use the cache throttling, I need to access the ICTC register, but
+there is no OF method to do that. So I would have to code one myself...
 
-There's an additional complication of rewinddir/seekdir/telldir, but
-let's get onto that later.
+Since it seems the OF MESH driver is at fault, I could try to patch that
+one, but that seems like an even harder task...
 
-> I'd really like to know how the concurrency of the kernel filesystem
-> should work, can anybody feed me with documentations about that ?
+I could also try and copy other special register access methods (like
+hid0@ and hid0!) if I knew how...
 
-I've cc'd linux-fsdevel, where people can fill you in.
+Thanks for any hints you can provide!
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
