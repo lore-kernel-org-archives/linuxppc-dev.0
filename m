@@ -1,66 +1,36 @@
-Message-ID: <398B8ACA.F11EE7F6@mvista.com>
-Date: Fri, 04 Aug 2000 20:32:26 -0700
-From: Frank Rowand <frank_rowand@mvista.com>
-Reply-To: frowand@mvista.com
-MIME-Version: 1.0
-To: Kwansuk Kim <kskim@neowave.co.kr>
-CC: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>, frowand@mvista.com
-Subject: Re: Compiling apache for Linux PPC
-References: <NEBBKFENMLEDKDHMEHPJEEBPCBAA.kskim@neowave.co.kr>
+Date: Sat, 5 Aug 2000 07:59:02 -0700
+From: Matt Porter <mporter@mvista.com>
+To: "Todd C. Larsen" <tlarsen@openbits.net>
+Cc: LinuxPPC Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: LinuxPPC running on an EST SBC740 board?
+Message-ID: <20000805075902.A1324@cx258813-a.chnd1.az.home.com>
+References: <00b201bffe42$7dd12b60$1a0210ac@r2d2>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <00b201bffe42$7dd12b60$1a0210ac@r2d2>; from tlarsen@openbits.net on Fri, Aug 04, 2000 at 11:33:31AM -0700
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Kwansuk Kim wrote:
+On Fri, Aug 04, 2000 at 11:33:31AM -0700, Todd C. Larsen wrote:
 >
-> I'm trying to implement embedded linux router.
->
-> So I tried to cross-compile apache on x86 linux machine.
->
-> I changed the compiler name from 'gcc' to 'powerpc-linux-gcc'
->
-> But when I ran make there was an error. Of course compile with gcc, it works well.
->
-> Is there any options? It seems there is no use of configure option '--tartget=powerpc-linux'
->
+> Has anyone attempted to boot Linux on an SBC740 (or SBC603, SBC750)
+> development board from EST?  So far, it looks like one of the best
+> candidates for an evaluation board for the MPC740, since Motorola
+> no longer sells the Yellowknife X4.  I was just wondering if anyone
+> else on the list had experiences with this board.
 
-A few hints...
+How about an alternative?  What about the IBM CPC700 reference
+platform with a 740?
 
+http://www.chips.ibm.com/products/powerpc/tools/600_ekit.html
 
-./configure --prefix=YOUR_INSTALL_PATH
+There is already somebody booting a limping partial port to this
+board using a 750.
 
-make
-
-cd src/main
-
-copy gen_test_char and gen_uri_delims to your target (PowerPC) system
-
-run gen_test_char and gen_uri_delims on your target system
-
-copy the output of gen_test_char to test_char.h on your host system
-
-copy the output of gen_uri_delims to uri_delims.h on your host system
-
-cd -
-
-make
-
-*** I may not have the syntax exactly right on the next command, but it
-gives you the idea:
-
-find -name "*\.a" -exec \
-  /opt/hardhat/devkit/ppc/8xx/bin/powerpc-linux-ranlib {} \;
-
-make
-
-make install
-
-
-
--Frank
 --
-Frank Rowand <frank_rowand@mvista.com>
-MontaVista Software, Inc
+Matt Porter
+MontaVista Software, Inc.
+mporter@mvista.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
