@@ -1,37 +1,32 @@
-Date: Fri, 7 Apr 2000 14:09:29 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: zzh <david-1z@263.net>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: about memory bandwidth
-In-Reply-To: <38EDBA6F.06842@mta2>
-Message-ID: <Pine.HPX.4.10.10004071406370.23926-100000@gra-ux1.iram.es>
+Message-ID: <CE0B0E640A06D411B1E700508BA0F95905D368@xover.hjinc.com>
+From: "Clayton, Mark" <mclayton@hjinc.com>
+To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Cc: "Home Clayton (E-mail)" <clayton@shore.net>
+Subject: FADS alternative? (somewhat OT)
+Date: Fri, 7 Apr 2000 09:53:56 -0400 
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, 7 Apr 2000, zzh wrote:
+Okay, so the FADS boards aren't so reliable.  I
+know, I've got four carcasses on my work bench.  So
+whose sells a better board that includes a UTOPIA
+(OC-3, fiber optic) interface?  I need both an 860
+and an 850 or a board with CPU modules that can be
+swapped like the FADS has.  It doesn't have to have
+the best Linux support since most of our focus is
+VxWorks and pSOS though, It'd be nice to have some
+linux support.
 
->
->
-> Hi,How to measure the 60x bus bandwidth.I write a program to write
-> to sdram in a tight loop,every iteration ,i write 8 words,
-> it takes about 36 seconds to finish 32M iterations with i-cache
-> enabled and d-cache disenabled.With d-cache enabled and flushing
->  cache in every iteration,it takes about 16 seconds.This is below
-> what i speculated.What is the possible reason?I program the sdram
-> machine to enable burst mode.                            4/7/2000
-
-This is very dependant on the processor and on the exact instructions you
-use. If you flush the cache (dcbf), then before the next write can proceed
-the processor has to reload a whole cache line.
-
-Which means that you have at least 2 bus cycles per iteration: the one
-from the flush and another one to read again. Plus the fact that you might
-need a sync which may also go the bus.
-
-What do you want to measure exatcly ?
-
+Thanks,
+Mark
+--
+Mark Clayton                 mclayton@hjinc.com
+Harris & Jeffries, Inc.	     http://www.hjinc.com
+888 Washington Street	     Tel: (781) 329-3200
+Dedham MA 02026		     Fax: (781) 329-4148
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
