@@ -1,44 +1,47 @@
-To: acurtis@onz.com
-Cc: "Flavio Pereira" <fpereira@azisa.com>,
-	"Yu Bo-BOYU1" <Bo.Yu@motorola.com>,
-	"linuxppc embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: 8260 configuration 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 02 Oct 2002 07:27:20 PDT."
-             <NCBBIINEHIPFGJPLBEIFCEMKDMAA.acurtis@onz.com>
-Date: Wed, 02 Oct 2002 16:47:52 +0200
-Message-Id: <20021002144757.8BCDFFA99@denx.denx.de>
+Message-Id: <200210021451.JAA26306@popmail.austin.ibm.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Hollis Blanchard <hollis@austin.ibm.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Is it binutils-2.13.90.0.4 or is it me?
+Date: Wed, 2 Oct 2002 09:54:14 -0500
+References: <20021002010320.GA601@dd.nec.com.au>
+In-Reply-To: <20021002010320.GA601@dd.nec.com.au>
+MIME-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <NCBBIINEHIPFGJPLBEIFCEMKDMAA.acurtis@onz.com> you wrote:
+On Tuesday 01 October 2002 20:03, Erik Christiansen wrote:
+>    Following the mini-howto on penguinppc.org, I started with compilation
+> of binutils.
 >
-> > > 2. The start address is fixed to 0x0
-> > >
-> >
-> > One "start" address that is not fixed is the initial load
-> > address. Where the
-> > kernel is put in RAM with decompressing etc. You should have to
-> > worry about
-> > this if you are using one of the available boot loaders.
+>    ./configure --target=powerpc-linux finished in a happy frame of mind,
+> but make spat the dummy, flagging errors on some rather elusive
+> scripting:
 >
-> Sorry, should NOT have to worry about that address...
+> cd .. \
+>   && CONFIG_FILES=po/Makefile.in:po/Make-in \
+>      CONFIG_HEADERS= /bin/sh ./config.status
+> creating po/Makefile.in
+> make[3]: Leaving directory `/usr/local/src/binutils-2.13.90.0.4/bfd/po'
+> make[3]: Entering directory `/usr/local/src/binutils-2.13.90.0.4/bfd/po'
+> file=./`echo sv | sed 's,.*/,,'`.gmo \
+>   && rm -f $file && PATH=../src:$PATH no -o $file sv.po
+> /bin/sh: no: command not found
+>
+>    Now, grep -r 'no -o' /usr/local/src/binutils-2.13.90.0.4/bfd/po draws
+> a blank, so before looking further for where it could be fixed, I
+> thought I'd ask whether going back a version or two might provide
+> smoother sailing?
 
-Wrong, you SHOULD worry about this address. Load the kernel to a  low
-enough  address  (say  at  0x10000)  and  the uncompressing code will
-probably overwrite the kernel image.
+This typically means someone did their autoconf wrong. You're missing some
+feature ("Checking for /bin/foo... no") but the script doesn't actually check
+for an error, and uses 'no' where it obviously shouldn't.
 
-Best regards,
+It is a bug; you should submit a bug report once you figure out what app it
+is.
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-If the facts don't fit the theory, change the facts.
-                                                   -- Albert Einstein
+-Hollis
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
