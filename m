@@ -1,47 +1,47 @@
-Message-ID: <3A71946D.C98063EB@agelectronics.co.uk>
-Date: Fri, 26 Jan 2001 15:14:53 +0000
-From: Adrian Cox <apc@agelectronics.co.uk>
+Message-ID: <003d01bfc6ee$995bce70$4a1f76d8@washington>
+From: "Navin Boppuri" <nboppuri@trinetcommunication.com>
+To: "Leonard Ye" <leonardye@xoommail.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <200101260218.SAA28758@xoommail.com>
+Subject: Re: is (F)ADS 8xx board mature enough?
+Date: Fri, 26 Jan 2001 09:33:25 -0600
 MIME-Version: 1.0
-To: Tom Roberts <tjroberts@lucent.com>
-CC: "'linuxppc-embedded@lists.linuxppc.org'"
- <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Query: PCI and Ethernet hardware/drivers
-References: <B25E2E5A003CD311B61E00902778AF2A0148B69D@server1.skystream.com> <3A718D21.66F9227D@lucent.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Tom Roberts wrote:
+Hello Leonard,
 
-> 1) Does Linux/PPC handle the PCI bus properly?
+I have used the FADS 823 for my needs. I did not have any major problems
+with it. But the pro's tell me that it is not a reliable board.
 
-Short answer, yes. Long answer, how strange a PCI system do you want to
-build?
+I have also used the TQM823 board from Denx. It is a reliable board and the
+support is good. My reason for getting the TQM823 board was that I could use
+2 RS-232's. The FADS 823 has a 2nd RS-232 which may be used only if the
+ethernet is turned off.
 
-> 2) Are there Linux/PPC drivers for the PLX 9054 (PCI interface) chip?
->    (Yes, that is PPC 60x-bus, not MAX bus; the hardware will handle that)
+Hope this helps.
+Navin Boppuri
 
-I ported the 2.2 kernel to a board which used the very similar PLX 9080.
-Does this mean that your board is intended to be a PCI agent? If so,
-you've got a whole world of fun ahead of you, and you can ask me for
-more details.
+----- Original Message -----
+From: "Leonard Ye" <leonardye@xoommail.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Sent: Friday, January 26, 2001 3:18 AM
+Subject: is (F)ADS 8xx board mature enough?
 
-> 3) What Ethernet MAC chips have people had success using?
->    (right now we favor an AMD chip, which they claim has Linux drivers,
->    but their test plan includes only AMD and Intel CPUs, not PowerPC)
-
-I've used a fully integrated AMD part.  Works fine, even if it's not the
-world's cleverest ethernet chip.
-
-> 4) We favor a 4-CPU SMP configuration. What not-so-obvious problems
->    are we likely to face? (e.g. our simulations show that doing this
->    at 133 MHz cannot be done using a CPLD-based memory controller:
->    wimpy data-bus drivers (:-() Our existing boards are all non-SMP,
->    and bus snooping is a bit of a mystery to us....
-
-Designing a good interrupt controller.
-
-- Adrian Cox
+> A newbie question.  Currently, I am considering using FADS 823/850/860
+> board for embedded system development.  While I was reading the "Linux for
+> PowerPC Embedded Systems HOWTO" as every newbie did initially, I was
+> referred to the message written by Dan Malek on 03 Sep 1999 in this
+> maillist. His oppinion on FADS 8xx is that "I don't recommend using any
+> (F)ADS board with Linux/PPC."  The full message can be viewed at:
+> http://lists.linuxppc.org/listarcs/linuxppc-embedded/199909/msg00007.html
+>
+> It has been more than one year since this message was written. I would like
+> to know has this situation been changed?  I need  good PCMCIA, ethernet and
+> UART support, USB support is need in the second stage of development.  Any
+> comments from you guys?
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
