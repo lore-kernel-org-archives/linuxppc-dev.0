@@ -1,53 +1,41 @@
-Date: Tue, 2 Jul 2002 13:36:42 +0200
-From: "Marco d'Itri" <md@Linux.IT>
-To: linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org
-Subject: IPv6 ND on PPC hardware
-Message-ID: <20020702113642.GA2654@wonderland.linux.it>
-Reply-To: linuxppc-dev@lists.linuxppc.org,
-	debian-powerpc@lists.debian.org, md@Linux.IT
+Date: Tue, 2 Jul 2002 16:54:51 -0400
+From: Noah Meyerhans <noahm@debian.org>
+To: linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org,
+	md@linux.it
+Subject: Re: IPv6 ND on PPC hardware
+Message-ID: <20020702165451.F7563@morgul.net>
+References: <20020702113642.GA2654@wonderland.linux.it>
 Mime-Version: 1.0
+In-Reply-To: <20020702113642.GA2654@wonderland.linux.it>; from md@Linux.IT on Tue, Jul 02, 2002 at 01:36:42PM +0200
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I do not understand why ND is not working. Is my configuration wrong or
-I have exposed a kernel bug?
-When I try to ping another host on the LAN it usually works the first
-time, and then stops working because the other host does not reply to
-ND requests. Everything works again if I switch the remote interface
-in promiscuous mode.
+On Tue, Jul 02, 2002 at 01:36:42PM +0200, Marco d'Itri wrote:
+> I do not understand why ND is not working. Is my configuration wrong or
+> I have exposed a kernel bug?
 
-erode:/# ip -6 ad
-1: lo: <LOOPBACK,UP> mtu 16436 qdisc noqueue
-    inet6 ::1/128 scope host
-2: eth0: <BROADCAST,MULTICAST,UP> mtu 1500 qdisc pfifo_fast qlen 100
-    inet6 3ffe:1001:210:16::3/64 scope global
-    inet6 3ffe:8271:a040:16::3/64 scope global
-    inet6 3ffe:8171:10:16::3/64 scope global
-    inet6 fe80::204:acff:fe97:7130/10 scope link
-erode:/# ip -6 ro
-3ffe:1001:210:16::/64 dev eth0  proto kernel  metric 256  mtu 1500 advmss 1440
-3ffe:8171:10:16::/64 dev eth0  proto kernel  metric 256  mtu 1500 advmss 1440
-3ffe:8271:a040:16::/64 dev eth0  proto kernel  metric 256  mtu 1500 advmss 1440
-2000::/3 via 3ffe:1001:210:16::1 dev eth0  metric 1024  mtu 1500 advmss 1440
-fe80::/10 dev eth0  proto kernel  metric 256  mtu 1500 advmss 1440
-ff00::/8 dev eth0  proto kernel  metric 256  mtu 1500 advmss 1440
-unreachable default dev lo  metric -1  error -101
-erode:/# uname -a
-Linux erode 2.4.19-rc1 #1 Sat Jun 29 15:05:41 CEST 2002 ppc unknown
+It is likely a problem with broken multicast support.
 
-The other host has a similar configuration.
+> When I try to ping another host on the LAN it usually works the first
+> time, and then stops working because the other host does not reply to
+> ND requests. Everything works again if I switch the remote interface
+> in promiscuous mode.
 
-Seen from a third host (i386, which appears to work) on the same LAN:
+This sounds even more likely to be broken multicast support.  Do you see
+the proper behavior if you enable allmulti on your interface, rather
+than promiscuous mode?
 
-16:23:22.818468 erode.bofh.it > ff02::1:ff00:1: icmp6: neighbor sol: who has attila.bofh.it(src lladdr: 0:4:ac:97:71:30) (len 32, hlim 255)
-16:23:23.814589 erode.bofh.it > ff02::1:ff00:1: icmp6: neighbor sol: who has attila.bofh.it(src lladdr: 0:4:ac:97:71:30) (len 32, hlim 255)
-16:23:24.814834 erode.bofh.it > ff02::1:ff00:1: icmp6: neighbor sol: who has attila.bofh.it(src lladdr: 0:4:ac:97:71:30) (len 32, hlim 255)
-16:23:25.844675 erode.bofh.it > ff02::1:ff00:1: icmp6: neighbor sol: who has attila.bofh.it(src lladdr: 0:4:ac:97:71:30) (len 32, hlim 255)
+A driver bug could be what's causing multicast not to work.  That's
+probably most likely, though there also could be a problem with
+hardware.
+
+noah
 
 --
-ciao,
-Marco
+ _______________________________________________________
+| Web: http://web.morgul.net/~frodo/
+| PGP Public Key: http://web.morgul.net/~frodo/mail.html=20
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
