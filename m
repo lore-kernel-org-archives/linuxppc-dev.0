@@ -1,42 +1,57 @@
-Date: Tue, 5 Oct 1999 07:36:19 -0400 (EDT)
-From: Elliot Lee <sopwith@redhat.com>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: linuxppc-dev@lists.linuxppc.org, Dave Miller <davem@redhat.com>
-Subject: Re: esound for PPC
-In-Reply-To: <19991005105431.012853@mailhost.mipsys.com>
-Message-ID: <Pine.LNX.4.10.9910050733100.1006-100000@lacrosse.corp.redhat.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Tue, 5 Oct 1999 10:45:59 -0500
+From: anthony tong <atong@uiuc.edu>
+To: Charlie McLachlan <cim@uk.research.att.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Do you XF86? Was: ATIRage128
+Message-ID: <19991005104558.A21274@mango.genunix.net>
+References: <19991004120035.A2956@mango.genunix.net> <Pine.SO4.4.04.9910050925060.25985-100000@marrow>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.SO4.4.04.9910050925060.25985-100000@marrow>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 5 Oct 1999, Benjamin Herrenschmidt wrote:
-
-> I may be wrong, but to me, this looks like a bug in esound. The driver
-> seems capable of telling the application about it's current format and
-> can be told to change it. If esound does assumptions about the default
-> format instead of querying the driver, then esound is broken. (Also
-> the driver may have been switched to another format by an application
-> before esound takes control anyway. I don't remember which of
-> /dev/audio or /dev/dsp will keep the current setting so this may not
-> be an issue).
+Charlie McLachlan (Tue, Oct 05, 1999 at 09:36:07AM +0100):
+> On Mon, 4 Oct 1999, anthony tong wrote:
+> > I haven't seen any indications that suse.de has merged their sources with
+> > the XFree86-3.x tree.
 > 
-> I agree that the driver lacks a call to query about the native endian,
-> so if you really want to, you can add code to esound to force-switch
-> to big endian on PowerMac, but at least, it should be fixed to not
-> rely on a supposed default setting.
+> from http://www.suse.de/en/support/xsuse/
+> 
+> "XFree86 complient, in this context, means that the sources to these
+> servers are already part of the XFree86 development sources and that
+> these servers will be included (with full sources) in one of the next
+> XFree86 releases"
+> ...
+> "Of course, all of them will be integrated into future versions of
+> XFree86"
 
-In ftp://people.redhat.com/sopwith/esound-0.2.15.tar.gz (not a final
-release), it explicitly sets big-endian mode on big-endian machines, so
-things should work a bit better. There is also a related bug in the sound
-file playback code fixed, that should help davem's "esdplay plays garbage"
-problems. Please try this out and let me know.
+The 3.3.x branch is dead, which XFCom_Rage128 is based off of. The
+devel branch is the 3.9x, which has some architectural differences.
 
--- Elliot					http://developer.gnome.org/
-The first thing a programmer needs to admit is that any program is by far
-more complex than his own mind. Thats why he partitions it into neat
-pieces and avoids complexity.
+> also, from http://www.xfree86.org/snapshots/3.9.16/ati3.html#3, regarding
+> the latest develop tree snapshot (3.9.16):
+> 
+> "The newer Rage 128 chips are not yet supported"
+
+Not yet supported means -exactly- that. XFree86 has no support for
+Rage128 in the latest devel tree snapshot (3.9.16b) and in their
+CVS tree.  Of course, I'd like to be wrong.. if XFree86 does have
+the source, it isn't available to its memebers.
+
+There also been no public response to whether suse's code would be integrated
+into the current tree on the devel xfree list.
+
+> The sources are in the development tree, which you can't get if you aren't
+> a member of XFree86, and they don't like making people members just so
+> they can try out new code.
+> 
+> So back to the question, Is anyone here a member, and have they tried
+> compiling the SUSE code for PPC? 
+
+Yes, there are several linux/ppc developers that are XFree86 developers.
+But there is no suse code to port.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
