@@ -1,32 +1,60 @@
-Message-ID: <3BD790A3.D4AF4852@mvista.com>
-Date: Thu, 25 Oct 2001 00:10:11 -0400
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: Bryan Rittmeyer <bryan@ixiacom.com>
-Cc: linuxppc-embedded@lists.linuxppc.org, akuster@mvista.com
-Subject: Re: http_load causes 405GP kernel panic w/ linux_2_4_devel
-References: <3BD77667.2060406@ixiacom.com>
-Content-Type: text/plain; charset=us-ascii
+Date: Wed, 24 Oct 2001 21:51:12 -0700
+From: Okehee Goh <ogoh@asu.edu>
+Subject: RE: MMU in MBX860
+In-reply-to: <3BD78E88.90337302@mvista.com>
+To: Dan Malek <dan@mvista.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Message-id: <AEEDJHMEPHBIHBAHOOCDIELKCAAA.ogoh@asu.edu>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Bryan Rittmeyer wrote:
+ Thank you, Dan
 
-> Looks like linux_2_4_devel is very unstable under high TCP/IP loads
-> and low amounts of memory on the Walnut.
+ The problem is that it shares one global page table between kernel and
+application processes.
+ Some of memory space that is allocated to each application process must be
+accessed by
+ that application process. In other word, it must prevent an application
+process from accessing to
+ memory space allocated to other an application process. For this
+protection, I need to use ASID.
+ If memory space are marked as SHARED and suprevisor permission, kernel can
+access all of memory space
+  because ASID checking is disabled.
+ But it can't support memory protection for application processes.
 
-Yeah, that's why it's called a _development_ tree.  If you want to
-play around here, the purpose is for you to help us fix the bugs.
+ I appreciate any your idea.
+ Thank you so much.
 
-When you find a solution, post a patch and we'll all take a look
-at it.  If you are willing to help out, that's great, but we all have
-plenty to do so just expecting someone else to look at it and fix
-it for you isn't going to be very satisfying :-).
+ Okehee
 
-Thanks.
+
+-----Original Message-----
+From: owner-linuxppc-embedded@lists.linuxppc.org
+[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Dan
+Malek
+Sent: Wednesday, October 24, 2001 9:01 PM
+To: Okehee Goh
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MMU in MBX860
+
+
+
+Okehee Goh wrote:
+
+>  My question:
+>  In MPC860, is there any way for supervisor mode's kernel to access all
+> memory space
+
+That's the purpose of the SHARED indicator in the TLB.  It effectively
+disables ASID checking and if you mark pages SHARED but not user access
+the kernel can access all pages while the applications are still protected.
 
 
 	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
