@@ -1,54 +1,52 @@
-From: "Peter Falk" <peter.falk@audiodev.com>
-To: "'Wolfgang Denk'" <wd@denx.de>,
-	"'Gerrit Van de Velde'" <gvd@denayer.wenk.be>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Linux on MPC5200 - LITE5200EVAL 
-Date: Wed, 11 Feb 2004 14:17:12 +0100
-Message-ID: <000501c3f0a1$5c96bf50$0b01030a@pfalkxp>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: stefano.gaiotto@tin.it
+Date: Wed, 11 Feb 2004 15:16:12 +0100
+Message-ID: <401989520000FA56@ims4c.cp.tin.it>
+Subject: Linux 2.6.2 & MPC8260
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-reply-to: <20040211130953.741CDC1215@atlas.denx.de>
+Content-Type: text/plain; charset="ISO-8859-15"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-The documentation is clear enough, but since the board boots with
-Motorola monitor and it's setup it is easy to miss. :-)
+Dear colleagues,
 
-Best regards,
+I'm trying to build Linux kernel 2.6.2 for some evaluation board with Motorola
+'8260, e.g. est8260.
+I'm using the following environment:
 
-Peter Falk
+- Linux kernel 2.6.2
+- gcc 3.3.2
+- glibc 2.3.2
+- binutils 2.14.90.0.7
 
------Original Message-----
-From: owner-linuxppc-embedded@lists.linuxppc.org
-[mailto:owner-linuxppc-embedded@lists.linuxppc.org] On Behalf Of
-Wolfgang Denk
-Sent: Wednesday, 11 February, 2004 14:10
-To: Gerrit Van de Velde
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Linux on MPC5200 - LITE5200EVAL
+After having expanded the linux kernel archive, I have only modified the
+makefile as follow:
+
+- ARCH := ppc
+- CROSS_COMPILE = powerpc-linux-
+
+Then, using "make menuconfig", I have loaded from /arch/ppc/configs the
+configuration file ?est8260_defconfig?
+After that, I have started the compilation with the command "make zImage"
+hoping to see the compiler to reach the end of the makefile...
+
+But after a few minutes the compiler stopps reporting the error:
+
+  AS      arch/ppc/kernel/head.o
+arch/ppc/kernel/head.S: Assembler messages:
+arch/ppc/kernel/head.S:1660: Error: unsupported relocation against MSR_
+make[1]: *** [arch/ppc/kernel/head.o] Error 1
+make: *** [arch/ppc/kernel] Error 2
 
 
+Thanks in advance for your advice.
 
-In message <1076495328.4808.2.camel@nios> you wrote:
->
-> I patched with sirdeff.patch and it works now, also great tip about
-> the handshaking, that saved me a day too I guess ;)
 
-Ummm... Do you think the documentation is not clear enough?
+With best regards,
 
-http://www.denx.de/twiki/bin/view/DULG/SystemSetup#Section_4.1.
-
-Best regards,
-
-Wolfgang Denk
-
---
-See us @ Embedded World, Nuremberg, Feb 17 - 19,  Hall 12.0 Booth 440
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de A
-Puritan is someone who is deathly afraid that  someone,  somewhere, is
-having fun.
+	Stefano
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
