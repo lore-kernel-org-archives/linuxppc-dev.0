@@ -1,74 +1,68 @@
-Date: Thu, 9 Mar 2000 12:04:34 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Kevin Hendricks <khendricks@ivey.uwo.ca>
-cc: Kostas Gewrgiou <gewrgiou@imbc.gr>, Michel Danzer <michdaen@iiic.ethz.ch>,
+Message-Id: <v03110700b4ed3e1295ce@[129.100.29.243]>
+In-Reply-To: <200003091632.IAA29278@berkeley.innomedia.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Thu, 9 Mar 2000 06:44:06 -0500
+To: Michael Thompson <mickey@berkeley.innomedia.com>,
         linuxppc-dev@lists.linuxppc.org
-Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to work on pp
- cwith r128
-In-Reply-To: <00030821502900.00501@localhost.localdomain>
-Message-ID: <Pine.HPX.4.10.10003091149520.22162-100000@gra-ux1.iram.es>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+Subject: IDE problems with 2.3.49?- same with 2.2.15pre3
+Cc: mickey@berkeley.innomedia.com (Michael Thompson)
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hi,
+
+I just finished installing linuxppc 2000 on my brand new G4 450MHz box and
+every time I try to boot into my linux side with Bootx 1.2fc1 I get the
+exact same error messages:
+
+hdc: lost interrupt
+hdd: lost interrupt
+
+and on top of that
+
+usbcore: USB device not responding, giving up (error=-101).
+
+The funny thing is that the installation from the ramdisk went fine and the
+keyboard and things worked with no problem.
+
+I have tried the hda=noautotune .. hdb= ... hdc= to no avail.
+
+Is there something different about recent G4 450s that I need to worry about?
+
+Thanks,
+
+Kevin
 
 
-	Hi,
-
-> There are three interesing tidbits about cache flushing.  One I picked up
-> recently on the  glibc apha and/or hacker mailing lists.
+At 08:32 -0800 3/9/00, Michael Thompson wrote:
+>I've been trying to get version 2.3.49 booted on my B&W G3 (USB/IDE).
 >
-> 1. It seems some (many?) embedded ppc systems running linux do not have a cache
-> line size of 32! It is 8 or 16 or something funny.
-
-Indeed, and future processors might have larger cache lines. With DDR
-SDRAM it would makes sense to perform 8 beat bursts, wider buses might
-also become more mainstream.
-
-> 2. AFAIK, cache flushing should never cause seg-faults since the associative
-> array used by the cache will ignore any address ranges not already in the cache.
-> If that page was never loaded it will not be in the cache.
-
-Wrong, the address is translated by the MMU for most instructions,
-otherwise how could you know whether which cache line to flush on a dcbf
-with an n-way cache ?
-
-On SMP cores (601,604,7400), the cache control instructions also broadcast
-on the bus if the M attribute bit of the translation is set.
-
-There are exceptions to this rule, mostly for icbi: AFAIR icbi is a nop on
-601 and flushes all 8 ways of the icache on 750 (which means that
-flush_icache_page could actually be optimized to flush all the cache
-through HID0 manipulations instead of looping). But icbi is the only
-instruction which has such wildly different implementations. OTOH, the
-prefetch instructions dcbt and dcbtst actually never trap for a page fault
-but I don't think you were referring to these.
-
-> 3. 601 processors may barf(?) on some of these instructions.
-
-No, it does not. It's just that the cache is unified which makes most
-coherency functions irrelevant.
-
-> So here is a piece of code I always steal when needing to do similar cache
-> flushing for the jdk and the metrowerks jit.  It is taken from the kernel
-> arch/ppc/kernel/head.S
+>It can probe the IDE drives, and they spin up, but it isn't getting
+>interrupts from IDE0:
 >
-> I don't think we can access the machine type register in user space (but I am
-> very unsure about that).
-
-No, you can't but a 601 will execute it just perfectly. OTOH some system
-services or a user/kernel shared page at a fixed address which  would
-exportt this kind of service to userland might be nice.
-
-> I have no idea if the cacheline size and processor values are made available by
-> the kernel during runtime so that we could use those values.
-
-They should be according to the SYSV ABI reference but I think this was
-never implemented.
-
-	Gabriel.
+>	hda: lost interrupt
+>	hda: lost interrupt
+>		.
+>		.
+>	hdb: lost interrupt
+>	hdb: lost interrupt
+>
+>I have been able to boot with a ram disk, and the keyboard works,
+>so interrupts, in general, are working.
+>
+>At this point, the problem seems to be isolated to IDE.
+>Has anyone had success with this?
+>
+>Btw, I got the kernel from fsmlabs' web-site. It's rtlinux v3 pre 4.
+>
+>Thanks,
+>
+>Michael Thompson
+>mickey@berkeley.innomedia.com
+>
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
