@@ -1,35 +1,50 @@
-Date: Mon, 22 Dec 2003 15:27:28 +0100 (CET)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: "David D. Kilzer" <ddkilzer@kilzer.net>
-Cc: Jeff Garzik <jgarzik@pobox.com>,
-	<tulip-devel@lists.sourceforge.net>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: [PATCH] Fix byte-swapped ethernet addr for Asante Fast 10/100
- PCI Adapter
-In-Reply-To: <20031207062153.GB6302@permusion.kilzer.net>
-Message-ID: <Pine.LNX.4.44.0312221520490.10152-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <3FE70E73.3090309@gcctech.com>
+Date: Mon, 22 Dec 2003 10:32:03 -0500
+From: "Christopher R. Johnson" <cjohnson@gcctech.com>
+Reply-To: cjohnson@gcctech.com
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Daniel Jacobowitz <drow@false.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: powerpc gdb and gdbserver
+References: <3FE0977B.7020504@gcctech.com> <20031218171010.GA16791@nevyn.them.org> <3FE20DAE.6010708@gcctech.com> <20031218203501.GA22392@nevyn.them.org> <3FE2101D.6000005@gcctech.com> <20031222035217.GA7378@nevyn.them.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->   Original:  00:00:B5:94:71:86  [INCORRECT]
->    Patched:  00:00:94:B5:86:71  [CORRECT]
->
-> Is it sufficient to simply check the first two bytes of the mac address
-> to determine this?  (This is what the attached patch does.  I added a
-> check for the first byte being 0x00 for the Asante card.)
->
-> Should the first three bytes of the mac address be used intead?  (Note
-> that I can only identify 00:A0:CC as one of the Lite-On mac addresses
-> that would be matched by the code segment above.  I don't see a 00:C0:**
-> entry for Lite-On in the IEEE database.)
+Good news.  All I needed to do was setup Kegel's crosstool.sh by adding
+the following to my powerpc-405.dat file:
+GLIBC_EXTRA_CONFIG="--without-fp"
 
-I'd check the first three bytes (after byte swapping :-) - there's plenty
-of other OUIs with the leading two bytes zero.
+to
 
-	Michael
+GLIBC_EXTRA_CONFIG="--without-fp --enable-add-ons=linuxthreads_db"
+
+And used crosstool to rebuild the tool chain.  That resulted in the
+library gdbserver needed to run.  I need some instruction from Dan on
+how to rebuild just a component, after this type of config change, so I
+don't go through the 2 hour crosstool run.
+
+Daniel Jacobowitz wrote:
+
+>On Thu, Dec 18, 2003 at 03:37:49PM -0500, Christopher R. Johnson wrote:
+>
+>>As I mentioned, the library doesn't exist.  I need to build it, but I'm
+>>not sure where it comes from (glibc I think) or how to get it built.
+>>Its a target library, so I have to build it for ppc and deliver it to
+>>my target box.  That part I know how to do, its creating the library to
+>>begin with that I don't know how to do.
+>>
+>
+>Wherever you got glibc from you should have gotten libthread_db.so.1
+>also; maybe it just wasn't installed?
+>
+
+--
+Christopher R. Johnson
+Principal Software Engineer
+GCC Printers
+(781)276-8763
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
