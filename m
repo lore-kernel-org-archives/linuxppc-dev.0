@@ -1,64 +1,41 @@
-Message-Id: <l03130300b4ab42c57934@[213.6.57.225]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Wed, 19 Jan 2000 11:38:57 +0100
+From: Tom Dilling (Oncolink) <tdilling@oncodev.isc-net.upenn.edu>
+Message-Id: <200001191622.LAA08271@oncodev.isc-net.upenn.edu>
+Subject: new HFS+ developer technote from Apple
 To: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
-From: Moritz Thomas <motho@gmx.net>
-Subject: Re: still no accelerated X ($#!$*)
-Cc: Kevin_Hendricks <khendricks@admin.ivey.uwo.ca>
+Date: Wed, 19 Jan 2000 11:22:12 -0500 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Finally I got it!
+I am not a heavy-duty programmer, so I can't help much in this regard,
+but I know that many of us would love (ie, desperately need) HFS+
+access from linux.  And, it looks like Apple has created a document to
+help in this regard.
 
-The problem was in the Xpmac code. If I remember correctly, this error
-was some time ago in the kernel's "atyfb.c" as well. Probably this is also
-fixed in current release of Xpmac
+I hope this is helpful to somebody out there!
 
-The following functions in "regmach.h":
-#if defined (__powerpc__)
-extern pointer mach64MemReg;
 
-static inline void regw(volatile unsigned long regindex, unsigned long regdata)
-{
-  register unsigned long base_addr = (unsigned long)mach64MemReg;
+http://developer.apple.com/technotes/tn/tn1150.html
 
-  asm("stwbrx %0,%1,%2": : "r"(regdata), "r"(regindex), "r"(base_addr));
-}
+Description:
+This Technote describes the on-disk format for an HFS Plus volume. It
+does not describe any programming interfaces for HFS Plus volumes.
 
-static inline unsigned long regr(volatile unsigned long regindex)
-{
-  register unsigned long base_addr = (unsigned long)mach64MemReg, val;
+This technote is directed at developers who need to work with HFS Plus
+at a very low level, below the abstraction provided by the File
+Manager programming interface. This includes developers of disk
+recovery utilities and programmers implementing HFS Plus support on
+other platforms.
 
-  asm("lwbrx %0,%1,%2": "=r"(val):"r"(regindex), "r"(base_addr));
-  return(val);
-}
-#endif
+This technote assumes that you have a conceptual understanding of the
+HFS volume format, as described in Inside Macintosh: Files.
 
-need to be replaced by:
-#if defined (__powerpc__)
-extern pointer mach64MemReg;
-
-static inline void regw(volatile unsigned long regindex, unsigned long regdata)
-{
-  register unsigned long base_addr = (unsigned long)mach64MemReg;
-
-  asm("stwbrx %0,%1,%2": : "r"(regdata), "b"(regindex), "r"(base_addr));
-}
-
-static inline unsigned long regr(volatile unsigned long regindex)
-{
-  register unsigned long base_addr = (unsigned long)mach64MemReg, val;
-
-  asm("lwbrx %0,%1,%2": "=r"(val):"b"(regindex), "r"(base_addr));
-  return(val);
-}
-#endif
-
-Don't know if this is correct (no clue about ppc assembly), but it works...
-
-mo
-
+Sincerely,
+Tom Dilling
+Production Editor, OncoLink
+http://www.oncolink.upenn.edu/
+tdilling@oncodev.isc-net.upenn.edu
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
