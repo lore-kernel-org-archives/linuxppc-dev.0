@@ -1,46 +1,53 @@
-To: Jaap-Jan Boor <jjboor@lucent.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: occasionally segmentation faults 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 08 Aug 2002 15:45:34 +0200."
-             <200208081345.PAA08157@hzsms01.nl.lucent.com>
-Date: Thu, 08 Aug 2002 22:12:28 +0200
-Message-Id: <20020808201233.91B7210DE1@denx.denx.de>
+Message-ID: <3D530222.7040303@redswitch.com>
+Date: Thu, 08 Aug 2002 16:43:30 -0700
+From: "Xiaogeng (Shawn) Jin" <xjin@redswitch.com>
+MIME-Version: 1.0
+To: linux-mtd@lists.infradead.org,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: MTD/JFFS2 on Intel 28F160F3
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Jaap-Jan,
+Hi *,
 
-in message <200208081345.PAA08157@hzsms01.nl.lucent.com> you wrote:
->
-> then I downloaded and installed you eldk, but still
-> have sometimes the segmentation fault.
->
-> My kernel is under suspicion now. I saw eldk also
+I'm trying to enable MTD and JFFS2 on an Intel 28F160F3 chip but have
+some problems.
 
-This is exactly what I suspeect, too.
+The basic problem is what the physical start address of flash mapping
+is? While on PPCBoot, I got flash information using command 'flinfo'.
+The start address is FFE00000. Is this address the one used to configure
+CFI flash device in physical memeory map? I tried using this address but
+  'physmap' couldn't find flash device.
 
-> contains a 2.4.4 kernel (I use 2.4.10)
+-----------------clip-----------------------------------------
+root@ib8sw:~# modprobe -a physmap
+physmap flash device: 100000 at ffe00000
+CFI: Found no Physically mapped flash device at location zero
+-----------------clip-----------------------------------------
+-----------------clip-----------------------------------------
+=> flinfo
 
-We were never able to get 2.4.10 stable (or any other version between
-some 2.4.7 and 2.4.14 or so).
+Bank # 1: INTEL 28F160F3 (16 Mbit, top boot sector)
+   Size: 2 MB in 39 Sectors
+   Sector Start Addresses:
+     FFE00000      FFE10000      FFE20000      FFE30000      FFE40000
+     FFE50000      FFE60000      FFE70000      FFE80000      FFE90000
+     FFEA0000      FFEB0000      FFEC0000      FFED0000      FFEE0000
+     FFEF0000      FFF00000 (RO) FFF10000 (RO) FFF20000 (RO) FFF30000 (RO)
+     FFF40000      FFF50000      FFF60000      FFF70000      FFF80000
+     FFF90000      FFFA0000      FFFB0000      FFFC0000      FFFD0000
+     FFFE0000      FFFF0000      FFFF2000      FFFF4000      FFFF6000
+     FFFF8000      FFFFA000      FFFFC000      FFFFE000
+=>
+-----------------clip-----------------------------------------
 
-> Did you apply something else then the uart changes to it?
+I haven't dived into the routine 'do_cfi_probe()' yet since I'm not sure
+if the start address I specified is correct. Any help is greatly
+appreciated.
 
-Well, yes. There are many extensions / changes / fixes in our  kernel
-source tree.
+- Shawn.
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-      Bugs are by far the largest and  most successful class of
-      entity, with nearly a million known species. In this res-
-      pect they outnumber all the other  known  creatures about
-      four to one.  -- Professor Snope's Encyclopedia of Animal
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
