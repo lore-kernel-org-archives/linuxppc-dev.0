@@ -1,28 +1,43 @@
-Message-ID: <3D1203B2.6050409@embeddededge.com>
-Date: Thu, 20 Jun 2002 12:32:50 -0400
+Message-ID: <3D120573.4000305@embeddededge.com>
+Date: Thu, 20 Jun 2002 12:40:19 -0400
 From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Steven Scholz <steven.scholz@imc-berlin.de>,
+To: Wolfgang Denk <wd@denx.de>
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	Steven Scholz <steven.scholz@imc-berlin.de>,
 	LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: board specific defines in commproc.h !?!?
-References: <3D0DA9C2.D78C43E5@imc-berlin.de> <3D106922.7026437A@imc-berlin.de> <20020619150520.GA12762@opus.bloom.county> <3D10A0AC.409EF92B@imc-berlin.de> <20020619152528.GB12762@opus.bloom.county> <3D10F388.5@embeddededge.com> <20020619212246.GA16052@opus.bloom.county>
+References: <20020619221532.F3C7A10301@denx.denx.de>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Tom Rini wrote:
+Wolfgang Denk wrote:
 
-> And in the (un)fortunate grand linux tradition, new features with some
-> demand from the users behind them get backported too.  For example,
-> 2.2.current (21? 22?) has all sorts of compat glue for 2.4 drivers and a
-> rather current USB stack and all sorts of things like that..
 
-It was probably done in 2.3.xx and backported, but yes, that does happen
-and it is a good thing.  However, it was first done in the newer, development
-tree before it was ported into the current, stable kernel.  I think
-the first half dozen 2.4 releases were really 2.3.xxx, anyway :-)
+> So what is your suggestion if I want to provide a patch that supports
+> some new hardware?
+
+I personally always do it first in the new, development tree (2.5 in
+this case), then move it into the current stable tree.  It isn't that
+you don't ever put new things into the stable tree, you just can't treat
+it as a development tree.  Any "cosmetic" changes shouldn't be done in
+a stable tree.
+
+
+> ..... And often enough the hardware is instable enough,
+> so I don't need the additional thrill of an instable Linux kernel.
+
+Well, that is a challenge but you are likely to have some similar hardware
+that will provide a stability reference.  Anything new won't work better
+than something that is proven.  The main reason I like doing the new hardware
+in 2.5 is that way it is carried along as the software evolves.  I have seen
+lots of updates lost in newer kernels because someone decided to "do it later",
+then when it becomes the next stable kernel everyone is in a panic to get
+their updates done :-)
+
+Thanks.
 
 
 	-- Dan
