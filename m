@@ -1,79 +1,64 @@
-Date: Tue, 24 Sep 2002 15:22:20 -0700 (PDT)
-From: Ani Joshi <ajoshi@unixbox.com>
-To: Robert E Brose II <bob@kunk.jriver.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Linear Aperture not available; Mach64 and X4.2.0
-In-Reply-To: <20020924063335.6655.qmail@kunk.jriver.com>
-Message-ID: <Pine.BSF.4.44.0209241519590.7261-100000@shell.unixbox.com>
+Message-ID: <3D914574.7030300@uow.edu.au>
+Date: Wed, 25 Sep 2002 15:11:16 +1000
+From: Ben Stanley <bds02@uow.edu.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: [PATCH] remove #ifdef __KERNEL__ from atomic.h
+Content-Type: multipart/mixed;
+ boundary="------------060603060004090505070803"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-The Mach64GX is unlike other Mach64's in that it doesn't use an internal
-ATI DAC but an external IBMRGB dac, and accessing this DAC isn't yet
-supported for ppc in X 4.2.0.  Hopefully someone will find some time in
-the future to get this working.  I suggest you use the "fbdev" driver
-instead if you want to use 4.2.0, or use Xpmac if you want acceleration.
+This is a multi-part message in MIME format.
+--------------060603060004090505070803
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+
+Hi,
+
+I was trying to compile sumji (formerly xtunes), which requires
+libCommonC++. I found that libCommonC++ would not compile, because it
+needs to use the atomic functions declared in include/asm-ppc/atomic.h .
+However, this file does not declare these functions unless __KERNEL__ is
+defined. I believe that this is incorrect.
+
+I have checked the i386 and s390 versions of atomic.h and they declare
+the atomic functions regardless of the status of the __KERNEL__ macro.
+Therefore I propose that it should be removed from asm-ppc/atomic.h, and
+have attached a patch to effect this.
+
+With this patch applied, I am able to compile libCommonC++.
+
+Ben Stanley.
 
 
-ani
+--------------060603060004090505070803
+Content-Type: text/plain;
+ name="atomic_ppc.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="atomic_ppc.patch"
 
+--- include/asm-ppc/atomic.h.orig	Wed Sep 25 07:49:12 2002
++++ include/asm-ppc/atomic.h	Wed Sep 25 07:49:32 2002
+@@ -10,8 +10,6 @@
 
-On Tue, 24 Sep 2002, Robert E Brose II wrote:
+ typedef struct { volatile int counter; } atomic_t;
 
->
-> Does anyone know if (and where) this problem has been resolved?
-> I assume there is some conflict in the default memory mapping?
->
->
-> 00:0d.0 VGA compatible controller: ATI Technologies Inc 210888GX [Mach64 GX] (rev 02) (prog-if 00 [VGA])
->         Flags: stepping, medium devsel, IRQ 23
->         Memory at 81000000 (32-bit, non-prefetchable) [size=16M]
->         Expansion ROM at <unassigned> [disabled] [size=64K]
->
->
->
-> XFree86 Version 4.2.0 (echo Yellow Dog Linux release: 4.2.0-6.30e) / X Window System
-> (protocol Version 11, revision 0, vendor release 6600)
-> Release Date: 23 January 2002
-> 	If the server is older than 6-12 months, or if your card is
-> 	newer than the above date, look for a newer version before
-> 	reporting problems.  (See http://www.XFree86.Org/)
-> Build Operating System: Linux 2.4.19-3b ppc [ELF]
-> Build Host: kaelta.terraplex.com
->
-> Module Loader present
-> Markers: (--) probed, (**) from config file, (==) default setting,
->          (++) from command line, (!!) notice, (II) informational,
->          (WW) warning, (EE) error, (NI) not implemented, (??) unknown.
-> (==) Log file: "/var/log/XFree86.0.log", Time: Tue Sep 24 01:30:27 2002
-> (==) Using config file: "/etc/X11/XF86Config-4"
-> (WW) ATI(0): Unknown RAMDAC type 0x95 detected.
-> (EE) ATI(0): Linear aperture not available.
-> (EE) Screen(s) found, but none have a usable configuration.
->
-> Fatal server error:
-> no screens found
->
-> When reporting a problem related to a server crash, please send
-> the full server output, not just the last messages.
-> This can be found in the log file "/var/log/XFree86.0.log".
-> Please report problems to xfree86@xfree86.org.
->
->
-> (supermac s900, 6 slot pci bus, g3 350, worked with xpmac)
->
-> Thanks,
-> Bob
-> --
-> /~\ The ASCII       | Robert E. Brose II    N0QBJ
-> \ / Ribbon Campaign | http://www.qbjnet.com/
->  X  Help cure       | mailto:bob@qbjnet.com
-> / \ HTML Email      | public key at http://www.qbjnet.com/key.html
->
->
+-#ifdef __KERNEL__
+-
+ #define ATOMIC_INIT(i)	{ (i) }
+
+ #define atomic_read(v)		((v)->counter)
+@@ -181,5 +179,4 @@
+ #define smp_mb__before_atomic_inc()	smp_mb()
+ #define smp_mb__after_atomic_inc()	smp_mb()
+
+-#endif /* __KERNEL__ */
+ #endif /* _ASM_PPC_ATOMIC_H_ */
+
+--------------060603060004090505070803--
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
