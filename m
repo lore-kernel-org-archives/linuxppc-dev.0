@@ -1,38 +1,39 @@
-Message-ID: <396A1649.88DAEA31@pop.agri.ch>
-Date: Mon, 10 Jul 2000 20:30:39 +0200
-From: Andreas Tobler <toa@pop.agri.ch>
-Reply-To: toa@pop.agri.ch
+Message-ID: <003b01bfeaa6$744c6e60$1a6a1504@strayer.edu>
+From: "Robert Thompson" <rothomp3@vt.edu>
+To: <pogtal@erols.com>
+Cc: <linuxppc-dev@lists.linuxppc.org>
+Subject: re: trackpad
+Date: Mon, 10 Jul 2000 15:38:40 -0400
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <bh40@calva.net>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.4.0-test3
-References: <3969E6B8.D0AE0169@pop.agri.ch> <20000710160513.21541@mailhost.mipsys.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
-
-> >In the sccstool I read in prom.c Calc BAT..... this may cause trouble if
-> >the framebuffer is really badly aligned.......
-> >TODO: Check 601 case...
-> >
-> >How can I help?
+On Sat, 08 Jul 2000, Nelson Abramson wrote:
+>Assuming that you have not changed gpm's defaults, and that you have linked
+both
+>/dev/input/mouse and /dev/input/usbmouse to /dev/mouse, all you should need
+to do
+>is "gpm -t imps2", and that should allow gpm to take input from both your
+external
+>usb mouse and the trackpad.  If you have X use /dev/mouse, then it should
+also
+>beable to take input from both sources (it works for my Pismo).
 >
-> Well, you can check disabling that (and the call that sets up this BAT in
-> head.S) but don't forget, if you do that, to also declare
-> bootx_text_mapped to 0 before leaving prom.c
+Apparently this is an iBook specific issue, then, because I tried exactly
+this
+and is still doesn't work! Hmm... anybody have any clue what's different
+between the trackpad on the Pismo and on the iBook? It's not like ADB isn't
+working: the keyboard works fine, so ADB is working at least mostly fine.
+Like
+I said, I use an external trackball anyway, but I'm sure somebody will be
+angry
+about this at some point...
 
-I did so, in head.S I if'ed 0 the setup_disp_bat part. In prom.c I
-commented out the prepare_disp_BAT(two times) and I set
-bootx_text_mapped in these sections to zero. I also put out mesh.
-Now the machine comes up again.
-But on shutting down I get a terrible nfsd panic with lots of crash
-code. (dump available)
+Thanks,
+Robbie Thompson
 
-So far my experiences......
-
-Andreas
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
