@@ -1,39 +1,82 @@
-Message-ID: <3740310A.1B7B7492@jlc.net>
-Date: Mon, 17 May 1999 11:08:58 -0400
-From: Dan Malek <dmalek@jlc.net>
+Message-ID: <911C34FD83B8D1119788004033A02EAE629DE8@MAILSRVR>
+From: Michael Cardenas <Michael_Cardenas@deneba.com>
+To: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
+Subject: USB 1.1 spec
+Date: Mon, 17 May 1999 11:46:33 -0400
 MIME-Version: 1.0
-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: MPC8xx porting issues
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01BEA07C.706EDF80"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+This message is in MIME format. Since your mail reader does not understand
+this format, some or all of this message may not be legible.
 
+------_=_NextPart_001_01BEA07C.706EDF80
+Content-Type: text/plain;
+	charset="iso-8859-1"
 
-To those of you that are having "weird" problems with the 8xx port.........
-It hit me this morning.  If you are running with copy back caches enabled,
-please use the binaries of the libraries I have compiled and placed on the
-server.  It contains a modification to the dynamic loader function so it
-understands the smaller size of the 8xx caches.  The global cache mode
-configuration is found in 'arch/ppc/kernel/head.S', and I believe I enable
-copy back by default.
+I have been trying to compile the latest working kernel on my imac so that I
+can get my unimouse to work. It uses the usb 1.16 spec and it appears that
+the latest uusbd in linux only handles up to 1.0. I'm going to return the
+mouse now, since I only bought it to use in linux. I've gotten some feedback
+from a user saying that kensington mice work in linux, so I'm going to get
+one of those. I thought I would make one last attempt first. 
 
-To those of you working on the PPC software.....we need a solution to this
-cache line size difference so we don't need a unique 8xx library set (although
-we probably should for floating-point purposes).  The other real big cache
-related issue is the 8xx will only support the 'dcbz' instruction on cache
-lines marked as copy-back.  If implementations choose to use write
-through or no cache modes on some data pages (I/O for example), the
-"optimized" memory zero functions using 'dcbz' will generate data access
-exceptions in logically correct code.
+Does anyone know if this new spec is going to be supported any time soon? 
 
-Thanks.
+_____________________________________________
 
+Neo: Why do my eyes hurt?
+Morpheus: Because you've never used them. 
+_____________________________________________
+Michael Cardenas
+Software Engineer
+Deneba Software
 
-    -- Dan
+------_=_NextPart_001_01BEA07C.706EDF80
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+5.5.2232.0">
+<TITLE>USB 1.1 spec</TITLE>
+</HEAD>
+<BODY>
 
+<P><FONT SIZE=3D2>I have been trying to compile the latest working =
+kernel on my imac so that I can get my unimouse to work. It uses the =
+usb 1.16 spec and it appears that the latest uusbd in linux only =
+handles up to 1.0. I'm going to return the mouse now, since I only =
+bought it to use in linux. I've gotten some feedback from a user saying =
+that kensington mice work in linux, so I'm going to get one of those. I =
+thought I would make one last attempt first. </FONT></P>
+
+<P><FONT SIZE=3D2>Does anyone know if this new spec is going to be =
+supported any time soon? </FONT>
+</P>
+
+<P><FONT SIZE=3D2>_____________________________________________</FONT>
+</P>
+
+<P><FONT SIZE=3D2>Neo: Why do my eyes hurt?</FONT>
+<BR><FONT SIZE=3D2>Morpheus: Because you've never used them. </FONT>
+<BR><FONT SIZE=3D2>_____________________________________________</FONT>
+<BR><FONT SIZE=3D2>Michael Cardenas</FONT>
+<BR><FONT SIZE=3D2>Software Engineer</FONT>
+<BR><FONT SIZE=3D2>Deneba Software</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01BEA07C.706EDF80--
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
