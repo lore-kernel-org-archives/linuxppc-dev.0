@@ -1,26 +1,29 @@
-Date: Wed, 29 May 2002 13:54:28 -0700
-From: Matt Porter <porter@cox.net>
-To: Matt Porter <porter@cox.net>
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	"Cameron, Steve" <Steve.Cameron@hp.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Unrecognized opcode: `mtdcr'
-Message-ID: <20020529135428.B3960@home.com>
-References: <45B36A38D959B44CB032DA427A6E10640167CFD8@cceexc18.americas.cpqcorp.net> <20020529195429.GP5997@opus.bloom.county> <20020529134350.A3960@home.com>
-Mime-Version: 1.0
+Message-ID: <20020529222336.30215.qmail@web20102.mail.yahoo.com>
+Date: Wed, 29 May 2002 15:23:36 -0700 (PDT)
+From: Owen Green <owenjinggreen@yahoo.com>
+Subject: Memory usage
+To: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <20020529135428.B3960@home.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020529134350.A3960@home.com>; from porter@cox.net on Wed, May 29, 2002 at 01:43:50PM -0700
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, May 29, 2002 at 01:43:50PM -0700, Matt Porter wrote:
-> There is _a_ 440-specific opcode, dlbmnz.  It's not yet supported by
-> gas (and ideally glibc).  For now, a 405 enabled toolchain is
-> sufficient.
+Hi all,
 
-Heh, can't type...the opcode is dlmzb.
+I`m currently developing applications for a linuxppc
+embedded system (mpc8xx) with linux-2.4.4 from denx
+and I realised that even with a tiny application I
+spent something like 140k on my RAM area, where at
+least 100k of that is for ld-2.2.3.so, I guess.
+The question is, am I right? Is there a way to share
+the code section of ld-2.2.3.so along applications? Is
+there a way to get this memory size down?
 
--Matt
+Thanks in advance,
+
+Owen.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
