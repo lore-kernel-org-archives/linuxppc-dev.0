@@ -1,24 +1,23 @@
-Return-Path: <sven.luther@wanadoo.fr>
-Received: from mwinf0810.wanadoo.fr (smtp8.wanadoo.fr [193.252.22.23])
-	by ozlabs.org (Postfix) with ESMTP id 3FB7F2BF0E
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Jan 2005 21:41:08 +1100 (EST)
-Received: from smtp8.wanadoo.fr (mwinf0803 [172.22.139.25])
-	by mwinf0810.wanadoo.fr (SMTP Server) with ESMTP id 0BF8210015D1
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Jan 2005 11:41:00 +0100 (CET)
-Date: Mon, 3 Jan 2005 11:48:48 +0100
-To: Philippe Guyot <pguyot@cvf.fr>
-Message-ID: <20050103104848.GA14682@pegasos>
+Return-Path: <felipe@cvf.fr>
+Received: from mh2.cvf.fr (mh2.cvf.fr [213.56.76.234])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 987B82BDB5
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Jan 2005 21:44:56 +1100 (EST)
+From: Philippe Guyot <pguyot@cvf.fr>
+To: mikemartin@linux.ca, Mike Martin <sydneymartin@gmail.com>,
+	Sven Luther <sven.luther@wanadoo.fr>
+Date: Mon, 3 Jan 2005 10:56:30 +0100
 References: <20050101150055.GA15400@pegasos>
 	<855e88d00501011715633922b2@mail.gmail.com>
 	<855e88d0050102201540148511@mail.gmail.com>
-	<200501031056.30775.pguyot@cvf.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <200501031056.30775.pguyot@cvf.fr>
-From: Sven Luther <sven.luther@wanadoo.fr>
-Cc: Ulrich Teichert <krypton@ulrich-teichert.org>,
-	Mike Martin <sydneymartin@gmail.com>, linuxppc-dev@ozlabs.org,
-	debian-powerpc@lists.debian.org, mikemartin@linux.ca
+In-Reply-To: <855e88d0050102201540148511@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200501031056.30775.pguyot@cvf.fr>
+Cc: Ulrich Teichert <krypton@ulrich-teichert.org>, linuxppc-dev@ozlabs.org,
+	debian-powerpc@lists.debian.org
 Subject: Re: 43p-140 install issues
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -29,46 +28,107 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jan 03, 2005 at 10:56:30AM +0100, Philippe Guyot wrote:
-> On Monday 03 January 2005 05:15, Mike Martin wrote:
-> > Now I'm very confused .... on my next reboot ... the network wouldn't
-> > work. After much trial and error, I got the current unstable d-i image
-> > to work. It did it all right up to the reboot (where is warns you that
-> > it doesn't have a boot loader installed).
-> >
-> > Now what!
-> >
-> > I have an installed system, but I can't figure out how to boot it! I
-> > have /boot/vmlinux on /dev/sdb1 and a root on /dev/sdb1. How do I
-> > write a boot sector or tell OpenFirmware to boot from this file? I
-> > tried to netboot and set root=/dev/sdb1 - but without the scsi modules
-> > loaded it fails to read the drives and panics.
-> >
-> > I think I neet to create a type 41 PReP boot partition and get the
-> > kernel onto it. I've found this thread:
-> > http://lists.gnu.org/archive/html/bug-parted/2002-09/msg00016.html
-> >
-> > and this:
-> > http://www.yellowdoglinux.com/support/solutions/champion_server/rs6k.shtml
-> >
-> > I tried booting up with the installer, going to a shell after the scsi
-> > was active and the installed system was mounted. I used sfdisk from
-> > /target/sbin to create a 10 Meg type 41 partition on the first HD
-> > (/dev/sdb0 eventually). I used dd to copy /target/boot/vmlinux to this
-> > partition. But it still won't boot.
-> 
-> 
-> I succeeded last year to install a woody on a 143P-140 whith the help of Leigh 
-> Brown (thanks to him again). And two 150 whit sarge also.
-> 
-> I'm not sure, but I have the feeling that your image on the prep partition 
-> (should be type 0x41) is not able to determine where the root is, so Leigh 
-> did a piece of code named "preptools" in order to patch the image with the 
-> location of root.
+On Monday 03 January 2005 05:15, Mike Martin wrote:
+> Now I'm very confused .... on my next reboot ... the network wouldn't
+> work. After much trial and error, I got the current unstable d-i image
+> to work. It did it all right up to the reboot (where is warns you that
+> it doesn't have a boot loader installed).
+>
+> Now what!
+>
+> I have an installed system, but I can't figure out how to boot it! I
+> have /boot/vmlinux on /dev/sdb1 and a root on /dev/sdb1. How do I
+> write a boot sector or tell OpenFirmware to boot from this file? I
+> tried to netboot and set root=/dev/sdb1 - but without the scsi modules
+> loaded it fails to read the drives and panics.
+>
+> I think I neet to create a type 41 PReP boot partition and get the
+> kernel onto it. I've found this thread:
+> http://lists.gnu.org/archive/html/bug-parted/2002-09/msg00016.html
+>
+> and this:
+> http://www.yellowdoglinux.com/support/solutions/champion_server/rs6k.shtml
+>
+> I tried booting up with the installer, going to a shell after the scsi
+> was active and the installed system was mounted. I used sfdisk from
+> /target/sbin to create a 10 Meg type 41 partition on the first HD
+> (/dev/sdb0 eventually). I used dd to copy /target/boot/vmlinux to this
+> partition. But it still won't boot.
 
-Hey, cool, where is this tool ? We need to package it for debian if it is not
-already, and use it in d-i, and maybe even mkvmlinuz directly.
 
-Friendly,
+I succeeded last year to install a woody on a 143P-140 whith the help of Leigh 
+Brown (thanks to him again). And two 150 whit sarge also.
 
-Sven Luther
+I'm not sure, but I have the feeling that your image on the prep partition 
+(should be type 0x41) is not able to determine where the root is, so Leigh 
+did a piece of code named "preptools" in order to patch the image with the 
+location of root.
+
+To see if this can help, can you boot from openfirmware (BTW, is it the last 
+version? and have you updated the load_base and real-base values?) with this 
+parameter ?
+     boot disk root=/dev/whatever_root_sda_is 
+
+Hope this helps.
+
+>
+> I'm very close. If I can get the system to boot (really it needs to
+> boot itself - not netboot) I'd call this a success.
+>
+> Thanks!
+> MikeM
+>
+> On Sat, 1 Jan 2005 20:15:13 -0500, Mike Martin <sydneymartin@gmail.com> 
+wrote:
+> > I can boot with this image:
+> > http://debian.yorku.ca/debian/dists/testing/main/installer-powerpc/curren
+> >t/images/powerpc/netboot/vmlinuz-prep.initrd
+> >
+> > And things seems to go very well. Network configures, hard drives
+> > partition, it dies at "Install the base system"  with "The debootstrap
+> > program exited with an error (return value 255)." It instructs me to
+> > check /var/log/messages which now contains: "execv: No such file or
+> > directory"
+> >
+> > The previous step, partitioning, added:
+> >   "No matching physical volumes found
+> >   No volume groups found
+> >   Reading all physical volumes.  This may take a while..."
+> >
+> > Anyone?
+> >
+> > MikeMartin
+> >
+> > On Sat, 1 Jan 2005 17:57:58 +0100, Sven Luther <sven.luther@wanadoo.fr> 
+wrote:
+> > > On Sat, Jan 01, 2005 at 05:30:25PM +0100, Ulrich Teichert wrote:
+> > > > Hi,
+> > > >
+> > > > [del]
+> > > >
+> > > > >I would prefer that we fix the debian kernels for them to work
+> > > > > correctly though. More on this on monday.
+> > > >
+> > > > I failed to configure a stock 2.4.28 kernel to detect the SCSI
+> > > > controler. I think some of Leigh patches for this must be applied,
+> > > > but I haven't gone any further.
+> > >
+> > > I had some report on a power3 box, that only the SMP sym53c8xx driver
+> > > worked. When configuring in UP mode,
+> > >
+> > > > [del]
+> > > >
+> > > > >Do the debian 2.4.27 kernel work on it ? I was unable to boot the
+> > > > > 2.4.27 d-i kernel on my powerstack, but this is a different
+> > > > > machine, so the issues may be a bit different.
+> > > >
+> > > > I've only tried the Woody PREP kernel, which failed in a way which I
+> > > > can't remember, but I'll give it a try.
+> > >
+> > > Yes, please, i would greatly appreciate it, preferably the 2.6.8 kernel
+> > > too. Let' try to get this fixed before the sarge release, which is not
+> > > so far off now.
+> > >
+> > > Friendly,
+> > >
+> > > Sven Luther
