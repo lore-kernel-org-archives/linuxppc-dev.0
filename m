@@ -1,54 +1,48 @@
-Date: Mon, 14 Jun 2004 08:46:25 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
+Message-ID: <40CDDAC7.4090608@mvista.com>
+Date: Mon, 14 Jun 2004 10:05:11 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+MIME-Version: 1.0
 To: Adrian Cox <adrian@humboldt.co.uk>
 Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: [PATCH][RFC] OCP support for MPC107 and relatives
-Message-ID: <20040614084625.A29057@home.com>
 References: <1087207803.7360.83.camel@newt>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1087207803.7360.83.camel@newt>; from adrian@humboldt.co.uk on Mon, Jun 14, 2004 at 11:10:04AM +0100
+In-Reply-To: <1087207803.7360.83.camel@newt>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Jun 14, 2004 at 11:10:04AM +0100, Adrian Cox wrote:
-> The attached patch is a start at adding the internal peripherals of the
-> MPC107/MPC8240/MPC8245 to the OCP bus. I've used thus in the 2.6 port of
-> my MPC107 I2C driver, which follows shortly. I intend to use this for
-> the DMA controller later, once I decide what device ID to give it.
+Adrian Cox wrote:
 
-Excellent...I was hoping someone would take care of this for MPC10x-ish
-on-chip devices.
+> <snip>
+>
+>-	if (host_bridge != MPC10X_BRIDGE_106) {
+>+	if (host_bridge == MPC10X_BRIDGE_106) {
+>+		/* On-chip peripherals were introduced with the MPC107/MPC8240 */
+>+		core_ocp[0].vendor = OCP_VENDOR_INVALID;
+>
 
-> I'm a little uncertain about OCP device IDs. Should there be a separate
-> I2C device ID for each different I2C programming interface from the same
-> vendor? Motorola have already given us two separate implementations on
-> PowerPC.
+><snip>
+>
 
-Well, I've been asked this question a few times in similar contexts,
-but I haven't had a solid answer to give yet.  Basically, the question
-boils down to, "What are the rules for assigning new OCP IDs?". Right
-now, there are no written rules.  However, we have a software "bus"
-abstraction with a massive amount (32-bit) of IDs available for our
-use per vendor.
+> 		OpenPIC_Addr =
+> 			ioremap(phys_eumb_base + MPC10X_EUMB_EPIC_OFFSET,
+> 				MPC10X_EUMB_EPIC_SIZE);
+>+#endif
+>+		core_ocp[0].paddr = phys_eumb_base + MPC10X_EUMB_I2C_OFFSET;
+> 	}
+>
+>
 
-My current suggestion is to use this space to assign unique IDs
-per device even though devices don't show up between architectures
-(normally).  I can actually see cases where two different OCP systems might
-share a device, but it would be rare if anybody ever implements such
-a thing at all. Please assign unique IDs per device and per vendor
-for now.  If it gets out of hand in the future, we can revisit the
-situation.
+That's great that you're OCP-ifying the mpc10x code!  My only comment is
+thatI don't like hardcoding the position of an entry in the OCP (e.g.,
+core_ocp[0].vedor/paddr).  I don't think its safe to assume that any
+particular piece of code will always know all of the entries in the OCP
+and therefore what an entry's position will be.  You can use
+'ocp_for_each_device()' and a routine that checks for the fields that
+you want to accomplish the same thing.
 
-> This is a little bit different from the PPC40x use of OCP, because it's
-> hard to calculate everything at compile time. This is particularly
-> caused by the pcore boards, which use the MPC107 but don't use the
-> interrupt controller.
+Mark
 
-Mark Greer and Kumar Gala each have platforms doing runtime mods, so the
-Marvell and 85xx ports are good examples to follow.
-
--Matt
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
