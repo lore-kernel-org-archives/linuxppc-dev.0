@@ -1,13 +1,30 @@
-Message-ID: <8D7C5F56B409554D9D46AC22195807F3061C1B@exchwenz01.dmcwave.co.nz>
-From: Rod Boyce <rod_boyce@stratexnet.com>
-To: linuxppc-embedded@lists.linuxppc.org
+From: brian.auld@adic.com
+Message-ID: <995FF289C9D69747A09E42992644595405B2361B@penguin.adic.com>
+To: rod_boyce@stratexnet.com, linuxppc-embedded@lists.linuxppc.org
 Subject: RE: Need IDE for embedded Linux project
-Date: Wed, 22 Jan 2003 10:17:37 +1300
+Date: Tue, 21 Jan 2003 13:24:41 -0800
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Everyone,
+
+I am overwhelmed and grateful for all your input.
+
+Keep it coming. I'm busy absorbing and following up on everything written so
+far, but could very well have more questions.
+
+Thanks
+
+-- Brian
+
+-----Original Message-----
+From: Rod Boyce [mailto:rod_boyce@stratexnet.com]
+Sent: Tuesday, January 21, 2003 4:18 PM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Need IDE for embedded Linux project
 
 
 I agree with what hs been said except for one thing use tight VNC I have
