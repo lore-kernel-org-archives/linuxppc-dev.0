@@ -1,32 +1,33 @@
-Message-ID: <39CBD3D0.C7F1964A@wanadoo.fr>
-Date: Fri, 22 Sep 2000 23:49:04 +0200
-From: Martin Costabel <costabel@wanadoo.fr>
+Message-Id: <200009222159.XAA01105@piglet.grunz.lu>
+Date: Fri, 22 Sep 2000 23:59:49 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: __ioremap_at() in 2.4.0-test9-pre2
+To: bh40@calva.net
+cc: geert@linux-m68k.org, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <19340816161251.5999@192.168.1.10>
 MIME-Version: 1.0
-To: Henry Worth <haworth@ncal.verio.com>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Linux keycodes and left cursor on Pismo
-References: <Pine.SOL.4.10.10009221556010.17778-100000@ncal.verio.com>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Henry Worth wrote:
->
-> Michel Dänzer <daenzerm@student.ethz.ch> wrote:
+On  22 Sep, this message from Benjamin Herrenschmidt echoed through cyberspace:
+> Well, weren't some of the early Apple PPC servers running AIX based on
+> Bandit and using legacy VGA text mode ?
+> In this case, it may be possible to configure Bandit to open a window to
+> the ISA memory space...
 
-> >Also, what is the key combination for the Magic Sysrq on a Pismo?
-> >
->
-> For xmon it's <cmd><Power>. I'm not sure the Linux SysReq facility
-> is supported for PPC, I've never seen it enabled in Ben's .config
-> files and there is no sign of it in the archives.
+Get Apple to open up the documentation about bandit ;-)
 
-F13 (keycode 0x69) works for me as MagicSysRq (ADB keyboard, kernels
-2.2.x or 2.4.0-x).
+Michel
 
-> However, invoking xmon once X (at least Xpmac 10) is running
-> will result in a microscopic xmon text session replicated 4 times
-> across the screen (even if you switch back to a text VT first).
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
