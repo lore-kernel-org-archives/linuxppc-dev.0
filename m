@@ -1,63 +1,30 @@
-Message-ID: <3BF4BA85.A72CD8B5@taikebj.com.cn>
-Date: Fri, 16 Nov 2001 15:04:37 +0800
-From: lishaohu <tk20@taikebj.com.cn>
+Message-ID: <3C082FD5.D1F6C997@carts.com>
+Date: Fri, 30 Nov 2001 17:18:13 -0800
+From: Kevin Fry <kevin@carts.com>
 MIME-Version: 1.0
-To: scop@digitel.com.br
-Cc: Sally Wang <swang@otcwireless.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Linux on Wind River's PPMC755 board
-References: <JEEJJBIBHMGFHCANFACIOEEACAAA.swang@otcwireless.com> <3635.011205@digitel.com.br>
+To: linuxppc emb3dd3d list <linuxppc-embedded@lists.linuxppc.org>
+Subject: PPC cross-compiling 1394 libraries 
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Ricardo Scop:
-My name is Shaohu li
->
-> I am thinking to port linux upon Wind River's PPMC755 board. Where can
+I need to compile some 1394 libraries for my embedded 8260 board running
+HHL 2.0. These
+are the libraw1394 libraries needed for Firewire.  They have a
+./configure script
+and everything, but if I tell the script --target=powerpc-linux I get
+100's of
+make errors.  I'm using the HHL2.0 cross compiler, maybe that needs
+something
+extra to be done?
 
-I get the source
-> codes which can be easily ported toWind River's PPMC755 board?
-I am looking for help.
+Any advice on cross compiling libraries would be very appreciated?
 
+I sent this before, but i bounced back, so I'm not sure if it made it to
+the list or not. If so, I'm sorry for the double post.
 
-Best Regards,
-
-shaohu li
-
-Ricardo Scop wrote:
-
-> Sally,
->
-> BDI2000 from Abatron (www.abatron.ch) is a nice debugging tool, it's
-> completely Linux aware and works well with GNU development tools.
->
-> You should also look at
-> http://penguinppc.org/embedded/howto/PowerPC-Embedded-HOWTO.html
-> for further information.
->
-> []'s, Scop                            mailto:scop@digitel.com.br
->
-> ------------------------------------------------------------------
-> "What's money? A man is a success if he gets up in the morning and
-> goes to bed at night and in between does what he wants to do."
-> ~Bob Dylan
->
-> Wednesday, December 05, 2001, 12:19:04 AM, you wrote:
->
-> SW> Also I am looking for development tools for our project. It will using linux
-> SW> as OS, MPC8241 as CPU, and our own hardware board. What kind of tools you
-> SW> advice for debugging kernel and drivers ?
->
-> SW> I am looking forward to your helps.
->
-> SW> Thanks in advance,
->
-> SW> Sally Wang
->
-> SW> ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
->
+Kevin
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
