@@ -1,77 +1,61 @@
-Subject: RE: Cramfs root file system
+From: "Georg Klug" <gklug@giga-stream.de>
+To: "caixupeng" <edmoon@huawei.com>,
+	<linuxppc-embedded@lists.linuxppc.org>
+Subject: AW: compile a linux kernel for ppc4xx, error message
+Date: Fri, 22 Nov 2002 08:27:57 +0100
+Message-ID: <FFECLICFNBJAHONLGAKMCEADCHAA.gklug@giga-stream.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Date: Fri, 22 Nov 2002 09:25:09 +0200
-Message-ID: <7899847F7C05BE43A0687AD18D97DA2207F286@srv_mail.azisa.co.za>
-From: "Flavio Pereira" <flavio.pereira@za.flextronics.com>
-To: "Dennis Khoo" <dkhoo@atmxdsl.com>,
-	"LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
+	charset="iso-8859-1"
+In-Reply-To: <001501c291c2$04745150$33690b0a@DBKQW41X>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all / Dennis
+Hi Edmoon,
 
->1)   in kernel file init/main.c 's dev_name_struct,  add entry for
-> "mtdblock", 0x1f00
->if it's not there already.
+the problem is most likely a wrong kernel source or a wrong .config.
+There is a nice little howto on the web, actualy posted here a long time
+ago. Try a google search with
+   howto kernel compile walnut
+and you'll find that posting.
+
+Kind regards,
+Georg Klug
+
+> Dear all,
 >
->2) in ppcboot =>setenv bootargs init=/linuxrc root=/dev/mtdblockx
-
-I added the mtdblock entry and, yes it seems to have helped. The kernel
-however now returns...
-
-mtdblock_open
-ok
-mtdblock: read on "initrd" at 0x400, size 0x400
-mtdblock: read on "initrd" at 0x0, size 0x1000
-mtdblock: read on "initrd" at 0x1000, size 0x1000
-mtdblock: read on "initrd" at 0x2000, size 0x1000
-mtdblock: read on "initrd" at 0x3000, size 0x1000
-wrong magic
-VFS: Mounted root (jffs filesystem) readonly.
-
-Ive looked at the kernel code, and it looks like it doesn't support a
-cramfs system only jffs (ROM systems anyway). Can anyone confirm whether
-Linux 2.4.4 supports cramfs for root file systems?
-
-Thanks
-Flavio Pereira
-
-
------Original Message-----
-From: Dennis Khoo [mailto:dkhoo@atmxdsl.com]
-Sent: Thursday, November 21, 2002 9:18 PM
-To: Flavio Pereira; LinuxPPC
-Subject: Re: Cramfs root file system
-
-Flavio,
-
-> Please append a correct "root=" boot option
-> Kernel panic: VFS: Unable to mount root fs on 02:00
+> I config the kernel as ppc4xx-->walnut ,a 405 based board. and make
+> zImage,then
+> I got the following error messages:
 >
-> Now, is it possible to do what Im trying to do, if so are there any
-> suggestions as to what I'm doing wrong?
+> {standard input}: Assembler messages:
+> {standard input}:44: Error: unsupported relocation against DCRN_EXISR
+> {standard input}:45: Error: unsupported relocation against DCRN_EXIER
+> {standard input}:72: Error: unsupported relocation against DCRN_EXIER
+> {standard input}:89: Error: unsupported relocation against DCRN_EXIER
+> {standard input}:106: Error: unsupported relocation against DCRN_EXIER
+> {standard input}:110: Error: unsupported relocation against DCRN_EXISR
+> {standard input}:25: Error: unsupported relocation against DCRN_EXIER
+> make[1]: *** [ppc4xx_pic.o] Error 1
+> make[1]: Leaving directory `/usr/src/src-linuxppc_2_4/arch/ppc/kernel'
+> make: *** [_dir_arch/ppc/kernel] Error 2
 >
-
-I saw the same error when I was trying to mount jffs2 as root.  Maybe
-your
-problem is similar to mine.
-
-My solution:
-
-1)   in kernel file init/main.c 's dev_name_struct,  add entry for
- "mtdblock", 0x1f00
-if it's not there already.
-
-2) in ppcboot =>setenv bootargs init=/linuxrc root=/dev/mtdblockx
-
-Hope this helps.
-
-Dennis Khoo
-Software Engineer
-Adapcom, Inc
+>
+> another question:
+>
+> who has successed in compiling a linux kernel for ppc440GP?
+>
+> I have made my ebony board run ppcboot correctly, and I want compile
+> and download a
+>
+> linux kernel to the ebony board.
+>
+> who can help me?
+>
+> thanks!
+>
+>             edmoon
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
