@@ -1,81 +1,43 @@
-Date: Thu, 6 Jul 2000 19:55:44 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Michael Lundkvist <ml@epact.se>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Going from 2.2.12 to 2.2.17pre10
-In-Reply-To: <qp66qji2pq.fsf@erbium.epact.se>
-Message-ID: <Pine.HPX.4.10.10007061943050.21326-100000@gra-ux1.iram.es>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Fri, 7 Jul 2000 10:17:25 +1200
+From: Gwyn Judd <b.judd@xtra.co.nz>
+To: DeRobertis <derobert@erols.com>
+Cc: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Fixing dead Xservcfers (was Re: seemingly random lock-up with kernel 2.2.17p7)
+Message-ID: <20000707101725.A2168@thislove.dyndns.org>
+References: <Pine.SGI.4.21.0007050845550.10655-100000@rainbow.uchicago.edu>; <20000706013650.A2546@thislove.dyndns.org> <Pine.SGI.4.21.0007050845550.10655-100000@rainbow.uchicago.edu> <20000706020342.B986@thislove.dyndns.org> <l03130300b58a3be9712a@[209.122.247.91]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <l03130300b58a3be9712a@[209.122.247.91]>; from derobert@erols.com on Thu, Jul 06, 2000 at 09:41:36AM -0400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-	Hi,
-
-> > What's your version of fdisk ?
+On Thu, Jul 06, 2000 at 09:41:36AM -0400, DeRobertis wrote:
+> At 2:03 AM +1200 on 7/6/00, Gwyn Judd wrote:
 >
-> It seems like Hollis Blanchard was right so I'm doing a reinstall with
-> 2.2.16 instead.
-
-Ok, never had any problems with SCSI since DMA always gets the byte order
-right ;-)
-
-> > Under 2.2.12 dd if=/dev/hda of=xxx bs=512 count=1 and see what comes out.
-> > Can PPCBUG actually boot from these disks ?
-> >
+> >This all sounds quite familiar. The lockups have happened with both xmms
+> >and mpg123. I have no idea if it is a full system lock or just X since I
+> >have no remote machine to ping it with, all I am able to do is force
+> >reboot.
 >
-> Nope. I think I'll go for Bugboot. Ramix also talked about the
-> possibility of modifying PPCBug to add support for the Ramix 233.
-
-Where is and what is Bugboot ?
-
-> > > fsmlabs Bitkeeper repository?
-> >
-> > I have 2.4.0-test2 running on an MVME2600, look at:
-> >
-> > 	ftp://vlab1.iram.es/pub/linux-2.4
-> >
-> > did not try the MVME2400 yet (they are all in use for real tasks, I'm
-> > waiting for more and have to develop on the 16Mb MVME2600 :-(). But I
-> > only have SCSI disks or NFSRoot.
-> >
+> All you need to do is have your scripts which start as reset the keyboard
+> mode to XLATE after the server terminates. A few lines of C code will do
+> this; I think there is even a binary to do it, too.
 >
-> OK. I'll try that on a MVME2400.
->
-> We have ~25 MVME2400 just lying around here since they haven't been
-> able to get VxWorks working properly on them yet. :)
->
-> > I have a 2.2.16 kernel compiled but never booted, I could give you R/O
-> > access to my BK trees if you want (but the machine on which they are is
-> > not up 100% of the time).
-> >
-> > 	Gabriel.
->
-> How much difference is there between that and the main kernel?
+> No idea why Linuxppc does not put this in the X start script.
 
-Quite a lot. A complete bootloader, drivers for VME and many small patches
-in the arch/ppc/kernel subtree. A diffstat of both patches gives:
+This is not the only problem that can occur. I installed the Xpmac
+server the other day and the most annoying thing it did was if it
+couldn't start up correctly for some reason (one of them was that I
+didn't have the 100dpi fonts installed) then it would immediately quit.
+This would cue init (or gdm I'm not sure which) to try to start it
+again. and again. This happened about 3 times a second rendering the
+system completely unusable. I was not able to change VC's or anything
+like that. Fortunately using someone else's suggestion I was able to use
+the "Magic Sysrq" key combo to at least reboot the system safely.
 
- 73 files changed, 19880 insertions, 478 deletions
-
-> The main reason I'm moving from the 2.2.12 is that it wasn't stable
-> under load on the MVME2400. I figured it was pointless to try to debug
-> it on an old kernel.
-
-I had to shut down an MVME2600 after 6 months of uptime with this kernel
-for hardware upgrade. It is used as a server for all the nfsroot machines
-and to compile all the software for these (and sometimes heavily swapping:
-3 compiles in parallel in 32 Mb or RAM are noticeable). The MVME2400 have
-never been under serious load, so I don't know if they have specific
-problems but the kernel is essentially the same (less drivers and
-filesystems).
-
-I have not heavily stress-tested 2.4.0-test2 (well recompiling kernels and
-performing bitkeeper patch imports is kind of stress testing I/O,
-especially with 16Mb), I had some filesystem problems in 2.3.50 but they
-have vanished it seems.
-
-	Gabriel.
+--
+Gwyn Judd (b.judd@xtra.co.nz)
+A sine curve goes off to infinity, or at least to the end of the blackboard.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
