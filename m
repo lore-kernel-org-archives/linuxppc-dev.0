@@ -1,26 +1,31 @@
-Message-ID: <38DFD121.173F5883@embeddededge.com>
-Date: Mon, 27 Mar 2000 16:22:41 -0500
-From: Dan Malek <dan@netx4.com>
+Subject: Re: kernel executing from flash
+To: robt@flyingpig.com (Rob Taylor)
+Date: Tue, 28 Mar 2000 10:04:10 +1000 (EST)
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <000001bf97ca$1a27d7f0$b400a8c0@eventhorizon> from "Rob Taylor" at Mar 27, 2000 09:54:46 AM
 MIME-Version: 1.0
-To: Tom Miles <tmiles@teltronics.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Swap space on Embedded Planet CLLF 860
-References: <7143C7BA3BFAD2119AAC0008C7094B9965043E@postoffice2.teltronics.com>
 Content-Type: text/plain; charset=us-ascii
+Message-Id: <20000328000410.6770E35610@elph.research.canon.com.au>
+From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Tom Miles wrote:
+> > For our (non-linux) embedded systems, if we're going to run from
+> > flash, we store the executable in flash uncompressed.  Price is an
+> > issue which favors RAM, but speed issues no longer favor RAM - the new
+> > intel burst flash is faster than RAM in one of our systems.
 
-> I am running linuxplanet-2.2.13.  I have since learned that the 860T Rev B3
-> silicon has a bug in the data cache and since I disabled the data caching
-> the kernel is stable.
+Rob Taylor writes:
+>
+> isn't it only faster for burst reads tho? that sort of speed increase
+> doesn't really help when running code..
 
-I must have screwed up....there should be an option to enable the "CPU6"
-software patches.  If not, I should probably post a patch......
+I think you might be mistaken here. Code accesses tend to be very linear, and
+since the Instruction cache loads entire lines at a time, burst accesses are a
+big win for code.
 
-
-	-- Dan
+Regards,
+Graham
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
