@@ -1,60 +1,43 @@
-Subject: Re: Internal interrupts on the MPC107
-From: Adrian Cox <adrian@humboldt.co.uk>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <3ED7EFB4.2050400@mvista.com>
-References: <1054119003.23151.23.camel@newt>  <3ED7EFB4.2050400@mvista.com>
-Content-Type: text/plain
-Date: 02 Jun 2003 12:46:37 +0100
-Message-Id: <1054554408.20568.86.camel@newt>
-Mime-Version: 1.0
+Message-ID: <D73A25AA6E54D511AD74009027B1110F3C086C@ORION>
+From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+To: "'XOL'" <xol@mail.ru>, linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Booting CLLF ppc862 board from flash
+Date: Mon, 2 Jun 2003 09:09:56 -0400 
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="koi8-r"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Sat, 2003-05-31 at 00:56, Mark A. Greer wrote:
+The Embedded Planet boards ship with a documentation CD that contains an
+executable called the Planet Core FLASH burner.  This program will allow you
+to burn the Linux kernel to FLASH.  Most Linux kernels have a small boot
+section that is smart enough to copy the kernel to the location it was
+compiled for and boot it.
+
+-----Original Message-----
+From: XOL [mailto:xol@mail.ru]
+Sent: Sunday, June 01, 2003 7:02 AM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Booting CLLF ppc862 board from flash
 
 
-> [snip]
->  My guess is
-> that your board's fw (or early kernel init code) is setting it up with
-> the correct value but on the other systems you mentioned, the fw doesn't
-> (and the reset value of 0x00 is returned).  Basically, if I'm
-> interpreting the manual correctly, you probably need to do something
-> other than count on the fw setting up that field in that reg correctly.
 
-For boards derived from the linuxppc_2_4_devel tree, everything works.
-I've now done kernel ports for several MPC107 based boards, all derived
-from that tree, which use the "new way" you describe below.
+Hello.
+Sorry for my probably stupid question.
+I'm new in embedded field.
 
-> [description of "old way" snipped]
+I have CLLF ppc862 board from EmbeddedPlanet.
+I have it running booting from tftp with root fs NFS mounted
+on one of the desktop Linux PC.
 
-I think I may force the driver to run in polled mode on kernels which
-use the "old way". Many of them fail to initialise the vector in the
-EPIC.
-
-> The "new way" of initializing the openpic uses the openpic_set_sources()
-> routine which allows you to select just the vectors you want to
-> initialize and assign them the IRQ values that you want (independent of
-> their offset).  Much nicer and it doesn't write to vectors/locations
-> that you don't want written.
->
-> The problem for an I2C driver is that the IRQ is now board specific.
->
-> So what to do?  Well, the board-specific file needs to initialize the
-> I2C vector.  Also, there has to be some mechanism for the board-specific
-> file to tell your driver what the IRQ is.  Maybe the best solution is to
-> have the board-specific code set up the vector field in the IIVPR0 reg
-> with the proper IRQ and then your driver won't need to change.  Seems
-> fairly clean but you'll have to hack the board-specific code of any
-> boards that will use the I2C driver.
-
-If there's any interest I could tidy up the driver and submit it into
-linuxppc_2_4_devel along with a patch that collects MPC107 configuration
-into one place.
-
-- Adrian Cox
-http://www.humboldt.co.uk/
+Now I want to get it running in standalone mode from Flash.
+My board has PCMCIA connector with Flash Card adapter. I have
+flash card of 64K. Also there are on-board flash 64K and 32K RAM.
+Are there any step-by-step howto about this issue.
+Thank you in advance.
+Best Regards.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
