@@ -1,31 +1,37 @@
-Date: Mon, 29 Sep 2003 15:58:45 +0200
-From: Alexander Hollinger <alexander.hollinger@gmx.net>
+From: Christophe.LINDHEIMER@fr.thalesgroup.com
+Message-ID: <66CE949D18BCB249ABE8D9AF48C4F1CE77770D@helios.gnv.tcc.thomson-csf.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: kernel module for debugging MPC82xx (and MPC8xx)
-Message-ID: <20030929135845.GD15740@jerle.local>
-References: <20030819215043.GA9970@jerle.local> <20030828182825.GD11805@jerle.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20030828182825.GD11805@jerle.local>
+Subject: Question about ramdisk.
+Date: Mon, 29 Sep 2003 16:07:50 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello!
+Hi.
 
-An updated version is available.
-Now, both MPC82xx and MPC8xx are supported.
-Project renamed to powerQUICC_proc.
+I am using where linux is running in flash.
+I would like to use a ramdisk to develop my application.
+So I make mount -t ramdisk /dev/rd/0 /rdisk to get my ramdisk.
 
-http://home.in.tum.de/~hollinge/projects/powerQUICC_proc.html
+The application is developed on my host computer and the only link between
+the board and the host is my Bdi2000.
 
+So I would like to copy my cross compiled application into the ramdisk on my
+target.
 
-Kind regards,
-Alexander Hollinger
+Is there a way to do that ?
 
---
-Alexander Hollinger (alexander.hollinger@gmx.net)
-ICN CP D NT SW3, Siemens AG
-Hoffmannstr. 51, 81359 Muenchen
+I guess that I need to know the @ of the ramdisk ?
+How can I get it ?
+
+Thanks
+
+Regards
+
+Chris
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
