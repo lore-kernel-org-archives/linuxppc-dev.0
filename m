@@ -1,41 +1,47 @@
-Message-ID: <3BF1939A.B96072AC@labs.mot.com>
-Date: Tue, 13 Nov 2001 15:41:46 -0600
-From: Steve Rossi <srossi@labs.mot.com>
+Date: 14 Nov 2001 03:00:45 -0000
+Message-ID: <20011114030045.2376.qmail@mailweb9.rediffmail.com>
 MIME-Version: 1.0
-To: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
-Subject: mmap & no cache regions 
-Content-Type: text/plain; charset=us-ascii
+From: "Sarnath  Kannan" <sparc64@rediffmail.com>
+Reply-To: "Sarnath  Kannan" <sparc64@rediffmail.com>
+To: "Dan Malek" <dan@embeddededge.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Re: IDE in Mode 1 (Sandpoint) how ?
+Content-type: text/plain;
+	charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi All -
+>
+> I forgot, is this an X2 or X3 (or X3b) version of the
+> Sandpoint?
+>
+  Dan, This is an X2 board. I am able to
+telnet to the machine and work cooly..But
+serial is dead slow and the reason is as u said,
+ISA interrupts.. They are not coming in.. Its
+very clear. After a small investigation, I found
+out that the serial chip times out on the
+interrupt and "rs_timer" prints output in polled
+mode. By changing the "Timeout value", I was
+able to get faster output on the serial line.
+  But the problem of ISA interrupts not being
+routed is still there. This is very irritating.
 
-I'm writing a driver for custom hardware on an 8xx based system. I'm
-using MontaVista's Journeyman 2.0 (2.4.2 kernel). The driver uses
-consistent_alloc to allocate a region of memory which is used for DMA. I
-mmap that region to user space (using remap_page_range) such that the
-user-level application can directly access the data that has been DMA'd
-from the device. I learned that consistent_alloc is not sufficent to
-guarantee cache coherency on the mmaped region - in fact I had to mark
-these pages PAGE_NO_CACHE in the user space application's memory map as
-well. Having figured that out, it all works great now - but my question
-is: do I need to pay attention to how I deallocate and unmap that
-space? I use consistent_free in the driver so that takes care of marking
-the pages cacheable again in the kernel level mapping - but is it safe
-to assume that the application's memory map will be destroyed so I don't
-have to worry about marking the pages in that map as cacheable again?
+Dan, I further noticed that "i8259_init" disables
+all 8259 interrupts during initialization.
+I thot this could be a reason and enabled all
+8259 interrupts in a seperate loop. Even that
+dint pay much except for a gush of ISA interrupts
+immediately after enabling.
+
+But what I am wondering is "How ISA interrupts
+tick" for mvista kernel, when all 8259 interrupts
+are disabled !! Am i missing sthg ?
 
 Thanks,
-Steve
-
---
--------------------------------------------------------
-Steven K. Rossi                     srossi@labs.mot.com
-Staff Engineer
-Multimedia Communications Research Laboratory
-Motorola Labs
--------------------------------------------------------
+Sincerely
+Sarnath
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
