@@ -1,25 +1,30 @@
-Message-ID: <3C4C2EB6.6F3ACADE@midrivers.com>
-Date: Mon, 21 Jan 2002 08:07:34 -0700
-From: Mark Pilon <mpilon@midrivers.com>
+Message-ID: <3C4C62B1.6DA79017@web.de>
+Date: Mon, 21 Jan 2002 19:49:22 +0100
+From: Frank Haverkamp <f.haverkamp@web.de>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: KERNELBASE & large memory systems
-References: <3C4A96D7.9010501@embeddededge.com>
+To: PowerPC Linux Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Critical Interrupt Handling
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I've heard that one shouldn't modify the definition of KERNELBASE
-as it screws up the MM code;
+Hi,
 
-I'm wondering how people out there are handling designing systems
-(and getting linux running) on large pools of memory -- like
-1 - 2 Gb or so.
+I have a 403GCX based board on which I have some devices connected
+hardwired to critical
+interrupts. We have ported Linux sucessfully to this board and it is
+running fine. Now I wonder
+if somebody else has looked into critical interrupt handling with the
+40x processors.
 
-0xc0000000 - 0xFFFFFFFF is 1Gb; has anyone redefined KERNELBASE
-lower to allow for more memory in a system?
+Does anybody has experience with this topic? And, does anybody of the
+current mentainers of
+the embedded PowerPC kernel intend to support this in the future?
 
-Mark
+Thanks,
+
+Frank Haverkamp
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
