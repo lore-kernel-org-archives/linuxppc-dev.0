@@ -1,67 +1,76 @@
-Message-ID: <38DAFBE8.10082684@ncal.verio.com>
-Date: Thu, 23 Mar 2000 21:23:52 -0800
-From: Henry Worth <haworth@ncal.verio.com>
+Message-Id: <200003240701.IAA00309@piglet.grunz.lu>
+Date: Fri, 24 Mar 2000 08:01:28 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: Synchronous SCSI at 10MB/s on Lombard? (fwd)
+To: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <38DA6E1D.F4F25255@execpc.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <bh40@calva.net>,
-        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: PB2000 (pismo) install feedback
-References: <20000323174416.031445@mailhost.mipsys.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
+Hi all,
+
+On  23 Mar, this message from Joseph Garcia echoed through cyberspace:
+> Derek Homeier wrote:
+>> I didn't know you could set it at some speed in between - I rather thought
+>> these were basically two different settings, with 5 or 10 MB/s being the
+>> nominal transfer rate, and actual transfer rating below that. According
+
+That's my understanding as well. The 5MB/s or 10 MB/s is the raw byte
+througput of the SCSI bus; for net rate, you have to count driver
+overhead, command overhead, idle times on the bus, disk slowness, etc...
+
+>> to dmesg my Orb drive is found and communicated at 10MB/s, thus the 6.6
+> ...
+>> that you shouldn't mix HDs and CDROMs, scanners etc. on one chain, the
+>> latter seem to tend to have worse SCSI implementation.
 >
-> On Thu, Mar 23, 2000, Henry Worth <haworth@ncal.verio.com> wrote:
->
-> >It's very timing sensitive, a slight rearrangment of the code eliminated
-> >the "burnout", but didn't fix the ongoing offb colormap problems. Adding
-> >a small delay between writing the index and the palette value fixed the
-> >colomap problem. I rearranged the code to just set the index once and
-> >then use the palette index register's auto-incrementing to avoid the
-> >index write and delay in the loop, and that worked as well. I think
-> >Ben is planning to use a read back of the index register to ensure the
-> >write is posted and and give enough of a delay.
-> >
-> >Does anyone know if any of the ATI chips don't have autoincrementing of
-> >the palette index? That's been a fairly standard feature of RAMDAC's
-> >for a long time. So I was a bit surprised to see the frame buffers
-> >explicitly setting the index on every iteration, especially since
-> >the race between writing the palette index and the data has been
-> >a common problem for a long time.
->
-> What bugs me is that we have no such delay in aty128fb.c and you didn't
-> see the problem occur. Looks like a 1 instruction timing (one eieio) is
-> enough, so I beleive reading back the index is enough. We didn't have
-> this problem with older r128, so this may be a side effect of the
-> swadowing of the 2 sets of palette registers in the M3
+> Thats interesting.  I will have to try that some time.  Right now, my chain has
+> the CDRW after the Syquest, and I never figured in the potential sync problems.
 
-Possibly, with the extra control logic and the need to minimize the
-gate count and power consumption for a mobile use, the control
-logic may be somewhat slower than most modern chips. And with
-all the integration and duplication, timing errors may send data
-off to some very nasty places. Then again the Pismo and Sawmill
-are cranking both CPU and I/O bus speeds up another notch, so
-perhaps some of these classic timing issues will start cropping
-up again.
+On my 7600's internal MESH, I had both hard drives (sync at 10MB/s) and
+the factory-installed CDROM (sync at 5MB/s) and never had any
+particular problem. SCSI host adapters do negotiate separate parameters
+per target; that's how you can mix narrow and wide devices on one bus,
+by the way.
 
-The code in aty128fb.c isn't quite as tight as the offb.c
-cases. In both aty128fb.c cases there is a statement between the
-index out and the data out that does a couple of shifts to form
-the palette data value, and there would be no advantage for the
-compiler to schedule it before the first out. A quick grep didn't
-find the definition for aty_st_8, is it completely identical to
-out_8, particularly with the macros used to form the address?
+> However, I recall one of my friends mentioning that 10M/s should not be possible
+> because the compact connector on powerbooks is missing those extra 12 or so pins
+> needed.  Maybe the Orb is reporting 10, but falling back or compensating for the
+> lack of pins.  Or maybe connectors have changed.  My chain's Syquest has a
+> Centronix connector, my RW has a 50 pin mini-trapezoid.  Could explain some
+> things.  Whatever works i guess.
 
-The change from the case fall through to completely seperate
-case blocks, which stopped the "burnout" effect in offb, would
-have removed a barrier for optimization and register use between
-setting the DAC select control and the palette index write.
-So the code that didn't create the 'burnout' should have had
-even less delay between out's. Which is really puzzling, yet
-it was completely recreatable.
+No, no, there's nothing with pin count involved here. Macs have always
+had narrow buses (i.e. 8bits wide), and the difference in pin count of
+the connector is compensated by having different numbers of ground
+pins. On good cable material, this should have no influence on
+throughput.
 
-Henry
+On  23 Mar, this message from Dan Bethe echoed through cyberspace:
+> 	I second the question.  And what does "safe" mean?  Could these
+> aggressive settings damage your data, your hardware, or both?  If it's
+> just data, then that's okay for me to try.  I'll turn it off when I
+> find corrupted data.
+
+Setting the speed too high might corrupt data, but will never damage
+hardware. As stated above, host and target negotiate a compatible set
+of settings; this should already guarantee valid data transfers. The
+reason Apple states 5MB/s as limit for external buses is to depend less
+on the quality of the cables involved, and to permit longer chains
+conneting many external devices. Think 'hassle-free plug&play'....
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
