@@ -1,85 +1,540 @@
-Date: Fri, 30 Mar 2001 17:14:10 -0300
+Date: Fri, 30 Mar 2001 19:14:26 -0300
 From: Marcio Koch <koch@inf.pucrs.br>
-To: LinuxPPC-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Linux 2.4.2 + mtd-snapshot-20010328 doesn't compile with modules enabled
-Message-ID: <20010330171410.A5539@sirrah.inf.pucrs.br>
+To: JFFS-Dev <jffs-dev@axis.com>,
+	LinuxPPC-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Linux 2.4.2 + mtd-snapshot-20010328 doesn't compile with modules enabled
+Message-ID: <20010330191426.A21037@sirrah.inf.pucrs.br>
+References: <20010330171410.A5539@sirrah.inf.pucrs.br> <20010330171556.C5539@sirrah.inf.pucrs.br>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: multipart/mixed; boundary="AWniW0JNca5xppdA"
+In-Reply-To: <20010330171556.C5539@sirrah.inf.pucrs.br>; from koch@inf.pucrs.br on Sex, Mar 30, 2001 at 17:15:56 -0300
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I'm trying to compile linux 2.4.2 with patch from mtd-snapshot-20010328 and
-modules enabled, exactly like in the MTD-JFFS-HOWTO.
+--AWniW0JNca5xppdA
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 
-But I aways get this error:
 
-[cut]
+Em 2001.03.30 17:15:56 -0300 Marcio Koch escreveu:
+> I'm trying to compile linux 2.4.2 with patch from mtd-snapshot-20010328
+> and
+> modules enabled, exactly like in the MTD-JFFS-HOWTO.
+>
+> But I aways get this error:
+>
+> [cut]
+>
+> make[1]: Entrando no diretório `/usr/local/src/linux-2.4.2/arch/ppc/8xx_io'
+> make all_targets
+> make[2]: Entrando no diretório `/usr/local/src/linux-2.4.2/arch/ppc/8xx_io'
+> /opt/hardhat/devkit/ppc/8xx/bin/ppc_8xx-gcc -D__KERNEL__
+> -I/usr/local/src/linux-2.4.2/include -Wall -Wstrict-prototypes -O2
+> -fomit-frame-pointer -fno-strict-aliasing -D__powerpc__ -fsigned-char
+> -msoft-float -pipe -ffixed-r2 -Wno-uninitialized -mmultiple -mstring
+> -mcpu=860 -I../8xx_io    -c -o commproc.o commproc.c
+> /opt/hardhat/devkit/ppc/8xx/bin/ppc_8xx-gcc -D__KERNEL__
+> -I/usr/local/src/linux-2.4.2/include -Wall -Wstrict-prototypes -O2
+> -fomit-frame-pointer -fno-strict-aliasing -D__powerpc__ -fsigned-char
+> -msoft-float -pipe -ffixed-r2 -Wno-uninitialized -mmultiple -mstring
+> -mcpu=860 -I../8xx_io    -c -o uart.o uart.c
+> uart.c: In function `serial_console_setup':
+> uart.c:2961: warning: zero-length format string
+> /opt/hardhat/devkit/ppc/8xx/bin/ppc_8xx-gcc -D__KERNEL__
+> -I/usr/local/src/linux-2.4.2/include -Wall -Wstrict-prototypes -O2
+> -fomit-frame-pointer -fno-strict-aliasing -D__powerpc__ -fsigned-char
+> -msoft-float -pipe -ffixed-r2 -Wno-uninitialized -mmultiple -mstring
+> -mcpu=860 -I../8xx_io    -c -o enet.o enet.c
+> rm -f 8xx_io.o
+> /opt/hardhat/devkit/ppc/8xx/bin/ppc_8xx-ld  -r -o 8xx_io.o commproc.o
+> uart.o enet.o
+> make[2]: Saindo do diretório `/usr/local/src/linux-2.4.2/arch/ppc/8xx_io'
+> make[1]: Saindo do diretório `/usr/local/src/linux-2.4.2/arch/ppc/8xx_io'
+> /opt/hardhat/devkit/ppc/8xx/bin/ppc_8xx-ld -T arch/ppc/vmlinux.lds -Ttext
+> 0xc0000000 -Bstatic arch/ppc/kernel/head_8xx.o init/main.o init/version.o
+> \
+> 	--start-group \
+> 	arch/ppc/kernel/kernel.o arch/ppc/mm/mm.o arch/ppc/lib/lib.o
+> kernel/kernel.o mm/mm.o fs/fs.o ipc/ipc.o arch/ppc/math-emu/math-emu.o \
+> 	drivers/block/block.o drivers/char/char.o drivers/misc/misc.o
+> drivers/net/net.o drivers/media/media.o  arch/ppc/8xx_io/8xx_io.o \
+> 	net/network.o \
+> 	/usr/local/src/linux-2.4.2/lib/lib.a \
+> 	--end-group \
+> 	-o vmlinux
+> arch/ppc/kernel/kernel.o(__ksymtab+0x210): undefined reference to
+> `sys_ctrler'
+> arch/ppc/kernel/kernel.o(__ksymtab+0x218): undefined reference to
+> `kd_mksound'
+>
+> That's my last .config I used to test, it's very simple, has only the
+> modules enabled, but no modules selected. And when I use the same .config
+> but with only the modules disabled :
+>
+> from this:
+>
+> CONFIG_MODULES=y
+> CONFIG_MODVERSIONS=y
+> CONFIG_KMOD=y
+>
+> to this:
+>
+> # CONFIG_MODULES is not set
+>
+> it works!
+>
+> I would thank any help.
+>
 
-make[1]: Entrando no diretório `/usr/local/src/linux-2.4.2/arch/ppc/8xx_io'
-make all_targets
-make[2]: Entrando no diretório `/usr/local/src/linux-2.4.2/arch/ppc/8xx_io'
-/opt/hardhat/devkit/ppc/8xx/bin/ppc_8xx-gcc -D__KERNEL__
--I/usr/local/src/linux-2.4.2/include -Wall -Wstrict-prototypes -O2
--fomit-frame-pointer -fno-strict-aliasing -D__powerpc__ -fsigned-char
--msoft-float -pipe -ffixed-r2 -Wno-uninitialized -mmultiple -mstring
--mcpu=860 -I../8xx_io    -c -o commproc.o commproc.c
-/opt/hardhat/devkit/ppc/8xx/bin/ppc_8xx-gcc -D__KERNEL__
--I/usr/local/src/linux-2.4.2/include -Wall -Wstrict-prototypes -O2
--fomit-frame-pointer -fno-strict-aliasing -D__powerpc__ -fsigned-char
--msoft-float -pipe -ffixed-r2 -Wno-uninitialized -mmultiple -mstring
--mcpu=860 -I../8xx_io    -c -o uart.o uart.c
-uart.c: In function `serial_console_setup':
-uart.c:2961: warning: zero-length format string
-/opt/hardhat/devkit/ppc/8xx/bin/ppc_8xx-gcc -D__KERNEL__
--I/usr/local/src/linux-2.4.2/include -Wall -Wstrict-prototypes -O2
--fomit-frame-pointer -fno-strict-aliasing -D__powerpc__ -fsigned-char
--msoft-float -pipe -ffixed-r2 -Wno-uninitialized -mmultiple -mstring
--mcpu=860 -I../8xx_io    -c -o enet.o enet.c
-rm -f 8xx_io.o
-/opt/hardhat/devkit/ppc/8xx/bin/ppc_8xx-ld  -r -o 8xx_io.o commproc.o
-uart.o enet.o
-make[2]: Saindo do diretório `/usr/local/src/linux-2.4.2/arch/ppc/8xx_io'
-make[1]: Saindo do diretório `/usr/local/src/linux-2.4.2/arch/ppc/8xx_io'
-/opt/hardhat/devkit/ppc/8xx/bin/ppc_8xx-ld -T arch/ppc/vmlinux.lds -Ttext
-0xc0000000 -Bstatic arch/ppc/kernel/head_8xx.o init/main.o init/version.o \
-	--start-group \
-	arch/ppc/kernel/kernel.o arch/ppc/mm/mm.o arch/ppc/lib/lib.o
-kernel/kernel.o mm/mm.o fs/fs.o ipc/ipc.o arch/ppc/math-emu/math-emu.o \
-	drivers/block/block.o drivers/char/char.o drivers/misc/misc.o
-drivers/net/net.o drivers/media/media.o  arch/ppc/8xx_io/8xx_io.o \
-	net/network.o \
-	/usr/local/src/linux-2.4.2/lib/lib.a \
-	--end-group \
-	-o vmlinux
-arch/ppc/kernel/kernel.o(__ksymtab+0x210): undefined reference to
-`sys_ctrler'
-arch/ppc/kernel/kernel.o(__ksymtab+0x218): undefined reference to
-`kd_mksound'
+After some more tests I discovered that the problem was not about the mtd
+patch. But only with the linux kernel 2.4.2.
 
-That's my last .config I used to test, it's very simple, has only the
-modules enabled, but no modules selected. And when I use the same .config
-but with only the modules disabled :
+The problem now is this:
 
-from this:
+The Linux Kernel 2.4.2 don't build for the MPC8xx BSE-IP Engine with
+modules enabled.
 
-CONFIG_MODULES=y
-CONFIG_MODVERSIONS=y
-CONFIG_KMOD=y
 
-to this:
+.config attached.
 
-# CONFIG_MODULES is not set
 
-it works!
-
-I would thank any help.
+Forgive the misunderstanding.
 
 Best regards,
 
 Marcio Koch
 koch@inf.pucrs.br
 PUCRS/ELinux
+--AWniW0JNca5xppdA
+Content-Type: application/octet-stream; charset=us-ascii
+Content-Disposition: attachment; filename=".config"
+
+#
+# Automatically generated by make menuconfig: don't edit
+#
+# CONFIG_UID16 is not set
+
+#
+# Code maturity level options
+#
+CONFIG_EXPERIMENTAL=y
+
+#
+# Loadable module support
+#
+CONFIG_MODULES=y
+CONFIG_MODVERSIONS=y
+CONFIG_KMOD=y
+
+#
+# Platform support
+#
+CONFIG_PPC=y
+# CONFIG_6xx is not set
+# CONFIG_4xx is not set
+# CONFIG_POWER3 is not set
+# CONFIG_POWER4 is not set
+CONFIG_8xx=y
+CONFIG_SERIAL_CONSOLE=y
+# CONFIG_RPXLITE is not set
+# CONFIG_RPXCLASSIC is not set
+CONFIG_BSEIP=y
+# CONFIG_TQM8xxL is not set
+# CONFIG_TQM860L is not set
+# CONFIG_TQM860 is not set
+# CONFIG_MBX is not set
+# CONFIG_WINCEPT is not set
+# CONFIG_PPC601_SYNC_FIX is not set
+# CONFIG_ALL_PPC is not set
+# CONFIG_SMP is not set
+CONFIG_MACH_SPECIFIC=y
+CONFIG_MATH_EMULATION=y
+
+#
+# General setup
+#
+# CONFIG_HIGHMEM is not set
+# CONFIG_MOL is not set
+# CONFIG_ISA is not set
+# CONFIG_EISA is not set
+# CONFIG_SBUS is not set
+# CONFIG_MCA is not set
+# CONFIG_PCI_QSPAN is not set
+# CONFIG_PCI is not set
+CONFIG_NET=y
+CONFIG_SYSCTL=y
+CONFIG_SYSVIPC=y
+# CONFIG_BSD_PROCESS_ACCT is not set
+CONFIG_KCORE_ELF=y
+CONFIG_BINFMT_ELF=y
+CONFIG_KERNEL_ELF=y
+# CONFIG_BINFMT_MISC is not set
+# CONFIG_HOTPLUG is not set
+# CONFIG_PCMCIA is not set
+
+#
+# Parallel port support
+#
+# CONFIG_PARPORT is not set
+
+#
+# Memory Technology Devices (MTD)
+#
+# CONFIG_MTD is not set
+
+#
+# Plug and Play configuration
+#
+# CONFIG_PNP is not set
+# CONFIG_ISAPNP is not set
+
+#
+# Block devices
+#
+# CONFIG_BLK_DEV_FD is not set
+# CONFIG_BLK_DEV_XD is not set
+# CONFIG_PARIDE is not set
+# CONFIG_BLK_CPQ_DA is not set
+# CONFIG_BLK_CPQ_CISS_DA is not set
+# CONFIG_BLK_DEV_DAC960 is not set
+# CONFIG_BLK_DEV_LOOP is not set
+# CONFIG_BLK_DEV_NBD is not set
+# CONFIG_BLK_DEV_RAM is not set
+# CONFIG_BLK_DEV_INITRD is not set
+
+#
+# Multi-device support (RAID and LVM)
+#
+# CONFIG_MD is not set
+# CONFIG_BLK_DEV_MD is not set
+# CONFIG_MD_LINEAR is not set
+# CONFIG_MD_RAID0 is not set
+# CONFIG_MD_RAID1 is not set
+# CONFIG_MD_RAID5 is not set
+# CONFIG_BLK_DEV_LVM is not set
+
+#
+# Networking options
+#
+CONFIG_PACKET=y
+# CONFIG_PACKET_MMAP is not set
+CONFIG_NETLINK=y
+CONFIG_RTNETLINK=y
+# CONFIG_NETLINK_DEV is not set
+# CONFIG_NETFILTER is not set
+# CONFIG_FILTER is not set
+CONFIG_UNIX=y
+CONFIG_INET=y
+CONFIG_IP_MULTICAST=y
+# CONFIG_IP_ADVANCED_ROUTER is not set
+CONFIG_IP_PNP=y
+CONFIG_IP_PNP_BOOTP=y
+# CONFIG_IP_PNP_RARP is not set
+# CONFIG_NET_IPIP is not set
+# CONFIG_NET_IPGRE is not set
+# CONFIG_IP_MROUTE is not set
+# CONFIG_ARPD is not set
+# CONFIG_INET_ECN is not set
+# CONFIG_SYN_COOKIES is not set
+# CONFIG_IPV6 is not set
+# CONFIG_KHTTPD is not set
+# CONFIG_ATM is not set
+# CONFIG_IPX is not set
+# CONFIG_ATALK is not set
+# CONFIG_DECNET is not set
+# CONFIG_BRIDGE is not set
+# CONFIG_X25 is not set
+# CONFIG_LAPB is not set
+# CONFIG_LLC is not set
+# CONFIG_NET_DIVERT is not set
+# CONFIG_ECONET is not set
+# CONFIG_WAN_ROUTER is not set
+# CONFIG_NET_FASTROUTE is not set
+# CONFIG_NET_HW_FLOWCONTROL is not set
+
+#
+# QoS and/or fair queueing
+#
+# CONFIG_NET_SCHED is not set
+
+#
+# ATA/IDE/MFM/RLL support
+#
+# CONFIG_IDE is not set
+# CONFIG_BLK_DEV_IDE_MODES is not set
+# CONFIG_BLK_DEV_HD is not set
+
+#
+# SCSI support
+#
+# CONFIG_SCSI is not set
+
+#
+# Network device support
+#
+CONFIG_NETDEVICES=y
+
+#
+# ARCnet devices
+#
+# CONFIG_ARCNET is not set
+# CONFIG_DUMMY is not set
+# CONFIG_BONDING is not set
+# CONFIG_EQUALIZER is not set
+# CONFIG_TUN is not set
+# CONFIG_ETHERTAP is not set
+# CONFIG_NET_SB1000 is not set
+
+#
+# Ethernet (10 or 100Mbit)
+#
+CONFIG_NET_ETHERNET=y
+# CONFIG_MACE is not set
+# CONFIG_BMAC is not set
+# CONFIG_GMAC is not set
+# CONFIG_NCR885E is not set
+# CONFIG_OAKNET is not set
+# CONFIG_NET_VENDOR_3COM is not set
+# CONFIG_LANCE is not set
+# CONFIG_NET_VENDOR_SMC is not set
+# CONFIG_NET_VENDOR_RACAL is not set
+# CONFIG_AT1700 is not set
+# CONFIG_DEPCA is not set
+# CONFIG_NET_ISA is not set
+# CONFIG_NET_PCI is not set
+# CONFIG_NET_POCKET is not set
+
+#
+# Ethernet (1000 Mbit)
+#
+# CONFIG_ACENIC is not set
+# CONFIG_HAMACHI is not set
+# CONFIG_YELLOWFIN is not set
+# CONFIG_SK98LIN is not set
+# CONFIG_FDDI is not set
+# CONFIG_HIPPI is not set
+# CONFIG_PPP is not set
+# CONFIG_SLIP is not set
+
+#
+# Wireless LAN (non-hamradio)
+#
+# CONFIG_NET_RADIO is not set
+
+#
+# Token Ring devices
+#
+# CONFIG_TR is not set
+# CONFIG_NET_FC is not set
+# CONFIG_RCPCI is not set
+# CONFIG_SHAPER is not set
+
+#
+# Wan interfaces
+#
+# CONFIG_WAN is not set
+
+#
+# Amateur Radio support
+#
+# CONFIG_HAMRADIO is not set
+
+#
+# IrDA (infrared) support
+#
+# CONFIG_IRDA is not set
+
+#
+# ISDN subsystem
+#
+# CONFIG_ISDN is not set
+
+#
+# Old CD-ROM drivers (not SCSI, not IDE)
+#
+# CONFIG_CD_NO_IDESCSI is not set
+
+#
+# Console drivers
+#
+
+#
+# Frame-buffer support
+#
+# CONFIG_FB is not set
+
+#
+# Input core support
+#
+# CONFIG_INPUT is not set
+
+#
+# Macintosh device drivers
+#
+
+#
+# Character devices
+#
+# CONFIG_VT is not set
+# CONFIG_SERIAL is not set
+# CONFIG_SERIAL_EXTENDED is not set
+# CONFIG_SERIAL_NONSTANDARD is not set
+CONFIG_UNIX98_PTYS=y
+CONFIG_UNIX98_PTY_COUNT=256
+
+#
+# I2C support
+#
+# CONFIG_I2C is not set
+
+#
+# Mice
+#
+# CONFIG_BUSMOUSE is not set
+# CONFIG_MOUSE is not set
+
+#
+# Joysticks
+#
+# CONFIG_JOYSTICK is not set
+# CONFIG_QIC02_TAPE is not set
+
+#
+# Watchdog Cards
+#
+# CONFIG_WATCHDOG is not set
+# CONFIG_INTEL_RNG is not set
+# CONFIG_NVRAM is not set
+# CONFIG_RTC is not set
+# CONFIG_DTLK is not set
+# CONFIG_R3964 is not set
+# CONFIG_APPLICOM is not set
+
+#
+# Ftape, the floppy tape device driver
+#
+# CONFIG_FTAPE is not set
+# CONFIG_AGP is not set
+# CONFIG_DRM is not set
+
+#
+# Multimedia devices
+#
+# CONFIG_VIDEO_DEV is not set
+
+#
+# File systems
+#
+# CONFIG_QUOTA is not set
+# CONFIG_AUTOFS_FS is not set
+# CONFIG_AUTOFS4_FS is not set
+# CONFIG_REISERFS_FS is not set
+# CONFIG_REISERFS_CHECK is not set
+# CONFIG_ADFS_FS is not set
+# CONFIG_ADFS_FS_RW is not set
+# CONFIG_AFFS_FS is not set
+# CONFIG_HFS_FS is not set
+# CONFIG_BFS_FS is not set
+# CONFIG_FAT_FS is not set
+# CONFIG_MSDOS_FS is not set
+# CONFIG_UMSDOS_FS is not set
+# CONFIG_VFAT_FS is not set
+# CONFIG_EFS_FS is not set
+# CONFIG_JFFS_FS is not set
+# CONFIG_CRAMFS is not set
+# CONFIG_RAMFS is not set
+# CONFIG_ISO9660_FS is not set
+# CONFIG_JOLIET is not set
+# CONFIG_MINIX_FS is not set
+# CONFIG_NTFS_FS is not set
+# CONFIG_NTFS_RW is not set
+# CONFIG_HPFS_FS is not set
+CONFIG_PROC_FS=y
+# CONFIG_DEVFS_FS is not set
+# CONFIG_DEVFS_MOUNT is not set
+# CONFIG_DEVFS_DEBUG is not set
+CONFIG_DEVPTS_FS=y
+# CONFIG_QNX4FS_FS is not set
+# CONFIG_QNX4FS_RW is not set
+# CONFIG_ROMFS_FS is not set
+CONFIG_EXT2_FS=y
+# CONFIG_SYSV_FS is not set
+# CONFIG_SYSV_FS_WRITE is not set
+# CONFIG_UDF_FS is not set
+# CONFIG_UDF_RW is not set
+# CONFIG_UFS_FS is not set
+# CONFIG_UFS_FS_WRITE is not set
+
+#
+# Network File Systems
+#
+# CONFIG_CODA_FS is not set
+CONFIG_NFS_FS=m
+# CONFIG_NFS_V3 is not set
+# CONFIG_ROOT_NFS is not set
+# CONFIG_NFSD is not set
+# CONFIG_NFSD_V3 is not set
+CONFIG_SUNRPC=m
+CONFIG_LOCKD=m
+# CONFIG_SMB_FS is not set
+# CONFIG_NCP_FS is not set
+# CONFIG_NCPFS_PACKET_SIGNING is not set
+# CONFIG_NCPFS_IOCTL_LOCKING is not set
+# CONFIG_NCPFS_STRONG is not set
+# CONFIG_NCPFS_NFS_NS is not set
+# CONFIG_NCPFS_OS2_NS is not set
+# CONFIG_NCPFS_SMALLDOS is not set
+# CONFIG_NCPFS_NLS is not set
+# CONFIG_NCPFS_EXTRAS is not set
+
+#
+# Partition Types
+#
+CONFIG_PARTITION_ADVANCED=y
+# CONFIG_ACORN_PARTITION is not set
+# CONFIG_OSF_PARTITION is not set
+# CONFIG_AMIGA_PARTITION is not set
+# CONFIG_ATARI_PARTITION is not set
+# CONFIG_MAC_PARTITION is not set
+# CONFIG_MSDOS_PARTITION is not set
+# CONFIG_SGI_PARTITION is not set
+# CONFIG_ULTRIX_PARTITION is not set
+# CONFIG_SUN_PARTITION is not set
+# CONFIG_SMB_NLS is not set
+# CONFIG_NLS is not set
+
+#
+# Sound
+#
+# CONFIG_SOUND is not set
+
+#
+# MPC8xx CPM Options
+#
+CONFIG_SCC_ENET=y
+# CONFIG_SCC1_ENET is not set
+CONFIG_SCC2_ENET=y
+# CONFIG_FEC_ENET is not set
+# CONFIG_ENET_BIG_BUFFERS is not set
+# CONFIG_8xxSMC2 is not set
+# CONFIG_8xxSCC is not set
+# CONFIG_8xx_COPYBACK is not set
+# CONFIG_8xx_CPU6 is not set
+
+#
+# USB support
+#
+# CONFIG_USB is not set
+
+#
+# Kernel hacking
+#
+# CONFIG_MAGIC_SYSRQ is not set
+# CONFIG_KGDB is not set
+# CONFIG_XMON is not set
+
+--AWniW0JNca5xppdA--
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
