@@ -1,32 +1,43 @@
-Message-Id: <200008030457.FAA15430@hyperion.valhalla.net>
-Date: Thu, 03 Aug 2000 05:56:54 +0100
-Subject: Re: 2.4.0-t5 lockup on shutdown.
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: William Blew <wblew@home.com>
-CC: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+From: Paul Mackerras <paulus@linuxcare.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <14729.3482.592712.436379@argo.linuxcare.com.au>
+Date: Thu, 3 Aug 2000 16:13:46 +1000 (EST)
+To: Keith Owens <kaos@ocs.com.au>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Where does ppc define __start___ksymtab?
+In-Reply-To: <28827.965112049@ocs3.ocs-net>
+References: <28827.965112049@ocs3.ocs-net>
+Reply-To: paulus@linuxcare.com.au
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Aug 3, 2000,  William Blew wrote:
-> Iain Sandoe wrote:
->>
->> Does anyone know the cause of the (sometimes) complete lock-up of 2.4.0-t5
-[snip]
+> I have been trying to find where ppc defines __start___ksymtab and
+> __stop___ksymtab symbols.  These delimit the __ksymtab entries for
+> module symbols.  On every other architecture that supports modules,
+> arch/xxx/vmlinux.lds contains lines like this
+>
+>   __start___ksymtab = .;	/* Kernel symbol table */
+>   __ksymtab : { *(__ksymtab) }
+>   __stop___ksymtab = .;
+>
+> I can find no equivalent lines for ppc in a stock 2.4.0-test5 source
+> tree yet ppc obviously defines them somewhere.  But where?
 
-> layer, the VIA (CUDA) interrupt dies *grin*.
+I think they must be defined automagically by the linker.  They aren't
+defined explicitly anywhere but we still end up with a __ksymtab
+section with the __start___ksymtab and __stop___ksymtab symbols
+defined at the beginning and end of it.
 
-as in 'just disappears' ? i.e. as if some driver has requested it be
-deleted?... this would certainly explain more than one phenomenon... (I
-could see that also causing sound flakiness too - since we need the cuda for
-that)...
+We can add those lines if you like, that's no problem.
 
-Note that I haven't used IDE (AHAIK) in the cases mentioned - all my disk,
-other than CDROM, is on SCSI... but I could try a controlled test (later).
+Paul.
 
-what else causes the interrupt to 'disappear'?
-Iain.
+--
+Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
++61 2 6262 8990 tel, +61 2 6262 8991 fax
+paulus@linuxcare.com.au, http://www.linuxcare.com.au/
+Linuxcare.  Support for the revolution.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
