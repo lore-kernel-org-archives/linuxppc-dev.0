@@ -1,71 +1,55 @@
-From: loic@myri.com
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Thu, 17 Jun 1999 00:23:58 +0000 (XXX)
-To: ultralinux@vger.rutgers.edu, linux-alpha@vger.rutgers.edu,
-        linuxppc-dev@lists.linuxppc.org
-Cc: feldy@myri.com
-Subject: ioremap, virt_to_phys and pcidev->base_address consistency issues
-Message-Id: <14184.12536.601868.330309@blue1.myri.com>
+Date: Wed, 16 Jun 1999 17:36:28 -0700
+Message-Id: <199906170036.RAA07978@pizda.davem.net>
+From: "David S. Miller" <davem@redhat.com>
+To: loic@myri.com
+CC: ultralinux@vger.rutgers.edu, linux-alpha@vger.rutgers.edu,
+        linuxppc-dev@lists.linuxppc.org, feldy@myri.com
+In-reply-to: <14184.12536.601868.330309@blue1.myri.com> (loic@myri.com)
+Subject: Re: ioremap, virt_to_phys and pcidev->base_address consistency issues
+References: <14184.12536.601868.330309@blue1.myri.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+   Date: 	Thu, 17 Jun 1999 00:23:58 +0000 (XXX)
+   From: loic@myri.com
 
-[ I am not currently subscribed to all the mailing-lists, sorry
-if this issue has been brought recently]
+   So what would be the right person to contact to try to make things
+   more consistent? Is there currently a standard way to map PCI
+   memory space both in the kernel and in user-space aside from using
+   some #ifdefs?
 
-Hello,
+The problem is that virt_to_phys and virt_to_bus mean two totally
+different things on architectures like sparc64 where PCI memory space
+is disjoint from the physical RAM space.
 
-I am looking for a simple way to map PCI memory space to both kernel
-and user-space, and to map kernel memory to user-space.
+In some cases you want the "physical" address as seen by the CPU, in
+other cases you want the "physical" address as seen by a bus mastering
+PCI device.  For PCI memory space these two values are different in
+both cases on some machines, and there is no public mechanism to deal
+with this.
 
-ioremap, virt_to_phys and the base_address field of the pci_dev
-structure have different meaning across architectures which makes it
-more difficult that needed, to support all the linux archs.
+Take the ncr53c8xx.c SCSI driver for example, it must deal with all of
+these issues because of how the scsi processor needs to touch it's own
+registers via PCI memory space transactions addressed to itself and
+the assosciated bus_dvma_to_mem() macros it defines per architecture.
 
-Here is the status of things as I understand it:
+I'll be frank and say there is nobody you can talk to in order to get
+this cleaned up for 2.2.x Linux, that simply isn't going to happen.
+Maybe for 2.3.x...
 
-ioremap function:
-  x86: 
-    take a physical==bus address (note there is both ioremap and
-    ioremap_nocache. On >= P6 processors, if the  kernel is not compiled
-    with mtrr support, the "cacheability" behaviour of plain ioremap may
-    depend on the BIOS, so you may want to use ioremap_nocache instead)
-  Alpha: 
-    take a virtual kernel address
-  sparc64:
-  powerpc:
-    take a physical address
-  
+Another issue is that all of the ISA/EISA drivers want to say:
+outb(0x370) or whatever and expect it to access standard ISA ports on
+all architectures, yet outb(pci_dev->base_address[0]) should work
+correctly too.  See where the problems are?
 
-pcidev->base_address:
-  x86:
-    base_adress register === bus address + type bits
-  alpha:
-    gives a "special address" that code the bus number + bus base
-      address" meant to be used with the alpha specific dense_mem function.
-  sparc64:
-     gives the kernel virtual address to access the device from kernel
-  powerpc:
-     has some hacks so that it gives the physical address for some devices,
-     gives the bus address the rest of the time
+Just use ifdefs for now, it will get cleaned up eventually, the "inner
+circle" of Linux developers know it is a problem but we're putting out
+much larger fires at the moment.
 
-virt_to_phys:
-  x86, Alpha, powerpc:
-     same than __pa() => give physical address
-  sparc64:
-     same than virt_to_bus => gives DMAable PCI bus address
-(so I just use __pa now instead of virt_to_phys).
-
-So what would be the right person to contact to try to make things
-more consistent? Is there currently a standard way to map PCI memory
-space both in the kernel and in user-space aside from using some
-#ifdefs? 
-
-Loic PRYLLI
-
-
+Later,
+David S. Miller
+davem@redhat.com
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
