@@ -1,34 +1,56 @@
-Date: Thu, 6 Jul 2000 02:17:18 +1200
-From: Gwyn Judd <b.judd@xtra.co.nz>
-To: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
+Message-Id: <200007051418.PAA26120@hyperion.valhalla.net>
+Date: Wed, 05 Jul 2000 15:18:49 +0100
 Subject: Re: seemingly random lock-up with kernel 2.2.17p7
-Message-ID: <20000706021718.A1398@thislove.dyndns.org>
-References: <20000706013650.A2546@thislove.dyndns.org> <Pine.SGI.4.21.0007050845550.10655-100000@rainbow.uchicago.edu> <20000706020342.B986@thislove.dyndns.org> <396341CE.71DDB938@relog.ch>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <396341CE.71DDB938@relog.ch>; from daenzer@relog.ch on Wed, Jul 05, 2000 at 04:10:22PM +0200
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: linuxppc-dev@lists.linuxppc.org
+CC: daenzerm@student.ethz.ch, b.judd@xtra.co.nz
+Mime-version: 1.0
+Content-type: text/plain; charset="ISO-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Jul 05, 2000 at 04:10:22PM +0200, Michel Dänzer wrote:
-
+Michel Dänzer wrote:
+> Gwyn Judd wrote:
+>>
+>> On Wed, Jul 05, 2000 at 08:51:09AM -0500, me@johngrimes.com wrote:
+>> > Gwyn,
+>> >       Might be related or might not but I have recently started having
+>> > troubles too with random locks.
+>> >       Now I am running 2.2.15 (but this started happening soon after the
+>> > upgrade)
+>> >       Now my error is not directly with the kernel though.  If I am in
+>> > the console it has never happened but only if I am in X.  In fact its X
+>> > that crashes but as no keys work it doesn't matter.  Now I always have
+>> > xmms open when I crash but it also might be a screensaver problem as it
+>> > always happens when the screensaver is one (which is the majority of the
+>> > time though).
+>> >       Does this sound similar?
+>> >       Do you have an ati rage 128gl card by chance?
+>> >       John
+>>
+>> This all sounds quite familiar. The lockups have happened with both xmms
+>> and mpg123. I have no idea if it is a full system lock or just X since I
+>> have no remote machine to ping it with, all I am able to do is force
+>> reboot. It happened also with 2.2.15 I think as well as 2.2.16
+>
 > What versions of X are you using? Someone reported lockups with the 4.0 r128
 > driver a long time ago and someone else suggested it might be bad interaction
 > between the graphics and sound devices.
 
-[gwyn@thislove:~]$ rpm -q XFree86
-XFree86-3.3.6-8a
+There is a little wierditude with sound.  I've seen X grind to a halt on a
+300MHz G3 with smaller buffer sizes - which may just be a manifestation of
+the more general problem:
 
-Looks like no dice there I'm afraid. I upgraded from 3.3.5-something a
-week or so ago to see if that would solve it but to no avail.
+Quote from Geert "Richard Zidlicky found a bug that made the driver always
+use 1 byte buffers, which gave very bad results on slow machines. It was
+fixed in 2.3.x."
 
---
-Gwyn Judd (b.judd@xtra.co.nz)
-But scientists, who ought to know
-Assure us that it must be so.
-Oh, let us never, never doubt
-What nobody is sure about.
-		-- Hilaire Belloc
+I'm on the case of back-porting the 2.3.xx dmasound stuff to 2.2.17pre7 -
+but don't hold your breath (there's a lot of understanding to gain on my
+part - because the sleep queue stuff changed).
+
+Iain.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
