@@ -1,30 +1,25 @@
-Message-ID: <3844CF14.8136F23B@263.net>
-Date: Wed, 01 Dec 1999 15:32:36 +0800
-From: Wang Yong <wung_y@263.net>
-Reply-To: wung_y@263.net
+Message-ID: <3844FBA1.6E353B36@switchboard.ericsson.se>
+Date: Wed, 01 Dec 1999 11:42:41 +0100
+From: Magnus Damm <damm@kieraypc01.p.y.ki.era.ericsson.se>
 MIME-Version: 1.0
-To: linuxppc embedded mail list <linuxppc-embedded@lists.linuxppc.org>
-Cc: linux embedded maillist <linux-embedded@waste.org>,
-        linux-ce-devel <linuxce-devel@linuxce.org>,
-        linux-ppc <linuxppc-dev@lists.linuxppc.org>
-Subject: ask for help
+To: wung_y@263.net
+CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: ask for help
+References: <3844A63D.E8BA9488@263.net>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi, 
-        would you pls. do me a favor. i want to mount a smallest minix
-on my ibm evaluation board(ppc401d2). it's big-endian, but i don't have 
-a big-endian desktop such as PMAC or SPARC to make the minix fs image.
-so, would you please make a fs image of minix(big-endian) with command
-"dd" and mail it to me. i want only the file system itself, no files
-contained in it.  if you have PMAC or any other big-endian desktop,
-please.
-        thank you in advance.
+I don't know about minix, but I've made a ramdisk
+with ext2 support on my x86 server and used it on a 8xx.
 
-regards,
-Wang
+I've never experienced any endian problems with that.
 
+That was a while ago though... Maybe things have changed..
+
+Cheers /
+
+magnus
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
