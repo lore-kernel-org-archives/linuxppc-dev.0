@@ -1,47 +1,46 @@
-Date: Wed, 11 Apr 2001 18:23:52 +0200 (CEST)
-From: Florin Boariu <florin@bnv-bamberg.de>
-To: David Edelsohn <dje@watson.ibm.com>
-Cc: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: another difference in gcc (2v) ? 
-In-Reply-To: <200104111456.KAA15100@makai.watson.ibm.com>
-Message-ID: <Pine.LNX.4.21.0104111819040.96-100000@wolverine>
+Message-ID: <00a101c0c2a9$264c2580$6c125acf@mrsl.com>
+From: "Tim Moloney" <moloney@mrsl.com>
+To: <linuxppc-dev@lists.linuxppc.org>,
+	<yellowdog-devel@lists.yellowdoglinux.com>
+Subject: Interrupt handling via OpenPIC
+Date: Wed, 11 Apr 2001 13:00:55 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="Windows-1252"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Sorry I jump in like this w/o atually knowing what you're talking about
-(I'm not familiar with PPC assembly language, and I didn't follow this
-thread), but I just heard the words "exception table" and "incorrect" and
-this attracted my attention: I'm now sure whether it's the same problem
-(or at least a similar one), but I had some strange segmentation faults
-while throwing some C++ exceptions in a project I'm working on. The same
-code runs without problems on an i586...
+I am writing a device driver for a custom PMC card, and I'm having
+trouble with the interrupt service routine.
 
-I wasn't able to fix them yet since I was in pressure of time, but one day
-I'll have to face them again -- and I'm really not looking forward to
-that.
+Although the PCI configuration block says that the board's interrupt
+is 9, I am receiving interrupt 3.  I know that the OpenPIC is supposed
+to remap the interrupts but I don't quite understand the process.
+I've looked at the board's users manual and skimmed the Linux kernel
+but I can't find a good example of what to do.
 
-Does this relate? If not, I'm sorry for the rude interruption...
+Can anyone provide pointers to documentation, example code, etc. that
+shows how I can reconcile what the kernel thinks the interrupt is with
+what in actually being generated?
 
-regards,
-florin.
+Additional info:
+I am developing on a Synergy Microsystems VSS4 board.  This is a
+quad-G4 VME board that has the following:
+  IBM MPIC-2 interrupt controller
+  Motorola MPC106 Grackle PCI bridge/memory controller
+  Symbios 53c885 Ethernet/SCSI controller
+  Tundra Universe II PCI-VME64 bridge
+  DEC/Intel 21554 PCI-PCI bridge
 
-On Wed, 11 Apr 2001, David Edelsohn wrote:
+Thanks for any help.
 
->
-> 	"subf" and "srawi" only set condition codes if the "Rc" bit is
-> set, e.g. "subf." and "srawi."
->
-> 	Given the two sequences of code you have sent, I think the problem
-> is tht the exception table is being initialized with incorrect labels.
->
-> David
->
->
->
+Tim Moloney
+
+ManTech Real-time Systems Laboratory
+2015 Cattlemen Road
+Sarasota, FL  34232
+(941) 377-6775 x208
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
