@@ -1,64 +1,69 @@
-Message-Id: <6.0.1.1.1.20040128112011.01b3fb50@192.168.2.1>
-Date: Wed, 28 Jan 2004 11:24:59 +0100
-To: Wolfgang Denk <wd@denx.de>
-From: Matteo Bortolin <matteo.bortolin@wawnet.biz>
-Subject: Re: Problem with i2c-algo-ibm_ocp driver on ppc405 board 
+Subject: RE: TLB and CSSBAR problems with MPC8540 and BDI2000
+From: "Matthew S. McClintock" <mattsm@arlut.utexas.edu>
+To: Milliorn Gary-rxcr80 <Gary.Milliorn@motorola.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <20040128091434.28ECCC108D@atlas.denx.de>
-References: <Your message of "Wed, 28 Jan 2004 09:25:40 +0100." <6.0.1.1.1.20040128085052.01b12d40@192.168.2.1>
- <20040128091434.28ECCC108D@atlas.denx.de>
+In-Reply-To: <5725AF6EE9FAD51195DC009027E377020B6562DD@az33exm35.corp.mot.com>
+References: 
+	 <5725AF6EE9FAD51195DC009027E377020B6562DD@az33exm35.corp.mot.com>
+Content-Type: text/plain
+Message-Id: <1075305441.1204.22.camel@chuck.arlut.utexas.edu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Date: Wed, 28 Jan 2004 09:57:21 -0600
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 10.14 28/01/2004, Wolfgang Denk wrote:
+On Wed, 2004-01-14 at 11:19, Milliorn Gary-rxcr80 wrote:
 
->Dear Matteo,
->
->in message <6.0.1.1.1.20040128085052.01b12d40@192.168.2.1> you wrote:
 > >
-> > This would mean that a kernel that use  i2c-algo-ibm_ocp.c and a i2c
-> > RTC-driver cannot work properly
-> > with CONFIG_RTC_11_MINUTE_MODE!!!
-> >
-> > Is this correct?
+> > Yep.  I have one now.  Make sure your u-boot image also has a TLB1
+> > entry for your "default" CCSRBAR.  Further, make sure your BDI init
+> > section doesn't move the CCSRBAR from the default value assumed by
+> > your u-boot image.  I had the latter correct, just didn't realize
+> > that a "TLB1 flash invalidate" command to the MMUCSR0 doesn't seem
+> > to honor the 'invalidate protect' in the TLB entry.  Everything
+> > works fine when you get all of the ducks in a row :-)
 >
->This is correct.  This  is  exactly  the  reason  why  we  added  the
->CONFIG_RTC_11_MINUTE_MODE config option in our kernel tree - with the
->official kernels you will ALWAYS crash, as there is no such option.
->
-> > If yes, how can I solve my problem?
->
->Do not enable CONFIG_RTC_11_MINUTE_MODE?
->
->Do you understand what 11 minute  mode  means?  And  do  you  really,
->really  want  such  a  behaviour?  In  almost all cases I've seen the
->accuracy of the external RTC was much better than that of the  system
->clock.  In  such  a case you may either just set the system time from
->the RTC at boot time (and then let  the  system  time  drift  out  of
->sync),  or  run NTPD to keep the system time synced with the RTC (the
->RTC being the normal). I have been told that there are  installations
->where  the  11 minute mode is being used (and believed to be useful),
->but I don't know any. Especially not in embedded systems.
->
->Best regards,
->
->Wolfgang Denk
->
->--
->See us @ Embedded World, Nuremberg, Feb 17 - 19,  Hall 12.0 Booth 440
->Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
->The light at the end of the tunnel is usually a "No Exit" sign.
+>   The TLB1 issue is due to the MPC85x0 errata "CPU4"; there's a s/w
+> workaround.  It's nice if BDI fixes it for you, but seems like it would
+> not be necessary.
 >
 
+	So I have noticed some things, maybe someone here can explain this.
+When If configure everything with my bdi2000 and attempt to boot u-boot
+my CPU will crash (COP freeze) when I get to the code that implements
+the software workaround that was mentioned above.
 
-thank you very much for your help!
+	However if I do not configure anything with the bdi2000, and boot
+u-boot, it will load just fine. I have even removed the code that causes
+the crash in u-boot, recompiled u-boot and with those changes u-boot
+will not crash the CPU. But, that same u-boot image will not boot if I
+do not have the bdi2000 attached.
 
-Matteo Bortolin
+	So I guess the question is, what could be configured that would cause
+this CPU to crash when the code for the errata was executed?
 
-DAVE Srl
+Here is the code for the workaround:
+
+/* invalidate MMU L1/L2 */
+/* Note: before invalidate MMU L1/L2, we read TLB1 Entry 0 and then
+ * write it back immediately to fixup a bug(Errata CPU4)  for this
+initial
+ * TLB1 entry 0,otherwise the TLB1 entry 0 will be invalidated.
+ */
+#if defined(CONFIG_MPC85xx_REV1)
+	lis	r2,0x1000
+	mtspr	MAS0,r2
+	tlbre
+	tlbwe
+	isync
+	li      r2, 0x001e
+	mtspr   MMUCSR0, r2
+	isync
+#endif
+
+--
+Matthew S. McClintock <mattsm@arlut.utexas.edu>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
