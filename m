@@ -1,31 +1,36 @@
-Date: Fri, 20 Jul 2001 10:10:15 +0200
-From: Olaf Hering <olh@suse.de>
-To: Giuliano Pochini <pochini@shiny.it>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: ISDN cards
-Message-ID: <20010720101015.A6183@suse.de>
-References: <20010719225238.8EC81DBB59@atlas.valhalla.net> <XFMail.20010720091407.pochini@shiny.it>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <XFMail.20010720091407.pochini@shiny.it>; from pochini@shiny.it on Fri, Jul 20, 2001 at 09:14:07AM +0200
+Date: Fri, 20 Jul 2001 11:22:44 +0200 (CEST)
+From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+To: Iain Sandoe <iain@sandoe.co.uk>
+Cc: "Joseph P. Garcia" <jpgarcia@execpc.com>,
+	Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: powermac (other ppc?) events
+In-Reply-To: <20010719223636.DAB40DBB56@atlas.valhalla.net>
+Message-ID: <Pine.LNX.4.10.10107201043460.32605-100000@zirkon.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Jul 20, Giuliano Pochini wrote:
-
+> Look, I don't have a proper opinion on how the keys are achieved ...
 >
-> What ISDN cards are known to work wiht LinuxPPC ?
+> ---
+>
+> all I want is that the sound driver is:
+>
+> 1/ called through the standard ioctl() for volume - however many "volumes"
+> you want to adjust.
+>
+> This is so that *your* interface will work with *any* dmasound-supported
+> hardware (without hacking dmasound for each chipset).
 
-http://www.sedlbauer.de/english/kommunikation/standard.htm
+That was my idea in this - have some sound event daemon watch for events
+and call the proper ioctl. What was with the sound driver only permitting
+a single open() at a time? Would aumix running block the sound
+event daemon's ioctl?
 
+	Michael
 
-Gruss Olaf
-
---
- $ man clone
-
-BUGS
-       Main feature not yet implemented...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
