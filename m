@@ -1,64 +1,74 @@
-Message-ID: <3D9A998F.9010606@ellemedia.com>
-Date: Wed, 02 Oct 2002 10:00:31 +0300
-From: Apostolos Meliones <meliones@ellemedia.com>
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Patch to recover from segmentation fault on HiP4 MPC8260 versions (for kernels 2.4.x, x<10)
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Yu Bo-BOYU1 <Bo.Yu@motorola.com>
+Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: 8260 configuration 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 01 Oct 2002 20:07:39 CDT."
+             <0B0A39652BB0D411BCCF00508B9512EC08AEB3FC@tx14exm05.ftw.mot.com>
+Date: Wed, 02 Oct 2002 09:09:26 +0200
+Message-Id: <20021002070931.AC53CFA98@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Here you may find a simple patch for 2.4 kernels up to version 2.4.10 to
-support the HiP4 versions of MPC82xx:
+Dear Bo,
 
-In arch/ppc/kernel/misc.S replace _GLOBAL(_get_PVR) with the following:
-
-_GLOBAL(_get_PVR)
-mfspr r3,PVR
-xor r17,r17,r17
-xor r16,r16,r16
-addi r17,r17,0x7FFF@l
-addi r16,r16,0x10@l
-slw r17,r17,r16
-ori r17,r17,0xFFFF@l
-and r3,r3,r17
-blr
-
-
-Best Regards
-
-Apostol
-
-
-----------------------------------------
-Dr. Apostol Meliones
-Ellemedia Technologies
-223 Syngrou Ave., 17121, Athens, Greece
-Tel: +30-10-9373095, Fax: +30-10-9370386
-
-
-Allen Curtis wrote:
-
->>We moved to a new kernel (we were using 2.4.7) to support the PVR of the
->>HiP4 versions of MPC826x, so we tested 2.4.12, 2.4.18 and 2.4.20. We did
->>our porting mostly on 2.4.20. We had almost everything there. However,
->>we encountered a serious error related to memory management regarding
->>one of our drivers that was based on a port from MPC860 coded for kernel
->>2.4.4. Alternatively, we kept on working in parallel on 2.4.7 to find
->>out and cancel the PVR checks that were instructing the kernel to use an
->>incorrect cpu among the several available processor versions. This was
->>responsible for the segmentation fault. We deceived the kernel to take
->>8264 for 8260 and this way the problem was solved !!
->>
+in message <0B0A39652BB0D411BCCF00508B9512EC08AEB3FC@tx14exm05.ftw.mot.com> you wrote:
 >
->Could you provide a patch for you modifications. If they are too ugly, just
->send them to me. I am interested in maintaining an updated kernel for the
->MPC processors.
+> I had boot code ( with vxWorks and it is based on EST8260 bsp) in my custom
+> board
+> already. I decide to download the linux object via tftp. But I have the
+> following
+> questions:
 >
->Thanks
->
->
+> 1. Do I have to configure IMMR as 0xF0000_0000 or higher. The default
+> configuration
+>     in our boot is 0x0F00_0000 ? Is this a hard requirement or not ? If so,
 
+Yes, this is a hard requirement.  See  the  Embedded  PowerPC  HOWTO,
+especially the part about the memory map.
+
+> why can't linux
+>     init code do so by writing to IMMR+0x101a8 ?
+
+Linux relies on certain initialization beind done by the firmware.
+
+> 2. How to specify the start address where linux runs when I build the zImage
+> ?
+
+The start address of the Linux kernel on PowerPC is fix - it's 0x0000.
+
+> 3. When I make xconfig, what configuration I must have in order to run ? I
+> certainly
+>    do not need VGA/HARD DISK/PCI (this board does not have pci devices).
+
+There is a default configuration that should you  get  started.  Just
+type:
+
+	$ make est8260_config
+	$ make oldconfig
+
+> 4. Is there any good website/paper/documentation about linux for 8260
+> platform.
+
+Not that I know.
+
+You may have a look a http://www.denx.de/re/DPLG.html though. Most of
+the things are not CPU specific.
+
+> 5. Can anyone access ftp.leo.org to get ELDK ? I can ping it but I cannot
+> ftp it today.
+
+Works for me.
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Status quo. Latin for "the mess we're in."
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
