@@ -1,34 +1,28 @@
-Date: Sun, 11 Jul 1999 13:24:26 +0200 (CEST)
+Date: Sun, 11 Jul 1999 13:28:08 +0200 (CEST)
 From: Geert Uytterhoeven <geert@geert.cs.kuleuven.ac.be>
 Reply-To: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-cc: Tom Rini <trini@disparity.net>,
-        Hollis R Blanchard <hollis+@andrew.cmu.edu>,
-        Mark Abene <phiber@radicalmedia.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: platinum video makes me cry...
-In-Reply-To: <4.2.0.58.19990709161235.03b8de80@mail.lauterbach.com>
-Message-ID: <Pine.LNX.4.10.9907111323200.392-100000@cassiopeia.home>
+To: Josh Huber <huberj@WPI.EDU>
+cc: "Timothy A. Seufert" <tas@mindspring.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Problems with the atyfb driver on Power Mac G3 (Possible fix)
+In-Reply-To: <14214.22225.201034.85545@cpu.wpi.edu>
+Message-ID: <Pine.LNX.4.10.9907111326260.392-100000@cassiopeia.home>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 9 Jul 1999, Franz Sirl wrote:
-> At 15:32 09.07.99 , Tom Rini wrote:
-> >Well, 1) Did the installer endup using no video driver? (I still don't
-> >have a CD pair, have to bug jeff again once i settle in) 2) iirc, about a
-> >month ago Geert (the video maintainer) was working towards his PhD and
-> >could have easily lost the mail. 3) Where is the patch anyhow, there'll no
-> >doubt be a kernel upgrade "soon" :)
+On Fri, 9 Jul 1999, Josh Huber wrote:
+> Perhaps this is a question for Geert to answer, but it appears as though 2d acceleration is not being used for scrolling text in xterms. As a demonstration, fire up a new xterm, make it real big, and try and ls -lR /
 > 
-> The fix is in 2.2.10vger (and was in later 2.2.9vger as well). Geert 
-> accepted it nearly immediately, but probably feeding it to 2.2.10linus 
-> didn't happen in time.
+> Now, it's been so long since I've used xpmac that I don't remember wether or not it performed said operation, but perhaps someone could try it out?
 
-I have to admit I haven't sent any single patch to Linus during the last few
-months. Sorry, I'm trying to get in sync again. Being about 2 weeks abroad
-is a terrible thing...
+I know.
+
+I haven't done anything on ATI acceleration in XF68_FBDev since December 1998.
+I just saw the last alpha of the 3.9 branch of XFree86 finally has support for
+ATI Mach64, so it may be a good idea to start working again on it (it time
+permits)...
 
 Greetings,
 
