@@ -1,40 +1,21 @@
-Date: Sun, 22 Aug 1999 18:30:18 -0400
-From: brad allison <jackal@aol.net>
-To: Multiple recipients of list <linuxppc-dev@lists.linuxppc.org>,
-        linuxppc-user@lists.linuxppc.org
-Subject: lost Button2 in upgrade to 2.2.10
-Message-ID: <Pine.SGI.4.00.9908221825100.5682-100000@osiris.office.aol.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: missing public symbol in glibc/sysdeps/powerpc/elf
+Reply-To: minyard@acm.org
+From: minyard@acm.org
+Date: 22 Aug 1999 22:58:59 -0400
+Message-ID: <m2wvungq30.fsf@morse.concentric.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+I'm not sure where to report this, but it is something missing in the
+powerpc version of glibc.  In the file
+glibc/sysdeps/powerpc/elf/start.S, the __data_start variable is not
+global, but it should be (at least it is for i386).  The weak alias
+data_start is available, but that is pretty dangerous to use.  I need
+this to get the boehm garbage collector working for libgcj.
 
-I upgraded my G3 450 to 2.2.10 today.  I've been running 2.2.6.
-
-I pulled the keyboard-2.2.10 and mouse-2.2.10 files and linked them in
-/etc/sysconfig correctly.
-
-Booted into linux without a problem.
-
-But now Button2 no longer works.  I'm using a Logitech MouseMan Wheel USB 
-3 button mouse.
-
-I ran xev to see what Button2 was mapped to.  Button1 shows up as Button1.
-Button3 shows up as Button3.  Button2 shows up as nothing.  xev registered
-nothing.
-
-Again, all three buttons worked correctly with 2.2.6.
-
--b
-
-
---
-AOL SAPI 		                        703.265.0908     AIM:jackal242
-http://jackal.fudge.org        `I was never more certain of how far away I was
-from my goal than when I was standing right beside it.' - Ethan Hawke, Gattaca
-
+Corey
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
