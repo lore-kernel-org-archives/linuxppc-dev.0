@@ -1,41 +1,56 @@
-Date: Wed, 9 Dec 1998 12:34:25 -0500 (EST)
-From: "Mark S. Mathews" <mark@absoval.com>
-To: LinuxPPC Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Cross compiling kernels.
-Message-ID: <Pine.LNX.3.96.981209121231.12326B-100000@tristar.cc.absoval.com>
+Date: Wed, 9 Dec 1998 13:06:43 -0600 (CST)
+From: Takashi Oe <toe@unlinfo.unl.edu>
+To: Martin Costabel <costabel@wanadoo.fr>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: XF68_FBDev and option keys (was Re: XF68_FBDev under MkLinux? and Re:  pre-R5&miscs)
+In-Reply-To: <366E47E0.24DD93F4@wanadoo.fr>
+Message-ID: <Pine.LNX.3.96LJ1.1b7.981209125522.374A-100000@selq119.unl.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello,
+Hi,
 
-I'm currently trying to build a cross compiler (hosted on x86) for
-building PPC kernels to run on a single board computer with an MPC850
-processor.  I've read a bunch of docs, built the cross compiler from
-3 different source trees, and looked at a _bunch_ of kernel stuff (docs
-and code). I still have a few unanswered questions:
+On Wed, 9 Dec 1998, Martin Costabel wrote:
 
-1) What kernel version is recommended to run the MPC8xx processors?  I've
-seen references to 2.1.129, but I'm not sure.
+> There was, in fact, an error message that I neglected. It came from the
+> line
+>     xkb_symbols     { include "symbols/macintosh"  };
+> in /usr/X11/lib/X11/xkb/keymap/macintosh.
+> I did not know that this had to be changed. 
+> 
+> I think this is a bug, it should be "symbols/macintosh/us" in the
+> standard distribution, and it is now "symbols/macintosh/fr" for me, and
+> this makes my French keyboard work in XF68_FBDev just as it had been
+> working in XPmac all the time. 
 
-2) What compiler/binutils packages are considered 'best' for this?
-The latest I've tried is binutils-2.9.1 and egcs 1.1b
+I wouldn't say it's a bug because Xpmac had no problem and your original
+installation was specifically talored to the likes of Xpmac in a way.
+But, anyway, I'm glad to know you can finally use the option key.
 
-3) Is there a recommended kernel release for running with the MPC8xx
-processors?  i.e. on the Moto MBX boards?
+> My two other problems persist: No mouse buttons 2&3 in XF68_FBDev (and
+> no, adb_buttons=1 in the boot command line is no solution!), neither in
 
-TIA,
-Mark
+Ok, in console (not in X), try "showkey".  This will show you the keycode
+and such for the console mode.  Pick a key or two that you like to use to
+emulate the middle and right buttons and find their keycodes in console.
+With that, use the option.  For example, if you want to keycode 113 for
+the middle button and keycode 115 for the right button, then
+	adb_buttons=113,115
+should do.  This is according to the kernel source that I got a few days
+ago but I think there was a mention of this option's usage sometime ago in
+linux-pmac list.
+
+> R4 nor in pre-R5; and mixed-up color palette in XPmac in pre-R5. The
+> latter problem would, of course, lose its importance if the former were
+> solved.
+
+I have no clue about the palette problem.
 
 
-Mark S. Mathews
-
-AbsoluteValue Software     Web:    http://www.absoval.com
-P.O. Box 941149            e-mail: mark@absoval.com
-Maitland, FL 32794-1149    Phone:  407.644.8582
-USA                        Fax:    407.539.1294
+Takashi Oe
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
