@@ -1,36 +1,33 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Subject: mpc8xx linux maintenance
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <OFDCF8FB00.DE8D6095-ON85256E94.004352D9-85256E94.00445CD8@nanometrics.ca>
-From: David Ho <DavidHo@nanometrics.ca>
-Date: Fri, 14 May 2004 08:26:42 -0400
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Date: Fri, 14 May 2004 15:29:43 +0200
+From: Marc Leeman <marc.leeman@barco.com>
+To: Wolfgang Denk <wd@denx.de>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: ppc-82xx_objcopy hangs
+Message-ID: <20040514132943.GI4043@smtp.barco.com>
+Reply-To: Marc Leeman <marc.leeman@barco.com>
+References: <20040513110725.GU4043@smtp.barco.com> <20040513161638.C3444C108D@atlas.denx.de>
+Mime-Version: 1.0
+In-Reply-To: <20040513161638.C3444C108D@atlas.denx.de>
+Content-Type: text/plain; charset=iso-8859-15
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+> Seems you version of objcopy is broken. Try using the native objcopy,
+> or the cross objcopy from the ELDK.
 
-Just wondering, do we have a person from Motorola or a well known embedded
-linux company that actively ensures the operation of the Linux kernel on
-mpc8xx, 2.6 in particular?
+Wolfgang,
 
-I noticed that is a lot of work being done by Montavista on the IBM PowerPC
-chips and Timesys is working heavily on the Motorola 82xx for the 2.6
-kernel.  But not that much noise is made from these companies in regard to
-the mpc8xx.  Should this be a concern?
+It seems you were right, your version of the GCC compiler does not
+produce this problem [1], while the MVista tools do [2]. I guess it's
+time to issue a bug report.
 
-Wolfgeng mentioned in his interview with Linux Device (
-http://linuxdevices.com/articles/AT2240586951.html) that 2.6 may be slow,
-but if there are so many 2.6 features that are beneficial to embedded
-development (http://www.linuxjournal.com/article.php?sid=7477), why is
-mpc8xx , as I see it, being somewhat left behind.
+[1] [malm@bpscltpd u-boot-1.1.1]$ ppc_82xx-gcc --version
+ppc_82xx-gcc (GCC) 3.2.2 20030217 (Yellow Dog Linux 3.0 3.2.2-2a_1)
+Copyright (C) 2002 Free Software Foundation, Inc., in ELDK
 
-Regards,
-
-David Ho
-Nanometrics, Inc
-
+[2] [malm@bpscltpd ppcboot]$ ppc_82xx-gcc --version
+ppc_82xx-gcc (GCC) 3.3.1 (MontaVista 3.3.1-3.0.13.0400526 2004-04-16)
+Copyright (C) 2003 Free Software Foundation, Inc., in MVista 3.1
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
