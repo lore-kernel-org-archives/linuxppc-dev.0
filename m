@@ -1,46 +1,46 @@
-Date: Mon, 8 May 2000 11:49:59 +0200 (CEST)
+Date: Mon, 8 May 2000 11:50:49 +0200 (CEST)
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
-cc: Daniel Jacobowitz <drow@false.org>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: problem with Makefile
-In-Reply-To: <Pine.LNX.3.96.1000507234646.3380B-100000@deepspace.mklinux.org>
-Message-ID: <Pine.LNX.4.10.10005081148230.312-100000@cassiopeia.home>
+To: james  woodyatt <jhw@wetware.com>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Help with cross-endian bitfields?
+In-Reply-To: <v03110702b53c10dcc4d9@[208.177.152.17]>
+Message-ID: <Pine.LNX.4.10.10005081150260.312-100000@cassiopeia.home>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 7 May 2000, David A. Gatwood wrote:
-> On Mon, 8 May 2000, Daniel Jacobowitz wrote:
-> > On Mon, May 08, 2000 at 01:26:05PM +0800, Rolf Liu wrote:
-> > >
-> > > current work
-> > > is to translate the Makefile of linux-ppc into a standard one, such as one
-> > > for windows-based
-> > > Makefile,which is meaningful to other standard "make" utilities,including
+On Mon, 8 May 2000, james  woodyatt wrote:
+> Daniel Jacobowitz <drow@false.org> wrote:
+> >On Fri, May 05, 2000 at 03:27:21PM -0400, jlquinn@us.ibm.com wrote:
+> >>
+> [...]
+> >> Can someone tell me what's going on here?  Am I going to have to have
+> >> ifdef's on these structs, or resort to mask macros, or is there a
+> >> reasonable solution here.
 > >
-> > There is a standard make.  It's POSIX, I believe.  The linux makefile
-> > is pretty close to it.  Why on earth would you want to use Microsoft or
-> > Borland tools (which are nmake, not make, IIRC) to build a kernel?
+> >As Dan Malek said, there is no defined ordering.  The compiler is free
+> >to do whatever it wishes.  You can't assume that.  (I think.)
+> [...]
 >
-> As a fun exercise?
+> It's absolutely true.
 >
-> Seriously, though, what would be good would be to modify the makefile to
-> eliminate all gnu extensions, i.e. converting it into a pure lowest-
-> common-denominator makefile (yes, it's probably POSIX).  That would allow
-> it to be built under other OSes, including Windoze, but also *BSD, Darwin,
-> MacOS X, etc.  That having been said, it's a pain in the backside to do
-> that sort of thing, so I wish you lots of luck.  ;-)
+> Not only is there no defined ordering, the ANSI standard says that it
+> doesn't even need to use bitfield operations in the machine code.  It's
+> allowed to pad arbitrarily between the bitfields.  It's allowed to
+> completely ignore the bitfield widths and treat the members like integers.
+> It's even allowed to order the very bits themselves in weird ways, if it
+> thinks the processor will like it better that way.
+>
+> Bitfields are just not even remotely portable.
+>
+> C structures should not be used to represent portable serializations of
+> external data.  Period.  Yes, they're convenient-- but your compiler and my
+> compiler don't have to agree on practically anything about them.
 
-WHY?!?
-
-I once read in a guide about writing makefiles (can dig up the reference if you
-want):
-
-    Don't try to write portable Makefiles, use a portable make (i.e. GNU make)
-
-And I agree with this...
+And we all use gcc to compile Linux kernels... So the only remaining issue is
+endianness.
 
 Gr{oetje,eeting}s,
 
