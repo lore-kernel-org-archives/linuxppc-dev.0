@@ -1,44 +1,44 @@
-Date: Sat, 14 Aug 1999 17:30:44 +0200 (CEST)
+Date: Sat, 14 Aug 1999 20:34:10 +0200 (CEST)
 From: Geert Uytterhoeven <geert@geert.cs.kuleuven.ac.be>
 Reply-To: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Otto Moerbeek <otto@cable.a2000.nl>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Design issues Keyspan serial PCI driver
-In-Reply-To: <37B46883.9EAFF03@cable.a2000.nl>
-Message-ID: <Pine.LNX.4.10.9908141606000.575-100000@cassiopeia.home>
+To: Jes Sorensen <Jes.Sorensen@cern.ch>
+cc: "David A. Gatwood" <dgatwood@mvista.com>, Paul.Mackerras@cs.anu.edu.au,
+        linuxppc-dev@lists.linuxppc.org, linux-fbdev@vuser.vu.union.edu,
+        rth@cygnus.com
+Subject: Re: [linux-fbdev] Re: readl() and friends and eieio on PPC
+In-Reply-To: <d3so5mdyta.fsf@lxp03.cern.ch>
+Message-ID: <Pine.LNX.4.10.9908142012050.1163-100000@cassiopeia.home>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 13 Aug 1999, Otto Moerbeek wrote:
-> after some struggling I now have a very first working version of the
-> Keyspan SX
-> serial card driver, but I do not think the code I wrote is ready for
-> publishing. To make a neat driver I have some design issues I want to
-> share with you. Hopefully this will help me making the right decisions
-> for the real driver.
+On 14 Aug 1999, Jes Sorensen wrote:
+> >>>>> "David" == David A Gatwood <dgatwood@mvista.com> writes:
+> David> On Fri, 13 Aug 1999, Paul Mackerras wrote:
+> >> Surely it should only take a couple of cycles to move a register to
+> >> another and clear it?  I agree it's a pain though.  Actually, with
+> >> gcc the asm statement that uses the eieio could just specify the
+> >> register (which one is it?) as an input and give it the value 0.
 > 
-> The Keyspan SX cards use a PLX9050 as PCI bridge to connect to an
-> ST16C654 UART. I found some patches for char/serial.c that support the
-> UART directly. So this part of the problem was solved easily.
+> David> For some reason, just loading the value isn't enough.  The code
+> David> that Gilbert put in as a workaround shortly before DR3 looks
+> David> like this:
 > 
-> But Keyspan choose to map the UART to PCI memory space using the 9050,
-> not PCI I/O space. Furthermore, for some unknown reason, the registers
-> of the UART are separated 0x80 apart. Since char/serial.c uses I/O
-> instructions to access the UART, I had to hack the driver to use readb()
-> and friends. I am also multiplying the offset to compensate for the
-> strange offsets.
+> David> #define eieio() __asm__ volatile("li 0,0: cmpwi 0,0; bne+ 0f;
+> David> eieio; 0:" : : : "0")
+> 
+> Defininf a C function with the name of a PPC specific assembler
+> function is pretty stupid. To the best of my knowledge wmb() is the
 
-Please also post your message on linux-kernel@vger.rutgers.edu, since this is
-of interest not only for Linux/PPC development.
+Well, David was talking about replacing the eieio() macro (which Linux/PPC had
+since ages) by something that works around bugs in the hardware.
 
-> The good news of course is, if I can resolve the above issues, I have a
-> driver that can access both I/O based and memory based PCI cards. The
-> start of proper PCI serial card support in the standard serial driver?
+> generic name for the thing you are looking for.
 
-That would be great!
+Time to start grepping in include/asm-alpha/system.h. Huh, Alpha AXP has no
+`rmb' mnemonic ;-)
 
 Greetings,
 
