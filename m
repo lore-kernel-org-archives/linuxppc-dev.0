@@ -1,43 +1,35 @@
-To: Tom Stefanski <tom.stefanski@seranoa.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Can't disassemble my device driver 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 04 Sep 2002 18:19:58 EDT."
-             <3D76870E.5244CED5@seranoa.com>
-Date: Thu, 05 Sep 2002 09:29:07 +0200
-Message-Id: <20020905072912.88A9711836@denx.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Linux on 8260 using ELDK..Help?!? 
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Thu, 5 Sep 2002 10:20:44 +0200
+Message-ID: <1E354700654661418593A0D6B5A9D41008943F@mail.azisa.co.za>
+From: "Flavio Pereira" <fpereira@azisa.com>
+To: "Wolfgang Denk" <wd@denx.de>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Tom,
+Hi Wolfgang
 
-in message <3D76870E.5244CED5@seranoa.com> you wrote:
->
-> I have a adatron bdi 2000 connected to my target board and have
-> successfully load the linux kernel and set breakpoint in schedule
-> However when I load my device driver, it's text section is a 0xD11D6060
-> and the kernel is a 0xC00xxxxx. When is disassemble any routine in my
-> driver, I get all zeros.
+> I recommend to return to the original code, and get this working. You
+> can probably use the driver in our  CVS  as  reference;  we  fixed  a
+> couple of issues for example in the area of BRG assignment.
 
-See the hints (and utility scripts) in  section  "8.2.2.  Dynamically
-Loaded   Device   Drivers   (Modules)"   of   our   documentation  at
-http://www.denx.de/doc/TQM8xxL/debugging.html
+I have returned to the original uart.c. Although it still kills my
+serial port it has nothing to do with the unable to open initial
+console. Will the original uart.c I still get logging in
+/var/log/messages and I can see it is still doing the same thing. Yes,
+uart.c is probably something that I will still have to look at, but it
+is not the root cause of my original problem. Any more suggestions would
+be appreciated since I feel I've hit the brick wall quite severely now.
+Besides file permissions (which Im conviced are fine now) what else
+could cause the kernel to not be able to open a console?
 
->  I have MMU xlate set in the config file and I program the mmu correctly
-> since I can break a schedule. Any help would be apprecciated
+Regards
+Flavio
 
-You also have to use PTBASE in combination with a kernel that updates
-these pointers. See the BDI2000 documentation.
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-In theory, there is no difference between  theory  and  practice.  In
-practice, however, there is.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
