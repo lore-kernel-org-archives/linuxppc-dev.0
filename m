@@ -1,13 +1,31 @@
-Message-ID: <A109131318C4D1119AC20060088DECE330F49E@amwmail.adaptivemicro.com>
+Message-ID: <A109131318C4D1119AC20060088DECE330F49F@amwmail.adaptivemicro.com>
 From: Lucinda Schafer <lucsch@adaptivemicro.com>
 To: diekema@bucks.si.com, linuxppc-embedded@lists.linuxppc.org
 Subject: RE: Software Emulation Kernel Panic--specific information
-Date: Wed, 21 Jun 2000 14:13:26 -0500
+Date: Wed, 21 Jun 2000 14:18:38 -0500
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Oops. One of my coworkers corrected me and asks:
+
+I looked into the data cache setting in the MPC823 and, as far as I know, it
+is disabled. Can you ask if there is something specific that we can look at
+to determine if the caches are disabled and if there is something in Linux
+that should be disabled?
+
+
+Thanks.
+
+-----Original Message-----
+From: Lucinda Schafer [mailto:lucsch@adaptivemicro.com]
+Sent: Wednesday, June 21, 2000 2:13 PM
+To: diekema@bucks.si.com; linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Software Emulation Kernel Panic--specific information
+
 
 
 - What processor are you using? MPC823
@@ -51,5 +69,6 @@ might of already answered these questions?
 - Can you boot to a stand alone shell?
 - Can you boot to multi-user?
 - What Linux bits are you using?
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
