@@ -1,66 +1,52 @@
-Message-ID: <387C73BA.4956CF1@apus.co.at>
-Date: Wed, 12 Jan 2000 13:29:46 +0100
-From: "Reni Pachernegg" <rene.pachernegg@apus.co.at>
+Message-ID: <387C76E6.7CAADBBE@switchboard.ericsson.se>
+Date: Wed, 12 Jan 2000 13:43:18 +0100
+From: Magnus Damm <damm@kieraypc01.p.y.ki.era.ericsson.se>
 MIME-Version: 1.0
-To: kd@flaga.is
+To: Ruedi.Hofer@ascom.ch
 CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Building Glibc
-References: <OFC4189FBA.BDDFDE4A-ON00256864.003F955A@flaga.is>
+Subject: Re: Antwort: Re: Antwort: 8xxrom wierdness, 2nd
+References: <0FO800BEL1WA5U@pmdf-it.hasler.ascom.ch>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-typing 'as -v' writes:
-GNU assembler version 2.9.1, using BFD version 2.9.1.0.25
-If this is what you mean, how can I get the version 2.9.5?
-Do I have to install a new compiler?
 
-Regards
-	Rene
+> - Do you have experience with the sandisk pc cards?
 
-kd@flaga.is wrote:
+Not with pc cards.
+But my compact-flash cards with converter works.
+I've got cf-cards from Sandisk, Viking and Mitsubishi.
+I posted about the wierd Viking card a few weeks ago...
+
+If anyone out there wants support for a certain ATA-card
+feel free to send them to me and I will make sure it works! =)
+
+If I were you would I have a look at the data-sheet for the 
+pc-card and verify that the ata registers are mapped at the right
+positions...
+
+SanDisk has got pretty nice CF manuals and I guess that their pc-card
+documentation is good too.
+ 
+> - I formatted the pc card on a win95 box. That should work, right?
+>   (At least the boot device list should mention something)
+
+It should work.
+ 
+>> ATA disk: 'SunDisk SDP'.
 > 
-> And of course what binutils. That was a stumbling block for me, i.e. if it
-> is glibc 2.1.2. Buildin glibc 2.1.2 on ppc requieres binutils later than
-> version (or equal) 2.9.4.
-> I used 2.9.5 with success.
-> 
-> K.D.
-> 
-> 
->                     Dan Dickey <ddickey@charter.net>
->                     Sent by:                                To:
->                     owner-linuxppc-embedded@lists.li        cc:
->                     nuxppc.org                              Subject:     Re: Building Glibc
-> 
-> 
->                     01/12/2000 02:54 AM
-> 
-> 
-> 
-> Marcus Sundberg wrote:
-> >
-> > "Rene Pachernegg" <rene.pachernegg@apus.co.at> writes:
-> >
-> > > Hello,
-> > >
-> > > When building the GNU libc on a cross-compiler (i686 --> PowerPc 603e)
-> > > I get the following linker error (current directory: elf):
-> > > ../libc_pic.a(init-first.os): In function '_dl_start':
-> > > init-first.os(.text+0xb8): multiple definition of '_dl_start'
-> > > dl-allobjs.os(.text0x0): first defined here Warning: size of symbol
-> > > '_dl_start' changed from 1576 to 16 in init-first.os collect2: ld
-> > > returned 1 exit status make[1]: *** [librtld.os] Error 1 make: ***
-> > > [elf/subdir_lib] Error2
-> > >
-> > > What can I do? Are there special linker/compiler options?
-> >
-> > What version of glibc are you using?
-> > How did you configure glibc?
-> > What make command line (s) did you use?
-> 
-> I'd also chime in with,
-> What version of the compiler are you using?
+> Boot device list:Card Not Ready 0x0
+
+It is good that it is able to parse the cis and find out
+that it is a ATA disk.
+
+It probably fails when it should send a identify command.
+
+You might need some spinup time if it is a mechanical drive.
+
+Cheers /
+
+magnus
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
