@@ -1,56 +1,33 @@
-Message-ID: <398FCA03.5EE01236@relog.ch>
-Date: Tue, 08 Aug 2000 10:51:15 +0200
-From: Michel Dänzer <daenzer@relog.ch>
-Reply-To: daenzerm@student.ethz.ch
-MIME-Version: 1.0
-To: Kostas Gewrgiou <gewrgiou@imbc.gr>
-CC: Michel Dänzer <daenzerm@student.ethz.ch>, dri-devel@lists.sourceforge.net,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: [Dri-devel] Re: Kind of success! (r128 on PPC (Re: LinuxPPC
- XServer))
-References: <Pine.LNX.4.21.0008072058480.21201-100000@idd-01.imbc.gr>
-Content-Type: text/plain; charset=iso-8859-1
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Using the Altivec GNU patches
+References: <p04310104b5b5105d93f2@[192.168.1.5]>
+From: Holger Bettag <hobold@Informatik.Uni-Bremen.DE>
+Date: 08 Aug 2000 11:46:21 +0200
+In-Reply-To: Justin Shore's message of Mon, 7 Aug 2000 20:31:02 -0500
+Message-ID: <8x4s4w13wy.fsf@s63.informatik.uni-bremen.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Kostas Gewrgiou wrote:
+Justin Shore <listuser@vinnie.ksu.ksu.edu> writes:
 
-> > > [...] you could run the r128 driver without fbdev to get 16 bits, but
-> > > the code to switch the framebuffer to do byteswapping is missing so the
-> > > colors will be wron (easy to add though).
-> >
-> > Where and how?
 >
->   Somewhere in R128ModeInit (or the functions that get called from it) will
-> do fine i think.
+> I'm curious, can I
+> use the Altivec enchanced gcc (available at www.altivec.org) to
+> optimize my compilations for those G4s?  I compile most of my own
+> software; would it actually utilize the patched gcc or would it
+> require special code changes to make it work?
 
-I'll be trying in R128{Save,Restore}Crtc... , adding a config field to the
-...Save... struct for the CONFIG_CNTL register. Does that make sense?
+You can use gcc-vec, but it won't automatically vectorize
+code. Programs currently have to be rewritten to make use of
+AltiVec. (I know of one commercial preprocessor application that does
+some automatic vectorization at the source code level, but it's been
+in beta stage for almost a year, I think.)
 
+The high level programming model for AltiVec is quite nice and not too
+hard to grasp; and gcc-vec does a respectable job generating good
+machine code. If you're a programmer, you should take a look.
 
-> About how now look at the following code from aty128fb that does the same
-> thing.
->
->     config = aty_ld_le32(CONFIG_CNTL) & ~3;
-> #if defined(__BIG_ENDIAN)
->     if (par->crtc.bpp >= 24)
->         config |= 2;    /* make aperture do 32 byte swapping */
->     else if (par->crtc.bpp > 8)
->         config |= 1;    /* make aperture do 16 byte swapping */
-> #endif
->     aty_st_le32(CONFIG_CNTL, config);
-
-Thanks, that code also caught my eye this morning on the train :)
-
-
-Michel
-
-
---
-Why drink & drive when you can smoke and fly???
-______________________________________________________________________________
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
+  Holger
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
