@@ -1,45 +1,34 @@
-Message-ID: <3E8C766D.70705@pacbell.net>
-Date: Thu, 03 Apr 2003 09:59:09 -0800
-From: David Brownell <david-b@pacbell.net>
+From: Darin.Johnson@nokia.com
 MIME-Version: 1.0
-To: "Kholodnyi, Andrei" <Andrei.Kholodnyi@fci.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>,
-	"'linux-usb-devel@lists.sourceforge.net'" <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] USB host and gadget drivers for MPC850
-References: <9CFB9DA5261CD611A29B00508B7890484A10D6@ex-deu-munich02.force.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: PPC405GP w/Linux?
+Date: Thu, 3 Apr 2003 10:02:50 -0800
+Message-ID: <F0B628F30F48064289D8CCC1EE21B7A80C4868@mvebe001.americas.nokia.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Kholodnyi, Andrei wrote:
-> Hi All,
+A couple of questions regarding building linux for PPC405GP, below.
+
+> From: ext Wolfgang Denk [mailto:wd@denx.de]
+> Subject: Re: ppc linux kernel 2.4.4 for ppc440/EBony using ELDK 2.0.2?
 >
-> We plan to use two MPC850 with USB point-to-point communication link between
-> them,
-> where one MPC850 will support host interface another one gadget interface.
-> Does USB gadget driver exist for MPC850?
+> The 2.4.4 LInux kernel as included in this version of the ELDK is not
+> suitable for 4xx systems. Please use  the  linuxppc_2_4_devel  kernel
+> tree instead; see http://penguinppc.org/dev/kernel.shtml
 
-There's no controller driver using the new gadget framework at
+Is there anyway to FTP this kernel without having to use BitKeeper or
+rsync (ie, they're blocked by firewall)?  I've got 2.4.18 with PPC
+relevant patches - is that sufficient?
 
-     http://kernel.bkbits.net/~david-b/
+I've been unable to find any files that support the PPC405GP ethernet
+driver (the MAL stuff).  Does this support exist, and if so what is the
+file that implements it?  I see that there is a config file in 2.4.18
+for the Walnut boards, so I assume there must be onboard ethernet support
+somewhere (or is this only supported by add-on PCI boards?).
 
-I'd merge patches for mpc850 support, if anyone offered ... :)
-
-Given that hardware support, you should be able to use those
-two gadget drivers with only minor tweaks.  And maybe that
-CDC Ethernet gadget driver would solve part of your problem.
-
-- Dave
-
-
-
-> As USB host driver we'll use Brad Parker's USB hci driver.
->
-> Best regards,
-> Andrei.
->
->
-
+Darin Johnson
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
