@@ -1,74 +1,49 @@
-Message-ID: <19991013082759.A7133@elmo.cygnus.com>
-Date: Wed, 13 Oct 1999 08:27:59 -0400
-From: Michael Meissner <meissner@cygnus.com>
-To: Gabriel Paubert <paubert@iram.es>, Bob Doyle <doyle@primenet.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: PowerPC function returning long long
-References: <38041087.62AB190@primenet.com> <Pine.HPX.4.10.9910130940210.7415-100000@gra-ux1.iram.es>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.HPX.4.10.9910130940210.7415-100000@gra-ux1.iram.es>; from Gabriel Paubert on Wed, Oct 13, 1999 at 10:06:02AM +0200
+Message-Id: <v0420550bb42a7373f2ac@[206.163.71.146]>
+In-Reply-To: <Pine.LNX.4.10.9910102158200.793-100000@idd-01.imbc.gr>
+References: <Pine.LNX.4.10.9910102158200.793-100000@idd-01.imbc.gr>
+Date: Wed, 13 Oct 1999 10:49:25 -0700
+To: Kostas Gewrgiou <gewrgiou@imbc.gr>, linuxppc-dev@lists.linuxppc.org
+From: Joel Klecker <jk@espy.org>
+Subject: Re: MySQL at Linux/PPC
+Cc: debian-powerpc@lists.debian.org, mysql@lists.mysql.com
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Oct 13, 1999 at 10:06:02AM +0200, Gabriel Paubert wrote:
-> 
-> 
-> 
-> On Wed, 13 Oct 1999, Bob Doyle wrote:
-> 
-> > 
-> > I was playing with the inline assembler and the ppc
-> > timebase facility and created the following function -
-> > 
-> > unsigned long long get_timebase(void) {
-> >         unsigned long tbu;
-> >         unsigned long tbl;
-> >         unsigned long junk;
-> >         __asm__ __volatile__ ("
-> > 1:      mftbu   %2
-> >         mftb    %1
-> >         mftbu   %0
-> >         cmpw    %0,%2
-> >         bne     1b"
-> >         : "=r" (tbu), "=r" (tbl), "=r" (junk));
-> >         return ((unsigned long long)tbu << 32) | tbl;
-> > }
-> 
-> Rather write: 
-> unsigned long long get_timebase(void) {
->         unsigned long long retval;
->         unsigned long junk;
->         __asm__ __volatile__ ("
-> 1:      mftbu   %1
->         mftb    %0+1
->         mftbu   %0
->         cmpw    %0,%1
->         bne     1b"
->         : "=r" (retval), "=r" (junk));
->         return retval;
-> }
+At 09:19 +0300 1999-10-13, Kostas Gewrgiou wrote:
+>After looking at Bug#: 5732 in RedHat's bugzilla,
+>(http://developer.redhat.com/bugzilla/show_bug.cgi?id=5732)
+>i found out why enabling LFS makes a bad mysql binary, quoting from the
+>description of the patch bug:
+>
+>   The configure scripts of patch-2.5 detect the LFS support in
+>   glibc-2.1, but due to the lack of a definition of
+>   _GNU_SOURCE, no prototypes for fseeko are declared. That way
+>   the compiler thinks fseeko is taking a 32bit argument for
+>   the offset, when in reality it takes a 64bit offset.
+>
+>After compiling MySQL with -D_GNU_SOURCE (with LFS enabled) the problems
+>went away, i am not sure if defining _LARGEFILE_SOURCE is supposed to give
+>the fseeko declarations but if it is then its a bug in the glibc headers.
 
-The above doesn't work with -mreg-names and/or -pedantic.  Instead you should
-write:
+The glibc documentation says that _LARGEFILE_SOURCE is supposed to 
+give the fseeko declaration.
 
-unsigned long long get_timebase(void) {
-        unsigned long long retval;
-        unsigned long junk;
-        __asm__ __volatile__ ("\n\
-1:      mftbu   %1\n\
-        mftb    %L0\n\
-        mftbu   %0\n\
-        cmpw    %0,%1\n\
-        bne     1b"
-        : "=r" (retval), "=r" (junk));
-        return retval;
-}
+  - Macro: _LARGEFILE_SOURCE
+      If this macro is defined some extra functions are available which
+      rectify a few shortcomings in all previous standards.  More
+      concrete the functions `fseeko' and `ftello' are available.
+      Without these functions the difference between the ISO C interface
+      (`fseek', `ftell') and the low-level POSIX interface (`lseek')
+      would lead to problems.
 
+      This macro was introduced as part of the Large File Support
+      extension (LFS).
 -- 
-Michael Meissner, Cygnus Solutions
-PMB 198, 174 Littleton Road #3, Westford, Massachusetts 01886
-email: meissner@cygnus.com	phone: 978-486-9304	fax: 978-692-4482
+Joel Klecker (aka Espy)                    Debian GNU/Linux Developer
+<URL:mailto:jk@espy.org>                 <URL:mailto:espy@debian.org>
+<URL:http://web.espy.org/>               <URL:http://www.debian.org/>
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
