@@ -1,43 +1,46 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-From: Jim Thompson <jim@musenki.com>
+Message-ID: <002501c1a649$ef2b4ba0$74b0f8cb@bluecafe>
+From: "ChangYl Lee" <bluecafe@sgi21.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Booting linux-2.4.18-pre7 with IBM405GP(rev E)
+Date: Sat, 26 Jan 2002 18:15:01 +0900
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15442.10795.560990.370617@gargle.gargle.HOWL>
-Date: Fri, 25 Jan 2002 22:01:47 -0600
-To: frederic.villeneuve@laposte.net
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Boot loader for Sandpoint3 with UnityX4 MPC8245
-In-Reply-To: <3C4BFED40005C880@mail.laposte.net>
-References: <3C4BFED40005C880@mail.laposte.net>
+Content-Type: text/plain;
+	charset="ks_c_5601-1987"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I've got PPCboot 1.1.5 running on mine.  I don't think Wolfgang has my
-patches installed in the tree yet.  I can forward them via email if
-you like.
+Hi all..!
+I'm going to develop new board based on a IBM405GP(rev. E) processor and I cloned linux_2_4_devel and tested it.
 
-GBIOS also is supposed to run on the Sandpoint.
+kernel version is 2.4.18-pre7 and default config is set to walnut_defconfig.
 
-Jim
+Attempting to debug, I've found out my kernel is stopped or hung at real address 0.
+Before jumping address 0, it seems to be nice and I can see my debug character with serial console.
+but I can't see my debug character start of "start_here:" at arch/ppc/kernel/head_4xx.S
 
-Frederic Villeneuve writes:
->
-> Hello,
->
-> I'm looking for a boot loader for the above configuration.
->
-> So far I'm able to boot the system under DINK32, download a kernel via the
-> serial port and boot the kernel with a root filesystem on a hard drive.
->
-> I would like to be able to directly boot the Linux kernel when the system
-> powers-up.
-> Can anyone give me some advices on where to find a boot loader that would be
-> compatible with the UnityX4 and MPC8245 ?
->
-> Thanks
->
-> Frederic Villeneuve
+I've read posted message titled "booting HardHat on IBM405GP" but still I can't understand.
+The output of the booting message looks like this:
+-----------------
+MON> go
+Linux porting start.... press any key..
+
+loaded at:     00250000 002E8238
+board data at: 002E5168 002E51A8
+relocated to:  002E5128 002E5168
+zimage at:     00255B30 002E4CCB
+avail ram:     002E9000 04000000
+
+Linux/PPC load: console=ttyS0,115200 root=/dev/ram rw debug ram=64m
+Uncompressing Linux...done.
+Now booting the kernel
+----------------
+
+Any help is greatly appreciated.
+
+------------------------------------------------------------
+Be happy..!
+ChangYl, Lee : bluecafe@sgi21.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
