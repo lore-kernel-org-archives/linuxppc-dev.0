@@ -1,34 +1,39 @@
-Subject: Re: Embedded LinuxPPC questions.
-To: brendan@dgs.monash.edu.au
-Date: Thu, 26 Aug 1999 11:33:48 +1000 (EST)
-Cc: linux-embedded@waste.org, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <37C36F87.4B23BE60@dgs.monash.edu.au> from "Brendan Simon" at Aug 25, 99 02:22:32 pm
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Message-Id: <19990826013348.69CBC65A@elph.research.canon.com.au>
-From: greyham@research.canon.com.au (Graham Stoney)
+Date: Wed, 25 Aug 1999 22:29:35 -0400
+From: Daniel Jacobowitz <drow@false.org>
+To: Takashi Oe <toe@unlserve.unl.edu>
+Cc: David Riley <happyoscar42@usa.net>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: BootX enhancement request
+Message-ID: <19990825222935.A20023@them.org>
+References: <37C35F10.6159B81C@usa.net> <Pine.A41.3.96LJ1.1b7.990825194557.72736C-100000@unlserve.unl.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.A41.3.96LJ1.1b7.990825194557.72736C-100000@unlserve.unl.edu>; from Takashi Oe on Wed, Aug 25, 1999 at 07:49:34PM -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Brendan,
+On Wed, Aug 25, 1999 at 07:49:34PM -0500, Takashi Oe wrote:
+> 
+> On Tue, 24 Aug 1999, David Riley wrote:
+> 
+> > Some of the drivers don't do video=xxxx.  I know controlfb doesn't.  Is there
+> > a _good_ reason for this, or does controlfb just not like me?
+> 
+> It's probably a simple oversight.  Last I checked,
+> controlfb does have the necessary code for "video=...", while
+> drivers/video/fbmem.c lacks an entry for controlfb to actually activate
+> the code.
 
-I'm working on a pretty similar project with an MPC860T embedded board; I'd be
-interested to hear how you get on, and I'll try to offer any tips I can. I'm
-using the gcc-2.95 compiler, with binutils-990809 and glibc-2.1.2pre2.
+Translation - I'm being far too lazy.  I have some other work for the
+controlfb underway, and I'm hoping to make some progress.
 
-I don't have hardware yet though, so at this stage all I can answer is:
+Dan
 
-Brendan Simon writes:
-> 5) Do the linux-2.2.x kernels compile with GCC-2.95.x ?
-
-Yes. I can't tell you if it runs, but I have compiled the 2.2.5 embedded kernel
-from:
-    ftp://linuxppc.cs.nmt.edu/pub/linuxppc/embedded/
-with gcc-2.95.
-
-Regards,
-Graham
+/--------------------------------\  /--------------------------------\
+|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
+|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
+|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
+\--------------------------------/  \--------------------------------/
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
