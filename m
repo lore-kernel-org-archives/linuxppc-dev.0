@@ -1,17 +1,18 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id B09F467A6D
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Apr 2005 05:16:22 +1000 (EST)
-In-Reply-To: <425429BF.1050706@nortel.com>
-References: <425429BF.1050706@nortel.com>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <2b5cd7aefbd800842537d00be729d169@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Wed, 6 Apr 2005 14:16:15 -0500
-To: "Chris Friesen" <cfriesen@nortel.com>
+Return-Path: <dave@frascone.com>
+Received: from mail.frascone.com (frascone.com [204.49.99.9])
+	by ozlabs.org (Postfix) with ESMTP id E3A7467A6C
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Apr 2005 05:29:58 +1000 (EST)
+Date: Wed, 6 Apr 2005 14:29:47 -0500
+From: David Frascone <dave@frascone.com>
+To: Greg Weeks <greg.weeks@timesys.com>
+Message-ID: <20050406142947.75e360ec@greenlantern.frascone.com>
+In-Reply-To: <4253E9CB.20009@timesys.com>
+References: <20050406081201.07b9bdce@greenlantern.frascone.com>
+	<4253E9CB.20009@timesys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
-Subject: Re: question on inline assembly and long long values
+Subject: Re: Bogomips?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,71 +22,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I'm having a similar need (for a different purpose), this post might be=20=
 
-useful:
+That nailed it (branch prediction)!
 
-http://gcc.gnu.org/ml/gcc/2005-04/msg00283.html
+------------------------------------------------
+# cat /proc/cpuinfo
+cpu             : e500
+revision        : 2.0 (pvr 8020 0020)
+bogomips        : 665.19
+Vendor          : Motorola SPS
+Machine         : mpc8540ads
+bus freq        : 666.666660 MHz
+PVR             : 0x80200020
+SVR             : 0x80300020
+PLL setting     : 0x4
+Memory          : 512 MB
+------------------------------------------------
 
-- kumar
+Thanks!
 
-On Apr 6, 2005, at 1:26 PM, Chris Friesen wrote:
+-Dave
 
-> I want to retrieve the msr (which is 64-bits) on a 970 when running in
-> 32-bit mode.=A0 I have the following bit of code that seems to work, =
-but
-> when looking at the code it always seems to use a suboptimal register
-> for the low word, and then it ends up having to copy it to the right
-> register to create a long long register pair.
->
-> static inline unsigned long long get_msr()
->  {
->  =A0=A0=A0=A0=A0=A0=A0 union {
->  =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 struct {
->  =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
-unsigned long low;
->  =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
-unsigned long high;
->  =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 } words;
->  =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 unsigned long long val;
->  =A0=A0=A0=A0=A0=A0=A0 } val;
->  =A0=A0=A0=A0=A0=A0=A0=A0 asm volatile( \
->  =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 "mfmsr=A0 =
-%0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 \n\t" \
->  =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 "rldicl =
-%1,%0,32,32=A0=A0=A0=A0=A0=A0 \n\t" \
->  =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 "rldicl =
-%0,%0,0,32=A0=A0=A0=A0=A0=A0=A0 \n\t" \
->  =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 : "=3Dr" =
-(val.words.low), "=3Dr" (val.words.high));
-> =A0=A0=A0=A0=A0=A0=A0 return val.val;
->  }
->
-> Using this code, the optimised assembly output of
->
-> =A0=A0=A0=A0=A0=A0=A0 unsigned long long a =3D asdf();
->  =A0=A0=A0=A0=A0=A0=A0 unsigned long long b =3D asdf();
->
-> is
->
-> =A0=A0=A0=A0=A0=A0=A0 mfmsr=A0 5
->  =A0=A0=A0=A0=A0=A0=A0 rldicl 0,5,32,32
->  =A0=A0=A0=A0=A0=A0=A0 rldicl 5,5,0,32
->  =A0=A0=A0=A0=A0=A0=A0 mr 6,0
->  =A0=A0=A0=A0=A0=A0=A0 mfmsr=A0 7
->  =A0=A0=A0=A0=A0=A0=A0 rldicl 9,7,32,32
->  =A0=A0=A0=A0=A0=A0=A0 rldicl 7,7,0,32
->  =A0=A0=A0=A0=A0=A0=A0 mr 8,9
->
-> I figure it should have been able to use registers 6/8 in the first
-> place, and save the extra moves.
->
-> Is there any way to help gcc optimise this?
->
->
->
-> Chris
->  _______________________________________________
-> Linuxppc-dev mailing list
->  Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+
+On Wed, 06 Apr 2005 09:53:15 -0400
+Greg Weeks <greg.weeks@timesys.com> wrote:
+
+> David Frascone wrote:
+> 
+> >Can this be right?  I'm getting This from a MPC-8260 (/proc/cpuinfo):
+> >
+> >------------------------------------------------
+> >cpu             : 82xx
+> >core clock      : 199 MHz
+> >CPM  clock      : 133 MHz
+> >bus  clock      : 33 MHz
+> >revision        : 1.1 (pvr 0081 0101)
+> >bogomips        : 133.12
+> >------------------------------------------------
+> >
+> >And this from a MPC-8540
+> >------------------------------------------------
+> >cpu             : e500
+> >revision        : 2.0 (pvr 8020 0020)
+> >bogomips        : 190.05
+> >Vendor          : Motorola SPS
+> >Machine         : mpc8540ads
+> >bus freq        : 666.666660 MHz
+> >PVR             : 0x80200020
+> >SVR             : 0x80300020
+> >PLL setting     : 0x4
+> >Memory          : 512 MB
+> >------------------------------------------------
+> >
+> >
+> >The second one looks way low . . . any ideas?
+> >  
+> >
+> Do you have cache turned on? Do you have branch prediction turned on? 
+> Branch prediction would be my guess as it's easy to miss.
+> 
+> Greg Weeks
+> 
+
+
+-- 
+David Frascone
+
+Closed Hearing for the Caption Impaired...
