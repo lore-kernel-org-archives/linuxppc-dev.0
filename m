@@ -1,36 +1,87 @@
-Date: Mon, 09 Sep 2002 20:00:33 -0400
-From: Dan Brennan <dmb8@optonline.net>
-Subject: Re: 8260 MCC Interrupt priority
-To: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
-Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Message-id: <3D7D3621.5C62AC56@optonline.net>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-References: <020c01c25820$89c23880$0700a8c0@pc005>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <054001c25874$fd0ea040$6100a8c0@udtech.net>
+From: "Luo Yanjun" <yjluo@udtech.com.cn>
+To: "Wolfgang Denk" <wd@denx.de>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <20020909100854.D2D16FA8B@denx.denx.de>
+Subject: Re: How to run SELF without Hardhat 2.0? 
+Date: Tue, 10 Sep 2002 10:51:11 +0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Which silicon version are you using, e.g., B.3? Read the errata for the
-part. Activity on FCC1 can wreak havoc on a very busy MCC.
+Hi Wolfgang,
 
-"Ing.Gianfranco Morandi" wrote:
+I successfully build all of the images, thanks very much.
+
+Regards,
+Luo Yanjun.
+
+
+> Dear Luo Yanjun,
 >
-> Hi to everybody,
+> in message <03e001c257e5$48cc96d0$6100a8c0@udtech.net> you wrote:
+> >
+> > I just installed ELDK and compiled the kernel, I don't know how to make
+a
+> > ramdisk,
+> > and I searched the list find that you have made a SELF can build kernel
+with
+> > ramdisk,
+> > so I want to try, but I found that the SELF just use Hardhat 2.0 as
+develop
+> > environment,
+> > I don't have Hardhat 2.0 now, only ELDK, so can I use SELF?
 >
-> I'm currently working on a custom board derived from EST8260. We are trying
-> to implement a device driver of MCC to control the interface with a
-> synchrounous PCM.
-> I have noted that when there is an interrupt on SCC1 (or FCCx) the latency
-> time of MCC interrupt increase. Now I'm really concerned about the
-> possibility to loose some frame due to an heavy use of such interfaces.
+> Of course you can.
 >
-> Do anybody knows if there is the possibility to avoid such behaviour (maybe
-> allowing an interrupt casting with the MCC ISR)?
+> You should see the SELF package as a construction kit  for  your  own
+> envrionment;  all  you  need to do to use SELF with our ELDK (version
+> 1.x) is to create a  new  file  "config/LIB_LIST.ELDK-1.0"  with  the
+> following content:
 >
-> Many thanks
+> ----- cut here -----
+> lib/ld-2.2.1.so
+> lib/ld.so.1
+> lib/libc-2.2.1.so
+> lib/libc.so.6
+> lib/libcrypt-2.2.1.so
+> lib/libcrypt.so.1
+> lib/libdl-2.2.1.so
+> lib/libdl.so.2
+> lib/libnsl-2.2.1.so
+> lib/libnsl.so.1
+> lib/libnss_compat-2.2.1.so
+> lib/libnss_compat.so.2
+> lib/libnss_files-2.2.1.so
+> lib/libnss_files.so.2
+> lib/libresolv-2.2.1.so
+> lib/libresolv.so.2
+> lib/libutil-2.2.1.so
+> lib/libutil.so.1
+> ----- cut here -----
 >
-> Gianfranco Morandi
+> Then make your board's config file look like this:
 >
+> CROSS_PREFIX    = ppc_8xx-
+> CDK_DIR         = /opt/eldk/usr
+> LIB_DIR         = /opt/eldk/ppc_8xx
+> LIBRARIES       = LIB_LIST.ELDK-1.0
+>
+> That's all.
+>
+>
+> BTW: The next version of our ELDK will contain an adapted version  of
+> SELF,  with pre-build images for all supported arcitectures. ELDK-2.0
+> is based on YD-2.3 and will be available in 2 or 3 weeks from now.
+>
+> Wolfgang Denk
+>
+> --
+> Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+> Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+> When you die, the first thing you lose is your life. The  next  thing
+> is the illusions.                       - Terry Pratchett, _Pyramids_
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
