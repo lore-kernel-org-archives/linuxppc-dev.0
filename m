@@ -1,49 +1,45 @@
-Message-ID: <20020219092656.26237.qmail@web9705.mail.yahoo.com>
-Date: Tue, 19 Feb 2002 01:26:56 -0800 (PST)
-From: None Atall <linux_meis@yahoo.com>
-Subject: Re: USB in RPXLITE 823
-To: Dan Malek <dan@embeddededge.com>
-Cc: Sarnath Kannan <sparc64@rediffmail.com>,
-	linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <3C712B65.3040305@embeddededge.com>
+Date: Tue, 19 Feb 2002 11:27:40 +0100 (MET)
+From: Gerard Basler <gbasler@ee.ethz.ch>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Missing "#ifdef" in arch/ppc/boot/simple/mics-embedded.c ?
+Message-ID: <Pine.GSO.4.43.0202191043500.13185-100000@tardis-b01.ee.ethz.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
- Yes, 8260 doesn't have USB controller.
-I had that message when I tried to configure
-port C for the ATM. (config utopia pins).
-I had the same problem. Ethernet stopped at the
-same point. When I configured pins via ppcboot,
-everything went ok..Strange..but...thats how I
-solved the problem...
-                     D. Meidanis
+Hi,
 
---- Dan Malek <dan@embeddededge.com> wrote:
-> None Atall wrote:
->
-> >  Well, I have come to that message too, but for
-> 8260.
->
-> The last time I check, nothing in the 8260 family
-> had
-> an integrated USB controller...........
->
->
-> 	-- Dan
->
+I don´t have any experience with embedded-linux and I had a while
+until I managed to compile the Kernel for a PPC405GP Walnut
+architecture.
+I always received a compile error in
+arch/ppc/boot/simple/misc-embedded.c
+saying that the function "serial_close" (line 228) wasn´t found.
+I looked at line 84:
 
+#ifdef CONFIG_SERIAL_CONSOLE
+com_port = serial_init(0, bp)"
+#endif
 
-=====
--------------------------------------------------
-  Dhmhtrios Meidanis
--Degree in Mathematics, University of the Aegean.
--Master in Computer Architecture and Digital
- Systems, University of Crete.
-  Greece.
--------------------------------------------------
+and changed
+
+serial_close(com_port);
+
+to
+
+#ifdef CONFIG_SERIAL_CONSOLE
+serial_close(com_port);
+#endif
+
+Now it compiles but I´m not sure if my changes make any sense.
+I think that I made some false settings in xconfig but I have no idea
+where.
+
+Greetings
+
+Gerard
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
