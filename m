@@ -1,266 +1,93 @@
-To: Eisenzopf Thomas <thomas.eisenzopf@siemens.at>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: crash loadin bash after booting linux on a MPC860ADS
-References: <D53137D1F3DDD211A3750800060DA313017023B1@viee122a.erd.siemens.at>
-From: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
-Date: 04 Apr 2000 18:49:42 +0200
-In-Reply-To: Eisenzopf Thomas's message of "Tue, 4 Apr 2000 18:07:00 +0200"
-Message-ID: <kfywvmdvmjd.fsf@kieraypc01.p.y.ki.era.ericsson.se>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Message-Id: <200004041653.SAA08051@denx.local.net>
+To: Stephane Laroche <stephane.laroche@sympatico.ca>
+cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Basic questions about PPC embedded developement under Linux 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 04 Apr 2000 11:15:34 EDT."
+             <38EA0716.47AA17BA@sympatico.ca>
+Date: Tue, 04 Apr 2000 18:53:23 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Eisenzopf Thomas <thomas.eisenzopf@siemens.at> writes:
-
-> Hello,
+In message <38EA0716.47AA17BA@sympatico.ca> you wrote:
 >
-> thanks again for the suggestions from some members of this mailing list. I
-> managed to reconfigure my kernel and now I can boot linux until the NFS root
-> filesystem is mounted.
+> What do you gain by "understanding" the linux image?
+
+On the MPC8xx a Linux kernel image is usually an ELF binary file with
+several sections, for instance like that:
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         00004854  00180000  00180000  00010000  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .rodata       000007bc  00184860  00184860  00014860  2**4
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  2 .data         0000031c  00186000  00186000  00016000  2**2
+                  CONTENTS, ALLOC, LOAD, DATA
+  3 .data.init    00000000  00187000  00187000  00017000  2**0
+                  CONTENTS
+  4 .bss          000031f8  00187000  00187000  00017000  2**2
+                  ALLOC
+  5 image         0007135d  00000000  00000000  00017000  2**0
+                  CONTENTS, READONLY
+  6 initrd        0008a502  00000000  00000000  0008835d  2**0
+                  CONTENTS, READONLY
+
+Most BDM debuggers I know will load only those sections  into  memory
+(RAM or FLASH) that have the LOAD flag set (which is perfectly OK for
+normal  binaries).  So  they will load only the text, rodata and data
+sections which just contain the boot loader code - they will not load
+the kernel image, nor the initial ramdisk image.
+
+There are several tricks to work around this  (for  instance  packing
+everything  into another ELF file where everything appears to be part
+of the text segment, or stripping the ELF header and load as "unknown
+binary format" when your tool supports it),  but  I  find  it  really
+"nice"  that  the  Abatron  loads  the  whole Linux image without any
+further tricks on my side.
+
+> Another question, how useful is the BDM interface once the kernel has
+> started running?  Can you leave GDB/BDI2000 connected to the target
+
+That depends on what you want to do. You will probably NOT be able to
+use it for source level kernel debigging - as soon as the MMU  is  on
+(which happens really early) you need to know what your addresses are
+"by hand".
+
+> while the linux kernel is running?  I've seen in previous messages on
+> the mailing list (by Dan Malek I believe) that a BDM debugger could
+> interfere with the kernel operation.
+
+This depends only on the configuration of the DER  register.  If  you
+set it to a sensible value (for instance, 0x2002000F) it is perfectly
+fine to keep the BDM debugger attached while running Linux (I'm doing
+this all the time).
+
+> I'm asking because I'd like to get a BDM debugger to help with writing
+> the boot code of a custom MPC860 platform and I'm wondering if the BDM
+> could thereafter be used to help debugging the linux kernel and user
+> mode modules.  Today, I'm assuming that the BDM can only be used for
+> boot code debugging and that a combination of xmon/gdbserver is better
+> for the rest.
 >
-> But after this the kernel tries to load the shell /bin/sh from NFS, at this
-> point the system crashes. My kernel includes the patches from
-> www.s4l.de/powerpc.html.
->
-> Please, can anyone help? I took the ramdisk.image.gz filesystem from
-> www.s4l.de/powerpc.html. This should be working for PowerPC(?). On the other
-> hand I tried to get my own filesystem (crosscompile bash, ...), but it
-> didn´t work. Perhaps someone could support me with a tarball of a filesystem
-> working on a MPC860ADS board with NFS root filesystem? How can I make a
-> filesystem on my own (on an Intel PC)?
->
->
-> 8xxROM 0.3.0
->
-> compiletime options:
-> board: ADS DRAM_50MHZ
-> disk: DISK_ROM
->
-> cpu: XPC860xxZPnnA3 at 48 MHz: 4Kbyte icache 4Kbyte dcache
->
-> <warning: cpu core has silicon bugs, check the errata>
+> Am I right?
 
-Well, guess you didn't do this...
-Either put your CPU on a hard surface, apply a sledgehammer to it,
-and get a new(er) one. ;)
-Or apply the following diff and see if things get better:
+Probably yes. However, you still have a  few  options  with  the  BDM
+debugger  like  setting  breakpoints on whole ranges of addresses you
+might want to "watch", etc.
 
-diff -u -r1.2 -r1.3
---- head.S	2000/01/11 18:13:31	1.2
-+++ head.S	2000/01/11 18:27:59	1.3
-@@ -883,11 +886,26 @@
-  * only perform the attribute functions.
-  */
- InstructionTLBMiss:
-+#ifndef NO_MPC8xxBUG_CPU6
-+	stw	r3, 8(r0)
-+	li	r3, M_TW_ADDR
-+	stw	r3, 12(r0)
-+	lwz	r3, 12(r0)
- 	mtspr	M_TW, r20	/* Save a couple of working registers */
- 	mfcr	r20
- 	stw	r20, 0(r0)
- 	stw	r21, 4(r0)
- 	mfspr	r20, SRR0	/* Get effective address of fault */
-+	li	r3, MD_EPN_ADDR
-+	stw	r3, 12(r0)
-+	lwz	r3, 12(r0)
-+#else /* NO_MPC8xxBUG_CPU6 */
-+	mtspr	M_TW, r20	/* Save a couple of working registers */
-+	mfcr	r20
-+	stw	r20, 0(r0)
-+	stw	r21, 4(r0)
-+	mfspr	r20, SRR0	/* Get effective address of fault */
-+#endif /* NO_MPC8xxBUG_CPU6 */
- 	mtspr	MD_EPN, r20	/* Have to use MD_EPN for walk, MI_EPN can't */
- 	mfspr	r20, M_TWB	/* Get level 1 table entry address */
- 	lwz	r21, 0(r20)	/* Get the level 1 entry */
-@@ -899,8 +917,19 @@
- 	 */
- 	tophys(r21,r21,0)
- 	ori	r21,r21,1		/* Set valid bit */
-+#ifndef NO_MPC8xxBUG_CPU6
-+	li	r3, MI_TWC_ADDR
-+	stw	r3, 12(r0)
-+	lwz	r3, 12(r0)
-+	mtspr	MI_TWC, r21	/* Set page attributes */
-+	li	r3, MD_TWC_ADDR
-+	stw	r3, 12(r0)
-+	lwz	r3, 12(r0)
-+	mtspr	MD_TWC, r21	/* Load pte table base address */
-+#else
- 	mtspr	MI_TWC, r21	/* Set page attributes */
- 	mtspr	MD_TWC, r21	/* Load pte table base address */
-+#endif /* NO_MPC8xxBUG_CPU6 */
- 	mfspr	r21, MD_TWC	/* ....and get the pte address */
- 	lwz	r21, 0(r21)	/* Get the pte */
+IMHO both approaches have their advantages, so I get best  efficiency
+by using both.
 
-@@ -920,18 +949,29 @@
- 	 */
- 	ori	r20, r21, 0x00f0
+Wolfgang Denk
 
-+#ifndef NO_MPC8xxBUG_CPU6
-+	li	r3, MI_RPN_ADDR
-+	stw	r3, 12(r0)
-+	lwz	r3, 12(r0)
-+#endif
- 	mtspr	MI_RPN, r20	/* Update TLB entry */
-
- 	mfspr	r20, M_TW	/* Restore registers */
- 	lwz	r21, 0(r0)
- 	mtcr	r21
- 	lwz	r21, 4(r0)
-+#ifndef NO_MPC8xxBUG_CPU6
-+	lwz	r3, 8(r0)
-+#endif
- 	rfi
-
- 2:	mfspr	r20, M_TW	/* Restore registers */
- 	lwz	r21, 0(r0)
- 	mtcr	r21
- 	lwz	r21, 4(r0)
-+#ifndef NO_MPC8xxBUG_CPU6
-+	lwz	r3, 8(r0)
-+#endif
- 	b	InstructionAccess
- #endif /* CONFIG_8xx */
-
-@@ -1009,6 +1049,12 @@
- 	b	00b			/* Try lookup again */
- #endif /* NO_RELOAD_HTAB */
- #else /* CONFIG_8xx */
-+#ifndef NO_MPC8xxBUG_CPU6
-+	stw	r3, 8(r0)
-+	li	r3, M_TW_ADDR
-+	stw	r3, 12(r0)
-+	lwz	r3, 12(r0)
-+#endif
- 	mtspr	M_TW, r20	/* Save a couple of working registers */
- 	mfcr	r20
- 	stw	r20, 0(r0)
-@@ -1022,6 +1068,11 @@
- 	 */
- 	tophys(r21, r21, 0)
- 	ori	r21, r21, 1	/* Set valid bit in physical L2 page */
-+#ifndef NO_MPC8xxBUG_CPU6
-+	li	r3, MD_TWC_ADDR
-+	stw	r3, 12(r0)
-+	lwz	r3, 12(r0)
-+#endif
- 	mtspr	MD_TWC, r21	/* Load pte table base address */
- 	mfspr	r21, MD_TWC	/* ....and get the pte address */
- 	lwz	r21, 0(r21)	/* Get the pte */
-@@ -1042,18 +1093,29 @@
- 	 */
- 	ori	r20, r21, 0x00f0
-
-+#ifndef NO_MPC8xxBUG_CPU6
-+	li	r3, MD_RPN_ADDR
-+	stw	r3, 12(r0)
-+	lwz	r3, 12(r0)
-+#endif
- 	mtspr	MD_RPN, r20	/* Update TLB entry */
-
- 	mfspr	r20, M_TW	/* Restore registers */
- 	lwz	r21, 0(r0)
- 	mtcr	r21
- 	lwz	r21, 4(r0)
-+#ifndef NO_MPC8xxBUG_CPU6
-+	lwz	r3, 8(r0)
-+#endif
- 	rfi
-
- 2:	mfspr	r20, M_TW	/* Restore registers */
- 	lwz	r21, 0(r0)
- 	mtcr	r21
- 	lwz	r21, 4(r0)
-+#ifndef NO_MPC8xxBUG_CPU6
-+	lwz	r3, 8(r0)
-+#endif
- 	b	DataAccess
- #endif /* CONFIG_8xx */
-
-@@ -1086,6 +1148,12 @@
-  */
- 	. = 0x1400
- DataTLBError:
-+#ifndef NO_MPC8xxBUG_CPU6
-+	stw	r3, 8(r0)
-+	li	r3, M_TW_ADDR
-+	stw	r3, 12(r0)
-+	lwz	r3, 12(r0)
-+#endif
- 	mtspr	M_TW, r20	/* Save a couple of working registers */
- 	mfcr	r20
- 	stw	r20, 0(r0)
-@@ -1106,6 +1174,11 @@
- 	 */
- 	tophys(r21, r21, 0)
- 	ori	r21, r21, 1		/* Set valid bit in physical L2 page */
-+#ifndef NO_MPC8xxBUG_CPU6
-+	li	r3, MD_TWC_ADDR
-+	stw	r3, 12(r0)
-+	lwz	r3, 12(r0)
-+#endif
- 	mtspr	MD_TWC, r21		/* Load pte table base address */
- 	mfspr	r21, MD_TWC		/* ....and get the pte address */
- 	lwz	r21, 0(r21)		/* Get the pte */
-@@ -1133,18 +1206,29 @@
- 	 */
- 	ori	r20, r21, 0x00f0
-
-+#ifndef NO_MPC8xxBUG_CPU6
-+	li	r3, MD_RPN_ADDR
-+	stw	r3, 12(r0)
-+	lwz	r3, 12(r0)
-+#endif
- 	mtspr	MD_RPN, r20	/* Update TLB entry */
-
- 	mfspr	r20, M_TW	/* Restore registers */
- 	lwz	r21, 0(r0)
- 	mtcr	r21
- 	lwz	r21, 4(r0)
-+#ifndef NO_MPC8xxBUG_CPU6
-+	lwz	r3, 8(r0)
-+#endif
- 	rfi
- 2:
- 	mfspr	r20, M_TW	/* Restore registers */
- 	lwz	r21, 0(r0)
- 	mtcr	r21
- 	lwz	r21, 4(r0)
-+#ifndef NO_MPC8xxBUG_CPU6
-+	lwz	r3, 8(r0)
-+#endif
- 	b	DataAccess
- #endif /* CONFIG_8xx */
-
-@@ -2214,7 +2307,19 @@
-         lwz     r9,MM-TSS(r4)           /* Get virtual address of mm */
-         lwz     r9,PGD(r9)              /* get new->mm->pgd */
-         addis   r9,r9,-KERNELBASE@h     /* convert to phys addr */
-+#ifndef NO_MPC8xxBUG_CPU6
-+	lis	r6, cmd_line@h
-+	ori	r6, r6, cmd_line@l
-+	li	r7, M_TWB_ADDR
-+	stw	r7, 12(r6)
-+	lwz	r7, 12(r6)
-+	mtspr   M_TWB, r9               /* Update MMU base address */
-+	li	r7, M_CASID_ADDR
-+	stw	r7, 12(r6)
-+	lwz	r7, 12(r6)
-+#else
-         mtspr   M_TWB, r9               /* Update MMU base address */
-+#endif /* NO_MPC8xxBUG_CPU6 */
-         mtspr   M_CASID, r5             /* Update context */
-         tlbia
- #endif
-
-
-//Marcus
 --
-Signature under construction, please come back later.
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Real programmers don't comment their code. It was hard to  write,  it
+should be hard to understand.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
