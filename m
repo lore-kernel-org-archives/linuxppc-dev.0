@@ -1,45 +1,70 @@
-Date: Mon, 24 Jul 2000 09:37:03 -0400 (EDT)
-From: "Peter R. Wood" <pwood@gordon.edu>
+Date: Mon, 24 Jul 2000 10:12:09 -0400 (EDT)
+From: John Grimes <jpgrimes@johngrimes.dyndns.org>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: compiling 2.4.0-test5 -pmu errors
-Message-ID: <Pine.LNX.4.21.0007240933360.11526-100000@dyn-133-196.gordon.edu>
+Subject: Xfree86 version 4.01
+In-Reply-To: <Pine.LNX.4.21.0007240938040.11526-100000@dyn-133-196.gordon.edu>
+Message-ID: <Pine.LNX.4.21.0007240959001.1920-100000@johngrimes.dyndns.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+Decided to try Xfree86 version 4 again (it had been a few
+months).  Recompiled, fixed up XF86Config and amazingly I now have 24 bit
+color, 1280x1024, r128 accelerated X.  It is decidely faster than Xpmac
+and its a great start.
 
-I'm trying to compile 2.4.0-test5 using the kernel.org sources, and all
-compilation seems to go well, up until it tries to link together vmlinux:
+But I want more :)
 
-arch/ppc/kernel/kernel.o: In function `pmac_set_rtc_time':
-arch/ppc/kernel/kernel.o(.text+0x8f48): undefined reference to
-`pmu_request'
-arch/ppc/kernel/kernel.o(.text+0x8f48): relocation truncated to
-fit: R_PPC_REL24 pmu_request
-arch/ppc/kernel/kernel.o(.text+0x8f58): undefined reference to `pmu_poll'
-arch/ppc/kernel/kernel.o(.text+0x8f58): relocation truncated to
-fit: R_PPC_REL24 pmu_poll
-make: *** [vmlinux] Error 1
+For some reason I can not get any other mode to work
+(i.e. 640x480,1024x768, 800x600).  If any would fail I would expect it to
+be 1280x1024 not the smaller modes.  I have no modelines defined, just
+letting XF86 decided which modes to use.  Any ideas why the defaults don't
+work?
 
-I thought perhaps this meant I should include the PMU adb driver, which
-seems silly, since I am using a SuperMac J700, and the PMU is a powerbook
-driver... but I went and configured that in, recompiled, and the kernel
-linked just fine. However, it hangs on boot.  Why is this required to
-compile?  I suppose the hang on boot could be due to some other issue. Any
-suggestions?
+Next is getting multiple monitors (Xinema) to work.  I know there has
+been
+discussion of this on the list.
 
-Thanks,
+First how do I find out the bus address of my internal video?  It doesn't
+show up in /proc/pci although it is in /proc/fb.  This is on a
+highly upgraded powercenter.
 
-Peter
+Also, I seem to have not saved it as I had thought, but does anyone have
+an example XF86Config file for multiple monitors?
+
+Congrats to the people who have worked on this, it is definetely an
+improvement.
+
+							john
+
+
+
+
+
+On Mon, 24 Jul 2000, Peter R. Wood wrote:
+
+>
+> Regarding my last message, please Cc: any replies to me, as I am receiving
+> in digest mode. Thanks.
+>
+> Peter
+>
+> --
+> Peter R. Wood          pwood@gordon.edu
+> Computer Science       | Lightning    |
+> Gordon College         | Samurai      |
+> Wenham, MA             | Action!!!!!! |
+>
+>
+>
 
 --
-Peter R. Wood          pwood@gordon.edu
-Computer Science       | Lightning    |
-Gordon College         | Samurai      |
-Wenham, MA             | Action!!!!!! |
+           John Grimes - Mission Planner for Chandra X-Ray Telescope
+Phone 	(H) 617-591-1393	(W) 617-496-7663	(Fax) 617-495-7356
+Email 	me@johngrimes.com	Web	http://www.johngrimes.com
+Pager	1-800-473-6312 		Alphanumeric  4736312@mobilecomm.net)
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
