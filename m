@@ -1,19 +1,15 @@
-Return-Path: <wd@denx.de>
-Received: from mailout11.sul.t-online.com (mailout11.sul.t-online.com
-	[194.25.134.85]) by ozlabs.org (Postfix) with ESMTP id 6699D2BEA0
+Return-Path: <samlinuxppc@yahoo.com.cn>
+Received: from web15603.mail.cnb.yahoo.com (web15603.mail.cnb.yahoo.com
+	[202.165.102.57]) by ozlabs.org (Postfix) with SMTP id BDDF72BEA0
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 27 Nov 2004 05:24:36 +1100 (EST)
-To: ivica@asist-traffic.com
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 26 Nov 2004 11:48:01 +0100."
-	<41A709E1.4050608@asist-traffic.com>
-Date: Fri, 26 Nov 2004 15:36:56 +0100
-Sender: wd@denx.de
-Message-Id: <20041126143701.98123C1430@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC5200 toolchain test 
+	Sat, 27 Nov 2004 16:41:27 +1100 (EST)
+Message-ID: <20041127054115.24345.qmail@web15603.mail.cnb.yahoo.com>
+Date: Sat, 27 Nov 2004 13:41:15 +0800 (CST)
+From: Sam Song <samlinuxppc@yahoo.com.cn>
+To: linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=gb2312
+Subject: A new good Linux Kernel Webpage
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,39 +20,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Ivica,
+Hi, all,
 
-in message <41A709E1.4050608@asist-traffic.com> you wrote:
-> 
-> Educational reasons were my primary motives besides the independence 
-> factor. :-)
+I got the nice webpage from a forum. Just CC here for
+reference.
 
-OK, understood and accepted (that was  the  starting  point  for  the
-ELDK, too :-)
+http://www.win.tue.nl/~aeb/linux/lk/lk.html
 
-> I will have a certain budget to spend.What tools should I use? BDI2000? 
-> Any alternatives,
-> or is this simply superior tool for debugging purposes?
 
-It is. IMHO the BDI2000 is the de-facto standard tool  for  low-level
-Linux debugging.
-
-> >There is some pretty extensive documentation in our DULG about how to
-...
-> Yes I know of it. It doesn't describe though the process of compiling 
-> and linking standalone
-> applications to run without OS.
-
-Ummm.. there is. See http://www.denx.de/twiki/bin/view/DULG/UBootStandalone
-
-[I hope you don't call "U-Boot" an OS ;-) ]
-
+=====
 Best regards,
 
-Wolfgang Denk
+Sam
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Commitment, n.:      Commitment can be illustrated by a breakfast
-of ham and eggs. The chicken was involved, the pig was committed.
+_________________________________________________________
+Do You Yahoo!?
+150万曲MP3疯狂搜，带您闯入音乐殿堂
+http://music.yisou.com/
+美女明星应有尽有，搜遍美图、艳图和酷图
+http://image.yisou.com
+1G就是1000兆，雅虎电邮自助扩容！
+http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
