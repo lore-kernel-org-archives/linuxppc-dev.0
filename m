@@ -1,39 +1,43 @@
-Date: Wed, 13 Dec 2000 12:12:31 -0800
-From: Hao Li <hli@wag.caltech.edu>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: vxhack and mvista kernel
-Message-ID: <20001213121231.A26159@onetta.com>
-Mime-Version: 1.0
+Message-ID: <3A37DC1E.28164741@mvista.com>
+Date: Wed, 13 Dec 2000 15:29:18 -0500
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
+To: Hao Li <hli@wag.caltech.edu>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: vxhack and mvista kernel
+References: <20001213121231.A26159@onetta.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi. I am trying to use VxWorks boot rom to boot MontaVista's 2.4.0-test2
-kernel on a EST SBC8260 board. I already have MontaVista's CDK 1.2
-installed on a Linux x86 host running Red Hat 6.2. From a previous post
-I find that I'll need to hack the kernel zImage with Dan Malek's
-vxhack.c program. So below is what I did:
+Hao Li wrote:
 
-% uname -mrs
-Linux 2.4.0-test11 i686
-% cc --version
-2.95.2
-% ncftpget ftp://ftp.mvista.com/pub/Area51/ppc-8xx/vxhack.c
-vxhack.c:                                                3.49 kB   29.64 kB/s
-% cc -o vxhack vxhack.c
-% cp /opt/hardhat/devkit/ppc/82xx/target/boot/vmlinuz-sbc8260-2.4.0-test2-1.2.2-3 .
-% ./vxhack vmlinuz-sbc8260-2.4.0-test2-1.2.2-3
-Segmentation fault
+> % ./vxhack vmlinuz-sbc8260-2.4.0-test2-1.2.2-3
+> Segmentation fault
+>
+> Could someone explain to me what the problem is?
+
+The vxhack program has hard coded values for known sections in the
+image file.  For some reason, the sections in the file have changed
+since I wrote the program.
+
+There is a loop:
+	for (i=0; i<nsscns; i++) .......
+
+in the program.  Add some code to print out the section number and
+section size.  It will be obvious which section is the image, and
+change the 'if (i == 5)' (or whatever the number is in the code you
+have) in that loop to correspond to this number.  You can't use
+objdump because the header numbers it prints do not match what you
+find when you scan the file like vxhack does.
+
+If you want to update the program to read the string/symbol tables
+and to automatically locate sections by name, it would be useful.
+This was just a quick five minute program to solve an immediate problem,
+not something worth useful time.
 
 
-Could someone explain to me what the problem is? Is it because I do it
-on a non-ppc host or I should not have used MontaVista's
-vmlinuz-sbc8260-2.4.0-test2-1.2.2-3 kernel?
-
-Thanks a lot!
-
-- Hao
-
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
