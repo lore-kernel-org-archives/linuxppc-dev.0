@@ -1,31 +1,30 @@
-Date: Tue, 25 Jan 2000 14:40:22 -0700
-From: Cort Dougan <cort@fsmlabs.com>
-To: Frank Smith <smith@appliedmicro.ns.ca>
-Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: ftp.ppc.kernel.org
-Message-ID: <20000125144022.E25824@hq.fsmlabs.com>
-References: <00Jan25.074648ast.7304@dragon.appliedmicro.ns.ca>
+From: brian.neidig@ni.com
+To: linuxppc-embedded@lists.linuxppc.org
+cc: brian.neidig@ni.com
+Message-ID: <86256872.000F3FAD.00@notesmta.natinst.com>
+Date: Tue, 25 Jan 2000 20:45:48 -0600
+Subject: Cross-compiling standard utilities for 860
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <00Jan25.074648ast.7304@dragon.appliedmicro.ns.ca>; from Frank Smith on Tue, Jan 25, 2000 at 07:46:47AM -0400
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-We're going to be moving it because of the problems.  We'll have a better
-feed with fewer hops to get elsewhere.
 
-} Hi,
-}
-} Has anyone else been having problems connecting to
-} ftp.ppc.kernel.org? Anyone know what's going on?
-}
-} I recall there being some small ramdisk images in the
-} embedded directory. Would someone be so kind as to
-} e-mail me one? I'm just looking for something small
-} to hack around with.
-}
-} Thanks,
-} Frank Smith.
+I am using an 860 based board, and am in need of several of the 'standard' Linux
+utilities.  (shells, module support, ls, etc.)  In the past, I've always gone to
+the net and started looking around for an RPM containing the source code that I
+need and then take that and compile it for my platform.  However, lately, I've
+spent a lot of time not finding what I am looking for.  Is there a place someone
+can suggest that I can go to and get many of the standard utilities in source?
+
+Sometimes, these utilities are in RPMs (if not all the time.)  Is there a place
+that I can go to get a list of what utilities are in what RPMs?  (That is, how
+would I know that the source to ls is in x.y-4.rpm?)   Distributions build them,
+so they have to exist somewhere!
+
+Thanks,
+Brian Neidig
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
