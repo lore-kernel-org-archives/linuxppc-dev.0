@@ -1,12 +1,26 @@
-Message-ID: <400C03B7.7000800@devcom.cz>
-Date: Mon, 19 Jan 2004 17:20:07 +0100
-From: Jan Damborsky <jan.damborsky@devcom.cz>
+Message-ID: <D73A25AA6E54D511AD74009027B1110F5BB008@ORION>
+From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+To: "'Jan Damborsky'" <jan.damborsky@devcom.cz>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: RE: MPC823E SMC/I2C/SPI micropatch
+Date: Mon, 19 Jan 2004 11:29:47 -0500
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: MPC823E SMC/I2C/SPI micropatch
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
+
+
+I've used the one in the linuxppc_2_4_devel tree with success.
+http://ppc.bkbits.net
+It is found in directory arch/ppc/8xx_io
+
+-----Original Message-----
+From: Jan Damborsky [mailto:jan.damborsky@devcom.cz]
+Sent: Monday, January 19, 2004 11:20 AM
+To: linuxppc-dev@lists.linuxppc.org
+Subject: MPC823E SMC/I2C/SPI micropatch
+
 
 
 Hi,
