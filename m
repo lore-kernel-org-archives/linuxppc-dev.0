@@ -1,35 +1,83 @@
-To: "Curtis, Allen" <Allen.Curtis@Thales-IFS.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: BDI2000 config repository 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 09 May 2003 11:03:28 PDT."
-             <FA06AA2C99BCD511951200005A99441001E3F16D@irvexch1.sextantifs.com>
-Date: Sat, 10 May 2003 19:04:14 +0200
-Message-Id: <20030510170419.C562AC6092@atlas.denx.de>
+From: "Anil Giri" <anil@india.tejasnetworks.com>
+To: "bhupinder sahran" <bhup_sah@yahoo.com>,
+	<linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: problem in booting kernel
+Date: Mon, 12 May 2003 14:16:56 +0530
+Message-ID: <NFBBIIPBPPALGBNPGLOBGEEPJBAB.anil@india.tejasnetworks.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <20030507155215.73920.qmail@web41504.mail.yahoo.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <FA06AA2C99BCD511951200005A99441001E3F16D@irvexch1.sextantifs.com> you wrote:
+Hi,
+    Kernel Booting hangs just after entering start_kernel function.
+Even I can't see the printk fuction for printing linux banner getting
+executed.
+I have compiled linux-2.4.18 for MPC860.
+
+-Anil
+
+
+-----Original Message-----
+From: bhupinder sahran [mailto:bhup_sah@yahoo.com]
+Sent: Wednesday, May 07, 2003 9:22 PM
+To: Anil Giri; linuxppc-embedded@lists.linuxppc.org
+Subject: Re: problem in booting kernel
+
+Hi
+>From the inuts u have given it is very tough to find
+out. But let me ask u some of the questions.
+
+1. One possiblity is that ur serial port is not
+configured properly & u are not seeing any message
+from the console port.
+
+2. IF u are having the JTAG debugger find out the
+value in Program conuter & see where it matches in
+System.map.
+
+So tell me the PC value then it might be possible to
+catch the problem
+
+Thanx
+Bhupi
+Linux+Hypertransport -->Silicon
+www.gdatech.com
+Good after beer ---Linux
+
+
+--- Anil Giri <anil@india.tejasnetworks.com> wrote:
 >
-> I know there was talk about this, is there a repository for BDI2000 platform
-> configuration files?
+> Hi,
+>
+>
+>    I m trying to boot kernel for linux-2.4.18
+> (MPC860 processor), but it
+>
+>
+> hangs after "Now booting the kernel"  message. What
+> could be the reason???
+>
+>
+> also on debugging i found negative value for
+> register R3 instead of ptr to
+>
+>
+> board info data. Other register settings were ok.
+>
+>
+> Any imputs...
+>
+>
+>
+>
+> -Anil
+>
+>
+>
 
-We have a collection on our FTP  server;  see  http://www.denx.de  =>
-Documents => BDI2000
-
-Contributions welcome.
-
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-As of 1992, they're called European Economic Community fries.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
