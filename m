@@ -1,26 +1,48 @@
+Message-ID: <E1836A7F3557D311A14000805F9F36FC01518839@usdfo011.usac.danfoss.net>
+From: "Pergola, Michael" <MichaelPergola@Danfoss.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Cc: "Friedlander, Paul" <PaulFriedlander@Danfoss.com>,
+	"Hihn, Jason" <JasonHihn@Danfoss.com>
+Subject: i2c_algo_8xx_init compile problem
+Date: Mon, 11 Feb 2002 22:47:19 +0100
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: SDRAM is finally working
-Date: Mon, 11 Feb 2002 13:42:30 -0600
-Message-ID: <D3A72C5007329A4F991C0DD87202259F096A65@sekhmet.ad.newisys.com>
-From: "Navin Boppuri" <navin.boppuri@newisys.com>
-To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello everyone,
+Hi all,
 
-I now have Linux kernel booting up and mounting a file system without any problems.  I had all the timing right but my SDRAM initialization was messed up. My init sequence was missing a single NOP command at the very start. And so, things worked fine with PPCBOOT but with more memory intensive stuff that the kernel does, I had software emulation errors during the  kernel boot.
+I am trying to get the Simon Vogel i2c driver implemented on my
+Embedded Planet MPC823e platform but the kernel compile dies as follows:
 
-I appreciate all the help from Wolfgang in doing this. I got my very first SDRAM interface working on the 855 processor.
+[root@W032339 linux-2.2.14]# make -s dep
+Makefile:37: warning: overriding commands for target `fastdep'
+/opt/hardhat/devkit/lsp/linuxplanet/linux-2.2.14/Rules.make:106: warning:
+ignoring
+old commands for target `fastdep'
+[root@W032339 linux-2.2.14]# make -s zImage
+drivers/i2c/i2c.a(i2c-core.o): In function `i2c_init_all':
+i2c-core.o(.text.init+0xb4): undefined reference to `i2c_algo_8xx_init'
+i2c-core.o(.text.init+0xb4): relocation truncated to fit: R_PPC_REL24
+i2c_algo_8xx_init
+i2c-core.o(.text.init+0xb8): undefined reference to `i2c_rpx_init'
+i2c-core.o(.text.init+0xb8): relocation truncated to fit: R_PPC_REL24
+i2c_rpx_init
+make: *** [vmlinux] Error 1
 
-I would like to point out to everyone in this mailing list that there is an App. Note from Motorola (ANxxx/D) that talks about a high speed SDRAM interface to the MPC823. The document is a good start for anyone trying to interface the 8xx processor to and SDRAM while running the bus at speeds greater than 50Mhz. But please NOTE that the timings shown in the example SDRAM interface in this App. Note for the Micron MT48LC* chip are very wrong. Please do not design your timing around this example.
+I changed the Makefile for i2c-2.6.2 to use the EP direcories and
+successfully
+used menuconfig to select the MPC8xx CPM I2C interface & Embedded
+Planet RPX Lite/Classic support options but still this specific driver
+(i2c_algo_8xx_init) isn't compiled even after doing a make dep. The docs
+don't inform me which dir this file should go and be compiled in. Any
+suggestions?
 
-I looked at the sample timings from various board supports in PPCBOOT (eg. hermes). I manually inserted these timings into an *.mgp file for the MCUinit utility and looked at them in the GUI interface. But the final timings are totally dependent on your particular SDRAM chip ( The fact which Wolfgang tells us about all the time ;) ).
-
-Navin.
+Regards,
+     Michael Pergola
+     Software Engineer
+     Baltimore, MD  21236     (410) 931-6778 x4259
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
