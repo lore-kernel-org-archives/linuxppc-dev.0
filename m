@@ -1,76 +1,39 @@
-From: "Michael A. Peters" <mpeters@omnilinux.com>
-Reply-To: mpeters@omnilinux.com
-To: Edwin Tam <edwintam@ieee.org>, <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: php compilation fix
-Date: Wed, 9 Aug 2000 10:38:42 -0700
-Content-Type: text/plain
-References: <B5B71115.316A%edwintam@ieee.org>
-In-Reply-To: <B5B71115.316A%edwintam@ieee.org>
-Cc: ProjectQ2@unitek.com
+Date: Wed, 9 Aug 2000 19:58:31 +0200 (CEST)
+From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+To: Derek Homeier <supas100@astrophysik.uni-kiel.de>
+cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: Backlight control on Lombard PB
+In-Reply-To: <Pine.SOL.3.95.1000809191056.5966B-100000@juliet>
+Message-ID: <Pine.LNX.4.10.10008091940260.23221-100000@zirkon.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-Message-Id: <00080910462800.26506@localhost.localdomain>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Thanks! That patch worked beautifully on PowerPC, and mod_php-gd builds and the
-gd.so module loads.
-
-What we decided to do (until an official patch comes from zend) is only apply
-that patch when the src rpm builds for PowerPC, even though the patch may
-benefit i386 as well.
-
-But the nice thing is that I now have the RPM's, all of them including
-mod_php-gd, working on both platforms. linux-Sparc64 is next (hopefully it will
-at most just need the ppc patch, hopefully...)
-
-Once again, Thanks!
-
-On Tue, 08 Aug 2000, Edwin Tam wrote:
-> Marco Pratesi (Bcc'ed) suggested a much neater fix than mine:
-> > I have solved the problem simply by commenting out
-> > the lines 370 and 435 and using orig_args
-> > instead of args.
-> > I have made this thing because orig_args is never
-> > overwritten in the functions related to lines 370
-> > and 435 and it is used only to copy it in args.
-> > Do you think my correction can be dangerous ?
-> > My diff:
-> > 370,372c370,372
-> > <                       args = orig_args;
-> > <                       size = vsnprintf(buffer, sizeof(buffer) - 1, format,
-> args);
-> > <                       va_end(args);
-> > ---
-> >> //                    args = orig_args;
-> >> size = vsnprintf(buffer, sizeof(buffer) - 1, format, orig_args);
-> >> va_end(orig_args);
-> > 435,437c435,437
-> > <               args = orig_args;
-> > <               size = vsnprintf(buffer, sizeof(buffer) - 1, format, args);
-> > <               va_end(args);
-> > ---
-> >> //            args = orig_args;
-> >> size = vsnprintf(buffer, sizeof(buffer) - 1, format, orig_args);
-> >> va_end(orig_args);
-
-*SNIP*
-
-> > I created a patch that makes the changes suggest to php-4.0.1pl2/main/main.c
+> > Should be fixed in BenH's current tree, he said he was going to do it this
+> > past weekend. The pmu backlight controller didn't get registered on the
+> > Lombard (and possibly Wallstreet) because the backlight-control property
+> > is missing on these machines.
 > >
-> > replace
-> > args = orig_args;
-> > by:
-> > memcpy(args, orig_args, sizeof(orig_args));
-> >
-> > in lines 370 & 435
-> >
+> So we were just lucky that it used to work before?
 
-*snip*
+Nope, it broke because BenH added code to have either the PMU driver or
+the atyfb driver register a backlight control callback (depending on where
+the power control logic actually resides).
 
+> It should be in the linux-pmac-benh branch then, yeah? I rsynced again
+> from linuxcare.com.au yesterday (or rather 2:00 UT this morning), and the
+> problem still remains. Is there anything else to do, upgrade to a newer
+> BootX perhaps, or whatever?
 
---
-Michael A. Peters
-http://www.omnilinux.com/
+Compile you own kernel, and add a || machine_is_compatible("PowerBook1,1")
+right after the || machine_is_compatible("AAPL,PowerBook1999") in
+arch/ppc/kernel/pmac_support.c:register_backlight_controller(). That fixed
+it for me. I'll resync and see what BenH did there later today.
+
+	Michael
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
