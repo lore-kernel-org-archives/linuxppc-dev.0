@@ -1,89 +1,43 @@
-Message-Id: <200004121212.IAA10789@hoover.gilbarco.com>
-From: "Wohlgemuth, Jason" <jason_wohlgemuth@gilbarco.com>
-To: "'Kim Jørgensen'" <KIJ@infocom.dk>,
-        "'linuxppc-embedded@lists.linuxppc.org'"
-	 <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: No bash prompt
-Date: Wed, 12 Apr 2000 08:12:50 -0400
-Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-Id: <200004121349.PAA04256@denx.local.net>
+To: "Wohlgemuth, Jason" <jason_wohlgemuth@gilbarco.com>
+cc: "'Kim J?rgensen'" <KIJ@infocom.dk>,
+        "'linuxppc-embedded@lists.linuxppc.org'"@denx.local.net
+Subject: Re: No bash prompt 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 12 Apr 2000 08:12:50 EDT."
+             <200004121212.IAA10789@hoover.gilbarco.com>
+Date: Wed, 12 Apr 2000 15:09:38 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Kim,
+In message <200004121212.IAA10789@hoover.gilbarco.com> you wrote:
+>
+> Are you trying to boot your board with a BDM plugged in?  If so, Dan made us
+> aware that BDM's will fight with the kernel and will get confused about the
+> VM.  If this is your situation, you will need to program your flash with the
 
-Are you trying to boot your board with a BDM plugged in?  If so, Dan made us
-aware that BDM's will fight with the kernel and will get confused about the
-VM.  If this is your situation, you will need to program your flash with the
-kernel and boot it without a BDM connected.
+It is true that  the  BDM  debuggers  usually  don't  understand  the
+address mappings very well as soon as the MMU has been turned on, but
+it is NOT TRUE that "BDM's will fight with the kernel".
 
-Hope that helped,
-Jason
+So the BDM debugger might not be too helpful while Linux is  running,
+but it does not cause any problems if you configure it correctly:
 
------Original Message-----
-From: owner-linuxppc-embedded@lists.linuxppc.org
-[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Kim
-Jørgensen
-Sent: Wednesday, April 12, 2000 7:52 AM
-To: 'linuxppc-embedded@lists.linuxppc.org'
-Subject: No bash prompt
+Depending on your settings of the Debug Enable Register (DER) you can
+run  Linux  with  a  BDM  debugger  attached  without  any  problems;
+0x6002000F or 0x2002000F might be useful settings - depending on what
+you like.
 
+Wolfgang Denk
 
-
-Hi.
-
-A got a similar problem as described by LiuTao, my custom MPC823 board won't
-display the bash prompt at start up. Is there anybody who got a solution to
-this problem?
-
-I tried like LiuTao to define "SERIAL_DEBUG_INTR" in uart.c, and I got the
-same result: Lots of "THRE...rs_interrupt_single(0, 2)...end." on the
-console.
-I have successfully used the ramdisk image on a RPXL board, so that should
-be ok.
-
-Here are the console messages:
-
-loaded at:     00200000 0020B1F0
-relocated to:  00100000 0010B1F0
-board data at: 001001C4 001001E0
-relocated to:  00200100 0020011C
-zimage at:     00206000 002383D8
-initrd at:     002383D8 002B2E77
-avail ram:     002B3000 00800000
-
-Linux/PPC load:
-Uncompressing Linux...done.
-Now booting the kernel
-Linux version 2.2.13 (root@LinuxDriverPC.infocom.dk) (gcc version 2.95.2
-19991024 (release)) #74 Wed Apr 12 12:41:36 CEST 2000
-Boot arguments: root=/dev/ram
-time_init: decrementer frequency = 187500000/60
-Calibrating delay loop... 49.66 BogoMIPS
-Memory: 7032k available (376k kernel code, 268k data, 24k init)
-[c0000000,c0800000]
-DENTRY hash table entries: 262144 (order: 9, 2097152 bytes)
-Buffer-cache hash table entries: 32768 (order: 5, 131072 bytes)
-Page-cache hash table entries: 2048 (order: 1, 8192 bytes)
-POSIX conformance testing by UNIFIX
-Linux NET4.0 for Linux 2.2
-Based upon Swansea University Computer Society NET3.039
-Starting kswapd v 1.5
-CPM UART driver version 0.02
-ttyS00 at 0x0280 is a SMC
-RAM disk driver initialized:  16 RAM disks of 4096K size
-RAMDISK: Compressed image found at block 0
-EXT2-fs warning: checktime reached, running e2fsck is recommended
-VFS: Mounted root (ext2 filesystem).
-THRE...rs_interrupt_single(0, 2)...end.
-THRE...rs_interrupt_single(0, 2)...end.
-THRE...rs_interrupt_single(0, 2)...end.
-
-
-Hope someone can help.
-Kim Jorgensen
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Perfection is reached, not when there is no longer anything  to  add,
+but when there is no longer anything to take away.
+- Antoine de Saint-Exupery
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
