@@ -1,62 +1,53 @@
-To: Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: gdb problems / BDM PPCBoot 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 11 Oct 2001 12:05:25 +0200."
-             <6B546A602AD2D211BFF00008C7A42889041D6C6B@hrtades2.atea.be>
-Date: Thu, 11 Oct 2001 14:53:27 +0200
-Message-Id: <20011011125332.B981E10886@denx.denx.de>
+Message-ID: <012501c15257$52a964b0$7e7e7e7e@server>
+From: "RSR - Piero Dominioni" <pdominioni@rsr.it>
+To: "Jean-Denis Boyer" <jdboyer@mediatrix.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <F1BED55F35F4D3118C0F00E0295CFF4D414C39@mail.mediatrix.com>
+Subject: R: NFS mount for TQM823L
+Date: Thu, 11 Oct 2001 15:15:47 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <6B546A602AD2D211BFF00008C7A42889041D6C6B@hrtades2.atea.be> you wrote:
->
-> I am doing exactly the same thing as Joakim Tjernlund a few months ago:
+> 3) You may also start the syslog daemon, to be sure you don't miss
+important
+> information.
 
-> > I am trying to debug ppclinux 2.4 and ppcboot on RPX CLLF board
+Dear Jean-Denis,
+this above has been the key suggestion that lead me to success!!!
+Finally we could remote-mount our target's file system
+under whatever host (not every one, really) in our local network!
+Without the syslogd daemon I couldn't have been able to
+discover that the 'etab' file was missing in /var/lib/nfs target's
+directory.
+I don't know the rule or the meaning of all the lines and keywords
+that are in this file: I would like to know ,  in addition to the
+capability to make them run...
+Who does create this file, on the hosts for example?
+ Which command or daemon?
+I add here another pair of question, that would complete the
+scene.
 
-You have better chances to get a reply to PPCBoot  related  questions
-when you ask on the PPCBoot mailing list.
+> 1) Does it produce a core file?
+What do you mean with 'core file'?
 
-> After I enabled the -ggdb switch and removed -mrelocatable,  I am able to
-> look at variables, but it is all rubbish. Also the source code ddd points to
+> 2) You may start mountd with the following options:
+>    mountd --debug all --foreground
+>   This will start mountd in foregroud, turning on debugging information.
+>    I hope it will help...
+How should I have debugged then? (I couldn't do it)
+I have seen nothing: should any message have appeared?
 
-The "-mrelocatable" is necessary; when you remove it, you will  break
-lose a lot of problems.
+At last I want to thank you very much for your precious help, and
+I hope that our correspondence could help somebody else.
 
-I do a lot of debugging with  the  BDI2000  just  using  the  default
-options as supplied with PPCBoot, i. e. just "-g" (and of course WITH
--mrelocatable).
+Best regards
 
-> is completely wrong. When it should jump to board_init_f (PPCBoot, board.c),
-> it thinks it jumps to eth_rx+12. This corresponds with what I see in the
+Piero Dominioni
+R.S.R. srl
 
-This has been expalined a lot of times on the mailing list. You  have
-to  know  what  you're doing - if you're ruinning from flash, or from
-RAM.
-
-> ppcboot.map-file. The offset between these two is 0xa9b0. When I reload the
-> symbol file, "add-symbol-file ppcboot 0xff00a960" instead of
-> "add-symbol-file ppcboot 0xff000000", I start seeing the correct source-code
-> lines, but the variables are still completely wrong.
-
-...as wrong as both commands, I think.
-
-> Any ideas? Could it be a problem with the compiler and debugger version that
-> MontaVista ships with CDK1.2? That the -ggdb switch is needed is a hack in
-> the first place, right?
-
-Right, it is not needed, and don't worry about the tools. HHL-1.2 may
-be old but it works fine.
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-WARNING:  This Product Warps Space and Time in Its Vicinity.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
