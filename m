@@ -1,97 +1,67 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <40BC1DBF.6050108@intracom.gr>
-Date: Tue, 01 Jun 2004 09:10:07 +0300
+Message-ID: <40BC2A7A.2010801@intracom.gr>
+Date: Tue, 01 Jun 2004 10:04:26 +0300
 From: Pantelis Antoniou <panto@intracom.gr>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Dan Malek <dan@embeddededge.com>,
-	Tom Rini <trini@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+To: Wolfgang Denk <wd@denx.de>
+Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: [PATCH] fix TLB handling for 8xx on linuxppc-2.5
-References: <40BB42EF.10805@intracom.gr> <1086040829.1930.66.camel@gaston>
-In-Reply-To: <1086040829.1930.66.camel@gaston>
+References: <20040601070415.E13F6C109F@atlas.denx.de>
+In-Reply-To: <20040601070415.E13F6C109F@atlas.denx.de>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
+Wolfgang Denk wrote:
 
->On Tue, 2004-06-01 at 00:36, Pantelis Antoniou wrote:
+>In message <40BC1DBF.6050108@intracom.gr> you wrote:
 >
->>Hi
->>
->>The following patch fixes the problems of 8xx with the latest
->>linuxppc-2.5 tree.
->>
->>With it user space progresses properly.
->>Lots of gray areas remain and MM handling for 8xx is
->>mighty inefficient IMO.
->>
->>Dan could you please take a look?
+>>Perusing the headers I came across a comment that said swap is
+>>broken on 8xx. For some reason I need to fix it.
+>>Where can I go about looking?
 >>
 >
->Ok, looks a bit weird on the edges.
+>If a 2.4 kernel is good enough:
 >
->
-I agree :)
+:)
 
->>Pantelis
->>
->>
->>______________________________________________________________________
->>diff -Nur --exclude=RCS --exclude=CVS --exclude=SCCS --exclude=BitKeeper --exclude=ChangeSet linuxppc_2.5/arch/ppc/kernel/head_8xx.S linuxppc_2.5-intracom/arch/ppc/kernel/head_8xx.S
->>--- linuxppc_2.5/arch/ppc/kernel/head_8xx.S	Mon May 31 10:52:29 2004
->>+++ linuxppc_2.5-intracom/arch/ppc/kernel/head_8xx.S	Mon May 31 17:24:05 2004
->>@@ -157,6 +157,24 @@
->> 	SAVE_2GPRS(7, r11)
->>
->> /*
->>+if ((val & (_PAGE_HWWRITE | _PAGE_RW | _PAGE_DIRTY)) == (_PAGE_RW | _PAGE_DIRTY))
->>+	val |= _PAGE_HWWRITE;
->>+else if ((val & (_PAGE_HWWRITE | _PAGE_RW | _PAGE_DIRTY)) == _PAGE_HWWRITE)
->>+	val &= ~_PAGE_HWWRITE;
->>+*/
->>
->
->I don't like the above. Things should be dealt with differently.
->
->The TLB handler itself should only care about _setting_ _PAGE_HWWRITE I
->think when it's missing (oh, and dirty of course). The clearing should
->be done on a per-PTE basis in ptep_get_and_clear_*, ptep_clear_*, etc...
->along with the necessary TLB invalidate (hrm... can we invalidate
->selectively instead of the whole thing ?)
->
-Just setting HWWRITE is simple.
+Thanks
 
 >
->The tlbia in update_mmu_cache() doesn't look good. More like a
->workaround for breakage in the implementation.
+>Index: include/asm-ppc/pgtable.h
+>===================================================================
+>RCS file: /cvsroot/linuxppc_2_4_devel/include/asm-ppc/pgtable.h,v
+>retrieving revision 1.6
+>retrieving revision 1.7
+>diff -u -r1.6 -r1.7
+>--- include/asm-ppc/pgtable.h	11 Mar 2003 19:53:02 -0000	1.6
+>+++ include/asm-ppc/pgtable.h	24 Aug 2003 13:58:59 -0000	1.7
+>@@ -686,11 +686,11 @@
+>  * must not include the _PAGE_PRESENT bit, or the _PAGE_HASHPTE bit
+>  * (if used).  -- paulus
+>  */
+>-#define SWP_TYPE(entry)			((entry).val & 0x3f)
+>-#define SWP_OFFSET(entry)		((entry).val >> 6)
+>-#define SWP_ENTRY(type, offset)		((swp_entry_t) { (type) | ((offset) << 6) })
+>-#define pte_to_swp_entry(pte)		((swp_entry_t) { pte_val(pte) >> 2 })
+>-#define swp_entry_to_pte(x)		((pte_t) { (x).val << 2 })
+>+#define SWP_TYPE(entry)			(((entry).val >> 1) & 0x3f)
+>+#define SWP_OFFSET(entry)		((entry).val >> 8)
+>+#define SWP_ENTRY(type, offset)		((swp_entry_t) { ((type) << 1) | ((offset) << 8) })
+>+#define pte_to_swp_entry(pte)		((swp_entry_t) { pte_val(pte) & ~0x81 })
+>+#define swp_entry_to_pte(x)		((pte_t) { (x).val })
 >
-It is :)
-
-When I tried a selective TLB invalidate it crashed
-in a spectacular way.
-
-That lazy TLB stuff just gave the mm system a good shake and
-it came apart.
-
+> /* CONFIG_APUS */
+> /* For virtual address to physical address conversion */
 >
->Paul, any comment ?
+>Best regards,
 >
->Ben.
+>Wolfgang Denk
 >
 >
 Regards
 
 Pantelis
-
-P.S.
-
-Perusing the headers I came across a comment that said swap is
-broken on 8xx. For some reason I need to fix it.
-Where can I go about looking?
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
