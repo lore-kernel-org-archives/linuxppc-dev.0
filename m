@@ -1,150 +1,72 @@
-Message-ID: <20001121002310.28257.qmail@web1608.mail.yahoo.com>
-Date: Mon, 20 Nov 2000 16:23:10 -0800 (PST)
-From: Jens Tingleff <jens_tingleff@yahoo.com>
-Subject: controlfb problem (on XFree86-4.0.1 off the penguinppc.org development tree)
+Mime-Version: 1.0
+Message-Id: <p04330100b63f9bce42dd@[192.168.0.1]>
+Date: Mon, 20 Nov 2000 23:03:43 -0500
 To: linuxppc-dev@lists.linuxppc.org
-Cc: ajoshi@unixbox.com
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="0-1159126505-974766190=:27675"
+From: Stefan Jeglinski <jeglin@4pi.com>
+Subject: whacked out 2.2.18preX - last gasp
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---0-1159126505-974766190=:27675
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-
-Following up on message
-http://lists.linuxppc.org/listarcs/linuxppc-user/200011/msg00346.html ,
-
-I had a look through the linuxppc-dev mailing list, and found a few
-patches to controlfb. I collected a few and made them fit in (from
-messages in September).
-
-XFree86-4.0.1 base: xfree86-pmac tree off penguinppc (today) on top of
-stock 4.0.1 .
-
-the result is that I get Xwin (yay!), if only in 15bpp (no big problem)
--- I get various error messages if I mod the XF86Config to pick up a
-smaller screen area and nigher depth. (Maybe the problem is that an
-1152x870 virtual framebuffer is always allocated?). In 8bpp, I get a
-very wrong picture (too green, two images side by side on top half
-...).
-
-Anyway, enclosed the patches that - at least - made me see Xwin, on
-2.2.18pre17-ben1 kernel straight off penguinppc.
-
-Cheers
-
-    Jens
+[refer to all previous whacked out posts]
 
 
-=====
-Key ID 0x09723C12, j.tingleff@ieee.org/jens_tingleff@yahoo.com
-       Analogue filtering / HIPERLAN / MkLinux / odds and ends
-http://www.imaginet.fr/~jensting/             +44 1223 211 585
- "You can't fight in here! This is the War Room!" 'Dr Strangelove'
+In deference to BenH's necessary suggestion, I removed all of the 6
+cards I could from my PowerTowerPro. It's now down to the only 2 I
+need: a video card (imstt running the OFfb just fine like it always
+has) and the 2940UW card, connected to my 2 9Gig atlas drives. I
+can't do fewer cards than these, and I've tried them in different
+slots.
 
---0-1159126505-974766190=:27675
-Content-Type: application/x-unknown; name=controlfb-patch-20001120
-Content-Description: controlfb-patch-20001120
-Content-Disposition: attachment; filename=controlfb-patch-20001120
-Content-Transfer-Encoding: base64
+Thanks to Hollis, I learned how to determine that a kernel panic at
+boot occurs in ioremap, called by the aic7xxx driver (backtrace
+posted the other day). If I compile without the aic7xxx driver, the
+panic does not occur but of course I cannot mount the root device.
 
-LS0tIHhjL3Byb2dyYW1zL1hzZXJ2ZXIvaHcveGZyZWU4Ni9kcml2ZXJzL2Zi
-ZGV2L2ZiZGV2LmMJVGh1IEF1ZyAgMyAwOTowNDoyNiAyMDAwCisrKyBwYXRj
-aGVkL3hjL3Byb2dyYW1zL1hzZXJ2ZXIvaHcveGZyZWU4Ni9kcml2ZXJzL2Zi
-ZGV2L2ZiZGV2LmMJTW9uIE5vdiAyMCAyMjo0MDoxNSAyMDAwCkBAIC0xMzks
-NiArMTM5LDcgQEAKIAogCSJmYmRldkhXR2V0TmFtZSIsCiAJImZiZGV2SFdH
-ZXREZXB0aCIsCisgICAgICAgICJmYmRldkhXR2V0TGluZUxlbmd0aCIsCiAJ
-ImZiZGV2SFdHZXRWaWRtZW0iLAogCiAJLyogY29sb3JtYXAgKi8KQEAgLTQy
-Nyw3ICs0MjgsMTQgQEAKIAlpZiAoTlVMTCA9PSBwU2Nybi0+bW9kZXMpCiAJ
-CWZiZGV2SFdVc2VCdWlsZGluTW9kZShwU2Nybik7CiAJcFNjcm4tPmN1cnJl
-bnRNb2RlID0gcFNjcm4tPm1vZGVzOwotCXBTY3JuLT5kaXNwbGF5V2lkdGgg
-PSBwU2Nybi0+dmlydHVhbFg7IC8qIEZJWE1FOiBtaWdodCBiZSB3cm9uZyAq
-LworIAorICAgICAgICBpZiAoZlB0ci0+c2hhZG93RkIpCisgICAgICAgICAg
-ICAgICAgcFNjcm4tPmRpc3BsYXlXaWR0aCA9IHBTY3JuLT52aXJ0dWFsWDsg
-IC8qIFNoYWRvd0ZCIGhhbmRsZXMgdGhpcyBjb3JyZWN0bHkgKi8KKyAgICAg
-ICAgZWxzZQorICAgICAgICAgICAgICAgIC8qIEZJWE1FOiB0aGlzIGRvZXNu
-J3Qgd29yayBmb3IgYWxsIGNhc2VzLCBlLmcuIHdoZW4gZWFjaCBzY2FubGlu
-ZQorICAgICAgICAgICAgICAgICAgICAgICAgaGFzIGEgcGFkZGluZyB3aGlj
-aCBpcyBpbmRlcGVuZGVudCBmcm9tIHRoZSBkZXB0aCAoY29udHJvbGZiKSAq
-LworICAgICAgICAgICAgICAgIHBTY3JuLT5kaXNwbGF5V2lkdGggPSBmYmRl
-dkhXR2V0TGluZUxlbmd0aChwU2NybikvKGZiZGV2SFdHZXREZXB0aChwU2Ny
-bikgPj4gMyk7CisgCiAJeGY4NlByaW50TW9kZXMocFNjcm4pOwogCiAJLyog
-U2V0IGRpc3BsYXkgcmVzb2x1dGlvbiAqLwpAQCAtNTEzLDcgKzUyMSw3IEBA
-CiAJdW5zaWduZWQgY2hhciAqc3JjLCAqZHN0OwogCiAJQnBwID0gcFNjcm4t
-PmJpdHNQZXJQaXhlbCA+PiAzOwotCUZCUGl0Y2ggPSBwU2Nybi0+ZGlzcGxh
-eVdpZHRoICogQnBwOworICAgICAgICBGQlBpdGNoID0gZmJkZXZIV0dldExp
-bmVMZW5ndGgocFNjcm4pOwogCiAJd2hpbGUobnVtLS0pIHsKIAkJd2lkdGgg
-PSAocGJveC0+eDIgLSBwYm94LT54MSkgKiBCcHA7CmRpZmYgLXJ1IHhjL3By
-b2dyYW1zL1hzZXJ2ZXIvaHcveGZyZWU4Ni9mYmRldmh3L2ZiZGV2aHcuYyBw
-YXRjaGVkL3hjL3Byb2dyYW1zL1hzZXJ2ZXIvaHcveGZyZWU4Ni9mYmRldmh3
-L2ZiZGV2aHcuYwotLS0geGMvcHJvZ3JhbXMvWHNlcnZlci9ody94ZnJlZTg2
-L2ZiZGV2aHcvZmJkZXZody5jCVRodSBBdWcgIDMgMDk6MDM6NDYgMjAwMAor
-KysgcGF0Y2hlZC94Yy9wcm9ncmFtcy9Yc2VydmVyL2h3L3hmcmVlODYvZmJk
-ZXZody9mYmRldmh3LmMJTW9uIE5vdiAyMCAyMjo0MTozNSAyMDAwCkBAIC00
-MTUsNyArNDE1LDI0IEBACiBmYmRldkhXR2V0RGVwdGgoU2NybkluZm9QdHIg
-cFNjcm4pCiB7CiAJZmJkZXZIV1B0ciBmUHRyID0gRkJERVZIV1BUUihwU2Ny
-bik7Ci0JcmV0dXJuIGZQdHItPnZhci5iaXRzX3Blcl9waXhlbDsKKwlzd2l0
-Y2goZlB0ci0+dmFyLmJpdHNfcGVyX3BpeGVsKSB7CisJY2FzZSAxNjoKKwkg
-IGlmKGZQdHItPnZhci5ncmVlbi5sZW5ndGggPiA1KQorCSAgICByZXR1cm4o
-ZlB0ci0+dmFyLmJpdHNfcGVyX3BpeGVsKTsKKwkgIGVsc2UKKwkgICAgcmV0
-dXJuKDE1KTsKKwljYXNlIDMyOgorCSAgcmV0dXJuKDI0KTsKKwlkZWZhdWx0
-OgorCSAgcmV0dXJuKGZQdHItPnZhci5iaXRzX3Blcl9waXhlbCk7CisJfQor
-fQorCitpbnQKK2ZiZGV2SFdHZXRMaW5lTGVuZ3RoKFNjcm5JbmZvUHRyIHBT
-Y3JuKQoreworICAgICAgIGZiZGV2SFdQdHIgZlB0ciA9IEZCREVWSFdQVFIo
-cFNjcm4pOworICAgICAgIHJldHVybiBmUHRyLT5maXgubGluZV9sZW5ndGg7
-CiB9CiAKIGludApAQCAtNDU5LDcgKzQ3NiwzOCBAQAogCQl4ZnJlZTJmYmRl
-dl90aW1pbmcobW9kZSwmdmFyKTsKIAkJdmFyLnhyZXNfdmlydHVhbCA9IHZp
-cnRYOwogCQl2YXIueXJlc192aXJ0dWFsID0gdmlydFk7Ci0JCXZhci5iaXRz
-X3Blcl9waXhlbCA9IHBTY3JuLT5kZXB0aDsKKwkJdmFyLmJpdHNfcGVyX3Bp
-eGVsID0gcFNjcm4tPmJpdHNQZXJQaXhlbDsKKwkJc3dpdGNoKHBTY3JuLT5k
-ZXB0aCkgeworCQljYXNlIDE1OgorCQkgIHZhci5yZWQub2Zmc2V0ID0gMTA7
-CisJCSAgdmFyLnJlZC5sZW5ndGggPSA1OworCQkgIHZhci5ncmVlbi5vZmZz
-ZXQgPSA1OworCQkgIHZhci5ncmVlbi5sZW5ndGggPSA1OworCQkgIHZhci5i
-bHVlLm9mZnNldCA9IDA7CisJCSAgdmFyLmJsdWUubGVuZ3RoID0gNTsKKwkJ
-ICBicmVhazsKKwkJY2FzZSAxNjoKKwkJICB2YXIucmVkLm9mZnNldCA9IDEx
-OworCQkgIHZhci5yZWQubGVuZ3RoID0gNTsKKwkJICB2YXIuZ3JlZW4ub2Zm
-c2V0ID0gNTsKKwkJICB2YXIuZ3JlZW4ubGVuZ3RoID0gNjsKKwkJICB2YXIu
-Ymx1ZS5vZmZzZXQgPSAwOworCQkgIHZhci5ibHVlLmxlbmd0aCA9IDU7CisJ
-CSAgYnJlYWs7CisJCWNhc2UgMjQ6CisJCSAgaWYocFNjcm4tPmJpdHNQZXJQ
-aXhlbCA+IDI0KSB7CisJCSAgICB2YXIucmVkLm9mZnNldCA9IDE2OworCQkg
-ICAgdmFyLnJlZC5sZW5ndGggPSA4OworCQkgICAgdmFyLmdyZWVuLm9mZnNl
-dCA9IDg7CisJCSAgICB2YXIuZ3JlZW4ubGVuZ3RoID0gODsKKwkJICAgIHZh
-ci5ibHVlLm9mZnNldCA9IDA7CisJCSAgICB2YXIuYmx1ZS5sZW5ndGggPSA4
-OworCQkgICAgdmFyLnRyYW5zcC5vZmZzZXQgPSAyNDsKKwkJICAgIHZhci50
-cmFuc3AubGVuZ3RoID0gODsKKwkJICB9CisJCSAgYnJlYWs7CisJCX0KKwog
-CQl2YXIuYWN0aXZhdGUgPSBGQl9BQ1RJVkFURV9URVNUOwogCQlpZiAodmFy
-LnhyZXNfdmlydHVhbCA8IHZhci54cmVzKSB2YXIueHJlc192aXJ0dWFsID0g
-dmFyLnhyZXM7CiAJCWlmICh2YXIueXJlc192aXJ0dWFsIDwgdmFyLnlyZXMp
-IHZhci55cmVzX3ZpcnR1YWwgPSB2YXIueXJlczsKQEAgLTUyMyw3ICs1NzEs
-NyBAQAogCiAJVFJBQ0VfRU5URVIoIk1hcFZpZG1lbSIpOwogCWlmIChOVUxM
-ID09IGZQdHItPmZibWVtKSB7Ci0JCWZQdHItPmZib2ZmID0gZlB0ci0+Zml4
-LnNtZW1fbGVuICYgKFBBR0VfU0laRS0xKTsKKwkJZlB0ci0+ZmJvZmYgPSAo
-dW5zaWduZWQgbG9uZylmUHRyLT5maXguc21lbV9zdGFydCAmICh1bnNpZ25l
-ZCBsb25nKShQQUdFX1NJWkUtMSk7CiAJCWZQdHItPmZibWVtID0gbW1hcChO
-VUxMLCBmUHRyLT5maXguc21lbV9sZW4sIFBST1RfUkVBRCB8IFBST1RfV1JJ
-VEUsCiAJCQkJICAgTUFQX1NIQVJFRCwgZlB0ci0+ZmQsIDApOwogCQlpZiAo
-LTEgPT0gKGludClmUHRyLT5mYm1lbSkgewpAQCAtNjI2LDYgKzY3NCw4IEBA
-CiAJCXBlcnJvcigiRkJJT0dFVF9WU0NSRUVOSU5GTyIpOwogCQlyZXR1cm4g
-RkFMU0U7CiAJfQorCXBTY3JuLT5kaXNwbGF5V2lkdGggPSBmUHRyLT5maXgu
-bGluZV9sZW5ndGggLworCSAgKGZQdHItPnZhci5iaXRzX3Blcl9waXhlbCA+
-PiAzKTsKIAlyZXR1cm4gVFJVRTsKIH0KIApkaWZmIC1ydSB4Yy9wcm9ncmFt
-cy9Yc2VydmVyL2h3L3hmcmVlODYvZmJkZXZody9mYmRldmh3LmggcGF0Y2hl
-ZC94Yy9wcm9ncmFtcy9Yc2VydmVyL2h3L3hmcmVlODYvZmJkZXZody9mYmRl
-dmh3LmgKLS0tIHhjL3Byb2dyYW1zL1hzZXJ2ZXIvaHcveGZyZWU4Ni9mYmRl
-dmh3L2ZiZGV2aHcuaAlUaHUgQXVnICAzIDA5OjAzOjQ2IDIwMDAKKysrIHBh
-dGNoZWQveGMvcHJvZ3JhbXMvWHNlcnZlci9ody94ZnJlZTg2L2ZiZGV2aHcv
-ZmJkZXZody5oCU1vbiBOb3YgMjAgMjI6NDE6MzUgMjAwMApAQCAtMTQsNiAr
-MTQsNyBAQAogCiBjaGFyKiBmYmRldkhXR2V0TmFtZShTY3JuSW5mb1B0ciBw
-U2Nybik7CiBpbnQgICBmYmRldkhXR2V0RGVwdGgoU2NybkluZm9QdHIgcFNj
-cm4pOworaW50ICAgZmJkZXZIV0dldExpbmVMZW5ndGgoU2NybkluZm9QdHIg
-cFNjcm4pOwogaW50ICAgZmJkZXZIV0dldFR5cGUoU2NybkluZm9QdHIgcFNj
-cm4pOwogaW50ICAgZmJkZXZIV0dldFZpZG1lbShTY3JuSW5mb1B0ciBwU2Ny
-bik7CiAK
+The following kernels fail identically:
 
---0-1159126505-974766190=:27675--
+ppc.samba.org::linux-pmac-stable-2.2.18preX
+ppc.linuxcare.com:: linux-pmac-stable-2.2.18preX
+penguinppc.org:: linux-pmac-stable-2.2.18preX
+bk://bitkeeper.fsmlabs.com:5001 (2.2.18preX)
+
+(yes, every X I've tried for about a month now)
+
+The following kernels work fine:
+linux-pmac-stable (2.2.17)
+penguinppc.org::linux-pmac-benh (2.2.18pre17)
+
+I want 2.2.18 because it appears to have the full USB backport
+(according to linux-usb.org). Also AFAICT, the "backports" on
+linux-usb.org are really patches to take 2.2.17 to 2.2.18preX - they
+don't really "add USB to 2.2.17."
+
+I don't know why Ben's 2.2.18pre17 alone works, but it appears to be
+irrelevant because of Ben's statement that all his rsync trees are
+inactive. The only clue I have is both odd and almost totally
+irrelevant: the only kernels that work (both 2.2.17 and 2.2.18) are
+the ones that create a
+
+	ERROR - Attempting to write value for
+	unconfigured variable (CONFIG_SERIAL_CONSOLE).
+
+when using make xconfig. I can't see how this could be related, but it is true.
+
+It's frankly hard at this point to buy that one of my PCI devices is
+walking over the kernel. Or if it is, it looks like the end of the
+Linux line for my PowerTowerPro with the 2940 card. I think this is
+either a bug in the aic7xxx driver that has been exposed by 2.2.18
+changes (highly doubtful, there are too many 2940s out there for it
+to have been missed), or a linux-pmac bug. I just don't know enough
+yet to prove it, much less find it.
+
+
+
+c-ya
+
+
+
+Stefan Jeglinski
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
