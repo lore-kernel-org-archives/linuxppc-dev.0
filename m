@@ -1,54 +1,40 @@
-Date: Thu, 20 Dec 2001 10:48:38 -0500 (EST)
-From: Jack Howarth <howarth@bromo.med.uc.edu>
-Message-Id: <200112201548.KAA78174@bromo.msbb.uc.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: keyspan vs benh kernel
+Date: Thu, 20 Dec 01 08:42:49 PST
+From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
+Message-Id: <0112201642.AA25515@ivan.Harhan.ORG>
+To: adrian@humboldt.co.uk, d.mueller@elsoft.ch
+Subject: Re: ISA DMA
+Cc: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello,
-   Is anyone else seeing the following errors when trying to use
-the Keyspan USA-28X with benh's current 2.4.17-rc1 kernel?
+Adrian Cox <adrian@humboldt.co.uk> wrote:
 
-Dec 20 10:30:36 bogus kernel: usb.c: registered new driver serial
-Dec 20 10:30:36 bogus kernel: usbserial.c: USB Serial Driver core v1.4
-Dec 20 10:30:36 bogus kernel: usbserial.c: USB Serial support registered for Keyspan USA18X - (without firmware)
-Dec 20 10:30:36 bogus kernel: usbserial.c: USB Serial support registered for Keyspan USA19 - (without firmware)
-Dec 20 10:30:36 bogus kernel: usbserial.c: USB Serial support registered for Keyspan USA19W - (without firmware)
-Dec 20 10:30:36 bogus kernel: usbserial.c: USB Serial support registered for Keyspan USA28 - (without firmware)
-Dec 20 10:30:36 bogus kernel: usbserial.c: USB Serial support registered for Keyspan USA28X - (without firmware)
-Dec 20 10:30:36 bogus kernel: usbserial.c: Keyspan USA28X - (without firmware) converter detected
-Dec 20 10:30:36 bogus kernel: usbserial.c: USB Serial support registered for Keyspan USA28XA - (without firmware)
-Dec 20 10:30:36 bogus kernel: usbserial.c: Keyspan USA28X - (without firmware) converter detected
-Dec 20 10:30:36 bogus kernel: usbserial.c: ezusb_set_reset_R9a81da3a- 1 failed
-Dec 20 10:30:36 bogus kernel: keyspan.c: ezusb_writememory failed for Keyspanfirmware (-110 0033 e2179001 3)
-Dec 20 10:30:36 bogus kernel: usbserial.c: ezusb_set_reset_R9a81da3a- 0 failed
-Dec 20 10:30:36 bogus kernel: usbserial.c: USB Serial support registered for Keyspan USA28XB - (without firmware)
-Dec 20 10:30:36 bogus kernel: usbserial.c: Keyspan USA28X - (without firmware) converter detected
-Dec 20 10:30:36 bogus kernel: usbserial.c: ezusb_set_reset_R9a81da3a- 1 failed
-Dec 20 10:30:36 bogus kernel: keyspan.c: ezusb_writememory failed for Keyspanfirmware (-110 0033 e2179001 3)
-Dec 20 10:30:36 bogus kernel: usb.c: USB disconnect on device 5
-Dec 20 10:30:36 bogus kernel: usbserial.c: ezusb_set_reset_R9a81da3a- 0 failed
-Dec 20 10:30:36 bogus kernel: usbserial.c: USB Serial support registered for Keyspan USA49W - (without firmware)
-Dec 20 10:30:36 bogus kernel: usbserial.c: USB Serial support registered for Keyspan USA18X
-Dec 20 10:30:36 bogus kernel: usbserial.c: USB Serial support registered for Keyspan USA19
-Dec 20 10:30:36 bogus kernel: usbserial.c: USB Serial support registered for Keyspan USA19W
-Dec 20 10:30:36 bogus kernel: usbserial.c: USB Serial support registered for Keyspan USA28
-Dec 20 10:30:36 bogus kernel: usbserial.c: USB Serial support registered for Keyspan USA28X/XB
-Dec 20 10:30:36 bogus kernel: usbserial.c: USB Serial support registered for Keyspan USA28XA
-Dec 20 10:30:36 bogus kernel: usbserial.c: USB Serial support registered for Keyspan USA49W
-Dec 20 10:30:36 bogus kernel: keyspan.c: v1.1.1:Keyspan USB to Serial Converter Driver
-Dec 20 10:30:36 bogus kernel: usbdevfs: USBDEVFS_CONTROL failed dev 6 rqt 128 rq 6 len 18 ret -32
-Dec 20 10:30:36 bogus last message repeated 2 times
-Dec 20 10:30:36 bogus kernel: hub.c: USB new device connect on bus1/1/3, assigned device number 7
-Dec 20 10:30:36 bogus kernel: usbserial.c: Keyspan USA28X/XB converter detected
-Dec 20 10:30:36 bogus kernel: usbserial.c: Keyspan USA28X/XB converter now attached to ttyUSB0 (or usb/tts/0 for devfs)
-Dec 20 10:30:36 bogus kernel: usbserial.c: Keyspan USA28X/XB converter now attached to ttyUSB1 (or usb/tts/1 for devfs)
+> Via686a. As I understand it, 32-bit DMA uses the DMA_HI_PAGE_x registers
+> from 0x487 to 0x48a, and the Via manual doesn't claim to have any
+> registers in that range.
 
-I find that the usb/tts/0 and usb/tts/1 devices don't appear to work
-properly and am wondering if the failures on ezusb_set_reset_R9a81da3a-
-and ezusb_writememory are to blame. Is anyone else seeing this?
-                        Jack
+It is also my understanding that VT82C686/A/B offers 24-bit DMA addressing
+only.
+
+On the Adirondack I plan to use the floppy disk controller (the only ISA DMA
+user) in non-DMA mode only. I hope Linux can do that. The memory map we've
+adopted does not have memory at PCI address 0 at all, so 24-bit DMA means no
+DMA at all rather than bottom 16 MB only. It is really too late to change the
+memory map now, it would be so much pain that I would much rather settle for
+using non-DMA mode only for floppies.
+
+> The only 32-bit DMA southbridge I've
+> encountered is the Winbond chip on the Sandpoint, and that chip doesn't
+> have UDMA66, USB, and audio.
+
+Acer Labs 1543 has it according to its manual (see the latter for where the
+registers are, I don't remember).
+
+We have that bridge on the K2. Ironically, there we don't have a floppy disk
+port, so we have good ISA DMA on the board where we don't need it but don't
+have it on a board where we do...
+
+MS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
