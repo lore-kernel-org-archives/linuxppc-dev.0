@@ -1,33 +1,40 @@
-Message-ID: <XFMail.990214190644.jeremy@goop.org>
-Content-Type: text/plain; charset=us-ascii
+Date: Mon, 15 Feb 1999 00:41:24 -0600 (CST)
+From: Troy Benjegerdes <hozer@drgw.net>
+To: Michel Lanners <mlan@cpu.lu>
+cc: u497w7n9@umail.furryterror.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Why is -msoft-float used in Kernel compilation?
+In-Reply-To: <199902142110.WAA00523@piglet.cpu.lu>
+Message-ID: <Pine.LNX.4.04.9902150025360.432-100000@narn.local.drgw.net>
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.04.9902132334480.4390-100000@narn.local.drgw.net>
-Date: Sun, 14 Feb 1999 19:06:44 -0800 (PST)
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-To: Troy Benjegerdes <hozer@drgw.net>
-Subject: Re: Interrupt routing in prep_pci.c
-Cc: cort@cs.nmt.edu, linuxppc-dev@lists.linuxppc.org,
-        Gabriel Paubert <paubert@iram.es>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Sun, 14 Feb 1999, Michel Lanners wrote:
 
-On 14-Feb-99 Troy Benjegerdes wrote:
-> You may also find my patches for MTX SMP support usefull. It contains most
-> of the stuff in Geert's patches, with the addition that most all of the
-> architecture-dependent functions have been redone to be dispatched by a
-> structure of function pointers. (Thanks to Corey Minyard) This gets rid of
-> a great number of case statements, and what could be the framework for a
-> good cleaning up of the arch/ppc/kernel directory. I suspect it might make
-> porting to a yellowknife like board easier. If the yellowknife board
-> supports SMP and has an OpenPIC, my SMP patches might work also ;)
+> 
+> On  13 Feb, this message from Gavriel State echoed through cyberspace:
+> > 
+> > I can understand using -msoft-float if CONFIG__8xx is on,
+> > but why use it when compiling for 60x or 7x0 CPUs?
+> 
+> I've heard something about a 'no floiting point in kernel' rule, and
+> I've tried compiling without -msoft-float.... it does boot, but it's an
+> ugly sight... fp warning messages all over!
+> 
+> I have, however, never seen a clear explanation of why that rule
+> exists...
 
-Thanks a lot - this should be very helpful.  BTW, how much work has been put
-into using Open Firmware callbacks rather than blowing OFW away (I guess that's
-more of a CHRP rather than PReP or MTX question)?
+I'm not sure, but I believe it's an optimization to allow the kernel to
+not have to save floating point registers on every context switch.
 
-        J
+--------------------------------------------------------------------------
+| Troy Benjegerdes    |       troy@microux.com     |    hozer@drgw.net   |
+|    Unix is user friendly... You just have to be friendly to it first.  |
+| This message composed with 100% free software.    http://www.gnu.org   |
+--------------------------------------------------------------------------
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
