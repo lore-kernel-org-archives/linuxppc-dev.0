@@ -1,41 +1,32 @@
-Message-ID: <38397383.8F8677A1@jlc.net>
-Date: Mon, 22 Nov 1999 11:46:59 -0500
+Message-ID: <383975BE.A9B2A487@jlc.net>
+Date: Mon, 22 Nov 1999 11:56:30 -0500
 From: Dan Malek <dmalek@jlc.net>
 MIME-Version: 1.0
-To: sorin@nitechinc.com
-CC: linuxppc-embedded@lists.linuxppc.org
+To: Neil Blackwood <nb@terrafix.co.uk>
+CC: sorin@nitechinc.com, linuxppc-embedded@lists.linuxppc.org
 Subject: Re: IDE on MBX board
-References: <99111909331400.01435@splash.nitechinc.com>
+References: <99111909331400.01435@splash.nitechinc.com> <000a01bf34db$79773180$6401a8c0@everyone>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Sorin Balea wrote:
-> 
-> Hello all
-> 
-> I've noticed that the MBX board has an IDE port. Has anyone been able to
-> use it, let's say with a hard disk? Any tips regarding this problem?
+Neil Blackwood wrote:
 
 
-Well......Cort had it working once, I tend to break and fix it at
-various times.  I think right now it is broken......
+> I have used this with MBX821 . It at least seems to see the disk during
+> boot.
+> I haven't tried partitioning it yet. It only seems to work on 2.2.5. Every
+> kernel later seems broken
 
-The IDE has assumed knowledge of PC-style addresses and behavior.  To
-use things like ATA Flash cards in the PCMCIA of the 8xx, I break the
-generic IDE interface.  On the 8xx, it is also sensitive to the interrupt
-controller.  Cort and I are always going back and forth about how to
-use the internal interrupt controller in combination with the external
-8259.  I want things that are more generic to other 8xx boards, and to
-get IDE to work you have to make assumptions unique to the MBX.
+That's a good point.....To follow up on my last message, if you want
+to try IDE on MBX, use a 2.2.x kernel that I have not updated :-).  That
+is, use the stuff in the CVS tree, not something I have as a tar
+image on ppc.kernel.org.
 
-I understand it would be nice to have the IDE working on the MBX, but
-all of the products I have worked with use ATA flash....nothing has
-ever used an IDE drive through a PCI/AT bus adapter.  This is why code
-I tend to check in will allow PCMCIA ATA Flash and not the more complex
-external IDE.....it represents products in the field.
-
+I really do want to get this correct.  It is likely to happen when
+I finish the pcmcia-cs for the 8xx, as that will use the standard IDE
+(with appropriate 8xx modifications) for the ATA Flash.
 
 
 	-- Dan
