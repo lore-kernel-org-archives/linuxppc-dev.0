@@ -1,55 +1,80 @@
-Date: 22 Aug 2002 06:29:54 -0000
-Message-ID: <20020822062954.18098.qmail@webmail8.rediffmail.com>
-MIME-Version: 1.0
-From: "Narendra  " <narengh@rediffmail.com>
-Reply-To: "Narendra  " <narengh@rediffmail.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Embedded Planet 
-Content-type: text/plain;
-	format=flowed
+To: John.Fisher@nec.com.au
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: cygwin and embedded linux 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 22 Aug 2002 11:15:20 +1000."
+             <000501c24979$6348a190$37d34c93@neca.nec.com.au>
+Date: Thu, 22 Aug 2002 08:56:04 +0200
+Message-Id: <20020822065609.6DE7610E00@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi All,
+John,
 
-I have my WLAN driver running on Embedded Planet board with
-HardHat Linux.
+in message <000501c24979$6348a190$37d34c93@neca.nec.com.au> you wrote:
+>
+> So what are the issues: How is cygwin significantly different from Linux
+> that you would not want to use it?
 
-But when i send a ping of size more than 1000 bytes, there is
-crash everytime after successful req/reply of about 250packets.
+First, you may run into compatibility issues.  It  is  a  non-trivial
+task  to  create  a  set  of  tools  that  will  run on more than one
+combination of versions of Cygwin and Windoze: a product  that  works
+for Cygwin under Windows 2000 may fail if attempted to run on Windows
+NT,  let alone Windows 98. Different versions of Cygwin may even have
+different layout of the C header files.
 
-Here is the oops message i got,
+Second, many packages need for their build process a couple  of  UNIX
+tools  which  are  not  available  on Cygwin. For example: localedef,
+mktemp, rpcgen and others.
 
-Machine check in kernel mode.
-Caused by (from SRR1=9032): Unknown values in msr
-Oops: machine check, sig: 7
-NIP: C56784CC XER: C000197F LR: C567849C SP: C0129E20 REGS:
-c0129d70 TRAP: 0200
-MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-TASK = c0128010[0] 'swapper' Last syscall: 120
-last math 00000000 last altivec 00000000
-GPR00: 00000498 C0129E20 C0128010 00000000 8000001C 000002C1
-00000000 C3CA8800
-GPR08: 80000036 00000100 00000498 00003637 35F33F93 1001B8DC
-FF76FFDF BFBBFE7F
-GPR16: FFFFFDFF BFFFFFFF FFEFFFFF FFFFFEFF 00001032 00129EF0
-00000000 00000036
-GPR24: 00000018 00000000 000005D8 C3F87604 C3CA8C98 C3F87400
-8000001C 0000001C
-Call backtrace:
-C567849C C5676A78 C5674D94 C0003904 C0003A30 C0002810 C0003F84
-C0003F98 C01367C0 C00021E4
-Kernel panic: Aiee, killing interrupt handler
+Finally, you will probably run into  problems  with  NFS  support  on
+Windows  hosts.  I'm not sure that you can really create a filesystem
+on a Windows box which preserves all the information required  for  a
+LInux  root  filesystem,  so that you can actually export if over NFS
+for your targets (think about issues like symbolic  and  hard  links,
+owners,  groups,  sticky bit [for /tmp], setuid / setgid bits, device
+files, ...).
 
-In interrupt handler - not syncing
-Rebooting in 180 seconds..
+> Are there useful tools that run under Linux but not under cygwin?
 
-any idea why there is a crash?.
+Yes.
 
-thanks in advance for all inputs,
+> The reason I ask is that my organization currently does its software
+> development under windows using proprietary tools. We have to maintain our
+> existing products using these tools. We are however contemplating new
+> development using linux. If we have to dual boot our PCs or have an extra PC
+> running Linux for each developer, that is going to bring its own set of
+> nuisances and problems.
 
-Naren
+There are several solutions.
 
+First, and recommended, you can install one  of  a  couple  of  Linux
+servers.  It  is  trivial  to  make these resources available to your
+developers on Windoze hosts. You don't have to install a new Linux PC
+for every developer. Remember that UNIX has a long tradition in using
+dumb clients (like VT100 terminals or X11  clients);  a  windows  box
+fits nicely into this ;-)
+
+If you still think this is not an option, you don;t have to dual-boot
+to use both environments on the same machine. For example, Lineo uses
+(used?) vmware to provide a (hidden) Linux box running under  Windows
+to  provide  a Linux development environment on Windows systems - you
+can do the same.
+
+> Are there others in this situation and how have they chosen to solve it?
+
+Of course there is also the more radical approach: install  Linux  on
+all your Windoze boxen, and save a lot of money on M$ licenses ;-)
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+The price one pays for pursuing any profession,  or  calling,  is  an
+intimate knowledge of its ugly side.                  - James Baldwin
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
