@@ -1,49 +1,37 @@
-Message-ID: <63127.213.107.143.228.1049052624.squirrel@www.solinno.co.uk>
-Date: Sun, 30 Mar 2003 20:30:24 +0100 (BST)
-Subject: OpenPIC spurious vector
+Message-ID: <64885.213.107.143.228.1049136124.squirrel@www.solinno.co.uk>
+Date: Mon, 31 Mar 2003 19:42:04 +0100 (BST)
+Subject: Re: [PATCH] Fix memory size not being passed to kernel from prep boot loader
 From: "Leigh Brown" <leigh@solinno.co.uk>
-To: <linuxppc-dev@lists.linuxppc.org>
+To: <trini@kernel.crashing.org>
+In-Reply-To: <20030327202554.GH31771@ip68-0-152-218.tc.ph.cox.net>
+References: <63228.213.107.143.228.1048441818.squirrel@www.solinno.co.uk>
+        <20030327201313.GG31771@ip68-0-152-218.tc.ph.cox.net>
+        <20030327202554.GH31771@ip68-0-152-218.tc.ph.cox.net>
+Cc: <paulus@samba.org>, <linuxppc-dev@lists.linuxppc.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi there,
+Tom Rini said:
+> On Thu, Mar 27, 2003 at 01:13:13PM -0700, Tom Rini wrote:
+>>
+>> On Sun, Mar 23, 2003 at 05:50:18PM -0000, Leigh Brown wrote:
+>>
+>> > Current linuxppc_2_4 doesn't work on my 140 because the boot loader
+>> isn't passing in the memory size.  This patch fixes that.
+>>
+>> Paul broke it in the massive merge of other PReP changes.  Can you try
+>> just adding the BI_MEM_SIZE record code in?  The rest of those changes
+>> should be superfluous.  Thanks.
+>
+> Ah, I think not.  How about the following patch?  I didn't want to
+> remove the 'residual = hold_residual' line due to SMP things
+> referencing both.  Troy, can you explain why it's not consistenly
+> referencing 'hold_residual' ?
 
-Early RS/6000 7024-E20 and 7024-E30 models have weird openpics.  One of
-the problems with them is that the spurious vector doesn't seem to work
-properly.  Even though the spurious vector is being set to (127 + 16),
-on these particular machines it always returns 255.
-
-I've thought of a couple of ways of fixing this, but the simplest seems
-to be to change OPENPIC_VEC_SPURIOUS to 239.  Thus, it is always set to
-the value (239 + 16 = 255) that just happens to be the only one available
-on these boxes.
-
-I've applied the patch below on my 140 and it seems to work fine, but I
-don't know if there are any unintended consequences to this change.
-
-Can anyone think of any?
-
-Thanks in advance,
-
-Leigh.
-
-diff -urNX /home/leigh/.diffex prev/include/asm-ppc/open_pic.h
-linuxppc_2_4_devel-2.4.19-local/include/asm-ppc/open_pic.h
---- prev/include/asm-ppc/open_pic.h	2003-03-30 17:46:56.000000000 +0100
-+++ linuxppc_2_4_devel-2.4.19-local/include/asm-ppc/open_pic.h	2003-03-30
-19:59:39.000000000 +0100
-@@ -26,7 +26,7 @@
-
- #define OPENPIC_VEC_TIMER	64	/* and up */
- #define OPENPIC_VEC_IPI		72	/* and up */
--#define OPENPIC_VEC_SPURIOUS	127
-+#define OPENPIC_VEC_SPURIOUS	239
-
- /*
-  * For the OpenPIC_InitSenses table, we include both the sense
+It works, anyway.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
