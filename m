@@ -1,582 +1,99 @@
-From: "Stefan Roese" <stefan.roese@esd-electronics.com>
-To: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: PPC405GPr support patch (and a small CPCI405 update)
-Date: Thu, 13 Jun 2002 17:00:50 +0200
-Message-ID: <EFEAIMDCOOOHIEPHDNFJCEAKEBAA.stefan.roese@esd-electronics.com>
+Message-ID: <3D08B63B.4000901@lvl7.com>
+Date: Thu, 13 Jun 2002 11:11:55 -0400
+From: Neil Horman <nhorman@lvl7.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_002F_01C212FB.DF187B10"
+To: Steffen Rumler <Steffen.Rumler@icn.siemens.de>
+Cc: linuxppc <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Accessing the user stack inside system call service routine
+References: <3D084D1F.95AFFCBB@icn.siemens.de> <3D087D95.5070206@lvl7.com> <3D08AA25.9AF41113@icn.siemens.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
+Ahh, so you had already covered the addressing point.  sorry.  Well, the next
+thing that would occur to me is that 128 bytes of all zero's may be ok.  I'm not
+quite sure of the details of the inner workings of the standard C library for
+this situation, but right before the code in the C library executes a trap
+instruction to make the reuqested system call, it may append extra data to the
+last user space stack frame.  I know this happens during signal handling.
+Granted that call stack is transitioning the other way, but you see the same
+sort of behavior, in which the first "stack frame" is not really a stack frame,
+but rather a block of data which is removed before a return to the application
+at the point where it called the library function.  I would suggest that you try
+   copying more than 128 bytes to see if you start seeing valid stack frames, or
+more directly, invistigate the C library code which wraps around the system call
+in user space to see if it makes and strange manipulations to the stack frame
+before executing a trap.  Good luck!
+Neil
 
-------=_NextPart_000_002F_01C212FB.DF187B10
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Steffen Rumler wrote:
 
-Hi,
+>>        Since the process virtual address which are used on the user space stack are not
+>>directly available from the context of the kernel, you will need to do some
+>>virtual address translation to access teh stack frames you are interested in.  I
+>>would suggest that you look at the source code for the copy_to_user and
+>>copy_from_user functions to see how they access a process address space from
+>>kernel space.  That will probably start you in the right direction.
+>>hope that helps!
+>>Neil :)
+>>
+>>
+>
+> Thank you for the answer.
+>
+> I have not accessed the user  space directly.
+> Instead I have just used copy_from_user():
+>
+>
+> int
+> sys_sigsuspend(old_sigset_t mask, int p2, int p3, int p4, int p6, int
+> p7,
+> 	       struct pt_regs *regs)
+> {
+>   ...
+>   while (1) {
+>
+>     current->state = TASK_INTERRUPTIBLE;
+>
+>     current->in_suspend = 1;     /* XXX my stuff for debugging */
+>     current->user_regs  = regs;
+>     if(copy_from_user(current->user_stack_xxx, regs->gpr[1], 128)){
+>
+>       printk("\n------------- copy_from_user failed: %d\n", ret);
+>     }
+>
+>     schedule();
+>
+>     current->in_suspend = 0;    /* XXX my stuff for debugging */
+>     current->user_regs  = NULL;
+>     ...
+> }
+>
+> The copy_from_user() works fine. The printk() message does not
+> appear.
+>
+> Later, when I inspect 'current->user_stack_xxx' (temporary
+> added to struct_task) for all processes with 'current->in_suspend'
+> set, all seems to be zero. I do this check within a kernel
+> module, I can load when the threads are hanging.
+>
+> Steffen
+>
+>
 
-here is a small patch to support the new PPC405GPr (cputable.c).
-Additionally I have included some updates for our CPCI405 board (rtc support
-and default config update). This patch is against the current
-linuxppc_2_4_devel tree.
 
-By the way:
-Upon looking into cputable.c I noticed that all NP4xx ppc's have the wrong
-cache line size configured (total cache size in kB instead of cache line
-size). May this cause some problems?
-
-Ciao,
-Stefan.
-
-------=_NextPart_000_002F_01C212FB.DF187B10
-Content-Type: application/octet-stream;
-	name="linuxppc_2_4_devel_2.4.19pre10.patch"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
-	filename="linuxppc_2_4_devel_2.4.19pre10.patch"
-
-diff -N -u -r --exclude=3DCVS --exclude=3DLOG =
-linuxppc_2_4_devel_2.4.19pre10_orig/linuxppc_2_4_devel/arch/ppc/configs/c=
-pci405_defconfig =
-linuxppc_2_4_devel_2.4.19pre10/linuxppc_2_4_devel/arch/ppc/configs/cpci40=
-5_defconfig=0A=
---- =
-linuxppc_2_4_devel_2.4.19pre10_orig/linuxppc_2_4_devel/arch/ppc/configs/c=
-pci405_defconfig	Wed Apr 24 18:25:15 2002=0A=
-+++ =
-linuxppc_2_4_devel_2.4.19pre10/linuxppc_2_4_devel/arch/ppc/configs/cpci40=
-5_defconfig	Thu Jun 13 16:29:59 2002=0A=
-@@ -1,5 +1,5 @@=0A=
- #=0A=
--# Automatically generated make config: don't edit=0A=
-+# Automatically generated by make menuconfig: don't edit=0A=
- #=0A=
- # CONFIG_UID16 is not set=0A=
- # CONFIG_RWSEM_GENERIC_SPINLOCK is not set=0A=
-@@ -10,6 +10,7 @@=0A=
- # Code maturity level options=0A=
- #=0A=
- CONFIG_EXPERIMENTAL=3Dy=0A=
-+# CONFIG_ADVANCED_OPTIONS is not set=0A=
- =0A=
- #=0A=
- # Loadable module support=0A=
-@@ -25,14 +26,18 @@=0A=
- CONFIG_PPC32=3Dy=0A=
- # CONFIG_6xx is not set=0A=
- CONFIG_40x=3Dy=0A=
-+# CONFIG_440 is not set=0A=
- # CONFIG_POWER3 is not set=0A=
- # CONFIG_8xx is not set=0A=
- # CONFIG_PPC_ISERIES is not set=0A=
-+CONFIG_4xx=3Dy=0A=
- # CONFIG_PPC_STD_MMU is not set=0A=
-+# CONFIG_ASH is not set=0A=
- # CONFIG_CEDER is not set=0A=
- CONFIG_CPCI405=3Dy=0A=
- # CONFIG_EP405 is not set=0A=
- # CONFIG_OAK is not set=0A=
-+# CONFIG_RAINIER is not set=0A=
- # CONFIG_REDWOOD_4 is not set=0A=
- # CONFIG_REDWOOD_5 is not set=0A=
- # CONFIG_TIVO is not set=0A=
-@@ -43,11 +48,14 @@=0A=
- CONFIG_405GP=3Dy=0A=
- CONFIG_IBM405_ERR77=3Dy=0A=
- CONFIG_IBM_OCP=3Dy=0A=
--# CONFIG_405_DMA is not set=0A=
-+# CONFIG_PM is not set=0A=
- CONFIG_UART0_TTYS0=3Dy=0A=
- # CONFIG_UART0_TTYS1 is not set=0A=
- CONFIG_IBM405_ERR51=3Dy=0A=
- CONFIG_NOT_COHERENT_CACHE=3Dy=0A=
-+# CONFIG_PPC4xx_DMA is not set=0A=
-+CONFIG_PPC4xx_EDMA=3Dy=0A=
-+CONFIG_OCP_PROC=3Dy=0A=
- =0A=
- #=0A=
- # General setup=0A=
-@@ -75,7 +83,7 @@=0A=
- # Parallel port support=0A=
- #=0A=
- # CONFIG_PARPORT is not set=0A=
--# CONFIG_PPC_RTC is not set=0A=
-+CONFIG_PPC_RTC=3Dy=0A=
- # CONFIG_CMDLINE_BOOL is not set=0A=
- =0A=
- #=0A=
-@@ -97,8 +105,10 @@=0A=
- # CONFIG_PARIDE is not set=0A=
- # CONFIG_BLK_CPQ_DA is not set=0A=
- # CONFIG_BLK_CPQ_CISS_DA is not set=0A=
-+# CONFIG_CISS_SCSI_TAPE is not set=0A=
- # CONFIG_BLK_DEV_DAC960 is not set=0A=
--CONFIG_BLK_DEV_LOOP=3Dy=0A=
-+# CONFIG_BLK_DEV_UMEM is not set=0A=
-+# CONFIG_BLK_DEV_LOOP is not set=0A=
- # CONFIG_BLK_DEV_NBD is not set=0A=
- CONFIG_BLK_DEV_RAM=3Dy=0A=
- CONFIG_BLK_DEV_RAM_SIZE=3D4096=0A=
-@@ -141,10 +151,6 @@=0A=
- # CONFIG_KHTTPD is not set=0A=
- # CONFIG_ATM is not set=0A=
- # CONFIG_VLAN_8021Q is not set=0A=
--=0A=
--#=0A=
--#  =0A=
--#=0A=
- # CONFIG_IPX is not set=0A=
- # CONFIG_ATALK is not set=0A=
- =0A=
-@@ -152,13 +158,6 @@=0A=
- # Appletalk devices=0A=
- #=0A=
- # CONFIG_DEV_APPLETALK is not set=0A=
--# CONFIG_LTPC is not set=0A=
--# CONFIG_COPS is not set=0A=
--# CONFIG_COPS_DAYNA is not set=0A=
--# CONFIG_COPS_TANGENT is not set=0A=
--# CONFIG_IPDDP is not set=0A=
--# CONFIG_IPDDP_ENCAP is not set=0A=
--# CONFIG_IPDDP_DECAP is not set=0A=
- # CONFIG_DECNET is not set=0A=
- # CONFIG_BRIDGE is not set=0A=
- # CONFIG_X25 is not set=0A=
-@@ -176,6 +175,11 @@=0A=
- # CONFIG_NET_SCHED is not set=0A=
- =0A=
- #=0A=
-+# Network testing=0A=
-+#=0A=
-+# CONFIG_NET_PKTGEN is not set=0A=
-+=0A=
-+#=0A=
- # ATA/IDE/MFM/RLL support=0A=
- #=0A=
- CONFIG_IDE=3Dy=0A=
-@@ -184,14 +188,11 @@=0A=
- # IDE, ATA and ATAPI Block devices=0A=
- #=0A=
- CONFIG_BLK_DEV_IDE=3Dy=0A=
--=0A=
--#=0A=
--# Please see Documentation/ide.txt for help/info on IDE drives=0A=
--#=0A=
- # CONFIG_BLK_DEV_HD_IDE is not set=0A=
- # CONFIG_BLK_DEV_HD is not set=0A=
- CONFIG_BLK_DEV_IDEDISK=3Dy=0A=
- # CONFIG_IDEDISK_MULTI_MODE is not set=0A=
-+# CONFIG_IDEDISK_STROKE is not set=0A=
- # CONFIG_BLK_DEV_IDEDISK_VENDOR is not set=0A=
- # CONFIG_BLK_DEV_IDEDISK_FUJITSU is not set=0A=
- # CONFIG_BLK_DEV_IDEDISK_IBM is not set=0A=
-@@ -206,16 +207,13 @@=0A=
- # CONFIG_BLK_DEV_IDETAPE is not set=0A=
- # CONFIG_BLK_DEV_IDEFLOPPY is not set=0A=
- # CONFIG_BLK_DEV_IDESCSI is not set=0A=
--=0A=
--#=0A=
--# IDE chipset support/bugfixes=0A=
--#=0A=
-+# CONFIG_IDE_TASK_IOCTL is not set=0A=
- # CONFIG_BLK_DEV_CMD640 is not set=0A=
- # CONFIG_BLK_DEV_CMD640_ENHANCED is not set=0A=
- # CONFIG_BLK_DEV_ISAPNP is not set=0A=
- # CONFIG_BLK_DEV_RZ1000 is not set=0A=
- # CONFIG_BLK_DEV_IDEPCI is not set=0A=
--# CONFIG_BLK_DEV_SL82C105 is not set=0A=
-+# CONFIG_IBM_OCP_IDE is not set=0A=
- CONFIG_BLK_DEV_CPCI405_IDE=3Dy=0A=
- # CONFIG_IDE_CHIPSETS is not set=0A=
- # CONFIG_IDEDMA_AUTO is not set=0A=
-@@ -272,29 +270,7 @@=0A=
- #=0A=
- # Ethernet (10 or 100Mbit)=0A=
- #=0A=
--CONFIG_NET_ETHERNET=3Dy=0A=
--# CONFIG_MACE is not set=0A=
--# CONFIG_BMAC is not set=0A=
--# CONFIG_GMAC is not set=0A=
--CONFIG_IBM_OCP_ENET=3Dy=0A=
--# CONFIG_IBM_OCP_ENET_ERROR_MSG is not set=0A=
--CONFIG_IBM_OCP_ENET_RX_BUFF=3D64=0A=
--CONFIG_IBM_OCP_ENET_TX_BUFF=3D8=0A=
--CONFIG_IBM_OCP_ENET_GAP=3D8=0A=
--# CONFIG_SUNLANCE is not set=0A=
--# CONFIG_HAPPYMEAL is not set=0A=
--# CONFIG_SUNBMAC is not set=0A=
--# CONFIG_SUNQE is not set=0A=
--# CONFIG_SUNLANCE is not set=0A=
--# CONFIG_SUNGEM is not set=0A=
--# CONFIG_NET_VENDOR_3COM is not set=0A=
--# CONFIG_LANCE is not set=0A=
--# CONFIG_NET_VENDOR_SMC is not set=0A=
--# CONFIG_NET_VENDOR_RACAL is not set=0A=
--# CONFIG_HP100 is not set=0A=
--# CONFIG_NET_ISA is not set=0A=
--# CONFIG_NET_PCI is not set=0A=
--# CONFIG_NET_POCKET is not set=0A=
-+# CONFIG_NET_ETHERNET is not set=0A=
- =0A=
- #=0A=
- # Ethernet (1000 Mbit)=0A=
-@@ -306,6 +282,23 @@=0A=
- # CONFIG_HAMACHI is not set=0A=
- # CONFIG_YELLOWFIN is not set=0A=
- # CONFIG_SK98LIN is not set=0A=
-+# CONFIG_TIGON3 is not set=0A=
-+=0A=
-+#=0A=
-+# Backplane Networking=0A=
-+#=0A=
-+# CONFIG_NPNET is not set=0A=
-+=0A=
-+#=0A=
-+# On-chip net devices=0A=
-+#=0A=
-+CONFIG_IBM_OCP_ENET=3Dy=0A=
-+# CONFIG_IBM_OCP_ENET_ERROR_MSG is not set=0A=
-+CONFIG_IBM_OCP_ENET_RX_BUFF=3D64=0A=
-+CONFIG_IBM_OCP_ENET_TX_BUFF=3D8=0A=
-+CONFIG_IBM_OCP_ENET_GAP=3D8=0A=
-+CONFIG_IBM_OCP_ENET_SKB_RES=3D0=0A=
-+CONFIG_OCP_NET=3Dy=0A=
- # CONFIG_FDDI is not set=0A=
- # CONFIG_HIPPI is not set=0A=
- # CONFIG_PLIP is not set=0A=
-@@ -388,8 +381,10 @@=0A=
- CONFIG_I2C=3Dy=0A=
- # CONFIG_I2C_ALGOBIT is not set=0A=
- # CONFIG_I2C_ALGOPCF is not set=0A=
--# CONFIG_I2C_CHARDEV is not set=0A=
--# CONFIG_I2C_PROC is not set=0A=
-+CONFIG_I2C_IBM_OCP_ALGO=3Dy=0A=
-+CONFIG_I2C_IBM_OCP_ADAP=3Dy=0A=
-+CONFIG_I2C_CHARDEV=3Dy=0A=
-+CONFIG_I2C_PROC=3Dy=0A=
- =0A=
- #=0A=
- # Mice=0A=
-@@ -401,27 +396,18 @@=0A=
- # Joysticks=0A=
- #=0A=
- # CONFIG_INPUT_GAMEPORT is not set=0A=
--=0A=
--#=0A=
--# Input core support is needed for gameports=0A=
--#=0A=
--=0A=
--#=0A=
--# Input core support is needed for joysticks=0A=
--#=0A=
- # CONFIG_QIC02_TAPE is not set=0A=
- =0A=
- #=0A=
- # Watchdog Cards=0A=
- #=0A=
- # CONFIG_WATCHDOG is not set=0A=
--# CONFIG_INTEL_RNG is not set=0A=
- # CONFIG_NVRAM is not set=0A=
- # CONFIG_RTC is not set=0A=
- # CONFIG_DTLK is not set=0A=
- # CONFIG_R3964 is not set=0A=
- # CONFIG_APPLICOM is not set=0A=
--CONFIG_PPC405_GPIO=3Dy=0A=
-+# CONFIG_IBM_OCP_GPIO is not set=0A=
- =0A=
- #=0A=
- # Ftape, the floppy tape device driver=0A=
-@@ -452,8 +438,8 @@=0A=
- # CONFIG_EXT3_FS is not set=0A=
- # CONFIG_JBD is not set=0A=
- # CONFIG_JBD_DEBUG is not set=0A=
--# CONFIG_FAT_FS is not set=0A=
--# CONFIG_MSDOS_FS is not set=0A=
-+CONFIG_FAT_FS=3Dy=0A=
-+CONFIG_MSDOS_FS=3Dy=0A=
- # CONFIG_UMSDOS_FS is not set=0A=
- # CONFIG_VFAT_FS is not set=0A=
- # CONFIG_EFS_FS is not set=0A=
-@@ -461,7 +447,7 @@=0A=
- # CONFIG_JFFS2_FS is not set=0A=
- # CONFIG_CRAMFS is not set=0A=
- CONFIG_TMPFS=3Dy=0A=
--# CONFIG_RAMFS is not set=0A=
-+CONFIG_RAMFS=3Dy=0A=
- # CONFIG_ISO9660_FS is not set=0A=
- # CONFIG_JOLIET is not set=0A=
- # CONFIG_ZISOFS is not set=0A=
-@@ -491,12 +477,13 @@=0A=
- # CONFIG_CODA_FS is not set=0A=
- # CONFIG_INTERMEZZO_FS is not set=0A=
- CONFIG_NFS_FS=3Dy=0A=
--# CONFIG_NFS_V3 is not set=0A=
-+CONFIG_NFS_V3=3Dy=0A=
- CONFIG_ROOT_NFS=3Dy=0A=
- # CONFIG_NFSD is not set=0A=
- # CONFIG_NFSD_V3 is not set=0A=
- CONFIG_SUNRPC=3Dy=0A=
- CONFIG_LOCKD=3Dy=0A=
-+CONFIG_LOCKD_V4=3Dy=0A=
- # CONFIG_SMB_FS is not set=0A=
- # CONFIG_NCP_FS is not set=0A=
- # CONFIG_NCPFS_PACKET_SIGNING is not set=0A=
-@@ -516,7 +503,49 @@=0A=
- # CONFIG_PARTITION_ADVANCED is not set=0A=
- CONFIG_MSDOS_PARTITION=3Dy=0A=
- # CONFIG_SMB_NLS is not set=0A=
--# CONFIG_NLS is not set=0A=
-+CONFIG_NLS=3Dy=0A=
-+=0A=
-+#=0A=
-+# Native Language Support=0A=
-+#=0A=
-+CONFIG_NLS_DEFAULT=3D"iso8859-1"=0A=
-+# CONFIG_NLS_CODEPAGE_437 is not set=0A=
-+# CONFIG_NLS_CODEPAGE_737 is not set=0A=
-+# CONFIG_NLS_CODEPAGE_775 is not set=0A=
-+# CONFIG_NLS_CODEPAGE_850 is not set=0A=
-+# CONFIG_NLS_CODEPAGE_852 is not set=0A=
-+# CONFIG_NLS_CODEPAGE_855 is not set=0A=
-+# CONFIG_NLS_CODEPAGE_857 is not set=0A=
-+# CONFIG_NLS_CODEPAGE_860 is not set=0A=
-+# CONFIG_NLS_CODEPAGE_861 is not set=0A=
-+# CONFIG_NLS_CODEPAGE_862 is not set=0A=
-+# CONFIG_NLS_CODEPAGE_863 is not set=0A=
-+# CONFIG_NLS_CODEPAGE_864 is not set=0A=
-+# CONFIG_NLS_CODEPAGE_865 is not set=0A=
-+# CONFIG_NLS_CODEPAGE_866 is not set=0A=
-+# CONFIG_NLS_CODEPAGE_869 is not set=0A=
-+# CONFIG_NLS_CODEPAGE_936 is not set=0A=
-+# CONFIG_NLS_CODEPAGE_950 is not set=0A=
-+# CONFIG_NLS_CODEPAGE_932 is not set=0A=
-+# CONFIG_NLS_CODEPAGE_949 is not set=0A=
-+# CONFIG_NLS_CODEPAGE_874 is not set=0A=
-+# CONFIG_NLS_ISO8859_8 is not set=0A=
-+# CONFIG_NLS_CODEPAGE_1250 is not set=0A=
-+# CONFIG_NLS_CODEPAGE_1251 is not set=0A=
-+# CONFIG_NLS_ISO8859_1 is not set=0A=
-+# CONFIG_NLS_ISO8859_2 is not set=0A=
-+# CONFIG_NLS_ISO8859_3 is not set=0A=
-+# CONFIG_NLS_ISO8859_4 is not set=0A=
-+# CONFIG_NLS_ISO8859_5 is not set=0A=
-+# CONFIG_NLS_ISO8859_6 is not set=0A=
-+# CONFIG_NLS_ISO8859_7 is not set=0A=
-+# CONFIG_NLS_ISO8859_9 is not set=0A=
-+# CONFIG_NLS_ISO8859_13 is not set=0A=
-+# CONFIG_NLS_ISO8859_14 is not set=0A=
-+# CONFIG_NLS_ISO8859_15 is not set=0A=
-+# CONFIG_NLS_KOI8_R is not set=0A=
-+# CONFIG_NLS_KOI8_U is not set=0A=
-+# CONFIG_NLS_UTF8 is not set=0A=
- =0A=
- #=0A=
- # Sound=0A=
-113not set=0A=
- =0A=
- #=0A=
--# MPC4xx Driver Options=0A=
-+# IBM 4xx options=0A=
- #=0A=
- =0A=
- #=0A=
- # USB support=0A=
- #=0A=
- # CONFIG_USB is not set=0A=
--=0A=
--#=0A=
--# USB Controllers=0A=
--#=0A=
--# CONFIG_USB_UHCI is not set=0A=
--# CONFIG_USB_UHCI_ALT is not set=0A=
--# CONFIG_USB_OHCI is not set=0A=
--=0A=
--#=0A=
--# USB Device Class drivers=0A=
--#=0A=
--# CONFIG_USB_AUDIO is not set=0A=
--# CONFIG_USB_BLUETOOTH is not set=0A=
--# CONFIG_USB_STORAGE is not set=0A=
--# CONFIG_USB_STORAGE_DEBUG is not set=0A=
--# CONFIG_USB_STORAGE_DATAFAB is not set=0A=
--# CONFIG_USB_STORAGE_FREECOM is not set=0A=
--# CONFIG_USB_STORAGE_ISD200 is not set=0A=
--# CONFIG_USB_STORAGE_DPCM is not set=0A=
--# CONFIG_USB_STORAGE_HP8200e is not set=0A=
--# CONFIG_USB_STORAGE_SDDR09 is not set=0A=
--# CONFIG_USB_STORAGE_JUMPSHOT is not set=0A=
--# CONFIG_USB_ACM is not set=0A=
--# CONFIG_USB_PRINTER is not set=0A=
--=0A=
--#=0A=
--# USB Human Interface Devices (HID)=0A=
--#=0A=
--=0A=
--#=0A=
--#   Input core support is needed for USB HID=0A=
--#=0A=
--=0A=
--#=0A=
--# USB Imaging devices=0A=
--#=0A=
--# CONFIG_USB_DC2XX is not set=0A=
--# CONFIG_USB_MDC800 is not set=0A=
--# CONFIG_USB_SCANNER is not set=0A=
--# CONFIG_USB_MICROTEK is not set=0A=
--# CONFIG_USB_HPUSBSCSI is not set=0A=
--=0A=
--#=0A=
--# USB Multimedia devices=0A=
--#=0A=
--=0A=
--#=0A=
--#   Video4Linux support is needed for USB Multimedia device support=0A=
--#=0A=
--=0A=
--#=0A=
--# USB Network adaptors=0A=
--#=0A=
--# CONFIG_USB_PEGASUS is not set=0A=
--# CONFIG_USB_KAWETH is not set=0A=
--# CONFIG_USB_CATC is not set=0A=
--# CONFIG_USB_CDCETHER is not set=0A=
--# CONFIG_USB_USBNET is not set=0A=
--=0A=
--#=0A=
--# USB port drivers=0A=
--#=0A=
--# CONFIG_USB_USS720 is not set=0A=
--=0A=
--#=0A=
--# USB Serial Converter support=0A=
--#=0A=
--# CONFIG_USB_SERIAL is not set=0A=
--# CONFIG_USB_SERIAL_GENERIC is not set=0A=
--# CONFIG_USB_SERIAL_BELKIN is not set=0A=
--# CONFIG_USB_SERIAL_WHITEHEAT is not set=0A=
--# CONFIG_USB_SERIAL_DIGI_ACCELEPORT is not set=0A=
--# CONFIG_USB_SERIAL_EMPEG is not set=0A=
--# CONFIG_USB_SERIAL_FTDI_SIO is not set=0A=
--# CONFIG_USB_SERIAL_VISOR is not set=0A=
--# CONFIG_USB_SERIAL_IPAQ is not set=0A=
--# CONFIG_USB_SERIAL_IR is not set=0A=
--# CONFIG_USB_SERIAL_EDGEPORT is not set=0A=
--# CONFIG_USB_SERIAL_KEYSPAN_PDA is not set=0A=
--# CONFIG_USB_SERIAL_KEYSPAN is not set=0A=
--# CONFIG_USB_SERIAL_KEYSPAN_USA28 is not set=0A=
--# CONFIG_USB_SERIAL_KEYSPAN_USA28X is not set=0A=
--# CONFIG_USB_SERIAL_KEYSPAN_USA28XA is not set=0A=
--# CONFIG_USB_SERIAL_KEYSPAN_USA28XB is not set=0A=
--# CONFIG_USB_SERIAL_KEYSPAN_USA19 is not set=0A=
--# CONFIG_USB_SERIAL_KEYSPAN_USA18X is not set=0A=
--# CONFIG_USB_SERIAL_KEYSPAN_USA19W is not set=0A=
--# CONFIG_USB_SERIAL_KEYSPAN_USA49W is not set=0A=
--# CONFIG_USB_SERIAL_MCT_U232 is not set=0A=
--# CONFIG_USB_SERIAL_KLSI is not set=0A=
--# CONFIG_USB_SERIAL_PL2303 is not set=0A=
--# CONFIG_USB_SERIAL_CYBERJACK is not set=0A=
--# CONFIG_USB_SERIAL_XIRCOM is not set=0A=
--# CONFIG_USB_SERIAL_OMNINET is not set=0A=
--=0A=
--#=0A=
--# USB Miscellaneous drivers=0A=
--#=0A=
--# CONFIG_USB_RIO500 is not set=0A=
- =0A=
- #=0A=
- # Bluetooth support=0A=
-diff -N -u -r --exclude=3DCVS --exclude=3DLOG =
-linuxppc_2_4_devel_2.4.19pre10_orig/linuxppc_2_4_devel/arch/ppc/kernel/cp=
-utable.c =
-linuxppc_2_4_devel_2.4.19pre10/linuxppc_2_4_devel/arch/ppc/kernel/cputabl=
-e.c=0A=
---- =
-linuxppc_2_4_devel_2.4.19pre10_orig/linuxppc_2_4_devel/arch/ppc/kernel/cp=
-utable.c	Wed Jun  5 10:01:00 2002=0A=
-+++ =
-linuxppc_2_4_devel_2.4.19pre10/linuxppc_2_4_devel/arch/ppc/kernel/cputabl=
-e.c	Thu Jun 13 13:54:56 2002=0A=
-@@ -328,6 +328,13 @@=0A=
- 	32, 32,=0A=
- 	0, /*__setup_cpu_405 */=0A=
-     },=0A=
-+    {	/* 405GPr */=0A=
-+    	0xffff0000, 0x50910000, "405GPr",=0A=
-+    	CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB,=0A=
-+    	PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,=0A=
-+	32, 32,=0A=
-+	0, /*__setup_cpu_405 */=0A=
-+    },=0A=
-     {	/* STB 03xxx */=0A=
-     	0xffff0000, 0x40130000, "STB03xxx",=0A=
-     	CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB,=0A=
-diff -N -u -r --exclude=3DCVS --exclude=3DLOG =
-linuxppc_2_4_devel_2.4.19pre10_orig/linuxppc_2_4_devel/arch/ppc/platforms=
-/cpci405.c =
-linuxppc_2_4_devel_2.4.19pre10/linuxppc_2_4_devel/arch/ppc/platforms/cpci=
-405.c=0A=
---- =
-linuxppc_2_4_devel_2.4.19pre10_orig/linuxppc_2_4_devel/arch/ppc/platforms=
-/cpci405.c	Wed Apr 24 18:25:18 2002=0A=
-+++ =
-linuxppc_2_4_devel_2.4.19pre10/linuxppc_2_4_devel/arch/ppc/platforms/cpci=
-405.c	Thu Jun 13 15:26:41 2002=0A=
-@@ -26,6 +26,8 @@=0A=
- #include <asm/machdep.h>=0A=
- #include <asm/todc.h>=0A=
- =0A=
-+void *cpci405_nvram; =0A=
-+=0A=
- /*=0A=
-  * Some IRQs unique to CPCI-405.=0A=
-  */=0A=
-@@ -53,11 +55,15 @@=0A=
- void __init=0A=
- board_setup_arch(void)=0A=
- {=0A=
-+#ifdef CONFIG_PPC_RTC=0A=
-+	TODC_INIT(TODC_TYPE_MK48T35, cpci405_nvram, cpci405_nvram, =
-cpci405_nvram, 8);=0A=
-+#endif /* CONFIG_PPC_RTC */ =0A=
- }=0A=
- =0A=
- void __init=0A=
- board_io_mapping(void)=0A=
- {=0A=
-+	cpci405_nvram =3D ioremap(CPCI405_NVRAM_PADDR, CPCI405_NVRAM_SIZE);=0A=
- }=0A=
- =0A=
- void __init=0A=
-diff -N -u -r --exclude=3DCVS --exclude=3DLOG =
-linuxppc_2_4_devel_2.4.19pre10_orig/linuxppc_2_4_devel/arch/ppc/platforms=
-/cpci405.h =
-linuxppc_2_4_devel_2.4.19pre10/linuxppc_2_4_devel/arch/ppc/platforms/cpci=
-405.h=0A=
---- =
-linuxppc_2_4_devel_2.4.19pre10_orig/linuxppc_2_4_devel/arch/ppc/platforms=
-/cpci405.h	Wed Apr 24 18:25:18 2002=0A=
-+++ =
-linuxppc_2_4_devel_2.4.19pre10/linuxppc_2_4_devel/arch/ppc/platforms/cpci=
-405.h	Thu Jun 13 15:26:46 2002=0A=
-@@ -18,6 +18,12 @@=0A=
- */=0A=
- #define bi_tbfreq bi_intfreq=0A=
- =0A=
-+extern void *cpci405_nvram;=0A=
-+=0A=
-+/* Map for the NVRAM space */=0A=
-+#define CPCI405_NVRAM_PADDR	((uint)0xf0200000)=0A=
-+#define CPCI405_NVRAM_SIZE	((uint)32*1024)=0A=
-+=0A=
- /* Early initialization address mapping for block_io.=0A=
-  * Standard 405GP map.=0A=
-  */=0A=
-
-------=_NextPart_000_002F_01C212FB.DF187B10--
-
+--
+/******************************************************************
+*Neil Horman
+*Software Engineer
+*LVL7 Systems
+*13000 Weston Pkwy.
+*Cary, NC 27513
+*(919)-865-2915
+*nhorman@lvl7.com
+*PGP keyID 0xB5E1020A
+*http://www.keyserver.net/en
+*******************************************************************/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
