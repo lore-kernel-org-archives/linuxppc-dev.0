@@ -1,65 +1,52 @@
-Message-ID: <903E17B6FF22A24C96B4E28C2C0214D7012BB2F9@sr-bng-exc01.int.tsbu.net>
-From: "Karoliya, Abhishek" <Abhishek.Karoliya@fci.com>
-To: "'invictus rm'" <invictus_rm@hotmail.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: 2.4.18mvl30 & 1 GB Board
-Date: Sun, 2 Nov 2003 01:59:37 +0530 
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3FA4F3B2.6050106@iti.fi>
+Date: Sun, 02 Nov 2003 14:08:18 +0200
+From: Kate Alhola <kate@iti.fi>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: linuxppc_2_4_mpc5200 / 5200lite zImage
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
-     Its the bootflash that is mapped at ff800000 so I think i have not much
-option but to move PKMAP_BASE which i tried at fc000000 but with no luck .
+I just got Motorola5200 lite board and tried complie
+linuxppc_2_4_mpc5200 from
+denx to it.  When i say make bzImage it complains that __res is undefined
 
-what could be wrong..
+ppc_82xx-ld -T ../ld.script -Ttext 0x00800000 -Bstatic -o zvmlinux head.o
+../common/relocate.o  ../common/misc-simple.o ../common/bootinfo.o
+../common/misc-common.o ../common/string.o ../common/util.o
+../common/serial_stub.o mgt5100_tty.o  image.o ../lib/zlib.a
+mgt5100_tty.o: In function `serial_init':
+mgt5100_tty.o(.text+0x2): undefined reference to `__res'
+mgt5100_tty.o(.text+0xa): undefined reference to `__res'
 
-Thanks
-Abhishek
+__res is pointer to external scc buffer descriptors . Least it looks a
+like that it is
+defined in arch/ppc/platforms/icecube.c but this code looks a like complete
+board initialization code so i am not sure is it right module to add
+defining __res
 
------Original Message-----
-From: Karoliya, Abhishek [mailto:Abhishek.Karoliya@fci.com]
-Sent: Saturday, 1 November 2003 11:42 PM
-To: 'invictus rm'
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: 2.4.18mvl30 & 1 GB Board
+In this setup board is running original motorola debugger, no u-boot and
+this
+reason i try make zimage where is uncompressinng headers included.
 
+So, any suggestions or experiencies with 5200lite ?
 
+Also i got Macraigor wiggler but  saddly noticed that ocd-cmdr does not
+yet work with mpc5200. Any expreincies/suggestions with LOW COST
+OCD debugger for 5200 that can be used loading initial code to empty
+flash on my own board.
 
-Hi,
-   thanks a lot , a spot on solution.. {Should have checked the list...}
-that's indeed the case here, with one of the code lines.
+Kate
 
-   "io_block_mapping(0xff800000, 0xff800000, 0x00800000, _PAGE_IO);"
-I will  check with this modified to appropriate value {I don't have hardware
-right now}
-
-Just one question , will this even effect when the kernel is compiled with
-no CONFIG_HIGHMEM option? Thats the image I first tried and it hung ...{When
-I was expecting it to come up with 768 MB of Memory}
-
-Thanks
-Abhishek
-
-
-
-Hi ,
-  Are u having a call to io_block_mapping () in ur
-arch/ppc/platfrom/<board_setup.c> covering the PKMAP_BASE ( 0xfe000000) when
-
-using a kernel configured with CONFIG_HIGHMEM ?
-The io_block_mapping will be used by you to get the early serial messages on
-
-the console.
-
-Read the mail from Mark below
-     http://lists.linuxppc.org/linuxppc-embedded/200307/msg00018.html
-
-
-regards
+--
++==================================================================+
+! Kate Marika Alhola  Internet Technologies International Oy       !
+! kate@iti.fi         Phone +358 400 740701 Fax   +358 9 8138715   !
+! kate@iki.fi	      http://www.iti.fi    http://www.iki.fi/kate  !
++==================================================================+
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
