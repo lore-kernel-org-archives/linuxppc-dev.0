@@ -1,19 +1,26 @@
-Message-ID: <3913818B.F7F3927E@mandrakesoft.com>
-Date: Fri, 05 May 2000 22:20:59 -0400
-From: Jeff Garzik <jgarzik@mandrakesoft.com>
+Message-Id: <200005060603.PAA08017@mail.cc.tohoku.ac.jp>
 MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-CC: linux-fbdev@vuser.vu.union.edu,
+Date: Sat, 06 May 2000 15:03:23 +0900
+From: Kazunori Aoshima <aoshimak@mail.cc.tohoku.ac.jp>
+To: Geert Uytterhoeven <geert@linux-m68k.org>,
+        Jeff Garzik <jgarzik@mandrakesoft.com>
+Cc: linux-fbdev@vuser.vu.union.edu,
         Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: PATCH 2.3.99.7.5: update for clgenfb fbdev driver
+In-Reply-To: Your message of "Fri, 5 May 2000 13:38:26 +0200 (CEST)"
+ 	<Pine.LNX.4.10.10005051335010.428-100000@cassiopeia.home>
 References: <Pine.LNX.4.10.10005051335010.428-100000@cassiopeia.home>
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: PATCH 2.3.99.7.5: update for clgenfb fbdev driver
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Geert Uytterhoeven wrote:
->
+Hi,
+
+Return for :
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+on " Re: PATCH 2.3.99.7.5: update for clgenfb fbdev driver "
+date: Fri, 5 May 2000 13:38:26 +0200 (CEST) >>>
+
 > On Fri, 5 May 2000, Jeff Garzik wrote:
 > > updates my cirrus logic fbdev driver with a few cleanups, fix 0xA0000
 > > bug (note to alan), module and PCI cleanups, ...
@@ -25,16 +32,23 @@ Geert Uytterhoeven wrote:
 > Can someone please test this by disabling Offb (CONFIG_FB_OF=n) and seeing
 > whether everything still works fine? Thanks!
 
-If I can find someone to test, it can definitely be removed.  Thanks for
-noticing..
+I would like to test it on my PowerStack.
 
-	Jeff
+The test need to test two things.
 
+1. Add clgenfb (Version? I have 1.9.4.4 .) patch on newest
+   kernel 2.3.99.7.5 .
+2. CONFIG_FB_OF=n and CONFIG_FB_CLGEN=y needs on the config file.
 
+Is that so?
 
---
-Jeff Garzik              | ILOVEYOU, Linux.
-Building 1024            |
-MandrakeSoft, Inc.       |
+Best regards.
+----------------------
+Kaz Aoshima = Editor of the PReP station
+Material development, Faculty of engineering,
+Tohoku University, Japan
+E-mail:aoshimak@mail.cc.tohoku.ac.jp
+#I would appreciate if you could give me suggestions
+ for my impolite English expressions.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
