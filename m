@@ -1,12 +1,33 @@
-From: nbasker@india.tejasnetworks.com
-Message-ID: <1057225657.3f03fbb9e09cf@pop-mail.india.tejasnetworks.com>
-Date: Thu, Thu 03 Jul 2003 03:17:37 PM IST, Jul 2003 15:17:37 +0530
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Fwd: Problems in booting kernel from bootloader.
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Problems in booting kernel from bootloader.
+Date: Thu, 3 Jul 2003 08:14:03 -0400
+Message-ID: <8529B5552D4EAA4DAEDF49650C64B2B436E4E2@TARPON.mangrovesystems.com>
+From: "Muhammad Sarwar" <msarwar@mangrovesystems.com>
+To: <nbasker@india.tejasnetworks.com>,
+	<linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+If you are using EP8260 version 1.3, you need to enable PIPELINE in the
+planet core boot loader.
+In planet core:
+PIPELINE=1
+STO
+
+Regards,
+
+Muhammad Sarwar
+Mangrove Systems Inc.
+
+-----Original Message-----
+From: nbasker@india.tejasnetworks.com
+[mailto:nbasker@india.tejasnetworks.com]
+Sent: Wednesday, July 02, 2003 11:18 PM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Fwd: Problems in booting kernel from bootloader.
 
 
 Hi,
@@ -20,13 +41,15 @@ zImage.initrd.bin-2.4.7-timesys-3.1.180-ep8260.
 
 
  I am trying to boot the kernel using the bootloader given by the
-PlanetCore guys. The kernel was the one which I got from TimeSys. But this
+PlanetCore guys. The kernel was the one which I got from TimeSys. But
+this
 kernel doesn't come up(It hangs).
 
 
 Then I tried modifying a few lines of
 assembly code(arch/ppc/boot/mbx/head_8260.S) to find the problem. The
-board always goes for a reset when I run my code. I get the initial prints
+board always goes for a reset when I run my code. I get the initial
+prints
 regarding the
 
 
@@ -42,20 +65,27 @@ And then the "Uncompress kernel"and "Now booting kernel" prints are seen
 and then the board goes for a reset.
 
 
- The embed_config, decompress_kernel functions are run correctly. I could
+ The embed_config, decompress_kernel functions are run correctly. I
+could
 come to this conclusion from the dump of the first few bytes of
 memory. These were exactly identical to the "disassembled code of
 vmlinux".
 
-The head_8260.S is followed by the head.S code in arch/ppc/kernel. What I
-found is that I am able to jump to the diagnostics of the PlanetCore just
-before entering the "_start" of arch/ppc/kernel. But I am not able to jump
-to the diagnostics just after entering the "_start" of the kernel head.S.
+The head_8260.S is followed by the head.S code in arch/ppc/kernel. What
+I
+found is that I am able to jump to the diagnostics of the PlanetCore
+just
+before entering the "_start" of arch/ppc/kernel. But I am not able to
+jump
+to the diagnostics just after entering the "_start" of the kernel
+head.S.
 
 
 
-How do I debug this problem, I know that the first few bytes of SDRAM are
-exactly what was expected. These values I dumped. Then what is the problem
+How do I debug this problem, I know that the first few bytes of SDRAM
+are
+exactly what was expected. These values I dumped. Then what is the
+problem
 in jumping to that location. With my binary, the board goes for a reset.
 
 Please help.
