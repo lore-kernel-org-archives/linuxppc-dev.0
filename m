@@ -1,37 +1,42 @@
-Message-ID: <757A9CB222EBD5118D2300D0B7828DE10BE1D62B@az33exm32.corp.mot.com>
-From: Swarthout Ed-RA8734 <Ed.Swarthout@freescale.com>
-To: "'Tameen Khan'" <tameen@cisco.com>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: RE: Kgdb on Motorola 8451 ppc board
-Date: Mon, 5 Jul 2004 21:39:02 -0700 
-MIME-Version: 1.0
+Subject: Re: Kernel versions
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Gary Thomas <gary@mlbassoc.com>
+Cc: Wolfgang Denk <wd@denx.de>,
+	Giuliano Pochini <pochini@denise.shiny.it>,
+	linuxppc <linuxppc@4bridgeworks.com>,
+	Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <1088783785.6277.346.camel@hermes>
+References: <20040702145433.5BA0EC109F@atlas.denx.de>
+	 <1088783785.6277.346.camel@hermes>
 Content-Type: text/plain
+Message-Id: <1089126527.1897.69.camel@gaston>
+Mime-Version: 1.0
+Date: Tue, 06 Jul 2004 10:08:47 -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tameen asked:
+On Fri, 2004-07-02 at 10:56, Gary Thomas wrote:
+> On Fri, 2004-07-02 at 08:54, Wolfgang Denk wrote:
+> > In message <Pine.LNX.4.58.0407021623360.22661@denise.shiny.it> you wrote:
+> > >
+> > > The official 2.6.7 kernel works just fine on ppc machines.
+> >
+> > Please define "ppc machines". It doesn't work on most of the  systems
+> > we have in the lab (like MPC8xx or MPC5200 etc.)
+>
+> Indeed.  Not all "PPC machines" are Apple MacIntosh systems, although
+> Macs do use the PowerPC CPU.  Too many folks simply equate the two...
 
-> Any pointers to where I can get info to get kgdb working for this cross
-> arch debugging will be helpful..
+Then send patches upstream. It's plain wrong to reproduce what we
+had in 2.4 letting all sort of stuffs pile up in the "ppc" trees
+that never get sent upstream.
 
-Three things to look at:
+I tend to think that pretty much everything including fancy board
+support should be sent to lkml for comment & proposed upstream right
+away.
 
-1. You can tell gdb to show everything going over the serial port with:
-
-(gdb) set debug remote 1
-
-but I get similar messages when nothing is even attached to the serial port.
-
-2. Are you seeing "kgdb init" in the console logs?
-That message should come from kgdb_map_scc() in gen550_kgdb.c
-What serial port are you using for kgdb?
-
-3. Is the gdb stub actually in a position to do a serial port read?  It will only be listening as a result of a trap or if "gdb" is passed on the kernel cmdline.  (See setup_arch() in setup.c)
-
-Disclaimer: I haven't actually tried kgdb on this board and I'm on vacation for two weeks...
-
-Ed dot Swarthout at Freescale dot com
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
