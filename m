@@ -1,40 +1,20 @@
-Message-ID: <3E8DA82A.9070809@embeddededge.com>
-Date: Fri, 04 Apr 2003 10:43:38 -0500
-From: Dan Malek <dan@embeddededge.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <D73A25AA6E54D511AD74009027B1110F3C07A3@ORION>
+From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Linux training
+Date: Fri, 4 Apr 2003 11:13:08 -0500 
 MIME-Version: 1.0
-To: joakim.tjernlund@lumentis.se
-Cc: Till Straumann <strauman@slac.stanford.edu>,
-	Tom Rini <trini@kernel.crashing.org>,
-	"Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: dcbz works on 862 everywhere!
-References: <IGEFJKJNHJDCBKALBJLLIEMCFLAA.joakim.tjernlund@lumentis.se>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Joakim Tjernlund wrote:
+I was wondering if anyone can direct me to training courses on porting
+embedded Linux to single board computers.  Thank you for any direction and I
+welcome all comments.
 
-> hmm, no response from the maintainer(s). You don't agree?
-
-It's interesting to watch these hacks, but I can't justify
-complicating a general purpose function with more bus cycles by
-emulating a functional problem.  By not using these instructions
-we have a working system that costs just a few more cycles during
-the memory copy/zero operations.  If we had _working_ dcbz
-instructions, it would be a gain to use them, but from a system
-perspective it is going to cost more to "fix up" these than
-the code that already exists.
-
-As I said in the past, I'm sensitive to the code in the TLB exception
-processing.  So do something to remove code and streamline the process
-and I'm really interested.  Do something to add more code and it's
-going to get placed pretty low in my pile of things to do.
-
-Thanks.
-
-
-	-- Dan
-
+Steven Blakeslee
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
