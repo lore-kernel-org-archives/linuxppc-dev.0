@@ -1,40 +1,25 @@
-Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
-Date: Thu, 29 Jul 2004 16:37:48 +0800
-From: "hu" <hl76@263.net>
-To: "linuxppc-dev" <linuxppc-dev@lists.linuxppc.org>
-Subject: Software FPU Emulation
+Date: Thu, 29 Jul 2004 11:33:10 +0200
+From: Guido Guenther <agx@debian.org>
+To: Colin Leroy <colin@colino.net>
+Cc: Cedric Pradalier <cedric.pradalier@inrialpes.fr>,
+	debian-powerpc@lists.debian.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: adm103x module and 2.6.8
+Message-ID: <20040729093310.GD5012@bogon.ms20.nix>
+References: <20040728221825.34917851.cedric.pradalier@inrialpes.fr> <20040729004426.033e48a3@jack.colino.net>
 Mime-Version: 1.0
-Content-Type: text/plain
-Message-Id: <20040729083532.57B4F2F7B5@smtp.263.net>
+In-Reply-To: <20040729004426.033e48a3@jack.colino.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-1)environment
-Linux kernel 2.4.4-rthal5
-ppcboot 1.1.5
-MPC823 board
+On Thu, Jul 29, 2004 at 12:44:26AM +0200, Colin Leroy wrote:
+> The fact your driver still isn't included strikes me as a bit odd,
+> given that mine has been quite quickly. You had positive feedback
+> about therm_adm103x now, and maybe Ben forgot about it?
 
-2)I'm running a device driver which read data from touchpanel, sometimes
-I get message like that:
-Oops: Kernel Mode Software FPU Emulation, sig: 8
-NIP: C000BC0C XER: C000206F LR: C000BC0C SP: C019FF60 REGS: c019feb0 TRAP: 1000
-MSR: 00009032
-TASK = c019dff0[0] 'swapper' Last syscall: 120
-......
-Call backtrace
-C000BC0C C0003EE4 C0003EFC C01BA750 C00021E4
-
-3)I check in System.map
-C000BC0C 	Schedule
-C0003EE4 	Letext(idled)
-C0003EFC	cpu_idle
-C01BA750	start_kernel
-C00021E4	start_here
-
-4)I dont know how can I do, from messages above, I cant see any clue to solve.
-
-John Hu
-hl76@263.net
+I think things went just a bit more slowly while all the kernel guys
+were at OLS...
+ -- Guido
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
