@@ -1,51 +1,39 @@
-Message-ID: <3439AB3A99ECD5409F3A52ACF814744D158D24@norcom2.norcom.net>
-From: Lokesh Kumar <lokesh.kumar@wrx-us.com>
-To: "'karim@opersys.com'" <karim@opersys.com>,
-	Lokesh Kumar <lokesh.kumar@wrx-us.com>
-Cc: brian.auld@adic.com, linuxppc-embedded@lists.linuxppc.org
-Subject: RE: x86(host) --> ppc(tgt) cross-tool-chain
-Date: Mon, 9 Jun 2003 08:17:08 -0400 
+From: "dong in kang" <dkang@east.isi.edu>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Booting Linux without bootloader on Sandpoint X3 with PPC755 CPU, Montavista Linux
+Date: Mon, 9 Jun 2003 13:42:32 -0400
+Message-ID: <000f01c32eae$819c7ed0$45a97241@Minjoo>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
+	charset="us-ascii"
+In-Reply-To: <E19PMLT-000Hhi-00.xol-mail-ru@f16.mail.ru>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have Redhat 8.0, which I believe has GCC-3.2
+ Hello,
 
-Lokesh
+ I try to boot MontaVista Linux on Sandpoint X3 with PPC755 CPU.
+I make zImage.initrd for Sandpoint X3, and loaded it on the SDRAM at
+0x800000.
+I used bdi to initialize memory controller and load the binary image of
+zImage.initrd on the SDRAM.
+Although I don't use bootloader, I can read/write SDRAM without any problem.
+The only change I made is memory size change in
+arch/ppc/platform/sandpoint_setup.c file
 
------Original Message-----
-From: Karim Yaghmour [mailto:karim@opersys.com]
-Sent: Friday, June 06, 2003 10:14 PM
-To: Lokesh Kumar
-Cc: brian.auld@adic.com; linuxppc-embedded@lists.linuxppc.org
-Subject: Re: x86(host) --> ppc(tgt) cross-tool-chain
+ size = 128*1024*1024;   /* 128 M bytes */
 
+I also changed the size of memory in the boot parameters.
 
+ However, the Linux doesn't seem to boot properly.
+The serial line keeps silent.
+It keeps running. When I halt the running with bdi, it is in
+"emit_log_char".
+Could anybody tell me what's possibly wrong?
 
-Lokesh Kumar wrote:
-> Yes, it does work. I have a small web server running with glibc-2.2.3.
-...
-> > I built the toolchain on x86 host for PPC, and I used
-> >
-> > GCC-2.95.3
-> > GLIBC-2.2.3
-> > Binutils-2.11.92
+ Thanks,
 
-It seems the success with a toolchain component version set depends on the
-native tools you have on your workstation. Can you tell me what distro
-you were using on your workstation when you built glibc 2.2.3 in the
-above setup.
-
-Thanks,
-
-Karim
-
---
-Author, Speaker, Developer, Consultant
-Pushing Embedded and Real-Time Linux Systems Beyond the Limits
-http://www.opersys.com || karim@opersys.com || 514-812-4145
+ Dong-In
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
