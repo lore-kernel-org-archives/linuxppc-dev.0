@@ -1,40 +1,41 @@
-Message-ID: <39358E65.145F7EA3@embeddededge.com>
-Date: Wed, 31 May 2000 18:12:53 -0400
+Message-ID: <39358FA0.3C765982@embeddededge.com>
+Date: Wed, 31 May 2000 18:18:08 -0400
 From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: Steve Rossi <srossi@ccrl.mot.com>
-CC: Dan Malek <dan@netx4.com>,
-        Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: allocating non-cacheable regions
-References: <39104A07.D997B6C5@ccrl.mot.com> <3910838C.986942D6@embeddededge.com> <39357BC5.A0B3E713@ccrl.mot.com>
+To: "Gessner, Matt" <mattg@aiinet.com>
+CC: "'Linux PPC'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: EST SBC8260 & abatron
+References: <7283DE19D141D111AD0E00A0C95B195502581D61@mail2.aiinet.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Steve Rossi wrote:
+"Gessner, Matt" wrote:
+>
+> A long subject...
+>
+> I'm having trouble accessing the upper 8MB of the 16MB SDRAM SIMM on this
+> board.
+> I'm wondering if I don't have something configured wrong in my BDI2000
+> config file.
 
-> ....does setting the _PAGE_NO_CACHE flag
-> for a page table entry also invalidate any cached data for that page?
+Didn't we discuss this once before?  There were some suggestions posted.
 
-No.  It only ensures uncached behavior when the TLB is loaded.
+> Also, we're trying to load the linux kernel into this system.
+> How are the folks out there doing that?  Via ftp?  Via a bootloader on the
+> 2MB FLASH
+> chip on the board tied to /CS0?  What exactly?
 
-> I am observing a write-though behavior when I write to addresses in
-> the _PAGE_NO_CACHE page but when I read from addresses marked
-> as _PAGE_NO_CACHE it appears to be retrieving data from the cache
-> not from memory. Is this expected behavior?
-
-That's a rhetorical, question, right :-)?  If not....of course that
-isn't correct.
-
-> .... How can I make it so that
-> reads as well as writes to a particular page bypass the cache?
-
-You need to invalidate the data cache for this address and the TLB
-entry for this address when you set the flag.  Those drivers in your
-example get away with it because the caches/TLB have been invalidated
-and not yet touched at this point.  You also need to ensure you are not
-multiple mapping the same physical address....
+I am using a high speed serial S-record downloader.  I guess I will
+be posting the boot rom and the loader for the EST8260 when I get
+a chance later this week.  I then load and flash a kernel the same
+way.  I have some flash utilities that run from Linux and just reflash
+kernels into different areas for testing.  I have just finished a
+program to hack the zImage header so the VxWorks boot rom will load
+it.  I only spent about half an hour, so it needs a little cleaning up,
+but it seems to work.  I am hoping someone will provide a TFTP loader
+for the code I post.......
 
 
 	-- Dan
