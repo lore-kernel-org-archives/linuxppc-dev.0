@@ -1,38 +1,42 @@
-Message-ID: <40F466C5.5010202@rossvideo.com>
-Date: Tue, 13 Jul 2004 18:48:37 -0400
-From: Ralph Siemsen <rsiemsen@rossvideo.com>
-MIME-Version: 1.0
-To: James Perkins <james@loowit.net>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: early UART mapping in head_44x.S
-References: <40F452D6.9020806@rossvideo.com> <40F4621F.1000206@loowit.net>
-In-Reply-To: <40F4621F.1000206@loowit.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
+Date: Wed, 14 Jul 2004 13:33:47 +0800
+From: "hu" <hl76@263.net>
+To: "linuxppc-dev" <linuxppc-dev@lists.linuxppc.org>
+Subject: Oops:kernel access of bad areasig:11
+Mime-Version: 1.0
+Content-Type: text/plain
+Message-Id: <20040714053136.86F102F86F@smtp.263.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-James Perkins wrote:
+1)environment
+Linux kernel 2.4.4-rthal5
+ppcboot 1.1.5
+MPC823 board
 
-> ori won't clear the invalid bits, it just "or"s in the TS bit itself.
-> What suprises me is that TLB 1 is being written twice. It may make more
-> sense to change the second case
->
->         li      r0,1            /* TLB slot 1 */
->
-> to
->        li      r0,2             /* TLB slot 2 */
->
-> So that there is both a TS=0 and a TS=1 mapping, in TLB entry index 1
-> and 2, respectively -- this will catch both the MSR[DS]=0 and MSR[DS]=1
-> cases.
+2)I'm running a device driver which read data from touchpanel which use SIU_IRQ2, but I often get message like that:
+Oops: kernel access of bad area, sig: 11
+NIP: C000C4E8 XER: C000206F LR: C000C4E0 SP: C07FBEF0 REGS: c07fbe40 TRAP: 0300
+MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+DAR: 00000004,DISR: 0000013C
+last math 00000000   last altivec 00000000
+GPR00: 00000002 C07FBEF0 C07FA000 C07FBF08 00009032 C0C09E58 C0C08000 00000020
+GPR08: C01A9138 C0195364 C0C08000 C07FBF30 2F7B6A70 1007C2B8 40024400 00000000
+GPR16: 00000000 00000000 00000000 00000000 00000000 00003400 00580000 00002C7E
+GPR24: 00000000 0001C200 00000001 C07FBEF8 00000000 C07FBF00 00664BDA C07FBEF0
 
-Yes I see now.  Your suggestion also works, and it seems more logical -
-though I doubt anything in the early startup would ever do an access in
-TS=1 virtual space... shortly after this the real MMU init is done and
-it will overwrite all of these temporary mappings...
+Call backtrace:
+  C000C468 C002B440 C0004DA8
 
--Ralph
+3) I look through past document in linux-embedded, and I check /arch/ppc/kernel/m8xx_setup.c, it exists:
+fp = binfo->bi_intfreq * 1000000 / 16;
+and /arch/ppc/8xx_io/commproc.c, it exits:
+#define BRG_INT_CLK	(((bd_t *)__res)->bi_intfreq * 1000000 )
+
+------------------------------
+John Hu
+E-mail: hl76@263.net
+------------------------------
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
-** This list is shutting down 7/24/2004.
