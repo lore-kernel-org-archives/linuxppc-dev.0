@@ -1,50 +1,34 @@
-To: "leeyang" <leeyang@ycig.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: linux booting 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 23 Aug 2002 17:11:08 +0800."
-             <000b01c24a85$0596a620$cc00a8c0@ycigrnd.ycig.com>
-Date: Fri, 23 Aug 2002 16:23:14 +0200
-Message-Id: <20020823142319.BFD6111822@denx.denx.de>
+Subject: Re: IBM 440GP 36-bit addressing
+From: Hollis Blanchard <hollis@austin.ibm.com>
+To: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <001501c24ab5$daee9500$faffa8c0@VISHWANATH>
+References: <001501c24ab5$daee9500$faffa8c0@VISHWANATH>
+Content-Type: text/plain
+Date: 23 Aug 2002 10:00:23 -0500
+Message-Id: <1030114823.8559.37.camel@granite.austin.ibm.com>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <000b01c24a85$0596a620$cc00a8c0@ycigrnd.ycig.com> you wrote:
+On Fri, 2002-08-23 at 10:00, Vishwanath wrote:
 >
-> When I "bootm 0x10000"in ppcboot,it runs to
-> "Transferring control to linux kernel",then hangs
-> there,and I see nothing in the console.:(
+> I am new to PPC Linux. I am working on IBM 440 GP board. I am using
+> MontaVista Linux source code. I didn't understand how 36-bit addressing is
+> taken care in this code. If an application has to access the a memory
+> location in SDRAM of 440 GP or its internal peripheral registers, whether it
+> has to pass 36-bit address or normal 32-bit address.
 
-This will never work. I bet it  didn't  work  with  your  old  kernel
-either.  0x10000  is  just  64  kB  -  this  is _never_ enough for an
-uncompressed Linux kernel.  You  will  overwrite  your  kernel  while
-uncompressing it, which crashes the system. Use a higher load address, somthing like 0x200000.
+It's a 36-bit real address space, but 32-bit effective (aka "virtual").
+Applications, which run entirely in effective address space, have no
+reason to think about such things and require no modification.
 
-> In the PPCBoot guide(FAQ section),it mentioned
-> 2 possible causes,wrong bdinfo and clocks_in_mhz
-> I do check it and feel nothing wrong,however
-> nothing yet.
+The kernel has to care about the real address space, mostly when you
+want to ioremap (all the on-chip peripheral addresses are higher than
+4GB as I recall) a 36-bit real address to a 32-bit effective address so
+you can use it in the kernel (which also runs in effective mode).
 
-You have to _unset_ clocks_in_mhz for a 2.4.20-pre2 kernel.
+-Hollis
 
-> I have a BDI2000,but I think I should debug the bootm
-> part of ppcboot,however someone says it is quite
-> difficult to do so( at least for me).
-
-Well, it's not _that_ difficult. Try it out, so you get used to is ;-)
-
-> so I am seeking errors in blind.
-
-Just open your eyes, and thou shalt see :-)
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Always leave room to add an explanation if it doesn't work out.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
