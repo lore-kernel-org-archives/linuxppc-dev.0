@@ -1,39 +1,81 @@
-Message-ID: <39D21A61.445CC61F@mvista.com>
-Date: Wed, 27 Sep 2000 12:03:45 -0400
-From: Dan Malek <dan@mvista.com>
+Message-ID: <020e01bfc890$30ded920$4a1f76d8@washington>
+From: "Navin Boppuri" <nboppuri@trinetcommunication.com>
+To: "Daris A Nevil" <dnevil@snmc.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <018601bfc7e6$30ab9560$4a1f76d8@washington> <39D10BB4.D6F1897@charter.net> <39D11274.A2AF2410@snmc.com>
+Subject: Re: NFS problem- neighbout table overlow
+Date: Wed, 27 Sep 2000 11:29:15 -0500
 MIME-Version: 1.0
-To: Rob Taylor <robt@flyingpig.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: switching linux kernels
-References: <001801c02865$c71c1c10$b400a8c0@eventhorizon>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Rob Taylor wrote:
+Hello everyone,
 
-> presumably this is due to int in/out macros adding _IO_BASE to the pointer?
+Thank you for all the help. All I needed to do was to change the setting of
+SICR_ENET_CLKRT defined in commproc.h . The SCC2 was not configured
+correctly. jonb@marel.is  pointed this out to me. The ethernet now works
+just fine.
 
-Yes.
+Navin.
 
-> ... So
-> am I right in thinking that it makes sense to use in/out for ISA accesses (if
-> _IO_BASE is set correctly for your platform) and readb/writeb/.. for the rest of
-> your memory mapped registers?
-
-
-Well, yes, today.  Some of us have been "fighting" about this lately.
-I'm not a fan of address arithmetic in the inb/outb, so probably on
-8xx and 82xx you will always have some "opaque" handle to in/out that
-doesn't resemble any notion of x86 "ports".  The reason is that on
-these 8xx and 82xx systems (and potentially others) we don't have very
-flexible host bridges, or the processors are used in complex multiple
-PCI bus configurations where the notion of "bus 0" may not exist.  You
-can't assume using a hard coded (or legacy) port number will get you
-anywhere but a bus fault.
+----- Original Message -----
+From: Daris A Nevil <dnevil@snmc.com>
+To: Dan A. Dickey <ddickey@charter.net>
+Cc: Navin Boppuri <nboppuri@trinetcommunication.com>;
+<linuxppc-embedded@lists.linuxppc.org>; <greyham@research.canon.com.au>
+Sent: Tuesday, September 26, 2000 10:17 PM
+Subject: Re: NFS problem- neighbout table overlow
 
 
-	-- Dan
+>
+> When you see the "neighbour table overflow" message it simply means that
+> NFS cannot communicate with the server.  It could mean anything from a
+> bad cable, invalid IP setup, bad driver, incorrect driver setup, etc.
+> It really means that you are not successfully transporting IP packets.
+>
+> Regards,
+> Daris Nevil
+>
+>
+> "Dan A. Dickey" wrote:
+> >
+> > Navin Boppuri wrote:
+> > > Hello Everyone,
+> > > I have been having problems with my custom board. The NFS mount does
+> > > not
+> > > work. The NFS request does not actually go the server. I dont see any
+> > > packets coming to the server from this board. I did have some ring
+> > > dump
+> > > problems. There were some errors in Port A setting which I fixed and
+> > > that is
+> > > gone now. By I still see 'neighbour table overflow' messages. What can
+> > > be
+> > > the problem?
+> >
+> > Navin,
+> > I can't say that I remember for sure - but I seem to recall
+> > this as being a problem in the Linux NFS implementation.
+> > Check through the linux-kernel archives for messages regarding
+> > the neighbour table overflow.  There may be a suggestion
+> > on how to solve this.  I know I remember something about this...
+> >         -Dan
+> >
+>
+> --
+> Daris A Nevil
+> Simple Network Magic Corporation
+> 401 Kentucky Lane
+> McKinney, TX 75069
+> 214-793-7757
+> dnevil@snmc.com
+> www.snmc.com
+> quickstack.com
+> qslinux.org
+>
+>
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
