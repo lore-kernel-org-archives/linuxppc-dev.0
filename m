@@ -1,37 +1,59 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: kernel drivers and ioctls and mutexes?
-Date: Thu, 29 Nov 2001 11:58:07 +0100
-Message-Id: <20011129105807.1293@mailhost.mipsys.com>
-In-Reply-To: <20011129024133.EGCO16262.tomts14-srv.bellnexxia.net@there>
-References: <20011129024133.EGCO16262.tomts14-srv.bellnexxia.net@there>
+From: Paul Mackerras <paulus@samba.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15366.8350.416601.229303@gargle.gargle.HOWL>
+Date: Thu, 29 Nov 2001 22:48:46 +1100 (EST)
+To: linuxppc-dev@lists.linuxppc.org
+Cc: kaos@ocs.com.au
+Subject: Re: include/asm-ppc/platforms/
+In-Reply-To: <3C0482F6.1050307@embeddededge.com>
+References: <15363.31192.101536.919771@gargle.gargle.HOWL>
+	<3C2B376F.9070508@embeddededge.com>
+	<15364.32906.728532.676746@gargle.gargle.HOWL>
+	<3C0482F6.1050307@embeddededge.com>
+Reply-To: paulus@samba.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Can anyone tell me if your need mutexes to prevent problems when ioctls
->initiated from userland that change dev structure values are used in
->kernel drivers?
->
->For example in NIC modules a broken link can cause nway_start on some
->cards but a userland ioctl can (asynchronously) cause the same things to
->happen?  Should I be using mutexes inside the driver to prevent this or is
->there some synchronization mechanism I am missing here?  Given how nway
->negotiations are started and given them may take a few seconds to
->complete, something should shield the nway start routine from being
->re-entered.
+I have run the platform.h stuff past Keith Owens, the kbuild
+maintainer.  He makes several points:
 
-It depends on your driver, mutexes may or may not be the right solution.
+* He much prefers generated files (including symlinks) to be created
+  in arch/$(ARCH) rather than include.  In particular he doesn't like
+  mixing supplied and generated headers in the one directory.
 
-I've implemented ethtool ioctl support in sungem and have done my own
-synchronisation mecanism, basically the ioctl to restart autoneg will
-interrupt any pending autoneg and restart one, there should be no
-re-entrancy, except if I missed a case ;)
+* He prefers a copy rather than a symlink, particularly for
+  kbuild-2.5, so that we have real pathnames and timestamps in the
+  dependency tree.
 
-Ben.
+* He wrote a new script that uses sed rather than awk, checks a few
+  things (e.g. exactly one platform.h file is selected) and also
+  creates empty files if e.g. no platform_serial.h file is selected.
 
+The only reason for having include/asm-ppc/platforms under
+include/asm-ppc is so that serial.h can include the right
+blah_serial.h file.  We can get around that by using
+early_serial_setup except that that doesn't work if the serial driver
+is built as a module.  The boot stuff also needs to get at the first
+serial port but we can manage that by requiring the platform.h file to
+define e.g. BOOT_SERIAL_ADDRESS, BOOT_SERIAL_REG_SHIFT, etc., if it
+wants to use a serial port in the boot wrapper.  The boot wrapper code
+then just does #include <platform.h>.
+
+Alternatively we can add a -Iarch/$(ARCH) flag for cc and put
+platform.h in arch/ppc and the platform headers in
+arch/ppc/platforms.  This is Keith's preferred solution and it feels
+right to me too.
+
+Platform maintainers can continue to statically initialize rs_table
+for their serial ports if they wish.  I think I will move all those
+crufty old fourport, accent, boca and hub6 declarations into
+include/asm-ppc/isa_serial.h so that they are still available but not
+getting in our faces all the time.
+
+Comments?
+
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
