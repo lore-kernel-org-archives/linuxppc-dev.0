@@ -1,22 +1,20 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao07.cox.net (fed1rmmtao07.cox.net [68.230.241.32])
-	by ozlabs.org (Postfix) with ESMTP id 48B2E67A67
+Return-Path: <jchapman@katalix.com>
+Received: from ptb-relay03.plus.net (ptb-relay03.plus.net [212.159.14.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D526267A6D
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  3 Mar 2005 04:52:18 +1100 (EST)
-Date: Wed, 2 Mar 2005 10:52:01 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Takeharu KATO <takeharu1219@ybb.ne.jp>
-Message-ID: <20050302105201.C31614@cox.net>
-References: <421CD2B3.4020805@ybb.ne.jp> <421CD669.1040002@ybb.ne.jp>
-	<20050223142720.C13087@cox.net> <421D1085.5080602@ybb.ne.jp>
-	<421D1375.5000904@ybb.ne.jp>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <421D1375.5000904@ybb.ne.jp>;
-	from takeharu1219@ybb.ne.jp on Thu, Feb 24, 2005 at 08:36:21AM
-	+0900
-Cc: ppcembed <linuxppc-embedded@ozlabs.org>
-Subject: Re: PowerPC4xx Watchdog
+	Thu,  3 Mar 2005 05:47:49 +1100 (EST)
+Message-ID: <42260A4F.8030205@katalix.com>
+Date: Wed, 02 Mar 2005 18:47:43 +0000
+From: James Chapman <jchapman@katalix.com>
+MIME-Version: 1.0
+To: Ron Bianco <ronb@lcsaudio.com>
+References: <NCBBJPCHJLKAEAHINDCEGEJFFMAA.ronb@lcsaudio.com>
+In-Reply-To: <NCBBJPCHJLKAEAHINDCEGEJFFMAA.ronb@lcsaudio.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: Linuxppc-Embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: linuxppc tree with mv64xxx included?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,27 +25,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Feb 24, 2005 at 08:36:21AM +0900, Takeharu KATO wrote:
-> Hi
+Ron Bianco wrote:
+
+> I'm trying to locate the correct bitkeeper or other URL to get access to a
+> linux 2.5 or 2.6 tree that includes the support for the marvell mv64xxx
+> series chips.
+> I've examined the emails in this list regarding related patches for clues,
+> but am still confused.
 > 
-> >> Are you looking for the old "ppc405 watchdog" driver that simply
-> >> hooked into the generic PPC heartbeat facility? Or are you looking
-> >> for a driver that utilizes the 4xx/booke hardware watchdog facility?
-> >>
-> > I am looking for a driver that utilizes the 4xx/booke hardware watchdog 
-> > facility.
-> > 
-> > 
-> FYI, I wrote a driver uses 4xx/booke hardware watchdog.
-> BTW, is hooking PPC heartbeat facility obsoleted?
+> Tried bk://ppc.bkbits.net/linuxppc-2.5, but there is no marvell code.
 
-I see.  The ppc_md.heartbeat facility isn't going anywhere as there
-are multiple users.  It's possible to take the "ppc405_wdt" driver
-with a rename and minor cleanup have it be a generic timebase driven
-watchdog driver that is compliant with the familiar WD interface.
+There is Marvell code in that tree. Look in drivers/net/mv64*,
+arch/ppc/syslib/mv*
 
-What do you see as the advantage to having a watchdog driver
-that uses the booke hardware watchdog facility over a generic
-timebase driven driver?
+Some boards are already ported. See arch/ppc/platforms/*
 
--Matt
+You'll also find the Marvell code in the "mainline" at
+
+bk://linux.bkbits.net/linux-2.6
+
+> We downloaded a 2.4.23 kernel tree directly from the marvell website, but it
+> is lacking some things like i2c for marvell, that have been discussed here.
+> Was further work, existing in some other tree, based on this?
+
+i2c and several other improvements are in queue. Check the archives for
+patches.
+
+The latest ethernet code can be obtained from
+bk://farnsworth.bkbits.net/linux-2.5-mv643xx-enet
+
+-- 
+James Chapman
+PGP key : http://www.katalix.com/~jchapman/pgpkey.txt
