@@ -1,11 +1,12 @@
-Return-Path: <jonathan@jonmasters.org>
-Received: from smtp.mailbox.co.uk (smtp.mailbox.co.uk [195.82.125.32])
-	by ozlabs.org (Postfix) with ESMTP id BAFB167A81
+Return-Path: <jakob.viketoft@bitsim.se>
+Received: from amsfep15-int.chello.nl
+	(nl-ams-slo-l4-01-pip-8.chellonetwork.com [213.46.243.27])
+	by ozlabs.org (Postfix) with ESMTP id 8257867A7A
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  4 Apr 2005 21:01:56 +1000 (EST)
-Message-ID: <42511E89.9010704@jonmasters.org>
-Date: Mon, 04 Apr 2005 12:01:29 +0100
-From: Jon Masters <jonathan@jonmasters.org>
+	Mon,  4 Apr 2005 21:08:40 +1000 (EST)
+Message-ID: <4251203D.5070000@bitsim.se>
+Date: Mon, 04 Apr 2005 13:08:45 +0200
+From: Jakob Viketoft <jakob.viketoft@bitsim.se>
 MIME-Version: 1.0
 To: Andrei Konovalov <akonovalov@ru.mvista.com>
 References: <424ACFF1.5000403@bitsim.se>	
@@ -15,8 +16,8 @@ References: <424ACFF1.5000403@bitsim.se>
 	<4250EACF.1040403@bitsim.se> <42511D55.4040507@ru.mvista.com>
 In-Reply-To: <42511D55.4040507@ru.mvista.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>,
-	Sylvain Munaut <tnt@246tNt.com>, Jakob Viketoft <jakob.viketoft@bitsim.se>
+Cc: Jon Masters <jonathan@jonmasters.org>, Sylvain Munaut <tnt@246tNt.com>,
+	Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>
 Subject: Re: Flat OF Device Tree for ppc32 [was: Platform bus/ppc sys
 	model...]
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -29,31 +30,142 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hello Andrei!
+
 Andrei Konovalov wrote:
+> Hi Jakob!
+> 
+> Yes, Jon Loeliger's implementation plan looks OK for me
+> (as far as I understood Jon's posting; having look at
+> the current patch would be great). And I could participate
+> in the implementation for Xilinx if needed too, but don't
+> object if you do it by yourself (at the moment, I know
+> little about the OF device tree, so just testing the patch
+> on ML300 would be fine for me as well).
+
+Great! I could start and ask for assistance when needed... :)
 
 > Should we rely on U-Boot to give that device tree structure to
-> the kernel?
-
-I think this is the best way to do it - there's already a ppc_md struct 
-kicking around which is semi-meant for this kind of thing.
-
-> If I got it correct this is how the Freescale team plans to proceed.
-
-Good. It might actually happen if enough of us want it to :-)
-
-> Jon (Masters), are you going the same way?
-
-Yes, but I'm more than willing to pitch in with the Freescale guys if 
-that'll get things done faster - they've obviously got more manpower. I 
-wanted to get this thing done already! :-)
-
+> the kernel? If I got it correct this is how the Freescale team
+> plans to proceed. Jon (Masters), are you going the same way?
 > Anyone using arch/ppc/boot/simple bootwrapper with his Virtex 2 Pro
 > board? If we drop Virtex 2 Pro support in arch/ppc/boot and move to
 > U-Boot would it hurt anyone?
+> 
+> Thanks,
+> Andrei
 
-I don't use it. I have a very simple bootloader which I use on our Memec 
-based design - comes in straight off sysace and jumps at the kernel 
-after doing simple diagnostics, avoided the need for porting an existing 
-boot loader and it's reasonably able to cope with braindead Xilinx HALs.
+My end intention is to write something that both builds the OF device 
+tree from a listed number of (ip-)devices and a small FPGA-suitable 
+bootloader (as a small prog separated from the kernel). It'll probably 
+end up being an entire "Linux on Xilinx" howto... I say we can drop the 
+simple bootwrapper once all the stages of the OF adaptation is in place 
+(which might not happen overnight :).
 
-Jon.
+Cheers!
+
+	/Jakob
+
+> 
+> Jakob Viketoft wrote:
+> 
+>> Hi!
+>>
+>> You don't happen to have a patch of your current work against one of 
+>> the trees (83xx and 85xx)? It would be much easier to do work in 
+>> parallell, and I'd be happy to do it on the "Xilinx" tree (and help 
+>> out where I can, of course).
+>>
+>> Jon Masters and Andrei: Does Jon Loeliger's implementation plan sound 
+>> alright to you? Since you seem quite full-handed on your end anyway, 
+>> Jon, I'll be happy to do the work needed unless anyone has any 
+>> objections...
+>>
+>> Cheers!
+>>
+>>     /Jakob
+>>
+>> Jon Loeliger wrote:
+>>
+>>> On Thu, 2005-03-31 at 06:33, Jon Masters wrote:
+>>>
+>>>> Kumar Gala wrote:
+>>>>
+>>>> |> My intention was to give a device tree structure to the kernel at 
+>>>> boot
+>>>> |> time via a (pseudo?) pointer in bd_info or similar. 
+>>>
+>>>
+>>>
+>>>
+>>>> This got resurrected recently. 
+>>>
+>>>
+>>>
+>>>
+>>> Hi!
+>>>
+>>>
+>>>> | I think this is reasonable.  The best device tree would be a 
+>>>> flattened
+>>>> | OF tree since we are trying to move the world in that direction.  Jon
+>>>> | Masters around?
+>>>>
+>>>> Yes, but I've been tied up with worky and magazine stuff again. If
+>>>> someone wants to work with me then this might actually happen.
+>>>
+>>>
+>>>
+>>>
+>>> Hi Jon,
+>>>
+>>> I'm here and actively(!) working on it now.   Here is the very
+>>> rough plan as Kumar and I have discussed it.  Please feel free
+>>> to comment on it or offer suggestions.  Ben has suggested that
+>>> I start with the "second step" below.  I'd like to do a round
+>>> of cleanup first.
+>>>
+>>> So far, I have taken the first step of isolating the references
+>>> to the global __res[] variable into one file and replacing all
+>>> references to the data in the bd_t structure with a thin, shim
+>>> layer of function calls that are nominally into an OF-like
+>>> interface.  I have done this for all the 85xx and 83xx boards
+>>> in my development tree, and am working on the others now.
+>>> This step effectively isolates the __res[] references to one
+>>> file where a well defined interface can be created to pose as
+>>> an OF Device Tree layer (briefly).
+>>>
+>>> As a follow-up second step, I plan on introducing essentially
+>>> the same code currently in ppc64 to handle the flat device tree
+>>> and provide an interface to that data in exactly the same manner
+>>> as the ppc64 currently has.  I understand the desire to have the
+>>> flat-tree handling be "outside the kernel".
+>>>
+>>> As a third step, the shim layer will be rewritten/augmented to
+>>> use the actual OF device tree data where it currently fronts
+>>> for the bd_t data.
+>>>
+>>> Finally, as time permits and maintainers allow (read: prod),
+>>> the other (not 85xx, not 83xx) boards can have their setup code
+>>> converted to use the "real" OF device tree function calls.
+>>>
+>>> When all of that is done, the shim layer can be removed, as needed.
+>>>
+>>>
+>>> Oh, yeah.  Um, also on my plate will be to construct the
+>>> original flat-tree blob in U-Boot to be handed to the kernel.
+>>> (I'll start with 85xx and 83xx, naturlich.)
+>>>
+>>> We have not yet decided on the layout of that tree to determine
+>>> where all the attributes and devices really belong.  I will
+>>> also discuss with Wolfgang and crew how to generate that tree
+>>> over in U-Boot land.
+>>>
+>>> Right?
+>>>  
+>>> Thanks,
+>>> jdl
+>>>
+>>
+>>
+> 
