@@ -1,67 +1,40 @@
-Subject: Re: File system boot strategy
-From: Gary Thomas <gary@mlbassoc.com>
-To: =?ISO-8859-1?Q?G=E9rard_Gu=E9vel?= <gguevel@interfaceconcept.com>
-Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <000101c3aaae$e61e4240$5201a8c0@GEG2400>
-References: <000101c3aaae$e61e4240$5201a8c0@GEG2400>
-Content-Type: text/plain; charset=ISO-8859-1
-Message-Id: <1068817206.29984.5.camel@hermes>
+Date: Fri, 14 Nov 2003 08:28:54 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Jon Masters <jonathan@jonmasters.org>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 4xx ports
+Message-ID: <20031114082854.A23689@home.com>
+References: <3FB4D07C.4010909@jonmasters.org>
 Mime-Version: 1.0
-Date: 14 Nov 2003 06:40:06 -0700
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3FB4D07C.4010909@jonmasters.org>; from jonathan@jonmasters.org on Fri, Nov 14, 2003 at 12:54:20PM +0000
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, 2003-11-14 at 05:57, Gérard Guével wrote:
-> Hi,
+On Fri, Nov 14, 2003 at 12:54:20PM +0000, Jon Masters wrote:
 >
-> I have a custom 8260 board with a 2.4.18 Kernel.
 >
-> I want to mount multiple file systems from a CFI compliant flash.
-> The directories are distributed  like this :
+> Hi there,
 >
-> 	/   /bin /home /lib /root /sbin /usr		-> cramfs  to have a protected Linux
-> kernel
-> 	/etc /tftpboot				-> jffs2      to allow modifying services and files to
-> load
-> 	/dev /proc /tmp /var			-> ramfs    to store data which can be lost.
+> Several people seem to think I was after advice on a port to use or
+> asking for help doing one etc.
 >
-> I want to boot with the cramfs as root file system but the UNTAR wants all
-> the directories /dev /proc /tmp in the cramfs.
->
-> Can I use multiple file systems like this ?
-> Must I start with a ramfs and then mount cramfs ?
->
-> I find many docs to mount each file system individually and to add others
-> file systems mounted on /mnt
-> but no example to break a standard filesystem into multiple sub file
-> systems.
+> For the record I am not in this current thread of conversation asking
+> for those things but I am trying to find out how we can get the stock
+> official kernel distributed by kernel.org to reflect some of the changes
+> which have been made.
 
-There is nothing special about /mnt - it's just a directory (or set of
-directories like /mnt/floppy, /mnt/cdrom, etc). Also, the main names
-(like /etc) could be symbolic links.  Here's how I might solve this:
+Post patches versus the BK linux-2.4 tree here so they can be discussed.
+If they are suitable for merging upstream (Paul is happy) then they will
+be moved into the for-marcelo-ppc tree.  This is a slow process unless
+the changes are straightforward bug fixes or cleanups.
 
-==  cramfs  contents
+Merging patches into linuxppc-2.4 is much quicker and allows a wider
+audience to test significant changes to help determine if they are
+suitable to go upstream.  Stuff will get merged from linuxppc-2.4
+upstream over time.
 
-    /bin
-    /home
-    /lib
-    /root
-    /sbin
-    /usr
-    /JFFS2          (just a mount point)
-    /etc => /JFFS2/etc
-    /tftpboot => /JFFS2/tmp
-    /RAMDISK        (another mount point)
-    /tmp => /RAMDISK/tmp
-    /var => /RAMDISK/var
-
-/dev and /proc are special.  If you enable "devfs" and "procfs" in the
-kernel they get populated automatically, all you need do is mount them.
-
---
-Gary Thomas <gary@mlbassoc.com>
-MLB Associates
-
+-Matt
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
