@@ -1,29 +1,30 @@
-Date: Tue, 12 Jan 1999 21:57:40 +0100 (CET)
+Date: Tue, 12 Jan 1999 22:48:18 +0100 (CET)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Cort Dougan <cort@persephone.cs.nmt.edu>
-cc: Paul Mackerras <paulus@cs.anu.edu.au>, Dan Malek <dmalek@jlc.net>,
-        bh40@calva.net, linuxppc-dev@lists.linuxppc.org
-Subject: Re: new irq.c
-In-Reply-To: <Pine.LNX.3.96.990111182245.1184A-100000@persephone.cs.nmt.edu>
-Message-ID: <Pine.LNX.4.03.9901122155550.26849-100000@mercator.cs.kuleuven.ac.be>
+To: Tom Rini <trini@globe.linuxppc.org>
+cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: temporary freeze with Debian init
+In-Reply-To: <Pine.LNX.4.03.9812311928100.21390-100000@mercator.cs.kuleuven.ac.be>
+Message-ID: <Pine.LNX.4.03.9901122245260.28717-100000@mercator.cs.kuleuven.ac.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 11 Jan 1999, Cort Dougan wrote:
-> I've tested it pretty well.  You guys want to check it out for me?
-> Comments?
+On Thu, 31 Dec 1998, Geert Uytterhoeven wrote:
+> On Thu, 31 Dec 1998, Tom Rini wrote:
+> > On Thu, 31 Dec 1998, Geert Uytterhoeven wrote:
+> > 
+> > >     NET3: Unix domain sockets 0.16 for Linux NET3.038.
+> > 
+> > Unix domain sockets as a module perhaps?
 > 
-> I haven't finished cleaning up the chrp stuff yet.
+> Yes. But it's module on my m68k box too, and there I don't see the problem.
 
-| irq.c: In function `gatwick_action':
-| irq.c:653: gatwick_action causes a section type conflict
-| irq.c: In function `pmac_set_irq_mask':
-| irq.c:704: pmac_set_irq_mask causes a section type conflict
+Compiling Unix domain sockets in the kernel solved it.
 
-Ugh?
+Sysvinit is 2.76-2 on my PPC box, and 2.75-3 on my m68k box. Is that a
+reasonable explanation?
 
 Greetings,
 
