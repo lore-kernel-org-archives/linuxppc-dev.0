@@ -1,38 +1,39 @@
-Message-ID: <398F1346.B81B3756@jausoft.com>
-Date: Mon, 07 Aug 2000 21:51:34 +0200
-From: Sven Goethel <sgoethel@jausoft.com>
+Date: Mon, 7 Aug 2000 23:16:07 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: David Edelsohn <dje@watson.ibm.com>
+cc: Takashi Oe <toe@unlserve.unl.edu>, Benjamin Herrenschmidt <bh40@calva.net>,
+        Martin Costabel <costabel@wanadoo.fr>, linuxppc-dev@lists.linuxppc.org,
+        Iain Sandoe <iain@sandoe.co.uk>
+Subject: Re: rtc again... 
+In-Reply-To: <200008071514.LAA23286@mal-ach.watson.ibm.com>
+Message-ID: <Pine.HPX.4.10.10008072252360.9070-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-To: Kostas Gewrgiou <gewrgiou@imbc.gr>
-CC: Michel Ddnzer <daenzerm@student.ethz.ch>, dri-devel@lists.sourceforge.net,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: [Dri-devel] Re: Kind of success! (r128 on PPC (Re: LinuxPPC X
- Server))
-References: <Pine.LNX.4.21.0008072058480.21201-100000@idd-01.imbc.gr>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dear r128/ppc developers,
+On Mon, 7 Aug 2000, David Edelsohn wrote:
 
-I do follow your discussion for some days with a lot of
-euphorism. I want to try hardware acceleration with my powerbook,
-XF401+DRI for the GL4Java development.
+> 	Not all processors of an SMP complex are started at power-up and
+> the call to start secodary processors may perform a reset, so I don't
+> think that one can guarantee that the TB's are synchronized.  Maybe it all
+> just works, but it does not seem like a requirement of any SMP system
+> design.
 
-Just a few questions:
-	- which kernel ? (I currently use 2.4.0-test5)
-	- XF4.0.1 ?
-	- When and/or where can I get the working r128 linux kernel
-	  sources for ppc - they seemed not to be included in the current CVS
-tree.
-	  I only get a LOCK_PREFIX unknown ...
+Yes, you may perform a reset. But at least on the chipsets I have seen the
+reset pin you have access to is the soft reset input which does not clear
+the TB (nor set the MSR IP bit for example). If the HRESET inputs are
+wired together (from a power supply monitoring circuit or something
+similar) and the timebase is never written to, than they should be
+synchronized. Then the only remaining problems are the power saving modes
+that may stop the timebase...
 
-Thanxs a lot for your engagement and time.
+Disclaimer: this is how it works on 6xx/7xx processors as they are
+implemented in most systems. I don't know anything about IBM specific
+CPUs like Power3/Power4...
 
-Yours, Sven
---
-mailto:sgoethel@jausoft.com
-www   : http://www.jausoft.com ; pgp: http://www.jausoft.com/gpg/
-voice : +49-521-2399440, +49-170-2115963; fax: +49-521-2399442
+	Gabriel.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
