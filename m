@@ -1,37 +1,51 @@
-Date: Fri, 16 Jul 1999 21:14:57 +0200
-From: Marc Mutz <Marc@Mutz.com>
-Subject: Re: How Swap PCI changes.
-To: Johnnie Peters <jpeters@phx.mcd.mot.com>
-Cc: Linux Hot Swap <hotplug-list@redhat.com>,
-        "linux-ha@muc.de" <linux-ha@muc.de>,
-        "linux-kernel@vger.rutgers.edu" <linux-kernel@vger.rutgers.edu>,
-        "linuxppc-dev-digest@lists.linuxppc.org"
- <linuxppc-dev-digest@lists.linuxppc.org>,
-        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Message-id: <378F84B1.61589AD4@Mutz.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-References: <378BD350.DB68DBD6@phx.mcd.mot.com>
+Date: Fri, 16 Jul 1999 15:51:50 -0400
+From: Daniel Jacobowitz <drow@false.org>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: research for a new booting mechanism
+Message-ID: <19990716155150.A12541@drow.res.cmu.edu>
+References: <862567B0.0065DE1F.00@crnotes.collins.rockwell.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <862567B0.0065DE1F.00@crnotes.collins.rockwell.com>; from James S Lande on Fri, Jul 16, 1999 at 01:28:01PM -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Johnnie!
+On Fri, Jul 16, 1999 at 01:28:01PM -0500, James S Lande wrote:
+> Plan:
+> 
+> What if a person set bit 6 of the bbVersion field of the bootblock of a
+> dummy HFS partition and then at the end of the boot-block, put in the
+> /boot/first.b code?
+> My first attempt was to just dd the first.b to the first block of the dummy
+>  HFS partition.  Then I used System Disk from Darwin to boot off of this
+> disk.  Much to my surprise
+> quik actually kicked in and I was at the boot prompt.  But I couldn't boot
+> linux because it couldn't find the second.b chunk or the root filesystem.
+> I couldn't readily find the quik source at work, and don't have the source
+> RPM so, I stopped for now, mainly because I am going on a computer-less
+> vacation.
+> I thought I could look at/modify the source to read blocks from the disk/
+> or add hfs support/ to find/write the quik.conf file.
+> I also decided to post this to the dev list to see if anyone else had ever
+> tried something like this, so that I wouldn't be wasting my time if it had
+> been tried and found unsuccessful.
 
-Was it impossible for you to put that on the web or on a ftp server
-instead of posting 220K to 5 mailing lists, or did you simply not think
-before posting?
-I'm not sitting on a T1 when I'm at home... :-(
+The question, it seems to me, is what sort of state the OS is in when
+this happens.  Is Open Firmware still mapped in, or does the Apple ROM
+unmap it?  It should be possible to use this in either case, although
+if it is unmapped, it would be more like running BootX (whose source I
+have not yet actually looked at).
 
-Marc
+Ben, thoughts?
 
--- 
-Marc Mutz <Marc@Mutz.com>                    http://marc.mutz.com/
-University of Bielefeld, Dep. of Mathematics / Dep. of Physics
+Dan
 
-PGP-keyID's:   0xd46ce9ab (RSA), 0x7ae55b9e (DSS/DH)
-
-
+/--------------------------------\  /--------------------------------\
+|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
+|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
+|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
+\--------------------------------/  \--------------------------------/
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
