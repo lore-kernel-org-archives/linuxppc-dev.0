@@ -1,50 +1,45 @@
-Message-ID: <3CE95FCB.ADF38CE0@ixiacom.com>
-Date: Mon, 20 May 2002 13:42:51 -0700
+Message-ID: <3CE99643.B7188518@ixiacom.com>
+Date: Mon, 20 May 2002 17:35:15 -0700
 From: Dan Kegel <dkegel@ixiacom.com>
 MIME-Version: 1.0
-To: andrew may <acmay@acmay.homeip.net>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: When did ppc405 support stabilize?
-References: <3CE94AE9.E18D2B1E@ixiacom.com> <20020520133149.A17318@ecam.san.rr.com>
+To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Cc: dank@kegel.com
+Subject: bitkeeper, the 2_4_devel tree, and branches
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-andrew may wrote:
->
-> Dan Kegel wrote:
-> > I'd like to try older linuxppc_2_4_devel kernels
-> > until I find where the problem started.
-> > I guess I'll have to work my way backwards, since I don't know
-> > when ppc405 support stabilized in that tree. ...
-> >
-> > BTW, here's the cheesy script I'm using to fetch old kernel versions;
-> > I'm relying on the v2.4.xx tags.
->
-> look into 'bk export' instead of the script.
+My naive assumption, looking at the changesets listed at
+http://ppc.bkbits.net:8080/linuxppc_2_4_devel/
+was that if I cloned the repository as of two adjacent
+changesets, and exported from those repositories,
+the result would differ by exactly the second changeset.
 
-Hmm.  I tried
-$ bk export -rv2.4.14 bk://ppc.bkserver.net/linuxppc_2_4_devel mylinux
-but it failed with
-  Cannot find package root.
-Can some bk expert suggest the right command for grabbing a plaintext
-version of the linuxppc_2_4_devel kernel corresponding roughly to
-2.4.xx?
+That's probably true at some level, but when I tried
+it with the two tags 1.899 and v2.4.18 (aka 1.2.2.131),
+which are adjacent in the changeset list on that web page,
+I got two entirely different trees.  It seems many branches
+exist in the linuxppc_2_4_devel tree, and that bk names
+branches using the godawful SCCS/CVS branch naming scheme.
+(Hrmf- after getting used to Perforce's branch naming, it's
+hard to go back to the
+branch-name-is-suffix-on-version-number-of-each-file
+way of life.)
 
-> I believe the tags are off the base Linux kernel and they have never
-> worked for the 405gp.
+Bitkeeper's doc is a bit thin on branches; for instance,
+http://www.bitkeeper.com/manpages/bk-terms-1.html doesn't
+have a definition for 'branch'.
 
-Oh.  Do you have any suggestions for how to retrieve 'ok' older
-versions of the tree?  I can grab as of a date, but I imagine
-I'd have to be fairly picky about the date to get something good.
+So it seems that, unless one knows what one is doing,
+one should avoid any revisions with more than one dot
+in their name, and one should shun the tags 'v2.4.xx',
+which are probably just mirrors of the Linus kernels.
 
-> The recent trees have been working for me but there have been a lot
-> of changes to try to get a common OCP framework.
-
-(OCP has to do with the built-in peripherals?)  BTW,
-I don't even need to get ethernet working; the bug I'm
-after occurs even with loopback.  All I need working
-is the serial port and the core kernel.
+Can someone confirm this, say a couple words on the use
+of branches in the 2_4_devel tree, and explain how the
+v2.4.xx tags are useful to linux ppc kernel hackers?
+Thanks!
+- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
