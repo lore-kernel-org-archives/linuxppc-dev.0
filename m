@@ -1,51 +1,43 @@
-Message-ID: <39D0DDE4.5D11477F@mvista.com>
-Date: Tue, 26 Sep 2000 10:33:24 -0700
-From: Frank Rowand <frank_rowand@mvista.com>
-Reply-To: frowand@mvista.com
-MIME-Version: 1.0
-To: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
-CC: David Edelsohn <dje@watson.ibm.com>,
-        "David N. Welton" <davidw@linuxcare.com>,
+Date: Tue, 26 Sep 2000 20:35:23 +0200 (CEST)
+From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: R Shapiro <rshapiro@bbn.com>,
+        Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
         linuxppc-dev@lists.linuxppc.org
-Subject: Re: MPC405 - supported?
-References: <Pine.LNX.3.96.1000926092818.13281S-100000@deepspace.mklinux.org>
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: xf 4.0.1 with rage II/rage pro -- multi-headed display!
+In-Reply-To: <Pine.LNX.4.10.10009261825540.373-100000@cassiopeia.home>
+Message-ID: <Pine.LNX.4.10.10009262028450.20839-100000@zirkon.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"David A. Gatwood" wrote:
->
-> On Tue, 26 Sep 2000, David Edelsohn wrote:
->
-> >       Are you referring to the IBM PowerPC 405 embedded processor?  IBM
-> > part numbers are PPC405 (not Motorola MPC505).  I am pretty sure that the
-> > 4xx numbers are IBM parts.
+> > > Are there known X-related problems using BootX?
 > >
-> >       I have seen patches from MontaVista for 405 support in the
-> > toolchain, so they may be working with PPC405 chips.
+> > You were looking at it, from what I guess. Apple's drivers set up
+> > overlapping areas for MMIO and VRAM, and X fixes this by disabling one of
+> > these. Unfortunatly, the kernel doesn't notice.
 >
-> Yeah.  We demoed an IBM-built 405GP development box at the LWE a few weeks
-> ago, running some Hard Hat Linux-based setup acting as a web server, IIRC.
-> I'm not sure to what extent the various embedded controllers and stuff are
-> supported, but the core functionality works, anyway.  :-)
->
-> David
-> a.k.a. dgatwood@mvista.com
+> Fortunately these PCI assignment bugs should be circumvented by the new PCI
+> code we're working on.
 
-Yes, there is extensive support for the IBM PowerPC 405 embedded processor
-family (405 based processors from IBM include the 405GP, 405CR, STB03xxx, NPe405)
-available from MontaVista.  The development web site is currently slightly stale:
+... in 2.4.x, I believe. Problem is, most people aren't crazy enough to
+use 2.4.0 (-test8 in particular).
 
-  http://dev.mvista.com/projects/405gp_status/main.html
+All you can do in 2.2 is the 'pick and pray' approach: pick an alternate
+address for MMIO bases on some heuristics or wild guesses, and pray you
+don't trample on other card's resources. Works for me, but I warn anyone
+to be careful with that method.
 
-There is newer source on the ftp site than the web page describes (September 9)
-and there should be a newer version of source and an updated web page within
-the next few weeks.
+I've posted such a patch to debian-powerpc when one user there had this
+problem. That was before I learned booting with yaboot avoids the problem.
+If the resource conflict also happens on oldworld machines, I'd still
+prefer some suggestions to foolproof the patch (as in: how can I figure
+out if a region has been allocated by another card? What bits from the
+config registers should I look at?).
 
--Frank
---
-Frank Rowand <frank_rowand@mvista.com>
-MontaVista Software, Inc
+	Michael
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
