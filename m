@@ -1,14 +1,31 @@
-Date: Fri, 5 Sep 2003 11:02:27 +0200
-Subject: Re: display top CPU processes top tool
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v552)
+Reply-To: <zjzhou@newrocktech.com>
+From: "John Zhou" <zjzhou@newrocktech.com>
+To: "'Jaap-Jan Boor'" <jjboor@aimsys.nl>
 Cc: <linuxppc-embedded@lists.linuxppc.org>
-To: <zjzhou@newrocktech.com>
-From: Jaap-Jan Boor <jjboor@aimsys.nl>
-In-Reply-To: <000001c37387$5897abe0$9702a8c0@newrock2>
-Message-Id: <AC6519E7-DF7F-11D7-B7DD-003065E2BB06@aimsys.nl>
+Subject: RE: display top CPU processes top tool
+Date: Fri, 5 Sep 2003 17:23:24 +0800
+Message-ID: <000201c3738f$5bcfd2d0$9702a8c0@newrock2>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-reply-to: <AC6519E7-DF7F-11D7-B7DD-003065E2BB06@aimsys.nl>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Yes. I have a /etc/TERMCAP. But it's still failed. need other changes ?
+
+Thanks for your email.
+
+-----Original Message-----
+From: owner-linuxppc-embedded@lists.linuxppc.org
+[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Jaap-Jan
+Boor
+Sent: Friday, September 05, 2003 5:02 PM
+To: zjzhou@newrocktech.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: display top CPU processes top tool
+
 
 
 Do you have a /etc/TERMCAP ?
