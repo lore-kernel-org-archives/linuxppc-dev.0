@@ -1,20 +1,19 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5C6B32BDF2
+Return-Path: <ratman.k@gmail.com>
+Received: from mproxy.gmail.com (mproxy.gmail.com [216.239.56.247])
+	by ozlabs.org (Postfix) with ESMTP id 97C322BDF2
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 24 Nov 2004 07:10:46 +1100 (EST)
-In-Reply-To: <1101236780.41a38a2c7f44f@webmail.televes.com:443>
-References: <1101236780.41a38a2c7f44f@webmail.televes.com:443>
-Mime-Version: 1.0 (Apple Message framework v619)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <2515D492-3D8C-11D9-B8D4-003065F9B7DC@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Tue, 23 Nov 2004 15:13:31 -0500
-To: alebas@televes.com
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Kernel 2.6 hangs at m82xx_board_init
+	Wed, 24 Nov 2004 07:38:22 +1100 (EST)
+Received: by mproxy.gmail.com with SMTP id q44so24947cwc
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 23 Nov 2004 12:38:21 -0800 (PST)
+Message-ID: <004601c4d19b$77367450$a1b210ac@nvidia.com>
+From: "r.k" <ratman.k@gmail.com>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Tue, 23 Nov 2004 12:31:47 -0800
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0043_01C4D158.660000E0"
+Subject: mpc7447a
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,17 +24,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
 
-On Nov 23, 2004, at 2:06 PM, alebas@televes.com wrote:
+------=_NextPart_000_0043_01C4D158.660000E0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-> When this code is executed, the kernel jumps directly to another
-> address, 0xc000984c,
+any ideas how to generate tool chain for mpc7447a ???
+------=_NextPart_000_0043_01C4D158.660000E0
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-I suspect the MMU isn't yet set up to map the address of the BCSR.
-Access the address causes a fault, and the "jump" you see is the
-result of executing a bunch of exception handler instructions that
-you won't single step due to the exception priorities.
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Diso-8859-1">
+<META content=3D"MSHTML 6.00.2800.1458" name=3DGENERATOR>
+<STYLE></STYLE>
+</HEAD>
+<BODY bgColor=3D#ffffff>
+<DIV><FONT face=3DArial size=3D2>any ideas how to generate tool chain =
+for mpc7447a=20
+???</FONT></DIV></BODY></HTML>
 
-
-
-	-- Dan
+------=_NextPart_000_0043_01C4D158.660000E0--
