@@ -1,43 +1,38 @@
-Message-ID: <40C0172A.6080801@intracom.gr>
-Date: Fri, 04 Jun 2004 09:31:06 +0300
-From: Pantelis Antoniou <panto@intracom.gr>
+Message-ID: <40C020DC.9050607@iti.fi>
+Date: Fri, 04 Jun 2004 10:12:28 +0300
+From: Kate Alhola <kate@iti.fi>
 MIME-Version: 1.0
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	Kumar Gala <kumar.gala@motorola.com>,
-	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: [PATCH] Take two of the new serial uart driver.
-References: <40BF3206.8030705@intracom.gr> <1086279704.15845.1.camel@hades.cambridge.redhat.com>
-In-Reply-To: <1086279704.15845.1.camel@hades.cambridge.redhat.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: fbdev_drv/xfree86 getting rid of /dev/tty0 console
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David Woodhouse wrote:
+I try to use Xfree86 with fbdev_drv in embedded system and i got stuck
+to "xf86OpenConsole: Cannot open /dev/tty0" or
+"xf86OpenConsole: Cannot find a free VT" etc.
 
->On Thu, 2004-06-03 at 17:13 +0300, Pantelis Antoniou wrote:
->
->>The following patch updates the new CPM1/CPM2 uart driver.
->>
->>Its main features are:
->>
->
->Works for me on WindRiver PowerQUICC II once I make it build:
->
->--- cpm_uart_cpm2.c~	2004-06-03 16:50:03.841824208 +0100
->+++ cpm_uart_cpm2.c	2004-06-03 16:55:58.019980944 +0100
->@@ -47,7 +47,7 @@
->
-[snip]
+The problem is that the device is embedded ppc without any console at
+all and least there won't never be
+one in /dev/tty0 that is normally linked to serial port.
 
->
->
-Applied
+The problem is that /dev/tty0 looks a like to be hardcoded to
+"xf86OpenConsole(void)" in xfree86 lnx_init.c and
+it is called unconditionally from xf86Init.c . I have not found any
+switch to switch console off from xfree86
+config files. Also linkig /dev/tty to /dev/null or /dev/vcs0 etc does
+not help, it just replaces
+"can not open" error with "Cannot find a free VT".
 
-Thanks
+I know that i  can hack xfree86 source and remove this dependency by
+hand but it looks a like
+not to be right or most elegant solution because i can't believe that i
+am first one that tries to use
+fbdev in embedded hw without any console.
 
-Pantelis
+The the linux distribution and filesystem is stantard eldk 3.0 ppc_82xx .
 
+Kate
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
