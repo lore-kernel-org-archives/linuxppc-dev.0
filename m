@@ -1,21 +1,20 @@
-Return-Path: <wfarnsworth@mvista.com>
-Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
-	by ozlabs.org (Postfix) with ESMTP id 4E33867A65
+Return-Path: <greg.weeks@timesys.com>
+Received: from exchange.timesys.com (mail.timesys.com [65.117.135.102])
+	by ozlabs.org (Postfix) with ESMTP id CCD0D67A67
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Mar 2005 05:04:19 +1100 (EST)
-From: Wade Farnsworth <wfarnsworth@mvista.com>
-To: Jason McMullan <jason.mcmullan@timesys.com>
-In-Reply-To: <1110993985.2987.2.camel@ad.doubleclick.net>
-References: <1110907039.24673.12.camel@rhino.az.mvista.com>
-	<1110937421.28218.27.camel@jdub.homelinux.org>
-	<1110989349.24673.99.camel@rhino.az.mvista.com>
-	<1110993985.2987.2.camel@ad.doubleclick.net>
-Content-Type: text/plain
-Message-Id: <1110996255.24527.129.camel@rhino.az.mvista.com>
-Mime-Version: 1.0
-Date: 16 Mar 2005 11:04:15 -0700
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH 1/3] PPC440EP SoC and Bamboo board support
+	Thu, 17 Mar 2005 05:20:58 +1100 (EST)
+Message-ID: <42387908.5010003@timesys.com>
+Date: Wed, 16 Mar 2005 13:20:56 -0500
+From: Greg Weeks <greg.weeks@timesys.com>
+MIME-Version: 1.0
+To: Kumar Gala <kumar.gala@freescale.com>
+References: <42386274.2020504@timesys.com>
+	<f37ebc53776184342f4eb01eb23efcac@freescale.com>
+In-Reply-To: <f37ebc53776184342f4eb01eb23efcac@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: [patch] fix unitilized spinlock in cpm driver when used as
+	console
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,12 +25,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2005-03-16 at 10:26, Jason McMullan wrote:
-> Do you need a 'special' toolchain to work around Errata 42 (isync before
-> blrl) for user-space, or are the kernel-land fixes sufficient?
+Kumar Gala wrote:
 
-Yes, this work around also needs to be in gcc.  I know this has been
-fixed in MontaVista's toolchain, but I don't know if the work around has
-been pushed up to the main gcc tree.
+> This may already be resolved by this patch which is in the latest bk 
+> tree.
+>
+> http://ozlabs.org/ppc32-patches/patch.pl?id=280
+>
+> - kumar
+>
+> On Mar 16, 2005, at 10:44 AM, Greg Weeks wrote:
+>
+>> Fix unitilized spinlock in the cpm scc driver when used as console.
+>>
+>> Signed-off-by: Greg Weeks <greg.weeks@timesys.com>
+>>
+>>  <cpm.console.spinlock.patch><ATT247771.txt>
+>
+>
+Yes that fixes it.
 
--Wade Farnsworth
+Greg Weeks
