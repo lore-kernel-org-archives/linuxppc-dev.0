@@ -1,35 +1,49 @@
-Date: Thu, 1 Nov 2001 11:56:19 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: linuxppc-dev@lists.linuxppc.org,
-	linuxppc-commit@source.mvista.com
-Subject: Re: Incoming to hostme.bitkeeper.com:/ua/repos/p/ppc/linuxppc_2_4_devel
-Message-ID: <20011101115619.A25864@cpe-24-221-152-185.az.sprintbbd.net>
-References: <20011101001030.EFA5510094@hostme.bitkeeper.com> <3BE1932E.DB7956CA@linux-m68k.org>
+Message-ID: <20011101211901.28548.qmail@dag.newtech.fi>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: sym53c8xx broke in Bk kernel ?
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3BE1932E.DB7956CA@linux-m68k.org>
+Content-Type: text/plain; charset=iso-8859-1
+Date: Thu, 01 Nov 2001 23:19:01 +0200
+From: Dag Nygren <dag@newtech.fi>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Nov 01, 2001 at 07:23:42PM +0100, Roman Zippel wrote:
-> Hi,
->
-> > ChangeSet@1.559, 2001-10-31 17:09:57-07:00, trini@opus.bloom.county
-> >   Minor cleanups wrt isa_{io,mem}_base and pci_dram_offset, from
-> >   Roman Zippel <zippel@linux-m68k.org>
->
-> You missed the declaritions in mpc8xx.h, that change is in the other
-> patch. Sorry, I didn't mention it, I didn't resent the parts that
-> applied cleanly.
+Hi,
 
-Arg, not my day.  Can you split up the rest of the changes into seperate
-patches (01, 02, 0n) and make it vs the _devel tree?  It'll help stop me
-from doing things like that. :)
+just get the latest (well 2-day old) Bk devel tree
+up and running on my SBS VG4 board here and
+am having problems with the sym53c8xx driver.
+
+The system just hangs if I use mmaped I/Oand generates
+timeout errors if using non-mmapped I/O.
+
+Reverting to the driver that worked on my previous port
+(2.4.2-ac11) made everything work again, so I don't think there
+is anything wrong with my setups etc.
+
+Anyway wanted to ask, if anyone else have had problems here.
+
+I will submit the port later on, when I have investigated this
+problem a bit more and cleaned up the files here.
+
+BTW. Is anyone using the MPC107 ? It is very strange that
+I have to change the Openpic struct in a couple of places to
+get it working on my board.... That shouldn't happen 8-o
+
+Thanks to the guys cleaning up the PPC tree, it has been getting
+increasingly easier to get things going... Perhaps the most still
+needed change would be to move away the xxxx_setup.c and
+xxxx_pci.c files from the generic kernel-files ??
+
+BRGDS
 
 --
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Dag Nygren                               email: dag@newtech.fi
+Oy Espoon NewTech Ab                     phone: +358 9 8024910
+Träsktorpet 3                              fax: +358 9 8024916
+02360 ESBO                              Mobile: +358 400 426312
+FINLAND
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
