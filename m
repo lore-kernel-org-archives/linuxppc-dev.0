@@ -1,37 +1,24 @@
-Return-Path: <hollis@penguinppc.org>
-Received: from over.ny.us.ibm.com (over.ny.us.ibm.com [32.97.182.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "over.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id EF9D067A71
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Feb 2005 05:25:20 +1100 (EST)
-Received: from e31.co.us.ibm.com (e31.esmtp.ibm.com [9.14.4.129])
-	by pokfb.esmtp.ibm.com (8.12.11/8.12.11) with ESMTP id j1MFuDZR022497
-	(version=TLSv1/SSLv3 cipher=EDH-RSA-DES-CBC3-SHA bits=168 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Feb 2005 10:56:14 -0500
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e31.co.us.ibm.com (8.12.10/8.12.9) with ESMTP id j1MFu6ua185982
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Feb 2005 10:56:06 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.12.10/NCO/VER6.6) with ESMTP id
-	j1MFu6Ib145122
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Feb 2005 08:56:06 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11/8.12.11) with ESMTP id
-	j1MFu50m016719
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Feb 2005 08:56:05 -0700
-In-Reply-To: <20050222130646.25bc9520.sonic_amiga@rambler.ru>
-References: <20050222121809.351088dc.sonic_amiga@rambler.ru>
-	<20050222093208.GE27891@gate.ebshome.net>
-	<20050222130646.25bc9520.sonic_amiga@rambler.ru>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <efde43ce0c064cc8699fd850d594c7f1@penguinppc.org>
-From: Hollis Blanchard <hollis@penguinppc.org>
-Date: Tue, 22 Feb 2005 09:56:03 -0600
-To: Pavel Fedin <sonic_amiga@rambler.ru>
-Cc: Linux PPC Dev <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH] Non-DMA mode for floppy on PowerPC
+Return-Path: <sheutlin@gmx.de>
+Received: from mail.gmx.net (pop.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id B53C567A75
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Feb 2005 05:26:54 +1100 (EST)
+Message-ID: <421B79AD.60508@gmx.de>
+Date: Tue, 22 Feb 2005 19:27:57 +0100
+From: Sebastian Heutling <sheutlin@gmx.de>
+MIME-Version: 1.0
+To: Leigh Brown <leigh@solinno.co.uk>
+References: <20041206185416.GE7153@smtp.west.cox.net>
+	<Pine.SOC.4.61.0502221031230.6097@math.ut.ee>
+	<421B1F12.7050601@gmx.de>
+	<5982.195.212.29.67.1109074991.squirrel@195.212.29.67>
+In-Reply-To: <5982.195.212.29.67.1109074991.squirrel@195.212.29.67>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Tom Rini <trini@kernel.crashing.org>, Christian Kujau <evil@g-house.de>,
+	Meelis Roos <mroos@linux.ee>,
+	Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, Sven Hartge <hartge@ds9.gnuu.de>
+Subject: Re: [PATCH 2.6.10-rc3][PPC32] Fix Motorola PReP (PowerstackII   
+ Utah) PCI IRQ map
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,29 +28,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Feb 22, 2005, at 12:06 PM, Pavel Fedin wrote:
+Leigh Brown wrote:
 
-> On Tue, 22 Feb 2005 01:32:09 -0800
-> Eugene Surovegin <ebs@ebshome.net> wrote:
+>Sebastian Heutling said:
+>  
 >
->> Please, be patient and don't repost the same stuff every day.
+>>Meelis Roos wrote:
+>>
+>>    
+>>
+>>>>The PCI IRQ map for the old Motorola PowerStackII (Utah) boards was
+>>>>incorrect, but this breakage wasn't exposed until 2.5, and finally
+>>>>fixed
+>>>>until recently by Sebastian Heutling <sheutlin@gmx.de>.
+>>>>        
+>>>>
+>>>Yesterday I finally got around to testing it. It seems the patch has
+>>>been applied in Linus's tree so I downloaded the latest BK and tried it.
+>>>
+>>>Still does not work for me but this time it's different. Before the
+>>>patch SCSI worked fine but PCI NICs caused hangs. Now I can't test PCI
+>>>NICs because even the onboard 53c825 SCSI hangs - seems it gets no
+>>>interrupts.
+>>>
+>>>It detects the HBA, tries device discovery, gets a timeout, ABORT,
+>>>timeout, TARGET RESET, timeout, BUS RESET, timeout, HOST RESET and
+>>>there it hangs.
+>>>
+>>>Does it work for anyone else on Powerstack II Pro4000 (Utah)?
+>>>
+>>>      
+>>>
+>>It does work in 2.6.8 using backported patches (e.g. the debian 2.6.8
+>>kernel). But it doesn't work above that version because of other patches
+>>in arch/ppc/platforms/prep_pci.c and arch/ppc/platforms/prep_setup.c
+>>(made by Tom Rini?). I couldn't find out what exactly is causing this
+>>problem yet (because lack of time and the fact that my Powerstack is
+>>used as a router).
+>>    
+>>
 >
->  Ok. How long does it take for a patch to get included into the 
-> kernel? I posted if two weeks ago for the first time and nothing 
-> happened. In LKML also nobody answers.
+>Ah, this could well be my fault.  Those patches were to improve support
+>of IBM RS/6000 PReP boxes.  Do those machines have residual data?  If
+>so, could anyone who has one send me the contents of /proc/residual?
+>
+>Also, a full boot log when working and failing would be cool.
+>  
+>
+No, the PowerstackII Pro4000 (Utah) has no residual. I couldn't see 
+anything unusal in the bootlogs except that
+neither IDE nor SCSI interrupts occour (timeouts for SCSI and lost 
+interrupts for IDE). I assume other PCI-devices have a similar problem. 
+I will try to extract some bootlogs in the next days but I think they 
+won't help.
 
-That generally means nobody cares (don't worry, we've all been there).
-
-In your case, I would start by very clearly describing exactly why you 
-can't use DMA on Pegasos, and why the current code is unusable. Can a 
-PC floppy run in non-DMA mode? If so, your patch should probably be for 
-floppy.c rather than asm-ppc/floppy.h . I notice there is already code 
-for "virtual DMA mode" in floppy.c, apparently for when there is no 
-memory available in the DMA zone. Why doesn't that code work for you?
-
-As for code style, it seems that "TRACE_FLPY_INT" is something you 
-invented. It hurts readability; I'd remove it. Drop that "register" 
-stuff. Make your whitespace consistent (for example, add spaces after 
-"if" and "for").
-
--Hollis
+Basti
