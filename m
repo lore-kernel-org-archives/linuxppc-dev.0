@@ -1,40 +1,53 @@
-Message-ID: <3BF5B94C.2000404@embeddededge.com>
-Date: Fri, 16 Nov 2001 20:11:40 -0500
-From: Dan Malek <dan@embeddededge.com>
+Date: Sat, 17 Nov 2001 01:34:40 +0000 (GMT)
+From: Phillip Lougher <phillip@lougher.demon.co.uk>
+To: Shie Erlich <shie_e@elbit.co.il>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: a general bootloader question
+In-Reply-To: <Pine.LNX.4.21.0111170109000.1293-100000@lougher.demon.co.uk>
+Message-ID: <Pine.LNX.4.21.0111170130020.1401-100000@lougher.demon.co.uk>
 MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-embedded@lists.linuxppc.org,
-	Paul Mackerras <paulus@samba.org>
-Subject: Re: Organisation of 4xx initialization code
-References: <20011116164625.K673@zax> <3BF542D4.10706@embeddededge.com> <20011117114724.H12763@zax>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David Gibson wrote:
+On Sat, 17 Nov 2001, Phillip Lougher wrote:
 
+> > The linux image should be a pure binary image (not with the ELF header).
+> > See objdump concerning how to strip the vmlinux file.
 
+objdump should be objcopy, namely
 
-> ..........  create a new ppc4xx.c which
-> will probably have a lot of code copied out of ppc4xx_setup.c,
+objcopy -S -O binary vmlinux <output_file>
 
-Oh great, even more new files names......
+In mitigation, it is 1.30 in the morning here, so what do you expect.
 
-> Gradually move each of the other 4xx machines over to the new scheme
-> and finally remove ppc4xx_setup.c
-
-How about you just do them all at once so we don't have a mess with
-some old and some new methods?  Even if you can't test the changes,
-contact someone that can and offer to do the best at changes.  Nothing
-is worse than making major changes to only some of the files, leaving
-someone else to do the remainder when they are busy trying to accomplish
-something else.
-
-Thanks.
-
-
-	-- Dan
+>
+> >
+> > Hope this helps.
+> >
+> > Phillip
+> >
+> > ----
+> > Phillip Lougher,
+> > Zarlink Semiconductor,
+> > Chepstow,
+> > Wales.
+> >
+> > >
+> > > 		thanks in advance,
+> > > 			Shie Erlich
+> > >
+> > >
+> > >
+> > >
+> > >
+> >
+> >
+> >
+>
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
