@@ -1,35 +1,65 @@
-Message-ID: <3946C981.A1271A3E@embeddededge.com>
-Date: Tue, 13 Jun 2000 19:53:37 -0400
-From: Dan Malek <dan@netx4.com>
+Message-ID: <00bf01bfd5b0$1700ec00$57c809c0@nt4srv87>
+Reply-To: "john zhan" <johnzhan@363.net>
+From: "john zhan" <johnzhan@363.net>
+To: <hugh.mcdonald@nokia.com>
+Cc: "linuxppc-em" <linuxppc-embedded@lists.linuxppc.org>
+References: <4FC68B779807D31191B10008C7731C4D579921@meeis01nok>
+Subject: Re: SCC used for WAN connection
+Date: Wed, 14 Jun 2000 11:24:40 +0800
 MIME-Version: 1.0
-To: guinan@bluebutton.com
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MBX hang (tlbia)
-References: <Pine.LNX.4.21.0006131300470.24794-100000@gemini.home.net>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Jamie Guinan wrote:
+hi, Hugh McDonald
 
-> ..... Anyway, by simply
-> commenting out the parts of their 8xx init stuff which sets up
-> the MMU and TLBs,
+> On 30/5/00 Ruedi Hofer wrote,
+> >
+> >I'd like to use one of the currently unused SCC's as WAN interface.
+> >My ultimate dream is to run PPP or Frame Relay at a speed of
+> >2Mb/s on it.
+me too.  in fact,   also, I need generic x.25 running on it.
 
-You need to enter Linux with MMUs disabled.  I think this is true
-of all architectures.  The tlbia is needed to invalidate everything
-because a few lines later Linux sets up its own virtual environment.
+>Hugh McDonald wrote,
+> Hi Ruedi,
+>     I too am hoping to one day run one SCC on an MBX860 board as a 2M WAN
+> port. My general plan was to run the SCC in HDLC synchronous mode and use
+> the PPP protocol on top of this.  From my quick investigation I found that
+> in the LinuxPPc /kernel/drivers/char area there some files synclink.c
+> (rewrite of serial.c) and n_hdlc.c (rewrite of ppp.c). Together they form a
+> Linux Device Driver & line disipline for a synchrouous PPP link.
+> Unfortunately the synclink.c driver is dedicated to a PCI serial card
+> produced by MicroGate.
 
-Running with caches enabled is OK, because anything Linux ensures
-cache coherency among the operations it performs during boot.  You
-can't arbitrarily disable the MMU, because you need some knowledge of
-the physical environment you came from so you know what will happen
-when the MMU is disabled.
-
-Good job.  Have fun!
+yes , we NEED a SCC HDLC mode synchronous  driver.
 
 
-	-- Dan
+
+>    What is needed is a new version of 8xx_io/uart.c that sets up and drives
+> the SCC as a synchronous serial port. This may then be useable with the sync
+> PPP line disipline from the above driver.
+>   I have started playing with it but only when I have some spare time....
+ great!
+I think it will probably  have big difference from the existing uart.c , and init routine must contain of  both uart and hdlc init code.
+or ,  maybe need reconstruct the directory/file structures , add hdlc.c which supports full features of net device.
+
+
+
+> and I dont seem to get much of that these days :-(
+>    Please let me know if you get any info from other people or find out any
+> other possible solutions....
+
+I think we can  work together .
+If you like,let's discuss it later , privately.
+
+what do you say?
+
+
+regards.
+john zhan.
+hacking time.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
