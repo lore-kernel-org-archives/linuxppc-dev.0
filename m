@@ -1,35 +1,65 @@
-Message-ID: <39B110B9.6266196F@student.ethz.ch>
-Date: Sat, 02 Sep 2000 16:37:45 +0200
-From: Michel Dänzer <daenzerm@student.ethz.ch>
+Message-Id: <200009031238.OAA00869@piglet.grunz.lu>
+Date: Sun, 3 Sep 2000 14:38:24 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Latest rsync from Paul doesn't compile
+To: linuxppc-dev@lists.linuxppc.org
+cc: paulus@linuxcare.com.au
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <bh40@calva.net>
-CC: "Hendricks, Kevin" <khendricks@ivey.uwo.ca>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: asm statement in include/asm not ansi conform
-References: <39AFCE61.7D68ED0C@ivey.uwo.ca> <20000901161432.8125@mailhost.mipsys.com>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: MULTIPART/mixed; BOUNDARY="134458388-1804289383-967984710=:867"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
+--134458388-1804289383-967984710=:867
+Content-Type: TEXT/plain; charset=us-ascii
 
-> There is at least one r128 based PCI card for Mac that uses a different
-> clock rate. I think we should (for the future at least) add code to
-> aty128fb to recongnize it and return proper values from a private ioctl.
-> That wouldn't help users not using aty128fb, but on Macs, I beleive those
-> will be rare.
+Hi all,
 
-Only if 16 bit works properly in aty128fb (I have it working in console, still
-wrong colors with X, patch sent to Brad Douglas), otherwise people who want to
-use DRI are forced not to use it with X.
+Paul's latest rsync devel tree doesn't compile due to the recent MOL
+patches. It's a problem with altivec symbols, and the patch below fixes
+it for me.
 
+However, I'm not sure I've done it the roght way, so the MOL maintainers
+might want to look into this...
+
+Cheers
 
 Michel
 
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
---
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and The DRI Project
+--134458388-1804289383-967984710=:867
+Content-Type: TEXT/plain; CHARSET=US-ASCII
+Content-Disposition: attachment; filename="ksyms-mol.patch"
+
+--- linux-2.4.paul/arch/ppc/kernel/ppc_ksyms.c	Sun Aug 27 12:46:13 2000
++++ linux/arch/ppc/kernel/ppc_ksyms.c	Sun Sep  3 13:44:52 2000
+@@ -320,14 +320,16 @@
+ extern PTE *Hash;
+ extern unsigned long Hash_mask;
+ extern void (*ret_from_except)(void);
++#ifdef CONFIG_ALTIVEC
+ extern struct task_struct *last_task_used_altivec;
++EXPORT_SYMBOL(last_task_used_altivec);
++EXPORT_SYMBOL(giveup_altivec);
++#endif
+ EXPORT_SYMBOL_NOVERS(mol_interface);
+ EXPORT_SYMBOL(Hash);
+ EXPORT_SYMBOL(Hash_mask);
+ EXPORT_SYMBOL(handle_mm_fault);
+ EXPORT_SYMBOL(last_task_used_math);
+-EXPORT_SYMBOL(last_task_used_altivec);
+-EXPORT_SYMBOL(giveup_altivec);
+ EXPORT_SYMBOL(ret_from_except);
+ #endif
+
+
+--134458388-1804289383-967984710=:867--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
