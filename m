@@ -1,52 +1,48 @@
-Message-ID: <3439AB3A99ECD5409F3A52ACF814744D158D23@norcom2.norcom.net>
-From: Lokesh Kumar <lokesh.kumar@wrx-us.com>
-To: "'karim@opersys.com'" <karim@opersys.com>,
-	Lokesh Kumar <lokesh.kumar@wrx-us.com>
-Cc: brian.auld@adic.com, linuxppc-embedded@lists.linuxppc.org
-Subject: RE: x86(host) --> ppc(tgt) cross-tool-chain
-Date: Fri, 6 Jun 2003 13:40:45 -0400 
+From: "dong in kang" <dkang@east.isi.edu>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: gdb configuration for powerpc target on pentium pc
+Date: Fri, 6 Jun 2003 14:02:16 -0400
+Message-ID: <000801c32c55$c415ef40$45a97241@Minjoo>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
+	charset="us-ascii"
+In-Reply-To: <3439AB3A99ECD5409F3A52ACF814744D158D23@norcom2.norcom.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Yes, it does work. I have a small web server running with glibc-2.2.3.
+ I'm trying to debug Linux kernel on the Sandpoint X3 with MPC755 CPU board.
+I'm using BDI 2000 with GDB.
+I configured gdb v.5.3 as follows
 
-Lokesh
-
------Original Message-----
-From: Karim Yaghmour [mailto:karim@opersys.com]
-Sent: Friday, June 06, 2003 11:11 AM
-To: Lokesh Kumar
-Cc: brian.auld@adic.com; linuxppc-embedded@lists.linuxppc.org
-Subject: Re: x86(host) --> ppc(tgt) cross-tool-chain
+  configure --prefix=/usr/local/cross-ppc/host/intel/ --target=powerpc-linux
 
 
+ While I used the gdb with BDI, the breakpoints set by gdb do not work well.
+It doesn't stop.
+After a while, I typed Ctrl-C to stop it. Then it shows the messages shown
+below.
+And then it terminates. Could it be GDB configuration problem?
+Has anybody got similar problem?
 
-Lokesh Kumar wrote:
-> I built the toolchain on x86 host for PPC, and I used
->
-> GCC-2.95.3
-> GLIBC-2.2.3
-> Binutils-2.11.92
->
-> I did not use Karim's book. I went with "Embedded Linux Interfacing ...."
-> book.
+ Thanks in advance.
 
-:)
+ Dong-In
 
-I have to ask: Did this toolchain actually work for you on the target?
-I mean, did you try using glibc-2.2.3 on the PPC target? From I've
-seen, gcc 2.95.3 with glibc 2.2.3 will successfully generate a glibc,
-but the resulting glibc will core dump on the target.
+-------------------
+Program received signal SIGSTOP, Stopped (signal).
+0x0000d048 in todc_mc146818_read_val (addr=255)
+    at
+/opt/hardhat/previewkit/kernel/linux-2.4.17_mvl21/include/asm/io.h:299
+299             __asm__ __volatile__("lbz%U1%X1 %0,%1; eieio" : "=r" (ret) :
+"m" (*addr));
+(gdb) s
+Cannot remove breakpoints because program is no longer writable.
+It might be running in another process.
+Further execution is probably impossible.
+todc_mc146818_read_val (addr=32) at todc_time.c:119
+119             return inb(todc_info->nvram_data);
+--------------------------------------------------------
 
-Karim
-
---
-Author, Speaker, Developer, Consultant
-Pushing Embedded and Real-Time Linux Systems Beyond the Limits
-http://www.opersys.com || karim@opersys.com || 514-812-4145
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
