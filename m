@@ -1,23 +1,23 @@
-Return-Path: <jakub@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0CF3467A81
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Feb 2005 03:01:48 +1100 (EST)
-Date: Thu, 24 Feb 2005 11:01:39 -0500
-From: Jakub Jelinek <jakub@redhat.com>
-To: Mikael Pettersson <mikpe@csd.uu.se>
-Message-ID: <20050224160139.GF853@devserv.devel.redhat.com>
-References: <16924.59237.581247.498382@alkaid.it.uu.se>
-	<1109210688.15027.2.camel@gaston>
-	<16925.60927.49095.758660@alkaid.it.uu.se>
+Return-Path: <sven.luther@wanadoo.fr>
+Received: from smtp10.wanadoo.fr (smtp10.wanadoo.fr [193.252.22.21])
+	by ozlabs.org (Postfix) with ESMTP id AAC1467A82
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Feb 2005 03:16:08 +1100 (EST)
+Date: Thu, 24 Feb 2005 17:06:57 +0100
+To: Meelis Roos <mroos@linux.ee>
+Message-ID: <20050224160657.GB11197@pegasos>
+References: <20041206185416.GE7153@smtp.west.cox.net>
+	<Pine.SOC.4.61.0502221031230.6097@math.ut.ee>
+	<20050224074728.GA31434@pegasos>
+	<Pine.SOC.4.61.0502241746450.21289@math.ut.ee>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <16925.60927.49095.758660@alkaid.it.uu.se>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: ppc32 weirdness with gcc-4.0 in 2.6.11-rc4
-Reply-To: Jakub Jelinek <jakub@redhat.com>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <Pine.SOC.4.61.0502241746450.21289@math.ut.ee>
+From: Sven Luther <sven.luther@wanadoo.fr>
+Cc: Tom Rini <trini@kernel.crashing.org>, Christian Kujau <evil@g-house.de>,
+	Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, Sven Hartge <hartge@ds9.gnuu.de>
+Subject: Re: [PATCH 2.6.10-rc3][PPC32] Fix Motorola PReP (PowerstackII Utah)
+	PCI IRQ map
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,10 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Feb 24, 2005 at 04:08:47PM +0100, Mikael Pettersson wrote:
-> _However_, the 0k data message is due to a gcc-4.0 bug, and below
-> you'll find a test program which illustrates it.
+On Thu, Feb 24, 2005 at 05:47:15PM +0200, Meelis Roos wrote:
+> >Can you try :
+> >
+> > http://people.debian.org/~luther/d-i/images/daily/powerpc/netboot/vmlinuz-prep.initrd
+> 
+> Unfortunately there are only floppy and floppy-2.4 dirs under powerpc.
 
-http://gcc.gnu.org/PR20196
+Oh, damn, need to fix my daily builder, should be ok for tomorrow. IN the
+meanwhile, you can try : 
 
-	Jakub
+  http://people.debian.org/~luther/d-i/images/2005-02-23/powerpc/netboot/vmlinuz-prep.initrd
+
+This is a zImage.prep kernel with builtin initrd, you just put it somewhere
+where you can boot it from, usually a tftp server.
+
+Friendly,
+
+Sven Luther
