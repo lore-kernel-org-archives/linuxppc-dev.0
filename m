@@ -1,59 +1,42 @@
-To: "Juan Padron" <j_padron@joseane.zzn.com>
+From: Jim Thompson <jim@SmallWorks.COM>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15347.38520.794597.215495@zaphod.musenki.com>
+Date: Thu, 15 Nov 2001 04:18:32 -0600
+To: Shie Erlich <shie_e@elbit.co.il>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: CONFIG_IDE_PCCARD or CONFIG_IDE_PCMCIA 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 15 Nov 2001 10:43:18 +0100."
-             <C398751347F4533458DB3F93154AAAFD@j_padron.joseane.zzn.com>
-Date: Thu, 15 Nov 2001 11:15:19 +0100
-Message-Id: <20011115101524.6820010DDC@denx.denx.de>
+Subject: a general bootloader question
+In-Reply-To: <937610FE9B70D511B3E700508B8B65770E53B1@MAIL1>
+References: <937610FE9B70D511B3E700508B8B65770E53B1@MAIL1>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Juan,
-
-in message <C398751347F4533458DB3F93154AAAFD@j_padron.joseane.zzn.com> you wrote:
+> if anyone can help with the following question, i'd be really grateful:
 >
->   I need to put and IDE disk through the PCMCIA port in an MPC823FADS. I use the ppcboot 1.0.0
-> I read the mailing list and i have a doubt: What is the diference between the IDE_PCCARD and the IDE_PCMCIA? What do i need to use?
+> 1) what is the proper way to get the kernel to boot - do i need a
+> bootloader, if so, what ?
 
-If you have a real PCCard slot on your board you must use IDE_PCCARD;
-I have to admit that "IDE_PCMCIA" is a poor name. It  might  be  more
-clear  from  the  "Documentation//Configure.help" file in the current
-Linux kernel:
+ppcboot or gbios are two good starting points for a bootloader.
 
-...
-Type of MPC8xx IDE interface
-CONFIG_IDE_8xx_PCCARD
-  Select how the IDE devices are connected to the MPC8xx system:
+ppcboot: http://ppcboot.sourceforge.net/
+gbios: http://www.humboldt.co.uk/gbios.html
 
-  8xx_PCCARD uses the 8xx internal PCMCIA interface in combination
-             with a PC Card (e.g. ARGOSY portable Hard Disk Adapter),
-             ATA PC Card HDDs or ATA PC Flash Cards (example: TQM8xxL
-             systems)
+there is also dink32 from motorola.
 
-  8xx_DIRECT is used for directly connected IDE devices using the 8xx
-             internal PCMCIA interface (example: IVMS8 systems)
+> 2) what is the bootloader's functionality - except downloading the kernel ?
+> does it modify
+>     memory in any way ? is the kernel dependent on such modifications ?
 
-  EXT_DIRECT is used for IDE devices directly connected to the 8xx
-             bus using some glue logic, but _not_ the 8xx internal
-             PCMCIA interface (example: IDIF860 systems)
-...
+typically it turns on the memory system, sets up an environment for
+the kernel, moves the kernel into ram (over serial, ethernet or out of
+flash/rom) and then transfers control to the kernel (or the routine
+that decompresses the kernel)
 
-Here we renamed the poor "IDE_PCMCIA" into CONFIG_IDE_8xx_DIRECT.
+> 3) how can i make a bootloader load the kernel in low memory without
+> changing KERNELBASE etc ?
 
+See #1.
 
->   This is the PCMCIA stuff configuration of an config_TQM823L.h (¿is it the same i need to include on my config_FADS823.h?)
-
-It's probably the same, depending on your address map.
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"I like your game but we have to change the rules."
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
