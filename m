@@ -1,51 +1,44 @@
-Message-ID: <3E4FC683.60403@embeddededge.com>
-Date: Sun, 16 Feb 2003 12:12:35 -0500
-From: Dan Malek <dan@embeddededge.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Content-Type: text/plain;
+  charset="us-ascii"
+From: Arun Dharankar <ADharankar@attbi.com>
+Reply-To: ADharankar@attbi.com
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Relocating PPCBoot into SRAM
+Date: Sun, 16 Feb 2003 12:54:35 -0500
 MIME-Version: 1.0
-To: panto133@otenet.gr
-Cc: Pantelis Antoniou <panto@intracom.gr>,
-	LinuxPPC <linuxppc-embedded@lists.linuxppc.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Tom Rini <trini@kernel.crashing.org>
-Subject: Re: [2.5] Hang on 8xx in head_8xx.S
-References: <3E4B9D4E.7080808@intracom.gr> <3E4CF810.8040803@intracom.gr> <3E4D5209.30802@embeddededge.com> <200302142330.59987.panto133@otenet.gr>
-Content-Type: text/plain; charset=ISO-8859-7; format=flowed
+Message-Id: <200302161254.35753.ADharankar@ATTBI.Com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Pantelis Antoniou wrote:
+Greetings!
 
-> The drivers are assuming that you use only one
-> peripheral of each kind. That is yoy have a
-> UART in SCC1, ethernet in SCC3 and so on.
+- On MPC75x and MPC7410 boards with MPC8260 in companion
+  mode, SRAM on 1M and 2M respectively are available.
 
-I don't quite understand.  The uart driver will support a
-variety of SMC/SCC combinations.
+- Is it possible to relocate PPCBoot to this SRAM mapped
+  as private memory? Note that, this is a second relocation;
+  the first would already have occured when it is relocated
+  from Flash to SDRAM.
 
-We have discussed before that we are not doing "scc" or "smc"
-drivers, but rather "uart", "ethernet", "usb", whatever function
-driver.  It doesn't make sense to have an 'scc' driver because
-there are so many configuration combinations and you logically
-connect to the kernel with a function (i.e. network interface)
-not a device type.
-
-> There are some configurations that require
-> more than one of each kind, for example two
-> ethernets.
-
-Well, in the case of multiple SCC ethernets, I have provided my old
-patch to probably a half a dozen people, all who promised to
-bring it up to date and apply some suggested improvements.  None
-of them have provided anything up to date in return, so I guess
-I'll have to take time to do that, too :-)  The 8260 FCC driver
-supports any combination of FCC Ethernet devices.
+- And if this possible, a re-relocation from SRAM back to
+  SDRAM?
 
 
-Thanks.
+If this is possible, what needs to be done? The idea I
+would like to explore is to do a full memory test (walking
+bit, aligned/non-aligned access, refresh, alternating
+pattern, random pattern test - basically extensive testing)
+without executing PPCBoot in SDRAM.
+
+And that these tests are part of PPCBoot commands (or
+applications, perhaps).
 
 
-	-- Dan
+
+Best regards,
+-Arun.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
