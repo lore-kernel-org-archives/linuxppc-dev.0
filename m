@@ -1,47 +1,47 @@
-Subject: Re: Upgrade Blues 2.4.20 Ben H kernel
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ira Weiny <iweiny@acm.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20030307095717.1b1bece1.iweiny@acm.org>
-References: <20030307095717.1b1bece1.iweiny@acm.org>
-Content-Type: text/plain
-Message-Id: <1047135968.12345.81.camel@zion.wanadoo.fr>
+Date: Sat, 8 Mar 2003 12:21:36 -0600
+From: Nathan Ingersoll <ningerso@ruralcenter.org>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Runtime Altivec detection
+Message-ID: <20030308182135.GA31349@ruralcenter.org>
+References: <20030307210257.7b094f55.billfink@mindspring.com> <200303072011.54069.hollis@austin.ibm.com> <20030308030440.39fcdc90.billfink@mindspring.com>
 Mime-Version: 1.0
-Date: 08 Mar 2003 16:06:08 +0100
+In-Reply-To: <20030308030440.39fcdc90.billfink@mindspring.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 2003-03-07 at 18:57, Ira Weiny wrote:
-> Well I decided it was time to get up to date on my TiBook.
+On Sat, Mar 08, 2003 at 03:04:40AM -0500, Bill Fink wrote:
 >
-> So I went out and bought a copy of Yellow Dog and got apt-get installed and
-> started hacking.  After some switching pain I got it up and running but found
-> that I needed a newer kernel to get the networking stuff to work.
+> There's also a practical consideration.  For example, in the xine case,
+> the test for Altivec support is done in the xine library package, whereas
+> the main() program is in a separate package, namely the xine UI, of which
+> there are actually several available UIs.  Now if there was a getaux
+> function similar to the getenv function, this would make matters a lot
+> simpler.
 >
-> no problem...  I rsync'ed Bens tree built and rebooted...
->
-> There are 2 problems.
->
-> 1) My Microdrive which I had hacked in does not work any more.  What is the
->    status of the ide-cs driver?  Anyone know?  It is different than when I got
->    it to work before and I am not sure where to begin again.
+> So while the current xine code may be somewhat ugly, it does work and
+> is pretty easy to implement within a library.
 
-There are some problems with ide-cs currently. I'll try to work on it
-this week-end.
+One issue I saw with the xine code, is if it's in a library, you may want
+to use sigaction to save the previous handler, since the app may set it's
+own signal handler.
 
-> 2) m3mirror does not work?  This one really puzzles me.  lcd:0 turns off the
->    LCD screen but crt:1 does not turn on the outside monitor.  I rebooted into
->    Mac OS and the external port works.  The only thing I can think of is that I
->    did use the S-video port on Mac OS to show some pictures.  Is there
->    something in OF which Mac OS would set which would make the external port
->    not work with m3mirror?
+While somewhat ugly, it should be relatively OS independant, and it
+could also be used in a callback type fashion for testing instruction
+availability on a variety of platforms. The code I linked to in my
+original post is an example of this. It could be called with
+cpu_detect(mmx_test); on x86, cpu_detect(altivec_test); on ppc, or
+cpu_detect(vis_test) on sparc, etc.
 
-Well... All it does is to enable the port by sending it the same signal
-as the LCD. This works approx. well on the Pismo, but not with the tipb.
+Thanks for all the ideas folks, looks like I'll have to consider the
+different approaches, or use a combination.
 
-Somebody, I think, is working on proper mirroring based on setting up
-the second CRTC.
-
+--
+------------------------------------------------------------------------
+| Nathan Ingersoll           \\ Computer Systems & Network Coordinator |
+| ningerso@ruralcenter.org    \\ http://www.ruralcenter.org            |
+| http://ningerso.atmos.org/   \\ Minnesota Center for Rural Health    |
+------------------------------------------------------------------------
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
