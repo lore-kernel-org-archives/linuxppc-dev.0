@@ -1,18 +1,19 @@
-Return-Path: <jason.mcmullan@timesys.com>
-Received: from exchange.timesys.com (mail.timesys.com [65.117.135.102])
-	by ozlabs.org (Postfix) with ESMTP id 491732BDEB
+Return-Path: <wd@denx.de>
+Received: from mailout09.sul.t-online.com (mailout09.sul.t-online.com
+	[194.25.134.84]) by ozlabs.org (Postfix) with ESMTP id 57F162BDB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 18 Nov 2004 02:51:44 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <OFE0A40B56.8334E6F8-ONC1256F4E.002B5EF3@axxessit.no>
-References: <OFE0A40B56.8334E6F8-ONC1256F4E.002B5EF3@axxessit.no>
-Date: Wed, 17 Nov 2004 10:32:53 -0500
-Message-ID: <1100705908.14467.9.camel@jmcmullan>
-From: "McMullan, Jason" <jason.mcmullan@timesys.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: MPC85xx OCP->platform patches
+	Thu, 18 Nov 2004 03:03:07 +1100 (EST)
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 17 Nov 2004 09:15:14 EST."
+	<Pine.LNX.4.60.0411170914230.18374@localhost.localdomain>
+Date: Wed, 17 Nov 2004 15:40:08 +0100
+Sender: wd@denx.de
+Message-Id: <20041117144013.82500C1430@atlas.denx.de>
+Cc: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Subject: Re: ELDK 3.1? 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,21 +24,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2004-11-16 at 09:06 +0100, miguel.valero@axxessit.no wrote:
-> Probably, but the OCP or platform_device work is something that needs =
-to
-> get at some point.  I'll take a look, if you're willing to push the
-> driver with upstream I2C folks.
+In message <Pine.LNX.4.60.0411170914230.18374@localhost.localdomain> you wrote:
+> 
+>   any ETA for the upcoming enhanced ELDK 3.1?
 
-I have OCP->platform patches for 2.6.9 at
-http://67.171.103.33/~gus/patches
+It's actually out. I  just  wait  with  the  announcement  until  all
+mirrors picked it up. I have little influence on when they run rsync,
+though.
 
-They'll be moving to their permanent location at
-http://www.evillabs.net/~gus/patches in a few hours.
+Best regards,
 
-These patches are currently being reviewed, so they may change at any
-time without notice.
+Wolfgang Denk
 
-
---=20
-Jason McMullan <jason.mcmullan@timesys.com>
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+"There are things that are so serious that you can  only  joke  about
+them"                                                    - Heisenberg
