@@ -1,29 +1,22 @@
-Message-ID: <3959368C.218AB605@netx4.com>
-Date: Tue, 27 Jun 2000 19:19:40 -0400
-From: Dan Malek <dan@netx4.com>
+From: jinoung@mail.com
+Message-ID: <00ca01bfe09f$090c82e0$98e4d5a5@telecom.samsung.co.kr>
+Reply-To: <jinoung@mail.com>
+To: "linuxppc embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: 8xxrom for ADS860
+Date: Wed, 28 Jun 2000 10:20:23 +0900
 MIME-Version: 1.0
-To: Matt Gessner <mattg@aiinet.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 8260, FCC and local bus
-References: <3958BBF1.20E543AB@aiinet.com> <39590837.29E8FE30@aiinet.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="ks_c_5601-1987"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Matt Gessner wrote:
+HI,
+My ADS860 Dram is not initialized.
+I am using MCM518165BT60.
+Is ADS860  not support the DRAM ?
+Regards,
+Jinoung
 
-> I had ioremap'd it, and put va's and pa's where each belonged
-> (va's for the kernel's tracking stuff and pa's for the CPM stuff).
-
-
-The va/pa macros are not going to work on Local memory addresses.
-You have to explicitly compute these addresses.
-
-I have a board with some local memory.  I'll test it.
-
-
-
-	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
