@@ -1,38 +1,40 @@
-Message-ID: <397FEEE5.265963BF@execpc.com>
-Date: Thu, 27 Jul 2000 03:12:21 -0500
-From: Joseph Garcia <jpgarcia@execpc.com>
+Message-ID: <001901bff7a3$b093f640$bf0102c8@sc.mcel.mot.com>
+From: "Rolf Liu" <rolfl@sc23.sc.mcel.mot.com>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: question on "__shl2i"
+Date: Thu, 27 Jul 2000 16:21:40 +0800
 MIME-Version: 1.0
-To: sleemburg@jvc.nl
-CC: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: powerbook hang from post-sleep cdrom access - fix
-References: <397FE132.1690D2DD@execpc.com> <397FE1BE.2416FE2@jvc.nl>
-Content-Type: text/plain; charset=iso-2022-jp
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Stephan Leemburg wrote:
-> I wil put the code also in pmud itself. This should in fact be done at
-> kernel level, so a patch will be needed for the current tree.
+Hi, all,
+I am now currently linking the linux kernel ppc.
+There is a undefined problem,which follows:
 
-So would this always be done on wake to hdc and hde?  I read Pismos, and maybe
-iBooks, have their drives at hde.  I'm not sure if they are afflicted by this
-problem.
+>undefined: '__shl2i'
+>Referenced from 'block_read'
+I have search through all the source tree, but I can't find the definition ,
+even
+the occurence of the '__shl2i' !!!!!!!
+where does tsuch '__shl2i' come from?
+any suggestion is appreciated!!!!
 
-might also need to consider ide-floppy drives, like ls-120 and zip.  I don't
-have one myself, so I don't know if these need it either.  They dont have much
-for ioctls, just eject.  If they have this problem, an ioctl to
-idefloppy_media_change may be needed.
+BRs
+Rolf Liu
+Software Center Motorola China
+Global Software Division, Motorola,Inc.
+No 2 Dong San Huan Nan Lu (7th Floor)
+Chao Yang District, Beijing 100022, P. R. China
+Email: rolfl@sc.mcel.mot.com
+          A16975@email.mot.com
+Phone: 86-10-65642023            Fax: 86-10-65668458
+-----------------------------------------------------------------
+[  ] General Business Information
+[  ] Motorola Internal Use Only
+[  ] Motorola Confidential Proprietary
 
-I'm not concerned about it, but might genuine floppies have the hang problem
-too?
-
-I assume a bay hard drive would error/exit without a problem because they can't
-change.
-
---
-Joseph P. Garcia      jpgarcia@execpc.com      jpgarcia@lidar.ssec.wisc.edu
-CS Undergraduate                      Student Employee - Systems Programmer
-University of Wisconsin - Madison                            UW Lidar Group
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
