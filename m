@@ -1,40 +1,32 @@
-Message-ID: <38515AF9.3F756E5E@netx4.com>
-Date: Fri, 10 Dec 1999 14:56:41 -0500
+Message-ID: <38515C9B.359D913@netx4.com>
+Date: Fri, 10 Dec 1999 15:03:39 -0500
 From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: kd@flaga.is
+To: Grant Carter <gcarter@eng.uct.ac.za>
 CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: fads823 ethernet interface does (seams) not send data
-References: <OF18F33680.CFE448E8-ON00256843.003AAE59@flaga.is>
+Subject: Re: Kernel woes for versions > 2.2.5
+References: <3850F28A.D36731A3@eng.uct.ac.za>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-kd@flaga.is wrote:
+Grant Carter wrote:
 
 
-> Is it possible that this has something to do with the microcode patch
-> presented in 2.213?
+> processor just hangs with no output on the console.
 
+Take a look at arch/ppc/mbxboot/embed_config.c.  At the end
+of this is the function for initializing the board information
+structure.  Make sure you use the same information from the
+kernel that is booting correctly, in particular assigning the
+proper processor speed.  I have discussed this with Stuart of
+BrightStar Engineering, and I haven't yet included a processor
+speed variable in the environment variables.  The default
+configuration is not correct for this processor, so you have
+to assign the proper values here.  I am likely to have missed
+this when making the last kernel update.
 
-No, it has nothing to do with that.  It is only skeleton code
-that someday may perform a patch.  The drivers are not yet
-updated to handle it.  The microcode patches either work
-correctly or not at all, there is no in between.
-
-I have never used an SCC Ethernet on the FADS, but there must
-be control register bits or other 8xx general purpose I/O
-pins that are required to be set correctly for the Ethernet PHY
-to operate correctly.  You have to also make sure all of the
-SCC clock and I/O pins are properly configured for the hardware
-design.  I can guarantee some of this may not be correct for
-the 823 FADS, as all boards seem to use something different.
-
-The 8xx SCC Ethernet driver will only run on half duplex mode.
-There is no auto sensing like is provided on (some) FEC 10/100
-Ethernet PHYs.  The SCC (and FEC) has to be configured differently
-for half or full duplex operation.
 
 
 	-- Dan
