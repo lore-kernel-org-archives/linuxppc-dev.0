@@ -1,86 +1,60 @@
-To: brian.auld@adic.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: FW: Need openssh for embedded linux on 440GP 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 12 Mar 2003 05:09:53 PST."
-             <995FF289C9D69747A09E42992644595405B236B3@penguin.adic.com>
-Date: Wed, 12 Mar 2003 15:11:11 +0100
-Message-Id: <20030312141116.5B309C58BB@atlas.denx.de>
+Reply-To: <jwalden@digitalatlantic.com>
+From: "Jerry Walden" <jwalden@digitalatlantic.com>
+To: "Leiying Du" <ldu@solectek.com>,
+	"'LinuxPPC-Embedded'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: BDI2000 debug zImage
+Date: Wed, 12 Mar 2003 09:53:59 -0500
+Message-ID: <EGEGIJHKDKJGAJMGIDPNOEBMCJAA.jwalden@digitalatlantic.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <004901c2e83f$e9643f40$6649a8c0@LEIYINGDU>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <995FF289C9D69747A09E42992644595405B236B3@penguin.adic.com> you wrote:
->
-> Is there any particular reason why openssh is not included in the ELDK
-> target package?
+>But the board will get into the
+>check stop state if I type in go command.
 
-None of our customers asked for it yet, and nobody  else  contributed
-it either.
+I have the same problem if I simply type "go" - however
+if I enter "go 0x500000" it works as expected.
+If you have not already done so, try placing an absolute address
+after the "go" and see what happens.
 
-> As an update to what's written below, I did try cross-compiling and that was
-> even less successful than compiling on my embedded target.
+Jerry Walden
 
-I'm not surprised.
+-----Original Message-----
+From: owner-linuxppc-embedded@lists.linuxppc.org
+[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Leiying
+Du
+Sent: Tuesday, March 11, 2003 9:35 PM
+To: 'LinuxPPC-Embedded'
+Subject: BDI2000 debug zImage
 
-> The error I receive is: "Disconnecting: Corrupted MAC on input"
 
-I guess you mis-configured the tools so you now  run  into  endianess
-problems?
 
-> I am trying to get openssh installed and running on my embedded 440
-> platform. 'openssh' is not part of the target packages provided with the
-> ELDK, so I figure there's 2 ways to do it:
->
-> (a) cross-compile on my host
-> (b) compile it on my target system
->
-> I haven't tried (a) yet, as openssh does not seem to be very cross-compile
-> friendly and I'm still getting comfortable with the whole 'cross-compiling'
-> from source using ELDK.
+I'm using the BDI2000 with firmware version 1.12 to debug the zImage file
+that I made. The zImage file can be flashed into the ROM and boot up
+properly. From the BDI2000 telnet interface, I type in load
 
-In general,  cross  compiling  is  as  trivial  as  adding  a  "CC  =
-$(CROSS_COMPILE)gcc"  line  to  the Makefile. At least for any source
-that was  portably  written  and  does  not  need  any  autoconfig  /
-configure stuff to be built.
+Loading zImage , please wait ....
+- File offset 0x00010000 to address 0x00500000 size 25380
+- File offset 0x0001C570 to address 0x0050C570 size 3160272
+Loading program file passed
 
-> I went ahead and proceeded with (b). I retrieved the latest source from
-> www.openssh.com, unpacked and built it on my target system (filesytem nfs
-> mounted). It took a while, but everything built ok. I thought I was home
-> free until I tried to either:
->
->   (i)  start the sshd daemon
->        The daemon starts OK. However, when I ssh to the
->        Target, it barfs on a 'CRC' error.
+Then I can single step from the 0x500000. But the board will get into the
+check stop state if I type in go command.
 
-Did you turn on debugging?
+The host section in the BDI2000 configuration file are flollow:
+FILE    zImage
+FORMAT  IMAGE
+LOAD      MANUAL
 
->   (ii) ssh to another machine from the target
->        When I try to connect, I get an error message related
->        Errors at the MAC addr level.
+Is this the correct way to debug kernel with initrd? Thanks.
 
-Did you turn on debugging?
 
-> Can't provide more detail at this point on the specific errors as I'm
-> rebuilding ssh as I write this (on the target) and can't get the info.
->
-> Is the direction I'm going in the logical direction? I've worked on embedded
-> systems for years, but this is the first with embedded linux, and the first
-> time I've actually built something on my target!! It feels unusual, but I
-> don't see why it shouldn't work, and seems like a better choice than
-> cross-compiling.
 
-It should work.
+Ly
 
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"We don't care.  We don't have to.  We're the Phone Company."
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
