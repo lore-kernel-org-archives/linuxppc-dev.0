@@ -1,45 +1,30 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
-To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: bug: kernel timer added twice at e3259abc.
-Date: Thu, 28 Mar 2002 19:47:16 -0500
-References: <20020328040442.V26309@plato.local.lan> <Pine.GSO.4.21.0203281718540.4979-100000@vervain.sonytel.be> <20020328143117.X26309@plato.local.lan>
-In-Reply-To: <20020328143117.X26309@plato.local.lan>
+Message-ID: <3CA3BF8C.BC3021BC@wvi.com>
+Date: Thu, 28 Mar 2002 17:12:44 -0800
+From: Jim Potter <jrp@wvi.com>
+Reply-To: jrp@wvi.com
 MIME-Version: 1.0
-Message-Id: <20020329005501.GCSO11832.tomts24-srv.bellnexxia.net@there>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: data access errors on 2.4.19-pre3
+Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+I'm bringing up a recent 2_4_devel kernel (2.4.19-pre3, as I recall) on
+our embedded board, and I'm seeing some trap 300's (data access
+exception) in printk where it's parsing the string for emit_log_char.
+Anyone else seeing this?  The target system is a 7450 on 64260,
+ppcboot-1.1.5.
 
-The following has showed up in my dmesg log (running Ben's latest) on a
-dual SMP G4 machine:
+--
+Sincerely,
 
-bug: kernel timer added twice at e3259abc.
-bug: kernel timer added twice at e3259abc.
+Jim Potter
+45th Parallel Processing
 
-And using sun gem driver I see the following on occaision:
+  Those that would give up a necessary freedom for
+  temporary safety deserve neither freedom nor safety.
+    -- Ben Franklin
 
-invalidate: busy buffer
-sending pkt_too_big to self
-sending pkt_too_big to self
-sending pkt_too_big to self
-sending pkt_too_big to self
-sending pkt_too_big to self
-sending pkt_too_big to self
-sending pkt_too_big to self
-sending pkt_too_big to self
-sending pkt_too_big to self
-sending pkt_too_big to self
-sending pkt_too_big to self
-Saw underflow (9728 of 61440 bytes). Treated as error
-Saw underflow (3584 of 53248 bytes). Treated as error
-sending pkt_too_big to self
-
-Ideas welcome about either.
-
-Kevin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
