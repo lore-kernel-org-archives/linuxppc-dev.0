@@ -1,40 +1,105 @@
-Message-Id: <v04003a01b4d174851e54@[216.81.27.12]>
-In-Reply-To: <B0CAE42C9EE0D311AAAD00500422FC6302CD71@iis000.microdata.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Thu, 17 Feb 2000 04:21:39 -0600
-To: Patrick Lerda <Lerda@microprocess.com>, linuxppc-dev@lists.linuxppc.org,
-        "'debian-powerpc@lists.debian.org'" 	 <debian-powerpc@lists.debian.org>
-From: Tony Mantler <eek@escape.ca>
-Subject: Re: PowerPC in little endian mode
+Message-ID: <20000217105324.29583.qmail@web210.mail.yahoo.com>
+Date: Thu, 17 Feb 2000 02:53:23 -0800 (PST)
+From: "D.J. Barrow" <barrow_dj@yahoo.com>
+Subject: Re: hfs+
+To: Brad Boyer <flar@pants.nu>, Dan Bethe <dan_bethe@yahoo.com>
+Cc: marv <omarvo@hotmail.com>, linuxppc-dev@lists.linuxppc.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 2:52 AM -0600 2/17/2000, Patrick Lerda wrote:
->	Most of the trouble I have on my PowerPC platform came from the fact
->that
->	Linux work in big-endian mode,
+Hi,
+This guy might be able to help,
+he is a linux fan & an old friend & knows the mac as
+well as anyone, he is responsible for the apple's
+internal download/installation software &
+always has to get his hands dirty with mac filesystem
+internals.
 
-[... "please run ppc-linux in little-endian mode" ...]
+He is currently porting his partition libraries
+to MacOS X.
 
->	And so be able to get all the software from linux i386 working world
->without headache.
+Ken Fitzgerald Smith metro@tinet.ie
 
-Perhaps it's just my m68k side speaking (m68k = big endian only, for those
-who don't know), but I think it's safe to say that doing anything to make
-it easier for lazy mouth-breathing code-typists to write sloppy and
-incorrect code is a Bad Thing[tm].
+He usually is a bit difficult at first
+but is a real pussycat once you get to know him.
 
-Besides that, switching ppc-linux to little-endian mode would be (to put it
-mildly) a pain in the ass of galactic proportions.
+If he isn't able to help directly hopefully
+he should be able to get you more docs or
+point you in the right direction if you run
+into problems.
 
-
-Cheers - Tony :)
-
-
---
-Tony Mantler         Renaissance Nerd Extraordinaire         eek@escape.ca
-Winnipeg, Manitoba, Canada                       http://www.escape.ca/~eek
+--- Brad Boyer <flar@pants.nu> wrote:
+>
+> Dan Bethe wrote:
+> > 	Bless you.  Lots of people would be grateful.
+> This would be
+> > tremendously useful, especially if it could be the
+> main crossplatform,
+> > mature, multiuser, unix-like filesystem to share
+> data between Linux and
+> > MacOS 8/9/10 on the same machine.
+> > 	Beware of duplicate work.  There are the
+> hfsutils, which are user
+> > space utilities.  And there is something that's
+> either a library or a
+> > kernel module, that someone's working on, which is
+> nonfunctional at
+> > this time.
+> > 	Do searches on lists.linuxppc.org to find who's
+> doing what.  We've
+> > recently discussed this within the last 2 months.
+> > 	pajama1@mindspring.com and
+> tdilling@oncodev.isc-net.upenn.edu are in
+> > my linuxppc notes as being interested in hfs+
+> development.
+> > 	Also see this:
+> >
+> >
+> http://developer.apple.com/technotes/tn/tn1150.html
+> >
+> > --- marv <omarvo@hotmail.com> wrote:
+> > > Who's working HFS+ and can i help? I know some
+> seem and i've been
+> > > reading the kernel vfs docs and the hfs+ docs
+> from apple.
+> > > Reply directly because i was too lazy to join
+> the mailing list
+> > > although
+> > > i did browse through the archives :P
+>
+> I am the one with the mostly non functional code for
+> a kernel filesystem
+> module for hfsplus.  The current code is available
+> in my directory on
+> devel.linuxppc.org as a patch against a 2.2.14
+> kernel tree. However, the
+> big problem now is that the filesystem structure
+> doesn't seem to match
+> what I got out of the Apple technote, which may be
+> due to an error
+> on my part or a lack of info from Apple. I haven't
+> had the time to look
+> into it carefully yet, but if you want to look, I'll
+> do what I can to
+> help. The URL is
+> http://dev.linuxppc.org/pub/users/flar/ which has
+> links to individual patches I have posted. The most
+> recent patch as of
+> this moment can mount a filesystem and has code to
+> read directories and
+> data forks of files, but sometimes misreads the
+> catalog and loses track
+> of files at odd times. It isn't likely to damage
+> disks, but it does
+> crash occasionally and cause strange errors.
+>
+> 	Brad Boyer
+> 	flar@pants.nu
+>
+>
+>
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
