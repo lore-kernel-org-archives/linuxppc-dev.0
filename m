@@ -1,35 +1,87 @@
-Message-ID: <D53137D1F3DDD211A3750800060DA31301702339@viee122a.erd.siemens.at>
-From: Eisenzopf Thomas <thomas.eisenzopf@siemens.at>
-To: "'linuxppc-embedded@lists.linuxppc.org'"
-	 <linuxppc-embedded@lists.linuxppc.org>
-Subject: problems with PPC860/ADS board/8xxrom-0.3.0/mpc8xx-2.2.13/patches
-	 (from Raphael Bossek)
-Date: Wed, 15 Mar 2000 17:35:36 +0100
+Subject: Re: User buffers and cache flushing.
+To: linuxppc-embedded@lists.linuxppc.org ( Linux PPC Mailing List)
+Date: Thu, 16 Mar 2000 13:40:40 +1100 (EST)
+In-Reply-To: <38C862A6.224DBDF3@embeddededge.com> from "Dan Malek" at Mar 09, 2000 09:49:10 PM
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
+Message-Id: <20000316024040.76894355D1@elph.research.canon.com.au>
+From: gjohnson@research.canon.com.au (Greg Johnson)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello!
+Hi y'all,
 
-I´m trying to get embedded Linux running on an ADS board with a PowerPC 860.
+The buffers I need to IDMA out to a peripheral are allocated by
+the user with conventional malloc, and are rather dynamic so
+the driver does not have a lot of control over them that I can
+see.
 
-For the beginning I used the informations from Raphael Bossek´s WWW-page
-http://www.s4l.de/powerpc.html.
+So I have decided that I will be flushing the cache, either by
+calling 'flush_page_to_ram' or 'flush_dcache_range'. Now, these
+require a Kernel virtual address to work on (correct?), and the
+caller has given me a User virtual address (through 'write (2)').
+Therefore, before calling the flush function, I need to:
 
-My main problem at this time is, that the patches (from Magnus Damm and
-Raphael Bossek) from this internet page do not seem to fit to
-mpc8xx-2.2.13.tgz; the dates of the files differ, and the patch program
-delivers errors (e.g. Hunk #1 FAILED at 459....). But without these patches
-I cannot build the system.
+* Convert the User virtual address for each page to a Physical
+  address by doing something along the lines of:
 
-Does anyone have some advice for me? Is there somewhere a complete archive
-of the needed files (including the patches)? Where can I get additional
-information?
+    pgd = pgd_offset(current->mm, addr)
+    pmd = pmd_offset(pgd, addr)
+    pte = pte_offset(pte, addr)
+    etc.
 
-Thank you in advance,
-Thomas.
+* Convert the Physical address to a Kernel virtual address by
+  calling 'phys_to_virt'.
+
+Then I can call flush on each page I intend to IDMA out.
+
+Does this sound reasonable?
+
+Thanks
+
+Greg.
+
+Quoth Dan Malek:
+>
+>
+> Greg Johnson wrote:
+>
+> > ....Since I
+> > am not wanting to be double handling this data, and the data will
+> > most likely be fragmented in memory,
+>
+> That's no problem, CPM buffer descriptors are made for that.
+>
+>
+> > ....and call flush_dcache_range on each of these fragments.
+>
+> Depends upon how the data is handled.  In some cases I find it is
+> faster to just map the pages uncached and skip the cache push.  Do
+> some system design and analysis to determine what works best.
+>
+> > Have I overlooked anything? (other than the lack of support for IDMA
+> > currently in the MPC8xx kernel)
+>
+> This is pretty trivial, considering all CPM devices use the same DMA
+> engine as IDMA.  Take an existing driver, rip the guts of data comm
+> out of it, and you nearly have the IDMA driver.
+>
+>
+> 	-- Dan
+>
+>
+>
+
+
+--
++----------------------------------------------------+
+| Do you want to know more?                          |
+|               --== Greg Johnson ==--               |
+| HW/SW Engineer      gjohnson@research.canon.com.au |
+| Canon   Information  Systems   Research  Australia |
+| 1 Thomas Holt Dr, North Ryde, NSW, 2113, Australia |
+| "I FLEXed my BISON and it went YACC!" - me.        |
++----------------------------------------------------+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
