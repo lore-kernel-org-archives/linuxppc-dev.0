@@ -1,15 +1,19 @@
-Return-Path: <JihuaC@aaesys.com>
-Received: from aae-exchange.aaesys.com (mail.aaesys.com [67.131.247.41])
-	by ozlabs.org (Postfix) with ESMTP id C3E142BDA2
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Sep 2004 09:03:59 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Fri, 24 Sep 2004 15:51:48 -0700
-Message-ID: <92B7B15A1C9E564B94BEE09BA4E1E2A603FC57@aae-exchange.aaesys.com>
-From: "Jihua Cheng" <JihuaC@aaesys.com>
-To: <linuxppc-dev@ozlabs.org>
-Subject: memory swapping question
+Return-Path: <segher@kernel.crashing.org>
+Received: from mtagate4.de.ibm.com (mtagate4.de.ibm.com [195.212.29.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de.ibm.com", Issuer "Equifax" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id EF6BD2BDA2
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Sep 2004 12:18:48 +1000 (EST)
+In-Reply-To: <4153A362.8010604@sonartech.com.au>
+References: <4153A362.8010604@sonartech.com.au>
+Mime-Version: 1.0 (Apple Message framework v619)
+Message-Id: <AE8972FB-0E3A-11D9-BC8B-000A95A4DC02@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Date: Fri, 24 Sep 2004 10:01:58 -0500
+To: David Gardiner <daveg@sonartech.com.au>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: powerpc with gigabit card hanging
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,23 +23,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
+> Not sure that this really belongs here but since I've got an i386 - 
+> 2.6.7 running with a e1000 fine I would assume, it's got something to 
+> do with the platform and I'm hoping someone has seen something 
+> similar. Anyway whenever I configure a gigabit ethernet card (bcm5700 
+> or intel pro 1000) the system hangs and 100 base (e100) is fine.
 
-I am new to linux kernel. Sorry for the following dumbing question:
+It's not the platform; I've run both e1000 and tg3 successfully
+on PowerPC systems, no problems getting it to work at all.
 
-I am writing a linux driver which provides write() for user application, =
-under 2.4.20. The data from application will be written to hardware io =
-ports, byte by byte. In my write() function, I use __copy_from_user() to =
-copy data from user-mode to kernel-mode memory, then to read the =
-kernel-mode memory and to output data to hardware io ports byte by byte. =
-The write() does not return until all the data are outputed to hardware. =
-However, I think the data copy from user-to kernel-mode wastes my time. =
-In my Write() function, Could I read one byte(word) by one byte(word) =
-from user-mode memory? and How?Do I have the memory swaping problem, =
-under what situation?
 
-Thanks so much for your kindly help.
-
-Regards,
-
-Charles
+Segher
