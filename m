@@ -1,22 +1,22 @@
 Return-Path: <j.glisse@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.201])
-	by ozlabs.org (Postfix) with ESMTP id E1F132BF0E
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Jan 2005 05:14:31 +1100 (EST)
-Received: by wproxy.gmail.com with SMTP id 36so327546wra
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Jan 2005 10:14:29 -0800 (PST)
-Message-ID: <4240b9160501101014317b8d85@mail.gmail.com>
-Date: Mon, 10 Jan 2005 19:14:28 +0100
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.204])
+	by ozlabs.org (Postfix) with ESMTP id 4AE322BF0E
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Jan 2005 05:16:23 +1100 (EST)
+Received: by wproxy.gmail.com with SMTP id 37so318348wra
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Jan 2005 10:16:22 -0800 (PST)
+Message-ID: <4240b916050110101647cfb8f9@mail.gmail.com>
+Date: Mon, 10 Jan 2005 19:16:22 +0100
 From: Jerome Glisse <j.glisse@gmail.com>
-To: Tom Rini <trini@kernel.crashing.org>
-In-Reply-To: <20050110145219.GB2226@smtp.west.cox.net>
+To: benh@kernel.crashing.org
+In-Reply-To: <4240b91605010912414a5b1b67@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-References: <4240b916050109074053e328b1@mail.gmail.com>
-	<16865.39960.274092.996530@cargo.ozlabs.ibm.com>
-	<20050110145219.GB2226@smtp.west.cox.net>
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, linuxppc64-dev@ozlabs.org
-Subject: Re: Classic PPC specific ASM (CONFIG_6XX)
+References: <4240b916050109072621440269@mail.gmail.com>
+	<20050109160614.GA22839@lst.de>
+	<4240b91605010909463e44bba8@mail.gmail.com>
+	<4240b91605010912414a5b1b67@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
+Subject: Re: U3 G5 AGP support patch (v4)
 Reply-To: Jerome Glisse <j.glisse@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,33 +27,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Signed-off-by: Tom Rini <trini@kernel.crashing.org>
+> It seems there is bug somewhere in my agp patch. I was playing with
+> r300 radeon and
+> i get a hard lockup (quite used to that while playing with r300 thought :()
 > 
-> --- 1.40/arch/ppc/boot/simple/Makefile  2005-01-03 16:49:19 -07:00
-> +++ edited/arch/ppc/boot/simple/Makefile        2005-01-10 07:51:34 -07:00
-> @@ -112,11 +112,15 @@
->           end-$(pcore)                  := pcore
->     cacheflag-$(pcore)                  := -include $(clear_L2_L3)
+> But after a bit of investigation it seems to be related to agp. Right now i am
+> porting an old tools from dri that test agpgart & thus agp. I finally may really
+> need to totaly split the u3 driver from the old uninorth.
 > 
-> +# PPC_PREP can be set to y on a PPC970 configuration, which isn't a real
-> +# machine.
-> +ifeq ($(CONFIG_6xx),y)
->        zimage-$(CONFIG_PPC_PREP)                := zImage-PPLUS
->  zimageinitrd-$(CONFIG_PPC_PREP)                := zImage.initrd-PPLUS
->       extra.o-$(CONFIG_PPC_PREP)                := prepmap.o
->          misc-$(CONFIG_PPC_PREP)                += misc-prep.o mpc10x_memory.o
->           end-$(CONFIG_PPC_PREP)                := prep
-> +endif
-> 
->           end-$(CONFIG_SANDPOINT)       := sandpoint
->     cacheflag-$(CONFIG_SANDPOINT)       := -include $(clear_L2_L3)
+> I will give a deeper look to track down the issue. In the mean time if some
+> one could test agp & radeon r200 on a g5. You will certainly lockup your g5
+> but it should not burn, at least here i just got some smoke ;)
 > 
 
-This do not compile with this patch maybe need also to define
-CONFIG_6xx if PPC970 is selected as processor ?
+Finally this was because i was doing some nasty stuff elsewhere :)
+Thus AGP seems to work well, at least over here with some r300 
+test program using agp :)
 
-The errors are:
-undefined reference for cols, lines, vidmems, scroll, orig_x, orig_y
-in functions puts, ClearVideoMemory, putc
-
+best,
 Jerome Glisse
