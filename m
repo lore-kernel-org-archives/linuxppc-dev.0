@@ -1,237 +1,79 @@
-Date: Fri, 31 Aug 2001 17:36:34 +0200
-From: Xavier Grave <grave@ipno.in2p3.fr>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Xavier Grave <grave@ipno.in2p3.fr>,
-	embarque ppc <linuxppc-embedded@lists.linuxppc.org>
+Date: Fri, 31 Aug 2001 08:49:27 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Xavier Grave <grave@ipno.in2p3.fr>
+Cc: embarque ppc <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: mvme5100 one more time...
-Message-ID: <20010831173634.C8764@ipnpcu5.in2p3.fr>
-References: <20010830170043.A8047@ipnpcu5.in2p3.fr> <20010830091936.N18618@cpe-24-221-152-185.az.sprintbbd.net> <20010831111629.A29808@ipnpcu5.in2p3.fr> <20010831075046.E27811@cpe-24-221-152-185.az.sprintbbd.net>
+Message-ID: <20010831084927.F27811@cpe-24-221-152-185.az.sprintbbd.net>
+References: <20010830170043.A8047@ipnpcu5.in2p3.fr> <20010830091936.N18618@cpe-24-221-152-185.az.sprintbbd.net> <20010831111629.A29808@ipnpcu5.in2p3.fr> <20010831075046.E27811@cpe-24-221-152-185.az.sprintbbd.net> <20010831173634.C8764@ipnpcu5.in2p3.fr>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="AWniW0JNca5xppdA"
-In-Reply-To: =?ISO-8859-1?Q?=3C20010831075046=2EE27811=40cpe-24-221-152-185=2Eaz=2Esp?=
- =?ISO-8859-1?Q?rintbbd=2Enet=3E=3B_from_trini=40kernel=2Ecrashing=2Eorg_?=
- =?ISO-8859-1?Q?on_ven=2C_ao=FB_31=2C_2001_at_16:50:46_+0200?=
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20010831173634.C8764@ipnpcu5.in2p3.fr>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---AWniW0JNca5xppdA
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+On Fri, Aug 31, 2001 at 05:36:34PM +0200, Xavier Grave wrote:
+>
+> > That's fine..  Can you change arch/ppc/boot/simple/head.S to something
+> > like:
+> > #if 0
+> > /*
+> >  * Determine CPU type
+> > ...
+> > 	bge	_setup_L2CR
+> > #endif
+> > 	b	_setup_6xx
+> Thanks for your advice.
+>
+> I do on my x86 cpu :
+> make CROSS_COMPILE=powerpc-unknown-linux-gnu- ARCH=ppc znetboot
+> on my 5100 :
+> PPC6-Bug>nbo 0 0 ,,, zImage.pplus
+> Network Booting from: I82559, Controller 0, Device 0
+> Device Name: /pci@fe000000/pci8086,1209@e,0:0,0
+> Loading: zImage.pplus
+>
+> Client IP Address      = 192.168.120.38
+> Server IP Address      = 192.168.120.35
+> Gateway IP Address     = 0.0.0.0
+> Subnet IP Address Mask = 255.255.255.0
+> Boot File Name         = zImage.pplus
+> Argument File Name     =
+>
+> Network Boot File load in progress... To abort hit <BREAK>
+>
+> Bytes Received =&700757, Bytes Loaded =&700757
+> Bytes/Second   =&700757, Elapsed Time =1 Second(s)
+>
+> Exception: Program (Illegal Instruction)
+> SRR0 =001F0000 SRR1 =00083040 Vector-Offset =00700
+> IP     =001F0000 MSR    =00003040 CR     =00000000 FPSCR  =00000000
+> R0     =00000000 R1     =03F00000 R2     =00000000 R3     =00000000
+> R4     =00000000 R5     =49504C01 R6     =00007000 R7     =001F0000
+> R8     =03F0CF54 R9     =03F0CD54 R10    =03F0CD60 R11    =03F0CE54
+> R12    =03F0CE54 R13    =00000000 R14    =00000000 R15    =00000000
+> R16    =00000000 R17    =00000000 R18    =00000000 R19    =00000000
+> R20    =00000000 R21    =00000000 R22    =00000000 R23    =00000000
+> R24    =00000000 R25    =00000000 R26    =00000000 R27    =00000000
+> R28    =00000000 R29    =00000000 R30    =00000000 R31    =00000000
+> SPR0   =00000000 SPR1   =00000000 SPR8   =00000000 SPR9   =00000000
+> 001F0000 00040000  WORD        $00040000
+>
+> I have done the modification you advised me and also an other one (to
+> compile :-(
 
+Okay.  Try this.  Undo what I told you last time, and make the end of
+the file look like:
+#if 0
 
-> That's fine..  Can you change arch/ppc/boot/simple/head.S to something
-> like:
-> #if 0
-> /*
->  * Determine CPU type
-> ...
-> 	bge	_setup_L2CR
-> #endif
-> 	b	_setup_6xx
-Thanks for your advice.
+	.comm	.stack,4096*2,4
+#endif
 
-I do on my x86 cpu :
-make CROSS_COMPILE=powerpc-unknown-linux-gnu- ARCH=ppc znetboot
-on my 5100 :
-PPC6-Bug>nbo 0 0 ,,, zImage.pplus
-Network Booting from: I82559, Controller 0, Device 0
-Device Name: /pci@fe000000/pci8086,1209@e,0:0,0
-Loading: zImage.pplus
+This may or may not compile.  I have a feeling there'll be some egg on
+my face shortly...
 
-Client IP Address      = 192.168.120.38
-Server IP Address      = 192.168.120.35
-Gateway IP Address     = 0.0.0.0
-Subnet IP Address Mask = 255.255.255.0
-Boot File Name         = zImage.pplus
-Argument File Name     =
-
-Network Boot File load in progress... To abort hit <BREAK>
-
-Bytes Received =&700757, Bytes Loaded =&700757
-Bytes/Second   =&700757, Elapsed Time =1 Second(s)
-
-Exception: Program (Illegal Instruction)
-SRR0 =001F0000 SRR1 =00083040 Vector-Offset =00700
-IP     =001F0000 MSR    =00003040 CR     =00000000 FPSCR  =00000000
-R0     =00000000 R1     =03F00000 R2     =00000000 R3     =00000000
-R4     =00000000 R5     =49504C01 R6     =00007000 R7     =001F0000
-R8     =03F0CF54 R9     =03F0CD54 R10    =03F0CD60 R11    =03F0CE54
-R12    =03F0CE54 R13    =00000000 R14    =00000000 R15    =00000000
-R16    =00000000 R17    =00000000 R18    =00000000 R19    =00000000
-R20    =00000000 R21    =00000000 R22    =00000000 R23    =00000000
-R24    =00000000 R25    =00000000 R26    =00000000 R27    =00000000
-R28    =00000000 R29    =00000000 R30    =00000000 R31    =00000000
-SPR0   =00000000 SPR1   =00000000 SPR8   =00000000 SPR9   =00000000
-001F0000 00040000  WORD        $00040000
-
-I have done the modification you advised me and also an other one (to
-compile :-(
-
-Any idea ?
 --
-33 (0) 1 69 15 79 59
-De chacun selon ses forces, a chacun selon ses besoins
-
---AWniW0JNca5xppdA
-Content-Type: application/octet-stream; charset=us-ascii
-Content-Disposition: attachment; filename="head.S"
-Content-Transfer-Encoding: base64
-
-LyoKICogYXJjaC9wcGMvYm9vdC9zaW1wbGUvaGVhZC5TCiAqIAogKiBJbml0aWFsIGJvYXJk
-IGJyaW5ndXAgY29kZSBmb3IgbWFueSBkaWZmZXJlbnQgYm9hcmRzLgogKgogKiBBdXRob3I6
-IFRvbSBSaW5pCiAqCSAgIHRyaW5pQG12aXN0YS5jb20KICogRGVyaXZlZCBmcm9tIGFyY2gv
-cHBjL2Jvb3QvcHJlcC9oZWFkLlMgKENvcnQgRG91Z2FuLCBtYW55IG90aGVycykuCiAqCiAq
-IENvcHlyaWdodCAyMDAxIE1vbnRhVmlzdGEgU29mdHdhcmUgSW5jLgogKgogKiBQYXJ0IG9m
-IHRoZSBwaGlsb3NwaHkgYmVoaW5kIHRoaXMgaXMgdG8ga2VlcCAjaWZkZWZzIHRvIGEgbWlu
-aW11bS4KICogSG93ZXZlciwgdGhpcyBkb2Vzbid0IGFsd2F5cyB3b3Jrcy4gIEZvciBleGFt
-cGxlLCB0aGUgRm9yY2UgUG93ZXJDb3JlCiAqIG1hY2hpbmVzIF9uZWVkXyB0byBoYXZlIHRo
-ZSBMMSBkaXNhYmxlZCBlYXJseSBvbiBvciB0aGV5IHdvbid0IGdldCB0bwogKiB0aGUgc3Bv
-dCBldmVyeW9uZSBlbHNlIHdpdGggdGhhdCBDUFUgZ2V0cyBpdC4gIEFuZCBmb3IgX3NldHVw
-X2VtYmVkLAogKiBpdCB3b3VsZCBiZSBtb3JlIGNvbXBsZXggdGhhbiBuZWVkZWQgdG8gcmV0
-dXJuIGVhcmx5IG9uICE4eHguCiAqCiAqIEhhdmluZyBzYWlkIHRoYXQsIGl0J3Mgc3RpbGwg
-bm90IGEgZ29vZCBleGN1c2UgdG8gYWRkIGluIG1vcmUsIHVubGVzcyBpdCdzCiAqIHZlcnkg
-bmVjY2Vzc2FyeS4KICoKICogVGhpcyBwcm9ncmFtIGlzIGZyZWUgc29mdHdhcmU7IHlvdSBj
-YW4gcmVkaXN0cmlidXRlICBpdCBhbmQvb3IgbW9kaWZ5IGl0CiAqIHVuZGVyICB0aGUgdGVy
-bXMgb2YgIHRoZSBHTlUgR2VuZXJhbCAgUHVibGljIExpY2Vuc2UgYXMgcHVibGlzaGVkIGJ5
-IHRoZQogKiBGcmVlIFNvZnR3YXJlIEZvdW5kYXRpb247ICBlaXRoZXIgdmVyc2lvbiAyIG9m
-IHRoZSAgTGljZW5zZSwgb3IgKGF0IHlvdXIKICogb3B0aW9uKSBhbnkgbGF0ZXIgdmVyc2lv
-bi4KICovCgojaW5jbHVkZSA8bGludXgvY29uZmlnLmg+CiNpbmNsdWRlICIuLi8uLi9rZXJu
-ZWwvcHBjX2RlZnMuaCIKI2luY2x1ZGUgIi4uLy4uL2tlcm5lbC9wcGNfYXNtLnRtcGwiCiNp
-bmNsdWRlIDxhc20vcHJvY2Vzc29yLmg+CiNpbmNsdWRlIDxhc20vY2FjaGUuaD4KCi8qIExp
-c3Qgb2YgUFZSIG1hc2tzLgogKiBIZXJlJ3MgaG93IHRoZSBtYWdpYyB3b3Jrcy4gIEZpcnN0
-IHdlIGxvb2sgZm9yIDR4eC4gIE5vIEJBVHMsIG5vCiAqIG11Y2tpbmcgd2l0aCBMMS9MMiwg
-anVzdCBnZXQgdGhpbmdzIGdvaW5nLiAgVGhlbiB3ZSBsb29rIGZvciA4eHgsCiAqIGFuZCBk
-byBhbnkgbWFnaWMgbmVlZGVkIHRoZXJlLiAgSWYgd2UgZ2V0IGJleW9uZCB0aGVzZSBtYXNr
-cywKICogd2UgYXNzdW1lIGEgQ1BVIHdoaWNoIHdlIGNhbiBlbmFibGUvaW52YWxpZGF0ZS9k
-aXNhYmxlIHRoZSBMMSBvbi4KICogVGhlbiBsYXRlciBvbiwgd2Ugd2lsbCBjbGVhciB0aGUg
-QkFUcyBhbmQgc2V0dXAgc2VnbWVudCByZWdpc3RlcnMuCiAqIFRoZSBuZXh0IHNldCBvZiBt
-YXNrcyB3ZSBjaGVjayBmb3IgaXMgdG8gc2VlIGlmIHdlIGNhbiB0YWxrIHRvIHRoZQogKiBM
-MkNSLiAgSWYgd2UgY2FuLCB3ZSB3aWxsIGludmFsaWRhdGUvZGlzYWJsZSBhbmQgcmUtZW5h
-YmxlIHRoZSBMMiwKICogdG8gd29yayBhcm91bmQgcG9zc2libHkgYnVnZ3kgZmlybXdhcmUg
-aW1wbGVtZW50YXRpb25zLiAtLSBUb20KICovCgojZGVmaW5lCUlCTTQwMwkweDAwMDAwMjAw
-CS8qIElCTSA0MDMgc2VyaWVzICovCiNkZWZpbmUJSUJNNDA1CTB4MDAwMDQwMDAJLyogSUJN
-IDQwNSBzZXJpZXMgKi8KI2RlZmluZQlNUEM4WFgJMHgwMDAwMDA1MAkvKiBNb3Rvcm9sYSBN
-UEM4eHggKi8KI2RlZmluZQlQUEM3NTAJMHgwMDAwMDAwOAkvKiBQb3dlclBDIDc0MC83NTAg
-Ki8KI2RlZmluZQlQUEM3NDAwCTB4MDAwMDAwMEMJLyogUG93ZXJQQyA3NDAwICovCiNkZWZp
-bmUJUFBDNzQxMAkweDAwMDA4MDBDCS8qIFBvd2VyUEMgNzQxMCAqLwoKCS50ZXh0CgovKiBU
-aGlzIG1hY3JvIGlzIHVzZWQgdG8gdGVzdCB0aGUgUFZSIG9mIHRoZSBjdXJyZW50IENQVSB0
-byBhIGdpdmVuIG9uZSwKICogUFJPQy4KICovCiNkZWZpbmUJVEVTVChQUk9DKQkJCQkJCQlc
-CglsaXMJcjksUFJPQ0BoOwkvKiBMb2FkIHRoZSBtYXNrIGludG8gcjkgKi8JCVwKCW9yaQly
-OSxyOSxQUk9DQGw7CQkJCQkJXAoJYW5kCXI2LHI3LHI5OwkvKiByNiA9IFBWUiAmIG1hc2sg
-Ki8JCQlcCgljbXBsdwlyOSxyNjsJCS8qIGNvbXBhcmUgdGhlIG1hc2sgdG8gdGhlIG9yaWdp
-bmFsICovCVwKCWJlcQl0ZXN0OwkJLyogSWYgZXF1YWwsIHRlc3Qgd2hpY2gga2luZCB3ZSBo
-YXZlICovCVwKCWFkZGkJcjgscjgsMTsJLyogY291bnQrKyAqLwoKLyoKICogICAgICBCZWdp
-biBhdCBzb21lIGFyYml0cmFyeSBsb2NhdGlvbiBpbiBSQU0gb3IgRmxhc2gKICogICAgICAg
-IFRlc3QgUFZSIHRvIGRldGVybWluZSBDUFUgdHlwZSwgYWN0IG9jY29yZGluZ2x5LgogKgkg
-IEluaXRpYWxpemUgY29yZSByZWdpc3RlcnMKICoJICBDb25maWd1cmUgbWVtb3J5IGNvbnRy
-b2xsZXIgKE5vdCBleGVjdXRpbmcgZnJvbSBSQU0pCiAqCU1vdmUgdGhlIGJvb3QgY29kZSB0
-byB0aGUgbGluayBhZGRyZXNzICg4TSkKICoJICBTZXR1cCBDIHN0YWNrCiAqCSAgSW5pdGlh
-bGl6ZSBVQVJUCiAqICAgICAgRGVjb21wcmVzcyB0aGUga2VybmVsIHRvIDB4MAogKiAgICAg
-IEp1bXAgdG8gdGhlIGtlcm5lbCBlbnRyeQogKgogKi8KCgkuZ2xvYmwJc3RhcnQKc3RhcnQ6
-CglibAlzdGFydF8KCS8qIFRoZSBJQk0gIlRyZWUiIGJvb3Ryb20ga25vd3MgdGhhdCB0aGUg
-YWRkcmVzcyBvZiB0aGUgYm9vdHJvbQoJICogcmVhZCBvbmx5IHN0cnVjdHVyZSBpcyA0IGJ5
-dGVzIGFmdGVyIF9zdGFydC4KCSAqLwoJLmxvbmcJMHg2MjcyNmY2ZAkJIyBzdHJ1Y3R1cmUg
-SUQgLSAiYnJvbSIKCS5sb25nCTB4NWY3MjZmMDAJCSMgICAgICAgICAgICAgIC0gIl9yb1ww
-IgoJLmxvbmcJMQkJCSMgc3RydWN0dXJlIHZlcnNpb24KCnN0YXJ0XzoKI2lmZGVmIENPTkZJ
-R19QQ09SRQoJLyogV2UgaGF2ZSBzb21lIHJlYWxseSBiYWQgZmlybXdhcmUuICBXZSBtdXN0
-IGRpc2FibGUgdGhlIEwxIAoJICogaWNhY2hlL2RjYWNoZSBub3cgb3IgdGhlIGJvYXJkIHdv
-bid0IGJvb3QuCgkgKi8KCWxpCXI0LDB4MDAwMAoJaXN5bmMKCW10c3ByCUhJRDAscjQKCXN5
-bmMKCWlzeW5jCiNlbmRpZgoKCW1yCXIyNSxyMwkJLyogUG9zc2libHkgc2F2ZSBzb21ldGhp
-bmcuICovCi8qCiAqIERldGVybWluZSB3aGF0IENQVSB3ZSdyZSBvbi4KICovCglsaXMJcjgs
-MAkJLyogY291bnQgPT0gMCAqLwoJbWZwdnIJcjcJCS8qIEdldCB0aGUgUFZSICovCglzcmF3
-aQlyNyxyNywxNgkvKiBKdXN0IHRoZSBmaXJzdCAxNiBiaXRzICovCglURVNUKElCTTQwMykJ
-CS8qIENoZWNrIGZvciBhIDQwMyAqLwoJVEVTVChJQk00MDUpCQkvKiBDaGVjayBmb3IgYSA0
-MDUgKi8KCVRFU1QoTVBDOFhYKQkJLyogQ2hlY2sgZm9yIGFuIE1QQzh4eCAqLwoJVEVTVChQ
-UEM3NTApCQkvKiBDaGVjayBmb3IgYSA3NDAgb3IgNzUwICovCglURVNUKFBQQzc0MDApCQkv
-KiBDaGVjayBmb3IgYSA3NDAwICovCglURVNUKFBQQzc0MTApCQkvKiBDaGVjayBmb3IgYSA3
-NDEwICovCnRlc3Q6CgkvKiBXaGF0IG1pZ2h0IGJlIG5pY2UgaXMgdGVzdGluZyBmb3IgNHh4
-Lzh4eCwgYW5kIGlmIHdlIGFyZW4ndAoJICogb24gZWl0aGVyIG9mIHRob3NlLCBzZXR1cCB0
-aGUgZGVmYXVsdCBNU1IsIGFuZCB0ZXN0IG1vcmUuCgkgKiBPciB3ZSBjb3VsZCBldmVuIHRl
-c3QgZm9yIHI4ID09IDYgbGF0ZXIgb24uCgkgKi8KCWIJX3NldHVwXzZ4eAojaWYgMAoJY21w
-bHdpCXI4LDB4MDAwMgkvKiBUZXN0IGlmIHdlJ3JlIDw9IDIsIGlmIHNvIHdlJ3JlIDh4eCwg
-Ki8KCWJsZQlfc2V0dXBfZW1iZWQJLyogb3IgNHh4LiAqLwoJY21wbHdpCXI4LDB4MDAwNgkv
-KiBUZXN0IGlmIHdlJ3JlID09IDYsIGlmIHNvLCBkbyBnZW5lcmljIDZ4eCAqLwoJYmVxCV9z
-ZXR1cF82eHgJLyogZWFybHkgc2V0dXAuICovCgljbXBsd2kJcjgsMHgwMDAzCS8qIFRlc3Qg
-aWYgd2UncmUgPj0gMywgaWYgc28gYXNzdW1lIHdlICovCgliZ2UJX3NldHVwX0wyQ1IJLyog
-c2hvdWxkIHJlc2V0IHRoZSBMMkNSICovCiNlbmRpZgovKiBDb21lIGJhY2sgdG8gaGVyZSwg
-b25jZSB3ZSd2ZSBkb25lIG91ciBlYXJseSBpbml0IHN0dWZmcy4gKi8KZG9uZUVhcmx5OgoJ
-LyogY29tcHV0ZSB0aGUgc2l6ZSBvZiB0aGUgd2hvbGUgaW1hZ2UgaW4gd29yZHMuICovCgls
-aXMJcjQsc3RhcnRAaAoJb3JpCXI0LHI0LHN0YXJ0QGwKCWxpcwlyNSxlbmRAaAoJb3JpCXI1
-LHI1LGVuZEBsCglhZGRpCXI1LHI1LDMJCS8qIHJvdW5kIHVwICovCglzdWIJcjUscjUscjQJ
-LyogZW5kIC0gc3RhcnQgKi8KCXNyd2kJcjUscjUsMgoJbXIJcjcscjUJCS8qIFNhdmUgZm9y
-IGxhdGVyIHVzZS4gKi8KCgkvKiBjaGVjayBpZiB3ZSBuZWVkIHRvIHJlbG9jYXRlIG91cnNl
-bHZlcyB0byB0aGUgbGluayBhZGRyIG9yIHdlcmUgCgkgKiB3ZSBsb2FkZWQgdGhlcmUgdG8g
-YmVnaW4gd2l0aCAtLSBDb3J0ICovCgltZmxyCXIzCglzdWJpCXIzLHIzLDQJCS8qIHdlIGdl
-dCB0aGUgbmlwLCBub3QgdGhlIGlwIG9mIHRoZSBicmFuY2ggKi8KCW1yCXI4LHIzCgljbXAJ
-Y3IwLHIzLHI0CgliZXEJc3RhcnRfbGRyCS8qIElmIDAsIHdlIGRvbid0IG5lZWQgdG8gcmVs
-b2NhdGUgKi8KCgkvKiAKCSAqIG5vIG1hdHRlciB3aGVyZSB3ZSdyZSBsb2FkZWQsIG1vdmUg
-b3Vyc2VsdmVzIHRvIC1UdGV4dCBhZGRyZXNzCgkgKi8KCW1mbHIJcjMJCS8qIENvbXB1dGUg
-Y29kZSBiaWFzICovCglzdWJpCXIzLHIzLDQKCW1yCXI4LHIzCglsaXMJcjQsc3RhcnRAaAoJ
-b3JpCXI0LHI0LHN0YXJ0QGwKCW1yCXI1LHI3CQkvKiBHZXQgdGhlICMgb2YgbG9uZ3dvcmRz
-IGFnYWluICovCgltdGN0cglyNQkJLyogU2V0dXAgZm9yIGEgbG9vcCAqLwoJbGkJcjYsMAoJ
-c3ViaQlyMyxyMyw0CglzdWJpCXI0LHI0LDQKMDA6CWx3enUJcjUsNChyMykKCXN0d3UJcjUs
-NChyNCkKCXhvcglyNixyNixyNQoJYmRuegkwMGIKCWxpcwlyMyxzdGFydF9sZHJAaAoJb3Jp
-CXIzLHIzLHN0YXJ0X2xkckBsCgltdGxyCXIzCQkvKiBFYXNpZXN0IHdheSB0byBkbyBhbiBh
-YnNvbHV0ZSBqdW1wICovCglibHIKCnN0YXJ0X2xkcjoKLyogU29tZSBib2FyZHMgZG9uJ3Qg
-Ym9vdCB1cCB3aXRoIHRoZSBJLWNhY2hlIGVuYWJsZWQuICBEbyB0aGF0CiAqIG5vdyBiZWNh
-dXNlIHRoZSBkZWNvbXByZXNzIHJ1bnMgbXVjaCBmYXN0ZXIgdGhhdCB3YXkuCiAqIEFzIGEg
-c2lkZSBlZmZlY3QsIHdlIGhhdmUgdG8gZW5zdXJlIHRoZSBkYXRhIGNhY2hlIGlzIG5vdCBl
-bmFibGVkCiAqIHNvIHdlIGNhbiBhY2Nlc3MgdGhlIHNlcmlhbCBJL08gd2l0aG91dCB0cm91
-YmxlLgogKi8KCWJsCWZsdXNoX2luc3RydWN0aW9uX2NhY2hlCgoJLyogQ2xlYXIgYWxsIG9m
-IEJTUyBhbmQgc2V0IHVwIHN0YWNrIGZvciBDIGNhbGxzICovCglsaXMJcjMsZWRhdGFAaAoJ
-b3JpCXIzLHIzLGVkYXRhQGwKCWxpcwlyNCxlbmRAaAoJb3JpCXI0LHI0LGVuZEBsCglzdWJp
-CXIzLHIzLDQKCXN1YmkJcjQscjQsNAoJbGkJcjAsMAo1MDoJc3R3dQlyMCw0KHIzKQoJY21w
-CWNyMCxyMyxyNAoJYm5lCTUwYgo5MDoJbXIJcjkscjEJCS8qIFNhdmUgb2xkIHN0YWNrIHBv
-aW50ZXIgKGluIGNhc2UgaXQgbWF0dGVycykgKi8KCWxpcwlyMSwuc3RhY2tAaAoJb3JpCXIx
-LHIxLC5zdGFja0BsCglhZGRpCXIxLHIxLDQwOTYqMgoJc3ViaQlyMSxyMSwyNTYKCWxpCXIy
-LDB4MDAwRgkvKiBNYXNrIHBvaW50ZXIgdG8gMTYtYnl0ZSBib3VuZGFyeSAqLwoJYW5kYwly
-MSxyMSxyMgoKCS8qCgkgKiBFeGVjIGtlcm5lbCBsb2FkZXIKCSAqLwoJbXIJcjMscjgJCS8q
-IExvYWQgcG9pbnQgKi8KCW1yCXI0LHI3CQkvKiBQcm9ncmFtIGxlbmd0aCAqLwoJbXIJcjUs
-cjYJCS8qIENoZWNrc3VtICovCgltcglyNixyMTEJCS8qIFJlc2lkdWFsIGRhdGEgKi8KCWJs
-CWRlY29tcHJlc3Nfa2VybmVsCgkKCWxpcwlyNixjbWRfbGluZUBoCglvcmkJcjYscjYsY21k
-X2xpbmVAbAoJbHd6CXI2LDAocjYpCglzdWJpCXI3LHI2LDEKMDA6CWxienUJcjIsMShyNykK
-CWNtcGkJY3IwLHIyLDAKCWJuZQkwMGIKCgkvKiByNCxyNSBoYXZlIGluaXRyZF9zdGFydCwg
-c2l6ZSAqLwoJbGlzCXIyLGluaXRyZF9zdGFydEBoCglvcmkJcjIscjIsaW5pdHJkX3N0YXJ0
-QGwKCWx3eglyNCwwKHIyKQoJbGlzCXIyLGluaXRyZF9lbmRAaAoJb3JpCXIyLHIyLGluaXRy
-ZF9lbmRAbAoJbHd6CXI1LDAocjIpCgoJLyoKCSAqIFN0YXJ0IGF0IHRoZSBiZWdpbmluZy4K
-CSAqLwoJbGkJcjksMHgwMDAwCgltdGxyCXI5CglibHIKCi8qIFNldHVwIHZhcmlvdXMgQ1BV
-IHR5cGVzLiAqLwoKX3NldHVwX0wyQ1I6Ci8qCiAqIFdlIHNob3VsZCBiZSBza2lwcGluZyB0
-aGlzIHNlY3Rpb24gb24gQ1BVcyB3aGVyZSB0aGlzIHJlc3VsdHMgaW4gYW4KICogaWxsZWdh
-bCBpbnN0cnVjdGlvbi4gIElmIG5vdCwgcGxlYXNlIHNlbmQgdHJpbmlAa2VybmVsLmNyYXNo
-aW5nLm9yZwogKiB0aGUgUFZSIG9mIHlvdXIgQ1BVLgogKi8KCS8qIEludmFsaWRhdGUvZGlz
-YWJsZSBMMiBjYWNoZSAqLwoJbWZzcHIJcjQsTDJDUgoJYW5kaXMuCXI0LHI0LDB4N2ZmZgoJ
-b3JpcwlyNCxyNCwweDAwMjAKCWlzeW5jCgltdHNwcglMMkNSLHI0CglzeW5jCglpc3luYwoK
-CS8qIFJlZW5hYmxlIEwyIGNhY2hlICovCgltZnNwcglyNCxMMkNSCglvcmlzCXI0LHI0LDB4
-ODAwMAoJaXN5bmMKCW10c3ByCUwyQ1IscjQKCXN5bmMKCWlzeW5jCl9zZXR1cF82eHg6Ci8q
-CiAqIENvbmZpZ3VyZSBjb3JlIHJlZ2lzdGVycwogKi8KCS8qIEVzdGFibGlzaCBkZWZhdWx0
-IE1TUiB2YWx1ZSwgZXhjZXB0aW9uIHByZWZpeCAweEZGRiAqLwoJbGkJcjMsTVNSX0lQfE1T
-Ul9GUAoJbXRtc3IJcjMKCgkvKiBDbGVhciBCQVRzICovCglsaQlyOCwwCgltdHNwcglEQkFU
-MFUscjgKCW10c3ByCURCQVQwTCxyOAoJbXRzcHIJREJBVDFVLHI4CgltdHNwcglEQkFUMUws
-cjgKCW10c3ByCURCQVQyVSxyOAoJbXRzcHIJREJBVDJMLHI4CgltdHNwcglEQkFUM1UscjgK
-CW10c3ByCURCQVQzTCxyOAoJbXRzcHIJSUJBVDBVLHI4CgltdHNwcglJQkFUMEwscjgKCW10
-c3ByCUlCQVQxVSxyOAoJbXRzcHIJSUJBVDFMLHI4CgltdHNwcglJQkFUMlUscjgKCW10c3By
-CUlCQVQyTCxyOAoJbXRzcHIJSUJBVDNVLHI4CgltdHNwcglJQkFUM0wscjgKCWlzeW5jCglz
-eW5jCglzeW5jCgoJLyogU2V0IHNlZ21lbnQgcmVnaXN0ZXJzICovCglsaXMJcjgsMHg4MDAw
-Cglpc3luYwoJbXRzcglTUjAscjgKCW10c3IJU1IxLHI4CgltdHNyCVNSMixyOAoJbXRzcglT
-UjMscjgKCW10c3IJU1I0LHI4CgltdHNyCVNSNSxyOAoJbXRzcglTUjYscjgKCW10c3IJU1I3
-LHI4CgltdHNyCVNSOCxyOAoJbXRzcglTUjkscjgKCW10c3IJU1IxMCxyOAoJbXRzcglTUjEx
-LHI4CgltdHNyCVNSMTIscjgKCW10c3IJU1IxMyxyOAoJbXRzcglTUjE0LHI4CgltdHNyCVNS
-MTUscjgKCWlzeW5jCglzeW5jCglzeW5jCgoJLyogRW5hYmxlLCBpbnZhbGlkYXRlIGFuZCB0
-aGVuIGRpc2FibGUgdGhlIEwxIGljYWNoZS9kY2FjaGUuICovCglsaQlyOCwwCglvcmkJcjgs
-cjgsKEhJRDBfSUNFfEhJRDBfRENFfEhJRDBfSUNGSXxISUQwX0RDSSkKCW1mc3ByCXIxMSxI
-SUQwCglvcglyMTEscjExLHI4CglhbmRjCXIxMCxyMTEscjgKCWlzeW5jCgltdHNwcglISUQw
-LHI4CglzeW5jCglpc3luYwoJbXRzcHIJSElEMCxyMTAKCXN5bmMKCWlzeW5jCgoJYglkb25l
-RWFybHkJLyogRG9uZSB3aXRoIGVhcmx5IGluaXQgc3R1ZmZzICovCgovKiBNUEM4eHggQ1BV
-cyAqLwpfc2V0dXBfZW1iZWQ6CgltZm1zcglyMwkJLyogVHVybiBvZmYgaW50ZXJydXB0cyAq
-LwoJbGkJcjQsMAoJb3JpCXI0LHI0LE1TUl9FRQoJYW5kYwlyMyxyMyxyNAoJbXRtc3IJcjMK
-CiNpZmRlZiBDT05GSUdfOHh4CgkvKiBXZSBkbyB0aGlzIGJlY2F1c2Ugc29tZSBib290IHJv
-bXMgZG9uJ3QgaW5pdGlhbGl6ZSB0aGUKCSAqIHByb2Nlc3NvciBjb3JyZWN0bHkuIERvbid0
-IGRvIHRoaXMgaWYgeW91IHdhbnQgdG8gZGVidWcKCSAqIHVzaW5nIGEgQkRNIGRldmljZS4K
-CSAqLwoJbGkJcjQsMAkJLyogWmVybyBERVIgdG8gcHJldmVudCBGUlogKi8KCW10c3ByCVNQ
-Uk5fREVSLHI0CiNlbmRpZgoKCWIJZG9uZUVhcmx5CS8qIERvbmUgd2l0aCBlYXJseSBpbml0
-IHN0dWZmcyAqLwoKCS5jb21tCS5zdGFjayw0MDk2KjIsNAo=
-
---AWniW0JNca5xppdA--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
