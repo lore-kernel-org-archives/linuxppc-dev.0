@@ -1,24 +1,27 @@
-In-Reply-To: <19990913163755.A310@them.org>
-Date: Tue, 14 Sep 1999 11:15:20 +0200
-To: Daniel Jacobowitz <drow@false.org>, linuxppc-dev@lists.linuxppc.org
+Date: Tue, 14 Sep 1999 11:18:17 +0200
+To: Ethan Benson <erbenson@alaska.net>, linuxppc-dev@lists.linuxppc.org
 From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: hfs resource forks in Linux
-Message-Id: <19990914111520.021034@mailhost.mipsys.com>
+Subject: Re: New booter
+Message-Id: <19990914111817.004706@mailhost.mipsys.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Sep 13, 1999, Daniel Jacobowitz <drow@false.org> wrote:
+On Mon, Sep 13, 1999, Ethan Benson <erbenson@alaska.net> wrote:
 
->Not quite what I was talking about.  These let us touch the resource
->fork, and deal with hfs volumes, not manage a specific file's resource
->fork on the resource level.
+>>What a week, quik got fixed, AND a new booter for OF-deficient machines to
+>>free them from needing MacOS just to bootstrap Linux!
+>
+>quik is not fixed totally, the first stage loader still does not work 
+>on newworld macs, unless anyone has some suggestions...
 
-The resource fork format is not terribly complex. If noone does it, I'll
-look into writing a couple of tools for managing them one of those days.
-
+I agree this is not perfect, but as I wrote you privately, we can still
+use a small HFS partition with the second stage bootstrap beeing directly
+loaded by OF. This works now, I tested it last week. Not perfect, but
+better than BootX for those machine since the kernel will now be able to
+use RTAS ;-)
 
 -- 
            Perso. e-mail: <mailto:bh40@calva.net>
