@@ -1,41 +1,48 @@
-Message-ID: <404F51F4.5040000@catapult.com>
-Date: Wed, 10 Mar 2004 12:35:48 -0500
-From: "Kevin A. Sapp" <Kevin.Sapp@catapult.com>
+Message-ID: <02ab01c406c7$0813a420$3000a8c0@foundation>
+From: "Stuart Yoder" <stuart.yoder@conformative.com>
+To: "Ing.Gianfranco Morandi (LAN)" <gianfranco.morandi@euro-studio.it>
+Cc: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
+References: <010201c40692$51da2820$0400a8c0@portatile>
+Subject: Re: Marvell DB64360
+Date: Wed, 10 Mar 2004 11:42:17 -0600
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: RAM Disk problems
-References: <20040310150032.D3CBEC0655@atlas.denx.de>
-In-Reply-To: <20040310150032.D3CBEC0655@atlas.denx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thanks to all.
-  Wolfgang had it.  No EXT2 support. Duh!
+IBM has a 750FX eval board with the Marvel 64360 on it.
 
-Kevin
+http://www-306.ibm.com/chips/techlib/techlib.nsf/products/PowerPC_750FX_Evaluation_Kit
 
->In message <404F26A5.7070807@catapult.com> you wrote:
+Stuart
+
+----- Original Message -----
+From: "Ing.Gianfranco Morandi (LAN)" <gianfranco.morandi@euro-studio.it>
+To: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
+Sent: Wednesday, March 10, 2004 5:24 AM
+Subject: Marvell DB64360
+
+
 >
+> Hi to All,
 >
->>I am trying to bring up a RAM disk as the root file system.
->>Most everything is working until it come's time to mount it.
->>
->>
+> I'm evaluating a new development based on PPC750FX and I would like to
+check
+> if there is some porting on the ELDK 3.0 package.
+> I have also verified what development board could be the best candidate to
+> be used as starting point and It seems to be the Marvell DB64360.
 >
->This is an ext2 based ramdisk? Do you have ext2  support  enabled  in
->your kernel? If yes, try disabling devfs.
+> Did anybody work on such board?
 >
->Best regards,
+> and
 >
->Wolfgang Denk
+> Could anybody suggest me if there is some better reference point?
 >
->--
->Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
->Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
->I mean, I . . . think to understand you, I just don't know  what  you
->are saying ...                        - Terry Pratchett, _Soul Music_
+> Many thanks in advance.
+>
+> Gianfranco
 >
 >
 >
