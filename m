@@ -1,28 +1,51 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: FASSINO Jean-Philippe <jeanphilippe.fassino@francetelecom.fr>,
-        <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: RTAS on PowerMac Newworld
-Date: Tue, 25 Jul 2000 15:20:28 +0200
-Message-Id: <20000725132028.17969@mailhost.mipsys.com>
-In-Reply-To: <397D6A7A.CBF58A52@francetelecom.fr>
-References: <397D6A7A.CBF58A52@francetelecom.fr>
+From: tom_gall@vnet.ibm.com
+Message-ID: <397D9744.31E6BDC6@vnet.ibm.com>
+Date: Tue, 25 Jul 2000 13:33:56 +0000
+Reply-To: tom_gall@vnet.ibm.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: diff to tonight's kaffe cvs tree to work on ppc
+References: <200007250345.VAA22028@faith.cs.utah.edu> <397D926F.111AF60E@ivey.uwo.ca>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+"Kevin B. Hendricks" wrote:
 >
->Just a question about RTAS on PowerMac G4,
->does linux kernel can call RTAS function ?
->And if not, why ?
->I'm trying to do it and that fail...
+> Hi Godmar,
+>
+> > Is the stack alignment code 64bit safe?
+>
+> As promised, here is the clean up patch.  It should be applied after my first
+> patch.
+>
+> The only assumption I am making here is that sizeof(unsigned int) = sizeof(void
+> *).
 
-RTAS in not correctly implemented in those machines. Apple is apparently
-abandonning it, the implementation in ROM for all core99 machines is
-bogus. What do you want to use RTAS for ?
+> This should be true on both 64 bit and 32 bit systems.
 
-Ben.
+Hi Kevin,
 
+  This is only true as far as the 64 bit systems running on the 32 bit kernel,
+which is all there is at the moment.
+
+  Work has started on the 64 bit PowerPC Linux kernel, if Kaffe is compiled as a
+64 bit app for that kernel then sizeof(unsigned long) = sizeof(void *) will be
+true. Certainly not a big deal at this stage, but thought you'd be interested
+none the less.
+
+  Regards,
+
+  Tom
+
+--
+Tom Gall - PowerPC Linux Team    "Where's the ka-boom? There was
+Linux Technology Center           supposed to be an earth
+(w) tom_gall@vnet.ibm.com         shattering ka-boom!"
+(w) 507-253-4558                 -- Marvin Martian
+(h) tgall@uswest.net
+http://oss.software.ibm.com/developerworks/opensource/linux
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
