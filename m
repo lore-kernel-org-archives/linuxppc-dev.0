@@ -1,31 +1,37 @@
-Date: Thu, 6 Jul 2000 02:15:33 -0400 (EDT)
-From: Jamie Guinan <guinan@bluebutton.com>
-Reply-To: guinan@bluebutton.com
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: IDE quirk
-In-Reply-To: <Pine.LNX.4.21.0007052235430.3700-100000@gemini.home.net>
-Message-ID: <Pine.LNX.4.21.0007060211240.6798-100000@gemini.home.net>
+From: "Kwansuk Kim" <kskim@neowave.co.kr>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Unable to mount root fs...
+Date: Thu, 6 Jul 2000 21:19:02 +0900
+Message-ID: <NEBBKFENMLEDKDHMEHPJEENPCAAA.kskim@neowave.co.kr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <Pine.LNX.4.21.0007060211240.6798-100000@gemini.home.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, 5 Jul 2000, Jamie Guinan wrote:
+At last! My kernel started operating on the custom board.
 
-> I've been tinkering with the IDE drive on my MBX board.
-<snip>
-> Every other halfword does not "stick" on the drive.
-<snip>
+but, soon it halted as followed.
 
-I guess the QSpan and/or WinBond likes having 32bit I/O thrown at it,
+I think the compress ramdisk image is loaded well, and it seems decompressed well as the console output "Compressed image found ..."
 
-# hdparm -c 1 /dev/hda
+but why can't the kernel mount the file system?
 
-This seems to have fixed my problem.  I fdisk'd and mke2fs'd and
-everything looks peachy.
+I use the kernel included in redhat edk.
 
--Jamie
+-------------------
 
+Now booting the kernel
+ttyS00 at 0x0380 is a SMC
+ttyS01 at 0x0100 is a SCC
+ttyS02 at 0x0200 is a SCC
+pty: 256 Unix98 ptys configured
+RAM disk driver initialized:  16 RAM disks of 4096K size
+eth0: CPM ENET Version 0.2, 00:01:c4:00:00:b1
+RAMDISK: Compressed image found at block 0
+Kernel panic: VFS: Unable to mount root fs on 01:00
+Rebooting in 180 seconds..
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
