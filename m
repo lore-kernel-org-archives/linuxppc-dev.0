@@ -1,86 +1,38 @@
-Message-Id: <199912071649.KAA31048@lists.linuxppc.org>
-Date: Tue, 7 Dec 1999 11:46:56 -0500 (EST)
-From: Kevin_Hendricks <khendricks@admin.ivey.uwo.ca>
-Reply-To: Kevin_Hendricks <khendricks@admin.ivey.uwo.ca>
-Subject: Sun / Imprise Announcement: A Blackdown Porter's ViewPoint
+Date: Tue, 7 Dec 1999 20:19:37 +0200 (EET)
+From: Kostas Gewrgiou <gewrgiou@imbc.gr>
 To: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org,
-        yellowdog-general@lists.yellowdoglinux.com
+        yellowdog-general@lists.yellowdoglinux.com,
+        yellowdog-devel@lists.yellowdoglinux.com
+Subject: X3.9.16 and kernel for Voodoo3
+Message-ID: <Pine.LNX.4.20.9912072016210.583-100000@idd-01.imbc.gr>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
 
-I thought you might like to know that Sun is now officially supporting x86 Linux 
-and didn't bother to inform their porting partners after using their efforts.  
-There is no planned support for Sparc, PowerPC, arm, alpha, etc.
+  I've been working for that last few days to add support for my voodoo3 card
+in fbdev and XFree3.9.16
+I think that now both the fb and the X driver are in a condition good enough
+for release (no accel in console yet but X are acceled).
 
-Needless to say, the Blackdown porting effort is in serious jeopardy.
+For the Xserver you just need to install the rpm, don't forget to backup
+your old /etx/X11/XF86Config file before installing the rpm.
+The rpm will install a /etx/X11/XF86Config unfortunately since the format
+has changed you want be able to use Xconfigurator Xautoconfig to edit it.
+Also make sure that /etc/X11/X is a link to /usr/X11R6/bin/X
 
-My efforts for Java on Linux PowerPC will cease unless Sun makes a "*public*" 
-change asap.
+You can get the test Xserver and the kernel from:
+ftp://idd-01.imbc.gr/pub/voodoo3/XFree3916-3.9.16-1.ppc.rpm
+ftp://idd-01.imbc.gr/pub/voodoo3/vmlinux-991207.bz2
 
-If you use the JDK and want support to continue (at all for powerpc based 
-machines) you might want to (politely) express your displeasure with Sun.
+I'll post the kernel patches and the xfree srpms sometime tomorrow
 
-Thanks,
 
-Kevin
+ Thanks
 
-------------- Begin Forwarded Message -------------
-
-Date: Tue, 7 Dec 1999 11:39:58 -0500 (EST)
-From: Kevin_Hendricks <khendricks@admin.ivey.uwo.ca>
-Subject: Sun / Imprise Announcement: A Blackdown Porter's ViewPoint
-To: java-linux@java.blackdown.org
-Mime-Version: 1.0
-Content-MD5: jfrc0hb9tf/kXVy1gfHb0g==
-
-Hi,
-
-I just wanted the list to know that although we (Blackdown) knew Sun was going 
-to make some release we had no idea it would not even mention the 4 years of 
-work the Blackdown porters have contributed to this effort.
-
-I truly believe that the Sun / Imprise effort is based on an earlier Blackdown 
-tree.  
-
-If so, why has Sun not even acknowledged the existence of this second tree to 
-us.
-
-If so, why hasn't Sun given credit to Blackdown where credit is due?
-
-Needless to say the people who have contributed their personal time and effort 
-to the Blackdown project are *NOT* happy.
-
-I don't mind donating my time and effort to help Java on Linux.
-
-I *do* mind not having that effort recognized especially when it is used as the 
-basis of a someone else's tree.
-
-Frankly, Sun's conduct here stinks.
-
-Unless Sun makes some public change crediting Blackdown where credit is due in a 
-prominent place in their announcements / press releases/ web-page, I am finished 
-as a Blackdown porter and the future of the entire Blackdown project is 
-seriously at risk (most of us feel this way).
-
-If you have benefited in any way from the efforts of the Blackdown porting group 
-over the last 4 years, please (politely) express your displeasure at Sun.
-
-Thanks,
-
-Kevin B. Hendricks
-(possibly former member of the Blackdown porting group!).
-
---
-Kevin B. Hendricks
-Associate Professor of Operations and Information Technology
-Richard Ivey School of Business, University of Western Ontario
-London, Ontario  N6A-3K7  CANADA   
-khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
+Kostas Gewrgiou
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
