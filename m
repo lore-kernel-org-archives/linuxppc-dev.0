@@ -1,43 +1,31 @@
-From: Joe Green <jgreen@mvista.com>
-To: Wolfgang Denk <wd@denx.de>, Michael Habermann <MHabermann@gmx.de>
-Subject: Re: Reducing glibc with mklibs.sh
-Date: Wed, 17 Oct 2001 09:28:41 -0700
-Content-Type: text/plain
+Date: Wed, 17 Oct 2001 10:08:32 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Steven Vacca <svacca@valcom.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-References: <20011017123040.23ED310889@denx.denx.de>
-In-Reply-To: <20011017123040.23ED310889@denx.denx.de>
-MIME-Version: 1.0
-Message-Id: <01101709304900.12705@minotaur.mvista.com>
+Subject: Re: initrd offset in zImage getting mis-aligned?
+Message-ID: <20011017100832.A32556@cpe-24-221-152-185.az.sprintbbd.net>
+References: <01C156FF.63187140.svacca@valcom.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <01C156FF.63187140.svacca@valcom.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
-> In message <5.1.0.14.0.20011017155249.03548ec0@pop.gmx.de> you wrote:
-> >
-> > If you know any other tools to do this task, please let me know. Seems that
-> > LIPO (Lineo) and LOT(HardHat) are not free.
->
-> What makes you think so?
->
-> The MV Library Optimizer at
-> http://sourceforge.net/projects/libraryopt/ it's under GPL.
+On Wed, Oct 17, 2001 at 11:32:21AM -0400, Steven Vacca wrote:
 
-Yes, but it's not well documented yet...I need to improve that and add
-a mailing list.
+> I am porting a version of Redhat's embedded linux kernel to
+> a new custom designed bd with the mpc860.  I am using a
+> local RAM disk on this new bd.
 
-Michael Habermann wrote:
-> I tried to reduce the size of my self-compiled glibc 2.2.2, with the debian
-> script mklibs.sh, but it terminates with the following output:
-> ---
-> /usr/local/powerpc-linux/bin/ld: /tmp/,mklibs.21079/lib-so: undefined
-> versioned symbol name sys_siglist@@GLIBC_2.1
-
-This looks like a problem with COPY relocation types, which was seen and
-fixed for the LOT.
+Erm, you might want to look at the bits in the linuxppc_2_4 or
+linuxppc_2_4_devel tree (http://penguinppc.org/dev/kernel.shtml).  Prior
+to a few days ago, we did some slightl mis-calculations on where to put
+our image and/or ramdisk (they were off by 12bytes or so).  I'm not sure
+if this is your problem tho..
 
 --
-Joe Green <jgreen@mvista.com>
-MontaVista Software, Inc.
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
