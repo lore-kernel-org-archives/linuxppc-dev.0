@@ -1,49 +1,54 @@
-In-Reply-To: <v04011701b2ba429e00af@[209.86.156.161]>
-Date: Thu, 7 Jan 1999 12:59:44 +0100
-To: Paul.Mackerras@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org,
-        "Timothy A. Seufert" <tas@mindspring.com>
+Date: Thu, 7 Jan 1999 14:37:18 +0100
+To: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org,
+        debian-powerpc@lists.debian.org, linux-pmac@samba.anu.edu.au
 From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: Great IDE perf (WAS: Strange PMAC IDE performance)
-Message-Id: <19990107125944.017660@mail.mipsys.com>
+Subject: Bogus interrupts: test fix
+Message-Id: <19990107143718.019579@mail.mipsys.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Jan 7, 1999, Timothy A. Seufert <tas@mindspring.com> wrote:
+I've updated the 2.2-pre4 test kernel on my web page, it contains a test
+fix for the bogus interrupt problem. Please try it and give me feedback.
+Also, do not worry about the "lost interrupts" counter I added to
+/proc/interrupts, they are not really "lost" but I would be interested in
+knowing how much of them you get with ordinary use of the system.
 
->This works on the PowerBook 2400 as well.  It so happens that the IDE
->controllers also sit at 0xf3020000 and 0xf3021000 on the O'Hare.  The value
->of the register at offset 0x200 is slightly different under MacOS:
->0x221025.  I tried both values, it didn't seem to make a difference.  I did
->a quick hack to ide-pmac.c (it just stuffs the value in, no questions
->asked, though it does actually use the correct base address instead of hard
->coding 0xf3020000) and that worked.  Performance is up to 5.6 MB/s (was in
->the region of 1.6 before).
+The "fix" looks like this:
 
-Great ! I also included this initialisation in my latest set of patch and
-test kernel but currently, I test against "heathrow-ata" in the
-compatible property, so it won't do it on your machine. Could you tell me
-the value of the compatible property of the ATA on the 2400 ? I'll add
-similar code with 0x221025 for OHare and 0x211025 for heathrow, just to
-be safe.
+void __pmac pmac_mask_and_ack_irq(int irq_nr)
+{
+	unsigned long bit = 1UL << (irq_nr & 0x1f);
+	int i = irq_nr >> 5;
 
->Any guesses about the meaning of this register?  It feels wrong somehow to
->just ape MacOS without knowing what's really going on.  :)
+	if ((unsigned)irq_nr >= max_irqs)
+		return;
+	/*spin_lock(&irq_controller_lock);*/
 
-Good question ;-) I'm wondering if this could configure the timing of the
-DMA engine on the data port. I tried with my CD-ROM and it works too (I
-didn't hdparm it but at least, the CD mounts weel and I didn't see any
-problem). It would be great to test with really slow devices however (my
-CD is a very fast one).
+	clear_bit(irq_nr, cached_irq_mask);
+	if (test_and_clear_bit(irq_nr, lost_interrupts))
+		atomic_dec(&n_lost_interrupts);
+	out_le32(&pmac_irq_hw[i]->ack, bit);
+	out_le32(&pmac_irq_hw[i]->enable, cached_irq_mask[i]);
+	out_le32(&pmac_irq_hw[i]->ack, bit);
+	do {
+		/* make sure ack gets to controller before we enable interrupts */
+		sync();
+	} while(in_le32(&pmac_irq_hw[i]->flag) & bit);
 
-Another question about IDE: Does someone have any info about IDE ZIP
-drives ? I received a mail from someone which is having all sorts of
-trouble with a ZIP in the expansion bay. Looks like the beast is not
-correctly answering ATAPI commands sent by the driver (yeah, ATAPI, I
-thought a ZIP would be plain IDE or floppy-IDE but apparently, his drive
-is recognized as an ATAPI one).
+	/*spin_unlock(&irq_controller_lock);*/
+	/*if ( irq_controller_lock.lock )
+	  panic("irq controller lock still held in mask and ack\n");*/
+}
+
+Note that the sync() may now be useless. I don't have anymore bogus
+interrupts on the PowerBook for now but I usually have very few of them
+anyway. I'm more interested by results from people with a real problem
+(io slowdown due to lots of them).
+
+I'll post this kernel on an ftp site later today too.
 
 -- 
            E-Mail: <mailto:bh40@calva.net>
