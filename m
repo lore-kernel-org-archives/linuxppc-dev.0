@@ -1,97 +1,64 @@
-Message-Id: <200004171354.PAA29963@denx.local.net>
-To: Dan Malek <dan@netx4.com>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Bizarre initrd problem on CLLF860T 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 17 Apr 2000 09:12:00 EDT."
-             <38FB0DA0.DDE9098C@embeddededge.com>
-Date: Mon, 17 Apr 2000 15:54:50 +0200
+Subject: Re: Bizarre initrd problem on CLLF860T
+To: dan@netx4.com (Dan Malek)
+Date: Tue, 18 Apr 2000 17:57:04 +1000 (EST)
+Cc: linuxppc-embedded@lists.linuxppc.org (LinuxPPC Embedded Mailing List)
+In-Reply-To: <38FB0DA0.DDE9098C@embeddededge.com> from "Dan Malek" at Apr 17, 2000 09:12:00 AM
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-Id: <20000418075704.C3E833C970@elph.research.canon.com.au>
+From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <38FB0DA0.DDE9098C@embeddededge.com> Dan Malek wrote:
->
-> > Sending BOOTP requests..... OK
-> > IP-Config: Got BOOTP answer from 10.2.2.90, my address is 10.2.0.21
-> > IP-Config: Guessing netmask 255.0.0.0
-> > RAMDISK: Compressed image found at block 0
->
-> IP-Config with Ramdisk is a pretty weird configuration.  At the
-> 'Linux/PPC Load:' enter 'root=/dev/ram ip=off'.
+Hi everyone,
 
-Why do you call this weird? Is it not possible to use BOOTP  to  just
-get an IP address assigned?
+Thanks to all your suggestions, I have found the culprit...
 
-What method for network configuration do you suggest for a  minimized
-embedded  system? Including tools like ifconfig and set-up scripts to
-call them?
+Dan Malek writes:
+> So, what's different in your configuration?  Is this the same kernel
+> and ramdisk?  Like I requested in a previous message, the the sources
+> from MontaVista.  They are the most recent.
 
-I've been using similar combinations (RARP + initrd)  for  some  time
-without problems; would this fail using BOOTP?
+I am using the MontaVista kernel, with a few trivial local tweaks; namely the
+patches I've posted here over the last few weeks. My initrd problem lies in
+the CPU6 workaround in set_dec in arch/ppc/kernel/head.S, which does, err,
+interesting things to the command line!:
 
-Ummm... let's see:
+        .globl  set_dec
+set_dec:
+        mfmsr   r5              /* Disable interrupts */
+        li      r4,0
+        ori     r4,r4,MSR_EE
+        andc    r6,r5,r4
+        SYNC                    /* Some chip revs need this... */
+        mtmsr   r6
+        SYNC
+        lis     r7, cmd_line@h			###
+        ori     r7, r7, cmd_line@l		###
+        li      r4, 0x2c00			###
+        stw     r4, 12(r7)			###
+        lwz     r4, 12(r7)			###
+        mtspr   22, r3          /* Update Decrementer */
+        SYNC
+        mtmsr   r5
+        SYNC
+        blr
 
-Using RARP:
+The lines marked ### look like debug code that shouldn't have made it out to
+the world. It's causing my boot command line "root=/dev/ram" to turn into
+"root=/dev/ra", and triggering the initrd code that tries to remount the real
+root filesystem. If you're using the CPU6 workarounds, I suggest you nuke
+those lines.
 
-	...
-	ttyS00 at 0x0380 is a SMC
-	ttyS01 at 0x0280 is a SMC
-	pty: 256 Unix98 ptys configured
-	Found 2x16bit 4Mbyte CFI flash device of type AMD/Fujitsu standard at 40000000
-	registered flash device /dev/flash0
-	Found 2x16bit 4Mbyte CFI flash device of type AMD/Fujitsu standard at 40400000
-	registered flash device /dev/flash1
-	RAM disk driver initialized:  16 RAM disks of 4096K size
-	eth0: CPM ENET Version 0.2, 00:d0:93:00:02:6c
-	PPP: version 2.3.7 (demand dialling)
-	TCP compression code copyright 1989 Regents of the University of California
-	PPP line discipline registered.
-	Sending RARP requests.... OK
-	IP-Config: Got RARP answer from 10.0.0.1, my address is 10.0.0.99
-	IP-Config: Guessing netmask 255.0.0.0
-	RAMDISK: Compressed image found at block 0
-	EXT2-fs warning: checktime reached, running e2fsck is recommended
-	VFS: Mounted root (ext2 filesystem).
-	Freeing unused kernel memory: 32k init
-	Stand-alone shell (version 2.1)
-	>
+Turns out I'm not going crazy after all.
 
-Using BOOTP:
-
-	...
-	ttyS00 at 0x0380 is a SMC
-	ttyS01 at 0x0280 is a SMC
-	pty: 256 Unix98 ptys configured
-	Found 2x16bit 4Mbyte CFI flash device of type AMD/Fujitsu standard at 40000000
-	registered flash device /dev/flash0
-	Found 2x16bit 4Mbyte CFI flash device of type AMD/Fujitsu standard at 40400000
-	registered flash device /dev/flash1
-	RAM disk driver initialized:  16 RAM disks of 4096K size
-	eth0: CPM ENET Version 0.2, 00:d0:93:00:02:6c
-	PPP: version 2.3.7 (demand dialling)
-	TCP compression code copyright 1989 Regents of the University of California
-	PPP line discipline registered.
-	Sending BOOTP requests.... OK
-	IP-Config: Got BOOTP answer from 10.0.0.1, my address is 10.0.0.99
-	RAMDISK: Compressed image found at block 0
-	EXT2-fs warning: checktime reached, running e2fsck is recommended
-	VFS: Mounted root (ext2 filesystem).
-	Freeing unused kernel memory: 36k init
-	Stand-alone shell (version 2.1)
-	>
-
-This works for me, too.
-
-Wolfgang Denk
-
+Thanks again for all your suggestions,
+Graham
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Man is the best computer we can put aboard a spacecraft ...  and  the
-only one that can be mass produced with unskilled labor.
-                                                  - Wernher von Braun
+Graham Stoney
+Principal Hardware/Software Engineer
+Canon Information Systems Research Australia
+Ph: +61 2 9805 2909  Fax: +61 2 9805 2929
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
