@@ -1,13 +1,26 @@
-From: peter.grubmaier@chello.at
-Reply-To: peter.grubmaier@chello.at
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: MPC852 suppor
-Date: Thu, 29 Jan 2004 0:26:23 +0100
+Message-ID: <C7FFFEA58B43D311920D0004ACE5333F10E4F558@amer25.avnet.com>
+From: "Kerl, John" <John.Kerl@Avnet.com>
+To: "'peter.grubmaier@chello.at'" <peter.grubmaier@chello.at>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: MPC852 suppor
+Date: Wed, 28 Jan 2004 16:27:22 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Message-Id: <20040128232623.YHCG2881.viefep19-int.chello.at@localhost>
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+If you mean the FEC, then yes, this has been supported
+for some time.
+
+-----Original Message-----
+From: owner-linuxppc-embedded@lists.linuxppc.org
+[mailto:owner-linuxppc-embedded@lists.linuxppc.org]
+Sent: Wednesday, January 28, 2004 4:26 PM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: MPC852 suppor
+
 
 
 Hi,
