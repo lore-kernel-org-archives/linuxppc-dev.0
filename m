@@ -1,31 +1,35 @@
-Subject: Re: kernel executing from flash
-To: robt@flyingpig.com (Rob Taylor)
-Date: Tue, 28 Mar 2000 10:04:10 +1000 (EST)
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <000001bf97ca$1a27d7f0$b400a8c0@eventhorizon> from "Rob Taylor" at Mar 27, 2000 09:54:46 AM
+Message-ID: <1072F1A27E99D3119747005004B9A38041575C@MAIL>
+From: Rodney Davies <RodneyD@nulec.com.au>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Looking for Best 860xx/RPX development boards
+Date: Tue, 28 Mar 2000 15:03:36 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-Id: <20000328000410.6770E35610@elph.research.canon.com.au>
-From: greyham@research.canon.com.au (Graham Stoney)
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> > For our (non-linux) embedded systems, if we're going to run from
-> > flash, we store the executable in flash uncompressed.  Price is an
-> > issue which favors RAM, but speed issues no longer favor RAM - the new
-> > intel burst flash is faster than RAM in one of our systems.
+Greetings!
 
-Rob Taylor writes:
->
-> isn't it only faster for burst reads tho? that sort of speed increase
-> doesn't really help when running code..
+I'm now looking to discover which 860xx/RPX (Embedded Planet) boards are
+proving to be of great success.
 
-I think you might be mistaken here. Code accesses tend to be very linear, and
-since the Instruction cache loads entire lines at a time, burst accesses are a
-big win for code.
+Up until recent, I have been playing with an MPC850/RPXLite config with
+moderate success - I have a kernel, filesystem (NFS) and the compiler
+working (moderately).
 
-Regards,
-Graham
+I want to move to the 860 with _a_ board (Embedded Planet), but am unsure of
+which board/config of theirs I should obtain...RPXLite, Classic etc etc??
+Could someone please provide an indication of levels of
+success/reliability/failures they have had with various 860's and boards??
+
+Hope things are working well for you all...
+
+Thanks in advance!
+
+Cheers,
+Rod
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
