@@ -1,39 +1,37 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Date: Wed, 30 Oct 2002 17:28:51 +0100
-Mime-Version: 1.0 (Apple Message framework v482)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Subject: initrd problems
-From: Anders Blomdell <anders.blomdell@control.lth.se>
-To: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
-Message-Id: <ACFC1B4A-EC24-11D6-8213-0003931C2BFA@control.lth.se>
+To: Anders Blomdell <anders.blomdell@control.lth.se>
+Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: initrd problems 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 30 Oct 2002 17:28:51 +0100."
+             <ACFC1B4A-EC24-11D6-8213-0003931C2BFA@control.lth.se>
+Date: Wed, 30 Oct 2002 17:47:59 +0100
+Message-Id: <20021030164804.CC8A410154@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have created a compressed ramdisk of the root I'm currently using as NFS
-root for my embedded system. When I try to boot it with the following boot
-arguments:
+In message <ACFC1B4A-EC24-11D6-8213-0003931C2BFA@control.lth.se> you wrote:
+>
+>    RAMDISK: Compressed image found at block 0
+>    Freeing initrd memory: 361k freed
+>    Kernel panic: VFS: Unable to mount root fs on 01:00
+>
+> Anything very obvious that is wrong?
 
-   Linux/PPC load: console=ttyS0,9600 root=/dev/ram rw
+Are you sure you have support for initial ramdisk (CONFIG_BLK_DEV_RAM
++ CONFIG_BLK_DEV_INITRD) aneabled in your kernel  configuration?  And
+support for the filesystem type used in your ramdisk image?
 
-it fails with:
+Best regards,
 
-   RAMDISK: Compressed image found at block 0
-   Freeing initrd memory: 361k freed
-   Kernel panic: VFS: Unable to mount root fs on 01:00
+Wolfgang Denk
 
-Anything very obvious that is wrong?
-
-Regards
-
-Anders Blomdell
-
-------------------------------------------------------------------------------
-  Anders Blomdell
-  Department of Automatic Control        Email: anders.blomdell@control.lth.
-se
-  Lund Institute of Technology           Phone: +46 46 222 4625
-  Box 118, S-221 00 Lund, Sweden         Fax:   +46 46 138118
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Nothing is easier than to denounce  the  evildoer;  nothing  is  more
+difficult than to understand him.                 - Fyodor Dostoevski
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
