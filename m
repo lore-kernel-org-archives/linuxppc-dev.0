@@ -1,31 +1,29 @@
-Message-ID: <39733BC1.D0CC97E1@mvista.com>
-Date: Mon, 17 Jul 2000 10:00:49 -0700
-From: Mark Hatle <fray@mvista.com>
+Message-ID: <397341B7.51EFDD1B@blastoff.com>
+Date: Mon, 17 Jul 2000 10:26:15 -0700
+From: "Tod E. Kurt" <tod@blastoff.com>
 MIME-Version: 1.0
-To: oliver.amft@ch.abb.com
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: GLibC cross compile for ppc-linux
-References: <4125691F.0034CFC3.00@mail1.ch.abb.com>
+To: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: USB host stack for _any_ 823 board?
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I've been cross-compiling glibc-2.1.3 for ppc 7xx and 8xx for a while
-now.  I've yet to see any problems like that.  What if your host OS,
-(i.e. RedHat, debian etc? and it's version.)  And what are you
-targeting?
+Hi,
 
---Mark
+I've been recently using the RPX-Lite boards for my 823 development.
+They're great, but they don't have USB host capability yet, so I was
+wondering:
 
-oliver.amft@ch.abb.com wrote:
->
-> Hi all,
->
-> i'm trying to build the glibc 2.1.3 on a i686-linux machine for a powerpc-linux
-> embedded target. The make command works fine (...no errors) but somehow "make
-> check" stops in the "stdlib tests" part when it is invoking the "isomac" command
-> for the first time (after compiling it):
->
+Are there _any_ 823 boards out there that have a USB host stack written
+for them?
+
+Thanks,
+-=tod
+
+--
+tod@blastoff.com
+Tod E. Kurt
+BlastOff!
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
