@@ -1,34 +1,39 @@
+Message-ID: <FD52892BD296D71183B400065BFCB69009982F2E@il02exm12>
+From: Hawkins Jeffrey-CJH016 <Jeffrey.F.Hawkins@motorola.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Motorola MCP820 Board - 7410 / Harrier ASIC based - System Weirdn
+	ess
+Date: Mon, 10 May 2004 19:19:49 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <16544.4592.978105.177882@cargo.ozlabs.ibm.com>
-Date: Tue, 11 May 2004 09:36:16 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Amit Shah <amitshah@gmx.net>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: IBM 750GX SMP on Marvell Discovery II or III?
-In-Reply-To: <c7nb0l$5e3$1@sea.gmane.org>
-References: <c7nb0l$5e3$1@sea.gmane.org>
+Content-Type: text/plain
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Amit Shah writes:
+Hello,
 
-> I was wondering if SMP is supported for the 750 GX processor built on the
-> Marvell Discovery boards.
+I am evaluating a Motorola Computer Group MCP820 Board.  It is 7410 Based, running at 500 Mhz, 256MB RAM, 2MB L2 Cache.  Testing using 2.4.18 and 2.4.20 Kernels utilizing LMBENCH.  I am seeing some strange behavior with the Local Communications Latency Tests.  Comparing to a similarly configured 750 based System, the UDP and TCP operations have a latency that is 2+ times worse than the lesser performing System (MCP750 @ 366 Mhz).  Below is a snippet from the LMBENCH output:
 
-SMP is not supported for 750 processors.
+*Local* Communication latencies in microseconds - smaller is better
+-------------------------------------------------------------------
+Host                 OS 2p/0K  Pipe AF     UDP  RPC/   TCP  RPC/ TCP
+                        ctxsw       UNIX         UDP         TCP conn
+--------- ------------- ----- ----- ---- ----- ----- ----- ----- ----
+M750-01   Linux 2.4.18 0.990 8.471   14    38   103    67   155  255
+M750-01   Linux 2.4.18 0.960 8.657   14    38   103    67   154  255
+M750-01   Linux 2.4.18 1.000 8.279   14    38   103    67   138  254
+M750-01   Linux 2.4.18 0.830 8.425   14    38   102    67   155  255
+M750-01   Linux 2.4.18 0.990 8.427   14    38   102    67   154  254
+M820-01   Linux 2.4.18 0.770 6.060   10    73   237   133   357  598
+M820-01   Linux 2.4.18 0.770 6.076   10    73   238   133   354  594
+M820-01   Linux 2.4.18 0.580 6.079   10    73   240   134   357  591
+M820-01   Linux 2.4.20 0.770 6.483   11    73   226   139   376  592
+M820-01   Linux 2.4.20 0.780 6.608   11    69   222   129   367  577
 
-> If not, what's the problem in getting it supported? An older mail by Cort
-> Dougan said it was because of TLB invalidate information not being
-> broadcasted, but it was a really old mail, has anyone come up with any
-> workarounds?
+Can anybody give me some insight into this weirdness ?
 
-The real killer is that the cache management instructions are not
-broadcast.  The fact that the TLB invalidations are not broadcast is
-painful but it can be worked around in the kernel.  In contrast, the
-cache management instructions are used in userspace.
+Thanks,
+Jeff
 
-Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
