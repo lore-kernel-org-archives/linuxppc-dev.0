@@ -1,43 +1,55 @@
-Message-ID: <FA06AA2C99BCD511951200005A99441043863E@irvexch1.sextantifs.com>
-From: "Curtis, Allen" <Allen.Curtis@Thales-IFS.com>
-To: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
-Cc: "'acurtis@onz.com'" <acurtis@onz.com>
-Date: Thu, 2 May 2002 16:06:46 -0700
-Subject: linuxppc_2_4_devel - Walnut compile
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Subject: Re: problems with smbfs on 2.4.18 kernel (ppc)
+From: Bastien Nocera <hadess@hadess.net>
+To: Urban Widmark <urban@teststation.com>
+Cc: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <1020268150.25255.195.camel@dozo>
+References: <Pine.LNX.4.33.0203050945100.21791-100000@cola.teststation.com>
+	 <1020268150.25255.195.camel@dozo>
+Date: 03 May 2002 03:06:25 +0100
+Message-Id: <1020391586.13881.12.camel@dozo>
+Mime-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I downloaded and tried to compile an IBM405GP kernel using the Walnut
-configuration. Here is the path I have taken. Hopefully someone can take me
-the rest of the way home.
+Dammit,
 
-1. make menuconfig (xconfig - does not work)
-    and stripped out all of the extra junk
+I feel stupid now. The SAMBA version I grabbed off some MacOS X site
+came with a borked smb.conf. There was a rule to veto some files only
+used by MacOS X (resource forks). Here was the rule:
 
-2. linker error - early_serial* symbols undefined
-   modified drivers/char/Makefile - to include serial.c
+veto files = .*/Temporary Items/Desktop
+*/TheFindByContentFolder/TheVolumeSettingsFolder/Network */
 
-3. linker error - serial_close() undefined
-   reviewed the source code in arch/ppc. I believe that I need serial_sicc.c
+And the last bit actually vetoed all the directories, beginning with the
+one at the bottom of the share. I still don't understand why smbclient
+and the smb gnome-vfs method actually worked just fine with this share.
 
-4. Reviewed arch/ppc/config.in and discovered the following
-  a. Minor error in file was preventing menu "IBM 4xx options --->" from
-displaying (fixed)
-     This is the only place I can find a reference for SICC console support.
-This is dependent on 3 conditions. 1) Board is STB03xxx (not in any menus)
-2) SERIAL_SICC is true 3) UART0_TTYS1 is true.
-  b. Removed the platform dependency.
+Urban, is this actually a bug ? I'll take this off linuxppc-dev now.
 
-5. serial_sicc.c - does not compile because the only place the symbols are
-defined is in ibmstb3.h (guess it is platform dependent)
+Cheers
 
-Obviously my assumption about SICC serial support was wrong. What do I need
-to successfully compile and link this platform?
+On Wed, 2002-05-01 at 16:49, Bastien Nocera wrote:
+<snip>
+> I'm seeing this in ethereal:
+> from laptop to SMB server: Transaction2 Request QUERY_PATH_INFORMATION,
+> Path: \
+> from SMB server back to laptop: Transaction2 Response
+> QUERY_PATH_INFORMATION, Error: Directory not found
+>
+> However, smbclient seems to find it:
+>
+> smbclient //kara/backup1 -U hadess
+> added interface ip=192.168.1.2 bcast=192.168.1.255 nmask=255.255.255.0
+> Password:
+> Domain=[IDORU] OS=[Unix] Server=[Samba 2.2.2]
+> smb: \> ls
+>   mp3s                                D        0  Wed Apr  3 06:38:08
+> 2002
 
-Thanks in advance!
+--
+/Bastien Nocera
+http://hadess.net
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
