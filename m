@@ -1,40 +1,48 @@
-Message-ID: <3F427B58.3000409@ecubics.com>
-Date: Tue, 19 Aug 2003 13:32:40 -0600
-From: emanuel stiebler <emu@ecubics.com>
+Message-ID: <F9102D41F595D311ACA7009027DE2C840527B5BA@c3po.heurikon.com>
+From: "Johnson, Stephen" <stevebj@artesyncp.com>
+To: "'Dan Kegel'" <dank@kegel.com>,
+	emanuel stiebler <emu@ecubics.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: ELDK 2.1.0, kernel 2.4.21, MPC8245, ntpd
+Date: Tue, 19 Aug 2003 14:38:08 -0500
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ELDK 2.1.0, kernel 2.4.21, MPC8245, ntpd
-References: <3F426F17.3090206@ecubics.com> <3F4274D1.4050909@mvista.com>
-In-Reply-To: <3F4274D1.4050909@mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Mark Hatle wrote:
+Is ntpd trying to update your RTC out on i2c in interrupt context?
 
-> emanuel stiebler wrote:
->
->>
->> Hi all,
->> I get a "Segmentation fault (core dumped)" on my system using ntpd.
->> I checked the archives, and there is one messeage about something like
->> this on a 405.
->>
->> Is anybody working on this ? Did I missed some patches ?
->
->
-> If you clock is sufficiently out of date..  (I.e. 50/60 more? years
-> wrong) then you can get into an overflow situation.  While I've never
-> seen it segv, I have seen it do other 'interesting' things.
->
-> Try setting your clock to Jan 1 2000, then run ntpd and see what happens.
 
-I checked that already ;-)
-I set the clock manually before that, and the difference between the
-server and the local clock was less than a minute.
 
-Thanks
+-----Original Message-----
+From: Dan Kegel [mailto:dank@kegel.com]
+Sent: Tuesday, August 19, 2003 2:10 PM
+To: emanuel stiebler
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: ELDK 2.1.0, kernel 2.4.21, MPC8245, ntpd
+
+
+
+emanuel stiebler wrote:
+> I get a "Segmentation fault (core dumped)" on my system using ntpd.
+> I checked the archives, and there is one messeage about something like
+> this on a 405.
+>
+> Is anybody working on this ? Did I missed some patches ?
+
+No idea, but if you're using ELDK binaries, you might check
+with their mailing list.
+
+And then there's always compiling ntpd yourself and running
+it under gdb or gdbserver to see where it's crashing...
+- Dan
+
+--
+Dan Kegel
+http://www.kegel.com
+http://counter.li.org/cgi-bin/runscript/display-person.cgi?user=78045
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
