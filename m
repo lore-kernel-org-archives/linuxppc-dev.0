@@ -1,45 +1,34 @@
-Date: Mon, 7 Jun 2004 08:57:02 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Olaf Hering <olh@suse.de>
-Cc: Christian Kujau <evil@g-house.de>, Andrew Morton <akpm@osdl.org>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: [PATCH] fix typo in binutils version check
-Message-ID: <20040607155702.GX15195@smtp.west.cox.net>
-References: <20040605074341.GA15279@suse.de> <40C1A334.5010402@g-house.de> <20040605111135.GA30640@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20040605111135.GA30640@suse.de>
+In-Reply-To: <2E7C06A3-B893-11D8-92B4-000393DBC2E8@freescale.com>
+References: <20040605002915.GA17603@gate.ebshome.net> <2E7C06A3-B893-11D8-92B4-000393DBC2E8@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v618)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <B82608C6-B8AA-11D8-B7DC-000393DBC2E8@freescale.com>
+Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+From: Kumar Gala <kumar.gala@freescale.com>
+Subject: Re: [RFC] Simple ioremap cache
+Date: Mon, 7 Jun 2004 12:47:18 -0500
+To: Eugene Surovegin <ebs@ebshome.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Jun 05, 2004 at 01:11:35PM +0200, Olaf Hering wrote:
->
->  On Sat, Jun 05, Christian Kujau wrote:
->
-> >
-> > Olaf Hering wrote:
-> > | The binutils check is bogus, it doesnt work with the just released
-> > | binutils.
-> >
-> > why is this check bogus then? i tried to compile a kernel with some
-> > recent binutils which didn't pass the test - compilation failed.
-> > H.J.Lu's binutils [1] are working quite well, the releases from redhat
-> > [2] seem to produce these results you wrote about.
->
-> The checkbin target fails with current binutils cvs, you need an
-> additional option like -many
+On Jun 7, 2004, at 9:58 AM, Kumar Gala wrote:
 
-IMHO, binutils CVS is broken, and -many shouldn't be needed.  But that's
-not the direction things are heading apparently.
+>
+>> I have several questions on how we can enhance my simple hack so it
+>> can be
+>> acceptable into mainline:
+>>
+>> 0) Do we really need such stuff in mainline :) ?
+>
+> I see no reason, its helpful for a number of embedded archs (4xx, 8xx,
+> e500)
 
-But I believe that when Paul talked about this with some of the binutils
-folks it was decided that we should add -many to the AFLAGS so the
-kernel won't have to care about this.  So can you add -many to the
-AFLAGS, and make the binutils check use $(AFLAGS) as well?  Thanks.
+Should have been: 'I see no reason for it not to be'...
 
---
-Tom Rini
-http://gate.crashing.org/~trini/
+uugh, should wake up before sending emails.
+
+- kumar
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
