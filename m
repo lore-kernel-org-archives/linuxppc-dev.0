@@ -1,39 +1,75 @@
-Subject: Re: MPC8560ADS issues
-From: "Matthew S. McClintock" <mattsm@arlut.utexas.edu>
-To: Kumar Gala <kumar.gala@motorola.com>
-Cc: linuxppc-embedded@lists.linuxppc.org,
-	Jason McMullan <jason.mcmullan@timesys.com>,
-	Dan Malek <dan@embeddededge.com>
-In-Reply-To: <C27D4FB6-73AE-11D8-A4B4-000393DBC2E8@motorola.com>
-References: <1078945499.3748.4.camel@veena.timesys>
-	 <1079019785.29565.36.camel@chuck.arlut.utexas.edu>
-	 <405090F3.1000900@embeddededge.com>
-	 <1079025268.29565.51.camel@chuck.arlut.utexas.edu>
-	 <C27D4FB6-73AE-11D8-A4B4-000393DBC2E8@motorola.com>
-Content-Type: text/plain
-Message-Id: <1079049197.5056.3.camel@chuck.arlut.utexas.edu>
+Date: Thu, 11 Mar 2004 17:48:00 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: [RFC] "indirect" DCR access (40x, BookE)
+Message-ID: <20040312014800.GA25455@gate.ebshome.net>
 Mime-Version: 1.0
-Date: Thu, 11 Mar 2004 17:53:18 -0600
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, 2004-03-11 at 16:52, Kumar Gala wrote:
-> I'm confused the gianfar driver is for the MPC8540 FEC.  I believe the
-> initial question was regarding the FCC (on CPM / MPC8560).
->
-> As to why your having poor performance on the MPC8540 FEC, that seems
-> odd -- possibly some issue with the Intel PHY.  I do not believe we are
-> seeing anything similar on the ADS.
->
-> - kumar
->
+Hello all!
 
-My mistake, I did not realize the MPC8540 and MPC8560 were quite so
-different. I just assumed too much, I apologize.
+As some people know using DCR is sometimes PITA ;-).
+The reason is simple, DCR number is encoded in instruction itself, so
+one cannot write code like:
 
---
-Matthew S. McClintock <mattsm@arlut.utexas.edu>
+	for (i = 0; i < LAST_REG; ++i)
+		mtdcr(DCR_XXX_BASE + i, 0);
 
+Because of this limitation we have to use a lot of ugly #ifdefs and/or
+explicit switch/if statements when accessing DCR from device drivers
+(see for example include/asm-ppc/ppc405-dma.h,
+drivers/net/ibm_emac/ibm_ocp_mal.c (2.4 tree), etc)
+
+There is a simple solution for this problem (I'm sure everybody
+thought of this one, but just didn't have time to code it :).
+
+This approach trades space (16K of code) for convenience.
+
+Here is the short snippet which demonstrates the idea (full patch is
+quite big and can be found at http://kernel.ebshome.net/dcr-2.6.diff):
+
+#define DCR_ACCESS_PROLOG(table) \
+        rlwinm  r3,r3,4,18,27;   \
+        lis     r5,table@h;      \
+        ori     r5,r5,table@l;   \
+        add     r3,r3,r5;        \
+        mtctr   r3;              \
+        bctr
+
+_GLOBAL(__mfdcr)
+        DCR_ACCESS_PROLOG(__mfdcr_table)
+
+_GLOBAL(__mtdcr)
+        DCR_ACCESS_PROLOG(__mtdcr_table)
+
+__mfdcr_table:
+        mfdcr  r3,0; blr
+__mtdcr_table:
+        mtdcr  0,r4; blr
+        mfdcr  r3,1; blr
+        mtdcr  1,r4; blr
+        mfdcr  r3,2; blr
+        mtdcr  2,r4; blr
+        mfdcr  r3,3; blr
+	....
+
+I grouped reading & writing of the same DCR together to make these
+functions more cache friendly. I'm not sure about the names, though
+:).
+
+This patch is against 2.6, I can easily make for 2.4 as well if there
+is an interest.
+
+Please note, I'm not proposing _removing_ current "mfdcr/mtdcr"
+macros, they have their use. These "indirect" versions can be used in
+some drivers to get more clean and readable code.
+
+Comments, suggestions are welcome.
+
+Thanks,
+Eugene
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
