@@ -1,61 +1,46 @@
-Message-Id: <200101041317.NAA24882@hyperion.valhalla.net>
-Date: Thu, 04 Jan 2001 13:17:11 +0000
-Subject: Re: problems when recompiling dmasound modules
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-CC: "Michel Ddnzer" <michdaen@iiic.ethz.ch>, linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="ISO-8859-1"
+Message-ID: <3A54BBE7.27A35C8F@mvista.com>
+Date: Thu, 04 Jan 2001 13:07:35 -0500
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
+To: Gary Thomas <gthomas@redhat.com>
+CC: Rolf Liu <rolfl@sc.mcel.mot.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: separate kernel as code segment and data segment for linux p
+References: <XFMail.20010103201404.gthomas@redhat.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Jan 4, 2001, Geert Uytterhoeven wrote:
-> On Thu, 4 Jan 2001, Iain Sandoe wrote:
->> > Whenever I rebuild my linux-pmac-devel tree when the kernel version changed
-I
->> > get bitten by this:
->> > The sound modules don't get rebuilt so their version doesn't match the
-kernel
->> > version and they can't be insmoded.
-[...]
->> and viola!
->> it seemed to work as before...
->>
->> (so maybe that wasn't what you were saying at all ;-)
->
-> Real men
-heeeey.... ;-)
->don't have the time to do `make mrproper' and `make menuconfig' every
-> time the kernel changed,
+Gary Thomas wrote:
 
-true enough - although for those of us using rsync (even when doing your cp
--rl method for maintaining trees) it often takes less time than figuring out
-which changes to options depend on which *when the version changes*.
+> This method is called XIP (for execute in place) and is available on
+> some other architectures.  I don't know what it would take for the PPC,
 
-(and, OK, I don't often hand-edit .config - but every now and then ;-)....
+We have it running on a couple of MPC8xx systems.  It requires some
+careful memory mapping of the rom and the kernel, but almost no
+code changes in the kernel.  Lots of hacking in the vmlinux.lds file :-).
+It is only XIP for the kernel, not any applications.
 
-> so they rely on `make oldconfig' and `make dep'
-> instead...
+One cool performance hack it allows on the MPC8xx is using a
+dedicated 8M TLB entry to map the kernel text, so no TLB misses when
+running in the kernel (although, no one should be running in the
+kernel anyway :-).
 
-vi Makefile, change EXTRAVERSION to append -ids (my usual kinda practice)...
+I don't understand the cost tradeoff, but I have been told that in
+high volume consumer products that can use a masked rom it is actually
+less expensive than RAM.  You can also put lots of the filesystem
+in there as well.  In one case it saved just enough ram that the
+product didn't have to include the next larger increment.  Pennies
+counted.
 
-make oldconfig dep vmlinux modules
+I have not yet found a way to make this build "automatically".  You
+need some addressing knowledge prior to building the kernel, then
+some "hand waving" magic you manually code into 'head.S', then you
+can make vmlinux.  Once I am able to simply set some configuration
+variables and 'make romxip', I'll check it into the mainstream
+kernel sources.
 
- - builds dmasound_core & dmasound_awacs
 
-make_install creates a new /lib/modules/2.4.0-test13-pre3-ids and the
-modules appear to be installed...
-
-so... it seems to work for me.
-
-> Sorry Michel, no clue...
-
-IIRC there was, about 8 months ago, a problem with modversions.h
-dependencies in the dmasound driver...  it doesn't seem to be there in the
-set of code I just pulled.
-
-so... am I still missing the problem?
-Iain.
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
