@@ -1,33 +1,29 @@
-Subject: Re: [PATCH] Take two of the new serial uart driver.
-From: David Woodhouse <dwmw2@infradead.org>
-To: Pantelis Antoniou <panto@intracom.gr>
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	Kumar Gala <kumar.gala@motorola.com>,
-	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <40BF3206.8030705@intracom.gr>
-References: <40BF3206.8030705@intracom.gr>
-Content-Type: text/plain
-Message-Id: <1086426744.4588.121.camel@imladris.demon.co.uk>
-Mime-Version: 1.0
-Date: Sat, 05 Jun 2004 10:12:24 +0100
+From: bharat <bharat@coraltele.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: regarding ld.so.preloads,ld.so.cache
+Date: Sat, 5 Jun 2004 16:25:08 +0530
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-Id: <28007367.1086432866812.JavaMail.administrator@RnDserver>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, 2004-06-03 at 17:13 +0300, Pantelis Antoniou wrote:
-> Hi
->
-> The following patch updates the new CPM1/CPM2 uart driver.
+hello everyone
+                    i am using Hardhat embedded linux for my customerized
+board everything went fine till th dhell init as soon as the init is called
+the control starts looking for ld.so.preloads,ld.so.cache and then after
+loading  some files from NFS mounted  file sytem from server this goes hangs
+i am looking for an answer since last three days and it is driven me mad
+please help me
+bharat
 
-It seems to lose queued characters from the kernel output when userspace
-/dev/console is first opened. Should you drain the FIFO before resetting
-the hardware on open? Or indeed refrain from resetting the hardware if
-you're not actually changing anything?
 
-This is with console on ttyCPM0 == SMC1. SysRq is also non-functional.
 
---
-dwmw2
+!-- Virus-Free Mail Using PostMaster Enterprise AvAc & QuickHeal Engine --!
+
+-----------------------------------
+Coral Telecom Limited, Noida, India
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
