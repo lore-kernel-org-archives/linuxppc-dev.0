@@ -1,20 +1,18 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F3BA82BDB5
+Return-Path: <kumar.gala@freescale.com>
+Received: from motgate7.mot.com (motgate7.mot.com [129.188.136.7])
+	by ozlabs.org (Postfix) with ESMTP id CE88D2BDB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 Nov 2004 06:51:53 +1100 (EST)
-In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B06DBC9@ismail.innsys.innovsys.com>
-References: <DCEAAC0833DD314AB0B58112AD99B93B06DBC9@ismail.innsys.innovsys.com>
+	Tue, 23 Nov 2004 09:53:31 +1100 (EST)
+In-Reply-To: <8E5ACAE05E6B9E44A2903C693A5D4E8A023EC8C0@hqemmail02.nvidia.com>
+References: <8E5ACAE05E6B9E44A2903C693A5D4E8A023EC8C0@hqemmail02.nvidia.com>
 Mime-Version: 1.0 (Apple Message framework v619)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <51EED890-3CC0-11D9-8C5A-003065F9B7DC@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Mon, 22 Nov 2004 14:54:29 -0500
-To: "Rune Torgersen" <runet@innovsys.com>
+Message-Id: <4F87E4F8-3CD9-11D9-B55F-000393DBC2E8@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Mon, 22 Nov 2004 16:53:22 -0600
+To: "Ratin Kumar" <RKumar@nvidia.com>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC82xx -- DPRAM1
+Subject: Re: (no subject)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,19 +23,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Ratin,
 
-On Nov 19, 2004, at 9:25 AM, Rune Torgersen wrote:
+I would suggest looking at Dan Kegel's crosstool @ 
+http://www.kegel.com/crosstool/.  Very helpful in pairing various parts 
+of the GNU toolchain together to get a working version.  For MPC5200 
+you want the ppc750 build.
 
-> Send a patch to fix this in the driver. I think most people on this 
-> list
-> would like the seriaql drivers to be totally independent of the
-> bootloader (no matter what it is).
+- kumar
 
-The serial driver is totally independent of the bootloader.
-It configures the SMC from scratch and assumes nothing of
-the bootloader.  However, if the bootloader configures itself
-as Linux does, then other functions like early kgdb over
-serial port work properly.
+On Nov 22, 2004, at 1:23 PM, Ratin Kumar wrote:
 
-
-	-- Dan
+> Hi,
+>
+> I am trying to build a toolchain for MPC5200 using gcc 3.4.1.
+>
+> The bootstrap compiler build fails with a complain that it could not 
+> locate "signal.h". This happens even though I have the kernel headers 
+> (with signal.h) installed. A quick search on google shows that some 
+> other people have also run into this issue, although no 
+> patches/sloution appears. Any ideas??
+>
+> Also, has anyone tried using 3.4.1 compiler for kernel 2.4.23 ????
+>
+> What are the matching glibc and binutils to use with 3.4.1?? Any 
+> patches??
+>
+> Thanks,
+>  Rk.
+> <ATT949193.txt>
