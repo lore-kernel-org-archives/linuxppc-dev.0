@@ -1,66 +1,77 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Reply-To: <govindan@india.tejasnetworks.com>
-From: "Govindan" <govindan@india.tejasnetworks.com>
-To: <svacca@valcom.com>,
-	"LinuxEmbeddedMailList (E-mail)" <linuxppc-embedded@lists.linuxppc.org>,
-	<govindan@tejasnetworks.com>
-Subject: RE: Execute Reset via CheckStop approach
-Date: Wed, 24 Jul 2002 10:49:39 +0530
-Message-ID: <NEBBINFJMPEFJBMDGBGMAEOGFAAA.govindan@india.tejasnetworks.com>
+Message-ID: <3D3E597E.9050305@sysgo.de>
+Date: Wed, 24 Jul 2002 09:38:38 +0200
+From: Pavel Bartusek <pba@sysgo.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-In-Reply-To: <01C2322D.B3A24AF0.svacca@valcom.com>
+To: Jean-Denis Boyer <jdboyer@mediatrix.com>,
+	Dan Malek <dan@embeddededge.com>,
+	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: MDIO clock speed computation
+References: <2702075D4DE2B043BF5EB82E9CFAD45B093B12@mail1.mediatrix.com>
+Content-Type: multipart/mixed;
+ boundary="------------080400020805010109070500"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Here is something we found working:
--Govindan
+This is a multi-part message in MIME format.
+--------------080400020805010109070500
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-#include <asm/8xx_immap.h>
-#include <asm/mpc8xx.h>
+Jean-Denis Boyer wrote:
 
-#define IMAP_ADDR         ((uint)0xff000000)        /* Internal memory map
-address for our board. */
-#define PLPRCR_CSR      0x00000080      /* CheskStop Reset value */
-int csreset (void)
+>>Will this work for all cases? :
+>>
+>>((((bd->bi_intfreq + 4999999) / 2500000) / 2 ) & 0x3F ) << 1;
+>>
+>
+>I hope so ;-)
+>
+Because hoping is not enough, I wrote a little brute force program for testing (see attachment).
+The algorithm above is OK :-) It produces MDIO frequencies from 1.875MHz to 2.5 MHz.
+
+BTW: Wolfgang, similar problem is in the PPCboot.
+
+----------------------------------------------------------------------
+|                          Pavel Bartusek                            |
+|                                                                    |
+| Sysgo RTS GmbH,                     phone: +49 (0) 6136 9948-722   |
+| Am Pfaffenstein 14                  fax:   +49 (0) 6136 9948-10    |
+| D-55270 Klein-Winternheim           email: pba@sysgo.de            |
+| Germany                                                            |
+|                                                                    |
+|       http://www.sysgo.de           http://www.elinos.com          |
+|                                                                    |
+----------------------------------------------------------------------
+
+
+
+--------------080400020805010109070500
+Content-Type: text/plain;
+ name="fec_speed.test.c"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="fec_speed.test.c"
+
+#include <stdio.h>
+#include <limits.h>
+
+#define ALGORITHM ((((bi_intfreq + 4999999) / 2500000) / 2 ) & 0x3F ) << 1
+
+int main(void)
 {
-      unsigned int msr,addr;
+unsigned long bi_intfreq, mdio_clock_min=INT_MAX, mdio_clock_max=0, mii_speed,mii_speed_reg;
 
-      ((volatile immap_t *)IMAP_ADDR)->im_clkrst.car_plprcr |= PLPRCR_CSR;
-      /* Interrupts and MMU off */
-      asm("mtspr 81,0");
-      asm("mfmsr %0": "=r"(msr));
-      msr &= ~0x1030;
-      asm ("mtmsr %0" : /* no output */ : "r" (msr));
-
-      addr = 0x10000000;  // This should be a non-accessible memory
-location.
-      ((void (*)(void ))addr)();
-        return 0;
+for(bi_intfreq=10000000; bi_intfreq<200000000; bi_intfreq++) {
+ mii_speed_reg = ALGORITHM;
+ mii_speed = bi_intfreq / (mii_speed_reg & ~1);
+ if (mii_speed > mdio_clock_max) mdio_clock_max = mii_speed;
+ if (mii_speed < mdio_clock_min) mdio_clock_min = mii_speed;
+}
+ printf("MDIO clocks are from %ldHz to %ldHz\n",mdio_clock_min,mdio_clock_max);
 }
 
------Original Message-----
-From: owner-linuxppc-embedded@lists.linuxppc.org
-[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Steven
-Vacca
-Sent: Tuesday, July 23, 2002 7:16 PM
-To: LinuxEmbeddedMailList (E-mail); govindan@tejasnetworks.com
-Subject: Execute Reset via CheckStop approach
-
-
-
-I would like to execute an Internal Hard Reset on an MPC860T
-bd. using the Checkstop Reset approach.
-
-Does anyone have some code that I could utilize to implement
-this?
-
-Thanks,
-
-ShutEye Thinkin
-Valcom, Inc.
+--------------080400020805010109070500--
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
