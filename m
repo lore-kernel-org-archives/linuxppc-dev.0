@@ -1,51 +1,57 @@
-From: "Georg Klug" <gklug@giga-stream.de>
-To: "Jis Joy" <jisjoy@procsys.com>,
-	"Ppc Embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: AW: Booting Linux on Custom PowerPC 405GP board
-Date: Fri, 5 Jul 2002 10:25:46 +0200
-Message-ID: <FFECLICFNBJAHONLGAKMCEDHCFAA.gklug@giga-stream.de>
+Message-ID: <3D255F86.4060206@cambridgebroadband.com>
+Date: Fri, 05 Jul 2002 09:57:42 +0100
+From: Alex Zeffertt <ajz@cambridgebroadband.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <3D252776.60ACBA64@procsys.com>
+To: "Kappl, Hannes" <hkappl@harris.com>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: set a limit for the cache
+References: <8D4C69676E66D511A1CB00508BBBB1922C4173@ranmx1.ran.harris.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Jis,
+Kappl, Hannes wrote:
 
-> We got a custom PowerPC 405GP board, we want to boot Linux on that.
+>  Hi,
 >
-> Board limitations are:
-> 1. There is no network interface, only serial port. The kernel image has
+>  I am using kernel 2.4.4. I have 32M RAM with a 10M Ramdisk. Now my problem is
+> that
+>  the Ramdisk is cached in the RAM(4 - 8M!). Is it possible to set the size of
+> the
+>  cache to a limit or to disable the cache complete?
 >
-> to be  downloaded through the serial port. (network interface will be
-> added
-> to this card in future.)
-> 2. The monitor code is also custom one, its no a Walnut ROM monitor.
+>
+>
+>    7:13pm  up 34 min,  0 users,  load average: 0.12, 0.33, 0.30
+>  22 processes: 21 sleeping, 1 running, 0 zombie, 0 stopped
+>  CPU states:  0.9% user,  4.3% system,  0.0% nice, 94.7% idle
+>  Mem:   30612K av,   9216K used,  21396K free,   9904K shrd,      0K buff
+>  Swap:      0K av,      0K used,      0K free                  5392K cached
+>
+>   PID USER     PRI  NI  SIZE  RSS SHARE STAT  LIB %CPU %MEM   TIME COMMAND
+>   107 root      14   0   836  836   644 R       0  4.5  2.7   0:00 top
+>
 
-Did you think about using PPCBOOT? This works really perfect with the Linux
-kernel.
 
-> I found out that the boot loader files are in
-> /src/linux/arch/ppc/boot/tree directory (Am I  correct ??).
-> What are the changes I have to make to boot linux.
 
-The code from that standard kernel directory is only packaged arounfd the real
-kernel
-vmlinux.
-Even if you don't want to use PPCBOOT, read its documentation. Then you get
-good information on how the booting works.
+I'm confused, top says that you have 21.4M free.  If your 10M ramdisk was being cached in 4M of RAM
+then surely you'd have at most (32-14)=18M free?
 
-> Will it start booting, if I download the
-> /src/linux/arch/ppc/boot/image/vmlinux to the 0x00000000 location and
-> jump to that location ?? (the image is compiled for 405GP processor).
+While we're on the topic of RAM usage, can anyone tell me how you find out how the shrd memory (see
+top output above) is broken down into seperate libraries.
 
-Very unlikely, if you custom monitor was not designed for that. Some low level
-initializations are not done in the kernel. Again the documentation of PPCBOOT
-would give you a hint on what is possibly missing.
+Thanks,
 
-Georg
+Alex
+
+>
+>  best regard
+>  Hannes
+>
+>
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
