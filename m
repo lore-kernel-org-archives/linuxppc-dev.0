@@ -1,42 +1,49 @@
-Message-Id: <20000422140246.Postino-006830@smtp01.highway.ne.jp>
-Date: Sat, 22 Apr 2000 14:02:46 +0900
-To: rshawppc@yahoo.com
-CC: linuxppc-dev@lists.linuxppc.org
-From: Kaoru Fukui <k_fukui@highway.ne.jp>
-Subject: Re: Re : does'nt work BWG3v2's ide
-In-Reply-To: <3900AA7F.A1AA19EE@home.com>
-References: <38ffabf0395f2339@antholoma.wanadoo.fr> (added by
- antholoma.wanadoo.fr) <3900AA7F.A1AA19EE@home.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Date: Sat, 22 Apr 2000 02:00:27 -0500
+Subject: yaboot FAQ in-progress
+From: Eric Peden <ericpeden@homemail.com>
+To: LinuxPPC Dev <linuxppc-dev@lists.linuxppc.org>
+Message-ID: <B526B83B.3B50%ericpeden@homemail.com>
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-From: Robert Shaw <rshaw-az@home.com>
-To: Florent BOUDET <flobo@iname.com>
-Subject: Re: Re : does'nt work BWG3v2's ide
-Date: Fri, 21 Apr 2000 12:22:40 -0700
-CC: Kaoru Fukui <k_fukui@highway.ne.jp>, linuxppc-dev@lists.linuxppc.org
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-> Florent BOUDET wrote:
->
-> > Has anyone good ide probes with CMD646 ?
-> >
->
-> No, I get the same problems. I can only get the stable tree to run on my
-Rev.1 B&W
-> G3. I always get IDE problems with the 2.3.x series kernel. I'm glad it's
-not me,
-> but I still have no idea how to get it working right .... :P
+After seeing a definite need for one, I've started working on a yaboot FAQ.
+Right now, it's very, very far from complete, but at least one's underway,
+right? ;) I currently use yaboot on a G4, with yaboot itself stored on an
+external SCSI device, and the procedure for setting things up is a little
+more convoluted than it is on most "standard" systems. I need help from some
+people that have set it up on one of these standard [read: non SCSI-card]
+systems. Specifically, what procedure did you have to follow to designate
+the boot device; how did you determine the boot device's OF alias; how is
+the drive connected to your Mac; stuff like that. If you can help out,
+please let me know, and of course you'll be given due credit in the FAQ. ;)
+I'd also like to hear from people who have set up a Zip drive as their boot
+device, as this seems to be a common request.
 
+In addition, I'd love to put even this preliminary version on the web for
+people to begin looking over and making suggestions, but I'm in a bit of an
+argument with my ISP right now over whether or not I should have a personal
+webspace, and as such am currently unable to make the document publicly
+available (I'm avoiding "free" sites that display banner ads as a matter of
+principle). If someone would like to donate a (very) small amount of
+webspace during these early phases of creation, I'd very much appreciate it.
+Please contact me if you're interested.
 
-thanks,reply
+Waitin' for those mails to start pourin' in. ;)
 
-I tried to change cmd646 driver from stable kernel.
-I could compile it, but the result was the same.
+- --eric
+-----BEGIN PGP SIGNATURE-----
+Version: PGPfreeware 6.5.2 for non-commercial use <http://www.pgp.com>
 
-Kaoru
+iQA/AwUBOQFN+6TQUBxXFpjFEQL3MACdGluftU9RqThuqaSqtRqydXUcvr8AoIwC
+WPeE/oEqN7T33iI4WM5w4hEm
+=Dkoh
+-----END PGP SIGNATURE-----
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
