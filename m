@@ -1,54 +1,172 @@
-Message-Id: <v03110702b399351bdfdd@[209.183.128.103]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Fri, 25 Jun 1999 09:35:48 -0400
-To: Paul.Mackerras@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org,
-        "Conrad M. Hirano" <placebo2@pobox.com>
-From: "Kevin B. Hendricks" <kbhend@business.wm.edu>
-Subject: Machine Check in Kernel Mode with Paul's 2.2.10 on B+W G3
+Message-ID: <3773907C.D0EC7644@sei.co.kr>
+Date: Fri, 25 Jun 1999 23:21:49 +0900
+From: "KiPyo Ryu" <kpryu@sei.co.kr>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Help! How to install linux on MBX860 IDE hard disk?
+Content-Type: text/plain; charset=EUC-KR
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Conrad,
+Hello all,
 
->>  hda: hda timeout waiting for DMA
+I have a MBX860 with 32MB RAM, a 4GB IDE hard disk and a floppy.
+I would like to install linux on a MBX860 hard disk.
+I have some question to install linux on a MBX860 IDE hard disk.
 
->>Machine check in kernel mode
->>Caused by (from msr): regs c01a4c18 Unknown values in msr
-
->>Here are some register values:
->>   NIP: C00BDE58  LR: C00BDE14  MSR: 00009030  Trap: 0200
->>Task= c01a2f58[0] 'swapper' mm->pgd
->>Last syscall: 112
-
->>Backtrace: C00BDE14 COO13C04 C001C850 C0003B68 C001F460 C00069F4 ...
-
->>There does not seem to be anything unusual until the DMA timeout message
->>waiting for hda.
+I downloaded the following files from
+ftp://linuxppc.cs.nmt.edu/pub/linuxppc/embedded/
+mbxnotes, embedded_notes, mbxroot.full.tgz, zImage.mbx-2.2.0-pre6,
+embedded-2.2p7.tar.gz
 
 
->I've run into the same problem with my B&W G3.  The only workaround so
->far is it is to plug the hard drive into the other IDE channel on the
->motherboard.
->
->Earlier in the boot sequence, you'll see that hda comes up in DMA mode.
->After moving the cable to the other IDE channel, you'll see that hda then
->comes up in PIO mode, thus avoiding the later DMA timeout.
->
->Conrad Hirano
+1) I have untarred 'mbxroot.full.tgz' in the /sys directory.
+2) I have made arch/ppc/defconfig file by using configuration of the
+mbxnotes.
+   I don't know how to make it exactly.
+3) I have compiled on a PowerPC Linux.
 
-I know what DMA mode is and how it works, but I don't know what PIO mode
-is?  What impact on MacOS performance will moving the cable have?  Isn't
-DMA mode the fastest way to transfer blocks of data to and from memory?
-Will PIO mode have much of a performance penalty (I have to use this
-machine under MacOS as much or more than I do under LinuxPPC).
+4) My server(PowerPC Host) configuration for booting is as follows:
+    -> /etc/inetd.conf
+===========================================================================
 
-Thanks,
+    tftp   dgram udp wait root /usr/sbin/tcpd    in.tftpd /sys/mbxroot
+    bootps dgram udp wait root /usr/sbin/tcpd    bootpd
+===========================================================================
 
-Kevin
+    -> /etc/exports ==> I don't know how to make it exactly.
+===========================================================================
 
+    /sys/mbxroot
+===========================================================================
 
+    -> /etc/services
+===========================================================================
+
+    bootps    67/udp            # bootp server
+    bootpc    68/udp            # bootp client
+    tftp      69/udp            # tftp client
+===========================================================================
+
+    -> /etc/bootptab ==> I don't know how to make it exactly.
+===========================================================================
+
+# bootptab file
+#
+.default:\
+ :sm=255.255.255.0:\
+ :ht=ethernet:\
+ :bf=/sys/mbxroot/zImage:
+ :ha=08003e25cb18:ip=210.96.178.73:tc=.default:hd=/sys/mbxroot:
+===========================================================================
+
+    -> /etc/fstab
+===========================================================================
+
+/dev/sda1               /                       ext2    defaults 1 1
+/dev/sda3               /home                   ext2    defaults 1 2
+/dev/sda2               swap                    swap    defaults 0 0
+/dev/fd0                /mnt/floppy             ext2    noauto   0 0
+none                    /proc                   proc    defaults 0 0
+===========================================================================
+
+    -> /etc/mtab
+===========================================================================
+
+/dev/sda1 / ext2 rw 0 0
+none /proc proc rw 0 0
+/dev/sda3 /home ext2 rw 0 0
+===========================================================================
+
+4) I have booted with the created zImage via nfs.
+    Dump message is as follows :
+    Please let me know what's wrong in this procedure.
+
+===========================================================================
+
+EPPC-Bug>pl 20 0
+Network Booting from: MPC860, Controller 20, Device 0
+Loading: /sys/mbxroot/zImage
+
+Client IP Address      = 210.96.178.73
+Server IP Address      = 210.96.178.72
+Gateway IP Address     = 0.0.0.0
+Subnet IP Address Mask = 255.255.255.0
+Boot File Name         = /sys/mbxroot/zImage
+Argument File Name     =
+
+Bytes Received =&460572, Bytes Loaded =&460572
+Bytes/Second   =&230286, Elapsed Time =2 Second(s)
+loaded at:     00210000 0030E42C
+relocated to:  00100000 001FE42C
+board data at: 023F4558 023F4580
+relocated to:  00200100 00200128
+zimage at:     00216000 0026F092
+avail ram:     0030E42C 00600000
+
+Linux/PPC load: root=/dev/nfs nfsaddrs=210.96.178.73:210.96.178.72
+nfsroot=210.9
+6.178.72:/sys/mbxroot hdb=noprobe hda=8944,15,63
+Uncompressing Linux...done.
+Now booting the kernel
+Linux version 2.2.0-pre7 (root@linuxppc.sei.co.kr) (gcc version
+egcs-2.90.25 980
+302 (egcs-1.0.2 prerelease)) #1 Mon May 17 21:08:28 KST 1999
+Boot arguments: root=/dev/nfs nfsaddrs=210.96.178.73:210.96.178.72
+nfsroot=210.9
+6.178.72:/sys/mbxroot hdb=noprobe hda=8944,15,63
+time_init: decrementer frequency = 150000000/60
+ide_setup: hdb=noprobe
+ide_setup: hda=8944,15,63
+Calibrating delay loop... 39.63 BogoMIPS
+Memory: 35400k available (652k kernel code, 772k data, 40k init)
+[c0000000,c2400
+000]
+POSIX conformance testing by UNIFIX
+PCI: Probing PCI hardware
+Linux NET4.0 for Linux 2.2
+Based upon Swansea University Computer Society NET3.039
+NET4: Unix domain sockets 1.0 for Linux NET4.0.
+NET4: Linux TCP/IP 1.0 for NET4.0
+IP Protocols: ICMP, UDP, TCP
+Starting kswapd v 1.5
+Serial driver version 4.27 with no serial options enabled
+ttyS00 at 0x03f8 (irq = 4) is a 16550A
+ttyS01 at 0x02f8 (irq = 3) is a 16550A
+CPM UART driver version 0.02
+ttyS00 at 0x0280 is a SMC
+ttyS01 at 0x0380 is a SMC
+ttyS02 at 0x0100 is a SCC
+ttyS03 at 0x0200 is a SCC
+RAM disk driver initialized:  16 RAM disks of 4096K size
+hda: no response (status = 0xec)
+hda: non-IDE drive, CHS=8944/15/63
+ide0 at 0x000-0x007,0x000 on irq 30
+Sizeof nbd_request needs to be 28 in order to work!
+CPM ENET Version 0.1, 08:00:3e:25:cb:18
+IP-Config: Guessing netmask 255.255.255.0
+Partition check:
+Looking up port of RPC 100003/2 on 210.96.178.72
+Looking up port of RPC 100005/1 on 210.96.178.72
+VFS: Mounted root (NFS filesystem).
+Freeing unused kernel memory: 40k init 28k prep 4k pmac
+bash# /sbin/fdisk /dev/hda
+hda: driver not present
+hda: driver not present
+
+Unable to open /dev/hda
+bash#
+===========================================================================
+
+How come the above dump message of 'Unable to open /dev/hda' happen?
+
+Can anybody see what I'm doing wrong, or at least give me a few hints
+where to look?
+
+Thank you for your help.
+
+Kipyo Ryu.
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
