@@ -1,44 +1,41 @@
-Message-ID: <3B956C82.D2D7E9C6@mvista.com>
-Date: Tue, 04 Sep 2001 20:06:26 -0400
-From: Dan Malek <dan@mvista.com>
+Date: Tue, 4 Sep 2001 17:38:06 -0700 (PDT)
+From: John Tyner <jtyner@cs.ucr.edu>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: can't compile linuxppc_2_4_devel for 405gp
+Message-ID: <Pine.LNX.4.30.0109041733050.15177-100000@hill.cs.ucr.edu>
 MIME-Version: 1.0
-To: andrew may <acmay@acmay.homeip.net>
-Cc: John Tyner <jtyner@cs.ucr.edu>,
-	linuxppc-commit@source.mvista.com,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ppc405 enet changes (fwd)
-References: <Pine.LNX.4.30.0109031513110.21186-200000@hill.cs.ucr.edu> <3B9557CA.D76C70E2@mvista.com> <20010904152608.B14548@ecam.san.rr.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-andrew may wrote:
+I'm trying to compile the kernel for some 405gp's we have here, and the
+make seems to fail at/near the last step.
 
-> Well we don't have the hardware to do multiple devices. I just know
-> that is possible in the future. I would prefer to go through the
-> pain of removing the static's now rather than later.
+I'm using a working .config from our 2.4.6 version. The only changes I
+made to the new kernel were to change the Makefile to set ARCH = ppc and to
+point CROSS_COMPILE at our cross compiler which is hhl 2.0.
 
-Ummm...OK, I guess.
+Here is the last bit of the error:
 
+/opt/hardhat/devkit/ppc/405/bin/ppc_405-objcopy -O elf32-powerpc -R
+.comment \
+	--add-section=image=../images/vmlinux.gz \
+	zvmlinux.tmp zvmlinux
+rm -f zvmlinux.tmp
+../utils/mktree zvmlinux ../images/zImage.treeboot
+zvmlinux is not an ELF image
+make[2]: *** [zImage-TREE] Error 4
+make[2]: Leaving directory `/local/home/jtyner/linuxppc_2_4_devel/arch/ppc/boot/simple'
+make[1]: *** [zImage] Error 2
+make[1]: Leaving directory `/local/home/jtyner/linuxppc_2_4_devel/arch/ppc/boot'
+make: *** [zImage] Error 2
 
-> No I don't expect the patch to go in quickly. I just wanted John
-> to start the process off.
+Any help is appreciated. Thanks.
 
-OK.  Once I actually get the 2_4_devel kernel booting and running with
-some sense of reliability, I'll add the patch and give it a go.
+--
+John Tyner
+jtyner@cs.ucr.edu
 
-> So if you want to point to specific code that you don't like let
-> us know.
-
-Yeah, all of the linux version stuff.  It is nice to get patches against
-the current 2_4 or 2_4_devel that are known to be tested and working.
-If you can't test it, don't expect a quick turn around because someone
-else (like me :-) has to spend the time doing it.
-
-Thanks.
-
-
-	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
