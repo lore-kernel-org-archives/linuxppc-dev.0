@@ -1,50 +1,73 @@
-Date: Sun, 30 Apr 2000 16:56:59 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Rolf Liu <rolfl@sc23.sc.mcel.mot.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: more about  Who ever encounter such an so strange problem about
- compiling ?
-In-Reply-To: <018201bfb26b$2409f3a0$bf0102c8@dell191.sc.mcel.mot.com>
-Message-ID: <Pine.LNX.4.10.10004301650550.28269-100000@opal.biophys.uni-duesseldorf.de>
+From: ku2911@363.net
+Message-ID: <001e01beca40$ab7ac4e0$57c809c0@nt4srv87>
+Reply-To: <ku2911@363.net>
+To: "linuxppc-em" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RAMDISK uncompress problem.
+Date: Sat, 10 Jul 1999 03:24:16 +0800
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Sender: owner-linuxppc-dev@lists.linuxppc.org
-List-Id: <linuxppc-dev@lists.linuxppc.org>
+Content-Type: text/plain;
+	charset="gb2312"
+Sender: owner-linuxppc-embedded@lists.linuxppc.org
+List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> >_8xx -fsigned-char -msoft-float  -pipe -fno-builtin -ffixed-r2 -Wno-uniniti
-> a
-> >lize
-> >d -mmultiple -mstring -D__ASSEMBLY__ -c romsys/start.S -o romsys/start.o
-> >
-> >../usr/include/asm/fads.h: Assembler messages:
-> >../usr/include/asm/fads.h:14: Error: Unrecognized opcode: `typedef'
-> >../usr/include/asm/fads.h:15: Error: Unrecognized opcode: `unsigned'
-> >../usr/include/asm/fads.h:16: Error: Unrecognized opcode: `unsigned'
-> >../usr/include/asm/fads.h:17: Error: Unrecognized opcode: `unsigned'
-> >../usr/include/asm/fads.h:18: Error: Unrecognized opcode: `unsigned'
-> >../usr/include/asm/fads.h:19: Error: Unrecognized opcode: `unsigned'
-> >../usr/include/asm/fads.h:20: Error: Rest of line ignored. First ignored
-> >charac.
-> >../usr/include/asm/fads.h:22: Error: Unrecognized opcode: `extern'
->
-> the problem seems the as is trying to process the C source code ,how this
-> can be true?
-> I think the gcc will first call the c compiler to translate the C source
-> code into assembly
-> code .
-> how this can be true ?
+hello:
+    i got a problem like this:
 
-The header file you include isn't usually included by assembly code, only
-by C code. The C compiler will first preprocess, but including fads.h in
-your assembly file results in feeding the typedef and extern stuff
-straight to as. These declatations are C code, so as is right to complain.
+loaded at:     00100000 002C5AD0
+board data at: 001001C4 001001E0
+relocated to:  00200100 0020011C
+zimage at:     0010B1F0 0013A3F3
+initrd at:     0013A400 003116E2
+avail ram:     00312000 01000000
 
-Include the C code in #ifndef __ASSEMBLY__ ... #endif (that's how other
-headers that happen to get included from both assembly and C code handle
-it).
+Linux/PPC load:
+Uncompressing Linux...done.
+Now booting the kernel
+Linux version 2.2.13 (root@bigeyes) (gcc version 2.95.2 19991024 (release)) #110
+ Tue Apr 18 15:35:59 EDT 2000
+Boot arguments: root=/dev/ram
+time_init: decrementer frequency = 90000000/60
+Calibrating delay loop... 23.81 BogoMIPS
+Memory: 13768k available (356k kernel code, 352k data, 20k init) [c0000000,c1000
+000]
+DENTRY hash table entries: 262144 (order: 9, 2097152 bytes)
+Buffer-cache hash table entries: 32768 (order: 5, 131072 bytes)
+Page-cache hash table entries: 4096 (order: 2, 16384 bytes)
+POSIX conformance testing by UNIFIX
+Linux NET4.0 for Linux 2.2
+Based upon Swansea University Computer Society NET3.039
+Starting kswapd v 1.5
+CPM UART driver version 0.02
+ttyS00 at 0x0280 is a SMC
+ttyS01 at 0x0100 is a SCC
+ttyS02 at 0x0200 is a SCC
+RAM disk driver initialized:  16 RAM disks of 4096K size
+RAMDISK: Compressed image found at block 0
+crc error!orig_crc=0xe211d8c1,CRC_VALUE=0x40e28495
+length error! orig_len=0x400000,bytes_out=0x4000d5
 
-	Michael
+i added some prink() for debug ... ;)
+my ramdisk.image.gz is broken?
+but i can mount(-o loop) it in my host(i386-linux) after gunziped.
+
+and how to creat a correct ramdisk image?
+    using following step?
+        mkfs -t ext2 /dev/loop0
+        mount /dev/loop0 /mnt/rd
+                mkdir /mnt/rd/bin  /dev ...
+                cp bash etc. to /mnt/rd/bin ...
+                 mknod ....
+        dd if=/dev/loop0 of=./ramdisk.image
+        gzip -9 ramdisk.image
+
+what can i do?
+
+thanks for any help.
+
+b.r.
+john zhan.
+hacking time.
 
 
-** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
+** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
