@@ -1,63 +1,65 @@
-Message-Id: <200008081137.MAA10748@hyperion.valhalla.net>
-Date: Tue, 08 Aug 2000 12:35:10 +0100
-Subject: Re: rtc again...
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Gabriel Paubert <paubert@iram.es>,
-        Geert Uytterhoeven <geert@linux-m68k.org>
-CC: benjamin herrenschmidt <bh40@calva.net>,
-        martin costabel <costabel@wanadoo.fr>, linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Date: Tue, 8 Aug 2000 14:35:19 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Josh Huber <huber@mclx.com>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: [Dri-devel] Re: Kind of success! (r128 on PPC (Re: LinuxPPC X
+ Server))
+In-Reply-To: <20000807093124.B248@mclx.com>
+Message-ID: <Pine.LNX.4.10.10008081433260.442-100000@cassiopeia.home>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On   Tue, Aug 8, 2000, Gabriel Paubert wrote:
-> On Fri, 4 Aug 2000, Geert Uytterhoeven wrote:
+On Mon, 7 Aug 2000, Josh Huber wrote:
+> On Mon, Aug 07, 2000 at 09:08:01AM +0200, Michel D?nzer wrote:
+> > Benjamin Herrenschmidt wrote:
+> > > The Pismo allows that by scaling the LCD, but I don't think code for that
+> > > is implemented in the XFree r128 driver (I didn't check lately).
+> >
+> > No it doesn't work, neither with aty128fb. Would that be hard to implement?
 >
->> > Actually given the problems with RTC being UTC or local time, the offset
->> > might perhaps better be setup as a kernel parameter so that th system
->> > start up in a known good state. It seems that it is in RAM for Macs, but
->> > what about other machines (I have no problems since all my machines are
->> > UTC and I simply refuse to use an OS which requires anything else) ?
->>
->> Why do you want to handle the offset in the kernel???
->>
->> Any decent distro (e.g. Debian) allows to configure the time system for a
->> hardware clock running in either UTC or local time, so the correction will be
->> done on boot up.
->>
+> If it's anything like the mach 64, it shouldn't be hard to implement
+> at all.  you just have to program 3 registers.
 >
-> I think there is some misunderstanding here. I don't want to handle the
-> offset in the kernel, with one possible exception: when reading the
-> RTC for the first time to initialize xtime. Getting timestamps right as early
-> as possible might be important in some cases, and it's not a big deal
-> since the code to do this is small and thrown away anyway.
+> Speaking of this, I'm having trouble with the stretching setup for my
+> wallstreet.  It works fine in console mode, but something in the X
+> server is messing with the chip setup in a way to screw up the
+> rendering.  After playing with it I was able to get proper output:
 >
-> Oh and I can't remember whether the clock or hwclock command ever worked
-> on my machines. I think hwclock did once upon a time; life is so much
-> simpler with NTP anyway (but it is run quite late in the boot process,
-> actually just before the rc.local script on most of my machines and after
-> mounting NFS file systems and starting daemons like syslogd/crond/inetd).
+> console settings:
+>     mclk = 99.844107 MHz
+>     vclk = 44.702930 MHz
+>     dsp_loop_latency = 10
+>     dsp_precision = 5
+>     dsp_xclks_per_row = 1143 => 17.859375
+>     dsp_on = 69 => 34.500000
+>     dsp_off = 1113 => 556.500000
+>
+> X (xf4.0.1) settings:
+>     mclk = 99.844107 MHz
+>     vclk = 44.702930 MHz
+>     dsp_loop_latency = 10
+>     dsp_precision = 4
+>     dsp_xclks_per_row = 1143 => 8.929688
+>     dsp_on = 103 => 25.750000
+>     dsp_off = 1119 => 279.750000
 
-I seems to me (in summary) [since I started this thread :-) ]:
+Is this XF4.0.1 in `fbdev' mode? If yes, it's a bug in the X server. Setting
+the DSP registers is part of the video mode initialization and thus is the
+sole responsability of the frame buffer device, when running in `fbdev' mode.
 
-we can:
+Gr{oetje,eeting}s,
 
-(a) Fix up time in the kernel to emulate UTC
-(b) Fix up time in the kernel to emulates Local Time
+						Geert
 
-Which (or will both) of these works with hwclock (since that is the
-mechanism at 2.4.0 ?)  and for those of us switching to-and-ffo is also
-being used at 2.2.17
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-I would like to make sure that timestamps are right during kernel boot -
-and, at the moment, when using 2.2.17 I have to 'artificially' disable rtc
-to get the correct time.
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
-For many (paid-by-the-call) telephone network users NTP is not a suitable
-option - they don't like the machine making calls without asking.
-
-Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
