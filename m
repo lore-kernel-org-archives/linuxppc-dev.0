@@ -1,87 +1,81 @@
-Message-Id: <200211061444.PAA18916@ipnmail.in2p3.fr>
-From: Xavier Grave <grave@ipno.in2p3.fr>
-To: Michel =?iso-8859-1?q?D=E4nzer?= <michel@daenzer.net>
-Subject: 3 : Try to run X11 with an Apple studio Display 17'' LCD
-Date: Wed, 6 Nov 2002 15:40:34 +0100
-Cc: linuxppc-dev@lists.linuxppc.org
+Message-ID: <20021106152213.37134.qmail@web14307.mail.yahoo.com>
+Date: Wed, 6 Nov 2002 07:22:13 -0800 (PST)
+From: "Usman S. Ansari" <uansari@yahoo.com>
+Subject: Linux Kernel Debugging
+To: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="------------Boundary-00=_MRS5UGXLCKSX8K1IFOCR"
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---------------Boundary-00=_MRS5UGXLCKSX8K1IFOCR
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+I am trying to setup Linux kernel for debugging.
 
-Re sorry I've done one more mistake...
-need to sleep ? :-(
---------------Boundary-00=_MRS5UGXLCKSX8K1IFOCR
-Content-Type: text/plain;
-  charset="iso-8859-1";
-  name="XF86Config.new"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="XF86Config.new"
+Linux is running on PPC 8xx, The most luck I have is with following setup.
 
-U2VjdGlvbiAiU2VydmVyTGF5b3V0IgoJSWRlbnRpZmllciAgICAgIlhGcmVlODYgQ29uZmlndXJl
-ZCIKCVNjcmVlbiAgICAgIDAgICJTY3JlZW4wIiAwIDAKCUlucHV0RGV2aWNlICAgICJNb3VzZTAi
-ICJDb3JlUG9pbnRlciIKCUlucHV0RGV2aWNlICAgICJLZXlib2FyZDAiICJDb3JlS2V5Ym9hcmQi
-CkVuZFNlY3Rpb24KClNlY3Rpb24gIkZpbGVzIgoJUmdiUGF0aCAgICAgICIvZXhwb3J0L2JpbjFu
-YXJ2YWwvWDExUjYvbGliL1gxMS9yZ2IiCglNb2R1bGVQYXRoICAgIi9leHBvcnQvYmluMW5hcnZh
-bC9YMTFSNi9saWIvbW9kdWxlcyIKCUZvbnRQYXRoICAgICAiL2V4cG9ydC9iaW4xbmFydmFsL1gx
-MVI2L2xpYi9YMTEvZm9udHMvbWlzYy8iCglGb250UGF0aCAgICAgIi9leHBvcnQvYmluMW5hcnZh
-bC9YMTFSNi9saWIvWDExL2ZvbnRzL1NwZWVkby8iCglGb250UGF0aCAgICAgIi9leHBvcnQvYmlu
-MW5hcnZhbC9YMTFSNi9saWIvWDExL2ZvbnRzL1R5cGUxLyIKCUZvbnRQYXRoICAgICAiL2V4cG9y
-dC9iaW4xbmFydmFsL1gxMVI2L2xpYi9YMTEvZm9udHMvQ0lELyIKCUZvbnRQYXRoICAgICAiL2V4
-cG9ydC9iaW4xbmFydmFsL1gxMVI2L2xpYi9YMTEvZm9udHMvNzVkcGkvIgoJRm9udFBhdGggICAg
-ICIvZXhwb3J0L2JpbjFuYXJ2YWwvWDExUjYvbGliL1gxMS9mb250cy8xMDBkcGkvIgpFbmRTZWN0
-aW9uCgpTZWN0aW9uICJNb2R1bGUiCglMb2FkICAiZXh0bW9kIgoJTG9hZCAgImdseCIKCUxvYWQg
-ICJkcmkiCglMb2FkICAiZGJlIgoJTG9hZCAgInJlY29yZCIKCUxvYWQgICJ4dHJhcCIKCUxvYWQg
-ICJzcGVlZG8iCglMb2FkICAidHlwZTEiCkVuZFNlY3Rpb24KClNlY3Rpb24gIklucHV0RGV2aWNl
-IgoJSWRlbnRpZmllciAgIktleWJvYXJkMCIKCURyaXZlciAgICAgICJrZXlib2FyZCIKRW5kU2Vj
-dGlvbgoKU2VjdGlvbiAiSW5wdXREZXZpY2UiCglJZGVudGlmaWVyICAiTW91c2UwIgoJRHJpdmVy
-ICAgICAgIm1vdXNlIgoJT3B0aW9uCSAgICAiUHJvdG9jb2wiICJhdXRvIgoJT3B0aW9uCSAgICAi
-RGV2aWNlIiAiL2Rldi9tb3VzZSIKRW5kU2VjdGlvbgoKU2VjdGlvbiAiTW9uaXRvciIKCUlkZW50
-aWZpZXIgICAiTW9uaXRvcjAiCglWZW5kb3JOYW1lICAgIk1vbml0b3IgVmVuZG9yIgoJTW9kZWxO
-YW1lICAgICJNb25pdG9yIE1vZGVsIgpFbmRTZWN0aW9uCgpTZWN0aW9uICJEZXZpY2UiCiAgICAg
-ICAgIyMjIEF2YWlsYWJsZSBEcml2ZXIgb3B0aW9ucyBhcmU6LQogICAgICAgICMjIyBWYWx1ZXM6
-IDxpPjogaW50ZWdlciwgPGY+OiBmbG9hdCwgPGJvb2w+OiAiVHJ1ZSIvIkZhbHNlIiwKICAgICAg
-ICAjIyMgPHN0cmluZz46ICJTdHJpbmciLCA8ZnJlcT46ICI8Zj4gSHova0h6L01IeiIKICAgICAg
-ICAjIyMgW2FyZ106IGFyZyBvcHRpb25hbAogICAgICAgICNPcHRpb24gICAgICJOb0FjY2VsIiAg
-ICAgICAgICAgIAkjIFs8Ym9vbD5dCiAgICAgICAgI09wdGlvbiAgICAgIlNXY3Vyc29yIiAgICAg
-ICAgICAgCSMgWzxib29sPl0KICAgICAgICAjT3B0aW9uICAgICAiRGFjNkJpdCIgICAgICAgICAg
-ICAJIyBbPGJvb2w+XQogICAgICAgICNPcHRpb24gICAgICJEYWM4Qml0IiAgICAgICAgICAgIAkj
-IFs8Ym9vbD5dCiAgICAgICAgI09wdGlvbiAgICAgIkZvcmNlUENJTW9kZSIgICAgICAgCSMgWzxi
-b29sPl0KICAgICAgICAjT3B0aW9uICAgICAiQ1BQSU9Nb2RlIiAgICAgICAgICAJIyBbPGJvb2w+
-XQogICAgICAgICNPcHRpb24gICAgICJDUHVzZWNUaW1lb3V0IiAgICAgIAkjIDxpPgogICAgICAg
-ICNPcHRpb24gICAgICJBR1BNb2RlIiAgICAgICAgICAgIAkjIDxpPgogICAgICAgICNPcHRpb24g
-ICAgICJBR1BGYXN0V3JpdGUiICAgICAgIAkjIFs8Ym9vbD5dCiAgICAgICAgI09wdGlvbiAgICAg
-IkFHUFNpemUiICAgICAgICAgICAgCSMgPGk+CiAgICAgICAgI09wdGlvbiAgICAgIlJpbmdTaXpl
-IiAgICAgICAgICAgCSMgPGk+CiAgICAgICAgI09wdGlvbiAgICAgIkJ1ZmZlclNpemUiICAgICAg
-ICAgCSMgPGk+CiAgICAgICAgI09wdGlvbiAgICAgIkVuYWJsZURlcHRoTW92ZXMiICAgCSMgWzxi
-b29sPl0KICAgICAgICAjT3B0aW9uICAgICAiRW5hYmxlUGFnZUZsaXAiICAgICAJIyBbPGJvb2w+
-XQogICAgICAgICNPcHRpb24gICAgICJOb0JhY2tCdWZmZXIiICAgICAgIAkjIFs8Ym9vbD5dCiAg
-ICAgICAgI09wdGlvbiAgICAgIlBhbmVsT2ZmIiAgICAgICAgICAgCSMgWzxib29sPl0KICAgICAg
-ICAjT3B0aW9uICAgICAiRERDTW9kZSIgICAgICAgICAgICAJIyBbPGJvb2w+XQogICAgICAgICNP
-cHRpb24gICAgICJDbG9uZURpc3BsYXkiICAgICAgIAkjIDxpPgogICAgICAgICNPcHRpb24gICAg
-ICJDbG9uZU1vZGUiICAgICAgICAgIAkjIFs8c3RyPl0KICAgICAgICAjT3B0aW9uICAgICAiQ2xv
-bmVIU3luYyIgICAgICAgICAJIyBbPHN0cj5dCiAgICAgICAgI09wdGlvbiAgICAgIkNsb25lVlJl
-ZnJlc2giICAgICAgCSMgWzxzdHI+XQogICAgICAgICNPcHRpb24gICAgICJVc2VGQkRldiIgICAg
-ICAgICAgIAkjIFs8Ym9vbD5dCiAgICAgICAgI09wdGlvbiAgICAgIlZpZGVvS2V5IiAgICAgICAg
-ICAgCSMgPGk+CglJZGVudGlmaWVyICAiQ2FyZDAiCglEcml2ZXIgICAgICAiYXRpIgoJVmVuZG9y
-TmFtZSAgIkFUSSBUZWNobm9sb2dpZXMgSW5jIgoJQm9hcmROYW1lICAgIlJhZGVvbiBSMjUwIElm
-IFtSYWRlb24gOTAwMF0iCglCdXNJRCAgICAgICAiUENJOjA6MTY6MCIKRW5kU2VjdGlvbgoKU2Vj
-dGlvbiAiU2NyZWVuIgoJSWRlbnRpZmllciAiU2NyZWVuMCIKCURldmljZSAgICAgIkNhcmQwIgoJ
-TW9uaXRvciAgICAiTW9uaXRvcjAiCglTdWJTZWN0aW9uICJEaXNwbGF5IgoJCURlcHRoICAgICAx
-CglFbmRTdWJTZWN0aW9uCglTdWJTZWN0aW9uICJEaXNwbGF5IgoJCURlcHRoICAgICA0CglFbmRT
-dWJTZWN0aW9uCglTdWJTZWN0aW9uICJEaXNwbGF5IgoJCURlcHRoICAgICA4CglFbmRTdWJTZWN0
-aW9uCglTdWJTZWN0aW9uICJEaXNwbGF5IgoJCURlcHRoICAgICAxNQoJRW5kU3ViU2VjdGlvbgoJ
-U3ViU2VjdGlvbiAiRGlzcGxheSIKCQlEZXB0aCAgICAgMTYKCUVuZFN1YlNlY3Rpb24KCVN1YlNl
-Y3Rpb24gIkRpc3BsYXkiCgkJRGVwdGggICAgIDI0CglFbmRTdWJTZWN0aW9uCkVuZFNlY3Rpb24K
-Cg==
+- ppcboot is installed
+- pImage is installed
+- root filesystem is mounted on NFS
 
---------------Boundary-00=_MRS5UGXLCKSX8K1IFOCR--
+When not debugging, system comes up fine, etc.
+
+When debugging. I connect my bdi2000,
+
+- start bdi, start ppc
+- BDI>load
+Loading pImage , please wait ....
+Loading program file passed
+BDI>go
+- TARGET: target has entered debug mode
+
+- start minicom on serial, see messages from ppcboot and Linux kernel upto
+.
+.
+.
+Dentry-cache hash table entries: 2048 (order: 2, 16384 bytes)
+Buffer-cache hash table entries: 1024 (order: 0, 4096 bytes)
+Page-cache hash table entries: 4096 (order: 2, 16384 bytes)
+Inode-cache hash table entries: 1024 (order: 1, 8192 bytes)
+POSIX conformance testing by UNIFIX
+
+Start gdb as (see below)
+ppc_8xx-gdb vmlinux
+target remote bdi:2001
+
+I get
+
+Remote debugging using bdi:2001
+0xc0004d8c in kernel_thread () at time.c:464
+464     }
+
+After that if I try to set breakpoint
+(gdb) b send_signal
+Breakpoint 1 at 0xc0019128: file signal.c, line 403.
+(gdb)c
+Continuing.
+warning: Cannot insert breakpoint 1:
+Error accessing memory address 0xc0019128: Operation not permitted.
+
+Questions:
+(1) Why is my breakpoint not working ?
+(2) If I remove breakpoint, and "cont", it seems like nothing is happening. I do not see any
+    progree on minicom screen for kernel boot up and than loading of modules and application. If
+    I ctrl-c on gdb, I get
+
+Program received signal SIGSTOP, Stopped (signal).
+0xc0003eac in idled () at idle.c:70
+70                      if (!current->need_resched && htab_reclaim_on)
+
+I know it is in idle thread, but not very usefull, since I cannot proceed. No telnet window, no
+minicom window.
+
+I am missing a step or so, any ideas what is it ?
+
+Thanks for reading this far.
+
+Please cc me, as I am not subscribed to this list.
+
+Usman
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
