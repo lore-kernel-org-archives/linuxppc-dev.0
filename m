@@ -1,52 +1,30 @@
-Date: Fri, 10 Sep 1999 10:43:27 -0700 (PDT)
-From: Brad Midgley <brad@pht.com>
-To: Sacha Varma <sacha@ssl.co.uk>
-cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: altivec
-In-Reply-To: <37D8F922.67F18F1F@ssl.co.uk>
-Message-ID: <Pine.LNX.4.10.9909101030100.31612-100000@web1.turbolinux.com>
+Message-ID: <37D944A8.78051BB@wanadoo.fr>
+Date: Fri, 10 Sep 1999 19:49:28 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Paul's devel branch on Lombard?
+References: <Pine.LNX.4.10.9909101143540.23282-100000@mercator.cs.kuleuven.ac.be>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-urlich drepper put a lot of work into glibc2.1 and processor capabilities 
-for exactly this problem.
+Geert Uytterhoeven wrote:
+> 
 
-so the RIGHT way to do this is by having two dynamic libraries, one for g4
-and one for processors without altivec. the libraries just have to be put
-in different places; glibc's search path is defined dynamically based on
-processor capabilities so the appropriate shared library is linked in.
+> Woops, didn't read thit that well. So please forgot about my former suggestion
+> to run `make oldconfig' :-)
 
-also, we can avoid the problem of binaries that blow up because they were
-compiled for a different powerpc.
+I try to use always 'make oldconfig'. But sometimes this doesn't work
+correctly, like in the case of the adbmouse or in 2.3.16 for the Apple
+partitions. 
+But now the big ADB merger is arriving, and everything is different
+again. Curious if 2.3.18 will compile... (1 minute later: No, this is
+not yet finished)
 
-the assembler needs to know the new opcodes.
-
-the kernel needs to know how & when to stack and unstack the altivec
-registers.
-
-for capabilities, i suspect we just need a little kernel work so the
-kernel identifies altivec capability and makes that info available; then
-glibc will need to know the symbolic name to look for.
-
-the tough part will be designing a shared library and abstracting its
-entry points with an eye on performance both with and without simd
-capability. this is a problem that transcends altivec--it is relevant to
-simd processor extensions on other architectures too.
-
-> 3. People who want code that's optimised for G4 but also builds on G3
-> You could use the altivec API when coding and then have a header (as I
->  #ifndef __VEC__
->    /* software emulation */
->  #else
->    /* use native instructions */
->  #endif
-
-
-Brad
-brad@pht.com | http://www.pht.com/~brad/
-
+--
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
