@@ -1,39 +1,56 @@
-Message-ID: <000901c10df4$f1e85100$df0fa8c0@mystore>
-From: "Nguyen Trung Thanh" <jari.nguyen@serialsystem.com.sg>
-To: <linuxppc-embedded@lists.linuxppc.org>
-References: <3B52C152.F5FB58B7@genetel.co.kr>
-Subject: PCMCIA Nokia Cardphone 2.0 for MPC823
-Date: Mon, 16 Jul 2001 20:43:42 +0800
-MIME-Version: 1.0
+From: James Petterson <jpetterson@PARKS.com.br>
+Reply-To: James Petterson <jpetterson@PARKS.com.br>
+To: linuxppc-embedded@lists.linuxppc.org
 Content-Type: text/plain;
-	charset="EUC-KR"
+  charset="iso-8859-1"
+Subject: Re: i can't use the function in kernel??
+Date: Mon, 16 Jul 2001 10:10:59 -0300
+References: <3B52C152.F5FB58B7@genetel.co.kr>
+In-Reply-To: <3B52C152.F5FB58B7@genetel.co.kr>
+MIME-Version: 1.0
+Message-Id: <01071610105900.01193@james.parks.com.br>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+If you're compiling a module, your output file should be 'network.o':
 
-Pls help me, I'm stuck with this card.
-Now I used kernel Powerpc Hardhat 2.2.14,
-and pcmcia-cs-3.1.21 in a custom board using
-MPC823.
+ppc_8xx-gcc -o network.o network.c
 
-I could dial up with this card, but it is not stable,
-and I could not transfer data such as ftp....
+James
 
-Furthermore, I must set the maximum value for
-psst = 4, psht = 4, and psl = 20.
-and add some delay between each time I read from serial port ( in function
-receive_chars from file serial.c).
-
-Have anyone done it, before? Or you have any information about thi card
-phone, pls give me.
-
-Does this card use 16550A, and follow the standard of this chip?
-Is there any special thing about it spec, timing?
-
-Thanks very much,
-Jari
-
+On Monday 16 July 2001 07:26, hychon wrote:
+> hi!
+>
+> I write a  sample network device driver based on MPC860T
+> but  no experience  any device driver.
+> I reference  '/kernel/arch/ppc/8xx_io/enet.c' file  and I wirte a
+> program.
+>
+> when I compile (ppc_8xx-gcc -o network network.c ) , occur error with
+> following message
+>
+> ============== -error ============================================
+> ~~/network.c : undefined reference to 'printk'
+>  ~~/network.c : relocation truncation to fit : R_PPC_REL24 printk
+>
+> ~/network.c : undefined reference to 'kmalloc'
+>  ~~/network.c : relocation truncation to fit : R_PPC_REL24 kmalloc
+> .........
+>
+> collect2: ld returned 1 exit status
+> make: ***[all] Error 1
+>
+> ==============================================================
+>
+>  I can't use 'printk()' , kmalloc() etc... function .
+>
+> I include linux/kernel.h . linux/fs.h , linux/slab.h ...etc ( header
+> files of  need by function)
+> (reference  the book 'linux device driver ' by ALESSANDRO RUBIN )
+>
+> why i don't use  those function?
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
