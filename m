@@ -1,52 +1,47 @@
-Message-ID: <3B674529.F23B92F9@mvista.com>
-Date: Tue, 31 Jul 2001 18:54:17 -0500
-From: Mark Hatle <fray@mvista.com>
+Message-ID: <3B674558.1020908@mvista.com>
+Date: Tue, 31 Jul 2001 16:55:04 -0700
+From: Matthew Locke <mlocke@mvista.com>
 MIME-Version: 1.0
-To: Grant Erickson <erick205@umn.edu>
-Cc: Cindy Peters <cinpet@adaptivemicro.com>,
-	"'Dan Malek'" <dan@mvista.com>,
+To: Cindy Peters <cinpet@adaptivemicro.com>
+Cc: "'Dan Malek'" <dan@mvista.com>,
 	"'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: New Linux PowerPC development
-References: <Pine.SOL.4.20.0107311650090.15362-100000@garnet.tc.umn.edu>
-Content-Type: text/plain; charset=us-ascii
+References: <A109131318C4D1119AC20060088DECE35732E9@mail.adaptivemicro.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-We were going to release it, but if you read the lmbench license you
-will find out that contrary to popular belief it is not considered "free
-software".  Basically if you use lmbench for commerical purposes, or
-need to patch it to allow for it to cross compiler, or change it in
-anyway, you are not allowed to do anything with it.
+Cindy Peters wrote:
 
-So the short answer is we said "screw it", decided not to ship it.  We
-will give our patches and tools to (paying) customers on request, but it
-just isn't worth our while to deal with these restrictions for the open
-source release.  (Sorry..)
+ > We have just recently been instructed by management to stay with the
+ >  MPC823 in order to re-use the previous software and hardware
+ > development as much as possible. We are looking at using some VHDL
+ > IP provided by Open Cores (this is very new) for the IDE interface.
+ >  Are you familiar with this?
+ >
+ > The VHDL code uses a processor independent interface called a
+ > wishbone interface. I don't know much about it yet. I don't know if
+ >  this is something standard or just developed for Open Cores. Do
+ > you (or anyone else) know of any driver software that may be
+ > available for this interface?
+ >
 
-FYI, lmbench is actually pretty easy to cross compile.  If I remember
-right just do:
-make CC=(compiler)
-make CC=(compiler) results
-make CC=(compiler) rerun
+Having done several non-standard IDE interfaces before, I can say PIO
+mode for the IDE OpenCore would be straight forward to implement. DMA is
+always a bit more complicated.  I took a quick look thru the OpenCore
+documentation.  It looks like the core would work on the 8xx bus with
+few modifications.
 
---Mark Hatle
-MontaVista Software, Inc.
 
-Grant Erickson wrote:
->
-> On Tue, 31 Jul 2001, Cindy Peters wrote:
-> > I have downloaded the lmbench software to determine some benchmarking
-> > information. I am not sure how to build it for the PPC. I have a cross
-> > compiler development environment setup in a subdirectory. Can someone
-> > help me with this?
->
-> MontaVista reportedly has this as part of their at-cost HHL kit. However,
-> I am not aware of any monetarily-free bundles of this cross-compiled for
-> various architectures.
->
-> It's been on my to-do list to work on this; however, my experience thus
-> far is that this is not entirely straightforward to cross-compile based on
-> what's in the package at present.
+ > I have downloaded the lmbench software to determine some benchmarking
+information. I am not sure how to build it for the PPC. I have a cross
+ > compiler development environment setup in a subdirectory. Can someone
+help
+ > me with this?
+
+Sure, download our Journeyman product for 8xx, it includes
+cross-compilers and 8xx userland.  ftp://ftp.mvista.com
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
