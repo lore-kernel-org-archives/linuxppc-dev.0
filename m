@@ -1,31 +1,28 @@
-Message-Id: <200010041115.NAA00715@piglet.grunz.lu>
-Date: Wed, 4 Oct 2000 13:15:29 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: l2cr function corrections for G4 (attached now)
-To: bh40@calva.net
-cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <19340828165801.6685@192.168.1.10>
+Date: Wed, 4 Oct 2000 10:14:07 -0700
+From: Kevin Buettner <kev@primenet.com>
+Message-Id: <1001004171407.ZM31953@saguaro.lan>
+In-Reply-To: Michael Norton <mnorton@cisco.com>
+        "Purify or Comparable???" (Oct  4,  5:44am)
+References: <39DAFC02.52938515@cisco.com>
+To: mnorton@cisco.com, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Purify or Comparable???
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On   4 Oct, this message from Benjamin Herrenschmidt echoed through cyberspace:
-> _get_L2CR was indeed bogus (your patch doesn't seem to change _set_L2CR
-> or am I blind). Nice catch.
+On Oct 4,  5:44am, Michael Norton wrote:
 
-Only cosmetically. The bug in _get_L2CR wasn't present in _set_L2CR.
+> What software tool is recommended for examining memory leaks in code?
+> Does a close cousin of Purify exist for LinuxPPC/ What do you coders
+> recommend?
 
-Michel
+I've never used Purify, so I can't offer a comparison, but...
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+I've found that dmalloc works quite well for debugging memory
+allocation related problems.  See http://dmalloc.com/.
 
+Kevin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
