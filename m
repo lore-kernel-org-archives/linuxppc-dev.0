@@ -1,60 +1,52 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: <linuxppc-dev@lists.linuxppc.org>,
-	AMANO Kazuhiro <haa13142@jnb.odn.ne.jp>
 Subject: Re: MATSHITADVD-ROM SR-8176
-Date: Sun, 3 Feb 2002 20:39:28 +0100
-Message-Id: <20020203193928.30236@smtp.wanadoo.fr>
-In-Reply-To: <20020203155250172.VDPS.18601.t-mta3.odn.ne.jp@mta3.odn.ne.jp>
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+To: Bastien Nocera <hadess@hadess.net>
+Cc: AMANO Kazuhiro <haa13142@jnb.odn.ne.jp>,
+	"linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <1012763434.29823.13.camel@dozo>
 References: <20020203155250172.VDPS.18601.t-mta3.odn.ne.jp@mta3.odn.ne.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	<1012763434.29823.13.camel@dozo>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: 03 Feb 2002 23:31:13 +0100
+Message-Id: <1012775473.18215.19572.camel@pismo>
+Mime-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Son, 2002-02-03 at 20:10, Bastien Nocera wrote:
 >
->I'm in trouble with MATSHITA DVD-ROM SR-8176 drive on iBook2
-> under kernel-2.4.18-pre7-ben0.
+> On Sun, 2002-02-03 at 15:52, AMANO Kazuhiro wrote:
+> >
+> > I'm in trouble with MATSHITA DVD-ROM SR-8176 drive on iBook2
+> >  under kernel-2.4.18-pre7-ben0.
+> >
+> > First problem is in audio CD play. I'm using xmms-cdread-0.14a, but
+> > I cannot get track list of CD and cannot play.
+> >
+> > To solve this problem, I made a tiny patch:
+> > --- linux/drivers/ide/ide-cd.c-ORIG	Mon Jan 28 20:20:31 2002
+> > +++ linux/drivers/ide/ide-cd.c	Sun Feb  3 22:03:42 2002
+> > @@ -2644,7 +2644,8 @@
+> >  	 * but they do support reading TOC & audio datas
+> >  	 */
+> >  	if (strcmp (drive->id->model, "MATSHITADVD-ROM SR-8187") == 0 ||
+> > -	    strcmp (drive->id->model, "MATSHITADVD-ROM SR-8186") == 0)
+> > +	    strcmp (drive->id->model, "MATSHITADVD-ROM SR-8186") == 0 ||
+> > +	    strcmp (drive->id->model, "MATSHITADVD-ROM SR-8176") == 0)
+> >  		CDROM_CONFIG_FLAGS (drive)->audio_play = 1;
+> >
+> >  #if ! STANDARD_ATAPI
 >
->First problem is in audio CD play. I'm using xmms-cdread-0.14a, but
->I cannot get track list of CD and cannot play.
->
->To solve this problem, I made a tiny patch:
->--- linux/drivers/ide/ide-cd.c-ORIG	Mon Jan 28 20:20:31 2002
->+++ linux/drivers/ide/ide-cd.c	Sun Feb  3 22:03:42 2002
->@@ -2644,7 +2644,8 @@
-> 	 * but they do support reading TOC & audio datas
-> 	 */
-> 	if (strcmp (drive->id->model, "MATSHITADVD-ROM SR-8187") == 0 ||
->-	    strcmp (drive->id->model, "MATSHITADVD-ROM SR-8186") == 0)
->+	    strcmp (drive->id->model, "MATSHITADVD-ROM SR-8186") == 0 ||
->+	    strcmp (drive->id->model, "MATSHITADVD-ROM SR-8176") == 0)
-> 		CDROM_CONFIG_FLAGS (drive)->audio_play = 1;
+> Blimey! All this time this little patch was the thing missing ?
 
-Thanks, I'll include this one in the next round of patches.
+I have an SR-8174, and audio grabbing etc. also works. Maybe we can
+assume it works with any Matsushita DVD-ROM drive, or at least the
+SR-81xx series?
 
-> #if ! STANDARD_ATAPI
->---
->
->Second problem is in DVD-video play. I'm using xine-0.4.3 or
->vlc(videolan)-0.2.92, but I get only low performance.
->
->In /var/log/messages, some errors were reported:
->Feb  3 23:40:17 phaser kernel: hdb: DMA disabled
->Feb  3 23:40:17 phaser kernel: hdb: command error: status=0x51 {
->DriveReady SeekComplete Error }
->Feb  3 23:40:17 phaser kernel: hdb: command error: error=0x54
->Feb  3 23:40:17 phaser kernel: end_request: I/O error, dev 03:40 (hdb),
->sector 369232
->
->I can pass through this problem, by "hdparm -d1 -X34 /deb/hdb" to force
->Multiword DMA 2 Mode. But this hdparm command sometimes cause hung up.
->
->Both problem do not appear with ide-scsi driver.
 
-You should report this one to the ide-cd maintainer (Jens Axboe)
-
-Ben.
-
+--
+Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
+XFree86 and DRI project member   /  CS student, Free Software enthusiast
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
