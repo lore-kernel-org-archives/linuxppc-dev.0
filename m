@@ -1,25 +1,39 @@
-Date: Mon, 16 Jul 2001 21:39:28 +0900
-From: "G.TABIRA" <QYY00056@nifty.ne.jp>
-Message-ID: <20010716213928.59920038.20936@nifty.ne.jp>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Setting for RTSCHEDULE at HardHat2.0
-In-Reply-To: <200107161159.GAA19405@lists.linuxppc.org>
-References: <200107161159.GAA19405@lists.linuxppc.org>
+Message-ID: <000901c10df4$f1e85100$df0fa8c0@mystore>
+From: "Nguyen Trung Thanh" <jari.nguyen@serialsystem.com.sg>
+To: <linuxppc-embedded@lists.linuxppc.org>
+References: <3B52C152.F5FB58B7@genetel.co.kr>
+Subject: PCMCIA Nokia Cardphone 2.0 for MPC823
+Date: Mon, 16 Jul 2001 20:43:42 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain;
+	charset="EUC-KR"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-How do you do.
-Please teach your greatest thinking to me.
+Hi all,
 
-I've tried to run sample "hello"of rtlinux-3.0.tar.gz
-at Linux PowerPC-Embedded.
-I have set CONFIG RTSCHED=y in config file for RTSCHEDULE.
-I made kernel and Images by TCT that is TOOL included in the HardHat.
+Pls help me, I'm stuck with this card.
+Now I used kernel Powerpc Hardhat 2.2.14,
+and pcmcia-cs-3.1.21 in a custom board using
+MPC823.
 
-What should I  do for running sample program "hello" ?.
+I could dial up with this card, but it is not stable,
+and I could not transfer data such as ftp....
+
+Furthermore, I must set the maximum value for
+psst = 4, psht = 4, and psl = 20.
+and add some delay between each time I read from serial port ( in function
+receive_chars from file serial.c).
+
+Have anyone done it, before? Or you have any information about thi card
+phone, pls give me.
+
+Does this card use 16550A, and follow the standard of this chip?
+Is there any special thing about it spec, timing?
+
+Thanks very much,
+Jari
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
