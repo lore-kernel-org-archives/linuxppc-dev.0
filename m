@@ -1,52 +1,63 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-From: stefano.gaiotto@tin.it
-Date: Wed, 11 Feb 2004 15:16:12 +0100
-Message-ID: <401989520000FA56@ims4c.cp.tin.it>
-Subject: Linux 2.6.2 & MPC8260
-To: linuxppc-embedded@lists.linuxppc.org
+From: DavidHo@nanometrics.ca
+Subject: EXT_DIRECT IDE Mode
+To: steven.scholz@imc-berlin.de
+Cc: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <OF3324B9C2.51BE135A-ON85256E37.00512C20-85256E37.00527916@nanometrics.ca>
+Date: Wed, 11 Feb 2004 10:00:49 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-15"
+Content-type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear colleagues,
+Hi Steve,
 
-I'm trying to build Linux kernel 2.6.2 for some evaluation board with Motorola
-'8260, e.g. est8260.
-I'm using the following environment:
+My application needs a compactflash and a 1.8" disk drive connected to the
+MPC852T.  Since the compact flash has already taken up the only PCMCIA
+slot, the disk drive is directly attached to the PPC bus so I need to
+enable EXT_DIRECT for the disk drive.
 
-- Linux kernel 2.6.2
-- gcc 3.3.2
-- glibc 2.3.2
-- binutils 2.14.90.0.7
+I haven't been able to make linux call the ide_init_hwif function.  I
+looked at how ide.c works and it looks like it enables IDE interfaces on
+the PCI first (ide_default_io_base returns non-zero).  I haven't yet been
+able to find out where it call my function.
 
-After having expanded the linux kernel archive, I have only modified the
-makefile as follow:
+Would you be able to tell me how you got this mode working.
 
-- ARCH := ppc
-- CROSS_COMPILE = powerpc-linux-
-
-Then, using "make menuconfig", I have loaded from /arch/ppc/configs the
-configuration file ?est8260_defconfig?
-After that, I have started the compilation with the command "make zImage"
-hoping to see the compiler to reach the end of the makefile...
-
-But after a few minutes the compiler stopps reporting the error:
-
-  AS      arch/ppc/kernel/head.o
-arch/ppc/kernel/head.S: Assembler messages:
-arch/ppc/kernel/head.S:1660: Error: unsupported relocation against MSR_
-make[1]: *** [arch/ppc/kernel/head.o] Error 1
-make: *** [arch/ppc/kernel] Error 2
+Regards,
+David Ho
 
 
-Thanks in advance for your advice.
 
 
-With best regards,
+ >Subject: Re: MPC8xx IDE
+ >From: Steven Scholz <steven.scholz@imc-berlin.de>
+ >Date: Wed, 24 Oct 2001 14:02:33 +0200
 
-	Stefano
+ >> While trying to find an easy way to add non-volatile storage on a
+ >> custion MPC860 board, I noticed that there was some support for IDE on
+ >> the PCMCIA interface in the Linux kernel.
+
+ >There are actually at least three ways for connecting an IDE HDD. See
+ >ide-m8xx.c:
+
+ >---
+ >8xx_PCCARD uses the 8xx internal PCMCIA interface in combination
+ >with a PC Card (e.g. ARGOSY portable Hard Disk Adapter),
+ >ATA PC Card HDDs or ATA PC Flash Cards (example: TQM8xxL
+ >systems)
+
+ >8xx_DIRECT is used for directly connected IDE devices using the 8xx
+ >internal PCMCIA interface (example: IVMS8 systems)
+
+ >EXT_DIRECT is used for IDE devices directly connected to the 8xx
+ >bus using some glue logic, but _not_ the 8xx internal
+ >PCMCIA interface (example: IDIF860 systems)
+ >---
+
+ >I am probably the only one using EXT_DIRECT. ;-)
+
+ >Drop me a line if you need schematics.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
