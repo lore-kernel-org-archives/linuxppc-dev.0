@@ -1,34 +1,36 @@
 From: Paul Mackerras <paulus@linuxcare.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <14975.55035.835724.234984@tango.linuxcare.com.au>
-Date: Tue, 6 Feb 2001 21:50:35 +1100 (EST)
-To: Gabriel Paubert <paubert@iram.es>
-Cc: Dan Malek <dan@mvista.com>, tom_gall@vnet.ibm.com,
-        linuxppc-commit@hq.fsmlabs.com,
+Message-ID: <14975.55329.292764.981333@tango.linuxcare.com.au>
+Date: Tue, 6 Feb 2001 21:55:29 +1100 (EST)
+To: Dan Malek <dan@mvista.com>
+Cc: Gabriel Paubert <paubert@iram.es>, tom_gall@vnet.ibm.com,
+        Tom Gall <tgall@rochcivictheatre.org>,
+        Troy Benjegerdes <hozer@drgw.net>, linuxppc-commit@hq.fsmlabs.com,
         linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: context overflow
-In-Reply-To: <Pine.HPX.4.10.10101231050450.3872-100000@gra-ux1.iram.es>
-References: <3A6CCBDC.3D7B722A@mvista.com>
-	<Pine.HPX.4.10.10101231050450.3872-100000@gra-ux1.iram.es>
+In-Reply-To: <3A6DCBBE.60AB54CE@mvista.com>
+References: <Pine.HPX.4.10.10101231050450.3872-100000@gra-ux1.iram.es>
+	<3A6DCBBE.60AB54CE@mvista.com>
 Reply-To: paulus@linuxcare.com.au
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Gabriel Paubert writes:
+Dan Malek writes:
 
-> On Mon, 22 Jan 2001, Dan Malek wrote:
-[snip]
-> > No, you are confusing MMU context with kernel memory mapping and
-> > our (mostly incorrect) use of VSIDs on the 7xx processors.
->
-> Finally, somebody had to say it. But saying mostly incorrect is the
-> understatement of the week.
+> Heh :-)....Right, but it will require a context, and active_mm is
+> the proper place to store/retrieve it.  Doesn't the HIGHMEM option
+> require we properly use a kernel context?  Or, do we just get lucky
+> there, too :-).
 
-What's incorrect about it?
-
-Paul.
+The way we do things on 6xx/7xx, kernel accesses to addresses >=
+0xc0000000 don't depend on active_mm or on the currently selected
+context at all.  We can effectively choose a different context for
+each 256MB segment of the address space, and we always choose context
+0 for segments 0xc to 0xf.  Further, the hash_page routine looks in
+swapper_pg_dir for linux PTEs for addresses >= 0xc0000000, rather than
+in the page tables associated with current->active_mm or current->mm.
 
 --
 Paul Mackerras, Open Source Research Fellow, Linuxcare, Inc.
