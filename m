@@ -1,34 +1,50 @@
-Message-ID: <383A9040.5F29987F@macktrucks.com>
-Date: Tue, 23 Nov 1999 08:01:52 -0500
-From: Joe Julicher <joe_julicher@macktrucks.com>
+Message-ID: <383A909A.16FCF296@dalim.de>
+Date: Tue, 23 Nov 1999 14:03:22 +0100
+From: Stephane GEORGES <sg@dalim.de>
 MIME-Version: 1.0
-To: linux Developer <linuxppc-dev@lists.linuxppc.org>
-Subject: B/W
+To: linuxppc-dev@lists.linuxppc.org
+Subject: R_PPC_REL24 relocation out of range
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello,
-Slightly off topic...
+I am porting some code from linux Intel to linuxppc.
 
-I have a B/W G3 that went sorta braindead.  I can boot to OF.
-It won't load the firmware file (flashing folder icon)
-In OF, if I say 'boot' it says unable to load HD:
-I moved the HD to my Beige G3 and it boots and seems to be fine.
-Put the HD on the DVD's IDE chain and it gets to an mouse cursor and
-freezes.
+My executables have a plugin notion that allow people to add
+some new functionalities to program (like photoshop plugins).
 
-PRAM has been zapped
-Keyboard & with Battery removed.
+My plugins are shared libraries whose name does not start
+with lib (like jobs.so.1.0).
 
-Questions:
-	Can I access the drive from OF?  I have tried a few different things
-but have been unsuccessful.
-	Is the logic board fried?  (I hope not, expensive)
+These plugins can link on common shared libraries because
+they implement the same main classes.
 
-Anything else to try?
-I don't have the 8.5 CD, a replacement is in the mail.  When that
-arrives, I will try to boot from the CD.
+My issue is that I get such an error message when the second
+plugin is beeing loaded (via dlopen)
+
+jobs.so.1.0: R_PPC_REL24 relocation out of range (for instance)
+
+If I rename my plugins adding lib in front of the name, then,
+it works correctly (libjobs.so.1.0).
+
+Could someone help me so that it works without the lib added
+in front of the shared library name ?
+Does ld have special options so that it works ?
+(I have glibc-2.1.1-6c and my kernel is a 2.2.13).
+
+The same code works correctly on my linux Intel (with same
+version of glibc).
+
+--
+
+/====================================================================/|
+| Stephane GEORGES                     |                             ||
+| DALiM SOFTWARE GmbH      R&D         |    Tel: +49 7851 9196 40    ||
+| Strassburger Str.6                   |    Fax: +49 7851 7357 6     ||
+| D-77696                              |                             ||
+| Kehl-Sundheim (Germany)              |    E-mail: sg@dalim.de      ||
+|____________________________________________________________________|/
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
