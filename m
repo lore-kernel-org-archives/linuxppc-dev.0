@@ -1,74 +1,32 @@
-From: brian.auld@adic.com
-Message-ID: <995FF289C9D69747A09E42992644595405B23618@penguin.adic.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Need IDE for embedded Linux project
-Date: Tue, 21 Jan 2003 12:10:14 -0800
-MIME-Version: 1.0
-Content-Type: text/plain
+Message-Id: <3.0.3.32.20030121133523.0071127c@hollabaugh.com>
+Date: Tue, 21 Jan 2003 13:35:23 -0700
+To: brian.auld@adic.com, linuxppc-embedded@lists.linuxppc.org
+From: "Dr. Craig Hollabaugh" <craig@hollabaugh.com>
+Subject: Re: Need IDE for embedded Linux project
+In-Reply-To: <995FF289C9D69747A09E42992644595405B23618@penguin.adic.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello all,
+>Option 1: All Native Linux.
 
-I've just joined the mailing list. I apologize as I write this from a
-windows machine. I just spent some frustrating minutes trying to tweek
-Microsoft Outlook to go plain text 72 chars and I hope it worked. This
-is the unfortunate side effect of the company I work for providing a
-windows based dev environment for their engineers (nauseous).
 
-Also I hope I'm not too off-topic, and if I am, I humbly ask for the
-name of a different mailing list.
 
-My group is just kicking off their first embedded linux project. The
-bean counters finally bit the bullet and decided to move from VxWorks to
-Linux on this project. Our hardware will be a custom board running the
-PPC440GP. I am truly physched!!!
+Brian,
 
-As a first step I am trying to determine what IDE makes sense given our
-Department's infrastructure ... which is all windows (barf). I am aware of
-the following options:
+If your company is really going to use Linux then push for the Linux development station. The time you personally save by not fooling around with vmware and windows cygwin cross tools will pay for the development computer many times over. You probably have an old 233 or 400 celeron box sitting around collecting dust. Compiling the kernel, which you'll rarely do, after you get things running, with take the most time on an old machine. Device drivers compile in seconds on these old machines.
 
-Option 1: All Native Linux.
-Option 2: Native windows cross development environment.
-Option 3: Vmware (linux guest on windows) with a Linux based IDE. Option 4:
-Linux development server <--> PC-X server software
-          (hummingbird) on windows development hosts.
+You have a lot to learn: embedding Linux and cross compiling itself shouldn't be underestimated. Adding Win2K into the picture adds another complexity to screw things up.
 
-Starting from a clean slate, option (1) would be my choice, but I don't
-think it's practical given our installed base of Win2K workstations.
+Bean counters, you mentioned, will listen to this. Management will also listen if you stress that the windows cygwin cross will cost in terms of time and development complexity.
 
-Regarding option (2), I get the impression that there are packages
-available that do this, but I haven't got any real concrete hits when
-searching on the web.
+The question you need everyone to answer is cost and efficiency. Having your IT department or CVS requirements dictate type of development stations directly affects schedule and budget. Using Win2K, makes their life easier at your expense and potentially your job performance and product success.
 
-Regarding option (3), I just got the Vmware 30-day demo and am running RH7.2
+I have this conversation during my seminars and consulting work. I stress the use of samba, samba mounting NT servers, Windows desktops, putty, etc but maintain that the compiling/debugging machine run Linux. You can mix the environments, be successful and effective.
 
-as a Virtual Machine on my Win2K pukebox to evaluate.
-
-Regarding option (4), it's another idea I had but haven't done much
-investigation other than having thought about the possibility.
-
-So my basic questions are as follows:
-
-Question 1: Can anyone first confirm that option (2) is doable, and
-            second recommend or point me to some of these options.
-
-Question 2: If I go with (1) or (3), based on investigation so far, I
-            would expect to use Denx's IDE that I've seen mentioned on
-            this list's archives before. Some feedback about this choice
-            or others as a Linux based IDE would be appreciated.
-
-Thanks,
-
-Brian Auld
-Firmware Engineer
-
-Brian Auld
-Embedded Software Engineer
-ADIC
-10 Brown Rd. Ithaca, NY 14850
-(607) 241-4845
+Craig
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
