@@ -1,18 +1,14 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 2B84667A6E
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  5 Mar 2005 03:44:19 +1100 (EST)
-In-Reply-To: <20050304093515.A4471@cox.net>
-References: <20050304093515.A4471@cox.net>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <c31ade343817d01390084334633fd898@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Fri, 4 Mar 2005 10:44:14 -0600
-To: "Matt Porter" <mporter@kernel.crashing.org>
-Cc: ppcembed <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] WDT Driver for Book-E [2/2] Device driver part.
+Return-Path: <jdl@freescale.com>
+From: Jon Loeliger <jdl@freescale.com>
+To: Jaka =?iso-8859-2?Q?Mo=E8nik?= <jaka@activetools.si>
+In-Reply-To: <1109951593.32294.5.camel@x.at.lan>
+References: <1109951593.32294.5.camel@x.at.lan>
+Content-Type: text/plain; charset=iso-8859-2
+Message-Id: <1109952363.8949.10.camel@cashmere.sps.mot.com>
+Mime-Version: 1.0
+Date: Fri, 04 Mar 2005 10:06:03 -0600
+Cc: Embedded PPC Linux Mailing List <Linuxppc-embedded@ozlabs.org>
+Subject: Re: U-Boot hangs in relocate_code after sw reboot
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,27 +19,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Fair enough, we might actually have multiple watchdogs on some of are=20
-parts when the integrate system logic w/its own watchdog.  Makes sense.=20=
+On Fri, 2005-03-04 at 09:53, Jaka Moènik wrote:
+> hello!
+> 
+> I don't really know if this mailing list is the proper place to direct
+> questions regarding U-Boot, but I've seen some preceding posts about it,
+> so I thought I'd ask...
 
-  Lets leave it a config option then.
+Let's start with:  The U-Boot list is over at:
+    u-boot-users <u-boot-users@lists.sourceforge.net>
 
-- kumar
+> I've ported U-Boot over to a custom MPC8560 (PQ3) based board - it works
+> well, 
 
-On Mar 4, 2005, at 10:35 AM, Matt Porter wrote:
+Good...  So, what version did you start with?
+And how custom is it?  We just might need a few more details here... :-)
 
-> On Fri, Mar 04, 2005 at 10:02:40AM -0600, Kumar Gala wrote:
->  > Matt,
->  >
-> > Do you think this really needs a config option?=A0 Should it not be=A0=
+> except that after a sw reboot (from linux kernel or u-boot
+> itself),
 
-> > sufficient that if you enable watchdog you get this functionality =
-on=A0
-> > 4xx/e500?
->
-> I see the 8xx example, however, there may be a case where somebody
->  wants to use another hardware watchdog mechanism.=A0 In that case,
->  they probably don't want this facility automagically being enabled.
-> I think having the option can't hurt.
->
-> -Matt
+There were some early releases of 8560 U-Boot code that
+didn't do SW Reset right.  Let's make sure we are running
+a modern U-Boot for the 85xx first.
+
+>  it only gets to the part where it relocates itself to RAM and
+> then hangs - the last debug output is 
+
+There are some U-Boot FAQs down this line too.
+
+> has anyone experienced similar problems? any hints on what to look at?
+
+HTH,
+jdl
