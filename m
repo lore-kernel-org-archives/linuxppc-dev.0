@@ -1,59 +1,47 @@
-Date: Tue, 11 Jul 2000 17:15:42 +0200 (MET DST)
-From: Derek Homeier <supas100@astrophysik.uni-kiel.de>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [ANN] Dmasound backport to 2.2.17pre7/10 patch
-In-Reply-To: <200007080459.XAA32335@lists.linuxppc.org>
-Message-ID: <Pine.SOL.3.95.1000711165857.18657B-100000@juliet>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <4.3.2.7.2.20000711172513.03963320@mail.munich.netsurf.de>
+Date: Tue, 11 Jul 2000 17:29:57 +0200
+To: "Robert Thompson" <rothomp3@vt.edu>
+From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+Subject: Re: trackpad
+Cc: "Hollis Blanchard" <hollis@amulet.co.jp>, <pogtal@erols.com>,
+        <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <003b01bfeb47$848cf960$1a6a1504@strayer.edu>
+References: <003b01bfeaa6$744c6e60$1a6a1504@strayer.edu>
+ <396ACDF9.826580D3@amulet.co.jp>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 07 Jul 2000 17:11:38 +0100, "Iain Sandoe" <iain@sandoe.co.uk> wrote:
->
-> Hi again...
->
-> Well, it seems that one the list has bounced a message with a title - it
-> bounces it agin even if the new version fits within the rules...
->
-> Here's what I wanted to send:
->
-> hello all,
->
-> This may/may not help those who are experiencing X lock-up with sound
-> (although I've never had the problem myself).
->
-> I have done a backport of Geert's split-up dmasound stuff to 2.2.17pre7.
-> Thanks to Geert for helpful suggestions in doing this.
->
-I'd like to try the patch, though I didn't see a locked up X either
-(probably atyfb64 isn't affected?), but the CPU usage of xmms is also
-outrageously high on my Lombard, and there seem to be occasional drop-outs
-in the sound (as if the processor can't even always keep up with decoding
-the mp3s).
-My problem is that my kernel compiled from the rsynced 2.2.17pre10-ben1
-sources won't even boot beyond the first stages, to starting up the swapper
-- xmon reports
+At 16:51 11.07.00, Robert Thompson wrote:
 
-vector: 300 at pc=c00f7854, msr=9032, cp=cp03fb820 [c03fb770]
-dar=c8001304, dsisr=42000000
-current=c03fa000, pid=1, comm=swapper
+> > > Hmm... anybody have any clue what's different
+> > > between the trackpad on the Pismo and on the iBook? It's not like ADB
+>isn't
+> > > working: the keyboard works fine, so ADB is working at least mostly
+>fine.
+> > > Like
+> > > I said, I use an external trackball anyway, but I'm sure somebody will
+>be
+> > > angry
+> > > about this at some point...
+> >
+> > Robbie, I missed the beginning of the thread, but did you follow Ben's
+> > directions?
+>
+>Yes, I followed them exactly. Like I said, external usb mice work fine, and
+>the internal adb keyboard works fine, but the trackpad (also adb) doesn't
+>work at all. I tried gpm -m /dev/mouse -t imps2 and several variations
+>thereof, but nothing worked. The trackpad is detected correctly by the
+>kernel, according to dmesg. There are no errors reported of any kind, the
+>trackpad simply does nothing.
 
-without the patch as well as with it. The precompiled 2.2.17pre9-ben1 runs
-without significant problems (other than the sound one).
+Can you please post the dmesg part where all the ADB/USB devices get
+registered to inputs? And please also the line which contains "adb devices"
+in the dmesg and your kernel .config.
 
-What's more strange, the crashes even seem to affect OF, especially when
-I tried to boot with yaboot. Afterwards, I noticed the Mac didn't find
-the boot volume and searched for a while til it found my MacOS system
-folder. I discovered that all OF boot vars had been set back to defaults,
-maybe PRAM had been zapped completely, because also the function keys had been
-set back to Brightness/Volume keys etc.
-This happened several times after a crash, does anyone know how to avoid
-this?
-
-Greetings,
-							Derek
+Franz.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
