@@ -1,19 +1,17 @@
-Return-Path: <avolkov@varma-el.com>
-Received: from amanaus.varma-el.com (unknown [195.144.244.147])
-	by ozlabs.org (Postfix) with ESMTP id 4278167A6B
+Return-Path: <galak@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id A6B6E67A6B
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  2 Apr 2005 06:02:54 +1000 (EST)
-Message-ID: <424DA8E7.3070908@varma-el.com>
-Date: Sat, 02 Apr 2005 00:02:47 +0400
-From: Andrey Volkov <avolkov@varma-el.com>
+	Sat,  2 Apr 2005 06:34:51 +1000 (EST)
+Date: Fri, 1 Apr 2005 12:06:50 -0600 (CST)
+From: Kumar Gala <galak@freescale.com>
+To: Andrew Morton <akpm@osdl.org>
+Message-ID: <Pine.LNX.4.61.0504011201570.26223@blarg.somerset.sps.mot.com>
 MIME-Version: 1.0
-To: Sylvain Munaut <tnt@246tNt.com>
-References: <0.20050327_004704.tnt@patchsend.246tNt.com>
-	<4246B8E6.4060401@varma-el.com>
-In-Reply-To: <4246B8E6.4060401@varma-el.com>
-Content-Type: multipart/mixed; boundary="------------020700080002040609090008"
-Cc: ML linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH 1/1] Change MPC52xx-fec  platform bus / ppc_sys model
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-kernel@vger.kernel.org,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: [PATCH] ppc32: rename head_e500.S to head_fsl_booke.S
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,357 +22,1948 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------020700080002040609090008
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Andrew,
 
-Hi Sylvain
+Renamed head_e500.S to head_fsl_booke.S since the file is applicable to 
+other PowerPC Book-E implementations from Freescale, not just the e500.  
 
-Comments/Commit?
+Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 
-Signed-off-by: Andrey Volkov <avolkov@varma-el.com>
+---
 
-
---------------020700080002040609090008
-Content-Type: text/plain;
- name="fec.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="fec.diff"
-
-===================================================================
-
-
-ChangeSet@1.2297, 2005-04-01 23:50:51+04:00, avolkov@varma-el.com
-  
-  Converted from OCP to Platform usage
-
-
- fec.c |  162 +++++++++++++++++++++++++++++++++---------------------------------
- fec.h |    2 
- 2 files changed, 84 insertions(+), 80 deletions(-)
-
-
-diff -Nru a/drivers/net/fec_mpc52xx/fec.c b/drivers/net/fec_mpc52xx/fec.c
---- a/drivers/net/fec_mpc52xx/fec.c	2005-04-01 23:53:43 +04:00
-+++ b/drivers/net/fec_mpc52xx/fec.c	2005-04-01 23:53:43 +04:00
-@@ -29,7 +29,6 @@
- #include <asm/delay.h>
- #include <asm/ppcboot.h>
- #include <asm/mpc52xx.h>
--#include <asm/ocp.h>
+diff -Nru a/arch/ppc/Makefile b/arch/ppc/Makefile
+--- a/arch/ppc/Makefile	2005-04-01 12:01:01 -06:00
++++ b/arch/ppc/Makefile	2005-04-01 12:01:01 -06:00
+@@ -49,7 +49,7 @@
+ head-$(CONFIG_8xx)		:= arch/ppc/kernel/head_8xx.o
+ head-$(CONFIG_4xx)		:= arch/ppc/kernel/head_4xx.o
+ head-$(CONFIG_44x)		:= arch/ppc/kernel/head_44x.o
+-head-$(CONFIG_E500)		:= arch/ppc/kernel/head_e500.o
++head-$(CONFIG_FSL_BOOKE)	:= arch/ppc/kernel/head_fsl_booke.o
  
- #include <syslib/bestcomm/bestcomm.h>
- #include <syslib/bestcomm/fec.h>
-@@ -37,6 +36,8 @@
- #include "fec_phy.h"
- #include "fec.h"
- 
-+#define DRIVER_NAME "mpc52xx-fec"
+ head-$(CONFIG_6xx)		+= arch/ppc/kernel/idle_6xx.o
+ head-$(CONFIG_POWER4)		+= arch/ppc/kernel/idle_power4.o
+diff -Nru a/arch/ppc/kernel/Makefile b/arch/ppc/kernel/Makefile
+--- a/arch/ppc/kernel/Makefile	2005-04-01 12:01:01 -06:00
++++ b/arch/ppc/kernel/Makefile	2005-04-01 12:01:01 -06:00
+@@ -5,7 +5,7 @@
+ extra-$(CONFIG_PPC_STD_MMU)	:= head.o
+ extra-$(CONFIG_40x)		:= head_4xx.o
+ extra-$(CONFIG_44x)		:= head_44x.o
+-extra-$(CONFIG_E500)		:= head_e500.o
++extra-$(CONFIG_FSL_BOOKE)	:= head_fsl_booke.o
+ extra-$(CONFIG_8xx)		:= head_8xx.o
+ extra-$(CONFIG_6xx)		+= idle_6xx.o
+ extra-$(CONFIG_POWER4)		+= idle_power4.o
+diff -Nru a/arch/ppc/kernel/head_e500.S b/arch/ppc/kernel/head_e500.S
+--- a/arch/ppc/kernel/head_e500.S	2005-04-01 12:01:01 -06:00
++++ /dev/null	Wed Dec 31 16:00:00 196900
+@@ -1,952 +0,0 @@
+-/*
+- * arch/ppc/kernel/head_e500.S
+- *
+- * Kernel execution entry point code.
+- *
+- *    Copyright (c) 1995-1996 Gary Thomas <gdt@linuxppc.org>
+- *      Initial PowerPC version.
+- *    Copyright (c) 1996 Cort Dougan <cort@cs.nmt.edu>
+- *      Rewritten for PReP
+- *    Copyright (c) 1996 Paul Mackerras <paulus@cs.anu.edu.au>
+- *      Low-level exception handers, MMU support, and rewrite.
+- *    Copyright (c) 1997 Dan Malek <dmalek@jlc.net>
+- *      PowerPC 8xx modifications.
+- *    Copyright (c) 1998-1999 TiVo, Inc.
+- *      PowerPC 403GCX modifications.
+- *    Copyright (c) 1999 Grant Erickson <grant@lcse.umn.edu>
+- *      PowerPC 403GCX/405GP modifications.
+- *    Copyright 2000 MontaVista Software Inc.
+- *	PPC405 modifications
+- *      PowerPC 403GCX/405GP modifications.
+- * 	Author: MontaVista Software, Inc.
+- *         	frank_rowand@mvista.com or source@mvista.com
+- * 	   	debbie_chu@mvista.com
+- *    Copyright 2002-2004 MontaVista Software, Inc.
+- *      PowerPC 44x support, Matt Porter <mporter@kernel.crashing.org>
+- *    Copyright 2004 Freescale Semiconductor, Inc
+- *      PowerPC e500 modifications, Kumar Gala <kumar.gala@freescale.com>
+- *
+- * This program is free software; you can redistribute  it and/or modify it
+- * under  the terms of  the GNU General  Public License as published by the
+- * Free Software Foundation;  either version 2 of the  License, or (at your
+- * option) any later version.
+- */
+-
+-#include <linux/config.h>
+-#include <linux/threads.h>
+-#include <asm/processor.h>
+-#include <asm/page.h>
+-#include <asm/mmu.h>
+-#include <asm/pgtable.h>
+-#include <asm/cputable.h>
+-#include <asm/thread_info.h>
+-#include <asm/ppc_asm.h>
+-#include <asm/offsets.h>
+-#include "head_booke.h"
+-
+-/* As with the other PowerPC ports, it is expected that when code
+- * execution begins here, the following registers contain valid, yet
+- * optional, information:
+- *
+- *   r3 - Board info structure pointer (DRAM, frequency, MAC address, etc.)
+- *   r4 - Starting address of the init RAM disk
+- *   r5 - Ending address of the init RAM disk
+- *   r6 - Start of kernel command line string (e.g. "mem=128")
+- *   r7 - End of kernel command line string
+- *
+- */
+-	.text
+-_GLOBAL(_stext)
+-_GLOBAL(_start)
+-	/*
+-	 * Reserve a word at a fixed location to store the address
+-	 * of abatron_pteptrs
+-	 */
+-	nop
+-/*
+- * Save parameters we are passed
+- */
+-	mr	r31,r3
+-	mr	r30,r4
+-	mr	r29,r5
+-	mr	r28,r6
+-	mr	r27,r7
+-	li	r24,0		/* CPU number */
+-
+-/* We try to not make any assumptions about how the boot loader
+- * setup or used the TLBs.  We invalidate all mappings from the
+- * boot loader and load a single entry in TLB1[0] to map the
+- * first 16M of kernel memory.  Any boot info passed from the
+- * bootloader needs to live in this first 16M.
+- *
+- * Requirement on bootloader:
+- *  - The page we're executing in needs to reside in TLB1 and
+- *    have IPROT=1.  If not an invalidate broadcast could
+- *    evict the entry we're currently executing in.
+- *
+- *  r3 = Index of TLB1 were executing in
+- *  r4 = Current MSR[IS]
+- *  r5 = Index of TLB1 temp mapping
+- *
+- * Later in mapin_ram we will correctly map lowmem, and resize TLB1[0]
+- * if needed
+- */
+-
+-/* 1. Find the index of the entry we're executing in */
+-	bl	invstr				/* Find our address */
+-invstr:	mflr	r6				/* Make it accessible */
+-	mfmsr	r7
+-	rlwinm	r4,r7,27,31,31			/* extract MSR[IS] */
+-	mfspr	r7, SPRN_PID0
+-	slwi	r7,r7,16
+-	or	r7,r7,r4
+-	mtspr	SPRN_MAS6,r7
+-	tlbsx	0,r6				/* search MSR[IS], SPID=PID0 */
+-	mfspr	r7,SPRN_MAS1
+-	andis.	r7,r7,MAS1_VALID@h
+-	bne	match_TLB
+-	mfspr	r7,SPRN_PID1
+-	slwi	r7,r7,16
+-	or	r7,r7,r4
+-	mtspr	SPRN_MAS6,r7
+-	tlbsx	0,r6				/* search MSR[IS], SPID=PID1 */
+-	mfspr	r7,SPRN_MAS1
+-	andis.	r7,r7,MAS1_VALID@h
+-	bne	match_TLB
+-	mfspr	r7, SPRN_PID2
+-	slwi	r7,r7,16
+-	or	r7,r7,r4
+-	mtspr	SPRN_MAS6,r7
+-	tlbsx	0,r6				/* Fall through, we had to match */
+-match_TLB:
+-	mfspr	r7,SPRN_MAS0
+-	rlwinm	r3,r7,16,20,31			/* Extract MAS0(Entry) */
+-
+-	mfspr	r7,SPRN_MAS1			/* Insure IPROT set */
+-	oris	r7,r7,MAS1_IPROT@h
+-	mtspr	SPRN_MAS1,r7
+-	tlbwe
+-
+-/* 2. Invalidate all entries except the entry we're executing in */
+-	mfspr	r9,SPRN_TLB1CFG
+-	andi.	r9,r9,0xfff
+-	li	r6,0				/* Set Entry counter to 0 */
+-1:	lis	r7,0x1000			/* Set MAS0(TLBSEL) = 1 */
+-	rlwimi	r7,r6,16,4,15			/* Setup MAS0 = TLBSEL | ESEL(r6) */
+-	mtspr	SPRN_MAS0,r7
+-	tlbre
+-	mfspr	r7,SPRN_MAS1
+-	rlwinm	r7,r7,0,2,31			/* Clear MAS1 Valid and IPROT */
+-	cmpw	r3,r6
+-	beq	skpinv				/* Dont update the current execution TLB */
+-	mtspr	SPRN_MAS1,r7
+-	tlbwe
+-	isync
+-skpinv:	addi	r6,r6,1				/* Increment */
+-	cmpw	r6,r9				/* Are we done? */
+-	bne	1b				/* If not, repeat */
+-
+-	/* Invalidate TLB0 */
+-	li      r6,0x04
+-	tlbivax 0,r6
+-#ifdef CONFIG_SMP
+-	tlbsync
+-#endif
+-	/* Invalidate TLB1 */
+-	li      r6,0x0c
+-	tlbivax 0,r6
+-#ifdef CONFIG_SMP
+-	tlbsync
+-#endif
+-	msync
+-
+-/* 3. Setup a temp mapping and jump to it */
+-	andi.	r5, r3, 0x1	/* Find an entry not used and is non-zero */
+-	addi	r5, r5, 0x1
+-	lis	r7,0x1000	/* Set MAS0(TLBSEL) = 1 */
+-	rlwimi	r7,r3,16,4,15	/* Setup MAS0 = TLBSEL | ESEL(r3) */
+-	mtspr	SPRN_MAS0,r7
+-	tlbre
+-
+-	/* Just modify the entry ID and EPN for the temp mapping */
+-	lis	r7,0x1000	/* Set MAS0(TLBSEL) = 1 */
+-	rlwimi	r7,r5,16,4,15	/* Setup MAS0 = TLBSEL | ESEL(r5) */
+-	mtspr	SPRN_MAS0,r7
+-	xori	r6,r4,1		/* Setup TMP mapping in the other Address space */
+-	slwi	r6,r6,12
+-	oris	r6,r6,(MAS1_VALID|MAS1_IPROT)@h
+-	ori	r6,r6,(MAS1_TSIZE(BOOKE_PAGESZ_4K))@l
+-	mtspr	SPRN_MAS1,r6
+-	mfspr	r6,SPRN_MAS2
+-	li	r7,0		/* temp EPN = 0 */
+-	rlwimi	r7,r6,0,20,31
+-	mtspr	SPRN_MAS2,r7
+-	tlbwe
+-
+-	xori	r6,r4,1
+-	slwi	r6,r6,5		/* setup new context with other address space */
+-	bl	1f		/* Find our address */
+-1:	mflr	r9
+-	rlwimi	r7,r9,0,20,31
+-	addi	r7,r7,24
+-	mtspr	SPRN_SRR0,r7
+-	mtspr	SPRN_SRR1,r6
+-	rfi
+-
+-/* 4. Clear out PIDs & Search info */
+-	li	r6,0
+-	mtspr	SPRN_PID0,r6
+-	mtspr	SPRN_PID1,r6
+-	mtspr	SPRN_PID2,r6
+-	mtspr	SPRN_MAS6,r6
+-
+-/* 5. Invalidate mapping we started in */
+-	lis	r7,0x1000	/* Set MAS0(TLBSEL) = 1 */
+-	rlwimi	r7,r3,16,4,15	/* Setup MAS0 = TLBSEL | ESEL(r3) */
+-	mtspr	SPRN_MAS0,r7
+-	tlbre
+-	li	r6,0
+-	mtspr	SPRN_MAS1,r6
+-	tlbwe
+-	/* Invalidate TLB1 */
+-	li      r9,0x0c
+-	tlbivax 0,r9
+-#ifdef CONFIG_SMP
+-	tlbsync
+-#endif
+-	msync
+-
+-/* 6. Setup KERNELBASE mapping in TLB1[0] */
+-	lis	r6,0x1000		/* Set MAS0(TLBSEL) = TLB1(1), ESEL = 0 */
+-	mtspr	SPRN_MAS0,r6
+-	lis	r6,(MAS1_VALID|MAS1_IPROT)@h
+-	ori	r6,r6,(MAS1_TSIZE(BOOKE_PAGESZ_16M))@l
+-	mtspr	SPRN_MAS1,r6
+-	li	r7,0
+-	lis	r6,KERNELBASE@h
+-	ori	r6,r6,KERNELBASE@l
+-	rlwimi	r6,r7,0,20,31
+-	mtspr	SPRN_MAS2,r6
+-	li	r7,(MAS3_SX|MAS3_SW|MAS3_SR)
+-	mtspr	SPRN_MAS3,r7
+-	tlbwe
+-
+-/* 7. Jump to KERNELBASE mapping */
+-	li	r7,0
+-	bl	1f			/* Find our address */
+-1:	mflr	r9
+-	rlwimi	r6,r9,0,20,31
+-	addi	r6,r6,24
+-	mtspr	SPRN_SRR0,r6
+-	mtspr	SPRN_SRR1,r7
+-	rfi				/* start execution out of TLB1[0] entry */
+-
+-/* 8. Clear out the temp mapping */
+-	lis	r7,0x1000	/* Set MAS0(TLBSEL) = 1 */
+-	rlwimi	r7,r5,16,4,15	/* Setup MAS0 = TLBSEL | ESEL(r5) */
+-	mtspr	SPRN_MAS0,r7
+-	tlbre
+-	mtspr	SPRN_MAS1,r8
+-	tlbwe
+-	/* Invalidate TLB1 */
+-	li      r9,0x0c
+-	tlbivax 0,r9
+-#ifdef CONFIG_SMP
+-	tlbsync
+-#endif
+-	msync
+-
+-	/* Establish the interrupt vector offsets */
+-	SET_IVOR(0,  CriticalInput);
+-	SET_IVOR(1,  MachineCheck);
+-	SET_IVOR(2,  DataStorage);
+-	SET_IVOR(3,  InstructionStorage);
+-	SET_IVOR(4,  ExternalInput);
+-	SET_IVOR(5,  Alignment);
+-	SET_IVOR(6,  Program);
+-	SET_IVOR(7,  FloatingPointUnavailable);
+-	SET_IVOR(8,  SystemCall);
+-	SET_IVOR(9,  AuxillaryProcessorUnavailable);
+-	SET_IVOR(10, Decrementer);
+-	SET_IVOR(11, FixedIntervalTimer);
+-	SET_IVOR(12, WatchdogTimer);
+-	SET_IVOR(13, DataTLBError);
+-	SET_IVOR(14, InstructionTLBError);
+-	SET_IVOR(15, Debug);
+-	SET_IVOR(32, SPEUnavailable);
+-	SET_IVOR(33, SPEFloatingPointData);
+-	SET_IVOR(34, SPEFloatingPointRound);
+-	SET_IVOR(35, PerformanceMonitor);
+-
+-	/* Establish the interrupt vector base */
+-	lis	r4,interrupt_base@h	/* IVPR only uses the high 16-bits */
+-	mtspr	SPRN_IVPR,r4
+-
+-	/* Setup the defaults for TLB entries */
+-	li	r2,(MAS4_TSIZED(BOOKE_PAGESZ_4K))@l
+-   	mtspr	SPRN_MAS4, r2
+-
+-#if 0
+-	/* Enable DOZE */
+-	mfspr	r2,SPRN_HID0
+-	oris	r2,r2,HID0_DOZE@h
+-	mtspr	SPRN_HID0, r2
+-#endif
+-
+-	/*
+-	 * This is where the main kernel code starts.
+-	 */
+-
+-	/* ptr to current */
+-	lis	r2,init_task@h
+-	ori	r2,r2,init_task@l
+-
+-	/* ptr to current thread */
+-	addi	r4,r2,THREAD	/* init task's THREAD */
+-	mtspr	SPRN_SPRG3,r4
+-
+-	/* stack */
+-	lis	r1,init_thread_union@h
+-	ori	r1,r1,init_thread_union@l
+-	li	r0,0
+-	stwu	r0,THREAD_SIZE-STACK_FRAME_OVERHEAD(r1)
+-
+-	bl	early_init
+-
+-	mfspr	r3,SPRN_TLB1CFG
+-	andi.	r3,r3,0xfff
+-	lis	r4,num_tlbcam_entries@ha
+-	stw	r3,num_tlbcam_entries@l(r4)
+-/*
+- * Decide what sort of machine this is and initialize the MMU.
+- */
+-	mr	r3,r31
+-	mr	r4,r30
+-	mr	r5,r29
+-	mr	r6,r28
+-	mr	r7,r27
+-	bl	machine_init
+-	bl	MMU_init
+-
+-	/* Setup PTE pointers for the Abatron bdiGDB */
+-	lis	r6, swapper_pg_dir@h
+-	ori	r6, r6, swapper_pg_dir@l
+-	lis	r5, abatron_pteptrs@h
+-	ori	r5, r5, abatron_pteptrs@l
+-	lis	r4, KERNELBASE@h
+-	ori	r4, r4, KERNELBASE@l
+-	stw	r5, 0(r4)	/* Save abatron_pteptrs at a fixed location */
+-	stw	r6, 0(r5)
+-
+-	/* Let's move on */
+-	lis	r4,start_kernel@h
+-	ori	r4,r4,start_kernel@l
+-	lis	r3,MSR_KERNEL@h
+-	ori	r3,r3,MSR_KERNEL@l
+-	mtspr	SPRN_SRR0,r4
+-	mtspr	SPRN_SRR1,r3
+-	rfi			/* change context and jump to start_kernel */
+-
+-/*
+- * Interrupt vector entry code
+- *
+- * The Book E MMUs are always on so we don't need to handle
+- * interrupts in real mode as with previous PPC processors. In
+- * this case we handle interrupts in the kernel virtual address
+- * space.
+- *
+- * Interrupt vectors are dynamically placed relative to the
+- * interrupt prefix as determined by the address of interrupt_base.
+- * The interrupt vectors offsets are programmed using the labels
+- * for each interrupt vector entry.
+- *
+- * Interrupt vectors must be aligned on a 16 byte boundary.
+- * We align on a 32 byte cache line boundary for good measure.
+- */
+-
+-interrupt_base:
+-	/* Critical Input Interrupt */
+-	CRITICAL_EXCEPTION(0x0100, CriticalInput, UnknownException)
+-
+-	/* Machine Check Interrupt */
+-	MCHECK_EXCEPTION(0x0200, MachineCheck, MachineCheckException)
+-
+-	/* Data Storage Interrupt */
+-	START_EXCEPTION(DataStorage)
+-	mtspr	SPRN_SPRG0, r10		/* Save some working registers */
+-	mtspr	SPRN_SPRG1, r11
+-	mtspr	SPRN_SPRG4W, r12
+-	mtspr	SPRN_SPRG5W, r13
+-	mfcr	r11
+-	mtspr	SPRN_SPRG7W, r11
+-
+-	/*
+-	 * Check if it was a store fault, if not then bail
+-	 * because a user tried to access a kernel or
+-	 * read-protected page.  Otherwise, get the
+-	 * offending address and handle it.
+-	 */
+-	mfspr	r10, SPRN_ESR
+-	andis.	r10, r10, ESR_ST@h
+-	beq	2f
+-
+-	mfspr	r10, SPRN_DEAR		/* Get faulting address */
+-
+-	/* If we are faulting a kernel address, we have to use the
+-	 * kernel page tables.
+-	 */
+-	lis	r11, TASK_SIZE@h
+-	ori	r11, r11, TASK_SIZE@l
+-	cmplw	0, r10, r11
+-	bge	2f
+-
+-	/* Get the PGD for the current thread */
+-3:
+-	mfspr	r11,SPRN_SPRG3
+-	lwz	r11,PGDIR(r11)
+-4:
+-	rlwimi	r11, r10, 12, 20, 29	/* Create L1 (pgdir/pmd) address */
+-	lwz	r11, 0(r11)		/* Get L1 entry */
+-	rlwinm.	r12, r11, 0, 0, 19	/* Extract L2 (pte) base address */
+-	beq	2f			/* Bail if no table */
+-
+-	rlwimi	r12, r10, 22, 20, 29	/* Compute PTE address */
+-	lwz	r11, 0(r12)		/* Get Linux PTE */
+-
+-	/* Are _PAGE_USER & _PAGE_RW set & _PAGE_HWWRITE not? */
+-	andi.	r13, r11, _PAGE_RW|_PAGE_USER|_PAGE_HWWRITE
+-	cmpwi	0, r13, _PAGE_RW|_PAGE_USER
+-	bne	2f			/* Bail if not */
+-
+-	/* Update 'changed'. */
+-	ori	r11, r11, _PAGE_DIRTY|_PAGE_ACCESSED|_PAGE_HWWRITE
+-	stw	r11, 0(r12)		/* Update Linux page table */
+-
+-	/* MAS2 not updated as the entry does exist in the tlb, this
+-	   fault taken to detect state transition (eg: COW -> DIRTY)
+-	 */
+-	lis	r12, MAS3_RPN@h
+-	ori	r12, r12, _PAGE_HWEXEC | MAS3_RPN@l
+-	and	r11, r11, r12
+-	rlwimi	r11, r11, 31, 27, 27	/* SX <- _PAGE_HWEXEC */
+-	ori     r11, r11, (MAS3_UW|MAS3_SW|MAS3_UR|MAS3_SR)@l /* set static perms */
+-
+-	/* update search PID in MAS6, AS = 0 */
+-	mfspr	r12, SPRN_PID0
+-	slwi	r12, r12, 16
+-	mtspr	SPRN_MAS6, r12
+-
+-	/* find the TLB index that caused the fault.  It has to be here. */
+-	tlbsx	0, r10
+-
+-	mtspr	SPRN_MAS3,r11
+-	tlbwe
+-
+-	/* Done...restore registers and get out of here.  */
+-	mfspr	r11, SPRN_SPRG7R
+-	mtcr	r11
+-	mfspr	r13, SPRN_SPRG5R
+-	mfspr	r12, SPRN_SPRG4R
+-	mfspr	r11, SPRN_SPRG1
+-	mfspr	r10, SPRN_SPRG0
+-	rfi			/* Force context change */
+-
+-2:
+-	/*
+-	 * The bailout.  Restore registers to pre-exception conditions
+-	 * and call the heavyweights to help us out.
+-	 */
+-	mfspr	r11, SPRN_SPRG7R
+-	mtcr	r11
+-	mfspr	r13, SPRN_SPRG5R
+-	mfspr	r12, SPRN_SPRG4R
+-	mfspr	r11, SPRN_SPRG1
+-	mfspr	r10, SPRN_SPRG0
+-	b	data_access
+-
+-	/* Instruction Storage Interrupt */
+-	INSTRUCTION_STORAGE_EXCEPTION
+-
+-	/* External Input Interrupt */
+-	EXCEPTION(0x0500, ExternalInput, do_IRQ, EXC_XFER_LITE)
+-
+-	/* Alignment Interrupt */
+-	ALIGNMENT_EXCEPTION
+-
+-	/* Program Interrupt */
+-	PROGRAM_EXCEPTION
+-
+-	/* Floating Point Unavailable Interrupt */
+-	EXCEPTION(0x0800, FloatingPointUnavailable, UnknownException, EXC_XFER_EE)
+-
+-	/* System Call Interrupt */
+-	START_EXCEPTION(SystemCall)
+-	NORMAL_EXCEPTION_PROLOG
+-	EXC_XFER_EE_LITE(0x0c00, DoSyscall)
+-
+-	/* Auxillary Processor Unavailable Interrupt */
+-	EXCEPTION(0x2900, AuxillaryProcessorUnavailable, UnknownException, EXC_XFER_EE)
+-
+-	/* Decrementer Interrupt */
+-	DECREMENTER_EXCEPTION
+-
+-	/* Fixed Internal Timer Interrupt */
+-	/* TODO: Add FIT support */
+-	EXCEPTION(0x3100, FixedIntervalTimer, UnknownException, EXC_XFER_EE)
+-
+-	/* Watchdog Timer Interrupt */
+-	/* TODO: Add watchdog support */
+-	CRITICAL_EXCEPTION(0x3200, WatchdogTimer, UnknownException)
+-
+-	/* Data TLB Error Interrupt */
+-	START_EXCEPTION(DataTLBError)
+-	mtspr	SPRN_SPRG0, r10		/* Save some working registers */
+-	mtspr	SPRN_SPRG1, r11
+-	mtspr	SPRN_SPRG4W, r12
+-	mtspr	SPRN_SPRG5W, r13
+-	mfcr	r11
+-	mtspr	SPRN_SPRG7W, r11
+-	mfspr	r10, SPRN_DEAR		/* Get faulting address */
+-
+-	/* If we are faulting a kernel address, we have to use the
+-	 * kernel page tables.
+-	 */
+-	lis	r11, TASK_SIZE@h
+-	ori	r11, r11, TASK_SIZE@l
+-	cmplw	5, r10, r11
+-	blt	5, 3f
+-	lis	r11, swapper_pg_dir@h
+-	ori	r11, r11, swapper_pg_dir@l
+-
+-	mfspr	r12,SPRN_MAS1		/* Set TID to 0 */
+-	rlwinm	r12,r12,0,16,1
+-	mtspr	SPRN_MAS1,r12
+-
+-	b	4f
+-
+-	/* Get the PGD for the current thread */
+-3:
+-	mfspr	r11,SPRN_SPRG3
+-	lwz	r11,PGDIR(r11)
+-
+-4:
+-	rlwimi	r11, r10, 12, 20, 29	/* Create L1 (pgdir/pmd) address */
+-	lwz	r11, 0(r11)		/* Get L1 entry */
+-	rlwinm.	r12, r11, 0, 0, 19	/* Extract L2 (pte) base address */
+-	beq	2f			/* Bail if no table */
+-
+-	rlwimi	r12, r10, 22, 20, 29	/* Compute PTE address */
+-	lwz	r11, 0(r12)		/* Get Linux PTE */
+-	andi.	r13, r11, _PAGE_PRESENT
+-	beq	2f
+-
+-	ori	r11, r11, _PAGE_ACCESSED
+-	stw	r11, 0(r12)
+-
+-	 /* Jump to common tlb load */
+-	b	finish_tlb_load
+-2:
+-	/* The bailout.  Restore registers to pre-exception conditions
+-	 * and call the heavyweights to help us out.
+-	 */
+-	mfspr	r11, SPRN_SPRG7R
+-	mtcr	r11
+-	mfspr	r13, SPRN_SPRG5R
+-	mfspr	r12, SPRN_SPRG4R
+-	mfspr	r11, SPRN_SPRG1
+-	mfspr	r10, SPRN_SPRG0
+-	b	data_access
+-
+-	/* Instruction TLB Error Interrupt */
+-	/*
+-	 * Nearly the same as above, except we get our
+-	 * information from different registers and bailout
+-	 * to a different point.
+-	 */
+-	START_EXCEPTION(InstructionTLBError)
+-	mtspr	SPRN_SPRG0, r10		/* Save some working registers */
+-	mtspr	SPRN_SPRG1, r11
+-	mtspr	SPRN_SPRG4W, r12
+-	mtspr	SPRN_SPRG5W, r13
+-	mfcr	r11
+-	mtspr	SPRN_SPRG7W, r11
+-	mfspr	r10, SPRN_SRR0		/* Get faulting address */
+-
+-	/* If we are faulting a kernel address, we have to use the
+-	 * kernel page tables.
+-	 */
+-	lis	r11, TASK_SIZE@h
+-	ori	r11, r11, TASK_SIZE@l
+-	cmplw	5, r10, r11
+-	blt	5, 3f
+-	lis	r11, swapper_pg_dir@h
+-	ori	r11, r11, swapper_pg_dir@l
+-
+-	mfspr	r12,SPRN_MAS1		/* Set TID to 0 */
+-	rlwinm	r12,r12,0,16,1
+-	mtspr	SPRN_MAS1,r12
+-
+-	b	4f
+-
+-	/* Get the PGD for the current thread */
+-3:
+-	mfspr	r11,SPRN_SPRG3
+-	lwz	r11,PGDIR(r11)
+-
+-4:
+-	rlwimi	r11, r10, 12, 20, 29	/* Create L1 (pgdir/pmd) address */
+-	lwz	r11, 0(r11)		/* Get L1 entry */
+-	rlwinm.	r12, r11, 0, 0, 19	/* Extract L2 (pte) base address */
+-	beq	2f			/* Bail if no table */
+-
+-	rlwimi	r12, r10, 22, 20, 29	/* Compute PTE address */
+-	lwz	r11, 0(r12)		/* Get Linux PTE */
+-	andi.	r13, r11, _PAGE_PRESENT
+-	beq	2f
+-
+-	ori	r11, r11, _PAGE_ACCESSED
+-	stw	r11, 0(r12)
+-
+-	/* Jump to common TLB load point */
+-	b	finish_tlb_load
+-
+-2:
+-	/* The bailout.  Restore registers to pre-exception conditions
+-	 * and call the heavyweights to help us out.
+-	 */
+-	mfspr	r11, SPRN_SPRG7R
+-	mtcr	r11
+-	mfspr	r13, SPRN_SPRG5R
+-	mfspr	r12, SPRN_SPRG4R
+-	mfspr	r11, SPRN_SPRG1
+-	mfspr	r10, SPRN_SPRG0
+-	b	InstructionStorage
+-
+-#ifdef CONFIG_SPE
+-	/* SPE Unavailable */
+-	START_EXCEPTION(SPEUnavailable)
+-	NORMAL_EXCEPTION_PROLOG
+-	bne	load_up_spe
+-	addi    r3,r1,STACK_FRAME_OVERHEAD
+-	EXC_XFER_EE_LITE(0x2010, KernelSPE)
+-#else
+-	EXCEPTION(0x2020, SPEUnavailable, UnknownException, EXC_XFER_EE)
+-#endif /* CONFIG_SPE */
+-
+-	/* SPE Floating Point Data */
+-#ifdef CONFIG_SPE
+-	EXCEPTION(0x2030, SPEFloatingPointData, SPEFloatingPointException, EXC_XFER_EE);
+-#else
+-	EXCEPTION(0x2040, SPEFloatingPointData, UnknownException, EXC_XFER_EE)
+-#endif /* CONFIG_SPE */
+-
+-	/* SPE Floating Point Round */
+-	EXCEPTION(0x2050, SPEFloatingPointRound, UnknownException, EXC_XFER_EE)
+-
+-	/* Performance Monitor */
+-	EXCEPTION(0x2060, PerformanceMonitor, PerformanceMonitorException, EXC_XFER_STD)
+-
+-
+-	/* Debug Interrupt */
+-	DEBUG_EXCEPTION
+-
+-/*
+- * Local functions
+- */
+-	/*
+-	 * Data TLB exceptions will bail out to this point
+-	 * if they can't resolve the lightweight TLB fault.
+-	 */
+-data_access:
+-	NORMAL_EXCEPTION_PROLOG
+-	mfspr	r5,SPRN_ESR		/* Grab the ESR, save it, pass arg3 */
+-	stw	r5,_ESR(r11)
+-	mfspr	r4,SPRN_DEAR		/* Grab the DEAR, save it, pass arg2 */
+-	andis.	r10,r5,(ESR_ILK|ESR_DLK)@h
+-	bne	1f
+-	EXC_XFER_EE_LITE(0x0300, handle_page_fault)
+-1:
+-	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	EXC_XFER_EE_LITE(0x0300, CacheLockingException)
+-
+-/*
+-
+- * Both the instruction and data TLB miss get to this
+- * point to load the TLB.
+- * 	r10 - EA of fault
+- * 	r11 - TLB (info from Linux PTE)
+- * 	r12, r13 - available to use
+- * 	CR5 - results of addr < TASK_SIZE
+- *	MAS0, MAS1 - loaded with proper value when we get here
+- *	MAS2, MAS3 - will need additional info from Linux PTE
+- *	Upon exit, we reload everything and RFI.
+- */
+-finish_tlb_load:
+-	/*
+-	 * We set execute, because we don't have the granularity to
+-	 * properly set this at the page level (Linux problem).
+-	 * Many of these bits are software only.  Bits we don't set
+-	 * here we (properly should) assume have the appropriate value.
+-	 */
+-
+-	mfspr	r12, SPRN_MAS2
+-	rlwimi	r12, r11, 26, 27, 31	/* extract WIMGE from pte */
+-	mtspr	SPRN_MAS2, r12
+-
+-	bge	5, 1f
+-
+-	/* addr > TASK_SIZE */
+-	li	r10, (MAS3_UX | MAS3_UW | MAS3_UR)
+-	andi.	r13, r11, (_PAGE_USER | _PAGE_HWWRITE | _PAGE_HWEXEC)
+-	andi.	r12, r11, _PAGE_USER	/* Test for _PAGE_USER */
+-	iseleq	r12, 0, r10
+-	and	r10, r12, r13
+-	srwi	r12, r10, 1
+-	or	r12, r12, r10	/* Copy user perms into supervisor */
+-	b	2f
+-
+-	/* addr <= TASK_SIZE */
+-1:	rlwinm	r12, r11, 31, 29, 29	/* Extract _PAGE_HWWRITE into SW */
+-	ori	r12, r12, (MAS3_SX | MAS3_SR)
+-
+-2:	rlwimi	r11, r12, 0, 20, 31	/* Extract RPN from PTE and merge with perms */
+-	mtspr	SPRN_MAS3, r11
+-	tlbwe
+-
+-	/* Done...restore registers and get out of here.  */
+-	mfspr	r11, SPRN_SPRG7R
+-	mtcr	r11
+-	mfspr	r13, SPRN_SPRG5R
+-	mfspr	r12, SPRN_SPRG4R
+-	mfspr	r11, SPRN_SPRG1
+-	mfspr	r10, SPRN_SPRG0
+-	rfi					/* Force context change */
+-
+-#ifdef CONFIG_SPE
+-/* Note that the SPE support is closely modeled after the AltiVec
+- * support.  Changes to one are likely to be applicable to the
+- * other!  */
+-load_up_spe:
+-/*
+- * Disable SPE for the task which had SPE previously,
+- * and save its SPE registers in its thread_struct.
+- * Enables SPE for use in the kernel on return.
+- * On SMP we know the SPE units are free, since we give it up every
+- * switch.  -- Kumar
+- */
+-	mfmsr	r5
+-	oris	r5,r5,MSR_SPE@h
+-	mtmsr	r5			/* enable use of SPE now */
+-	isync
+-/*
+- * For SMP, we don't do lazy SPE switching because it just gets too
+- * horrendously complex, especially when a task switches from one CPU
+- * to another.  Instead we call giveup_spe in switch_to.
+- */
+-#ifndef CONFIG_SMP
+-	lis	r3,last_task_used_spe@ha
+-	lwz	r4,last_task_used_spe@l(r3)
+-	cmpi	0,r4,0
+-	beq	1f
+-	addi	r4,r4,THREAD	/* want THREAD of last_task_used_spe */
+-	SAVE_32EVR(0,r10,r4)
+-   	evxor	evr10, evr10, evr10	/* clear out evr10 */
+-	evmwumiaa evr10, evr10, evr10	/* evr10 <- ACC = 0 * 0 + ACC */
+-	li	r5,THREAD_ACC
+-   	evstddx	evr10, r4, r5		/* save off accumulator */
+-	lwz	r5,PT_REGS(r4)
+-	lwz	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
+-	lis	r10,MSR_SPE@h
+-	andc	r4,r4,r10	/* disable SPE for previous task */
+-	stw	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
+-1:
+-#endif /* CONFIG_SMP */
+-	/* enable use of SPE after return */
+-	oris	r9,r9,MSR_SPE@h
+-	mfspr	r5,SPRN_SPRG3		/* current task's THREAD (phys) */
+-	li	r4,1
+-	li	r10,THREAD_ACC
+-	stw	r4,THREAD_USED_SPE(r5)
+-	evlddx	evr4,r10,r5
+-	evmra	evr4,evr4
+-	REST_32EVR(0,r10,r5)
+-#ifndef CONFIG_SMP
+-	subi	r4,r5,THREAD
+-	stw	r4,last_task_used_spe@l(r3)
+-#endif /* CONFIG_SMP */
+-	/* restore registers and return */
+-2:	REST_4GPRS(3, r11)
+-	lwz	r10,_CCR(r11)
+-	REST_GPR(1, r11)
+-	mtcr	r10
+-	lwz	r10,_LINK(r11)
+-	mtlr	r10
+-	REST_GPR(10, r11)
+-	mtspr	SPRN_SRR1,r9
+-	mtspr	SPRN_SRR0,r12
+-	REST_GPR(9, r11)
+-	REST_GPR(12, r11)
+-	lwz	r11,GPR11(r11)
+-	SYNC
+-	rfi
+-
+-/*
+- * SPE unavailable trap from kernel - print a message, but let
+- * the task use SPE in the kernel until it returns to user mode.
+- */
+-KernelSPE:
+-	lwz	r3,_MSR(r1)
+-	oris	r3,r3,MSR_SPE@h
+-	stw	r3,_MSR(r1)	/* enable use of SPE after return */
+-	lis	r3,87f@h
+-	ori	r3,r3,87f@l
+-	mr	r4,r2		/* current */
+-	lwz	r5,_NIP(r1)
+-	bl	printk
+-	b	ret_from_except
+-87:	.string	"SPE used in kernel  (task=%p, pc=%x)  \n"
+-	.align	4,0
+-
+-#endif /* CONFIG_SPE */
+-
+-/*
+- * Global functions
+- */
+-
+-/*
+- * extern void loadcam_entry(unsigned int index)
+- *
+- * Load TLBCAM[index] entry in to the L2 CAM MMU
+- */
+-_GLOBAL(loadcam_entry)
+-	lis	r4,TLBCAM@ha
+-	addi	r4,r4,TLBCAM@l
+-	mulli	r5,r3,20
+-	add	r3,r5,r4
+-	lwz	r4,0(r3)
+-	mtspr	SPRN_MAS0,r4
+-	lwz	r4,4(r3)
+-	mtspr	SPRN_MAS1,r4
+-	lwz	r4,8(r3)
+-	mtspr	SPRN_MAS2,r4
+-	lwz	r4,12(r3)
+-	mtspr	SPRN_MAS3,r4
+-	tlbwe
+-	isync
+-	blr
+-
+-/*
+- * extern void giveup_altivec(struct task_struct *prev)
+- *
+- * The e500 core does not have an AltiVec unit.
+- */
+-_GLOBAL(giveup_altivec)
+-	blr
+-
+-#ifdef CONFIG_SPE
+-/*
+- * extern void giveup_spe(struct task_struct *prev)
+- *
+- */
+-_GLOBAL(giveup_spe)
+-	mfmsr	r5
+-	oris	r5,r5,MSR_SPE@h
+-	SYNC
+-	mtmsr	r5			/* enable use of SPE now */
+-	isync
+-	cmpi	0,r3,0
+-	beqlr-				/* if no previous owner, done */
+-	addi	r3,r3,THREAD		/* want THREAD of task */
+-	lwz	r5,PT_REGS(r3)
+-	cmpi	0,r5,0
+-	SAVE_32EVR(0, r4, r3)
+-   	evxor	evr6, evr6, evr6	/* clear out evr6 */
+-	evmwumiaa evr6, evr6, evr6	/* evr6 <- ACC = 0 * 0 + ACC */
+-	li	r4,THREAD_ACC
+-   	evstddx	evr6, r4, r3		/* save off accumulator */
+-	mfspr	r6,SPRN_SPEFSCR
+-	stw	r6,THREAD_SPEFSCR(r3)	/* save spefscr register value */
+-	beq	1f
+-	lwz	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
+-	lis	r3,MSR_SPE@h
+-	andc	r4,r4,r3		/* disable SPE for previous task */
+-	stw	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
+-1:
+-#ifndef CONFIG_SMP
+-	li	r5,0
+-	lis	r4,last_task_used_spe@ha
+-	stw	r5,last_task_used_spe@l(r4)
+-#endif /* CONFIG_SMP */
+-	blr
+-#endif /* CONFIG_SPE */
+-
+-/*
+- * extern void giveup_fpu(struct task_struct *prev)
+- *
+- * The e500 core does not have an FPU.
+- */
+-_GLOBAL(giveup_fpu)
+-	blr
+-
+-/*
+- * extern void abort(void)
+- *
+- * At present, this routine just applies a system reset.
+- */
+-_GLOBAL(abort)
+-	li	r13,0
+-        mtspr   SPRN_DBCR0,r13		/* disable all debug events */
+-	mfmsr	r13
+-	ori	r13,r13,MSR_DE@l	/* Enable Debug Events */
+-	mtmsr	r13
+-        mfspr   r13,SPRN_DBCR0
+-        lis	r13,(DBCR0_IDM|DBCR0_RST_CHIP)@h
+-        mtspr   SPRN_DBCR0,r13
+-
+-_GLOBAL(set_context)
+-
+-#ifdef CONFIG_BDI_SWITCH
+-	/* Context switch the PTE pointer for the Abatron BDI2000.
+-	 * The PGDIR is the second parameter.
+-	 */
+-	lis	r5, abatron_pteptrs@h
+-	ori	r5, r5, abatron_pteptrs@l
+-	stw	r4, 0x4(r5)
+-#endif
+-	mtspr	SPRN_PID,r3
+-	isync			/* Force context change */
+-	blr
+-
+-/*
+- * We put a few things here that have to be page-aligned. This stuff
+- * goes at the beginning of the data segment, which is page-aligned.
+- */
+-	.data
+-_GLOBAL(sdata)
+-_GLOBAL(empty_zero_page)
+-	.space	4096
+-_GLOBAL(swapper_pg_dir)
+-	.space	4096
+-
+-/* Reserved 4k for the critical exception stack & 4k for the machine
+- * check stack per CPU for kernel mode exceptions */
+-	.section .bss
+-        .align 12
+-exception_stack_bottom:
+-	.space	BOOKE_EXCEPTION_STACK_SIZE * NR_CPUS
+-_GLOBAL(exception_stack_top)
+-
+-/*
+- * This space gets a copy of optional info passed to us by the bootstrap
+- * which is used to pass parameters into the kernel like root=/dev/sda1, etc.
+- */
+-_GLOBAL(cmd_line)
+-	.space	512
+-
+-/*
+- * Room for two PTE pointers, usually the kernel and current user pointers
+- * to their respective root page table.
+- */
+-abatron_pteptrs:
+-	.space	8
+-
+diff -Nru a/arch/ppc/kernel/head_fsl_booke.S b/arch/ppc/kernel/head_fsl_booke.S
+--- /dev/null	Wed Dec 31 16:00:00 196900
++++ b/arch/ppc/kernel/head_fsl_booke.S	2005-04-01 12:01:01 -06:00
+@@ -0,0 +1,952 @@
++/*
++ * arch/ppc/kernel/head_fsl_booke.S
++ *
++ * Kernel execution entry point code.
++ *
++ *    Copyright (c) 1995-1996 Gary Thomas <gdt@linuxppc.org>
++ *      Initial PowerPC version.
++ *    Copyright (c) 1996 Cort Dougan <cort@cs.nmt.edu>
++ *      Rewritten for PReP
++ *    Copyright (c) 1996 Paul Mackerras <paulus@cs.anu.edu.au>
++ *      Low-level exception handers, MMU support, and rewrite.
++ *    Copyright (c) 1997 Dan Malek <dmalek@jlc.net>
++ *      PowerPC 8xx modifications.
++ *    Copyright (c) 1998-1999 TiVo, Inc.
++ *      PowerPC 403GCX modifications.
++ *    Copyright (c) 1999 Grant Erickson <grant@lcse.umn.edu>
++ *      PowerPC 403GCX/405GP modifications.
++ *    Copyright 2000 MontaVista Software Inc.
++ *	PPC405 modifications
++ *      PowerPC 403GCX/405GP modifications.
++ * 	Author: MontaVista Software, Inc.
++ *         	frank_rowand@mvista.com or source@mvista.com
++ * 	   	debbie_chu@mvista.com
++ *    Copyright 2002-2004 MontaVista Software, Inc.
++ *      PowerPC 44x support, Matt Porter <mporter@kernel.crashing.org>
++ *    Copyright 2004 Freescale Semiconductor, Inc
++ *      PowerPC e500 modifications, Kumar Gala <kumar.gala@freescale.com>
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
 +
- static irqreturn_t fec_interrupt(int, void *, struct pt_regs *);
- static irqreturn_t fec_rx_interrupt(int, void *, struct pt_regs *);
- static irqreturn_t fec_tx_interrupt(int, void *, struct pt_regs *);
-@@ -109,7 +110,7 @@
- 		udelay(1);
- 	}
- 	if (i == FEC_RESET_DELAY)
--		printk (KERN_ERR "FEC Reset timeout!\n");
-+		printk (KERN_ERR DRIVER_NAME ": FEC Reset timeout!\n");
- 
- 	/* Set station address. */
- 	fec_set_paddr(dev, dev->dev_addr);
-@@ -488,7 +489,7 @@
- 	return 0;
- }
- 
--__setup("mpc52xx_mac=", mpc52xx_fec_mac_setup);
-+__setup("mpc52xx-mac=", mpc52xx_fec_mac_setup);
- 
- static void fec_hw_init(struct net_device *dev)
- {
-@@ -547,52 +548,62 @@
- 
- 
- /* ======================================================================== */
--/* OCP Driver                                                               */
-+/* Platform Driver                                                               */
- /* ======================================================================== */
- 
- static int __devinit
--mpc52xx_fec_probe(struct ocp_device *ocp)
-+mpc52xx_fec_probe(struct device *dev)
- {
- 	int ret;
--	struct net_device *dev;
-+	struct platform_device *pdev = to_platform_device(dev);
-+	struct net_device *ndev;
- 	struct fec_priv *priv = NULL;
-+	struct resource *mem;
- 
- 	/* Reserve FEC control zone */
--	if (!request_mem_region(ocp->def->paddr, sizeof(struct mpc52xx_fec),
--	                        "mpc52xx_fec"))
-+	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	if ((mem->end - mem->start + 1) != sizeof(struct mpc52xx_fec)) {
-+		printk(KERN_ERR DRIVER_NAME 
-+			   " - invalid resource size (%lx != %x), check mpc52xx_devices.c\n",
-+									mem->end - mem->start + 1, sizeof(struct mpc52xx_fec));
-+		return -EINVAL;
-+	}
-+	
-+	if (!request_mem_region(mem->start, sizeof(struct mpc52xx_fec),
-+	                        DRIVER_NAME))
- 		return -EBUSY;
- 
--	/* Get the ether dev & it's private zone */
--	dev = alloc_etherdev(sizeof(struct fec_priv));
--	if (!dev) {
-+	/* Get the ether ndev & it's private zone */
-+	ndev = alloc_etherdev(sizeof(struct fec_priv));
-+	if (!ndev) {
- 		ret = -ENOMEM;
- 		goto probe_error;
- 	}
- 	
--	priv = (struct fec_priv *)dev->priv;
-+	priv = (struct fec_priv *)ndev->priv;
- 	
--	/* Init ether dev with what we have */
--	dev->open		= fec_open;
--	dev->stop		= fec_close;
--	dev->hard_start_xmit	= fec_hard_start_xmit;
--	dev->do_ioctl		= fec_ioctl;
--	dev->get_stats		= fec_get_stats;
--	dev->set_mac_address	= fec_set_mac_address;
--	dev->set_multicast_list = fec_set_multicast_list;
--	dev->tx_timeout		= fec_tx_timeout;
--	dev->watchdog_timeo	= FEC_WATCHDOG_TIMEOUT;
--	dev->flags &= ~IFF_RUNNING;
--	dev->base_addr		= ocp->def->paddr;
--
--	priv->rx_fifo = dev->base_addr + FIELD_OFFSET(mpc52xx_fec,rfifo_data);
--	priv->tx_fifo = dev->base_addr + FIELD_OFFSET(mpc52xx_fec,tfifo_data);
--	priv->t_irq = priv->r_irq = dev->irq = -1; /* IRQ are free for now */
-+	/* Init ether ndev with what we have */
-+	ndev->open		= fec_open;
-+	ndev->stop		= fec_close;
-+	ndev->hard_start_xmit	= fec_hard_start_xmit;
-+	ndev->do_ioctl		= fec_ioctl;
-+	ndev->get_stats		= fec_get_stats;
-+	ndev->set_mac_address	= fec_set_mac_address;
-+	ndev->set_multicast_list = fec_set_multicast_list;
-+	ndev->tx_timeout		= fec_tx_timeout;
-+	ndev->watchdog_timeo	= FEC_WATCHDOG_TIMEOUT;
-+	ndev->flags &= ~IFF_RUNNING;
-+	ndev->base_addr		= mem->start;
++#include <linux/config.h>
++#include <linux/threads.h>
++#include <asm/processor.h>
++#include <asm/page.h>
++#include <asm/mmu.h>
++#include <asm/pgtable.h>
++#include <asm/cputable.h>
++#include <asm/thread_info.h>
++#include <asm/ppc_asm.h>
++#include <asm/offsets.h>
++#include "head_booke.h"
 +
-+	priv->rx_fifo = ndev->base_addr + FIELD_OFFSET(mpc52xx_fec,rfifo_data);
-+	priv->tx_fifo = ndev->base_addr + FIELD_OFFSET(mpc52xx_fec,tfifo_data);
-+	priv->t_irq = priv->r_irq = ndev->irq = -1; /* IRQ are free for now */
- 	
- 	spin_lock_init(&priv->lock);
- 
- 	/* ioremap the zones */
- 	priv->fec = (struct mpc52xx_fec *)
--		ioremap(ocp->def->paddr, sizeof(struct mpc52xx_fec));
-+		ioremap(mem->start, sizeof(struct mpc52xx_fec));
- 	
- 	if (!priv->fec) {
- 		ret = -ENOMEM;
-@@ -618,20 +629,20 @@
- 
- 	/* Get the IRQ we need one by one */
- 		/* Control */
--	dev->irq = ocp->def->irq;
--	if (request_irq(dev->irq, &fec_interrupt, SA_INTERRUPT,
--	                "mpc52xx_fec_ctrl", dev)) {
--		printk(KERN_ERR "mpc52xx_fec: ctrl interrupt request failed\n");
-+	ndev->irq = platform_get_irq(pdev, 0);
-+	if (request_irq(ndev->irq, &fec_interrupt, SA_INTERRUPT,
-+	                DRIVER_NAME "_ctrl", ndev)) {
-+		printk(KERN_ERR DRIVER_NAME ": ctrl interrupt request failed\n");
- 		ret = -EBUSY;
--		dev->irq = -1;	/* Don't try to free it */
-+		ndev->irq = -1;	/* Don't try to free it */
- 		goto probe_error;
- 	}
- 
- 		/* RX */
- 	priv->r_irq = sdma_irq(priv->rx_sdma);
- 	if (request_irq(priv->r_irq, &fec_rx_interrupt, SA_INTERRUPT,
--	                "mpc52xx_fec_rx", dev)) {
--		printk(KERN_ERR "mpc52xx_fec: rx interrupt request failed\n");
-+	                DRIVER_NAME "_rx", ndev)) {
-+		printk(KERN_ERR DRIVER_NAME ": rx interrupt request failed\n");
- 		ret = -EBUSY;
- 		priv->r_irq = -1;	/* Don't try to free it */
- 		goto probe_error;
-@@ -640,8 +651,8 @@
- 		/* TX */
- 	priv->t_irq = sdma_irq(priv->tx_sdma);
- 	if (request_irq(priv->t_irq, &fec_tx_interrupt, SA_INTERRUPT,
--	                "mpc52xx_fec_tx", dev)) {
--		printk(KERN_ERR "mpc52xx_fec: tx interrupt request failed\n");
-+	                DRIVER_NAME "_tx", ndev)) {
-+		printk(KERN_ERR DRIVER_NAME ": tx interrupt request failed\n");
- 		ret = -EBUSY;
- 		priv->t_irq = -1;	/* Don't try to free it */
- 		goto probe_error;
-@@ -649,23 +660,23 @@
- 
- 	/* MAC address init */
- 	if (memcmp(mpc52xx_fec_mac_addr, null_mac, 6) != 0)
--		memcpy(dev->dev_addr, mpc52xx_fec_mac_addr, 6);
-+		memcpy(ndev->dev_addr, mpc52xx_fec_mac_addr, 6);
- 	else
--		fec_get_paddr(dev, dev->dev_addr);
-+		fec_get_paddr(ndev, ndev->dev_addr);
- 
- 	/* Hardware init */
--	fec_hw_init(dev);
-+	fec_hw_init(ndev);
- 
- 	/* Register the new network device */
--	ret = register_netdev(dev);
-+	ret = register_netdev(ndev);
- 	if(ret < 0)
- 		goto probe_error;
- 
- 	/* MII init : After register ???? */
--	fec_mii_init(dev);
-+	fec_mii_init(ndev);
- 	
- 	/* We're done ! */
--	ocp_set_drvdata(ocp, dev);
-+	dev_set_drvdata(dev, ndev);
- 
- 	return 0;
- 
-@@ -673,60 +684,54 @@
- 	/* Error handling - free everything that might be allocated */
- probe_error:
- 
--	if (dev) {
-+	if (ndev) {
- 		if (priv->rx_sdma)	sdma_free(priv->rx_sdma);
- 		if (priv->tx_sdma)	sdma_free(priv->tx_sdma);
- 		
--		if (dev->irq >= 0)	free_irq(dev->irq, dev);
--		if (priv->r_irq >= 0)	free_irq(priv->r_irq, dev);
--		if (priv->t_irq >= 0)	free_irq(priv->t_irq, dev);
-+		if (ndev->irq >= 0)	free_irq(ndev->irq, ndev);
-+		if (priv->r_irq >= 0)	free_irq(priv->r_irq, ndev);
-+		if (priv->t_irq >= 0)	free_irq(priv->t_irq, ndev);
- 
- 		if (priv->fec)		iounmap(priv->fec);
- 	
--		free_netdev(dev);
-+		free_netdev(ndev);
- 	}
- 	
--	release_mem_region(ocp->def->paddr, sizeof(struct mpc52xx_fec));
-+	release_mem_region(mem->start, sizeof(struct mpc52xx_fec));
- 
- 	return ret;
- }
- 
--static void
--mpc52xx_fec_remove(struct ocp_device *ocp)
-+static int
-+mpc52xx_fec_remove(struct device *dev)
- {
--	struct net_device *dev;
-+	struct net_device *ndev;
- 	struct fec_priv *priv;
- 	
--	dev = (struct net_device *) ocp_get_drvdata(ocp);
--	if (!dev)
--		return;
--	priv = (struct fec_priv *) dev->priv;
--
--	unregister_netdev(dev);
--	
--	free_irq(dev->irq, dev);
--	free_irq(priv->r_irq, dev);
--	free_irq(priv->t_irq, dev);
-+	ndev = (struct net_device *) dev_get_drvdata(dev);
-+	if (!ndev)
-+		return 0;
-+	priv = (struct fec_priv *) ndev->priv;
++/* As with the other PowerPC ports, it is expected that when code
++ * execution begins here, the following registers contain valid, yet
++ * optional, information:
++ *
++ *   r3 - Board info structure pointer (DRAM, frequency, MAC address, etc.)
++ *   r4 - Starting address of the init RAM disk
++ *   r5 - Ending address of the init RAM disk
++ *   r6 - Start of kernel command line string (e.g. "mem=128")
++ *   r7 - End of kernel command line string
++ *
++ */
++	.text
++_GLOBAL(_stext)
++_GLOBAL(_start)
++	/*
++	 * Reserve a word at a fixed location to store the address
++	 * of abatron_pteptrs
++	 */
++	nop
++/*
++ * Save parameters we are passed
++ */
++	mr	r31,r3
++	mr	r30,r4
++	mr	r29,r5
++	mr	r28,r6
++	mr	r27,r7
++	li	r24,0		/* CPU number */
 +
-+	unregister_netdev(ndev);
-+	
-+	free_irq(ndev->irq, ndev);
-+	free_irq(priv->r_irq, ndev);
-+	free_irq(priv->t_irq, ndev);
- 
- 	iounmap(priv->fec);
- 	
--	release_mem_region(dev->base_addr, sizeof(struct mpc52xx_fec));
-+	release_mem_region(ndev->base_addr, sizeof(struct mpc52xx_fec));
- 
--	free_netdev(dev);
-+	free_netdev(ndev);
- 	
--	ocp_set_drvdata(ocp, NULL);
-+	dev_set_drvdata(dev, NULL);
-+	return 0;
- }
- 
--static struct ocp_device_id mpc52xx_fec_ids[] __devinitdata = {
--	{ .vendor = OCP_VENDOR_FREESCALE, .function = OCP_FUNC_FEC_MPC52xx },
--	{ .vendor = OCP_VENDOR_INVALID /* Terminating entry */ }
--};
--
--MODULE_DEVICE_TABLE(ocp, mpc52xx_fec_ids);
--
--static struct ocp_driver mpc52xx_fec_ocp_driver = {
--	.name		= "mpc52xx_fec",
--	.id_table	= mpc52xx_fec_ids,
-+static struct device_driver mpc52xx_fec_driver = {
-+	.name	  = DRIVER_NAME,
-+	.bus		= &platform_bus_type,
- 	.probe		= mpc52xx_fec_probe,
- 	.remove		= mpc52xx_fec_remove,
- #ifdef CONFIG_PM
-@@ -735,7 +740,6 @@
- #endif
- };
- 
--
- /* ======================================================================== */
- /* Module                                                                   */
- /* ======================================================================== */
-@@ -743,13 +747,13 @@
- static int __init
- mpc52xx_fec_init(void)
- {
--	return ocp_register_driver(&mpc52xx_fec_ocp_driver);
-+	return driver_register(&mpc52xx_fec_driver);
- }
- 
- static void __exit
- mpc52xx_fec_exit(void)
- {
--	ocp_unregister_driver(&mpc52xx_fec_ocp_driver);
-+	driver_unregister(&mpc52xx_fec_driver);
- }
- 
- 
-diff -Nru a/drivers/net/fec_mpc52xx/fec.h b/drivers/net/fec_mpc52xx/fec.h
---- a/drivers/net/fec_mpc52xx/fec.h	2005-04-01 23:53:43 +04:00
-+++ b/drivers/net/fec_mpc52xx/fec.h	2005-04-01 23:53:43 +04:00
-@@ -229,7 +229,7 @@
- 	u32 r_fdxfc;			/* FEC + 0x2DC */
- 	u32 ieee_r_octets_ok;		/* FEC + 0x2E0 */
- 
--	u32 reserved10[6];		/* FEC + 0x2E4-2FC */
-+	u32 reserved10[7];		/* FEC + 0x2E4-2FC */
- 
- 	u32 reserved11[64];		/* FEC + 0x300-3FF */
- };
-
-
---------------020700080002040609090008--
++/* We try to not make any assumptions about how the boot loader
++ * setup or used the TLBs.  We invalidate all mappings from the
++ * boot loader and load a single entry in TLB1[0] to map the
++ * first 16M of kernel memory.  Any boot info passed from the
++ * bootloader needs to live in this first 16M.
++ *
++ * Requirement on bootloader:
++ *  - The page we're executing in needs to reside in TLB1 and
++ *    have IPROT=1.  If not an invalidate broadcast could
++ *    evict the entry we're currently executing in.
++ *
++ *  r3 = Index of TLB1 were executing in
++ *  r4 = Current MSR[IS]
++ *  r5 = Index of TLB1 temp mapping
++ *
++ * Later in mapin_ram we will correctly map lowmem, and resize TLB1[0]
++ * if needed
++ */
++
++/* 1. Find the index of the entry we're executing in */
++	bl	invstr				/* Find our address */
++invstr:	mflr	r6				/* Make it accessible */
++	mfmsr	r7
++	rlwinm	r4,r7,27,31,31			/* extract MSR[IS] */
++	mfspr	r7, SPRN_PID0
++	slwi	r7,r7,16
++	or	r7,r7,r4
++	mtspr	SPRN_MAS6,r7
++	tlbsx	0,r6				/* search MSR[IS], SPID=PID0 */
++	mfspr	r7,SPRN_MAS1
++	andis.	r7,r7,MAS1_VALID@h
++	bne	match_TLB
++	mfspr	r7,SPRN_PID1
++	slwi	r7,r7,16
++	or	r7,r7,r4
++	mtspr	SPRN_MAS6,r7
++	tlbsx	0,r6				/* search MSR[IS], SPID=PID1 */
++	mfspr	r7,SPRN_MAS1
++	andis.	r7,r7,MAS1_VALID@h
++	bne	match_TLB
++	mfspr	r7, SPRN_PID2
++	slwi	r7,r7,16
++	or	r7,r7,r4
++	mtspr	SPRN_MAS6,r7
++	tlbsx	0,r6				/* Fall through, we had to match */
++match_TLB:
++	mfspr	r7,SPRN_MAS0
++	rlwinm	r3,r7,16,20,31			/* Extract MAS0(Entry) */
++
++	mfspr	r7,SPRN_MAS1			/* Insure IPROT set */
++	oris	r7,r7,MAS1_IPROT@h
++	mtspr	SPRN_MAS1,r7
++	tlbwe
++
++/* 2. Invalidate all entries except the entry we're executing in */
++	mfspr	r9,SPRN_TLB1CFG
++	andi.	r9,r9,0xfff
++	li	r6,0				/* Set Entry counter to 0 */
++1:	lis	r7,0x1000			/* Set MAS0(TLBSEL) = 1 */
++	rlwimi	r7,r6,16,4,15			/* Setup MAS0 = TLBSEL | ESEL(r6) */
++	mtspr	SPRN_MAS0,r7
++	tlbre
++	mfspr	r7,SPRN_MAS1
++	rlwinm	r7,r7,0,2,31			/* Clear MAS1 Valid and IPROT */
++	cmpw	r3,r6
++	beq	skpinv				/* Dont update the current execution TLB */
++	mtspr	SPRN_MAS1,r7
++	tlbwe
++	isync
++skpinv:	addi	r6,r6,1				/* Increment */
++	cmpw	r6,r9				/* Are we done? */
++	bne	1b				/* If not, repeat */
++
++	/* Invalidate TLB0 */
++	li      r6,0x04
++	tlbivax 0,r6
++#ifdef CONFIG_SMP
++	tlbsync
++#endif
++	/* Invalidate TLB1 */
++	li      r6,0x0c
++	tlbivax 0,r6
++#ifdef CONFIG_SMP
++	tlbsync
++#endif
++	msync
++
++/* 3. Setup a temp mapping and jump to it */
++	andi.	r5, r3, 0x1	/* Find an entry not used and is non-zero */
++	addi	r5, r5, 0x1
++	lis	r7,0x1000	/* Set MAS0(TLBSEL) = 1 */
++	rlwimi	r7,r3,16,4,15	/* Setup MAS0 = TLBSEL | ESEL(r3) */
++	mtspr	SPRN_MAS0,r7
++	tlbre
++
++	/* Just modify the entry ID and EPN for the temp mapping */
++	lis	r7,0x1000	/* Set MAS0(TLBSEL) = 1 */
++	rlwimi	r7,r5,16,4,15	/* Setup MAS0 = TLBSEL | ESEL(r5) */
++	mtspr	SPRN_MAS0,r7
++	xori	r6,r4,1		/* Setup TMP mapping in the other Address space */
++	slwi	r6,r6,12
++	oris	r6,r6,(MAS1_VALID|MAS1_IPROT)@h
++	ori	r6,r6,(MAS1_TSIZE(BOOKE_PAGESZ_4K))@l
++	mtspr	SPRN_MAS1,r6
++	mfspr	r6,SPRN_MAS2
++	li	r7,0		/* temp EPN = 0 */
++	rlwimi	r7,r6,0,20,31
++	mtspr	SPRN_MAS2,r7
++	tlbwe
++
++	xori	r6,r4,1
++	slwi	r6,r6,5		/* setup new context with other address space */
++	bl	1f		/* Find our address */
++1:	mflr	r9
++	rlwimi	r7,r9,0,20,31
++	addi	r7,r7,24
++	mtspr	SPRN_SRR0,r7
++	mtspr	SPRN_SRR1,r6
++	rfi
++
++/* 4. Clear out PIDs & Search info */
++	li	r6,0
++	mtspr	SPRN_PID0,r6
++	mtspr	SPRN_PID1,r6
++	mtspr	SPRN_PID2,r6
++	mtspr	SPRN_MAS6,r6
++
++/* 5. Invalidate mapping we started in */
++	lis	r7,0x1000	/* Set MAS0(TLBSEL) = 1 */
++	rlwimi	r7,r3,16,4,15	/* Setup MAS0 = TLBSEL | ESEL(r3) */
++	mtspr	SPRN_MAS0,r7
++	tlbre
++	li	r6,0
++	mtspr	SPRN_MAS1,r6
++	tlbwe
++	/* Invalidate TLB1 */
++	li      r9,0x0c
++	tlbivax 0,r9
++#ifdef CONFIG_SMP
++	tlbsync
++#endif
++	msync
++
++/* 6. Setup KERNELBASE mapping in TLB1[0] */
++	lis	r6,0x1000		/* Set MAS0(TLBSEL) = TLB1(1), ESEL = 0 */
++	mtspr	SPRN_MAS0,r6
++	lis	r6,(MAS1_VALID|MAS1_IPROT)@h
++	ori	r6,r6,(MAS1_TSIZE(BOOKE_PAGESZ_16M))@l
++	mtspr	SPRN_MAS1,r6
++	li	r7,0
++	lis	r6,KERNELBASE@h
++	ori	r6,r6,KERNELBASE@l
++	rlwimi	r6,r7,0,20,31
++	mtspr	SPRN_MAS2,r6
++	li	r7,(MAS3_SX|MAS3_SW|MAS3_SR)
++	mtspr	SPRN_MAS3,r7
++	tlbwe
++
++/* 7. Jump to KERNELBASE mapping */
++	li	r7,0
++	bl	1f			/* Find our address */
++1:	mflr	r9
++	rlwimi	r6,r9,0,20,31
++	addi	r6,r6,24
++	mtspr	SPRN_SRR0,r6
++	mtspr	SPRN_SRR1,r7
++	rfi				/* start execution out of TLB1[0] entry */
++
++/* 8. Clear out the temp mapping */
++	lis	r7,0x1000	/* Set MAS0(TLBSEL) = 1 */
++	rlwimi	r7,r5,16,4,15	/* Setup MAS0 = TLBSEL | ESEL(r5) */
++	mtspr	SPRN_MAS0,r7
++	tlbre
++	mtspr	SPRN_MAS1,r8
++	tlbwe
++	/* Invalidate TLB1 */
++	li      r9,0x0c
++	tlbivax 0,r9
++#ifdef CONFIG_SMP
++	tlbsync
++#endif
++	msync
++
++	/* Establish the interrupt vector offsets */
++	SET_IVOR(0,  CriticalInput);
++	SET_IVOR(1,  MachineCheck);
++	SET_IVOR(2,  DataStorage);
++	SET_IVOR(3,  InstructionStorage);
++	SET_IVOR(4,  ExternalInput);
++	SET_IVOR(5,  Alignment);
++	SET_IVOR(6,  Program);
++	SET_IVOR(7,  FloatingPointUnavailable);
++	SET_IVOR(8,  SystemCall);
++	SET_IVOR(9,  AuxillaryProcessorUnavailable);
++	SET_IVOR(10, Decrementer);
++	SET_IVOR(11, FixedIntervalTimer);
++	SET_IVOR(12, WatchdogTimer);
++	SET_IVOR(13, DataTLBError);
++	SET_IVOR(14, InstructionTLBError);
++	SET_IVOR(15, Debug);
++	SET_IVOR(32, SPEUnavailable);
++	SET_IVOR(33, SPEFloatingPointData);
++	SET_IVOR(34, SPEFloatingPointRound);
++	SET_IVOR(35, PerformanceMonitor);
++
++	/* Establish the interrupt vector base */
++	lis	r4,interrupt_base@h	/* IVPR only uses the high 16-bits */
++	mtspr	SPRN_IVPR,r4
++
++	/* Setup the defaults for TLB entries */
++	li	r2,(MAS4_TSIZED(BOOKE_PAGESZ_4K))@l
++   	mtspr	SPRN_MAS4, r2
++
++#if 0
++	/* Enable DOZE */
++	mfspr	r2,SPRN_HID0
++	oris	r2,r2,HID0_DOZE@h
++	mtspr	SPRN_HID0, r2
++#endif
++
++	/*
++	 * This is where the main kernel code starts.
++	 */
++
++	/* ptr to current */
++	lis	r2,init_task@h
++	ori	r2,r2,init_task@l
++
++	/* ptr to current thread */
++	addi	r4,r2,THREAD	/* init task's THREAD */
++	mtspr	SPRN_SPRG3,r4
++
++	/* stack */
++	lis	r1,init_thread_union@h
++	ori	r1,r1,init_thread_union@l
++	li	r0,0
++	stwu	r0,THREAD_SIZE-STACK_FRAME_OVERHEAD(r1)
++
++	bl	early_init
++
++	mfspr	r3,SPRN_TLB1CFG
++	andi.	r3,r3,0xfff
++	lis	r4,num_tlbcam_entries@ha
++	stw	r3,num_tlbcam_entries@l(r4)
++/*
++ * Decide what sort of machine this is and initialize the MMU.
++ */
++	mr	r3,r31
++	mr	r4,r30
++	mr	r5,r29
++	mr	r6,r28
++	mr	r7,r27
++	bl	machine_init
++	bl	MMU_init
++
++	/* Setup PTE pointers for the Abatron bdiGDB */
++	lis	r6, swapper_pg_dir@h
++	ori	r6, r6, swapper_pg_dir@l
++	lis	r5, abatron_pteptrs@h
++	ori	r5, r5, abatron_pteptrs@l
++	lis	r4, KERNELBASE@h
++	ori	r4, r4, KERNELBASE@l
++	stw	r5, 0(r4)	/* Save abatron_pteptrs at a fixed location */
++	stw	r6, 0(r5)
++
++	/* Let's move on */
++	lis	r4,start_kernel@h
++	ori	r4,r4,start_kernel@l
++	lis	r3,MSR_KERNEL@h
++	ori	r3,r3,MSR_KERNEL@l
++	mtspr	SPRN_SRR0,r4
++	mtspr	SPRN_SRR1,r3
++	rfi			/* change context and jump to start_kernel */
++
++/*
++ * Interrupt vector entry code
++ *
++ * The Book E MMUs are always on so we don't need to handle
++ * interrupts in real mode as with previous PPC processors. In
++ * this case we handle interrupts in the kernel virtual address
++ * space.
++ *
++ * Interrupt vectors are dynamically placed relative to the
++ * interrupt prefix as determined by the address of interrupt_base.
++ * The interrupt vectors offsets are programmed using the labels
++ * for each interrupt vector entry.
++ *
++ * Interrupt vectors must be aligned on a 16 byte boundary.
++ * We align on a 32 byte cache line boundary for good measure.
++ */
++
++interrupt_base:
++	/* Critical Input Interrupt */
++	CRITICAL_EXCEPTION(0x0100, CriticalInput, UnknownException)
++
++	/* Machine Check Interrupt */
++	MCHECK_EXCEPTION(0x0200, MachineCheck, MachineCheckException)
++
++	/* Data Storage Interrupt */
++	START_EXCEPTION(DataStorage)
++	mtspr	SPRN_SPRG0, r10		/* Save some working registers */
++	mtspr	SPRN_SPRG1, r11
++	mtspr	SPRN_SPRG4W, r12
++	mtspr	SPRN_SPRG5W, r13
++	mfcr	r11
++	mtspr	SPRN_SPRG7W, r11
++
++	/*
++	 * Check if it was a store fault, if not then bail
++	 * because a user tried to access a kernel or
++	 * read-protected page.  Otherwise, get the
++	 * offending address and handle it.
++	 */
++	mfspr	r10, SPRN_ESR
++	andis.	r10, r10, ESR_ST@h
++	beq	2f
++
++	mfspr	r10, SPRN_DEAR		/* Get faulting address */
++
++	/* If we are faulting a kernel address, we have to use the
++	 * kernel page tables.
++	 */
++	lis	r11, TASK_SIZE@h
++	ori	r11, r11, TASK_SIZE@l
++	cmplw	0, r10, r11
++	bge	2f
++
++	/* Get the PGD for the current thread */
++3:
++	mfspr	r11,SPRN_SPRG3
++	lwz	r11,PGDIR(r11)
++4:
++	rlwimi	r11, r10, 12, 20, 29	/* Create L1 (pgdir/pmd) address */
++	lwz	r11, 0(r11)		/* Get L1 entry */
++	rlwinm.	r12, r11, 0, 0, 19	/* Extract L2 (pte) base address */
++	beq	2f			/* Bail if no table */
++
++	rlwimi	r12, r10, 22, 20, 29	/* Compute PTE address */
++	lwz	r11, 0(r12)		/* Get Linux PTE */
++
++	/* Are _PAGE_USER & _PAGE_RW set & _PAGE_HWWRITE not? */
++	andi.	r13, r11, _PAGE_RW|_PAGE_USER|_PAGE_HWWRITE
++	cmpwi	0, r13, _PAGE_RW|_PAGE_USER
++	bne	2f			/* Bail if not */
++
++	/* Update 'changed'. */
++	ori	r11, r11, _PAGE_DIRTY|_PAGE_ACCESSED|_PAGE_HWWRITE
++	stw	r11, 0(r12)		/* Update Linux page table */
++
++	/* MAS2 not updated as the entry does exist in the tlb, this
++	   fault taken to detect state transition (eg: COW -> DIRTY)
++	 */
++	lis	r12, MAS3_RPN@h
++	ori	r12, r12, _PAGE_HWEXEC | MAS3_RPN@l
++	and	r11, r11, r12
++	rlwimi	r11, r11, 31, 27, 27	/* SX <- _PAGE_HWEXEC */
++	ori     r11, r11, (MAS3_UW|MAS3_SW|MAS3_UR|MAS3_SR)@l /* set static perms */
++
++	/* update search PID in MAS6, AS = 0 */
++	mfspr	r12, SPRN_PID0
++	slwi	r12, r12, 16
++	mtspr	SPRN_MAS6, r12
++
++	/* find the TLB index that caused the fault.  It has to be here. */
++	tlbsx	0, r10
++
++	mtspr	SPRN_MAS3,r11
++	tlbwe
++
++	/* Done...restore registers and get out of here.  */
++	mfspr	r11, SPRN_SPRG7R
++	mtcr	r11
++	mfspr	r13, SPRN_SPRG5R
++	mfspr	r12, SPRN_SPRG4R
++	mfspr	r11, SPRN_SPRG1
++	mfspr	r10, SPRN_SPRG0
++	rfi			/* Force context change */
++
++2:
++	/*
++	 * The bailout.  Restore registers to pre-exception conditions
++	 * and call the heavyweights to help us out.
++	 */
++	mfspr	r11, SPRN_SPRG7R
++	mtcr	r11
++	mfspr	r13, SPRN_SPRG5R
++	mfspr	r12, SPRN_SPRG4R
++	mfspr	r11, SPRN_SPRG1
++	mfspr	r10, SPRN_SPRG0
++	b	data_access
++
++	/* Instruction Storage Interrupt */
++	INSTRUCTION_STORAGE_EXCEPTION
++
++	/* External Input Interrupt */
++	EXCEPTION(0x0500, ExternalInput, do_IRQ, EXC_XFER_LITE)
++
++	/* Alignment Interrupt */
++	ALIGNMENT_EXCEPTION
++
++	/* Program Interrupt */
++	PROGRAM_EXCEPTION
++
++	/* Floating Point Unavailable Interrupt */
++	EXCEPTION(0x0800, FloatingPointUnavailable, UnknownException, EXC_XFER_EE)
++
++	/* System Call Interrupt */
++	START_EXCEPTION(SystemCall)
++	NORMAL_EXCEPTION_PROLOG
++	EXC_XFER_EE_LITE(0x0c00, DoSyscall)
++
++	/* Auxillary Processor Unavailable Interrupt */
++	EXCEPTION(0x2900, AuxillaryProcessorUnavailable, UnknownException, EXC_XFER_EE)
++
++	/* Decrementer Interrupt */
++	DECREMENTER_EXCEPTION
++
++	/* Fixed Internal Timer Interrupt */
++	/* TODO: Add FIT support */
++	EXCEPTION(0x3100, FixedIntervalTimer, UnknownException, EXC_XFER_EE)
++
++	/* Watchdog Timer Interrupt */
++	/* TODO: Add watchdog support */
++	CRITICAL_EXCEPTION(0x3200, WatchdogTimer, UnknownException)
++
++	/* Data TLB Error Interrupt */
++	START_EXCEPTION(DataTLBError)
++	mtspr	SPRN_SPRG0, r10		/* Save some working registers */
++	mtspr	SPRN_SPRG1, r11
++	mtspr	SPRN_SPRG4W, r12
++	mtspr	SPRN_SPRG5W, r13
++	mfcr	r11
++	mtspr	SPRN_SPRG7W, r11
++	mfspr	r10, SPRN_DEAR		/* Get faulting address */
++
++	/* If we are faulting a kernel address, we have to use the
++	 * kernel page tables.
++	 */
++	lis	r11, TASK_SIZE@h
++	ori	r11, r11, TASK_SIZE@l
++	cmplw	5, r10, r11
++	blt	5, 3f
++	lis	r11, swapper_pg_dir@h
++	ori	r11, r11, swapper_pg_dir@l
++
++	mfspr	r12,SPRN_MAS1		/* Set TID to 0 */
++	rlwinm	r12,r12,0,16,1
++	mtspr	SPRN_MAS1,r12
++
++	b	4f
++
++	/* Get the PGD for the current thread */
++3:
++	mfspr	r11,SPRN_SPRG3
++	lwz	r11,PGDIR(r11)
++
++4:
++	rlwimi	r11, r10, 12, 20, 29	/* Create L1 (pgdir/pmd) address */
++	lwz	r11, 0(r11)		/* Get L1 entry */
++	rlwinm.	r12, r11, 0, 0, 19	/* Extract L2 (pte) base address */
++	beq	2f			/* Bail if no table */
++
++	rlwimi	r12, r10, 22, 20, 29	/* Compute PTE address */
++	lwz	r11, 0(r12)		/* Get Linux PTE */
++	andi.	r13, r11, _PAGE_PRESENT
++	beq	2f
++
++	ori	r11, r11, _PAGE_ACCESSED
++	stw	r11, 0(r12)
++
++	 /* Jump to common tlb load */
++	b	finish_tlb_load
++2:
++	/* The bailout.  Restore registers to pre-exception conditions
++	 * and call the heavyweights to help us out.
++	 */
++	mfspr	r11, SPRN_SPRG7R
++	mtcr	r11
++	mfspr	r13, SPRN_SPRG5R
++	mfspr	r12, SPRN_SPRG4R
++	mfspr	r11, SPRN_SPRG1
++	mfspr	r10, SPRN_SPRG0
++	b	data_access
++
++	/* Instruction TLB Error Interrupt */
++	/*
++	 * Nearly the same as above, except we get our
++	 * information from different registers and bailout
++	 * to a different point.
++	 */
++	START_EXCEPTION(InstructionTLBError)
++	mtspr	SPRN_SPRG0, r10		/* Save some working registers */
++	mtspr	SPRN_SPRG1, r11
++	mtspr	SPRN_SPRG4W, r12
++	mtspr	SPRN_SPRG5W, r13
++	mfcr	r11
++	mtspr	SPRN_SPRG7W, r11
++	mfspr	r10, SPRN_SRR0		/* Get faulting address */
++
++	/* If we are faulting a kernel address, we have to use the
++	 * kernel page tables.
++	 */
++	lis	r11, TASK_SIZE@h
++	ori	r11, r11, TASK_SIZE@l
++	cmplw	5, r10, r11
++	blt	5, 3f
++	lis	r11, swapper_pg_dir@h
++	ori	r11, r11, swapper_pg_dir@l
++
++	mfspr	r12,SPRN_MAS1		/* Set TID to 0 */
++	rlwinm	r12,r12,0,16,1
++	mtspr	SPRN_MAS1,r12
++
++	b	4f
++
++	/* Get the PGD for the current thread */
++3:
++	mfspr	r11,SPRN_SPRG3
++	lwz	r11,PGDIR(r11)
++
++4:
++	rlwimi	r11, r10, 12, 20, 29	/* Create L1 (pgdir/pmd) address */
++	lwz	r11, 0(r11)		/* Get L1 entry */
++	rlwinm.	r12, r11, 0, 0, 19	/* Extract L2 (pte) base address */
++	beq	2f			/* Bail if no table */
++
++	rlwimi	r12, r10, 22, 20, 29	/* Compute PTE address */
++	lwz	r11, 0(r12)		/* Get Linux PTE */
++	andi.	r13, r11, _PAGE_PRESENT
++	beq	2f
++
++	ori	r11, r11, _PAGE_ACCESSED
++	stw	r11, 0(r12)
++
++	/* Jump to common TLB load point */
++	b	finish_tlb_load
++
++2:
++	/* The bailout.  Restore registers to pre-exception conditions
++	 * and call the heavyweights to help us out.
++	 */
++	mfspr	r11, SPRN_SPRG7R
++	mtcr	r11
++	mfspr	r13, SPRN_SPRG5R
++	mfspr	r12, SPRN_SPRG4R
++	mfspr	r11, SPRN_SPRG1
++	mfspr	r10, SPRN_SPRG0
++	b	InstructionStorage
++
++#ifdef CONFIG_SPE
++	/* SPE Unavailable */
++	START_EXCEPTION(SPEUnavailable)
++	NORMAL_EXCEPTION_PROLOG
++	bne	load_up_spe
++	addi    r3,r1,STACK_FRAME_OVERHEAD
++	EXC_XFER_EE_LITE(0x2010, KernelSPE)
++#else
++	EXCEPTION(0x2020, SPEUnavailable, UnknownException, EXC_XFER_EE)
++#endif /* CONFIG_SPE */
++
++	/* SPE Floating Point Data */
++#ifdef CONFIG_SPE
++	EXCEPTION(0x2030, SPEFloatingPointData, SPEFloatingPointException, EXC_XFER_EE);
++#else
++	EXCEPTION(0x2040, SPEFloatingPointData, UnknownException, EXC_XFER_EE)
++#endif /* CONFIG_SPE */
++
++	/* SPE Floating Point Round */
++	EXCEPTION(0x2050, SPEFloatingPointRound, UnknownException, EXC_XFER_EE)
++
++	/* Performance Monitor */
++	EXCEPTION(0x2060, PerformanceMonitor, PerformanceMonitorException, EXC_XFER_STD)
++
++
++	/* Debug Interrupt */
++	DEBUG_EXCEPTION
++
++/*
++ * Local functions
++ */
++	/*
++	 * Data TLB exceptions will bail out to this point
++	 * if they can't resolve the lightweight TLB fault.
++	 */
++data_access:
++	NORMAL_EXCEPTION_PROLOG
++	mfspr	r5,SPRN_ESR		/* Grab the ESR, save it, pass arg3 */
++	stw	r5,_ESR(r11)
++	mfspr	r4,SPRN_DEAR		/* Grab the DEAR, save it, pass arg2 */
++	andis.	r10,r5,(ESR_ILK|ESR_DLK)@h
++	bne	1f
++	EXC_XFER_EE_LITE(0x0300, handle_page_fault)
++1:
++	addi	r3,r1,STACK_FRAME_OVERHEAD
++	EXC_XFER_EE_LITE(0x0300, CacheLockingException)
++
++/*
++
++ * Both the instruction and data TLB miss get to this
++ * point to load the TLB.
++ * 	r10 - EA of fault
++ * 	r11 - TLB (info from Linux PTE)
++ * 	r12, r13 - available to use
++ * 	CR5 - results of addr < TASK_SIZE
++ *	MAS0, MAS1 - loaded with proper value when we get here
++ *	MAS2, MAS3 - will need additional info from Linux PTE
++ *	Upon exit, we reload everything and RFI.
++ */
++finish_tlb_load:
++	/*
++	 * We set execute, because we don't have the granularity to
++	 * properly set this at the page level (Linux problem).
++	 * Many of these bits are software only.  Bits we don't set
++	 * here we (properly should) assume have the appropriate value.
++	 */
++
++	mfspr	r12, SPRN_MAS2
++	rlwimi	r12, r11, 26, 27, 31	/* extract WIMGE from pte */
++	mtspr	SPRN_MAS2, r12
++
++	bge	5, 1f
++
++	/* addr > TASK_SIZE */
++	li	r10, (MAS3_UX | MAS3_UW | MAS3_UR)
++	andi.	r13, r11, (_PAGE_USER | _PAGE_HWWRITE | _PAGE_HWEXEC)
++	andi.	r12, r11, _PAGE_USER	/* Test for _PAGE_USER */
++	iseleq	r12, 0, r10
++	and	r10, r12, r13
++	srwi	r12, r10, 1
++	or	r12, r12, r10	/* Copy user perms into supervisor */
++	b	2f
++
++	/* addr <= TASK_SIZE */
++1:	rlwinm	r12, r11, 31, 29, 29	/* Extract _PAGE_HWWRITE into SW */
++	ori	r12, r12, (MAS3_SX | MAS3_SR)
++
++2:	rlwimi	r11, r12, 0, 20, 31	/* Extract RPN from PTE and merge with perms */
++	mtspr	SPRN_MAS3, r11
++	tlbwe
++
++	/* Done...restore registers and get out of here.  */
++	mfspr	r11, SPRN_SPRG7R
++	mtcr	r11
++	mfspr	r13, SPRN_SPRG5R
++	mfspr	r12, SPRN_SPRG4R
++	mfspr	r11, SPRN_SPRG1
++	mfspr	r10, SPRN_SPRG0
++	rfi					/* Force context change */
++
++#ifdef CONFIG_SPE
++/* Note that the SPE support is closely modeled after the AltiVec
++ * support.  Changes to one are likely to be applicable to the
++ * other!  */
++load_up_spe:
++/*
++ * Disable SPE for the task which had SPE previously,
++ * and save its SPE registers in its thread_struct.
++ * Enables SPE for use in the kernel on return.
++ * On SMP we know the SPE units are free, since we give it up every
++ * switch.  -- Kumar
++ */
++	mfmsr	r5
++	oris	r5,r5,MSR_SPE@h
++	mtmsr	r5			/* enable use of SPE now */
++	isync
++/*
++ * For SMP, we don't do lazy SPE switching because it just gets too
++ * horrendously complex, especially when a task switches from one CPU
++ * to another.  Instead we call giveup_spe in switch_to.
++ */
++#ifndef CONFIG_SMP
++	lis	r3,last_task_used_spe@ha
++	lwz	r4,last_task_used_spe@l(r3)
++	cmpi	0,r4,0
++	beq	1f
++	addi	r4,r4,THREAD	/* want THREAD of last_task_used_spe */
++	SAVE_32EVR(0,r10,r4)
++   	evxor	evr10, evr10, evr10	/* clear out evr10 */
++	evmwumiaa evr10, evr10, evr10	/* evr10 <- ACC = 0 * 0 + ACC */
++	li	r5,THREAD_ACC
++   	evstddx	evr10, r4, r5		/* save off accumulator */
++	lwz	r5,PT_REGS(r4)
++	lwz	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
++	lis	r10,MSR_SPE@h
++	andc	r4,r4,r10	/* disable SPE for previous task */
++	stw	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
++1:
++#endif /* CONFIG_SMP */
++	/* enable use of SPE after return */
++	oris	r9,r9,MSR_SPE@h
++	mfspr	r5,SPRN_SPRG3		/* current task's THREAD (phys) */
++	li	r4,1
++	li	r10,THREAD_ACC
++	stw	r4,THREAD_USED_SPE(r5)
++	evlddx	evr4,r10,r5
++	evmra	evr4,evr4
++	REST_32EVR(0,r10,r5)
++#ifndef CONFIG_SMP
++	subi	r4,r5,THREAD
++	stw	r4,last_task_used_spe@l(r3)
++#endif /* CONFIG_SMP */
++	/* restore registers and return */
++2:	REST_4GPRS(3, r11)
++	lwz	r10,_CCR(r11)
++	REST_GPR(1, r11)
++	mtcr	r10
++	lwz	r10,_LINK(r11)
++	mtlr	r10
++	REST_GPR(10, r11)
++	mtspr	SPRN_SRR1,r9
++	mtspr	SPRN_SRR0,r12
++	REST_GPR(9, r11)
++	REST_GPR(12, r11)
++	lwz	r11,GPR11(r11)
++	SYNC
++	rfi
++
++/*
++ * SPE unavailable trap from kernel - print a message, but let
++ * the task use SPE in the kernel until it returns to user mode.
++ */
++KernelSPE:
++	lwz	r3,_MSR(r1)
++	oris	r3,r3,MSR_SPE@h
++	stw	r3,_MSR(r1)	/* enable use of SPE after return */
++	lis	r3,87f@h
++	ori	r3,r3,87f@l
++	mr	r4,r2		/* current */
++	lwz	r5,_NIP(r1)
++	bl	printk
++	b	ret_from_except
++87:	.string	"SPE used in kernel  (task=%p, pc=%x)  \n"
++	.align	4,0
++
++#endif /* CONFIG_SPE */
++
++/*
++ * Global functions
++ */
++
++/*
++ * extern void loadcam_entry(unsigned int index)
++ *
++ * Load TLBCAM[index] entry in to the L2 CAM MMU
++ */
++_GLOBAL(loadcam_entry)
++	lis	r4,TLBCAM@ha
++	addi	r4,r4,TLBCAM@l
++	mulli	r5,r3,20
++	add	r3,r5,r4
++	lwz	r4,0(r3)
++	mtspr	SPRN_MAS0,r4
++	lwz	r4,4(r3)
++	mtspr	SPRN_MAS1,r4
++	lwz	r4,8(r3)
++	mtspr	SPRN_MAS2,r4
++	lwz	r4,12(r3)
++	mtspr	SPRN_MAS3,r4
++	tlbwe
++	isync
++	blr
++
++/*
++ * extern void giveup_altivec(struct task_struct *prev)
++ *
++ * The e500 core does not have an AltiVec unit.
++ */
++_GLOBAL(giveup_altivec)
++	blr
++
++#ifdef CONFIG_SPE
++/*
++ * extern void giveup_spe(struct task_struct *prev)
++ *
++ */
++_GLOBAL(giveup_spe)
++	mfmsr	r5
++	oris	r5,r5,MSR_SPE@h
++	SYNC
++	mtmsr	r5			/* enable use of SPE now */
++	isync
++	cmpi	0,r3,0
++	beqlr-				/* if no previous owner, done */
++	addi	r3,r3,THREAD		/* want THREAD of task */
++	lwz	r5,PT_REGS(r3)
++	cmpi	0,r5,0
++	SAVE_32EVR(0, r4, r3)
++   	evxor	evr6, evr6, evr6	/* clear out evr6 */
++	evmwumiaa evr6, evr6, evr6	/* evr6 <- ACC = 0 * 0 + ACC */
++	li	r4,THREAD_ACC
++   	evstddx	evr6, r4, r3		/* save off accumulator */
++	mfspr	r6,SPRN_SPEFSCR
++	stw	r6,THREAD_SPEFSCR(r3)	/* save spefscr register value */
++	beq	1f
++	lwz	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
++	lis	r3,MSR_SPE@h
++	andc	r4,r4,r3		/* disable SPE for previous task */
++	stw	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
++1:
++#ifndef CONFIG_SMP
++	li	r5,0
++	lis	r4,last_task_used_spe@ha
++	stw	r5,last_task_used_spe@l(r4)
++#endif /* CONFIG_SMP */
++	blr
++#endif /* CONFIG_SPE */
++
++/*
++ * extern void giveup_fpu(struct task_struct *prev)
++ *
++ * The e500 core does not have an FPU.
++ */
++_GLOBAL(giveup_fpu)
++	blr
++
++/*
++ * extern void abort(void)
++ *
++ * At present, this routine just applies a system reset.
++ */
++_GLOBAL(abort)
++	li	r13,0
++        mtspr   SPRN_DBCR0,r13		/* disable all debug events */
++	mfmsr	r13
++	ori	r13,r13,MSR_DE@l	/* Enable Debug Events */
++	mtmsr	r13
++        mfspr   r13,SPRN_DBCR0
++        lis	r13,(DBCR0_IDM|DBCR0_RST_CHIP)@h
++        mtspr   SPRN_DBCR0,r13
++
++_GLOBAL(set_context)
++
++#ifdef CONFIG_BDI_SWITCH
++	/* Context switch the PTE pointer for the Abatron BDI2000.
++	 * The PGDIR is the second parameter.
++	 */
++	lis	r5, abatron_pteptrs@h
++	ori	r5, r5, abatron_pteptrs@l
++	stw	r4, 0x4(r5)
++#endif
++	mtspr	SPRN_PID,r3
++	isync			/* Force context change */
++	blr
++
++/*
++ * We put a few things here that have to be page-aligned. This stuff
++ * goes at the beginning of the data segment, which is page-aligned.
++ */
++	.data
++_GLOBAL(sdata)
++_GLOBAL(empty_zero_page)
++	.space	4096
++_GLOBAL(swapper_pg_dir)
++	.space	4096
++
++/* Reserved 4k for the critical exception stack & 4k for the machine
++ * check stack per CPU for kernel mode exceptions */
++	.section .bss
++        .align 12
++exception_stack_bottom:
++	.space	BOOKE_EXCEPTION_STACK_SIZE * NR_CPUS
++_GLOBAL(exception_stack_top)
++
++/*
++ * This space gets a copy of optional info passed to us by the bootstrap
++ * which is used to pass parameters into the kernel like root=/dev/sda1, etc.
++ */
++_GLOBAL(cmd_line)
++	.space	512
++
++/*
++ * Room for two PTE pointers, usually the kernel and current user pointers
++ * to their respective root page table.
++ */
++abatron_pteptrs:
++	.space	8
++
