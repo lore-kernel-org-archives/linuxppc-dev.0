@@ -1,36 +1,38 @@
-Date: Wed, 28 Jul 1999 12:16:10 +0200
-To: linuxppc-dev@lists.linuxppc.org
-CC: kevyn@mail.apple.com
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Wallstreet sleep, second try
-Message-Id: <19990728121610.027921@mail.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <379EF84B.8E9B69D4@zg.tel.hr>
+Date: Wed, 28 Jul 1999 14:32:13 +0200
+From: Stanko Juzbasic <stanko.juzbasic@zg.tel.hr>
+Reply-To: stanko.juzbasic@zg.tel.hr
+MIME-Version: 1.0
+To: Bill Schottstaedt <bil@ccrma.Stanford.EDU>, paulus@cs.anu.edu.au,
+        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: Audio file open problem on LINUXPPC 1999 solution
+Content-Type: text/plain; charset=iso-8859-1; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I've made a little bit more progress regarding sleep on the wallstreet
-powerbooks. It's still not working (crashing on wakeup), but the sleep
-code seems ok (the ROM reset code now always correctly detect the fact
-that the machine went to sleep and never reboots when waking up).
+To whoever it may concern
 
-I've been unable to find a way to debug the wakeup for now (I tried
-writing things on screen since the external monitor is back as soon as
-the machine wakes up and I tried sending things to the SCC, without much
-success neither).
+It seems I found the cause and solution to the LINUXPPC 1999 audio file
+open problem I wrote about two days ago:
 
-If you want to play with the code and eventually find out what's going
-on, the curent patches against 2.2.10 are at:
-<http://calvaweb.calvacom.fr/bh40/sleep_test2.tar.gz>. You need to have
-xmon compiled into your kernel.
+The problem occurs only if one installs the new LINUXPPC 1999 filesystem
+from scratch using the release CD-ROM installer. It has several  bugs,
+among which this one:
 
+- it fails to create /dev/dsp (eventhough it creates /dev/dsp1...),
+without giving a notice
+- default system sound apps have an endianness problem, so they don’t
+give a proper
+    error message.
 
--- 
-           Perso. e-mail: <mailto:bh40@calva.net>
-           Work   e-mail: <mailto:benh@mipsys.com>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+The solution is to [MAKEDEV audio] manually and rebuild CCRMA sndlib,
+and sound will work perfectly.
 
+Best,
+
+Stanko
+.
 
 
 
