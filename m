@@ -3,47 +3,43 @@ Content-Type: text/plain;
 From: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
 To: Franz Sirl <Franz.Sirl-ppc@lauterbach.com>
 Subject: Re: asm inline
-Date: Mon, 2 Dec 2002 10:08:21 -0500
+Date: Mon, 2 Dec 2002 10:11:55 -0500
 Cc: Andreas Schwab <schwab@suse.de>, linuxppc-dev@lists.linuxppc.org
 References: <jeisycebok.fsf@sykes.suse.de> <5.2.0.9.2.20021202154112.0512a008@mail.lauterbach.com>
 In-Reply-To: <5.2.0.9.2.20021202154112.0512a008@mail.lauterbach.com>
 MIME-Version: 1.0
-Message-Id: <200212021008.21007.kevin.hendricks@sympatico.ca>
+Message-Id: <200212021011.55105.kevin.hendricks@sympatico.ca>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 Hi,
 
-The Sun JDK 1.3.X source is not strict aliasing safe and that has been
-built on a number of platforms and compilers for a long time (I found that
-out the hard way a year or two back).
+Here is what Sun's Hamburg developers wrote in reply...
 
-Also OOo used gcc-2.95.4 for a long time (it never supported or used gcc
-2.96) and still uses gcc-3.0.4 at -O1 and -O2 for its official binaries
-and I do not belive that turns on strict-aliasing at all.
+> Hi Kevin,
+>
+> -fstrict-aliasing is in -O2 optimization since gcc-3.0.x. And no, our
+> code is not strict alias safe. You'll get some problems, I know of at
+> least one place in sc. I bet there are more.
+>
+> I recommend to use -O2 -fno-strict-aliasing. This is what Hamburg
+> release engineering currently uses.
+>
+> If someone is able to identify all strict alias violating places I would
+> be more than happy to propose that we change these (or add the
+> -fno-strict-alias to just these files).
+>
+> Heiner
 
-They will stick with gcc-3.0.4 for x86 binaries since they must maintain
-c++ compatibilitiy with proprietary binary only components for StarOffice.
+So it looks like Solaris and Win must not detect these issues already.
+So a backport of the gcc 3.3 warning flag would certainly be a big help to
+the OOo project as well.
 
-Either way, I sent a query to the dev@openoffice.org list to see if anyone
-can bring me up to date on any known strict-alising issues.
-
-I have always used -fno-strict-aliasing for all the JDK and OOo binaries
-since I was burned by it much earlier and could not find where exactly in
-the code the optimization introduced a change.
-
-So the only people who would have any empirical eveidence as to how strict
-aliasing safe the OOo code would be are probably Redhat or Mandrake who
-have incorporated OOo into their distributions with a later compiler (I
-think Debian still uses gcc 2.95.X as their official compiler and I am not
-sure what SuSE is using now but Olaf always used gcc 2.95.X for ppc 7.3)
-
-The Apple gcc 3.1 compiler explicitly turns off  strict-aliasing according
-to their man page.   So only if the Solaris Forte or the WIN compilers
-catch it will those issues already have been fixed.
+Thanks,
 
 Kevin
+
 
 
 On December 2, 2002 09:51, Franz Sirl wrote:
@@ -70,6 +66,8 @@ On December 2, 2002 09:51, Franz Sirl wrote:
 > still contained reasonable amounts of aliasing-unsafe code.
 >
 > Franz.
+>
+>
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
