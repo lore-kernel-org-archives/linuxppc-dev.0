@@ -1,44 +1,28 @@
-Message-Id: <199909131813.UAA00324@piglet.cpu.lu>
-Date: Mon, 13 Sep 1999 20:13:31 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: controlfb.c bug in VRAM bank2 check if bank1
-To: ldl@chpc.utah.edu
-cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <37DBDBB6.4B608A42@chpc.utah.edu>
+Message-ID: <37DD46B2.BFED562@fi.infn.it>
+Date: Mon, 13 Sep 1999 20:47:14 +0200
+From: Simone Piccardi <Simone.Piccardi@fi.infn.it>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: A question about zImage when booting from HD
+References: <2B0D01F974CBD211B9150000F8085A1E036873AA@itexchsrv2.phx.mcd.mot.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  12 Sep, this message from Lou Langholtz echoed through cyberspace:
-> If I had a spare PowerMac 7500 I'd love to test every combo and see what gets
-> detected where. Unfortunately I don't, but hope someone else can do this
-> instead and get conclusive info that we need. It concerns me too that people
-> with 8500's (that seem to have the same graphics card) seem to observe
-> different behavior in detection.
+I'm using /dev/sda3 to boot, but I tried anyway to zero it to see if
+something change, but without success. I give a dd if=/dev/zero
+of=/dev/sda3 count=100 and then I copied again zImage in the partition,
+but the result was the same of before. 
 
-Yeah; might prove interesting to compare the results on a 7500 with
-those on a 8500...
+Before erasing all my system I would like to be sure that if I use
+/dev/sda1 it will work. My board is a MVME2432 with a MPC101 PCI
+mezzanine card.
 
-> What version of controlfb are you using? Current from the 2.2 kernel tree,
-> 2.3 kernel tree, or 2.2 or 2.3 from vger, or even somewhere else. 2.2.12
-> wouldn't detect all 4MB VRAM in my 7500 box. I'm sorry but I haven't kept up
-> very well with all the different distributions of source. Let me know which
-> release then you use and I'll eagerely check it out ;-)
-
-Hmm... official 2.2.12 does detect my 4 MB... and this is a 7600, so
-the same motherboard as the 7500...
-
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
-
+Thanks
+-- 
+Simone Piccardi
+Microsoft is NOT the answer. Microsoft is the Question.
+The answer is: "NO!"
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
