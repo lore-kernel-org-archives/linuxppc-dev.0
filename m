@@ -1,47 +1,31 @@
-From: "Chris Hallinan" <clh@net1plus.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: ppc_4xx-gdb and modules
-Date: Mon, 22 Oct 2001 13:27:06 -0400
-Message-ID: <NEBBKJPFOLJNBMFNKBIIKEDICJAA.clh@net1plus.com>
+Subject: 405GP cat /proc/interrupts
+To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <OF8E67EA1A.B526D51D-ON85256AED.0064781F@raleigh.ibm.com>
+From: "John F Davis" <johndavi@us.ibm.com>
+Date: Mon, 22 Oct 2001 14:24:44 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-We are having a problem displaying variables from a loadable module
-using gdb.  The short description of the problem is this:
-configuration: Linux version 2.4.2-mvista_010303, gdb version 5.0
-(from MV distribution) configured as powerpc-hardhat-linux, custom
-h/w platform.
+Hello
 
-In order to break/step/etc in module code using gdb, one loads the
-module symbol file with an offset, determined in a number of ways,
-like this:
-add-sym module.o OFFSET, where offset is the module load address,
-i.e. THIS_MODULE.  This tells gdb where the module ended up when
-loaded with insmod.
+I am using linux kernel 2.4.2_hhl20 (pre 2.0 CDK) with a custom modified
+arch/ppc/kernel/ppc4xx_pic.c so that
+it uses level, positive interrupts.  Note, I have tweaked the mtdcr calls
+so it modifies UIC0_PR, TR, and CR to match
+our hardware.  With that said, why does cat /proc/interrupts say that I am
+using Edge Sensitive interrupts when I have
+modified the TR register to be Level sensitive?
 
-However, when we try to access data variables (ours are located in
-the initialized data section according to the output of ppc_4xx-nm),
-gdb apparently uses only the OFFSET given on the add-sym command
-line to evaluate the address of the variable, and does not apply the
-offset of the 'text' section.  The result is garbage, essentially
-the offset of the variable in the initialized data section added to
-the value passed on the add-sym command, usually right in the middle
-of the text (code) section.
+I am asking this, because I have a problem where I am missing interrupts
+when they are generated quickly.  I am hoping that
+the /proc/interrupts mismatch is a clue that I have not completed the Edge
+to Level interrupt modification.  If you know of a file
+besides ppc4xx_pic.c which needs to be modified, please let me know.
 
-Is this a bug in gdb, or are we using it wrong?  Is there a way to
-tell gdb that this data variable is in the initialized data section,
-and it must add not only the OFFSET given on the add-sym command
-line, but also an offset determined by it's actual location in the
-module beyond the text section?
-
-I hope this appreviated description proves useful...
-
--Chris Hallinan
-DS4.COM, Inc.
+John
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
