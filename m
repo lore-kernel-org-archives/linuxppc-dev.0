@@ -1,29 +1,28 @@
-Message-Id: <200403310303.i2V3366P010744@ms.usish.com>
-From: "Jack Liu" <Jack_liu@usish.com>
-To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Network problem: Ping is OK, Yet telnet and ftp etc is not working
+Message-Id: <200403311110.FAA01298@lists.linuxppc.org>
+Date: Wed, 31 Mar 2004 19:11:12 +0800
+From: "jeffy" <leo_guo@jisung.cn>
+To: "linuxppc-embedded@lists.linuxppc" <linuxppc-embedded@lists.linuxppc.org>
+Cc: "Wolfgang Denk" <wd@denx.de>
+Subject: Boot problems on MPC8250!!!
 Mime-Version: 1.0
 Content-Type: text/plain
-Date: Wed, 31 Mar 2004 11:2:22 +0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi,all
+Hi all:
+ I am porting U-BOOT and PPCLinux to my MPC8250 board, now when UBOOT
+boots up and it can runs serveral steps, after the entry "serial_init()"
+in board_init_f(), it hangs! I add a "serial_puts("***")" at
+the end serial_init(), it can print out, and in UBOOT, the next
+entry after "serial_init" should be "console_init_f", so I and a
+"serial_puts("aaaa")" at the begin of "console_init_f", it don't print
+out! (the soft watch dog is disabled), why about this?
 
-     We use ADMTek AN983B chip as our network chip. And I have porting
-linux to this MPC8241 platform.Now I have a very strange problem:
-   If I ping my target, no answer. When I start tcpdump on my target,
-the ping ... works fine. Since the hardware is put into promiscuous
-mode when tcpdump is running, So I use ifconfig to put NIC work in
-promiscuous mode. I thought it can temporarily solve the problem. Now
-ping is OK. However When I telnet other machine, no answer.And When I
-telnet my target, still no answer. I thought it may because of firewall.
-So I undef CONFIG_NETFILTER in .config and autoconf.h. Still the same.
-So what could be the problem?
+	Thanks a lot!
+	Best Regards!
 
-Best regards
-
-Jack Liu
+jeffy
+leo_guo@jisung.cn
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
