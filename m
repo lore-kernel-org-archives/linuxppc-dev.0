@@ -1,61 +1,126 @@
-Date: Wed, 26 Apr 2000 15:40:26 -0700
-From: Tim Wojtulewicz <Tim.Wojtulewicz@NAU.EDU>
-Subject: Re: Dual head on a Powerbook
-In-reply-to: <200004262125.XAA14159@macocotte.inria.fr>
-To: Jean-Jacques.Levy@inria.fr, linuxppc-dev@lists.linuxppc.org
-Message-id: <p04310101b52d1fabac8e@[134.114.15.89]>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii; format=flowed
-References: <200004262125.XAA14159@macocotte.inria.fr>
+Message-Id: <200004262254.PAA23995@pop3.ucdavis.edu>
+Date: Wed, 26 Apr 2000 15:54:18 -0700
+Subject: Re: XFree 4.0 dual monitor on AGP G4
+From: "W. Taylor Holliday" <wtholliday@ucdavis.edu>
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+CC: daenzerm@student.ethz.ch, linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 11:25 PM +0200 4/26/00, Jean-Jacques Levy wrote:
->Already asked this question on Sun, 21 Nov 1999. And on Mon, 3 Jan 2000.
->On Tue, 4 Jan 2000, there was following answer from Benh:
+> Care to post a lspci -vv log?
 >
->  "features like mirroring and multi-head provided by the
->   Rage LT and LT Pro video controllers of the PowerBook are not enabled by
->   Linux drivers. I know Brad Midgley is working on implementing the LT Pro
->   multihead. It would probably be possible to more easily enable simple
->   mirroring if someone takes the time to hack into the driver."
->
->In the linuxcare web page, it's mentioned that
->
->   "the video acceleration problem is truly weird, you can write to
->    certain registers and only some bits go in, the other bits are stuck."
->
->Myself, for a presentation, I boot (No Video Driver option) with video
->on the external projector, and blank screen on LCD. It works; it's
->very unconvenient; it's with Xpmac (otherwise too slow).
->
->I would love to know current status. Is it not simpler to make a patch
->for video mirroring? Which is enough for presentations.  Multihead is
->a luxurious solution.
->
->-JJ-
+>  Michael
 
-I've tried a couple of things, including setting up the video
-settings in MacOS and restarting to linux.  That doesn't work.  At
-the point where the display is first "initiailized", some text
-appears on the external monitor.  I haven't been able to read the
-message completely and write it down, but I know it has some thing to
-do with "OF quiescence" and "fake <something>".  I'm not to
-experienced with the PPC drivers and such, so I would have no idea
-what these mean.
+noprob, here it is
 
-My current setup is now:  Pismo Powerbook, LinuxPPC 2000, current
-linux-pmac-stable kernel (2.2.15-pre19), Xpmac.rev10
+00:0d.0 PCI bridge: Digital Equipment Corporation DECchip 21154 (rev 05)
+ Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+Stepping- SERR+ FastB2B-
+ Status: Cap+ 66Mhz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort-
+<MAbort- >SERR- <PERR-
+ Latency: 32 set, cache line size 08
+ Bus: primary=00, secondary=01, subordinate=01, sec-latency=32
+ I/O behind bridge: 00001000-00001fff
+ Memory behind bridge: 80000000-87ffffff
+ Prefetchable memory behind bridge: 0000000080000000-000000007ff00000
+ BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
 
-Tim
---
+00:10.0 VGA compatible controller: ATI Technologies Inc: Unknown device 5246
+ Subsystem: Unknown device b530:0408
+ Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+Stepping+ SERR- FastB2B-
+ Status: Cap+ 66Mhz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort-
+<MAbort- >SERR- <PERR-
+ Latency: 8 min, 255 set, cache line size 08
+ Interrupt: pin A routed to IRQ 48
+ Region 0: Memory at 94000000 (32-bit, prefetchable)
+ Region 1: I/O ports at 0400 [disabled]
+ Region 2: Memory at 90000000 (32-bit, non-prefetchable)
+ Capabilities: <available only to root>
 
--------
-Tim Wojtulewicz           Tim.Wojtulewicz@nau.edu
-(520)523-2543             http://dana.ucc.nau.edu/~tjw4
+01:02.0 SCSI storage controller: Adaptec AIC-7850 (rev 03)
+ Subsystem: Unknown device 9004:7850
+ Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+Stepping- SERR- FastB2B-
+ Status: Cap+ 66Mhz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort-
+<MAbort- >SERR- <PERR-
+ Latency: 4 min, 4 max, 16 set, cache line size 08
+ Interrupt: pin A routed to IRQ 52
+ Region 0: I/O ports at <unassigned>
+ Region 1: Memory at 80084000 (32-bit, non-prefetchable)
+ Capabilities: <available only to root>
 
-In the Windows world, you are one click away from
-harming yourself -- Elias Levy, Bugtraq
+01:03.0 VGA compatible controller: ATI Technologies Inc: Unknown device 5245
+ Subsystem: Unknown device b530:0408
+ Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+Stepping+ SERR- FastB2B-
+ Status: Cap+ 66Mhz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort-
+<MAbort- >SERR- <PERR-
+ Latency: 8 min, 16 set, cache line size 08
+ Interrupt: pin A routed to IRQ 53
+ Region 0: Memory at 84000000 (32-bit, prefetchable)
+ Region 1: I/O ports at 1000 [disabled]
+ Region 2: Memory at 8008c000 (32-bit, non-prefetchable)
+ Capabilities: <available only to root>
+
+01:07.0 Class ff00: Apple Computer Inc.: Unknown device 0022 (rev 02)
+ Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr-
+Stepping- SERR- FastB2B-
+ Status: Cap- 66Mhz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort-
+<MAbort- >SERR- <PERR-
+ Latency: 16 set, cache line size 08
+ Region 0: Memory at 80000000 (32-bit, non-prefetchable)
+
+01:08.0 USB Controller: Apple Computer Inc.: Unknown device 0019 (prog-if
+10)
+ Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+Stepping- SERR- FastB2B-
+ Status: Cap- 66Mhz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort-
+<MAbort- >SERR- <PERR-
+ Latency: 3 min, 86 max, 16 set
+ Interrupt: pin A routed to IRQ 27
+ Region 0: Memory at 80083000 (32-bit, non-prefetchable)
+
+01:09.0 USB Controller: Apple Computer Inc.: Unknown device 0019 (prog-if
+10)
+ Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+Stepping- SERR- FastB2B-
+ Status: Cap- 66Mhz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort-
+<MAbort- >SERR- <PERR-
+ Latency: 3 min, 86 max, 16 set
+ Interrupt: pin A routed to IRQ 28
+ Region 0: Memory at 80082000 (32-bit, non-prefetchable)
+
+01:0a.0 FireWire (IEEE 1394): Texas Instruments: Unknown device 8019
+(prog-if 10)
+ Control: I/O- Mem- BusMaster- SpecCycle- MemWINV+ VGASnoop- ParErr-
+Stepping- SERR- FastB2B-
+ Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort-
+<MAbort- >SERR- <PERR-
+ Interrupt: pin A routed to IRQ 63
+ Region 0: Memory at 80081000 (32-bit, non-prefetchable) [disabled]
+ Region 1: Memory at 80088000 (32-bit, non-prefetchable) [disabled]
+ Capabilities: <available only to root>
+
+01:0b.0 Ethernet controller: Digital Equipment Corporation DECchip 21142/43
+(rev 41)
+ Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr-
+Stepping- SERR- FastB2B-
+ Status: Cap+ 66Mhz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort-
+<MAbort- >SERR- <PERR-
+ Latency: 20 min, 40 max, 96 set, cache line size 08
+ Interrupt: pin A routed to IRQ 58
+ Region 0: I/O ports at 1000
+ Region 1: Memory at 80080000 (32-bit, non-prefetchable) [disabled]
+ Capabilities: <available only to root>
+
+
+Thanx again for your help
+(I think I previously posted my /proc/pci if u need it)
+
+- Taylor
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
