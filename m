@@ -1,28 +1,32 @@
-Message-ID: <000501c28f63$18d742d0$1200a8c0@hardware03>
-From: "cheng" <chete@21cn.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: what's wrong about the  psim 
-Date: Tue, 19 Nov 2002 08:31:53 +0800
+Message-ID: <3DD98FD4.3020804@gmx.de>
+Date: Tue, 19 Nov 2002 09:11:48 +0800
+From: Michael Habermann <mhabermann@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: rekha gvv <rekhagvvc@yahoo.co.in>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: glibc 2.2.2  error
+References: <20021118122042.74002.qmail@web8001.mail.in.yahoo.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi! All
-  After  I had downloaded the ppcboot sourcecode and made it. Then I run it in the psim but it print the errors.
+rekha gvv wrote:
 
-Administrator@HARDWARE-03 /cygdrive/d/cygwin/usr/soft/ppcboot-2.0.0
-$ powerpc-elf-run -m 603e ppcboot
-cpu 1, cia 0xfff00000: program interrupt - illegal instruction
-ppcboot: Caught signal -1 at address 0xfff00000
+>
+>
+>../linuxthreads/sysdeps/unix/sysv/linux/bits/local_lim.h:36:26:
+>linux/limits.h: No such file or directory
+>
+You have to create a symbolic link to the kernels include/linux and
+include/asm directory into the /usr/local/powerpc-linux/include directory.
+e.g.
+cd /usr/local/powerpc-linux/include
+ln -s /usr/src/ppclinux/include/linux
+ln -s /usr/src/ppclinux/include/asm
 
-Administrator@HARDWARE-03 /cygdrive/d/cygwin/usr/soft/ppcboot-2.0.0
-$ powerpc-elf-run -m 603e -e chirp  ppcboot
-/memory@0: failed to allocate 98304 bytes at 0xfff00000
-my board is base on MPC8245 ,so it is a 603e core.
-what¡¯s wrong ?pls help me .
-Best wishes,
-chete
+The kernel source has to exist for that and the kernels make menuconfig
+had to be called earlier.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
