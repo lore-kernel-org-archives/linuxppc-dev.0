@@ -1,41 +1,109 @@
-From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
-To: "Tom Rini" <trini@kernel.crashing.org>,
-	"Paul Mackerras" <paulus@samba.org>
-Cc: <akpm@osdl.org>,
-	"Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: [PATCH] MachineCheck exception broken for MPC 8xx CPU's
-Date: Tue, 25 May 2004 17:16:43 +0200
-Message-ID: <JPEALJAFNGDDLOPNDIEEEENDCIAA.joakim.tjernlund@lumentis.se>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-In-Reply-To: <20040525144030.GX6763@smtp.west.cox.net>
+Content-Type: multipart/mixed;
+	boundary="----_=_NextPart_001_01C44271.ECB2F121"
+Subject: RE: 8260 CPM DP ram free function
+Date: Tue, 25 May 2004 11:04:14 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B06DAE4@ismail.innsys.innovsys.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Tom Rini" <trini@kernel.crashing.org>,
+	<linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> On Tue, May 25, 2004 at 08:17:19PM +1000, Paul Mackerras wrote:
->
-> > Joakim Tjernlund writes:
-> >
-> > > The Machine Check exception handler is broken on MPC 8xx CPU's
-> > > This patch should fix it.
-> > > Tom Rini asked me to send it to you.
-> >
-> > Hmmm, this doesn't look like it will apply.  The patch looks to be
-> > against linuxppc-2.5, not Andrew's/Linus' tree.
-> >
-> > In fact I don't think there is a great deal of point in applying this
-> > patch until we update arch/ppc/kernel/head_8xx.S with all the other
-> > changes we have in the linuxppc-2.5 tree.
->
-> Aside from one less thing to pull out and push ahead?  I was hoping to
-> avoid exactly that if possible. :)
+This is a multi-part message in MIME format.
 
-Well, since the stock kernel is broken for 8xx I don't think that is going to work.
-You need to push the 8xx changes in linuxppc-2.5 to akpm and then it will
-be possible/meaningful to generate patches against the stock kernel.
+------_=_NextPart_001_01C44271.ECB2F121
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
- Jocke
+Ok, here is the revised version of the dpalloc/free patch
+
+Rune Torgersen
+System Developer
+Innovative Systems LLC
+1000 Innovative Drive
+Mitchell, SD 57301
+www.innovsys.com
+
+------_=_NextPart_001_01C44271.ECB2F121
+Content-Type: application/x-gzip;
+	name="cpm_alloc_free.patch.gz"
+Content-Transfer-Encoding: base64
+Content-Description: cpm_alloc_free.patch.gz
+Content-Disposition: attachment;
+	filename="cpm_alloc_free.patch.gz"
+
+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
+
+------_=_NextPart_001_01C44271.ECB2F121--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
