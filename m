@@ -1,32 +1,38 @@
-Date: Sun, 14 Feb 1999 15:33:59 +0100
-To: linuxppc-dev@lists.linuxppc.org, Paul Mackerras <paulus@cs.anu.edu.au>
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: BootX and disk images: stop ?
-Message-Id: <19990214153359.002164@smtp.calvacom.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-Id: <9902141703.AA37524@marc.watson.ibm.com>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: bootstrap stuffs 
+In-Reply-To: Message from Benjamin Herrenschmidt <bh40@calva.net>
+   of "Sun, 14 Feb 1999 15:02:35 +0100." <19990214150235.030449@smtp.calvacom.fr>
+Date: Sun, 14 Feb 1999 12:03:40 -0500
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I have some work in progress on BootX (1.1aX) that involves support for
-building a physical "map" of a disk image to give the kernel for booting.
+>>>>> Benjamin Herrenschmidt writes:
 
-I'm wondering if this is still interesting and If I should just throw
-this code away since supporting it via a loop-device on kernel's HFS is a
-better long-term solution and since HFS+ support is beeing worked on.
+>> Are all of those "sync" instructions necessary in your code?
 
-Basically, the goal of this code was to provide the kernel with a map of
-the physical blocs used by the image along with some infos to locate the
-device.
+Benjamin> Just paranoid. They were added around the interrupt switching to make
+Benjamin> sure to sync an eventual second processor and everything else before
+Benjamin> switching the MMU off. I beleive that for disabling the MMU, andi. is
+Benjamin> probably more efficient than my ori/andc pair, could you just explain my
+Benjamin> why you added &0xffff at it ?
 
+	"andi." only operates on halfword, so one needs to make sure that
+the constant is valid or the assembler will complain.  (~ 0x8000) will
+produce values in the upper half of the 32-bit word.  PowerPC immediate
+instructions apply to either the upper-half or lower-half of a 32-bit
+word. 
 
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+	For correctness, "sync" must be used, but for best performance,
+"sync" should be used sparingly, only when necessary.
 
+	Michael's comment about the -mrelocatable flag are a more detailed
+answer to your question.
 
-
+David
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
