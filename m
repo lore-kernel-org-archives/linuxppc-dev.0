@@ -1,42 +1,47 @@
-Date: Fri, 19 Dec 2003 16:31:00 +0100
-From: Wouter Cloetens <wouter@mind.be>
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: v2p@mind.be
-Subject: Re: [PATCH] Insight Memec Virtex-II Pro Development Board support
-Message-ID: <20031219153100.GA15181@roadkill.intern.mind.be>
-References: <20031212215601.GH3935@roadkill.intern.mind.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20031212215601.GH3935@roadkill.intern.mind.be>
+In-Reply-To: <DBF73ACB70D3D711A358000BDBACF5CE09D23B@SSMAIL1>
+References: <DBF73ACB70D3D711A358000BDBACF5CE09D23B@SSMAIL1>
+Mime-Version: 1.0 (Apple Message framework v606)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <26FE0593-323D-11D8-BA5A-000A95B312BA@onz.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+From: Allen Curtis <acurtis@onz.com>
+Subject: Re: ep8260 board linux port
+Date: Fri, 19 Dec 2003 08:05:23 -0800
+To: Kiran Mandava <kiran.mandava@skystream.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Dec 12, 2003 at 10:56:01PM +0100, Wouter Cloetens wrote:
-> Mind is making available a set of Linux kernel patches adding support for the Insight
-> Memec Virtex-II Pro Development Board using Memec's reference design for Linux on
-> ftp://ftp.mind.be/Virtex2Pro/patch-v2.4.23_linuxppc_2_4_devel/.
+>   I am trying to port linux 2.4.22 onto ep8260 board. (256 MB RAM on
+> 6xx
+> bus/ 32 MB Flash) using tools and source code from denx webisite.
+>   I was able to port u-boot and trying to boot linux now.
+>   i couldn't find any specific files to this board in the platform
+> directory
+> although est8260.h file has the basic bd structure. the problem i am
+> facing
+> is the processor loops in serial_console_write/ timer interrupt
+> handler. i
+> made sure that i am passing the baudrate proeprly by looking at the bd
+> structure while passing teh control to start_kernel function.
+>
 
-[...]
+How are you creating your boot image. If you are following the u-boot
+directions then you don't need any board specific support in the
+kernel. If you are trying to boot zImage, then you have more work to
+do.
 
-> The patches should be applied in the following order:
->  ftp://ftp.mind.be/Virtex2Pro/patch-v2.4.23_linuxppc_2_4_devel/patch-platform-insightv2pro
->    board-specific platform support
->    patch for the 405D5X[12] CPU_212 bug (see http://support.xilinx.com/xlnx/xil_ans_display.jsp?iLanguageID=1&iCountryID=1&getPagePath=14052)
+>   My console does display everything properly running u-boot but once
+> the
+> control goes to linux don't see anything on the console.
+>
 
-I've updated this file and patch-defconfig because:
-- It's not actually the CPU_212 erratum, but the solution 12 one below.
-  I got confused by the layout. I've renamed the config option
-  accordingly.
-- The problem is apparently only present on a small subset of
-  early-release Virtex-II Pros. So I've made the option configurable,
-  and disabled by default, instead of always enabling it for the
-  Memec board.
+Did you happen to customize the BAUD rate information for u-boot or
+Linux?  The u-boot default is 115K, Linux default is 9600.
 
-Sorry about that. I should've read the '4xx Ports' thread on this list
-a few weeks ago that discussed the issue.
+Another thing that I have run into is the clock divider configuration
+by u-boot. Try changing your minicom baud rate up or down by 4X and see
+if you see anything then.
 
---
-There are 10 types of people in the world: Those who understand binary, and those who don't.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
