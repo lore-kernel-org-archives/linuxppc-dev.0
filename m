@@ -1,176 +1,59 @@
-Message-ID: <01C07729.CF3B0510.svacca@valcom.com>
-From: Steven Vacca <svacca@valcom.com>
-Reply-To: "svacca@valcom.com" <svacca@valcom.com>
-To: "'Ruhland, Paul'" <pruhland@microwavedata.com>,
-        "LinuxEmbeddedMailList (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: How to disable Denial-of-Service safeguard in Linux Kernel?
-Date: Fri, 5 Jan 2001 15:11:41 -0500
+Message-ID: <20010106022001.34890.qmail@web11704.mail.yahoo.com>
+Date: Sat, 6 Jan 2001 10:20:01 +0800 (CST)
+From: Micael balow <micaelbalow@yahoo.com.cn>
+Subject: ppcboot Questions
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=gb2312
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thanks Paul,
+Dear Sir,
+      I am a freshman of the development of embedded
+system, and it is my honor to contact with you .
+      I have already had a custom PBX board with a
+embedded CPU named MPC823, and a monitor has already
+been flashed into a EPROM on the board.
+      I'd like to ask you the following questions.
+      1.I think,in order to get a kernel image and let
+it run on that board,I need a Linux OS with a right
+version to complie a kernel. When I used Redhat 6.0
+and 6.1 Linux to make ppcboot.0.4.4-pre1,I got the
+following error mesages:
 
-I have run this test previously making sure that the Client always called close()
-1st.  If I understand correctly, the 1st to close() is the only one to go into TIME-WAIT.
-But, I also set TCP_TIMEWAIT_LEN = 0.
+>      Makefile:24:***unterminated call to >function
+'shell' : missing '('. stop.
 
-But, anyway, regarding the test where the Client connected 29,500 times with no problem
-until exactly 10 min expired would seem to discount any resource problem, wouldn't it? :-)
-It doesn't seem to matter if the freq. of connects is 50/s (29,500 in 10min) or 1/30s (20 in 10min).
-How could it work so well almost 30,000 times, and then die like that?
+     But when I use Redhat 6.2 Linux to make
+ppcboot.0.4.4-pre1,the message is something like the
+following:
 
-Connecting at a freq, of 1/52 secs works, but 1/48secs doesn't.  So, I wonder if 50 secs is
-another key number.
+>Make[1]:Entering directory '/ppcboot/ppc'
+>Make[1]:'.depend' is up to date.
+            ...
+>Make[1]:Entering directory '/ppcboot/tools'
+>Make[1]:***No rule to make target 'crc32.c'needed >by
+'.depend'. stop.
+>Make[1]:Leaving directory '/ppcboot/tools'
 
-I've tried playing with the func in net/core/utils.c called net_ratelimit() which seems to be
-some kind of safeguard against DoS, but it doesn't appear to help.
+     I do not  know the reason that I got so much
+error messages.Did I use the wrong Linux version? Did
+I use the wrong Bash version? How can I make changes
+to let it run well.
 
-For test purposes, this is a very simple, barebones, generic Client/Server setup.
+     Thank you for your reading my letter and thank
+you for your considering my questions. I’d like to
+expect to get answers as soon as possible. Thank you
+very much.
 
-Client:   while (1)
-                {
-               socket()
-               connect()
-               close()
-               5 sec delay (or could be 30 sec, or could be 50 per sec)
-               }
+      Best Regards
 
-Server:   socket()
-             bind()
-             listen()
-
-             while (1)
-                {
-               accept()
-               close()
-               }
-
-
-Puzzled,
-
-ShutEye Thinkin
-
-
------Original Message-----
-From:	Ruhland, Paul [SMTP:pruhland@microwavedata.com]
-Sent:	Friday, January 05, 2001 2:47 PM
-To:	svacca@valcom.com; LinuxEmbeddedMailList (E-mail)
-Subject:	RE: How to disable Denial-of-Service safeguard in Linux Kernel?
-
-Without knowing anything about your linux tcp server I will take a guess at
-what is happening.
-
-When the client disconnects from the server the server port may not be
-closing...it may be in a TIME WAIT state.  So when the next connection
-request comes in it cannot accept because the port is still open.  The
-server ports will eventually timeout which is why the longer time between
-connections works.
-
-Try this...after your client disconnects, do a 'netstat --inet' on the
-server.  My guess is you'll see the port your server uses is still open.
+                      yours sincerely  Micael Balow
 
 
-
-
-> -----Original Message-----
-> From: Steven Vacca [mailto:svacca@valcom.com]
-> Sent: Friday, January 05, 2001 2:30 PM
-> To: LinuxEmbeddedMailList (E-mail)
-> Subject: How to disable Denial-of-Service safeguard in Linux Kernel?
->
->
->
-> I am suspecting the the problem stated below is due to
-> Denial-of-Service safeguards
-> incorporated into the Linux Kernel.  Would anyone know how to
-> diable this feauture?
->
-> Thanks,
->
-> ShutEye Thinkin
->
-> -----Original Message-----
-> From:	Steven Vacca [SMTP:svacca@valcom.com]
-> Sent:	Friday, January 05, 2001 10:50 AM
-> To:	LinuxEmbeddedMailList (E-mail)
-> Subject:	TCP Server stops accepting after 10mins
->
-> Hi everyone.  I would very much appreciate help with the
-> following problem:
->
-> The Unit Under Test (UUT) has Redhat's embedded Linux kernel
-> (based on Linux
-> kernel 2.2.13), from the Redhat EDK 1.0, running on an
-> embedded MPC860 uP
-> with 8M of RAM, and is connected to a LAN.
->
-> For my test, I have a TCP Client (Microsoft) on a PC, also
-> connected to the
-> LAN, connect to the TCP Server (linux) on the UUT at the
-> following intervals
-> (50/s = "50 connects per sec", 1/5s = "1 connect every 5 secs"):
->
->        50/s, 1/5s, 1/20s, 1/30s, and 1/60s.
->
-> For 50/s, 1/5s, 1/20s, and 1/30s, approx. 10 minutes (+/- 1
-> connect period) is the
-> constant time when the TCP Client fails to connect to the Server.
->
-> But, whenever the connect frequency = 1/60s, or longer, then
-> the problem goes
-> away and the TCP Client can connect forever at this rate.
->
->
-> Test Results:
->
-> 50/s:	stopped connecting                 @  10:00
-> (over 29,500 connect()s.)
->
-> 1/5s:	stopped connecting on next try @ 10:05
->
-> 1/20s:	stopped connecting on next try @ 9:40
->
-> 1/30s:	stopped connecting on next try @ 10:30
->
-> 1/60s:   connects forever (several hours in test)
->
->
-> The fact that regardless of whether the connects occur at a
-> very high frequency
-> (50/s) or low frequency (1/30s), the TCP Client fails to
-> connect after 10 mins.
-> (I think 1min and 10 mins are key info). I would think that
-> this would indicate
-> that the problem is not one of running out of allocated memory.
-> It appears that something happens once a minute, some type of
-> cleanup, maybe?
-> And if that goes on for 10 times, then connects are denied.  As
-> long as at least 1 min is allowed to go by without accepting
-> a connect from a
-> client, then there is no problem, and another 10 min period
-> is allowed to occur.
->
-> This is very repeatable.  Note that if I pause the Client
-> from connecting just before
-> the 10 minute time period connect() failure is to occur, and
-> wait at least 1 minute
-> (can't be less), and then allow the Client to continue
-> connecting, then the Client
-> is able to connect for another 10 minutes before the
-> connect() failure occurs.
->
-> This problem occurs even when I have no threads running, and
-> the TCP Server is
-> executing in the main() func.
->
-> Thanks a million for anybody's help or suggestions,
->
-> ShutEye Thinkin
-> Roanoke, Virginia  USA
->
->
+_________________________________________________________
+Do You Yahoo!? 登录免费雅虎电邮! http://mail.yahoo.com.cn
+创建雅虎俱乐部，真我个性尽施展！http://cn.clubs.yahoo.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
