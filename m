@@ -1,27 +1,30 @@
-Date: Thu, 9 Aug 2001 01:11:17 -0700 (PDT)
-From: James F Dougherty <jfd@GigabitNetworks.COM>
-Message-Id: <200108090811.BAA02438@krakatoa.gigabitnetworks.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: modprobe error messages on console
-Mime-Version: 1.0
+From: eejape@tpu.fi
+To: hychon@genetel.co.kr
+Cc: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <638cbb07.bb07638c@tpu.fi>
+Date: Thu, 09 Aug 2001 11:16:18 +0300
+MIME-Version: 1.0
+Subject: Re: to controll the serial baudrate?
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-So, I have my development board up, and am trying to
-build some apps and get disk working, running fdisk
-emits the block device error, while attempting to
-build emacs and then run it emacs the binfmt-eedb
-error ...
+Please read the serial programming howto and serial howto at
+www.linuxdoc.org. Though I learned it best from the source code of
+minicom.
 
-How does one compile the below drivers into the kernel?
+----- Original Message -----
+From: hychon <hychon@genetel.co.kr>
+Date: Thursday, August 9, 2001 9:36 am
+Subject: to controll the serial baudrate?
 
+> Hi!
+> I work to use two serial port(SMC1 , SMC2) on MPC860T running
+> kernel-2.4.4 .
+> I want to controll the seral speed(baudrate) of SMC serial.
+>
+> question) where I can controlled the serial baudrate?
 
-modprobe: modprobe: Can't locate module binfmt-eedb
-modprobe: modprobe: Can't locate module block-major-3
-
-				Thanks,
-				-James
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
