@@ -1,52 +1,94 @@
-Message-ID: <38E93D4B.6BDE311@wibble.net>
-Date: Tue, 04 Apr 2000 10:54:35 +1000
-From: Steven Hanley <sjh@wibble.net>
+Message-Id: <200004040601.IAA00488@piglet.grunz.lu>
+Date: Tue, 4 Apr 2000 08:01:51 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: LongTrail PCI resource assignment
+To: schmitz@opal.biophys.uni-duesseldorf.de
+cc: geert@linux-m68k.org, michdaen@iiic.ethz.ch, paubert@iram.es,
+        bh40@calva.net, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.LNX.4.10.10004031854280.15106-200000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-To: Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: problems with the frame buffer (ATV 64) on a power mac 7220 in   newer kernels
-References: <200004030925.LAA00262@piglet.grunz.lu>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michel Lanners wrote:
+Hi there,
 
-> > I tried a kernel command line of video=controlfb:vmode:5
->                                          ^^^^^^^^^
-> I didn't know the 7220 had a control display adapter? Anyway, this
-> option will do nothing for your ATI display. You need to look at atyfb
-> for relevant options.
+On   3 Apr, this message from Michael Schmitz echoed through cyberspace:
+>> > - OF reports two base addresses for the Mach64, one of which is the I/O
+>> > region (according to the PCI BAR values) at 0xc00. OF reports its address
+>>                                               ^^^^^
+>> Where does that address come from? I'm missing something here..
+>
+> Straight from the BAR for region 1, with the resource type bits masked
+> off. BTW lspci also reports this.
 
-I have no idea what the hardware actually has or doesnt, however as
-mentioned in the email I did try a plain video=vmode:6 also which if I
-read line 3279 of atyfb.c correctly (2.2.15pre14)
+Ahhh... ok. In that case, it's a possible value.
 
-3278-#if defined(CONFIG_PPC)
-3279:   else if (!strncmp(this_opt, "vmode:", 6)) {
-3280-       unsigned int vmode = simple_strtoul(this_opt+6, NULL, 0);
-3281-       if (vmode > 0 && vmode <= VMODE_MAX)
-3282-           default_vmode = vmode;
+>> > as 0x80881000 or some such. Does this mean the I/O registers are
+>> > accessible at 0x80881000, or did OF probing get some bogus values there?
 
-should set the vmode correctly to whatever I pass, instead it still just
-goes with 6 seemingly due to code paulus added since 2.2.10.
+When looking at what OF assigned, always check the BAR value in OF's
+properties; they are not necessarily all in the same order all the
+time. Here's for example what I have on my machine for my Matrox:
 
-I would love for someone to clear this up for me. how do I make a recent
-kernel show anything at all on the screen, it still wont yet 2.2.10
-seems to be fine no matter how much I muck around with different weird
-config options.
+[mlan@piglet /proc/device-tree/bandit/MTRX,Millennium@F]$ hexdump reg
+0000000 0000 7800 0000 0000 0000 0000 0000 0000
+0000010 0000 0000 0200 7810 0000 0000 0000 0000
+0000020 0000 0000 0000 4000 4200 7814 0000 0000
+0000030 0000 0000 0000 0000 0080 0000
+000003c
+[mlan@piglet /proc/device-tree/bandit/MTRX,Millennium@F]$ hexdump assigned-addresses
+0000000 c200 7814 0000 0000 8100 0000 0000 0000
+0000010 0080 0000 8200 7810 0000 0000 8080 0000
+0000020 0000 0000 0000 4000
+0000028
 
-Thanks
+The reg property has 3 entries, where the second and third represent
+BARs at 0x10 and 0x14; however, assigned-addresses has these in reverse
+order...
 
-	See You
-	    Steve
+If you look at your properties, here is their meaning:
 
---
-sjh@wibble.net http://wibble.net/~sjh/
-Look Up In The Sky
-   Is it a bird?  No
-      Is it a plane?  No
-         Is it a small blue banana?
-YES
+ <flags> <bus-hi> <bus-lo> <processor> <size>
+
+All elements are 32 bits; the BAR value is in the last byte of <flags>.
+You'll see that in reg, <processor> is not set; that's because reg
+represents the address requests of the device before attribution.
+
+<bus-hi> and <bus-lo> form a 64-bit PCI bus address; on 32-bit systems,
+<bus-hi> is zero. assigned-addresses is what OF gave your device.
+
+> 0xfe000000 is what pmac_pci.c uses for my machine (processor physical as
+> well as virtual). I'm not trying to change that, I just didn't understand
+> the address reported by OF for that region. I still don't understand it.
+
+Can you verify your OF properties, to check whether OF _really_ assigned
+a region for the IO ports at 0xc00? I doubt it...
+
+>> If you remap the MMIO range, you need to do two things:
+>>
+>> 2. change the values stored in struct pci_dev, so that the kernel at
+>> large (that includes other drivers, and the interface used by lspci)
+>> knows about it.
+>
+> That's what I missed. I changed the value in the OF tree but forgot the
+> PCI side.
+
+Changing the OF device tree is nice, but probably too much hassle.
+The struct pci_dev, on the other hand, is vital.
+
+Have fun!
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
