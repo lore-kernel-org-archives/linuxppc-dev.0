@@ -1,22 +1,19 @@
-Return-Path: <jangiels@speakeasy.net>
-Received: from mail3.speakeasy.net (mail3.speakeasy.net [216.254.0.203])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E4C4E2BF0C
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Oct 2004 03:29:12 +1000 (EST)
-From: Jeff Angielski <jangiels@speakeasy.net>
-To: Dan Malek <dan@embeddededge.com>
-In-Reply-To: <B9C9EB8C-2378-11D9-9860-003065F9B7DC@embeddededge.com>
-References: <A3240F62EF3C2749B1A25D3BC9548F4148BCF1@ExchWENZ02.wenz.global.vpn>
-	<721875C6-236D-11D9-9860-003065F9B7DC@embeddededge.com>
-	<1098371711.3508.9.camel@nighteyes.localdomain>
-	<B9C9EB8C-2378-11D9-9860-003065F9B7DC@embeddededge.com>
-Content-Type: text/plain
-Message-Id: <1098379749.8619.16.camel@nighteyes.localdomain>
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 6A68C2BDA5
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Oct 2004 03:49:28 +1000 (EST)
+Date: Thu, 21 Oct 2004 10:49:23 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+To: linuxppc <linuxppc@4bridgeworks.com>
+Message-ID: <20041021174923.GB6234@gate.ebshome.net>
+References: <C18BA5DDB58DD511BD0700C0DF0DD4502941E6@NTSERVER4>
 Mime-Version: 1.0
-Date: Thu, 21 Oct 2004 13:29:09 -0400
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: SCC UART stalling/hanging - progress
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <C18BA5DDB58DD511BD0700C0DF0DD4502941E6@NTSERVER4>
+Cc: Linux PPC Dev <linuxppc-dev@ozlabs.org>
+Subject: Re: Problem with PPC 440 GX Transmit Path
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,27 +23,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2004-10-21 at 11:49, Dan Malek wrote:
-> On Oct 21, 2004, at 11:15 AM, Jeff Angielski wrote:
-> 
-> > No flow control.  8N1 at 230kbps on SCC2 in UART mode.
-> 
-> WTF?  Does it work at other baud rates, like 115200?
+On Thu, Oct 21, 2004 at 03:20:55PM +0100, linuxppc wrote:
+> I have found a problem with the driver for the PPC440GX (ibm_emac), while
+> reading from the PPC (OCOTEA) BOX doesn't always transmit the last packet, I
+> have managed to get it to continue by pinging it or from it, or if the root
+> filesystem is mounted as nfs (I am assuming communications using nfs use a
+> keepalive test or equivalent). I have also found that by turning on the
+> debug options in ibm_emac_core.c (PKT_DEBUG) fixes the problem!! I have
+> removed all but one of the debug messages and as long as they are in the tx
+> functions (not the rx functions) I have no problems. Any help or guidance
+> will be appreciated, for now I am going to try and implement gdb.....
 
-I have seen the SCC stall with 57600 and 115200 as well, but not as
-often.  I have not test anything slower than that.
+Which kernel version you are using?
 
-> If you just transmit out the port and watch on an o'scope
-> or something, does it keep running?  
-
-The data on the tx/rx lines on the scope go idle at the same time the
-software thinks the SCCs have gone idle.
-
-> When it fails, how long does it usually run?
-
-Unfortunately I have not discovered any pattern to the madness. 
-Sometimes it works fine for MBs of data and sometimes it stalls after
-only 30k bytes worth of data.  The only thing of note is that it seems
-to happen more often with the faster baud rate.
-
-Jeff Angielski
+--
+Eugene
