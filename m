@@ -1,33 +1,64 @@
-Date: Fri, 12 Oct 2001 09:17:18 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: EliuG <guile@mac.com>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: VGA out on ibook2
-In-Reply-To: <1002853526.3527.4.camel@milleniumfalcon>
-Message-ID: <Pine.LNX.4.33.0110120914070.15541-100000@opal.biophys.uni-duesseldorf.de>
+Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
+From: Paul Mackerras <paulus@samba.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15302.40082.869098.88039@cargo.ozlabs.ibm.com>
+Date: Fri, 12 Oct 2001 17:32:34 +1000 (EST)
+To: linuxppc-dev@lists.linuxppc.org
+Subject: boot methods
+Reply-To: paulus@samba.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> 	I'm trying to use the external VGA connector on an ibook2 (the white
-> one) with the benh utility m3mirror and, after turning crt on, the
-> screen on the monitor looks "wavy" and unusable.
-> 	Anybody could guide me to solve this problem?
+I would like to make a complete list of the methods people use to boot
+the PPC/Linux kernel on different platforms.  As a start, here is what
+I can think of off the top of my head:
 
-Dump the CRTC and CRTC2 registers (come to think of it, dump any of the
-interesting registers). Compare with what you get after using MockOS to
-set up the VGA display and booting with video=ofonly.
+Powermac:
+	vmlinux loaded with BootX
+	vmlinux loaded with quik
+	vmlinux loaded with yaboot
+	vmlinux.coff loaded via OF netboot
+	vmlinux.elf-pmac loaded via OF (disk or net boot)
 
-Use a scope to verify there is a hsync signal (I suspect it might not be
-generated, or it's way out of spec.
+RS/6000 CHRP:
+	vmlinux loaded with yaboot
+	zImage.chrp-rs6k loaded via OF netboot
 
-> Also... anybody knows how to turn up the composite video output of the
-> ibook2?
+RS/6000 43p-140:
+	zImage.prep loaded via OF (floppy or hard disk)
 
-Apple knows. Examine their drivers.
+Can others contribute entries to this list please?
 
-	Michael
+I am particularly interested in the cases where the kernel vmlinux
+binary is loaded directly from some external software, because those
+are the cases that constrain our freedom to choose how information
+gets passed in to the kernel.  From a long-term maintainability
+viewpoint, it would be better if we could say that we always have a
+zImage-style wrapper, because then we could change the interface
+between the wrapper and the kernel at will without breaking anything.
+It would then be up to the wrapper to do any translation needed
+between what the external software passed in to it and what the kernel
+is expecting.
+
+Along those lines, I have been thinking that it would be good if the
+wrapper built a data structure describing the hardware in the system,
+particularly things like:
+
+- the amount of RAM and any holes
+- type and register addresses for PCI host bus adaptors
+- ditto for interrupt controllers
+- interrupt mapping
+
+The open firmware device tree does a good job of describing things
+like this, so I would suggest it as the structure.  Whatever structure
+we use needs to be flexible and open-ended rather than only describing
+a fixed set of things, as well as being easy to traverse and
+interpret (so I don't think prep-style residual data is an option).
+
+Thoughts?
+
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
