@@ -1,32 +1,33 @@
-Message-ID: <39EFA8CE.33485BAD@mvista.com>
-Date: Thu, 19 Oct 2000 22:07:10 -0400
+Message-ID: <39EFABFF.96F35223@mvista.com>
+Date: Thu, 19 Oct 2000 22:20:47 -0400
 From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: brendan.simon@ctam.com.au
-CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: linux-embedded: smallest kernel for 2.4.0-test9
-References: <39EF7A07.5D946387@ctam.com.au>
+To: Tomas Carmen <tomas@tcc.com.pe>
+CC: "linuxppc-embedded@lists.linuxppc.org"
+ <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: kernel for 823 over 16bits
+References: <39EF85BB.FA712976@tcc.com.pe>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Brendan J Simon wrote:
+Tomas Carmen wrote:
 
-> ....  I currently have the kernel down to 520K
-> but would like to get it under 448K (512K minus one 64K sector for a
-> bootloader).  Is this possible ???
+> I would like to know if the linux kernel or the bootloader developed for
+> PPC (MPC8xx) can working well
+> over a 16 bits environment (FLASH and RAM).
 
-
-Heh...I did this just the other day with a old -test2 kernel.
-
-Did you remove the ELF header?
-
-	dd if=zImage bs=64k skip=1 of=zImage.bin
-
-The starting instruction is the first word of zImage.bin.
+You mean you are just using a 16-bit data bus?  Kind of weird, but
+the software doesn't care.  Make sure you run with caches on and
+make sure you are careful of multiword cycles when accessing I/O
+in 32-bit operations.
 
 
 	-- Dan
+
+--
+
+	I like MMUs because I don't have a real life.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
