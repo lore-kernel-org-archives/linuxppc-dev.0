@@ -1,38 +1,30 @@
-From: "dong in kang" <dkang@east.isi.edu>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: load_elf_bin problem
-Date: Thu, 7 Aug 2003 09:22:23 -0400
-Message-ID: <000101c35ce6$f060b910$45a97241@Minjoo>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <OOEJKGLHOBHLNAIEBLEFAEMGKJAA.zjhzou@newrocktech.com>
+Date: Thu, 7 Aug 2003 11:01:44 -0400
+Message-Id: <200308071501.h77F1iL19883@hyper.wm.sps.mot.com>
+From: Peter Barada <pbarada@mail.wm.sps.mot.com>
+To: zjhzou@newrocktech.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-reply-to: <OOEJKGLHOBHLNAIEBLEFAEMFKJAA.zjhzou@newrocktech.com>
+Subject: Re: kernel memory mapping problem
+References: <OOEJKGLHOBHLNAIEBLEFAEMFKJAA.zjhzou@newrocktech.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
- Hello,
+>when run this module( lsmod mymodule.o ), kernel is always dead. Are
+>there any errors of this function ?
+>
+>Any help is appreciated!
 
- The linux kernel boot up well till the last stage to call /bin/sh.
-It crashes inside of load_elf_bin.
-More specifically
+What are you doing with the physical address of a varaible that is on
+the *stack*?  If you let some hardware modify that value, then you can
+easily trash your stack if the hardware modifies this value *after*
+this function exits since tmp will go out of scope.
 
-   load_elf_bin()  --> setup_arg_pages() --> put_dirty_page();
+I'd suggest that you move tmp outside of func for starters.
 
-Inisde of put_dirty_page() routing, it crashes at
-   if (!pte_none(pte)) {
-
-The program accesses pte->pte, but the address of pte->pte is not translated
-to physical address properly.
-So machine exception occurs, and the kernel crashes.
-
- Is it paging problem?
-I turned L1 and L2 cache off because those have defects.
-Does it cause any problem to paging mechanism?
-
- I'll appreciate your help.
-
- Dong-In
-
+--
+Peter Barada                             Peter.Barada@motorola.com
+Wizard                                   781-852-2768 (direct)
+WaveMark Solutions(A Motorola Company)   781-270-0193 (fax)
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
