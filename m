@@ -1,28 +1,48 @@
-Subject: Re: Physical Memory map holes in PPC
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Tameen Khan <tameen@cisco.com>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <00b001c428eb$2d8ae740$273147ab@amer.cisco.com>
-References: <00b001c428eb$2d8ae740$273147ab@amer.cisco.com>
-Content-Type: text/plain
-Message-Id: <1082701889.6442.2.camel@gaston>
-Mime-Version: 1.0
-Date: Fri, 23 Apr 2004 16:31:30 +1000
+Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
+From: "challaharikumar" <challaharikumar@tataelxsi.co.in>
+To: <linuxppc-dev@lists.linuxppc.org>, <dan@embeddededge.com>
+Subject: MPC8260 Hang
+Date: Fri, 23 Apr 2004 12:31:06 +0530
+Message-ID: <004101c42900$c082e880$3401080a@telxsi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> I have looked through the boot memory allocator code for PPC and I dont find
-> a similar memory map. They use a phys_avail array for boot memory allocation
-> which is initialized to a single region from PPC_MEMSTART to total_memory.
-> >From this it appears that there are no "holes" in physical memory map for
-> PPC.
+Hi!
+All ...
 
-Most ppc32 don't, though it's fairly dependant on a given board. ppc64
-do have holes, though at this point, it's not simple to get to them, the
-data structure representing the physical memory map beeing marked __init...
+I having been trying to bring up the ADS8260 board and incidentally ran
+into some problems.
 
-Ben.
+I initially tried using Linux 2.4.1 kernel and it worked fine and the
+board was up.
 
+I upgraded to 2.4.17 and I found out that the system started hanging
+during boot up.
+
+I compiled 2.4.17 for ppc boot. (I already have ppc boot on my ADS board
+and I test my development by tftp boot'ing the kernel image.
+
+I tried tracking down where the hang could be and ended up at the RFI
+instruction where its waiting to complete the MMU initialization. The
+system executes SYNC instruction and then hangs. (arch/ppc/kernel/head.S)
+
+I tried comparing the file head.S between 2.4.1 and 2.4.17. I found out
+some patches done inside the 2.4.1 had been made generic. There were
+patches for the BAT initialization and RAM mapping on the MPC8260.
+
+Is there an update on the files?
+Should the patches be done for 2.4.17 as well ?
+
+Any suggestions or pointers could be very helpful.
+
+[Running on x86 with Red Hat 8.0 and cross compiling for PPC.]
+
+
+regards
+Hari
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
