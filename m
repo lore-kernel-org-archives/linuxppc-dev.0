@@ -1,44 +1,45 @@
-Date: Tue, 23 Feb 1999 07:24:39 -0500 (EST)
-From: Tom Vier <nester@erols.com>
-Reply-To: Tom Vier <thomassr@erols.com>
-To: Gary Thomas <gdt@linuxppc.org>
-cc: linuxppc-dev@lists.linuxppc.org,
-        mklinux-development-system@public.lists.apple.com
-Subject: RE: egcs-1.1.1-1c bug (was Re: major ksyms problem)
-In-Reply-To: <XFMail.990223072246.gdt@linuxppc.org>
-Message-ID: <Pine.LNX.4.05.9902230719260.2996-100000@localhost.erols.com>
+Message-ID: <36D2BCB3.89221902@cos.ufrj.br>
+Date: Tue, 23 Feb 1999 11:35:31 -0300
+From: Lauro Whately <whately@cos.ufrj.br>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "D.J. Barrow" <barrow_dj@yahoo.com>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: I believe I found a bug in /arch/ppc/kernel/signal.c
+References: <19990222195304.000021@mail.mipsys.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 23 Feb 1999, Gary Thomas wrote:
+> On Mon, Feb 22, 1999, D.J. Barrow <barrow_dj@yahoo.com> wrote:
 
-> On 22-Feb-99 Tom Vier wrote:
-> > it's an egcs bug. i think it's not aligning instructions properly, cuz
-> > i believe the 601 is more strict about alignment. is anyone having
-> > problems using bsd_comp.o, ppp_deflate.o, and hfs.o on a non-601
-> > machine built under pre-R5 (egcs-1.1.1-1c)?
+> The bug manifested itself in tftp, when longjmp'ing out
+> of the signal handler on timeouts.
+>
+> Resulting in....
+> a )sys_sigreturn not get called
+> b) signals queued & trampoline stuff on the user stack being trashed.
+> c) SIGALRM being blocked forever.
 
-> > egcs-1.1.1-1c failed using -O0, -O2, and -O3 with all combinations of
-> > -mcpu=601, -mcpu=604, and -fno-schedule-insns. -fpic did work, however
-> > it addes an offset table symbol that makes insmod complain.
-> > 
-> > is this a know problem?
-
-> I think you need newer binutils to fix this.  Try using:
->   ftp://ftp.linuxppc.org/linuxppc/users/gdt/redhat/RPMS/ppc/binutils-2.9.1-19a.ppc.rpm
-
-no, it's an egcs bug, i believe. i'm already running
-binutils-2.9.1.0.19a-1a from the current pre-R5. i'm download those
-egcs rpms from your dir, right now, which fred bacon told me have
-VTABLE_THUNKS disabled.
+Have you tried the sigsetjmp/siglongjmp ?
+I've met a similar problem a month ago and found that POSIX.1 does not
+specify the effect of setjmp and longjmp on signal masks (SVR4 does not save
+and restore the signal mask under  setjmp/longjmp, however 4.3 BSD save and
+restore the signal mask) Instead, two new functions sigsetjmp and siglongjmp
+are defined by POSIX.1
+Those new ones are working ok with linux 2.1.x releases (I've been using them
+with linuxppc 2.1.112)
+It seems that the behavior of sigsetjmp/siglongjmp was changed to the POSIX.1
+specification around the release 2.1.112.
 
 --
-Tom Vier - 0x82B007A8
-thomass@erols.com        | goto the Zero Page at:
-Tortured Souls Software  | http://www.erols.com/thomassr/zero/
+ Lauro Whately
+ Parallel Computing Lab. / COPPE
+ Federal University of Rio de Janeiro
+ Brazil
+ =====================================
+ "A distributed system is one on which I cannot get any work done, because a
+ machine I have never heard of has crashed." -- Leslie Lamport
 
 
 
