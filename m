@@ -1,27 +1,111 @@
-Date: 22 Mar 2002 15:38:38 -0000
-Message-ID: <20020322153838.28789.qmail@mailweb9.rediffmail.com>
+Message-ID: <C08678384BE7D311B4D70004ACA371050B763354@amer22.avnet.com>
+From: "Kerl, John" <John.Kerl@Avnet.com>
+To: "'Jeff Studer'" <jstuder@aquilagroup.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: eth0 : time out ....error
+Date: Fri, 22 Mar 2002 13:16:12 -0700
 MIME-Version: 1.0
-From: "ashish  anand" <ppc4@rediffmail.com>
-Reply-To: "ashish  anand" <ppc4@rediffmail.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: porting effort reqd. from mpc860 to mpc823
-Content-type: text/plain;
-	format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+This has been fixed; you need a newer fec.c.  (I would tell you
+the version numbers but I don't know them; my copies of fec.c
+(without & without the fix) are lacking version numbers. )
 
-Being a new guy in this type of activities I would just like to
-have a estimation of efforts in tech. terms for porting a cpu
-specific portion of base code of mpc860 to mpc823.
-to narrow down what all cpu specific features needs to be
-addressed comparing mpc860 to mpc823.
-any pointer would help me much.
 
-Best Regards,
-Ashish
+-----Original Message-----
+From: Jeff Studer [mailto:jstuder@aquilagroup.com]
+Sent: Friday, March 22, 2002 1:54 PM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: eth0 : time out ....error
+
+
+
+Is this with the FEC driver? I have the same problem with the FEC driver in
+kernel version 2.4.2.  I would like to hear any solutions to this problem,
+too.
+
+ÀüÇý¿µ wrote:
+
+> Hi!
+>
+> I have the problem when I get/recevie data of over 100 kbytes size
+> If I send a small size data , it's trance success
+> but big size data is fail and print following messages
+>
+> why not transmit the big size data(over 100kbyte)??
+>
+> help me  and thanks for your answers!!
+>
+> ===  LOG message  =============
+>
+> 1) small size data
+>
+> sh-2.03# ftp pc
+>
+> Connected to pc.
+> 220 ProFTPD 1.2.1 Server (ProFTPD Default Installation) [tree.com]
+> Name (pc:root): hukim
+> 331 Password required for hukim.
+> Password:
+> 230 User hukim logged in.
+> Remote system type is UNIX.
+> Using binary mode to transfer files.
+>
+> ftp> get btd
+> local: btd remote: btd
+> 200 PORT command successful.
+> 150 Opening BINARY mode data connection for btd (27545 bytes).
+> 226 Transfer complete.
+> 27545 bytes received in 0.017 secs (1.6e+03 Kbytes/sec)
+>
+>  ==========================================================> "success"
+>
+> 2) big size data
+>
+> ftp> get bt.o
+> local: bt.o remote: bt.o
+> 200 PORT command successful.
+> 150 Opening BINARY mode data connection for bt.o (138660 bytes).
+> NETDEV WATCHDOG: eth0: transmit timed out
+> eth0: transmit timed out.
+> Ring data dump: cur_tx c1f70078, dirty_tx c1f70078 cur_rx: c1f70038
+>  tx: 8 buffers
+>   c1f70040: 1c00 0042 01f714be
+>   c1f70048: 1c14 0042 01f71dbe
+>   c1f70050: 1c00 0042 01f71bbe
+>   c1f70058: 1c0c 0042 01f716be
+>   c1f70060: 1c00 0042 01f71cbe
+>   c1f70068: 1c04 0042 01f715be
+>   c1f70070: 1c00 0042 01f71ebe
+>   c1f70078: 3c24 0042 01f717be
+>  rx: 8 buffers
+>   c1f70000: 8800 0446 01f6f000
+>   c1f70008: 8800 0446 01f6f800
+>   c1f70010: 8800 0446 01f6e000
+>   c1f70018: 8800 0446 01f6e800
+>   c1f70020: 8800 0446 01f6d000
+>   c1f70028: 8800 0446 01f6d800
+>   c1f70030: 8800 0446 01f6c000
+>   c1f70038: a800 0446 01f6c800
+> NETDEV WATCHDOG: eth0: transmit timed out
+> eth0: transmit timed out.
+> Ring data dump: cur_tx c1f70078, dirty_tx c1f70078 cur_rx: c1f70008
+>
+>  ( ... )
+>  ===========================================================> fail
+>
+
+--
+Jeff Studer
+Software Engineer
+Aquila Technologies Group
+
+jstuder@aquilagroup.com
+office:  505-796-3859
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
