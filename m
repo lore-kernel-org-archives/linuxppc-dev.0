@@ -1,62 +1,101 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
-	"Justin T. Gibbs" <gibbs@scsiguy.com>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: now random kernel panics with aic7xxx driver 6.2.4 in kernel
- 2.4.12
-Date: Mon, 15 Oct 2001 14:24:20 +0200
-Message-Id: <20011015122420.31143@smtp.adsl.oleane.com>
-In-Reply-To: <20011014235202.PYHV2701.tomts7-srv.bellnexxia.net@there>
-References: <20011014235202.PYHV2701.tomts7-srv.bellnexxia.net@there>
+To: Wolfgang Denk <wd@denx.de>
+Cc: <paulus@samba.org>, <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: boot methods 
+Date: Mon, 15 Oct 2001 14:42:14 +0200
+Message-Id: <20011015124214.18780@smtp.adsl.oleane.com>
+In-Reply-To: <20011014154453.1829E10887@denx.denx.de>
+References: <20011014154453.1829E10887@denx.denx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Hi Justin,
 >
->> It would be interesting to know what type of panics you saw prior
->> to 6.2.4.  It might help me track down where this problem began.
+>* When porting Linux to new hardware the wrapper adds  an  additional
+>  layer which must be adapted and ported. If you have PPCBoot running
+>  on  a  board,  all  that's  needed to "port" Linux to that board is
+>  copying things like ethernet intialization from the PPCBoot sources
+>  - since PPCBoot is based on Linux device driver  code,  this  is  a
+>  simple copy & paste.
+
+No. When porting to new hardware, you expect your bootloader to pass
+the proper bi_recs your kernel need and your wrapper will be either
+empty, or just the standard one. In some case, I expect a same
+kernel could even work with a wide range of boards as base addresses
+and config for some legacy drivers could be passed via bi_recs as well.
+
+The goal of bi_rec's here is to replace bd_t with a tagged structure.
+
+One thing I want here is to stop parsing the bi_rec's once for all in
+the kernel, but on the contrary keep them available all the time a bit
+like the device-tree. For custom boards like the one(s) I'm working for
+this is a flexible mecanism for my firmware to pass some HW informations
+to the kernel, which stays the same for the whole range of products.
+
+>* With PPCBoot, you can use the same kernel image on different boards
+>  without need to recompile it just because you want differend  default
+>  boot arguments.
+
+Which is also what the bi_recs will help do in a more generic way.
+The point of the wrapper is to handle firmware that don't already pass
+the bi_recs we need, or more "interactive" firmwares like OF.
+
+>* With PPCBoot, you can use the same kernel image in combination with
+>  different ramdisk images without need to recompile it.
+
+I don't see the problem neither. Our proposed mecanism won't replace
+bootloaders like ppcboot.
+
+>Etc. etc. It was one of our design goals with PPCBoot to get  rid  of
+>all the (IMHO) unneccessary maintenance of the bootstap loader code.
 >
->This is my first foray into 2.4.X kernels.  I did not have any panics with
->the old aic7xxx driver.  I first used 6.2.1 in kernel 2.4.11.  So you
->pretty much know the whole story.  The reason I moved to your 6.2.4 was
->that at some point I could not even boot 2.4.12 since it came back with:
 >
->scsi0:A:1: ahc_intr - referenced scb not valid during seqint 0x71 scb(0)
->...
->Kernel panic: for safety
->In interrupt handler - not syncing
-><0>Rebooting in 180 seconds
+>I can understand that the wrappers make sense for  boards  that  come
+>with  some  firmware that cannot or shall not be changed; but this is
+>the only reason I see for it's existence.
+
+It handles whatever translation is needed between the firmware and the
+kernel. If your firmware (ppcboot) already pass in good shaped birecs
+and no translation is needed, just use an empty (or no) wrapper.
 >
->But the message logs never caught any of the error message since a sync
->was not done.
+>Your argumentation sounds as if you expect many frequent  changes  of
+>the kernel boot interface. Is that true? In sucha case I'd suggest we
+>spend some more thoughts on that interface before changing it.
 
-I've been getting bizqrre problems with aic7xxx since 2.4.11 on my
-dual G4 as well. It started with some problems detecting my external
-disk, but the problem disappeared by itself using a more recent
-kernel (during the .11-pre series).
-
-However when I first compiled .12, the machine locked up during boot
-just after printing "SCSI subsystem driver Revision: 1.00". It was
-not a hard lockup as the console cursor was still flashing, looks like
-one of the CPUs got hung or something around those lines.
-
-I recompiled this kernel with xmon (our small kernel debugger we have
-on PPC), the problem went away magically...
-
-Today, I recompiled that same kernel, but with different drivers built-in
-(nothing related to SCSI, but that did change the kernel size and boot
-timing), I'm getting a  similar error as above (referenced scb not valid)
-followed by a panic (using the 6.2.1 driver).
-
-I'll try to do the tests you suggest asap, I hope to have some time
-tonight or tomorrow. Note that I used earlier 2.4.x kernels with your
-driver on that same box (with the same 2 adaptec cards & disk setup)
-without problems.
-
-Ben.
+>> That's great, but I wonder what happens when someone upgrades their
+>> PPCBoot to your new version and then wants to boot the old 2.4.2
+>> kernel that they have lying around to check whether it shows a
+>> particular problem they're chasing.
+>
+>This is not the first incompatible change we've  seen:  for  instance
+>the  switch  from passing the clock frequencies in HZ (instead of MHz
+>as it was before Patch 1.1.1.6) is such an incompatible change of the
+>kernel interface.
+>
+>We will deal with it.
+>
+>> If we absolutely *have* to boot a vmlinux directly without a wrapper,
+>> then probably the best thing is to use bi_recs and pass in a pointer
+>> to them, since that is reasonably flexible and can be made to be
+>> forwards and backwards compatible without too much pain.  Changing to
+>
+>It was my assumption from the  previous  discussions  that  this  was
+>going  to  happen. I like it because you have the option to chose the
+>implementation that fits best: if a wrapper seems appropriate it  can
+>be  used  easily; if another solution seems simpler this can be used,
+>too. Enforcing want to be forced to use of a wrapper  in  all  cases.
+>want.
+>
+>> this scheme is going to cause considerable pain in the short term,
+>> though.
+>
+>I don't see much difference to the status quo: f or all  the  systems
+>using  a  wrapper  it is a transparent change like any other; for the
+>other systems it's a new, incompatible  kernel  interface  just  like
+>what happened with the Mhz / Hz change.
+>
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
