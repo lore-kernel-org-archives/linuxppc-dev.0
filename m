@@ -1,42 +1,54 @@
-Date: Thu, 1 Apr 2004 10:05:46 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: John Whitney <jwhitney-linuxppc@sands-edge.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Problems with dma_alloc_coherent()
-Message-ID: <20040401100546.A27472@home.com>
-References: <9EB527A2-83F5-11D8-9FF0-000A95A07384@sands-edge.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9EB527A2-83F5-11D8-9FF0-000A95A07384@sands-edge.com>; from jwhitney-linuxppc@sands-edge.com on Thu, Apr 01, 2004 at 10:59:56AM -0500
+To: Dan Malek <dan@embeddededge.com>
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	Kumar Gala <kumar.gala@motorola.com>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: mpc5xxx support (Was: Re: Proposed Kconfig update patch for help text) 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 01 Apr 2004 11:58:14 CDT."
+             <406C4A26.3040107@embeddededge.com>
+Date: Thu, 01 Apr 2004 19:18:22 +0200
+Message-Id: <20040401171827.57899C10A4@atlas.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Apr 01, 2004 at 10:59:56AM -0500, John Whitney wrote:
-> In the process of reworking my Generic DMA core for the 2.6 kernel, I
-> noticed that dma_alloc_coherent() returns NULL in all cases on a
-> cache-coherent platform.  Instead, I think it would be better if this
-> routine returned a block of contiguous memory (not cache-inhibited), as
-> pci_alloc_consistent() does.
+In message <406C4A26.3040107@embeddededge.com> you wrote:
+>
+> > In all seriousness, when the 52xx code for 2.4 was brought up, there
+> > were a number of objections to the Motorola provided code,
+>
+> Does anyone actually use this code?  From the work I've done it appears
 
-Yeah, that's really broken.  The changeover to dma-mapping.h is
-incomplete.  Tom and I were just talking about this because I
-think it exposes a bigger problem.  What I originally wanted
-was the PCI DMA API defined in terms of the generic DMA API
-on ppc32.  He just pointed out asm-generic/pci-dma-compat.h that
-we can leverage to do that.
+Yes.
 
-> To that end, I am submitting the attached patch which modifies
-> dma_alloc_coherent() and dma_free_coherent() to do just this for
-> cache-coherent platforms.
+> the FEC implements it's own DMA, other peripherals are used in programmed I/O
 
-Your patch fixes the problem but exposes the bigger issue that we
-are starting to duplicate code since on ppc32 PCI DMA API and DMA
-API are handled the same on the backend.
+Indeed, the FEC implementation should be cleaned up.
 
-In the meantime (I think Tom volunteered to clean this up!), I think
-this needs to go in so we are at least functional.
+> mode, and stuff I have done I've found it easier to just write my own
+> code manage the DMA.  IMHO we should just punt this stuff for Linux,
+> now that there is more public interest start collaborating on a better
+> solution, and maybe just use what Mot provided as documentation filler.
 
--Matt
+I cannot speak for Motorola, but I understand they would welcome  any
+input for improvement. Instead of working separately and against each
+other we should co-operate.
+
+> The Motorola solution seems like an attempt to be everything for everyone.
+
+Indeed. They have to support more than just Linux.
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+As usual, this being a 1.3.x release, I haven't  even  compiled  this
+kernel yet. So if it works, you should be doubly impressed.
+      - Linus Torvalds in <199506181536.SAA10638@keos.cs.Helsinki.FI>
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
