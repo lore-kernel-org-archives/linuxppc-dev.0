@@ -1,54 +1,54 @@
-Date: Tue, 12 Feb 2002 19:33:17 +0100
-From: Werner Almesberger <wa@almesberger.net>
-To: benh@kernel.crashing.org
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: performance monitor exceptions
-Message-ID: <20020212193317.F5079@almesberger.net>
-References: <20020211233730.E5079@almesberger.net> <20020212125502.32396@mailhost.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020212125502.32396@mailhost.mipsys.com>; from benh@kernel.crashing.org on Tue, Feb 12, 2002 at 01:55:01PM +0100
+Date: Tue, 12 Feb 2002 14:15:00 -0500 (EST)
+From: Christopher Murtagh <christopher.murtagh@mcgill.ca>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: SUNGEM config
+Message-ID: <Pine.LNX.4.33.0202121351140.23572-100000@blues.wcg.mcgill.ca>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-benh@kernel.crashing.org wrote:
->  - I don't know how the perf. mon stuff works, but couldn't you
-> enter a condition were the CPU is continuously sending your the
-> pef monitor exception until you clear something else ?
+ Ben,
 
-No, in a performance monitor exception, PMXE (PM exception enable)
-is cleared in MMCR0, and I need to set it explicitly to get another
-exception. The only performance event source that's enabled is the
-one using the timer base, so this gives me exceptions at 200 Hz,
-more if I want.
+ A while back when the question was asked as to why we should use SUNGEM
+instead of BMAC or GMAC, you said something to the affect that it offers
+config options. I read through the pdf from the kernel config help and it
+mentions a ge.conf file. So, if I got this right, I simply create an
+/etc/ge.conf file and this will allow me to force XBaseT and Auto or
+forced full/half duplex?
 
->  - I encountered a problem with the TAU stuff and the 7400 where
-> the CPU could actually get mixed up when getting both a normal
-> interrupt and a TAU exception and scew up itself (by taking both
-> exceptions and screwing up SRR0/1)
+ I've been trying it with my iBook2 and 2.4.18pre8 and so far it works
+very well. However, when my iBook is not connected, it keeps on try to
+negotiate an eth0 connection (/var/log/messages):
 
-Bingo ! That seems to be the one:
+Feb  7 15:42:53 shiva kernel: eth0: switching to forced 10bt
+Feb  7 15:43:14 shiva kernel: eth0: switching to forced 100bt
+Feb  7 15:43:21 shiva kernel: eth0: switching to forced 10bt
+Feb  7 15:43:41 shiva kernel: eth0: switching to forced 100bt
 
-http://www.mot.co.jp/SPS/html/lit/pdf/mpc7410pns_rev0.pdf
+So, it would be nice to turn this off other than turning off
+/etc/rc.d/init.d/network.
 
-  #5:
-  Description: Consecutive Performance Monitor, Decrementer,
-  or Thermal Management Interrupts may become non-recoverable.
+ Is there a place where I can find docs for this? I tried google searches
+for ge.conf linux with not much luck.
 
-  Work-Around: Avoid enabling any combination of
-  Performance Monitor, Decrementer, or Thermal Management
-  Interrupts at the same time.
+ Any enlightenment short of a LART would be much appreciated. :-)
 
-Hmm, working around this will be tricky ...
+Cheers,
 
-Thanks a lot !
-
-- Werner
+Chris
 
 --
-  _________________________________________________________________________
- / Werner Almesberger, Lausanne, CH                    wa@almesberger.net /
-/_http://icawww.epfl.ch/almesberger/_____________________________________/
+
+Christopher Murtagh
+Webmaster / Sysadmin
+Web Communications Group
+McGill University
+Montreal, Quebec
+Canada
+
+Tel.: (514) 398-3122
+Fax:  (514) 398-2017
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
