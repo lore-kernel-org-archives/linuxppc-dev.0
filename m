@@ -1,55 +1,34 @@
-Message-ID: <379623E4.7510E304@phx.mcd.mot.com>
-Date: Wed, 21 Jul 1999 12:47:48 -0700
-From: Johnnie Peters <jpeters@phx.mcd.mot.com>
+Message-ID: <B79009C85505D211B11100805FA784C803E79A90@s-il02-k.comm.mot.com>
+From: Ziolko Ryan-crz074 <Ryan.Ziolko@motorola.com>
+To: "Linuxppc-User (E-mail)" <linuxppc-user@lists.linuxppc.org>,
+        "Linux DEV (E-mail)" <linuxppc-dev@lists.linuxppc.org>
+Subject: Sharp LCD Panel
+Date: Wed, 21 Jul 1999 15:25:52 -0500
 MIME-Version: 1.0
-To: Matt Porter <mmporter@home.com>
-CC: VALETTE Eric <valette@crf.canon.fr>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Is the vger 2.2 kernel branch dead
-References: <Pine.LNX.3.96.990721082132.13818A-100000@liberty.chnd1.az.home.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is as we speak being fixed.  Look at vger in the next
-few days for the changes.
+Hello All-
 
-Johnnie
+I have a Sharp LM64K837 24cm [9.4"] Transflective type, B/W STN-LCD
+Module[VGA Format] panel.  Since it is VGA can I just hook it straight up to
+a video card?  If I can, what refresh rates would I use and such.  If you
+can't help me, do you know anyone that might be able to point me in the
+right direction?  I want to use it for my LinuxPPC box... to run in
+console... (and hopefully X).  I have seen LCDproc, but it doesn't have
+quite what I need yet.
 
+http://www.sharpsma.com/datasheets/displays/cstn/lm64k837.pdf
 
-
-
-Matt Porter wrote:
-> 
-> On Mon, 19 Jul 1999, Johnnie Peters wrote:
-> 
-> > Matt Porter wrote:
-> > >
-> > > On Mon, 19 Jul 1999, VALETTE Eric wrote:
-> > >
-> > > > I tried to upgrade here and no changes during one month!!!
-> > > > As there still some important bugs in 2.2.10++, I wonder
-> > > > why nothing happens???
-> > >
-> > > Perhaps nobody has submitted any bug fixes?
-> > >
-> > Actually that is not true.  Motorola has submitted changes to both Paul
-> > and Cort that have not made it into vger.  Last I know the sources in
-> > vger would not boot on Motorola platforms other than Blackhawks and
-> > Utahs.
-> >
-> > I'd very much like to get the changes in.
-> 
-> I was being facetious.  Honestly, somebody is feeding me a major line of
-> crap.  Cort claims to get no patches from Motorola, yet Johnnie claims to
-> be sending them in.  Since my stuff is in Johnnie's repository, it's a
-> problem for me.  Hopefully, this time things start going in cause if
-> not we'll have to find another route.
-> 
-> --
-> Matt Porter
-> mmporter@home.com
-> This is Linux Country. On a quiet night, you can hear Windows reboot.
+---------------------------------------------------------------
+Ryan Ziolko
+Secure Design Center, Motorola Inc.
+Phone: 847-538-6662
+Email: Ryan.Ziolko@motorola.com
+---------------------------------------------------------------
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
