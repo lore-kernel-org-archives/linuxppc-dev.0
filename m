@@ -1,62 +1,75 @@
-Date: Thu, 9 Mar 2000 13:52:03 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Michel Lanners <mlan@cpu.lu>
-cc: geert@linux-m68k.org, grant@borg.umn.edu, mmporter@home.com,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Grabbing an Interrupt for a Brain-dead PCI Device
-In-Reply-To: <200003090658.HAA00456@piglet.grunz.lu>
-Message-ID: <Pine.HPX.4.10.10003091341310.22162-100000@gra-ux1.iram.es>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <4.3.2.20000309152803.00ca9100@mail.munich.netsurf.de>
+Date: Thu, 09 Mar 2000 15:46:38 +0100
+To: Sean Harding <sharding@dogcow.org>
+From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+Subject: Re: compiler optimization? something else?
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20000308113436.A3472@dogcow.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+At 20:34 08.03.00, Sean Harding wrote:
 
-> I doubt it will work on a PowerMac; see what the resource 'checking'
-> code finds as parent resources (r is a mem resource, pr is its parent
-> resource):
+>I posted this on comp.os.linux.powerpc without any response. Perhaps someone
+>here can address it.
 >
-> Mar  9 07:24:29 piglet kernel:    Resources: r.start=f2000400, r.end=f200043f,
-> pr.start=00000000, pr.end=ffffffff.
+>Is anyone working on optimizing the compiler for PPC? It seems like it could
+>use a little work. Maybe that's not actually the problem here, but it's the
+>first thing that springs to mind.
 >
-> As far as I can tell, parent resource would be the memory region held
-> by the parent bridge, out of which this region was allocated. A bit
-> huge, this region, isn't it?
+>I recently was playing with encoding mp3s using LAME on several
+>systems. LAME 3.63beta compiles easily out of the box, but it is
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+But what compiler options did it use on with your compile? I downloaded it
+myself and it seems to default to a simple -O, which is a rather
+non-optimal choice. Try editing the Makefile and play with combinations of
+these options:
 
-Indeed...
+-O2, -O3, -funroll-loops, -funroll-all-loops, -ffast-math (dunno if this
+one has an effect on PPC at all), -finline-functions, -mcpu=604, -mcpu=750
 
-> Then again, Apple's host bridges might not conform entirely to the PCI
-> spec in the way they advertise their resources available for
-> assignment...
+Do that and come back with a table listing your encoding times for the
+different switch combinations.
 
-They probably do, at least OF should get it right in the range properties
-of every bus (that's what I have on a very buggy OF for PreP Motorola
-boards):
+>quite a bit slower than is seeems it should be. For one sample file, the
+>encoding took 32 minutes on my PPC 604/150. The same file, encoded with the
+>same options, took 6 minutes on my PII 366 laptop. I get similar speeds on
+>Tru64 alpha systems, HP-UX pa-risc systems and Solaris sparc systems.
+>Obviously there are differences in speed for these systems based on the CPU,
+>etc. But they all perform in line with what I would expect to see. It's
+>just ppc that's way slower.
 
-ranges                   01000000 00000000 00000000 80000000 00010000
-                         01000000 00000000 01000000 81000000 3e800000
-                         02000000 00000000 00000000 c0000000 3c000000
-			 c172616e 67657386 0005c32c
+Well, if you set the compiler options to suboptimal values, this is what
+you would expect. I think I saw hand-tuned compiler options for all
+platforms you listed, just not for Linux/PPC+gcc, which usually means
+nobody did care til now. Remember Linux is a collaborative effort and if
+you care about something being done/implemented/optimized/etc you usually
+have to do it yourself or maybe kick the right people :-).
 
-the first 2 lines indicate how the I/O space is mapped from the processor
-and the 3rd the PCI memory  space. The last line is junk...
 
-> Those with the PCI spec at hand out there, is there such a thing as
-> resource registers in bridges (be it P2P or host) that inform about
-> what is available to devices behind this particular bridge?
+>The system is not i/o bound during the encode, and there were no other
+>CPU-intensive processes running at the time. If this were an isolated case,
+>I wouldn't worry too much about it. But it seems like most CPU-intensive
+>tasks are slower than they should be.
+>
+>My system is pretty generic LinuxPPC 1999 right now. Here's what I have:
+>
+>juliet ~
+>26% uname -a
+>Linux juliet 2.2.13 #1 Fri Nov 12 23:01:37 PST 1999 ppc unknown
+>
+>juliet ~
+>27% gcc --version
+>egcs-2.91.66
 
-P2P do have them, host bridges do not have them although they often have
-chip specific registers which allow t ochoose between several options or
-to program where the I/O space.
+Upgrade to gcc-2.95.2, <ftp://devel.linuxppc.org/users/fsirl/R5/RPMS/ppc/>.
+Though I don't believe this will give you a really big improvement in code
+optimization, it is a big step forward in compiler correctness on PPC.
 
-> Maybe there's another job for the fixup code...
-
-Indeed, actually /proc/iomem on Intel includes even the RAM ! What is
-needed is to include one hierarchy level to define the physical addresses
-which the bridge forward to PCI (I started a patch but never finished it).
-
-	Gabriel.
+Franz.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
