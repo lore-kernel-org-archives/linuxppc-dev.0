@@ -1,51 +1,43 @@
-Date: Mon, 27 Mar 2000 13:46:36 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+Date: Mon, 27 Mar 2000 13:51:15 +0200 (MET DST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Kostas Gewrgiou <gewrgiou@imbc.gr>
-cc: Michel Dänzer <michdaen@iiic.ethz.ch>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
+cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+        Michel Dänzer <michdaen@iiic.ethz.ch>,
         Gabriel Paubert <paubert@iram.es>,
         Benjamin Herrenschmidt <bh40@calva.net>,
         linuxppc-dev@lists.linuxppc.org
 Subject: Re: LongTrail PCI resource assignment
 In-Reply-To: <Pine.LNX.4.21.0003271409210.22822-100000@idd-01.imbc.gr>
-Message-ID: <Pine.LNX.4.10.10003271335250.32203-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <Pine.GSO.4.10.10003271349510.11532-100000@dandelion.sonytel.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Without acceleration its logical to be *alot* slower than the old server
-> the shadowfb helps a little there (its used by default unless you disabled
-> it in the config)
-
-So the old server was accelerating already?
-
+On Mon, 27 Mar 2000, Kostas Gewrgiou wrote:
 > 16bpp isn't supported by atyfb, you should use 15bpp instead (the xserver
 > needs to be fixed to report that 16bpp isn't supported)
-
-I guessed as much, and Geert said 565 weight needs to be implemented
-already.
-
+>
 > 32bpp should have worked fine, the (no screen found, weight 000 inconsistent
 > with depth 32) message probably means that you tried a startx -- -depth 32
 > instead of the correct -fbbpp 32
 
-I did no such thing. I just used the DefaultDisplayDepth option in the
-config file. How do I specify fbbpp in the config?
+s/bpp/depth/
 
-> > Even with not loading the more arcane extensions the X server weighs in at
-> > 21 MB (I recall 17 or so before), that might explain the slowdown a bit.
-> > Need to work on the accelerated Mach64 driver perhaps.
->
->   My xserver weights about 74mb (it hits 100+mb with dual head) but keep in
-> mind that this includes the  mmaped fb/mmio areas which in my case is 64mb
-> so the server is using about 10mb of memory which isn't too much.
+There's a difference between bpp (`bit per pixel': 8, 16, 24 or 32 are
+supported by atyfb) and depth (8, 15 and 24 are supported by atyfb).
 
-With only 64 MB RAM (yes I was cheap but the Powerbook was expensive
-enough already) it's a bit heavy on the system.
+Gr{oetje,eeting}s,
 
-	Michael
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
