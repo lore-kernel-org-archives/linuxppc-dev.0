@@ -1,71 +1,54 @@
-Date: Tue, 9 Mar 2004 10:20:50 +0100
-From: Jaap-Jan Boor <jjboor@aimsys.nl>
-Message-ID: <Pine.LNX.4.44.0403091013500.16007@linpc003.aimsys.nl>
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: searchplugin (off topic)
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_yxYTAz6wCd0OS+U"
+To: David Jander <david.jander@protonic.nl>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Compiling glibc-2.3.2 (debian) on mpc8xx ;-) 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 09 Mar 2004 09:53:54 +0100."
+             <200403090953.54598.david.jander@protonic.nl>
+Date: Tue, 09 Mar 2004 10:45:21 +0100
+Message-Id: <20040309094526.38303C0655@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---Boundary-00=_yxYTAz6wCd0OS+U
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+In message <200403090953.54598.david.jander@protonic.nl> you wrote:
+>
+> So far, so good. I compiled a kernel with FPU-emulation just in case, and went
+> through the installation of the base system using glibc-2.3.1 from ELDK
+> binaries plugged on top of the version from debian, to avoid further
+> incompatibilities.
 
-Hi,
+You have just created a bunch of incompatibilities here.  You  cannot
+use binaries and shared libraries that don't fit to each other.
 
-For anybody interested, I've attached a
-mozilla/firefox/etc. searchplugin for
-this mailing list. Just put in your
-<browser install>/searchplugins directory
-and restart.
+> Question: What do I have to patch exactly before compiling? I want to leave
+> floating-point stuff in there for now to stay compatible with
 
-Jaap-Jan
+What do you mean by "leave floating-point stuff in"?
 
+Since the MPC8xx does  not  have  a  FPU,  you  cannot  use  hardware
+floating  point. Oh yes, there is the FP emulation in the kernel. But
+this has never been working reliably.
+
+> debian-binaries. AFAIK there is (was?) an issue with
+> sysdeps/powerpc/powerpc32/memset.S and sysdeps/powerpc/powerpc32/dl-machine.c
+> containing code that assumed a cache-line of different size than that of the
+> MPC8xx. Is this still the case in glibc-2.3.2? Hasn't this been patched in
+> the official sources?
+> What else do I have to look out for? What other patches to apply? Where to get
+> them from?
+
+See the patches in the ELDK build environment.
+
+
+Best regards,
+
+Wolfgang Denk
 
 --
-J.G.J. Boor			  Anton Philipsweg 1
-Software Engineer		  1223 KZ Hilversum
-AimSys bv              		  tel. +31 35 689 1941
-Postbus 2194, 1200 CD Hilversum   mailto:jjboor@aimsys.nl
-
-
---Boundary-00=_yxYTAz6wCd0OS+U
-Content-Type: text/plain;
-  charset="us-ascii";
-  name="linuxppc.src"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename="linuxppc.src"
-
-# linuxppc-embedded Sherlock for Mozilla
-#
-# jjboor at aimsys dot nl March 2004
-#
-
-<search
-   name="linuxppc-embedded"
-   description="LinuxPPC - Mail List Archives"
-   action="http://lists.linuxppc.org/results.html"
-   searchForm="http://lists.linuxppc.org/results.html"
-   method="GET" >
-
-<input name="restrict" value="linuxppc-embedded">
-<input name="words" user >
-
-<interpret
-
-    resultListStart="<!-- RESULT LIST START -->"
-    resultListEnd="<!-- RESULT LIST END -->"
-
-    resultItemStart="<!-- RESULT ITEM START -->"
-    resultItemEnd="<!-- RESULT ITEM END -->"
->
-</search>
-
---Boundary-00=_yxYTAz6wCd0OS+U--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+The greatest threat towards future is indifference.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
