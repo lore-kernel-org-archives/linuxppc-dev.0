@@ -1,33 +1,41 @@
-Subject: Re: multiple separate pci bridges ...
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Rob Baxter <robb@synergymicro.com>
-Cc: Sven Luther <sven.luther@wanadoo.fr>,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <20040103002733.GA2112@synergy>
-References: <20040101181145.GA27294@iliana> <20040102151830.GA31261@synergy>
-	 <1073087816.10542.16.camel@gaston>  <20040103002733.GA2112@synergy>
-Content-Type: text/plain
-Message-Id: <1073092343.10538.21.camel@gaston>
-Mime-Version: 1.0
-Date: Sat, 03 Jan 2004 12:12:23 +1100
+From: Roland Riegel <roland.riegel.maillist@gmx.de>
+To: benh@kernel.crashing.org
+Subject: Re: iBook G4 LCD backlight misbehaviours
+Date: Sat, 3 Jan 2004 18:59:58 +0100
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+References: <200401030014.07254.roland.riegel.maillist@gmx.de> <1073087414.10543.9.camel@gaston>
+In-Reply-To: <1073087414.10543.9.camel@gaston>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200401031859.58576.roland.riegel.maillist@gmx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> This was necessary because the PCI driver (scan/enumeration code) was using
-> these same config calls that was being fixed up.  (A chicken and egg issue?)
+Am Samstag, 3. Januar 2004 00:50 schrieb Benjamin Herrenschmidt:
+> On Sat, 2004-01-03 at 10:15, Roland Riegel wrote:
+> > Hi everybody!
+> >
+> > Recently I bought an iBook G4 and installed Linux on it. I am using
+> > linux-2.4.23-ben1 and have the following problem:
+> >
+> > When configured with CONFIG_PMAC_BACKLIGHT=y, on startup the screen
+> > switches completely off (it took me some time to notice that the kernel
+> > does not crash but only the screen turns dark and the system keeps
+> > booting).
+>
+> This machine isn't currently fully supported by 2.4.23 kernels, you will
+> have better success using my current 2.6.1-rc1 tree
+>
+> Ben.
 
-This should still not be necessary... Before scanning a bus, the PCI code
-will properly set first_busno, thus the config access methods will work.
+Ok, I will try to switch then.
 
-The only problem I spotted in 2.4 (and afaik, that is fixed in 2.6) is
-that when P2P bridges are moved around, we could end up with a temporary
-wrong state where 2 of these on a given bus segment would try to decode
-the same bus numbers, thus screwing up probe. This is why I added a
-skew value of 0x10 between each host on some machines.
+Thanks for your answer!
 
-Ben.
+Greetings,
+Roland
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
