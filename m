@@ -1,57 +1,40 @@
-In-Reply-To: <40F8138F.8090004@pi.be>
-References: <40F57D15.8030700@pi.be> <69A5B0EA-D669-11D8-A9B5-000393DBC2E8@freescale.com> <40F8138F.8090004@pi.be>
-Mime-Version: 1.0 (Apple Message framework v618)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <6505FDD3-DC31-11D8-A541-000393DBC2E8@freescale.com>
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-From: Kumar Gala <kumar.gala@freescale.com>
-Subject: Re: [PATCH] align.c
-Date: Thu, 22 Jul 2004 17:49:31 -0500
-To: Paul Mackerras <paulus@samba.org>
+Date: Thu, 22 Jul 2004 16:55:36 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Ralph Siemsen <rsiemsen@rossvideo.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: early UART mapping in head_44x.S
+Message-ID: <20040722165536.B20296@home.com>
+References: <40F452D6.9020806@rossvideo.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <40F452D6.9020806@rossvideo.com>; from rsiemsen@rossvideo.com on Tue, Jul 13, 2004 at 05:23:34PM -0400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Paul,
-
-Can you explain to me why/when stswi/lswi would get alignment
-exceptions.  I think I'm missing something :)  The reason I ask is we
-are working on some emulation handlers but are not doing anything with
-regards to alignment for e500.
-
-- kumar
-
-On Jul 16, 2004, at 12:42 PM, Stef Simoens wrote:
-
-> Kumar Gala wrote:
->> Do you really see string ops and alignment exceptions?  I was under
->> the impression they did byte accesses.
+On Tue, Jul 13, 2004 at 05:23:34PM -0400, Ralph Siemsen wrote:
 >
-> Yes, but i've only seen alignment exceptions with stswi/lswi
-> instructions though.
->
-> (On the MPC601, stswi/lswi has better timings than a series of
-> stw/lwz; that's why I'm probably the only one seeing them...)
->
-> While I was at it, Paulus asked me to handle stmw/lmw and stswx/lswx
-> as well...
->
-> Stef
->
->> On Jul 14, 2004, at 1:36 PM, Stef Simoens wrote:
->>> This is an (updated) diff to arch/ppc/kernel/align.c of the 2.6.8-rc1
->>> kernel.
->>> The patch adds support for the handling of alignment exceptions of
->>> multiple (lmw/stmw) and string (lswi/lswx/stswi/stswx) instructions.
->>> Stef
->>>
->>> diff -ur linux-2.6.8-rc1/arch/ppc/kernel/align.c
->>> linux-2.6.8-rc1-mq/arch/ppc/kernel/align.c
->>> --- linux-2.6.8-rc1/arch/ppc/kernel/align.c    2004-07-12
->>> 17:46:42.525695737 +0200
->>> +++ linux-2.6.8-rc1-mq/arch/ppc/kernel/align.c    2004-07-12
->>> 20:25:24.390989048 +0200
-> (snip)
+> I've been trying to boot a vanilla 2.6.7 kernel on a board similar to
+> Ocotea (the board boots 2.4.x okay).  I wasn't getting any serial
+> output, despite setting CONFIG_SERIAL_TEXT_DEBUG and doing early
+> registration of a console (as per David Woodhouse's posts on this list).
 
+That's a separate issue. I need to go through and early register
+the console on 4xx when I get a moment.
+
+> After much tracing and a lucky suggestion on IRC, I seem to have
+> stumbled on the cause, although I don't fully understand what is going
+> on.  In arch/ppc/kernel/head_44x.S (from 2.6.7 mainline) there is a
+> block of code that sets up the "early UART mapping".  It does three
+> tlbwe instructions, and then repeats the same a second time but in
+> "Translation state 1".  This second set seems to cause my problems.
+> When I comment out the 5 instructions before the isync, I magically
+> start getting printk outputs.
+
+Yeah, I fat-fingered the last patch to head_44x.S and left the
+duplicate code fragment there. There's a patch submitted to fix
+this in mainline.
+
+-Matt
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
