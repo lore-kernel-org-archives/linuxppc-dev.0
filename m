@@ -1,37 +1,38 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-From: "Elan Feingold" <elan@nxnetworks.com>
-To: <wd@denx.de>, <kenneth.johansson@inn.ericsson.se>
-Cc: "Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Driver question 
-Date: Mon, 27 Aug 2001 13:25:58 -0500
-Message-ID: <NDBBLJLFCLLGDHJPGKGCCECFEEAA.elan@nxnetworks.com>
+Message-ID: <E1836A7F3557D311A14000805F9F36FCD4E41D@usdfo011.usac.danfoss.net>
+From: "Pergola, Michael" <MichaelPergola@Danfoss.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: tty buffer size
+Date: Mon, 27 Aug 2001 20:32:53 +0200
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-reply-to: <20010826204606.0BC8A10CBE@denx.denx.de>
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> > One of them lives at 0x84000800 (above 2Gb!).
-> That's a physical address, right?
+All,
 
-Correct.
+Is it possible to receive up to 1k characters under
+one serial port interrupt? My current product needs
+to receive a greater number of characters than that
+specified by the TTY_FLIPBUF_SIZE.
 
-> Ummm... you must have been doing something wrong.
+I've been playing around with this and if I set the
+RX_BUF_SIZE to 256 I can get it to receive
+that many characters OK. I can even make it
+skip the BH until the flip buffer is full but cannot
+get greater than the 512 bytes specified. When
+I tried to set TTY_FLIPBUF_SIZE to 1024,
+I got a resulting kernel panic upon the next
+reboot.
 
-Yep, I wasn't page aligning the 0x8400800 8-)  That did it.
+Thanks for any and all help.
 
-> You can use mmap(), but of course  you  need  a  device  driver  that
-> provides such a mmap() interface.
-
-It didn't sound like Kenneth was using a device driver (is that correct,
-Kenneth?).  Is the driver used to provide additional features (like making
-sure the memory is not cached, etc.)?
-
-I'm confused 8-)  Thanks in advance for any help you can provide.
-
--elan
+Regards,
+     Michael Pergola
+     Software Engineer
+     Danfoss Air-Conditioning & Refrigeration Division
+     7941 Corporate Blvd.
+     Baltimore, MD  21236     (410) 931-8250 x4259
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
