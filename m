@@ -1,90 +1,61 @@
-Message-Id: <199904210150.VAA22908@mail-2.global2000.net>
-Date: Tue, 20 Apr 1999 21:41:25 -0400
-Subject: FW: Darwin Streaming Server on Linux ix86
-From: "AArthur" <aarthur@h30.net>
-To: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Date: Wed, 21 Apr 1999 10:30:40 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Simone Piccardi <Simone.Piccardi@fi.infn.it>
+cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: New boot attempts on a MVME2431 
+In-Reply-To: <371B741C.35603A35@fi.infn.it>
+Message-ID: <Pine.HPP.3.96.990421101949.20020T-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Just more info on compiling qt/darwin streaming server for you guys to take
-a look at if you not subscribed to the darwin-developer list.
-
-----------
-From: Pedro Ivo Andrade Tavares <p-tavares@usa.net>
-To: B <bolen@hcs.harvard.edu>
-Subject: Re: Darwin Streaming Server on Linux ix86
-Date: Tue, Apr 20, 1999, 8:45 PM
 
 
-Some notes on compiling QTFileLib on Linux (Debian 2.2[potato], Pentium):
+On Mon, 19 Apr 1999, Simone Piccardi wrote:
 
-First thing I noticed: The -ansi flag must be removed from the Makefile in
-Linux systems,
-or certain prototyped won't be defined (e.g. strdup). Also, the line
-
-#include <getopt.h>
-
-should be included in OSHeaders.h
-
-Other than that, it's just compiling with -D__FreeBSD__ . I'm testing
-building libQTFileLib
-as a shared library. I'm sure it will be useful to someone this way.
-
-At 20:14 19/04/99 -0400, you wrote:
->On Mon, 19 Apr 1999, Pedro Ivo Andrade Tavares wrote:
->
->> I'm thinking of changing the current way of having defines for each OS into
->> an autoconf - generated header. Unfortunately, I know nothing about how to
->> use autoconf.
->
->Ditto, I think it might be time to learn...
-
-maybe we can think of something together...  The current #define's  system
-is OK
-for now, but when you add some more OS's, it's going to get unwieldly...
-
->> As to the Server, I think it's best to build new makefiles. I think I'm
->> gonna use the GNUstep-make package, it seem suited to converstion of PB
->> projects.
->
->Yeah, I was looking at them, and I was thinking of just doing a conversion
->by hand to a plain makefile format.  If the GNUStep stuff can save some
->time, then by all means...
-
-Well, I tried yesterday, and just discovered gstep-make doesn't recognize
-*.cpp files.
-As I lack the expertise to add then, it's either (a) bug the developers to
-add it or (b) wing
-it with a new Makefile.
-
->What about system dependant stuff?  There are the whole OS*.cpp set of
->files, anybody start looking at those?
-
-Hm... The OSHeaders in QTFileLib was simple enough... Haven't looked at the
-Server yet in this matter...
-However, it uses Mach cthreads! Anyone know how to convert this code to
-pthreads? I'm stumped on that...
-
->> Anybody else interested?
->me me!  I don't have a lot of background, but I am currently writing
->'nachos' for my OS class...  (anybody else learned on nachos?)
-
-NachOS? Nice pun in an OS name... Never heard of it, though. Any good?
-
-So, anybody else working on it, or are just the two of us? Let's get
-together, folks!
-
-Pedro Ivo Tavares
+> 
+> Hi,
+> 
+> I'm still trying to boot LinucPPC on this board. Thanks to new kernel
+> images provided by G. Paubert in his site I could obtain some new
+> results (not a success but at least this time the boot is going a bit
+> further).
 
 
-====================================================================
-Unsubscribe: <darwin-development-unsubscribe@public.lists.apple.com>
+Ok, what does the SROM command under PPCBug return. There is a bug in the
+setup of these.
 
-Help: <http://www.lists.apple.com/darwin-development.html>
-or    <darwin-development-info@public.lists.apple.com>
+You have to type SROM, answer Y to the first question and list all the
+values until the the address 0x80. Then around address 0x20, there is
+probably a byte which is 0x08 and should be 0x00, but I can't tell you the
+exact address without the dump.
+
+> It seems quite strange to me also the message:
+> OpenPIC Version ? (2 CPUs and 17 IRQ sources) at d1000000
+> Why 2 CPU?
+
+Because the OpenPIC in the Raven and Hawk support up to 2 CPUs. This does
+not mean that they are installed however...
+
+> time_init: decrementer frequency = 998700000/60 (15MHz)
+
+This is strange, it should be 25 MHz. I have got timing problems on my
+board too... Going to investigate since it seems constant when it should
+not.
+
+
+> My question are: 
+> Is the way I gave the boot parameter (root=/dev/nfs) right? 
+> I exported an empty /home/ppc directory on the same PC that I used as 
+> tftp server, but how the board can recognize just this directory? And 
+> what files I have to put in this directory?
+
+You have to setup you /etc/bootptab entries and /etc/exports. Don't forget 
+to set the export as no_root_squash.
+
+	Gabriel.
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
