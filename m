@@ -1,32 +1,37 @@
-Message-ID: <20020711224210.62434.qmail@web11505.mail.yahoo.com>
-Date: Thu, 11 Jul 2002 15:42:10 -0700 (PDT)
-From: Khai Trinh <kqtrinh@yahoo.com>
-Subject: tasklets and waking up sleeping process question
+Message-ID: <B162270C965FD511AB9600B0D0B0AB420128241D@NAPA>
+From: Mike Ji <hji@netscreen.com>
 To: linuxppc-embedded@lists.linuxppc.org
+Subject: va-ppc.h and powerpc-eabi-gcc
+Date: Thu, 11 Jul 2002 15:59:05 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have new to Linux. I am reading the Linux device
-driver book second eddition and am trying to make some
-sense out of it.
+Hi, folks,
 
-I am trying to implement an interrupt handler. From
-the description in the book, it seems that one can go
-about implementing the bottom half either using the
-tasklets method or by waking up a sleeping process in
-the top half interrupt handler.
+I got in trouble with the "printf"...
 
-Is what I understood correct or I am totally of the
-topics?
+* The cross-compiled I built is: powerpc-eabi-gcc.
 
-When do you determine which method to implement for an
-interrupt handler?
+* When I compile/build my codes, I also forced the compiler to use EABI by
+"-meabi" usage.
+* With "-v", I did see the default predefined Macro of "__PPC__" and
+"CALLSYSV".
 
-Regards,
---Khai
+With those two macros, my codes will link the "va-ppc.h"(Please see the
+stdarg.h).
+
+The result is: my printf can't work properly when with complex input
+parameters.
+
+Would you guys give me some help if you happen to know this area?
+
+Thanks a million,
+
+Mike,
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
