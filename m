@@ -1,22 +1,29 @@
-Date: Thu, 21 Oct 1999 14:42:01 -0500
-From: anthony tong <atong@uiuc.edu>
-To: luther@dpt-info.u-strasbg.fr
-Cc: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: SuSE Rage 128 Xserver Source and XFree 3.3.6
-Message-ID: <19991021144201.A17030@mango.genunix.net>
-References: <v03110700b433ca16486c@[209.183.133.114]> <19991020150502.A2198@mango.genunix.net> <19991021124450.A22613@maxime.u-strasbg.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <19991021124450.A22613@maxime.u-strasbg.fr>
+Date: Thu, 21 Oct 1999 22:36:11 +0200 (CEST)
+From: Michael Schmitz <schmitz@amber.biophys.uni-duesseldorf.de>
+To: Wolfgang Denk <wd@denx.de>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Probing for (non-existing) memory?
+In-Reply-To: <199910211928.VAA20201@denx.local.net>
+Message-ID: <Pine.LNX.4.10.9910212233220.22319-100000@amber.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Sven LUTHER (Thu, Oct 21, 1999 at 12:44:50PM +0200):
-> So is the Rqge 128 driver stuff already in 3.9.16 ?
 
-Nope.
+
+On Thu, 21 Oct 1999, Wolfgang Denk wrote:
+
+> please excuse the silly question: is there a standard way to probe an
+> address if it is readable/writable memory? Ideally something that  is
+> portable across all architectures?
+
+Look at what copy_to_user or copy_from_user does to set up a temporary
+page fault handler, so to speak. m68k has hwreg_present() so I'd start by
+translating that to ppc assembly. 
+
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
