@@ -1,32 +1,49 @@
-Date: Tue, 29 Jun 2004 11:12:16 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-To: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-Subject: ok ... which source trees are the "right" choices?
-Message-ID: <Pine.LNX.4.60.0406291107530.25353@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Date: Tue, 29 Jun 2004 08:16:04 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: 2.5 bk tree on 8xx board ... so close
+Message-ID: <20040629151603.GG28128@smtp.west.cox.net>
+References: <Pine.LNX.4.60.0406281743170.4213@localhost.localdomain> <20040628233119.GE28128@smtp.west.cox.net> <Pine.LNX.4.60.0406290546500.3272@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.60.0406290546500.3272@localhost.localdomain>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-   based on wolfgang's recent reference to the linuxppc_2_4_devel
-source tree at DENX, one has to ask -- how does one choose between the
-various source trees to stay on top of things?
+On Tue, Jun 29, 2004 at 05:53:22AM -0400, Robert P. J. Day wrote:
 
-   so far, i've established that, for the 2.6 kernel, i just keep
-pulling the latest stuff from ppc.bkbits.net/linuxppc-2.5.
+> On Mon, 28 Jun 2004, Tom Rini wrote:
+>
+> >Which serial driver did you use?  For me 8xx_UART does not work, but
+> >CPM_UART will (it's still not quite correct, I have to config in both
+> >SMC1 and SCC1 to get SMC1 to work, but I'm burried under a bunch of
+> >other stuff right now).
+>
+> i was, in fact, using 8xx_UART under the "MPC8xx CPM options" menu,
+> but (pardon my confusion) i'm not aware of this CPM_UART option of
+> which you speak (unless you're just paraphrasing).
 
-   but what about the 2.4 kernel?  besides the denx source (which,
-based on experience, would be at the top of my list in terms of
-choice), there's a whack of 2.4-based trees at ppc.bkbits.net.
+Paraphrasing from memory, yes, sorry.
 
-   and i've already confused myself this morning by looking at one
-source tree while the discussion was referring to a different one.
-dang.
+> if i deselect 8xx_UART, i'm assuming you're talking about going then
+> to the menu selections:
+>
+>   Device Drivers
+>     Character devices
+>       Serial drivers
+>
+> and selecting the appropriate CONFIG_SERIAL_CPM* settings (_SCC1 and
+> _SMC1)?  is that what you're referring to above?
 
-   so ... what's the recommendation?  at the moment, it seems that i'd
-want the denx 2.4 devel tree, and the bkbits 2.5 tree.  thoughts?
+Yes, that driver.  As I was saying, for some reason I haven't had time
+to dig into, I have to select both SCC1 and SMC1 to get a console which
+is on SMC1 working.  I've also found that enabling everything doesn't
+horribly kill the board, so you could just try that for now.
 
-rday
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
