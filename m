@@ -1,35 +1,43 @@
-Message-ID: <39072136.6A4B340A@relog.ch>
-Date: Wed, 26 Apr 2000 19:02:46 +0200
-From: Michel Dänzer <daenzer@relog.ch>
-Reply-To: daenzerm@student.ethz.ch
+From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+Reply-To: khendricks@ivey.uwo.ca
+To: Giovanna Ambrosini <ambrosini@lightning.ch>
+Subject: Re: patch: POSIX.1b signals for ppc
+Date: Wed, 26 Apr 2000 13:11:21 -0400
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.linuxppc.org
+References: <v03110700b52c8481fb7e@[209.183.131.177]> <v03110700b52cb98e15b9@[129.100.29.243]>
+In-Reply-To: <v03110700b52cb98e15b9@[129.100.29.243]>
 MIME-Version: 1.0
-To: Ryuichi Oikawa <roikawa@rr.iij4u.or.jp>
-CC: gewrgiou@imbc.gr, linuxppc-dev@lists.linuxppc.org
-Subject: Re: XFree 4.0 dual monitor on AGP G4
-References: <Pine.LNX.4.21.0004261635150.27506-100000@idd-01.imbc.gr> <20000427015351E.roikawa@rr.iij4u.or.jp>
-Content-Type: text/plain; charset=iso-8859-1
+Message-Id: <00042613142600.25418@khendricks_mac>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Ryuichi Oikawa wrote:
+Hi Giovanna,
 
-> BTW, why do people like fbdev very much?
+> I need to keep using a stable kernel so I have attempted to backport your
+> POSIX.1b.patch back to Paul's latest 2.2.15pre19 kernel.
+>
+> Here is the patch.  It compiles cleanly but I have not attempted to boot
+> with it yet (but will soon).
+>
+> If this works, I would like to get your changes into both Paul's stable and
+> devel trees as soon as possible.  This functionality has been in the x86
+> kernel since at least the beginning of the 2.2 kernel series.
 
-- one can use the generic fbdev driver if the dedicated driver doesn't work
-- if the dedicated driver supports fbdev, access to the hardware is
-  coordinated between all virtual terminals
-- ...
+I have just finished running jdk 1.3 successfully using Paul's stable
+2.2.15pre19 kernel (rsynced yesterday) and your posix signal patch backported
+to the stable tree.
 
+So far it seems to be working well with no real difficulties.
 
-> It's easier to port XFree86 built-in drivers as Kostas mentioned before, and > has advantages that developers can port/update the server independent on the
-> kernel, add support the latest hardware without waiting for the kernel
-> driver, etc.
+I will try to exercise the SA_SIGINFO info in some signal handlers to make sure
+things are working okay.
 
-Use of the fbdev support is optional.
+I sure hope Paul and Cort add your patch in.
 
+Thanks,
 
-Michel
-
+Kevin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
