@@ -1,36 +1,33 @@
-Date: Tue, 20 Jan 2004 14:49:17 +0100
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Etsushi Kato <ekato@ees.hokudai.ac.jp>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <20040120223457T.ekato@ees.hokudai.ac.jp>
+References: <4824AFEC-4B0A-11D8-A780-00039394E428@ees.hokudai.ac.jp> <Pine.GSO.4.58.0401201102450.18625@waterleaf.sonytel.be> <20040120223457T.ekato@ees.hokudai.ac.jp>
+Mime-Version: 1.0 (Apple Message framework v609)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <10F0AFAD-4B61-11D8-8D03-000A95A0560C@us.ibm.com>
+Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+From: Hollis Blanchard <hollisb@us.ibm.com>
 Subject: Re: local_irq_enable() problem...
-Message-ID: <20040120134917.GA7665@iliana>
-References: <4824AFEC-4B0A-11D8-A780-00039394E428@ees.hokudai.ac.jp> <Pine.GSO.4.58.0401201102450.18625@waterleaf.sonytel.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <Pine.GSO.4.58.0401201102450.18625@waterleaf.sonytel.be>
-From: Sven Luther <sven.luther@wanadoo.fr>
+Date: Tue, 20 Jan 2004 09:55:27 -0600
+To: Etsushi Kato <ekato@ees.hokudai.ac.jp>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Jan 20, 2004 at 11:03:41AM +0100, Geert Uytterhoeven wrote:
+On Jan 20, 2004, at 7:34 AM, Etsushi Kato wrote:
 >
-> On Tue, 20 Jan 2004, Etsushi Kato wrote:
-> > I just started porting Linux 2.6 for nubus powermac.  I've applied most
-> > of 2.4 nubus patch to 2.6.1-rc2, and kernel compiles fine now.  But in
-> > the early booting of kernel, it hangs while doing local_irq_enable()
-> > just after profile_init() in start_kernel() of init/main.c.
-> >
-> > How can I debug kernel in this situation?  printk() is working, and
-> > boot messages are shown with serial connection until "Console: colour
-> > dummy device 80x25".
->
-> Did you pass `console=ttyS0'?
+> In the early boot sequence, 2.6 kernel freezes just after showing
+> 'arch_exit' on the screen, and 'Console: colour dummy device 80x25' on
+> the serial console.  Even if I put printk() right after
+> local_irq_enable() in init/main.c, this debug print won't show up.  So
+> it seems something causes kernel hang while enabling MSR_EE bit, but I
+> can't figure out how to detect...  Does anyone have a clue?
 
-Is it not console=ttyS01 ?
+Perhaps you have an irq that won't shut up? Or maybe a problem
+returning from an exception handler (I'm assuming you have your own
+head.S).
 
-Friendly,
+--
+Hollis Blanchard
+IBM Linux Technology Center
 
-Sven Luther
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
