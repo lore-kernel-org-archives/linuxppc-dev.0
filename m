@@ -1,19 +1,18 @@
-Return-Path: <wd@denx.de>
-Received: from mailout04.sul.t-online.com (mailout04.sul.t-online.com
-	[194.25.134.18]) by ozlabs.org (Postfix) with ESMTP id E6E5367A65
+Return-Path: <markc@mail.com>
+Received: from relay03.roc.ny.frontiernet.net (relay03.roc.ny.frontiernet.net
+	[66.133.182.166]) by ozlabs.org (Postfix) with ESMTP id 52F2367A64
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 11 Feb 2005 22:15:58 +1100 (EST)
-To: robin <robin@india.tejasnetworks.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 11 Feb 2005 11:59:04 +0530."
-	<200502111159.04265.robin@india.tejasnetworks.com>
-Date: Fri, 11 Feb 2005 11:53:27 +0100
-Sender: wd@denx.de
-Message-Id: <20050211105332.3AB7FC108D@atlas.denx.de>
-Cc: etux@embeddedtux.org, linuxppc-embedded@ozlabs.org
-Subject: Re: Memory leak problem 
+	Sat, 12 Feb 2005 00:48:28 +1100 (EST)
+Message-ID: <001101c5103d$7ed78470$0301a8c0@chuck2>
+From: "Mark Chambers" <markc@mail.com>
+To: "Vijay Padiyar" <vijay_padiyar@hotmail.com>,
+	"LinuxPPC Support" <linuxppc-embedded@ozlabs.org>
+References: <BAY1-DAV32181D4E594557F8931608B770@phx.gbl>
+Date: Fri, 11 Feb 2005 08:27:47 -0500
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: Re: problem with accessing memory mapped area
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,21 +23,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <200502111159.04265.robin@india.tejasnetworks.com> you wrote:
-> 
-> 1. Did somebody encounter any problems(leaks) with the 
-> syncppp module in denx 2.4.20 kernel?? 
+> In addition, in the address range 0x30000000-0x300000FF, I have a CPLD
+> mapped.
+>
+> Now, I wish to access the registers of this CPLD. For this, I create a
+> module and insert it into the kernel. Now, in my 'init_module' function, I
+> map the address range 0x30000000-0x300000FF to cpld_mem:
+>
+> But when I execute this program on the target, it crashes after displaying
+> "Writing to CPLD". Sometimes it says 'Bus error' and some other times I
+get
+> a 'Kernel panic' message and the system reboots.
+>
 
-2.4.20 is pretty old. Is there any specific reason for  not  using  a
-more recent kernel version?
-
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"To IBM, 'open' means there is a modicum  of  interoperability  among
-some of their equipment."                            - Harv Masterson
+If you are getting 'bus error' it sounds like the memory controller is not
+set
+up [correctly] for this address.  Do you know if the bootloader is
+configuring
+the CPLD chip select correctly?
