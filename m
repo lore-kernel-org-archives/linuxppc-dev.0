@@ -1,52 +1,58 @@
-Message-ID: <0B0A39652BB0D411BCCF00508B9512EC08AEB627@tx14exm05.ftw.mot.com>
-From: Yu Bo-BOYU1 <Bo.Yu@motorola.com>
-To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: printk and 
-Date: Mon, 4 Nov 2002 16:05:20 -0600 
+From: "Georg Klug" <gklug@giga-stream.de>
+To: <svacca@valcom.com>
+Cc: "Ppc Embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Thruput slow unless select() on stdin frequently
+Date: Tue, 5 Nov 2002 10:00:32 +0100
+Message-ID: <FFECLICFNBJAHONLGAKMAELNCGAA.gklug@giga-stream.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
+	charset="US-ASCII"
+In-Reply-To: <01C28414.C30A9C20.svacca@valcom.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hi Steven,
 
-The linux object did not go very far on my custom board. As soon as it
-decompress
-itself then it hang silently. The last printout is "Now booting the kernel".
+unfortunately, I don't know your board, but from the effect you are seeing,
+I would say it is some sort of an interrupt problem. Do you have shared
+IRQs? Was the interrupt service routine of the "QMC channel" driver
+correctly installed? Does the interrupt really occur? Those would be the
+things I would be searching next.
 
-I am trying to understand why printk() did not print out even one character
-as this
-function is called at very beginning of start_kernel(). I had the following
-questions.
+Kind regards,
+Georg Klug
 
-1. What does this statement mean in kernel/printk.c ?
+> --- stdin appears to block until a select() tests it, thus slowing
+>    system code execution way down. ---
+>
+> My MPC860T app executes UDP recvfrom()'s and sendto()'s
+> at regular intervals.  The recvfrom() UDP pkt data is queued with
+> a buffer descriptor for transmission on a QMC channel to an
+> external device.  The data read from the device on a QMC
+> channel is queued with a buffer descriptor for subsequent sendto().
+>
+> But if I do not constantly execute a select() (timeout = 10us)
+> on stdin (serial keyboard - not being used often) at a fast enough
+> rate (i.e. if the select() is executed in it's own thread and doesn't
+> get scheduled frequently enough) the code execution slows way
+> down, and I find that the queued QMC channel data, residing
+> in the circular queues doesn't get transmitted fast enough
+> and the queues grow and grow.  Doing no select() on stdin
+> basically shuts the QMC buff desc processing down.
+>
+> It's as though, even with no serial chars coming in, stdin
+> blocks until the select() tests it.  I need to avoid this blocking, yet
+> still periodically check for a serial key input on stdin.
+>
+> Any ideas out there in Linux Embedded-land?
+>
+> Thanks,
+>
+> Steven
+>
+>
+>
 
-__setup("console=", console_setup);
-
-2. How does the underneath driver of printk() is initialized? If printk() is
-called before
-init_IRQ(). I assume it can only push characters out instead of accepting
-input just
-like putc() or serial_putc() before uncompessing linux. But after intense
-search inside
-linux source code, I am still puzzled...
-
-This is the boot log.
-Starting at 0x800000...
-
-loaded at: 00800000 0089E1BC
-zimage at: 00805870 0089AC70
-avail ram: 00400000 00800000
-
-Linux/PPC load:
-Uncompressing Linux...done.
-Now booting the kernel
-
-
-Thanks.
-
-Bo
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
