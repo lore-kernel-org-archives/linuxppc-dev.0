@@ -1,169 +1,32 @@
-Date: Tue, 17 Jul 2001 00:45:40 -0500
-From: "Joseph P. Garcia" <jpgarcia@execpc.com>
-To: linuxppc-dev@lists.linuxppc.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: 2.4 - buttons, temperature, ictc
-Message-Id: <20010717004540.255d1b2c.jpgarcia@execpc.com>
-Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="Multipart_Tue__17_Jul_2001_00:45:40_-0500_10167db8"
+Date: Tue, 17 Jul 2001 09:18:53 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: "Joseph P. Garcia" <jpgarcia@execpc.com>
+Cc: linuxppc-dev@lists.linuxppc.org,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: 2.4 - buttons, temperature, ictc
+In-Reply-To: <20010717004540.255d1b2c.jpgarcia@execpc.com>
+Message-ID: <Pine.LNX.4.05.10107170917410.10614-100000@callisto.of.borg>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
+On Tue, 17 Jul 2001, Joseph P. Garcia wrote:
+> - small ATY resource tweak in pmac_pci.c (I like it at 0x830--.  not sure if 0x800-- is best or not.  ignore if you like.)
 
---Multipart_Tue__17_Jul_2001_00:45:40_-0500_10167db8
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Why is it necessary to hardcode this address? It may clash with another device.
 
-mostly a rehash of patches from the past, and mostly not mine originally, attached is a patch.gz against the latest BenH 2.4 kernel.  It adds support for:
-- repeating brightness buttons
-- volume buttons (using kernel space volume control interface)  supported sound cards only (screamer, burgundy?)
-- temperature support for my wallstreet 750CX, which doesn't use TAU. (not sure what CPUs support this coding.  no checks yet)
-- ICTC proc support  (I still have this in my kernel.  might use it one day)
-- small ATY resource tweak in pmac_pci.c (I like it at 0x830--.  not sure if 0x800-- is best or not.  ignore if you like.)
+Gr{oetje,eeting}s,
 
-I'm willing to help see some of these get into a public tree.  BenH showed interest in the repeating and volume buttons, but with the noted exception of providing user space an interface to use them.  This coding has a broken new input layer volume key support, which if completed, and supported by a daemon, could lighten the code bulk extensively. (links between adbhid - pmacfeatures - dmasound[module] aren't pretty)
-
-figured now was a good time to remind people these things still exist.
+						Geert
 
 --
-Joseph P. Garcia
-http://www.execpc.com/~jpgarcia
---Multipart_Tue__17_Jul_2001_00:45:40_-0500_10167db8
-Content-Type: application/octet-stream;
- name="voltemic.patch.gz"
-Content-Disposition: attachment;
- filename="voltemic.patch.gz"
-Content-Transfer-Encoding: base64
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-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
-y+vsJobfmOffz9aZkIhfAAA=
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
---Multipart_Tue__17_Jul_2001_00:45:40_-0500_10167db8--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
