@@ -1,78 +1,70 @@
-Message-ID: <009201bf5b0b$01e4c140$73f102de@sjzhu>
-Reply-To: "Shuangjun Zhu (r44089)" <r44089@email.sps.mot.com>
-From: "Shuangjun Zhu" <r44089@email.sps.mot.com>
-To: "Mark Vojkovich" <mvojkovich@varesearch.com>
-Cc: "XFree86 Devel" <devel@XFree86.Org>,
-        "Linux/PPC Development" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Question about the video device driver
-Date: Mon, 10 Jan 2000 09:35:39 +0800
+Message-ID: <38794090.8D116362@charter.net>
+Date: Sun, 09 Jan 2000 20:14:40 -0600
+From: Dan Dickey <ddickey@charter.net>
 MIME-Version: 1.0
-Content-Type: text/plain;	charset="iso-8859-1"
+To: Dan Malek <dan@netx4.com>
+CC: "linuxppc-embedded@lists.linuxppc.org"
+ <linuxppc-embedded@lists.linuxppc.org>,
+        Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: MPC850 Development Board - with SDRAM
+References: <38777E93.2BE51FEE@charter.net> <38791AAD.F3EBA3A2@netx4.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-
->
->
->On Mon, 10 Jan 2000, Shuangjun Zhu wrote:
->
->> I'm a newbie in the X domain,
->> where can I get the information about showfb?
->> As I know, there is no hardware for MPC823 FADS that can do the
->> conversion from RGB data stored in system memory,
->> we must do it using software.
->> 
->> So, where I should start?
->> Any suggestion?
->
->
->   Shadowfb is a "layer" (using the X terminology) which 
->is initialized after framebuffer rendering is setup.  It
->is given a callback function when initialized.
->
->typedef void (*RefreshAreaFuncPtr)(ScrnInfoPtr, int, BoxPtr);
->
->Bool
->ShadowFBInit (
->    ScreenPtr           pScreen,
->    RefreshAreaFuncPtr  refreshArea
->);
->
->  The shadowfb encapsulates all rendering into that buffer
->and gives the driver a callback telling it which rectangles
->of the buffer have been updated.
->
->   What can be done is that one can setup a framebuffer in 
->system memory and get callbacks telling which parts need to
->be copied into the real hardware framebuffer, hence the
->name - you have a buffer and its shadow.   It is safe to
->copy areas larger than the rectangles you are told to update.
->That way you can reduce your refreshArea function to copying
->and translating only macroblocks.
->
->   There are examples in some other drivers such as the
->glide driver which uses it on a write-only framebuffer or
->the MGA driver which uses it for effects like rotating
->the screen.
->
->   What format is the hardware buffer in?  What macroblock
->size?
+Dan Malek wrote:
 > 
+> Dan Dickey wrote:
+> 
+> > yes - I have an RPX Lite sitting right next to me.
+> > But, apparently Embedded Planet doesn't have any
+> > development boards with SDRAM on them.
+> 
+> Embedded Planet does not build development boards, they
+> build production boards for OEMs to integrate into products
+> to reduce development cost and risk.
 
+Sorry - didn't mean to imply that.  I'm aware of what they
+advertise on their web page (http://www.embeddedplanet.com/)
+and how some of it is used.  I'm not sure that any "smaller"
+companies actually make powerpc development systems - instead,
+I can only find them at Motorola and IBM, and ???.
 
-For the MPC823 FADS board, video controller is in the CPM, part of 
-the CPU, and video encoder is ADV7176, video memory is map to 
-the system memory.  It can support NTSC/PAL display.
+>   There is always
+> a debate about EDO versus SDRAM.  Their design started wtih
+> EDO, and since it continues to be available with both
+> competitive cost and performance there isn't a reason to
+> change the design.
+> 
+> Products that wish to use SDRAM do so by placing it on their
+> boards that connect to the Embedded Planet board.  This allows
+> the flexibility to add the necessary amount of memory for
+> the product requirements.  You can use the UPMB signals from
+> the RPX-Lite processor bus connector in your design if you
+> require SDRAM.
+> 
+>         -- Dan
 
-MPC823 can support RGB and YCr Cb, but for Analog Devices ADV7176
-video encoder,  it can only support 4:2:2 YCr Cb(CCIR 601) format.
+Yes, I've become a little more aware of this situation since
+claiming the above.  Here's a message I received from
+Robert Applebaum (who works for Embedded Planet I believe).
+He gave permission to repost this to the list.
 
-I do not know what the macroblock's meaning is.
+Robert Applebaum wrote:
+> 
+> Dan, we use EDO on CPU boards, but have PC100 SDRAM on new IO cards such as
+> the VEXC which use the UPM B (the EDO on UPM A are used as a single Heap)
+> 
+> all our new products have SDRAM
 
->
-> Mark.
->
+I haven't responded back to Robert yet; but I'm intrigued by the
+last line - is there a system in the works that has SDRAM on it?
+(And no EDO).  Time will tell.
 
+And yes - I'm aware that Embedded Planet isn't in the
+development system market - but you do have to admit, their
+boards also fulfill that requirement pretty well.  :)
+	-Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
