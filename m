@@ -1,21 +1,22 @@
-Return-Path: <jonmasters@gmail.com>
-Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.203])
-	by ozlabs.org (Postfix) with ESMTP id CEDF82BC0F
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Oct 2004 22:35:09 +1000 (EST)
-Received: by rproxy.gmail.com with SMTP id 76so10473rnk
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Oct 2004 05:35:04 -0700 (PDT)
-Message-ID: <35fb2e590410210535d788e4d@mail.gmail.com>
-Date: Thu, 21 Oct 2004 13:35:03 +0100
-From: Jon Masters <jonmasters@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1098143379.18687.44.camel@gaston>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-References: <20041018232004.0a9e0d5e@jack.colino.net>
-	<1098143379.18687.44.camel@gaston>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: PMU questions
-Reply-To: jonathan@jonmasters.org
+Return-Path: <schwab@suse.de>
+Received: from Cantor.suse.de (cantor.suse.de [195.135.220.2])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "mail.suse.de",
+	Issuer "SuSE Linux AG internal IMAP-Server CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 329412BC0F
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Oct 2004 22:47:08 +1000 (EST)
+Received: from hermes.suse.de (hermes-ext.suse.de [195.135.221.8])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(No client certificate requested)
+	by Cantor.suse.de (Postfix) with ESMTP id 1BB51DFD788
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Oct 2004 14:23:31 +0200 (CEST)
+To: linuxppc-dev@ozlabs.org
+From: Andreas Schwab <schwab@suse.de>
+Date: Thu, 21 Oct 2004 14:23:30 +0200
+Message-ID: <je7jpkxnst.fsf@sykes.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Subject: Signal handler can clobber fpu regs
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,37 +26,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 19 Oct 2004 09:49:40 +1000, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Tue, 2004-10-19 at 07:20, Colin Leroy wrote:
-> > Hi everyone,
-> >
-> > I'm at a loss with a PMU-related problem... Basically something happened
-> > and my iBook (G4 14") battery now thinks it can last only 30 minutes.
-> > It used to be 3+ hours. I don't really know what happened.
-> 
-> Happens all the time on Apple laptops lately. My tipb battery is now
-> half of it's capacity. Browse the archives on the web, you'll see that
-> it's a common disease with those.
+Apparently the scratch fpu registers are not saved around calls to signal
+handlers.  Here is a test case, when run the output changes every second,
+tested with 2.6.9:
 
-I took my 667 G4 Powerbook back to the John Lewis retail outlet where
-I purchased it two years previously and they replaced the case
-(scratched paintwork), battery (didn't last very long by now), the
-right hinge (just in case), the DVD/CDRW drive, didn't reinstall the
-software as per my request, and a bunch of other fixes.
+#include <stdio.h>
+#include <signal.h>
+#include <sys/time.h>
 
-Essentially it's nearly new at this point and I love it. The motto of
-the story is that, in the UK at least, John Lewis -
-http://www.johnlewis.com/ - are the place to buy Powerbooks. They're
-cheaper than Apple, give a two year warrenty and twice now have
-entertained my crazy notions of things they might want to offer me
-under warrenty. The other thing they did was accept a return when the
-first unit developed a single faulty pixel on the day I bought it -
-not Apple standard practice either.
+void
+sigalarm (int sig)
+{
+  static double x[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+  static int i;
+  asm volatile ("lfd 0,%0" : : "Q" (x[i++]));
+  if (i == sizeof (x) / sizeof (*x))
+    i = 0;
+}
 
-I'm currently thinking about getting another battery from one of those
-online refurb suppliers, but am completely discharging this one as
-part of each charge/discharge cycle. Over 4 hours of battery now with
-the display set on full and while doing compiles, etc.
+int
+main (void)
+{
+  static struct itimerval one_second = { { 1, 0 }, { 1, 0 } };
+  static double zero;
+  setitimer (ITIMER_REAL, &one_second, 0);
+  signal (SIGALRM, sigalarm);
+  asm volatile ("lfd 0,%0" : : "Q" (zero));
+  for (;;)
+    {
+      union { double d; unsigned int i[2]; } x;
+      asm volatile ("stfd 0,%0" : "=Q" (x.d));
+      printf ("f0 = %08x%08x\n", x.i[0], x.i[1]);
+    }
+}
 
-Jon.
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux AG, Maxfeldstraße 5, 90409 Nürnberg, Germany
+Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
