@@ -1,34 +1,35 @@
-From: Kevin Hendricks <khendricks@ivey.uwo.ca>
-Reply-To: khendricks@ivey.uwo.ca
-To: anthony tong <atong@uiuc.edu>, Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: [linux-fbdev] Re: Fwd: Re: still no accelerated X ($#!$*)
-Date: Sat, 22 Jan 2000 21:44:52 -0500
-Content-Type: text/plain
-Cc: khendricks@ivey.uwo.ca, linuxppc-dev@lists.linuxppc.org,
-        linux-fbdev@vuser.vu.union.edu
-References: <00012021232600.07340@localhost.localdomain> <20000121151511.029555@mailhost.mipsys.com> <20000122145451.A26894@rogue.genunix.net>
-In-Reply-To: <20000122145451.A26894@rogue.genunix.net>
+Message-ID: <20000123040540.6726.qmail@web3306.mail.yahoo.com>
+Date: Sat, 22 Jan 2000 20:05:40 -0800 (PST)
+From: Robert Shaw <rshawaz@yahoo.com>
+Reply-To: rshaw@linuxppc.org
+Subject: Re: Blue G3: v2.3 kernel
+To: "Roger W. Brown" <bregor@anusf.anu.edu.au>,
+        linuxppc-dev@lists.linuxppc.org, jim.chapman@iname.com
 MIME-Version: 1.0
-Message-Id: <00012221475102.00489@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Anthony,
 
-> > I'll put back eieio() in the access macros for my kernels until a
-> > definitive answer pops up on this issue.
->
-> I must have missed when these were taken out; does anyone know the reason
-> why it was done?
+>  "Anyone know whether recent v2.3 kernels run on
+> Apple Blue G3 machines? I
+>   couldn't find any mention of v2.3 at
+> www.linuxppc.org/blueg3/".
 
-When the eieio's in aty128fb.c have been added back in to the version that was
-backported to 2.2.14 please cc a copy of the file you send to Ben to me also.
-I am still having trouble debugging some final nits in the xf 3.9.17 r128
-module and would love to have a "fixed" driver.
+I have not spent a lot of time on this. But so far, I
+don't think the 2.3 kernels will work just yet. There
+have been a lot of changes that have affected the
+G3/G4 compatibility. I could be wrong, because I have
+not spent much time on it (yet).
 
-Thanks,
+As soon as I know, it'll be posted on the BlueG3 news
+page. :)
 
-Kevin
+
+=====
+-Robert
+ mailto:rshaw@linuxppc.org
+ http://www.linuxppc.org/BlueG3/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
