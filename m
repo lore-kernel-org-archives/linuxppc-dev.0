@@ -1,62 +1,50 @@
-Message-Id: <200010310649.HAA00860@piglet.grunz.lu>
-Date: Tue, 31 Oct 2000 07:49:32 +0100 (CET)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: 2.2.18pre17 again
-To: paulus@linuxcare.com.au
-cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <14839.53124.753011.489351@argo.linuxcare.com.au>
-MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Mime-Version: 1.0
+Message-Id: <v04220801b6245b031367@[10.0.0.42]>
+In-Reply-To: <Pine.LNX.4.10.10010301315510.413-100000@cassiopeia.home>
+References: <Pine.LNX.4.10.10010301315510.413-100000@cassiopeia.home>
+Date: Tue, 31 Oct 2000 03:23:01 -0800
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+From: "Timothy A. Seufert" <tas@mindspring.com>
+Subject: Re: PPC byte ordering
+Cc: Neil Russell <caret@c-side.com>, David Riley <oscar@the-rileys.net>,
+        linuxppc-dev@lists.linuxppc.org
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Paul.
+At 1:18 PM +0100 10/30/00, Geert Uytterhoeven wrote:
+>On Mon, 30 Oct 2000, Timothy A. Seufert wrote:
+>>  At 5:24 PM -0700 10/28/00, Neil Russell wrote:
+>>  >It would in theory be possible to have the kernel run big-endian as it is
+>>  >and have certain user programs run little endian by setting the LE bit in
+>>  >the MSR register for the process in question.  The real problem here is
+>>  >that you have to add a *lot* of code to system calls to make this work.
+>>  >There are a few system calls that this would be real difficult, such
+>>  >as ioctl().  I once looked into doing this for the MIPS with SVR4 UNIX.
+>>
+>>  The other real problem is that Linus Torvalds has already said that
+>>  he will never ever in a million years accept a patch which attempts
+>>  to do such a thing, so you'd have to fork the kernel to do it.
+>>  According to Linus, architectures are either big or little-endian,
+>   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>>  not both.  A sane position considering the syscall ugliness you
+>   ^^^^^^^^^
+>>  mention...
+>
+>Really? Or did he mean: big-endian kernels must not run little-endian binaries
+>and vice versa.
+>
+>Note that there exist 3 flavors of MIPS: 32-bit big-endian, 32-bit
+>little-endian and 64-bit. Linux supports them all. Expect to upgrade the hard
+>drives on your local Debian mirror soon :-)
 
-On  26 Oct, this message from Paul Mackerras echoed through cyberspace:
-> I have updated my rsync trees with some more changes to my current
-> 2.2.18pre17 source
+You're absolutely correct -- what he doesn't want (at least as I
+interpreted the email I'm remembering from a linux-kernel discussion)
+is mixing modes.  In other words, the official Linus kernel will
+never support mixed LE and BE processes at runtime; you must choose
+one or the other at kernel compile time.
 
-There are a few patches on sourceforge that you might consider for the
-2.2.18 kernel release:
-
-- per-fb mmap for controlfb: this one has worked well for everybody who
-tested it, and gives a decent speed increase:
-
-https://sourceforge.net/patch/?func=detailpatch&patch_id=101236&group_id=8234
-
-- better processor configuration in head.S. This is basicallz a copz of
-  what is already done in 2.4:
-
-https://sourceforge.net/patch/?func=detailpatch&patch_id=101403&group_id=8234
-
-- macserial proc additions and cleanups:
-
-https://sourceforge.net/patch/?func=detailpatch&patch_id=101410&group_id=8234
-
-- ICTC support in the sysctl interface:
-
-https://sourceforge.net/patch/?func=detailpatch&patch_id=101484&group_id=8234
-
-- kernel compilation independant of the /usr/src/linux path (however,
-  this patches the top-level Makefile as well...):
-
-https://sourceforge.net/patch/?func=detailpatch&patch_id=101549&group_id=8234
-
-I have one or two other things (not of any particular importance); if I
-get around to making a patch in the next days, I'll send them along.
-
-Cheers
-
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
-
+   Tim Seufert
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
