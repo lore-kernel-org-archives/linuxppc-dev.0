@@ -1,44 +1,47 @@
-Message-Id: <200101190658.HAA00760@piglet.grunz.lu>
-Date: Fri, 19 Jan 2001 07:58:13 +0100 (CET)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: Problem with FEC on CLLF
-To: mgopik@yahoo.com
-cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20010103152029.51915.qmail@web11108.mail.yahoo.com>
+Date: Fri, 19 Jan 2001 08:54:15 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Troy Benjegerdes <hozer@drgw.net>
+cc: Alois Fertl <alois_fertl@talknet.de>,
+        LinuxppcDev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: ncr810 problem on powerstack
+In-Reply-To: <20010119000309.A17347@altus.drgw.net>
+Message-ID: <Pine.LNX.4.05.10101190851170.27117-100000@callisto.of.borg>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On   3 Jan, this message from gopi krishna echoed through cyberspace:
-> If we connect this to our switch *through a
-> hub*(100mbps half duplex), everything is working fine.
+On Fri, 19 Jan 2001, Troy Benjegerdes wrote:
+> On Tue, Jan 16, 2001 at 09:44:07PM +0100, Alois Fertl wrote:
+> > I tried the recent 2.4.1-pre1 kernel on a powerstack but the ncr810 based
+> > SCSI code does not work. The driver complains about CACHE INCORRECTLY CONFIGURED.
+> >
+> > Anybody knows what this comes from. Attached if the full boot log of the system.
 >
-> If we connect this directly to the switch, both the
-> switch and the cllf show the link status to be up and
-> connected(100mbps, half duplex), but ping doesnt work.
+> Arrrgh, the same thing happens on my powerstack.
+> I'd track this down, but
 >
-> We have noticed that the switch recieves the
-> packets(frames) that the cllf is sending on the fec
-> port,  the switch is sending some frames to the cllf
-> fec port, but cllf doesnt receive even a single frame.
->
-> Any pointers to the possible problem/solution?
+> a) I don't have time
+> b) the machine is my mail server and runs the linuxppc_2_2 tree happily.
 
-I have seen things like that happen with bad cables. 100 Mb/s is very
-sensitive to cable quality. Use a good, commercial-grade pre-built
-cable, not homemade.
+I saw a similar thing on my LongTrail (with '875 card) after I added a call to
+pci_assign_unassigned_resources() to arch/ppc/kernel/pci.c (like PReP) did, and
+before I fixed the test for ppc_md.pcibios_enable_device_hook.
 
-Michel
+Perhaps PReP doesn't like ppc_md.pcibios_enable_device_hook instead of
+pci_assign_unassigned_resources?
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
