@@ -1,24 +1,34 @@
-From: "Daniel Lao" <laodx@gzjpg.com>
-To: Gabriel Paubert <paubert@iram.es>,
-	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: A question about the 68-pin SCSI devices
-Mime-Version: 1.0
-Content-Type: text/plain
-Date: Wed, 6 Nov 2002 8:39:11 +0800
-Message-Id: <20021106092862.SM00332@xuyf>
+Message-ID: <3DC8B923.8030203@pop.agri.ch>
+Date: Wed, 06 Nov 2002 07:39:31 +0100
+From: Andreas Tobler <toa@pop.agri.ch>
+MIME-Version: 1.0
+To: Stefan Jeglinski <jeglin@4pi.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Sonnet G4 800 in 1st gen PCI mac + linux ...
+References: <p05100300b9ebaedd46a7@[192.168.0.8]>
+In-Reply-To: <p05100300b9ebaedd46a7@[192.168.0.8]>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Thanks for your answer.
-Yes, I use 2.2.12 because of the VME driver! I am too lazy to compile a latest kernel :-( , and not sure if I must get a VME patch for the new kernel to support it.
-May you help me to make a better choice?
+Stefan Jeglinski wrote:
 
->It should work right out of the box.
+> With 2.4.20-pre9-ben0, I note the following things:
 >
->But why are you still using 2.2.12, because you use my VME driver ?
+> 1. Although cpuinfo still shows 'l2cr override : 0x80000000', there is
+>     not dmesg line stating that the cache is enabled.
 
----
-Daniel Lao
+
+[andreas@wallstreet andreas]$ cat /proc/sys/kernel/l2cr
+0xb9000000:  enabled, no parity, 1MB, +2 clock, pipelined burst SRAM,
+copy-back, 0.5ns hold
+
+On a 2.4.20-pre11-ben0.
+
+Is this proc entry available on your system?
+
+Andreas
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
