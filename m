@@ -1,33 +1,41 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Bill Fink <billfink@mindspring.com>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: [PATCH] Minor changes to control/imstt/platinum/valkyrie/atyfb
-Date: Mon, 3 Dec 2001 00:59:53 +0100
-Message-Id: <20011202235953.3323@smtp.wanadoo.fr>
-In-Reply-To: <Pine.LNX.4.33.0112030257230.5627-100000@gwiz.nasa.atd.net>
-References: <Pine.LNX.4.33.0112030257230.5627-100000@gwiz.nasa.atd.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Sun, 02 Dec 2001 21:10:50 -0800
+From: Till Straumann <Till.Straumann@TU-Berlin.de>
+Subject: RE:  airport + dhcp
+To: linuxppc-dev@lists.linuxppc.org
+Message-id: <3C0B095A.4050206@TU-Berlin.de>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> Wasn't there a tool to fiddle and store the vmode/cmode stuff into NVRAM
->> tho which would probably work with all of the other cards?
->
->nvvideo, which could set either a video-mode or a color-mode, but I
->don't think the color-mode was the same thing as the cmode.  I had to
->use a color-mode of 3 IIRC (with a video-mode of 18) to get a decent
->display on a 7200 at work (which had a platinum FB IIRC).
+ >>
+ >>Did anybody meet speed problems when connecting an airport to a dhcp
+ >>cable tv ISP?
+ >>
+ >>The speed is then incredibly slow, inducing timeouts for pop servers
+ >>as soon as there are long messages to transfer.
+ >>
+ >>But the speed is quite normal with a real wire connexion between my
+ >>powerbook and the cable tv modem (ie without the airport), when I use
+ >>the same airport with a fixed IP adress at my office. It seems the
+ >>problem happens only when combining airport and dhcp (under linux or
+ >>macos9/10).
+ >>
+ >>I run 2.4.15-ben0 kernel on a pbg4.
+ >>
+ >>Thanks for help.
+ >
+ >I'm afraid if the problem also happens with MacOS, it's an issue
+ >with the station firmware. You'd rather report it to apple ;)
+ >
+ >Ben.
 
-Same problem, the information there is driver specific and the
-tool currently use a fix offset instead of properly handling the
-nvram device tree extension format (afaik). The cmode is also a
-driver specific thing and is equivalent to the MacOS driver
-"DepthMode" setting, which will map differently to bit depths
-depending on the MacOS driver you are dealing with.
+You also can try running Linux on the base station :-)
 
-Ben.
+http://www-hft.ee.tu-berlin.de/~strauman/airport/airport.html
+
+-- Till
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
