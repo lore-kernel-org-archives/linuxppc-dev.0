@@ -1,36 +1,153 @@
-Date: Thu, 1 Nov 2001 10:04:54 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [PATCH] Lots of changes to PReP booting
-Message-ID: <20011101100454.A25511@cpe-24-221-152-185.az.sprintbbd.net>
-References: <20011025175915.A6439@cpe-24-221-152-185.az.sprintbbd.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20011025175915.A6439@cpe-24-221-152-185.az.sprintbbd.net>
+From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+To: Jeff Garzik <jgarzik@mandrakesoft.com>
+Subject: Patch - some final fixes for tulip driver support of PNIC_II chip
+Date: Thu, 1 Nov 2001 12:45:37 -0500
+References: <20011028125007.MHAN10438.tomts12-srv.bellnexxia.net@there> <20011031022825.EOTE7882.tomts5-srv.bellnexxia.net@there> <3BDF6249.71796C9C@mandrakesoft.com>
+In-Reply-To: <3BDF6249.71796C9C@mandrakesoft.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+MIME-Version: 1.0
+Content-Type: Multipart/Mixed;
+  boundary="------------Boundary-00=_1OU494R2BOUVWH2GDZ17"
+Message-Id: <20011101174307.XCLU21779.tomts14-srv.bellnexxia.net@there>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Oct 25, 2001 at 05:59:15PM -0700, Tom Rini wrote:
+--------------Boundary-00=_1OU494R2BOUVWH2GDZ17
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 
-> 2) Notify the user where we are just after we init the serial & vga
-> ports.
-> 3) Notify the user where the residual data is only if we have it.  If we
-> don't have it tell the user that too.
-> 4) _Always_ relocate the zImage, and if we have an initrd, always
-> relocate that too.
-> 5) Kill the checks for things being above 16M.  We've now garrenteed
-> that initrd_start will be valid, and hold_residual and cmd_line are part
-> of the wrapper and thus must be close to the 8M mark, or wherever we've
-> relocated the wrapper to after boot.
+Hi Jeff,
 
-These parts of the patch are now in the linuxppc_2_4_devel tree.  If you
-haven't tested these changes yet and have a machine which you can
-reboot, please try these changes.  They quite probably won't harm
-anything, and do fix a few known problems.
+I found and fixed some other minor problems and cleaned up the
+pnic2_lnk_change code so that I could follow what is going on better.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+I also dealt with the issue of starting nway before enabling the
+auotnegotiate complete interrupt (but only for PNIC2 so as not to break or
+impact anyone else)
+
+Unless I find other bugs, this will be the final patch for me.  I hope you
+can include it in the official tulip driver.
+
+The patch will only impact PNIC2 chips, no other chips should be impacted.
+
+The patch is against your tulip driver in the 2.4.10 kernel.
+
+It should apply cleanly  in linux/drivers/net/tulip/
+
+Thanks again for pointing me at the datasheet  manuals.
+
+Hope this helps.
+
+Kevin
+
+
+
+--------------Boundary-00=_1OU494R2BOUVWH2GDZ17
+Content-Type: application/x-gzip;
+  name="pnic2_fix_rev2.patch.gz"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="pnic2_fix_rev2.patch.gz"
+
+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
+bSp1SAAA
+
+--------------Boundary-00=_1OU494R2BOUVWH2GDZ17--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
