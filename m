@@ -1,34 +1,27 @@
-Message-ID: <383CC85B.A7DCB448@anu.edu.au>
-Date: Thu, 25 Nov 1999 16:25:47 +1100
-From: Bob Edwards <Robert.Edwards@anu.edu.au>
-MIME-Version: 1.0
+Subject: Converting zImage to S-records for CLLF/860T
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Embedded Linux on PPC403GA??
-Content-Type: text/plain; charset=us-ascii
+Date: Thu, 25 Nov 1999 17:58:49 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Message-Id: <19991125065849.55731F393@elph.research.canon.com.au>
+From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+Dear fellow Embedees,
 
-I have a (small) number of NCD Explora Pro X-terminals with PPC403GA
-chips in them that are currently surplus to requirement. They have
-an early implementation of a PCMCIA slot, as well as all the usual
-X-terminal features including booting from the network using BOOTP and
-TFTP. For this reason, they would make great little router boxes etc.
-or wireless Access Points with an appropriate PCMCIA wireless card
-(my real application).
+Now that our RPX CLLF/860T boards have arrived, I'm attempting to download a
+kernel built from the mpc8xx-2.2.13.tgz sources via 100Mb Ethernet. The board
+expects S-records, and the embedded_notes file mentions using 'zsrec' to
+convert the zImage, but I can't find zsrec anywhere and I'm equally unsure of
+the magic incantation to objcopy. The output from the obvious:
+    powerpc-linux-objcopy -O srec zImage zImage.srec
+is far too small to be correct.
 
-As the PPC403GA doesn't have an MMU of any sort, I was wondering if
-anyone on this list had been able to get one to boot Linux using one
-of the MMU-less embedded Linux implementations?
+Could someone please point me in the right direction to find zsrec?
 
-Any help, tips or suggestions would be greatly appreciated.
-
-Cheers,
-
-Bob Edwards,
-Department of Computer Science,
-Australian National University,
-Canberra, AUSTRALIA, 0200.
+Thank you,
+Graham
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
