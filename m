@@ -1,95 +1,73 @@
-Message-ID: <3EE9F34F.5060200@imc-berlin.de>
-Date: Fri, 13 Jun 2003 17:52:47 +0200
-From: Steven Scholz <steven.scholz@imc-berlin.de>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+From: Rakesh jagota <j.rakesh@gdatech.co.in>
+Reply-To: j.rakesh@gdatech.co.in
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Problem in booting kernel
+Date: Sat, 14 Jun 2003 10:13:12 +0530
+Cc: j.rakesh@gdatech.co.in
 MIME-Version: 1.0
-To: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>,
-	Magnus Damm <damm@opensource.se>, mlocke@mvista.com,
-	Wolfgang Denk <wd@denx.de>,
-	PCMCIA <pcmcia-cs-devel@lists.sourceforge.net>
-Subject: Question about MPC8xx PCMCIA
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Message-ID: <1iiwzz6cccr670f.140620031003@gda-server>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi there,
+Hi all,
+I am working on custom design board based on IBM405 PPC. I am using OpenBios
+code and Linux -2.4.17 version from montavista. I am downloading the os image
+using serial port. After downoading the image, I am getting the follwoinbg
+messeges:
 
-I do have some problems with PCMCIA cards on my MPC855T based board.
-In fact there are two:
 
-1. I do get some "cs: socket 0 timed out during reset". But they
-become rare now. (So this shouldn't be the issue right now.)
-2. Some cards (96MB Flash Card from SimpleTech and SiliconTech" are
-"sometimes" not recognized correctly. I get
+=========================================================================
 
-cardmgr[367]: socket 0: Anonymous Memory
-cardmgr[367]: executing: 'modprobe memory_cs'
 
-instead of
+Loaded successfully ...
+Entry point at 0x500000 ...
 
-cardmgr[62]: socket 0: ATA/IDE Fixed Disk
-cardmgr[62]:   product info: "STI", "Flash 5.0"
-cardmgr[62]:   manfid: 0x0007, 0x0000  function: 4 (fixed disk)
+loaded at:     00500000 005AD1F8
+relocated to:  00400000 004AD1F8
+board data at: 004AA128 004AA168
+relocated to:  00405544 00405584
+zimage at:     00405BA0 004A9671
+avail ram:     004AE000 04000000
 
-The reason for that is that the CIS is not read correctly.
-I do expierence the same problems with an TQM860L (STK), linux-2.4.20
-(from DENX) and pcmcia-cs-3.2.4 (with m8xx patches from DENX ELDK).
+Linux/PPC load: console=ttyS0,9600
+Uncompressing Linux...
 
-I know this "sometimes" does not help much. But I am here to ask some
-general questions:
+opps... out of memory
+pause
+opps... out of memory
+pause
+opps... out of memory
+pause
+opps... out of memory
+pause
+opps... out of memory
+pause
+opps... out of memory
+pause
+opps... out of memory
+pause
+opps... out of memory
+pause
+opps... out of memory
+pause
+opps... out of memory
+pause
+done.
+Now booting the kernel
+========================================================================
 
-1. Why do we power up the card as early as in hardware_enable()?
-    IMHO this is the task of cardmgr!
+And after this it stops.
 
-2. In hardware_enable() we're wait quiet a while for the card to come
-    up. But a) cs.c is responsible for a vcc_settle delay and b) later
-    insertions are _not_ effected by this anyway. So it's only for one
-    time while system startup... !?
-    Should we do that everytime voltage_set() gets called? But then
-    again cs.c is responsible for vcc_settle...
+Can anyone suggest me how to resolve this problem. I am using 4MB flash. And
+Single SDRAM with single bank  of size 32MB. Can anyone helpme out to sort
+out this issue.
 
-3. Most implementaions of voltage_set() in m8xx_pcmcia.c first switch
-    the power off and then switch it back on. Fair enough. BUT every-
-    time m8xx_set_socket() gets called, the power is switched off and
-    on again. Even if the vcc state didn't changed! So it's switched
-    off and on without good reason _and_ without time to settle! I
-    can't imagine that this is feature...
-    So I think voltage_set() should only switch powers if something
-    changed.
+Thanks & Regards,
 
-4. Someone wrote in m8xx_set_socket() :
-         /* The CxOE signal is connected to a 74541 on the ADS.
-            I guess most other boards used the ADS as a reference.
-            I tried to control the CxOE signal with SS_OUTPUT_ENA,
-            but the reset signal seems connected via the 541.
-            If the CxOE is left high are some signals tristated and
-            no pullups are present -> the cards act wierd.
-            So right now the buffers are enabled if the power is on. */
-
-    Well. "The PCMCIA Developer's Guide" states on page 55
-	"After the socket controller enables power to the socket,
-	there is at least a 300mS delay until output signals are
-	enabled ... All socket controller output signals, including
-	RESET, are in a tristate mode until the end of the 300mS
-	delay."
-   So if I change
-
-         if(state->Vcc || state->Vpp)
-                 M8XX_PGCRX(_slot_) &= ~M8XX_PGCRX_CXOE;
-   to
-         if(state->flags & SS_OUTPUT_ENA)
-                 M8XX_PGCRX(_slot_) &= ~M8XX_PGCRX_CXOE; /* active low
-   (as it would be correct) then the above mentioned FLASH CARDS indeed
-   act wiered... .-(
-
-I hope that someone out there finds time and wants to share his
-thoughts with me.
-
-Thanks a million and have a nice weekend!
-
-Cheers,
-
-Steven
+rakesh
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
