@@ -1,70 +1,151 @@
-Message-Id: <v04003a00b3b6a4bdfdfa@[10.0.0.2]>
+Date: Sun, 18 Jul 1999 14:49:49 -0400
+From: Aidan Cully <aidan@kublai.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: [PATCH]: Support for Mouse Systems A3 protocol mice
+Message-ID: <19990718144949.A764@xanadu.kublai.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Sat, 17 Jul 1999 17:35:45 -0400
-To: linuxppc-user-digest@lists.linuxppc.org
-From: Paul Barrette <barretp@mcmail.cis.mcmaster.ca>
-Subject: OF and R5 boot problem, opening display /platinum@F8000000...
- failed
-Cc: linuxppc-dev@lists.linuxppc.org
+Content-Type: multipart/mixed; boundary=KsGdsel6WgEHnImy
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dear OF gurus,
-I used to run OF in R4 with success, on a 7200.  I don't use auto-boot, and
-I added the boot catch line to my boot command.  I can interact with OF
-through a serial connection from another mac so I can trouble shoot
-properly.  Here is the issue:  R5 boot fine with bootx, but I want to
-compile my own optimized kernel and I don't want to boot off my zip all the
-time.  I installed the kernel.2.2.6-15apmac.rpm and compiled a nice lean
-kernel.  I put it, modules and System.map in place; edited quik.conf, and
-ran quik -v.
+--KsGdsel6WgEHnImy
+Content-Type: text/plain; charset=us-ascii
 
-Then I rebooted to macos and ran bootvars leaving the boot-file field empty
-and rebooted:
+This patch adds 3-button support for (at least) the Mouse Systems A3
+Trackball, and Mac Point Pro products.  I've also changed a bit of how
+the button-change logic works, since I think it's allowed for mice to
+slip back into the 1-button mouse protocol.  I don't know if that's
+entirely appropriate, but both Darwin and NetBSD seem to take that
+precaution..
 
-Here is the OF:
->>>
-Open Firmware, 1.0.5
-To continue booting the MacOS type:
-BYE<return>
-To continue booting from the default boot device type:
-BOOT<return>
- ok
-0 > boot scsi/sd@0:0 Second-stage QUIK loader
-type 'linux' or 'macos'.
-boot: linux
-Enter the kernel image name as [device:][partno]/path, where partno is a
-number from 0 to 16.  Instead of /path you can type [mm-nn] to specify a
-range of disk blocks (512B)
-boot:
-1                        l                        macos
-m
-You can also type in custom image locations, in the form
-{prom_path;}partno/path_to_image or {prom_path;}{partno}[start-end]
-boot: 1  [which is the label of my kernel]
-Starting at C
-opening display /platinum@F8000000... failed
-copying OF device tree...done
-<<<
-The screen is black with a bunch of diagnal lines.  I'm not sure what to
-try next?  a new platinumfb.c file?  I had one working from 2.2.2?
+The patch is against kernel 2.2.10.  Hopefully, someone here will know
+how to get it integrated into new kernel revisions.
 
-Any help would be appreciated.
+I'm not subscribed to this list, so please CC: any replies to me.
+Thanks,
+--aidan
 
---
-Paul Barrette
-Ph.D. candidate, dept. of Classics
-System Administrator
-McMaster University
+--KsGdsel6WgEHnImy
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="mac_keyb.patch"
 
-umbra loco deerat; qua postquam parte resedit
-Dis genitus vates et fila sonantia movit,
-umbra loco venit.                  (Ov. Met. 10. 88 ff.)
-http://www.humanities.mcmaster.ca/~barrette/
+--- ../linux/drivers/macintosh/mac_keyb.c	Sun Jul 11 13:38:18 1999
++++ drivers/macintosh/mac_keyb.c	Sat Jul 17 23:07:19 1999
+@@ -23,6 +23,7 @@
+  * - Contour Design (Contour Mouse)
+  * - Hunter digital (NoHandsMouse)
+  * - Kensignton TurboMouse 5 (needs testing)
++ * - Mouse Systems A3 3 button mice and trackballs
+  *
+  * To do:
+  *
+@@ -239,6 +240,7 @@
+ static void init_trackball(int id);
+ static void init_turbomouse(int id);
+ static void init_microspeed(int id);
++static void init_ms_a3(int id);
+ 
+ #ifdef CONFIG_ADBMOUSE
+ /* XXX: Hook for mouse driver */
+@@ -268,6 +270,7 @@
+ #define ADBMOUSE_TURBOMOUSE5    5	/* Turbomouse 5 (previously req. mousehack) */
+ #define ADBMOUSE_MICROSPEED	6	/* Microspeed mouse (&trackball ?), MacPoint */
+ #define ADBMOUSE_TRACKBALLPRO	7	/* Trackball Pro (special buttons) */
++#define ADBMOUSE_MS_A3		8	/* Mouse Systems A3 trackball (handler 3) */
+ 
+ static int adb_mouse_kinds[16];
+ 
+@@ -512,6 +515,11 @@
+ 		data[2] = (data[2] & 0x7f) | ((data[3] & 0x01) << 7);
+ 		data[3] = (data[3] & 0x77) | ((data[3] & 0x02) << 6);
+ 		break;
++	    case ADBMOUSE_MS_A3:
++		data[1] = (data[1] & 0x7f) | ((data[3] & 0x01) << 7);
++		data[2] = (data[2] & 0x7f) | ((data[3] & 0x02) << 6);
++		data[3] = ((data[3] & 0x04) << 5);
++		break;
+ 	}
+ 
+ 	if (adb_mouse_interrupt_hook)
+@@ -522,7 +530,9 @@
+ 	/* Only send mouse codes when keyboard is in raw mode. */
+ 	if (kbd->kbdmode == VC_RAW) {
+ 		static unsigned char uch_ButtonStateSecond = 0x80;
++		static unsigned char uch_ButtonStateThird = 0x80;
+ 		unsigned char uchButtonSecond;
++		unsigned char uchButtonThird;
+ 
+ 		/* Send first button, second button and movement. */
+ 		mac_put_queue(0x7e);
+@@ -542,17 +552,17 @@
+ 
+ 		/* Macintosh 3-button mouse (handler 4). */
+ 		if (nb >= 4) {
+-			static unsigned char uch_ButtonStateThird = 0x80;
+-			unsigned char uchButtonThird;
+-
+ 			/* Store the button state for speed. */
+ 			uchButtonThird = (data[3] & 0x80);
++		} else {
++			/* If we got less than 4 bytes, assume the button is up. */
++			uchButtonThird = 0x80;
++		}
+ 
+-			/* Send third button. */
+-			if (uchButtonThird != uch_ButtonStateThird) {
+-				mac_put_queue(0x40 | uchButtonThird);
+-				uch_ButtonStateThird = uchButtonThird;
+-			}
++		/* Send third button. */
++		if (uchButtonThird != uch_ButtonStateThird) {
++			mac_put_queue(0x40 | uchButtonThird);
++			uch_ButtonStateThird = uchButtonThird;
+ 		}
+ 	}
+ }
+@@ -757,6 +767,10 @@
+ 			printk("ADB mouse at %d, handler set to 4", id);
+ 			adb_mouse_kinds[id] = ADBMOUSE_EXTENDED;
+ 		}
++		else if (adb_try_handler_change(id, 3)) {
++			printk("ADB mouse at %d, handler set to 3", id);
++			adb_mouse_kinds[id] = ADBMOUSE_MS_A3;
++		}
+ 		else if (adb_try_handler_change(id, 2)) {
+ 			printk("ADB mouse at %d, handler set to 2", id);
+ 			adb_mouse_kinds[id] = ADBMOUSE_STANDARD_200;
+@@ -785,6 +799,8 @@
+ 		if ((adb_mouse_kinds[id] == ADBMOUSE_TRACKBALLPRO)
+ 		    || (adb_mouse_kinds[id] == ADBMOUSE_MICROSPEED)) {
+ 			init_microspeed(id);
++		}  else if (adb_mouse_kinds[id] == ADBMOUSE_MS_A3) {
++			init_ms_a3(id);
+ 		}  else if (adb_mouse_kinds[id] ==  ADBMOUSE_EXTENDED) {
+ 			/*
+ 			 * Register 1 is usually used for device
+@@ -974,6 +990,19 @@
+ 	    0x10,	/* extended protocol, no speed change */
+ 	    0x07);	/* all buttons enabled as mouse buttons, no locking */
+ 
++
++	adb_request(&req, NULL, ADBREQ_SYNC, 1, ADB_FLUSH(id));
++}
++
++static void init_ms_a3(int id)
++{
++	struct adb_request req;
++
++	printk(" (Mouse Systems A3 Mouse, or compatible)");
++	adb_request(&req, NULL, ADBREQ_SYNC, 3,
++	ADB_WRITEREG(id, 0x2),
++	    0x00,
++	    0x07);
+ 
+ 	adb_request(&req, NULL, ADBREQ_SYNC, 1, ADB_FLUSH(id));
+ }
 
-
+--KsGdsel6WgEHnImy--
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
