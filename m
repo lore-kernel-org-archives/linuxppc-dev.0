@@ -1,45 +1,67 @@
-From: Peter Bergner <bergner@brule.borg.umn.edu>
-Date: Fri, 12 Oct 2001 11:26:19 -0500
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Val Henson <val@nmt.edu>,
-	Michael Sokolov <msokolov@ivan.Harhan.ORG>,
-	linuxppc-dev@lists.linuxppc.org, Paul Mackerras <paulus@samba.org>
-Subject: Re: SBS Palomar II/IV/V port
-Message-ID: <20011012112619.A281146@brule.borg.umn.edu>
-Reply-To: bergner@vnet.ibm.com
-References: <0110092125.AA22665@ivan.Harhan.ORG> <20011010122415.A22918@boardwalk> <20011011161848.B21564@cpe-24-221-152-185.az.sprintbbd.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20011011161848.B21564@cpe-24-221-152-185.az.sprintbbd.net>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+To: "Justin T. Gibbs" <gibbs@scsiguy.com>
+Subject: Re: no luck with Adaptec SCSI controller in 2.4.X
+Date: Fri, 12 Oct 2001 12:38:28 -0400
+Cc: linuxppc-dev@lists.linuxppc.org,
+	yellowdog-devel@lists.yellowdoglinux.com
+References: <200110121622.f9CGMmY11334@aslan.scsiguy.com>
+In-Reply-To: <200110121622.f9CGMmY11334@aslan.scsiguy.com>
+MIME-Version: 1.0
+Message-Id: <20011012163608.GLTX14703.tomts20-srv.bellnexxia.net@there>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-: Okay, does the following look right/work for everyone?  (With a similar
-: change to arch/ppc64/kernel/setup.c).
-:
-: ===== arch/ppc/kernel/setup.c 1.60 vs edited =====
-: --- 1.60/arch/ppc/kernel/setup.c	Thu Sep 27 09:01:14 2001
-: +++ edited/arch/ppc/kernel/setup.c	Thu Oct 11 16:15:45 2001
-: @@ -496,7 +496,7 @@
-:  #ifdef CONFIG_BLK_DEV_INITRD
-:  		case BI_INITRD:
-:  			initrd_start = data[0];
-: -			initrd_end = data[0] + rec->size;
-: +			initrd_end = data[0] + data[1];
-:  			break;
-:  #endif /* CONFIG_BLK_DEV_INITRD */
-:  #ifdef CONFIG_ALL_PPC
+Hi Justin,
 
-That's one of the changes I already have for PPC64, so looks good to me too.
+On October 12, 2001 12:22, Justin T. Gibbs wrote:
+> >Here is what dmesg says:
+> >
+> >SCSI subsystem driver Revision: 1.00
+> >ahc_pci:1:2:0: Reading SEEPROM...done.
+> >ahc_pci:1:2:0: internal 50 cable not present
+> >ahc_pci:1:2:0: external cable not present
+>
+> What is your real cable configuration?  This implies that we found
+> *no* cables on the card.  I'm sure that is not correct.  Can you also
+> tell me the exact markings on the card?  I'd like to fix the cable
+> detection logic.
 
-Peter
+This card is the Adaptec PCI card that apples shipped (ships?) as part of
+it Build-To-Order process.  The card is identified as an Adaptec 2930CU
+and it has the following numbers (taken from Open Firmware)
+1686806-04
+Rom # 4.0
+rev. 3
 
---
-Peter Bergner
-SLIC Optimizing Translator Development / Linux PPC64 Kernel Development
-IBM Rochester, MN
-bergner@vnet.ibm.com
+The card has no internal cables connected.  It is used to drive provide
+external scsi support.  Apple installed the card and it ships with a
+converter to convert it to the db 25 like connector previously used by
+Apple for its scsi devices.
 
+> From the messages file, it appears that the timing out device is
+> simply not bothering to complete commands it has accepted.  We
+> abort these stuck commands successfully and even try them again,
+> but the device won't cooperate.  This appears to be your Quantum
+> Fireball - a drive with a very spotty history.
+
+Never a day of trouble with it under Mac or Linux up till the point I used
+the new driver.  Still works fine under the old aic7xxx driver.
+
+> Perhaps the drive
+> will function correctly if tagged queing is disabled for it.  You
+> can do this only for target 1 with the "tag_info" option.  There may
+> also be firmware updates for this drive.
+
+Can you be more specific about how to use the "tag_info" option.  Where is
+this option set (in the driver source code?) Or is it passed to the kernel
+liek the aic7xxx=verbose option.  If the latter, what syntax should I be
+using so that I can test that option.
+
+Thanks for you time with it.  I really apreciate it.
+
+Kevin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
