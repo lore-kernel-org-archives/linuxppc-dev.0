@@ -1,32 +1,21 @@
-Date: Fri, 8 Nov 2002 10:44:38 -0800 (PST)
-From: "David A. Gatwood" <dgatwood@gatwood.net>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: NuBus SMP?
-In-Reply-To: <Pine.GSO.4.21.0211081302390.23267-100000@vervain.sonytel.be>
-Message-ID: <Pine.LNX.3.96.1021108104420.6942B-100000@gatwood.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Sun, 10 Nov 2002 15:07:41 -0800
+From: Stephen Chester <tenor@shaw.ca>
+Subject: Looking for David Given re: ATI Rage Pro 128 TR
+To: linuxppc-dev@lists.linuxppc.org
+Message-id: <366C9944-F501-11D6-AF99-0003934E6F04@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=US-ASCII; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 8 Nov 2002, Geert Uytterhoeven wrote:
-
-> Do there exist SMP NuBus Macs?
-
-God, I hope not.
-
-
-David
-
----------------------------------------------------------------------
-David A. Gatwood                                dgatwood@gatwood.net
-Developer Docs Writer                             dgatwood@apple.com
-Apple Computer                                  dgatwood@mklinux.org
-
-                    Check out my weekly web comic:
-                     http://www.techmagazine.org
+Back in January you posted that you'd solved the problem of the lack of
+framebuffer support for the ATI Rage Pro 128 TR on the Indigo iMac.  I
+discovered your post in an archive earlier this month, but unfortunately
+it didn't have the attatched file you mentioned.  Could you send that to
+me at  <tenor@shaw.ca>  along with an instruction of how to install it?
+That tech problem halted my first forays into linux, so I'm not
+completely sure of how to go about that.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
