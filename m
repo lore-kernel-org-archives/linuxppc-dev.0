@@ -1,48 +1,50 @@
-To: Arturo Nunez <artnpp@cs.ucf.edu>
-Cc: linuxppc-embedded@lists.linuxppc.org (ppc)
-Subject: Re: Error Compiling Embedded 860 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 12 Mar 2001 20:06:40 EST."
-             <200103130106.UAA18070@iris.cs.ucf.edu>
-Date: Tue, 13 Mar 2001 09:09:48 +0100
-Message-Id: <20010313080953.4CFAD281DB@denx.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3AAF4DC1.CAE5395B@vienna.at>
+Date: Wed, 14 Mar 2001 11:53:53 +0100
+From: Roman Weissgaerber <weissg@vienna.at>
+Reply-To: weissg@vienna.at
+MIME-Version: 1.0
+To: Brad Parker <brad@parker.boston.ma.us>
+Cc: "linux-usb-devel@lists.sourceforge.net" <linux-usb-devel@lists.sourceforge.net>,
+	dan@mvista.com, linuxppc-embedded@lists.linuxppc.org
+Subject: MPC823/850 USB host driver
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <200103130106.UAA18070@iris.cs.ucf.edu> you wrote:
->
-> 	But when I try to compile the Kernel for a
-> 	- 8xx Processor Type ( I have a 860)
-> 	Doesnt compile ..
-> 	The error I may see is:
-> 	-realpath(../8xx_io) failed, No such file or directory
-> 	Ok Seems to be that doesnt fin the File... But I already have..
-> 	Any Idea about the Problem ??
+Hi Brad,
 
-You can fix that easily:
+now I have some USB bulk devices (USB-storage and pegasus.c (patched))
+working with a modified version of your MPC850/823 USB host driver.
+(BTW. The MPC850 has some serious hardware problems when used with some
+tranceivers.)
+As I am useing a TQ Board and there were some problems with bulk
+transfers
+I made the following modifications:
 
---- linux-2.4.3-pre3-2001-03-11/arch/ppc/Makefile.ORIG	Sun Mar 11 21:10:01 2001
-+++ linux-2.4.3-pre3-2001-03-11/arch/ppc/Makefile	Mon Mar 12 14:30:25 2001
-@@ -31,7 +31,7 @@
- endif
+Patch 1: adds some more choices of resources for SOF and clock so it
+  should also work with other boards (at least TQ boards)
 
- ifdef CONFIG_8xx
--CFLAGS := $(CFLAGS) -mcpu=860 -I../8xx_io
-+CFLAGS := $(CFLAGS) -mcpu=860 -I$(TOPDIR)/arch/ppc/8xx_io
- endif
+Patch 2: replaces the 'old fashioned' roothub process with a
+ virtual root hub and also uses the bus wires to detect new devices
+ (this makes it more conform with how other Linux USB-host-driver
+ like OHCI and UHCI manages the root-hub
+ and the detection of devices is more USB spec. conform)
 
- ifdef CONFIG_PPC64BRIDGE
+Patch 3,..: OHCI like URB-queueing, new SCC code ...
 
-Hope this helps,
 
-Wolfgang Denk
+Patch 1 and 2 changes not very much of the architecture besides the
+root hub.
+But patches 3,.. changes a lot. So these patches could need some
+discussion. (whether we use the OHCI like structure (smaller) or
+I will try to extract the changes needed for bulk transfers)
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Calm down, it's *__only* ones and zeroes.
+Patches 1 and 2 follow immediately (on linux-usb-devel).
+The other patches follow in the next days.
+
+
+- Roman
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
