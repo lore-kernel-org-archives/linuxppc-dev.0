@@ -1,59 +1,87 @@
+Message-ID: <40A536BD.5090302@mvista.com>
+Date: Fri, 14 May 2004 14:14:37 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: Basic Question
-Date: Fri, 14 May 2004 14:45:15 -0600
-Message-ID: <065ACD8E84315E4394C835E398C8D5EB092240@cossmgmbx02.email.corp.tld>
-From: "VanBaren, Gerald (AGRE)" <Gerald.VanBaren@smiths-aerospace.com>
-To: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
+To: Dieu Morales <dieumorales@yahoo.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Porting Linux to Radstone PPC7A
+References: <20040514135900.26033.qmail@web60402.mail.yahoo.com>
+In-Reply-To: <20040514135900.26033.qmail@web60402.mail.yahoo.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> -----Original Message-----
-> From: owner-linuxppc-embedded@lists.linuxppc.org
-> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of
-> claudio.lazzarotto@copel.com
-> Sent: Friday, May 14, 2004 9:38 AM
-> To: Linuxppc-Embedded; Dan Malek; Wolfgang Denk; Joakim Tjernlund;
-> sanjeevr@myw.ltindia.com
-> Subject: Basic Question
->
->
->
-> Hello people!
->
-> I'm beginning to use Linux on embedded PowerPC and ...
-> ... i want to get Linux installed on a powerPC board MPC850
-> based system  equipped with the follow PPCBoot bootloader:
->
-> PPCBoot 2.0.0 (Jul 21 2003 - 11:22:03)
->
-> CPU:   XPC850xxZTB at 48 MHz: 2 kB I-Cache 1 kB D-Cache
-> DRAM:  32 MB
-> FLASH:  8 MB
-> In:    serial
-> Out:   serial
-> Err:   serial
-> Net:   SCC ETHERNET
->
-> Where can I get a linux version and how can I have it
-> ported to this board?
->
-> Thanks
->
-> Claudio A. Lazzarotto
+Dieu Morales wrote:
 
+><snip>
+>
+>After making minor changes to the system controller's
+>base register address and the serial base addresses, I
+>saw Linux begin booting.  I am using the latest kernel
+>source 2.6.6.  I have noticed when I compile the
+>kernel with early output debug messages turned on, I
+>do receive serial I/O up until the MMU_init( )
+>finishes and start_kernel( ) begins (last debug text
+>seen is “MMU:exit”), where the system hangs in the
+>first ppc_md.progress ( ) call in setup_arch( ).
+>Looking at the assembly code comments after MMU_init(
+>), there is reference to unmapping memory and setting
+>up the exception vectors.  Is this unmapping before
+>start_kernel( ) causing me to lose my serial I/O?
+>
+Probably not.
 
-Basic answers: U-Boot is the successor to PPCBoot.  Both are hosted on SourceForge.  You should switch to U-Boot, PPCBoot became U-Boot and is no longer actively maintained.
-  http://sourceforge.net/projects/u-boot/
+>  If
+>so, how do I get it back?
+>
+If you're using the mpsc for serial I/O then you moved its reg base when
+you moved the bridges reg base. It sounds like you know this, though.
+However, you also have to change the address you ioremap and the address
+you put in the STD_SERIAL_PORT_DFNS. Maybe you forgot one of them?
 
-Wolfgang Denk has very good linux support that will help _you_ to port linux to your board.  See his Embedded Linux Development Kit (ELDK).
-  http://www.denx.de/
-  http://www.denx.de/twiki/bin/view/DULG/Manual
-If you don't feel up to the job, there are several companies and probably more than a few freelance engineers willing to do it for a fee.  In terms of companies, Denx and MontaVista are the ones most visible in the U-Boot arena.
+If you're using an external 16550-type uart for serial I/O, then unless
+you change the dev bus window that maps in its regs, you don't want to
+change its address in the code. Did you change it by mistake?
 
-gvb
+>
+>To continue on, I turned off the early output debug
+>messages option and have been debugging by setting
+>card reset calls.  Through this method, I have
+>presently traced into console_init( ) which does not
+>return.  Any thoughts on what would cause hang-ups in
+>this function?
+>
+A guess would be that you're accessing an mpsc reg that isn't mapped
+into kernel virt space and panic'ing.
+
+>
+>Since the setup_arch( ) returned, I figured all was
+>well.  The board has a GT64260 system controller and
+>an ALi M1535+ South Bridge.  To add the South Bridge
+>support I added the  ALi M1535 in the configuration
+>menu to my kernel.  Is this the correct driver or
+>would this need to be updated for the M1535+?
+>
+There may be more to it. I don't recall what's on an M1535 but if its
+has a PIC and you want to using it, you need to cascade the interrupts
+properly.
+
+>
+>Finally, while analyzing the EV64260_setup.c code, I
+>noticed certain hard-coded interrupt memory maps.  Are
+>these maps board-specific?
+>
+If you're talking about the pci interrupt map then yes, it is board
+specific. You need to read the docs or schematics for your board to see
+how they routed pci interrupts and set up the table accordingly. By
+default, GPP interrupts start at 64 (e.g., GPP0 == irq 64, GPP1 == irq
+65, ...). If the M1535 has an 8259 or other PIC in it and you want to
+shoe-horn it in front of the 64260's irq's, you have to shift all
+64260-related irq's back 16 and cascade the PICs correctly. That
+includes shifting the mpsc & embedded enet irq's too.
+
+Mark
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
