@@ -1,74 +1,60 @@
-Message-Id: <200109242209.RAA30858@lists.linuxppc.org>
-From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-To: paulus@samba.org
-Subject: Re: [PATCH] gcc3 compatibility and debugger support
-Date: Tue, 25 Sep 2001 00:09:55 +0200
-Cc: linuxppc-commit@source.mvista.com,
-	linuxppc-dev@lists.linuxppc.org
-References: <200109061932.OAA12306@lists.linuxppc.org> <15278.40161.431833.765393@cargo.ozlabs.ibm.com>
-In-Reply-To: <15278.40161.431833.765393@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="------------Boundary-00=_JKT6FSL3BFOAQCHQJQC9"
+Date: Mon, 24 Sep 2001 15:04:37 -0800
+From: Ethan Benson <erbenson@alaska.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: More problems with Kernel 2.4.10-pre12 and mounting
+Message-ID: <20010924150437.I14835@plato.local.lan>
+References: <20010923221839.G14835@plato.local.lan> <Pine.NEB.4.33.0109241732420.19824-100000@vex.net>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="v4FgCkd4vT7RadTR"
+In-Reply-To: <Pine.NEB.4.33.0109241732420.19824-100000@vex.net>; from tendim@vex.net on Mon, Sep 24, 2001 at 05:39:59PM -0400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---------------Boundary-00=_JKT6FSL3BFOAQCHQJQC9
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+--v4FgCkd4vT7RadTR
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Monday 24 September 2001 04:39, Paul Mackerras wrote:
-> Franz Sirl writes:
-> >  	current_set[smp_processor_id()] = new;
-> > +#else
-> > +	current_set[0] = new;
-> >  #endif /* CONFIG_SMP */
->
-> Yuck.  Just put the #endif before the line that sets current_set[].
-> smp_processor_id() is 0 on UP.
+On Mon, Sep 24, 2001 at 05:39:59PM -0400, patrick wrote:
+> On Sun, 23 Sep 2001, Ethan Benson wrote:
+>=20
+> > well sounds to me like your scsi driver is hosed then.
+>=20
+> Well if the SCSI driver is hosed, then shouldn't I *not* be able to do
+> anything else then?  My setup is as follows:
+>=20
+> SCSI0 - Adaptec 2940 UW Card   /dev/sda
+> SCSI1 - Mesh Internal SCSI     /dev/sdb
+>=20
+> And all of the drivers have been compiled into the kernel (no modules).
+>=20
+> > well if badblocks has no problem reading the entire device why should
+> > anything else.  this clearly has nothing to do with partition table
+> > support.
+>=20
+> Then that leaves it to the program I'm using to read the partition map.
+> I've seen you reference "mac-fdisk".  Is this the same as pdisk?  Or
+> is an entirely different beast?
 
-OK, here is the updated patch.
+its a debian modified version of pdisk thats more reliable.  get the
+one from debian woody.
 
-Franz.
+> Perhaps it is pdisk that doesn't like the new kernel.
+
+i don't really see how.. its not doing much more then reading the
+first 32k of of the disk to parse the partition table.
+
+--=20
+Ethan Benson
+http://www.alaska.net/~erbenson/
+
+--v4FgCkd4vT7RadTR
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
 
---------------Boundary-00=_JKT6FSL3BFOAQCHQJQC9
-Content-Type: text/plain;
-  charset="iso-8859-1";
-  name="bk-misc1a.diff"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: attachment; filename="bk-misc1a.diff"
-
-===== arch/ppc/kernel/process.c 1.29 vs edited =====
---- 1.29/arch/ppc/kernel/process.c	Tue Sep 18 03:19:06 2001
-+++ edited/arch/ppc/kernel/process.c	Mon Sep 24 19:59:28 2001
-@@ -226,8 +226,10 @@
- 	if ((prev->thread.regs && (prev->thread.regs->msr & MSR_VEC)))
- 		giveup_altivec(prev);
- #endif /* CONFIG_ALTIVEC */
--	current_set[smp_processor_id()] = new;
- #endif /* CONFIG_SMP */
-+
-+	current_set[smp_processor_id()] = new;
-+
- 	/* Avoid the trap.  On smp this this never happens since
- 	 * we don't set last_task_used_altivec -- Cort
- 	 */
-===== include/asm-ppc/prom.h 1.20 vs edited =====
---- 1.20/include/asm-ppc/prom.h	Wed Aug 29 00:49:25 2001
-+++ edited/include/asm-ppc/prom.h	Thu Sep  6 21:13:57 2001
-@@ -106,7 +106,7 @@
-
- #define PTRRELOC(x)	((typeof(x))((unsigned long)(x) + offset))
- #define PTRUNRELOC(x)	((typeof(x))((unsigned long)(x) - offset))
--#define RELOC(x)	(*PTRRELOC(&(x)))
-+#define RELOC(x)	(*({ typeof(x) * __ptr  = PTRRELOC(&(x)); __asm__ ("" : "=r" (__ptr) : "0" (__ptr)); __ptr;}))
-
- #endif /* _PPC_PROM_H */
- #endif /* __KERNEL__ */
-
---------------Boundary-00=_JKT6FSL3BFOAQCHQJQC9--
+--v4FgCkd4vT7RadTR--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
