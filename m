@@ -1,74 +1,87 @@
-Message-ID: <3F5789D5.6020105@ece.msstate.edu>
-Date: Thu, 04 Sep 2003 13:52:05 -0500
-From: Jan Dominik Baranski <jdb2@ece.msstate.edu>
+Message-ID: <3F57A4F2.5040405@mvista.com>
+Date: Thu, 04 Sep 2003 13:47:46 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Kernel hangs on EP862-1.1 during boot
-References: <D73A25AA6E54D511AD74009027B1110F3C0A1B@ORION>
-In-Reply-To: <D73A25AA6E54D511AD74009027B1110F3C0A1B@ORION>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Yuxiao Xi <xiyuxiao@harbournetworks.com>
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	"linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: DINK32 R13.1 on Sandpoint X2
+References: <200309040128.UAA25464@lists.linuxppc.org>
+In-Reply-To: <200309040128.UAA25464@lists.linuxppc.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thanks for the help. Until some of you mentioned it, I didn't even think
-the linuxppc kernels were any different from the kernel.org
-kernel+patches. After some wrestling with BitKeeper, I've got
-linuxppc_2_4_devel working great.
+We have an 8139 and have successfully downloaded and run a kernel with
+DINK version 13.1.1.  I didn't do it but the instructions sent from the
+person who did are:
 
-Thanks again
+    To download via the network, DINK uses fixed IP
+    address and Realtek8139 NIC. The steps are:
 
--Jan
+    1. do "ppr" verify NIC card has been identified vendor/device ID as
+    10EC/8139
+    2. do "env IO=COM1:9600@100, Then "reset".
+    3. do "ni -i " to set up your network parameters.  For example:
 
-Steven Blakeslee wrote:
-> I got the linuxppc_2_4_devel tree at http://ppc.bkbits.net/ to boot with no
-> problem.  The compiler I used was ELDK.  The config file was
-> arch/ppc/configs/rpxcllf_defconfig.
+     DINK32[MPC7457] {1} >>ni
+     NETWORK INFORMATION
+       PCI CARD
+         Type 8139/10EC on slot 16
+
+       SETTINGS
+         SERVER(TFTP) : 192.168.  1.  1
+         GATEWAY      : 192.168.  1.  1
+         NETMASK      : 255.255.255.  0
+         DHCP         : 192.168.  1.  1
+         CLIENT(DINK) : 192.168.  1.  7
+
+       DHCP: Disabled
+       SESSION TIMEOUT: Never
+
+    4. set up you tftp server at host side
+    5. The download command is "dl -nw -b -o800000 -fzImage.sandpoint"
+    6. "go 810000"
+
+You can change IP addr, image name, to fit your setup.
+
+As far as differences in the X2 vs. X3, yes there are important
+differences.  Does DINK v13.1.1 run successfully & download via the
+network successfully on an X2?  I don't know, you'll have to figure that
+out for yourself or talk to Motorola.
+
+Mark
+--
+
+Yuxiao Xi wrote:
+
+>Hi,Tom,
+>     From the mailing lists,I know that someone use DINK32's tftp
+>download function to download his image successfully on a Sandpoint X3
+>board.Is there any important differences between Sandpoint X3 and X2
+>board so that I can not use the DINK32's tftp function on X2 board?
 >
-> -----Original Message-----
-> From: Jan Dominik Baranski [mailto:jdb2@ece.msstate.edu]
-> Sent: Wednesday, September 03, 2003 6:02 PM
-> To: linuxppc-embedded@lists.linuxppc.org
-> Subject: Kernel hangs on EP862-1.1 during boot
->
-> Hello all,
-> I'm having trouble getting a 2.4.22 kernel to boot on an Embedded Planet
-> EP862-1.1 board (based on an MPC860). I get this:
-> ---
-> Loaded addresses 00400000 through 0049FFFF.
->  >go
-> [Go 00400000]
->
-> loaded at:     00400000 004A31F4
-> relocated to:  00180000 002231F4
-> board data at: 00220128 00220144
-> relocated to:  001862E0 001862FC
-> zimage at:     001868A0 0021F3EC
-> avail ram:     00224000 01000000
->
-> Linux/PPC load: console=ttyS0,9600
-> Uncompressing Linux...done.
-> Now booting the kernel
->
-> <just hangs here>
->
-> ---
-> I've searched the archives, but no one seems to have this board/problem
-> combination. I've made sure the watchdog timer is disabled and that the
-> IMMR (0xfa200000) is set correctly. Being pretty new to this, I don't
-> really know where else to look. Maybe something related to m8xx_board_info?
->
-> The thing is, I've been able to get an old kernel (2.4.7) from Timesys
-> that's configured for an RPX Classic board to boot correctly. I just
-> can't figure out what they may have done that I haven't.
->
-> Any suggestions??
->
-> Thanks
->
-> -Jan
+>======= 2003-09-03 11:04:00 £º=======
 >
 >
+>
+>>On Tue, Sep 02, 2003 at 05:22:08PM +0800, Yuxiao Xi wrote:
+>>
+>>
+>>
+>>>    Now I'm working on a Motorola Sandpoint X2 board with ppc8240.
+>>>I use DINK32 r13.1 to boot my linux kernel image. From DINK32 r13.1
+>>>user manual,I know that DINK32 r13.1 supports ethernet card Realtek
+>>>8139,but after these steps:
+>>>
+>>>
+>>What I would suggest is that instead of using the ethernet card
+>>support, you use the serial support still. DINK32 r13.0.0 and newer
+>>support 115200 baud, so loading a kernel via serial is now much less
+>>painful than it used to be.
+>>
+>>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
