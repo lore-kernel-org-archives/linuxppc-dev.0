@@ -1,19 +1,22 @@
-Return-Path: <panto@intracom.gr>
-Received: from mailserv.intranet.gr (mailserv.intranet.GR [146.124.14.106])
-	by ozlabs.org (Postfix) with ESMTP id 49D6C2BF34
+Return-Path: <geert@linux-m68k.org>
+Received: from witte.sonytel.be (witte.sonytel.be [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id BD59C2BF2E
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  9 Nov 2004 19:53:20 +1100 (EST)
-Received: from mailserv.intranet.gr (localhost [127.0.0.1])
-	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id iA98sQdm008021
-	for <linuxppc-embedded@ozlabs.org>; Tue, 9 Nov 2004 10:54:27 +0200 (EET)
-Message-ID: <4190840D.6000403@intracom.gr>
-Date: Tue, 09 Nov 2004 10:47:09 +0200
-From: Pantelis Antoniou <panto@intracom.gr>
+	Tue,  9 Nov 2004 20:12:27 +1100 (EST)
+Date: Tue, 9 Nov 2004 10:12:01 +0100 (MET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Sender: geert@sonycom.com
+To: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <EA4FB805-3212-11D9-AC65-000393DBC2E8@freescale.com>
+Message-ID: <Pine.GSO.4.61.0411091011220.25943@waterleaf.sonytel.be>
+References: <20041108213428.16dfb1f7.akpm@osdl.org>
+	<EA4FB805-3212-11D9-AC65-000393DBC2E8@freescale.com>
 MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>,
-	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Subject: The case of the disappearing CPU_FTR_xxx
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Andrew Morton <akpm@osdl.org>, Kumar Gala <galak@somerset.sps.mot.com>,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH][PPC32] Added MPC8555/8541 security block infrastructure
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,20 +27,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all
+On Mon, 8 Nov 2004, Kumar Gala wrote:
+> Uugh, sorry.  The previous version of pine I was using did not do this.  I
+> will look at trying to change its settings.  Thanks for reformatting the
+> patch.  Can you explain further what you mean by 'space-stuffing'
 
-I'm currently trying to implement proper idling for 8xx in 2.4 (please 
-don't bitch yet
-since things are pretty similar for 2.6 too).
+IIRC, you have to enable quell-flowed-text.
 
-It appears that the flags set in cputable.c, i.e. CPU_FTR_NAP get cleared
-at some point in the init sequence.
+Always read the release notes after upgrading pine ;-)
 
-Looking at the 6xx idle code, there is some extra handling for that case but
-I'm unable to locate what is going on.
+Gr{oetje,eeting}s,
 
-Can anyone shed some light on the issue?
+						Geert
 
-Regards
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Pantelis
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
