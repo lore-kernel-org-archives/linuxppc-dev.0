@@ -1,57 +1,54 @@
-Message-ID: <3AF5527F.ED85C413@iiic.ethz.ch>
-Date: Sun, 06 May 2001 15:32:47 +0200
-From: Michel =?iso-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
+Message-ID: <001b01c0d635$04e06740$5b682dd5@default>
+From: "Lorenzo De Vito" <lorenzodevito@libero.it>
+To: =?iso-8859-1?Q?Michel_D=E4nzer?= <michdaen@iiic.ethz.ch>
+Cc: <debian-powerpc@lists.debian.org>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Two problems
+Date: Sun, 6 May 2001 16:00:26 +0200
 MIME-Version: 1.0
-To: "Jason E. Stewart" <jason@openinformatics.com>
-Cc: debian-powerpc@lists.debian.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Success! (was Re: External Monitor under Pismo)
-References: <20010404092143.EFE4C2F01B@apollo.valhalla.net>
-		<3ACB537B.99B851B9@netfall.com>
-		<87hf0433qs.fsf@amadeus.openinformatics.com>
-		<3ACB6167.3B2E0242@iiic.ethz.ch>
-		<878zlg31mw.fsf@amadeus.openinformatics.com>
-		<3ACB9611.C95D16A2@iiic.ethz.ch>
-		<87ae5w1ce3.fsf@amadeus.openinformatics.com>
-		<3ACB9EB3.2661FFCE@iiic.ethz.ch>
-		<87u242zz7y.fsf@amadeus.openinformatics.com>
-		<3ACCFFBB.58CC75D2@iiic.ethz.ch>
-		<87itjmf7lf.fsf_-_@amadeus.openinformatics.com>
-		<3AEDEF2D.4B823134@iiic.ethz.ch>
-		<87wv7x984o.fsf@amadeus.openinformatics.com>
-		<3AF1D91F.7030801@iiic.ethz.ch>
-		<87hez1pjm1.fsf@amadeus.openinformatics.com>
-		<3AF29AF6.9AC80F3E@iiic.ethz.ch>
-		<87hez1hw97.fsf@amadeus.openinformatics.com>
-		<3AF35975.30456155@iiic.ethz.ch>
-		<87wv7wjfu4.fsf@amadeus.openinformatics.com>
-		<3AF43F7E.E3F2C682@iiic.ethz.ch> <87oft7cxc5.fsf@amadeus.openinformatics.com>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"Jason E. Stewart" wrote:
+ Xterm don't recognize some types but these work fine with any text editor,
+ when I type don't print anything on the screen, Wvdial don't recpgnize my
+ password and it close the connection, pppd connect but I cannot see with
+ "ifconfig" the ppp connection.
+ What I can use for internet connection ?
+
+> ----- Original Message -----
+> From: Michel Dänzer <michdaen@iiic.ethz.ch>
+> To: Lorenzo De Vito <lorenzodevito@tin.it>
+> Cc: <debian-powerpc@lists.debian.org>
+> Sent: Sunday, May 06, 2001 3:25 PM
+> Subject: Re: Two problems
 >
-> "Michel Dänzer" <michdaen@iiic.ethz.ch> writes:
 >
-> > Still mostly 4.0.3 modules. Try with all 4.0.99.3 .
+> > Lorenzo De Vito wrote:
+> >
+> > > my connection on internet (ppp) don't work with wvdial and also with
+pon
+> or
+> > > pppd.
+> >
+> > Does it fail to establish a connection, or what's the problem?
+> >
+> > A problem with wvdial is that it doesn't handle DNS servers. Have you
+> tried
+> > pppconfig? It has an option for that.
+> >
+> >
+> > --
+> > Earthling Michel Dänzer (MrCooper)    \   Debian GNU/Linux (powerpc)
+> developer
+> > CS student, Free Software enthusiast   \        XFree86 and DRI project
+> member
+> >
+> >
+> >
 >
-> Aah. I see. Sorry my misunderstanding, I thought you meant just the
-> video drivers...
 
-Mixing modules between versions may work but it's not guaranteed to.
-
-BTW you still used the 4.0.3 bitmap module but that shouldn't matter. ;)
-
-
-> Still fails. Log attached.
-
-It tries to initialize int10 which can't work for us yet. Try Option "NoInt10"
-(hasn't worked for me yet) or move away libint10.a .
-
-
---
-Earthling Michel Dänzer (MrCooper)    \   Debian GNU/Linux (powerpc) developer
-CS student, Free Software enthusiast   \        XFree86 and DRI project member
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
