@@ -1,8 +1,8 @@
-Message-ID: <001601c1bff5$4c5b0210$17f2fea9@genetelhychon>
+Message-ID: <002e01c1bffb$25786bf0$17f2fea9@genetelhychon>
 From: =?ks_c_5601-1987?B?wPzH/b+1?= <hychon@genetel.co.kr>
 To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: eth0 : time out ....error 
-Date: Thu, 28 Feb 2002 10:14:39 +0900
+Subject: time out
+Date: Thu, 28 Feb 2002 10:56:32 +0900
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="ks_c_5601-1987"
@@ -79,5 +79,6 @@ Ring data dump: cur_tx c1f70078, dirty_tx c1f70078 cur_rx: c1f70008
 
  ( ... )
  ===========================================================> fail
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
