@@ -1,35 +1,33 @@
-Date: Thu, 3 Aug 2000 15:59:11 -0700
-From: Matt Porter <mporter@mvista.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Ronald Wahl <rwa@peppercon.de>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: iounmap
-Message-ID: <20000803155911.A6226@cx258813-a.chnd1.az.home.com>
-References: <Pine.LNX.4.21.0008030950020.1647-100000@goliath.issistance.de> <Pine.LNX.4.10.10008031443520.425-100000@cassiopeia.home>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.10.10008031443520.425-100000@cassiopeia.home>; from geert@linux-m68k.org on Thu, Aug 03, 2000 at 02:44:12PM +0200
+Message-Id: <200008032302.TAA29224@mal-ach.watson.ibm.com>
+To: Thomas Graichen <graichen@innominate.de>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: shifts on 64bit ints 
+In-Reply-To: Message from Thomas Graichen <news-innominate.list.linux.ppc.dev@innominate.de>
+   of "03 Aug 2000 22:38:06 GMT." <news2mail-8mcs8e$kdj$2@mate.bln.innominate.de>
+Date: Thu, 03 Aug 2000 19:02:31 -0400
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Aug 03, 2000 at 02:44:12PM +0200, Geert Uytterhoeven wrote:
->
-> On Thu, 3 Aug 2000, Ronald Wahl wrote:
-> > I'm currently writing a device driver for an pci controller and have to
-> > map very large amounts of pci memory and i/o ranges via ioremap. The
-> > problem is that there is no iounmap and ioremap returns NULL after some
-> > insmod/rmmod cycles. When gets this implemented?
->
-> When someone steals some spare time and writes the code.
+	First, I would suggest that you use a printf format like "%08x"
+for better legibility.
 
-Done.  The hot swap PCI kernel patches from MCG have iounmap implemented.
-Very useful when ripping a PCI peripheral out of its slot. :)
+	Second, I tried your example with gcc-2.95.2 on PowerPC AIX
+gcc-2.95.2 on PowrePC Linux, and a recent development snapshot of GCC with
+various optimization levels (you did not specify what options you used to
+compile the testcase) and I consistently saw the following output:
 
-See them at http://www.mcg.mot.com/linux under HA Linux/Downloads.
+Mask 29 is 0x0000000020000000 - 0xffffffffdfffffff
+Mask 30 is 0x0000000040000000 - 0xffffffffbfffffff
+Mask 31 is 0x0000000080000000 - 0xffffffff7fffffff
+Mask 32 is 0x0000000100000000 - 0xfffffffeffffffff
+Mask 33 is 0x0000000200000000 - 0xfffffffdffffffff
+Mask 34 is 0x0000000400000000 - 0xfffffffbffffffff
 
---
-Matt Porter
-MontaVista Software, Inc.
-mporter@mvista.com
+	You appear to have a problem, but it is local to your system
+(could be toolchain or C library as well).
+
+David
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
