@@ -1,50 +1,55 @@
-Date: Fri, 13 Oct 2000 18:26:29 +0300 (EEST)
-From: Kostas Gewrgiou <gewrgiou@imbc.gr>
-To: Michel Dänzer <daenzerm@student.ethz.ch>
-cc: "Hendricks, Kevin" <khendricks@ivey.uwo.ca>, Josh Huber <huber@mclx.com>,
-        Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: dual head r128
-In-Reply-To: <39E62C4C.42287094@student.ethz.ch>
-Message-ID: <Pine.LNX.4.21.0010131549280.1099-100000@idd-01.imbc.gr>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-7
+Date: Fri, 13 Oct 2000 09:19:04 -0700
+From: Matt Porter <mporter@mvista.com>
+To: Xavier Grave <grave@ipno.in2p3.fr>
+Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 2.4 kernel doesn't allocate resource for my PCI Board
+Message-ID: <20001013091904.B24968@beef.az.mvista.com>
+References: <20001012101130.A2964@cx258813-a.chnd1.az.home.com> <Pine.LNX.4.21.0010131718080.5959-100000@ipnpcu5>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.21.0010131718080.5959-100000@ipnpcu5>; from grave@ipno.in2p3.fr on Fri, Oct 13, 2000 at 05:20:04PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 12 Oct 2000, Michel [iso-8859-1] Dänzer wrote:
-
-> Kostas Gewrgiou wrote:
-> >
-> > On Thu, 12 Oct 2000, Michel [iso-8859-1] Dänzer wrote:
-> >
-> > > But there is an #ifdef _powerpc_ so it can't break x86 machines?
-> >
-> > Yes but it *does* break x86 cards used in ppc machines.
-> > (linux/ppc isn't the only ppc os supported in xfree and they won't
-> > be happy if we break things for them)
+On Fri, Oct 13, 2000 at 05:20:04PM +0200, Xavier Grave wrote:
+> Hi all,
 >
-> And the int10 or whatever code works for them?
+> I've downloaded the linuxppc_2_5 tree with bitkeeper and compiled it for
+> my prep board I always have the same message :
+> PCI: Cannot allocate resource region 0 of device 00:0d.0
+> PCI: Cannot allocate resource region 1 of device 00:0e.0
+> PCI: Cannot allocate resource region 1 of device 00:11.0
+> PCI: Cannot allocate resource region 2 of device 00:11.0
+> PCI: Failed to allocate resource 2 for Symbios Logic Inc. (formerly
+> NCR) 53c895
+>
+> and after the sym53c8xx driver give the following :
+>
+> sym53c895-0: Downloading SCSI SCRIPTS.
+> scsi0 : sym53c8xx - version 1.6b
+> scsi : aborting command due to timeout : pid 0, scsi0, channel 0, id 0,
+> lun 0 Inquiry 00 00 00 ff 00
+> sym53c8xx_abort: pid=0 serial_number=1 serial_number_at_timeout=1
+> SCSI host 0 abort (pid 0) timed out - resetting
+> SCSI bus is being reset for host 0 channel 0.
+> sym53c8xx_reset: pid=0 reset_flags=2 serial_number=1
+> serial_number_at_timeout=1
+>
+> Any idea why this continue to fail ?
 
-ISA IO/MEM works for them so yes int10/vgahw should be fine there, i think
-that linux/ppc is the only platform with this broken (with the new syscalls
-we its simple to get it working for machines with one iobase and a working
-ISA memory)
+Standard 2.4 PCI resource handling problems.  #define DEBUG in
+arch/ppc/kernel/pci.c and show us your output.  The request_resource()
+call is failing.
 
-> And then set info->VBIOS = NULL for OF and change the #ifdef _powerpc_ to if
-> (!info->VBIOS) or similar?
+BAR2 (resource region 2) is the on chip RAM on LSI Logic's 53c8xx SCSI
+chips, it's looking for an 8KB allocation in PCI memory space.  If it
+doesn't get placed, then the 895 driver can't kick off the bus master
+driven transfer to download the scripts into the 895's on-chip RAM.
 
-Right something along this lines will do, you probably need to change the
-R128_BIOS16/32 macros to do byteswapping as well since the fields in the rom
-are in little endian format.
-
-> I have my last exam for this year tomorrow and leave for two weeks of vacation
-> on Saturday, so I wish good luck to any takers :)
-
-Good luck in your exam, i'll try to write something over the weekend if i
-can find some free time.
-
- Kostas
-
+--
+Matt Porter
+MontaVista Software, Inc.
+mporter@mvista.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
