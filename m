@@ -1,50 +1,36 @@
-Date: Tue, 6 Nov 2001 18:47:17 -0700
-From: Val Henson <val@nmt.edu>
-To: Tom Rini <trini@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Heartbeat revisited
-Message-ID: <20011106184716.A18004@boardwalk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Date: Tue, 6 Nov 01 20:43:59 PST
+From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
+Message-Id: <0111070443.AA04232@ivan.Harhan.ORG>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: RFC: i8259.c cleanup
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Y'all will recall the debate a few months ago about the proper
-behaviour of the ppc_md.heartbeat function.  The conclusion was that
-the heartbeat function should be run once on each cpu per hearbeat
-interval.
+hollis@austin.ibm.com wrote:
 
-Unfortunately, the solution made the interval between calls of the
-heartbeat function dependent on the number of cpus in the system:
+> Anyways, by reading from 0xbffffff0 we can get the active irq without having
+> to play with the 8259 directly (which we were doing wrong; see above URL).
+> This is true on the IBM PReP's because the 8259's are implemented in the Fire
+> Coral SIO bridge (which is on the PCI bus), so it can respond to the PHB's
+> interrupt request. (Unless I'm mistaken it's the PHB, in this case MPC105,
+> which decodes 0xbffffff0 and asks the system interrupt controller to supply
+> the active irq number.)
 
-	if (ppc_md.heartbeat && !ppc_md.heartbeat_count--)
-		ppc_md.heartbeat();
+Different host bridges provide different means for generating PCI Interrupt
+Acknowledge cycles. None of the bridges I've worked with (IBM CPC700, IBM
+CPC710, and Galileo GT64260) does it via BFFFFFF0. CPC710 does it via a
+register in the IBM PHB structure for each of its two PCI interfaces, CPC700
+has a special register, and GT64260 has special registers for PCI0 and PCI1
+Interrupt Acknowledge in its internal registers space.
 
-Since it decrements the heartbeat_count once per cpu per timer
-interrupt.  If this is declared to be the desired and intended
-behavior, I'll change Gemini to work around it.  Otherwise, I suggest
-something like:
+> The following patch (to linuxppc_2_4_devel) does exactly that - it reads from
+> 0xbffffff0 instead of the 8259 directly.
 
-	if (ppc_md.heartbeat) {
-		if (!smp_processor_id())
-			ppc_md.heartbeat_count--;
-		if (!ppc_md.heartbeat_count)
-			ppc_md.heartbeat();
-	}
+i8259.c is not specific to PREP, it's used by many platforms in the tree. Your
+patch as posted will break a lot of platforms in the tree, including all SBS
+boards which use one of the above host bridges and 8259s in a south bridge.
 
-Or the simpler and originally intended form that only executes on one CPU:
-
-	if (ppc_md.heartbeat && !smp_processor_id() &&
-	    !ppc_md.heartbeat_count--)
-		ppc_md.heartbeat();
-
-Also, you need to be careful to reset the heartbeat even if you aren't
-executing the heartbeat function.  The last heartbeat discussion left
-Gemini with a negative heartbeat count after a few calls of the
-heartbeat function.
-
--VAL
+MS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
