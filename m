@@ -1,40 +1,40 @@
-Date: Wed, 26 Jul 2000 19:14:08 +0200 (CEST)
+Date: Wed, 26 Jul 2000 19:27:14 +0200 (CEST)
 From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Josh Huber <huber@mclx.com>
-cc: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: xf4 hang on mach64
-In-Reply-To: <20000726092449.A404@mclx.com>
-Message-ID: <Pine.LNX.4.10.10007261913470.29908-100000@opal.biophys.uni-duesseldorf.de>
+To: Steffen Haeuser <SteffenH@hyperion-software.de>
+cc: Geert Uytterhoeven <geert@linux-m68k.org>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: sound again [was: Re: xf4 bug report]
+In-Reply-To: <yam8242.441.146608920@mail.lf-online.de>
+Message-ID: <Pine.LNX.4.10.10007261914190.29908-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Has anyone had any luck with Ani's drivers for the Mach64 chipset?  If
-> you have, could you send me your XF86Config?  I'm getting the
-> following kind of output:
+> >Why not? Linux/m68k first ran on the Amiga, then on the Atari, and only much
 >
-> (II) ATI: ATI driver (version 5.3.5) for chipsets: ati, ativga
-> (--) Chipset ATI Mach64 3D Rage LT Pro (PCI) found
-> Found a Mach64 on a PowerPC
-> (WW) ****INVALID MEM ALLOCATION**** b: 0x82000000 e: 0x82ffffff correcting
-> own
->         [0] -1  0x82fff000 - 0x82ffffff (0x1000) MXB
->         [1] -1  0x00000400 - 0x000004ff (0x100) IXB
+> Some people might feel upset :)
 
-With a 2.2. kernel ?? There's a PCI conflict that is 'fixed' by XFree86 by
-way of unmapping the conflicting resource which happens to be either the
-framebuffer or the memory mapped registers. The practical upshot of this
-is that the kernel fbdev driver, attempting to set the color registers,
-accesses the unmapped region and dies.
+Right. The very people that first brought Linux to the m68k Mac might feel
+upset. One was a well known ix86 kernel hacker, the other a m68k hacker
+from the Atari/Amiga camp.
+While I personally never used an Amiga, and did work on mostly Atari code,
+I've considered myself m68k kernel hacker first, Atari second (or third,
+or....). Similar for most others on linux-m68k. With a bit of hindsight,
+I'd say I'd not mention the Mac in the same sentence as all of the others.
+But Amiga/Atari rivalry has never existed in the m68k team for as long as
+I've followed it.
 
-A 2.3 or 2.4 kernel with PCI resource conflict resolution should fix this.
-I don't recall whether I ever sent a patch for 2.2.x to this list, but if
-you remap the conflicting PCI resource to another non overlapping region,
-and update the oftree and kernel PCI tree data accordingly at the start of
-atyfb_probe, the problem should go away. Guessing a correct address for
-the remapping without PCI resource management is a bit of a hazard.
+> >later on the Mac. You can even compile a kernel that will run on both Amiga
+> >and Atari! :-)
+
+And Mac, and VME, perhaps even hp300. The odd ones are Q40 and Sun3.
+
+> Would be only a 68k Kernel then though and not use the PowerPC Board in case
+> of the Amiga...
+
+Right, but can you compile a kernel that will run on PowerMac/CHRP/PReP
+and APUS? Which one's serial will work?
 
 	Michael
 
