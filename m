@@ -1,62 +1,60 @@
-Reply-To: <govindan@tejasnetworks.com>
-From: "Govindan" <govindan@tejasnetworks.com>
-To: "'Matthew Locke'" <mlocke@mvista.com>,
-        "'Paolo Scaffardi'" <arsenio@tin.it>
-Cc: "'linuxppc-emb'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: PCMCIA - another step...
-Date: Thu, 14 Dec 2000 12:06:18 +0530
-Message-ID: <00e601c06598$2b171020$1b01a8c0@india.tejasnetworks.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <39E73DE0.F95F057F@mvista.com>
+Date: Thu, 14 Dec 2000 18:21:26 +1100
+From: Graham Stoney <greyham@research.canon.com.au>
+To: Dan Malek <dan@mvista.com>
+Cc: Graham Stoney <greyham@research.canon.com.au>,
+        Brian Ford <ford@vss.fsi.com>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 2.5 or 2.4 kernel profiling
+Message-ID: <20001214182126.E8430@brixi.research.canon.com.au>
+References: <20001212182856.A8336@brixi.research.canon.com.au> <Pine.GSO.4.21.0012120933330.24199-100000@eos> <20001213121554.B17129@brixi.research.canon.com.au> <3A37A048.46E692A0@mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3A37A048.46E692A0@mvista.com>; from dan@mvista.com on Wed, Dec 13, 2000 at 11:14:00AM -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Paolo Scaffardi,
+On Wed, Dec 13, 2000 at 11:14:00AM -0500, Dan Malek wrote:
+> Although I have not yet proven this, I am leaning toward the following.
+> Allocate a small fixed set of receive buffers (like we used to do)
+> in the driver and mark them copy-back cached.  The received BDs will
+> always point to thesed buffers.
 
-I am unable to get these patches. I have the HardHat 1.2 CD-ROM
-and would like to use this patch for a CLLF board with an IBM micro drive.
-Could you provide the mechanism to access this location?
-Thank you in advance,
+I dunno; now that I've heard about the "buffer deficit scheme", I think it
+gives better memory utilisation, since the receive buffers aren't permanently
+tied up in the network driver.  It's the way the other drivers now do it.
 
-Govindan.
+> Then, copy-and-sum these into IP aligned skbuffs.
 
-"Code it clear rather than clever"
----------------------------------------------------------------------
-Govindan  K Thrithala                 Tel: +91-80-226-7495x4033
-Tejas Networks India Pvt. Ltd.     Fax: +91-80-226 7494
-49, Khanija Bhavan, Race Course Road
-Bangalore 560 001
--------------------------------------------------------------------
-"I care for future, because I spend rest of my life there"
+I think it depends whether the gain of having IP headers aligned outweighs the
+cost of the extra copy in place of just a checksum.  The copy will tend to
+throw more stuff out of the cache since it's dealing with the data twice.
+Conventional logic when optimising network stacks is to eliminate copies, and
+the only thing I see here that contradicts that is that we end up with not-
+nicely-aligned IP headers.  In my application, eliminating the copy more than
+offset the loss due to unaligned headers.
 
+> The advantage of Graham's DMA into skbufs isn't that the driver doesn't
+> copy/sum, it is that later when the IP stack does it we get burst transfers
+> into cache.
 
+But we get burst transfers into cache in either case, whether it's during
+the checksum in csum_partial or the copy/sum in csum_partial_copy_generic.
+The difference is that in the copy case, the data that gets loaded is only
+used once, to write to another address in another cache line.  This extra
+write will carry both a caching and bus penalty, and the impact is likely to
+be worse in real applications than in simplistic throuhput tests.  Hence I
+believe the conventional wisdom about eliminating the copy applies.
 
+I know everything has second order effects and profiling is a perilous
+minefield, but just occasionally things really do end up the way first order
+thinking suggests :-).
 
-
------Original Message-----
-From: owner-linuxppc-embedded@lists.linuxppc.org
-[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Matthew
-Locke
-Sent: Friday, October 13, 2000 10:23 PM
-To: Paolo Scaffardi
-Cc: linuxppc-emb
-Subject: Re: PCMCIA - another step...
-
-
-
-Paolo Scaffardi wrote:
-
-I have some patches for the kernel and pcmcia-cs for the 8xx on our ftp
-site.
-
-ftp://ftp.mvista.com/pub/area51/ppc_8xx
-
-I moved Magnus stuff up to pcmcia-cs-3.1.19 and there is a patch for the
-ioremapping of _IO_BASE.  I chose 0x80000000 but that probably is not
-the best place to put it.
-
+Regards,
+Graham
+--
+Graham Stoney
+Assistant Technology Manager
+Canon Information Systems Research Australia
+Ph: +61 2 9805 2909  Fax: +61 2 9805 2929
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
