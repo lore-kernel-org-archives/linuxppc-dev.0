@@ -1,28 +1,58 @@
-Date: Wed, 23 Jun 1999 09:32:53 -0500 (CDT)
-From: Kevin Puetz <kp11901@mail.cedarnet.org>
-To: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-cc: Kevin Puetz <kp11901@cedarnet.org>, Justin Vallon <vallon@mindspring.com>,
-        LinuxPPC-Dev List <linuxppc-dev@lists.linuxppc.org>
+Message-Id: <4.2.0.56.19990623163213.042ffa40@mail.lauterbach.com>
+Date: Wed, 23 Jun 1999 16:37:25 +0200
+To: Troy Benjegerdes <hozer@drgw.net>
+From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
 Subject: Re: dl-load.c (ld.so) bug??
-In-Reply-To: <Pine.LNX.3.96L.990623101810.1657A-100000@unix47.andrew.cmu.edu>
-Message-ID: <Pine.SGI.3.95.990623093146.1266B-100000@www.cedarnet.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.LNX.4.04.9906211749280.27642-100000@narn.local.drgw.n
+ et>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-OK, it was just a random thought... before people beat head on wall, it
-was something simple to look at. I don't claim enough knowledge to really
-make such a statement, anyhow...
+At 00:52 22.06.99 , Troy Benjegerdes wrote:
 
-> Doesn't look like it's an R4 problem... I just rebuilt it and it does the same
-> thing. A different __libc_start_main thing, I guess.
-> 
-> -Hollis
 
-Kevin Puetz <kp11901@www.cedarnet.org>
+>testcase:
+>
+>#include <stdio.h>
+>int main(void){
+>         char * ptr;
+>         printf("hello world\n");
+>         fflush(stdout);
+>         ptr = (char *)malloc(100);
+>         free(ptr);
+>}
+>
+>
+>compile this with:
+>gcc test.c -lefence -g -static
+>
+>On a PPC glibc-2.1 box, this segfaults in dl-load.c:564
+>
+>On a x86 Red Hat 6.0 system, it works fine (
+>[troybenj@mos6 troybenj]$ ./a.out
+>
+>   Electric Fence 2.0.5 Copyright (C) 1987-1998 Bruce Perens.
+>hello world
+>[troybenj@mos6 troybenj]$
+>
+>
+>Either dl-load.c has a serious bug, or ElectricFence is broken on PPC.
+>I suspect it's the former, and if so, this would explain the weird
+>segfaults I've been seeing.
+>
+>Can someone that knows glibc better please confirm or deny this for me?
 
+This bug is fixed already in cvs-glibc. I've put up mostly untested RPMS 
+for a newer glibc under <ftp://dev.linuxppc.org/users/fsirl/R5>.
+
+It might be that the new IP of dev is still not fully propagated, so use 
+169.207.1.122 directly in that case.
+
+Franz.
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
