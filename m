@@ -1,18 +1,17 @@
-Return-Path: <telkimcs@empal.com>
-Received: from tx7.empal.com (unknown [220.90.209.157])
-	by ozlabs.org (Postfix) with ESMTP id EF4F72BDF2
+Return-Path: <Marc.Howard@KLA-Tencor.com>
+Received: from ca1xpr03.adcorp.kla-tencor.com (mailout02.kla-tencor.com
+	[192.146.1.172]) by ozlabs.org (Postfix) with SMTP id D433E2BDF2
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 12 Nov 2004 12:10:03 +1100 (EST)
-Received: from empal.com ([10.151.12.144])
-	by tx7.empal.com (8.11.6/8.11.6) with ESMTP id iAC13ga00914
-	for <linuxppc-embedded@ozlabs.org>; Fri, 12 Nov 2004 10:03:42 +0900
-Message-ID: <20041112100340.41940bec0001b4f300056bfc.1368@empal.com>
-From: =?ks_c_5601-1987?B?IrHoIMOivcQi?= <telkimcs@empal.com>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Fri, 12 Nov 2004 10:03:40 +0900
+	Fri, 12 Nov 2004 13:33:59 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/html; charset="ks_c_5601-1987"
-Subject: [Micropatch]I wanted micropatch in mpc852t
+Content-Type: multipart/mixed;
+	boundary="----=_NextPartTM-000-6c4946bd-e9c6-430e-891a-d3ea73920fc1"
+Date: Thu, 11 Nov 2004 18:19:02 -0800
+Message-ID: <91B22F93A880FA48879475E134D6F0BE283EBD@CA1EXCLV02.adcorp.kla-tencor.com>
+From: "Howard, Marc" <Marc.Howard@KLA-Tencor.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Trouble booting uboot on 440GX (ocotea) eval board after initial
+	power-up boot
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,34 +22,76 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-PEhUTUw+PEhFQUQ+DQo8TUVUQSBjb250ZW50PSJNU0hUTUwgNi4wMC4yODAwLjE0NzYiIG5hbWU9
-R0VORVJBVE9SPg0KPFNUWUxFPlAgew0KCU1BUkdJTjogNXB4IDBweA0KfQ0KPC9TVFlMRT4NCjwv
-SEVBRD4NCjxCT0RZIHN0eWxlPSJGT05ULVNJWkU6IDEwcHQ7IENPTE9SOiBibGFjazsgRk9OVC1G
-QU1JTFk6ILG8uLIiPg0KPFA+SSB0cmllZCB0byB1c2UgbWljcm9wYXRjaCBpbiBtcGM4NTJ0LiA8
-L1A+DQo8UD5CZWNhdXNlIEkgdXNlIFNDQzMgYW5kIFNNQzEgY29uY3VycmVudGx5LjwvUD4NCjxQ
-PkJ1dCBpdCBkaWRuJ3Qgd29yay48L1A+DQo8UD5JIHVzZWQgbGludXgga2VybmVsIDIuNC4xOC4g
-VGhpcyBzb3VyY2UgaW5jbHVkZSBtaWNyb3BhdGNoLmMgaW4gYXJjaC9wcGMvOHh4X2lvLzwvUD4N
-CjxQPkhvdyBkaWQmbmJzcDtpdCB1c2U/LiZuYnNwOyA8L1A+DQo8UD4mbmJzcDs8L1A+DQo8UD5U
-aGFuayB5b3UgZm9yIHJlYWRpbmcgYSBwb29yIGVuZ2xpc2ggbWFpbC48L1A+DQo8UD4mbmJzcDs8
-L1A+DQo8UD5Gcm9tIGNzIGtpbS48L1A+DQo8UD4mbmJzcDs8L1A+CjxzdHlsZSB0eXBlPSJ0ZXh0
-L2NzcyI+CnRkLGZvbnQsYQl7Zm9udC1zaXplOjlwdDsgZm9udC1mYW1pbHk6tbi/8jsgd29yZC1i
-cmVhazpicmVhay1hbGw7fQphCQl7Y3Vyc29yOmhhbmR9Cjwvc3R5bGU+Cgo8dGFibGUgYm9yZGVy
-PTAgY2VsbHBhZGRpbmc9MCBjZWxsc3BhY2luZz0wIHdpZHRoPTY2MCBzdHlsZT0iYm9yZGVyLXRv
-cDpkYXNoZWQgMXB4ICNGRkNGMDAiPgo8dHI+Cjx0ZCB2YWxpZ249dG9wIHN0eWxlPSJwYWRkaW5n
-OjEwIDEwIDAgM3B4IiB3aWR0aD0xMDE+PGEgaHJlZj0iaHR0cDovL3d3dy5lbXBhcy5jb20vP3Jl
-Zj1tIiB0YXJnZXQ9X2JsYW5rPjxpbWcgc3JjPSJodHRwOi8vaWIuZW1pbWcuY29tL2VtcGFsL3Ns
-b2dhbi9sb2dvX2FkbWFpbC5naWYiIGJvcmRlcj0wPjwvYT48L3RkPgo8dGQgc3R5bGU9InBhZGRp
-bmctdG9wOjEwcHgiIHZhbGlnbj10b3A+CgoJPHRhYmxlIGJvcmRlcj0wIGNlbGxwYWRkaW5nPTAg
-Y2VsbHNwYWNpbmc9MCB3aWR0aD0xMDAlPgoJPHRyPjx0ZD48Zm9udCBzdHlsZT1jb2xvcjpGRjU5
-MDA7PrDLu/bG98XQILrOua4gsbmwobDtsLS4uMG3tbUgNLPiIL+svNMgMcCnPC9mb250Pjxicj48
-L3RkPjwvdHI+Cgk8dHI+PHRkIHN0eWxlPSJwYWRkaW5nLXRvcDoycHgiPjxmb250IGNvbG9yPTMz
-MzMzMz6/pcbEvbogtLq9uiAtIDxhIGhyZWY9Imh0dHA6Ly9uZXdzLmVtcGFzLmNvbS9tb25pdG9y
-cHIuaHRtbC8/cmVmPW0iIHRhcmdldD1fYmxhbms+J7jwtM/Fzbi1JyC9xcO7x8+46Swgx8+35yAx
-NSwwMDCwxyC0ur26tbbBoSE8L2E+PC9mb250PjwvdGQ+PC90cj4KCTwvdGFibGU+Cgo8L3RkPgo8
-dGQgc3R5bGU9InBhZGRpbmctdG9wOjdweCIgYWxpZ249cmlnaHQ+PGEgaHJlZj0iaHR0cDovL2Js
-b2cuZW1wYXMuY29tLz9yZWY9bSIgdGFyZ2V0PV9ibGFuaz48aW1nIHNyYz0iaHR0cDovL2liLmVt
-aW1nLmNvbS9lbXBhbC9zbG9nYW4vYmxvZ19ta3kuZ2lmIiBib3JkZXI9MD48L2E+PC90ZD4KPC90
-cj4KPC90YWJsZT4KCjwvQk9EWT48L0hUTUw+PGltZyB3aWR0aD0xIGhlaWdodD0xIHNyYz0iaHR0
-cDovL21haWwuZW1wYXMuY29tL3JzZC9lbXBhbHJjcHQuaHRtbC9uSFF3dG1acWFtWmthQS9YZkJT
-S0JNelk0TS9mQ05IU0dOTGM2dkRnNE1iYVN0ckV5c2pJeXNqQW52VFl3c1RtM0Y3a3pzL2Zvby5n
-aWYiPg0KDQo=
+This is a multi-part message in MIME format.
+
+------=_NextPartTM-000-6c4946bd-e9c6-430e-891a-d3ea73920fc1
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C4C85D.F6D1935D"
+
+------_=_NextPart_001_01C4C85D.F6D1935D
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+I've built and installed U-Boot 1.1.2 on an IBM 440GX eval board
+(ocotea).  After powering the board I can get the uboot interactive
+prompt.  If I type 'reset' or hit the reset button it hangs.  I get the
+same results whether or not I use the BDI2000.  Doing a power cycle of
+the board is the only way to get back to the prompt.
+
+Is there some reconfiguation U-Boot does that causes the processor boot
+address to change after the initial power-up?  Am I missing something
+here?
+
+Thanks,
+
+Marc W. Howard
+
+
+
+------_=_NextPart_001_01C4C85D.F6D1935D
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7226.0">
+<TITLE>Trouble booting uboot on 440GX (ocotea) eval board after initial =
+power-up boot</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/rtf format -->
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">Hi,</FONT>
+</P>
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">I've built and installed U-Boot 1.1.2 =
+on an IBM 440GX eval board (ocotea).&nbsp; After powering the board I =
+can get the uboot interactive prompt.&nbsp; If I type 'reset' or hit the =
+reset button it hangs.&nbsp; I get the same results whether or not I use =
+the BDI2000.&nbsp; Doing a power cycle of the board is the only way to =
+get back to the prompt.</FONT></P>
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">Is there some reconfiguation U-Boot =
+does that causes the processor boot address to change after the initial =
+power-up?&nbsp; Am I missing something here?</FONT></P>
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">Thanks,</FONT>
+</P>
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">Marc W. Howard</FONT>
+</P>
+<BR>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C4C85D.F6D1935D--
+
+------=_NextPartTM-000-6c4946bd-e9c6-430e-891a-d3ea73920fc1--
