@@ -1,57 +1,27 @@
-Date: Tue, 14 Oct 2003 12:26:14 +0200
+Date: Tue, 14 Oct 2003 12:27:40 +0200
 From: Colin Leroy <colin@colino.net>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Fw: [PATCH] hcd-pci.c compile fix
-Message-Id: <20031014122614.036ac493.colin@colino.net>
+Subject: Re: Fw: [PATCH] Right-click modifier
+Message-Id: <20031014122740.2a8a05a3.colin@colino.net>
+In-Reply-To: <20031014093604.GC29143@suse.de>
+References: <02cc01c39231$dce0d200$3cc8a8c0@ANOSP>
+	<20031014093604.GC29143@suse.de>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="Multipart_Tue__14_Oct_2003_12:26:14_+0200_10304998"
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
+On 14 Oct 2003 at 11h36, Olaf Hering wrote:
 
---Multipart_Tue__14_Oct_2003_12:26:14_+0200_10304998
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Hi,
 
-[Forwarding this one too :)]
+> Its certainly a nice thing, but all this mouse button emulation stuff
+> should be handled in userland. Its just the question how and where.
 
-> Hi,
-
-> this patch fixes compilation of drivers/usb/core/hcd-pci.c
-> with gcc 2.95.
-
-> hth,
-> --
-> Colin
-
---Multipart_Tue__14_Oct_2003_12:26:14_+0200_10304998
-Content-Type: text/plain;
- name="hcd-pci.fix.patch"
-Content-Disposition: attachment;
- filename="hcd-pci.fix.patch"
-Content-Transfer-Encoding: 7bit
-
---- drivers/usb/core/hcd-pci.c.orig	Mon Oct 13 23:30:39 2003
-+++ drivers/usb/core/hcd-pci.c	Mon Oct 13 23:30:32 2003
-@@ -302,10 +302,11 @@
- 			dev_dbg (hcd->controller, "suspend fail, retval %d\n",
- 					retval);
- 		else {
--			hcd->state = USB_STATE_SUSPENDED;
- #ifdef CONFIG_PPC_PMAC
- 			struct device_node	*of_node;
--
-+#endif
-+			hcd->state = USB_STATE_SUSPENDED;
-+#ifdef CONFIG_PPC_PMAC
- 			/* Disable USB PAD & cell clock for Keylargo built-in controller */
- 			of_node = pci_device_to_OF_node (dev);
- 			if (of_node)
-
-
---Multipart_Tue__14_Oct_2003_12:26:14_+0200_10304998--
+Any pointer about how it could be done?
+--
+Colin
+http://ayttm.sf.net/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
