@@ -1,45 +1,52 @@
-Message-Id: <200007102219.AAA00856@piglet.grunz.lu>
-Date: Tue, 11 Jul 2000 00:19:27 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: GNU Parted, linuxppc support coming :-)
-To: tas@mindspring.com
-cc: erbenson@alaska.net, linuxppc-dev@lists.linuxppc.org, clausen@gnu.org,
-        parted@gnu.org
-In-Reply-To: <v04220801b58c9d72e07f@[10.0.0.42]>
+Date: Mon, 10 Jul 2000 17:20:50 -0500 (CDT)
+From: Takashi Oe <toe@unlserve.unl.edu>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.4.0-test3
+In-Reply-To: <20000710221410.2067@192.168.1.10>
+Message-ID: <Pine.LNX.3.96LJ1.1b7.1000710171750.14195D-100000@ofey.inetnebr.com>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+On Tue, 11 Jul 2000, Benjamin Herrenschmidt wrote:
 
-On   8 Jul, this message from Timothy A. Seufert echoed through cyberspace:
->>>  Don't forget that there are lots of Macs that _absolutely_ need at least
->>>  one HFS partition and an Aple partition map on one of there disks,
->>>  because that's the only thing the ROM can boot some OS from.
->>>
->>>  AFAICT, all pre-NewWorld machines are in this case, except maybe some
->>>  that can be tweaked to network boot...
->>
->>oldworld macs this is true i think.
+> >
+> >Why is pmac_backlight.c compiled in for CONFIG_ALL_PPC?  Isn't it
+> >PowerBook only thing?
 >
-> Not completely true.  They do have to have a Mac partition table but
-> I'm pretty sure you can get away without any HFS partitions if you
-> use quik to boot.  Granted, that's a pain, but it can be done.
+> Well, if you change that, then chipsfb.c, atyfb.c, aty128fb.c and via-
+> pmu.c must be changed too. It's not completely powerbook only since, at
+> term, this could driver also external LVDS LCD backlight.
 
-You are right. OF only accesses the boot block of a partition marked
-bootable. It probably doesn't know filesystems at all.
+Yes, that's true.  I forgot about that.  Sorry.  In any case, my initial
+problem with this was just CONFIG_ADB_PMU thing, and I went too far.
 
-Michel
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+Takashi Oe
+
+--- linuxppc_2_3-vanilla/arch/ppc/kernel/pmac_backlight.c	Mon Jul 10 02:18:43 2000
++++ linuxppc_2_3-nubus/arch/ppc/kernel/pmac_backlight.c	Mon Jul 10 17:16:54 2000
+@@ -63,7 +63,8 @@
+ 		if (backlight_level > BACKLIGHT_MAX)
+ 			backlight_level = BACKLIGHT_MAX;
+ 	}
+-
++
++#ifdef CONFIG_ADB_PMU
+ 	backlight_autosave = machine_is_compatible("AAPL,3400/2400")
+ 		|| machine_is_compatible("AAPL,3500");
+ 	if (backlight_autosave) {
+@@ -73,6 +74,7 @@
+ 			pmu_poll();
+ 		backlight_level = req.reply[1] >> 4;
+ 	}
++#endif /* CONFIG_ADB_PMU */
+
+ 	if (!backlighter->set_enable(1, backlight_level, data))
+ 		backlight_enabled = 1;
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
