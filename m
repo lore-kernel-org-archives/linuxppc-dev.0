@@ -1,60 +1,62 @@
-Message-Id: <200009211941.VAA05085@piglet.grunz.lu>
-Date: Thu, 21 Sep 2000 21:40:58 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: CPU Temperature Patch
-To: trini@kernel.crashing.org
-cc: ad@mpifr-bonn.mpg.de, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20000920110436.C15401@opus.bloom.county>
-MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=iso-8859-1
+Date: Thu, 21 Sep 2000 21:44:47 +0200
+From: Samuel Rydh <samuel@ibrium.se>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: PCI bridge bases, IDE on the B&W G3
+Message-ID: <20000921214446.A865@ibrium.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+Hi,
 
-On  20 Sep, this message from Tom Rini echoed through cyberspace:
->
-> On Wed, Sep 20, 2000 at 05:03:42PM +0200, Albrecht Dreß wrote:
->>
->> "D.J. Osguthorpe" wrote:
->> > Here are two patches that appear to fix the cpu_temp function in setup.c.
->> > They have been applied to a number of Ben Herrenschmidt kernels on a 500 MHz
->> > Pismo powerbook and print reasonable values when you cat /proc/cpuinfo.
->>
->> The patch seems to work on my Lombard/333, too... Really great!
->>
->> > +       /* this set for 500 MHz Pismo - how do we get access to clock?? */
->>
->> There is, in the same file, around line 319 code to read the clock speed from
->> the device tree. However, is it really necessary to include the clock speed at
->> this point? What is the drawback if we just assume 500 MHz (or even the max
->> value) for every G3 based machine?
->
-> Why assume when we can do it properly?  Besides, a friend of mine oc'ed his
-> B&W to 550, so it's possible to have >500Mhz :)
+I recently installed an ACARD 6260 IDE card in my B&W G3.
+While trying to get it working with the 2.4 kernel, I found
+three problems:
 
-To do it properly on all machines requires a processor frequency
-calculating routine, that doesn't depend on OF. Note that on all
-upgraded machines that did not initially have a G3, OF's value is wrong
-(too low, actually)!
+- The B&W G3 has two PCI-buses. The second one is
+accessed through a DEC,21154 controller. The expension
+slots as well as the internal CMD646 IDE-controller is on
+the second bus. The problem is that the bridge reports
+zero in the both baseregisters (the new PCI resource
+allocation scheme then fails miserably). This problem
+is simply fixed by (arch/ppc/kernel/pci.c):
 
-On the other hand, Motorola's doc states that setting too large a value
-doesn't hurt, so I guess we can safely hardcode something like 600 MHz.
+ void __init pcibios_fixup_bus(struct pci_bus *bus)
+ {
++       pci_read_bridge_bases(bus);
++
+        if ( ppc_md.pcibios_fixup_bus )
+                ppc_md.pcibios_fixup_bus(bus);
+ }
 
-At the only expense of busy-waiting a bit too long on slower machines...
-but how often do you look at /proc/cpuinfo? Besides, you could always do
-the aproximation using the interrupt ;-)
+(i386 does it this way too).
 
-Michel
+- The pci card was never enabled. I solved this by calling
+pci_enable_device(dev) by hand. But... shouldn't this really
+be done automatically by the generic ide layer?
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+- If yaboot loads the kernel (or the yaboot config file?)
+from the ACARD IDE-bus, then the card will not work (lost
+interrupts). The same problem (lost interrupts) occurs if
+one tries to boot from the built-in CMD646 controller.
+Possibly, IDE devices are not left in a good state by the
+firmware/yaboot on the B&W G3?
 
+The ACARD card works great if the kernel is loaded from
+a CMD-controlled device.
+
+
+Cheers,
+
+/Samuel
+
+
+
+----------------------------------------------------------
+ E-mail <samuel@ibrium.se>  WWW: <http://www.ibrium.se>
+  Phone/fax: (home) +46 8 4418431, (work) +46 8 7908470
+----------------------------------------------------------
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
