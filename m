@@ -1,57 +1,60 @@
-From: Kevin Hendricks <khendricks@ivey.uwo.ca>
-Reply-To: khendricks@ivey.uwo.ca
-To: Kostas Gewrgiou <gewrgiou@imbc.gr>
-Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to work on ppc with r128
-Date: Thu, 24 Feb 2000 22:19:34 -0500
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.linuxppc.org
-References: <Pine.LNX.4.21.0002241917120.2343-100000@idd-01.imbc.gr> <00022417315801.00485@localhost.localdomain>
-In-Reply-To: <00022417315801.00485@localhost.localdomain>
+Message-ID: <38BC513A.9893292D@pop.agri.ch>
+Date: Wed, 01 Mar 2000 00:07:39 +0100
+From: Andreas Tobler <toa@pop.agri.ch>
+Reply-To: toa@pop.agri.ch
 MIME-Version: 1.0
-Message-Id: <00022422322102.01256@localhost.localdomain>
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+CC: Benjamin Herrenschmidt <bh40@calva.net>, paulus@linuxcare.com,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: PPC should not use -fno-builtin (was Re: 2.3.47 imac build?)
+References: <Pine.LNX.4.10.10002292018001.5514-100000@opal.biophys.uni-duesseldorf.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Kostas,
 
-> I have been looking at my mouse problems in XF 3.9.18 and put some debug
-> statements into Xserver/hw/xfree86/input/mouse/mouse.c to look at the raw
-> characters being read from /dev/usbmouse.
 
-Well I have been looking at xfree86/input/mouse/mouse.c
+Michael Schmitz wrote:
+>
+> > >The way it fails booting is a bit entertaining: using BootX 1.1.3, it will
+> > >show a little more than half a page of messages (arch_exit or similar in
+> > >the last), then starts drawing funny color fringes on the screen until I
+> > >reset. Using BootX 1.2b3, it locks up after the first six or so lines of
+> > >text (before getting to the early console output). 2.3.29 worked fine. Any
+> > >ideas?
+> >
+> > I think I know what's going on:
+> >
+> >  - make sure setting the display BAT in arch/ppc/mm/init.c (MMU_Init) is
+> > commented out, this is a hack and need some alignement tricks to work in
+> > all cases. It should already be in #if 0/#endif
+>
+> Check.
+>
+> >  - in arch/ppc/kernel/pmac_setup.c, comment out the content of the
+> > function pmac_progress. (Or change pmac_init() so that it sets
+> > ppc_md.progress to NULL, and set it to pmac_progress only pmac_setup_arch()).
+>
+> Tried both. I get the arch: exit if I set ppc_md.progress in pmac_setup
+> arch. Shortly after this output, the color fringe fun starts again.
+>
+> I'll strip my .config to the bare minimum to narrow this down. Thanks for
+> getting me this far :-)
+Well, I wanted to reply earlier, but unfortunately my telco dropped my
+line for two hours and I was thinking about having destroied my modems
+until I had a look to my /var/log/messages arghhhh.
 
-The problem was in MouseReadInput().
+What I did: I have both trees living around on my PB. I did a diff
+against the linux-pmac-devel/arch/ppc and patched the missing things. I
+know a bit dangerous, but it did the trick. It's not only the things Ben
+mentioned, also the drawx vs. prom_drawx are necessary I think. So it
+boots on an Wallstreet I, AND on an ancient pm7200!!
 
-What a HUGE KLUDGE!
+I may post a patch, but I'm not quite satiesfied with since I don't know
+at all what's really necessary. Sorry, but I think it's better not to
+distribute a wrong patch.
 
-This is some of the most whacked code I have ever seen.  Setting up tables with
-wierd parameters just to try and use the exact same routine to handle all mice
-regardless of how many characters they return, whether serial or bus or
-whatever.
-
-This in just simply incredibly bad coding.  It is unmaintainable since any
-change will have to impact other mice or simply need another bad hack to work
-around it.
-
-The code they were using deliberately resulted in out of sync characters after
-the very first call.
-
-I hacked away most of the MouseReadInput() code and now things work as expected.
-
-I will try to clean up my changes and put back most of what I hacked out so
-that they can be integrated into the xfree86 tree in time for xfree 4.0 but
-someone should really simplify it and stop trying to make one routine work for
-every case (the tables simply could have pointed to individual routines).
-
-Kevin
-
---
-Kevin B. Hendricks
-Associate Professor of Operations and Information Technology
-Richard Ivey School of Business, University of Western Ontario
-London, Ontario  N6A-3K7  CANADA
-khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
-
+Andreas
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
