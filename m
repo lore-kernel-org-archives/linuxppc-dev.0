@@ -1,33 +1,51 @@
-Message-ID: <3C04A483.6070206@humboldt.co.uk>
-Date: Wed, 28 Nov 2001 08:46:59 +0000
-From: Adrian Cox <adrian@humboldt.co.uk>
+Date: Wed, 28 Nov 2001 10:14:38 +0100 (MET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
+	Debian GNU/Linux PPC <debian-powerpc@lists.debian.org>,
+	ajoshi@unixbox.com, lethal@chaoticdreams.org, dan@debian.org,
+	Martin Costabel <costabel@wanadoo.fr>
+Subject: Re: [PATCH] Minor changes to control/imstt/platinum/valkyrie/atyfb
+In-Reply-To: <20011127143058.R13091@cpe-24-221-152-185.az.sprintbbd.net>
+Message-ID: <Pine.GSO.4.21.0111281012090.15842-100000@mullein.sonytel.be>
 MIME-Version: 1.0
-To: paulus@samba.org
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: include/asm-ppc/platforms/
-References: <15363.31192.101536.919771@gargle.gargle.HOWL>	<3C2B376F.9070508@embeddededge.com> <15364.32906.728532.676746@gargle.gargle.HOWL>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Paul Mackerras wrote:
+On Tue, 27 Nov 2001, Tom Rini wrote:
+> Hello all.  The following patches make slight changes to the vmode/cmode
+> logic on a few fb drivers.  Now everone consistantly only tries to get
+> these modes from nvram if CONFIG_NVRAM is defined (otherwise a
+> compile-time error on everyone but atyfb).  On imsttfb I made the logic
+> only executed on CONFIG_ALL_PPC, and removed USE_NV_MODES (which
+> shouldn't be needed now).  However, I have none of this hardware, and I
+> remember some of these drivers being very touchy.  So could people with
+> this hardware apply the patch and let me know if it works still?
 
-> The patch below does all this.  It does mean that we will need a
-> platform header for every platform, and a platform_serial header for
-> every platform where we want to use the standard serial driver.  As an
-> example, I have made an all_ppc_serial.h that contains most of what
-> was in serial.h before.  In fact, with a bit of care we could make
-> serial.h be the symlink.
+I _think_ the right solution is to hide the NVRAM vmode/cmode stuff in
+macmodes.c, so all drivers will automagically use it for the default video
+mode.
 
+The same with MAC monitor sense information, just pass it to mac_find_mode().
 
-All my boards now use early_serial_setup() instead of a platform header
-file. This approach is simple to write, and requires no modifications
-outside the platform_setup.c file. I'd rather not go back to providing
-platform specific serial definitions in a header file.
+So mac_find_mode() should do this:
+
+  - if default mode specified, try that
+  - if MAC monitor sense specified, try that
+  - if NVRAM, try that
+  - fall back to default mode database walking
+
+Gr{oetje,eeting}s,
+
+						Geert
 
 --
-Adrian Cox   http://www.humboldt.co.uk/
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
