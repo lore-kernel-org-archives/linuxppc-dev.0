@@ -1,20 +1,34 @@
-Date: Thu, 18 Feb 1999 20:25:10 -0700 (MST)
-From: Cort Dougan <cort@persephone.cs.nmt.edu>
-To: Greg Stovall <gstovall@nortelnetworks.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: IBM providing Linux for RS6000
-In-Reply-To: <A969F78C865BD1119B230000F8B8459603166F9D@zrchb181.us.nortel.com>
-Message-ID: <Pine.LNX.3.96.990218202455.8577C-100000@persephone.cs.nmt.edu>
+Date: Thu, 18 Feb 1999 22:23:21 -0600 (CST)
+From: Ken Roberts <ken@worldnet.att.net>
+Reply-To: Ken Roberts <ken.r@worldnet.att.net>
+To: Nathan Hurst <njh@drongo.anu.edu.au>
+cc: Gary Thomas <gdt@linuxppc.org>,
+        marcos otero garcia <marcos.oterogarcia@luebeck.netsurf.de>,
+        linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: RE: MKLinux on Performa 6200
+In-Reply-To: <Pine.LNX.3.95.990219090822.29822A-100000@drongo.anu.edu.au>
+Message-ID: <Pine.LNX.3.96.990218222142.2847A-100000@danger>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-They're not providing their own version.
+>For these machines(all the nubus ones) would it be possible to use BootX
+>and fake the OF device tree?  Do we have GPLd drivers for all the early
+>PPC apple hardware?
 
-}Will the fact that IBM is going to be providing it's own version going to
-}have any effects on the linuxppc development efforts?  
+would the mklinux mach kernel help?  it's not exactly linux kernel, but it is
+source.
+
+
+-------------------------------------------------------------------------------
+    Ken Roberts                                      ken.r@worldnet.att.net
+                 Oft-times thou feelest like unto a nut,
+                     And yet, M'lord, anon, feel'st thou not so.
+                 Yon Almond Joy these selfsame nuts doth have,
+                     Whereas contrary Mounds doth have them not.
+                                 -- William Shakespeare, kind of
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
