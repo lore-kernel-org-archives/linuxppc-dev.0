@@ -1,31 +1,34 @@
-From: linas@austin.ibm.com
-Date: Thu, 15 Jan 2004 13:54:04 -0600
-To: Hollis Blanchard <hollisb@us.ibm.com>
-Cc: "Matthew S. McClintock" <mattsm@arlut.utexas.edu>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Christian <evil@g-house.de>,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: cpu_setup_6xx.S:19:22: ppc_defs.h: No such file or directory
-Message-ID: <20040115135404.F40474@forte.austin.ibm.com>
-References: <1074025766.23751.2.camel@chuck.arlut.utexas.edu> <1074131648.5123.48.camel@gaston> <1074186989.23751.9.camel@chuck.arlut.utexas.edu> <200401151925.24746.hollisb@us.ibm.com>
+Subject: Re: ibmstb4 fixes
+From: Andreas Oberritter <obi@saftware.de>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20040115193619.GF983@stop.crashing.org>
+References: <1074028643.1526.42.camel@shiva.eth.saftware.de>
+	 <20040115193619.GF983@stop.crashing.org>
+Content-Type: text/plain
+Message-Id: <1074196707.1526.8.camel@shiva.eth.saftware.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200401151925.24746.hollisb@us.ibm.com>; from hollisb@us.ibm.com on Thu, Jan 15, 2004 at 07:25:23PM +0000
+Date: Thu, 15 Jan 2004 20:58:28 +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Jan 15, 2004 at 07:25:23PM +0000, Hollis Blanchard wrote:
+On Thu, 2004-01-15 at 20:36, Tom Rini wrote:
+> > - two typo fixes for i2c and the ocp definition
 >
-> Just a guess, but I don't think 2.4 trees work perfectly with parallel builds
-> (make -jN). It could be that one build needs ppc_defs.h before the other has
-> created it yet.
+> Is the first one related to dgibsons latest changes?
 
-I'll chime in and say that I've seen something like this, if not this
-problem exactly.  I was a big user of make -j and I remember that
-when the problem showed up, it was real hard to make go away.
-Oh, and always at the most inopportune moment ...
+Yes, the buggy #define was introduced in rev. 1.5. It results in a
+compile error if IBM_IIC_IS_FAST is not overridden by the board's
+header.
 
---linas
+> > Now that linuxppc_2_4_devel seems to be rather dead, would you accept a
+> > patch that adds the smc91111 network driver to linuxppc-2.4?
+>
+> I'd rather the smc91111 driver be sent to Jeff Garzik for review so he
+> can push it into linux-2.4 and offer hints / help to get it into 2.6.
+
+ok.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
