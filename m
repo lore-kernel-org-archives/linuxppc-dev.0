@@ -1,43 +1,38 @@
-Message-ID: <3EADE723.4070003@pp.iij4u.or.jp>
-Date: Tue, 29 Apr 2003 11:44:51 +0900
-From: Yuji Nishimura <yujin@pp.iij4u.or.jp>
+From: gopi@india.tejasnetworks.com
+Date: Tue, 29 Apr 2003 05:52:52 +0000 (GMT)
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: anil@india.tejasnetworks.com
+Subject: Error in compiling 2.4.18 kernel for PPC
+Message-ID: <Pine.LNX.4.21.0304290542560.27871-100000@localhost.localdomain>
 MIME-Version: 1.0
-To: Steven Rothweiler <Stevenr@raritan.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Where to find zsrec.c ?
-References: <159C486347C8D3119B1D005004A4694001F6D557@olive.raritan.com>
-In-Reply-To: <159C486347C8D3119B1D005004A4694001F6D557@olive.raritan.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-zsrec source package include in montavista preview kit
-(previewkit-mvl2.1.0-encrypt.img).
-you can download it from montavista.
-http://www.mvista.com/previewkit/index.html
+  We are trying to compile kernel 2.4.18 for ppc(&mbxboard) with
+gcc(cross compiler version 2.95.2)
 
-Best Regards,
-Yuji Nishimura - Tokyo, Japan
+Compilation breaks with the following error.
+-----------------------------------------------
+In file included from /opt/hardhat/devkit/ppc/8xx/lib/gcc-lib/powerpc-hardhat-linux/2.95.2/../../../../powerpc-hardhat-linux/include/linux/mm.h:4,
+                 from /opt/hardhat/devkit/ppc/8xx/lib/gcc-lib/powerpc-hardhat-linux/2.95.2/../../../../powerpc-hardhat-linux/include/asm/pgtable.h:7,
+                 from head_8xx.S:33:
+/opt/hardhat/devkit/ppc/8xx/lib/gcc-lib/powerpc-hardhat-linux/2.95.2/../../../../powerpc-hardhat-linux/include/linux/sched.h:30: warning: `CLONE_VM' redefined
+ppc_defs.h:72: warning: this is the location of the previous definition
+/opt/hardhat/devkit/ppc/8xx/lib/gcc-lib/powerpc-hardhat-linux/2.95.2/../../../../powerpc-hardhat-linux/include/asm/ptrace.h: Assembler messages:
+/opt/hardhat/devkit/ppc/8xx/lib/gcc-lib/powerpc-hardhat-linux/2.95.2/../../../../powerpc-hardhat-linux/include/asm/ptrace.h:21: Error: Unrecognized opcode: `struct'
+/opt/hardhat/devkit/ppc/8xx/lib/gcc-lib/powerpc-hardhat-linux/2.95.2/../../../../powerpc-hardhat-linux/include/asm/ptrace.h:22: Error: Unrecognized opcode: `unsigned'
+/opt/hardhat/devkit/ppc/8xx/lib/gcc-lib/powerpc-hardhat-linux/2.95.2/../../../../powerpc-hardhat-linux/include/asm/ptrace.h:23: Error: Unrecognized opcode: `unsigned'
+/opt/hardhat/devkit/ppc/8xx/lib/gcc-lib/powerpc-hardhat-linux/2.95.2/../../../../powerpc-hardhat-linux/include/asm/ptrace.h:24: Error: Unrecognized opcode: `unsigned'
+/opt/hardhat/devkit/ppc/8xx/lib/gcc-lib/powerpc-hardhat-linux/2.95.2/../../../../powerpc-hardhat-linux/include/asm/ptrace.h:25: Error: Unrecognized opcode: `unsigned'
+-----------------------------------------------
 
-Steven Rothweiler wrote:
+What could be the problem?
 
->Hi,
->
->I don't have MontaVista software, yet nevertheless,
->I have a need for zsrec.c because I'm trying to
->port Linux to a Motorola Sandpoint III board.
->
->Can anyone point me to where I can download it?
->
->Thanks.
->--
->Steve
->
->
->
->
->
+Also, are there any patches to be applied to get this working for 860T?
+
+thanx in advance.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
