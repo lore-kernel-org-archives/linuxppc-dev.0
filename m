@@ -1,18 +1,19 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 7FA6767A6C
+Return-Path: <akonovalov@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (RT-soft-2.Moscow.itn.ru [80.240.96.70])
+	by ozlabs.org (Postfix) with SMTP id 9688667A6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Mar 2005 22:53:39 +1000 (EST)
-Message-ID: <424AA23D.3090207@anagramm.de>
-Date: Wed, 30 Mar 2005 14:57:33 +0200
-From: Clemens Koller <clemens.koller@anagramm.de>
+	Wed, 30 Mar 2005 23:46:18 +1000 (EST)
+Message-ID: <424AAF09.9050706@ru.mvista.com>
+Date: Wed, 30 Mar 2005 17:52:09 +0400
+From: Andrei Konovalov <akonovalov@ru.mvista.com>
 MIME-Version: 1.0
-To: James E Wilson <wilson@specifixinc.com>
-References: <42429E50.4080804@anagramm.de> <424A1936.9020309@specifixinc.com>
-In-Reply-To: <424A1936.9020309@specifixinc.com>
+To: Sylvain Munaut <tnt@246tNt.com>
+References: <424A5C89.2030504@bitsim.se> <424A7749.3040604@246tNt.com>
+In-Reply-To: <424A7749.3040604@246tNt.com>
 Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: gcc@gcc.gnu.org, linuxppc-embedded@ozlabs.org
-Subject: Re: gcc-3.3.3 ppc e500 - Abort of uic from Qt (solved)
+Cc: Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>,
+	Jakob Viketoft <jakob.viketoft@bitsim.se>
+Subject: Re: Platform bus/ppc sys model...
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,96 +24,66 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Just FYI x-posted to linuxppc-embedded
-
-Hello, James!
-
-Thank you for your hints...
-In the meanwhile as I experienced some other strange issues with my 
-gcc-3.3.3 toolchain, I concentrated to upgrade to the latest
-mainstream  gcc-3.4.3. It also failed during bootstrapping in
-the beginning, but after a 'two-iteration' bootstrap I was able
-to move up to 3.4.3:
-
-Here is my buildlog:
-	./gcc-3.4.3/configure
-		--enable-languages=c
-		--enable-shared
-		--enable-threads=posix
-		--enable-__cxa_atexit
-		--enable-nls=yes
-		--enable-clocale=gnu
-	make bootstrap
-failed with an occasional segfault but let's give it a second chance
-	make bootstrap
-which finished successful!
-	make install
-Ok, now I have a working gcc-3.4.3 at least - well, for c only!
-but let me now try a
-	make distclean
-	../gcc-3.4.3/configure
-		--enable-languages=c,c++,objc
-		--enable-shared
-		--enable-threads=posix
-		--enable-__cxa_atexit
-		--enable-nls=yes
-		--enable-clocale=gnu
-	make bootstrap
-and voila! successful!
-	make check
-	make install
-
-Okay, now, I am back to installing Qt... which also works fine.
-uic doesn't crash anymore.
-I am pretty sure that my initial toolchain (ELDK3.1 for ppc_8xx)
-was somehow broken.
-
-The next step is to get optimized code for the mpc8540 but that's low 
-priority now.
-
-Best greets,
-
--- 
-Clemens Koller
-_______________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Str. 45/1
-81379 Muenchen
-Germany
-
-http://www.anagramm.de
-Phone: +49-89-741518-50
-Fax: +49-89-741518-19
-
->> /[..]/qt-x11-free-3.3.4/bin/uic -L /[..]/qt-x11-free-3.3.4/plugins
->> -embed designercore [lots of images/*.png's]
->> -o qmake_image_collection.cpp
->> make: *** [qmake_image_collection.cpp] Aborted
->> make: *** Deleting file `qmake_image_collection.cpp'
+Sylvain Munaut wrote:
+> Hi,
 > 
 > 
-> uic is dumping core.  We can't really do anything about that, as that 
-> isn't part of gcc.  We need a testcase that we can use to reproduce the 
-> problem, or evidence of an actual gcc problem.
+>> Is there some good documentation about how to use the platform bus / ppc
+>> sys model or is it only possible to read and try to understand the code
+>> for the freescale devices?
 > 
-> If this is a gcc miscompilation problem, and you are compiling with a 
-> high optimization level like -O2, you could try using -O or -O0 instead.
 > 
-> You could try using a different gcc version.  Maybe gcc-3.3.4 has a bug 
-> that isn't present in other earlier or later gcc-3.3.x versions.
+> I'm not aware on documentation for the ppc_sys model in particular but
+> the code is pretty easy to understand/read.
 > 
-> You could try debugging uic to figure out why it is failing.
+> Basically you have a ???_devices.c that describe all the devices you can
+> find in a family of devices (by family I mean basically the same 
+> processors but with slightly different options/peripheral), then a 
+> ???_sys.c that describe each particular variant with the devices that 
+> are really implemented in that variant). Then somewhere in platform init 
+> code, you need to identify the ppc system  you're runngin on ( by a 
+> identify_ppc_sys_by_id(mfspr(SPRN_SVR)); for e.g. ).
 > 
->  >BTW: What are the most current versions for a toolchain which 
-> generates >working and efficient code for the MPC8540 (ppc32, e500, spe)?
+> Kumar, if I got it wrong, please correct ;)
+
+Do I understand correct that the ppc_sys model used by 85xx, 83xx, and 52xx
+SOCs is not so well suited for Virtex-II Pro (which Jakob and me bear in mind)?
+In case of Xilinx ???_devices.c could be the list of all the IPs supported in linux.
+But ???_sys.c has little sense as for any given combination of the particular
+Virtex-II Pro chip and the particular board the set of IPs (as well as the memory
+map, interrupt numbers, some hardware options (if ethernet has SGDMA or not))
+is not fixed. I.e. ideally we would need some kind of run time system configuration
+instead of compiled time system configuration implemented by ???_sys.c.
+
+Thanks,
+Andrei
+
+>> Specifically, how do you make the kernel aware of a certain device and
+>> what else is required? Do I have to "connect" the device and the driver
+>> or will the new model find this out automagically? I'm looking at 
+>> adding the usual serials, emacs etc...
 > 
-> There are people supporting the e500 target, so it should be working 
-> reasonably well in any gcc release.
 > 
-> There is a special branch maintained for the e500 by Red Hat, which is 
-> called gcc-3_4-e500-branch.  This can be checked out from our cvs 
-> repository.  I don't know details about this branch other than what is 
-> on the web site.
->     http://gcc.gnu.org/cvs.html#devbranches
-> and scroll down to the Architecture-specific section.
+> It's "automatic" by using matching of strings. The driver name has to be
+> the same as the device name. More specifically by matching the name 
+> field in struct platform_device with the name field in struct 
+> device_driver. The code for this magic is in drivers/base/platform.c
+> 
+> 
+>> Lastly, I suppose this will be the way all platforms should connect
+>> their boards with the devices "from now on", right?
+> 
+> 
+> It seems to be the trend yes.
+> The OCP and platform bus model have the same base idea/concept. The 
+> advantage of platform bus is that it's common in multiple arch, the rest 
+>  is mainly style. The ppc sys model is based on platform bus to ease 
+> working with SoC variants.
+> 
+> 
+> 
+>     Sylvain.
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
