@@ -1,24 +1,24 @@
-Message-ID: <3C45A17E.24FC453B@ardistech.com>
-Date: Wed, 16 Jan 2002 16:51:26 +0100
-From: "bart@ardistech.com" <bart@ardistech.com>
-Reply-To: bart@ardistech.com
+Message-ID: <01C19E7D.11F64F60.svacca@valcom.com>
+From: Steven Vacca <svacca@valcom.com>
+Reply-To: "svacca@valcom.com" <svacca@valcom.com>
+To: "LinuxEmbeddedMailList (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Lookin' for best fec.c ver. for linux 2.2.13, mpc860T, LXT971 PHY
+Date: Wed, 16 Jan 2002 11:00:54 -0500
 MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: MPC823e video dma priority?
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+I have RedHat linux mpc8xx-2.2.13 running on an mpc860T with
+the MII interfaced to an LXT971 PHY chip.
 
-I have the video output of the 823e switching to the value in the video
-background colour (VBCB) register when I have ethernet activity (on a EP
-RPX Lite board with HH linux-2.4.2_hhl20). The LAM bit I have set and the
-LAID and RAID are set to zero. Anybody knows why the SDMA apperently
-can't fill the FIFO?
+What would be the best version of fec.c to use in this case.
+Or, what would be the best approach to modifying a version
+of fec.c.
 
-Best regards,
-		Bart Thissen,	Ardis Technologies bv
+Thanks,
+
+Steven
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
