@@ -1,46 +1,63 @@
-Message-ID: <3C566357.7060307@esd-electronics.com>
-Date: Tue, 29 Jan 2002 09:54:47 +0100
-From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+Message-ID: <3C569C1A.38BBF76F@etx.ericsson.se>
+Date: Tue, 29 Jan 2002 13:56:58 +0100
+From: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
 MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: I2C support for 405GP
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Alex Zeffertt <ajz@cambridgebroadband.com>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>,
+	"mtd@infradead.org" <mtd@infradead.org>
+Subject: Re: JFFS2: strange output
+References: <3C5673A4.662CC3E6@cambridgebroadband.com>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+I think you used up all free blocks and now you basically is in a state where
+you have to wait for one to get free before anything can happen. If you just
+wait a while when things start to get slow then repeat the test do you get a
+few runs that are fast again?
 
-is anybody working on the I2C driver for the IBM 405GP ?
-The driver was in the 2.4.2 Kernel from Montavista, but it dissapeared
-from the devel tree a long time ago. I tried to take that old sources
-and merged the i2c stuff into a more recent 2.4 devel kernel. It did not work.
-
-This leads to some questions:
-
-1) Is anybody currently workig on this issue ?
-2) Does anybody have a local working i2c driver for the 405 ?
-3) Is there a special reason why the i2c support dissapeared ?
-
-I read sometime ago on the i2c project site, that they care about the 405
-i2c driver. Is this true ?
-
-Matthias
+Alex Zeffertt wrote:
+>
+> Hi all,
+>
+> I'm using a linux-2.4.4-2001-11-24 kernel on an MPC862 based board.
+>
+> I've been playing with JFFS2 and getting some strange results.
+>
+> First I erase /dev/mtd2 (a 6 MB FLASH partition).  Then I mount the same partition
+>
+> > mount -t jffs2 /dev/mtdblock2 /mnt
+>
+> Then I copy file1 (a 500K file) to /mnt and repeat the following over and over:
+>
+> > cp /mnt/file1 /mnt/file2; rm /mnt/file1; mv /mnt/file2 /mnt/file1
+>
+> After 10 of the above I get the following message in /var/log/messages:
+>
+> Dec 24 00:04:58 gonzo kernel: Waiting for chip to read, status = 4
+> Dec 24 00:05:40 gonzo last message repeated 2 times
+>
+> After 11 of the above I get the following message in /var/log/messages:
+>
+> Dec 24 00:05:55 gonzo kernel: Waiting for chip to read, status = 4
+> Dec 24 00:05:55 gonzo kernel: Waiting for chip to read, status = 7
+> Dec 24 00:06:26 gonzo last message repeated 2841 times
+>
+> By this point the copies are progressing painfully slowly.
+>
+> I repeated the same test with JFFS1 and had no problems.  I repeated the above command 100 times,
+> with no strange output in /var/log/messages, and with no slowing down.
+>
+> Has anybody had similar problems with JFFS2?
+>
+> Alex
+>
 
 --
--------------------------------------------------------------------------
-
-                             _/_/_/_/   Matthias Fuchs
-                            _/_/_/_/   Dipl.-Ing.
-                           _/_/_/_/   matthias.fuchs@esd-electronics.com
-
-       _/_/_/   _/_/_/_/_/_/_/      esd electronic system design gmbh
-     _/   _/  _/             _/    Vahrenwalder Str. 207
-    _/   _/    _/_/_/   _/   _/   D-30165 Hannover
-    _/             _/  _/   _/   Phone: +49-511-37298-0
-     _/_/_/_/_/_/_/   _/_/_/    Fax:   +49-511-37298-68
-
--------------------------------------------------------------------------
-
+Kenneth Johansson
+Ericsson Telecom                  Tel: +46 8 404 71 83
+Viderögatan 3                     Fax: +46 8 404 72 72
+164 80 Stockholm                  kenneth.johansson@etx.ericsson.se
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
