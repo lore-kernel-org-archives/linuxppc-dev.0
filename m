@@ -1,27 +1,28 @@
-Message-ID: <3D940B2C.3060105@motorola.com>
-Date: Fri, 27 Sep 2002 08:39:24 +0100
-From: John Traill <john.traill@motorola.com>
+Message-ID: <3D941568.5D7FEFBD@imc-berlin.de>
+Date: Fri, 27 Sep 2002 10:23:04 +0200
+From: Steven Scholz <steven.scholz@imc-berlin.de>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: bi_record location Error ?
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Status of MPC857T ???
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-The _ALIGN macro is defined as follows :-
+Hi there,
 
-#define _ALIGN(addr,size)        (((addr)+size-1)&(~(size-1)))
+is anyone using the MPC857T?
 
-However all uses of the ALIGN macro for bi_record location already add the size eg.
+IIRC there was a post to this list about problem with the MPC857.
 
-rec = (struct bi_record *)_ALIGN((ulong)__bss_start+(1<<20)-1,(1<<20));
+Actually the MPC857T should behave like the MPC855T, shouldn't it?
+So I could replace the 855T with the 857T in my designs without changing a
+single line, couldn't I?
 
-The use of _ALIGN for the bi_records is consistent but is there a reason for the double size offset or is it a simple typo ?
+Thanks a million!
 
---
+Cheers,
 
-Regards, John
-
+Steven
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
