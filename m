@@ -1,34 +1,45 @@
-Date: Fri, 22 Oct 1999 17:08:48 -0500 (CDT)
-From: Vinai <vroopcha@post.its.mcw.edu>
-To: Nathan Ingersoll <ningerso@d.umn.edu>
-cc: Sean Chitwood <darkmane@w-link.net>,
-        LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
+Date: Sat, 23 Oct 1999 00:34:21 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Sean Chitwood <darkmane@w-link.net>
+cc: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: Modern PowerPC Assembly?
-In-Reply-To: <Pine.SO4.4.02.9910221607580.23230-100000@ub.d.umn.edu>
-Message-ID: <Pine.SOL.3.96.991022170748.25137C-100000@post.its.mcw.edu>
+In-Reply-To: <Pine.LNX.4.10.9910221357090.676-100000@darkmane.w-link.net>
+Message-ID: <Pine.HPX.4.10.9910230020330.21757-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 22 Oct 1999, Nathan Ingersoll wrote:
 
-->The actual page for ordering is at
-->http://www.mot-sps.com/home/lit_ord.html
-->
-->Search around the site for order numbers for the various books they have
-->available.
 
-Also take a look at:
+On Fri, 22 Oct 1999, Sean Chitwood wrote:
 
-	http://www.mot.com/SPS/PowerPC/teksupport/teklibrary/
+> 
+> Can anyone recommend a book or website for PPC Assembly Programming? 
+> 
 
-There's a lot of documentation up there, and it may even save you a
-couple of books ;-)
+It depends on what you exactly mean and your level. For smart tricks look
+for the Compiler Writer's Guide somewhere on IBM's site. I've personnally
+learnt PPC assembly from reading the architecture specification and got
+some more useful tricks from the Compiler Writer's Guide.
 
-cheers
-vinai
+<Shameless plug> 
+
+For an example of a fairly large (but still comprehensible IMHO) assembly
+program, you may have a look at my em86 program on ftp://vlab1.iram.es.
+
+This is an emulator for x86 BIOSes which allows me to initialize my S3.
+It's quite heavily commented and the emulation of flags has been designed
+to make clever use of rlwimi and cntlzw instructions. OTOH the decoding
+of addressing modes is quite awful spaghetti (but this was faster than 
+indirect branches). Plus the mixture of little and big endian made it very
+funny to write...
+
+</Shameless plug>
+
+
+	Gabriel.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
