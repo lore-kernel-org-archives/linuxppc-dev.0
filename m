@@ -1,47 +1,51 @@
-Message-Id: <v03130305b2d231353f9c@[192.168.0.1]>
-In-Reply-To: <199901250114.SAA21010@shell.rmi.net>
-References: <v03130301b2d040f84476@[192.168.0.1]> from "Samuel Rydh" at
- Jan 24, 99 04:48:41 am
+Message-Id: <v03010d05b2d23dd9198b@[209.96.179.28]>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Date: Mon, 25 Jan 1999 16:12:52 +0100
-To: Tom Harrington <tph@rmi.net>
-From: Samuel Rydh <samuel@ibrium.se>
-Subject: Re: mac-on-linux project status
-Cc: linuxppc-dev@lists.linuxppc.org
+Date: Mon, 25 Jan 1999 10:32:00 -0500
+To: linuxppc-dev@lists.linuxppc.org
+From: "Kevin B. Hendricks" <kbhend@dogwood.tyler.wm.edu>
+Subject: Re: Help from Kernel Gurus needed!!!
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> 4. Status of Hardware Emulation
->>
->> The processor emulation is fairly complete, with some  exceptions:
->>
->>   - floating point instructions
->>   - 603 support
->>   - HIDx registers
->>
->> Some things in the MMU code needs to be fixed and tuned,  but the MMU
->> emulaton is in principle complete.
->
->Just out of curiosity, have you considered using PSIM?  It sounds like
->it's a pretty complete PowerPC emulator.
-><ftp://cambridge.cygnus.com/pub/psim/index.html>.
->
->
+Hi,
 
-The idea is to run things natively on the processor. For instance, all
-user level instructions are run at full speed. The only thing needed
-to be emulated are the priviliged instructions. Since priviliged
-instructions only are used by the operating system for such things
-as interrupt control, mac-on-linux runs at in principle 100% speed.
+Nothing like answering your own question.  I never saw my post make it back
+to me, but if anyone runs into the same problem here is my solution.  I
+figured this out from looking at the stack inside a signal handler with gdb
+so I may be wrong but this seems to work:
 
-The "emulation" of the MMU works in a similar manner. Mac-on-linux
-acts like a glue between the physical MMU and the MMU the mac-process
-expects there to be. When a segment register is loaded for instance,
-mac-on-linux simply translates the context number.
+>From inside a signal handler, to check on old signal masks or register
+contents right before the signal was delivered:
 
-/Samuel
+
+#include <asm/sigcontext.h>
+
+    /* get the value of r1 (the stack pointer) */
+    long * p;
+    struct sigcontext_struct * scp;
+    __asm__ ( "addi %0,1,0" : "=r" (p) : /* no inputs */ );
+    /* follow it back up the chain */
+    p = *p;
+    /* from here the sigcontext struct is 64 bytes away */
+    p = p + 16;
+    scp = (struct sigcontext_struct *)p;
+
+I hope this helps.  If it looks wrong to anyone out there please let me
+know ASAP.
+
+Thanks,
+
+Kevin
+
+
+----------------------------------------------------------
+Kevin B. Hendricks
+Associate Professor, Operations & Information Technology
+School of Business, College of William & Mary
+Williamsburg, VA 23187, kbhend@dogwood.tyler.wm.edu
+http://business.tyler.wm.edu
 
 
 
