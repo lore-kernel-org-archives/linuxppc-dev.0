@@ -1,49 +1,45 @@
-Subject: Re: Oops when inserting PCMCIA flash card (IDE)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: mlan@cpu.lu
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <E18nL1U-0007Ag-00@piglet.grunz.lu>
-References: <E18nL1U-0007Ag-00@piglet.grunz.lu>
-Content-Type: text/plain
-Message-Id: <1046108448.12533.204.camel@zion.wanadoo.fr>
 Mime-Version: 1.0
-Date: 24 Feb 2003 18:40:48 +0100
+Message-Id: <p05200f0bba801e39a47c@[10.8.16.89]>
+Date: Mon, 24 Feb 2003 13:45:13 -0600
+To: linuxppc-dev@lists.linuxppc.org
+From: Greg Allen <gallen@arlut.utexas.edu>
+Subject: Wake-on-LAN on PowerBook G4
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 2003-02-24 at 17:00, Michel Lanners wrote:
+I have a PowerBook G4, 1GHz. Wake-on-LAN works fine under MacOS X,
+but seems to be ignored on Linux.
 
-> The NIP in the oops points to ide_mm_inb(); it's trying to read from the
-> IDE ports. However, the port the new IDE interface got assinged seems to
-> be 0x100 (see r3: 0x107, which is port_base + IDE_STATUS_OFFSET). This
-> is of course outside of the range the PCMCIA controller has:
->
-> pooh:/etc/ppp# cat /proc/ioports
-> 00000000-007fffff : /pci@f2000000
->   00001000-00008fff : PCI CardBus #11
->   00009000-000090ff : PCI CardBus #11
-> 00802000-01001fff : /pci@f0000000
->   00802400-008024ff : ATI Technologies Inc Rage Mobility M3 AGP 2x
-> ff7fe000-ffffdfff : /pci@f4000000
->
-> So the problem seems to be the PCMCIA code gets the wrong ports for the
-> PCMCIA card?
+My guess is that this belongs in
+    drivers/macintosh/via-pmu.c, at about line 2070:
 
-No, the ranges above are for cardbus, not pcmcia. pcmcia usually
-assign resources outside of this range, and 0x100 looks like a
-correct port. I'm not sure what is wrong, I'd say ide_mm_inb is
-the wrong set of iops, it should be ide_inb instead (it's IO
-port access, not MMIO), now we have to figure out why ide_mm_inb
-got a assigned, I suspect ide_cs actually tried to re-use an IDE
-slot that was initialized for ide-pmac (which is mmio).
+   /* Tell PMU what events will wake us up */
+....
+   pmu_request(&req, NULL, 4, PMU_POWER_EVENTS, PMU_PWR_SET_WAKEUP_EVENTS,
+     0, PMU_PWR_WAKEUP_KEY |
+     (option_lid_wakeup ? PMU_PWR_WAKEUP_LID_OPEN : 0));
 
-There are various breakage with IDE in pre4, which is why I don't
-quite suggest using my bk tree for now, I'm waiting for Alan &
-Marcelo to sync all of Alan recent fixes before I really look into
-debugging these.
+Several other options for wakeup are listed in include/linux/pmu.h,
+but Wake-on-LAN is not one of them.
 
-Ben.
+I'd like to make this work and am willing to try, but need more info.
+Questions:
 
+Is this the right place, and there's just a PMU_PWR_WAKEUP_LAN bit missing?
+Does anyone know what that bit is? Perhaps Apple doesn't tell us.
+Is there a MacOSX program that dumps this PMU register, so I can
+twiddle the setting and see if a PMU bit changes?
+
+Any advice greatly appreciated. If there's a more appropriate list,
+please let me know.
+
+Thanks,
+-Greg
+--
+  Gregory E. Allen, MSEE Engineering Scientist
+  Applied Research Laboratories: The University of Texas at Austin
+  Please help find my missing daughter: http://FindSabrina.org/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
