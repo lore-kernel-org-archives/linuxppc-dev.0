@@ -1,38 +1,27 @@
-Date: Wed, 24 Nov 1999 08:32:59 +0100 (MET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Cort Dougan <cort@fsmlabs.com>
-cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org,
-        paulus@linuxcare.com
-Subject: Re: bootloader & head.S weirdness (patch)
-In-Reply-To: <19991123132116.A17270@hq.fsmlabs.com>
-Message-ID: <Pine.GSO.4.10.9911240831570.4319-100000@dandelion.sonytel.be>
+From: raphael.bossek@solutions4linux.de
+To: linuxppc-dev@lists.linuxppc.org
+Date: Wed, 24 Nov 1999 08:45:14 +0100
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-type: text/plain; charset=US-ASCII
+Subject: newbie: get ppc823fads working with linux 2.3.x kernel...
+Message-Id: <E11qX1y-0007yx-00@mx00.kundenserver.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 23 Nov 1999, Cort Dougan wrote:
-> } No we don't. The structure isn't that large, and the kernel is padded to a multiple
-> } of the page size anyway (the structure is after the kernel in memory).
-> } 
-> } Gr{oetje,eeting}s,
-> } P.S. How much Belgian Beer do I have to send you to convince you to put your
-> }      comments _below_ the text you quote, like all other people do? ;-)
-> 
-> If you send me Juliper (I think that was the one I had) just one will do :)
+Hi all,
 
-Jupiler (`Mannen weten waarom' / `Les hommes savent pourqoui' / `Real men know
-why')...
+i tried here to cross-compile the unstable linux kernel for the FADS 
+ppc823 evaluation board but i get ONLY errors while compiling... For 
+instance the serial.c source does not compile or other stuff too...
 
-Gr{oetje,eeting}s,
+Where will be CONFIG_FADS #defined ? The 8xx_io/fec.c and 
+mbxboot/mbxtty.c files check for that... I thing that the PowerPC 
+configuration menu miss this token...
 
-						Geert
+Will patches be collected somewhere so i can get reported bug fixed 
+within the kernel ?
 
---
-Geert Uytterhoeven ----------------- Sony Suprastructure Center Europe (SUPC-E)
-Geert.Uytterhoeven@sonycom.com ------------------- Sint-Stevens-Woluwestraat 55
-Phone +32-2-7248632 Fax +32-2-7262686 ---------------- B-1130 Brussels, Belgium
-
+thx
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
