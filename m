@@ -1,46 +1,47 @@
-To: Marc Leeman <marc.leeman@barco.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [PATCH] u-boot 1.1.1 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 10 May 2004 15:46:38 +0200."
-             <20040510134638.GW14935@smtp.barco.com>
-Date: Tue, 11 May 2004 21:24:53 +0200
-Message-Id: <20040511192458.48159C108D@atlas.denx.de>
+Message-ID: <EFB813091B18D511BD3600508B644F820A617EBB@tx14exm06.ftw.mot.com>
+From: Zajac Adam-AAZ004 <Adam.Zajac@motorola.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Question on the fs choice
+Date: Tue, 11 May 2004 18:20:06 -0500
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Marc,
+Hello,
 
-in message <20040510134638.GW14935@smtp.barco.com> you wrote:
->
-> oops:
->
->  -    CONFIG_READ_BYTE(PCMBRCR,val);
->  +    CONFIG_READ_BYTE(PCMBCR,val);
+We've built a custom board based on MPC8540 that runs Linux OS and utilizes
+compact flash card to store the kernel on a raw-data partition (read-only)
+and root file system on an Ext2 partition (read-write). As Ext2 is not a
+journaling FS, in case of any power failure the file system is not cleanly
+unmounted and the fscheck complains upon a system start-up.
+Also, sometimes the file system partition gets corrupted when we power-cycle
+the card instead of shutting the system down gracefully (the card is build
+to be "hot-swappable" so we test it on purpose).
 
-I told you before:
+I saw Wolfgang Denx's post discouraging any use of the CF cards for an
+embedded platform where write operations are performed under power-failure
+prone environment. Unfortunately, this is the reality we're facing on our
+card.
 
-This is not the right place for  U-Boot  patches.  Please  send  such
-stuff  to  the  U-Boot-Users  mailing  list.  And  please  follow the
-instructions in the README ("Submitting Patches").
+I'm seeking some help with selecting the file system that would survive
+power failure if the CF card didn't get damaged during a write cycle (we're
+gonna perform a thorough testing to assess the severity of that issue).
 
+I've seen some articles suggesting one of the journaling systems, like Ext3,
+XFS or ReiserFS.
 
-Do you think I will search 850k+ lines of code? And actually no  such
-line appears anywhere in the current U-Boot code.
+Has anybody successfully implemented any of these FS systems on an embedded
+platform equipped with a compact flash card working as a main storage
+medium?
 
-If you have something to report, please do  it  on  the  U-Boot-Users
-mailing list, and do it in a usable form.
+Any help would be greatly appreciated.
 
-Best regards,
+Adam Zajac
+Motorola Inc, Global Telecom Solutions Sector
+5555 N Beach St, Mailstop 8E, Fort Worth, TX 76137-2794
+Phone: (817) 245-7963
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Always leave room to add an explanation if it doesn't work out.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
