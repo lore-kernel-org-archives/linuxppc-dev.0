@@ -1,60 +1,102 @@
-Message-ID: <3B9F880D.3CE65C1A@mvista.com>
-Date: Wed, 12 Sep 2001 09:06:37 -0700
+Message-ID: <3B9FA99D.3C9C105C@mvista.com>
+Date: Wed, 12 Sep 2001 11:29:49 -0700
 From: Armin Kuster <akuster@mvista.com>
 MIME-Version: 1.0
-To: andrew may <acmay@acmay.homeip.net>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: another set of ppc405_enet changes
-References: <20010911202712.B8620@ecam.san.rr.com>
-Content-Type: text/plain; charset=us-ascii
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: 405 gpio driver 
+Content-Type: multipart/mixed;
+ boundary="------------5520F70D0E8B568A2539698B"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-andrew may wrote:
->
-> I wanted to limit this patch to be just a rework of the static var's but I
-> ended up changing more things. I will attempt a summary of the changes.
-> I did not compile/fix the stuff ifdef'd out by default.
->
-> I attached the output from some runs with nttcp before and after the changes.
-> It does not appear like there is any noticable change in performace from these
-> changes. "-u" is for UDP "-r" is Rx'd on the 405GP Tx'd by my x86 box, "-t" is
-> Tx'd by the 405GP Rx'd by the x86.
-> One thing to look into would be the diff between UDP tx packets to the
-> number rx'd on the other side. I don't know where the packets are being dropped
-> now.
->
-> Config.ini changed to CONFIG_PPC405_ENET to be tristate instead of just bool.
->
-> Change NUM_RX to 32 and NUM_TX to 8. Doesn't change performace noticablely.
-> Moved probe1 code into init function.
->
-> kfree of private struct on module unload or failure to register netdevice.
->
-> Used skb->len instead of tail-head in places.
->
-> For both tx/rx eob int's clear reg first then loop through, instead of loop
-> clear, goto top of loop again.
->
-> Moved tx stat counts into tx eob from hard_xmit. In tx_eob moved netif_wake
-> outside of loop.
->
-> In rx_eob wait untill end of function to refill slots instead of after
-> each packet. Also did skb_put instead of += tail and len. Put in check
-> for dev_alloc_skb failure but still no recovery when OOM.
->
+This is a multi-part message in MIME format.
+--------------5520F70D0E8B568A2539698B
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
 
-Andrew;
+Hello;
 
-This look very similar to a previous patch from last week. Provide a
-patch that represents addition work since then.  I have applied most of
-your previous patches.  Please be patient,  this does not happen over
-night.
+here is a patch that addes support for the gpio interface for the 405GP.
 
-regards,
 
-Armin
+arch/ppc/4xx_io/Config.in	<- new,config for 405 gpio
+arch/ppc/4xx_io/Makefile	<- new creates 4xx_io.o
+arch/ppc/4xx_io/ppc405_gpio.c	<- new
+arch/ppc/4xx_io/ppc405_gpio.h	<- new
+arch/ppc/Makefile		<- addes 4xx_io.o to build
+arch/ppc/config.in		<- addes "IBM 4xx core device" config menu
+
+patch created against 11 am PST linuxppc_2_4_devel kernel
+
+-- armin
+--------------5520F70D0E8B568A2539698B
+Content-Type: application/octet-stream;
+ name="4xx_io.patch.gz"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="4xx_io.patch.gz"
+
+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
+quPJKhIsI50sI9F7jf8DukG/uzIrAAA=
+--------------5520F70D0E8B568A2539698B--
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
