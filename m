@@ -1,49 +1,61 @@
-Message-ID: <3B4CAC0E.2D08B233@aps.anl.gov>
-Date: Wed, 11 Jul 2001 14:42:06 -0500
-From: Andrew Johnson <anj@aps.anl.gov>
-MIME-Version: 1.0
-To: "Justin (Gus) Hurwitz" <ghurwitz@dyndns.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
+Message-Id: <4.3.2.20010711154256.00c59320@falcon.si.com>
+Date: Wed, 11 Jul 2001 16:30:19 -0400
+To: linuxppc-embedded@lists.linuxppc.org
+From: Jerry Van Baren <vanbaren_gerald@si.com>
 Subject: Re: How fast should a bogomip be
-References: <Pine.LNX.3.95.1010711084748.21073D-100000@november.bhjjh.erols.com>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.3.95.1010711084748.21073D-100000@november.bhjjh.e
+ rols.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-"Justin (Gus) Hurwitz" wrote:
+Circumstantial evidence would indicate bogomips should go down by a
+factor of 14.  On July 9, 2001, Andrew <anj@aps.anl.gov> sent a message
+complaining about speed: he was running a 8240 (603e core) at 200MHz
+without caches and getting a bogomips rating of 9.59 where he expected
+133.  This matches my experience that caches are VERY important on
+modern processors.  He later confirmed that his problem was that caches
+were disabled.
+
+Main memory speed is  VERY slow compared to the 100MHz or 200MHz core
+clock rate.  Even with "PC133" or such SDRAM, which would lead you to
+believe that it is fast memory, you have to look at latency, not just
+the data clocking speed.  What you will find is that the initial
+latency causes a substantial delay, and then it will burst the data at
+bus speed (50MHz, 66MHz, or what have you).  Note also that the
+bursting ONLY takes place if it is cached, which REALLY kills your
+memory subsystem speed if you are running with caches disabled because
+EVERY memory access causes the multiple clock cycle latency.
+
+gvb
+
+
+At 08:58 AM 7/11/01 -0400, Justin (Gus) Hurwitz wrote:
+
+>First off- let me run for cover while saying that I know bogomips are
+>relatively arbitrary numbers.
 >
-> I've seen numbers that indicate on 6xx series processors bogomips is
-> usually about 2/3 the processor speed- so about 66.6 for a 100Mhz
-> processor. I hope this is accurate, because that's what I'm getting.
+>I've seen numbers that indicate on 6xx series processors bogomips is
+>usually about 2/3 the processor speed- so about 66.6 for a 100Mhz
+>processor. I hope this is accurate, because that's what I'm getting.
+>
+>But, about what should I expect for a 6xx (603e) 100Mhz processor running
+>without cache? I've been trying to disable cache so I can continue
+>development until the kernel supports propper allocation of non-cacheable
+>memory (on a 603e with broken memory controller). When I run the kernel
+>with code changes that *should* disable the cache the bootup process does
+>feel marginally slower, and bogomips goes down a whopping .64 (from 66.56
+>to 65.92). It then crashes with a segfault in kupdated (when in _wake_up).
+>And I've been scratching my head trying to figure out a) whether the
+>caches are actually disabled b) what causes that segfault, and c) how the
+>two are related.
+>
+>Any feedback it appreciated,
+>--Gus
+>
+>
 
-When running with cache that sounds right from my very limited experience.
-
-> But, about what should I expect for a 6xx (603e) 100Mhz processor running
-> without cache? I've been trying to disable cache so I can continue
-> development until the kernel supports propper allocation of non-cacheable
-> memory (on a 603e with broken memory controller). When I run the kernel
-> with code changes that *should* disable the cache the bootup process does
-> feel marginally slower, and bogomips goes down a whopping .64 (from 66.56
-> to 65.92). It then crashes with a segfault in kupdated (when in _wake_up).
-> And I've been scratching my head trying to figure out a) whether the
-> caches are actually disabled b) what causes that segfault, and c) how the
-> two are related.
-
-I can't help with the crash except to suggest that your patch isn't doing
-what you think, and it certainly isn't disabling your cache.  Could the
-segfault be related to the the broken memory controller?
-
-I was porting to a 200 MHz MPC8240 (ppc603ek?) board and initially had the
-wrong code in head.S, such that the cache was not being enabled.  The
-BogoMIPS rating was then about 9.5; with the cache properly enabled I now
-get 133.2 (~200*2/3).  I suspect that the difference is a measurement of
-the relative speed of the cache RAM compared to the main RAM - a factor of
-13, which certainly seems in the right ballpark.
-
-- Andrew
---
-The world is such a cheerful place when viewed from upside-down
-It makes a rise of every fall, a smile of every frown
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
