@@ -1,25 +1,27 @@
-Subject: MPC8270 PCI
-From: Jaap-Jan Boor <jjboor@aimsys.nl>
+Message-ID: <10318-29667@sneakemail.com>
+Date: Wed, 25 Feb 2004 19:54:22 -0800
+From: "Stephen Williams" <612dlag102@sneakemail.com>
+MIME-Version: 1.0
 To: linuxppc-embedded@lists.linuxppc.org
-Content-Type: text/plain
-Message-Id: <1077730574.9261.5.camel@linpc003.aimsys.nl>
-Mime-Version: 1.0
-Date: Wed, 25 Feb 2004 18:36:14 +0100
+Subject: Activating SystemACE support
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
 
-I've a short question regarding 82xx PCI (like 8266/8270).
-As far as I understand the manual, you should always be
-able to issue config cycles (config read) on the bus,
-if the 60x bus is in PCI mode. Is this true? I've quite
-some problems with this, and want to blame the hardware...
 
-thanks for any info,
+I have a board that, like the Xilinx ml300 board, has a SystemACE
+chip on it. I would like to activate the existing SystemACE drivers
+support in the kernel, but it is not clear to me how I pass to the
+drivers the base address and IRQ that has been assigned. Does anyone
+has any suggestions?
 
-Jaap-Jan
-AimSys b.v.
+- --
+Steve Williams                "The woods are lovely, dark and deep.
+steve at XXXXXXXXXX           But I have promises to keep,
+http://www.XXXXXXXXXX         and lines to code before I sleep,
+http://www.picturel.com       And lines to code before I sleep."
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
