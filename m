@@ -1,81 +1,35 @@
-Subject: [PATCH] make platform_init() weak for 8xx
-From: Andreas Oberritter <obi@saftware.de>
-To: Tom Rini <trini@kernel.crashing.org>
+Date: Mon, 19 Jul 2004 09:32:03 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Andreas Oberritter <obi@saftware.de>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Content-Type: multipart/mixed; boundary="=-b8NPSJsBFC4Vg+gq4g8T"
-Message-Id: <1090253615.1415.24.camel@shiva.saftware.de>
+Subject: Re: [PATCH] make platform_init() weak for 8xx
+Message-ID: <20040719163203.GA6813@smtp.west.cox.net>
+References: <1090253615.1415.24.camel@shiva.saftware.de>
 Mime-Version: 1.0
-Date: Mon, 19 Jul 2004 18:13:35 +0200
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1090253615.1415.24.camel@shiva.saftware.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---=-b8NPSJsBFC4Vg+gq4g8T
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+On Mon, Jul 19, 2004 at 06:13:35PM +0200, Andreas Oberritter wrote:
 
-Hi Tom,
+> Hi Tom,
+>
+> this patch renames platform_init to m8xx_init in m8xx_setup.c and adds
+> new weak platform_init, which can be overridden by boards to allow them
+> to e.g. register platform_devices like redwood5.c does for 40x.
 
-this patch renames platform_init to m8xx_init in m8xx_setup.c and adds
-new weak platform_init, which can be overridden by boards to allow them
-to e.g. register platform_devices like redwood5.c does for 40x.
+First, I don't see the redwood5 example you're talking about.
+Second, this takes us in the direction of 82xx.  Until the 82xx
+abstractions get flushed out a bit more, I remain unconvinced that
+they're really the right way to go (perhaps hooking the other direction
+would work better, e.g. platform_init() calls board_init(), with a weak
+version provided, and some functions forced to be provided by board.c,
+such as m8xx_map_io).
 
-Signed-off-by: Andreas Oberritter <obi@saftware.de>
-
---=-b8NPSJsBFC4Vg+gq4g8T
-Content-Disposition: attachment; filename=m8xx_setup.diff
-Content-Type: text/x-patch; name=m8xx_setup.diff; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-
-===== arch/ppc/syslib/m8xx_setup.c 1.29 vs edited =====
---- 1.29/arch/ppc/syslib/m8xx_setup.c	2004-05-28 00:37:33 +02:00
-+++ edited/arch/ppc/syslib/m8xx_setup.c	2004-07-19 17:54:03 +02:00
-@@ -47,6 +47,7 @@
- #include <asm/xmon.h>
-
- #include "ppc8xx_pic.h"
-+#include "m8xx_setup.h"
-
- static int m8xx_set_rtc_time(unsigned long time);
- static unsigned long m8xx_get_rtc_time(void);
-@@ -363,7 +364,7 @@
- }
-
- void __init
--platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
-+m8xx_init(unsigned long r3, unsigned long r4, unsigned long r5,
- 		unsigned long r6, unsigned long r7)
- {
- 	parse_bootinfo(find_bootinfo());
-@@ -413,3 +414,11 @@
- 	m8xx_ide_init();
- #endif
- }
-+
-+void __init __attribute__ ((weak))
-+platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
-+		unsigned long r6, unsigned long r7)
-+{
-+	m8xx_init(r3, r4, r5, r6, r7);
-+}
-+
---- /dev/null	2004-07-17 13:36:50.945552208 +0200
-+++ edited/arch/ppc/syslib/m8xx_setup.h	2004-07-19 17:15:37.854994064 +0200
-@@ -0,0 +1,12 @@
-+/*
-+ * arch/ppc/syslib/m8xx_setup.h
-+ */
-+
-+#ifndef _PPC_SYSLIB_M8XX_SETUP_H
-+#define _PPC_SYSLIB_M8XX_SETUP_H
-+
-+void m8xx_init(unsigned long r3, unsigned long r4, unsigned long r5,
-+		unsigned long r6, unsigned long r7);
-+void m8xx_setup_arch(void);
-+
-+#endif /* _PPC_SYSLIB_M8XX_SETUP_H */
-
---=-b8NPSJsBFC4Vg+gq4g8T--
-
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
