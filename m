@@ -1,9 +1,10 @@
-Message-ID: <C7FFFEA58B43D311920D0004ACE5333F10E4F558@amer25.avnet.com>
-From: "Kerl, John" <John.Kerl@Avnet.com>
-To: "'peter.grubmaier@chello.at'" <peter.grubmaier@chello.at>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: MPC852 suppor
-Date: Wed, 28 Jan 2004 16:27:22 -0700
+Return-Path: <bouncefilter+linuxppc-embedded=wd=denx.de@lists.linuxppc.org>
+Message-ID: <0B0A39652BB0D411BCCF00508B9512EC0E5962B3@tx14exm05.ftw.mot.com>
+From: Yu Bo-BOYU1 <Bo.Yu@motorola.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: How to pass "-Wa,e500" to gcc when building a bootstrap compiler
+	?
+Date: Wed, 28 Jan 2004 19:44:02 -0600
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -11,25 +12,18 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-If you mean the FEC, then yes, this has been supported
-for some time.
+All,
 
------Original Message-----
-From: owner-linuxppc-embedded@lists.linuxppc.org
-[mailto:owner-linuxppc-embedded@lists.linuxppc.org]
-Sent: Wednesday, January 28, 2004 4:26 PM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: MPC852 suppor
+I am trying to build a cross-compiler tool chain for mpc8540 - powerquicc3.
+But I wish to build option '-Wa,e500' into bootstrap gcc so that I do not
+worry
+it later when rebuilding glibc etc.
 
+Is there any trick to make gcc have a default option like '-Wa,e500' ?
 
+Thanks.
 
-Hi,
-I just wanted to ask if somebody
-knows wether MPC852 (especially
-its 10/100Mbit ethernet IF )
-is already supported in 2.4 or 2.6 kernel
-Thanks in advance
-  Peter
+Bo Yu
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
