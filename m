@@ -1,62 +1,60 @@
-Date: Mon, 18 Feb 2002 09:31:21 -0800 (PST)
-From: "David A. Gatwood" <dgatwood@gatwood.net>
-To: Giuliano Pochini <pochini@shiny.it>
-Cc: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: RE: Final question: best wasy to move /, /usr, /home, etc?
-In-Reply-To: <XFMail.20020218094253.pochini@shiny.it>
-Message-ID: <Pine.LNX.3.96.1020218092106.6585B-100000@gatwood.net>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	"Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+Subject: Re: radeonfb.c flakiness
+Date: Mon, 18 Feb 2002 15:55:53 -0500
+Cc: <linuxppc-dev@lists.linuxppc.org>,
+	<yellowdog-devel@lists.yellowdoglinux.com>
+References: <4BAF45B8-23D3-11D6-B713-0003938E434C@ivey.uwo.ca> <20020217215121.3523@smtp.wanadoo.fr>
+In-Reply-To: <20020217215121.3523@smtp.wanadoo.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <20020218205555.OVAC2625.tomts5-srv.bellnexxia.net@there>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 18 Feb 2002, Giuliano Pochini wrote:
-
-> > I am finally at the point I want to give up my old external scsi hard
-> > drives.  Unfrotunately, my current /, /usr, /home, etc all exist on scsi
-> > drives.
-> >
-> > I recently purchased a 60 gig hard drive (ide) and have now installed it.
+Hi Ben and Ani,
 >
-> IDE ?!?  Bleah !!
+> Try removing the bit of code in my radeonfb.c that blast various
+> registers like MC_FB_LOCATION within a #ifdef CONFIG_ALL_PPC
+> in radeon_pci_register().
+>
+> I suspect the sequence for changing those isn't good, the chip may
+> need some additional reset or delays.
 
-Yeah.  Be forewarned.  Some IDE drives over 34 gigs, particularly when
-attached to ATA cards, behave badly under Linux, causing horrible file
-system corruption caused by high block numbers being stupidly remapped
-over the top of lower block numbers.
+Tried that no help.  I have now figured out that the only way to make the
+DFP startup properly is to zap the parameter ram (one chime's worth) and
+then it will actually startup.  If I don't do that and I have been running
+MacOSX then no matter what I do or try it does right after the yaboot
+prompt I see a flash and then everything stays blank.
 
-After adding an hdg=x,y,z line, it worked until I shut the machine off, at
-which point it said that the file systems that were above the 34 gig limit
-weren't there.  So it had failed again.  Several reboots later, it
-magically started working.
+Perhaps Mac OSX driver is writing something to nvram or is moving the
+memory mapping for the card's interfaces.  Either way without that single
+pram zap, the screen simply goes dead and stays dead.
 
-Long story short, in its power-on state, the Maxtor drive gave incorrect
-fictitious geometry, indicating that it was a 2 gig drive.  The Linux
-kernel code was ignoring the boot arguments and was proceeding to
-overwrite them with data from an inquiry on the drive.  The problem was
-that since the drive reported itself as having 4092 cylinders instead of
-the 16,653 cylinders that large drives are -supposed- to report as their
-fictitious BIOS geometry, the Linux kernel didn't realize that the
-geometry was fictitious, and refused to allow the LBA size information to
-override the drive-returned geometry.
+I am willing to try and debug this further by dumping addesses and things
+from the device tree under both Linux and MacOSX to try and figure out
+what has changed, if either of you think it would help.
 
-It took me a couple of days to debug the IDE code in the kernel to create
-a workaround.  This is probably the result of a firmware bug in my Maxtor
-drive, but if people run into problems where partitions above the 34 gig
-limit will fail to work correctly for the first several boots but then
-magically start working, I have a possible patch against the 2.2.21
-prepatch kernels (should work against any of them, as the code hasn't
-changed much).
+Just let me know what you want me to try.
 
+Thanks,
 
-Later,
-David
+Kevin
 
----------------------------------------------------------------------
-                    Check out my weekly web comic:
-                     http://www.techmagazine.org
-
+> >I can't understnad why the screen simply goes blank immediately after
+> >the kernel starts to boot.
+> >
+> >Ben, you mentioned something about playig with the memory mapping of
+> > the card.  I see code that does something along those lines in the
+> > radeonfb.c for screens that have dual heads.
+> >
+> >Do you have any ideas I should test to see if they impact the random
+> >startup blank screen issue (btw the kernel boots fine and I can blindly
+> >login and shutdown).  Changing VTs from 1 to 2 or 3 has no impact.
+> >
+> >Ideas welcome.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
