@@ -1,30 +1,27 @@
-From: Joe Green <jgreen@mvista.com>
-To: Ravindranath <krnsoft@yahoo.com>,
+Message-Id: <5.1.0.14.0.20010716084535.00a06020@pop.gmx.de>
+Date: Mon, 16 Jul 2001 08:48:52 +0800
+To: g.ramakrishna@exgate.tek.com,
 	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: cdk 2.0
-Date: Sun, 15 Jul 2001 13:13:42 -0700
-Content-Type: text/plain
-References: <20010714203206.68975.qmail@web11605.mail.yahoo.com>
-In-Reply-To: <20010714203206.68975.qmail@web11605.mail.yahoo.com>
-MIME-Version: 1.0
-Message-Id: <01071513155800.05068@minotaur.mvista.com>
+From: Michael Habermann <MHabermann@gmx.de>
+Subject: Re: Could not find mpc8xx-2.2.13.tgz 
+In-Reply-To: <301A812E6528D511A8F70008C71E578616C854@AP-BANG-M02>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Ravindranath wrote:
-> I just moved to cdk 2.0(Journey man edition)..
-> I am not able to find zsrec utility in cdk2.0..
-> Do I have to any specific package..
+At 02:50 AM 7/15/2001 -0700, g.ramakrishna@exgate.tek.com wrote:
 
-You need the hhl-host-zsrec package.  There are versions in these
-directories:
+>Can anyone please gimme the pointers where I can download
+>"mpc8xx-2.2.13.tgz" and related patches for ADS board.
+>I tried at <ftp://ftp.ppc.kernel.org/pub/linuxppc/embedded/> which does not
+>exist currently.
 
-	ftp://ftp.mvista.com/pub/Journeyman/cd2/ppc_8xx/tools/redhat62/
-	ftp://ftp.mvista.com/pub/Journeyman/cd2/ppc_8xx/tools/redhat70/
+I don't know if you find the specified kernel there, but you can download
+embedded PPC kernels from
+ftp.denx.de and in the free Hardhat Linux Journeyman edition at
+www.mvista.com and ftp.mvista.com.
 
---
-Joe Green <jgreen@mvista.com>
-MontaVista Software, Inc.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
