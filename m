@@ -1,73 +1,40 @@
-Message-ID: <3439AB3A99ECD5409F3A52ACF814744D158D87@norcom2.norcom.net>
-From: Lokesh Kumar <lokesh.kumar@wrx-us.com>
-To: "'Tom Rini'" <trini@kernel.crashing.org>,
-	Lokesh Kumar <lokesh.kumar@wrx-us.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: mpc8xx pcmcia cardmgr problem
-Date: Thu, 18 Sep 2003 08:42:47 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: "He Xudong" <xdhe@utstar.com>
+Cc: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: uart problem 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 17 Sep 2003 09:47:37 +0800."
+             <9733CD15FD6A2C418132CE83BCDB16F60155CE25@hzmail1.cn.utstar.com>
+Date: Thu, 18 Sep 2003 15:26:39 +0200
+Message-Id: <20030918132644.19055C59E4@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thanks Tom,
+Hello,
 
-I did search on google but found no patch againt airo.c for 2.4.18. Anything
-you or anybody else aware of?
-
-Thanks for help.
-
-Lokesh
-
------Original Message-----
-From: Tom Rini [mailto:trini@kernel.crashing.org]
-Sent: Wednesday, September 17, 2003 3:56 PM
-To: Lokesh Kumar
-Cc: 'linuxppc-embedded@lists.linuxppc.org'
-Subject: Re: mpc8xx pcmcia cardmgr problem
-
-
-On Wed, Sep 17, 2003 at 03:47:59PM -0400, Lokesh Kumar wrote:
+in message <9733CD15FD6A2C418132CE83BCDB16F60155CE25@hzmail1.cn.utstar.com> you wrote:
 >
-> Hi Guys,
->
-> I am trying to bring pcmcia up on my mpc855 based board. I am using
-> kernel-2.4.18 and have pcmcia extensions.
->
-> I am making pcmcia as module, so  I can insmod pcmcia_core and m8xx_pcmcia
-> and ds. When I insert the card and start cardmgr, this is what I get.
->
->
-> Starting PCMCIA services: cardmgr[79]: watching 2 sockets
-> done.
-> cardmgr[80]: starting, version is 3.2.5
-> cardmgr[80]: socket 1: 350 Series Wireless LAN Adapter
-> # insmod: insmod: char-major-4: no module by that name found
-> cardmgr[80]: executing: 'modprobe airo'
-> cardmgr[80]: + Using
-/lib/modules/2.4.18/kernel/drivers/net/wireless/airo.o
-> cardmgr[80]: executing: 'modprobe airo_cs '
-> cardmgr[80]: + Using
-> /lib/modules/2.4.18/kernel/drivers/net/wireless/airo_cs.o
-> m8xx_pcmcia: voltage_set slot=B, vcc=5, vpp=5
->  <7>m8xx_pcmcia: Service(1, 4, 0xc1e9180c)
-> m8xx_pcmcia: WRX voltage_set slot=B, vcc=5, vpp=5
->  <7>m8xx_pcmcia: Service(1, 8, 0xc1e91870)
-> Kernel panic: request_irq
->  <0>Rebooting in 180 seconds..
->
-> What am I missing here?? why is it trying to insmod char-major-4?? and why
-> does the kernel panic??
+> 	I'm using the eldk linux-2.4.4 kernel.
+> 	I use the 2 SMC and 3 SCC (SCC2,SCC3,SCC4) in 8260_io/uart.c.
+> change the rs_table,io configuration,and the brg.
+...
+> I have use the oscillograph to see if the signal have reach the 8260,
+> it is.and so does my SMC2.(the SCC4 even have no interrupt).whould you
+> please give me some advice about it,thx a lot.
 
-The kernel panics because in 2.4.18 a call to request_irq() would simply
-panic.  If you hit google, you can probably find a patch to airo.c to
-make it use request_8xxirq() and 'work', or if you update to 2.4.21 (or
-was it 2.4.20, I forget now), this is not an issue.
+Please check out our 2.4.20 kernel (module linuxppc_2_4_devel on  our
+CVS server). We fixed a couple of issues recently.
+
+Best regards,
+
+Wolfgang Denk
 
 --
-Tom Rini
-http://gate.crashing.org/~trini/
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+No more blah, blah, blah!
+	-- Kirk, "Miri", stardate 2713.6
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
