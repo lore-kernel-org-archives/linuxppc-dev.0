@@ -1,45 +1,77 @@
-Message-ID: <39A54F24.1060175D@relog.ch>
-Date: Thu, 24 Aug 2000 18:36:52 +0200
-From: Michel Dänzer <daenzer@relog.ch>
-Reply-To: daenzerm@student.ethz.ch
-MIME-Version: 1.0
-To: Iain Sandoe <iain@sandoe.co.uk>
-CC: Henry Worth <haworth@ncal.verio.com>, linuxppc-dev@lists.linuxppc.org
+Message-Id: <200008241758.SAA30244@hyperion.valhalla.net>
+Date: Thu, 24 Aug 2000 18:58:47 +0100
 Subject: Re: [RFC] DMAsound 2.4.0-tx => 2.2.17 back-port.
-References: <200008241630.RAA14789@hyperion.valhalla.net>
-Content-Type: text/plain; charset=iso-8859-1
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+CC: "Linux/PPC Development" <linuxppc-dev@lists.linuxppc.org>,
+        "Linux/m68k" <linux-m68k@lists.linux-m68k.org>,
+        "Linux/PPC on APUS" <linux-apus-devel@lists.sourceforge.net>
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Iain Sandoe wrote:
+Thanks Geert,
 
-> > Where is your backport (or rather patches against 2.4.0-testx) available?
+On Thu, Aug 24, 2000, Geert Uytterhoeven wrote:
+> On Mon, 7 Aug 2000, Iain Sandoe wrote:
+[...]
+>>
+>> 1. the look-up tables have been moved to the lower levels.
 >
-> The backport is on  http://www.drfruitcake.com/linux/linuxppc.html
+> Their definitions have to be static, else you get duplicate symbols when
+> compiling a generic kernel that includes more than one low-level driver.
+> Perhaps we better compile the needed tables separately and link them (to each
+> low-level modules for a modular kernel, else to dmasound.o)?
+
+OK. I think this (static issue) was a slip up (but I'm in favour of separate
+files anyway).  As it stands, if we had all the options compiled in with
+static tables the code size would grow again.
+
+>> 2. The conditionalisation on HAS_RECORD has been made a run-time decision
 >
-> I have not done a separate 2.4.0-test x patch.
+> You don't need `MACHINE.can_record', just check the `MACHINE.record' function
+> pointer.
 
-Sorry, I was referring to Henry Worth mentioning changes to the 2.4 code.
+OK, this saves a few bytes.
 
+>> This means, AFAICT that it will no longer be necessary to have different
+>> versions of dmasound_core.o for different machines (in the same arch).
+>
+> But you can no longer disable the code for recording for a machine that
+> doesn't need it...
 
-> I'm mostly working under 2.2.17 because of the flakiness of 2.4.0 (but, by
-> using the same code base, with the idea that any improvements will move
-> straight to 2.4.0)>
+Well, this is a choice.  It was done in response to the comment that a
+distro might wish to include all machine options.  This could not be done if
+dmasound.o needs to be re-compiled.  Perhaps we need a vote :-)
 
-BTW AFAIK Linus considers this coding style bloat. I also think that if the
-new stuff would only be in 2.4, more people would probably use/test it and get
-it more stable.
+>   - `MACHINE.can_byteswap' is never used, so remove it.
 
+Sorry, this is work in progress - and doesn't have a purpose in the released
+patch.
 
-Two cents more,
+>   - Is it OK to use `AFMT_S16_LE' as startup mode for /dev/dsp? WAV-files can
+>     be 8-bit as well, and always have a header so you can't just cat them to
+>     /dev/dsp without static in the beginning anyway.
 
+well, I don't know what's best here.  Most (if not all) of the files have
+headers and/or chunks so there's no real 'right' way - apart from using a
+proper sound playing app.
 
-Michel
+The idea was that .wav is now the most common format and that this does at
+least play without wrecking your speakers if you are daft enough to do cat
+>/dev/dsp
 
+>   - What's the purpose of `dmasound.catch_rad'?
 
---
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and the DRI project
+Sorry, more work in progress...
+
+> And finally, my patch :-) DISCLAIMER: I don't claim that it works, not even
+> that it compiles...
+
+Thanks, I'll be back on this over the weekend (with luck :-)
+
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
