@@ -1,48 +1,35 @@
-Date: Thu, 31 Aug 2000 15:35:24 -0700 (PDT)
-From: Matt Brubeck <mbrubeck@hmc.edu>
-To: johnathan spectre <jspectre@lords.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: which kernel...?
-In-Reply-To: <B5D45095.8AC7%jspectre@lords.com>
-Message-ID: <Pine.GSO.4.21.0008311518010.9104-100000@turing.cs.hmc.edu>
+Date: 31 Aug 2000 17:41:14 -0500 
+Subject: Re: asm in OF? YES!
+From: "Bruce Anderson" <brucea@spacestar.net>
+To: "Gabriel Paubert" <paubert@iram.es>
+Cc: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <B5D4493E-53821@192.168.2.21>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 31 Aug 2000, johnathan spectre wrote:
-
-> i rsync'ed down pmac-benh because someone on linuxppc-user told me that was
-> what i needed to support audio on my pismo. it works great (thanks ben) as
-> far as i can tell.. but there are also 4 other kernels (not to mention
-> xfree86 which i haven't tried yet...) to be had.
+On Thu, Aug 31, 2000 2:52 AM, Gabriel Paubert <mailto:paubert@iram.es>
+wrote:
 >
-> can someone explain the differences between them to me? will any of the
-> others run on my pismo? is any of the others "better" or "worse" (no offense
-> to all the coders involved)? should i just be quiet and happy with ben's
-> latest and do all of them plan on merging at some point and then folding
-> their code into what's available at www.kernel.org?
+>You've just got to love OF portability across machines and architecture
+>independance :-( Add to this the fact that I have somewhere a FirmWorks
+>document which claims that on PPC the top of the stack is always in r28,
+>r20/r21 are scratch registers. r31 is still the stack pointer (and r30 the
+>return stack AFAIR).
+>
+>
 
-Ben H's rsync tree and precompiled kernels contain very recent work on new
-PowerMac hardware support (AirPort, Pismo audio, Rage 128 video). If you
-have a recent Apple machine (iBook or later), Ben's kernels may give you
-hardware support that's not yet in the other development trees.
+Your asumption about OF portability is in error. Apple does not
+use FirmWorks OF code.  Apple created their own "OF" version that
+resembles FirmWorks OF vocabulary.
 
-Once they are tested, Ben's changes are regularly merged into Paul's tree,
-which is the main development tree for the PowerMac platform. If you don't
-need the very latest changes from Ben's kernels, then Paul's rsync tree is
-a good place to go.
 
-Cort's Bitkeeper repository is a development tree for the PowerPC platform
-(not just Macs and Mac clones). Patches are regularly shared back and
-forth between the bk and rsync trees. They are also merged with the
-mainstream (kernel.org) sources, but with less regularity.
 
-For your hardware (Pismo), I'd recommend sticking with the rsync kernels.
-Use the benh trees if you want to use (and test) the latest experimental
-features, or Paul's tree if you'd rather wait for those changes to be
-tested and merged.
+" Stamp out root logins .  .  .  . su "   --Bruce Anderson
+ This message was created and sent using Cyberdog 2.0, MacOS 8.6,
+ awk, find, sed, sendmail, sh, and NetBSD a free Multi-Platform OS.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
