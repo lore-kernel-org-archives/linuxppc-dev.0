@@ -1,113 +1,50 @@
-Message-ID: <39529455.811FC8B1@mvista.com>
-Date: Thu, 22 Jun 2000 15:33:57 -0700
-From: Frank Rowand <frank_rowand@mvista.com>
-Reply-To: frowand@mvista.com
+Date: Fri, 23 Jun 2000 00:25:54 -0600 (MDT)
+From: Jason Gunthorpe <jgg@ualberta.ca>
+To: Frank Smith <smith@amirix.com>
+cc: emdebian-discuss@lists.sourceforge.net, debian-devel@lists.debian.org,
+        linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Embedded Debian Cross Development Environments Available
+In-Reply-To: <00Jun22.220240adt.7304@dragon.appliedmicro.ns.ca>
+Message-ID: <Pine.LNX.3.96.1000623001547.11519E-100000@wakko.deltatee.com>
 MIME-Version: 1.0
-To: Lucinda Schafer <lucsch@adaptivemicro.com>
-CC: frowand@mvista.com, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Software Emulation Panic,
-References: <A109131318C4D1119AC20060088DECE330F4C1@amwmail.adaptivemicro.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Lucinda Schafer wrote:
->
-> The results of the backtrace are as follows :
->
->  C0016204  put_dirty_page
->  C0016A98  handle_mm_fault
->  C0009098  do_page_fault
->  C0002544  _switch
->  018A4490  ???
->  300E88A4  ???
->  0180C6D4  ???
->  0180C5D8  ???
->  01803250  ???
->  01802B64  ???
->  01801D80  ???
->
-> Which order are these called? I haven't been able to link all four together,
-> although I do know that  do_page_fault calls handle_mm_fault, the scheduler
-> calls _switch,  execve calls put_dirty_page via load_elf_binary. This all
-> happens during the rc.sysinit.
+On Thu, 22 Jun 2000, Frank Smith wrote:
 
-You got the order right.  According to this backtrace, _switch() called do_page_fault()
-which called handle_mm_fault() which called put_dirty_page().  You left out the top of
-the trace though, C0E87DF0.  Is that a valid address (it often isn't)?
+> I'm pleased to announce the availability of the first *test* release of
+> Embedded Debian Cross Development Environments. Here are the specs:
 
-Some more clues:
+This is very interesting, I hope to have time to look at it myself later..
+[I have ARM, m68k, and ppc boards to try] I found it a *HUGE* pain to get
+a proper GCC/binutils/glibc/newlib cross compile setup, and I've done it 3
+times now :<
 
-  The MSR is 00001000.  Does this mean instruction translation is turned off (I don't recall
-  what processor this is on, so I can't look it up)?  If so, then  NIP: 00001FFC would be
-  the last instruction of Trap_1f.  This is probably not a valid instruction, thus the
-  software emulation panic.  In a kernel I have laying around (2.3.39 based, built for the
-  IBN 405GP processor) the instruction at the place is:
+You might also want to provide newlib versions of everything, it would be
+really cool if you could share newlib/glibc gcc+binutils somehow.
 
-      0xc0001ffc <Trap_1F+252>:       .long 0x0
+For instance, for what I am doing now I need to be able to compile linux
+kernels, compile linux applications, compile ecos and compile stand alone
+programs. The latter two could really benifit from newlib availability.
 
-  So the next question is how did you get to this location?  A bad branch?
+>     * Capabilities:
+>         - C development
 
+C++ would be nice too, it is handy to use for embedded stuff. Don't
+necessarily need libstdc++, just the compiler.
 
-> -----Original Message-----
-> From: Frank Rowand [mailto:frank_rowand@mvista.com]
-> Sent: Thursday, June 22, 2000 3:29 PM
-> To: Lucinda Schafer
-> Cc: linuxppc-embedded@lists.linuxppc.org
-> Subject: Re: Software Emulation Panic,
->
-> Lucinda Schafer wrote:
-> >
-> > When I get a kernel panic I see:
-> >
-> > NIP: 00001FFC XER: 8000FF7F LR: 00000988 REGS: c0e87c90 TRAP: 1000
-> > MSR: 00001000 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 00
-> > TASK = c0e86000[7] 'rc.sysinit' mm->pgd c0e8b000 Last syscall: 67
-> > last math 00000000
-> > GPR00: 00000000 C0E87D40 C0E86000 C0E87D50 0189EE34 C0133404 C0E88278
-> > C0E8B000
-> > GPR08: C00DA634 00FBA9E1 00FBA9E1 00FBA9E1 3555F593 018A31D0 00000000
-> > 00000D08
-> > GPR16: 000000C1 01005000 0100A400 00300008 00001032 00E87D40 C00162F0
-> > 00009032
-> > GPR24: 0189EE34 C0E88278 C0615760 00FBA8A1 C0FBA000 C0E86000 C0F5F000
-> > C0132510
->
-> Look at the addresses that are of the form 0xCxxxxxxx in the backtrace, they
-> may give you a clue:
->
-> > Call backtrace:
-> > C0E87DF0 C0016204 C0016A98 C0009098 C0002544 018A4490 300E88A4
-> > 0180C6D4 0180C5D8 01803250 01802B64 01801D80
-> > Instruction DUMP:
-> >
-> > If the NIP = 00001FFC, then where is that? That is in the middle of
-> > "Trap_1f" according to the System.map.
-> >
-> > In the call backtrace, how do I know what addresses such as 018a4490 or
-> > 300e88a4 fall? System.map only has C000000++?
-> >
-> > Please be patient with me. I am still learning. I really need to figure
-> out
-> > what is going on here. I come from the world of 8051 assembly programmed
-> > into ROM. Memory management, task switching, and embedded operating
-> systems
-> > are new to me.
-> >
-> > Lucinda Schafer
-> > Staff Software Engineer
-> > Adaptive Micro-Ware, Inc.
-> >
->
-> -Frank
-> --
-> Frank Rowand <frank_rowand@mvista.com>
-> MontaVista Software, Inc
->
+I really like how you re-used the libc6 .debs from the original sources,
+that is certain to eliminate any possible incompatibilities. I have
+regularly been cross compiling linux applications from i386 to ARM this
+past little while, so this is important to me :>
 
---
-Frank Rowand <frank_rowand@mvista.com>
-MontaVista Software, Inc
+In fact, a generic 'convert lib and lib-dev package to lib-TARGET' script
+like alien would be extremely usefull, and probably quite doable!
+
+Thanks,
+Jason
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
