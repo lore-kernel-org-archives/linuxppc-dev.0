@@ -1,32 +1,29 @@
-From: brian.auld@adic.com
-Message-ID: <995FF289C9D69747A09E42992644595405B2361D@penguin.adic.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Does 'Bitkeeper' work according to the 'kernel sources' link @ pp
-	cpenguin.org
-Date: Thu, 23 Jan 2003 12:03:08 -0800
+To: brian.auld@adic.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Does 'Bitkeeper' work according to the 'kernel sources' link @ pp cpenguin.org
+References: <995FF289C9D69747A09E42992644595405B2361D@penguin.adic.com>
+From: Roland Dreier <roland@topspin.com>
+Date: 23 Jan 2003 12:21:07 -0800
+In-Reply-To: <995FF289C9D69747A09E42992644595405B2361D@penguin.adic.com>
+Message-ID: <52d6mnzkgc.fsf@topspin.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I've successfully installed the cross-compiler for powerpc-linux and am
-trying to build the kernel. There is a HOWTO @ ppcpenguin.org that tells you
-how to cross-compile ... which is what I'm following.
+    brian> This is my first time using bk. I bk'ed linuxppc_2_4, but
+    brian> it appears that the whole thing does not get
+    brian> downloaded. For example, the "scripts/lxdialog" directory
+    brian> in the kernel source tree does not have any contents other
+    brian> than the SCCS directory. I find this is a consistent
+    brian> problem with a smattering of diretories within the kernel
+    brian> source tree. I cannot successfully execute "make
+    brian> menuconfig" and am stumped.
 
-This is my first time using bk. I bk'ed linuxppc_2_4, but it appears that
-the whole thing does not get downloaded. For example, the "scripts/lxdialog"
-directory in the kernel source tree does not have any contents other than
-the SCCS directory. I find this is a consistent problem with a smattering of
-diretories within the kernel source tree. I cannot successfully execute
-"make menuconfig" and am stumped.
+Do "bk -r co" in your bk tree after your "bk clone" to check out the
+actual source files.
 
-Can anyone confirm whether or not the instructions under the "kernel
-sources" link at ppcpenguin.org are accurate or not?
-
-Thanks
-
--- Brian
-
+ - Roland
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
