@@ -1,31 +1,35 @@
-Date: Thu, 08 May 2003 17:48:02 -0400
-From: Kent Borg <kentborg@borg.org>
-Subject: Re: Shared Interrupts Question (2.4)
-To: Dale Farnsworth <dale@farnsworth.org>,
-	linuxppc-embedded@lists.linuxppc.org
-Message-id: <2.1-12682897-381-A-OEWW@smtp.sprintpcs.com>
-MIME-version: 1.0
-Content-type: text/plain; format=flowed
+Message-ID: <3EBAD545.50707@esteem.com>
+Date: Thu, 08 May 2003 15:08:05 -0700
+From: Conn Clark <clark@esteem.com>
+MIME-Version: 1.0
+To: May Ling List <linuxppc-embedded@lists.linuxppc.org>
+Subject: What PCI specs will I need?
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dale Farnsworth wrote:
-> Create and register a board-specific interrupt driver.  Assign it
-> a range of irqs (non-conflicting with the main interrupt driver).
-> When called with an irq outside its range, the board-specific driver
-> routines forward the call to the main driver.  The board-specific driver
-> does a request_irq at init time for the one main irq it is multiplexing.
+Hello all,
 
-Yes!  Flatten the cascaded interrupts to IRQs outside the CPU's, range,
-and write a software multiplexer that registers for the one IRQ the CPU
-knows. Right?
+	Our company is being forced to buy modules in mini-PCI because nobody
+will sell us the discrete componets we desire. So we are going to have
+to build an embedded computer to use them. I know we will need the basic
+specification, but I was wondering if we need to get the BIOS
+specification as well or does Linux handle it?
 
-That's much better than what I had in mind.
+Many thanks in advance,
 
+	Conn
+--
 
-Thanks,
+*****************************************************************
+   If you live at home long enough, your parents will move out.
+  (Warning they may try to sell their house out from under you.)
+*****************************************************************
 
--kb
+Conn Clark
+Engineering Stooge				clark@esteem.com
+Electronic Systems Technology Inc.		www.esteem.com
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
