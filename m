@@ -1,56 +1,46 @@
-Message-ID: <394DDB66.62A97110@student.ethz.ch>
-Date: Mon, 19 Jun 2000 10:35:50 +0200
-From: Michel Dänzer <daenzerm@student.ethz.ch>
-MIME-Version: 1.0
-To: Hollis Blanchard <hollis@amulet.co.jp>
-CC: arcane@verinet.com, yellowdog-general@lists.yellowdoglinux.com,
+Date: Mon, 19 Jun 2000 10:58:53 +0200
+From: Olaf Hering <olh@suse.de>
+To: Michel Dänzer <daenzerm@student.ethz.ch>
+Cc: Hollis Blanchard <hollis@amulet.co.jp>, arcane@verinet.com,
+        yellowdog-general@lists.yellowdoglinux.com,
         linuxppc-dev@lists.linuxppc.org
 Subject: Re: Need for Cross Platform Updates Distribution
-References: <Pine.LNX.4.10.10006190106010.30352-100000@bamboo.verinet.com> <394DD78F.AD49931@amulet.co.jp>
+Message-ID: <20000619105853.A11715@suse.de>
+References: <Pine.LNX.4.10.10006190106010.30352-100000@bamboo.verinet.com> <394DD78F.AD49931@amulet.co.jp> <394DDB66.62A97110@student.ethz.ch>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <394DDB66.62A97110@student.ethz.ch>; from daenzerm@student.ethz.ch on Mon, Jun 19, 2000 at 10:35:50AM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hollis Blanchard wrote:
->
-> Bryan Stillwell wrote:
+On Mon, Jun 19, Michel Dänzer wrote:
+
+
+> > > Also, what's this about suse using /opt for kde and gnome? sn't
+> > > /opt in the filesystem standard for commercial software only?
 > >
-> > I've never used suse personally, but I've tried using a
-> > suse rpm witha redhat installation and it just screwed everything up.
+> > It all depends on what "standard" you're using.
 >
-> I look at that as trying to install an OS/2 binary onto a Windows box
-> (and then complaining that it doesn't work).
-
-Huh??? We are speaking about the same binaries for the same OS, but packaged
-in an incompatible manner.
-
-
-> > Also, what's this about suse using /opt for kde and gnome? sn't
-> > /opt in the filesystem standard for commercial software only?
+> Check out FHS (http://www.pathname.com/fhs/), which is an affiliated project
+> of The Free Standards Group.
 >
-> It all depends on what "standard" you're using.
+> Debian is already mostly FHS conformant and aiming to be fully so AFAIK.
 
-Check out FHS (http://www.pathname.com/fhs/), which is an affiliated project
-of The Free Standards Group.
+<AOL>
+me too
+</AOL>
 
-Debian is already mostly FHS conformant and aiming to be fully so AFAIK.
-
-
-> I should also note that Debian packages also don't work well with other
-> distributions.
-
-But at least there aren't incompatible flavours of debs - you find a deb
-somewhere, you install it, it works.
+Just read FHS (2.0 for 6.4-ppc) and compare it with the reality. It will
+be amazing. Flamewars should go to comp.os.advocacy ;)
 
 
-Michel
-
+Gruss Olaf
 
 --
-Why drink & drive when you can smoke and fly???
-______________________________________________________________________________
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
+ $ man clone
+
+BUGS
+       Main feature not yet implemented...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
