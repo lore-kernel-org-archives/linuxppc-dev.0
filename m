@@ -1,40 +1,36 @@
-From: Paul Mackerras <paulus@samba.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15700.52122.899541.683630@argo.ozlabs.ibm.com>
-Date: Sat, 10 Aug 2002 18:15:22 +1000 (EST)
-To: akuster@dslextreme.com
-Cc: David Gibson <david@gibson.dropbear.id.au>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: First steps to OCP device model integration
-In-Reply-To: <3D541AE9.40007@dslextreme.com>
-References: <20020809042605.GC23642@zax>
-	<3D541AE9.40007@dslextreme.com>
+To: "Xiaogeng (Shawn) Jin" <xjin@redswitch.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: /dev/flash and MTD 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 09 Aug 2002 16:38:20 PDT."
+             <3D54526C.80703@redswitch.com>
+Date: Sat, 10 Aug 2002 10:37:48 +0200
+Message-Id: <20020810083753.BA6F610DE1@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-akuster writes:
+Dear Shawn,
 
-> I object seriously.
+in message <3D54526C.80703@redswitch.com> you wrote:
 >
->   Some of what you have might be useful.:) OCP is not just for 4xx.  In
-> fact the name may need to change.  I have been working on overhalling
-> this interface and testing the ideas before having a review of the
-> changes.  I am on the hook to Paul and others to get this out in the
-> open to discuss and am not ready.  So if you could just relax and wait I
-> would appriciate it.  I would rather see the 2.5 kernel boot on a few
-> 4xx boards
+> WINDOW_SIZE. What does this difference mean? If I know the physical
+> start address of flash memory and the size, is there a generic map
+> driver available to do the probing? My general question is "do we need a
+> MTD map driver for each board, especially for those custom boards?".
 
-Two points:
+Actually we don't. Set  the  config  option  CONFIG_MTD_CMDLINE_PARTS
+which  allows  the  use  of  a generic mapping driver and passing the
+partitioning info from the command line.
 
-- Integrating the OCP stuff into the unified device model (driverfs
-  etc.) in 2.5 is essential.
+Wolfgang Denk
 
-- I really want to have some open discussions about ideas, structures
-  etc. for OCP support *before* you have everything fully worked out. :)
-
-Regards,
-Paul.
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Do not follow where the path may lead....go instead where there is no
+path and leave a trail.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
