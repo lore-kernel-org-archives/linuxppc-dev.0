@@ -1,35 +1,38 @@
-Message-ID: <3B954F7D.38D91654@mvista.com>
-Date: Tue, 04 Sep 2001 18:02:37 -0400
-From: Dan Malek <dan@mvista.com>
+Message-Id: <20010905160606.Postino-024904@smtp01.highway.ne.jp>
+Date: Wed, 5 Sep 2001 16:06:06 +0900
+To: linuxppc-dev@lists.linuxppc.org
+From: Kaoru Fukui <k_fukui@highway.ne.jp>
+Subject: BOOT PROBLEM recent kernels with  gcc 3.0.1
 MIME-Version: 1.0
-To: paulus@samba.org
-Cc: Edward Swarthout <swarthou@ibmoto.com>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: Assorted patches - number one
-References: <200108311711.f7VHBxS14716@pacific.somerset.sps.mot.com> <15251.459.153586.712142@cargo.ozlabs.ibm.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Paul Mackerras wrote:
+Hi!
 
-> These are the 4xx registers, aren't they?  We had definitions in like
-> this before, does anyone remember why they were removed?
+I have this problem for a long time.
+gcc3.0.1 was able to rebuild bootable linux-2.2.19,and linux-2.4.7 from bk
+tree. those kernel was successfull with gcc-3.0.1.
 
-The 7450 has a 'software TLB' mode, which would use these registers.
-I didn't plan on ever using that mode in Linux, so there really isn't
-any need for them to be defined.
+But all recent kernels are not able to boot with gcc-3.0.1 ,
+which are linux-2.4.9 Ben's,linux-2.4.10pre3(BK tree)
+and linux-2.4.10pre3(BK devel tree).
+I had fail with all recent kernels when using gcc-3.0.1.
 
-I'm also thinking we should move the cache control register definitions
-to 'cache.h', to stop the ever growing size of processor.h.  I'm also
-a minimalist programmer.....why do we define all of this crap if we
-don't use it?  If you want to know how _all_ of the registers and
-bits are used, read the programming manual for the processor.......
+Those compilation is no poblem.
+I have said  this to Mark who is gcc3's maintainer,his answer was not gcc bug.
 
-Thanks.
+Any help!
 
+Kaoru
 
-	-- Dan
+--------- the error from OF ---------
+... ok
+copying OF device tree...
+DEFAULT CATCH!, code=300 at  %SRR0: 0132ec  %SRR1: 00003030
+ ok
+ 0 > _
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
