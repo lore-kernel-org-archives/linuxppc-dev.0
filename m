@@ -1,35 +1,40 @@
-Date: Wed, 28 Jan 2004 19:00:43 +0100 (CET)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Hugang <hugang@soulinfo.com>
-Cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
-	Pavel Machek <pavel@ucw.cz>,
+Subject: Re: pmdisk working on ppc (WAS: Help port swsusp to ppc)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+Cc: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
+	Pavel Machek <pavel@ucw.cz>, Hugang <hugang@soulinfo.com>,
 	Patrick Mochel <mochel@digitalimplant.org>,
 	Nigel Cunningham <ncunningham@users.sourceforge.net>,
-	<ncunningham@clear.net.nz>,
+	ncunningham@clear.net.nz,
 	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: pmdisk working on ppc (WAS: Help port swsusp to ppc)
-In-Reply-To: <20040129010246.43e9bda0@localhost>
-Message-ID: <Pine.LNX.4.44.0401281859120.21460-100000@opal.biophys.uni-duesseldorf.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <Pine.LNX.4.44.0401281707260.21460-100000@opal.biophys.uni-duesseldorf.de>
+References: 
+	 <Pine.LNX.4.44.0401281707260.21460-100000@opal.biophys.uni-duesseldorf.de>
+Content-Type: text/plain
+Message-Id: <1075326899.30500.297.camel@gaston>
+Mime-Version: 1.0
+Date: Thu, 29 Jan 2004 08:55:00 +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > OK. I put a mdelay(100) between the PMU_SYSTEM_READY request and the
-> > pmu_suspend() call in pmu_sys_resume and it seems to work so far. Side
-> > note: if you are saving a large system and have multiple swap files,
-> > play with swap priorities to make sure the pages are swapped out to
-> > the file_not_ used for suspend.
+On Thu, 2004-01-29 at 03:09, Michael Schmitz wrote:
+> > > Battery requests might have been underway; pmud is running. If I read
+> > > pmu_suspend() right, pending battery requests should result in pmu_suspend
+> > > waiting for them to finish?
+> >
+> > Normally yes... pmud isn't running at this point (all processes are frozen)
 >
-> Can you try with swsusp2 ppc port, if you have time.
+> OK. I put a mdelay(100) between the PMU_SYSTEM_READY request and the
+> pmu_suspend() call in pmu_sys_resume and it seems to work so far. Side
+> note: if you are saving a large system and have multiple swap files, play
+> with swap priorities to make sure the pages are swapped out to the file
+> _not_ used for suspend.
 
-I'll have a look at it. Unless you take care of PMU timeouts some way,
-I'd dare predict it won't work, though.
+Hrm... Remove the PMU_SYSTEM_READY, it's a bug to call it on a 101...
+And it's not needed anyway.
 
-	Michael
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
