@@ -1,48 +1,28 @@
-From: Benjamin Herrenschmidt <benjamin.herrenschmidt@wanadoo.fr>
-To: Dan Malek <dan@mvista.com>
-Cc: Linuxppc-Commit <linuxppc-commit@source.mvista.com>,
-	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: status of linuxppc_2_4_devel for ppc405gp
-Date: Wed, 22 Aug 2001 22:04:04 +0200
-Message-Id: <20010822200404.21295@smtp.wanadoo.fr>
-In-Reply-To: <3B83D895.C5738613@mvista.com>
-References: <3B83D895.C5738613@mvista.com>
+Message-ID: <3B84150F.4A26D28@mvista.com>
+Date: Wed, 22 Aug 2001 16:24:47 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: Mark Phillips <thewalthamgroup@netscape.net>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Text address for 8xx
+References: <158A3A7A.7EA3EBDC.C7F6CBA8@netscape.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->
->Will you please check that in?  I pused the files but couldn't
->decide which method of initialization was "current" :-).
->
->I'm still sorting out the bootloader stuff.
+Mark Phillips wrote:
 
-I'll do tomorrow when I'm at work.
+> Is there a good reason not to make this 400000 for all processors?
 
-Note that I still didn't manage to get userland to work on
-my 405GP. I'm suspecting an issue between Paulus/DaveM new
-cache flush avoidance code and the weird cache design of the
-405. But it might not...
+Probably fewer than the reasons to keep it at the lower address.
+I'll be changing this as part of some generic bootloader changes
+over the next week or so.  The reason to use the lower address is
+there are still some people that think they can make this run on
+a 4MBtye memory.  Another reason is the way the "free" memory is
+allocated for the unzip working buffers.  We can fix the latter :-).
 
-If I understand correctly the 405GP docs the instruction cache
-is indexed with a sort of mixup of virtual & physical addresses,
-which has the side effect of causing aliasing problems if the
-page size is lower than 16k (which is our case).
 
-I'm not sure I get it completely yet, but it appears that with
-a 4k size, we are supposed to invalidate a line _and_ the line
-with bit 29 xor'ed whenever we want a given address to be safe
-for instructions. Since the "shadow" line may not be in the same
-page and that same page is not necessarily mapped when we do
-the invalidate, the best solution, for now, would be to have
-_all_ of the instruction cache invalidate functions inval. the
-entire instruction cache. (You currently do it only on one of
-"callbacks" in asm/pgtable.h, not in the other routines in
-the .S files). That would be true for userland as well.
-
-Ben.
-
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
