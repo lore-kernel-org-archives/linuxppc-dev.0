@@ -1,42 +1,37 @@
-Date: Sun, 28 Oct 2001 11:57:47 -0700 (MST)
-From: Derrik Pates <dpates@dsdk12.net>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
-	Ani Joshi <ajoshi@shell.unixbox.com>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: GeForce on PPC == _no work_
-In-Reply-To: <20011028145435.7084@smtp.wanadoo.fr>
-Message-ID: <Pine.LNX.4.33.0110281153080.24940-100000@andromeda.dsdk12.net>
+Cc: <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Sound on G4 tower, success
+References: <85r8rtcnzj.fsf@junk.nocrew.org>
+	<20011026120847.6797@smtp.adsl.oleane.com>
+From: Lars Brinkhoff <lars.spam@nocrew.org>
+Date: 28 Oct 2001 19:59:36 +0100
+In-Reply-To: <20011026120847.6797@smtp.adsl.oleane.com>
+Message-ID: <854roj7fqf.fsf@junk.nocrew.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 28 Oct 2001, Benjamin Herrenschmidt wrote:
+> Can you tell me if the version of dmasound in my current rsync helps
+> getting sound our of speaker ? It should mute the speaker when the
+> jack is plugged and unmute it when unplugged. Can you verify this
+> behaviour ?
 
-> The video drivers are among the things Apple didn't open source as part
-> of Darwin :(
+These are my results:
 
-How nice.
+* kernel compilation without powerbock power management fails.
+  (I resynced serveral times.)
 
-> This includes all drivers not entirely owned by Apple (ATI, nVidia, Adaptec,
-> Airport, ...) and some Apple drivers they didnt want to open source for
-> various (bad) reasons (PMU, ieee1394 controllers).
+* dmasound_pmac as module can't be loaded because of missing
+  symbols (pmu_register_sleep_notifier, pmu_unregister_sleep_notifier).
 
-Hm. Yay. All hail Apple and their "open-source" (with 50,000 or so
-exceptions) operating system. Bah. Oh, and hooray for nVidia, too. :p
+* dmasound_pmac can be successfully compiled into the kernel, but
+  there is no sound from neither the internal speaker nor from the
+  loudspeakers.  I haven't tried the headphone output.
 
-Tried talking to Mark Vojkovich, and unfortunately, he doesn't have any
-info to give me either. I'm now disgusted. And of course, no binary
-drivers for nVidia boards on PPC (hooray for binary drivers too), so I'm
-disgusted and stuck.
-
-I don't suppose anyone knows if there's any hope of reverse-engineering
-the MacOS 9 or OS X nVidia drivers?
-
-Derrik Pates      |   Sysadmin, Douglas School   |    #linuxOS on EFnet
-dpates@dsdk12.net |     District (dsdk12.net)    |    #linuxOS on OPN
-
+--
+Lars Brinkhoff          http://lars.nocrew.org/     Linux, GCC, PDP-10
+Brinkhoff Consulting    http://www.brinkhoff.se/    programming
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
