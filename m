@@ -1,47 +1,73 @@
-To: Kate Alhola <kate@iti.fi>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <40E514DE.6020300@iti.fi>
+Date: Fri, 02 Jul 2004 10:55:10 +0300
+From: Kate Alhola <kate@iti.fi>
+MIME-Version: 1.0
+To: Wolfgang Denk <wd@denx.de>
 Cc: Stefan Nickl <Stefan.Nickl@kontron.com>,
 	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Lite5200 PCI not working 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 02 Jul 2004 07:43:48 +0300."
-             <40E4E804.5010606@iti.fi>
-Date: Fri, 02 Jul 2004 09:22:06 +0200
-Message-Id: <20040702072211.901A5C109F@atlas.denx.de>
+Subject: Re: Lite5200 PCI not working
+References: <20040702072211.901A5C109F@atlas.denx.de>
+In-Reply-To: <20040702072211.901A5C109F@atlas.denx.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <40E4E804.5010606@iti.fi> you wrote:
+Wolfgang Denk wrote:
+
+>In message <40E4E804.5010606@iti.fi> you wrote:
 >
-> Do you meaean that responsibility of byte order is left to application
-> level ?
+>
+>>Do you meaean that responsibility of byte order is left to application
+>>level ?
+>>
+>>
+>
+>No. The graphic drivers are responsible for it.
+>
+>
+It is how you call it. X server or Embedded QT graphics driver normally
+works
+in user level..
 
-No. The graphic drivers are responsible for it.
+>>Linux fbdev just maps display memory to user application space and so it
+>>cant do anything for how R,G,B bits are ordered within word. It is
+>>then responsibility to GUI-engine ( X-server, Embedded-QT ) to
+>>handle this ordering.
+>>
+>>
+>
+>This is why it is impossible to use a simple  framebuffer  driver  on
+>the  Coral-P  in  16  bit mode. You can run a framebuffer with 24 bpp
+>(and actually our first demo dreiver was doing this), but it ain't no
+>fun.
+>
+>
+Yes, this was that i were using and in this one x-server was just
+patched to fix byte order.
 
-> Linux fbdev just maps display memory to user application space and so it
-> cant do anything for how R,G,B bits are ordered within word. It is
-> then responsibility to GUI-engine ( X-server, Embedded-QT ) to
-> handle this ordering.
+>Also, with  a  framebuffer  driver  you  miss  all  the  options  for
+>accelerated graphics provided by the Coral-P engine.
+>
+>This is why we implemented an accelerated X11 driver for the Coral-P.
+>
+>
+I should try this new one. With the older one i have some problems with
+get all required
+virtual console etc drivers to compiled to kernel to make Xfree 4.4
+happy. Ok, now
+there looks a like to be icecube_5200_CoralP_defconfig
 
-This is why it is impossible to use a simple  framebuffer  driver  on
-the  Coral-P  in  16  bit mode. You can run a framebuffer with 24 bpp
-(and actually our first demo dreiver was doing this), but it ain't no
-fun.
+It is just somehow dificult to find all new files appearing to tree ......
 
-Also, with  a  framebuffer  driver  you  miss  all  the  options  for
-accelerated graphics provided by the Coral-P engine.
+May be it is worth to try use QT with X11 server instead using embedded
+qt direct to
+fb device. In older driver it was anyhow much better to use embedded qt
+direrctly.
 
-This is why we implemented an accelerated X11 driver for the Coral-P.
 
-Best regards,
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Today is the yesterday you worried about tomorrow.
+Kate
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
