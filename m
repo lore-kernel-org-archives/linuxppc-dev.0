@@ -1,26 +1,24 @@
-Date: Wed, 27 Mar 02 10:53:14 PST
-From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
-Message-Id: <0203271853.AA04719@ivan.Harhan.ORG>
-To: linuxppc-dev@lists.linuxppc.org
+From: benh@kernel.crashing.org
+To: <msokolov@ivan.Harhan.ORG>, <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: EV-64260-BP & GT64260 bi_recs
+Date: Wed, 27 Mar 2002 20:37:54 +0100
+Message-Id: <20020327193754.15486@mailhost.mipsys.com>
+In-Reply-To: <0203271853.AA04719@ivan.Harhan.ORG>
+References: <0203271853.AA04719@ivan.Harhan.ORG>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-benh@kernel.crashing.org wrote:
+>OK, I accept that you are right, your flexible structure is better. Now
+>are you
+>guys going to actually implement it or just talk about it?
 
-> The main problem I have with putting a "structure" inside one bi_rec like
-> BI_GT64260_ETH_CFG is that it won't evolve. I mean, let's say today, you
-> define it contains an HW ethernet address. Then, you figure out you have
-> wired your PHY directly, it's not on the MII and you need your driver to
-> know about it, how do you add that info ? Or you figure out that your
-> driver would need some tunning (different LED wiring on the PHY), you
-> change the structure layout to pass new parameters ?
-> You create unnecessary compatibility hell.
+It will be done soon, I hope this week-end, in bk 2.5, then
+eventually backported to 2.4
 
-OK, I accept that you are right, your flexible structure is better. Now are you
-guys going to actually implement it or just talk about it?
+Ben.
 
-MS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
