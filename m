@@ -1,45 +1,39 @@
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Thu, 6 Sep 2001 01:42:38 -0700 (PDT)
+From: James F Dougherty <jfd@GigabitNetworks.COM>
+Message-Id: <200109060842.BAA12475@krakatoa.gigabitnetworks.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Date: Thu, 06 Sep 2001 07:56:59 +0200
-From: "karanth" <karanthk@lycos.com>
-Message-ID: <BJMJJOGDMKJHLAAA@mailcity.com>
+Subject: FLASH RamDisk and kernel init options for disk
 Mime-Version: 1.0
-Reply-To: karanthk@lycos.com
-Subject: initrd failing.
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hai,
+Hi,
 
-Iam Using a custom made board, using  kernel 2.2.14.  Iam able to
-boot from the NFS and from the flash, I want ramdisk to work,
-but it is failing in start_kernel.
-while booting it gives the message,
+What are peoples thoughts on the best way to make
+a small ramdisk which fits in less than 1M and
+performs the task of checking for a root disk,
+running fsck, and then remounting it as root.
 
-Uncompressing Linux...done.
-hold_residual=00600100
-Now booting the kernel
+As a fallout condition, it would let your run
+fdisk and possibly some network script which
+runs rpm over the net..
 
-bi_memory_size = 0x04000000 ?
-Linux version 2.2.14
-Boot arguments: console=ttyS0,19200n8 root=/dev/ram0
-time_init: decrementer frequency = 247500000/60
-con_init()
-calling kmem_cache_init (memory_start=0xc019efa8, memory_end=0xc1000000)
-Initilize I2C bus: done
-Calibrating delay loop... 65.74 BogoMIPS
-initrd overwritten (0xc00721fc < 0xc019efa8) - disabling it.  ----------> why it is failing ??????????
-Memory: 14852k available (752k kernel code, 740k data, 40k init) [c0000000,c100]
-POSIX conformance testing by UNIFIX
-......................
-.....................
+The reason I ask is because I boot my kernel and
+ramdisk from flash and would like to create a small
+initrd that allows you to setup a system/disk if
+it is not found.
 
-my question in what circumstances initrd is overwritten, how can it be avoided, and how can it be repaired.
+Surely someone has done this ...
 
-Thank for any suggestion in advance.
-Regards
-Ambarish.
+Also, is there some way to pass a kernel argument which
+does an fsck on a disk before it mounts it every time?
+I'm pretty sure this doesn't exist ..
 
+
+			Thanks,
+			-James
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
