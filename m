@@ -1,226 +1,41 @@
-Date: Sat, 11 Aug 2001 10:33:46 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Hollis Blanchard <hollis@austin.ibm.com>
-Cc: linuxppc-dev@lists.linuxppc.org
+Date: Sat, 11 Aug 2001 10:45:09 +0200
+From: Olaf Hering <olh@suse.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Hollis Blanchard <hollis@austin.ibm.com>,
+	linuxppc-dev@lists.linuxppc.org
 Subject: Re: VGA console endian bug
-In-Reply-To: <20010810161335.A29271@austin.ibm.com>
-Message-ID: <Pine.LNX.4.05.10108111032070.8907-200000@callisto.of.borg>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="114856-1302650615-997518826=:8907"
+Message-ID: <20010811104509.D13486@suse.de>
+References: <20010810161335.A29271@austin.ibm.com> <Pine.LNX.4.05.10108111032070.8907-200000@callisto.of.borg>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.05.10108111032070.8907-200000@callisto.of.borg>; from geert@linux-m68k.org on Sat, Aug 11, 2001 at 10:33:46AM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-  Send mail to mime@docserver.cac.washington.edu for more info.
+On Sat, Aug 11, Geert Uytterhoeven wrote:
 
---114856-1302650615-997518826=:8907
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-
-On Fri, 10 Aug 2001, Hollis Blanchard wrote:
-> On Fri, Aug 10, 2001 at 10:41:39AM +0200, Geert Uytterhoeven wrote:
-> > On Thu, 9 Aug 2001, Hollis Blanchard wrote:
-> > > These two patches came from Daniel Berlin on July 9. They completely resolve
-> > > the VGA console backwards-endian problem for me on PPC. If they have Geert's
-> > > seal of approval ;) can they be committed?
-> > >
-> > > -Hollis
-> > >
-> > > --- linuxppc_2_4_devel/include/asm-ppc/vga.h.old	Thu Aug  9 11:49:23 2001
-> > > +++ linuxppc_2_4_devel/include/asm-ppc/vga.h	Thu Aug  9 11:49:42 2001
-> > > @@ -37,6 +37,9 @@
-> > >
-> > >  #define VT_BUF_HAVE_MEMCPYW
-> > >  #define scr_memcpyw	memcpy
-> > > +#define VT_BUF_HAVE_MEMCPYF
-> > > +#define scr_memcpyw_to memcpy
-> > > +#define scr_memcpyw_from memcpy
-> > >
-> > >  #endif /* !CONFIG_VGA_CONSOLE && !CONFIG_MDA_CONSOLE */
-> >
-> > The first I cannot approve: if scr_{write,read}w() swap bytes, how can it work
-> > if scr_memcpyw_{to,from}() don't swap bytes?
 >
-> I have no idea. Perhaps those functions weren't used, and that's why it
-> appeared to work. I have not tried with only the second patch; perhaps that
-> will be enough...
->
-> > And where's the 3rd patch? I once posted a patch to fix a similar bug in
-> > drivers/char/console.c.
->
-> I can't find it in the linuxppc-dev archives. :(
+> Note that I've been having a fight with Olaf Hering about this as well :-)
 
-It indeed wasn't sent to that list. I attached the mail I sent to Ben H, which
-includes the mail I sent before.
+And the battle goes on :)
 
-Gr{oetje,eeting}s,
+It really fixes my VGA problems so far, but I guess the bug is somewhere
+else.
+We use a patch to display the kernel version above the framebuffer logo.
+It works on intel and on sparc, but it gives the usual garbage for the
+version chars on ppc.
 
-						Geert
+It uses the fbcon_putcs() function. I will see how it works without that
+vga patch.
+
+
+Gruss Olaf
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+ $ man clone
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
---114856-1302650615-997518826=:8907
-Content-Type: TEXT/PLAIN; charset=US-ASCII; name=Mail
-Content-Transfer-Encoding: BASE64
-Content-ID: <Pine.LNX.4.05.10108111033460.8907@callisto.of.borg>
-Content-Description: 
-Content-Disposition: attachment; filename=Mail
-
-RnJvbSBnZWVydEBsaW51eC1tNjhrLm9yZyBTYXQgQXVnIDExIDEwOjMxOjEz
-IDIwMDENCkRhdGU6IE1vbiwgOSBKdWwgMjAwMSAxODo0NToxNCArMDIwMCAo
-Q0VTVCkNCkZyb206IEdlZXJ0IFV5dHRlcmhvZXZlbiA8Z2VlcnRAbGludXgt
-bTY4ay5vcmc+DQpUbzogQmVuamFtaW4gSGVycmVuc2NobWlkdCA8YmVuaEBr
-ZXJuZWwuY3Jhc2hpbmcub3JnPg0KQ2M6IEdlZXJ0IFV5dHRlcmhvZXZlbiA8
-Z2VlcnRAbGludXgtbTY4ay5vcmc+DQpTdWJqZWN0OiBSZTogRndkOiBSZTog
-Z3BtIHNlbGVjdGlvbiB2cyBWR0EgY29uc29sZSAmIGZiY29uDQoNCglIaSBC
-ZW4sDQoNCj4gR2VlcnQsIGRvZXMgdGhhdCBwYXRjaCBzb3VuZHMgdGhlIHJp
-Z2h0IHRoaW5nIHRvIHlvdSA/IElmIHllcywNCj4gSSdsbCBwdXNoIGl0IGFs
-bCBvdmVyIHRoZSBiaydzIGFuZCB0byBMaW51cywgSSdtIHRpcmVkIG9mIA0K
-PiBnZXR0aW5nIHRoaXMgYnVnIHJlcG9ydGVkIDspDQoNCj4gKioqIHZnYS5o
-CVdlZCBKdWwgIDQgMTA6NTg6NDAgMjAwMQ0KPiAtLS0gL3Jvb3QvbGludXgv
-aW5jbHVkZS9hc20tcHBjL3ZnYS5oCVRodSBKdW4gMjggMTQ6MjI6MDIgMjAw
-MQ0KPiAqKioqKioqKioqKioqKiogZXh0ZXJuIGlubGluZSB1MTYgc2NyX3Jl
-YWR3KHZvbGF0aWxlIGNvbg0KPiAqKiogMzcsNDIgKioqKg0KPiAtLS0gMzcs
-NDUgLS0tLQ0KPiANCj4gICAjZGVmaW5lIFZUX0JVRl9IQVZFX01FTUNQWVcN
-Cj4gICAjZGVmaW5lIHNjcl9tZW1jcHl3CW1lbWNweQ0KPiArICNkZWZpbmUg
-VlRfQlVGX0hBVkVfTUVNQ1BZRg0KPiArICNkZWZpbmUgc2NyX21lbWNweXdf
-dG8gbWVtY3B5DQo+ICsgI2RlZmluZSBzY3JfbWVtY3B5d19mcm9tIG1lbWNw
-eQ0KPiANCj4gICAjZW5kaWYgLyogIUNPTkZJR19WR0FfQ09OU09MRSAmJiAh
-Q09ORklHX01EQV9DT05TT0xFICovDQoNCkkgZmFpbCB0byBzZWUgaG93IHRo
-ZSBmaXJzdCBwYXJ0IGNhbiBzb2x2ZSBhIHByb2JsZW06IHNjcl9tZW1jcHl3
-X3t0byxmcm9tfQ0KY29weSBiZXR3ZWVuIHRoZSBWR0EgdGV4dCBidWZmZXIg
-b24gdGhlIGdyYXBoaWNzIGNhcmQgKGxpdHRsZSBlbmRpYW4pIGFuZA0KbmF0
-aXZlIGVuZGlhbm5lc3MsIHNvIHNldHRpbmcgdGhlbSB0byBtZW1jcHkoKSBj
-YW5ub3QgYmUgcmlnaHQuIEkgc3VzcGVjdA0KdGhlcmUncyBhbm90aGVyIGJ1
-ZyBzb21ld2hlcmUgZWxzZS4uLg0KDQpOb3RlIHRoYXQgSSd2ZSBiZWVuIGhh
-dmluZyBhIGZpZ2h0IHdpdGggT2xhZiBIZXJpbmcgYWJvdXQgdGhpcyBhcyB3
-ZWxsIDotKQ0KDQpCVFcsIHRoZSBjb21tZW50IGFmdGVyIHRoZSAjZW5kaWYg
-aXMgd3JvbmcsIGl0IHNob3VsZCBiZQ0KDQogICAgI2VuZGlmIC8qIENPTkZJ
-R19WR0FfQ09OU09MRSB8fCBDT05GSUdfTURBX0NPTlNPTEUgKi8NCg0KaW5z
-dGVhZCBvZg0KDQogICAgI2VuZGlmIC8qICFDT05GSUdfVkdBX0NPTlNPTEUg
-JiYgIUNPTkZJR19NREFfQ09OU09MRSAqLw0KDQo+ICoqKiBmYmNvbi5jCVR1
-ZSBKdWwgIDMgMTc6NTg6NDEgMjAwMQ0KPiAtLS0gL3Jvb3QvbGludXgvZHJp
-dmVycy92aWRlby9mYmNvbi5jCVdlZCBKdW4gMjcgMTQ6NTI6NTkgMjAwMQ0K
-PiAqKioqKioqKioqKioqKiogc3RhdGljIHZvaWQgZmJjb25faW52ZXJ0X3Jl
-Z2lvbihzdHJ1Y3Qgdg0KPiAqKiogMTk1NCwxOTY2ICoqKioNCj4gICAJaWYg
-KCFjb25wLT52Y19jYW5fZG9fY29sb3IpDQo+ICAgCSAgICAqcCsrIF49IDB4
-MDgwMDsNCj4gICAJZWxzZSBpZiAoY29ucC0+dmNfaGlfZm9udF9tYXNrID09
-IDB4MTAwKSB7DQo+ICEgCSAgICB1MTYgYSA9ICpwOw0KPiAgIAkgICAgYSA9
-ICgoYSkgJiAweDExZmYpIHwgKCgoYSkgJiAweGUwMDApID4+IDQpIHwgKCgo
-YSkgJiAweDBlMDApIDw8IDQpOw0KPiAhIAkgICAgKnArKyA9IGE7DQo+ICAg
-CX0gZWxzZSB7DQo+ICEgCSAgICB1MTYgYSA9ICpwOw0KPiAgIAkgICAgYSA9
-ICgoYSkgJiAweDg4ZmYpIHwgKCgoYSkgJiAweDcwMDApID4+IDQpIHwgKCgo
-YSkgJiAweDA3MDApIDw8IDQpOw0KPiAhIAkgICAgKnArKyA9IGE7DQo+ICAg
-CX0NCj4gICAJaWYgKHAgPT0gKHUxNiAqKXNvZnRiYWNrX2VuZCkNCj4gICAJ
-ICAgIHAgPSAodTE2ICopc29mdGJhY2tfYnVmOw0KPiAtLS0gMTk1NCwxOTY2
-IC0tLS0NCj4gICAJaWYgKCFjb25wLT52Y19jYW5fZG9fY29sb3IpDQo+ICAg
-CSAgICAqcCsrIF49IDB4MDgwMDsNCj4gICAJZWxzZSBpZiAoY29ucC0+dmNf
-aGlfZm9udF9tYXNrID09IDB4MTAwKSB7DQo+ICEgCSAgICB1MTYgYSA9IHNj
-cl9yZWFkdyhwKTsNCj4gICAJICAgIGEgPSAoKGEpICYgMHgxMWZmKSB8ICgo
-KGEpICYgMHhlMDAwKSA+PiA0KSB8ICgoKGEpICYgMHgwZTAwKSA8PCA0KTsN
-Cj4gISAJICAgIHNjcl93cml0ZXcoYSwgcCsrKTsNCj4gICAJfSBlbHNlIHsN
-Cj4gISAJICAgIHUxNiBhID0gc2NyX3JlYWR3KHApOw0KPiAgIAkgICAgYSA9
-ICgoYSkgJiAweDg4ZmYpIHwgKCgoYSkgJiAweDcwMDApID4+IDQpIHwgKCgo
-YSkgJiAweDA3MDApIDw8IDQpOw0KPiAhIAkgICAgc2NyX3dyaXRldyhhLCBw
-KyspOw0KPiAgIAl9DQo+ICAgCWlmIChwID09ICh1MTYgKilzb2Z0YmFja19l
-bmQpDQo+ICAgCSAgICBwID0gKHUxNiAqKXNvZnRiYWNrX2J1ZjsNCg0KVGhl
-IHNlY29uZCBwYXJ0IGlzIE9LIGZvciBtZS4NCg0KVGhlcmUncyBhIHNpbWls
-YXIgYnVnIGluIGNvbnNvbGUuYzogYWx3YXlzIHVzZSBzY3Jfe3JlYWQsd3Jp
-dGV9dygpIHdoZW4NCmFjY2Vzc2luZyB0aGUgdGV4dC9hdHRyaWJ1dGUgYnVm
-ZmVyLiBTZWUgdGhlIHBhdGNoIChzdGlsbCB1bnRlc3RlZCBieSBtZSkgaW4N
-CnRoZSBtYWlsIGJlbG93Lg0KDQotLXNuaXAtLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLQ0KPkZyb20gZ2VlcnRAbGludXgtbTY4ay5vcmcgTW9uIEp1
-bCAgOSAxODozODoxNyAyMDAxDQpEYXRlOiBTYXQsIDIgSnVuIDIwMDEgMjE6
-MjM6MzIgKzAyMDAgKENFU1QpDQpGcm9tOiBHZWVydCBVeXR0ZXJob2V2ZW4g
-PGdlZXJ0QGxpbnV4LW02OGsub3JnPg0KVG86IERhbmllbCBCZXJsaW4gPGRh
-bkBjZ3NvZnR3YXJlLmNvbT4NCkNjOiBMaW51eCBGcmFtZSBCdWZmZXIgRGV2
-aWNlIERldmVsb3BtZW50DQogICAgPGxpbnV4LWZiZGV2LWRldmVsQGxpc3Rz
-LnNvdXJjZWZvcmdlLm5ldD4sDQogICAgIEFsYW4gQ294IDxhbGFuQGx4b3Jn
-dWsudWt1dS5vcmcudWs+LCBPbGFmIEhlcmluZyA8b2xoQHN1c2UuZGU+DQpT
-dWJqZWN0OiBSZTogRkJDb24gaW52ZXJ0X3JlZ2lvbiBpcyBlbmRpYW4gdW5z
-YWZlLA0KICAgICBzYW1lIHdpdGggZ2VuZXJpYyBpbnZlcnRfcmVnaW9uDQoN
-CglIaSBEYW5pZWwsDQoNCj4gSSdtIG5vdCBxdWl0ZSBzdXJlIHdobyB0aGUg
-bWFpbnRhaW5lciBpcywgZmJjb24uYyBsaXN0cyA1IHBlb3BsZSwgYW5kDQo+
-IG5vIG9uZSBpcyBsaXN0ZWQgaW4gdGhlIE1BSU5UQUlORVJTIGZpbGUgKGkg
-c2VhcmNoZWQgb24gZmJjb24pLg0KPiANCj4gVGhpcyBvbmUgaGFzIGJlZW4g
-Ym90aGVyaW5nIG1lIGZvciBhIGxvbmcgdGltZS4NCj4gSXQgY2F1c2VzIHRl
-eHQgc2VsZWN0aW9uIHRvIGZhaWwgb24gZmJjb24gZGV2aWNlcyBmb3IgYmln
-IGVuZGlhbg0KPiBwbGF0Zm9ybXMgKEJlY2F1c2UsIG9idmlvdXNseSwgaXQg
-Z2V0cyBiaWcgZW5kaWFuIGRhdGEgb24gYmlnIGVuZGlhbg0KPiBtYWNoaW5l
-cywgc2luY2VpdCBuZWdsZWN0cyB0byB1c2Ugc2NyX3JlYWR3L3Njcl93cml0
-ZXcuIER1bWIuIFlvdSBlbmQNCj4gdXAgaW52ZXJ0aW5nLCBwYXN0aW5nIGVh
-Y2ggYnl0ZSByZXZlcnNlZCB3aXRob3V0IGZpeGluZyB0aGlzLCBzbyB3aGVy
-ZQ0KPiB5b3Ugd291bGQgbm9ybWFsbHkgaGF2ZSBwYXN0ZWQvc2VlIGEgYmFj
-a2dyb3VuZCBpbnZlcnRlZCAndScgKDB4NzUpLA0KPiB5b3UgZ2V0IGEgJ1cn
-ICgweDU3KSkuDQoNCiAgICBbLi4uXQ0KDQo+IEhvd2V2ZXIsIGl0J3MgaW1w
-b3J0YW50IHRvIG5vdGUgdGhhdCBjb25zb2xlLmMgaGFzIHRoZSBzYW1lIGRh
-bW4gYnVnDQo+IGluIGl0J3MgZ2VuZXJpYyBpbnZlcnNpb24gcm91dGluZS4N
-Cj4gDQo+IENoYW5naW5nIHRoZSBjb2RlIHRvIHRoZSByaWdodCB3YXkgbWFr
-ZXMgdGV4dCBzZWxlY3Rpb24gd29yayBwZXJmZWN0bHkNCj4gYWdhaW4sIHdo
-aWNoIGl0IGhhc24ndCBzaW5jZSAyLjIueCwgYXQgbGVhc3QgZm9yIG1lLg0K
-DQpTbyB0aGlzIHBhdGNoICh1bnRlc3RlZCkgZml4ZXMgaXQ/DQoNCk9sYWY6
-IGlzIHRoaXMgdGhlIG1pc3NpbmcgcGllY2UgZm9yIHlvdSBhcyB3ZWxsPw0K
-DQotLS0gY29uc29sZS0yLjQuNS9kcml2ZXJzL2NoYXIvY29uc29sZS5jLm9y
-aWcJTW9uIEZlYiAxOSAxMDozNjo0NyAyMDAxDQorKysgY29uc29sZS0yLjQu
-NS9kcml2ZXJzL2NoYXIvY29uc29sZS5jCVNhdCBKdW4gIDIgMjE6MTU6MTAg
-MjAwMQ0KQEAgLTM5MCwyMCArMzkwLDI4IEBADQogCWVsc2Ugew0KIAkJdTE2
-ICpxID0gcDsNCiAJCWludCBjbnQgPSBjb3VudDsNCisJCXUxNiBhOw0KIA0K
-IAkJaWYgKCFjYW5fZG9fY29sb3IpIHsNCi0JCQl3aGlsZSAoY250LS0pICpx
-KysgXj0gMHgwODAwOw0KKwkJCXdoaWxlIChjbnQtLSkgew0KKwkJCSAgICBh
-ID0gc2NyX3JlYWR3KHEpOw0KKwkJCSAgICBhIF49IDB4MDgwMDsNCisJCQkg
-ICAgc2NyX3dyaXRldyhhLCBxKTsNCisJCQkgICAgcSsrOw0KKwkJCX0NCiAJ
-CX0gZWxzZSBpZiAoaGlfZm9udF9tYXNrID09IDB4MTAwKSB7DQogCQkJd2hp
-bGUgKGNudC0tKSB7DQotCQkJCXUxNiBhID0gKnE7DQorCQkJCWEgPSBzY3Jf
-cmVhZHcocSk7DQogCQkJCWEgPSAoKGEpICYgMHgxMWZmKSB8ICgoKGEpICYg
-MHhlMDAwKSA+PiA0KSB8ICgoKGEpICYgMHgwZTAwKSA8PCA0KTsNCi0JCQkJ
-KnErKyA9IGE7DQorCQkJCXNjcl93cml0ZXcoYSwgcSk7DQorCQkJCXErKzsN
-CiAJCQl9DQogCQl9IGVsc2Ugew0KIAkJCXdoaWxlIChjbnQtLSkgew0KLQkJ
-CQl1MTYgYSA9ICpxOw0KKwkJCQlhID0gc2NyX3JlYWR3KHEpOw0KIAkJCQlh
-ID0gKChhKSAmIDB4ODhmZikgfCAoKChhKSAmIDB4NzAwMCkgPj4gNCkgfCAo
-KChhKSAmIDB4MDcwMCkgPDwgNCk7DQotCQkJCSpxKysgPSBhOw0KKwkJCQlz
-Y3Jfd3JpdGV3KGEsIHEpOw0KKwkJCQlxKysNCiAJCQl9DQogCQl9DQogCX0N
-Ci0tLSBjb25zb2xlLTIuNC41L2RyaXZlcnMvdmlkZW8vZmJjb24uYy5vcmln
-CU1vbiBGZWIgMTkgMTA6Mzc6MDAgMjAwMQ0KKysrIGNvbnNvbGUtMi40LjUv
-ZHJpdmVycy92aWRlby9mYmNvbi5jCVNhdCBKdW4gIDIgMjE6MDc6MzggMjAw
-MQ0KQEAgLTE5MzQsMTcgKzE5MzQsMTUgQEANCiBzdGF0aWMgdm9pZCBmYmNv
-bl9pbnZlcnRfcmVnaW9uKHN0cnVjdCB2Y19kYXRhICpjb25wLCB1MTYgKnAs
-IGludCBjbnQpDQogew0KICAgICB3aGlsZSAoY250LS0pIHsNCisJdTE2IGEg
-PSBzY3JfcmVhZHcocCk7DQogCWlmICghY29ucC0+dmNfY2FuX2RvX2NvbG9y
-KQ0KLQkgICAgKnArKyBePSAweDA4MDA7DQotCWVsc2UgaWYgKGNvbnAtPnZj
-X2hpX2ZvbnRfbWFzayA9PSAweDEwMCkgew0KLQkgICAgdTE2IGEgPSAqcDsN
-CisJICAgIGEgXj0gMHgwODAwOw0KKwllbHNlIGlmIChjb25wLT52Y19oaV9m
-b250X21hc2sgPT0gMHgxMDApDQogCSAgICBhID0gKChhKSAmIDB4MTFmZikg
-fCAoKChhKSAmIDB4ZTAwMCkgPj4gNCkgfCAoKChhKSAmIDB4MGUwMCkgPDwg
-NCk7DQotCSAgICAqcCsrID0gYTsNCi0JfSBlbHNlIHsNCi0JICAgIHUxNiBh
-ID0gKnA7DQorCWVsc2UNCiAJICAgIGEgPSAoKGEpICYgMHg4OGZmKSB8ICgo
-KGEpICYgMHg3MDAwKSA+PiA0KSB8ICgoKGEpICYgMHgwNzAwKSA8PCA0KTsN
-Ci0JICAgICpwKysgPSBhOw0KLQl9DQorCXNjcl93cml0ZXcoYSwgcCk7DQor
-CXArKzsNCiAJaWYgKHAgPT0gKHUxNiAqKXNvZnRiYWNrX2VuZCkNCiAJICAg
-IHAgPSAodTE2ICopc29mdGJhY2tfYnVmOw0KIAlpZiAocCA9PSAodTE2ICop
-c29mdGJhY2tfaW4pDQoNCkdye29ldGplLGVldGluZ31zLA0KDQoJCQkJCQlH
-ZWVydA0KDQotLQ0KR2VlcnQgVXl0dGVyaG9ldmVuIC0tIFRoZXJlJ3MgbG90
-cyBvZiBMaW51eCBiZXlvbmQgaWEzMiAtLSBnZWVydEBsaW51eC1tNjhrLm9y
-Zw0KDQpJbiBwZXJzb25hbCBjb252ZXJzYXRpb25zIHdpdGggdGVjaG5pY2Fs
-IHBlb3BsZSwgSSBjYWxsIG15c2VsZiBhIGhhY2tlci4gQnV0DQp3aGVuIEkn
-bSB0YWxraW5nIHRvIGpvdXJuYWxpc3RzIEkganVzdCBzYXkgInByb2dyYW1t
-ZXIiIG9yIHNvbWV0aGluZyBsaWtlIHRoYXQuDQoJCQkJCQkJICAgIC0tIExp
-bnVzIFRvcnZhbGRzDQoNCi0tc25pcC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tDQoNCkdye29ldGplLGVldGluZ31zLA0KDQoJCQkJCQlHZWVydA0K
-DQotLQ0KR2VlcnQgVXl0dGVyaG9ldmVuIC0tIFRoZXJlJ3MgbG90cyBvZiBM
-aW51eCBiZXlvbmQgaWEzMiAtLSBnZWVydEBsaW51eC1tNjhrLm9yZw0KDQpJ
-biBwZXJzb25hbCBjb252ZXJzYXRpb25zIHdpdGggdGVjaG5pY2FsIHBlb3Bs
-ZSwgSSBjYWxsIG15c2VsZiBhIGhhY2tlci4gQnV0DQp3aGVuIEknbSB0YWxr
-aW5nIHRvIGpvdXJuYWxpc3RzIEkganVzdCBzYXkgInByb2dyYW1tZXIiIG9y
-IHNvbWV0aGluZyBsaWtlIHRoYXQuDQoJCQkJCQkJICAgIC0tIExpbnVzIFRv
-cnZhbGRzDQoNCg==
---114856-1302650615-997518826=:8907--
+BUGS
+       Main feature not yet implemented...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
