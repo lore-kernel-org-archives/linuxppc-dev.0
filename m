@@ -1,57 +1,72 @@
-Message-ID: <004301c4551b$07f6a8a0$2700000a@jmartin>
-From: "jmartin" <jmartin@prodys.net>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: fec multicast question
-Date: Fri, 18 Jun 2004 12:00:05 +0200
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
+Subject: RE : MPC5200Lite PCI & IRQ
+Date: Fri, 18 Jun 2004 12:06:20 +0200
+Message-ID: <5A96167EBCEA8440A48790B5419953AE13C46A@gr-lafayette.lacie.com>
+From: "Bertrand Baudet" <bbaudet@lacie.com>
+To: "David Woodhouse" <dwmw2@infradead.org>
+Cc: <linuxppc-embedded@lists.linuxppc.org>, <jgarzik@redhat.com>,
+	<B.Zolnierkiewicz@elka.pw.edu.pl>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi folks,
+Well, there is not only the IDE driver; the USB driver does it as well:
 
-i'm working on fec driver modification. I'm implementing the
-set_multicast_list. dev->dmi_addr is saved on LSB format. I want to do a
-multicast filter. I'm doing it by sw.
+In the 2.4.25, from the "drivers/usb/host/usb-ohci.c", in the 'ohci_pci_probe' function:
 
-Now i'm using crc32 from /linux/crc.h, witch use a table.
+And in the 2.6.7, from "drivers/usb/core/hcd-pci.c", in the 'usb_hcd_pci_probe' function:
 
-I convert LSB dmi_addr to MSB. Then apply crc32. Result obtained is for UART
-tx purpose(LSB), pass result
-to MSB again. Then mask with 0x7C000000 to obtain bit on
-hash_table_register. mask with 0x80000000 to select what register.
+if (!dev->irq) {
+	err("found OHCI device with no IRQ assigned. check BIOS settings!");
+	pci_disable_device (dev);
+	return -ENODEV;
+}
 
-on mine board, diferent to anyone you can know, multicast filter is done.
-but not correctly. I can't access to any SCC(all used, modes diferent from
-ETHERNET). I can't access to boards with scc enet.
+There are probably other drivers that have the wrong assumption that IRQ 0
+is an unassigned IRQ.
 
-when i call to crc32 val take 0xFFFFFFFF value, like
-scc dpram says(c_pres, section 28.8 MPC860 PowerQuicc User's Manual), and
-mask is not used(c_mask).
 
-Can anyone give mi hex value of hash_table_high and hash_table_low using
-CPM_SET_GROUP? i.e, for address 224.0.0.123. better for three or four
-direcctions, then maybe can obtain algorithm used by cpm and sw
-CPM_SET_GROUP can be do.
+Bertrand
 
-thanks all
 
-----------------------------------------------------------------------------
-----------------------------------------
-"No nos atrevemos a muchas cosas porque son difíciles, pero son difíciles
-porque no nos atrevemos a hacerlas"
-Lucio Anneo Séneca , 2 AC-65
+-----Message d'origine-----
+De : David Woodhouse [mailto:dwmw2@infradead.org]
+Envoyé : vendredi 18 juin 2004 11:29
+À : Bertrand Baudet
+Cc : linuxppc-embedded@lists.linuxppc.org; jgarzik@redhat.com; B.Zolnierkiewicz@elka.pw.edu.pl
+Objet : Re: MPC5200Lite PCI & IRQ
 
-Jose Manuel Martin Bravo
+On Fri, 2004-06-04 at 15:00 +0200, Bertrand Baudet wrote:
+> Hi,
+>
+> I'm trying to plug a sata card in the PCI slot of the MPC5200Lite.
+...
+> By default the IRQ line of the sata card is 0,
+...
+> From the source code, it looks like a value 0 for the IRQ means the IRQ
+> is disabled.
+>
+> From "drivers/ide/ide-probe.c", in the 'hwif_init' function:
+> ...
+> if (!hwif->irq) {
+>    if (!(hwif->irq = ide_default_irq(hwif->io_ports[IDE_DATA_OFFSET])))
+>    {
+>       printk("%s: DISABLED, NO IRQ\n", hwif->name);
+>       return (hwif->present = 0);
+>    }
+> }
+> ...
+>
+> Commenting out the above code allow the PCI card to run properly.
 
-jmartin@prodys.net
-termita@ya.com
+This is a bug in the IDE driver. Zero is a perfectly valid IRQ number --
+I have boxes where PCI slots get IRQ #0 too. Please fix the IDE driver
+and send the patch to the IDE maintainer.
 
-Madrid,Spain
-----------------------------------------------------------------------------
-----------------------------------------
+--
+dwmw2
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
