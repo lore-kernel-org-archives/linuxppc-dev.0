@@ -1,33 +1,41 @@
-From: "Stefano Coluccini" <s.coluccini@caen.it>
-To: "=?iso-8859-1?B?U+liYXN0aWVuIEP0dOk=?=" <scote1@matrox.com>
-Cc: "Dan Malek" <dan@mvista.com>,
-	"Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: KERNELBASE at 0xa0000000
-Date: Mon, 26 Feb 2001 17:48:04 +0100
-Message-ID: <NDBBIFIMCKPOADMAJOKMEEGNCPAA.s.coluccini@caen.it>
+Message-ID: <3A9A8976.884C49C2@mvista.com>
+Date: Mon, 26 Feb 2001 11:51:02 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <20010226110745.A1229@dyn-52-73.matrox.com>
+To: Steve Ferri <sferri@ss7-link.com>
+CC: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Cache Inhibit on 860?
+References: <F1BD619B2A58D41197990050DA2C08E41A5E2C@SLINK12>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> On 2001.02.26 10:51:57 -0500 Stefano Coluccini wrote:
-> > I have hoped it was more platform-dependent because I have a MVME5100
-> > (that
-> > is, I think, a MCPN765 with a PCI-VME bridge) and with KERNELBASE at
-> > 0xa0000000 doesn't work (in head.S the kernel doesn't recognize that it
-> > is
-> > running at 0 and it try to relocate itself).
-> > Do you think that this is a warning of a more complicated problem ?
->
-> I think that's what happened when I changed KERNELBASE but not
-> KERNELLOAD.
-> Try changing both (if it's not already done).
+Steve Ferri wrote:
 
-I have leaved both untouched the first time, then I have changed both to
-0xc0000000 to get working.
+> Is there a way to alloc memory and mark it as cache inhibited ?
 
+In a few minutes :-).  I finally created a common set of 'dma_consistent'
+functions for 8xx and 4xx (and anything else that may need them)
+based upon implementations from other architectures.  I am now checking
+this into the linuxppc_2_5 BitKeeper tree.
+
+> This would eliminating the need for the invalidate and flush calls.
+
+But, if you already have this working, it is probably better performance
+unless these are tiny, frequently used buffers.
+
+> .....  I am
+> currently
+> running a 2.2.14 version of the kernel on an 860 processor.
+
+For 2.2.14, look at the arch/ppc/8xx_io/enet.c Ethernet driver as
+an example.  It calls __get_free_page(), then tracks down the
+page table entry and sets the cache inhibit flag.  Do the same thing
+in your driver.  The stuff done in 'commproc.c' is different because
+it is called earlier in the kernel.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
