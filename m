@@ -1,42 +1,60 @@
-Subject: Re: value of XIP?  and whether it works with 2.6 kernel?
-From: David Woodhouse <dwmw2@infradead.org>
-To: Dan Malek <dan@embeddededge.com>
-Cc: Mark Chambers <markc@mail.com>,
-	Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>,
-	"Robert P. J. Day" <rpjday@mindspring.com>
-In-Reply-To: <60394D06-F6B8-11D8-918A-003065F9B7DC@embeddededge.com>
-References: <Pine.LNX.4.60.0408241141110.6489@localhost.localdomain>
-	 <000f01c48a95$e18e5c20$0301a8c0@chuck2>
-	 <FE902A72-F6AB-11D8-918A-003065F9B7DC@embeddededge.com>
-	 <001a01c48abe$0fccb5f0$0301a8c0@chuck2>
-	 <60394D06-F6B8-11D8-918A-003065F9B7DC@embeddededge.com>
+Message-ID: <239A78AC110CD711A1A500D0B7828CD80C247CA7@zhk08exm01.sps.mot.com>
+From: Ho Jeffrey-r26191 <r26191@freescale.com>
+To: "'Andrew Dennison'" <andrew.dennison@motec.com.au>,
+	"'Andrey Volkov'" <avolkov@varma-el.com>,
+	"'Sylvain Munaut'" <tnt@246tnt.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Re[2]: mpc5200 and ddr
+Date: Thu, 26 Aug 2004 11:28:47 +0800
+MIME-Version: 1.0
 Content-Type: text/plain
-Message-Id: <1093483666.3777.1579.camel@imladris.demon.co.uk>
-Mime-Version: 1.0
-Date: Thu, 26 Aug 2004 02:27:46 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, 2004-08-25 at 13:01 -0400, Dan Malek wrote:
-> The kernel XIP from Flash isn't very hard to implement,
-> it is just very board configuration dependent.  All you
-> need is a proper linker command file for your board
-> and a couple of start up MMU hacks......for PowerPC.
+Have you check AN2582 which is DDR design for MPC85xx. Even thought the part used is different, most of the general DDR design rules can be find  in this docu.
 
-It's a little bit harder than that if you want to actually write to the
-same flash chip you're running from. :)
+Regards,
+Jeffrey Ho
 
-Not a _lot_ harder though -- you just put the flash-mangling routines
-into a separate section in RAM and disabling interrupts while you're in
-them (you can poll for interrupts, suspend pending writes/erases and
-handle the interrupts without particularly evil latencies).
+-----Original Message-----
+From: owner-linuxppc-embedded@lists.linuxppc.org [mailto:owner-linuxppc-embedded@lists.linuxppc.org] On Behalf Of Andrew Dennison
+Sent: Thursday, August 26, 2004 8:56 AM
+To: 'Andrey Volkov'; 'Sylvain Munaut'
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Re[2]: mpc5200 and ddr
 
-I did it a long time ago -- just couldn't ever see the point in merging
-it.
 
---
-dwmw2
+
+> Andrey Volkov wrote:
+>
+> Hello Sylvain,
+>
+> Wednesday, August 25, 2004, 8:35:25 PM, you wrote:
+>
+> > Hi,
+>
+> > Sorry I don't have informations, but I'm interested too ;)
+>
+> > I guess you just "connect" them, but I wonder about
+> terminations ? ( or
+> > maybe keeping short trace is ok ? ).
+>
+>
+> Certainly - termination, time diagrams, restrictions (especially
+> capacitors length and likewise) etc. As I wrote before datasheet very
+> foggy and miserly, but may be David or somebody from freescale
+> enlighten me, if so, then I send info to ml.
+>
+
+Hello Andrey, Sylvain,
+
+Micron have a tech note (TN4606) on DDR termination for point-to-point systems. Have a look at this if you are working on a design with DDR chips on the PCB. It appears that series termination is sufficient with short
+(<50mm) track lengths. However DDR timing requires some careful attention to layout (impedence control and track length matching) so all the information I have found on DDR is always qualified by "simulate your design".
+
+My local Freescale FAE was able to supply some additional information so maybe you can ask yours?
+
+Andrew
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
