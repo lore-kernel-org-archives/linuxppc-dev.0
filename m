@@ -1,39 +1,37 @@
-Date: Mon, 18 Oct 1999 10:52:01 -0700
-From: "David N. Welton" <davidw@linuxcare.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Kernel questions
-Message-ID: <19991018105201.B17058@bassano.linuxcare.com>
+In-Reply-To: <Pine.LNX.4.05.9910181938290.401-100000@callisto.of.borg>
+Date: Mon, 18 Oct 1999 20:00:44 +0200
+To: Geert Uytterhoeven <geert@linux-m68k.org>, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: Support for Sawtooth (New G4) Motherboards
+Message-Id: <19991018200044.028209@mailhost.mipsys.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi, I have several questions regarding the latest devel kernel
-(2.3.22), that I am trying to get running on an RS6000.
+On Mon, Oct 18, 1999, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 
-1) Why does everything seem to want to access NVRAM things?  I've
-   found it scattered in several places throughout the kernel, such as
-   matroxfb.c.
+>> Finally, there is the sound, which is on an i2s bus. I don't know how
+>> such a bus looks like, and so I don't know if I'll be able to make a
+>> driver for this one, at least not immediately.
+>
+>i2s? Not i2c?
 
-2) Why is it trying to compile and use pmac_support (amongst other
-   pmac_* things).  I have it set to the CHRP architecture.
+Yes, I2S. There's also a couple of I2C busses (one in the northbridge,
+probably for the SDRAM config, the other one in the mac-io chip). 
 
-3) Why does pmac_support.c assume that you have ADB stuff compiled in?
+This part of the device tree looks like that:
 
-nvram_read_byte contains: "struct adb_request req".
+pci/mac-io
+    ...
+    /i2c
+        /i2c-cereal
+    /i2s
+        /i2s-a
+            /sound
+        /i2s-b
+    ...
 
-If I have understood correctly, ADB is an Apple thing, and really
-shouldn't have anything to do with my RS6000.  Is this correct?
-
-I'm sorry if some of these are silly questions, and hope my ignorance
-isn't too glaring:-)
-
-Thanks,
--- 
-David N. Welton, Developer, Linuxcare, Inc.
-415.354.4878 x241 tel, 415.701.7457 fax
-dwelton@linuxcare.com, http://www.linuxcare.com/
-Linuxcare. At the center of Linux.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
