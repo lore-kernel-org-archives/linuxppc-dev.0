@@ -1,30 +1,73 @@
-Date: Thu, 3 Jan 2002 14:58:46 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Stefan Jeglinski <jeglin@4pi.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: do_mounts.c parse error
-Message-ID: <20020103215846.GD749@cpe-24-221-152-185.az.sprintbbd.net>
-References: <p04330106b85a7acfa489@[63.220.231.138]>
+From: Jeremy Friesner <jaf@lcsaudio.com>
+Reply-To: jaf@lcsaudio.com
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Having linking problems with atomic_inc(), atomic_dec_and_test() in user app, help!
+Date: Thu, 3 Jan 2002 19:24:40 -0800
+Cc: jeffk@jdkoftinoff.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <p04330106b85a7acfa489@[63.220.231.138]>
+Content-Type: text/plain; charset=iso-8859-1
+Message-Id: <02010319244002.11251@jeremy>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Jan 03, 2002 at 04:28:15PM -0500, Stefan Jeglinski wrote:
+Hi Linux Guys,
 
-> I still get a parse error in 2.5.2-pre5 (bk mirror) in
-> init/do_mounts.c, as reported for -pre1. I've tried scoring the code
-> for typos but I can't find one. Is this just a dumb typo I'm missing,
-> or something more subtle?
+I have what I hope is an easy question for you... I have am writing an
+user-space application that does some multithreading (using pthreads), and
+does some thread-safe reference counting by using the functions in
+asm/atomic.h.  Specifically, I'm using the atomic_inc(atomic_t *) and
+atomic_dec_and_test(atomic_t *) functions.
 
-Not sure.  But who said 2.5.x is going to compile out of the box anyhow?
-Which reminds me, I'm going to push 2.5.2-pre6 soon, and almost nothing
-is compiling in that. :)
+Under Red Had Linux 7.1 on an Intel box, the program compiles and links fine.
+Under LinuxPPC 2.2.17-0.6.1, however, the link fails with the error output
+that is included below -- it fails whether I have optimization enabled (-O3),
+or not.  Is there some special library I need to link in, or magic compiler
+flag needed in order to access those functions?  Any advice?
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Also, what does "relocation truncated to fit: R_PPC_REL24 atomic_inc(atomic_t
+*)" mean?
+
+Thanks,
+Jeremy
+
+Begin link output--------------
+
+gcc  -o lxelcd Message.o AbstractMessageIOGateway.o MessageIOGateway.o
+String.o StorageReflectSession.o AbstractReflectSession.o
+DumbReflectSession.o ReflectServer.o StringMatcher.o PathMatcher.o
+NetworkUtilityFunctions.o SysLog.o Thread.o muscled.o FileDescriptorDataIO.o
+FilterSessionFactory.o PulseNode.o RateLimitSessionIOPolicy.o
+MemoryAllocator.o GlobalMemoryAllocator.o CCSysexMessageIOGateway.o
+CCModuleMessageIOGateway.o CCFrameMessageIOGateway.o CCSession.o
+CCModuleChainSession.o CCControlSession.o CCServer.o CCFrameSession.o
+CCComponentSession.o CCConfigFile.o CCRangeConvert.o CCModuleLogic.o
+CCTransportModuleLogic.o CCEditorModuleLogic.o CCMeterModuleLogic.o
+CCFaderModuleLogic.o CCBitPack.o CCFrameSubscription.o
+CCDynamicHardwareSession.o CCSoftMeterSession.o CCSoftMeterModuleLogic.o
+CCAbstractEditBoxModuleLogic.o CCEQEditBoxModuleLogic.o
+CCBusAssignEditBoxModuleLogic.o CCSoftGenericSession.o
+CCSoftGenericModuleLogic.o ControlPointSpec.o CCChannelInfo.o ccserverd.o
+ccconfigd.o LXADTPSession.o LXFakeStorage.o LXFakeFileStorage.o
+LXADTPIOGateway.o LXSCSIStorage.o lxaudiodtpd.o LXWTRXAudioIOGateway.o
+LXWTRXAudioSession.o LXWTRXIOGateway.o LXWTRXServer.o LXWTRXSession.o
+LXWTRXStatusIOGateway.o LXWTRXStatusSession.o tc.o lxwtrxd.o AsyncIORequest.o
+LXWTRXAsyncDiskIOSession.o SafetyNetDataIO.o LXTCPComSession.o
+LXTCPComIOGateway.o LXTCPHSBIOGateway.o LXTCPComServer.o lxtcpcomd.o lxelcd.o
+webserve.o sock.o filewebserve.o getframesstatus.o sendsysex.o watchalerts.o
+smallframestatus.o -lm -lpthread
+Message.o: In function `muscle::AtomicCounter::AtomicIncrement(void)':
+Message.o(.muscle::AtomicCounter::gnu.linkonce.t.AtomicIncrement(void)+0x24):
+undefined reference to `atomic_inc(atomic_t *)'
+Message.o(.muscle::AtomicCounter::gnu.linkonce.t.AtomicIncrement(void)+0x24):
+relocation truncated to fit: R_PPC_REL24 atomic_inc(atomic_t *)
+Message.o: In function `muscle::AtomicCounter::AtomicDecrement(void)':
+Message.o(.muscle::AtomicCounter::gnu.linkonce.t.AtomicDecrement(void)+0x24):
+undefined reference to `atomic_dec_and_test(atomic_t *)'
+Message.o(.muscle::AtomicCounter::gnu.linkonce.t.AtomicDecrement(void)+0x24):
+relocation truncated to fit: R_PPC_REL24 atomic_dec_and_test(atomic_t *)
+collect2: ld returned 1 exit status
+make: *** [lxelcd] Error 1
+[jaf@jonathan lxelcd]$
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
