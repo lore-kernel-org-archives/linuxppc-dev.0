@@ -1,46 +1,98 @@
-Date: Thu, 8 Nov 2001 13:07:55 +0100 (MET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Chris Emerson <chris@tartarus.org>
-Cc: Paul Mackerras <paulus@samba.org>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: The Plan
-In-Reply-To: <20011108111401.A18221@ixion.tartarus.org>
-Message-ID: <Pine.GSO.4.21.0111081307200.11099-100000@mullein.sonytel.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Thu, 8 Nov 2001 10:04:38 -0500
+Subject: Re: [PATCH]: Make radeonfb work alot better with new powerbooks
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v472)
+Cc: <ajoshi@unixbox.com>, <linuxppc-dev@lists.linuxppc.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Daniel Berlin <dan@cgsoftware.com>
+In-Reply-To: <20011108102237.11596@smtp.adsl.oleane.com>
+Message-Id: <EDBD773A-D459-11D5-9D29-0030657B5340@cgsoftware.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 8 Nov 2001, Chris Emerson wrote:
-> On Wed, Nov 07, 2001 at 10:35:07PM +1100, Paul Mackerras wrote:
-> > (to reduce the arch/ppc/kernel clutter, that is)
-> >
-> > This is what I am thinking of; I have implemented it locally here and
-> > I'm doing test compiles with arch/ppc/configs/*.
-> >
-> > - arch/ppc/kernel/ppc_asm.h moves to include/asm-ppc, and the contents
-> >   of ppc_asm.tmpl get folded into it, with corresponding changes to
-> >   arch/ppc/*/*.S.
+On Thursday, November 8, 2001, at 05:22  AM, Benjamin Herrenschmidt
+wrote:
+
+>>
+>> This patch makes the radeonfb work a lot better on the rev b
+>> powerbooks.
+>> It's against benh's latest, as of last night.
 >
-> This sounds like a good thing for the user-mode port, which tries to use
-> a couple of the assembler files from arch/ppc.  There's some hideous symlink
-> hackery going on to get them to work at the moment.  If it's all just in
-> include/asm-ppc, that should be much nicer.
+> Heh, Great ! I ordered a new TiPb but didn't get it yet :)
+:)
+They are very nice.
+In case you were wondering, here's a rundown of how things work:
+Firewire is an LSI FW500 chip (AFAICT), and works with ohci1394 in your
+tree without any changes.
+The ethernet phy is something i've never seen before (It works, being
+detected as a generic PHY). It's got an ID number that doesn't seem to
+be like any of the others we can detect, but i could be wrong.
+Sound seems the same as the ibook2 (TAS chip).
+>
+> Could you send me a tarball of /proc/device-tree ?
+>
+Sure, i'll do it when i get home today.
+>> Fixed/added:
+>> 1. Any other mode besides 640x480 was absurdly slow. Unusable, in fact.
+>> It now is pretty darn quick, and completely usable.
+>> 2. It would default to 640x480, rather than 1152x768, on rev b
+>> powerbooks.
+>> 3. It would also determine that we had no monitor, and no display
+>> panel,
+>> because it couldn't read the video bios that doesn't exist in the
+>> powerbooks.
+>> In reality, the LCD is on the DVI port.
+>> So for rev b powerbooks, we go ahead and say so, and let it detect
+>> the flat panel size/stretching/etc.
+>
+> We need to fix this for DVI LCDs as well, for both radeon and aty128fb.
+> "Mac" radeons will put the monitor EDID in the device-tree, so we could
+> probably just parse that, but r128's firmware won't. I'd rather
+> implement
+> the proper i2c code for reading that and add a generic fbdev ioctl for
+> retreiveing it (as it's not card specific) so userland tools can use it
+> to generate proper XF86Config as well.
 
-Both MIPS and ARM have board-specific directories in include/asm-*/ and
-arch/*/.
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+The code to do i2c on the radeon and aty128fb doesn't seem that tricky
+to implement ( At least, from reading the xfree86 drivers), so i might
+take a whack at it.
+>
+>> 4. It would assume blanking meant blanking the crt. It will now turn
+>> off
+>> the lcd as well.
+>> 5. It now supports the backlevel lighting control. It's the same on the
+>> rage128 and the radeon, so i copied and renamed the routines from
+>> aty128fb.c
+>
+> Beware with blanking of the CRT/LCD. The current code I have for r128
+> seem to have problems. I've user reports on r128 of "burned" lines after
+> keeping the LCD off a long timech fortunately disappeared, but only
+> after
+> several hours of normal use. I suspect a different shutdown sequence
+> should
+> be used to properly turn off the LVDS and the panel itself, but I don't
+> know
+> what for sure, the docs I have from ATI aren't very precise.
+>
+> I want to remove part of that code and let only LVDS_DIS and backlight
+> off.
+>
+>> It *shouldn't* have any problems on a normal radeon powermac, but i
+>> don't
+>> have one to try it out on.
+>
+> I'll try it on the radeon AGP card I have at work, if it still works,
+> I'll
+> include it in my tree and bk _devel.
+>
+>> Hopefully, this is useful for someone besides me.
+>
+> Yup ;)
+>
+> Regards,
+> Ben./
+>
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
