@@ -1,49 +1,57 @@
-Subject: Re: GT64260_eth (Ethernet) Driver
-From: David Woodhouse <dwmw2@infradead.org>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Cc: Dieu Morales <dieumorales@yahoo.com>,
-	linuxppc-embedded@lists.linuxppc.org,
-	Brian Waite <waite@skycomputers.com>
-In-Reply-To: <40DB2199.2050006@mvista.com>
-References: <20040620202719.25741.qmail@web60407.mail.yahoo.com>
-	 <40DA06BE.204@mvista.com>
-	 <1088066228.18627.3352.camel@hades.cambridge.redhat.com>
-	 <40DB2199.2050006@mvista.com>
-Content-Type: text/plain
-Message-Id: <1088147437.4636.114.camel@imladris.demon.co.uk>
-Mime-Version: 1.0
-Date: Fri, 25 Jun 2004 08:10:37 +0100
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: C.Gillan@ecit.qub.ac.uk
+Message-ID: <34753.143.117.36.139.1088161982.squirrel@143.117.36.139>
+Date: Fri, 25 Jun 2004 12:13:02 +0100 (BST)
+Subject: PPCBoot question
+To: linuxppc-embedded@lists.linuxppc.org
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, 2004-06-24 at 11:46 -0700, Mark A. Greer wrote:
-> >Ooh look another one. What's in here that merits it having its own tree
-> >and prevents it from being accepted upstream?
-> >
-> It doesn't "merit" its own tree; it has its own tree because the code is
-> not yet ready to be passed upstream but others need to see the code.  If
-> you don't want to deal with the code in this tree, don't.  When it is
-> ready, and eventually [hopefully] accepted into the kernel.org tree,
-> this tree will disappear.
+I have been using PPCBoot/Das U-Boot to boot an MPC860 based
+evaluation board in which the Kernel and an (initrd) file
+system are loaded at defined addresses in Flash.
 
-Oh, I definitely want to deal with this tree :)
+The Flash system has been partitioned (in the kernel) using
+MTD so that there is a partition holding the initrd filesystem.
 
-Do you have a brief list of what still offends you about this rewritten
-code, such that you haven't sent it yet? Especially those parts which I
-could usefully address myself.
+I would like to to be able to build only one binary file
+to be used for download to the target, rather than have to
+download the kernel and filesystem separately. But, I'm not sure if
+this is possible and if it is, how to set up the bootm command
+to work with this. Perhaps, I've missed something in the documentation.
 
-I note there are no platforms actually present which use the 64360.
-There's Artesyn Katana support in Kconfig but no actual platform support
-for that unless I'm being particularly dim today.
+As I understand it, the mkimage utility that comes with the PPCBoot/Das
+U-Boot bootloader software can build a combined image containing both
+the kernel and the file system - following is from the PPCBoot documentation:
 
-Is the 64360 support expected to work? Is there an older known-working
-tree for 64360? I'm looking at the Timesys 2.4 port for the Dy-4
-DMV-182, but that doesn't actually seem to boot on my DMV-182 so I lack
-confidence in the wisdom of using that as any form of reference ;)
+ -> tools/mkimage -n '2.2.13 for initrd on TQM850L' \
+        > -A ppc -O linux -T kernel -C gzip -a 00000000 -e 0000000C \
+        > -d /opt/mpc8xx/src/linux-2.2.13/arch/ppc/coffboot/vmlinux.gz \
+        > examples/image-2.2.13-initrd
+        Image Name:   2.2.13 for initrd on TQM850L
+        Created:      Wed Jul 19 02:34:59 2000
+        Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+        Data Size:    335725 Bytes = 327.86 kB = 0.32 MB
+        Load Address: 0x00000000
+        Entry Point:  0x0000000c
 
---
-dwmw2
+My confusion arises from the fact that I don't see a way of
+specifying the address to which the file system will be downloaded,
+whenever it is inside this single binary file.
+As I understand it, I need to specify that address as the second
+argument on the bootm command, e.g.
+
+    bootm <kernel-address> <file-system-address>
+
+
+I'd be grateful for any help received.
+
+Thanks,
+
+Charles Gillan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
