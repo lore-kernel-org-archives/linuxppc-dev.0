@@ -1,34 +1,27 @@
-Date: Mon, 4 Dec 2000 18:37:19 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: CRS <cshaw@dera.gov.uk>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MVME2700 VME
-In-Reply-To: <3A2BD0B7.1D7F9D8C@dera.gov.uk>
-Message-ID: <Pine.HPX.4.10.10012041829500.3044-100000@gra-ux1.iram.es>
+From: Cha Hyun Joon <tachyon@postech.ac.kr>
+Message-Id: <200012041751.CAA03877@vision.postech.ac.kr>
+Subject: [i2c] Do I need ucode relocation patch?
+To: linuxppc-embedded@lists.linuxppc.org
+Date: Tue, 5 Dec 2000 02:51:30 +0900 (KST)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=EUC-KR
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, 4 Dec 2000, CRS wrote:
+Hello.
 
->
-> Has anyone managed to get a Linux VME driver to work with the MVME 2700?
+I'm running Montavista hardhat Linux kernel-2.2.14 with my custom board.
 
-I'm using my own driver on MVME2400 and MVME2600. Some colleagues have
-used it on MVME2700 too so it should work. You will have to work around
-bugs if you have Universe I (the driver works around most but not all
-bugs). It depends on whether you are using 2.2 or 2.4, I shall only be
-able to finish it next year but it already provides quite a lot of
-capabilities (interrupts, DMA, stacked modules for device specific
-drivers, etc...).
+Since there is video decoder board which is connected by I2C bus with MPC860SAR on board, I have to adopt i2c device driver of Kim Jorgensen and my first attempt to write a value to i2c bus makes Linux hang.
 
-Everything is on my ftp site at ftp://vlab1.iram.es/pub/linux-2.[24],
-mostly in the form of patches relative to the official (Linus) kernel.
+There are many posting of I2C and SCC1 conflict, so I've searched 860 errata from Motorola web site. But my 860 is not listed anywhere on it.
 
-	Regards,
-	Gabriel.
+The version number of MPC860SAR is "XPC860SRZP50D3 , QQFV00261 , 2K20A".
+I'm using SCC1 as ethernet and SMC1 as ttyS0.
 
+Do I need ucode relocation patch to work with i2c bus?
+
+Thanks in advance.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
