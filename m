@@ -1,28 +1,44 @@
-Message-ID: <3A6C7795.4796F29@mvista.com>
-Date: Mon, 22 Jan 2001 13:10:29 -0500
-From: Dan Malek <dan@mvista.com>
+Message-ID: <3A6C7970.2E3E88CA@relog.ch>
+Date: Mon, 22 Jan 2001 19:18:24 +0100
+From: Michel Dänzer <daenzer@relog.ch>
+Reply-To: michdaen@iiic.ethz.ch
 MIME-Version: 1.0
-To: Tom Gall <tgall@rochcivictheatre.org>
-CC: Troy Benjegerdes <hozer@drgw.net>, linuxppc_commit@hq.fsmlabs.com,
-        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: context overflow
-References: <3A68F7A0.693639F1@mvista.com> <20010121222842.A27103@altus.drgw.net> <3A6BB971.7F128273@rochcivictheatre.org>
-Content-Type: text/plain; charset=us-ascii
+To: Roman Zippel <zippel@fh-brandenburg.de>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Jeff Hartmann <jhartmann@valinux.com>,
+        Gareth Hughes <gareth@valinux.com>, linuxppc-dev@lists.linuxppc.org,
+        dri-devel@lists.sourceforge.net, Paul Mackerras <paulus@linuxcare.com>
+Subject: Re: [Dri-devel] PPC Lockup (ati-pcigart-branch)
+References: <Pine.GSO.4.10.10101221854100.18061-100000@zeus.fh-brandenburg.de>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tom Gall wrote:
+Roman Zippel wrote:
 
-> I will look into this tomorrow.  It's an important fix, I don't want to rush.
+> > > [drm] drm_sg_alloc
+> > > i: ca292000
+> > > pgd: c014dca0
+> > > pmd: c014dca0
+> > > pte: 00000a48
+> > > Oops: kernel access of bad area, sig: 11
+> >
+> > Looking at pgd/pmd, pte seems fishy for a pointer. Any reason why this
+> > code shouldn't work on PPC?
+>
+> There is no pte table and so there is nothing mapped at that address, you
+> can use (pgd|pmd|pte)_present() to test for that.
 
-This was a bug that appeared during the 2.3 development, and (the
-collective :-) we have been running systems like this for a long
-time.  I'm running all of mine with my proposed (proper :-) bug
-fix, but since they never crashed before......I'll at least check
-it into the 2_5 baseline along with some other stuff.
+You are saying we should use *_present() to check each of these before using
+*_offset to get the pointer? And what if *_present() is false?
 
 
-	-- Dan
+Michel
+
+
+--
+Earthling Michel Dänzer (MrCooper)    \   Debian GNU/Linux (powerpc) developer
+CS student, Free Software enthusiast   \        XFree86 and DRI project member
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
