@@ -1,42 +1,45 @@
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: Caching problems using UART driver on custom MPC8260 board
-Date: Thu, 23 Oct 2003 19:10:35 +0100
-Message-ID: <DEF39A0710293E489D45B10E06645CBD02671352@dub-msx1.spectelcorp.com>
-From: "Joao Vicente" <joao.vicente@spectel.com>
+	charset="US-ASCII"
+Subject: Problems bring up NFS mount on MPC8270 board
+Date: Thu, 23 Oct 2003 21:15:23 -0400
+Message-ID: <8529B5552D4EAA4DAEDF49650C64B2B41673CC@tarpon.mangrovesystems.com>
+From: "Joe Birch" <jbirch@mangrovesystems.com>
 To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi
+Hello
 
-I am using PPC Linux version 2.4.20 on a MPC8260 based custom board, using U-boot 0.4.5 as a bootloader.
+I am trying to bring up the kernel on custom hardware based on the
+MPC8270.
 
-I am having some problems using the CPM drivers, which I am inclined to think that could be due to the fact that the kernel memory in cache enabled.
+I've ported the LSP from Embedded Planet EP8260. I am using u-boot 4.0
 
-I am modified the uart driver in order to suit the CPM SCC4 port, which is used as a UART on this board.
-The UART driver seems to use m8260_cpm_dpalloc function to allocate memory from DPRAM (DBAT0 - cache is disabled), for the buffer descriptors, and use m8260_cpm_hostalloc function to allocate system memory (DBAT2 - cache is enabled) for the data buffers.
+After doing NFS mount of FS, I usually get these message on the console:
 
-I tried to use the driver in this way, but it did not work. I got a series of blank cahracters on the terminal, and when I looked at the TX data with a scope, I saw that the data was always the same, even though the characters were being copied to the exact memory location where the buffer descriptor cbd_bufaddr was set to. i.e. __va(bdp->cdb_bufaddr).
+INIT: version 2.78 bootimory: 56k init.
+INIT: Entering runlevel:
+INIT: no more processes left in this runlevel
 
-I then, taking as a reference the CPM SPI driver, tried to call flush_dcache_range() with the data buffer range, just before setting the BD_SC_READY bit on bdp->cdb_sc.
+Console locks but I can ping the board successfully
 
-This seemed to resolve the problem for the UART driver, but now I am confronted with the fact that the FCC driver uses m8260_cpm_hostalloc for both Buffer Descriptors and data buffers.
-I see that this driver is widely used by a series of standard boards, and invalidating cache after writing to Buffer Descriptor and after writing onto data buffers seems a bit over the top.
+Sometimes get passed this and get:
 
-I also tried to disable cashing on DBAT2 to see if I could use the UART and FCC drivers, but I did not get any output on the console.
+INIT: version 2.78 bootimory: 56k init.
+Activating swap...
+Checking all file systems...
+Parallelizing fsck version 1.22 (22-Jun-2001)
+Calculating module dependencies...
 
-I try to find threads with similar problems as the one I am getting here, but I did not seem to find any relevant ones for this particular problem, which is leading me to think that I might be missing something here.
+And then the target stops (crashes)
 
-Should I allocate a section of memory into another DBAT with non caching attribute, to be used with hardware ?
-Is there another trick to bypass caching for a particular section of memory allocated ?
 
-I would appreciate any suggestions regarding this
+I have checked SDRAM memory (U-boot post) and its OK.
 
-Best regards
-
-Joao Vicente
+Any ideas?
+Thanks
+Joe
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
