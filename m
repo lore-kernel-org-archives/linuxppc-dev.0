@@ -1,25 +1,28 @@
-Subject: PREEMPT on PPC
+Subject: Re: PREEMPT on PPC
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
 Cc: "debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
+In-Reply-To: <1080197240.1210.2.camel@gaston>
+References: <1080197240.1210.2.camel@gaston>
 Content-Type: text/plain
-Message-Id: <1080197240.1210.2.camel@gaston>
+Message-Id: <1080201697.1217.3.camel@gaston>
 Mime-Version: 1.0
-Date: Thu, 25 Mar 2004 17:47:20 +1100
+Date: Thu, 25 Mar 2004 19:01:38 +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi !
+On Thu, 2004-03-25 at 17:47, Benjamin Herrenschmidt wrote:
+>
+> I've start looking into the various issues of running CONFIG_PREEMPT
+> on ppc32. I found some problems, there may be more, but here's a first
+> patch that should apply on a recent 2.6.x.
+>
+> I suggest if you want to try this out that you run with the various
+> kernel debugging options enabled. Report me remaining problems.
 
-I've start looking into the various issues of running
-CONFIG_PREEMPT on ppc32. I found some problems, there
-may be more, but here's a first patch that should apply on a
-recent 2.6.x.
-
-I suggest if you want to try this out that you run with the
-various kernel debugging options enabled. Report me remaining
-problems.
+And here's an updated version of that patch that doesn't break
+sleep on laptops.
 
 Ben.
 
@@ -291,7 +294,7 @@ Ben.
 
 ===== drivers/macintosh/via-pmu.c 1.61 vs edited =====
 --- 1.61/drivers/macintosh/via-pmu.c	Thu Mar  4 13:04:36 2004
-+++ edited/drivers/macintosh/via-pmu.c	Thu Mar 25 16:04:35 2004
++++ edited/drivers/macintosh/via-pmu.c	Thu Mar 25 18:52:00 2004
 @@ -137,7 +137,8 @@
  static int data_len;
  static volatile int adb_int_pending;
@@ -371,82 +374,48 @@ Ben.
 
  	return 0;
  }
-@@ -2360,7 +2374,7 @@
+@@ -2330,6 +2344,8 @@
+ 		return -EBUSY;
+ 	}
+
++	preempt_disable();
++
+ 	/* Make sure the decrementer won't interrupt us */
+ 	asm volatile("mtdec %0" : : "r" (0x7fffffff));
+ 	/* Make sure any pending DEC interrupt occurring while we did
+@@ -2352,6 +2368,7 @@
+ 	if (ret) {
+ 		wakeup_decrementer();
+ 		local_irq_enable();
++		preempt_enable();
+ 		device_resume();
+ 		broadcast_wake();
+ 		printk(KERN_ERR "Driver powerdown failed\n");
+@@ -2360,7 +2377,8 @@
 
  	/* Wait for completion of async backlight requests */
  	while (!bright_req_1.complete || !bright_req_2.complete ||
 -		!bright_req_3.complete || !batt_req.complete)
-+	       !batt_req.complete)
++
++			!batt_req.complete)
  		pmu_poll();
 
  	/* Giveup the lazy FPU & vec so we don't have to back them
-@@ -2427,9 +2441,12 @@
- 	if (!grackle)
- 		return -ENODEV;
+@@ -2398,6 +2416,8 @@
 
-+	preempt_disable();
-+
- 	ret = pmac_suspend_devices();
- 	if (ret) {
- 		printk(KERN_ERR "Sleep rejected by devices\n");
-+		preempt_enable();
- 		return ret;
- 	}
-
-@@ -2497,6 +2514,8 @@
-
- 	pmac_wakeup_devices();
+ 	pmu_blink(1);
 
 +	preempt_enable();
 +
- 	return 0;
- }
+ 	/* Resume devices */
+ 	device_resume();
 
-@@ -2513,9 +2532,12 @@
- 		return -ENOSYS;
- 	}
-
-+	preempt_disable();
-+
- 	ret = pmac_suspend_devices();
- 	if (ret) {
- 		printk(KERN_ERR "Sleep rejected by devices\n");
-+		preempt_enable();
- 		return ret;
- 	}
-
-@@ -2595,6 +2617,8 @@
-
- 	pmac_wakeup_devices();
-
-+	preempt_enable();
-+
- 	return 0;
- }
-
-@@ -2619,12 +2643,15 @@
- 	}
- 	mem_ctrl_sleep = (unsigned int *) (mem_ctrl + PB3400_MEM_CTRL_SLEEP);
-
-+	preempt_disable();
-+
- 	/* Allocate room for PCI save */
- 	pbook_alloc_pci_save();
-
- 	ret = pmac_suspend_devices();
- 	if (ret) {
- 		pbook_free_pci_save();
-+		preempt_enable();
- 		printk(KERN_ERR "Sleep rejected by devices\n");
- 		return ret;
- 	}
-@@ -2673,9 +2700,10 @@
+@@ -2673,9 +2693,9 @@
  		mb();
 
  	pmac_wakeup_devices();
 -
  	pbook_free_pci_save();
-+	preempt_enable();
  	iounmap(mem_ctrl);
 +
  	return 0;
@@ -524,5 +493,30 @@ Ben.
 +
 
  #endif /* __KERNEL__ */
+
+===== sound/oss/dmasound/dmasound_core.c 1.22 vs edited =====
+--- 1.22/sound/oss/dmasound/dmasound_core.c	Mon Feb  9 13:18:52 2004
++++ edited/sound/oss/dmasound/dmasound_core.c	Thu Mar 25 18:41:02 2004
+@@ -1004,6 +1004,7 @@
+ static int sq_fsync(struct file *filp, struct dentry *dentry)
+ {
+ 	int rc = 0;
++	int timeout = 5;
+
+ 	write_sq.syncing |= 1;
+ 	sq_play();	/* there may be an incomplete frame waiting */
+@@ -1016,6 +1017,12 @@
+ 			 * and clear the queue. */
+ 			sq_reset_output();
+ 			rc = -EINTR;
++			break;
++		}
++		if (!--timeout) {
++			printk(KERN_WARNING "dmasound: Timeout draining output\n");
++			sq_reset_output();
++			rc = -EIO;
+ 			break;
+ 		}
+ 	}
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
