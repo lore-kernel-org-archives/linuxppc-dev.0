@@ -1,32 +1,39 @@
-To: Ralph Blach <rcblach@raleigh.ibm.com>
-Cc: Embedded Linux list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Wait queue question
-References: <3A8A9EB2.660A7A2D@raleigh.ibm.com>
-From: Roland Dreier <roland@topspincom.com>
-Date: 14 Feb 2001 09:30:18 -0800
-In-Reply-To: Ralph Blach's message of "Wed, 14 Feb 2001 10:05:22 -0500"
-Message-ID: <52snlh41g5.fsf@love-boat.topspincom.com>
+Message-ID: <00933BFA237CD2119B3400409543582704A2BA@MEV01>
+From: Ian Abbott <abbotti@mev.co.uk>
+To: Embedded Linux list <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Wait queue question
+Date: Wed, 14 Feb 2001 18:04:07 -0000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-    Ralph> If I have a wait queue thats I am using to wake up a device
-    Ralph> driver read from an interrupt service routine.  If I get
-    Ralph> three interrupt and three wake_up_interrables, will I need
-    Ralph> to execute three sleep_ons to get the wait queue back to
-    Ralph> the null state, or is it just back after the first
-    Ralph> sleep_on?
+Ralph Blach wrote:
 
-You really don't want to use sleep_on() any more (Linux wants to
-remove it out for 2.5).  Take a look at
+> If I have a wait queue thats I am using to wake up a device
+> driver read
+> from an interrupt service routine.
+> If I get three interrupt and three wake_up_interrables, will I need to
+> execute three sleep_ons to get the wait queue back to the
+> null state, or
+> is it just back after the first sleep_on?
 
-<http://lwn.net/2001/0201/a/sleep-fix.php3>
+They do not work like semaphores. wake_up and wake_up_interruptible have
+an immediate effect on processes waiting on the specified queue, but
+don't modify a counter or anything like that. This also means you can't
+sleep on an event that has already happened, like you could with a
+semaphore.
 
-for a safer way to sleep, or use the wait_event macro (in
-linux/sched.h).
+Also, you probably want to use interruptible_sleep_on rather than
+sleep_on, unless you've already considered this.
 
-Roland
+These are general Linux driver writing questions, rather than embedded
+Linux PPC questions. You may be better off addressing these sorts of
+questions to a different list or newsgroup. Also, you may wish to
+consider investing in Alessandro Rubini's "Linux Device Drivers",
+published by O'Reilly. It's starting to get a little out-of-date in
+places but is still a good introduction to writing device drivers for
+Linux.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
