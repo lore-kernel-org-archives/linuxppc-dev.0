@@ -1,57 +1,51 @@
-Date: Sat, 07 Apr 2001 22:34:11 -0700
-Subject: Re: Coding device driver for a minor device.
-From: Karsten Jeppesen <kj-list@jeppesens.com>
-To: David Schleef <ds@schleef.org>,
-	Karsten Jeppesen <karsten@jeppesens.com>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Message-ID: <B6F54661.5D5B%kj-list@jeppesens.com>
-In-Reply-To: <20010407175334.A27797@stm.lbl.gov>
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Message-ID: <3AD01011.A8FAB831@mvista.com>
+Date: Sun, 08 Apr 2001 03:15:29 -0400
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
+To: David Schleef <ds@schleef.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: bugfix patch to arch/ppc/8260_io/fcc_enet.c
+References: <20010406071644.A2517@stm.lbl.gov>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Thanks Dave,
+David Schleef wrote:
+>
+> The attached patch fixes a bug with 8260 fcc_enet driver that
+> is related to when the TX buffer becomes full.
 
-Looking through it I decided for major 10, minor 156, the lcd front panel.
-It is not merely a local use device rather I have a new ppc platform which
-has a front VFD, two push buttons and a tri-state led.
+Well, you need to prove to me you don't have a wrap-around
+problem.  The line:
+	if(cep->skb_cur - cep->skb_dirty >= TX_RING_SIZE){
 
-Thaks again,
+is in big trouble, and I suspect you changed these from shorts
+to ints because it didn't work right.  I suspect all you did
+was postpone the problem until you hit 4G of packets instead of 64K.
 
-karsten
 
-> From: David Schleef <ds@schleef.org>
-> Reply-To: David Schleef <ds@schleef.org>
-> Date: Sat, 7 Apr 2001 17:53:34 -0700
-> To: Karsten Jeppesen <karsten@jeppesens.com>
-> Cc: linuxppc-dev@lists.linuxppc.org
-> Subject: Re: Coding device driver for a minor device.
->
->
-> On Sat, Apr 07, 2001 at 12:42:19PM -0700, Karsten Jeppesen wrote:
->>
->> I have done modules.
->>
->> Now the problem is that I have 2 pushbuttons that I would like to read.
->> Looking in the device list I see dev 10, which has a lot of - let us call it
->> miscellaneous - content. This one seems to fit here. Maybe as a minor 185 or
->> 186.
->> But how do I locate the device driver for device major 10?
->>
->> I am certain there is a simple way - somebody knows it?
->
-> See linux/include/linux/miscdevice.h.  And you should probably use
-> a minor in the range of 240-255, as those are reserved for local
-> use.
->
->
->
-> dave...
->
->
->
+> ..... Currently,
+> the driver relies on the BD_ENET_TX_READY for determining if
+> a ring slot is available for a tx buffer.  This is not a
+> valid criterion, because the interrupt handler may not have
+> cleared the slot from a previous tx buffer.
 
+I beg to differ.  It is a valid criterion because the interrupt
+handler isn't responsible for clearing the flag.  The transmit
+function sets it, and the CPM will clear it when it is done sending
+the buffer.
+
+You are going to have big problems if you are writing into buffers
+that have this flag set.
+
+> ..... This bug is easy
+> to generate by writing files over NFS with large wsize.
+
+Then, there is some other bug that needs to be found and fixed.....
+
+
+
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
