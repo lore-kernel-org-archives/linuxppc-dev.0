@@ -1,18 +1,19 @@
-Return-Path: <avolkov@varma-el.com>
-Received: from amanaus.varma-el.com (unknown [195.144.244.147])
-	by ozlabs.org (Postfix) with ESMTP id 0E24767A72
+Return-Path: <habdutycom@habitantsduty.com>
+Received: from asterix.it2go.info (fusehost12.fusehost.net [195.47.215.71])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9655F67A2F
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 27 Mar 2005 23:45:16 +1000 (EST)
-Message-ID: <4246B8E6.4060401@varma-el.com>
-Date: Sun, 27 Mar 2005 17:45:10 +0400
-From: Andrey Volkov <avolkov@varma-el.com>
-MIME-Version: 1.0
-To: Sylvain Munaut <tnt@246tNt.com>, Dale Farnsworth <dale@farnsworth.org>,
-	ML linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-References: <0.20050327_004704.tnt@patchsend.246tNt.com>
-In-Reply-To: <0.20050327_004704.tnt@patchsend.246tNt.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: Re: [PATCH 0/6] Change MPC52xx to platform bus / ppc_sys model
+	Mon, 28 Mar 2005 11:41:26 +1000 (EST)
+Received: from apache by asterix.it2go.info with local (Exim 4.43)
+	id 1DFhNk-0007kE-8Q
+	for linuxppc-embedded@ozlabs.org; Mon, 28 Mar 2005 01:41:24 +0200
+To: linuxppc-embedded@ozlabs.org
+From: Habitants@ozlabs.org, "Duty <johan_loves_mel"@hotmail.com
+Message-Id: <E1DFhNk-0007kE-8Q@asterix.it2go.info>
+Date: Mon, 28 Mar 2005 01:41:24 +0200
+Subject: HabitantsDuty - Win prices!!
+Reply-To: From@ozlabs.org, johan_loves_mel@hotmail.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,35 +24,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Sylvain, Dale
+Dear friend,
 
-Which state of fec ocp -> fec platform conversion?
-Without fec, IMHO, this patches less usable.
+Today i have found a strategic "browser-based" game, no downloads are required!
+Sign up today and win great prices!!
+You can win prices like PS2, Xbox, iPod Shuffle etc...
 
--- 
-Regards
-Andrey Volkov
+ The game is located at http://www.HabitantsDuty.com 
 
-Sylvain Munaut wrote:
-> Hi Andrew,
-> 
-> This series of patch changes all the MPC52xx related code
-> to use platform bus and ppc_sys instead of OCP. It's
-> divided in several patches that represents "steps" in
-> the conversion. However the intermediate states might
-> not be functionnal.
-> 
-> Theses are against a bk clone of this morning since they
-> depend on some patches that are on bk but not yet in
-> 2.6.12-rc1. I just tested and they also apply/run fine
-> with -mm3.
-> 
-> 
-> Regards,
-> 
-> 	Sylvain
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
+<a href="http://www.HabitantsDuty.com">AOL Users click here</a>
