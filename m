@@ -1,46 +1,21 @@
-Message-ID: <38FFA264.4D436FB@ccrl.mot.com>
-Date: Thu, 20 Apr 2000 19:35:48 -0500
-From: Steve Rossi <srossi@ccrl.mot.com>
 MIME-Version: 1.0
-To: Jason Wohlgemuth <jsw-embedded@mindspring.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: QSPAN PCI wierdness
-References: <NCBBKJKKGDLPHKDPAFFMOECDCEAA.jsw-embedded@mindspring.com>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <39002421.07687@mta1>
+Date: Fri, 21 Apr 2000 17:49:21 +0800 (CST)
+From: "zzh" <david-1z@263.net>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: memory map
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-That would be it. Thank you. I gues I've failed the #1 rule - always
-check the archives first. In fact come to think of it, I saw your
-posting the first time and I think I saved it away in a safe place so that
-I could come back to it later. Duh!
-
-Steve
-
-Jason Wohlgemuth wrote:
-
->
-> It seems that in the inline-assembly in qspan_pci.c the compiler doesn't
-> recognize that the first argument to the assembly may be modified.  This
-> resulted in a register getting trashed where it shouldn't have.  To fix the
-> problem I modified the in-line assembly to tell the compiler that this
-> register has been changed.
->
-> 86c86
-> <               : "=r"(x) : "r"(addr) : "%0")
-> ---
-> >               : "=r"(x) : "r"(addr))
->
-> Jason <jwohlgem@mindspring.com>
-
---
--------------------------------------------------------
-Steven K. Rossi                     srossi@ccrl.mot.com
-Staff Engineer
-Multimedia Communications Research Laboratory
-Motorola Labs
--------------------------------------------------------
+Hi,everyone.
+I have some questions about the memory map on linux on 8xx and ppc
+1)Some area eg BCSR mapped below KERNELBASE,is this safe?
+I check some process's vm area,it does not fall in this area,will
+it be unsafe under some circumstances?
+2)I read mapin_ram() in mm/init.c ,found that phys mem is also mapped
+both by bat and page table ,what is this for?
+Can someone help me?
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
