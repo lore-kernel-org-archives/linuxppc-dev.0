@@ -1,45 +1,45 @@
-Date: Sat, 20 Nov 1999 01:18:33 -0500
-From: Eric Dorland <dorland@lords.com>
-To: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
-Cc: Hollis R Blanchard <hollis+@andrew.cmu.edu>,
-        linuxppc-dev@lists.linuxppc.org
+Message-Id: <199911201327.OAA17266@appel.flower>
+To: linuxppc-dev@lists.linuxppc.org
+cc: dgatwood@deepspace.mklinux.org, dorland@lords.com, hollis+@andrew.cmu.edu
 Subject: Re: Floppy problems
-Message-ID: <19991120011833.B515@HSE-MTL-ppp4368.qc.sympatico.ca>
-References: <19991120005342.A515@HSE-MTL-ppp4368.qc.sympatico.ca> <Pine.LNX.3.96.991119221517.13279D-100000@deepspace.mklinux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.3.96.991119221517.13279D-100000@deepspace.mklinux.org>
+Date: Sat, 20 Nov 1999 14:27:22 +0100
+From: Jan Nieuwenhuizen <janneke@gnu.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Nov 19, 1999 at 10:17:00PM -0800, David A. Gatwood wrote:
-> On Sat, 20 Nov 1999, Eric Dorland wrote:
-> 
-> > I've tried a bunch of different floppies (at least 5), all give the exactly
-> > same error. The drive works flawlessly in the MacOS. I don't really have
-> > MkLinux installed to test it. Something I forgot to mention. When I try to
-> > to do dd, it gives the error and hangs the terminal. I can switch to another
-> > virt. console, but the dd process refuses to die. Is there something odd
-> > about the G3 floppy drive? Does anyone have this problem?
-> 
-> It does sound like a driver bug.  And no, the G3 machines should be using
-> the same (Mitsubishi or Panasonic) mechanisms used in all the other
-> PowerMacs.  It's remotely possible they used the Sony mechanism, but I
-> don't think they've done that since the Quadras, so....
 
-It is very weird. Again, other G3 users, does your floppy drive work?
+On Sat, 20 Nov 1999 David A. Gatwood writes:
 
-> > BTW, is there any utility in the MacOS to write raw disk images? DiskCopy
-> > will mount them, but doesn't seem to want to write them to a floppy. (Its a
-> > Debian i386 bootdisk).
-> 
-> DiskCopy should be able to write them, too.
+> It is very weird. Again, other G3 users, does your floppy drive work?
 
-It can't, it copes out with a -54 error. Looking it up its a permError
-(trying to write a locked file) which doesn't make much sense.
+No, mine doesn't work either.  I've reported and asked several times here,
+but never got replies (other than: use gdb.. duh)
 
-Eric Dorland
-dorland@lords.com
+See, eg,
+
+	 * To: linuxppc-dev@lists.linuxppc.org
+	 * Subject: /dev/fd0 close () hangs -- how to debug?
+	 * From: Jan Nieuwenhuizen <janneke@gnu.org>
+	 * Date: Tue, 16 Nov 1999 12:14:57 +0100
+	 _________________________________________________________________
+
+
+    Hi,
+
+    I've never gotten my floppy drive to work under Linuxppc, it works fine
+    under MacOS.  When accessing the floppy, it sounds ok, but the close ()
+    system call doesn't return.  After this, the fd0 device can't be accessed
+    again because it's busy.  The process can't be killed.
+
+    [...]
+
+
+Greetings,
+Jan.
+
+-- 
+Jan Nieuwenhuizen <janneke@gnu.org> | GNU LilyPond - The music typesetter
+http://www.xs4all.nl/~jantien/      | http://www.lilypond.org/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
