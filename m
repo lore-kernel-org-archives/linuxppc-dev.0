@@ -1,47 +1,31 @@
-Date: Sun, 18 Nov 2001 15:41:11 +0100 (MET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Till Adam <till@adam-lilienthal.de>
-Cc: Linux Frame Buffer Device Development <Linux-fbdev-devel@lists.sourceforge.net>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: [Linux-fbdev-devel] atyfb and the Mach64 LT PRO
-In-Reply-To: <20011118104140.A27002@neb.adam-lilienthal.de>
-Message-ID: <Pine.GSO.4.21.0111181540180.2305-100000@mullein.sonytel.be>
+Date: Sun, 18 Nov 2001 12:59:37 -0200 (BRST)
+From: Cloves Ferreira Junior <cfj@gandalf.cefetgo.br>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: gunzipping error
+Message-ID: <Pine.LNX.4.10.10111181258180.9582-100000@gandalf.cefetgo.br>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 18 Nov 2001, Till Adam wrote:
-> # Thus spake Geert Uytterhoeven (geert@linux-m68k.org):
->
-> > On Sat, 17 Nov 2001, Till Adam wrote:
-> > > So does the atyfb driver need to be extended to set the stretching
-> > > registers to a sane state to work properly with this card? If so, is
-> >
-> > Yes.
-> >
-> > > there someone on this list for whom this would be a three minute job and
-> > > who'd be willing to hack this in? I'm willing to help and test, but I'd
-> > > appreciate the guidance of someone with more experience in this.
-> >
-> > Some PPC people already started working on this.
->
-> Any details on who to hook up with or where to find these folks? A
-> mailing list perhaps?
+Hello,
 
-linuxppc-dev@lists.linuxppc.org (CC'ed in this message)
+I am trying to produce a bootable image to use with PPC 7025 F40 CHRP IBM
+workstation. From kernel 2.4.10 until version 2.4.14 the boot can not
+starts and the follow message appeared:
 
-Gr{oetje,eeting}s,
+exit INIT-PROGRAM: ELF-LOADER
+chrpboot starting: loaded at 0x00400000
+gunzipping (0x00010000 <- 0x00416470:0x004e94bc)...DEFAULT CATCH!,
+code=fff0020
+ ok
+0 >
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Can anyone point to me what is happening and why can I correct this boot
+process?
+Thanks in advance,
+  Cloves.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
