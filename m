@@ -1,26 +1,25 @@
-To: Lokesh Kumar <lokesh.kumar@wrx-us.com>
-Cc: "'Brian Padalino'" <bpadalino@perigee.com>,
-	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: U-Boot and 2.6.0-test1 kernel 
+To: cedric_aubert@yahoo.fr
+Cc: LinuxPPC Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Motorola finally anounces the MPC5200 
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 24 Jul 2003 09:09:52 EDT."
-             <3439AB3A99ECD5409F3A52ACF814744D158D55@norcom2.norcom.net>
-Date: Thu, 24 Jul 2003 15:27:25 +0200
-Message-Id: <20030724132730.41666C602D@atlas.denx.de>
+In-reply-to: Your message of "Thu, 24 Jul 2003 05:50:44 PDT."
+             <20030724125044.44568.qmail@web41808.mail.yahoo.com>
+Date: Thu, 24 Jul 2003 15:55:17 +0200
+Message-Id: <20030724135522.30423C602D@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3439AB3A99ECD5409F3A52ACF814744D158D55@norcom2.norcom.net> you wrote:
+In message <20030724125044.44568.qmail@web41808.mail.yahoo.com> you wrote:
 >
-> See u-boot's readme file. It describes the image format required for u-boot,
-> basically built from vmlinux using "mkimage" tool from denx eldk.
+> There are a french news about a declaration of MV that
+> they have
+> full support of the MPC5200.
 
-Actually "mkimage" is part of U-Boot (see the  tools  directory)  and
-copied from U-Boot into the ELDK.
-
+With a little luck there will be support for the MGT5100 and  MPC5200
+in the next version of the ELDK, too (including U-Boot and Linux).
 
 Best regards,
 
@@ -29,6 +28,7 @@ Wolfgang Denk
 --
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Neckties strangle clear thinking.                       -- Lin Yutang
+Only in our dreams we are free.  The rest of the time we need  wages.
+                                    - Terry Pratchett, _Wyrd Sisters_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
