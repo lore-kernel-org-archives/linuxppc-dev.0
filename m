@@ -1,63 +1,76 @@
-To: deepesh@india.tejasnetworks.com
+Date: Tue, 22 Jul 2003 21:23:44 +0000
+From: Giuliano Pochini <pochini@shiny.it>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: EP8260 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 22 Jul 2003 19:32:34 +0700."
-             <1058882554.3f1d43faafee2@pop-mail.india.tejasnetworks.com>
-Date: Tue, 22 Jul 2003 17:52:23 +0200
-Message-Id: <20030722155228.DF415C6D82@atlas.denx.de>
+Subject: Re: Radeon problems
+Message-Id: <20030722212344.11c895f1.pochini@shiny.it>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message <1058882554.3f1d43faafee2@pop-mail.india.tejasnetworks.com> you wrote:
+>> Problem #1: Radeonfb sets a video mode that isn't supported by my LCD
+>> monitor. I have to blindly type "/usr/sbin/fbset -a 1280x1024-60 -depth 16"
+>> at the root console every time (*if* it boots, because I make the box
+>> crash quite often :( ). Is there a boot option to set the right video mode ?
 >
->   I loaded my EP8260 board with UBOOT. This was working fine. Then I loaded a
+> Can you send me a dmesg dump (with the wrong video mode) and
+> a dump of /proc/device-tree/pci@f0000000 ?
 
-First I would like to point out (like many times before) that  U-Boot
-related  questions  are  off-topic  on  a  linuxppc-dev mailing list.
-Please post such questions to the u-boot-users list.
+Yes, these are the relevant lines:
 
-> binary into RAM using tftp. Then tried copying the stuff to flash. When I could
-> not copy things into flash directly, I erased a few sectors randomly and then
-> copied the binary to flash. Then when I reset the board, it did not come up.
+----
+Kernel command line: ro video=radeonfb:1024x768-8@75
+Console: colour dummy device 80x25
+radeonfb: ref_clk=2700, ref_div=12, xclk=24975 from OF
+Console: switching to colour frame buffer device 80x30
+radeonfb: ATI Radeon 9000 If DDR SGRAM 64 MB
+radeonfb: DVI port no monitor connected
+radeonfb: CRT port CRT monitor connected
+----
 
-One of my teachers used to say that some people only  learn  when  it
-hurts really bad.
+Hmm, I just noticed that it believes I connected a CRT monitor. It's wrong,
+I have an non-Apple LCD display connected to the DVI port. 80x30 means the
+resolution is still 640x480.
 
-I hope you understand that you should have  investigates  _why_  yuou
-could  not  copy your image to flash. Thi is supposed to work, and if
-it fails it usually means that you made  something  wrong.  Analyzing
-the  error  and  understanding _what_ you did wrong is very important
-for you to avoid the same error in the future.
+This a dir of /proc/device-tree/pci@f0000000, but I don't see how can it be
+useful. Is there a tool to extract more info ?
 
-Well, and "erasing a few sectors randomly" is such a bad idea that  I
-better keep my mouth shut.
+[Giu@Jay pci@f0000000]$ dir
+total 0
+dr-xr-xr-x    4 root     root            0 lug 22 21:09 .
+dr-xr-xr-x   21 root     root            0 lug 22 21:09 ..
+lrwxrwxrwx    1 root     root           20 lug 22 21:13 @10 -> ATY,PheonixParent@10
+-r--r--r--    1 root     root            4 lug 22 21:13 #address-cells
+lrwxrwxrwx    1 root     root           20 lug 22 21:13 ATY,PheonixParent -> ATY,PheonixParent@10
+dr-xr-xr-x    4 root     root            0 lug 22 21:13 ATY,PheonixParent@10
+lrwxrwxrwx    1 root     root           15 lug 22 21:13 @b -> uni-north-agp@b
+-r--r--r--    1 root     root           10 lug 22 21:13 built-in-names
+-r--r--r--    1 root     root            8 lug 22 21:13 bus-range
+-r--r--r--    1 root     root            4 lug 22 21:13 clock-frequency
+-r--r--r--    1 root     root           10 lug 22 21:13 compatible
+-r--r--r--    1 root     root            4 lug 22 21:13 device_type
+-r--r--r--    1 root     root            4 lug 22 21:13 #interrupt-cells
+-r--r--r--    1 root     root           28 lug 22 21:13 interrupt-map
+-r--r--r--    1 root     root           16 lug 22 21:13 interrupt-map-mask
+-r--r--r--    1 root     root            4 lug 22 21:13 interrupt-parent
+-r--r--r--    1 root     root            8 lug 22 21:13 interrupts
+-r--r--r--    1 root     root            4 lug 22 21:13 linux,phandle
+-r--r--r--    1 root     root           14 lug 22 21:13 model
+-r--r--r--    1 root     root            4 lug 22 21:13 name
+-r--r--r--    1 root     root           72 lug 22 21:13 ranges
+-r--r--r--    1 root     root            8 lug 22 21:13 reg
+-r--r--r--    1 root     root            4 lug 22 21:13 #size-cells
+-r--r--r--    1 root     root           11 lug 22 21:13 slot-names
+lrwxrwxrwx    1 root     root           15 lug 22 21:13 uni-north-agp -> uni-north-agp@b
+dr-xr-xr-x    2 root     root            0 lug 22 21:13 uni-north-agp@b
+-r--r--r--    1 root     root            0 lug 22 21:13 write-combining
 
-
-> I put back the u-boot into the flash using BDI2000. But now I am getting weird
-> characters on the screen. I have looked at the minicom settings-- It is 115200
-> and 8N1. These were the settings with which I was working before also. What I am
-> not able to understand is the reason for the weird characters.
-
-Probably you overwrote more than you think.
-
-Restart from scratch: erase the _whole_  flash  memory,  and  install
-_only_ U-Boot. Then power-cycle the board. Then check again.
-
-
-And never ever erase "random sectors" again.
-
-Best regards,
-
-Wolfgang Denk
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"When anyone says `theoretically,' they really mean `not really.'"
-- David Parnas
+Bye.
+   Giuliano.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
