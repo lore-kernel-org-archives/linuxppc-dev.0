@@ -1,36 +1,52 @@
-Date: Mon, 2 Oct 2000 22:27:48 +0200 (CEST)
-From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-To: R Shapiro <rshapiro@bbn.com>
-cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-        Kostas Gewrgiou <gewrgiou@imbc.gr>,
-        Michel Dänzer <daenzerm@student.ethz.ch>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        linuxppc-dev@lists.linuxppc.org, Jon Erick Ween <jween@som.llu.edu>
-Subject: Re: Patch: PCI resource fixup for atyfb (was: Re: xf 4.0.1 + ati
- driver with rage II/rage pro)
-In-Reply-To: <14808.60984.51654.764750@esb.bbn.com>
-Message-ID: <Pine.LNX.4.10.10010022226060.20845-100000@zirkon.biophys.uni-duesseldorf.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Mon, 2 Oct 2000 22:47:03 +0200
+From: Olaf Hering <olh@suse.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Patch: PCI resource fixup for atyfb (was: Re: xf 4.0.1 + ati driver with rage II/rage pro)
+Message-ID: <20001002224703.A15425@suse.de>
+References: <20001001224427.A18368@suse.de> <Pine.LNX.4.10.10010021658320.1581-100000@cassiopeia.home>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.10.10010021658320.1581-100000@cassiopeia.home>; from geert@linux-m68k.org on Mon, Oct 02, 2000 at 04:59:18PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->  > While I still think having a userland PCI resource fixup tool would be
->  > nice (at least for debugging purpose) I also promised to come up with a
->  > sanitized version of the atyfb resource fixup patch. Here it is, please
->  > test it (especially Jon, and R. Shapiro) and tell me if it works.
+On Mon, Oct 02, Geert Uytterhoeven wrote:
+
+> On Sun, 1 Oct 2000, Olaf Hering wrote:
+> > while we are about to improve the atyfb, is it possible to fix the color
+> > depth switching?
+> > When I boot without a kernel arg I end up with 8 bit at console. I can't
+> > increase the color depth afterwards with fbset, and mol crashes when it
+> > tries to do that. When I specify atyfb:cmode:24 everythings works fine
+> > and I can switch down to 8 and back to 24 and mol starts fine.
 >
->
-> I patched a kernel.org 2.2.17 kernel, it made no difference in the
-> behavior.  The fbdev driver works ok, the ati driver crashes linux.
+> Does it also crash when you increase the color depth with fbset?
 
-I'm not amused (though not exactly surprised: I said the PCI config looked
-sane already on your box).
+It was not clear enough: I can not fbset when I have only 8 bit. But XF4
+can increase the color depth, maybe it does that in a different way?
 
-Just for the record: did you ever try the 2.2.17 source from BenH?
+plum:~ # fbset
 
-	Michael
+mode "1024x768-60"
+    # D: 64.666 MHz, H: 48.115 kHz, V: 59.696 Hz
+    geometry 1024 768 1024 4080 8
+    timings 15464 144 40 29 3 136 6
+    accel true
+    rgba 8/0,8/0,8/0,0/0
+endmode
 
+plum:~ # fbset -depth 24
+ioctl FBIOPUT_VSCREENINFO: Invalid argument
+
+
+Gruss Olaf
+
+--
+ $ man clone
+
+BUGS
+       Main feature not yet implemented...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
