@@ -1,43 +1,40 @@
-Date: Wed, 7 Apr 2004 17:04:40 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Stephen Williams <612dlag102@sneakemail.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: System ACE MPU interface to CF card
-Message-ID: <20040408000440.GP31152@smtp.west.cox.net>
-References: <407470ED.3030607@buckeye.ece.drexel.edu> <6058-40021@sneakemail.com>
+Message-Id: <200404080133.i381XW6P017976@ms.usish.com>
+From: "Jack Liu" <Jack_liu@usish.com>
+To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: USB 2.0 problem
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <6058-40021@sneakemail.com>
+Content-Type: text/plain
+Date: Thu, 8 Apr 2004 09:32:59 +0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Apr 07, 2004 at 04:09:33PM -0700, Stephen Williams wrote:
->
-> Sharad Gupta sharad-at-buckeye.ece.drexel.edu |PPC Linux Embedded| wrote:
-> >
-> >Hi All,
-> >
-> >I would like to know if anyone in the group or otherwise is/was using
-> >Xilinx's System ACE MPU interface to read/write to Compact Flash card on
-> >their hardware ? I see that there is a device driver provided by Xilinx
-> >for system ace mpu bus in the linux kernel tree (2.4.23). But, I dont
-> >see anyone actually implementing it in their design.
->
-> That would be me. I haven't yet submitted patches for my JSE
-> board, but if you look back to the last few weeks in this list,
-> you'll see plenty of messages with SystemACE in their subject.
->
-> Including a patch on 1 April 2004 to generalize the driver a
-> bit. MonteVista folks have approved the patch, so I hope it
-> turns up inofficial trees in due course.
+hi,all
+ I am using NEC uPD720101 USB chip. It has two OHCI and one EHCI. USB1.1
+works ok. When I enable EHCI, system hangs when I plugged one 2.0
+device. I thought maybe it is becuase of the overcurrent protection, I
+used one external-power supply for the device. Yet the same thing. The
+debugging infomation as below:
 
-The previous message reminded me that I still hadn't pushed that patch,
-so I did that a few hours ago (and it should show up on the commit list
-in due course).
+	port 1, portstatus 501, change 1, 480 Mb/s<6>hub.c: new USB device 00:0e.2-1, assigned address 2
+	enter usb_new_device()
+    EHCI enter ehci_irq()
+    devpath 1 ep0out 3strikes token = 80248
+    QTD_STS_XACT
+    exit ehci_iqr
+    USB device not accepting new address=2 (error=-71)
+    EHCI enter ehci_irq()
+    exit ehci_iqr
+    now exit usb_hub_port_connect_change()
+    port 1, portstatus 101, change 1, 12 Mb/sUSI: recv a ARP pkt source 56.198
+    enter usb_new_device()
+    we now enter hc_interrupt()
+    USB device not accepting new address=2 (error=-110)
+    enter usb_new_device()
 
---
-Tom Rini
-http://gate.crashing.org/~trini/
+    So what could be the problem?
+
+Best regards
+Jack liu
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
