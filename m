@@ -1,13 +1,21 @@
-Return-Path: <jaka@activetools.si>
-From: Jaka =?iso-8859-2?Q?Mo=E8nik?= <jaka@activetools.si>
-To: Embedded PPC Linux Mailing List <Linuxppc-embedded@ozlabs.org>
-In-Reply-To: <1109842283.29455.9.camel@x.at.lan>
-References: <1109842283.29455.9.camel@x.at.lan>
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 03 Mar 2005 16:12:29 +0100
-Message-Id: <1109862749.29455.49.camel@x.at.lan>
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao05.cox.net (fed1rmmtao05.cox.net [68.230.241.34])
+	by ozlabs.org (Postfix) with ESMTP id 88EC367A6C
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri,  4 Mar 2005 02:21:04 +1100 (EST)
+Date: Thu, 3 Mar 2005 08:20:44 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Kumar Gala <kumar.gala@freescale.com>
+Message-ID: <20050303082044.A7915@cox.net>
+References: <4226FF62.30007@jp.fujitsu.com>
+	<c56d8feba0d803d74d77ab20f54287e9@freescale.com>
 Mime-Version: 1.0
-Subject: Re: BCM5421 PHY on TSEC on MPC8560
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <c56d8feba0d803d74d77ab20f54287e9@freescale.com>;
+	from kumar.gala@freescale.com on Thu, Mar 03, 2005 at 08:53:15AM
+	-0600
+Cc: ppcembed <linuxppc-embedded@ozlabs.org>
+Subject: Re: PowerPC4xx Watchdog
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -18,24 +26,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2005-03-03 at 10:31 +0100, Jaka Mo=C4=8Dnik wrote:
-> I have a BroadCom BCM5421 PHY attached to MPC8560 TSEC. I have added
-> support for its aux status register and its initialization (via another
-> phy_info entry) to gianfar_phy.c and configured the kernel with Gianfar
-> driver without NAPI support. It seems that the link is established OK
-> (at least the switch that the board is connected to suggests so) and the
-> gfar_transmit() gets called, signalling that the buffers are being sent.
-> however, no packets seem to be thrown on the wire (nothing ever gets to
-> the other side).
-never mind: the board does not support the "phy interrupt", so the
-driver has to use timer to poll for link changes in order to call adjust
-link. removing the unfortunate flag from device definition for my board
-was all it took. now it's time to make it 1000BT aware;)
+On Thu, Mar 03, 2005 at 08:53:15AM -0600, Kumar Gala wrote:
+> One thing the code needs is a general name cleanup.  Its just confusing 
+> to me for e500 to have 4xx references.
 
-regards,
-	jaKa
+I suggest booke_wdt* since the Book E spec is where this feature
+came from.
 
---=20
+Since you already picked up the bug-fix patch, we just need a two
+part patch with the name cleanup where 1) arch-specific code
+2) driver portion.
 
-w3: http://fish.homeunix.org/people/jaka
-email: jaka@activetools.si
+-Matt
