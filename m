@@ -1,44 +1,46 @@
-Message-ID: <3A572925.4A791E05@iiic.ethz.ch>
-Date: Sat, 06 Jan 2001 15:18:13 +0100
-From: Michel Dänzer <michdaen@iiic.ethz.ch>
-MIME-Version: 1.0
-To: Ethan Benson <erbenson@alaska.net>
-CC: linuxppc-dev@lists.linuxppc.org
+Date: Sat, 6 Jan 2001 05:59:22 -0900
+From: Ethan Benson <erbenson@alaska.net>
+To: linuxppc-dev@lists.linuxppc.org
 Subject: Re: status of ppc support in official 2.4.0 or Alan's 2.4.0-ac1
-References: <200101051455.f05Et0v06700@ashley.ivey.uwo.ca> <20010105083740.B14321@opus.bloom.county> <20010105154015.R29805@plato.local.lan>
-Content-Type: text/plain; charset=iso-8859-1
+Message-ID: <20010106055922.Y29805@plato.local.lan>
+References: <200101051455.f05Et0v06700@ashley.ivey.uwo.ca> <20010105083740.B14321@opus.bloom.county> <20010105154015.R29805@plato.local.lan> <3A572925.4A791E05@iiic.ethz.ch>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="D9gQZneUBQfHBTVA"
+In-Reply-To: <3A572925.4A791E05@iiic.ethz.ch>; from michdaen@iiic.ethz.ch on Sat, Jan 06, 2001 at 03:18:13PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Ethan Benson wrote:
->
-> On Fri, Jan 05, 2001 at 08:37:40AM -0700, Tom Rini wrote:
-> >
-> > On Fri, Jan 05, 2001 at 09:55:00AM -0500, Kevin B. Hendricks wrote:
-> >
-> > > I have not kept up with 2.4.0 development at all.  I see that Linus has
-> > > officially released 2.4.0.  Alan has also release 2.4.0-ac1.  What is
-> > > the status of ppc support in either of these kernels?
-> >
-> > Don't bother with kernel.org, Alan's tree is better but not fully merged.
-> > 2_3 bk is fine, 2_5 bk will be merged up shortly.
-> > http://www.fsmlabs.com/linuxppcbk.html
->
-> it would really be more useful if a unified patch against the 2.4.0 on
-> kernel.org could be made available somewhere (penguinppc.org) to
-> create a cleaned up, merged finalized 2.4.0-powerpc without requiring
-> [ordinary] people to fiddle with the proprietary bk.
+--D9gQZneUBQfHBTVA
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I'm running 2.4.0 from linuxppc_2_3 and have never used bk. rsync is rather
-cool.
+On Sat, Jan 06, 2001 at 03:18:13PM +0100, Michel D=E4nzer wrote:
+>=20
+> I'm running 2.4.0 from linuxppc_2_3 and have never used bk. rsync is rath=
+er
+> cool.
+
+yes but if this tree is stabelized, and thus not being fiddeled with
+(as it should be for a 2.4.0) then a unified diff or full out tarball
+would be more convenient.   IMO anyway.
+
+the main thing i think is needed is a *static* finalized 2.4.0 for
+powerpc people can use.  not everyone wants to recompile the kernel
+every day to get/fix `the tweak of the day' of actively developed
+kernels. =20
+
+--=20
+Ethan Benson
+http://www.alaska.net/~erbenson/
+
+--D9gQZneUBQfHBTVA
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
 
-Michel
-
-
---
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and The DRI Project
+--D9gQZneUBQfHBTVA--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
