@@ -1,66 +1,75 @@
-Date: Tue, 3 Aug 1999 12:57:52 -0400
-From: Daniel Jacobowitz <drow@false.org>
-To: David Edelsohn <dje@watson.ibm.com>
-Cc: Wulf Hofbauer <wh@echo.chem.tu-berlin.de>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: yet another bug in atyfb.c
-Message-ID: <19990803125752.A20729@them.org>
-References: <wh@echo.chem.tu-berlin.de> <9908031526.AA40146@marc.watson.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9908031526.AA40146@marc.watson.ibm.com>; from David Edelsohn on Tue, Aug 03, 1999 at 11:26:39AM -0400
+From: "Bill Royal" <bill@spicetech.com>
+To: "Grant Carter" <gcarter@eng.uct.ac.za>, <linuxppc-dev@lists.linuxppc.org>
+Subject: RE: Please help: kernel won't compile
+Date: Tue, 3 Aug 1999 18:58:20 -0400
+Message-ID: <NCBBKCLAOLHFIOJGGGALKEMCCCAA.bill@spicetech.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <37A6EB76.F36F142E@eng.uct.ac.za>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Aug 03, 1999 at 11:26:39AM -0400, David Edelsohn wrote:
-> 
-> >>>>> Wulf Hofbauer writes:
-> 
-> Wulf> EXPLANATION: atyfb.c - as of Kernel 2.2.10 - uses the following constructs
-> Wulf> for accessing little-endian words in Mach32 controller space:
-> 
-> Wulf> asm("lwbrx %0,%1,%2" : "=r"(val) : "r" (regindex), "r" (temp));
-> 
-> Wulf> and
-> 
-> Wulf> asm("stwbrx %0,%1,%2" : : "r" (val), "r" (regindex), "r" (temp) :
-> Wulf> "memory");
-> 
-> Wulf> This is meant to access a word at address regindex+temp. If regindex
-> Wulf> happens to be held in register r0, the address calculation is off as
-> Wulf> r0 is defined as a null operand. This problem shows up with gcc-2.95 which
-> Wulf> seems to use better register allocation code and _does_ keep regindex in
-> Wulf> r0 at times.
-> 
-> 	The problem is that you are using the wrong register constraints.
-> The inlined assembly should look like:
-> 
-> asm("lwbrx %0,%1,%2" : "=r"(val) : "b" (regindex), "r" (temp));
-> 
-> because %1 must be a BASE register (any GPR other than r0) for this use.
-> If you use the correct register constraints, GCC register allocation will
-> arrange to place the values in the correct class of register.  If you use
-> the right register constraints, you do not need to make any other
-> modifications. 
+Currently broken.
 
-And congratulations to the both of you, you analyzed that one much more
-easily than I did :)  It's been fixed in vger for a while:
-
-revision 1.106.2.1
-date: 1999/06/22 06:28:23;  author: paulus;  state: Exp;  lines: +42 -23
-Geert's crystal frequency estimation stuff from the 2.3 branch;
-fix the constraints on the inline assembly.
-
-However, could someone please move this fix onto the mainline also?
+Go to ftp://linuxppc.cs.nmt.edu/pub/linuxppc/embedded/, read embedded_notes
+and mbxnotes, and then pull down embedded-2.2.5.tgz and one of the mbxroot
+filesystem images.  This is the standard 2.2.5 kernel with a few hardcoded
+fixes.  You may run into some minor compile-time errors, but you should be
+able to get this up and running on the MBX board without too much hassle.
 
 
-Dan
+have fun
 
-/--------------------------------\  /--------------------------------\
-|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
-|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
-|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
-\--------------------------------/  \--------------------------------/
+Bill
+
+-----Original Message-----
+From: owner-linuxppc-dev@lists.linuxppc.org
+[mailto:owner-linuxppc-dev@lists.linuxppc.org]On Behalf Of Grant Carter
+Sent: Tuesday, August 03, 1999 9:16 AM
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Please help: kernel won't compile
+
+
+
+Hi
+
+I have tried a couple of kernel versions but cannot seem to get any of
+them to compile. I seem to always land up with similar errors namely
+those below from my 2.2.10 kernel attempt:
+
+make[1]: Entering directory
+`/usr/home/gcarter/Linux-ppc/src/linux/arch/ppc/kernel'
+powerpc-linux-gcc -D__KERNEL__
+-I/usr/home/gcarter/Linux-ppc/src/linux/include -Wall
+-Wstrict-prototypes -O2 -fomit-frame-pointer -D__powerpc__ -fsigned-char
+-msoft-float -pipe -fno-builtin -ffixed-r2 -Wno-uninitialized -mmultiple
+-mstring -mcpu=860   -DEXPORT_SYMTAB -c ppc_ksyms.c
+ppc_ksyms.c:73: `isa_io_base' undeclared here (not in a function)
+ppc_ksyms.c:73: initializer element for `__ksymtab_isa_io_base.value' is
+not constant
+ppc_ksyms.c:74: `isa_mem_base' undeclared here (not in a function)
+ppc_ksyms.c:74: initializer element for `__ksymtab_isa_mem_base.value'
+is not constant
+ppc_ksyms.c:75: `pci_dram_offset' undeclared here (not in a function)
+ppc_ksyms.c:75: initializer element for
+`__ksymtab_pci_dram_offset.value' is not constant
+make[1]: *** [ppc_ksyms.o] Error 1
+make[1]: Leaving directory
+`/usr/home/gcarter/Linux-ppc/src/linux/arch/ppc/kernel'
+make: *** [_dir_arch/ppc/kernel] Error 2
+
+Any suggestions??? I am trying to compile this for a Motorola MBX board.
+
+Thanks in advance
+Grant
+--
+Grant Carter                              gcarter@eng.uct.ac.za
+Department of Electrical Engineering      University of Cape Town
+Tel: +27 (0)21 650-3467                   Fax: +27 (0)21 650-3465
+                     "Coffee not found - operator halted!"
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
