@@ -1,23 +1,46 @@
-Message-ID: <762A181C0D966E459A2EB3B810142C7703861203@nmrusdunsx12.nmrlan.net>
-From: "Wells, Charles" <Charles.Wells@nielsenmedia.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: "'zjzhou@newrocktech.com'" <zjzhou@newrocktech.com>
-Subject: RE: reboot by software
-Date: Tue, 16 Dec 2003 09:40:08 -0500
+From: "Beena" <beena@gdatech.com>
+To: "Dan Kegel" <dank@kegel.com>
+Cc: "Silverton Aron-C1710C" <Aron.J.Silverton@motorola.com>,
+	"'Ashwin Bihari'" <raz0redge@hotmail.com>, <listmember@orkun.us>,
+	<linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Cross-compile package combinations
+Date: Tue, 16 Dec 2003 10:21:36 -0800
+Message-ID: <FFELLIHDBBOAPGLCBDIPAEBBCDAA.beena@gdatech.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
+	charset="us-ascii"
+In-Reply-To: <3FD9436F.2060206@kegel.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Now, I want to reboot system by software. But, when I jump to 0xfff00100
-in kernel mode, it's going > dead. Can anybody help me?
+I used crosstool and was able to effortlessly install gcc 3.3.2, glibc 2.3.2
+for powerpc. Thanks a lot for your suggestion.
 
-If you have the Software Watchdog Timer enabled, just do a lock-interrupts
-followed by a branch-self.
+-Beena
 
-Charlie
+-----Original Message-----
+From: Dan Kegel [mailto:dank@kegel.com]
+Sent: Thursday, December 11, 2003 8:26 PM
+To: Beena
+Cc: Silverton Aron-C1710C; 'Ashwin Bihari'; listmember@orkun.us;
+linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Cross-compile package combinations
+
+
+Beena wrote:
+> I have observed the same errors when trying to build the bootstrap gcc
+> 3.2.3. I understand that
+> this is because gcc 3.2.3 build (in case of powerpc) looks for some glibc
+> files. So I first built gcc 2.95.3,
+> then glibc 2.2.1 and then built bootstrap gcc 3.2.2(you could try with
+> 3.2.3) and it compiled fine.
+
+One of the reasons I did crosstool was to avoid that kind of
+hackery.  With crosstool, you don't need to build gcc 2.95.3
+just to build gcc 3.2.3.  Crosstool does clean builds from pristine,
+minimally patched source.
+- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
