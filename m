@@ -1,35 +1,35 @@
-Message-Id: <200103190002.TAA57145@p2.parker.boston.ma.us>
+Message-ID: <3AB591DD.6ABFCF1B@routefree.com>
+Date: Sun, 18 Mar 2001 20:58:06 -0800
+From: David Blythe <blythe@routefree.com>
+MIME-Version: 1.0
 To: Ralph Blach <rblach@intrex.net>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: es1371.o sound module on a IBM405 gp walnut 
-In-reply-to: Your message of "Sun, 18 Mar 2001 11:32:32 EST."
-             <3AB4E320.233162CD@intrex.net>
-Date: Sun, 18 Mar 2001 19:02:27 -0500
-From: Brad Parker <brad@parker.boston.ma.us>
+Subject: Re: es1371.o sound module on a IBM405 gp walnut
+References: <3AB4E320.233162CD@intrex.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Ralph Blach wrote:
 >
->I am trying to get an es1371. sound module working on an IBM405 walunt
->developement kit.  8 bit sound works ok
->but 16 bit sound sounds like noise.  Will this driver have to be made
->Endian  aware?
+> I am trying to get an es1371. sound module working on an IBM405 walunt
+> developement kit.  8 bit sound works ok
+> but 16 bit sound sounds like noise.  Will this driver have to be made
+> Endian  aware?
 
-I tried it with madplay and found that it seemed to almost work; the
-sound was slightly rough but 'working'.  It sounded just slightly
-distorted but I was not sure if that was due to the version of madplay
-I was using or the es1371 driver.  It certainly wasn't noise...
-
-I'm not sure what madplay was putting out - it may have been 8 bit
-stereo (but I thought it would go for 16 bit stereo).
-
-This was running the linuxppc_2_5 branch, however, and only after I
-made some minor pci fixes.
-
-what are you sending out and how? (i.e. cat xxx >/dev/ds
-
--brad
+Yes and no.  A lot of the player programs are not very endian savy.
+Typically what I have seen happen on bigendian ppc is that either the
+player asks for AFMT_S16_LE  but really sends  AFMT_S16_BE samples and
+you get noise (sox/play does this but I worked on a patch for this with
+Chris Bagwell so hopefully it is available now) or it asks for
+AFMT_S16_BE samples and the driver doesn't support this and the request
+format ioctl defaults to AFMT_U8 instead and the player ends up sending
+8 bit samples instead of 16, because it didn't also do a query for
+AFMT_S16_LE.  An earlier version of madplay was doing this (I tooked the
+easy way out and had our sound driver return AFMT_S16_LE as the default
+format to get around this, but the query algorithm in madplay could be
+made better).  It looks like the es1371 driver defaults to AFMT_U8.
+	david
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
