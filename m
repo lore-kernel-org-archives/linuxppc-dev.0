@@ -1,63 +1,38 @@
-Subject: RE: Cross compiling : problem linking
-From: Toni Van Remortel <t.vanremortel@ha.be>
-Reply-To: linuxppc-embedded@lists.linuxppc.org
-To: Fillod Stephane <stephane.fillod@thomson.net>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <2C1BAF8F8E1DD611862B0002A5D4C3FC01BC068F@renexch3.rennes.thmulti.com>
-References: 
-	 <2C1BAF8F8E1DD611862B0002A5D4C3FC01BC068F@renexch3.rennes.thmulti.com>
-Content-Type: text/plain
-Message-Id: <1065169617.14913.7.camel@toni>
-Mime-Version: 1.0
-Date: Fri, 03 Oct 2003 10:26:57 +0200
+Message-ID: <00df01c38992$6d179b40$2803050a@JackyLam>
+From: "Jacky Lam" <jackylam@astri.org>
+To: <linuxppc-embedded@lists.linuxppc.org>
+References: <20031002121733.A2E32C59E4@atlas.denx.de> <001101c3894c$38833ab0$2803050a@JackyLam> <3F7D3238.2090400@bluewin.ch>
+Subject: Re: Queston about Walnut
+Date: Fri, 3 Oct 2003 17:40:46 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="ISO-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Op do 02-10-2003, om 18:34 schreef Fillod Stephane:
-> Note to the list: sorry for the RFC2822
->
-> > Do you know the replacement for iopl to work on PowerPC?
->
-> There's no such crap on PowerPC. No separate IO bus either.
+> the kernel you use - vanilla+ppc-patch - is based on linuxppc-2.4, which
+> is not appropriate for your system. [At least it was like that some time
+> ago. Tom, could you please comment.] Try using the linuxppc_2_4_devel
+> tree from Bitkeeper or from our FTP server (see http://www.denx.de).
 
-Darn. I've once seen an example somewhere on the net on controlling an
-output pin on the EP405 (from kernel space), but I can't remember where
-:(
+    I just tried. The result is the same. Using the original walnut_config,
+it hangs in mapin_ram().
+    If I use minimal config, it hangs in __sti().
 
-> > Final goal is a kernel module, but now I'm writing a test program in
-> > user space (standalone, dynamic compiled).
+    Does anyone still working on Walnut platform and successfully boot up
+2.4 kernel on that? If no, could someone remember what is the last known
+working toolchain and kernel on Walnut?
 
-Now I know that the difference between user and kernel space is so
-different, I'll only try to go for the final result: a kernel module.
+    I use toolchain gcc 3.2.3, glibc 2.2.5 because I have some trouble to
+compile to newest one (it requests my host gcc >=3.1). Is this related? If
+yes, I would tried to reinstall my RedHat to newer version, but it would be
+painful.....
 
-> Okay, let's use ESP for once :)
+    Thanks.
 
-What is ESP?
-
-> Toni, I don't know what's your "base" address, but it is really odd
-> (well, both ways :) on a PowerPC system. You should borrow some help
-> from your D-science lab, or have something like a PPC Linux training.
-
-I'm afraid I should go for the last one. The D-science lab is actually
-specialized in usability and product design testing. There is only one
-technological project running, namely mine, which is about embedded
-Linux. I started working on this project when I was just about half a
-year graduated as industrial engineer. So my Linux knowledge was limited
-to desktop use and installation.
-You'll probably think I'm asking things that every embedded Linux
-developer knows, but I'm not one, I'm just trying to understand
-everything. Aside that, my platform knowledge is zero. That's why I come
-up with code for x86 to run on PPC ;)
-
-PS: that "base" address was fetched from ibm405gp.h (the ECB base
-address).
---
-                           Toni Van Remortel
-              Wetenschappelijk Medewerker - D-science lab
-  Real time Linux for embedded systems: http://linemb.d-sciencelab.com
-              Tel: +32 3 205 61 72 - Fax: +32 3 205 61 95
-                      E-mail: t.vanremortel@ha.be
+Best regards,
+Jacky
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
