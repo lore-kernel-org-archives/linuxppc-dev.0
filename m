@@ -1,52 +1,62 @@
-Message-ID: <3727A7E3.D379E041@zg.tel.hr>
-Date: Thu, 29 Apr 1999 02:29:25 +0200
-From: Stanko Juzbasic <stanko.juzbasic@zg.tel.hr>
-Reply-To: stanko.juzbasic@zg.tel.hr
+Message-Id: <199904281818.UAA01127@student.physik.uni-mainz.de>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+Subject: Re: Endianess problems in linuxppc kernel
+Cc: linuxppc-dev@lists.linuxppc.org
+Date: Wed, 28 Apr 1999 20:13:55 CEST
+From: "Christian Bauer" <Christian.Bauer@uni-mainz.de>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Lesstif problems
-References: <199904281402.JAA31866@lists.linuxppc.org>
-Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
+Content-Type: text/plain; charset="ISO-8859-1"
+Reply-To: Christian.Bauer@uni-mainz.de
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hi!
 
+>>   Bus  0, device  16, function  0:
+>>     Unknown class: Apple Unknown device (rev 1).
+>>       Vendor id=106b. Device id=7.
+>>       Medium devsel.  Master Capable.  Latency=32.  
+>>       Non-prefetchable 32 bit memory at 0xf3000000 [0xf3000000].
+>
+>Do you know which Apple chip is this, so it can be added to the pciutils
+>database?
 
-Hi,
+The device tree has this to say:
 
-I am using lesstif-087 for porting some SGI & LinuxX86 academic music software to
+Devices:device-tree:bandit:ohare
+#address-cells = [00000001 = 1]
+#size-cells = [00000001 = 1]
+AAPL,address = [f3000000 = -218103808]
+assigned-addresses
+class-code = [00ff0000 = 16711680]
+device-id = [00000007 = 7]
+device_type = "dbdma"
+devsel-speed = [00000001 = 1]
+max-latency = [00000000 = 0]
+min-grant = [00000000 = 0]
+model = "AAPL,343S0172"
+name = "ohare"
+ranges
+reg
+revision-id = [00000001 = 1]
+vendor-id = [0000106b = 4203]
 
-LinuxPPC. There is a bit of problem, probably due to myself, being novice to
-LinuxPPC programming. Main window does not appear correctly, l/r scrollbar
-gets stuck under the menubar, the bottom of the u/d scrollbar gets hidden be-
-low the resize corner. Resize itself does not work correctly (every odd time
-I do resize work area collapses, on even resizes it miraculosly reappears).
-Compiler gcc often gives weird warnings about
-XtUnmanageChild being an incompatible pointer to XtAddCallback argument no. 3,
-complains about missing callback lists when in fact they are not needed.
+>You are using atyfb? What kind of ATI Mach64 chip do you have?
 
+ATI 264VT2
 
-For test I compiled all the demo apps from Motif programming manual, which
-exactly reproduces the problem. Furthermore the programs don't accept
-user-defined default fonts, geometry & colors.
+>I'd say the wrong values are written to MEM_CNTL. But atyfb always writes the
+>same values to MEM_CNTL, i.e. it doesn't depend on what MacOS did before?!?
 
-Hardware: PMac 7200
-Kernels:   2.2.1,  2.1.127,  2.1.24
-(2.1.24 of R4 does nor support but .WAV soundfiles, so I can't use it)
+Maybe the host bridge also does byte swapping on the frame buffer??
 
-Although I did not get any dependancy warnings on other libraries, I would kindly
+Bye,
+Christian
 
-ask someone to whom this kind of problem sounds familiar which versions of
-lXm lXt lICE lSM ...
-
-do work with lesstif 0.87.
-
-Thanks in advance.
-
-Stanko
-
-
+-- 
+  / Coding on PowerPC and proud of it
+\/ http://www.uni-mainz.de/~bauec002/
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
