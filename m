@@ -1,19 +1,18 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao02.cox.net (fed1rmmtao02.cox.net [68.230.241.37])
-	by ozlabs.org (Postfix) with ESMTP id 3CFBB2BF41
+Return-Path: <dadair@ariodata.com>
+Received: from orion.ariodata.com (adsl-64-170-199-186.dsl.snfc21.pacbell.net
+	[64.170.199.186]) by ozlabs.org (Postfix) with ESMTP id B384D2BDEB
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 11 Nov 2004 08:16:19 +1100 (EST)
-Date: Wed, 10 Nov 2004 08:13:27 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Neil Wilson <NWilson@Airspan.com>
-Message-ID: <20041110081327.A20590@home.com>
-References: <3506EDCDEC47904CBE6FD2E1DEEA8984020CFB71@fs5.airspan.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3506EDCDEC47904CBE6FD2E1DEEA8984020CFB71@fs5.airspan.com>;
-	from NWilson@Airspan.com on Wed, Nov 10, 2004 at 01:58:29PM -0000
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: mmap64/open64/pread etc on 440GX
+	Thu, 11 Nov 2004 09:41:40 +1100 (EST)
+From: "David Adair" <dadair@ariodata.com>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Wed, 10 Nov 2004 14:41:47 -0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <20041110135238.A22537@home.com>
+Message-ID: <ORIONhx27kBnccYTjr800000173@orion.ariodata.com>
+Subject: RE: Problems with MII mode operation on 440GP ethernet
+Reply-To: dadair@ariodata.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,36 +23,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Nov 10, 2004 at 01:58:29PM -0000, Neil Wilson wrote:
-> Hi,
+
+Thanks for the advice Matt. 
+
+> I have a custom board with the same configuration (on 2.6). The
+> driver in that tree works in this configuration. FWIW, the port
+> also uses ocp calls to remove the three unused interfaces. In
+
+This sounds reasonable to me -- OCP stays cpu generic but exact
+use is refined by the board port.
+
+Can you give me any hints were to find the "ocp calls?"
+
+> > (I also tweaked things so my version of mii-tool would work
+> > does anyone else have trouble with the wrong variable size?)
 > 
-> I am trying to write a command line utility for our dev board
-> (440GX,2.6.9 kernel) in order to provide support for our hardware
-> engineers.  As a test I am trying to dump the first few bytes of the
-> U-boot header.
-> 
-> I though that this would work but using /dev/mem gives me a bad address
-> error on the pread64, using /dev/kmem only reads back 0 bytes.  Is there
-> something blindingly obvious that I am missing for using 36bit addresses
-> ? I believe the address is correct as I can see the boot code from
-> within the kernel. Thanks.
+> I haven't tried 2.4 in a long time...others would know. A lot
+> of fixes/features have gone into the 2.6 driver that haven't
+> been backported to 2.4.
 
-No, it's not blindingly obvious at all.  First, mmaping /dev/mem is
-a completely non-portable way to get at devices in userspace. It
-has no guarantees of working across architectures and is broken
-in many ways.
+I'm severely 2.6 impaired, but looking at 2.6.9 there is still a mismatch
+that does not exist in other drivers such as eepro100:
 
-One way is on PPC440 where we have a 36-bit physical address space.
-The /dev/mem implementation simply allows you to mmap an offset
-within a 32-bit physical address space. On PPC440, this means you can't
-get to any of the useful devices since they are all above 4GB.
-In post 2.6.9, remap_pfn_range() helps a bit but there is still a
-local (arch/ppc/) problem...
+drivers/net/ibm_emac/ibm_emac_core.c:
 
-I'm working on some patches to fix 36-bit support for
-io_remap_page_range() and to fix some problems with set_pte()
-and friends on 36-bit platforms. This is the first bit necessary
-to make this work at all in 2.6. I should be posting something
-RSN. ;)
+static int emac_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
+{
+	struct ocp_enet_private *fep = dev->priv;
+	uint *data = (uint *) & rq->ifr_ifru;
 
--Matt
+	switch (cmd) {
+	case SIOCGMIIPHY:
+		data[0] = fep->mii_phy_addr;
+
+And
+
+include/linux/mii.h:
+
+/* This structure is used in all SIOCxMIIxxx ioctl calls */
+struct mii_ioctl_data {
+	u16		phy_id;
+	u16		reg_num;
+	u16		val_in;
+	u16		val_out;
+};
