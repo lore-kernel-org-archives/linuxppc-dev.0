@@ -1,91 +1,102 @@
-Date: Thu, 12 Apr 2001 01:07:56 +0200
-From: Samuel Rydh <samuel@ibrium.se>
-To: Gabriel Paubert <paubert@iram.es>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [PATCH] gettimeofday stability
-Message-ID: <20010412010756.A668@ibrium.se>
-References: <20010411210021.A4894@ibrium.se> <Pine.HPX.4.10.10104112111330.1891-100000@gra-ux1.iram.es>
-Mime-Version: 1.0
+Message-ID: <3AD5170C.E6E369FC@kidar.org>
+Date: Wed, 11 Apr 2001 19:46:36 -0700
+From: nolan <nolan@radik.com>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org, khendricks@ivey.uwo.ca
+Subject: Re: another difference in gcc (2v) ?
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.HPX.4.10.10104112111330.1891-100000@gra-ux1.iram.es>; from paubert@iram.es on Wed, Apr 11, 2001 at 09:42:58PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Apr 11, 2001 at 09:42:58PM +0200, Gabriel Paubert wrote:
-> > Normally, delta should be strictly positive. However, if
-> > coherency between DEC and TB is lost, then delta might turn
-> > out to be (slightly) negative, which results in a
-> > bogus time stamp.
-> >
-> > The main reason why I want this modification is that MOL
-> > touches both DEC and TB. I've not managed to maintain
-> > exact coherency (appears to be more or less impossible).
-> > The fix above would guard against an occasional drift.
+As long as we're "me too"ing, I might as well add that I suddenly hit the
+same problem of non-caught exceptions.  I didn't install or upgrade
+anything, just after about a month of intel only work, our system stopped
+catching exceptions on PPC.  I tried upgrading from 2.95.2 to 2.95.3, but
+got the exact same results.  All my simple test cases performed exactly
+as expected, its only within the full system that exceptions break.  The
+weird onset combined with my inability to reproduce the behavior in a
+simple test suggest that only certain conditions cause the error.  I'm no
+gcc hacker though.
+
+Interestingly enough, -fno-schedule-insns and -fno-schedule-insns2 did
+not help at all:
+
+Program received signal SIGABRT, Aborted.
+0xfdd4d9c in kill () at soinit.c:59
+59      soinit.c: No such file or directory.
+Current language:  auto; currently c
+(gdb) bt
+#0  0xfdd4d9c in kill () at soinit.c:59
+#1  0xffd4ce8 in pthread_kill (thread=1024, signo=6) at signals.c:65
+#2  0xffd5344 in raise (sig=6) at signals.c:226
+#3  0xfdd62fc in abort () at ../sysdeps/generic/abort.c:88
+#4  0xff40d08 in __default_terminate () from
+/usr/lib/libstdc++-libc6.1-2.so.3
+#5  0xff40d40 in __terminate () from /usr/lib/libstdc++-libc6.1-2.so.3
+#6  0xff41d9c in __throw () from /usr/lib/libstdc++-libc6.1-2.so.3
+#7  0x100f93f4 in Socket::writeBytes (this=0x7ffff048,
+    pBuffer=0x10419090 "PUT /makefile.spec HTTP/1.1", iByteCount=27)
+    at ./src/Socket.cpp:164
+#8  0x100f9cac in HttpClient::sendRequest (this=0x7ffff048,
+    header=@0x7fffeee8, body=0x7ffff248) at ./src/HttpClient.cpp:55
+#9  0x100cc5cc in TestHttpClient::doRequest (this=0x7ffff538,
+    client=@0x7ffff048, iRequestType=PUT, pBody=0x7ffff248)
+    at ./test/HttpClientTest.cpp:103
+#10 0x100cc230 in TestHttpClient::runTests (this=0x7ffff538)
+    at ./test/HttpClientTest.cpp:87
+#11 0x100cbcbc in main (argc=4, argv=0x7ffff654)
+    at ./test/HttpClientTest.cpp:41
+#12 0xfdcd69c in __libc_start_main (argc=4, argv=0x7ffff654,
+envp=0x7ffff668,
+    auxvec=0x7ffff71c, rtld_fini=0, stinfo=0x103111f0,
+    stack_on_entry=0x7fffe850) at ../sysdeps/powerpc/elf/libc-start.c:106
+(gdb)
+
+The call to Socket::writeBytes in HttpClient::sendRequest is wrapped in a
+try { } block set to catch exactly the exception thrown by
+Socket::writeBytes.  Even generalizing the try to catch ALL exceptions
+didn't actually result in it catching the exception.  It works fine on
+Alpha Linux (gcc-2.96), intel Linux(gcc-2.96 and 2.95.2), and Solaris
+(gcc-2.95.2).
+
+This probably doesn't help at all, but hey, the more data points, the
+merrier.
+
+On Wed, 11 Apr 2001, Florin Boariu wrote:
 >
-> Why in the hell does it touch TB ? I could understand touching the
-> decrementer, but the TB should be sacred. It is the only absolute time
-> reference we have, and apart from being synchronized at boot on SMP, it
-> should never be changed.
+> Sorry I jump in like this w/o atually knowing what you're talking about
+> (I'm not familiar with PPC assembly language, and I didn't follow this
+> thread), but I just heard the words "exception table" and "incorrect" and
+> this attracted my attention: I'm now sure whether it's the same problem
+> (or at least a similar one), but I had some strange segmentation faults
+> while throwing some C++ exceptions in a project I'm working on. The same
+> code runs without problems on an i586...
+>
+> I wasn't able to fix them yet since I was in pressure of time, but one day
+> I'll have to face them again -- and I'm really not looking forward to
+> that.
+>
+> Does this relate? If not, I'm sorry for the rude interruption...
+>
+> regards,
+> florin.
+>
+> On Wed, 11 Apr 2001, David Edelsohn wrote:
+>
+> >
+> >       "subf" and "srawi" only set condition codes if the "Rc" bit is
+> > set, e.g. "subf." and "srawi."
+> >
+> >       Given the two sequences of code you have sent, I think the problem
+> > is tht the exception table is being initialized with incorrect labels.
+> >
+> > David
+> >
+> >
+> >
 
-Ideally, TB should not be touched. Indeed, MOL can run without
-touching TB (but DEC is essential). However, TB needs to be
-modified for 'save session' feature to work. Basically, the RAM
-and cpu state of MacOS is flushed to disk. At a later time,
-MacOS can be restarted instantly. The problem is that MacOS can't
-deal with the TB skip that occurs if the timebase is not restored
-(no big surprise there).
-
-> If you touch the TB, you will lose the nicely spaced regular interrupts
-> that we have and screw up NTP for example, get occasionally shorter or
-> longer jiffies etc... I wrote the code carefully to avoid all these kinds
-> of problems.
-
-Yes, that is probably unavoidable. My though was to let the user
-choose the use of the save session feature at the price of slightly
-less regularly spaced DEC interrupts while MOL is running (there
-will probably be a minor clock drift too).
-
->Besides that, you have to touch all TB simultaneously on SMP,
-> it's not as easy as it seems.
-
-I know :-). It is difficult enough to keep DEC and TB coherent
-on a single processor system (i.e. I don't think there is a
-simple way - loading them simultaneously just after a clock
-edge does not work since mtdec/mttb requires too many processor
-cycles on certains CPUs).
-
-> Finally, if you _really_ run into this problem, given the delay between
-> the decrementer interrupt and the update of tb_last_stamp, it means that
-> you likely introduce uncertainties of several microseconds.
-
-Yes, that is probably true.
-
-> I forgot also to mention that, to complicate matters, you have to
-> check CPU type before you touch the TB (601 versus all others).
-
-Well, the TB/RTC issue is a minor problem compared to the other differences
-(in particular, the unified BATs and the lack of a no-execute bit
-in the segment registers).
-
-Anyway, the negative offset check is desirable even if it is
-only the DEC that is touched. Of course, as a workaround one could
-make sure the DEC register is only accessed in such a manner that
-linux-DEC interrupts never occur early (this is what MOL does now).
-However, this workaround is a bit tricky to implement without
-introducing dependencies on the inner workings of the processor
-(at least as long as one tries to avoid introducing a drift
-in the opposite direction).
-
-
-Regards,
-
-/Samuel
-
-
-----------------------------------------------------------
- E-mail <samuel@ibrium.se>  WWW: <http://www.ibrium.se>
-  Phone/fax: (home) +46 8 4418431, (work) +46 8 7908470
-----------------------------------------------------------
+--
+nolan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
