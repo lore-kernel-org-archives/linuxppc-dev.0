@@ -1,45 +1,29 @@
-From: "Jerry Quinn" <jquinn@nortelnetworks.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=unknown
-Message-ID: <14239.5584.749636.587908@gargle.gargle.HOWL>
-Date: Wed, 28 Jul 1999 10:38:08 -0400 (EDT)
-To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: Audio file open problem on LINUXPPC 1999 solution
-In-Reply-To: <379EF84B.8E9B69D4@zg.tel.hr>
-References: <379EF84B.8E9B69D4@zg.tel.hr>
+Message-ID: <BFC0587634C3D111AACB00805FA766FA02C1C6AE@exchny12.ny.smb.com>
+From: "Velasquez, Carlos" <carlos.velasquez@ssmb.com>
+To: "Linuxppc Mailing List (E-mail)" <linuxppc-dev@lists.linuxppc.org>
+Subject: Video Acceleration...
+Date: Wed, 28 Jul 1999 11:20:41 -0400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> "Stanko" == Stanko Juzbasic <stanko.juzbasic@zg.tel.hr> writes:
+Hello,
 
- Stanko> To whoever it may concern
+So I finally got R5 up and running (great interface too!) and started doing
+some nifty things on my SuperMac. I read in the R5 manual that if you are a
+Twin Turbo owner, you can add -tt128m (or something like that) to the
+gdm.conf file, so I did.
 
- Stanko> It seems I found the cause and solution to the LINUXPPC 1999 audio
- Stanko> file open problem I wrote about two days ago:
+Well, after rebooting, the screen came in with horrible colors, etc etc.
+Anyone know what's up with that? My video card is a Twin Turbo 8 meg card.
 
- Stanko> The problem occurs only if one installs the new LINUXPPC 1999
- Stanko> filesystem from scratch using the release CD-ROM installer. It has
- Stanko> several bugs, among which this one:
+Carlos
 
- Stanko> - it fails to create /dev/dsp (eventhough it creates /dev/dsp1...),
- Stanko> without giving a notice - default system sound apps have an
- Stanko> endianness problem, so they don’t give a proper error message.
-
-This was a problem I ran into as well.  As an additional note, IIRC doing
-something to /dev/sequencer caused /dev/dsp to disappear.  I'm not exactly
-sure about the circumstances.  I have to go back and recreate the problem.
-But there is definitely something like this going on on my machine.
-
- Stanko> The solution is to [MAKEDEV audio] manually and rebuild CCRMA sndlib,
- Stanko> and sound will work perfectly.
-
-Can you comment on rebuilding sndlib?  What does that affect?
-
--- 
-Jerry Quinn                             Tel: (514) 761-8737
-jquinn@nortelnetworks.com               Fax: (514) 761-8505
-Speech Recognition Research
+______________________________________________________________________
+C.F. Velasquez
+Asst. Vice President
+Global Database and Technology Division
+Salomon Smith Barney, Inc.
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
