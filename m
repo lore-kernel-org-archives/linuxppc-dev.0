@@ -1,44 +1,27 @@
-Message-ID: <3AD7F303.FAD9EA51@opersys.com>
-Date: Sat, 14 Apr 2001 02:49:39 -0400
-From: Karim Yaghmour <karym@opersys.com>
-MIME-Version: 1.0
-To: Gabriel Paubert <paubert@iram.es>
-Cc: Samuel Rydh <samuel@ibrium.se>, linuxppc-dev@lists.linuxppc.org,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] gettimeofday stability
-References: <Pine.HPX.4.10.10104121947440.1891-100000@gra-ux1.iram.es>
-Content-Type: text/plain; charset=us-ascii
+Date: Sat, 14 Apr 2001 00:17:37 -0800
+From: Ethan Benson <erbenson@alaska.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: PPC test machine?
+Message-ID: <20010414001737.I2127@plato.local.lan>
+References: <3AD7A907.12872ACB@mandrakesoft.com>
+Mime-Version: 1.0
+In-Reply-To: <3AD7A907.12872ACB@mandrakesoft.com>; from jgarzik@mandrakesoft.com on Fri, Apr 13, 2001 at 09:33:59PM -0400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Gabriel Paubert wrote:
+On Fri, Apr 13, 2001 at 09:33:59PM -0400, Jeff Garzik wrote:
 >
-> Given that time handling is completely different in 2.2 and 2.4, it is
-> surprising. This would indicate that a decrementer interrupt has happened
-> too early.
->
-> How often does it happen ? Does it still happen with recent kernels ?
-> Were you running something that touches the decrementer (MOL, RTLINUX) ?
->
+> Can anybody suggestion a source for a good, cheap PPC machine for
+> testing PCI drivers?  I definitely can't afford anything brand new.
 
-I can't tell you if the interrupt is happening too early or not,
-although code could be added to check this.
+there are always a bunch of powermacs on ebay, the beige G3s tend to
+go for around 100-300 USD.
 
-I can tell you that this has been noticed by more than one person.
-I noticed this and so did the person at MontaVista that contributed
-the cross-platform reading code (to enable traces to be read accross
-different endian machines).
+as goes with ebay caveat emptor...
 
-If you really want to see what I mean I could forward you a textual
-trace sample to proove my point.
-
-The latest kernel I've tested this on is 2.4.0-test10.
-
-===================================================
-                 Karim Yaghmour
-               karym@opersys.com
-      Embedded and Real-Time Linux Expert
-===================================================
+--
+Ethan Benson
+http://www.alaska.net/~erbenson/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
