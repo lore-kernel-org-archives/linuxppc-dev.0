@@ -1,29 +1,30 @@
-Date: Tue, 24 Aug 1999 10:43:55 -0700 (PDT)
+Date: Tue, 24 Aug 1999 11:05:26 -0700 (PDT)
 From: "David A. Gatwood" <dgatwood@mvista.com>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: BootX enhancement request
-In-Reply-To: <19990824110229.025988@mail.mipsys.com>
-Message-ID: <Pine.LNX.3.96.990824104012.26367B-100000@mvista.com>
+To: Dave Weis <djweis@plconline.com>
+cc: Benjamin Herrenschmidt <bh40@calva.net>, Tony Mantler <eek@escape.ca>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: Performa 5200
+In-Reply-To: <Pine.LNX.4.10.9908240826490.24794-100000@catbert.desm.plconline.com>
+Message-ID: <Pine.LNX.3.96.990824110317.26367J-100000@mvista.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 24 Aug 1999, Benjamin Herrenschmidt wrote:
+On Tue, 24 Aug 1999, Dave Weis wrote:
 
-> MacOS no longer relies on the nvram setting. Video drivers are free to
+> Depending on how in to the 68k boxes you are, the impression I got is that
+> the memory structure is very similar to the 68ks of the same shape/era. I
+> tried it on my wife's 6114CD and it hung with just the desktop background
+> visible. Mix and match some of the mac68k code and you should be done in
+> no time :-) haha
 
-That's not _entirely_ true.  The hardware itself relies on the nvram
-setting in order to determine the initial startup mode before it starts
-loading MacOS.  That's why you can do tricks with newer versions of MacOS
-like have the preferences set to 1024x768 and the pram/nvram set to
-640x480 and have it switch half-way into booting. (Makes it nice for
-MkLinux on x100's where you have to be in 8-bit color, but don't want to
-run MacOS that way.)  The Monitors & Sound CP does set the nvram value, at
-least on some machines, unless it changed quite recently, but you
-sometimes have to delete its prefs files to convince it to do so.
+It's a nasty mismatch.  It's basically a Quadra 630, but with Valkyrie for
+video, a few other small changes, and an added PPC to 68k bus bridge that
+probably needs to have at least minimal support, and a bunch of other
+oddities.  Hmmm.  That brings up another place where the code could be
+going wrong.
 
 
 David
