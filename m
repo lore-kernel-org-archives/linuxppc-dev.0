@@ -1,40 +1,38 @@
+Message-ID: <3A7AFD6B.67378DDD@mvista.com>
+Date: Fri, 02 Feb 2001 10:33:15 -0800
+From: Frank Rowand <frank_rowand@mvista.com>
+Reply-To: frowand@mvista.com
 MIME-Version: 1.0
-Subject: Kernel 2.4.x??
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Fri, 2 Feb 2001 16:33:43 -0000
-Message-ID: <EADB10BAC266A14A85ECBF8686A73E310A90F7@kolkrabbi.flaga.is>
-From: Kári Davíðsson <kd@flaga.is>
-To: "Linux Embedded ppc (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+To: Subodh Nijsure <SNijsure@SkyStream.com>
+CC: "'jeffrey.d.kowing1@jsc.nasa.gov'" <jeffrey.d.kowing1@jsc.nasa.gov>,
+        linuxppc-embedded@lists.linuxppc.org
+Subject: Re: ping says unknown protocol icmp I have /etc/protocols file.
+References: <B25E2E5A003CD311B61E00902778AF2A0148B6C5@SERVER1>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Subodh Nijsure wrote:
+>
+> Hello Jeffrey,
+>
+> Thanks, indeed it was an issue of having libresolv library
+>
+> I copied libresolve to /usr/lib when building the ramdisk and
+> ping works now.
+>
+> BTW, is there a something equivalent to  ldd in powerpc world, so one
+> can find out which shared library an executable is linked with?
+> I have 8xx environment from MontaVista and I don't see ppc_8xx-ldd
+>
+> /Subodh Nijsure
 
-I am testing the Linux 2.4.1pre12 kernel from fsmlabs (3 day old
-snaphot).
-Everything seem to be working fine. Actually the migration from 2.2.13
-to 2.4.x
-was much simpler than I antisipated. There are though some strangeness
-in the serial port.
+Yes, ldd is /bin/ldd in the target file system.
 
-I am not shure if I should blame it on the busybox shell, the kernel or
-what.
-
-A telnet session works fine. All commands I type get across the wire and
-are interpreted correctly.
-But when entering commands on the serial port terminal the shell does
-not seem to get the full commands,
-e.g. if I type "ls -l" it might respond
-"l no such command"
-
-I have not seen any reports about strange behaviour of the serialport
-anywhere (here, busybox list) so it might just be mis configuration of
-the board (although I have not found any).
-
-So any ideas?
-
-K.D.
+-Frank
+--
+Frank Rowand <frank_rowand@mvista.com>
+MontaVista Software, Inc
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
