@@ -1,41 +1,41 @@
-Message-ID: <3974C0DD.7097988A@execpc.com>
-Date: Tue, 18 Jul 2000 15:41:01 -0500
-From: Joseph Garcia <jpgarcia@execpc.com>
-MIME-Version: 1.0
-To: Derek Homeier <supas100@astrophysik.uni-kiel.de>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: switching consoles
-References: <Pine.SOL.3.95.1000718222308.3933C-100000@juliet>
-Content-Type: text/plain; charset=iso-2022-jp
+Mime-Version: 1.0
+Message-Id: <p04320400b59a741412fc@[10.0.1.44]>
+In-Reply-To: <Pine.SO4.4.02.10007181457570.7001-100000@ub.d.umn.edu>
+References: <Pine.SO4.4.02.10007181457570.7001-100000@ub.d.umn.edu>
+Date: Tue, 18 Jul 2000 16:54:29 -0400
+To: Nathan Ingersoll <ningerso@d.umn.edu>, linuxppc-dev@lists.linuxppc.org
+From: Paul Schinder <schinder@pobox.com>
+Subject: Re: Malloc bug?
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Derek Homeier wrote:
-> On Fri, 14 Jul 2000, Joseph Garcia wrote:
-> > I suppose you could try setting it back and forth and getting a hexdump of nvram
-> > and then diff them to find the common thread.  then write an app that does it
-> > for you.
+At 3:40 PM -0500 7/18/00, Nathan Ingersoll wrote:
+>I've been working on a GTK program for a while now, and I've been
+>experiencing segfaults within malloc. I was under the impression that
+>malloc should always return successfully (at least that's what the man
+>page says).
+
+No, it shouldn't.  If there's no memory left, it will return NULL.
+Software should be checking for this.
+
+>Any ideas what may be causing this? I don't know if this has
+>anything to do with it, but the kernel I was using generated lots of
+>vm_do_try_free_pages failed error logs but not necessarily during program
+>execution.
 >
-> You mean, writing an app that can set it in Linux? Well, would be even
-> slicker, actually I was only thinking about some OF command like
-> 'setenv keyxxx yyy' to not have to fully boot into MacOS every time the
-> bootvars are reset. But a linux utility would really be quite useful,
-> unfortunately I've never played with OF settings from within Linux.
-> I'll have a look at your setpramboot docs, though.
-
-After writing this, i thought.. hmm.  isn't that a lot more a 'trackpad' tap
-like thing, rather than a OF thing?  If it is stored in nvram, its probably just
-read by a MacOS extention, which then sets the hardware.  so its probably not as
-straight forward as I thought/made it out to seem.  My bad.
-
-anyone know how this is actually done?  I think a Linux app would be the
-ultimate solution.  trackpad is a required tool for pb users IMO, and this could
-become another of those tools.
+>---------------------------------------------------------------------------
+>|   Nathan Ingersoll             |   Computer Science/Mathematics         |
+>|   mailto: ningerso@d.umn.edu   |   University of Minnesota-Duluth       |
+>|   http://umn.edu/~ningerso     |   http://www.d.umn.edu                 |
+>---------------------------------------------------------------------------
+>
+>
 
 --
-Joseph P. Garcia      jpgarcia@execpc.com      jpgarcia@lidar.ssec.wisc.edu
-CS Undergraduate                      Student Employee - Systems Programmer
-University of Wisconsin - Madison                            UW Lidar Group
+--
+Paul Schinder
+schinder@pobox.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
