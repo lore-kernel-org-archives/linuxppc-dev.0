@@ -1,46 +1,54 @@
-Message-Id: <5.1.0.14.2.20030220085208.02608ba8@falcon.si.com>
-Date: Thu, 20 Feb 2003 08:55:00 -0500
+Message-ID: <3E54E4E1.D60F5A7@tataelxsi.co.in>
+Date: Thu, 20 Feb 2003 19:53:29 +0530
+From: "Kamalesh B" <kamal@tataelxsi.co.in>
+MIME-Version: 1.0
 To: linuxppc-embedded@lists.linuxppc.org
-From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
-Subject: RE: about filesize when copy from flash to ram
-In-Reply-To: <00012747.C22236@embeddedplanet.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Subject: Problem booting Linux on MPC8260ADS board
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-You are copying flash over top of your interrupt vectors, overwriting
-active code and crashing your system.  Don't do that.  Getting a load into
-the bottom of RAM (e.g. loading linux) is a delicate dance that u-boot does
-well, so use that function.  You are not going to be able to do it with the
-"cp" command.  Read the README file for a lot more information.
+hello,
 
-gvb
+I am facing a problem in booting the Linux on MPC8260ADS board.
+Linux version : 2.4.17 (MontaVista)
 
+I have added the patches required to MPC8260ADS board like setting up
+the memory map and BATs.
 
->From: okisoftxman [mailto:okisoftxman@hotmail.com]
->Sent: Wednesday, February 19, 2003 6:04 PM
->To: linux-emb
->Subject: about filesize when copy from flash to ram
->
->
->
->First thank you for your help.
->
->Useing my MBX860 board's u-boot,I try to copy some files from flash to
->ram.The files in this address "fe600000" in the flash.
->I find a problem when I use this command"cp.b fe000000 00000000 filesize",if
->the filesize<=900sbit(hex),the
->file can copy from flash to ram.but if the filesize>=900sbit(hex),the system
->will reset.e.g."cp.b fe000000 00000000 1000"will reset the system and fail
->to copy to ram,why?
->
->The critical value of filesize is between 900~1000,about 2Kbytes,why?
->
->Thank you
->
->
+Control enters "start_here" subroutine
+(linux2.4.17_mvl121/arch/ppc/kernel). But it hangs before calling
+"load_mmu" subroutine.
+
+--- Code begins ---
+/*
+ * Go back to running unmapped so we can load up new values
+ * for SDR1 (hash table pointer) and the segment registers
+ * and change to using our exception vectors.
+ */
+ lis r4,2f@h
+ ori r4,r4,2f@l
+ tophys(r4,r4)
+ li r3,MSR_KERNEL & ~(MSR_IR|MSR_DR)
+ FIX_SRR1(r3,r5)
+ mtspr SRR0,r4
+ mtspr SRR1,r3
+ SYNC
+ RFI        (**** <= After this, MPC8260 hangs ****)
+
+/* Load up the kernel context */
+2:
+--- Code ends ---
+
+Is there any reason for this to happen??? And any solutions to get the
+linux going...
+
+Am i using the wrong file in compilation, by any chance?
+
+Any help is appreciated.
+Thanks and regards,
+kamal
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
