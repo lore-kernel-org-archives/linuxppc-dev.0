@@ -1,46 +1,49 @@
-Date: Mon, 23 Oct 2000 20:03:28 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Josh Huber <huber@mclx.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: gpm and XF401 (Re: ADB-Mouse)
-In-Reply-To: <20001023122716.D426@missioncriticallinux.com>
-Message-ID: <Pine.LNX.4.10.10010232002440.390-100000@cassiopeia.home>
+Message-ID: <39F47F61.EFBFFCD2@mvista.com>
+Date: Mon, 23 Oct 2000 11:11:45 -0700
+From: Frank Rowand <frank_rowand@mvista.com>
+Reply-To: frowand@mvista.com
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Gabriel Paubert <paubert@iram.es>
+CC: Dan Malek <dan@mvista.com>, minyard@acm.org,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: Allowing signal handlers to modify SE and BE
+References: <Pine.HPX.4.10.10010171019190.18996-100000@gra-ux1.iram.es>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 23 Oct 2000, Josh Huber wrote:
-> On Mon, Oct 23, 2000 at 03:00:02PM +0200, Olaf Hering wrote:
-> > You mean you mark some text at console with gpm and all you get in the
-> > selected area is garbage, even with a non psaux device?
-> > I tried it here on a chrp machine and got the same effect, could be a
-> > framebuffer bug. Anyone else with that problem?
+Gabriel Paubert wrote:
+>
+> On Tue, 17 Oct 2000, Dan Malek wrote:
+>
+> > > Is this really the case?  I noticed in the x86 version that setting
+> > > the equivalent of the SE bit is allowed, how does the x86 get away
+> > > with this while the PPC can't?
 > >
-> > I have XF4 here with kernel 2.4 and no problems at all (fbdev driver).
+> > These bits are optionally supported by processors.  As I recall,
+> > the 601 doesn't but I don't know of any others.  You may find a
+> > processor where they don't have any effect.  I can't think of any
+> > other reason.
 >
-> I have the same problem on a g4 (r128 fb driver) when using 2.4.
+> Slight correction: the 601 does have the SE bit but not the BE bit. The
+> other important difference of the 601 is that it handles debug exceptions
+> differently (different vector etc...).
 >
-> I haven't had the time to look into it, but selecting text in console
-> mode is definately broken.  It looks like it's somehow using the wrong
-> characters for the highlighted versions of the text.
+> So at least the SE bit is present on all processors.
 >
-> Anyone have any ideas,
+>         Gabriel.
 
-Perhaps it's exchanging the attribute byte with the character byte? Check out
-the scr_*() macros/functions.
+The SE bit is not present on at least some of the IBM PPC 4xx processors.
+It is not present on the 405 processors.  It is not present on the 403GCX.
+(I did not check the other 403 variants.)
 
-Gr{oetje,eeting}s,
+(This doesn't affect the discussion that led to the question about the SE
+bit, but I thought I would let people know about the 4xx processors....)
 
-						Geert
-
+-Frank
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+Frank Rowand <frank_rowand@mvista.com>
+MontaVista Software, Inc
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
