@@ -1,57 +1,47 @@
-Message-ID: <0F48024310E5D6118D200002B3A440DB08B07A3D@zil01exm08.mcil.comm.mot.com>
-From: Meriin Michael-BMM063 <Meriin@motorola.com>
-To: "'Ricardo DIz'" <rdiz@alumni.deec.uc.pt>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: U-Boot and kernel 2.6
-Date: Thu, 10 Jun 2004 09:45:57 +0300
+Message-ID: <40C80EA6.1060005@fh-landshut.de>
+Date: Thu, 10 Jun 2004 09:32:54 +0200
+From: Oliver Korpilla <okorpil@fh-landshut.de>
+Reply-To: okorpil@fh-landshut.de
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: "Heater, Daniel (GE Infrastructure)" <Daniel.Heater@gefanuc.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: VME - PowerPC: Resource sizes
+References: <DB1DE297F535B340AEAE1E51B221C3D007E84017@FTWMLVEM02.e2k.ad.ge.com>
+In-Reply-To: <DB1DE297F535B340AEAE1E51B221C3D007E84017@FTWMLVEM02.e2k.ad.ge.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Check the bd_t definition, it MUST be the same in u-boot and Linux platform definition.
-bd_t in Linux is defined in ppcboot.h
+Heater, Daniel (GE Infrastructure) wrote:
 
-Best Regards,
-     Michael Meriin
+>>I don't know about x86 bus organization, but maybe it limits
+>>the address
+>>range for available addresses too strongly (on a single bus,
+>>where the
+>>Universe is on). Comparing how much window space you can map with the
+>>old version and the new one on x86 could prove useful.
+>>
+>>
+>
+>Your dead on right. I cannot allocate as much space. In fact,
+>on a VMIVME-7750 I'm only able to allocate 768KB now vs. the
+>~2MB I could access before.
+>
+>
+Since we only request the current bus the Universe is on, there could be
+a fix:
+We could iterate the PCI bus tree to the top (there is some parent bus
+field, IIRC), and then start complete iteration until a suitable
+resource is found. This may produce larger resource regions with
+reasonable effort.
 
+Are you sure you mean 768 _KB_ and 2 _MB_, not 768 _MB_ and 2 _GB_? My
+SLSI window is already 64 MB big, and with the PCI layout on my MVME2100
+it is imaginable that I could map 84000000 - BEFFFFFF = 944MB (from end
+of SLSI window to start of the Universe I/O memory)?
 
------Original Message-----
-From: owner-linuxppc-embedded@lists.linuxppc.org [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Ricardo DIz
-Sent: Wednesday, June 09, 2004 20:48
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: U-Boot and kernel 2.6
-
-
-
-Hi,
-
-I'm trying to boot a custom 860T board using the latest kernel from
-linuxppc-2.5. The board is currently using a variation of an old version
-of U-Boot (0.2.0) along with a hacked 2.4.20 linux kernel version.
-
-My first aim is to boot a simple kernel and make it get to a shell. For
-that I compiled the kernel, but did not compiled u-boot with a recent
-version.
-
-When booting, the kernel got uncompressed, but then it resets! I presume
-the watchdog (which is enabled), is resetting the processor, so I guess
-booting just stalls. Was there any changes in the way parameters were
-received by the kernel since 2.4.20?
-
-Oh, I forgot to mention the compiler. I'm still using a gcc 2.95
-cross-compiler, altough I tried using a gcc 3.2 cross-compiler for the
-8260 once, but got the same result.
-
-I followed a recent thread very similar to this, but that turned out to be
-just a matter of UART configuration, and I don't thinks this is the case.
-
-Any thoughts?
-
-Thanks in advance,
-Ricardo Diz
-
+With kind regards,
+Oliver Korpilla
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
