@@ -1,61 +1,33 @@
-Date: Wed, 23 Feb 2000 05:40:30 -0700
-From: Kevin Buettner <kev@primenet.com>
-Message-Id: <1000223124030.ZM2395@saguaro.lan>
-In-Reply-To: "jjs" <Jerry.Sexton@insignia.com>
-        "gdb and multi-threaded applications." (Feb 23, 10:09am)
-References: <001101bf7de6$07263dc0$571170c1@honda.isltd.insignia.com>
-To: "jjs" <Jerry.Sexton@insignia.com>, <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: gdb and multi-threaded applications.
+Date: Wed, 23 Feb 2000 14:43:20 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Gabriel Ricard <g_ricard@yahoo.com>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Strange Issues with Lombard & PMU/PMUD
+In-Reply-To: <20000222195013.10038.qmail@web1703.mail.yahoo.com>
+Message-ID: <Pine.LNX.4.10.10002231347400.8833-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Feb 23, 10:09am, jjs wrote:
+> Ok, I've got a Lombard 400MHz running 2.2.15pre6,
+> pmud-0.3pre1 on top of YDL Champion Server 1.1. I can
+> put the system to sleep using Batmon (that came with
+> pmud) or by closing the lid. It comes out of sleep
+> just fine when I hit a key, except for resetting the
+> trackpad options I had previously set, but that is a
+> documented bug already.
 
-> I recently installed linuxppc-1999 on my beige G3. The main motivation for
-> doing this was to debug a multi-threaded application, which I could not do
-> under the Release 4 that I previously had installed.
->
-> The version of gdb that comes with the distribution (which I got from
-> ftp.linuxppc.org) is 4.17.0.11, which is not multi-thread aware. I therefore
-> got hold of the sources for 4.17 from ftp.gnu.org and H.J.Lu's patches for
-> 4.17.0.14 and compiled up the resulting sources. According to the release
-> notes for 4.17.0.14, the change form 4.17.0.11 to 4.17.0.12 adds support for
-> LinuxThreads on PowerPC, so the version I have should work for
-> multi-threaded applications. However, typing 'info threads' on the
-> resultingexecutable, just returns me to the gdb prompt. Typing 'thread 1',
-> yields the message 'Thread ID 1 not known. Use the "info threads" command to
-> see the IDs of currently known threads.'. According to the gdb info, this is
-> typical behaviour of a gdb that does not have multi-threaded support.
->
-> Also, running the gdb.threads test in the testsuite that comes with the
-> distribution, tells me that my gdb does not support pthreads for this
-> machine.
->
-> All the evidence points to my gdb build not supporting multiple threads. Can
-> anybody tell me what I am doing wrong?
+It's a feature, not a bug. The kernel does the exact same init of the
+trackpad as it did on boot. Add 'trackpad notap' to cases 1, 2 and 3 of
+the pwrctl() function in /sbin/pwrctl to set the trackpad options again on
+wakeup. Or figure out how to read the trackpad settings from the device
+before sleep (a read of the same ADB registers as used to write the
+settings to might already do) and restore them on wake. All of this can be
+implemented in user space BTW.
 
-I'm not sure that you're doing anything wrong.  Was the program in
-question multithreaded?  I see the same behavior on linux/x86 when
-debugging a single threaded program.
+	Michael
 
-Regardless, you may want to try the latest gdb sources from the CVS
-repository at sourceware.cygnus.com.  I've recently merged the gdb
-patches for linux/ppc into the "official" source base and need help
-testing this code.  This version is thread aware and passes all of the
-thread related tests in the test suite.  In fact overall, I'm seeing
-only 31 failures.  (This number rises to 70 if you also build/test
-insight (gdbtk)).
-
-See http://sourceware.cygnus.com/gdb/ for information on how to obtain
-the sources.
-
-Kevin
-
---
-Kevin Buettner
-kev@primenet.com, kevinb@redhat.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
