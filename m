@@ -1,67 +1,83 @@
-Message-ID: <3896164A.16417EC2@zeta.org.au>
-Date: Tue, 01 Feb 2000 10:10:02 +1100
-From: Peter Allworth <linsol@zeta.org.au>
+Message-ID: <38961D55.C544EB7A@netx4.com>
+Date: Mon, 31 Jan 2000 18:40:05 -0500
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: Pavel Roskin <pavel_roskin@geocities.com>
-CC: Graham Stoney <greyham@research.canon.com.au>,
-        linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Best compiler/flags combination
-References: <Pine.LNX.4.21.0001302322580.774-100000@localhost.localdomain>
+To: Brendan.Simon@ctam.com.au
+CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: mpc8xx-2.2.13 kernel hangs during boot.
+References: <3896AEAE.B261AAAD@ctam.com.au>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Pavel Roskin wrote:
->
+Brendan John Simon wrote:
 
-<snip>
+>     Board Data at: 001001C4 001001E0
+>     relocated to:  00200100 0020011C
+>     Boot args at:  00200000 00200200
 
-> You did not mention flags. Maybe my results will be of some interest. I'm
-> using egcs-1.1.2 native for PowerMAC
->
-> -O2                bad code almost everywhere (libcrypt, depmod, bash)
-> -Os                bad code in tinylogin
-> -Os -fno-inline    good code (not extensively tested),
->                    but it doesn't look like a clean solution
-> -O2 -mcpu=860 -mmultiple -mstrings -mhard-float
->                    good code so far, but libm cannot be compiled
->                    (internal error in the compiler)
+> I'm a little concerned about the overlap of BootArgs and the relocated
+> BoardData.  Does this seem right or wrong to anyone ?
 
-Pavel,
+No, that is the way it is supposed to work.  I doubled the
+size of the boot arguments (it is only 256 bytes), and placed
+the board information structure there.  I just didn't update
+the messages to further describe what is going on.  This
+information is really only useful when debugging the boot
+code, and it seems to be working now.
 
-I believe I have found the cause of the "internal error" in the compiler.
-The source code of the compiler includes a file:
+The command line and board information structure must reside
+within the first 8Mbytes, and it seemed somewhat logical to
+me to just use the same buffer space.
 
-egcs-1.1.2/gcc/config/rs6000/rs6000.c
 
-that defines a routine called "rs6000_override_options" which for -mcpu=860
-will FORCE soft-float, irrespective of your command line flags.
-(I think it's particularly thoughtful the way it doesn't tell you it's
-doing this. ;)
+> ....  It was suggested to me that the UPM was probably incorrect and
+> that's why it fails with the caches enabled.
 
-By looking through the available list of cpu types, I've found an old
-one that results in the compiler using the correct set of internal flags
-to generate code for an MPC core with hardware (or emulated) floating point.
 
-It's: -mcpu=505
+I was the one that probably suggested that.  If all of the
+memory mapping is correct (IMMR > 0xd0000000, and such) this
+is usually where I start looking, since the code is known to
+operate on other platforms.
 
-With this flag I've been able to successfully compile and use glibc-2.1.1
-on my Rev C iMac. I think the same code should run native on the iMac but
-I haven't tried it.
 
-> Probably I'll still have to use
-> -O2 -mcpu=860 -mmultiple -mstrings -mhard-float
->
-> Or should I understand your recommendation so that you don't specify -mcpu
-> and gcc still produces code running on embedded systems?
+> ....  I have tried with 4 different UPM settings for a 25MHz bus
+> with 60ns EDO DRAM.
 
-As far as I can tell, the only problem with using the compiler "as-is"
-would be that the compiler's idea of how long each instruction takes
-would be wrong in some cases and so the resulting code would be suboptimal.
 
-'Hope that all helps,
+Although others may be more talented, I have never been able
+to program the UPM without the actual DRAM specifications,
+schematics and a logic analyzer connected to the processor bus.
+Guessing at UPM values is kind of like playing the lottery.
 
-PeterA.
+
+> ....  Is there anything else the kernel expects to be setup
+> ?
+
+Not much.  Obviously the DRAM must be configured because the
+kernel is loaded there.  Beyond that it just reads the IMMR
+and maps it.
+
+
+> How can I tell where it is failing ?  I don't think I can use printk as
+> the console is not setup yet.  Is this correct ?
+
+
+Here is a hint.  Look at the symbol table from System.map and
+convert the address of log_buf to a physical address (mask the
+upper couple of bits).  Dump this area of memory, as all of the
+printk() messages end up in this buffer before they are sent to
+the console.
+
+
+> Getting a little desperate now.
+
+
+Are those ready-for-production boards looking any better yet :-)?
+The world is passing you by........
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
