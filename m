@@ -1,30 +1,28 @@
-Message-ID: <3B7D78D5.EB19D6E9@mvista.com>
-Date: Fri, 17 Aug 2001 16:04:37 -0400
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: "Petersen, David (MED, GEMS-IT)" <David.Petersen@med.ge.com>
-Cc: linuxppc emb3dd3d list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: HZ to MHZ, 2.4.2 kernel
-References: <B1243F436404D511A5CF009027E705DA0261F7B0@USWAUMSX09MEDGE>
+Date: Fri, 17 Aug 2001 13:14:03 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Liu HongXun-a16975 <a16975@motorola.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Is there a PCI based 802.11b device driver for ppc linux?
+Message-ID: <20010817131403.G556@cpe-24-221-152-185.az.sprintbbd.net>
+References: <01139FC052A0D411900B00508B9535FC02A9CA76@ZCH07EXM04.corp.mot.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <01139FC052A0D411900B00508B9535FC02A9CA76@ZCH07EXM04.corp.mot.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-"Petersen, David (MED, GEMS-IT)" wrote:
+On Fri, Aug 17, 2001 at 11:11:28AM +0800, Liu HongXun-a16975 wrote:
 >
-> Look at the board information structure you are passing to linux. hh2.0
-> is expecting the cpu clock in HZ.
+> Hi, all,
+> Our customized ppc based board only has PCI interface. I wonder if there is a PCI based 802.11b device driver for ppc linux?
 
-All of this is "self contained" between the zImage bootloader and
-Linux itself.  If you have something that boots a kernel directly, you
-have to track these changes and make them to your bootloader.
+Well, it depends on the chipset.  And is it a PCI one or a pcmcia one in a
+pcmcia pci card.  I think some of the prism II and whatnot based cards work.
+Take a look in drivers/net/wireless.
 
-FYI, there are some major changes coming soon where the 8xx and 8260
-will start to use bi_recs like all of the other PowerPCs.  That's really
-going to mess you up if you aren't booting a zImage.
-
-
-	-- Dan
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
