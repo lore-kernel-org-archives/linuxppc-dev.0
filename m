@@ -1,93 +1,88 @@
-From: clark@esteem.com
-Message-Id: <1.5.4.32.20001006222031.006b6ab0@pop.esteem.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Fri, 06 Oct 2000 15:20:31 -0700
-To: Matthew Locke <mlocke@mvista.com>
-Subject: Re: Re: Ethernet Trouble
-Cc: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <39DE819F.A0B840E6@serialsystem.com.sg>
+Date: Sat, 07 Oct 2000 08:51:27 +0700
+From: Jari <jari.nguyen@smartstors.com>
+Reply-To: jari.nguyen@smartstors.com
+MIME-Version: 1.0
+To: jonb@marel.is
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Problem with shared libraries in HHL with initrd
+References: <OF2290EC0A.032808E8-ON00256970.004061A5@marel.is>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 10:18 AM 10/6/00 -0700, you wrote:
->clark@esteem.com wrote:
->> Sending BOOTP and RARP requests............. timed out!
->> IP-Config: Auto-configuration of network failed.
->> dev_close: bug eth0 still running
->> Looking up port of RPC 100003/2 on 100.100.100.14
->> RPC: sendmsg returned error 101
->> RPC: sendmsg returned error 101
->>
+Hello,
+
+jonb@marel.is wrote:
+
 >
->looks like a config problem.  trying turning off RARP in the kernel.
->
+> I seems the system expects to find the shared libraries in some other
+> directory than /lib.
 >
 
-        I found the problem, It was a hardware problem (the nasty analog
-type). Sorry for the trouble . However now it does the following.
+that 's right! If you use hhl 1.2
+you should have a link to /
+/opt/hardhat/devkit/ppc/8xx/powerpc-hardhat-linux
+as you have in your NFS root filesystem.
 
+> Can anyone give me directions ?
+> Does someone have a "minroot.tar.gz" made with HHL 1.2 ?
 
-## Booting Linux kernel at 40020000 ...
-   Image Name:   2.2.14 for EST192E
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    413162 Bytes = 403 kB = 0 MB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-Linux version 2.2.14 (root@pokey.esteem.com) (gcc version 2.95.2 19991030 (2.9
-5.3 prerelease/franzo)) #14 Thu Oct 5 13:24:22 PDT 2000
-Boot arguments: root=/dev/nfs rw ip=100.100.100.21:100.100.100.11:100.100.100.
-1:255.0.0.0:esteem192e.com:eth0 nfsroot=100.100.100.11:/home/brent/dk80211b/ro
-otfs.nfs
-time_init: decrementer frequency = 183750000/60
-Calibrating delay loop... 48.03 BogoMIPS
-Memory: 15120k available (748k kernel code, 476k data, 40k init) [c0000000,c10
-00000]
-Dentry hash table entries: 2048 (order 2, 16k)
-Buffer cache hash table entries: 16384 (order 4, 64k)
-Page cache hash table entries: 4096 (order 2, 16k)
-POSIX conformance testing by UNIFIX
-Linux NET4.0 for Linux 2.2
-Based upon Swansea University Computer Society NET3.039
-NET4: Unix domain sockets 1.0 for Linux NET4.0.
-NET4: Linux TCP/IP 1.0 for NET4.0
-IP Protocols: ICMP, UDP, TCP, IGMP
-TCP: Hash tables configured (ehash 16384 bhash 16384)
-Starting kswapd v 1.5
-CPM UART driver version 0.03
-ttyS00 at 0x0280 is a SMC
-ttyS01 at 0x0380 is a SMC
-pty: 256 Unix98 ptys configured
-RAM disk driver initialized:  16 RAM disks of 4096K size
-loop: registered device at major 7
-NET4: Ethernet Bridge 007 for NET4.0
-early initialization of device brg0 is deferred
-eth0: CPM ENET Version 0.2, 00:10:ec:00:1b:ba
-PPP: version 2.3.7 (demand dialling)
-TCP compression code copyright 1989 Regents of the University of California
-PPP line discipline registered.
-brg0: network interface for Ethernet Bridge 007/NET4.0
-brg0: generated MAC address FE:FD:00:30:16:76
-brg0: attached to bridge instance 0
-Looking up port of RPC 100003/2 on 100.100.100.11
-Looking up port of RPC 100005/1 on 100.100.100.11
-VFS: Mounted root (NFS filesystem).
-Freeing unused kernel memory: 40k init
+I don't have, but minimum ramdisk is depend on
+which application you want to support.
+if you just want to boot , configure IP address, mount, see my list:
 
-It hangs here.
+other dir is empty
 
-Do not pass go.
-Do not collect $200.
+/bin
+-rwxr-xr-x    1 root     root       564644 Sep 27 08:52 bash
+-rwxr-xr-x    1 root     root        39480 Aug  8 15:22 ifconfig
+-rwxr-xr-x    1 root     root        30344 Aug  8 15:25 init
+-rwxr-xr-x    1 root     root        26096 Aug  8 15:24 modprobe
+-rwxr-xr-x    1 root     root        56652 Aug  8 15:27 mount
+lrwxrwxrwx    1 root     root            4 Oct  3 14:54 sh -> bash
+-rwxr-xr-x    1 root     root        25500 Aug  8 15:27 umount
 
-It seems like it is not running init and/or loading inittab.
+/lib
+-rwxr-xr-x    1 root     root        93544 Sep 29 08:56 ld-2.1.3.so
+lrwxrwxrwx    1 root     root           11 Oct  3 14:54 ld.so.1 -> ld-2.1.3.so
 
-Whats up with this?????
+-rwxr-xr-x    1 root     root      1052892 Sep 29 08:51 libc-2.1.3.so
+lrwxrwxrwx    1 root     root           13 Oct  3 14:54 libc.so.6 ->
+libc-2.1.3.so
+-rwxr-xr-x    1 root     root        11372 Sep 29 08:56 libdl-2.1.3.so
+lrwxrwxrwx    1 root     root           10 Oct  3 14:54 libdl.so -> libdl.so.2
 
-Any and all help appreciated.
+lrwxrwxrwx    1 root     root           14 Oct  3 14:54 libdl.so.2 ->
+libdl-2.1.3.so
+-rwxr-xr-x    1 root     root        40268 Sep 27 07:57 libnss_files-2.1.3.so
+lrwxrwxrwx    1 root     root           17 Oct  3 14:54 libnss_files.so ->
+libnss_files.so.2
+lrwxrwxrwx    1 root     root           21 Oct  3 14:54 libnss_files.so.2 ->
+libnss_files-2.1.3.so
+lrwxrwxrwx    1 root     root           19 Oct  3 14:54 libtermcap.so ->
+libtermcap.so.2.0.8
+lrwxrwxrwx    1 root     root           19 Oct  3 14:54 libtermcap.so.2 ->
+libtermcap.so.2.0.8
+-rwxr-xr-x    1 root     root        13832 Sep 29 08:56 libtermcap.so.2.0.8
+/etc
+-rw-r--r--    1 root     root         2045 Aug  8 15:21 DIR_COLORS
+-rw-r--r--    1 root     root           32 Sep 27 08:52 fstab
+-rw-r--r--    1 root     root           97 Aug 10 02:17 group
+-rw-r--r--    1 root     root         2880 Aug  8 15:28 inetd.conf
+-rw-r--r--    1 root     root         1317 Oct  3 13:19 inittab
+-rw-------    1 root     root           60 Oct  3 13:25 ioctl.save
+-rw-r--r--    1 root     root           50 Oct  3 13:25 mtab
+-rw-r--r--    1 root     root           78 Aug 10 02:17 passwd
+-rw-r--r--    1 root     root         1186 Aug 10 02:17 protocols
+-rwxr-xr-x    1 root     root          212 Oct  3 15:00 rc.sysinit
+-rw-r--r--    1 root     root         1595 Aug  8 14:38 rpc
+-rw-r--r--    1 root     root         4400 Apr  9  1997 services
+-rw-r--r--    1 root     root         2677 May  8  1999 termcap
 
-        Conn Clark
+hope this help,
+Jari
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
