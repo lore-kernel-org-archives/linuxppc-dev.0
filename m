@@ -1,38 +1,38 @@
-Date: Sun, 8 Aug 1999 16:55:01 -0400 (EDT)
-From: Tom Rini <trini@disparity.net>
-To: Michel Lanners <mlan@cpu.lu>
+Message-Id: <199908082101.XAA03061@piglet.cpu.lu>
+Date: Sun, 8 Aug 1999 23:01:09 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: Trying a Promise Ultra/66 on powerpc
+To: trini@disparity.net
 cc: hedrick@Astro.Dyer.Vanderbilt.Edu, drow@false.org, mj@ucw.cz,
         Paul.Mackerras@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Trying a Promise Ultra/66 on powerpc
-In-Reply-To: <199908081954.VAA02923@piglet.cpu.lu>
-Message-ID: <Pine.BSF.3.96.990808165209.16262c-100000@silver.teardrop.net>
+In-Reply-To: <Pine.BSF.3.96.990808165209.16262c-100000@silver.teardrop.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 8 Aug 1999, Michel Lanners wrote:
+On   8 Aug, this message from Tom Rini echoed through cyberspace:
+> On Sun, 8 Aug 1999, Michel Lanners wrote:
+[snip'ed about PMac IDE stuff]
+> Would this be one of the things solved/cleaned up by seperating ide-pmac.c
+> and the CONFIG option for it into generic enable IDE stuff and a driver
+> for the builtin IDE on some machines?  Last I tried, I needed to enable
+> both cmd646 and ide-pmac on myy blue&white (trying to do this is on my
+> todo list, someplace.. :))
 
-> This fact was already catered for with the definition of outb/inb and
-> friends, which get an offset added to the port. Unfortunately, the
-> PowerMac IDE code undoes this and replaces it with a different
-> mechanism, which in essence removes the offset. Grrr..
->
-> I've solved the problem by adding the right offset directly to the
-> io-port values as found in the kernel's PCI structures. I think this
-> needs more serious rework, though. Paul, are you the author of the
-> PowerMac IDE stuff? So we can work this out... 
+I hope so ;-). Not that I'm complaining, but <asm-ppc/ide.h> looks like
+quite a mess to me....
 
-Would this be one of the things solved/cleaned up by seperating ide-pmac.c
-and the CONFIG option for it into generic enable IDE stuff and a driver
-for the builtin IDE on some machines?  Last I tried, I needed to enable
-both cmd646 and ide-pmac on myy blue&white (trying to do this is on my
-todo list, someplace.. :))
+Michel
 
----
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
