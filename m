@@ -1,40 +1,37 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: Multipart/Mixed;
+  charset="iso-8859-1";
+  boundary="------------Boundary-00=_EEZ8032YRX2XISKL98T1"
 From: Paul Ruhland <pruhland@rochester.rr.com>
-To: "Steve Clarke" <steve.clarke@overturenetworks.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: PCMCIA on MBX860
-Date: Sun, 4 Feb 2001 14:22:55 -0500
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <HCELKHHHIOJIDLBGAKBCKECFCAAA.steve.clarke@overturenetworks.com> <01020413495000.00647@kanga>
-In-Reply-To: <01020413495000.00647@kanga>
+Date: Sun, 4 Feb 2001 14:27:50 -0500
+References: <HCELKHHHIOJIDLBGAKBCKECFCAAA.steve.clarke@overturenetworks.com> <01020413495000.00647@kanga> <01020414225501.00647@kanga>
+In-Reply-To: <01020414225501.00647@kanga>
 MIME-Version: 1.0
-Message-Id: <01020414225501.00647@kanga>
+Message-Id: <01020414275000.00757@kanga>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Sunday 04 February 2001 13:49, Paul Ruhland wrote:
+--------------Boundary-00=_EEZ8032YRX2XISKL98T1
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 
-> Steve,
+On Sunday 04 February 2001 14:22, Paul Ruhland wrote:
+> On Sunday 04 February 2001 13:49, Paul Ruhland wrote:
+> > Steve,
+> >
+> > I will send you the changes for the MBX860 in another reply tomorrow (
+> > 20010205 ).  All of that code is presently on my work machine.
 >
-> I will send you the changes for the MBX860 in another reply tomorrow (
-> 20010205 ).  All of that code is presently on my work machine.
->
+> I managed to find an a patch for the pcmcia-cs-3.1.22 I made for the mbx...
 
-I managed to find an a patch for the pcmcia-cs-3.1.22 I made for the mbx. I
-only have code for the 'voltage_set' function in this patch.  You should be
-able to use this as a starting point for changes to pcmcia-cs-3.1.24...this
-was done hastily and the hardware_enable, hardware_disable should probably be
-implemented and the voltage_set could use some work.  I believe this got it
-up and running...I was able to use a 3Com LAN card ( 3c589_cs driver ).
-Also, this patch doesn't include the irq stuff I mention in my previous reply.
+I guess attaching the patch would have been a good idea...I need email
+software that automatically attaches files I'm referring to...hahaha.
 
-I then abandoned the MBX in favor of an STK/TQM850L board from Denx Software
-Engineering/TQ Components ( http://www.denx.de ) for various reasons.
+Don't forget to modify the config.in stuff to match your development layout.
 
-For embedded mpc8xx development, I strongly recommend the STK/TQM boards and
-PPCBOOT bootloader/monitor..outstanding hardware, software, support, and
-documentation.
 
 -------------------------------
 Paul Ruhland
@@ -43,5 +40,88 @@ Micrwave Data Systems Inc.
 Rochester, NY 14620
 TEL: +1.716.242.8372
 EMAIL: pruhland@microwavedata.com
+
+--------------Boundary-00=_EEZ8032YRX2XISKL98T1
+Content-Type: text/plain;
+  charset="iso-8859-1";
+  name="pcmcia-cs-3.1.22.mbx.patch"
+Content-Disposition: attachment; filename="pcmcia-cs-3.1.22.mbx.patch"
+Content-Transfer-Encoding: base64
+
+T25seSBpbiBwY21jaWEtY3MtMy4xLjIyOiAucHJlcmVxLm9rCmRpZmYgLWMgLS1yZWN1cnNpdmUg
+dGFyL3BjbWNpYS1jcy0zLjEuMjIvQ29uZmlndXJlIHBjbWNpYS1jcy0zLjEuMjIvQ29uZmlndXJl
+CioqKiB0YXIvcGNtY2lhLWNzLTMuMS4yMi9Db25maWd1cmUJV2VkIE5vdiAgOCAwMDowMDozNyAy
+MDAwCi0tLSBwY21jaWEtY3MtMy4xLjIyL0NvbmZpZ3VyZQlGcmkgRGVjICA4IDE0OjI0OjM3IDIw
+MDAKKioqKioqKioqKioqKioqCioqKiA0MzMsNDM4ICoqKioKLS0tIDQzMyw0MzkgLS0tLQogICAg
+ICAJcHJpbnRmbGFnICJNUEM4eHggYXJjaGl0ZWN0dXJlIiBDT05GSUdfOHh4CiAgICAgIAlwcmlu
+dGZsYWcgIkVtYmVkZGVkIFBsYW5ldCBMSVRFIHBsYXRmb3JtIiBDT05GSUdfUlBYTElURQogICAg
+ICAJcHJpbnRmbGFnICJFbWJlZGRlZCBQbGFuZXQgQ0xBU1NJQyBwbGF0Zm9tIiBDT05GSUdfUlBY
+Q0xBU1NJQworICAgICAgICAgcHJpbnRmbGFnICJNb3Rvcm9sYSBNQlggcGxhdGZvcm0iIENPTkZJ
+R19NQlgKICAgICAgCXByaW50ZmxhZyAiTVBDODIzIHByb2Nlc3NvciIgQ09ORklHX01QQzgyMwog
+ICAgICAJcHJpbnRmbGFnICJNUEM4NTAgcHJvY2Vzc29yIiBDT05GSUdfTVBDODUwCiAgICAgIAlw
+cmludGZsYWcgIk1QQzg2MCBwcm9jZXNzb3IiIENPTkZJR19NUEM4NjAKKioqKioqKioqKioqKioq
+CioqKiA1NzMsNTc4ICoqKioKLS0tIDU3NCw1ODAgLS0tLQogIAkgICAgY29uZmlnY2hlY2sgQ09O
+RklHXzh4eAogIAkgICAgY29uZmlnY2hlY2sgQ09ORklHX1JQWExJVEUKICAJICAgIGNvbmZpZ2No
+ZWNrIENPTkZJR19SUFhDTEFTU0lDCisgICAgICAgICAgICAgY29uZmlnY2hlY2sgQ09ORklHX01C
+WAogIAkgICAgY29uZmlnY2hlY2sgQ09ORklHX01QQzgyMwogIAkgICAgY29uZmlnY2hlY2sgQ09O
+RklHX01QQzg1MAogIAkgICAgY29uZmlnY2hlY2sgQ09ORklHX01QQzg2MAoKZGlmZiAtYyAtLXJl
+Y3Vyc2l2ZSB0YXIvcGNtY2lhLWNzLTMuMS4yMi9jb25maWcuaW4gcGNtY2lhLWNzLTMuMS4yMi9j
+b25maWcuaW4KKioqIHRhci9wY21jaWEtY3MtMy4xLjIyL2NvbmZpZy5pbglUaHUgSnVuIDE1IDIz
+OjIzOjQ4IDIwMDAKLS0tIHBjbWNpYS1jcy0zLjEuMjIvY29uZmlnLmluCUZyaSBEZWMgIDggMTQ6
+MDM6MTQgMjAwMAoqKioqKioqKioqKioqKioKKioqIDEsMTcgKioqKgogICMKICAjIGNvbmZpZy5p
+biAxLjE2IDIwMDAvMDYvMTUgMTg6MjM6NDggKERhdmlkIEhpbmRzKQogICMKISBMSU5VWD0vdXNy
+L3NyYy9saW51eAohIFBSRUZJWD0KISBNT0RESVI9CiEgQ0M9Y2MKISBMRD1sZAogIFBDREVCVUc9
+CiAgS0ZMQUdTPQogIFVGTEFHUz0KISBBUkNIPQogIFVOU0FGRV9UT09MUz1uCiEgQ09ORklHX0NB
+UkRCVVM9eQogIENPTkZJR19QTlA9bgogIFVTRV9QTT15CiAgQ09ORl9TUkM9MQotLS0gMSwxNyAt
+LS0tCiAgIwogICMgY29uZmlnLmluIDEuMTYgMjAwMC8wNi8xNSAxODoyMzo0OCAoRGF2aWQgSGlu
+ZHMpCiAgIwohIExJTlVYPS9ob21lL3BhdWxyL3Byb2plY3RzL25ldGhvcC9saW51eAohIFBSRUZJ
+WD0vaG9tZS9wYXVsci9wcm9qZWN0cy9uZXRob3AvdGFyZ2V0CiEgTU9ERElSPS9saWIvbW9kdWxl
+cy8yLjIuMTQKISBDQz1wcGNfOHh4LWdjYwohIExEPXBwY184eHgtbGQKICBQQ0RFQlVHPQogIEtG
+TEFHUz0KICBVRkxBR1M9CiEgQVJDSD1wcGMKICBVTlNBRkVfVE9PTFM9bgohIENPTkZJR19DQVJE
+QlVTPW4KICBDT05GSUdfUE5QPW4KICBVU0VfUE09eQogIENPTkZfU1JDPTEKCmRpZmYgLWMgLS1y
+ZWN1cnNpdmUgdGFyL3BjbWNpYS1jcy0zLjEuMjIvbW9kdWxlcy9tOHh4X3BjbWNpYS5jIHBjbWNp
+YS1jcy0zLjEuMjIvbW9kdWxlcy9tOHh4X3BjbWNpYS5jCioqKiB0YXIvcGNtY2lhLWNzLTMuMS4y
+Mi9tb2R1bGVzL204eHhfcGNtY2lhLmMJV2VkIE9jdCAyNSAwNToxNTo1MSAyMDAwCi0tLSBwY21j
+aWEtY3MtMy4xLjIyL21vZHVsZXMvbTh4eF9wY21jaWEuYwlNb24gRGVjIDExIDEwOjQ0OjM2IDIw
+MDAKKioqKioqKioqKioqKioqCioqKiA5NCw5OSAqKioqCi0tLSA5NCwxMDUgLS0tLQogICNlbmRp
+ZgogICNlbmRpZgogIAorIC8qIFRoZSBNQlggdXNlcyBTTE9UX0EgKi8KKyAjaWZkZWYgQ09ORklH
+X01CWAorICNkZWZpbmUgQ09ORklHX1BDTUNJQV9TTE9UX0EKKyAjZGVmaW5lIENPTkZJR19CRF9J
+U19IWgorICNlbmRpZgorIAogICNlbmRpZiAvKiAhZGVmaW5lZChDT05GSUdfUENNQ0lBX1NMT1Rf
+QSkgJiYgIWRlZmluZWQoQ09ORklHX1BDTUNJQV9TTE9UX0IpICovCiAgCiAgLyogLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLSAqLwoqKioqKioqKioqKioqKioKKioqIDEzOCwxNDYgKioqKgogICNlbmRpZgogIAog
+ICNpZmRlZiBDT05GSUdfQkRfSVNfTUhaCiEgI2RlZmluZSBNOFhYX0JVU0ZSRVEgKChtcGM4eHhf
+YmRpbmZvLT5iaV9idXNmcmVxKSAqIDEwMDAwMDApCiAgI2Vsc2UKISAjZGVmaW5lIE04WFhfQlVT
+RlJFUSAobXBjOHh4X2JkaW5mby0+YmlfYnVzZnJlcSkKICAjZW5kaWYKICAKICBzdGF0aWMgaW50
+IHBjbWNpYV9zY2hsdmwgPSBQQ01DSUFfU0NITFZMOwotLS0gMTQ0LDE1NCAtLS0tCiAgI2VuZGlm
+CiAgCiAgI2lmZGVmIENPTkZJR19CRF9JU19NSFoKISAvLyNkZWZpbmUgTThYWF9CVVNGUkVRICgo
+bXBjOHh4X2JkaW5mby0+YmlfYnVzZnJlcSkgKiAxMDAwMDAwKQohICNkZWZpbmUgTThYWF9CVVNG
+UkVRICgoNTApICogMTAwMDAwMCkKICAjZWxzZQohIC8vI2RlZmluZSBNOFhYX0JVU0ZSRVEgKG1w
+Yzh4eF9iZGluZm8tPmJpX2J1c2ZyZXEpCiEgI2RlZmluZSBNOFhYX0JVU0ZSRVEgKCg1MCkgKiAx
+MDAwMDAwKQogICNlbmRpZgogIAogIHN0YXRpYyBpbnQgcGNtY2lhX3NjaGx2bCA9IFBDTUNJQV9T
+Q0hMVkw7CioqKioqKioqKioqKioqKgoqKiogMzk2LDQwMSAqKioqCi0tLSA0MDQsNDYxIC0tLS0K
+ICB9CiAgCiAgI2VuZGlmCisgCisgLyogLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0qLworIC8qIE1CWCBCb2Fy
+ZHMgZnJvbSBNb3Rvcm9sYSAqLworIAorICNpZiBkZWZpbmVkKENPTkZJR19NQlgpCisgCisgI2Rl
+ZmluZSBQQ01DSUFfQk9BUkRfTVNHICJNQlg4NjAiCisgCisgc3RhdGljIGludCB2b2x0YWdlX3Nl
+dChpbnQgc2xvdCwgaW50IHZjYywgaW50IHZwcCkKKyB7CisgCXVuc2lnbmVkIGNoYXIgcmVnID0g
+MDsKKyAKKyAJc3dpdGNoKHZjYykgeworIAljYXNlIDA6IGJyZWFrOworIAljYXNlIDMzOiByZWcg
+fD0gMHg4MDsgYnJlYWs7CisgCWNhc2UgNTA6IHJlZyB8PSAweDQwOyBicmVhazsKKyAJZGVmYXVs
+dDogcmV0dXJuIDE7CisgCX0KKyAKKyAJc3dpdGNoKHZwcCkgeworIAljYXNlIDA6IGJyZWFrOwor
+IAljYXNlIDMzOiAKKyAJY2FzZSA1MDoKKyAJCWlmKHZjYyA9PSB2cHApCisgCQkJcmVnIHw9IDB4
+MjA7CisgCQllbHNlCisgCQkJcmV0dXJuIDE7CisgCQlicmVhazsKKyAJY2FzZSAxMjA6IAorIAkJ
+cmVnIHw9IDB4MTA7CisgCWRlZmF1bHQ6IHJldHVybiAxOworIAl9CisgCisgCWlmKCEoKHZjYyA9
+PSA1MCkgfHwgKHZjYyA9PSAwKSkpCisgCSAgIHJldHVybiAxOworIAorIAkvKiBmaXJzdCwgdHVy
+biBvZmYgYWxsIHBvd2VyICovCisgCisgCSooKHVuc2lnbmVkIGNoYXIqKShNQlhfQ1NSX0FERFIg
+KyAxKSkgJj0gfigweDgwIHwgMHg0MCB8IDB4MjAgfCAweDEwICk7CisgCisgCS8qIGVuYWJsZSBu
+ZXcgcG93ZXJzZXR0aW5ncyAqLworIAorIAkqKCh1bnNpZ25lZCBjaGFyKikoTUJYX0NTUl9BRERS
+ICsgMSkpIHw9IHJlZzsKKyAKKyAJcmV0dXJuIDA7CisgfQorIAorICNkZWZpbmUgc29ja2V0X2dl
+dChfc2xvdF8pIFBDTUNJQV9TT0NLRVRfS0VZXzVWCisgI2RlZmluZSBoYXJkd2FyZV9lbmFibGUo
+X3Nsb3RfKSAgLyogTm8gaGFyZHdhcmUgdG8gZW5hYmxlICovCisgI2RlZmluZSBoYXJkd2FyZV9k
+aXNhYmxlKF9zbG90XykgLyogTm8gaGFyZHdhcmUgdG8gZGlzYWJsZSAqLworIAorICNlbmRpZiAv
+KiBDT05GSUdfTUJYICovCiAgCiAgLyogLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLSAqLwo=
+
+--------------Boundary-00=_EEZ8032YRX2XISKL98T1--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
