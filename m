@@ -1,81 +1,50 @@
-Subject: 8250 IDMA TX Problems
+Message-ID: <20030228164733.30406.qmail@web41507.mail.yahoo.com>
+Date: Fri, 28 Feb 2003 08:47:33 -0800 (PST)
+From: bhupinder sahran <bhup_sah@yahoo.com>
+Subject: Re: Question about modules
+To: Ibon Gotxi Garcia <igotxi@jazzfree.com>,
+	Linux PPC embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <1046424964.385.3.camel@muse>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Fri, 28 Feb 2003 08:17:11 -0800
-Message-ID: <BD92DBD34D62AC4FA034933E33E53F7E172453@grog>
-From: "Penn, John" <jpenn@magisnetworks.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hi
 
-After searching the archives I still have a few basic questions.
-I am using an 8250 Hip 4 Rev A.  Linux kernel 2.4.19 with a few patches.
+What abt System.map...
+Can u check if symbols are there.
 
-I am trying to get IDMA working to transfer data between the 60x system
-memory and a device on the local bus.  I am using DREQ and nDACK for TX,
-RX will come later.
-
-When I send a start command for IDMA3 to the CPM my serial port locks
-up.
-I have Initialized all the IDMA registers and loaded up 1 buffer
-descriptor
-with the LAST and WRAP bits set.
-
-Using a BDI 2000 debugger I can access the 60x bus and it seems to be
-working.
-The error registers of the CPM also don't show any info.
-
-The nDACK signal never asserts either and data does not seem to be
-written into
-the DPM transfer buffer.  I checked DREQ and it is asserting though I am
-usually
-locked up before this event.
-
-Some info:
-   RCCR = 		DR3M - DREQ 3 is level sensitive
-			DR3QP - DREQ has lowest priority
-					than the comm. controllers
-
-   DCM = 		FB - Dual address mode
-   			DMA_WRAP - size of IDMA 3
-					transfer buffer = 2048 bytes
-			SINC - source addr increment
-			ERM - External Request Mode
-					CP responds to DREQ
-			S/D - Read from memory, write to peripheral
+Bye
+Bhupi
 
 
-1.	Has anyone used IDMA on an 8250?  The 8250 and the 8260 are
-supposedly
-	the same die so this functionality should be there, so I was
-told.
+--- Ibon Gotxi Garcia <igotxi@jazzfree.com> wrote:
+>
+> I'm trying to write a simple module for an 8xx board
+> using the SMC2.
+> Everything works, till I try to insmod it: I get
+> m8xx_cpm_alloc and
+> m8xx_cpm_hostalloc as unresolved symbols.
+>
+> I think that arch/ppc/8xx_io/commproc.c is properly
+> compiled (I can see
+> both symbols on vmlinux), but somehow the build
+> process strips them off
+> as they are unused (i cannot see them in /proc/ksyms
+> in the target). Is
+> that right? Any clue to solve it? (having them in
+> the target kernel
+> without modifying the original sources)
+>
+> Many regards.
+> ibon
+>
+> --
+> Ibon Gotxi Garcia <igotxi@jazzfree.com>
+>
+>
 
-2.	Has anyone managed to get IDMA working between 60x memory and a
-	peripheral on the Local Bus using DPM for :
-	a. BDs ?
-	b. IDMAx Parameter Ram ?
-
-3.	Should I switch to local bus ram for BDs?
-
-4.	Should I use local bus ram for the data buffers?
-
-5.	For a write transaction I am using the following values :
-	SS_MAX = 2048-32;
-	STS = 2048-32;
-	DTS = 4;			// The peripheral port is 32
-bits.
-
-	2048 is the largest packet I will ever transfer.
-
-	Do these values look ok?
-
-
-Thanks for the help,
-
-John Penn
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
