@@ -1,28 +1,34 @@
-From: benh@kernel.crashing.org
-To: Jeff Walther <trag@io.com>, <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: 9600 maturity?
-Date: Mon, 15 Apr 2002 06:01:03 +0100
-Message-Id: <20020415050103.6412@mailhost.mipsys.com>
-In-Reply-To: <a04310102b8e086debdbe@[199.170.89.178]>
-References: <a04310102b8e086debdbe@[199.170.89.178]>
+Message-ID: <20020415074341.4272.qmail@web11003.mail.yahoo.com>
+Date: Mon, 15 Apr 2002 00:43:41 -0700 (PDT)
+From: Dan Bethe <dan_bethe@yahoo.com>
+Subject: 9600 maturity?
+To: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->I have found that any PCI card which has its own PPB hangs the
->machine (with a few exceptions) in the lower four slots.  i.e. if you
->create a hierarchy of two PPBs Apple's PCI implementation bails.
->
->Jeff Walther
+Hi all.  I am considering getting a Powermac 9600 with a single 200 MHz 604e to
+replace my 8500 as a production server.  I can't find any info so far on the
+maturity of Linux's support of the 9600.  I read that a while back there were
+SMP problems, video problems, and problems with some types of PCI cards in the
+2nd PCI bus (the lower three slots).  The PCI problem was also had on MacOS at
+some point in time, so I wonder if they worked around it with something like a
+System Enabler and I wonder if such knowledge is incorporated into Linux.
 
-Yes, this is a known bug of older OFs, though an OF patch is floating
-around to fix it (dunno how to find it though).
+Can anyone confirm whether Linux support of the 9600 is at least as rock solid
+as that of the 8500?  I need it to be all around ideal or else it's not good
+enough.  Or give ideas on where to search for it other than the mailing lists
+at lists.linuxppc.org and lists.yellowdoglinux.com?  Google shows nothing so
+far.
 
-Note that recent 2.4 kernels may be able to work around OF bugs here.
+Thanks to all who contribute to that hardware family.... well, and to anything
+else too  :}
 
-Ben.
+=====
+Ambassador Communication Services -=- http://ambcomm.com
+   Managed Teleconferencing and Transcription Services
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
