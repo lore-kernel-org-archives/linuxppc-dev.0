@@ -1,27 +1,35 @@
-Date: Tue, 5 Jan 1999 14:06:48 -0700 (MST)
-From: Cort Dougan <cort@persephone.cs.nmt.edu>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-cc: Dan Malek <dmalek@jlc.net>, Paul Mackerras <paulus@cs.anu.edu.au>,
-        bh40@calva.net, tmrini@ntplx.net, linuxppc-dev@lists.linuxppc.org
-Subject: Re: irq cleanup
-In-Reply-To: <Pine.LNX.4.03.9901051001440.28240-100000@mercator.cs.kuleuven.ac.be>
-Message-ID: <Pine.LNX.3.96.990105140620.30613B-100000@persephone.cs.nmt.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Wed, 6 Jan 1999 09:39:13 +1100
+Message-Id: <199901052239.JAA04790@tango.anu.edu.au>
+From: Paul Mackerras <paulus@cs.anu.edu.au>
+To: tas@mindspring.com
+CC: linuxppc-dev@lists.linuxppc.org
+In-reply-to: <v04011700b2b76717bf6b@[209.86.156.101]> (tas@mindspring.com)
+Subject: Re: Strange PMAC IDE performance problem
+Reply-to: Paul.Mackerras@cs.anu.edu.au
+References: <v04011700b2b76717bf6b@[209.86.156.101]>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Yelloknife has the same thing, but backwards.  That's jumper switchable
-though.
+Timothy A. Seufert <tas@mindspring.com> wrote:
 
-}LongTrail CHRP has the output of the master i8259 routed through the OpenPIC.
-}So it has 3 interrupt controllers:
-}
-}  - irq 0-7: master i8259	-> irq 16
-}  - irq 8-15: slave i8259	-> irq 2
-}  - irq 16-35: OpenPIC in Hydra	-> CPU
+> Needless to say, the IDE performance figures are far less than those drives
+> are capable of!  Under MacOS they benchmark much higher (for example, the
+> 38451 scores 7780 to 9472 KB/s (8819 avg) sustained read on the FWB
 
+I have noticed this poor performance myself but it's hard to say what
+might be the cause - whether it's some bit that needs to be set
+somewhere in a hardware register, or something about the IDE driver
+that is causing it to waste time somewhere.  One way to start getting
+some information would be to add some statements to the IDE driver to
+read the timebase register to get some timing information about how
+long different parts of the process take.  If it is that the hardware
+is not transferring the bytes very fast, then we need to look for a
+value in a hardware register which is different between macos and
+linux.  I don't think I will be able to get on to it soon but if
+someone else wants to have a go that would be great.
+
+Paul.
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
