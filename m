@@ -1,44 +1,45 @@
-From: "Hendricks, Kevin" <khendricks@ivey.uwo.ca>
+Date: Mon, 24 Jul 2000 09:37:03 -0400 (EDT)
+From: "Peter R. Wood" <pwood@gordon.edu>
 To: linuxppc-dev@lists.linuxppc.org
-Message-Id: <v03110701b5a1e95b45a4@[129.100.29.243]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Mon, 24 Jul 2000 08:44:33 -0400
-Subject: Kaffe from cvs and some patches
+Subject: compiling 2.4.0-test5 -pmu errors
+Message-ID: <Pine.LNX.4.21.0007240933360.11526-100000@dyn-133-196.gordon.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Hi all,
 
-I built kaffe cvs using the cvs version of libffi and basicly it compiles
-but does not really run any truly multi-threadsed apps (see
-test/regressions/ThreadLocalTest.java for instance).
+I'm trying to compile 2.4.0-test5 using the kernel.org sources, and all
+compilation seems to go well, up until it tries to link together vmlinux:
 
-So I threw out libffi and threw back in my old sysdepCallMethod routine I
-wrote for ppc back when kaffe first came out,  added a stack alignment
-constraint to 16 to the jthreads code, and a few other very minor build
-changes to get it to build with complete shared libs.
+arch/ppc/kernel/kernel.o: In function `pmac_set_rtc_time':
+arch/ppc/kernel/kernel.o(.text+0x8f48): undefined reference to
+`pmu_request'
+arch/ppc/kernel/kernel.o(.text+0x8f48): relocation truncated to
+fit: R_PPC_REL24 pmu_request
+arch/ppc/kernel/kernel.o(.text+0x8f58): undefined reference to `pmu_poll'
+arch/ppc/kernel/kernel.o(.text+0x8f58): relocation truncated to
+fit: R_PPC_REL24 pmu_poll
+make: *** [vmlinux] Error 1
 
-Kaffe now successfully runs the Cafeinemark 3 benchmark.
-
-I anyone want these changes, please let me know.  I can't commit these
-changes to kaffe since I am contaminated by seeing the JDK, however these
-chnages all all ppc kaffe specific and have nothing whatsoever to do with
-the jdk.
-
-If anyone out there is helping kaffe, and wants my changes, please let me know.
+I thought perhaps this meant I should include the PMU adb driver, which
+seems silly, since I am using a SuperMac J700, and the PMU is a powerbook
+driver... but I went and configured that in, recompiled, and the kernel
+linked just fine. However, it hangs on boot.  Why is this required to
+compile?  I suppose the hang on boot could be due to some other issue. Any
+suggestions?
 
 Thanks,
 
-Kevin
+Peter
 
 --
-Kevin B. Hendricks, Associate Professor of Operations and Information
-Technology
-Richard Ivey School of Business, University of Western Ontario
-London, Ontario  N6A-3K7  CANADA
-khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
+Peter R. Wood          pwood@gordon.edu
+Computer Science       | Lightning    |
+Gordon College         | Samurai      |
+Wenham, MA             | Action!!!!!! |
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
