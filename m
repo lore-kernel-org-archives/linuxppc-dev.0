@@ -1,47 +1,27 @@
-Message-ID: <3B674558.1020908@mvista.com>
-Date: Tue, 31 Jul 2001 16:55:04 -0700
-From: Matthew Locke <mlocke@mvista.com>
+Message-ID: <3B674592.44629416@mvista.com>
+Date: Tue, 31 Jul 2001 18:56:02 -0500
+From: Mark Hatle <fray@mvista.com>
 MIME-Version: 1.0
-To: Cindy Peters <cinpet@adaptivemicro.com>
-Cc: "'Dan Malek'" <dan@mvista.com>,
-	"'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+To: Cort Dougan <cort@fsmlabs.com>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: New Linux PowerPC development
-References: <A109131318C4D1119AC20060088DECE35732E9@mail.adaptivemicro.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+References: <Pine.SOL.4.20.0107311650090.15362-100000@garnet.tc.umn.edu> <3B673FF7.2070504@mvista.com> <20010731174128.S26070@ftsoj.fsmlabs.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Cindy Peters wrote:
+Cort Dougan wrote:
+>
+> Not the toolchain included with 2.0, though.
+>
+> } Our tool-chain is publicly available on our ftp site for several architectures (including 8xx). ftp://ftp.mvista.com
+>
 
- > We have just recently been instructed by management to stay with the
- >  MPC823 in order to re-use the previous software and hardware
- > development as much as possible. We are looking at using some VHDL
- > IP provided by Open Cores (this is very new) for the IDE interface.
- >  Are you familiar with this?
- >
- > The VHDL code uses a processor independent interface called a
- > wishbone interface. I don't know much about it yet. I don't know if
- >  this is something standard or just developed for Open Cores. Do
- > you (or anyone else) know of any driver software that may be
- > available for this interface?
- >
+Yes it is.  ftp://ftp.mvista.com/pub/Journeyman/cd2/ contains the tools
+and userland for the PowerPC 405, 7xx, 82xx and 8xx processors.
 
-Having done several non-standard IDE interfaces before, I can say PIO
-mode for the IDE OpenCore would be straight forward to implement. DMA is
-always a bit more complicated.  I took a quick look thru the OpenCore
-documentation.  It looks like the core would work on the 8xx bus with
-few modifications.
-
-
- > I have downloaded the lmbench software to determine some benchmarking
-information. I am not sure how to build it for the PPC. I have a cross
- > compiler development environment setup in a subdirectory. Can someone
-help
- > me with this?
-
-Sure, download our Journeyman product for 8xx, it includes
-cross-compilers and 8xx userland.  ftp://ftp.mvista.com
-
+--Mark Hatle
+MontaVista Software, Inc.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
