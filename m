@@ -1,39 +1,67 @@
-Date: Wed, 20 Oct 1999 19:04:26 -0500
-From: anthony tong <atong@uiuc.edu>
-To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: SuSE Rage 128 Xserver Source and XFree 3.3.6
-Message-ID: <19991020190425.A1863@mango.genunix.net>
-References: <v03110700b433ca16486c@[209.183.133.114]> <v03110700b433ca16486c@[209.183.133.114]> <19991020150502.A2198@mango.genunix.net> <v03110701b433fe2f8663@[209.183.128.19]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <v03110701b433fe2f8663@[209.183.128.19]>
+Date: Wed, 20 Oct 1999 20:40:25 -0500 (CDT)
+From: ian reinhart geiser <geiseri@msoe.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: C++ Question
+Message-ID: <Pine.LNX.4.10.9910202034270.9611-100000@sleepchamber.apt5.msoe.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Kevin B. Hendricks (Wed, Oct 20, 1999 at 07:23:27PM -0400):
-> >I have the source, and also Precision Insights additions to it (a bit
-> >cleaner layout + hw cursor).
-> >
-> >I've also started merging into our xf68_fbdev but I won't have any free
-> >time to continue this (at least for a week or so). The problem is that
-> >they're using the xaa interface (which never was ported to ppc), so you
-> >have to wrapper all their accel functions by hand.
-> 
-> Are you allowed to share that source with others?
+I have confirmed that this works under 2.95 under RH 6.1
+one ix86 so I am thinking this is a LinuxPPC problem.
 
-Unfortunately, no.
+I am building the gcc cross compiler for th 68HC11 using
+the 2.8.1 source code and a patch supplied by my professor.
 
-           2) You must, under no circumstances, release work-in-progress code,  
-              documentation, or other preliminary materials outside the         
-              membership of The XFree86 Project, Inc., without express          
-              permission from the Board of Directors of the corporation.        
+i get the following error:
 
-However becoming a XFree86 member is quite painless.
+gcc -c -DCROSS_COMPILE -DIN_GCC    -g  -DHAVE_CONFIG_H    -I. -I.
+-I./config fol
+d-const.c
+fold-const.c: In function `exact_real_inverse':
+fold-const.c:945: parse error before `if'
+fold-const.c: At top level:
+fold-const.c:945: parse error before `else'
+fold-const.c:945: parse error before `.'
+fold-const.c:945: parse error before `.'
+fold-const.c:945: parse error before `.'
+fold-const.c:959: parse error before `('
+fold-const.c:960: `y' undeclared here (not in a function)
+fold-const.c:960: warning: data definition has no type or storage class
+fold-const.c:961: parse error before `return'
+make: *** [fold-const.o] Error 1     
 
-XFree86-3.3.5a is already completed, and to my knowledge it'll be released
-as 3.3.6 by the end of the month.
+When I looked at the code i found the following:
+
+exact_real_inverse (mode, r)
+     enum machine_mode mode;
+     REAL_VALUE_TYPE *r;
+{
+  union
+    {
+      double d;
+      unsigned short i[4];
+    }x, t, y;     
+----SNIP----
+and at 945 the following code...
+941:  /* Truncate to the required mode and range-check the result.  */
+942:  y.d = REAL_VALUE_TRUNCATE (mode, t.d);
+943:#ifdef CHECK_FLOAT_VALUE
+944:  i = 0;
+945:	  if (CHECK_FLOAT_VALUE (mode, y.d, i))
+946:    goto fail;
+947:#endif 
+
+why did i get an error on y.d on 945 and not 941?
+
+any ideas?
+
+sorry if i am missing info, i have been beating on this
+for a week and it is all getting blurry...
+
+-ian reinhart geiser
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
