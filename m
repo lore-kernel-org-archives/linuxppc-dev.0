@@ -1,32 +1,37 @@
-From: THEDREAM@chollian.net
-Message-Id: <200111160538.OAA03649@ldap.dacom.co.kr>
-Date: Fri, 16 Nov 2001 14:41:27 +0900
+Date: Fri, 16 Nov 2001 16:46:26 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: implement modem control for the 860 SMC 
-Reply-To: THEDREAM@chollian.net
-MIME-Version: 1.0
-Content-Type: text/plain
+Cc: Paul Mackerras <paulus@samba.org>
+Subject: Organisation of 4xx initialization code
+Message-ID: <20011116164625.K673@zax>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi, everybody ~~!!!
+At the moment the initialization for each of the 4xx boards goes
+through the platform_init() in arch/ppc/kernel/ppc4xx_setup.c, which
+in turns calls a board_init() function for the specific board.
 
-I want to implement modem control using 860 SMC. (NOT SCC)
+It seems to me that it would make more sense to put platform_init() in
+the board specific files, and these functions could then call back,
+where appropriate, to generic 4xx setup functions.  This would mean:
+	- It would be easier to support wierd and wacky boards which
+have non-standard address setups.
+	- Some ugly #ifdefs in ppc4xx_setup.c could be done away with.
+	- We should be able to remove some inconvenient header
+dependencies - at present lots of things are recompiled when board
+local defines are changed because walnut.h/ep405.h/etc are included
+indirectly in serial.h and some other unexpected places.
 
-I have the board that have MPC 860, SMC Port and so on.
+Thoughts?
 
-I am a beginner about Hardware. (I just know BR, OR, IMMR an so on ^^;;;)
+--
+David Gibson			| For every complex problem there is a
+david@gibson.dropbear.id.au	| solution which is simple, neat and
+				| wrong.  -- H.L. Mencken
+http://www.ozlabs.org/people/dgibson
 
-I have studied and ported Linux Kernel for 4~5 months.
-
-Could you easily teach me how I can do it ?
-
-I am prepare for try anything (I have the MPC User's Manual, Linux Kernel Source
-(2.2.14 & 2.4.4) and the board that is ported Linux Kernel into.)
-
-Any help would be appreciated.
-
-Thanks ~~~
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
