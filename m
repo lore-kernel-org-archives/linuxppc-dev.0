@@ -1,38 +1,47 @@
-Message-ID: <20040707071319.93766.qmail@web15201.mail.bjs.yahoo.com>
-Date: Wed, 7 Jul 2004 15:13:19 +0800 (CST)
-From: Song Sam <samlinuxppc@yahoo.com.cn>
-Subject: Re: make menuconfig error in latest "bk pull"
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <Pine.LNX.4.60.0407061615230.21433@localhost.localdomain>
+Message-ID: <40EBB6E8.6020104@246tNt.com>
+Date: Wed, 07 Jul 2004 10:40:08 +0200
+From: Sylvain Munaut <tnt@246tnt.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Linh Dang <linhd@nortelnetworks.com>
+Cc: ppc linux embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Getting rid of static IO mapping
+References: <40EB28C7.5020105@246tNt.com> <wn5isd0jwn3.fsf@linhd-2.ca.nortel.com>
+In-Reply-To: <wn5isd0jwn3.fsf@linhd-2.ca.nortel.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-"Robert P. J. Day" <rpjday@mindspring.com> wrote£º
+Linh Dang wrote:
 
-> i'm probably way behind the curve here, but:
+>On 6 Jul 2004, tnt@246tnt.com wrote:
+>[...]
 >
-> $ make ARCH=ppc menuconfig
-> scripts/kconfig/mconf arch/ppc/Kconfig
-> drivers/net/Kconfig:201: can't open file
-> "drivers/net/ibm_ocp/Kconfig"
-> make[1]: *** [menuconfig] Error 1
-> make: *** [menuconfig] Error 2
+>
+>>I wonder how it works. At the mapin_ram(), my BAT are overwritten,
+>>
+>>
+>
+>No they're not. the BAT configurations (which will be used later by
+>load_up_mmu) are written, NOT the BATs themselves.
+>
+>
+>
+Ok, thanks. That's what I've missed.
 
-I met this same problem,too.You could try mask
-drivers/net/Kconfig:201.Then it could be OK.I guess it
-was Matt Porter updated old ibm_ocp but neglected to
-fix related Makefile.Also if you use "make
-mrproper",there is still one Makefile error left.You
-could try remove or mask the line of ibm_ocp of
-driver/net/Makefile.There was no driver/net/ibm_ocp
-directory in the lastest repository.
+>>then the "MMU:setio" progress is called, but at this point, my BAT
+>>is no longer active and my setup_io_mappings is not yet
+>>called. Shouldn't that crash ? During these two calls, the uart zone
+>>shouldn't be mapped.
+>>
+>>
+>
+>setup_io_mappings is similar to mapin_ram. the configurations are
+>changed but not the BATs.
+>
+>
 
-Best regards,
 
-Sam
+Sylvain Munaut
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
