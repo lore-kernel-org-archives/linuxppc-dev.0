@@ -1,74 +1,57 @@
-Message-Id: <200009292135.XAA00900@piglet.grunz.lu>
-Date: Fri, 29 Sep 2000 23:35:07 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
+Date: Fri, 29 Sep 2000 17:11:37 -0700
+From: Matt Porter <mporter@mvista.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Benjamin Herrenschmidt <bh40@calva.net>, Michel Lanners <mlan@cpu.lu>,
+        linuxppc-dev@lists.linuxppc.org
 Subject: Re: __ioremap_at() in 2.4.0-test9-pre2
-To: geert@linux-m68k.org
-cc: bh40@calva.net, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.LNX.4.10.10009291319510.383-100000@cassiopeia.home>
-MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Message-ID: <20000929171137.A31137@cx258813-a.chnd1.az.home.com>
+References: <19340823125112.7591@mailhost.mipsys.com> <Pine.LNX.4.10.10009291319510.383-100000@cassiopeia.home>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.10.10009291319510.383-100000@cassiopeia.home>; from geert@linux-m68k.org on Fri, Sep 29, 2000 at 01:37:45PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  29 Sep, this message from Geert Uytterhoeven echoed through cyberspace:
-> On Thu, 28 Sep 2000, Michel Lanners wrote:
->> On  28 Sep, this message from Geert Uytterhoeven echoed through cyberspace:
->> >> I'm not sure it would help. It would probably allow a kind of "mapping on
->> >> demand" of the IO region on memory mapped IOs platforms, but unless we
->> >> add another parameter to ioportremap telling it the pci_dev (or at least
->> >> the bus number), we can't "guess" on which IO bus the device is and which
->> >> physical base we must use.
->> >
->> > But we can find out the IO bus by looking in which region the physical address
->> > is located, right? Or do we have the same region on different IO busses?
->> > That would be really weird! Different IO busses should decode different
->> > regions.
->>
->> No, they map the same bus-view IO space (bus addr. 0x0 - 0xsomething) to
->> different windows in the processor's memory space.
->>
->> In other words, you can have IO port 0x3f8 on each of the PCI buses, but
->> it will be accessed at different addresses from the processor's point of
->> view.
+On Fri, Sep 29, 2000 at 01:37:45PM +0200, Geert Uytterhoeven wrote:
 >
-> Hence you have to fixup any pci_dev on the non-primary bus so its resources
-> reflect the `real' I/O addresses, as seen from the CPU.
+> On Thu, 28 Sep 2000, Benjamin Herrenschmidt wrote:
+> > >> I'm not sure it would help. It would probably allow a kind of "mapping on
+> > >> demand" of the IO region on memory mapped IOs platforms, but unless we
+> > >> add another parameter to ioportremap telling it the pci_dev (or at least
+> > >> the bus number), we can't "guess" on which IO bus the device is and which
+> > >> physical base we must use.
+> > >
+> > >But we can find out the IO bus by looking in which region the physical
+> > address
+> > >is located, right? Or do we have the same region on different IO busses?
+> > >That would be really weird! Different IO busses should decode different
+> > >regions.
+> >
+> > That mean that you intend to feed a physical address to ioportremap and
+> > not an IO address ? Hrm... that mean we need to have the physical address
+> > in the device IO resources instead of the content of the IO BAR. Well,
+> > how should this work for legacy devices, then ? By assuming addresses
+> > below 64k are legacy IO (hard coded) addresses ? I don't like it too much.
+>
+> No, I meant I/O addresses. Each PCI bus should decode different I/O addresses,
+> just like it decodes different memory addresses.
+>
+> Say the first bus decodes I/O 0x0000-0x0fff, the second one decodes
+> 0x1000-0x1fff, and so on. If the different busses have different physical
+> addresses, you have to use the region decoding from my previous mail. Hence
+> ioportremap() would move the burden (and overhead) of the region decoding from
+> inb() and friends to one single place: ioportremap().
 
-Yes, you will have to correct the pci_dev IO resources of all devices on
-buses other than what you assign as being bus 0. In fact, the way Paul
-and Ben intend to do it, is adding a fixed offset in inb() and friends,
-and having a MMU mappung such that all IO regions appear as a single
-consecutive region within the processor's virtual space.
+No, each PCI host bridge segment contains an independent address space
+and may well have addresses that are identical numerically to addresses
+on other host bridge segments (I hate that "host" terminology).  The
+host bridges are what map these to sane unique values on the processor
+bus.
 
-In other words, IO on bus 1 needs to be offset (in pci_dev) by the size
-of bus 0's IO space, and so on.
-
-> So I/O address 0x3f8 (CPU view) is decoded by the first bus and accesses 0x3f8
-> on the first bus.
-> Say the second bus decodes, 0x1000-0x1fff. Then I/O address 0x13f8 (CPU view)
-> is decoded by the second bus and accesses 0x3f8 on the second bus.
-
-Yes, except that the offset to bus 1 will more likely be something like
-0x10000 or more, i.e inb(0x103f8) gives you 0x3f8 on bus 1. Remember we
-don't want to overlap the IO spaces of the different buses, rather
-concatenate them. This saves the hassle of 'correcting' the firmware's
-IO resource asignments.
-
-> [ I think I really need the output of lspci -vv on a PC with PCI, AGP and a
->   PCI-PCI bridge (and lots of cards) to bring some clarity... ]
-
-Sure you want to see that? ;-)
-
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
-
+--
+Matt Porter
+MontaVista Software, Inc.
+mporter@mvista.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
