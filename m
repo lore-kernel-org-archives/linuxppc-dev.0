@@ -1,50 +1,50 @@
-Message-ID: <40D41B9D.80201@246tNt.com>
-Date: Sat, 19 Jun 2004 12:55:25 +0200
-From: Sylvain Munaut <tnt@246tnt.com>
+Date: Sat, 19 Jun 2004 09:59:53 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Sven Luther <sven.luther@wanadoo.fr>,
+	Alan Cox <alan@www.pagan.org.uk>, Nicolas DET <nd@bplan-gmbh.de>,
+	Linux-USB <linux-usb-devel@lists.sourceforge.net>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: [linux-usb-devel] [Patch] for UHCI driver (from kernel 2.6.6).
+In-Reply-To: <1087595028.2061.295.camel@gaston>
+Message-ID: <Pine.LNX.4.44L0.0406190953120.19842-100000@netrider.rowland.org>
 MIME-Version: 1.0
-To: Dale Farnsworth <dale@farnsworth.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [PATCH][RFC] MPC52xx basic support on linux 2.6 (was DMA support
- for MPC5xxx?)
-References: <20040603090635.B7347@home.com> <20040603164245.B24A9C109F@atlas.denx.de> <20040603113302.A24468@home.com> <20040603185053.GN15195@smtp.west.cox.net> <40BF87BB.4020808@246tNt.com> <20040603134804.B24468@home.com> <40C8BB6C.4040709@246tNt.com> <20040618192046.GA22607@zenos.farnsworth.org>
-In-Reply-To: <20040618192046.GA22607@zenos.farnsworth.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dale Farnsworth wrote:
+On Fri, 18 Jun 2004, Benjamin Herrenschmidt wrote:
 
->On Thu, Jun 10, 2004 at 07:50:04PM +0000, Sylvain Munaut wrote:
+> > I recently changed a few mb() calls to wmb(), because they only protected
+> > data the CPU was writing to be read by the device.  Do you think changing
+> > all the wmb()'s back to mb()'s would make a difference?
+> >
+> > (Actually it seems likely that this is _not_ directly related to the
+> > original problem, but it might be important anyway.)
 >
->
->>Here it is, slightly delayed because of hardrive crash and need to
->>rename all 'Motorola' to 'Freescale' ;)
->>
->>It's there :
->>
->>http://www.246tNt.com/linux-2.5-mpc52xx-pending-20040610.diff
->>bk://bkbits.246tNt.com/linux-2.5-mpc52xx-pending
->>
->>
->
->FWIW, I'd like to see the above go into linux-2.5.
->
->I found a few issues.
->  - need to call uart_update_timeout
->  - Maximum delay for console_write (printk) was too short
->  - one missed icecube to lite5200 name change.
->
->This patch applies on top Sylvain's patch above.
->
->
+> Well, the problem on ppc is that the eieio done by wmb() (or implicitely
+> done by all writeX IO accessors) will only order stores in the same
+> domain. That is cacheable aren't ordered vs. non cacheables.
+
+I'm not familiar with the term "eieio"; can you explain it?
+
+> For example, write to a descriptor in memory, then writel() to your
+> device, that isn't guaranteed to happen in order.
+
+Then it shouldn't matter for what I'm doing, which involves multiple
+writes to the same region of "consistent" memory.  Or maybe it's only
+"coherent" memory -- the important thing is that the first write must
+complete and be visible to the device's DMA before the second.  wmb()
+will suffice for that, right?
+
+> In this case, you indeed need an mb(), but that's a ppc thing and the
+> race on ppc32 CPUs is quite small (though ppc64, typically POWER4 and
+> POWER5, will eat you for lunch with their multiple deep store queues).
+
 Thanks,
 
-Merged with others bits I fixed.
-Already in the -devel tree. I'll push it to the others as soon as I
-figure how to do it with bitkeeper ;) ...
+Alan Stern
 
-
-Sylvain Munaut
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
