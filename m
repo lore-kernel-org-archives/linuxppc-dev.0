@@ -1,50 +1,56 @@
-Message-ID: <406DB5DC.6060508@acm.org>
-Date: Fri, 02 Apr 2004 13:50:04 -0500
-From: "Michael R. Zucca" <mrz5149@acm.org>
+Message-ID: <406DBE90.1060603@gcctech.com>
+Date: Fri, 02 Apr 2004 14:27:12 -0500
+From: "Christopher R. Johnson" <cjohnson@gcctech.com>
+Reply-To: cjohnson@gcctech.com
 MIME-Version: 1.0
-To: John Whitney <jwhitney-linuxppc@sands-edge.com>
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Problems with dma_alloc_coherent()
-References: <9EB527A2-83F5-11D8-9FF0-000A95A07384@sands-edge.com> <20040401100546.A27472@home.com> <4317F0F4-8405-11D8-9FF0-000A95A07384@sands-edge.com> <20040401181926.GA3630@gate.ebshome.net> <406C658E.10500@embeddededge.com> <20040401185956.GB3786@gate.ebshome.net> <2C2F00BD-8410-11D8-9FF0-000A95A07384@sands-edge.com> <20040401191715.GC3786@gate.ebshome.net> <406C8104.9050609@acm.org> <20040401220018.GA4130@gate.ebshome.net> <D7F4C570-84C5-11D8-9FF0-000A95A07384@sands-edge.com>
-In-Reply-To: <D7F4C570-84C5-11D8-9FF0-000A95A07384@sands-edge.com>
+To: linas@austin.ibm.com
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: General question about caching
+References: <406D92CF.8040302@gcctech.com> <20040402110239.A58706@forte.austin.ibm.com>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-John Whitney wrote:
+Ok, I'll give it a shot.
+
+1. Isn't it taking up memory?  If not then what does "Cached: 11924kB"
+mean in meminfo?  With my embedded application, I desperately need every
+byte I can get; 11924k is HUGE in my little 32MB environment.
+
+2. Not sure why its vague that avoiding needless caching in ram of stuff
+that's already in ram is silly.  Perhaps the performance hit is minimal,
+but its still silly.  At the very least won't there be some needless
+data copying?
+
+Which cache is used for file contents?  That would be the one I don't need.
+
+linas@austin.ibm.com wrote:
+
+>On Fri, Apr 02, 2004 at 11:20:31AM -0500, Christopher R. Johnson wrote:
 >
-> As an exemplification of the problem I am having with the current
-> DMA/PCI API:
+>>I have a tight footprint, and no swapping (in fact no disks).  I notice
+>>that /proc/meminfo reports:
+>>
+>...
 >
-> I am developing a Generic DMA driver.  DMA providers register
-> themselves with it.  Clients ask the DMA core driver to please have a
-> registered driver transfer the data from one location to another, and
-> call them back when it is complete.
-
-If CPU memory is assumed to be a source/target and the other
-source/target is the device, then you should take a DMA direction, a
-virtual address, a device or bus, and a bus-local address. If CPU memory
-isn't the only target or the DMA engine is between a bunch of bridges,
-you might need to take a source bus and bus-local address, and a
-destination bus and bus-local address.
-
-If you have the bus and the bus-local address you should be able to
-deduce what bridges you have to program/translate-through to do the
-transfer with the DMA engine. Once you know that you should be able to
-translate a bus-local address to whatever address is appropriate for the
-DMA engine and program any intervening bridges appropriately.
-
-Does Linux currently have the smarts to do this? Beats me, but it should
-if it's ever going to hope to deal with the crazy array of busses and
-bridges coming out of the minds of hardware engineers these days. :-)
-
---
-----------------------------------------------
-  Michael Zucca - mrz5149@acm.org
-----------------------------------------------
-  "I'm too old to use Emacs." -- Rod MacDonald
-----------------------------------------------
+>>I only have rom and ram-based file systems, so I believe that disk
+>>caching could and maybe should be reduced to use less space.  Can I
+>>
+>
+>Why?  What's wrong with the way it is?  Is it impacting performance?
+>Thrashing?  I can see a vague argument that its (nearly) pointless
+>to cache buffers from ramdisk ... but it would take some work to flesh
+>out this argument.
+>
+>That said, you can play with parameters in /proc/sys/vm although
+>none of those directly affect the buffer cache size.  Indirectly,
+>setting the flush times to zero might shrink the effective buffer
+>cache, though... maybe. And it might hurt performance, maybe ...
+>
+>--linas
+>
+>
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
