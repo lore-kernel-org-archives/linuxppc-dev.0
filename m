@@ -1,42 +1,34 @@
-Message-ID: <407527E2.6040207@246tNt.com>
-Date: Thu, 08 Apr 2004 12:22:26 +0200
-From: Sylvain Munaut <tnt@246tNt.com>
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Patch for Linux 2.6 on MPC5xxx
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Subject: Re: MVME2100 patch
+From: Adrian Cox <adrian@humboldt.co.uk>
+To: okorpil@fh-landshut.de
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <Pine.LNX.4.58.0404071641050.16422@ppcproject1>
+References: <Pine.LNX.4.58.0404071641050.16422@ppcproject1>
+Content-Type: text/plain
+Message-Id: <1081428630.19021.55.camel@newt>
+Mime-Version: 1.0
+Date: Thu, 08 Apr 2004 13:50:30 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Here is basic support for the MPC5xxx on the 2.6 series :
+On Wed, 2004-04-07 at 15:51, okorpil@fh-landshut.de wrote:
 
- * The patch can be obtained at :
-http://www.246tNt.com/linux-2.5-mpc5xxx-20040408.diff.bz2
+> Was wrong about IRQ stuff last time - I'm off course operation in serial
+> IRQ mode here, because there is a serial IRQ source (8259(attached to the
+> IRQO of the OpenPIC, giving me the 12 (16 in total, 4 unused) IRQs I care
+> about. But no cascade within that 16 lines, so no cascade hook.
 
-It applies to a tree constructed by a
-bk clone bk://linux.bkbits.net/linux-2.5
-bk pull bk://source.mvista.com/linux-2.5-ocp
+I'm not sure what you mean here. The presence of an i8259 cascade is
+independent of the EPIC serial mode. EPIC serial mode is a hardware
+design decision, which is required if you need to feed more than 5
+sources into the EPIC. An i8259 is just another source, and as far as I
+can tell, there is no i8259 on the MVME2100.
 
+The RTC is probably connected to IRQ 8 because you set CONFIG_RTC=y. Use
+CONFIG_GEN_RTC instead.
 
- * There is also a read-only bitkeeper tree at
-bk://bkbits.246tNt.com/linux-2.5-mpc5xxx
-
-Please, try to avoid cloning it directly since the BW is limited on this
-server. Prefer a :
-bk clone bk://linux.bkbits.net/linux-2.5
-bk pull bk://source.mvista.com/linux-2.5-ocp
-bk pull bk://bkbits.246tNt.com/linux-2.5-mpc5xxx
-
-which should give the same result.
-
-
-There is a Documentation/powerpc/mpc5xxx.txt file for more informations.
-
-Any comments, feed-backs, patches, whatever, are welcomed ;)
-
-
-Sylvain Munaut
+- Adrian Cox
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
