@@ -1,19 +1,20 @@
-Return-Path: <sven.luther@wanadoo.fr>
-Date: Tue, 8 Mar 2005 20:28:05 +0100
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <20050308192805.GA13884@pegasos>
-References: <422C495B.8090805@katalix.com>
-	<20050307125808.6585A200008A@mwinf0308.wanadoo.fr>
-	<20050307225401.GA31041@xyzzy> <20050308064945.GC27722@pegasos>
-	<1110266832.13607.267.camel@gaston>
+Return-Path: <akpm@osdl.org>
+Received: from smtp.osdl.org (fire.osdl.org [65.172.181.4])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 6C94067A72
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Mar 2005 06:49:32 +1100 (EST)
+Date: Tue, 8 Mar 2005 11:48:51 -0800
+From: Andrew Morton <akpm@osdl.org>
+To: oray@lucent.com
+Message-Id: <20050308114851.1f997476.akpm@osdl.org>
+In-Reply-To: <200503081415.j28EF9CG002475@fire-1.osdl.org>
+References: <200503081415.j28EF9CG002475@fire-1.osdl.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1110266832.13607.267.camel@gaston>
-From: Sven Luther <sven.luther@wanadoo.fr>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Dale Farnsworth <dale@farnsworth.org>,
-	linuxppc-embedded@ozlabs.org, Nicolas DET <det.nicolas@free.fr>
-Subject: [PATCH] final mv643xx_eth pegasos patch set ...
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, netdev@oss.sgi.com
+Subject: Re: [Bugme-new] [Bug 4310] New: ppc 8260 fcc ethernet driver cannot
+ read LXT971 PHY id
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,32 +24,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
 
-Ok, thanks for your help, here is the final (hopefully) and cleaned up version
-of my patches :
+I'm not sure that we have a maintainer for fcc_enet.c.  Could you
+please send in a tested diff?
 
-  1) mv643xx-eth-pegasos.diff
-  This is the arch/ppc/platform diff, benh, could you look it over, and merge
-  it in ? It is not really usefull without the mv643xx_eth.c changes, but dale
-  is going to move those in together with his patches.
-
-  2) linux-2.5-mv643xx-enet-pegasos.diff
-  This is just two small hunks against dale's linux-2.5-mv643xx-enet tree,
-  which include the SA_INTERRUPT -> SA_IRQ and the Kconfig change. Dale said
-  he would merge them with his stuff, hopefully for 2.6.12.
-
-  3) mv643xx-eth.diff
-  This is the linux-2.5-mv643xx-enet diff against 2.6.11, together with the
-  linux-2.5-mv643xx-enet-pegasos.diff changes, for those who want to build
-  against 2.6.11.
-
-So to build against the linux-2.5-mv643xx-enet tree, you need 1) and 2) and to
-build against 2.6.11 you need 1) and 3).
-
-I am currently running the patches included in these changes, and will include
-them in the debian 2.6.11 kernels unless i hear otherwise. 
-
-Friendly,
-
-Sven Luther
+bugme-daemon@osdl.org wrote:
+>
+> http://bugme.osdl.org/show_bug.cgi?id=4310
+> 
+>            Summary: ppc 8260 fcc ethernet driver cannot read LXT971 PHY id
+>     Kernel Version: 2.6.10
+>             Status: NEW
+>           Severity: normal
+>              Owner: platform_ppc-32@kernel-bugs.osdl.org
+>          Submitter: oray@lucent.com
+> 
+> 
+> Distribution: www.kernel.org
+> Hardware Environment: Target: PowerPC 8260 custom board
+> Software Environment: Red Hat 9 cross development using ELDK 3.1 distribution.
+> Problem Description: Fast ethernet driver (fcc_enet.c) initialization fails to
+> read a valid id from registers 2 and 3 of the LXT971 PHY device and calls the
+> panic routine. The bug is in the mii_send_receive() function. During the read
+> phase, per LXT971 data sheet, the device starts driving the MDIO line after the
+> rising edge of the MDC clock and it could take up to 150ns before the data
+> settles. The driver reads the MDIO line before waiting for the data to settle
+> down and thus reads in garbage. I fixed the problem by moving the sampling of
+> the MDIO line to after the MDC clock is taken low. The code snippet follows:   
+> 
+> 
+>                 for (i = 0, off = 15; i < 16; i++, off--)
+>                 {
+> #define FCC_8260_BUG
+>                         FCC_PDATC_MDC(1);
+>                         retval <<= 1;
+> #ifndef FCC_8260_BUG
+>                         if (io->iop_pdatc & fip->fc_mdio)
+>                                 retval++;
+>                         udelay(1);
+>                         FCC_PDATC_MDC(0);
+> #else
+>                         udelay(1);
+>                         FCC_PDATC_MDC(0);
+>                         if (io->iop_pdatc & fip->fc_mdio)
+>                                 retval++;
+> #endif
+>                         udelay(1);
+> #undef FCC_8260_BUG
+>                 }
+> 
+> 
+> Steps to reproduce: Is likely to happen on an 8260 target with any kind of PHY,
+> not just the LXT971, hooked up to the FCC port.
+> 
+> ------- You are receiving this mail because: -------
+> You are on the CC list for the bug, or are watching someone who is.
