@@ -1,30 +1,36 @@
-Message-ID: <002901c300f2$58776090$020120b0@jockeXP>
-From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
-To: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>,
-	"Wojciech Kromer" <krom@dgt-lab.com.pl>,
-	"Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-References: <IGEFJKJNHJDCBKALBJLLEEPEFLAA.joakim.tjernlund@lumentis.se> <3E97BB43.6030409@dgt-lab.com.pl> <000901c300cd$b708f8a0$020120b0@jockeXP> <3E97DD20.6030908@dgt-lab.com.pl> <001901c300df$4a2bb030$020120b0@jockeXP>
-Subject: Re: kernel/timer.c
-Date: Sat, 12 Apr 2003 14:52:11 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ISO-8859-2"
+To: Wojciech Kromer <krom@dgt-lab.com.pl>
+Cc: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: ELDK missing ip program ? 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Sat, 12 Apr 2003 14:27:03 +0200."
+             <3E980617.1040603@dgt-lab.com.pl>
+Date: Sat, 12 Apr 2003 15:17:38 +0200
+Message-Id: <20030412131743.5E4B1C5877@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> > so, anyone knows what linus.t says about adding one jiffie  to every
-> > non-zero expire?
+In message <3E980617.1040603@dgt-lab.com.pl> you wrote:
 >
-> I think this is a bug. It should be enough to round up to nearest jiffie.
-> Ask on the linux kernel list.
->
->  Jocke
+> where is /sbin/ip program ? it's needet to iup script
 
-Actually, I take that back. It's not a bug. schedule_timeout(x), x > 0 will wait
-somewere between x-1 and x jiffies. Therefore one must add an extra
-jiffie to make sure that you don't return too early.
+The iproute package is not (yet) included with the ELDK.
+Please use ifconfig manually.
 
-     Jocke
+And of course: feel free to contribute a new package to the ELDK.
+It's an Open Source project.
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"In the face of entropy and nothingness, you kind of have to  pretend
+it's  not  there  if  you  want  to  keep writing good code."
+- Karl Lehenbauer
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
