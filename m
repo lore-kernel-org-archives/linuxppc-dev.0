@@ -1,39 +1,36 @@
-Message-ID: <39FF6FDD.50DFBE38@mvista.com>
-Date: Tue, 31 Oct 2000 20:20:29 -0500
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: Gabriel Paubert <paubert@iram.es>
-CC: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org,
-        paulus@linuxcare.com.au
+Message-Id: <200011010733.IAA00809@piglet.grunz.lu>
+Date: Wed, 1 Nov 2000 08:33:45 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
 Subject: Re: 2.2.18pre17 again
-References: <Pine.HPX.4.10.10010311722330.15431-100000@gra-ux1.iram.es>
-Content-Type: text/plain; charset=us-ascii
+To: bh40@calva.net
+cc: paulus@linuxcare.com.au, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <19340925052524.13014@192.168.1.2>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Gabriel Paubert wrote:
+On  31 Oct, this message from Benjamin Herrenschmidt echoed through cyberspace:
+>>- ICTC support in the sysctl interface:
 >
-> On Tue, 31 Oct 2000, Benjamin Herrenschmidt wrote:
->
+> Won't this require recalibrating the loops_per_jiffy for udelay() ?
 
+In a perfect world, yes. But I have seen no ill effects of a (limited)
+loops_per_jiffy mismatch.
 
-> > Because you didn't implement it yet ? :)
->
-> Perhaps...
+But I agree, if you want to heavily use ICTC we'd better fix this part.
+But the solution has followed ;-)
 
-Make sure you look at the code in the "boot" directories.  I think
-all of them have udelay functions that use the timebase.  At least,
-it would be a starting point.
+Michel
 
-> Even with a 33 MHz timebase (keep dreaming), the maximal delay for non
-> 601 CPUs is over 100 seconds.
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
-I thought at one time we had mdelay/udelay that were smart enough
-to loop and call the lower level delay to ensure this maximum
-delay wasn't exceeded.....maybe I was smoking something :-).
-
-
-	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
