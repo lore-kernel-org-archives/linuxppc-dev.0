@@ -1,34 +1,35 @@
 Subject: Re: chrp mmu and booting.
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Peter Bergner <bergner@vnet.ibm.com>
-Cc: Sven Luther <sven.luther@wanadoo.fr>,
+To: Sven Luther <sven.luther@wanadoo.fr>
+Cc: Peter Bergner <bergner@vnet.ibm.com>,
 	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <1074890984.2840.25.camel@otta.rchland.ibm.com>
+In-Reply-To: <20040123185433.GB5125@iliana>
 References: <20040123111725.GB23537@iliana>
 	 <1074883450.2842.9.camel@otta.rchland.ibm.com>
 	 <20040123185433.GB5125@iliana>
-	 <1074890984.2840.25.camel@otta.rchland.ibm.com>
 Content-Type: text/plain
-Message-Id: <1074906380.814.49.camel@gaston>
+Message-Id: <1074906498.1262.52.camel@gaston>
 Mime-Version: 1.0
-Date: Sat, 24 Jan 2004 12:06:21 +1100
+Date: Sat, 24 Jan 2004 12:08:19 +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 2004-01-24 at 07:49, Peter Bergner wrote:
+> Yeah, but in my case, i have no yaboot, and i know that these boxes are
+> also capable of booting from the OF.
+>
+> But then, how comes the OF translate call is able to map the address 0
+> to the 0x10000 address ?
 
-> In real mode, there is no address mapping done.  When the kernel starts
-> executing, we are not loaded where we were linked at, so we must be very
-> careful about what we touch.  You'll see in arch/ppc64/kernel/prom.c,
-> that we use the RELOC() macro to access global data.  It essentially
-> maps the virtual/effective address the kernel expects things to be at
-> to the physical address it's actually loaded at.  The ppc32 kernel was
-> able to remove the RELOC() macro, but for various reasons, the PPC64
-> kernel is still stuck using it.
+If you are talking about non-IBM HW, then you can't rely on what happens
+on IBM CHRP as a reference :) Any OF implementation does things differently
+(and for example, Apple's one runs in virtual mode, not in real mode, thus
+the translate call is useful in case you are loaded at a non-1:1 address).
 
-Yup :( Anton, Paulus and I have been scratching our heads to find
-a way to kill it, not as simple as ppc32 but we'll eventually do it :)
+What prom.c is expected to return is at what physical address the kernel
+was loaded. If you have MMU off or 1:1 mapping, the reloc "offset" is
+usually enough, but if OF have setup some kind of non-1:1 MMU mapping
+then you need the translate call.
 
 Ben.
 
