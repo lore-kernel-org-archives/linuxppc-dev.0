@@ -1,59 +1,34 @@
-Message-Id: <v04003a06b353b65b1379@[204.22.210.180]>
-In-Reply-To: <Pine.PMDF.3.96.990503135548.540345761G-100000@uni.edu>
-References: <372D3AAD.3C76AF99@wanadoo.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Date: Mon, 3 May 1999 16:32:19 -0400
-To: puetzk6715@uni.edu
-From: "sean o'malley" <somalley@ed.mde.state.mi.us>
-Subject: Re: local.h header file.
-Cc: linuxppc-dev@lists.linuxppc.org
+Date: Mon, 3 May 1999 22:27:31 -0400 (EDT)
+From: Tom Rini <tmrini@ntplx.net>
+To: "Jason Y. Sproul" <jsproul@mail.wesleyan.edu>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Mozilla for PPC
+In-Reply-To: <Pine.GSO.4.05.9905031015580.12394-100000@mail.wesleyan.edu>
+Message-ID: <Pine.LNX.4.05.9905032225370.660-100000@pc.wackyland.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I found reference to MAX_OPEN_FILES in the SMB man pages so I would suspect
-the Samba source would have local.h and the smb.conf file would have the
-value MAX_OPEN_FILES
+On Mon, 3 May 1999, Jason Y. Sproul wrote:
 
+> 
+> On Mon, 3 May 1999, Tom Rini wrote:
+> 
+> > R5 RSN. <g>
+> 
+> Are we talking O(weeks) or O(days) here? I'm trying to budget my time
+> effectively, and it would help to have this info.
 
-Sean
+Sometime between now and the end of the world, definatly before y3k and
+possibly before Wayne Gretzcy(sp?) Jr makes the NHL. :)
 
+---
+Tom Rini (TR1265)
+http://dobbstown.yeti.edu/
 
-
->Isn't this stuff in the kernel source?
->
->On Mon, 3 May 1999, Martin Costabel wrote:
->
->>
->> > Marc-AndrÈ Fortin wrote:
->> >
->> > Can somebody tell me if there is a file called local.h in RedHat Linux
->> > 5.2? (if yes, where it is?)
->> >
->> > Or maybe the parameter I'm looking for (MAX_OPEN_FILES) is somewhere
->> > else?
->> >
->> > Should I use the grep command to find files containing a specific
->> > string? Is (grep) looks in all the subdirectories?
->> > (I' tried, but no luck)
->>
->> To look for a string in all the *.h files in all subdirectories, you can
->> do
->>
->>    find . -name "*.h" -print | xargs grep MAX_OPEN
->>
->> or some abbreviation thereof (you can omit the '.' and '-print').
->>
->> I didn't find any local.h nor MAX_OPEN_FILES here, BTW.
->>
->> --
->> Martin
->>
->>
->
-
-
+Has no one learned better then to ask for a date? <g>
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
