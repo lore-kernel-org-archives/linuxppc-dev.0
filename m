@@ -1,24 +1,25 @@
-Message-ID: <39FB3C16.3359BC41@the-rileys.net>
-Date: Sat, 28 Oct 2000 16:50:38 -0400
+Message-ID: <39FB4F3E.F18D9FF@the-rileys.net>
+Date: Sat, 28 Oct 2000 18:12:26 -0400
 From: David Riley <oscar@the-rileys.net>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: PPC byte ordering
+To: Michael Norton <mnorton@cisco.com>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: BIG ENDIAN or LITTLE ENDIAN
+References: <200010282019.NAA19248@cisco.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Before I get dirty looks, I know the PowerPC's default byte ordering is
-big-endian (the way things *should* be :-).  What I'm asking is slightly
-irrelevant to most development discussion here, but...
+Michael Norton wrote:
+>
+> hi,
+>
+> I am working on some code that is particuliar of byte ordering. Is the G4, running PPC 2000 a BIG_ENDIAN machine?
 
-I know that the PowerPC does allow both endian modes.  My big question
-is how well it works in little endian mode.  I know we'll never switch
-Linux to this, since that would be too much unnecessary work, but just
-for reference:  Is it broken?  I have heard reports to this effect.
+I think this one was answered before, but...
 
-Thanks,
-	David
+LinuxPPC (and for that matter, most if not all PPC operating systems)
+run in big endian.  The answer to your question in a word is "yes".
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
