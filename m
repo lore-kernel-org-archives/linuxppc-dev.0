@@ -1,35 +1,34 @@
-Message-ID: <3E64212F.3080309@koffie.nl>
-Date: Tue, 04 Mar 2003 04:44:47 +0100
-From: Segher Boessenkool <segher@koffie.nl>
+Reply-To: <joakim.tjernlund@lumentis.se>
+From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
+To: "Dan Malek" <dan@embeddededge.com>,
+	"Daniel Jacobowitz" <drow@false.org>
+Cc: <linuxppc-dev@lists.linuxppc.org>
+Subject: RE: Improved copy_page() function, about 30% speed up for mpc860!
+Date: Tue, 4 Mar 2003 09:29:03 +0100
+Message-ID: <IGEFJKJNHJDCBKALBJLLIEMEFKAA.joakim.tjernlund@lumentis.se>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Albert Cahalan <albert@users.sourceforge.net>,
-	oprofile-list@lists.sourceforge.net, linuxppc-dev@lists.linuxppc.org
-Subject: Re: porting oprofile to ppc
-References: <1046474835.1090.303.camel@cube>  <3E62B4C4.6030306@koffie.nl>	 <1046679297.1090.405.camel@cube> <1046680119.2019.112.camel@zion.wanadoo.fr>
-In-Reply-To: <1046680119.2019.112.camel@zion.wanadoo.fr>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <3E641FCF.7080307@embeddededge.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
-> On Mon, 2003-03-03 at 09:14, Albert Cahalan wrote:
+> Daniel Jacobowitz wrote:
 >
+> > That is, in fact, incorrect.  It's fatal from userland.  I experimented
+> > with it just a couple of months ago.
 >
->>>You are talking about the time base?  It runs at 1/4th
->>>the cpu clock.  It can be disabled by means of a hardware
->>>pin (GPIO9 on most Mac's); default is running and that's
->>>just what you want, I think ;)
->>
->>Yes. I wonder where I got the 1/16 idea.
+> Uh oh....was this discussed and I missed it?
 >
-> Isn't it the bus clock rather ?
+> Will you fill me in on what you were trying to do and how it failed?
 
-Yes, the cpu bus clock.  Sorry about the confusion.
+I and Daniel discussed it, mostly in private. It fails horribly for
+me too in user space(init hangs, don't know any details) and that's why
+I split copy_tofrom_user into 2 functions( see yesterdays mail) as a test. With that
+change my system is stable.
 
-
-Segher
+   Jocke
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
