@@ -1,26 +1,20 @@
-Return-Path: <Renaud.Barbier@ge.com>
-Received: from ext-ch1gw-7.online-age.net (ext-ch1gw-7.online-age.net
-	[64.37.194.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F3F3F2BDF2
+Return-Path: <Gerald.VanBaren@smiths-aerospace.com>
+Received: from smtp3.smiths.com (smtp3.smiths.com [192.208.34.52])
+	by ozlabs.org (Postfix) with ESMTP id 4C7072BDB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  4 Dec 2004 07:51:41 +1100 (EST)
-Received: from int-ch1gw-5.online-age.net (int-ch1gw-5 [3.159.232.69])
-	by ext-ch1gw-7.online-age.net (8.12.11/8.12.11/20050527-JWF) with ESMTP
-	id iB3KtV1M026539
-	for <linuxppc-embedded@ozlabs.org>; Fri, 3 Dec 2004 15:55:31 -0500
-Received: from cinmlef05.e2k.ad.ge.com (localhost [127.0.0.1])
-	by int-ch1gw-5.online-age.net (8.12.9/8.12.3/990426-RLH) with ESMTP id
-	iB3KpWNg024110
-	for <linuxppc-embedded@ozlabs.org>; Fri, 3 Dec 2004 15:51:32 -0500 (EST)
+	Sat,  4 Dec 2004 08:56:26 +1100 (EST)
+Received: from COSSMGIMS04.email.corp.tld (unknown [10.225.225.147])
+	by smtp3.smiths.com (Postfix) with ESMTP id 55C161C012AC
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri,  3 Dec 2004 14:56:16 -0700 (MST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Fri, 3 Dec 2004 14:52:32 -0600
-Message-ID: <45ABD2373C33C4459D42B40EC4F346F20482F947@FTWMLVEM03.e2k.ad.ge.com>
-From: "Barbier, Renaud (GE Infrastructure)" <Renaud.Barbier@ge.com>
-To: "Matt Porter" <mporter@kernel.crashing.org>
+	charset="us-ascii"
+Date: Fri, 3 Dec 2004 14:56:13 -0700
+Message-ID: <065ACD8E84315E4394C835E398C8D5EBBBED0A@COSSMGMBX02.email.corp.tld>
+From: "VanBaren, Gerald (AGRE)" <Gerald.VanBaren@smiths-aerospace.com>
+To: "Barbier, Renaud (GE Infrastructure)" <Renaud.Barbier@ge.com>,
+	"Matt Porter" <mporter@kernel.crashing.org>
 Cc: linuxppc-embedded@ozlabs.org
 Subject: RE: 440GX MMU problem
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -33,40 +27,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-actually, I just loaded linux at memory offset 0x10000000(above 256MB)
-and in this case it is able to boot and use the full 512MB.
-there maybe indeed something broken.
 
-Originally, U-boot did not map the full 512MB but only 256MB.
-I wonder if that could be a possible source of my problem.
+> -----Original Message-----
+> From: linuxppc-embedded-bounces@ozlabs.org=0D
+> [mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of=0D
+> Barbier, Renaud (GE Infrastructure)
+> Sent: Friday, December 03, 2004 3:53 PM
+> To: Matt Porter
+> Cc: linuxppc-embedded@ozlabs.org
+> Subject: RE: 440GX MMU problem
+>=0D
+> actually, I just loaded linux at memory offset=0D
+> 0x10000000(above 256MB) and in this case it is able to boot=0D
+> and use the full 512MB.
+> there maybe indeed something broken.
+>=0D
+> Originally, U-boot did not map the full 512MB but only 256MB.
+> I wonder if that could be a possible source of my problem.
+
+Disclaimer: I don't have experience with the 4xx family, but won't stop
+me from speculating (which drives Wolfgang crazy when I guess wrong ;-).
+
+On the 82xx u-boot uses BATs to map memory.  On the 82xx, BATs are
+limited to 256MBytes per BAT.  I'm guessing you are running into this.
+Somewhere in your u-boot it doesn't know how to go beyond the 256MByte
+boundary.
+
+On u-boot, check out the use of "CONFIG_VERY_BIG_RAM".  It doesn't look
+like it applies directly to your board/processor, but you may be able to
+enhance your system using it or a similar concept.
+
+gvb
 
 
+******************************************
+I apologize for the following message brought to you by the Lawyers'
+League of IdioSpeak:
 
------Original Message-----
-From: Matt Porter [mailto:mporter@kernel.crashing.org]
-Sent: Friday, December 03, 2004 6:06 PM
-To: Barbier, Renaud (GE Infrastructure)
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: 440GX MMU problem
-
-
-On Fri, Dec 03, 2004 at 06:12:31AM -0600, Barbier, Renaud (GE =
-Infrastructure) wrote:
->=20
-> I am using linux 2.4.26 on a 440GX with 512MB of SDRAM.
-> >From U-boot I can see the whole memory.
-> If I boot Linux, unless I set the boot parameter mem=3D256M (or less).
-> it will not boot. Linux does not seem to go further than the =
-MMU_setup.
-
-Verified that the 440GX eval with 512MB works on both 2.4.26 and current
-2.4. Works For Me(tm).
-=20
-> Any idea why it cannot use 512MB?
-
-A broken board port would do it. If you deviate for any reason
-from the stock kernel configuration you can shoot yourself in the
-foot real fast. If you can provide some details on your custom
-board and port, somebody may be able to help you.
-
--Matt
+******************************************
+The information contained in, or attached to, this e-mail, may contain=
+ confidential information and is intended solely for the use of the=
+ individual or entity to whom they are addressed and may be subject to=
+ legal privilege.  If you have received this e-mail in error you should=
+ notify the sender immediately by reply e-mail, delete the message from=
+ your system and notify your system manager.  Please do not copy it for any=
+ purpose, or disclose its contents to any other person.  The views or=
+ opinions presented in this e-mail are solely those of the author and do=
+ not necessarily represent those of the company.  The recipient should=
+ check this e-mail and any attachments for the presence of viruses.  The=
+ company accepts no liability for any damage caused, directly or=
+ indirectly, by any virus transmitted in this email.
+******************************************
