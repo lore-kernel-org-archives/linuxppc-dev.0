@@ -1,26 +1,24 @@
-Message-ID: <3CBF4D1D.4010405@embeddededge.com>
-Date: Thu, 18 Apr 2002 18:47:57 -0400
-From: Dan Malek <dan@embeddededge.com>
+Message-ID: <XFMail.20020419093710.pochini@shiny.it>
+Content-Type: text/plain; charset=us-ascii
 MIME-Version: 1.0
-To: Dan Brennan <dmb8@optonline.net>
-Cc: David Edelsohn <dje@watson.ibm.com>,
-	LinuxPPC-Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: as question
-References: <200204182025.QAA29880@makai.watson.ibm.com> <3CBF2F23.9F2E5456@optonline.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <3CBF29F4.B00B75B6@optonline.net>
+Date: Fri, 19 Apr 2002 09:37:10 +0200 (CEST)
+From: Giuliano Pochini <pochini@shiny.it>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: asm info
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dan Brennan wrote:
+I want to write some small functions/peices of code in
+ppc assembly. I have ppc user manuals and the ABI, but
+I don't know the syntax. I need to know how to code asm
+inside the C source, and I need to know how to write a
+.S file to assemble and link with C object files. Where
+can I find the docs ?  Does gcc support Altivec ?
 
-> You're right, I objdump'd on the wrong object. They are okay. Still
-> trying to figure out why execution stops immediately following the RFI.
 
-How do you know it stops?
-
-
-	-- Dan
+Bye.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
