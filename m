@@ -1,55 +1,69 @@
-Message-ID: <3B6FA2F7.1C1A2BA2@genetel.co.kr>
-Date: Tue, 07 Aug 2001 17:12:39 +0900
-From: hychon <hychon@genetel.co.kr>
-Reply-To: hychon@genetel.co.kr
-MIME-Version: 1.0
+Message-ID: <20010807123341.19790.qmail@web14509.mail.yahoo.com>
+Date: Tue, 7 Aug 2001 05:33:41 -0700 (PDT)
+From: ambarish <ambarishak@yahoo.com>
+Subject: Kernel Hangs !
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: (enet) - hardware address??
-Content-Type: multipart/mixed;
- boundary="------------8FBF574DFD6F5F31190F5701"
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-MIME 형식의 멀티-파트 메시지입니다.
---------------8FBF574DFD6F5F31190F5701
-Content-Type: text/plain; charset=EUC-KR
-Content-Transfer-Encoding: 7bit
+Hai Everybody,
+
+I have been trying to port linux 2.2.14 on custom made
+board,
+the processor is mpc823.
+
+The problem is after printing the following message,
+
+Freeing unused kernel memory: 52k init
+
+it hangs. after putting some debugs, I used show_mem
+function from
+init.c the following output comes.
 
 
-I want to use to two ethernet device (fec and SCC1) base on MPC860T and
-I use kernel-2.2.13.
-when I am boot that , it come in to collision between devices.
+Mem-info:
+Free pages:       30792kB
+ ( Free: 7698 (64 128 192)
+NonDMA: 0*4kB 0*8kB 0*16kB 0*32kB 0*64kB 0*128kB
+0*256kB 0*512kB 0*1024kB 0*204)
+DMA: 0*4kB 1*8kB 2*16kB 1*32kB 0*64kB 0*128kB 0*256kB
+0*512kB 0*1024kB 15*2048k)
+Swap cache: add 0, delete 0, find 0/0
+Free swap:            0kB
+8192 pages of RAM
+7812 free pages
+315 reserved pages
+0 pages shared
+0 pages swap cached
+0 pages in page table cache
+Buffer memory:          4kB
+Buffer heads:        20
+Buffer blocks:        4
+Buffer hashed:        0
+Networking buffers in use          : 1
+Total network buffer allocations   : 20
+Total failed network buffer allocs : 0
+IP fragment buffer size            : 0
+Process  Pid Cnt      Ctx   Ctx<<4 Last Sys        pc
+   task
+swapper    1   1        1       16       11 ?00000000
+c0176000
+kupdate    2   1        2       32       -1 ?00000000
+c010c000
+rpciod     3   1        0        0       -1 ?00000000
+c018e000
 
-boot message ================================
-eth0: CPM ENET Version 0.2 on SCC1, 00:06:42:00:00:01
-eth1: FEC ENET Version 0.1, fec: Phy @ 0x0, type 0x001378e1
-00:fec: link up,auto complete
-06:fec: 10 Mbps, Half-Duplex
-42:00:00:01
-IP-Config: Incomplete network configuration information.
-dev_close: bug eth0 still running
-===============================================================
+my question is why address is showing as zero for the
+process. How can I solve this problem.
+Can any body help me to solve my problem
 
-how to allocate a hardware address (mac address) to each device in
-kernel ?
---------------8FBF574DFD6F5F31190F5701
-Content-Type: text/x-vcard; charset=EUC-KR;
- name="hychon.vcf"
-Content-Transfer-Encoding: 7bit
-Content-Description: Card for hychon
-Content-Disposition: attachment;
- filename="hychon.vcf"
+Thanks in advance for the suggestion.
 
-begin:vcard
-n:;
-x-mozilla-html:FALSE
-adr:;;;;;;
-version:2.1
-x-mozilla-cpt:;0
-end:vcard
-
---------------8FBF574DFD6F5F31190F5701--
+Thanks
+Ambarish.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
