@@ -1,47 +1,25 @@
-Message-ID: <XFMail.990305100624.gdt@linuxppc.org>
+Date: Fri, 5 Mar 1999 11:08:25 +0100
+From: Hubert Figuiere <hub@point-barre.fr>
+To: LinuxPPC Dev List <linuxppc-dev@lists.linuxppc.org>
+Subject: ADB Reset
+Message-ID: <19990305110825.A602@giordino.point-barre.fr>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-MIME-Version: 1.0
-In-Reply-To: <9903050401.AA41152@marc.watson.ibm.com>
-Date: Fri, 05 Mar 1999 10:06:24 -0000 (GMT)
-From: Gary Thomas <gdt@linuxppc.org>
-To: David Edelsohn <dje@watson.ibm.com>
-Subject: Re: Problem with egcs and denormalized constants?
-Cc: egcs@egcs.cygnus.com, linuxppc-dev@lists.linuxppc.org, sbb@gnu.org,
-        kbhend@business.wm.edu, Randy Gobbel <gobbel@andrew.cmu.edu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Can anybody tell me how to reset the ADB bus. Just because when I
+snooze the PowerBook, the mouse become really slow....
 
-On 05-Mar-99 David Edelsohn wrote:
-> 
->>>>>> Randy Gobbel writes:
-> 
-> Randy> I've been poking around in binutils a bit, and it looks to me like the
-> Randy> badness is actually in gas.  Somewhere in expr.c is my current best
-> Randy> guess.  As far as I can tell, gas doesn't actually call glibc to
-> Randy> translate numbers, it has its own hairy platform-independent stuff for
-> Randy> that.
-> 
->       Has anyone created a small, self-contained testcase and reported
-> it as a bug to binutils?
-> 
-> David
-> 
+How can I ask to redect all the ADB peripherals. I want to be able
+to plug and unplug my kensington mouse.
 
-I'm looking into it.  Note: it was only in the last few hours that this
-problem with GAS/BINUTILS/??? became known.
+The goal is to make a small set of utilities for this :-)
 
-
-------------------------------------------------------------------------
-Gary Thomas                              |
-email: gdt@linuxppc.org                  | "Fine wine is a necessity of
-   ... opinions expressed here are mine  |        life for me"
-       and no one else would claim them! |
-                                         |      Thomas Jefferson
-------------------------------------------------------------------------
-
-
+Hub
+-- 
+World Wide Wait: the real meaning for WWW.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
