@@ -1,43 +1,47 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-From: Jeff Kowing <jeffrey.d.kowing@nasa.gov>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <16148.1141.101138.214108@igor.jsc.nasa.gov>
-Date: Tue, 15 Jul 2003 08:41:09 -0500
-To: "Brian Padalino" <bpadalino@perigee.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: DENX ELDK Kernel
-In-Reply-To: <DGEEIPOFGGPOACEFBGGCOEGKCAAA.bpadalino@perigee.com>
-References: <DGEEIPOFGGPOACEFBGGCOEGKCAAA.bpadalino@perigee.com>
-Reply-To: jeffrey.d.kowing@nasa.gov
+To: jeffrey.d.kowing@nasa.gov
+Cc: "Brian Padalino" <bpadalino@perigee.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: DENX ELDK Kernel 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 15 Jul 2003 08:41:09 CDT."
+             <16148.1141.101138.214108@igor.jsc.nasa.gov>
+Date: Tue, 15 Jul 2003 15:51:14 +0200
+Message-Id: <20030715135119.5782CC6D82@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Brian Padalino writes:
- > I understand that DENX ELDK is always being worked on, and I have seen that
- > Wolfgang Denk is amazingly active in this community, so I guess my question
+Dear Jeff,
 
-He's a mythological figure!  I think he is really secretly several
-people working as one incredible unit of productivity.
+in message <16148.1141.101138.214108@igor.jsc.nasa.gov> you wrote:
+>
+> He's a mythological figure!  I think he is really secretly several
+> people working as one incredible unit of productivity.
 
- > is -- can I use the linux-ppc kernel patches for the latest 2.4 kernels
- > instead of DENX's?  Should this requirement of the kernel needing to be
- > easily upgradable to any kernel reevaluated?
+No, really, it's just me. And I'm still trying to figure out how  the
+clone() system call could be used for real-life applications :-)
 
-Others are more qualified to answer this than me, but, heck, that
-never stopped me before!  Basically, the answer is yes - at least I
-have been using the ELDK with a linux-2.4.20 kernel (from kernel.org).
-The key point to remember is that you should always compile user
-applications against the Linux include files that glibc (and all the
-rest of the target ELDK apps) are built against - Do NOT compile your
-user applications against the newer Linux kernel.
+> never stopped me before!  Basically, the answer is yes - at least I
+> have been using the ELDK with a linux-2.4.20 kernel (from kernel.org).
+> The key point to remember is that you should always compile user
+> applications against the Linux include files that glibc (and all the
+> rest of the target ELDK apps) are built against - Do NOT compile your
+> user applications against the newer Linux kernel.
 
-Regards,
-Jeff
+10 of 10 points :-)
+
+
+Best regards,
+
+Wolfgang Denk
 
 --
-Jeff Kowing <jeffrey.d.kowing@nasa.gov>
-All opinions expressed are my own and not of my employer.
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"Where shall I begin, please your Majesty?" he asked. "Begin  at  the
+beginning,"  the  King said, gravely, "and go on till you come to the
+end: then stop."    - Alice's Adventures in Wonderland, Lewis Carroll
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
