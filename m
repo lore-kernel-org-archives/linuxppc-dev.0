@@ -1,25 +1,39 @@
-Date: Thu, 8 Jun 2000 10:35:04 -0500
-From: Grant Erickson <grant@borg.umn.edu>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Embedded Perl
-Message-ID: <Pine.SGI.4.21.0006081030590.371275-100000@tigris.borg.umn.edu>
+Message-ID: <393FC202.1E5007C9@iname.com>
+Date: Thu, 08 Jun 2000 16:55:46 +0100
+From: Jim Chapman <jim.chapman@iname.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Grant Erickson <grant@borg.umn.edu>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Embedded Perl
+References: <Pine.SGI.4.21.0006081030590.371275-100000@tigris.borg.umn.edu>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In a target system I was planning on running Perl scripts as a means to
-accomplish a lot of tasks, particularly for driving CGI scripts for
-web-based management. However, it has since dawned on me that an
-installation of Perl is HUGE (12+ MB).
+Have you looked at the GoAhead embedded web server? It's in the HardHat
+distribution. It's intended for small memory footprint requirements and seems
+to have mechanisms to do CGI-style stuff without needing perl.
 
-Has anyone had any experience getting PERL shoehorned into an embedded
-environment? How trim were you able to make Perl?
+See www.goahead.com
 
-Thanks,
+-Jim
 
-Grant Erickson
+
+Grant Erickson wrote:
+
+> In a target system I was planning on running Perl scripts as a means to
+> accomplish a lot of tasks, particularly for driving CGI scripts for
+> web-based management. However, it has since dawned on me that an
+> installation of Perl is HUGE (12+ MB).
+>
+> Has anyone had any experience getting PERL shoehorned into an embedded
+> environment? How trim were you able to make Perl?
+>
+> Thanks,
+>
+> Grant Erickson
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
