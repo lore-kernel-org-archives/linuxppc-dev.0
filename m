@@ -1,27 +1,21 @@
-Message-ID: <39405BFB.1E231721@embeddededge.com>
-Date: Thu, 08 Jun 2000 22:52:43 -0400
-From: Dan Malek <dan@netx4.com>
+From: "??????" <kskim@neowave.co.kr>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: kernel for booting without tftp
+Date: Fri, 9 Jun 2000 12:03:11 +0900
+Message-ID: <NEBBKFENMLEDKDHMEHPJOEJMCAAA.kskim@neowave.co.kr>
 MIME-Version: 1.0
-To: Murray Jensen <Murray.Jensen@cmst.csiro.au>
-CC: Daniel Wu <Daniel.Wu@alcatel.com.au>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Using zImage.initrd
-References: <27066.960518430@msa.cmst.csiro.au>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="ks_c_5601-1987"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Murray Jensen wrote:
+I know very little at linux and mpc860, and I just have started porting linux on mpc860.
 
-> Try this patch:
->
-> --- fs/buffer.c 2000/05/16 01:31:41     1.1.1.12
+There are lots of kernel distributions for mpc860, but according to their documents they are for tftp downloading.
 
+If I use BDM and download directly on the RAM, should I modify the kernel source? or config? or search for another one?
 
-The 2.2.xx kernels don't have any ramdisk patch required.  This was
-broken in later 2.3.xx kernels.  Don't be trying this in 2.2 kernels.
-
-
-	-- Dan
+And is there any difference between booting from tftp and booting from BDM?
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
