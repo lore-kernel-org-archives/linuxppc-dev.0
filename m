@@ -1,55 +1,35 @@
-Message-ID: <37D93AF2.7E716F7F@chpc.utah.edu>
-Date: Fri, 10 Sep 1999 11:08:02 -0600
-From: Lou Langholtz <ldl@chpc.utah.edu>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: controlfb.c bug in VRAM bank2 check if bank1
-References: <37D929E4.205A04B8@chpc.utah.edu>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <9909101739.AA34034@marc.watson.ibm.com>
+To: Sacha Varma <sacha@ssl.co.uk>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: altivec 
+In-Reply-To: Message from Sacha Varma <sacha@ssl.co.uk>
+   of "Fri, 10 Sep 1999 11:32:36 BST." <37D8DE44.9AE2C717@ssl.co.uk>
+Date: Fri, 10 Sep 1999 13:39:31 -0400
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Someone requested a re-post of the diff I'm using to get 4MB VRAM suport
-using the "-u" option to diff...
+>>>>> Sacha Varma writes:
 
-diff -u linux/drivers/video/controlfb.c.orig
-linux/drivers/video/controlfb.c
---- linux/drivers/video/controlfb.c.orig Mon Aug  9 13:04:57 1999
-+++ linux/drivers/video/controlfb.c Wed Sep  1 12:58:19 1999
-@@ -711,18 +711,19 @@
-  asm volatile("eieio; dcbi 0,%0" : : "r" (&p->frame_buffer[0]) : "memory"
-);
-  bank1 = (in_8(&p->frame_buffer[0]) == 0x5a) && (in_8(&p->frame_buffer[1])
-== 0xc7);
+Sacha> Has any progress been made on LinuxPPC Altivec support? I posted a while back
+Sacha> and there was some discussion, I wondered if anyone was taking it further. I
+Sacha> suppose the arrival of G4 Macs in a few weeks' time will help kickstart things.
+Sacha> It would be great if AIM took the lead in this sort of work...
 
-- out_8(&p->frame_buffer[0x600000], 0xa5);
-- out_8(&p->frame_buffer[0x600001], 0x38);
-- asm volatile("eieio; dcbi 0,%0" : : "r" (&p->frame_buffer[0x600000]) :
-"memory" );
-- bank2 = (in_8(&p->frame_buffer[0x600000]) == 0xa5)
--  && (in_8(&p->frame_buffer[0x600001]) == 0x38);
--
-+ out_8(&p->frame_buffer[0x200000], 0xa5);
-+ out_8(&p->frame_buffer[0x200001], 0x38);
-+ asm volatile("eieio; dcbi 0,%0" : : "r" (&p->frame_buffer[0x200000]) :
-"memory" );
-+ bank2 = (in_8(&p->frame_buffer[0x200000]) == 0xa5)
-+      && (in_8(&p->frame_buffer[0x200001]) == 0x38);
+Sacha> The issues as I remember them:
 
-  p->total_vram = (bank1 + bank2) * 0x200000;
-+ printk(KERN_INFO "Total VRAM = %dMB\n", (int) (p->total_vram / 1024 /
-1024));
-  /* If we don't have bank 1 installed, we hope we have bank 2 :-) */
-  p->control_use_bank2 = !bank1;
-  if (p->control_use_bank2) {
--  p->frame_buffer += 0x600000;
--  p->frame_buffer_phys += 0x600000;
-+  p->frame_buffer += 0x200000;
-+  p->frame_buffer_phys += 0x200000;
-  }
+Sacha> .. support in egcs for the Altivec C language extensions, 
+Sacha> hopefully C++ also (someone said they had patches supplied
+Sacha> by Motorola, but I've not found mention of these on the
+Sacha> Motorola SPS site so I assume they're not for general
+Sacha> consumption)
 
-  init_control(p);
+	Apple apparently has a version of egcs-1.1.2 with an improved
+version of Motorola's AltiVec support merged in.  I still have not seen
+any offer of these patches to the GCC maintainers (and accompanying
+assignment to the FSF) for inclusion in the public sources.
 
+David
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
