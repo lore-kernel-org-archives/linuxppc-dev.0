@@ -1,38 +1,26 @@
-Message-Id: <20010905160606.Postino-024904@smtp01.highway.ne.jp>
-Date: Wed, 5 Sep 2001 16:06:06 +0900
-To: linuxppc-dev@lists.linuxppc.org
-From: Kaoru Fukui <k_fukui@highway.ne.jp>
-Subject: BOOT PROBLEM recent kernels with  gcc 3.0.1
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: ashish anand <ashisha@india.infogain.com>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Disabled UDMA feature?
+Date: Wed, 5 Sep 2001 14:50:59 +0200
+Message-Id: <20010905125059.16395@smtp.adsl.oleane.com>
+In-Reply-To: <3B947182.2D82706@india.infogain.com>
+References: <3B947182.2D82706@india.infogain.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi!
+>this I asked if somebody already faced the similar situation
+>though i understand that i need to browse and further check in driver
+>code why UDMA feature is not being enabled...
 
-I have this problem for a long time.
-gcc3.0.1 was able to rebuild bootable linux-2.2.19,and linux-2.4.7 from bk
-tree. those kernel was successfull with gcc-3.0.1.
+What machine and what IDE controller are you using ? What are
+the messages displayed by the kernel during boot regarding your
+IDE setup ?
 
-But all recent kernels are not able to boot with gcc-3.0.1 ,
-which are linux-2.4.9 Ben's,linux-2.4.10pre3(BK tree)
-and linux-2.4.10pre3(BK devel tree).
-I had fail with all recent kernels when using gcc-3.0.1.
-
-Those compilation is no poblem.
-I have said  this to Mark who is gcc3's maintainer,his answer was not gcc bug.
-
-Any help!
-
-Kaoru
-
---------- the error from OF ---------
-... ok
-copying OF device tree...
-DEFAULT CATCH!, code=300 at  %SRR0: 0132ec  %SRR1: 00003030
- ok
- 0 > _
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
