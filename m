@@ -1,58 +1,59 @@
-From: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+To: Daniel Berlin <dan@cgsoftware.com>
+Subject: Re: DFP support for kernel radeonfb.c added
+Date: Thu, 15 Nov 2001 07:16:28 -0500
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	<linuxppc-dev@lists.linuxppc.org>
+References: <Pine.LNX.4.33.0111142302580.13578-100000@www.cgsoftware.com>
+In-Reply-To: <Pine.LNX.4.33.0111142302580.13578-100000@www.cgsoftware.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15347.45163.962240.790007@cargo.ozlabs.ibm.com>
-Date: Thu, 15 Nov 2001 23:09:15 +1100 (EST)
-To: Gabriel Paubert <paubert@iram.es>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: floating-point under ppc/linux
-In-Reply-To: <Pine.LNX.4.33.0111151030280.30220-100000@gra-lx1.iram.es>
-References: <15347.21652.410313.109535@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.33.0111151030280.30220-100000@gra-lx1.iram.es>
-Reply-To: paulus@samba.org
+Message-Id: <20011115121346.JSZQ25459.tomts20-srv.bellnexxia.net@there>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Gabriel Paubert writes:
+Hi,
 
-> IOW: the FPSCR should be cleared for signal handlers (and obviously
-> restored on return to interrupted program), however I belive that FE0 and
-> FE1 should not be changed, so that these are global process (actually
-> thread) flags.
+That is interesting.  I hard coded mine to 67 but the PLL probe code
+returned 12.  Ani said it should be 67 so I just assumed OF was not
+setting up the card properly.
 
-I have an implementation which I am testing at the moment, I'll post a
-patch tomorrow once it works.  I have added a fpexc_mode field to the
-thread_struct which contains the FE0/1 values that we want to have in
-the MSR.
+Pleaase let me know if that is indeed the issue.
 
-> There is another problem with making FE0/FE1 depending on SIGFPE
-> disposition, you would have to modify the MSR of all the CLONE_SIGHAND
-> threads, which might involve cross processor interrupts and a significant
-> increase in complexity. Actually this last argument is probably the killer
-> one: it very strongly favors disassociating FE0/FE1 setting from SIGFPE
-> disposition IMHO.
+Glad to hear it works basically!
 
-That is a good point.  Actually the problem would occur when the
-disposition is SIG_IGN and some thread sets it to something else (and
-then it is a hard problem as you point out).  Going the other way is
-easier since we could take the exception and then, if the handler is
-SIG_IGN, set FE0/1 to 00 and continue.
+Care to try with adding:
 
-> OTOH I don't have any idea on inheritance of FE0 and FE1 flags on
-> clone(2), should they depend on CLONE_SIGHAND flag or not ?
+radeon:of_edid,lcd
 
-CLONE_SIGHAND just controls whether we do a deep or a shallow copy of
-the signal state (i.e. do we just copy the pointer or do we copy the
-contents to a new signal struct).  Either way we end up with the same
-signal state initially.  The child starts with the same msr as the
-parent initially, just as it starts with the same values in all the
-registers except r3.  So that is OK.
+to see how that does ( I already added in the searching for EDID1)
 
-However, it sounds like we do need a system call to control FE0/1.  Is
-prctl the most appropriate one to use or is there a better one?  (I
-wonder what AIX does, I'll try to find out tomorrow.)
+Thanks.
 
-Paul.
+Kevin
+
+On November 15, 2001 01:04, Daniel Berlin wrote:
+> On Wed, 14 Nov 2001, Kevin B. Hendricks wrote:
+> > Anyway, please give it a try.  I will send followup patches with other
+> > fixes and additions I make to improve things but this should be enough
+> > to get people working until the i2c stuff gets going.
+> >
+> > So Daniel, if you get a chance, please try this.  If it works, then we
+> > have broken nothing for you and we can then decide if you want to move
+> > to the more general case of using EDID info.  If it does not work,
+> > please let me know asap so I can back out my changes in groups until
+> > we identify what is going wrong here.
+>
+> It works, but if i don't set the refdiv to 67 (like we do for the QD), i
+> get what looks like a very slow refresh rate (IE when you move the mouse
+> in X or cause a lot of screen updates on the console, you can see it's
+> going slower than it should).
+> I'll reboot a few times to verify this is indeed the cause.
+>
+> > Thanks,
+> >
+> > Kevin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
