@@ -1,66 +1,48 @@
-Message-ID: <38C355B5.951735EB@amberdata.demon.co.uk>
-Date: Mon, 06 Mar 2000 06:52:37 +0000
-From: David Monro <davidm@amberdata.demon.co.uk>
+Date: Mon, 6 Mar 2000 07:54:16 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Kostas Gewrgiou <gewrgiou@imbc.gr>
+cc: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
+        Michel Dänzer <michdaen@iiic.ethz.ch>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to work on pp
+ cwith  r128
+In-Reply-To: <Pine.LNX.4.21.0003060013070.30614-100000@idd-01.imbc.gr>
+Message-ID: <Pine.LNX.4.05.10003060753180.19293-100000@callisto.of.borg>
 MIME-Version: 1.0
-To: Linux/ppc Dev List <linuxppc-dev@lists.linuxppc.org>
-Subject: bootloader ideas
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Mon, 6 Mar 2000, Kostas Gewrgiou wrote:
+> On Sun, 5 Mar 2000, Geert Uytterhoeven wrote:
+> > On Sun, 5 Mar 2000, Kostas Gewrgiou wrote:
+> > >   Yeap its the same in the x86 side as well, atyfb doesn't support 565
+> > > either i imagine you remember the jdk problems that we had in xf68_fbdev
+> > > because of this.
+> >
+> > But since Mach64 CT/VT/GT do support RGB 565, adding support for it isn't that
+> > difficult. Patches?
+>
+>  Unfortunately i don't have a mach64 card anymore, i'll take a look in the
+> xserver side though, right now it looks only in var.bits_per_pixel but this
 
-(I originally only posted this to -workstation)
+The X server should be OK, it's atyfb that needs to be patched.
 
-I've been thinking about bootloaders. Particularly with respect to PReP
-machines.
+> is set to 16 even in the 555 case so we need to check green.length as well
+> right ?
 
-The current method of making the kernel a binary loaded by the firmware
-is a bit of a kluge. It means we have to jump through hoops to change
-kernel parameters etc. It seems to me there are two or three obvious
-approaches, but first I need some information.
+Yes. RGB555 and RGB565 all use 16 bit pixels.
 
-1) What if any services does the PReP firmware provide once it loads an
-image? I'm guessing that it isn't a lot, just the residual data to tell
-us what hardware we have. I could be wrong here though - can anybody
-tell me where to find softcopy PReP documentation?
+Gr{oetje,eeting}s,
 
-2) What does the ARC bootloader goop for NT provide in the way of
-services? I'm guessing rather more. In particular I suspect we have a
-way or reading files, by name, from a FAT16-formatted partition, and
-possibly passing them arguments, maybe stored in nvram. This is the way
-some Alpha systems do it; you set up an ARC boot entry to run a little
-executable (ldmilo.exe) which loads a file called 'milo' from the same
-directory and executes it. Milo then takes over and loads the kernel.
+						Geert
 
-Do all the PReP machines have ARC available for them? I would guess most
-do, but I could be wrong.
+--
+Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
 
-IMHO milo itself is overkill; it actually contains an awful lot of the
-kernel code (basically the SCSI drivers etc) so that once loaded it can
-load the kernel from any device that linux knows about, even if the
-machine firmware and ARC don't know about it. The current PReP boot code
-covers that eventuality even if it is a bit of a kluge - as long as the
-kernel can be loaded by the firmware (even from floppy) it will work.
-Assuming that more PReP machines have ARC images available, I'd be
-interested in creating a bootloader which, once loaded from ARC, would
-be able to load a kernel image from a device ARC could read, using ARC
-services. Anybody got any documentation?
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
-Oh, we could also have the bootloader do a lot of fixing up of things
-like the PCI spaces and interrupts - I note that NT and Linux on the
-IBM 850 have different ideas of where things are and what interrupts
-they use. Seems to work though.
-
-Ideally we would get to the point where all the platform-specific fixup
-code etc was moved into the bootloaders, and then do away with the
-CHRP/PReP/whatever compile option.
-
-Any comments?
-
-Cheers,
-
-        David
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
