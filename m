@@ -1,54 +1,77 @@
-Message-ID: <3D9DDEE9.5070909@mvista.com>
-Date: Fri, 04 Oct 2002 11:33:13 -0700
-From: Todd Poynor <tpoynor@mvista.com>
+Message-ID: <001701c26c5f$647b72a0$0700a8c0@pc005>
+Reply-To: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
+From: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
+To: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Fw: HHL 2.1 preview kit
+Date: Sat, 5 Oct 2002 13:07:27 +0200
 MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: very minor 405GP and 405GPr PCI difference
-References: <20021002014219.GF1848@zax> <NCBBIINEHIPFGJPLBEIFEEMFDMAA.acurtis@onz.com> <20021002053422.GL1848@zax> <20021002100312.A2240@home.com> <20021003011044.GB1102@zax> <20021003081439.C4643@home.com> <20021004024832.GG1933@zax>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David Gibson wrote:
+Thanks for the answer, I have got the image.
 
-> +	/* Now configure the PCI->PLB windows, we only use PTM1 */
-> +	out_le32((void *) &(pcip->ptm1ms), 0x00000000); /* first disable */
-> +	out_le32((void *) &(pcip->ptm1la), 0x00000000); /* base address */
-> +	out_le32((void *) &(pcip->ptm1ms), 0x80000001); /* re-enable */
-> +	out_le32((void *) &(pcip->ptm2ms), 0x00000000); /* disable PTM2 */
-> +
-> +	/* Zero config bars */
-> +	for (bar = PCI_BASE_ADDRESS_1; bar <= PCI_BASE_ADDRESS_2; bar += 4) {
-> +		early_write_config_dword(hose, hose->first_busno,
-> +					 PCI_FUNC(hose->first_busno), bar,
-> +					 0x00000000);
-> +		early_read_config_dword(hose, hose->first_busno,
-> +					PCI_FUNC(hose->first_busno), bar,
-> +					&bar_response);
-> +		DBG("BUS %d, device %d, Function %d bar 0x%8.8x is 0x%8.8x\n",
-> +		    hose->first_busno, PCI_SLOT(hose->first_busno),
-> +		    PCI_FUNC(hose->first_busno), bar, bar_response);
-> +	}
+Unfortunately the Image doesn' t run. The problem is derived from the
+loading the image file.
+The boot loader is PPCboot 1.0.5 and the "vmlinux.gz" has been converted
+with the "mkimage" utility. The bootloader is able to download the image
+generated with the CDK 1.2 (kernel 2.4.0-test2) but when it downloads the
+image which is the result of new compilation (HHL 2.1), program is stuck
+after the decompression.
 
-Only PCI_BASE_ADDRESS_1 (aka PCIL0_PTM1BAR) needs to be set since PTM2
-is disabled (Ash is already doing it this way).  My reading of the
-manual would indicate that the BAR ought to be set before PTM1 is
-enabled, but haven't seen any problems with this.
-
-Could enclose the early_read_config_dword() in #ifdef DEBUG.
-
-Rainier (NP4GS3) PMM1 is setup specially in the existing code, is this
-no longer needed?
-
-This code is fragile and tends to break on certain platforms in ways
-that can't be explained by the available documentation.  I can help test
-the unified version on Walnut/Sycamore/Ash if needed.
+Anybody has some suggestions to give me?
 
 
---
-Todd
+Thanks
+Gianfranco
+
+----- Original Message -----
+From: "Yu Bo-BOYU1" <Bo.Yu@motorola.com>
+To: "'Ing.Gianfranco Morandi'" <gianfranco.morandi@euro-studio.it>;
+"LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
+Sent: Thursday, October 03, 2002 4:20 PM
+Subject: RE: HHL 2.1 preview kit
+
+
+> you need to change some definitions in makefile
+>
+> ARCH := ppc
+> CROSS_COMPILE = ppc_82xx-
+>
+> Bo
+>
+> -----Original Message-----
+> From: Ing.Gianfranco Morandi [mailto:gianfranco.morandi@euro-studio.it]
+> Sent: Thursday, October 03, 2002 9:11 AM
+> To: LinuxPPC
+> Subject: HHL 2.1 preview kit
+>
+>
+>
+> Hi to all,
+>
+> I have a question regarding the preview kit of Montavista.
+>
+> I have downloaded the CD Image and installed the tools for the Sandpoint
+> 8240 (which should be an 82xx architecture).
+>
+> When I try to configure the kernel with "make config" command, no
+processor
+> other than x86 can be selected.
+> In other word I cannot select the Power PC architecture.
+>
+> I would like to install the kit for the EST8260 board and I thought that
+> such installation was a good base to start.
+>
+> Anybody has suggestions to give me?
+>
+> Any help is appreciated.
+>
+> Gianfranco
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
