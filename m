@@ -1,66 +1,66 @@
-Date: Thu, 21 Jan 1999 16:44:29 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Marc Dejardin <Marc.Dejardin@cern.ch>
+Date: Thu, 21 Jan 1999 09:38:27 -0700 (MST)
+From: Matt Porter <mmporter@home.com>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
 cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Kernel panic with Xpmac using recent kernel 2.2.0-pre7 
-In-Reply-To: <Pine.A41.3.95a.990121093109.145812A-100000@rsplus07.cern.ch>
-Message-ID: <Pine.LNX.4.03.9901211642250.1033-100000@mercator.cs.kuleuven.ac.be>
+Subject: Re: DEC21143 on PPC
+In-Reply-To: <Pine.LNX.3.96.990120210809.12797B-100000@liberty.chnd1.az.home.com>
+Message-ID: <Pine.LNX.3.96.990121093326.14236C-100000@liberty.chnd1.az.home.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 21 Jan 1999, Marc Dejardin wrote:
-> Kernel panic with Xpmac using recent kernel 2.2.0-pre7 (or all > 2.1.24).
+On Wed, 20 Jan 1999, Matt Porter wrote:
+
+> > > Is anybody running a 21143 on Linux/PPC using either de4x5.c or tulip.c?
+> > > I'm having problems getting either to work on the newer Motorola VME
+> > > boards.
+> > > 
+> > > eth0: DC21143 at 0x11000 (PCI bus 0, device 14), h/w address
+> > > 08:00:3e:26:a3:0f,
+> > >       and requires IRQ10 (provided by PCI BIOS).
+> > > de4x5.c:V0.543 1998/12/30 davies@maniac.ultranet.com
+> > > NIP: C000F104 XER: 00000000 LR: C000F0E8 REGS: c01d3cc0 TRAP: 0300
+> >        ^^^^^^^^
+> > > MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+> > > TASK = c01d2000[1] 'swapper' mm->pgd c013a000 Last syscall: 120 
+> > > last math 00000000
+> > > GPR00: 00001032 C01D3DB0 C01D2000 00000001 00008000 C01CD0D4 00000000
+> > > 00018583 
+> > > GPR08: 00000001 00007800 80000000 000001E0 0000001F 01F818C0 00000000
+> > > 00000000 
+> > > GPR16: 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+> > > 00000000 
+> > > GPR24: 00000000 00000000 C0160000 C0160000 00000000 00009032 C01CD76C
+> > > C01D3DB0 
+> > > Call backtrace: 
+> > > 00000000 C00DF338 C00D8DE4 C00D7764 C00D749C C0075278 C00762E0 
+> >            ^^^^^^^^ ^^^^^^^^ ^^^^^^^^ ^^^^^^^^ ^^^^^^^^ ^^^^^^^^
+> > > C015D480 C015DDE0 C015CC8C C015EB7C C01548B0 C0004140 C0008010 
+> >            ^^^^^^^^ ^^^^^^^^ ^^^^^^^^ ^^^^^^^^ ^^^^^^^^ ^^^^^^^^
+> > > Kernel panic: kernel access of bad area pc c000f104 lr c000f0e8 address
+> > > 7804 tsk swapper/1
 > 
-> Recently I have tryed to update my kernel to recent ones (I was using 2.1.24 
-> witout any problem) and I encounter problem when I use Xwindow. In general I
-> have a kernel panic after some seconds or minutes when I launch an application
-> which uses X11 (xearth, gv, netscape, ...)
-> The problem does not occur always at the same time. It seems linked to the fact
-> that recent kernels for linuxppc are optimised for XFree86 and the
-
-The kernel is not optimised for XFree86.
-
-> compatibility with the old Xpmac is not perfect.
-
-That's possible.
-
-> Linux version 2.2.0-pre7 (dejard1@xxxxxx.xxxxxx.xxx.fr) (gcc version
-> egcs-2.91.57 19980901 (egcs-1.1 release)) #1 Fri Jan 15 15:50:46 CET 1999
+> c00d749c: de4x5_open
+> c00d7764: de4x5_init
+> c00d8de4: autoconf_media
+> c00df338: disable_ast
+> c000f104: del_timer
 > 
-> ONE KERNEL PANIC :
-> 
-> Jan 18 09:26:21 xxxxxx kernel: NIP: C00CDF9C XER: E000BE6F LR: C00347CC REGS: c2535cb0 TRAP: 0300
-                                      ^^^^^^^^
-> Jan 18 09:26:21 xxxxxx kernel: MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-> Jan 18 09:26:21 xxxxxx kernel: TASK = c2534000[304] 'X' mm->pgd c245e000 Last syscall: 142 
-> Jan 18 09:26:21 xxxxxx kernel: last math c2534000
-> Jan 18 09:26:21 xxxxxx kernel: GPR00: C00347CC C2535DA0 C2534000 00000407 00000000 00000000 00000000 C23006C4 
-> Jan 18 09:26:21 xxxxxx kernel: GPR08: 00000010 C0160000 00000004 C24E5A40 95533E39 01A87568 01A80000 6C7A336E 
-> Jan 18 09:26:21 xxxxxx kernel: GPR16: 01A8B3AC 01A8B52C 00000000 553DBE39 533DBE39 C2F58280 C2535E18 00000001 
-> Jan 18 09:26:21 xxxxxx kernel: GPR24: 00002ECD C2F58000 0000000F 00000000 C015A39C C2F58000 00000407 C1E8E000 
-> Jan 18 09:26:21 xxxxxx kernel: Call backtrace: 
-> Jan 18 09:26:21 xxxxxx kernel: C2F58000 C00347CC C0034BB8 C0007A70 C0003898 01837B64 0180E1D4 
-                                 ^^^^^^^^ ^^^^^^^^ ^^^^^^^^ ^^^^^^^^ ^^^^^^^^ ^^^^^^^^ ^^^^^^^^
-> Jan 18 09:26:21 xxxxxx kernel: 01822310 01801BD4 
-                                 ^^^^^^^^ ^^^^^^^^
-Please look up these numbers in your System.map.
+> Appears to lose it in the kernel timer services.  I'll update my source
+> tree to the latest vger and give it another try.  My arch independent
+> stuff hasn't been updated since Nov 30.
 
-> Jan 18 09:26:21 xxxxxx kernel: Instruction DUMP: 41820028  3d20c019  83a94558 <4bf5b87d> 7c641b78  7f85e378  7fa3eb78  4bf44fa5  38000001 
-> Jan 18 09:26:21 xxxxxx kernel: Kernel panic: kernel access of bad area pc c00cdf9c lr c00347cc address 453 tsk X/304
-                                                                                                         ^^^
-0x453, makes me think of a NULL pointer dereference for a struct.
-
-Greetings,
-
-						Geert
+Got the latest and the same problem using del_timer is present.  Note: I
+had to disable kbd_init() to get the latest stuff to boot, since the
+board I have has no kbd port...previously it just failed cleanly.
 
 --
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
+Matt Porter
+mmporter@home.com
+Unix is a Linux-like operating system.
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
