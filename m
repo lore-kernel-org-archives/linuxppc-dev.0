@@ -1,14 +1,21 @@
-Return-Path: <kumar.gala@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v619)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <48C50EC3-480D-11D9-8A5A-000393DBC2E8@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Mon, 6 Dec 2004 23:03:07 -0600
-To: Linux Kernel Development <linux-kernel@vger.kernel.org>
+Return-Path: <jason.mcmullan@timesys.com>
+Received: from exchange.timesys.com (mail.timesys.com [65.117.135.102])
+	by ozlabs.org (Postfix) with ESMTP id 1B8942BDEB
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Dec 2004 23:21:55 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <48C50EC3-480D-11D9-8A5A-000393DBC2E8@freescale.com>
+References: <48C50EC3-480D-11D9-8A5A-000393DBC2E8@freescale.com>
+Date: Tue, 7 Dec 2004 07:02:15 -0500
+Message-ID: <1102421377.6162.8.camel@jmcmullan>
+From: "McMullan, Jason" <jason.mcmullan@timesys.com>
+To: "Kumar Gala" <kumar.gala@freescale.com>
 Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	linux-arm-kernel@lists.arm.linux.org.uk,
-	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-Subject: Second Attempt: Driver model usage on embedded processors
+	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: Second Attempt: Driver model usage on embedded processors
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,39 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I'm looking at moving support for PowerPC System on a Chip devices to 
-using the 2.6 driver model.  I think may issues may apply to any system 
-on a chip device. I have a few issues, however one is holding up 
-progress.  I think the best way to ask my question is with an example:
+On Mon, 2004-12-06 at 23:03 -0600, Kumar Gala wrote:
+> The intent was that I would use the platform_data pointer to pass =
+board=20
+> specific information to the driver.  We would have board specific code =
 
-On a given chip we have an ethernet controller that is directly 
-available to the CPU.  The ideas is that this device would be a 
-platform device.  The issue is that this controller may have several 
-minor variations on the same chip or between chip models.  We have 
-written a single driver to handle these variants.  Variants may 
-include, support for Gigabit, support for RMON, support for interrupt 
-coalescing.  Additionally, the driver needs to be based some 
-information that is board specific.  Such as which PHY, at what PHY id, 
-does the PHY have an interrupt, etc.
+> which would fill in the information.  The question I have is how to=20
+> handle the device variant information which is really static?
 
-The intent was that I would use the platform_data pointer to pass board 
-specific information to the driver.  We would have board specific code 
-which would fill in the information.  The question I have is how to 
-handle the device variant information which is really static?
+I use a 'struct device_ethernet_data' in my MPC85xx platform-device
+patches at http://www.evillabs.net/~gus/patches
 
-Possible solutions I've come up with:
-1. use a struct resource for the flags that describe ethernet variants
-- Add a new resource type
-- steal a bus specific resource type
-2. create a super structure that platform_data points to which contains 
-the flags and a board_data pointer
+That seems to work well, and we could move it from
+include/asm-ppc/device-ethernet.h to include/linux/device-ethernet.h to
+make it more arch-independant. That covers MAC addrs and phy locations.
 
-The issue I've got with #2 is that some of these devices (and therefor 
-drivers) will end up existing on various parts from Freescale that 
-might have an ARM core or PPC core.  I'd prefer a solution that did not 
-impose restrictions on how an arch does things.
+As for PHY IRQ, that's a thornier issue. For now, I put that in the
+ethernet device's resource list.
 
-I a few other questions about headers and were to put things, but 
-that's secondary.
-
-- kumar
+--=20
+Jason McMullan <jason.mcmullan@timesys.com>
