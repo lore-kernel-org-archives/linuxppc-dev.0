@@ -1,22 +1,27 @@
-Message-ID: <3BDD23B9.7FD83F62@imc-berlin.de>
-Date: Mon, 29 Oct 2001 10:39:05 +0100
-From: Steven Scholz <steven.scholz@imc-berlin.de>
+Date: 29 Oct 2001 12:29:13 -0000
+Message-ID: <20011029122913.30468.qmail@mailFA4.rediffmail.com>
 MIME-Version: 1.0
-Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: USB and MPC855T/860T ???
-References: <A3E34B558F5CD211B4980008C7A4A99003C584CD@sparrow.gso.mcs.marconi.com>
-Content-Type: text/plain; charset=us-ascii
+From: "Sarnath  Kannan" <sparc64@rediffmail.com>
+Reply-To: "Sarnath  Kannan" <sparc64@rediffmail.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Compressing S-REC ?!?!
+Content-type: text/plain;
+	charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-And anyway, what's the big difference between a "host controller" and a
-"interface chip"?
-I am not talking about Transceiver!
+Hi All,
+ I have the "zsrec" program that accompanies
+JourneyMan Montavista edition. However since I am
+downloading over a serial line, the downloading
+is terribly slow ?
+ Any good alternatives  ??
+Is "zsrec" output itsefl a compressed one ?
 
-Thanks,
+Any help would b gretly appreicated
 
+sarnath
 
-Steven Scholz
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
