@@ -1,30 +1,56 @@
-Message-ID: <3766CF12.62875FF2@msoe.edu>
-Date: Tue, 15 Jun 1999 17:09:22 -0500
-From: ian geiser <geiseri@msoe.edu>
-MIME-Version: 1.0
-To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>,
-        "linuxppc-user@lists.linuxppc.org" <linuxppc-user@lists.linuxppc.org>
-Subject: SCSI Help NEEDED!
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <199906160420.VAA02733@magpie.prod.itd.earthlink.net>
+Subject: Re: PRAM problem with the latest B&W G3s?
+Date: Tue, 15 Jun 1999 21:20:46 -0700
+From: "Conrad M. Hirano" <c.hirano@pobox.com>
+To: "Kevin Puetz" <puetz@penguinpowered.COM>,
+        <linuxppc-dev@lists.linuxppc.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I am having a problem on my power center 132.
-I have the stock SCSI system in place but when ever i try to use
-my CD-R or scanner the bugger locks up tight!.
+>> I just got my hands on a 450 MHz B&W G3 and have run into problems
+>> trying to install Linux. I'm wondering if Apple made some changes to the
+>> PRAM which cause an incompatibility with Linux or BootX because of the
+>> symptoms I see.
+>>
+>> First, I noticed that Techtool no longer reports the date of manufacture
+>> or the number of hours the computer has been in use. It just lists "N/A"
+>> for both. Apparently, Apple has changed the PRAM in some way.
+>>
+>> Second, the kernels for both R4, for the B&W G3, and R5, from the
+>> installer, do not successfully let me get to the respective installers.
+>> After the system hangs, it will not successfully boot the Mac OS off the
+>> hard disk or the CD until I reset the PRAM. It begins to load the Mac OS
+>> and the BootX window appears, but after I dismiss the window, it hangs
+>> before the extension icons appear at the bottom of the screen. I've also
+>> tried booting with no extensions, and the system still hangs.
+>
+>You can't OF-boot these machines - You have to use BootX, and you have to
+>use the kernels from that are labeled for the blue&white G3's in the kernels
+>folder of LinuxPPC 1999. They contain some unmerged patches that make them
+>work.
+>
+>If the extension form of BootX is not working, try the application. I have a
+>freind with a B&W G3/300 that works real nice ;-)
 
-Last night i finnally found out why.  For some reason when i access
-the scanner or cdr ALL information on the SCSI bus stops.  I have seen
-this before on the i86 side and this is because something on the bus
-will not support SCSI disconnect/reconnect.
+I wasn't trying to OF-boot; I was using BootX with one of the kernels for 
+the B&W G3s. Initially, I thought there was some sort of problem with the 
+kernel corrupting the PRAM because after resetting the system, the system 
+still wouldn't boot the Mac OS successfully until I reset the PRAM. It 
+turned out that something else just wasn't getting reset when I restarted 
+the system. I later found that if I powered the system down completely, 
+then the system would successfully boot the Mac OS on the next try. There 
+was no need to reset the PRAM.
 
-Dose anyone know how to get arround this and how to fix it?
-Dose anyone know how to set these options.  I know how to do it on
-an adaptec card but i have no clue how to do it in the 2.2.x kernels....
-
-    -ian reinhart geiser
-
+It appears that there's still a problem with IDE DMA. The kernel fails 
+during the partition check with a DMA time-out. Someone who ran into the 
+same problem as I did solved the problem by plugging the hard drive into 
+the other IDE connector on the motherboard. When you do this, you see in 
+the kernel messages that the hard drive is accessed using polled I/O 
+rather than DMA. Because the kernel is no longer using DMA, the problem 
+goes away and the system successfully boots.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
