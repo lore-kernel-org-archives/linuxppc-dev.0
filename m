@@ -1,32 +1,36 @@
-Date: Sun, 5 Jan 2003 21:07:30 -0700
+Date: Sun, 5 Jan 2003 21:10:07 -0700
 From: Matt Porter <porter@cox.net>
-To: Aman <aman@mistralsoftware.com>
-Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Accessing I2C from User Space
-Message-ID: <20030105210730.B22675@home.com>
-References: <001901c2ad79$bd3f8560$370da8c0@aman>
+To: Vishwanath <vishwanath@mistralsoftware.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: ioremap64 and remap_page_range in 440GP
+Message-ID: <20030105211007.C22675@home.com>
+References: <001801c2b161$5fa973c0$faffa8c0@VISHWANATH>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <001901c2ad79$bd3f8560$370da8c0@aman>; from aman@mistralsoftware.com on Fri, Dec 27, 2002 at 12:59:49PM +0530
+In-Reply-To: <001801c2b161$5fa973c0$faffa8c0@VISHWANATH>; from vishwanath@mistralsoftware.com on Wed, Jan 01, 2003 at 12:15:29PM +0530
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Dec 27, 2002 at 12:59:49PM +0530, Aman wrote:
+On Wed, Jan 01, 2003 at 12:15:29PM +0530, Vishwanath wrote:
 >
-> Hi,
+> Hi All,
 >
-> Iam working on IBM 440gp. I need to access the IIC registers from the
-> user space. So I wrote a driver mmap entry point. But I noticed that the
-> function remap_page_range () takes physical address as unsigned long which
-> is 32 bits. How do I remap the IIC registers which lie in the 36 bit
-> physical address space?
+> In PPC Linux, to bring a particular IO page onto Linux addressing space, we
+> use ioremap64(). Is my understanding correct? If I want to map this remapped
 
-There's a reference to a patch in one of my changeset entries.  It pays
-to keep current with the development trees.  See the changesets in your
-local BK tree or browse the linuxppc-commit archives.
+Yes.
 
-BTW, why the need to manipulate the registers directly?
+> address on user space, I have to use  remap_page_range() of kernel in my
+> driver.  remap_page_range() takes a 32-bit physical address as argument. But
+> in 440GP, all addresses are 36-bit with respect to processor. Is there any
+> 64-bit equivalent of remap_page_range(). If it exists, how to use it?
+
+There's a patch to make remap_page_range() use a phys_addr_t and to use
+the same bigphys fixups that ioremap() on 440gp uses.  Part of it is
+a bit of hack which is why it's not being commited.  See the changeset
+description in linuxppc_2_4_devel or linuxppc-2.5 for a pointer to
+pick up the patch.
 
 Regards,
 --
