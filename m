@@ -1,30 +1,30 @@
-Date: Fri, 18 Jul 2003 09:13:22 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: "Johnson, Stephen" <stevebj@artesyncp.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: kmalloc vs pci_alloc_consistent
-Message-ID: <20030718091322.C26854@home.com>
-References: <F9102D41F595D311ACA7009027DE2C840527B4D2@c3po.heurikon.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <F9102D41F595D311ACA7009027DE2C840527B4D2@c3po.heurikon.com>; from stevebj@artesyncp.com on Fri, Jul 18, 2003 at 08:34:24AM -0500
+Message-ID: <3F182007.8020002@embeddededge.com>
+Date: Fri, 18 Jul 2003 12:27:51 -0400
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: Eli Brin <elib@rokonet.co.il>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: 8xx SCC's as uart
+References: <75DF04AC5ED4D511A9810090273CB4163F5DE5@rokonet-e.rokonet.co.il>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Jul 18, 2003 at 08:34:24AM -0500, Johnson, Stephen wrote:
->
-> I don't know the history behind pci_alloc and wanted to throw this out there
-> to get some clarification.
->
-> What's the benefit of pci_alloc over using kmalloc with flags for a
-> cache-safe buffer?
+Eli Brin wrote:
 
-Documentation/DMA-mapping.txt has a detailed explanation of the API.
+> I have noticed, in kernel 2.4.20, that SCC1 and SCC4 cannot be configured as
+> uarts.
 
-Regards,
---
-Matt Porter
-mporter@kernel.crashing.org
+Ummmm....2.4.20 from where?
+
+The linuxppc 2.4 development tree was updated by Gary Thomas a while
+back to allow all possible SMC/SCC configurations within the resource
+limitations of the particular processor variant.  This included the
+baud rate generator restrictions on the 857.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
