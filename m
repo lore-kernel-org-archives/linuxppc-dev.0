@@ -1,17 +1,25 @@
-Return-Path: <peri@aqua.aspd.pwr.wroc.pl>
-Received: from aqua.aspd.pwr.wroc.pl (aqua.aspd.pwr.wroc.pl [156.17.17.24])
-	by ozlabs.org (Postfix) with ESMTP id E04ED2BDA1
+Return-Path: <rpjday@mindspring.com>
+Received: from soulshock.mail.pas.earthlink.net
+	(soulshock.mail.pas.earthlink.net [207.217.120.130])
+	by ozlabs.org (Postfix) with ESMTP id C7AC52BDB3
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 28 Sep 2004 19:57:52 +1000 (EST)
-Date: Tue, 28 Sep 2004 11:57:44 +0200 (CEST)
-From: Piotr Perak <peri@aqua.aspd.pwr.wroc.pl>
-To: Matt Porter <mporter@kernel.crashing.org>
-In-Reply-To: <20040927065758.B25288@home.com>
-Message-ID: <Pine.LNX.4.21.0409281116130.12901-100000@aqua.aspd.pwr.wroc.pl>
+	Tue, 28 Sep 2004 22:57:14 +1000 (EST)
+Received: from bittern.mail.pas.earthlink.net (bittern.mail.pas.earthlink.net
+	[207.217.120.119])
+	by soulshock.mail.pas.earthlink.net (8.11.6+Sun/8.11.6) with ESMTP id
+	i8SCo7J25698 for <linuxppc-embedded@ozlabs.org>;
+	Tue, 28 Sep 2004 05:50:07 -0700 (PDT)
+Received: from user-0c8hpmb.cable.mindspring.com ([24.136.230.203])
+	by bittern.mail.pas.earthlink.net with esmtp (Exim 3.33 #1)
+	id 1CCHQg-0007Io-00
+	for linuxppc-embedded@ozlabs.org; Tue, 28 Sep 2004 05:50:03 -0700
+Date: Tue, 28 Sep 2004 08:43:32 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+To: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Message-ID: <Pine.LNX.4.60.0409280836340.9825@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: 2.6.x on 405CR
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Subject: I2C/SPI/SMC relocation patch works for both SMC 1 and 2?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,35 +31,20 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-On Mon, 27 Sep 2004, Matt Porter wrote:
+   i'm reading the microcode patch PDF doc file describing the 
+relocation of I2C/SPI/SMC for the 850.  as i've mentioned, in my case, 
+i've relocated *specifically* SMC1 so i can use SCC3 for ethernet and 
+it seems to work just fine.
 
-> Since you are failing in ocp_add_one_device() and you have a
-> processor which doesn't have a chip definition in 2.6, the
-> problem is probably somewhere there.  Doublecheck your
-> arch/ppc/platforms/4xx/ibm405cr.c (you do have one, right?)
-> against a known good one in arch/ppc/platforms/4xx/ibm405gp.c
+   but the PDF file doesn't refer explicitly to SMC1, just to the 
+generic SMC(UART).  does this mean that the same instructions to 
+relocate SMC1 could also relocate SMC2 at the same time?  the writeup 
+isn't clear on this and, from what i've read, it might be useful to 
+relocate SMC2 if one wants to use the reserved memory just before it 
+for, say, ethernet on SCC4 (if that's even possible).
 
-Because I use ibm405cr.c which works good with 2.4.23 I think that's not
-the problem. Remember the call stack?
+   so, short question -- i know that patch supports relocating SMC1. 
+does it also handle *both* SMC1 and SMC2?  or, perhaps, SMC2 all by 
+itself?  there's nothing in the writeup i can see that clarified this.
 
-setup_arch() - arch/ppc/kernel/setup.c
-  -> ocp_early_init() - arch/ppc/syslib/ocp.c
-    -> ocp_add_one_device() - arch/ppc/syslib/ocp.c
-      ->  alloc_bootmem MACRO calling __alloc_bootmem_core() -
-mm/bootmem.c
-
-When I comment line calling ocp_early_init() I fail in:
- 
-setup_arch() - arch/ppc/kernel/setup.c
-  -> paging_init() - arch/ppc/mm/init.c
-    -> free_area_init() - arch/ppc/mm/page_alloc.c
-      -> free_area_init_node() - arch/ppc/mm/page_alloc.c
-        -> alloc_bootmem_node() MACRO calling __alloc_bootmem_node -
-mm/bootmem.c
-          -> __alloc_bootmem_core() - mm/bootmem.c
-
-As you can see again __alloc_bootmem_core. So maybe there's some
-problem with memory?
-
-Forgive me if I ask stupid questions, but this the first time I have
-something to do with the kernel (not counting compiling for my home PC).
+rday
