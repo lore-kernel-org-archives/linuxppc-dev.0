@@ -1,41 +1,28 @@
-Message-ID: <3BB0C1B8.1D59FDCD@aps.anl.gov>
-Date: Tue, 25 Sep 2001 12:41:12 -0500
-From: Andrew Johnson <anj@aps.anl.gov>
+Message-ID: <35C119252057D511BB9F0003476BF8A208E5C2@freexc01.smartm.com>
+From: "Prasad, Siva" <Siva.Prasad@smartm.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: mtmsr...
+Date: Tue, 25 Sep 2001 18:53:19 -0700
 MIME-Version: 1.0
-To: flynn@lure.u-psud.fr
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Motorola VME boards
-References: <20010925093710.A12663@jupiter.lure.net>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Gerard,
+Hello,
 
-flynn@lure.u-psud.fr wrote:
->
->    I would like to run Linux on an MVME 2100 board (8240 based).
->    Has anyone tried this ?  I would think that the Sandpoint port
->    shouldn't be hard to adapt to this board or might just work
->    on it.  Is there something I'm overlooking ?
+My zImage hangs immediately after executing the 'mtmsr' instruction in the
+arch/ppc/boot/head.S file.
 
-I can let you have patches to MontaVista's Hard Hat 2.0 Linux 2.0
-Journeyman release for the MVME2100 - I have it running, using PPCBug for
-network (tftp) booting.  The configuration also allows for blowing a boot
-image into flash, but I've not actually tested that.  I haven't tested the
-PMC or PC-MIP slots either, so there may still be some hardware
-configuration issues.
+li    r3, 0
+mtmsr r3
+isync
 
-I haven't looked at VME bridge software properly yet (this port is only a
-background project for me), but would be interested in other people's
-thoughts about this - there appear to be several possibilities, but I
-haven't looked at them in detail.
+This is in the very beginning of the zImage, where it uncompresses the
+actual image. Can some one help me out.
 
-- Andrew
---
-Perfection is reached, not when there is no longer anything to add,
-but when there is no longer anything to take away.
-- Antoine de Saint-Exupery
+Thanks in advance.
+-- Siva
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
