@@ -1,27 +1,31 @@
-Date: Thu, 25 Oct 2001 09:11:52 -0400
-From: Kent Borg <kentborg@borg.org>
+Date: 25 Oct 2001 13:29:49 -0000
+Message-ID: <20011025132949.776.qmail@mailweb20.rediffmail.com>
+MIME-Version: 1.0
+From: "Sarnath  Kannan" <sparc64@rediffmail.com>
+Reply-To: "Sarnath  Kannan" <sparc64@rediffmail.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Dying of First sti()
-Message-ID: <20011025091152.D11285@borg.org>
-References: <20011022162118.A13160@borg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20011022162118.A13160@borg.org>; from kentborg@borg.org on Mon, Oct 22, 2001 at 04:21:18PM -0400
+Subject: hi
+Content-type: text/plain;
+	charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Oct 22, 2001 at 04:21:18PM -0400, Kent Borg wrote:
-> I make it in init/main.c to the point where sti() is about to be
-> called.  But I never get back from the sti() call.
+Hi everybody,
+ I m trying to  enable linux of a 8240 board,.
+I m aware of journeman from mvista,, m doing to just
+to understand things in detail
+ I need help on OpenPIC in PPC. what is this for ?
+I searced the net and found to my dismay that
+the spec is licensed by INTEL.
+  So can any1 of u tell me how to enable interrupts
+on 8240 board ? I am aware of  mapping the EUMB into
+the PCI memory space before touching EPIC.
 
-I found my problem.  We had put the wrong value in bi_intfreq (and
-bi_busfreq).  We were off by a mere factor of a million.  It meant
-that the PIT was rolling over nearly instantly.  Oops.  Works *much*
-better with a sensible value in there.
 
+thanks in advance
 
--kb
+Sarnath
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
