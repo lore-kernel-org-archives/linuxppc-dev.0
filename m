@@ -1,24 +1,39 @@
-Message-ID: <3E91E6AD.1010300@mvista.com>
-Date: Mon, 07 Apr 2003 13:59:25 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Patch for PCORE on linuxppc_2_4_devel
-References: <3E8E2D71.8050707@mvista.com> <20030407174355.GD16622@ip68-0-152-218.tc.ph.cox.net> <3E91C1E2.4060502@mvista.com> <20030407201003.GA17151@ip68-0-152-218.tc.ph.cox.net>
-In-Reply-To: <20030407201003.GA17151@ip68-0-152-218.tc.ph.cox.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Date: Tue, 8 Apr 2003 09:20:18 -0700
+From: Matt Porter <porter@cox.net>
+To: invictus rm <invictus_rm@hotmail.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: insmod search_exception_table !!!
+Message-ID: <20030408092018.A20846@home.com>
+References: <F108HX2WK43S3Iouk4R0001e01b@hotmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <F108HX2WK43S3Iouk4R0001e01b@hotmail.com>; from invictus_rm@hotmail.com on Tue, Apr 08, 2003 at 09:40:37PM +0530
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tom, this has already consumed far more time than its worth.  Change it
-or leave it or do something else, I don't care.  Please push the
-remainder of the patch.
+On Tue, Apr 08, 2003 at 09:40:37PM +0530, invictus rm wrote:
+>
+> Hi ,
+> I am working on a board which has 512MB RAM . The PCI space is from
+> 0xe0000000 to 0xf8000000.
+> 0xf8000000 -- 0xfc000000 device 1
+> Remaining for other I/0(Flash/RTC..etc)
+>
+> When i try to load any module(insmod), the kernel crashes every time .
 
-Thanks,
+Sounds like you clobbered vmalloc space.  Did you use io_block_map()
+calls and limit the amount of vmalloc space available?  How much
+address space have you ioremapped before loading the module?
 
-Mark
+Assuming you aren't using any advanced options to change PAGE_OFFSET
+and friends, your vmalloc space starts at 0xe1000000.  I sure hope
+you haven't 1:1 mapped that PCI mem space into kernel virtual space.
 
+Regards,
+--
+Matt Porter
+porter@cox.net
+This is Linux Country. On a quiet night, you can hear Windows reboot.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
