@@ -1,36 +1,51 @@
-Message-Id: <4.2.2.20000121163453.03db3200@mail.munich.netsurf.de>
-Date: Fri, 21 Jan 2000 16:37:14 +0100
-To: Albrecht Dreﬂ <ad@mpifr-bonn.mpg.de>
-From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-Subject: Re: gcc 2.95/PPC bug
-Cc: LinuxPPC Users <linuxppc-user@lists.linuxppc.org>,
-        LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <388804D3.DF16EE2F@mpifr-bonn.mpg.de>
+Message-Id: <4.2.2.20000121163838.05255ad0@mail.munich.netsurf.de>
+Date: Fri, 21 Jan 2000 16:47:33 +0100
+To: Gabriel Paubert <paubert@iram.es>
+From: Franz Sirl <Franz.Sirl@munich.netsurf.de>
+Subject: Re: Fwd: Re: still no accelerated X ($#!$*)
+Cc: Kevin Hendricks <khendricks@ivey.uwo.ca>,
+        David Edelsohn <dje@watson.ibm.com>, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.HPX.4.10.10001202357570.18916-100000@gra-ux1.iram.es>
+References: <00012023473100.01038@enzo.bigblue.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"; format=flowed
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 08:03 21.01.00 , Albrecht Dreﬂ wrote:
+At 01:05 21.01.00 , Gabriel Paubert wrote:
 
->When trying to find the cause for crashes of LAME, I think I found a
->bug in the gcc.  The code below (which is actually a simpilified excerpt
->from LAME) will NOT pass the parameter `buggy' correctly to the
->subroutine.  Changing the number/type/sorting of the parameters will,
->however, produce a working code in some cases.  Some facts about the
->system:
->
->   Machines: PowerMac 7300 (604e), LinuxPPC 2.2.11
->             PB "Lombard" (G3), LinuxPPC 2.2.12
->   gcc:      versions 2.95 and 2.95.1
->   options:  gcc -O0 -Wall gcc-2.95-ppc-bug.c -o gcc-2.95-ppc-bug
->
->Is this a known (and hopefully already fixed ;-) bug, or should it go
->directly to gcc-bugs@gcc.gnu.org?
 
-I believe this is fixed in my current gcc-2.95.2 RPM-set available on
-<ftp://devel.linuxppc.org/users/fsirl/>.
+
+>On Thu, 20 Jan 2000, Franz Sirl wrote:
+>
+> > It depends a little bit on the usage of the asm's if the memory (either
+> > global or local) clobber is needed or not. If you use them for
+> read/writes to HW
+> > registers needing ordering (which is very likely here since we talk about
+> > graphics HW), the compiler can only decide on the memory usage defined
+> by the
+> > clobbers/memory inputs on how to order the inlines (volatile has no
+> effect on
+> > this).
+>
+>Do you mean that a volatile memory reference can be reordered wit an asm
+>volatile statement ? I thought theat this was not possible.
+>
+> >From GCC's documentation:
+>
+>    "You can prevent an `asm' instruction from being deleted, moved
+>significantly, or combined, by writing the keyword `volatile' after the
+>`asm'."
+>
+>You might disagree, but I consider that moving across a volatile memory
+>reference is a _significant_ move, a very significant one.
+
+asm volatile doesn't declare any volatile memory references! What makes you
+think it does?
+There was a lengthy discussion about this with Richard Henderson on the
+gcc/egcs lists a while ago. The result was a rewrite of
+linux/include/asm-ppc/io.h in the kernel to it's current state.
 
 Franz.
 
