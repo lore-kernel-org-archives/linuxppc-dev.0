@@ -1,63 +1,51 @@
-Date: Thu, 9 May 2002 18:16:27 +0200 (CEST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Troy Benjegerdes <hozer@drgw.net>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Jean-Denis Boyer <jdboyer@mediatrix.com>,
-	<linuxppc-embedded@lists.linuxppc.org>,
-	Paul Mackerras <paulus@samba.org>
-Subject: Re: Bogomips and loops_per_jiffy
-In-Reply-To: <20020509100846.G16602@altus.drgw.net>
-Message-ID: <Pine.LNX.4.33.0205091804250.936-100000@gra-lx1.iram.es>
+Message-ID: <3CDAB099.11A0DC74@esteem.com>
+Date: Thu, 09 May 2002 10:23:37 -0700
+From: Conn Clark <clark@esteem.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Performance on PPC8xx using string and multiple load instructions?
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, 9 May 2002, Troy Benjegerdes wrote:
+Hello,
 
-> >
-> > > >	while ((next_dec = tb_ticks_per_jiffy - tb_delta(&jiffy_stamp)) < 0)
-> > > >{
-> > > >
-> > > >Now that next_dec is unsigned, this condition is always false.
-> >
-> > Yes I wrote this in the most possible compact way.  But I don't understand
-> > (yet) how this can cause problems. You have a security margin of about 2
-> > billion timbase ticks.
->
-> The problem occurs when calibrating the delay loop, and the timebase is
-> very large.
-
-The fact that the TB is large or not should be irrelevanet, after all
-the TB wraps around every 2 to 5 minutes or so on most processors. Do the
-math, it's rather simple modulo 2^32 arithmetic. If I lost decrementer
-interrupts every time the TB wraps around, I would see strange things
-under top for example.
-
-Now if you do a set_tb after the time_init at some point, you have to
-update the timekeeping variables (jiffy_stamp or whatever) in sync.
-Otherwise you are going to have problems.
-
-Note that there is a very simple possible patch: truncate the new value
-you load into the decrementer to tb_ticks_per_jiffy. And for debugging,
-keep the last few values of the timebase at the decrementer interrupt
-around and print them when you have to truncate. I'm afraid that this is a
-symptom of lost timekeeping after reading the RTC and that you simply
-cure the symptom.
+	Does anyone know how using the -mstring and -mmultiple GCC
+code optimization switches affect performance on the PPC8xx ? The
+book I have on PPC assembly says the use of the string and
+load-multiple instrutions may be signifigantly slower than the
+multiple instruction equivalent on some processors. It does not tell
+me which processors or why. I think it might be due to ther fact
+that multiple instructions can be paired in multi instruction
+pipelined chips. Since the 8xx has only a sigle pipeline I was
+wondering if this was the case.
 
 
->
-> http://lists.linuxppc.org/linuxppc-embedded/200205/msg00040.html
->
-> We could probably just avoid all this and do 'set_tb(0,0)' in time_init
-> (since we go and try to sync the timebase on SMP systems anyway)
+	In the kernel source they use the -mmultiple and -mstring
+switches in the architecture dependant code. This may be done to
+reduce codeIf these are
+instructions signifigantly slower on some processors is this a good
+idea to have them as default optimizations for all processors?
 
-Better set the TB to a large value to force the problem and see if you can
-reproduce it.
+	If anybody ever benchmarked code with these instructions
+on an 8xx processor or other processor I would like to see the
+results.
 
-	Regards,
-	Gabriel.
+Thanks in advance
+
+	Conn
+
+
+--
+
+*****************************************************************
+  If you live at home long enough, your parents will move out.
+*****************************************************************
+
+Conn Clark
+Engineering Stooge				clark@esteem.com
+Electronic Systems Technology Inc.		www.esteem.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
