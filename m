@@ -1,5 +1,5 @@
-Date: 25 Sep 2003 11:27:45 -0000
-Message-ID: <20030925112745.9511.qmail@webmail18.rediffmail.com>
+Date: 25 Sep 2003 11:28:40 -0000
+Message-ID: <20030925112840.3137.qmail@webmail17.rediffmail.com>
 MIME-Version: 1.0
 From: "somshekar chandrashekar kadam" <som_kadam1@rediffmail.com>
 Reply-To: "somshekar chandrashekar kadam" <som_kadam1@rediffmail.com>
@@ -24,7 +24,7 @@ i dont get any of the prints on the console , in kernel
 configuration ,
 i have choosen only smc2 , where else i need to specify touse SMC2
 , please any one can throw some light on this , here are my kernel
-messages
+messages , please do a cc to this mail ID ,please
 Thanks And regards
 NEELU
 --------------------------------------
