@@ -1,40 +1,31 @@
-Date: Mon, 19 Jul 2004 08:15:41 -0400 (EDT)
+Date: Mon, 19 Jul 2004 08:27:23 -0400 (EDT)
 From: "Robert P. J. Day" <rpjday@mindspring.com>
-To: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-Subject: list of 2.6-related migration issues for embedded programmers?
-Message-ID: <Pine.LNX.4.60.0407190807450.9101@dell.enoriver.com>
+To: Gary Thomas <gary@mlbassoc.com>
+Cc: Wolfgang Denk <wd@denx.de>,
+	Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: list of outstanding issues somewhere?
+In-Reply-To: <1090239062.2197.15.camel@hermes>
+Message-ID: <Pine.LNX.4.60.0407190825510.9191@dell.enoriver.com>
+References: <20040719114502.1D15AC109F@atlas.denx.de> <1090239062.2197.15.camel@hermes>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-   on the topic of lists of things, is there a list somewhere of the
-potentially important 2.6-related issues someone should at least
-understand before migrating from 2.4 to 2.6?  i don't mean just
-improvements in the kernel from 2.4 to 2.6; i mean significantly new
-features that would require a rethinking and possible redesign of the
-build process.  as examples off the top of my head:
+On Mon, 19 Jul 2004, Gary Thomas wrote:
 
-   - replace devfs with udev:  currently, even with my current 8xx 2.6
-build, i'm sticking with devfs until i'm confident i understand enough
-to move up.
+>
+> On Mon, 2004-07-19 at 05:44, Wolfgang Denk wrote:
 
-   - initramfs:  currently, i'm still using a zImage.initrd-based
-image, and all i know about initramfs is that it's checked for at boot
-time.  should i care about it?  at some point, probably, i'm sure.
+>> Maybe we could even  have  a  (searchable)  patch  database  so  that
+>> submissions, even if rejected, don't get lost completely.
+>
+> BugZilla works great for this.
 
-   - redesign of modules and device drivers to be 2.6-compatible,
-that's a biggie.  and the fact that the CVS busybox tree just recently
-had 2.6 support added to its modules-related commands.
-
-   - totally redesigned kernel config menus
-
-   at the moment, i'm going through the 5-part series on migrating to
-2.6 starting at http://linuxdevices.com/articles/AT3855888078.html.
-some of it's useful, some of it's kind of fluffy.  but it would be
-nice to have a list of that type aimed primarily at embedded
-developers.
+i'm not sure it needs to be that detailed or precise; i was just
+thinking of a more general summary of "things we're working on or that
+have to be dealt with at some point."  whatever works.
 
 rday
 
