@@ -1,18 +1,18 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 4560B67A95
+Return-Path: <ejohnson@acdstar.com>
+Received: from mail.acdstar.com (mail.acdstar.com [209.98.244.9])
+	by ozlabs.org (Postfix) with ESMTP id C016E67A6D
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Feb 2005 06:26:46 +1100 (EST)
-In-Reply-To: <420A4CF3.5090902@anagramm.de>
-References: <420A4CF3.5090902@anagramm.de>
-Mime-Version: 1.0 (Apple Message framework v619)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <86EC2676-7AD0-11D9-B269-000393DBC2E8@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Wed, 9 Feb 2005 13:26:41 -0600
-To: "Clemens Koller" <clemens.koller@anagramm.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Are the I2C drivers on MPC8540 Kernel 2.6.10 working?
+	Thu, 10 Feb 2005 06:43:36 +1100 (EST)
+Received: from zaphod.acdstar.com (zaphod.int.acdstar.com [192.168.2.100])
+	by mail.acdstar.com (8.13.0/8.13.0) with ESMTP id j19JWvqY020515
+	for <linuxppc-embedded@ozlabs.org>; Wed, 9 Feb 2005 13:32:57 -0600
+Message-Id: <6.2.1.2.1.20050209131409.02b2b718@mail.int.acdstar.com>
+Date: Wed, 09 Feb 2005 13:31:35 -0600
+To: linuxppc-embedded@ozlabs.org
+From: "Eric N. Johnson (ACD)" <ejohnson@acdstar.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
+Subject: MPC5200 JTAG/BDM Flash Burning
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,119 +23,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-One issue with the 2.6.10 driver was it was very slow.  I changed some=20=
+I'm working on a custom MPC5200 board based heavily on the IceCube design 
+from Motorola/Freescale.  We plan to use the u-boot bootloader.
 
-sleep calls in 2.6.11 to improve its performance.  You may want to try=20=
+I'm looking for a tool to allow us to burn u-boot into the flash memory on 
+new board (with all flash devices unprogrammed).  Ideally, I'd like 
+something like the Jflash-linux tool used with StrongARM linux, or a 
+stand-along linux tool that lets us burn the memory.
 
-grabbing the driver out of 2.6.11-rc3 and see if that helps also.
+Both the "MPCBDM" and "bdm4gdb" projects haven't been updated for 
+years.  The BDM-Tools project is more active, but only seems to support 
+68k/Coldfire processors.
 
-- kumar
+The 5200lite "IceCube" demo board came with a Metrowerks "Wiretap" BDM 
+interface, and a Green Hills "Slingshot" BDM module, but these seems to 
+require a large (and expensive) windows based "Development environment" 
+which is far more than we need.  Are there linux based drivers for either 
+of these?
 
-On Feb 9, 2005, at 11:48 AM, Clemens Koller wrote:
+We may have to write our own JTAG based pin-wiggler, but this solution 
+tends to be extremely slow.
 
-> Hello,
->
-> My questions:
->  Is I2C and the Real Time Clock stuff working for the MPC8540
->  in Kernel 2.6.10?
->  Are there any hidden bugs/traps/features I need to tweak?
->  Does anybody work successfully with the I2C in
->  this configuration?
->
-> My problems:
->  I try to get a I2C Philips PCF8563 Real Time Clock working which
->  is connected to the I2C of my MPC8540 processor.
->  The chip should be sw-compatible with the Epson RTC8564 component
->  (according to the datasheets), so I tried to enable the MPC85xx
->  I2C bus, the EPSON RTC8564 and the Kernel RTC support.
->  I tried several configs - compiled i2c into the kernel or as a
->  modules to load and unload them with debug=3D1
->
-> I cannot access /dev/misc/rtc with the hwclock (latest version=3D2.23):
->  -----8<------------------------------------
->  hwclock -w
->  hwclock: ioctl() (RTC_SET_TIME) to /dev/misc/rtc to set time failed,
-> errno =3D Invalid argument (22).
-> -----8<------------------------------------
->
-> Now I try to work with the modules and try to track down
->  the problem:
->
-> after a modprobe rtc8564:
->  -----8<------------------------------------
->  i2c_adapter i2c-0: examining adapter
->  i2c-core: driver unregistered: RTC8564
->  i2c-core: driver RTC8564 registered.
->  i2c_adapter i2c-0: found normal i2c entry for adapter 0, addr 51
->  i2c_adapter i2c-0: master_xfer: with 1 msgs.
->  Doing write 0 bytes to 0x51 - 1 of 1 messages
->  rtc8564_attach: client=3Dc02c1e00
-> rtc8564_attach: client.id=3D61440
-> i2c_adapter i2c-0: master_xfer: with 1 msgs.
->  Doing write 2 bytes to 0x51 - 1 of 1 messages
->  I2C: No RXAK
->  rtc8564: cant init ctrl1
->  i2c-core: unregister_driver - looking for clients.
->  i2c_adapter i2c-0: examining adapter
->  i2c-core: driver unregistered: RTC8564
->  i2c_adapter i2c-0: adapter unregistered
->  i2c-core: driver RTC8564 registered.
->  -----8<------------------------------------
->  Module=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 Size=A0 =
-Used by
->  rtc8564=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 6660=A0 0
->  i2c_core=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 25264=A0 1 rtc8564
->  -----8<------------------------------------
->
-> and after a modprobe i2c-mpc I get:
->  -----8<------------------------------------
->  i2c_adapter i2c-0: found normal i2c entry for adapter 0, addr 51
->  i2c_adapter i2c-0: master_xfer: with 1 msgs.
->  Doing write 0 bytes to 0x51 - 1 of 1 messages
->  rtc8564_attach: client=3Dc02c1200
-> rtc8564_attach: client.id=3D61440
-> i2c_adapter i2c-0: master_xfer: with 1 msgs.
->  Doing write 2 bytes to 0x51 - 1 of 1 messages
->  I2C: No RXAK
->  rtc8564: cant init ctrl1
->  i2c_adapter i2c-0: registered as adapter #0
->  -----8<------------------------------------
->  Module=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 Size=A0 =
-Used by
->  i2c_mpc=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 5376=A0 0
->  rtc8564=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 6660=A0 0
->  i2c_core=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 25264=A0 2 =
-i2c_mpc,rtc8564
-> -----8<------------------------------------
->
-> So, the output looks basically fine, except of the
->
-> I2C: No RXAK
->  rtc8564: cant init ctrl1
->
-> Which means that I don't get an ACK from my RTC.
->  I connected an oscilloscope to the I2C - there
-> is a lot of traffic. So I believe that the problem
->  is more on the protocol side?
->
-> Does somebody have any suggestions before I dig into
->  the code?
->  Thank you in advance!
->
-> Best greets,
->
-> Clemens Koller
-> _______________________________
-> R&D Imaging Devices
->  Anagramm GmbH
->  Rupert-Mayer-Str. 45/1
->  81379 Muenchen
->  Germany
->
-> http://www.anagramm.de
-> Phone: +49-89-741518-50
->  Fax: +49-89-741518-19
->  _______________________________________________
-> Linuxppc-embedded mailing list
->  Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+Thanks
+Eric
+------------------------------------
+Eric Johnson, Electrical Engineer
+Advanced Communication Design
+   7901 12th Avenue South
+   Bloomington, MN 55425
+Ph: 952-854-4000  Fax: 952-854-5774
