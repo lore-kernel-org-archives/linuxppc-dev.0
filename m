@@ -1,18 +1,21 @@
-Return-Path: <SRS0+fa9254f6a0dc08e19aee+555+infradead.org+dwmw2@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
+Return-Path: <joerg@dorchain.net>
+Received: from Redstar.dorchain.net (153-133-088-212.ip-addr.teresto.net
+	[212.88.133.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7A06F67A71
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Mar 2005 21:07:21 +1100 (EST)
-From: David Woodhouse <dwmw2@infradead.org>
-To: benh@kernel.crashing.org
-Content-Type: text/plain
-Date: Tue, 01 Mar 2005 10:06:48 +0000
-Message-Id: <1109671608.22578.88.camel@hades.cambridge.redhat.com>
+	by ozlabs.org (Postfix) with ESMTP id D84FA67A65
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Mar 2005 23:44:41 +1100 (EST)
+Received: (from joerg@localhost)
+	by Redstar.dorchain.net (8.13.3/8.13.2) id j23CiZSb026267
+	for linuxppc-dev@ozlabs.org; Thu, 3 Mar 2005 13:44:35 +0100
+Date: Thu, 3 Mar 2005 13:44:35 +0100
+From: Joerg Dorchain <joerg@dorchain.net>
+To: linuxppc-dev@ozlabs.org
+Message-ID: <20050303124435.GA24233@Redstar.dorchain.net>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Subject: GCC4 fun.
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="HlL+5n6rz5pIUxbD"
+Subject: Re: GCC4 fun.
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,104 +25,78 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-include/asm-ppc64/paca.h:
-	Fix use of 'struct paca_struct' before it's defined.
 
-arch/ppc/open_pic_defs.h;
-	Remove extern declaration of OpenPIC. It's static in openpic.c
+--HlL+5n6rz5pIUxbD
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-include/asm-ppc/prom.h:
-	Remove extern declaration of prom_display_paths[] and 
-	prom_num_displays. Those are static too in prom_init.c
+Hi list,
 
-arch/ppc/kernel/time.c:
-	Rename time_offset to rtc_time_offset to avoid conflict
-	with the global time_offset.
+I just booted a self-compiled 2.6.11 on my iBook G4.
 
---- linux-2.6.10/include/asm-ppc64/paca.h~	2005-03-01 08:48:20.000000000 +0000
-+++ linux-2.6.10/include/asm-ppc64/paca.h	2005-03-01 08:54:47.662044104 +0000
-@@ -22,7 +22,6 @@
- #include	<asm/iSeries/ItLpRegSave.h>
- #include	<asm/mmu.h>
- 
--extern struct paca_struct paca[];
- register struct paca_struct *local_paca asm("r13");
- #define get_paca()	local_paca
- 
-@@ -115,4 +114,6 @@
- #endif
- };
- 
-+extern struct paca_struct paca[];
-+
- #endif /* _PPC64_PACA_H */
---- linux-2.6.10-ppc/arch/ppc/syslib/open_pic_defs.h~	2005-03-01 09:20:34.000000000 +0000
-+++ linux-2.6.10-ppc/arch/ppc/syslib/open_pic_defs.h	2005-03-01 09:39:22.776010608 +0000
-@@ -172,8 +172,6 @@ struct OpenPIC {
-     OpenPIC_Processor Processor[OPENPIC_MAX_PROCESSORS];
- };
- 
--extern volatile struct OpenPIC __iomem *OpenPIC;
--
- 
-     /*
-      *  Current Task Priority Register
---- linux-2.6.10-ppc/include/asm-ppc/prom.h~	2004-12-24 21:35:23.000000000 +0000
-+++ linux-2.6.10-ppc/include/asm-ppc/prom.h	2005-03-01 09:36:01.350016664 +0000
-@@ -13,9 +13,6 @@
- typedef void *phandle;
- typedef void *ihandle;
- 
--extern char *prom_display_paths[];
--extern unsigned int prom_num_displays;
--
- struct address_range {
- 	unsigned int space;
- 	unsigned int address;
---- linux-2.6.10-ppc/arch/ppc/kernel/time.c~	2005-03-01 09:20:34.000000000 +0000
-+++ linux-2.6.10-ppc/arch/ppc/kernel/time.c	2005-03-01 09:53:47.293085192 +0000
-@@ -89,7 +89,7 @@ unsigned long tb_to_ns_scale;
- 
- extern unsigned long wall_jiffies;
- 
--static long time_offset;
-+static long rtc_time_offset;
- 
- DEFINE_SPINLOCK(rtc_lock);
- 
-@@ -172,7 +172,7 @@ void timer_interrupt(struct pt_regs * re
- 		     xtime.tv_sec - last_rtc_update >= 659 &&
- 		     abs((xtime.tv_nsec / 1000) - (1000000-1000000/HZ)) < 500000/HZ &&
- 		     jiffies - wall_jiffies == 1) {
--		  	if (ppc_md.set_rtc_time(xtime.tv_sec+1 + time_offset) == 0)
-+		  	if (ppc_md.set_rtc_time(xtime.tv_sec+1 + rtc_time_offset) == 0)
- 				last_rtc_update = xtime.tv_sec+1;
- 			else
- 				/* Try again one minute later */
-@@ -289,7 +289,7 @@ void __init time_init(void)
- 	unsigned old_stamp, stamp, elapsed;
- 
-         if (ppc_md.time_init != NULL)
--                time_offset = ppc_md.time_init();
-+                rtc_time_offset = ppc_md.time_init();
- 
- 	if (__USE_RTC()) {
- 		/* 601 processor: dec counts down by 128 every 128ns */
-@@ -334,10 +334,10 @@ void __init time_init(void)
- 	set_dec(tb_ticks_per_jiffy);
- 
- 	/* If platform provided a timezone (pmac), we correct the time */
--        if (time_offset) {
--		sys_tz.tz_minuteswest = -time_offset / 60;
-+        if (rtc_time_offset) {
-+		sys_tz.tz_minuteswest = -rtc_time_offset / 60;
- 		sys_tz.tz_dsttime = 0;
--		xtime.tv_sec -= time_offset;
-+		xtime.tv_sec -= rtc_time_offset;
-         }
-         set_normalized_timespec(&wall_to_monotonic,
-                                 -xtime.tv_sec, -xtime.tv_nsec);
+The dmesg shows a hickup, where I am wondering what's the cause.
 
+Total memory =3D 768MB; using 2048kB for hash table (at c0400000)
+Linux version 2.6.11 (root@whisker) (gcc version 3.3.5 (Debian 1:3.3.5-8)) =
+#29 Wed Mar 2 20:15:15 CET 2005
+Found UniNorth memory controller & host bridge, revision: 210
+Mapped at 0xfdf00000
+Found a Intrepid mac-io controller, rev: 0, mapped at 0xfde80000
+Processor NAP mode on idle enabled.
+PowerMac motherboard: iBook G4
+Found UniNorth PCI host bridge at 0xf0000000. Firmware bus number: 0->0
+Found UniNorth PCI host bridge at 0xf2000000. Firmware bus number: 0->0
+Found UniNorth PCI host bridge at 0xf4000000. Firmware bus number: 0->0
+via-pmu: Server Mode is disabled
+PMU driver 2 initialized for Core99, firmware: 0c
+On node 0 totalpages: 196608
+  DMA zone: 196608 pages, LIFO batch:16
+  Normal zone: 0 pages, LIFO batch:1
+  HighMem zone: 0 pages, LIFO batch:1
+Built 1 zonelists
+Kernel command line: root=3D/dev/hda5 ro=20
+PowerMac using OpenPIC irq controller at 0x80040000
+OpenPIC Version 1.2 (4 CPUs and 64 IRQ sources) at fc633000
+OpenPIC timer frequency is 4.166666 MHz
+PID hash table entries: 4096 (order: 12, 65536 bytes)
+time_init: decrementer frequency =3D 18.432000 MHz
+Console: colour dummy device 80x25
+Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
+Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
+Memory: 773632k available (1928k kernel code, 1044k data, 144k init, 0k hig=
+hmem)
+AGP special page: 0xeffff000
+Calibrating delay loop... 663.55 BogoMIPS (lpj=3D331776)
+Mount-cache hash table entries: 512 (order: 0, 4096 bytes)
+scheduling while atomic: swapper/0x00000002/0
+Call trace:
+ [c0007620] dump_stack+0x18/0x28
+ [c01de704] schedule+0x678/0x67c
+ [c0004500] syscall_exit_work+0x108/0x10c
+ [c02a97b4] proc_root_init+0x168/0x174
+ [ff847288] 0xff847288
+ [c02945e8] start_kernel+0x144/0x170
+ [00003a30] 0x3a30
 
--- 
-dwmw2
+Anyone an idea where this comes from? (Or, what else is needed for a
+qualified statement about it?)
+
+TIA,
+
+Joerg
+
+--HlL+5n6rz5pIUxbD
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.5 (GNU/Linux)
+
+iD8DBQFCJwazjY4+4PdzvOARAuVFAJ97RbjoN4Nj4n7mBSKFY2DIcor4dQCfUh2t
+6zoWr3a4gT15WnemoS4tBGU=
+=hmKL
+-----END PGP SIGNATURE-----
+
+--HlL+5n6rz5pIUxbD--
