@@ -1,43 +1,48 @@
-Date: Thu, 18 May 2000 16:06:01 -0400 (EDT)
-From: Worth <haworth@ncal.verio.com>
-To: Sergio Brandano <sb@dcs.qmw.ac.uk>
-cc: "Timothy A. Seufert" <tas@mindspring.com>, luther@dpt-info.u-strasbg.fr,
-        Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-        Albrecht Dreﬂ <ad@mpifr-bonn.mpg.de>,
-        Tim Wojtulewicz <Tim.Wojtulewicz@nau.edu>,
-        linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org
-Subject: Re: Pismo status 
-In-Reply-To: <200005180812.JAA03379@copper.dcs.qmw.ac.uk>
-Message-ID: <Pine.SOL.4.10.10005181519400.15607-100000@ncal.verio.com>
+Message-ID: <003401bfc10f$d9cca180$d2d3470a@mike>
+From: "Mike Hudson" <Exoray@isys.ca>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: BMAC+ & Full Duplex
+Date: Thu, 18 May 2000 17:27:20 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 18 May 2000, Sergio Brandano wrote:
+Has anyone looked into the problem with a BMAC+ not being able to do
+ full-duplex 100baseTX? I currently use BootX scripted in the MacOS,
+since this allows me to use Apple's Duplexer tool to set Full-Duplex
+100BaseTX.
+I'd like to move to yaboot/ybin, since about half the time BootX hangs
+when I need to remotely reboot.
 
->
->  There is one standard feature of automobiles that has not yet been
->  implemented for computers, namely if you switch off the computer the
->  cooling system should stay on until needed.
+I've looked at the BMAC/BMAC+ Driver, and some Darwin Code and
+there is a register in the darwin code"
 
-Actually it's old hat on mainframes, though that is mainly due to
-numerous extremely hot chips with relatively small heat sinks in a
-constrained plenum or manifold that depends upon high coolant flow.
-And, on liquid cooled systems, to avoiding condensation problems.
+#define kTxFullDuplex   0x0200
 
->
->  (On my 101, I often hear the fan going on just when I need to shut
->  down. The fact is that when I want to shut down, I do not want to
->  wait for the fan, and I also put the screen down...
+But I'm wary to add to the code, seeing that it will probably break
+compatiblity with the original BMAC (which can't do 100Mbps).
+Also, I'm not sure of this will do the trick if the BMAC+ isn't advertising
+ 100FD, so therefore somehow one would have to access whatever
+circutry handles the autonegotiation (MII layer or actual transceiver?)
 
-No need to wait for the fan, it's not the only cooling source, or
-even the primary. The semiconductor junctions are already as hot as they
-are going to get and are not producing any more heat. The surface of the
-heat sink may have an upward transient at shutdown due to the loss of
-airflow, but it's still cooler than those junctions or the bulk of the
-heat sink.
+FYI, I'm running a B&W G3 450 Server, 128MB, 18GB. All my PCI
+slots are full (U2SCSI + two serial port boards), so I'm stuck with the
+BMAC+
+for my network connectivity.
+
+Also, anyone look at implementing 'server mode' on the macs? This is a
+nother reason I still use BootX, I can set server mode in MacOS first
+before switching to Linux. (Sever mode is Apple's way of rebooting if A
+C power lost, crucial if a UPS is used) I've done some background reasearch
+on doing this with the CUDA (Power Chip on Pre-G4 desktops), and I'd love
+ to discuss this with someone. Too bad this is a non-persistent software
+setting,
+on my PC it's nice little BIOS option which I can set and forget.
+
+Mike Hudson
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
