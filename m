@@ -1,46 +1,47 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-Message-Id: <200112052146.16467@enzo.bigblue.local>
-To: Corey Minyard <minyard@acm.org>
-Subject: Re: Changes to PPC Linux required for GCC 3.1
-Date: Wed, 5 Dec 2001 21:51:02 +0100
-Cc: linuxppc-dev@lists.linuxppc.org
-References: <5.1.0.14.2.20011205134825.024d8ed8@mail.lauterbach.com> <3C0E48D2.6000409@acm.org>
-In-Reply-To: <3C0E48D2.6000409@acm.org>
+From: Paul Mackerras <paulus@samba.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15374.39089.18825.865506@argo.ozlabs.ibm.com>
+Date: Thu, 6 Dec 2001 08:59:13 +1100 (EST)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	Corey Minyard <minyard@acm.org>,
+	Franz Sirl <Franz.Sirl-ppc@lauterbach.com>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Changes to PPC Linux required for GCC 3.1
+In-Reply-To: <20011205175038.27184@smtp.adsl.oleane.com>
+References: <20011205173728.GB27936@cpe-24-221-152-185.az.sprintbbd.net>
+	<20011205175038.27184@smtp.adsl.oleane.com>
+Reply-To: paulus@samba.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wednesday 05 December 2001 17:18, Corey Minyard wrote:
-> Franz Sirl wrote:
-> > Ah, I see, I only saw this problem in aty128fb. I'll add the fix to
-> > the linuxconsole CVS for 2.5.x.
->
-> What about 2.4?  I'm sure people will want to compile 2.4 with gcc 3.x.
-
-That has to go thru the usual channels.
-
-> >> * In include/linux/sunrpc/clnt.h, I removed a bogus function declaration
-> >> which was messing up inlining.
+Benjamin Herrenschmidt writes:
 > >
-> > I guess this is 3.1 specific? I don't remember problems with 3.0.x.
+> >I think the reason this wasn't applied is that Paul said something about
+> >thiws being horriyingly ugly.  Corey, can you post a patch that changes
+> >RELOC(x) into a function and nothing else? :)
 >
-> Probably.  I've seen some other problems with GCC being fairly picky
-> about declarations, and I think it's fairly new.  But the declaration
-> both wrong and unnecessary.
+> I prefer this beeing resolved at compile time. The reason Paul didn't want
+> it at first is because he didn't want a workaround for a pre-release gcc
+> bug. Since this is becoming a "feature", it makes sense to get the
+> workaround. Paulus will confirm or not what I'm saying though...
 
-Ah yes, I browsed this discussion on the lists.
+Actually, I'm annoyed that gcc thinks it can do something different
+from what I have written.  If I wanted it to call memcpy instead of
+strcpy, I would have written memcpy.  If I put in a call to strcpy, I
+want the compiler to generate a "bl strcpy" instruction (assuming I
+haven't declared strcpy to be inline of course).
 
-> > What about the FAT filesystem? Is gcc-3.1 now able to correctly
-> > optimize the 64bit signed divide by const into a ASHIFT+fixup?
->
-> Nope.  I was going to ask about that one.  Do you have a GCC PR on this?
+This is the kernel, where we don't have a standard libc, and I would
+much rather gcc didn't assume that it knows the semantics of things
+like strcpy().  Does -fno-builtin achieve that effect?
 
-Nope, probably I should add one, cause I don't have time to continue with a
-divdi3_32 pattern anytime soon :-(.
+Maybe the thing to do is to side-step the problem by having an extra
+entry point for strcpy, called string_copy or something, and call that
+instead of strcpy.
 
-Franz.
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
