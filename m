@@ -1,58 +1,35 @@
-Message-ID: <75DF04AC5ED4D511A9810090273CB4163F5DED@rokonet-e.rokonet.co.il>
-From: Eli Brin <elib@rokonet.co.il>
-To: "'Dan Malek'" <dan@embeddededge.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: 8xx SCC's as uart
-Date: Sun, 20 Jul 2003 10:52:01 +0200
-MIME-Version: 1.0
-Content-Type: text/plain
+Date: Mon, 21 Jul 2003 14:10:41 +1200
+From: Robin Gilks <robin.gilks@tait.co.nz>
+Subject: Clock rate on MPC8xx CPUs
+To: linuxppc mail list <linuxppc-embedded@lists.linuxppc.org>
+Message-id: <3F1B4BA1.6000204@tait.co.nz>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello Dan,
+Greetings
 
-Originally I was referring to both kernel.org and Denx.  But I was referred
-to a patched 2.4.20 version from Denx that enables SCC1 and SCC4 as uarts
-including RTS, CTS, DCD and DTR pin configuration.
+Can anyone shed some light on a question of clock rates?
 
-I believe this should go into the kernel from kernel.org.  If one chooses to
-use the 860(T/DT) or 855(T) processors why shouldn't he use SSC1 and 4 as
-uarts.  The limitation of the 857 should not limit other processors.  Look
-at the 852(T), it can use SCC4 as a uart.
+We're playing with the mpc866ads board and currently running both the
+CPU core and bus at 50MHz to keep things simple. As a result it seems
+that the internal Linux time is 50% out despite passing the clock rate
+from u-boot as being 50MHz.
 
-Regarding the baud rate generators, we can configure the to more then one
-uart, if those uarts use the same baud rate.  So, perhaps the BRG's should
-be decoupled from the uart in the configuration.  This will go to the 8xx
-CPM configuration witch is processor specific in the first place (FEC, SCC
-and Ethernet and other 8xx processor variant stuff).
-
-Thank you,
-Eli Brin
+Since the mpc866 can run its core at x2 the bus rate, does the timer
+setup in Linux for this port assume that the CPU _will_ be running at x2
+from the rate passed at boot time or is there something else
+'interesting' with this new '866 CPU :-))
 
 
+--
+Robin Gilks
+Senior Design Engineer              Phone: (+64)(3) 357 1569
+Tait Electronics                          Fax  :  (+64)(3) 359 4632
+PO Box 1645 Christchurch        Email : robin.gilks@tait.co.nz
+New Zealand
 
------Original Message-----
-From: Dan Malek [mailto:dan@embeddededge.com]
-Sent: Friday, July 18, 2003 6:28 PM
-To: Eli Brin
-Cc: 'linuxppc-embedded@lists.linuxppc.org'
-Subject: Re: 8xx SCC's as uart
-
-
-Eli Brin wrote:
-
-> I have noticed, in kernel 2.4.20, that SCC1 and SCC4 cannot be
-> configured as uarts.
-
-Ummmm....2.4.20 from where?
-
-The linuxppc 2.4 development tree was updated by Gary Thomas a while back to
-allow all possible SMC/SCC configurations within the resource limitations of
-the particular processor variant.  This included the baud rate generator
-restrictions on the 857.
-
-
-	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
