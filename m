@@ -1,36 +1,33 @@
-Date: Sun, 31 Oct 1999 20:28:37 -0600 (CST)
-From: Takashi Oe <toe@unlserve.unl.edu>
-To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-cc: linuxppc-dev@lists.linuxppc.org, Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: DMA macserial change seems to have messed up my pppd?
-In-Reply-To: <v03110700b44273ab1522@[209.183.132.176]>
-Message-ID: <Pine.LNX.3.96LJ1.1b7.991031201619.515A-100000@ofey.inetnebr.com>
+Message-ID: <381D20F9.C4EF2945@jlc.net>
+Date: Mon, 01 Nov 1999 00:11:21 -0500
+From: Dan Malek <dmalek@jlc.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: RevD iMac USB errors (was Problems compiling ppc kernels)
+References: <19991027030045.28758.qmail@kunk.jriver.com> <381674D5.15A925B5@andrew.cmu.edu> <19991026225703.G11654@lx.c-side.com> <3816973A.375F987D@andrew.cmu.edu>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 31 Oct 1999, Kevin B. Hendricks wrote:
+Just to keep everyone up to date.......
 
-> Comparing Paul's rsync'd stable kernel from about a week or so before
-> 2.2.13 was announced to a more recent version made late last week,
-> something (the changes in macserial and use of DMA?) has completely made
-> any ppp session unstable when used with any large, memory hungry
-> applications which includes Netscape, the JDK, etc.
-> 
-> Prior to the DMA change my ppp connections were always completely stable.
+Someone wrote:
 
-Paul's linux-pmac-stable tree has changed quite a bit about ten days ago
-when it was synced somewhat to Linus' and vger trees.  It's been somewhat
-unstable on my machine as well since then.  I'm using the DMA support for
-a month or so prior to that, and my machine was much more stable.
+> > > The kernels on rshaw's pages (http://www.linuxppc.org/blueg3) should
+> > > work fine. The trick is just to comment out the USB version-checking
+> > > code. I think he has the patch there as well.
 
-If you like, you can uncomment "#define SUPPORT_SERIAL_DMA" in macserial.c
-to disable the DMA code and see if it changes anything.
+I tried again today, and the vmlinux-2.2.10-rev1.gz booted on my RevD iMac.
+The 2.2.6 wouldn't, and the anything prior to the recent Oct. 30 build
+wouldn't either.  I used 2.2.10 to install Linux/PPC, you just don't have
+any backspace/delete/kill keys, so be careful typing :-).
+
+Thank you very much!  Now, if I could just get the video driver to
+leave the monitor enabled, it would be great.  FYI, video=fbonly (check
+the No Video box) works, but any other video option turns off the monitor.
 
 
-Takashi Oe
-
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
