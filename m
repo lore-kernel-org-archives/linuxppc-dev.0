@@ -1,28 +1,31 @@
-Message-ID: <400D6E5E.50606@jonmasters.org>
-Date: Tue, 20 Jan 2004 18:07:26 +0000
-From: Jon Masters <jonathan@jonmasters.org>
-MIME-Version: 1.0
+Message-ID: <20040120195133.50035.qmail@web20416.mail.yahoo.com>
+Date: Tue, 20 Jan 2004 11:51:33 -0800 (PST)
+From: hp <aput99@yahoo.com>
+Subject: Development Environment:
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Embedded Systems Event Request For Comments
-Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <AAB0E96AD630DC4E8D751BA4D854F2A1074CB487@WKCORPXCH.corp.weekleyhomes.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi there,
+Hi,
 
-I have been talking to the UKUUG about organising an Embedded Systems
-event in the UK. What I want to do is put together a proposal and
-generate some information based upon who would be interested in
-participating in a low cost event targetted somewhere between developers
-  and maybe business users - the idea stems from a wouldn't-it-be-nice
-if lots of Embedded Linux people met in the UK and the idea is to tag
-this on to their summer conference in Leeds which is probably going to
-have some kind of telecoms angle this year again.
+I am doing a research on what are the "best" or "most popular" tools to use
+in an embedded linux development environment right now.  I know there are a
+lot of expert embedded linux developers in this news group.  I would really
+appreciated it if you would take a few seconds to let me know what you are
+using or what you think is good to use for the following:
 
-Suggestions to me please.
+                  compiler: _________
+                deployment: _________
+code management (i.e. cvs): _________
+           kernel debugger: _________
+          bootrom debugger: _________
 
-Jon.
+Thanks in advance for any advice.
+Adam
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
