@@ -1,29 +1,78 @@
-From: "Stephan Linke" <Stephan.Linke@epygi.de>
-To: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: question on howto use invalidate_dcache_range
-Date: Wed, 12 Mar 2003 12:20:06 +0100
-Message-ID: <FCEAKDJJAPHPLJFINDAJCELACOAA.Stephan.Linke@epygi.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: brian.auld@adic.com
+Message-ID: <995FF289C9D69747A09E42992644595405B236B3@penguin.adic.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: FW: Need openssh for embedded linux on 440GP
+Date: Wed, 12 Mar 2003 05:09:53 -0800
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+One more time...
 
-in November there was the discussion about Joakims patch to 8xx_io/enet.c.
-(http://lists.linuxppc.org/linuxppc-embedded/200211/msg00122.html)
+Is there any particular reason why openssh is not included in the ELDK
+target package?
 
-Since the result of the discussion didn't seam that clear to me I still have a question related to this.
+As an update to what's written below, I did try cross-compiling and that was
+even less successful than compiling on my embedded target.
 
-After all is it realy neccessary to use invalidate_dcache range before giving the transmit buffer to the DMA?
-  That's one of Joakims last modifications but what exactly is the reason? It's obvious for the flush command but I couldn't figure
-out the reason for invalidate.
-Beside the cache line alignment problem (causing nearby data to be flushed or invalidated) are there any other problems to be taken
-care of?
+The error I receive is: "Disconnecting: Corrupted MAC on input"
 
-Thanks, Stephan
+Thanks,
+
+-- Brian
+
+-----Original Message-----
+From: brian.auld@adic.com [mailto:brian.auld@adic.com]
+Sent: Thursday, March 06, 2003 11:03 AM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Need openssh for embedded linux on 440GP
+
+
+This is more of an ELDK question that a general embedded linux question.
+
+I am trying to get openssh installed and running on my embedded 440
+platform. 'openssh' is not part of the target packages provided with the
+ELDK, so I figure there's 2 ways to do it:
+
+(a) cross-compile on my host
+(b) compile it on my target system
+
+I haven't tried (a) yet, as openssh does not seem to be very cross-compile
+friendly and I'm still getting comfortable with the whole 'cross-compiling'
+from source using ELDK.
+
+I went ahead and proceeded with (b). I retrieved the latest source from
+www.openssh.com, unpacked and built it on my target system (filesytem nfs
+mounted). It took a while, but everything built ok. I thought I was home
+free until I tried to either:
+
+  (i)  start the sshd daemon
+       The daemon starts OK. However, when I ssh to the
+       Target, it barfs on a 'CRC' error.
+  (ii) ssh to another machine from the target
+       When I try to connect, I get an error message related
+       Errors at the MAC addr level.
+
+Can't provide more detail at this point on the specific errors as I'm
+rebuilding ssh as I write this (on the target) and can't get the info.
+
+Is the direction I'm going in the logical direction? I've worked on embedded
+systems for years, but this is the first with embedded linux, and the first
+time I've actually built something on my target!! It feels unusual, but I
+don't see why it shouldn't work, and seems like a better choice than
+cross-compiling.
+
+Feed me back please.
+
+Also, is there any particular reason ssh is not included in the ELDK target
+packages?
+
+Thanks
+
+-- Brian
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
