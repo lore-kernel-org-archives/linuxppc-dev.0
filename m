@@ -1,42 +1,38 @@
-Message-ID: <008c01c38e2d$27feac20$2803050a@JackyLam>
-From: "Jacky Lam" <jackylam@astri.org>
-To: <linuxppc-embedded@lists.linuxppc.org>
-References: <006e01c38e1b$5f72b500$2803050a@JackyLam> <20031008223518.A10052@home.com>
-Subject: Re: General porting question
-Date: Thu, 9 Oct 2003 14:18:28 +0800
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3F85048E.5040600@imc-berlin.de>
+Date: Thu, 09 Oct 2003 08:47:42 +0200
+From: Steven Scholz <steven.scholz@imc-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Status of MPC5200 ???
+References: <20031008125142.7B257C59E4@atlas.denx.de>
+In-Reply-To: <20031008125142.7B257C59E4@atlas.denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> A quick inspection shows that es1371 does some things that won't work on
-> a 405.  It takes a pci_alloc_consistent buffer and does a virt_to_page.
-> That will be bogus since the buffer's virtual address is in vmalloc
-> space on 4xx.  In addition, it performs a virt_to_phys and then uses
-> remap_page_range on that...that will be bogus as well.  A bus_to_virt
-> on the pci_alloc_consistent buffer's dma_addr will work and then
-> virt_to_page() can be used on that virtual address.  In the same
-> fashion one could do a virt_to_phys(bus_to_virt(dma_addr) to get
-> the correct physical address to be passed to remap_page_range.
+Wolfgang Denk wrote:
+
+>>I wonder to which extend Motorola's MPC5200 is supported by now.
+>>...
+>>Which compiler do I need to use its floating point capabilities in an user land
+>>application?
 >
+>
+> We use the ppc_82xx packages from our ELDK for development.
 
-    That means in short:
+ELDK-2.1.1 that is!? Using gcc 2.95.4?
 
-    pci_alloc_consistent() ->virt_to_page() should be replaced by
-pci_alloc_consistent()->bus_to_virt()->virt_to_page().
+--
+Steven Scholz
 
-    Similarly, for any PCI related memory space. Before using
-virt_to_*/*_to_virt(), I should use bus_to_*/*_to_bus() on the argument
-first.
-
-    Is it right?
-
-    Thanks for your help.
-
-Best regards,
-Jacky
+imc Measurement & Control               imc Meﬂsysteme GmbH
+Voltastr. 5                             Voltastr. 5
+13355 Berlin                            13355 Berlin
+Germany                                 Deutschland
+fon: +49 30 467090-0                    Tel: 030 / 467090-0
+fax: +49 30 4631576                     fax: 030 / 4631576
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
