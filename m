@@ -1,38 +1,31 @@
-Date: Tue, 30 Nov 1999 15:36:17 -0600
-From: Grant Erickson <grant@lcse.umn.edu>
-To: linuxppc-embedded@lists.linuxppc.org
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Ethernet Drivers for LAN/Controller-on-Board Systems
-Message-ID: <Pine.SGI.4.10.9911301438280.118603-100000@brule.borg.umn.edu>
+From: Josh Huber <huberj@WPI.EDU>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <14404.17703.247016.528826@cpu.wpi.edu>
+Date: Tue, 30 Nov 1999 16:44:07 -0500 (EST)
+To: linuxppc-dev@lists.linuxppc.org
+Subject: wallstreet power usage...
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I seem to recall seeing a HOWTO on this issue some time ago; however,
-after checking the HOWTO archives, I find that my memory must be failing
-me.
+Hey, for those who know, how could I extend the battery life for my WallStreet when it's both sleeping, and when it's awake...
 
-Anyway, I'm working on a port for the IBM "Oak" 403GCX board. This board
-has on it, a National DP83902AV Ethernet MAC. The chip is more or less
-directly attached to the 403GCX's address/data buses and resides at the
-base physical address 0xF4000000.
+does the /proc/sys/kernel/powersave-nap setting do anything for the wallstreet series machines?
 
-How are such Ethernet controllers accommodated by the kernel? It seems as
-though I cannot just use 8390.o directly as it is but a library used by
-drivers such as ne2k.o. However, I don't think I can or want to use a
-driver such as ne2k.o as this isn't a PCI or an ISA card-type controller
-either.
+With Batmon, it seems that the power usage is like:
+powersave-nap      current
+0                  -1350
+1                  -1550
 
-Do I need to write a small upper-layer wrapper driver, such as oak_8390.c,
-for this?
+the number varies, of course...but they appear to be about 200 off from eachother.
 
-Any pointers, advice, or input would be appreciated.
+Doesn't this seem a little backwards to any of you? It seems backwards to what Paul is doing for the 3400 in the pwrctl script.
 
-Regards,
+Any other tips?  Is it possible to turn off hardware like: ethernet, sound, video (I know this is a little buggy...for my machine anyway)?
 
-Grant
+I ask, because while the machine is sleeping, in about 6 hours 25% of the battery seems to be used, which is far far more than used when sleeping in macos.
 
+Josh
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
