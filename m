@@ -1,28 +1,38 @@
-Message-ID: <4120F19B.1050604@rossvideo.com>
-Date: Mon, 16 Aug 2004 13:40:43 -0400
-From: Ralph Siemsen <rsiemsen@rossvideo.com>
-MIME-Version: 1.0
-To: Oliver Fuchs <olivers.lists@gmx.net>
+In-Reply-To: <4120DA20.2984.1BD2DC2@localhost>
+References: <411B9AF9.12494.1DA4A94@localhost> <4120DA20.2984.1BD2DC2@localhost>
+Mime-Version: 1.0 (Apple Message framework v619)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <B97F656A-EFB0-11D8-A698-003065F9B7DC@embeddededge.com>
 Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+From: Dan Malek <dan@embeddededge.com>
 Subject: Re: MPC82xx enet on SCC3
-References: <20040816162120.6403FC109F@atlas.denx.de>
-In-Reply-To: <20040816162120.6403FC109F@atlas.denx.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Mon, 16 Aug 2004 14:18:51 -0400
+To: "Oliver Fuchs" <olivers.lists@gmx.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
+On Aug 16, 2004, at 10:00 AM, Oliver Fuchs wrote:
 
->>Is there any chance to get the latest CVS version by HTTP or FTP?
->
-> Not from our (denx.de) CVS server.
 
-There is a BK to CVS export done frequently, and you can rsync that CVS
-tree directly from rsync.kernel.org/pub/scm/linux/kernel/bkcvs/linux-2.5
+> Ok, it was a little bit more, but I have it.
 
-Next best thing for those of us still living in the CVS "stone age"
+Apologies, I had FCC on the brain.
 
--Ralph
+> I have modified arch/ppc/config.in and arch/ppc/8260_io/enet.c so
+> that it fits to SCC1-4 w/o further modifications there.
+
+Has anyone ever taken the patch I posted for multiple SCC Enet
+support and brought it up to date?  That would have solved this
+problem as well.  I've given to several people, all promising to
+update it and send it back (because they actually had hardware
+to test it and I don't any longer).
+
+> I would contribute this, if anyone wants to use it.
+
+Just send it to me and I'll get it into some source base :-)
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
