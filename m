@@ -1,31 +1,74 @@
-Message-ID: <3E239B1A.9040107@redswitch.com>
-Date: Mon, 13 Jan 2003 21:07:38 -0800
-From: "Xiaogeng (Shawn) Jin" <xjin@redswitch.com>
+Message-ID: <21A8AE56EBB6D411A4520060973D360101A9F738@PEPINTERCOM>
+From: Claus Gindhart <Claus.Gindhart@kontron.com>
+To: James Don <JDon@spacebridge.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: RPM: how do i un-pack an rpm without installing ...
+Date: Tue, 14 Jan 2003 08:32:18 +0100
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Configure 8xx_io in 2.4.21-pre3
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: multipart/mixed;
+	boundary="----_=_NextPart_000_01C2BB9F.111AD300"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-The 8xx CPM configuration in 2.4.4 release from DENX has more options
-than any other release, including 2.4.21-pre3. For example,
-CONFIG_SMC1_UART is in 2.4.4 (DENX). My board uses SMC1 as UART. I
-almost needn't to change anything in 2.4.4-denx to make my 8xx CPM
-working. I'm trying to migrate the kernel to 2.4.21 and the kernel is
-stuck in my_console_write() and no any message is shown on the console.
-So I think the problem is in CPM settings. I enabled the following
-configuations for MPC8xx CPM.
-CONFIG_FEC_ENET=y
-CONFIG_USE_MDIO=y
-CONFIG_FEC_LXT971=y
-CONFIG_8xx_COPYBACK=y
-CONFIG_UCODE_PATCH=y
+This message is in MIME format. Since your mail reader does not understand
+this format, some or all of this message may not be legible.
 
-How can I set CPM correctly in 2.4.21? Any hints are greatly appreciated.
+------_=_NextPart_000_01C2BB9F.111AD300
+Content-Type: text/plain
 
-- Shawn.
+Or just use the attached script
+(it is also based on rpm2cpio)
 
+--
+Mit freundlichen Gru?en / Best regards
+
+Claus Gindhart
+Software Design Engineer
+
+PEP Modular Computers GmbH     phone:    +49-8341-803-374
+R&D Software                   fax:      +49-8341-803-40-374
+Sudetenstrasse 7               email:    claus.gindhart@kontron.com
+D-87600 Kaufbeuren             web page: http://www.pep.de
+                                         http://www.kontron.com
+
+
+-----Original Message-----
+From: Mark Hatle [mailto:fray@mvista.com]
+Sent: Dienstag, 14. Januar 2003 02:19
+To: James Don
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: RPM: how do i un-pack an rpm without installing ...
+
+
+
+James Don wrote:
+> Sorry,
+> Not really a topic for this group but ...
+>
+> how do i un-pack an rpm without installing it?
+
+Use "rpm2cpio" to produce a cpio archive, and then use cpio to extract it.
+
+"rpm2cpio <rpm> | cpio -id" works for me.
+
+--Mark
+
+
+
+
+------_=_NextPart_000_01C2BB9F.111AD300
+Content-Type: application/octet-stream;
+	name="unpack_rpm"
+Content-Disposition: attachment;
+	filename="unpack_rpm"
+
+#!/bin/sh
+# The purpose of this shell script is to unpack a
+# source RPM package to the current directory
+rpm2cpio $1 | cpio --extract --make-directories
+
+
+------_=_NextPart_000_01C2BB9F.111AD300--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
