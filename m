@@ -1,19 +1,21 @@
-Return-Path: <walt.wimer@timesys.com>
-Received: from exchange.timesys.com (mail.timesys.com [65.117.135.102])
-	by ozlabs.org (Postfix) with ESMTP id 97B0767A71
+Return-Path: <jakob.viketoft@bitsim.se>
+Received: from amsfep20-int.chello.nl (amsfep20-int.chello.nl [213.46.243.18])
+	by ozlabs.org (Postfix) with ESMTP id 9B90567A2F
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 31 Mar 2005 02:00:04 +1000 (EST)
-From: "Walter L. Wimer III" <walt.wimer@timesys.com>
-To: Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>
-In-Reply-To: <424A60E1.4080802@compulab.co.il>
-References: <51DB8827D393D411BB69003048003F4601B1C1CE@tvesntr>
-	<1112111080.26645.14.camel@excalibur.timesys.com>
-	<424A60E1.4080802@compulab.co.il>
-Content-Type: text/plain
-Date: Wed, 30 Mar 2005 11:00:00 -0500
-Message-Id: <1112198401.24332.8.camel@excalibur.timesys.com>
-Mime-Version: 1.0
-Subject: Re: Problem running Linux 2.6.11 on MPC8272ADS
+	Thu, 31 Mar 2005 02:12:34 +1000 (EST)
+Message-ID: <424ACFF1.5000403@bitsim.se>
+Date: Wed, 30 Mar 2005 18:12:33 +0200
+From: Jakob Viketoft <jakob.viketoft@bitsim.se>
+MIME-Version: 1.0
+To: Kumar Gala <kumar.gala@freescale.com>
+References: <424AAF09.9050706@ru.mvista.com>
+	<5a325f210dccfd254541824008e8c5a1@freescale.com>
+In-Reply-To: <5a325f210dccfd254541824008e8c5a1@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Andrei Konovalov <akonovalov@ru.mvista.com>,
+	Sylvain Munaut <tnt@246tNt.com>,
+	Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>
+Subject: Re: Platform bus/ppc sys model...
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,136 +26,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
-This matched my experience as well.
-
-Does anyone know why U-Boot 1.1.1 from Freescale uses a different BCSR
-address than U-Boot 1.1.1 from Sourceforge?
-
-Any opinions on which address is the "correct" one to use?  Kumar asked
-for a patch to fix this, so what do we think the correct fix is?
-
-
-
-Thanks!
-
-Walt
-
-
-
-On Wed, 2005-03-30 at 10:18 +0200, Mike Rapoport wrote:
-> Walter,
-> Thanks for you help. I've discovered several things and now the things 
-> seem to work fine.
-> I've used u-boot-1.1.1 that came with the Freescale BSP and it maps BCSR 
-> to 0xf8000000. The "regular" u-boot-1.1.1 (from sf.net) maps the BCSR to 
-> 0xf4500000 as well as the kernel does (arch/ppc/platforms/pq2ads.h). The 
-> difference causes the "hang"-like behaviour when the kernel initializes 
-> serial comm and kernel crash afterwards when FCC is initialized.
+Kumar Gala wrote:
+> On Mar 30, 2005, at 7:52 AM, Andrei Konovalov wrote:
+>> Do I understand correct that the ppc_sys model used by 85xx, 83xx, and 
+>> 52xx
+>>  SOCs is not so well suited for Virtex-II Pro (which Jakob and me bear 
+>> in mind)?
+>>  In case of Xilinx ???_devices.c could be the list of all the IPs 
+>> supported in linux.
+>>  But ???_sys.c has little sense as for any given combination of the 
+>> particular
+>>  Virtex-II Pro chip and the particular board the set of IPs (as well 
+>> as the memory
+>> map, interrupt numbers, some hardware options (if ethernet has SGDMA 
+>> or not))
+>>  is not fixed. I.e. ideally we would need some kind of run time system 
+>> configuration
+>>  instead of compiled time system configuration implemented by ???_sys.c.
 > 
-> Mike.
 > 
-> >Thanks for the data points, Alex.
-> >
-> >I'm using U-Boot 1.1.1 and vanilla kernel.org 2.6.11.4 (actually now
-> >2.6.11.5).  My BCSR_ADDR looks the same as what you've listed below, so
-> >I'd guess the difference is with U-Boot...  (Another engineer here
-> >installed U-Boot on my board, from, I believe, a binary copy he got from
-> >a Freescale(?) CD...  I didn't build U-Boot from source...  That's
-> >something I'll need to take a look at...)
-> >
-> >Mike, have you discovered anything further about your problem?
-> >
-> >
-> >
-> >Walt
-> >
-> >
-> >
-> >On Tue, 2005-03-29 at 08:29 +0200, Bastos Fernandez Alexandre wrote:
-> >  
-> >
-> >>Hi, 
-> >>
-> >>>From "linux/arch/ppc/platforms/pq2ads.h"
-> >>#define BCSR_ADDR ((uint) 0xf4500000)
-> >>>From "u-boot/include/configs/MPC8260ADS.h"
-> >>#define CFG_BCSR 0xF4500000
-> >>So ...
-> >>Which version of u-boot and/or linux tree are you using?
-> >>With linuxppc-2.5 and u-boot 1.2 everything works fine for me.
-> >>Maybe Mike's problem is other. Maybe not. :-)
-> >>
-> >>Best regards,
-> >>Alex
-> >>
-> >>    
-> >>
-> >>>-----Original Message-----
-> >>>From:	Walter L. Wimer III [SMTP:walt.wimer@timesys.com]
-> >>>Sent:	Monday, March 28, 2005 6:07 PM
-> >>>To:	Mike Rapoport
-> >>>Cc:	linuxppc-embedded@ozlabs.org
-> >>>Subject:	Re: Problem running Linux 2.6.11 on MPC8272ADS
-> >>>
-> >>>
-> >>>Hi Mike,
-> >>>
-> >>>I had the same "hang" experience.  The file arch/ppc/platforms/pq2ads.c
-> >>>contains the following function:
-> >>>
-> >>>  void __init
-> >>>  m82xx_board_setup(void)
-> >>>  {
-> >>>  	/* Enable the 2nd UART port */
-> >>>  	*(volatile uint *)(BCSR_ADDR + 4) &= ~BCSR1_RS232_EN2;
-> >>>  }
-> >>>
-> >>>
-> >>>I had to ifdef-out the assignment statement above.  It appears that the
-> >>>definition for BCSR_ADDR in the kernel code differs from what U-Boot is
-> >>>using, and that area of memory isn't properly mapped into the kernel
-> >>>address space this early in the boot sequence.  As a result, I was
-> >>>getting an Oops() before the console was even enabled (I could see the
-> >>>Oops message by examining the kernel's printk log buffer using a
-> >>>BDI-2000 hardware debugger).
-> >>>
-> >>>
-> >>>
-> >>>Good luck,
-> >>>
-> >>>Walt Wimer
-> >>>TimeSys Corporation
-> >>>
-> >>>
-> >>>
-> >>>
-> >>>On Sun, 2005-03-27 at 11:31 +0200, Mike Rapoport wrote:
-> >>>      
-> >>>
-> >>>>Hi,
-> >>>>I'm trying to bring up the Linux 2.6.11 on MPC8272ADS and it seem to 
-> >>>>hang up at the very beginning.
-> >>>>I use ads8272_defconfig and then enable console on SCC:
-> >>>>
-> >>>>CONFIG_SERIAL_CPM=y
-> >>>>CONFIG_SERIAL_CPM_CONSOLE=y
-> >>>>CONFIG_SERIAL_CPM_SCC1=y
-> >>>>
-> >>>>
-> >>>>when I boot the kernel from the u-boot the system hangs up right after 
-> >>>>the kernel decompression.
-> >>>>
-> >>>>        
-> >>>>
-> >>>_______________________________________________
-> >>>Linuxppc-embedded mailing list
-> >>>Linuxppc-embedded@ozlabs.org
-> >>>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> >>>      
-> >>>
-> >
-> >
-> >  
-> >
+> This is correct.  There is nothing that precludes us from building up a 
+> way to dynamically create the information.  Is there some way to query 
+> the hardware itself, or is the information implied something else?
 > 
+> - kumar
+
+My intention was to give a device tree structure to the kernel at boot 
+time via a (pseudo?) pointer in bd_info or similar. Then you would only 
+need to recompile a little bootloader (which is needed for setting up 
+the FPGA anyway) with this structure for every specific card. You could 
+even be shrewd enough to have a single kernel image but several 
+structures to launch several processors on the same chip. Does it sound 
+like a sane solution?
+
+Otherwise, I'm a bit unsure as to whether a system with a gigantic list 
+of devices in ???_devices.c is the right way to go. In the Xilinx case, 
+not only is a list of possible IP:s needed, but also the usual standard 
+circuits which can be connected from outside to the chip. Wouldn't it be 
+more realistic to have knowledge of the compiled in drivers somehow?
+
+	/Jakob
