@@ -1,34 +1,49 @@
-Date: Fri, 11 Jun 2004 18:26:19 +0200
-From: Colin Leroy <colin@colino.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.6.7-rc3: another strange bug(?)
-Message-Id: <20040611182619.0ef46253@jack.colino.net>
-In-Reply-To: <20040608201921.7059a87a@jack.colino.net>
-References: <20040608201921.7059a87a@jack.colino.net>
+Date: Mon, 14 Jun 2004 11:15:30 +0200
+From: Olaf Hering <olh@suse.de>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: [PATCH] fix missing option in binutils version check
+Message-ID: <20040614091530.GA18482@suse.de>
+References: <20040605074341.GA15279@suse.de> <20040608112556.GA21447@suse.de> <20040610001605.GH18212@smtp.west.cox.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20040610001605.GH18212@smtp.west.cox.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 08 Jun 2004 at 20h06, Colin Leroy wrote:
+ On Wed, Jun 09, Tom Rini wrote:
 
-Hi,
+> On Tue, Jun 08, 2004 at 01:25:56PM +0200, Olaf Hering wrote:
+>
+> >
+> >  On Sat, Jun 05, Olaf Hering wrote:
+> >
+> > > pomegranate:~# echo dssall | /usr/bin/as -o /tmp/x
+> > > {standard input}: Assembler messages:
+> > > {standard input}:1: Error: Unrecognized opcode: `dssall'
+> > > pomegranate:~# /usr/bin/as -v
+> > > GNU assembler version 2.15.91.0.1 (powerpc-suse-linux) using BFD version 2.15.91.0.1 20040527 (SuSE Linux)
+> > >
+> > >
+> > > *** 2.6 kernels no longer buildcorrectly with old versions of binutils.
+> > > *** Please upgrade your binutils to 2.12.1 or newer
+> > > make: *** [checkbin] Error 1
+> > > make: Target `all' not remade because of errors.
+> >
+> > I talked to Alan, and -many is the correct fix.
+>
+> Does the resulting kernel compile (e.g. on a config where we might try
+> and compile a .S file with 'dssall' in it) ?  I could be missing it, but
+> is -many passed down to gas by something else now?  Otherwise this isn't
+> a correct fix the assembler won't work. :)
 
-> I've installed 2.6.7-rc3, and it seems to work quite fine. However
-> something strange happened after a few hours of uptime: pbbuttonsd had
-> dimmed the display, I came back on the laptop (iBook G4), moved the
-> trackpad, and when the display came back it was all garbled - as when
-> UseFBDev isn't used in X. It's ok after a reboot...
-
-again; Happened after ~ 1 day of uptime. Restarting X or switching vts
-doesn't help. It started to appear with the rc2 -> rc3 patch...
-
-I'm pretty much clueless about this one :-(
-I'll be on holidays for a week (yay!) starting about now, but will
-occasionnaly check my mail and could try patches if it helps.
+Everyone who wants to build the latest and greatest kernel can also
+update binutils, its a no-brainer.
 
 --
-Colin
+USB is for mice, FireWire is for men!
+
+sUse lINUX ag, nÜRNBERG
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
