@@ -1,34 +1,36 @@
-To: shagitgy@t2.technion.ac.il
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: UART on SCC2 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 26 Nov 2003 11:50:45 +0200."
-             <1069840245.3fc47775c9a38@webmail.technion.ac.il>
-Date: Wed, 26 Nov 2003 11:26:59 +0100
-Message-Id: <20031126102704.9FA33C5F5F@atlas.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3FC4B0EC.3090107@imc-berlin.de>
+Date: Wed, 26 Nov 2003 14:55:56 +0100
+From: Steven Scholz <steven.scholz@imc-berlin.de>
+MIME-Version: 1.0
+To: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Cross Compiler running under Win32
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <1069840245.3fc47775c9a38@webmail.technion.ac.il> you wrote:
->
-> What kernel version do you use, and what kind of configuration did you choose?
+Hi there,
 
-I used the kernels on our CVS server. This  includes  config  options
-for the SCC ports.
+does someone know of a cross compiler (producing code for let's say MPC8xx) that
+is running natively under win32 (Windows2000/XP) without stuff like CYGWIN?
 
-Best regards,
+I'am just wondering.
+Apparently MVISTA released their new "DevRocket" which is supposed to run under
+WindowsXP. So I assume they have cross compilers for "30 processors from 8
+architectures" running under Windows...
 
-Wolfgang Denk
+Thanks.
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-After a heated argument on some trivial matter Nancy [Astor]  .  .  .
-shouted,  ``If  I were your wife I would put poison in your coffee!''
-Whereupon Winston Churchill with equal heat and  sincerity  answered,
-``And if I were your husband I would drink it.''
+Steven Scholz
+
+imc Measurement & Control               imc Meﬂsysteme GmbH
+Voltastr. 5                             Voltastr. 5
+13355 Berlin                            13355 Berlin
+Germany                                 Deutschland
+fon: +49 30 467090-0                    Tel: 030 / 467090-0
+fax: +49 30 4631576                     fax: 030 / 4631576
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
