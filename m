@@ -1,35 +1,51 @@
-In-Reply-To: <Pine.LNX.4.05.9901061455190.1311-100000@beer.pub.umich.edu>
-Date: Thu, 7 Jan 1999 10:19:02 +0100
-To: linuxppc-user@lists.linuxppc.org,
-        LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>,
-        satadru pramanik <satadru@umich.edu>
-CC: Paul Mackerras <paulus@cs.anu.edu.au>
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: scsi hangs - SOLVED!
-Message-Id: <19990107101902.021731@smtp.calvacom.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
+Message-Id: <v04011701b2ba429e00af@[209.86.156.161]>
+In-Reply-To: <19990106170222.030778@mail.mipsys.com>
+References: <199901060601.RAA00588@tango.anu.edu.au>
+Date: Thu, 7 Jan 1999 03:12:26 -0800
+To: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org,
+        Paul.Mackerras@cs.anu.edu.au
+From: "Timothy A. Seufert" <tas@mindspring.com>
+Subject: Re: Great IDE perf (WAS: Strange PMAC IDE performance)
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Jan 6, 1999, satadru pramanik <satadru@umich.edu> wrote:
+At 5:02 PM +0100 1/6/99, Benjamin Herrenschmidt wrote:
+>On Wed, Jan 6, 1999, Paul Mackerras <paulus@cs.anu.edu.au> wrote:
+>
+>>I found a register at 0xf3020200 on my powermac G3 which affects the
+>>speed of disk transfers.  This is at offset 0x200 from the base
+>>address of the IDE interface and it is a 32-bit little-endian
+>>register.  After booting Linux, it has 0x2f8526 in it, but under MacOS
+>>it has 0x211025.  Putting 0x211025 in (with xmon) increased the speed
+>>reported by hdparm -tT /dev/hda from 1.89MB/s to 9.7MB/s !  The disk
+>>is a WDC 24300ACL (as reported by hdparm -i /dev/hda).  The other
+>>hdparm settings were -d1 -u1 -m16.
+>
+>I tried the manipulation with xmon on my wallstreet PowerBook, using
+>today's vger 2.2-pre4 and hdparam test jumped from 1.88Mb/s to 6.3MB/s
+>!!! (At first, I forgot to flush the caches, so I got 50Mb/s ;-)
 
->Ben's test kernel SOLVES the scsi hang problem I was having.  I can copy
->400+ MB files across the scsi happily.  Neither the mesh or aic7xxx seem
->to be complaining too much.  I do get a bunch of bad interrrupts under
->heavy stress though.  After 10 minutes of heavy disk activity on the
->adaptec 2940, my /proc/interrupts gave me this:
+Good one, Paul!
 
-I didn't do anything special to fix them. I guess someone fixed something
-in vger or in linux SCSI handling recently.
+This works on the PowerBook 2400 as well.  It so happens that the IDE
+controllers also sit at 0xf3020000 and 0xf3021000 on the O'Hare.  The value
+of the register at offset 0x200 is slightly different under MacOS:
+0x221025.  I tried both values, it didn't seem to make a difference.  I did
+a quick hack to ide-pmac.c (it just stuffs the value in, no questions
+asked, though it does actually use the correct base address instead of hard
+coding 0xf3020000) and that worked.  Performance is up to 5.6 MB/s (was in
+the region of 1.6 before).
 
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+Right now my cheap hack is using 0x221025, but if somebody wants I will do
+0x211025 instead for an extended period to see if there are any problems.
 
+Any guesses about the meaning of this register?  It feels wrong somehow to
+just ape MacOS without knowing what's really going on.  :)
 
-
+  Tim Seufert
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
