@@ -1,38 +1,141 @@
-Message-ID: <388AF6C7.AE41258E@erols.com>
-Date: Sun, 23 Jan 2000 12:40:39 +0000
-From: Nelson Abramson <pogtal@erols.com>
+Date: Sun, 23 Jan 2000 14:06:17 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+To: jlquinn@us.ibm.com
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Fwd: Re: still no accelerated X ($#!$*)
+In-Reply-To: <8525686D.0070361D.00@D51MTA03.pok.ibm.com>
+Message-ID: <Pine.HPX.4.10.10001231248260.18916-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-To: bob@kunk.jriver.com
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: USB problems in 2.2.14pre9
-References: <20000123023047.6377.qmail@kunk.jriver.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-bob@kunk.jriver.com wrote:
 
->
-> It will be interesting to see if the 2.3.40 kernel works better. Judging
-> by Tom's comment, it looks like it's now 6-key rollover ;)
->
-> It's REAL easy to get the bad behavior by typing cd<space>
-> I ALWAYS get cdcd with this sequence. (note that the c and d keys aren't
-> released before the space is hit). It appears I'm not the ONLY one who types
-> like this....
 
-I type cd like that too....I get the cdcd or the cdc a lot too....you're not
-alone!! :-)
+On Fri, 21 Jan 2000 jlquinn@us.ibm.com wrote:
 
---Nelson Abramson
+> Can you list some of these efficiency issues?  In case anybody wants to
+> tackle them.
 
---
-"Every time you get a dialog box you don't understand, you ought to get a nickel
- from Microsoft, and every time it crashes, you should get a dollar.  That would
- make Bill Gates homeless and me a rich man." --Ben Schneiderman, University of
-Maryland computer science professor
-Courtesy of 1984: http://www.1984-online.com/facts.html
+Well, there are many things which need improvements IMHO:
+
+1) interrupt handling, I hate to say this but it has recently bloated to
+an incredible level through this new (and I am firmly convinced absolutely
+unnecessary int_control structure). Every save_flags/cli/sti/restore flags
+is implemented with an indirect function call. So the common sequence:
+
+	save_flags(flags);
+	cli();
+	...do some work...
+	restore_flags;
+
+takes about 4 instructions per line (lis+lwz+mtctr+bctrl). And because
+"some chips have problems", _every_ mtmsr is preceded with a sync
+instuction which are very costly in every implementation in which the sync
+actually goes to the bus (and on an SMP G4 with the long memory queues we
+may be speaking of something like 100+ processor cycles).  Multiply the
+number of cli+sti+restore_flags per second on a busy SMP system by the
+number of processors by the time a sync actually takes and you might end
+up with a significant proportion of the bus activity (AFAIU a sync will be
+retried as long as one device on the bus, be it processor or host bridge,
+has something pending in its buffers, and this may take a very long time
+with the deep buffers of current processors).
+
+I always thought the sync argument was bogus at least for the cli case,
+but since you work for IBM, you might have better access than me to the
+errata :-).
+
+Furthermore the fact that these heavily used functions are external
+functions means that many leaf functions are transformed into non-leaf
+functions with the associated code bloat and overhead needed to establish
+a stack frame, save GPR/LR and restore them on exit (this is indirect code
+bloat but it may be even more significant than the direct one). The cost
+of leaf functions on most PPC processors is extremely small thanks to
+early detection of branches in the pieline and folding (actually even
+fairly short functions can improve performance by reducing instruction
+cache footprint).
+
+Ok, enough rant on this one, I have an idea which that I'm fairly sure
+will work on UP (and very probably on SMP) but I want to make some tests
+before publishing it.
+
+2) system call entry optimization, saving all registers for a system call
+and most interrupts is ridiculous. The API says that r14-r31 are preserved
+across function calls, so please don't save them on the kernel stack on
+every entry through real mode. System calls should not even need to save
+lr/ctr/xer/r11/r12/cr, I'd rather have syscalls use a convention similar
+to standard function calls, you need to save some registers (r0 and
+r3-r10)  in case it is restarted but that's about all. The problem is that
+we might have to save now some of these registers because of backwards
+compatibility issues. Anyway saving something like 18 to 24 registers less
+will speed up many system calls and reduce icache and dcache footprint
+significantly for simple system calls.
+
+Also not saving all these registers will reduce stack usage in case of
+nested interrupts, don't forget that the available stack size has just
+been reduced by half a kilobyte with the addition of the Altivec state.
+Although the right solution might be an interrupt stack (one per processor
+on SMP), which can be fairly large since it does not need to scale with
+the number of processes running in the system.
+
+3) inline many simple functions, in my source tree I have already removed
+some functions in arch/ppc/kernel/misc.S (abs for example, by adding
+-Dabs=__builtin_abs after the -fno-builtin), other simple functions are
+now inline. I'm also going to test a version of bitops.h and atomic.h
+which inlines virtually all functions (and generates optimal or very close
+to optimal assembly code in every case). For example:
+
+clear_bit(constant, &word) generates:
+
+1:	lwarx	tmp,0,ptr
+	rlwinm	tmp,tmp,0,"correct mask for constant"
+	stwcx.	tmp
+	bne-	1b
+
+where prt is the address of word + constant>>5
+but if it is a variable the rlwinm is replaced with andc tmp,tmp,mask
+where mask is generated by:
+
+	li 	x,1
+	rlwnm	mask,x,variable
+
+(x and mask may or may not be the same register, the compiler chooses).
+
+ This works well with recent compilers and could probably be introduced
+when the minimal compiler version is raised, or using inline versions
+conditionally depending on compiler version. Here once again the issue
+is direct and indirect code bloat (actually the code may be slightly
+larger than a function call in some cases, but increasing the number
+of leaf functions should more than compensate for it).
+
+4) Add support for machines with 1Gb and more of RAM. But please do not
+copy the way it's done on Linux/Intel: it's a kludge.
+
+5) Increase the address space available to applications, the current limit
+of 2 Gb is mostly due to the fact that I/O space on PreP is mapped at
+0x80000000 and that most firmware allocates I/O space in an extremely
+sparse way. Here my bootloader (which reorganizes PCI I/O space to compact
+it without taking any risk of conflicts) might help.
+
+5) Allow to use BATs from user mode for large mappings, this will be
+especially beneficial for X servers.
+
+6) Many other things which I forget right now, and this post is already
+long enough.
+
+Right now I'm more interested in improving GCC code generation. Then I'll
+be back to kernel hacking when I get my PPC notenook around Easter I hope
+(it has to be an Apple since IBM has dropped them AFAICT).
+
+> In fact, it would be interesting to have a page of potential ppc-related
+> kernel projects (others as well) that people could refer to if they're
+> looking for something to do.  Is there such a page already?  If not, I'd be
+> willing to assemble one.  However I don't have a place to host it.
+
+Good idea, let us follow Hollis' suggestions.
+
+	Gabriel.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
