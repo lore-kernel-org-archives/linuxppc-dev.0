@@ -1,31 +1,27 @@
-Date: Mon, 26 Jul 2004 16:07:34 -0700
+Date: Tue, 27 Jul 2004 10:47:07 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: Alan Modra <amodra@bigpond.net.au>
-Cc: Hollis Blanchard <hollisb@us.ibm.com>,
-	Geert Uytterhoeven <geert@linux-m68k.org>, Olaf Hering <olh@suse.de>,
-	Stef Simoens <stefaan.simoens@coditel.net>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
-	Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] fix missing option in binutils version check
-Message-ID: <20040726230734.GH28588@smtp.west.cox.net>
-References: <20040615172511.GA21667@suse.de> <20040615174648.GC14528@smtp.west.cox.net> <20040703222918.GA10425@suse.de> <40E75DC7.7070601@coditel.net> <20040704024149.GB2146@smtp.west.cox.net> <Pine.GSO.4.58.0407041028480.21842@waterleaf.sonytel.be> <E2EB9906-CDD7-11D8-92C8-000A95A0560C@us.ibm.com> <20040725060754.GE7099@bubble.modra.org> <20040726193652.GE28588@smtp.west.cox.net> <20040726230353.GX7099@bubble.modra.org>
+To: Giuliano Pochini <pochini@shiny.it>, Olaf Hering <olh@suse.de>
+Cc: LinuxPPC-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Can't compile 2.6.7 with gcc 3.4.1
+Message-ID: <20040727174707.GB10891@smtp.west.cox.net>
+References: <20040726223832.3edafe0a.pochini@shiny.it>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20040726230353.GX7099@bubble.modra.org>
+In-Reply-To: <20040726223832.3edafe0a.pochini@shiny.it>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Jul 27, 2004 at 08:33:53AM +0930, Alan Modra wrote:
+On Mon, Jul 26, 2004 at 10:38:32PM +0200, Giuliano Pochini wrote:
 
-> On Mon, Jul 26, 2004 at 12:36:52PM -0700, Tom Rini wrote:
-> [about ppc .machine]
-> > But working in what versions of binutils ?
 >
-> HJ's 2.14.90.0.8 and later, FSF 2.15 release.
+> Is this a known problem ?  I can't compile the kernel 2.6.7 with gcc 3.4.1:
 
-OK.  I suppose when we force 2.15 as a miniumum we need to remember to
-revist using this then.  Thanks.
+You're trying to use gcc-3.4 and binutils-2.14, which is a bad
+combination.
+
+Olaf, did you ever get a chance to try the last patch I had with your
+matrix of toolchain versions?
 
 --
 Tom Rini
