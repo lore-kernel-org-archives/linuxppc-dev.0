@@ -1,23 +1,27 @@
-Message-ID: <36BA2A00.ED1008D5@bigpond.com>
-Date: Fri, 05 Feb 1999 10:15:35 +1100
-From: Tom Kennedy <tomkenn@bigpond.com>
+Date: Thu, 4 Feb 1999 16:51:43 -0700 (MST)
+From: Cort Dougan <cort@persephone.cs.nmt.edu>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+cc: Gerd Knorr <kraxel@goldbach.in-berlin.de>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: I/O port access ???
+In-Reply-To: <Pine.LNX.4.03.9902042132120.17258-100000@mercator.cs.kuleuven.ac.be>
+Message-ID: <Pine.LNX.3.96.990204165034.28537A-100000@persephone.cs.nmt.edu>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: [INFO] Apple's TN1150 low level HFS plus info
-Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Apple have released the low level specs on HFS plus.
+What I'm looking at doing in the next weeks is unifying the IO bases.
+We'd remap the IO (as we do on prep now) for all the arch's so that we
+only need one set of io base values.
 
-<http://developer.apple.com/technotes/tn/tn1150.html>
-
-"This technote is directed at developers who need to work with HFS Plus
-at a very low level, below the abstraction provided by the File Manager
-programming interface. This includes developers of disk recovery
-utilities and programmers implementing HFS Plus support on other
-platforms."
+}> Is there some way to access the I/O ports, for example the VGA registers
+}> of some graphics board (assuming the I/O ports are enabled in the PCI
+}> config space) on ppc boxes?  How can I do that with Linux?  From kernel
+}> space?  From user space?
+}
+}You have to mmap() /dev/mem. Which address depends on the type of PPC box.
+}You can find the correct addres in <asm/io.h> (*_ISA_IO_BASE).
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
