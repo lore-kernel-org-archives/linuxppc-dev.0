@@ -1,35 +1,38 @@
-From: Thomas Graichen <news-innominate.list.linux.ppc.dev@innominate.de>
-Reply-To: Thomas Graichen <graichen@innominate.de>
-Subject: Re: [ANN] Rage128 (Pro) DRI test binaries
-Date: 13 Sep 2000 22:20:34 GMT
-Message-ID: <news2mail-8pouji$jgc$2@mate.bln.innominate.de>
-References: <3997D880.22A70312@student.ethz.ch>
-Reply-To: thomas.graichen@innominate.de
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-To: linuxppc-dev@lists.linuxppc.org
+Message-ID: <39BFFEA5.FE89C6EC@wanadoo.fr>
+Date: Thu, 14 Sep 2000 00:24:37 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
+MIME-Version: 1.0
+To: mlan@cpu.lu
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: per-fb mmap for platinumfb and valkyriefb in 2.4 (and 2.2)
+References: <200009132110.XAA04545@piglet.grunz.lu>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-i just tried them on a blueberry imac (r128 rl) ... so far it
-works - but the screen shows only the left half and on the
-right half the left one is mapped again - any idea where
-this comes from? (and even better: how to fix it :-)
+Michel Lanners wrote:
+>
+> Hi all,
+>
+> On  13 Sep, this message from mlan echoed through cyberspace:
+> > Below is the per-fb mmap implementation
+>
+> Err.. nothing was below. Stupid /me... it's getting late.
+>
+> Anyway, here it is for both 2.2 and 2.4. Note that to compile on 2.2,
+> you need my controlfb patch implementing mmap as well, since without it,
+> this one won't compile (get it on sourceforge).
 
-a lot of thanks in advance
+Tried it for valkyriefb: Doesn't work. It works in console mode, where
+it actually feels like it is scrolling fast, but starting X gives an
+immediate system freeze. I tried it twice, but now I'll go to bed.
 
-t
+> Have fun!
 
-Michel Dänzer <daenzerm@student.ethz.ch> wrote:
-
-> Grab them at http://n.ethz.ch/student/daenzerm/download/DRI/ .
-
+Not much fun in hard rebooting and watching 15 minutes of fsck.
 
 --
-thomas.graichen@innominate.de
-technical director                                       innominate AG
-clustering & security                                networking people
-tel: +49.30.308806-13  fax: -77                   http://innominate.de
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
