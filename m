@@ -1,39 +1,56 @@
-From: Arturo Nunez <artnpp@cs.ucf.edu>
-Message-Id: <200103200112.UAA22228@iris.cs.ucf.edu>
-Subject: Re: Problems Compiling 2_4 for 860
-To: cal_erickson@mvista.com
-Date: Mon, 19 Mar 2001 20:12:20 -0500 (EST)
-Cc: linuxppc-embedded@lists.linuxppc.org (linuxppc-embedded)
-In-Reply-To: <3AB681C7.DAE8E5A0@mvista.com> from "Cal Erickson" at Mar 19, 2001 02:01:43 PM
+Message-ID: <001001c0b0e0$3190a5e0$8021690a@huawei.com>
+From: "dony" <dony.he@huawei.com.cn>
+To: "Amit D Chaudhary" <amitc@brocade.com>
+Cc: "Dan Malek" <dan@mvista.com>,
+	<linuxppc-embedded@lists.linuxppc.org>
+References: <006401c0af6f$4d1c39e0$8021690a@huawei.com> <3AB6A1C2.60802@brocade.com>
+Subject: Re: shell prompt cannot appear after "Freeing unused kernel memory:..."
+Date: Tue, 20 Mar 2001 09:50:51 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello:
+> Is your nfs rootfs correct? Check for /sbin/init, /etc/inittab, etc
 
-> Arturo,
-> You did not convert the output from make zImage to an s-records file.
-> This can be done through objcopy. Then you load the s-records file
-> and you should not get the error you see.
-Thanks.
-Also I have used "zsrec",as:
+Yes, they are OK. I only use sash as my shell .
+The same rootfs can work on linux2.2.13+860 .
 
-$zsrec  arch/ppc/mbxboot/zImage > vmlinuz.srec
+Any ideas?
+machael
+>
+> michael wrote:
+>
+> > Hello:
+> >     I use ppcboot and can boot kernel with NFS filesystems on my custom
+> > board now. But problem occurs ...
+> >    When it shows the following:
+> > ####################################
+> >          ...........................
+> >         "VFS:Mounted root(nfs filesystem)".
+> >         Freeing unused kernel memory:44k init
+> > ####################################
+> >
+> > At this moment I should have seen "sash#" ,but  nothing happens . I
+cannot
+> > see anything.
+> >
+> > I remember that there is a patch for this when I boot kernel on my 860
+based
+> > custom board last year(linux-2.2.13+860).
+> > I don't know if this can work for my 8260 based custom board
+> > now(linux-2.4.1+8260).
+> > Can you help me?
+> >
+> > Thank you very much.
+> >
+> > michael
+> >
+> >
+>
+>
 
-BUT what I cant manage is the 100mbits port.
-Even its recognized through the Kernel as eth1, I cant manage it.
-I have defined 2 Ip adresses, each one for the 10 and the 100 Mbits ports
-All its OK.
-But when I disconnect the cable from the FEC port is the other port that
-answers the Pings ???
-Thats Wierd.
-
-Suggestions Welcome...
-
-Regards
-
-Arturo Nunez
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
