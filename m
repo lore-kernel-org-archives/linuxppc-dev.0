@@ -4,9 +4,9 @@ To: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
 In-Reply-To: <3F5562F5.7070101@tait.co.nz>
 References: <3F5562F5.7070101@tait.co.nz>
 Content-Type: text/plain; charset=ISO-8859-15
-Message-Id: <1062567088.1998.14.camel@lilith>
+Message-Id: <1062567141.1998.16.camel@lilith>
 Mime-Version: 1.0
-Date: 03 Sep 2003 07:32:21 +0200
+Date: 03 Sep 2003 07:32:24 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
