@@ -1,39 +1,42 @@
-Message-ID: <3BAF691B.9020207@mc.com>
-Date: Mon, 24 Sep 2001 13:10:51 -0400
-From: Mark Salisbury <mbs@mc.com>
+Date: Mon, 24 Sep 2001 17:39:59 -0400 (EDT)
+From: patrick <tendim@vex.net>
+To: Ethan Benson <erbenson@alaska.net>
+Cc: <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: More problems with Kernel 2.4.10-pre12 and mounting
+In-Reply-To: <20010923221839.G14835@plato.local.lan>
+Message-ID: <Pine.NEB.4.33.0109241732420.19824-100000@vex.net>
 MIME-Version: 1.0
-To: "Timothy A. Seufert" <tas@mindspring.com>
-Cc: "Albert D. Cahalan" <acahalan@cs.uml.edu>,
-	linuxppc-dev@lists.linuxppc.org, dan@mvista.com,
-	hobold@Informatik.Uni-Bremen.DE, nicoya@apia.dhs.org
-Subject: Re: ppc LE questions (seeking help hand info pointers)
-References: <200109211848.f8LImlT19616@saturn.cs.uml.edu> <p05100302b7d16386402f@[10.0.0.42]>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Timothy A. Seufert wrote:
+On Sun, 23 Sep 2001, Ethan Benson wrote:
 
-> Assuming you've identified all the needed changes for PPC LE with a
-> LE board (*), I humbly submit that Mark & co. should get to work
-> making a patch if they really want this feature.  The only item which
-> might touch very much code is #5 (anybody know how frequently such
-> instructions are used?), and a strong argument can be made that those
-> instructions should not be used by anybody given their clearly
-> deprecated status.  The rest of it is small enough to be maintained
-> outside the regular trees, so they will not lose big time if it gets
-> refused for integration.
+> well sounds to me like your scsi driver is hosed then.
 
+Well if the SCSI driver is hosed, then shouldn't I *not* be able to do
+anything else then?  My setup is as follows:
 
-we'll see how it goes and let you know...
+SCSI0 - Adaptec 2940 UW Card   /dev/sda
+SCSI1 - Mesh Internal SCSI     /dev/sdb
 
+And all of the drivers have been compiled into the kernel (no modules).
 
---
-/*------------------------------------------------**
-**   Mark Salisbury | Mercury Computer Systems    **
-**   mbs@mc.com     | System OS - Kernel Team     **
-**------------------------------------------------*/
+> well if badblocks has no problem reading the entire device why should
+> anything else.  this clearly has nothing to do with partition table
+> support.
+
+Then that leaves it to the program I'm using to read the partition map.
+I've seen you reference "mac-fdisk".  Is this the same as pdisk?  Or
+is an entirely different beast?
+
+Perhaps it is pdisk that doesn't like the new kernel.
+
+patrick@tendim.cjb.net
+http://www.tendim.cjb.net/
+Like anime?   Got hotline?
+hotline://twoaday.cjb.net/
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
