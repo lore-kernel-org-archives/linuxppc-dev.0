@@ -1,45 +1,47 @@
-From: phandel@cise.ufl.edu
-Date: Wed, 17 Nov 1999 19:35:44 -0500 (EST)
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: Martin Costabel <costabel@wanadoo.fr>,
-        Dev-Linux <linuxppc-dev@lists.linuxppc.org>
-Subject: Extreme swapping / new location of Paul's kernels [was Re: Kernel
- debugging??]
-In-Reply-To: <Pine.LNX.4.05.9911172207200.25661-100000@callisto.of.borg>
-Message-ID: <Pine.LNX.4.10.9911171932360.868-100000@PetesBox.localdomain>
+Date: Thu, 18 Nov 1999 01:14:40 +0000 (   )
+From: John Buswell <johnb@one.net>
+Reply-To: webmaster@imaclinux.net
+To: imac-linux-announce@egroups.com
+cc: linuxppc-dev@lists.linuxppc.org,
+        yellowdog-general@lists.yellowdoglinux.com,
+        yellowdog-devel@lists.yellowdoglinux.com, imac-linux-devel@egroups.com,
+        imac-linux@egroups.com
+Subject: iMac 350/DV/DV SE Linux HowTo
+Message-ID: <Pine.LNX.3.96.991118010730.21026K-100000@shell>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 17 Nov 1999, Geert Uytterhoeven wrote:
+The team at iMac Linux (http://www.imaclinux.net) has managed to get the
+iMac DV to boot linux to a usable point. We have put together a small
+howto on how to achieve this Open Firmware boot and how to kludge a root
+file system onto your iMac.
 
-> On Tue, 16 Nov 1999, Martin Costabel wrote:
-> > Just for information: Paul M's 2.3.27 rsync kernel compiles and runs
-> > just fine on this Pmac 6400. The machine swaps like crazy and is
-> > therefore rather slow, but I am not sure if this is the kernel's fault.
+You can find the HowTo at:
 
-I've noticed the same extreme swapping in 2.3.26, using SCSI disks
-(PowerCenter Pro 210) and BootX.  Returning to my previous kernel, there
-was no swapping. This was using BootX 1.2b1.
+http://www.imaclinux.net:8080/content/942890525/index_html
 
-> Are you sure about the version? I just checked out this tree, and it's 2.3.22,
-> according to the Makefile. Perhaps I made a mistake? This is the first time I
-> used rsync (`rsync -auvz samba.anu.edu.au::linux-pmac-devel .').
+The iMac DV currently has ethernet (through the Dec Tulip device driver)
+and USB support, and appears to function quite fast as well!
 
-rsync -auvz linuxcare.com.au::linux-pmac-devel /usr/src/linux-2.3.devel
-(from Ben's post a few days ago)
+For those interested here is /proc/cpuinfo
+
+processor       : 0
+cpu             : 750
+temperature     : 0 C
+clock           : 400MHz
+revision        : 2.2
+bogomips        : 797.90
+zero pages      : total 0 (0Kb) current: 0 (0Kb) hits: 0/146 (0%)
+machine         : PowerMac2,1
+motherboard     : PowerMac2,1 MacRISC Power Macintosh
+L2 cache        : 512K unified
+memory          : 128MB
 
 
-Thanks,
-Peter
-
--- 
-Peter F. Handel          "[The anti-Christ] also forced everyone, small and
-phandel@cise.ufl.edu      great ... to receive a mark [smart card?] on his
-www.cise.ufl.edu/~phandel right hand or on his forehead, so that no one could
-FAX: (561) 619-8051       buy or sell unless he had the mark"-Revelation13:16
+Please feel free to visit the site.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
