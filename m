@@ -1,50 +1,34 @@
-Date: Sat, 03 Apr 2004 19:59:26 -0500
-From: ERIC NORTHUP <eric.northup@jhu.edu>
-Subject: Re: 4way smp on ppc32
-To: Mark Guertin <mguertin@macdiscussion.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-Message-id: <a85093a81050.a81050a85093@jhumail.jhu.edu>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
+Subject: Re: PREEMPT problems
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Cc: Colin LEROY <colin@colino.net>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <1080997005.4208.24.camel@thor.asgaard.local>
+References: <1b6001c417f6$229c2a70$3cc8a8c0@epro.dom>
+	 <1080867387.1203.19.camel@gaston>
+	 <1080921611.11826.13.camel@thor.asgaard.local>
+	 <1080924194.11826.27.camel@thor.asgaard.local>
+	 <1080961566.1425.84.camel@gaston>
+	 <1080997005.4208.24.camel@thor.asgaard.local>
+Content-Type: text/plain
+Message-Id: <1081045248.1201.98.camel@gaston>
+Mime-Version: 1.0
+Date: Sun, 04 Apr 2004 12:20:48 +1000
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wednesday, March 31, 2004 12:56 pm, Mark Guertin wrote:
-> I'll try and find some time to test this stuff on my daystar quad
-> as
-> well.  I know that right up to latest 2.4.x all 4 of my CPU's are
-> still
-> working fine.
-
-OK, I have just gotten a 2.4 smp kernel booted, and it does find all 4 cpus.  However, the machine is far from stable.  GCC dies on a fatal signal or reports an "internal compiler error", but when re-inovked on the same file it works.  Other times, it takes the ssh connection down with it.  I was trying to build LTP or some other code to narrow down the problem areas, but gcc is too flaky for this to work.
-
-> On 31-Mar-04, at 3:17 AM, Benjamin Herrenschmidt wrote:
+> > I also added a WARN_ON(), do you see it triggered in dmesg ?
 >
-> >
-> > Actually, there is at least one problem, can you try this patch:
-> >
-> > ===== arch/ppc/platforms/pmac_smp.c 1.30 vs edited =====
-> > --- 1.30/arch/ppc/platforms/pmac_smp.c	Tue Mar 23 12:46:59 2004
-> > +++ edited/arch/ppc/platforms/pmac_smp.c	Wed Mar 31 18:16:54 2004
-> > @@ -316,6 +316,8 @@
-> >
-> >  	psurge_type = psurge_quad_probe();
-> >  	if (psurge_type != PSURGE_DUAL) {
-> > +        	psurge_smp_ops.take_timebase = smp_generic_take_timebase;
-> > +        	psurge_smp_ops.give_timebase = smp_generic_give_timebase;
-> >          	psurge_quad_init();
-> >          	/* All released cards using this HW design have 4 CPUs */
-> >          	ncpus = 4;
+> I'm not sure what those would look like, but
+>
+> zgrep -i warn /var/log/kern.log*
+>
+> doesn't seem to yield anything relevant.
 
-I applied this patch with the addition of a forward declaration
+They look like bactraces ;)
 
-struct smp_ops_t psurge_smp_ops;
-
-The system did not boot (it crashed earler than without the patchbut i did not get an oops on the serial console)
-
---Eric
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
