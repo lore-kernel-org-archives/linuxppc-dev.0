@@ -1,72 +1,27 @@
-Message-Id: <4.3.2.20001208145914.00ba75b0@falcon.si.com>
-Date: Fri, 08 Dec 2000 15:09:42 -0500
+Message-ID: <DF2142DFD5ECD311BA1900104B943A97A4ED20@roche-exg1.rochester.adaptivebroadband.com>
+From: "Ruhland, Paul" <pruhland@microwavedata.com>
 To: linuxppc-embedded@lists.linuxppc.org
-From: Jerry Van Baren <vanbaren_gerald@si.com>
-Subject: Re: 66 Mhz bus clock for EST8260?
-In-Reply-To: <Pine.GSO.4.21.0012081225350.24199-100000@eos>
+Subject: PCMCIA on MBX860 and NFS stale
+Date: Fri, 8 Dec 2000 16:40:27 -0500 
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Yes, that is what we did and it worked, including running linux, as I
-recall.
+I've gotten the pcmcia card services ( pcmcia-cs-3.1.22 ) running on an
+MBX860.  It correctly identifies and inserted card and loads the appropriate
+driver.  Currently, I'm testing with a 3com lan card.  After the drivers are
+loaded, eth1 ( eth0 is the onboard ethernet ) is configured and working.  I
+can ping both ports successfully.
 
-We have not run extensively with the 66MHz bus clock.  Our processor
-was 166/133/66 rev A.1 so we clocked the processor at 166MHz (MODCK_H =
-0101, MODCK[1-3] = 110).  We played with overclocking the CPU: we were
-able to run quite a bit faster than 166MHz at the 33MHz bus speed
-(300MHz?), but died right away when we tried to overclock with the
-66MHz bus speed.
+However, during this whole process my nfs root filesystem goes stale.  Is
+there anyway to prevent this?
 
-For more details, I would have to dig out some notes.
-
-gvb
-
-
-At 12:47 PM 12/8/00 -0600, Brian Ford wrote:
-
->Is there any magic in getting the EST8260 board to work with a 66 Mhz bus
->clock?  I haven't had good luck with a Linux or vxWorks image.
->
->My board has a 200/166/66 rev A.1 chip.
->
->I boot using a vxWorks bootrom.  I have made a few corrections to the
->bootrom so the decrementer frequency is set correctly from the user
->dip switches in addition to setting the core, cpm, and bus speeds.
->
->The scenerio is as follows:
->
->1.) Burn configuration word to change MODCK_H from 0x0001 to 0x0101
->2.) Swap oscillators 33.0 -> 66.0 Mhz
->3.) Set MODCK[1-3] switches to 0x111 (200/133/66)
->4.) Mirror 3.) on user switches for vxWorks bootrom to read
->5.) Hack head_8260.S to put immr in place for Linux
->6.) Set linux board info in embed_config.c to 200/133/66/66
->(core,cpm,bus,brg) making sure there is real space allocated for it
->instead or whatever was in r3 when vxWorks booted us.
->6.) Reboot.
->
->vxWorks bootrom runs fine and downloads Linux or vxWorks.
->
->Linux pannics just before giving me a shell prompt somewhere in tty init.
->
->vxWorks appears to come up fine, but the muxDevBind fails for the Fast
->Ethernet and thus no network communications.  Even though the bootrom
->just downloaded us successfully over the same interface.
->
->Has anyone had any luck with the 66 Mhz bus clock?
->
->--
->Brian Ford
->Software Engineer
->Vital Visual Simulation Systems
->FlightSafety International
->Phone: 314-551-8460
->Fax:   314-551-8444
->
->
+--------------
+Paul Ruhland
+Rochester, NY 14620, USA
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
