@@ -1,228 +1,62 @@
-Message-Id: <m12uh7W-001SyaC@bucks>
+Message-Id: <m12uhYO-001SyaC@bucks>
 From: diekema@bucks.si.com (diekema_jon)
-Subject: Floating Point problems with Linux on the EST SBC8260
+Subject: Re: Wait Queue bug triggered on EST SBC8260
 To: linuxppc-embedded@lists.linuxppc.org
-Date: Wed, 24 May 2000 15:47:10 -0400 (EDT)
-Cc: all@cideas.com
+Date: Wed, 24 May 2000 16:14:55 -0400 (EDT)
+Cc: source@mvista.com, all@cideas.com
+In-Reply-To: <m12tvIQ-001SyZC@bucks> from "diekema_jon" at May 22, 2000 12:43:14 PM
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Floating Point problems with Linux on the EST SBC8260:
+Previous message:
+
+http://lists.linuxppc.org/listarcs/linuxppc-embedded/200005/msg00180.html
+
+> bad magic 0 (should be c01fb2e0, creator 0), wq bug, forcing oops.
+> kernel BUG at sched.c:656!
+> NIP: C000FB5C XER: 00000000 LR: C000FB5C REGS: c01adc00 TRAP: 0700
+> MSR: 00081032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+> TASK = c01ac000[1] 'init' Last syscall: 6
+> last math 00000000 last altivec 00000000
+> GPR00: C000FB5C C01ADCB0 C01AC000 0000001B 00001032 C010EF80 C01FB260 C0128502
+> GPR08: 0000001B C0110000 F00000B8 C01ADBF0 24444028 1001EEB4 00000000 00000000
+> GPR16: 00000000 00000000 00000000 00000000 00009032 C01DA060 00000000 00000000
+> GPR24: 00000021 00000001 C01DA060 C010A3E0 C0125000 C0110000 C01FB2D4 C01ADCB0
+> Call backtrace:
+> C000FB5C C008CB8C C007F560 C007FE8C C0033CE4 C0033D80 C0032818
+> C00328CC C00328FC C00048F0 10005548 10005A20 0FF09E78 00000000
+> Kernel panic: Exception in kernel pc c000fb5c signal 4
+> Rebooting in 180 seconds..
+
+We are walking into a scheduling bug in kernel/sched.c with Linux
+2.3.99-pre9.  MontaVista has an experimental real-time scheduler that
+can be installed into Linux 2.2.14.  Will this scheduler work with
+Linux 2.3.99-pre9?  If it has a shot at working, I would like to try
+it.  Perhaps I can avoid my problem.
 
 
-Questions:
+>From hhl-kernel-rtsched.patch:
 
-- What is the state of floating point support with Linux on the
-  MPC8260?
+REAL TIME SCHEDULER for Linux version 2.2.14
 
-- Does anybody have hard-float applications running on the MPC8260?
+Released under the GNU Public License.
 
-- I am looking for a floating point validation test suite written in
-  C.  The test suite should start with the fundamentals and work out
-  from there.
+This patch contains the real time scheduler developed by
+MontaVista Software, Inc.  It applies cleanly against the
+Linux kernel version 2.2.14.  It adds the kernel configuration
+option CONFIG_RTSCHED.  If CONFIG_RTSCHED=y, the real time
+scheduler is configured, otherwise the standard scheduler is
+used.
 
-  Does anybody have any leads?  This is what I have found so far:
+This patch also contains some fixes for the standard scheduler.
 
-1) TestFloat-2a
+May 5, 2000:
+Add real time scheduler option, as well as fixes for the standard scheduler.
+This updated version fixes a build problem on the PowerPC.
 
-Package Overview for TestFloat Release 2a
-
-John R. Hauser
-1998 December 16
-
-
-TestFloat is a program for testing that a floating-point implementation
-conforms to the IEC/IEEE Standard for Binary Floating-Point Arithmetic.
-TestFloat is distributed in the form of C source code.  The TestFloat
-package actually provides two related programs:
-
--- The `testfloat' program tests a system's floating-point for conformance
-   to the IEC/IEEE Standard.  This program uses the SoftFloat software
-   floating-point implementation as a basis for comparison.
-
--- The `testsoftfloat' program tests SoftFloat itself for conformance to
-   the IEC/IEEE Standard.  These tests are performed by comparing against a
-   separate, slower software floating-point that is included in the TestFloat
-   package.
-
-2) UCBTEST
-
-     UCBTEST is a suite of programs for testing certain difficult cases of
-IEEE 754 floating-point arithmetic.  Some of the difficult test cases are
-obtained from number-theoretic algorithms developed by Turing Award winner
-Prof. W. Kahan, Department of Electrical Engineering and Computer Science,
-University of California, Berkeley, as part of ongoing research into test
-methods for computer arithmetic.
-
-
-Either TestFloat or UCBTEST will require some porting effort to run
-on the PPC.  I would like to work smarter rather than harder. I can't
-even get the rights answers from printf, *, or /.
-
-
-Environment:
-
-Platform: EST SBC8260 w/ MPC8260 Rev A.1 running at 166 Mhz
-Ethernet: 10 Mbs (SCC)
-Linux kernel: 2.3.99-pre9
-root filesystem (NFS mounted): MontaVista Hard Hat Linux version 1.1
-Toolset: Denx Software CDK recompiled with gcc configured for
-         --with-cpu=603e and hard-float (i.e. no --nfp)
-
-
-Application:
-
-Note: The executable was statically linked to pull in the hard-float
-      C runtime libraries.
-
-dell 403} cat z.c
-#include "stdio.h"
-
-double x, y, z;
-
-main ()
-
-{
-  x = 1234.33;
-  printf("x %lf (1234.33) 0x%08lX\n", x , x);
-
-  y = 4444.2;
-  printf("y %lf (4444.2)  0x%08lX\n", y , y);
-
-  z = x * y;
-  printf("z = x * y, %lf %lf %lf\n", x , y, z);
-
-  z = x / y;
-  printf("z = x / y, %lf %lf %lf\n", x , y, z);
-}
-
-dell 404} cat z.s
-	.file	"z.c"
-gcc2_compiled.:
-	.section	".rodata"
-	.align 2
-.LC1:
-	.string	"x %lf (1234.33) 0x%08lX\n"
-	.align 2
-.LC3:
-	.string	"y %lf (4444.2)  0x%08lX\n"
-	.align 2
-.LC4:
-	.string	"z = x * y, %lf %lf %lf\n"
-	.align 2
-.LC5:
-	.string	"z = x / y, %lf %lf %lf\n"
-	.align 3
-.LC0:
-	.long 0x40934951
-	.long 0xeb851eb8
-	.align 3
-.LC2:
-	.long 0x40b15c33
-	.long 0x33333333
-	.section	".text"
-	.align 2
-	.globl main
-	.type	 main,@function
-main:
-	stwu 1,-16(1)
-	mflr 0
-	stw 31,12(1)
-	stw 0,20(1)
-	mr 31,1
-	lis 9,x@ha
-	lis 11,.LC0@ha
-	lfd 0,.LC0@l(11)
-	stfd 0,x@l(9)
-	lis 9,x@ha
-	lis 11,x@ha
-	lis 10,.LC1@ha
-	la 3,.LC1@l(10)
-	lfd 1,x@l(9)
-	lfd 2,x@l(11)
-	creqv 6,6,6
-	bl printf
-	lis 9,y@ha
-	lis 11,.LC2@ha
-	lfd 0,.LC2@l(11)
-	stfd 0,y@l(9)
-	lis 9,y@ha
-	lis 11,y@ha
-	lis 10,.LC3@ha
-	la 3,.LC3@l(10)
-	lfd 1,y@l(9)
-	lfd 2,y@l(11)
-	creqv 6,6,6
-	bl printf
-	lis 9,z@ha
-	lis 11,x@ha
-	lis 10,y@ha
-	lfd 0,x@l(11)
-	lfd 13,y@l(10)
-	fmul 0,0,13
-	stfd 0,z@l(9)
-	lis 9,x@ha
-	lis 11,y@ha
-	lis 10,z@ha
-	lis 8,.LC4@ha
-	la 3,.LC4@l(8)
-	lfd 1,x@l(9)
-	lfd 2,y@l(11)
-	lfd 3,z@l(10)
-	creqv 6,6,6
-	bl printf
-	lis 9,z@ha
-	lis 11,x@ha
-	lis 10,y@ha
-	lfd 0,x@l(11)
-	lfd 13,y@l(10)
-	fdiv 0,0,13
-	stfd 0,z@l(9)
-	lis 9,x@ha
-	lis 11,y@ha
-	lis 10,z@ha
-	lis 8,.LC5@ha
-	la 3,.LC5@l(8)
-	lfd 1,x@l(9)
-	lfd 2,y@l(11)
-	lfd 3,z@l(10)
-	creqv 6,6,6
-	bl printf
-.L2:
-	lwz 11,0(1)
-	lwz 0,4(11)
-	mtlr 0
-	lwz 31,-4(11)
-	mr 1,11
-	blr
-.Lfe1:
-	.size	 main,.Lfe1-main
-	.comm	x,8,8
-	.comm	y,8,8
-	.comm	z,8,8
-	.ident	"GCC: (GNU) 2.95.2 19991024 (release)"
-
-
-On the target:
-
-> ./a.out
-x nan (1234.33) 0x00000000
-y 0.000000 (4444.2)  0x1003FBCC
-z = x * y, 0.000000 0.000000 0.000000
-z = x / y, 0.000000 0.000000 0.000000
-
-
-The expected results should look something like:
-
-dell 420} ./a.out
-x 1234.330000 (1234.33) 0xEB851EB8
-y 4444.200000 (4444.2)  0x33333333
-z = x * y, 1234.330000 4444.200000 5485609.386000
-z = x / y, 1234.330000 4444.200000 0.277740
-
-We aren't even close to reasonable answers yet.
+CONTACT: <source@mvista.com>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
