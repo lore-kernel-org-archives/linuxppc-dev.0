@@ -1,54 +1,50 @@
-Message-ID: <3C0AADA8.8050304@waitaki.otago.ac.nz>
-Date: Mon, 03 Dec 2001 11:39:36 +1300
-From: Bryce McKinlay <bryce@waitaki.otago.ac.nz>
+From: Paul Mackerras <paulus@samba.org>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.linuxppc.org,
-	Jeff Koftinoff <jeffk@jdkoftinoff.com>, havardk@xmms.org
-Subject: Re: Byte order in sound drivers
-References: <3C099A81.6040506@waitaki.otago.ac.nz> <20011202095651.24942@smtp.wanadoo.fr>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15370.44910.527310.435748@argo.ozlabs.ibm.com>
+Date: Mon, 3 Dec 2001 09:47:10 +1100 (EST)
+To: Martin Costabel <costabel@wanadoo.fr>
+Cc: linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org
+Subject: Re: [PATCH] Minor changes to control/imstt/platinum/valkyrie/atyfb
+In-Reply-To: <3C0AA2AF.97E7FCB4@wanadoo.fr>
+References: <20011127143058.R13091@cpe-24-221-152-185.az.sprintbbd.net>
+	<3C08CFF0.18A1FBC7@wanadoo.fr>
+	<15369.65261.546405.15780@argo.ozlabs.ibm.com>
+	<3C0AA2AF.97E7FCB4@wanadoo.fr>
+Reply-To: paulus@samba.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
+Martin Costabel writes:
 
->>The most recent release of XMMS (0.9.5) works correctly for me for both
->>MP3 and WAV files, but not CD audio for which the input plugin returns
->>sound in the native endian-ness.
->>
+> I did some tests with the 2 useful modes of the 6400: 1024x768x8bit at
+> 72Hz (vmode 15, cmode 8) and 800x600x16bit at 60Hz (vmode 10, cmode 16).
 >
->So far, I had MP3s working but not WAV nor cdread (blank noise in both
->cases). I didn't yet try 0.9.5 though.
+> The results, with or without Tom's patch, were the same as they always
+> were:
+> The vmode of MacOS is used by the Linux console; the cmode 16 is not
+> recognized, so instead of vmode 10 16 one always gets vmode 10 8 as
+> default. The log says
 >
+> kernel: Monitor sense value = 0x62b, <6>using video mode 10 and color
+> mode 0
 
-I should mention I was using the "xmms-cdread" plugin from
-ftp://mud.stack.nl/pub/OuterSpace/willem, along with the ide-scsi
-driver, to get cd audio going. The built in XMMS "cdaudio" plugin didn't
-work for my Ti 500.
+Ben H has just pointed out to me that macos stores some extra
+device-tree properties in nvram, and uses that to store the default
+resolution and depth.  For the control display, it uses a "gprf"
+property, 8 bytes long, and in fact the 2nd and 3rd bytes are what we
+are looking at.  Unfortunately OF doesn't add the nvram properties to
+the device tree, but Ben seems to think we can add code to do that in
+the kernel.
 
->>It depends on the HW you have. Most recent machines don't do HW
->>byteswap, and so accept only big-endian samples. The way this is
->>implemented in our driver currently is a bit weird though, the
->>setformat ioctl won't fail when trying to set an LE format, but
->>it will set the equivalent BE format. So the application is
->>expected to read back the format to figure out what had to be
->>done.
->
->
->Well, the current dmasound behaviour is definitely broken. I'm
->changing it now so that when asked for an _LE format on a chip
->that do only _BE will return -EINVAL.
->
+So it would be very interesting to see a dump of nvram on your machine
+with the screen set to the different resolution/depth settings in
+macos.  Also, if you have the DisplayNameRegistry app under macos,
+open it and look at the properties on the valkyrie and see if there is
+one with a little "chip" icon (looks like a 6-legged insect to me but
+apparently it is supposed to be a chip :).
 
-Interesting, thanks for looking at that. I wonder if the USB audio
-driver has the same problem, since I get exactly the same behaviour with
-my sound sticks.
-
-regards
-
-Bryce.
-
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
