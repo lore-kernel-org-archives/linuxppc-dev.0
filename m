@@ -1,34 +1,27 @@
-From: Thomas Graichen <news-innominate.list.linux.ppc.dev@innominate.de>
-Reply-To: Thomas Graichen <graichen@innominate.de>
-Subject: keyboard problems
-Date: 1 Aug 2000 05:48:10 GMT
-Message-ID: <news2mail-8m5oaq$6tj$3@mate.bln.innominate.de>
-Reply-To: thomas.graichen@innominate.de
+From: Keith Owens <kaos@ocs.com.au>
 To: linuxppc-dev@lists.linuxppc.org
+Subject: Where does ppc define __start___ksymtab?
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Tue, 01 Aug 2000 16:40:49 +1000
+Message-ID: <28827.965112049@ocs3.ocs-net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-i have a little keyboard problem on my blueberry imac with the
-standard usb keyboard: whenever i type something very quickly
-followed by space the typed in will be repeated before the
-space (best example: i want to type "cd " and get "cdcd ")
-- this gets a bit annoying - does anybody have the same
-problem (or even a fix for it) ? - is it more a soft-
-wareproblem (i hope :-) or maybe a hardwareproblem ?
-(i had it on all kernels from 2.2.x to 2.4.0-testx)
+Please cc: kaos@ocs.com.au on replies, I am not on this list.
 
-a lot of thanks in advance
+I have been trying to find where ppc defines __start___ksymtab and
+__stop___ksymtab symbols.  These delimit the __ksymtab entries for
+module symbols.  On every other architecture that supports modules,
+arch/xxx/vmlinux.lds contains lines like this
 
-t
+  __start___ksymtab = .;	/* Kernel symbol table */
+  __ksymtab : { *(__ksymtab) }
+  __stop___ksymtab = .;
 
-p.s.: it appears both on the console and under x - so it has
-      to - if software - a problem in the kbd driver
+I can find no equivalent lines for ppc in a stock 2.4.0-test5 source
+tree yet ppc obviously defines them somewhere.  But where?
 
---
-thomas.graichen@innominate.de
-technical director                                       innominate AG
-clustering & security                                networking people
-tel: +49.30.308806-13 fax: -77 web: http://innominate.de pgp: /pgp/tgr
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
