@@ -1,19 +1,24 @@
-Return-Path: <mgberry@ellipticity.com>
-Received: from waffle.digitalsmiths.com (waffle.digitalsmiths.com
-	[66.194.119.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "plesk", Issuer "plesk" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 274F467A65
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao10.cox.net (fed1rmmtao10.cox.net [68.230.241.29])
+	by ozlabs.org (Postfix) with ESMTP id 291F367A6D
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  5 Mar 2005 01:22:00 +1100 (EST)
-Message-ID: <003b01c520c5$6c44edf0$84be1942@Osiris>
-From: "Matt Berry" <mgberry@ellipticity.com>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Fri, 4 Mar 2005 08:13:07 -0600
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0032_01C52091.FF42C5C0"
-Subject: Tool Chain
+	Sat,  5 Mar 2005 02:39:44 +1100 (EST)
+Date: Fri, 4 Mar 2005 08:39:22 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: J?rn Engel <joern@wohnheim.fh-wedel.de>
+Message-ID: <20050304083921.A2508@cox.net>
+References: <46110262C7A0BF418DE9C9A5BD73F92807F2F94C@cceexc23.americas.cpqcorp.net>
+	<200503011737.22205.g.jaeger@sysgo.com>
+	<20050302215308.GA6511@wohnheim.fh-wedel.de>
+	<200503030923.22677.g.jaeger@sysgo.com>
+	<20050303230541.GA7274@wohnheim.fh-wedel.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20050303230541.GA7274@wohnheim.fh-wedel.de>;
+	from joern@wohnheim.fh-wedel.de on Fri, Mar 04, 2005 at
+	12:05:41AM +0100
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Building a Kernel for the AMCC PPC440EP Bamboo Board
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,40 +29,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On Fri, Mar 04, 2005 at 12:05:41AM +0100, J?rn Engel wrote:
+> On Thu, 3 March 2005 09:23:22 +0100, Gerhard Jaeger wrote:
+> > > 
+> > Could not confirm that so far! Ebony and Ocotea are working out of the
+> > box, using these defconfig files! (pristine kernel 2.6.11)
+> 
+> With PIBS and on a bamboo?  If I was just too stupid and made some
+> silly mistake, that would be great news.
 
-------=_NextPart_000_0032_01C52091.FF42C5C0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Impossible. You need a 440EP/Bamboo specific port. Memory map is
+completely different on 440EP.  For discussion sake, note that
+440GP/GX are very similar parts with respect to memory map and
+peripherals, then 440SP and 440EP each have very different layouts.
 
-I am trying to get the 2.6 running on my lite5200 eval board.  Is there =
-a tool chain allready availble or will I need to build my own?
+FWIW, there's somebody well into a 2.6 440EP port, dunno what the
+ETA on submitting the code is.
 
-Thanks,
-
-Matt
-------=_NextPart_000_0032_01C52091.FF42C5C0
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Diso-8859-1">
-<META content=3D"MSHTML 6.00.2900.2604" name=3DGENERATOR>
-<STYLE></STYLE>
-</HEAD>
-<BODY bgColor=3D#ffffff>
-<DIV><FONT face=3DArial size=3D2>I am trying to get the 2.6 running on =
-my lite5200=20
-eval board.&nbsp; Is there a tool chain allready availble or will I need =
-to=20
-build my own?</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2>Thanks,</FONT></DIV>
-<DIV>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2>Matt</FONT></DIV></BODY></HTML>
-
-------=_NextPart_000_0032_01C52091.FF42C5C0--
+-Matt
