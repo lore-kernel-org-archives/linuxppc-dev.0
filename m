@@ -1,20 +1,18 @@
-Return-Path: <takeharu1219@ybb.ne.jp>
-Received: from ybbsmtp10.mail.mci.yahoo.co.jp (ybbsmtp10.mail.mci.yahoo.co.jp
-	[210.80.241.184]) by ozlabs.org (Postfix) with SMTP id 7CA0667A76
+Return-Path: <sven.luther@wanadoo.fr>
+Received: from smtp6.wanadoo.fr (smtp6.wanadoo.fr [193.252.22.25])
+	by ozlabs.org (Postfix) with ESMTP id A4B5C67A6F
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Feb 2005 10:36:23 +1100 (EST)
-Message-ID: <421D1375.5000904@ybb.ne.jp>
-Date: Thu, 24 Feb 2005 08:36:21 +0900
-From: Takeharu KATO <takeharu1219@ybb.ne.jp>
-MIME-Version: 1.0
-To: Takeharu KATO <takeharu1219@ybb.ne.jp>
-References: <421CD2B3.4020805@ybb.ne.jp>
-	<421CD669.1040002@ybb.ne.jp>	<20050223142720.C13087@cox.net>
-	<421D1085.5080602@ybb.ne.jp>
-In-Reply-To: <421D1085.5080602@ybb.ne.jp>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: ppcembed <linuxppc-embedded@ozlabs.org>
-Subject: Re: PowerPC4xx Watchdog
+	Thu, 24 Feb 2005 19:34:15 +1100 (EST)
+Date: Thu, 24 Feb 2005 09:25:08 +0100
+To: "Mark A. Greer" <mgreer@mvista.com>
+Message-ID: <20050224082508.GA30005@pegasos>
+References: <41F6E0E1.6000803@mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <41F6E0E1.6000803@mvista.com>
+From: Sven Luther <sven.luther@wanadoo.fr>
+Cc: nd@bplan-gmbh.de, Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH][PPC32] mv64x60 updates
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,18 +23,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi
-
->> Are you looking for the old "ppc405 watchdog" driver that simply
->> hooked into the generic PPC heartbeat facility? Or are you looking
->> for a driver that utilizes the 4xx/booke hardware watchdog facility?
->>
-> I am looking for a driver that utilizes the 4xx/booke hardware watchdog 
-> facility.
+On Tue, Jan 25, 2005 at 05:14:25PM -0700, Mark A. Greer wrote:
+> Hi Andrew.
 > 
-> 
-FYI, I wrote a driver uses 4xx/booke hardware watchdog.
-BTW, is hooking PPC heartbeat facility obsoleted?
+> This patch briges the mv64x60 related code up to the latest that I have.
 
--- 
-Takeharu KATO
+Mark, ...
+
+I am a bit bewildered by what you are doing here. How does this mv64x60 code
+relate to the mv643xx_eth driver from the mips folk ? 
+
+Friendly,
+
+Sven Luther
