@@ -1,54 +1,55 @@
-Date: Thu, 18 Oct 2001 10:24:04 -0700
-Subject: Re: Compiling BootX?
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v472)
-Cc: Takashi Oe <toe@unlserve.unl.edu>,
-	linuxppc-dev@lists.linuxppc.org
-To: Andrew P McPherson <apm@MIT.EDU>
-From: "David A. Gatwood" <dgatwood@apple.com>
-In-Reply-To: <Pine.GSO.4.30L.0110172159300.16073-100000@biohazard-cafe.mit.edu>
-Message-Id: <ED9543FC-C3EC-11D5-951D-003065B90BBC@apple.com>
+Subject: Re: IRDA/IRCOMM on a TiBook patch
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
+To: Till Straumann <Till.Straumann@TU-Berlin.de>
+Cc: linuxppc-dev@lists.linuxppc.org, linux-irda@pasta.cs.uit.no
+In-Reply-To: <3BCC104D.B5770ADE@TU-Berlin.de>
+References: <3BCC104D.B5770ADE@TU-Berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: 19 Oct 2001 03:02:27 +0200
+Message-Id: <1003453347.24371.912.camel@pismo>
+Mime-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wednesday, October 17, 2001, at 07:02 PM, Andrew P McPherson wrote:
+On Tue, 2001-10-16 at 12:47, Till Straumann wrote:
 
+> I (and I believe other people as well) had problems
+> setting up IRDA/IRCOMM on a TiBook / 2.4.12-benh and
+> older 2.4 series kernels [on powerpc].
 >
-> On Tue, 16 Oct 2001, Takashi Oe wrote:
+> As far as I could find out there are several problems:
 >
->> On Sun, 14 Oct 2001 23:57:39 -0400 (EDT), Andrew P McPherson wrote:
->>
->>
->>> The problem with the MkLinux booter is that it refuses to run because
->>> it
->>> doesn't recognize the machine as "supported."  Is the source of the
->>> MkLinux booter available so that I could disable that "feature," or
->>> was
->>> that a closed-source effort by Apple?
->>
->> It's a closed-source software.  Is the one you have version 1.4?
->> What's the gestalt id of your machine with PPC card?  Have you tried
->> some software to fake the id (and change the type of apple booter from
->> 'scri' to 'INIT' or so)?
->>
+> 1) There seems to be a timing problem when opening
+>    the irda port which prevents it from being properly
+>    initialized.
 >
-> Thanks for the suggestion.  Installing the "Wish" extension to change
-> the
-> gestalt ID to a PowerMac 6100/60 worked.  I did need  to change the type
-> to INIT because otherwise the booter always loaded before Wish.
+>    When I run "irattach /dev/ttyS1 -s 1", my Nokia 8890
+>    is never discovered. However, when I issue a 'cat /dev/ttyS1',
+>    prior to starting irattach (i.e. by opening the device
+>    [and holding it open until irattach starts]),
+>    things are properly initialized
+>    and discovery works. Putting 'mdelay(100);' somewhere
+>    in macserial.c:rs_open() does the job. However, I have
+>    not yet figured out what exactly causes the problem.
+>    A user space work-around involves patching irattach.c
 >
+> 2) There is an endianness bug. A possible solution is attached.
 
-I missed your hardware config.  What was it, again?  If it's a 68k mac
-with a PPC card, you probably want to set it to the gestalt of a 5300.
-The kernel should then identify that it isn't really a 5300 and should
-half-heartedly attempt to boot anyway, then crash at some point.  Let me
-know the gestalt, and I can verify whether the MkLinux booter knows it.
-I can't promise that I'd be allowed to send you an update or anything,
-but at least I can check and see if it knows the gestalt.  :-)
+Your patch seems to be missing a bit (in qos.c IIRC) though.
+
+> 3) When applying 1) and 2), IRCOMM works provided that
+>    /proc/sys/net/irda/max_baud_rate is clamped to 57600.
+>    Apparently, there is another problem in 'macserial.c' where speeds
+>    higher than 57600 are treated especially.
+
+Have you managed to do anything 'real' yet? I tried your patch, and it
+does seem to improve things, irdadump seems to show data from my Palm,
+but I haven't succeeded to synchronize yet.
 
 
-David
-
+--
+Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
+XFree86 and DRI project member   /  CS student, Free Software enthusiast
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
