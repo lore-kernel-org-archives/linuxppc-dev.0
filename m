@@ -1,52 +1,58 @@
-Date: Wed, 17 May 2000 18:20:00 +0200
-From: Claus Enneper <enneper@olis.north.de>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: quik booting on a wallstreet
-Message-ID: <20000517182000.B576@olis.north.de>
-Reply-To: cl.en@gmx.net
-References: <20000517115301.A332@mclinux.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-md5;
-	protocol="application/pgp-signature"; boundary="pvezYHf7grwyp3Bc"
-In-Reply-To: <20000517115301.A332@mclinux.com>; from Josh Huber on Wed, May 17, 2000 at 11:53:01AM -0400
+Date: Wed, 17 May 2000 13:36:47 -0400 (EDT)
+From: Worth <haworth@ncal.verio.com>
+To: Sergio Brandano <sb@dcs.qmw.ac.uk>
+cc: Tim Wojtulewicz <Tim.Wojtulewicz@NAU.EDU>, linuxppc-dev@lists.linuxppc.org,
+        debian-powerpc@lists.debian.org
+Subject: Re: Pismo status 
+In-Reply-To: <200005171514.QAA00462@copper.dcs.qmw.ac.uk>
+Message-ID: <Pine.SOL.4.10.10005171219570.17780-100000@ncal.verio.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---pvezYHf7grwyp3Bc
-Content-Type: text/plain; charset=us-ascii
-Content-Description: quik
-Content-Transfer-Encoding: quoted-printable
+On Wed, 17 May 2000, Sergio Brandano wrote:
 
- >:=20
- >: I tried using:
- >: boot-device ide0/disk@0,0 ide0/disk@0:0 ide0/disk@0:11 ide0/disk@0,11
-=20
-when you are in OF type 'dev alias' and you should see your ata.
-something like:
-'setenv boot-device ata0/ata-disk@0:B'
-remember boot-device wants hex.
- >:=20
- >: My root partition is 11, which has the kernel as well, in /boot/vmlinux.
- >:=20
+>
+> > What should happen is that the OS should realize that the processor
+> > is getting too warm, and turn on the fan before that limit is
+> > reached.
+>
+>  ... relying on the OS for cooling the CPU?
+>  What is the advantage of doing it?
+>  What happened to good-old control theory?
+>
+>  Sergio
+>
+>
+>
 
-'setenv boot-file /boot/vmlinux root=3D/dev/hda11
+It's unlikely that the OS is involved in controlling the fan. To
+depend upon the OS would be a very stupid design, as what would
+happen if it goes into la-la land in a processor-intensive infinite
+loop...? The PMU is a uproc with it's own firmware and should be
+managing the fan, provided the fan isn't simply controlled
+by a thermo-switch. However, there is no documentation to that
+effect, but I haven't found any sign of fan control in the
+Darwin drivers (which added some Core99 support in the last
+update).
 
---=20
-ce
+Others have complained of the fan being on all the time, my PB2K
+500 seems to have its on quite often and it never gets anywhere near
+as hot as it gets idling in MacOS (which can get hot enough to
+cause sweaty palms when typing).
 
---pvezYHf7grwyp3Bc
-Content-Type: application/pgp-signature
+It is very important that you leave the screen up when the
+system is on. Convection through the keyboard is a major part
+of that case's cooling design, which is why MacOS does not give
+you the option of not going into sleep when it is closed (Apple has
+released a tech note on that). Also use hdparm to keep the disks
+from running more than necessary, they generate a lot of heat,
+particularly the DVD.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v0.9.9 (GNU/Linux)
-Comment: For info see http://www.gnupg.org
+Beyond that, until Apple releases some definitive documentation --
+yah, right -- you pays your money and you takes your chances...
 
-iD8DBQE5Isawrqjwzwd0UekRAZxEAKChpS1AohLIYH+HMAVbNW9LFxQ83QCbBzRT
-lRq8W16OtIp1SyTQonDsAKc=
-=zz/8
------END PGP SIGNATURE-----
-
---pvezYHf7grwyp3Bc--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
