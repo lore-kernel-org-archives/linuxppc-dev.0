@@ -1,66 +1,67 @@
-Date: Wed, 13 Sep 2000 11:21:53 +0200 (MEST)
-From: Tobias Otto-Adamczak <Tobias.Otto-Adamczak@e-technik.tu-chemnitz.de>
-To: Julia Elbert <jelbert@enerdyne.com>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: no scc_hdlc struct in commproc.h
-In-Reply-To: <67505026E29DD311A9AA00508B7315F31956EC@EXCHANGE>
-Message-ID: <Pine.LNX.4.21.0009131118150.24289-100000@odoaker.hrz.tu-chemnitz.de>
+From: jonb@marel.is
+Subject: Re: Programming Flash
+To: Kirk Haderlie <khaderlie@vividimage.com>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <OFA9C687F1.AC168953-ON00256959.00402DBE@marel.is>
+Date: Wed, 13 Sep 2000 11:50:38 +0000
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello Julia,
+Hi
 
-> I did not find a scc_hdlc structure like scc_enet and scc_uart in
-> commproc.h.
+We use the Macraigor flash programmer to program flash on boards with
+soldered down flash,
+in our production process.  There does not need to be any boot strap code
+programmed by
+some other means on the board.
 
-I wrote the following one for my project (which is about adding ISDN
-functionality for MPC860):
+The way it works (I am guessing here), is that the Macraigor flash
+programmer loads a program
+into the dual ported ram of the MPC823 and starts it.  This program then
+gets the data to be
+written from the flash programmer and writes it to the flash chip.  This is
+how I think it works.
+Feel free to correct me if I am wrong :-).
 
-/*********   SCC parameter RAM for HDLC mode   *********/
-typedef struct scc_hdlc {
-	ushort	scc_rbase;	// Rx Buffer descriptor base address
-	ushort	scc_tbase;	// Tx Buffer descriptor base address
-	u_char	scc_rfcr;	// Rx function code
-	u_char	scc_tfcr;	// Tx function code
-	ushort	scc_mrblr;	// Max receive buffer length
-	uint	scc_rstate;	// internal
-	uint	scc_idp;	// internal
-	ushort	scc_rbptr;	// internal
-	ushort	scc_ibc;	// internal
-	uint	scc_rxtmp;	// internal
-	uint	scc_tstate;	// internal
-	uint	scc_tdp;	// internal
-	ushort	scc_tbptr;	// internal
-	ushort	scc_tbc;	// internal
-	uint	scc_txtmp;	// internal
-	uint	scc_rcrc;	// internal
-	uint	scc_tcrc;	// internal
-	// here begins HDLC specific part
-	uint	scc_res1;	// reserved
-	uint	scc_cmask;	// CRC mask
-	uint	scc_cpres;	// CRC preset
-	ushort	scc_disfc;	// discarded frame counter
-	ushort	scc_crcec;	// CRC error counter
-	ushort	scc_abtsc;	// abort sequence counter
-	ushort	scc_nmarc;	// nonmatching address receive counter
-	ushort	scc_retrc;	// frame retransmission counter
-	ushort	scc_mflr;	// Max frame length register
-	ushort	scc_maxcnt;	// internal
-	ushort	scc_rfthr;	// recceived frames threshold
-	ushort	scc_rfcnt;	// internal
-	ushort	scc_hmask;	// HDLC address mask register
-	ushort	scc_haddr1;	// HDLC address register 1
-	ushort	scc_haddr2;	// HDLC address register 2
-	ushort	scc_haddr3;	// HDLC address register 3
-	ushort	scc_haddr4;	// HDLC address register 4
-	ushort	scc_tmp;	// internal
-	ushort	scc_tmp_mb;	// internal
-} scc_hdlc_t;
+Regards,
 
-Ciao - Tobias
+Jon Benediktsson
+Marel hf.
+Reykjavik, Iceland.
+
+
+
+
+
+                    Kirk Haderlie
+                    <khaderlie@vividimage.com>              To:     "'linuxppc-embedded@lists.linuxppc.org'"
+                                                            <linuxppc-embedded@lists.linuxppc.org>
+                                                            cc:
+                    Sent by:                                Subject:     Programming Flash
+                    owner-linuxppc-embedded@lists.li
+                    nuxppc.org
+
+
+                    12/09/2000 20:04
+
+
+
+
+
+
+We have a FADS 823 board and a MPC823 custom board on the way.  The
+question
+is: Using the Macrgraigor flash programmer can we program blank flash, or
+does some sort of boot strap need to be run in order to configure the on
+board memory to use the flash programmer?  How do you program in production
+with soldered down flash?  I realize this is a general embedded question.
+
+Kirk Haderlie
+kirk@vividimage.com
+Vivid Image Engineering
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
