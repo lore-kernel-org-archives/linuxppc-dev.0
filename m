@@ -1,170 +1,84 @@
-Message-ID: <20030212181536.8600.qmail@web41215.mail.yahoo.com>
-Date: Wed, 12 Feb 2003 10:15:36 -0800 (PST)
-From: Prakash kanthi <pkanthi@yahoo.com>
-Subject: sash source code Compilation
-To: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <BAY2-F15mkH4WOkA32x0002431b@hotmail.com>
+Message-ID: <C08678384BE7D311B4D70004ACA37105111946C5@amer22.avnet.com>
+From: "Kerl, John" <John.Kerl@Avnet.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Low memory on Virtex-II Pro
+Date: Wed, 12 Feb 2003 12:33:39 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Folks,
+All:
 
-I have compiled sash source code in denx environment.
-Following is the compilation log. Do you see any
-problem with the compilation?
+For anyone who has been breathlessly following this thread:
+with Peter's help we now have SDRAM at address 0 on our
+Virtex-II Pro board.  Please contact me if you need the
+MHS file information.
 
-I added the resulting sash elf to ramdisk, still after
-exeve'ing from init/main.c, i don;t see any output.
+Thanks Peter.
 
--------------
-ppc_4xx-gcc -O3 -Wall -Wmissing-prototypes -DHAVE_EXT2
-  -c -o sash.o sash.c
-ppc_4xx-gcc -O3 -Wall -Wmissing-prototypes -DHAVE_EXT2
-  -c -o cmds.o cmds.c
-In file included from cmds.c:19:
-/opt/eldk/usr/../ppc_4xx/usr/include/linux/fs.h:47:
-warning: `BLOCK_SIZE' redefined
-/opt/eldk/usr/../ppc_4xx/usr/include/sys/mount.h:28:
-warning: this is the location of the previous
-definition
-/opt/eldk/usr/../ppc_4xx/usr/include/linux/fs.h:101:
-warning: `MS_RDONLY' redefined
-/opt/eldk/usr/../ppc_4xx/usr/include/sys/mount.h:37:
-warning: this is the location of the previous
-definition
-/opt/eldk/usr/../ppc_4xx/usr/include/linux/fs.h:102:
-warning: `MS_NOSUID' redefined
-/opt/eldk/usr/../ppc_4xx/usr/include/sys/mount.h:39:
-warning: this is the location of the previous
-definition
-/opt/eldk/usr/../ppc_4xx/usr/include/linux/fs.h:103:
-warning: `MS_NODEV' redefined
-/opt/eldk/usr/../ppc_4xx/usr/include/sys/mount.h:41:
-warning: this is the location of the previous
-definition
-/opt/eldk/usr/../ppc_4xx/usr/include/linux/fs.h:104:
-warning: `MS_NOEXEC' redefined
-/opt/eldk/usr/../ppc_4xx/usr/include/sys/mount.h:43:
-warning: this is the location of the previous
-definition
-/opt/eldk/usr/../ppc_4xx/usr/include/linux/fs.h:105:
-warning: `MS_SYNCHRONOUS' redefined
-/opt/eldk/usr/../ppc_4xx/usr/include/sys/mount.h:45:
-warning: this is the location of the previous
-definition
-/opt/eldk/usr/../ppc_4xx/usr/include/linux/fs.h:106:
-warning: `MS_REMOUNT' redefined
-/opt/eldk/usr/../ppc_4xx/usr/include/sys/mount.h:47:
-warning: this is the location of the previous
-definition
-/opt/eldk/usr/../ppc_4xx/usr/include/linux/fs.h:107:
-warning: `MS_MANDLOCK' redefined
-/opt/eldk/usr/../ppc_4xx/usr/include/sys/mount.h:49:
-warning: this is the location of the previous
-definition
-/opt/eldk/usr/../ppc_4xx/usr/include/linux/fs.h:108:
-warning: `MS_NOATIME' redefined
-/opt/eldk/usr/../ppc_4xx/usr/include/sys/mount.h:57:
-warning: this is the location of the previous
-definition
-/opt/eldk/usr/../ppc_4xx/usr/include/linux/fs.h:109:
-warning: `MS_NODIRATIME' redefined
-/opt/eldk/usr/../ppc_4xx/usr/include/sys/mount.h:59:
-warning: this is the location of the previous
-definition
-/opt/eldk/usr/../ppc_4xx/usr/include/linux/fs.h:110:
-warning: `MS_BIND' redefined
-/opt/eldk/usr/../ppc_4xx/usr/include/sys/mount.h:61:
-warning: this is the location of the previous
-definition
-/opt/eldk/usr/../ppc_4xx/usr/include/linux/fs.h:121:
-warning: `MS_RMT_MASK' redefined
-/opt/eldk/usr/../ppc_4xx/usr/include/sys/mount.h:65:
-warning: this is the location of the previous
-definition
-/opt/eldk/usr/../ppc_4xx/usr/include/linux/fs.h:126:
-warning: `MS_MGC_VAL' redefined
-/opt/eldk/usr/../ppc_4xx/usr/include/sys/mount.h:70:
-warning: this is the location of the previous
-definition
-/opt/eldk/usr/../ppc_4xx/usr/include/linux/fs.h:134:
-warning: `S_APPEND' redefined
-/opt/eldk/usr/../ppc_4xx/usr/include/sys/mount.h:53:
-warning: this is the location of the previous
-definition
-/opt/eldk/usr/../ppc_4xx/usr/include/linux/fs.h:135:
-warning: `S_IMMUTABLE' redefined
-/opt/eldk/usr/../ppc_4xx/usr/include/sys/mount.h:55:
-warning: this is the location of the previous
-definition
-/opt/eldk/usr/../ppc_4xx/usr/include/linux/fs.h:170:
-warning: `BLKROSET' redefined
-/opt/eldk/usr/../ppc_4xx/usr/include/sys/mount.h:78:
-warning: this is the location of the previous
-definition
-/opt/eldk/usr/../ppc_4xx/usr/include/linux/fs.h:171:
-warning: `BLKROGET' redefined
-/opt/eldk/usr/../ppc_4xx/usr/include/sys/mount.h:79:
-warning: this is the location of the previous
-definition
-/opt/eldk/usr/../ppc_4xx/usr/include/linux/fs.h:172:
-warning: `BLKRRPART' redefined
-/opt/eldk/usr/../ppc_4xx/usr/include/sys/mount.h:80:
-warning: this is the location of the previous
-definition
-/opt/eldk/usr/../ppc_4xx/usr/include/linux/fs.h:173:
-warning: `BLKGETSIZE' redefined
-/opt/eldk/usr/../ppc_4xx/usr/include/sys/mount.h:81:
-warning: this is the location of the previous
-definition
-/opt/eldk/usr/../ppc_4xx/usr/include/linux/fs.h:174:
-warning: `BLKFLSBUF' redefined
-/opt/eldk/usr/../ppc_4xx/usr/include/sys/mount.h:82:
-warning: this is the location of the previous
-definition
-/opt/eldk/usr/../ppc_4xx/usr/include/linux/fs.h:175:
-warning: `BLKRASET' redefined
-/opt/eldk/usr/../ppc_4xx/usr/include/sys/mount.h:83:
-warning: this is the location of the previous
-definition
-/opt/eldk/usr/../ppc_4xx/usr/include/linux/fs.h:176:
-warning: `BLKRAGET' redefined
-/opt/eldk/usr/../ppc_4xx/usr/include/sys/mount.h:84:
-warning: this is the location of the previous
-definition
-ppc_4xx-gcc -O3 -Wall -Wmissing-prototypes -DHAVE_EXT2
-  -c -o cmd_dd.o cmd_dd.c
-ppc_4xx-gcc -O3 -Wall -Wmissing-prototypes -DHAVE_EXT2
-  -c -o cmd_ed.o cmd_ed.c
-ppc_4xx-gcc -O3 -Wall -Wmissing-prototypes -DHAVE_EXT2
-  -c -o cmd_grep.o cmd_grep.c
-ppc_4xx-gcc -O3 -Wall -Wmissing-prototypes -DHAVE_EXT2
-  -c -o cmd_ls.o cmd_ls.c
-ppc_4xx-gcc -O3 -Wall -Wmissing-prototypes -DHAVE_EXT2
-  -c -o cmd_tar.o cmd_tar.c
-ppc_4xx-gcc -O3 -Wall -Wmissing-prototypes -DHAVE_EXT2
-  -c -o cmd_gzip.o cmd_gzip.c
-ppc_4xx-gcc -O3 -Wall -Wmissing-prototypes -DHAVE_EXT2
-  -c -o cmd_find.o cmd_find.c
-ppc_4xx-gcc -O3 -Wall -Wmissing-prototypes -DHAVE_EXT2
-  -c -o cmd_file.o cmd_file.c
-ppc_4xx-gcc -O3 -Wall -Wmissing-prototypes -DHAVE_EXT2
-  -c -o cmd_chattr.o cmd_chattr.c
-ppc_4xx-gcc -O3 -Wall -Wmissing-prototypes -DHAVE_EXT2
-  -c -o cmd_ar.o cmd_ar.c
-ppc_4xx-gcc -O3 -Wall -Wmissing-prototypes -DHAVE_EXT2
-  -c -o utils.o utils.c
-ppc_4xx-gcc -static -s -o sash sash.o cmds.o cmd_dd.o
-cmd_ed.o cmd_grep.o cmd_ls.o cmd_tar.o cmd_gzip.o
-cmd_find.o cmd_file.o cmd_chattr.o cmd_ar.o utils.o
--L/opt/eldk/ppc_4xx/usr/lib
--------------
 
-Thanks,
-Prakash
+-----Original Message-----
+From: Peter Ryser [mailto:Peter.Ryser@xilinx.com]
+Sent: Saturday, February 08, 2003 9:39 PM
+To: Kerl John
+Cc: 'linuxppc-embedded@lists.linuxppc.org'
+Subject: Re: Low memory on Virtex-II Pro
 
+
+John,
+
+please correct me if I see this wrong but it looks like you are mixing up
+MicroBlaze and PowerPC. The LMB is a bus that is only available on
+MicroBlaze.
+Linux does not have support for MicroBlaze.
+
+However, Linux works great on the PowerPC inside the Virtex-II Pro FPGA when
+you map the main memory at address zero. When using EDK to build your system
+just set the BASEADDR for the SDRAM to zero.
+
+You might also want to be aware of the fact that the interrupt controller
+that
+ships with EDK is different from the interrupt controller that ships with
+the
+Xilinx ML300 board. If you build your system with EDK you will have to adapt
+arch/ppc/kernel/xilinx_pic.c.
+
+Regards,
+- Peter
+
+
+"Kerl, John" wrote:
+
+> Hello all,
+>
+> There have been some recent posts about Linux & Virtex-II Pro
+> (FPGA with PPC405 hard core).  & apparently people have it working.
+>
+> One question before I start, though:
+>
+> Of course the kernel starts at *virtual* address 0xc0000000, regardless
+> of the processor.  But my understanding is that certain processors have
+> zero-based *physical* addresses for RAM, and some don't -- x86 of course
+> being an example of the former, and ARM being an example of the latter.
+> I believe that PPC is an example of the former.  Certainly our MPC857T
+> board, and all the other boards of which I'm aware, have RAM starting at
+> physical address 0x00000000.
+>
+> Now, on our custom Virtex-II Pro board, with Xilinx EDK setup, there's a
+> bit (the MSB) in the physical address that specifies whether a memory
+> region is on the LMB bus or OPB bus.  We get to pick *which* bit, but
+> there must be *a* bit set for the SDRAM.  The upshot is that our SDRAM
+> starts at physical address 0xb0000000.  It can't be placed at address 0.
+> And block RAM could be made low, but I can't see having megabytes of
+> block RAM.
+>
+> So, I think I have to have the kernel at non-zero physical address
+> with PPC405.
+>
+> Can anyone advise on success or failure of doing so?
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
