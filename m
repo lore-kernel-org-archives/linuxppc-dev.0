@@ -1,66 +1,85 @@
-Message-ID: <3BF65B8B.EB015B30@intrex.net>
-Date: Sat, 17 Nov 2001 07:43:55 -0500
-From: Ralph Blach <rblach@intrex.net>
+Message-ID: <20011117133818.52830.qmail@web15003.mail.bjs.yahoo.com>
+Date: Sat, 17 Nov 2001 21:38:18 +0800 (CST)
+From: =?gb2312?q?Dross=20Zhou?= <zjuzhou@yahoo.com.cn>
+Subject: Why this driver alway panic?
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-To: paulus@samba.org
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	Dan Malek <dan@embeddededge.com>, Matt Porter <mporter@mvista.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Organisation of 4xx initialization code
-References: <20011116164625.K673@zax>
-		<20011116045737.A24130@cx258813-a.chnd1.az.home.com>
-		<20011116085121.D5410@cpe-24-221-152-185.az.sprintbbd.net>
-		<20011116094210.B3473@beef.az.mvista.com>
-		<20011116101323.B9242@cpe-24-221-152-185.az.sprintbbd.net>
-		<3BF5A01D.4040502@embeddededge.com>
-		<20011117114330.G12763@zax>
-		<20011116191832.D9923@cpe-24-221-152-185.az.sprintbbd.net> <15350.18199.593968.834376@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=gb2312
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Just a note that might influence you.  The sprs of each 405 will be the same,
-but there is NO gurantee that the DCR, any of them look anything like any
-other DCR in any other DCR.
+I am writing a video capture driver.But after this
+driver has worked for a  period(10-50 min),system
+alway panics.
+My server programe just get data form device then send
+them to network using TCP connection.
+Here is output message after panic:
+---
+Oops: Kernel Mode Software FPU Emulation, sig: 8
+NIP: 00001FFC XER: 00000000 LR: 00000590 SP: C0199E30
+REGS: c0199d80 TRAP: 1000
+MSR: 00001000 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 00
+TASK = c0198000[5] 'bdflush' Last syscall: -1
+last math 00000000 last altivec 00000000
+GPR00: 00000004 C0199E30 C0198000 C0199E40 00000000
+C0124CB8 C0602240 0000001B
+GPR08: C0124CB8 C05B9000 C019C000 C014AB90 44000025
+10018DAC 00000000 00000000
+GPR16: 00000000 00000000 00000000 00000000 00001032
+00199E30 C000C80C 00009032
+GPR24: 00000000 00000200 C053A000 C0602240 00000000
+C0602240 C0127AB0 C0199EF0
+Call backtrace:
+C0002810 001801C0 C00385A0 C0004E80
+Oops: kernel access of bad area, sig: 11
+NIP: C000C63C XER: 20000000 LR: C000C5D0 SP: C0199CF0
+REGS: c0199c40 TRAP: 0300
+MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+DAR: 00000004, DSISR: 00000928
+TASK = c0198000[5] 'bdflush' Last syscall: -1
+last math 00000000 last altivec 00000000
+GPR00: 000E9715 C0199CF0 C0198000 00000000 00000000
+C0130000 C0198000 C0130000
+GPR08: 00000000 C0124CB8 C0198000 00000001 84000028
+10018DAC 00000000 00000000
+GPR16: 00000000 00000000 00000000 00000000 00001032
+00199D70 00000000 C0002818
+GPR24: C0002EDC 00000200 C053A000 C0602240 C0199D80
+00000008 C0127AB0 C0199CF0
+Call backtraC000C948 C00134CC C0002A2C C0002F10
+C0002818 C0002810 001801C0
+C00385A0 C0004E80
+Oops: kernel access of bad area, sig: 11
+NIP: C000C63C XER: 00000000 LR: C000C5D0 SP: C0199B00
+REGS: c0199a50 TRAP: 0300
+MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+DAR: 00000004, DSISR: 00000928
+TASK = c0198000[5] 'bdflush' Last syscall: -1
+last math 00000000 last altivec 00000000
+GPR00: 000E9761 C0199B00 C0198000 00000001 00000000
+00000001 C0198000 C0130000
+GPR08: 00000000 C0124CB8 C0198000 00000000 84000028
+10018DAC 00000000 00000000
+GPR16: 00000000 00000000 00000000 00000000 00001032
+00199C30 00000000 C0002818
+GPR24: C000A238 00000000 00030001 C0199C40 C0199C40
+0000000B C0127AB0 C0199B00
+Call backtrace:
+C00130C8 C00134CC C0002A2C C000A5EC C000A4C8 C0002818
+C000C948
+C00134CC C0002A2C C0002F10 C0002818 C0002810 001801C0
+C00385A0
+C0004E80
+Oops: kernel access of bad area, sig: 11
+NIP: C000C63C XER: 00000000 LR: C000C5D0 SP: C0199910
+REGS: c0199860 TRAP: 0300
+MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+DAR: 00000004, DSISR: 00000928
+TASK = c0198000[5] 'bdflush' Last syscall: -1
+last math 00000000 last altivec 00000000
 
-I suggest core, chip, and then platform specfic.
-
-Chip
-
-Paul Mackerras wrote:
-
-> Tom Rini writes:
->
-> > > No need - the board's platform_init() can call the processor general
-> > > functions if necessary.
-> >
-> > But why not do this once instead of many times?  Right now, each of the
-> > 405GP 'board' file would look awful similar.  I think what Dan said
->
-> As a philosophical thing, I think it is better to give control to the
-> platform-specific code early and let it call back to generic stuff.
-> This is very much the Linux philosophy - it's basically what Linus did
-> with the USB code for instance (the old code worked its way down
-> through several layers to the HCI driver, Linus' new code called
-> straight into the HCI driver which then called a library of support
-> routines).
->
-> I think that each platform (ep405, walnut, etc.) should have its own
-> platform_init(), and if all that does is ppc405_init(), that's fine.
-> The fact that we have board_init() at present suggests that some
-> platforms will do more than just ppc405_init.  And having a
-> platform_init() for each platform is consistent with our approach on
-> other platforms as well.  Then ppc4xx_setup.c becomes a library of
-> pieces of code that can be called or not as appropriate.
->
-> Paul.
->
-
---
-Ralph "Chip" Blach
-KF4WBK
-Chapel Hill, North Carolina
+...	...
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
