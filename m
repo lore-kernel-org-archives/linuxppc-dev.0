@@ -1,43 +1,57 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: ppcboot 8260 LXT971A
-Date: Mon, 30 Jun 2003 10:46:57 +0200
-Message-ID: <30C145E544071F4FB8B627789F7910BD32BE35@csy-exchange1.giat.intra>
-From: "ARIBAUD Albert" <A.ARIBAUD@giat-industries.fr>
-To: <linuxppc-embedded@lists.linuxppc.org>
+To: greggiraud@netcourrier.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: ppcboot 8260 LXT971A 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 30 Jun 2003 10:12:10 EST."
+             <mnet1.1056960730.12133.greggiraud@netcourrier.com>
+Date: Mon, 30 Jun 2003 10:58:53 +0200
+Message-Id: <20030630085859.0A408C592A@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Hi,
+Dear Grego,
+
+in message <mnet1.1056960730.12133.greggiraud@netcourrier.com> you wrote:
+>
 > I installed a ppcboot and a linux 2.4 on a MPC8260ADS card.
+
+There are some things you should change:
+
+First, PPCBoot is a dead project; development has  been  discontinued
+more  than half a year ago. For new development the successor project
+"U-Boot" should be used instead.
+
+Second, U-Boot (and PPCBoot) related questions are  off  topic  on  a
+LInux  mailing  list.  Please post such questions to the u-boot-users
+mailing list instead.
+
+> Now, I am working on a custom card such as an MPC8260ADS card. The difference between those two cards is the ethernet: my custom card has two ethernet port, and uses two LXT971A.
 >
-> Now, I am working on a custom card such as an MPC8260ADS
-> card. The difference between those two cards is the ethernet:
-> my custom card has two ethernet port, and uses two LXT971A.
->
-> So, I compile a ppcboot for 8260ads. PPCBOOT can't download a
-> kernel with tftp. Is someone has a source code to support the LXT971?
->
-> I compile a new kernel, which support LXT971A. PPCBOOT can
-> run it from memory. But the kernel doesn't have network.
->
-> please can someone help me?
+> So, I compile a ppcboot for 8260ads. PPCBOOT can't download a kernel with tftp. Is someone has a source code to support the LXT971?
 
-Hi,
+Third, if you have a custom card, you should adapt ("port") U-Boot to
+your hardware. Using a configuration that was designed for  different
+hardware will always cause some sort of problems.
 
-My own experience was with a TQM855L-like setup, using an LX971A, so it's an 8xx, not an 82xx context.
+Finally, both PPCBoot and U-Boot have been supporting the LXT971  for
+a long time.
 
-However : I had no problem with PPCBoot (and U-Boot now), but at first the kernel would not work with Ethernet. I traced that down to the MPC8XX CPM Options : once the "use MDIO for PHY configuration" option was UNSET (but "Support LXT971 PHY" was SET, of course), everything worked OK.
+> I compile a new kernel, which support LXT971A. PPCBOOT can run it from memory. But the kernel doesn't have network.
 
-My problem had something to do with MII state change interrupts not being detected properly, so the Ethernet driver was not told when the line went up after autonegociation, and thus never sent any packet.
+Well, this is a  different  issue,  then.  The  Linux  driver  should
+perform  all  required  initialization itself, so no interaction with
+U-Boot should happen.
 
-Maybe with your 8260 you hit the same kind of problems?
+Best regards,
 
-HTH,
+Wolfgang Denk
 
-Albert.
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Another megabytes the dust.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
