@@ -1,71 +1,67 @@
-Message-ID: <1088772168014.mikko.alutoin.130383.qbx_NYnmPOfktfBlL_IlKw@luukku.com>
-Date: Fri, 2 Jul 2004 15:42:48 +0300 (EEST)
-From: Mikko Alutoin <mikko.alutoin@luukku.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: On the MPC85xx development boards
+Subject: Re: [PATCH][RFC]Updated MPC I2C driver
+From: Adrian Cox <adrian@humboldt.co.uk>
+To: Sylvain Munaut <tnt@246tnt.com>
+Cc: mcclintock@freescale.com,
+	Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>,
+	"Kumar K. Gala" <kumar.gala@motorola.com>
+In-Reply-To: <40E54074.2010801@246tNt.com>
+References: <1088705955.28598.168.camel@localhost>
+	 <1088693987.7555.60.camel@matthew-laptop>
+	 <1088717127.28598.197.camel@localhost>  <40E49100.2060501@246tNt.com>
+	 <1088759103.936.24.camel@localhost>  <40E54074.2010801@246tNt.com>
+Content-Type: text/plain
+Message-Id: <1088775864.933.60.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Date: Fri, 02 Jul 2004 14:44:25 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi again!
+It looks to me that supporting the 5200 will require a lot of small
+changes.
 
-Thanks to everybody who answered my original mail about a week ago.
+On Fri, 2004-07-02 at 12:01, Sylvain Munaut wrote:
 
-The tips were very helpful. For your knowledge, we decided to go with option 2 this time (http://www.metrowerks.com/MW/Develop/NetComm/8540EVAL.htm).
+> #include <asm/ppcboot.h>
+> extern bd_t __res;
+> u32 ipbfreq = __res.bi_ipbfreq;
+>
+> But this field will only exists when :
+>  - CONFIG_PPC_MPC52xx symbol is defined.
+>  - When the MPC52xx patch is applied to the kernel
 
-Cheers,
-Mikko
+Maybe we should define two more fields in the ocp_fs_i2c_data structure:
+one for base clock, and one for i2c clock. Then platform code could fill
+in the clocks as necessary.
 
-P.S. For those who absolutely need an optical 1 Gbps Ethernet interface on board, options 1 and 4 seem to be the only alternatives.
+> Also, there is no DFSRR register on the 5200.
 
-Mikko Alutoin wrote 24.06.2004:
->
-> Hi folks!
->
-> I would be happy to receive some comments on pros & cons of different
-> development boards for MPC85xx cause I'm in the process of selecting
->  one.
-> The final design will be using MPC8560 to implement a 1 Gbps
->  Ethernet card
-> for a router. ATM support will be needed later on.
-> The development environment includes a Linux PC and Abatron BDI2000
-> emulator.
->
-> Here are the boards that I am aware of:
->
-> 1)	MPC8560ADS by Motorola
-> 2)	CW8540DSEVAL by Motorola
-> 3)	SBC8560 by Windriver
-> 4)	Silicon Tx GP3 8560
-> 5)	MPC8540 RDK by GDATech
->
-> Are these boards all there is?
->
-> I am under the impression that 1, 2, 4 and 5 (but not 3) come with a
->  Linux
-> BSP included? Is this correct?
->
-> Being the lazy person that I am, I'm trying to minimize the work to get
-> Linux up and running on the board. I wonder which board/package gives me
-> least headache? Are there any pitfalls that I should know about?
->
-> Let us assume that the final product will not be based on a commercial
-> Embedded Linux distro, but a custom 2.6 kernel with busybox & uclibc.
-> Should that effect the choice in any way?
->
-> Forgive me if the questions seem a bit foolish. The bottom line is
->  that I
-> have not used any kind of development boards in the past and I would
->  like
-> to receive some insight on which one of the above to choose.
->
-> Cheers,
-> Mikko
->
->
->
+I noticed that. I don't think anybody ever used anything but the default
+value on the other chips.
+
+> >To use my driver, just set IE1 and IE2. The other flags are for a
+> >different approach using DMA to load the TX and RX registers. That would
+> >give a lower CPU overhead, but would also require a separate driver.
+
+> Are you sure ? If I don't set the BNBE (Bus Not Busy Enable) bit, I just
+> get timeouts.
+
+>From the manual it looks as if setting BNBE might cause extra
+interrupts, which the driver has no way to handle.  Could you try
+enabling the interrupts, and see if this happens?
+
+> Yes sure, that's the easiest way. It's just that I'd like to avoid it.
+> Especially when it's content is dependent on if the user has choosed to
+> use irq or not.
+> But It's sure is a pity that the register is shared between the two I2C
+> ... Because even with a flag, the driver should be passed the address of
+> this register, and what bits to use.
+
+How about putting a function pointer for platform interrupt enabling and
+disabling into the ocp_fs_i2c_data?
+
+- Adrian Cox
+Humboldt Solutions Ltd.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
