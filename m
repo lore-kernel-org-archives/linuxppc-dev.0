@@ -1,54 +1,34 @@
-Date: Fri, 29 Sep 2000 13:28:14 +0200 (MEST)
-From: Tobias Otto-Adamczak <tobias.otto-adamczak@e-technik.tu-chemnitz.de>
-To: Gérard Guével <gguevel@interfaceconcept.com>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Hdlc driver for SCC port
-In-Reply-To: <000001c029ea$0682dee0$2901a8c0@none>
-Message-ID: <Pine.LNX.4.21.0009291323090.13421-100000@odoaker.hrz.tu-chemnitz.de>
+Message-ID: <39D485A1.2785C0E4@serialsystem.com.sg>
+Date: Fri, 29 Sep 2000 19:05:53 +0700
+From: Jari <jari.nguyen@smartstors.com>
+Reply-To: jari.nguyen@smartstors.com
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: mount RAMDISK directly on rom
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Now I have a linux2.2.14 kernel which runs on my MPC860P board.
-> I would want to customize an hdlc driver on scc.
-> Some help about what exists (structure, driver, howto, ...) would be
-> welcome.
+Hi all,
 
-I need to handle HDLC for my ISDN project on an MBX board. Progress is
-slowly, because I am no expert. At the moment I can give away this
-addition to commproc.h:
+Is there anyone know how to let the uncompressed ramdisk image in the
+rom,
+and mount root system directly from it (read only)?
 
---- snip --------------------------------------------------------------
+I think that I have to modify  mount_root() function,
+reinitialize  super_block *sb directly by reading ramdisk image from the
+rom,
+before calling add_vsfmnt(sb,"/dev/root","/"),
+is that right? of course, I have to build  a kernel image with
+uncompress image,
+modify the code which copy ramdisk image to ram_device.
 
-/*********   SCC parameter RAM for HDLC mode   *********/
-typedef struct scc_hdlc {
-	sccp_t	scc_gen;	/* generic SCC parameters */
-	uint	scc_res1;	/* reserved */
-	uint	scc_cmask;	/* CRC mask */
-	uint	scc_cpres;	/* CRC preset */
-	ushort	scc_disfc;	/* discarded frame counter */
-	ushort	scc_crcec;	/* CRC error counter */
-	ushort	scc_abtsc;	/* abort sequence counter */
-	ushort	scc_nmarc;	/* nonmatching address receive counter */
-	ushort	scc_retrc;	/* frame retransmission counter */
-	ushort	scc_mflr;	/* Max frame length register */
-	ushort	scc_maxcnt;	/* internal */
-	ushort	scc_rfthr;	/* received frames threshold */
-	ushort	scc_rfcnt;	/* internal */
-	ushort	scc_hmask;	/* HDLC address mask register */
-	ushort	scc_haddr1;	/* HDLC address register 1 */
-	ushort	scc_haddr2;	/* HDLC address register 2 */
-	ushort	scc_haddr3;	/* HDLC address register 3 */
-	ushort	scc_haddr4;	/* HDLC address register 4 */
-	ushort	scc_tmp;	/* internal */
-	ushort	scc_tmp_mb;	/* internal */
-} scc_hdlc_t;
+If you have done it, and see my way is incorrect,
+or know where to look for information about it, teach me please.
 
---- snip --------------------------------------------------------------
-
-Ciao - Tobias
+Thanks in advance,
+Jari
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
