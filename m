@@ -1,18 +1,19 @@
-Return-Path: <Stefan.Nickl@kontron.com>
-Received: from kom-mail1.kontron-modular.com (unknown [62.159.155.196])
-	by ozlabs.org (Postfix) with ESMTP id 6571767A65
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao11.cox.net (fed1rmmtao11.cox.net [68.230.241.28])
+	by ozlabs.org (Postfix) with ESMTP id 9491A67A6D
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  3 Mar 2005 00:41:30 +1100 (EST)
-From: Stefan Nickl <Stefan.Nickl@kontron.com>
-To: Andriy Korud <a.korud@vector.com.pl>
-In-Reply-To: <60E856FD577CC04BA3727AF4122D3F1611352E@3bit.vector.com.pl>
-References: <60E856FD577CC04BA3727AF4122D3F1611352E@3bit.vector.com.pl>
-Content-Type: text/plain
-Date: Wed, 02 Mar 2005 14:41:26 +0100
-Message-Id: <1109770886.30018.34.camel@lucy.pep-kaufbeuren.de>
+	Thu,  3 Mar 2005 03:29:21 +1100 (EST)
+Date: Wed, 2 Mar 2005 09:29:18 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Jeff Garzik <jgarzik@pobox.com>
+Message-ID: <20050302092918.A30946@cox.net>
+References: <20050218101245.D11439@cox.net> <4216FD64.9020509@pobox.com>
 Mime-Version: 1.0
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: Looking for prebuilt PPC board with miniPCI slot
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4216FD64.9020509@pobox.com>;
+	from jgarzik@pobox.com on Sat, Feb 19, 2005 at 03:48:36AM -0500
+Cc: netdev@oss.sgi.com, linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] emac: filter illegal frame sizes
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,23 +24,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2005-03-02 at 14:18 +0100, Andriy Korud wrote:
-> Hi,
-> we are looking for a embedded board with at least one miniPCI slot and Ethernet port with performance at AMCC 405EP@333 level and Linux 2.6 support. 
-> Have anybody heard about something like this preferably in Europe?
+On Sat, Feb 19, 2005 at 03:48:36AM -0500, Jeff Garzik wrote:
+> Matt Porter wrote:
+> > Fix to drop frames that are too large for the current MTU.
+> 
+> What is this fixing?
+> 
+> You should be passing all frames up to the software stack.
 
-<shameless plug>
+I was originally fixing the issue where the driver was only allocating
+rx buffers big enough for the configured MTU and got a bit
+overzealous. I pulled out the filtering hunks so we always allocate
+skbs large enough to handle a full size jumbo frame and pass everything
+up to the stack...new patch to follow.
 
-Hm, our EB405 only runs at 266 MHz, but there are other PowerPC-based
-modules you can stick onto our EBC2 carrier board.
-
-http://www.kontron.com/techlib/manuals/MAN-%20EBC2.pdf
-http://www.kontron.com/contact/ct-emea.cfm
-
-We also have an office in warsaw.
-
-</shameless plug>   :-)
-
--- 
-Stefan Nickl
-Kontron Modular Computers
+-Matt
