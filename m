@@ -1,25 +1,46 @@
-Subject: Re: On the MPC85xx development boards
+Subject: Re: GT64260_eth (Ethernet) Driver
 From: David Woodhouse <dwmw2@infradead.org>
-To: Mikko Alutoin <mikko.alutoin@luukku.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <1088085327022.mikko.alutoin.17388.vROgRbiXwfx6jgnkf5FAxQ@luukku.com>
-References: 
-	 <1088085327022.mikko.alutoin.17388.vROgRbiXwfx6jgnkf5FAxQ@luukku.com>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Cc: Dieu Morales <dieumorales@yahoo.com>,
+	linuxppc-embedded@lists.linuxppc.org,
+	Brian Waite <waite@skycomputers.com>
+In-Reply-To: <40DB2199.2050006@mvista.com>
+References: <20040620202719.25741.qmail@web60407.mail.yahoo.com>
+	 <40DA06BE.204@mvista.com>
+	 <1088066228.18627.3352.camel@hades.cambridge.redhat.com>
+	 <40DB2199.2050006@mvista.com>
 Content-Type: text/plain
-Message-Id: <1088147283.4636.110.camel@imladris.demon.co.uk>
+Message-Id: <1088147437.4636.114.camel@imladris.demon.co.uk>
 Mime-Version: 1.0
-Date: Fri, 25 Jun 2004 08:08:03 +0100
+Date: Fri, 25 Jun 2004 08:10:37 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, 2004-06-24 at 16:55 +0300, Mikko Alutoin wrote:
-> I am under the impression that 1, 2, 4 and 5 (but not 3) come with a Linux BSP
-> included? Is this correct?
+On Thu, 2004-06-24 at 11:46 -0700, Mark A. Greer wrote:
+> >Ooh look another one. What's in here that merits it having its own tree
+> >and prevents it from being accepted upstream?
+> >
+> It doesn't "merit" its own tree; it has its own tree because the code is
+> not yet ready to be passed upstream but others need to see the code.  If
+> you don't want to deal with the code in this tree, don't.  When it is
+> ready, and eventually [hopefully] accepted into the kernel.org tree,
+> this tree will disappear.
 
-Number 3 (the WindRiver SBC8560) should be supported by 2.6 as soon as
-Linus heeds my request to pull from
-bk://linux-mtd.bkbits.net/sbc8560-2.6
+Oh, I definitely want to deal with this tree :)
+
+Do you have a brief list of what still offends you about this rewritten
+code, such that you haven't sent it yet? Especially those parts which I
+could usefully address myself.
+
+I note there are no platforms actually present which use the 64360.
+There's Artesyn Katana support in Kconfig but no actual platform support
+for that unless I'm being particularly dim today.
+
+Is the 64360 support expected to work? Is there an older known-working
+tree for 64360? I'm looking at the Timesys 2.4 port for the Dy-4
+DMV-182, but that doesn't actually seem to boot on my DMV-182 so I lack
+confidence in the wisdom of using that as any form of reference ;)
 
 --
 dwmw2
