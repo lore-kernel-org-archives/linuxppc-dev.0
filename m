@@ -1,14 +1,25 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <8D7C5F56B409554D9D46AC22195807F3061C5B@exchwenz01.dmcwave.co.nz>
-From: Rod Boyce <rod_boyce@stratexnet.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Creating RAM disks as a non root user.
-Date: Tue, 4 Feb 2003 15:00:57 +1300 
+Message-ID: <DB0585C9F6F9D411BE8F00D0B7896A4CC0615C@SNCMAIL>
+From: James Don <JDon@spacebridge.com>
+To: "'Rod Boyce'" <rod_boyce@stratexnet.com>,
+	"'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Creating RAM disks as a non root user.
+Date: Mon, 3 Feb 2003 21:03:49 -0500 
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+I think in DENX new ELDK they may use what you just found ... but in older
+versions of SELF you must become root user like you say ...
+
+Jim
+
+-----Original Message-----
+From: Rod Boyce [mailto:rod_boyce@stratexnet.com]
+Sent: Monday, February 03, 2003 9:01 PM
+To: 'linuxppc-embedded@lists.linuxppc.org'
+Subject: Creating RAM disks as a non root user.
 
 
 All,
