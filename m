@@ -1,48 +1,34 @@
-Message-ID: <37B31A3B.8532D794@wanadoo.fr>
-Date: Thu, 12 Aug 1999 21:02:19 +0200
-From: Martin Costabel <costabel@wanadoo.fr>
-MIME-Version: 1.0
-To: toa@pop.agri.ch
-CC: Linux-User <linuxppc-user@lists.linuxppc.org>,
-        Linux-Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: xhfs & MacOS standard disks corruption
-References: <37B30E49.844CA5A8@pop.agri.ch>
+Date: Thu, 12 Aug 1999 15:56:29 -0400
+From: Daniel Jacobowitz <drow@false.org>
+To: LinuxPPC Developpers <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Assembly
+Message-ID: <19990812155629.A9752@them.org>
+References: <XFMail.990812092025.heinz@bintec.de> <37B2C0A5.55A07C87@usa.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <37B2C0A5.55A07C87@usa.net>; from David Riley on Thu, Aug 12, 1999 at 08:40:06AM -0400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Andreas Tobler wrote:
-> 
-> Hi,
-> 
-> has anybody made similar experiences with xhfs (from hfsutils-3.2-1b):
-> 
-> Under MacOs 8.6 cleaned the disk with DiskFirstAid 8.5.2.
+On Thu, Aug 12, 1999 at 08:40:06AM -0400, David Riley wrote:
+> I'm not sure where I got it, but I have a nice book on PPC assembly that gives
+> quite a bit of help, called "Optimizing PowerPC Code", by Gary Kacmarcik.
+> It's a fairly early book, but not much has changed since the PowerPC was new.
+> All you need to know is that the 604 and up have three integer units instead
+> of one.
 
-hfsutils-3.2-1b is pretty old, maybe from the times when hfs support was
-indeed unsafe (March 1998 or so). Are you still using R4? Even then, you
-could get a newer hfsutils*.src.rpm and compile it; for ex. from the
-contrib directory on ftp.linuxppc.org.
+Seconded.  This book, in combination with the Motorola reference
+manuals (available in PDF from their web site) is my complete assembly
+library; it's always been enough.
 
-> Boot into Linux, startx, xhfs & open the cleaned partition, transfer a
-> file, in my case 9MB, to the mounted partition.
-> Afterwards closed the xhfs shut the machine down to reboot into MacOS.
-> 
-> A check on this partition gives me an error in the catalog tree.
-> Ok, doing a repair to it works. But as it happened to me doing that
-> several times without checking/reparing the partition I got an
-> unreparable partition which I had to erase.
-> This is done with 2.2.10 & 2.2.11.
-> Question: is xhfs bad? or is there something uggly with hfs support?
+Dan
 
-MacOS 8.6 + Linux 2.2.10, and then hfsutils-3.2-1b: Somewhat
-incongruous.
-
-Disclaimer: Your problem could be something else entirely, of course.
-
---
-Martin
+/--------------------------------\  /--------------------------------\
+|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
+|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
+|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
+\--------------------------------/  \--------------------------------/
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
