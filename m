@@ -1,37 +1,21 @@
-From: zjuzhou@163.net
-MIME-Version: 1.0
-Message-Id: <3AE6965D.28638@bjapp4>
-Date: Wed, 25 Apr 2001 17:18:21 +0800 (CST)
+Message-ID: <41EA756DBC9FD0118CFC0020AFDB5C5A188DBD@tcint1ntsrv>
+From: Zehetbauer Thomas <TZ@link.topcall.co.at>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: About BOOTP in hhl kernel 2.1.14
+Subject: RE: ppc little-endian port
+Date: Wed, 25 Apr 2001 14:16:36 +0200
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hello all,
-	i use bootp to get a ip address to my borad.My host's dhcpd service is working.But when i boot my borad,he told me time out. I don't know why?
-	even i have config BOOTP ,i want to change ipconfig.c to give a vlaue to
-my borad and nfs server's ip address,can i do? need some others ?
-	thanks!
+Thank's for the patch Alexandre & Sebastien !
 
+For those who need to ask 'why': We want^H^H^H^Hneed interoperatbility
+with no hazzles between the big world running on little endian x86
+systems and those little devices designed by people who have not left
+their protected labs for years.
 
-dross chou
-
-
-
-
-
-
-
-
-
-===============================================
-为你而建，为你而设，让你传递真心真意
-
-    ---- 163.net贺卡站（http://ecard.163.net）
-
-163电子邮局全新奉献，精彩无限的电子贺卡站。
-===============================================
-
+Tom
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
