@@ -1,27 +1,32 @@
-In-Reply-To: <v04003a02b3ea789770f8@[216.81.21.14]>
-Date: Thu, 26 Aug 1999 10:57:11 +0200
-To: Tony Mantler <eek@escape.ca>, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.LNX.4.10.9908261001270.29782-100000@mercator.cs.kuleuven.ac.be>
+Date: Thu, 26 Aug 1999 10:59:49 +0200
+To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>,
+        linuxppc-dev@lists.linuxppc.org
 From: Benjamin Herrenschmidt <bh40@calva.net>
 Subject: Re: Performa 5200
-Message-Id: <19990826105711.010933@mailhost.mipsys.com>
+Message-Id: <19990826105949.028784@mailhost.mipsys.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Aug 26, 1999, Tony Mantler <eek@escape.ca> wrote:
+On Thu, Aug 26, 1999, Geert Uytterhoeven
+<Geert.Uytterhoeven@cs.kuleuven.ac.be> wrote:
 
->I know the 5200 uses the Capella chip, but I haven't been able to find any
->documentation whatsoever about the PPC upgrade cards.
->
->I would be surprised if Apple did bother to make 2 different 68k <-> PPC
->bridge chips, as in both cases they perform the exact same function. But
->then, Apple does do that sort of thing.
 
-I think those PPC upgrade card were actually made by Daystar (but maybe
-using Apple chips. In those old days, Apple and Daystar used to work very
-closely).
+>Originally the idea was to create machine specific directories for machine
+>stuff that's shared between architectures (m68k and PPC Amigas and Macs, m68k
+>and SPARC Suns, `PC' for ia32/PPC/MIPS/AXP/SPARC, ...) in 2.3.x, but due to
+>the
+>feature freeze announce we won't be able to do that in time...
+
+But we do have drivers/macintosh already, we can use it or eventually
+sub-divide it for ppc-only and m68k-only drivers, keeping common drivers
+at the root level. Also, we could re-merge some drivers, like the zilog
+driver (especially since it doesn't use DMA, i never finished it) and the
+ADB mouse/keyboard stuff.
+
 
 -- 
            Perso. e-mail: <mailto:bh40@calva.net>
