@@ -1,50 +1,40 @@
-Date: Sat, 15 Apr 2000 22:24:44 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Logan Hall <warrior514@worldnet.att.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.3.99-pre5 compile problems
-In-Reply-To: <38F3F9B9.9DB92F87@worldnet.att.net>
-Message-ID: <Pine.LNX.4.10.10004152223530.876-100000@cassiopeia.home>
+Date: Sun, 16 Apr 2000 22:15:00 -0400 (EDT)
+From: "Mark S. Mathews" <mark@absoval.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Anyone running LinuxPPC2000+PCMCIA+WallStreet?
+Message-ID: <Pine.LNX.3.96.1000416220038.20340A-100000@tristar.cc.absoval.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 11 Apr 2000, Logan Hall wrote:
-> I just downloaded the 2.3.99-pre5 kernel in hopes of getting my
-> /dev/mixer working.  This is on a G3 beige tower.  It apears to have
-> problems with the dma sound for ppc.  here is the error:
->
-> dmasound_core.c: In function `dmasound_init':
-> dmasound_core.c:1196: `irq_installed' undeclared (first use in this
-> function)
+Hi Folks,
 
-Please let me know whether it works fine or not after this patch:
+We're trying to run a LinuxPPC 2000 install on a WallStreet M4753 and
+trying to get PCMCIA going.  Of course, we've had loads of trouble.  ;-)
 
---- geert-2.3.99-pre5/drivers/sound/dmasound/dmasound_core.c.orig	Sat Apr 15 22:08:03 2000
-+++ geert-2.3.99-pre5/drivers/sound/dmasound/dmasound_core.c	Sat Apr 15 22:23:26 2000
-@@ -1193,8 +1193,10 @@
+We've been trying with the pmac-2.2.15pre7 kernel and a variety of pcmcia
+versions.  No matter what, we always get panics when inserting a card.
 
- int __init dmasound_init(void)
- {
-+#ifdef MODULE
- 	if (irq_installed)
- 		return -EBUSY;
-+#endif
+At this point we're pretty sure the problem is in i82365 or cardmgr, not a
+specific card driver.  We're not getting far enough to deal w/ a
+specific driver.  We've tried a couple of network cards, including
+some that aren't supported by pcmcia-cs at all (we were hoping for
+'successful' failure).
 
- 	/* Set up sound queue, /dev/audio and /dev/dsp. */
+Any recommendations?  We'll send .configs and such if anyone wants to see
+them.
 
-Gr{oetje,eeting}s,
+Thanks,
+-Mark
 
-						Geert
+Mark S. Mathews
 
---
-Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+AbsoluteValue Software     Web:    http://www.absoval.com
+P.O. Box 941149            e-mail: mark@absoval.com
+Maitland, FL 32794-1149    Phone:  407.644.8582
+USA                        Fax:    407.539.1294
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
