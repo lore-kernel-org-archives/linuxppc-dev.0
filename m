@@ -1,58 +1,43 @@
-Date: Fri, 10 Aug 2001 12:27:40 -0700
-From: Matt Porter <mporter@mvista.com>
-To: Karsten Jeppesen <kj-list@jeppesens.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: 1 GigaByte memory problem on BriQ (memory limits?)
-Message-ID: <20010810122740.A9688@cx258813-a.chnd1.az.home.com>
-References: <B799A471.A093%kj-list@jeppesens.com>
+Date: Fri, 10 Aug 2001 14:34:23 -0500
+From: Hollis Blanchard <hollis@austin.ibm.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: PReP and generic PCI resource assignment
+Message-ID: <20010810143423.B28326@austin.ibm.com>
+References: <20010809091402.A11768@beef.az.mvista.com> <Pine.LNX.4.05.10108101034110.2083-100000@callisto.of.borg>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <B799A471.A093%kj-list@jeppesens.com>; from kj-list@jeppesens.com on Fri, Aug 10, 2001 at 02:47:14PM -0700
+In-Reply-To: <Pine.LNX.4.05.10108101034110.2083-100000@callisto.of.borg>; from geert@linux-m68k.org on Fri, Aug 10, 2001 at 10:38:04AM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Aug 10, 2001 at 02:47:14PM -0700, Karsten Jeppesen wrote:
+On Fri, Aug 10, 2001 at 10:38:04AM +0200, Geert Uytterhoeven wrote:
 >
-> Any comments on this here is greatly appreciated:
->
-> I am having trouble with Linux accepting 1G memory.
-> 512M works fine, but at 1G Linux gets all the way through the initialization
-> until the partition check.
->
-> At this point Linux (checking hda) reports:
-> Unable to handle kernel NULL pointer at virtual address 000)
->
-> And then the registerdump.
->
-> Before I send all the other debug output I would like to know if anybody
-> knows of any memory limits in Linux?
+> There are (or were, read as in `were the last time I
+> tried it, a few months ago) still some problems, though. One of them is that
+> the hardcoded ISA motherboard resources (i8259 and legacy stuff) are
+> requested before PCI resources are done, and that the PCI bus parent
+> resources were not requested and thus don't appear in the full resource
+> tree.
 
-2.2 768MB max standard.  I had trouble with >512MB though.  With
-some board specific rearranging of I/O you can get ~968MB on some
-platforms using the stock KERNELBASE.  Drop KERNELBASE to something
-lower than 0xc0000000 and you can get 1GB or more.  This approach
-sacrifices some user virtual space but for most apps I work
-with 3GB user VM is a waste.
+There is still that problem with VGA console, which does a
+request_resource(&ioport_resource,...) after the PCI host bridge has been
+found, but well before the PCI code has reserved all of *its* resources. So
+reserving 0-ffffffff IO fails because VGA already grabbed a tiny chunk at
+0x3d0 or so.
 
-2.4 has highmem support so max lowmem is 512MB, highmem can go
-well below that.  Depending on your application the highmem
-approach may or may not be useful.  Some applications of Linux
-(especially high-end embedded apps) are better suited to the
-lower KERNELBASE approach since it allows access to a lot more
-permanently mapped memory.  Imagine a system with a custom driver
-that uses _huge_ kernel buffers or a legacy OS running as a
-client of Linux in kernel space.
+Even regardless of order, VGA console is requesting directly from
+ioport_resource, which probably should be changed (Paul suggested
+request_region instead)...
 
-> I don't see any compile switches (which is good).
-> Currently running 2.2.19 kernel.org kernel added support for the BriQ. I am
-> not done porting the 2.4.x kernel yet - sorry for that.
+I didn't see any similar problem with i8259, but I wasn't looking for it
+either.
 
-I suggest you do your port against linuxppc_2_4_devel.
+I get a ton of failed request_resources on the boxes I play with the most, but
+luckily most things work ok. Except for this video controller, which doesn't
+like being moved away from 0x0... :/
 
---
-Matt Porter
-MontaVista Software, Inc.
-mporter@mvista.com
+-Hollis
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
