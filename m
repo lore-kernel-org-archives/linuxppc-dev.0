@@ -1,48 +1,30 @@
-Message-Id: <199908310731.DAA25842@nerd-xing.mit.edu>
+Message-ID: <37CB8D07.FE7D3D62@wanadoo.fr>
+Date: Tue, 31 Aug 1999 10:06:31 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
+MIME-Version: 1.0
 To: "David D. Kilzer" <ddkilzer@computer.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: SMP support for Daystar 604e 200MHz dual-processor card 
-In-Reply-To: Your message of "Tue, 31 Aug 1999 00:26:35 CDT."
-             <v03130301b3f116a864e2@[192.168.1.1]>
-Mime-Version: 1.0
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: SMP support for Daystar 604e 200MHz dual-processor card
+References: <v03130301b3f116a864e2@[192.168.1.1]>
 Content-Type: text/plain; charset=us-ascii
-Date: Tue, 31 Aug 1999 03:31:49 -0400
-From: "Charles E. Leiserson Jr." <locutus@MIT.EDU>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> >Is anyone running LinuxPPC with a Daystart 604e 200MHz dual-processor 
-> >card?
+"David D. Kilzer" wrote:
 > 
-> Hmmm...must have been half-asleep when typing that.  Yes, it's a 
-> Daystar nPower processor card with dual 200 MHz 604e PowerPC CPUs.
-> 
-> Here's what's left of the boot messages on the screen in 2.2.12 from 
-> CVS that I compiled on Aug 29, 1999:
-> 
-> 
-> POSIX conformance testing by UNIFIX
-> Entering SMP Mode...
-> Processor 1 is stuck.
 
-The "processor stuck" message should be fixed if you do a cold boot (ie. shut 
-the machine down completely).  You shouldn't have any more problems like this 
-after the first successful boot.
+> Serial driver version 4.27 with no serial options enabled
+> Machine check in kernel mode.
 
-> Kernel panic: machine check
-> Rebooting in 180 seconds..
-> 
-> 
-> The part about "Processor 1 is stuck." doesn't look good, then we get 
-> the big OOPS.
+I'd look into your serial driver config options. There are some that
+don't work on the PPC.
 
-Sounds like you have compiled something in that your computer doesn't like...
-Have you tried my kernel (R5)?
+And if you run the oops message through ksymoops (to be found in
+/usr/src/linux/scripts/ksymoops/), you get more meaningful addresses.
 
-
-					- Ricky
-
+--
+Martin
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
