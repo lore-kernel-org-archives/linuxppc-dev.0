@@ -1,8 +1,8 @@
-Message-ID: <A109131318C4D1119AC20060088DECE330F493@amwmail.adaptivemicro.com>
+Message-ID: <A109131318C4D1119AC20060088DECE330F49E@amwmail.adaptivemicro.com>
 From: Lucinda Schafer <lucsch@adaptivemicro.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Software Emulation Kernel Panic--specific information
-Date: Wed, 21 Jun 2000 12:26:58 -0500
+To: diekema@bucks.si.com, linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Software Emulation Kernel Panic--specific information
+Date: Wed, 21 Jun 2000 14:13:26 -0500
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -10,46 +10,46 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Greetings!
+- What processor are you using? MPC823
+- Have you tried running with caches disabled? No, is this important?
+- When do this problem happen? Just at the end of boot up 1 of every 1000
+bootups
+- Can you boot to a stand alone shell? Yes except when this happens
+- Can you boot to multi-user? Yes, except when this happens
+- What Linux bits are you using? ??not sure which bits to which you are
+referring...
 
-When we have our Kernel Mode Software FPU Emulation panic, we get the
-following information.
+-----Original Message-----
+From: diekema@bucks.si.com [mailto:diekema@bucks.si.com]
+Sent: Wednesday, June 21, 2000 2:09 PM
+To: lucsch@adaptivemicro.com
+Subject: Re: Software Emulation Kernel Panic--specific information
 
-The NIP, LR, and TRAP always seem to be set to the same values (others
-vary). I assume those values are physical addresses.
 
-If so, from System.map, the NIP seems to be between c0001f00 t Trap_1f and
-c0002000 T transfer_to_handler.
-The LR seems to be between c0000900 t Decrementer and c0000a00 t Trap_0a.
-The TRAP is set to our Software Emulation trap, c0001000 t SoftEmu.
+> The results of the backtrace are as follows (manual, not by your script):
 
-I can't make sense of this, since I don't fully understand what the
-relationship of NIP and LR are.  Does the LR address refer to the return
-address after the exception? Does this mean the exception happened in the
-Decrementer timer interrupt? Why is the NIP set to a value between Trap_1f
-and transfer_to_handler?
+> C0016204  put_dirty_page
+> C0016A98  handle_mm_fault
+> C0009098  do_page_fault
+> C0002544  _switch
+> 018A4490  ???
+> 300E88A4  ???
+> 0180C6D4  ???
+> 0180C5D8  ???
+> 01803250  ???
+> 01802B64  ???
+> 01801D80  ???
 
-I need your expertise!
+> Does this tell us that we have a page that is not handled properly? Why?
 
-NIP: 00001FFC XER: 8000FF7F LR: 00000988 REGS: c0e87c90 TRAP: 1000
-MSR: 00001000 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 00
-TASK = c0e86000[7] 'rc.sysinit' mm->pgd c0e8b000 Last syscall: 67
-last math 00000000
-GPR00: 00000000 C0E87D40 C0E86000 C0E87D50 0189EE34 C0133404 C0E88278
-C0E8B000
-GPR08: C00DA634 00FBA9E1 00FBA9E1 00FBA9E1 3555F593 018A31D0 00000000
-00000D08
-GPR16: 000000C1 01005000 0100A400 00300008 00001032 00E87D40 C00162F0
-00009032
-GPR24: 0189EE34 C0E88278 C0615760 00FBA8A1 C0FBA000 C0E86000 C0F5F000
-C0132510
-Call backtrace:
-C0E87DF0 C0016204 C0016A98 C0009098 C0002544 018A4490 300E88A4
-0180C6D4 0180C5D8 01803250 01802B64 01801D80
-Instruction DUMP:
+I haven't been paying too much attention to your problem.  So, you
+might of already answered these questions?
 
-Lucinda Schafer
-Staff Software Engineer
-Adaptive Micro-Ware, Inc.
+- What processor are you using?
+- Have you tried running with caches disabled?
+- When do this problem happen?
+- Can you boot to a stand alone shell?
+- Can you boot to multi-user?
+- What Linux bits are you using?
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
