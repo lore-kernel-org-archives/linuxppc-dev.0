@@ -1,34 +1,43 @@
-Date: Fri, 10 Nov 2000 09:49:45 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: jlhagen@collins.rockwell.com
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: RTLinux and mvme26xx cards? :)
-In-Reply-To: <OF774F72D8.4D5354AC-ON86256991.007B9E46@collins.rockwell.com>
-Message-ID: <Pine.HPX.4.10.10011100948050.19910-100000@gra-ux1.iram.es>
+Message-ID: <008c01c04af9$80dca5b0$69f001dc@r44089-d1.sps.mot.com>
+From: "Shuangjun Zhu" <r44089@email.sps.mot.com>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: decompress the kenerl image for MPC8260ADS-L2C board
+Date: Fri, 10 Nov 2000 17:35:02 +0800
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;	charset="gb2312"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 8 Nov 2000 jlhagen@collins.rockwell.com wrote:
+I built the linux-2.4.0-test2 kernel on x86 platform,
+The powerpc-linux-gcc version is 2.95.2,
+the target board is MPC8260ADS-L2C board from Motorola.
+After I download the kennel image (zImage.initrd)
+using the EST tools visionICE to the target,
+The boot code can not correctly decompress the kernel.
 
->
-> Hello,
->
-> what is the possibility of using FSMLabs RTLinux on mvme26xx boards? IIRC
-> RTLinux supports uniprocessor powerpc in the V3 beta series, correct me if
-> I'm wrong. Using Gabriel's patches I have been able to bring up 2.2.12
-> series kernels on our mvme2604 boards. I'm having problems on with the
-> 2.4-test series kernels and Gabriel's patches, issue with NFS, but I'm
-> starting to wonder about using RTLinux on these boards.
+Before boot/head_8260.S call decompress_kernel(),
+the compressed kernel image in memory is right, ( I upload it
+from target to my host, it's same as the file vmlinux.gz),
+but after it call the decompress_kernel() function,
+the value of address 0,4,8... all are filled with 0.
+It seems that the coff/zlib.c can not correctly decompress the
+kernel image.
+I have no any knowledge about gnuzip.
 
-I have never found time to try RTlinux, but I wanted to. I don't
-foresee any major problem, except perhaps for interference with my VME
-driver (the Universe actually has to act as a cascaded interrupt
-controller).
+Any suggestion?
+Thanks.
 
-	Gabriel.
 
+loaded at:     00400000 005C1270
+board data at: 0001126C 00011290
+relocated to:  00200100 00200124
+zimage at:     00409D70 0047A61F
+initrd at:     0047A61F 005BCBF8
+avail ram:     005BD000 01000000
+
+Linux/PPC load:
+Uncompressing Linux...done.
+Now booting the kernel
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
