@@ -1,28 +1,27 @@
-Message-ID: <38CAC92A.5F4B4CFF@denise.shiny.it>
-Date: Sat, 11 Mar 2000 17:31:06 -0500
+Message-ID: <38CAC97F.4F45265A@denise.shiny.it>
+Date: Sat, 11 Mar 2000 17:32:31 -0500
 From: Giuliano Pochini <pochini@denise.shiny.it>
 MIME-Version: 1.0
-To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-CC: Sean Harding <sharding@dogcow.org>, linuxppc-dev@lists.linuxppc.org
+To: David Edelsohn <dje@watson.ibm.com>
+CC: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
+        Sean Harding <sharding@dogcow.org>, linuxppc-dev@lists.linuxppc.org
 Subject: Re: compiler optimization? something else?
-References: <4.3.2.20000309152803.00ca9100@mail.munich.netsurf.de>
+References: <200003091604.LAA24832@mal-ach.watson.ibm.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 
-> >juliet ~
-> >27% gcc --version
-> >egcs-2.91.66
->
-> Upgrade to gcc-2.95.2, <ftp://devel.linuxppc.org/users/fsirl/R5/RPMS/ppc/>.
-> Though I don't believe this will give you a really big improvement in code
-> optimization, it is a big step forward in compiler correctness on PPC.
 
-I don't see any speed improvement from egcs-1.1.12 to gcc 2.95.2. Various
-tests done with lame and mpg123 show than 2.95.2 produces code only 0.5%
-faster or so. Executable size is 10-15% smaller.
+> Franz> -O2, -O3, -funroll-loops, -funroll-all-loops, -ffast-math (dunno if this
+> Franz> one has an effect on PPC at all), -finline-functions, -mcpu=604, -mcpu=750
+>
+>         -ffast-math does enable use of the FP "fsel" instruction for
+> conditional moves.  -ffast-math also affects other floating-point
+> optimizations in the compiler, not just specific architecture features.
+
+And mul-add's & friends ?
 
 Bye.
 
