@@ -1,32 +1,32 @@
-Date: Mon, 28 Feb 2000 17:57:26 +0100 (CET)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Albrecht Dreﬂ <ad@mpifr-bonn.mpg.de>
-cc: LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: iMac Mouse Three Button Emulation: a solution
-In-Reply-To: <38BA9C94.14977454@mpifr-bonn.mpg.de>
-Message-ID: <Pine.LNX.4.10.10002281754130.24776-100000@opal.biophys.uni-duesseldorf.de>
+Date: Mon, 28 Feb 2000 10:44:08 -0700 (MST)
+From: Tom Rini <trini@kernel.crashing.org>
+To: Patrick Lerda <Lerda@microprocess.com>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: RE: Stability of 2.3.47 (G4)
+In-Reply-To: <B0CAE42C9EE0D311AAAD00500422FC6302CD80@iis000.microdata.fr>
+Message-ID: <Pine.LNX.4.10.10002281042320.709-100000@opus.bloom.county>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Please note that you should NOT activate this feature if you have a working
-> three-button USB mouse, as the code blocks any 2nd and 3rd mouse button events
-> and passes the emulated ones only. This behaviour is not nice, but I must
-> admit that I can not imagine a situation where this is really a problem, so I
-> omitted the code to fix this. An other point: the emulation does of course not
+On Mon, 28 Feb 2000, Patrick Lerda wrote:
 
-It's a simple matter of keeping track of the button states, OR'ing
-emulated and real buttons together. But it's a bit pointless indeed :-)
+> I try linux 2.3.47 on an other kind of PowerPC box, a 740 with a PCI bus.
+> The kernel start, but my NE2000 or my tulip board don't work in an
+> nfs mode. The IDE driver crash, and The adaptec driver don't work too.
+> Otherwise USB seems to work, and my framebuffer works...
 
-> work if you do not have an USB keyboard, e.g. if you connect the iMac Mouse to
-> a Lombard PowerBook.
+Well, the ne2k-pci driver may or may not have been fixed finally (yes, it
+is/was an endian issue and was patched.  I think the patch stuck tho).  As
+for the tulip board, do not use the tulip driver, use de4x5.  I've tried 3
+tulip cards with tulip.c 0.91g-ppc and none of them have worked. (a real
+tulip, a lite-on and a maxtronic or something wierd like that).
 
-In which case the ADB button emulation works just fine, via the builtin
-ADB trackpad ...
-
-	Michael
+---
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
