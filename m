@@ -1,19 +1,16 @@
-Return-Path: <g.jaeger@sysgo.com>
-Received: from mail.sysgo.com (mail.sysgo.com [62.8.134.5])
-	by ozlabs.org (Postfix) with ESMTP id 1F2BB67A6B
+Return-Path: <a.korud@vector.com.pl>
+Received: from 3bit.vector.com.pl (3bit.vector.com.pl [81.210.9.37])
+	by ozlabs.org (Postfix) with ESMTP id 9E17867A65
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  2 Mar 2005 22:01:07 +1100 (EST)
-From: Gerhard Jaeger <g.jaeger@sysgo.com>
-To: linuxppc-embedded@ozlabs.org
-Date: Wed, 2 Mar 2005 12:00:59 +0100
-References: <000501c51f09$610e6ff0$f101a8c0@SN7605>
-In-Reply-To: <000501c51f09$610e6ff0$f101a8c0@SN7605>
+	Thu,  3 Mar 2005 00:18:32 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200503021200.59765.g.jaeger@sysgo.com>
-Cc: Matthias Babylon <m.babylon@hima.com>
-Subject: Re: Linux Dist
+	charset="ISO-8859-1"
+Date: Wed, 2 Mar 2005 14:18:31 +0100
+Message-ID: <60E856FD577CC04BA3727AF4122D3F1611352E@3bit.vector.com.pl>
+From: "Andriy Korud" <a.korud@vector.com.pl>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Looking for prebuilt PPC board with miniPCI slot
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,25 +21,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 02 March 2005 10:22, Matthias Babylon wrote:
-> Hi all,
-> 
-> we actually desgin a new PowerPC 440GX based Dev-Board. The Problem is, we
-> have no Linux Distribution with embedded ppc440gx support. can someone give
-> me links to ibm440gx linux distributions homepages??
-> 
-> greetz,
-> Matthias
-
 Hi,
+we are looking for a embedded board with at least one miniPCI slot and =
+Ethernet port with performance at AMCC 405EP@333 level and Linux 2.6 =
+support.=20
+Have anybody heard about something like this preferably in Europe?
 
-you might want to checkout ELinOS ;)
-See my signature.
+Thanks in advance,
 
-cheers,
-Gerhard
+--
 
--- 
-Gerhard Jaeger <gjaeger@sysgo.com>            
-SYSGO AG                      Embedded and Real-Time Software
-www.sysgo.com | www.elinos.com | www.pikeos.com | www.osek.de 
+Andriy Korud
+software engineer,
+
+http://www.vector.com.pl
