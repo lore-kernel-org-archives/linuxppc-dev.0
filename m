@@ -1,26 +1,27 @@
-Message-ID: <3D0A6161.2080804@embeddededge.com>
-Date: Fri, 14 Jun 2002 17:34:25 -0400
+Message-ID: <3D0A6251.9040107@embeddededge.com>
+Date: Fri, 14 Jun 2002 17:38:25 -0400
 From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: linuxppc-embedded@lists.linuxppc.org,
-	Paul Mackerras <paulus@samba.org>,
-	David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: consistent_free()
-References: <20020614042928.GK26146@zax> <20020614153954.GL13541@opus.bloom.county> <3D0A1D53.6040205@embeddededge.com> <20020614171035.GM13541@opus.bloom.county>
+To: Dan Brennan <dmb8@optonline.net>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: compact flash and true IDE mode
+References: <3D0A3DA4.586D0956@optonline.net>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Tom Rini wrote:
+Dan Brennan wrote:
 
-> I'm not sure either.  __iounmap on ARM just is vfree() with the casts.
+> ....Is anyone using CF in this
+> mode? Any recommendations?
 
-The issue is in consistent_free() they forcibly reset the Reserved
-indicator on the pages.  I don't know why this is necessary.  It's
-either due to the way they remap the pages during the allocation or
-some change in the Linux VM that I haven't yet discovered :-)
+Yes, I see this quite frequently on products I help integrate.
+You just need the right IDE board support functions to initialize
+a few things and the standard IDE drivers "just work."  Take a look
+at the work Matthew Locke did for the MPC8xx IDE.  If you find
+yourself writing more than about 50 lines of total code in these few
+setup functions, you're likely trying too hard :-)
 
 
 	-- Dan
