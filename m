@@ -1,106 +1,121 @@
-Message-ID: <3AEF8C19.42B979CC@cdotb.ernet.in>
-Date: Wed, 02 May 2001 09:54:57 +0530
-From: "N.Suresh" <nsuresh@cdotb.ernet.in>
+From: kingseft@samsung.co.kr
+Date: Wed, 2 May 2001 15:35:59 +0900
+Message-Id: <H00002af04cc5233@MHS>
+Subject: Question for module compile for ppc
 MIME-Version: 1.0
-To: guinan@bluebutton.com, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Booting problem on MBX board
-References: <Pine.LNX.4.21.0105011146240.8926-100000@gemini.home.net>
-Content-Type: text/plain; charset=us-ascii
+To: wd@denx.de, linuxppc-embedded@lists.linuxppc.org
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Jamie Guinan wrote:
+ Hello.
 
-> On Tue, 1 May 2001, N.Suresh wrote:
->
-> > Hi,
-> >
-> >     I am trying to compile and MPC8xx-2.2.13 on MBX board (MBX860-005B).
-> >
-> >     I am able to compile and generate zImage which i am downloading thru
-> >
-> >     <cut>
-> >
-> >     EPPC-Bug>pl 20 0
-> >
-> >       loaded at:     00210000 0021B1D8
-> >       relocated to:  00100000 0010B1D8
-> >       board data at: 003F4558 003F4580
-> >       relocated to:  00200100 00200128
-> >       zimage at:     00216000 00271893
-> >       initrd at:     00271893 00273E7D
-> >       avail ram:     00274000 00400000
-> >
-> >       Linux/PPC load:
-> >       Uncompressing Linux...done.
-> >       Now booting the kernel
->
-> [ Its been a while... ]
->
-> That looks good so far.   The next thing you want to see is
-> the Linux banner "Linux version ...".
->
-> I would not change KERNELLOAD.
->
-> Are you using any additional ram?  I had an additional DIMM on my
-> board, and I had to hack arch/ppc/mbxboot/head.S to set up BR2/OR2
-> because EPPC-Bug didn't recognize my DIMM.
->
-> You should be using the Monta Vista tools.  You might want to
-> compare your .config to mine,
->
->   http://www.bluebutton.com/proj/mbxlinux/dot.config
->
-> Make sure you have your bootp and NFS (for root fs) servers ready when
-> the board finally boots.
->
-> -Jamie
->
-> >
-> >     </cut>
-> >
-> >     and the system hangs.. i tried to change the KERNELLOAD and then also
-> >
-> >      it is not working.
-> >
-> >     Any idea what's happening?
-> >
-> >     ( I have seen the mail archive and Jamie Guinen has told it is working
-> >
-> >     with EPPC-Bug).
-> >
-> >     thanx in advance,
-> >
-> >     bye
-> >
-> > -----------------***************************************----------------
-> >                                 N.SURESH
-> >                             Research Engineer,
-> >                   Centre For Development of Telematics,
-> >                            71/1,Sneha Complex,
-> >                             Bangalore-560052
-> > -----------------***************************************----------------
+ I use HHL CDK v1.2 and use linux-2.4.3-pre3-2001-03-11(W.Denk's patched kernel).
+ When I compile small module program, I got following message.
+ Could someone help me with this problem??
 
-Hi,
-    We are using MBX8xx Board with 16 Mb RAM without any DIMM.
+[root@ssljm 8xx_io]# make -f Makefile.test
+/opt/hardhat/devkit/ppc/8xx/bin/ppc_8xx-gcc -O2 -D__KERNEL__ -DMODULE -DMODVERSIONS -D__powerpc__ -mcpu=860 -I/2ndhard/linux-2
+.4.13-pre3-2001-03-11/include -Wall -Wstrict-prototypes -Wno-uninitialized -fomit-frame-pointer -fsigned-char -msoft-float -fn
+o-builtin -ffixed-r2 -pipe -mmultiple -mstring -I/2ndhard/linux-2.4.3-pre3-2001-03-11/arch/ppc/8xx_io -I/2ndhard/linux-2.4.13-
+pre3-2001-03-11/include/linux/modversions.h -c -o  test.o test.c
 
-    We  are using tools provided by Embedded Development Kit by RedHat.
+{standard input}: Assembler messages:
+{standard input}:6: Warning: Ignoring changed section attributes for .modinfo
+[root@ssljm 8xx_io]#
 
-    I compared your .config with mine and lots of differences are there..
+ although this warning, I got test.o object file and I could loading test.o by insmod test.o
+ but I got another problem.
 
-    But my .config should also work, right...
+ Warning: Kernel module version mismatch
+ test.o was compiled for kernel version 2.2.14
+ while this kernel is version 2.4.3-pre3
 
-    bye
+ any comments will help us.
+ thanks..
 
---
------------------***************************************----------------
-                                N.SURESH
-                            Research Engineer,
-                  Centre For Development of Telematics,
-                           71/1,Sneha Complex,
-                            Bangalore-560052
------------------***************************************----------------
+
+ here test.c file
+ ------------------------------------
+#include <linux/kernel.h>	/* We're doing kernel work	*/
+#include <linux/module.h>	/* Specifically, a module	*/
+#include <asm/uaccess.h>	/* for put_user			*/
+#include <asm/init.h>		/* for __initfunc		*/
+#include <asm/8xx_immap.h>
+
+#undef  DEBUG
+
+#ifdef	DEBUG
+# define debugk(fmt,args...)	printk(fmt ,##args)
+#else
+# define debugk(fmt,args...)
+#endif
+
+/*
+ * Deal with CONFIG_MODVERSIONS
+ */
+#if CONFIG_MODVERSIONS==1
+#undef MODVERSIONS
+#define MODVERSIONS
+#include <linux/modversions.h>
+#endif
+
+/*
+ * For character devices
+ */
+#include <linux/fs.h>		/* character device definitions	*/
+#include <linux/wrapper.h>	/* wrapper for compatibility with future versions */
+
+#ifndef KERNEL_VERSION
+# define KERNEL_VERSION(a,b,c)	((a)*65536+(b)*256+(c))
+#endif
+
+int init_module (void)
+{
+	printk("\n Now Module function called. init_module()");
+	printk("\n Programmed by kingseft\n");
+	return 0;
+}
+
+
+void cleanup_module (void)
+{
+	printk("\nclean up module\n");
+}
+
+
+ Here is Makefile.test
+ -------------------------------------------------------
+ CFLAGS  =       -O2
+
+CC	= /opt/hardhat/devkit/ppc/8xx/bin/ppc_8xx-gcc
+
+MODULE_CFLAGS = -D__KERNEL__ -DMODULE -DMODVERSIONS \
+	-D__powerpc__ -mcpu=860 \
+	-I/2ndhard/linux-2.4.13-pre3-2001-03-11/include \
+        -Wall -Wstrict-prototypes -Wno-uninitialized \
+	-fomit-frame-pointer \
+	-fsigned-char -msoft-float -fno-builtin -ffixed-r2 \
+        -pipe -mmultiple -mstring \
+	-I/2ndhard/linux-2.4.3-pre3-2001-03-11/arch/ppc/8xx_io \
+        -I/2ndhard/linux-2.4.13-pre3-2001-03-11/include/linux/modversions.h
+
+
+all:	test.o
+
+ins:	all
+	[ -c /dev/rtc ] || mknod /dev/test c 44 0
+	-rmmod test.o
+	/sbin/insmod ./test.o
+
+test.o:	test.c
+	$(CC) $(CFLAGS) $(MODULE_CFLAGS) -c -o  $@ $^
+
+clean:
+	rm -f test.o
+
+-------------------------- end of list --------------------------
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
