@@ -1,47 +1,49 @@
-Date: Thu, 26 Oct 2000 13:34:47 +0300 (EET DST)
-From: Topi Kanerva <tkanerva@ees2.oulu.fi>
-To: Chris Leishman <masklin@debian.org>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: airport woes?
-In-Reply-To: <20001024151644.A660@nina.dev.fol>
-Message-ID: <Pine.GSO.4.21.0010261319290.16028-100000@stekt6>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Thu, 26 Oct 2000 09:54:59 -0400
+From: Josh Huber <huber@mclx.com>
+To: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
+Subject: lombard ethernet
+Message-ID: <20001026095459.A12571@missioncriticallinux.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-md5;
+	protocol="application/pgp-signature"; boundary="Kj7319i9nmIyA2yE"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 24 Oct 2000, Chris Leishman wrote:
+--Kj7319i9nmIyA2yE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->I've been using ssh to connect to remote hosts, and needless to say the
->response time is shocking.
->
->However, I've also had problems where the session totally locks up - I type at
->the terminal as much as I like, but nothing reaches the other end.  At first I
->put this down to the crappy network link.  However I've also noticed more
->recently that only _half_ the connection craps out - I can still receive data
->from the remote server.  Weird.
->
->Then today I switched to use ethernet instead of the airport (I was
->transfering some large files and wanted to use 100Mb), and I noticed that I
->wasn't getting the lockup problems with the remote hosts.
->
->I'm using benh's latest kernel and airport driver.  Now I can't think what
->would be causing this, but I thought you'd like to know.  Anyone else seen
->this problem?
+I'm having trouble with my Lombard's ethernet.  Every once in a while
+it seems to lock up.  bringing the interface down and then up fixes
+the problem.
 
-Me. I went nuts one day when my ssh connections got constantly stuck and
-the only thing I could do was to killall ssh and restart the
-connection... I blamed about every part of the network, and finally
-realized that I wasn't getting this symptom as long as I was using the GMAC
-interface instead of airport... I'm using kernel 2.2.17pre20-ben3 and
-aswell Ben's newest airport driver... And yes, if you e.g. run irc on one
-session, you can easily see that even though you cannot transmit any
-characters on the remote host, it seems that the other people are writing
-to you nonetheless. So, it's a pretty weird and unexplainable problem. Ben?
+I'm not sure if this is helpful or not. (are the errors normal?)
+
+eth0      Link encap:Ethernet  HWaddr 00:50:E4:A0:40:6F
+          inet addr:10.1.8.96  Bcast:10.1.8.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING  MTU:1500  Metric:1
+          RX packets:122499 errors:16 dropped:15 overruns:0 frame:15
+          TX packets:85094 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0
+
+I'm running pump to get dhcp, so I thought it was (perhaps) the
+culprit.  I'd experienced this problem with a Wallstreet and I traced
+it to dhclient.  However, it's not that easy because killing pump
+didn't make the problem go away.
+
+Any thoughts?
+
+--=20
+Josh Huber                               | huber@nightshade.org |
+1024D/6B21489A 61F0 6138 BE7B FEBF A223  E9D1 BFE1 2065 6B21 489A
+
+--Kj7319i9nmIyA2yE
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
 
--topi
-
+--Kj7319i9nmIyA2yE--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
