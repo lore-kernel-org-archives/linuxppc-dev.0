@@ -1,10 +1,11 @@
-Message-ID: <002501c315a7$7e309260$020120b0@jockeXP>
+Message-ID: <003101c315a8$4766e300$020120b0@jockeXP>
 From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
 To: "Eitan Rabin" <rabin@mellanox.co.il>,
-	<linuxppc-embedded@lists.linuxppc.org>
-References: <506C3D7B14CDD411A52C00025558DED603018B6A-100000@mtlex01.yok.mtl.com>
+	"Steven Blakeslee" <BlakesleeS@embeddedplanet.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <506C3D7B14CDD411A52C00025558DED6030191E8-100000@mtlex01.yok.mtl.com>
 Subject: Re: MPC860 and I2C
-Date: Thu, 8 May 2003 23:19:12 +0200
+Date: Thu, 8 May 2003 23:24:53 +0200
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -12,38 +13,17 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Hi All,
+> The version of CPU I has requires the patch to solve the conflict  between
+> the ram parameters of I2C/SPI and those of Ethernet. I checked my version
+> against the errata at Motorola's website and it is required.
 >
-> I'm trying to use the MPC I2C controller to generate I2C transactions. I
-> use  the devel kernel version and include the I2C relocation patch (seen
-> in /var/log/messages).
-
-Can you post the message it prints?
-
+> If I don't use the relocation then the command has not effect. If I use the
+> patch then there are i2c transaction being generated but I can only use
+> certain addresses.
 >
-> I used the standard I2C driver and also tried the driver downloaded
-> directly from lmsensors.
->
-> The problem occurs when I activate the master. As soon as I give the
-> master the start command (i2c->i2c_i2com = 0x80) for the DMA transaction
-> to start the CPU complete freezes.
-> I narrowed the problem and found out the it is actually the address of the
-> descriptor the one causing the CPU to hang. If I give addresses that are
-> relatively small, few Kilos, then everything is OK. If I give addresses
-> that are given to me by kmalloc and translated properly then the cpu
-> hangs.
+> Any advice will be appreciated.
 
-What address? Have you made any changes to the driver?
-Can you post some example code?
-
-> It seems to me that maybe something is wrong with the SDMA
-> configuration.
-
-hmm, if SDMA doesn't work as it should I think you would experience
-problems with the console and ethernet.
-
-Make sure that SDA and clock signals has a pull up resistor.
-
-Jocke
+What CPU revison do you have? Older CPUs than D4 has a lot of I2C bugs.
+If you have an older CPU, try enabling the chip errata code in the i2c driver.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
