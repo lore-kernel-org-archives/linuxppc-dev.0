@@ -1,82 +1,66 @@
-Message-ID: <3CBEDFB2.7E0548C1@snom.de>
-Date: Thu, 18 Apr 2002 17:01:06 +0200
-From: Sven Boehringer <boehringer@snom.de>
-Reply-To: boehringer@snom.de
-MIME-Version: 1.0
-To: Jacky Wang <jacky@premierme.com.tw>,
-	linuxppc <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Does anyone port m8xx_pcmcia driver to Linux Kernel successfully?
-References: <NFBBLKLHNAGPKBMPDMALIEICKAAA.jacky@premierme.com.tw>
-Content-Type: text/plain; charset=us-ascii
+Subject: RE: Virtex II Pro/405GP
+From: James Campbell <jcampbell@omnigon.com>
+To: Peter.Davey@csiro.au
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: 
+	<2F62FF8D9BD6F647BD924E3889D0F6077F7BB0@prex1-fy.preston.cmst.csiro.au>
+References: 
+	<2F62FF8D9BD6F647BD924E3889D0F6077F7BB0@prex1-fy.preston.cmst.csiro.au>
+Content-Type: text/plain
+Date: 18 Apr 2002 08:40:35 -0700
+Message-Id: <1019144435.3138.20.camel@skoll.omnigon.com>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Jacky,
+Hello,
 
-Jacky Wang wrote:
->
-> Conn,
->
-> hmm......
-> sounds good.
->
-> but, I am a newbie about programming with linux kernel and MPC850.
-> Could you tell me which kernel release and how to port it smoothly?
->
-> Jacky
-> -----Original Message-----
-> From: root@esteem.com [mailto:root@esteem.com]On Behalf Of Conn Clark
-> Sent: Wednesday, April 17, 2002 12:48 AM
-> To: Jacky Wang
-> Cc: May Ling List
-> Subject: Re: Does anyone port m8xx_pcmcia driver to Linux Kernel successfully?
->
-> Jacky Wang wrote:
-> >
-> > Hi everyone,
-> >
-> > I am interesting about how to port m8xx_pcmcia driver to linux kernel w/ MPC850.
-> >
-> > Would you mind to share your successful experience with me?
-> >
-> > Best Regards
-> > Jacky Wang
-> >
->
-> We have done it. There shouldn't be much to do provided you have the
-> PCMCIA interface connected correctly.
->
-> There was a mistake in the Motorola manual on the MPC850. It involved
-> two lines having to be swapped.
+The file you are looking for is "dp83865avh.pdf", which I can send to
+you directly if you wish.
 
-That sounds interesting, can you please tell me which lines? Cause I'm
-right on the way to
-do such a interface...
+We chose the 83865 over the 83861 because they removed about sixty
+superfluous pins, and really cleaned the interface up as well.  It turns
+out that the 83861 had some serious problems at 10mbit as well, which
+they have now decided to respin all the silicon in that series.
 
-And a little bit OT, but how do you implement the BCSR's? I looked for
-the (ABEL)-Source which is provided with the Manual
-(MPC8xxFADSMENGUM.pdf) but i found no good tool to extract the needed
-pins...
-
-Any help would be very pleasant,
+We went to the "Programmable World 2002" telecast here yesterday, and
+those new Virtex II Pro chips look hot.  I guess MonteVista is doing
+some sort of board support package for the 405 cores inside the fpgas,
+but they did not go into any detail about what will be provided in the
+ISE dev kits for linux, and what you will have to buy from MonteVista.
 
 
-Regards
-	Sven Boehringer
+Cheers,
 
+James Campbell
+
+On Wed, 2002-04-17 at 22:50, Peter.Davey@csiro.au wrote:
+> James,
+> 	We currently have a board with an XC2V3000, MPC8260 and a serial
+> backplane using S2064.  We are intending to move to the Virtex Pro to use
+> the built in serial.  Your use of the DP83865 sounds interesting.  I
+> couldn't find the data on National's website.  Do you have the chips yet?
+> Also if you have the datasheet I would be grateful if you could email me a
+> copy.
 >
-> Conn
+> Regards,
 >
-> --
+> Peter Davey
+> CSIRO CMST
+> Preston VIC
 >
-> *****************************************************************
->   If you live at home long enough, your parents will move out.
-> *****************************************************************
->
-> Conn Clark
-> Engineering Stooge                              clark@esteem.com
-> Electronic Systems Technology Inc.              www.esteem.com
->
+> Phone  +613 9662 7824
+> Fax    +613 9662 7853
+
+--
+James Campbell          -|-   Embedded Systems Engineer
+jcampbell@omnigon.com   -|-     Omnigon International
+pgp:  DA57 E174 4769 1B9D D0DF 73E6 D639 D867 A576 A5AE
+work: +1.760.804.8884 x 332       cell: +1.760.803.8476
+--
+I bestride this world like a Colossus.  A very small
+Colussus.  Without a torch.  Made of meat.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
