@@ -1,76 +1,30 @@
-Message-ID: <20030619140528.19785.qmail@web41805.mail.yahoo.com>
-Date: Thu, 19 Jun 2003 07:05:28 -0700 (PDT)
-From: Cedric Aubert <cedric_aubert@yahoo.fr>
-Reply-To: cedric_aubert@yahoo.fr
-Subject: RE: RTC for MPC8xx with Linux ?
-To: David Jander <david.jander@protonic.nl>,
-	linuxppc-embedded@lists.linuxppc.org
-MIME-Version: 1.0
+Date: Thu, 19 Jun 2003 09:13:27 -0500
+From: Chris Zimman <chris@cryptoapps.com>
+To: Christophe.LINDHEIMER@fr.thalesgroup.com
+Cc: zjzhou@newrocktech.com, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [Linux] Problem with booting Linux
+Message-ID: <20030619141327.GB16069@dingdong.cryptoapps.com>
+Reply-To: Chris Zimman <chris@cryptoapps.com>
+References: <D96E2AFA0DF3D211B13900902745494805E22C87@helios.gnv.tcc.thomson-csf.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <D96E2AFA0DF3D211B13900902745494805E22C87@helios.gnv.tcc.thomson-csf.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi
+On Thu, Jun 19, 2003 at 12:44:31PM +0200, Christophe.LINDHEIMER@fr.thalesgroup.com wrote:
 
-Personnaly I use a DS1306 on SPI to do RTC on a
-MPC860.
-I don't use it under linux still now. But succesfully
-run it under RTOS.
+> In Bdi, if I make
+> 	reset run
+> 	go
+> Then in Uboot
+> 	bootm 0x43000000
+> Linux hangs when trying to start init.
 
-It's port under U-Boot so it's should not be difficult
-to
-use it under linux. If someone have some more
-information
-about DS1306 under linux (or throught U-Boot may be).
+What does the board do without the BDI attached?  More interesting yet,
+have you stopped the kernel to see where it's hung?
 
-If you want to look at the DS1306 U-Boot driver, look
-at
-		boot/u-boot/rtc/ds1306.c
-
-Expects that help
-
-Cedric
-
-> -----Original Message-----
-> From: owner-linuxppc-embedded@lists.linuxppc.org
->
-[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On
-Behalf Of David
-> Jander
-> Sent: Thursday, June 19, 2003 3:37 PM
-> To: linuxppc-embedded@lists.linuxppc.org
-> Subject: RTC for MPC8xx with Linux ?
->
->
->
-> Hi everybody,
->
-> Thanks for all the answers I got over experience
-with the MPC852T.
-> One other thing I was investigating is the RTC.
-> What RTC solutionts are known for easy interfacing
-with MPC8xx processors,
-> that work under linux ? What's the standard ?
-> There are a number of PC-compatible RTC chips out
-there, but I
-> don't seem to
-> like them much, because they're generally quite
-expensive, have a lot of
-> functionality which might be nice, but is not really
-needed in my case.
-> Any experience with smaller 1-bit (or SPI) RTC's
-under linux ? I'm looking
-> basically for a Battery-backuped time-keeping
-counter.
->
-> Greetings,
->
-> --
-> David Jander
-> Protonic Holland.
->
->
-
+--Chris
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
