@@ -1,35 +1,38 @@
-In-Reply-To: <19990330125854.000150@mail.mipsys.com>
-Date: Tue, 30 Mar 1999 21:22:54 +0200
-To: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: Yesterday vger and ioremap
-Message-Id: <19990330212254.017483@mail.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <XFMail.990330125817.hughc@babcockbrown.com>
+Content-Type: text/plain; charset=us-ascii
+MIME-Version: 1.0
+Date: Tue, 30 Mar 1999 12:58:17 -0800 (PST)
+From: Batmensch <hughc@babcockbrown.com>
+To: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: How to Install Pre-R5 on a PB G3
+Cc: hcaley@loomer.com
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Mar 30, 1999, Benjamin Herrenschmidt <bh40@calva.net> wrote:
+Subject: How to Install Pre-R5 on a PB G3 Series
 
->Apparently, the kernel works fine, PA seems to always be equal to VA, and
->apparently, this concerns all addresses on the Apple asic (mac-io on the
->G3), at f30xxxxx. 
->Since this is mapped with a BAT, I'm wondering if this could be a
->conflict between new ioremap changes and BAT mapping ?
+I have added this information to the Faq-O-Matic
 
-I was wrong, actually, the kernel  doesn't work, looks like IP or
-ethernet is just dead. I don't have enough time to look at this now
-(using bmac ethernet on a desktop G3, I didn't test another machine yet).
+http://cobweb.dartmouth.edu/cgi-bin/cgiwrap/johnh/faqomatic/faq.pl
 
+I had been pretty frustrated with this; it worked in December, it didn't work
+in January, it worked in February, it didn't work in March, argh.  I wanted to
+get the steps down in case I need to do it again.
 
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+I hope this helps others who are having problems with it, and take some heat
+off the developers.
+
+Hugh
 
 
+----------------------------------
+E-Mail: Batmensch <hughc@babcockbrown.com>
+Date: 30-Mar-99
+Time: 12:45:08
 
-
+This message was sent by XFMail
+----------------------------------
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
