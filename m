@@ -1,54 +1,52 @@
-Date: Fri, 7 Jul 2000 12:19:55 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Michael Lundkvist <ml@epact.se>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Going from 2.2.12 to 2.2.17pre10
-In-Reply-To: <qpg0pmgtko.fsf@erbium.epact.se>
-Message-ID: <Pine.HPX.4.10.10007071209230.21326-100000@gra-ux1.iram.es>
+Message-ID: <3965B532.F00E82B6@univ-rennes1.fr>
+Date: Fri, 07 Jul 2000 11:47:14 +0100
+From: Martin Costabel <costabel@univ-rennes1.fr>
+Reply-To: costabel@wanadoo.fr
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Gwyn Judd <b.judd@xtra.co.nz>
+CC: Dan Foster <dsf@gblx.net>,
+        LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: X still locks up
+References: <20000707142631.B804@thislove.dyndns.org> <20000706232259.A3148@frontiernet.net> <20000707153525.A1445@thislove.dyndns.org>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 7 Jul 2000, Michael Lundkvist wrote:
+Gwyn Judd wrote:
+[]
+> Okay so you get it on x86 2.2.16 and XFree 4.01
+> I get it on powerpc kernel >= 2.2.15 and XFree3.3.6
+> Any other takers?
 
-> If I can find a stable version it is an option. And I actually have
-> plenty of time to look. I need a rock-stable system by the end of this
-> year.
+I don't know if all this is really the same thing, but I have been
+getting sudden X freezes randomly with all 2.2.x kernels when using
+Xpmac. For me this was the main reason to switch to XFree68_FBDev where
+I *never* got these with 2.2.x kernels. Now I am getting these freezes
+also with XFree68_FBDev (some 3.3.6 version) when using 2.3.x or 2.4.0
+kernels. I very rarely use xmms (but always netscape), and I get these
+freezes sometimes when the machine is completely idle. Sometimes this
+happens after a couple of minutes, sometimes after 3 days.
 
-Ok, I hoppe 2.4 will be out then...
+The symptoms are: Mouse frozen, no keyboard input possible, no
+MagicSysRq, no X shutdown with ctl-cmd-del, no console switching, the
+only key combination working is the ctl-cmd-power hard reboot. On the
+other hand, the kernel and even X seem to continue to live at least for
+a while. I can see messages continue to scroll down and hear downloads
+or compilations making their disk noise. The one time I tried to ping
+from the outside, I was not successful, but then it sometimes takes 2
+minutes of pinging to wake the machine up and get a response even when
+it is not frozen.
 
-> I'll try 2.2.17pre10 tonight and see if I have more luck with that.
+>From my observations, I concluded that this must be a problem with the
+keyboard and/or mouse drivers in X. But since this part of the kernel
+and X ( I never understood why XFree has to have their own drivers for
+everything that is already in the kernel) is worst black magic, rapidly
+changing in incompatible ways, and since my machine (6400, ADB keyboard
+and mouse, valkyrie video) belongs to an endangered species anyway, I
+did not really try to understand what happens.
 
-Well, I'm going to put my patches for 2.2.16 in an untested directory
-then...
-
-> I guess I should talk to Ramix. They have been helpful before.
-> I'll also try to go back to an older version of the
-> CMD646-driver. There are a few timing related setup changes in the
-> newer versions.
-
-This might indeed be the problem. My 2400 are not heavily stressed but
-nevertheless they are stable: one has 52 days and the other 39 days
-uptime. The second one had a strange behaviour when a lightning struck the
-telescope however and had to be powered down before rebooting, hard reset
-through front panel push button would not work (not even reaching PPCBUG
-boot messages).
-
-> > The only accessible place (with adequate lab equipment) are the buffers:
-> > cut the input or the output of the receive buffer and connect it to the
-> > power supply (safer on the input since it can directly be connected to
-> > the buffer power supply while I'm not sure that some versions of the
-> > Universe are not 3.3V only)   .
-> >
->
-> OK. Then it looks quite possible. Thanks for the info.
-
-Thee only problem is to locate this damned buffer (just find which one is
-connected to the VME bus SYSRST but there are so many).
-
-	Gabriel.
-
+--
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
