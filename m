@@ -1,32 +1,26 @@
-Message-ID: <3CC40B91.90601@allot.com>
-Date: Mon, 22 Apr 2002 16:09:37 +0300
-From: Felix Radensky <felix@allot.com>
-MIME-Version: 1.0
+Message-ID: <E8F83D6D2A6AD3118E0300902786A20502371457@NTEX>
+From: "David Marqvar (DAM)" <DAM@tt.dk>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Cross compiling gdb-5.1.1 for ppc405
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: "Laurits Lassen Petersen (LLP)" <LLP@tt.dk>
+Subject: USB-driver for MPC-8xx
+Date: Mon, 22 Apr 2002 15:22:28 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Hi,
 
-I've managed to cross-compile gdb-5.1.1 for 405GP using
-Monta Vista HHL 2.0 toolchain.  Gdb runs, I can load the executable
-and set breakpoints. However, when i try to run the  program from gdb,
-I get the following message:
+Does anyone have a suggestion for a USB-driver for MPC823, using Linux 2.4.4
+?
 
-Starting program: /tmp/hello
-Don't know how to run.  Try "help target".
+(We have a "USB-transciever": Philips PDIUSBP11A)
 
-The same program runs fine  in gdb-5.0 from Monta Vista
-HHL 2.0.
 
-Any ideas ?
-
-Thanks a lot.
-
-Felix.
+Regaards,
+David Marqvar
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
