@@ -1,40 +1,36 @@
-Message-ID: <4033A0D7.1050005@jonmasters.org>
-Date: Wed, 18 Feb 2004 17:28:55 +0000
-From: Jon Masters <jonathan@jonmasters.org>
+Message-ID: <007b01c3f648$14ce2bc0$4a34a8c0@av34>
+From: "Marcus Overhagen" <marcus.overhagen@ims.fhg.de>
+To: "Tom Rini" <trini@kernel.crashing.org>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <A3240F62EF3C2749B1A25D3BC9548F410309FE@ExchWENZ02.wenz.global.vpn> <20040217221957.GH16881@smtp.west.cox.net>
+Subject: Re: 2.6 kernel ppc tree
+Date: Wed, 18 Feb 2004 18:53:13 +0100
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: EDK6.1 vs. EDK3.2 clarification
-References: <1036q23btu3ru01@corp.supernews.com>
-In-Reply-To: <1036q23btu3ru01@corp.supernews.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi there,
+"Tom Rini" <trini@kernel.crashing.org> wrote:
 
-Added configuration options to Linux config.in to control (actual names
-are slightly different for internal naming convention):
+> The linuxppc-2.5 tree already has most of this done (as it did as of
+> 2.6.1 or 2.6.2, I haven't re-checked the drivers).  However, head_8xx.S
+> still needs some updates for VM/exception changes.
 
-	CACHE_MODE	-	Toggle these
-	CACHE_REAL	-	Real mode cacheing enabled
-	CACHE_KERNEL	-	Kernel pages cacheing enabled
-	CACHE_USER	-	User pages cacheing enabled
+I tried compiling 2.6.3 for a MPC850 based board today, and got the same problem
+with uart.c (as well as a few other minor errors). However, I have trouble getting
+the 2.5 uart.c file by bitkeeper, can somebody please send it to me by (private) email?
 
-The system now boots if I disable all cacheing and it seems to be ok.
-However this only partially helps me and I still welcome input.
+I also noticed that the Kconfig file, as well as the uart.c file has very few options
+to support custom pin assigments, for example I couldn't configure SCC2 as
+Ethernet and at the same time SCC3 as serial. Is someone working on this, or
+must I do this myself?
+And what about hardware handshake signals, like RTS/CTS, does anyone
+have that working?
 
-Anyone know of any particular reason why this Memec Insight board would
-dislike cacheing being enabled especially with EDK6.1 hardware?
-
-I would love to hand validate the cache contents and this kind of thing
-but the Xilinx documentation is not good. The Xilinx XMD FAQ says that
-icachestartadr is a command when in fact it is a parameter to ppcconnect
-and then fails to provide an actual example of its use. *Sigh*.
-
-Cheers,
-
-Jon.
+regards
+Marcus
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
