@@ -1,47 +1,47 @@
-Message-Id: <199902011532.PAA25411@go.hannover.sgh-net.de>
-Subject: Greetin's an' felicitations
-Date: Mon, 1 Feb 99 16:32:04 +0100
-From: John L Grantham <jgrantha@hannover.sgh-net.de>
-To: <linuxppc-dev@lists.linuxppc.org>
+Date: Mon, 1 Feb 1999 16:55:38 +0100
+To: linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: matroxfb, anybody? (More details...)
+Message-Id: <19990201165538.009774@mail.mipsys.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+On Mon, Feb 1, 1999, Geert Uytterhoeven
+<Geert.Uytterhoeven@cs.kuleuven.ac.be> wrote:
 
-Thought I would introduce myself, seein's how I've just joined ye olde 
-LinuxPPC list.
+>Since BootX creates a fake OF device tree, I suspect it to appear in the
+tree.
+>Can you use your Mystique under MacOS? This is of course a prerequisite for
+>BootX seeing your board.
 
-I'm an American living in Hannover, Germany (home of CeBIT), 27 years 
-old, long-time Mac user (since about two weeks after the first Mac Super 
-Bowl ad) and started using Linux on the Mac with MkLinux DR2.1 about a 
-year and a half ago, later started using LinuxPPC once the G3-able kernel 
-came out, and have used SuSE Linux on PCs for about two years. I'm a 
-graphic and Web designer by profession, also do some Apache server 
-administration. Married, no kids.
+OF in the machine's ROM (not the card's ROM) should make _any_ PCI board
+visible provided that it contains correct config-space registers with a
+vendorID and a deviceID, which is required for all PCI cards anyway. The
+board itself can optionally contain OF code which can then change things
+in the device-tree but you will (should) always at least have a device
+tree entry, even if you have no OF code on the board.
 
-I also run a German-language Website about Linux on the Mac (MkLinux and 
-LinuxPPC), which can be found at http://linux.macnews.de/. Mainly 
-concentrates on helping people get started, rather than big-shot support 
-or anything like that. I'm considering adding an English-language section 
-in the near future, but am not yet sure about it.
+BootX will make the fake OF tree from MacOS Name Registry, which is
+itself a translated version of OF tree (plus or minus a couple of things
+since MacOS drivers can change it).
 
-Being a (relative) newbie with LinuxPPC, I'll try to refrain from stupid 
-questions, I promise... ;-)
-
-Hope to have some fun here...let the games begin.
-
-rgds
-
-John
+However, I've read somewhere that there is actually a difference between
+Matrox boards with and without OF code: the OF code will set the board to
+use big-endian pixels. It may also change a couple of other things, so
+you can not rely on the state of the board at driver initialisation. You
+will probably also have differences with or without Gabriel PReP
+bootloader since it will be able to run any x86 bios code that lives here.
 
 
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
-John Grantham | Dipl.-Designer (FH)
-              | Linux am Mac FAQ: http://linux.macnews.de/
-              | Homepage: http://surf.to/multimedia
+
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
