@@ -1,147 +1,50 @@
+Date: Fri, 4 Jun 1999 11:59:20 -0400
+From: Michael Meissner <meissner@cygnus.com>
+To: Adrian Cox <apc@agelectronics.co.uk>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Support for Motorola Platforms
+Message-ID: <19990604115920.A3331@tiktok.cygnus.com>
+References: <3757E59D.B18BCA8C@phx.mcd.mot.com> <3757E499.32339D86@agelectronics.co.uk>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="==_Boundary-1_=="
-Date: Fri, 4 Jun 1999 17:14:25 +0200
-To: linuxppc-dev@lists.linuxppc.org
-CC: cort@attis.cs.nmt.edu, Paul.Mackerras@cs.anu.edu.au
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Small pmac patches
-Message-Id: <19990604171425.013973@mail.mipsys.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3757E499.32339D86@agelectronics.co.uk>; from Adrian Cox on Fri, Jun 04, 1999 at 03:37:13PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---==_Boundary-1_==
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+On Fri, Jun 04, 1999 at 03:37:13PM +0100, Adrian Cox wrote:
+> 
+> Johnnie Peters wrote:
+> > Motorola has a new version of the MVME2400 with the MAX processor and
+> > as soon as I can get my hands on one I will do the work to get Linux
+> > to run on it.  Plans are also underway for new versions of the MTX
+> > series
+> > supporting the MAX processor.
+> 
+> Has anybody started work on GNU tools and kernel porting for Altivec
+> processors? The issues I see are:
+> (1) Altivec intructions in gas, so I don't have to enter the codes by
+> hand.
+> (2) Linux Kernel patches to load/save Altivec registers. These are large
+> enough that a lazy load/save might be useful.
+> (3) (Questionable) Patches to EGCS to support the C extensions that
+> Motorola specify in the Altivec PIM. I detest C extensions that add the
+> keyword "vector", but all Motorola's example code uses them.
 
-Enclosed are some minor patches that should apply fine on the 2.2.x tree.
-They contains un updated bootx.h, a fix for the bootx/l2cr support and a
-couple of ADB mice fixes.
+I have patches from Motorola to add Altivec support to egcs 1.0.3.  I haven't
+been in PowerPC mode recently and haven't looked at them.
+
+> All of these can be done based on documentation from Motorola's website.
+> I suspect that (1) has already happened inside some RTOS vendors, but
+> will take a long time to filter into the standard releases.
+> 
+> - Adrian Cox
+
 
 -- 
-           Perso. e-mail: <mailto:bh40@calva.net>
-           Work   e-mail: <mailto:benh@mipsys.com>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
-
-
---==_Boundary-1_==
-Mime-Version: 1.0
-Content-Type: application/octet-stream; name="patches.ben.tar.gz"; x-mac-creator="477a6970"; x-mac-type="477a6970"
-Message-Id: <19990604171430.032397>
-Date: Fri, 4 Jun 1999 17:14:30 +0200
-Content-Transfer-Encoding: base64
-
-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
-
---==_Boundary-1_==--
-
-
+Michael Meissner, Cygnus Solutions
+PMB 198, 174 Littleton Road #3, Westford, Massachusetts 01886
+email: meissner@cygnus.com	phone: 978-486-9304	fax: 978-692-4482
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
