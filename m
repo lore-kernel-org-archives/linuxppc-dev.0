@@ -1,54 +1,51 @@
-Date: Wed, 2 Oct 2002 11:42:19 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: very minor 405GP and 405GPr PCI difference
-Message-ID: <20021002014219.GF1848@zax>
-References: <OF8DC4E66D.5C36B7D3-ON87256C41.00434ACB@boulder.ibm.com> <20020930040143.GF10265@zax> <20021001052121.GV10265@zax> <3D995EC0.2000500@elsoft.ch>
-Mime-Version: 1.0
+Message-Id: <200210020156.AA00446@cj3020122-a.isd.mci.mei.co.jp>
+From: yamazaki <yama@isd.mci.mei.co.jp>
+Date: Wed, 02 Oct 2002 10:56:23 +0900
+To: Michael Habermann <mhabermann@gmx.de>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: nfsmount
+In-Reply-To: <3D9A4F24.9070005@gmx.de>
+References: <3D9A4F24.9070005@gmx.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3D995EC0.2000500@elsoft.ch>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Oct 01, 2002 at 10:37:20AM +0200, "David M?ller (ELSOFT AG)" wrote:
->
-> Hello
->
-> David Gibson wrote:
-> >On Mon, Sep 30, 2002 at 02:01:43PM +1000, David Gibson wrote:
-> >
-> >>On Fri, Sep 27, 2002 at 08:27:35AM -0400, Ralph Blach wrote:
-> >>
-> >>>Yesterday I discovered a minor 405GP vs 405GPr PCI difference.
-> >>>IN the 405GP the ptm1ms bit 31, the enable bit for the region is set to 1
-> >>>by the hardware and cannot be written.
-> >>>On the 405GPr the bit is writable and this makes necessitates  a change
-> >>>in
-> >>>walnut.c
-> >>>
->
-> [stuff deleted]
->
-> >So, here is a patch to do that.  If there are no objections, I will
-> >commit this to linuxppc-2.5 BK.
->
->
-> In your proposed patch, i'm missing a way to install a board specify
-> mapping either by using special constants, callback functions to board
-> specific code, .... AFAICS all boards are forced to use the same mapping.
+Thank you for reply.
 
-That's right.  Is there a reason for boards to have different
-mappings?  I can well believe that there is, but the current tree
-doesn't show it - all the boards (in the tree) that have PCI appear to
-do the same initialisation of the windows.  It doesn't seem worthwhile
-to create board specific PCI initialisation hooks until we have a
-board that needs it.
+I start the NFS Server with /etc/init.d/nfs start on nfs server.
+And,other client can nfsmount on nfs server.
 
---
-David Gibson			| For every complex problem there is a
-david@gibson.dropbear.id.au	| solution which is simple, neat and
-				| wrong.
-http://www.ozlabs.org/people/dgibson
+I know it can nsmount without rpc.statd,but take a long long time.
+
+>yamazaki wrote:
+>
+>> Hello,
+>>
+>> I have a question.
+>> We made a custom board(mpc8245 used),and implemeted kernel-2.2.18.
+sorry it was wrong.kernel is 2.4.18.
+>> It works very well.
+>> now,I tried to implement nfsmount client in single user mode.
+>> Is does not work.
+>> Then I knew the reason which is for rpc.statd missing.
+>> I could not found rpc.statd form the message of ps -aux.
+>>
+>> Please tell me if you know why it does not work.
+>>
+>> ----
+>> yamazaki  yama@isd.mci.mei.co.jp
+>>
+>>
+>>
+>>
+>
+>You need to start the NFS Server with /etc/init.d/nfs start.
+>
+
+----
+yamazaki  yama@isd.mci.mei.co.jp
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
