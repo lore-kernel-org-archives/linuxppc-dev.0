@@ -1,176 +1,83 @@
-Message-ID: <3DDD37CB.70005@pop.agri.ch>
-Date: Thu, 21 Nov 2002 20:45:15 +0100
-From: Andreas Tobler <toa@pop.agri.ch>
-MIME-Version: 1.0
-To: LinuxPPC Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: G3 bus speed detector
-Content-Type: multipart/mixed;
- boundary="------------020101070600060405000903"
+From: "Dale Farnsworth" <Dale.Farnsworth@mvista.com>
+Date: Thu, 21 Nov 2002 14:50:50 -0700
+To: linuxppc-dev@lists.linuxppc.org
+Subject: __copy_tofrom_user fails on unaligned read faults
+Message-ID: <20021121215050.GD6090@cuzco.az.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------020101070600060405000903
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+For performance reasons, __copy_tofrom_user copies
+data in 16-bytes chunks.  If a read fault occurs in the
+middle of one of these chunks, the data which has been
+successfully read (up to 15 bytes within the chunk) is
+discarded.
 
-Hello,
+Valid data is similarly not copied properly while copying
+words and the faulting read address is not word aligned.
 
-attached a little module I hacked. This module calculates the bus, cpu
-and the L2 frequency of a G3 based system. I tested it on a pm8600
-G3/500 and a wallstreet I.
-We can discuss about the need of such a module, yes. Possibly useless
-except for me. I did it to learn a bit module programming and asm. Also
-I was annoyed that my wallstreet reports 100MHz bus frequency from OF.
+Is this a known issue?
 
-It would be great if I could get some feedback regarding functionality
-and other issues.
+While this a rare corner case, I propose that we retry
+with byte copies after an unaligned read fault.
 
-PLEASE keep in mind, TRY IT ON YOUR OWN RISK. It should be safe now, but
-you never know.
+I've appended a patch against linuxppc_2_4_devel
 
-make,
-make install (as root)
-insmod clock_cpu_mod
-sync (just to be on the safe side)
+-Dale Farnsworth
 
-cat /proc/cpu_clock
+--- linux/arch/ppc/lib/string.S.orig	2002-11-21 09:26:41.000000000 -0700
++++ linux/arch/ppc/lib/string.S	2002-11-21 11:47:29.000000000 -0700
+@@ -512,7 +512,12 @@
+ 	li	r3,0
+ 	b	99f
+ /* read fault, initial word copy */
+-102:	li	r4,0
++102:	andi.	r0,r4,3
++	beq	85f
++/* read fault was not word aligned, retry one byte at a time */
++	li	r3,2
++	b	86f
++85:	li	r4,0
+ 	b	91f
+ /* write fault, initial word copy */
+ 103:	li	r4,1
+@@ -539,15 +544,33 @@
+ #endif
 
-[root@pm8600 clock]# cat /proc/cpu_clock
-CPU clock: detecting CPU clock
-PPC 740/750
-Bus frequency : 49997936 Hz
-CPU frequency : 499979360 Hz
-L2  frequency : 249989680 Hz
-cpu-rev:  3.2 COP
-Clock:  End of Test
-
-
-That's it.
-
-TIA,
-
-Andreas
-
-P.S, thanks goes once again to benh.
-
---------------020101070600060405000903
-Content-Type: application/x-gzip; x-mac-type="0"; x-mac-creator="0";
- name="clock-21112002.tar.gz"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="clock-21112002.tar.gz"
-
-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
---------------020101070600060405000903--
-
+ /* read fault in cacheline loop */
+-104:	li	r4,0
++104:	addi	r0,r4,4
++	andi.	r0,r0,15
++	beq	87f
++/* read fault was not 16-byte aligned, retry one byte at a time */
++/* number of bytes remaining is r5 + (ctr << r3) */
++86:	mfctr	r0
++	slw	r3,r0,r3
++	add	r3,r3,r5
++	mtctr	r3
++	b	40b
++
++87:	li	r4,0
+ 	b	92f
++
+ /* fault on dcbz (effectively a write fault) */
+ /* or write fault in cacheline loop */
+ 105:	li	r4,1
+ 92:	li	r3,LG_CACHELINE_BYTES
+ 	b	99f
+ /* read fault in final word loop */
+-108:	li	r4,0
++108:	andi.	r0,r4,3
++	beq	88f
++/* read fault was not word aligned, retry one byte at a time */
++	andi.	r5,r5,3
++	li	r3,2
++	b	86b
++88:	li	r4,0
+ 	b	93f
+ /* write fault in final word loop */
+ 109:	li	r4,1
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
