@@ -1,47 +1,38 @@
-Date: Wed, 9 Jun 1999 09:38:42 +0200 (CEST)
+Date: Wed, 9 Jun 1999 09:41:54 +0200 (CEST)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Daniel Jacobowitz <drow@false.org>
+To: Gabriel Paubert <paubert@iram.es>
 cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: ioremap() on ISA memory space
-In-Reply-To: <19990608161648.A7950@drow.res.cmu.edu>
-Message-ID: <Pine.LNX.4.10.9906090937100.31065-100000@mercator.cs.kuleuven.ac.be>
+In-Reply-To: <Pine.HPP.3.96.990608205122.27048K-100000@gra-ux1.iram.es>
+Message-ID: <Pine.LNX.4.10.9906090939060.31065-100000@mercator.cs.kuleuven.ac.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 8 Jun 1999, Daniel Jacobowitz wrote:
-> On Tue, Jun 08, 1999 at 09:08:04PM +0200, Gabriel Paubert wrote:
-> > be compulsory in 2.3 even on i386), but this is not necessarily a mm bug
-> > IMHO. It would be better to define a macro that conditionally adds a
-> > platform dependant offset for addresses < 16 Mb (I've heard that
-> > ISA_MEM_BASE has been killed, and I disagree just because of this kind
-> > of things).
+On Tue, 8 Jun 1999, Gabriel Paubert wrote:
+> On Tue, 8 Jun 1999, Geert Uytterhoeven wrote:
+> > I found one reason why current kernels don't work on my LongTrail: my NVRAM is
+> > in ISA memory space. When the kernel tries to ioremap() it in
+> > pmac_nvram_init(), I get
 > > 
-> > I would rather use ioremap(dev->base_address[n],...) for standard PCI
-> > devices and ioremap(ISA_PHYSICAL_ADDRESS(xxx),...) for devices which might
-> > be on ISA with: 
+> >     __ioremap(): phys addr e0000 is RAM lr c000e43c
 > > 
-> > #define ISA_PHYSICAL_ADDRESS(x) \ 
-> > (((x)<0x1000000) ? ((x)+ISA_PHYSICAL_BASE) : (x))
+> > and ioremap() returns NULL, causing all later accesses to NVRAM (e.g. in atyfb)
+> > to fail due to NULL pointer dereferences.
 > > 
-> > where ISA_PHYSICAL_BASE is a boot time constant (0xfd000000 on MPC106,
-> > don't know on others). 
+> > Do all CHRP boxes have NVRAM in ISA memory space? The comment (by Corey) near
+> > the call to pmac_nvram_init() in chrp_init2() already wonders whether
+> > pmac_nvram_init() should be called or not.
 > 
-> Incidentally, and somewhat related to this:
-> 
-> When I was hacking on tulip.c, I wanted to use tulip-daig to get the
-> state of the card.  But it uses inl/outl, and on powerpc these have a
-> kernel private variable (isa_io_base) in their macro expansion.  Is
-> there any way to make the PCI space available to userland on powerpc,
-> as iopl() and inb/outb can on x86?
+> I don't know, but according to M.Mares (the PCI guy), all addresses passed
+> to ioremap should be processor physical addresses. So you should modify
+> the call to ioremap to add the physical offset at which the ISA memory
+> space (address 0-16 Mb) appears on the PCI bus. 
 
-You have to mmap() /dev/mem and store the result in a variable called
-isa_io_base first. But the address region you have to map depends on the
-machine type :-(
-
-Example: http://www.cs.kuleuven.ac.be/~geert/PowerPC/sio.c
+Oops, you're right (in my case that's an offset of 0xf7000000). Hence we have
+to `fix up' the OF device tree first...
 
 Greetings,
 
@@ -51,6 +42,7 @@ Greetings,
 Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
 Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
 Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
