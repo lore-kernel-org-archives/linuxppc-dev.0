@@ -1,60 +1,45 @@
-To: Pavel Roskin <pavel_roskin@geocities.com>
-Cc: Graham Stoney <greyham@research.canon.com.au>,
-        linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Best compiler/flags combination
-References: <Pine.LNX.4.21.0001302322580.774-100000@localhost.localdomain>
-From: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
-Date: 31 Jan 2000 13:58:32 +0100
-In-Reply-To: Pavel Roskin's message of "Sun, 30 Jan 2000 23:55:50 -0500 (EST)"
-Message-ID: <kfy7lgql7nr.fsf@kieraypc07.p.y.ki.era.ericsson.se>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Ruedi.Hofer@ascom.ch
+Date: Mon, 31 Jan 2000 16:12:58 +0100 (CET)
+Subject: RomFS
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: damm@kieraypc01.p.y.ki.era.ericsson.se
+Message-id: <0FP7006FSGXU3K@pmdf-it.hasler.ascom.ch>
+MIME-version: 1.0
+Content-type: MULTIPART/MIXED; BOUNDARY="Boundary_(ID_wT3K7biElrlfYxFL8Tl3fA)"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Pavel Roskin <pavel_roskin@geocities.com> writes:
 
-> You did not mention flags. Maybe my results will be of some interest. I'm
-> using egcs-1.1.2 native for PowerMAC
->
-> -O2                bad code almost everywhere (libcrypt, depmod, bash)
-> -Os                bad code in tinylogin
-> -Os -fno-inline    good code (not extensively tested),
->                    but it doesn't look like a clean solution
-> -O2 -mcpu=860 -mmultiple -mstrings -mhard-float
->                    good code so far, but libm cannot be compiled
->                    (internal error in the compiler)
+--Boundary_(ID_wT3K7biElrlfYxFL8Tl3fA)
+Content-type: TEXT/PLAIN
+Content-Transfer-Encoding: 7BIT
 
-What you are seeing is most likely completely random behaviour depending
-on how the code and data in the binary is layed out. You can not use a
-standard glibc on 8xx or 4xx CPUs due to incorrect assumptions of
-cache-line size. See
-http://lists.linuxppc.org/listarcs/linuxppc-embedded/199909/msg00000.html
-for a solution.
+Hi,
 
-> Probably I'll still have to use
-> -O2 -mcpu=860 -mmultiple -mstrings -mhard-float
+My ADS board is happily running with a NFS mounted linux box.
 
-If you don't have math emulation in the kernel you should use
--mcpu=860 -msoft-float
-If you do have math emulation you don't have to use them. The important
-thing is that all binaries and libraries on the system are compiled
-with the same flags.
+Now I have to put all the code into the flash memory to get a standalone
+solution.
 
-Level of optimization should not matter. If it does something is broken.
-Also note that -mhard-float is ignored if -mcpu=860 is present on the
-command line. With the layout of the specs file in current gcc you must
-either use both "-mcpu=860 -msoft-float" or none of them, otherwise you
-get broken binaries.
+I'm using the 8xxrom Bootloader. In a file called config.h I can configure
+CONFIG_DISK_ROM.  As far as I can see, the bootloader assumes
+then that a complete FAT filesystem is stored from the position
+0xFE020000 in flash.
 
-> Or should I understand your recommendation so that you don't specify -mcpu
-> and gcc still produces code running on embedded systems?
+My question:
+- Is my assumption right?
 
-If you have kernel math emu you don't need to specify -mcpu.
+- How can I produce a FAT filesystem in a file, which I can download
+  with MPC8BUG into the onboard flash?
 
-//Marcus
---
-Signature under construction, please come back later.
+- Does it have anything in common with the romfs driver which is supported
+  by the kernel? (I think not)
+
+
+TIA, Ruedi
+
+
+--Boundary_(ID_wT3K7biElrlfYxFL8Tl3fA)--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
