@@ -1,92 +1,96 @@
-Message-ID: <20000814055236.26882.qmail@kunk.jriver.com>
-Subject: MORE Mace on 7200 debug output, narrowing it down...
-In-Reply-To: <B5B7BC73-243610@192.168.2.21> "from Bruce Anderson at Aug 10, 2000
- 01:57:03 am"
-To: Bruce Anderson <brucea@spacestar.net>
-Date: Mon, 14 Aug 2000 00:52:36 -0500 (CDT)
-From: Robert E Brose II <bob@kunk.jriver.com>
-CC: linuxppc-dev@lists.linuxppc.org
+Message-ID: <3997D880.22A70312@student.ethz.ch>
+Date: Mon, 14 Aug 2000 13:31:12 +0200
+From: Michel Dänzer <daenzerm@student.ethz.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: debian-powerpc@lists.debian.org
+CC: linuxppc-dev@lists.linuxppc.org,
+        Steffen Haeuser <SteffenH@hyperion-software.de>
+Subject: [ANN] Rage128 (Pro) DRI test binaries
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-User Bruce Anderson says:
-> On Wed, Aug 9, 2000 10:40 PM, Robert E Brose II
-> >Any ideas on what to look for next??
->
-> Same tests but this time use a crossover and no hub between the machines.
+Grab them at http://n.ethz.ch/student/daenzerm/download/DRI/ .
 
-Ok, had to wire up a crossover cable.
-It works "better" but still drops around 2 in 10 ping packets.
 
-IMPORTANT OBSERVATIONS:
+Here's the DRI.readme you find there:
 
-Whenever 7200 fails to reply to a packet, the packet has the P bit set.
-22:47:25.180000 > myeth0 > rhlinuxeth0: icmp: echo request
-22:47:25.180000 < rhlinuxeth0 > myeth0: icmp: echo reply (DF)
-22:47:26.180000 > myeth0 > rhlinuxeth0: icmp: echo request
-22:47:26.180000 P rhlinuxeth0 > myeth0: icmp: echo reply (DF)
 
-In the dump above, the first was successful, the second was not.
+Direct Rendering Infrastructure for Rage128 (Pro) on PowerPC
+------------------------------------------------------------
 
-Packet size makes very little difference (tried 64 to 1400 bytes)
 
-The problem isn't a hub, I have tried a hub and a switch (which is
-just like connecting with a crossover because the switch has a
-normal ethernet chip in it, in my case 21140's).
+These are test binaries. If you have installed XFree86 4.0.2 or later,
+chances are it already supports DRI. Please check before trying these
+tarballs.
 
-Here is another with ftp.... Again, the 7200 drops every packet with the
-P flag set.
-23:21:25.810000 M 0:20:4c:1:63:d6 1:0:0:0:0:0 ip 84: rhlinuxeth0.ftp > myeth0.2347: P 1320814795:1320814824(29) ack 1220753521 win 32696 (DF) [tos 0x10]
+You can find general information about the DRI at http://dri.sourceforge.net .
 
-Performance is VERY bad for tcp. Once the 7200 starts receiving lots of
-large packets in a short time it drops packets like crazy.
 
-Finally, I did another test, just 3 pings from the redhatbox to the
-7200 and had a tcpdump running on both machines. The first 2 packets
-were received on the 7200 with the P flag set and were not replied to,
-the 3rd didn't have the P flag set and the 7200 replied which was
-received properly by the rhlinux box.
+For flexibility, I have split things up in three tarballs:
 
-Here are 2 detailed reply packets as received on the 7200.
-The first worked, the second didn't:
+- dri-main
 
-23:57:18.480000 M 0:20:4c:1:63:d6 1:0:0:0:0:0 ip 98: rhlinuxeth0 > myeth0: icmp:
- echo reply (DF)
-4500 0054 0000 4000 ff01 f853 c0a8 0103
-c0a8 0101 0000 a48b 6710 0006 3997 7c2e
-0007 538e 0809 0a0b 0c0d 0e0f 1011 1213
-1415 1617 1819 1a1b 1c1d 1e1f 2021 2223
-2425 2627 2829 2a2b 2c2d 2e2f 3031 3233
-3435 3637
+  This contains the X server binary, the common modules, the libraries and
+  an example XF86Config (etc/X11/XF86Config.dri). Just untar into / and
+  start the server like this:
 
-23:57:19.480000 P 0:20:4c:1:63:d6 0:0:0:0:0:1 ip 98: rhlinuxeth0 > myeth0: icmp:
- echo reply (DF)
-4500 0054 0000 4000 ff01 f853 c0a8 0103
-c0a8 0101 0000 a487 6710 0007 3997 7c2f
-0007 5390 0809 0a0b 0c0d 0e0f 1011 1213
-1415 1617 1819 1a1b 1c1d 1e1f 2021 2223
-2425 2627 2829 2a2b 2c2d 2e2f 3031 3233
-3435 3637
+    /usr/XF86-DRI/bin/X :1 -xf86config /etc/X11/XF86Config.dri
 
-THINGS TO ASK...
+  The :1 is only needed if you already have an X server running on display
+  :0 .
 
-Why is this P flag set on all failed packets? Does it mean the packet is
-being received corrupted or is really receiving a set P flag.
+  You may have to set the environment variable LD_LIBRARY_PATH to
+  /usr/XF86-DRI/lib for GL apps to use the correct libraries.
 
-What is the significance of the destination ethernet address of
-1:0:0:0:0:0 which is on the good received packet vs the 0:0:0:0:0:1
-which is on the bad received packet? Is this what the
-P flag means in icmp packets? What causes this?
 
-Not to be boringly repetitious but this works fine in MacOS.
+- dri-r128
 
-Bob
+  This contains the Rage128 (Pro) specific modules for the X server and
+  libGL. You have to untar this into / as well for things to work.
+
+  I have split these from the main tarball to allow for frequent updates
+  without having to download too much.
+
+
+- drm-source
+
+  This contains the source for the Direct Rendering Manager kernel module.
+
+  The following assumes you are running kernel version <ver>:
+
+  Untar anywhere, cd drm-source, make, cp r128.o /lib/modules/<ver>/misc/ .
+  If your kernel source isn't in /usr/src/linux{,-<ver>}, you have to set
+  TREE to where it is, e.g. make TREE=/usr/src/linux-pmac-benh .
+
+
+
+Current Status
+--------------
+
+It Works(TM) :)
+
+There are color problems here and there, I'm working on that.
+
+Performance isn't too exciting without AGP GART, however before you give up
+frustrated, try something which uses (preferrably lots of) textures. :)
+
+The kernel modules sometimes can't be loaded successfully upon the first
+server start. Just exit and restart. Or load it manually before starting the
+server to be on the safe side.
+
+
+
+Please repoprt any bugs you find to me!
+
+Have fun and be happy,
+
+Michel Dänzer <daenzerm@student.ethz.ch>
+
+
 --
-Robert E. Brose II    N0QBJ
-http://www.jriver.com/~bob/
-bob@kunk.jriver.com
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and The DRI Project
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
