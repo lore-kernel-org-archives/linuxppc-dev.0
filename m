@@ -1,17 +1,16 @@
-Return-Path: <wd@denx.de>
-Received: from mailout09.sul.t-online.com (mailout09.sul.t-online.com
-	[194.25.134.84]) by ozlabs.org (Postfix) with ESMTP id 392CF2BDB4
+Return-Path: <rpjday@mindspring.com>
+Received: from tomts10-srv.bellnexxia.net (tomts10.bellnexxia.net
+	[209.226.175.54]) by ozlabs.org (Postfix) with ESMTP id D10602BDB4
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  9 Oct 2004 09:29:32 +1000 (EST)
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 08 Oct 2004 19:10:01 EDT."
-	<Pine.LNX.4.60.0410081908410.3331@localhost.localdomain>
-Date: Sat, 09 Oct 2004 01:29:15 +0200
-Sender: wd@denx.de
-Message-Id: <20041008232920.C68C6C1430@atlas.denx.de>
+	Sat,  9 Oct 2004 09:40:07 +1000 (EST)
+Date: Fri, 8 Oct 2004 19:33:09 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+To: Wolfgang Denk <wd@denx.de>
+In-Reply-To: <20041008232920.C68C6C1430@atlas.denx.de>
+Message-ID: <Pine.LNX.4.60.0410081930510.3440@localhost.localdomain>
+References: <20041008232920.C68C6C1430@atlas.denx.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Cc: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
 Subject: Re: next pass of cleaning up micropatch.c 
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -24,30 +23,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <Pine.LNX.4.60.0410081908410.3331@localhost.localdomain> you wrote:
-> 
-> >> nice idea, but sadly, doomed to failure.  note that the code to copy
-> >> the patch arrays *requires* you to be able to take the sizeof() those
-...
-> > This is not right. Guess how memcpy() works - it's a function, btw.
-> 
-> sure.  and it accepts a size parameter, which is why it works.  i'm 
-> not sure what you're getting at.
+On Sat, 9 Oct 2004, Wolfgang Denk wrote:
 
-I'm getting at your "doomed to failure" argument.
+> I'm surprised that you didn't think about the possibility to pass the
+> patch length as an argument to the function, that's all.  This  seems
+> all  too  obvious  to  me.
 
-I'm surprised that you didn't think about the possibility to pass the
-patch length as an argument to the function, that's all.  This  seems
-all  too  obvious  to  me.  (If  you like you can this make an inline
-function - then the code will be more or less identical  to  what  we
-have now [which does not make the code a bit better, btw.])
+oh, sure, if you know the length, it's easy.  and who wants to count 
+those bytes?  not me.  that's why i long ago dropped the idea of 
+writing a function.
 
-Best regards,
+personally, i still like the macro solution.  it seems to be 
+appropriate for a 2-line loop, but i'm not going to start that
+discussion again.  time to move on.
 
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-The only person who always got his work done by Friday
-                                                 was Robinson Crusoe.
+rday
