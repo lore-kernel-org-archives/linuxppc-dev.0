@@ -1,43 +1,43 @@
-Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
-From: Gabriel Paubert <paubert@iram.es>
-Date: Tue, 13 May 2003 12:21:45 +0200
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Wolfgang Denk <wd@denx.de>, Richard Zidlicky <rz@linux-m68k.org>,
+Date: Tue, 13 May 2003 14:03:51 +0200
+From: Richard Zidlicky <rz@linux-m68k.org>
+To: Gabriel Paubert <paubert@iram.es>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+	Wolfgang Denk <wd@denx.de>,
 	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: set_rtc_time() cleanup / normalization
-Message-ID: <20030513102145.GA3997@iram.es>
-References: <20030513081817.A25655@mrt-lx1.iram.es> <Pine.GSO.4.21.0305131051420.20323-100000@vervain.sonytel.be>
+Message-ID: <20030513120351.GB3868@linux-m68k.org>
+References: <20030512211733.B489EC6092@atlas.denx.de> <Pine.GSO.4.21.0305130951230.20323-100000@vervain.sonytel.be> <20030513081817.A25655@mrt-lx1.iram.es>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.GSO.4.21.0305131051420.20323-100000@vervain.sonytel.be>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20030513081817.A25655@mrt-lx1.iram.es>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, May 13, 2003 at 10:53:28AM +0200, Geert Uytterhoeven wrote:
->
-> On Tue, 13 May 2003, Gabriel Paubert wrote:
-> > On Tue, May 13, 2003 at 09:52:22AM +0200, Geert Uytterhoeven wrote:
-> > > On Mon, 12 May 2003, Wolfgang Denk wrote:
-> > > > I would like to find out if there is some consensus about the use  of
-> > > > set_rtc_time() in the timer interrupt handler.
-> > >
-> > > On m68k, we removed that part because it confused NTP. Richard Zidlicky can
-> > > probably tell more about that.
-> >
-> > I certainly would like to know the details of this. I believe it may
-> > be fixing the symptom rather than the cause (an NTP bug).
->
-> As far as I remember, NTP estimates the error of your RTC and uses that
-> estimation to correct your time if no NTP server is available, but the
-> estimation step fails if the kernel messes with the RTC behind NTP's back.
+> > On m68k, we removed that part because it confused NTP. Richard Zidlicky can
+> > probably tell more about that.
 
-In this case NTP should never clear the STA_UNSYNC flag shen it
-synchronized to the local clock (driver 127.127.0.0 IIRC) . The state
-change from 0x41 to 0x01 should never happen for the kernel side of
-the status flags, this would avoid creating the loop.
+more specific, syncinc systime with NTP could confuse hwclock,
+see eg the thread following
 
-	Regards,
-	Gabriel
+http://marc.theaimsgroup.com/?l=linux-kernel&m=100448857801670&w=2
+
+Although workarounds are possible, there are some more reasons
+to dislike the hwclk update code in arch/*kernel/time.c:
+
+- RTC should be accessed by proper rtc device driver only
+- magic updates may confuse hwclock, adjtimex and other programs,
+  some programs need to use workarounds to avoid triggering it.
+- everything it does can be done much better by userspace
+  accessing /dev/rtc
+- implements policy and thus doesn´t belong into kernel
+- getting rid of it saves a few clock cycles on every timer
+  interrupt
+- nobody can positively expect it to work, iirc many HW
+  variants were never supported -> nothing can break if
+  it is killed
+
+
+Richard
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
