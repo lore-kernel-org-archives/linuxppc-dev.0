@@ -1,43 +1,60 @@
-From: Steffen Haeuser <SteffenH@hyperion-software.de>
-Reply-To: SteffenH@hyperion-software.de
-To: Iain Sandoe <iain@sandoe.co.uk>, takashi oe <toe@unlserve.unl.edu>
-CC: linuxppc-dev@lists.linuxppc.org
-Date: Sun, 30 Jul 2000 23:46:24 +0100
-Message-ID: <yam8246.1226.148140032@mail.lf-online.de>
-In-Reply-To: <200007301959.UAA25203@hyperion.valhalla.net>
-Subject: Re: LinuxPPC X Server
+Message-ID: <3984B243.AC88BF64@sympatico.ca>
+Date: Sun, 30 Jul 2000 18:54:59 -0400
+From: hendricks <kevin.hendricks@sympatico.ca>
+Reply-To: khendricks@ivey.uwo.ca
 MIME-Version: 1.0
-Content-Type: text/plain
+To: "green@cygnus.com" <green@cygnus.com>
+CC: "'khendricks@ivey.uwo.ca'" <khendricks@ivey.uwo.ca>,
+        "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Kaffe from cvs and some patches
+References: <01BFFA2B.F8827460.green@cygnus.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Am 30-Jul-00 schrieb Iain Sandoe:
+Hi Anthony,
 
-Hi!
+If you are interested in kaffe, Godmar committed my changes and it
+should build just fine under cvs.
 
->Don't know - I did a make "World" so I guess that should have built
->everything?
+I also built it using unix-pthreads (native linuxthreads) and it also
+seems to work well (with a few minor build modifications).
 
-How many fps do you get, if you run the "gears" demo of Mesa3D ? This is
-a good test for if 3D HW Acceleration is present... if it is below 100,
-then it is software... some other demos which are not in the Mesa3D Archive
-for example "fire" (I could send you source code) is even better for the test.
-On Software it usually does not even give *one frame*.
+As for libffi,I was using the cvs version 2.X.  As for threadsafety, I
+am not sure that is the issue at all.
 
->I will mail you off list when I have had time to do a test.
+Given the sysdepCallMethod now exists for ppc, it should improve
+performance over libffi (simply less overhead) (if you can get libffi to
+work).
 
-Okay.
 
->> You told it took 1 day to do... so
->> there were big problems/source code changes to do ? Or what caused this ?
+Try a cvs checkout of kaffe, it should build and work with both
+unix-jthreads and unix-pthreads.
 
->No problems, no changes, it's just *BIG* :-)
+Kevin
 
-Ah, so this was just plain compile time ? No complications or such ? Sounds
-good... maybe I should try it... :)
 
-Steffen
+Anthony Green wrote:
+>
+> Kevin wrote:
+> > I built kaffe cvs using the cvs version of libffi and basicly it compiles
+> but
+> > does not really run any truly multi-threadsed apps
+> > (see test/regressions/ThreadLocalTest.java for instance).
+>
+> libffi itself is thread safe.  I suspect that Kaffe is using it incorrectly.
+>  Do you (or anyone else) know what the problem is?
+>
+> AG
 
+--
+
+--
+Kevin B. Hendricks
+Associate Professor of Operations and Information Technology
+Richard Ivey School of Business, University of Western Ontario
+London, Ontario  N6A-3K7  CANADA
+khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
