@@ -1,51 +1,49 @@
-Message-Id: <369DCAA7.E3EE9749@schweiz.ch>
-Date: Thu, 14 Jan 1999 11:44:55 +0100
-From: Andreas Tobler <a.tobler@schweiz.ch>
+In-Reply-To: <199901131910.LAA28570@saul9.u.washington.edu>
+Date: Thu, 14 Jan 1999 12:12:21 +0100
+To: linuxppc-dev@lists.linuxppc.org,
+        "David A. Gatwood" <marsmail@globegate.utm.edu>,
+        a sun <asun@saul9.u.washington.edu>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: Porting to NuBus PowerMacs
+Message-Id: <19990114121221.005972@mail.mipsys.com>
 Mime-Version: 1.0
-To: Multiple recipients of list <linux-pmac@samba.anu.edu.au>,
-        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: sources of libstdc++
-Content-Type: multipart/mixed;
- boundary="------------34AE3866FA026A022FEBC01B"
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------34AE3866FA026A022FEBC01B
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+On Tue, Jan 12, 1999, a sun <asun@saul9.u.washington.edu> wrote:
 
-Hello,
-where can I find the sources of libstdc++2.9.0-1c?
-I didn't find them on biggi.linuxppc.org. I have to rebuild them with a
-special option.
+>so, ben, i guess i'll also need memory addresses/sizes as well. after
+>perusing the m68k code, i think that's the only thing that i forgot to
+>tell you about. this will essentially make bootx report essentially
+>the same information as the m68k boot loader.
 
-Thanks,
-Andreas
+I'll download this bootloader and see what it does. I don't know exactly
+how to get this memory map yet, it would be great if David could manage
+to find the info ...
+
+>well, my "oh so clever plan" is actually to use the gestalt
+>information to mock up something that i pass to the m68k interrupt
+>routines. presto! no more uglification of irq.c. given the
+>similarities between the apus stuff and the nubus powermac stuff, i'm
+>actually turning the nubus powermacs into a variant of apus for now. a
+>lot of my fiddling actually ends up making some minor changes to the
+>m68k code and calling that instead. 
+>
+>for now, i'm conveniently ignoring the dma stuff, but it looks like
+>modifying the mac68k devices will actually prove to be more useful
+>than dealing with the the standard pci powermac stuff. 
+
+I think so too. And PCI powermac is still evolving, it would be more
+difficult to take care of not breaking the NuBus support during evolutions.
+
 -- 
-| Andreas Tobler				
-| CH-8004 Zuerich 							
-| E-Mail: andreas.tobler@alcatel.ch	| a.tobler@schweiz.ch
------------------------------------------------------------
---------------34AE3866FA026A022FEBC01B
-Content-Type: text/x-vcard; charset=us-ascii;
- name="a.tobler.vcf"
-Content-Description: Card for Andreas Tobler
-Content-Disposition: attachment;
- filename="a.tobler.vcf"
-Content-Transfer-Encoding: 7bit
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
-begin:vcard 
-n:;Andreas Tobler
-x-mozilla-html:FALSE
-version:2.1
-email;internet:a.tobler@schweiz.ch
-x-mozilla-cpt:;0
-fn:Andreas Tobler
-end:vcard
 
---------------34AE3866FA026A022FEBC01B--
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
