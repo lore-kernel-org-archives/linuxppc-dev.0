@@ -1,69 +1,59 @@
-Date: Fri, 22 Nov 2002 11:14:17 +0100
-From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
-Subject: RE: linuxppc_2_4_devel, rc1 and rc2 problem.
-In-reply-to: <23761.1037957518@passion.cambridge.redhat.com>
-To: David Woodhouse <dwmw2@infradead.org>
+Date: Fri, 22 Nov 2002 18:26:04 +0800
+From: caixupeng <edmoon@huawei.com>
+Subject: Re: compile a linux kernel for ppc4xx, error message
+To: Aman <aman@mistralsoftware.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Reply-To: joakim.tjernlund@lumentis.se
-Message-id: <IGEFJKJNHJDCBKALBJLLEEDNFIAA.joakim.tjernlund@lumentis.se>
+Message-id: <000701c29211$90689eb0$33690b0a@DBKQW41X>
 MIME-version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Content-type: text/plain; charset=iso-8859-1
+References: <001501c291c2$04745150$33690b0a@DBKQW41X>
+ <001001c291ec$be79adf0$370da8c0@aman>
+ <000901c291f2$952c3250$33690b0a@DBKQW41X> <009901c291fb$16c84e40$370da8c0@aman>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->
-> -ENOCONTEXT.
-:-), sorry the context was lost due to me beeing a moron.
+Wonderful!
+I  download the newest develeping version of linux kernel from bitkeeper.
+And compiled without any errors.
 
-Anyway here is the problem again:
+I don't have any Montvista or others. I only have binutils-2.13 and gcc-core-2.95.3.
 
-I upgraded my linuxppc_2_4_devel from pre8(1.1130) to rc1(1.1157) and noticed that
-my syslog had problems to start:
+thank you very much!
 
-NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
-VFS: Mounted root (jffs2 filesystem).
-Freeing unused kernel memory: 64k init
-INIT: version 2.78 booting
-Fast boot, no file system check
-none on /dev/shm type shm (rw)
-ramfs on /tmp type ramfs (rw)
-ramfs on /var/run type ramfs (rw)
-ramfs on /tftpboot/log type ramfs (rw)
-Cleaning: /etc/network/ifstate.
-Enabling packet forwarding: done.
-Disable TCP/IP Explicit Congestion Notification: done.
-Configuring network interfaces: done.
-Cleaning: /tmp /var/lock /var/run.
-INIT: Entering runlevel: 2
-Starting system log daemon: syslogd/etc/rc.d/rc2.d/S10syslog: line 53:    50 Ter
-minated              start-stop-daemon -v --start --quiet --exec /sbin/syslogd -
-- $SYSLOGD
- klogd.
-Starting internet superserver: inetd.
+        edmoon
 
-I then started to backout the changes between pre8 and rc1 to see where the problem was.
-That gave me:
 
->> Aaargh, now I am getting it in pre8 as well. However I have made
->> some progress:
->>
->> I have 2 custom boards one mpc862(100Mhz, 16KB icache, 8KB dcache) and a
->> mpc860(80Mz,4KB icache, 4KB dcache). If I overclock the mpc860 to 100MHz I get
->> the same problem. If I set the clock on both boards to 95MHz all is well. If I overclock
->> the mpc862 to 105 MHz it works fine.
->>
->> It turns out that syslog is actually running after the error. If I stop syslog and
->> start it again it works fine. If adjust my script so klogd is started before
->> syslogd all is well to.
->>
->> This looks like a race somewhere to me, but i have no clue as to where.
->>
->> Anyone?
->>
->>     Jocke
->
->hmm, if I upgrade the JFFS2 filesystem to CVS HEAD, the problem goes away.
+----- Original Message -----
+From: "Aman" <aman@mistralsoftware.com>
+To: "caixupeng" <edmoon@huawei.com>
+Sent: Friday, November 22, 2002 3:45 PM
+Subject: Re: compile a linux kernel for ppc4xx, error message
 
+> 1. The Linux kernel is available as a tar'd file from the following site:
+> http://www.ppckernel.org/tree.php?id=5
+> 2. These kernels are in a constant state of change, as developers upload
+> revised versions.
+> 3. The latest version is titled "BitKeeper  2.4 development".  This actually
+> contains  kernels targeted to a number of  processors in addition to the
+> 440.
+> 4. The tar'd file should be downloaded to a local machine then  untar'd,
+> which will in turn yield a set of directories for the  different kernel
+> targets.
+> 5. Traverse to the 4xx directory, and therein will reside the necessary
+> source code.
+> 6. In order to compile the software, I believe you will need the MontaVista
+> cross compiler. [ Do you have Montavist compiler, if not try "Embedded Linux
+> Development Kit" at www.denx.de]
+> 7. In order to make the kernel,  If you just want to play with the _devel
+> tree then use your
+>  ppc_405- toolchain to build the kernel. Edit the top-level Makefile to say
+> "ARCH := ppc" and "CROSS_COMPILE := ppc_405-". [ If you don't have
+> "ppc_405-" tool set, set the appropriate compiler you hv]
+> make ebony_config
+> make oldconfig
+> make dep
+> make clean
+> make zImage
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
