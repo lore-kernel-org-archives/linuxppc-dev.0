@@ -1,38 +1,36 @@
-Message-ID: <39AD4E8F.76FB97E0@relog.ch>
-Date: Wed, 30 Aug 2000 20:12:31 +0200
-From: Michel Dänzer <daenzer@relog.ch>
-Reply-To: daenzerm@student.ethz.ch
-MIME-Version: 1.0
-To: Marc Dietrich <Marc.Dietrich@hrz.uni-giessen.de>
+Message-Id: <200008301941.UAA13718@hyperion.valhalla.net>
+Date: Wed, 30 Aug 2000 20:42:02 +0100
+Subject: Re: [PATCH] via-cuda (CUDA_COMBINED_FORMAT_IIC)
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: Geert Uytterhoeven <geert@linux-m68k.org>, mlan@cpu.lu
 CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: asm statement in include/asm not ansi conform
-References: <39AD48FD.9D649CCF@uni-giessen.de>
-Content-Type: text/plain; charset=iso-8859-1
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Marc Dietrich wrote:
+On Wed, Aug 30, 2000, Geert Uytterhoeven
+> The generic i2c subsystem works (at least `used to work') on PPC as well. I
+> once wrote an i2c `driver' (something that can read from and write to 2 signal
+> lines, very very complex :-)
 
-> I just compiled XFree from dri.sourceforge.net, which uses the "-ansi"
-> option for compiling.
+Well, today I wish I could get at SDA/SCL - because I think I would have a
+working solution to my need (to read the TDA7433).
 
-Is that defined in xc/config/cf/host.def? It's always a good idea to tweak
-that file before an X build.
+Maybe it's complex - or at least tedious - because of working within the OS
+- but it is also specified by the i2c spec - so a solvable problem.
 
+All the time on this patch has been spent second-guessing what the CUDA does
+with its command packets... and at the end I still can't read the chip (lots
+of info from the SPDs & other devices ;-)
 
-> Problem is, that this fails on some "asm" instructions in e.g.
-> include/asm-ppc/processor.h. I'm not very firm with C but is it posible to
-> replace this with __asm__ ? I compiled X without -ansi and it seems to work.
+CUDA is also on m68k? (I see some conditionals in the 2.4.0 stuff for
+CONFIG_MAC)
 
-So the DRI is working for you? Cool, we are two now then ;)
+I really would be very grateful if anyone has any more sources of info on
+the command packets contents for it (CUDA)...
 
-
-Michel
-
-
---
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and the DRI project
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
