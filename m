@@ -1,64 +1,31 @@
-Message-ID: <638AA0336D7ED411928700D0B7B0D75BB32418@mail2.aiinet.com>
-From: "Gessner, Matt" <mattg@aiinet.com>
-To: "'Dan Malek'" <dan@embeddededge.com>
-Cc: "'Linux PPC'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: BDI2000 and failed MMU translations
-Date: Wed, 23 Jan 2002 17:58:45 -0500
+Message-ID: <3C4F488D.1@embeddededge.com>
+Date: Wed, 23 Jan 2002 18:34:37 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: "Gessner, Matt" <mattg@aiinet.com>
+Cc: "'Linux PPC'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: BDI2000 and failed MMU translations
+References: <638AA0336D7ED411928700D0B7B0D75BB32418@mail2.aiinet.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Whooops, too soon.
+Gessner, Matt wrote:
 
-OK, AFTER the first breakpoint, it then gets mad about
-single stepping.
+> Whooops, too soon.
 
-The MMU xlation fails for the next address.
+I'm sure it's my fault, I'm sorry.
 
-Matt
+I started making some changes to support large page sizes and I think
+it screwed up the BDI2000.  I'll have a patch in as quickly as possible
+(yet tonight) and post it.  I won't be able to test it with the BDI2000
+but it is basically backing out some changes I made.
 
-> -----Original Message-----
-> From: Dan Malek [mailto:dan@embeddededge.com]
-> Sent: Wednesday, January 23, 2002 5:51 PM
-> To: Gessner, Matt
-> Cc: 'Linux PPC'
-> Subject: Re: BDI2000 and failed MMU translations
->
->
-> Gessner, Matt wrote:
->
-> > It's straight 2_4.  I wasn't stopping at start_kernel though.
->
-> You don't need to stop anywhere unless there are some breakpoints
-> you want to set for early debug.
->
-> > I don't have PTBASE set up.
->
-> You need:
-> 	MMU XLAT 0xc0000000
-> 	PTBASE 0x000000f0
->
-> The newer kernels initialize the page table pointers for the BDI2000,
-> so ignore comments about stopping and setting values.  We went through
-> several iterations of implementation, so anything written about how to
-> do this manually is probably wrong :-).
->
-> > ...... I'm going to
-> > break at start kernel FIRST, then connect with BDI, then
-> > see if I can look at my data.
->
-> How do you break and then connect the BDI?  You need the BDI
-> connected to set and trap the breakpoint.
->
-> Have fun.
->
->
-> 	-- Dan
->
->
->
+I apologize.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
