@@ -1,31 +1,57 @@
-Date: Fri, 7 Mar 2003 11:52:02 -0600
-From: Nathan Ingersoll <ningerso@ruralcenter.org>
+Date: Fri, 07 Mar 2003 09:57:17 -0800
+From: Ira Weiny <iweiny@acm.org>
+Subject: Upgrade Blues 2.4.20 Ben H kernel
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Runtime Altivec detection
-Message-ID: <20030307175201.GA6252@ruralcenter.org>
-References: <20030307164753.GA5240@ruralcenter.org> <3E68D5BF.1050906@embeddededge.com> <1047058865.12206.44.camel@zion.wanadoo.fr>
-Mime-Version: 1.0
-In-Reply-To: <1047058865.12206.44.camel@zion.wanadoo.fr>
-Content-Type: text/plain; charset=us-ascii
+Message-id: <20030307095717.1b1bece1.iweiny@acm.org>
+MIME-version: 1.0
+Content-type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Mar 07, 2003 at 06:41:05PM +0100, Benjamin Herrenschmidt wrote:
->
-> There's a much better way. The kernel passes down CPU features
-> bits down to userland via ELF AUX tables.
+Well I decided it was time to get up to date on my TiBook.
 
-Do you know of any reference code for accessing that information?
+So I went out and bought a copy of Yellow Dog and got apt-get installed and
+started hacking.  After some switching pain I got it up and running but found
+that I needed a newer kernel to get the networking stuff to work.
 
-Thanks,
-Nathan
+no problem...  I rsync'ed Bens tree built and rebooted...
 
---
-------------------------------------------------------------------------
-| Nathan Ingersoll           \\ Computer Systems & Network Coordinator |
-| ningerso@ruralcenter.org    \\ http://www.ruralcenter.org            |
-| http://ningerso.atmos.org/   \\ Minnesota Center for Rural Health    |
-------------------------------------------------------------------------
+There are 2 problems.
+
+1) My Microdrive which I had hacked in does not work any more.  What is the
+   status of the ide-cs driver?  Anyone know?  It is different than when I got
+   it to work before and I am not sure where to begin again.
+
+2) m3mirror does not work?  This one really puzzles me.  lcd:0 turns off the
+   LCD screen but crt:1 does not turn on the outside monitor.  I rebooted into
+   Mac OS and the external port works.  The only thing I can think of is that I
+   did use the S-video port on Mac OS to show some pictures.  Is there
+   something in OF which Mac OS would set which would make the external port
+   not work with m3mirror?
+
+Relative versions
+2.4.20-ben5
+
+> cat /proc/cpuinfo
+cpu		: 7410, altivec supported
+temperature 	: 10-12 C (uncalibrated)
+clock		: 500MHz
+revision	: 17.3 (pvr 800c 1103)
+bogomips	: 996.14
+machine		: PowerBook3,2
+motherboard	: PowerBook3,2 MacRISC2 MacRISC Power Macintosh
+detected as	: 71 (PowerBook Titanium)
+pmac flags	: 0000000b
+L2 cache	: 1024K unified
+memory		: 512MB
+pmac-generation	: NewWorld
+
+> cat /proc/fb
+0 ATY Rage128
+
+As usual broken and hacking my kernel...  ;-)
+Ira Weiny
+iweiny@acm.org
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
