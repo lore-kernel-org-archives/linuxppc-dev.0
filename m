@@ -1,33 +1,43 @@
-Date: Thu, 20 May 1999 13:12:07 -0400 (EDT)
-From: Tom Rini <tmrini@ntplx.net>
-To: Satadru Pramanik <satadru@umich.edu>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: ppc hardware clock.
-In-Reply-To: <Pine.LNX.4.10.9905201029580.7786-100000@beer.pub.umich.edu>
-Message-ID: <Pine.LNX.4.05.9905201310450.746-100000@pc.wackyland.com>
+Message-ID: <374456FE.F3AD5501@wanadoo.fr>
+Date: Thu, 20 May 1999 20:39:58 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
+Reply-To: costabel@wanadoo.fr
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: OF booting news
+References: <XFMail.990520104212.R.Post@sara.nl> <374440FF.D74A6407@americasm01.nt.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 20 May 1999, Satadru Pramanik wrote:
+Jerry Quinn wrote:
+> 
+> Remco Post wrote:
 
-> I did a rebuild and install of many redhat 6.0 src rpms before the ppc
-> equivalent came out.  As a result, i have a program called "hwclock" in my
-> rc scripts that refuses to be able to get the date from the hardware
-> clock.  I think this program may be specific to x86 platforms.  Which new
-> ppc.rpm should I upgrade to to fix this?  which program in particular will
-> access the clock on a apple 7600 correctly on a glibc2.1 system?
+> > BootX is a huge improvement if you like waiting for a machine to boot and have
+> > an option. Quik is still my favourite since I never boot MacOS on my 7200.
 
-hwclock doesn't work on PMacs.  It's for machines w/ a PC type rtc.  Get
-the pmac-utils srpm (or RR1.0 rpm) and use clock.  You might also wanna
-look at the RR1.0 util-linux rpm. (Just to get rid of the hwclock stuff)
+> BootX is a huge improvement because it allows OS choice in a clean
+> manner. I don't like waiting for my system to boot any more than the
+> next person, although timeout on an OS chooser doesn't bother me.
 
----
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+I am curious: Has anyone ever compared the actual booting times for OF
+booting and BootX booting (I can't, because my 6400 doesn't OF boot
+anymore). I suspect the difference is less than 10 seconds. On a total
+booting time of more than 60 seconds, this is really minimal.
 
+I just rebooted, and the total time of 110 seconds (from typing "reboot"
+until the login prompt) was spent as follows:
+
+35 sec: shutdown
+23 sec: starting MacOS and BootX extension, hitting the button, waiting
+for the  
+        penguin to show up and the kernel messages to start scrolling by
+52 sec: rest of linux boot procedure.
+
+--
+Martin
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
