@@ -1,53 +1,34 @@
-Message-Id: <378AD5F3.7B2CC246@duettech.com>
-Date: Tue, 13 Jul 1999 11:30:19 +0530
-From: Rajendra Prasad <prasadr@duettech.com>
-Mime-Version: 1.0
-To: linux-ppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: 860T - Fast Ethernet
-Content-Type: multipart/mixed;
- boundary="------------AE1B361B785E9151C7A59CE6"
+Message-ID: <378B1CFB.A41B6217@switchboard.ericsson.se>
+Date: Tue, 13 Jul 1999 13:03:23 +0200
+From: Kenneth Johansson <ken@kieraypc01.p.y.ki.era.ericsson.se>
+Reply-To: ken@kieraypc01.p.y.ki.era.ericsson.se
+MIME-Version: 1.0
+To: Rajendra Prasad <prasadr@duettech.com>
+CC: linux-ppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 860T - Fast Ethernet
+References: <378AD5F3.7B2CC246@duettech.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------AE1B361B785E9151C7A59CE6
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Sending UDP we got 22Mb with linux. The same hardware running vxWorks
+got 28Mb. We have not done any more testing than this simple stuff but I
+think this shows the fasterst possible transefer you can expect going
+thru the ip layer.
 
-Hi,
 
-Does someone work on FADS860T running linux on it?
+Rajendra Prasad wrote:
 
-What is the network throughput performance you have 
-got on Fast Ethernet at raw and TCP/Ip stack level.
-
-regards
-Rajendra
---------------AE1B361B785E9151C7A59CE6
-Content-Type: text/x-vcard; charset=us-ascii;
- name="prasadr.vcf"
-Content-Description: Card for Rajendra Prasad
-Content-Disposition: attachment;
- filename="prasadr.vcf"
-Content-Transfer-Encoding: 7bit
-
-begin:vcard 
-n:Prasad;Rajendra
-tel;home:91-118-535666
-tel;work:91-118-567001
-x-mozilla-html:FALSE
-url:www.duettech.com
-org:Duet Technologies Ltd.;Telecom
-adr:;;#B1,  SDF, NEPZ;NOIDA;U.P.;201305;INDIA
-version:2.1
-email;internet:prasadr@duettech.com
-title:Project Leader
-x-mozilla-cpt:;-14352
-fn:Rajendra Prasad
-end:vcard
-
---------------AE1B361B785E9151C7A59CE6--
+> Hi,
+>
+> Does someone work on FADS860T running linux on it?
+>
+> What is the network throughput performance you have
+> got on Fast Ethernet at raw and TCP/Ip stack level.
+>
+> regards
+> Rajendra
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
