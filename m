@@ -1,43 +1,154 @@
-Date: Mon, 29 Apr 2002 14:40:53 -0700
+Date: Mon, 29 Apr 2002 17:05:36 -0700
 From: andrew may <acmay@acmay.homeip.net>
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: [PATCH]IBM OCP I2C
-Message-ID: <20020429144053.B6106@ecam.san.rr.com>
+To: Armin <akuster@pacbell.net>
+Cc: andrew may <acmay@acmay.homeip.net>,
+	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: [PATCH]IBM OCP I2C
+Message-ID: <20020429170536.C6106@ecam.san.rr.com>
+References: <20020429144053.B6106@ecam.san.rr.com> <3CCDE113.5000700@pacbell.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/mixed; boundary="WIyZ46R2i8wDzkSu"
+In-Reply-To: <3CCDE113.5000700@pacbell.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is incremental to the other patches I posted. It gets the
-iic_xfer that is based of the ppcboot code working. The return
-values are still not correct but the data is transfered ok for
-what I have tested. I do not try to do a Repeated Start for
-anything yet either.
+--WIyZ46R2i8wDzkSu
+Content-Type: text/plain; charset=us-ascii
 
-If anyone has any comments or more test conditions I would like
-to hear them.
+On Mon, Apr 29, 2002 at 05:10:59PM -0700, Armin wrote:
+> Please send me that patch,  I am in the middle of a major restructuring
+> and any suggestions from you are welcome.  As soon as I am comfortable
+> with what i have , I will send you a preview.  The other patchs I have
+> put on hold until I get what I have working.
 
-I pulled some defines from the PPCBoot code and I am not sure the
-correct header file for them.
+Always forget the attachments, sorry.
 
-I would like to dump the iic_outb/inb as well. In the iic_xfer I
-use readb/writeb directly without problems.
+--WIyZ46R2i8wDzkSu
+Content-Type: application/octet-stream
+Content-Disposition: attachment; filename="i2c-xfer2.patch.gz"
+Content-Transfer-Encoding: base64
 
-I put this comment in there about the driver. Does any see anything
-wrong with this?
-/*
- * Limits of the IBM OCP I2C driver.
- * There is no way to do lenght 0 transfers since iic->cntl TCT==00 means 1 byte
- * We can not handle I2C_M_NOSTART since there is no way to put just one bit
- * on the bus after a NA.
- * We can not handle I2C_M_REV_DIR_ADDR since the Rd/Wr bit is not
- * set directly in the address register and the controller uses the
- * Rd/Wr bit in the CNTL reg to know what to do.
- *
- * If you need to get around any of these I suggest you setup i2c-adap-ibm...
- * to use the algo-bit and provide functions to use the DirectControl Reg of
- * the IBM OCP hardware.
- */
+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
+JVz8IimFLlRVQGqvgw/3BABTj7dATF8AAA==
+
+--WIyZ46R2i8wDzkSu--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
