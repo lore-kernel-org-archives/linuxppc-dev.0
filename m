@@ -1,15 +1,36 @@
-Message-ID: <3879D04D.D0FB5CFE@switchboard.ericsson.se>
-Date: Mon, 10 Jan 2000 13:27:58 +0100
-From: Magnus Damm <damm@kieraypc01.p.y.ki.era.ericsson.se>
-MIME-Version: 1.0
-To: Ruedi Hofer <ruedi.hofer@ascom.ch>
-CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Antwort: Re: Loading the Kernel on a FADS
-References: <38798A2F.457B1077@ascom.ch>
-Content-Type: text/plain; charset=us-ascii
+From: Ruedi.Hofer@ascom.ch
+Date: Mon, 10 Jan 2000 14:59:45 +0100 (CET)
+Subject: Antwort: Re: Antwort: Re: Loading the Kernel on a FADS
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: damm@kieraypc01.p.y.ki.era.ericsson.se
+Message-id: <0FO40012JHKFQY@pmdf-it.hasler.ascom.ch>
+MIME-version: 1.0
+Content-type: MULTIPART/MIXED; BOUNDARY="Boundary_(ID_qPBN/g5o3AkItHCtIkU/Wg)"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
+
+
+--Boundary_(ID_qPBN/g5o3AkItHCtIkU/Wg)
+Content-type: TEXT/PLAIN
+Content-Transfer-Encoding: 7BIT
+
+It must be a problem of the memory mapping in the ROM.
+
+Static members like hexdigits seem to be excluded from the 
+image if PGSZ is set to 0x10000.
+
+The pointer to this array (when called from asc_to_hex) always
+points to 0xffffffff.
+
+
+
+
+
+damm@kieraypc01.p.y.ki.era.ericsson.se on 10.01.2000 13:27:58
+An: ruedi.hofer@ascom.ch @ MailGate
+Kopie: linuxppc-embedded@lists.linuxppc.org @ MailGate 
+Thema: Re: Antwort: Re: Loading the Kernel on a FADS
 
 > Not that I understand the above problem any better, but I see where it
 > crashes more clearly now.
@@ -30,5 +51,9 @@ about what is going on...
 Hope it helps /
 
 Magnus Damm
+
+
+
+--Boundary_(ID_qPBN/g5o3AkItHCtIkU/Wg)--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
