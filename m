@@ -1,28 +1,48 @@
-Date: Tue, 23 Nov 1999 13:21:16 -0700
-From: Cort Dougan <cort@fsmlabs.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org,
-        paulus@linuxcare.com
-Subject: Re: bootloader & head.S weirdness (patch)
-Message-ID: <19991123132116.A17270@hq.fsmlabs.com>
-References: <19991123121629.A16956@hq.fsmlabs.com> <Pine.LNX.4.05.9911232115090.12629-100000@callisto.of.borg>
-Mime-Version: 1.0
+Message-ID: <383AFEF9.1EFCB317@mitre.org>
+Date: Tue, 23 Nov 1999 15:54:54 -0500
+From: Frank McPherson <frank@mitre.org>
+MIME-Version: 1.0
+To: Jim Chapman <jim.chapman@iname.com>
+CC: LiuTao <tliu@ict.ac.cn>,
+        LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>,
+        "linuxppc-embedded@lists.linuxppc.org"
+ <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: need suggestions
+References: <383AF067.2B8EB961@iname.com>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.05.9911232115090.12629-100000@callisto.of.borg>; from Geert Uytterhoeven on Tue, Nov 23, 1999 at 09:16:38PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-} No we don't. The structure isn't that large, and the kernel is padded to a multiple
-} of the page size anyway (the structure is after the kernel in memory).
-} 
-} Gr{oetje,eeting}s,
-} P.S. How much Belgian Beer do I have to send you to convince you to put your
-}      comments _below_ the text you quote, like all other people do? ;-)
+Jim and others, 
 
-If you send me Juliper (I think that was the one I had) just one will do :)
+We did some work last summer with a Dy4-177 VMEbus board which came to
+us with the VxWorks bootrom intact, and used a similar solution to
+yours.  
 
-I'm putting some of those changes in for the m68k-style bootloader info
-right now.  I'll have it in the main 2.3.x tree shortly.
+> The
+> binary-to-assembly convertor is a simple perl script which does almost
+> the same thing as vxWorks' binToAsm tool.
+
+We are using a piggyback.c (different from the one in chrpboot)  to
+produce the assembly.   It's probably no better or worse than the perl
+script you've got.  
+
+> The initrd stuff would need similar treatment, but since I don't use
+> initrd, I haven't implemented it.
+
+We DID find it useful to have initrd support, so our Makefiles can use
+piggyback to make a tftp/vxworks loadable Linux kernel.   If this is
+something you could use, please let me know.  
+
+Cheers, 
+
+Frank
+
+-- 
+Frank H. McPherson IV
+W118 Embedded Solutions Team
+The MITRE Corporation
+703-883-5404
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
