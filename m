@@ -1,38 +1,29 @@
-Date: Wed, 7 Jul 2004 08:24:16 +0200
-From: Olaf Hering <olh@suse.de>
-To: =?utf-8?B?UGF3ZcWC?= Sikora <pluto@pld-linux.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [kernel26@ppc] fixes...
-Message-ID: <20040707062416.GA17456@suse.de>
-References: <200407070042.56649.pluto@pld-linux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <200407070042.56649.pluto@pld-linux.org>
+Message-ID: <40EDC59E.9020403@rossvideo.com>
+Date: Thu, 08 Jul 2004 18:07:26 -0400
+From: Ralph Siemsen <rsiemsen@rossvideo.com>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: ibm_ocp ethernet OPB clocks
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
- On Wed, Jul 07, Paweł Sikora wrote:
+In pretty much all versions of the kernel (I checked 2.4.x, 2.6.7), one
+finds in drivers/net/ibm_ocp/ibm_ocp_emac.h:
 
-> Hi,
-> Could You look at attached patches?
->
-> [1] 2.6.7-ppc-asm-defs.patch
-> assembler reports an error at `dssall'
+#define EMAC_M1_OPB_CLK_66              0x00000010      /* 66Mhz */
+#define EMAC_M1_OPB_CLK_83              0x00000008      /* 83hz */
 
-I think -Wa,-many for CFLAGS and AFLAGS will fix that, this has been
-discussed last week on this list.
+I believe these bitfield values are reversed... at least according to
+the 440GX usermanual, page 879.  Bug/typo?  Is the usermanual wrong?  Or
+perhaps other 4xx series processors have different definitions?
 
-> [3] 2.6.7-ppc-ipr-div.patch
-> similar sector_div() bug.
+The definitions for 100MHz and >100MHz appear to be correct though.
 
-you should send this to the driver maintainer,
-Brian J King <bjking1@us.ibm.com>
+Is there a current maintainer for this driver?
 
+-Ralph
 
---
-USB is for mice, FireWire is for men!
-
-sUse lINUX ag, nÜRNBERG
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
