@@ -1,33 +1,42 @@
-From: =?iso-8859-1?Q?Andr=E9_L=E4mmer?= <alaemmer@fh-konstanz.de>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Linux on Motorola LoPEC
-Date: Mon, 1 Sep 2003 16:09:33 +0200
-Message-ID: <004e01c37092$ab2d8890$0f21258d@fhkonstanz.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-Id: <200309020913.EAA17470@lists.linuxppc.org>
+From: "Yuxiao Xi" <xiyuxiao@harbournetworks.com>
+To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: DINK32 R13.1 on Sandpoint X2 
+Mime-Version: 1.0
+Content-Type: text/plain
+Date: Tue, 2 Sep 2003 17:22:8 +0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi!
+Hi,all,
+    Now I'm working on a Motorola Sandpoint X2 board with ppc8240.
+I use DINK32 r13.1 to boot my linux kernel image.
+    From DINK32 r13.1 user manual,I know that DINK32 r13.1 supports
+ethernet card Realtek 8139,but after these steps:
+       DINK32[MPC8240] {7} >>ni -i
+        some configrations......
 
-I have a Motorola PPC-board. It is the LoPEC-P011 with PPC5-Bug version
-1.3. The board has only a network connection an no hard disk or flash
-memory.
+       DINK32[MPC7455] {8} >>ni
+       NETWORK INFORMATION
+            PCI CARD
+            Type 8139/10EC on slot 16
+            SETTINGS
+            SERVER(TFTP) : 10. 18.15.27
+            GATEWAY : 10. 18.15.254
+            NETMASK : 255.255.255. 0
+            DHCP : 0. 0. 0. 0
+            CLIENT(DINK) : 10. 18.15.201
+            DHCP: Disabled
+            SESSION TIMEOUT: Never
 
-Now, I want run Linux on it. My idea is to load the bootloader with tftp
-und mount the filesystem with nfs. The problem is, that I cannot find
-any working bootloader. I tried ppcboot, but there is no config for the
-LoPEC.
+ Then I reset the system,but the Tealtek 8139 seems not to work correctly!:(
+ I ping the board from my host computer with OS Redhat linux 9.0,but I can't
+ get any response!
+ Can anyone help me?
 
-Do anyone know a installtion guide for this board? Or is there a working
-bootloader and kernel?
-
-André Lämmer
-
-University of Applied Science
-Fachhochschule Konstanz
-
+¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡Yuxiao Xi
+¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡xiyuxiao@harbournetworks.com
+¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡2003-09-02
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
