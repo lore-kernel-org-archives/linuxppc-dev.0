@@ -1,29 +1,32 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linas@austin.ibm.com
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20030912120037.A26892@forte.austin.ibm.com>
-References: <20030911112823.A27066@forte.austin.ibm.com>
-	 <20030912120037.A26892@forte.austin.ibm.com>
-Message-Id: <1063477133.9720.23.camel@gaston>
+Date: Sun, 14 Sep 2003 21:40:38 +0200
+From: Olaf Hering <olh@suse.de>
+To: linuxppc-dev@lists.linuxppc.org,
+	Marcelo Tosatti <marcelo.tosatti@cyclades.com.br>
+Subject: [PATCH] incorrect extern declarations
+Message-ID: <20030914194038.GA19676@suse.de>
 Mime-Version: 1.0
-Date: Sat, 13 Sep 2003 20:18:53 +0200
-Subject: Re: [PATCH] ppc64 kernel 2.6 ide-related patches (revised)
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 2003-09-12 at 19:00, linas@austin.ibm.com wrote:
+both variables are declared static earlier in the file. gcc3.4 doesnt
+tolerated the extern anymore.
 
-> -- the current code does *not* auto-negotiate itself up into the
->    highest possible performance mode.  (i.e. 32 bit transfers, dma on,
->    etc.)  This appears to be due to the fact that this task is normally
->    done by i386 BIOS, and the ppc open firmware doesn't do anything
->    analogous, and there's nothing in the kernel (that I know of) to
->    make up for this.
+--- linux-2.4.23-pre4/arch/ppc/platforms/prep_pci.c~	2003-08-25 13:44:40.000000000 +0200
++++ linux-2.4.23-pre4/arch/ppc/platforms/prep_pci.c	2003-09-14 17:36:54.000000000 +0200
+@@ -1141,8 +1141,6 @@ void __init
+ prep_pcibios_fixup(void)
+ {
+         struct pci_dev *dev;
+-        extern unsigned char *Motherboard_map;
+-        extern unsigned char *Motherboard_routes;
 
-This is done in the kernel by the host chipset driver normally. It works
-fine on pmac with ppc32 at least ;)
+ 	prep_route_pci_interrupts();
 
+--
+USB is for mice, FireWire is for men!
+
+sUse lINUX ag, nÜRNBERG
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
