@@ -1,28 +1,50 @@
-Date: Tue, 22 Jun 1999 13:07:52 +1000
-Message-Id: <199906220307.NAA01278@farrago.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: brad@pht.com
-CC: linuxppc-users@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-In-reply-to: <Pine.LNX.3.95.990621201542.23566A-100000@pacific.pht.com>
-	(message from Brad Midgley on Mon, 21 Jun 1999 20:37:08 -0600 (MDT))
-Subject: Re: precompiled 2.2.10 kernel available
-Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <Pine.LNX.3.95.990621201542.23566A-100000@pacific.pht.com>
+Date: Mon, 21 Jun 1999 23:09:21 -0400
+From: Daniel Jacobowitz <drow@false.org>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: dl-load.c (ld.so) bug??
+Message-ID: <19990621230921.A20471@drow.res.cmu.edu>
+References: <Pine.LNX.4.04.9906212045480.27642-100000@narn.local.drgw.net> <Pine.LNX.3.96L.990621222014.5237C-100000@unix47.andrew.cmu.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.3.96L.990621222014.5237C-100000@unix47.andrew.cmu.edu>; from Hollis R Blanchard on Mon, Jun 21, 1999 at 10:48:12PM -0400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Brad Midgley <brad@pht.com> wrote:
+On Mon, Jun 21, 1999 at 10:48:12PM -0400, Hollis R Blanchard wrote:
+> 
+> > No. Electric Fence is designed to catch programming errors, such as
+> > attempting to access memory which was not 'malloc'ed. I have traced this
+> > down extensively a couple of months ago, and found that it does indeed
+> > appear to overrun what it malloced.
+> 
+> I have two even simpler test cases for you:
+> 
+> int main(void){
+>     char *ptr=NULL;
+>     free(ptr);
+> }
 
-> did the protocol of /dev/usbmouse have to change? :( now it appears as a
+Well, that one would probably segfault anyway (or at least, is not
+guaranteed not to).
 
-It was Linus' decision.  Argue with him. :-)
+> int main(void){
+>     char *ptr = (char *)malloc(100);
+> }        
 
-> ps2 mouse not a busmouse. x can't understand it either way but i'm able to
+That one's a problem, though :)
 
-Use protocol "IMPS/2" in your XF86Config.
+> If this were the case, wouldn't you expect ridiculous levels of instability?
 
-Paul.
+Depends entirely on what it overwrote.
+
+Dan
+
+/--------------------------------\  /--------------------------------\
+|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
+|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
+|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
+\--------------------------------/  \--------------------------------/
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
