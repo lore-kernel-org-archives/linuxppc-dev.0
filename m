@@ -1,23 +1,21 @@
 Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao08.cox.net (fed1rmmtao08.cox.net [68.230.241.31])
-	by ozlabs.org (Postfix) with ESMTP id EC78D67A65
+Received: from fed1rmmtao01.cox.net (fed1rmmtao01.cox.net [68.230.241.38])
+	by ozlabs.org (Postfix) with ESMTP id D578467A65
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Mar 2005 07:43:38 +1100 (EST)
-Date: Tue, 15 Mar 2005 13:43:26 -0700
+	Wed, 16 Mar 2005 07:50:30 +1100 (EST)
+Date: Tue, 15 Mar 2005 13:50:22 -0700
 From: Matt Porter <mporter@kernel.crashing.org>
-To: Wade Farnsworth <wfarnsworth@mvista.com>,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Message-ID: <20050315134326.C5861@cox.net>
+To: "McMullan, Jason" <jason.mcmullan@timesys.com>
+Message-ID: <20050315135022.D5861@cox.net>
 References: <1110907039.24673.12.camel@rhino.az.mvista.com>
-	<1110912458.24527.27.camel@rhino.az.mvista.com>
-	<1110913134.24673.32.camel@rhino.az.mvista.com>
-	<20050315192216.GB18588@gate.ebshome.net>
-	<20050315192424.GC18588@gate.ebshome.net>
+	<1110915063.5937.93.camel@ad.doubleclick.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050315192424.GC18588@gate.ebshome.net>;
-	from ebs@ebshome.net on Tue, Mar 15, 2005 at 11:24:24AM -0800
-Subject: Re: [PATCH 3/3] PPC440EP IBM EMAC support
+In-Reply-To: <1110915063.5937.93.camel@ad.doubleclick.net>;
+	from jason.mcmullan@timesys.com on Tue, Mar 15, 2005 at
+	02:27:57PM -0500
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: 440EP FPU patch
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,45 +26,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 15, 2005 at 11:24:24AM -0800, Eugene Surovegin wrote:
-> On Tue, Mar 15, 2005 at 11:22:16AM -0800, Eugene Surovegin wrote:
-> > On Tue, Mar 15, 2005 at 11:58:54AM -0700, Wade Farnsworth wrote:
-> > > This patch adds support to the IBM EMAC ethernet driver for the 440EP.
-> > > 
-> > > Regards,
-> > > Wade Farnsworth
-> > > 
-> > > Signed-off-by: Wade Farnsworth <wfarnsworth@mvista.com>
-> > > 
-> > 
-> > > --- linux-2.6.11-bk7/drivers/net/ibm_emac/ibm_emac_phy.c	2005-03-02 00:38:13.000000000 -0700
-> > > +++ linux-2.6.11-bk7-440ep/drivers/net/ibm_emac/ibm_emac_phy.c	2005-03-11 16:32:01.000000000 -0700
-> > > @@ -27,6 +27,12 @@
-> > >  
-> > >  #include "ibm_emac_phy.h"
-> > >  
-> > > +#ifdef CONFIG_BAMBOO
-> > > +#define BAMBOO_REV0 (mfspr(PVR) == PVR_440EP_RA)
-> > > +#else
-> > > +#define BAMBOO_REV0 0
-> > > +#endif
-> > > +
-> > 
-> > I really don't like it. Chip revision doesn't imply which board 
-> > this code is running on. Please, think of some other way to do this or 
-> > drop this completely.
-> > 
+On Tue, Mar 15, 2005 at 02:27:57PM -0500, McMullan, Jason wrote:
+> This patch (against vanilla 2.4.11.3) breaks out the FPU code for
+> PowerPC into a common .S code for all the head*.S files.
 > 
-> Or to phrase this differently, it's better to avoid any board specific 
-> code/defines in network driver.
+> Less cargo-culted code.
+> 
+> Wade, you may want to integrate this into your 440EP patch.
 
-Indeed it's better. However, I made the suggestion that it's not
-worth the effort to add in another hook to provide board specific
-phy help to ibm_emac/ at this time.  I think the hack can exist
-until a proper hook can be added to the phy lib stuff that should
-be used in the future.
+Hi Jason,
 
-If you think that's too far off, we can go ahead and add another hook
-so the hack can be moved into bamboo.c where it ideally belongs.
+Can you change CONFIG_FPU->CONFIG_PPC_FPU? Otherwise, this looks
+like exactly what we need to me.
 
 -Matt
