@@ -1,28 +1,52 @@
-From: Alan Cox <alan@cymru.net>
-Message-Id: <199812232158.VAA21083@snowcrash.cymru.net>
-Subject: Re: TCPv4 checksum errors
-To: Geert.Uytterhoeven@cs.kuleuven.ac.be (Geert Uytterhoeven)
-Date: Wed, 23 Dec 1998 21:58:04 +0000 (GMT)
-Cc: davem@dm.cobaltmicro.com, Paul.Mackerras@cs.anu.edu.au,
-        linuxppc-dev@lists.linuxppc.org, linux-m68k@lists.linux-m68k.org,
+Date: Thu, 24 Dec 1998 14:57:53 +1100
+Message-Id: <199812240357.OAA06229@tango.anu.edu.au>
+From: Paul Mackerras <paulus@cs.anu.edu.au>
+To: Geert.Uytterhoeven@cs.kuleuven.ac.be
+CC: davem@dm.cobaltmicro.com, linuxppc-dev@lists.linuxppc.org,
         VANDROVE@vc.cvut.cz
-In-Reply-To: <Pine.LNX.4.03.9812231013310.18310-100000@mercator.cs.kuleuven.ac.be> from "Geert Uytterhoeven" at Dec 23, 98 10:14:44 am
-Content-Type: text
+In-reply-to: 
+	<Pine.LNX.4.03.9812231013310.18310-100000@mercator.cs.kuleuven.ac.be>
+	(message from Geert Uytterhoeven on Wed, 23 Dec 1998 10:14:44 +0100
+	(CET))
+Subject: Re: TCPv4 checksum errors
+Reply-to: Paul.Mackerras@cs.anu.edu.au
+References: <Pine.LNX.4.03.9812231013310.18310-100000@mercator.cs.kuleuven.ac.be>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-The classic bad packet error is a frame that ends up with
+Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be> wrote:
 
-checksum =FFFF end around carry left =1
+> In the mean time I got this from a `new' PPC hacker. I haven't tried it yet
+> (still have to manually calculate checksums for my bad packets, too, sigh).
 
-because you need to do two end around carries
+> diff -ur linux/include/asm-ppc/checksum.h linux/include/asm-ppc/checksum.h
+> --- linux/include/asm-ppc/checksum.h Thu Apr 23 02:35:41 1998
+> +++ linux/include/asm-ppc/checksum.h    Tue Dec 22 16:19:49 1998
+> @@ -83,13 +83,13 @@
+>                            unsigned int sum)
+>  {
+>      __asm__("
+> -   add %0,%0,%1
+> -   add %0,%0,%2
+> -   add %0,%0,%0
+> -   addi %0,%0,0
+> +   addc %0,%0,%1
+> +   adde %0,%0,%2
+> +   adde %0,%0,%3
+> +   addze %0,%0
+>     "
+>     : "=r" (sum)
+> -   : "r" (daddr), "r"(saddr), "r"((ntohs(len)<<16)+proto*256), "0"(sum));
+> +   : "r" (daddr), "r"(saddr), "r"((proto<<16)+len), "0"(sum));
+>      return sum;
+>  }
 
-(FFFF        1)
-(0000	     1)
-(0001        0)
+Aargh, I checked arch/ppc/lib/checksum.S thoroughly but I missed this
+one!  Of course it needs to be addc/adde/adde/addze.  Kudos to Petr
+Vandrovec (good spotting, as Linus would say).
 
-at the end of a checksum
+Paul.
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
