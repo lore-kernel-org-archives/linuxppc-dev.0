@@ -1,66 +1,44 @@
-To: "XOL" <xol@mail.ru>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Re[4]: How to change Bus speed for MPC8xx CPU 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sun, 18 May 2003 16:02:07 +0400."
-             <E19HMrf-0008UY-00.xol-mail-ru@f9.mail.ru>
-Date: Sun, 18 May 2003 18:16:31 +0200
-Message-Id: <20030518161636.8EA6FC6162@atlas.denx.de>
+Date: Mon, 19 May 2003 11:30:33 +0200
+From: Peter Vandenabeele <peter.vandenabeele@mind.be>
+To: bob piatek <bobtek@fishcamp.com>
+Cc: emanuel stiebler <emu@ecubics.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Virtex II Pro eval Boards
+Message-ID: <20030519113032.D21768@mind.be>
+Reply-To: Peter Vandenabeele <peter.vandenabeele@mind.be>
+References: <3EC568D2.6020905@ecubics.com> <5668A00E-87FA-11D7-AD26-000393D6CBAE@fishcamp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5668A00E-87FA-11D7-AD26-000393D6CBAE@fishcamp.com>; from bobtek@fishcamp.com on Fri, May 16, 2003 at 04:58:49PM -0700
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
-
-in message <E19HMrf-0008UY-00.xol-mail-ru@f9.mail.ru> you wrote:
+On Fri, May 16, 2003 at 04:58:49PM -0700, bob piatek wrote:
 >
-> You r right I've posted same message to
-> embedded list. I though this is better place for this topic.
-> Ok, I can get configuration of
-> CPU 100M
-> Bus 50M
-> Or
-> CPU 80M
-> Bus 40M
-> In the worst case second is ok for me, but
-> I have a luck of performance in my system and do not
-> want to loose 20% of CPU speed.
+> Insight electronics has a V2Pro evaluation card that is bare bones:
+>
+> http://www.insight.memec.com/cgi-bin/bvutf8/memec/scripts/local/
+> mc_loc_b.jsp?Div=INSIGHT&Reg=AMERICAS&Country=UNITED_STATES&Lang=EN&isDe
+> tailPage=true&EDOID=200910&Manu=MD_XILINX
 
-There is no other choice.
+I figured out http://www.insight.memec.com/virtex2pro/ is a short-cut
+for this ...
 
-> So I want to find a way how to get
-> CPU 100M
-> Bus 40M
+> It's a lot cheaper than the Xilinx ML300 but, of course, doesn't do as
+> much.  You can get daughter cards for it to support things like
+> Ethernet, CompactFlash, etc.  I understand that 'Mind' has ported
+> PPCBoot and Linux to the card:
+>
+> http://mind.be/library/software/
 
-You cannot. The MPC8xx CPUs gives you two options: you can select the
-EBDF bits in SCCR either for a divider factor of 1 (bus clock ==  CPU
-clock) or 2 (bus clock = CPU clock / 2).
+That was an old port to a development board (ML2). Our port to the
+Memec Evaluation board is not ready yet,
 
-No other modes are supported on this platform.
-
-> Also I'm driving a PPC Bus via number of boards in the system
-> and 40M can be problematic. So probably I'll need to
-> downgrade it to 30/35M.
-
-In this case you have to run the CPU at 60 or 70 MHz, resp.
-
-> This is reason I can't just use multiplier but have to
-> find a way control bus speed by myself.
-
-You cannot. Bus clock and CPU clock depend on  each  other,  and  the
-only  option is a divider factor of 1 or 2. See the documentation for
-the clocks and the SCCR register in the UM.
-
-Best regards,
-
-Wolfgang Denk
+Peter
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Nothing ever becomes real till it is experienced -- even a proverb is
-no proverb to you till your life has illustrated it.     - John Keats
+Peter Vandenabeele
+Mind: Embedded Linux and eCos Development -- http://mind.be
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
