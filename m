@@ -1,29 +1,34 @@
-From: jlhagen@collins.rockwell.com
-Subject: plain 2.2.17 works on mvme2604 - learning more
+Date: Thu,  9 Nov 00 15:48 EST
+From: fraher <fraher@pweh.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Date: Thu, 9 Nov 2000 11:31:50 -0600
-Message-ID: <OF8AB847EB.E00BE165-ON86256992.005F12D8@collins.rockwell.com>
-MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Subject: MVME2604 Problems with MMU
+Content-Type: text/plain
+Message-ID: <3a0b0db70.46b4@clbdev2.eh.pweh.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+   I've got a 2.2.12 kernel with Gabriel's patches (NFS mounted root),
+and it works beautifully on a MVME2603 board (many thanks, Gabriel).
+However, when I swap out the MVME2603 with a MVME2604, and cause some
+SCSI disk activity, the system crashes with
 
-First thanks for the nfs suggestions. The 'root=/tftpboot/192.168.1.5 rw '
-works as expected.
+        end_scsi_request: buffer-list destroyed
+        page fault in interrupt handler, addr=8000000
+        NIP: 08000000 XER: 20000000 LR: C00C67BC REGS: c00ffc48 TRAP: 0400
+        MSR: 40001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+        TASK = c00fdfe8[0] 'swapper' mm->pgd c00fc000 Last syscall: 112
+                ...
+        kernel panic: kernel access of bad area pc 8000000 lr c00c67bc address 8000000 tsk swapper/0
 
-Second I got a response back from someone using a fresh (kernel.org) 2.2.17
-build on their mvme2303 boards( thanks xavier) . So I gave it a shot and
-picked up the arch/ppc/boot/zImage and it loads/boots just fine. It is also
-mounting the NFS root file system as expected.
+The 'page fault' makes me wonder if the 604's TLB miss response differs
+sufficiently to cause the kernel panic.
+Has anyone else seen problems running on 2.2.12 with an MVME2604?
+Are there other patches needed to compensate for the MMU differences
+with the 604e?
 
-So I just wanted to put this in the list for others to find.  I hope this
-is not an indication of duplication of effort on Gabriel's and ppc kernel
-hackers. That would be wasting too much talent.
-
-JH
+Bill Fraher
+fraher@pratt-whitney.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
