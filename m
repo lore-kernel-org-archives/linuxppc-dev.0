@@ -1,51 +1,87 @@
-Date: Wed, 18 Jul 2001 18:22:19 -0500
-From: "Joseph P. Garcia" <jpgarcia@execpc.com>
-To: "Iain Sandoe" <iain@sandoe.co.uk>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: powermac (other ppc?) events
-Message-Id: <20010718182219.1d7dfbaa.jpgarcia@execpc.com>
-In-Reply-To: <20010718230301.7A05C2F0F9@apollo.valhalla.net>
-References: <20010718230301.7A05C2F0F9@apollo.valhalla.net>
+Date: Wed, 18 Jul 2001 21:45:52 -0400
+From: Simon Piette <simonp@Sat.QC.CA>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Video acceleration on IMSTT with bk (and Ben's) 2.4.7-pre6 kernel
+Message-ID: <20010718214552.C9041@Weber.Sat.QC.CA>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Greetings.
+Hi,
 
-Oops.  forgot to post to the list.
+I just compiled 2.4.7pre6 from Ben's tree, and another one from bk, with
+the same results. It compiled without any problems, but I can't have
+accelerated video. I use "video=imsttfb:vmode:17,cmode:16 video=ofonly"
+as kernel args to have a working unaccelerated video. Without ofonly, I
+get some blue dots forming a very distortioned screen of what should be
+there (linux logo and kernel verbosity). Without the imsttfb part, it
+won't work after the initial boot screen: it stops after
 
-On Thu, 19 Jul 2001 00:01:03 +0100
-"Iain Sandoe" <iain@sandoe.co.uk> wrote:
-> >> this *should properly* be handled by the dmasound driver - it needs to
-> >> understand the sound hardware (and on some models shares interrupts with
-> >> other sound stuff)
-> >
-> > I had this implemented in a patch posted long long ago (mac-like sound
-> > controls iirc).  Mostly met with 'I like dual volume controls'.  Given
-> > that, it should be runtime disable-able.  so that would mean either another
-> > event for our daemon, a proc interface, or an ioctl.  Preference?
->
-> well, it's not possible on all models to have the twin volume controls - it
-> works on the G3/Beige - which I'm sitting at - and, I think, on some of my
-> other machines ... but the headphone level is not independently split out
-> (IIRC) on, say, the iMac - (correct me if wrong - I haven't got round to
-> looking at it yet)...
+pmac_init(): exit
+id_mach(): done
+MMU: enter
+MMU: hw init
+hash: enter
+hash: find peice
+hash: patch
+hash: clone
+MMU: mapin
+MMU: setio
+MMU: exit
+setup_arch: enter
+setup_arch: bootmem
+arch: exit
 
-Here's where the original post was.  thread easily followable from there.
+Here is some details:
 
-http://lists.linuxppc.org/listarcs/linuxppc-dev/199909/msg00288.html
+Umax J700/180 192 MB RAM using BootX 1.2.2 (Ben's one)
+IMS TwinTurbo 128 2M PCI
+Kernel config at: http://www.generation.net/~spiette/linuxppc/config.txt
+lspci -vv:
+[...]
+00:0e.0 Display controller: Integrated Micro Solutions Inc. IMS9129
+[Twin turbo 128] (rev 01)
+        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
+ParErr- Stepping- SERR- FastB2B-
+        Status: Cap- 66Mhz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+        Latency: 8 min, 8 max, 32 set
+        Interrupt: pin A routed to IRQ 24
+        Region 0: Memory at 82000000 (32-bit, prefetchable) [size=16M]
+        Expansion ROM at 80900000 [disabled] [size=64K]
 
-I recall my implementation was a little flaky in the sleep department, but the core interupt and register handling is in there.  under AUDIO_SWITCHING defines.  its interwoven into an earlier version of the volume controls that someone else
-provided.  And this was written for 2.2.
+First boot screen:
+Welcome to Linux, kernel 2.4.7
+started at:     0x00000000
+linked at:      0xc0000000
+frambuffer at:  0x82000020 (phys) 0x82000020 (log)
+[...]
 
-It's a start, but not at all useful as is.
+Relevant dmesg output:
+Linux version 2.4.7-pre6 (simonp@bing.dyndns.org) (gcc version 2.95.3
+20010312 ( prerelease/franzo/20010312)) #1 Tue Jul 17 14:35:46 EDT 2001
+Cache coherency enabled for bandit/PSX at 00000000
+Found Bandit PCI host bridge at 0xf2000000. Firmware bus number: 0->1
+[...]
+PCI: Probing PCI hardware
+Unknown bridge resource 2: assuming transparent
+PCI: Cannot allocate resource region 2 of PCI bridge 1
+PCI: resource is 80000000..8fffffff (200), parent c029a068
+PCI:00:0e.0: Resource 0: 82000000-82ffffff (f=1208)
+[...]
+MacOS display is /bandit/IMS,tt128mb
+Using unsupported 1024x768 IMS,tt128mb at 82000020, depth=16, pitch=2048
+Console: switching to colour frame buffer device 128x48
+fb0: Open Firmware frame buffer device on /bandit/IMS,tt128mb
+[...]
 
-Hope this helps.
+What could be wrong?
 
---
-Joseph P. Garcia
-http://www.execpc.com/~jpgarcia
+Cheers,
+
+Simon Piette
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
