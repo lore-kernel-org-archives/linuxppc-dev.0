@@ -1,66 +1,38 @@
-Message-Id: <200008290758.JAA02594@denx.local.net>
-To: "Hyun-Joon Cha" <tachyon@postech.ac.kr>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Serial 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 29 Aug 2000 11:28:36 +0900."
-             <051301c01160$d5e0b560$1952df8d@SOYANG>
-Date: Tue, 29 Aug 2000 09:58:27 +0200
+Cc: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <39ABC306.BDA989EA@lucent.com>
+Date: Tue, 29 Aug 2000 09:04:54 -0500
+From: Tom Roberts <tjroberts@lucent.com>
+MIME-Version: 1.0
+To: Alex Shnitman <alexsh@hectic.net>
+Subject: Re: Linux on Motorola Sandpoint/PPMC7400
+References: <20000828225504.B23679@hectic.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <051301c01160$d5e0b560$1952df8d@SOYANG> you wrote:
->
-> I'm using 8xxrom-0.3.0 for boot loader and MVista-2.2.13 for kernel.
+Alex Shnitman wrote:
+> I've seen that Hard Hat Linux supports the Sandpoint board with
+> MPC8240 and MPC755. We have a 7400 processor there though. Does anyone
+> have any experience with this configuration? Can Linux run on it?
 
-Forget 8xxrom. It's dead.
+While I have no experience with this board, I have run Linux on our
+own boards, with MPC750, MPC755, and MPC7400. Note these three can
+all be obtained in APPROXIMATELY pin-compatible packages, and their
+architecthres are compatible (the 7400 adds AltiVec; I'm ignoring
+differences in clock speed, cache size, etc). The MPC8240 is I believe
+a completely different beast (I've never used one).
 
-Use the new PPCBoot instead. See http://ppcboot.sourceforge.net/
+I used Linux Kernel 2.2.15 from YellowDog, heavily customized to run
+on our boards. I made no MPC7400-specific changes, however. Note I
+made no effort at all to optimize it for the 7400 (other than adding
+the proper l2cr parameter -- yes, your software has to be aware of
+the hardware platform's details (:-().
 
-> I tried to remove serial driver for some reason.
+	I have only 1 board with 7400s, and we are modifying it to
+	try and evaluate SMP architecture....
 
-What are these reasons? Do you have  another  interface  to  interact
-with the board instead?
 
-> I have 4 questions abou it.
-
-The following answers are for PPCBoot code.
-
-> 0. If I remove it, will board boot correctly?
-
-Yes, it will. But you will still have a lot of dead code (interactive
-commands) which you might remove as well.
-
-> 1. Can I expect some performance gain with removal?
-
-What type of "performance" do you mean?
-
-Linux will not run any faster when you remove the serial driver  from
-the boot loader.
-
-If you're talking about boot times, the difference is minimal  -  you
-can    get   nearly   the   same   with   PPCBoot   configured   with
-CONFIG_BOOTCOMMAND  set  to  the  command  you  need  to   boot   and
-CONFIG_BOOTDELAY set to 0 so it will boot immediately.
-
-> 2. Are there any easy way to do it?
-
-Just remove the relevant code.
-
-But to be  honest:  I  see  a  lot  of  disadvantages,  and  no  real
-advantages.  But you didn't tell us your reasons, so I cannot comment
-on this.
-
-Hope this helps.
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-A day without sunshine is like night.
+Tom Roberts	tjroberts@lucent.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
