@@ -1,70 +1,69 @@
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: Paul Ruhland <pruhland@microwavedata.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: pcmcia-cs-3.1.34 compile problems
+Date: Mon, 15 Jul 2002 15:53:27 -0400
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: ioremap on powerpc question
-Date: Mon, 15 Jul 2002 13:58:21 -0500
-Message-ID: <45B36A38D959B44CB032DA427A6E106401281440@cceexc18.americas.cpqcorp.net>
-From: "Cameron, Steve" <Steve.Cameron@hp.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
+  charset="us-ascii"
+Message-Id: <200207151553.27554.pruhland@microwavedata.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+I've been using linux-2.4.4-2001-07-23 with a patched pcmcia-cs-3.1.24...works
+great ( MPC850 platform ).
 
-I have a question about ioremap_nocache() on powerpc.
+For a new project, I thought I would try the linux-2.4 cvs tree from DENX.
+Applied all changes for our board...no problems...works as expected.  Then I
+grabbed pcmcia-cs-3.1.34 from sourceforge and added the board specific stuff
+and can't get it to compile.
 
-I want to create a huge RAM buffer for i/o purposes, so I
-boot the kernel with parameter "mem=64M" (actually, my
-system, an IBM ebony 440, has 128M RAM)
-This leave 64M sitting around unused by the linux kernel.
+Has anyone else tried/gotten the pcmcia-cs-3.1.34 source to compile for ppc
+linux-2.4.x or had similar probems?
 
-Then, I can do
+Below is the output from the build:
 
-	unsigned char *buf;
-	buf = ioremap_nocache(64*1024*1024, 64*1024*1024);
+ppc_8xx-gcc -fno-builtin -msoft-float -ffixed-r2  -MD -O2 -Wall
+-Wstrict-prototypes -pipe -I../include
+-I/home/paulr/projects/nautilus2/src/linux/include  -D__KERNEL__ -DMODULE -c
+m8xx_pcmcia.c
+m8xx_pcmcia.c: In function `m8xx_shutdown':
+m8xx_pcmcia.c:546: warning: implicit declaration of function
+`free_irq_Rf20dabd8'
+m8xx_pcmcia.c: In function `m8xx_init':
+m8xx_pcmcia.c:561: warning: implicit declaration of function
+`printk_Rdd132261'
+m8xx_pcmcia.c:562: warning: implicit declaration of function
+`CardServices_Re4eef0a4'
+m8xx_pcmcia.c:573: warning: implicit declaration of function
+`request_8xxirq_R814af5f5'
+m8xx_pcmcia.c:627: warning: implicit declaration of function
+`register_ss_entry_Reda35fe3'
+m8xx_pcmcia.c: In function `m8xx_exit':
+m8xx_pcmcia.c:641: warning: implicit declaration of function
+`unregister_ss_entry_R7f678b5b'
+m8xx_pcmcia.c: In function `m8xx_get_speed':
+m8xx_pcmcia.c:782: `__res_Rd7dfb463' undeclared (first use in this function)
+m8xx_pcmcia.c:782: (Each undeclared identifier is reported only once
+m8xx_pcmcia.c:782: for each function it appears in.)
+m8xx_pcmcia.c:755: warning: `clocks' might be used uninitialized in this
+function
+m8xx_pcmcia.c: In function `m8xx_get_status':
+m8xx_pcmcia.c:918: warning: implicit declaration of function `socket_get'
+m8xx_pcmcia.c: In function `m8xx_set_socket':
+m8xx_pcmcia.c:1000: warning: implicit declaration of function
+`__save_flags_ptr_R98964d1e'
+m8xx_pcmcia.c:1001: warning: implicit declaration of function
+`__cli_Re45078fb'
+m8xx_pcmcia.c:1115: warning: implicit declaration of function
+`__restore_flags_R9a3562fe'
+make[1]: *** [m8xx_pcmcia.o] Error 1
+make[1]: Leaving directory
+`/home/paulr/projects/nautilus2/src/pcmcia-cs-3.1.34/modules'
+make: *** [all] Error 2
 
-And get back some kind of virtual address, "buf" which I want
-to use for example to recieve data coming in from an IP socket.
-
-Then, since I know the physical address of buf (because I set
-it up myself with ioremap), I want to DMA from buf to a PCI
-device.
-
-I have all this working fine on x86, so far so good.
-
-However, on powerpc, as soon as I try to do, for example:
-
-	*buf = '\0'; // write one char to virt addr returned by ioremap
-
-It blows up with a machine check.
-
-(BTW, buf happens to be == 0xc505c000, so alignment shouldn't be a problem.)
-
-Now, I see threads on LKML via google that say, essentially,
-"you _must_ use readb/writeb, etc to access addresses returned
-by ioremap,"  I had presumed this is because ioremap is used most
-typically to access memory, registers, etc which are actually on
-PCI devices.  In my case, I am simply remapping actual RAM, not
-on the PCI bus at all.  I thought this meant that I can get away
-with accessing those virtual addresses directly.  Am I wrong about
-that?  (well, it seems I am wrong somewhere, but why?)
-
-Using readb/writeb would defeat my purpose.
-My purpose is to avoid an extra copy of the data.  I want to read/write
-the data off an IP socket into/from a buffer which is then directly DMA-able
-to/from a PCI device, and thus avoid having to copy the data into a special
-DMA-able buffer from a more "ordinary" buffer that's used with the socket.
-
-I'm using ioremap because kmalloc can't give me big enough buffers.
-(nothing even close to 64M, and in the end it's likely I would want
-even more than 64M.)
-
-Is what I'm trying to do possible?  Where am I going wrong?
-
-Thanks,
-
--- steve
-
+--
+Paul Ruhland
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
