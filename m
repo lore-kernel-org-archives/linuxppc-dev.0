@@ -1,83 +1,66 @@
-Date: Thu, 10 Aug 2000 14:02:46 +0200 (MET DST)
-From: Derek Homeier <supas100@astrophysik.uni-kiel.de>
-To: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-cc: Topi Kanerva <tkanerva@ees2.oulu.fi>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Backlight control on Lombard PB
-In-Reply-To: <Pine.LNX.4.10.10008101149110.1740-100000@zirkon.biophys.uni-duesseldorf.de>
-Message-ID: <Pine.SOL.3.95.1000810133200.8052B-100000@juliet>
+Message-ID: <3992EAE6.27CF4490@motorola.com>
+Date: Thu, 10 Aug 2000 12:48:22 -0500
+From: Jeffrey Hawkins <Jeffrey.F.Hawkins@motorola.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Franz.Sirl-kernel@lauterbach.com, linuxppc-dev@lists.linuxppc.org
+Subject: PPC Versions of Glibc and GCC Status
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 10 Aug 2000, Michael Schmitz wrote:
+Frank,
 
-> > >Should be fixed in BenH's current tree, he said he was going to do it this
-> > >past weekend. The pmu backlight controller didn't get registered on the
-> > >Lombard (and possibly Wallstreet) because the backlight-control property
-> > >is missing on these machines.
-> >
-> > Well, the backlight control surely doesn't work on Pismos... I just hate
->
-> I was speaking about Lombard and related machines. On the Pismo, the
-> backlight control is in the display driver IIRC.
->
-And with the fix to pmac_setup.c it is indeed working on the Lombard,
-thanks to everyone!
+I am currently utilizing your current versions of GCC
+2.95.3-2c and GLIB2.1.3-15d for my development.  Thanks
+for all the hard work....
 
-BenH did some research on the settings of the function keys, but that's
-probably not exactly the problem with the Pismo...(?):
+I am experiencing a few issues with LinuxThreads, which upon
+querying the GNU developers/lists, I have found the issues
+may have been fixed in the 2.1.9x and 2.2-beta versions.
+The required fixes are in the LinuxThreads Library, as well
+as, in other Libraries.
 
-> I've done some hacking on MacOS today and found that the Fn key behaviour
-> can apparently be triggered by setting an ADB register of the keyboard.
->
-> If you write 0xc6 0x01 to register 1 of the keyboard, the Fx keys will be
-> real function keys by default and Fn will trigger the control buttons.
-> Write 0xc6 00 to revert the behaviour to default.
->
-> So a userland tool can be easily hacked using the trackpad tool source as
-> an example, you have to find the keyboard instead of the trackpad (device
-> with default and current address 2 should always work on PowerBook and
-> iBook ADB) and then do the register write of a 2 bytes message
-> (0xc6 0x01). I can't try this now, but if someone wants to look at it...
->
-I tried to make some sense of this, but unfortunately I wasn't able to tell
-from trackpad.c where I'd try to find the keyboard and where exactly the
-register write is done (one of the 'send(buf, n)', probably? Then
-  buf[0] = 0xc6;
-  buf[1] = 0x01;
-  send(buf, 2);
-would be the thing to do?). No experience with this, but maybe I'll get it
-yet sorted out...
-Would this work for setting the register:
+Are you currently integrating/migrating your
+2.1.3 versions with 2.1.9x or 2.2.x ?  If you are not
+planning on doing this, have the changes you have made,
+or the changes by other LinuxPPC Developers, both to the
+GCC and GLIBs, been submitted and incorporated in the GNU
+running changes ?
 
-void set_fnkey(int id, int mode)
-{
-	unsigned char buf[16];
+I am just starting the process of going through the Source
+for 2.1.91 and checking the differences with the 2.1.3-15d.
+I am querying you on your efforts, and others, so that I don't
+waste time duplicating what has already been done.  I was
+hoping to use GLIB 2.1.91 off the shelf, but I know this
+will probably not be the case.
 
-	set_program_mode(id, 1);
-
-#ifdef DEBUG
-	printf("setting mode: %d\n", mode);
-#endif
-
-	buf[0] = 0xc6;
-	buf[1] = (mode < 1) ? 00 : 0x01;
-	send(buf, 2);
-	listen(buf);
-
-	set_program_mode(id, 0);
-
-}
-
-if called with (2, 1) to set the F keys to function keys, and with (2, 0)
-to set it back to default? I'm afraid I've not fully grasped what
-set_program_mode(id, n) does.
+Any feedback, or tips on things to look out for (such as
+Libraries/Modules you had to make extensive updates to, #ifdefs
+and #defines that need to be added for PowerPC), would be
+appreciated.  I will be making the Source Tarballs and RPMs
+available once I have completed this task.
 
 
-Cheers,
-							Derek
 
+Jeff
+
+--
+********************************************************
+
+Jeffrey Hawkins
+
+Senior Staff Software Engineer
+Motorola Wireless Data Solutions Engineering
+
+Address: DEPT:  DQ525
+         MS:    IL-02-1055A
+         1301 East Algonquin Road
+         Schaumburg, IL 60196
+
+Phone:   (847)576-7463
+FAX:     (847)576-7737
+
+********************************************************
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
