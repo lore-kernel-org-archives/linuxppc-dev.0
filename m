@@ -1,22 +1,19 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id D0C2C67A67
+Return-Path: <avolkov@varma-el.com>
+Received: from amanaus.varma-el.com (unknown [195.144.244.147])
+	by ozlabs.org (Postfix) with ESMTP id D670767A71
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Mar 2005 04:24:48 +1100 (EST)
-In-Reply-To: <1110340214.32524.32.camel@gaston>
-References: <1107b64b01fb8e9a6c84359bb56881a6@freescale.com>
-	<1110334456.32556.21.camel@gaston>
-	<20050308194229.41c23707.davem@davemloft.net>
-	<1110340214.32524.32.camel@gaston>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <57a429f8eb807987d88b06129861d507@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Date: Wed, 9 Mar 2005 11:24:44 -0600
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: netdev@oss.sgi.com, "David S. Miller" <davem@davemloft.net>,
-	linuxppc-embedded@ozlabs.org
-Subject: Re: RFC: PHY Abstraction Layer II
+	Thu, 10 Mar 2005 04:40:16 +1100 (EST)
+Message-ID: <422F34F9.1050607@varma-el.com>
+Date: Wed, 09 Mar 2005 20:40:09 +0300
+From: Andrey Volkov <avolkov@varma-el.com>
+MIME-Version: 1.0
+To: Kumar Gala <kumar.gala@freescale.com>
+References: <422EEA20.4050907@varma-el.com>
+	<d32d7ad858d3660f9d7fdf33003ca4cc@freescale.com>
+In-Reply-To: <d32d7ad858d3660f9d7fdf33003ca4cc@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: paulus@samba.org, linuxppc-embedded@ozlabs.org
+Subject: Re: RFC/Commit: New ocp id for CANbus devs
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,39 +24,63 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi Kumar:
+> Is this for 2.6?  
+Oh sorry, certainly for 2.6 (Sylvain's kernel more precisely).
+But since, Sylvain not maintainer of ocp_ids.h, so I send
+this patch to Paul (who create it, am I right?).
 
-On Mar 8, 2005, at 21:50, Benjamin Herrenschmidt wrote:
+> If so, 5200 needs to be moved to using the new driver 
+> model and platform devices.  Take a look at support for MPC85xx or 
+> marvell (mv64x60) as examples.
+> 
+> - kumar
+Kumar, please, more cleanly, what did you want to say? If you told about
+board_ocp[] in lite5200.c (platform specific). Then yes, I use it, but 
+not mpc5200.c
 
-> On Tue, 2005-03-08 at 19:42 -0800, David S. Miller wrote:
->> On Wed, 09 Mar 2005 13:14:16 +1100
->> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+--
+Andrey
+
+> 
+> On Mar 9, 2005, at 6:20 AM, Andrey Volkov wrote:
+> 
+>> Hi Paul,
 >>
->>> I'll have a closer look when I find some time, see if it makes sense 
->>> to
->>> adapt sungem or not.
+>> Pls. commit this patch, its needed for MPC5200 Can
 >>
->> Especially because of the Broadcom PHYs I bet it doesn't.
+>> Regards
+>>  Andrey Volkov
 >>
->> Too many chips have to reset the MAC, or do other fancy stuff
->> when programming the PHY to make this genphy thing very useful.
->
-> Oh, I think genphy is just a generic driver, but his layer has hooks 
-> for
-> other PHY drivers (wasn't it based on sungem_phy in the first place ?)
-
-Definitely.  Much of this code was culled from the sungem and ibm_emac 
-drivers, with some input from mii.c.  The genphy driver is just one of 
-the 6 PHY drivers in the patch I sent (the others are Marvell, Davicom, 
-Cicada, QS, LXT).  Actually, several of those files have multiple 
-drivers in them.  The genphy driver is the fallback driver.  It exists 
-for those PHYs which never get a driver, but don't need special 
-attention.
-
->
-> I discussed several steps of the design with Andy, the idea was to have
-> something a bit like sungem_phy.c with addditional common library for
-> doing the link polling & fallback stuff etc... that could be easily
-> shared by drivers.
-
-Yup.  I look forward to your input on how well the code meshes with 
-what people need for their drivers.
+>> Signed-off-by: Andrey Volkov <avolkov@varma-el.com>
+>>  --
+>>  ChangeSet@1.2159, 2005-03-09 15:05:37+03:00, avolkov@varma-el.com
+>>     ocp_ids.h:
+>>       New number for onboard CANbus devs.
+>>
+>>
+>>
+>>   ocp_ids.h |    1 +
+>>    1 files changed, 1 insertion(+)
+>>
+>>
+>>
+>> diff -Nru a/include/asm-ppc/ocp_ids.h b/include/asm-ppc/ocp_ids.h
+>>  --- a/include/asm-ppc/ocp_ids.h 2005-03-09 15:07:51 +03:00
+>>  +++ b/include/asm-ppc/ocp_ids.h 2005-03-09 15:07:51 +03:00
+>>  @@ -62,6 +62,7 @@
+>>    #define OCP_FUNC_RGMII                0x00D3
+>>    #define OCP_FUNC_TAH          0x00D4
+>>    #define OCP_FUNC_SEC2         0x00D5  /* Crypto/Security 2.0 */
+>>  +#define OCP_FUNC_CAN           0x00D6  /* CAN bus device */
+>>
+>>   /* Network 0x0200 - 0x02FF */
+>>    #define OCP_FUNC_EMAC         0x0200
+>>
+>> _______________________________________________
+>> Linuxppc-embedded mailing list
+>>  Linuxppc-embedded@ozlabs.org
+>> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
+> 
+> 
