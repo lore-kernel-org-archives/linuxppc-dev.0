@@ -1,45 +1,61 @@
-Message-ID: <37DF0C38.34352830@ctam.com.au>
-Date: Wed, 15 Sep 1999 13:02:17 +1000
-From: Brendan Simon <bsimon@ctam.com.au>
-Reply-To: bsimon@ctam.com.au
+Message-ID: <37DFF342.94EE3B8@jlc.net>
+Date: Wed, 15 Sep 1999 15:28:02 -0400
+From: Dan Malek <dmalek@jlc.net>
 MIME-Version: 1.0
-To: Dan Malek <dmalek@jlc.net>
+To: bsimon@ctam.com.au
 CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: 8xx updates
-References: <37DF00DD.A0806F12@jlc.net>
+Subject: Re: mpc8xx-2.3.10 configuration questions.
+References: <37DEF583.3DC2F0D4@ctam.com.au>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek wrote:
+Brendan Simon wrote:
 
-> OK.  I just posted all of the outstanding 8xx updates to the
-> CVS tree.  Read the web page for more info.
+> It fails to build if I include any of the following options.  I can't
+> remember the exact error messages but can post them later if it helps.
+> * CPU is too slow to handle full bandwidth.
 
-:)
+The cpu isn't too slow, so don't select this one.
+
+> * MS-DOS, VFAT filesystems.
+> * SMB network filesystems.
+
+These are the result of generic VM changes and are not at all
+related to 8xx.  You can't build them on any PPC machine in that
+release.
 
 
-> I will probably make mbx_defconfig a generic m8xx_defconfig that will
-> build on all boards.  You can then selectively add features you
-> know your board supports.  I just haven't found the lowest
-> common denominator yet.
+> I notice that the .config file has both 8xx and 6xx cpus defined even
+> though I've chosen 8xx/860.  Similarly, CONFIG_PARIDE_PARPORT=y even
+> though I don't enable it.  It looks as though there are some defaults
+> that are set regardless of what the user sets.
 
-Sounds ok.
+This has all been corrected in later releases.  I don't think any
+of it was 8xx related as I didn't specifically change anything.
 
-The other thing that needs to be done is the help documentation.  I tend to
-use "make xconfig" when configuring my kernel.  This gives me the ability to
-load and store configuration files and then only change the bits I need to
-without going through the entire configuration processes.  The other reason is
-that it has a help button for all the configuration options.  I believe "make
-menuconfig" also has help features.  There are so many options that it is hard
-to remember what all of them do (unless you have read the docs a million
-times).  The 2.2.x and 2.3.x series from kernel mirrors have the help docs but
-none of the embedded archives (embedded-2.2.5 and mpc8xx-2.3.10) seem to have
-them.  I think its just a matter of copying the help files to the
-Documentation directory.
+> .....This worries me a bit,
+> especially having 8xx and 6xx cpus both defined.  Is this intentional ?
 
-Brendan Simon.
+Well, you can either worry or fix it and get on with life.  Keep in
+mind that the 8xx is really a minimal change to the Linux/PPC baseline.
+If something doesn't work on the 8xx, and it is not specific to
+the 8xx (like the file system stuff), chances are it doesn't work
+for any PPC release.  Build it for a PMAC or something (you do have
+some other PPC besides the 8xx, right?) and compare the results.
+Remember, the 2.3.x CVS is a serious development tree, changing
+every minute, and can go for many releases without running
+properly in many aspects.  When you play in this sandbox you have
+to expect things not to work correctly, and contribute to the
+updates.
 
+People have full multi-user, multiple network, PPP, web server
+stuff running on 8xx platforms....and I never saw them post a
+message to any of the PPC lists.....unfortunately no code updates
+were posted either....
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
