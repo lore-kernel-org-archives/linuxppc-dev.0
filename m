@@ -1,69 +1,29 @@
-Subject: 405LP RTC warning patch
-From: Hollis Blanchard <hollis@austin.ibm.com>
-To: embedded list <linuxppc-embedded@lists.linuxppc.org>
-Content-Type: multipart/mixed; boundary="=-1qlWo5PSWT/XrlgTwHHY"
-Date: 19 Dec 2002 11:31:14 -0600
-Message-Id: <1040319075.30597.143.camel@granite.austin.ibm.com>
+From: Cort Dougan <cort@fsmlabs.com>
+Date: Thu, 19 Dec 2002 11:06:09 -0700
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: PPC Tree structures (Was, at some point: Re: Support for Arctic platform (405LP based))
+Message-ID: <20021219180609.GD1048@host109.name>
+References: <20021213043628.GI21319@zax.zax> <20021212215126.V23952@duath.fsmlabs.com> <20021213151808.GI19456@opus.bloom.county> <20021215121526.M30941@duath.fsmlabs.com> <15869.5023.549830.146265@argo.ozlabs.ibm.com> <20021215174120.E30568@duath.fsmlabs.com> <20021216150442.GJ6095@opus.bloom.county> <20021216124931.B9431@duath.fsmlabs.com> <20021216201301.GA2513@opus.bloom.county>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20021216201301.GA2513@opus.bloom.county>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---=-1qlWo5PSWT/XrlgTwHHY
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+} But regardless of all of that, there's nothing related to this being a
+} 'marcelo' tree or not as you can't pick and choose bk csets without
+} everything preceeding it.  Ideally we can get to the point of not really
+} needing a seperate tree like 2.2 is (which could go if someone wants to
+} sit down and think about the LongTrail-specific changes in there).
 
-As David suggested, this patch warns the user if the RTC frequency is
-altered by Linux (at least a little time will have been lost during
-firmware boot).
+There's a great advantage to it being based on Marcelo's tree.  I can pull
+in several projects that I need along with the PPC changes I need into my
+own tree.  I think that would help a lot of people out.
 
-Please apply to _2_4_devel.
-
--Hollis
---
-PowerPC Linux
-IBM Linux Technology Center
-
---=-1qlWo5PSWT/XrlgTwHHY
-Content-Disposition: attachment; filename=405LP-rtc-warn.diff
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; name=405LP-rtc-warn.diff; charset=ISO-8859-1
-
-# This is a BitKeeper generated patch for the following project:
-# Project Name: Linux 2.4 for PowerPC development tree
-# This patch format is intended for GNU patch command version 2.5 or higher=
-.
-# This patch includes the following deltas:
-#	           ChangeSet	1.1179  -> 1.1180=20
-#	arch/ppc/platforms/ibm405lp.c	1.5     -> 1.6   =20
-#
-# The following is the BitKeeper ChangeSet Log
-# --------------------------------------------
-# 02/12/19	hollis@granite.austin.ibm.com	1.1180
-# print a warning message if RTC frequency is altered
-# --------------------------------------------
-#
-diff -Nru a/arch/ppc/platforms/ibm405lp.c b/arch/ppc/platforms/ibm405lp.c
---- a/arch/ppc/platforms/ibm405lp.c	Thu Dec 19 11:27:45 2002
-+++ b/arch/ppc/platforms/ibm405lp.c	Thu Dec 19 11:27:45 2002
-@@ -288,7 +288,14 @@
- 		mtdcr(DCRN_RTC0_CR1, 0x80);		/* Disable update cycles/interrupts*/
- 		mtdcr(DCRN_RTC0_WRAP, 0);       /* toggle NRST & NMR */
- 		mtdcr(DCRN_RTC0_WRAP, 3);
--		mtdcr(DCRN_RTC0_CR0, (RTC_DVBITS & 0x7) << 4);		/* input clock */
-+
-+		/* if necessary, set the input clock frequency */
-+		if ((mfdcr(DCRN_RTC0_CR0) >> 4) !=3D RTC_DVBITS) {
-+			printk(KERN_WARNING "Warning: RTC frequency was incorrect\n");
-+			mtdcr(DCRN_RTC0_CR0,
-+					 ((RTC_DVBITS & 0x7) << 4) | (mfdcr(DCRN_RTC0_CR0) & 0xf));
-+		}
-+
- 		mtdcr(DCRN_RTC0_CR1, mfdcr(DCRN_RTC0_CR1) & 0x7f);	/* allow updates */
-=20
- 		not_initialized =3D 0;
-
---=-1qlWo5PSWT/XrlgTwHHY--
-
+In fact, it should help merging with Marcelo a great deal.  You can easily
+pull in main-line changes.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
