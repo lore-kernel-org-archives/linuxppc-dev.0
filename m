@@ -1,47 +1,23 @@
-Message-ID: <000701bebb4c$9827b400$7a0519c3@art-expr1>
-From: "Aziz MEHDAOUI" <amehdaoui@eolisconseil.com>
-To: <linuxppc-dev@lists.linuxppc.org>
-Subject: SHMMAX
-Date: Sun, 20 Jun 1999 20:40:33 +0200
+Message-ID: <376D4033.F9064DA4@usa.net>
+Date: Sun, 20 Jun 1999 15:25:49 -0400
+From: David Riley <happyoscar42@usa.net>
+Reply-To: happyoscar42@usa.net
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0004_01BEBB5D.24B8DC40"
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Followup:  Linux/m68k for mac
+Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
+Whoops, heh.  Found it.  it's at <http://mac.linux-m68k.org/>.  Note:
+You _need_ to have a working MacOS system (even just System and Finder)
+for this to work, since 68k macs lack even the conception of another OS,
+let alone OpenFirmware-type stuff.  The mailing list for that is at
+<linux-mac68k-request@mac.linux-m68k.org>
 
-------=_NextPart_000_0004_01BEBB5D.24B8DC40
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-Bonjour,
-please in witch file SHMMAX is configured in linux?
-Aziz
-
-------=_NextPart_000_0004_01BEBB5D.24B8DC40
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD W3 HTML//EN">
-<HTML>
-<HEAD>
-
-<META content=3Dtext/html;charset=3Diso-8859-1 =
-http-equiv=3DContent-Type>
-<META content=3D'"MSHTML 4.72.3110.7"' name=3DGENERATOR>
-</HEAD>
-<BODY bgColor=3D#ffffff>
-<DIV><FONT color=3D#000000 size=3D2>Bonjour,</FONT></DIV>
-<DIV><FONT color=3D#000000 size=3D2>please in witch file SHMMAX is =
-configured in=20
-linux?</FONT></DIV>
-<DIV><FONT color=3D#000000 size=3D2>Aziz</FONT></DIV></BODY></HTML>
-
-------=_NextPart_000_0004_01BEBB5D.24B8DC40--
+As a little note, I believe XF68_FBDev was made originally for 68k linux
+(note "XF68" instead of "XF86").
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
