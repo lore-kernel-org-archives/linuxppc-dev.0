@@ -1,26 +1,20 @@
-Message-ID: <3AF2C4C5.3C1ECE55@mvista.com>
-Date: Fri, 04 May 2001 11:03:33 -0400
-From: Dan Malek <dan@mvista.com>
+Message-ID: <01C0D48A.5F429BB0.svacca@valcom.com>
+From: Steven Vacca <svacca@valcom.com>
+Reply-To: "svacca@valcom.com" <svacca@valcom.com>
+To: "LinuxEmbeddedMailList (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Need Latest FEC driver for MPC860T + LXT970 PHY
+Date: Fri, 4 May 2001 11:07:09 -0400
 MIME-Version: 1.0
-To: Freddy Lugo <wilflugo@yahoo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: debugging infor after decompress_kernel
-References: <20010504144827.94868.qmail@web9907.mail.yahoo.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Freddy Lugo wrote:
+I have a custom design which has the MPC860T and the LXT970A PHY.
+Would anyone know where I could find the latest fec.c driver for this setup?
 
->  but then how I obtain the debug info of the kernel
->  after bootloading?
+Thanks,
 
-You need to use the 'vmlinux' file for the information.
-I simply 'gdb vmlinux' then remotely attach to the debugger,
-either KGDB or Abatron.
-
-
-	-- Dan
+ShutEye Thinkin
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
