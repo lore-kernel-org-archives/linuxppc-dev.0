@@ -1,25 +1,28 @@
-Message-ID: <3A755A2F.99BB1A8B@agelectronics.co.uk>
-Date: Mon, 29 Jan 2001 11:55:27 +0000
-From: Adrian Cox <apc@agelectronics.co.uk>
+Date: Mon, 29 Jan 2001 14:39:01 +0100 (MET)
+From: Roman Zippel <zippel@fh-brandenburg.de>
+To: Iain Sandoe <iain@sandoe.co.uk>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: correct use of lock_kernel() - help!  please
+In-Reply-To: <20010129112448.C96802EFBD@apollo.valhalla.net>
+Message-ID: <Pine.GSO.4.10.10101291435080.899-100000@zeus.fh-brandenburg.de>
 MIME-Version: 1.0
-To: Derek Homeier <supas100@astrophysik.uni-kiel.de>
-CC: linuxppc-dev@lists.linuxppc.org, Brad Midgley <brad@turbolinux.com>
-Subject: Re: pmud monitoring temperature (Re: powerbook doubles...)
-References: <Pine.SOL.3.95.1010129121607.21410A-100000@juliet>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Derek Homeier wrote:
+Hi,
 
-> Actually, IBM and Motorola specs say the G3 has an operating temperature
-> of up to 105C!
+On Mon, 29 Jan 2001, Iain Sandoe wrote:
 
-G4s come in a variety of temperature specs, and many of them are only
-rated up to 65C. You'll have to read the markings on the package to work
-it out.
+> Around the use of which kernel resources should a lock be applied?
 
-- Adrian Cox
+Depends on the resource, but most of it shouldn't need this anymore. If
+the kernel lock is moved into the driver, it usually means that everything
+else is safe, check now that the driver itself is smp safe, then you can
+remove the kernel lock.
+
+bye, Roman
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
