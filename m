@@ -1,63 +1,32 @@
-From: "David S. Miller" <davem@redhat.com>
+Message-ID: <3AC417B4.5F73589@ncal.verio.com>
+Date: Thu, 29 Mar 2001 21:20:52 -0800
+From: Henry Worth <haworth@ncal.verio.com>
 MIME-Version: 1.0
+To: Franz.Sirl-kernel@lauterbach.com
+Cc: linuxppc-dev@lists.linuxppc.org, billfink@capu.net
+Subject: Re: xine, ppc and illegal instructions
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <15044.444.777880.743127@pizda.ninka.net>
-Date: Thu, 29 Mar 2001 19:47:08 -0800 (PST)
-To: Daniel Berlin <dan@www.cgsoftware.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: ieee1394 fixed soon...
-In-Reply-To: <Pine.LNX.4.10.10103290950010.11075-100000@www.cgsoftware.com>
-References: <15042.57778.640138.923390@pizda.ninka.net>
-	<Pine.LNX.4.10.10103290950010.11075-100000@www.cgsoftware.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Daniel Berlin writes:
- > As sopon as the the ieee1394 maintainer gets on the ball, i'll submit
- > them again.
+Franz Sirl wrote:
+>>At 07:30 27.03.2001, Bill Fink wrote:
+>>         *  In configure, there's a case check for"powerpc-*-linux*)".
+>>            This should be changed to "powerpc-*-linux* | ppc-*-linux*)".
 
-If they continue to be unresponsive, I can ask Linus what we
-as maintainers should do.
+>This isn't correct, it's always powerpc-*-linux*, the other one is
+>superflous. This usually happens if people didn't update their configure
+>scripts for a _long_ time and your patch is just papering over that.
+>
+>Franz.
 
- > > 	p->value &= cpu_to_le32(0xfffffff0);
- > >
- > > works _PERFECTLY_ fine.
 
- > Not for me
+No, LinuxPPC 2000 Q4 is ppc-*, what version of the
+config scripts, I don't know, and don't care. A
+lot of packages break because of it, allow both
+and save a lot of grief!
 
-This is mathmatically impossible.  :-)  Something else has to account
-for it.
-
-Maybe, you were hitting a compiler bug or similar, but you were not
-hitting a problem because the logic is wrong.
-
- > I'm pretty sure, however, that I did that change
- > individually, and it made a difference.
-
-Please verify this now, and check for miscompilation if you still
-see the problem.
-
- > > I know what needs to be swapped thats why I did the patches I did :-)
- >
- > It's trickier than you may think, because motherboard implementations of
- > firewire aren't required to honor the byte swapping setting, making it
- > pretty useless.
-
-I've read this paragraph of the OHCI specification.  Find me a
-motherboard controller found on a big-endian system which does
-not implement this bit, then I will begin to be concerned.
-
- > sure, as soon as they start actually maintaining ieee1394.
-
-Why don't we contact them and give them a week, explaining that if
-they don't wish to be active in ieee1394 driver maintainence then you
-and I are willing to help more actively co-maintain the ieee1394 layer
-together. :-)
-
-Later,
-David S. Miller
-davem@redhat.com
+Henry
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
