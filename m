@@ -1,27 +1,34 @@
-Message-ID: <3B4B69E4.42178D5B@aps.anl.gov>
-Date: Tue, 10 Jul 2001 15:47:32 -0500
-From: Andrew Johnson <anj@aps.anl.gov>
+From: Subodh Nijsure <subodh@best.com>
+Message-Id: <200107110235.TAA02964@shell9.ba.best.com>
+Subject: Read write to ioremap_nocache are still cached?
+To: linuxppc-embedded@lists.linuxppc.org
+Date: Tue, 10 Jul 2001 19:35:45 -0700 (PDT)
 MIME-Version: 1.0
-To: Jerry Van Baren <vanbaren_gerald@si.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: SSSSlllloooowwww MPC8240
-References: <4.3.2.20010709213031.00c44910@falcon.si.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Jerry Van Baren wrote:
->
-> Is caching enabled (both instruction and data)?  It sounds a lot like
-> you are running without the benefit of caches.
+Hello,
 
-That was it - thanks Jerry, I now get 133.12 BogoMIPS and a much more
-responsive machine.
+I have mapped memory area using ioremap_nocache() and what I observered
+through logica analyzer is when I do simple word read or write there are
+multiple read/write cycles happening on  the same address.
 
-- Andrew
---
-The world is such a cheerful place when viewed from upside-down
-It makes a rise of every fall, a smile of every frown
+Code looks something like this --
+
+	printk("Write reset word to PLD and read new stauts\n");
+	pld_base = ioremap_nocache( physical_pld_address );
+	*(pld_base + 0x8) = 0xA;
+	newStatus = *(pld_base + 0x4);
+	printk("Status word is %X \n",newStatus);
+
+If I just move this code to by bootrom read/writes happen exactly
+as I expect,  but when I move this code to kernel I see multiple
+ read and writes. What could be the reason? Note this routine is
+not called multiple times.
+
+/Subodh
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
