@@ -1,25 +1,26 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Tony Mantler <nicoya@apia.dhs.org>,
-	<linuxppc-dev@lists.linuxppc.org>
+To: Kaoru Fukui <k_fukui@highway.ne.jp>
+Cc: <linuxppc-dev@lists.linuxppc.org>, <paulus@samba.org>,
+	<cort@fsmlabs.com>
 Subject: Re: Fwd: CPU features
-Date: Sun, 1 Apr 2001 22:09:59 +0200
-Message-Id: <20010401200959.23374@smtp.wanadoo.fr>
-In-Reply-To: <v04003a00b6ed2078c77d@[24.70.162.12]>
-References: <v04003a00b6ed2078c77d@[24.70.162.12]>
+Date: Sun, 1 Apr 2001 22:11:10 +0200
+Message-Id: <20010401201110.30859@smtp.wanadoo.fr>
+In-Reply-To: <20010402041101.Postino-017970@smtp01.highway.ne.jp>
+References: <20010402041101.Postino-017970@smtp01.highway.ne.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+>Your fix  is very nice.
+>I could run fine smp-kernel-2.4.3 which your patch to penguinppc's 2.4-bk.
 >
->I got the linux-2.4-benh from rsync.penguinppc.org (I assume this is the
->up-to-date one) around noontime today, and got a crash after arch:exit on
->my 9600/200mp.
+>Last one is a problem of "smp_core99_kick_cpu" on your tree.
 
-I fixed that. Maybe the rsync is not fully up-to-date, I'll check that asap.
+I reverted that change until I can test it on the dual G4.
 
-Ben.
+ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
