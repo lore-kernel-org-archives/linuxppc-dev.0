@@ -1,37 +1,31 @@
-Message-Id: <20010409073941.Postino-030350@smtp01.highway.ne.jp>
-Date: Mon, 9 Apr 2001 07:39:41 +0900
-To: Guillaume Laures <guillaume.laures@noos.fr>
-Cc: linuxppc <linuxppc-dev@lists.linuxppc.org>
-From: Kaoru Fukui <k_fukui@highway.ne.jp>
-Subject: Re: XFree86-4.0.99.2
-In-Reply-To: <986767730.17213.0.camel@pmg4.gom.net>
-References: <15056.36750.453557.759357@ipa.ne.mediaone.net>
- <3AD0AABE.1020605@vacuumgenesis.com>
- <15056.55761.845494.317224@ipa.ne.mediaone.net>
- <986767730.17213.0.camel@pmg4.gom.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Date: Mon, 09 Apr 2001 01:21:15 +0100
+Subject: Re: DMASOUND->rev6  (2.4.3)(attn: Xine, MOL, PowerComputing,  
+	 ibook, Tumbler)
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+Cc: phandel@cise.ufl.edu, linuxppc-dev@lists.linuxppc.org,
+	gewrgiou@imbc.gr
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
+Message-Id: <20010409002140.F23732F0AB@apollo.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-From: Guillaume Laures <guillaume.laures@noos.fr>
+>> Hmmm. I'm getting a bit confused... the disk problem we think we (might)
+>> understand - the mouse one is different, maybe ?
+>
+> Why? Both the disk and the mouse interface cause interrupts to happen ...
 
-> I'm running 4.0.99.2-0a on the stock AGP Rage Pro really fine, exept for
+yes, but the fault we are trying to fix is supposed to be a PCI timing bug
+;-)
 
-> Now on N9...
+hence my earlier rambling about mouse moves .... -> updates cursor (via PCI
+to graphics card)...
 
->     Driver      "i128"
+or maybe there are two faults...
 
-I didn't set i128 to my package.
-You must set it yourself.
-
-You can use the src.rpm.
-Add i128 into rpm.spec.
-
-I don't have been tried the card still.
-
-Kaoru
-
+ciao,
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
