@@ -1,42 +1,91 @@
-Mime-Version: 1.0
-Message-Id: <v04220801b58c9d72e07f@[10.0.0.42]>
-In-Reply-To: <20000707210726.C7162@plato.local.lan>
-References: <20000705130158.A18557@drow.them.org>
- <200007060537.HAA01020@piglet.grunz.lu>
- <20000707210726.C7162@plato.local.lan>
-Date: Sat, 8 Jul 2000 01:58:52 -0700
-To: Ethan Benson <erbenson@alaska.net>, Michel Lanners <mlan@cpu.lu>
-From: "Timothy A. Seufert" <tas@mindspring.com>
-Subject: Re: GNU Parted, linuxppc support coming :-)
-Cc: linuxppc-dev@lists.linuxppc.org, clausen@gnu.org, parted@gnu.org
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Message-ID: <39671310.96C22BBD@noos.fr>
+Date: Sat, 08 Jul 2000 13:40:00 +0200
+From: Guillaume Laurès <guillaume.laures@noos.fr>
+Reply-To: guillaume.laures@noos.fr
+MIME-Version: 1.0
+To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+CC: mlan@cpu.lu
+Subject: Re: Trying to enable backside on a G4
+References: <200007080615.IAA00725@piglet.grunz.lu>
+Content-Type: text/plain; charset=iso-8859-1; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 9:07 PM -0800 7/7/00, Ethan Benson wrote:
->On Thu, Jul 06, 2000 at 07:37:34AM +0200, Michel Lanners wrote:
->>
->>  Hi all,
->>
->>  >> Excuse my ignorance... what FS's do people usually use with MacOS?
->>  >> HFS/HFS+?
->>
->>  Something  wanted to add to a previous mail in the thread:
->>
->>  Don't forget that there are lots of Macs that _absolutely_ need at least
->>  one HFS partition and an Aple partition map on one of there disks,
->>  because that's the only thing the ROM can boot some OS from.
->>
->>  AFAICT, all pre-NewWorld machines are in this case, except maybe some
->>  that can be tweaked to network boot...
+Michel Lanners a écrit :
+
 >
->oldworld macs this is true i think.
+> If you're working on 2.4.0-style kernels, here is a patch that
+> implements this functionality as a kernel command line option.
 
-Not completely true.  They do have to have a Mac partition table but
-I'm pretty sure you can get away without any HFS partitions if you
-use quik to boot.  Granted, that's a pain, but it can be done.
+Hum, did you forget to join the patch ???
 
-   Tim Seufert
+And what about the l2cr=xxxxxxxx option in the next kernels, will it be re-enabled or should we
+keep on user-space ?
+
+>
+>
+> If you are trying to produce a standalone program, your example code
+> will not work. It will only work inside the kernel, not from userspace.
+> You could try to build it as a module....
+
+OK, let's schedule this for later...
+
+>
+>
+> But then again, you can easily set the l2cr from userspace. I have this
+> in my /etc/rc.d/rc.sysinit:
+
+I followed your setup and put :
+
+        echo -n "Enabling level2 cache..."
+        echo 0 > /proc/sys/kernel/l2cr
+        echo '0x35300000' > /proc/sys/kernel/l2cr
+#disabled,no parity,1MB,+1.5 clock,pipelined burst SRAM,data only,global invalidate,ZZ
+enabled,copy-back,0.5ns hold
+        echo '0xb5100000' > /proc/sys/kernel/l2cr
+#enabled,no parity,1MB,+1.5 clock,pipelined burst SRAM,data only,ZZ enabled,copy-back,0.5ns hold
+
+        echo
+
+Since :
+ - GrabG3CacheSetting (slightly modified to accept any processor or it would complain that I
+don't have a G3...) from BenH told me that XLR8's extension sets my G4's L2CR to 0xb5100000
+ - I don't really understand what the the L2I bit stands for, is it necessary to set it on the
+second echo too as you do ?
+
+>
+> Be aware that there might be problems with just using the echo>
+> technique, as the cache needs to be invalidated before enabling it.
+> Normally that should happen automagically; however it didn't work for
+> me. That's why there are two 'echo's above.
+
+So may be it's viser to do as a general rule :
+
+echo 0 > /proc/sys/kernel/l2cr # (disable)
+echo '0x00200000' > /proc/sys/kernel/l2cr # (invalidate)
+echo '0x_what_your_card_supports' /proc/sys/kernel/l2cr # (set up and enable)
+
+>
+>
+> My final l2cr value is:
+>
+> [mlan@piglet ~]$ cat /proc/sys/kernel/l2cr
+> 0xa9000000:  enabled, no parity, 512KB, +2 clock, pipelined burst SRAM, copy-back, 0.5ns hold
+
+gom@pm8600:~$ cat /proc/sys/kernel/l2cr
+b5100000:  enabled,no parity,1MB,+1.5 clock,pipelined burst SRAM,data only,ZZ
+enabled,copy-back,0.5ns hold
+And kernel compilation is now at least twice as fast...
+
+>
+>
+> Have fun
+
+Oh, I did ;-)
+
+--
+Guillaume
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
