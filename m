@@ -1,26 +1,26 @@
-Message-Id: <9812280408.AA24292@marc.watson.ibm.com>
-To: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-Cc: "Jens Ch. Restemeier" <jenschrr@post.uni-bielefeld.de>,
-        linuxppc-dev@lists.linuxppc.org
+Message-Id: <9812280419.AA35728@marc.watson.ibm.com>
+To: jenschrr@post.uni-bielefeld.de
+Cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: egcs bug - who can I send it to ? 
-In-Reply-To: Message from Hollis R Blanchard <hollis+@andrew.cmu.edu>
-   of "Sun, 27 Dec 1998 12:59:32 EST." <Pine.LNX.3.96L.981227125743.1898A-100000@unix47.andrew.cmu.edu>
-Date: Sun, 27 Dec 1998 23:07:59 -0500
+In-Reply-To: Message from "Jens Ch. Restemeier" <jenschrr@post.uni-bielefeld.de>
+   of "Sun, 27 Dec 1998 21:29:46 +0100." <368698BA.3C54@post.uni-bielefeld.de>
+Date: Sun, 27 Dec 1998 23:19:47 -0500
 From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> Hollis R Blanchard writes:
+>>>>> "Jens Ch Restemeier" writes:
 
-Hollis> I think "internal compiler errors" are usually due to an optimization setting
-Hollis> that's to high. Look for a -O switch in your Makefile, and set it to 2 or
-Hollis> below (-O2, -O1, or -O0).
+Jens> Whoops, it's egcs-2.91.57. Does this help ?
 
-	Sorry, this is incorrect.  These errors may only OCCUR when
-optimizing, but it is not DUE to optimizing.  EGCS ignores any
-optimization levels higher than -O3.  EGCS is not pgcc, so please do not
-try to apply pgcc/Linux on Intel knowledge.
+	I believe that egcs-1.1.1 reports itself as egcs-2.91.60:
+
+		gcc version egcs-2.91.60 19981201 (egcs-1.1.1 release)
+
+There was a PowerPC address generation bug which was fixed just before
+egcs-1.1.1 was released and it might address your problem.  There is no
+way for me to advise about developer interim snapshots.
 
 David
 
