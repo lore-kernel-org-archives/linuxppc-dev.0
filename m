@@ -1,49 +1,54 @@
-To: "Graham Williams" <gwilliams@sbir.com>
-Cc: "'saurosalomoni'" <saurosalomoni@bol.com.br>,
-	"'linuxppc-embedded'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Lite5200 from RS232 to RS485 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 14 Jun 2004 07:47:33 PDT."
-             <005801c4521e$86e0ea40$26c8a8c0@GMAN>
-Date: Mon, 14 Jun 2004 17:37:23 +0200
-Message-Id: <20040614153728.13AD1C13D3@atlas.denx.de>
+Date: Mon, 14 Jun 2004 08:46:25 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Adrian Cox <adrian@humboldt.co.uk>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [PATCH][RFC] OCP support for MPC107 and relatives
+Message-ID: <20040614084625.A29057@home.com>
+References: <1087207803.7360.83.camel@newt>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1087207803.7360.83.camel@newt>; from adrian@humboldt.co.uk on Mon, Jun 14, 2004 at 11:10:04AM +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <005801c4521e$86e0ea40$26c8a8c0@GMAN> you wrote:
->
-> I used tcgetattr and tcsetattr to set the termios settting like baud.  I
-> also had to recompile the kernel using make menuconfig and in MPC8xx CPM
-> Options-> I selected Use SCCx UART then Use SSC1 UART then selected PC15 for
+On Mon, Jun 14, 2004 at 11:10:04AM +0100, Adrian Cox wrote:
+> The attached patch is a start at adding the internal peripherals of the
+> MPC107/MPC8240/MPC8245 to the OCP bus. I've used thus in the 2.6 port of
+> my MPC107 I2C driver, which follows shortly. I intend to use this for
+> the DMA controller later, once I decide what device ID to give it.
 
-Ummm... but the MPC8xx CPM options _definitely_ have  zero  influence
-on  the  behaviour of the MPC5200 PSC UART driver. This is completely
-different hardware.
+Excellent...I was hoping someone would take care of this for MPC10x-ish
+on-chip devices.
 
-> RTS on SCC1 UART.  Make sure the second UART device (ttyS1) is in the /dev
-> directory and this should enable the RTS to work.  You can only use RTS with
+> I'm a little uncertain about OCP device IDs. Should there be a separate
+> I2C device ID for each different I2C programming interface from the same
+> vendor? Motorola have already given us two separate implementations on
+> PowerPC.
 
-No, it will NOT work. I repeat: the existing driver DOES NOT  SUPPORT
-hardware  handshake, so no matter what you do (short of extending the
-driver) - it will not work.
+Well, I've been asked this question a few times in similar contexts,
+but I haven't had a solid answer to give yet.  Basically, the question
+boils down to, "What are the rules for assigning new OCP IDs?". Right
+now, there are no written rules.  However, we have a software "bus"
+abstraction with a massive amount (32-bit) of IDs available for our
+use per vendor.
 
-> the SCCs and NOT the SMCs.  Maybe the console ttyS0 is an SMC not an SCC at
-> least that is the way my eval board was setup. I hope this helps.
+My current suggestion is to use this space to assign unique IDs
+per device even though devices don't show up between architectures
+(normally).  I can actually see cases where two different OCP systems might
+share a device, but it would be rare if anybody ever implements such
+a thing at all. Please assign unique IDs per device and per vendor
+for now.  If it gets out of hand in the future, we can revisit the
+situation.
 
-Sorry, but it doesn't.
+> This is a little bit different from the PPC40x use of OCP, because it's
+> hard to calculate everything at compile time. This is particularly
+> caused by the pcore boards, which use the MPC107 but don't use the
+> interrupt controller.
 
-Best regards,
+Mark Greer and Kumar Gala each have platforms doing runtime mods, so the
+Marvell and 85xx ports are good examples to follow.
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Our missions are peaceful -- not for conquest.  When we do battle, it
-is only because we have no choice.
-	-- Kirk, "The Squire of Gothos", stardate 2124.5
+-Matt
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
