@@ -1,19 +1,18 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao02.cox.net (fed1rmmtao02.cox.net [68.230.241.37])
-	by ozlabs.org (Postfix) with ESMTP id 0002067A6D
+Return-Path: <clark@esteem.com>
+Received: from mail5.hsphere.cc (mail5.hsphere.cc [216.157.145.25])
+	by ozlabs.org (Postfix) with SMTP id F36DB67A6B
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  3 Mar 2005 03:38:51 +1100 (EST)
-Date: Wed, 2 Mar 2005 09:37:54 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Roger Larsson <roger.larsson@optronic.se>
-Message-ID: <20050302093754.A31614@cox.net>
-References: <518B77BB6246D54D9E88FC49AFB0389D1E6C2C@seskoptronicmsx.optronic.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <518B77BB6246D54D9E88FC49AFB0389D1E6C2C@seskoptronicmsx.optronic.local>;
-	from roger.larsson@optronic.se on Mon, Feb 28, 2005 at 02:22:46AM +0100
+	Thu,  3 Mar 2005 04:48:21 +1100 (EST)
+Message-ID: <4225FADC.8060604@esteem.com>
+Date: Wed, 02 Mar 2005 09:41:48 -0800
+From: Conn Clark <clark@esteem.com>
+MIME-Version: 1.0
+To: Andriy Korud <a.korud@vector.com.pl>
+References: <60E856FD577CC04BA3727AF4122D3F1611352E@3bit.vector.com.pl>
+In-Reply-To: <60E856FD577CC04BA3727AF4122D3F1611352E@3bit.vector.com.pl>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] ppc4xx_sgdma.c
+Subject: Re: Looking for prebuilt PPC board with miniPCI slot
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,18 +23,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Feb 28, 2005 at 02:22:46AM +0100, Roger Larsson wrote:
-> * Dynamic list length
->    1. short lists will not waste a whole page
->    2. no limit in list length
-> * End of Transfer termination
-> * Residue corrected
+Andriy Korud wrote:
+> Hi,
+> we are looking for a embedded board with at least one miniPCI slot and Ethernet port with performance at AMCC 405EP@333 level and Linux 2.6 support. 
+> Have anybody heard about something like this preferably in Europe?
 > 
-> Working with hardware (some tests remaining)
+> Thanks in advance,
+> 
+> --
+> 
+> Andriy Korud
+> software engineer,
+> 
+> http://www.vector.com.pl
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
 
-You might want to copy/forward to Wolfgang since this patch is
-against the Denx 2.4 tree in ELDK. Since it doesn't mention the
-tree (most patches here are for linuxppc-2.4 or 2.6), he might
-have missed this thread.
+There is the Inrinsyc Cerf Cube 405EP 
+http://www.intrinsyc.com/products/mob_ref_sys/cerfcube_405_ep/  . It has 
+a MiniPCI slot and uses the 405EP . I don't know where it stands as far 
+as 2.6 kernel support. I'm pretty sure nobody is actively supporting it 
+with the current 2.4 kernel at this time though. You might have to call 
+them to find out where software development stands. They might be able 
+to make you some with a 333MHz part.
 
--Matt
+-- Conn Clark
+
+*****************************************************************
+Give a man a match and you heat him for a moment. Set him on fire
+and you'll heat him for life.
+*****************************************************************
+
+Conn Clark
+Engineering Stooge				clark@esteem.com
+Electronic Systems Technology Inc.		www.esteem.com
+
+Stock Ticker Symbol				ELST
