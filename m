@@ -1,14 +1,29 @@
-Message-ID: <009701c26ae6$ab351400$0700a8c0@pc005>
-Reply-To: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
-From: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
-To: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
-Subject: HHL 2.1 preview kit
-Date: Thu, 3 Oct 2002 16:10:46 +0200
+Message-ID: <0B0A39652BB0D411BCCF00508B9512EC08AEB403@tx14exm05.ftw.mot.com>
+From: Yu Bo-BOYU1 <Bo.Yu@motorola.com>
+To: "'Ing.Gianfranco Morandi'" <gianfranco.morandi@euro-studio.it>,
+	LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: HHL 2.1 preview kit
+Date: Thu, 3 Oct 2002 09:20:40 -0500 
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+you need to change some definitions in makefile
+
+ARCH := ppc
+CROSS_COMPILE = ppc_82xx-
+
+Bo
+
+-----Original Message-----
+From: Ing.Gianfranco Morandi [mailto:gianfranco.morandi@euro-studio.it]
+Sent: Thursday, October 03, 2002 9:11 AM
+To: LinuxPPC
+Subject: HHL 2.1 preview kit
+
 
 
 Hi to all,
