@@ -1,34 +1,47 @@
-Message-ID: <20000129082907.13106.qmail@web1006.mail.yahoo.com>
-Date: Sat, 29 Jan 2000 00:29:07 -0800 (PST)
-From: Dan Bethe <dan_bethe@yahoo.com>
-Subject: Re: HFS+ format
-To: linuxppc-dev@lists.linuxppc.org
-Cc: LinuxPPC Developer <linuxppc-dev@lists.linuxppc.org>
+Message-ID: <3892DED9.AC481842@erols.com>
+Date: Sat, 29 Jan 2000 07:36:42 -0500
+From: Erik Winkler <ewinkler@erols.com>
+Reply-To: ewinkler@erols.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Denis BEURIVE <linux_ppc_user@yahoo.com>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: GCC cross compiler ix86/linux => ppc/linux
+References: <20000129040432.27295.qmail@web3506.mail.yahoo.com>
+Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+I just followed the instructions given here:
+http://members.home.net/mmporter/linux/cross/.  I used it for kernels
+only, but they all ran fine on my powermac.
 
-> I think part of the problem is the license.  I believe everything
-> incorporated in the Linux kernel, including modules, has to be under the
-> GPL license, as it covers linking and (debatably) dynamic linking.  So a
-> direct port wouldn't be possible, due to the incompatible licenses.  The
-> code would have to be rewritten from scratch.
+Erik
 
-	That would be the case if software ported from BSD or from an Apple product,
-was to be made part of the standard kernel distribution.  It is not necessary
-for all kernel modules to be GPL.  For example, see the OSS commercial drivers.
- And VMware's GPL kernel modules that support their proprietary commercial
-application.  :)
-	So I'd say that it's cool to port it if that's very easy, then let people
-include it on their own or as a LinuxPPC RPM, and then see about including it
-straight into the kernel.
-	IMHO!
+Denis BEURIVE wrote:
 
-=====
-"Don't expect your own messiah; this neverworld which you desire is
-only in your mind." -- http://www.dreamtheater.net/songb4.htm#IV5
+> Hi every body,
+>
+> I am trying to build GCC as a cross compiler from a
+> "ix86/linux" host to a "ppc/linux" target. And I want
+> to use the libraries from the LinuxPPC distribution.
+>
+> To specify the target for GCC I am using the flag:
+> --target=powerpc-unknown-linux-gnu
+>
+> -->> Is it the rigth value for the "target" flag ? (I
+> can't find any other value for this flag that contains
+> "powerpc" and "linux").
+>
+> -->> Did anybody have already build the same cross
+> compiler ?
+>
+> Thank you very much; any help will be greatly
+> appreciated.
+>
+> Best regards,
+>
+> Denis BEURIVE
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
