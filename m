@@ -1,37 +1,33 @@
-Message-ID: <004001c14bf3$7c326c60$b480a984@int.serialsystem.com.sg>
-From: "Nguyen Trung Thanh" <jaringuyentrungthanh@yahoo.com>
-To: "'Linuxppc-Embedded '" <linuxppc-embedded@lists.linuxppc.org>
-References: <619D608DD3F0D311882C009027732E1A8B1779@ntserver.act.domain>
-Subject: USB Isochronous for MPC823
-Date: Wed, 3 Oct 2001 18:09:08 +0800
+Message-ID: <3BBB214A.486AFEE9@digigram.com>
+Date: Wed, 03 Oct 2001 16:31:38 +0200
+From: Claire Troussier <troussier@digigram.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Problem with Sanpoint and IDE access
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+Hi,
 
-I've tried to use m8xxhci.c from Hardhat2.0,
-but I saw that it still has a bunch of errors.
+I am using Montavista 2.4.2_hhl20 with a Sanpoint (8240) board and I am
+trying to add a hard disk on the IDE interface. I can access the hard
+disk correctly. If the hard disk has previously been formated and
+partitionned on another Linux system I can mount all the existing
+partitions and access all the files on this hard disk. If I try to write
+on it the partition table is totally destroyed and I cannot acces
+anymore to the hard disk. It seems that read operations are correctly
+performed but not write operations.
 
-I did make many changes, and it could run with control msg, and bulk msg.
-However, it's not fully reliable, of course because I'm still testing it.
+In the same way if I try to add a new partition, when I save it the
+existing partion table is totally destroyed
 
-Now, I am stuck with Isochronous msg.
-Have you done it before? Or do you have any information that I need to pay
-attention to?
+Any idea ?
 
-I read in the spec of MPC823, it just said that I'd take care of TM bit in
-USEP, (transfer mode for endpoint 0).
-Then I modifed that code, to change this TM bit according to BULK, ISO or
-CONTROL msg.
+Thanks for your help
 
-Pls help me to make the usb audio driver run on MPC823.
-I'll try to make it reliable.
-Thanks,
-Jari
+Claire
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
