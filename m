@@ -1,34 +1,48 @@
-From: Paul Mackerras <paulus@samba.org>
+Message-ID: <20010820025147.7057.qmail@kunk.jriver.com>
+Subject: Re: Occasional crash reports
+In-Reply-To: <20010818111705.1E2B2DB9D0@atlas.valhalla.net> "from Iain Sandoe
+ at Aug 18, 2001 12:16:58 pm"
+To: Iain Sandoe <iain@sandoe.co.uk>
+Date: Sun, 19 Aug 2001 21:51:47 -0500 (CDT)
+From: Robert E Brose II <bob@kunk.jriver.com>
+Cc: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15232.21084.255152.281121@cargo.ozlabs.ibm.com>
-Date: Mon, 20 Aug 2001 09:57:16 +1000 (EST)
-To: mlan@cpu.lu
-Cc: hozer@drgw.net, linuxppc-dev@lists.linuxppc.org
-Subject: Re: About TAU (and ICTC)
-In-Reply-To: <200108191559.RAA01163@piglet.grunz.lu>
-References: <200108191003.MAA00874@piglet.grunz.lu>
-	<200108191559.RAA01163@piglet.grunz.lu>
-Reply-To: paulus@samba.org
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michel Lanners writes:
+User Iain Sandoe says:
+> >
+> > Mace is still unreliable in 2.4. It's always been just plain unreliable
+> > for me on 7200, 7500 and 7600's.
+>
+>  - are these clones or Apple originals?
+> we found other dbdma problems on clone 7x00 machines for PowerComputing (in
+> the sound side) ...
 
-> My preliminary test indicate that settig ICTC to 33 (0x21) has no
-> noticeable effect on an idle machine. While running an endless kernel
-> compile loop, however, it makes the CPU temperature drop from 19C to
-> 15-17C, and increases battery life by about 20 min.
+All are Apple originals.
 
-How long did each kernel compile take, with ICTC=0 and ICTC=0x21, and
-what was the average current consumption in each case?
+> might be worth checking that there are no cases of "DEAD" status coming up
+> on the Mace driver...
 
-I would expect that the total battery charge used could well be higher
-with ICTC=0x21 than with ICTC=0, particularly if you had the LCD
-backlight on during the compile. :)
+I am setting up a test machine as I write this. I'm setting up YDL 2.0
+on a 7200 using the internal mace. I'll get it to fail (not hard) and
+put some printk's in the "DEAD" tests in mace.c
 
-Regards,
-Paul.
+> as I say, booting with the BootX *init* (rather than the application) bmac,
+> at least, seems reliable on g3/beige (don't use Mace much).
+
+Will check that as well and let you know.
+
+> ciao,
+> Iain.
+>
+
+Bob
+--
+Robert E. Brose II    N0QBJ
+http://www.jriver.com/~bob/
+bob@kunk.jriver.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
