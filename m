@@ -1,46 +1,47 @@
-Message-ID: <3B017286.CC313C9C@mandrakesoft.com>
-Date: Tue, 15 May 2001 14:16:38 -0400
-From: Jeff Garzik <jgarzik@mandrakesoft.com>
-MIME-Version: 1.0
-To: Gabriel Paubert <paubert@iram.es>
-Cc: Amelia De Vivo <amelia.devivo@roma.quadrics.com>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: Addressing PCI memory
-References: <Pine.HPX.4.10.10105151859290.1451-100000@gra-ux1.iram.es>
+Date: Wed, 16 May 2001 01:03:28 -0300
+To: linuxppc-dev@lists.linuxppc.org
+Subject: kernel lockup
+Message-ID: <20010516010328.D19015@llama.nslug.ns.ca>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+From: Peter Cordes <peter@llama.nslug.ns.ca>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Gabriel Paubert wrote:
->
-> On Tue, 15 May 2001, Amelia De Vivo wrote:
->
-> >
-> > Hi all, I'm trying to write a driver for a 64 bit PCI device. Something like
-> > this works well under i386 Linux, but it doesn't work at all for Linux
-> > 2.2.15 by Yellow Dog:
-> >
-> >     struct pci_dev *dev = NULL;
-> >     dev = pci_find_device(vendor, device, dev);
-> >     pci_read_config_dword(dev, PCI_BASE_ADDRESS_0, &cards[0].addr0);
->
-> First, use the resource in the dev structure, they do not necessarily
-> correspond to the value read from the base, even on Intel BTW.
->
->         cards[0].addr0 = dev->resources[0].start
->
-> don't even need to mask the address bits...
+ I'm running 2.4.4, rsynced from the benh tree.  I wanted to adjust my
+keyboard key repeat stuff, so I ran (on the console)
 
-correct.
+bigfoot:~# kbdrate -h
+kbdrate: invalid option -- h
+Machine check in kernel mode.
+Caused by (from SRR1=c9030): Unknown values in msr
 
-Though note it is highly encouraged to use
-pci_resource_{start,end,len,flags} helpers.  That makes it transparent
-to port code to earlier kernels, and IMHO makes the code easier to read.
+ What do I do to debug this?
+
+ The machine is totally locked, not even the SysRQ combination does
+anything.  (control+command+power still resets though, since it is handled
+in hardware on oldworlds.)
+
+ More details: I'm running a quad PPC604 Mac clone from Daystar (the Genesis
+MP).  The top line in /usr/src/linux-2.4-benh/ChangeSet is:
+cort@ftsoj.fsmlabs.com|drivers/sound/dmasound/Config.in|20010106072831|13776|67da7753905f489
+benh@zion.wanadoo.fr|drivers/sound/dmasound/Config.in|20010512181358|01477,
+in case that helps :)
+
+ I wasn't running X at the time of the crash.  I was using a framebuffer
+console (ATI mach64 driver).
+
+ This crash is repeatable.  I just did it again (after going to single user
+mode and remounting my drives read-only :).  However, this time it prints an
+infinity of newlines after the crash message.
 
 --
-Jeff Garzik      | Game called on account of naked chick
-Building 1024    |
-MandrakeSoft     |
+#define X(x,y) x##y
+Peter Cordes ;  e-mail: X(peter@llama.nslug. , ns.ca)
+
+"The gods confound the man who first found out how to distinguish the hours!
+ Confound him, too, who in this place set up a sundial, to cut and hack
+ my day so wretchedly into small pieces!" -- Plautus, 200 BCE
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
