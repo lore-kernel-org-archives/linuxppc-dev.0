@@ -1,33 +1,39 @@
-In-Reply-To: <20040120223457T.ekato@ees.hokudai.ac.jp>
-References: <4824AFEC-4B0A-11D8-A780-00039394E428@ees.hokudai.ac.jp> <Pine.GSO.4.58.0401201102450.18625@waterleaf.sonytel.be> <20040120223457T.ekato@ees.hokudai.ac.jp>
+In-Reply-To: <1074549957.10585.57.camel@gaston>
+References: <20040114161107.GM2658@adapter.n0skillz.org> <20040114181350.B40506@forte.austin.ibm.com> <70D6BF86-473D-11D8-A8C3-000A95A4DC02@kernel.crashing.org> <20040115115023.GA12001@iram.es> <C404D01A-475A-11D8-A8C3-000A95A4DC02@kernel.crashing.org> <20040116195406.GA25566@iram.es> <64789114-4A89-11D8-9C4D-000A95A4DC02@kernel.crashing.org> <1074549957.10585.57.camel@gaston>
 Mime-Version: 1.0 (Apple Message framework v609)
+Message-Id: <A3C1C69E-4B72-11D8-BDF1-000A95A4DC02@kernel.crashing.org>
+Cc: Gabriel Paubert <paubert@iram.es>, linas@austin.ibm.com,
+	valvoline <valvoline@vrlteam.org>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Broadcom BCM94306
+Date: Tue, 20 Jan 2004 19:01:15 +0100
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <10F0AFAD-4B61-11D8-8D03-000A95A0560C@us.ibm.com>
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-From: Hollis Blanchard <hollisb@us.ibm.com>
-Subject: Re: local_irq_enable() problem...
-Date: Tue, 20 Jan 2004 09:55:27 -0600
-To: Etsushi Kato <ekato@ees.hokudai.ac.jp>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Jan 20, 2004, at 7:34 AM, Etsushi Kato wrote:
+On 19-jan-04, at 23:05, Benjamin Herrenschmidt wrote:
+
 >
-> In the early boot sequence, 2.6 kernel freezes just after showing
-> 'arch_exit' on the screen, and 'Console: colour dummy device 80x25' on
-> the serial console.  Even if I put printk() right after
-> local_irq_enable() in init/main.c, this debug print won't show up.  So
-> it seems something causes kernel hang while enabling MSR_EE bit, but I
-> can't figure out how to detect...  Does anyone have a clue?
+>> The BAT thing at least is documented (and has been documented
+>> _for ever_ -- see the PEM, the 970 is a 64-bit chip.  Get the
+>> rev 2.0 PEM from the 970 doc page).
+>>
+>> The large page thing is cpu specific afaik (from memory).
+>
+> POWER3 had BATs
 
-Perhaps you have an irq that won't shut up? Or maybe a problem
-returning from an exception handler (I'm assuming you have your own
-head.S).
+Sure, but BATs are not *required* by the 64-bit architecture.
 
---
-Hollis Blanchard
-IBM Linux Technology Center
+
+Segher
+
+
+p.s.  Well actually, I went to check -- and the PEM 2.0 _does_
+define BATs for 64-bit.  Let's put this under "POWER4 and
+derivatives specific" as well then, until the docs get fixed :-)
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
