@@ -1,14 +1,17 @@
-Return-Path: <Idit.Ben-Moshe@motorola.com>
-Message-ID: <0F48024310E5D6118D200002B3A440DB0FA5FAB0@zil01exm08.mcil.comm.mot.com>
-From: Nagar-Halevi Idit-BIB019 <Idit.Ben-Moshe@motorola.com>
-To: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>,
-	"'linuxppc-dev@ozlabs.org'" <linuxppc-dev@ozlabs.org>
-Date: Sun, 6 Feb 2005 14:32:11 +0200 
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C50C47.E16D144D"
-Cc: Nagar-Halevi Idit-BIB019 <Idit.Ben-Moshe@motorola.com>
-Subject: Support  Marvell's Fast Ethernet Switch, 88E6060, at Linux2.4 
+Return-Path: <olh@suse.de>
+Received: from Cantor.suse.de (news.suse.de [195.135.220.2])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "mail.suse.de",
+	Issuer "SuSE Linux AG internal IMAP-Server CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 211CD67A83
+	for <linuxppc-dev@ozlabs.org>; Sun,  6 Feb 2005 23:40:22 +1100 (EST)
+Date: Sun, 6 Feb 2005 13:40:14 +0100
+From: Olaf Hering <olh@suse.de>
+To: Tom Rini <trini@kernel.crashing.org>, linuxppc-dev@ozlabs.org
+Message-ID: <20050206124014.GA5880@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Subject: make -j12 all fails in uImage target
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,84 +21,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This message is in MIME format. Since your mail reader does not understand
-this format, some or all of this message may not be legible.
 
-------_=_NextPart_001_01C50C47.E16D144D
-Content-Type: text/plain;
-	charset="windows-1255"
+this is what I got with 2.6.11rc3:
 
-All,
- 
-I need to use the fast Ethernet switch of Marvell - 88E6060 - on a PowerPC processor with Linux 2.4 OS.
-I would like to know whether linux2.4 support the fast Ethernet switch of Marvell, 88E6060 ?
-Which driver is needed and how can I get ?
- 
-The link to Marvel site, where an information about the 88E6060 can be found, is:
-http://www.marvell.com <http://www.marvell.com> 
- 
- 
-Thanks & Regards,
-Idit
- 
+make ARCH=ppc O=../O-2.6.11-rc3-b50-SMP -j12 all
+...
+  LD      vmlinux
+  SYSMAP  System.map
+  SYSMAP  .tmp_System.map
+  OBJCOPY arch/ppc/boot/images/vmlinux.bin
+  HOSTCC  arch/ppc/boot/utils/addnote
+  HOSTCC  arch/ppc/boot/utils/mknote
+  HOSTCC  arch/ppc/boot/utils/mkprep
+  LD      arch/ppc/boot/lib/built-in.o
+  HOSTCC  arch/ppc/boot/utils/hack-coff
+  HOSTCC  arch/ppc/boot/utils/mkbugboot
+  OBJCOPY arch/ppc/boot/images/vmlinux.bin
+  GZIP    arch/ppc/boot/images/vmlinux.gz
+/bin/sh: line 1: arch/ppc/boot/images/vmlinux.bin: No such file or directory
+make[2]: *** [arch/ppc/boot/images/vmlinux.gz] Error 1
+make[1]: *** [uImage] Error 2
+make[1]: *** Waiting for unfinished jobs....
 
-------_=_NextPart_001_01C50C47.E16D144D
-Content-Type: text/html;
-	charset="windows-1255"
-Content-Transfer-Encoding: base64
-
-PCFET0NUWVBFIEhUTUwgUFVCTElDICItLy9XM0MvL0RURCBIVE1MIDQuMCBUcmFuc2l0aW9uYWwv
-L0VOIj4NCjxIVE1MPjxIRUFEPg0KPE1FVEEgSFRUUC1FUVVJVj0iQ29udGVudC1UeXBlIiBDT05U
-RU5UPSJ0ZXh0L2h0bWw7IGNoYXJzZXQ9d2luZG93cy0xMjU1Ij4NCg0KDQo8TUVUQSBjb250ZW50
-PSJNU0hUTUwgNi4wMC4yODAwLjE0NzkiIG5hbWU9R0VORVJBVE9SPjwvSEVBRD4NCjxCT0RZPg0K
-PERJVj48Rk9OVCBmYWNlPUFyaWFsIGNvbG9yPSMwMDAwODAgc2l6ZT0yPjxTUEFOIA0KY2xhc3M9
-MDE3MTQwNzEyLTA2MDIyMDA1PkFsbCw8L1NQQU4+PC9GT05UPjwvRElWPg0KPERJVj48Rk9OVCBm
-YWNlPUFyaWFsIGNvbG9yPSMwMDAwODAgc2l6ZT0yPjxTUEFOIA0KY2xhc3M9MDE3MTQwNzEyLTA2
-MDIyMDA1PjwvU1BBTj48L0ZPTlQ+Jm5ic3A7PC9ESVY+DQo8RElWPjxGT05UIGZhY2U9QXJpYWwg
-Y29sb3I9IzAwMDA4MCBzaXplPTI+PFNQQU4gY2xhc3M9MDE3MTQwNzEyLTA2MDIyMDA1PkkgbmVl
-ZCANCnRvIHVzZSB0aGUgZmFzdCBFdGhlcm5ldCBzd2l0Y2ggb2YgTWFydmVsbCAtIDg4RTYwNjAg
-LSBvbiBhIFBvd2VyUEMgcHJvY2Vzc29yIA0Kd2l0aCBMaW51eCAyLjQgT1MuPC9TUEFOPjwvRk9O
-VD48L0RJVj4NCjxESVY+PEZPTlQgY29sb3I9IzAwMDA4MD48Rk9OVCBmYWNlPUFyaWFsIHNpemU9
-Mj48U1BBTiANCmNsYXNzPTAxNzE0MDcxMi0wNjAyMjAwNT5JIHdvdWxkIGxpa2UgdG8ga25vdyB3
-aGV0aGVyIGxpbnV4Mi40IHN1cHBvcnQgdGhlIGZhc3QgDQpFdGhlcm5ldCBzd2l0Y2ggb2YgTWFy
-dmVsbCw8L1NQQU4+PC9GT05UPjxGT05UIGZhY2U9QXJpYWw+PEZPTlQgc2l6ZT0yPiANCjg4RTYw
-NjA8U1BBTiBjbGFzcz0wMTcxNDA3MTItMDYwMjIwMDU+IDwvU1BBTj48U1BBTiANCmNsYXNzPTAx
-NzE0MDcxMi0wNjAyMjAwNT4/PC9TUEFOPjwvRk9OVD48L0ZPTlQ+PC9GT05UPjwvRElWPg0KPERJ
-Vj48Rk9OVD48Rk9OVCBzaXplPTI+PFNQQU4gDQpjbGFzcz0wMTcxNDA3MTItMDYwMjIwMDU+PC9T
-UEFOPjwvRk9OVD48L0ZPTlQ+PFNQQU4gDQpjbGFzcz0xNDk1MDI2MTUtMDMwMjIwMDU+PEZPTlQg
-ZmFjZT1BcmlhbD48Rk9OVCBjb2xvcj0jMDAwMDgwPjxGT05UIHNpemU9Mj5XaGljaCANCmRyaXZl
-cjxTUEFOIGNsYXNzPTAxNzE0MDcxMi0wNjAyMjAwNT4mbmJzcDtpczwvU1BBTj4gbmVlZGVkIGFu
-ZCBob3cgDQpjYW4mbmJzcDs8U1BBTiBjbGFzcz0wMTcxNDA3MTItMDYwMjIwMDU+SSA8L1NQQU4+
-Z2V0Jm5ic3A7PFNQQU4gDQpjbGFzcz0wMTcxNDA3MTItMDYwMjIwMDU+PzwvU1BBTj48L0ZPTlQ+
-PC9GT05UPjwvRk9OVD48L1NQQU4+PC9ESVY+DQo8RElWPjxTUEFOIGNsYXNzPTE0OTUwMjYxNS0w
-MzAyMjAwNT48Rk9OVCBmYWNlPUFyaWFsPjxGT05UIGNvbG9yPSMwMDAwODA+PEZPTlQgDQpzaXpl
-PTI+PFNQQU4gDQpjbGFzcz0wMTcxNDA3MTItMDYwMjIwMDU+PC9TUEFOPjwvRk9OVD48L0ZPTlQ+
-PC9GT05UPjwvU1BBTj4mbmJzcDs8L0RJVj4NCjxESVY+PFNQQU4gY2xhc3M9MTQ5NTAyNjE1LTAz
-MDIyMDA1PjxGT05UIGZhY2U9QXJpYWw+PEZPTlQgY29sb3I9IzAwMDA4MD48Rk9OVCANCnNpemU9
-Mj48U1BBTiBjbGFzcz0wMTcxNDA3MTItMDYwMjIwMDU+VGhlIGxpbmsgdG8gTWFydmVsIHNpdGUs
-IHdoZXJlIGFuIA0KaW5mb3JtYXRpb24gYWJvdXQgdGhlIDg4RTYwNjAgY2FuIGJlIA0KZm91bmQs
-Jm5ic3A7aXM6PC9TUEFOPjwvRk9OVD48L0ZPTlQ+PC9GT05UPjwvU1BBTj48L0RJVj4NCjxESVY+
-PFNQQU4gY2xhc3M9MTQ5NTAyNjE1LTAzMDIyMDA1PjxGT05UIGZhY2U9QXJpYWw+PEZPTlQgY29s
-b3I9IzAwMDA4MD48Rk9OVCANCnNpemU9Mj48U1BBTiBjbGFzcz0wMTcxNDA3MTItMDYwMjIwMDU+
-PC9TUEFOPjwvRk9OVD48L0ZPTlQ+PC9GT05UPjwvU1BBTj48U1BBTiANCmNsYXNzPTE0OTUwMjYx
-NS0wMzAyMjAwNT48Rk9OVCBmYWNlPUFyaWFsPjxGT05UIGNvbG9yPSMwMDAwODA+PEZPTlQgc2l6
-ZT0yPjxTUEFOIA0KY2xhc3M9MDE3MTQwNzEyLTA2MDIyMDA1PjxGT05UIGNvbG9yPSMwMDAwODAg
-c2l6ZT0yPjxBIA0KaHJlZj0iaHR0cDovL3d3dy5tYXJ2ZWxsLmNvbSI+aHR0cDovL3d3dy5tYXJ2
-ZWxsLmNvbTwvQT48L0ZPTlQ+PC9TUEFOPjwvRk9OVD48L0ZPTlQ+PC9GT05UPjwvU1BBTj48L0RJ
-Vj4NCjxESVY+PFNQQU4gY2xhc3M9MTQ5NTAyNjE1LTAzMDIyMDA1PjxGT05UIGZhY2U9QXJpYWw+
-PEZPTlQgY29sb3I9IzAwMDA4MD48Rk9OVCANCnNpemU9Mj48U1BBTiANCmNsYXNzPTAxNzE0MDcx
-Mi0wNjAyMjAwNT48L1NQQU4+PC9GT05UPjwvRk9OVD48L0ZPTlQ+PC9TUEFOPiZuYnNwOzwvRElW
-Pg0KPERJVj48U1BBTiBjbGFzcz0xNDk1MDI2MTUtMDMwMjIwMDU+PEZPTlQgZmFjZT1BcmlhbD48
-Rk9OVCBjb2xvcj0jMDAwMDgwPjxGT05UIA0Kc2l6ZT0yPjxTUEFOIA0KY2xhc3M9MDE3MTQwNzEy
-LTA2MDIyMDA1PjwvU1BBTj48L0ZPTlQ+PC9GT05UPjwvRk9OVD48L1NQQU4+Jm5ic3A7PC9ESVY+
-DQo8RElWPjxTUEFOIGNsYXNzPTE0OTUwMjYxNS0wMzAyMjAwNT48Rk9OVCBmYWNlPUFyaWFsPjxG
-T05UIGNvbG9yPSMwMDAwODA+PEZPTlQgDQpzaXplPTI+PFNQQU4gY2xhc3M9MDE3MTQwNzEyLTA2
-MDIyMDA1PlRoYW5rcyAmYW1wOyANClJlZ2FyZHMsPC9TUEFOPjwvRk9OVD48L0ZPTlQ+PC9GT05U
-PjwvU1BBTj48L0RJVj4NCjxESVY+PFNQQU4gY2xhc3M9MTQ5NTAyNjE1LTAzMDIyMDA1PjxGT05U
-IGZhY2U9QXJpYWw+PEZPTlQgY29sb3I9IzAwMDA4MD48Rk9OVCANCnNpemU9Mj48U1BBTiANCmNs
-YXNzPTAxNzE0MDcxMi0wNjAyMjAwNT48L1NQQU4+PC9GT05UPjwvRk9OVD48L0ZPTlQ+PC9TUEFO
-PjxTVFJPTkc+PEVNPjxGT05UIA0KZmFjZT1TY3JpcHQgY29sb3I9IzAwMDA4MCBzaXplPTY+SWRp
-dDwvRk9OVD48L0VNPjwvU1RST05HPjwvRElWPg0KPERJVj48Rk9OVCBmYWNlPUFyaWFsIGNvbG9y
-PSMwMDAwODAgc2l6ZT0yPjwvRk9OVD4mbmJzcDs8L0RJVj48L0JPRFk+PC9IVE1MPg0K
-
-------_=_NextPart_001_01C50C47.E16D144D--
+also, one time that zImage.chrp was only 570K instead of the expected
+1.4M, so netboot failed. But I got no build error.
+Any idea what dependency is missing?
