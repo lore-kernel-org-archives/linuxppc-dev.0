@@ -1,35 +1,63 @@
-Message-ID: <325-38173@sneakemail.com>
-Date: Thu, 05 Feb 2004 19:56:50 -0800
-From: "Stephen Williams" <612dlag102@sneakemail.com>
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Which kernel tree
-References: <10045-28297@sneakemail.com> <20040206031101.GB6578@gate.ebshome.net>
-In-Reply-To: <20040206031101.GB6578@gate.ebshome.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <20040205091232.A15092@home.com>
+References: <4021F487.660E680B@alcatel.it> <40220DC0.2050105@Jaluna.COM> <20040205091232.A15092@home.com>
+Mime-Version: 1.0 (Apple Message framework v609)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <D4CB3E11-5869-11D8-BF45-000393DBC2E8@motorola.com>
+Cc: <Michele.Pallaro@alcatel.it>,
+	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>,
+	eric lescouet <eric.lescouet@Jaluna.COM>
+From: Kumar Gala <kumar.gala@motorola.com>
+Subject: Re: Linux kernel and u-boot for mpc8540
+Date: Fri, 6 Feb 2004 00:00:57 -0600
+To: Matt Porter <mporter@kernel.crashing.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Eugene Surovegin ebs-at-ebshome.net |PPC Linux Embedded| wrote:
+Matt's fix is now part of the linuxppc-2.4 tree.  Thanks matt.
 
-> Try linuxppc-2.4 BK tree (ppc.bkbits.net) it should work just fine for
-> 405GPr.
+- kumar
+
+On Feb 5, 2004, at 10:12 AM, Matt Porter wrote:
+
 >
-> If you have problems with 405 and this tree, please post them to this
-> list :).
+> On Thu, Feb 05, 2004 at 10:32:48AM +0100, eric lescouet wrote:
+>>
+>> Michele,
+>>
+>> Support for mpc8540 is already in linuxppc-2.4 tree.
+>> see ppc.bkbits.net
 >
-> Eugene.
-
-OK, so that means I'm going to have to get accustomed to
-bitkeeper. That'll be slightly interesting. (Grr..)
-
-
---
-Steve Williams                "The woods are lovely, dark and deep.
-steve at icarus.com           But I have promises to keep,
-http://www.icarus.com         and lines to code before I sleep,
-http://www.picturel.com       And lines to code before I sleep."
+> Actually, the linuxppc-2.4 support is incomplete, there's no TSEC/FEC
+> driver or other on-chip peripheral drivers in that tree to make it
+> really useful. You could just use a PCI network card to nfsroot a
+> filesystem and get started, though.
+>
+> http://www.metrowerks.com/MW/Develop/Embedded/Linux/BSP.htm has
+> an 8560ADS BSP for download...it probably has some drivers for
+> on-chip peripherals included.
+>
+> BTW, you'll need the following patch to linuxppc-2.4 to fix outbound
+> PCI mem cycles:
+>
+> ===== arch/ppc/platforms/mpc85xx_ads_common.c 1.3 vs edited =====
+> --- 1.3/arch/ppc/platforms/mpc85xx_ads_common.c Thu Jan 22 12:58:25
+> 2004
+> +++ edited/arch/ppc/platforms/mpc85xx_ads_common.c      Thu Feb  5
+> 09:10:34 2004@@ -316,8 +316,8 @@
+>         pci->piwar2 = 0;
+>         pci->piwar3 = 0;
+>
+> -       /* Setup 128M outbound mem window @ 0xe0000000 */
+> -       pci->potar1 = 0x00000000;
+> +       /* Setup 128M Phys:PCI 1:1 outbound mem window @ 0xe0000000 */
+> +       pci->potar1 = (MPC85XX_ADS_PCI_LOWER_MEM >> 12) & 0x000fffff;
+>         pci->potear1 = 0x00000000;
+>         pci->powbar1 = (MPC85XX_ADS_PCI_LOWER_MEM >> 12) & 0x000fffff;
+>         pci->powar1 = 0x8004401a;       /* Enable, Mem R/W, 128M */
+>
+> -Matt
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
