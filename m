@@ -1,50 +1,67 @@
-Message-ID: <408788E5.4020602@246tNt.com>
-Date: Thu, 22 Apr 2004 10:57:09 +0200
-From: Sylvain Munaut <tnt@246tNt.com>
-MIME-Version: 1.0
-To: Stefan Nickl <Stefan.Nickl@kontron.com>
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Question about process/kernel address space
-References: <1082616231.4760.14.camel@lucy.pep-kaufbeuren.de>
-In-Reply-To: <1082616231.4760.14.camel@lucy.pep-kaufbeuren.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: "=?utf-8?B?amVmZnk=?=" <leo_guo@jisung.cn>
+Cc: "=?utf-8?B?bGludXhwcGMtZW1iZWRkZWRAbGlzdHMubGludXhwcGM=?=" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: =?utf-8?B?UmU6IFJlOiB3aGljaCBpcyB0aGUgYmVzdCByb290IEZpbGUgc3lzdGVtIGluIGVtYmVkIGxpbnV4IHN5c3RlbT8=?= 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 22 Apr 2004 16:44:34 +0800."
+             <20040422085859.C6134424CD@denx.de>
+Date: Thu, 22 Apr 2004 11:39:50 +0200
+Message-Id: <20040422093955.1D74BC109F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Stefan Nickl wrote:
+In message <20040422085859.C6134424CD@denx.de> you wrote:
+>
+> Because our board will be turned on and off frequently, so I think "high stability" is the important, and a R/W file system is prefer selection too!
+> Another  performances such as speed of booting is not the focus!
 
->Hi,
->
->in some elderly code for a VME-supporting 824x-board from
->our company I found the following line in ppc_md.setup_io_mappings():
->
->io_block_mapping(0x80000000, 0x80000000, 0x10000000, _PAGE_IO);
->
->This is obviously meant to map a window of VME IO memory into
->virtual address space. What puzzles me is that the mapping is
->located below PAGE_OFFSET (0xc0000000), which, from my general
->understanding, is bad :(
->
->
->But since apparently nobody had a problem with this for years,
->(and ranges above PAGE_OFFSET are tight) I'd like to know what
->the actual implications are.
->Ok, should a process ever access this range, it would fail
->(since the BATs go first and allow only supervisor access(?)),
->but a user process ever using such a high address seems highly unlikely.
->
->
->
-On my PPC kernel, TASK_SIZE is 0x80000000, so that should be OK. ( linux
-2.6.5 )
-I think the area between TASK_SIZE and PAGE_OFFSET can also be used to
-map stuff as long as you take care not to map two things at the same
-place. IIRC, in ARM, the modules are loaded in that space, but I don't
-know for PPC.
+How about speed when accessing (especially reading) files? What about
+memory footprint?
 
+> Now our system can runs ok, I use EXT2 FS as the root file system build in a 32M DOC2000, but it seems it's unstable!
 
-Sylvain Munaut
+You asked adbout a filesystem for flash before - this is NOT the same
+as DOC or  even  CompacfFlash,  as  these  devices  use  an  internal
+controller  which  may  perfom certain operations like wear levelling
+etc. So what do you want  to  know  -  filesystems  for  plain  flash
+memory, or for DOC?
 
+The ext2 filesystem is extremley well tested and can be considered to
+be very stable. Howebver, it was not designed to  be  used  like  you
+attempt  to  do - i. e. just powering off the device. You must always
+unmount an ext2 filesystem  (or  at  least  remount  it  read-only_)_
+before shutting doen the system.
+
+> In any time when the linux is starting, you turn off the power, maybe the root file system will crash!
+
+Yes, this is the logical consequence of your mis-use.
+
+> I have serval questions want to be confirmed:
+> 1. Whether the DOC2000 is unstable?
+
+NO. It is working perfectly fine in many applications.
+
+> 2. Can I build a EXT2 FS in flash?
+
+Yes, you can. Both in flash memory and on a DOC device. BUt you  have
+to  be aware of the restrictions (i. e. ext2 requires to be unmounted
+before shutdown, and it does not implement any wear  levelling  which
+may be useful on writable flash filesystems).
+
+> 3. How to avoid the file system crash in embed linux system?
+
+Don't do things which  are  outside  of  the  specifications  of  the
+software.
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"I like your game but we have to change the rules."
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
