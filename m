@@ -1,51 +1,66 @@
-Date: Tue, 20 Apr 1999 17:49:56 -0500 (CDT)
-From: "David A. Gatwood" <marsmail@globegate.utm.edu>
-To: "J. Robokos" <roboj@ibm.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Kernel 2.2.6-ac1 problem
-In-Reply-To: <371CC261.AF18E73A@ibm.net>
-Message-ID: <Pine.LNX.3.96.990420174726.26110B-100000@globegate.utm.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <199904210043.UAA18581@mail-2.global2000.net>
+Date: Tue, 20 Apr 1999 20:43:44 -0400
+Subject: Re: Apple's "Darwin Streaming Server"
+From: "AArthur" <arthur99@global2000.net>
+To: Grant Bayley <gbayley@ausmac.net>
+CC: linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 20 Apr 1999, J. Robokos wrote:
+> Having played around with Quicktime 4 this morning and watched the BBC etc
+> across the Internet, I was delighted to see that Apple have opensourced
+> and released the source code for the streaming server itself.
+>
+> I downloaded it and read the FAQ - only problem is they use the funky
+> NeXTStep-ish Makefile to build the thing and requires "modification of a
+> handful of source files" to compile and run on "platforms other than Mac
+> OS X Server".
+>
+> I realise this is off topic, but it would be an interesting addition to
+> Linux (and LinuxPPC in particular) to have this available in an
+> easy-to-compile (./configure, anyone  :-) package..
+>
+> Has anyone started work on porting this?
 
-> > We've had similar problems with free block corruption under MkLinux
-> > (2.0.37).  This may be a red herring, but I've only noticed the damage on
-> > the last partition mounted.  You might try mounting a bogus partition
-> > after the others and see if it goes away.  Just a wild thought.  Anyway,
-> > the problem began when someone ported some changes from the current
-> > development sources into the 2.0.xx tree, between 2.0.33 and 2.0.36 (the
-> > former was fine, the latter has the problem.  It might be easier to find
-> > in the context of 2.0.xx since many less things were changing....
-> 
-> I don't think the error is happening on my last partition.  To verify that,
-> I tried compiling a c program and I got an error (after a few tries) saying
-> that ld failed writing to /tmp
-> The last few partitions of my hard drive are listed below:
-> 
-> ...
->  7:       Apple_UNIX_SVR2 opt                     614400 @ 1823921  (300.0M)
-> 
->  8:       Apple_UNIX_SVR2 home                    102400 @ 2438321  ( 50.0M)
-> 
->  9:             Apple_HFS MacOS                 11527935 @ 2540721  (  5.5G)
-> 
-> and the dirctory /tmp is on another partition on the same drive.
+Grant,
 
-No, I mean the last one mounted, generally speaking, the last entry in
-fstab.  It's also possible that these are two different problems.
+According to the Darwin developer list, people are working on porting it to
+the x86 Linux, so that version should easily be able to bring to the PowerPC
+with some work. Here are some messages regrading this:
 
+----
+>So who is interested in getting the Darwin Streaming Server to build under
+>Linux i386?
+>
+>I've already gotten the QTFileLib to compile, but it looks like
+>StreamingServer will require some actual work, and well, no time this
+>week.
 
-David
+QTFileLib is easy to compile, altough not all things work right.
 
-David A. Gatwood                         Visit globegate's internet
-dgatwood@globegate.utm.edu                  talker, Deep Space 36
-http://globegate.utm.edu                telnet globegate.utm.edu:9624
+I'm thinking of changing the current way of having defines for each OS into
+an autoconf - generated header. Unfortunately, I know nothing about how to
+use autoconf.
 
+As to the Server, I think it's best to build new makefiles. I think I'm
+gonna use the GNUstep-make package, it seem suited to converstion of PB
+projects.
+
+Unfortunately, my spare time is small also. But I intend to do something
+over the next two weeks.
+
+Anybody else interested?
+
+Pedro Ivo Tavares
+----
+
+Thanks,
+
+AArthur
+arthur99@global2000.nwt
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
