@@ -1,68 +1,90 @@
-Date: Tue, 11 Jun 2002 10:18:34 +0800
-From: "Daniel Lao" <laodx@gzjpg.com>
-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Why I can't bind the 1023 port?
-Mime-Version: 1.0
 Content-Type: text/plain;
-      charset="GB2312"
-Message-Id: <200206111046140.SM00168@------>
+  charset="us-ascii"
+From: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: problems with Sonnet Tempo ATA-100 - Is it supported?
+Date: Mon, 10 Jun 2002 22:32:16 -0400
+Cc: yellowdog-devel@lists.terrasoftsolutions.com
+MIME-Version: 1.0
+Message-Id: <200206102232.16457.kevin.hendricks@sympatico.ca>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I recently met some trouble with the "rcp" command. My "rcp" could not work
-even if I have correctly configure the remote host.
-When I run rcp in my local host, it print "Permission deny" to the terminal.
+Hi,
 
-So I re-compiled rcp and debugged it by GDB. I found that it fail while tried to
-bind the 1023 port for connecting with the remote rshd.
+I have a Sonnet Tempo ATA100 I use when I boot under MacOSX that I have
+been trying to make useful under Linux.
 
-I though the 1023 port might be protected, and I wrote a program as below:
+I looked and the chip is  Promise 20268 so I enabled the PDC202XX driver in
+Linux as a module and applied the latest fixes that were talked about
+recently on the kernel mailing list archive (direct from Promise).
 
---- begin ---
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <errno.h>
-extern int errno;
+Finally... the partition table is now readable on that drive (it has never
+worked with any pdc202xx driver up to this point) but I now get some funny
+error messages about "IN from bad port XXX at C02cfa68
 
-int main (int argc, char **argv)
-{
-    int s, rv;
-    unsigned short port = 1023;
-    struct sockaddr_in sin;
+My System.map shows the following for that address:
+c02cfa3c T pci_init_pdc202xx
 
-    s = socket (AF_INET, SOCK_STREAM, 0);
-    if (s < 0)
-    {
-        perror ("socket");
-        return errno;
-    }
+Here is the relevant piece of the dmesg (this is with Ben's latest kernel
+rsynced on Saturday with some patches to get past the partition table hang
+direct from Promise via the linux kernel mailing list archive.
 
-    sin.sin_family = AF_INET;
-    sin.sin_addr.s_addr = INADDR_ANY;
-    sin.sin_port = htons (port);
-    rv = bind (s, (struct sockaddr *) &sin, sizeof (sin));
-    if (rv < 0)
-    {
-        perror ("bind");
-        return errno;
-    }
-}
+PDC20268: IDE controller on PCI bus 01 dev a0
+PDC20268: chipset revision 2
+PDC20268: not 100% native mode: will probe irqs later
+IN from bad port 41f at c02cfa68
+IN from bad port 41a at c02cfa84
+IN from bad port 41b at c02cfaa0
+PDC20268: ROM enabled at 0x80090000
+IN from bad port 3 at c02cfe1c
+    ide2: BM-DMA at 0x0400-0x0407, BIOS settings: hde:pio, hdf:pio
+IN from bad port 3 at c02cfe1c
+    ide3: BM-DMA at 0x0408-0x040f, BIOS settings: hdg:pio, hdh:pio
+...
+hde: WDC WD600BB-32BSA0, ATA DISK drive
+...
+hde: 117231408 sectors (60022 MB) w/2048KiB Cache, CHS=116301/16/63,
+UDMA(33)
+...
+ hde: [mac] hde1 hde2 hde3 hde4 hde5 hde6 hde7 hde8 hde9 hde10 hde11 hde12
 
---- end ---
 
-The running result was that I could not bind these ports: 1023, 1022, ...
-but it was success in bind 1024 port.
-And while I su to as the super-user, I could bind all these ports!
-I am wondering if the ports were really protected, and how can I use the ports?
+So the latest patches on the kernel list for the pdc 202xx are a big
+improvement (no more hanging at the partition map) but still not quite
+right.
 
-Should anyone be kind to give me some advise?
-:)
+Here is what lspci -v says about the card:
 
----
-Daniel Lao
-2002-06-11 10:17:58
+01:14.0 Unknown mass storage controller: Promise Technology, Inc. 20268
+(rev 02)
+ (prog-if 85)
+        Subsystem: Promise Technology, Inc.: Unknown device ad68
+        Flags: bus master, 66Mhz, slow devsel, latency 16, IRQ 54
+        I/O ports at 0440 [size=8]
+        I/O ports at 0430 [size=4]
+        I/O ports at 0420 [size=8]
+        I/O ports at 0410 [size=4]
+        I/O ports at 0400 [size=16]
+        Memory at 800a0000 (32-bit, non-prefetchable) [size=64K]
+        Expansion ROM at 80090000 [disabled] [size=64K]
+        Capabilities: <available only to root>
 
+I noticed that I/O ports are enable (not disabled).  I thought all I/O was
+MMIO (memory mapped) but I am unsure if this is the case.
+
+This card works fine under MacOSX, and Mac OS9 and I hoped PPC Linux which
+is why I bought it.
+
+Can someone give me some hints about where to look to fix this?  Is it just
+that the pdc202XX driver is not compatbile with ppc linux?
+
+Is anyone else using a Sonnet Tempo ATA100 pci card successfully with DMA
+and if so which driver?
+
+Thanks,
+
+Kevin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
