@@ -1,41 +1,43 @@
-Date: Mon, 7 Feb 2000 07:46:45 -0700 (MST)
-From: Dan Burcaw <dburcaw@terraplex.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: anyone build 2.3.42 for ppc?
-In-Reply-To: <Pine.LNX.4.20.0002070025410.29493-100000@mail.turbolinux.com>
-Message-ID: <Pine.LNX.4.10.10002070746020.12286-100000@newhope.terraplex.com>
+Message-ID: <389EE09A.571A6C26@denise.shiny.it>
+Date: Mon, 07 Feb 2000 16:11:22 +0100
+From: Giuliano Pochini <pochini@denise.shiny.it>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Adrian Cox <apc@agelectronics.co.uk>
+CC: LinuxPPC-Dev <linuxppc-dev@lists.linuxppc.org>,
+        Debian PowerPC <debian-powerpc@lists.debian.org>
+Subject: Re: Altivec and binary compatibility
+References: <389AAA06.CBCDB19A@agelectronics.co.uk>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Brad,
 
-Take a look at Ani's 2.3.42 patch. I believe it fixes this.
-
+> Altivec raises an interesting question of binary compatibility, in the
+> area of C++ exceptions and C setjmp/longjmp.
 >
-> you guys are having great luck. i haven't been able to get past
->
-> In file included from init/main.c:33:
-> /usr/src/linux/include/linux/pci.h:318: parse error before `dma_addr_t'
-> /usr/src/linux/include/linux/pci.h:318: warning: no semicolon at end of struct or union
-> /usr/src/linux/include/linux/pci.h:346: parse error before `}'
->
-> this is the plain common_config on an rs/6000. using gcc 2.95.2, glibc
-> 2.1.3-0j.
+> As the jmp_buf is a different size in Altivec and non-Altivec code
 
-Regards,
-Dan
+Because with Altivec we need to save V registers, right ?  Well, I suppose
+intel developers had the same problem with P-III "vector" unit. How did they
+solve the problem ?
 
-Terra Soft Solutions, Inc.
- Yellow Dog Linux
- "The Ultimate Companion for a Dedicated Server"
- http://www.yellowdoglinux.com/
+> it is not possible to jump or pass exceptions between the two.
+> This is a problem, because:
+> 1) Now would not be a good time to change the size of a jmp_buf.
+> 2) We do not need two incompatible 32-bit PowerPC ABIs under Linux.
+> 2a) Most libraries installed by a distribution will be non-Altivec code,
+> to avoid having both G[123] and G4 binary variants of the distribution.
 
- Black Lab Linux
- Advanced Workstations and Parallel Solutions
- http://www.blacklablinux.com/
+I agree.
+
+> To add to the problem, throwing exceptions on an error is just what a
+> modern C++ library is supposed to do.  Throwing or catching an exception
+> in Altivec code will produce sequences that cannot execute on a G3
+
+Why ?? (sorry for my ignorance...)
+
+Bye.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
