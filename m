@@ -1,52 +1,85 @@
-Message-ID: <20031024171504.23157.qmail@web40805.mail.yahoo.com>
-Date: Fri, 24 Oct 2003 10:15:04 -0700 (PDT)
-From: sakthivel kariappan <sakvel_k@yahoo.com>
-Subject: Porting VxWorks to Apple Mac PowerPC G4
-To: linuxppc-dev@lists.linuxppc.org
+Message-ID: <3F9A511D.2000002@alles.or.jp>
+Date: Sat, 25 Oct 2003 19:31:57 +0900
+From: Takeharu KATO <tk1219@alles.or.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: linuxppc-dev@lists.linuxppc.org
+Subject: [TRIVAL] Critical interrupt handling for PPC44x
+Content-Type: multipart/mixed;
+ boundary="------------090901060204010509040601"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
- Hi All,
- I'm trying to understand the complexities involved
- in porting vxworks to PowerPc G4. I already have the
- port for MPC740 based board. I'm sure some of you
- might have done the linux porting. That's why posting
- to this mail-group.
+This is a multi-part message in MIME format.
+--------------090901060204010509040601
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 
- The question is related to open firmware, CHRP and
- run time drivers. As per my understanding, it
-requires
- understanding the device tree to obtain CPU, PCI  bus
- and peripherals and how it is connected. As a side
- note, PowerPC G4 Xserve cluster node uses two custom
- made ICs (U2-bridge and memory controller and
-KeyLargo
- IO controller and disk)
+Dear all:
 
- Now, how do I know about clock (and timers),
-interrupt
- structure and registers etc to configure the
- devices.  Also, OF says, it should provide basic run
- time drivers. Now, How do I invoke the drivers that
- comes with boot ROM? and performing VxWorks
- intialization. Or should I have to write drivers?
+I fixed ``ret_from_crit_exc'' in arch/ppc/kernel/entry.S for PPC44x.
+In PPC44x return from interruption with CSRR0/CSRR1 instead of SRR2/SRR3.
+But I do not have PPC44x board so, I did not test this code on a real
+machine.
+Please test this code.
 
- I don't see any documentation at apple developers
-site
- and in the internet that helps much.
+--
+-----------------------------------
+Takeharu KATO
+Mail: tk1219@alles.or.jp
 
- Any documentation available will be helpful (I read
- through apple  technocal notes 1167, 2000, 1061,
- 1062,  2001, 2004, 2023 and 1167).
- But, I don't seem to find enough information.
 
- Appreciate any information.
+--------------090901060204010509040601
+Content-Type: text/x-diff;
+ name="crit-fix.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="crit-fix.patch"
 
- Thanks,
- Sak
+diff -Nacr linux-2.6.0-test8-original/arch/ppc/kernel/entry.S linux-2.6.0-test8/arch/ppc/kernel/entry.S
+*** linux-2.6.0-test8-original/arch/ppc/kernel/entry.S	2003-10-24 23:58:30.000000000 +0900
+--- linux-2.6.0-test8/arch/ppc/kernel/entry.S	2003-10-25 19:15:47.678618416 +0900
+***************
+*** 689,696 ****
+--- 689,701 ----
+  	mtspr	SPRN_ESR,r10
+  	lwz	r11,_NIP(r1)
+  	lwz	r12,_MSR(r1)
++ #if defined(CONFIG_44x)
++ 	mtspr	CSRR0,r11
++ 	mtspr	CSRR1,r12
++ #else
+  	mtspr	SRR2,r11
+  	mtspr	SRR3,r12
++ #endif
+  	lwz	r9,GPR9(r1)
+  	lwz	r12,GPR12(r1)
+  	lwz	r10,crit_sprg0@l(0)
+diff -Nacr linux-2.6.0-test8-original/arch/ppc/kernel/ppc_ksyms.c linux-2.6.0-test8/arch/ppc/kernel/ppc_ksyms.c
+*** linux-2.6.0-test8-original/arch/ppc/kernel/ppc_ksyms.c	2003-10-24 23:58:40.000000000 +0900
+--- linux-2.6.0-test8/arch/ppc/kernel/ppc_ksyms.c	2003-10-25 19:17:24.102959688 +0900
+***************
+*** 365,370 ****
+--- 365,371 ----
+
+  EXPORT_SYMBOL(next_mmu_context);
+  EXPORT_SYMBOL(set_context);
++ #if defined(CONFIG_PPC_MULTIPLATFORM)
+  EXPORT_SYMBOL(handle_mm_fault); /* For MOL */
+  EXPORT_SYMBOL_NOVERS(disarm_decr);
+  extern long mol_trampoline;
+***************
+*** 375,380 ****
+--- 376,382 ----
+  extern int mmu_hash_lock;
+  EXPORT_SYMBOL(mmu_hash_lock); /* For MOL */
+  #endif /* CONFIG_SMP */
++ #endif  /*  CONFIG_PPC_MULTIPLATFORM  */
+  extern long *intercept_table;
+  EXPORT_SYMBOL(intercept_table);
+  #endif /* CONFIG_PPC_STD_MMU */
+
+--------------090901060204010509040601--
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
