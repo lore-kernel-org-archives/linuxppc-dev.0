@@ -1,174 +1,51 @@
 From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
 To: Martin Costabel <costabel@wanadoo.fr>, Paul.Mackerras@cs.anu.edu.au
 Subject: Re: vger-2.3.15 on pmac
-Date: Fri, 27 Aug 1999 00:01:47 +0200
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-=_nWlrBbmQBhCDarzOwKkYHIDdqSCD"
-References: <4.2.0.58.19990826171730.00981650@mail.lauterbach.com> <37C57094.D6415E54@wanadoo.fr>
-In-Reply-To: <37C57094.D6415E54@wanadoo.fr>
+Date: Fri, 27 Aug 1999 03:01:53 +0200
+Content-Type: text/plain
 Cc: linuxppc-dev@lists.linuxppc.org
+References: <4.2.0.58.19990826171730.00981650@mail.lauterbach.com> <37C57094.D6415E54@wanadoo.fr> <99082700153800.01224@ns1102.munich.netsurf.de>
+In-Reply-To: <99082700153800.01224@ns1102.munich.netsurf.de>
 MIME-Version: 1.0
-Message-Id: <99082700153800.01224@ns1102.munich.netsurf.de>
+Message-Id: <99082703052100.00447@ns1102.munich.netsurf.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Am Fre, 27 Aug 1999 schrieb Franz Sirl:
+>- convert adb_mouse_setup to new style (compiles, but not tested yet)
 
---Boundary-=_nWlrBbmQBhCDarzOwKkYHIDdqSCD
-Content-Type: text/plain
-Content-Transfer-Encoding: 8bit
+AAARGH! Everything has changed with the setup code. Use the following diff
+for the adb_mouse_setup routine:
 
-Am Don, 26 Aug 1999 schrieb Martin Costabel:
->Franz Sirl wrote:
->> 
->> At 10:40 26.08.99 , Martin Costabel wrote:
->> >In a second post, I'll have some questions about things that don't yet
->> >work. I hope this is the right forum for this. I didn't see many
->> >discussions on kernel development for the PPC like on the linux-kernel
->> >list.
->> 
->> You'll probably talking about the problems with adbmouse. 
->
->Yes, you beat me by 6 sec.
+@@ -174,16 +193,22 @@ __initfunc(int adb_mouse_init(void))
+  * option, which is about using ADB keyboard buttons to emulate
+  * mouse buttons. -- paulus
+  */
+-__initfunc(void adb_mouse_setup(char *str, int *ints))
++static int __init adb_mouse_setup(char *str)
+ {
++       int ints[4];
++
++       str = get_options(str,ARRAY_SIZE(ints),ints);
+        if (ints[0] >= 1) {
+-               adb_emulate_buttons = ints[1] > 0;
+-               if (ints[1] > 1)
+-                       adb_button2_keycode = ints[1];
++               adb_emulate_buttons = ints[1];
+                if (ints[0] >= 2)
+-                       adb_button3_keycode = ints[2];
++                       adb_button2_keycode = ints[2];
++               if (ints[0] >= 3)
++                       adb_button3_keycode = ints[3];
+        }
++       return 1;
+ }
++
++__setup("adb_buttons=", adb_mouse_setup);
 
-:-)
-Yeah, I noticed.
-
->
->>                                                           I have a patch
->> for this one. I have also a fixed version of my Xpmac-style 3-mousebutton
->> emulation with the "buttons locked before 1st use" problem. I'll forward
->> this stuff to Paul later today when I'm home.
->
->Great! Could you CC it to me, please? I am using your patch all the time
->in 2.2.12. The problem you are talking about, is it the one that forces
->me to press Opt_R before moving the mouse the first time (gpm and X)?
->Not very serious, but if you have a fix, umso besser!
-
-Yes, this problem is fixed now.
-
-For Paul, this patch does:
-- fixes 2.3.15 compilation issues vs. CONFIG_MOUSE/CONFIG_BUSMOUSE
-- convert adb_mouse_setup to new style (compiles, but not tested yet)
-- added 2nd Xpmac style mouse button emulation mode:
-	adb_buttons=1,x,y: exactly like the old version, one key == one button
-	adb_buttons=2,x,y: Xpmac style, one key + mouse click == one button
-
-BTW, Paul, is there any chance we can go back to USB keycodes before 2.4? This
-seems a lot more logical in the longterm.
-
-Franz.
-
---Boundary-=_nWlrBbmQBhCDarzOwKkYHIDdqSCD
-Content-Type: text/x-c;
-  name="adbmouse.patch"
-Content-Disposition: attachment; filename="adbmouse.patch"
-Content-Transfer-Encoding: base64
-
-SW5kZXg6IGNoYXIvTWFrZWZpbGUKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQpSQ1MgZmlsZTogL2N2cy9saW51eC9saW51
-eC9kcml2ZXJzL2NoYXIvTWFrZWZpbGUsdgpyZXRyaWV2aW5nIHJldmlzaW9uIDEuOTgKZGlmZiAt
-dSAtcCAtcjEuOTggTWFrZWZpbGUKLS0tIGNoYXIvTWFrZWZpbGUJMTk5OS8wOC8wOCAwMTozNTox
-MAkxLjk4CisrKyBjaGFyL01ha2VmaWxlCTE5OTkvMDgvMjYgMjE6NDg6NTIKQEAgLTE5OCwxMSAr
-MTk4LDExIEBAIGVsc2UKICAgZW5kaWYKIGVuZGlmCiAKLWlmZXEgKCQoQ09ORklHX01PVVNFKSx5
-KQoraWZlcSAoJChDT05GSUdfQlVTTU9VU0UpLHkpCiBNID0geQogT1hfT0JKUyArPSBidXNtb3Vz
-ZS5vCiBlbHNlCi0gIGlmZXEgKCQoQ09ORklHX01PVVNFKSxtKQorICBpZmVxICgkKENPTkZJR19C
-VVNNT1VTRSksbSkKICAgTU0gPSBtCiAgIE1YX09CSlMgKz0gYnVzbW91c2UubwogICBlbmRpZgpJ
-bmRleDogY2hhci9hZGJtb3VzZS5jCj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KUkNTIGZpbGU6IC9jdnMvbGludXgvbGlu
-dXgvZHJpdmVycy9jaGFyL2FkYm1vdXNlLmMsdgpyZXRyaWV2aW5nIHJldmlzaW9uIDEuMTgKZGlm
-ZiAtdSAtcCAtcjEuMTggYWRibW91c2UuYwotLS0gY2hhci9hZGJtb3VzZS5jCTE5OTkvMDgvMjAg
-MDA6Mjg6MTIJMS4xOAorKysgY2hhci9hZGJtb3VzZS5jCTE5OTkvMDgvMjYgMjE6NDg6NTUKQEAg
-LTUzLDYgKzUzLDggQEAgZXh0ZXJuIHZvaWQgKCphZGJfbW91c2VfaW50ZXJydXB0X2hvb2spKAog
-ZXh0ZXJuIGludCBhZGJfZW11bGF0ZV9idXR0b25zOwogZXh0ZXJuIGludCBhZGJfYnV0dG9uMl9r
-ZXljb2RlOwogZXh0ZXJuIGludCBhZGJfYnV0dG9uM19rZXljb2RlOworZXh0ZXJuIGludCBhZGJf
-bW9kaWZpZXJfa2V5c19zdGF0ZTsKKwogZXh0ZXJuIGludCBjb25zb2xlX2xvZ2xldmVsOwogCiAv
-KgpAQCAtOTUsNiArOTcsMTkgQEAgc3RhdGljIHZvaWQgYWRiX21vdXNlX2ludGVycnVwdCh1bnNp
-Z25lZAogCSAgIEJ1dHRvbiAzIChtaWRkbGUpOiBiaXQgMSwgYnVzbW91c2UgYnV0dG9uIDIKIAkg
-Ki8KIAorCWlmIChuYiA8IDQgJiYgYWRiX2VtdWxhdGVfYnV0dG9ucyA9PSAyKSB7CisJCWJ1Zlsz
-XSA9IDB4ODA7CisJCWlmIChhZGJfbW9kaWZpZXJfa2V5c19zdGF0ZSAmIDB4MDEpIHsKKwkJCWJ1
-ZlsyXSB8PSAweDgwOworCQkJYnVmWzJdICY9IChidWZbMV0gJiAweDgwKSB8IDB4N2Y7CisJCQli
-dWZbMV0gfD0gMHg4MDsKKwkJfQorCQllbHNlIGlmIChhZGJfbW9kaWZpZXJfa2V5c19zdGF0ZSAm
-IDB4MDIpIHsKKwkJCWJ1ZlszXSA9IGJ1ZlsxXSAmIDB4ODA7CisJCQlidWZbMV0gfD0gMHg4MDsK
-KwkJfQorCX0KKwogCS8qIHgveSBhbmQgYnV0dG9ucyBzd2FwcGVkICovCiAKIAlpZCA9IChidWZb
-MF0gPj4gNCkgJiAweGY7CkBAIC0xMTEsNyArMTI2LDcgQEAgc3RhdGljIHZvaWQgYWRiX21vdXNl
-X2ludGVycnVwdCh1bnNpZ25lZAogCSAqICBvbiBhIGxvZ2l0ZWNoIG1vdXNlbWFuLCB0aGUgcmln
-aHQgYW5kIG1pZCBidXR0b25zIHNvbWV0aW1lcyBiZWhhdmUKIAkgKiAgc3RyYW5nZWx5IHVudGls
-IHRoZXkgYm90aCBoYXZlIGJlZW4gcHJlc3NlZCBhZnRlciBib290aW5nLiAqLwogCS8qIGRhdGEg
-dmFsaWQgb25seSBpZiBleHRlbmRlZCBtb3VzZSBmb3JtYXQgISAqLwotCWlmIChuYiA+PSA0KQor
-CWlmIChuYiA+PSA0IHx8IGFkYl9lbXVsYXRlX2J1dHRvbnMgPT0gMikKIAkJYnV0dG9ucyA9IChi
-dXR0b25zICYgNikgfCAoYnVmWzNdICYgMHg4MCA/IDEgOiAwKTsgLyogMSszIHVuY2hhbmdlZCAq
-LwogCiAJYWRiX21vdXNlX2J1dHRvbnNbaWRdID0gYnV0dG9uczsKQEAgLTEyNSw4ICsxNDAsOCBA
-QCBzdGF0aWMgdm9pZCBhZGJfbW91c2VfaW50ZXJydXB0KHVuc2lnbmVkCiAJYnVzbW91c2VfYWRk
-X21vdmVtZW50YnV0dG9ucyhtc2VkZXYsIGR4LCAtZHksIGJ1dHRvbnMpOwogCiAJaWYgKGNvbnNv
-bGVfbG9nbGV2ZWwgPj0gOCkKLQkJcHJpbnRrKCIgJVggJVggJVggZHggJWQgZHkgJWQgXG4iLAot
-CQkgICAgICAgYnVmWzFdLCBidWZbMl0sIGJ1ZlszXSwgZHgsIGR5KTsKKwkJcHJpbnRrKCIgJWQg
-JVggJVggJVggJVggZHggJWQgZHkgJWQgYnV0dG9ucyAlZFxuIiwKKwkJICAgICAgIG1zZWRldiwg
-YWRiX21vZGlmaWVyX2tleXNfc3RhdGUsIGJ1ZlsxXSwgYnVmWzJdLCBidWZbM10sIGR4LCBkeSwg
-YnV0dG9ucyk7CiB9CiAKIHN0YXRpYyBpbnQgcmVsZWFzZV9tb3VzZShzdHJ1Y3QgaW5vZGUgKmlu
-b2RlLCBzdHJ1Y3QgZmlsZSAqZmlsZSkKQEAgLTEzOCw3ICsxNTMsMTEgQEAgc3RhdGljIGludCBy
-ZWxlYXNlX21vdXNlKHN0cnVjdCBpbm9kZSAqaQogCiBzdGF0aWMgaW50IG9wZW5fbW91c2Uoc3Ry
-dWN0IGlub2RlICppbm9kZSwgc3RydWN0IGZpbGUgKmZpbGUpCiB7CisJaW50IGlkOworCiAJTU9E
-X0lOQ19VU0VfQ09VTlQ7CisJZm9yIChpZCA9IDA7IGlkIDwgMTY7ICsraWQpCisgICAgICAgIAlh
-ZGJfbW91c2VfYnV0dG9uc1tpZF0gPSA3OyAgICAgIC8qIGFsbCBidXR0b25zIHVwICovCiAJYWRi
-X21vdXNlX2ludGVycnVwdF9ob29rID0gYWRiX21vdXNlX2ludGVycnVwdDsKIAlyZXR1cm4gMDsK
-IH0KQEAgLTE3NCwxNiArMTkzLDE5IEBAIF9faW5pdGZ1bmMoaW50IGFkYl9tb3VzZV9pbml0KHZv
-aWQpKQogICogb3B0aW9uLCB3aGljaCBpcyBhYm91dCB1c2luZyBBREIga2V5Ym9hcmQgYnV0dG9u
-cyB0byBlbXVsYXRlCiAgKiBtb3VzZSBidXR0b25zLiAtLSBwYXVsdXMKICAqLwotX19pbml0ZnVu
-Yyh2b2lkIGFkYl9tb3VzZV9zZXR1cChjaGFyICpzdHIsIGludCAqaW50cykpCitzdGF0aWMgaW50
-IF9faW5pdCBhZGJfbW91c2Vfc2V0dXAoY2hhciAqc3RyLCBpbnQgKmludHMpCiB7CiAJaWYgKGlu
-dHNbMF0gPj0gMSkgewotCQlhZGJfZW11bGF0ZV9idXR0b25zID0gaW50c1sxXSA+IDA7Ci0JCWlm
-IChpbnRzWzFdID4gMSkKLQkJCWFkYl9idXR0b24yX2tleWNvZGUgPSBpbnRzWzFdOworCQlhZGJf
-ZW11bGF0ZV9idXR0b25zID0gaW50c1sxXTsKIAkJaWYgKGludHNbMF0gPj0gMikKLQkJCWFkYl9i
-dXR0b24zX2tleWNvZGUgPSBpbnRzWzJdOworCQkJYWRiX2J1dHRvbjJfa2V5Y29kZSA9IGludHNb
-Ml07CisJCWlmIChpbnRzWzBdID49IDMpCisJCQlhZGJfYnV0dG9uM19rZXljb2RlID0gaW50c1sz
-XTsKIAl9CisJcmV0dXJuIDE7CiB9CisKK19fc2V0dXAoImFkYl9idXR0b25zPSIsIGFkYl9tb3Vz
-ZV9zZXR1cCk7CiAKICNpZmRlZiBNT0RVTEUKIGludCBpbml0X21vZHVsZSh2b2lkKQpJbmRleDog
-Y2hhci9idXNtb3VzZS5jCj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT0KUkNTIGZpbGU6IC9jdnMvbGludXgvbGludXgvZHJp
-dmVycy9jaGFyL2J1c21vdXNlLmMsdgpyZXRyaWV2aW5nIHJldmlzaW9uIDEuMjYKZGlmZiAtdSAt
-cCAtcjEuMjYgYnVzbW91c2UuYwotLS0gY2hhci9idXNtb3VzZS5jCTE5OTkvMDgvMjAgMDA6Mjg6
-MTQJMS4yNgorKysgY2hhci9idXNtb3VzZS5jCTE5OTkvMDgvMjYgMjE6NDg6NTUKQEAgLTQzNSw5
-ICs0MzUsNiBAQCB1bnJlZ2lzdGVyX2J1c21vdXNlKGludCBtb3VzZWRldikKIF9faW5pdGZ1bmMo
-aW50CiBidXNfbW91c2VfaW5pdCh2b2lkKSkKIHsKLSNpZmRlZiBDT05GSUdfQlVTTU9VU0UKLQli
-dXNfbW91c2VfaW5pdCgpOwotI2VuZGlmCiAjaWZkZWYgQ09ORklHX01TX0JVU01PVVNFCiAJbXNf
-YnVzX21vdXNlX2luaXQoKTsKICNlbmRpZgpJbmRleDogY2hhci9taXNjLmMKPT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQpS
-Q1MgZmlsZTogL2N2cy9saW51eC9saW51eC9kcml2ZXJzL2NoYXIvbWlzYy5jLHYKcmV0cmlldmlu
-ZyByZXZpc2lvbiAxLjUxCmRpZmYgLXUgLXAgLXIxLjUxIG1pc2MuYwotLS0gY2hhci9taXNjLmMJ
-MTk5OS8wOC8xMCAxNTo1NDoyNgkxLjUxCisrKyBjaGFyL21pc2MuYwkxOTk5LzA4LzI2IDIxOjQ4
-OjU1CkBAIC0xODcsNyArMTg3LDcgQEAgaW50IF9faW5pdCBtaXNjX2luaXQodm9pZCkKIAlwcm9j
-X21pc2MgPSBjcmVhdGVfcHJvY19lbnRyeSgibWlzYyIsIDAsIDApOwogCWlmIChwcm9jX21pc2Mp
-CiAJCXByb2NfbWlzYy0+cmVhZF9wcm9jID0gbWlzY19yZWFkX3Byb2M7Ci0jaWZkZWYgQ09ORklH
-X01PVVNFCisjaWZkZWYgQ09ORklHX0JVU01PVVNFCiAJYnVzX21vdXNlX2luaXQoKTsKICNlbmRp
-ZgogI2lmIGRlZmluZWQgQ09ORklHXzgyQzcxMF9NT1VTRQpJbmRleDogbWFjaW50b3NoL21hY19r
-ZXliLmMKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PQpSQ1MgZmlsZTogL2N2cy9saW51eC9saW51eC9kcml2ZXJzL21hY2lu
-dG9zaC9tYWNfa2V5Yi5jLHYKcmV0cmlldmluZyByZXZpc2lvbiAxLjMyCmRpZmYgLXUgLXAgLXIx
-LjMyIG1hY19rZXliLmMKLS0tIG1hY2ludG9zaC9tYWNfa2V5Yi5jCTE5OTkvMDgvMjAgMDA6Mjg6
-NTMJMS4zMgorKysgbWFjaW50b3NoL21hY19rZXliLmMJMTk5OS8wOC8yNiAyMTo0ODo1OQpAQCAt
-MjQ1LDYgKzI0NSw3IEBAIHZvaWQgKCphZGJfbW91c2VfaW50ZXJydXB0X2hvb2spKHVuc2lnbmUK
-IGludCBhZGJfZW11bGF0ZV9idXR0b25zID0gMDsKIGludCBhZGJfYnV0dG9uMl9rZXljb2RlID0g
-MHg3ZDsJLyogcmlnaHQgY29udHJvbCBrZXkgKi8KIGludCBhZGJfYnV0dG9uM19rZXljb2RlID0g
-MHg3YzsgLyogcmlnaHQgb3B0aW9uIGtleSAqLworaW50IGFkYl9tb2RpZmllcl9rZXlzX3N0YXRl
-ID0gMDsKICNlbmRpZgogCiBleHRlcm4gaW50IGNvbnNvbGVfbG9nbGV2ZWw7CkBAIC0zNDQsNyAr
-MzQ1LDcgQEAgaW5wdXRfa2V5Y29kZShpbnQga2V5Y29kZSwgaW50IHJlcGVhdCkKIAkgKglNaWdo
-dCBhbHNvIHdhbnQgdG8ga25vdyBob3cgbWFueSBidXR0b25zIG5lZWQgdG8gYmUgZW11bGF0ZWQu
-CiAJICoJLT4gaGlkZSB0aGlzIGFzIGZ1bmN0aW9uIGluIGFyY2gvbTY4ay9tYWMgPwogCSAqLwot
-CWlmIChhZGJfZW11bGF0ZV9idXR0b25zCisJaWYgKGFkYl9lbXVsYXRlX2J1dHRvbnMgPT0gMQog
-CSAgICAmJiAoa2V5Y29kZSA9PSBhZGJfYnV0dG9uMl9rZXljb2RlCiAJCXx8IGtleWNvZGUgPT0g
-YWRiX2J1dHRvbjNfa2V5Y29kZSkKIAkgICAgJiYgKGFkYl9tb3VzZV9pbnRlcnJ1cHRfaG9vayB8
-fCBjb25zb2xlX2xvZ2xldmVsID09IDEwKSkgewpAQCAtMzYzLDYgKzM2NCwxNCBAQCBpbnB1dF9r
-ZXljb2RlKGludCBrZXljb2RlLCBpbnQgcmVwZWF0KQogCQkJCWFkYl9tb3VzZV9pbnRlcnJ1cHRf
-aG9vayhkYXRhLCA0KTsKIAkJfQogCQlyZXR1cm47CisJfSBlbHNlIGlmIChhZGJfZW11bGF0ZV9i
-dXR0b25zID09IDIKKwkJICAgJiYga2V5Y29kZSA9PSBhZGJfYnV0dG9uMl9rZXljb2RlKSB7CisJ
-CWFkYl9tb2RpZmllcl9rZXlzX3N0YXRlICY9IDB4MDI7CisJCWFkYl9tb2RpZmllcl9rZXlzX3N0
-YXRlIHw9IHVwX2ZsYWcgPyAwIDogMTsKKwl9IGVsc2UgaWYgKGFkYl9lbXVsYXRlX2J1dHRvbnMg
-PT0gMgorCQkgICAmJiBrZXljb2RlID09IGFkYl9idXR0b24zX2tleWNvZGUpIHsKKwkJYWRiX21v
-ZGlmaWVyX2tleXNfc3RhdGUgJj0gMHgwMTsKKwkJYWRiX21vZGlmaWVyX2tleXNfc3RhdGUgfD0g
-dXBfZmxhZyA/IDAgOiAyOwogCX0KICNlbmRpZiAvKiBDT05GSUdfQURCTU9VU0UgKi8KIAo=
-
---Boundary-=_nWlrBbmQBhCDarzOwKkYHIDdqSCD--
+ #ifdef MODULE
+ int init_module(void)
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
