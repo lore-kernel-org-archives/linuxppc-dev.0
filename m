@@ -1,38 +1,45 @@
-Message-Id: <199901112136.WAA00520@piglet.cpu.lu>
-Date: Mon, 11 Jan 1999 22:36:47 +0100 (CET)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: Strange tar hang....
-To: jk@espy.org
-cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <v04103c34b2bf2769a22d@[206.163.71.146]>
-MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+Message-Id: <199901112138.WAA05948@denx.muc.de>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+Cc: linuxppc-dev@lists.linuxppc.org
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: MBX860: How to boot with initrd ? 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 11 Jan 1999 11:42:51 +0100."
+             <19990111114251.006245@smtp.calvacom.fr>
+Date: Mon, 11 Jan 1999 22:38:08 +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi there,
-
-On  10 Jan, this message from Joel Klecker echoed through cyberspace:
->>Could this be a problem in the networking code of the kernel?
+In message <19990111114251.006245@smtp.calvacom.fr> you write:
 > 
-> tar tries to look up UIDs and GIDs in the tar file and match them to 
-> local users. With the default /etc/nsswitch.conf, it will end up 
-> trying NIS and other services.
+> >You mean ftp://ftp.linuxppc.org/gary/redhat/RPMS/ppc/egcs*-1.1*ppc.rpm ?
+> >
+> >They don't work for me - same result: no problems during compilation,
+> >but the kernel hangs.
+> >
+> >So far the only reliably working version of EGCS for me is the one in
+> >linuxppc-R4 :-(
+> 
+> Almost all the kernels I compile are with this version of egcs without
+> any problem... They work just fine. Maybe egcs breaks something specific
+> to your machine ? Are you using PReP or PowerMac ?
 
-OK, that prevented the timeout; thanks for the tip. Question is, should
-the timeout have occurred in the first place?
+I've run some verification tests with  above  packages  and  my  home
+built  cross  compiler  based  on egcs-1.1.1: the plain MBX860 kernel
+boots fine, but it hangs as soon as I  try  to  use  initrd  as  root
+device.
 
-Michel
+So better be careful when you use these new compilers :-(
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-9, Montee St. Crepin           |    Ask Questions.  Make Mistakes.
-L-1365 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+Wolfgang
 
+-- 
+Phone:  (+49)-89-95720-110   Fax: (+49)-89-95720-112   wd@denx.muc.de
+Office: (+49)-89-722-27328               Wolfgang.Denk@ICN.Siemens.DE
+Quote from the Boss... "I didn't say it was your fault.  I said I was
+going to blame it on you."
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
