@@ -1,39 +1,22 @@
-From: Alan Mimms <alan@packetengines.com>
-To: Dan Malek <dan@netx4.com>
-Subject: Re: linuxppc-embedded: main kernel tree
-Date: Wed, 26 Jan 2000 13:45:25 -0800
-Content-Type: text/plain
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-References: <388F3D65.3B420FED@ctam.com.au> <00012613095603.05597@alan.corp.packetengines.com> <388F677E.59321B87@netx4.com>
-In-Reply-To: <388F677E.59321B87@netx4.com>
+Message-ID: <388F76DF.85E1985E@alerton.com>
+Date: Wed, 26 Jan 2000 14:36:15 -0800
+From: Bill Roman <roman@alerton.com>
 MIME-Version: 1.0
-Message-Id: <00012613462905.05597@alan.corp.packetengines.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: linuxppc-embedded: main kernel tree
+References: <388F3D65.3B420FED@ctam.com.au> <388F18F5.BDE5D395@netx4.com> <00012611055301.05597@alan.corp.packetengines.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, 26 Jan 2000, Dan Malek wrote:
-> Alan Mimms wrote:
->
-> > ...  Certainly the 2.2.13 from
-> > the ftp.us.kernel.org did NOT work, even configured precisely as your kernel
-> > was configured.
->
->
-> Of course not.  I sometimes wonder why I bother posting messages
-> and writing development notes......The 2.2.xx kernels do not have
-> any up to date 8xx functions.  You must use the tar files from
-> ppc.kernel.org that I have updated......
+Alan Mimms wrote:
+> I have tried 2.3.34 and found that the 'make menuconfig' and all other ways of
+> simply generating a config were broken for powerpc in ways that I wasn't able
+> to understand.
 
-Apologies for my lack of attention.  Perhaps I missed the relevant bits from
-your notes.
-
-a
-
---
-Alan Mimms     Packet Engines, Inc.     Spokane, Washington [99214-0497]
-  USA, Earth, Sol, Milky Way, The Local Group, Virgo Supercluster, U0
-Despite the cost of living, have you noticed how popular it remains?
-  -- Steven Wright?
+As of 2.3.33 (from kernel.org), at lines 88 and 90 in arch/ppc/config.in
+(shortly after "comment 'General setup'"), "else if" should be "elif".  Shell
+scripts are not C :-)
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
