@@ -1,82 +1,55 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-To: Michel =?iso-8859-1?q?D=E4nzer?= <michdaen@iiic.ethz.ch>
-Subject: Re: bug in XFree86 4.1.0 with Rage 128 driver?
-Date: Wed, 10 Oct 2001 21:53:37 -0400
-Cc: linuxppc-dev@lists.linuxppc.org, kevin.hendricks@sympatico.ca
-References: <20011011011945.DFYL19597.tomts17-srv.bellnexxia.net@there> <1002764279.4001.662.camel@pismo>
-In-Reply-To: <1002764279.4001.662.camel@pismo>
+Date: Wed, 10 Oct 2001 20:10:25 -0600 (MDT)
+From: Derrik Pates <dpates@dsdk12.net>
+To: <benh@kernel.crashing.org>, <linuxppc-dev@lists.linuxppc.org>
+Subject: Patch to kernel to make long names work on big-endian systems with
+ VFAT
+Message-ID: <Pine.LNX.4.33.0110102007560.29867-200000@andromeda.dsdk12.net>
 MIME-Version: 1.0
-Message-Id: <20011011015130.DBWA27994.tomts14-srv.bellnexxia.net@there>
+Content-Type: MULTIPART/MIXED; BOUNDARY="1842346852-615257861-1002766225=:29867"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+  Send mail to mime@docserver.cac.washington.edu for more info.
 
-> > If I specify depth 32, I used to get 24 bits of color depth with 32
-> > bpp in the Rage 128 driver.
->
-> No you didn't. XFree86 4 has never supported depth 32.
+--1842346852-615257861-1002766225=:29867
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
-I thought that the 24 depth was the broken one that was not supported
-early on and all that did work was 8, 16, and 32 (or am I confusing the
-kernel driver versus the XFree86 driver).
+Figured I'd send this to Ben and the LinuxPPC devel list, because I think
+everyone will want to see this. I figured out the mods to make in the vfat
+FS driver to reorder the (little-endian) wide-character data for the long
+name entries so that big-endian systems (like PowerPC) can read and write
+VFAT filesystems correctly - finally, no more filenames like
+"????????????".
 
-> > But if I specify 24 bits of color depth I seem to be getting cfb24
-> > being used instead of cfb32.
->
-> Only if you specify DefaultFbBpp 24 in Section "Screen" or -fbbpp 24 on
-> the command line. The default for depth 24 is 32 bpp in the r128 driver
-> - has always been AFAIR.
+Derrik Pates      |   Sysadmin, Douglas School   |    #linuxOS on EFnet
+dpates@dsdk12.net |     District (dsdk12.net)    |    #linuxOS on OPN
 
-Okay, I must have misread it.
+--1842346852-615257861-1002766225=:29867
+Content-Type: TEXT/plain; name="vfat-lfn-fix.diff"
+Content-Transfer-Encoding: BASE64
+Content-ID: <Pine.LNX.4.33.0110102010250.29867@andromeda.dsdk12.net>
+Content-Description: 
+Content-Disposition: attachment; filename="vfat-lfn-fix.diff"
 
-> In contrast to framebuffer devices, XFree86 strictly separates the terms
-> 'depth' and 'bits per pixel'.
-
-It never used to ;-)   It used to confuse them all the time for a depth of
-15 in 16bpp called a depth of 16.  That used to drive the JDK crazy.
-
-> > and the resulting visuals have changed.
->
-> The problem might be related to visuals, things have changed about them
-> due to the RENDER extension and other things; I don't know details, you
-> might want to check out the Xpert mailing list archives.
-
-Yes, the error happens in the XRender lib but it is partially our fault.
-I am just trying to figure out what changed.  Here is the relevant code
-from OOo:
-
-  // the 8bit alpha mask format must be there
-    XRenderPictFormat aPictFormat={0,0,8,{0,0,0,0,0,0,0,0xFF},0};
-    mpGlyphFormat = (*pXRenderFindFormat)( mpDisplay, 0, &aPictFormat, 1 );
-
-    // and support for the visual
-    XRenderPictFormat*  pVisualFormat =  (*pXRenderFindVisualFormat)(
-mpDisplay, _pVisual );
-    if( pVisualFormat != NULL )
-        mbUsingXRender = true;
-
-The problem is that the call to XRenderFindFormat() is returning 0 under
-XF4.1.0 under Rage 128 but it previously returned a proper value under XF
-4.0.2 using Rage 128.
-
-> If this is the problem, it's most likely an OpenOffice bug. Applications
-> tend to make false assumptions about visuals and/or not handle them
-> correctly.
-
-Quite probably, the interesting thing here is that this all works under XF
-4.0.2 using Rage 128 and now fails under XF 4.1.0 using Rage 128 (but
-works if the straight framebuffer is used).
-
-So the issue is tied to the Rage 128 code in some way.
-
-I will keep looking.
-
-Thanks for your help!
-
-Kevin
+LS0tIG9yaWdzL2xpbnV4LTIuNC1iZW5oLmRpc3QvZnMvZmF0L2Rpci5jCVdl
+ZCBPY3QgMTAgMDc6MTE6MzIgMjAwMQ0KKysrIGxpbnV4L2ZzL2ZhdC9kaXIu
+YwlXZWQgT2N0IDEwIDE5OjU5OjU3IDIwMDENCkBAIC0yNTAsNiArMjUwLDEw
+IEBADQogCQkJCWlmIChkcy0+YWxpYXNfY2hlY2tzdW0gIT0gYWxpYXNfY2hl
+Y2tzdW0pDQogCQkJCQlnb3RvIHBhcnNlX2xvbmc7DQogCQkJfQ0KKw0KKwkJ
+CWZvcihpID0gMDsgaSA8IG9mZnNldDsgaSArPSAyKQ0KKwkJCQlfX2xlMTZf
+dG9fY3B1cygod2NoYXJfdCAqKSZ1bmljb2RlW2ldKTsNCisNCiAJCQlpZiAo
+ZGUtPm5hbWVbMF0gPT0gKF9fczgpIERFTEVURURfRkxBRykNCiAJCQkJY29u
+dGludWU7DQogCQkJaWYgKGRlLT5hdHRyID09ICBBVFRSX0VYVCkNCkBAIC00
+NDgsNiArNDUyLDEwIEBADQogCQkJaWYgKGRzLT5hbGlhc19jaGVja3N1bSAh
+PSBhbGlhc19jaGVja3N1bSkNCiAJCQkJZ290byBQYXJzZUxvbmc7DQogCQl9
+DQorDQorCQlmb3IoaSA9IDA7IGkgPCBvZmZzZXQ7IGkgKz0gMikNCisJCQlf
+X2xlMTZfdG9fY3B1cygod2NoYXJfdCAqKSZ1bmljb2RlW2ldKTsNCisNCiAJ
+CWlmIChkZS0+bmFtZVswXSA9PSAoX19zOCkgREVMRVRFRF9GTEFHKQ0KIAkJ
+CWdvdG8gUmVjRW5kOw0KIAkJaWYgKGRlLT5hdHRyID09ICBBVFRSX0VYVCkN
+Cg==
+--1842346852-615257861-1002766225=:29867--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
