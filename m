@@ -1,8 +1,8 @@
-Message-ID: <001e01bfeffd$9ba35440$640a0a0a@server>
+Message-ID: <001f01bfeffd$9d66fd40$640a0a0a@server>
 From: "Paolo Scaffardi" <arsenio@tin.it>
 To: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: X-Server for 823?
-Date: Mon, 17 Jul 2000 14:52:30 +0200
+Subject: What IDE for 8xx developers?
+Date: Mon, 17 Jul 2000 16:43:34 +0200
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -10,11 +10,13 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-How can i run simple X applications on my MPC823 FADS?
-I'd like to enable S-Video output and to use the frame buffer X-Server...
-did anyone implement a X-server or a frame-buffer device for the 823?
+What IDE do you use to develop under Linux for 8xx targets?
 
-Thanx in advance..
+It's very frustrating working with command-line editors and compilers...
+
+I heard of CodeWarrior? What's it?
+
+Thanx!
 
 Bye,
 Paolo.
