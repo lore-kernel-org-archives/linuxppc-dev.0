@@ -1,8 +1,8 @@
-Message-Id: <200006120732.JAA00819@piglet.grunz.lu>
-Date: Mon, 12 Jun 2000 09:32:48 +0200 (CEST)
+Message-Id: <200006121039.MAA03014@piglet.grunz.lu>
+Date: Mon, 12 Jun 2000 12:39:16 +0200 (CEST)
 From: Michel Lanners <mlan@cpu.lu>
 Reply-To: mlan@cpu.lu
-Subject: XFree4 on the control display adaptor
+Subject: Out of memory?
 To: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
 Content-Type: TEXT/plain; charset=us-ascii
@@ -10,20 +10,33 @@ Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+Hi list,
 
-I've been struggling a bit with running XFree4 on my PowerMac, on the
-control display adaptor.
+I've run into memory problems. I'm experimenting with Gimp, and working
+with relatively large images (3000 x 3000 pixels). I'm also working with
+large fonts (>100 pixels).
 
-For all those that would like to try the same, I've put up a page with
-the required patches:
+Problem is that the kernel VM layer starts to kill my processes when
+they get really big re. memory footprint. Here are the massages from the
+kernel:
 
-http://www.cpu.lu/~mlan/linux/dev/xf4.html
+Jun 12 10:53:13 piglet kernel: VM: killing process gimp
+Jun 12 10:55:03 piglet kernel: VM: killing process X
+Jun 12 10:59:46 piglet kernel: VM: killing process X
+Jun 12 12:04:27 piglet kernel: VM: killing process xfs
 
-The patches are not really clean; rather quick hacks to make it work.
-But they do help out ;-)
+and so on... acording to the comment in arch/ppc/mm/fault.c, this
+happens when for some reason the kernel cannot satisfy a paging request.
 
-Have fun!
+xfs gets killed when rendering a really big font, X when sending it over
+to gimp, and gimp when working with large images....
+
+What reason is there to kill a process for memory reasons? Does a single
+process need to fit _entirely_ into RAM, or can part of a process be
+swapped out? In all of the above cases, I've always had over 100 megs of
+swap free. Or is there a fixed limit on how big a process can get?
+
+Thanks
 
 Michel
 
