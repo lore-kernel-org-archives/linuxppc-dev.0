@@ -1,53 +1,43 @@
-Message-ID: <38EFCCD9.6263E7F9@denise.shiny.it>
-Date: Sat, 08 Apr 2000 20:20:41 -0400
-From: Giuliano Pochini <pochini@denise.shiny.it>
-MIME-Version: 1.0
-To: DeRobertis <derobert@erols.com>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: stty crtscts < /dev/ttyS1
-References: <l03130302b4fd80d3a908@[216.164.130.191]>
-	 <l03130304b50c8e1b783f@[216.164.131.253]> <l03130302b5145fe8d18f@[209.122.247.115]>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <38EFDEA8.3A3F9AD0@w-d.org>
+Date: Sat, 08 Apr 2000 21:37:27 -0400
+From: John Doty <jpd@yami.w-d.org>
+Reply-To: jpd@yami.w-d.org
+Mime-Version: 1.0
+To: rshawppc@yahoo.com
+Cc: linuxppc-dev@lists.linuxppc.org, rshaw@linuxppc.org
+Subject: Re: Blue & White & SCSI & Ultra 2 SCSI & Kernel > 2.2.10 -> No Disks
+References: <38EF50E4.872D76ED@w-d.org> <38EF891E.5D14C524@home.com>
+Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> >What is connected to the serial port ?  When I enable RTS/CTS on ttyS1
-> >and there is my Epson 740 attached, the whole system freezed.
+Robert Shaw wrote:
+
+> John Doty wrote:
 >
-> Same thing attached.
-
-It could be a bug in the serial driver, but I don't think so. BeOS hangs
-same way (although it's likely Be people "ported" Linux code into BeOS...).
-I spent a couple of days around the serial driver and I didn't find any bug.
-BTW under MacOS it works fine :-/  so what ???
-
-> >I don't
-> >know why this happen exactly. It seems that the printer changes continuosly
-> >with very high frequency  the state of CTS, which cause the serial driver
-> >to loop indefinitely.
+> > We have finally gotten partway to the bottom of this. Apparently, if the
+> > 2930 controller is present the kernel cannot find the 2940 controller
+> > (and the 2940 has the disks on it). With the 2930 pulled (I don't really
+> > need it the way I'm currently using the system), SCSI works fine with
+> > the newer kernels.
 >
-> Ouch! Broken hardware... how can I document this is happening, so that
-> I can demand an answer from Epson ?
+> Yes, I've found this issue with the latest kernels with someone else as
+> well. Do any of the SCSI driver developers out there know what might be
+> causing this? Apparently, when there are more than one Adaptec SCSI
+> controllers (doesn't seem to matter which ones, but most notably a narrow
+> controller and a wide controller combo), the SCSI driver freaks out and
+> does not recognize either properly.
+>
 
-To print under Linux I wrote a small prg which sends data to the printer very
-slowly bacause I couldn't find a way to know when the printer buffer gets
-filled. Somewhere at Epson (about older printers) I read that it should use
-starndard rts/cts flow control.
-Ah, I send data at 230400bps 8N2 (*2* stop bits) because the printer don't
-seem to be able to receive data so quickly (again, no problems with 8N1
-under MacOS).
+Actually, in my case the kernel *did* recognize the (narrow) 2930 when the
+2940 was there. I even managed to install a working system on a 1G Jaz
+cartridge. I just couldn't use my big fast disks. Your mileage may vary,,,
 
-> Or maybe I should just hack the serial driver to ignore this.
-
-:-6
-
-> And WTF
-> is the serial driver doing looking at CTS on a port with no data?!
-
-CTS changes cause and interrupt.
-
-Bye.
+--
+John Doty  "You can't confuse me, that's my job."
+Home: jpd@w-d.org
+Work: jpd@space.mit.edu
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
