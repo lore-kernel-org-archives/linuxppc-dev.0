@@ -1,28 +1,34 @@
-Date: Wed, 25 Aug 1999 19:49:34 -0500 (CDT)
-From: Takashi Oe <toe@unlserve.unl.edu>
-To: David Riley <happyoscar42@usa.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: BootX enhancement request
-In-Reply-To: <37C35F10.6159B81C@usa.net>
-Message-ID: <Pine.A41.3.96LJ1.1b7.990825194557.72736C-100000@unlserve.unl.edu>
+Subject: Re: Embedded LinuxPPC questions.
+To: brendan@dgs.monash.edu.au
+Date: Thu, 26 Aug 1999 11:33:48 +1000 (EST)
+Cc: linux-embedded@waste.org, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <37C36F87.4B23BE60@dgs.monash.edu.au> from "Brendan Simon" at Aug 25, 99 02:22:32 pm
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
+Message-Id: <19990826013348.69CBC65A@elph.research.canon.com.au>
+From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 24 Aug 1999, David Riley wrote:
+Hi Brendan,
 
-> Some of the drivers don't do video=xxxx.  I know controlfb doesn't.  Is there
-> a _good_ reason for this, or does controlfb just not like me?
+I'm working on a pretty similar project with an MPC860T embedded board; I'd be
+interested to hear how you get on, and I'll try to offer any tips I can. I'm
+using the gcc-2.95 compiler, with binutils-990809 and glibc-2.1.2pre2.
 
-It's probably a simple oversight.  Last I checked,
-controlfb does have the necessary code for "video=...", while
-drivers/video/fbmem.c lacks an entry for controlfb to actually activate
-the code.
+I don't have hardware yet though, so at this stage all I can answer is:
 
-Takashi Oe
+Brendan Simon writes:
+> 5) Do the linux-2.2.x kernels compile with GCC-2.95.x ?
 
+Yes. I can't tell you if it runs, but I have compiled the 2.2.5 embedded kernel
+from:
+    ftp://linuxppc.cs.nmt.edu/pub/linuxppc/embedded/
+with gcc-2.95.
+
+Regards,
+Graham
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
