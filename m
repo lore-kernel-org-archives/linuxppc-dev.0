@@ -1,48 +1,39 @@
-Message-Id: <3.0.6.32.19990415195032.00844460@hsins.uia.ac.be>
-Date: Thu, 15 Apr 1999 19:50:32 +0200
-To: Simone Piccardi <Simone.Piccardi@fi.infn.it>
-From: David De Ridder <david.de.ridder@bitsmart.com>
-Subject: Re: First attempt for LinuxPPC on a MVME2400
-Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <371621E6.F54F8019@fi.infn.it>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Message-ID: <37163753.D2022EDD@natinst.com>
+Date: Thu, 15 Apr 1999 14:00:36 -0500
+From: Dean Luick <dean@natinst.com>
+MIME-Version: 1.0
+To: costabel@wanadoo.fr, linuxppc-dev@lists.linuxppc.org
+Subject: Re:[Patch]linuxppc gnuplot segfaults in save
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 19:29 15-4-99 +0200, Simone Piccardi wrote:
+> Here is a minimal example, adapted from the gnuplot sources. If used
+as
+> "a.out foo.gnu", it segfaults for me. Compiler is egcs-2.91.66
+19990314
+> (egcs-1.1.2 release) (PowerPC GNU/Linux), glibc-2.1.1-3a.
+> gbd backtrace gives
 
-[snip]
->Kernel panic: kernel access of bad area pc c000bbf8 lr c000c474 address
->10120 ts
->k swapper/1
->Rebooting in 180 seconds..
+Using egcs 1.0.2 prelease, it looks like egcs is messing up how it
+pushes
+arguements on the stack.  In partiuclar, egcs should be filling all of
+the integer
+argument registers, r3-r10.  Instead, it places what should to in r8 in
+r10, and placing
+what should be in r9 and r10 on the stack.  This leave r8 and r9
+completely random, plus
+pushes the final two integer arguments (which should be on the stack) 8
+bytes off from
+their correct position.
 
- Just to make sure : try ping'ing the board after the kernel has paniced
-(sp?).
- It should work. (You have 180 secs to ping it ;-) 
+Assuming that fprintf correctly interprets the format string, it is no
+wonder that
+it crashes.
 
->I tried also to start the  zimage_nfsroot-2_2.1 image, obtainig a
->similar result, that is right because I did not setup any root tree for
->the NFS.
+Dean
 
- What do you mean with ``a similar result'' ? Does the kernel panic because
- it cannot find a root fs or does it give an other reason ? In this case too,
- try pinging the board, to verify the Ethernet interface is configured
- correctly.
-
-Regards,
-
-+-----------------------------------------------------------------+
-  David 'Septimus' De Ridder       <david.de.ridder@bitsmart.com> 
-
-"Gonzo   : - You'll live to regret this.
- Old man : - We intend to !"
-   - 'The Muppet Show' 
-
-+-----------------------------------------------------------------+
-  
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
