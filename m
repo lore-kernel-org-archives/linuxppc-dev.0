@@ -1,59 +1,37 @@
-Date: Wed, 17 Mar 1999 12:29:14 -0500 (EST)
-From: Anirudh Joshi <ajoshi@Glue.umd.edu>
-To: Andreas Tobler <a.tobler@schweiz.ch>
-cc: linux ppc <linuxppc-user@lists.linuxppc.org>,
-        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: egcs-1.1.2-RPM
-In-Reply-To: <36EF6F70.61C452E0@schweiz.ch>
-Message-ID: <Pine.GSO.3.95q.990317122532.27250A-100000@z.glue.umd.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <v04003a00b31599a44c21@[204.22.210.180]>
+In-Reply-To: <19990317162518.010351@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Wed, 17 Mar 1999 17:50:32 +0000
+To: Benjamin Herrenschmidt <bh40@calva.net>
+From: "sean o'malley" <somalley@ed.mde.state.mi.us>
+Subject: Re: Apple Open Source: the drivers
+Cc: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 
-these were built against glibc2
+>There's a PMU driver with apparently up-to-date command length tables and
+>lots of comments about the commands ;-) An interesting thing that I've
+>not seen in the LinuxPPC driver: When sending read commands to
+>non-existing devices, the PMU may never answer, and so there's need for
+>some kind of timeout. I didn't find infos about putting the PowerBook to
+>sleep, maybe MacOS X Server cannot sleep...
+
+Hey maybe we will get the b/w g-3's (yMacs) running yet..
+
+Macos X Server doesnt have any sleep code.. it wasnt written for that..
+you also wont see _much_ USB (keyboard and mouse) support and it is still
+lacking Firewire support from everything i have read.
+
+Powerbooks arent supported at all..
+Which makes me wonder why... Apple was giving major discounts to developers
+on those things. unless they just wanted to give out information and
+support linuxppc..
 
 
-ftp://linuxppc.slackers.cx/pub/rawhide/ppc/RedHat/RPMS/egcs-1.1.2-8c.ppc.rpm
-ftp://linuxppc.slackers.cx/pub/rawhide/ppc/RedHat/RPMS/egcs-c++-1.1.2-8c.ppc.rpm
-ftp://linuxppc.slackers.cx/pub/rawhide/ppc/RedHat/RPMS/egcs-g77-1.1.2-8c.ppc.rpm
-ftp://linuxppc.slackers.cx/pub/rawhide/ppc/RedHat/RPMS/egcs-objc-1.1.2-8c.ppc.rpm
-ftp://linuxppc.slackers.cx/pub/rawhide/ppc/RedHat/RPMS/cpp-1.1.2-8c.ppc.rpm
-ftp://linuxppc.slackers.cx/pub/rawhide/ppc/RedHat/RPMS/libstdc++-2.9.0-8c.ppc.rpm
 
-btw, also available: glibc-2.1.1-0a.pre1.ppc.rpm
-
-
-ani
-
-
-On Wed, 17 Mar 1999, Andreas Tobler wrote:
-
-> 
-> Hi,
-> 
-> maybe a dump question, is anybody working on a RPM for
-> egcs-1.1.2-glibc1.99? And or egcs-1.1.2-glibc-2.1.
-> If not can I try it by adapting a RPM from a earlier release? I never
-> made a RPM from scratch, I only modified them.
-> 
-> Yesterday, I built egcs-1.1.2 under R4.1. It worked out of the box?! Now
-> I have to compare the test results. I can't believe it, before I had so
-> many troubles building an egcs directly from egcs.cygnus.com.
-> 
-> A last question, what are the minimal requirements to build egcs under
-> pre-R5. Means glibc etc.
-> 
-> Thanks
-> Andreas
-> -- 
-> | Andreas Tobler				
-> | CH-8004 Zuerich 							
-> | E-Mail: andreas.tobler@alcatel.ch	| a.tobler@schweiz.ch
-> -----------------------------------------------------------
-> 
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
