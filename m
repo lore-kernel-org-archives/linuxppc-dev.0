@@ -1,9 +1,8 @@
-Date: Thu, 15 Jan 2004 08:16:04 +0100
+Date: Thu, 15 Jan 2004 08:20:47 +0100
 From: valvoline <valvoline@vrlteam.org>
-To: Colin Leroy <colin@colino.net>
-Cc: linuxppc-dev@lists.linuxppc.org
+To: linuxppc-dev@lists.linuxppc.org
 Subject: Re: temp.c and cputable.c issues
-Message-ID: <20040115071604.GR2658@adapter.n0skillz.org>
+Message-ID: <20040115072047.GS2658@adapter.n0skillz.org>
 Reply-To: valvoline@vrlteam.org
 References: <20040114193910.GN2658@adapter.n0skillz.org> <20040114221018.GB983@stop.crashing.org> <20040114201153.GO2658@adapter.n0skillz.org> <125601c3db40$50b11bc0$3cc8a8c0@ANOSP>
 Mime-Version: 1.0
@@ -15,19 +14,12 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 On Thu, Jan 15, 2004 at 09:19:37AM +0100, Colin Leroy wrote:
 
-> You may have an external chipset used to check temperatures and control
-> the fan.
+> What's your computer model ?
+> You can try to do a
+> `find /proc/device-tree -name fan|grep -v aliases`
 
-to be exact, there's an i2c thermostat named adt7467:
-
-http://www.analog.com/UploadedFiles/Data_Sheets/115254175ADT7467_pra.pdf
-
-i've tried to use it, but the module is not compatible with i2c_west and
-soundcard, so the system hangs with no further response! (=
-
-without the soundcards, the module load correctly, but i can't see
-any new special device under /dev nor /proc...perhaps, the support is
-stille experimental, or i've done some mistake in loading.
+i've an iBook G4/12"/firewire. it's branded as PowerMac6,3 and it should
+be the lastest available from apple.
 
 --
 [ valvoline :: VRL Team :: s0ftpj :: freaknet Medialab :: GPG key available  ]
