@@ -1,40 +1,32 @@
-Message-ID: <3ADF33DC.CDA78E27@mvista.com>
-Date: Thu, 19 Apr 2001 14:52:12 -0400
+Message-ID: <3ADF3970.C015DB5D@mvista.com>
+Date: Thu, 19 Apr 2001 15:16:00 -0400
 From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Kyle Harris <kharris@nexus-tech.net>
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: TDM on mpc823
-References: <3ADF222D.C860E056@nexus-tech.net>
+To: Steven Hein <ssh@sgi.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 860 RTC support
+References: <3ADE0222.BF7F539C@sgi.com> <3ADE0501.321052F9@mvista.com> <3ADF1377.72242D3B@sgi.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Kyle Harris wrote:
+Steven Hein wrote:
 
-> Sorry if this is off-topic (not really linux related).
+> My problem is this:   when I set the date via the "date --set"
+> command (which calls stime()) or by calling settimeofday() directly,
+> it doesn't result in the 860's RTC being updated.
 
-It's OK....It's an education about how to use Linux with a TDM
-interface :-).
 
-> But as soon as I go above 5 bytes, the TDM fails to send the correct
-> number and sometimes stuffs the bits in an incorrect slot.
+Ahh, OK.  I'll take a look at this.  I thought it used to work in
+older kernels.  It's on my list (or if someone else wants to take
+a look and send a patch ...... :-).
 
-I'm going to assume you are using an SMC (since SMC2 is a logical
-choice).  Here is another reason why you don't use the LAST indicator.
-Unlike the SCC, the SMC doesn't start to load it's FIFO from the BD
-until the TDM tells it the frame pulse has arrived.  Because of this,
-you can't get the first slot of the TDM to transmit from an SMC after
-it achieves synchronization.  You will notice my cs4218 driver
-compensates for this by shifting the data in the buffer (by moving
-the pointer) on the first buffer of a transfer.  Once the world is
-streaming, the SMC can move through the buffers and get the first
-TDM slot.  If you are using a processor with an available SCC (like
-SCC3 on the 823e/850), I would use that instead of the SMC.  The SCC
-pre-loads the FIFO, and behaves as you expect.  FYI, the SMC is useful
-for managing the ISDN D-channel on either IDL or GCI, which isn't the
-first slot and is low bandwidth.
+> I know I'm missing something, as it sounds like this works for others,
+
+As I recall, there are events that occur to update the RTC from
+the kernel's notion of time, and one used to be some timeout.  Perhaps
+after you set the time, if you wait for a while it may update the RTC.
 
 
 	-- Dan
