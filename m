@@ -1,35 +1,38 @@
+Message-ID: <20010227171058.56271.qmail@web11103.mail.yahoo.com>
+Date: Tue, 27 Feb 2001 09:10:58 -0800 (PST)
+From: gopi krishna <mgopik@yahoo.com>
+Subject: Unable to read/write consistently to a device.
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: gdbserver for mpc8xx targets
-Message-ID: <983264512.3a9b6d0098303@imp.imms.de>
-Date: Tue, 27 Feb 2001 10:01:52 +0100 (MET)
-From: Christian Schroeder <christian.schroeder@imms.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+Hi..
 
-did anybody successfully cross compile gdbserver for powerpc targets.
-I tried the sources for gdb-4.18 and gdb-5.0 but gdbserver didn't compile.
+  We have custom board based on 860T running
+linux2.2.14
 
-Is there a special version of gdbserver for ppc targets or do I have to
-apply patches ?
+  We have a device 0xf0040000.  This address has been
+ioremapped.
+(Hence directly using the physical address to access
+the memory)
 
-Thanks
-Christian Schroeder
+We tried to read the registers using:
+  in_be32(addr)
+  *address
+  in_be32(volatile unsigned *addr)
+but, none of them are giving any consistent results.
 
-Dr.-Ing. Christian Schroeder
-Institut fuer Mikroelektronik- und Mechatronik-Systeme
-Langewiesener Strasse 22
-98693 Ilmenau
-Telefon: +49 3677 678315
-Telefax: +49 3677 678337
-Mobil:   +49 173 5789172
-e-mail:  christian.schroeder@imms.de
-www:     http://www.imms.de/~christi/cs.html
-pgp:     finger christi@finger.imms.de
+With BDM, we are able to get correct and consistent
+results.
+
+Can there be any cache/coherency/any other issues of
+linux which we are overlooking?
+
+thanx in advance
+gopi
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
