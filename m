@@ -1,45 +1,36 @@
-Date: Wed, 15 Mar 2000 16:09:55 +0200 (EET)
-From: Kostas Gewrgiou <gewrgiou@imbc.gr>
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-cc: michdaen@iiic.ethz.ch, Alan Hourihane <alanh@fairlite.demon.co.uk>,
-        "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to workonppcwithr128
-In-Reply-To: <Pine.LNX.4.10.10003151054180.24581-100000@opal.biophys.uni-duesseldorf.de>
-Message-ID: <Pine.LNX.4.21.0003151544550.3091-100000@idd-01.imbc.gr>
+Date: Wed, 15 Mar 2000 15:49:21 +0100 (MET)
+From: Christiaan Welvaart <C.J.Welvaart@phys.uu.nl>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.3.51 Trashes RTC on Beige G3 Mini-tower
+In-Reply-To: <200003141133.LAA09460@hyperion.valhalla.net>
+Message-ID: <Pine.OSF.4.21.0003151519190.20168-100000@ruunat.phys.uu.nl>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 15 Mar 2000, Michael Schmitz wrote:
+On Tue, 14 Mar 2000, Iain Sandoe wrote:
 
->
-> > > I guess it all boils down to PCI messups.
-> >
-> > How do you come to this conclusion? Why should it influence ioctls?
->
-> Because these ioctls will, ultimately, write to the card again? If the X
-> server actually messes with the PCI bridges, the card might no longer be
-> mapped?
-> I admit that I understand next to nothing about PCI, or how the X server
-> uses PCI. Makes it a bit harder to spot the flaky code :-)
->
-> Anyway, the X server appears to complete screen init OK but I never
-> actually get to see the cross hatch pattern.
+> at boot time {with options vmode=atyfb, vmode:16,code:32 single }
+> the usual "rtc time is" ... prints the correct date...
+> then we get "setting time to ... some time in Feb 1932...
+> from then on the RTC is wrong although using 'date' to set the correct time
+> behaves as expected on the running system.
+> Is this a library problem? (I'm using 2.3.51 with a system installed from
+> linuxPPC Q3 - but I've also updated to glibc-2.1.3 - j).
+
+On a beige G3 Dekstop, with the standard 2.3.51 sources, I don't see this
+problem At least there are no wrong dates set in /var/messages, though I
+only booted 2.3.51 twice. I use glibc-2.1.3-4a (with linux 2.2.14 now).
+
+I did find a different problem: the builtin ethernet port doesn't work. It
+seems to work (almost?) perfectly from within linux (i.e. no errors), but
+no ethernet connection is made. The light on the hub stays off while the
+kernel reports that BMAC ethernet was succesfully initialized.
 
 
-  The X server has played with the cards mappings, since it believed the
-old ones were wrong. atyfb will still try to access the card in the old
-location and thats what gives you the hard locks.
-
-  The question is why the X server doesn't like the old mappings ?
-If you can send me the /var/log/XFree86.0.log and lspci output i'll
-forward it in the xfree devel list and see what answers we can get from
-there.
-
-  Kostas
+    Christiaan
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
