@@ -1,36 +1,69 @@
-Date: Mon, 22 Jan 2001 19:54:48 +0100 (MET)
-From: Roman Zippel <zippel@fh-brandenburg.de>
-To: michdaen@iiic.ethz.ch
-cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Jeff Hartmann <jhartmann@valinux.com>,
-        Gareth Hughes <gareth@valinux.com>, linuxppc-dev@lists.linuxppc.org,
-        dri-devel@lists.sourceforge.net, Paul Mackerras <paulus@linuxcare.com>
-Subject: Re: [Dri-devel] PPC Lockup (ati-pcigart-branch)
-In-Reply-To: <3A6C7970.2E3E88CA@relog.ch>
-Message-ID: <Pine.GSO.4.10.10101221945230.19978-100000@zeus.fh-brandenburg.de>
+From: tom_gall@vnet.ibm.com
+Message-ID: <3A6C822F.7DB50A58@vnet.ibm.com>
+Date: Mon, 22 Jan 2001 18:55:43 +0000
+Reply-To: tom_gall@vnet.ibm.com
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
+To: Tom Gall <tgall@rochcivictheatre.org>
+CC: Troy Benjegerdes <hozer@drgw.net>, Dan Malek <dan@mvista.com>,
+        linuxppc_commit@hq.fsmlabs.com,
+        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: context overflow
+References: <3A68F7A0.693639F1@mvista.com> <20010121222842.A27103@altus.drgw.net> <3A6BB971.7F128273@rochcivictheatre.org>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
-
-On Mon, 22 Jan 2001, Michel Dänzer wrote:
-
-> > There is no pte table and so there is nothing mapped at that address, you
-> > can use (pgd|pmd|pte)_present() to test for that.
+Tom Gall wrote:
 >
-> You are saying we should use *_present() to check each of these before using
-> *_offset to get the pointer? And what if *_present() is false?
+> Troy Benjegerdes wrote:
+>
+> > On Fri, Jan 19, 2001 at 09:27:44PM -0500, Dan Malek wrote:
+> > >
+> > > I just heard about the bug Tom Gall fixed in "context_overflow"
+> > > by testing for current->mm == NULL.
+> > >
+> > > I believe the proper solution is to use 'current->active_mm'
+> > > instead of 'current->mm' (and you never get a null pointer).
+> > > This way, the proper 'active' context is updated with a new
+> > > context even though a kernel thread has stolen it from somewhere
+> > > else to use.  I think skipping the selection of a new context
+> > > in this case could be logically incorrect for some PowerPC cores.
+> >
+> > Since this got no response, I'm cross-posting to linuxppc-commit.
+>
+> I will look into this tomorrow.  It's an important fix, I don't want to rush.
 
-It depends what you what you want to do. If you just want to do a reverse
-lookup, yes, you have to check the value with *_present.
-But you can also map something at that address, then you had to use
-*_alloc(), but leave that better to ioremap/vmalloc. (Look for map_page in
-arch/ppc/mm/init.c for how it can be done.)
+Hi All,
 
-bye, Roman
+  Ok here's the explaination and I beg forgivness if this isn't clear or needs
+more filled in.
 
+  current->mm I believe is correct. active_mm for tasks in user space just point
+back to mm. kernel space tasks will have an mm of NULL yet their active_mm will
+point back to the last user space task they ran.
+
+  The reason for this patch is in the case where the idle task comes in on one
+processor and on another processor it has encountered a context overflow. The
+idle task on processor 0 detects the overflow as well and that's when things get
+interesting, and why the change.
+
+  So anyway that's the situation from my neck of the woods. These other
+processor cores make me worried. What cores are you refering too? Are they SMP?
+How and in what ways are they different?
+
+  Many thanks to Pat McCarthy who is my local guru on this topic and also the
+author of the fix in question.
+
+  Regards,
+
+  Tom
+--
+Tom Gall - PowerPC Linux Team    "Where's the ka-boom? There was
+Linux Technology Center           supposed to be an earth
+(w) tom_gall@vnet.ibm.com         shattering ka-boom!"
+(w) 507-253-4558                 -- Marvin Martian
+(h) tgall@rochcivictheatre.org
+http://oss.software.ibm.com/developerworks/opensource/linux
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
