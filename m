@@ -1,44 +1,33 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <4021F7A3.7080707@dgt-lab.com.pl>
+Date: Thu, 05 Feb 2004 08:58:27 +0100
+From: Wojciech Kromer <krom@dgt-lab.com.pl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: Linux kernel and u-boot for mpc8540
-Date: Thu, 5 Feb 2004 08:55:52 +0100
-Message-ID: <9367F79C9DBB8147AD58A96C933F00869D5494@men-exch.intra.men.de>
-From: "Klaus Popp" <KPopp@men.de>
-To: <Michele.Pallaro@alcatel.it>,
-	"linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
+To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: 826x ATM
+References: <DCEAAC0833DD314AB0B58112AD99B93B06DA5A@ismail.innsys.innovsys.com>
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B06DA5A@ismail.innsys.innovsys.com>
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Where I can download the Linux kernel and u-boot patch for mpc8540 ?
+U¿ytkownik Rune Torgersen napisa³:
 
-We have got a linux port from Motorola (for 8560ADS board), but I'm not sure if I'm allowed to give it away...
-We haven't yet tried to run it on the eval board. Anybody out there who has done this?
+>Has anybody got working code for using ATM on FCC1 on a 826x CPU?
+>Our board has the same ATM impementation as the MPC826xADS boards, and I
+>need a way to test if it actually works.
+>
+>
+>
+we have one, but it's hardware dependend
 
-Klaus Popp
-MEN Mikro Elektronik GmbH
-www.men.de
+you'll have to make some modification specific to your
+ phy,clocking,using of local bus etc...
 
+--
+* * * * * * * * * * * *
+* per pedes ad astra! *
+* * * * * * * * * * * *    mailto:krom@dgt-lab.com.pl
 
-> -----Original Message-----
-> From: owner-linuxppc-embedded@lists.linuxppc.org
-> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of
-> Michele.Pallaro@alcatel.it
-> Sent: Thursday, February 05, 2004 8:45 AM
-> To: linuxppc-embedded
-> Subject: Linux kernel and u-boot for mpc8540
->
->
->
-> Where I can download the Linux kernel and u-boot patch for mpc8540 ?
->
-> Thanks
->     Michele
->
->
->
->
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
