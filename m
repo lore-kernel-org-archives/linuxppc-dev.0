@@ -1,45 +1,25 @@
-Message-ID: <3B52C152.F5FB58B7@genetel.co.kr>
-Date: Mon, 16 Jul 2001 19:26:32 +0900
-From: hychon <hychon@genetel.co.kr>
-Reply-To: hychon@genetel.co.kr
-MIME-Version: 1.0
+Date: Mon, 16 Jul 2001 21:39:28 +0900
+From: "G.TABIRA" <QYY00056@nifty.ne.jp>
+Message-ID: <20010716213928.59920038.20936@nifty.ne.jp>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: i can't use the function in kernel??
-Content-Type: text/plain; charset=EUC-KR
+Subject: Setting for RTSCHEDULE at HardHat2.0
+In-Reply-To: <200107161159.GAA19405@lists.linuxppc.org>
+References: <200107161159.GAA19405@lists.linuxppc.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi!
+How do you do.
+Please teach your greatest thinking to me.
 
-I write a  sample network device driver based on MPC860T
-but  no experience  any device driver.
-I reference  '/kernel/arch/ppc/8xx_io/enet.c' file  and I wirte a
-program.
+I've tried to run sample "hello"of rtlinux-3.0.tar.gz
+at Linux PowerPC-Embedded.
+I have set CONFIG RTSCHED=y in config file for RTSCHEDULE.
+I made kernel and Images by TCT that is TOOL included in the HardHat.
 
-when I compile (ppc_8xx-gcc -o network network.c ) , occur error with
-following message
-
-============== -error ============================================
-~~/network.c : undefined reference to 'printk'
- ~~/network.c : relocation truncation to fit : R_PPC_REL24 printk
-
-~/network.c : undefined reference to 'kmalloc'
- ~~/network.c : relocation truncation to fit : R_PPC_REL24 kmalloc
-.........
-
-collect2: ld returned 1 exit status
-make: ***[all] Error 1
-
-==============================================================
-
- I can't use 'printk()' , kmalloc() etc... function .
-
-I include linux/kernel.h . linux/fs.h , linux/slab.h ...etc ( header
-files of  need by function)
-(reference  the book 'linux device driver ' by ALESSANDRO RUBIN )
-
-why i don't use  those function?
+What should I  do for running sample program "hello" ?.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
