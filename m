@@ -1,8 +1,12 @@
 Mime-Version: 1.0
-Message-Id: <a04310100bbce04de57b9@[199.170.89.118]>
-In-Reply-To: <Pine.GSO.4.21.0311042328150.3207-100000@waterleaf.sonytel.be>
-References: <Pine.GSO.4.21.0311042328150.3207-100000@waterleaf.sonytel.be>
-Date: Tue, 4 Nov 2003 19:48:44 -0600
+Message-Id: <a04310101bbce0854283b@[199.170.89.118]>
+In-Reply-To: <1067985081.707.124.camel@gaston>
+References: <20031103033529.24416.qmail@kunk.qbjnet.com>	
+ <1067842481.17970.8.camel@gaston>
+ <a04310106bbcd1501d614@[199.170.89.118]>	
+ <1067937269.680.92.camel@gaston>
+ <a04310102bbcda40d92fc@[199.170.89.159]> <1067985081.707.124.camel@gaston>
+Date: Tue, 4 Nov 2003 20:11:39 -0600
 To: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
 From: Jeff Walther <trag@io.com>
 Subject: Re: IRQS on 6 Slot Macs
@@ -11,51 +15,64 @@ Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 23:30 +0100 11/04/2003, Geert Uytterhoeven wrote:
-
->On Tue, 4 Nov 2003, Jeff Walther wrote:
->>  At 20:14 +1100 11/04/2003, Benjamin Herrenschmidt wrote:
->>  >>  After all, one can, in theory, add 1024 PCI slots to a machine using
->>  >>  PPBs.   There aren't going to be 1024 interrupts available.
->>  >
->>  >Why ? Some iSeries have up to 2048 irq lines afaik ;)
->>
+At 09:32 +1100 11/05/2003, Benjamin Herrenschmidt wrote:
 >>  By iSeries, do you mean iBook and iMac?   Or is that something else?
+>>  I'm still kind of living in the PowerSurge world, with occasional
+>>  forays up to Beige G3.  :-)
 >
->iSeries are the big IBM boxes formerly known as AS/400.
+>Nah ;) iSeries are IBM big boxes :) Though a G5 has about 256 interrupt
+>sources on his 2 openpics, but I doubt they are all used.
 
-How do they provide that many IRQ lines?  I'm assuming that there
-can't be one wire/pin per IRQ because of the routing/packaging
-problems for the traces and chips.   Do they do something like an
-address bus for IRQs?
->
->>  I think I can find GC's connection to MESH as well, but I'm
->>  uncertain.   I believe that MESH is just a licensed NEC (now LSI
->                                                       ^^^
->>  Logic) 53CF96 and I have the pinout for the 53CF96 so tracing
->
->NCR, I assume?
+How do they handle that physically?   Surely there are not 256
+separate wires?   Do they use an 8 wire bus and signal interrupts as
+if they were addresses?
 
-Derrrrrrr.  Yes.   Must.  Find.  New.  Brain.
+>Isn't MESH an IBM part ? I may be confused... Also, I would have
+>expected MESH to be actually _inside_ GC, it isn't ?
 
-NCR spun off their semiconductor business as SYMBIOS which was later
-acquired by LSI Logic.
+It is an Apple part.  I do not know for certain where it came from
+originally.  However, following the evolution of Apple design
+suggests that it's based on the NCR 53CF96.   The previous generation
+of machines, the PPC NuBus machines, included the PMac 8100 and 9100
+which used exactly the same CURIO chip as the x500 machines to
+provide the slow (5 MB/s) ethernet and used the NCR 53CF96 to provide
+the Fast SCSI bus.   Earlier machines (the Quadras) used the NCR
+53C96 to handle their SCSI bus.   And, of course, the earlier
+machines used the NCR 53C80.
 
+Additionally, the 53CF96 chip in the 8100 is in a 100 pin, 20 X 30
+quad flat pack.   MESH is in exactly the same package.    This is not
+definitive, but suggests to me that MESH is simply a licensed 53CF96.
+
+
+MESH is a separate chip and is not contained in GC.   It would be
+kind of cool if MESH was in GC, because then one could implement the
+Fast SCSI bus on 7200s and the PCC Catalyst clones, but that's not
+the way it is....
+
+In my queue of projects (massive and ever lengthening) is to install
+a 53CF96 in place of a MESH and/or vice versa and see what happens.
+However, I wonder if a similar test could be done with software.   I
+assume that Linux implements some kind of driver to support MESH.
+Is there a driver for the 53CF96 which could be substituted or
+compared as an experiment.
+
+As an aside, it's too bad that CURIO's pinout is not available from
+AMD.   They have datasheets for several related chips on their site.
+I guess CURIO was a custom job for Apple or something.
+
+>>  There is no PLD between the PCI interrupt pins and GC on the S900
+>>  board.  But, since Umax designed the board, they certainly could have
+>>  added one.   They already did that quirky E100 hack to PCI slot 1.
 >>  I haven't dug into that, but I'd like to know how they made that
 >>  work.  Does an Enet card require an interrupt?  Does it ever master
 >>  the PCI bus?
 >
->Ethernet prefers to have an interrupt, else it becomes quite slow :-)
->Most modern Ethernet interfaces do bus mastering. Old NE2000 clones don't.
+>Yes, especially recent ones, they need both.
 
-Thank you.  Then one would expect to find an interrupt and PCI bus
-arbitration lines in the extender on PCI slot 1 of the S900.   The
-PCI bus arbitration lines are simple.  The arbiter that Apple used
-has something like six GNT and REQ lines available, so there are
-spares of those, but I wonder where Umax got the interrupt, unless
-it's sharing one with the UW SCSI portion of the card and the drivers
-take that into account.
+Thank you.
 
 Jeff Walther
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
