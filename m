@@ -1,21 +1,22 @@
-Message-ID: <3AC418FD.2FA4AE67@ncal.verio.com>
-Date: Thu, 29 Mar 2001 21:26:21 -0800
-From: Henry Worth <haworth@ncal.verio.com>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org, billfink@capu.net
+Message-Id: <200103300529.AAA24230@makai.watson.ibm.com>
+To: Henry Worth <haworth@ncal.verio.com>
+Cc: Franz.Sirl-kernel@lauterbach.com,
+	linuxppc-dev@lists.linuxppc.org, billfink@capu.net
 Subject: Re: xine, ppc and illegal instructions 
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: Message from Henry Worth <haworth@ncal.verio.com>
+   of "Thu, 29 Mar 2001 21:20:52 PST." <3AC417B4.5F73589@ncal.verio.com>
+Date: Fri, 30 Mar 2001 00:29:12 -0500
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Bill Fink wrote:
->
->A theory why xine 0.4.01 would work on Henry's system but not on mine
->was that Henry was running with a newer glibc (2.2.something).  I was
+	The configuration target is powerpc-*-linux, not ppc-*-linux.
+At best ppc-* could be converted to powerpc-*.  It's too bad that people
+made the wrong assumption about the configuration name, but there is not
+reason to encourage that.
 
-Actually, I'm at 2.1.3 and 2.95.3 compiler, but the common
-denominator for those failing seems to be Debian distributions,
-whereas I'm LPPC Q4.
+David
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
