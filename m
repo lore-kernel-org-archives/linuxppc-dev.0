@@ -1,43 +1,53 @@
-Message-Id: <200002082006.VAA12025@denx.local.net>
-To: Joseph Garcia <jpgarcia@execpc.com>
-cc: Josh Huber <huberj@wpi.edu>,
-        Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: BMAC eth problems...
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 08 Feb 2000 07:22:45 CST."
-             <38A018A5.FD10C45D@execpc.com>
-Date: Tue, 08 Feb 2000 21:06:22 +0100
+Message-ID: <38A07887.DB071C6C@denise.shiny.it>
+Date: Tue, 08 Feb 2000 21:11:51 +0100
+From: Giuliano Pochini <pochini@denise.shiny.it>
+MIME-Version: 1.0
+To: Adrian Cox <apc@agelectronics.co.uk>
+CC: LinuxPPC-Dev <linuxppc-dev@lists.linuxppc.org>,
+        Debian PowerPC <debian-powerpc@lists.debian.org>
+Subject: Re: Altivec and binary compatibility
+References: <389AAA06.CBCDB19A@agelectronics.co.uk> <389EE09A.571A6C26@denise.shiny.it> <389F09C2.18FD4AA5@agelectronics.co.uk>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
 
-in message <38A018A5.FD10C45D@execpc.com> you write:
+> > Because with Altivec we need to save V registers, right ?  Well, I suppose
+> > intel developers had the same problem with P-III "vector" unit. How did they
+> > solve the problem ?
 >
-> My wallstreet/300 has a similar, possibly related problem.  any FTP transfer
-> originating from my powerbook in Linux (under any client or server) has a max
-> transfer under 100k.  This is a BMAC driver problem.  my brother's lombard
+> As far as I can tell, by ignoring it, and making the assumption that
+> only low-level libraries will use the vector registers.
 
-Same problem for me. Incoming traffic is fast and reliable,  outgoing
-data  is  slow  (usually  around  80  k/s)  and large transfers often
-contain garbage (bad data, but I cannot see any errors reported).
+mm :-/
 
-> MacOS has no problems with my ethernet card; incoming FTP transfers work normal;
+> I plan to take
+> a similar approach, and warn users not to mix Altivec and exceptions.
 
-Same here.
+>From altivec p. e. m.: "1.2.6 - The AltiVec vector unit never generates an
+exception"
 
-Wolfgang Denk
+I just started to read the book, but I think AltiVec tells nothing even on
+things like divisions by 0, etc.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-				 EARTH
-			     smog  |   bricks
-			 AIR  --  mud  --  FIRE
-			soda water |   tequila
-				 WATER
+> > > To add to the problem, throwing exceptions on an error is just what a
+> > > modern C++ library is supposed to do.  Throwing or catching an exception
+> > > in Altivec code will produce sequences that cannot execute on a G3
+> >
+> > Why ?? (sorry for my ignorance...)
+>
+> I haven't studied GCC's implementation of exceptions in great detail.
+> The compiler saves and restores all the non-transient registers as part
+> of the exception sequence. When generating Altivec code this produces
+> stvx and lvx instructions, which will cause an illegal instruction
+> exception on G3 processors.
+
+Ok, the programmmer will have to check for AltiVec at the beginning of the
+program. What's really important is that programs compiled for 603, 604, G3,
+will work fine on G4.
+
+Bye.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
