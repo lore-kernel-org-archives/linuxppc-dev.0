@@ -1,50 +1,26 @@
-Date: Tue, 17 Oct 2000 16:46:17 +0200
-From: Claus Enneper <cl.en@gmx.net>
-To: linuxppc-dev@lists.linuxppc.org
-Cc: Topi Kanerva <tkanerva@ees2.oulu.fi>
-Subject: Re: IrDA on PowerBooks
-Message-ID: <20001017164617.B369@olis.north.de>
-References: <20001017015054.A16003@ee.oulu.fi>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-md5;
-	protocol="application/pgp-signature"; boundary="4SFOXa2GPu3tIq4H"
-In-Reply-To: <20001017015054.A16003@ee.oulu.fi>; from tkanerva@ees2.oulu.fi on Tue, Oct 17, 2000 at 01:50:54 +0300
+Date: Tue, 17 Oct 2000 16:51:08 +0200 (CEST)
+From: Xavier Grave <grave@ipno.in2p3.fr>
+To: Matt Porter <mporter@mvista.com>
+cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 2.4 kernel doesn't allocate resource for my PCI Board
+In-Reply-To: <20001016095706.B4206@beef.az.mvista.com>
+Message-ID: <Pine.LNX.4.21.0010171649450.1915-100000@ipnpcu5>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---4SFOXa2GPu3tIq4H
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-Hi Topi!
+No more problem on the PCI allocation with the right kernel. Still have a
+few problems to boot, but I need to investigate a little before asking any
+question.
 
- >:=20
- >: Now, anyone who has succesfully got any IrDA devices to work with the
- >: PowerBook IrDA port? any suggestions?
+O+ xavier
 
+33 (0) 1 69 15 79 59
+De chacun selon ses forces, a chacun selon ses besoins
 
-don't know anything about the ericson, but as long as you followed
-the IRDA-HOWTO, it should work right out of the box.
-get the irda-utils src, or use debian's package.
-and there is a gsmlib-rpm at linuxppc, which manage your sms (no GUI).
-	I did't try that one, 'cause I use irda only for the palm.
-
-# irattach /dev/ttyS1
-# irmanager -d 1
-and after that it's a matter of your userland app via /dev/ircomm0
-
-
-
-
-		Claus
-
---4SFOXa2GPu3tIq4H
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
-
---4SFOXa2GPu3tIq4H--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
