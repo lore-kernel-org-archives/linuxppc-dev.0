@@ -1,20 +1,19 @@
-Return-Path: <jason.mcmullan@timesys.com>
-Received: from exchange.timesys.com (mail.timesys.com [65.117.135.102])
-	by ozlabs.org (Postfix) with ESMTP id B94A567A65
+Return-Path: <wfarnsworth@mvista.com>
+Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
+	by ozlabs.org (Postfix) with ESMTP id 4E33867A65
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Mar 2005 04:26:29 +1100 (EST)
-From: Jason McMullan <jason.mcmullan@timesys.com>
-To: Wade Farnsworth <wfarnsworth@mvista.com>
-In-Reply-To: <1110989349.24673.99.camel@rhino.az.mvista.com>
+	Thu, 17 Mar 2005 05:04:19 +1100 (EST)
+From: Wade Farnsworth <wfarnsworth@mvista.com>
+To: Jason McMullan <jason.mcmullan@timesys.com>
+In-Reply-To: <1110993985.2987.2.camel@ad.doubleclick.net>
 References: <1110907039.24673.12.camel@rhino.az.mvista.com>
 	<1110937421.28218.27.camel@jdub.homelinux.org>
 	<1110989349.24673.99.camel@rhino.az.mvista.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-XuiamZsKsKoHs6Zq38TK"
-Date: Wed, 16 Mar 2005 12:26:25 -0500
-Message-Id: <1110993985.2987.2.camel@ad.doubleclick.net>
+	<1110993985.2987.2.camel@ad.doubleclick.net>
+Content-Type: text/plain
+Message-Id: <1110996255.24527.129.camel@rhino.az.mvista.com>
 Mime-Version: 1.0
+Date: 16 Mar 2005 11:04:15 -0700
 Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 Subject: Re: [PATCH 1/3] PPC440EP SoC and Bamboo board support
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -27,30 +26,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Wed, 2005-03-16 at 10:26, Jason McMullan wrote:
+> Do you need a 'special' toolchain to work around Errata 42 (isync before
+> blrl) for user-space, or are the kernel-land fixes sufficient?
 
---=-XuiamZsKsKoHs6Zq38TK
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Yes, this work around also needs to be in gcc.  I know this has been
+fixed in MontaVista's toolchain, but I don't know if the work around has
+been pushed up to the main gcc tree.
 
-
-Do you need a 'special' toolchain to work around Errata 42 (isync before
-blrl) for user-space, or are the kernel-land fixes sufficient?
-
---=20
-Jason McMullan <jason.mcmullan@timesys.com>
-TimeSys Corporation
-
-
---=-XuiamZsKsKoHs6Zq38TK
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-
-iD8DBQBCOGxB8/0vJ5szK6kRAnIwAJ9nQYtD75fUW06eMitooXJ0xUsinACgrpmG
-3scoAqTKhaAkQ5kchuiyVYY=
-=BobH
------END PGP SIGNATURE-----
-
---=-XuiamZsKsKoHs6Zq38TK--
+-Wade Farnsworth
