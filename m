@@ -1,68 +1,53 @@
-Message-ID: <404837D3.3060609@imc-berlin.de>
-Date: Fri, 05 Mar 2004 09:18:27 +0100
-From: Steven Scholz <steven.scholz@imc-berlin.de>
+Message-ID: <00a101c40291$c31a7120$0400a8c0@portatile>
+Reply-To: "Ing.Gianfranco Morandi (LAN)" <gianfranco.morandi@euro-studio.it>
+From: "Ing.Gianfranco Morandi (LAN)" <gianfranco.morandi@euro-studio.it>
+To: "Wolfgang Denk" <wd@denx.de>
+Cc: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
+References: <20040304110742.949A1C0655@atlas.denx.de>
+Subject: Re: "mkimage" not found 
+Date: Fri, 5 Mar 2004 10:10:53 +0100
 MIME-Version: 1.0
-To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: uncached user space mapping with mmap() ???
-References: <40473464.8010203@imc-berlin.de>
-In-Reply-To: <40473464.8010203@imc-berlin.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi there,
+Dear Wolfgang
 
-thanks very much for all your help.
-I used the stuff StÈphane suggested. But I have to ask again about
-mapping of huge memory areas:
+> Maybe your PATH ist not correct?
 
-Let's say the peripheral has 32 MB address range staring at BASE. At
-address GRAM 1MB of external SDRAM is located.
+You are perfectly right! I didn't add the line "export
+PATH=$PATH:/opt/eldk/usr/bin"  to .bashrc.
+Many thanks
 
-I use a simple test loop
+> > With the previous ELDK2.0 I would have generated the image with the
+"make
+> > pImage" command while now I suppose the command "make uImage" must be
+used.
+> > Is this correct?
+>
+> This is correct, but "make pImage" will still work, too.
 
-	p = (unsigned short *)
-		ioremap(base + GRAM, 32MB);
+unfortunately I had the following messages:
 
-	START ();
-	while (Retries--) {
-		for (i = 0; i < Size; i++) {
-			pData[i] = *p;
-		}
-	}
-	STOP ();
+[gianfranco@home001 linux]$ make pImage
+make: *** No rule to make target `pImage'.  Stop.
+[gianfranco@home001 linux]$ grep -r pImage *
+arch/ppc/boot/Makefile:pImage: $(MKIMAGE) images/vmlinux.gz
+[gianfranco@home001 linux]$ grep -r uImage *
+arch/ppc/boot/Makefile:uImage  \
+arch/ppc/boot/Makefile: ln -sf vmlinux.UBoot images/uImage
+arch/ppc/Makefile:BOOT_TARGETS = zImage zImage.initrd znetboot
+znetboot.initrd uImage
+CHANGELOG:Add support for U-Boot boot image "uImage"
+[gianfranco@home001 linux]$
 
-When I map only the the GRAM I get a throughput of
 
-IoremapTest...        8.0 s      => 2049.4 kW/s
+Should I modify BOOT_TARGET into arch/ppc/Makefile?
 
-But when I map the whole address range
-
-	p = (unsigned short *)
-		ioremap(BASE, imcdevif_iosize);
-
-and move the pointer
-
-	p += GRAM;
-
-before entering the test loop I only get
-
-IoremapTest...        8.4 s      => 1944.8 kW/s
-
-How is that???
-
-Is it always better to map only the small part I am going to use?
-
-Thanks a million!
-
---
-Steven Scholz
-
-imc Measurement & Control               imc Meﬂsysteme GmbH
-Voltastr. 5                             Voltastr. 5
-13355 Berlin                            13355 Berlin
-Germany                                 Deutschland
+Best regards
+Gianfranco
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
