@@ -1,67 +1,39 @@
-Date: Fri, 22 Sep 2000 17:54:44 -0800
-From: Ethan Benson <erbenson@alaska.net>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: MacOS X and yaboot wars.
-Message-ID: <20000922175444.P30638@plato.local.lan>
-References: <20000921214002.N30638@plato.local.lan> <19340817093546.32417@mailhost.mipsys.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="LwbuP8dfxhLLLUfV"
-In-Reply-To: <19340817093546.32417@mailhost.mipsys.com>; from bh40@calva.net on Fri, Sep 22, 2000 at 06:04:02PM +0200
+Date: Fri, 22 Sep 2000 23:10:55 -0400
+Message-Id: <200009230310.XAA08258@asgard.cs.columbia.edu>
+From: "Robert M. Fuhrer" <rmf@asgard.cs.columbia.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Compile errors on kernel source from ppc.samba.org::linux-pmac-stable
+Reply-to: rmf@cs.columbia.edu
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---LwbuP8dfxhLLLUfV
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: quoted-printable
+I rsync'ed twice from ppc.samba.org, and although it clearly got many
+files (the first time around), the source wouldn't compile.  The first of
+many batches of errors cropped up in
 
-On Fri, Sep 22, 2000 at 06:04:02PM +0200, Benjamin Herrenschmidt wrote:
->=20
-> Their installer does something weird, indeed. It tends to randomly make
-> another partition of the target disk "vanish". The partition (typically,
-> the HFS "exchange" partition people keep around) does not appear any more
-> in the MacOS 9 Finder nor in the file selection dialogs. It still mounts
-> in Linux and MacOS X.
+  drivers/block/ll_rw_blk.c
 
-another thing i thought of, does OSX still use a bootstrap partition
-of its own? (it must if you choose UFS instead of HFS+) perhaps its
-reordering the partition table to make its partition first instead of
-ours?  this can be changed back in mac-fisk/pdisk with the `r'
-command.  then again it could just be doing the same inspect and
-debless crap macos is notorious for, a rerun of ybin will fix that.
-(if the BSD layer remains sufficiently intact in OSX final i may see
-about getting ybin working from the OSX side, but that depends on
-whether i can get access to OSX or not)
+which sees no definition of the type 'elevator_t', as well as a few other
+"elevator"-related types.
 
-> Apparently, the problem seem to be related to the installer setting the
-> "invisible" bit of the toplevel (root) directory entry of the HFS volume.
-> The partition is actually mounted, but invisible. I "fixed" mine using
-> Norton Disk Editor (Norton Utilities), but there might be other ways.
+Granted, I rsync'ed on top of an existing 2.2.15pre9 source tree, but I
+gave rsync the "--delete" and "-u" flags, which I thought should have
+given me a fairly clean and up-to-date tree.  No?
 
-hmount /dev/foo
-hattrib -i :
-humount /dev/foo
+The precise rsync cmd I used was
 
-will fix that from the linux side.  though linux ignores that bit.
+  rsync -avuz ppc.samba.org::linux-pmac-stable .
 
-that is odd and disconcerting that its tampering with other partitions
-like that, i hope its a bug that will be removed in the next beta
-rather then intentional. =20
+If my rsync cmd was ok, am I wrong in expecting the linux-pmac-stable
+tree to compile cleanly?
 
-as for the invisible bit on the root, macos still mounts the disk, but
-since the root directory is invisable it does not show it anywhere.  i
-used to do this to people's floppies as a joke ;-)
+Or, failing all of the above, what's wrong?
 
---=20
-Ethan Benson
-http://www.alaska.net/~erbenson/
-
---LwbuP8dfxhLLLUfV
-Content-Type: application/pgp-signature
-
-
---LwbuP8dfxhLLLUfV--
+ -------------------------------------------------------------------------
+ >                   "Smooth Jazz" is no jazz at all...                  <
+ > Dr. Robert M. Fuhrer                           rfuhrer@watson.ibm.com <
+ > Computer Music Center                 IBM T.J. Watson Research Center <
+ -------------------------------------------------------------------------
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
