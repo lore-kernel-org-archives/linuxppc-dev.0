@@ -1,54 +1,38 @@
-Message-ID: <3EA023F2.820B65C0@doremilabs.com>
-Date: Fri, 18 Apr 2003 16:12:34 +0000
-From: Jeff H Zhong <jeff@doremilabs.com>
-MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
+Date: Fri, 18 Apr 2003 14:00:22 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Cort Dougan <cort@fsmlabs.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: debugging using bdi2000, unable to proceed.
-References: <20030418222217.E5F71C58B9@atlas.denx.de>
+Subject: Re: [PATCH] Fix RPX and add flash-burner in linuxppc_2_4_devel
+Message-ID: <20030418210022.GA7065@ip68-0-152-218.tc.ph.cox.net>
+References: <20030416182453.GP20197@host109.fsmlabs.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20030416182453.GP20197@host109.fsmlabs.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
-We may need one more variable to be passed to kernel and let kernel know
-if we want initialize ethernet or not?
+On Wed, Apr 16, 2003 at 12:24:53PM -0600, Cort Dougan wrote:
 
---Jeff
+> This patch fixes the RPX boot which was generating a bad boot image (it was
+> an ELF) and will do the 'cp' command line correctly, too.
 
-> > Wolfgang Denk wrote:
-> > >
-> > > in message <3E9FB7FD.93947BE5@doremilabs.com> you wrote:
-> > > >
-> > > > Could you give me a hand to help me figure out this issue on ebony?
-> > >
-> > > I've read your story before, but I cannot help.
-> > >
-> > > > If I use "bootp" or "tftp" to load kernel image(linuxppc_2_4_devel from
-> > > > BK) at address 0x01000000 and then issue "bootm", everything works fine.
-> > > > I have also programmed the image into flash at 0xffe00000, but each time
-> > > > when I issue "bootm 0xffe00000", it will get stuck at when trying to
-> > > > mount NFS.
-> > >
-> > > Technically there is absolutely no difference between both cases:  in
-> > > either  case  U-Boot  will  copy  and  uncompress  the  kernel to RAM
-> > > starting at physical adress 0x0000, and start it there.  I  have  not
-> > > the slightest idea whaty could cause a behaviour as described by you,
-> > > nor have I ever seen anything like that before.
->
-> Well, there _is_ one obvious difference: when you use "tftp" to  load
-> kernel  then  U-Boot  will  perform the initialization of the network
-> interface. You can perform a simple test for this:
->
-> Do a dummy TFTP download, and then try  to  "bootm"  the  image  from
-> flash. I bet it'll work.
+That's a "feature".  Newer versions of the rpx fw boot ELF.  And IIRC,
+if you need to convert it to srec later on, you can't have already
+stripped off the ELF header (for objcopy).
+
+> This patch also adds a boot image that will burn itself (and an initrd if
+> present) to the flash on the RPX.
+
+That's interesting.  Perhaps generating the FLASHBURN srec file instead
+of just including it would be a bit better of an approach 'tho.
+
+> http://www2.fsmlabs.com/~cort/rpx.patch.gz
+
+What're the FINISH_EXCEPTION2 changes for?
 
 --
-Jeff H. Zhong
--------------
-Doremi Labs, Inc.
-306 East Alameda Avenue
-Burbank, CA 91502
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
