@@ -1,38 +1,44 @@
-Message-ID: <3CEA70AB.1070405@mvista.com>
-Date: Tue, 21 May 2002 09:07:07 -0700
-From: Armin Kuster <akuster@mvista.com>
-MIME-Version: 1.0
-To: Kenneth Johansson <kenneth.johansson@inn.ericsson.se>
-Cc: Linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>,
-	andrew may <acmay@acmay.homeip.net>
-Subject: Re: 405 I2C
-References: <1021995053.7265.22.camel@swb11>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Tue, 21 May 2002 09:08:19 -0700
+From: andrew may <acmay@acmay.homeip.net>
+To: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
+Cc: andrew may <acmay@acmay.homeip.net>,
+	linuxppc-embedded@lists.linuxppc.org,
+	Armin Kuster <akuster@mvista.com>
+Subject: Re: [PATCH] ibm ocp gpio
+Message-ID: <20020521090819.G9190@ecam.san.rr.com>
+References: <20020520182657.B17318@ecam.san.rr.com> <3CEA0F45.BDBBA25@etx.ericsson.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3CEA0F45.BDBBA25@etx.ericsson.se>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Kenneth Johansson wrote:
-> How would you feel about merging the i2c-adap-ibm_ocp.c
-> andi2c-algo-ibm_ocp.c into one file. This way it's possible to build the
-> i2c drivers as a module.
+On Tue, May 21, 2002 at 11:11:33AM +0200, Kenneth Johansson wrote:
+> andrew may wrote:
+> >
+> > The most common thing I want to use the GPIO pins for is
+> > simple lighting of some LED's. I decided to roll in some timers
+> > into the generic GPIO driver rather than haveing each user of the
+> > GPIO driver be forced to do some form of timers to get a usable
+> > LED visual as well.
+> >
+> > I think I got the timer stuff correct but I am not sure.
+> > I didn't bother cleaning it up until I get some feedback on it.
 >
->
-> Also I have a problem when accessing a device that is not present. The
-> bus ends up in busy state an no other action can be taken. I solved the
-> problem for me here by simply removing the test in iix_xfer but a proper
-> solution has to be discussed. I have not tried Andrew's new iic_xfer is
-> it going to be merged ??
->
->
->
+> I don't think we should add this It's not really something that needs to be
+> done in the driver. Also you have not exported this functionality to
+> userspace.
 
-They should both work as modules as it stands, or at least it did in the
-past.  IMHO is does not matter if it is one or two files. Andrew's
-iic_xfer was bundled in with many other changes that did not fly, but I
-would revisit is if a new patch where submitted with just the iic_xfer.
+Well no it doesn't need to be in the driver, but you then are forced with
+having every other driver doing there own timer to turn off the bit rather
+than having one timer take care of them all. And do you really want to
+have you UserSpace app wake up and do an ioctl just to turn off an LED
+a quarter second after you turn it on?
 
-armin
-
+As I said I didn't clean it up. That would include not having it exported
+as an ioctl or having the symbol export to modules. Or making it a config
+option to compile it out if you are worried about the size of the code.
+Or removing the extra printk's.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
