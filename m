@@ -1,44 +1,48 @@
-Subject: Re: linux ram size
-From: Jaap-Jan Boor <jjboor@aimsys.nl>
-To: somshekar chandrashekar kadam <som_kadam1@rediffmail.com>
+Message-ID: <C7FFFEA58B43D311920D0004ACE5333F0F5359A8@amer25.avnet.com>
+From: "Kerl, John" <John.Kerl@Avnet.com>
+To: "'Hubert Figuiere'" <hub-linux-arm@trantor.staff.proxad.net>,
+	sulvin xavier <sulvinx@yahoo.fr>
 Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <20030919105119.26534.qmail@webmail27.rediffmail.com>
-References: <20030919105119.26534.qmail@webmail27.rediffmail.com>
-Content-Type: text/plain
-Message-Id: <1063969891.22594.12.camel@linpc003.aimsys.nl>
-Mime-Version: 1.0
-Date: 19 Sep 2003 13:11:31 +0200
+Subject: RE: I need assembler programming PowerPC4xx
+Date: Fri, 19 Sep 2003 09:33:29 -0700
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Also don't forget powerpc-gcc -S (some .c file), and/or
+powerpc-objdump -d (some exe file).
 
-I think you just need to pass in your bd_t structure
-the proper amount of ram to kernel, so it looks ppc boot
-pass someting else (16MB) to the kernel.
+You can write some simple little functions, adding one line
+at a time, etc. and see what each statement assembles to.
+A great way to learn any assembler .......
 
-Jaap-Jan
 
-On Fri, 2003-09-19 at 12:51, somshekar chandrashekar kadam wrote:
-> hi ,
->
->     Ineed to know can i run my linux with 8mb of ram , what
-> changes i need to do with my mpc860 linuxppc code as i see he is
-> mapping 8mb and again 8mb , totally 16mb he is using , soi am not
-> getting anything proper , it hangs after uncompressing the kernel
-> ,i use ppcboot .
-> my ram size is 8mb
-> pls mail to this id
->
-> Thanksin advance
-> Somshekar
-> ___________________________________________________
-> Art meets Anesthesia; Shefali Weds Dr. Raman.
-> Rediff Matchmaker strikes another interesting match !!
-> Visit http://matchmaker.rediff.com?1
->
->
+
+-----Original Message-----
+From: Hubert Figuiere [mailto:hub-linux-arm@trantor.staff.proxad.net]
+Sent: Friday, September 19, 2003 2:52 AM
+To: sulvin xavier
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: I need assembler programming PowerPC4xx
+
+
+
+On Fri, 2003-09-19 at 09:50, sulvin xavier wrote:
+> Hello all,
+> Please, Anyone can send me documentation (or web url)
+> for assembler programming PowerPC4xx (programming
+> tutorial, example, exercise with correction  ...)
+> Thanks in advance,
+
+motorola.com has references manuals for PowerPC assembly.
+For sample code, look for .S files in linux/arch/ppc
+
+
+
+Hub
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
