@@ -1,44 +1,43 @@
-Message-ID: <82867A41A066D111B80D00A0C90815E93FB419@WATSON>
-From: Will Wood <wwood@borealiscorp.com>
-To: "'kbhend@business.wm.edu'" <kbhend@business.wm.edu>, gdt@linuxppc.org,
-        sbb@gnu.org, linuxppc-dev@lists.linuxppc.org, egcs@egcs.cygnus.com
-Subject: RE: Problem with egcs and denormalized constants?
-Date: Thu, 4 Mar 1999 10:43:22 -0800 
+Message-ID: <36DEDAED.F8384894@jlc.net>
+Date: Thu, 04 Mar 1999 14:11:42 -0500
+From: Dan Malek <dmalek@jlc.net>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Embedded 8xx libraries
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-My LinuxPPC configuration is currently down but here's some results from
-HP and Solaris.  All are
-running EGCS-1.1.1
 
-HPUX 10.20 EGCS 1.1.1 HP 9816
 
-flmin(0) is  1.4023984275674e-37
-flmin(1) is  1.4023983434895e-38
-flmin(2) is  1.4023984836193e-39
-flmin(3) is  1.4023914771270e-40
-flmin(4) is  1.4024195030963e-41
-flmin(5) is  1.4026997627891e-42
-flmin(6) is  1.4012984643248e-43
-flmin(7) is  1.4012984643248e-44
-flmin(8) is  1.4012984643248e-45
-But flmin(7)/10.0F is  1.4012984643248e-45
+OK....Finally.  I promised these a long time ago and now they are
+on the linuxppc.cs.nmt.edu server in the embedded directory.
+The file libc-1.99-8xx-tar.gz contains the files with symbolic links
+for everything found in the source RPM (I think :-).  I didn't build this as
+an RPM because I think it is easier to choose the pieces you need and
+install on an embedded system.
 
-UltraSparc II/256 Solaris 2.6 EGCS-1.1.1
+These are built from Gary's glibc-0.961212-1o.src.rpm using
+egcs-1.0.2 and the -mcpu=860 flag.
 
-flmin(0) is  1.4023984275674e-37
-flmin(1) is  1.4023983434895e-38
-flmin(2) is  1.4023984836193e-39
-flmin(3) is  1.4023914771270e-40
-flmin(4) is  1.4024195030963e-41
-flmin(5) is  1.4026997627891e-42
-flmin(6) is  1.4012984643248e-43
-flmin(7) is  1.4012984643248e-44
-flmin(8) is  1.4012984643248e-45
-But flmin(7)/10.0F is  1.4012984643248e-45
+In addition to having the software floating point, I "fixed" an assumption
+about the cache line size.  The 8xx uses a 16 byte cache line while the
+other PPC cores seems to all use 32 bytes.  This caused problems
+flushing the copy back cache during dynamic library loading.  You can
+enable the copy back cache initialization (in head.S in the kernel) when
+you use these libraries.
+
+Make sure you also use the -mcpu=860 (or -msoft-float) when compiling
+and linking your programs since there are different compiler run-time
+support functions that must also be linked into the program.
+
+Once we all catch up to glibc2 I will do this again.
+
+
+    -- Dan
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
