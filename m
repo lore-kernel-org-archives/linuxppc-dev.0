@@ -1,10 +1,8 @@
-Message-ID: <00d601c330f2$489159d0$0320a8c0@onstardevserv>
-From: "Mark Schaefer" <junk@markschaefer.org>
-To: "Wolfgang Denk" <wd@denx.de>
-Cc: "'linuxppc-embedded mailing list'" <linuxppc-embedded@lists.linuxppc.org>
-References: <20030612121905.708CDC5FD7@atlas.denx.de>
-Subject: Re: VxWorks.c ?? 
-Date: Thu, 12 Jun 2003 10:52:42 -0400
+Message-ID: <D96E2AFA0DF3D211B139009027454948037362FE@helios.gnv.tcc.thomson-csf.com>
+From: Christophe.LINDHEIMER@fr.thalesgroup.com
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Running Linux with 2Mo of Ram.
+Date: Thu, 12 Jun 2003 17:53:15 +0200
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -12,72 +10,121 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang,
+Hi.
 
-    I can't find any chip that looks like it drives the USB interface.
-There are a few buffers, I believe.  I know the USB wasn't used for the
-pilot.  Only the two RS232's (one console), RS485 and ethernet were used.
-It was in a plastic box that hid the JTAG port and LED's.  I'm not really
-concerned about getting the USB working right now.
+I am trying to run linux on a custom board ( Mpc8xx )
+There is only 2Mo of RAM.
+I use romfs to save RAM.
 
-    Thanks for the BDM4GDB link.  It looks like that's my best option.  I
-don't want to put more $$$ than I have to in it.  Since I'm trying to save
-$150 (the cost of an RS-485 programmable thermostat), and learn some things
-about embedded Linux, it doesn't make sense to spend $1600 on a programmer
-:).
+I use U-boot to start the kernel.
 
-Thanks!
+The kernel starts correctly.
+the kernel is launched with init=/bin/sh
 
-Mark
------ Original Message -----
-From: "Wolfgang Denk" <wd@denx.de>
-Sent: Thursday, June 12, 2003 8:19 AM
-Subject: Re: VxWorks.c ??
+The kernel stops to tell me to press enter to activate the console ( to
+launch the sh ) and then crash because it is running out of memory.
 
-> in message <009c01c330d8$425ee3d0$040110ac@junior> you wrote:
-> >
-> > I'm trying to reverse-engineer a "home gateway" - used for a home
-> > automation project I worked on. It currently runs VxWorks, but I'd
-> > like to see if I can port Linux to it. From what I can tell, it's an
-> > XPC860 with two serial ports, a USB port, a FEC and an Rs-485 port.
-> > It has two FLASH chips and two RAM chips - probably 32MB of each.
->
-> 860 with USB? So there is an external USB controller on the board?
->
-> > First of all, I need to replace the VxWorks boot loader with U-Boot.
-> > I have the VxWorks loader capable of loading files from my computer
-> > via ftp, but the Linux kernel requires virtual memory support, which
-> > the boot loader doesn't have. I've looked everywhere for "vxhack.c"
-> > and all the ftp sites are gone.
->
-> I have no doubt that using U-Boot is a Good Thing (TM) per se, but
-> there is no real requirement to use it - you can load and start a
-> Linux kernel using the VxWorks loader, too. You have to tweak the
-> Linux kernel's bootstrap loader code a bit, though. There is NO
-> requirement that the boot loader must support virtual memory - U-Boot
-> doesn't do this either.
->
-> > After that, I need to set up a development environment. I have
-> > the ppc kernel source, but I'm not able to get libc and u-boot to
-> > compile. Should I give up and just use the ELDK? Also, what JTAG
-> > Emulators and
->
-> It is an interesting experience to go through all steps necessary to
-> build your own toolchain and to debug all the funny little details
-> that can go wrong. But it's time consuming, too. If you just need the
-> toolchain now, feel free to use the ELDK.
->
-> If you want to build your own set of tools please go on, but I
-> recommend to separate these two projects ;-)
->
-> > programmers do you use that are compatible with Linux and MPC8xx?
->
-> The BDI200 was already recommended. I agree with that statement 100%.
-> On the other hand, the price is a bit high if you need the tool just
-> for a hobby project. For the MPC8xx you can also use the BDM4GDB
-> parallel port adapter. Not that powerful, not that fast, limited to
-> 8xx CPUs, not as reliable, plus some other disadvantages if compared
-> against the BDI2000. But the, you can either build it for negligible
-> cost, or buy the ready-to-use adapter for just 50 Euro.
+The question is to know if it is really impossible to make Linux work on
+this target or is I have missed something that could explain that there is
+no more memory available.
+
+Thanks
+
+Regards
+
+Chris
+
+--------------------------------
+U-Boot 0.3.0 (Jun  4 2003 - 16:21:25)
+
+CPU:   XPC860xxZPnnC1 at 38.400 MHz: 4 kB I-Cache 4 kB D-Cache
+DRAM:   2 MB
+In:    serial
+Out:   serial
+Err:   serial
+Hit any key to stop autoboot:  0
+
+=> setenv bootargs root=/dev/mtdblock/1 ro init=/bin/sh
+=> bootm 0x90000
+## Booting image at 00090000 ...
+   Image Name:   Crisssou Kernel Image
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    263950 Bytes = 257.8 kB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+Linux version 2.4.4 (blinde@Linux) (gcc version 2.95.4 20010319
+(prerelease/franzo/20011204)) #96 jeu jun 12 15:35:15 CEST 2003
+On node 0 totalpages: 512
+zone(0): 512 pages.
+zone(1): 0 pages.
+zone(2): 0 pages.
+Kernel command line: root=/dev/mtdblock/1 ro init=/bin/sh
+Decrementer Frequency: 2375000
+Calibrating delay loop... 37.78 BogoMIPS
+Memory: 1212k available (512k kernel code, 236k data, 32k init, 0k highmem)
+Dentry-cache hash table entries: 512 (order: 0, 4096 bytes)
+Buffer-cache hash table entries: 1024 (order: 0, 4096 bytes)
+Page-cache hash table entries: 1024 (order: 0, 4096 bytes)
+Inode-cache hash table entries: 512 (order: 0, 4096 bytes)
+POSIX conformance testing by UNIFIX
+Linux NET4.0 for Linux 2.4
+Based upon Swansea University Computer Society NET3.039
+Starting kswapd v1.8
+CPM UART driver version 0.03
+ttyS0 on SMC1 at 0x0280, BRG1
+block: queued sectors max/low 709kB/236kB, 64 slots per queue
+devfs: v0.102 (20000622) Richard Gooch (rgooch@atnf.csiro.au)
+devfs: devfs_debug: 0x0
+devfs: boot_options: 0x0
+pr4gv3 flash device: 400000 at 4000000
+ Amd/Fujitsu Extended Query Table v1.0 at 0x0040
+number of JEDEC chips: 1
+0: offset=0x0,size=0x8000,blocks=1
+1: offset=0x8000,size=0x4000,blocks=2
+2: offset=0x10000,size=0x10000,blocks=1
+3: offset=0x20000,size=0x20000,blocks=31
+Creating 2 MTD partitions on "Physically mapped flash":
+0x00000000-0x00100000 : "ppcboot"
+0x00100000-0x00400000 : "fs"
+physmap flash device: 400000 at 4000000
+ Amd/Fujitsu Extended Query Table v1.0 at 0x0040
+number of JEDEC chips: 1
+0: offset=0x0,size=0x8000,blocks=1
+1: offset=0x8000,size=0x4000,blocks=2
+2: offset=0x10000,size=0x10000,blocks=1
+3: offset=0x20000,size=0x20000,blocks=31
+
+VFS: Mounted root (romfs filesystem) readonly.
+Mounted devfs on /dev
+
+Bummer, could not run '/etc/init.d/rcS': No such file or directory
+device '/dev/tty4' does not exist.
+device '/dev/tty3' does not exist.
+device '/dev/tty2' does not exist.
+
+Please press Enter to activate this console.
+device '/dev/tty2' does not exist.
+device '/dev/tty2' does not exist.
+device '/dev/tty2' does not exist.
+device '/dev/tty2' does not exist.
+device '/dev/tty2' does not exist.
+device '/dev/tty2' does not exist.
+device '/dev/tty2' does not exist.
+device '/dev/tty2' does not exist.
+device '/dev/tty2' does not exist.
+device '/dev/tty2' does not exist.
+device '/dev/tty2' does not exist.
+device '/dev/tty2' does not exist.
+device '/dev/tty2' does not exist.
+device '/dev/tty2' does not exist.
+
+Out of Memory: Killed process 1 (sh).
+__alloc_pages: 0-order allocation failed.
+VM: killing process sh
+Kernel panic: Attempted to kill init!
+Rebooting in 180 seconds..
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
