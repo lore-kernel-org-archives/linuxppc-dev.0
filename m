@@ -1,35 +1,36 @@
-From: Chris Mason <mason@suse.com>
-Date: Wed, 30 Aug 2000 14:25:46 GMT
-Message-ID: <20000830.14254600@coffee.suse.com>
+Date: Wed, 30 Aug 2000 17:07:26 +0200
+From: "Andi Kleen" <ak@suse.de>
+To: Steve Lord <lord@sgi.com>
+Cc: "Andi Kleen" <ak@suse.de>, flar@allandria.com,
+        matthew@wil.cx (Matthew Wilcox), khalfmann@libra.de (Halfmann Klaus),
+        roman@augan.com (Roman Zippel), linuxppc-dev@lists.linuxppc.org,
+        linux-fsdevel@vger.kernel.org
 Subject: Re: Btree directories (Re: Status of HFS+ support)
-To: Matthew Wilcox <matthew@wil.cx>
-CC: "Halfmann, Klaus" <khalfmann@libra.de>, Roman Zippel <roman@augan.com>,
-        linuxppc-dev@lists.linuxppc.org, linux-fsdevel@vger.kernel.org
-In-Reply-To: <20000829181851.D6395@parcelfarce.linux.theplanet.co.uk>
-References: <F14441D40E5AD3118886005004607AD10BDD7F@MAIL1> <20000829181851.D6395@parcelfarce.linux.theplanet.co.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Message-ID: <20000830170726.B18398@gruyere.muc.suse.de>
+References: <200008301206.HAA24978@jen.americas.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200008301206.HAA24978@jen.americas.sgi.com>; from lord@sgi.com on Wed, Aug 30, 2000 at 07:06:36AM -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 8/29/00, 1:18:51 PM, Matthew Wilcox <matthew@wil.cx> wrote regarding
-Btree directories (Re: Status of HFS+ support):
+On Wed, Aug 30, 2000 at 07:06:36AM -0500, Steve Lord wrote:
+> >
+> > In theory you could put as much state as you want into a private field
+> > of the file structure of the directory. This just ignores two ugly things:
+> > NFS and telldir. Both basically require you to generate stateless 32bit
+> > cookies that safely walk your directory.
+>
+> Can't we at least pass the cookie generation and intepretation down to
+> the filesystem layer, since at least NFS V3 allows bigger handles.
 
-[ 32 bit directory offsets ]
+Only 64bit though, which may or may not be enough. If HFS indexes directly
+with names instead of hash values it'll probably not be enough so they
+would need to fall back to the no shrink hack.
+Anyways, you probably cannot ignore telldir of 32bit programs.
 
-> Hmmm.. now the LFS patches have gone in and f_pos is now a 64-bit
-quantity,
-> this sounds more plausible.  I'd be curious to hear from the ReiserFS
-> people how they solved this problem.
 
-In reiserfs, the offset in the directory is a hash of the file name.  The
-directories are sparse, so we could have a directory with 4 items,
-offsets 1, 2, 32458, 2million.  The hash of a given item never changes,
-new items can be inserted or removed from either side of any existing
-item (except . and ..)
-
--chris
-
+-Andi
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
