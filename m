@@ -1,27 +1,29 @@
-Message-ID: <20040807141411.74995.qmail@web15604.mail.cnb.yahoo.com>
-Date: Sat, 7 Aug 2004 22:14:11 +0800 (CST)
-From: Song Sam <samlinuxppc@yahoo.com.cn>
-Subject: Re: How to remove JFFS2 'Making dirty' display on RPXlite DW?
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <1091872202.1438.26.camel@imladris.demon.co.uk>
-MIME-Version: 1.0
+Subject: Re: Embedded SDRAM memory tester
+From: Stefan Nickl <Stefan.Nickl@kontron.com>
+To: Stephen Williams <steve@icarus.com>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <41140944.2060704@icarus.com>
+References: <41140944.2060704@icarus.com>
 Content-Type: text/plain
+Message-Id: <1092033287.4556.1.camel@lucy.pep-kaufbeuren.de>
+Mime-Version: 1.0
+Date: Mon, 09 Aug 2004 08:34:48 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David Woodhouse <dwmw2@infradead.org> wrote£º
->
-> The JFFS2 code in the 2.6 kernel can give about an order of magnitude
-> improvement in mount time. It's a lot less naÃ¯ve than the 2.4 code.
+On Sat, 2004-08-07 at 00:42, Stephen Williams wrote:
+> Does anybody out there know of a good quality memory stress tester
+> for embedded use? I have a PPC based system that seems to work
+> fine in general (linuxppc-2.4) but I'm seeing soem occasional odd
+> behavior and I would like to eliminate SDRAM as a potential
+> problem.
 
-Good hints.But 2.6 cannot boot on 8xx via NFS by
-now.How can I make a JFFS2?Beats me.Anyway,I will try
-it to see how far I would go ...
+http://www.qcc.ca/~charlesc/software/memtester/
 
-Thanks
+--
+Stefan Nickl
+Kontron Modular Computers
 
-Sam
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
