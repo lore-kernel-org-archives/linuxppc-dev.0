@@ -1,35 +1,46 @@
-Message-ID: <C08678384BE7D311B4D70004ACA371050B7632A8@amer22.avnet.com>
-From: "Kerl, John" <John.Kerl@Avnet.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Linux on 857T?
-Date: Mon, 21 Jan 2002 18:20:12 -0700
+Message-ID: <007201c1a2f8$0c061980$0c1112ac@ming>
+From: "Chen Yaoming" <ymchen@ocdtt.com>
+To: "Steve Rossi" <srossi@labs.mot.com>,
+	"Embedded Linux PPC List" <linuxppc-embedded@lists.linuxppc.org>
+References: <3C4C9375.8F09A6E3@labs.mot.com>
+Subject: Re: HardHat Journeyman 2.0 & RH7.2
+Date: Tue, 22 Jan 2002 11:51:14 +0800
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
+	charset="gb2312"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+No problem in my case. I don't think there are any differences of HHL2.0 JE
+running on RH7.1 and RH7.2.
 
-I am attempting a Linux port to a custom 857T board.  I've tried
-several different kernel trees, with the same results:  unhandled
-ITLB misses parking the CPU.  Now, I've searched repeatedly through
-the mailing lists here, but haven't found the answer to the following:
+----- Original Message -----
+From: "Steve Rossi" <srossi@labs.mot.com>
+To: "Embedded Linux PPC List" <linuxppc-embedded@lists.linuxppc.org>
+Sent: Tuesday, January 22, 2002 6:17 AM
+Subject: HardHat Journeyman 2.0 & RH7.2
 
-	Has anyone has successfully ported Linux to an 857T?
 
-I know many people have done it on 860's and 8260's, but I am curious
-about any undocumented errata (perhaps MMU-related) that anyone may
-have found, or any gotchas.
+>
+> Has anyone gotten HHL Journeyman 2.0 running under RedHat7.2? I can
+> install it by hacking the installation script (same as I did to install
+> in on RH 7.1) but kernels that I compile on RH7.2 don't match the same
+> kernel compiled under RH7.1, nor does it boot.
+> Any suggestions?
+>
+> Steve
+>
+> --
+> -------------------------------------------------------
+> Steven K. Rossi                     srossi@labs.mot.com
+> Staff Engineer
+> Multimedia Communications Research Laboratory
+> Motorola Labs
+> -------------------------------------------------------
+>
+>
+>
 
-I am of course omitting, on this post, many specific details such as
-kernel revisions, location of the CPU hang, specifics of the board,
-what devices are on it, what hardware has been tested and how,
-etc., etc.  At this point, I'd just like to know if anyone has
-succeeded on an 857T at all; then, maybe we could discuss things in
-more detail.
-
-Thanks in advance ... .
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
