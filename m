@@ -1,65 +1,34 @@
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-Id: <v04011708b4ec4b0ae554@[129.116.196.236]>
-Date: Wed, 8 Mar 2000 12:59:29 -0600
-To: linuxppc-dev@lists.linuxppc.org
-From: Greg Allen <gallen@arlut.utexas.edu>
-Subject: AltiVec on Linux
+Date: Wed, 8 Mar 2000 20:12:10 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Grant Erickson <grant@borg.umn.edu>
+cc: Michel Lanners <mlan@cpu.lu>, Matt Porter <mmporter@home.com>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: Grabbing an Interrupt for a Brain-dead PCI Device
+In-Reply-To: <Pine.SGI.4.21.0003081136360.51665-100000@brule.borg.umn.edu>
+Message-ID: <Pine.LNX.4.05.10003082011320.8208-100000@callisto.of.borg>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-So I've been playing with Motorola's new "AltiVec" compiler, and here are
-some observataions I thought I might share:
+On Wed, 8 Mar 2000, Grant Erickson wrote:
+> Also, regarding memory address space resources, is there a routine I can
+> call that says "Assign this card some resource space because it hasn't
+> been assigned one yet"?
 
-It's not a "Linux" compiler -- it's strictly a cross-compiler. It creates
-the toolset "powerpc-eabisim-*". The binaries that it generates do not run
-on Linux.
+Yes there is, somewhere in drivers/pci/. I don't know yet whether it works.
 
-The included gdb has a simulator that can run these binaries.
+Gr{oetje,eeting}s,
 
-It is possible to generate a library with powerpc-eabisim-gcc (lib*.a) and
-then link to it with native gcc and get an executable. However, libc
-function calls are problematic -- Linux is glibc based and
-powerpc-eabisim-gcc is newlib based. e.g. "printf" called from the
-powerpc-eabisim-gcc causes link errors with native gcc.
+						Geert
 
-Motorola chose to "extend the C language" for the AltiVec API. They added a
-new modifier "vector":
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-    vector float a, b, c;
-    c = vec_add(a,b);
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
-To make powerpc-eabisim-gcc recognize "vector", you compile with "-fvec".
-
-Unfortunately, powerpc-eabisim-g++ doesn't recognize "vector" at all.
-That's right, boys and girls, NO C++ SUPPORT WITH ALTIVEC!
-
-So we have to patch g++ the same way gcc was patched -- to extend the C++
-language for AltiVec.
-
-When I saw that Motorola was "changing C" for AltiVec, I thought it was a
-mistake. Now I'm certain.
-
-What's wrong with:
-    typedef float[4] vector_float;
-    vector_float a, b, c;
-    c = vec_add(a,b);
-
-That works fine with VIS and MMX (in integer modes).
-
-</rant>
-
-In any case, the AltiVec package gives a few hints on what needs to be done
-to make a LinuxPPC native compiler. We're not there yet.
-
-I guess I'll be looking into that, too...
-
--Greg
-----------------------------------------------------------------------
-| Gregory E. Allen, MSEE Research Engineer <gallen@arlut.utexas.edu> |
-|    Advanced Technology Laboratory, Sonar Development Division      |
-|  Applied Research Laboratories: The University of Texas at Austin  |
-----------------------------------------------------------------------
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
