@@ -1,48 +1,43 @@
-Message-ID: <38C83281.17BE9E03@embeddededge.com>
-Date: Thu, 09 Mar 2000 18:23:45 -0500
-From: Dan Malek <dan@netx4.com>
+Subject: User buffers and cache flushing.
+To: linuxppc-embedded@lists.linuxppc.org ( Linux PPC Mailing List)
+Date: Fri, 10 Mar 2000 12:02:35 +1100 (EST)
 MIME-Version: 1.0
-To: Coenraad Jacobsz <cjj@research.canon.com.au>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Modem control on 860/855
-References: <38C82EFC.52068F01@research.canon.com.au>
 Content-Type: text/plain; charset=us-ascii
+Message-Id: <20000310010235.6B0D3355C8@elph.research.canon.com.au>
+From: gjohnson@research.canon.com.au (Greg Johnson)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Coenraad Jacobsz wrote:
+Hi All,
 
+Following the other thread on USB. The driver I am writing for an
+MPC855T embedded board, I create a character device that a user
+can 'write (2)' to. I then need to DMA this data directly to our
+device. I now realise that I will need to be calling
+flush_dcache_range prior to kicking of the IDMA transfer. Since I
+am not wanting to be double handling this data, and the data will
+most likely be fragmented in memory, it looks like I will need to
+resolve kernel addresses and sizes for each memory fragment of the
+users data buffer (something like a scatter/gather list, I guess)
+and call flush_dcache_range on each of these fragments.
 
-> Has anybody implemented modem control for the 860/855 SCC/SMC?
+Is this reasoning correct?
+Have I overlooked anything? (other than the lack of support for IDMA
+currently in the MPC8xx kernel)
 
-Well, SMCs don't have any modem control on the 8xx.  Some board
-designs, like Embedded Planet, route the signals to an external
-control register so you could try to manage the ports in software.....
+Thanks.
 
-I left remnants of code in the uart driver where this is supposed to
-happen for the SCCs, but haven't been back to visit.  With the exception
-of one current project, that doesn't really need them for flow control
-but rather device control, all of the applications I have done use the
-SCCs for some purpose other than uarts.  Custom drivers were written
-in those cases.
+Greg.
 
-> .....  We need
-> to use the CTS/RTS for standard flow control and possibly DSR/DTR/DCD
-> lines as well.  If you could point me to existing source of offer any
-> suggestions it would be appreciated.
-
-The remnants are there.  Remove lots of '#if 0', find a place to generate
-the proper control registers for the SCCs to make this happen, and you
-should be close.
-
-
-> How does an application read the values of DCD and other inputs?
-
-Use ioctl()'s to tty devices.
-
-
-
-	-- Dan
+--
++----------------------------------------------------+
+| Do you want to know more?                          |
+|               --== Greg Johnson ==--               |
+| HW/SW Engineer      gjohnson@research.canon.com.au |
+| Canon   Information  Systems   Research  Australia |
+| 1 Thomas Holt Dr, North Ryde, NSW, 2113, Australia |
+| "I FLEXed my BISON and it went YACC!" - me.        |
++----------------------------------------------------+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
