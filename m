@@ -1,24 +1,45 @@
-Message-ID: <01139FC052A0D411900B00508B9535FC0334D03D@ZCH07EXM04.corp.mot.com>
-From: Liu HongXun-a16975 <a16975@motorola.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: how to disable the swap on embedded system?
-Date: Wed, 26 Sep 2001 15:48:12 +0800
+To: Grant Erickson <erick205@umn.edu>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Solutions for Fast Software Upgrade in Linux/PPC
+References: <Pine.SOL.4.20.0109251001370.4999-100000@garnet.tc.umn.edu>
+From: Josh Huber <huber@alum.wpi.edu>
+Date: Wed, 26 Sep 2001 11:51:17 -0400
+In-Reply-To: <Pine.SOL.4.20.0109251001370.4999-100000@garnet.tc.umn.edu>
+ (Grant Erickson's message of "Tue, 25 Sep 2001 10:38:15 -0500 (CDT)")
+Message-ID: <87n13idk7e.fsf@mclinux.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi, all,
-I am running linuxppc 2.4.4( Wolf's version) on my FADS823 board.
-Because there is no disk support, I wonder if there is also the need
-to use the swap function which load needed page from disk to memory?
-If that swap function is not needed, how I can disable such function for
-linuxppc?
-The current version linuxppc on my FADS823 always gives some problems.
-When there is a page fault, the system will halt and oops
-Thanks
-rolf liu
+Grant Erickson <erick205@umn.edu> writes:
+
+[snip]
+
+I'd also recommend the fast-reboot option, but since no one mentioned
+yet I'll suggest Werner Almsberger's bootimg utility.
+
+Take a look at:
+<URL:ftp://icaftp.epfl.ch/pub/people/almesber/misc/>
+
+specifically, bootimg-current.tar.gz
+
+Also, in ../booting/ there is a paper describing the
+method. (bootinglinux-current.ps.gz)
+
+I've tested this many times (we use it at Mission Critical for our
+kernel crash dump system), and if you're looking for fast reboots this
+is the way to go.
+
+Unfortunately, it doesn't solve the upgrading of the ROM issue.
+
+For the lazy who don't want to look at the references, what this
+allows you to do is boot a linux kernel, using an already loaded Linux
+kernel.
+
+ttyl,
+--
+Josh Huber
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
