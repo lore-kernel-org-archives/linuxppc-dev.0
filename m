@@ -1,20 +1,39 @@
-Date: Fri, 23 Jul 2004 10:57:29 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-To: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-Subject: 2.4 versus 2.6 patches
-Message-ID: <Pine.LNX.4.60.0407231055450.5463@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Date: Fri, 23 Jul 2004 10:36:28 -0500
+From: David Wolfe <david.wolfe@freescale.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MPC5200, Hang in send() to a socket
+Message-ID: <20040723153628.GA32654@orthanc.sps.mot.com>
+References: <42A622EB18325843894BB8E1040E3DF50227A4@sinaexchf>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <42A622EB18325843894BB8E1040E3DF50227A4@sinaexchf>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-   i just realized that the sample excerpts i was posting from the
-ppc config files were from the 2.4 source tree, not 2.6, so for most
-of the folks on this list, i suspect they'd be more interested in
-patches to a 2.6-style Kconfig file, not a 2.4-style config.in file,
-correct?
+[ I?igo Lopez Barranco writes: ]
+> Hi. I'm testing a program to send files thru a TCP socket on an MPC5200.
 
-rday
+> programs stops forever in one of the writings to the socket after
+> having sent a random number of packets. Strace says that it stops on a
+> send(), and netstat shows that the connection is stablished, and stays
+> this way:
+
+I see this problem too during a FTP put operation. The network remains up
+as a concurrently executing ping has no problem and I can restart the FTP
+transfer which will happily transfer an random number of packets before
+halting again. I also noticed a nasty memory leak associated with this
+-- if I rerun the FTP transfer enough times the system will run out of
+memory. It may be related to lost RX packets. The RX error count seen
+from "ifconfig" adds up very quickly on a put. FTP get doesn't provoke
+this bug nearly as much.
+
+I'm looking into the driver, though I am quite unfamiliar with Linux
+networking kernel code.
+
+--
+David Wolfe
+Digital Audio, Radio & Telematics
+Freescale Semiconductor
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
