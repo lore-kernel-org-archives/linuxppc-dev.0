@@ -1,24 +1,37 @@
-Date: Tue, 6 Apr 2004 00:13:21 +0100
-From: Martin Habets <errandir_news@mph.eclipse.co.uk>
-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: 2.6.5/iBook G3: Oops on resume from sleep
-Message-ID: <20040405231321.GA1293@palantir8>
-References: <20040405215318.GA2822@mortadelo.pirispons.net>
+Subject: Re: PREEMPT problems
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Cc: Colin LEROY <colin@colino.net>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <1080997005.4208.24.camel@thor.asgaard.local>
+References: <1b6001c417f6$229c2a70$3cc8a8c0@epro.dom>
+	 <1080867387.1203.19.camel@gaston>
+	 <1080921611.11826.13.camel@thor.asgaard.local>
+	 <1080924194.11826.27.camel@thor.asgaard.local>
+	 <1080961566.1425.84.camel@gaston>
+	 <1080997005.4208.24.camel@thor.asgaard.local>
+Content-Type: text/plain
+Message-Id: <1081212676.1426.166.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20040405215318.GA2822@mortadelo.pirispons.net>
+Date: Tue, 06 Apr 2004 10:51:18 +1000
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-What sound chip do you actually have? The kernel seems to think
-you have a snapper.
-You can find out with
-cat /proc/asound/cards
-after ALSA is loaded.
+> Sure enough, -rc2-ben0 is now behaving just as badly as -rc3-ben0.
+> Probably just fluctuation.
+>
+> > I also added a WARN_ON(), do you see it triggered in dmesg ?
 
-This capture_source thing was added pretty recently.
+Still can't reproduce any problem here. You are using xfs right ?
+Maybe it's a filesystem issue... or some driver (USB device ?) that
+you are using that is allergic to preempt ?
 
-Martin
+It would be useful if you could spot one of those stuck processes
+and get a backtrace from it. For that, use P<pid> in xmon to get the
+ksp then b<ksp value> to get a backtrace.
+
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
