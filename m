@@ -1,30 +1,31 @@
-Date: Mon, 20 Mar 2000 11:16:09 +0100 (CET)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-cc: Michel Lanners <mlan@cpu.lu>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: dmasound split
-In-Reply-To: <Pine.GSO.4.10.10003201107330.17246-100000@dandelion.sonytel.be>
-Message-ID: <Pine.LNX.4.10.10003201114070.3889-100000@opal.biophys.uni-duesseldorf.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <200003201027.KAA20233@hyperion.valhalla.net>
+Date: Mon, 20 Mar 2000 10:27:36 +0000
+Subject: Mac-Side dev-tree dump
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > Anything missing, Geert?
->
-> Isn't this the problem where dmasound_init() is no longer called? I forgot to
-> update the #ifdef CONFIG_DMASOUND since I never tried it builtin.
+Hello,
+I've taken the extract_devtree stuff from BootX and made a Mac app that
+dumps the tree as formatted text on the Mac.  This was mainly to grab info
+to let me get OF working to the screen on a 9600 - which was driving me mad
+- however it *might* be useful for people wanting info on other H/W - when
+in the "blank screen" phase.
 
-Sounds possible.
+I haven't got a way of posting it for anonymous ftp - but the compressed
+executable is small enough to email (28k) so - within reason - if anyone is
+interested e-mail me directly.  It runs OK on 9600 (604), G3 Mintower(beige)
+& Lombard... which are all I can test on... the NewWorld OF does produce
+some interesting stuff no?
 
-> I received a patch to call it on #ifdef CONFIG_DMASOUND_*.
+The source + a CW5 project is about 212k (as .sit)
 
-Meaning #if defined(CONFIG_DMASOUND_AWACS) || defined(CONFIG_DMASOUND_ATARI) .. ?
-
-I'll try that, could you forward that patch if it's something else ??
-
-	Michael
-
+If anyone with a server wants to post it - let me know.
+ciao,
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
