@@ -1,63 +1,33 @@
-Subject: Re: Linuxppc + MPC860T + Ethernet
-To: zimmer_n@gmx.de
-Date: Thu, 18 May 2000 10:51:54 +1000 (EST)
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <3922914E.9EC23A6@gmx.de> from "Norbert Zimmermann" at May 17, 2000 02:32:14 PM
+Message-ID: <39235DE0.585F036A@embeddededge.com>
+Date: Wed, 17 May 2000 23:05:04 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
+To: Pavel Roskin <pavel_roskin@geocities.com>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Another useful piece of code lost
+References: <Pine.LNX.4.21.0005171815010.32437-100000@sunapee.transcept.com>
 Content-Type: text/plain; charset=us-ascii
-Message-Id: <20000518005154.AEDE93C976@elph.research.canon.com.au>
-From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Norbert,
+Pavel Roskin wrote:
 
-Norbert Zimmermann writes:
-> has anybody experienced using the Motorola MPC860T with Linuxppc and
-> 10BeseT / 100BaseTX in terms of drivers, accessing drivers, etc?
+> Strictly speaking, this is wrong because this code assumes that all PPC
+> machines, even PowerMac's use PCMCIA.
 
-Yes, many of us I suspect. Ethernet driver access is via standard Berkeley
-sockets. You can probably tap in lower if you really want, but you probably
-compromise the portability advantage of using Linux in the first place.
+Of course it's wrong.  That was done specifically for your custom
+embedded hardware.  There wasn't any mechanism in that code base to
+ack the ATA interrupt if it didn't come from known IDE hatdware.
 
-> My key questions are (@ the mom):
-> - How difficult is it to get the Ethernet side of the MPC860T to work.
+> The MontaVista kernels don't include anything like that. This is one of
+> the reasons why they don't support ATA Flash on RPX/Lite.
 
-Very easy, especially if you use an off-the-shelf board which is already
-fully supported. For a complete list, see the HOWTO mentioned below.
+That work was done for you under contract on the RPX-Lite.  If you wish
+to give this away, go ahead.  My intention is to use newer IDE abstractions
+or Magnus' real PCMCIA instead of this unique solution for you.
 
-> - Where can I get Linuxppc Ethernet-Drivers for that purpose from?
 
-In the MontaVista kernel.
-
-> - Where can I get fully documented protocoll stacks, like UDP or TCPIP,
-> from?
-
-It's the same protocol stack as any other Linux distribution, so any doco
-you find on Linux's internals will apply. You probably don't need to delve
-that deeply though; just socket(), bind(), listen(), accept(), read()/write()
-from user space and you're away.
-
-> - How do I drive the external bus of the MPC860T using Linuxpppc?
-
-Sounds like you'll either need to write a device driver to interface to the
-rest of your system, or (if you're a hero like Dan) dive at it direct from
-user space. Depends how complex your device is, and how well you want to
-encapsulate/partition it.
-
-For answers to these any many other questions you haven't thought of yet, see
-the Linux for PowerPC Embedded Systems HOWTO at:
-    http://members.xoom.com/greyhams/linux/PowerPC-Embedded-HOWTO.html
-
-(Dan, have you got write access back to www.ppc.kernel.org yet?)
-
-Regards,
-Graham
---
-Graham Stoney
-Principal Hardware/Software Engineer
-Canon Information Systems Research Australia
-Ph: +61 2 9805 2909  Fax: +61 2 9805 2929
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
