@@ -1,52 +1,30 @@
-Message-ID: <399989FD.29EFBABA@pop.agri.ch>
-Date: Tue, 15 Aug 2000 20:20:48 +0200
-From: Andreas Tobler <toa@pop.agri.ch>
-Reply-To: toa@pop.agri.ch
+Message-ID: <39998B4F.2AD2E17E@student.ethz.ch>
+Date: Tue, 15 Aug 2000 20:26:22 +0200
+From: Michel D	nzer <daenzerm@student.ethz.ch>
 MIME-Version: 1.0
-To: Martin Costabel <costabel@wanadoo.fr>
-CC: Jack Howarth <howarth@bromo.med.uc.edu>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: bk 2.4-test7 broken
-References: <200008150304.UAA31773@bromo.med.uc.edu> <39992943.C267C4CB@wanadoo.fr>
+To: "Kevin M. Myer" <kevin_myer@iu13.k12.pa.us>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Control fb problem on 8500
+References: <Pine.LNX.4.21.0008151339190.734-100000@pegmatite.iu13.k12.pa.us>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Martin Costabel wrote:
->
-> Hi,
->
-> I too would like to know if somebody has this kernel running.
+"Kevin M. Myer" wrote:
 
-Up to now NO.
+> Secondly, the video chip doesn't show up on the PCI bus.  Although XFree86
+> 4.0 apparently supports the controlfb (which is what the 8500 has), it
+> also needs a BusID to be used.  Am I out of luck with using XFree86 4.0 or
+> newer with my machine?  Or generically, is anyone without a card on the
+> PCI bus out of luck?
 
->
-> This one has been included in the bitkeeper kernel in the meantime.
-> On the other hand, the corresponding changeset introduced another bug by
-> changing the type of the function find_via_cuda() from void to int, but
-> only its declaration in the header file include/linux/cuda.h and not its
-> definition in drivers/macintosh/via-cuda.c. Doesn't compile.
+No, the contrary, you're very lucky! :)
 
-Changed the int also in via-cuda.c -> It compiles with warnings.
-
-> > The third problem is more serious. The resulting kernel gets stuck in
-> > the Freeing unused kernel memory stage. This is similar to the problem
-> > Geert mentioned earlier on the mailing list.
->
-> Mine gets stuck after saying "arch: exit" and before switching from the
-> prom console to the fb console (no penguin).
-
-On the wallstreet  I get as far as Jack does, but my screen is
-unreadable. On the 7200 (601-cpu) I enter the xmon just after arch:exit.
-The only thing I see here is this:
-
-vector: 700 at pc = c00061bc, lr = c0004bd4, msr = 81030, sp = c0208f10 [c0208e60]
-current = c0207020, pid = 0, comm = swapper.
-
-No key input works..... (also ctrl apple power doesn't maybe due to my
-usb & adb combination?)
+As the chip doesn't show up, the X server can't deactivate it. So you don't
+need to specify a bus ID (which would prevent the server of disabling the chip ;).
 
 
-Andreas
+Michel
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
