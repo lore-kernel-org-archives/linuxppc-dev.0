@@ -1,42 +1,36 @@
-Date: Wed, 14 Nov 2001 07:28:20 +0100 (MET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Robert E Brose II <bob@kunk.jriver.com>
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: E15 Carolina Frame Buffer Driver for 2.4
-In-Reply-To: <20011113155734.28247.qmail@kunk.jriver.com>
-Message-ID: <Pine.GSO.4.21.0111140727240.2370-100000@mullein.sonytel.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Wed, 14 Nov 2001 10:46:55 +0100
+From: Richard Zidlicky <rz@linux-m68k.org>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+	Jun Sun <jsun@mvista.com>, "Maciej W. Rozycki" <macro@ds2.pg.gda.pl>,
+	Linux/MIPS Development <linux-mips@oss.sgi.com>,
+	Linux/m68k <linux-m68k@lists.linux-m68k.org>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: [RFC] generic MIPS RTC driver
+Message-ID: <20011114104655.A187@linux-m68k.org>
+References: <20011113144240.B669@linux-m68k.org> <Pine.LNX.4.33.0111131630310.3818-100000@serv>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.33.0111131630310.3818-100000@serv>; from zippel@linux-m68k.org on Tue, Nov 13, 2001 at 04:32:42PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 13 Nov 2001, Robert E Brose II wrote:
-> I have gotten the 2.2 framebuffer driver for the E15 (internal)
-> display adapter in the IBM 7248-133 43p (carolina Prep MB) to
-> work (on my machine anyway) in 2.4. This provides a way to
-> run X with the 2.4 kernels on this hardware.
+On Tue, Nov 13, 2001 at 04:32:42PM +0100, Roman Zippel wrote:
+> Hi,
 >
-> Here is a patch against the benh rsync tree from last night...
+> On Tue, 13 Nov 2001, Richard Zidlicky wrote:
 >
-> http://www.qbjnet.com/~bob/e15fb-2.4.15-pre3-benh-patch
+> > hwclock and a bunch of less known porgrams like chrony.
 >
-> It would be interesting to hear if it works on other variations
-> of the 7248.
+> I was playing with chrony, but it was unable to adjust the time, last
+> weekend I switched back to ntp and that works better.
 
-Can't this be merged with the various frame buffer devices for S3 that are
-available on the net?
+some years ago chrony was the reason I wrote the Q40 rtc driver.
+It didn't work very well for me either, but the rtc driver was
+very useful in the meantime :)
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+Bye
+Richard
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
