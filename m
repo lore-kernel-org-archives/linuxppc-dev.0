@@ -1,48 +1,29 @@
-Message-Id: <199910122335.BAA00876@appel.flower>
-To: Jason Haas <jhaas@www.linuxppc.org>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [Announce] Absoft interested in making Fortran compiler -- needs user feedback 
-In-reply-to: Your message of "Tue, 12 Oct 1999 17:34:27 CDT."
-             <Pine.LNX.4.04.9910121733400.27363-100000@www.linuxppc.org>
-Date: Wed, 13 Oct 1999 01:35:42 +0200
-From: Jan Nieuwenhuizen <janneke@gnu.org>
+Message-ID: <3803D353.B710B66C@chpc.utah.edu>
+Date: Tue, 12 Oct 1999 18:33:23 -0600
+From: Lou Langholtz <ldl@chpc.utah.edu>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: How to get latest vger 2.2 sources???
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tuesday, 12 October 1999, Jason Haas writes:
-> On Wed, 13 Oct 1999, Jan Nieuwenhuizen wrote:
-> 
-> > On Tuesday, 12 October 1999, Jason Haas writes:
-> > 
-> > > We have been asked to assist Absoft, makers of the #1 commercial Linux/x8
-    + 6
-> > > Fortran compiler, in determining if there is a market for their product o
-    + n
-> > > the Linux/PowerPC platform.
-> > 
-> > What's the licence?  It sounds awfully proprietary, and a lot of us
-> > are not interested at all in proprietary software.
-> 
-> Note the word commercial.
+This has got to be one of the most frequently asked question that still
+isn't in a FAQ somewhere I can find:
 
-Yes, I did.  AbiWord, eg, is commercial too, yet GPL licenced.
+How does one get the latest 2.2 linux kernel sources from vger or from
+cvs.on.openprojects.net or where ever else the best PPC specific sources
+are? www.kernel.org kernels seem way off what others report from using
+the vger tree.
 
-> > I would very much appreciate it, if non-free announcements were
-> > prominently marked 'non-free', or 'proprietary'.
-> 
-> It is commercial software, although not an announcement for it -- it was
-> an announcement trying to gauge interest in it. 
+"cvs -z3 checkout linux" only gets me the 2.3 tree. What's the tag for
+the 2.2 tree? I could have sworn someone else just asked this on this
+email list or on the linux ppc newsgroup and now I'm kicking myself that
+I didn't pay more attention to the answers they got. I can't find them
+in any archive either.
 
-Ok.  But same thing, I would be interested in another fortran compiler,
-but not if it would be proprietary.
+Thanks!!!
 
-Greetings,
-
-Jan.
-
--- 
-Jan Nieuwenhuizen <janneke@gnu.org> | GNU LilyPond - The music typesetter
-http://www.xs4all.nl/~jantien/      | http://www.lilypond.org/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
