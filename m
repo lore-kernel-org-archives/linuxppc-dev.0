@@ -1,63 +1,67 @@
-Date: Mon, 22 Feb 1999 21:03:34 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Cort Dougan <cort@persephone.cs.nmt.edu>
-cc: Jesper Skov <jskov@cygnus.co.uk>,
-        Christian Zankel <zankel@tarantel.rz.fh-muenchen.de>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Restructuring Efforts
-In-Reply-To: <Pine.LNX.3.96.990218100142.6024A-100000@persephone.cs.nmt.edu>
-Message-ID: <Pine.HPP.3.96.990222204844.3871F-100000@gra-ux1.iram.es>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: sigaltstack and SA_ONSTACK for linuxppc (patch)
+Reply-To: minyard@acm.org
+From: Corey Minyard <minyard@acm.org>
+Date: 22 Feb 1999 15:20:52 -0600
+Message-ID: <m2aey6p22z.fsf@wf-rch.cirr.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+I just read that the SheepSaver people were a little stuck because
+LinuxPPC didn't have  a working sigaltstack.
 
+The following patch implements SA_ONSTACK in 2.2, in case nobody has
+done that yet.  I hope it is correct, it seems to work well for me.
 
-On Thu, 18 Feb 1999, Cort Dougan wrote:
+-- 
+Corey Minyard                   Internet:  minyard@acm.org
+  Work: minyard@nortelnetworks.com  UUCP:  minyard@wf-rch.cirr.com
 
-> 
-> I was just trying this out with tlbia: Use real tlbias in the kernel even
-> on chips that don't do tlbia.  When on a chip that doesn't have the tlbia
-> instruction take the trap and fix the code up in the trap handler (put in
-> a bl soft_tlbia instead of a tlbia).  We could do something like this per
-> architecture.  When doing an arch specific function trap, take the trap
-> and fix it up.  The problem with that is keeping track of the myriad of
-> functions we need to keep track of.
-
-I was thinking along different lines: add a linker section called
-.apus_fixups or so in which I would keep the addresses of all the
-in[wl]/out[wl] instructions and patch very early in the boot
-according to the following rules: 
-
-	lhbrx  -> lhzx
-	lwbrx  -> lwzx
-	sthbrx -> sthx
-	stwbrx -> stwbrx
-
-between these pairs of instructions only the extended part of the opcode
-is different, it would not work the other way around since non byte
-swapping instructions have more addressing modes. I once asked on an egcs
-list if it would be possible to add a constraint for "x" addressing mode
-only because it would make some things simpler (and Altivec only has this
-addressing mode): the answer was no, unfortunately. 
-    
-Of course this section would be freed up and the space reclaimed. The
-macros would not be much more complex than they are now: 
-
-asm("1: 	lhbrx %0,0,%1;\t"
-	"	.section .apus_fixups,ar;\t"
-	"	.long 1b;\t"
-	"	.previous"
+--- linux-2.2p4.orig/arch/ppc/kernel/signal.c   Sun Nov 15 12:51:44 1998
++++ linux-2.2p4/arch/ppc/kernel/signal.c        Thu Jan 14 15:12:22 1999
+@@ -144,6 +144,7 @@
  
-
-Same idea could perhaps be applied for tlbia to avoid adding runtime
-exception handler code and overhead.
-
-	Regards,
-	Gabriel.  
-
+        if (act) {
+                old_sigset_t mask;
++
+                if (verify_area(VERIFY_READ, act, sizeof(*act)) ||
+                    __get_user(new_ka.sa.sa_handler, &act->sa_handler) ||
+                    __get_user(new_ka.sa.sa_restorer, &act->sa_restorer))
+@@ -258,7 +259,7 @@
+ badframe:
+        lock_kernel();
+        do_exit(SIGSEGV);
+-}
++}
+ 
+ /*
+  * Set up a signal frame.
+@@ -374,7 +375,7 @@
+        if (!oldset)
+                oldset = &current->blocked;
+ 
+-       newsp = frame = regs->gpr[1] - sizeof(struct sigregs);
++       newsp = frame = 0;
+ 
+        for (;;) {
+                unsigned long signr;
+@@ -470,6 +471,15 @@
+                                /* NOTREACHED */
+                        }
+                }
++
++               if (    (ka->sa.sa_flags & SA_ONSTACK)
++                    && (! on_sig_stack(regs->gpr[1]))) {
++                               newsp = (current->sas_ss_sp
++                                        + current->sas_ss_size);
++               } else {
++                       newsp = regs->gpr[1];
++               }
++               newsp = frame = newsp - sizeof(struct sigregs);
+ 
+                /* Whee!  Actually deliver the signal.  */
+                handle_signal(signr, ka, &info, oldset, regs, &newsp, frame);
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
