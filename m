@@ -1,40 +1,31 @@
-Message-ID: <3F77DF36.5000609@einfochips.com>
-Date: Mon, 29 Sep 2003 12:58:54 +0530
-From: bhavin <bhavinp@einfochips.com>
-MIME-Version: 1.0
+Date: Mon, 29 Sep 2003 15:58:45 +0200
+From: Alexander Hollinger <alexander.hollinger@gmx.net>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: ELDK & ppc-boot1.1.5
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Re: kernel module for debugging MPC82xx (and MPC8xx)
+Message-ID: <20030929135845.GD15740@jerle.local>
+References: <20030819215043.GA9970@jerle.local> <20030828182825.GD11805@jerle.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20030828182825.GD11805@jerle.local>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-  Hello,
-    I downloaded ELDK 2.0.2 . When I tried to compile ppcboot 1.1.5 it
-gave me following error.  I did not even change the code of ppcboot. I
-tried to compile it for PM826 card. Can anyone please please tell me the
-possible reasons??
+Hello!
 
-Error: Unrecognized opcode: `psdmr_acttorw_1w'
-/home/bhavin/ppcproj/ppcboot-1.1.5/include/config_PM826.h:427:
-Error: Unrecognized opcode: `psdmr_ldotopre_1c'
-/home/bhavin/ppcproj/ppcboot-1.1.5/include/config_PM826.h:428:
-Error: Unrecognized opcode: `psdmr_wrc_1c'
-/home/bhavin/ppcproj/ppcboot-1.1.5/include/config_PM826.h:429:
-Error: Unrecognized opcode: `psdmr_cl_2)'
-make[1]: *** [ticks.o] Error 1
-make[1]: Leaving directory
-`/home/bhavin/ppcproj/ppcboot-1.1.5/ppc'
-make: *** [subdirs] Error 1
+An updated version is available.
+Now, both MPC82xx and MPC8xx are supported.
+Project renamed to powerQUICC_proc.
+
+http://home.in.tum.de/~hollinge/projects/powerQUICC_proc.html
 
 
-Your help will be highly appreciated.
+Kind regards,
+Alexander Hollinger
 
-Thanks,
-Bhavin Shah
-Embedded Engineer
-eInfochips Ltd.,
-bhavinp@einfochips.com
-
+--
+Alexander Hollinger (alexander.hollinger@gmx.net)
+ICN CP D NT SW3, Siemens AG
+Hoffmannstr. 51, 81359 Muenchen
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
