@@ -1,32 +1,28 @@
-Message-ID: <3BE9D0C9.5E4A3F8@mvista.com>
-Date: Wed, 07 Nov 2001 17:24:41 -0700
+Message-ID: <3BE9D140.D28D6B0B@mvista.com>
+Date: Wed, 07 Nov 2001 17:26:40 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-To: Val Henson <val@nmt.edu>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+To: Val Henson <val@nmt.edu>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
 	Paul Mackerras <paulus@samba.org>,
 	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: The Plan
-References: <15337.7275.266062.777161@cargo.ozlabs.ibm.com> <Pine.GSO.4.21.0111071246050.11631-100000@mullein.sonytel.be> <20011107134125.O22194@boardwalk>
+References: <15337.7275.266062.777161@cargo.ozlabs.ibm.com> <Pine.GSO.4.21.0111071246050.11631-100000@mullein.sonytel.be> <20011107134125.O22194@boardwalk> <3BE9D0C9.5E4A3F8@mvista.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Val Henson wrote:
+"Mark A. Greer" wrote:
 
-> I agree with Geert.  I don't think that dividing the clutter into two
-> directories instead of one really improves matters.  Each directory is
-> still monstrously huge and the division is non-obvious.
-> arch/ppc/masochist would be easier to understand. :)
+> Hmmm, clutter I suppose but to be honest I don't have a problem with the way
+> it is now...
 
-Yeah but if you do it the other way, you end up with a directory with a
-clutter of subdirs--exchanged one clutter for another.
+That is as long as everyone uses descriptive file names.
 
-> What is the problem we're trying to solve here?
-
-Hmmm, clutter I suppose but to be honest I don't have a problem with the way
-it is now...
+Now that I think about it a little more, I do like the platforms dir
+idea...separates board-specific code from more generic infracture code (e.g.,
+bridge code, todc, head.S)
 
 Mark
 
