@@ -1,48 +1,26 @@
-Reply-To: <fred@sc23.sc.mcel.mot.com>
-From: "Liu Fred-a18596" <a18596@email.mot.com>
-To: "'Mark Hatle'" <fray@mvista.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: can newlib be a shared library on ppc platform?
-Date: Thu, 5 Dec 2002 09:13:47 +0800
-Message-ID: <002a01c29bfb$90c82e90$940879c8@sc.mcel.mot.com>
+From: Paul Mackerras <paulus@samba.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-In-Reply-To: <3DEBEB39.6040701@mvista.com>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15854.51654.206530.977151@argo.ozlabs.ibm.com>
+Date: Thu, 5 Dec 2002 14:36:38 +1100
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: ISA dma on 4xx
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I found a tool at
-http://oss.software.ibm.com/developer/opensource/linux/projects/minilibc/,
-with it I have tailored standard glibc2.1.3 to less than 500K. It meets our
-requirements.
+Is anyone using a pc-style southbridge chip in a 4xx-based system?
 
+I am thinking that the split that we currently have in linuxppc-2.5,
+where asm/dma.h includes either ppc4xx_dma.h or ppc_isa_dma.h, is not
+the best way to do things, because we might want to use the ISA dma
+functions on a 4xx system.
 
------Original Message-----
-From: Mark Hatle [mailto:fray@mvista.com]
-Sent: Tuesday, December 03, 2002 7:23 AM
-To: Liu Fred-a18596
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: can newlib be a shared library on ppc platform?
+Does anyone use the 4xx dma controller with some device that is
+normally connected to an ISA bus?  That is, is there a need for the
+4xx dma functions to provide the same interface as the ISA dma
+functions?
 
-Liu Fred-a18596 wrote:
-> Hi,
->
-> I need a small libc in our embedded system, so I compiled newlib.
-> But it seems that newlib only support static library on ppc platform.
-> Is it true?
-
-I believe newlib is barely a C library, (it was the last time I looked at
-it)
-
-I would suggest you investigate uclibc and see if that will do what you
-need.
-(There is a version of uclibc that will do shared libs, but I do not know
-how
-advanced the dynamic loader is on PPC.)
-
---Mark
-
+Paul.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
