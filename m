@@ -1,37 +1,30 @@
-Message-ID: <39D35A6C.EF02CCC1@mvista.com>
-Date: Thu, 28 Sep 2000 10:49:16 -0400
-From: Dan Malek <dan@mvista.com>
+From: Dave Pegler <dwp@cambridgebroadband.com>
 MIME-Version: 1.0
-To: Graham Stoney <greyham@research.canon.com.au>
-CC: mgreer@mvista.com,
-        LinuxPPC Embedded Mailing List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Memory corruption bug in HardHat-1.2 CPU6 workaround
-References: <20000928052449.15FE54FF6B@brixi.research.canon.com.au>
 Content-Type: text/plain; charset=us-ascii
+Message-ID: <14803.23469.74630.600419@localhost.localdomain>
+Date: Thu, 28 Sep 2000 15:54:37 +0100 (BST)
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: mbxroot.min.tgz and mbxroot.full.tgz
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Graham Stoney wrote:
+Can anyone tell me where I can get the minimal and complete root file
+systems from. I've tried from :
 
-> I've just noticed some potential memory corruption bugs associated with
-> the CPU6 workaround in the PPC HardHat-1.2 kernel.
+ftp://linuxppc.cs.nmt.edu/pub/linuxppc/embedded/
 
-In what LSP of the 1.2 CDK?  Mark has been predominantly discussing
-the 8240/755 Sandpoint and providing pointers to software that doesn't
-represent integration of the 8xx software on the CDK.
+but the "linuxppc" directory seems to have vanished
 
-Is this a problem in one of the MPC8xx LSPs of the CDK?
+I've also tried :
 
-> ...meaning that they will clobber an unrelated value in memory 8 bytes
-> after cpu6_bug.
+http://www.ppc.kernel.org/pub/linuxppc/embedded/
 
-I'm travelling and don't have an 8xx LSP handy, but there was supposed
-to be sufficient space allocated here to prevent this condition.  Thanks
-for the note and I will check the software to ensure this is correct in
-the MPC8xx CDKs.
+but the machine is non-existent.
 
+Thanks,
 
-	-- Dan
+Dave.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
