@@ -1,27 +1,52 @@
-Date: Mon, 3 Jun 2002 17:53:22 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: Paul Mackerras <paulus@samba.org>
-Subject: More details on the telnet with CONFIG_PIN_TLB problems
-Message-ID: <20020603075322.GI6765@zax>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Date: Mon, 3 Jun 2002 11:16:14 +0200 (CEST)
+From: Geir Frode Raanes <geirfrs@invalid.ed.ntnu.no>
+To: Khai Trinh <kqtrinh@yahoo.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: PCI 3.3V vs. 5V support in the 440GP
+In-Reply-To: <20020531213526.78227.qmail@web11505.mail.yahoo.com>
+Message-ID: <20020603105456.I43281-100000@invalid.ed.ntnu.no>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-To narrow down the cause of the problem I tried copying a 1M file of
-random data through the loopback interface (using netcat).
+On Fri, 31 May 2002, Khai Trinh wrote:
 
-The file was corrupted, specifically certain sections became zero in
-the destination copy.  Oddly enough the zeroed chunks were always 2684
-bytes long and the next byte after the affected region was a multiple
-of 32k (e.g. bytes 0xc7584-0xc8000 zeroed).
+>
+> Does anybody design a PCI card that has to handle PCI
+> 3.3V and 5V? The 440GP support only pci 3.3v and we
+> are thinking of making it support both 3.3v and 5v.
+>
+> Is there a voltage conversion chip out there that does
+
+Short of a full blown transparent PCI bridge, there
+is no reliable way of doing this that I know of.
+
+PCI is an underterminatet bus that relies on reflected
+waves to pump the combined pulse above the logic 1 mark.
+It is therefore not simply a 3V3 <-> 5V problem you have,
+but also a transmission line problem. Traditional buffering
+is therefor out of the question. But nothing stops you from
+trying. You might also try analog switches steered by the
+bus grant signal, with clamping on the inside. But I have
+no confidence in that soulution either.
+
+PCI is designed to ban all 'clever' solutions of the past.
+You can tell by the spesification that the designers know
+all the tricks of the trade by heart and have put implicit
+barriers against them into the specification. They where
+definitely not going to sit by and have ISA all over again.
+That's good, but from our point of view it's kind of annoing.
+OTOH we no longer have to face anyone elses clever solutions.
 
 --
-David Gibson			| For every complex problem there is a
-david@gibson.dropbear.id.au	| solution which is simple, neat and
-				| wrong.  -- H.L. Mencken
-http://www.ozlabs.org/people/dgibson
+  ******************************************************
+  Never ever underestimate the power of human stupidity.
+  -Robert Anson Heinlein
+
+		GeirFRS@invalid.and.so.forth
+  ******************************************************
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
