@@ -1,49 +1,30 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Daniel Berlin <dberlin@redhat.com>,
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
 	<linuxppc-dev@lists.linuxppc.org>
 Subject: Re: u64 fun and PCI DMA not working for things behind bridges?
-Date: Thu, 1 Mar 2001 15:02:42 +0100
-Message-Id: <19350124073426.30284@mailhost.mipsys.com>
-In-Reply-To: <m2k86a2gw5.fsf@dynamic-addr-83-177.resnet.rochester.edu>
-References: <m2k86a2gw5.fsf@dynamic-addr-83-177.resnet.rochester.edu>
+Date: Thu, 1 Mar 2001 15:03:41 +0100
+Message-Id: <19350124073525.11032@mailhost.mipsys.com>
+In-Reply-To: 
+ <Pine.LNX.4.30.0103011305510.28644-100000@opal.biophys.uni-duesseldorf.de>
+References: 
+ <Pine.LNX.4.30.0103011305510.28644-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+>> I can't compile the drivers without optimization, or else i get
+>> references to functions that don't exist in the kernel, for some
+>> reason.
 >
->The firewire device is behind the same bridge the GMAC is behind. Is
->there something special I need to do to make physical dma work all the
->time when the device you are dma'ing to/from is behind a bridge?
->
->It could be a hardware implementation problem in the uni-north FW, of
->course. I'm just trying to see if anyone has ever noticed anything.
->
->
->Right now i have to resort to having the SBP-2 driver emulate physical
->dma reads/writes by telling the firewire subsystem driver to redirect
->all reads/writes into host memory through a routine that simply does
->memcpys.
->I also tell the controller it's not allowed to allow physical dma
->accesses to be performed (there are filter registers that let you
->specify what addresses you'll allow physical dma access to, and what
->you want to go through the normal block read/write/quadlet read/write
->process) , and that the other side must do it through normal block
->reads/write packets.
->
->This works, but it's a little slow, of course.
+>What exact functions don't exist?
 
-It might be possible that we have an apple bug here... Could you try
-doing as if the device was not cache coherent ?
+If you compile with -O0, you also disable inlining, which cause tons of
+link errors for all inline functions. The lowest optimisation level you
+can use is -O1
 
-Basically, invalidate the cache for a data block that will be filled by
-the device, and flush the cache for a data block that will be read by the
-device. You can do the first one with dcbi, the second with dcbf, both
-loops followed by a "sync" instruction to make sure the ache operations
-are completed.
-
-Ben
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
