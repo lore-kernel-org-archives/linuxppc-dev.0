@@ -1,61 +1,41 @@
-Message-Id: <200002090102.RAA29474@work.bitmover.com>
-To: Tom Rini <trini@kernel.crashing.org>
-cc: Dan Bethe <dan_bethe@yahoo.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: the state of the linuxppc-dev community
-In-Reply-To: Your message of "Tue, 08 Feb 2000 17:51:14 MST."
-             <Pine.LNX.4.10.10002081750240.30794-100000@opus.bloom.county>
-Date: Tue, 08 Feb 2000 17:02:17 -0800
-From: Larry McVoy <lm@bitmover.com>
+Message-ID: <38A0BED6.AD2E336C@zeta.org.au>
+Date: Wed, 09 Feb 2000 12:11:50 +1100
+From: Peter Allworth <linsol@zeta.org.au>
+MIME-Version: 1.0
+To: Jesper Skov <jskov@redhat.com>
+CC: linuxppc-embedded@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: more Re: Low memory problems in 8xx Linux
+References: <20000201235813.4F5611B51A@elph.research.canon.com.au> <38977960.40E014A1@zeta.org.au> <ot1z6of1ws.fsf@thinktwice.zoftcorp.dk>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-: > BK users bless it, we'll do a public release.
-:
-: ooh ooh ooh, you mean it might finally be out?  It has _not_ helped any
-: that the only up to date trees have been hidden from the public.
-: Duplication of work, general annoyance, etc.
+Jesper Skov wrote:
 
-Yeah.  Sorry it's taken so long.  BK is fairly complicated and the problem
-is that it is a really poor match to the open style of development, in
-my opinion.  If you guys all use it, it isn't really acceptable to have it
-break.  Supporting Cort and his buddies on it turned into a big job and it
-became clear that we needed to do the renames rewrite before a public
-release.
+<snip>
 
-It's minorly amazing that a group of people who don't have tools that handle
-renames quickly grow to like having tools that handle renames and use that
-feature enough to promptly break it.
+> An alternative and slighly faster implementation might be to skip the
+> _PAGE_PRESENT check. Any reason something like this wouldn't work?
 
-The breakage was fairly subtle - stuff like
+<snip>
 
-	start with A, B, C
-	# rotate left 1
-	mv A tmp
-	mv B A
-	mv C B
-	mv tmp C
+I had another look at the code and I now remember my rationale for
+the _PAGE_PRESENT test. It wasn't to do with level 1 table entries,
+Dan's code already takes care of that. It was so that a zeroed pte
+couldn't get changed to a non-zero value, since that would make the
+pte_none() function return the wrong result. (Moreover, it just seemed
+wrong to mess with something that's marked "invalid".)
 
-actually showed up.  Among others.  So we now have an architecturally
-clean rename processing alg, as well as an idempotent resolver (you can
-bail out in the middle and start again and its happy), a more robust
-resolver (it saves everything and if there is an error, it restores
-everything), as well as a rewritten reader/writer global locking scheme,
-etc.  It was a lot of work but I think it will pay off in two ways:
-less support overhead, and when you guys find a case we missed, we have
-a much cleaner way of handling it.
+Admittedly I'm being a bit paranoid since the next thing the exception
+handler is likely to do is set the page table entry to something valid.
+But, can you be sure? What about a segmentation fault? ;)
 
-Again, my apologies for the delays.  If it helps - I'm sure it doesn't
-help much - we're working on this 7 days a week, usually pulling 12-14
-hour days.  My wife pretty much hates me.  I suspect the other guy's
-wives are none too thrilled either...
+Cheers,
 
-Light at the end of the tunnel, though.
+PeterA.
 
---lm
-
-P.S.  Andrew (awc@bitmover.com) is rolling all the code into one executable.
-Initial tests shows this reduces the x86 installation size from about 14MB
-to 340KB...  Busy, busy...
+"I've always considered a paranoid as a man with all the facts."
+	-- Tales of Ordinary Madness
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
