@@ -1,22 +1,44 @@
-Date: Tue, 25 Feb 2003 06:24:22 -0700
-From: Matt Porter <porter@cox.net>
-To: Eugene Surovegin <ebs@ebshome.net>
-Cc: brian.auld@adic.com, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Kernel Preemption patch
-Message-ID: <20030225062422.A9657@home.com>
-References: <995FF289C9D69747A09E42992644595405B23686@penguin.adic.com> <5.1.0.14.2.20030224135756.0465b778@mail.ebshome.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5.1.0.14.2.20030224135756.0465b778@mail.ebshome.net>; from ebs@ebshome.net on Mon, Feb 24, 2003 at 02:29:18PM -0800
+From: brian.auld@adic.com
+Message-ID: <995FF289C9D69747A09E42992644595405B2368A@penguin.adic.com>
+To: porter@cox.net
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Kernel Preemption patch
+Date: Tue, 25 Feb 2003 06:32:29 -0800
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
+
+I would presume others interested in the information you posted below would
+have the same questions:
+
+(1) penguinppc.org patch page??
+    - I don't remember, and couldn't find when double-checking, a link
+      for patches at this url.
+
+(2) source.mvista.com (440GP mmap patch)
+    - I ncftp'ed to this location, and did not find any patches that
+      were for the 440, including the mmap patch you mentioned. Is
+      there a README somewhere that talks about this?
+
+      Or, is this the pub/linuxppc/bigphys_remap... patch?
+
+-- Brian
+
+-----Original Message-----
+From: Matt Porter [mailto:porter@cox.net]
+Sent: Tuesday, February 25, 2003 8:24 AM
+To: Eugene Surovegin
+Cc: brian.auld@adic.com; linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Kernel Preemption patch
 
 On Mon, Feb 24, 2003 at 02:29:18PM -0800, Eugene Surovegin wrote:
 > I used George Anzinger patch (it looked less intrusive than 0(1) to me)
 > with small fixes.
 >
-> Actually I applied 3 different patches to achieve reasonable user-mode soft
+> Actually I applied 3 different patches to achieve reasonable user-mode
+soft
 > real-time for 440GP kernel:
 >
 > 1) preempt patch (from MVL)
