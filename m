@@ -1,33 +1,30 @@
-Date: Mon, 17 Jan 2000 22:05:25 -0600 (CST)
-From: Troy Benjegerdes <hozer@drgw.net>
-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Argh, PReP netbooting doesn't use residual data
-Message-ID: <Pine.LNX.4.10.10001172159080.20769-100000@altus.drgw.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Tue, 18 Jan 2000 18:15:44 +0100
+To: Moritz Thomas <motho@gmx.net>,
+        Kevin_Hendricks <khendricks@admin.ivey.uwo.ca>
+From: Ruben Malchow <ruben@untergrund.org>
+Subject: Re: still no accelerated X ($#!$*)
+Cc: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
+In-Reply-To: <l03130300b4aa3cb5b581@[213.6.51.119]>
+References: <20000117135832.10037gmx1@mx2.gmx.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Message-Id: <E12AcPX-0003V4-00@mx0.01019freenet.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+>>Then boot your kernel with BootX  with the "No Video Driver" box *checked*.
+>>
 
-Is there any sane way to fix arch/ppc/boot/misc.c so that PReP machines
-that are network booting can figure out how much memory the machine has?
+i was having some trouble with xserver acceleration too, but a look at this 
 
-I have a MVME 2600 with 16 MB of RAM I have been fighting with the last
-week until I realized it assumed 32 MB while the machine only had 16, and
-*did not* print a warning message of any sorts.
 
-Gabriel Paubert has done quite a bit of work on his prep bootloader.. Are
-there some reasons that this bootloader could not be included as a config
-option?
+http://www.members.home.net/njolly/xfree86/kernel_arg_table.html
 
-Thanks
+instead of relying on the kernel params provided by BootX did the trick for me
+on a b&w g3 
 
---------------------------------------------------------------------------
-| Troy Benjegerdes    |  troy@blacklablinux.com    |    hozer@drgw.net   |
-|    Unix is user friendly... You just have to be friendly to it first.  |
-| This message composed with 100% free software.    http://www.gnu.org   |
---------------------------------------------------------------------------
+.rm
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
