@@ -1,17 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F1D4E2BF0E
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Dec 2004 05:35:56 +1100 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <dean@bong.com.au>
+Received: from smtp.pnc.com.au (belinda.pnc.com.au [203.13.174.10])
+	by ozlabs.org (Postfix) with SMTP id B9ECE2BF07
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Dec 2004 11:21:42 +1100 (EST)
+Message-ID: <41CA0E0D.908@bong.com.au>
+Date: Thu, 23 Dec 2004 11:15:09 +1100
+From: Dean Hamstead <dean@bong.com.au>
+MIME-Version: 1.0
 To: "debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
-In-Reply-To: <1103739194.5316.1.camel@gaston>
-References: <1103739194.5316.1.camel@gaston>
-Content-Type: text/plain
-Date: Wed, 22 Dec 2004 19:35:13 +0100
-Message-Id: <1103740513.29974.0.camel@gaston>
-Mime-Version: 1.0
+References: <Pine.LNX.4.21.0412230130510.5692-100000@hal.pp.fishpool.fi>
+In-Reply-To: <Pine.LNX.4.21.0412230130510.5692-100000@hal.pp.fishpool.fi>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 Subject: Re: [PATCH] Fix Alsa issues including Oopses with OSS emulation
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -23,46 +21,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2004-12-22 at 19:13 +0100, Benjamin Herrenschmidt wrote:
-> This patch (which will be send upstream separately by the Alsa folks) fixes
-> an signed vs. unsigned char problem in Alsa which was the cause of the Oops
-> people were experiencing on ppc with OSS emulation and possibly other issues.
+the pmac driver has issues on my imac dv, it works but alas
+it doesnt know what to do when plugging in headphones
+not to mention lack of input sensors for my ibook (clamshell)
 
-Ok, actually, the one that will be commited upstream is a bit different,
-here it is:
+i realise though that if you cant get specs and no one
+wants to tinker around stuff wont get implemented.
+but if its in OSS...
 
+*shrug*
 
-Summary: [ALSA] Fix the wrong sign of format data entries
+ben (and others) do a great job though.
 
-Fix suggested by Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Dean
 
-On architectures like PPC, char is handled as "unsigned char", thus the
-pcm_format_data table entries with -1 give a positive 255.  This causes
-Oops with OSS-emulation on such architectures.
-
-The patch simply adds the right signed/unsigned prefix to fix this problem.
-
-
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
-
-
---- linux/sound/core/pcm_misc.c 8 Jun 2004 16:57:28 -0000       1.12
-+++ linux/sound/core/pcm_misc.c 22 Dec 2004 18:07:29 -0000      1.14
-@@ -25,11 +25,14 @@
- #include <sound/pcm.h>
- #define SND_PCM_FORMAT_UNKNOWN (-1)
- 
-+/* NOTE: "signed" prefix must be given below since the default char is
-+ *       unsigned on some architectures!
-+ */
- struct pcm_format_data {
--       char width;     /* bit width */
--       char phys;      /* physical bit width */
--       char le;        /* 0 = big-endian, 1 = little-endian, -1 = others */
--       char signd;     /* 0 = unsigned, 1 = signed, -1 = others */
-+       unsigned char width;    /* bit width */
-+       unsigned char phys;     /* physical bit width */
-+       signed char le; /* 0 = big-endian, 1 = little-endian, -1 = others */
-+       signed char signd;      /* 0 = unsigned, 1 = signed, -1 = others */
-        unsigned char silence[8];       /* silence data to fill */
- };
+Martin-Éric Racine wrote:
+> Nice to know that work is being done on the pmac ALSA driver. :)
+> 
+> However, I still cannot get ALSA to work at all on this iMac's Burgundy:  
+> https://bugtrack.alsa-project.org/alsa-bug/view.php?id=306
+> 
+> The old OSS driver still works, so I know that the hardware is not at
+> fault; this is clearly an ALSA driver problem.
+> 
+> Has anybody managed to get this to work on similar hardware?
+> 
+> 
+> On Wed, 22 Dec 2004, Benjamin Herrenschmidt wrote:
+> 
+> 
+>>This patch (which will be send upstream separately by the Alsa folks) fixes
+>>an signed vs. unsigned char problem in Alsa which was the cause of the Oops
+>>people were experiencing on ppc with OSS emulation and possibly other issues.
+>>
+>>Index: linux-work/sound/core/pcm_misc.c
+>>===================================================================
+>>--- linux-work.orig/sound/core/pcm_misc.c	2004-11-22 01:51:09.000000000 +0100
+>>+++ linux-work/sound/core/pcm_misc.c	2004-12-22 19:11:26.297518336 +0100
+>>@@ -26,10 +26,10 @@
+>> #define SND_PCM_FORMAT_UNKNOWN (-1)
+>> 
+>> struct pcm_format_data {
+>>-	char width;	/* bit width */
+>>-	char phys;	/* physical bit width */
+>>-	char le;	/* 0 = big-endian, 1 = little-endian, -1 = others */
+>>-	char signd;	/* 0 = unsigned, 1 = signed, -1 = others */
+>>+	signed char width;	/* bit width */
+>>+	signed char phys;	/* physical bit width */
+>>+	signed char le;		/* 0 = big-endian, 1 = little-endian, -1 = others */
+>>+	signed char signd;	/* 0 = unsigned, 1 = signed, -1 = others */
+>> 	unsigned char silence[8];	/* silence data to fill */
+>> };
+>> 
+>>
+>>
+>>
+>>
+> 
+> 
