@@ -1,44 +1,46 @@
-Date: Fri, 3 Sep 1999 17:29:09 -0400 (EDT)
-From: Hank De Gregorio <hcd1@acpub.duke.edu>
-To: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
-Subject: Re: SCSI host detected, but not the drive
-In-Reply-To: <Pine.SOL.3.91.990827144757.13651A@godzilla6.acpub.duke.edu>
-Message-ID: <Pine.SOL.3.91.990903172713.439A-100000@godzilla6.acpub.duke.edu>
+Message-ID: <37D044CE.B31A1907@broadlink.com>
+Date: Fri, 03 Sep 1999 14:59:42 -0700
+From: Scott Wood <scott@broadlink.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: DEC Tulip not working in B&W G3
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-i am installing linuxppc-r4 with the redhat installer.
+I have a NetGear FA-310TX (DEC 21141) NIC in my new B&W G3 running kernel
+2.2.6.
+The kernel detects the card and gives me an eth1 interface, but I can't 
+pass any traffic into or out of the interface, and I get some strange
+kernel
+messages:
 
-i get this message (and subsequently a frozen screen) *after* i have 
-chosen my root password and clicked ok to reboot:
+eth0: BMAC+ at 00:50:e4:20:d7:43
+  The PCI BIOS has not enabled this device!  Updating PCI command
+0000->0005.
+tulip.c:v0.89H 5/23/98 becker@cesdis.gsfc.nasa.gov
+eth1: Digital DS21140 Tulip at 0x1080, 40 00 35 05 fc db, IRQ 23.
+eth1:  MII transceiver found at MDIO address 0, config 1000 status 7809.
+eth1:  Advertising 01e1 on PHY 0, previously advertising 01e1.
 
-VFS: Mounted root (ext2 filesystem) readonly.
-change_root: old root has d_count=2
-Trying to unmount old root ... <3>error -16
-Change root to /initrd: error -2
-Freeing unused kernel memory: 88k init 4k pmac 8k open firmware
-tty_io.c: process 1 (swapper) used obsolete /dev/cua1 - update software 
-to use /
-dev/ttyS1
-tty_io.c: process 1 (init) used obsolete /dev/cua1 - update software to 
-use /dev
-/ttyS1
-tty_io.c: process 1 (init) used obsolete /dev/cua1 - update software to 
-use /dev
-/ttyS1
-tty_io.c: process 1 (init) used obsolete /dev/cua1 - update software to 
-use /dev
-/ttyS1
-tty_io.c: process 1 (init) used obsolete /dev/cua1 - update software to 
-use /dev
-/ttyS1
+>---snip---<
 
-does anyone have a clue what's going on with my system?
+phy registers:
+ 0800 7809 7810 0001 01e1 40a1 0003 0000
+ 0000 0000 0000 0000 0000 0000 0000 0000
+ 0000 0002 0000 1000 0048 0010 0000 0002
+ 0001 0000 0000 0000 0000 0000 0000 0000
 
-hank
+I'm not certain exactly what causes this message to be printed, though. 
+Has
+anyone else got the Tulip NICs to work in a B&W G3??
 
+-- 
++---------------------+----------------------+
+|     Scott Wood      |   Systems  Engineer  |
+|=====================+======================|
+|           BroadLink Communications         |
++--------------------------------------------+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
