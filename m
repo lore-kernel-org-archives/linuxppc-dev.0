@@ -1,37 +1,71 @@
-Subject: pcmcia microdrive support on 2.4.21-rev5 for arctic2
-To: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <OF5A440509.F12D8E5A-ON87256CF6.0080427D-85256CF6.00811364@us.ibm.com>
-From: John F Davis <johndavi@us.ibm.com>
-Date: Thu, 27 Mar 2003 18:29:33 -0500
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+To: "xisto.garcia" <xisto.garcia@bol.com.br>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [OT] bdiGDB connection problems 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 27 Mar 2003 17:32:41 -0300."
+             <HCFD2H$Ir2UEt49Zg3kPckloUwpF3NOg_PNxkgldEQziM49VK@bol.com.br>
+Date: Fri, 28 Mar 2003 01:45:09 +0100
+Message-Id: <20030328004514.D8D0FC58BA@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello
+In message <HCFD2H$Ir2UEt49Zg3kPckloUwpF3NOg_PNxkgldEQziM49VK@bol.com.br> you wrote:
+>
+> I'm new to bdiGDB and I'm facing some problems with it. I've got a
+> bdiGDB for a 82xx PPC and I've correctly updated its firmware and
+> configured it through the RS232 interface, specifying its IP address,
+> my host IP, bla bla bla. But when I try to communicate through the
+> ethernet, by a telnet section, it doesn't seem to respond at all.
+...
+> IP Addr  : 192.168.0.2
+> Subnet   : 255.255.255.255
 
-I am trying to get my microdrive working with 2.4.21.rev5.  I have the
-following config options set:
-CONFIG_PCMCIA=m
-CONFIG_PCMCIA_PCCF_4xx=m
-CONFIG_IDE=y
-CONFIG_BLK_DEV_IDE=y
-CONFIG_BLK_DEV_IDECS=m
+Try setting a valis subnet mask, like 255.255.255.0
 
-I can insmod pcmcia_core, pccf_4xx, and ds.
+> - Do I need to have my target conected to bdi in order to
+>   stabilish the telnet connection?
 
-I built the latest pcmcia package from sourceforge in order to get cardmgr.
+No.
 
-When I insert my microdrive, it says "insmod ide_cs.o" no module by that
-name found.
-I indeed do not have this module in my tree.  What's the deal?
+> - What about the tftp server, does it have to be running at
+>   this point?
 
+Yes, or the BDI2000 will not be able to load the  board  config  file
+and  the  register  description  file.  But  it  will  allow a telnet
+connection, and complain if the TFTP server does not work.
 
-FWIW, I tried building 2.4.17 kernel from kernel.org but it had the same
-result.
+> - What services are provided by the bdi? Telnet on TCP port 23?
 
-JD
+Yes.
 
+>   ICMP also? And what about the debugger, does it listen to
+
+At least it will reply to ping.
+
+>   port 2001?
+
+Yes.
+
+> - How can I get it running?
+
+See above: netmask.
+
+> Well, sorry by flooding the list with this newbie and OT message 8) And
+> of course, I'd appreciate some help.
+
+You are welcome.
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"A complex system that works is invariably found to have evolved from
+a simple system that worked."             - John Gall, _Systemantics_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
