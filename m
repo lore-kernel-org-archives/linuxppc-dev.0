@@ -1,53 +1,53 @@
-Message-ID: <20040126134819.56623.qmail@web21408.mail.yahoo.com>
-Date: Mon, 26 Jan 2004 05:48:19 -0800 (PST)
-From: Dave Johnson <davejohnson_hifi@yahoo.com>
-Subject: Re: Linux Performance 
-To: Wolfgang Denk <wd@denx.de>
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <20040123000415.E219AC10AF@atlas.denx.de>
+Message-ID: <019201c3e413$7f45d3a0$026810ac@gilad>
+From: "Gilad Rom" <gilad@romat.com>
+To: "Alex Zeffertt" <ajz@cambridgebroadband.com>,
+	<linux-atm-general@lists.sourceforge.net>,
+	<linuxppc-embedded@lists.linuxppc.org>
+References: <1075117282.1504.17.camel@zambia.cambridgebroadband.com>
+Subject: Re: [Linux-ATM-General] Announcement: MPHY now supported in mpc860sar
+Date: Mon, 26 Jan 2004 15:51:28 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="Windows-1252"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Caches are already enabled.
+This is very exciting news! (well, for me it is)
 
-Dave..
+How many PHY's in parallel are we talking about here?
 
---- Wolfgang Denk <wd@denx.de> wrote:
-> In message
-> <20040122204828.62134.qmail@web21405.mail.yahoo.com>
-> you wrote:
-> >
-> > I am running MV3.1 Linux on a MPC8270 based custom
-> > board. I ran LMbench2 on my board and got these
-> > numbers (file attached). Also I have high
-> interrupt
+Thanks,
+Gilad.
+
+
+----- Original Message -----
+From: "Alex Zeffertt" <ajz@cambridgebroadband.com>
+To: <linux-atm-general@lists.sourceforge.net>;
+<linuxppc-embedded@lists.linuxppc.org>
+Sent: Monday, January 26, 2004 1:41 PM
+Subject: [Linux-ATM-General] Announcement: MPHY now supported in mpc860sar
+
+
+> Just a quick note to say that multi-phy is now supported by the
+> mpc860sar ATM driver, thanks to a patch by Rodolfo Giometti.
 >
-> Attachment missing.
+> Page: http://sourceforge.net/projects/mpc860sar/
 >
-> > Also these numbers dont look good either. Are
-> there
-> > any tricks which can be played to enhance kernel
-> > performance??
->
-> Turn on the caches?
+> Alex
 >
 >
-> Wolfgang Denk
 >
-> --
-> See us @ Embedded World, Nuremberg, Feb 17 - 19,
-> Hall 12.0 Booth 440
-> Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88
-> Email: wd@denx.de
-> "You know, after a woman's raised a family and so
-> on,  she  wants  to
-> start living her own life."   "Whose life she's
-> _been_ living, then?"
->                                   - Terry Pratchett,
-> _Witches Abroad_
+> -------------------------------------------------------
+> The SF.Net email is sponsored by EclipseCon 2004
+> Premiere Conference on Open Tools Development and Integration
+> See the breadth of Eclipse activity. February 3-5 in Anaheim, CA.
+> http://www.eclipsecon.org/osdn
+> _______________________________________________
+> Linux-atm-general mailing list
+> Linux-atm-general@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/linux-atm-general
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
