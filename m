@@ -1,13 +1,21 @@
-Date: Fri, 26 May 2000 09:46:26 -0400
-From: Alain Birtz <abz@videotron.ca>
-Subject: Detecting keyboard event (input) for non X application
-To: linuxppc-dev@lists.linuxppc.org
-Reply-to: abz@videotron.ca
-Message-id: <392E8032.F5FFE56@videotron.ca>
-MIME-version: 1.0
-Content-type: text/plain; x-mac-creator=4D4F5353; x-mac-type=54455854; charset=us-ascii
+From: kd@flaga.is
+Subject: Re: Detecting keyboard event (input) for non X application
+To: abz@videotron.ca
+Cc: linuxppc-dev@lists.linuxppc.org
+Message-ID: <OFAD4C5102.EA44A7BA-ON002568EB.004D980C@flaga.is>
+Date: Fri, 26 May 2000 14:09:04 +0000
+MIME-Version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
+
+
+What about using poll() with timeout and then read() to get the keyboard
+data?
+
+K.D.
+
+Alain Birtz wrote:
 
 
 Within an infinite loop, how to know if there is a keyboard input ?
