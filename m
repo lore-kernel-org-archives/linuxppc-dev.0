@@ -1,143 +1,56 @@
-Message-ID: <39637BC3.17F2F09@mvista.com>
-Date: Wed, 05 Jul 2000 11:17:39 -0700
-From: Frank Rowand <frank_rowand@mvista.com>
-Reply-To: frowand@mvista.com
-MIME-Version: 1.0
-To: Matthew Locke <mlocke@jps.net>
-CC: Matthias Fuchs <matthias.fuchs@esd-electronics.com>,
-        linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: making kernel for ppc405gp from montavista sources
-References: <NDBBJCEBJMJJJBIMCFBEGEAICEAA.mlocke@jps.net>
-Content-Type: text/plain; charset=iso-8859-1
+Message-Id: <200007052245.AAA24265@denx.local.net>
+To: "TWG - pat, mark & steve" <twg@world.std.com>
+cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Problems with HardHat/NFS root filesystems 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 05 Jul 2000 12:27:57 EDT."
+             <Pine.SGI.3.95.1000705121641.27740C-100000@world.std.com>
+Date: Thu, 06 Jul 2000 00:45:48 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Matthew Locke wrote:
+In message <Pine.SGI.3.95.1000705121641.27740C-100000@world.std.com> you wrote:
 >
-> I believe 'make mrproper' blows away .config and autoconf.h.  I don't know
-> what the state of your tree is now, but try to
+> Thanks, Wolfgang, for your response.  It helped somewhat.  Here's what I
+> discovered:
 >
-> copy the .config again
-> "make 'your favorite config process'" (mine is xconfig) keep all defaults
-> and 'save and exit'. this will create things like autoconf.h
-> "make dep"
-> "make 'your favorite image'"
+> 1. I am also unable to run ash.static
+
+Then shread libs are not your primary problem.
+
+> 2. I forgot to mention another error message (actually, I thought it was
+> trivial but it's not), I also get a "Warning: unable to open an initial
+> console" error message.
+
+OK - that's a different issue, then.
 
 
-Follow the directions on my web page in the section "Building the kernel:",
-
-   http://www.mvista.com/products/405gp_status/main.html
-
-(This URL is likely to change in the next few days, I'll send out an announcement when
-it does.)
-
-After getting the .config, you need to
-
-  make oldconfig
-  make dep
-  make one of the kernel targets
-
-Please use "make menuconfig" instead of "make xconfig".  The last time I checked,
-make xconfig generates incorrect results for the 405gp.  Fixing it to work is on
-my to-do list.
-
-Note that the web page points you to the May 3 kernel.  There is a new kernel as of
-June 29, but I haven't announced it yet since I haven't updated the web page.
-
-
-> > -----Original Message-----
-> > From: owner-linuxppc-embedded@lists.linuxppc.org
-> > [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Matthias
-> > Fuchs
-> > Sent: Saturday, August 05, 2000 9:02 AM
-> > To: linuxppc-embedded
-> > Subject: making kernel for ppc405gp from montavista sources
-> >
-> >
-> >
-> > Hello,
-> >
-> > I downloaded the linux_tar.gz file from montavista and unpacked it ! I
-> > copied the .config file from the same location to the kernel tree's
-> > root. Before I did a "make mrproper".
-> >
-> > When I run a "make dep" I got an error ! Well, I could start to check
-> > out if there is an error in the tree, but I think that there is a
-> > general mistake I made !
-> >
-> > Does anybody know where the error comes from ? Here is the output of my
-> > "make dep":
-> >
-> > ----------------------
-> > mfuchs@pc-matthias:~/mvista_405_linux_new/linux > make dep
-> > make -C arch/ppc/boot fastdep
-> > make[1]: Entering directory
-> > `/home/mfuchs/mvista_405_linux_new/linux/arch/ppc/boot'
-> > /home/mfuchs/mvista_405_linux_new/linux/scripts/mkdep *.[Sch] > .depend
-> > make[1]: Leaving directory
-> > `/home/mfuchs/mvista_405_linux_new/linux/arch/ppc/boot'
-> > make -C arch/ppc/chrpboot fastdep
-> > make[1]: Entering directory
-> > `/home/mfuchs/mvista_405_linux_new/linux/arch/ppc/chrpboot'
-> > /home/mfuchs/mvista_405_linux_new/linux/scripts/mkdep *.[Sch] > .depend
-> > make[1]: Leaving directory
-> > `/home/mfuchs/mvista_405_linux_new/linux/arch/ppc/chrpboot'
-> > make -C arch/ppc/treeboot fastdep
-> > make[1]: Entering directory
-> > `/home/mfuchs/mvista_405_linux_new/linux/arch/ppc/treeboot'
-> > /home/mfuchs/mvista_405_linux_new/linux/scripts/mkdep *.[Sch] > .depend
-> > make[1]: Leaving directory
-> > `/home/mfuchs/mvista_405_linux_new/linux/arch/ppc/treeboot'
-> > scripts/mkdep init/*.c > .depend
-> > scripts/mkdep `find /home/mfuchs/mvista_405_linux_new/linux/include/asm
-> > /home/mfuchs/mvista_405_linux_new/linux/include/linux
-> > /home/mfuchs/mvista_405_linux_new/linux/include/scsi
-> > /home/mfuchs/mvista_405_linux_new/linux/include/net -follow -name \*.h !
-> > -name modversions.h -print` > .hdepend
-> > make _sfdep_kernel _sfdep_drivers _sfdep_mm _sfdep_fs _sfdep_net
-> > _sfdep_ipc _sfdep_lib _sfdep_arch/ppc/kernel _sfdep_arch/ppc/mm
-> > _sfdep_arch/ppc/lib _FASTDEP_ALL_SUB_DIRS="kernel drivers mm fs net ipc
-> > lib arch/ppc/kernel arch/ppc/mm arch/ppc/lib"
-> > make[1]: Entering directory `/home/mfuchs/mvista_405_linux_new/linux'
-> > make -C kernel fastdep
-> > make[2]: Entering directory
-> > `/home/mfuchs/mvista_405_linux_new/linux/kernel'
-> > make[2]: *** No rule to make target
-> > `/home/mfuchs/mvista_405_linux_new/linux/include/linux/autoconf.h',
-> > needed
-> > by
-> > `/home/mfuchs/mvista_405_linux_new/linux/include/linux/modules/sig
-> > nal.ver'.
-> > Stop.
-> > make[2]: Leaving directory
-> > `/home/mfuchs/mvista_405_linux_new/linux/kernel'
-> > make[1]: *** [_sfdep_kernel] Error 2
-> > make[1]: Leaving directory `/home/mfuchs/mvista_405_linux_new/linux'
-> > make: *** [dep-files] Error 2
-> > mfuchs@pc-matthias:~/mvista_405_linux_new/linux >
-> > --------------------------------------
-> >
-> > thanks for advise
-> > Matthias
-> >
-> > --
-> > -------------------------------------------------
-> > \ Matthias Fuchs                                 \
-> >  \ esd electronic system design Gmbh              \
-> >   \ Vahrenwalder Straße 205                        \
-> >    \ D-30165 Hannover                               \
-> >     \ email: matthias.fuchs@esd-electronics.com      \
-> >      \ phone: +49-511-37298-0                         \
-> >       \ fax:   +49-511-37298-68                        \
-> >        --------------------------------------------------
-> >
+> In /etc/exports, I export the volume as /opt/hardhat.....
 >
+> However, when I do an "exportfs -av" the exported volume shows up as
+> /usr/opt/hardhat.....
+> I specified /opt/hardhat... in /etc/dhcpd.conf
+>
+> I think, therefore, that NFS is not allowing access to the proper
+> directories, and that's why it can't find an init (or a /dev/console!)
+>
+> Am I on the right track?
 
+I think so - most probably your target can't see the files it  needs.
+You should be able find out by running some network analyzer (tcpdump
+might be enough for the job; ethereal will make it more convenient).
 
--Frank
+The quick test is to fix your configuration and try it out :-)
+
+Wolfgang Denk
+
 --
-Frank Rowand <frank_rowand@mvista.com>
-MontaVista Software, Inc
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+If it went on at this rate, in several billion  years  he'd  be  rich
+beyond his wildest dreams!            - Terry Pratchett, _Soul Music_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
