@@ -1,33 +1,35 @@
-Subject: Re: Looking for fast flash programming code
-From: David Woodhouse <dwmw2@infradead.org>
-To: Eugene Surovegin <ebs@ebshome.net>
-Cc: Richard Williams <richard_williams@stratexnet.com>,
-	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <20040803003538.GA11101@gate.ebshome.net>
-References: 
-	 <A3240F62EF3C2749B1A25D3BC9548F4148BC20@ExchWENZ02.wenz.global.vpn>
-	 <20040803003538.GA11101@gate.ebshome.net>
+Subject: Large TLBs on 40x
+From: Josh Boyer <jwboyer@charter.net>
+To: linuxppc-embedded@lists.linuxppc.org
 Content-Type: text/plain
-Message-Id: <1091520922.12594.135.camel@imladris.demon.co.uk>
+Message-Id: <1091574342.2578.83.camel@c68.115.86.108.roc.mn.charter.com>
 Mime-Version: 1.0
-Date: Tue, 03 Aug 2004 09:15:22 +0100
+Date: Tue, 03 Aug 2004 18:05:42 -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, 2004-08-02 at 17:35 -0700, Eugene Surovegin wrote:
-> On Tue, Aug 03, 2004 at 09:13:40AM +1200, Richard Williams wrote:
-> >
-> > I am looking for fast flash programming code for AMD. Does this exist anywhere?
-> >
-> > In kernel 2.4.24, amd_flash.c only implements the slow programming algorithm.
->
-> IIRC, buffer write support for AMD chips is in MTD CVS.
+Howdy,
 
-...which means it's in 2.6 already. Why are you still using 2.4?
+In 2.6, the PPC mm code for 4xx platforms uses large TLB entries for
+most of RAM.  Specifically, I am looking at arch/ppc/mm/4xx_mmu.c at the
+mmu_mapin_ram function.  In there, the pmd pointers are setup with
+_PMD_SIZE_16M | _PAGE_HWEXEC | _PAGE_HWWRITE.
 
---
-dwmw2
+Doesn't this allow the text pages of the kernel to be written to?  So to
+my understanding, a buggy driver that went off into the weeds could
+corrupt the text pages of the kernel.
+
+I would think that you would want the kernel text pages to be
+non-writable so that if something like the above scenario happened you
+don't have possibly bad text pages.  Debugging wouldn't be much fun.
+
+I think I am missing something here.  If so, please excuse my lack of
+knowledge on TLBs, but I am somewhat new to the low level stuff.  Anyone
+care to point out what I am missing?
+
+thx,
+josh
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
