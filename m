@@ -1,47 +1,64 @@
-Date: Mon, 19 Mar 2001 18:29:16 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: losing interrupts - printk is bad
-In-Reply-To: <3AB63E12.6D38973E@esd-electronics.com>
-Message-ID: <Pine.HPX.4.10.10103191822450.13151-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: flash writing with Linux
+Date: Mon, 19 Mar 2001 17:31:29 -0000
+Message-ID: <EADB10BAC266A14A85ECBF8686A73E3108AFE4@kolkrabbi.flaga.is>
+From: =?iso-8859-1?B?S+FyaSBEYXbt8HNzb24=?= <karid@flaga.is>
+To: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, 19 Mar 2001, Matthias Fuchs wrote:
+> -----Original Message-----
+> From: Matthias Fuchs [mailto:matthias.fuchs@esd-electronics.com]
+> Sent: 19. mars 2001 17:16
+> To: Subodh Nijsure; linuxppc-embedded
+> Subject: Re: flash writing with Linux
+>
+>
+>
+> Hi Subodh,
+>
+> Subodh Nijsure wrote:
+> >
+> > Perhaps you can take a look at mtd and use that to manage
+> your flash.
+> > With mtd you can partition your flash to different devices
+> and erase them
+> > selectively.
+> What is mtd ? Never heard of before !
+
+It is flash abstracation layer (driver), and is now part of the
+official linux 2.4.x kernels from Linus.
+http://www.mtd-infradead.org
+
+> >
+> > Once you have your flash partitioned you can simply cat a
+> file to /dev/mtd#
+> > to copy new content to the flash.
+> That sounds nice and seems to be same like the stuff Wolfgang
+> offered in
+> his 2.4.3-preX patch.
+
+Yes it is.
 
 >
-> Hi,
+> Matthias
 >
-> I got a nice problem: I am working on an embedded PPC board (IBM405CR)
-> with a serial console (115200 baud). While I was testing some new driver
-> code, I made a lot of prink debugging output - as we all like to do :-)
-> My problem is, that I always lose some bytes on an other serial port. I
-> found out that printk waits until the complete format string is send
-> through the console. That takes about 5 ms for 40 bytes. During this
-> time printk blocks the interrupts !!! That means some incomming data on
-> the other serial port can be (and is) lost. This is a very strange
-> problem.
 >
-> Well first would be glad to get a good workaround. Well, a 'klogd -c 1'
-> turn off all the debuggin and printk is much faster, but I need the
-> debugging output.
+> --
+> -------------------------------------------------
+> \ Matthias Fuchs                                 \
+>  \ esd electronic system design Gmbh              \
+>   \ Vahrenwalder Straße 205                        \
+>    \ D-30165 Hannover                               \
+>     \ email: matthias.fuchs@esd-electronics.com      \
+>      \ phone: +49-511-37298-0                         \
+>       \ fax:   +49-511-37298-68                        \
+>        --------------------------------------------------
 >
-> Second, could anybody explain t ome, what klogd is doing ? It would be
-> glad to get klogd read all the debugging output from the kernel and
-> output the data from user space (well buffered and not blocking the
-> whole system). It seems that klogd cannot do that, am I right ?
-
-Do you have a nettwork (Ethernet interface) ? I get all my debugging
-output in /var/log/messages on another system with properly configured
-syslogd. Of course, if has to go through userspace but once you've got
-your driver stable enough , it should not be a problem.
-
-	Regards,
-	Gabriel.
-
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
