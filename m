@@ -1,63 +1,38 @@
-Date: Sat, 23 Sep 2000 14:38:39 -0700
-From: Matt Porter <mporter@mvista.com>
-To: Dan Malek <dan@mvista.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, paulus@linuxcare.com.au,
-        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: __ioremap_at() in 2.4.0-test9-pre2
-Message-ID: <20000923143839.A16562@cx258813-a.chnd1.az.home.com>
-References: <Pine.LNX.4.10.10009221356470.377-100000@cassiopeia.home> <39CBA90A.58092A25@mvista.com>
-Mime-Version: 1.0
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <39CBA90A.58092A25@mvista.com>; from dan@mvista.com on Fri, Sep 22, 2000 at 02:46:34PM -0400
+Message-ID: <14797.11370.609130.657303@ipa.ne.mediaone.net>
+Date: Sat, 23 Sep 2000 18:19:22 -0400
+From: R Shapiro <reshapiro@mediaone.net>
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+Cc: Michel Ddnzer <daenzerm@student.ethz.ch>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: xf 4.0.0/1 with rage II/rage pro -- should the ati driver work?
+In-Reply-To: <Pine.LNX.4.10.10009231802380.1165-100000@opal.biophys.uni-duesseldorf.de>
+References: <14796.52485.753924.552345@ipa.ne.mediaone.net>
+	<Pine.LNX.4.10.10009231802380.1165-100000@opal.biophys.uni-duesseldorf.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Sep 22, 2000 at 02:46:34PM -0400, Dan Malek wrote:
->
-> Geert Uytterhoeven wrote:
->
-> > But you suggested the use of the MMU to map all I/O spaces from all bridges
-> > into one merged and consecutive universal I/O space.
->
-> Well, Paul is suggesting that, I don't really care and I think it
-> is a detail that doesn't matter.  I prefer the approach:
->
-> 	addr_to_use = tell_me_where()
-> 	inb(addr_to_use)
->
-> but I guess I am wrong on this :-).  Everyone seems to like hacking
-> addresses either in the PCI resources structures or within the macros
-> rather than doing it as a one time operation in some well contained
-> platform specific function.  I already know I can't use a simple
-> mapping/arithmetic solution on a platform I have, so I am going to
-> pay a high penalty for people using in/out on PCI I/O space.  Fortunately,
-> I can use drivers for devices that have PCI memory, although I will
-> have to modify them, and most of the drivers will be new and unique.
+Michael Schmitz writes:
+ > That might be due to a bug in the ati driver (last time I rsynced in
+ > mid-July, there was a bug in Mach64PPCPreInit:
+ > [...]
+ > 	/* hack */
+ > 	pScrn->videoRam = 2048;
+ > [...]
+ > The hack to unconditionally set pScrn->videoRam to 2M should be removed,
 
-Paul's major concern is to not disturb the legacy drivers because of
-the unknown level of effort to "move that mountain" of developers
-to enhance them with a new I/O access scheme like you're suggesting.
 
-I would honestly like to see something like the above.  I said that
-if we have to stick with the legacy inb usage then the MMU handled
-fixup would be preferred.
+The rsync of atimach64ppc.c I got earlier today doesn't have this
+unconditonal assignment hack anymore.  The hardwired vram setting
+certainly could have caused at least some of the problems I was
+running into on Friday.  I'll try this new ati driver first thing
+Monday and report back.
 
-> > ... but not in user space, because you still need the correct _physical_
-> > address when mmap'ing /dev/mem.
->
-> Right, and I don't really think we should be promoting that kind of
-> access at the user level.  To do so you either need some more complex
-> method of finding this physical address, and I don't know the outcome
-> of some of these discussions that took place a while ago, or you should
-> write a driver to just do it (open the device and mmap that descriptor).
 
-Absolutely, if people want to mmap /dev/mem they'll have to do the
-hard work of getting the correct physical address on their own.
 
 --
-Matt Porter
-MontaVista Software, Inc.
-mporter@mvista.com
+reshapiro@mediaone.net
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
