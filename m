@@ -1,76 +1,49 @@
-From: Ruedi.Hofer@ascom.ch
-Date: Tue, 03 Oct 2000 11:37:51 +0100 (CED)
-Subject: Antwort: Re: Kernel 2.4.0 test8
-To: diekema@bucks.si.com
-Cc: linuxppc-embedded@lists.linuxppc.org, kernel@linux01.hasler.ascom.ch
-Message-id: <0G1U0014BLFN06@pmdf-it.hasler.ascom.ch>
-MIME-version: 1.0
-Content-type: MULTIPART/MIXED; BOUNDARY="Boundary_(ID_tbLb9PcHbczutVnl8CMbRw)"
+Message-ID: <39D9E451.9A4E20D4@siemens.at>
+Date: Tue, 03 Oct 2000 15:51:13 +0200
+From: Rainer Kloud <rainer.kloud@siemens.at>
+MIME-Version: 1.0
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: different memory map
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---Boundary_(ID_tbLb9PcHbczutVnl8CMbRw)
-Content-type: TEXT/PLAIN
-Content-Transfer-Encoding: 7BIT
+Dear All,
 
-Hi Jon
+for porting the 2.4.0-test4 kernel to my Scout Board I
+used as base the EST8260 configuration.
+This two boards are very similar, but they have a different
+Memory Map.
+The EST board has the IMMR Registers at 0xf0000000, my
+Board has them at 0x10700000.
 
-I downloaded the kernel 2.4.0-test8 from linux.org and decompressed it. Then I tried to run
-make menuconfig after having changed the Makefile for ppc.
+Therefore I'd like to know which changes are necessary to
+get the Board running.
+All what I have done up to now is that I have changed the
+define for IMAP_ADDR and in MMU_init I setup the bat with
+index 0 from 0x10000000 (instead of 0xf0000000).
 
-After I've saved the config I noticed that CONFIG_8260 was not set. I changed that manually
-to correspond to the HHL1.2 kernel config.
+With this two changes the kernel can boot correctly
+until it tries to execute the init process.
+When loading the init process via load_elf_binary
+the kernel gets a machine check execption in function
+clear_user (beqlr) which was called from padzero (first time
+that we are in user space?).
+The parameters for the function are: address: 0x10010528
+len: 0xad8
+This address resides in the BAT which I have used for my
+IMMR registers.
 
-Then:
+Is there any coherence between the machine check exceptions
+and my changes for the different memory map?
 
->make symlinks
->make dep && make clean && make zImage
-> ......
->/usr/src/eld/products/sbc8260/kernel/hardhat/linux-2.4.0-test8/include/asm/processor.h:724: #error "Machine not defined correctly"
->In file included from /usr/src/eld/products/sbc8260/kernel/hardhat/linux-2.4.0-test8/include/linux/capability.h:17,
->                 from /usr/src/eld/products/sbc8260/kernel/hardhat/linux-2.4.0-test8/include/linux/binfmts.h:5,
->                 from /usr/src/eld/products/sbc8260/kernel/hardhat/linux-2.4.0-test8/include/linux/sched.h:9,
->                 from /usr/src/eld/products/sbc8260/kernel/hardhat/linux-2.4.0-test8/include/linux/mm.h:4,
->                 from /usr/src/eld/products/sbc8260/kernel/hardhat/linux-2.4.0-test8/include/linux/slab.h:15,
->                 from /usr/src/eld/products/sbc8260/kernel/hardhat/linux-2.4.0-test8/include/linux/malloc.h:4,
->                 from init/main.c:15:
->/usr/src/eld/products/sbc8260/kernel/hardhat/linux-2.4.0-test8/include/linux/fs.h:547: warning: `struct flock64' declared inside parameter list
->/usr/src/eld/products/sbc8260/kernel/hardhat/linux-2.4.0-test8/include/linux/fs.h:547: warning: its scope is only this definition or declaration,
-which is probably not what you want.
->/usr/src/eld/products/sbc8260/kernel/hardhat/linux-2.4.0-test8/include/linux/fs.h:548: warning: `struct flock64' declared inside parameter list
->make: *** [init/main.o] Error 1
+Any suggestions to fix my problem?
 
-... hmmm?
+Thank you in advance!
 
-How do you set the configuration?
+Bye
+Rainer
 
-Do you mind sending me your .config file?
-
-(I even tried to copy the .config file from HHL1.2 without success!)
-
-\Ruedi
-
-
-
-
-
-
-diekema@bucks.si.com on 02.10.2000 16:50:30
-An: Ruedi.Hofer@ascom.ch @ MailGate
-Kopie:
-Thema: Re: Kernel 2.4.0 test8
-
-> Is the 2.4.0-test8 kernel from http://www.kernel.org as up to date as
-> the one is from fsmlabs?
-
-The latest on FSMLabs is 2.4.0-test9-pre6.  I would try using
-2.4.0-test8 from http://www.kernel.org, and see how it goes.
-
-
-
-
-
---Boundary_(ID_tbLb9PcHbczutVnl8CMbRw)--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
