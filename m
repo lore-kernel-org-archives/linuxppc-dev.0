@@ -1,42 +1,65 @@
-Message-Id: <m112AYH-0000WZC@tri-yann.crf.canon.fr>
-Date: Thu, 8 Jul 1999 11:33:09 +0200 (CEST)
+Message-Id: <m112Abc-0000WZC@tri-yann.crf.canon.fr>
+Date: Thu, 8 Jul 1999 11:36:36 +0200 (CEST)
 From: "VALETTE Eric" <valette@crf.canon.fr>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: ppc/kernel/prep_pci.c is badly designed
+Subject: PREP IDE support is broken
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 
-Months ago I posted a mail on the mailling list saying
-that PREP machines code was badly lacking some board identification
-routine and also support for Raven. As a result, allthough
-I had code for MCP750 that runs perfectly for months (thanks again
-Gabriel) I wasn't able to submit anything better than horrible kludges...
 
-Since then things have positively evolved as the RAVEN is now supported
-and there is a table that enables to identify PREP boards.
-However the handling of the identification only serves
-for interupt routing and cannot be used for anything else 
-afterward (except if you want to use Motherboard_map_name!!!)
+Do anyone used PREP boards using IDE disk!!! I do.
+Months ago soemone from Moto posted a mail fixing IDE
+support. With the introduction of machine dependendent
+function pointers for ide byte handling, someone broke 
+it again.
 
-Why the hell a kind of machine ID is not recorded so that it can
-be used latter to add machine specific code? Thanks to motorola
-the MCP750 has two major incompatible revision regarding ISA interrupt 
-routing EDGE/LEVEL settings and the actual code does not boot on recent
-MCP750 board and I cannot add cleanly the necessary code...
+here is the fix
+  -------------------------------- cut here ---------------------
+*** ./arch/ppc/kernel/prep_setup.c~	Fri Jun  4 22:30:47 1999
+--- ./arch/ppc/kernel/prep_setup.c	Tue Jul  6 17:00:39 1999
+***************
+*** 629,641 ****
+  void
+  prep_ide_insw(ide_ioreg_t port, void *buf, int ns)
+  {
+! 	_insw((unsigned short *)((port)+_IO_BASE), buf, ns);
+  }
+  
+  void
+  prep_ide_outsw(ide_ioreg_t port, void *buf, int ns)
+  {
+! 	_outsw((unsigned short *)((port)+_IO_BASE), buf, ns);
+  }
+  
+  int
+--- 629,641 ----
+  void
+  prep_ide_insw(ide_ioreg_t port, void *buf, int ns)
+  {
+! 	ide_insw((unsigned short *)((port)+_IO_BASE), buf, ns);
+  }
+  
+  void
+  prep_ide_outsw(ide_ioreg_t port, void *buf, int ns)
+  {
+! 	ide_outsw((unsigned short *)((port)+_IO_BASE), buf, ns);
+  }
+  
+  int
+***************
+*** 688,693 ****
+--- 688,694 ----
+  void
+  prep_ide_fix_driveid(struct hd_driveid *id)
+  {
++   	ppc_generic_ide_fix_driveid(id);
+  }
+  
+  __initfunc(void
 
-So here is a proposal :
-
-   1) PREP Machine identification  should only record a PREP_machine_ID
-   (the code may be moved in prep_setup BTW),
-   2) PREP_machine_ID could then be used in prep_pci.c to find
-   the correct IRQ routing procedure (and not a simple table
-   as it is today (empty for MCP750 although quite of bit
-   of VIA 82596 programming must be done !!!)
-
-What do you think of that?
-
+  ------------------------------------------------------------------- 
 
 -- 
    __                 
