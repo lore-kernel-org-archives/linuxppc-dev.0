@@ -1,43 +1,59 @@
-Message-ID: <38423714.D5136535@wanadoo.fr>
-Date: Mon, 29 Nov 1999 09:19:32 +0100
-From: Martin Costabel <costabel@wanadoo.fr>
+Message-ID: <384248F0.751F2136@agelectronics.co.uk>
+Date: Mon, 29 Nov 1999 09:35:44 +0000
+From: Adrian Cox <apc@agelectronics.co.uk>
 MIME-Version: 1.0
-To: Shaw Terwilliger <sterwill@io.nu>
-CC: paulus@linuxcare.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.3.30-pre3
-References: <19991128154913.A15762@io.nu> <19991129000645.003441@smtp.calvacom.fr> <19991128221713.A17532@io.nu>
+To: Jonathan Brauer <brauer@texmemsys.com>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: New port
+References: <199911270059.SAA07621@sun92.texmemsys.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Shaw Terwilliger wrote:
+Jonathan Brauer wrote:
 > 
-> BenH wrote:
-> > Yes, please, send me your patches. Paul will be away for a few weeks and
-> > I want to move all my patches (there are more coming ;) to 2.3.x asap.
-> 
-> OK... here they are.  They're against paul's devel tree as of an hour
-> ago.  I'm running a fresh-built kernel from a tree with these applied;
-> everything's working well.
-> 
-> Besides being attached here, the individual patches (and the README) are
-> available at http://www.abisource.com/~sterwill/patches/.
-> 
-> If anyone else is interested in bulding the kernel, just grab the
-> devel tree and do "patch -p0 < all.patch" from /usr/src (assuming
-> the tree is /usr/src/linux).
+> I am looking on information on porting linux to a new ppc platform.  The short
+> version of my efforts are to port linux to a custom 603 sbc. 
+> Essentialy from this my questions would be
+> 1.  Is there a correct mode to start running head.S in (ie. translation on/off?)
 
-<???> 
-Are there several different versions of Paul's devel tree? The one I am
-getting is only at version 2.3.29 and has been nicely compiling and
-running for me for a while now. I don't know about chipsfb.c which I am
-not using, but the others of your patches are essentially those that A.
-Joshi has published a long time ago. And they don't apply to my version
-of Paul's devel tree, because they are already built in. 
-</???>
+Off is better.
 
---
-Martin
+> 2.  Where should the stack be started at?
+
+Anywhere there's room (eg. top of memory). The stack will be moved by
+the kernel once it know what memory it has.
+
+> 3.  Where should the code be downloaded to?
+
+Ideally physical address 0 (virtual address c0000000), but it should
+relocate itself.
+
+> 4.  Is an uncompressed kernel better than a compressed one?
+
+Yes. An uncompressed kernel is a normal ELF file.
+
+> 5.  If we load the kernel at address 0, should we change KERNELBASE?
+
+Physical 0, virtual c0000000. Don't touch KERNELBASE.
+
+> 6.  It appears that after kludging up to identify machine we tend to die.
+
+You need to add your own machine type, by using an existing one as
+example. As your board is probably weird, I'd suggest basing your port
+on something else weird, like the APUS.
+
+> 7.  Enabling the caching seems to throw us for a loop as well.
+
+Remember that you can't do memory mapped IO between the point where
+caches are enabled and when Linux enables memory translation. This is
+actually a very long time, and a complicated code path.
+
+> 8.  What values does the kernel assume are passed in by a boot loader and how?
+
+Different for each machine type. Define your own, and pass them in.
+
+- Adrian Cox, AG Electronics
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
