@@ -1,62 +1,42 @@
-Message-ID: <3CBF14C1.6080802@cymes.de>
-Date: Thu, 18 Apr 2002 20:47:29 +0200
-From: Matthias Grimm <joker@cymes.de>
-MIME-Version: 1.0
+Date: Thu, 18 Apr 2002 16:17:56 -0400
+From: Dan Brennan <dmb8@optonline.net>
+Subject: as question
 To: LinuxPPC-Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Design weakness in /proc/pmu ?!
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Message-id: <3CBF29F4.B00B75B6@optonline.net>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+In arch/ppc/kernel/head.S the following code segment exists:
 
-Recently I played a lot with /proc/pmu to get reliable battery states.
+turn_on_mmu:
+        mfmsr   r0
+        ori     r0,r0,MSR_DR|MSR_IR
+        mtspr   SRR1,r0
+        lis     r0,start_here@h
+        ori     r0,r0,start_here@l
+        mtspr   SRR0,r0
+        SYNC
+	RFI
 
-In the current design each battery has a value time rem. calculated out
-of that battery's parameters. This calculations will fail if more than
-one battery is attached to the computer as the following snapshot of a
-wallstreet powerbook shows:
+However, when I do objdump on head.o this is what appears:
 
-$ cat /proc/pmu/info
-PMU driver version     : 2
-PMU firmware version   : 0a
-AC Power               : 0
-Battery count          : 2
+00000088 <turn_on_mmu>:
+      88:       7c 00 00 a6     mfmsr   r0
+      8c:       60 00 00 30     ori     r0,r0,48
+      90:       7c 1b 03 a6     mtsrr1  r0
+      94:       3c 00 00 00     lis     r0,0
+      98:       60 00 00 00     nop
+      9c:       7c 1a 03 a6     mtsrr0  r0
+      a0:       4c 00 00 64     rfi
 
-$ cat /proc/pmu/battery_0
+It appears that the code which loads the address of the label start_here
+does not get assembled correctly. Is this observation correct?
 
-flags      : 00000001
-charge     : 2619
-max_charge : 2639
-current    : 0
-voltage    : 16489
-time rem.  : 0
+I'm building for the est8260 target.
 
-$ cat /proc/pmu/battery_1
-
-flags      : 00000001
-charge     : 261
-max_charge : 2529
-current    : -1318
-voltage    : 14318
-time rem.  : 712
-
-As you could see battery 0 is fully charged but the time remaining value
-is calculated as zero. If you now calculate the overall time remaining
-simply as sum of the time rem. of each battery you will get a wrong time
-and possibly bother the user with unnessecary warnings.
-
-I suggest to move the time rem. value out of the /proc/battery_* files
-into the /proc/info file and store an overall time-remaining value
-there. Because the time until power off is a quality of the whole system
-mainly defined through the overall power consumption. It isn't a feature
-of a single battery.
-
-What do you think?
-
-    Regards
-     Matthias
-
+Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
