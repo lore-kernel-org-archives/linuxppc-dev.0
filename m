@@ -1,37 +1,60 @@
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Wed, 23 Apr 2003 19:08:46 -0700
-To: Chris Heintzelman <heintz@mail.utexas.edu>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: booting MGT5100?
-Message-ID: <20030424020846.GA1283@rover.farnsworth.org>
-References: <3EA70BDE.9080609@mail.utexas.edu>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Thu, 24 Apr 2003 13:52:54 +0900
+Message-Id: <200304240452.h3O4qrq04070@www.cnetia.com>
+From: randy kim <randy@cnetia.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: cache init problems - (non multi-mimed mail )  
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3EA70BDE.9080609@mail.utexas.edu>
+Content-Type: text/plain; charset="iso-8859-1"
+Reply-To: randy@cnetia.com
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Apr 23, 2003 at 09:55:42PM +0000, Chris Heintzelman wrote:
->
-> I noticed that a few months ago someone mentioned booting Linux on one
-> of these boards (MGT5100).  There didn't seem to be much discussion
-> though; I have one of these boards and would also like to boot linux on
-> it, I'm wondering if anyone can point me to a good starting point on
-> this?  Any help is appreciated.  I've got a toolchain and kernel built
-> but am having no luck with it.
->
-> Thanks,
-> Chris H.
+Hi..
 
-I've been working with Kent Borg to bring up linux on the mgt5100.
-As Peter said, they're running it on an icecube, while I have a glacier
-system.  The serial driver seems reasonably solid.  I've been working
-on an ethernet driver and started testing it today.  It has sent and
-received a few packets but lots of cleanup remains.  I plan to put up a
-bk repository on source.mvista.com in a couple of weeks.  I could send
-you a tarball if you'd rather not wait.
+I have a problem for porting PPC-BOOT to STT755EMC.
 
--Dale Farnsworth
+Here is my BD spec.
+
+CPU: MPC750 ( main core ) + MPC8260 ( companion only )
+L2 cache:  1M
+SDRAM on 60x bus: 64M
+SDRAM on Local bus: 32M
+FLASH: 8MB
+10/100 Base T port on FFC2
+Dual RS232 port residing SMC1 & SMC2.
+
+
+The problem is  cache.
+Whenever boot process reach at cache init code,
+all system is stoped!. No more progress!
+But if the cache init code is commented out from boot codes,
+Everything's fine except perfomence.
+
+I don't know why the code doesn't work. please help..
+
+Here is the code i used.
+
+        /* icache_enable */
+        mfspr   r3, HID0
+        li      r5, HID0_ICFI|HID0_ILOCK
+        andc    r3, r3, r5
+        ori     r3, r3, HID0_ICE
+        ori     r5, r3, HID0_ICFI
+        mtspr   HID0, r5
+        mtspr   HID0, r3
+        isync
+
+ /* dcache_enable */
+        mfspr   r3,HID0
+        ori     r3,r3,HID0_DCE | HID0_DCFI
+        sync
+        mtspr   HID0,r3
+
+Thanks
+
+ps ) sorry for my previous Multi-mimed mail.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
