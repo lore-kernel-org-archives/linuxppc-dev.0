@@ -1,41 +1,37 @@
-Date: Tue, 13 Apr 1999 17:22:20 +0200 (MET DST)
-From: David De Ridder <s970707@uia.ua.ac.be>
-Reply-To: David De Ridder <david.de.ridder@bitsmart.com>
-To: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
-Subject: Cannot telnet into pre-R5 board (PAM?)
-Message-ID: <Pine.SO4.4.05.9904131707080.18847-100000@hsins.uia.ac.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Tue, 13 Apr 1999 18:32:06 +0200 (METDST)
+From: Niels Roest <N.P.Roest@ITS.TUDelft.NL>
+Subject: Re: ggi and frame buffer
+In-reply-to: <Pine.LNX.4.10.9904122007520.23848-100000@beer.pub.umich.edu>
+To: satadru pramanik <satadru@umich.edu>
+Cc: linuxppc-dev@lists.linuxppc.org
+Message-id: <Pine.HPP.3.95.990413182812.17396A-100000@elektron.et.tudelft.nl>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Mon, 12 Apr 1999, satadru pramanik wrote:
 
-I have a small problem that I would like to see fixed. I'm running
-a pre-R5 on our MVME2306 board. I cannot telnet to the board, i.e.
-I get the login prompt, but always ``Login incorrect''. 
-
-First I thought it was because I tried to login as root. So I tried 
-to create a new non-root account, which fails. When I do a ``useradd'', 
-followed by a ``passwd'', then the passwd fails with ``passwd: permission
-denied'' (what permission ?).
-
-I strongly suspect PAM being responsible for all this, but I have no
-experience whatsoever with PAM. It seems to me that the /etc/pam.d/
-are all correct.
-
-Can anybody please help ?
-
-+-----------------------------------------------------------------+
-   David 'Septimus' De Ridder     <david.de.ridder@bitsmart.com>
-
-"Fortunately, Hill Giants have large blind  spots in
- which a human can easily hide. Unfortunately, these
- blind spots are beneath the bottoms of their feet."
- - 'Hill Giant' (M:TG)
-+-----------------------------------------------------------------+
-
+> 
+> Since linuxppc defaults to using a FB-device, ggi should work, right?  So
+> I compiled the latest snapshit, and when I tried to run a demo, ie
+> "cube3d" I got this:
+> cube3d: error in loading shared libraries: /usr/local/lib/libgg.so.0:
+> R_PPC_REL2
+> 4 relocation out of range
+> 
+> Any clues to what this is?  Has anybody gotten libgii and libggi to work
+> successfully on LinuxPPC, especially pre-rel5?
+> 
+> 
+I did compile it on pre-rel5, the one with libc-2.0.108, and kernel 2.2.1,
+on an 7600 (that's with a control chip if that matters)
+It was a while ago, I rm-ed the sources, but I tried
+it on linux-heretic (I compiled both xheretic and ggiheretic)
+and it still works ok. Note: this is not on console, but in X.
+I didn't try it in console. so ggi on X works.
+Niels
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
