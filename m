@@ -1,71 +1,68 @@
-Date: Sun, 27 Apr 2003 14:39:22 +0200
-Subject: Re: ibook2r2 & strange freeze.
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v552)
-Cc: "Linuxppc-Dev@Lists.                  " "Linuxppc. Org" <linuxppc-dev@lists.linuxppc.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-From: Brice Figureau <brice@tincell.com>
-In-Reply-To: <1051398872.8435.15.camel@gaston>
-Message-Id: <457B4BE7-78AD-11D7-B4DF-0003939D5F18@tincell.com>
+Date: Sun, 27 Apr 2003 12:42:36 -0700
+From: Fred Gray <fegray@socrates.berkeley.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: ppc_irq_dispatch_handler dominating profile?
+Message-ID: <20030427194236.GC25907@socrates.berkeley.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sunday, April 27, 2003, at 01:14 AM, Benjamin Herrenschmidt wrote:
->>> Ah, that's a machine check... interesting. So either the address
->>> above
->>> is bogus, or the card is crashed. In this later case, noaccel should
->>> have helped, except if, for some reason, the argument was ignored
->>> when setting the initial mode...
->> Since the address does not seem to be bogus, could it be possible that
->> my computer is broken in a certain way ? (bad memory...).
->> I'll do another noaccel check.
->
-> Well, it's weird... It seems the ATI chip isn't anwsering on the bus on
-> a specific access.
->
-> Are you sure of that specific bit of disassembly ?
->
-> c0184554 380b0e40 addi  r0,r11,3640
->
-> Is't it 3648 instead ? (the opcode seem to indicate that). In this
-> case,
-> the problem is that we are getting a machine check in
-> radeon_fifo_wait()
-> while reading RBBM_STATUS register.
-You were right, that was 3648, it was late yesterday when I copied
-that...
+Dear linuxppc-dev,
 
-> I have absolutely no idea what can cause this (but bad HW ?) in xmon,
-> if you first check out r0 (it may not be d9000000 again ...) and then
-> do "m d9000000.l" (or replace d9000000 by whatever it has become) and
-> finally tell me if you atually read a value or not.
-The address seems to exists (and it didn't change):
-m d9000000.l gave:
-	00030000
-	6b000a00
-	88030000
-...
-I don't think my hardware is bad since I run macosx and ben8 without
-any problem (XFree86 is working fine).
+I'm trying to get a gigabit Ethernet card (SBS Technologies PMC-Gigabit-ST3;
+it uses the Intel 82545EM chipset and therefore the Linux e1000 driver) to
+work with a MVME2600 board (a PReP board with a 200 MHz PowerPC 604e CPU).
+I'm getting surprisingly poor performance and trying to understand why.
 
-> I completely fail to understand why a problem like this would happen
-> with -ben9 and not -ben8. Are you absolutely sure you properly tried
-> -ben9 with the radeonfb from -ben8 ?
-Yes.
+I'm running a simple benchmark program that was passed along to me by a kind
+soul on the linux-net@vger.kernel.org mailing list.  It has two modes, one
+that uses the ordinary socket interface, and one that uses the sendfile()
+system call for zero-copy transmission.  In either case, it simply floods the
+destination with TCP data for a fixed amount of time.  The results in
+non-zero-copy mode agree with standard benchmarks like netperf and iperf,
+which I have also tried.  In any event, the maximum bandwidth that I have
+been able to obtain is about 15 MByte/s, and that level of performance required
+16000 byte jumbo frames and zero-copy mode.  Transmission was clearly CPU-bound.
 
-I'm now sure that the problem does not come from radeonfb !
-To proove it, I took -ben8 and backported -ben9 changes one after one
-into it, until I got the same crash as before.
-It began to crash when I backported:
-	 cputable.c
-	 head.S
-	 cputable.h
+I used the kernel profiling interface (kernel version 2.4.21-pre6 from the
+linuxppc_2_4_devel tree) to determine where the hot spot is.  Using ordinary
+socket calls, these are the leading entries:
 
-As I'm not really good at powerpc assembly, I'll let you find exactly
-where the problem is ;-)
+  5838 total                                      0.0059
+  3263 ppc_irq_dispatch_handler                   5.7855
+  1645 csum_partial_copy_generic                  7.4773
+   133 e1000_intr                                 0.8750
+    89 do_softirq                                 0.3477
+    69 tcp_sendmsg                                0.0149
 
-Brice
+In zero-copy mode, this is the situation (notice that the copy and checksum
+have been successfully offloaded to the gigabit interface):
 
+  5983 total                                      0.0061
+  4740 ppc_irq_dispatch_handler                   8.4043
+   614 e1000_intr                                 4.0395
+    61 e1000_clean_tx_irq                         0.1113
+    52 do_tcp_sendpages                           0.0179
+    51 do_softirq                                 0.1992
+
+In both cases, ppc_irq_dispatch_handler is the "winner."  I'm not very familiar
+with the kernel profiler, especially on the PowerPC, so I don't know whether
+or not this is likely to be an artifact of piled-up timer interrupts.
+Otherwise, it suggests that something dramatically inefficient is
+happening in the interrupt handling chain, since it spends twice as much
+time here as it does touching all of the outgoing data for the copy and
+checksum.
+
+I would appreciate suggestions of what I might check next.
+
+Thanks very much for your help,
+
+-- Fred
+
+-- Fred Gray / Visiting Postdoctoral Researcher                         --
+-- Department of Physics / University of California, Berkeley           --
+-- fegray@socrates.berkeley.edu / phone 510-642-4057 / fax 510-642-9811 --
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
