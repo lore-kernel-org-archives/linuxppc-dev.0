@@ -1,61 +1,36 @@
-Message-ID: <38B49A0B.92CEC283@netx4.com>
-Date: Wed, 23 Feb 2000 21:40:11 -0500
-From: Dan Malek <dan@netx4.com>
+Message-ID: <38B4E19D.80A35E98@ict.ac.cn>
+Date: Thu, 24 Feb 2000 15:45:33 +0800
+From: LiuTao <tliu@ict.ac.cn>
 MIME-Version: 1.0
-To: Greg Johnson <gjohnson@research.canon.com.au>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MPC860 Embedded Planet IDMA Support
-References: <20000224002220.90CE07C8@elph.research.canon.com.au>
-Content-Type: text/plain; charset=us-ascii
+To: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>,
+        "linuxppc-embedded@lists.linuxppc.org"
+ <linuxppc-embedded@lists.linuxppc.org>
+Subject: The problem about MMU in MPC860
+Content-Type: text/plain; charset=gb2312
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Greg Johnson wrote:
+Hi:
 
+This is really a boring problem, however, give me some
+help please.
+I am debugging the linux on my customized 860 board.
+The linux can't bootup, the message is:
 
-> Kernel 2.2.13 that we are using on the MPC860 does not have support
-> for IDMA which we need.
+Linux/PPC load:
+Uncompressing Linux...done.
+Now booting the kernel
+loaded at:     00200000 0020B1D4
+zimage at:     00230164 0028534F
+avail ram:     00286000 00FFFFFF
 
-I haven't and don't know of anyone that has.  Providing the
-software is the easy part, just use existing CPM DPRAM allocation
-functions for the BDs and either overload or create new BD
-structures in commproc.h.
+I think that's the MMU's problem.
+How to resolve it?
+Any suggestion is welcome.
 
-The harder part is the hardware interface.  The /DREQx and /RTSx
-multiplex on the same pin, which prohibits cool protocols like
-Ethernet on the SCC ports when using IDMA.
+Thanks!
 
-The IDMA isn't terribly efficient, so it either runs in "background"
-mode or at a high priority.  If you are using the CPM for other
-tasks, the IDMA may not move much data for you in background
-mode, or will starve other communication tasks when run at
-a higher priority.  Make sure you calculate CPM loading and
-everything fits.
-
-In the complete system architecture, it is more efficient to
-program the UPM to control the device and use burst mode programmed
-I/O cycles from the PPC core.  The IDMA cycles are long, even
-with devices that can respond quickly, and you tie up the
-System bus, U bus, internal RISC bus, effectively eliminating
-any overlapped processing by any functional unit within the part.
-At least with programmed I/O, the CPM can still do its
-communication thing.
-
-Also, since no one uses IDMA (there may be a lesson here :-) the
-CPM microcode patches remap parameter spaces into the IDMA
-locations.  Sometimes this is selectable, and you may have to
-chase down places where this is done and customize to suit
-your application.
-
-It may work for you.  Just make sure you consider all of the
-alternatives.
-
-
-	-- Dan
-
-P.S.  Have you signed up with Embedded Planet and received their
-expansion guidelines?  Lots of technical tidbits there that can
-make your life more enjoyable.
+LiuTao
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
