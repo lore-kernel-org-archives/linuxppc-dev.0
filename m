@@ -1,30 +1,32 @@
-Message-ID: <39B6B21C.9A3ACA5B@embeddededge.com>
-Date: Wed, 06 Sep 2000 17:07:40 -0400
-From: Dan Malek <dan@netx4.com>
+From: Paul Mackerras <paulus@linuxcare.com.au>
 MIME-Version: 1.0
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-CC: frowand@mvista.com, Geert Uytterhoeven <geert@linux-m68k.org>,
-        Rolf Liu <rolfl@sc23.sc.mcel.mot.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: question about 'r2' !!!
-References: <Pine.LNX.4.10.10009062235520.30076-100000@opal.biophys.uni-duesseldorf.de>
 Content-Type: text/plain; charset=us-ascii
+Message-ID: <14774.59123.968142.533410@argo.linuxcare.com.au>
+Date: Thu, 7 Sep 2000 11:53:07 +1100 (EST)
+To: "Rolf Liu" <rolfl@sc23.sc.mcel.mot.com>
+Cc: <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: question about 'r2' !!!
+In-Reply-To: <00b401c017a9$91f50640$bf0102c8@sc.mcel.mot.com>
+References: <00b401c017a9$91f50640$bf0102c8@sc.mcel.mot.com>
+Reply-To: paulus@linuxcare.com.au
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michael Schmitz wrote:
+Rolf Liu writes:
 
-> If you're unable to use gcc for building your kernels, ....
+> I am currently engaged in compiling Linux-ppc source tree using a CC other
+> than GCC.
 
-With the gcc/gas specific syntax, and the reliance on gcc inline
-assembler, there is lots of work to do to make something else
-compile this software in any case.
+This is going to be fraught with difficulty.  The Linux kernel source
+uses quite a lot of the extensions to the C language which gcc
+provides.  Basically the kernel is not designed to be compiled by
+anything other than gcc.
 
-Then, all you have done is the easy part, which is getting a kernel
-to boot.  What about applications, libraries and other tools that
-actually make a system do something?
-
-
-	-- Dan
+--
+Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
++61 2 6262 8990 tel, +61 2 6262 8991 fax
+paulus@linuxcare.com.au, http://www.linuxcare.com.au/
+Linuxcare.  Support for the revolution.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
