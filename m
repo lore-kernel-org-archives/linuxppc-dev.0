@@ -1,35 +1,24 @@
-Message-ID: <D73A25AA6E54D511AD74009027B1110F3C0439@ORION>
-From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
-To: "'Crawford Matthew A'" <rygad@tamu.edu>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: EP405GP GPIO Control Question
-Date: Tue, 12 Nov 2002 08:58:36 -0500
+Message-ID: <3DD114B7.EFA6E6CE@imc-berlin.de>
+Date: Tue, 12 Nov 2002 15:48:23 +0100
+From: Steven Scholz <steven.scholz@imc-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Using ioctl from with the kernel ???
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-It's in the Embedded Planet user manual under Board Control Status
-Registers.
+Hi there,
 
------Original Message-----
-From: Crawford Matthew A [mailto:rygad@tamu.edu]
-Sent: Monday, November 11, 2002 6:16 PM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: EP405GP GPIO Control Question
+I use a device driver (/dev/status_led from DENX) to manipulate some frontpanel
+LEDs from user space via some ioctls.
 
-
-
-Does anyone out there know where I can find information on, or know how to
-control the output pins
-associated with the GPIO on this board?  We are trying to write a small
-driver that will send a
-signal out to trigger some power measuring equipment.
+Now I'd like to access them from the kernel space. How can I do that? AFAIK I
+can't use fopen and ioctl...
 
 Thanks,
-Matt
 
+Steven
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
