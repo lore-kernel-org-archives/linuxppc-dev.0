@@ -1,42 +1,40 @@
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
+To: Michel =?iso-8859-1?q?D=E4nzer?= <michdaen@iiic.ethz.ch>
 Subject: Re: Rage128 support for resolutions less than panel resolution?
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
-To: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
+Date: Tue, 4 Dec 2001 19:25:03 -0500
 Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20011204175547.WVJL16262.tomts14-srv.bellnexxia.net@there>
-References: <Pine.LNX.4.40.0112041017530.8200-100000@andromeda.dsdk12.net>
-	<20011204175547.WVJL16262.tomts14-srv.bellnexxia.net@there>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: 05 Dec 2001 00:47:45 +0100
-Message-Id: <1007509665.21511.38.camel@pismo>
-Mime-Version: 1.0
+References: <Pine.LNX.4.40.0112041017530.8200-100000@andromeda.dsdk12.net> <20011204175547.WVJL16262.tomts14-srv.bellnexxia.net@there> <1007509665.21511.38.camel@pismo>
+In-Reply-To: <1007509665.21511.38.camel@pismo>
+MIME-Version: 1.0
+Message-Id: <20011205002204.RXBE9080.tomts7-srv.bellnexxia.net@there>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 2001-12-04 at 18:58, Kevin B. Hendricks wrote:
+Hi,
 
-> However if you have the correct timing info, you should be able to write a
-> mode to use and then use fbset to set rage128 frame buffer to that mode.
->
-> This should work to change your resolution to whatever you want as long as
-> the "scaling register code" patch I saw fly by recently (a couple of weeks
-> ago) actually made it into the aty128fb.c code yet.
->
-> If it did you should be in luck.  Just take the timing from the the full
-> native resolution and just change the x and y resolution and leave all of
-> the rest untouched.  The scaling registers code should figure out the rest.
-> as long as the real native panel resolution is known by the driver.
+> One thing I noticed is that when I use the timings from 1024x768-60 for
+> 640x480, the vertical refresh is shown as 130 Hz. That doesn't harm the
+> panel?
 
-Thanks for these instructions Kevin! I'm now able to use 800x600 and
-640x480 on my Pismo without any flickering and artifacts.
+I don't know.  :-(
 
-One thing I noticed is that when I use the timings from 1024x768-60 for
-640x480, the vertical refresh is shown as 130 Hz. That doesn't harm the
-panel?
+My limited understanding is that there is only one fixed timing for the
+lcd and dfp displays and the stretch registers fill up the full horizontal
+and vertical resolution (the same number of horizonntal and vertical bits
+is always turned on) no matter what.  So the timing should be exactly the
+same shouldn't it?
 
+If you are worried you can try changing the refresh rate to see what
+impact that has.
 
---
-Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
-XFree86 and DRI project member   /  CS student, Free Software enthusiast
+Sorry I can't be more help.
+
+Take care,
+
+Kevin
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
