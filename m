@@ -1,32 +1,28 @@
-Date: Thu, 14 Sep 2000 21:35:13 -0500 (CDT)
-From: Takashi Oe <toe@unlserve.unl.edu>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>,
-        Paul Mackerras <paulus@linuxcare.com.au>, mlan@cpu.lu,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: zeroing pages in the idle task?
-In-Reply-To: <Pine.LNX.4.10.10009132130250.452-100000@cassiopeia.home>
-Message-ID: <Pine.A41.3.96LJ1.1b7.1000914213033.93706B-100000@unlserve.unl.edu>
+Message-ID: <20000915024609.15159.qmail@web1003.mail.yahoo.com>
+Date: Thu, 14 Sep 2000 19:46:09 -0700 (PDT)
+From: Dan Bethe <dan_bethe@yahoo.com>
+Subject: Re: Programming USB ports
+To: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 13 Sep 2000, Geert Uytterhoeven wrote:
+--- Michael Norton <mnorton@cisco.com> wrote:
+>
+> hi,
+>
+> Where can I find some good documentation on programming the USB ports
+> under LinuxPPC?
+> Do tools exist for programming the USB using JAVA?
 
-> On the m68k, we have some code to guestimate the CPU clock based on the
-> BogoMIPS (see get_cpuinfo() in arch/m68k/kernel/setup.c). Since we didn't care
-> about the overhead incurred by interrupt processing, it's not that accurate
-> though (I get 24.8 MHz on my 25 MHz 68040).
+	You can try http://linux-usb.org, there might be relevant HOWTOs on
+http://linuxdoc.org, and you might try searching something like Google.com.
 
-That thought had occured to me.  Only problem is that the relationship
-between bogomips and cpu clock speed depends on, well, CPU.  For 601, it's
-one to one, and, for 604, two to one, and so on.  I don't know the ratios
-for 603, G3, or G4.
-
-
-Takashi Oe
+=====
+"Don't expect your own messiah; this neverworld which you desire is
+only in your mind." -- http://www.dreamtheater.net/songb4.htm#IV5
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
