@@ -1,47 +1,29 @@
-Date: Fri, 2 Nov 2001 09:20:32 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: "David M?ller (ELSOFT AG)" <d.mueller@elsoft.ch>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [PATCH] Various patches against linuxppc_dev-2.4.14-pre7
-Message-ID: <20011102092032.F26147@cpe-24-221-152-185.az.sprintbbd.net>
-References: <3BE2C0A5.7080707@elsoft.ch>
-Mime-Version: 1.0
+Message-ID: <3BE2DAC2.FEB5AAC2@mvista.com>
+Date: Fri, 02 Nov 2001 10:41:22 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+MIME-Version: 1.0
+To: Sarnath Kannan <sparc64@rediffmail.com>
+Cc: Dag Nygren <dag@newtech.fi>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: EPIC Vs OpenPIC Vs MontaVista
+References: <20011102152550.14933.qmail@mailweb16.rediffmail.com>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3BE2C0A5.7080707@elsoft.ch>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Nov 02, 2001 at 04:49:57PM +0100, David M?ller (ELSOFT AG) wrote:
+Sarnath, Dag, Andrew,
 
->   - include/asm-ppc/ibm4xx.h
->      missing include file  (I'm not sure if this is the correct fix)
->
->   - drivers/net/ppc405_enet.h
->      missing include file  (ditto)
+What I think you guys are discovering is an artifact of the inadequate
+interface to openpic_init()--its wider than just a 8259/107 problem.  This has
+been discussed before and some ideas kick around.
 
-What's broken right now?  <asm/ibm405gp.h> gets included by CONFIG_FOO,
-if FOO is a 405GP board.
+Since you guys seem to have the time & motivation, why don't you go back &
+check out the mail archives for that/those discussion(s).  If you like what
+was talked about there, go with it or come up with a better solution and post
+it here for everyone to comment on.  It would be really nice to have a more
+flexible interface to openpic_init(), et. al.
 
+Mark
 
->   - arch/ppc/kernel/ppc4xx_setup.c
->      added call to board_setup_irq() in ppc4xx_init_IRQ()
->      added call to board_setup_rtc_access() in platform_init()
->
->   - arch/ppc/kernel/walnut.c
->   - arch/ppc/kernel/redwood.c
->   - arch/ppc/kernel/cpci405.c
->   - arch/ppc/kernel/ep405.c
->      added necessary board_setup_irq() and
->      board_setup_rtc_access() functions
-
-Shouldn't board_setup_rtc_access() do all of the RTC stuff, not just
-changing the nvram bits?  If your board needs a different way to get
-nvram access, we should rename board_setup_rtc_access() to
-board_setup_nvram_access()
-
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
