@@ -1,25 +1,27 @@
-Return-Path: <sven.luther@wanadoo.fr>
-Received: from smtp3.wanadoo.fr (smtp3.wanadoo.fr [193.252.22.28])
-	by ozlabs.org (Postfix) with ESMTP id 80E7E67A73
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Feb 2005 04:11:36 +1100 (EST)
-Date: Thu, 24 Feb 2005 18:01:50 +0100
-To: Meelis Roos <mroos@linux.ee>
-Message-ID: <20050224170150.GA7746@pegasos>
+Return-Path: <mroos@linux.ee>
+Received: from math.ut.ee (math.ut.ee [193.40.36.2])
+	by ozlabs.org (Postfix) with ESMTP id 4029067A7A
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Feb 2005 07:55:44 +1100 (EST)
+Date: Thu, 24 Feb 2005 22:51:45 +0200 (EET)
+From: Meelis Roos <mroos@linux.ee>
+Sender: mroos@math.ut.ee
+To: Sven Luther <sven.luther@wanadoo.fr>
+In-Reply-To: <20050224170150.GA7746@pegasos>
+Message-ID: <Pine.SOC.4.61.0502242250050.21289@math.ut.ee>
 References: <20041206185416.GE7153@smtp.west.cox.net>
 	<Pine.SOC.4.61.0502221031230.6097@math.ut.ee>
 	<20050224074728.GA31434@pegasos>
 	<Pine.SOC.4.61.0502241746450.21289@math.ut.ee>
 	<20050224160657.GB11197@pegasos>
 	<Pine.SOC.4.61.0502241832510.21289@math.ut.ee>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <Pine.SOC.4.61.0502241832510.21289@math.ut.ee>
-From: Sven Luther <sven.luther@wanadoo.fr>
-Cc: Tom Rini <trini@kernel.crashing.org>, Christian Kujau <evil@g-house.de>,
+	<20050224170150.GA7746@pegasos>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: Tom Rini <trini@kernel.crashing.org>, Sven Hartge <hartge@ds9.gnuu.de>,
 	Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, Sven Hartge <hartge@ds9.gnuu.de>
+	Christian Kujau <evil@g-house.de>, linuxppc-dev@ozlabs.org
 Subject: Re: [PATCH 2.6.10-rc3][PPC32] Fix Motorola PReP (PowerstackII Utah)
-	PCI IRQ map
+ PCI IRQ map
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,30 +31,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Feb 24, 2005 at 06:34:03PM +0200, Meelis Roos wrote:
-> >Oh, damn, need to fix my daily builder, should be ok for tomorrow. IN the
-> >meanwhile, you can try :
-> >
-> > http://people.debian.org/~luther/d-i/images/2005-02-23/powerpc/netboot/vmlinuz-prep.initrd
-> 
-> This seems to work fine: onboard scsi is OK, pci nic with de4x5 is OK 
-> too. Haven't got more PCI cards in there currently.
+> Then just dd your /boot/vmlinuz-2.6.10-powerpc to your prep partition, or
+> better yet to a tftp server, and try it out. If the scsi problems are there,
+> can you fill a bug report against kernel-source-2.6.10 ?
 
-Ok, can you now install the 2.6.10-3 package from : 
+Thanks for the new kernel. Just filed a bug report on 
+kernel-source-2.6.10.
 
-  http://people.debian.org/~luther/powerpc/2.6.10-3 
+> You may probably want also to modify /etc/mkinitrd/mkinitrd:MODULES_DEP to dep
+> instead of MOST, or you may hit size problems with your initrd, i would be
+> interested in knowing that.
 
-(you need kernel-image-2.6.10-powerpc and mkvmlinuz), call mkvmlinuz on it (or
-add it to kernel-img.conf as postinst_hook=/usr/sbin/mkvmlinuz).
+It worked without changing the module list, with 5.2M resulting vmlinuz.
 
-You may probably want also to modify /etc/mkinitrd/mkinitrd:MODULES_DEP to dep
-instead of MOST, or you may hit size problems with your initrd, i would be
-interested in knowing that.
-
-Then just dd your /boot/vmlinuz-2.6.10-powerpc to your prep partition, or
-better yet to a tftp server, and try it out. If the scsi problems are there,
-can you fill a bug report against kernel-source-2.6.10 ? 
-
-Friendly,
-
-Sven Luther
+-- 
+Meelis Roos (mroos@linux.ee)
