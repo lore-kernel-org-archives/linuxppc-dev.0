@@ -1,96 +1,37 @@
-Message-ID: <CA78D1B723D8D411AF0300508BDCF74F8C0FE2@NTCORREO>
-From: GOTZON ASTONDOA <gastondoa@fagorautomation.es>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Out of memory ?
-Date: Wed, 30 Jan 2002 15:58:07 +0100
+Message-ID: <3C58410B.802BC1F4@mvista.com>
+Date: Wed, 30 Jan 2002 10:52:59 -0800
+From: Armin Kuster <akuster@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: David =?iso-8859-1?Q?M=FCller?= (ELSOFT AG) <d.mueller@elsoft.ch>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [PATCH] 3 patches against linuxppc_dev-2.4.18-pre7
+References: <3C57F9AC.9040008@elsoft.ch>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
- Hi all,
+"David Müller (ELSOFT AG)" wrote:
+>
+> Hello
+>
+> The attached patch fixes the following issues:
+>
+>     - arch/ppc/kernel/ppc4xx_pic.c
+>        fixed constant in ppc405_pic_get_irq()
+>        (should be NR_AIC_IRQS as in ppc403_pic_get_irq())
 
-  I have a custom board based in the MPC823e.
-  I am using mvista ftpserver who works OK in the FADS but, when i try to do
-it in my custom board it says that it is out of memory. But with the meminfo
-it says that i have memory.
+David,
 
-  Can anybody help me?
-  Thanks in advance
+include/asm-ppc/irq.h
+NR_IRQS = (NR_AIC_IRQS + NR_BOARD_IRQS) and was defined to allow
+cascading UIC's.
+NR_BOARD_IRQS is defined in some of the board files and its default is
+in include/asm-ppc/ibm4xx.h
 
-
-  # cat meminfo
-        total:    used:    free:  shared: buffers:  cached:
-Mem:   6381568  2576384  3805184  1208320  1048576   593920
-Swap:        0        0        0
-MemTotal:         6232 kB
-MemFree:          3716 kB
-MemShared:        1180 kB
-Buffers:          1024 kB
-Cached:            580 kB
-Active:           1604 kB
-Inact_dirty:         0 kB
-Inact_clean:         0 kB
-Inact_target:       24 kB
-HighTotal:           0 kB
-HighFree:            0 kB
-LowTotal:         6232 kB
-LowFree:          3716 kB
-SwapTotal:           0 kB
-SwapFree:            0 kB
+So i don't see the need to patch that file but the others look fine.
 
 
-
-
-# chroot /nfs/CNC8055_FTPSERVER/
-
-
-BusyBox v0.60.0 (2001.09.18-16:26+0000) Built-in shell (msh)
-Enter 'help' for a list of built-in commands.
-
-# inetd -d
-ADD : echo proto=tcp, wait.max=0.40, user.group=root.(null) builtin=100141dc
-server=internal
-ADD : echo proto=udp, wait.max=0.40, user.group=root.(null) builtin=100141ec
-server=internal
-ADD : discard proto=tcp, wait.max=0.40, user.group=root.(null)
-builtin=100141fc server=internal
-ADD : discard proto=udp, wait.max=0.40, user.group=root.(null)
-builtin=1001420c server=internal
-ADD : daytime proto=tcp, wait.max=0.40, user.group=root.(null)
-builtin=1001423c server=internal
-ADD : daytime proto=udp, wait.max=0.40, user.group=root.(null)
-builtin=1001424c server=internal
-ADD : chargen proto=tcp, wait.max=0.40, user.group=root.(null)
-builtin=1001425c server=internal
-ADD : chargen proto=udp, wait.max=0.40, user.group=root.(null)
-builtin=1001426c server=internal
-ADD : ftp proto=tcp, wait.max=0.40, user.group=root.(null) builtin=0
-server=/bin/ftpd
-someone wants ftp
-accept, ctrl 3
-kmod: runaway modprobe loop assumed and stopped
-Out of Memory: Killed process 29 (inetd).
-Out of Memory: Killed process 29 (inetd).
-Out of Memory: Killed process 29 (inetd).
-Out of Memory: Killed process 29 (inetd).
-Out of Memory: Killed process 29 (inetd).
-Out of Memory: Killed process 29 (inetd).
-Out of Memory: Killed process 29 (inetd).
-Out of Memory: Killed process 29 (inetd).
-Out of Memory: Killed process 29 (inetd).
-Out of Memory: Killed process 29 (inetd).
-Out of Memory: Killed process 29 (inetd).
-Out of Memory: Killed process 30 (inetd).
-request_module[net-pf-1]: waitpid(31,...) failed, errno 1
-Out of Memory: Killed process 30 (inetd).
-Out of Memory: Killed process 30 (inetd).
-Out of Memory: Killed process 30 (inetd).
-Out of Memory: Killed process 30 (inetd).
-Out of Memory: Killed process 30 (inetd).
-Out of Memory: Killed process 30 (inetd).
-Out of Memory: Killed process 30 (inetd).
-
+-- armin
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
