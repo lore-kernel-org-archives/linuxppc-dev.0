@@ -1,22 +1,37 @@
-Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
-Reply-To: <chenm@cs.man.ac.uk>
-From: "Ming Chen" <chenm@cs.man.ac.uk>
-To: <linuxppc-dev@lists.linuxppc.org>
-Subject: Could you like to tell me that where I can find the definition of "struct pt_regs" in Linux/PPC?
-Date: Sat, 10 Jul 2004 14:42:42 +0100
-Message-ID: <HLEBJDLEFEKDCJFKLDCEIEBNEDAA.chenm@cs.man.ac.uk>
-MIME-Version: 1.0
+Subject: Re: Could you like to tell me that where I can find the definition
+	of "struct pt_regs" in Linux/PPC?
+From: Gary Thomas <gary@mlbassoc.com>
+To: chenm@cs.man.ac.uk
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <HLEBJDLEFEKDCJFKLDCEIEBNEDAA.chenm@cs.man.ac.uk>
+References: <HLEBJDLEFEKDCJFKLDCEIEBNEDAA.chenm@cs.man.ac.uk>
 Content-Type: text/plain
+Message-Id: <1089470886.3988.2974.camel@hermes>
+Mime-Version: 1.0
+Date: Sat, 10 Jul 2004 08:48:07 -0600
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi, I am porting JikesRVM from PowerPC to ARM.
+On Sat, 2004-07-10 at 07:42, Ming Chen wrote:
+> Hi, I am porting JikesRVM from PowerPC to ARM.
+>
+> I can not find the source code of "asm/proc/ptrace.h" and the definition of
+> "struct pt_regs" in it.
+>
+> Could you like to tell me that where I can find the definition of "struct
+> pt_regs" in Linux/PPC?
 
-I can not find the source code of "asm/proc/ptrace.h" and the definition of
-"struct pt_regs" in it.
+Use the source :-)  In the Linux source tree:
 
-Could you like to tell me that where I can find the definition of "struct
-pt_regs" in Linux/PPC?
+% grep -r pt_regs include
+  ...
+include/asm-ppc/ptrace.h:struct pt_regs {
+  ...
+
+--
+Gary Thomas <gary@mlbassoc.com>
+MLB Associates
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
