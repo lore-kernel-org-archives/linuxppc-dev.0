@@ -1,48 +1,59 @@
-To: Prakash kanthi <pkanthi@yahoo.com>
-Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Smallest Initrd (ram disk) 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 26 Dec 2002 14:47:30 PST."
-             <20021226224730.21626.qmail@web41210.mail.yahoo.com>
-Date: Fri, 27 Dec 2002 01:22:39 +0100
-Message-Id: <20021227002244.B4C9FC6139@atlas.denx.de>
+Message-ID: <3E0BA5BB.7B959E63@koffie.nl>
+Date: Fri, 27 Dec 2002 01:58:36 +0100
+From: Segher Boessenkool <segher@koffie.nl>
+MIME-Version: 1.0
+To: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
+Cc: "'Paul Mackerras'" <paulus@samba.org>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: SV: New invalidate/clean/flush_dcache functions
+References: <000001c2aa85$ff48d250$83b9143e@hempc>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20021226224730.21626.qmail@web41210.mail.yahoo.com> you wrote:
+Joakim Tjernlund wrote:
+
+> Only the invalidate function is missing the sync instruction.
+> It's not needed. Invalidating the cache does not touch the memory
+> so there is no need to sync the memory. I have been running my system
+
+sync is not a "sync the memory" instruction, whatever that should mean.
+>From chapter 8 of the 32-bit PEM:
+
+	The sync instruction provides an ordering function for the effects of
+	all instructions executed by a given processor. Executing a sync
+	instruction ensures that all instructions preceding the sync instruction
+	appear to have completed before the sync instruction completes, and that
+	no subsequent instructions are initiated by the processor until after the
+	sync instruction completes. When the sync instruction completes, all
+	external accesses caused by instructions preceding the sync instruction
+	will have been performed with respect to all other mechanisms that access
+	memory.
+
+dcbi can cause external accesses (it invalidates cache on _all_ cpu's in a
+system, not just the local cpu).
+
+> without it for a long time and I asked my HW contact at Motorola about
+> it and he agreed. Others has used the dcbi without a sync without
+> problems.
 >
-> If i want to build a smallest possible initrd, can you
+> Can you give me a pointer to where the spec claims that a sync is
+> needed after a dcbi?
 
-The  smallest  possible  ramdisk  would  probably  contain  just  the
-/dev/directory  with  an  entry  for  /dev/console,  and a statically
-linked application program by the name of /sbin/init or so.
+It doesn't.  Whether the sync is needed or not depends on your usage of the
+dcbi, i.e. 1) is it necessary that the cache line gets invalidated on all
+other cpu's, too?  and 2) do you already have another sync instruction on this
+cpu, some time after the dcbi, but before the point where you have the requirement
+of invalidation?
 
-> suggest where i can get it from or how i can build it?
+It might very well be true that a sync here isn't necessary, and sync's can be very
+costly (on smp systems), but better be safe than sorry.
 
-See  Documentation/initrd.txt  that  comes  with  your  Linux  kernel
-sources.
 
-> I am working with a custom made PPC405 based board
-> with just 8MB RAM.
+Cheers,
 
-8 MB is a lot. You  can  run  pretty  complex  systems  there  -  for
-example, the default ramdisk size for the SELF package is 4 MB, about
-half  of  which  is  unused. See the ELF package as included with our
-ELDK,  or  see  ftp://ftp.denx.de/pub/LinuxPPC/usr/src/SELF/  for  am
-older (and smaller) version.
+Segher
 
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"What is wanted is not the will to believe, but the will to find out,
-which is the exact opposite." - Bertrand Russell, _Sceptical_Essays_,
-1928
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
