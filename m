@@ -1,45 +1,98 @@
-To: "Brian S. Park" <brian@corelis.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: getting Linux working on IBM Walnut demo board 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 29 May 2003 13:17:06 PDT."
-             <5.1.1.6.2.20030529131257.01276478@corelis.com>
-Date: Thu, 29 May 2003 22:26:13 +0200
-Message-Id: <20030529202618.BD122C5492@atlas.denx.de>
+Date: Thu, 29 May 2003 19:30:05 -0500
+Mime-Version: 1.0 (Apple Message framework v552)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Subject: Linux boots on MPC8540
+From: Kumar Gala <kumar.gala@motorola.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Message-Id: <DBEEE757-9235-11D7-9796-000393DBC2E8@motorola.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <5.1.1.6.2.20030529131257.01276478@corelis.com> you wrote:
->
-> I need more help!
-> Some time, when u-Boot is trying to download the linux kernel image over
+For those with any interest in embedded parts from Motorola, here is a
+boot log from
+early PQIII silicon we have running in the lab.
 
-I recommend to send such messages to the u-boot-users  mailing  list.
-They are off topic here.
+  Kumar Gala
+  Andy Fleming
+  Xianghua Xiao
 
-> Also, I was wondering if it's possible to make u-boot image that will work
-> with 256KB of ram/flash.
+--------------------------------------
+mpc85xx_init(): exit
+id mach(): done
+MMU:enter
+MMU:hw init
+MMU:mapin
+MMU:mapin_ram done
+MMU:setio
+MMU:exit
+Linux version 2.4.21-pre3 (galak@blarg.somerset.sps.mot.com) (gcc
+version 3.2.2 20030217 (Yellow Dog Linux 3.0 3.2.2-2a)) #308 Tue May 27
+17:59:16 CDT 2003
+setup_arch: enter
+setup_arch: bootmem
+mpc85xx_setup_arch
+arch: exit
+On node 0 totalpages: 65536
+zone(0): 65536 pages.
+zone(1): 0 pages.
+zone(2): 0 pages.
+Kernel command line: root=/dev/nfs rw
+nfsroot=10.82.0.102:/nfsroot/galak/ppc_85xx
+ip=10.82.0.103:10.82.0.102:10.82.1.254:255.255.254.0:rhuath::off
+console=ttyS0,115200
+openpic: enter
+OpenPIC Version 1.2 (1 CPUs and 44 IRQ sources) at fdf40000
+openpic: timer
+openpic: external
+openpic: spurious
+openpic: exit
+time_init: decrementer frequency = XX.XXXXXX MHz
+Calibrating delay loop... XXXXXX BogoMIPS
+Memory: 257636k available (1036k kernel code, 332k data, 56k init, 0k
+highmem)
+Dentry cache hash table entries: 32768 (order: 6, 262144 bytes)
+Inode cache hash table entries: 16384 (order: 5, 131072 bytes)
+Mount-cache hash table entries: 4096 (order: 3, 32768 bytes)
+Buffer-cache hash table entries: 16384 (order: 4, 65536 bytes)
+Page-cache hash table entries: 65536 (order: 6, 262144 bytes)
+POSIX conformance testing by UNIFIX
 
-You mean your board has just 256 kB RAM? Really??
+Linux NET4.0 for Linux 2.4
+Based upon Swansea University Computer Society NET3.039
+Initializing RT netlink socket
+Starting kswapd
+pty: 256 Unix98 ptys configured
+Serial driver version 5.05c (2001-07-08) with no serial options enabled
+ttyS00 at 0xfdf04500 (irq = 26) is a 16550A
+ttyS01 at 0xfdf04600 (irq = 0) is a 16550A
+eth0: Three Speed Ethernet Controller Version 0.00001,
+00:0a:28:0a:0b:0e:
+RAMDISK driver initialized: 16 RAM disks of 32768K size 1024 blocksize
+loop: loaded (max 8 devices)
+NET4: Linux TCP/IP 1.0 for NET4.0
+IP Protocols: ICMP, UDP, TCP
+IP: routing cache hash table of 2048 buckets, 16Kbytes
+TCP: Hash tables configured (established 16384 bind 32768)
+IP-Config: Complete:
+       device=eth0, addr=10.82.0.103, mask=255.255.254.0, gw=10.82.1.254,
+      host=rhuath, domain=, nis-domain=(none),
+      bootserver=10.82.0.102, rootserver=10.82.0.102, rootpath=
+NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+Looking up port of RPC 100003/2 on 10.82.0.102
+Looking up port of RPC 100005/1 on 10.82.0.102
+VFS: Mounted root (nfs filesystem).
+Freeing unused kernel memory: 56k init
 
-Well, the U-Boot image can be made to fit easily in 128 kB  or  less;
-you  will have to configure for a smaller malloc area. The U-Boot can
-probably run in 256 kB RAM - but what for?  There  will  not  be  any
-memory left for U-Boot's main purpose: to load an OS.
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"Obviously, a major malfunction has occurred."
-              -- Steve Nesbitt, voice of Mission Control, January 28,
-                 1986, as the shuttle Challenger exploded within view
-                 of the grandstands.
+rhuath login: root
+Last login: Wed Dec 31 21:43:21 on console
+bash-2.05# cat /proc/cpuinfo
+cpu		: e500
+revision	: 0.16 (pvr 8020 0010)
+bogomips	: XXXXXX
+Vendor		: Motorola SPS
+Machine		: mpc8540
+Memory		: 256 MB
+bash-2.05#
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
