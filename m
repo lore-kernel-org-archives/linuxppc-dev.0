@@ -1,33 +1,50 @@
-Message-ID: <3BE74DCD.3070407@drea.dnd.ca>
-Date: Mon, 05 Nov 2001 22:41:17 -0400
-From: Gavin Hemphill <hemphill@drea.dnd.ca>
-Reply-To: hemphill@drea.dnd.ca
+Date: Tue, 6 Nov 2001 02:32:36 -0500 (EST)
+From: <tahoward@ntrnet.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Kernel cannot allocate resource region
+In-Reply-To: <20011104201640.24983@smtp.wanadoo.fr>
+Message-ID: <Pine.LNX.4.33.0111060225210.686-100000@ranger>
 MIME-Version: 1.0
-To: yellowdog-general@lists.yellowdoglinux.com,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Ti Powerbooks and YDL 2.1 - Problems
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Well I've just spent an interesting two days documenting a problem with
-the Ti Powerbooks and the 2.4 series kernels.  I have access to two
-500Mhz Ti's with the Matshita DVD-ROM SR-8187 drives.  When I tried to
-follow Dan Burcaw's experimental instructions on doing a yup update of
-YDL2.0 to 2.1 I ran into the problem that a mount of any CD returned the
-error message "wrong media type" (I hadn't used the CD at all since
-moving to the 2.4 series kernels).  After trying all the various ways of
-mounting an ISO CD I decided to try the 2.2 series kernels (which of
-course are on the 2.0 CD - catch 22).  After downloading the old kernel
-RPM's and installing them I was able to mount the CD with no problem and
-actually completed the yup update to 2.1.  However with the new 2.4.10
-kernel in place I'm back to the error message if I try and mount the CD
-I used to do the update.  I've tried the latest kernels from Benh, and
-the bk tree and they all report the same error.  It looks like the drive
-is reporting that it doesn't have a DVD inserted, and fails to allow for
-the fact that CDROMS are valid.  As a side note I've also observed this
-error message on my G4 733 Tower with the superdrive.
+I had been using the bk linuxppc_2_4 tree.  I tried the _devel tree, and
+it worked both with and without adb_sync, so all seems well.  Thanks!
+
+Tony
+
+On Sun, 4 Nov 2001, Benjamin Herrenschmidt wrote:
+
+>
+> >That may be a timing difference hitting in some driver - in the m68k ADB
+> >code, I had been using a local (stack) adb_request struct for some
+> >asyncronous ADB request. Most of the time the async operation would
+> >complete while that variable was still valid (the calling routine hadn't
+> >returned yet). Someetimes it would only complete later ;-(
+> >
+> >The current ADB code should be free from such gross errors, but maybe
+> >something else doesn't cope with async probing of devices? ADB probing
+> >happens asynchronously these days (but then, BenH won't have used
+> >non-static variables for that). And I'd expect the kernel to throw a
+> >panic() for data or illegal instruction errors. Maybe some deadlock - what
+> >other task is active during ADB probe?
+>
+> Well, it' s possible that I left or added such bugs ;)
+>
+> If you are using my rsync tree (or since recently the bk _devel tree),
+> there's an "adb_sync" option you can add to your kernel command line
+> to force ADB probe to be synchronous.
+>
+> Tell me if that helps.
+>
+> Ben.
+>
+>
+>
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
