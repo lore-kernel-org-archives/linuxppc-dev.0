@@ -1,35 +1,24 @@
-Message-ID: <3739A86E.BF3B67FA@babcockbrown.com>
-Date: Wed, 12 May 1999 09:12:31 -0700
-From: Hugh Caley <hughc@babcockbrown.com>
-Reply-To: hughc@babcockbrown.com
+Message-ID: <3739B04D.4FB90206@deneba.com>
+Date: Wed, 12 May 1999 12:46:06 -0400
+From: michael cardenas <michael_cardenas@deneba.com>
 MIME-Version: 1.0
-To: Alex Vallens <Vallens@Colorado.EDU>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Does Linux PPC support the new 'Lombard/101' Powerbook G3s?
-References: <373926B4.6BFD7CE7@loomer.com> <3739A691.AC62E53D@Colorado.EDU>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: What Sources To use When Compiling the kernel
 Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I can get to the OF interface; I just can't get it to boot Linuxppc.
-Does that work for you?
+So, where do I get the sources to compile the kernel? ftp.us.kernel.org
+? ftp.linuxppc.org? should I try the 2.3.0 or the 2.2.x?
 
-Hugh
+I want to get the latest version and try to compile it so that my usb 3
+button mouse will work. I'm interested in working on the usb code, if
+it's feasible.
 
+thanks,
 
-
-Alex Vallens wrote:
-
-> Actually, the Wallstreet PowerBooks OF boot just fine. It's a simple
-> cmd-opt-o-f key command at startup.
->
-> Alex
-
---
-Hugh Caley, Unix/Web Administrator
-Babcock & Brown, San Francisco
-415-512-1515 hughc@babcockbrown.com
+michael cardenas
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
