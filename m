@@ -1,84 +1,48 @@
-Message-ID: <3D1B81C3.6060907@mvista.com>
-Date: Thu, 27 Jun 2002 14:21:07 -0700
-From: Armin Kuster <akuster@mvista.com>
-MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
+Date: Fri, 28 Jun 2002 10:59:08 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Scott Anderson <scott_anderson@mvista.com>
 Cc: Tom Rini <trini@kernel.crashing.org>,
+	Armin Kuster <akuster@mvista.com>,
 	linuxppc-embedded@lists.linuxppc.org,
 	Paul Mackerras <paulus@samba.org>
 Subject: Re: Trivial cleanup in ocp_uart.c
-References: <20020620073440.GC20689@zax> <20020620155026.GE16052@opus.bloom.county> <20020621005216.GH20689@zax> <20020621143903.GO16052@opus.bloom.county> <20020624074019.GA9087@zax>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Message-ID: <20020628005908.GC11095@zax>
+References: <20020620073440.GC20689@zax> <20020620155026.GE16052@opus.bloom.county> <20020621005216.GH20689@zax> <20020621143903.GO16052@opus.bloom.county> <20020624074019.GA9087@zax> <3D19F965.86668872@mvista.com> <20020627004144.GR9087@zax> <3D1B3C0D.9B36EB42@mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3D1B3C0D.9B36EB42@mvista.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David Gibson wrote:
-> On Fri, Jun 21, 2002 at 07:39:03AM -0700, Tom Rini wrote:
+On Thu, Jun 27, 2002 at 09:23:41AM -0700, Scott Anderson wrote:
 >
->>On Fri, Jun 21, 2002 at 10:52:16AM +1000, David Gibson wrote:
->>
->>>On Thu, Jun 20, 2002 at 08:50:26AM -0700, Tom Rini wrote:
->>>
->>>>And I think it can be used, once it gets registered to the ocp_list (and
->>>>something later accesses it).
->>>>
->>>
-> I can't see why it would need to: ocp_register() will just be calling
-> pm_register() which will directly provide a usable device identifier
-> to its callbacks.  For that matter I don't see much point in running
-> the PM stuff through the OCP layer at all rather than just having the
-> relevant drivers call pm_register() directly.  But the last point
-> might change if useful default power management handlers could be
-> implemented through the CPM constants added to core_ocp in Armin's
-> recent patch.
+> David Gibson wrote:
+> > Eek, wibble.  It still seems somewhat unlikely to me that you'd be
+> > changing the peripherals "on the fly" in a real life embedded
+> > application.  Especially considering that reboots are likely to be
+> > much less of an issue on an embedded system than on a big server.
 >
-> Incidentally I think a "register" interface could make sense if the
-> "registration" occured at the point the device was discovered - which
-> for these embedded devices means unconditionally during board and/or
-> chip initialization.  This is the obvious way to map embedded devices
-> onto the 2.5 unified device model.  Registration at driver
-> initialization like ocp_register() makes no sense to me.
-
-Thats obvious			^^^^^^^^^^^^^^^^^^
-
+> My contrived example is a piece of test equipment that has an LCD
+> touchscreen and some high speed serial collection device.  The LCD is
+> only used when interacting with the UI and the serial is only used
+> during a run when the LCD can be blank.  By reprogramming part of the
+> FPGA on the fly you can squeeze more into a smaller FPGA.  It appears
+> that Xilinx already has this working:
+>   http://www.xilinx.com/xapp/xapp290.pdf
 >
-> Basically there are two quite distinct approaches either of which
-> would make sense (for any given peripheral/bus type):
-> 	a) Register each device as it is discovered.  Register each
-> driver as the appropriate module loads.  Whenever either event happens
-> the common code calls init or probe callbacks in a driver to connect
-> it to any devices of appropriate type.
-> 	b) No registration.  When a driver loads, it searches for all
-> devices of appropriate type, and initializes each of them in turn.
+> I guess I wouldn't be quite so quick to dismiss this as unlikely, but
+> I must admit, my crystal ball is in the shop this week.  It sure would
+> be nice to keep such things in mind as OCP is evolving, though.
 
-I'll need to fix that won't I :)
+Heh, well, maybe.  In any case this sounds more like a 2.5 and later
+timerframe thing to me, in which case integration into the unified
+device model should give us what's needed.
 
->
-> Examples of (a) include the new PCI interface, PCMCIA, and the 2.5
-> unified device model.  Examples of (b) include the old PCI interface
-> (pci_find_device()) and (some?/all?) non-PCI devices on OF machines
-> (e.g. Airport).
->
-> Approach (a) is clearly needed to handle hotplug.  But that's not an
-> issue for OCPs (indeed device (not driver) registration will always be
-> degenerate) so either approach would do.  Frankly (a) seems overkill
-> for OCPs, but it does have the advantage of being easily integrated
-> into the unified device model.
-
-It's not over kill.  if I used the entire PCI model, it would be.
-
->
-> What we have at the moment is mishmash of both models, which *doesn't*
-> make sense).
->
-This is in devel, I guess what I should have done was fork and do all
-the work there and then provide a complete solution to devel. :)
-
->
-
-
-armin
-
+--
+David Gibson			| For every complex problem there is a
+david@gibson.dropbear.id.au	| solution which is simple, neat and
+				| wrong.  -- H.L. Mencken
+http://www.ozlabs.org/people/dgibson
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
