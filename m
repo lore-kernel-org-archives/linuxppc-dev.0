@@ -1,56 +1,43 @@
-To: Alireza Sadri <arsadri@yahoo.ca>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: UPM driver of MPC8260 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 01 Jul 2004 04:12:30 PDT."
-             <20040701111230.27014.qmail@web12825.mail.yahoo.com>
-Date: Thu, 01 Jul 2004 14:18:00 +0200
-Message-Id: <20040701121805.E8164C109F@atlas.denx.de>
+Message-ID: <40E404B2.8040101@gmx.de>
+Date: Thu, 01 Jul 2004 14:33:54 +0200
+From: =?ISO-8859-15?Q?Christian_Tr=F6ster?= <please.see.sig@gmx.de>
+MIME-Version: 1.0
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Notifying a user space application
+References: <200407010029.05546.please.see.sig@gmx.de> <1088662847.6010.2.camel@lucy.pep-kaufbeuren.de>
+In-Reply-To: <1088662847.6010.2.camel@lucy.pep-kaufbeuren.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20040701111230.27014.qmail@web12825.mail.yahoo.com> you wrote:
->
-> i am going to make my custom SBC8260 standalone , so i
-> need to replace the ppcboot of the board with a
-> bootable linux image. I want this linux to mount the
+Hi Stefan!
 
-No, this makes no sense. leave the PPCBoot as is, and use it to  boot
-Linux.
+Stefan Nickl schrieb:
+ > On Thu, 2004-07-01 at 00:29, Christian Tröster wrote:
+ >>I'd like to notify a user space application if an interrupt occurs. I
+ >>had no
+ >>problems to install a custom signal handler but I am not sure what's
+ >>the best
+ >>way to notify the application.
+ > Mostly a stripped-down ppdev.
+Thanks for posting your code. It works perfectly. I only had to change
+one line adding an initialization value for the spin lock.
 
-> flash, and then i put my own final program on the
-> flash , and as a service, linux will run the program
-> on any reset.(now,it would be standalone)
+ > /*
+ >  * Open the device. It is single-open.
+ >  */
+ > int wfi_s_count = 0;
+ > spinlock_t wfi_s_lock;
+spinlock_t wfi_s_lock = SPIN_LOCK_UNLOCKED;
 
-Yes, booted by PPCBoot from flash.
+ > static int wfi_open (struct inode *inode, struct file *file)
+ > {
+ >         file->private_data = &wfi_global;
 
-> so i cannot hold the ppcboot (u-boot) on the flash, i
-> need the changes in my linux image , or using a linux
-> driver.
-
-You will always need a boot loader to initialize the  hardware.  This
-is what PPCBoot is doing for you. Only then you can start Linux.
-
-> (I know board needs bootloader anyway , but i don't
-> know what it is. is it ppcboot? or ELDK makes a
-> bootable linux?)
-
-Yes, PPCBoot is the boot loader. Do NOT replace it, just use it.
-
-> Any other point of view is really wellcome.
-
-Did you read the DULG? See http://www.denx.de/twiki/bin/view/DULG/Manual
-
-Best regards,
-
-Wolfgang Denk
+Bye, Christian
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Lack of skill dictates economy of style.                - Joey Ramone
+| Mail: c dot troester at gmx dot de | PGP-Id: FA006C74 |
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
