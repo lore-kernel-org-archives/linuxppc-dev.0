@@ -1,44 +1,41 @@
-Message-ID: <38A7C1DF.99A5346@wanadoo.fr>
-Date: Mon, 14 Feb 2000 09:50:39 +0100
-From: Martin Costabel <costabel@wanadoo.fr>
-MIME-Version: 1.0
+From: Eric Benard <ebenard@ifrance.com>
 To: Paul Mackerras <paulus@linuxcare.com>
-CC: linuxppc-dev@lists.linuxppc.org
 Subject: Re: 2.3.43 failed
-References: <38A6C19F.92468821@wanadoo.fr> <00021410380401.14021@argo.linuxcare.com.au>
-Content-Type: text/plain; charset=us-ascii
+Date: Mon, 14 Feb 2000 09:53:51 +0100
+Content-Type: text/plain
+References: <00021211003504.00821@linux.eric.fr> <00021318311301.12422@argo.linuxcare.com.au>
+In-Reply-To: <00021318311301.12422@argo.linuxcare.com.au>
+Cc: linuxppc-dev@lists.linuxppc.org
+MIME-Version: 1.0
+Message-Id: <00021409555701.01375@linux.eric.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Paul Mackerras wrote:
+Le dim, 13 fév 2000, Paul Mackerras a écrit :
+> On Sat, 12 Feb 2000, Eric Benard wrote:
 >
-> On Mon, 14 Feb 2000, Martin Costabel wrote:
-[]
-> > Feb 13 15:06:14 rennes-231 kernel: Warning: kfree_skb on hard IRQ
-> > c7159770
-> > Feb 13 15:07:24 rennes-231 last message repeated 421 times
-> > Feb 13 15:12:01 rennes-231 last message repeated 97 times
-> > and so on.
-> >
-> > How can I get rid of the warnings (short of disabling the line that
-> > produces it in net/core/skbuff.c)?
+> > it compiles fine on a B&W G3 but doesn't run : it stops after the "Booting..."
+> > message.
 >
-> Find the places where dev_kfree_skb is called from interrupt context and
-> change them to dev_kfree_skb_irq.  If you aren't sure you can say
+> I just updated linuxcare.com.au::linux-pmac-devel to 2.3.44 final.  I
+> fixed a couple of problems where it would hang during boot if you booted
+> from OF (or with quik or yaboot) and it couldn't find the screen.  Try it
+> now.  If it doesn't work, let me know (and tell me how you are booting it).
 >
->         if (in_irq())
->                 dev_kfree_skb_irq(skb);
->         else
->                 dev_kfree_skb(skb);
+I just tried with the 2.3.45 from linux-pmac-devel and it makes exctlly the
+same thing.
+I'm using BootX 1.2b1 with MacOS 8.6 to boot.
 
-Thanks. Your new version in 2.3.45pre works correctly (shows me once
-more why I'm not a kernel developer: I replaced all 3 occurrences of
-dev_kfree_skb by if (in_irq()) ... else ..., which worked, too; you
-replaced just one of them by dev_kfree_skb_irq; I had tried this before,
-but always got the wrong one :-( ).
+My root partition is on an external SCSI HD connected to an Adaptec 2906 scsi
+card.
 
---
-Martin
+
+Eric
+
+______________________________________________________________________________
+Si votre email etait sur iFrance vous pourriez ecouter ce message au tel !
+http://www.ifrance.com : ne laissez plus vos emails loin de vous ...
+gratuit sur iFrance :  emails (20 MO, POP, FAX), Agenda, Site perso
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
