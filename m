@@ -1,32 +1,39 @@
-Date: Thu, 28 Oct 1999 21:40:16 +0200 (CEST)
+Date: Thu, 28 Oct 1999 22:46:52 +0200 (CEST)
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Sean Chitwood <darkmane@w-link.net>
-cc: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Assembler Specific codes
-In-Reply-To: <Pine.LNX.4.10.9910280049030.669-100000@darkmane.w-link.net>
-Message-ID: <Pine.LNX.4.05.9910282139310.6037-100000@callisto.of.borg>
+To: Josh Huber <huberj@WPI.EDU>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: LCD stretching partially working!
+In-Reply-To: <14360.32207.88755.452600@cpu.wpi.edu>
+Message-ID: <Pine.LNX.4.05.9910282243080.6037-100000@callisto.of.borg>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 28 Oct 1999, Sean Chitwood wrote:
-> 	I'm trying to track down what certain assembler specific instructions might mean, and I hope someone here might have a clue...
+On Thu, 28 Oct 1999, Josh Huber wrote:
+> I'm working on getting hardware stretching for the Rage LT chipset
+> (wallst. & lombard at least), and have got this far:
 > 
-> 	I need to find out what dc.[lw] in the CodeWarrior Assembler might translate to on the GNU Assembler. I don't have CW so I can't look it up.
+> 
+> In console mode:
+> 1. Stretching in the vertical direction works
+> 2. stretching in the horiz direction works
 
-By compiling
+Great!
 
-| int a = 10;
-| short b = 10;
+> 3. doing both at the same time appears to work...except for a little
+>    screen flicker. (what could cause this?)
 
-using `gcc -S', I got:
+Two possible solutions:
 
-| a:
-|         .long 10
-| b:
-|         .short 10
+  - Does it help if you lower the mclk?
+  - Perhaps the display FIFO parameters have to take into account the
+    stretching? At least for the horizontal stretching this sounds logical to
+    me, i.e. try to use
+
+    xclks_per_row = (pll->mclk_fb_div*pll->vclk_post_div_real*64*hstretch<<11)/
+		    (pll->vclk_fb_div*pll->mclk_post_div_real*bpp);
 
 Gr{oetje,eeting}s,
 --
