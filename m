@@ -1,112 +1,55 @@
-Message-ID: <619D608DD3F0D311882C009027732E1A35320B@ntserver.act.domain>
-From: Rudolf Ladyzhenskii <rudolf.ladyzhenskii@act-aus.net>
-To: "PPC-Linux list (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: 2.4.6 kernel on MCP750 board
-Date: Wed, 18 Jul 2001 09:54:41 +1000
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: ppc-embed <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Ethernet on 8260 
+In-Reply-To: Message from Brad Bonkoski <bradb59@home.com>
+   of "17 Jul 2001 12:07:19 MST." <20010718005352.VZZY3814.femail19.sdc1.sfba.home.com@cx263713-b.mesa1.az.home.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Wed, 18 Jul 2001 16:26:00 +1000
+Message-ID: <6825.995437560@msa.cmst.csiro.au>
+From: Murray Jensen <Murray.Jensen@cmst.csiro.au>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi, all
+On 17 Jul 2001 12:07:19 -0700, Brad Bonkoski <bradb59@home.com> writes:
+>One further question, is it possible for a detection of a loss of the
+>actual Ethernet cable at the kernel level?
 
-I am trying to put the latest kernel on Motorola MCP750 card. 2.2 kernel
-used to work fine, but 2.4.6 have some PCI problems.
-It can not allocate resources to network interface and, as a result, I can
-not boot.
-Startup dump attached.
+Depends on your board design - only the PHY knows this info and you
+communicate with the PHY via the MII. But the 8260 has no specific
+support for the management communication as defined by the MII spec
+(MDC/MDIO - very similar to an i2c interface) - you implement this
+using I/O port pins, twiddling bits to send clocked serial data to
+the PHY.
 
-Any help is appreciated,
-Thanks,
-Rudolf
+The first board design dependent thing is which port pins you choose
+to connect to the PHY MDC/MDIO pins. The second is which interrupt
+input(s) (port C pins?) you connect the PHY interrupt output(s) to.
+There will be others - probably dependent on the PHY you choose, or
+even the RJ45 connector itself! e.g. on our board, there is a bi-colour
+LED on the RJ45 socket which we connect to our FPGA so that with the
+appropriate FPGA code loaded we can interpret the PHY state outputs and
+display the appropriate colours - rather than dedicate I/O port pins
+on the 8260 to this function i.e. input the PHY state, output the LED
+state - wastes a lot of pins. Other board designs might use I/O port
+pins. LEDs aren't so critical, but you get the idea.
 
+Based on previous postings, I believe Dan Malek will (eventually) be
+patching the FCC driver to provide interrupt driven MII/PHY support,
+but you will have to hack it for your PHY etc. although most PHYs are
+pretty similar so that all you might need to do is recognise your vendor
+ID number.
 
-PCI: Probing PCI hardware
-Scanning bus 00
-Found 00:00 [1057/4801] 000600 00
-Fixup res 1 (200) of dev 00:00.0: 3c000000 -> fc000000
-Found 00:58 [1106/0586] 000601 00
-Found 00:59 [1106/0571] 000101 00
-Found 00:5a [1106/3038] 000c03 00
-Found 00:5b [1106/3040] 000000 00
-Found 00:70 [1011/0009] 000200 00
-Fixup res 1 (200) of dev 00:0e.0: 3bffff00 -> fbffff00
-PCI:00:0e.0 Resource 6 [fffc0000-ffffffff] is unassigned
-Found 00:a0 [1011/0026] 000604 01
-Fixups for bus 00
-Memory resource not set for host bridge 0
-Scanning behind PCI bridge 00:14.0, config 010100, pass 0
-Scanning bus 01
-Fixups for bus 01
-Unknown bridge resource 0: assuming transparent
-Unknown bridge resource 1: assuming transparent
-PCI: Unable to handle 64-bit address space for
-Bus scan for 01 returning with max=01
-Scanning behind PCI bridge 00:14.0, config 010100, pass 1
-Bus scan for 00 returning with max=01
-Setting PCI interrupts for a "Mesquite cPCI (MCP750)"
-PCI:00:00.0: Resource 1: fc000000-fc03ffff (f=200)
-PCI: Cannot allocate resource region 1 of device 00:00.0
-PCI:00:0b.1: Resource 0: 0000fff0-0000fff7 (f=101)
-PCI: Cannot allocate resource region 0 of device 00:0b.1
-PCI: parent is c01cf030: 00000000-ffffffff (f=100)
-PCI:00:0b.1: Resource 1: 0000ffec-0000ffef (f=10d)
-PCI: Cannot allocate resource region 1 of device 00:0b.1
-PCI: parent is c01cf030: 00000000-ffffffff (f=100)
-PCI:00:0b.1: Resource 2: 0000ffe0-0000ffe7 (f=101)
-PCI: Cannot allocate resource region 2 of device 00:0b.1
-PCI: parent is c01cf030: 00000000-ffffffff (f=100)
-PCI:00:0b.1: Resource 3: 0000ffdc-0000ffdf (f=10d)
-PCI: Cannot allocate resource region 3 of device 00:0b.1
-PCI: parent is c01cf030: 00000000-ffffffff (f=100)
-PCI:00:0b.1: Resource 4: 0000ffc0-0000ffcf (f=101)
-PCI: Cannot allocate resource region 4 of device 00:0b.1
-PCI: parent is c01cf030: 00000000-ffffffff (f=100)
-PCI:00:0b.2: Resource 4: 0000ffa0-0000ffbf (f=101)
-PCI: Cannot allocate resource region 4 of device 00:0b.2
-PCI: parent is c01cf030: 00000000-ffffffff (f=100)
-PCI:00:0e.0: Resource 0: 0fffff00-0fffff7f (f=101)
-PCI: Cannot allocate resource region 0 of device 00:0e.0
-PCI: parent is c01cf030: 00000000-ffffffff (f=100)
-PCI:00:0e.0: Resource 1: fbffff00-fbffff7f (f=200)
-PCI: Cannot allocate resource region 1 of device 00:0e.0
-PCI: Failed to allocate resource 0(1000-1007) for 00:0b.1
-PCI: Failed to allocate resource 1(1000-1003) for 00:0b.1
-PCI: Failed to allocate resource 2(1000-1007) for 00:0b.1
-PCI: Failed to allocate resource 3(1000-1003) for 00:0b.1
-PCI: Failed to allocate resource 4(1000-100f) for 00:0b.1
-PCI: Failed to allocate resource 4(1000-101f) for 00:0b.2
-PCI: Failed to allocate resource 0(1000-107f) for 00:0e.0
-PCI: Failed to allocate resource 1(c0000000-bfffffff) for 00:0e.0
-Activating ISA DMA hang workarounds.
-PCI: Via IRQ fixup for 00:0b.2, from 16 to 0
-Linux NET4.0 for Linux 2.4
-Based upon Swansea University Computer Society NET3.039
-Starting kswapd v1.8
-initialize_kbd: Keyboard reset failed, no ACK
-Serial driver version 5.05a (2001-03-20) with MANY_PORTS SHARE_IRQ
-SERIAL_PCI en
-abled
-keyboard: Timeout - AT keyboard not present?
-keyboard: Timeout - AT keyboard not present?
-block: queued sectors max/low 20002kB/6667kB, 64 slots per queue
-Linux Tulip driver version 0.9.15-pre6 (July 2, 2001)
-PCI: Unable to reserve I/O region #1:80@1000 for device 00:0e.0
+>Are there any pointers to
+>docs I could read on this?
 
-
-
-/************************/
-Rudolf Ladyzhenskii
-Senior DSP Engineer
-Advanced Communication Technologies
-ph.  +61 3 8080 8215
-fax. +61 3 9672 8800
-Level 9, 190 Queen Street,
-Melbourne, 3000
-Australia
-/***********************/
+Your PHY manual, your board design manual, and section 30.3 of the 8260 UM.
+Cheers!
+								Murray...
+--
+Murray Jensen, CSIRO Manufacturing Sci & Tech,         Phone: +61 3 9662 7763
+Locked Bag No. 9, Preston, Vic, 3072, Australia.         Fax: +61 3 9662 7853
+Internet: Murray.Jensen@cmst.csiro.au  (old address was mjj@mlb.dmt.csiro.au)
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
