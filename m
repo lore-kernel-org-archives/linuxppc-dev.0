@@ -1,40 +1,41 @@
-Message-ID: <3C437912.61CB9423@attbi.com>
-Date: Mon, 14 Jan 2002 16:34:27 -0800
-From: C S Rosenmund <gnuman@attbi.com>
-MIME-Version: 1.0
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: A few questions on older Macintosh Powerbooks
-References: <Pine.LNX.4.33.0201141334110.8470-100000@opal.biophys.uni-duesseldorf.de>
-Content-Type: text/plain; charset=us-ascii
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: <debian-powerpc@lists.debian.org>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: "Cache Profiler" ? (was: No cache control on ppc??)
+References: <877kqmvfmy.fsf@yahoo.com> <20020113193619.14166@smtp.wanadoo.fr>
+From: Elizabeth Barham <soggytrousers@yahoo.com>
+Date: 15 Jan 2002 03:17:32 -0600
+In-Reply-To: Benjamin Herrenschmidt's message of "Sun, 13 Jan 2002 20:36:19 +0100"
+Message-ID: <87vge455xv.fsf@liliwhite.open.oasis>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I'm using that binary image myself, while trying to roll my own. I can
-get the box to boot, and do most things with the 2.4.5 sources I have,
-but any real loading and the MMU problem crops up. what I need is the
-patches to make my hardware work:
+> First boot once with BootX. Once in linux, grab the value of
+> /proc/sys/kernel/l2cr. Then, go back to quik, and in your boot
+> scripts, write back this value. This is the configuration of the
+> backside L2 cache of the 750.
 
-PCMCIA (so I can use my NIC and get on the net)
-MMU so I do not have to keep going back to a different kernel to try
-other options when building the kernel)
-and Media Bay (so I can use the CDROM as a software and data transfer
-device. . .)
+Just a follow-up:
 
-I'm not timid at all about building a kernel, nor about using patches to
-fix the broken code, but I need to know where to *find* them
+It turns out that Linux was using the 750 processor with it's
+configuration (1,0,0,1 [NewerTech G3L2]) but it was not using the
+cache at all. In order to grab the parameters of the above-mentioned
+file in the /proc/sys/kernel directory I had to install Mac
+OS. Fortunatly we had an extra drive available to install it upon.
 
-Michael Schmitz wrote:
->
-> > Would someone tell me what the latest monolithic kernel and patch
-> > available for a NuBus PPC would be and where they can be found? I'm
-> > working with the 2.4.5 sources (and the patch-2.4.5-Nubus patch), and it
-> > works *almost*. . .
->
-> I'm using 2.4.6-pre3 from the SF site on a 6100 here, and it seems to work
-> fine. nubus-pmac.sourceforge.net should be the site to look at.
->
->         Michael
+The configuration that I had been using, though, disabled the cache so
+I had to find a better setting that was quicker and stable (0,0,1,0
+[240 MHz, 478.41 bogomips]). However, the gotcha! with this is that
+quik (v2.0) throws a fatal error prior to the start-screen ("Choose
+your kernel").
+
+So, I ended up just keeping MacOS on half of the newly-installed drive
+and will use BootX to boot into Linux now and in the future; it's not
+*that* inconvenient and the increase in speed is easily worth it.
+
+Thank you all for your help.
+
+Kind regards, Elizabeth
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
