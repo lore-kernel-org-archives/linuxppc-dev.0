@@ -1,29 +1,32 @@
-Date: Thu, 24 Jan 2002 14:32:32 -0700 (MST)
-From: Derrik Pates <dpates@dsdk12.net>
-To: daRonin <daronin@digimerc.com>
+From: hollis@austin.ibm.com
+Date: Thu, 24 Jan 2002 16:17:36 -0600
+To: Michel Lanners <mlan@cpu.lu>
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: RE:  Radeon DRI support patch
-In-Reply-To: <1011905262.3c5072ee67039@mail.digimerc.com>
-Message-ID: <Pine.LNX.4.43.0201241431430.29327-100000@andromeda.dsdk12.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: Re: RFC: vesafb
+Message-ID: <20020124221736.GZ510@austin.ibm.com>
+References: <20020123192010.GP510@austin.ibm.com> <E16Tbiw-00008o-00@piglet.grunz.lu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <E16Tbiw-00008o-00@piglet.grunz.lu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 24 Jan 2002, daRonin wrote:
-
-> I install benh kernel and applied your patches on my new Powerbook Titanium.
+On Thu, Jan 24, 2002 at 05:42:46AM +0100, Michel Lanners wrote:
+> On  23 Jan, this message from hollis@austin.ibm.com echoed through cyberspace:
+> > The attached patch allows vesafb to work on PPC. vesafb does surprisingly
+> > little with the BIOS (which I thought was the whole point of VESA). With
+> > some ifdef's I'm able to use it as sort of a VGA offb -- the firmware
+> > initializes the card, and the driver just uses it and never mucks with it.
 >
-> Seems to be working, it's nice to get more than 400FPS. Unfortunately it still seems to be a bit flaky.
->
-> It does freeze the machine randomly when running GLX apps.
+> Wouldn't this be a good start to use generic PC-type grafic cards on PPC
+> machines in general? Or do you lack initialization if nobody (neither
+> firmware nor OS) can talk to the card 'natively'?
 
-That's the ever-lovely UniNorth AGP adding joy to your day. Ben's still
-working on getting the kinks out of supporting it - it's weird.
+Yes, we would lack initialization on Power Mac (for example). PReP firmware
+does proper setup for a very limited range of chips, which is why this is
+useful at all.
 
-Derrik Pates      |   Sysadmin, Douglas School   |    #linuxOS on EFnet
-dpates@dsdk12.net |     District (dsdk12.net)    |    #linuxOS on OPN
-
+-Hollis
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
