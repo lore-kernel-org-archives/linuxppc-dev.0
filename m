@@ -1,57 +1,36 @@
-Date: Tue, 28 Nov 2000 13:19:13 -0600 (CST)
-From: Brian Ford <ford@vss.fsi.com>
-To: Dan Malek <dan@mvista.com>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: EST SBC8260 and Canary CTX-1170
-In-Reply-To: <3A2322FB.ECCD2CA2@mvista.com>
-Message-ID: <Pine.GSO.4.21.0011281308070.493-100000@eos>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <200011281950.eASJoPL03212@denx.local.net>
+To: Kyle Harris <kharris@nexus-tech.net>
+cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: fb on mpc823 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 28 Nov 2000 14:15:45 EST."
+             <3A240461.10B69DF3@nexus-tech.net>
+Date: Tue, 28 Nov 2000 20:50:25 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, 27 Nov 2000, Dan Malek wrote:
-
-> That driver either "supports" any PHY, or none at all, depending upon
-> your perspective.  None of the command/status MII interface is in
-> place to do anything.  None of those functions are called in the
-> driver.  The QS6612 comment is left over from the 860T FEC driver I
-> copied to get the framework for the FCC driver.
+In message <3A240461.10B69DF3@nexus-tech.net> you wrote:
 >
-So does this mean that a "complete" implementation would have a
-"command/status MII interface" or that a "complete" implementation does
-not need one?
+> Thanks, this makes more sense. But I'm still having problems. I'm
+> running 2.2.13 on a TQM823 board. I updated lcd823.c and rebuilt the
+> kernel with fb and vt support. Now I get a kernel panic (listed below).
+...
+> I guess it's time to figure out how to interpret and debug kernel
+> panics. Any suggestions on where to start?
 
-> From looking at the drivers, it appears they are a little out of
-> date.  I have a newer one (that I was certain I checked in) that will
-> interrogate the PHY.  In any case, this driver should work fine on
-> any half duplex Ethernet, and you should see transmit packets in any
-> case.
->
-That seems to be my problem.  It is negotiating a full duplex link.
+Try switching to 2.2.14 first; the necessary changes for the  TQM8xxL
+are available on our FTP server - see
+ftp://ftp.denx.de/pub/LinuxPPC/usr/src/linux-2.2.14*
 
-> > I know that the hardware can work, because the VxWorks boot rom loads
-> > Linux successfully via this interface and MII.
->
-> Then the driver must not be configuring the I/O lines correctly for
-> some unknown reason, or you are running full duplex without the FCC
-> initialized to do that.
->
-Can you help point me to where I need to write code that would initialize
-the FCC to do full duplex, or to have it auto-negotiate to half
-duplex?  It is fairly problematic for me to force the other end to half
-duplex and, ultimately, I would really like to run full.
-
-Thank you for any information that would allow me to write such code.
+Wolfgang Denk
 
 --
-Brian Ford
-Software Engineer
-Vital Visual Simulation Systems
-FlightSafety International
-Phone: 314-551-8460
-Fax:   314-551-8444
-
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Where people stand is not as important as which way they face.
+        - Terry Pratchett & Stephen Briggs, _The Discworld Companion_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
