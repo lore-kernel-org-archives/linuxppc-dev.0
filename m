@@ -1,32 +1,35 @@
-Subject: Re: What video driver should I use?
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-To: brad allison <jackal@aol.net>
-Cc: Multiple recipients of list <linuxppc-dev@lists.linuxppc.org>,
-	yellowdog-general@lists.terrasoftsolutions.com
-In-Reply-To: <Pine.LNX.4.30.0204291754430.2830-100000@horus.office.aol.com>
-References: <Pine.LNX.4.30.0204291754430.2830-100000@horus.office.aol.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: 30 Apr 2002 00:37:45 +0200
-Message-Id: <1020119865.9567.2203.camel@tibook>
-Mime-Version: 1.0
+Date: Tue, 30 Apr 2002 19:07:49 +0200 (CEST)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Aurel Wisse <aurel_wisse@yahoo.com>,
+	<linuxppc-dev@lists.linuxppc.org>,
+	yddev <yellowdog-devel@lists.terrasoftsolutions.com>
+Subject: Re: Sungem with iMac Rev-B
+In-Reply-To: <20020429132638.29518@smtp.adsl.oleane.com>
+Message-ID: <Pine.LNX.4.33.0204301829360.30445-100000@opal.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 2002-04-30 at 00:02, brad allison wrote:
+> >Going through the sourcecode of the sungem, I am not
+> >sure however that it will work with older hardware
+> >like the iMac Rev-B's Uni-North and the LXT970.
+>
+> No, you mismatched bmac and gmac. The sungem driver obsoletes
+> the gmac one, not the bmac one.
+>
+> The bmac driver currently don't have PHY control. This could
+> eventually be added, since I beleive we actually know how to
+> tap the PHY registers when available. Though this need some
+> work and I have no hardware to test on, so I'd rather see
+> someone who has do the job ;)
 
-> 	(WW) R128: No matching Device section for instance (BusID PCI:0:16:0) found
-> 	(EE) No devices detected.
+Throw some hints (what to write where, approximately) my way and I might
+give it a shot.
 
-This means you have to put
+	Michael
 
-	BusID		"PCI:0:16:0"
-
-in the device section.
-
-
---
-Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
-XFree86 and DRI project member   /  CS student, Free Software enthusiast
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
