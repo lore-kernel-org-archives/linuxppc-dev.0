@@ -1,50 +1,35 @@
-Message-ID: <3C7A2FA4.E111C24D@etx.ericsson.se>
-Date: Mon, 25 Feb 2002 13:35:48 +0100
-From: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
-MIME-Version: 1.0
-To: "David C. Chiu" <dchiu@ariodata.com>
+To: Wojciech Kromer <krom@dgt-lab.com.pl>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Memory Pre-allocation (mem=xxx)
-References: <8A098FDFC6EED94B872CA2033711F86F0ABD14@orion.ariodata.com>
-Content-Type: text/plain; charset=iso-8859-1
+Subject: Re: MPC8xx IDE 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 25 Feb 2002 12:41:07 +0100."
+             <3C7A22D3.80905@dgt-lab.com.pl>
+Date: Mon, 25 Feb 2002 14:24:30 +0100
+Message-Id: <20020225132435.70C5D109E3@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I'am not shure what you mean with a module driver during boot but If you want
-to pass a option that was entered in the bootline you can read the bootline
-from /proc/cmdline and with some small shell script extract the part you want
-and pass that to the module when you insert it.
+In message <3C7A22D3.80905@dgt-lab.com.pl> you wrote:
+>
+> >  EXT_DIRECT is used for IDE devices directly connected to the 8xx
+> >             bus using some glue logic, but _not_ the 8xx internal
+> >             PCMCIA interface (example: IDIF860 systems)
+> >...
+> What does it mean 'some glue logic'? I have to use CompactFlash on 8260. How to connect it?
 
-"David C. Chiu" wrote:
->
-> Thanks for your comment Wolfgang.
->
-> The driver in question is compiled as module, and the last time I
-> checked (a year ago) there isn't a way to pass an argument to a module
-> driver during boot time. Has this changed? The kernel is 2.4 series.
->
-> -----Original Message-----
-> Wolfgang Denk
-> Sent: Friday, February 22, 2002 4:57 PM
->
-> In message <8A098FDFC6EED94B872CA2033711F86F0ABD0C@orion.ariodata.com>
-> you wrote:
->
-> > We're working on a project that requires a two megabytes block of
-> > contiguous memory in kernel space. Although it is well documented that
-> > memory can be reserved by using mem=xx arguments during boot time, it
-> is
-> > unclear (to me) as to how a driver can automatically detect the size
-> of
-> > the said reserved block.
->
-> Pass an extra boot argument?
+I think Steven Scholz <steven.scholz@imc-berlin.de> posted some
+schematics some time ago. If you can't find it, try contacting
+Steven.
+
+Wolfgang Denk
 
 --
-Kenneth Johansson
-Ericsson Telecom                  Tel: +46 8 404 71 83
-Viderögatan 3                     Fax: +46 8 404 72 72
-164 80 Stockholm                  kenneth.johansson@etx.ericsson.se
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+You can do this in a number of ways.     IBM chose to do all of them.
+Why do you find that funny?        -- D. Taylor, Computer Science 350
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
