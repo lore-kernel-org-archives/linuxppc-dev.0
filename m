@@ -1,81 +1,41 @@
-Message-Id: <200104092057.WAA00920@piglet.grunz.lu>
-Date: Mon, 9 Apr 2001 22:57:30 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: Serial console problems w/ 2.4.1
-To: kevin_myer@iu13.k12.pa.us
+Date: Tue, 10 Apr 2001 00:28:03 +0100
+Subject: Re: HTML device-trees posted
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: jeramy b smith <ultrapenguin@netscape.net>
 Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.LNX.4.33.0104061050510.1481-100000@pegmatite.iu13.k12.pa.us>
-MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
+Message-Id: <20010409232808.8FEE62EFAF@apollo.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Thu, Apr 05, 2001, Jeramy wrote:
+> I noticed the IBM device trees on tibitt's page. Do we want to make a
+> combined page and put it in the 'developer library/reference' section ?
 
-On   6 Apr, this message from Kevin M. Myer echoed through cyberspace:
-> I'm trying to boot an Apple Network Server using a serial console and am
-> having trouble doing so.  I have no trouble getting Open Firmware output
-> and input to go through the serial port but I can't get the machine to
-> boot into Linux.  Originally, I had xmon support compiled in and when I
-> would try to boot the kernel, I would get the following output over the
-> serial line:
->
-> ATZ1V1
-> +++
+Fine by me... but you should also check with Tilmann
 
-I have the same problem, and haven't had time to investigate in detail.
+It's rather audio-centric (because this seems to be the area where we are
+most likely to have to account for machines nearly individually)...
 
-The above 'text' are modem commands coming from xmon, because by default
-xmon is configured to believe you have a modem attached there. I guess
-another one of those 'features' we're getting blessed with because this
-is what Paulus (author of xmon) uses at this time for his own
-development, and this is what gets pusehed into his 'official' kernels.
+I'm afraid it's only very basic html as well... it could do with making a
+bit more slick ;-) (any volunteers?)
 
-Try setting via_modem to 0 in arch/ppc/xmon/start.c line 31. Also,
-enabling early boot text console under general setup will show you on
-screen at boot time what xmon will use to interact.
+- there are some other machine trees on the suse site that I didn't convert
+to html.
 
-> I suspect that output is coming from xmon (not sure why) but I disabled
-> that and now, there's nothing coming across the serial line.
+IMHO we should also try to link in some pointers to sites with OF info as
+well ... e.g. ftp://playground.sun.com/pub/1275/coredoc/1275-1994/
 
-It was xmon, indeed.
+and a reference to the Apple hardware pages (perhaps):
 
-> For the kernel command line, I'm using <kernel-name> console=ttyS0,38400
->
-> Open Firmware serial port settings are 38400,8N1,XON/XOFF (and I don't
-> know how to change them).  Looking at the macserial driver, it appears to
-> use those settings anyway.  Also looking at the driver, I see, at about
-> line 2619:
->
-> panic("macserial: console not supported yet !");
->
-> It seems to be right in the middle of an initialization routine - is it
-> really not supported?
+developer.apple.com/techpubs/hardware/hardware.html
 
-At least it was in the past, and it is for me on 2.2 kernels. It wasn't,
-however, at one time in the 2.3 kernels; but I believe that problem was
-fixed ages ago? I'll re-check... (5 min later) No, that patch is
-actually included with the later 2.4 kernels.
+and (errm ;-) there might be some similar stuff on netBSD/FreeBSB/mkLinux
+pages that would be a useful x-reference (sorry, don't have the URLs).
 
-Also, I found that I needed to set the logging level differently with
-2.4 kernels to get any output on the serial console:
-
-/bin/dmesg -n 7
-
-It seems to be at 0 by default??
-
-Cheers
-
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
-
+ciao,
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
