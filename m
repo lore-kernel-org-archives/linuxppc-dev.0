@@ -1,43 +1,31 @@
-Date: Thu, 10 Jun 1999 15:28:13 -0600 (MDT)
-From: Brad Midgley <brad@turbolinux.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: [patch] mol quit-at-shutdown
-In-Reply-To: <199906102103.QAA15072@cegt201.bradley.edu>
-Message-ID: <Pine.LNX.3.95.990610151742.24326A-100000@pacific.pht.com>
+Date: Fri, 11 Jun 1999 00:56:24 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+To: Joseph Palani Garcia <jpgarcia@execpc.com>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: EM86 port for LinuxPPC?
+In-Reply-To: <Pine.GSO.3.95.990610130308.9290A-100000@earth>
+Message-ID: <Pine.LNX.4.10.9906110055170.15669-100000@mercator.cs.kuleuven.ac.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-with this patch, mol quits when macos tries to pull down the power so the
-macos shutdown action cleanly exits the emulator.
+On Thu, 10 Jun 1999, Joseph Palani Garcia wrote:
+> Some may have noticed the EM86 x86 "emulator" for alpha/linux to run
+> x86/linux binaries.  I recently added the define to my kernel compile and
 
-it appears all the mol cleanup is done in an atexit routine so i figured
-this would be safe. my only concern is that it looks like macos does a
-couple of scsi operations AFTER telling the cuda to power down. maybe i
-should set an alarm and have the alarm kill the emulator instead...?
+Gabriel Pubert wrote an em86 for PPC that for initializing video boards using
+the ia32 code in the video BIOS.
 
-i would like to make the debugger interface optional via a command-line
-interface to mol next...
+Greetings,
 
---- ../mol/drivers/cuda.c       Fri May 21 12:47:58 1999
-+++ ./drivers/cuda.c    Thu Jun 10 15:26:21 1999
-@@ -332,7 +332,9 @@
-                printm("CUDA: rest system\n");
-                break;
-        case CUDA_MS_RESET:
-+               break;
-        case CUDA_POWERDOWN:
-+               exit(0);
-        case CUDA_POWERUP_TIME:
-                break;
-        case CUDA_AUTOPOLL: /* input_len/output_len : 1/0 */
+						Geert
 
-
-Brad
-brad@pht.com | http://www.pht.com/~brad/
-
+--
+Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
+Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
+Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
