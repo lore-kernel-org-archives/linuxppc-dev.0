@@ -1,67 +1,211 @@
-Date: Thu, 15 Jul 1999 10:45:42 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Paul.Mackerras@cs.anu.edu.au
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: MESH problems in 2.2.x
-In-Reply-To: <199907140509.PAA21467@tango.anu.edu.au>
-Message-ID: <Pine.LNX.4.10.9907151045030.15826-100000@mercator.cs.kuleuven.ac.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Mime-Version: 1.0
+Content-Type: multipart/alternative; boundary="============_-1280093432==_ma============"
+Message-Id: <v04010108b3b35306d50b@power.elec.kitami-it.ac.jp>
+Date: Thu, 15 Jul 1999 17:57:42 +0900
+To: linuxppc-dev@lists.linuxppc.org
+From: "T.Ueda" <ueda@power.elec.kitami-it.ac.jp>
+Subject: Help! Fortran call from C on LinuxPPC-R5
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 14 Jul 1999, Paul Mackerras wrote:
-> Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be> wrote:
-> > Just made some diff between 2.1.130 and the `broken' kernels. The following
-> > two things make me suspicious:
-> > 
-> > Index: drivers/scsi/mesh.c
-> > @@ -1643,6 +1643,7 @@
-> >  static void
-> >  mesh_completed(struct mesh_state *ms, Scsi_Cmnd *cmd)
-> >  {
-> > +#if 0
-> >  	if (ms->completed_q == NULL)
-> >  		ms->completed_q = cmd;
-> >  	else
-> > @@ -1651,6 +1652,9 @@
-> >  	cmd->host_scribble = NULL;
-> >  	queue_task(&ms->tqueue, &tq_immediate);
-> >  	mark_bh(IMMEDIATE_BH);
-> > +#else
-> > +	(*cmd->scsi_done)(cmd);
-> > +#endif
-> >  }
-> >  
-> >  /*
-> > 
-> > Why did Dave (mesh.c 1.20, according to the vger CVS logs, which don't help me
-> > much) do this?
-> 
-> I made that change, I think maybe I sent it straight to Linus and it
-> got into vger via the official releases or something.
-> 
-> The point was that I realized, looking at the scsi code (which has
-> changed quite a bit since I wrote the original mesh driver) that the
-> scsi done routine was going to schedule a BH handler anyway so there
-> was no point in mesh.c having complexity to arrange for that.  I was
-> cleaning up the SMP locking in mesh.c at the time and making that
-> change was an alternative to getting the locking right for the
-> completed_q stuff.
+--============_-1280093432==_ma============
+Content-Type: text/plain; charset="us-ascii"
 
-But on my UP box, changing the `#if 0' to `#if 1' fixed all my MESH
-problems...
+Hi,
 
-Greetings,
+I am checking a simple program that Fortran calls C  using LinuxPPC-R5 on
+PowerBookG3.
 
-						Geert
+It seems that real fuction call of fortran may wrong.
+Why 2147482368.000000 in the case of calling real function?? ( real and
+float are not same bytes?)
 
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
+Anyone know the reason?
 
+
+Tac@Japan
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[complile& run]
+ f77 -c f2.f
+ f77 -c f22.f
+ f77 -c f3.f
+ f77 -c f33.f
+ gcc main.c f2.o f22.o f3.o f33.o
+ a.out
+Result: 5  --> 25  2147482368.000000  125   125.000000
+
+Why 2147482368.000000?? ( real and float are not same size?)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/*   (1)main.c  */
+#include <stdio.h>
+
+int main() {
+  float y22, y33;
+  int x=5;
+  int y2, y3;
+
+  y2=f2_(&x);
+  y22=f22_(&x);
+  f3_(&x, &y3);
+  f33_(&x, &y33);
+  printf("%d  --> %d  %f  %d   %f \n", x, y2, y22, y3, y33);
+   return 0;
+}
+~~~~~~~~~~~~~~~~~~
+C    (2)f2.f
+    integer  function f2(x)
+      integer x
+      f2=x*x
+      end
+~~~~~~~~~~~~~~~~~~
+C   (3) f22.f
+      real function f22(x)
+      integer x
+      f22=x*x
+      end
+~~~~~~~~~~~~~~~~~~
+C   (4) f3.f
+      subroutine f3(x,y)
+      integer x, y
+      y=x*x*x
+      end
+~~~~~~~~~~~~~~~~~~
+C   (5) f33.f
+      subroutine f33(x,y)
+      integer x
+      real y
+      y=x*x*x
+      end
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--============_-1280093432==_ma============
+Content-Type: text/enriched; charset="us-ascii"
+
+Hi,
+
+
+<fontfamily><param>Courier</param>I am checking a simple program that
+Fortran calls C  using LinuxPPC-R5 on PowerBookG3.
+
+
+It seems that real fuction call of fortran may wrong.
+
+Why 2147482368.000000 in the case of calling real function?? ( real and
+float are not same bytes?)
+
+
+Anyone know the reason?
+
+
+
+Tac@Japan
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+[complile& run]
+
+ f77 -c f2.f
+
+ f77 -c f22.f
+
+ f77 -c f3.f
+
+ f77 -c f33.f
+
+ gcc main.c f2.o f22.o f3.o f33.o
+
+ a.out
+
+Result: 5  --> 25  2147482368.000000  125   125.000000 
+
+
+Why 2147482368.000000?? ( real and float are not same size?)
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+/*   (1)main.c  */
+
+#include <<stdio.h>
+
+
+int main() {
+
+  float y22, y33;
+
+  int x=5;
+
+  int y2, y3;
+
+
+  y2=f2_(&x);
+
+  y22=f22_(&x);
+
+  f3_(&x, &y3);
+
+  f33_(&x, &y33);
+
+  printf("%d  --> %d  %f  %d   %f \n", x, y2, y22, y3, y33);
+
+   return 0;
+
+}
+
+~~~~~~~~~~~~~~~~~~
+
+C    (2)f2.f
+
+    integer  function f2(x)
+
+      integer x
+
+      f2=x*x
+
+      end
+
+~~~~~~~~~~~~~~~~~~
+
+C   (3) f22.f
+
+      real function f22(x)
+
+      integer x
+
+      f22=x*x
+
+      end
+
+~~~~~~~~~~~~~~~~~~
+
+C   (4) f3.f
+
+      subroutine f3(x,y)
+
+      integer x, y
+
+      y=x*x*x
+
+      end
+
+~~~~~~~~~~~~~~~~~~
+
+C   (5) f33.f
+
+      subroutine f33(x,y)
+
+      integer x
+
+      real y
+
+      y=x*x*x
+
+      end
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</fontfamily>
+
+--============_-1280093432==_ma============--
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
