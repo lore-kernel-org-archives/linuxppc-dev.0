@@ -1,27 +1,58 @@
-Message-ID: <011201c38bdc$bdf96510$2803050a@JackyLam>
-From: "Jacky Lam" <jackylam@astri.org>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Walnut boot problem solved
-Date: Mon, 6 Oct 2003 15:37:48 +0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="big5"
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: robdlg@att.net
+Message-Id: <200310061051.FAA10075@lists.linuxppc.org>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: popt, ELDK 2.0.2
+Date: Mon, 06 Oct 2003 10:51:44 +0000
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear all,
+I was experimenting with the popt library in the ELDK 2.0.2, and I received
+the following errors.  The same compiler invocation is successful when used
+with gcc under Red Hat Linux 7.3.  The source code follows the error
+messages.  How do I properly compile and link this file?
 
-    I have figured out why my kernel hanged while booting on Walnut
-platform. It is because the structure of board_info is different between
-u-boot-0.4.8 and linuxppc-2.4-devel. After syncing the structure, I can boot
-up to where the kernel tries to mount the filesystem. Attached is a patch
-for the fix.
+ppc_82xx-gcc -Wall -lpopt -o popt_test main.c
+/tmp/ccMrZmW2.o: In function `main':
+/tmp/ccMrZmW2.o(.text+0x60): undefined reference to `poptGetContext'
+/tmp/ccMrZmW2.o(.text+0x60): relocation truncated to fit: R_PPC_REL24
+poptGetContext
+/tmp/ccMrZmW2.o(.text+0x70): undefined reference to `poptGetNextOpt'
+/tmp/ccMrZmW2.o(.text+0x70): relocation truncated to fit: R_PPC_REL24
+poptGetNextOpt
+/tmp/ccMrZmW2.o(.text+0x94): undefined reference to `poptFreeContext'
+/tmp/ccMrZmW2.o(.text+0x94): relocation truncated to fit: R_PPC_REL24
+poptFreeContext
+collect2: ld returned 1 exit status
+make: *** [all] Error 1
 
-    Thanks for all help and suggestions.
+#include <stdio.h>
+#include <stdlib.h>
+#include <popt.h>
 
-Best regards,
-Jacky Lam
+int main(int argc, char *argv[])
+{
+	int rc;
 
+	/* command-line arguments */
+	struct poptOption options[] = {
+		{ "help", 'h', POPT_ARG_NONE, NULL, 1 },
+		{ NULL, 0, 0, NULL, 0 }
+	};
+	poptContext context;
+
+	context = poptGetContext(NULL, argc, (const char **)argv, options,
+0);
+	rc = poptGetNextOpt( context );
+
+	printf("%d\n", rc);
+
+	poptFreeContext( context);
+
+	return 0;
+}
+
+/* eof */
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
