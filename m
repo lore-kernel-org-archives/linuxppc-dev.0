@@ -1,33 +1,44 @@
-In-Reply-To: <v03110701b4eda44b28b7@[129.100.29.243]>
-Date: Fri, 10 Mar 2000 10:43:51 +0100
-To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
-        linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: IDE problems with 2.3.49?- same with 2.2.15pre3
-Message-Id: <20000310104351.001539@mailhost.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Fri, 10 Mar 2000 10:55:09 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+To: Patrick Lerda <Lerda@microprocess.com>
+cc: David Monro <davidm@amberdata.demon.co.uk>,
+        Linux/ppc Dev List <linuxppc-dev@lists.linuxppc.org>
+Subject: RE: IBM 850 - Open Firmware or not? and more on the ide byteswapg
+ ame...
+In-Reply-To: <902CA06399F5D311AAAC00500422FC63094031@iis000.microdata.fr>
+Message-ID: <Pine.HPX.4.10.10003101024360.22162-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Mar 9, 2000, Kevin B. Hendricks <khendricks@ivey.uwo.ca> wrote:
 
->I grabbed the yellowdog yaboot_0.4 (I can not get your yaboot_0.5 to
->uncompress properly) and started up with with the following yaboot.conf
 
-there's a problem with Apache configuration on ppclinux.apple.com (which
-is, BTW, the same problem i used to have when downloading Xpmac from your
-web server). Apparently, the server tries to uncompress the gz file on
-the fly. It appears however that most web browser will only download the
-compressed size, and so the downloaded file is incomplete.
-I used to work around this (when downloading Xpmac from your site) by
-using Netscape under MacOS (apparently, it did download the entire
-uncompressed file), and removing manally the ".gz" once downloaded.
+On Thu, 9 Mar 2000, Patrick Lerda wrote:
 
-If you know the solution (the server setting that need to be changed),
-tell me and I'll pass the info along to Kevyn (maintainer of
-ppclinux.apple.com).
+> I think porting Linux PPC to little endian could be a great idea. Now, all
+> systems
+> use PCI, and little endian is the native mode of this bus. Trying
+> to get all PCI hardware well supported on Linux i386 working on a PowerPC
+> box
+> is an headache, and a lot of drivers and programs don't work proberly for
+> only one
+> reason: endianess... Using PowerPC in big endian mode is only understandable
+> in closed
+> computers like iMac.
+
+I happen to strongly disagree (and I don't think at all that it's a
+headache, it's fairly easy), but if you want to start a ppcel port, go
+ahead. I just won't use it.
+
+Endianness is just the tip of the iceberg and is mostly transparent thanks
+to the bridges preserving byte addresses for all transfers. There are at
+least 2 other pure BE ports of Linux, m68k and sparc (split into sparc and
+sparc64), the SPARC having PCI buses (some 68k might have PCI buses as
+well). The MIPS port is bi-endian AFAICT...
+
+	Gabriel.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
