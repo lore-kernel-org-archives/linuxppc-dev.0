@@ -1,34 +1,53 @@
-Subject: Re: Fast boot times
-From: Kenneth Johansson <ken@switchboard.ericsson.se>
-To: "Kevin P. Dankwardt" <k@kcomputing.com>
-Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <KCEOLLHGFJIAFNAMGACHIEGADMAA.k@kcomputing.com>
-References: <KCEOLLHGFJIAFNAMGACHIEGADMAA.k@kcomputing.com>
-Content-Type: text/plain
-Message-Id: <1086702496.4640.8.camel@spawn.uab.ericsson.se>
-Mime-Version: 1.0
-Date: Tue, 08 Jun 2004 15:48:17 +0200
+To: tschaefer@giga-stream.de
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: fw_setenv problem when calling from expect script 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 08 Jun 2004 14:20:27 +0200."
+             <FIEJJAKAABLMHFKFECNJCEHIHBAA.tschaefer@giga-stream.de>
+Date: Tue, 08 Jun 2004 16:07:21 +0200
+Message-Id: <20040608140726.8A969C109F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, 2004-06-08 at 03:57, Kevin P. Dankwardt wrote:
-> I am participating in a project that has a challenging boot time
-> requirement. We need a Linux boot solution where we have booted in the
-> 50msec range, talking on a protocol stack, from a COLD Start (power being
-> applied to the board.) The loading of the drivers and the stack
-> initialization has to occur within 50msec.
+In message <FIEJJAKAABLMHFKFECNJCEHIHBAA.tschaefer@giga-stream.de> you wrote:
 >
-> Does anyone have any leads/ideas for being able to meet this deadline?
+> I'm using MVL 3.0 (kernel 2.4.18) on a PPC 405GPr custom board. Flash memory
+> on the board is located in 2 AMD641DH flash chips, which are concatenated on
+> the mtd layer to one large flash memory area. The flash is divided into 5
+> partitions (bootloader u-boot, 2 bootloader environment partitions, kernel,
+> rootfs).
 
-You don't say much about the hardware but I would say it's a borderline
-case even if you put a lot of work into it.
+More interesting than the kernel  version  would  be  to  know  which
+version  of the MTD subsystem you are using. A 2.4.18 kernel sounds a
+bit old, so this probably means that the MTD code is even older?
 
-say you have a 8bit flash 120ns access time that gives
-8.3 MB/sec thus you can only copy 400kB data in 50ms so you have barley
-enough time getting the data into dram before your time is up.
+...
+> CRC write error on /dev/mtd1: Input/output error
+> Error: can't write fw_env to flash
+...
+> The respective environment sector has been erased, but writing the new
+> environment didn't work.
+>
+> If I insert a 'sync' command between writing on the rootfs partition and the
+> fw_setenv call, writing of the environment sector works, but this is not
+> really a solution???
 
-It's not going to happen just checking a config option that's for sure.
+No. Definitely not. Soulds like a MTD problem to me.
 
+> Any ideas, comments?
+
+Update the MTD code?
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Lead me not into temptation... I can find it myself.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
