@@ -1,40 +1,41 @@
-From: Paul Mackerras <paulus@samba.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15366.44742.923433.367449@gargle.gargle.HOWL>
-Date: Fri, 30 Nov 2001 08:55:18 +1100 (EST)
-To: msokolov@ivan.Harhan.ORG (Michael Sokolov)
-Cc: linuxppc-dev@lists.linuxppc.org
+Date: Thu, 29 Nov 01 14:15:10 PST
+From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
+Message-Id: <0111292215.AA01078@ivan.Harhan.ORG>
+To: linuxppc-dev@lists.linuxppc.org
 Subject: Re: ide_init_hwif_ports
-In-Reply-To: <0111291900.AA00593@ivan.Harhan.ORG>
-References: <0111291900.AA00593@ivan.Harhan.ORG>
-Reply-To: paulus@samba.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michael Sokolov writes:
+mod+linuxppc-dev@MissionCriticalLinux.com wrote:
 
-> to ISA slot connectors. This is what the Adirondack does, and the result is
-> that no matter what you do in the PCI domain, the primary IDE interrupt will
-> always come in as IRQ 14 and the secondary IDE interrupt will always come in as
-> IRQ 15.
+> Not to quibble with your painfully accurate
+> description of the VT82C686B, but might it be
+> possible (using the IDE Interrupt Routing register
+> at offset 0x4a in function 1) to arrange for both
+> channels to use the same interrupt routing?
+> Like force both to IRQ14?  Just a thought...
 
-Thanks for the explanation.  I'll ask Vojtech Pavlik and Andre Hedrick
-if they can suggest a better way (drivers/ide/via82cxxx.c has
-Vojtech's name on it).
+>From what I could tell the IDE interrupt routing is fixed by the board
+circuitry *outside* the chip and cannot be changed by any register diddling. As
+I said, I don't think the VT82C686B even knows when an IDE interrupt has
+occurred. The interrupt lines from the IDE connectors are tied directly to the
+IRQ14 and IRQ15 pins, the same ones that go to the ISA slot connectors. If one
+of these pins goes high, the VT82C686B has no way of knowing that it's IDE or
+something else on ISA using this IRQ is signaling an interrupt.
 
-Actually, I have just noticed this code in drivers/ide/ide-pci.c:
+Then what does the supposed IDE Interrupt Routing register (at offset 0x4A in
+function 0, I assume that's what you really meant) do? I have no idea. I
+suspect that Via *tried* to make it standards-compliant and support both AT-
+compatible and pure PCI IDE interrupt routing, but never fully got it. Consider
+function 1's Interrupt Pin register (offset 0x3D). The Via manual says:
 
-                if (IDE_PCI_DEVID_EQ(d->devid, DEVID_UM8886A) ||
-                    IDE_PCI_DEVID_EQ(d->devid, DEVID_UM8886BF) ||
-                    IDE_PCI_DEVID_EQ(d->devid, DEVID_UM8673F)) {
-                        hwif->irq = hwif->channel ? 15 : 14;
-                        goto bypass_umc_dma;
-                }
+00h Legacy mode interrupt routing
+01h Native mode interrupt routing
 
-We may be able to get something similar added for our case(s).
+Yet it always reads as 00 and I couldn't get it to read as 01 or as anything
+else.
 
-Paul.
+MS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
