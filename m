@@ -1,53 +1,40 @@
-To: brian.auld@adic.com
+Message-Id: <5.1.0.14.2.20030224135756.0465b778@mail.ebshome.net>
+Date: Mon, 24 Feb 2003 14:29:18 -0800
+To: <brian.auld@adic.com>
+From: Eugene Surovegin <ebs@ebshome.net>
+Subject: RE: Kernel Preemption patch
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Kernel Preemption patch 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 24 Feb 2003 05:47:35 PST."
-             <995FF289C9D69747A09E42992644595405B23683@penguin.adic.com>
-Date: Mon, 24 Feb 2003 22:15:43 +0100
-Message-Id: <20030224211548.0DA99C6E0C@atlas.denx.de>
+In-Reply-To: <995FF289C9D69747A09E42992644595405B23686@penguin.adic.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <995FF289C9D69747A09E42992644595405B23683@penguin.adic.com> you wrote:
+At 12:45 PM 2/24/2003, brian.auld@adic.com wrote:
+>In a previous post, you mentioned that you had the Kernel Preemption patch
+>as well as the Real-Time scheduler patch running on a 2.4.19 kernel on
+>405/440 platforms...
 >
-> - I presume RTAI and subsequently any task running on top of it are running
->   in user mode, as opposed to kernel mode?
+>If not, how did you manage to propogate forward George Anzinger's latest
+>patch (2.4.16) to your kernel?
 
-Wrong. The real-time part of RTAI applications usually runs in kernel
-mode; it may (but  does  not  have  to)  communicate  with  user-land
-applications.
+I used George Anzinger patch (it looked less intrusive than 0(1) to me)
+with small fixes.
 
-> - Would it be possible, using the RTAI, to receive inbound data encapsulated
->   in some storage protocal via the associate device driver, pass this about
->   a few RTAI tasks, and then ship it out encapsualted in another storage
->   protocal envelope via the associate device driver ... all the time using
->   the same buffer of I/O data (i.e. no buffer to buffer copies)??
+Actually I applied 3 different patches to achieve reasonable user-mode soft
+real-time for 440GP kernel:
 
-Sure.
+1) preempt patch (from MVL)
+2) rtsched by George Anzinger
+3) lock-break by RML
 
-> Given our need to prevent buffer copies of I/O data, I was envisioning
-> implementing a good part of our application as kernel treads. This is why I
-> was looking into the preemption patch, and also why Real-Time abastraction
-> layers that sit on top of the kernel were not showing up on my radar.
+I can make a patch for 2.4.19 PPC devel tree snapshot with all those
+patches and my fixes if you want.
 
-RTAI does not sit on top of linux, it's rather vice versa: Linux sits
-on top of the RTAI "real-time kernel".
+I'm not sure whether I should post it to the list or not.
 
-F'up to <rtai@rtai.org> ?
+Eugene
 
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-If a train station is a place where a train stops,
-                                           then what's a workstation?
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
