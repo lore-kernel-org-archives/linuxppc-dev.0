@@ -1,45 +1,41 @@
-Date: Mon, 19 Jan 2004 10:55:47 +0100
-To: Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Date: Mon, 19 Jan 2004 11:08:42 +0100 (MET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Sven Luther <sven.luther@wanadoo.fr>,
 	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: multiple separate pci bridges ...
-Message-ID: <20040119095547.GA18112@iliana>
-References: <20040118144412.GA6897@iliana> <1074443601.9704.164.camel@thor.asgaard.local> <20040118172838.GA8785@iliana> <1074450283.9700.200.camel@thor.asgaard.local> <20040118222053.GA11651@iliana> <1074468804.9700.219.camel@thor.asgaard.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1074468804.9700.219.camel@thor.asgaard.local>
-From: Sven Luther <sven.luther@wanadoo.fr>
+In-Reply-To: <1074503490.4547.52.camel@gaston>
+Message-ID: <Pine.GSO.4.58.0401191108100.6038@waterleaf.sonytel.be>
+References: <20040118144412.GA6897@iliana> <1074503490.4547.52.camel@gaston>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Jan 19, 2004 at 12:33:24AM +0100, Michel Dänzer wrote:
+On Mon, 19 Jan 2004, Benjamin Herrenschmidt wrote:
+> > I am returning 0 for all of function 0. I dropped the whole struct
+> > pci_dev ressource thingy, and they are well nullified. My limited
+> > understanding of those pci issues let me make a guess though. I think
+> > that either the stuff in the struct pci_dev is set later on (the BARs
+> > are modifiable i think), or those values are read from the struct
+> > pci_dev before i nullify them.
 >
-> On Sun, 2004-01-18 at 23:20, Sven Luther wrote:
-> > On Sun, Jan 18, 2004 at 07:24:44PM +0100, Michel Dänzer wrote:
-> > > On Sun, 2004-01-18 at 18:28, Sven Luther wrote:
-> > > > On Sun, Jan 18, 2004 at 05:33:21PM +0100, Michel Dänzer wrote:
-> > > > > On Sun, 2004-01-18 at 15:44, Sven Luther wrote:
-> > > > > >
-> > > > > > The freeze happens when i first launch glxinfo, or when i first start
-> > > > > > moving a window around (using a debian/unstable default gnome desktop).
-> > > > > > I don't remember well, but i think it would also freeze when let running
-> > > > > > for a time, but i am not sure.
-> > >
-> > > It would be quite interesting to know, see below.
-> >
-> > But then, maybe it has something to do with the GL screensaver or
-> > something such.
->
-> Don't run them, then? *shrug*
+> pci_dev resources are read from the BARs and the sizing mecanism
+> uses the BARs too (you should filter out writes too btw). If you
+> properly filter things out, there should be no problem.
 
-Mmm, i only have xscreensaver installer, not the gl ones. Should be ok.
+So shouldn't reads from the BAR return -1 instead of 0, and writes be ignored?
 
-But then, the DRI server corrupts the fbdev screen, and the font memory
-when i /etc/init.d/gdm stop :/
+Gr{oetje,eeting}s,
 
-Friendly,
+						Geert
 
-Sven Luther
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
