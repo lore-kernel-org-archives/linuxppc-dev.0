@@ -1,33 +1,33 @@
-Date: Mon, 2 Jun 2003 22:43:05 -0800
-From: Ethan Benson <erbenson@alaska.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [RFC] A stand-alone boot loader for PReP
-Message-ID: <20030603064305.GW32642@plato.local.lan>
-References: <62639.213.107.143.228.1054413401.squirrel@www.solinno.co.uk> <20030531214950.GP32642@plato.local.lan> <63891.213.107.143.228.1054475827.squirrel@www.solinno.co.uk> <20030601221249.GQ32642@plato.local.lan> <20030602174032.GC787@ip68-0-152-218.tc.ph.cox.net>
+Subject: Re: new 601 port starting point?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Dave Weis <djweis@sjdjweis.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.LNX.4.21.0306021217270.19576-100000@oliver.internal.sjdjweis.com>
+References: 
+	 <Pine.LNX.4.21.0306021217270.19576-100000@oliver.internal.sjdjweis.com>
+Content-Type: text/plain
+Message-Id: <1054624406.541.70.camel@gaston>
 Mime-Version: 1.0
-In-Reply-To: <20030602174032.GC787@ip68-0-152-218.tc.ph.cox.net>
-Content-Type: text/plain; charset=us-ascii
+Date: 03 Jun 2003 09:13:27 +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Jun 02, 2003 at 10:40:32AM -0700, Tom Rini wrote:
+On Mon, 2003-06-02 at 19:19, Dave Weis wrote:
+> I'm going to be working on the mca rs/6000 machines again. The kernel has
+> changed a bit since I last tried, so I need some advice.
 >
-> I suspect it's because some PReP boxes (IBM ones, _mostly_) have
-> OpenFirmware.  And yes, there's a few versions of OF that are as funky,
-> if not funkier, than the one Apple uses.  But, as the 2.5 kernel shows,
-> the OF code can be shared.  The problem is that not all PReP boxes
-> support OF, so yaboot2 won't work on them.  Unless you're up for
-> allowing non-OF machines. :)
+> Which platform should I base my work on? It's a 601 machine, no pci or isa
+> bus.
+>
+> I have downloaded the 2.4.20-benh rsync-able tree to start with.
 
-i am not opposed to it, prom-libc is designed so the prom specific
-stuff is simply a sysdep, it can be ported to pretty much any prom on
-any architecture.  so long as the bootloader (yaboot) avoids using low
-level prom calls wherever possible it will be easily portable to any
-new arch prom-libc is ported to.
+I don't recommend using my tree for developing a new platform,
+you should rather start from either the official 2.4.x tree in
+kernel.org or the linuxppc_2_4, though the later is probably
+what you want.
 
---
-Ethan Benson
-http://www.alaska.net/~erbenson/
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
