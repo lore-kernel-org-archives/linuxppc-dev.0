@@ -1,62 +1,71 @@
-Message-ID: <C78540EA349B2D4BB83D1B0AD748E26F1BE47C@amer20.avnet.com>
-From: "Kerl, John" <John.Kerl@Avnet.com>
-To: "'Conn Clark'" <clark@esteem.com>,
-	Aman <aman@mistralsoftware.com>
-Cc: May Ling List <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Time
-Date: Fri, 7 Mar 2003 10:06:06 -0700 
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Fri, 7 Mar 2003 17:18:30 +0000
+From: Magnus Damm <damm@opensource.se>
+To: "Gerhard TAEUBL" <Gerhard.TAEUBL@frequentis.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: PCMCIA
+Message-Id: <20030307171830.1dca14f1.damm@opensource.se>
+In-Reply-To: <se68594f.071@mail.frequentis.com>
+References: <se68594f.071@mail.frequentis.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-A stopwatch or the time command will tell you the
-total time.  But if you want to find out *where*
-the time is being spent, please don't forget gprof.
-(I don't know if an embedded version is available.)
+Hi,
 
------Original Message-----
-From: Conn Clark [mailto:clark@esteem.com]
-Sent: Friday, March 07, 2003 10:04 AM
-To: Aman
-Cc: May Ling List
-Subject: Re: Time
+> We are using MPC860T with one possible PCMCIA port and Montavista kernel 2.4.2.
+> So it is possible to use every PCMCIA card, which is supported by Linux?
 
+Not all cards worked "right out of the box" when I wrote the socket driver.
+And I don't think that all of them will work today either.
+There are many things that might cause problems - endian unawareness, timing stuff etc.
 
+So you will not be able to install a set of RPMs on your hardware and then just
+insert any PCMCIA card and hear bleep-bleep and everything works. No.
+But with some hacking and some knowledge of Linux and PCMCIA you will probably
+find out a collection of PCMCIA cards that will work ok.
 
-Aman wrote:
-> Hi
+I don't know how many PCMCIA cards that Linux/pcmcia-cs supports, but I guess
+that everyone uses CARDBUS today instead of PCMCIA. 32 bits are much more fun.
+
+I think that I read that someone was planning on writing a list, but I don't
+remeber seeing any actual output. Or maybe I missed that.
+
+There are (were anyhow) many things that differs between a common PC and
+the Linux implementation on a embedded powerpc box. The IDE stuff, serial
+ports and other things are treated different. And it all depends on the
+variant and version of your kernel. What fun.
+And the status of your Montavista kernel - I have no idea.
+
+Have you modified the socket driver to fit your hardware?
+You will not be able to use any PCMCIA card without correct configuration.
+
+Hope this leads you in the right direction.
+
+/ magnus
+
+On Fri, 07 Mar 2003 08:32:47 +0100
+"Gerhard TAEUBL" <Gerhard.TAEUBL@frequentis.com> wrote:
+
 >
-> Can anybody suggest the best way to calculate the time taken by an
-> application, running on PPC 440.
+> Hi again!
 >
-> Thanking you in advance
-> regards
-> Aman
+> Maybe I frogot some information:
+>
+> We need for a project a second 100MBit interface, so our soloution will be to use a PCMCIA card. Does there exists an actual compatibility list which cards works, which not? I only found a list from 2000 or 2001.
+>
+> Please help :-)
 >
 >
+> We are using MPC860T with one possible PCMCIA port and Montavista kernel 2.4.2.
+> So it is possible to use every PCMCIA card, which is supported by Linux?
 >
-
-There is a program called 'time' . It is used time and gather statistics
-of a program. See the man page.
-
-
-Good Luck
-
-	Conn
-
---
-
-*****************************************************************
-   If you live at home long enough, your parents will move out.
-  (Warning they may try to sell their house out from under you.)
-*****************************************************************
-
-Conn Clark
-Engineering Stooge				clark@esteem.com
-Electronic Systems Technology Inc.		www.esteem.com
-
+> Again, please help...
+>
+> best regards
+> Gerhard
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
