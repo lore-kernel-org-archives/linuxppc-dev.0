@@ -1,5 +1,5 @@
-Message-ID: <3EA020E5.6FAEBC0A@doremilabs.com>
-Date: Fri, 18 Apr 2003 15:59:33 +0000
+Message-ID: <3EA023F2.820B65C0@doremilabs.com>
+Date: Fri, 18 Apr 2003 16:12:34 +0000
 From: Jeff H Zhong <jeff@doremilabs.com>
 MIME-Version: 1.0
 To: Wolfgang Denk <wd@denx.de>
@@ -11,15 +11,12 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I mean just like that on workstation(none embedded linux), user should
-be able to at least ping the target at the time when it brings up the
-ethernet interface, is it right?
+Wolfgang Denk wrote:
+We may need one more variable to be passed to kernel and let kernel know
+if we want initialize ethernet or not?
 
-Regards,
 --Jeff
 
-> In message <3E9FD84F.2C40F0ED@doremilabs.com> you wrote:
-> >
 > > Wolfgang Denk wrote:
 > > >
 > > > in message <3E9FB7FD.93947BE5@doremilabs.com> you wrote:
