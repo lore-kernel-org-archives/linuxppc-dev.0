@@ -1,38 +1,34 @@
-From: Frank Smith <smith@amirix.com>
-To: Dan Malek <dan@netx4.com>
-cc: "Mark S. Mathews" <mark@absoval.com>, linuxppc-embedded@lists.linuxppc.org
+Date: Thu, 22 Jun 2000 15:37:16 -0400 (EDT)
+From: Pavel Roskin <proski@gnu.org>
+To: "Mark S. Mathews" <mark@absoval.com>
+cc: Dan Malek <dan@netx4.com>, linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Can't mmap the top 1MB of /dev/mem?
-In-Reply-To: <39525D02.AA611102@embeddededge.com>
-Message-Id: <00Jun22.160620adt.7305@dragon.appliedmicro.ns.ca>
+In-Reply-To: <Pine.LNX.3.96.1000622144244.10709D-100000@tristar.cc.absoval.com>
+Message-ID: <Pine.LNX.4.21.0006221532500.6246-100000@sunapee.transcept.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Date: Thu, 22 Jun 2000 16:06:17 -0300
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, 22 Jun 2000, Dan Malek wrote:
+Hello, Mark!
 
->
-> Frank Smith wrote:
->
-> > Wouldn't this account for it?
->
->
-> No.  Those are virtual address calculations in that file........
+> If it _were_ extremely  important I could always trace the mmap system
+> call.
 
-Oops. Upon thinking about this a bit more, the problem we were having
-was that we were trying to get physical 0xfe000000 mapped to virtual
-0xfe000000.
+I already know that it happens in do_mmap(), at this point:
 
-The board we're using has firmware that we want to be able to call
-after Linux is up and running. The FW runs from 0x3000-0x60000, but
-refers to data up in 0xfe space. Our first naive attempts were to
-use mmap from userland, but we ended up putting stuff in the kernel
-and mapping flash directly with remap_page_range().
+/* offset overflow? */
+if (off + len < off)
+        return -EINVAL;
 
+I'm puzzled why it doesn't happen on G3.
 
-Frank.
+> _That's_ why Linux is so cool.
+
+Yup.
+
+Pavel
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
