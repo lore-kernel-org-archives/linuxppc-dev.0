@@ -1,63 +1,72 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Date: Thu, 27 Mar 2003 17:32:41 -0300
-Message-Id: <HCFD2H$Ir2UEt49Zg3kPckloUwpF3NOg_PNxkgldEQziM49VK@bol.com.br>
-Subject: [OT] bdiGDB connection problems
+Message-ID: <002f01c2f4aa$b60b80a0$020120b0@jockeXP>
+From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
+To: "Dan Malek" <dan@embeddededge.com>
+Cc: "Till Straumann" <strauman@SLAC.Stanford.EDU>,
+	"Tom Rini" <trini@kernel.crashing.org>,
+	"Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>
+References: <IGEFJKJNHJDCBKALBJLLIEHKFLAA.joakim.tjernlund@lumentis.se> <3E81F6FD.2000407@embeddededge.com>
+Subject: Re: dcbz works on 862 everywhere!
+Date: Thu, 27 Mar 2003 22:49:09 +0100
 MIME-Version: 1.0
-Content-Type: text/plain;charset="iso-8859-1"
-From: "xisto.garcia" <xisto.garcia@bol.com.br>
-To: linuxppc-embedded@lists.linuxppc.org
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi there!
+> > hmm, why would not dcbz execute properly? Surely the instruction is restarted
+> > when the DTLB Miss/Error handler return?
+>
+> Write a test to verify it.  I know there were cases in the past when
+> it didn't work.  You would notice it when you expected to have some
+> zero initialized spaces that weren't.
 
-I'm new to bdiGDB and I'm facing some problems with it. I've got a
-bdiGDB for a 82xx PPC and I've correctly updated its firmware and
-configured it through the RS232 interface, specifying its IP address,
-my host IP, bla bla bla. But when I try to communicate through the
-ethernet, by a telnet section, it doesn't seem to respond at all.
+I think Till's superb analysis show that this is not a problem.
 
-Some facts:
+>
+> > In a earlier mail you said the there was a case where the "normal" instructions
+> > would not set MD_EPN in the DTLB Error handler and that it was documented.
+> > What case is this and where can I find this documentation?
+>
+> Well, it's more of an interpretation of the documentation and discussions
+> with Motorola engineers.
 
-- Target MPC8260 in a MPC8260ADS board;
-- RedHat Linux 8.0 as the host;
-- dump from the bdi200 setup:
+So this case is mere speculation and has never been proven?
 
-BDI Type : BDI2000 Rev.C (SN: xxx)
-Loader   : V1.05
-Firmware : V1.15 bdiGDB for PPC6xx/PPC7xx
-Logic    : V1.02 PPC6xx/PPC7xx
-MAC      : 00-0c-01-xx-xx-xx
-IP Addr  : 192.168.0.2
-Subnet   : 255.255.255.255
-Gateway  : 255.255.255.255
-Host IP  : 192.168.0.1
-Config   : mpc820ads.cnf
+[SNIP]
+> For TLB miss exceptions, the Mx_xxx hardware assist registers work
+> properly, as documented, to minimize the number of instructions needed
+> to determine what PTE to load.  The TLB miss exception has exactly
+> one function, to as quickly as possible locate the PTE from the table
+> hierarchy and stuff the bits into the MMU.  That's it and it should
+> really be implemented in five lines of code.
 
-- The 'load mode' was correctly closed;
-- The ethernet 'link' led is on and the 'rx' led blinks as packets
-  ares sent on the net;
-- The bdi doesn't even answer my pings!
-- Sniffering the net, I've seen several ARP request and replies,
-  exchanged by bdi->host and host->bdi.
+Five lines of code, that I would like to see :-) Seriously, why do the
+DTLB handlers have two tables, one for kernel space and one for the rest?
 
-Some questions:
+Can the DataAccess path be removed in the DTLB Miss handler?
 
-- Do I need to have my target conected to bdi in order to
-  stabilish the telnet connection?
-- What about the tftp server, does it have to be running at
-  this point?
-- What services are provided by the bdi? Telnet on TCP port 23?
-  ICMP also? And what about the debugger, does it listen to
-  port 2001?
-- How can I get it running?
+[SNIP]
+> > Maybe Till Straumann's suggestion to set the DAR register to a known "bad" address
+> > when leaving an exception. Then test for this bad address in the DTLB error handler
+> > to decide what register to trust?
+>
+> Not necessary.
+>
+> By not "correctly" tracking usage and dirty pages, as we did in the past,
+> it caused us to never generate DTLB Error exceptions unless it was truly
+> an access to a non-recoverable bad address or if the page was swapped out.
+> I would just set 'used' on every instruction page and 'used + dirty' on
+> every data page allocation.  A static embedded system would just converge on
+> this point anyway, but in more dynamic systems it cost more real memory.
 
+hmm, don't you loose copy-on-write by doing so?
 
-Well, sorry by flooding the list with this newbie and OT message 8) And
-of course, I'd appreciate some help.
+Would the suggested instruction decoding in the DLTB Error handler
+be too ugly for your liking?
+Since dcbi also causes DTLB Errors with undefined values in DAR and MD_EPN it
+might be a good idea.
 
-Thanks,
-Xisto Garcia
+ Jocke
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
