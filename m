@@ -1,43 +1,35 @@
-From: acurtis@directvinternet.com
-Reply-To: <acurtis@directvinternet.com>
-To: "Pantelis Antoniou" <panto@intracom.gr>,
-	<acurtis@directvinternet.com>
-Cc: <joakim.tjernlund@lumentis.se>,
-	"Tom Rini" <trini@kernel.crashing.org>,
-	"Dan Malek" <dan@embeddededge.com>,
-	"Paul Mackerras" <paulus@au1.ibm.com>,
-	"Matt Porter" <porter@cox.net>,
-	<linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Regarding consistent_alloc
-Date: Wed, 11 Dec 2002 07:36:01 -0800
-Message-ID: <NCBBIINEHIPFGJPLBEIFOEPGDPAA.acurtis@directvinternet.com>
+Message-ID: <3DF7AA61.9020205@redswitch.com>
+Date: Wed, 11 Dec 2002 13:13:05 -0800
+From: "Xiaogeng (Shawn) Jin" <xjin@redswitch.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-reply-to: <3DF75343.3060005@intracom.gr>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: usage of disarm_decr[]
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Lets assume that we force the memory returned by the xxx_cpm_hostalloc()
-> and xxx_cpm_dpalloc() routines to return contiguous memory both
-> virtually and physically. Is there any negative impact?
-> Every driver out there expects precisely that.
->
+disarm_decr[] is defined as an unsigned long array but never get
+initialized in arch/ppc/kernel/time.c.
 
-It will be interesting to see how you solve the virtual and physical
-contiguity in a general implementation. IMHO it isn't worth the effort.
+What's the purpose of using disarm_decr? I read the timer_interrupt()
+code and found the only place where it's referenced.
 
-> Regarding the dual-ported memory, keep in mind that there are members
-> of the 8xx family that are very constrained.
-> Better allocation routines will allow us to utilise even the gaps
-> left between configured parameter areas. Yes it is horrible
-> but that's the way that the hardware is designed.
+int timer_interrupt(struct pt_regs * regs)
+{
+...
+	if ( !disarm_decr[smp_processor_id()] )
+		set_dec(next_dec);
+	last_jiffy_stamp(cpu) = jiffy_stamp;
+...
+}
 
-Yes, we need every spare byte and sometime you MUST use certain memory
-regions based on hardware contraints.
+So in this case, the value of disarm_decr[] is always zero, right? Then
+the decrementer get set each time when the timer interrupt is invoked.
 
-Sorry for any confusion.
+--
+Shawn Jin
+RedSwitch Inc.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
