@@ -1,51 +1,85 @@
-Message-Id: <5.1.0.14.2.20030924133835.021bf780@falcon.si.com>
-Date: Wed, 24 Sep 2003 13:43:34 -0400
-To: linuxppc-embedded@lists.linuxppc.org
-From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
-Subject: Re: 64-bit Data Flash Access Problem [MPC8245]
-In-Reply-To: <0000C657.C22236@eudoramail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-ID: <D73A25AA6E54D511AD74009027B1110F3C0A51@ORION>
+From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+To: "'nebuphilips@eudoramail.com'" <nebuphilips@eudoramail.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: 64-bit Data Flash Access Problem [MPC8245]
+Date: Wed, 24 Sep 2003 14:03:26 -0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-32 bit reads should be easy: reading 32 bits should cause a 64 (full width)
-read since you only have one chip select and the processor will ignore the
-32 bits it doesn't want.  I'm confused when you say you have only one chip
-select but then say only 4 chips respond when you do a 32 bit read.  How do
-the other 4 chips know _not_ to respond?
+It sounded like the problem you were describing is caused by software
+floating points.  If the bus size is 64bit then you must write 64bit.
+Software floating points cheat this by doing two consecutive 32bit writes,
+the 8245 will not allow this.
 
-Writing is much more complicated.  If you have what you say you have, 64
-bit wide flash with no provisions for selecting upper/lower, you will need
-to do 64 bit write operations.  This requires a "trick": using a floating
-point store operation, which is a 64 bit write.  As an alternative, you can
-enable cache, do your write, and then flush the cache (also a 64 bit
-write), but that is much more complex because you have the cache as an
-intermediary between you and your flash and it will do things you didn't
-expect it to do :-(.
+-----Original Message-----
+From: Augustine Nebu Philips [mailto:nebuphilips@eudoramail.com]
+Sent: Wednesday, September 24, 2003 1:35 PM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: 64-bit Data Flash Access Problem [MPC8245]
 
-gvb
 
-At 12:04 PM 9/24/2003 -0400, nebuphilips@eudoramail.com wrote:
+
+Steve,
+ I tried to use fp assembly instructions (like lfd). But my assembler has
+problems and doesnt let me generate my binary. I'm sorry I couldnt properly
+get you... Should I make use of sw floating points..? That means, should I
+access 64-bit data only through 64-bit operations..?
+
+Thanks and Regards
+Nebu
+--------- Original Message ---------
+
+DATE: Wed, 24 Sep 2003 13:31:50
+From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+
+>Are you sure you are not using software floating points?
 >
->I have a set of 8 1GB data flash chips (Samsung) on an MPC8245 Ref.
->Board. These are on a 64-bit bus-mode.
+
+>Subject: 64-bit Data Flash Access Problem [MPC8245]
+>
+>
+>
+>Hi
+>I have a set of 8 1GB data flash chips (Samsung) on an MPC8245 Ref. Board.
+>These are on a 64-bit bus-mode.
 >
 >-------DBUS_SIZ[0-1]:DBUS_SIZ[2] = 110b -------
 >
->All 8 chips are selected by a single chip select (RCS1). Trying a
->32-bit read from the Data Address Location after giving the Command
->to Access the flash IDs, only 4 flashes on a common byte lane seem to
->be responding. 32-bit writes appear only on the DH[0-31] and not on
->DL[0-31].
+>All 8 chips are selected by a single chip select (RCS1). Trying a 32-bit
+>read from the Data Address Location after giving the Command to Access the
+>flash IDs, only 4 flashes on a common byte lane seem to be responding.
+>32-bit writes appear only on the DH[0-31] and not on DL[0-31].
 >
 >I am not very clear as to:
 >
 >(a) How do we perform writes to send out data out on
->     all 64-bits of the bus..?
->(b) How would we ideally access 64-bit data through 32-bit reads..?
+>    all 64-bits of the bus..?
+>(b) How would we ideally access 64-bit data through 32-    bit reads..?
 >(c) Or must we *have* 64- bit read/write
->     instructions..?
+>    instructions..?
+>
+>many thanks in advance for any response ..
+>
+>Regards
+>Nebu
+>
+>
+>Need a new email address that people can remember
+>Check out the new EudoraMail at
+>http://www.eudoramail.com
+>
+>
+
+
+
+Need a new email address that people can remember
+Check out the new EudoraMail at
+http://www.eudoramail.com
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
