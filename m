@@ -1,145 +1,42 @@
-Message-ID: <3D408FE4.2090602@dslextreme.com>
-Date: Thu, 25 Jul 2002 16:55:16 -0700
-From: akuster <akuster@dslextreme.com>
-Reply-To: akuster@dslextreme.com
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Arun Dharankar <ADharankar@ATTBI.Com>
+To: Mark Chambers <markc@mail.com>
+Subject: Re: console problem
+Date: Thu, 25 Jul 2002 21:00:58 -0400
+Cc: linuxppc-dev@lists.linuxppc.org
+References: <5.1.0.14.0.20020719083530.00a11d50@raven-villages.net> <5.1.0.14.0.20020723145817.00a8c120@pop1.mail.com>
+In-Reply-To: <5.1.0.14.0.20020723145817.00a8c120@pop1.mail.com>
 MIME-Version: 1.0
-To: akuster@dslextreme.com
-Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: [RFC/Patch] ppc4xx_pm.c
-References: <3D3DD903.3070300@dslextreme.com>
-Content-Type: multipart/mixed;
- boundary="------------020302010406050203000904"
+Message-Id: <200207252100.58092.ADharankar@ATTBI.Com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------020302010406050203000904
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Hi Mark,
 
-akuster wrote:
+When I use the BDI2000 to find out what the board is doing, I can
+see the place where the PPCBoot and Linux will hang.  As for debugging
+the problem, I mentioned my conclusion in reply to another post.
+
+Thanks for your followup!
+
+Best regards,
+-Arun.
+
+On Tuesday 23 July 2002 03:13 pm, Mark Chambers wrote:
+> Hi Arun,
 >
-> I am in the process of fixing the init of the pm for 4xx in ppc4xx_pm.c
-> so that it can be used and I and others have discussed having the
-> drivers enable/disable their own power managment bits at init & exit times.
+> I've got a question about your situation:  If you have no terminal attached
+> to your system, how do you know what Linux is doing?  Or to put it
+> conversely, how do you know that it's failing?  Are you sure the problem is
+> really related to removing the cable or do you change something else to run
+> without a terminal?
 >
-> So what I would like to do is have each core header define a default set
-> of what is required to be powered on and then have each driver enable
-> them selves.  These changes would be done in two stages
+> I have seen my code hang in the very same place - but it did it whether a
+> cable was attached or not, because the UART was not set up correctly.
 >
-> 1) fix ppc4xx_pm.c init and have the default pm bitmap set to all ocp
-> drivers on.
-
-These patches are the changes to the core header files and for ppc4xx_pm.c.
-
-  Please _note_ that if you enable the Power Managment in the config
-that most kernels might hang if you use an ocp device since the drivers
-are not updated yet. :)
-
-If no one has an objection, then I will get it submitted
-
-armin
-
-
-
-
---------------020302010406050203000904
-Content-Type: application/x-gunzip;
- name="pm_header_0724.patch.gz"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="pm_header_0724.patch.gz"
-
-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
---------------020302010406050203000904
-Content-Type: application/x-gunzip;
- name="ocp_pm_0724.patch.gz"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="ocp_pm_0724.patch.gz"
-
-H4sICFiOQD0CA29jcF9wbV8wNzI0LnBhdGNoAJVUbW/iRhD+jH/FNPlQcg7YEMjrXZTEJFHa
-AFbC9XpSJWuxB7wXe9dar4Gq7X/v7BrydrlIh3hZsTPPPDPzPN6GScpLoDeDC65/RyxQwRwF
-KqYxgYLpOIWZVKBTpN8sk0su5lAo+Q1jfexsQ1gfYcRyPIZbLqoVdNs9mxTKJaowgAQXmMki
-R6FBK0RKs3Uf4XOmDQkuNIqE6prk69HndUAs85yJBBaoSi4FwfeBAlI+T1G1X4JxEWdVguUr
-wglmmpXEtwFPryBlYo73qBuddsc/2gdonYI9HgBFMhWnXlHE3gMqgZk59larqMjbMSUcWYh1
-Ap2cbUvkeVFes3ga7GNBuJVzCm/9xIvC/a7nH3jdPjHLuTjDskTRzhe81KxNM6q7OKDAz2Xd
-84xVmYYiN0cuiJqSOU1TIaTIEiI04xmWlCDkEpY8y2h8XMMyRQElZrRW2gUXlCJm3BAejSeX
-x5DLUkOiuNkHpWpg0wxBSyiropCKdlwpYRhQ97kBWtA+pKB8XMVYaJBxEVWMAksJiRS/akBR
-Y9C4wiHIQps9P6/8c6NyEj6bQWukKmDeO3uE6Xu3DmG9n9+YpBX8VmXQ7UNn/7h3eLx3BF3f
-7zqu674P/uPUszNo9fq7++DSN2nr7MwB+GA+tOEe+Pte59Dzu9CCc6MDezHjK7i5CdbzAkFm
-dFxKcm1SH4xues+T3DrJeHzDKbLLp5XQtzma3S5toDEfy6GysmKPwrL2hiETbG6tPeU6Z4Xh
-4zngwPbai/AxM08Fr+bWTk9th51+f3dvD9xO/2i3e2ibvPwzHN9Novuvw4vxbdOIROGc1I0q
-qtW2c0Ko9ITgM8J3vQ/wxSh1aqgyEvVWZ8soSFgZzSmB9JPJ+IGMaNqAUsuioI7pWuHM2KBk
-C/s4s41sBmZdLKff1vIvjbKNokGSphiZpBIC45jsx9TfNqsuQyRoTilb1DreGKSWtpfw0vza
-cOsL6zKSeFViG+ALkaHngk2sx2sjed3MR2Pa03ZqDWsuPMd1YCF5ApFdm/NqjU1zt+PAP06r
-UYmSz4V1soYFyyqET+CfOG6D3rlOYtUcBHejKAiHV3e74JspO9Cg8T52XQliaXpTydJM2njd
-9FkPjti0tvmMeEMwHl3dXEc9v38dUum62r+fgLCjQRCeGNRAJhgyWovN26zTIMAv9YMqaa5x
-bi6G0TgIo+vwZrzzGs/8SW1sIFo/gOgGjzDng/PwOxiyjUV50cD95MLfW61WbwR3npV8v3QY
-BmYlg+H5d0XpvycYt1Eo2s1Dc4tIAqWs55obZ6G1Vi2i5C+xtXPy5tYGV7cT06cpGA7tCltv
-hFkS1kYv2j0Ph7Rx0s684JLUQaeN9ZrE9v7rfTS4/IO0sWuf3XQdkxGmtMTnlvzPcWs1msvm
-S0FS3P9OOpQMbQgAAA==
---------------020302010406050203000904--
+> Mark Chambers
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
