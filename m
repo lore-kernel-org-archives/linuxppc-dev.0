@@ -1,94 +1,45 @@
-Date: Thu, 6 Mar 2003 10:05:52 -0800
-From: curt brune <curt@acm.org>
-To: Wolfgang Denk <wd@denx.de>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ELDK and wireless LAN PCMCIA card
-Message-ID: <20030306100552.B28587@curtisb.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: mpc 8250 problem with 2.4.19 kernel
+Date: Thu, 6 Mar 2003 13:19:53 -0500
+Message-ID: <2702075D4DE2B043BF5EB82E9CFAD45B093BCB@mail1.mediatrix.com>
+From: "Jean-Denis Boyer" <jdboyer@mediatrix.com>
+To: "Wojciech Kromer" <krom@dgt-lab.com.pl>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang,
-
-It works, with 40-bit WEP!  It took a little longer than it should
-have though.  I was using iwconfig to the set the key like this:
-
-  iwconfig eth1 key s:secur
-
-"iwconfig eth1" showed that the key was set with the correct hex
-bytes, matching my access point.  At first, however, it did not work.
-After much head scratching, reading and experimenting I figured out
-that I also needed to do this:
-
-  iwconfig eth1 key on
-
-which enabled encryption.  After that it just worked.  I am a little
-disappointed (not with you) that "iwconfig eth1" does not show the
-state of "key on/off" -- if it did, it would have saved me a day of
-experimenting.  It's a poor interface that overloads the meaning the
-verb "key" to both set the keys and to enable encryption ... should have
-been a different verb all together.  OK, I'm done ranting.
-
-So the good news is it works on the 823e RPXLite board -- chalk up
-another supported board.
-
-Currently I am having one small problem with the hotplug, however.
-When I insert the card the cardmgr loads the appropriate modules and
-runs "./network start eth1", but nothing happens.  Currently I run a
-script I wrote by hand that calls "ifconfig eth1 ..." and a bunch of
-calls to "iwconfig ....".
-
-Isn't something supposed to call /etc/pcmcia/wireless (which sources
-/etc/pcmcia/wireless.opts) ? Where does that occur?
-
-looking at /etc/pcmcia/network I see the following comment for the
-"start" action:
-
-  #
-  # We don't do *anything* here. We get a hotplug event when the
-  # ethX device is registered, and we bring the device up there
-  #
-
-Do I need to put a script in /etc/sysconfig/network-scripts/ ?  As I
-am not a RedHat user I am not familiar with /etc/sysconfig/....
-
-Of course I can do something hack-ish like putting my hand-made script
-in /etc/pcmcia/network, but I would like to do it "the right way".
-
-Cheers,
-Curt
-
-
-On Mon, Mar 03, 2003 at 07:30:21PM +0100, Wolfgang Denk wrote:
-> Dear Curt,
+> Can anyone tell me the differences between 8250 and 8260.
+> I turned off any ATM/utopia of course.
 >
-> in message <20030303081702.A24793@curtisb.com> you wrote:
-> > Indeed.  Shortly after my previous email I figured this out.  It seems
-> > to be working now -- that is iwconfig shows the board and I can bring
-> > up eth1.  Once I set the ESSID correctly I could see good link
-> > quality and signal level from 'cat /proc/net/wireless'.
->
-> Congrats!
->
-> > My issue now is setting the WEP key correctly -- I'm sure after
-> > reading the iwconfig documentation carefully this should be easy.
-> >
-> > Thanks for all your help.  The suggestion about increasing the bus
-> > timeout value really got me over the hump.
->
-> You are welcome.
->
-> Best regards,
->
-> Wolfgang Denk
->
-> --
-> Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-> Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-> "Once they go up, who cares where  they  come  down?  That's  not  my
-> department."                                       - Werner von Braun
->
+> Anyone have expiriences with 8250 ?
+
+We have successfully booted 2.4.19 on 8250, 8255 and 8260.
+
+Note that the 8260 has an HIP3 core, while 8250 has an HIP4 (like the 8260A).
+So it has many bug fixes, a lower voltage (and higher speed), a PCI bus, and no UTOPIA.
+If you don't use the PCI bus, it should be disabled (/PCI_MODE driven high),
+or it will replace the local bus.
+
+Of course, we had to adjust the hardware configuration word and the MODCK[1-3] pins
+to support the higher speed of the HIP4.
+
+We had some communication problems with the BDI2000.
+At first, we tought it was related to the 8250 itself,
+but then we expected it might be a problem of cable length.
+We built a shorter cable (between the BDI2000 and the JTAG connector)
+and it completely fixed the problem.
+
+Regards,
+--------------------------------------------
+ Jean-Denis Boyer, B.Eng., Technical Leader
+ Mediatrix Telecom Inc.
+ 4229 Garlock Street
+ Sherbrooke (Québec)
+ J1L 2C8  CANADA
+ (819)829-8749 x241
+--------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
