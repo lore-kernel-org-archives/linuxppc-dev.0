@@ -1,67 +1,75 @@
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3AC49EC3.978D9A4A@snmc.com>
+Date: Fri, 30 Mar 2001 08:57:07 -0600
+From: Daris A Nevil <dnevil@snmc.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: Whate kind of kernel errors cause an Segmentation Fault
-Date: Fri, 30 Mar 2001 14:54:35 -0000
-Message-ID: <EADB10BAC266A14A85ECBF8686A73E3108B011@kolkrabbi.flaga.is>
-From: =?iso-8859-1?B?S+FyaSBEYXbt8HNzb24=?= <kd@flaga.is>
-To: <linuxppc-embedded@lists.linuxppc.org>
+To: ?????? <engineersong@hanmail.net>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: SCC3 console problem on MPC860
+References: <20010330095839.HM.30000000001Zxx8@www4.hanmail.net>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Well he asked what kind of kernel error causes segfault.
-If I am not wrong returning EFAULT, e.g. from driver causes
-the kernel to send signal 11 (SIGSEGV) to the application
-which has default signal handler that causes the application
-to crash.
+Daum,
 
-K.D.
+I had problems trying to get the uart.c driver to do what you wanted as
+well.  I don't think it was really meant to support both SCC and SMC at
+the same time.  I ended up splitting the driver into two different
+drivers, making one work just for the SCC, and the other only for the
+SMC.  This works quite well.
 
-> -----Original Message-----
-> From: Kenneth Johansson [mailto:kenneth.johansson@inn.ericsson.se]
-> Sent: 30. mars 2001 14:44
-> To: Kári Davíðsson
-> Cc: Embedded Linux list
-> Subject: Re: Whate kind of kernel errors cause an Segmentation Fault
+The code is in the QSLinux release, which you can download from
+ftp:://qslinux.org.  When you untar the kernel you can find the two
+drivers in the directory snmc/qslinux/kernel/drivers/char.
+
+Regards,
+Daris Nevil
+
+
+?????? wrote:
 >
+> Hi, all
+> I am not used to write in English.
 >
-> No segmentation fault is sent as signal 11 it's not a return value.
+> I would like to use SCC3 as second console, and use SMC1 as first console.
+> I ported denx kernel 2.4.3-pre4 into my 860 board.
+> when I compiling, checked SCC3 for UART option in MPC8xx CPM option.
+> SMC1(ttyS0) is connected to my linux box COM2, SCC3(ttyS1) is connected to COM1.
 >
-> Happens when the program uses memory it dose not own.
+> After booting, in COM2 echo 1111 > /dev/ttyS1 result is shown in SCC3(ttyS1).
+> so far good.
+> but, COM1 port don't any receive keyboard key.
 >
-> Kári Davíðsson wrote:
-> >
-> > EFAULT i believe
-> >
-> > check linux/include/asm/errno.h
-> >
-> > K.D.
-> >
-> > > -----Original Message-----
-> > > From: Ralph Blach [mailto:rcblach@raleigh.ibm.com]
-> > > Sent: 30. mars 2001 14:19
-> > > To: Embedded Linux list
-> > > Subject: Whate kind of kernel errors cause an Segmentation Fault
-> > >
-> > >
-> > > What kind of kernel return codes will cause the C library
-> to print out
-> > > the message
-> > >
-> > > "Segmentation Fault"
-> > >
-> > > Thanks
-> > >
-> > > Chip
-> > >
-> >
+> In /arch/ppc/uart.c
+> I modified CONFIG_SERIAL_CONSOLE_PORT for SCC3 console
 >
-> --
-> Kenneth Johansson
-> Ericsson Business Innovation AB   Tel: +46 8 404 71 83
-> Viderögatan 3                     Fax: +46 8 404 72 72
-> 164 80 Stockholm                  kenneth.johansson@inn.ericsson.se
+> #if 1
+> #undef CONFIG_SERIAL_CONSOLE_PORT
+> #define CONFIG_SERIAL_CONSOLE_PORT      1
+> #endif
 >
+> Is it enough to to make SCC3 console?
+>
+> Thanks for any comments and replyings.
+>
+> ==================================================
+> ¿ì¸® ÀÎÅÍ³Ý, Daum
+> Æò»ý ¾²´Â ¹«·á E-mail ÁÖ¼Ò ÇÑ¸ÞÀÏ³Ý
+> Áö±¸ÃÌ ÇÑ±Û °Ë»ö¼­ºñ½º Daum FIREBALL
+> http://www.daum.net
+>
+
+--
+Daris A Nevil
+Simple Network Magic Corporation
+401 Kentucky Lane
+McKinney, TX 75069
+214-793-7757
+dnevil@snmc.com
+www.snmc.com
+quickstack.com
+qslinux.org
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
