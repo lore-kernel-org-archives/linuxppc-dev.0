@@ -1,18 +1,20 @@
-Return-Path: <kumar.gala@freescale.com>
+Return-Path: <galak@freescale.com>
 Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 1FCBF67A78
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id F1E6E67A65
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 22 Mar 2005 02:30:12 +1100 (EST)
-In-Reply-To: <1111395923.14412.23.camel@felix.allot.com>
-References: <1111395923.14412.23.camel@felix.allot.com>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <fce4e1652b6f0eb3c1b3d28e4958c262@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Mon, 21 Mar 2005 09:30:10 -0600
-To: "Felix Radensky" <felix@allot.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: New PowerQUICC III support
+	Tue, 22 Mar 2005 02:39:38 +1100 (EST)
+Date: Mon, 21 Mar 2005 09:39:12 -0600 (CST)
+From: Kumar Gala <galak@freescale.com>
+To: Andrew Morton <akpm@osdl.org>
+In-Reply-To: <34e690a54bb55ad44bb2518e1d7bf4f3@freescale.com>
+Message-ID: <Pine.LNX.4.61.0503210937280.27668@blarg.somerset.sps.mot.com>
+References: <34e690a54bb55ad44bb2518e1d7bf4f3@freescale.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-kernel@vger.kernel.org,
+	Segher Boessenkool <segher@kernel.crashing.org>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: [PATCH] ppc32: typo fix in load/store string emulation
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,50 +25,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Felix,
+Andrew,
 
-The expectation is that the existing gianfar driver should work on 
-8548.  However until its tried out we will not know for sure.
+Patch fixes a typo in the emulation of load/store string emulations 
+pointed out by Segher Boessenkool.
 
-- kumar
 
-On Mar 21, 2005, at 3:05 AM, Felix Radensky wrote:
+Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 
->  Hi, Kumar
->
->  Thanks for answering. There isn't much info regarding new PQ3 chips on
->  Freescale site, so It's hard to tell how similar they are to 
-> 8540/8560.
->  I'm interested in basic support and Gigabit ethernet driver. Are you 
-> saying
->  that gianfar driver will work with new PQ3 chips ?
->
->  Thanks a lot.
->
->  Felix.
->
->  On Sun, 2005-03-20 at 12:43 -0600, Kumar Gala wrote:
->
->  Felix,
->
->  Is there something specific about the new PQ3 chips you are looking
->  for?  The basic support that is in the kernel for the existing PQ3 
-> line
->  (8540, 8541, 8555, 8560) should work on these devices w/o much change.
->
->  - kumar
->
->  On Mar 20, 2005, at 4:09 AM, Felix Radensky wrote:
->
->  >  Hi, folks
->  >
->  >  Are there any plans to support new PowerQUICC III models (e.g. 
-> 8543,
->  > 8548)
->  >  in the near future ? Is anyone working on it ?
->  >
->  >  TIA.
->  >
->  >  Felix. <ATT325611.txt>
->
->
+---
+diff -Nru a/arch/ppc/kernel/traps.c b/arch/ppc/kernel/traps.c
+--- a/arch/ppc/kernel/traps.c	2005-03-21 09:36:28 -06:00
++++ b/arch/ppc/kernel/traps.c	2005-03-21 09:36:28 -06:00
+@@ -412,7 +412,7 @@
+ 			return -EINVAL;
+ 
+ 	/* Early out if we are an invalid form of lswi */
+-	if ((instword & INST_STRING_MASK) == INST_LSWX)
++	if ((instword & INST_STRING_MASK) == INST_LSWI)
+ 		if ((rA >= rT) || (rT == rA))
+ 			return -EINVAL;
+ 
