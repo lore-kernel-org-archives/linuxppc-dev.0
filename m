@@ -1,24 +1,26 @@
-From: "Rob Taylor" <robt@flyingpig.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: kernel executing from flash
-Date: Mon, 27 Mar 2000 09:54:46 +0100
-Message-ID: <000001bf97ca$1a27d7f0$b400a8c0@eventhorizon>
+Message-ID: <38DF707F.DF49A490@raleigh.ibm.com>
+Date: Mon, 27 Mar 2000 09:30:23 -0500
+From: Ralph Blach <rcblach@raleigh.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;charset="iso-8859-1"
-In-reply-to: <200003241749.MAA00739@misery.wavemark.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: 405gc problem with shared libraries
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> For our (non-linux) embedded systems, if we're going to run from
-> flash, we store the executable in flash uncompressed.  Price is an
-> issue which favors RAM, but speed issues no longer favor RAM - the new
-> intel burst flash is faster than RAM in one of our systems.
+I am attempting to run the latest 405gc port and am getting error.
 
-isn't it only faster for burst reads tho? that sort of speed increase
-doesn't really help when running code..
+I boot up to sash, and then run the command ls
+everthing seems to run fine untill I get the message
 
-Rob
+./ls: error in loading shared libraries: libc.so.6: failed to map
+segment
+ from shared object: Error 19
 
+This message is from ld.so.1.  What is ld.so.1 trying to do?  Any
+suggestions.
+
+Chip
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
