@@ -1,40 +1,44 @@
-Date: Wed, 21 Nov 2001 17:03:23 +0000
-Subject: Re: dmasound
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: "J=?ISO-8859-1?B?9g==?=rn Nettingsmeier" <nettings@folkwang-hochschule.de>,
-	Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Ivo Kwee <ivo@idsia.ch>,
-	"Linux/PPC Development" <linuxppc-dev@lists.linuxppc.org>
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
-Message-Id: <20011121191905.6401DDBA53@atlas.valhalla.net>
+From: benh@kernel.crashing.org
+To: <linuxppc-dev@lists.linuxppc.org>,
+	"David N. Welton" <davidw@dedasys.com>
+Subject: Re: sleep: trackpad settings, screen blanking
+Date: Wed, 21 Nov 2001 19:23:24 +0100
+Message-Id: <20011121182324.24462@mailhost.mipsys.com>
+In-Reply-To: <87n11g888h.fsf@dedasys.com>
+References: <87n11g888h.fsf@dedasys.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Jorn Wrote:
-> Geert Uytterhoeven wrote:
->>
->>         Hoi Ivo,
->>
->> > Ik weet niet of je nog aan de dma_sound driver werkt, maar ik zag je
->> > naam als laatste. Ik ben een beetje aan het prutsen met /dev/dsp op een
->>
->> Dat is lang geleden...
->>
->> Iain Sandoe werkt er momenteel het hardste aan, geloof ik. Maar zijn adres
-heb
->> ik hier niet.
 >
-> his address and a link to his linuxppc-sound page is here:
+>It's the "stable" kernel from the ftp site.
+
+Hrm... which ftp site ?
+
+>> >2) Trackpad settings aren't restored (or saved beforehand?) after
+>> >   sleep.  Same questions apply.
 >
-> http://www.linuxdj.com/audio/lad/resourcesmembers.php3#sandoe
+>> That's normal for now.
+>
+>I see... is anyone working on it? "KOBAYASHI R. Taizo" sent me a patch
+>that he says does it...  I suppose I don't have the time in any case
+>(nor much knowledge).
 
-sorry ... not very active at the moment .. work does not permit.
-will be back when the schedule gets less hectic.
+There was some code to do that in pmud afaik, but I think it was
+broken in subtle ways and got disabled. Just run the trackpad tool
+again from your /etc/pwrctl script.
 
-will try to answer questions tho ..
-ciao,
-Iain.
+For 2.5, I'm thinking about doing a /proc/bus/adb, with all the
+available config infos (Fn key behaviour, trackpad setting, maybe
+other things on non-Apple devices like HW button mapping on some
+third party mice when we know how to do it).
+
+At this point, I expect those infos to be backed up accross ADB
+resets.
+
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
