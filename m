@@ -1,10 +1,11 @@
-Date: Sun, 8 Aug 1999 22:52:58 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+Date: Sun, 8 Aug 1999 16:55:01 -0400 (EDT)
+From: Tom Rini <trini@disparity.net>
 To: Michel Lanners <mlan@cpu.lu>
-cc: bh40@calva.net, linuxppc-dev@lists.linuxppc.org, mj@ucw.cz
+cc: hedrick@Astro.Dyer.Vanderbilt.Edu, drow@false.org, mj@ucw.cz,
+        Paul.Mackerras@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org
 Subject: Re: Trying a Promise Ultra/66 on powerpc
-In-Reply-To: <199908082000.WAA02943@piglet.cpu.lu>
-Message-ID: <Pine.LNX.4.10.9908082252170.23564-100000@mercator.cs.kuleuven.ac.be>
+In-Reply-To: <199908081954.VAA02923@piglet.cpu.lu>
+Message-ID: <Pine.BSF.3.96.990808165209.16262c-100000@silver.teardrop.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
@@ -12,42 +13,26 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 On Sun, 8 Aug 1999, Michel Lanners wrote:
-> On  29 Jul, this message from Benjamin Herrenschmidt echoed through cyberspace:
-> > On Wed, Jul 28, 1999, Michel Lanners <mlan@cpu.lu> wrote:
-> > 
-> >>It seems that OpenFirmware is not doing its job well in initializing all
-> >>PCI devices.For the planb driver, which uses an onboard PCI device
-> >>(video input) known to OF (i.e Apple device), I need to set
-> >>PCI_COMMAND_MEMORY | PCI_COMMAND_MASTER | PCI_COMMAND_INVALIDATE. Or is
-> >>it just a problem with IO space enabling, and memory is already
-> >>switched on by OF?
-> > 
-> > OF will not enable memory space if there's no OF boot code on the board.
-> > I beleive it doesn the same with IO space (but I didn't check). The lack
-> > of PCI_COMMAND_INVALIDATE can be considered as an OF bug if the card
-> > already has PCI_COMMAND_MASTER set as a default. I think the kernel
-> > should add this to all devices at fixup time. (It should be harmless for
-> > non-master devices anyway).
-> 
-> Right, according to 'Designing PCI cards and Drivers..', OF never
-> enables neither memory space, nor IO space, neither ROM. It should,
-> however, set both PCI_COMMAND_MASTER and PCI_COMMAND_INVALIDATE. I
-> didn't chek, though...
-> 
-> I'm getting a patch ready that fixes this on the PMac plkatform. Geert,
-> how about OF in your CHRP box? Does it need the enable fix as well?
 
-Yep, my OF neither enables memory spaces on devices it doesn't have a driver
-for. It even doesn't allocate space to them.
+> This fact was already catered for with the definition of outb/inb and
+> friends, which get an offset added to the port. Unfortunately, the
+> PowerMac IDE code undoes this and replaces it with a different
+> mechanism, which in essence removes the offset. Grrr..
+>
+> I've solved the problem by adding the right offset directly to the
+> io-port values as found in the kernel's PCI structures. I think this
+> needs more serious rework, though. Paul, are you the author of the
+> PowerMac IDE stuff? So we can work this out... 
 
-Greetings,
+Would this be one of the things solved/cleaned up by seperating ide-pmac.c
+and the CONFIG option for it into generic enable IDE stuff and a driver
+for the builtin IDE on some machines?  Last I tried, I needed to enable
+both cmd646 and ide-pmac on myy blue&white (trying to do this is on my
+todo list, someplace.. :))
 
-						Geert
-
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
+---
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
