@@ -1,28 +1,36 @@
-Message-ID: <003301c34473$0f88d7a0$020120b0@jockeXP>
-From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
-To: "J?rn Engel" <joern@wohnheim.fh-wedel.de>,
-	"Paul Mackerras" <paulus@samba.org>
-Cc: "Linuxppc-Dev@Lists. Linuxppc. Org" <linuxppc-dev@lists.linuxppc.org>
-References: <16133.19178.764449.966821@cargo.ozlabs.ibm.com> <IGEFJKJNHJDCBKALBJLLOEPGFNAA.joakim.tjernlund@lumentis.se> <16134.4102.899233.25492@cargo.ozlabs.ibm.com> <20030705072119.GA32363@wohnheim.fh-wedel.de> <16134.52251.943207.814024@cargo.ozlabs.ibm.com> <20030705170145.GA29928@wohnheim.fh-wedel.de>
-Subject: Re: memmove broken
-Date: Mon, 7 Jul 2003 12:32:21 +0200
+From: Atro Tossavainen <atossava@cc.helsinki.fi>
+Message-Id: <200307071146.h67BkHj02191@kruuna.Helsinki.FI>
+Subject: Kernel 2.4.21-ben2 does not boot on Rev 1 Xserve
+To: linuxppc-dev@lists.linuxppc.org
+Date: Mon, 7 Jul 2003 14:46:17 +0300 (EEST)
+Reply-To: Atro.Tossavainen@Helsinki.FI
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > You are proposing to replace simple, working code with considerably
-> > more complex code.  You need to be able to point to a specific real
-> > situation where your change makes a significant difference if you want
-> > to get it accepted.
->
-> Agreed.  And even then, I don't want to submit it before 2.7.
+Hello,
 
-Why? Just look at 2.4 and you will find much boulder stuff going
-in there than this.
+I tried to upgrade the kernel on our Xserve to 2.4.21-ben2 which I just
+downloaded from source.mvista.com with rsync.
 
-  Jocke
+The bootup messages scroll by quite quickly, but if I'm not mistaken,
+the IDE driver announced the following:
+
+PDC20270: neither IDE port enabled (BIOS)
+
+and fails to boot because it can't see the disks.
+
+The computer works fine with 2.4.20-ben1, which I seem to have installed
+on February 18 this year.
+
+--
+Atro Tossavainen (Mr.)               / The Institute of Biotechnology at
+Systems Analyst, Techno-Amish &     / the University of Helsinki, Finland,
++358-9-19158939  UNIX Dinosaur     / employs me, but my opinions are my own.
+< URL : http : / / www . helsinki . fi / %7E atossava / >
+
+File attachments NOT welcome unless agreed to beforehand.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
