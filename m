@@ -1,61 +1,54 @@
-Message-ID: <3D64DA41.3000104@cambridgebroadband.com>
-Date: Thu, 22 Aug 2002 13:34:09 +0100
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
+Message-ID: <E1836A7F3557D311A14000805F9F36FC0141C856@usdfo011.usac.danfoss.net>
+From: Hihn Jason <JasonHihn@DANFOSS.com>
+To: "'John.Fisher@nec.com.au'" <John.Fisher@nec.com.au>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: cygwin and embedded linux
+Date: Thu, 22 Aug 2002 15:06:06 +0200
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org,
-	Magnus Damm <damm@opensource.se>
-Subject: PCMCIA on an MPC860
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-All,
+Why not just set up ONE Linux computer and have people login to it?
+Use SAMBA to map drives off the Linux box if you want to use your
+proprietary IDEs
+-or- use Cygwin Xfree86 (or a proprietary product, i.e. eXceed) to run an X
+server and run KDevelop (or whatever off the Linux box with display to your
+local windows PC)
 
-Has anybody had any luck getting PCMCIA to work on an MPC860?
+With Linux and Unix-based tools and technologies, the possible developmental
+infrastructure configurations are endless!
 
-I have a custom MPC860 board, with a single PCMCIA socket connected to Slot B.  This is what I have
-so far done:
-
-1.
-Downloaded pcmcia-cs-3.2.0.tar.gz
-2.
-Added board specific definitions in modules/m8xx_pcmcia.c for
-		hardware_enable()
-		hardware_disable()
-		voltage_set()
-		socket_get()
-3.
-Cross compiled for the 8xx.
-4.
-In my kernel (linux-2.4.4-2001-11-24 from Denx) I added the following lines
-		include/asm-ppc/<board>.h:
-			/* define IO_BASE for pcmcia */
-			#define _IO_BASE 0x80000000
-			#define _IO_BASE_SIZE (1024*64)
-		arch/ppc/mm/init.c:
-			void __init MMU_init(void) {
-			...
-			ioremap(_IO_BASE,_IO_BASE_SIZE);
+-Jason Hihn
+I reserve the right to be wrong.
 
 
-	...as suggested by Magnus Damm in
-	http://lists.linuxppc.org/linuxppc-embedded/200005/msg00227.html
+
+-----Original Message-----
+From: John Fisher [mailto:John.Fisher@nec.com.au]
+Sent: Wednesday, August 21, 2002 9:15 PM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: cygwin and embedded linux
 
 
-HOWEVER,
 
-5. 	When I boot my board with a Flash card in the PCMCIA slot, and I run:
-	/etc/rc.d/rc.pcmcia start
-	I find that ide_cs.o causes an Oops when it calls ide_register().  "cardctl status"
-	and "cardctl ident" work though.
+> Actually, my personal opinion on that matter is that I'm not very fond
+> of using Windows for a Linux kernel development platform. Doing --
 
+So what are the issues: How is cygwin significantly different from Linux
+that you would not want to use it?
+Are there useful tools that run under Linux but not under cygwin?
 
-Can anybody suggest what I'm doing wrong?
+The reason I ask is that my organization currently does its software
+development under windows using proprietary tools. We have to maintain our
+existing products using these tools. We are however contemplating new
+development using linux. If we have to dual boot our PCs or have an extra PC
+running Linux for each developer, that is going to bring its own set of
+nuisances and problems.
 
-Thanks in advance,
-
-Alex
+Are there others in this situation and how have they chosen to solve it?
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
