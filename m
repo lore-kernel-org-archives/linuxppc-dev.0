@@ -1,71 +1,60 @@
-From: Paul Ruhland <pruhland@rochester.rr.com>
-To: nbasker@india.tejasnetworks.com
-Subject: Re: problems in SCC-UART in mpc860
-Date: Tue, 1 Jul 2003 22:48:13 -0400
-References: <1057070760.3f019ea838280@pop-mail.india.tejasnetworks.com>
-In-Reply-To: <1057070760.3f019ea838280@pop-mail.india.tejasnetworks.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
+From: deepesh@india.tejasnetworks.com
+Date: Wed, 2 Jul 2003 15:16:15 +0530 (IST)
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Problems in booting kernel.
+In-Reply-To: <1057136387.3f029f034f3a1@pop-mail.india.tejasnetworks.com>
+Message-ID: <Pine.LNX.4.21.0307021435460.7865-100000@deepesh.india.tejasnetworks.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200307012248.13130.pruhland@rochester.rr.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-You stated you have the SCC UART CD enabled so this may be your initial
-problem.
+Hi,
 
-With CD enabled, SCC UART will not receive unless CD is asserted.  Typically,
-a modem will not assert CD until it is connected and gets an aswer tone.
-Therefore, you will not be able to communicate with the modem to configure it
-and tell it to dial.
+ I am having an EP8260 board. And I got a zImage binary from TimeSys
+linux(2.4.7). The board comes with a bootloader and diagnostics.
 
-Try enabling RTS and CTS but not CD.  This may get you farther along.
+ The TimeSys linux gives me a binary called
+zImage.initrd.bin-2.4.7-timesys-3.1.180-ep8260.
 
 
-On Tuesday 01 July 2003 10:46 am, nbasker@india.tejasnetworks.com wrote:
-> Hi:
->
-> I am trying to use a SCC configured in UART to communicate with a intel
-> pc via modem. The configuration is simple and shown below
->
-> target --- modem -------phoneline---- modem----i386pc
->
-> target configuration:
-> 1. mpc860T custom board
-> 2. scc2 configured in uart
-> 3. linux-2-2-14 from montavista
-> 4. patched 8xx_io/uart.c from 2.2.4 kernel from Denks
-> 5. using mgetty/pppd to program modem and start pppd.
->
-> host configuration:
-> 1. i368pc running 2.2.14-12 redhat kernel
-> 2. using pppd/chat to dialup to target modem.
->
-> In this setup if use PCSO to enable RTS, CTS and CD along with
-> crtscts option in pppd nothing works. If I disable PCSO and use
-> nocrtscts option in pppd, LCP connection goes through but IPCP
-> exchange at target fails (it never sends ConfigAck packet towards host).
->
-> I am able to get the setup working using null modem cable enabling
-> RTS/CTS/CD via PCSO register as well as pppd options.
->
-> Since I am able to get SCC2/UART working with nullmodem, but not
-> with actual modem, should I suspect hardware signal connectivity as
-> a problem source?. I suspected the uart driver and went through
-> all the register settings described in Section 23.21 of 860T user
-> manual and everything seems to be fine.
->
-> Any hint or help on this issue will be greatly appreciated.
->
-> Thanks for your time,
-> Nicholas.
->
-> -------------------------------------------------
-> This mail sent through Tejasnetworks Webclient
->
->
+ I am trying to boot the kernel using the bootloader given by the
+PlanetCore guys. The kernel was the one which I got from TimeSys. But this
+kernel doesn't come up(It hangs).
 
+
+Then I tried modifying a few lines of
+assembly code(arch/ppc/boot/mbx/head_8260.S) to find the problem. The
+board always goes for a reset when I run my code. I get the initial prints
+regarding the
+
+loaded at:     00800000 0080C27C
+relocated to:  00400000 0040C27C
+board data at: F0003000 F0003034
+relocated to:  0040C148 0040C17C
+zimage at:     0080C27C 008C6253
+avail ram:     008C7000 04000000
+
+And then the "Uncompress kernel"and "Now booting kernel" prints are seen
+and then the board goes for a reset.
+
+ The embed_config, decompress_kernel functions are run correctly. I could
+come to this conclusion from the dump of the first few bytes of
+memory. These were exactly identical to the "disassembled code of
+vmlinux".
+
+The head_8260.S is followed by the head.S code in arch/ppc/kernel. What I
+found is that I am able to jump to the diagnostics of the PlanetCore just
+before entering the "_start" of arch/ppc/kernel. But I am not able to jump
+to the diagnostics just after entering the "_start" of the kernel head.S.
+
+How do I debug this problem, I know that the first few bytes of SDRAM are
+exactly what was expected. These values I dumped. Then what is the problem
+in jumping to that location. With my binary, the board goes for a reset.
+
+Please help.
+
+D.Deepesh
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
