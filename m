@@ -1,87 +1,42 @@
-From: Graf Alex <alex.graf@siemens.com>
-To: "'lihong wei'" <lihongwlh@yahoo.com>,
-	ppclinux <linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <791B3205DB661A42B4BFE5464A7D1D0204B36D86@chzugexch01.abatos.com>
-Subject: AW: Serial console failure on DENX Linux on MPC850 board
-Date: Fri, 19 Dec 2003 09:45:26 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Fri, 19 Dec 2003 16:31:00 +0100
+From: Wouter Cloetens <wouter@mind.be>
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: v2p@mind.be
+Subject: Re: [PATCH] Insight Memec Virtex-II Pro Development Board support
+Message-ID: <20031219153100.GA15181@roadkill.intern.mind.be>
+References: <20031212215601.GH3935@roadkill.intern.mind.be>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20031212215601.GH3935@roadkill.intern.mind.be>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Do you use SCC1 / SMCx for UARTs? This gives an offset! --> ttyS1, ...
+On Fri, Dec 12, 2003 at 10:56:01PM +0100, Wouter Cloetens wrote:
+> Mind is making available a set of Linux kernel patches adding support for the Insight
+> Memec Virtex-II Pro Development Board using Memec's reference design for Linux on
+> ftp://ftp.mind.be/Virtex2Pro/patch-v2.4.23_linuxppc_2_4_devel/.
 
-cheers
+[...]
 
-Alex
+> The patches should be applied in the following order:
+>  ftp://ftp.mind.be/Virtex2Pro/patch-v2.4.23_linuxppc_2_4_devel/patch-platform-insightv2pro
+>    board-specific platform support
+>    patch for the 405D5X[12] CPU_212 bug (see http://support.xilinx.com/xlnx/xil_ans_display.jsp?iLanguageID=1&iCountryID=1&getPagePath=14052)
 
------Ursprüngliche Nachricht-----
-Von: lihong wei [mailto:lihongwlh@yahoo.com]
-Gesendet: Donnerstag, 18. Dezember 2003 19:09
-An: ppclinux
-Betreff: Serial console failure on DENX Linux on MPC850 board
+I've updated this file and patch-defconfig because:
+- It's not actually the CPU_212 erratum, but the solution 12 one below.
+  I got confused by the layout. I've renamed the config option
+  accordingly.
+- The problem is apparently only present on a small subset of
+  early-release Virtex-II Pros. So I've made the option configurable,
+  and disabled by default, instead of always enabling it for the
+  Memec board.
 
+Sorry about that. I should've read the '4xx Ports' thread on this list
+a few weeks ago that discussed the issue.
 
-
-Hi all,
-
-I am porting latest version  Denx linux
-linuxppc_2_4_devel kernel and U-boot 3.0 to our MPC850
- board. I also used SELF to generate the ext2 file
-system. I am using the TQM850L configuration
- on my board, and configured the SCC2 as serial
-console(because the hardware designed like this).
-  After the kernel started the /sbin/init, which is
-the last step of booting, the console stop
-   response. I have studied several discussion groups
-and did the following changes, but it still
-    doesn't work:
-
-1. set boot command line in u-boot like this:
-    setenv bootargs console=ttyS0,115200 root=/dev/ram
-rw
-
-2. when creating root file system in SELF, under /dev
-directory, create devices with
-ELDK_MAKEDEV, ELDK_FIXOWNER, and then delete
-/dev/console, then link ttyS0 to /dev/console,
-(this is from some discussion group).
-
-3. in /etc/inittab, added:
-ttyS0::respawn:-/bin/sh
-
-4. The SELF used busybox-0.51, and I also tried
-busybox-0.61.1, there's no difference.
- I also tried  modifying the init_main() in
-busybox../init.c, and foreced the console_init()
-  routine to open("/dev/console"...) instead of using
-the parameters passed from kernel.
-Because after kernel started run /sbin/init, I can not
-trace the code, neither can I post
-debugging info from serail console, I can only tell
-the difference from the behavior of the
- last few lines of console output. It seems that the
-init routine can open the console device.
-  and the serial IOCTL in console_init() can also
-detect the device. but there's still no
-  output on the screen.
-
-I also tried to use the files system coming with ELDK
-distribution, but it's too big (1.5M)
- and my system has only 2M flash, including u-boot,
-and kernel. I tried to make a smaller
- image to cut everything except files like /bin/bash,
-/dev/console, /sbin/init. and somehow
-  it's still 1M. and system doesn't work either.
-
-I am stuck here and any response will be cordially
-appreciated!
-
-Best Regards,
-
-Vincent
-
+--
+There are 10 types of people in the world: Those who understand binary, and those who don't.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
