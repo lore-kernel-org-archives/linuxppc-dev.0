@@ -1,97 +1,55 @@
-Message-ID: <40CDB84A.7010906@intracom.gr>
-Date: Mon, 14 Jun 2004 17:38:02 +0300
-From: Pantelis Antoniou <panto@intracom.gr>
-MIME-Version: 1.0
+Subject: Re: [PATCH][RFC] OCP support for MPC107 and relatives
+From: Adrian Cox <adrian@humboldt.co.uk>
 To: Kumar Gala <kumar.gala@freescale.com>
-Cc: Adrian Cox <adrian@humboldt.co.uk>, Matt Porter <porter@cox.net>,
-	"Kumar K. Gala" <kumar.gala@motorola.com>,
-	Stefan Nickl <Stefan.Nickl@kontron.com>,
-	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>,
-	David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH][RFC] I2C support for MPC107 and relatives
-References: <1087207803.7360.83.camel@newt> <1087208600.7360.102.camel@newt> <1087210866.18442.5.camel@lucy.pep-kaufbeuren.de> <1087213025.7360.181.camel@newt> <1087218066.18446.11.camel@lucy.pep-kaufbeuren.de> <1087219489.7360.278.camel@newt> <36790086-BE08-11D8-8344-000393DBC2E8@freescale.com>
-In-Reply-To: <36790086-BE08-11D8-8344-000393DBC2E8@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <FF1E1EF0-BE0A-11D8-91C4-000393DBC2E8@freescale.com>
+References: <1087207803.7360.83.camel@newt>
+	 <FF1E1EF0-BE0A-11D8-91C4-000393DBC2E8@freescale.com>
+Content-Type: text/plain
+Message-Id: <1087224423.7360.323.camel@newt>
+Mime-Version: 1.0
+Date: Mon, 14 Jun 2004 15:47:04 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Kumar Gala wrote:
+On Mon, 2004-06-14 at 14:59, Kumar Gala wrote:
+> Is there a reason why we dont support the 106 as well for OCP?  Do you
+> know if this will match for the 8241 and/or 824x?
 
->
-> Adrian,
->
-> It would be really helpful if you could take a look at getting the
-> driver working on a MPC107 based systems.  We have not had time to look
-> at that fully.  However, are intent has always to get the same driver
-> working for MPC10x, 824x, 85xx systems since the block is very similar.
->
-> - kumar
->
-> On Jun 14, 2004, at 8:24 AM, Adrian Cox wrote:
->
->> On Mon, 2004-06-14 at 14:01, Stefan Nickl wrote:
->>
->>> On Mon, 2004-06-14 at 13:37, Adrian Cox wrote:
->>>
->>>> On Mon, 2004-06-14 at 12:01, Stefan Nickl wrote:
->>>>
->>>>> FYI: The Motorola folks recently pushed a I2C driver called
->>>>> i2c-mpc.c
->>>>> into the 2.4 tree, it seems to be fully OCP'ed, save it seems the
->>>>> platform hooks are only present for 8540 yet.
->>>>
->>>>
->>>> Do you know which 2.4 tree? It's not in linuxppc_2_4_devel or in the
->>>> main 2.4 kernel. If their driver works with my OCP patch, it would
->>>> save
->>>> a whole lot of effort.
->>>
->>>
->>> Sorry, I was talking about
->>> bk://ppc.bkbits.net/linuxppc-2.4
->>
->>
->> It does similar things to mine, but it can support the controller on 8
->> as well as 32 bit busses.  I may try putting it into my 2.6 tree and
->> using it on the MPC107.
->>
->> - Adrian Cox
->> Humboldt Solutions Ltd.
->
->
->
->
->
->
-I'm thinking about taking the plunge and OCPfying 8xx so perhaps we
-can get this thing organized.
+According to my 106 user manual it's a pure northbridge, without I2C
+unit, DMA, or interrupt controller. The code should work for the 824x
+family, but I don't have any of them.
 
-I'd like to have a hierarhy of the peripherals like so:
+> > -	if (host_bridge != MPC10X_BRIDGE_106) {
+> > +	if (host_bridge == MPC10X_BRIDGE_106) {
+> > +		/* On-chip peripherals were introduced with the MPC107/MPC8240 */
+> > +		core_ocp[0].vendor = OCP_VENDOR_INVALID;
+> > +	} else {
+> >  		early_read_config_byte(hose,
+> >  				       0,
+> >  				       PCI_DEVFN(0,0),
+>
+> My only other comments relate to consistency with how we are doing
+> things for 85xx with regards to OCP.  For example, how the config
+> options are handled (added a FSL_OCP) and how we update the paddr field
+> based on eumbar.  Also, I believe we have an ocp interface to delete an
+> OCP entry [which may or may not apply].
 
+I've just done a bk pull which has fetched your 85xx ocp code. I can
+copy your config approach and make MPC10X_BRIDGE set FSL_OCP.
 
-                  ______- CPM -______  ___________  ___
-                 /        /          \            \     \
-                /        /            \            \     \
-            Timers     SCC1..n _       SMC__      IDMA   DSP-f  etc.
-                      /  |  \   \      |    \
-                     /   |   \   \      \    \
-                 UART  HDLC Enet QMC     UART Transp.
-                                 /   \
-                         HDLC0..63  Transp0..63
+As for the updates based on EUMBAR, we do them at the same time. I've
+done them in syslib code rather than platform code, because I'm trying
+to minimise the board specific code. My goal is for the platform
+directory to contain the minimum amount of code necessary to describe
+how the board vendor connected the chip. I have the added complication
+that the board vendor may not have wired the MPC107 OpenPIC to the IRQ
+line of the PowerPC. With the 824x and 85xx they don't have the ability
+to make that mistake.
 
-Of course with only one protocol active per SCC/SMC.
-
-Is something like this supported with the OCP code, and if not
-how could I get around in making it work?
-
-IMO, we could share alot of the stuff between the CPM1/CPM2/CPM3...
-
-Regards
-
-Pantelis
-
-P.S. I suck at ASCII art
+- Adrian Cox
+Humboldt Solutions Ltd
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
