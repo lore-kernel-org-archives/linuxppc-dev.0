@@ -1,47 +1,55 @@
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Steven Scholz <steven.scholz@imc-berlin.de>,
-	LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: board specific defines in commproc.h !?!? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 17 Jun 2002 14:43:39 PDT."
-             <20020617214339.GZ13541@opus.bloom.county>
-Date: Tue, 18 Jun 2002 00:28:07 +0200
-Message-Id: <20020617222812.3CCC0102FB@denx.denx.de>
+Message-ID: <000c01c2167c$162a4560$7301a8c0@zhongqx>
+From: "zhongqx" <zhongqx@guoguang.com.cn>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Uart problem of Linux 2.4.18
+Date: Tue, 18 Jun 2002 11:56:09 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="gb2312"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Tom,
-
-in message <20020617214339.GZ13541@opus.bloom.county> you wrote:
->
-> likely) for 2.4 and 2.5.  And yes, an untested/lightly tested 2.5 patch
-> is perfectly acceptible.  2.5 itself is only lightly tested (or not
-> tested at all for some cases).
-
-But don't you see  the  problem?  Exactly  this  is  what  makes  2.5
-unusable: it's a collection of lightly or not tested patches.
-
-> I'm asking you (and everyone else) to submit new work for the community
-> vs 2.5 before you submit it for 2.4.  This has the bonus that the next
-> stable release will have all of your fixes in it already and you won't
-
-I don't see any bonus, but I do see  additional  (and  most  probably
-wasted) efford.
+Hi,everyone,
+     I want to run linux in my fads860T board.but i find when concole printf
+"CPM UART version 3.00" then it stop it ,it seems the system dead!
+ I use linux version is 2.4.18.Console is SMC2,disable copy back mode,
+ Can you give me some advice? thank you in advance!
 
 
-Tom, let's stop here. I understand _what_ you say, and even parts  of
-the _why_, but it's not practical to me.
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-After a time, you may find that "having" is not so pleasing a thing,
-after all, as "wanting."  It is not logical, but it is often true.
-	-- Spock, "Amok Time", stardate 3372.7
+=>bootm 500000
+## Booting image at 00500000 ...
+   Image Name:   2.4.4.
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    654829 Bytes = 639 kB = 0 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+Linux version 2.4.19-pre10 (root@gaof.guoguang.com.cn) (gcc version 2.95.2 19991
+024 (release)) #1 Fri Jun 14 16:45:56 CST 2002
+On node 0 totalpages: 2048
+zone(0): 2048 pages.
+zone(1): 0 pages.
+zone(2): 0 pages.
+Kernel command line:
+Decrementer Frequency = 180000000/60
+Calibrating delay loop... 47.82 BogoMIPS
+Memory: 6456k available (1200k kernel code, 380k data, 48k init, 0k highmem)
+Dentry cache hash table entries: 1024 (order: 1, 8192 bytes)
+Inode cache hash table entries: 512 (order: 0, 4096 bytes)
+Mount-cache hash table entries: 512 (order: 0, 4096 bytes)
+Buffer-cache hash table entries: 1024 (order: 0, 4096 bytes)
+Page-cache hash table entries: 2048 (order: 1, 8192 bytes)
+POSIX conformance testing by UNIFIX
+Linux NET4.0 for Linux 2.4
+Based upon Swansea University Computer Society NET3.039
+Initializing RT netlink socket
+Starting kswapd
+devfs: v1.12a (20020514) Richard Gooch (rgooch@atnf.csiro.au)
+devfs: boot_options: 0x0
+Installing knfsd (copyright (C) 1996 okir@monad.swb.de).
+CPM
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
