@@ -1,47 +1,49 @@
-Date: Sun, 9 Jul 2000 07:15:07 +1200
-From: Gwyn Judd <b.judd@xtra.co.nz>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-Cc: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: X still locks up
-Message-ID: <20000709071507.B879@thislove.dyndns.org>
-References: <20000707142631.B804@thislove.dyndns.org> <20000707105332.11070@mailhost.mipsys.com>
-Mime-Version: 1.0
+Message-ID: <39679C6C.CC794B77@denise.shiny.it>
+Date: Sat, 08 Jul 2000 17:26:04 -0400
+From: Giuliano Pochini <pochini@denise.shiny.it>
+MIME-Version: 1.0
+To: Nelson Abramson <pogtal@erols.com>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: bG3+damaged CD=crash
+References: <XFMail.000706092421.pochini@shiny.it> <396499F3.491EA41@erols.com>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20000707105332.11070@mailhost.mipsys.com>; from bh40@calva.net on Fri, Jul 07, 2000 at 12:53:32PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Jul 07, 2000 at 12:53:32PM +0200, Benjamin Herrenschmidt wrote:
-> >1) I tried installing the Xpmac.rev10 server that someone recommened in
-> >the hope that that would fix the problem. Unfortunately it didn't as
-> >five minutes ago the system locked up yet again. This seems to suggest
-> >it may be kernel related rather than X related.
-> >
-> >2) I recompiled my kernel wth the "Magic Sysrq" support in it. This
-> >seems to work more or less as designed. However when the system locked
-> >up as before the "magic sysrq" key did not work at all meaning I had to
-> >reboot without being able to shut down properly. This suggests to me
-> >that the kernel had itself crashed.
-> >
-> >3) When I rebooted there was no kernel panic in the logs. This has me
-> >puzzled. I suppose it could have crashed and not had it written out to
-> >disk in time. On the otherhand this has happened before and each time
-> >there is no panic.
+> > My blue-G3 hangs completely when I try to read a CDROM with some
+> > errors. The whole system freezes and the only cure is reboot (no
+> > logs, no errors, no panics, no oops). My older 7300 simply told
+> > it couldn't read the disk. Is it a known bug ?
 >
-> Can you give a try to my current rsync tree (linuxcare.com.au::linux-
-> pmac-benh) and tell me if it helps ?
+> Maybe it's a bad CD?
 
-Okay I got that kernel working but it crashed overnight :(. Seems like
-the problem is still there. It seems to happen most often when I'm
-listening to streaming mp3's (ie. internet radio stations or the like)
-if that helps.
+Yes, it IS bad.
 
---
-Gwyn Judd (b.judd@xtra.co.nz)
-A citizen of America will cross the ocean to fight for democracy, but
-won't cross the street to vote in a national election.
+> Chances are if it crashes one machine and another
+> won't read it, that the CD-ROM itself is bad, not the reader....
+> If you
+> purchased the CD (as opposed to burning it yourself), get in contact with
+> the LinuxPPC people and ask for an exchange...
 
-		-- Bill Vaughan
+Ehmm, no.  This CDROM is a backup copy of all junk I d/l from the net. It's
+content is not important. What I mean is thet if I try to read a file Linux
+creashes.
+
+cp /mnt/cdrom/foobar.tgz /home/pochini/    ---> Linux hangs completely
+
+Doing the same on the old 7300 w/ SCSI CD reader if tells me it can't read the
+disk and continues working happily.
+
+> > Perhaps I'll buy a SCSI CD, I hate IDE junk.
+>
+> Your 7300 (I think, and AppleSpec backs me up) has a SCSI CD-ROM, so it's
+> probably not the drives.
+
+The problem is the pmac IDE software driver. Trying to read the same CDROM om
+my PC gives an error and does not crash.
+
+
+Bye.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
