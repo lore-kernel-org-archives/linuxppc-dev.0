@@ -1,58 +1,45 @@
-In-Reply-To: <Pine.LNX.4.10.10003241715130.21215-100000@opal.biophys.uni-duesseldorf.de>
-Date: Fri, 24 Mar 2000 18:17:46 +0100
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+Date: Fri, 24 Mar 2000 18:40:37 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Gabriel Paubert <paubert@iram.es>
+cc: Benjamin Herrenschmidt <bh40@calva.net>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
         linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
 Subject: Re: LongTrail PCI resource assignment
-Message-Id: <20000324181746.026025@mailhost.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <Pine.HPX.4.10.10003241456491.14656-100000@gra-ux1.iram.es>
+Message-ID: <Pine.LNX.4.10.10003241806210.22814-100000@opal.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Mar 24, 2000, Michael Schmitz
-<schmitz@opal.biophys.uni-duesseldorf.de> wrote:
-
-
->I'd like to reach a point where I understand what's happening in the
->XFree PCI code before getting into that sort of discussion. And the X
->source is way too convoluted for me to achieve that right now.
+> > So it's perfectly legal for resources within the same device to overlap?
+> > WTF does X not tolerate this and disables the overlapping one?
 >
->I'll stick to pre-4.0 XFree rather.
+> It may be legal if the internal decoders are prioritized and the priority
+> is the right one (which it should if the firmware has set it up this way).
 
-I spent some time discussion with Egbert. The result is basically that in
-order to support all archs, bogus BIOS, legacy cards, softbooting, etc...
-XF must take over the PCI the way it does it. There are lots of reasons
-for that, I could try to summarize them if you really want the gory
-details, I beleive Egbert is bored of repeating himself all the time ;)
+They are prioritized the right way: if you memset the whole aperture to 0
+the chip freaks out instead of just painting the whole screen black. Been
+there, done that.
 
-I suggested making that optional (and relying, for example, only on fbdev
-or disabling the re-assignement when the appropriate option is set in
-XF86Config), but Egbert thinks that would be a support nightmare with
-users playing with the config options.
+> I don't consider it good practice though, especially when it saves only
+> minute amounts of address space. X should tolerate this in any case
+> however, it should admit that it is not always smarter than the firmware.
 
-He agrees that things are not perfect, especially since the way we handle
-PIO and iobase is bogus (see other discussions about this). Also, the
-current remapping scheme can make the kernel (and fbdev) quite confused
-with new hot-swap PCI, Cardbus, etc... He plans to rework the PCI
-interface of XFree so that better cooperation with the kernel can be
-implemented. On another hand, I think _we_ should find a definitive
-solution for the PIO problem before he can begin adapting XFree. There
-are lots of changes to be done to legacy drivers (VGA) to make them grok
-a notion of iobase (since iobase can be different per-device, it can't be
-handled inside inb/outb and friends).
+Well, arguing with X is pointless. So far I've always got the short end of
+the stick :-)
 
-Note that XF will always have to disable IO response on VGA cards when
-more than one card is present in the machine since that's the only way to
-prevent 2 VGA cards from trying to hard-decode legacy VGA addresses at
-the same time. We need to find a way to make the kernel (and the fbdev)
-aware of what's going on.
+> > I'm not sure adding subtrees will help - I guess X might go ahead and
+> > disable the main resources anyway. Will the subtree resources remain
+> > accessible in that case?
+>
+> Yes, but then I have given up on trying to understand X :-( Oh and the
 
-No time do give more details now, tell me if you need more precisions on
-one of these specific points.
+I mean: if someone disables the original resource, what happens to the
+new resources?
 
-Ben.
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
