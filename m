@@ -1,96 +1,52 @@
-Date: Tue, 22 Dec 1998 11:13:27 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-Reply-To: Gabriel Paubert <paubert@iram.es>
-To: Corey Minyard <minyard@acm.org>
-cc: Martin Mares <mj@ucw.cz>, Gerard Roudier <groudier@club-internet.fr>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: SCSI NCR driver and PCI mappings on PPC (was restructure of arch/ppc/kernel...)
-In-Reply-To: <m2ogp1tvh6.fsf@wf-rch.cirr.com>
-Message-ID: <Pine.HPP.3.96.981221150948.18639G-100000@gra-ux1.iram.es>
+Date: Tue, 22 Dec 1998 11:38:01 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+To: "David S. Miller" <davem@dm.cobaltmicro.com>
+cc: Paul.Mackerras@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org,
+        linux-m68k@lists.linux-m68k.org
+Subject: Re: TCPv4 checksum errors
+In-Reply-To: <199812221011.CAA09825@dm.cobaltmicro.com>
+Message-ID: <Pine.LNX.4.03.9812221133590.9840-100000@mercator.cs.kuleuven.ac.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
- 
+On Tue, 22 Dec 1998, David S. Miller wrote:
+>    Date: Tue, 22 Dec 1998 11:01:13 +0100 (CET)
+>    From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+> 
+>    On Tue, 22 Dec 1998, David S. Miller wrote:
+>    > My suggestion is that since you can reproduce it, you should add code
+>    > next to this printk statement which dumps the entire packet in HEX to
+>    > the console.  Then you can see what and who is at fault and where.
+>    > If the packet is sufficiently small you can walk the checksum
+>    > algorithm by hand and verify it for this test case.
+> 
+>    Which one do I have to dump? skb->h.raw or skb->nh.raw? I guess
+>    skb->nh.iph->tot_len bytes at skb->nh.raw?
+> 
+> Look at what the code next to the printk is verifying:
 
-On 18 Dec 1998, Corey Minyard wrote:
+Ooch, didn't notice there was no `break' in between the two cases...
 
-> I do plan on trying your preploader, but I don't expect a problem with
-> it since I have a 2700.  I have been quite busy recently trying to
-> clean things up in the kernel and with the rest of my job.  I'm hoping
-> with your stuff we can get rid of the "Wacky IBM" relocation done in
-> the NCR SCSI driver.
+> 		skb->csum = csum_partial((char *)th, len, 0);
+> 		if (tcp_v4_check(th,len,skb->nh.iph->saddr,skb->nh.iph->daddr,skb->csum))
+> 
+> So you need all the bytes from 'th' to 'th + len'.  You also need the
+> values of the source and destination addresses from the IP header (at
+> skb->nh.iph->{saddr,daddr}).
 
-Indeed, on my machine the SCSI interface now appears at sane addresses. 
-Here is what I get after changing slightly the offending code from
-ncr53c8xx.c (don't worry about I/O ports above the 16 biit boundary, they 
-are placed there to make sure no ISA conflicts can happen): 
+Thanks! Rebooting...
 
-[root@vcorr1 /root]# lspci -v -s 0c
-00:0c.0 SCSI storage controller: Symbios Logic Inc. (formerly NCR) 53c825 (rev 13)
-        Flags: bus master, medium devsel, latency 128, IRQ 19
-        I/O ports at 10000
-        Memory at c3f51000 (32-bit, non-prefetchable)
-        Memory at c3f50000 (32-bit, non-prefetchable)
+Greetings,
 
-[root@vcorr1 /root]# lspci -vb -s 0c
-00:0c.0 SCSI storage controller: Symbios Logic Inc. (formerly NCR) 53c825 (rev 13)
-        Flags: bus master, medium devsel, latency 128, IRQ 14
-        I/O ports at 10000
-        Memory at 03f51000 (32-bit, non-prefetchable)
-        Memory at 03f50000 (32-bit, non-prefetchable)
+						Geert
 
-  Note that the address are different if seen from the kernel and from
-the bus since the bridge offsets MMIO addresses by 0xc0000000. I think 
-it is the right way to do it since it should not change the interface 
-to ioremap(). However I had to add the following hack to ncr53c8xx.c:
-
-	if ( is_prep ) {
-#if 0	
-[previous Wacky IBM hack]
-#else
-		base -= 0xc0000000;
-		base_2 -= 0xc0000000;
-#endif
-
-
-Which I think is equivalent to the base{,_2}=__pa(base{,_2) used on
-SPARC, although it should be implemented more elegantly.
-
-I don't have any SPARC around and much less running Linux to see if what
-I've done is coherent however. Any comments to confirm that I'm not
-grossly mistaken (Gerard/Martin) ?
-
-Oh, and I don't know the effect of the following in struct Symbios_host: 
-        struct Symbios_host{
-[snipped]
-                u_short io_port;        /* PCI io_port address */
-        } host[4];
-
-on architectures where PCI I/O space is > 64k. I have only one host, so
-probably I can't be affected. 
-
-
-> I haven't changed the function of anything in the kernel, just the
-> structure, so I don't expect a problem in that respect with your
-> changes.  I'll probably try it out early next year sometime.
-
-I've for now tried to keep the things religiously so that the same exact
-vmlinux boots with my bootloader and with the old one. However, this might
-change in the future since for example my bootloader also clears the bss
-(there is ugly code to clear the bss only when booting the first processor
-on SMP, all of this could be removed. The bootloader runs UP by definition
-and can set a few things up to remove some of the assembly mess in 
-early PPC init code). 
-
-	Regards,
-	Gabriel
-
-
-
-
+--
+Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
+Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
+Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
