@@ -1,39 +1,55 @@
-To: vandana mehtani <vandana_mehtani@yahoo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: port ppc to linux 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 31 May 2002 00:26:27 PDT."
-             <20020531072627.89529.qmail@web12705.mail.yahoo.com>
-Date: Fri, 31 May 2002 11:31:22 +0200
-Message-Id: <20020531093127.0490A102F2@denx.denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: cramfs root filesystem corruption
+Date: Fri, 31 May 2002 14:07:25 -0000
+Message-ID: <EADB10BAC266A14A85ECBF8686A73E31937F6A@kolkrabbi.flaga.is>
+From: =?iso-8859-1?B?S+FyaSBEYXbt8HNzb24=?= <kd@flaga.is>
+To: <pruhland@microwavedata.com>, <wd@denx.de>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Vandana,
+Inactive meaning "unmounted" or just not beeing used?
 
-in message <20020531072627.89529.qmail@web12705.mail.yahoo.com> you wrote:
+K.D.
+
+> -----Original Message-----
+> From: Paul Ruhland [mailto:pruhland@microwavedata.com]
+> Sent: 31. maí 2002 14:04
+> To: wd@denx.de
+> Cc: linuxppc-embedded@lists.linuxppc.org
+> Subject: Re: cramfs root filesystem corruption
 >
-> i  have taken a a ppc kernel source taken from
-> ppckernel.org
-> it is one of the paulus kernels,
-> for powerpc MPC860 made by Motorola running on FADS
-> board..
-> if i write the initialisations ..
-
-Well, maybe you should start reading the
-Linux for PowerPC Embedded Systems HOWTO
-at http://penguinppc.org/embedded/howto/PowerPC-Embedded-HOWTO.html
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-All these theories, diverse as they are, have two things  in  common:
-they explain the observed facts, and they are completeley and utterly
-wrong.                       - Terry Pratchett, _The Light Fantastic_
+>
+>
+> 200205301450.50112.pruhland@microwavedata.com> you wrote:
+> >> The cramfs image is in flash, mounted as root via mtd blockdevice.
+> >> Typically the error occurs during flash reprogramming (
+> using mtd char
+> >> device '/dev/mtd0' ) ...during/after flash programming the cramfs
+> >> filesystem 'loses' information ( files disappear ).  The
+> errors from syslog
+> >> are 'error during decompression', typically the error
+> numbers ( from
+> >> 'linux/zlib_fs.h' ) are Z_BUF_ERROR, for the first error,
+> and Z_DATA_ERROR
+> >> for the rest.
+> >
+> > Ummm... can you please explain EXACTLY what you
+> > are doing? You have a
+> > cramfs in flash, mounted as root, and you are erasing and
+> overwriting
+> > the SAME cramfs partition WHILE RUNNING FROM IT?
+> >
+>
+> No, I have redundant cramfs images in flash.  I am erasing
+> and overwriting the
+> inactive image while the other, active image,  is mounted as root.
+>
+>
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
