@@ -1,25 +1,30 @@
-From: "Donald MacArthur" <dmacarth@ufl.edu>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: SCC and SMC to RS232 for MPC850
-Date: Tue, 17 Dec 2002 09:24:29 -0500
-Message-ID: <NDBBIHDFKLJKGJJGMFJOIEJPCGAA.dmacarth@ufl.edu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Tue, 17 Dec 2002 07:59:01 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Georg Klug <gklug@giga-stream.de>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Possible problem in asm/bitops.h
+Message-ID: <20021217145901.GH2513@opus.bloom.county>
+References: <20021212152851.GE19456@opus.bloom.county> <FFECLICFNBJAHONLGAKMAEFOCHAA.gklug@giga-stream.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <FFECLICFNBJAHONLGAKMAEFOCHAA.gklug@giga-stream.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-When enabling the SCC and SMC ports for RS232 on a MPC850, do you simply
-need to connect the RX/TX/GND lines
-to a RS232 line driver and enable the ports for UART in the kernel?
+On Tue, Dec 17, 2002 at 10:10:09AM +0100, Georg Klug wrote:
 
-Is there a alternative/simple method for configuring an MPC850 to have four
-RS232 serial ports?
+> > I suspect the actual problem is that iproute2 only needs
+> > a very small amount of what is in include/linux/inetdev.h
+>
+> That might be true. But would the solution be to copy the linux/inetdev.h
+> to a local directory and change that file until it doesn't need the file
+> asm/bitops.h anymore?
 
-Thank You
-Donald MacArthur
-dmacarth@ufl.edu
+Correct.
 
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
