@@ -1,105 +1,85 @@
-Subject: Re: Powerbook Pismo not waking from sleep with 2.6.4
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jens Schmalzing <jens.schmalzing@physik.uni-muenchen.de>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <hhwu5eupml.fsf@theorie.physik.uni-muenchen.de>
-References: <hhwu5eupml.fsf@theorie.physik.uni-muenchen.de>
-Content-Type: text/plain
-Message-Id: <1079908705.912.152.camel@gaston>
+Date: Sun, 21 Mar 2004 17:35:36 -0900
+From: Ethan Benson <erbenson@alaska.net>
+To: yaboot-users@lists.penguinppc.org,
+	yaboot-devel@lists.penguinppc.org,
+	Debian-powerpc <debian-powerpc@lists.debian.org>,
+	Linux/PPC-devel <linuxppc-dev@lists.linuxppc.org>,
+	yellowdog-general@lists.terrasoftsolutions.com,
+	yellowdog-devel@lists.terrasoftsolutions.com,
+	g5-test@lists.terrasoftsolutions.com
+Subject: [YABOOT] Preliminary ofpath with 2.6 kernel support NEEDS TESTING
+Message-ID: <20040322023536.GB21226@plato.local.lan>
 Mime-Version: 1.0
-Date: Mon, 22 Mar 2004 09:38:26 +1100
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 2004-03-22 at 03:33, Jens Schmalzing wrote:
-> Hi,
->
-> I've tried to upgrade the kernel to 2.6.4 on my Pismo Powerbook, and
-> found that it doesn't sleep properly any more (which it did with
-> 2.6.3-ben2).  Rather, the machine falls asleep, and then wakes up to
-> some extent: It gets as far as
->
->  mediabay 0 IDE ready
->
-> but never reaches the following message
+Hello,
 
-Try this patch
+As many are painfully aware ofpath in current yaboot does not function
+correctly under 2.6 systems, worse case it gives out bogus paths
+therefore causing the system to fail to boot.
 
-===== drivers/serial/pmac_zilog.c 1.6 vs edited =====
---- 1.6/drivers/serial/pmac_zilog.c	Wed Mar 10 21:18:32 2004
-+++ edited/drivers/serial/pmac_zilog.c	Mon Mar 22 09:35:13 2004
-@@ -1563,15 +1563,21 @@
- static int pmz_suspend(struct macio_dev *mdev, u32 pm_state)
- {
- 	struct uart_pmac_port *uap = dev_get_drvdata(&mdev->ofdev.dev);
--	struct uart_state *state = pmz_uart_reg.state + uap->port.line;
-+	struct uart_state *state;
- 	unsigned long flags;
+I have preliminary changes in current development version of yaboot
+which fixes ofpath to support 2.6.4 and above kernels.
 
--	if (uap == NULL)
-+	if (uap == NULL) {
-+		printk("HRM... pmz_suspend with NULL uap\n");
- 		return 0;
-+	}
+I need everyone with 2.6.4 or newer systems to test this version of
+ofpath and verify that it produces correct OpenFirmware paths to your
+devices (compare with ofpath output from a recent 2.4 kernel (2.4.23
+or newer))
 
- 	if (pm_state == mdev->ofdev.dev.power_state || pm_state < 2)
- 		return 0;
+Prerequisites:
 
-+	pmz_debug("suspend, switching to state %d\n", pm_state);
-+
-+	state = pmz_uart_reg.state + uap->port.line;
-+
- 	down(&pmz_irq_sem);
- 	down(&state->sem);
+* You must have 2.6.4 or newer, previous versions lack necessary
+  sysfs information.
 
-@@ -1607,6 +1613,8 @@
- 	up(&state->sem);
- 	up(&pmz_irq_sem);
+* You must have sysfs mounted (normally on /sys, but ofpath should be
+  able to detect where its mounted).
 
-+	pmz_debug("suspend, switching complete\n");
-+
- 	mdev->ofdev.dev.power_state = pm_state;
+* You must still have /proc/ide so if this becomes a configurable
+  option like /proc/scsi you must have it enabled (/proc/scsi is also
+  required for machines with SATA drives).
 
- 	return 0;
-@@ -1616,7 +1624,7 @@
- static int pmz_resume(struct macio_dev *mdev)
- {
- 	struct uart_pmac_port *uap = dev_get_drvdata(&mdev->ofdev.dev);
--	struct uart_state *state = pmz_uart_reg.state + uap->port.line;
-+	struct uart_state *state;
- 	unsigned long flags;
- 	int pwr_delay;
+The easiest way to test the new ofpath is download the current version
+from http://penguinppc.org/~eb/files/ofpath and install it manually:
 
-@@ -1626,6 +1634,10 @@
- 	if (mdev->ofdev.dev.power_state == 0)
- 		return 0;
+as root enter:
 
-+	pmz_debug("resume, switching to state 0\n");
-+
-+	state = pmz_uart_reg.state + uap->port.line;
-+
- 	down(&pmz_irq_sem);
- 	down(&state->sem);
+	which ofpath
 
-@@ -1658,6 +1670,7 @@
- 		enable_irq(uap->port.irq);
- 	}
+this will return the path of the active ofpath program, probably
+/usr/sbin/ofpath
 
-+ bail:
- 	up(&state->sem);
- 	up(&pmz_irq_sem);
+move it to safe place:
 
-@@ -1670,7 +1683,8 @@
- 		schedule_timeout((pwr_delay * HZ)/1000);
- 	}
+	mv `which ofpath` /root
 
-- bail:
-+	pmz_debug("resume, switching complete\n");
-+
- 	mdev->ofdev.dev.power_state = 0;
+install the new version (put it in the same place as the old one was,
+see step 1):
 
- 	return 0;
+	install -m 755 /home/youruser/ofpath /usr/sbin/ofpath
 
+run ofpath on all your disk devices and ensure its output is correct.
+
+then comment out any ofboot= lines in /etc/yaboot.conf and change your
+macos* entries back to /dev/ nodes, run ybin and ensure the bootloader
+functions correctly.
+
+MOST IMPORTANTLY:
+
+	* REPORT SUCCESS *AND* FAILURE *
+
+I want to know what kind of machine you have, and that ofpath worked
+correctly, I will release yaboot 1.3.12 once I have enough success
+reports for enough differing machines, very new machines are most
+important, as they are the ones which old ofpath failed on.
+
+Thanks in advance, and thanks to Nick Lopez for granting me local
+shell access to his machine so I could get this done.
+
+--
+Ethan Benson
+http://www.alaska.net/~erbenson/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
