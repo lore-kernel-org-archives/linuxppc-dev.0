@@ -1,33 +1,40 @@
-From: nbasker@india.tejasnetworks.com
-Message-ID: <1065623430.3f841f86ab2cb@pop-mail.india.tejasnetworks.com>
-Date: Wed, 08 Oct 2003 20:00:30 +0530
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: question on using correct in/out functions
+Message-ID: <3F842077.6090504@tataelxsi.co.in>
+Date: Wed, 08 Oct 2003 20:04:31 +0530
+From: Omanakuttan <omanakuttan@tataelxsi.co.in>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+To: Andreas Oberritter <obi@saftware.de>,
+	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: driver for CyberPro 5202 Display Processor
+References: <3F8408FB.4040501@tataelxsi.co.in> <1065618226.844.23.camel@shiva.eth.saftware.de>
+In-Reply-To: <1065618226.844.23.camel@shiva.eth.saftware.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi:
+Andreas Oberritter wrote:
+> On Wed, 2003-10-08 at 14:54, Omanakuttan wrote:
+>
+>>A google search on cyberpro 5202 chipset drivers on linux  did not
+>>produce any significant result. I may have to write the drivers for
+>>this, so any input is welcome. Any help/hints on other cyberpro 50xx
+>>chipsets are also welcome.
+>
+>
+> Have a look at linux/drivers/video/cyber2000fb.c
+>
+>
 
-We use a mpc860t based board (2.4.20 kernel) and the addresses
-beyond 0xf0000000 are io-remapped. In driver space, to access memory
-mapped devices beyond this address i have some simple routines like
-in8/in16/in32 and out8/out16/out32 which basically use val = *addr or
-*addr = val kind of access.
+Yes I have already gone through. Seems like it requires quite large
+amount of hacking to support cyberpro 5202 chipset. It directly supports
+Intergraphics CyberPro 2000, 2010 and 5000 frame buffer device, but the
+extent of support for 5202 is something for me to see after going
+through the data sheet and comparing it with these chipset's data sheets
 
-I would like to use routines from asm-ppc/io.h file. But there are
-atleast two choices like insl/outsl or in_le32/out_le32. My problem
-is that I do not understand them well to use the correct one. I have searched
-for documents in the documentation directory and google search but could
-not find anything useful.
+Any further input is welcome.
 
-It would be helpful if I can get some pointers on how to use functions
-in io.h file
-
-Thansk for your time,
-Nicholas.
+Thank you very much.
+Om.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
