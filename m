@@ -1,42 +1,54 @@
-Date: Sat, 5 Jun 1999 12:00:34 -0600 (MDT)
-From: Brad Midgley <brad@turbolinux.com>
-Reply-To: Brad Midgley <brad@turbolinux.com>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Mac-on-linux is now working...
-In-Reply-To: <19990603200523.030085@mail.mipsys.com>
-Message-ID: <Pine.LNX.3.95.990605112727.6609B-100000@pacific.pht.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <199906060055.TAA06757@www.cedarnet.org>
+Date: Sat, 05 Jun 1999 19:57:16 -0500
+Subject: Re: control-c [Re: Mac-on-linux is now working...]
+From: "Kevin Puetz" <kp11901@cedarnet.org>
+To: Brad Midgley <brad@turbolinux.com>
+CC: linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-sorry i'm filling you mailbox :)
+Actually it always does that on my machine - kind of annoying. That and mol
+doesn't see my hard drives (they are IDE and don't have SCSI drivers on
+them, I think that's why).
 
-> >the virtual machine. i think i'll install a small macos on another drive
-> >that has bootx and remove bootx from the main mac system. (it IS a trip to
-> >watch linux boot inside linux however :)
-> 
-> I think I'll have to fix that...
+cntrl-c.. kills the emulator dead.
 
-is there a way bootx could tell it was running inside a mol session?
+--
++--------------------------------------------------------------------+
+|            .-'''''-.       Kevin Puetz                             |
+|          .'   _/|   `.                                             |
+|         :   =/_/      :    kp11901@cedarnet.org -preferred         |
+|        :   _/ |        :   Kevin.Puetz@039-server.pls.uni.edu      |
+|       (\  /  ,|        :   webmaster@039-server.pls.uni.edu        |
+|        \\/^\/||__     :                                            |
+|     _/~`~`""~`"` \_ .'  "Could you please continue the petty       |
+|  __/  -'/  `-._ `\_\__   bickering?  I find it - most intriguing." |
+|/     /-'`  `\   \  \-.\    --Data, STTNG, "Haven"                  |
++--------------------------------------------------------------------+
 
-> Probably something in the adb emulation. I have some plans in mind to add
-> better support in the kernel for routing directly ADB datas to MOL.
-> Currently, MOL reconsitutes ADB datas from the Xpmac pseudo-keycodes send
-> by the kernel to the front VC.
+----------
+>From: Brad Midgley <brad@turbolinux.COM>
+>To: Benjamin Herrenschmidt <bh40@calva.net>
+>Cc: Brad Midgley <brad@turbolinux.COM>, linuxppc-dev@lists.linuxppc.ORG
+>Subject: control-c [Re: Mac-on-linux is now working...]
+>Date: Sat, Jun 5, 1999, 12:27 PM
+>
 
-interesting approach. the xpmac code in the kernel could be fixed to deal
-with multiple mice better (i'll have a look). /dev/adbmouse does deal
-correctly with multiple mice--did you ever think of translating busmouse
-info into an adb stream?
-
-Brad
-brad@pht.com | http://www.pht.com/~brad/
-
-
-
+>
+> fyi, i found out that control-c doesn't stop mol if mol was started from
+> my shell script. so it may be something to do with signal handling...
+>
+> perhaps when run from a script bash gets the control-c and sends the
+> interrupt signal to mol but mol was looking for a raw control-c? maybe
+> stty could change that behavior...
+>
+> Brad
+> brad@pht.com | http://www.pht.com/~brad/
+>
+>
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
