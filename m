@@ -1,43 +1,32 @@
-Date: Wed, 28 Mar 2001 14:40:21 +0300 (EEST)
-From: Kostas Gewrgiou <gewrgiou@imbc.gr>
-To: Iain Sandoe <iain@sandoe.co.uk>
-Cc: Takashi Oe <toe@unlserve.unl.edu>,
-	"Michael R. Zucca" <mrz5149@acm.org>, <phandel@cise.ufl.edu>,
-	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Sound stoppage: TRIAL code to re-start DEAD dma
-In-Reply-To: <20010328105501.E28EEDBA11@atlas.valhalla.net>
-Message-ID: <Pine.LNX.4.31.0103281418180.21345-100000@idd-01.imbc.gr>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Dan Malek <dan@mvista.com>, <linuxppc-dev@lists.linuxppc.org>,
+	<linuxppc-commit@fsmlabs.com>
+Subject: Re: PVR hell
+Date: Wed, 28 Mar 2001 13:46:34 +0200
+Message-Id: <20010328114634.7871@mailhost.mipsys.com>
+In-Reply-To: <3AC179EB.C77A2EB5@mvista.com>
+References: <3AC179EB.C77A2EB5@mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 28 Mar 2001, Iain Sandoe wrote:
+>
+>The only 7450 systems running Linux today are embedded PPMC with a DINK
+>boot rom that boot from flash........those aren't desktops.  Someday
+>Apple may have something available for you desktop guys, but the
+>initial development is for Linux embedded targets :-).
+>
+>I think your table lookup stuff is just fine, and I'm ready to rewrite
+>some of head.S to use something different.
 
->
-> > With a quick look it doesn't seem that it will work, you only need to return
-> > if you restart the frame otherwise the driver will deadlock,
->
-> we do restart the frame - with the:
->
->     /* may as well try anyway - I guess all bets are off now */
->     out_le32(&awacs_txdma->control, ((RUN|WAKE) << 16) + (RUN|WAKE));
->
-> the difference from what you did is that I don't re-load the cmdptr register
-> - we are just going to see if the current state can be resumed.
->
-> It might lock up - but it's worth a try.
+Heh, there are already Apple G4s with the 7450 AFAIK ;)
 
-Nope it doesn't restart the frame, thats why we need to either reload it
-and return or continue as if it played correctly.
+I'll code something today in my rsync tree and post a patch that can
+be discussed before pushing.
 
-I was wondering again today why we get the DEAD status in the powercomputing
-machines everything was working fine until 2.2.9/10 (there were no changes
-in dmasound at that point) so some other change is causing this i can't
-imagine anything though :(
-
-  Kostas
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
