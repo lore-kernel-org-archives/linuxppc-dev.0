@@ -1,23 +1,22 @@
-Return-Path: <jdl@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 5A99D67A82
+Return-Path: <wfarnsworth@mvista.com>
+Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
+	by ozlabs.org (Postfix) with ESMTP id 1919C67A6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  1 Apr 2005 01:56:10 +1000 (EST)
-From: Jon Loeliger <jdl@freescale.com>
-To: Jon Masters <jonathan@jonmasters.org>
-In-Reply-To: <424BEDFC.8080300@jonmasters.org>
-References: <424ACFF1.5000403@bitsim.se>
-	<111d2ae873d1bfee413409dfc4f2f064@freescale.com>
-	<424BEDFC.8080300@jonmasters.org>
+	Fri,  1 Apr 2005 02:26:28 +1000 (EST)
+From: Wade Farnsworth <wfarnsworth@mvista.com>
+To: Jason McMullan <jason.mcmullan@timesys.com>,
+	Tom Rini <trini@kernel.crashing.org>
+In-Reply-To: <20050318193045.GM8345@smtp.west.cox.net>
+References: <20050316231800.GD8345@smtp.west.cox.net>
+	<d0e9907f9780a7fce59b3f69af6ece99@freescale.com>
+	<1111171391.2987.24.camel@ad.doubleclick.net>
+	<20050318193045.GM8345@smtp.west.cox.net>
 Content-Type: text/plain
-Message-Id: <1112284541.23088.77.camel@cashmere.sps.mot.com>
+Message-Id: <1112286378.24673.252.camel@rhino.az.mvista.com>
 Mime-Version: 1.0
-Date: Thu, 31 Mar 2005 09:55:42 -0600
-Cc: Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>,
-	Sylvain Munaut <tnt@246tNt.com>,
-	Andrei Konovalov <akonovalov@ru.mvista.com>,
-	Jakob Viketoft <jakob.viketoft@bitsim.se>
-Subject: Flat OF Device Tree for ppc32 [was: Platform bus/ppc sys model...]
+Date: 31 Mar 2005 09:26:18 -0700
+Cc: linuxppc-embedded Linux list <linuxppc-embedded@ozlabs.org>
+Subject: Re: 440EP FPU patch
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,68 +27,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2005-03-31 at 06:33, Jon Masters wrote:
-> Kumar Gala wrote:
+On Fri, 2005-03-18 at 12:30, Tom Rini wrote:
+> On Fri, Mar 18, 2005 at 01:43:11PM -0500, Jason McMullan wrote:
+> > On Fri, 2005-03-18 at 10:06 -0600, Kumar Gala wrote:
+> > > Can you build your patch for the lopec_defconfig and fix the errors 
+> > > associated with enabling altivec.
+> > > 
+> > > Looks like you need to include asm/offset.h & asm/page.h in vector.S, 
+> > > however there is another build error after that.
+> > 
+> > Thanks! That also found a linking bug, fixed in this patch.. Please
+> > double check the call in 'AltiVecUnavalible' in head.S, and the re-load
+> > of 'ctr' at the end of load_up_altivec, as I do not have an AltiVec
+> > machine here.
 > 
-> |> My intention was to give a device tree structure to the kernel at boot
-> |> time via a (pseudo?) pointer in bd_info or similar. 
+> No dice:
+> VFS: Mounted root (nfs filesystem) readonly.
+> Freeing unused kernel memory: 100k init 4k prep
+> floating point used in kernel (task=c03816b0, pc=c000d664)
+> Doing some objdump'ing, that's the start of load_up_altivec.
 
-> This got resurrected recently. 
+Hi Jason and Tom,
 
-Hi!
+Has there been any more progress on this patch?
 
-> | I think this is reasonable.  The best device tree would be a flattened
-> | OF tree since we are trying to move the world in that direction.  Jon
-> | Masters around?
-> 
-> Yes, but I've been tied up with worky and magazine stuff again. If
-> someone wants to work with me then this might actually happen.
-
-Hi Jon,
-
-I'm here and actively(!) working on it now.   Here is the very
-rough plan as Kumar and I have discussed it.  Please feel free
-to comment on it or offer suggestions.  Ben has suggested that
-I start with the "second step" below.  I'd like to do a round
-of cleanup first.
-
-So far, I have taken the first step of isolating the references
-to the global __res[] variable into one file and replacing all
-references to the data in the bd_t structure with a thin, shim
-layer of function calls that are nominally into an OF-like
-interface.  I have done this for all the 85xx and 83xx boards
-in my development tree, and am working on the others now.
-This step effectively isolates the __res[] references to one
-file where a well defined interface can be created to pose as
-an OF Device Tree layer (briefly).
-
-As a follow-up second step, I plan on introducing essentially
-the same code currently in ppc64 to handle the flat device tree
-and provide an interface to that data in exactly the same manner
-as the ppc64 currently has.  I understand the desire to have the
-flat-tree handling be "outside the kernel".
-
-As a third step, the shim layer will be rewritten/augmented to
-use the actual OF device tree data where it currently fronts
-for the bd_t data.
-
-Finally, as time permits and maintainers allow (read: prod),
-the other (not 85xx, not 83xx) boards can have their setup code
-converted to use the "real" OF device tree function calls.
-
-When all of that is done, the shim layer can be removed, as needed.
-
-
-Oh, yeah.  Um, also on my plate will be to construct the
-original flat-tree blob in U-Boot to be handed to the kernel.
-(I'll start with 85xx and 83xx, naturlich.)
-
-We have not yet decided on the layout of that tree to determine
-where all the attributes and devices really belong.  I will
-also discuss with Wolfgang and crew how to generate that tree
-over in U-Boot land.
-
-Right?
- 
 Thanks,
-jdl
+Wade Farnsworth
