@@ -1,29 +1,32 @@
-Message-Id: <200005040333.XAA13971@shell.faradic.net>
-Date: Wed, 03 May 2000 23:32:56 EDT
-From: jingai <jingai@floatingpenguins.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Re: Re: hfs
-Reply-To: jingai@floatingpenguins.com
+Message-ID: <39111625.9D1FD101@mpifr-bonn.mpg.de>
+Date: Thu, 04 May 2000 08:18:13 +0200
+From: Albrecht Dre_ <ad@mpifr-bonn.mpg.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+To: LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>
+Subject: FireWire chip on PISMO?
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> What works for you? I have the latest kernel from Paul also 2.3.99pre6
-> and
-> it most defintly does not work. I can not mount hfs cds at all. It will
-> let you mount hfs partitions. But try to do anything besides a ls like
-> specifically trying to copy something to it. And it will lock your
-> machine
-> ahrd and screw up your partition. Try that out and let me know what
-> happens. I would think that its highly unlikely that hfs realy works for
-> you in the latest dec kernel.
+Does anyone know where I could find information about the FireWire controller
+chip which is used in the Apple PISMO Powerbook?  lspci tells me that it was
+made by Apple, device id 0x0018, and I think this one is not (yet) supported by
+the FireWire-for-Linux stuff.
 
-I haven't tried mounting HFS cds, but I can most certainly read and write
-to HFS partiitons just fine.  I don't know exactly what could be different,
-but I haven't had any troubles with it since 2.3.99x..
+Thanks, Albrecht.
 
--j
+--
++-----------------------------------------------------------------------------+
+| Dr.-Ing. Albrecht Dre\ss                                     """"           |
+| Max-Planck-Institut f\"ur Radioastronomie   |\       /      /o  o\          |
+| Abteilung f\"ur Infrarot-Interferometrie    |  \    /      |  /   |         |
+| Auf dem H\"ugel 69                          |    \ |        \ ---/          |
+| D-53121 Bonn (Germany)          ------------+------+-------------------     |
+| Phone (+49) 228 525 319                     |    / |                        |
+| Fax   (+49) 228 525 411                     |  /  /                         |
+| Mail  ad@mpifr-bonn.mpg.de                  |/   /                          |
+| http://www.mpifr-bonn.mpg.de/div/iri                                        |
++-------------- electrical engineers do it with less resistance --------------+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
