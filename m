@@ -1,54 +1,50 @@
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-Message-Id: <199910081233.OAA03575@simul.biophys.uni-duesseldorf.de>
+In-Reply-To: <199910081233.OAA03575@simul.biophys.uni-duesseldorf.de>
+Date: Fri, 8 Oct 1999 15:06:17 +0200
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+        linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
 Subject: Re: ADB probing
-In-Reply-To: <19991008120851.018835@mailhost.mipsys.com> from Benjamin Herrenschmidt at "Oct 8, 1999 12:08:51 pm"
-To: bh40@calva.net (Benjamin Herrenschmidt)
-Date: Fri, 8 Oct 1999 14:33:18 +0200 (CEST)
-Cc: linuxppc-dev@lists.linuxppc.org
-MIME-Version: 1.0
+Message-Id: <19991008150617.016099@mailhost.mipsys.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> >?? I found the reset (and implicit rescan) in adb.c, is there a hook from
-> >mac_keyb.c? (I meant 'force a reset via /dev/adb, which will in turn cause a
-> >rescan)
-> 
-> There is a notifier that the devices can attach to the adb core. I added
-> this when working on the sleep code.
+On Fri, Oct 8, 1999, Michael Schmitz
+<schmitz@opal.biophys.uni-duesseldorf.de> wrote:
 
-Thanks, I forgot that sleeping will power down all ADB devices. That still
-doesn't force a bus reset but a bus reset may not be what we want anyway. 
+>Thanks, I forgot that sleeping will power down all ADB devices. That still
+>doesn't force a bus reset but a bus reset may not be what we want anyway. 
 
-Can we add a SysRQ code for this? Speaking of which, what is the magic sysrq 
-key on a Lombard, or the shutdown key combo? I couldn't find that in the
-keyboard driver ...
+Yes, sleep powers down all ADB devices, and that's why the ADB code
+contains a sleep notifier which will do a bus reset on wakeup. The adb
+code will then re-do the probing and re-adressing and notify it's own
+clients (mac_keyb.c drivers) via it's own notifier that the bus was reset
+so they get a chance to re-initialize their various devices.
+The /dev/adb code will also catch bus reset commands and do the same
+thing. I still think that we should try to do something more complex than
+a reset+reprobe.
 
->  - minor 0 is the "control" channel where you can send bus resets, raw
-> commands, etc... I'll add this new ioctl for querying things like the
-> original address. It will be backward compatible.
-> 
->  - each minor >0 correspond to an address. Open is exclusive. When
-> opened, the original handler (if any) is replaced by a special one that
-> sends autopoll datas to a ring buffer that can be read(). Optionally, we
-> can provide a few ioctls to set this buffer's size and to flush it. In
-> case a bus reset happens, all those opened minor are marked "dead" and
-> return an error to any read or ioctl call. (The user is then expected to
-> close the file, use minor 0 to re-probe the device, and reopen an
-> "autopoll" minor if the device is still there).
-> 
-> I beleive this is enough for anything we might want to do with ADB, and
-> things like tablet drivers could be 100% userland.
+>Can we add a SysRQ code for this? Speaking of which, what is the magic sysrq 
+>key on a Lombard, or the shutdown key combo? I couldn't find that in the
+>keyboard driver ...
 
-That's about what I've been discussing with some (including Paul and hpa)
-about two years ago. We could add adbkeyb (raw keyboard data) and adbmouse
-(the busmouse device) and possibly adbtablet for good measure and give up 
-that hijacked misc minor 10, finally. 
+>That's about what I've been discussing with some (including Paul and hpa)
+>about two years ago. We could add adbkeyb (raw keyboard data) and adbmouse
+>(the busmouse device) and possibly adbtablet for good measure and give up 
+>that hijacked misc minor 10, finally. 
+>
+>I can help writing and testing this on a Powerbook, I just don't have a
+>desktop Mac to connect multiple ADB devices to. 
 
-I can help writing and testing this on a Powerbook, I just don't have a
-desktop Mac to connect multiple ADB devices to. 
+My idea was to work on this this Sunday, but if you want to write it now,
+feel free to do so ;) I can test it on various configurations at work.
 
-	Michael
+-- 
+           Perso. e-mail: <mailto:bh40@calva.net>
+           Work   e-mail: <mailto:benh@mipsys.com>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
