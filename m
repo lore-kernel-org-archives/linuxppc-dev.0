@@ -1,9 +1,9 @@
-Date: Thu, 29 Jul 2004 22:33:19 +0100
+Date: Thu, 29 Jul 2004 22:33:58 +0100
 To: paulus@samba.org
 Cc: trini@kernel.crashing.org, linuxppc-dev@lists.linuxppc.org,
 	barbieri@gmail.com
-Subject: [0/9] Support for old IBM PReP boxes
-Message-ID: <20040729213319.GA5857@george.solinno.co.uk>
+Subject: [1/9] Support for old IBM PReP boxes
+Message-ID: <20040729213358.GA5865@george.solinno.co.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 From: leigh@solinno.co.uk (Leigh Brown)
@@ -11,68 +11,353 @@ Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This set of patches add support for old IBM PReP machines.  They are
-not perfect, but they are known working on the E20, E30, 140, 240
-and F30.  The F40 is not currently working, but it doesn't work at
-all without these patches so I'm not too concerned right now.
-
-As 060-old-openpic.diff has not shown up any problems on any machines
-I think it's worth applying, but if Tom is still unhappy then it can
-be left for now.
-
-Summary:
-
-[1/9] 005-have-residual-data.diff
-
 Introduce have_residual_data() function and change existing code to
 use it.  This is mainly to avoid my additions adding loads of ugly
 #ifdef CONFIG_RESIDUAL_DATA sections.
 
-[2/9] 020-ibm_prep_statusled.diff
 
-This allows use of the IBM status LED if it's found in the residual
-data, plus a couple of other bells and whistles.  It removes the
-140-specific code.
+diff -urNX /home/leigh/.diffex linux-2.6.8-rc2-bk8.prev/arch/ppc/platforms/prep_pci.c linux-2.6.8-rc2-bk8/arch/ppc/platforms/prep_pci.c
+--- linux-2.6.8-rc2-bk8.prev/arch/ppc/platforms/prep_pci.c	2004-07-29 20:38:27.000000000 +0100
++++ linux-2.6.8-rc2-bk8/arch/ppc/platforms/prep_pci.c	2004-07-29 20:40:14.000000000 +0100
+@@ -836,52 +836,52 @@
+ void __init
+ ibm_prep_init(void)
+ {
+-#ifdef CONFIG_PREP_RESIDUAL
+-	u32 addr, real_addr, len;
+-	PPC_DEVICE *mpic;
+-	PnP_TAG_PACKET *pkt;
+-
+-	/* Use the PReP residual data to determine if an OpenPIC is
+-	 * present.  If so, get the large vendor packet which will
+-	 * tell us the base address and length in memory.
+-	 * If we are successful, ioremap the memory area and set
+-	 * OpenPIC_Addr (this indicates that the OpenPIC was found).
+-	 */
+-	mpic = residual_find_device(-1, NULL, SystemPeripheral,
+-			    ProgrammableInterruptController, MPIC, 0);
+-	if (!mpic)
+-		return;
++	if (have_residual_data()) {
++		u32 addr, real_addr, len;
++		PPC_DEVICE *mpic;
++		PnP_TAG_PACKET *pkt;
++
++		/* Use the PReP residual data to determine if an OpenPIC is
++		 * present.  If so, get the large vendor packet which will
++		 * tell us the base address and length in memory.
++		 * If we are successful, ioremap the memory area and set
++		 * OpenPIC_Addr (this indicates that the OpenPIC was found).
++		 */
++		mpic = residual_find_device(-1, NULL, SystemPeripheral,
++				    ProgrammableInterruptController, MPIC, 0);
++		if (!mpic)
++			return;
 
-[3/9] 040-residual-pcidev.diff
+-	pkt = PnP_find_large_vendor_packet(res->DevicePnPHeap +
+-			mpic->AllocatedOffset, 9, 0);
++		pkt = PnP_find_large_vendor_packet(res->DevicePnPHeap +
++				mpic->AllocatedOffset, 9, 0);
 
-This adds a function to use the residual data to determine the IRQ
-for a given PCI device, and changes prep_pcibios_fixup() to use it.
+-	if (!pkt)
+-		return;
++		if (!pkt)
++			return;
 
-[4/9] 045-residual-irqmask.diff
+ #define p pkt->L4_Pack.L4_Data.L4_PPCPack
+-	if (!((p.PPCData[0] == 2) && (p.PPCData[1] == 32)))
+-		return; /* not a 32-bit memory address */
+-
+-	real_addr = ld_le32((unsigned int *) (p.PPCData + 4));
+-	if (real_addr == 0xffffffff)
+-		return;
++		if (!((p.PPCData[0] == 2) && (p.PPCData[1] == 32)))
++			return; /* not a 32-bit memory address */
 
-This adds a function to determine the 8259 level/edge mask word.
-With this function we can now (in theory) support any IBM PReP
-machine.  We therefore add a little bit more code to fallback
-to using residual data if we don't recognise the machine.
+-	/* Adjust address to be as seen by CPU */
+-	addr = real_addr + PREP_ISA_MEM_BASE;
+-
+-	len = ld_le32((unsigned int *) (p.PPCData + 12));
+-	if (!len)
+-		return;
++		real_addr = ld_le32((unsigned int *) (p.PPCData + 4));
++		if (real_addr == 0xffffffff)
++			return;
++
++		/* Adjust address to be as seen by CPU */
++		addr = real_addr + PREP_ISA_MEM_BASE;
++
++		len = ld_le32((unsigned int *) (p.PPCData + 12));
++		if (!len)
++			return;
+ #undef p
+-	OpenPIC_Addr = ioremap(addr, len);
+-	ppc_md.get_irq = openpic_get_irq;
++		OpenPIC_Addr = ioremap(addr, len);
++		ppc_md.get_irq = openpic_get_irq;
 
-[5/9] 050-residual-isapic-addr.diff
+-	OpenPIC_InitSenses = prep_openpic_initsenses;
+-	OpenPIC_NumInitSenses = sizeof(prep_openpic_initsenses);
++		OpenPIC_InitSenses = prep_openpic_initsenses;
++		OpenPIC_NumInitSenses = sizeof(prep_openpic_initsenses);
 
-This adds a function to use the residual data to determine the
-address to pass to i8259_init().
+-	printk(KERN_INFO "MPIC at 0x%08x (0x%08x), length 0x%08x "
+-	       "mapped to 0x%p\n", addr, real_addr, len, OpenPIC_Addr);
+-#endif
++		printk(KERN_INFO "MPIC at 0x%08x (0x%08x), length 0x%08x "
++		       "mapped to 0x%p\n", addr, real_addr, len, OpenPIC_Addr);
++	}
+ }
 
-[6/9] 055-host-bridge.diff
+ static void __init
+@@ -1262,8 +1262,8 @@
+ 			   PREP_ISA_IO_BASE + 0xcfc);
 
-This adds support for the "PCIBridgeRS6K" bridge type in residual
-data to prep_find_bridges() - this is for the 7043-240.
+ 	printk("PReP architecture\n");
+-#ifdef CONFIG_PREP_RESIDUAL
+-	{
++
++	if (have_residual_data()) {
+ 		PPC_DEVICE *hostbridge;
 
-[7/9] 060-old-openpic.diff
+ 		hostbridge = residual_find_device(PROCESSORDEVICE, NULL,
+@@ -1284,7 +1284,6 @@
+ 				setup_indirect_pci(hose, 0x80000cf8, 0x80000cfc);
+ 		}
+ 	}
+-#endif /* CONFIG_PREP_RESIDUAL */
 
-Some older E20/E30 machines have a very old implementation of the
-OpenPIC which trips up the existing ibm_prep_init() function.  This
-adds support for it.  It also changes the OPENPIC_VEC_SPURIOUS
-constant to work around the buggy OpenPIC in those machines.
+ 	ppc_md.pcibios_fixup = prep_pcibios_fixup;
+ 	ppc_md.pcibios_after_init = prep_pcibios_after_init;
+diff -urNX /home/leigh/.diffex linux-2.6.8-rc2-bk8.prev/arch/ppc/platforms/prep_setup.c linux-2.6.8-rc2-bk8/arch/ppc/platforms/prep_setup.c
+--- linux-2.6.8-rc2-bk8.prev/arch/ppc/platforms/prep_setup.c	2004-07-29 20:38:27.000000000 +0100
++++ linux-2.6.8-rc2-bk8/arch/ppc/platforms/prep_setup.c	2004-07-29 20:40:14.000000000 +0100
+@@ -193,9 +193,8 @@
+ 		seq_printf(m, "bad");
+ 	seq_printf(m, "\n");
 
-[8/9] 080-shorter-planar-id.diff
+-#ifdef CONFIG_PREP_RESIDUAL
+ 	/* print info about SIMMs */
+-	if (res->ResidualLength != 0) {
++	if (have_residual_data()) {
+ 		int i;
+ 		seq_printf(m, "simms\t\t: ");
+ 		for (i = 0; (res->ActualNumMemories) && (i < MAX_MEMS); i++) {
+@@ -207,7 +206,6 @@
+ 		}
+ 		seq_printf(m, "\n");
+ 	}
+-#endif
+ }
 
-The planar id is only a byte, so why waste 8 characters displaying
-it?
+ static int __prep
+@@ -431,9 +429,8 @@
+ 	}
 
-[9/9] 090-show-level.diff
+ no_l2:
+-#ifdef CONFIG_PREP_RESIDUAL
+ 	/* print info about SIMMs */
+-	if (res->ResidualLength != 0) {
++	if (have_residual_data()) {
+ 		int i;
+ 		seq_printf(m, "simms\t\t: ");
+ 		for (i = 0; (res->ActualNumMemories) && (i < MAX_MEMS); i++) {
+@@ -445,7 +442,6 @@
+ 		}
+ 		seq_printf(m, "\n");
+ 	}
+-#endif
 
-This makes the /proc/interrupts display the correct edge/level
-indicator for each interrupt.  This is purely cosmetic, but does
-reduce confusion.
+ 	return 0;
+ }
+@@ -561,14 +557,12 @@
+ {
+ 	/* PREP's without residual data will give incorrect values here */
+ 	seq_printf(m, "clock\t\t: ");
+-#ifdef CONFIG_PREP_RESIDUAL
+-	if (res->ResidualLength)
++	if (have_residual_data())
+ 		seq_printf(m, "%ldMHz\n",
+ 			   (res->VitalProductData.ProcessorHz > 1024) ?
+ 			   res->VitalProductData.ProcessorHz / 1000000 :
+ 			   res->VitalProductData.ProcessorHz);
+ 	else
+-#endif /* CONFIG_PREP_RESIDUAL */
+ 		seq_printf(m, "???\n");
+
+ 	return 0;
+@@ -598,9 +592,10 @@
+ 	 * Get the needed resource informations from residual data.
+ 	 *
+ 	 */
+-#ifdef CONFIG_PREP_RESIDUAL
+-	audiodevice = residual_find_device(~0, NULL, MultimediaController,
+-			AudioController, -1, 0);
++	if (have_residual_data())
++		audiodevice = residual_find_device(~0, NULL,
++				MultimediaController, AudioController, -1, 0);
++
+ 	if (audiodevice != NULL) {
+ 		PnP_TAG_PACKET *pkt;
+
+@@ -613,7 +608,6 @@
+ 		if (pkt != NULL)
+ 			ppc_cs4232_dma2 = masktoint(pkt->S5_Pack.DMAMask);
+ 	}
+-#endif
+
+ 	/*
+ 	 * These are the PReP specs' defaults for the cs4231.  We use these
+@@ -649,13 +643,14 @@
+ static void __init
+ prep_init_vesa(void)
+ {
+-#if defined(CONFIG_PREP_RESIDUAL) && \
+-	(defined(CONFIG_FB_VGA16) || defined(CONFIG_FB_VGA_16_MODULE) || \
++#if     (defined(CONFIG_FB_VGA16) || defined(CONFIG_FB_VGA_16_MODULE) || \
+ 	 defined(CONFIG_FB_VESA))
+-	PPC_DEVICE *vgadev;
++	PPC_DEVICE *vgadev = NULL;
++
++	if (have_residual_data())
++		vgadev = residual_find_device(~0, NULL, DisplayController,
++							SVGAController, -1, 0);
+
+-	vgadev = residual_find_device(~0, NULL, DisplayController, SVGAController,
+-									-1, 0);
+ 	if (vgadev != NULL) {
+ 		PnP_TAG_PACKET *pkt;
+
+@@ -680,7 +675,7 @@
+ 			}
+ 		}
+ 	}
+-#endif /* CONFIG_PREP_RESIDUAL */
++#endif
+ }
+
+ static void __init
+@@ -821,18 +816,19 @@
+ static void __init
+ prep_calibrate_decr(void)
+ {
+-#ifdef CONFIG_PREP_RESIDUAL
+-	unsigned long freq, divisor = 4;
++	if (have_residual_data()) {
++		unsigned long freq, divisor = 4;
+
+-	if ( res->VitalProductData.ProcessorBusHz ) {
+-		freq = res->VitalProductData.ProcessorBusHz;
+-		printk("time_init: decrementer frequency = %lu.%.6lu MHz\n",
+-				(freq/divisor)/1000000,
+-				(freq/divisor)%1000000);
+-		tb_to_us = mulhwu_scale_factor(freq/divisor, 1000000);
+-		tb_ticks_per_jiffy = freq / HZ / divisor;
+-	} else
+-#endif
++		if ( res->VitalProductData.ProcessorBusHz ) {
++			freq = res->VitalProductData.ProcessorBusHz;
++			printk("time_init: decrementer frequency = %lu.%.6lu MHz\n",
++					(freq/divisor)/1000000,
++					(freq/divisor)%1000000);
++			tb_to_us = mulhwu_scale_factor(freq/divisor, 1000000);
++			tb_ticks_per_jiffy = freq / HZ / divisor;
++		}
++	}
++	else
+ 		todc_calibrate_decr();
+ }
+
+@@ -1000,15 +996,14 @@
+ 	DMA_MODE_WRITE = 0x48;
+
+ 	/* figure out what kind of prep workstation we are */
+-#ifdef CONFIG_PREP_RESIDUAL
+-	if ( res->ResidualLength != 0 ) {
++	if (have_residual_data()) {
+ 		if ( !strncmp(res->VitalProductData.PrintableModel,"IBM",3) )
+ 			_prep_type = _PREP_IBM;
+ 		else
+ 			_prep_type = _PREP_Motorola;
+-	} else /* assume motorola if no residual (netboot?) */
+-#endif
+-	{
++	}
++	else {
++		/* assume motorola if no residual (netboot?) */
+ 		_prep_type = _PREP_Motorola;
+ 	}
+
+diff -urNX /home/leigh/.diffex linux-2.6.8-rc2-bk8.prev/arch/ppc/platforms/residual.c linux-2.6.8-rc2-bk8/arch/ppc/platforms/residual.c
+--- linux-2.6.8-rc2-bk8.prev/arch/ppc/platforms/residual.c	2004-07-29 20:38:27.000000000 +0100
++++ linux-2.6.8-rc2-bk8/arch/ppc/platforms/residual.c	2004-07-29 20:40:14.000000000 +0100
+@@ -504,7 +504,7 @@
+ #define did dev->DeviceId
+
+ 	/* make sure we have residual data first */
+-	if ( res->ResidualLength == 0 )
++	if (!have_residual_data())
+ 		return;
+
+ 	printk("Residual: %ld devices\n", res->ActualNumDevices);
+@@ -639,7 +639,7 @@
+ #define did dev->DeviceId
+
+ 	/* make sure we have residual data first */
+-	if ( res->ResidualLength == 0 )
++	if (!have_residual_data())
+ 		return;
+ 	printk("Residual: %ld devices\n", res->ActualNumDevices);
+ 	for ( i = 0;
+@@ -790,7 +790,7 @@
+ 			 int n)
+ {
+ 	int i;
+-	if ( !res->ResidualLength ) return NULL;
++	if (!have_residual_data()) return NULL;
+ 	for (i=0; i<res->ActualNumDevices; i++) {
+ #define Dev res->Devices[i].DeviceId
+ 		if ( (Dev.BusId&BusMask)                                  &&
+@@ -813,7 +813,7 @@
+ 			 int n)
+ {
+ 	int i;
+-	if ( !res->ResidualLength ) return NULL;
++	if (!have_residual_data()) return NULL;
+ 	for (i=0; i<res->ActualNumDevices; i++) {
+ #define Dev res->Devices[i].DeviceId
+ 		if ( (Dev.BusId&BusMask)                                  &&
+@@ -901,7 +901,7 @@
+ int __init
+ proc_prep_residual_init(void)
+ {
+-	if (res->ResidualLength)
++	if (have_residual_data())
+ 		create_proc_read_entry("residual", S_IRUGO, NULL,
+ 					proc_prep_residual_read, NULL);
+ 	return 0;
+diff -urNX /home/leigh/.diffex linux-2.6.8-rc2-bk8.prev/include/asm-ppc/residual.h linux-2.6.8-rc2-bk8/include/asm-ppc/residual.h
+--- linux-2.6.8-rc2-bk8.prev/include/asm-ppc/residual.h	2004-01-09 06:59:27.000000000 +0000
++++ linux-2.6.8-rc2-bk8/include/asm-ppc/residual.h	2004-07-29 20:40:14.000000000 +0100
+@@ -328,6 +328,19 @@
+ extern PnP_TAG_PACKET *PnP_find_large_vendor_packet(unsigned char *p,
+ 						    unsigned packet_type,
+ 						    int n);
++
++#if       defined(CONFIG_PREP_RESIDUAL)
++static inline int have_residual_data(void)
++{
++	return res && res->ResidualLength;
++}
++#else /* !defined(CONFIG_PREP_RESIDUAL) */
++static inline int have_residual_data(void)
++{
++	return 0;
++}
++#endif /* defined(CONFIG_PREP_RESIDUAL) */
++
+ #endif /* __ASSEMBLY__ */
+ #endif  /* ndef _RESIDUAL_ */
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
