@@ -2,29 +2,28 @@ From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Bill Fink <billfink@mindspring.com>
 Cc: <rwaldrop@sbcglobal.net>, <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: aic7xxx breakage
-Date: Sun, 11 Aug 2002 10:41:24 +0200
-Message-Id: <20020811084124.10190@192.168.4.1>
-In-Reply-To: <20020811055718.59ebc9bd.billfink@mindspring.com>
-References: <20020811055718.59ebc9bd.billfink@mindspring.com>
+Date: Sun, 11 Aug 2002 11:17:24 +0200
+Message-Id: <20020811091724.23046@192.168.4.1>
+In-Reply-To: <20020811075428.649cbdba.billfink@mindspring.com>
+References: <20020811075428.649cbdba.billfink@mindspring.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Unfortunately, with this change the kernel doesn't even boot, failing
->very early on with the last messages on screen being:
+>OK (that was very painful).  I hope I transcribed it properly (I did
+>check and doublecheck it but especially the 0s and 8s look very similar).
 >
->openpic enter
->openpic timer
->openpic ext
->openpic spurious
->openpic exit
+>						-Bill
+>
+>P.S.  The following was transcribed exactly as it appeared on my
+>      screen, but due to screen wrapping I believe the actual last
+>      line output was the one before the two blank lines.
 
-Ok, boot that kernel with the "printkbtext" kernel arg and tell me what
-it says.
-
-Thanks
+Thanks. I'm still investigating, I'll let you know. It may have
+to wait for a week or so though as I'm on vacation with only the
+laptop.
 
 Ben.
 
