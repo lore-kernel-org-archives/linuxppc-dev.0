@@ -1,53 +1,40 @@
-Message-Id: <v03010d00b336681cf21c@[209.96.179.223]>
-In-Reply-To: <19990411150328.032219@mail.mipsys.com>
-References: <370E71B0.577788B0@synxis.com>
+Date: Sun, 11 Apr 1999 18:14:08 +0200
+To: a sun <asun@saul1.u.washington.edu>, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: BootX 1.0.3b2
+Message-Id: <19990411181408.020170@mail.mipsys.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Sun, 11 Apr 1999 11:07:02 -0400
-To: linux-pmac@samba.anu.edu.au, gdt@linuxppc.org,
-        linuxppc-dev@lists.linuxppc.org, Paul.Mackerras@cs.anu.edu.au
-From: "Kevin B. Hendricks" <kbhend@business.wm.edu>
-Subject: PPC Kernel Gurus Help?
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+I've uploaded BootX 1.0.3b2 to my web page. It contains more "DMA
+shutdown" fixes, some source code cleanups, and preliminary support for
+NuBus machines so adrian can begin working on them.
 
-I have been trying to track down deadlocks in linuxthreads code when using
-semaphores.  The semaphores are implemented using the lwarx and stwcx.
-instructions to create both a testandset and compare_and_swap type of
-intructions.
+There's a kernel patch available at
+<http://calvaweb.calvacom.fr/bh40/patch.html> which updates bootx.h along
+with minor changes to prom.c. The patch was made against today's vger
+tree and could be merged in vger without harm.
 
-Unfortunately, things are not working very reliably.  I was looking in the
-PPC Programmers Environment Manual found that in section 6.3 it specifies
-that the operating system when process switching should do an stwcx.
-instruction to a nonsense EA to clear any reservations held by the
-processor before starting the new process.
+I tested the NuBus stuff on an old performa I have here. There kernel is
+loaded at 0x200000 (phys) and entered with MMU off. I don't have a nubus
+machine with video in DRAM so I can't test if remapping of this works.
+The code for it is quick&dirty anyway, I'll clean this up later. Look at
+bootx.h for details about infos passed to the kernel on the nubus
+(basically, the device tree is gone, the phys mem map is added, along
+with the machineID (from gestalt)).
 
-Is this being done in Linux PPC kernels?
+Current kernels will boot until the HW intialisation begins. At this
+point, it crashes, and that's normal since it expects a PCI machine. The
+early boot text (prom_printf) works, the initial message is correctly
+displayed (the above patch adds more infos).
 
-Does anything special have to be done for threads created with the clone
-system call?
 
-What about in signal handlers?  If a signal handler is invoked in the
-middle of the lwarx/stwcx. instruction pairs, should the handler be
-clearing the reservation bit?
-
-Should we be clearing the reservation using an stwcx. instruction in the
-sigsetjmp / longjmp calls because they are often used to longjmp out of
-signal handlers which in turn might result in a mispaired ldwarx/stwcx. set
-of instructions similar to a process switch?
-
-Use of these instructions lwarx/stwcx. is not something I am up on.  I have
-been trying to understand things from reading the PPC manuals from Motorola
-and IBM but the answers to my questions above were not clear.
-
-Any help here would be greatly appreciated?  Am I barking up the wrong tree?
-
-Thanks,
-
-Kevin
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
 
 
