@@ -1,95 +1,28 @@
-Date: Fri, 11 Jul 2003 10:24:32 +1200
-From: Rod Boyce <rod_boyce@stratexnet.com>
-To: Dmytro Bablinyuk <dmytro.bablinyuk@tait.co.nz>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: telnetd: All network ports in use!
-Message-Id: <20030711102432.3024885b.rod_boyce@stratexnet.com>
-In-Reply-To: <3F0DDB97.2060902@tait.co.nz>
-References: <3F0DDB97.2060902@tait.co.nz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3F0E0C91.1000209@irtf.ifa.hawaii.edu>
+Date: Thu, 10 Jul 2003 15:02:09 -1000
+From: Charles Lockhart <lockhart@jeans.ifa.hawaii.edu>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Linux on the Virtex II Pro?- ELDK?
+References: <C7FFFEA58B43D311920D0004ACE5333F0F53583A@amer25.avnet.com>
+In-Reply-To: <C7FFFEA58B43D311920D0004ACE5333F0F53583A@amer25.avnet.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have sorted out this exact problem 2 weeks or so ago.  For me the problem was that the device node telnet was trying to obtain did not exist on my filesystem.  Look in /dev for device nodes ttyp* this is what they look like in my file system:
-crw-------    1 root     root       3,   0 May  7  2002 ttyp0
+Is it possible to use the ELDK to compile a simple stand alone
+executable that I could download and start using my jtag interface?  I
+tried compiling a really trivial piece of code with the "-static"
+option, and it created a file that looks large enough to have included
+everything it needs but when I download and start it, I don't see any of
+the break points I'm setting being triggered.
 
-I have added 16 of them.
+I'd just like to do this as kind of a litmus test to show that I can
+build something at least that'll execute.
 
-Regards,
-Rod Boyce
-On Fri, 11 Jul 2003 09:33:11 +1200
-Dmytro Bablinyuk <dmytro.bablinyuk@tait.co.nz> wrote:
+-Charles Lockhart
 
->
-> Finally we got u-boot with linux working, but I am experiencing problem with telnetd: "telnetd: All network ports in use!"
-> I've seen around quite a few reports about the same problem but no one solution really works.
-> Below I attached some info about my system in hope that somebody may be come across this problem.
-> Thank you in advance for any help.
-> -------
-> / # cat /etc/fstab
-> # /etc/fstab: static file system information.
-> #
-> # <file system> <mount pt>     <type>   <options>         <dump> <pass>
-> /dev/root       /              ext2     rw,noauto         0      1
-> tmpfs           /tmp           tmpfs    defaults          0      0
->
-> none            /proc          proc     defaults          0      0
-> none            /dev/pts       devpts   mode=0620         0      0
-> -------
-> / # mount
-> /dev/ram0 on / type ext2 (rw)
-> /proc on /proc type proc (rw)
-> tmpfs on /tmp type tmpfs (rw)
-> none on /dev/pts type devpts (rw)
-> -------
-> / # netstat -a
-> Active Internet connections (servers and established)
-> Proto Recv-Q Send-Q Local Address           Foreign Address         State
-> tcp        0      0 *:telnet                *:*                     LISTEN
-> Active UNIX domain sockets (servers and established)
-> Proto RefCnt Flags       Type       State         I-Node Path
-> unix  2      [ ]         DGRAM                    51     /dev/log
-> / #
-> -------
-> ## Transferring control to Linux (at address 00000000) ...
-> Linux version 2.4.21-erik (root@sardine.tait.co.nz) (gcc version 3.3) #35 Thu Jul 10 19:39:05 NZST 2003
-> On node 0 totalpages: 2048
-> zone(0): 2048 pages.
-> zone(1): 0 pages.
-> zone(2): 0 pages.
-> Kernel command line: root=/dev/ram rw
-> Decrementer Frequency = 187500000/60
-> Calibrating delay loop... 49.86 BogoMIPS
-> Memory: 6196k available (848k kernel code, 344k data, 48k init, 0k highmem)
-> Dentry cache hash table entries: 1024 (order: 1, 8192 bytes)
-> Inode cache hash table entries: 512 (order: 0, 4096 bytes)
-> Mount cache hash table entries: 512 (order: 0, 4096 bytes)
-> Buffer-cache hash table entries: 1024 (order: 0, 4096 bytes)
-> Page-cache hash table entries: 2048 (order: 1, 8192 bytes)
-> POSIX conformance testing by UNIFIX
-> Linux NET4.0 for Linux 2.4
-> Based upon Swansea University Computer Society NET3.039
-> Initializing RT netlink socket
-> Starting kswapd
-> CPM UART driver version 0.03
-> ttyS00 at 0x0280 is a SMC
-> pty: 2048 Unix98 ptys configured
-> eth0: FEC ENET Version 0.2, FEC irq 3, MII irq 4, addr 00:24:20:10:18:6a
-> RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
-> loop: loaded (max 8 devices)
-> NET4: Linux TCP/IP 1.0 for NET4.0
-> IP Protocols: ICMP, UDP, TCP, IGMP
-> IP: routing cache hash table of 512 buckets, 4Kbytes
-> TCP: Hash tables configured (established 512 bind 1024)
-> NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
-> RAMDISK: Compressed image found at block 0
-> Freeing initrd memory: 644k freed
-> VFS: Mounted root (ext2 filesystem).
-> Freeing unused kernel memory: 48k init
-> init started:  BusyBox v0.61.pre (2003.07.10-04:42+0000) multi-caip: RTNETLINK answers: File exists
->
->
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
