@@ -1,69 +1,40 @@
-Message-ID: <3C0CD3C6.ECB0E61B@laposte.net>
-Date: Tue, 04 Dec 2001 14:46:46 +0100
-From: Phil <ibm405.linux@laposte.net>
+Message-ID: <05E0AA82E68BD411A4CA00508BC5CE9A02DC64D4@engnorth.kidd.co.za>
+From: Pirow Engelbrecht <PirowE@kentron.co.za>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: MetroTRK and Motorola Sandpoint 7410
+Date: Tue, 4 Dec 2001 16:08:53 +0200 
 MIME-Version: 1.0
-To: Matt Porter <mporter@mvista.com>
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	Simon Winwood <sjw@cse.unsw.edu.au>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: More walnut boottime "fun"
-References: <20011127103042.A11612@cse.unsw.edu.au> <20011126221728.D13091@cpe-24-221-152-185.az.sprintbbd.net> <20011127050754.B15728@cx258813-a.chnd1.az.home.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I'am trying to boot the latest linuxppc_2_4_devel kernel version
-(2.4.27-pre2).
-I got it with the rsync access from Montavista.
-I build the kernel for my Walnut board using HHL2.0 toolchain
-(ppc-405-xxx) and i try to load it
-with the original bootloader (from ibm)
-Nothing appened after "Now booting the kernel".
-It seems it's a known problem.
-Thanks.
--Phil
+I'm trying to get the MetroTRK debugger working on the Motorola Sandpoint
+board (7410 processor).
+It seems from the manual that I have two options:
+1. I load MetroTRK (using DINK) into the first of the two flashes on the
+MPPMC card,
+2. I burn MetroTRK to ROM, replacing DINK
 
-Here is my boot console:
---------------------------------
-ENET Speed is 10
-Mbs...
-HALF duplex
-connection
-Booting from [ENET] Ethernet
-...
-Sending bootp request
-...
+I've tried both options now. The first time using the s-record file supplied
+with codewarrior (ROM image adress 0xfff000000), and the second time using a
+recompiled s-record file with a ROM image adress 0x0000000.
+
+Am I correct in saying that I should place the code at the start of the ROM
+(which would be memory mapped to 0xfff000000)? Any other tips or other
+comments (especially on obvious mistakes I've made) would be welcomed.
+
+Thanxs
+Pirow
 
 
-Loading file "pvillet/kernel/vmlinuz-target"
-...
-Sending tftp boot request
-...
-Transfer Complete
-...
-Loaded successfully
-...
-Entry point at 0x500000
-...
 
-loaded at:     00500000
-0058388C
-relocated to:  00400000
-0048388C
-board data at: 004807BC
-004807FC
-relocated to:  0048077C
-004807BC
-zimage at:     00405400
-0047FF59
-avail ram:     00484000
-02000000
-
-Linux/PPC load: root=/dev/nfs rw
-ip=auto
-Uncompressing
-Linux...done.
-Now booting the kernel
+**********************************************************************
+This email and any files transmitted with it are confidential and
+intended solely for the use of the individual or entity to whom they
+are addressed. If you have received this email in error please notify
+the system manager at contentadmin@kentron.co.za.
+**********************************************************************
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
