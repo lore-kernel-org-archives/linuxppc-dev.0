@@ -1,45 +1,29 @@
-From: clark@esteem.com
-Message-Id: <5.0.0.25.1.20001108105630.00a4d890@pop.esteem.com>
-Date: Wed, 08 Nov 2000 11:34:16 -0800
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: More on my SPI driver questions
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Date: Wed, 8 Nov 2000 20:58:14 +0100 (MET)
+From: Tobias Otto-Adamczak <tobias.otto-adamczak@e-technik.tu-chemnitz.de>
+To: clark@esteem.com
+cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: More on my SPI driver questions
+In-Reply-To: <5.0.0.25.1.20001108105630.00a4d890@pop.esteem.com>
+Message-ID: <Pine.LNX.4.21.0011082047010.13081-100000@pandora.hrz.tu-chemnitz.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-	Hello Again,
+> I was wondering if anbody has a working SPI driver yet that gets along
+> with SCC2 Ethernet?
 
-	I should have been a little more informative in my previous post. I am
-using a custom board with a MPC850ZTxxBT. Right now I am running ppcboot
-and kernel 2.2.13 . My board does use SCC2 as its Ethernet connection. So I
-do assume I need the IIC/SPI microcode patch.
+Adding some lines you should be able to use my code.
 
-	So to restate my original questions. I was wondering if anbody has a
-working SPI driver yet that gets along with SCC2 Ethernet? Is there any
-known side effects IIC/SPI microcode patch?
+> Is there any known side effects IIC/SPI microcode patch?
 
-Many thanks in advanced
+The I2C/SPI host commands (Init Rx/Tx params, close RxBD) are not
+supported when using the patch. Therefore you have to take care of some
+register values yourself. There is a Motorola document that explains more
+details. I can send you this.
 
-	Conn Clark
-
-
-Many thanks in advanced
-
-	Conn Clark
-*****************************************************************
-   If you live at home long enough, your parrents will move out.
-*****************************************************************
-
-Conn Clark
-Engineering Stooge				clark@esteem.com
-Electronic Systems Technology Inc.		www.esteem.com
-
-Stock Ticker Symbol				ELST
-
-"clark@esteem.com" Copyright 2000 all rights reserved. May not be sold or
-used for advertisements.
+Ciao - Tobias
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
