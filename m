@@ -1,37 +1,46 @@
-To: Ken Offer <koffer@arlut.utexas.edu>
-Cc: linuxppcdev <linuxppc-dev@lists.linuxppc.org>
+Date: Tue, 14 Oct 2003 17:10:43 -0500
 Subject: Re: Need a Linux PPC kernel which supports the Radeon Mobility 9600
-References: <FBD9E413-FE53-11D7-AB64-000393467F1A@arlut.utexas.edu>
-Reply-To: Jens Schmalzing <jens.schmalzing@physik.uni-muenchen.de>
-From: Jens Schmalzing <jens.schmalzing@physik.uni-muenchen.de>
-Date: 14 Oct 2003 17:14:59 +0200
-In-Reply-To: <FBD9E413-FE53-11D7-AB64-000393467F1A@arlut.utexas.edu>
-Message-ID: <hhfzhv7swc.fsf@pygar.theorie.physik.uni-muenchen.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v552)
+Cc: linuxppcdev <linuxppc-dev@lists.linuxppc.org>
+To: Jens Schmalzing <jens.schmalzing@physik.uni-muenchen.de>
+From: Ken Offer <koffer@arlut.utexas.edu>
+Message-Id: <40CB1A40-FE93-11D7-AB64-000393467F1A@arlut.utexas.edu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+> Date: 11 Oct 2003 23:44:22 +0200
+> From: Jens Schmalzing <jens.schmalzing@physik.uni-muenchen.de>
+> Subject: Re: Need a Linux PPC kernel which supports the Radeon
+> Mobility 9600
+>
+> Hi,
+>
+> Benjamin Herrenschmidt writes:
+>
+>> I just fixed that in my 2.6 and I'll backport to 2.4 soon
+>
+> I compiled the latest version of that tree in order to get radeonfb
+> working on my 17" Powerbook.  A few questions:
 
-Ken Offer writes:
+Hi Jens,
 
-> Anyone know how to get to Ben's 2.6 kernel?
+I'm trying that myself, but I'm running into undefined symbols, plus
+problems with compiling PCNET32 (whatever that is).
 
-The tree itself is available at
+I started with the ".config" file copied from
+"arch/ppc/configs/pmac_defconfig", but that might not be the best.  I'm
+not sure how all the creative config names map to specific machines,
+like the PowerBook.
 
- bk://ppc.bkbits.net/linuxppc-2.5-benh
+What config file did you compile 2.5-benh with?
 
-I am also aware of two rsync mirrors at
++--------------------------------------------------------------+
+| Ken Offer                               Office: 512-835-3859 |
+| Email: koffer@arlut.utexas.edu             Fax: 512-835-3259 |
+| Applied Research Laboratories, University of Texas at Austin |
++--------------------------------------------------------------+
 
- source.mvista.com::linuxppc-2.5-benh
- rsync.theorie.physik.uni-muenchen.de::linuxppc-2.5-benh
-
-Regards, Jens.
-
---
-J'qbpbe, le m'en fquz pe j'qbpbe!
-Le veux aimeb et mqubib panz je pézqbpbe je djuz tqtaj!
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
