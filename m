@@ -1,27 +1,38 @@
-Message-ID: <047301c0d75c$2da00a00$4b00000a@foolio1>
-From: "Eli Chen" <eli@routefree.com>
-To: "Dan Malek" <dan@mvista.com>
-Cc: "Gabriel Paubert" <paubert@iram.es>,
-	<brian.kuschak@skystream.com>, <linuxppc-embedded@lists.linuxppc.org>
-References: <Pine.HPX.4.10.10105072359470.22253-100000@gra-ux1.iram.es> <3AF72CA8.52163E55@mvista.com> <03a001c0d74e$60022c70$4b00000a@foolio1> <3AF73161.26986237@mvista.com> <040a01c0d754$1bf6d5c0$4b00000a@foolio1> <3AF740C0.F65FBCB8@mvista.com>
-Subject: Re: dcache BUG()
-Date: Mon, 7 May 2001 18:14:06 -0700
+Message-ID: <3AF748FF.E308BF0C@mvista.com>
+Date: Mon, 07 May 2001 21:16:47 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Michael Habermann <MHabermann@gmx.de>
+Cc: machael thailer <dony.he@huawei.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Uncompress Ok, but cannot run linux kernel...
+References: <5.0.2.1.0.20010508085652.00a4aec0@pop.gmx.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I've been running Gabriel's patch for a while now, and I'm still seeing the
-"de_put: entry net already free!" messages from running Brian's test
-(although seemingly not as often).
+Michael Habermann wrote:
 
-I do believe Gabriel is right about clearing the reservation before the rfi,
-not in transfer_to_handler.  Perhaps there are other places that returns
-from an interrupt?
+> I have the same problem on an FADS board.
 
--eli
+What "same" problem?  How are you loading and tracing the kernel?
 
+> ......... So it maybe works if the image
+> is used without bootloader or by changing head.S.
+
+The image certainly won't work without any bootloader, whether it
+is PPCBoot or the code found in arch/ppc/mbx (or arch/ppc/boot/mbx
+depending on your source base).  The kernel requires a bunch of
+registers and information set up before it is called, and one of
+those two methods must be used to ensure this happens.
+
+I believe there is a working FADS port in the FSM Labs BitKeeper
+sources.  If not, you can download the older 2.4.0-test2 LSP from
+MontaVista and use it as a guide for updating a later kernel.  The
+changes are very minor.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
