@@ -1,50 +1,51 @@
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-Id: <v04011700b2b76717bf6b@[209.86.156.101]>
-Date: Tue, 5 Jan 1999 00:52:41 -0800
-To: linuxppc-dev@lists.linuxppc.org
-From: "Timothy A. Seufert" <tas@mindspring.com>
-Subject: Strange PMAC IDE performance problem
+Date: Tue, 5 Jan 1999 10:05:39 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+To: Dan Malek <dmalek@jlc.net>
+cc: Cort Dougan <cort@persephone.cs.nmt.edu>,
+        Paul Mackerras <paulus@cs.anu.edu.au>, bh40@calva.net,
+        tmrini@ntplx.net, linuxppc-dev@lists.linuxppc.org
+Subject: Re: irq cleanup
+In-Reply-To: <3691A41B.5BB09E15@jlc.net>
+Message-ID: <Pine.LNX.4.03.9901051001440.28240-100000@mercator.cs.kuleuven.ac.be>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I discovered hdparm today, and ran its -Tt test to show sustained DTR from
-the drive on several configurations:
+On Tue, 5 Jan 1999, Dan Malek wrote:
+> Cort Dougan wrote:
+> > Right, that's the plan.
+> >
+> > }To support PCI or ISA devices that interrupt on the MBX
+> > }you would need to modify irq.c to support a multilevel interrupt
+> > }scheme.  The 8259 would interrupt on one of the 8xx interrupt
+> > }controller levels, then you would have to process all 8259
+> > }interrupts.
+> 
+> Are there other systems designed like this with a multilevel
+> interrupt controller?  It's not hard to imagine, although I have
+> never seen one before the MBX.  This is one reason I didn't
+> spend any effort when I did the iniitial port.  It seemed like
+> lots of work for a single board not likely to use them
 
-1) PowerMac G3,    2.1.130,    BootX, IBM DGHS-09U on Adaptec 2940UW
-   buffered disk reads 14.55 MB/s
+LongTrail CHRP has the output of the master i8259 routed through the OpenPIC.
+So it has 3 interrupt controllers:
 
-2) PowerMac G3,    2.1.130,    BootX, IBM DHEA-38451 IDE
-   buffered disk reads 1.89 MB/s
+  - irq 0-7: master i8259	-> irq 16
+  - irq 8-15: slave i8259	-> irq 2
+  - irq 16-35: OpenPIC in Hydra	-> CPU
 
-3) PowerBook 2400, 2.1.115,    OF,    IBM DTCA-24090 IDE 2.5"
-   buffered disk reads 1.90 MB/s
+Greetings,
 
-4) PowerBook 2400, 2.2.0-pre4, BootX, IBM DTCA-24090 IDE 2.5"
-   buffered disk reads 1.74 MB/s
+						Geert
 
-5) PowerBook 2400, 2.2.0-pre4, OF,    IBM DTCA-24090 IDE 2.5"
-   buffered disk reads 0.93 MB/s
+--
+Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
+Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
+Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
 
 
-I provided the Ultra SCSI case for comparison's sake, to show that hdparm
-hasn't totally lost its mind.  14.55 MB/s is pretty much what IBM claims
-for the DGHS-09U (UltraStar 9LP).
-
-Needless to say, the IDE performance figures are far less than those drives
-are capable of!  Under MacOS they benchmark much higher (for example, the
-38451 scores 7780 to 9472 KB/s (8819 avg) sustained read on the FWB
-BenchTest).  I think it's particularly interesting that the 2400 did better
-when booted from BootX than Open Firmware.  It would also appear from (3)
-that things have gotten worse over time, not better.
-
-All the IDE figures above are with DMA on (except 2.1.115, which doesn't
-support IDE DMA on the PowerMac unless I am mistaken).  I tried turning IDE
-DMA off on 2.2.0-pre4 (hdparm -d0 /dev/hda).  Doing so increased the
-throughput by .02 MB/s (BootX, didn't try OF case).
-
-  Tim Seufert
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
