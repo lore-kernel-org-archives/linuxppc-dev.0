@@ -1,71 +1,40 @@
-Message-Id: <m0zsgMz-001BzRC@shell.rmi.net>
-From: tph@rmi.net (Tom Harrington)
-Subject: Re: TurboMouse fix
-To: jacobs@azstarnet.com (john s jacobs anderson)
-Date: Tue, 22 Dec 1998 21:58:01 -0700 (MST)
-Cc: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.LNX.3.96.981222145001.10207B-100000@lazarus> from "john s jacobs anderson" at Dec 22, 98 02:59:42 pm
+Date: Tue, 22 Dec 1998 23:08:05 -0600 (CST)
+From: Troy Benjegerdes <hozer@drgw.net>
+To: linuxppc-dev@lists.linuxppc.org
+cc: apenwarr@foxnet.net, eric@aib.com
+Subject: workaround for broken 'make xconfig' on ppc
+Message-ID: <Pine.LNX.4.04.9812222301100.28200-100000@narn.local.drgw.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > Hmm, maybe something in your header files?  ADB_WRITEREG is defined (on
-> > my system) in /usr/include/asm/adb_mouse.h.  Look for this file and see 
-> > what's there.
-> 
-> OMM, the /usr/include/asm dir is a symlink to asm-ppc in the kernel
-> source, which is 2.1.131. That file contains a struct def for
-> mouse_status, and that's all. The ADB_WRITEREG, etc. #defines are in
-> adb.h.
+After using make xconfig on i386 earlier today, I finally decided to
+figure out why it's broke on PPC. I found that there's something not
+working right in scripts/tkgen.c where 'global CONFIG_SOUND' isn't being
+put into the tk script in the 'update_mainmenu' function.
 
-Err... hmm.  I can't quite account for that.  I did make a mistake in
-that the macro is defined in cuda.h, not adb_mouse.h, on my system.
-But I'm running a pretty basic R4 install, upgraded to 2.1.125.
-Maybe you chose different install options than I did?  IIRC I told
-it to give me every programming-related option available.
+This cause the script to bomb with a 'can't find variable $CONFIG_SOUND'
+error.
 
-If you see the definition in adb.h on your box, then adding 
-"#include asm/adb.h", and deleting either adb_mouse.h or cuda.h,
-(whichever gcc doesn't like) should get it compiling.
+This doesn't show up on i386 since CONFIG_SOUND isn't the last item, like
+it is on PPC.
 
-Can anyone else account for the header file discrepancy?
+By adding the following to linux/arch/ppc/, make xconfig now works:
 
-> > I'm surprised it complains about "ADB-WRITEREG" when the code uses
-> > "ADB_WRITEREG".  You didn't happen to "fix" this while trimming the
-> > file in pico, did you?
-> 
-> No, I screwed up while re-typing the error messages into my email.
-> Nothing in between the --cut here-- and --cut here-- (or whatever you
-> had delimiting the code) was changed. 
-> 
-> (Is it just me, or is everybody assuming I'm way more stupid than is
-> necessary? I followed instructions, and when that didn't work, I provided
-> the requested feedback, and so far I've got two condescending emails to
-> show for it.) 
+-----
 
-Two of the most painful lessons of programming are:
-1. Everyone makes the stupidest mistakes, all the time.
-2. If you don't understand #1, you will still make stupid mistakes, but
-it will take you FOREVER to find them.
+mainmenu_option next_comment
+comment 'make Xconfig is broken'
+bool 'Xconfig is broken' CONFIG_BROKEN_XCONFIG
+endmenu  
 
-Yes, I suggested that you might have made a stupid mistake.  That
-doesn't mean I was suggesting that _you_ are stupid.  If you do
-understand #1, you learn to look for stupid mistakes right from the
-start (I _still_ use "=" for "==" sometimes, but now I know to expect
-it).
-
-> > I really don't know if mousehack is useful (or even necessary) with a v4.0
-> > TurboMouse.  I assume you've tried the "mousemode" command?
-> 
-> Well, Mark Abene(sp?) has said in this thread that mousehack doesn't work
-> with the 4.0 balls. I've tried mousemode; the mouse just switches back.
-
-Yeah, it sounds like the 4.0 TurboMouse is pretty weird in this regard.
-They could have just used the extended mouse protocol, after all.
-
-Tom
+--------------------------------------------------------------------------
+| Troy Benjegerdes    |       troy@microux.com     |    hozer@drgw.net   |
+|    Unix is user friendly... You just have to be friendly to it first.  |
+| This message composed with 100% free software.    http://www.gnu.org   |
+--------------------------------------------------------------------------
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
