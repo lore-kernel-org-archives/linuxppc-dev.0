@@ -1,36 +1,28 @@
-Message-ID: <3BB9ED05.D354AF5B@midrivers.com>
-Date: Tue, 02 Oct 2001 10:36:21 -0600
-From: Mark Pilon <mpilon@midrivers.com>
+From: "Jeffrey D. Kowing" <jeffrey.d.kowing1@jsc.nasa.gov>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: building tools from montavista SRPMs
 Content-Type: text/plain; charset=us-ascii
+Message-ID: <15289.61816.759663.863700@igor.jsc.nasa.gov>
+Date: Tue, 2 Oct 2001 11:55:20 -0500
+To: Mark Pilon <mpilon@midrivers.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: building tools from montavista SRPMs
+In-Reply-To: <3BB9ED05.D354AF5B@midrivers.com>
+References: <3BB9ED05.D354AF5B@midrivers.com>
+Reply-To: jeffrey.d.kowing1@jsc.nasa.gov
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I'm sure this has been covered somewhere, but I've yet to find it
-this morning ... all constructive replies appreciated.
+Mark Pilon writes:
+ > I've seen references to 'rpmconfig' but don't know just what to
+ > feed rpm / rpmconfig in order to build per the SRPM spec files.
 
-I'm working from mvista professional v.2.0 and want to build some
-of the tools from scratch -- specifically for a ppc405.
-
-I've seen references to 'rpmconfig' but don't know just what to
-feed rpm / rpmconfig in order to build per the SRPM spec files.
-
-can someone point me to the details of how to do this ... ?
-
-many thanks,
-
-Mark
+You need to install the hhl-host-rpmconfig RPM (something like
+hhl-host-rpmconfig-1.98-hhl2.0.1.i386.rpm)  Then follow the
+instructions in /opt/hardhat/config/rpm/README.
 
 --
-Mark Pilon
-
-Minolta-QMS
-P.O. Box 37
-Fallon, MT.  59326-0037
-
-1-406-853-0433
+Jeff Kowing
+jeffrey.d.kowing1@jsc.nasa.gov
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
