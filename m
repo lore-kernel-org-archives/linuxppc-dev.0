@@ -1,52 +1,38 @@
-Subject: Re: XServe G5 and Linux ?
+Subject: Re: ibook G4 Status Report
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Harald Welte <laforge@gnumonks.org>
+To: Costantino Pistagna <cpistagna@vrlteam.org>
 Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <20040209103652.GM18913@obroa-skai.de.gnumonks.org>
-References: <20040208180539.GG18479@sunbeam.de.gnumonks.org>
-	 <1076299574.887.118.camel@gaston>
-	 <20040209103652.GM18913@obroa-skai.de.gnumonks.org>
+In-Reply-To: <27203D60-5B28-11D8-A96D-000A95B30208@vrlteam.org>
+References: <27203D60-5B28-11D8-A96D-000A95B30208@vrlteam.org>
 Content-Type: text/plain
-Message-Id: <1076360199.835.1.camel@gaston>
+Message-Id: <1076361029.763.13.camel@gaston>
 Mime-Version: 1.0
-Date: Tue, 10 Feb 2004 07:57:10 +1100
+Date: Tue, 10 Feb 2004 08:10:30 +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 2004-02-09 at 21:36, Harald Welte wrote:
-
-> I see.  It's just that the XServe G5 is sold cheaper than the XServe G4
-> (at least the dealers have a lower price).  That's why I somehow feel
-> reluctand of buying an old machine.
-
-Well, I don't quite recommend G4s in general any more ;)
-
-> Also, I can positively confirm that we've had a G5 XServe at the 20C3
-> (CCC Chaos Communication Congress) at the end of december.  It was used
-> to relay the A/V streams of the lecture halls into the congress network.
-
-Strange... I'm quite sure they are only due to shipping about now.
-
-> So either the CCC has received an unreleased machine, or they are
-> already sold.
+> Since my ibook is a 12" equipped, i really need to use the video output
+> with my 17" LCD.
 >
-> > > 1) Does anybody have experience running linux on the current G5
-> > > Xserve?
-> >
-> > I expect the kernel to mostly work, +/- minor adaptations that should
-> > be fairly trivial hopefully, except maybe for the thermal control.
-> > But then it depends what they changed of the chipset. The above is
-> > assuming the chipset is just the new northbridge rev and same IO chip.
->
-> mh. Unfortunately you're in .au now.  This means I cannot just buy one
-> of them and ship it to you for getting that initial work done.
-> Shipping, Taxes, Customs Offices, ... would definitely over-complicate
-> everything.
+> Any clues ? and/or usefull start point ?. i've tried to look inside
+> xfree drivers sources,
+> but without any good results. Seems that radeon9200 does not provide,
+> any type of
+> multiple screen support.
 
-Right, on the other hands, there are chances that it just work :) And I
-will probably get access to one soon anyway.
+You have a VGA or DVI output ? VGA I think ? It should work with
+Michel Danzer packages but it will be an analog output, not as good
+as a fully digital.
 
+XFree doesn't drive properly a DVI output on a laptop yet, though
+I got it to work with a small userland hack I use to "fix" the chip
+after X configured it ;)
+
+Note that you may also have a problem with XFree not setting the proper
+divider for your internal panel when used without UseFBDev. Same issue,
+I have a userland "fix" for that since fixing it in XFree itself isn't
+quite simple at this point.
 
 Ben.
 
