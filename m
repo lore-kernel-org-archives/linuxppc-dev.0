@@ -1,20 +1,13 @@
-Return-Path: <Peter.Ryser@xilinx.com>
-Received: from mail17-haw-R.bigfish.com (mail-haw.bigfish.com [12.129.199.61])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id D75A12BDA0
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 26 Oct 2004 02:57:26 +1000 (EST)
-Date: Mon, 25 Oct 2004 09:35:42 -0700
-From: Peter Ryser <Peter.Ryser@xilinx.com>
-In-reply-to: <1098701468l.31592l.0l@ipnnarval>
-To: grave <grave@ipno.in2p3.fr>
-Message-id: <417D2B5E.8050200@xilinx.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-15; format=flowed
-References: <1098701468l.31592l.0l@ipnnarval>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: uboot and ppc405
+Return-Path: <runet@innovsys.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Date: Mon, 25 Oct 2004 12:17:04 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B06DB99@ismail.innsys.innovsys.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: <Linuxppc-embedded@ozlabs.org>
+Cc: 
+Subject: [PATCH] RE: CPM2 Bug
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,32 +18,127 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Did some more research.
 
-please have a look at "Getting started with U-Boot and ML300" 
-http://www.xilinx.com/bvdocs/appnotes/xapp542.pdf that describes how to 
-use U-Boot with Xilinx Virtex-II Pro devices.
+Res6 should be 94 bytes long.
 
-You might also want to have a look at the README.ml300 in the u-boot 
-source tree that provides a quick start.
+However... It does work @ 92 bytes because the compiler alligns the next
+struct (pci_cpm2_t) on a int boundary anyways (no packing specified fo
+the structs)
 
-- Peter
+I tested it with a module that pronted out the address of the PCI struct
+that follows the sit_cpm2_t struct.
+
+Imap =3D 0xF0000000
+With res6[92]
+im-pci is @  0xf0010430
+
+With res6[94]
+im-pci is @  0xf0010430
+
+So we're saved by the compiler.
+
+Here's the patch
+
+Signed-off by Rune Torgersen <runet@innovsys.com>
+
+--- linux-2.5/include/asm-ppc/immap_cpm2.h      2004-10-21
+10:00:14.607712610 -0500
++++ linux-innsys-2.6.9/include/asm-ppc/immap_cpm2.h     2004-10-25
+12:09:58.000000000 -0500
+@@ -133,7 +133,7 @@ typedef struct      sys_int_timers {
+        u8      res5[2];
+        u32     sit_pitc;
+        u32     sit_pitr;
+-       u8      res6[92];
++       u8      res6[94];
+        u8      res7[390];
+ } sit_cpm2_t;
 
 
-grave wrote:
-
-> Hi,
->
-> We re starting a disign with xilinx chip Virtex II pro and I wonder 
-> the  typical size of an uboot binary. This is for our electronician 
-> disigner  in order to dimension the prom and so on...
->
-> Any hint welcome,
->
-> Thanks in advance, xavier grave
->
+> -----Original Message-----
+> From: Rune Torgersen
+> Sent: Friday, October 22, 2004 10:56
+> I do use PCI in u-boot, and it works (on an 8266, not 8xx)
+> > > Rune Torgersen wrote:
+> > >=20
+> > >> I think I found a bug in immap_cmp2.h
+> > >>
+> > >> (in structue sit_cpm2_t)
+> > >>
+> > >> I know that res7 was changed to make room for the PCI
+> > structure But
+> > >> res6 is 2 bytes shorter in the new one.
+> > >>
+> > >> I compared to the same structure in u-boot (that got the
+> > PCI change
+> > >> at about the same time) and it has it at 94 bytes long also.
+> > >>
+> > >>
+> > >> Old structure:
+> > >>  /* System Integration Timers.
+> > >>  */
+> > >> typedef struct sys_int_timers {
+> > >>     char    res1[32];
+> > >>     ushort    sit_tmcntsc;
+> > >>     char    res2[2];
+> > >>     uint    sit_tmcnt;
+> > >>     char    res3[4];
+> > >>     uint    sit_tmcntal;
+> > >>     char    res4[16];
+> > >>     ushort    sit_piscr;
+> > >>     char    res5[2];
+> > >>     uint    sit_pitc;
+> > >>     uint    sit_pitr;
+> > >>     char    res6[94];
+> > >>     char    res7[2390];
+> > >> } sit8260_t;
+> > >>
+> > >> New structue:
+> > >> typedef struct sys_int_timers {
+> > >>     u8    res1[32];
+> > >>     u16    sit_tmcntsc;
+> > >>     u8    res2[2];
+> > >>     u32    sit_tmcnt;
+> > >>     u8    res3[4];
+> > >>     u32    sit_tmcntal;
+> > >>     u8    res4[16];
+> > >>     u16    sit_piscr;
+> > >>     u8    res5[2];
+> > >>     u32    sit_pitc;
+> > >>     u32    sit_pitr;
+> > >>     u8    res6[92];
+> > >>     u8    res7[390];
+> > >> } sit_cpm2_t;
+> > >>
+> > >> Rune Torgersen
+> > >> System Developer
+> > >> Innovative Systems LLC
+> > >> 1000 Innovative Drive
+> > >> Mitchell, SD 57301
+> > >> Ph: 605-995-6120
+> > >> www.innovsys.com _______________________________________________
+> > >> Linuxppc-embedded mailing list Linuxppc-embedded@ozlabs.org
+> > >> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> > >>
+> > >>
+> > >=20
+> > > _______________________________________________
+> > > Linuxppc-embedded mailing list
+> > > Linuxppc-embedded@ozlabs.org
+> > > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> > >=20
+> > >=20
+> >=20
+> > _______________________________________________
+> > Linuxppc-embedded mailing list
+> > Linuxppc-embedded@ozlabs.org
+> > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> >=20
+> >=20
 > _______________________________________________
 > Linuxppc-embedded mailing list
 > Linuxppc-embedded@ozlabs.org
 > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
+>=20
+>=20
