@@ -1,43 +1,55 @@
-From: Miles Lane <miles.lane@comcast.net>
+Message-Id: <5.2.1.1.2.20030804104557.01f0fe00@mail.lauterbach.com>
+Date: Mon, 04 Aug 2003 10:49:47 +0200
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: 2.6.0-test2-bk2 (linus' tree) -- arch/ppc/platforms/pmac_cpufreq.c:219: undefined reference to `cpufreq_frequency_table_verify'
-Date: Sun, 3 Aug 2003 15:17:14 -0700
-References: <200308031456.11550.miles.lane@comcast.net> <1059948097.602.1.camel@gaston>
-In-Reply-To: <1059948097.602.1.camel@gaston>
-Cc: linuxppc-dev@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200308031517.14905.miles.lane@comcast.net>
+From: Franz Sirl <Franz.Sirl-ppc@lauterbach.com>
+Subject: Re: linuxppc-2.5 (rsync mvista) -- drivers/input/evdev.c:243:
+  error: invalid lvalue in asm statement
+Cc: Paul Mackerras <paulus@samba.org>,
+	Miles Lane <miles.lane@comcast.net>, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <1059910283.3519.121.camel@gaston>
+References: <16172.61621.985947.378822@cargo.ozlabs.ibm.com>
+ <200308021823.30382.miles.lane@comcast.net>
+ <16172.61621.985947.378822@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun August 3 2003 3:01 pm, Benjamin Herrenschmidt wrote:
-> On Sun, 2003-08-03 at 23:56, Miles Lane wrote:
-> > After patching arch/ppc/kernel/setup.c to include cpu.h,
-> > I got this error:
+At 13:31 03.08.2003, Benjamin Herrenschmidt wrote:
+
+>On Sun, 2003-08-03 at 13:23, Paul Mackerras wrote:
+> > Miles Lane writes:
+> > >
+> > >   CC      drivers/input/evdev.o
+> > > drivers/input/evdev.c: In function `evdev_ioctl':
+> > > drivers/input/evdev.c:243: error: invalid lvalue in asm statement
+> > > drivers/input/evdev.c:243: error: invalid lvalue in asm statement
+> > > drivers/input/evdev.c:243: error: invalid lvalue in asm statement
+> > > drivers/input/evdev.c:243: error: invalid lvalue in asm statement
 > >
-> >   LD      .tmp_vmlinux1
-> > arch/ppc/platforms/built-in.o(.pmac.text+0x584c): In function
-> > `pmac_cpufreq_setup':
-> > arch/ppc/platforms/pmac_cpufreq.c:219: undefined reference to
-> > `cpufreq_frequency_table_verify'
-> > arch/ppc/platforms/built-in.o(.pmac.text+0x588c):arch/ppc/platforms/pmac_
-> >cpufreq.c:229: undefined reference to `cpufreq_frequency_table_target'
-> > arch/ppc/platforms/built-in.o(.pmac.text+0x5930):arch/ppc/platforms/pmac_
-> >cpufreq.c:254: undefined reference to `cpufreq_frequency_table_cpuinfo'
-> > make: *** [.tmp_vmlinux1] Error 1
+> > These errors are a consequence of the change I made to make get_user
+> > work on 64-bit quantities.  I can't actually see a way to have
+> > get_user work when it's used the way it is here and also work on
+> > 64-bit quantities, without giving spurious warnings when used on
+> > pointers.
+> >
+> > Who was it that wanted 64-bit get_user?  I think we are going to have
+> > to make a separate get_user64().
 >
-> That's some Kconfig not up-to-date yet. I'm sorting out various
-> missing pmac patches for Linus and will send them over next week,
-> including that. You basically need CPU_FREQ_TABLE for now.
+>No Paul, it's not your fault, if you look closely at evdev, that code
+>can't really work properly anyway.
 
-Uh, rats.  It looks like KConfig won't let me edit .config by hand.
-It strips out me addition.  How do I get around this?
+Well, his patch to get_user exposed it, but the bug is really in the very
+questionable use of the gcc extension to accept ?: expressions as lvalue,
+see <http://gcc.gnu.org/bugzilla/show_bug.cgi?id=11564>
 
-Puzzled,
+>I talked to Vojtech at OLS and he'll be fixing that to always pass
+>either an u32 or an int to userspace.
 
-	Miles
+I've sent him a patch too as a result of the above GCC PR.
+
+Franz.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
