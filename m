@@ -1,42 +1,67 @@
-From: bob@kunk.jriver.com
-Message-ID: <19990806054632.8201.qmail@kunk.jriver.com>
-Subject: Re: Odd ethernet problem
-In-Reply-To: <199908060541.PAA20067@tango.anu.edu.au> from Paul Mackerras at
- "Aug 6, 1999 03:41:18 pm"
-To: Paul.Mackerras@cs.anu.edu.au
-Date: Fri, 6 Aug 1999 00:46:31 -0500 (CDT)
-CC: linuxppc-dev@lists.linuxppc.org
+Date: Fri, 6 Aug 1999 10:08:04 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+To: Neil Blackwood <nb@terrafix.co.uk>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: PROBLEMS BOOTING KERNEL ON EMBEDDED PROCESSOR MBX821
+In-Reply-To: <000101bedfdd$9250fc20$6401a8c0@everyone>
+Message-ID: <Pine.LNX.4.10.9908061005520.31686-100000@mercator.cs.kuleuven.ac.be>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-User Paul Mackerras says:
-> bob@kunk.jriver.com wrote:
+On Thu, 5 Aug 1999, Neil Blackwood wrote:
+>         I have just downloaded the 2.2.0pre6 kernel for MBX8xx processors
+> from
+> the embedded directory of linuxppc.cs.nmt.edu.
+> We are running it on a MXX821-004A development board.
+> Unfortunately we seem to have a problem during the booting of the kernel.
+> The messages
 > 
-> > When the iMac talked to either Unix box from linux-ppc (several kernels
-> > tested), I would get nearly 100 percent on receive but REALLY slow
-> > response on transmit (like about 40k/sec). Watching the lights on the hub,
-> > it appears that there is a really big delay restarting transmit after
-> > a collision occurs. Perhaps duplex set wrong?
+>                         iack = -1
 > 
-> I have seen this too but I haven't figured out what's going wrong yet.
-> My suspicion is that some packets are getting corrupted somehow on
-> transmission and then we are having to wait for a TCP retransmit.  A
-> tcpdump might yield some interesting information.
+> and
+>                         irq = 7
 > 
-> Paul.
+> are displayed continuously.
+> 
+> We have managed to track down the iack message in the kernel source.
+> In directory
+> linux/arch/ppc/kernel
+> in File
+> ppc8xx_pic.c
+> In function
+> 
+> mbx_i8259_action()
+> is the code
+> 
+>                 int irq;
+> 
+>                 irq = (inl(0x508)>>24)&0xff;
+>                 if (irq!= 0xff)printk("iack 5d\n", irq);
+> 
+> We think this is inconsistent if the value of irq is printed out as -1.
 
-Good suggestion, I'll setup a tcp dump and check it out. I did try hacking
-the transmit timer without success...
+The first thing in my mind that gets triggered by this is unsigned vs. signed
+chars. On most systems, `char' defaults to `signed char', but on PPC it
+defaults to `unsigned char'. Either behavior complies with the C standard.
+But I don't see where it gets wrong here :-(
 
-Bob
+> ps Is this type of enquiry suitable for this mailing list or should I use
+> USERS.
 
--- 
-Robert E. Brose II    N0QBJ
-http://www.jriver.com/~bob/
-bob@kunk.jriver.com
+IMHO this is the correct list.
+
+Greetings,
+
+						Geert
+
+--
+Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
+Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
+Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
