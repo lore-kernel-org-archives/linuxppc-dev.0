@@ -1,54 +1,34 @@
-Date: Mon, 8 Feb 1999 13:07:15 -0600 (CST)
-Message-Id: <v03110700b2e4911c54e4@[129.59.235.1]>
-In-Reply-To: <Pine.LNX.4.04.9902081248200.459-100000@idd-01.imbc.gr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-To: Kostas Gewrgiou <gewrgiou@imbc.gr>, <linuxppc-dev@lists.linuxppc.org>
-From: "Marcus H. Mendenhall" <mendenmh@nashville.net>
-Subject: Kernel message
+Date: Tue, 9 Feb 1999 12:59:24 +1100
+Message-Id: <199902090159.MAA04789@tango.anu.edu.au>
+From: Paul Mackerras <paulus@cs.anu.edu.au>
+To: mavpion@fire.csua.ucla.edu
+CC: linuxppc-dev@lists.linuxppc.org, mavpion@fire.csua.ucla.edu
+In-reply-to: <Pine.LNX.3.96.990201154257.111F-100000@fire.csua.ucla.edu>
+	(message from Eric Guenterberg on Mon, 1 Feb 1999 15:53:25 -0800
+	(PST))
+Subject: Re: Linux 2.2.1 Kernel scsi troubles
+Reply-to: Paul.Mackerras@cs.anu.edu.au
+References: <Pine.LNX.3.96.990201154257.111F-100000@fire.csua.ucla.edu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This appears (from the mm->pgd reference) to be the same crash I have been
-seeing and posting to the list for a while.  I have been trying to trace it
-down, but not with much success.  It comes from mm/slab.c and may be
-associated with a bad page fault.  Very few people (other than me) have
-been reporting it.  I am seeing it on a G3 rev 2 with 128 MB RAM, running
-off the stock internal IDE drives.  A possible indication is that it might
-be a bug in the IDE driver, causing page fault to fail, since at least one
-person running with SCSI drives has indicated he is not seeing this
-problem.
+Eric Guenterberg <mavpion@fire.csua.ucla.edu> wrote:
 
-Unfortunately, the time I can spend chasing this is small, so unless
-someone with a lot more time starts getting annoyed by it, it won't go away
-soon.
+> I recently compiled the the Linux 2.2.1 kernel, but I can't get it to boot
+> because when it is booting it aborts the reading of the harddrive that
+> contains my root partition.
+> 
+> I have a PowerMac 7600/132
+[snip]
+> It says:
+> scsi host 0 aborted
 
-Marcus Mendenhall
+Could you try the kernel (vmlinux.gz) in
+ftp://samba.anu.edu.au/pub/linux-pmac/test/
+and let me know if it does the same thing?
 
-
->I got the following from the kernel, (vger-2.2.0-990201)
->i was playing with loadkeys at that time, maybe its usefull
->in the developers maybe not, i have no idea how to turn this
->to something usefull.
->
->  Kostas Gewrgiou
->
->NIP: 0182A070 XER: 00000000 LR: 01801EAC REGS: c3483e90 TRAP: 0500
->MSR: 0000d032 EE: 1 PR: 1 FP: 0 ME: 1 IR/DR: 11
->TASK = c3482000[277] 'rc5des' mm->pgd c3480000 Last syscall: 78
->last math c2af0000
->GPR00: E5E74579 7FFFFA84 9B449F0E 0212050F 73E1FEAA 45086972 7C81A0EE
->3C571621
->GPR08: 83F32258 4B765D95 7356167B 313C4254 18253FCD 46DF33E4 07D0C6CC
->63186637
->GPR16: CF819E85 799561AC 68D44C12 CD405D72 3D919D13 950149FD 14B690AE
->A5959BEF
->GPR24: C987064F CDC150F7 B00426E7 85D30A31 1825F482 3E07D996 61FD48F2
->4BD08963
->
-
-
+Paul.
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
