@@ -1,81 +1,1444 @@
-From: Gabriel Paubert <paubert@iram.es>
-Date: Tue, 29 Apr 2003 14:08:38 +0200
-To: Fred Gray <fegray@socrates.berkeley.edu>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: ppc_irq_dispatch_handler dominating profile?
-Message-ID: <20030429120838.GA18537@iram.es>
-References: <20030427194236.GC25907@socrates.berkeley.edu> <16044.23965.747962.112267@nanango.paulus.ozlabs.org> <20030428085342.GA7396@iram.es> <20030428124224.GC26408@socrates.berkeley.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20030428124224.GC26408@socrates.berkeley.edu>
+Message-ID: <3EAF1A0C.3050401@mvista.com>
+Date: Tue, 29 Apr 2003 17:34:20 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+MIME-Version: 1.0
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: linuxppc_2_4_devel patch for Force CPCI-690
+Content-Type: multipart/mixed;
+ boundary="------------010401020405070604020001"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-	Hi Fred,
+This is a multi-part message in MIME format.
+--------------010401020405070604020001
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Mon, Apr 28, 2003 at 05:42:24AM -0700, Fred Gray wrote:
->
-> On Mon, Apr 28, 2003 at 10:53:42AM +0200, Gabriel Paubert wrote:
-> > Hmmm, I get more than 100MB/s on my MVME2600 with a 200MHz 603e,
-> > although not the half GB/s Motorola claims it is capable of. But a 604
-> > should be a bit faster. The chipset is old (1997) but it was rather
-> > fast when it came out, especially because the memory interface is 128
-> > bits wide. This said, putting a gbit Ethernet (PMC module I suppose)
-> > on it is stretching it a bit.
-> >
-> > Is the 100Mb/s of the builtin interface too slow for you?
->
-> Hi, Gabriel, (...and many thanks for your hard work porting Linux to these
->   boards in the first place--I am extremely glad to be in a position to leave
->   vxWorks behind)
+The following patch adds support for the Force CPCI-690 cPCI board.
 
-Glad that it helped. And another "customer" of my MVME port (and
-perhaps VME driver too) which I discover right now ;-)
+If no one objects, please push this into linuxppc_2_4_devel.
 
-(I'm planning to do a port of late 2.5/early 2.6 in less than a year,
-I don't know exactly when but I shall have to do it).
+Thanks,
 
-> The gigabit Ethernet is indeed on a PMC module (from SBS Technologies,
-> PMC-Gigabit-ST3).  Our electronics generates about 15 MB/s per VME crate;
-> it's digitizing tracks left by muons in a time-projection chamber.
-> There are two crates, each with this rate, each equipped with an MVME2600
-> with an gigabit card, and they have to transfer this firehose of data to a
-> computer that will do some as-yet-undefined online data reduction and
-> send the result to an LTO 2 tape robot.  So, yes, we need about 50% more
-> throughput than the built-in 10/100 Ethernet port could provide, and we need
-> it with enough CPU time left over to manage the VME readout.
+Mark
 
-Ok, I use them differently. The 6 MVME 2600 I have doing data acquisition
-produce very little data on the network (<300 kB/s, but they process it quite
-a lot, including a Fourier transform, bewteen acquisition and sending). Newer
-systems use MVME2400 which are way faster. The main problem I had (solved now) is
-that 4 of my boards are from the first batches and that I had to carefully
-work around the pile of bugs of the Universe I PCI<->VME bridge.
+--------------010401020405070604020001
+Content-Type: text/plain;
+ name="cpci690.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="cpci690.patch"
 
->
-> Fortunately, though, we don't need the whole gigabit.  I agree that would
-> probably be well-nigh impossible.  Still, I'm very interested in understanding
-> why the interrupt overhead seems to be so high at our 10 to 15 MB/s
-> interrupt rate.
+===== arch/ppc/config.in 1.177 vs edited =====
+--- 1.177/arch/ppc/config.in	Fri Apr 25 11:24:05 2003
++++ edited/arch/ppc/config.in	Mon Apr 28 19:00:05 2003
+@@ -143,6 +143,7 @@
+ 	"CHRP/PowerMac/PReP	CONFIG_ALL_PPC		\
+ 	 Amiga-APUS		CONFIG_APUS		\
+ 	 Cogent-Willow		CONFIG_WILLOW		\
++	 Force-CPCI690		CONFIG_CPCI690		\
+ 	 Force-PowerCore	CONFIG_PCORE		\
+ 	 Force-PowerPMC250	CONFIG_POWERPMC250	\
+ 	 Marvell-EV-64260-BP	CONFIG_EV64260		\
+@@ -170,7 +171,7 @@
+ fi
 
-How many interrupts do you have altogether, how many VME interrupts too
-if it's not secret (cat /proc/bus/vme/interrupts if you use my driver).
+ if [ "$CONFIG_EV64260" = "y" -o "$CONFIG_HXEB100" = "y" \
+-  -o "$CONFIG_PUMA_A" = "y" ]; then
++  -o "$CONFIG_PUMA_A" = "y" -o "$CONFIG_CPCI690" = "y" ]; then
+     define_bool CONFIG_GT64260 y
+ fi
 
-Do you have lots of bad interrupts (cat /proc/interrupts)?
+===== arch/ppc/boot/simple/Makefile 1.25 vs edited =====
+--- 1.25/arch/ppc/boot/simple/Makefile	Tue Apr  1 12:48:31 2003
++++ edited/arch/ppc/boot/simple/Makefile	Tue Apr 29 15:45:45 2003
+@@ -31,6 +31,13 @@
+ TFTPIMAGE			:= /tftpboot/zImage.embedded
+ MISC				:= misc-embedded.o
+ endif
++ifeq ($(CONFIG_CPCI690),y)
++ZIMAGE				:= zImage-CPCI690
++ZIMAGEINITRD			:= zImage.initrd-CPCI690
++EXTRA				:= misc-gt64260.o gt64260_stub.o misc-cpci690.o
++CACHEFLAG			:= -include clear.S
++TFTPIMAGE			:= /tftpboot/zImage.cpci690
++endif
+ ifeq ($(CONFIG_IBM_OPENBIOS),y)
+ ZIMAGE				:= zImage-TREE
+ ZIMAGEINITRD			:= zImage.initrd-TREE
+@@ -258,6 +265,12 @@
 
-Do you know how much time you spend in the VME interrupt routines
-(which are run with interrupts masked if you use my driver, but there
-is really no other solution, the Universe being essentially a cascaded
-interrupt controller) ?
+ zImage.initrd-K2: zvmlinux.initrd
+ 	ln -sf zImage.initrd.elf ../images/zImage.initrd.k2
++
++zImage-CPCI690: zvmlinux
++	dd if=zvmlinux of=../images/zImage.cpci690 skip=64 bs=1k
++
++zImage.initrd-CPCI690: zvmlinux.initrd
++	dd if=zvmlinux.initrd of=../images/zImage.initrd.cpci690 skip=64 bs=1k
 
-Do you know the percentage of bus utilization due to DMA ?
+ zImage-EV64260: zvmlinux
+ 	ln -sf zImage.elf ../images/zImage.ev64260
+===== arch/ppc/configs/cpci690_defconfig 1.1 vs edited =====
+--- 1.1/arch/ppc/configs/cpci690_defconfig	Wed Apr  9 11:54:59 2003
++++ edited/arch/ppc/configs/cpci690_defconfig	Tue Apr 29 17:09:45 2003
+@@ -0,0 +1,601 @@
++#
++# Automatically generated by make menuconfig: don't edit
++#
++# CONFIG_UID16 is not set
++# CONFIG_RWSEM_GENERIC_SPINLOCK is not set
++CONFIG_RWSEM_XCHGADD_ALGORITHM=y
++CONFIG_HAVE_DEC_LOCK=y
++
++#
++# Code maturity level options
++#
++CONFIG_EXPERIMENTAL=y
++# CONFIG_ADVANCED_OPTIONS is not set
++
++#
++# Loadable module support
++#
++CONFIG_MODULES=y
++CONFIG_MODVERSIONS=y
++CONFIG_KMOD=y
++
++#
++# Platform support
++#
++CONFIG_PPC=y
++CONFIG_PPC32=y
++CONFIG_6xx=y
++# CONFIG_40x is not set
++# CONFIG_440 is not set
++# CONFIG_POWER3 is not set
++# CONFIG_8xx is not set
++# CONFIG_8260 is not set
++CONFIG_PPC_STD_MMU=y
++# CONFIG_ALL_PPC is not set
++# CONFIG_APUS is not set
++# CONFIG_WILLOW is not set
++CONFIG_CPCI690=y
++# CONFIG_PCORE is not set
++# CONFIG_POWERPMC250 is not set
++# CONFIG_EV64260 is not set
++# CONFIG_SPRUCE is not set
++# CONFIG_MENF1 is not set
++# CONFIG_PUMA_A is not set
++# CONFIG_HXEB100 is not set
++# CONFIG_LOPEC is not set
++# CONFIG_MCPN765 is not set
++# CONFIG_MVME5100 is not set
++# CONFIG_PPLUS is not set
++# CONFIG_PRPMC750 is not set
++# CONFIG_PRPMC800 is not set
++# CONFIG_SANDPOINT is not set
++# CONFIG_ADIR is not set
++# CONFIG_K2 is not set
++# CONFIG_PAL4 is not set
++# CONFIG_GEMINI is not set
++# CONFIG_ZX4500 is not set
++CONFIG_GT64260=y
++
++#
++# Marvell/Galileo GT64260 Options
++#
++# CONFIG_GT64260_BUS_0_NOT_COHERENT is not set
++# CONFIG_GT64260_BUS_1_NOT_COHERENT is not set
++# CONFIG_USE_PPCBOOT is not set
++CONFIG_GT64260_ORIG_REG_BASE=f1000000
++# CONFIG_GT64260_NEW_BASE is not set
++# CONFIG_SMP is not set
++CONFIG_ALTIVEC=y
++CONFIG_TAU=y
++# CONFIG_TAU_INT is not set
++# CONFIG_TAU_AVERAGE is not set
++CONFIG_PPC_ISATIMER=y
++
++#
++# General setup
++#
++# CONFIG_HIGHMEM is not set
++# CONFIG_ISA is not set
++# CONFIG_EISA is not set
++# CONFIG_SBUS is not set
++# CONFIG_MCA is not set
++CONFIG_PCI=y
++CONFIG_NET=y
++CONFIG_SYSCTL=y
++CONFIG_SYSVIPC=y
++# CONFIG_BSD_PROCESS_ACCT is not set
++CONFIG_KCORE_ELF=y
++CONFIG_BINFMT_ELF=y
++CONFIG_KERNEL_ELF=y
++CONFIG_BINFMT_MISC=y
++CONFIG_PCI_NAMES=y
++# CONFIG_HOTPLUG is not set
++# CONFIG_PCMCIA is not set
++
++#
++# Parallel port support
++#
++# CONFIG_PARPORT is not set
++# CONFIG_GEN_RTC is not set
++CONFIG_PPC_RTC=y
++CONFIG_CMDLINE_BOOL=y
++CONFIG_CMDLINE="console=ttyS0,9600 ip=on"
++
++#
++# Memory Technology Devices (MTD)
++#
++# CONFIG_MTD is not set
++
++#
++# Plug and Play configuration
++#
++# CONFIG_PNP is not set
++# CONFIG_ISAPNP is not set
++
++#
++# Block devices
++#
++# CONFIG_BLK_DEV_FD is not set
++# CONFIG_BLK_DEV_XD is not set
++# CONFIG_PARIDE is not set
++# CONFIG_BLK_CPQ_DA is not set
++# CONFIG_BLK_CPQ_CISS_DA is not set
++# CONFIG_CISS_SCSI_TAPE is not set
++# CONFIG_BLK_DEV_DAC960 is not set
++# CONFIG_BLK_DEV_UMEM is not set
++CONFIG_BLK_DEV_LOOP=y
++# CONFIG_BLK_DEV_NBD is not set
++CONFIG_BLK_DEV_RAM=y
++CONFIG_BLK_DEV_RAM_SIZE=4096
++CONFIG_BLK_DEV_INITRD=y
++# CONFIG_BLK_STATS is not set
++
++#
++# Multi-device support (RAID and LVM)
++#
++# CONFIG_MD is not set
++# CONFIG_BLK_DEV_MD is not set
++# CONFIG_MD_LINEAR is not set
++# CONFIG_MD_RAID0 is not set
++# CONFIG_MD_RAID1 is not set
++# CONFIG_MD_RAID5 is not set
++# CONFIG_MD_MULTIPATH is not set
++# CONFIG_BLK_DEV_LVM is not set
++
++#
++# Networking options
++#
++CONFIG_PACKET=y
++# CONFIG_PACKET_MMAP is not set
++# CONFIG_NETLINK_DEV is not set
++CONFIG_NETFILTER=y
++# CONFIG_NETFILTER_DEBUG is not set
++# CONFIG_FILTER is not set
++CONFIG_UNIX=y
++CONFIG_INET=y
++CONFIG_IP_MULTICAST=y
++# CONFIG_IP_ADVANCED_ROUTER is not set
++CONFIG_IP_PNP=y
++CONFIG_IP_PNP_DHCP=y
++# CONFIG_IP_PNP_BOOTP is not set
++# CONFIG_IP_PNP_RARP is not set
++# CONFIG_NET_IPIP is not set
++# CONFIG_NET_IPGRE is not set
++# CONFIG_IP_MROUTE is not set
++# CONFIG_ARPD is not set
++# CONFIG_INET_ECN is not set
++CONFIG_SYN_COOKIES=y
++
++#
++#   IP: Netfilter Configuration
++#
++# CONFIG_IP_NF_CONNTRACK is not set
++# CONFIG_IP_NF_QUEUE is not set
++# CONFIG_IP_NF_IPTABLES is not set
++# CONFIG_IP_NF_ARPTABLES is not set
++# CONFIG_IP_NF_COMPAT_IPCHAINS is not set
++# CONFIG_IP_NF_COMPAT_IPFWADM is not set
++# CONFIG_IPV6 is not set
++# CONFIG_KHTTPD is not set
++# CONFIG_ATM is not set
++# CONFIG_VLAN_8021Q is not set
++# CONFIG_IPX is not set
++# CONFIG_ATALK is not set
++
++#
++# Appletalk devices
++#
++# CONFIG_DEV_APPLETALK is not set
++# CONFIG_DECNET is not set
++# CONFIG_BRIDGE is not set
++# CONFIG_X25 is not set
++# CONFIG_LAPB is not set
++# CONFIG_LLC is not set
++# CONFIG_NET_DIVERT is not set
++# CONFIG_ECONET is not set
++# CONFIG_WAN_ROUTER is not set
++# CONFIG_NET_FASTROUTE is not set
++# CONFIG_NET_HW_FLOWCONTROL is not set
++
++#
++# QoS and/or fair queueing
++#
++# CONFIG_NET_SCHED is not set
++
++#
++# Network testing
++#
++# CONFIG_NET_PKTGEN is not set
++
++#
++# ATA/IDE/MFM/RLL support
++#
++# CONFIG_IDE is not set
++# CONFIG_BLK_DEV_IDE_MODES is not set
++# CONFIG_BLK_DEV_HD is not set
++
++#
++# SCSI support
++#
++# CONFIG_SCSI is not set
++
++#
++# Fusion MPT device support
++#
++# CONFIG_FUSION is not set
++# CONFIG_FUSION_BOOT is not set
++# CONFIG_FUSION_ISENSE is not set
++# CONFIG_FUSION_CTL is not set
++# CONFIG_FUSION_LAN is not set
++
++#
++# IEEE 1394 (FireWire) support (EXPERIMENTAL)
++#
++# CONFIG_IEEE1394 is not set
++
++#
++# I2O device support
++#
++# CONFIG_I2O is not set
++# CONFIG_I2O_PCI is not set
++# CONFIG_I2O_BLOCK is not set
++# CONFIG_I2O_LAN is not set
++# CONFIG_I2O_SCSI is not set
++# CONFIG_I2O_PROC is not set
++
++#
++# Network device support
++#
++CONFIG_NETDEVICES=y
++
++#
++# ARCnet devices
++#
++# CONFIG_ARCNET is not set
++# CONFIG_DUMMY is not set
++# CONFIG_BONDING is not set
++# CONFIG_EQUALIZER is not set
++# CONFIG_TUN is not set
++# CONFIG_ETHERTAP is not set
++
++#
++# Ethernet (10 or 100Mbit)
++#
++CONFIG_NET_ETHERNET=y
++# CONFIG_MACE is not set
++# CONFIG_BMAC is not set
++# CONFIG_GMAC is not set
++# CONFIG_SUNLANCE is not set
++# CONFIG_HAPPYMEAL is not set
++# CONFIG_SUNBMAC is not set
++# CONFIG_SUNQE is not set
++# CONFIG_SUNGEM is not set
++# CONFIG_NET_VENDOR_3COM is not set
++# CONFIG_LANCE is not set
++# CONFIG_NET_VENDOR_SMC is not set
++# CONFIG_NET_VENDOR_RACAL is not set
++# CONFIG_HP100 is not set
++# CONFIG_NET_ISA is not set
++CONFIG_GT64260_ETH=y
++CONFIG_NET_PCI=y
++# CONFIG_PCNET32 is not set
++# CONFIG_AMD8111_ETH is not set
++# CONFIG_ADAPTEC_STARFIRE is not set
++# CONFIG_APRICOT is not set
++# CONFIG_CS89x0 is not set
++CONFIG_TULIP=y
++# CONFIG_TULIP_MWI is not set
++# CONFIG_TULIP_MMIO is not set
++# CONFIG_DE4X5 is not set
++# CONFIG_DGRS is not set
++# CONFIG_DM9102 is not set
++CONFIG_EEPRO100=y
++# CONFIG_EEPRO100_PIO is not set
++# CONFIG_E100 is not set
++# CONFIG_LNE390 is not set
++# CONFIG_FEALNX is not set
++# CONFIG_NATSEMI is not set
++# CONFIG_NE2K_PCI is not set
++# CONFIG_NE3210 is not set
++# CONFIG_ES3210 is not set
++# CONFIG_8139CP is not set
++# CONFIG_8139TOO is not set
++# CONFIG_8139TOO_PIO is not set
++# CONFIG_8139TOO_TUNE_TWISTER is not set
++# CONFIG_8139TOO_8129 is not set
++# CONFIG_8139_OLD_RX_RESET is not set
++# CONFIG_SIS900 is not set
++# CONFIG_EPIC100 is not set
++# CONFIG_SUNDANCE is not set
++# CONFIG_SUNDANCE_MMIO is not set
++# CONFIG_TLAN is not set
++# CONFIG_TC35815 is not set
++# CONFIG_VIA_RHINE is not set
++# CONFIG_VIA_RHINE_MMIO is not set
++# CONFIG_WINBOND_840 is not set
++# CONFIG_NET_POCKET is not set
++
++#
++# Ethernet (1000 Mbit)
++#
++# CONFIG_ACENIC is not set
++# CONFIG_DL2K is not set
++# CONFIG_E1000 is not set
++# CONFIG_MYRI_SBUS is not set
++# CONFIG_NS83820 is not set
++# CONFIG_HAMACHI is not set
++# CONFIG_YELLOWFIN is not set
++# CONFIG_R8169 is not set
++# CONFIG_SK98LIN is not set
++# CONFIG_TIGON3 is not set
++# CONFIG_FDDI is not set
++# CONFIG_HIPPI is not set
++# CONFIG_PLIP is not set
++# CONFIG_PPP is not set
++# CONFIG_SLIP is not set
++
++#
++# Wireless LAN (non-hamradio)
++#
++# CONFIG_NET_RADIO is not set
++
++#
++# Token Ring devices
++#
++# CONFIG_TR is not set
++# CONFIG_NET_FC is not set
++# CONFIG_RCPCI is not set
++# CONFIG_SHAPER is not set
++
++#
++# Wan interfaces
++#
++# CONFIG_WAN is not set
++
++#
++# Amateur Radio support
++#
++# CONFIG_HAMRADIO is not set
++
++#
++# IrDA (infrared) support
++#
++# CONFIG_IRDA is not set
++
++#
++# ISDN subsystem
++#
++# CONFIG_ISDN is not set
++
++#
++# Old CD-ROM drivers (not SCSI, not IDE)
++#
++# CONFIG_CD_NO_IDESCSI is not set
++
++#
++# Console drivers
++#
++# CONFIG_VGA_CONSOLE is not set
++
++#
++# Frame-buffer support
++#
++# CONFIG_FB is not set
++
++#
++# Input core support
++#
++# CONFIG_INPUT is not set
++# CONFIG_INPUT_KEYBDEV is not set
++# CONFIG_INPUT_MOUSEDEV is not set
++# CONFIG_INPUT_JOYDEV is not set
++# CONFIG_INPUT_EVDEV is not set
++
++#
++# Macintosh device drivers
++#
++
++#
++# Character devices
++#
++CONFIG_VT=y
++CONFIG_VT_CONSOLE=y
++# CONFIG_SERIAL is not set
++# CONFIG_SERIAL_EXTENDED is not set
++CONFIG_SERIAL_NONSTANDARD=y
++# CONFIG_COMPUTONE is not set
++# CONFIG_ROCKETPORT is not set
++# CONFIG_CYCLADES is not set
++# CONFIG_DIGIEPCA is not set
++# CONFIG_DIGI is not set
++# CONFIG_ESPSERIAL is not set
++CONFIG_GT64260_MPSC=y
++CONFIG_GT64260_CONSOLE=y
++CONFIG_SERIAL_CONSOLE=y
++CONFIG_GT64260_CONSOLE_0=y
++# CONFIG_GT64260_CONSOLE_1 is not set
++CONFIG_SERIAL_CONSOLE_BAUD=9600
++# CONFIG_GT64260_BCLKIN is not set
++# CONFIG_GT64260_SCLK0 is not set
++# CONFIG_GT64260_TSCLK0 is not set
++# CONFIG_GT64260_SCLK1 is not set
++# CONFIG_GT64260_TSCLK1 is not set
++CONFIG_GT64260_TCLK=y
++CONFIG_GT64260_CLKSRC=8
++# CONFIG_GT64260_BRG_EQ_BUS is not set
++CONFIG_GT64260_BRG_CLK_RATE=133000000
++# CONFIG_MOXA_INTELLIO is not set
++# CONFIG_MOXA_SMARTIO is not set
++# CONFIG_ISI is not set
++# CONFIG_SYNCLINK is not set
++# CONFIG_SYNCLINKMP is not set
++# CONFIG_N_HDLC is not set
++# CONFIG_RISCOM8 is not set
++# CONFIG_SPECIALIX is not set
++# CONFIG_SX is not set
++# CONFIG_RIO is not set
++# CONFIG_STALDRV is not set
++CONFIG_UNIX98_PTYS=y
++CONFIG_UNIX98_PTY_COUNT=256
++
++#
++# I2C support
++#
++# CONFIG_I2C is not set
++
++#
++# Mice
++#
++# CONFIG_BUSMOUSE is not set
++# CONFIG_MOUSE is not set
++
++#
++# Joysticks
++#
++# CONFIG_INPUT_GAMEPORT is not set
++# CONFIG_QIC02_TAPE is not set
++# CONFIG_IPMI_HANDLER is not set
++# CONFIG_IPMI_PANIC_EVENT is not set
++# CONFIG_IPMI_DEVICE_INTERFACE is not set
++# CONFIG_IPMI_KCS is not set
++# CONFIG_IPMI_WATCHDOG is not set
++
++#
++# Watchdog Cards
++#
++# CONFIG_WATCHDOG is not set
++# CONFIG_SCx200_GPIO is not set
++# CONFIG_AMD_PM768 is not set
++# CONFIG_NVRAM is not set
++# CONFIG_RTC is not set
++# CONFIG_DTLK is not set
++# CONFIG_R3964 is not set
++# CONFIG_APPLICOM is not set
++
++#
++# Ftape, the floppy tape device driver
++#
++# CONFIG_FTAPE is not set
++# CONFIG_AGP is not set
++# CONFIG_DRM is not set
++
++#
++# Multimedia devices
++#
++# CONFIG_VIDEO_DEV is not set
++
++#
++# File systems
++#
++# CONFIG_QUOTA is not set
++# CONFIG_AUTOFS_FS is not set
++# CONFIG_AUTOFS4_FS is not set
++# CONFIG_REISERFS_FS is not set
++# CONFIG_REISERFS_CHECK is not set
++# CONFIG_REISERFS_PROC_INFO is not set
++# CONFIG_ADFS_FS is not set
++# CONFIG_ADFS_FS_RW is not set
++# CONFIG_AFFS_FS is not set
++# CONFIG_HFS_FS is not set
++# CONFIG_BEFS_FS is not set
++# CONFIG_BEFS_DEBUG is not set
++# CONFIG_BFS_FS is not set
++# CONFIG_EXT3_FS is not set
++# CONFIG_JBD is not set
++# CONFIG_JBD_DEBUG is not set
++# CONFIG_FAT_FS is not set
++# CONFIG_MSDOS_FS is not set
++# CONFIG_UMSDOS_FS is not set
++# CONFIG_VFAT_FS is not set
++# CONFIG_EFS_FS is not set
++# CONFIG_JFFS_FS is not set
++# CONFIG_JFFS2_FS is not set
++# CONFIG_CRAMFS is not set
++CONFIG_TMPFS=y
++CONFIG_RAMFS=y
++# CONFIG_ISO9660_FS is not set
++# CONFIG_JOLIET is not set
++# CONFIG_ZISOFS is not set
++# CONFIG_JFS_FS is not set
++# CONFIG_JFS_DEBUG is not set
++# CONFIG_JFS_STATISTICS is not set
++# CONFIG_MINIX_FS is not set
++# CONFIG_VXFS_FS is not set
++# CONFIG_NTFS_FS is not set
++# CONFIG_NTFS_RW is not set
++# CONFIG_HPFS_FS is not set
++CONFIG_PROC_FS=y
++CONFIG_DEVFS_FS=y
++# CONFIG_DEVFS_MOUNT is not set
++# CONFIG_DEVFS_DEBUG is not set
++CONFIG_DEVPTS_FS=y
++# CONFIG_QNX4FS_FS is not set
++# CONFIG_QNX4FS_RW is not set
++# CONFIG_ROMFS_FS is not set
++CONFIG_EXT2_FS=y
++# CONFIG_SYSV_FS is not set
++# CONFIG_UDF_FS is not set
++# CONFIG_UDF_RW is not set
++# CONFIG_UFS_FS is not set
++# CONFIG_UFS_FS_WRITE is not set
++
++#
++# Network File Systems
++#
++# CONFIG_CODA_FS is not set
++# CONFIG_INTERMEZZO_FS is not set
++CONFIG_NFS_FS=y
++CONFIG_NFS_V3=y
++CONFIG_ROOT_NFS=y
++# CONFIG_NFSD is not set
++# CONFIG_NFSD_V3 is not set
++# CONFIG_NFSD_TCP is not set
++CONFIG_SUNRPC=y
++CONFIG_LOCKD=y
++CONFIG_LOCKD_V4=y
++# CONFIG_SMB_FS is not set
++# CONFIG_NCP_FS is not set
++# CONFIG_NCPFS_PACKET_SIGNING is not set
++# CONFIG_NCPFS_IOCTL_LOCKING is not set
++# CONFIG_NCPFS_STRONG is not set
++# CONFIG_NCPFS_NFS_NS is not set
++# CONFIG_NCPFS_OS2_NS is not set
++# CONFIG_NCPFS_SMALLDOS is not set
++# CONFIG_NCPFS_NLS is not set
++# CONFIG_NCPFS_EXTRAS is not set
++# CONFIG_ZISOFS_FS is not set
++
++#
++# Partition Types
++#
++# CONFIG_PARTITION_ADVANCED is not set
++CONFIG_MSDOS_PARTITION=y
++# CONFIG_SMB_NLS is not set
++# CONFIG_NLS is not set
++
++#
++# Sound
++#
++# CONFIG_SOUND is not set
++
++#
++# USB support
++#
++# CONFIG_USB is not set
++
++#
++# Bluetooth support
++#
++# CONFIG_BLUEZ is not set
++
++#
++# Library routines
++#
++# CONFIG_ZLIB_INFLATE is not set
++# CONFIG_ZLIB_DEFLATE is not set
++
++#
++# Kernel hacking
++#
++# CONFIG_DEBUG_KERNEL is not set
++# CONFIG_SERIAL_TEXT_DEBUG is not set
+===== arch/ppc/kernel/Makefile 1.128 vs edited =====
+--- 1.128/arch/ppc/kernel/Makefile	Tue Apr 22 08:04:41 2003
++++ edited/arch/ppc/kernel/Makefile	Mon Apr 28 18:57:32 2003
+@@ -87,6 +87,7 @@
+ 					indirect_pci.o i8259.o
+ obj-$(CONFIG_ADIR)		+= i8259.o indirect_pci.o pci_auto.o \
+ 					todc_time.o
++obj-$(CONFIG_CPCI690)		+= indirect_pci.o todc_time.o pci_auto.o
+ obj-$(CONFIG_GT64260)		+= gt64260_common.o gt64260_pic.o
+ obj-$(CONFIG_EV64260)		+= indirect_pci.o todc_time.o pci_auto.o
+ obj-$(CONFIG_PUMA_A)		+= indirect_pci.o todc_time.o pci_auto.o
+===== arch/ppc/platforms/Makefile 1.38 vs edited =====
+--- 1.38/arch/ppc/platforms/Makefile	Thu Apr 17 22:47:41 2003
++++ edited/arch/ppc/platforms/Makefile	Mon Apr 28 18:58:36 2003
+@@ -62,6 +62,7 @@
+ obj-$(CONFIG_PPC_RTAS)		+= error_log.o proc_rtas.o
+ obj-$(CONFIG_PREP_RESIDUAL)	+= residual.o
+ obj-$(CONFIG_ADIR)		+= adir_setup.o adir_pic.o adir_pci.o
++obj-$(CONFIG_CPCI690)		+= cpci690.o
+ obj-$(CONFIG_EV64260)		+= ev64260.o
+ obj-$(CONFIG_GEMINI)		+= gemini_pci.o gemini_setup.o gemini_prom.o
+ obj-$(CONFIG_K2)		+= k2_setup.o k2_pci.o
+===== arch/ppc/platforms/cpci690.c 1.1 vs edited =====
+--- 1.1/arch/ppc/platforms/cpci690.c	Mon Apr  7 12:04:30 2003
++++ edited/arch/ppc/platforms/cpci690.c	Tue Apr 29 17:29:26 2003
+@@ -0,0 +1,638 @@
++/*
++ * arch/ppc/platforms/cpci690.c
++ *
++ * Board setup routines for the Force CPCI690 board.
++ *
++ * Author: Mark A. Greer <mgreer@mvista.com>
++ *
++ * 2003 (c) MontaVista Software, Inc.  This file is licensed under
++ * the terms of the GNU General Public License version 2.  This programr
++ * is licensed "as is" without any warranty of any kind, whether express
++ * or implied.
++ */
++#include <linux/config.h>
++
++#include <linux/delay.h>
++#include <linux/pci.h>
++#include <linux/ide.h>
++#include <linux/irq.h>
++#include <linux/fs.h>
++#include <linux/seq_file.h>
++
++#include <asm/bootinfo.h>
++#include <asm/machdep.h>
++#include <asm/gt64260.h>
++#include <asm/todc.h>
++#include <asm/time.h>
++
++#include <platforms/cpci690.h>
++
++#define BOARD_VENDOR	"Force"
++#define BOARD_MACHINE	"CPCI690"
++
++/* Set IDE controllers into Native mode? */
++#define SET_PCI_IDE_NATIVE
++
++static u32	board_reg_base;	/* Virtual addr of board regs */
++
++
++static const unsigned int cpu_7xx[16] = { /* 7xx & 74xx (but not 745x) */
++	18, 15, 14, 2, 4, 13, 5, 9, 6, 11, 8, 10, 16, 12, 7, 0
++};
++
++bd_t	board_info;
++
++
++TODC_ALLOC();
++
++static void __init
++cpci690_extract_board_info(void *bi_rec, int size)
++{
++	bd_t	*bip = bi_rec;
++
++	if (ppc_md.progress)
++		ppc_md.progress("cpci690_extract_board_info: extracting bi_rec",
++				0);
++
++	if ((size == sizeof(bd_t)) && (bip->bi_magic == CPCI690_BI_MAGIC)) {
++		memcpy(&board_info, bip, sizeof(bd_t));
++	}
++	else {
++		if (ppc_md.progress)
++			ppc_md.progress("Invalid BOARD_INFO bi_rec\n", 0);
++		printk(KERN_NOTICE "Invalid BOARD_INFO bi_rec\n");
++	}
++
++	return;
++}
++
++static int
++cpci690_get_bus_speed(void)
++{
++	return 133000000;
++}
++
++static int
++cpci690_get_cpu_speed(void)
++{
++	unsigned long	hid1;
++
++	hid1 = mfspr(HID1) >> 28;
++	return cpci690_get_bus_speed() * cpu_7xx[hid1]/2;
++}
++
++unsigned long __init
++cpci690_find_end_of_memory(void)
++{
++	u32		mem_ctlr_size;
++	static u32	board_size;
++	static u8	first_time = 1;
++
++	if (first_time) {
++		/* Using cpci690_set_bat() mapping ==> virt addr == phys addr */
++		switch (in_8((u8 *)(CPCI690_REG_BASE+CPCI690_MEM_CTLR))&0x07) {
++			case 0x01:
++				board_size = 256*MB;
++				break;
++			case 0x02:
++				board_size = 512*MB;
++				break;
++			case 0x03:
++				board_size = 768*MB;
++				break;
++			case 0x04:
++				board_size = 1*GB;
++				break;
++				case 0x05:
++				board_size = 1*GB + 512*MB;
++				break;
++			case 0x06:
++				board_size = 2*GB;
++				break;
++			default:
++				board_size = 0xffffffff; /* use mem ctlr size */
++		} /* switch */
++
++		mem_ctlr_size = gt64260_get_mem_size();
++
++		/* Check that mem ctlr & board reg agree.  If not, pick MIN. */
++		if (board_size != mem_ctlr_size) {
++			printk(KERN_WARNING "Board register & memory controller mem size disagree (board reg: 0x%lx, mem ctlr: 0x%lx)\n",
++				(ulong)board_size, (ulong)mem_ctlr_size);
++			board_size = MIN(board_size, mem_ctlr_size);
++		}
++
++		first_time = 0;
++	} /* if */
++
++	return board_size;
++}
++
++#ifdef SET_PCI_IDE_NATIVE
++static void __init
++set_pci_native_mode(void)
++{
++	struct pci_dev *dev;
++
++	/* Better way of doing this ??? */
++	pci_for_each_dev(dev) {
++		int class = dev->class >> 8;
++
++		/* enable pci native mode */
++		if (class == PCI_CLASS_STORAGE_IDE) {
++			u8 reg;
++
++			pci_read_config_byte(dev, 0x9, &reg);
++			if (reg == 0x8a) {
++				printk("PCI: Enabling PCI IDE native mode on %s\n", dev->slot_name);
++				pci_write_config_byte(dev, 0x9,  0x8f);
++
++				/* let the pci code set this device up after we change it */
++				pci_setup_device(dev);
++			} else if (reg != 0x8f) {
++				printk("PCI: IDE chip in unknown mode 0x%02x on %s", reg, dev->slot_name);
++			}
++		}
++	}
++}
++#endif
++
++static void __init
++cpci690_pci_fixups(void)
++{
++#ifdef SET_PCI_IDE_NATIVE
++	set_pci_native_mode();
++#endif
++}
++
++static int __init
++cpci690_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned char pin)
++{
++	struct pci_controller	*hose = pci_bus_to_hose(dev->bus->number);
++
++	if (hose->index == 0) {
++		static char pci_irq_table[][4] =
++		/*
++		 *	PCI IDSEL/INTPIN->INTLINE
++		 * 	   A   B   C   D
++		 */
++		{
++			{ 90, 91, 88, 89}, /* IDSEL 30/20 - Sentinel */
++		};
++
++		const long min_idsel = 20, max_idsel = 20, irqs_per_slot = 4;
++		return PCI_IRQ_TABLE_LOOKUP;
++	}
++	else {
++		static char pci_irq_table[][4] =
++		/*
++		 *	PCI IDSEL/INTPIN->INTLINE
++		 * 	   A   B   C   D
++		 */
++		{
++			{ 93, 94, 95, 92}, /* IDSEL 28/18 - PMC slot 2 */
++			{  0,  0,  0,  0}, /* IDSEL 29/19 - Not used */
++			{ 94, 95, 92, 93}, /* IDSEL 30/20 - PMC slot 1 */
++		};
++
++		const long min_idsel = 18, max_idsel = 20, irqs_per_slot = 4;
++		return PCI_IRQ_TABLE_LOOKUP;
++	}
++}
++
++static void __init
++cpci690_setup_bridge(void)
++{
++        gt64260_bridge_info_t	info;
++	u8			save_exclude;
++	u32			val;
++	int			i;
++
++        GT64260_BRIDGE_INFO_DEFAULT(&info, cpci690_find_end_of_memory());
++
++	/*
++	 * Assume that GT64260_CPU_SCS_DECODE_WINDOWS,
++	 * GT64260_CPU_SNOOP_WINDOWS, GT64260_PCI_SCS_WINDOWS, and
++	 * GT64260_PCI_SNOOP_WINDOWS are all the equal.
++	 * Also assume that GT64260_CPU_PROT_WINDOWS >=
++	 * GT64260_CPU_SCS_DECODE_WINDOWS and
++	 * GT64260_PCI_ACC_CNTL_WINDOWS >= GT64260_PCI_SCS_WINDOWS.
++	 */
++	for (i=0; i<GT64260_CPU_SCS_DECODE_WINDOWS; i++) {
++		info.cpu_prot_options[i] = 0;
++		info.cpu_snoop_options[i] = GT64260_CPU_SNOOP_WB;
++		info.pci_0_acc_cntl_options[i] =
++			/* Breaks PCI (especially slot 4)
++			GT64260_PCI_ACC_CNTL_PREFETCHEN |
++			*/
++			GT64260_PCI_ACC_CNTL_DREADEN |
++			GT64260_PCI_ACC_CNTL_RDPREFETCH |
++			GT64260_PCI_ACC_CNTL_RDLINEPREFETCH |
++			GT64260_PCI_ACC_CNTL_RDMULPREFETCH |
++			GT64260_PCI_ACC_CNTL_SWAP_NONE |
++			GT64260_PCI_ACC_CNTL_MBURST_4_WORDS;
++		info.pci_0_snoop_options[i] = GT64260_PCI_SNOOP_WB;
++		info.pci_1_acc_cntl_options[i] =
++			/* Breaks PCI (especially slot 4)
++			GT64260_PCI_ACC_CNTL_PREFETCHEN |
++			*/
++			GT64260_PCI_ACC_CNTL_DREADEN |
++			GT64260_PCI_ACC_CNTL_RDPREFETCH |
++			GT64260_PCI_ACC_CNTL_RDLINEPREFETCH |
++			GT64260_PCI_ACC_CNTL_RDMULPREFETCH |
++			GT64260_PCI_ACC_CNTL_SWAP_NONE |
++			GT64260_PCI_ACC_CNTL_MBURST_4_WORDS;
++		info.pci_1_snoop_options[i] = GT64260_PCI_SNOOP_WB;
++	}
++
++	info.pci_0_latency = 0x4;
++	info.pci_1_latency = 0x4;
++
++	info.hose_a = pcibios_alloc_controller();
++	if (!info.hose_a) {
++		if (ppc_md.progress)
++			ppc_md.progress("cpci690_setup_bridge: hose_a failed", 0);
++		printk("cpci690_setup_bridge: can't set up first hose\n");
++		return;
++	}
++
++	info.hose_b = pcibios_alloc_controller();
++	if (!info.hose_b) {
++		if (ppc_md.progress)
++			ppc_md.progress("cpci690_setup_bridge: hose_b failed", 0);
++		printk("cpci690_setup_bridge: can't set up second hose\n");
++		return;
++	}
++
++	info.phys_base_addr = gt64260_base;
++
++	/* Map in the bridge's registers */
++	gt64260_base = (u32)ioremap(gt64260_base, GT64260_INTERNAL_SPACE_SIZE);
++
++        /* Lookup PCI host bridges */
++        if (gt64260_find_bridges(&info, cpci690_map_irq)) {
++                printk("Bridge initialization failed.\n");
++		iounmap((void *)gt64260_base);
++        }
++
++	/*
++	 * Dave Wilhardt found that bit 4 in the PCI Command registers must
++	 * be set if you are using cache coherency.
++	 *
++	 * Note: he also said that bit 4 must be on in all PCI devices but
++	 *       that has not been implemented yet.
++	 */
++	save_exclude = gt64260_pci_exclude_bridge;
++	gt64260_pci_exclude_bridge = FALSE;
++
++	early_read_config_dword(info.hose_a,
++			info.hose_a->first_busno,
++			PCI_DEVFN(0,0),
++			PCI_COMMAND,
++			&val);
++	val |= 0x10;
++	early_write_config_dword(info.hose_a,
++			info.hose_a->first_busno,
++			PCI_DEVFN(0,0),
++			PCI_COMMAND,
++			val);
++
++	early_read_config_dword(info.hose_b,
++			info.hose_b->first_busno,
++			PCI_DEVFN(0,0),
++			PCI_COMMAND,
++			&val);
++	val |= 0x10;
++	early_write_config_dword(info.hose_b,
++			info.hose_b->first_busno,
++			PCI_DEVFN(0,0),
++			PCI_COMMAND,
++			val);
++
++	gt64260_pci_exclude_bridge = save_exclude;
++
++	return;
++}
++
++static void __init
++cpci690_setup_peripherals(void)
++{
++	/*
++	 * Set up windows to SRAM, RTC/TODC and DUART on device module
++	 * (CS 0, 1 & 2)
++	 * */
++	gt64260_cpu_cs_set_window(1, CPCI690_TODC_BASE, CPCI690_TODC_SIZE);
++	/* IMPI not touched
++	gt64260_cpu_cs_set_window(2, CPCI690_IPMI_BASE, CPCI690_IPMI_SIZE);
++	*/
++
++	TODC_INIT(TODC_TYPE_MK48T35, 0, 0,
++			ioremap(CPCI690_TODC_BASE, CPCI690_TODC_SIZE), 8);
++
++	/* Map in board registers */
++	board_reg_base = (u32)ioremap(CPCI690_REG_BASE, CPCI690_REG_SIZE);
++
++	gt_set_bits(GT64260_PCI_0_ARBITER_CNTL, (1<<31));
++	gt_set_bits(GT64260_PCI_1_ARBITER_CNTL, (1<<31));
++
++        gt_set_bits(GT64260_CPU_MASTER_CNTL, (1<<9)); /* Only 1 cpu */
++
++#define GPP_EXTERNAL_INTERRUPTS \
++		((1<<24) | (1<<25) | (1<<26) | (1<<27) | \
++		 (1<<28) | (1<<29) | (1<<30) | (1<<31))
++	/* PCI interrupts are inputs */
++	gt_clr_bits(GT64260_GPP_IO_CNTL, GPP_EXTERNAL_INTERRUPTS);
++	/* PCI interrupts are active low */
++	gt_set_bits(GT64260_GPP_LEVEL_CNTL, GPP_EXTERNAL_INTERRUPTS);
++
++	/* Clear any pending interrupts for these inputs and enable them. */
++	gt_write(GT64260_GPP_INTR_CAUSE, ~GPP_EXTERNAL_INTERRUPTS);
++	gt_set_bits(GT64260_GPP_INTR_MASK, GPP_EXTERNAL_INTERRUPTS);
++
++	/* Route MPP interrupt inputs to GPP */
++	gt_write(GT64260_MPP_CNTL_2, 0x00000000);
++	gt_write(GT64260_MPP_CNTL_3, 0x00000000);
++
++	/*
++	 * Force firmware, for some reason, enables a bunch of intr sources
++	 * for the PCI INT output pins.  Must mask them off b/c the PCI0/1
++	 * Int pins are wired to INTD# for their respective buses.
++	 */
++	gt_write(GT64260_IC_CPU_INTR_MASK_LO, 0);
++	gt_write(GT64260_IC_CPU_INTR_MASK_HI, 0);
++	gt_write(GT64260_IC_PCI_0_INTR_MASK_LO, 0);
++	gt_write(GT64260_IC_PCI_0_INTR_MASK_HI, 0);
++	gt_write(GT64260_IC_PCI_1_INTR_MASK_LO, 0);
++	gt_write(GT64260_IC_PCI_1_INTR_MASK_HI, 0);
++
++	/*
++	 * Set MPSC Multiplex RMII
++	 * NOTE: ethernet driver modifies bit 0 and 1
++	 */
++	gt_write(GT64260_MPP_SERIAL_PORTS_MULTIPLEX, 0x00001102);
++
++	/* Set up the MAC addresses for the enet ctlrs. */
++	gt64260_set_mac_addr(0, board_info.bi_enetaddr[0]);
++	gt64260_set_mac_addr(1, board_info.bi_enetaddr[1]);
++	gt64260_set_mac_addr(2, board_info.bi_enetaddr[2]);
++
++	return;
++}
++
++static void __init
++cpci690_setup_arch(void)
++{
++	uint	val;
++
++	if ( ppc_md.progress )
++		ppc_md.progress("cpci690_setup_arch: enter", 0);
++
++	loops_per_jiffy = cpci690_get_cpu_speed() / HZ;
++
++#ifdef CONFIG_BLK_DEV_INITRD
++	if (initrd_start)
++		ROOT_DEV = MKDEV(RAMDISK_MAJOR, 0);
++	else
++#endif
++#ifdef	CONFIG_ROOT_NFS
++		ROOT_DEV = to_kdev_t(0x00FF);	/* /dev/nfs pseudo device */
++#else
++		ROOT_DEV = to_kdev_t(0x0802);	/* /dev/sda2 SCSI disk */
++#endif
++
++	if ( ppc_md.progress )
++		ppc_md.progress("cpci690_setup_arch: Enabling L2 cache", 0);
++
++	/* Enable L2 and L3 caches (if 745x) */
++	val = _get_L2CR();
++	val |= L2CR_L2E;
++	_set_L2CR(val);
++
++	if ( ppc_md.progress )
++		ppc_md.progress("cpci690_setup_arch: Initializing bridge", 0);
++
++	cpci690_setup_bridge();		/* set up PCI bridge(s) */
++	cpci690_setup_peripherals();	/* set up chip selects/GPP/MPP etc */
++
++	if ( ppc_md.progress )
++		ppc_md.progress("cpci690_setup_arch: bridge init complete", 0);
++
++#ifdef	CONFIG_DUMMY_CONSOLE
++	conswitchp = &dummy_con;
++#endif
++
++	printk(BOARD_VENDOR " " BOARD_MACHINE "\n");
++	printk("CPCI690 port (C) 2003 MontaVista Software, Inc. (source@mvista.com)\n");
++
++	if ( ppc_md.progress )
++		ppc_md.progress("cpci690_setup_arch: exit", 0);
++
++	return;
++}
++
++static void
++cpci690_reset_board(void)
++{
++	unsigned long i = 10000;
++
++	__cli();
++
++	/* set exception prefix high - to the prom */
++	_nmask_and_or_msr(0, MSR_IP);
++
++	out_8((u8 *)(board_reg_base + CPCI690_SW_RESET), 0x11);
++
++	while ( i != 0 ) i++;
++	panic("restart failed\n");
++}
++
++static void
++cpci690_restart(char *cmd)
++{
++	cpci690_reset_board();
++}
++
++static void
++cpci690_halt(void)
++{
++	__cli();
++	while (1);
++	/* NOTREACHED */
++}
++
++static void
++cpci690_power_off(void)
++{
++	cpci690_halt();
++	/* NOTREACHED */
++}
++
++static int
++cpci690_show_cpuinfo(struct seq_file *m)
++{
++	seq_printf(m, "vendor\t\t: " BOARD_VENDOR "\n");
++	seq_printf(m, "machine\t\t: " BOARD_MACHINE "\n");
++	seq_printf(m, "cpu MHz\t\t: %d\n", cpci690_get_cpu_speed()/1000/1000);
++	seq_printf(m, "bus MHz\t\t: %d\n", cpci690_get_bus_speed()/1000/1000);
++
++	return 0;
++}
++
++static void __init
++cpci690_calibrate_decr(void)
++{
++	ulong freq;
++
++	freq = cpci690_get_bus_speed()/4;
++
++	printk("time_init: decrementer frequency = %lu.%.6lu MHz\n",
++	       freq/1000000, freq%1000000);
++
++	tb_ticks_per_jiffy = freq / HZ;
++	tb_to_us = mulhwu_scale_factor(freq, 1000000);
++
++	return;
++}
++
++#if defined(CONFIG_BLK_DEV_IDE) || defined(CONFIG_BLK_DEV_IDE_MODULE)
++static int
++cpci690_ide_check_region(ide_ioreg_t from, unsigned int extent)
++{
++        return check_region(from, extent);
++}
++
++static void
++cpci690_ide_request_region(ide_ioreg_t from,
++                        unsigned int extent,
++                        const char *name)
++{
++        request_region(from, extent, name);
++	return;
++}
++
++static void
++cpci690_ide_release_region(ide_ioreg_t from,
++                        unsigned int extent)
++{
++        release_region(from, extent);
++	return;
++}
++
++static void __init
++cpci690_ide_pci_init_hwif_ports(hw_regs_t *hw, ide_ioreg_t data_port,
++                ide_ioreg_t ctrl_port, int *irq)
++{
++	struct pci_dev	*dev;
++#if 1 /* NTL */
++        int i;
++
++	//printk("regs %d to %d @ 0x%x\n", IDE_DATA_OFFSET, IDE_STATUS_OFFSET, data_port);
++        for (i = IDE_DATA_OFFSET; i <= IDE_STATUS_OFFSET; i++) {
++                hw->io_ports[i] = data_port;
++                data_port++;
++        }
++
++	//printk("ctrl %d @ 0x%x\n", IDE_CONTROL_OFFSET, ctrl_port);
++        hw->io_ports[IDE_CONTROL_OFFSET] = ctrl_port;
++#endif
++
++	pci_for_each_dev(dev) {
++		if (((dev->class >> 8) == PCI_CLASS_STORAGE_IDE) ||
++		    ((dev->class >> 8) == PCI_CLASS_STORAGE_RAID)) {
++			hw->irq = dev->irq;
++
++			if (irq != NULL) {
++				*irq = dev->irq;
++			}
++		}
++	}
++
++	return;
++}
++#endif
++
++/*
++ * Set BAT 3 to map 0xf0000000 to end of physical memory space.
++ */
++static __inline__ void
++cpci690_set_bat(void)
++{
++	mb();
++	mtspr(DBAT2U, 0xf0001ffe);
++	mtspr(DBAT2L, 0xf000002a);
++	mb();
++
++	return;
++}
++
++#ifdef	CONFIG_SERIAL_TEXT_DEBUG
++static void __init
++cpci690_map_io(void)
++{
++	io_block_mapping(gt64260_base, gt64260_base, 0x00020000, _PAGE_IO);
++}
++#endif
++
++void __init
++platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
++	      unsigned long r6, unsigned long r7)
++{
++	extern char cmd_line[];
++
++#ifdef	CONFIG_GT64260_NEW_BASE
++	gt64260_base = CONFIG_GT64260_NEW_REG_BASE;
++#else
++	gt64260_base = CONFIG_GT64260_ORIG_REG_BASE;
++#endif
++
++	cmd_line[0]=0;
++#ifdef CONFIG_BLK_DEV_INITRD
++	initrd_start=initrd_end=0;
++	initrd_below_start_ok=0;
++#endif /* CONFIG_BLK_DEV_INITRD */
++
++	ppc_md.board_info = cpci690_extract_board_info;
++	parse_bootinfo(find_bootinfo());
++
++	cpci690_set_bat();
++
++	isa_mem_base = 0;
++	isa_io_base = GT64260_PCI_0_IO_START_PROC;
++	pci_dram_offset = GT64260_PCI_0_MEM_START_PROC;
++
++	ppc_md.setup_arch = cpci690_setup_arch;
++	ppc_md.show_cpuinfo = cpci690_show_cpuinfo;
++	ppc_md.irq_cannonicalize = NULL;
++	ppc_md.init_IRQ = gt64260_init_irq;
++	ppc_md.get_irq = gt64260_get_irq;
++
++	ppc_md.pcibios_fixup = cpci690_pci_fixups;
++
++	ppc_md.restart = cpci690_restart;
++	ppc_md.power_off = cpci690_power_off;
++	ppc_md.halt = cpci690_halt;
++
++	ppc_md.find_end_of_memory = cpci690_find_end_of_memory;
++
++	ppc_md.init = NULL;
++
++	ppc_md.time_init = todc_time_init;
++	ppc_md.set_rtc_time = todc_set_rtc_time;
++	ppc_md.get_rtc_time = todc_get_rtc_time;
++
++	ppc_md.nvram_read_val = todc_direct_read_val;
++	ppc_md.nvram_write_val = todc_direct_write_val;
++
++	ppc_md.calibrate_decr = cpci690_calibrate_decr;
++
++#ifdef	CONFIG_SERIAL_TEXT_DEBUG
++	ppc_md.setup_io_mappings = cpci690_map_io;
++	ppc_md.progress = gt64260_mpsc_progress; /* embedded UART */
++#endif /* CONFIG_SERIAL_TEXT_DEBUG */
++
++#if defined(CONFIG_BLK_DEV_IDE) || defined(CONFIG_BLK_DEV_IDE_MODULE)
++        ppc_ide_md.ide_init_hwif = cpci690_ide_pci_init_hwif_ports;
++#endif
++
++	return;
++}
+===== arch/ppc/platforms/cpci690.h 1.1 vs edited =====
+--- 1.1/arch/ppc/platforms/cpci690.h	Tue Apr  8 14:10:11 2003
++++ edited/arch/ppc/platforms/cpci690.h	Tue Apr 29 15:40:59 2003
+@@ -0,0 +1,70 @@
++/*
++ * arch/ppc/platforms/cpci690.h
++ *
++ * Definitions for Force CPCI690
++ *
++ * Author: Mark A. Greer <mgreer@mvista.com>
++ *
++ * 2003 (c) MontaVista, Software, Inc.  This file is licensed under
++ * the terms of the GNU General Public License version 2.  This program
++ * is licensed "as is" without any warranty of any kind, whether express
++ * or implied.
++ */
++
++/*
++ * The GT64260 has 2 PCI buses each with 1 window from the CPU bus to
++ * PCI I/O space and 4 windows from the CPU bus to PCI MEM space.
++ * We'll only use one PCI MEM window on each PCI bus.
++ */
++
++#ifndef __PPC_PLATFORMS_CPCI690_H
++#define __PPC_PLATFORMS_CPCI690_H
++
++#ifndef	MAX
++#define	MAX(a,b)	(((a) > (b)) ? (a) : (b))
++#endif
++#ifndef	MIN
++#define	MIN(a,b)	(((a) < (b)) ? (a) : (b))
++#endif
++
++#define KB              (1024UL)
++#define MB              (KB * KB)
++#define GB              (MB * KB)
++
++/*
++ * Define bd_t to pass in the MAC addresses used by the GT64260's enet ctlrs.
++ */
++#define	CPCI690_BI_MAGIC		0xFE8765DC
++
++typedef struct board_info {
++	u32	bi_magic;
++	u8	bi_enetaddr[3][6];
++} bd_t;
++
++/*
++ * CPU Physical Memory Map setup.
++ */
++#define	CPCI690_REG_BASE		0xf0000000
++#define	CPCI690_REG_SIZE		0x07
++/* Board reg offsets */
++#define	CPCI690_LED_CNTL		0x00
++#define	CPCI690_SW_RESET		0x01
++#define	CPCI690_MISC_STATUS		0x02
++#define	CPCI690_SWITCH_STATUS		0x03
++#define	CPCI690_MEM_CTLR		0x04
++#define	CPCI690_LAST_RESET_1		0x05
++#define	CPCI690_LAST_RESET_2		0x06
++
++#define	CPCI690_MAC_OFFSET		0x7c10 /* MAC addrs in RTC NVRAM */
++
++#define	CPCI690_TODC_BASE		0xf0100000
++#define	CPCI690_TODC_SIZE_ACTUAL	0x8000	/* Size or NVRAM + RTC regs */
++#define	CPCI690_TODC_SIZE		MAX(GT64260_WINDOW_SIZE_MIN,	\
++						CPCI690_TODC_SIZE_ACTUAL)
++
++#define	CPCI690_IPMI_BASE		0xf0200000
++#define	CPCI690_IPMI_SIZE_ACTUAL	0x10	/* 16 bytes of IPMI regs */
++#define	CPCI690_IPMI_SIZE		MAX(GT64260_WINDOW_SIZE_MIN,	\
++						CPCI690_IPMI_SIZE_ACTUAL)
++
++#endif /* __PPC_PLATFORMS_CPCI690_H */
+===== drivers/net/gt64260_eth.h 1.7 vs edited =====
+--- 1.7/drivers/net/gt64260_eth.h	Fri Feb 21 11:42:35 2003
++++ edited/drivers/net/gt64260_eth.h	Tue Apr 29 17:12:10 2003
+@@ -183,6 +183,10 @@
+ #define PHY_LXT97x
+ #define PHY_ADD0                                4
+ #define PHY_ADD1                                5
++#elif CONFIG_CPCI690
++#define PHY_ADD0                                0
++#define PHY_ADD1                                1
++#define PHY_ADD2                                2
+ #else
+ #define PHY_ADD0                                4
+ #define PHY_ADD1                                5
 
-Do both machines exhibit the same problem ?
+--------------010401020405070604020001--
 
-Which kernel version are you using?
-
-	Regards,
-	Gabriel
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
