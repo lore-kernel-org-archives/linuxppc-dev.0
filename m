@@ -1,35 +1,32 @@
-Subject: Re: Need a Linux PPC kernel which supports the Radeon Mobility 9600
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ken Offer <koffer@arlut.utexas.edu>
-Cc: linuxppcdev <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <83C80826-FF21-11D7-B3CC-000393467F1A@arlut.utexas.edu>
-References: <83C80826-FF21-11D7-B3CC-000393467F1A@arlut.utexas.edu>
-Content-Type: text/plain
-Message-Id: <1066231321.646.58.camel@gaston>
-Mime-Version: 1.0
-Date: Wed, 15 Oct 2003 17:22:01 +0200
+Mime-Version: 1.0 (Apple Message framework v606)
+Message-Id: <2AA74CF2-FF2E-11D7-93F0-000A958557FC@macdiscussion.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+To: linuxppc-dev@lists.linuxppc.org
+From: Mark Guertin <mguertin@macdiscussion.com>
+Subject: OF and/or kernel option for ext video on tibook
+Date: Wed, 15 Oct 2003 12:39:37 -0400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 2003-10-15 at 17:09, Ken Offer wrote:
-> On Wednesday, October 15, 2003, at 03:19  AM, Benjamin Herrenschmidt
-> wrote:
+Hi everyone
 
-> Hi Ben,
->
-> Below are the warnings I get with "make modules_install" and your
-> 2.6.0-test7 kernel using the pmac_defconfig config file with pcnet32
-> turned off.  This was compiled with gcc 3.2.2.
+Can anyone help me here, all teh googling I've done has led to no
+answers ...
 
-Something is wrong on your side, either a build system,
-incorrect module tools or whatever...
+I have a TiBook 550 mhz that had the screen destroyed here at work,
+which I've been using as a linux workstation on external video until
+recently.  I powered it down for a couple weeks while I was doing other
+work, and now I can't get my main video to work on the external
+display, it always tries to go to the non existent screen ... maybe the
+mboard battery is dying and it reset to defaults in OF ...
 
-Did you install the module-init-tools ? Those replace modutils for
-2.6 (actually, you can have both installed, the correct ones will
-be picked up automatically)
+Is there a kernel option I can pass at boot to force it to use only the
+external video (or mirror, whatever works)?  Or better yet, is there
+something I can tell OF to use only this device .. I've tried setting
+the screen option several times, but it doesn't seem to pick it up.
 
-Ben.
+Gerk
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
