@@ -1,39 +1,44 @@
-To: Jin Cheng <jcheng@redswitch.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MDPPro850 or EST8240 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 15 Apr 2002 12:05:28 PDT."
-             <3CBB2478.A92C8C65@redswitch.com>
-Date: Mon, 15 Apr 2002 21:08:10 +0200
-Message-Id: <20020415190815.4BFF611259@denx.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <1079.206.104.177.96.1018904994.squirrel@nevil.org>
+Date: Mon, 15 Apr 2002 16:09:54 -0500 (CDT)
+Subject: SMC Console not responding
+From: "Daris A Nevil" <dnevil@snmc.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Reply-To: dnevil@snmc.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3CBB2478.A92C8C65@redswitch.com> you wrote:
->
-> Anyone had successfully put ppcboot on the MDPPro850 or EST 8240 board?
+Hello All,
 
-Nobody that I know of.
+I just finished porting Linux 2.4.18 to a custom MPC860-based board.
+Everything works fine except input to the console.
 
-> I am trying to put ppcboot on MDPPro 850, but it always stop after
-> printing:
-> DRAM : 0MB
+I have setup the console on the SMC1 port.  I use PPCBoot as the
+bootloader. PPCBoot works fine for both console input and output on SMC1.
+I can see the kernel boot messages, and I can even see the prompt from SASH
+(but not BASH).  However, any typed characters (input) are not seen by the
+console.
 
-Obviously either your RAM initialization and/or your RAM sizing  code
-is broken.
+Is there a known problem with the 8xx_io/uart.c file in 2.4.18, or has
+something changed in linux/init/main.c?
 
-Better help probably on the ppcboot mailing list; you  can  subscribe
-at http://lists.sourceforge.net/lists/listinfo/ppcboot-users
+Just to answer the obvious, I have performed the following:
 
-Wolfgang Denk
+1. Compiled with CONFIG_CONS_SMC1 and CONFIG_SERIAL_CONSOLE
+2. mknod /dev/ttyS0 c 4 64
+3. cd /dev, ln -sfn ttyS0 console
+4. The linux/init/main.c file seems to open the device "/dev/console" just
+fine.  It also finds the initial application (either SASH or BASH).
+
+
+Thanks,
+Daris Nevil
+SNMC
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-To get something done, a committee should consist  of  no  more  than
-three men, two of them absent.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
