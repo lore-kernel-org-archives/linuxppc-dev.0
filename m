@@ -1,41 +1,43 @@
-To: "Rupesh S" <rupeshs@myw.ltindia.com>
-Subject: Re: DENX kernel support for MPC885 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 16 Apr 2004 02:33:47 +0530."
-             <s07f4611.076@EMAIL>
-Date: Fri, 16 Apr 2004 00:22:03 +0200
-Message-ID: <1BEFFh-0k9jyi0@fmrl00.sul.t-online.com>
+Message-ID: <005101c4233c$abf8b670$6f01a8c0@xiphos.ca>
+From: "Joshua Lamorie" <jpl@xiphos.ca>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Cascaded interrupt controllers
+Date: Thu, 15 Apr 2004 18:54:56 -0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <s07f4611.076@EMAIL> you wrote:
->
-> I was just planning to use MPC885 for my embedded sytem that will be running Linux as the platform Operating System.
-> Can somebody help me know if Linux for PowerPC supports the MPC885 Processor.
+Gidday there,
 
-The  standard  source  trees  like  linuxppc-2.4  etc.  contain  only
-partioal support, i. e. as far as the MPC8xx support fits.
+I have a board containing a Virtex-II Pro and a few other FPGAs.  I have an
+OPB between the Virtex-II Pro and a Virtex-II which contains a UART,
+Interrupt controller and other peripherals.
 
-> I specifically checked out the hardware supported by the DENX kernel, in which I could not see MPC885.
+I currently have linux booting just fine, and a single UART talking nicely
+to the primary interrupt controller on the Virtex-II OPB.  I'm trying to
+modify the xilinx_pic.c code in arch/ppc/kernel as well as elements of
+arch/ppc/platforms/xilinx_ml300.[ch] and several files within
+arch/ppc/platforms/xilinx_ocp.
 
-This is correct. Our code base is 2.4.25, which does not yet  include
-specific MPC885 support.
+I've been using ppc4xx_pic as an example, but I can't figure out where to
+register, or initialize the interrupt that goes from the second INTC to the
+first.  When it's running all I see in /proc/interrupts is the interrupt for
+the serial port.
 
-> Though the Core os MPC885 is 8xx, MPC8xx has got _two ethernet_ and a USB which can act as master and slave.
-> Does the DENX linux support these drivers.
+I'm afraid I'm a little new to this level of the linux kernel, and
+definitely new to powerpc architecture.
 
-Not yet. Sames as in "official" linuxppc-2.4.
+Can anyone give me any pointers to good examples of setting things up?  It
+doesn't appear that anything uses irq_action which seems to be how things
+are done for a intel Pee Cee.
 
-Best regards,
+I'll post whichever elements of code would be most useful.
 
-Wolfgang Denk
+Thanks
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Madness takes its toll. Please have exact change.
+Joshua
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
