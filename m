@@ -1,283 +1,56 @@
-Message-ID: <E1836A7F3557D311A14000805F9F36FC0141C785@usdfo011.usac.danfoss.net>
-From: Hihn Jason <JasonHihn@DANFOSS.com>
-To: "'Christian Schroeder'" <christian.schroeder@imms.de>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: mpc823e usb most mode - once again
-Date: Fri, 12 Jul 2002 22:40:31 +0200
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: multipart/mixed;
+	boundary="----=_NextPartTM-000-a7e997ec-79a3-4896-bd5f-f99afef74010"
+Subject: Problem with PPC 857 MMU
+Date: Mon, 15 Jul 2002 14:06:39 +0530
+Message-ID: <72D09F11CC09B645ADE2890F6B442FD815E4A5@blr-m3-msg.wipro.com>
+From: "rajib  majila" <rajib.majila@wipro.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+This is a multi-part message in MIME format.
+
+------=_NextPartTM-000-a7e997ec-79a3-4896-bd5f-f99afef74010
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
 Hi,
+We are trying to port mvista linux on Power PC 857T based board. We are =
+loading the zImage.initrd file into 0x120000 address and our bootloader =
+looks for an elf file at that address and then copies the kernel into =
+0x400000 adrress.=20
+After that the boot-loader jumps to that location and the pro-kernel =
+starts uncompressing the kernel into 0x000000. After that it jumps to =
+0x0. From head_8xx.S, control is transffered to start_kernel by using a =
+rfi instruction. Our kernel crashes at this location. We would like to =
+hear about any such problem faced by any of you and how you solved the =
+problem.=20
+We are downloading our boot-loader into the RAM (at 0x100000) using BDM =
+and we run the boot-loader from there as we are
+Not able to write the on-board flash.
+All the addresses mentioned above RAM physical address.
+Thanx a lot in advance for your help.
+--Rajib
 
-I'm in very much the same position as you with this matter, but you seem to
-have a month and 1/2 head start. I was wondering if you had connected delay
-gates yet, and if they worked.
+------=_NextPartTM-000-a7e997ec-79a3-4896-bd5f-f99afef74010
+Content-Type: text/plain;
+	name="Wipro_Disclaimer.txt"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="Wipro_Disclaimer.txt"
 
-We're doing a product design, and currently we have a $5 additional USB host
-chip included in the design. We could really use the pins and $5 back and
-not waste an SCC.
+**************************Disclaimer**************************************************
 
-Your input is greatly appreciated!
--Jason
+ Information contained in this E-MAIL being proprietary to Wipro Limited is 'privileged'
+and 'confidential' and intended for use only by the individual or entity to which it is
+addressed. You are notified that any use, copying or dissemination of the information
+contained in the E-MAIL in any manner whatsoever is strictly prohibited.
 
+****************************************************************************************
 
------Original Message-----
-From: Christian Schroeder [mailto:christian.schroeder@imms.de]
-Sent: Friday, May 31, 2002 2:59 AM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: mpc823e usb most mode - once again
-
-
-
-Hi all,
-
-I try to play once again with the usb host code for the mpc823e.
-
-1. I collected some information from the Internet and the linuxppc-
-    embedded mailing list.
-
-2. I downloaded Brad Parkers new usb hci driver (rev. 2) from heeltoe.com
-   and integrated it in the kernel sorces (2.4.4) from ftp.denx.de
-
-3. I did some modifications specific to the TQM823L board (mpc823e chip
-   revision B2)
-   - #define USE_TIMER1_FOR_SOF
-   - #define USE_PA4_CLK4
-   - #undef POLL_FOR_HUB
-
-4. I loaded the IIC/SPI microcode patch from Brads distribution and
-   connected the timer1 output to /dreq1 to enable the patch. I tried
-   the microcode patch, which is contained in Wolfgang Denks kernel
-   source, too - with the same results.
-
-5. I didn't insert delay gates between the USBXRM/USBXRP inputs of the
-    mpc823 and the VM/VP outputs of the PDIUSB11A usb transceiver. I know,
-    that the mpc850 needs theese delay gates, but I use the latest release
-    of the mpc823e (PPC823EZTnnB2) and there's no hint in the errata.
-
-6.   I tested some devices and got the following results:
-
-6.1. Booting with no device connected
-
-PPCBoot 1.1.5 (May 28 2002 - 10:23:33)
-
-CPU:   PPC823EZTnnB2 at 50 MHz: 16 kB I-Cache 8 kB D-Cache
-Board: TQM823LDB0A3.200
-DRAM:  16 MB
-FLASH:  8 MB
-In:    serial
-Out:   serial
-Err:   serial
-PCMCIA:   No Card found
-Hit any key to stop autoboot:  0
-ARP broadcast 1
-TFTP from server 194.95.133.21; our IP address is 194.95.133.100
-Filename '/bdi2000/pImage-tq'.
-Load address: 0x100000
-Loading: #################################################################
-         ################################################
-done
-Bytes transferred = 578280 (8d2e8 hex)
-## Booting image at 00100000 ...
-   Image Name:   Linux-2.4.4
-   Created:      2002-05-30  12:58:54 UTC
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    578216 Bytes = 564 kB = 0 MB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-## Loading RAMDisk Image at 40100000 ...
-   Image Name:   LinuxPPC Ramdisk Image
-   Created:      2001-03-19   8:29:39 UTC
-   Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
-   Data Size:    1999700 Bytes = 1952 kB = 1 MB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Loading Ramdisk to 00dc7000, end 00faf354 ... OK
-Linux version 2.4.4 (root@thor) (gcc version 2.95.2 19991024 (release)) #2
-Thu May 30 14:57:53 CEST 2002
-USB uCode patch installed
-On node 0 totalpages: 4096
-zone(0): 4096 pages.
-zone(1): 0 pages.
-zone(2): 0 pages.
-Kernel command line: root=/dev/ram rw init=/sbin/init
-ip=194.95.133.100:194.95.133.21:194.95.133.126:255.255.255.128 ram
-disk_size=8192
-Decrementer Frequency: 3125000
-Calibrating delay loop... 49.86 BogoMIPS
-Memory: 12516k available (1092k kernel code, 456k data, 56k init, 0k
-highmem)
-Dentry-cache hash table entries: 2048 (order: 2, 16384 bytes)
-Buffer-cache hash table entries: 1024 (order: 0, 4096 bytes)
-Page-cache hash table entries: 4096 (order: 2, 16384 bytes)
-Inode-cache hash table entries: 1024 (order: 1, 8192 bytes)
-POSIX conformance testing by UNIFIX
-Linux NET4.0 for Linux 2.4
-Based upon Swansea University Computer Society NET3.039
-Starting kswapd v1.8
-CPM UART driver version 0.03
-ttyS0 on SMC1 at 0x0280, BRG2
-pty: 256 Unix98 ptys configured
-Found 2x16bit 4MByte CFI flash device of type AMD/Fujitsu standard at
-40000000
-Registered flash device /dev/flasha (minor 0, 4 partitions)
-Found 2x16bit 4MByte CFI flash device of type AMD/Fujitsu standard at
-40400000
-Registered flash device /dev/flashb (minor 8, 2 partitions)
-block: queued sectors max/low 8224kB/2741kB, 64 slots per queue
-RAMDISK driver initialized: 16 RAM disks of 8192K size 1024 blocksize
-Uniform Multi-Platform E-IDE driver Revision: 6.31
-ide: Assuming 50MHz system bus speed for PIO modes; override with idebus=xx
-PCMCIA slot B: phys mem e0000000...ec000000 (size 0c000000)
-No card in slot B: PIPR=ff00ff00
-eth0: CPM ENET Version 0.2 on SCC2, 00:d0:93:00:03:c6
-RAMDISK: Compressed image found at block 0
-Freeing initrd memory: 1952k freed
-usb.c: registered new driver usbdevfs
-usb.c: registered new driver hub
-m8xxhci: initializing controller
-m8xxhci_setup()
-usb.c: new USB bus registered, assigned bus number 1
-m8xxhci_start_controller()
-m8xxhci: MPC823e (mask 1)
-m8xxhci: USING CLK4 for USB clock!
-m8xxhci: ring sizes: rx 32, tx 40
-m8xxhci: enable USB controller
-m8xxhci_timer_setup()
-m8xxhci: timer, intfreq 50, busfreq 50, count 3125
-m8xxhci: USING TIMER1 FOR SOF!
-m8xxhci: timer1 started
-m8xxhci: usb bus is NOT idle
-hub.c: USB hub found
-hub.c: 1 port detected
-rh_submit_urb() int pipe
-rh_port_power(1)
-m8xxhci: initializing done
-usb.c: registered new driver usb_mouse
-usb.c: registered new driver keyboard
-NET4: Linux TCP/IP 1.0 for NET4.0
-IP Protocols: ICMP, UDP, TCP
-IP: routing cache hash table of 512 buckets, 4Kbytes
-TCP: Hash tables configured (established 1024 bind 1024)
-NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
-VFS: Mounted root (ext2 filesystem).
-Freeing unused kernel memory: 56k init
-#
-
-6.2. Connecting a cherry usb keybord (5 port hub integrated)
-
-# (connect)
-rh_port_reset(1)
-hub.c: USB new device connect on bus1/1, assigned device number 2
-hub.c: USB hub found
-hub.c: 5 ports detected
-hub.c: USB new device connect on bus1/1/4, assigned device number 3
-input0: USB HIDBP Keyboard 046a:0001 on on usb1:3.0
-# (disconnect)
-usb.c: USB disconnect on device 2
-usb.c: USB disconnect on device 3
-rh_port_enable(0)
-
-6.3. Connecting a Thunderbird 4-port usb hub
-
-# (connect)
-rh_port_reset(1)
-hub.c: USB new device connect on bus1/1, assigned device number 2
-usb.c: USB device not responding, giving up (error=-110)
-rh_port_reset(1)
-hub.c: USB new device connect on bus1/1, assigned device number 3
-hub.c: USB hub found
-hub.c: 4 ports detected
-# (disconnect)
-usb.c: USB disconnect on device 3
-rh_port_enable(0)
-
-6.4. Connecting a simple usb mouse
-
-# (connect)
-rh_port_reset(1)
-hub.c: USB new device connect on bus1/1, assigned device number 2
-usb_control/bulk_msg: timeout
-usb.c: USB device not accepting new address=2 (error=-110)
-rh_port_reset(1)
-hub.c: USB new device connect on bus1/1, assigned device number 3
-usb_control/bulk_msg: timeout
-usb.c: USB device not accepting new address=3 (error=-110)
-rh_port_enable(0)
-#
-(Disconnecting the mouse, the usb bus remains silent)
-
-6.5. Connecting the mouse to the Thunderbird hub and then
-       connecting the hub to the mpc823
-
-# (connect)
-rh_port_reset(1)
-hub.c: USB new device connect on bus1/1, assigned device number 2
-usb.c: USB device not responding, giving up (error=-110)
-rh_port_reset(1)
-hub.c: USB new device connect on bus1/1, assigned device number 3
-hub.c: USB hub found
-hub.c: 4 ports detected
-hub.c: get_port_status failed (err = -110)
-hub.c: get_port_status failed (err = -110)
-hub.c: get_port_status failed (err = -110)
-hub.c: get_port_status failed (err = -110)
-hub.c: get_hub_status failed
-hub.c: get_port_status(1) failed (err = -110)
-hub.c: get_port_status(1) failed (err = -110)
-hub.c: USB new device connect on bus1/1/1, assigned device number 4
-input0: Cypress Sem. Cypress USB Mouse on usb1:4.0
-hub.c: get_port_status failed (err = -110)
-hub.c: get_port_status failed (err = -110)
-hub.c: get_port_status failed (err = -110)
-hub.c: get_hub_status failed
-hub.c: get_port_status failed (err = -110)
-hub.c: get_port_status failed (err = -110)
-hub.c: get_hub_status failed
-#
-
-Conclusions and questions:
-
-Obviously my mpc823e detects only high speed devices correctly.
-This is a known behaviour of the mpc850, but i thought, that the
-mpc823 also can work with low speed devices. Did anyone notice
-this behaviour too ???
-
-What about the error (-110) connecting the Thunderbird hub ???
-Sometimes the hub is detected, sometimes not. A mouse, con-
-nected to one of the slave ports of the Thunderbird hub is detected
-only sometimes and everytime with errors.
-Now, I'm not sure if the USB driver works correctly or not anf if
-I need to insert the delay gates or not ... ??? What can I do to
-make  driver  more stable ????
-
-I could never receive a character from the usb keyboard, althoug
-it was detected correctly everytime. Is there a simple test program,
-to check if a usb device in not only detected correctly, but can ex-
-change data with the usb host ???
-
-any help would be greatly appreciated.
-
-Christian Schroeder
-
-
-Dr.-Ing. Christian Schroeder
-Institut fuer Mikroelektronik- und Mechatronik-Systeme
-Langewiesener Strasse 22
-98693 Ilmenau
-Telefon: +49 3677 678315
-Telefax: +49 3677 678337
-Mobil:   +49 173 5789172
-e-mail:  christian.schroeder@imms.de
-www:     http://www.imms.de/~christi/cs.html
-pgp:     finger christi@finger.imms.de
-
+------=_NextPartTM-000-a7e997ec-79a3-4896-bd5f-f99afef74010--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
