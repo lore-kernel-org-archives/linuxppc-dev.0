@@ -1,81 +1,151 @@
-Message-ID: <3C7122FAF06DD5118ED600500473364802649571@esply01.cnt.com>
-From: Bret Ketchum <bret_ketchum@cnt.com>
-To: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
-Subject: PPC pthread_spin_init appears broken.
-Date: Fri, 5 Sep 2003 08:17:22 -0500 
+Message-ID: <3F58AA89.80803@acm.org>
+Date: Fri, 05 Sep 2003 10:23:53 -0500
+From: Corey Minyard <minyard@acm.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Corey Minyard <minyard@acm.org>
+Cc: Matt Porter <mporter@kernel.crashing.org>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: Change to allow signal handlers to set SE and BE bits.
+References: <3F4FB0F3.9090906@acm.org> <20030829131824.B18608@home.com> <3F574958.4090402@acm.org>
+In-Reply-To: <3F574958.4090402@acm.org>
+Content-Type: multipart/mixed;
+ boundary="------------090205010503020009020902"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-	Scanning through a couple of glibc sources (Redhat 2.3.2-11.9
-and Yellow Dog 2.3.1-51a) it appears that pthread_spin_init is broken
-for the PPC, at least the 32 bit variety. pthread_spin_init initializes the
-lock
-to '1' but pthread_spin_lock calls compare_and_wait looking for a '0' as the
+This is a multi-part message in MIME format.
+--------------090205010503020009020902
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-old value, to be swapped for a '1' when the old value is read. This can't
-happen
-(without forcing the lock to '0') as the lock was first set to a '1' in
-pthread_spin_init.
+Here's an example patch (that I have tested) that shows the use of the
+top 16 bits of the trap field as communication between the signal
+handler and the kernel.
 
-	Any enlightenment will be appreciated.
+-Corey
 
-Code fragments from Redhat 2.3.2-11.9 below:
+Corey Minyard wrote:
 
-glibc-2.3.2-20030313/linuxthreads/sysdeps/powerpc/powerpc32/pt-machine.h
+>
+> Actually, using the SE bit may not be the best way to handle this to
+> cover all the PPC variants.
+>
+> Would it be better to have a special bit field someplace that is used to
+> communicate between the signal handler and the kernel?  Some
+> possibilities are:
+>
+>    * The top 16 bits of the trap field
+>    * The currently unused mq field (except on APUS?)
+>    * A new field in the signal frame
+>
+> I'm thinking that reserving the top 16 bits of the trap field may be the
+> best.  It would always come in as zero (so existing software won't be
+> broken) and it will be available for all processors and will not be used
+> for anything else by the processor.
+>
+> Any thoughts?
+>
+> -Corey
+>
+> Matt Porter wrote:
+>
+>> On Fri, Aug 29, 2003 at 03:00:51PM -0500, Corey Minyard wrote:
+>>
+>>
+>>> I have a debugger that runs in an application that requires access to
+>>> the SE and BE bits.  The following patch adds that capability to
+>>> 2.4.21-ben1.  I have tested this, and gdb still seems to correctly step
+>>> out of signal handlers, and it seems to work for 4xx.  Does this
+>>> look ok?
+>>>
+>>>
+>>
 
-PT_EI int
-__compare_and_swap (long int *p, long int oldval, long int newval)
-{
-  int ret;
 
-  __asm__ __volatile__ (
-           "0:    lwarx %0,0,%1 ;"
-           "      xor. %0,%3,%0;"
-           "      bne 1f;"
-           "      stwcx. %2,0,%1;"
-           "      bne- 0b;"
-           "1:    "
-        : "=&r"(ret)
-        : "r"(p), "r"(newval), "r"(oldval)
-        : "cr0", "memory");
-  /* This version of __compare_and_swap is to be used when acquiring
-     a lock, so we don't need to worry about whether other memory
-     operations have completed, but we do need to be sure that any loads
-     after this point really occur after we have acquired the lock.  */
-  __asm__ __volatile__ ("isync" : : : "memory");
-  return ret == 0;
-}
+--------------090205010503020009020902
+Content-Type: text/plain;
+ name="ppc-dbgr2.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="ppc-dbgr2.diff"
 
-glibc-2.3.2-20030313/linuxthreads/sysdeps/powerpc/pspinlock.c
-int
-__pthread_spin_lock (pthread_spinlock_t *lock)
-{
-  while (! __compare_and_swap ((long int *)lock, 0, 1))
-    ;
-  return 0;
-}
+--- arch/ppc/kernel/signal.c.old	2003-08-28 15:30:37.000000000 -0500
++++ arch/ppc/kernel/signal.c	2003-09-05 09:17:49.000000000 -0500
+@@ -304,6 +304,29 @@
+ 			     GP_REGS_SIZE - PT_ORIG_R3 * sizeof(elf_greg_t)))
+ 		return 1;
 
-int
-__pthread_spin_unlock (pthread_spinlock_t *lock)
-{
-  MEMORY_BARRIER ();
-  *lock = 0;
-  return 0;
-}
++
++	/* Check any special handling requests from the signal
++	   handler */
++	if (regs->trap >> 16) {
++		/* If the signal handler has asked for
++		   single-stepping, set it up. */
++		if (regs->trap & PPC_TRAP_ENABLE_SINGLE_STEP) {
++#if defined(CONFIG_4xx)
++			regs->msr |= MSR_DE;
++			current->thread.dbcr0 |= (DBCR0_IDM | DBCR0_IC);
++#else
++			regs->msr |= MSR_SE;
++#endif
++		}
++		/* If the signal handler has asked for branch
++		   tracing, set it up. */
++		if (regs->trap & PPC_TRAP_ENABLE_BRANCH_TRACE) {
++#if !defined(CONFIG_4xx)
++			regs->msr |= MSR_BE;
++#endif
++		}
++	}
++
+ 	/* force the process to reload the FP registers from
+ 	   current->thread when it next does FP instructions */
+ 	regs->msr &= ~MSR_FP;
+--- arch/ppc/kernel/traps.c.old	2003-08-28 15:42:26.000000000 -0500
++++ arch/ppc/kernel/traps.c	2003-09-05 09:15:47.000000000 -0500
+@@ -396,7 +396,7 @@
+ void
+ SingleStepException(struct pt_regs *regs)
+ {
+-	regs->msr &= ~MSR_SE;  /* Turn off 'trace' bit */
++	regs->msr &= ~(MSR_SE | MSR_BE);  /* Turn off 'trace' bits */
+ 	if (debugger_sstep(regs))
+ 		return;
+ 	_exception(SIGTRAP, regs, TRAP_TRACE, 0);
+--- include/asm-ppc/ptrace.h.old	2003-09-05 09:02:15.000000000 -0500
++++ include/asm-ppc/ptrace.h	2003-09-05 09:16:43.000000000 -0500
+@@ -29,11 +29,28 @@
+ 	unsigned long ccr;
+ 	unsigned long mq;		/* 601 only (not used at present) */
+ 					/* Used on APUS to hold IPL value. */
++
++	/* Note that the high-order 16-bits of the trap field are used
++	   to communicate information back from the signal handler, as
++	   described in the PPC_TRAP_xxx macros below.  You should
++	   leave this alone if you do not need these functions. */
+ 	unsigned long trap;		/* Reason for being here */
+ 	unsigned long dar;		/* Fault registers */
+ 	unsigned long dsisr;		/* used for ESR on 4xx/Book-E */
+ 	unsigned long result; 		/* Result of a system call */
+ };
++
++/* If you set this bit in the "trap" field when returning from a
++   signal handler, single stepping will be enabled on the first
++   instruction back from the signal handler, if the processor supports
++   this. */
++#define PPC_TRAP_ENABLE_SINGLE_STEP	(1 << 16)
++
++/* If you set this bit in the "trap" field when returning from a
++   signal handler, branch tracing will be enabled on the first
++   instruction back from the signal handler, if the processor supports
++   this. */
++#define PPC_TRAP_ENABLE_BRANCH_TRACE	(1 << 17)
+ #endif
 
-int
-__pthread_spin_init (pthread_spinlock_t *lock, int pshared)
-{
-  /* We can ignore the `pshared' parameter.  Since we are busy-waiting
-     all processes which can access the memory location `lock' points
-     to can use the spinlock.  */
-  *lock = 1;
-  return 0;
-}
+ #ifdef __KERNEL__
+
+--------------090205010503020009020902--
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
