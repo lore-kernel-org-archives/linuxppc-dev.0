@@ -1,23 +1,33 @@
-Message-ID: <64AFC0D37B2ED411BAB300508B6D90A019AAC1@AVALANCHE>
-From: Dan Winkler <dwinkler@virtual-ink.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Device driver FAQ/Information
-Date: Tue, 19 Dec 2000 09:45:34 -0500
+Message-ID: <3A3F9363.1040105@galileo.co.il>
+Date: Tue, 19 Dec 2000 18:57:07 +0200
+From: Rabeeh Khoury <rabeeh@galileo.co.il>
+Reply-To: rabeeh@galileo.co.il
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Booting the kernel
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Does anyone know any links to info on developing device drivers for embedded
-PPC.  I'm having a little trouble understanding the memory managment inside
-of the drivers, specifically with the CPM.  I know most drivers used the
-Dual port ram to send the data but would it work just as easily with
-external ram.  Would there be any other considerations.  The macros which I
-am confused with are the __va  __pa etc...  Can I find an explaination of
-this anywhere....  Thanks
+Hi All,
 
--Dan Winkler
+I'v developed a network loader for our embedded systems that downloads a
+kernel through network. Before branching to the kernel entry point
+(logical address 0x0) I have I/D BAT2 already mapping 0xc0000000 to
+0x00000000 . The problem is that the kernel hangs in lots of places in
+arch/ppc/kernel/head.S file . For example all the mmu_off stuff ,
+changing the BATs etc...
+
+The question is what is the idial situation that the kernel will most
+like ? What should be the situation of the BATs / MMU ?
+What is initrd_start / end ? and what should I put in r4 / r5 ?
+
+Any other piece of information provided might help bringing the boot
+puzzle up !
+
+Regards,
+Rabeeh
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
