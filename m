@@ -1,76 +1,52 @@
-Message-ID: <3B97CA7E.6010805@brocade.com>
-Date: Thu, 06 Sep 2001 12:11:58 -0700
-From: Amit D Chaudhary <amitc@brocade.com>
-MIME-Version: 1.0
-To: =?x-windows-949?B?wLG1v7yu?= <manulsan@daintelecom.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: How to make ramdisk ?
-References: <002801c1346a$553b1e40$2000a8c0@private>
-Content-Type: text/plain; charset=x-windows-949
+Date: Thu, 6 Sep 2001 13:01:06 -0700
+From: andrew may <acmay@acmay.homeip.net>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: acmay@acmay.homeip.net, Dan Malek <dan@mvista.com>,
+	John Tyner <jtyner@cs.ucr.edu>, linuxppc-commit@source.mvista.com,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: patch for mktree.c on cross compiles
+Message-ID: <20010906130106.L14548@ecam.san.rr.com>
+References: <20010905120613.I14548@ecam.san.rr.com> <3B968E75.A63F26EA@mvista.com> <20010905212050.K18940@cpe-24-221-152-185.az.sprintbbd.net> <20010905223903.D621@sink.san.rr.com> <20010906075542.A21172@cpe-24-221-152-185.az.sprintbbd.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20010906075542.A21172@cpe-24-221-152-185.az.sprintbbd.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Look at Documentation/ramdisk.txt in the kernel source tree for details.
+On Thu, Sep 06, 2001 at 07:55:42AM -0700, Tom Rini wrote:
+> On Wed, Sep 05, 2001 at 10:39:03PM -0700, acmay@acmay.homeip.net wrote:
+> > On Wed, Sep 05, 2001 at 09:20:50PM -0700, Tom Rini wrote:
+> > > On Wed, Sep 05, 2001 at 04:43:33PM -0400, Dan Malek wrote:
+> > > > andrew may wrote:
+> > > > > I would think everything in arch/ppc/boot/utils should be checked
+> > > > > for endian problems on cross compiles.
+> > > >
+> > > > Are the network-host macros the right things to use?  That's what
+> > > > always comes to mind for me, but I suspect there is a more standard
+> > > > set of macros from 'endian.h' or something........If it's OK with
+> > > > everyone I'll check it in, but it does look kind of weird.
+> > >
+> > > Well, after some quick digging, here's what I found.  If we include
+> > > <asm/byteoder.h>, and deal with some __'s, which are exported outside
+> >
+> > One problem with trying this is that <asm/byteoder.h> will only be for
+> > the target, not the compiling host. I think mktree should stick with
+> > standard userspace include headers and stay away from kernel headers.
+>
+> Er.  No, <asm/byteorder.h> _should_ be a userspace header.  At least on
+> Linux..  For BSD (and Linux with _USE_BSD) we can use sys/types.h and get
+> back a __BYTE_ORDER, I _think_...
 
-Amit
+It seems that <asm/byteorder.h> is one of the "shared" headers between glibc
+and the kernel. Hasn't Linus wanted the glibc people to do there own headers
+for ages.
 
+Either way it seems that htonl gets mapped down __cpu_to_be32() in
+linux/byteorder/generic.h. So that even thought it seems strange to
+use the "network" functions it does seem to be OK.
 
-윤동석 wrote:
-> 네트워크Hi
->
-> I'am trying to Hard Hat linux 1.2  on custom MPC8240 Board
-> modifying  Sandpointing8240  SDK.
-> I want to use ramdisk  so I did " make  zImage.initrd"
-> but there are errors.  followings are error messages
-> =================================================================
-> .
-> .
-> mlinux:                 59.5% -- replaced with vmlinux.gz
-> make[2]: Leaving directory `/opt/hardhat/devkit/lsp/motorola-sandpoint/linux-2.4.2_hhl20/arch/ppc/boot/images'
-> make -C sandpoint zImage.initrd
-> make[2]: Entering directory `/opt/hardhat/devkit/lsp/motorola-sandpoint/linux-2.4.2_hhl20/arch/ppc/boot/sandpoint'
-> ppc_82xx-ld -T /opt/hardhat/devkit/lsp/motorola-sandpoint/linux-2.4.2_hhl20/arch/ppc/vmlinux.lds -Ttext 0x00800000 -o zvmlinux.initrd.tmp head.o ../common/misc-common.o ../common/misc-simple.o ../common/ns16550.o ../common/string.o ../lib/zlib.a
-> ppc_82xx-objcopy -O elf32-powerpc -R .comment \
->         --add-section=initrd=../images/ramdisk.image.gz \
->         --add-section=image=../images/vmlinux.gz \
->         zvmlinux.initrd.tmp zvmlinux.initrd
-> ppc_82xx-objcopy: cannot stat: ../images/ramdisk.image.gz:  no such file or directory
-> make[2]: *** [zvmlinux.initrd] Error 1
-> make[2]: Leaving directory `/opt/hardhat/devkit/lsp/motorola-sandpoint/linux-2.4.2_hhl20/arch/ppc/boot/sandpoint'
-> make[1]: *** [zImage.initrd] Error 2
-> make[1]: Leaving directory `/opt/hardhat/devkit/lsp/motorola-sandpoint/linux-2.4.2_hhl20/arch/ppc/boot'
-> make: *** [zImage.initrd] Error 2
-> =================================================================
->
-> Question ]
->     At cimpile time, ramdisk.image.gz is needed .
->
->    1) How do I make ramdisk.image.gz ?
->
->
-> Thanks in advance.
->                                                 DongSeak Yoon
->
-> Question ]
->
->    1) Do I have to make ramdisk.image.gz ?
->    2) if so , how can I make it  ?
->
->
-> Thanks in advance.
->                                                 DongSeak Yoon
->
->
->
->
-> E-mail  : manulsan@daintelecom.com
-> Mobil   : 016-208-9568
-> Fax     : 82-2-581-2805
->
->
->
->
+We can only hope people don't have bad /usr/include/[asm][linux] symlinks.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
