@@ -1,43 +1,35 @@
-Message-Id: <200008030930.KAA12700@hyperion.valhalla.net>
-Date: Thu, 03 Aug 2000 10:30:48 +0100
-Subject: Re: [alsa-devel] ALSA sequencer + Timidity on GNU/Linux PPC
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: alsa-devel@alsa-project.org, "alsa-devel" <alsa-devel@alsa-project.org>
-CC: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Martin Costabel <costabel@wanadoo.fr>, <linuxppc-dev@lists.linuxppc.org>,
+        Iain Sandoe <iain@sandoe.co.uk>
+Subject: Re: rtc again...
+Date: Thu, 3 Aug 2000 11:30:49 +0200
+Message-Id: <20000803093049.3478@mailhost.mipsys.com>
+In-Reply-To: <398934C7.663E6BD9@wanadoo.fr>
+References: <398934C7.663E6BD9@wanadoo.fr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  Thu, Aug 3, 2000, Matthias Pfisterer wrote:
-> I tried the above combination (plus pmidi). It generally works; timing
-> seems to be correct. However, the sound of most (all?) notes is very
-> distorted. Is there any way to debug this? Timidity in standalone-mode
-> works ok---some timing problems if doing real-time playback, but perfect
-> in doing batch-processing (rendering to a wav file).
-> I'm using alsa-drivers 0.5.8b, Timidity 2.10.0a3 and a patched dmasound
-> driver (that's the OSS driver for Macs, sorry, no ALSA driver for it
-> yet).
+>I am using it as module both for 2.2.17-bk and for 2.4.0-test5. They
+>don't give the same time, and I think it is the one in 2.4.0 that is
+>right. I am at GMT+2:00, and the time in 2.2.17 is 2 hours early. When I
+>change /etc/sysconfig/clock from "UTC=false" to "UTC=true", both times
+>shift by 2 hours, but the discrepancy remains.
+>
+>The following patch for bitkeeper linuxppc_2_2 fixes this problem for
+>me. It brings 2.2.17pre13 in line with 2.4.0-test5 (and MacOS). I cannot
+>test the VIAPMU part, so maybe there the offset is necessary, but for
+>the VIACUDA part, it seems wrong.
 
-Which kernel (2.2.17pxx or 2.4.0?)
-(a) What frag sizes & number of frags are you using for the driver?
+You patch reverts a fix I made some time ago. Basially, what probably
+happens is that your RTC is in UTC time, not in local time. The Mac RTC
+is supposed to be in local time, the offset corrects the kernel time on
+boot to account for this. Previously, without that fix, the kernel used
+to boot with a bogus UTC time until userland fixes it.
 
-(b) I think we may have an issue with the order in which SNDCTL_XXX IOCTLs
-are sent to the dmasound driver.  This is being investigated (today) as it
-came to light last night...
+Ben.
 
-It is possible that the distortion is simply that the mode that Timidity
-*thinks* it has set is different for what is *actually* set in the driver.
-
-Once the kernel (OSS) driver is "sorted" I will (if no-one else
-volunteers/does it in the meantime) try to get an ALSA one going ASAP.
-
-BTW I will try and replicate the effect if you mail me the configs/URLs
-(off-list).  Last time I tried Timidity I didn't get any action :-( but I
-had very little time to experiment.
-
-regards,
-Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
