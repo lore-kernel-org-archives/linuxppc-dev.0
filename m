@@ -1,64 +1,54 @@
-Mime-Version: 1.0
-Message-Id: <p06001800bb30f2ae6091@[192.168.0.254]>
-Date: Tue, 8 Jul 2003 18:46:36 -0400
+Message-ID: <20030709010622.15390.qmail@kunk.qbjnet.com>
+Subject: Making 2.5 kernels
 To: linuxppc-dev@lists.linuxppc.org
-From: Stefan Jeglinski <jeglin@4pi.com>
-Subject: OT: wanting to write PCI daemon
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Date: Tue, 8 Jul 2003 20:06:22 -0500 (CDT)
+From: Robert E Brose II <bob@kunk.qbjnet.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Now that I have your attention with the moronic subject line, ahem...
-I feel more comfortable writing to this list than a gen-purpose linux
-list; feel free to respond off-list.
+I'm trying to compile the most revent bitkeeper 2.5 kernel and am getting
+this:
+.
+.
+.
+make -f scripts/Makefile.build obj=drivers/net
+  gcc -Wp,-MD,drivers/net/.loopback.o.d -D__KERNEL__ -Iinclude -Wall -Wstrict-prototypes -Wno-trigraphs -O2 -fno-strict-aliasing -fno-common -Iarch/ppc -msoft-float -pipe -ffixed-r2 -Wno-uninitialized -mmultiple -mstring -fomit-frame-pointer -nostdinc -iwithprefix include    -DKBUILD_BASENAME=loopback -DKBUILD_MODNAME=loopback -c -o drivers/net/.tmp_loopback.o drivers/net/loopback.c
+In file included from include/net/ip.h:33,
+                 from include/net/checksum.h:31,
+                 from drivers/net/loopback.c:52:
+include/net/route.h:24: features.h: No such file or directory
+include/net/route.h:25: sys/socket.h: No such file or directory
+include/net/route.h:26: sys/types.h: No such file or directory
+include/net/route.h:27: netinet/in.h: No such file or directory
+include/net/route.h:100: warning: `RTCF_NAT' redefined
+include/linux/in_route.h:28: warning: this is the location of the previous definition
+include/net/route.h:114: warning: `RT_TOS' redefined
+include/linux/in_route.h:30: warning: this is the location of the previous definition
+In file included from include/net/ip.h:33,
+                 from include/net/checksum.h:31,
+                 from drivers/net/loopback.c:52:
+include/net/route.h:55: field `rtmsg_dst' has incomplete type
+include/net/route.h:56: field `rtmsg_src' has incomplete type
+include/net/route.h:57: field `rtmsg_gateway' has incomplete type
+make[2]: *** [drivers/net/loopback.o] Error 1
 
-As background, our current product is a PCI card that works in Wintel
-and Mac boxes. We make a hardware driver for Win/OS9/OSX, and a
-control and data acquisition application for Win/OS9/OSX that talks
-to the driver, which in turn talks to DSPs on the PCI card.
+I get an error at the same place in the 2.5.74 kernel on an i386
+box.
 
-Our company is faced with a redesign of our PCI card because of the
-new PCI-X architecture coming up. We were already planning to drop
-PCI altogether and move our card electronics to an external box that
-runs a Linux kernel on a commercial motherboard, with internal
-connections to our custom hardware, and communicating with external
-computers via TCP/IP.
+Did look around but the problem is not obvious to me.
+The includes that are "missing" are in the /usr/include.... tree.
+Can anyone give me some pointers? I did do a make mrproper as a
+matter of course.
 
-We have been moving along in this project slowly, and you could say
-we're now caught with our pants down a bit, given that part of our
-customer base will soon be buying G5s with PCI-X only (except the one
-model).
-
-As an interim solution until our next-gen hardware becomes real, we
-want to use up our stock of existing PCI cards, and have mostly
-settled on the idea that we can build a small box with a commercial
-motherboard including 1 PCI slot. But to further our next-gen design,
-we'd like to go ahead and run a linux kernel on it. That means it
-will likely be Intel, so already I'm getting seriously close to
-getting booted here, but this we know how to do. We then just need a)
-to talk TCP/IP out the one end, and b) PCI on the other.
-
-We had the naive idea that we could take an existing [open-source]
-daemon that listens via TCP/IP on an ethernet interface, and modify
-it for our purposes. We would then wed the kernel (and daemon) with
-source code from PLX, the maker of our PCI controller chip (they
-apparently provide Linux source as part of a $99 devel kit).
-
-Now the questions: does this seem at all reasonable? Are there
-obvious gotchas or better approaches? Is the idea of adapting an
-existing daemon a stupid one? If not, which existing daemon might be
-best adapted? Are there existing TCP/IP daemons that already are
-adapted for use in a PCI environment? Is there already a free OOTB
-solution for us? <grin>
-
-Any other thoughts or suggestions? Is my terminology even in the
-right place? Searching on sourceforge for "PCI" brings quite a few
-hits, but our resources to investigate even the reasonable
-possibilities are limited.
-
-Regards, and thanks for your patience,
-
-Stefan Jeglinski
+Thanks,
+Bob
+--
+/~\ The ASCII       | Robert E. Brose II    N0QBJ
+\ / Ribbon Campaign | http://www.qbjnet.com/
+ X  Help cure       | mailto:bob@qbjnet.com
+/ \ HTML Email      | public key at http://www.qbjnet.com/key.html
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
