@@ -1,80 +1,78 @@
-To: Benjamin Herrenschmidt <bh40@calva.net>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Misc problems with Lombard (serial, ethernet, SCSI)
-References: <m2vgvlthiy.fsf@c469597-a.grlnd1.tx.home.com> <19340820005344.27517@192.168.1.10>
-Reply-To: minyard@acm.org
-From: Corey Minyard <minyard@acm.org>
-Date: 03 Oct 2000 23:57:26 -0500
-In-Reply-To: Benjamin Herrenschmidt's message of "Mon, 25 Sep 2000 09:22:00 +0200"
-Message-ID: <m2snqdfbk9.fsf@c469597-a.grlnd1.tx.home.com>
+From: Michael Thompson <mickey@berkeley.innomedia.com>
+Message-Id: <200010040653.XAA18312@berkeley.innomedia.com>
+Subject: PCI resource allocation
+To: linuxppc-dev@lists.linuxppc.org
+Date: Tue, 3 Oct 2000 23:53:12 -0700 (PDT)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I upgraded to 2.4-test9 (from LinuxCare) and I've got some new data.
+Hello,
 
-Benjamin Herrenschmidt <bh40@calva.net> writes:
+I'm porting linux to a custom 8240 based board. This board has
+two PCI buses; bus 0 is a 66MHz bus, and bus 1 is a 33MHz bus, so there
+is a PCI-PCI bridge (1011/0023) on bus 0.
 
-> >* Serial drivers - At least when talking to the modem, it will occasionally
-> >  cease to work.  I use pppd to connect, and when it disconnects I cannot
-> >  reconnect.  Once this happens, anything that tries to open the port get
-> >  an I/O error.  If I unload the serial module and then reload it, the
-> >  problem goes away for a while.  This started happening around 2.2.15.
->
-> Dan Malek recently "ported" a workaround for a HW SCC bug which seem to
-> fix such problems. (The SCC get stuck sometimes when receiving certain
-> kinds of bad characters). I'll try to get that merged ASAP.
+On bus 1, there is one ethernet device (1022:2000) and a PCI-ISA
+bridge (100b/0021).
 
-This seems to be fixed in 2.4-test9
+There is a problem allocating resources for the ethernet device, and
+I'm afraid I'm clueless at the moment. Can anybody give me an idea
+what might be going on?
 
->
-> >* MESH Driver - It won't work with my scanner.  The scanner works fine
-> >  under MacOS and used to work under Linux x86.  It has problems with
-> >  disconnects.  Also, once I use it then sleeping and awaking will locks up
-> >  the machine.  Also, unloading the MESH module and reloading it locks up
-> >  the machine.
->
-> Paul ? Any clue ? MESH is still a weird beast to me ;)
+Thanks!
 
-This also seem to be fixed.
+-Michael Thompson
+mickey@berkeley.innomedia.com
 
->
-> >* Ethernet driver (BMAC) - The driver will occasionally lock up under heavy
-> >  load (I haven't seen this yet with 2.2.17, though).  If I define an alias
-> >  address, bringing down the alias address will also bring down the main
-> >  address (this is still happening under 2.2.17).  Unloading the ethernet
-> >  driver and loading it again causes a lockup.
->
-> I've not experieced that before, there are some known issues with bmac
-> (HW bugs uncovered by comments in Apple's Darwin source code) but AFAIK,
-> nothing that cause a kernel lockup.
+----
 
-I haven't had the port lockup (it's not a kernel lockup, but the port
-just stops working), but I haven't done much heavy traffic.  Unloading
-and reloading the driver as a module still causes a machine lockup.
+Total memory = 3136MB; using 0kB for hash table (at 00000000)
+Linux version 2.4.0-test9 (mickey@richter) (gcc version 2.95.2 19991024 (release/franzo)) #17 Tue Oct 3 23:38:55 PDT 2000
+Boot arguments: root=nfs console=ttyS0,9600
+On node 0 totalpages: 802816
+zone(0): 802816 pages.
+zone(1): 0 pages.
+zone(2): 0 pages.
+Kernel command line: root=nfs console=ttyS0,9600
+OpenPIC Version 1.2 (1 CPUs and 24 IRQ sources) at fc040000
+OpenPIC timer frequency is not set
+time_init: decrementer frequency = 66.000000 MHz
+Calibrating delay loop... 439.09 BogoMIPS
+Memory: 8864k available (0k kernel code, 0k data, 0k init, 0k highmem)
+Dentry-cache hash table entries: 262144 (order: 9, 2097152 bytes)
+Buffer-cache hash table entries: 262144 (order: 8, 1048576 bytes)
+Page-cache hash table entries: 524288 (order: 9, 2097152 bytes)
+Inode-cache hash table entries: 262144 (order: 9, 2097152 bytes)
+POSIX conformance testing by UNIFIX
+PCI: Probing PCI hardware
+Scanning bus 00
+Found 00:00 [1057/0003] 000600 00
+Found 00:80 [11ab/4809] 000200 00
+Found 00:88 [1011/0023] 000604 01
+Fixups for bus 00
+Scanning behind PCI bridge 00:11.0, config 010100, pass 0
+Scanning bus 01
+Found 01:00 [1022/2000] 000200 00
+Found 01:10 [100b/0021] 000601 00
+Fixups for bus 01
+Bus scan for 01 returning with max=01
+Scanning behind PCI bridge 00:11.0, config 010100, pass 1
+Bus scan for 00 returning with max=01
+PCI: Resource 80100000-80100fff (f=200, d=0, p=0)
+PCI: Cannot allocate resource region 1 of device 00:00.0
+PCI: Resource 80200000-803fffff (f=200, d=1, p=1)
+PCI: Cannot allocate resource region 0 of device 00:10.0
+PCI: Resource 00801000-00801003 (f=101, d=1, p=1)
+PCI: Resource 00800000-0080001f (f=101, d=1, p=1)
+PCI: Cannot allocate resource region 0 of device 01:00.0
+PCI: Resource a0100000-a010001f (f=200, d=1, p=1)
+  got res[10000000:101fffff] for resource 0
+PCI: Failed to allocate resource 0 for PCI device 1022:2000
+Linux NET4.0 for Linux 2.4
+Based upon Swansea University Computer Society NET3.039
 
->
-> >I'm also seeing random lockups after long periods of running under
-> >heavy load, but this is new and I'm thinking it may be a heat problem.
-> >But just in case, I'll say it.
->
-> It may also be a RAM problem. Some Lombards are known to have memory
-> controller (or RAM, we don't know for sure) problems.
-> Also, which boot method are you using ?
->
-
-Haven't done any big builds, but I haven't seen this eithers.
-
-
-I upgraded to a USB scanner and a USB CDRW, which seem to work fine, BTW.
-
-I am having wakeups from sleeping lock up the machine occasionally;
-this seems related to the USB stuff, it only seems to happen when I
-remove USB devices, sleep, wakup without them, sleep again, then plug
-them back in and wake up.  But I do this fairly often.
-
-Thanks,
-
-Corey
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
