@@ -1,35 +1,46 @@
+Message-ID: <004e01c1e5ac$a084adf0$1a11efcb@industrialDiv.hanasys.co.kr>
+Reply-To: "Sangmoon Kim" <dogoil@etinsys.com>
+From: "Sangmoon Kim" <dogoil@etinsys.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Cross compiling glibc-2.2.3
+Date: Wed, 17 Apr 2002 10:10:13 +0900
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: Anyone got eepro100 working on Walnut?
-Date: Tue, 16 Apr 2002 21:08:41 -0400
-Message-ID: <FF6CF34C346E724596A2FB5CAAB2C4978844FF@voyager.ops.infiniswitch.com>
-From: "Wright, David" <dwright@infiniswitch.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
+	charset="ks_c_5601-1987"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I've been trying to get an Intel eepro100 card working on a
-Walnut board.  I've tried both the 1.09 and 1.19 versions of
-the driver (eepro100.c).  Initially, both failed the self-
-test step.  I was able to get past that one by invalidating
-the dcache after issuing the self-test directive.  However,
-I now find that the card is neither transmitting nor receiving
-reliably.  I get messages like:
+Hi, IGOR LURI
 
-   eth1: Unknown receiver error, status=0x5048.  [lots of these]
+> Anybody has already crosscompiled glibc 2.2.3 for mpc8xx?
+I crosscompiled glibc-2.2.5.
 
-and
+> I know that for glibc-2.1.2 there is a patch in denx page, but for glibc
+> 2.2.3 is there any patch?
 
-eth1: Transmit timed out: status 0050  0000 at 2/8 commands 00a00300 00a003000.
-eth1: Restarting the chip...
-eth1: Command unit failed to mark command 00030000 as complete at 6.
+I referenced the patch in denx page, and fixed the crosscompile problem by following procedure.
 
+1. Move the sysdeps/powerpc/fclrexcpt.c to sysdeps/powerpc/fpu/
+mv sysdeps/powerpc/fclrexcpt.c sysdeps/powerpc/fpu/
 
-Any suggestions (other than junking this card, which is not an option
-for me) most welcome.
+2. Delete the sysdeps/powerpc/memset.S
+rm sysdeps/powerpc/memset.S
 
-  -- David Wright, InfiniSwitch Corp.
+3. Edit the sysdeps/powerpc/Makefile
+#ifeq ($(subdir),gmon)
+#libm-support += fenv_const fe_nomask
+#endif
+
+4. Compile
+CC=${TARGET}-gcc AR=${TARGET}-ar RANLIB=${TARGET}-ranlib \
+        CFLAGS="-msoft-float -D_SOFT_FLOAT -mcpu=860 -O2" \
+        ../${GLIBC}/configure --host=$TARGET --prefix=${PREFIX} \
+        --enable-add-ons=linuxthreads --with-headers=${PREFIX}/include \
+        --without-fp
+
+Good luck.
+- Sangmoon Kim -
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
