@@ -1,36 +1,47 @@
-Message-ID: <371E0DB4.4D0EB787@jlc.net>
-Date: Wed, 21 Apr 1999 13:41:08 -0400
-From: Dan Malek <dmalek@jlc.net>
+Date: Wed, 21 Apr 1999 20:58:00 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Simone Piccardi <Simone.Piccardi@fi.infn.it>
+cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Un-Setting VME3PCI Master Master Enable on MVME2431
+In-Reply-To: <371E0313.C0FF665C@fi.infn.it>
+Message-ID: <Pine.HPP.3.96.990421202724.20020d-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-To: Alexander Larsson <alex@signum.se>
-CC: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Embedded 8xx 2.2.5 kernel tarball
-References: <Pine.LNX.4.04.9904211803010.6664-100000@tammy.signum.se>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Alexander Larsson wrote:
-
-> I just merged my local changes with the 2.2.5-embedded sources.
-> I get an error when starting init. (Booting from nfs.)
->
-> It just says:
-> Freeing unused kernel memory: 32k init
-> put_dirty_page: page already exists
-
-Ummm.....it would help if I knew a little more about what you are using.
-Like, what kind of board and the kernel configuration?
-
-I would see a similar problem when I would configure IDE and not
-configure PCI.  This is because the IDE probes (and other I/O in/out
-operations) map to real memory locations and tend to write on top of
-kernel data structures.  This is my only guess without more information.
 
 
-    -- Dan
+On Wed, 21 Apr 1999, Simone Piccardi wrote:
 
+> 
+> Hi,
+> today I got another "little" trouble with our board.
+> We finally get a dataway display that cannot work. After many attempts
+> to use it (it was perfectly working in other crates) we try to go back
+> to the default configuration of the board (I switched to VME3PCI Master
+> Master Enable = N according to what said in the mailing list to boot the
+> kernel) and everything went working.
+> The manual said:
+> N do not enable the VME Bus Interface
+> 
+> So is this only related to the PPCBug (and with a working kernel all
+> will be OK?) Or I have to worry?
+
+Don't worry. The settings of the Raven/Hawk are not ideal for large VME
+systems and it's better to enable the Universe later in the boot process
+or when loading the driver. This bridge is simply a PCI space hog,
+actually if you sum the maximal size of all the programmable images you
+would get something slightly over 32 Gb so it's better to disable it when
+playing with the host bridge (not yet fully done). 
+
+> Probably this is a stupid question, but as I said I'm totally new to
+> VME.
+
+No problem. We all have been newbies at some point. 
+
+	Gabriel
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
