@@ -1,134 +1,65 @@
-Message-ID: <36E2FB05.C877DD6@mail.esiea.fr>
-Date: Sun, 07 Mar 1999 23:17:48 +0100
-From: "G. =?iso-8859-1?Q?Laur=E8s?=" <laures@hp1.esiea.fr>
-Reply-To: laures@hp1.esiea.fr
+Date: Sun, 7 Mar 1999 19:14:21 -0600 (CST)
+From: Troy Benjegerdes <hozer@drgw.net>
+To: "David Mentr\\'e" <David.Mentre@irisa.fr>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: [Linux SMP FAQ] Info request for SMP PPC systems Linux support
+In-Reply-To: <wd8d82m7cjn.fsf@parate.irisa.fr>
+Message-ID: <Pine.LNX.4.04.9903071902330.25081-100000@narn.local.drgw.net>
 MIME-Version: 1.0
-To: "Dev @ LinuXppc" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: PBG3Series and pre-R5: a lot further
-References: <XFMail.990307023826.hcaley@loomer.com> <36E29D89.B6877224@mail.esiea.fr>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Finally, I got it !
-XFBDev on PBG3 series, now the TFT screams ! I never though it would be
-that good.
+On 6 Mar 1999, David Mentr\'e wrote:
 
-So it turns out that it was the lack of valid video mode that prevented
-XFBDev to work properly (actually, to display properly). Now I have the
-following /etc/XF86Config :
+> 
+> [ as I'm not on this list, so please Cc: to me any answer. Thanks. ]
+> 
+>  Hello all LinuxPPC developpers,
+> 
+> I'm the maintainer of the Linux SMP FAQ (see pointer below if you want
+> to have a look). Right know, this FAQ is very x86 centric but I plan to
+> change that. Looking at linuxppc.org, it seems that :
+> 
+>  - support is beeing developed (by lead programmer Cort Dougan )for
+>    PowerSurge boards. This includes the UMAX s900.
+> 
+>  - support for SMP PowerMac is working.
 
-# /etc/XF86Config
-# makes XF68_FBDev emulate Xpmac by using the current video mode
-# and the mac mouse. be sure to compile macintosh mouse
-# support into your kernel and to create /dev/adbmouse.
-# major=10 minor=10
-# (Courtesy Brad Midgley <brad@pht.com>)
+Let me add: 
 
-Section "Files"
-    RgbPath "/usr/X11R6/lib/X11/rgb"
-    FontPath "/usr/X11R6/lib/X11/fonts/misc/"
-    FontPath "/usr/X11R6/lib/X11/fonts/local/"
-    FontPath "/usr/X11R6/lib/X11/fonts/Type1/"
-    FontPath "/usr/X11R6/lib/X11/fonts/Speedo/"
-    FontPath "/usr/X11R6/lib/X11/fonts/75dpi/"
-    FontPath "/usr/X11R6/lib/X11/fonts/100dpi/"
-EndSection
-Section "ServerFlags"
-EndSection
-Section "Keyboard"
-    Protocol "Standard"
-    AutoRepeat 300 5
-    XkbKeymap "macintosh"
-EndSection
-Section "Pointer"
-    Protocol "BusMouse"
-    Device "/dev/adbmouse"
-EndSection
-Section "Monitor"
-    Identifier "Apple PowerBook G3 Series 14,1 TFT"
-    VendorName "Unknown"
-    ModelName  "Unknown"
+Motorola MTX (and probably dual CPU MVME boards) have early (working)
+support for SMP. Dual CPU have two 604e chips running at 300, 333, or 400
+mhz, fyi.
 
-    HorizSync  31.5-48.5
-    VertRefresh 55-90
+Support for the MTX isn't fully complete, the MTX board I use is
+reasonably stable. It will, however crash with more than 2 or 3 large
+compiles running.
 
-Mode "1024x768"
-    DotClock 65.00
-    HTimings 1024 1032 1176 1344
-    VTimings 768 771 777 806
-    Flags    "+HSync" "+VSync" "-CSync"
-EndMode
+> So here are my questions :
+> 
+>  1. what is the current status of SMP support for LinuxPPC? any table? 
+> 
+>  2. is there any specific things to do to make a PPC SMP system?
+>     (kernel compilation, boot, etc.)
 
-#Mode "800x600"
-#    DotClock 50.00
-#    HTimings 800 856 976 1040
-#    VTimings 600 637 643 666
-#    Flags    "+HSync" "+VSync" "-CSync"
-#EndMode
+PowerMac SMP is similiar to standard PowerMac. The MTX booting process is
+somewhat involved, and the MTX SMP code is not in the mainline kernel yet.
+ 
+>  3. is there a mailing-list I should subscribe to to have further info
+>     on this subject (i.e. SMP && PPC && Linux)?
+> 
+>  4. any bench result of SMP system?
 
-#Mode "640x480"
-#    DotClock 36.00
-#    HTimings 640 696 752 832
-#    VTimings 480 481 484 509
-#    Flags    "+HSync" "+VSync" "-CSync"
-#EndMode
+Do you have any suggested benchmarks?
 
-EndSectionSection "Device"
-    Identifier "Linux Frame Buffer Device"
-EndSection
-Section "Screen"
-    Driver "fbdev"
-    Device "Linux Frame Buffer Device"
-    Monitor "Apple PowerBook G3 Series 14,1 TFT"
-    DefaultColorDepth 32
-    SubSection "Display"
-	Depth 32
-	Modes "640x480" "800x600" "832x624" "1024x768" "1152x870"
-	ViewPort 0 0
-	Virtual 1024 768
-    EndSubsection
-    SubSection "Display"
-	Depth 24
-	Modes "640x480" "800x600" "832x624" "1024x768" "1152x870"
-	ViewPort 0 0
-	Virtual 1152 870
-    EndSubsection
-    SubSection "Display"
-	Depth 16
-	Modes "640x480" "800x600" "832x624" "1024x768" "1152x870" "1152x900" "1280x1024"
-	ViewPort 0 0
-	Virtual 1280 1024
-    EndSubsection
-    SubSection "Display"
-	Depth 8
-	Modes "640x480" "800x600" "832x624" "1024x768" "1152x870" "1152x900" "1280x1024"
-	ViewPort 0 0
-	Virtual 1280 1024
-    EndSubsection
-EndSection
+--------------------------------------------------------------------------
+| Troy Benjegerdes    |       troy@microux.com     |    hozer@drgw.net   |
+|    Unix is user friendly... You just have to be friendly to it first.  |
+| This message composed with 100% free software.    http://www.gnu.org   |
+--------------------------------------------------------------------------
 
-Please note that the 3 modes defined for the LCD are taken from a
-Toshiba laptop screen... I didn't had enough info to build the right
-ones, however they work quite well.
-Two are commented because if not, they are taken instead the 1024x768,
-which is obviously nicer. I don't know why.
-
-The server is stable now, no more freezes as before. I just lack a
-french keyboard and 3 buttons and enlightenment and gnome and java and....
-
-This machine is now really a screamer, I'd like to thank G.U. for his
-amazing work, of which I can finally make some use !
-
-The whole process to make this working from a fresh pre-R5 installation
-is: (by memory)
-make sure the XFree86-FBDev rpm is installed
-go to /etc/X11 and there ln -s /usr/X11R6/bin/XF69_FBDev X
-copy the enclosed /etc/XF86Config
-startx !!!
--- 
-GoM
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
