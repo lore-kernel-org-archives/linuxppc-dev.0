@@ -1,41 +1,44 @@
-Date: Mon, 25 Sep 2000 20:59:49 +0200
+Message-ID: <39CFB72A.8974F2DB@student.ethz.ch>
+Date: Mon, 25 Sep 2000 22:35:54 +0200
 From: Michel Dänzer <daenzerm@student.ethz.ch>
-Subject: Re: xf 4.0.1 with rage II/rage pro -- multi-headed display, xinerama
-To: rshapiro@bbn.com
-Cc: linuxppc-dev@lists.linuxppc.org
-Message-id: <39CFA0A5.31FA625@student.ethz.ch>
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-References: <Pine.LNX.4.10.10009231028030.26749-100000@apollo.kulian.net>
- <14798.23332.833379.615321@esb.bbn.com> <39CE8B90.1B318DD2@student.ethz.ch>
- <14799.19089.742041.388095@esb.bbn.com> <39CF8EA9.E444E5EE@student.ethz.ch>
- <14799.40986.872007.608122@esb.bbn.com>
+MIME-Version: 1.0
+To: Martin Costabel <costabel@wanadoo.fr>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Linux keycodes and left cursor on Pismo
+References: <Pine.SOL.4.10.10009221556010.17778-100000@ncal.verio.com>
+	 <39CE9B1F.84530732@student.ethz.ch> <39CEF070.1A60BE5B@wanadoo.fr>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-R Shapiro wrote:
+Martin Costabel wrote:
 
->  > > Btw for those who might want to try this, +xinerama is a server arg so
->  > > the command is  'startx -- +xinerama'.
->  >
->  > There's also an option for XF86Config, read the manpage - the logical
->  > place would be in the Layout Section.
+> > > >After switching to Linux keycodes (and Debian's i386 us keymap), the
+> > > >left cursor key doesn't generate a keycode anymore. Interestingly, it
+> > > >works in X with Xkb, but not without.
+> > > >
+> > > >Anyone else sees this?
+> > >
+> > > Check the dev and user archives, I think this has been discussed a
+> > > few times since the new input layer backport went in.
+> >
+> > I've searched the archives now with no luck.
 >
-> I searched the XF86Config and XFree86 man pages and found no
-> references to xinerama.  Is it somewhere else?  None of the
-> ServerLayout settings seem relevant to xinerama as distinguished from
-> the standard multi-head mode (multiple X screens).
->
-> I'd rather put this option in the XF86Config but I can't find a place
-> for it.
+> I haven't seen this discussed, but I'll try a wild guess: What's
+> suspicious is that the linux keycode for KEY_LEFT is 105=0x69, the same
+> as the old mac keycode for SYSRQ_KEY. You could easily verify this by
+> pressing LEFT plus s or t or something and see whether it does some
+> emergency sync or whatever. Just a guess.
 
-If (wild guess)
+But a good one! That's exactly the issue. I wonder how it has worked with Xkb
+in X though...
 
-    Option "UseXinerama"
+As Magic Sysrq seems to always use ADB keycodes anyway, I'll not use it for
+now.
 
-in the Layout Section doesn't work, please ask on xpert@XFree86.Org .
 
+Thanks,
 
 Michel
 
