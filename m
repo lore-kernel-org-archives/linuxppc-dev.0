@@ -1,95 +1,38 @@
-Message-ID: <A3240F62EF3C2749B1A25D3BC9548F41030930@ExchWENZ02.wenz.global.vpn>
-From: Rod Boyce <rod_boyce@stratexnet.com>
-To: "'Aain_Devarenne%ZODIAC@zodiac.com'" <Aain_Devarenne%ZODIAC@zodiac.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: =?iso-8859-1?Q?RE=3A_R=E9f=2E_=3A_Re=3A_mpc_/_linux_kernel_-_u?=
-	=?iso-8859-1?Q?ser_space?=
-Date: Mon, 1 Dec 2003 08:00:26 +1300 
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Sender: owner-linuxppc-embedded@lists.linuxppc.org
-List-Id: <linuxppc-embedded@lists.linuxppc.org>
+Date: Sun, 30 Nov 2003 21:25:30 +0530
+From: Harald Welte <laforge@gnumonks.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: insmod ipv6 freezes current linuxppc-2.5 and 2.5-benh
+Message-ID: <20031130155530.GK26749@obroa-skai.de.gnumonks.org>
+References: <20031120201249.GB29432@sunbeam.de.gnumonks.org> <1069386878.876.49.camel@gaston> <20031121153314.GC23224@sunbeam.de.gnumonks.org>
+Mime-Version: 1.0
+In-Reply-To: <20031121153314.GC23224@sunbeam.de.gnumonks.org>
+Content-Type: text/plain; charset=us-ascii
+Sender: owner-linuxppc-dev@lists.linuxppc.org
+List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-All,
-
-A quick search on this mailing list will point to a replay by Wolfgang Denk
-to exactly the same question.  Try
-http://lists.linuxppc.org/linuxppc-embedded/200107/msg00154.html
-
-The subject is Interfacing user application and interrupt.  I have just done
-exactly this using Wolfgang's reply to this e-mail.  You use either select
-or poll and wait in a thread for the interrupt to occure.
-
-Regards,
-Rod Boyce.
-
------Original Message-----
-From: Aain_Devarenne%ZODIAC@zodiac.com
-[mailto:Aain_Devarenne%ZODIAC@zodiac.com]
-Sent: Friday, November 28, 2003 10:22 PM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Réf. : Re: mpc / linux kernel - user space
-
-
-
-Hi everybody
-
-I 'm pending on the same problem as Juergen,
-- How can a User Space Thread Wait for a signaling event set by KERNEL  ?
-- Can an IOCTL return pending,  and then do a completion after the event ?
-- Can we pass an Handle by IOCTL to Kernel from user space ?
-
-Ps: Calling a pointeur in UserSpce seems a bit weird and unsecure !!!
-
-
-Regards Alain Devarenne
-
-
-
-
-Hi Juergen,
-
-That's normally not something you do and I don't know if it's possible.
-Application code normally communicates with your driver code using
-system
-calls (read/write). So either your appl procedure must be part
-of your module, or you must signal e.g. a user thread the timer
-interrupt happened, so the thread can execute that code.
-Hope this helps,
-
-Jaap-Jan
-
-
-On 27-nov-03, at 17:07, Juergen Oberhofer wrote:
-
+On Fri, Nov 21, 2003 at 04:32:52PM +0100, Harald Welte wrote:
 >
-> Hi,
+> On Fri, Nov 21, 2003 at 02:54:38PM +1100, Benjamin Herrenschmidt wrote:
 >
-> I have a module and an application program in user space:
+> > Interesting. Same machine here and I use 2.6 everyday :)
 >
-> The Module performs the following task: at init it initializes the cpm
-> timer register of the mpc823,
-> such that an interrupt is generated every x microseconds. Thus, I
-> installed an interrupt handling function f that handles the timer
-> interrupts.
+> The problem seems to be gcc-related. Debian testing seems to have
+> installed gcc-3.3.2 (yes, maybe not the best compiler for a kernel
+> anyway) per default.
 >
-> My problem is that the module / the interrupt handling function should
-> execute a procedure defined in the application program. How can I pass
-> a
-> pointer (which points to that function) from the appl.program to the
-> module, such that the handler can execute this function every x
-> milliseconds? I thought to create a procedure in the module that
-> accepts
-> a function pointer as argument. But how can I achieve, that this module
-> procedure is visible to the application program? Does somebody have a
-> suggestion or know another way to do it?
->
-> Regards,
-> Juergen
->
->
+> compiling the same kernel with gcc-2.95 results in a working ipv6
+> module.
 
+I did some more testing:
 
-** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
+Compiles with gcc-3.3.2 and gcc-3.2.3 result in a broken kernel,
+gcc-3.0.4 and gcc-2.95.4 work fine.
+
+--
+- Harald Welte <laforge@gnumonks.org>               http://www.gnumonks.org/
+============================================================================
+Programming is like sex: One mistake and you have to support it your lifetime
+
+** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
