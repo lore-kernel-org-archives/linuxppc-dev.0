@@ -1,47 +1,47 @@
-Subject: [PATCH] Set _IO_BASE on 8260 PCI.
-From: David Woodhouse <dwmw2@infradead.org>
-To: trini@kernel.crashing.org
-Cc: linuxppc-embedded@lists.linuxppc.org
-Content-Type: text/plain
-Message-Id: <1092227652.15466.18.camel@hades.cambridge.redhat.com>
-Mime-Version: 1.0
-Date: Wed, 11 Aug 2004 13:34:12 +0100
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <09C1525B7197D3118A4D0008C7E6EEE00FD74787@zuk28exm05.ecid.cig.mot.com>
+From: Latsky Sterren-LTSS001 <LTSS001@motorola.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: UART Problems booting linux on est8260
+Date: Wed, 11 Aug 2004 13:51:02 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-We weren't including <syslib/m8260_pci.h> from <asm/mpc8260.h>, so
-_IO_BASE was defined to zero instead of isa_io_base.
+Hi.
 
-===== arch/ppc/syslib/m8260_pci.h 1.2 vs edited =====
---- 1.2/arch/ppc/syslib/m8260_pci.h	2004-06-17 13:57:15 +01:00
-+++ edited/arch/ppc/syslib/m8260_pci.h	2004-08-04 11:56:49 +01:00
-@@ -66,6 +66,7 @@
- #endif
+I'm trying to boot linux-2.4.22 on the est8260 board using U-boot-1.1.1, but the serial interface corrupts after this line comes up:
 
- #ifdef CONFIG_8260_PCI9
-+struct pci_controller;
- extern void setup_m8260_indirect_pci(struct pci_controller* hose,
- 				     u32 cfg_addr, u32 cfg_data);
- #else
-===== include/asm-ppc/mpc8260.h 1.9 vs edited =====
---- 1.9/include/asm-ppc/mpc8260.h	2004-07-27 22:46:37 +01:00
-+++ edited/include/asm-ppc/mpc8260.h	2004-08-03 13:16:22 +01:00
-@@ -40,6 +40,10 @@
- #include <platforms/pq2ads.h>
- #endif
+=> bootm
+## Booting image at 00400000 ...
+   Image Name:   Linux 2.4.22
+   Created:      2004-08-10  15:55:04 UTC
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    523580 Bytes = 511.3 kB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+Memory BAT mapping: BAT2=16Mb, BAT3=0Mb, residual: 0Mb
+Linux version 2.4.22 (ltss001@linux) (gcc version 2.95.3 20010315 (release)) #3
+..
+Kernel command line: root=/dev/nfs rw nfsroot=192.168.0.1:/tftpboot/192.168.0.2
+ip=192.168.0.2:192.168.0.1::255.255.255.0::off panic=1
+...
+CPM UART driver version 0.01
 
-+#ifdef CONFIG_PCI_8260
-+#include <syslib/m8260_pci.h>
-+#endif
-+
- /* Make sure the memory translation stuff is there if PCI not used.
-  */
- #ifndef _IO_BASE
+I have looked around and found that the next line should say something like
 
+ttyS00 at 0x8000 is a SCC
 
---
-dwmw2
+But all I get is garbage like musical notes and square root signs streaming onto the terminal. I have tried changing the baud rate when this comes up to all the other options but I still don't read anything coherent.
 
+When configuring the kernel I tried just loading the est8260_config, then building without editing the menuconfig, when that didn't work I went to menuconfig > Character devices and fiddled around with various options in there but nothing seems to work.
+
+Any help would be greatly appreciated. Thanks,
+Sterren Latsky
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
