@@ -1,17 +1,29 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtai13.cox.net (fed1rmmtai13.cox.net [68.230.241.46])
-	by ozlabs.org (Postfix) with ESMTP id 943802BD71
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Sep 2004 09:24:29 +1000 (EST)
-Date: Tue, 14 Sep 2004 16:15:51 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Pantelis Antoniou <panto@intracom.gr>
-Message-ID: <20040914231551.GC9398@smtp.west.cox.net>
-References: <4146F3C3.2090100@intracom.gr>
+Return-Path: <kevin@retriever.dyndns.org>
+Received: from soulshock.mail.pas.earthlink.net
+	(soulshock.mail.pas.earthlink.net [207.217.120.130])
+	by ozlabs.org (Postfix) with ESMTP id 75A2F2BD71
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Sep 2004 10:21:51 +1000 (EST)
+Received: from grebe.mail.pas.earthlink.net (grebe.mail.pas.earthlink.net
+	[207.217.120.46])
+	by soulshock.mail.pas.earthlink.net (8.11.6+Sun/8.11.6) with ESMTP id
+	i8ENknJ28999
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Sep 2004 16:46:49 -0700 (PDT)
+Received: from ar39.lsanca2-4.16.240.34.lsanca2.elnk.dsl.genuity.net
+	([4.16.240.34] helo=retriever.dyndns.org)
+	by grebe.mail.pas.earthlink.net with esmtp (Exim 3.33 #1)
+	id 1C7N0V-00002E-00
+	for linuxppc-dev@ozlabs.org; Tue, 14 Sep 2004 16:46:43 -0700
+Received: from kevin by retriever.dyndns.org with local (Exim 3.36 #1 (Debian))
+	id 1C7N0S-0001wm-00
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Sep 2004 16:46:40 -0700
+Date: Tue, 14 Sep 2004 16:46:40 -0700
+From: Kevin Bailey <ppc@retriever.dyndns.org>
+To: linuxppc-dev@ozlabs.org
+Message-ID: <20040914234639.GA27768@retriever.dyndns.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4146F3C3.2090100@intracom.gr>
-Cc: Linux PPC Dev <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH] Trivial warning fix patch
+Sender: Kevin Bailey <kevin@retriever.dyndns.org>
+Subject: 8245
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,17 +33,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 14, 2004 at 04:36:03PM +0300, Pantelis Antoniou wrote:
+Is there a specific branch or set of patches somewhere for the 8245
+using the internal DUART ?
 
-> Hi
-> 
-> The following patch removes some annoying warnings produced
-> by the latest gccs.
-
-Can you please read the Developer's Certificate of Origin 1.0 (found in
-Documentation/SubmittingPatches and add the approraite lines?  Thanks (I
-hate to be annoying about it, but..)
-
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+Thx,
+krb
