@@ -1,61 +1,51 @@
-Date: 25 Sep 2003 11:28:40 -0000
-Message-ID: <20030925112840.3137.qmail@webmail17.rediffmail.com>
+From: Christophe.LINDHEIMER@fr.thalesgroup.com
+Message-ID: <66CE949D18BCB249ABE8D9AF48C4F1CE7776DC@helios.gnv.tcc.thomson-csf.com>
+To: wolfgang.grandegger@bluewin.ch,
+	Christophe.LINDHEIMER@fr.thalesgroup.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Kernel Driver with floats.
+Date: Thu, 25 Sep 2003 15:23:55 +0200
 MIME-Version: 1.0
-From: "somshekar chandrashekar kadam" <som_kadam1@rediffmail.com>
-Reply-To: "somshekar chandrashekar kadam" <som_kadam1@rediffmail.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: cpm_handler
-Content-type: text/plain;
-	format=flowed
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-HI ,
+Ok
 
-   I am not on this mailing list i have subscribed to it , ineed
-yet to receive the acknowledgement ,
+Thank you, it seems it compiles much better now !
 
-before that i need to solve a problem ,
+Regards
 
-   once my MPC860 calls rs_8xx_init , once cpm_handler_init is
-called
-i dont get any of the prints on the console , in kernel
-configuration ,
-i have choosen only smc2 , where else i need to specify touse SMC2
-, please any one can throw some light on this , here are my kernel
-messages , please do a cc to this mail ID ,please
-Thanks And regards
-NEELU
---------------------------------------
-  Decrementer Frequency = 187500000/60
-Calibrating delay loop... 49.76 BogoMIPS
-Memory: 6892k available (808k kernel code, 296k data, 40k init, 0k
-highmem)
-Dentry-cache hash table entries: 1024 (order: 1, 8192 bytes)
-Inode-cache hash table entries: 512 (order: 0, 4096 bytes)
-Mount-cache hash table entries: 512 (order: 0, 4096 bytes)
-Buffer-cache hash table entries: 1024 (order: 0, 4096 bytes)
-Page-cache hash table entries: 2048 (order: 1, 8192 bytes)
-POSIX conformance testing by UNIFIX
-IN init ok
-IN do_basic setup
-  in SOCK_INIT
-Linux NET4.0 for Linux 2.4
-Based upon Swansea University Computer Society NET3.039
-Initializing RT netlink socket
-  before do_initcalls
-Starting kswapd
-CPM UART driver version 0.03
-ttyS00 at 0x0280 is a SMC
-state->irq = 4
-  ENtering m8xx_cpm_hostalloc
-in SMC
-  Entering inatll interrupt handler
-  Entering m8xx_cpm_setbrg
-AFTER CPM SETBRG
-ttyS01 at 0x0380 is a SMC
-state->irq = 3
+Chris
 
+
+> -----Message d'origine-----
+> De : Wolfgang Grandegger [mailto:wolfgang.grandegger@bluewin.ch]
+> Envoye : jeudi 25 septembre 2003 11:07
+> A : Christophe.LINDHEIMER@fr.thalesgroup.com
+> Cc : linuxppc-embedded@lists.linuxppc.org
+> Objet : Re: Kernel Driver with floats.
+>
+>
+> On 09/25/2003 10:45 AM Christophe.LINDHEIMER@fr.thalesgroup.com wrote:
+> > Hi.
+> >
+> > I would like to know if it is possible to use floats in a
+> kernel driver.
+> > I use a MPC860.
+> > I get unresolved symbols with the standard makefile.
+> > Are there special options to use ?
+> > Any lib to add ?
+>
+> We have a demo module for RTAI using soft-floats on MPC 8xx at
+> ftp://ftp.denx.de/pub/RTAI/contrib/fp_ppc_8xx.tar.bz2. There
+> is a README
+> inside. But be aware that soft-float on the 860 is very slow,
+> especially
+> when you do complex FP math like sin() etc.
+>
+> Wolfgang.
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
