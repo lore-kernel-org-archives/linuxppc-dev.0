@@ -1,85 +1,95 @@
-Message-ID: <3B460ABD.7BFEF12B@routefree.com>
-Date: Fri, 06 Jul 2001 12:00:13 -0700
-From: David Blythe <blythe@routefree.com>
+From: Paul Mackerras <paulus@samba.org>
 MIME-Version: 1.0
-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: IBM Microdrive PCCard on TiBook (ide-cs module)
-References: <3B460601.6A3AA7D9@acm.org>
 Content-Type: text/plain; charset=us-ascii
+Message-ID: <15174.24815.352088.954640@cargo.ozlabs.ibm.com>
+Date: Sat, 7 Jul 2001 11:07:59 +1000 (EST)
+To: Gary Byers <gb@gse.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: giving up the FPU, MSR[FE0], MSR[FE1], and the FPSCR
+In-Reply-To: <Pine.GSO.4.21.0106260032030.15923-100000@gse.com>
+References: <Pine.GSO.4.21.0106260032030.15923-100000@gse.com>
+Reply-To: paulus@samba.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Ira Weiny wrote:
->
-> I have spent a little more time tracking down why the PCCard adapter for
-> my Microdrive causes the TiBook to shutdown.  But I need some help in
-> interpreting the information I have found.
+Gary Byers writes:
 
+> Sometime in the last year or two (sorry not to be more precise; I
+> wasn't paying attention) the linuxppc kernel seems to have started
+> doing lazy FPU switching.  If I read the code (in
 
-Your symptoms sound similar to the ones i was seeing.
-I recently did some work to get a PCMCIA ATA Flash card running on a
-405GP (using a circa 2.4.0 kernel with some later pcmcia updates from
-the 2.4-devel tree).  I ran into a large number of problems with
-interrupts that would hang the system, but haven't figured out what to
-do with them.  The basic issue i had was that the ide interrupt is
-shared with the pc card controller and during drive probing the prober
-issues a command which generates an interrupt with no ide interrupt
-handler in place but the pccard interrupt handler gets flooded since it
-is sharing the same line.  I 'fixed' the problem by disabling the
-specific interrupt from ide-cs.c right before the call to ide_register()
-and then (ughh) re-enabled it from inside init_irq() in ide-probe.c
-(rather than re-enabling it right after the call to ide_register() to
-avoid missing interrupts :(.  Additionally i did something to force the
-SHIRQ flag when the irq was requested.  ide-cs differs from other card
-service drivers in that the others usually install the interrupt handler
-themselves, but ide-cs lets the rest of the ide susbsystem do it.
-	david
+No, that code is older than that, I think it dates from 96 or 97. :)
 
->
-> 1) I was able to catch with xmon a stack trace before it shutdown.  This
-> showed a stack trace as follows:
->
-> ide-cs.c:ide_config
-> ide.c:ide_register
-> ide.c:ide_register_hw
-> ide.c:ide_probe_module
-> ide-probe.c:ideprobe_init
-> ide-probe.c:probe_hwif
-> ide-probe.c:do_probe
-> ide-probe.c:try_to_identify
-> ide-probe.c:actual_try_to_identify  <== shutdown somewhere here??
->
-> 2) I am assuming at this point it is writing to registers which are
-> mapped incorrectly (probably to the PMU) which cause it to shutdown.
->
-> 3) I have found that the io_base addresses is 0x1000 (as set in my
-> config.opts file) and this is what is passed to the ide_register
-> function.  Changing this address does not seem to change it's behavior
-> though.  (??)
->
-> 4) ide_register calls ide_init_hwif_ports with these addresses which
-> have a "pmac_" specific call.  So I am assuming that it would "ioremap"
-> these as appropriate.  (However, I don't see it modifying this address
-> at all?)
->
-> 5) ide_register_hw calls "ide_probe_module" which takes me into the
-> ide-probe.c file.  But I see a specific "pmac_ide_probe" which is called
-> at init time.
->
-> My conclusion is that I should either be calling this pmac_ide_probe
-> rather than the generic ide_probe module (and making it _not_ an init
-> function).  OR I need to modify the ide_probe module to handle the
-> proper maping of the addresses such that I don't write to the PMU.
->
-> Unfortunatly I have not found any examples of the later in the pcmcia
-> drivers I have looked at so I am worried that I am totally off base.  If
-> I am "barking up the wrong tree" I hope someone can tell me such that I
-> can start looking elsewhere.
->
-> Thanks in advance,
-> Ira Weiny
-> iweiny@acm.org
->
+> ../arch/ppc/kernel/head.S) and judge its effects correctly, code in
+> load_up_fpu() unconditionally sets the FE0 and FE1 bits in the MSR.  I
+> wonder if this change (setting the bits) was intentional: there's
+> still some code in ./signal.c and ./ptrace.c that tries to allow
+> signal handlers/ptrace to change those bits, though I don't know if
+> that's ever worked.
+
+I believe that does work and that glibc uses it.  Not that that is the
+ideal way to handle it...  Albert Cahalan's suggestion of setting
+FE0/FE1 based on the disposition of the SIGFPE signal is a good one.
+
+I'm not totally sure yet what to do when SIGFPE is blocked though - I
+guess if we get a floating-point exception and SIGFPE is blocked we
+should clear FE0/FE1 and continue.  Maybe we should clear the
+exception enable bits in the FPSCR too, although I would rather not.
+I don't like the idea of the kernel frobbing the FPSCR when the
+process is not expecting it, but on the other hand you may get
+surprising results if you do a floating-point operation that causes an
+exception, and the exception enable bit in the FPSCR is set, but
+FE0/FE1 are zero.  (Section 3.3.6 of the Programming Environments
+Manual describes this.)  But then I guess if you are doing
+floating-point stuff with SIGFPE blocked you presumably know what you
+are doing... :)
+
+> It seems that when a user-level SIGFPE handler begins execution, its
+> own FPSCR[FEX] (and other exception-related bits in the FPSCR) are set
+> and the FPU (MSR[FP, FE0, FE1]) is disabled.  (I'd be more confident
+
+Interesting... I guess you are right but I haven't found the code that
+does that yet. 8-)
+
+> It seems like any attempt to use the FPU inside the SIGFPE handler
+> cause the kernel to turn it back on (setting MSR[FP, FE0, and FE1]);
+> with FPSCR[FEX] set, this seems to raise SIGFPE again; attempts to
+> clear FPSCR[FEX] from user code involve ... well, they involve using
+> the FPU again.
+
+OK.  The question I have here is whether the signal handler should
+have its own FPSCR value.  I notice that the signal delivery code in
+the kernel saves the floating-point registers (fr0 - fr31) on the
+stack, and restores them in sys_sigreturn, but doesn't do anything
+with FPSCR.  Arguably it should save and restore FPSCR and initialize
+the FPSCR to 0 for the signal handler.  That would mean a change to
+the signal stack layout though, and it would mean that if the signal
+handler wanted to change the FPSCR used by the program (e.g. to clear
+the exception status bits) it would need to find and change the value
+on the stack rather than changing the FPSCR directly.
+
+> While I was puzzling over that (stepping through a SIGFPE handler in
+> gdb), I noticed something disturbing: some newly created processes
+> (grep and more and other random programs) started dying with unhandled
+> "Floating point exception" messages.  I'm at a loss to explain this,
+> but I saw it happen often enough to be convinced that I'm not imagining
+> the behavior.  I do wonder whether "lazily" enabling the FPU (and
+> enabling FPU exceptions) when FPSCR[FEX] may be set is really a good
+
+In fact the MSR[FP] bit has no effect on whether the cpu will take a
+floating-point exception (the 0x700 program exception, not the FP
+unavailable exception, I mean).  It's fairly clear now that
+setting/clearing FE0 and FE1 at the same time as FP is not the right
+thing to do.
+
+> I guess that I'm reporting a bug (or a few bugs) here; I certainly
+> understand the motivation behind doing lazy FPU switching, but question
+> whether it's done with adequate care when FP exceptions are enabled.
+
+Certainly the current behaviour is suboptimal; we can fix it but first
+we need to discuss what the Right Way (tm) to do things would be.
+
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
