@@ -1,26 +1,23 @@
-Message-ID: <3E4BCCB8.8030301@embeddededge.com>
-Date: Thu, 13 Feb 2003 11:50:00 -0500
-From: Dan Malek <dan@embeddededge.com>
+Message-ID: <3E4BCF5D.80501@ecubics.com>
+Date: Thu, 13 Feb 2003 10:01:17 -0700
+From: emanuel stiebler <emu@ecubics.com>
 MIME-Version: 1.0
-To: Pantelis Antoniou <panto@intracom.gr>
-Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Tom Rini <trini@kernel.crashing.org>
-Subject: Re: [2.5] Hang on 8xx in head_8xx.S
-References: <3E4B9D4E.7080808@intracom.gr>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: linux on minimal 8245
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Pantelis Antoniou wrote:
+Hi,
+anybody out here has the necessary configuration files to boot linux on
+a minimal mpc8245, and likes to share it ?
+(minimal means just SDRAM/FLASH/internal serial, the i82559er ethernet
+is not important at the moment)
 
-> I'm trying to make 2.5 work for 8xx processors.
-
-I'm working on it right now and should have it running shortly.
-
-
-	-- Dan
+preferably on the ELDK ...
+thanks,
+emanuel
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
