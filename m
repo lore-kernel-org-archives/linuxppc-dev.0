@@ -1,35 +1,45 @@
-Subject: Re: [RFC] Simple ioremap cache
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <kumar.gala@freescale.com>
-Cc: Eugene Surovegin <ebs@ebshome.net>,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <2E7C06A3-B893-11D8-92B4-000393DBC2E8@freescale.com>
-References: <20040605002915.GA17603@gate.ebshome.net>
-	 <2E7C06A3-B893-11D8-92B4-000393DBC2E8@freescale.com>
-Content-Type: text/plain
-Message-Id: <1086622041.10517.59.camel@gaston>
+Date: Mon, 7 Jun 2004 08:57:02 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Olaf Hering <olh@suse.de>
+Cc: Christian Kujau <evil@g-house.de>, Andrew Morton <akpm@osdl.org>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: [PATCH] fix typo in binutils version check
+Message-ID: <20040607155702.GX15195@smtp.west.cox.net>
+References: <20040605074341.GA15279@suse.de> <40C1A334.5010402@g-house.de> <20040605111135.GA30640@suse.de>
 Mime-Version: 1.0
-Date: Mon, 07 Jun 2004 10:27:22 -0500
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20040605111135.GA30640@suse.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > 1) Should this feature be enabled for all ppc32 archs or only for 4xx?
-> > I
-> > made ioremap profile for 2.6.6 kernel running on my G4 Powerbook and
-> > haven't noticed a lot of ioremap regions overlap (there was one
-> > instance where
-> > my patch would have helped if I've increased cache size to 32 entries).
+On Sat, Jun 05, 2004 at 01:11:35PM +0200, Olaf Hering wrote:
 >
-> This may be due to use of BATs on PPC Classic.
+>  On Sat, Jun 05, Christian Kujau wrote:
+>
+> >
+> > Olaf Hering wrote:
+> > | The binutils check is bogus, it doesnt work with the just released
+> > | binutils.
+> >
+> > why is this check bogus then? i tried to compile a kernel with some
+> > recent binutils which didn't pass the test - compilation failed.
+> > H.J.Lu's binutils [1] are working quite well, the releases from redhat
+> > [2] seem to produce these results you wrote about.
+>
+> The checkbin target fails with current binutils cvs, you need an
+> additional option like -many
 
-I don't think I use a BAT anymore for IOs on pmac. But I also don't
-declare overlapping regions. The only places where I may actually
-have a few overlaps are some parts of the mac-io ASIC like the DBDMA
-regs since they are offset by 0x400 and I ioremap them separately
-in each driver.
+IMHO, binutils CVS is broken, and -many shouldn't be needed.  But that's
+not the direction things are heading apparently.
 
-Ben.
+But I believe that when Paul talked about this with some of the binutils
+folks it was decided that we should add -many to the AFLAGS so the
+kernel won't have to care about this.  So can you add -many to the
+AFLAGS, and make the binutils check use $(AFLAGS) as well?  Thanks.
 
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
