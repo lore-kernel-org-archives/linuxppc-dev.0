@@ -1,69 +1,37 @@
-Mime-Version: 1.0
-Message-Id: <v04220801b513d68f9145@[192.168.0.2]>
-Date: Fri, 7 Apr 2000 20:50:48 +0200
-To: linuxppc-dev@lists.linuxppc.org
-From: "Michael A. Peters" <mpeters@mac.com>
-Subject: Building X 3.3.6 (non-distributor environment)
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Message-ID: <38EE7EDE.612EB99F@denise.shiny.it>
+Date: Fri, 07 Apr 2000 20:35:42 -0400
+From: Giuliano Pochini <pochini@denise.shiny.it>
+MIME-Version: 1.0
+To: DeRobertis <derobert@erols.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: stty crtscts < /dev/ttyS1
+References: <l03130302b4fd80d3a908@[216.164.130.191]> <l03130304b50c8e1b783f@[216.164.131.253]>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I'm running the Linux From Scratch project
-(http://www.linuxfromscratch.org) and its all working swell except X
-won't build.
+> >> Hardware flow control is broken. The command in the subject line (stty
+> >> crtscts < /dev/ttyS1) freezes linux 2.2.14. Any idea why?
+> >
+> >Try this syntax: "stty -F /dev/ttyS1 crtscts". There's a comment in the
+> >info doc for stty that letting the shell open the device may block in
+> >certain situations.
+>
+> Does not help -- still freezes.
+>
+> By freezes I mean that the kernel dies. It no longer responds to
+> keypresses. It no longer runs processes. All that I can do is hit reset.
 
-When I unpack X3.3.6 and try "make World" it very quickly quits with
-an error from gcc. Funny thing is, the build *does* complete under
-LinuxPPC (gcc 2.95.2, glibc 2.1.3 if it matters) from the same source.
+What is connected to the serial port ?  When I enable RTS/CTS on ttyS1
+and there is my Epson 740 attached, the whole system freezed. I don't
+know why this happen exactly. It seems that the printer changes continuosly
+with very high frequency  the state of CTS, which cause the serial driver
+to loop indefinitely. When I detach the cable, Linux awakes. It also happens
+with BeOS, but not under MacOS.
+RTS/CTS works fine when I connect the serial port to the modem or to
+another computer.
 
-Everything on the LFS system was compiled from source, first the
-basics were compiled statically under LinuxPPC and then LFS was
-booted, rebuilding everything shared and (of course) then building
-the rest of the system. Other than not being able to build X
-everything works well and properly.
-
-Both systems boot off of the same kernel (2.2.14)
-
-I looked at the environmental variable from both systems, no major
-differences (I'm running bash 2.0.4 under LFS, 2.0.3 under LinuxPPC).
-I looked at the end of /usr/lib/gcc-lib/<host>/2.95.2/specs on both
-systems (looking for differences in the *cpp_os_linux predefines) and
-there is no differences, at least not towards the end of the specs
-file.
-
-What seems to be happening is that make World under the LFS system is
-passing instructions to the compiler that gcc doesn't like- the error
-message when it quits:
-
-gcc: cannot specify -o with -c or -S and multiple compilations
-make[2]: *** [imake.o] Error 1
-make[2]: Leaving directory `/usr/src/xc/config/imake'
-make[1]: *** [imake.bootstrap] Error 2
-make[1]: Leaving directory `/usr/src/xc'
-make: *** [World] Error 2
-
-Opinion among people who have used the LFS howto on x86 and also
-built X on other platforms is that my problem is that the make World
-script doesn't know my compiler is gcc. Yes, I do have cc symlinked
-to gcc
-
-I've even tried make CC=gcc World with same result.
-
-However, under LinuxPPC it compiles no problem.
-
-Any of you know what the problem is (if its something else) or how to
-set up the non-distribution linux so that it DOES know the compiler
-is gcc?
-
-Sorry for the lengthy post, and thanks for your time!
-
-
-
--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-Michael A. Peters                  http://216.22.163.20/
-Linux Pages (new)                  http://216.22.163.20/Linux_Pages/
--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Bye.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
