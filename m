@@ -1,33 +1,29 @@
-Message-ID: <3C9F3467.3EC9F212@seranoa.com>
-Date: Mon, 25 Mar 2002 09:29:59 -0500
-From: Andrew Dixon <andrew.dixon@seranoa.com>
+Message-ID: <20020325171639.22867.qmail@web9507.mail.yahoo.com>
+Date: Mon, 25 Mar 2002 09:16:39 -0800 (PST)
+From: Pete McCormick <pete261@yahoo.com>
+Subject: booting linux kernel 2.4.18 on Motorola MPC8260ADS board
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-To: ppclist <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Simple FTP server
-References: <CA78D1B723D8D411AF0300508BDCF74F3F6D0D@NTCORREO>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Igor,
+Hello all,
 
-IGOR LURI wrote:
-</snip>
->
-> Someone knows where con I get a litle o simple FTP server?
->
+I am having a problem booting the linux kernel 2.4.18 on a Motorola MPC8260ADS
+board.  I am stuck in arch/ppc/kernel/head.S, just after the start_here label.
+The software never returns from an "RFI" instruction (around line 1586).  This
+is at the end of the block of code preceded by the comment "Go back to running
+unmapped".
 
-I'm using troll ftpd from trolltech.  You can download it from
-ftp.trolltech.com .
+I suspect something is not right in the MMU setup but I don't know what.
 
-HTH,
-Andy
+Any ideas or suggestions would be helpful.
 
---
-Andrew Dixon
-Software Engineer
-Seranoa Networks
-978.897.3434 x231
+Thanks,
+
+Pete
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
