@@ -1,52 +1,59 @@
-Date: Sun, 4 Feb 2001 21:09:02 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: "Joseph P. Garcia" <jpgarcia@execpc.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.4: PCIBIOS_MIN_MEM correct?
-In-Reply-To: <01020413004001.06077@momiji>
-Message-ID: <Pine.LNX.4.05.10102042107540.16275-100000@callisto.of.borg>
+Message-ID: <3A7DC4E7.38588294@mvista.com>
+Date: Sun, 04 Feb 2001 16:08:55 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Tom Gall <tom_gall@vnet.ibm.com>
+CC: Troy Benjegerdes <hozer@drgw.net>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Power3/4 Was: Re: Fast Altivec
+References: <3A7AE117.628B22A6@mvista.com> <20010202125143.D31120@altus.drgw.net> <3A7D8C19.B829A8D0@mvista.com> <3A7DB6B5.7370D32D@vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 4 Feb 2001, Joseph P. Garcia wrote:
-> should PCIBIOS_MIN_MEM be 0x10000000?  I caught this when i noticed it is
+Tom Gall wrote:
 
-That value is suited for `PC' systems.
+> .... At the moment it is nice
+> that one define handles issues for the entire family of boxes.
 
-> used as the minimum address in the pci assign resource function, used in such
-> situations as the OF/ATY-overlap re-allocate in wallstreets.  My system would
-> panic with the lcd melting effect as some may recall.
->
-> I brute forced in the following lines in
-> drivers/pci/setup-res.c:pci_assign_resource()
->      min = (res->flags & IORESOURCE_IO) ? PCIBIOS_MIN_IO : PCIBIOS_MIN_MEM;
-> +    if(res->start==0)
-> +         min = 0x83000000;
->
-> resulting in the same mapping used by Michael Schmitz earlier 2.2 patch.
-> (its the only re-alloc on my system, so it works :)  My kernel isn't
-> panicing.. yet.
->
-> Anyway, looking in /proc/iomem, one might get the idea that PCIBIOS_MIN_MEM
-> should be defined as 0x80000000.  This might resolve the problem I had in a
-> less brute way.  I haven't tried it myself yet.  waiting for a second opinion.
+I learned years ago when I did a processor port it was important to
+separate the processor and platform specific configuration definitions.
+When you do that second platform that uses the same processor you will
+discover how badly it was integrated :-).
 
-The correct fix is to add bus resources that indicate the allowed region.
-pci_assign_resource() will assign a region from the allowed region.
+> .... But you are right
+> it could be split and I can see the case for making the split.
 
-Gr{oetje,eeting}s,
+It seems like these are CHRP machines with some kind of extended address
+bus mapping?  We either need to devise a new configuration name or
+integrate the changes with some "CHRP extension" that isn't based on
+the POWERx configuration.
 
-						Geert
+>   Which set of changes are you interested in using for the 7450? You say the chip
+> has 36 bit addressing, how does that work?
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+It can use a 36-bit physical address bus, so any processor register that
+holds a physical address (SDR, page tables, etc) has "extended" bits
+that
+can be used when the proper configuration bits are set in the HID0.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+I was going to use some of the I/O mapping functions (often with
+comments
+like "big hack" in them :-), to support this as well.  Generally, I am
+looking at some VM changes that allow us to support beyond 4G
+virtual/physical
+with 32-bit processors (other than using the HIGHMEM hack).  Some of the
+things in BRIDGE64 and POWERx are appropriate to use but seem to have
+knowledge of the underlying platform, so a slightly different
+configuration
+name and minor code changes would be useful.  I just started looking and
+still have lots of work to do here.
 
+>   6392 messages yet to read... ug!  Boy am I behind in mail since LinuxWorld...
+
+Heh...
+
+
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
