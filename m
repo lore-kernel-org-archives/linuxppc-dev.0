@@ -1,52 +1,39 @@
-Message-ID: <393C01D9.C7295B05@grn.georet.net>
-Date: Mon, 05 Jun 2000 15:39:05 -0400
-From: Ryan Boder <rboder@grn.georet.net>
-Reply-To: rboder@grn.georet.net
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: linux-pmac-stable
-References: <393BF78C.1D3F10E1@grn.georet.net>
+Date: Mon, 5 Jun 2000 12:59:35 -0700
+From: Daniel Jacobowitz <drow@false.org>
+To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: PCI resource assignment
+Message-ID: <20000605125935.A21551@quaketop.them.org>
+References: <Pine.LNX.4.05.10006050927350.5397-100000@callisto.of.borg>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.05.10006050927350.5397-100000@callisto.of.borg>; from geert@linux-m68k.org on Mon, Jun 05, 2000 at 09:42:02AM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Sorry,
-I figured out the problem. It was because I am a retard and left my
-airport card in while trying to boot. It worked fine after I took it out.
+On Mon, Jun 05, 2000 at 09:42:02AM +0200, Geert Uytterhoeven wrote:
+>   - I don't know what to do with the code marked with
+>
+> 	Don't touch IDE controllers and I/O ports of video cards!
+>
+>     Perhaps we do need to touch IDE controllers on PPC? I don't have IDE
+>     devices connected to the IDE interface in my LongTrail, so I don't know.
+>     AFAIK the IDE interface does work without fiddling with the PCI resources
+>     on other LongTrails, but that could be caused by the different OF in those
+>     boxes (that different OF does assign other missing resources, unlike mine).
 
-Ryan
+My experience is that we need to touch IDE cards without Open Firmware
+ROM.  I currently have a card that needs this; I have a hideous local
+hack in my kernel to enable it.
 
+>
 
-Ryan Boder wrote:
->
-> I am having trouble with the linux-pmac-stable source. I have a G4 AGP
-> 400MHZ. The problem is that for every kernel I compile, it begins
-> booting but halfway through the process it freezes up and kgdb gives me
-> this...
->
-> unable to handle kernel paging request at virtual address 4446204c
-> (error 40000000)
-> NIP: C0014788   XER: 00000000   LR:C0014764   REGS: c0531bf0   TRAP:
-> 0300
-> MSR: 00009032   [EEIRDRME]
-> TASK: c0530000[7]   'ohci-control' mm->pgd   c0155000   Last syscall: -1
->
-> GPR00: C0530000   C0531CA0   C0530000   00009032   00000000   00000000
-> FFFFFC18   C0157260
-> GPR08: C0157260   0000001B   C0530000   C015ABC8   88462022   002060A8
-> 00000000   00000000
-> GPR16: 00000000   00000064   C0531D90   01000000   C0463B60   C0513000
-> 00000000   80000000
-> GPR24: C0513220   C0531D88   00000000   C0170000   C0157260   00000000
-> 44462028   C0531CA0
-> kgdb: entering handle-excpetion; trap[0x300]
-> turning serial ints off
->
-> Does anyone know how I can fix or just get around this error? If not can
-> anyone point me in the right direction? I just need source for a kernel
-> that will run on my G4. Thanks
->
-> Ryan
+Dan
+
+/--------------------------------\  /--------------------------------\
+|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
+|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
+|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
+\--------------------------------/  \--------------------------------/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
