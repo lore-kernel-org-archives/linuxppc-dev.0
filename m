@@ -1,39 +1,33 @@
-Date: Mon, 19 Jul 1999 23:07:33 +0200
-To: Matt Porter <mmporter@home.com>
-Cc: VALETTE Eric <valette@crf.canon.fr>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Is the vger 2.2 kernel branch dead
-Message-ID: <19990719230733.X25323@isis.isis.de>
-References: <m116DdY-0000WZC@tri-yann.crf.canon.fr> <Pine.LNX.3.96.990719133758.6567C-100000@liberty.chnd1.az.home.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.3.96.990719133758.6567C-100000@liberty.chnd1.az.home.com>; from Matt Porter on Mon, Jul 19, 1999 at 01:39:05PM -0700
-From: Hartmut.Koptein@t-online.de (Hartmut Koptein)
+Date: Mon, 19 Jul 1999 15:41:59 -0600 (MDT)
+From: Brad Midgley <brad@pht.com>
+To: Hartmut Koptein <Hartmut.Koptein@t-online.de>
+cc: Matt Porter <mmporter@home.com>, VALETTE Eric <valette@crf.canon.fr>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: cdrecord (Re: Is the vger 2.2 kernel branch dead)
+In-Reply-To: <19990719230733.X25323@isis.isis.de>
+Message-ID: <Pine.LNX.3.95.990719153617.1369A-100000@pacific.pht.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > I tried to upgrade here and no changes during one month!!!
-> > As there still some important bugs in 2.2.10++, I wonder
-> > why nothing happens???
-> 
-> Perhaps nobody has submitted any bug fixes?
+on the topic of cdrecord, i found i can burn to CDRW media but not CDRs
+(it dies with "retryable errors" when closing the CDR)  this is on a
+7500's external bus with paul's 2.2.10 and a ricoh MP6201S firmware 2.20
+using Cdrecord release 1.8a22. has anyone else seen this?
 
-Btw: what is the status for the SHM bug? Can we easiely push it up to 16MB?
+> #define SHMMAX 0x1000000                /* max shared seg size (bytes) */
 
-/usr/src/linux/include/asm/shmparam.h
+this one can be fixed in userspace. in /etc/rc.d/rc.sysinit:
 
-#define SHMMAX 0x1000000                /* max shared seg size (bytes) */
+# set shmmax to allow cdrecord to work
+echo 6000000 >/proc/sys/kernel/shmmax
 
-
-Another problem is the missing  set_bit, clear_bit, ... in /usr/include/asm/bitops.h
-
-This is ifdefed with   #if 0 ... #endif
+Brad
+brad@pht.com | http://www.pht.com/~brad/
 
 
-Regards,
-
-
-       Hartmut
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
