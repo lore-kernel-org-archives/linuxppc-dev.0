@@ -1,75 +1,59 @@
-From: "Nicolas-Peter Pohland" <pohland@snom.de>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Doze / Low power Mode with MPC855T D3
-Date: Thu, 19 Apr 2001 18:19:45 +0200
-Message-ID: <HEEJLLLEHBIOHDGILMPNCEJJCGAA.pohland@snom.de>
+Message-ID: <3ADF1377.72242D3B@sgi.com>
+Date: Thu, 19 Apr 2001 11:33:59 -0500
+From: Steven Hein <ssh@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Dan Malek <dan@mvista.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 860 RTC support
+References: <3ADE0222.BF7F539C@sgi.com> <3ADE0501.321052F9@mvista.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+Dan Malek wrote:
+>
+> > Is there a working method (to read the RTC value at boot-time)?
+>
+> The MPC8xx real-time clock is implicitly managed in the kernel.
+> At boot time, the register is read and stored in the kernel
+> time.  Whenever the kernel time is updated, the hardware register
+> is also updated.  Since the 8xx is simply a 32-bit register
+> access with an update rate that matches the kernel time, I
+> chose to do it this way.
+>
 
-I would like to put a MPC855T D3 on a custom board into doze mode when it is
-not needed.
-See code sample of arc/ppc/kernel/idle.c below.
+Dan,
 
-It appears to be an easy task:
+My question was poorly worded (because at that point I
+didn't understand the whole picture.....).  I know that the
+860's RTC on my board is working properly, that's not the issue.
 
-* TRST is connected to PORESET.
-* SCCR bits CRQEN and PRQEN are 1.
-* PLPRCR is 0x00900000 (MF = 10), i.e. TEXPS=0
-* SIPEND = 0, i.e. no interrupts
-* Then set TMIST=1 and LPM=1
-* Then set POW and EE of the MSR
-* Wait for dedrementer or interrupt to wake up the processor
-* Take back the EE bit to ensure restore_flags() works
+My problem is this:   when I set the date via the "date --set"
+command (which calls stime()) or by calling settimeofday() directly,
+it doesn't result in the 860's RTC being updated.
+Yes, do_settimeofday() gets called properly, but it never results
+in ppc_md.set_rtc_time ==> m8xx_set_rtc_time getting called!
+(The only place I see that called is in timer_interrupt in
+arch/ppc/kernel/time.c, and it's only called if the STA_UNSYNC
+bit is not set in timer_status.  do_settimeofday() results
+in the STA_UNSYNC bit being set and I don't see how it gets
+cleared.....).
 
-* I use _set_plprcr() to avoid the problem described in the errata of the
-855T.
+I also looked at the other approach of configuring in /dev/rtc
+and using hwclock, but the kernel won't boot with this
+drivers/char/rtc.c
+built in, and that doesn't look like it has 8xx support anyway.
 
-I put in code to count and to toggle ports on the MPC and it does not stop
-running.
-On the other hand if I take out the save_flags(), cli and restore_flags(), I
-can
-telnet on the board before power_save() is activated and then I can issue a
-"ps aux"
-by typing return twice on the telnet window and the decrementer also comes
-to a halt.
-It looks like every second interrupt is swallowed.
+In your response, you said "Whenever the kernel time is updated, the
+hardware register is also updated.".  Is settimeofday()/stime()
+the methods of updating the kernel time that you were talking about?
 
-Am I missing something here ?
+I know I'm missing something, as it sounds like this works for others,
+but I'd greatly appreciate it if someone would clue me in!
+(Again, I'm using the 2.4.3 kernel, if that's relevant).
 
-TIA,
-Nicolas Pohland
-
-
---------------- Code sample ----------------------
-
-void power_save(void)
-{
-  unsigned long msr, plprcr;
-
-  save_flags(msr);
-  __cli();
-  if (!current->need_resched) {
-
-      // go to doze mode:
-      plprcr = ((volatile immap_t *)IMAP_ADDR)->im_clkrst.car_plprcr;
-
-    	_set_plprcr(plprcr | 0x00001100); // doze + timst
-
-	/* set the POW bit in the MSR, and enable interrupts
-	 * so we wake up sometime! */
-	_nmask_and_or_msr(0, MSR_POW | MSR_EE);
-
-	/* Disable interrupts again so restore_flags will work. */
-	_nmask_and_or_msr(MSR_EE, 0);
-    }
-  }
-  restore_flags(msr);
-}
+Thanks,
+Steve
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
