@@ -1,49 +1,65 @@
-Message-Id: <l03130300b8bba63e55e4@[192.168.1.2]>
+Date: Mon, 18 Mar 2002 07:54:07 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Michael Sokolov <msokolov@ivan.Harhan.ORG>
+Cc: linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
+Subject: Re: [PATCH] My GT-64260 enhancements
+Message-ID: <20020318145407.GB3762@opus.bloom.county>
+References: <3C94E3A8.9080301@embeddededge.com> <0203172010.AA01807@ivan.Harhan.ORG>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Mon, 18 Mar 2002 09:15:39 -0500
-To: benh@kernel.crashing.org
-From: "Michael R. Zucca" <mrz5149@acm.org>
-Subject: Re: 2.4.18 and dmasound and rebooting
-Cc: linuxppc-dev@lists.linuxppc.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <0203172010.AA01807@ivan.Harhan.ORG>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Can you try this patch and tell me if it helps ?
+On Sun, Mar 17, 2002 at 12:10:43PM -0800, Michael Sokolov wrote:
 >
-> ===== drivers/sound/dmasound/dmasound_awacs.c 1.21 vs edited =====
-> --- 1.21/drivers/sound/dmasound/dmasound_awacs.c        Tue Feb  5
->09:58:03 2002
-> +++ edited/drivers/sound/dmasound/dmasound_awacs.c      Mon Mar  4
->11:32:36 2002
-> @@ -963,7 +963,9 @@
->                         st_le16(&cp->res_count, 0);
->                         st_le16(&cp->xfer_status, 0);
->                         st_le32(&cp->phy_addr, phy);
-> -                       st_le16(&cp->command, OUTPUT_MORE + INTR_ALWAYS);
-> +                       st_le32(&cp->cmd_dep, virt_to_bus
-> (&awacs_tx_cmds[(i+1)%write_sq.max_count]));
-> +                       st_le16(&cp->command, OUTPUT_MORE | BR_ALWAYS |
->INTR_ALWAYS);
-> +
->                        /* point at our patched up command block */
->                         out_le32(&awacs_txdma->cmdptr, virt_to_bus(cp));
->                        /* we must re-start the controller */
+> Dan Malek <dan@embeddededge.com> wrote:
+>
+> > So, I don't see the problem.  A default is specified and you can change it,
+> > just like lots of other configurations.
+>
+> The problem is that there is a
+>
+> define_int CONFIG_SERIAL_CONSOLE_BAUD 115200
 
-Ok, sorry for getting back so slowly.
+The other problem is you're looking at the wrong tree for this, which
+I'll get into further down.  But in the galileo tree, it's:
+if [ "$CONFIG_MOT_MVP" = "y" ]; then
+   define_bool CONFIG_GT64260 y
+   define_int CONFIG_SERIAL_CONSOLE_BAUD 115200
+fi
+...
+if [ "$CONFIG_USE_PPCBOOT" != "y" ]; then
+   int 'Serial Console Baudrate' CONFIG_SERIAL_CONSOLE_BAUD 115200
+fi
 
-I tried compiling this in and it worked great. It eliminated some popping
-that would happen on the DMA-dead recovery before.
+So the MVP uses 115200, and possibly even DINK does, and anyone else
+gets to pick or assumes 9600.
 
-I haven't yet tried compiling this into a kernel module yet to see if it
-fixes the problem of the kernel module version of this not working.
+> Having "$CONFIG_GT64260" = "y" imply support for CONFIG_SERIAL_TEXT_DEBUG is
+> also discriminatory and undemocratic. Should we also imply the same then for
+> "$CONFIG_CPC700" = "y" -o "$CONFIG_CPC710" = "y" -o "$CONFIG_UNINORTH" = "y",
+> etc?
 
-----------------------------------------------
- Michael Zucca - mrz5149@acm.org
-----------------------------------------------
- "I'm too old to use Emacs." -- Rod MacDonald
-----------------------------------------------
+No, because right now the CPC700 and CPC710 systems don't know how to
+setup a serial port for early debugging via ppc_md.progress().
 
+> I mean I don't mind if defaults are changed globally, it's just the
+> discriminatory treatment of GT-64260 that I violently object to.
+
+Can you be more specific?
+
+> Oh, and having
+> a separate BK tree and mailing list for it too isn't something I'm fond of.
+
+Why?  The GT-64260 stuff is under heavy development, and between
+gt-64260 problems and board problems (and possible processor issues)
+having a seperate tree in which to try and hammer things out between the
+folks working on it seems useful.
+
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
