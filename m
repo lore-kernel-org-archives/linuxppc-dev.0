@@ -1,35 +1,29 @@
-Message-ID: <3817396D.51DC81CA@andrew.cmu.edu>
-Date: Wed, 27 Oct 1999 13:42:05 -0400
-From: Hollis R Blanchard <hollis@andrew.cmu.edu>
+Date: Wed, 27 Oct 1999 12:48:24 -0500 (CDT)
+From: Jeff Zahourek <jeffzahourek@cjnetworks.com>
+Reply-To: jeffzahourek@cjnetworks.com
+To: Kevin_Hendricks <khendricks@admin.ivey.uwo.ca>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Netscape and missing libnullplugin.so
+In-Reply-To: <199910271530.KAA32070@lists.linuxppc.org>
+Message-ID: <Pine.LNX.4.10.9910271239560.27852-100000@thor.valhalla.lan>
 MIME-Version: 1.0
-To: alex khalil <alex@leb.net>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: B/W G3 ATY 128 vram not recognized
-References: <19991027123206.A5039@leb.net>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-alex khalil wrote:
-> 
-> Hello
-> 
->   This B/W G3 displays only 614k of VRAM which allows it 640x480 in
-> 16 bits.
->   The video card is an ATY 128.
-> 
->   How to make the rest of the VRAM appear in Xconfigurator.
-> 
->   I used kernel 2.2.10 rev2 for B/W G3, XF86_FBDev 3.3.5, and otherwise
-> LinuxPPC 5 with the set of security updates from linuxppc.org
+I believe the libnullplugin.so is needed. I built the Plugger 3.0 plugin
+on linuxppc but it would not work. I have the same plugin working on
+linux-i386. The i386 Netscape v4.7 has libnullplugin.so and removing it
+causes Plugger 3.0 to fail exactly as it does on the Netscape v4.7 on
+linuxppc. Put it back and the plugin works normally.
 
-If you have BootX's "no video driver" checked, Xconfigurator will not be
-able to correctly detect your VRAM.
+Jeff
+-- 
+{]>===-                       {]>===-                         {]>===- 
+Jeff Zahourek                            Because without beer, things
+jeffzahourek@cjnetworks.com              do not seem to go as well.
+http://www.cjnetworks.com/~jeffzahourek/                 -- Anonymous
 
-Xconfigurator frequently doesn't work right anyways, in which case I'd
-suggest Xautoconfig.
-
--Hollis
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
