@@ -1,26 +1,38 @@
-Message-ID: <20040430104411.30960.qmail@web15207.mail.bjs.yahoo.com>
-Date: Fri, 30 Apr 2004 18:44:11 +0800 (CST)
-From: =?gb2312?q?Song=20Sam?= <samlinuxppc@yahoo.com.cn>
-Subject: Re: JFFS2 problem when data cache enabled
-To: "S. Hebbar" <shebbar@india.tejasnetworks.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <200404301350.20513.shebbar@india.tejasnetworks.com>
+Message-ID: <40922E6C.6070209@intracom.gr>
+Date: Fri, 30 Apr 2004 13:46:04 +0300
+From: Pantelis Antoniou <panto@intracom.gr>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Sanjeev R <sanjeevr@myw.ltindia.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Configuring Both the FECs in MPC880: FEC driver
+References: <s0926a35.058@EMAIL>
+In-Reply-To: <s0926a35.058@EMAIL>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-"S. Hebbar" <shebbar@india.tejasnetworks.com> wrote:
+Sanjeev R wrote:
 
-> When I disable the datachache on linux kernel, everything works fine.
+>Hi,
+>
+>There are two FECs availbale in MPC880, and i need to use/configure both of them.
+>I saw the driver code fec.c available  in the ELDK distribution, but it supports only one. It has the provision to adapt when an SCC is configured  as  ethernet,
+>but when I have to configure two FECs available ?? how do i proceed?
+>
+>Thanks
+>Sanjeev
+>
+>
+>
+>
+>
+>
+Wait a little bit, I have it my pipeline.
 
-Sorry.I have no idea about your problem but just want
-to how to disable datacache.Could you play it in front
-of me?
+Regards
 
-Thanks a lot for any input!
+Pantelis
 
-Sam
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
