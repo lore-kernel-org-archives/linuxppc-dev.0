@@ -1,43 +1,61 @@
-Subject: Re: ibook G4 Status Report
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-To: cpistagna@vrlteam.org
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20040222111847.GX2289@adapter.n0skillz.org>
-References: <20040222111847.GX2289@adapter.n0skillz.org>
-Content-Type: text/plain; charset=UTF-8
-Message-Id: <1077644505.14639.94.camel@thor.asgaard.local>
+Date: Tue, 24 Feb 2004 10:54:09 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: "debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Need testers: G3 @ G4 laptops (powerbooks & ibooks)
+Message-ID: <20040224175409.GC1052@smtp.west.cox.net>
+References: <1077074495.1082.94.camel@gaston>
 Mime-Version: 1.0
-Date: Tue, 24 Feb 2004 18:41:46 +0100
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1077074495.1082.94.camel@gaston>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 2004-02-22 at 12:18, Costantino Pistagna wrote:
+On Wed, Feb 18, 2004 at 02:21:36PM +1100, Benjamin Herrenschmidt wrote:
+
 >
-> Now the second screen switch in clone-mode without any problem. The only
-> trouble is that the output resolution is the same of the embedded lcd,
-> so the max res that i can use is 1024x768; no matter about the paramters
-> specified in XF86Config.
+> Hi need people who own those machiens, especially the recent iBook2 models
+> with a G3 CPU and titanium powerbooks with a G4, to test this patch and
+> tell me if sleep mode still works reliably or becomes unstable.
+[snip]
+> ===== arch/ppc/kernel/l2cr.S 1.15 vs edited =====
+> --- 1.15/arch/ppc/kernel/l2cr.S	Tue Oct 14 17:28:01 2003
+> +++ edited/arch/ppc/kernel/l2cr.S	Wed Feb 18 14:14:33 2004
+> @@ -130,11 +130,13 @@
+>  	mtspr	HID0,r4			/* Disable DPM */
+>  	sync
+>
+> +#if 0
+>  	/* Flush & disable L1 */
+>  	mr	r5,r3
+>  	bl	__flush_disable_L1
+>  	mr	r3,r5
+> -
+> +#endif
+> +
+>  	/* Get the current enable bit of the L2CR into r4 */
+>  	mfspr	r4,L2CR
+>
+> @@ -236,8 +238,10 @@
+>  	sync
+>
+>  4:
+> -	bl	__inval_enable_L1
+>
+> +#if 0
+> +	bl	__inval_enable_L1
+> +#endif
+>  	/* Restore HID0[DPM] to whatever it was before */
+>  	sync
+>  	mtspr	1008,r8
 
-You need to set up either multiple screens or clone modes to go beyond
-that.
-
-> If it's usefull, i've patched my OF to unlock the video resolutions as
-> described in some howtos on the net.
-
-Only Mac OS cares about that, in order to artificially cripple iBooks.
-
-
-> if you've readed carefully above, i've to disable the second screen in
-> ServerLayout; if i turn it on the system start with an 8bits ColorDepth.
-> I've no idea about this...maybe i've done some mistake.
-
-Impossible to tell without seeing the server log.
-
+Are you sure that you can get away with this, passed on how the manuals
+(745x) describe the sequence of flush/invalidating the L2 (and, L3) ?
 
 --
-Earthling Michel Dänzer      |     Debian (powerpc), X and DRI developer
-Libre software enthusiast    |   http://svcs.affero.net/rm.php?r=daenzer
-
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
