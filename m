@@ -1,30 +1,27 @@
-Date: Mon, 27 Nov 2000 16:34:24 +0100 (CET)
-From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-        debian-powerpc@lists.debian.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: apmd and other archs
-In-Reply-To: <19341022082533.14985@192.168.1.2>
-Message-ID: <Pine.LNX.4.10.10011271629590.19879-100000@zirkon.biophys.uni-duesseldorf.de>
+Message-ID: <3A2292BE.2F599BCF@mvista.com>
+Date: Mon, 27 Nov 2000 08:58:38 -0800
+From: "Douglas M. Lowder" <dlowder@mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: [linuxppc-dev] Sound and sleep support for iBook?
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> >Result: The vanilla gnome battery_applet now works for me (TM).
->
-> A better way would be to have the via-pmu driver asynchronously (via
-> a timer) poll for state change and update some static status datas.
-> This way, on core99, we can just disable the polling timer and rely
-> on automatic notifications done by the hw. The /proc interface would
-> then just output the last status.
+I am using kernel 2.2.17pre20-ben3 (from Benjamin Herrenschmidt's
+site) and everything else on the system is well supported.
+I would be very interested in getting information on the
+last two gaps in hardware support, namely sound and power
+management.  Anyone out there made progress on this lately?
 
-Just as fine. What routine is processing the automatic notification, and
-what does the data format look like? I guess /dev/pmu will have to return
-buffered data as well on core99?
+-Doug Lowder
 
-	Michael
-
+--
+----------------------------------------------------------
+Douglas M. Lowder                       Ph  (408) 328-6077
+Monta Vista Software                    Fax (408) 328-9204
+1237 E. Arques Ave.
+Sunnyvale, CA 94085                     dlowder@mvista.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
