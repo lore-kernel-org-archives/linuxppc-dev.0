@@ -1,31 +1,39 @@
-Message-ID: <XFMail.001009181300.pochini@shiny.it>
+Message-ID: <XFMail.001009181549.pochini@shiny.it>
 Content-Type: text/plain; charset=us-ascii
 MIME-Version: 1.0
-In-Reply-To: <Pine.GSO.4.21.0010091229310.24725-100000@stekt6>
-Date: Mon, 09 Oct 2000 18:13:00 +0200 (CEST)
+In-Reply-To: <19340903045945.2380@192.168.1.2>
+Date: Mon, 09 Oct 2000 18:15:49 +0200 (CEST)
 From: Giuliano Pochini <pochini@shiny.it>
-To: Topi Kanerva <tkanerva@ees2.oulu.fi>
+To: Benjamin Herrenschmidt <bh40@calva.net>
 Subject: Re: can't boot 2.4.0-t9
 Cc: linuxppc-dev@lists.linuxppc.org,
-        Giuliano Pochini <pochini@denise.shiny.it>
+        Giuliano Pochini <pochini@denise.shiny.it>,
+        Topi Kanerva <tkanerva@ees2.oulu.fi>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>I can't boot kernel 2.4.0-test9 because it fails configuration
->>of my scsi cards (resource collisions). The hack of removing the
->>"return -EINVAL" I used in test7 doesn't work anymore.  Anyway,
->>I'm just curious to know why there are not such problems in 2.2.
+>>is this the plain 2.4.0-test9 or linuxcare devel version?
+>>If I were you, I'd try to backport the test7 scsi code to make
+>>the hack work again.
+>>I don't know about the drivers/scsi stuff, because I have a pismo
+>>(and hence no scsi), but for sure none of the 2.4.0-testx kernels
+>>have worked for me in terms of X: if I start X (4.0.1c), the
+>>lcd screen goes black, or then just completely wild.
+>>
+>>Can anyone else with a pismo confirm this?
 >
-> is this the plain 2.4.0-test9 or linuxcare devel version?
+> For the SCSI resources problem, I have to check is the main tree is up-
+> to-date with the latest PPC fixes. You may want to try with the PPC
+> bitkeeper tree.
 
-Plain version, d/l fron kernel.org
+Can I download only the arch/ppc tree ?
 
-> If I were you, I'd try to backport the test7 scsi code to make
-> the hack work again.
+> For the X 4 vs. 2.4 issue, I've been biten by this for a long time (on a
+> Pismo too and on a G4) until I figured out that the X server dies when
+> looking up font path.
 
-A function (I don't remember which) have a different number of
-parameters and it doe't compile. I'll try again this night.
+4.0.0 works fine here (test7).
 
 
 Bye.
