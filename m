@@ -1,45 +1,37 @@
-Subject: [PATCH] fix bad merge in drivers/video/Config.in (linuxppc-2.4)
-From: Andreas Oberritter <obi@saftware.de>
-To: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-Content-Type: multipart/mixed; boundary="=-RpMEd7TQfFp88SJqrH+g"
-Message-Id: <1066071151.1582.2.camel@shiva.eth.saftware.de>
-Mime-Version: 1.0
-Date: Mon, 13 Oct 2003 20:52:32 +0200
+Message-ID: <3F8B32D6.2030208@ixiacom.com>
+Date: Mon, 13 Oct 2003 16:18:46 -0700
+From: Dan Kegel <dkegel@ixiacom.com>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: oops logging enhancements for ppc?
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---=-RpMEd7TQfFp88SJqrH+g
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+I'm interested in improving oops logging for ppc.
+Two enhancements come to mind:
 
-Hi,
+1. Log a few bytes of instruction space like other
+architectures do, e.g.
+http://lists.linuxppc.org/linuxppc-dev/199812/msg00109.html
 
-menuconfig didn't work anymore because of invalid syntax in Config.in.
-Please apply.
+2. Log module names and address ranges, as Andrea Arcangeli
+proposed in
+http://marc.theaimsgroup.com/?l=linux-kernel&m=102772338115172&w=2
+and currently implements with the patch
+http://www.kernel.org/pub/linux/kernel/people/andrea/kernels/v2.4/2.4.23pre6aa3/90_module-oops-tracking-3
 
-Regards,
-Andreas
+Is anyone aware of improvements along those lines,
+or does anyone have objections to this sort of change,
+before I dive in and implement them for the latest 2.4 for ppc?
 
---=-RpMEd7TQfFp88SJqrH+g
-Content-Disposition: attachment; filename=video_config.diff
-Content-Type: text/plain; name=video_config.diff; charset=iso-8859-15
-Content-Transfer-Encoding: 7bit
+(See also my post today to lkml,
+http://marc.theaimsgroup.com/?l=linux-kernel&m=106608037825960&w=2
+about making ksymoops aware of Andrea's enhanced oops logging. )
 
-===== drivers/video/Config.in 1.34 vs edited =====
---- 1.34/drivers/video/Config.in	Tue Sep 16 07:20:21 2003
-+++ edited/drivers/video/Config.in	Mon Oct 13 20:48:45 2003
-@@ -425,7 +425,7 @@
- 	      "$CONFIG_FB_INTEL" = "m" -o \
- 	      "$CONFIG_FB_SGIVW" = "m" -o "$CONFIG_FB_SIS" = "m" -o \
- 	      "$CONFIG_FB_PVR2" = "m" -o "$CONFIG_FB_VOODOO1" = "m" -o \
--	      "$CONFIG_FB_CYBER2000" = "m" -o "$CONFIG_FB_STI" = "m" ]; then
-+	      "$CONFIG_FB_CYBER2000" = "m" -o "$CONFIG_FB_STI" = "m" -o \
- 	      "$CONFIG_FB_XILINX" = "m" ]; then
- 	    define_tristate CONFIG_FBCON_CFB32 m
- 	 fi
-
---=-RpMEd7TQfFp88SJqrH+g--
+Thanks!
+- Dan
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
