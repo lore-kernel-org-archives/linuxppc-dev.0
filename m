@@ -1,44 +1,48 @@
-From: THEDREAM@chollian.net
-Message-Id: <200109201107.UAA15781@ldap.dacom.co.kr>
-Date: Thu, 20 Sep 2001 20:08:53 +0900
+Date: Thu, 20 Sep 2001 20:10:24 +0900 (JST)
+Message-Id: <20010920.201024.730567552.t-matsuu@protein.osaka-u.ac.jp>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: [Question] I want to use CSCOPE to port Linux kernel.
-Reply-To: THEDREAM@chollian.net
-MIME-Version: 1.0
-Content-Type: text/plain
+Subject: Re: 2.4.10-pre12 sysrq.c compile error
+From: MATSUURA Takanori <t-matsuu@protein.osaka-u.ac.jp>
+In-Reply-To: <200109200500.AAA17467@lists.linuxppc.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-HI.
+From: owner-linuxppc-dev@lists.linuxppc.org
+Subject: Linux PPC Developer Digest V34 #19
+Date: Thu, 20 Sep 2001 00:00:59 -0500
 
-I want to use CSCOPE.
+> Date: Wed, 19 Sep 2001 17:34:26 -0400
+> From: Stefan Jeglinski <jeglin@4pi.com>
+> Subject: 2.4.10-pre12 sysrq.c compile error
+>
+> rsynced mvista today, linuxppc_2_4:
+>
+> sysrq.c:35: conflicting types for `wakeup_bdflush'
+> /usr/src/linuxppc_2_4/include/linux/fs.h:1347: previous declaration
+> of `wakeup_bdflush'
+> make[3]: *** [sysrq.o] Error 1
+> make[3]: Leaving directory `/usr/src/linuxppc_2_4/drivers/char'
+> make[2]: *** [first_rule] Error 2
+> make[2]: Leaving directory `/usr/src/linuxppc_2_4/drivers/char'
+> make[1]: *** [_subdir_char] Error 2
+> make[1]: Leaving directory `/usr/src/linuxppc_2_4/drivers'
+> make: *** [_dir_drivers] Error 2
 
-I use Redhat 7.1 in my PC.
+`wakeup_bdflush' was defines in two defrent files.
 
-I tried to install cscope but I had the message as below.
+linuxppc_2_4_devel/drivers/char/sysrq.c (line: 35)
+extern void wakeup_bdflush(int);
 
-------------------------------------------------------
-# rpm -ivh cscope-15.3-1.i386.rpm
-error: failed dependencies:
-        libncurses.so.4 is needed by cscope-15.3-1
-------------------------------------------------------
+linuxppc_2_4_devel/include/linux/fs.h (line: 1347)
+extern void wakeup_bdflush(void);
 
-I have already libncurses.so.5.2
 
-So I tried as below, but I had the same result.
----------------------------------------------------
-# ln -s libncurses.so.5.2 libncurses.so.4
-# rpm -ivh cscope-15.3-1.i386.rpm
-error: failed dependencies:
-        libncurses.so.4 is needed by cscope-15.3-1
-----------------------------------------------------
-
-What do I do to use CSCOPE ?
-
-Any help could greatly appreciated.
-
-Have a nice day.
-
+MATSUURA Takanori @ Division of Protein Chemistry,
+                     Institute for Protein Research, Osaka University, Japan
+E-Mail: t-matsuu@protein.osaka-u.ac.jp
+Web Page: http://chux1.protein.osaka-u.ac.jp/~t-matsuu/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
