@@ -1,78 +1,40 @@
-Message-ID: <20040624115640.49843.qmail@web13606.mail.yahoo.com>
-Date: Thu, 24 Jun 2004 04:56:40 -0700 (PDT)
-From: m madhuker <mythri_madhuker@yahoo.com>
-Subject: problem with usb webcam in MPC8245
+Message-ID: <1088085327022.mikko.alutoin.17388.vROgRbiXwfx6jgnkf5FAxQ@luukku.com>
+Date: Thu, 24 Jun 2004 16:55:27 +0300 (EEST)
+From: Mikko Alutoin <mikko.alutoin@luukku.com>
 To: linuxppc-embedded@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: On the MPC85xx development boards
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hello all,
+Hi folks!
 
-             Iam working with MPC8245 board.and iam
-using timesys GPL-linux(kernel ver: 2.4.7).
+I would be happy to receive some comments on pros & cons of different development boards for MPC85xx cause I'm in the process of selecting one.
+The final design will be using MPC8560 to implement a 1 Gbps Ethernet card for a router. ATM support will be needed later on.
+The development environment includes a Linux PC and Abatron BDI2000 emulator.
 
-        We have logitec quickcam 3000 pro webcam.
-which supports philips driver. in x86 linux system its
-working well.(since driver was already installed).
+Here are the boards that I am aware of:
 
-        But in this board kernel has pwc-8.0 version,
-which not support our webcam. so we downloaded philips
-8.8 version. which supports quickam 3000 pro webcam.
-and as per installation notes we followed...
-      but when we compile kernel(make zImage.initrd.)
-        it got error as follows:
-        ----------------
-      pwc-if.c:2023: parse error before string
-constant
-        cc1: warnings being treated as errors
-    pwc-if.c:2023: warning: type defaults to `int' in
-declaration of `MODULE_LICENSE'
-        pwc-if.c:2023: warning: function declaration
-isn't a prototype
-        pwc-if.c:2023: warning: data definition has no
-type or storage class
-        make[3]: *** [pwc-if.o] Error 1
-        make[3]: Leaving directory
-`/usr/src/timesys/ampenpp1/2.4.7-timesys-3.1.554/kernel/drivers/usb'
-        make[2]: *** [first_rule] Error 2
-        make[2]: Leaving directory
-`/usr/src/timesys/ampenpp1/2.4.7-timesys-3.1.554/kernel/drivers/usb'
-        make[1]: *** [_subdir_usb] Error 2
-        make[1]: Leaving directory
-`/usr/src/timesys/ampenpp1/2.4.7-timesys-3.1.554/kernel/drivers'
-        make: *** [_dir_drivers] Error 2
-        [root@mail kernel]#
-        -------------------------
+1)	MPC8560ADS by Motorola
+2)	CW8540DSEVAL by Motorola
+3)	SBC8560 by Windriver
+4)	Silicon Tx GP3 8560
+5)	MPC8540 RDK by GDATech
 
-        so we masked the line no: 2023 as follows:
-        MODULE_LICENCE("GPL");
-        then after it was complied sucessesfully...and
+Are these boards all there is?
 
-        while booting kernel in board its dispalyed as
-follows:
-        -------------
-        usb.c: registered new driver usbdevfs
-        usb.c: registered new driver hub
-        pwc Philips PCA645/646 + PCVC675/680/690 +
-PCVC730/740/750 webcam module versio.pwc Also supports
-the Askey VC010, Logitech Quickcam 3000 Pro, Samsung
-MPC-C10 ,pwc the Creative WebCam 5, SOTEC Afina Eye
-and Visionite VCS-UC300 and VCS-UM10.usb.c: registered
-new driver Philips webcam
-        ----------------
-        we thought board was detected.
-        but, when we run application it is saying:
-        /dev/video0: No such device.
+I am under the impression that 1, 2, 4 and 5 (but not 3) come with a Linux BSP included? Is this correct?
 
-        we created the node also as 'mknod /dev/video0
-c 81 0'
-        please give suggestion.
-                            Thanking you.
-                                       Regards
-                                       Madhukar
+Being the lazy person that I am, I'm trying to minimize the work to get Linux up and running on the board. I wonder which board/package gives me least headache? Are there any pitfalls that I should know about?
+
+Let us assume that the final product will not be based on a commercial Embedded Linux distro, but a custom 2.6 kernel with busybox & uclibc. Should that effect the choice in any way?
+
+Forgive me if the questions seem a bit foolish. The bottom line is that I have not used any kind of development boards in the past and I would like to receive some insight on which one of the above to choose.
+
+Cheers,
+Mikko
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
