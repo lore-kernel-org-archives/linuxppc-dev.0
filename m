@@ -1,30 +1,31 @@
-Message-ID: <407EB271.3040202@embeddededge.com>
-Date: Thu, 15 Apr 2004 12:04:01 -0400
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-Cc: Jon Loeliger <jdl@motorola.com>,
-	Gerrit Van de Velde <gvd@denayer.wenk.be>,
-	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: MPC85xx support
-References: <20040415153742.E4754C109F@atlas.denx.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+From: Jason McMullan <jason.mcmullan@timesys.com>
+To: Kumar Gala <kumar.gala@motorola.com>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <7E4506ED-8EF2-11D8-8550-000393DBC2E8@motorola.com>
+References: <407E5F36.80003@denayer.wenk.be>
+	 <1082036134.20892.8.camel@baz.sps.mot.com>
+	 <407EA4CA.4080208@embeddededge.com>
+	 <49705.193.77.24.1.1082042532.squirrel@www.arhitektova-delavnica.com>
+	 <7E4506ED-8EF2-11D8-8550-000393DBC2E8@motorola.com>
+Message-Id: <1082049680.4404.1.camel@veena.timesys>
+Mime-Version: 1.0
+Date: Thu, 15 Apr 2004 13:21:21 -0400
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
+On Thu, 2004-04-15 at 11:35, Kumar Gala wrote:
+> We have been keeping the linuxppc-2.4 bitkeeper in sync with our work
+> for 85xx.  See http://penguinppc.org/dev/kernel.shtml on how to get
+> access.
 
-> Sorry, they didn't make it into the CVS yet. They are definitely  not
-> lost but sitting in my input queue.
+I have a raft of MPC85xx (specifically, MPC8560ADS support) for 2.6.4
+if anyone wants them.
 
-I know you wouldn't lose them, I just wanted Jon to know there was
-a pending update from me and to not lose track of that. :-)
-
-Thanks.
-
-
-	-- Dan
-
+--
+Jason McMullan <jason.mcmullan@timesys.com>
+TimeSys Corporation
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
