@@ -1,14 +1,25 @@
+Message-ID: <D73A25AA6E54D511AD74009027B1110F3C0907@ORION>
+From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+To: "'Muhammad Sarwar'" <msarwar@mangrovesystems.com>,
+	nbasker@india.tejasnetworks.com, linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Problems in booting kernel from bootloader.
+Date: Thu, 3 Jul 2003 08:38:32 -0400 
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Problems in booting kernel from bootloader.
-Date: Thu, 3 Jul 2003 08:14:03 -0400
-Message-ID: <8529B5552D4EAA4DAEDF49650C64B2B436E4E2@TARPON.mangrovesystems.com>
-From: "Muhammad Sarwar" <msarwar@mangrovesystems.com>
-To: <nbasker@india.tejasnetworks.com>,
-	<linuxppc-embedded@lists.linuxppc.org>
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Also, make sure the SYPCR is disabled.
+
+-----Original Message-----
+From: Muhammad Sarwar [mailto:msarwar@mangrovesystems.com]
+Sent: Thursday, July 03, 2003 8:14 AM
+To: nbasker@india.tejasnetworks.com;
+linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Problems in booting kernel from bootloader.
+
 
 
 If you are using EP8260 version 1.3, you need to enable PIPELINE in the
