@@ -1,35 +1,27 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: <linuxppc-dev@lists.linuxppc.org>
-Cc: <jeffk@jdkoftinoff.com>, <linuxppc-dev@lists.linuxppc.org>,
-	Jerry Van Baren <vanbaren_gerald@si.com>
-Subject: Re: Having linking problems with atomic_inc(),
- atomic_dec_and_test() in user app, help!
-Date: Fri, 4 Jan 2002 13:57:37 +0100
-Message-Id: <20020104125737.19448@smtp.noos.fr>
-In-Reply-To: <5.1.0.14.2.20020104064034.0218c160@falcon.si.com>
-References: <5.1.0.14.2.20020104064034.0218c160@falcon.si.com>
+Date: Fri, 4 Jan 2002 15:18:16 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Jeremy Friesner <jaf@lcsaudio.com>
+Cc: linuxppc-dev@lists.linuxppc.org, jeffk@jdkoftinoff.com
+Subject: Re: Having linking problems with atomic_inc(), atomic_dec_and_test()
+ in user app, help!
+In-Reply-To: <02010319244002.11251@jeremy>
+Message-ID: <Pine.LNX.4.33.0201040922450.15701-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>I have what I hope is an easy question for you... I have am writing an
->>user-space application that does some multithreading (using pthreads), and
->>does some thread-safe reference counting by using the functions in
->>asm/atomic.h.  Specifically, I'm using the atomic_inc(atomic_t *) and
->>atomic_dec_and_test(atomic_t *) functions.
+> Also, what does "relocation truncated to fit: R_PPC_REL24 atomic_inc(atomic_t
+> *)" mean?
 
-Those are kernel functions, not availble to userland. If your userland
-application need them, you have to either re-implement them, or rely on
-equivalent routines provided by glibc if any.
+About as much as 'unresolved external reference'. atomic_inc isn't defined
+in the scope of your code. Look at the kernel headers; it might be inside
+#ifdef __KRENEL__ (actually it is).
 
-If you plan to re-implement them, beware that some CPU-specific errata
-have to be taken into account, you probably want to add all the sync's
-that are CONFIG-dependant in the kernel in your userland implementation
-for it to work properly on all PPC CPUs and on SMP machines.
+Why do you think you need to use atomic_inc directly instead of some
+pthreads wrapper?
 
-Ben.
-
+	Michael
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
