@@ -1,36 +1,29 @@
-To: Gerhard Jaeger <g.jaeger@sysgo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MPC5200Lite and PCI issues... 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 27 Feb 2004 09:35:06 +0100."
-             <200402270935.06816.g.jaeger@sysgo.com>
-Date: Fri, 27 Feb 2004 09:56:54 +0100
-Message-Id: <20040227085659.B2B2CC0655@atlas.denx.de>
+From: m.venkatraj@exgate.tek.com
+Message-ID: <301A812E6528D511A8F70008C71E578601FCF4FE@ap-bang-m02.india.tek.com>
+To: Torsten.Demke@fci.com, linuxppc-embedded@lists.linuxppc.org
+Subject: RE: ADS860 - unable to load kernel- Bad magic number
+Date: Fri, 27 Feb 2004 01:14:45 -0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <200402270935.06816.g.jaeger@sysgo.com> you wrote:
+Thanks for all the suggestions! mkimage did the trick.
+
+Best regards
+Venkatraj
+
+> when using u-boot you need an Linux image which is
+> created with "mkimage" tool.
 >
-> while playing around with a Lite5200 eval-board, I noticed that
-> there seems to be some problems with the PCI bus. Some cards
-> are detected without any problems and also can be accessed
-> some cards not. Apart for the 5V/3.3V issues, I think there are
-> some problems with this board.
-> Are there any experiences? Explanations? Solutions, or workarounds?
-
-Remember that there is just one PCI interrupt on the LITE5200;  cards
-that require another one will not work.
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Every time history repeats itself the price goes up.
+> Try "make uImage" which will create this
+> image in arch/ppc/boot/image.
+>
+> See also:
+> (http://www.denx.de/twiki/bin/view/DULG/Manual)
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
