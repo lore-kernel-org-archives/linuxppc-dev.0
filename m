@@ -1,17 +1,16 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao01.cox.net (fed1rmmtao01.cox.net [68.230.241.38])
-	by ozlabs.org (Postfix) with ESMTP id 071E82BD46
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Oct 2004 04:11:00 +1000 (EST)
-Date: Sun, 24 Oct 2004 11:10:51 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Olaf Hering <olh@suse.de>
-Message-ID: <20041024181051.GA20064@smtp.west.cox.net>
-References: <20041024160923.GA22167@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20041024160923.GA22167@suse.de>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] write gas check tmp file to O= directory
+Return-Path: <samlinuxppc@yahoo.com.cn>
+Received: from web15603.mail.cnb.yahoo.com (web15603.mail.cnb.yahoo.com
+	[202.165.102.57]) by ozlabs.org (Postfix) with SMTP id E93CA2BC0F
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Oct 2004 01:00:16 +1000 (EST)
+Message-ID: <20041025150013.35506.qmail@web15603.mail.cnb.yahoo.com>
+Date: Mon, 25 Oct 2004 23:00:12 +0800 (CST)
+From: Sam Song <samlinuxppc@yahoo.com.cn>
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>,
+	Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=gb2312
+Cc: linuxppc-dev@ozlabs.org, steven.scholz@imc-berlin.de
+Subject: Re: Linux 2.6.x on 8xx status
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,21 +20,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Oct 24, 2004 at 06:09:23PM +0200, Olaf Hering wrote:
+Sam Song <samlinuxppc@yahoo.com.cn> wrote：
+> BTW, out of curiousness, I just pulled from
+> linux-2.4 and compiled 2.4.28-pre4 on 8xx but end 
+> with some making errors as follows. Did you 
+> encounter it? Some guys like me are more interested
+> in 2.4.x on 8xx.
 
-> the tmp file should be in the O= directory.
+Oh, I feel so sorry to all of you for the former
+misleading message I did on Sat, 16 Oct. It turned out
+to be the kernel configuration problem. Now I can
+compile a right 2.4.28-rc1 on RPXlite DW.
 
-[snip]
-> @@ -132,5 +132,5 @@ endif
->  
->  CLEAN_FILES +=	include/asm-$(ARCH)/offsets.h \
->  		arch/$(ARCH)/kernel/asm-offsets.s \
-> -		$(TOUT)
-> +		$(objdir)$(TOUT)
+I should thank John Whittington for his hints.
 
-Having to do this seems wrong.  We don't need $(objdir) for any other
-generated file in CLEAN_FILES.
+Sorry for bothering you all.
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+=====
+Best regards,
+
+Sam
+
+_________________________________________________________
+Do You Yahoo!?
+150万曲MP3疯狂搜，带您闯入音乐殿堂
+http://music.yisou.com/
+美女明星应有尽有，搜遍美图、艳图和酷图
+http://image.yisou.com
+1G就是1000兆，雅虎电邮自助扩容！
+http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
