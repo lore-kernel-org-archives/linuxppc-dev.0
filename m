@@ -1,36 +1,40 @@
-To: wung_y@263.net
-Cc: linuxppc embedded mail list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: TiVo Kernel for 403GCX Update (was Re: Support for IBM CPUs?)
-References: <Pine.SGI.4.10.9910222012050.46619-100000@brule.lcse.umn.edu> <3812E624.BF756DFF@263.net>
+To: Dan Malek <dan@netx4.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Console on SMC2 (was: Re: MPC823 Serial ports)
+References: <38107697.9A2576F7@eng.uct.ac.za> <3810A961.FF50C5F8@netx4.com> <kfypuy4sz1p.fsf_-_@kieraypc01.p.y.ki.era.ericsson.se> <38133CB5.61A6433B@netx4.com> <kfyr9ijr1aj.fsf@kieraypc01.p.y.ki.era.ericsson.se> <3814672F.598B1CBD@netx4.com>
 From: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
-Date: 25 Oct 1999 16:33:17 +0200
-In-Reply-To: Wang Yong's message of "Sun, 24 Oct 1999 18:57:40 +0800"
-Message-ID: <kfyn1t7qzma.fsf@kieraypc01.p.y.ki.era.ericsson.se>
+Date: 25 Oct 1999 16:59:37 +0200
+In-Reply-To: Dan Malek's message of "Mon, 25 Oct 1999 10:20:31 -0400"
+Message-ID: <kfyiu3vqyee.fsf@kieraypc01.p.y.ki.era.ericsson.se>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wang Yong <wung_y@263.net> writes:
+Dan Malek <dan@netx4.com> writes:
 
-> Hi,
->   It appears you compiled this kernel with GCC, so i am wondering if
-> GCC could work correctly with some architecture specified instructions
-> of
-> PPC embedded controller? Do you know if GCC could compile the kernel
-> written
-> for 401D2, another embedded controller from IBM?
+> Marcus Sundberg wrote:
+> 
+> 
+> > It would be nice if we had "Board default" as an option for
+> > the boot console (or as an alternative - make Config.in set
+> > the correct default device when you change boards).
+> 
+> Yeah, I know, but as I have said before, I have more than a
+> dozen different boards in my office, all somewhat different.
+> The configuration files get increasingly complex with all of these
+> different possibilities.  Having separate default configurations
+> where the only difference is the console port is kind of
+> overkill.  Right now, you have to know where the console port
+> is connected, and simply select it.  I am trying to find a simple
+> configuration that will work with all boards, rather than track
+> lots of different ones.
 
->From a quick look at the source GCC and binutils seems to know about
-401 CPUs, so there shouldn't be any problem compiling/assembling code
-for this CPU.
-
-> this is very important for
-> us because we're starting to port linux to this platform(RedWood3) but
-> we still don't know which compiler should be ok.
-
-If GCC hadn't supported this particular PowerPC CPU it would probably
-have been easier to add support for it to GCC and binutils than to
-port Linux to a non-GCC compiler...
+Yes, that is the right way to go for the distribution kernel.
+Howver, we have several different boards here too, and personally
+I'd perfer if I could just select the CPU and board type at
+configuration time, and have the rest taken from my board specific
+file. This could be allowed even if the board files in the
+distribution doesn't use this feature.
 
 //Marcus
 -- 
