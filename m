@@ -1,18 +1,18 @@
-Return-Path: <emann@mrv.com>
-Received: from apollo.nbase.co.il (apollo.nbase.co.il [194.90.137.2])
-	by ozlabs.org (Postfix) with ESMTP id E787067A6B
+Return-Path: <hxie@centecnetworks.com>
+Received: from mail.centecnetworks.com (unknown [222.92.63.19])
+	by ozlabs.org (Postfix) with ESMTP id 1C11967A70
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 29 Mar 2005 21:30:02 +1000 (EST)
-Message-ID: <4249330B.4070503@mrv.com>
-Date: Tue, 29 Mar 2005 12:50:51 +0200
-From: emann@mrv.com (Eran Mann)
+	Wed, 30 Mar 2005 00:55:34 +1000 (EST)
+Received: from [10.10.25.198] ([222.92.63.20]) (authenticated)
+	by mail.centecnetworks.com (8.10.2/8.10.2) with ESMTP id j2SEsoM01080
+	for <linuxppc-embedded@ozlabs.org>; Mon, 28 Mar 2005 22:54:52 +0800
+Message-ID: <42496C68.60603@centecnetworks.com>
+Date: Tue, 29 Mar 2005 22:55:36 +0800
+From: Anchor <hxie@centecnetworks.com>
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-References: <20050329104340.70E0EC108D@atlas.denx.de>
-In-Reply-To: <20050329104340.70E0EC108D@atlas.denx.de>
+To: inuxppc-embedded <linuxppc-embedded@ozlabs.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: bdonadt@arabellasw.com, 'linuxppc-embedded ' <linuxppc-embedded@ozlabs.org>
-Subject: Re: MPC885 CryptoApi support.
+Subject: how to get a embbed linux for MPC8240 which core is 603e
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,26 +23,13 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Wolfgang Denk wrote:
-> In message <42492C93.2060906@eircom.net> you wrote:
-> 
->>If it is the case that you have provided a GPL-Arabella-Linux-Kernel, to 
->>a customer and all the code is GPL compliant, then that customer, is 
->>*free* to fork and/or redistribute that code, which seems like a bit of 
->>an oxymoron, for a commercial offering !
-> 
-> 
-> Maybe we should start a collect to buy one "license" and put it on  a
-> FTP server :-)
-> 
-> Best regards,
-> 
-> Wolfgang Denk
-> 
-Sure, and while we're at it, why not do the same for MontaVista kernel, 
-Metrowerks kernel, etc...
+Hi everbody:
 
--- 
-Eran Mann
-MRV International
-www.mrv.com
+    I am a new guy, I want get a ready embedded linux for Motorala 
+ppc8245, give me a hand.
+
+Thank you very much!
+
+anchor xie
+
+03-29-2005
