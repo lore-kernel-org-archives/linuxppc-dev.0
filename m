@@ -1,28 +1,37 @@
-Date: Thu, 15 Mar 2001 11:19:21 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Stefano Coluccini <s.coluccini@caen.it>
-Cc: Bj?rn Wingman <bjowi@ida.liu.se>,
-	linuxppc-embedded@lists.linuxppc.org
+Date: Thu, 15 Mar 2001 19:27:06 +0100 (MET)
+Message-Id: <200103151827.TAA26091@aste15.ida.liu.se>
+From: "=?iso-8859-1?q?Bj=F6rn?= Wingman" <bjowi@ida.liu.se>
+To: mgreer@mvista.com
+Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: mcpn765
-Message-ID: <20010315111921.A872@opus.bloom.county>
-References: <yx2r8zzghpd.fsf@aste15.ida.liu.se> <NDBBIFIMCKPOADMAJOKMGEBMDAAA.s.coluccini@caen.it>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <NDBBIFIMCKPOADMAJOKMGEBMDAAA.s.coluccini@caen.it>; from s.coluccini@caen.it on Thu, Mar 15, 2001 at 06:26:43PM +0100
+References: <yx2r8zzghpd.fsf@aste15.ida.liu.se> <3AB0EA13.B893E257@mvista.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Mar 15, 2001 at 06:26:43PM +0100, Stefano Coluccini wrote:
+> Sounds like you're netbooting.
 
-> Check the make file arch/ppc/boot/pp3/Makefile, in the rule for making
-> zImage.initrd there is a typo: you must add the -pbp option to the mkprep
-> invocation.
+Yes.
 
-This _should_ be fixed in current 2_5.
+> Using the niot cmd, make sure everything is set up correctly.
+> Using the 'env' cmd, make sure network PREP-boot (or something like that)
+> is turned on.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Yes, I think I have those correctly set up.
+
+> I take it you're using the code in the linuxppc_2_5 right?
+
+No. I pulled the sources with
+
+bk clone bk://bitkeeper.fsmlabs.com:5005 linux_2_5
+
+as some earlier mail said, but it seems to be incomplete. Several
+directories, like kernel and mm are empty. Am I supposed to merge this
+tree with the latest 2.4-tree somehow? Is there an FAQ somewhere that I
+haven't found?
+
+	/Björn Wingman
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
