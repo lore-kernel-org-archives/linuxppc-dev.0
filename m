@@ -1,21 +1,20 @@
-Return-Path: <Joakim.Tjernlund@lumentis.se>
-Received: from dmz.lumentis.net (unknown [212.105.56.244])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 004872BDB5
+Return-Path: <markc@mail.com>
+Received: from relay03.roc.ny.frontiernet.net (relay03.roc.ny.frontiernet.net
+	[66.133.131.36]) by ozlabs.org (Postfix) with ESMTP id B6A7D2BF07
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  3 Jan 2005 08:58:27 +1100 (EST)
-From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
-To: <wd@denx.de>
-Date: Sun, 2 Jan 2005 22:58:15 +0100
-Message-ID: <BCEFJBPJCGFCNMMMIDBHCEPECJAA.Joakim.Tjernlund@lumentis.se>
+	Tue,  4 Jan 2005 01:04:32 +1100 (EST)
+Message-ID: <003c01c4f19d$98a16510$0301a8c0@chuck2>
+From: "Mark Chambers" <markc@mail.com>
+To: "Sylvain Munaut" <tnt@246tNt.com>
+References: <200412301246.48870.david.jander@protonic.nl>	<C6D7331E-5A77-11D9-AECD-003065F9B7DC@embeddededge.com>
+	<061001c4eeaf$0b5e1860$0301a8c0@chuck2>
+	<41D7269E.1070906@246tNt.com>
+Date: Mon, 3 Jan 2005 09:07:39 -0500
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-In-Reply-To: <20050102205429.8F01DC14DD@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: CPU15 errata workaround for 8xx by WD 
-Reply-To: Joakim.Tjernlund@lumentis.se
+Subject: Re: MPC5200 PCI byte-swapping
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,63 +25,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> Dear Joakim,
-> 
-> in message <BCEFJBPJCGFCNMMMIDBHOEPBCJAA.Joakim.Tjernlund@lumentis.se> you wrote:
-> > 
-> > Had a look at your CPU15 errata workaround for 8xx and I have a comment
-> > or two:
-> > 
-> > 1) I think you should make the sysctl support a compile time option
-> >    as the overhead for sysctl support in the TLB handler is 6 instr. when
-> >    the fix itself is only 4 instr.
-> 
-> You are right. For a permanent patch that would be better  -  in  our
-> case  it  was important to be able to turn on and off this workaround
-> dynamically with exactly the same kernel binary. We  wanted  to  have
-> real  proof that the effects we saw were caused by CPU15 erratum, and
-> that the workaround fixes these problems.
 
-Have you done any performance measurements with with/without the CPU15
-patch? To always invalidate the previous and the next TLB(plus the extra code in the
-TLB handler) seems expensive.
 
+> Mark Chambers wrote:
 > 
-> > 2) You placed the workaround in the middle of the CPU6 workaround which will
-> >    disable the CPU6 workaround(I think). Move it before the #ifdef CONFIG_8xx_CPU6
-> >    and you should be fine.
-> 
-> I think you are right.
-> 
-> > 3) Your test program uses the dcbst and dcbi instr. and these are buggy as they do not
-> >    update the DAR register in the TLB exceptions. I guess you made sure that such errors
-> >    will not happen?
-> 
-> Ummm... I think so.
+> >I've just realized that the 5200 does byte-lane swapping
+> >on all PCI accesses.  That is, if you write a 32 bit word
+> >0x12345678, 0x12 will go out on byte 0, 0x34 on byte 1,
+> >etc.  Unfortunately, my target, a T.I. DM642, does not
+> >do this, so I've got a big/little endian mismatch.  A couple
+> >of questions if anybody knows:
+> >
+Sylvain wrote:
 
-Me too, but I only had a quick look.
+> I'm not sure of what you mean but look at the mapping
+> aroung pdf page 337 of the user manual. It's not configurable
+> as far as I can see.
+> 
 
-> 
-> > 4) The CPU15 bug has been around for years I think, what made it show up now? New toolchains?
-> 
-> No, this is not a toolchain issue. It's a processor problem.
-> 
-> I have to admit that I didn't believe our customer when  he  reported
-> that  he has problems that were caused by the CPU15 bug - I never saw
-> this on any other 8xx processor before, and as you say  it  has  been
-> mentioned  in  all errata sheets I can remember. As far as I can tell
-> it is only the MPC870/885 duet family of processors where this  CPU15
-> bug actually hits. I have no idea why.
+Thanks.  I had an older manual that didn't spell it out so
+clearly.
 
-That explains why I never seen this before, thanks.
+I've been trying to interpret the PCI sections for some other
+82xx family parts, and it appears that they do NOT do this
+byte lane swapping, so this make the 5200 non-standard in
+this regard, which is unfortunate.  If I'm understanding this
+right, one would have to have different drivers for a PCI
+device on a 5200 and an 8270, for instance.
 
-A better fix would be to make the toolchain insert an extra NOP if
-the last instr. in a page is a branch, but that will take some time.
-Any GCC people on this list?
+Also, I note that when doing simple block reads from pre-
+fetchable PCI space, it appears the 5200 does not prefetch,
+but does each read individually.  This is using stock ELDK
+u-boot and 2.4.24 so I haven't yet determined if it's a
+configuration matter, (or ruled out target disconnects)
+but I'm suspecting that you can't get burst mode from the 
+5200 without using DMA.
 
-    Regards
-            Joakim
-> 
-> Best regards,
-> 
-> Wolfgang Denk
+Mark Chambers
