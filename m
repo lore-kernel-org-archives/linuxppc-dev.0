@@ -1,73 +1,37 @@
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="==_Boundary-1_=="
-Date: Mon, 11 Jan 1999 20:50:11 +0100
-To: linuxppc-dev@lists.linuxppc.org
-CC: Cort Dougan <cort@ladron.cs.nmt.edu>,
-        Paul Mackerras <paulus@cs.anu.edu.au>
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: PowerBook ZIP patch
-Message-Id: <19990111205011.003224@mail.mipsys.com>
+Message-Id: <199901112136.WAA00520@piglet.cpu.lu>
+Date: Mon, 11 Jan 1999 22:36:47 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: Strange tar hang....
+To: jk@espy.org
+cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <v04103c34b2bf2769a22d@[206.163.71.146]>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---==_Boundary-1_==
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Hi there,
 
-The following patch enables the PowerBook internal ZIP drive. You may
-need my other patch to irq.c that fixes bogus interrupt values for the
-left bay to work (should be included in Cort's new irq.c when finished).
-The right bay should work "as is".
+On  10 Jan, this message from Joel Klecker echoed through cyberspace:
+>>Could this be a problem in the networking code of the kernel?
+> 
+> tar tries to look up UIDs and GIDs in the tar file and match them to 
+> local users. With the default /etc/nsswitch.conf, it will end up 
+> trying NIS and other services.
 
+OK, that prevented the timeout; thanks for the tip. Question is, should
+the timeout have occurred in the first place?
 
---- linux.orig/drivers/block/ide-probe.c	Thu Jan  7 14:17:32 1999
-+++ linux.dev/drivers/block/ide-probe.c	Mon Jan 11 22:44:52 1999
-@@ -118,8 +118,14 @@
- 				}
- 				type = ide_cdrom;	/* Early cdrom models used zero */
- 			case ide_cdrom:
--				printk ("CDROM");
- 				drive->removable = 1;
-+				/* XXX kludge for Apple PowerBook internal zip */
-+				if (!strstr(id->model, "CD-ROM") && strstr(id->model, "ZIP")) {
-+					printk ("FLOPPY");
-+					type = ide_floppy;
-+					break;
-+				}
-+				printk ("CDROM");
- 				break;
- 			case ide_tape:
- 				printk ("TAPE");
+Michel
 
-
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
-
-
-
---==_Boundary-1_==
-Mime-Version: 1.0
-Content-Type: application/octet-stream; name="zip.patch"; x-mac-creator="43574945"; x-mac-type="54455854"
-Message-Id: <19990111205023.028569>
-Date: Mon, 11 Jan 1999 20:50:23 +0100
-Content-Transfer-Encoding: base64
-
-LS0tIGxpbnV4Lm9yaWcvZHJpdmVycy9ibG9jay9pZGUtcHJvYmUuYwlUaHUgSmFu
-ICA3IDE0OjE3OjMyIDE5OTkKKysrIGxpbnV4LmRldi9kcml2ZXJzL2Jsb2NrL2lk
-ZS1wcm9iZS5jCU1vbiBKYW4gMTEgMjI6NDQ6NTIgMTk5OQpAQCAtMTE4LDggKzEx
-OCwxNCBAQAogCQkJCX0KIAkJCQl0eXBlID0gaWRlX2Nkcm9tOwkvKiBFYXJseSBj
-ZHJvbSBtb2RlbHMgdXNlZCB6ZXJvICovCiAJCQljYXNlIGlkZV9jZHJvbToKLQkJ
-CQlwcmludGsgKCJDRFJPTSIpOwogCQkJCWRyaXZlLT5yZW1vdmFibGUgPSAxOwor
-CQkJCS8qIFhYWCBrbHVkZ2UgZm9yIEFwcGxlIFBvd2VyQm9vayBpbnRlcm5hbCB6
-aXAgKi8KKwkJCQlpZiAoIXN0cnN0cihpZC0+bW9kZWwsICJDRC1ST00iKSAmJiBz
-dHJzdHIoaWQtPm1vZGVsLCAiWklQIikpIHsKKwkJCQkJcHJpbnRrICgiRkxPUFBZ
-Iik7CisJCQkJCXR5cGUgPSBpZGVfZmxvcHB5OworCQkJCQlicmVhazsKKwkJCQl9
-CisJCQkJcHJpbnRrICgiQ0RST00iKTsKIAkJCQlicmVhazsKIAkJCWNhc2UgaWRl
-X3RhcGU6CiAJCQkJcHJpbnRrICgiVEFQRSIpOwo=
-
---==_Boundary-1_==--
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+9, Montee St. Crepin           |    Ask Questions.  Make Mistakes.
+L-1365 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
