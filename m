@@ -1,54 +1,23 @@
-Reply-To: <zjzhou@newrocktech.com>
-From: "John Zhou" <zjzhou@newrocktech.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: about tinylogin
-Date: Fri, 5 Mar 2004 09:54:20 +0800
-Message-ID: <000e01c40254$c714bcf0$b702a8c0@newrock2>
+Subject: How Can The Starting Address Of An Image In ELF File BeChanged
+To: uclinux-dev@uclinux.org, linuxppc-embedded@lists.linuxppc.org
+Message-ID: <OFD40F49BF.D7A17B63-ON65256E4E.00170A96@lntinfotech.com>
+From: "Thamarai Selvan" <Thamarai.Selvan@lntinfotech.com>
+Date: Fri, 5 Mar 2004 09:48:41 +0530
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hi all,
 
-I'm meeting a problem:
+I created the elf file of the kernel using "make vmlinux", when i checked
+the created system.map i found the the kernel image starting from
+0xc0000000. Can any tell where this address is defined or configured? and
+how can this be changed to 0x0000000 is it possible?
 
-When I type "su testUser" under shell "ash", it report "Cannot execute
-/bin/sh: Permission denied" after I had used command "adduser" to add one
-user name.
+with regards
+Thamarai Selvan.G
 
-I used tinylogin(v0.80) for "adduser" and "login" and ash(v0.3.5) for
-shell.
-
-My target is based on Linux 2.4.1.
-
-Could anyody give me any hint or point?
-
-Thanks very much!
-
-John
-
-The command process is following:
-------------------------------------------------------------------
-#adduser John
-Changing password for John
-Enter the new password (minimum of 5, maximum of 8 characters)
-Please use a combination of upper and lower case lette.
-Enter new password:
-Re-enter new password:
-Password changed.
-#
-# su John
-Cannot execute /bin/sh: Permission denied
-#
-# chmod 777 /bin/sh
-#
-# su John
-Cannot execute /bin/sh: Permission denied
-#
-
--------------------------------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
