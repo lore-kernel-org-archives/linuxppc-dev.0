@@ -1,33 +1,38 @@
-Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
-Date: Tue, 30 Dec 2003 13:07:13 -0800
-From: Dale Harris <rodmur@maybe.org>
-To: "'Mailing List: linuxppc-dev'" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: A question on kernel clock:
-Message-ID: <20031230210713.GC5005@maybe.org>
-References: <000501c3cec2$130dbab0$b702a8c0@newrock2> <20031230184951.94F07C12DD@atlas.denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20031230184951.94F07C12DD@atlas.denx.de>
+To: Dale Harris <rodmur@maybe.org>
+Cc: "'Mailing List: linuxppc-dev'" <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: A question on kernel clock: 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 30 Dec 2003 13:07:13 PST."
+             <20031230210713.GC5005@maybe.org>
+Date: Tue, 30 Dec 2003 22:40:32 +0100
+Message-Id: <20031230214037.77A1CC12DD@atlas.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Dec 30, 2003 at 07:49:46PM +0100, Wolfgang Denk elucidated:
-> Dear John,
+In message <20031230210713.GC5005@maybe.org> you wrote:
 >
-> in message <000501c3cec2$130dbab0$b702a8c0@newrock2> you wrote:
-> > (1) which timer is used for nsleep?
+> > > (1) which timer is used for nsleep?
+> >
+> > I have not the slightest idea. I don't know of any  standard  funtion
+> > with that name - neither in user space nor in kernel code.
 >
-> I have not the slightest idea. I don't know of any  standard  funtion
-> with that name - neither in user space nor in kernel code.
->
+> Perhaps he means nanosleep().
 
-Perhaps he means nanosleep().
+Perhaps. But then the definition of nanosleep()  says  that  it  will
+cause  a  delay  of  "at least the time specified in *req", i. e. the
+upper bound is not even specified. But the  OP  seemed  to  assume  a
+strict timing, so maybe it was yet another function.
 
+Best regards, and a Happy New Year!
+
+Wolfgang Denk
 
 --
-Dale Harris
-rodmur@maybe.org
-/.-)
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Old programmers never die, they just become managers.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
