@@ -1,33 +1,31 @@
-Date: Wed, 17 Nov 1999 21:18:44 +0100 (CET)
+Date: Wed, 17 Nov 1999 22:08:17 +0100 (CET)
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Ani Joshi <ajoshi@shell.unixbox.com>
-cc: Linux -Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: again 2.3.28
-In-Reply-To: <Pine.LNX.4.10.9911171209470.5504-100000@shell.unixbox.com>
-Message-ID: <Pine.LNX.4.05.9911172118130.25661-100000@callisto.of.borg>
+To: Martin Costabel <costabel@wanadoo.fr>
+cc: Dev-Linux <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Kernel debugging??
+In-Reply-To: <3831DE3B.5F2C790@wanadoo.fr>
+Message-ID: <Pine.LNX.4.05.9911172207200.25661-100000@callisto.of.borg>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 17 Nov 1999, Ani Joshi wrote:
-> On Wed, 17 Nov 1999, Geert Uytterhoeven wrote:
-> > Probably it depends on the machine, since I get up to free_all_bootmem(), which
-> > is called by mem_init() in start_kernel(). OK, I have a different box (CHRP)
-> > and was actually speaking about 2.3.27, but the 2.3.28 patch doesn't contain
-> > relevant changes.
+On Tue, 16 Nov 1999, Martin Costabel wrote:
+> Geert Uytterhoeven wrote:
+> > > And I could boot a stock 2.3.26 with changes in asm-ppc/fcntl.h
+> > > (O_LARGEFILE ....)
+> > 
+> > That's very interesting to know! It means we just have to analyse the 2.3.27
+> > and 2.3.28 patches to find out what went wrong.
 > 
-> 	could your problem in free_all_bootmem() be caused by
-> "if(!bootmem_map) BUG();"?  because in do_init_bootmem()
-> it frees the bootmem bitmap (which is called very early).  
-> is it trying to free something thats already been free'd?
-> 
-> its possible this is happening on pmacs also...
+> Just for information: Paul M's 2.3.27 rsync kernel compiles and runs
+> just fine on this Pmac 6400. The machine swaps like crazy and is
+> therefore rather slow, but I am not sure if this is the kernel's fault.
 
-As I posted before (last Friday), it gets further than that.
-
-I'll try Paul's tree...
+Are you sure about the version? I just checked out this tree, and it's 2.3.22,
+according to the Makefile. Perhaps I made a mistake? This is the first time I
+used rsync (`rsync -auvz samba.anu.edu.au::linux-pmac-devel .').
 
 Gr{oetje,eeting}s,
 --
