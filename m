@@ -1,53 +1,36 @@
-To: o_y <o_yahav@netvision.net.il>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MPC860T FEC problem 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sat, 07 Sep 2002 18:59:02 +0200."
-             <MBBBIOFIICDAPDMKHBDEKEDLCAAA.o_yahav@netvision.net.il>
-Date: Sat, 07 Sep 2002 19:14:57 +0200
-Message-Id: <20020907171502.BF3EFFA8A@denx.denx.de>
+Date: Sat, 7 Sep 2002 13:45:50 -0500
+Subject: Re: ELDK Compiler
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v543)
+Cc: Aman <aman@mistralsoftware.com>,
+	linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+To: Matt Porter <porter@cox.net>
+From: Kumar Gala <kumar.gala@motorola.com>
+In-Reply-To: <20020906103908.A30038@home.com>
+Message-Id: <0780DA16-C292-11D6-9618-003065BFB10E@motorola.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-
-in message <MBBBIOFIICDAPDMKHBDEKEDLCAAA.o_yahav@netvision.net.il> you wrote:
+> Nobody has provided PPC440-specific support for binutils.  Right now,
+> everybody is using mcpu=[403|405] since they define an identical
+> set of instructions. The -mbooke support in current binutils will
+> not work on 440 since it is e500 specific.
 >
-> I'm trying to port linux 2.2.14 on MPC860T and busybox as initrd.
 
-2.2.14 is prehistoric stuff. Don't waste your time on  all  the  bugs
-and problems that have been fixed since.
+This is not exactly true, the -mbooke option does NOT produce an e500
+specific set of instructions that the assembler knows about but as
+close to a generic booke set.  Unfortunately, Book-E leaves remove for
+a few instructions to have implementation specific operands (for
+example tlbwe/tlbre).  The e500 & 440 differ in the number of operands
+these instructions require (e500 - 0, 440 - 3).  The currently binutils
+treats these instructions as having no operands.
 
-> I have not seen any initializetion of the BCSR4 so i initialize it with the
-> value
-> that ppcboot uses , so the ENABLE led is on too.
+I am not aware of any other cases in which the current binutils would
+not work for 440 code (possibly use of simplified mtspr/mfspr
+instructions would not work with the -mbooke flag).
 
-Ummm... What's BCSR4? If PPCBoot initializes it, why do you  have  to
-initialize it again?
+- kumar
 
-> The device isn't working even when i use ppcboot (i configured ppcboot to
-> use it).
-
-Sic! So get PPCBoot running first.
-
-> 1. Why there is no initializetion of BCSR4 in the original code?
-> 2. If BCSR4 must be initialized , what is the correct value?
-> 3. Is any one have a code that succeeded getting FEC device to work?
-
-Among all the things you don;t care to mention is which  bard  you're
-working  on.  My  guess is that it simply never was really working in
-that old kernel version.
-
-As I said before: you are wasting your time. Use a current kernel.
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-The faster I go, the behinder I get.                 -- Lewis Carroll
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
