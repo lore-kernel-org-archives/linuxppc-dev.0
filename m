@@ -1,46 +1,44 @@
-Message-ID: <39D3D33F.6AA82A1D@mvista.com>
-Date: Thu, 28 Sep 2000 16:24:47 -0700
-From: Frank Rowand <frank_rowand@mvista.com>
-Reply-To: frowand@mvista.com
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <bh40@calva.net>
-CC: Geert Uytterhoeven <geert@linux-m68k.org>,
-        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
-        Paul Mackerras <paulus@linuxcare.com.au>, Dan Malek <dan@mvista.com>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: <linuxppc-dev@lists.linuxppc.org>,
+        Geert Uytterhoeven
+ <geert@linux-m68k.org>, <paulus@linuxcare.com.au>
 Subject: Re: __ioremap_at() in 2.4.0-test9-pre2
-References: <Pine.LNX.4.10.10009231430200.413-100000@cassiopeia.home> <19340822040932.8760@mailhost.mipsys.com>
-Content-Type: text/plain; charset=us-ascii
+Date: Thu, 28 Sep 2000 23:33:01 +0000
+Message-Id: <19340823170445.20040@192.168.1.10>
+In-Reply-To: <19340823125112.7591@mailhost.mipsys.com>
+References: <19340823125112.7591@mailhost.mipsys.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
+Earlier today, I wrote:
 >
-> >Life would be much simpler if PCI I/O space used a similar opaque IO base
-> >cookie with a corresponding ioportremap(cookie) function (looks a lot like
-> >Dan's tell_me_where() function, which I didn't realize until now :-), before
-> >feeding everything to inb() and friends. On ia32, ioportremap() would
-> evaluate
-> >to the identity.
-> >
-> >No way we can convince The Others to use this approach? It does sound logical
-> >:-)
+>Then, we can have separate:
+> - isa_io_remap(range),
+> - isa_mem_remap(range),
+> - pci_io_remap(pci_bus, resource_addr)
+> - pci_mem_remap(pci_bus, resource_addr)
 >
-> I'm not sure it would help. It would probably allow a kind of "mapping on
-> demand" of the IO region on memory mapped IOs platforms, but unless we
-> add another parameter to ioportremap telling it the pci_dev (or at least
-> the bus number), we can't "guess" on which IO bus the device is and which
-> physical base we must use.
->
-> Ben.
+> .../...
 >
 
-Yes, we should add pci_dev to ioportremap(), which can then extract the
-bus number from pci_dev->pci_bus.
+Obviously this would be a long term plan and need more thinking and then
+endless discussions on the linux-kernel list...
 
--Frank
---
-Frank Rowand <frank_rowand@mvista.com>
-MontaVista Software, Inc
+That's why I liked, as a temporary workaround, what Paul proposed which
+was basically to have the kernel hack a MMU mapping that puts all IO
+busses together, the first one beeing the default for legacy devices
+(eventually selected via a kernel arg).
+
+This way, inb/outb would work for legacy devices on this bus and for
+normal PCI IO "apertures" by using resource[x]->start as a base (like all
+PCI drivers currently do AFAIK)
+
+We would have to fixup IO resources of all other IO busses, but I think
+it's the less painful solution for 2.4.
+
+Ben.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
