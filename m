@@ -1,33 +1,42 @@
-Message-Id: <000e01bf9b78$2f2073e0$0602a8c0@cs.tsinghua.edu.cn>
-From: "Wang Yong" <wung_y@yahoo.com>
-To: "Mike Wolf" <mwolf@sgi.com>, <linuxppc-embedded@lists.linuxppc.org>
-References: <38E3CE55.977E302@cray.com>
-Subject: Re: 4xx tlb questions
-Date: Sat, 1 Apr 2000 09:18:16 +0800
-Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+From: Ruedi.Hofer@ascom.ch
+Date: Mon, 03 Apr 2000 08:55:29 +0100 (CED)
+Subject: PCMCIA support for 860
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: kernel@linux01.hasler.ascom.ch
+Message-id: <0FSF00NFMHXF1M@pmdf-it.hasler.ascom.ch>
+MIME-version: 1.0
+Content-type: MULTIPART/MIXED; BOUNDARY="Boundary_(ID_lI4iG1vY1SDYhHfrVNXJTQ)"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-the PID reg corresponds to TID field of TLB Entry when
-new entry is inserted and va is translated. if the TID of
-some entry is set to 0, then this entry can be used for
-translation by every process. in scenario of creating
-new TLB entry and process switching, you should set PID
-reg. and the TLBs used by virtual space of kernel is inserted
-into TLB with the TID set as 0 so that PID need not to be
-changed when enter kernel(system call or interrupt and so on).
+--Boundary_(ID_lI4iG1vY1SDYhHfrVNXJTQ)
+Content-type: TEXT/PLAIN
+Content-Transfer-Encoding: 7BIT
 
-w.y.
---
-Wang Yong - DCS at Tsinghua Univ.
+Hi
 
-EMAIL: wyong@acm.org (CC to wung_y@yahoo.com pls :-)
-PHONE: 010-62788076(Lab)
-       010-62775899(Dorm)
-Dorm : 22#606, Tsinghua Univ.
+In the february mailing list I found the PCMCIA patch from Magnus Damm. It looks
+very interesting and useful.
+>From reading the 'Kernel modification' list I assume that I need some help.
 
+Extract from Mail http://lists.linuxppc.org/listarcs/linuxppc-embedded/200002/msg00093.html:
+
+> 1. First of all you need to ioremap 64KByte at _IO_BASE.
+>    This is for the emulated ISA-bus.
+>    VIRT must be PHYS and I don't know how to do that
+>    from a module.
+
+> 2. All bus operations that are 16 bit or more should be
+>    big endian - no swapping. This is the same as APUS in io.h.
+>    We need to figure out how this should co-exist with
+>    the swapped ISA.
+
+Did someone already integrate those enhancements into the Kernel. If yes, do you mind
+sending the affected files??
+
+Cheers, Ruedi Hofer
+
+--Boundary_(ID_lI4iG1vY1SDYhHfrVNXJTQ)--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
