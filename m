@@ -1,34 +1,60 @@
-To: Felix Domke <tmbinc@elitedvb.net>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: C++ Library recommendations ...
-References: <200301280810.JAA19807@hzsms01.nl.lucent.com>
-	<3E365DA5.7060201@elitedvb.net>
-From: Roland Dreier <roland@topspin.com>
-Date: 28 Jan 2003 07:27:18 -0800
-In-Reply-To: <3E365DA5.7060201@elitedvb.net>
-Message-ID: <52k7gpthux.fsf@topspin.com>
-MIME-Version: 1.0
+Date: Tue, 28 Jan 2003 21:06:46 +0100
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Program for Embedded & Kernel Development at fosdem 2003
+Message-ID: <20030128200646.GE839@mind.be>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+From: p2@mind.be (Peter 'p2' De Schrijver)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-    Felix> The thing the STL guy forgot is to keep in mind than
-    Felix> 1000*linear (list insertions... ) is still worse than 1*exp
-    Felix> (memcpy when doing vector insertions... but take this only
-    Felix> as an example) when your list has, for example, 5 entries.
+Dear all,
 
-This isn't really on topic for the linuxppc list, but anyway...
+Fosdem 2003 will be held 8 and 9 february 2003 in Brussels. See
+http://www.fosdem.org for more info.
 
-What you say isn't really true.  The STL is generally quite efficient,
-and provides both vector<> and list<> data structures (in addition to
-slist<> and deque<>).
+The program for the Embedded & Kernel Development Room at fosdem 2003 :
 
-In fact, since a good implementation of vector<> will double the size
-of its memory allocation each time it needs to grow it, the cost of
-adding elements to the vector<> is still linear when amortized.
+Saturday 8/2/2003
+=================
 
-Best,
-  Roland
+14:00 - 14:45 : Keynote
+	        opencores.org : free hardware development
+				Speaker : Richard Herveille
+
+14:45 - 15:30 : Adapting Debian for Embedded Use
+				Speaker : Martin Michlmayr
+
+16:00 - 16:45 : Portable programming on complex systems
+				Speaker : Peter De Schrijver
+
+16:45 - 17:30 : Wonka  - a JVM for embedded systems
+				Speaker : Chris Gray
+
+Sunday 9/2/2003
+===============
+
+10:00 - 11:00 : breakfast + BoF's
+
+11:00 - 11:45 : Cross-compiling in embedded systems
+  				Speaker : Eero Tamminen
+
+11:45 - 12:30 : eCos
+ 				Speaker : Nick Garnett
+
+14:00 - 14:45 : RTAI
+				Speaker : Philippe Gerum
+
+14:45 - 15:30 : GNU Bayonne and real-time issues in freely licensed
+                telephony software
+				Speaker : David Sugar
+
+15:30 - 16:15 : Using C++ for real-time extensions to the Linux kernel
+				Speaker : Peter Soetens
+
+Cheers,
+
+Peter.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
