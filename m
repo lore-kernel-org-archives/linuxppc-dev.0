@@ -1,43 +1,42 @@
 From: "Jerry Quinn" <jquinn@nortelnetworks.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <14293.24696.450823.134283@gargle.gargle.HOWL>
-Date: Tue, 7 Sep 1999 14:59:04 -0400 (EDT)
-To: Paul.Mackerras@cs.anu.edu.au
-Cc: toa@pop.agri.ch, "Jerry Quinn" <jquinn@nortelnetworks.com>,
-        linuxppc-dev@lists.linuxppc.org, linux-kernel@vger.rutgers.edu
-Subject: Re: MO-Disk on PPC with 53C94 SCSI-chip
-In-Reply-To: <199909070043.KAA01407@tango.anu.edu.au>
-References: <37BC482D.7EB2A4AF@pop.agri.ch> <14273.21611.490430.724369@gargle.gargle.HOWL> <37D3A439.3A41F55@pop.agri.ch> <199909070043.KAA01407@tango.anu.edu.au>
+Message-ID: <14293.32499.969773.770323@gargle.gargle.HOWL>
+Date: Tue, 7 Sep 1999 17:09:07 -0400 (EDT)
+To: Simon Piette <spiette@generation.net>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Patch for powercomputing keyboards
+In-Reply-To: <37C2E5F7.F92E76E4@generation.net>
+References: <14269.42715.336106.140568@gargle.gargle.HOWL> <37C2E5F7.F92E76E4@generation.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> "Paul" == Paul Mackerras <paulus@cs.anu.edu.au> writes:
+>> "Simon" == Simon Piette <spiette@generation.net> writes:
 
- >> and second, a mac53c94 driver which may have some bugs.
+ Simon> Jerry Quinn wrote:
+ >> Hi all.  I've put together a hack that allows the CapsLock key on
+ >> PowerComputing keyboards to work reasonably as a control key.
+ >> 
+ >> So anyone with a Powercomputing keyboard, please try this out and let me
+ >> know what you think.  The patch is against Linus' 2.2.10.  If it seems
+ >> good, I think it also will need a configuration, unless someone has a
+ >> suggestion on how to make it play nicely with Apple keyboards.
+ >> 
 
- Paul> I wrote the mac53c94 driver a long time ago and I haven't spent
- Paul> anything like as much time on it as on the mesh driver (which isn't
- Paul> perfect either).
+ Simon> Hi,
 
- Paul> The opportunity is sitting there, waiting for someone to pick it up, to
- Paul> stress-test, debug and optimize the mac53c94 driver, including doing
- Paul> things like implementing disconnect/reconnect.  In the Open Source
- Paul> tradition, this should be someone for whom this is an itch that they
- Paul> want to scratch. :-)
+ Simon> I have a Umax J700 and the patch work perfectly. Thanks a lot for this
+ Simon> annoying bug fix! Do you think it will be integrated in the vger
+ Simon> and/or samba kernel?
 
-Can you tell us what the difference is between this driver and the generic
-53c94 driver in the same directory?  Also, is there a source of docs other
-than the code there (for us SCSI newbies :-)?
+Thanks for the feedback!It's very useful to me as well.  
+
+I would like it to go in, especially to the mainline as well as development
+kernel.  Can anyone offer some input on how to get it into the vger kernel?
 
 Thanks,
 Jerry
-
--- 
-Jerry Quinn                             Tel: (514) 761-8737
-jquinn@nortelnetworks.com               Fax: (514) 761-8505
-Speech Recognition Research
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
