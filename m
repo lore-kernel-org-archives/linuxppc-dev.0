@@ -1,31 +1,58 @@
-Message-ID: <3BF35805.5000702@embeddededge.com>
-Date: Thu, 15 Nov 2001 00:52:05 -0500
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: Brad Bonkoski <bradb59@home.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ADS 8260
-References: <3BF31908.7E591B3B@home.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: "Juan Padron" <j_padron@joseane.zzn.com>
+Message-Id: <C398751347F4533458DB3F93154AAAFD@j_padron.joseane.zzn.com>
+Date: Thu, 15 Nov 2001 10:43:18 +0100
+Content-Type: text/plain; charset=iso-8859-1
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: CONFIG_IDE_PCCARD or  CONFIG_IDE_PCMCIA
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Brad Bonkoski wrote:
+  Hi:
+
+  I need to put and IDE disk through the PCMCIA port in an MPC823FADS. I use the ppcboot 1.0.0
+I read the mailing list and i have a doubt: What is the diference between the IDE_PCCARD and the IDE_PCMCIA? What do i need to use?
+  This is the PCMCIA stuff configuration of an config_TQM823L.h (¿is it the same i need to include on my config_FADS823.h?)
 
 
-> I noticed that in the current linuxppc_2_4_devel kernel tree there is no
-> longer an option for the ADS8260 platform.  Is one of the other 8260
-> boards compatible with this one, if so which one?
+   #define CFG_PCMCIA_MEM_ADDR	   (0xE0000000)
+   #define CFG_PCMCIA_MEM_SIZE	   ( 64 << 20 )
+   #define CFG_PCMCIA_DMA_ADDR	   (0xE4000000)
+   #define CFG_PCMCIA_DMA_SIZE	   ( 64 << 20 )
+   #define CFG_PCMCIA_ATTRB_ADDR   (0xE8000000)
+   #define CFG_PCMCIA_ATTRB_SIZE   ( 64 << 20 )
+   #define CFG_PCMCIA_IO_ADDR	   (0xEC000000)
+   #define CFG_PCMCIA_IO_SIZE	   ( 64 << 20 )
 
-Sorry, I have some updates that I have yet to pull out of the HHL 2.0
-distribution into this kernel.  The changes are trivial, I just haven't
-done it.  Maybe over the weekend..........or you could just download
-the HHL 2.0 Journeyman edition for the ADS8260 and send me the patches :-).
+/*--------------------------------------------------------------------
+ * IDE/ATA stuff (Supports IDE harddisk on PCMCIA Adapter)
+ *-------------------------------------------------------------------
+ */
+
+   #define CONFIG_IDE_PCCARD 1	/* Use IDE with PC Card	Adapter	*/
+
+   #undef CONFIG_IDE_PCMCIA 	/* Direct IDE    not supported	*/
+   #undef CONFIG_IDE_LED	/* LED   for ide not supported	*/
+   #undef CONFIG_IDE_RESET	/* reset for ide not supported	*/
+   #define CFG_IDE_MAXBUS    1	/* max. 1 IDE bus		*/
+   #define CFG_IDE_MAXDEVICE 1	/* max. 1 drive per IDE bus	*/
+   #define CFG_ATA_IDE0_OFFSET	0x0000
+   #define CFG_ATA_BASE_ADDR	CFG_PCMCIA_MEM_ADDR
+
+/* Offset for data I/O			*/
+   #define CFG_ATA_DATA_OFFSET	(CFG_PCMCIA_MEM_SIZE + 0x320)
+
+/* Offset for normal register accesses	*/
+   #define CFG_ATA_REG_OFFSET	(2 * CFG_PCMCIA_MEM_SIZE + 0x320)
+
+/* Offset for alternate registers	*/
+   #define CFG_ATA_ALT_OFFSET	0x0100
 
 
 
-	-- Dan
+ Thank you very much for your help.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
