@@ -1,29 +1,32 @@
-Date: Thu, 28 Oct 1999 20:44:41 +0200 (CEST)
+Date: Thu, 28 Oct 1999 21:40:16 +0200 (CEST)
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: anthony tong <atong@uiuc.edu>
-cc: Charlie McLachlan <cim@uk.research.att.com>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Accel ATI Rage 128 support, the very first step (Help needed)
-In-Reply-To: <19991028012551.A16581@mango.genunix.net>
-Message-ID: <Pine.LNX.4.05.9910282043170.6037-100000@callisto.of.borg>
+To: Sean Chitwood <darkmane@w-link.net>
+cc: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Assembler Specific codes
+In-Reply-To: <Pine.LNX.4.10.9910280049030.669-100000@darkmane.w-link.net>
+Message-ID: <Pine.LNX.4.05.9910282139310.6037-100000@callisto.of.borg>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 28 Oct 1999, anthony tong wrote:
-> Charlie McLachlan (Wed, Oct 27, 1999 at 11:46:15AM +0100):
-> > 2) If I recompile aty128fb, how do I replace the currently active version
-> > without having to restart? (i.e. how do I change frame buffer modules?)
+On Thu, 28 Oct 1999, Sean Chitwood wrote:
+> 	I'm trying to track down what certain assembler specific instructions might mean, and I hope someone here might have a clue...
 > 
-> You don't; at least, I've never been able to unregister a fbdev driver
-> and re-registering a new one. I'm not sure if this has been fixed recently
-> though.
+> 	I need to find out what dc.[lw] in the CodeWarrior Assembler might translate to on the GNU Assembler. I don't have CW so I can't look it up.
 
-If you have a second active frame buffer device, you can unload the first after
-you mapped all VCs to the second. It works for me: I can unload/reload vga16fb
-for my S3 Trio64V+ while atyfb serves my RAGE II+.
+By compiling
+
+| int a = 10;
+| short b = 10;
+
+using `gcc -S', I got:
+
+| a:
+|         .long 10
+| b:
+|         .short 10
 
 Gr{oetje,eeting}s,
 --
