@@ -1,59 +1,44 @@
-Message-ID: <3B97B4E2.8DAEA1D5@mvista.com>
-Date: Thu, 06 Sep 2001 12:39:46 -0500
-From: Mark Hatle <fray@mvista.com>
-MIME-Version: 1.0
-To: James F Dougherty <jfd@GigabitNetworks.COM>,
+Date: Thu, 6 Sep 2001 10:48:30 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Matt Porter <mporter@mvista.com>
+Cc: Brian Waite <bwaite@cspi.com>,
 	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: SysVInit (RC Scripts) on HHL 2.0 (Add'n info)
-References: <200109061710.KAA13165@krakatoa.gigabitnetworks.com> <3B97B0B9.4ADDFF9F@mvista.com>
+Subject: Re: MVME5100 and bugboot fails
+Message-ID: <20010906104830.K21172@cpe-24-221-152-185.az.sprintbbd.net>
+References: <85256ABF.00549667.00@pine.cspi.com> <200109061544.LAA11977@orchid.cspi.com> <20010906085639.F21172@cpe-24-221-152-185.az.sprintbbd.net> <20010906070358.A9316@cx258813-a.chnd1.az.home.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20010906070358.A9316@cx258813-a.chnd1.az.home.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Mark Hatle wrote:
->
-> James F Dougherty wrote:
->
-> > I am using HHL 2.0 (2.4.2) on MPC8240 and I downloaded
-> > the root filesystem RPM's from
+On Thu, Sep 06, 2001 at 07:03:58AM -0700, Matt Porter wrote:
+> On Thu, Sep 06, 2001 at 08:56:39AM -0700, Tom Rini wrote:
 > >
-> > ftp://ftp.mvista.com/pub/Journeyman/cd2/ppc_82xx/apps/*.rpm
+> > On Thu, Sep 06, 2001 at 11:36:39AM -0400, Brian Waite wrote:
 > >
-> > Is there some bug in HHL 2.0 on ppc_82xx I don't know about?
+> > > I tried that and I was unable to relocate just the initrd. Right now, I just
+> > > tested to see:
+> > > if  ((zImage_start >= 0xf0000000) || (zImage_start <= 0x00800000))
+> > >
+> > > That seems to work for now, but I'll take a peek at the gemeni and see how
+> > > they do it.
+> >
+> > Er, after re-reading, it's wrong too.  I'll send you a patch
+> > privately, if you can test it.
 >
-> Assuming you used the installer, only the init scripts required to boot
-> a minimal system (and be able to telnet in and use nfs root) are
-> enabled.  Anything beyond that you, the developer/user will need to
-> enable.  If you did not use the installer, you probably got a bunch of
-> messages during installation such as "Unable to enable initd service:
-> checkfs.sh".  These messages mean that the initdconfig program was not
-> able to be run for some reason or another, thus you probably don't have
-> ANY initscripts installed.
->
-> The initscripts are further discussed in the "Initscript Overview"
-> section of Chapter 7.
+> This location checking logic is all a hack...I've already stared at this
+> a while to make it work for someone.  I recommend we _always_ relocate
+> both zImage and initrd (if present).
 
-FYI, if you did not use the installer, and want to try to "rescue" your
-installation, the following initscripts are enabled by default in the
-installer.  (If I list an initscript you don't have ignore it, it isn't
-part of Journeyman then.)
+Right, but if the initrd happens to start off at below the 16 mb barrier,
+why do it?  For example anyhow, my PowerStack doesn't need to relocate the
+zimage (and if I can make it happily netboot, I'll test initrd, but that
+might need it..)
 
-bootmisc.sh    	S:on
-checkfs.sh     	S:on
-checkroot.sh   	S:on
-devpts.sh      	S:on
-mountall.sh    	S:on
-mountnfs.sh    	S:on
-umountfs       		0:on						6:on
-umountnfs.sh   		0:on						6:on
-ifupdown       	S:on
-networking     	S:on
-inetd          				2:on	3:on	4:on	5:on
-portmap        	S:on
-syslog         				2:on	3:on	4:on	5:on
-
---Mark Hatle
-MontaVista Software, Inc.
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
