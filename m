@@ -1,28 +1,34 @@
-Message-ID: <3ADE0222.BF7F539C@sgi.com>
-Date: Wed, 18 Apr 2001 16:07:46 -0500
-From: Steven Hein <ssh@sgi.com>
+Message-ID: <3ADE0501.321052F9@mvista.com>
+Date: Wed, 18 Apr 2001 17:20:01 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: 860 RTC support
+To: Steven Hein <ssh@sgi.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 860 RTC support
+References: <3ADE0222.BF7F539C@sgi.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I've seen some discussions about real-time clocks lately, but (I think)
-I scoured the list and can't find any basic information about how
-to function the 860's real-time clock.  I'm using the real 2.4.3
-kernel right now and I don't see that /dev/rtc would work.
+Steven Hein wrote:
 
-Is there a working method (to read the RTC value at boot-time)?
-I see references to 'hwclock', but from what I can tell that won't
-work unless there's a /dev/rtc available (since 860 PPC isn't
-supported natively by hwclock).
+> Is there a working method (to read the RTC value at boot-time)?
 
-I apologize if I missed this info in the archives.  Any help would
-be appreciated!
+The MPC8xx real-time clock is implicitly managed in the kernel.
+At boot time, the register is read and stored in the kernel
+time.  Whenever the kernel time is updated, the hardware register
+is also updated.  Since the 8xx is simply a 32-bit register
+access with an update rate that matches the kernel time, I
+chose to do it this way.
 
-Thanks,
-Steve
+If you provide the appropriate crystal and battery to the 8xx,
+you get a non-volatile time of day clock.
+
+Most implementations seem to choose an external time of day clock
+that is already managed by one of the RTC drivers.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
