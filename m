@@ -1,69 +1,56 @@
-From: tom_gall@vnet.ibm.com
-Message-ID: <3A6C822F.7DB50A58@vnet.ibm.com>
-Date: Mon, 22 Jan 2001 18:55:43 +0000
-Reply-To: tom_gall@vnet.ibm.com
+Message-ID: <3A6C8C6E.3C19F151@mvista.com>
+Date: Mon, 22 Jan 2001 14:39:26 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Tom Gall <tgall@rochcivictheatre.org>
-CC: Troy Benjegerdes <hozer@drgw.net>, Dan Malek <dan@mvista.com>,
-        linuxppc_commit@hq.fsmlabs.com,
-        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: context overflow
-References: <3A68F7A0.693639F1@mvista.com> <20010121222842.A27103@altus.drgw.net> <3A6BB971.7F128273@rochcivictheatre.org>
+To: Roman Zippel <zippel@fh-brandenburg.de>
+CC: michdaen@iiic.ethz.ch, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Jeff Hartmann <jhartmann@valinux.com>,
+        Gareth Hughes <gareth@valinux.com>, linuxppc-dev@lists.linuxppc.org,
+        dri-devel@lists.sourceforge.net, Paul Mackerras <paulus@linuxcare.com>
+Subject: Re: [Dri-devel] PPC Lockup (ati-pcigart-branch)
+References: <Pine.GSO.4.10.10101221945230.19978-100000@zeus.fh-brandenburg.de>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tom Gall wrote:
+...I don't know who wrote:
 >
-> Troy Benjegerdes wrote:
->
-> > On Fri, Jan 19, 2001 at 09:27:44PM -0500, Dan Malek wrote:
-> > >
-> > > I just heard about the bug Tom Gall fixed in "context_overflow"
-> > > by testing for current->mm == NULL.
-> > >
-> > > I believe the proper solution is to use 'current->active_mm'
-> > > instead of 'current->mm' (and you never get a null pointer).
-> > > This way, the proper 'active' context is updated with a new
-> > > context even though a kernel thread has stolen it from somewhere
-> > > else to use.  I think skipping the selection of a new context
-> > > in this case could be logically incorrect for some PowerPC cores.
-> >
-> > Since this got no response, I'm cross-posting to linuxppc-commit.
->
-> I will look into this tomorrow.  It's an important fix, I don't want to rush.
+> > > There is no pte table and so there is nothing mapped at that address,
 
-Hi All,
+No, there is a pte table there, you just didn't get to printing
+anything from it......
 
-  Ok here's the explaination and I beg forgivness if this isn't clear or needs
-more filled in.
+Roman Zipple wrote:
 
-  current->mm I believe is correct. active_mm for tasks in user space just point
-back to mm. kernel space tasks will have an mm of NULL yet their active_mm will
-point back to the last user space task they ran.
+> It depends what you what you want to do.
 
-  The reason for this patch is in the case where the idle task comes in on one
-processor and on another processor it has encountered a context overflow. The
-idle task on processor 0 detects the overflow as well and that's when things get
-interesting, and why the change.
+I am really bad at guessing today....someone is going to have to
+tell me what you are trying to do.  From the few lines of code I have
+see posted, you are doing:
 
-  So anyway that's the situation from my neck of the woods. These other
-processor cores make me worried. What cores are you refering too? Are they SMP?
-How and in what ways are they different?
+	1. Allocating some kernel virtual address and backing that
+		with pages in real memory.
 
-  Many thanks to Pat McCarthy who is my local guru on this topic and also the
-author of the fix in question.
+	2. Trying to find something in the kernel page tables, that I
+		guessed wrong was a physical address of the pages.
 
-  Regards,
+Then, Jeff mentioned something about mapping user space pages, but
+virt_to_bus/bus_to_virt aren't going to do that on PowerPC. I'm working
+on some functions that will, but they aren't there for all systems yet.
 
-  Tom
---
-Tom Gall - PowerPC Linux Team    "Where's the ka-boom? There was
-Linux Technology Center           supposed to be an earth
-(w) tom_gall@vnet.ibm.com         shattering ka-boom!"
-(w) 507-253-4558                 -- Marvin Martian
-(h) tgall@rochcivictheatre.org
-http://oss.software.ibm.com/developerworks/opensource/linux
+
+> But you can also map something at that address, then you had to use
+> *_alloc(), but leave that better to ioremap/vmalloc. (Look for map_page in
+> arch/ppc/mm/init.c for how it can be done.)
+
+Err...ahhhh...I don't know if I would go looking in that file for
+examples.  I would prefer to understand the problem we are trying to
+solve, and perhaps write some functions to call if necessary.  Scattering
+code from functions in this file into other places may not be a good
+thing.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
