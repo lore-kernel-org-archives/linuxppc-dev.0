@@ -1,34 +1,37 @@
-Subject: Re: Serial Console
-From: Ibon Gotxi Garcia <igotxi@jazzfree.com>
-To: Mark Hatle <fray@mvista.com>
-Cc: Aman <aman@mistralsoftware.com>,
-	Linux PPC embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <3E64C8DD.5010100@mvista.com>
-References: <000801c2e25d$d560ec10$370da8c0@aman>
-	 <3E64C8DD.5010100@mvista.com>
-Content-Type: text/plain
-Message-Id: <1046797567.379.16.camel@muse>
-Mime-Version: 1.0
-Date: 04 Mar 2003 17:06:07 +0000
+Message-ID: <3E64EA95.7050405@paulidav.org>
+Date: Tue, 04 Mar 2003 10:04:05 -0800
+From: Vladimir Gurevich <vag@paulidav.org>
+MIME-Version: 1.0
+To: Omanakuttan <omanakuttan@tataelxsi.co.in>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: problem in ppc-linux-gcc cross compiler.
+References: <3E64DC21.4060802@tataelxsi.co.in>
+In-Reply-To: <3E64DC21.4060802@tataelxsi.co.in>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, 2003-03-04 at 15:40, Mark Hatle wrote:
+Hello,
 
->
-> The console is enabled either by the system configuration or by the kernel
-> command line, "console=".  Look in the "Documentation" directory in the kernel,
-> something in there explains serial consoles and the cmdline semantics.
->
+You should change the line
+>              warning, __FILE__, __LINE__, __FUNCTION__, ##msg) ;\
+to
+>              warning, __FILE__, __LINE__, __FUNCTION__ , ##msg) ;\
 
-newbie question:
-is there any chance of having virtual terminals through the serial port?
+This space (after __FUNCTION__) will do the trick.
 
-Cheers.
+You can read more about it in gcc info file (C Extensions/Macro Varargs),
+where the issue is thoroughly explained:
 
---
-Ibon Gotxi Garcia <igotxi@jazzfree.com>
+       This is a special feature of the GNU C preprocessor: `##' before a
+       rest argument that is empty discards the preceding sequence of
+       non-whitespace characters from the macro definition.  (If another
+       macro argument precedes, none of it is discarded.)
+
+
+Hope, this helps.
+Vladimir
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
