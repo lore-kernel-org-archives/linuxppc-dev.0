@@ -1,32 +1,33 @@
-Message-ID: <3CB539DF.CF3BDD85@imc-berlin.de>
-Date: Thu, 11 Apr 2002 09:23:11 +0200
-From: Steven Scholz <steven.scholz@imc-berlin.de>
+Message-ID: <3CB53ACE.4070603@bluewin.ch>
+Date: Thu, 11 Apr 2002 09:27:10 +0200
+From: Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch>
 MIME-Version: 1.0
-To: Christian Pellegrin <chri@infis.univ.trieste.it>
+To: Steven Scholz <steven.scholz@imc-berlin.de>
 Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: sporadic kernel panic during boot (MPC8xx, FEC)
-References: <Pine.LNX.4.44.0204110914100.18980-100000@sole.infis.univ.trieste.it>
+References: <3CB53640.9B0DD9B4@imc-berlin.de>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Christian Pellegrin wrote:
+On 04/11/2002 09:07 AM, Steven Scholz wrote:
 
-> not really sure this will help you, but I had similar problem (spurious
-> hangs during boot/insmod on 823 and 850 MPCs). The ppc mm for 8xx in 2.4
-> repository is broken, use that in 2.4-devel that works fine. AFA net
-> devices are concerned check that rx start is done in open and not in init
-> since linux doesn't like packets before a device is opened.
+>Hi there,
+>
+>I am using the linux kernel from bitkeepers linuxppc_2_4_devel exported
+>as of -rv2.4.18 on a MPC855T based board.
+>
+AFAIK, this relase tag applies ony to Linus's part of the tree.
+The PPC part is somehow undefined and might be quite old.
+I usually search "bk changes" for "v2.4.18" and then take a
+change-set shortly afterwards e.g.:
 
-Thanks for your reply.
+  bk export -r1.900 <path>
 
-I got the kernel from the linuxppc_2_4_devel tree using
+Hope it helps,
 
-bk export ... -rv2.4.18
+Wolfgang.
 
-So I guess I do have a 2.4-devel. Right?
-
-Steven
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
