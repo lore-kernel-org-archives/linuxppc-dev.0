@@ -1,15 +1,19 @@
-Return-Path: <mgreer@mvista.com>
-Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
-	by ozlabs.org (Postfix) with ESMTP id 3A67267A7A
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Feb 2005 10:53:27 +1100 (EST)
-Message-ID: <42001671.1040200@mvista.com>
-Date: Tue, 01 Feb 2005 16:53:21 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-MIME-Version: 1.0
-To: akpm <akpm@osdl.org>
-Content-Type: multipart/mixed; boundary="------------070208030802020905010900"
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
-Subject: [PATCH][PPC32] include/asm-ppc/rwsem.h RWSEM_DEBUG usage
+Return-Path: <pevnev@juno.com>
+Received: from outbound-mail.lax.untd.com (outbound-mail.lax.untd.com
+	[64.136.28.164]) by ozlabs.org (Postfix) with SMTP id BEF4E67A2C
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Feb 2005 23:47:39 +1100 (EST)
+Received: from outbound29-sr.lax.untd.com (webmail17.lax.untd.com
+	[10.131.27.157])
+	by smtpout02.lax.untd.com with SMTP id AABBABUSHAYD9LYS
+	for <linuxppc-dev@ozlabs.org> (sender <pevnev@juno.com>);
+	Wed,  2 Feb 2005 04:39:35 -0800 (PST)
+Mime-Version: 1.0
+From: "Alex" <pevnev@juno.com>
+Date: Wed, 2 Feb 2005 12:38:40 GMT
+To: linuxppc-dev@ozlabs.org, 'linuxppc-embedded@ozlabs.org'
+Content-Type: text/plain
+Message-Id: <20050202.043920.25841.77096@webmail17.lax.untd.com>
+Subject: 2.6.10-rc3 8xx (MPC 880) i2c driver - "about to sleep" 
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,57 +24,43 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-This is a multi-part message in MIME format.
---------------070208030802020905010900
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Hi,
 
-include/asm-ppc/rwsem.h has '#ifdef RWSEM_DEBUG' but RWSEM_DEBUG is 
-always defined (as 0) in include/linux/rwsem.h.  The #ifdef's should be 
-#if's.  This also brings the ppc usage in line with the the other 
-architectures.
+Sorry for bothering you  again - I will appreciate your opinion/advise/guidance !
 
-Please apply.
+What is your interpretation of entries I found in the log buf with regards to I2C driver ? 
+.....
+<6>i2c /dev entries driver.
+<7>device class 'i2c-dev': registering.
+<7>bus i2c:add driver dev_driver.
+<7>i2c-core: driver dev_driver registered
+<6>i2c-rpx: i2c MPC8xx driver.
+<7>DEV: registering device: ID ='i2c-0'.
+<7>CLASS: registering class device: ID= 'i2c-0'.
+<7>i2c_adapter i2c-0:Registered as minor 0.
+<7>CLASS:registering class device: ID = 'i2c-0'
+<7>i2c_adapter i2c-0: registered as adapter #0.
+<4>cpm_iic_init() - iip=fa203c80.
+<4>cpm_iic_init[132] Install ISR for IRQ 16.
+<6>CPM interrupt c0105d90 replacing c01f7a8c.
+<3>request_irq() returned -22  for CPM vector 32.
+<6> i2c-algo-8xx.o: scanning bus m8xx........
+<4>cpm_iic_tryaddress(cpm=c019b9f8,addr=0).
+<4>iip fa203c80, dp_addr 0x800.
+<4>iic_tbase 2048, r_tbase 2048
+<4>about to sleep
+........
+BOOTING HANGS FROM HERE !!!!
 
-Signed-off-by: Mark A. Greer <mgreer@mvista.com>
---
+The board is equipped with M24Cxx-x Serial I2C bus EEPROM 
+- does above means that the EEPROM device was not detected on the I2C bus ?
+Do I need to supply in the code the addresses to be scanned ?
 
---------------070208030802020905010900
-Content-Type: text/plain;
- name="rwsem.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="rwsem.patch"
+Thanks,
+Alex
 
-diff -Nru a/include/asm-ppc/rwsem.h b/include/asm-ppc/rwsem.h
---- a/include/asm-ppc/rwsem.h	2005-02-01 16:46:53 -07:00
-+++ b/include/asm-ppc/rwsem.h	2005-02-01 16:46:53 -07:00
-@@ -27,7 +27,7 @@
- #define RWSEM_ACTIVE_WRITE_BIAS		(RWSEM_WAITING_BIAS + RWSEM_ACTIVE_BIAS)
- 	spinlock_t		wait_lock;
- 	struct list_head	wait_list;
--#ifdef RWSEM_DEBUG
-+#if RWSEM_DEBUG
- 	int			debug;
- #endif
- };
-@@ -35,7 +35,7 @@
- /*
-  * initialisation
-  */
--#ifdef RWSEM_DEBUG
-+#if RWSEM_DEBUG
- #define __RWSEM_DEBUG_INIT      , 0
- #else
- #define __RWSEM_DEBUG_INIT	/* */
-@@ -59,7 +59,7 @@
- 	sem->count = RWSEM_UNLOCKED_VALUE;
- 	spin_lock_init(&sem->wait_lock);
- 	INIT_LIST_HEAD(&sem->wait_list);
--#ifdef RWSEM_DEBUG
-+#if RWSEM_DEBUG
- 	sem->debug = 0;
- #endif
- }
 
---------------070208030802020905010900--
+___________________________________________________________________
+Speed up your surfing with Juno SpeedBand.
+Now includes pop-up blocker!
+Only $14.95/month -visit http://www.juno.com/surf to sign up today!
