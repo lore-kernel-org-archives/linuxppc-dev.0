@@ -1,42 +1,43 @@
-To: "Li Xiangrong" <lixiangrong@china.com>
-Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: problem about mac address 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 25 Nov 2002 20:25:32 +0800."
-             <200211251219.GAA14313@lists.linuxppc.org>
-Date: Mon, 25 Nov 2002 17:14:57 +0100
-Message-Id: <20021125161502.A9429C58BF@atlas.denx.de>
+Date: Mon, 25 Nov 2002 14:44:32 -0500
+From: Stefano Bodini <s.bodini@comcast.net>
+Subject: Frozen ! any idea ?
+To: linuxppc-embedded@lists.linuxppc.org
+Message-id: <5.1.0.14.0.20021125143442.00aa8df0@pop3.norton.antivirus>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <200211251219.GAA14313@lists.linuxppc.org> you wrote:
->
-> i configured.I searched the kernel and have not find the place to set that addr. The kernel gets the mac addr. from and only from the SDRAM(enet.c):
+Hi all !
 
-I don't know where you're looking, but I have a line
+I have (for me) a curious problem.
+I have an Embedded Planet RXP Classic credit card (ppc860) loaded with a
+2.4.17 kernel (compiled with MontaVista Pro 2.1).
+I'm able to load correctly the kernel and the filesystem .. all is working
+just fine, but after 1 minute since the last command issued, the system
+just freeze.
+1 minute without any command issued and the system is gone .. no errors, no
+messages, no logs, nothing.
+Just doesn't accept anymore commands .. even the echo on the tty port is gone.
 
-	iap = bd->bi_enetaddr;
+About the 1 minute value, I did some tests to figure out the timing and is
+more or less 1 minute.
+Up to 30-45 secs. and the system still react, after (50-70 secs) the system
+freeze.
+If you continue to issue commands the system doesn't freeze .. but it do it
+as long as you stop to issue commands.
 
-in our FEC code, which reads the MAC address as passed  by  the  boot
-loader in the bd_info struncture.
+I tried to load also the default kernel image for that board .. same result.
+It seems a kind of watch dog or timer .. but I don't understand why all is
+frozen !
 
-> this happen and may u give me an advice to solve it?
+Any idea ?
 
-You provide too little information to allow a really helpful  answer.
-Which  CPU?  Which board? Which kernel version? Where did you get the
-source from? Who ported the source to your board?
+Thanks in advance
 
-Best regards,
+C'ya
+	Steve
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"The one charm of marriage is that it makes a  life  of  deception  a
-neccessity."                                            - Oscar Wilde
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
