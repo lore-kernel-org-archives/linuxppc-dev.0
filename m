@@ -1,34 +1,27 @@
-Date: Wed, 20 Oct 1999 15:05:02 -0500
-From: anthony tong <atong@uiuc.edu>
-To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: SuSE Rage 128 Xserver Source and XFree 3.3.6
-Message-ID: <19991020150502.A2198@mango.genunix.net>
-References: <v03110700b433ca16486c@[209.183.133.114]>
-Mime-Version: 1.0
+Message-ID: <19991020224832.2035.rocketmail@web1003.mail.yahoo.com>
+Date: Wed, 20 Oct 1999 15:48:32 -0700 (PDT)
+From: Dan Bethe <dan_bethe@yahoo.com>
+Subject: ATI XFree86 testing?
+To: linuxppc-dev@lists.linuxppc.org
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <v03110700b433ca16486c@[209.183.133.114]>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Kevin B. Hendricks (Wed, Oct 20, 1999 at 03:43:06PM -0400):
-> I got tired of waiting for SuSE to release the source to its accelerated
-> Xserver for Rage 128, so I sent them a nasty gram and what they replied is
-> below:
-> 
-> So Anthony?, Tom?, Geert?, Anyone?
-> 
-> Do any of you know who has access to XFree 3.3.6 source code so that we can
-> get started porting this server to PPC?
+http://news.excite.com/news/pr/991020/ati-supports-linux
 
-I have the source, and also Precision Insights additions to it (a bit 
-cleaner layout + hw cursor).
+	Hi guys.  The above article is the press release for
+ATI's endorsement of open source methods.  I have a
+Wallstreet II series Powerbook with a 4 MB ATI Rage LT
+Pro, kernel 2.2.10 with atyfb Mach64 patches from
+kernel 2.3, and XFree86 3.3.3.1.
+	I'm not a programmer but I run LinuxPPC almost
+exclusively and I trickle in weird OS upgrades all day
+ :)  Where should I start as a tester for any new developments?
 
-I've also started merging into our xf68_fbdev but I won't have any free
-time to continue this (at least for a week or so). The problem is that
-they're using the xaa interface (which never was ported to ppc), so you
-have to wrapper all their accel functions by hand.
-
+=====
+"Don't expect your own messiah; this neverworld which you desire is
+only in your mind." -- http://www.dreamtheater.net/songb4.htm#IV5
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
