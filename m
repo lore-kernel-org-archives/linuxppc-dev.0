@@ -1,48 +1,67 @@
-Message-ID: <37D9E860.B1B5ED41@loomer.com>
-Date: Fri, 10 Sep 1999 22:28:01 -0700
-From: Hugh Caley <hcaley@loomer.com>
+Message-ID: <37DA0CF4.74840414@wanadoo.fr>
+Date: Sat, 11 Sep 1999 10:04:04 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Problems with atyfb, 32 bit color, Lombard
+To: "Joshua M. Thompson" <funaho@jurai.org>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.3.18 and CONFIG_ADB_MOUSE
+References: <Pine.LNX.4.10.9909101954130.10100-100000@ifurita.jurai.org>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello, Geert.  If you are not the correct person to contact about this, please
-let me know.
+Sorry for this, I was too tired when I wrote it. Sometimes the day job
+can get in the way of successful Linux hacking :-)
 
-Those of use using atyfb on Apple "Lombard" laptops are having an odd problem
-with X.  Small lines are not being drawn at the correct angles, so things like
-arrows in menus and checkboxes are not being drawn correctly.  For example,
-the little arrows in the menus in WindowMaker end up looking like squares.
+I had seen the typo in drivers/char/Config.in, but forgot to correct it.
+And then it seemed more logical to have the selection of ADB_MOUSE next
+to ADB_KEYBOARD, but maybe it isn't. 
 
-This doesn't seem to be related to window managers, I get the same problems
-with window managers and programs that use completely different libraries.
+Anyway, in 'make menuconfig' the mouse selection is buried rather deep
+down, on the  'Character devices' page after things like 'Non-standard
+serial port support' and 'Unix98 PTY support'. Let's see... OK, this
+seems to be a bug in drivers/char/Config.in. There is an 'endmenu'
+missing just before 
 
-It only seems to happen with 32-bit color, and happens both with XF68_FBDev
-and Xpmac.  It only happens when using atyfb.
+mainmenu_option next_comment 
+comment 'Mice' 
 
-I'm using kernel args (in bootx):
+But, if I put an 'endmenu' there, then 'make xconfig' breaks. And 'make
+xconfig' got it right before! (Right = Put 'Mice' and 'Video for Linux'
+and so on into the main menu and not in the 'Character devices' menu).
+Solution (but this is black magic, I don't understand it and better give
+up on this):
 
-video=atyfb:vmode:16,cmode:32,mclk:67; I've also tried vmode 14, cmode 16 and
-mclk 100.
+Put a line with '#endmenu' instead of 'endmenu' there. Now both 'make
+menuconfig' and 'make xconfig' are happy and behave in the same way
+(well, almost, in 'make xconfig', the 'watchdog timer' selection is
+still on the 'Character devices' page, but the 'watchdog card' selection
+is in the main menu). Weird stuff.
 
-The latest version of atyfb.c I'm using:
+Here is the patch:
 
-[root@hugh video]# more atyfb.c
-/*  $Id: atyfb.c,v 1.106.2.4 1999/09/02 06:34:46 paulus Exp $
- *  linux/drivers/video/atyfb.c -- Frame buffer device for ATI Mach64
-
-
-Hugh
+cvs diff -u drivers/char/Config.in
+Index: drivers/char/Config.in
+===================================================================
+RCS file: /cvs/linux/linux/drivers/char/Config.in,v
+retrieving revision 1.80
+diff -u -r1.80 Config.in
+--- drivers/char/Config.in      1999/09/11 03:39:16     1.80
++++ drivers/char/Config.in      1999/09/11 07:02:10
+@@ -61,6 +61,7 @@
+   fi
+   dep_tristate 'Support for user-space parallel port device drivers'
+CONFIG_PPDEV $CONFIG_PARPORT
+ fi
++#endmenu
+ 
+ mainmenu_option next_comment
+ comment 'Mice'
 
 --
-Hugh Caley, Unix Administrator
-Babcock & Brown, San Francisco
-510-524-1672
-hughc@babcockbrown.com
-
+Martin
+(Not drunk, it's 10am, but feeling slightly seasick after one hour with
+the config.in files)
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
