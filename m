@@ -1,70 +1,62 @@
-Date: Sun, 4 Jul 2004 09:23:50 +0200
-From: Olaf Hering <olh@suse.de>
+Date: Sun, 4 Jul 2004 10:32:52 +0200 (MEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Tom Rini <trini@kernel.crashing.org>
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@lists.linuxppc.org
+Cc: Stef Simoens <stefaan.simoens@coditel.net>,
+	Olaf Hering <olh@suse.de>, Andrew Morton <akpm@osdl.org>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: [PATCH] fix missing option in binutils version check
-Message-ID: <20040704072350.GA7060@suse.de>
-References: <20040614091530.GA18482@suse.de> <20040614162359.GA7798@smtp.west.cox.net> <20040614173841.GA3247@suse.de> <20040614180734.GB3247@suse.de> <20040614205537.GB7798@smtp.west.cox.net> <20040614211931.GA21113@suse.de> <20040615161258.GA14528@smtp.west.cox.net> <20040615172511.GA21667@suse.de> <20040615174648.GC14528@smtp.west.cox.net> <20040703222918.GA10425@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20040703222918.GA10425@suse.de>
+In-Reply-To: <20040704024149.GB2146@smtp.west.cox.net>
+Message-ID: <Pine.GSO.4.58.0407041028480.21842@waterleaf.sonytel.be>
+References: <20040614162359.GA7798@smtp.west.cox.net> <20040614173841.GA3247@suse.de>
+ <20040614180734.GB3247@suse.de> <20040614205537.GB7798@smtp.west.cox.net>
+ <20040614211931.GA21113@suse.de> <20040615161258.GA14528@smtp.west.cox.net>
+ <20040615172511.GA21667@suse.de> <20040615174648.GC14528@smtp.west.cox.net>
+ <20040703222918.GA10425@suse.de> <40E75DC7.7070601@coditel.net>
+ <20040704024149.GB2146@smtp.west.cox.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
- On Sun, Jul 04, Olaf Hering wrote:
-
+On Sat, 3 Jul 2004, Tom Rini wrote:
+> On Sun, Jul 04, 2004 at 03:30:47AM +0200, Stef Simoens wrote:
+> > Olaf Hering wrote:
+> > > On Tue, Jun 15, Tom Rini wrote:
+> > >>And yes, passing -many does work on all older supported versions of
+> > >>binutils.  So perhaps we should just add -Wa,-many to our cflags and be
+> > >>done with it now (and for future fixes of this sort).
+> > >
+> > >gcc 3.2 passes only -mppc, so all altive instructions will fail to
+> > >compile without either -many or -maltivec
+> >
+> > Are there altivec instructions when CONFIG_ALTIVEC is not set?
 >
->  On Tue, Jun 15, Tom Rini wrote:
->
-> > And yes, passing -many does work on all older supported versions of
-> > binutils.  So perhaps we should just add -Wa,-many to our cflags and be
-> > done with it now (and for future fixes of this sort).
->
-> gcc 3.2 passes only -mppc, so all altive instructions will fail to
-> compile without either -many or -maltivec
->
-> I have tested this patch with
-> gcc 3.2.3 + binutils-2.15.91.0.1
-> gcc 3.3.4 + binutils-2.15.91.0.1
-> gcc 3.4.1 + binutils-2.15.91.0.1
-> gcc 3.2.3 + binutils-2.15
-> gcc 3.3.4 + binutils-2.15
-> gcc 3.4.1 + binutils-2.15
+> Yes.  And I can forsee in the future were we might have BookE specific
+> ones in the same situation.
 
-I meant to sent this version of the patch, really use -many also for the
-.S files.
+Perhaps it makes sense to add a directive to the assembler to switch on the
+fly, cfr. the `.chip' directive on m68k? E.g. using
 
-diff -purNX /suse/olh/kernel/kernel_exclude.txt linux-2.6.7-bk16.orig/arch/ppc/Makefile linux-2.6.7-bk16/arch/ppc/Makefile
---- linux-2.6.7-bk16.orig/arch/ppc/Makefile	2004-07-03 22:33:35.000000000 +0200
-+++ linux-2.6.7-bk16/arch/ppc/Makefile	2004-07-03 23:11:10.037787069 +0200
-@@ -24,6 +24,9 @@ ifndef CONFIG_E500
- cflags-y	+= -mstring
- endif
+    .chip 68040
 
-+# gcc 3.2.3 passes -mppc,
-+# the altivec asm code will fail to compile with binutils newer than 2.15
-+cflags-$(CONFIG_6xx)		+= -Wa,-many
- cflags-$(CONFIG_4xx)		+= -Wa,-m405
- cflags-$(CONFIG_E500)		+= -Wa,-me500
- cflags-$(CONFIG_PPC64BRIDGE)	+= -Wa,-mppc64bridge
-diff -purNX /suse/olh/kernel/kernel_exclude.txt linux-2.6.7-bk16.orig/arch/ppc/kernel/Makefile linux-2.6.7-bk16/arch/ppc/kernel/Makefile
---- linux-2.6.7-bk16.orig/arch/ppc/kernel/Makefile	2004-07-03 22:33:35.000000000 +0200
-+++ linux-2.6.7-bk16/arch/ppc/kernel/Makefile	2004-07-03 22:51:16.802332774 +0200
-@@ -8,6 +8,9 @@ endif
- ifdef CONFIG_4xx
- EXTRA_AFLAGS		:= -Wa,-m405
- endif
-+ifdef CONFIG_6xx
-+EXTRA_AFLAGS		:= -Wa,-many
-+endif
- ifdef CONFIG_E500
- EXTRA_AFLAGS		:= -Wa,-me500
- endif
+we switch to 68040 mode, and using
+
+    .chip 68k
+
+we switch back to generic mode. That way we can have instructions for different
+CPU types in the same kernel, while the assembler still checks the validity
+depending on the selected CPU type.
+
+Gr{oetje,eeting}s,
+
+						Geert
 
 --
-USB is for mice, FireWire is for men!
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-sUse lINUX ag, nÜRNBERG
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
