@@ -1,73 +1,46 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
-To: Franz Sirl <Franz.Sirl-ppc@lauterbach.com>
+Message-Id: <5.2.0.9.2.20021202155713.01d9b7e8@mail.lauterbach.com>
+Date: Mon, 02 Dec 2002 16:12:27 +0100
+To: Samuel Rydh <samuel@ibrium.se>
+From: Franz Sirl <Franz.Sirl-ppc@lauterbach.com>
 Subject: Re: asm inline
-Date: Mon, 2 Dec 2002 10:11:55 -0500
-Cc: Andreas Schwab <schwab@suse.de>, linuxppc-dev@lists.linuxppc.org
-References: <jeisycebok.fsf@sykes.suse.de> <5.2.0.9.2.20021202154112.0512a008@mail.lauterbach.com>
-In-Reply-To: <5.2.0.9.2.20021202154112.0512a008@mail.lauterbach.com>
-MIME-Version: 1.0
-Message-Id: <200212021011.55105.kevin.hendricks@sympatico.ca>
+Cc: Gabriel Paubert <paubert@iram.es>,
+	linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20021202131158.GA2427@ibrium.se>
+References: <5.2.0.9.2.20021202115327.01d2e420@mail.lauterbach.com>
+ <Pine.LNX.4.33.0211291712010.9530-100000@gra-lx1.iram.es>
+ <20021129160826.GA27950@ibrium.se>
+ <Pine.LNX.4.33.0211291712010.9530-100000@gra-lx1.iram.es>
+ <5.2.0.9.2.20021202115327.01d2e420@mail.lauterbach.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+At 14:11 02.12.2002, Samuel Rydh wrote:
+>(unrelated: Does anyone understand why the compiler clears cr4.eq?)
 
-Here is what Sun's Hamburg developers wrote in reply...
+Because you didn't give a prototype for TESTING.
 
-> Hi Kevin,
->
-> -fstrict-aliasing is in -O2 optimization since gcc-3.0.x. And no, our
-> code is not strict alias safe. You'll get some problems, I know of at
-> least one place in sc. I bet there are more.
->
-> I recommend to use -O2 -fno-strict-aliasing. This is what Hamburg
-> release engineering currently uses.
->
-> If someone is able to identify all strict alias violating places I would
-> be more than happy to propose that we change these (or add the
-> -fno-strict-alias to just these files).
->
-> Heiner
+>The compiler does the right thing if -fno-strict-aliasing is used or
+>if 'int b' is replaced by 'ulong b'.
 
-So it looks like Solaris and Win must not detect these issues already.
-So a backport of the gcc 3.3 warning flag would certainly be a big help to
-the OOo project as well.
+Well, the compiler was right before and as Andreas said, you are wrong. In
+C *(ulong*)&B and *&B are different unrelated objects and the compiler
+optimizes accordingly.
 
-Thanks,
+>Adding volatile after asm also fixes things (but I did not see
+>this effect in the unsimplified example).
 
-Kevin
+Besides the fact that it's almost always right in low-level inline assembly
+to use __asm__ __volatile__ (because without the __volatile__ the __asm__
+maybe hoisted out of loops if the compiler thinks it's a loop invariant),
+you are just lucky that the __volatile__ fixes it.
 
+So either fixup your code (with unions or char pointers) to be C compliant
+or accept the performance penalty of -fno-strict-aliasing.
 
-
-On December 2, 2002 09:51, Franz Sirl wrote:
-> At 15:37 02.12.2002, Kevin B. Hendricks wrote:
-> >Hi,
-> >
-> > > |> Is there any warning flag that can be enabled to help find these
-> > > |> cases (the OOo source base is simply huge)?
-> > >
-> > > gcc 3.3 implements such a warning, but it may give many false
-> > > positives.
-> >
-> >Any chance we can get this flag backported so that it appears in gcc
-> > 3.2.2?
-> >
-> >False positives are a whole lot better than code that quietly does the
-> > an unexpected thing.
->
-> Well, are you sure OO is really affected? strict-aliasing is the default
-> since gcc-2.96 which means that everything since redhat-7.0 would be
-> affected on x86 for example. Also GCC has been very late to make this
-> the default at all, I think that Sun and MS compilers do this for years
-> already. I would be very surprised if a multiplatform project like OO
-> still contained reasonable amounts of aliasing-unsafe code.
->
-> Franz.
->
->
+Franz.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
