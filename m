@@ -1,48 +1,41 @@
-Message-ID: <3A7D8C19.B829A8D0@mvista.com>
-Date: Sun, 04 Feb 2001 12:06:33 -0500
-From: Dan Malek <dan@mvista.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: "Joseph P. Garcia" <jpgarcia@execpc.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: 2.4: PCIBIOS_MIN_MEM correct?
+Date: Sun, 4 Feb 2001 13:00:40 -0600
 MIME-Version: 1.0
-To: Troy Benjegerdes <hozer@drgw.net>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Fast Altivec
-References: <3A7AE117.628B22A6@mvista.com> <20010202125143.D31120@altus.drgw.net>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <01020413004001.06077@momiji>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Troy Benjegerdes wrote:
+should PCIBIOS_MIN_MEM be 0x10000000?  I caught this when i noticed it is
+used as the minimum address in the pci assign resource function, used in such
+situations as the OF/ATY-overlap re-allocate in wallstreets.  My system would
+panic with the lcd melting effect as some may recall.
 
-> Heheheh, I have to ask.. is it really running that fast, and do you have all
-> the neat features turned on?
+I brute forced in the following lines in
+drivers/pci/setup-res.c:pci_assign_resource()
+     min = (res->flags & IORESOURCE_IO) ? PCIBIOS_MIN_IO : PCIBIOS_MIN_MEM;
++    if(res->start==0)
++         min = 0x83000000;
 
+resulting in the same mapping used by Michael Schmitz earlier 2.2 patch.
+(its the only re-alloc on my system, so it works :)  My kernel isn't
+panicing.. yet.
 
-It's really running that fast, in fact I may try to push it up to 800
-MHz
-just to see.  There are switches on the board to select up to 16
-different
-speeds in 50 MHz increments.  I have version 2.02 of the silicon now,
-and you certainly don't want to use anything older than that (and in
-fact you probably won't ever see any).
+Anyway, looking in /proc/iomem, one might get the idea that PCIBIOS_MIN_MEM
+should be defined as 0x80000000.  This might resolve the problem I had in a
+less brute way.  I haven't tried it myself yet.  waiting for a second opinion.
 
-I have L1/L2 caches working.  I started on the L3 stuff but ran out of
-time for the demo.  I discovered someone "fixed" my original Media-Q
-graphics driver by removing all of the PowerPC big endian fixes (and did
-other things like ioremap and then in/out).  I spent too long sorting
-this out instead of working on processor specific things.
+The macro appears to be new in 2.4, so its understandable why it looks like
+most archs seem to have similar values.
 
-There are a few little details that have to be fixed up on the code,
-lots of PVR things and a few new bits in some registers.
+Any one have any insight on this?
 
-I also think the POWER3/POWER4 changes are not being done correctly.
-There is too much overlap between the processor and the platform.  The
-POWERx ifdefs should only be related to the processor, not how the
-platform maps stuff to PCI or other things.  Since the 7450 has a 36-bit
-addressing capability, I wanted to use some of the changes along the
-POWERx
-path to help out.  More on that later..........
-
-
-	-- Dan
+--
+Joseph P. Garcia
+http://www.execpc.com/~jpgarcia
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
