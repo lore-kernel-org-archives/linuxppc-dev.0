@@ -1,22 +1,44 @@
-Message-ID: <20040701111849.73177.qmail@web12821.mail.yahoo.com>
-Date: Thu, 1 Jul 2004 04:18:49 -0700 (PDT)
-From: Alireza Sadri <arsadri@yahoo.ca>
-Subject: Re: Re: RS232 Baud Rate
-To: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <20040630141645.3764.qmail@webmail18.rediffmail.com>
+Message-ID: <40E3F73A.60607@iti.fi>
+Date: Thu, 01 Jul 2004 14:36:26 +0300
+From: Kate Alhola <kate@iti.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Wolfgang Denk <wd@denx.de>
+Cc: Stefan Nickl <Stefan.Nickl@kontron.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Lite5200 PCI not working
+References: <20040701091858.A3564C109F@atlas.denx.de>
+In-Reply-To: <20040701091858.A3564C109F@atlas.denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Narasimha Charya,
+>I've updated the table to include  the  settings  for  the  Rev.  4.0
+>board, too, and to list ALL jumpers on the board.
+>
+>
+>
+>>OK. Please see http://www.denx.de/twiki/bin/view/DULG/CoralPInstallation
+>>
+>>
+>
+>Hope this helps.
+>
+>
 
-don't i need the RS232 cable to test the bootloader?
-It seems i cannot use VPII for this purpose.it is only
-useful to varify or read back the written data.
+I have Rev 3.0 board with analog switch type EL4331. To get it working
+even in bypassed mode
+it needs PD ( Power down ) input in pin 14 to grounded ( connect example
+to pin 10 ).
 
-regards.
+With this modification my board works.  I am running Embedded QT but it
+looks a like that
+#define QT_QWS_REVERSE_BYTE_ENDIANNESS in
+qt-embedded-free-3.3.2/src/kernel/qgfxraster_qws.cpp was not enough to get
+colours right. Needs just more hacking code for fixing endianes problem.
 
+
+
+Kate
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
