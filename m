@@ -1,71 +1,33 @@
-Date: Fri, 7 Mar 2003 17:18:30 +0000
-From: Magnus Damm <damm@opensource.se>
-To: "Gerhard TAEUBL" <Gerhard.TAEUBL@frequentis.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: PCMCIA
-Message-Id: <20030307171830.1dca14f1.damm@opensource.se>
-In-Reply-To: <se68594f.071@mail.frequentis.com>
-References: <se68594f.071@mail.frequentis.com>
+Date: Fri, 7 Mar 2003 10:44:21 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: emanuel stiebler <emu@ecubics.com>
+Cc: linux-emb <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Kernel Sources, was Re: EPIC_SERIAL_MODE, openpic_initsenses
+Message-ID: <20030307174421.GA29077@ip68-0-152-218.tc.ph.cox.net>
+References: <3E67A891.4010909@ecubics.com> <20030306202356.GC24584@ip68-0-152-218.tc.ph.cox.net> <3E67C2A5.6060300@ecubics.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3E67C2A5.6060300@ecubics.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-
-> We are using MPC860T with one possible PCMCIA port and Montavista kernel 2.4.2.
-> So it is possible to use every PCMCIA card, which is supported by Linux?
-
-Not all cards worked "right out of the box" when I wrote the socket driver.
-And I don't think that all of them will work today either.
-There are many things that might cause problems - endian unawareness, timing stuff etc.
-
-So you will not be able to install a set of RPMs on your hardware and then just
-insert any PCMCIA card and hear bleep-bleep and everything works. No.
-But with some hacking and some knowledge of Linux and PCMCIA you will probably
-find out a collection of PCMCIA cards that will work ok.
-
-I don't know how many PCMCIA cards that Linux/pcmcia-cs supports, but I guess
-that everyone uses CARDBUS today instead of PCMCIA. 32 bits are much more fun.
-
-I think that I read that someone was planning on writing a list, but I don't
-remeber seeing any actual output. Or maybe I missed that.
-
-There are (were anyhow) many things that differs between a common PC and
-the Linux implementation on a embedded powerpc box. The IDE stuff, serial
-ports and other things are treated different. And it all depends on the
-variant and version of your kernel. What fun.
-And the status of your Montavista kernel - I have no idea.
-
-Have you modified the socket driver to fit your hardware?
-You will not be able to use any PCMCIA card without correct configuration.
-
-Hope this leads you in the right direction.
-
-/ magnus
-
-On Fri, 07 Mar 2003 08:32:47 +0100
-"Gerhard TAEUBL" <Gerhard.TAEUBL@frequentis.com> wrote:
-
+On Thu, Mar 06, 2003 at 02:50:29PM -0700, emanuel stiebler wrote:
 >
-> Hi again!
->
-> Maybe I frogot some information:
->
-> We need for a project a second 100MBit interface, so our soloution will be to use a PCMCIA card. Does there exists an actual compatibility list which cards works, which not? I only found a list from 2000 or 2001.
->
-> Please help :-)
+> Tom Rini wrote:
 >
 >
-> We are using MPC860T with one possible PCMCIA port and Montavista kernel 2.4.2.
-> So it is possible to use every PCMCIA card, which is supported by Linux?
+> >If you're using kernel.org sources, the LoPEC support has made it into
+> >2.4.21-pre4.  Otherwise use the linuxppc_2_4_devel tree
+> >(http://penguinppc.org/dev/kernel.shtml)
 >
-> Again, please help...
->
-> best regards
-> Gerhard
->
->
+> Is there a difference between this two ?
+
+Um yes, there is a difference in the _devel platform, namely that it
+supports a number of additional platforms and other cleanups.
+
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
