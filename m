@@ -1,32 +1,35 @@
-Date: Mon, 10 Jan 2000 01:36:34 -0600 (CST)
-From: Troy Benjegerdes <hozer@drgw.net>
-To: James Bredijk <jbredijk@nac.net>
-cc: Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: PPC Boards?
-In-Reply-To: <v03130302b49d06179767@[209.123.117.14]>
-Message-ID: <Pine.LNX.4.10.10001100134120.30097-100000@altus.drgw.net>
+Message-ID: <38798CFE.1CED24AB@jlc.net>
+Date: Mon, 10 Jan 2000 02:40:46 -0500
+From: Dan Malek <dmalek@jlc.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Mark Vojkovich <mvojkovich@varesearch.com>
+CC: XFree86 Devel <devel@XFree86.Org>,
+        Shuangjun Zhu <r44089@email.sps.mot.com>,
+        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Question about the video device driver
+References: <Pine.LNX.4.04.10001070959040.28797-100000@silicon.su.valinux.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 8 Jan 2000, James Bredijk wrote:
+I guess I must have been sleeping when this went around the first time.....
 
-> 
-> Grant,
->   I'm looking to do some 'mad scientist' type of experimenting with the
-> PPC. I hope to 'play' with both the 'System' & 'Embedded' PPC platforms,
-> but I'm not looking to spend $2600 on the Motorola SandPoint board just so
-> I can fill up my afternoons.
 
-hrrm, for embedded, how about looking at www.embeddedplanet.com ?
+> > On Fri, 7 Jan 2000, Shuangjun Zhu wrote:
+> > > The video of MPC823 FADS board only support YCbYCr mode,
 
---------------------------------------------------------------------------
-| Troy Benjegerdes    |  troy@blacklablinux.com    |    hozer@drgw.net   |
-|    Unix is user friendly... You just have to be friendly to it first.  |
-| This message composed with 100% free software.    http://www.gnu.org   |
---------------------------------------------------------------------------
 
+Really?  Why is that?  The 823 supports an 8-bit index into a 12-bit
+colormap for LCD panels.  Why wouldn't the FADS support this?
+
+Yes, it also supports RGB, and CCIR-601 (4:4:4 and 4:2:2) with NTSC/PAL
+resolution through the CCIR-656 port.  It seems the LCD panel would
+be easier to support with X......and if you are really working on
+that, let me know :-).
+
+
+
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
