@@ -1,14 +1,26 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <406B9D084FAFD4118C980008C79FADB901B57FF4@ALBMAIL>
-From: "Yang, Bo" <bo.yang@transcore.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: serial console lost when linux kernel boots up
-Date: Fri, 11 Apr 2003 13:49:54 -0600
+Message-ID: <83E3831A88E65844B01DB1A73FB66F9314082F@CSDNT99.cdcgy.com>
+From: "Dang, James" <James.Dang@gdcanada.com>
+To: "'Yang, Bo'" <bo.yang@transcore.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: serial console lost when linux kernel boots up
+Date: Fri, 11 Apr 2003 14:12:17 -0600
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Run ELDK_MAKEDEV in your dev directory to create devices.
+
+James Dang
+
+-----Original Message-----
+From: Yang, Bo [mailto:bo.yang@transcore.com]
+Sent: Friday, April 11, 2003 1:50 PM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: serial console lost when linux kernel boots up
+
 
 
 Hello,
@@ -28,5 +40,6 @@ I wonder the root file system I used may not be a complete file system. Any
 ideas? Thanks for any hints.
 
 Bo Yang
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
