@@ -1,54 +1,82 @@
-Message-ID: <3EE8C5B8.7080806@embeddededge.com>
-Date: Thu, 12 Jun 2003 14:26:00 -0400
-From: Dan Malek <dan@embeddededge.com>
+Message-ID: <3EE8D12D.4020507@bluewin.ch>
+Date: Thu, 12 Jun 2003 21:14:53 +0200
+From: Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch>
 MIME-Version: 1.0
-To: erik.teose@exgate.tek.com
-Cc: fray@mvista.com, Christophe.LINDHEIMER@fr.thalesgroup.com,
+To: Mark Hatle <fray@mvista.com>
+Cc: Christophe.LINDHEIMER@fr.thalesgroup.com,
 	linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Running Linux with 2Mo of Ram.
-References: <BA0E4392AD99D040885C414D992C24BE0361528A@us-bv-m11>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+References: <D96E2AFA0DF3D211B139009027454948037362FE@helios.gnv.tcc.thomson-csf.com> <3EE8A746.7010901@mvista.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-erik.teose@exgate.tek.com wrote:
+On 06/12/2003 06:16 PM Mark Hatle wrote:
+> Christophe.LINDHEIMER@fr.thalesgroup.com wrote:
+>> Hi.
+>>
+>> I am trying to run linux on a custom board ( Mpc8xx )
+>> There is only 2Mo of RAM.
+>> I use romfs to save RAM.
+>>
+>> I use U-boot to start the kernel.
+>>
+>> The kernel starts correctly.
+>> the kernel is launched with init=/bin/sh
+>>
+>> The kernel stops to tell me to press enter to activate the console ( to
+>> launch the sh ) and then crash because it is running out of memory.
+>>
+>> The question is to know if it is really impossible to make Linux work on
+>> this target or is I have missed something that could explain that there is
+>> no more memory available.
+>
+> You will need some type of "execute in place", i.e. run the kernel and/or
+> userspace applications out of ROM in order to work with 2MB of RAM.
+>
+> This type of thing is generally very board, processor and application specific.
+>   So I don't believe there is existing (open source) code to do it.
 
-> MontaVista's "Consumer Electronics Edition" does xip (execute in place) from
-> rom.
+Some time ago I got XIP working for MPC 8xx with our DENX Linux 2.4.4
+kernel by collecting and integrating the various pieces already around.
+Below are some results about the amount of memory you can save. Note
+that this is for our standard, normally RAMdisk based run time
+environment SELF (see ftp://ftp.denx.de/pub/LinuxPPC/usr/src/SELF/). If
+you have little RAM and plenty of Flash memory XIP might be an option.
 
-I wrote the original version of that several years ago for an mpc8xx
-consumer product.  I've been sitting on the patches ever since trying
-to find a way to neatly make it part of at least the PowerPC tree.
-Recent changes have made it easier to add the patch to the source
-tree, but as Mark said it is very processor, board and application
-specific.  The patches would only work for the original product and
-although the code would be easy to modify upon inspection for another
-target, it isn't something that lends itself to configuration options.
+Hope it's useful.
 
-The code should be modified to work with a more common off-the-shelf
-board, and people could use that as an example.
-
-However, xip is not a solution to simply not having enough memory
-for the application.  If you do a systems analysis, xip doesn't really
-save that much memory, and depending upon the hardware design could
-hinder the performance.  In the particular application that started
-this, we gained some performance by using large page mapping for the
-code space, not so much for using less real memory for code.  It
-also provided a slightly faster boot up indication to the user that
-the system had started operating.  The large page mapping is the part
-of the patch that I have integrated into the public sources.
-
-Keep in mind that Linux is a dynamic operating system, and by itself
-it does very little.  The memory management Linux performs is based
-completely on what the applications are asking it to do.  Kernel hacks
-and tricks are fun to do, but aren't going to provide a stable solution
-to ill-behaved applications.  The way applications are built and the
-configuration of the necessary files to support them will have a much
-more significant effect than xip on the utilization of system resources.
+Wolfgang.
 
 
-	-- Dan
+
+Normal kernel + linear cramfs (patched):
+
+  pImage:  538062
+  cramfs: 1081344
+
+          total:    used:    free:  shared: buffers:  cached:
+  Mem:  14921728  3866624 11055104  2781184        0  2240512
+
+XIP kernel + linear cramfs:
+
+  pImage: 1395952
+  cramfs: 1081344
+
+          total:    used:    free:  shared: buffers:  cached:
+  Mem:  16175104  3940352 12234752  2822144        0  2240512
+
+
+XIP kernel + XIP cramfs (chmod +t: busybox, initd, libc)
+
+  pImage: 1395952
+  cramfs: 1871872
+
+          total:    used:    free:  shared: buffers:  cached:
+  Mem:  16175104  2367488 13807616   610304        0   671744
+
+The net saving is > 1.1MB + 1.5M = 2.6 MB.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
