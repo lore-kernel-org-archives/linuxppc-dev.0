@@ -1,40 +1,27 @@
 Mime-Version: 1.0
-Message-Id: <v04220800b69d5088a9c4@[10.0.0.42]>
-In-Reply-To: <19341224043310.26390@mailhost.mipsys.com>
-References: <200101280019.QAA15270@mail.turbolinux.com>
- <19341224043310.26390@mailhost.mipsys.com>
-Date: Tue, 30 Jan 2001 21:36:35 -0800
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, <brad@turbolinux.com>,
-        <linuxppc-dev@lists.linuxppc.org>
+Message-Id: <v04220802b69d56ed2a65@[10.0.0.42]>
+In-Reply-To: <Pine.SOL.3.95.1010129121607.21410A-100000@juliet>
+References: <Pine.SOL.3.95.1010129121607.21410A-100000@juliet>
+Date: Tue, 30 Jan 2001 21:53:54 -0800
+To: Derek Homeier <supas100@astrophysik.uni-kiel.de>,
+        linuxppc-dev@lists.linuxppc.org
 From: "Timothy A. Seufert" <tas@mindspring.com>
-Subject: Re: powerbook doubles as a frying pan
+Subject: Re: pmud monitoring temperature (Re: powerbook doubles...)
+Cc: Brad Midgley <brad@turbolinux.com>
 Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 12:01 PM +0100 1/29/01, Benjamin Herrenschmidt wrote:
+At 12:37 PM +0100 1/29/01, Derek Homeier wrote:
 
->Troy have some code that allow to read the temp from /proc. However, it
->looks like a lot of CPUs are so badly calibrated that the information
->returned is almost useless... Maybe that's not the case in CPUs used in
->portables, that's the case in some of the G4s used in dual G4s.
+>Actually, IBM and Motorola specs say the G3 has an operating temperature
+>of up to 105C!
 
-G3s generally have a useful temperature sensor, but you have to know
-the correction formula specific to the die revision you're using.
-The raw data is not good for much other than deltas (i.e. if the raw
-value changes by 12 C, you know that it really did change by about 12
-C, even if you don't know what the real starting and ending temps
-were).
-
-However, from what I've heard the G4 sensor is essentially useless.
-On my own dual processor 500, a MacOS temperature readout utility
-consistently tells me that one processor is 24 degC (or more) cooler
-than the other.  Both CPUs are the same die revision of course.
-There is just no way for this to be correct; the CPUs are thermally
-coupled by a nice thick chunk of aluminum (1" x 0.5" cross section at
-least), due to the design of the heatsink.  Both are getting good
-contact (I checked).
+There are multiple temperature grades.  Desktops usually use parts
+rated for 65 C, maybe 85 if you're lucky.  Apple's early Wall Street
+G3 laptops used 105 C parts (and needed it), later ones with better
+cooling may have 85 C.
 
    Tim Seufert
 
