@@ -1,31 +1,27 @@
-Message-ID: <3D9C7A26.3030602@mvista.com>
-Date: Thu, 03 Oct 2002 10:11:02 -0700
-From: Todd Poynor <tpoynor@mvista.com>
-MIME-Version: 1.0
-To: Matt Porter <porter@cox.net>
-Cc: Paul Mackerras <paulus@samba.org>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Remove ocp-proc.c
-References: <20021003062159.GA6160@zax> <20021003075753.B4643@home.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Thu, 3 Oct 2002 11:06:46 -0700
+From: Matt Porter <porter@cox.net>
+To: Anders Blomdell <anders.blomdell@control.lth.se>
+Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: PrPMC800
+Message-ID: <20021003110646.B5138@home.com>
+References: <F0A416BC-D6EB-11D6-8F3F-0003931C2BFA@control.lth.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <F0A416BC-D6EB-11D6-8F3F-0003931C2BFA@control.lth.se>; from anders.blomdell@control.lth.se on Thu, Oct 03, 2002 at 06:19:49PM +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->>This patch completely removes drivers/ocp/ocp-proc.c from 2.5, along
->>with all references to it - it's been terminally broken for some time
->>now.  Shall I commit this to linuxppc-2.5?
+On Thu, Oct 03, 2002 at 06:19:49PM +0200, Anders Blomdell wrote:
+>
+> I recently bought a few Motorola PrPMC800 boards, has anybody succeeded
+> with running linux on these beasts?
 
-Using driverfs instead sounds fine to me.  It's definitely the way to go
-if all the other /proc/bus/ denizens are moving to driverfs in the near
-future, anyhow.  Even if not, and /proc/bus/ lives on for certain
-busses, "ocp" is something of an artificial bus anyhow, and using a
-driverfs interface with a structure more closely approximating the real
-bus structure of the platform should be a good thing.
-
+Support in the linuxppc_2_4_devel tree.
 
 --
-Todd
-
+Matt Porter
+porter@cox.net
+This is Linux Country. On a quiet night, you can hear Windows reboot.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
