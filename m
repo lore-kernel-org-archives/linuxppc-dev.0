@@ -1,48 +1,37 @@
-Message-Id: <200103252008.OAA17663@lists.linuxppc.org>
-Subject: Re: st corruption
-From: Guillaume Laures <guillaume.laures@noos.fr>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Tony Mantler <nicoya@apia.dhs.org>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <Pine.LNX.4.05.10103252120020.13875-100000@callisto.of.borg>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: 25 Mar 2001 22:08:13 +0200
+Message-Id: <v01530504b6e45840ee6c@[199.170.89.13]>
 Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Sun, 25 Mar 2001 20:32:04 -0600
+To: linuxppc-dev@lists.linuxppc.org
+From: trag@io.com (Jeff Walther)
+Subject: Hammerhead pin outs:  CPU bus arbitration pins
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Le 25 Mar 2001 21:21:20 +0200, Geert Uytterhoeven a écrit :
-> On 25 Mar 2001, Guillaume Laures wrote:
-> > > merida:/home/nicoya# md5sum testfile
-> >
-> > 13b37214355ea84d906a54bb14c1c0be  testfile
-> >
-> > > merida:/home/nicoya# tar -c testfile >/dev/st0
-> > > merida:/home/nicoya# mv testfile testfile.1
-> > > merida:/home/nicoya# tar -x </dev/st0
-> > > merida:/home/nicoya# md5sum testfile
-> >
-> > 13b37214355ea84d906a54bb14c1c0be  testfile
-> >
-> > uname -a :
-> > Linux shiner.gom.net 2.2.18-snd-bkport #26 Wed Feb 28 23:19:57 CET 2001
-> > ppc unknown
-> >
-> > So no prob here either with close hardware.
->
-> Thanks! Do you also have a 2.4.x kernel around?
+Does anybody have a pin out list or diagram for the Hammerhead memory
+controller?  Specifically, I am looking for two sets of CPU-bus arbitration
+pins not used by the Bandit PCI Bridges or CPU.  According to the Apple
+documentation there may be two sets available, unused (or one set on the
+ANS, assuming that the on-board video is a CHAOS/Control chip).
 
-Not yet for this machine, but soon. I'll keep you tuned.
+The ANS and the Power Surge machines (X500 Macs) were designed with four
+Bandits in mind.  So it makes sense that the Hammerhead would have support
+available for four Bandits.
 
-I may do test on my G4 with an external enclosure (2.4.3-pre3, scsi =
-sym53c1010-33-0 through sym53c8xx-1.7.3a-20010304)
+I have most of a pin out for the Bandit chip in case anyone is interested.
+The only pins I don't have identified are five pins that appear to handle
+CPU bus arbitration (I know there are five pins, but I don't know which
+does what) and two other pins, probably on the PCI side of the bridge,
+which I think are PERR and SERR, but I can't be sure because they are just
+tied to 5V.  Apple didn't include support for the optional signals PERR and
+SERR though they are available on the Bandit.
 
-Later,
+One puzzling thing is that it seems that the ARBUS architecture should
+require Master/Slave devices on the CPU bus to have six arbitration lines,
+but the Bandit only has five--unless the sixth is a shared line on the bus.
 
-
---
-GoM
+Jeff Walther
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
