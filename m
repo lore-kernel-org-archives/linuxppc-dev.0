@@ -1,40 +1,28 @@
-Date: Thu, 3 Oct 2002 17:31:43 -0400
-From: Daniel Jacobowitz <drow@false.org>
-To: Kumar Gala <kumar.gala@motorola.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: RFC: generic vector unit support?
-Message-ID: <20021003213143.GA9675@nevyn.them.org>
-References: <E81F90F8-D715-11D6-B5AB-003065BFB10E@motorola.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <E81F90F8-D715-11D6-B5AB-003065BFB10E@motorola.com>
+Message-ID: <20021004052905.2189.qmail@kunk.jriver.com>
+Subject: usb-storage.o - Unresolved symbol ppc_generic_ide_fix_driveid in 2.4.20-pre7-ben0
+To: linuxppc-dev@lists.linuxppc.org
+Date: Fri, 4 Oct 2002 00:29:05 -0500 (CDT)
+From: Robert E Brose II <bob@kunk.jriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Oct 03, 2002 at 04:20:14PM -0500, Kumar Gala wrote:
-> I am not sure about what to do about ptrace.  We extended the interface
-> to have two new request types (PTRACE_GETVRREGS, PTRACE_SETVRREGS)
-> which return the full altivec state (all registers, vscr, vrsave).  We
-> could overload these request types to return all the 'vector' state
-> depending on which processor we are.  This would mean debuggers would
-> have to know which processor we are to know how big of a buffer to have
-> for ptrace calls, the memory layout, etc.
+Tried to get all the info in the title..
 
-I'd rather see you do it the other way around:  Add PTRACE_GETSPEREGS
-in the e500, so that the debugger can use ptrace to figure out which
-registers are available.
+usb-storage.o - Unresolved symbol ppc_generic_ide_fix_driveid in 2.4.20-pre7-ben0
 
-> We also extend generic vector idea to allow dumping of altivec/SPE
-> register state into core files (which we do not do currently).
+This worked in 2.4.19.
 
-That's a great idea.  Again, I think Altivec and SPE registers should
-be tagged differently even though they can't coexist.
+Ide is not enabled on this machine which is a SuperMac S900 (though if
+I remember right, enabling it didn't make any difference).
 
-Otherwise, it sounds like a good idea to me.
-
+Bob
 --
-Daniel Jacobowitz
-MontaVista Software                         Debian GNU/Linux Developer
+/~\ The ASCII       | Robert E. Brose II    N0QBJ
+\ / Ribbon Campaign | http://www.qbjnet.com/
+ X  Help cure       | mailto:bob@qbjnet.com
+/ \ HTML Email      | public key at http://www.qbjnet.com/key.html
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
