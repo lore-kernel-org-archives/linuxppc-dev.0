@@ -1,49 +1,49 @@
-Message-ID: <391C3164.E68C4EC4@motorola.com>
-Date: Fri, 12 May 2000 11:29:24 -0500
+Message-ID: <391C3273.4BBF0884@motorola.com>
+Date: Fri, 12 May 2000 11:33:55 -0500
 From: "Richard Hendricks" <richard.hendricks@motorola.com>
 MIME-Version: 1.0
-CC: "'linuxppc-embedded@lists.linuxppc.org'"  <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Problem with CPM I2C driver
-References: <819E3E914E0AD11194DE00805F0D100B0138B857@fbi.infocom.dk>
-Content-Type: text/plain; charset=iso-8859-1
+To: "Dan A. Dickey" <ddickey@charter.net>
+CC: "linuxppc-embedded@lists.linuxppc.org"  <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: How to get rom code to go on FADS?
+References: <391B220F.9838E70F@charter.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Kim Jørgensen wrote:
->
-> Hi.
->
-> After solving my hardware problem on custom MPC823E board and I got my LCD
-> running, thank you for the help.
-> But I have a new problem: I want to use the I2C bus, but the driver doesn't
-> seam to work.
->
-> I added CPM IIC and IIC/SPI Microcode patch in xconfig. Then I added the
-> cpm_iic_init function in drivers/char/mem.c so that is would be called at
-> startup.
+What do you mean, exactly?  How to get it to run stand-alone?  The
+way I understand it, the 8xxROM code is designed to work stand-alone.
 
-I assume you are using the microcode patch because you are using
-Ethernet?
-If your Ethernet is on SCC2 (which it should be), you don't need the
-patch unless you are using SPI.
+Do you mean running with the ADI&MPC8bug connected?  In that case,
+you could try reseting the ADS board without letting MPC8bug run its
+default configuration scripts (type "reset :ni" I believe).  This will
+not initialize any of the on-chip registers.  You might have to turn
+on the ADS board, start MPC8bug, shut off the ADS board, turn the
+ADS board back on again, then run "reset :ni" in order for this to
+work properly, since MPC8bug does a reset when it starts.  This will
+make sure the registers are in their default state.  Once you do that,
+you should be able to do a "go", and the CPU should start automatically
+at 0x0100.  Remember though, MPC8bug doesn't do address translation, so
+it will have problems displaying memory locations once the MMU's have
+been enabled.
 
-> When I try to read some data from /dev/i2c0 the driver just hang. I have
-> added some printk in the iic driver read function, and it seam to hang just
-> after enabling the i2c controller.
-> Can anyone help me with this?
-
-Are you trying to do any of the CPM Microcontroller commands?  I don't
-think you can do the SPI/I2C commands when using the patch.  The uCode
-patch itself has been recently updated to address a problem with
-high CPM loads, is that the environment you are running in?
-
-> The "driver" in arch/ppc/mbxboot seam to work fine on my board.
+"Dan A. Dickey" wrote:
 >
-> Is there any other more complete i2c driver available?
+> Ok, so I have the 8xxrom code running on my fads board;
+> and so far I've only been able to run it by using the
+> ADI connected to the debug port.  I noticed the other
+> day that it was actually running without the ADI connected.
+> (Lights blinking, RS232 status LED coming on, etc...)
 >
-> ---
-> Kim Jorgensen
+> However, I cannot seem to figure out how to cause this to
+> happen at will.  Is there some configuration thing I need
+> to set via the debug port?  (Using mpc8bug95 on a windows
+> machine talking to the ADI board connected to the debug
+> port).
+>
+> If anyone is familar with how this is done, I'd appreciate
+> a reply.   Thanks again.
+>         -Dan
 >
 
 --
