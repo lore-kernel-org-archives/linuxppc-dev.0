@@ -1,111 +1,32 @@
+Message-ID: <008001c43f61$247bb080$0301a8c0@chuck2>
+From: "Mark Chambers" <markc@mail.com>
+To: "'Carlo Parravicini'" <c.parravicini@sehitaly.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <762A181C0D966E459A2EB3B810142C770386143A@nmrusdunsx12.nmrlan.net>
+Subject: Re: ELDK 3.0 C++ Problem
+Date: Fri, 21 May 2004 14:26:30 -0400
 MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----_=_NextPart_001_01C43F59.F1AD082B"
-Subject: 8260 CPM DP ram free function
-Date: Fri, 21 May 2004 12:35:01 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B06DADE@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
+> I'll bet _two_ cases of beer that Wolfgang won the beer. The seg. fault is
+> happening in the memset.
+>
 
-------_=_NextPart_001_01C43F59.F1AD082B
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Before this goes any further, I think we need to put the beer in escrow.  I
+humbly offer my garage.  I will sample it and make sure it's worthy of this
+duel.
 
-Hi
+By the way - on the printf - do you have a '\n' on the end of your
+diagnostic message?  If you're right, you're going to have to go the next
+step and find out exactly what is failing in new().  'new' should basically
+boil down to malloc(4), possibly followed by 'if (p == 0) branch_to_catch',
+then *p = 10000;  Hard to imagine what could go wrong there...
 
-I hope someone on this list can push the following patch to one of the
-ppc trees.
+Mark Chambers
 
-It adds functionality to the 8260 CPM to free() allocated host and dp
-ram memory. (nice for loadable drivers that use DP ram)
-
-The functions that are added are m8260_cpm_dpfree() and
-m8260_cpm_hostfree()
-
-This patch is agains 2.6.5, but it should apply cleanly agains any 2.4.x
-and 2.6.x, since it only touches arch/ppc/8260_io/commproc.c and
-include/asm-ppc/cpm_8260.h
-
-This could possibly also be used on the 8xx CPUs, since the code is
-identical.
-
-------_=_NextPart_001_01C43F59.F1AD082B
-Content-Type: application/x-gzip;
-	name="cpm_dpfree.patch.gz"
-Content-Transfer-Encoding: base64
-Content-Description: cpm_dpfree.patch.gz
-Content-Disposition: attachment;
-	filename="cpm_dpfree.patch.gz"
-
-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
-+BYVf8kbVLqt/x/RU7klwCwAAA==
-
-------_=_NextPart_001_01C43F59.F1AD082B--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
