@@ -1,36 +1,29 @@
-To: =?gb2312?q?ZhongJun=20Zhou?= <zjzhou@newrocktech.com>
-Cc: Peter Barada <pbarada@mail.wm.sps.mot.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: kernel memory mapping problem 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 07 Aug 2003 23:49:23 +0800."
-             <20030807154923.56073.qmail@web105.mail.yahoo.com>
-Date: Thu, 07 Aug 2003 23:32:23 +0200
-Message-Id: <20030807213228.A9194C59E4@atlas.denx.de>
+From: "dong in kang" <dkang@east.isi.edu>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Does Linux kernel use paging or BAT registers before running the first user-level program "/bin/sh"?
+Date: Fri, 8 Aug 2003 10:09:25 -0400
+Message-ID: <002601c35db6$acc8aed0$6601a8c0@Minjoo>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <20030807213228.A9194C59E4@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20030807154923.56073.qmail@web105.mail.yahoo.com> you wrote:
->
-> But my functions are serial running on PPC82xx, its
-> means that when I mapped the the address using __pa(
-> (void *)tmp) to bd_address, then reading the BD's
-> status and control registers, if OK, then return from
+ Does Linux kernel use paging or BAT registers before executing "/bin/sh"?
+How can I test if paging works fine?
 
-Just a stupid question: what are the alignment requirements of a  BD,
-and which alignment is guaranteed for your tmp buffer?
+  My Linux kernel crashes while it accesses page table entry for argument
+page which is called
+   load_elf_binary --> setup_arg_pages --> put_dirty_page.
+The address of page table entry is 0xb0beffc which is not a valid address.
+When the kernel accesses that address, it crashes.
+I suspect that paging may not work properly.
 
+Did anybody have this problem?
 
-Wolfgang Denk
+ Dong-In
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-This cultural mystique surrounding the  biological  function  --  you
-realize humans are overly preoccupied with the subject.
-	-- Kelinda the Kelvan, "By Any Other Name", stardate 4658.9
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
