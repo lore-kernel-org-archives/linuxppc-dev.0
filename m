@@ -1,13 +1,25 @@
-Date: Fri, 18 Apr 2003 11:25:38 -0400
-From: Stefano Bodini <s.bodini@comcast.net>
-Subject: SPI again
-In-reply-to: <3E9EA7C6.2020605@tataelxsi.co.in>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Message-id: <5.2.0.9.0.20030418111207.0361ac60@pop3.norton.antivirus>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii; format=flowed
+Message-ID: <D73A25AA6E54D511AD74009027B1110F3C07F5@ORION>
+From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+To: "'Stefano Bodini'" <s.bodini@comcast.net>,
+	"'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: SPI again
+Date: Fri, 18 Apr 2003 11:46:39 -0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Actaully you are using the I2C.  Early in the boot Linux uses the I2C to
+read configuration keys from the onboard EEPROM.
+
+-----Original Message-----
+From: Stefano Bodini [mailto:s.bodini@comcast.net]
+Sent: Friday, April 18, 2003 11:26 AM
+To: 'linuxppc-embedded@lists.linuxppc.org'
+Subject: SPI again
+
 
 
 Hi
