@@ -1,31 +1,46 @@
-Message-ID: <3C0E5679.4060407@embeddededge.com>
-Date: Wed, 05 Dec 2001 12:16:41 -0500
+Message-ID: <3C0E5AC7.4090203@embeddededge.com>
+Date: Wed, 05 Dec 2001 12:35:03 -0500
 From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: Shie Erlich <shie_e@elbit.co.il>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: 64 bit memory access - again ...
-References: <937610FE9B70D511B3E700508B8B65770E53DC@MAIL1>
-Content-Type: text/plain; charset=windows-1255; format=flowed
+To: Rudolf Ladyzhenskii <rudolf.ladyzhenskii@act-aus.net>
+Cc: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: ATM switching in MPC8260
+References: <B164B53F5BD6D511888D009027732E1A0249AA@ntserver.act.domain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Shie Erlich wrote:
+Rudolf Ladyzhenskii wrote:
 
+> Hi, all
+>
+> I have to do some ATM traffic switching
 
-> the FPU solution does work, however (and thanks for the pointers) - but if
-> my
-> function saves the fpu registers and restores them, do i really need to
-> force
-> the kernel to context switch the fpu ?
+I'm not sure what you mean by "traffic switching."  The 603 core
+needs to be involved for some management of the connections.  I've
+done custom Ethernet bridging applications over ATM using the AAL5
+and it has worked well.
 
-You have to be careful that moving the bits in/out of the FP register
-doesn't have other side effects in FP status or condition codes.  Always
-saving/restoring the context will guarantee the application doesn't see
-these side effects, but you can experiment if you wish.
+> MPC8260 manual says that it is possible to do it on AAL0
 
-Good Luck.
+The AAL0 is just a "raw" ATM cell connection.  Anything over this interface
+requires 603 core interaction.  It's purpose is to provide a conduit for
+ATM cells that aren't configured for processing by CPM.  Any VCI/VPI the
+CPM receives that it doesn't understand is routed here.
+
+> Does anyone know if this is possible for AAL5?
+
+With AAL5 you just hand the CPM a PDU for transmit, and the receiver
+returns the PDU in the receive buffer.  The CPM does all of the cell
+fragmentation, CRC and length checks, and header processing.
+
+There are many nice features of this ATM controller, including things
+like bit rate and cell scheduling.  I suspect the whole of the Linux ATM
+software can be done by the CPM (and then some), all we need is a data
+path and control interface.
+
+Have fun!
 
 
 	-- Dan
