@@ -1,45 +1,59 @@
-Date: Mon, 15 May 2000 15:23:51 +0200 (MET DST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: current bk tree
-In-Reply-To: <Pine.GSO.4.10.10005150925400.4996-100000@dandelion.sonytel.be>
-Message-ID: <Pine.GSO.4.10.10005151523050.4996-100000@dandelion.sonytel.be>
+Message-ID: <39201DA7.96674A96@pop.agri.ch>
+Date: Mon, 15 May 2000 17:54:28 +0200
+From: Andreas Tobler <toa@pop.agri.ch>
+Reply-To: toa@pop.agri.ch
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linux -Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: ppc assembler help needed
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 15 May 2000, Geert Uytterhoeven wrote:
-> I managed to compile the current bk tree (+ a few fixes I just checked in) and
-> boot it on my LongTrail. Comments:
->
->   - The MESH driver doesn't detect any disks anymore, which is bad.
->
->   - The kernel still detects 3 serial ports:
->
->       ttyS00 at 0x03f8 (irq = 4) is a 16550A
->       ttyS01 at 0x02f8 (irq = 3) is a 16550A
->       ttyS02 at 0x03e8 (irq = 4) is a 16450
->
->     The last one is bogus. This problem has been there seen quite a while, but
->     seems to be harmless.
+Hi,
 
-Forgot one:
+I have some problems understanding the following code snippet. It is
+from misc.S in kernel 2.3.
 
-    - `cat /proc/ppc_htab' is a solid and alternative way to cause a hard
-      reboot in exactly 180 seconds.
+The function call is like this:
 
-Gr{oetje,eeting}s,
+void _insl_ns(volatile u32 *port, u32 *buf, int nl)
 
-						Geert
+_GLOBAL(_insl_ns)
+        cmpw  0,r5,0
+        mtctr   r5
+        subi    r4,r4,4
+        blelr-
+00:     lwz     r5,0(r3)
+        eieio
+        stwu    r5,4(r4)
+        bdnz    00b
+        blr
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Am I right with port = r3, buf = r4, nl = r5?
+If so, cmpw 0,r5,0 compares the content of r5, in my case nl, with zero
+and stores the result in CR0?
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+What does blelr- exactly do? 'branch if less than or equal' according to
+the 'Programming Environment for 32bit uPs' from Motorola.
+Commenting out the cmpw and the blelr- line as in kernel-2.2, then the
+function works. The values from nl are in the range from 10 to 20 (int).
+So the the blelr- shouldn't happen.
 
+The function in C looks a bit like: (Thanks to Paul)
+
+void _insl_ns(volatile u32 *port, u32 *buf, int nl)
+{
+        if (nl <= 0)
+                return;
+        do {
+                *buf++ = *port;
+                eieio();
+        } while (--nl != 0);
+}
+
+Thanks for any explanation
+
+Andreas
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
