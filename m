@@ -1,13 +1,23 @@
-Return-Path: <domen@coderock.org>
-Received: from trashy.coderock.org (coderock.org [193.77.147.115])
-	by ozlabs.org (Postfix) with ESMTP id 586EA67A6E
-	for <linuxppc-dev@ozlabs.org>; Sun, 20 Mar 2005 00:19:29 +1100 (EST)
-To: benh@kernel.crashing.org
-From: domen@coderock.org
-Date: Sat, 19 Mar 2005 14:19:19 +0100
-Message-Id: <20050319131920.099BF1F23D@trashy.coderock.org>
-Cc: linuxppc-dev@ozlabs.org, domen@coderock.org
-Subject: [patch 1/1] Re: list_for_each_entry: drivers-macintosh-via-pmu.c]
+Return-Path: <Joakim.Tjernlund@lumentis.se>
+Received: from dmz.lumentis.net (unknown [212.105.56.244])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 928EB67A6E
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Mar 2005 02:01:59 +1100 (EST)
+Received: from Jocke ([84.217.0.212]) (authenticated bits=0)
+	by dmz.lumentis.net (8.12.8/8.12.8) with ESMTP id j2KEMINX031150
+	(version=TLSv1/SSLv3 cipher=RC4-MD5 bits=128 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Sun, 20 Mar 2005 15:22:19 +0100
+From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
+To: "Linuxppc-Dev" <linuxppc-dev@ozlabs.org>
+Date: Sun, 20 Mar 2005 15:22:16 +0100
+Message-ID: <BCEFJBPJCGFCNMMMIDBHIECMCLAA.Joakim.Tjernlund@lumentis.se>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <BCEFJBPJCGFCNMMMIDBHKECDCLAA.Joakim.Tjernlund@lumentis.se>
+Subject: RE: PCC ABI question
+Reply-To: Joakim.Tjernlund@lumentis.se
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,70 +27,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> 
+> Hi Folks
+> 
+> It seems to me that linux doesn't follow the ABI for PowerPC.
+> According to http://refspecs.freestandards.org/elf/elfspec_ppc.pdf,
+> Figure 3-31(Initial Process Stack) should the stack ptr point to a NULL word, instead
+> linux's stack ptr points to argc and there is no NULL word, correct?
+> 
+> The initial register map, on p. 3-28, register r7 should point to a
+> "termination function" or hold zero. Does linux do this?
+> If so, where does it get the "termination function" from?
+> If not, can one assume that r7 is NULL at all times?
+> 
+> Are there other deviations from the above spec in linux?
+> 
+>  Jocke 
 
-Replace for loops with nice list_for_each* macros.
+[Moving this to linuxpcc-dev list]
 
-Signed-off-by: Domen Puncer <domen@coderock.org>
----
+Someone was kind enough to point me to this spec:
+http://refspecs.freestandards.org/LSB_2.0.1/LSB-Core-PPC32/LSB-Core-PPC32/processinitialization.html
+Which says:
+"Contrary to what is stated in the Registers part of Chapter 3 of the System V Application Binary Interface PowerPC
+Processor Supplement there are no values set in registers r3, r4, r5, r6 and r7. Instead the values specified to
+appear in all of those registers except r7 are placed on the stack. The value to be placed into register r7,
+the termination function pointer is not passed to the process."
 
+It is not quite clear to me if r3, r4, r5, r6 and r7 contains random data or if one
+can assume that some of them are set to NULL. It would be good if one could assume
+that r7 is always set to NULL as that would simplify the startup code(crtX.S) in uClibc which
+I am updating to support passing a FINI function ptr in r7.
 
- kj-domen/drivers/macintosh/via-pmu.c |   16 ++++------------
- 1 files changed, 4 insertions(+), 12 deletions(-)
-
-diff -puN drivers/macintosh/via-pmu.c~list_for_each-drivers_macintosh_via-pmu drivers/macintosh/via-pmu.c
---- kj/drivers/macintosh/via-pmu.c~list_for_each-drivers_macintosh_via-pmu	2005-03-18 20:05:49.000000000 +0100
-+++ kj-domen/drivers/macintosh/via-pmu.c	2005-03-18 20:05:49.000000000 +0100
-@@ -2062,8 +2062,7 @@ pmu_register_sleep_notifier(struct pmu_s
- 	struct list_head *list;
- 	struct pmu_sleep_notifier *notifier;
- 
--	for (list = sleep_notifiers.next; list != &sleep_notifiers;
--	     list = list->next) {
-+	list_for_each(list, &sleep_notifiers) {
- 		notifier = list_entry(list, struct pmu_sleep_notifier, list);
- 		if (n->priority > notifier->priority)
- 			break;
-@@ -2090,8 +2089,7 @@ broadcast_sleep(int when, int fallback)
- 	struct list_head *list;
- 	struct pmu_sleep_notifier *notifier;
- 
--	for (list = sleep_notifiers.prev; list != &sleep_notifiers;
--	     list = list->prev) {
-+	list_for_each_prev(list, &sleep_notifiers) {
- 		notifier = list_entry(list, struct pmu_sleep_notifier, list);
- 		ret = notifier->notifier_call(notifier, when);
- 		if (ret != PBOOK_SLEEP_OK) {
-@@ -2112,14 +2110,10 @@ static int __pmac
- broadcast_wake(void)
- {
- 	int ret = PBOOK_SLEEP_OK;
--	struct list_head *list;
- 	struct pmu_sleep_notifier *notifier;
- 
--	for (list = sleep_notifiers.next; list != &sleep_notifiers;
--	     list = list->next) {
--		notifier = list_entry(list, struct pmu_sleep_notifier, list);
-+	list_for_each_entry(notifier, &sleep_notifiers, list)
- 		notifier->notifier_call(notifier, PBOOK_WAKE);
--	}
- 	return ret;
- }
- 
-@@ -2720,15 +2714,13 @@ static void __pmac
- pmu_pass_intr(unsigned char *data, int len)
- {
- 	struct pmu_private *pp;
--	struct list_head *list;
- 	int i;
- 	unsigned long flags;
- 
- 	if (len > sizeof(pp->rb_buf[0].data))
- 		len = sizeof(pp->rb_buf[0].data);
- 	spin_lock_irqsave(&all_pvt_lock, flags);
--	for (list = &all_pmu_pvt; (list = list->next) != &all_pmu_pvt; ) {
--		pp = list_entry(list, struct pmu_private, list);
-+	list_for_each_entry(pp, &all_pmu_pvt, list) {
- 		spin_lock(&pp->lock);
- 		i = pp->rb_put + 1;
- 		if (i >= RB_SIZE)
-_
+ Jocke
