@@ -1,24 +1,31 @@
-Message-ID: <20000307040114.8079.qmail@web1002.mail.yahoo.com>
-Date: Mon, 6 Mar 2000 20:01:14 -0800 (PST)
-From: Dan Bethe <dan_bethe@yahoo.com>
-Subject: Re: serial module in 2.3.x?
+Message-ID: <20000307081925.14102.qmail@www0p.netaddress.usa.net>
+Date: 7 Mar 00 02:19:25 CST
+From: jeramy b smith <ultrapenguin@netscape.net>
 To: linuxppc-dev@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: Kernel Bug Report-Jeram
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> It takes a lot of time to find out where, since each freeze needs
-> about
-> 10' to reboot (fsck)
+I wrote to linuxppc user to get some feedback on a kernel error I was running
+into. Specifically, when booting 2.2.15pre3 directly (yaboot); my Lombard 333
+hangs when it enables multiword dma for hda. It gives the message that it
+enables multiword dma , gives the specs of the drive twice, and duly hangs.
 
-	You might see how much of your storage you can mount read-only, if you
-know it's unstable.  Then there'll be no fsck needed  ;->
-	There's a true Wintel-style workaround mentality for ya!
+1. If I boot from a a linuxppc cdrom this does not occur.
 
-=====
-"Don't expect your own messiah; this neverworld which you desire is
-only in your mind." -- http://www.dreamtheater.net/songb4.htm#IV5
+2. If I warm reboot after booting from a Linux cdrom and mounting the drives
+or booting from a macos cdrom, then the direct boot succeeds.
+
+3. If I boot from a bootx extension, this does not occur.
+
+4. If I direct boot the newer kernel in cs 1.2 (pre8?), multiword dma is
+successfully initialized for hda but then I get two messages that multiword is
+enabled for hdc followed by a nice hang.
+
+-Jeramy
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
