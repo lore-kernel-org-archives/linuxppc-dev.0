@@ -1,54 +1,43 @@
-Date: Mon, 13 Mar 2000 18:24:18 +0200 (EET)
-From: Kostas Gewrgiou <gewrgiou@imbc.gr>
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-cc: Michel Dänzer <michdaen@iiic.ethz.ch>,
-        "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to work
- onppcwithr128
-In-Reply-To: <Pine.LNX.4.10.10003131401510.32105-100000@opal.biophys.uni-duesseldorf.de>
-Message-ID: <Pine.LNX.4.21.0003131530380.1561-100000@idd-01.imbc.gr>
+Message-Id: <200003131630.KAA28738@lists.linuxppc.org>
+Date: Mon, 13 Mar 2000 11:29:17 -0500 (EST)
+From: Kevin_Hendricks <khendricks@admin.ivey.uwo.ca>
+Reply-To: Kevin_Hendricks <khendricks@admin.ivey.uwo.ca>
+Subject: 1 line kernel patch and new Xpmac now works on new sawtooth G4s !
+To: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 13 Mar 2000, Michael Schmitz wrote:
+Hi,
 
-> >   Without the BusID line the XServer will disable the pci memory/io
-> > for the card, it doesn't matter if fbdev_open_pci is used or not.
-> > What probably happens is that even with the BusID defined the xserver
-> > still disables your card.
->
-> We'll see if that's a problem; right now it hangs earlier.
->
+By changing the constants.xclk value to 0x36d5 in the stable kernel aty128fb.c
+and running a slightly modified Xpmac that recognizes the Rage128Pro graphics
+card (id 0x5046) I now have nicely working Rage 128 acceleration.
 
-  Earlier than what ? The Xserver does its pci magic (badly in this
-case it seems) very early, by the time you reach fbdevHWModeInit
-its already done.
+There is still a problem using just the OF frame buffer device in place of the
+modified aty128fb video driver that I will look at later.
+
+If anyone wants the aty128fb.c diff and/or a binary Xpmac.special (the source is
+at at home but coming tomorrow!), just let me know and I will post them.
+
+The XF 4.0 R128 driver still has yet to be fixed (the defaults used in place of
+the rom bios probe matched the old aty128fb.c xclk value and not the new ones.
+
+So no more split vertical panes under new G4 machines!
+
+Hooray I can finally do something at over 8bpp!
+
+Kevin
 
 
-> > The PCI warnings that you get most likely will tell us where the problem
-> > is, can you send the logfile over ?
->
-> Relevant log excerpt:
->
-> (II) Loading /usr/X11R6/lib/modules/linux/libfbdevhw.a
-> (II) Module fbdevhw: vendor="The XFree86 Project"
-> 	compiled for 4.0, module version = 0.0.1
-> (II) FBDev(1): using default device
-> (**) FBDev(1): claimed PCI slot 0:17:0
-> (WW) ****INVALID MEM ALLOCATION**** b: 0x81000000 e: 0x81ffffff correcting
-> own
->         [0] -1  0x81fff000 - 0x81ffffff (0x1000) MXB
-> 	[1] -1  0x00000c00 - 0x00000cff (0x100) IXB
-> (WW) ****INVALID IO ALLOCATION**** b: 0xc00 e: 0xcff correcting
-
-    Here is the problem, for some reason the xserver doesn't like
-the pci mem/io mappings for the card and "corrects" them :(
-
-  Kostas
+--
+Kevin B. Hendricks
+Associate Professor of Operations and Information Technology
+Richard Ivey School of Business, University of Western Ontario
+London, Ontario  N6A-3K7  CANADA
+khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
