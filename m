@@ -1,57 +1,65 @@
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-Id: <v04011700b301bd4f1962@[206.173.232.34]>
-Date: Tue, 2 Mar 1999 08:31:25 -0800
 To: linuxppc-dev@lists.linuxppc.org
-From: "Randall R. Schulz" <rrschulz@cris.com>
-Subject: Offer of Work on Blue G3 Port
+Subject: PCI driver porting - problem with ioremap ?
+From: Olivier Aubert <Olivier.Aubert@enst-bretagne.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Date: 02 Mar 1999 17:43:15 +0100
+Message-ID: <u7btibdeqk.fsf@xatard.enst-bretagne.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Greetings,
+Hi.
 
-I recently acquired a Blue G3 in one of the top-of-the-line configurations
-available only directly from Apple:
+I am trying to port an existing driver (for a FORE PCA200E ATM card)
+from an existing driver for i386 & alpha to linuxppc (2.2.0 on a PReP,
+Motorola board). I have some trouble with the memory mapping:
 
-	400 MHz
-	256 Mb
-	8.5 Gb SCSI (advertised as 9!)
-	DVD ROM / Video (ATA bus)
-	21" Studio Monitor
-	ZIP Drive (ATA bus)
+lspci -v gives
+[...]
+00:11.0 ATM network controller: FORE Systems Inc PCA-200E
+        Flags: bus master, medium devsel, latency 100, IRQ 11
+        Memory at 01e00000 (32-bit, non-prefetchable)
 
-I've added a CD recorder / rewritable based on the Yamaha 4416S drive
-attached via an Initio INI-9100UW UltraWide SCSI adaptor (so as not to
-compromise the performance of the Adapte 2940UW2B included with the "9
-Gigabyte" SCSI option).
+So it detects correctly the address region. I then try to remap it:
 
-This system is to (eventually) replace my 8500/120 which I use for both
-MacOS and MkLinux.
+nodep->membase = (char*)dev->base_address[0];
+(unsigned long) nodep->membase &= PCI_BASE_ADDRESS_MEM_MASK;
+ if ((nodep->kernel_membase = (caddr_t) ioremap((unsigned int)nodep->membase,
+                                                RAM_SIZE)) == NULL) {
+                        printk("pca200e: Can't ioremap board memory for device %d\n",pci_index); return -EIO; }
+#ifdef DEBUG_200E
+                printk("pca200e: Board Memory mapped at 0x%p\n",nodep->kernel_me
+mbase);
+#endif
 
-When I bought this machine I intendeded to run both LinuxPPC and MacOS.
-Imagine my disappointment to find LinuxPPC wasn't yet supported!
+The remap seems to be alright, but when I access the remapped memory
+area, I access a seemingly random zone of memory. A dump of the memory
+area compared to the same thing (sames sources recompiled) on i386
+does not give reasonable results (in general, the various addresses
+which should be in the memory area are just nonsense [status
+registers, etc], and there is a specific ASCII string which does not
+even appear in the PPC dump).
 
+>From what I have understood (mailing lists, linux sources), PCI
+handling with PReP seems to be a kind of a mess (with relocation
+happening early at boottime). I investigated problems related to
+byte-order, but the PCI routines on the PPC side should handle this.
 
-So, to get to the real point of this message, I'm wondering if I might make
-a meaningful contribution to the porting efforts. I have extensive
-experience in UNIX kernel and system programming, though it is a bit dated
-now and I've never worked on Linux internals per se.
+I tried to map a memory zone as large as possible and grep the
+specific ASCII string from there, but I must have missed something
+because it did not appear. I got some code from the ncr53c8xx.c
+driver, related to address relocation, but it is now done in the
+kernel setup. I checked the PCI command register, which is set to
+PCI_COMMAND_MASTER|PCI_COMMAND_MEMORY, as expected.
 
-My questions are these:
+I am now stuck with no idea of what to try next. Does anybody have a
+hint?
 
-- Is there a need for help on this port?
-- What is a meaningful commitment of time?
-- If I decide I can make the committment, how do I go about doing so?
+Apart from that, LinuxPPC on a PReP board works just fine. Kudos to
+all the developers!
 
-
-If this isn't the proper place to address this question, please accept my
-apologies and redirect me or this query to a more appropriate recipient.
-
-Thank you.
-
-Randall R. Schulz
-Mountain View, CA
+Olivier
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
