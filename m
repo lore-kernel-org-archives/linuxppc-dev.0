@@ -1,59 +1,40 @@
-Message-ID: <3EA6B8AF.8030005@embeddededge.com>
-Date: Wed, 23 Apr 2003 12:00:47 -0400
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: Frank Haverkamp <f.haverkamp@web.de>
+To: "Johnson, Stephen" <stevebj@artesyncp.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Behaviour of consistent_{alloc|free}
-References: <200304231355.h3NDttq00868@mailgate5.cinetic.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Re: Opps...with ELDK-2.1.0 (ppc_4xx) 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 23 Apr 2003 08:49:54 CDT."
+             <F9102D41F595D311ACA7009027DE2C840527B19B@c3po.heurikon.com>
+Date: Wed, 23 Apr 2003 19:14:56 +0200
+Message-Id: <20030423171501.96FD2C5E29@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Frank Haverkamp wrote:
-
-> I am working with a PowerPC 405 based asic having PCI_DRAM_OFFSET to be defined not to be zero.
-
-Why?
+In message <F9102D41F595D311ACA7009027DE2C840527B19B@c3po.heurikon.com> you wrote:
+>
+> i2c is somewhat slow...and I looked at the driver to see it using spin_lock() around the write to the rtc. This could potentially be the problem...and it most likely would not be observed with a memory mapped rtc device (because it is much faster than i2c).
 
 
-> consistent_alloc returned a virtual address and the address on my pci bus.
+Ummm... can you please try using shorter lines? Some 70...80 chars or
+so? Thanks.
 
-I think you don't understand the value of PCI_DRAM_OFFSET.  This value is the
-way system memory is mapped from the PCI bus, it does not represent a processor
-mapping to the PCI bus.
+> I just changed spin_lock() to spin_lock_irq() and I'm currently testing it.
+>
+> Wolfgang:  Is the driver that you're seeing the problem with using spin_lock().
 
-> ... The address on the bus was
-> returned correctly, but the mapping consistent_alloc was working was not like I expected it.
+No, it is not. We see the problem for example  on  the  LWMON  board,
+which uses drivers/char/pcf8563_rtc.c and drivers/i2c/i2c-simple.c.
 
-It did exactly what you asked.  It allocated free memory pages, then adjusted the
-physical address by PCI_DRAM_OFFSET.  This address is what you should be giving
-a device on the PCI bus for mastering buffers in your system memory.
+Best regards,
 
+Wolfgang Denk
 
-> It maps the virtual address to an address on the bus and not to the real address of my DRAM.
-
-Then, you don't have PCI_DRAM_OFFSET assigned a proper value.
-
-
-> A mapping to the real address in DRAM is, what I wanted to have. I tried to do a virt_to_phys
-> on the virtual address, but got, again, the address on the bus. And a bus_to_phys I could not find ;-)
-
-You can't use any of the virt_to_* or bus_to_* functions on the addresses returned
-by consistent_alloc.  This is why consistent_alloc() returns both a virtual address
-for you to use for processor access, and a "bus" address handle to be given to the
-device that will perform the DMA.  You have to stash these values in your driver
-so you can reference them at later times when necessary.
-
-In fact, if this is a PCI device, you should be using the pci_* functions as
-described in Documentation/DMA-mapping.txt, and not using the consistent_alloc()
-functions directly.
-
-Thanks.
-
-
-	-- Dan
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+I'm what passes for a Unix guru in my office. This is  a  frightening
+concept. - Lee Ann Goldstein, in <3k55ba$c43@butch.lmsc.lockheed.com>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
