@@ -1,41 +1,54 @@
-Message-Id: <200012100836.eBA8a3W15391@denx.local.net>
-To: Subodh Nijsure <SNijsure@SkyStream.com>
-cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Connecting to powerpc target via wiggler. 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sat, 09 Dec 2000 20:30:38 PST."
-             <B25E2E5A003CD311B61E00902778AF2A0148B611@server1.skystream.com>
-Date: Sun, 10 Dec 2000 09:36:02 +0100
+Date: Mon, 11 Dec 2000 11:45:33 +1100
+From: Graham Stoney <greyham@research.canon.com.au>
+To: Brian Ford <ford@vss.fsi.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 2.5 or 2.4 kernel profiling
+Message-ID: <20001211114533.A2691@brixi.research.canon.com.au>
+References: <Pine.GSO.4.21.0012071148420.515-100000@eos> <Pine.GSO.4.21.0012071210280.515-100000@eos>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.GSO.4.21.0012071210280.515-100000@eos>; from ford@vss.fsi.com on Thu, Dec 07, 2000 at 12:11:07PM -0600
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <B25E2E5A003CD311B61E00902778AF2A0148B611@server1.skystream.com> you wrote:
->
-> Has anybody been successful in connecting to the powerpc board
-> using the BDM wiggler from MACRAIGOR system?
+Hi Brian,
 
-AFAIK the wiggler comes with its own software; I don't know if a  GDB
-compatible version is available.
+On Thu, Dec 07, 2000 at 12:11:07PM -0600, Brian Ford wrote:
+> I am trying to do some kernel profiling on my EST8260 to determine the
+> bottle neck in TCP and UDP thruput, but I can't seem to get any profile
+> information.
 
-> I have gdb-5.0 which I have compiled with OCD and BDM4GDB targets.
+When I first attempted a similar thing with the 2.2 kernel on our 855T based
+board, I found that the trivial do_profile routine needed to collect data for
+/proc/profile kernel profiling wasn't implemented for the ppc architecture.
+As far as I can see, it still isn't implemented on linux-2.4.0-test11, but it
+is in the linuxppc_2_3 tree at http://www.fsmlabs.com/linuxppcbk.html .
+I really wish the seperate architecture maintainers had got together to
+eliminate all the duplicated do_profile functions like I did in my 2.2 patch
+at:
+    http://members.nbci.com/greyhams/linux/patches/2.2/profile.patch
 
-The BDM4GDB target will only work with the BDM4GDB adapter;  see  the
-BDM4GDB project at Sourceforge.
+Unfortunately I guess it was easier for the PPC guys to just copy the
+do_profile function (yet again!) like everyone else did.  Oh well, maybe in
+2.5...
 
-> I have also tried building the BDM4GDB and connecting using
-> that target, without any luck.
+Back to TCP, I found I could improve raw TCP throughput by 15-20% on the 855T
+by DMAing received data directly into the kernel socket buffers.  The
+improvement in performance from eliminating the extra copy between the ring
+buffer and socket buffer isn't staggering, since the CPU still needs to do
+a pass through the data to calculate the IP checksum, which unfortunately the
+855T's FEC can't do for me.  Nevertheless, it does make things a little faster
+and I would imagine a similar technique would work on the 8260; you can get a
+feel for what is involved from my 2.2 FEC speedup patch at:
+    http://members.nbci.com/greyhams/linux/patches/2.2/fecdmaskb.patch
 
-There is very little chance that this might work.
-
-Wolfgang Denk
-
+Good luck!
+Graham
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Perl already has an IDE.  It's called Unix.
-                      -- Tom Christiansen in 375bd509@cs.colorado.edu
+Graham Stoney
+Assistant Technology Manager
+Canon Information Systems Research Australia
+Ph: +61 2 9805 2909  Fax: +61 2 9805 2929
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
