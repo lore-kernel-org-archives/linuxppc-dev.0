@@ -1,17 +1,13 @@
-Return-Path: <j.glisse@free.fr>
-Received: from postfix3-2.free.fr (postfix3-2.free.fr [213.228.0.169])
-	by ozlabs.org (Postfix) with ESMTP id AF4462BF16
-	for <linuxppc-dev@ozlabs.org>; Sat,  8 Jan 2005 22:24:08 +1100 (EST)
-Message-ID: <41DFC28F.1000002@free.fr>
-Date: Sat, 08 Jan 2005 12:22:55 +0100
-From: Jerome Glisse <j.glisse@free.fr>
-MIME-Version: 1.0
-To: Chris Friesen <cfriesen@nortelnetworks.com>
-References: <41DEA9D8.3000506@nortelnetworks.com>
-In-Reply-To: <41DEA9D8.3000506@nortelnetworks.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: G5 noisier under linux than firmware or OSX
+Return-Path: <damm@opensource.se>
+Received: from mail-slave.dataphone.se (ns3.dataphone.se [212.37.0.170])
+	by ozlabs.org (Postfix) with ESMTP id BD43E2BF0E
+	for <linuxppc-dev@ozlabs.org>; Sun,  9 Jan 2005 05:08:24 +1100 (EST)
+From: Magnus Damm <damm@opensource.se>
+To: linuxppc-dev@ozlabs.org
+Message-Id: <20050108180050.14410.66973.89460@kubu>
+Date: Sat,  8 Jan 2005 19:02:09 +0100 (CET)
+Cc: Magnus Damm <damm@opensource.se>
+Subject: [PATCH] ppc32: ide, mpc8xx - volatile fix
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,25 +17,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Chris Friesen wrote:
+This patch makes sure that a PCMCIA register is accessed with a volatile
+pointer. Wierd things happen without the patch if compiled with gcc-3.
 
-> I've noticed that when booting, right around the time the kernel first 
-> accesses my disks the fan speed jumps a bit.  It's not full-on vacuum 
-> cleaner howling, just a bit noisier.
->
-> I've only got the one machine so I can't do A/B comparisons, but it 
-> seems to be quieter when running OSX.
->
-> Is linux using the same fan speed parameters, or are we maybe a bit 
-> conservative?
+Signed-off-by: Magnus Damm <damm@opensource.se>
 
- From my memory, there have been some guess on values for
-therm regulation as Apple seems to not give informations or
-source code on that. Thus the values for regulating the fan are not
-the same as OS X.
-
-By the way, i also hear little more noise. The question is : Should
-we lower the speed or stay with this conservative values ? :)
-
-best,
-Jerome Glisse
+--- linux-2.6.10/drivers/ide/ppc/mpc8xx.c	2004-12-24 22:35:39.000000000 +0100
++++ linux-2.6.10-ppc32_ide_mpc8xx_volatile/drivers/ide/ppc/mpc8xx.c	2005-01-08 18:42:06.000000000 +0100
+@@ -172,7 +172,7 @@
+ 	volatile pcmcia_win_t *win;
+ 	volatile pcmconf8xx_t *pcmp;
+ 
+-	uint *pgcrx;
++	volatile uint *pgcrx;
+ 	u32 pcmcia_phy_base;
+ 	u32 pcmcia_phy_end;
+ 	static unsigned long pcmcia_base = 0;
