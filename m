@@ -1,15 +1,15 @@
 Return-Path: <achim.machura@berghof.com>
 Received: from pegasus.berghof.com (unknown [145.253.135.72])
-	by ozlabs.org (Postfix) with ESMTP id 4A7D62BF0E
+	by ozlabs.org (Postfix) with ESMTP id B7F652BF07
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 23 Dec 2004 01:18:11 +1100 (EST)
+	Thu, 23 Dec 2004 01:21:48 +1100 (EST)
 Received: from BATEEE52 (batee-e52.be-int [10.255.241.52])
-	by pegasus.berghof.com (8.12.10/8.12.10) with SMTP id iBMDY1of021830
-	for <linuxppc-embedded@ozlabs.org>; Wed, 22 Dec 2004 14:34:01 +0100
+	by pegasus.berghof.com (8.12.10/8.12.10) with SMTP id iBMELlof022433
+	for <linuxppc-embedded@ozlabs.org>; Wed, 22 Dec 2004 15:21:47 +0100
 From: "Achim Machura" <achim.machura@berghof.com>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Wed, 22 Dec 2004 14:34:00 +0100
-Message-ID: <001501c4e82a$e5dc3160$34f1ff0a@BATEEE52>
+To: "Linuxppc-Embedded (E-Mail)" <linuxppc-embedded@ozlabs.org>
+Date: Wed, 22 Dec 2004 15:21:45 +0100
+Message-ID: <001601c4e831$91d73c20$34f1ff0a@BATEEE52>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -27,7 +27,7 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 Hello list,
 
-i'm new here.
+i'm new here, if this mail comes twice sorry .
 
 I work on a 5200 board and want to enable an Bestcomm-task to copy Data from
 PSC to a shared memory.
