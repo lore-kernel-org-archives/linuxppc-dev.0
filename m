@@ -1,58 +1,45 @@
-Message-ID: <399E898A.1564594C@student.ethz.ch>
-Date: Sat, 19 Aug 2000 15:20:10 +0200
-From: Michel Dänzer <daenzerm@student.ethz.ch>
+Message-Id: <200008191415.QAA00716@piglet.grunz.lu>
+Date: Sat, 19 Aug 2000 16:15:08 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: XF4 hangs on 2.4 kernel (was: Re: Control fb problem on 8500)
+To: bh40@calva.net
+cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20000819115929.17289@192.168.1.10>
 MIME-Version: 1.0
-To: mlan@cpu.lu
-CC: dmj+@andrew.cmu.edu, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Control fb problem on 8500
-References: <200008190718.JAA00823@piglet.grunz.lu>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michel Lanners wrote:
-
-> On  18 Aug, this message from Daniel Jacobowitz echoed through cyberspace:
-> >> In fact, before, the line length was exactly hpixels * bytes/pixel,
-> >> whereas now there's an additional 0x20 bytes in each line. I have not
-> >> been able to boot a 2.4.0 kernel with any fix applied, but you could try
-> >> and build a version without those 0x20 bytes added (they are found in a
-> >> few spots inside controlfb.c).
-> >>
-> >> As to why these 0x20 bytes were added, anybody know an explanation? And,
-> >> if they do serve a purpose (I suppose so ;-), it would be better to add
-> >> the exact number of bytes as a #define somewhere...
-> >
-> > *sigh*
-> >
-> > I have no idea where this came from, but 0x20 means it has something to
-> > do with cursor support, I'd bet.  I seem to recall someone talking
-> > about that a few months ago... that is how hardware cursor is generally
-> > implemented, by a 32 pixel block at the end of the scanline.
+On  19 Aug, this message from Benjamin Herrenschmidt echoed through cyberspace:
+>>My XFree 4.0 goes into an infinite loop eating CPU time when I boot a
+>>2.4.0 kernel. Xpmac does work, but with the artifact described in my
+>>previous mail.
 >
-> That's what I was thinking about. However, I'm not sure that XFree
-> supports a display with discontiguous lines in video memory. I think I
-> read that somewhere in some mailing list or X doc... Can any of the
-> XFree specialists confirm?
+> I have this exact same problem with XF4 on my Pismo (r128) with any 2.4.
+> The X server dies in this infinite loop and a black screen. Theo only way
+> I found to get the screen back is to telnet into the box, kill -9 the X
+> server, and launch Xpmac. This seems to restore the console system into a
+> working state.
 
-It does support that, if not directly then certainly via shadowfb. Maybe the
-shadowfb RefreshArea function would have to be modified to take account of
-this.
+Ahh, so that problem is not control-specific.
 
+> I don't know what's up yet.
 
-> My XFree 4.0 goes into an infinite loop eating CPU time when I boot a
-> 2.4.0 kernel.
+Are you using the new input layer from bk? I'm not; I use Paul's devel
+tree, which doesn't include that part yet.
 
-Works fine here. I don't use the RPM stuff, stock 4.0.1/DRI .
+Strange...
 
+Michel
 
-The other Michel,
-who once thought he was the glint maintainer
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
-
---
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and The DRI Project
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
