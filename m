@@ -1,35 +1,47 @@
-Message-ID: <3D25E245.70303@embeddededge.com>
-Date: Fri, 05 Jul 2002 14:15:33 -0400
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: "Walser, Martin" <mwalser@harris.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: no link changed interrupt
-References: <8D4C69676E66D511A1CB00508BBBB1921BCF4D@ranmx1.ran.harris.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: "somshekar chandrashekar kadam" <ppclinux@rediffmail.com>
+Cc: "Ppc Embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: bash prompt 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "04 Jul 2002 17:07:53 -0000."
+             <20020704170753.14420.qmail@webmail14.rediffmail.com>
+Date: Fri, 05 Jul 2002 22:53:44 +0200
+Message-Id: <20020705205349.7AE1110342@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Walser, Martin wrote:
+Hi,
 
-> Is there another way to get a link change without a hardware interrupt?
+in message <20020704170753.14420.qmail@webmail14.rediffmail.com> you wrote:
+>
+>          My  kernel serial driver for 8260 is able to give bash
+> prompt but its not able to read anything from serial console,bash
+> prompt is not at all responding
 
-The only way to guarantee a link chnage interrupt is to use a PHY and
-board design that supports a hardware interrupt.  Some boards/PHYs do
-this, others do not, and it is a board specific design.  While you could
-poll the PHY status at regular intervals, it would depend upon the PHY
-status registers to properly publish/latch this information.  There isn't
-sufficient information in the generic PHY registers to detect link change,
-so again this is software that will have to be implemented unique to your
-PHY (it's proprietary registers) and board design.
+What do ypu expect from me? To guess what you're doing wrong?
 
-The only reason the FEC (or any 8xx/82xx Ethernet controller) needs to
-see a link change is to properly configure full/half duplex.  It will
-adapt to the different link speeds and other link attributes.
+>   when i attach the interrupts its gettting hanged all 8 leds are
+> glowing ,if temporarily if i  remove the interrupt handler there
+> is no problem of all 8 leds problem ,coming to bash prompt but not
+> responding
+>
+> transmit_chars is happeneing proper but no receive_chars
 
+This can be anything - maybe you just have to disable  hardware  flow
+control in your terminal program.
 
-	-- Dan
+I have absolutely no information about your board  -  do  you  really
+assume  I  could  have  any glue what your "all 8 LEDs" could mean? I
+have to disappoint you - the quality of my responses  cannot  be  any
+better than the information you provide.
 
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"Virtual" means never knowing where your next byte is coming from.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
