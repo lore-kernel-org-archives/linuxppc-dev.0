@@ -1,49 +1,56 @@
-From: "John Que" <qwejohn@hotmail.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: cross compiling a complex project 
-Date: Mon, 03 May 2004 11:59:49 +0300
+Subject: Re: cross compiling a complex project
+From: Stefan Nickl <Stefan.Nickl@kontron.com>
+To: John Que <qwejohn@hotmail.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <BAY14-F15dPULDvYqNC0000a732@hotmail.com>
+References: <BAY14-F15dPULDvYqNC0000a732@hotmail.com>
+Content-Type: text/plain
+Message-Id: <1083581925.4776.15.camel@lucy.pep-kaufbeuren.de>
 Mime-Version: 1.0
-Content-Type: text/plain; format=flowed
-Message-ID: <BAY14-F15dPULDvYqNC0000a732@hotmail.com>
+Date: Mon, 03 May 2004 12:58:45 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
-I had build a cross compiler for embedded linux which runs on embedded
-powerPC.
+On Mon, 2004-05-03 at 10:59, John Que wrote:
+> Hello,
+> I had build a cross compiler for embedded linux which runs on embedded
+> powerPC.
+>
+> It works ok on simple sample programs I wrote, like
+> "hello world", etc, which do not use other libs.
+>
+> Now I want to use it to build some more complex projects (the complexity is
+> relative
+> to the samples I wrote, of course).
+> I mean projects which have autocinf configure scripts.
+> Like , for example ,  speex audio codec , or Midnight Commander.
 
-It works ok on simple sample programs I wrote, like
-"hello world", etc, which do not use other libs.
+I've had good experiences using Gentoo on the target with nfsroot.
+Unpack a stage3 onto the nfs server, throw in a good amount of
+Linux/Gentoo knowledge and your're going.
 
-Now I want to use it to build some more complex projects (the complexity is
-relative
-to the samples I wrote, of course).
-I mean projects which have autocinf configure scripts.
-Like , for example ,  speex audio codec , or Midnight Commander.
+You'll need plenty of time, depending on the CPU performance,
+glibc takes ~1 workday on a ppc603e@300MHz, but on the other hand this
+makes an excellent stability test for your platform ;)
+BTW: Lots of RAM required so you don't have to swap over the network.
+It's also a good idea to have /tmp and /var/tmp as tmpfs.
 
-Now , it has not have in its configure script the type of ppc I
-use.
+The basic idea is that I find it easier to have a native
+setup which may be relatively slow, but where I don't stumble
+on every other package that does some platform-detection in
+configure and forces me to fiddle with it.
 
-On the other hands, it uses other libraries (speex uses oggs for example).
+There are brave projects like ptxdist and rock linux that do this
+for you, but chances are that the package you're interested
+in is just not there yet. But natively, it's just an "emerge" away.
 
-one way is to configure it with no target, and afterwards change the
-makefile.
-But this seems not an easy task.
-I googled the net for solutions.
+Another idea would be of course to get a bigger brother, say
+a dual G5 for building...
 
-I saw one solution in http://www.scratchbox.org/
-
-but is says there
-"Supports ARM, x86 and PowerPC targets (PowerPC is experimental at this
-time)"
-So i hesitate a little.
-does anybody has experience with a task like that (on powerpc) and using
-tools
-for that task (like that scratchbox or other?)
-
-regards
-Q.  John
+--
+Stefan Nickl
+Kontron Modular Computers
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
