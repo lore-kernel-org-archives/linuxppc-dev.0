@@ -1,55 +1,35 @@
-Message-ID: <39E1EAF4.229EF29C@practicalmatters.com>
-Date: Mon, 09 Oct 2000 08:57:40 -0700
-From: "montgomery f. tidwell" <mtidwell@practicalmatters.com>
-MIME-Version: 1.0
-To: "Marcus H. Mendenhall" <mendenmh@telalink.net>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Anyone succeed with VNC?
-References: <200010070500.AAA10239@lists.linuxppc.org> <p04330100b60777284ff4@[129.59.235.75]>
+Message-ID: <XFMail.001009181300.pochini@shiny.it>
 Content-Type: text/plain; charset=us-ascii
+MIME-Version: 1.0
+In-Reply-To: <Pine.GSO.4.21.0010091229310.24725-100000@stekt6>
+Date: Mon, 09 Oct 2000 18:13:00 +0200 (CEST)
+From: Giuliano Pochini <pochini@shiny.it>
+To: Topi Kanerva <tkanerva@ees2.oulu.fi>
+Subject: Re: can't boot 2.4.0-t9
+Cc: linuxppc-dev@lists.linuxppc.org,
+        Giuliano Pochini <pochini@denise.shiny.it>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Howdy,
+>>I can't boot kernel 2.4.0-test9 because it fails configuration
+>>of my scsi cards (resource collisions). The hack of removing the
+>>"return -EINVAL" I used in test7 doesn't work anymore.  Anyway,
+>>I'm just curious to know why there are not such problems in 2.2.
+>
+> is this the plain 2.4.0-test9 or linuxcare devel version?
+
+Plain version, d/l fron kernel.org
+
+> If I were you, I'd try to backport the test7 scsi code to make
+> the hack work again.
+
+A function (I don't remember which) have a different number of
+parameters and it doe't compile. I'll try again this night.
 
 
-try this link, i think it's where i got it from.
+Bye.
+    Giuliano Pochini ->)|(<- Shiny Corporation {AS6665} ->)|(<-
 
-ftp://ftp.linuxppc.org/contrib/software/Applications/Networking/
-
-
-
-
-"Marcus H. Mendenhall" wrote:
->
-> I have been trying to get VNC (http://www.uk.research.att.com/vnc/)
-> up and running under Linux-ppc.  I have used it under MacOS and seen
-> it used under Linux-x86, and it is a great package.
->
-> Unfortunately, it is hard to find for Linux-ppc.  The website (above)
-> points to an rpm hosted at ppc.linux.or.jp, but that server never
-> responds..  I have poked all around the linux.or.jp servers with no
-> luck.
->
-> Over the weekend, I broke down and decided to try to build it.  The X
-> version of it is based on XF86 source, and (with only minor
-> modifications to the linux.cf file to recognize powerpc architecture)
-> it built fine.  However, when run, it produces slightly muddled
-> screen displays, and crashes after window dragging or other large
-> operations.
->
-> Has anyone out there succeeded with VNC, or does anyone know where
-> the rpms which apparently existed once have gone?  It would be very
-> useful to return this package to Linux-ppc compatibility.  I can put
-> in a little time working on it, but have no familiarity with the
-> innards of an XF86 server, so if I could enlist some help from
-> someone who has poked at that package before, it might greatly
-> improve the likelihood of my getting this done in finite time.
->
-> Thanks.
->
-> Marcus Mendenhall
->
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
