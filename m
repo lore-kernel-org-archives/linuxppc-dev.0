@@ -1,17 +1,15 @@
-Return-Path: <mgroeger@sysgo.com>
-Received: from mailgate.sysgo.de (ns.sysgo.de [213.68.67.98])
-	by ozlabs.org (Postfix) with ESMTP id 1EAB72BDA0
+Return-Path: <samlinuxppc@yahoo.com.cn>
+Received: from web15601.mail.cnb.yahoo.com (web15601.mail.cnb.yahoo.com
+	[202.165.102.55]) by ozlabs.org (Postfix) with SMTP id 95BD62BDA0
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Oct 2004 18:45:31 +1000 (EST)
-Date: Thu, 14 Oct 2004 10:25:31 +0200 (CEST)
-From: Marius Groeger <mgroeger@sysgo.com>
-Sender: mag@sysgo.com
-To: Sam Song <samlinuxppc@yahoo.com.cn>
-In-Reply-To: <20041013193959.57540.qmail@web15605.mail.cnb.yahoo.com>
-Message-ID: <Pine.LNX.4.61.0410140952570.1661@mag.sysgo.com>
-References: <20041013193959.57540.qmail@web15605.mail.cnb.yahoo.com>
+	Thu, 14 Oct 2004 19:27:42 +1000 (EST)
+Message-ID: <20041014092739.6826.qmail@web15601.mail.cnb.yahoo.com>
+Date: Thu, 14 Oct 2004 17:27:39 +0800 (CST)
+From: Sam Song <samlinuxppc@yahoo.com.cn>
+To: Marius Groeger <mgroeger@sysgo.com>
+In-Reply-To: <Pine.LNX.4.61.0410140952570.1661@mag.sysgo.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=gb2312
 Cc: linuxppc-embedded@ozlabs.org
 Subject: Re: Meaning of BSP and LSP
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -24,42 +22,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, 14 Oct 2004, Sam Song wrote:
+Marius Groeger <mgroeger@sysgo.com> wrote：
 
-> I'd like to make sure about the meaning of BSP and
-> LSP. There is sth unclear in my mind, I am afraid.
+> From what I know, the term BSP was coined as an
+> acronym for "Board Support Package" in pre-Linux 
+> days. To me it is most familiar in 
 
->From what I know, the term BSP was coined as an acronym for "Board 
-Support Package" in pre-Linux days. To me it is most familiar in 
-conjunction with Embdedded (RT)OSes such as LynxOS, vxWorks, or pSOS 
-and many others. These systems have a more or less clearly defined BSP 
-API, meaning that a port to a new platform is a well defined process.
+So that day the meaning of BSP was clear enough.
 
-Grossly simplified, the BSP provider must implement a number of 
-support functions which make hardware resources (interrupts, memory 
-and so forth) available to the common kernel code. Note also that this 
-is valid across architectures (PPC, ARM, X86...).
+> "LSP" is a term introduced by MontaVista, AFAIR, so
+> maybe one of the MV folks on this list wants to 
+> elaborate on this?
 
-Linux still doesn't really offer something like this. Some people may 
-argue that things are actually improving, but most people probably 
-just don't care. The simplest reason I can think of for that is that 
-there were always enough knowledgable people to do the hard porting 
-work. Also, obviously, Linux doesn't care for commercial issues such 
-like wanting to keep the common kernel code closed.
+I also got the term "LSP" from MV. 
+ 
+> Bottom line: BSP is an OS/Vendor specific term to
+> capture the software components related to a 
+> specific board. It is a useful handle in 
+> project discussions, provided that all participants
+> use the same notion.
 
-"LSP" is a term introduced by MontaVista, AFAIR, so maybe one of the 
-MV folks on this list wants to elaborate on this?
+See what's EP view on "BSP". 
+http://www.embeddedplanet.com/products/bsp_linux.asp
 
-Bottom line: BSP is an OS/Vendor specific term to capture the software 
-components related to a specific board. It is a useful handle in 
-project discussions, provided that all participants use the same 
-notion.
+It seems that BSP > = LSP.
 
-Regards,
-Marius
+Just as Wolfgang said, the meaning  varys in different
+vendors. But at least "LSP" by MV doesn't include
+hardware scheme and boot loader code, I think.
 
--- 
-Marius Groeger <mgroeger@sysgo.com>
-SYSGO AG                      Embedded and Real-Time Software
-Voice: +49 6136 9948 0                  FAX: +49 6136 9948 10
-www.sysgo.com | www.elinos.com | www.osek.de | www.imerva.com
+"LSP" is a special term defined by MV. So just to
+follow the meaning as MV does.
+
+Thanks for your nice comment on this topic.
+
+=====
+Best regards,
+
+Sam
+
+_________________________________________________________
+Do You Yahoo!?
+150万曲MP3疯狂搜，带您闯入音乐殿堂
+http://music.yisou.com/
+美女明星应有尽有，搜遍美图、艳图和酷图
+http://image.yisou.com
+1G就是1000兆，雅虎电邮自助扩容！
+http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
