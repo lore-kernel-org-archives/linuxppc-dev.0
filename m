@@ -1,26 +1,32 @@
-Date: Wed, 1 Sep 1999 15:58:27 -0600 (CST)
-From: Kamran Karimi <karimi@cs.uregina.ca>
-To: linuxppc-announce@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org,
-        linuxppc-user@lists.linuxppc.org
-Subject: DIPC 2.0-pre10 for PowerPC
-Message-ID: <Pine.SGI.3.91.990901155123.29307A-100000@MERCURY.CS.UREGINA.CA>
+Date: Thu, 2 Sep 1999 00:00:20 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: "D. Lance Robinson" <lancer@airways.com>
+cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Sym53c8xx in 2.3.now
+In-Reply-To: <37CD8E2C.60E670CF@airways.com>
+Message-ID: <Pine.LNX.4.10.9909012359540.3656-100000@mercator.cs.kuleuven.ac.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Wed, 1 Sep 1999, D. Lance Robinson wrote:
+> You should post your message on the linux-scsi list server. Gerard, who
+> wrote the driver listens in on that list.
+> 
+>   send to linux-scsi@vger.rutgers.edu
 
- DIPC 2.0-pre10 (http://wallybox.cei.net/dipc) is now available for 
-downloading from orion.cs.uregina.ca/pub/dipc. There are no known bugs 
-in it, and unless some new problems are detected, this will be the base for 
-the final DIPC 2.0 release.
+I already did more than a week ago. No response.
 
- As of 2.0-pre5, DIPC is GPL. Please test 2.0-pre10 and inform me of the 
-results.
+Greetings,
 
--Kamran
+						Geert
+
+--
+Geert Uytterhoeven                   Geert.Uytterhoeven@sonycom.com
+Sony Suprastructure Center Europe (SUPC-E) --- Brussels --- Belgium
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
