@@ -1,191 +1,118 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-From: "yhxing" <xyuhua_telecom@hotmail.com>
-To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: PCMCIA problem help!
-Mime-Version: 1.0
-Content-Type: text/plain
-Date: Wed, 21 Apr 2004 17:04:16 +0800
-Message-ID: <Sea1-DAV39b0zrAXBir0002037c@hotmail.com>
+From: okorpil@fh-landshut.de
+Date: Wed, 21 Apr 2004 15:16:09 +0200 (CEST)
+Reply-To: okorpil@fh-landshut.de
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Initrd and PPCbug, can it work?
+Message-ID: <Pine.LNX.4.58.0404211503050.20798@ppcproject1>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hello!
 
-  When I use PC card on mpc823, there is some trouble, the card
-initialization would always run and can not stop. Here are the printed
-messages at the start:
+Target hardware: MVME2100, MPC8240 microcontroller - PowerPC 603e CPU
 
-  Linux PCMCIA Card Services 3.2.1
-  kernel build: 2.4.4-rthal5 #959 Fri Feb 6 12:46:59 CST 2004
-  options:  none
-m8xx_pcmcia: Version 0.03, 14-Feb-2000, Magnus Damm
-m8xx_pcmcia: TQM8xxL using SLOT_B with IRQ 13.
-m8xx_pcmcia: Socket 0: MemWin 0: Base 0xe0000000.
-m8xx_pcmcia: Socket 0: MemWin 1: Base 0xe4000000.
-m8xx_pcmcia: Socket 0: MemWin 2: Base 0xe8000000.
-m8xx_pcmcia: Socket 0: MemWin 3: Base 0xec000000.
-m8xx_pcmcia: Socket 0: MemWin 4: Base 0xf0000000.
-m8xx_pcmcia: voltage_set: TQM8xxL Slot B, Vcc=0.0, Vpp=0.0
-m8xx_pcmcia: Disable PCMCIA buffers and assert RESET
-m8xx_pcmcia: PCMCIA power OFF
-m8xx_pcmcia: PIPR: 0xff00ff00 --> only 5 V
-m8xx_pcmcia: PCMCIA powered down
-m8xx_pcmcia: Enable PCMCIA buffers and stop RESET
-m8xx_pcmcia: voltage_set: TQM8xxL Slot B, DONE
-m8xx_pcmcia: hardware_enable: TQM8xxL Slot B
-m8xx_pcmcia: Disable PCMCIA buffers and assert RESET
-m8xx_pcmcia: [621] hardware_enable: PIPR(fff000f0)=0xff000200
-m8xx_pcmcia: PIPR: 0xff000200 ==> VS1=off, VS2=off
-m8xx_pcmcia:  3.3V card found: m8xx_pcmcia: Enable PCMCIA buffers and stop RESET
-m8xx_pcmcia: # hardware_enable done
-m8xx_pcmcia: Service(0, 4, 0xc021980c)
-m8xx_pcmcia: SetSocket(0, flags 0x000, Vcc 0, Vpp 0, io_irq 0, csc_mask 0x80)
-m8xx_pcmcia: voltage_set: TQM8xxL Slot B, Vcc=0.0, Vpp=0.0
-m8xx_pcmcia: Disable PCMCIA buffers and assert RESET
-m8xx_pcmcia: PCMCIA power OFF
-m8xx_pcmcia: PIPR: 0xff000200 --> can do 3.3V
-m8xx_pcmcia: PCMCIA powered down
-m8xx_pcmcia: Enable PCMCIA buffers and stop RESET
-m8xx_pcmcia: voltage_set: TQM8xxL Slot B, DONE
-m8xx_pcmcia: Service(0, 6, 0xc0647e58)
-PCMCIA_IO_WIN_BASE = 80000000
-m8xx_pcmcia: SetIOMap(0, 0, 0x00, 0 ns, 0x0000-0x0001)
-m8xx_pcmcia: Service(0, 6, 0xc0647e58)
-PCMCIA_IO_WIN_BASE = 80000000
-m8xx_pcmcia: SetIOMap(0, 1, 0x00, 0 ns, 0x0000-0x0001)
-m8xx_pcmcia: Service(0, 8, 0xc0647e48)
-m8xx_pcmcia: SetMemMap(0, 0, 0x00, 0 ns, 0x00000-0x00000, 0x00000)
-m8xx_pcmcia: Socket 0: Mapped memory window 0 at 0xe0000000, OR = 0xb8028a84.
-m8xx_pcmcia: SetMemMap(0, 0, 0x00, 0 ns, 0x00000-0x00000, 0x00000)
-m8xx_pcmcia: Service(0, 8, 0xc0647e48)
-m8xx_pcmcia: SetMemMap(0, 1, 0x00, 0 ns, 0x00000-0x00000, 0x00000)
-m8xx_pcmcia: Socket 0: Mapped memory window 1 at 0xe4000000, OR = 0xb8028a84.
-m8xx_pcmcia: SetMemMap(0, 1, 0x00, 0 ns, 0x00000-0x00000, 0x00000)
-m8xx_pcmcia: Service(0, 8, 0xc0647e48)
-m8xx_pcmcia: SetMemMap(0, 2, 0x00, 0 ns, 0x00000-0x00000, 0x00000)
-m8xx_pcmcia: Socket 0: Mapped memory window 2 at 0xe8000000, OR = 0xb8028a84.
-m8xx_pcmcia: SetMemMap(0, 2, 0x00, 0 ns, 0x00000-0x00000, 0x00000)
-m8xx_pcmcia: Service(0, 8, 0xc0647e48)
-m8xx_pcmcia: SetMemMap(0, 3, 0x00, 0 ns, 0x00000-0x00000, 0x00000)
-m8xx_pcmcia: Socket 0: Mapped memory window 3 at 0xec000000, OR = 0xb8028a84.
-m8xx_pcmcia: SetMemMap(0, 3, 0x00, 0 ns, 0x00000-0x00000, 0x00000)
-m8xx_pcmcia: Service(0, 8, 0xc0647e48)
-m8xx_pcmcia: SetMemMap(0, 4, 0x00, 0 ns, 0x00000-0x00000, 0x00000)
-m8xx_pcmcia: Socket 0: Mapped memory window 4 at 0xf0000000, OR = 0xb8028a84.
-m8xx_pcmcia: SetMemMap(0, 4, 0x00, 0 ns, 0x00000-0x00000, 0x00000)
-m8xx_pcmcia: Service(0, 1, 0xc0219818)
-m8xx_pcmcia: Service(0, 11, 0xc02fd320)
+I've successfully booted the Linux kernel via the netboot (NBO in PPCbug),
+with a NFS root filesystem. I successfully booted the kernel from memory
+(after NIOP) and from flash (RB, after I flashed it in the 4MB flash
+bank with PFLASH).
+
+All this was relying on NFS to give me the root filesystem, which worked
+fine, but will not suffice in the long run, because the goal is to have it
+boot as a standalone without a NFS root filesystem.
+
+Yet I do not know how to accomplish that. I created both ext2 and cramfs
+initial ramdisks (that mounted fine on the host), copied them into
+arch/ppc/boot/images/ramdisk.image.gz, made make zImage.initrd and used
+the images created by that.
+
+Kernel bootup tells me, that it loaded the kernel and ramdisk and
+relocated both, yet after the kernel boot finishes it fails (I guess when
+it tries to mount a root filesystem). Bootlog is attached.
+
+I've tried several variations of the kernel command line, but I am
+stumped.
+
+I thought I could use that zImage.initrd and keep the initial ram disk as
+root filesystem, yet I do not know what the error in my config is.
+
+Is this even possible with the PPCbug, or do I need a Linux-friendly
+bootloader? I initially guessed, that if at bootup everything is
+relocated, that would actually suffice, and no additional information from
+the bootloader is required??
+
+Thanks in advance,
+Oliver Korpilla
+
+My bootup output:
+
+Network Boot File load in progress... To abort hit <BREAK>
+
+Bytes Received =&1436351, Bytes Loaded =&1436351
+Bytes/Second   =&718175, Elapsed Time =2 Second(s)
+
+Residual-Data Located at: $01F5511C
+loaded at:     00005400 001655BC
+relocated to:  00800000 009601BC
+zimage at:     008058B0 008C16FA
+initrd at:     008C2000 0095D000
+avail ram:     00400000 00800000
+
+Linux/PPC load: console=ttyS0,9600 init=/linuxrc
+Uncompressing Linux...done.
+Now booting the kernel
+Memory BAT mapping: BAT2=32Mb, BAT3=0Mb, residual: 0Mb
+Linux version 2.4.25 (korpo@ppcproject1) (gcc version 2.95.3 20010315
+(release)) #6 Wed Apr 21 14:44:36 CEST 2004
+Platform: Motorola MVME2100
+On node 0 totalpages: 8192
+zone(0): 8192 pages.
+zone(1): 0 pages.
+zone(2): 0 pages.
+Kernel command line: console=ttyS0,9600 root=/dev/ram0 init=/linuxrc rw
+OpenPIC Version 1.2 (1 CPUs and 16 IRQ sources) at f7fd0000
+OpenPIC timer frequency is 8.333344 MHz
+time_init: decrementer frequency = 16.666748 MHz
+Calibrating delay loop... 133.12 BogoMIPS
+Memory: 30392k available (1256k kernel code, 472k data, 252k init, 0k
+highmem)
+Dentry cache hash table entries: 4096 (order: 3, 32768 bytes)
+Inode cache hash table entries: 2048 (order: 2, 16384 bytes)
+Mount cache hash table entries: 512 (order: 0, 4096 bytes)
+Buffer cache hash table entries: 1024 (order: 0, 4096 bytes)
+Page-cache hash table entries: 8192 (order: 3, 32768 bytes)
+POSIX conformance testing by UNIFIX
+PCI: Probing PCI hardware
+Linux NET4.0 for Linux 2.4
+Based upon Swansea University Computer Society NET3.039
+Initializing RT netlink socket
+Starting kswapd
+Installing knfsd (copyright (C) 1996 okir@monad.swb.de).
+JFFS2 version 2.1. (C) 2001 Red Hat, Inc., designed by Axis Communications
+AB.
+pty: 256 Unix98 ptys configured
+Serial driver version 5.05c (2001-07-08) with MANY_PORTS SHARE_IRQ
+SERIAL_PCI enabled
+ttyS00 at 0xffe10000 (irq = 25) is a 16550A
+Generic RTC Driver v1.07
+RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
+loop: loaded (max 8 devices)
+Linux Tulip driver version 0.9.15-pre12 (Aug 9, 2002)
+tulip0:  EEPROM default media type Autosense.
+tulip0:  Index #0 - Media MII (#11) described by a 21142 MII PHY (3)
+block.
+tulip0:  MII transceiver #8 config 1000 status 7809 advertising 01e1.
+eth0: Digital DS21143 Tulip rev 65 at 0xbfffec00, 00:01:AF:02:93:8C, IRQ
+16.
+pcnet32.c:v1.27a 10.02.2002 tsbogend@alpha.franken.de
 NET4: Linux TCP/IP 1.0 for NET4.0
 IP Protocols: ICMP, UDP, TCP, IGMP
 IP: routing cache hash table of 512 buckets, 4Kbytes
-TCP: Hash tables configured (established 1024 bind 1024)
-ip_conntrack (128 buckets, 1024 max)
-ip_tables: (c)2000 Netfilter core team
+TCP: Hash tables configured (established 2048 bind 2048)
 NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
-NET4: Ethernet Bridge 008 for NET4.0
-m8xx_pcmcia: Service(0, 0, 0xc0647e58)
-m8xx_pcmcia: Service(0, 2, 0xc0647e60)
-m8xx_pcmcia: GetStatus(0) = 0x90
-m8xx_pcmcia: Service(0, 2, 0xc0647dd8)
-m8xx_pcmcia: GetStatus(0) = 0x90
-m8xx_pcmcia: Service(0, 4, 0xc021980c)
-m8xx_pcmcia: SetSocket(0, flags 0x000, Vcc 50, Vpp 50, io_irq 0, csc_mask 0x80)
-m8xx_pcmcia: voltage_set: TQM8xxL Slot B, Vcc=5.0, Vpp=5.0
-m8xx_pcmcia: Disable PCMCIA buffers and assert RESET
-m8xx_pcmcia: PCMCIA power OFF
-m8xx_pcmcia: PIPR: 0xff000200 --> can do 3.3V
-m8xx_pcmcia: PCMCIA powered at 5.0V
-m8xx_pcmcia: Enable PCMCIA buffers and stop RESET
-m8xx_pcmcia: voltage_set: TQM8xxL Slot B, DONE
-EXT2-fs warning: mounting unchecked fs, running e2fsck is recommended
-VFS: Mounted root (ext2 filesystem).
-Freeing unused kernel memory: 64k init
-m8xx_pcmcia: Service(0, 4, 0xc021980c)
-m8xx_pcmcia: SetSocket(0, flags 0x240, Vcc 50, Vpp 50, io_irq 0, csc_mask 0x80)
-m8xx_pcmcia: voltage_set: TQM8xxL Slot B, Vcc=5.0, Vpp=5.0
-m8xx_pcmcia: Disable PCMCIA buffers and assert RESET
-m8xx_pcmcia: PCMCIA power OFF
-m8xx_pcmcia: PIPR: 0xff000200 --> can do 3.3V
-m8xx_pcmcia: PCMCIA powered at 5.0V
-m8xx_pcmcia: Enable PCMCIA buffers and stop RESET
-m8xx_pcmcia: voltage_set: TQM8xxL Slot B, DONE
-m8xx_pcmcia: Service(0, 4, 0xc021980c)
-m8xx_pcmcia: SetSocket(0, flags 0x200, Vcc 50, Vpp 50, io_irq 0, csc_mask 0x80)
-m8xx_pcmcia: voltage_set: TQM8xxL Slot B, Vcc=5.0, Vpp=5.0
-m8xx_pcmcia: Disable PCMCIA buffers and assert RESET
-m8xx_pcmcia: PCMCIA power OFF
-m8xx_pcmcia: PIPR: 0xff000200 --> can do 3.3V
-m8xx_pcmcia: PCMCIA powered at 5.0V
-m8xx_pcmcia: Enable PCMCIA buffers and stop RESET
-m8xx_pcmcia: voltage_set: TQM8xxL Slot B, DONE
-m8xx_pcmcia: Service(0, 2, 0xc015ee48)
-m8xx_pcmcia: GetStatus(0) = 0x190
-init started:  BusyBox v0.60.2 (2002.02.02-02:29+0000) multi-call m8xx_pcmcia: S
-ervice(0, 2, 0xc06d3908)
-m8xx_pcmcia: GetStatus(0) = 0x190
-m8xx_pcmcia: Service(0, 2, 0xc0695df8)
-m8xx_pcmcia: GetStatus(0) = 0x190
-m8xx_pcmcia: Service(0, 2, 0xc0695df8)
-m8xx_pcmcia: GetStatus(0) = 0x190
-Using /lib/modules/2.4.4-rthal5/net/hostap_crypt.o
-hostap_crypto_init
-hcrypt:c02028e0
-1
-alg=c02023a0
-3
-4
-hostap_crypt: registered algorithm '}i|NÄ =`®§9k°‰H}i|NÄ =`®§'
-m8xx_pcmcia: Service(0, 2, 0xc0695818)
-m8xx_pcmcia: GetStatus(0) = 0x190
-Using /lib/modules/2.4.4-rthal5/net/hostap.o
-m8xx_pcmcia: Service(0, 2, 0xc0695c98)
-m8xx_pcmcia: GetStatus(0) = 0x190
-m8xx_pcmcia: Service(0, 2, 0xc0695c28)
-m8xx_pcmcia: GetStatus(0) = 0x190
-Using /lib/modules/2.4.4-rthal5/pcmcia/hostap_cs.o
-m8xx_pcmcia: Service(0, 2, 0xc0695df8)
-m8xx_pcmcia: GetStatus(0) = 0x190
-hostap_cs:
-hostap_cs: (c) Jouni Malinen <jkmaline@cc.hut.fi>
-m8xx_pcmcia: Service(0, 2, 0xc0695ae8)
-m8xx_pcmcia: GetStatus(0) = 0x190
-Using /lib/modules/2.4.4-rthal5/net/hostap_crypt_wep.o
-hcrypt:c02028e0
-1
-alg=c0202380
-3
-4
-hostap_crypt: registered algorithm 'WEP'
-m8xx_pcmcia: Service(0, 2, 0xc0695bd8)
-m8xx_pcmcia: GetStatus(0) = 0x190
-do_bind fd=3 driver=hostap_cs
-resource adj ret=0
-prism2_attach
-PDEBUG
-m8xx_pcmcia: Service(0, 8, 0xc0219870)
-m8xx_pcmcia: SetMemMap(0, 0, 0x21, 300 ns, 0x00000-0x00000, 0x00000)
-m8xx_pcmcia: Service(0, 2, 0xc06956e8)
-m8xx_pcmcia: GetStatus(0) = 0x190
-m8xx_pcmcia: Socket 0: Mapped memory window 0 at 0xe0000000, OR = 0xb8028a95.
-m8xx_pcmcia: SetMemMap(0, 0, 0x21, 300 ns, 0xe0000000-0xe0000000, 0x00000)
-m8xx_pcmcia: Service(0, 2, 0xc06956e8)
-m8xx_pcmcia: GetStatus(0) = 0x190
-m8xx_pcmcia: Service(0, 8, 0xc0219870)
-m8xx_pcmcia: SetMemMap(0, 0, 0x21, 300 ns, 0xe0000000-0xe0000000, 0x00000)
-m8xx_pcmcia: Socket 0: Mapped memory window 0 at 0xe0000000, OR = 0xb8028a95.
-m8xx_pcmcia: Service(0, 2, 0xc06956e8)
-m8xx_pcmcia: GetStatus(0) = 0x190
-m8xx_pcmcia: SetMemMap(0, 0, 0x21, 300 ns, 0xe0000000-0xe0000000, 0x00000)
-m8xx_pcmcia: Service(0, 8, 0xc0219870)
-........
--------------------------------------------------------------------------------
-
-  This  "m8xx_pcmcia" process will continue and cannot stop.
-
-  What is the matter with it?
-
-Regards,
-Yuhua Xing
+cramfs: wrong magic
+Kernel panic: VFS: Unable to mount root fs on 01:00
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
