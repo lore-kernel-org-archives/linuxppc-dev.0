@@ -1,15 +1,36 @@
-In-Reply-To: <NBBBIKIPCKOLLCLIHBIMMEPNEBAA.bob.doiron@amirix.com>
-References: <NBBBIKIPCKOLLCLIHBIMMEPNEBAA.bob.doiron@amirix.com>
-Mime-Version: 1.0 (Apple Message framework v618)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <6327D22A-C939-11D8-BD02-003065F9B7DC@embeddededge.com>
+From: "Bob Doiron" <bob.doiron@amirix.com>
+To: "Dan Malek" <dan@embeddededge.com>
 Cc: <linuxppc-embedded@lists.linuxppc.org>
-From: Dan Malek <dan@embeddededge.com>
-Subject: Re: Possbile bug in hashtable.S : add_hash_page
-Date: Mon, 28 Jun 2004 15:28:52 -0400
-To: "Bob Doiron" <bob.doiron@amirix.com>
+Subject: RE: Possbile bug in hashtable.S : add_hash_page
+Date: Mon, 28 Jun 2004 16:43:34 -0300
+Message-ID: <NBBBIKIPCKOLLCLIHBIMGEPOEBAA.bob.doiron@amirix.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="Windows-1252"
+In-Reply-To: <6327D22A-C939-11D8-BD02-003065F9B7DC@embeddededge.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+I started with the vanilla 2.6.6 kernel, then I compared hashtable.S to the
+one found here: http://ppc.bkbits.net:8080/linuxppc-2.5 and saw that it had
+the same stack/interrupt handling within the add_hash_page function. The
+processor is an mpc7457.
+
+I guess I was hoping the ppc assembly guru's would check thier current ppc
+hashtable.S to see if the code was the same, and if so, take a stab at
+whether it looks reasonable given my problem explanation.
+
+-Bob
+
+
+-----Original Message-----
+From: Dan Malek [mailto:dan@embeddededge.com]
+Sent: Monday, June 28, 2004 4:29 PM
+To: Bob Doiron
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Possbile bug in hashtable.S : add_hash_page
+
 
 
 On Jun 28, 2004, at 2:40 PM, Bob Doiron wrote:
