@@ -1,37 +1,39 @@
-To: Pedro Parrilla <pparrilla@prodys.net>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Rx problems with IDMA on MPC860... 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 08 May 2003 09:47:58 +0200."
-             <3EBA0BAE.93167851@prodys.net>
-Date: Thu, 08 May 2003 11:34:24 +0200
-Message-Id: <20030508093429.6BF3CC6092@atlas.denx.de>
+Message-ID: <3EBA4D38.5030905@embeddededge.com>
+Date: Thu, 08 May 2003 08:27:36 -0400
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: "Kerl, John" <John.Kerl@Avnet.com>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: mm_ptov() in pgtable.c
+References: <B895EFF5AF34724880036BDB5B5B814813561F@amer22.avnet.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3EBA0BAE.93167851@prodys.net> you wrote:
->
->     I'm working on a MPC860T. I've been trying to receive from a
-> peripheral via IDMA and it seems to work OK, but when I study data
-> received from IDMA I can see that there are some bytes at the end of
-> each IDMA buffer received that are wrong, in fact they haven't been
-> written to the buffer and previous bytes remain; but interrupts are
-> received Ok, and the number of read bytes in the peripheral are the IDMA
-> set.
+Kerl, John wrote:
 
-Are you sure you got the cache handling right?
+> Does anyone know why we have mm_ptov() in
+> arch/ppc/mm/pgtable.c, since we already
+> have __va?
 
-Best regards,
+They are different functions.  The __va() macro
+does simple arithmetic on the 1:1 kernel mapped low memory
+addresses.  The mm_ptov() is supposed to do the opposite
+of where we use iopa(), which can be used on the entire
+virtual address space.  Since there isn't sufficient information
+in the kernel to properly implement mm_ptov() in a generic way,
+it's implementation has been stalled and we have used a
+variety of different methods to return physical addresses
+dependent on the way memory has been mapped (which unfortunately
+seems to be the Linux design preference).
 
-Wolfgang Denk
+The APUS configuration uses mm_ptov, I kind of broke it at one
+point and I'm waiting for them to stumble across it so we can
+fix it for them.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-If in any problem you find yourself doing an immense amount of  work,
-the answer can be obtained by simple inspection.
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
