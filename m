@@ -1,63 +1,128 @@
-Message-ID: <023EF71CB65AA949A2C510353690C86B027F7A@rokonet-e.rokonet.co.il>
-From: Eli Brin <eli.brin@rokonet.co.il>
-To: "'I?igo Lopez Barranco'" <ilopez@albatros-sl.es>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Little survey: SCM systems?
-Date: Thu, 15 Jul 2004 12:27:41 +0200
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: multipart/mixed;
+	boundary="----_=_NextPart_001_01C46A90.95473233"
+Subject: Small patches to serial port and ehternet on mpc8xx
+Date: Thu, 15 Jul 2004 17:24:28 -0000
+Message-ID: <EADB10BAC266A14A85ECBF8686A73E31938681@kolkrabbi.flaga.is>
+From: =?iso-8859-1?B?S+FyaSBEYXbt8HNzb24=?= <kd@medcare.is>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello Ingo,
+This is a multi-part message in MIME format.
 
-For embedded Linux development, we use CVSNT (CVS for windows) as our SCM.
+------_=_NextPart_001_01C46A90.95473233
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-For our Enterprise and Desktop applications we use Rational Clear-Case.  But
-I'm seriously thinking of moving to CVS here as well.
+Hi,
 
-For an IDE we use Eclipse for Linux, and it works OK with the CVSNT.  The
-platform is ELDK 3.0.
+Here are two patches for arch/ppc/8xx_io/uart.c and =
+arch/ppc/8xx_io/enet.c, it applies against the linux sources from the =
+rsync mirror at mvista for the linuxppc-2.4.x devel tree.
 
-All three CVSNT - Eclipse - ELDK work very well together.
+The first one (enet.patch) adds the polling method for the ethernet =
+driver. It is essential if one wants to use the netconsole patch.
 
-Best regards,
-Eli Brin
+The second one (serial.patch) addresses the serial port, i.e. makes it =
+possible to compile out all references to serial port console, i.e. if =
+serial port console is not wanted.
 
+I also had to make small changes to the console over ethernet "package" =
+(http://oss.software.ibm.com/linux/patches/?patch_id=3D761) in order to =
+get the the netconsole working for our mpc823 platform. That patch will =
+be sent to its maintainer.
 
+Regards,
+K.D.
 
+------_=_NextPart_001_01C46A90.95473233
+Content-Type: application/octet-stream;
+	name="enet.patch"
+Content-Transfer-Encoding: base64
+Content-Description: enet.patch
+Content-Disposition: attachment;
+	filename="enet.patch"
 
------Original Message-----
-From: ilopez@albatros-sl.es [mailto:ilopez@albatros-sl.es]
-Sent: Wednesday, July 14, 2004 5:40 PM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Little survey: SCM systems?
+SW5kZXg6IGFyY2gvcHBjLzh4eF9pby9lbmV0LmMKPT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gYXJjaC9wcGMvOHh4
+X2lvL2VuZXQuYwkocmV2aXNpb24gMTMzKQorKysgYXJjaC9wcGMvOHh4X2lvL2VuZXQuYwkod29y
+a2luZyBjb3B5KQpAQCAtNjI3LDYgKzYyNywyMSBAQAogCX0KIH0KIAoraW50IHNjY19lbmV0X3Bv
+bGwoc3RydWN0IG5ldF9kZXZpY2UgKmRldiwgaW50IGVudHJ5KQoreworCisgICAgdW5zaWduZWQg
+bG9uZyBmbGFnczsKKyAgICAKKyAgICBzYXZlX2ZsYWdzKGZsYWdzKTsKKyAgICBjbGkoKTsKKyAg
+ICBkaXNhYmxlX2lycShkZXYtPmlycSk7CisJc2NjX2VuZXRfaW50ZXJydXB0KGRldi0+aXJxLCBk
+ZXYsIE5VTEwpOworICAgIGVuYWJsZV9pcnEoZGV2LT5pcnEpOworICAgIHJlc3RvcmVfZmxhZ3Mo
+ZmxhZ3MpOworCisJcmV0dXJuIDA7Cit9CisKIC8qIEluaXRpYWxpemUgdGhlIENQTSBFdGhlcm5l
+dCBvbiBTQ0MuICBJZiBFUFBDLUJ1ZyBsb2FkZWQgdXMsIG9yIHBlcmZvcm1lZAogICogc29tZSBv
+dGhlciBuZXR3b3JrIEkvTywgYSB3aG9sZSBidW5jaCBvZiB0aGlzIGhhcyBhbHJlYWR5IGJlZW4g
+c2V0IHVwLgogICogSXQgaXMgbm8gYmlnIGRlYWwgaWYgd2UgZG8gaXQgYWdhaW4sIHdlIGp1c3Qg
+aGF2ZSB0byBkaXNhYmxlIHRoZQpAQCAtOTQ5LDYgKzk2NCw3IEBACiAJZGV2LT5zdG9wID0gc2Nj
+X2VuZXRfY2xvc2U7CiAJZGV2LT5nZXRfc3RhdHMgPSBzY2NfZW5ldF9nZXRfc3RhdHM7CiAJZGV2
+LT5zZXRfbXVsdGljYXN0X2xpc3QgPSBzZXRfbXVsdGljYXN0X2xpc3Q7CisJZGV2LT5wb2xsID0g
+c2NjX2VuZXRfcG9sbDsKIAogCS8qIEFuZCBsYXN0LCBlbmFibGUgdGhlIHRyYW5zbWl0IGFuZCBy
+ZWNlaXZlIHByb2Nlc3NpbmcuCiAJKi8KCg==
 
+------_=_NextPart_001_01C46A90.95473233
+Content-Type: application/octet-stream;
+	name="serial.patch"
+Content-Transfer-Encoding: base64
+Content-Description: serial.patch
+Content-Disposition: attachment;
+	filename="serial.patch"
 
-Hi.
-I would like to know which software configuration system (SCM) have you
-people tried. I found a nice comparison between different systems in
-http://better-scm.berlios.de/comparison/ and Vesta seems really interesting.
-Anyone has tried it?
-We're using CVS right now, but it has some limitations wich can become quite
-bothering. Also, we have to compile for several different platforms, using
-different toolchains, etc. Any SCM that you would recommend for this kind of
-development.
-Thanks in advance.
+SW5kZXg6IGFyY2gvcHBjL2NvbmZpZy5pbgo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSBhcmNoL3BwYy9jb25maWcu
+aW4JKHJldmlzaW9uIDEzMykKKysrIGFyY2gvcHBjL2NvbmZpZy5pbgkod29ya2luZyBjb3B5KQpA
+QCAtMTM5LDcgKzEzOSw2IEBACiBmaQogCiBpZiBbICIkQ09ORklHXzh4eCIgPSAieSIgXTsgdGhl
+bgotICBkZWZpbmVfYm9vbCBDT05GSUdfU0VSSUFMX0NPTlNPTEUgeQogICBkZWZpbmVfYm9vbCBD
+T05GSUdfTk9UX0NPSEVSRU5UX0NBQ0hFIHkKIAogICBjaG9pY2UgJ01hY2hpbmUgVHlwZScJCVwK
+SW5kZXg6IGFyY2gvcHBjLzh4eF9pby9Db25maWcuaW4KPT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gYXJjaC9wcGMv
+OHh4X2lvL0NvbmZpZy5pbgkocmV2aXNpb24gMTMzKQorKysgYXJjaC9wcGMvOHh4X2lvL0NvbmZp
+Zy5pbgkod29ya2luZyBjb3B5KQpAQCAtMjQsMTMgKzI0LDE5IEBACiAgIGZpCiAgIGJvb2wgJ1Vz
+ZSBCaWcgQ1BNIEV0aGVybmV0IEJ1ZmZlcnMnIENPTkZJR19FTkVUX0JJR19CVUZGRVJTCiBmaQor
+Citib29sICdVc2Ugc2VyaWFsIHBvcnQgY29uc29sZScgQ09ORklHX1NFUklBTF9DT05TT0xFCisK
+IGlmIFsgIiRDT05GSUdfU0NDM19FTkVUIiAhPSAieSIgXTsgdGhlbgogICBib29sICdVc2UgU01D
+MSBmb3IgVUFSVCcgQ09ORklHXzh4eF9TTUMxCiBmaQorCiBib29sICdVc2UgU01DMiBmb3IgVUFS
+VCcgQ09ORklHXzh4eF9TTUMyCiBpZiBbICIkQ09ORklHXzh4eF9TTUMyIiA9ICJ5IiBdOyB0aGVu
+CiAgIGJvb2wgJ1VzZSBBbHRlcm5hdGUgU01DMiBJL08gKDgyMy84NTApJyBDT05GSUdfQUxUU01D
+MgotICBib29sICdVc2UgU01DMiBmb3IgQ29uc29sZScgQ09ORklHX0NPTlNfU01DMgorICBpZiBb
+ICIkQ09ORklHX1NFUklBTF9DT05TT0xFIiA9ICJ5IiBdOyB0aGVuCisJICBib29sICdVc2UgU01D
+MiBmb3IgQ29uc29sZScgQ09ORklHX0NPTlNfU01DMgorICBmaQogZmkKIGlmIFsgIiRDT05GSUdf
+U0NDMV9FTkVUIiAhPSAieSIgXTsgdGhlbgogICBib29sICdVc2UgU0NDMSBmb3IgVUFSVCcgQ09O
+RklHXzh4eF9TQ0MxIApJbmRleDogYXJjaC9wcGMvOHh4X2lvL3VhcnQuYwo9PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0t
+LSBhcmNoL3BwYy84eHhfaW8vdWFydC5jCShyZXZpc2lvbiAxMzMpCisrKyBhcmNoL3BwYy84eHhf
+aW8vdWFydC5jCSh3b3JraW5nIGNvcHkpCkBAIC05MSwxNSArOTEsMTcgQEAKIAogc3RhdGljIHN0
+cnVjdCB0dHlfZHJpdmVyIHNlcmlhbF9kcml2ZXIsIGNhbGxvdXRfZHJpdmVyOwogc3RhdGljIGlu
+dCBzZXJpYWxfcmVmY291bnQ7CisjaWYgZGVmaW5lZChDT05GSUdfU0VSSUFMX0NPTlNPTEUpCiBz
+dGF0aWMgaW50IHNlcmlhbF9jb25zb2xlX3NldHVwKHN0cnVjdCBjb25zb2xlICpjbywgY2hhciAq
+b3B0aW9ucyk7CiAKIHN0YXRpYyB2b2lkIHNlcmlhbF9jb25zb2xlX3dyaXRlKHN0cnVjdCBjb25z
+b2xlICpjLCBjb25zdCBjaGFyICpzLAogCQkJCXVuc2lnbmVkIGNvdW50KTsKIHN0YXRpYyBrZGV2
+X3Qgc2VyaWFsX2NvbnNvbGVfZGV2aWNlKHN0cnVjdCBjb25zb2xlICpjKTsKIAotI2lmIGRlZmlu
+ZWQoQ09ORklHX1NFUklBTF9DT05TT0xFKSAmJiBkZWZpbmVkKENPTkZJR19NQUdJQ19TWVNSUSkK
+KyNpZiBkZWZpbmVkKENPTkZJR19NQUdJQ19TWVNSUSkKIHN0YXRpYyB1bnNpZ25lZCBsb25nIGJy
+ZWFrX3ByZXNzZWQ7IC8qIGJyZWFrLCByZWFsbHkgLi4uICovCi0jZW5kaWYKKyNlbmRpZiAvKiBD
+T05GSUdfTUFHSUNfU1lTUlEgKi8KKyNlbmRpZiAvKiBDT05GSUdfU0VSSUFMX0NPTlNPTEUgKi8K
+IAogLyoKICAqIFNlcmlhbCBkcml2ZXIgY29uZmlndXJhdGlvbiBzZWN0aW9uLiAgSGVyZSBhcmUg
+dGhlIHZhcmlvdXMgb3B0aW9uczoKQEAgLTI1MCw2ICsyNTIsNyBAQAogCSB1bnNpZ25lZCBjaGFy
+CQkqdHhfdmFfYmFzZTsKIH0gc2VyX2luZm9fdDsKIAorI2lmIGRlZmluZWQoQ09ORklHX1NFUklB
+TF9DT05TT0xFKQogc3RhdGljIHN0cnVjdCBjb25zb2xlIHNlcmNvbnMgPSB7CiAJbmFtZToJCSJ0
+dHlTIiwKIAl3cml0ZToJCXNlcmlhbF9jb25zb2xlX3dyaXRlLApAQCAtMjU4LDYgKzI2MSw3IEBA
+CiAJZmxhZ3M6CQlDT05fUFJJTlRCVUZGRVIsCiAJaW5kZXg6CQlDT05GSUdfU0VSSUFMX0NPTlNP
+TEVfUE9SVCwKIH07CisjZW5kaWYKIAogc3RhdGljIHZvaWQgY2hhbmdlX3NwZWVkKHNlcl9pbmZv
+X3QgKmluZm8pOwogc3RhdGljIHZvaWQgcnNfOHh4X3dhaXRfdW50aWxfc2VudChzdHJ1Y3QgdHR5
+X3N0cnVjdCAqdHR5LCBpbnQgdGltZW91dCk7CkBAIC0zMDAyLDYgKzMwMDYsNyBAQAogCXJldHVy
+biAwOwogfQogCisjaWYgZGVmaW5lZChDT05GSUdfU0VSSUFMX0NPTlNPTEUpCiAvKiBUaGlzIG11
+c3QgYWx3YXlzIGJlIGNhbGxlZCBiZWZvcmUgdGhlIHJzXzh4eF9pbml0KCkgZnVuY3Rpb24sIG90
+aGVyd2lzZQogICogaXQgYmxvd3MgYXdheSB0aGUgcG9ydCBjb250cm9sIGluZm9ybWF0aW9uLgog
+Ki8KQEAgLTMxNzUsNCArMzE4MCw0IEBACiAJY29uc29sZV90eF9idWZfbGVuID0gRUFSTFlfQlVG
+X1NJWkU7CiAJcmV0dXJuIDA7CiB9Ci0KKyNlbmRpZiAvKiBDT05GSUdfU0VSSUFMX0NPTlNPTEUg
+Ki8KCg==
 
-Iñigo
-
-
- This mail arrived via mail.pineapp.net
-
-****************************************************************************
-********
-This footnote confirms that this email message has been scanned by
-PineApp Mail-SeCure for the presence of malicious code, vandals & computer
-viruses.
-****************************************************************************
-********
+------_=_NextPart_001_01C46A90.95473233--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
