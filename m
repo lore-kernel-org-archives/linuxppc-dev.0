@@ -1,42 +1,28 @@
-Date: Wed, 9 Dec 1998 01:30:02 -0600 (CST)
-From: Troy Benjegerdes <hozer@drgw.net>
-To: Cort Dougan <cort@persephone.cs.nmt.edu>
+Date: Wed, 9 Dec 1998 01:25:21 -0700 (MST)
+From: Cort Dougan <cort@persephone.cs.nmt.edu>
+To: Troy Benjegerdes <hozer@drgw.net>
 cc: Dan Malek <dmalek@jlc.net>, linuxppc-dev@lists.linuxppc.org
 Subject: Re: PReP RTC vs Decrementer accuracy...
-In-Reply-To: <Pine.LNX.3.96.981208165142.11398A-100000@persephone.cs.nmt.edu>
-Message-ID: <Pine.LNX.4.04.9812090128220.13527-100000@narn.local.drgw.net>
+In-Reply-To: <Pine.LNX.4.04.9812090128220.13527-100000@narn.local.drgw.net>
+Message-ID: <Pine.LNX.3.96.981209012238.14552A-100000@persephone.cs.nmt.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 8 Dec 1998, Cort Dougan wrote:
+No, this would tend to make it slower if anything.
 
-> The hardware is more stable, of course, but we can miss when handling it.
-> Take a look at the decrementer code - I think it's possible to miss a decr
-> when resetting it.  That could explain drift.
+}Okay, would this cause the clock to be fast? (mine was about 45 minutes
+}fast) (And, is it feasable to make it 'impossible' to miss a decr?)
 
-Okay, would this cause the clock to be fast? (mine was about 45 minutes
-fast) (And, is it feasable to make it 'impossible' to miss a decr?)
+Rebooting a lot would affect it.  Are you running the code that sync's the
+rtc with the system clock every 11 minutes?  If so, turning it off and
+seeing which clock was accurate after a while would be a useful
+experiment.
 
-I have also rebooted the machine quite a bit.. This may also be the
-reason.
-
-> 
-> }Nope, not even close.  If you convert rtc drift specifications and
-> }processor oscillator drift specifications to a common reference (like
-> }PPM) you will see processor oscillators are significantly better
-> 
-> 
-
-Basically, I want to know the right way to do this before fixing it.
-
---------------------------------------------------------------------------
-| Troy Benjegerdes    |    troybenj@iastate.edu    |    hozer@drgw.net   |
-|    Unix is user friendly... You just have to be friendly to it first.  |
-| This message composed with 100% free software.    http://www.gnu.org   |
---------------------------------------------------------------------------
+}I have also rebooted the machine quite a bit.. This may also be the
+}reason.
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
