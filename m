@@ -1,22 +1,20 @@
-Return-Path: <Agostino.Sette@siemens.com>
-Received: from david.siemens.it (david.siemens.it [192.109.0.136])
-	by ozlabs.org (Postfix) with ESMTP id 6B8722BF09
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao09.cox.net (fed1rmmtao09.cox.net [68.230.241.30])
+	by ozlabs.org (Postfix) with ESMTP id BF59F2BDEB
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  5 Nov 2004 03:32:14 +1100 (EST)
-Received: from milano-b-qfe1.netz.sbs.de (milano-b.netz.sbs.de [192.109.0.135])
-	by david.siemens.it (8.11.7/8.11.7) with SMTP id iA4GGQd00398
-	for <linuxppc-embedded@ozlabs.org>; Thu, 4 Nov 2004 17:16:26 +0100 (MET)
-Received: from milvb22a.siemens.it (milvb22a.siemens.it [141.29.217.131])
-	by mail.siemens.it (8.11.7/8.11.7) with ESMTP id iA4GFBK24261
-	for <linuxppc-embedded@ozlabs.org>; Thu, 4 Nov 2004 17:15:11 +0100 (MET)
-Message-ID: <69DF49BE936F4441980EC1D59F0ADC2F94592E@aqlby02a.siemens.it>
-From: Sette Agostino <Agostino.Sette@siemens.com>
-To: linuxppc-embedded@ozlabs.org
-Date: Thu, 4 Nov 2004 17:17:58 +0100 
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C4C289.D95C9D10"
-Subject: My email
+	Fri,  5 Nov 2004 04:25:53 +1100 (EST)
+Date: Thu, 4 Nov 2004 10:25:51 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Rick McBain <rick.mcbain@logicsense.com>
+Message-ID: <20041104102551.A12135@home.com>
+References: <002b01c4c1fb$49adde60$6802a8c0@RicksPresario900>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <002b01c4c1fb$49adde60$6802a8c0@RicksPresario900>;
+	from rick.mcbain@logicsense.com on Wed, Nov 03, 2004 at
+	03:17:27PM -0800
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Linux port for the AMCC (was IBM) 440EP
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,176 +25,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This message is in MIME format. Since your mail reader does not understand
-this format, some or all of this message may not be legible.
+On Wed, Nov 03, 2004 at 03:17:27PM -0800, Rick McBain wrote:
+> Does anybody have a working distribution for the 440EP? We were planning
+> to use a Timesys port, but we've now been told it doesn't exist (after
+> months of promises it did.).  Our other option is to pay US$25K to
+> MontaVista, but that seems a tad pricey, and our previous experience
+> with them is that they delivered us an ARM port which fundamentally
+> didn't work.
 
-------_=_NextPart_001_01C4C289.D95C9D10
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-Agostino.Sette@siemens.com
-
-=20
-
-------------------------------------------------------------------------=
-----
----------------------
-SIEMENS CNX
-Agostino Sette     DI SW 3
-Phone: +39 0862 335 557    FAX: +39 0862 335 623
-Address: Localit=E0 Boschetto S.S.17  67100 L'Aquila - Italy
-E-Mail:  <mailto:Agostino.Sette@siemens.com> Agostino.Sette@siemens.com
-"L'esperienza =E8 il nome che diamo ai nostri errori"
-"Experience is simply the name we give our mistakes"
-"Erfahrung ist der Name, den man seinen Fehlern gibt." Oscar Wilde
-------------------------------------------------------------------------=
-----
----------------------
-=20
-
-=20
-
-
-------_=_NextPart_001_01C4C289.D95C9D10
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<html>
-
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-
-
-<meta name=3DGenerator content=3D"Microsoft Word 10 (filtered)">
-
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0cm;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-address
-	{margin:0cm;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-span.EmailStyle17
-	{font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:612.0pt 792.0pt;
-	margin:72.0pt 89.85pt 72.0pt 89.85pt;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Agostino.Sette@siemens.com</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>&nbsp;</span></font></p>
-
-<address><b><i><font size=3D3 color=3Dteal face=3D"Times New =
-Roman"><span lang=3DIT
-style=3D'font-size:12.0pt;color:teal;font-weight:bold'>-----------------=
-------------------------------------------------------------------------=
---------</span></font></i></b></address>
-
-<address><b><i><font size=3D3 color=3Dteal face=3D"Times New =
-Roman"><span lang=3DIT
-style=3D'font-size:12.0pt;color:teal;font-weight:bold;font-style:normal'=
->SIEMENS</span></font></i></b><font
-color=3Dteal><span lang=3DIT style=3D'color:teal;font-style:normal'> =
-<strong><b><font
-face=3D"Times New =
-Roman">CNX</font></b></strong></span></font></address>
-
-<address><strong><b><i><font size=3D3 color=3Dnavy face=3D"Times New =
-Roman"><span
-lang=3DIT =
-style=3D'font-size:12.0pt;color:navy;font-style:normal'>Agostino =
-Sette</span></font></i></b></strong><font
-color=3Dnavy><span lang=3DIT =
-style=3D'color:navy;font-style:normal'>&nbsp;&nbsp;&nbsp;&nbsp;
-DI SW 3</span></font></address>
-
-<address><i><font size=3D3 color=3Dnavy face=3D"Times New Roman"><span =
-lang=3DIT
-style=3D'font-size:12.0pt;color:navy;font-style:normal'>Phone: +39 =
-0862&nbsp;335
-557&nbsp;&nbsp;&nbsp; FAX: +39&nbsp;0862 335 =
-623</span></font></i></address>
-
-<address><i><font size=3D3 color=3Dnavy face=3D"Times New Roman"><span =
-lang=3DIT
-style=3D'font-size:12.0pt;color:navy;font-style:normal'>Address: =
-Localit=E0
-Boschetto S.S.17&nbsp; 67100&nbsp;L'Aquila - =
-Italy</span></font></i></address>
-
-<address><i><font size=3D3 color=3Dnavy face=3D"Times New Roman"><span =
-lang=3DIT
-style=3D'font-size:12.0pt;color:navy;font-style:normal'>E-Mail: =
-</span></font></i><font
-color=3Dnavy><span style=3D'color:navy;font-style:normal'><a
-href=3D"mailto:Agostino.Sette@siemens.com"><span =
-lang=3DIT>Agostino.Sette@siemens.com</span></a></span></font></address>
-
-<address><i><font size=3D3 color=3Dnavy face=3D"Times New Roman"><span =
-lang=3DIT
-style=3D'font-size:12.0pt;color:navy;font-style:normal'>&quot;L'esperien=
-za =E8 il
-nome che diamo ai nostri errori&quot;</span></font></i></address>
-
-<address><i><font size=3D3 color=3Dnavy face=3D"Times New Roman"><span
-style=3D'font-size:12.0pt;color:navy;font-style:normal'>&quot;Experience=
- is
-simply the name we give our mistakes&quot;</span></font></i></address>
-
-<address><i><font size=3D3 color=3Dnavy face=3D"Times New Roman"><span
-style=3D'font-size:12.0pt;color:navy;font-style:normal'>&quot;Erfahrung =
-ist der
-Name, den man seinen Fehlern gibt.&quot; Oscar =
-Wilde</span></font></i></address>
-
-<address><b><i><font size=3D3 color=3Dteal face=3D"Times New =
-Roman"><span
-style=3D'font-size:12.0pt;color:teal;font-weight:bold'>-----------------=
-------------------------------------------------------------------------=
---------</span></font></i></b></address>
-
-<address><i><font size=3D3 color=3Dnavy face=3D"Times New Roman"><span
-style=3D'font-size:12.0pt;color:navy'>&nbsp;</span></font></i></address>=
-
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:
-12.0pt'>&nbsp;</span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------_=_NextPart_001_01C4C289.D95C9D10--
+Since IBM->AMCC did the raw kernel port and toolchain for 440EP, why
+don't you ask them for it?  Then you can roll your own distribution
+for far cheaper than $25k.  What do you need working?  There are
+a lot of new features on 440EP.
+ 
+-Matt
