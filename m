@@ -1,43 +1,40 @@
-From: "Nick Ng" <nick@dd.nec.com.au>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: how to get dwarf-1 debugging in crossGcc compilation
-Date: Fri, 28 Feb 2003 18:58:30 +1100
-Message-ID: <000101c2deff$2f195010$79d44c93@dd.nec.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: john@corelis.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Good Books 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 27 Feb 2003 17:05:18 PST."
+             <3E5EB5CE.4090509@corelis.com>
+Date: Fri, 28 Feb 2003 08:59:10 +0100
+Message-Id: <20030228075915.BF7B7C6E0C@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->>
->I have built a cross GCC compiler (based on gcc 2.95.3) for my PowerPc
->embedded project. This tool chain successfully output an executable ELF
-file
->which can be ran on my target board.
+In message <3E5EB5CE.4090509@corelis.com> you wrote:
+>
+> I am looking for reference books which are related to PPC 440GP or/and
+> embedded PPC or/and Linux on PPC. Do you have any suggestion?
 
-But when I tried to load this elf file >into my SingleStep SDS 7.5 debugger,
-the loading has failed. The reason is
->SDS debugger only support dwarf-1 version and my elf file contains debug
-information which is disliked by her parser "fromelf.exe".
+There is an excellent (IMHO) book to be  available  soon  (couple  of
+weeks?):
 
->I tried to use all sort of compilation flags like "-gdwarf", "-gdwarf-1"
-and
->"-gdwarf-2" so as to produce an elf with "dwarf-1" debug information in it.
-But all of
->these trials had failed. I actually dump the elf, via fromelf,  file out to
-see if dwarf
->information has been included but none is found! Can anyone help me on the
-following questions:
+	Karim Yaghmour:
+	Building Embedded Linux Systems - Tools and Resources.
+	O'Reilly, ISBN 059600222X
 
-Does A) Is >dwarf-1 format supported in CrossGcc for MPC target??
-B) if yes, what compilation flag >should I use in my makefile. (I am
-using -g in the make)?
 
->Thanks in advance.
->p.s. gcc -v on my host computer display this version info.
->	Reading specs from /usr/local/lib/gcc-lib/powerpc-linux/2.95.3/specs
->gcc version 2.95.3 20010315 (release)"
+Best regards,
 
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+The shortest unit of time in the multiverse is the News York  Second,
+defined  as  the  period  of  time between the traffic lights turning
+green and the cab behind you honking.
+                                - Terry Pratchett, _Lords and Ladies_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
