@@ -1,48 +1,47 @@
-Message-ID: <67505026E29DD311A9AA00508B7315F350A513@EXCHANGE>
-From: Julia Elbert <jelbert@enerdyne.com>
-To: "'jari.nguyen@serialsystem.com.sg'" <jari.nguyen@serialsystem.com.sg>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'"
-	 <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Ram Disk
-Date: Wed, 20 Sep 2000 08:58:37 -0700
+Message-ID: <39C8E538.B9F0DA84@mvista.com>
+Date: Wed, 20 Sep 2000 12:26:32 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Rainer Kloud <rainer.kloud@siemens.at>
+CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: 8260 FCC Ethernet driver, cpm_8260.h
+References: <39C1DE70.F1D90668@siemens.at> <39C24395.756E3252@mvista.com> <39C8C584.D845678A@siemens.at>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-Hi Jari,
-Maybe you were talking to Jacob? Hmmm.
-I have posted this already. Look at 8/24. But here you go and feel free to
-post it again if you like.
-Thanks,
-Julia
+Rainer Kloud wrote:
 
->From John's note my code change was as follows:
-I moved a close comment down 5 lines.
+> But one further question:
+> After compelation of your driver I was able to send some
+> data (bootp request), but I couldn't receive any.
 
-lines 405 - 409 commented out in linux/mm/vmscan.c
+Check to make sure you are using the same pins for clocks as
+the driver has.  That is a common problem.
 
-/* Then, try to page stuff out..
-		while (swap_out(priority, gfp_mask)) {
-			if (!--count)
-				goto done;
-		}
-*/
+> So setting the desired events in the FCC mask register has
+> no effect!
 
-John wrote:
+Well, you have to be a little careful here.  I don't have the
+book handy to look up the details, but there are several places
+where things are assigned 32-bit address alignments, but only
+the upper 8 or 16 are valid.  In some cases, these also have
+to be accessed as 16-bit operations on the 32-bit aligment.
+One of the reasons is an attempt to use legacy microcode from
+the 8xx, which is a 16/20/32-bit CPM architecture in a fully 32-bit
+CPM of the 8260....
 
-In *my* code (I am running a modified 2.2.15 kernel), I merely commented out
-the "swap_out ()" code in routine do_try_to_free_pages in mm/vmscan.c (in my
-code, it's lines 405-409).  Since I made this change, my system has been
-rock-steady (and I run a LOT of applications, including the Apache web
-server and various CGI scripts I have written).  I now see free memory go
-down as new images are read from the ramdisk, and back up as memory is freed
-by the system.
-Hope this helps your problem...
-John Whitney
+The code that is posted works on Rev. A parts on several platforms.
+I am sure there are some mistakes, but look at it carefully....:-)
 
+> What do you think about this?
+
+I guess I better take a closer look.....
+
+Thanks.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
