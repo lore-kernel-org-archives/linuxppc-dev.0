@@ -1,36 +1,26 @@
-Date: Sat, 9 Aug 2003 13:48:02 +0200
-From: Samuel Rydh <samuel@ibrium.se>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.linuxppc.org,
-	Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] 2.6 timebase synchronization
-Message-ID: <20030809114802.GA1654@ibrium.se>
-References: <20030808001523.GA9274@ibrium.se> <20030809011305.GA12030@ibrium.se> <1060419490.653.18.camel@gaston>
+Subject: BK problems with linuxppc-2.5
+From: Gary Thomas <gary@mlbassoc.com>
+To: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <E19lS18-0003Ng-00@source.mvista.com>
+References: <E19lS18-0003Ng-00@source.mvista.com>
+Content-Type: text/plain
+Message-Id: <1060436322.16233.52.camel@hermes>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1060419490.653.18.camel@gaston>
+Date: 09 Aug 2003 07:38:43 -0600
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Aug 09, 2003 at 10:58:11AM +0200, Benjamin Herrenschmidt wrote:
-> I'm on vacation now, I can't test it until I'm back, but that
-> looks quite good overall (except maybe the MacOS-like constant
-> naming for kXXXX :)
->
-> However, does it work with more than 2 CPUs ?
+I've been unable to access this repository [for days].
 
-Yes, it does. The code simply passes the timestamp from CPU0
-to the one currently beeing booted (the CPU0 timebase is
-not affected).
+ [gthomas@hermes tmp]$ bk clone bk://source.mvista.com/linuxppc-2.5 linuxppc-2.5
+  ERROR-Can't get read lock on the repository.
 
-> It seem to be rather
-> dual CPU centric from my understanding of the ack mecanism...
+Any ideas/help?
 
-Only a pair of CPUs are synchronized simultaneously, yes. But there
-is absolutely no need to synchronize more than two at the same.
-Besides, CPU2 is not started until CPU1 has booted...
+--
+Gary Thomas <gary@mlbassoc.com>
+MLB Associates
 
-/Samuel
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
