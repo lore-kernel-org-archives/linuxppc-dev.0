@@ -1,85 +1,60 @@
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: UPM driver of MPC8260 
-Date: Thu, 1 Jul 2004 06:37:54 -0600
-Message-ID: <065ACD8E84315E4394C835E398C8D5EB09229A@cossmgmbx02.email.corp.tld>
-From: "VanBaren, Gerald (AGRE)" <Gerald.VanBaren@smiths-aerospace.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Lite5200 PCI not working
+From: Stefan Nickl <Stefan.Nickl@kontron.com>
+To: Kate Alhola <kate@iti.fi>
+Cc: Wolfgang Denk <wd@denx.de>,
+	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <40E3F73A.60607@iti.fi>
+References: <20040701091858.A3564C109F@atlas.denx.de>
+	 <40E3F73A.60607@iti.fi>
+Content-Type: text/plain
+Message-Id: <1088685514.6235.78.camel@lucy.pep-kaufbeuren.de>
+Mime-Version: 1.0
+Date: Thu, 01 Jul 2004 14:38:34 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> -----Original Message-----
-> From: owner-linuxppc-embedded@lists.linuxppc.org
-> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf
-> Of Alireza
-> Sadri
-> Sent: Thursday, July 01, 2004 7:13 AM
-> To: linuxppc-embedded@lists.linuxppc.org
-> Subject: Re: UPM driver of MPC8260
->
->
->
-> Hi , thanks for your attentins.
->
-> I am not an expert, but i know the meanings of
-> programming of the board , ppcboot(bootloader) ,
-> kernel , linux,  ELDK(I have compiled it for my
-> board), driver , service , and i am familiar with
-> MPC8260 as a microprocessor.I was working on hardware
-> of this board.
-> we made a copy , a customized copy.
->
-> now i am working on software ,
-> i am going to make my custom SBC8260 standalone , so i
-> need to replace the ppcboot of the board with a
-> bootable linux image. I want this linux to mount the
-> flash, and then i put my own final program on the
-> flash , and as a service, linux will run the program
-> on any reset.(now,it would be standalone)
->
-> so i cannot hold the ppcboot (u-boot) on the flash, i
-> need the changes in my linux image , or using a linux
-> driver.
->
-> Can you please guide me through this process?
-> If I have to replace ppcboot , how can have
-> bootloader?
-> (I know board needs bootloader anyway , but i don't
-> know what it is. is it ppcboot? or ELDK makes a
-> bootable linux?)
->
-> Any other point of view is really wellcome.
->
-> Best Regards.
+On Thu, 2004-07-01 at 13:36, Kate Alhola wrote:
+> >I've updated the table to include  the  settings  for  the  Rev.  4.0
+> >board, too, and to list ALL jumpers on the board.
+> >
+> >
+> >
+> >>OK. Please see http://www.denx.de/twiki/bin/view/DULG/CoralPInstallation
 
-U-boot is the bootloader.  You must have it (or equivalent, but u-boot is probably your easiest option).  If you are truly using ppcboot, you should upgrade to u-boot (it is the successor of ppcboot).
+Great documentation, thanks!
 
-U-boot lives in flash and boots the board.  You can build a linux image and put it also in flash.
+> I have Rev 3.0 board with analog switch type EL4331. To get it working
+> even in bypassed mode
+> it needs PD ( Power down ) input in pin 14 to grounded ( connect example
+> to pin 10 ).
 
-READ the ELDK documentation for lots of useful help
-  http://www.denx.de/twiki/bin/view/DULG/Faq
-  http://www.denx.de/twiki/bin/view/DULG/Manual
+The Rev 5.0 board has J251 "PDN EN" (apparently documented nowhere
+except for the DULG) for that purpose. When set, Pin 14 is grounded.
 
-U-boot image formats
-  http://www.denx.de/twiki/bin/view/DULG/UBootImages
+But it didn't help much. I took random shots at the CORALVO[RGB] signals
+on the extension connector, and even there, the red and green channels
+are only half the amplitude as the blue channel with a typical
+grey-on-black linux startup screen. The picture also looks dim-blueish.
 
-Making a linux image suitable for booting via u-boot
-  http://www.denx.de/twiki/bin/view/DULG/LinuxConfiguration
+I think I'll try the board in a Windows box in the next step ...
 
-  "The make target uImage uses the tool mkimage (from the U-Boot package) to create a Linux kernel image in arch/ppc/boot/images/uImage which is immediately usable for download and booting with U-Boot."
+> With this modification my board works.  I am running Embedded QT but it
+> looks a like that
+> #define QT_QWS_REVERSE_BYTE_ENDIANNESS in
+> qt-embedded-free-3.3.2/src/kernel/qgfxraster_qws.cpp was not enough to get
+> colours right. Needs just more hacking code for fixing endianes problem.
 
-You should set up a TFTP server and booting your kernel off of the server until you are happy with it.
-  http://www.denx.de/twiki/bin/view/DULG/LinuxNfsRoot
-The following page is aimed at debian, but may be helpful.
-  http://www.denx.de/twiki/bin/view/DULG/DebianOnPowerpcInstallationHowto
+We're running qte 3.1.1 on the Asilient chip (cpu is MPC8245),
+and we didn't have to hack Qt for this, hmm ...
 
-At that point, copy the uImage to flash somewhere (where it doesn't overwrite anything important, of course) and boot it directly from flash via u-boot's command prompt.  When you are happy with that, you can use u-boot's environment variables to create an "auto-execute" script to boot linux "hands off."
-  http://www.denx.de/twiki/bin/view/DULG/LinuxBootIntro
-  http://www.denx.de/twiki/bin/view/DULG/LinuxInFlash
-
-gvb
+--
+Stefan Nickl
+Project Engineering
+Kontron Modular Computers
+Sudetenstr. 7
+D-87600 Kaufbeuren
+Phone ++49/8341/803-294
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
