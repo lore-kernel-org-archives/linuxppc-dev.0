@@ -1,28 +1,33 @@
-Subject: Re: USB, 2.6-test11 and hot flaming death
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Samuel Rydh <samuel@ibrium.se>
+Message-ID: <1070626021.3fd074e539732@mail.theboonies.us>
+Date: Fri,  5 Dec 2003 06:07:01 -0600
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <20031204163433.GA21236@ibrium.se>
-References: <1070080961.683.26.camel@gaston>
-	 <09B6571B-2408-11D8-970C-0003939E069A@mac.com>
-	 <20031204163433.GA21236@ibrium.se>
-Content-Type: text/plain
-Message-Id: <1070580925.613.7.camel@gaston>
-Mime-Version: 1.0
-Date: Fri, 05 Dec 2003 10:35:26 +1100
+Subject: Re: userspace testing an ati fb driver
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+From: David Eger <random-temp_addy-1071230825.92d33e@theboonies.us>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> This problem has actually been present quite a while (at least
-> since 2.6.0-test3). On my dual 1.25 GHz G4, it occurs once
-> every four boots or so.
+I think this explains my problem;  output from my reg dump:
 
-Interesting. It happens with the NEC EHCI/OHCI or with the
-KeyLargo OHCI's ? I suspect it's a problem of the NEC part,
-and I think K2 actually contains that part built-in on the G5
+Radeon MMIO registers:
+0000 : 0000c081
+0004 : 00313131
+0008 : 3f000000
+...
 
-Ben.
+output from your reg dump:
 
+Radeon MMIO registers:
+0000 : 81c00000
+0004 : 31313100
+0008 : 0000003f
+...
+
+thanks a bunch.
+
+-david
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
