@@ -1,41 +1,42 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Topi Kanerva <tkanerva@ees2.oulu.fi>,
-        Giuliano Pochini
- <pochini@denise.shiny.it>,
-        <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: can't boot 2.4.0-t9
-Date: Mon, 9 Oct 2000 13:28:01 +0200
-Message-Id: <19340903045945.2380@192.168.1.2>
-In-Reply-To: <Pine.GSO.4.21.0010091229310.24725-100000@stekt6>
-References: <Pine.GSO.4.21.0010091229310.24725-100000@stekt6>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Mime-Version: 1.0
+Message-Id: <p04330100b60777284ff4@[129.59.235.75]>
+In-Reply-To: <200010070500.AAA10239@lists.linuxppc.org>
+References: <200010070500.AAA10239@lists.linuxppc.org>
+Date: Mon, 9 Oct 2000 08:30:33 -0500
+To: linuxppc-dev@lists.linuxppc.org
+From: "Marcus H. Mendenhall" <mendenmh@telalink.net>
+Subject: Anyone succeed with VNC?
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->
->is this the plain 2.4.0-test9 or linuxcare devel version?
->If I were you, I'd try to backport the test7 scsi code to make
->the hack work again.
->I don't know about the drivers/scsi stuff, because I have a pismo
->(and hence no scsi), but for sure none of the 2.4.0-testx kernels
->have worked for me in terms of X: if I start X (4.0.1c), the
->lcd screen goes black, or then just completely wild.
->
->Can anyone else with a pismo confirm this?
+I have been trying to get VNC (http://www.uk.research.att.com/vnc/)
+up and running under Linux-ppc.  I have used it under MacOS and seen
+it used under Linux-x86, and it is a great package.
 
-For the SCSI resources problem, I have to check is the main tree is up-
-to-date with the latest PPC fixes. You may want to try with the PPC
-bitkeeper tree.
+Unfortunately, it is hard to find for Linux-ppc.  The website (above)
+points to an rpm hosted at ppc.linux.or.jp, but that server never
+responds..  I have poked all around the linux.or.jp servers with no
+luck.
 
-For the X 4 vs. 2.4 issue, I've been biten by this for a long time (on a
-Pismo too and on a G4) until I figured out that the X server dies when
-looking up font path. I had a broken font path in my /etc/X11/XF86Config,
-removing it fixed the problem. (It's the last one in the list, it used to
-give an error with older X servers).
+Over the weekend, I broke down and decided to try to build it.  The X
+version of it is based on XF86 source, and (with only minor
+modifications to the linux.cf file to recognize powerpc architecture)
+it built fine.  However, when run, it produces slightly muddled
+screen displays, and crashes after window dragging or other large
+operations.
 
-Ben.
+Has anyone out there succeeded with VNC, or does anyone know where
+the rpms which apparently existed once have gone?  It would be very
+useful to return this package to Linux-ppc compatibility.  I can put
+in a little time working on it, but have no familiarity with the
+innards of an XF86 server, so if I could enlist some help from
+someone who has poked at that package before, it might greatly
+improve the likelihood of my getting this done in finite time.
 
+Thanks.
+
+Marcus Mendenhall
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
