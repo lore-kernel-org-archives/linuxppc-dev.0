@@ -1,66 +1,64 @@
-Message-ID: <3ECD5B1E.4070805@mvista.com>
-Date: Thu, 22 May 2003 16:19:58 -0700
+Message-ID: <3ECD5B84.9030807@mvista.com>
+Date: Thu, 22 May 2003 16:21:40 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
 To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: linuxppc_2_4_devel patch to arch/ppc/kernel/setup.c
+Subject: linuxppc_2_4_devel patch for gt64260_eth
 Content-Type: multipart/mixed;
- boundary="------------040309070803000006060501"
+ boundary="------------050900050008030805060602"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 This is a multi-part message in MIME format.
---------------040309070803000006060501
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+--------------050900050008030805060602
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 
-This is a minor patch to move the default setting of the default
-loops_per_jiffy to before the call to platform_init().  This would be
-necessary if someone required a reasonable value for loops_per_jiffy so
-that their progress output would work (e.g., polled UART I/O that
-required a udelay() call).  Ideally, this should never be necessary
-since the board-specific platform_init() should set it up correctly.
-This is just in case.
+Minor patch to move macros that define the embedded ethernet & mpsc IRQ
+values.
 
 Mark
-
-P.S., I would almost prefer just getting rid of the default
-loops_per_jiffy setup.  Anyone else?
 --
 
---------------040309070803000006060501
+--------------050900050008030805060602
 Content-Type: text/plain;
- name="setup.patch"
+ name="gt_eth.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline;
- filename="setup.patch"
+ filename="gt_eth.patch"
 
-===== arch/ppc/kernel/setup.c 1.119 vs edited =====
---- 1.119/arch/ppc/kernel/setup.c	Mon Apr 21 17:13:07 2003
-+++ edited/arch/ppc/kernel/setup.c	Thu May  8 17:43:26 2003
-@@ -513,6 +513,9 @@
- 	strcpy(cmd_line, CONFIG_CMDLINE);
- #endif /* CONFIG_CMDLINE */
+===== drivers/net/gt64260_eth.c 1.11 vs edited =====
+--- 1.11/drivers/net/gt64260_eth.c	Tue Apr  1 12:43:14 2003
++++ edited/drivers/net/gt64260_eth.c	Tue May 13 15:42:47 2003
+@@ -64,7 +64,8 @@
 
-+	/* so udelay does something sensible, assume <= 1000 bogomips */
-+	loops_per_jiffy = 500000000 / HZ;
+ #define BIT(n) (1<<(n))
+
+-static unsigned char GT64260_ETH_irq[3] = { 32, 33, 34 };
++static unsigned char GT64260_ETH_irq[3] = {
++	GT64260_ETH_IRQ_0, GT64260_ETH_IRQ_1, GT64260_ETH_IRQ_2 };
+
+ static const char *version = "gt64260_eth.c: v0.09";
+
+===== include/asm-ppc/gt64260_defs.h 1.12 vs edited =====
+--- 1.12/include/asm-ppc/gt64260_defs.h	Tue Apr  1 12:45:33 2003
++++ edited/include/asm-ppc/gt64260_defs.h	Tue May 13 15:39:36 2003
+@@ -22,6 +22,12 @@
+ /* Minimum window size supported by 64260 is 1MB */
+ #define GT64260_WINDOW_SIZE_MIN                         0x00100000
+
++/* IRQ's for embedded controllers */
++#define	GT64260_ETH_IRQ_0	32
++#define	GT64260_ETH_IRQ_1	33
++#define	GT64260_ETH_IRQ_2	34
++#define	GT64260_SDMA_IRQ	36
 +
- 	platform_init(r3, r4, r5, r6, r7);
+ /*
+  *****************************************************************************
+  *
 
- 	if (ppc_md.progress_init)
-@@ -558,9 +561,6 @@
- 	extern char _etext[], _edata[];
- 	extern char *klimit;
- 	extern void do_init_bootmem(void);
--
--	/* so udelay does something sensible, assume <= 1000 bogomips */
--	loops_per_jiffy = 500000000 / HZ;
-
- #ifdef CONFIG_ALL_PPC
- 	/* This could be called "early setup arch", it must be done
-
---------------040309070803000006060501--
+--------------050900050008030805060602--
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
