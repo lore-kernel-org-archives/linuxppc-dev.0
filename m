@@ -1,93 +1,59 @@
-Message-ID: <3E81F701.70307@slac.stanford.edu>
-Date: Wed, 26 Mar 2003 10:52:49 -0800
-From: Till Straumann <strauman@slac.stanford.edu>
+Message-ID: <3E81FA3A.9010306@embeddededge.com>
+Date: Wed, 26 Mar 2003 14:06:34 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: joakim.tjernlund@lumentis.se
-Cc: Dan Malek <dan@embeddededge.com>,
+To: Till Straumann <strauman@slac.stanford.edu>
+Cc: joakim.tjernlund@lumentis.se,
 	Tom Rini <trini@kernel.crashing.org>,
 	"Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: dcbz works on 862 everywhere!
-References: <IGEFJKJNHJDCBKALBJLLGEHAFLAA.joakim.tjernlund@lumentis.se> <3E810DA7.1060605@slac.stanford.edu> <3E81C4B3.2080006@embeddededge.com>
+References: <IGEFJKJNHJDCBKALBJLLGEHAFLAA.joakim.tjernlund@lumentis.se> <3E810DA7.1060605@slac.stanford.edu> <3E81C4B3.2080006@embeddededge.com> <3E81ED56.7050105@slac.stanford.edu>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Jocke.
+Till Straumann wrote:
 
-There's of course a trivial test to check Dan's suspicion
-that it might just be a lucky sequence of TLBMiss-TLBError
-exceptions helping you out.
+> - TLB Miss, copy EPN to DAR (DAR is semi-correct, i.e. to
+>    a page boundary).
+> - RFI, dcbz is restarted
 
-Just load some bogus values (a la 0xdeadbeef) into
-MD_EPN and DAR shortly prior to returning from the
-TLBMiss exception (but after walking the tables, of
-course). Thereby you make sure that any 'leftover'
-values seen by a subsequent TLBError are invalidated.
+The EPN has never been copied to DAR.  Some bits of DAR are copied
+to EPN so we can use the hardware assist in the TLB Error exception.
 
--- Till
+>
+> --- here, task switching could occur ---
 
-Dan Malek wrote:
+No, it can't because the TLB Miss rfi is likely to immediately result in
+a TLB Error.  The TLB Miss doesn't return through a path that causes
+a context switch.
 
-> Till Straumann wrote:
->
->> I found that 'dcbz' (while failing to set DAR)
->> indeed sets MD_EPN correctly. Hence, Jocke's fix
->> (copy EPN[0:19]->DAR) would handle that.
->
->
->
-> After sleeping for a couple of days and consuming large
-> amounts of medicine to cure a cold, I think I understand
-> why copying these bits around seems to "fix" problems.
->
-> It's all related to the sequence of TLB miss/error exceptions
-> that I had been describing all along.  The first thing that
-> is going to most likely happen is you will get a TLB miss to
-> load a PTE  into the TLB.  It will be marked valid but not
-> dirty (not writable).  Immediately upon performing the rfi
-> you will get a TLB Error to handle the dirty PTE update.
-> By copying the bits from MD_EPN to the DAR in the miss handler,
-> the Error handler will have at least a 4K boundary aligned DAR
-> and it will execute correctly to update the dirty state.  At
-> this point, it will appear to "work" properly (even though
-> it is likely the dcbz didn't execute) because the system will
-> at least keep running (for a while).
->
-> If you have a situation where you get a TLB Error without
-> a matching TLB miss (very rare, but they can happen as the
-> result of swapping, copy on write, certain other page table
-> updates), then you are hosed.  The DAR will contain some information
-> from a previous exception, we will likely end up on a "hung"
-> system continually taking TLB Error exceptions because we
-> can't fix them properly.  This is basically what happens
-> without the bit copying "fix".
->
->
->> My older idea (fixing up MD_EPN and DAR based
->> on the faulting instruction opcode and the involved
->> GPR contents) should work even if we have neither
->> a valid MD_EPN nor DAR.
->
->
-> All of the TLB exception handlers must have minimal instructions.
-> The ones in Linux are too big already.  The very little you would
-> gain from making a dcbz/dcbt work correctly would be lost many,
-> many, many times over in a more complex TLB exception handler.
->
-> Copying bits from MD_EPN to DAR doesn't set the DAR "correctly",
-> it only gives you the page boundary.  This is going to further
-> confuse debuggers or signal handlers if you actually have an
-> addressing bug that is detected by one of these instructions.
->
-> The only update I would like to see to TLB exception handlers is
-> the removal of code due to streamlining of the page table organization.
->
-> Thanks.
->
->
->     -- Dan
->
+> Under the premise that TLB Miss always sets EPN correctly
+> and TLB Error always sets DAR correctly, this should work
+> even if a task switch (or IRQ) sneaks in.
+
+The current implementation relies on TLB Miss always setting EPN
+(and other hardware assist registers) correctly, and TLB Error
+relies on DAR being set correctly.  Everything works fine until
+you get a TLB Error on a dcbz/dcbt that doesn't properly update DAR.
+In this case EPN isn't set correctly either.
+
+> Again: I thought you said that TLB Error _does_ set DAR?
+
+It does, except in the case of some cache instruction exceptions.
+
+> ... But you gain the huge advantage that you don't
+> have to carefully screen any software you intend to port for cache
+> instructions.
+
+The instructions that don't work properly are dcbz/dcbt.  We have
+corrected this in the kernel and all GNU libraries long ago.  There
+are other reasons to need a unique 8xx (and 4xx) set of libraries
+other than the use of these cache instructions.
+
+
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
