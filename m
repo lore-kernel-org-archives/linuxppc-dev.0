@@ -1,23 +1,18 @@
-Return-Path: <Joakim.Tjernlund@lumentis.se>
-Received: from dmz.lumentis.net (unknown [212.105.56.244])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 928EB67A6E
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Mar 2005 02:01:59 +1100 (EST)
-Received: from Jocke ([84.217.0.212]) (authenticated bits=0)
-	by dmz.lumentis.net (8.12.8/8.12.8) with ESMTP id j2KEMINX031150
-	(version=TLSv1/SSLv3 cipher=RC4-MD5 bits=128 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Sun, 20 Mar 2005 15:22:19 +0100
-From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
-To: "Linuxppc-Dev" <linuxppc-dev@ozlabs.org>
-Date: Sun, 20 Mar 2005 15:22:16 +0100
-Message-ID: <BCEFJBPJCGFCNMMMIDBHIECMCLAA.Joakim.Tjernlund@lumentis.se>
+Return-Path: <schwab@suse.de>
+Received: from Cantor.suse.de (cantor.suse.de [195.135.220.2])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "mail.suse.de",
+	Issuer "SuSE Linux AG internal IMAP-Server CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 1A15067A6D
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Mar 2005 04:19:46 +1100 (EST)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Andreas Schwab <schwab@suse.de>
+Date: Sun, 20 Mar 2005 18:19:38 +0100
+Message-ID: <jed5tuqlp1.fsf@sykes.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <BCEFJBPJCGFCNMMMIDBHKECDCLAA.Joakim.Tjernlund@lumentis.se>
-Subject: RE: PCC ABI question
-Reply-To: Joakim.Tjernlund@lumentis.se
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev@ozlabs.org
+Subject: Wakeup broken on iBook G3
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,36 +22,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> 
-> Hi Folks
-> 
-> It seems to me that linux doesn't follow the ABI for PowerPC.
-> According to http://refspecs.freestandards.org/elf/elfspec_ppc.pdf,
-> Figure 3-31(Initial Process Stack) should the stack ptr point to a NULL word, instead
-> linux's stack ptr points to argc and there is no NULL word, correct?
-> 
-> The initial register map, on p. 3-28, register r7 should point to a
-> "termination function" or hold zero. Does linux do this?
-> If so, where does it get the "termination function" from?
-> If not, can one assume that r7 is NULL at all times?
-> 
-> Are there other deviations from the above spec in linux?
-> 
->  Jocke 
+Ever since the massive changes to the radeonfb pm code I've never been
+able to get a working wakeup on my iBook G3.  The screen keeps blank after
+wakeup, I hear the cdrom drive being reset, and then the system crashes
+hard.
 
-[Moving this to linuxpcc-dev list]
+Andreas.
 
-Someone was kind enough to point me to this spec:
-http://refspecs.freestandards.org/LSB_2.0.1/LSB-Core-PPC32/LSB-Core-PPC32/processinitialization.html
-Which says:
-"Contrary to what is stated in the Registers part of Chapter 3 of the System V Application Binary Interface PowerPC
-Processor Supplement there are no values set in registers r3, r4, r5, r6 and r7. Instead the values specified to
-appear in all of those registers except r7 are placed on the stack. The value to be placed into register r7,
-the termination function pointer is not passed to the process."
-
-It is not quite clear to me if r3, r4, r5, r6 and r7 contains random data or if one
-can assume that some of them are set to NULL. It would be good if one could assume
-that r7 is always set to NULL as that would simplify the startup code(crtX.S) in uClibc which
-I am updating to support passing a FINI function ptr in r7.
-
- Jocke
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
