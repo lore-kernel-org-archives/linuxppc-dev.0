@@ -1,39 +1,28 @@
-Date: Wed, 25 Aug 1999 14:26:06 +1000
-Message-Id: <199908250426.OAA00893@tango.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: Geert.Uytterhoeven@cs.kuleuven.ac.be
-CC: linuxppc-dev@lists.linuxppc.org
-In-reply-to: 
-	<Pine.LNX.4.10.9908241456210.17842-100000@mercator.cs.kuleuven.ac.be>
-	(message from Geert Uytterhoeven on Tue, 24 Aug 1999 14:56:45 +0200
-	(CEST))
-Subject: Re: BootX enhancement request
-Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <Pine.LNX.4.10.9908241456210.17842-100000@mercator.cs.kuleuven.ac.be>
+Message-ID: <37C370C5.94FD8755@dgs.monash.edu.au>
+Date: Wed, 25 Aug 1999 14:27:50 +1000
+From: Brendan Simon <brendan@dgs.monash.edu.au>
+Reply-To: brendan@dgs.monash.edu.au
+MIME-Version: 1.0
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: More embedded LinuxPPC questions.
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be> wrote:
 
-> Thus I can remove the nvram code from atyfb?
+Dan Malek has stated that the ADS boards have serious quality problems.
+I thought I might start to port the linux kernel to a custom MPC860
+board.  Are there any docs to help out here ?
 
-Well, what's there doesn't seem to be much use.  OTOH, we really do
-need something to make it less likely that a newbie will be confronted
-by a blank screen because they forgot to put "video=atyfb:vmode:17" in
-their kernel command line.  Maybe it should look at the registers and
-see if the chip is already running, and if so, just use whatever
-timings the chip is currently set to (as long as they look sane).  Or
-maybe there needs to be some intelligence somewhere that looks at the
-`compatible' property on the device-tree root node and says "aha, an
-iMac, default to 1024x768@75Hz".
+Can anyone recommend some guidelines to follow ?
 
-I see that there properties called "ATY,DefaultMode" and
-"ATY,DisplayMode" on the device-tree node for the ATI chip on my G3
-desktop.  They both have the value 30 (0x1e).  I don't know what mode
-30 is.
+Which of the supported MPC860 platforms would be the best one to
+follow/copy to get a new board supported ?
 
-Paul.
+Thanks,
+Brendan Simon.
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
