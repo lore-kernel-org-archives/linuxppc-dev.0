@@ -1,136 +1,123 @@
-Message-ID: <006601c35cae$1d869510$960aa8c0@ksshin>
-From: =?ks_c_5601-1987?B?vcWw5rz2?= <ksshin@essetel.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: kernel stack overflow
-Date: Thu, 7 Aug 2003 15:35:37 +0900
+Message-ID: <20030807065348.79265.qmail@web8001.mail.in.yahoo.com>
+Date: Wed, 6 Aug 2003 23:53:48 -0700 (PDT)
+From: rekha gvv <rekhagvvc@yahoo.co.in>
+Subject: kernel boot up without using PPCBOOT from flash
+To: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <20030805132125.82BB9C59E4@atlas.denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ks_c_5601-1987"
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi, everyone.
-I have a board based with mpc7410 + gt64260
-and I try to port linux to that board.
-I use ppcboot-2.0.0 and kernel is from
-montavista 2.4.18(LSP Name is EVB64260 based on 750)
+Thanks ,
 
-I commented MMU_init()->MMU_init_hw()->cacheable_memzero()
-because the board died when run that function...
-after that when run start_kernel()->sti(), then
-the message is below.
+I was able to solve the staic/shared library problem
+by just stripping out the libraries and including them
+in the ramdisk .
 
-I don't know why.
-do you have any solutions?
+Now i need to go ahead with booting the kernel without
+using PPCBOOT as soon as the power is on.
+I dont know from where to start and which files i need
+to modify ..
+So please help me to go ahead with your suggestions
+how to boot kernel from flash ?
 
-> bootm
- [KSSHIN] do_bootm() start
- [KSSHIN] boot progress : 1
-## Booting image at 01000000 ...
- [KSSHIN] boot progress : 2
- [KSSHIN] boot progress : 3
-   Image Name:   2.4.18 for MPC7410+GT64260 Board
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    836430 Bytes = 816.8 kB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
- [KSSHIN] boot progress : 4
- [KSSHIN] boot progress : 5
- [KSSHIN] boot progress : 6
-   Uncompressing Kernel Image ... OK
- [KSSHIN] boot progress : 7
- [KSSHIN] boot progress : 8
- [KSSHIN] do_bootm_linux() start
-## Current stack ends at 0x07F7FB70 => set upper limit to 0x00800000
-## cmdline at 0x007FFF00 ... 0x007FFF0D
-memstart    = 0x00000000
-memsize     = 0x08000000
-flashstart  = 0xFF800000
-flashsize   = 0x00800000
-flashoffset = 0x00000000
-sramstart   = 0x40000000
-sramsize    = 0x00010000
-bootflags   = 0x00000001
-intfreq     =    399 MHz
-busfreq     =    133 MHz
-ethaddr     = 00:11:22:33:44:55
-IP addr     = 192.168.10.198
-baudrate    =  38400 bps
- [KSSHIN] boot progress : 14
-No initrd
-## Transferring control to Linux (at address 00000000) ...
- [KSSHIN] boot progress : 15
- [KSSHIN] do_bootm_linux() end
- kernel : 0x00000000
- kbd : 0x007ffeb0
- initrd_start : 0x00000000, initrd_end : 0x00000000
- cmd_start : 0x007fff00, cmd_end : 0x007fff0d
- cmd : root=/dev/nfs
-abcdMd mach(): done
-MMU:enter
-MMU_setup
-ppcboot_bd_valid is valid
-MMU:hw init
-hash:enter
-hash:find piece - 2
-hash:find piece - 3
-hash:patch
-hash:done
-MMU:mapin
-MMU:setio
-MMU:exit
-start_kernel
-start_kernel ...
-start_kernel - 1
-setup_arch: enter
-setup_arch: bootmem
-ev64260_setup_arch: enter
-ev64260_setup_arch: Enabling L2 cache - not
-ev64260_setup_arch: Initializing bridge
-ev64260_setup_arch: bridge init complete
-ll_mpsc_init: enter
-Esse 7410+64260
-MontaVista linux 2.4.18_mvl30
-ev64260_setup_arch: exit
-arch: exit
-paging_init:enter
-free_area_init_core:enter
-free_area_init_core:run - 1
-free_area_init_core:run - 2
-paging_init:exit
-start_kernel - 2
-gt64260_init_irq: enter
-gt64260_init_irq: GPP -> levelint
-gt64260_init_irq: exit
-start_kernel - 3
-start_kernel - 4
-start_kernel - 5
-gt64260_mpsc_console_init: enter
-gt_console_setup: enter
-gt_console_setup: exit
-found bd_t @c07ffeb0
-memstart=00000000
-memsize=08000000
-enetaddr=001122334455
-intfreq=399000000
-busfreq=133000000
-baudrate=38400
-found cmdline: 'root=/dev/nfs'
-Memory BAT mapping: BAT2=128Mb, BAT3=0Mb, residual: 0Mb
-Total memory = 128MB; using 256kB for hash table (at c0240000)
-rtsched version <20011203.1609.50>
-gt64260_mpsc_console_init: exit
- kmem_cache_init() is end in start_kernel !!
-Kernel stack overflow in process c018d420, r1=c018d830
-Kernel stack overflow in process c018d420, r1=c018d830
-Kernel stack overflow in process c018d420, r1=c018d830
-Kernel stack overflow in process c018d420, r1=c018d830
-Kernel stack overflow in process c018d420, r1=c018d830
-Kernel stack overflow in process c018d420, r1=c018d830
-Kernel stack overflow in process c018d420, r1=c018d830
-Kernel stack overflow in process c018d420, r1=c018d830
-...
+Thankyou!
+
+--- Wolfgang Denk <wd@denx.de> wrote:
+>
+> In message
+>
+<20030805131112.59750.qmail@web8007.mail.in.yahoo.com>
+> you wrote:
+> >
+> > I am trying to execute certain fileutils
+> application
+> > like cp ,ls ..
+> > These applications are compiled using the Glibc
+> 2.2.3
+> >
+> > The problem is if i compile the applications
+> > Statically
+> > and try to execute the command cp,ls ..i get the
+> > segmentation fault error.Please let me know the
+> proper
+> > compiler options  for static linking.
+>
+> Please explain which toolchain you are yusing, which
+>  libraries,  and
+> which versions of the tools listed above.
+>
+> > OBJS = cat.o chgrp.o chmod.o chown.o cmp.o cp.o
+> dd.o
+> > grep.o l.o ln.o ls.o \
+> >         mkdir.o mkfifo.o mknod.o more.o mv.o rm.o
+> > rmdir.o sync.o touch.o vi.o
+>
+> Where did you get these object files from?
+>
+> I have a suspicion that these are  in  fact  parets
+> of  the  busybox
+> toolbox.  If  this  is  correct,  then  why  don't
+> you simply use the
+> Makefile that comes with busybox?
+>
+> > Then i tried to eliminate the problem by using
+> shared
+> > library that is put the ld.so.1 file and libc.so.6
+> > file in the /lib directory of the ramdisk .
+> > The problem is the library files are too big in
+> size.
+> > libc is 5.1mb and ld.so.1 is .5mb
+>
+> You can strip the shared libraries for the target.
+>
+> > inorder to create a ramdisk image i have used the
+> > initrd.sudo scrip file form the denx SELF package.
+> > : ${IRD_SIZE:=4096k}
+> >
+> > dd if=/dev/zero of=$IMAGE bs=$IRD_SIZE count=1
+> > 2>/dev/null
+>
+> Again, I have the suspicion  that  this  code  comes
+>  from  our  SELF
+> package.  The  scripts provided by SELF take care of
+> all the problems
+> you are running in.
+>
+> > 1.should i use statick linking
+>
+> No, this will most probably just increasy your
+> memory footprint.
+>
+> > 2.shared library ..
+>
+> Yes.
+>
+> What I don't understand: there is a working set of
+> tools and scripts.
+> You rip it apart, omit essential parts, and then
+> complain that it  is
+> not working any more.
+>
+> What else did you expect?
+>
+> Best regards,
+>
+> Wolfgang Denk
+>
+> --
+> Software Engineering:  Embedded and Realtime
+> Systems,  Embedded Linux
+> Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88
+> Email: wd@denx.de
+> It is surely a great calamity for  a  human  being
+> to  have  no  ob-
+> sessions.
+>     - Robert Bly
+>
+>
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
