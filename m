@@ -1,79 +1,45 @@
-Message-ID: <39E62C4C.42287094@student.ethz.ch>
-Date: Thu, 12 Oct 2000 23:25:33 +0200
-From: Michel Dänzer <daenzerm@student.ethz.ch>
+Date: Fri, 13 Oct 2000 17:20:04 +0200 (CEST)
+From: Xavier Grave <grave@ipno.in2p3.fr>
+To: Matt Porter <mporter@mvista.com>
+cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 2.4 kernel doesn't allocate resource for my PCI Board
+In-Reply-To: <20001012101130.A2964@cx258813-a.chnd1.az.home.com>
+Message-ID: <Pine.LNX.4.21.0010131718080.5959-100000@ipnpcu5>
 MIME-Version: 1.0
-To: Kostas Gewrgiou <gewrgiou@imbc.gr>
-CC: "Hendricks, Kevin" <khendricks@ivey.uwo.ca>, Josh Huber <huber@mclx.com>,
-        Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: dual head r128
-References: <Pine.LNX.4.21.0010122029001.1217-100000@idd-01.imbc.gr>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Kostas Gewrgiou wrote:
->
-> On Thu, 12 Oct 2000, Michel [iso-8859-1] Dänzer wrote:
->
-> > Kostas Gewrgiou wrote:
-> > >
-> > > Kevin Hendricks patches from Ani's tree will fix the memory/clock values
-> > > for OF cards only, the patch breaks the calculations for the x86 cards
-> > > (thats the reason why its not in the xfree cvs),
-> >
-> > But there is an #ifdef _powerpc_ so it can't break x86 machines?
->
-> Yes but it *does* break x86 cards used in ppc machines.
-> (linux/ppc isn't the only ppc os supported in xfree and they won't
-> be happy if we break things for them)
+Hi all,
 
-And the int10 or whatever code works for them?
+I've downloaded the linuxppc_2_5 tree with bitkeeper and compiled it for
+my prep board I always have the same message :
+PCI: Cannot allocate resource region 0 of device 00:0d.0
+PCI: Cannot allocate resource region 1 of device 00:0e.0
+PCI: Cannot allocate resource region 1 of device 00:11.0
+PCI: Cannot allocate resource region 2 of device 00:11.0
+PCI: Failed to allocate resource 2 for Symbios Logic Inc. (formerly
+NCR) 53c895
 
+and after the sym53c8xx driver give the following :
 
-> > > The current test only checks if a rom is present not if a bios or OF
-> > > segment is there, it needs to be fixed to check that its really reading
-> > > from a bios rom and not from something else (OF).
-> >
-> > So this code from the current X CVS:
-> >
-> >     R128ReadBIOS(0x0000, info->VBIOS, R128_VBIOS_SIZE);
-> >     if (info->VBIOS[0] != 0x55 || info->VBIOS[1] != 0xaa) {
-> >         xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-> >                    "Video BIOS not detected in PCI space!\n");
-> >
-> > only checks if there is a ROM, not if it's a BIOS?
->
-> Right, from the pci spec the table is something like this
-> Offset    Length    Value    Description
-> 0h          1        55h    ROM Signature, byte 1
-> 1h          1        AAh    ROM Signature, byte 2
-> ...
-> 18h-19h     2        xx     Pointer to PCI Data Structure
->
-> PCI Data Structure
-> Offset    Length  Description
-> ...
-> 14           1    Code Type
-> ..
->
-> Code Type is 0 for bios and 1 for OF
->
-> So you'll have to add one more test to check for BIOS/OF
+sym53c895-0: Downloading SCSI SCRIPTS.
+scsi0 : sym53c8xx - version 1.6b
+scsi : aborting command due to timeout : pid 0, scsi0, channel 0, id 0,
+lun 0 Inquiry 00 00 00 ff 00
+sym53c8xx_abort: pid=0 serial_number=1 serial_number_at_timeout=1
+SCSI host 0 abort (pid 0) timed out - resetting
+SCSI bus is being reset for host 0 channel 0.
+sym53c8xx_reset: pid=0 reset_flags=2 serial_number=1
+serial_number_at_timeout=1
 
-And then set info->VBIOS = NULL for OF and change the #ifdef _powerpc_ to if
-(!info->VBIOS) or similar?
+Any idea why this continue to fail ?
 
+xavier
 
-I have my last exam for this year tomorrow and leave for two weeks of vacation
-on Saturday, so I wish good luck to any takers :)
+33 (0) 1 69 15 79 59
+De chacun selon ses forces, a chacun selon ses besoins
 
-
-Michel
-
-
---
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and The DRI Project
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
