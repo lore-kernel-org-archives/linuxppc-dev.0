@@ -1,40 +1,50 @@
-Date: Thu, 21 Feb 2002 15:10:32 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: yellowdog-devel@lists.yellowdoglinux.org,
-	linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org
-Subject: Important things about 'linuxppc_2_4' tree.
-Message-ID: <20020221221032.GH719@opus.bloom.county>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <T59373b00ffac1785c31d3@pcow058m.blueyonder.co.uk>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Alban Fellows <Alban.Fellows@blueyonder.co.uk>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: USB audio
+Date: Thu, 21 Feb 2002 22:32:01 +0000
+References: <85ofii3lk9.fsf@junk.nocrew.org>
+In-Reply-To: <85ofii3lk9.fsf@junk.nocrew.org>
+MIME-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-As some of you might have noticed, the linuxppc_2_4 tree has been a bit
-weird of late.  The short version of it is that the "current"
-linuxppc_2_4, as of (Thu, 21 Feb 2002 13:48:57 -0700) will export very
-broken trees.  The only good way to fix this is to just forget it
-happened, and go back to an older clone.
+On Thursday 21 February 2002 3:24 pm, Lars Brinkhoff wrote:
+> I got an iSub today.  It's recognized as an USB audio device when it's
+> connected, and it basically works, but there are two problems:
+>
+> * Whenever I kill a process (with ^C, to be precise) writing audio
+>   data to the iSub, that process hangs.  From then on, all processes
+>   opening the dsp or mixer devices also hang.  If I don't kill the
+>   process, suspending and resuming works fine.
+>
+> * The "aumix" program (version 2.7) doesn't seem to think there is a
+>   volume control.
+>
+> I'm running Linux 2.4.18-rc1-benh (from ppckernel.org).
 
-First, the linuxppc_2_4_devel tree is _NOT_ effected.  If you're only
-using this, you're fine.
+For the group's information I have had similar hanging problems with my
+Roland UA-30 USB Audio Interface. The most major issue has been the fact that
+because the process cannot be killed, the filesystem is in use and cannot be
+unmounted, which results in a forced fsck after reboot.
+This has become less of a problem since I switched to ext3 filesystems, as
+they don't need fsck.
 
-Second, if you have a copy of this tree and haven't done any local
-modifications you can either find the changeset (It's:
-"ChangeSet@1.543.1.41, 2002-02-17 09:38:20-07:00, trini@opus.bloom.county"
-locally, probably different elsewhere) and do a bk clone -r REV .
-../linuxppc_2_4-good, and then rm your old tree.  Or you can just rm and
-reclone.
+I am running 2.4.18-rc1 from the bitkeeper ppc tree.
 
-If you've done modifications locally, you will need to do something like
-the above clone -r'ing, and if you've checked in changes since then, bk
-export -tpatch from your old repo, and bk import -tpatch ../patch . to
-your new repo.
+As a side issue to this I have noticed that the console beep does not work on
+the USB audio, but does on the dmasound for the builtin audio. I now have
+both installed and get console beeps from the Mac and most of my other sound
+from the USB.
 
-Sorry for the inconvenience.
+BTW. Is there any reason why the dsp devices appear to be single open. (ie
+once one program has the sound another program can hang waiting for it)
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+thanks
+
+Alban.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
