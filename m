@@ -1,25 +1,23 @@
-Message-ID: <C18BA5DDB58DD511BD0700C0DF0DD45029418E@NTSERVER4>
-From: linuxppc <linuxppc@4bridgeworks.com>
-To: Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Converting 2.6 drivers to 2.4
-Date: Tue, 29 Jun 2004 09:30:19 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Subject: equivalent of touch_nmi_watchdog
+From: Rajarshi Das <rajarshi@in.ibm.com>
+To: linuxppc-dev@lists.linuxppc.org
+Content-Type: text/plain
+Date: 29 Jun 2004 17:19:26 +0530
+Message-Id: <1088509774.22425.54.camel@darya>
+Mime-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 Hi,
+I am running some code which needs interrupts to be disabled for a
+reasonable amount of time. A "touch_nmi_watchdog" call is done before
+this code gets called on i386 platform. How do I do it on ppc64 ? I am
+using a power 3 machine (type 7044-170) (uniprocessor) and a 2.6.6
+kernel.
 
-I need a driver for the ibm emac cicada 8201 chip for the 2.4 kernel, I have
-found a 2.6 kernel driver by Matt Porter, however this has a #include
-<linux/dma-mapping.h>, which is not in the 2.4 kernel. Is there anywhere I
-can find out what the equivelant header file is in the 2.4 kernel?
+Thanks in advance,
+Rajarshi.
 
-
-Cheers
-
-Daren
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
