@@ -1,79 +1,74 @@
-Date: Tue, 22 Jun 1999 03:26:05 -0400 (EDT)
-From: satadru pramanik <satadru@umich.edu>
-To: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
-Subject: R5 X setup on B/W G3; OF Setup; USB mouse support
-Message-ID: <Pine.LNX.4.10.9906220308450.17871-100000@beer.pub.umich.edu>
+Date: Tue, 22 Jun 1999 15:00:31 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+To: Paul.Mackerras@cs.anu.edu.au
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: MESH problems in 2.2.x
+In-Reply-To: <Pine.LNX.4.10.9906071309510.9045-100000@mercator.cs.kuleuven.ac.be>
+Message-ID: <Pine.LNX.4.10.9906221455110.5853-100000@michelin.cs.kuleuven.ac.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Mon, 7 Jun 1999, Geert Uytterhoeven wrote:
+> On Thu, 3 Jun 1999, Paul Mackerras wrote:
+> > Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be> wrote:
+> > > During boot up I now see the message:
+> > > 
+> > >     scsi1: device driver called scsi_done() for a syncronous reset
+> > 
+> > The reset and abort handling in the mesh driver needs to be updated;
+> > the way the scsi mid-layer expects them to work changed during the 2.1
+> > series but I haven't updated the mesh driver to the new way yet,
+> > partly because I don't know exactly what the new way is. :-)
+> > 
+> > > Since the message mentions `syncronous reset' and since the old Conner doesn't
+> > > seem to do synchronous mode, this makes me think the mesh driver fails with
+> > > synchronous devices in 2.2.x. Is this correct? Does anyone else see this
+> > > problem?
+> > 
+> > It's working OK for me now with a 2.3.4 kernel, having fixed ioremap
+> > (the fix is now in vger for both the 2.2 and 2.3 branches).
+> > 
+> > If you want to disable sync mode, you could change the initializer for
+> > mesh_sync_targets in drivers/scsi/mesh.c from 0xff to 0.
+> 
+> This one seems to work.
 
-After extensively browsing the list archives, and various man pages, i
-have been unable to come to an understanding as to how I should change the
-resolution in X unless I reboot into MacOS, change resolutions, and reboot
-back into Linux.   Is this true?   fbset refuses to change resolutions
-at the console.   
+But not perfect :-(
 
+Since /me was stupid and told OF `boot scsi/disk@5:' (i.e. I forgot the file
+part of the path), my OF kept on enjoying autoreboot cycles with `rebooting in
+the correct mode for this client program' messages. The only thing that stopped
+this was to remove the power from the scsi/disk@5 device. This was the first
+time the power was removed since my previous mail about this.
 
+And then I got
 
-Secondly, I'm using the 2.2.10 kernel sources posted earlier with the USB
-support, and they work fantastically, letting me use the USB keyboard on
-the B/W G3, but the mouse refuses to work inside X...   How do I configure
-X to use the USB mouse, instead of having to hook up a ADB mouse?
+    scsi1: device driver called scsi_done() for a syncronous reset
 
-Another USB issue: going to single user mode unloads USB support, perhaps
-not the best of options if one plans to use a USB keyboard at the console,
-I suppose.  
+again, booting 2.3.6 from vger-june15.
 
-Finally, I have been using OF to boot a 7600/132 successfully all the way
-through to 2.2.7.   I'm hearing that the MacOS boot mechanism through
-BootX may cause certain problems, such as the total lack of sound I have
-right now.  I understand that certain coff headers aren't being
-generated correctly for the OF 3.0+ revisions, is this an issue if I have
-already installed Linux on the internal IDE hard disk?   I have messed
-around in OF on the B/W G3 just like I did on the 7600, and as far as I
-can tell, a boot-device setting for the 6th partition on the internal IDE
-disk should be this (looking at the system-disk control panel output):
-/pci@80000000/pci-bridge@d/pci-ata@1/ata-4@0/@0:4
+Fortunately I still had the working 2.1.130 kernel around. After I booted that
+first, I was able to boot my 2.3.6 kernel.
 
-just like the 7600 has a boot-device entry of this:
-/bandit@F20000000/ADPT,2940U2W@D/disk@0:0
+So to boot recent kernels when you have sync-capable devices on the MESH, two
+conditions have to be met:
 
+  - boot 2.1.130 first
+  - mesh_sync_targets = 0 (setting CONFIG_SCSI_MESH_SYNC_RATE=0 doesn't work)
 
-I don't get a claim failed, just some message about the LOAD being too
-small or something. (no serial port, no serial console logging, sigh.)
+Anyone else seeing this?
 
-But it just doesn't work.  I've already run quik to set up the
-bootloaders. Does anybody know how to get OF booting working on the B/W
-G3s?
+Greetings,
 
-Any help on these issues would be appreciated.  Then I can go back to
-installing LinuxPPC 5.0 in a NFS boot version for my network with
-Mac-On-Linux to get my VTs and X while running Quark.
-<silly grin>
+						Geert
 
-sat
-
-
-- --=
-satadru pramanik `satadru@umich.edu' www.umich.edu/~satadru
-MIS, Student Publications
-"I'm old enough to be living in the future I was warned about."
-  - Myron Krueger
-=--
-
------BEGIN PGP SIGNATURE-----
-Version: PGPfreeware 5.0i for non-commercial use
-Charset: noconv
-
-iQA/AwUBN286mUwK0JxvsXXVEQKtFgCg02NzIqRnSySJTy5GY11ZcVE3vkgAoMWT
-MgPyhUrj2VcYkvXlWMwBf/bl
-=Nt5/
------END PGP SIGNATURE-----
+--
+Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
+Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
+Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
