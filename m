@@ -1,27 +1,27 @@
-Date: Thu, 20 Jan 2000 16:26:56 -0500 (EST)
-From: Hans - Dulimarta <dulimart@egr.msu.edu>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Non NFS boot
-In-Reply-To: <Pine.SGI.4.10.10001111436150.243622-100000@brule.borg.umn.edu>
-Message-ID: <Pine.GSO.4.10.10001201541460.15391-100000@scully>
+Message-ID: <38877FD8.F4B3DD6B@netx4.com>
+Date: Thu, 20 Jan 2000 16:36:24 -0500
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ralf HECKHAUSEN <RHeckhau@frequentis.com>
+CC: "<" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Embedded planet 860T CLLF HELP!
+References: <s8877a79.049@mail.frequentis.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+Ralf HECKHAUSEN wrote:
 
-A few weeks ago, there were discusions on linuxppc embedded kernel which
-is able to boot in NFS root mode.
 
-I'm looking for information on a similar kind of kernel which does not
-require NFS root.
+> Try to initialize PDDIR with 0x1fff instead of 0x1c58.
 
---
-Hans Dulimarta, Ph.D.        dulimart@[egr.msu.edu, computer.org]
-                                 http://www.egr.msu.edu/~dulimart
-Visiting Research Associate,  Electrical & Computer Engineering
-Michigan State University, East Lansing, MI 48824, (517) 432-7589
+Right, now I remember....that doesn't work on pre Rev-D 860T parts.
+Guess I need to add some silicon revision detection and set
+accordingly.  Next version.
 
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
