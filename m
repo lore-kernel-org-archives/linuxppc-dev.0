@@ -1,29 +1,135 @@
-Date: Mon, 29 Jan 2001 15:29:16 +0100 (CET)
+Date: Mon, 29 Jan 2001 15:49:02 +0100 (CET)
 From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Daniel Eisenbud <eisenbud@cs.swarthmore.edu>
-cc: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
-        Amit Chaudhary <amitc@brocade.com>, <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: mesh SCSI bus locks hard on 7500 when burning a CD-R in dao mode
-In-Reply-To: <20010127195924.A19744@allspice.cs.swarthmore.edu>
-Message-ID: <Pine.LNX.4.30.0101291528550.2636-100000@opal.biophys.uni-duesseldorf.de>
+To: Brad Midgley <brad@turbolinux.com>
+cc: <linuxppc-dev@lists.linuxppc.org>, <djosg@mgu.bath.ac.uk>
+Subject: Re: pmud monitoring temperature (Re: powerbook doubles)
+In-Reply-To: <200101290141.RAA21010@mail.turbolinux.com>
+Message-ID: <Pine.LNX.4.30.0101291534510.2636-200000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: MULTIPART/MIXED; BOUNDARY="1669728176-453238557-980779742=:2636"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > > So put just that one line redirecting log output to /dev/tty7 into
-> > > syslog.conf temporarily and kill -1 syslogd before starting the test.
-> >
-> > I'll try this variation in a few minutes.
->
-> This worked, but I didn't get any useful log output until I started
-> getting error 600 from the SCSI midlevel and errors from ext2fs.  I'm
-> going to try again, making sure that I have dmesg set as high as
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+  Send mail to mime@docserver.cac.washington.edu for more info.
 
-Please report the precise message text.
+--1669728176-453238557-980779742=:2636
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+
+> i reworked this patch to work with the current bk tree (argh. i just complained to iain that diffs
+> against a moving target were gross)
+>
+> http://redcloud.uccs.edu/~bcmidgle/linux/
+>
+> btw, it looks like troy wants the _{gs}et_THRM{123} macros changed to use some different macros,
+> but i'm not familiar with that stuff so i just reenabled the old macros.
+
+I don't think what changes you propose there but from the comment on your
+patch page ('cpu speed not included in calculations') it seems you picked
+up the old version of the patch. I attach the version including
+conversion time calculation from processor speed (for 2.4.0pre). The CPU
+speed is  preset to 500 MHz in case it can't be determined from OF, this
+gives too long conversion times for slower processors - does this hurt?
+What is the maximum CPU speed for machines without clock_frequency
+present in the device tree?
 
 	Michael
 
+--1669728176-453238557-980779742=:2636
+Content-Type: TEXT/PLAIN; charset=US-ASCII; name="cputemp-2.4.diff"
+Content-ID: <Pine.LNX.4.30.0101291549020.2636@opal.biophys.uni-duesseldorf.de>
+Content-Description: 2.4.0-test9 cputemp patch
+Content-Disposition: attachment; filename="cputemp-2.4.diff"
+Content-Transfer-Encoding: BASE64
+
+LS0tIDIuNC4wLXRlc3Q5L2FyY2gvcHBjL2tlcm5lbC9zZXR1cC5jLmNwdXRl
+bXAJVHVlIFNlcCAxMiAwNzo1MTo1NiAyMDAwDQorKysgMi40LjAtdGVzdDkv
+YXJjaC9wcGMva2VybmVsL3NldHVwLmMJU3VuIE9jdCAgOCAxNDo1MDowOSAy
+MDAwDQpAQCAtMTgxLDMxICsxODEsODQgQEANCiAJcHBjX21kLmhhbHQoKTsN
+CiB9DQogICANCisNCitleHRlcm4gaW50IF9nZXRfVEhSTTEoKTsNCitleHRl
+cm4gaW50IF9nZXRfVEhSTTIoKTsNCitleHRlcm4gaW50IF9nZXRfVEhSTTMo
+KTsNCitleHRlcm4gaW50IF9zZXRfVEhSTTEoaW50KTsNCitleHRlcm4gaW50
+IF9zZXRfVEhSTTIoaW50KTsNCitleHRlcm4gaW50IF9zZXRfVEhSTTMoaW50
+KTsNCisNCiB1bnNpZ25lZCBsb25nIGNwdV90ZW1wKHZvaWQpDQogew0KIAl1
+bnNpZ25lZCBjaGFyIHRocmVzID0gMDsNCisJdW5zaWduZWQgaW50IG90aHJt
+MTsNCisJdW5zaWduZWQgaW50IG90aHJtMjsNCisJdW5zaWduZWQgaW50IG90
+aHJtMzsNCisJdW5zaWduZWQgaW50IHRocm0xOw0KKwl1bnNpZ25lZCBpbnQg
+dGhybTM7DQorCXVuc2lnbmVkIGludCBjbnQ7DQorCXVuc2lnbmVkIGludCB0
+aHJlc2Q7DQorCXVuc2lnbmVkIGludCB0aHJlc3Q7DQorCXVuc2lnbmVkIGlu
+dCBpOw0KKwl1bnNpZ25lZCBpbnQgY3B1X2ZyZXE7DQogCQ0KLSNpZiAwDQor
+CW90aHJtMSA9IF9nZXRfVEhSTTEoKTsNCisJb3Rocm0yID0gX2dldF9USFJN
+MigpOw0KKwlvdGhybTMgPSBfZ2V0X1RIUk0zKCk7DQogCS8qIGRpc2FibGUg
+dGhybTIgKi8NCiAJX3NldF9USFJNMiggMCApOw0KLQkvKiB0aHJlc2hvbGQg
+MCBDLCB0aWQ6IGV4Y2VlZGluZyB0aHJlc2hvbGQsIHRpZTogZG9uJ3QgZ2Vu
+ZXJhdGUgaW50ZXJydXB0ICovDQotCV9zZXRfVEhSTTEoIFRIUk0xX1YgKTsN
+CisJX3NldF9USFJNMSggMCApOw0KIA0KIAkvKiB3ZSBuZWVkIDIwdXMgdG8g
+ZG8gdGhlIGNvbXBhcmUgLSBhc3N1bWUgMzAwTUh6IHByb2Nlc3NvciBjbG9j
+ayAqLw0KKwkvKiBtYXggdmFsdWUgZm9yIHNpdHYgaXMgMHgzZmZmIC0gb3Ig
+MTYzODMgKi8NCisJLyogdGhpcyBzZXQgZm9yIDUwMCBNSHogUGlzbW8gLSBo
+b3cgZG8gd2UgZ2V0IGFjY2VzcyB0byBjbG9jaz8/ICovDQorDQorCWNwdV9m
+cmVxID0gNTAwOw0KKwlpZiAoIGhhdmVfb2YgKQ0KKwl7DQorCQlzdHJ1Y3Qg
+ZGV2aWNlX25vZGUgKmNwdV9ub2RlOw0KKwkJaW50ICpmcDsNCisNCisJCWNw
+dV9ub2RlID0gZmluZF90eXBlX2RldmljZXMoImNwdSIpOw0KKwkJaWYgKCBj
+cHVfbm9kZSApIHsNCisJCQlmcCA9IChpbnQgKikgZ2V0X3Byb3BlcnR5KGNw
+dV9ub2RlLCAiY2xvY2stZnJlcXVlbmN5IiwgTlVMTCk7DQorCQkJaWYgKCBm
+cCApIGNwdV9mcmVxID0gKmZwIC8gMTAwMDAwMDsNCisJCX0NCisJfQ0KKw0K
+KwkvKiAyNSB1c2VjIGNvbnZlcnNpb24gdGltZSAtIG1heCBmb3IgNTAwIE1o
+eiBpcyBhcHByb3guIDMyIHVzZWMgKi8NCiAJX3NldF9USFJNMygwKTsNCi0J
+X3NldF9USFJNMyhUSFJNM19FIHwgKDMwMCozMCk8PDE4ICk7DQorCV9zZXRf
+VEhSTTMoVEhSTTNfRSB8IFRIUk0zX1NJVFYoY3B1X2ZyZXEqMjUpICk7DQog
+DQotCXVkZWxheSgxMDApOw0KLQkvKiB3YWl0IGZvciB0aGUgY29tcGFyZSB0
+byBjb21wbGV0ZSAqLw0KLQkvKndoaWxlICggIShfZ2V0X1RIUk0xKCkgJiBU
+SFJNMV9USVYpICkgOyovDQotCWlmICggIShfZ2V0X1RIUk0xKCkgJiBUSFJN
+MV9USVYpICkNCi0JCXByaW50aygibm8gdGl2XG4iKTsNCi0JaWYgKCBfZ2V0
+X1RIUk0xKCkgJiBUSFJNMV9USU4gKQ0KLQkJcHJpbnRrKCJjcm9zc2VkXG4i
+KTsNCisJdGhyZXNkID0gMSA8PCA2Ow0KKwl0aHJlc3QgPSB0aHJlc2Q7DQor
+CWkgPSAgNzsNCisJd2hpbGUgKGkgPiAxICYmIHRocmVzZCA+IDIpDQorCQl7
+DQorCQl0aHJtMSA9IChUSFJNMV9USFJFUyh0aHJlc3QpKSB8IFRIUk0xX1Y7
+DQorCQlfc2V0X1RIUk0xKHRocm0xKTsNCisJCWNudCA9IDEwMDAwOw0KKwkJ
+d2hpbGUgKCAhKCh0aHJtMT1fZ2V0X1RIUk0xKCkpICYgVEhSTTFfVElWKSAm
+JiBjbnQgKSBjbnQtLTsNCisJCS8qIHByaW50aygiVEhSTTEgJTh4ICVkICVj
+ICVkICVkICVkXG4iLHRocm0xLDEwMDAwLWNudCwodGhybTEmVEhSTTFfVElO
+Pyd4JzonICcpLHRocmVzdCx0aHJlc2QsaSk7ICovDQorCQlpZiAoY250ID09
+IDApDQorCQkJeyBwcmludGsoIlRIUk0xOiBubyBpbnRlcnJ1cHQgJTh4XG4i
+LHRocm0xKTsgdGhyZXN0ID0gMDsgYnJlYWs7IH0NCisJCWVsc2UNCisJCQl7
+DQorCQkJaWYgKCB0aHJtMSAmIFRIUk0xX1RJTiApDQorCQkJCXsgdGhyZXNk
+ID0gdGhyZXNkID4+IDE7IHRocmVzdCArPSB0aHJlc2Q7IH0NCisJCQllbHNl
+DQorCQkJCXsgdGhyZXNkID0gdGhyZXNkID4+IDE7IHRocmVzdCAtPSB0aHJl
+c2Q7IH0NCisJCQlpLS07DQorCQkJfQ0KKwkJfQ0KKwl0aHJlcyA9IHRocmVz
+dDsNCisJLyogcHJpbnRrKCJUSFJNMSAlZFxuIix0aHJlc3QpOyAqLw0KIAkv
+KiB0dXJuIGV2ZXJ5dGhpbmcgb2ZmICovDQotCV9zZXRfVEhSTTMoMCk7DQot
+CV9zZXRfVEhSTTEoMCk7DQotI2VuZGlmDQorCV9zZXRfVEhSTTMob3Rocm0z
+KTsNCisJLypfc2V0X1RIUk0xKDApOyovDQorCV9zZXRfVEhSTTEob3Rocm0x
+KTsNCisJX3NldF9USFJNMihvdGhybTIpOw0KIAkJDQogCXJldHVybiB0aHJl
+czsNCiB9DQotLS0gMi40LjAtdGVzdDkvaW5jbHVkZS9hc20tcHBjL3Byb2Nl
+c3Nvci5oLmNwdXRlbXAJTW9uIFNlcCAxMSAwMDo0NTowNyAyMDAwDQorKysg
+Mi40LjAtdGVzdDkvaW5jbHVkZS9hc20tcHBjL3Byb2Nlc3Nvci5oCVN1biBP
+Y3QgIDggMTQ6Mjc6MDAgMjAwMA0KQEAgLTI2MSwxNSArMjYxLDE2IEBADQog
+I2RlZmluZQkgIFRDUl9GSUUJCTB4MDA4MDAwMDAJLyogRklUIEludGVycnVw
+dCBFbmFibGUgKi8NCiAjZGVmaW5lCSAgVENSX0FSRQkJMHgwMDQwMDAwMAkv
+KiBBdXRvIFJlbG9hZCBFbmFibGUgKi8NCiAjZGVmaW5lCVNQUk5fVEhSTTEJ
+MHgzRkMJLyogVGhlcm1hbCBNYW5hZ2VtZW50IFJlZ2lzdGVyIDEgKi8NCi0j
+ZGVmaW5lCSAgVEhSTTFfVElOCQkoMTw8MCkNCi0jZGVmaW5lCSAgVEhSTTFf
+VElWCQkoMTw8MSkNCi0jZGVmaW5lCSAgVEhSTTFfVEhSRVMJCSgweDdmPDwy
+KQ0KLSNkZWZpbmUJICBUSFJNMV9USUQJCSgxPDwyOSkNCi0jZGVmaW5lCSAg
+VEhSTTFfVElFCQkoMTw8MzApDQotI2RlZmluZQkgIFRIUk0xX1YJCSgxPDwz
+MSkNCisjZGVmaW5lCSAgVEhSTTFfVElOCQkoMTw8MzEpCQkvKiB0aGVzZSBi
+aXRzIHdlcmUgZGVmaW5lZCBpbiBpbnZlcnRlZCBlbmRpYW4gc2Vuc2Ugb3Jp
+Z2luYWxseSAqLw0KKyNkZWZpbmUJICBUSFJNMV9USVYJCSgxPDwzMCkNCisj
+ZGVmaW5lCSAgVEhSTTFfVEhSRVMoeCkJKCh4JjB4N2YpPDwyMykNCisjZGVm
+aW5lCSAgVEhSTTFfVElECQkoMTw8MikNCisjZGVmaW5lCSAgVEhSTTFfVElF
+CQkoMTw8MSkNCisjZGVmaW5lCSAgVEhSTTFfVgkJKDE8PDApDQogI2RlZmlu
+ZQlTUFJOX1RIUk0yCTB4M0ZECS8qIFRoZXJtYWwgTWFuYWdlbWVudCBSZWdp
+c3RlciAyICovDQogI2RlZmluZQlTUFJOX1RIUk0zCTB4M0ZFCS8qIFRoZXJt
+YWwgTWFuYWdlbWVudCBSZWdpc3RlciAzICovDQotI2RlZmluZQkgIFRIUk0z
+X0UJCSgxPDwzMSkNCisjZGVmaW5lCSAgVEhSTTNfRQkJKDE8PDApDQorI2Rl
+ZmluZSAgIFRIUk0zX1NJVFYoeCkJCSgoeCYweDNmZmYpPDwxKQ0KICNkZWZp
+bmUJU1BSTl9UU1IJMHgzRDgJLyogVGltZXIgU3RhdHVzIFJlZ2lzdGVyICov
+DQogI2RlZmluZQkgIFRTUl9FTlcJCTB4ODAwMDAwMDAJLyogRW5hYmxlIE5l
+eHQgV2F0Y2hkb2cgKi8NCiAjZGVmaW5lCSAgVFNSX1dJUwkJMHg0MDAwMDAw
+MAkvKiBXRFQgSW50ZXJydXB0IFN0YXR1cyAqLw0K
+--1669728176-453238557-980779742=:2636--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
