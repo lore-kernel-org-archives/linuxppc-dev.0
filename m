@@ -1,19 +1,21 @@
-Return-Path: <grave@ipno.in2p3.fr>
-Received: from ipnmail.in2p3.fr (ipnmail.in2p3.fr [134.158.92.208])
-	by ozlabs.org (Postfix) with ESMTP id 08D5D67A7E
+Return-Path: <geert@linux-m68k.org>
+Received: from witte.sonytel.be (witte.sonytel.be [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id ED7C167AAE
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  8 Feb 2005 22:47:33 +1100 (EST)
-Date: Tue, 08 Feb 2005 11:35:22 +0000
-From: grave <grave@ipno.in2p3.fr>
-To: =?iso-8859-1?b?Qmr2cm4g1nN0Ynk=?= <Bjorn.Ostby@combitechsystems.com>
-References: <004B1D7A5257174C9044A1B7BD0E60ED0178CBE7@ratatosk.combitechsystems.com>
-In-Reply-To: <004B1D7A5257174C9044A1B7BD0E60ED0178CBE7@ratatosk.combitechsystems.com>
-	(from Bjorn.Ostby@combitechsystems.com on Tue Feb  8 12:09:07 2005)
-Message-Id: <1107862522l.16620l.9l@ipnnarval>
+	Tue,  8 Feb 2005 23:23:36 +1100 (EST)
+Date: Tue, 8 Feb 2005 13:23:34 +0100 (MET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Sender: geert@sonycom.com
+To: Jarno Manninen <manninej@students.cc.tut.fi>
+In-Reply-To: <Pine.LNX.4.58.0502081323590.17665@mozart.cc.tut.fi>
+Message-ID: <Pine.GSO.4.61.0502081321540.1267@waterleaf.sonytel.be>
+References: <DE2CC66C40EAB74EA6D66AC71BF98E1E03055B71@TQ-MAILSRV-1>
+	<Pine.LNX.4.58.0502081323590.17665@mozart.cc.tut.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; DelSp=Yes; Format=Flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: =?iso-8859-1?q?Re=A0=3A?= RTAI+ELDK Compile Problems
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>,
+	Martin Krause <Martin.Krause@tqs.de>
+Subject: Re: AW: Microwindows on Icecube/CoralP 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,28 +26,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Le 08.02.2005 12:09:07, Bj=F6rn =D6stby a =E9crit=A0:
-> I've got a major problem trying to compile RTAI using the ELDK cross
-> compiler.
-> I'm using ELDK version 3.1, and my target is ppc_8xx (823). I have
-> followed the instructions given at =20
-> ftp://ftp.denx.de/pub/RTAI/24.1.12/README.install,
-> using the
-> linuxppc_2_4_devel kernel (2004_04_30_1320) and rtai-24.1.12-denx.
->=20
-> Now, the rtai patch works fine, and the kernel compiles, but when I
-> try to compile rtai
-> The following error occurs:
->=20
-> /opt/eldk-3.1/ppc_8xx/usr/src/rtai-24.1.12/include/asm/rtai_srq.h:
-> In function `rtai_srq':
-> /opt/eldk-3.1/ppc_8xx/usr/src/rtai-24.1.12/include/asm/rtai_srq.h:32:
-> error: asm-specifier for variable `__sc_3' conflicts with asm clobber
-> list
+On Tue, 8 Feb 2005, Jarno Manninen wrote:
+> On Tue, 8 Feb 2005, Martin Krause wrote:
+> > Hm, the SM501 has 8 MB internal RAM. The framebuffer lies within this
+> > memory. The SM501 is connected with the MPC5200 over the local bus
+> > interface (not over PCI) and mapped with CS1 to address range
+> > 0xE0000000-0xE3FFFFFF. The SM501 configuration registers are within
+> > the mapped memory area at 0xE3E00000. I can't imagine, why the byte
+> > swapping should only affect accesses to the famebuffer memory and not
+> > to the configuration registers (where also single bits at the right
+> > position must be set correctly). I could configure CS1 to do byte
+> > swapping, but then access to the SM501 configuration registers does
+> > not work any longer, because this bytes are swapped, too.
+> 
+> Um. Have you written a kernel FB driver? If so then the write/read macros
+> do this swapping for you. Assuming that you use those for accessing the
+> device registers. At least SM722 requires those writes to be swapped too.
 
-Hi,
+Indeed.
 
-I had a similar problem, can you check your gcc version ?
-I had to compile rtai with gcc2.95 if I remember well...
+> > Geert, I've seen, you have done much of the fb stuff in the linux
+> > kernel (thank you for that!). Could you please point me to the best
+> > place, where byte swapping should be done if I want to use the linux
+> > text console in 16 bit mode with the MPC5200?
+> 
+> Perhaps the pseudopalette would suffice here, I guess? And supposing that
 
-xavier
+Yep, text console is simple: setcolreg() must fill in the correct pixel value
+in the pseudo palette. If you swap it there, it will just work.
+
+Logo is more difficult, you need your own imageblit().
+
+> you have written a FB driver. If not then you have to do the patching at
+> the gfx-library level.
+
+And userspace needs to do swapping as well.
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
