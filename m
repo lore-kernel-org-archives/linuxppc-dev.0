@@ -1,129 +1,55 @@
-Message-ID: <001f01c00cc2$86792950$9801a8c0@frank>
-From: "Hankoo F. Lee" <frank@vtcom.co.kr>
-To: <linuxppc-embedded@lists.linuxppc.org>
-References: <Pine.LNX.4.10.10008221155330.6840-100000@maestro.tcc.com>
-Subject: Re: help with Patches for FADS8xx and suggestions
-Date: Wed, 23 Aug 2000 14:25:18 +0900
+Message-ID: <39A4DED4.ED577265@raleigh.ibm.com>
+Date: Thu, 24 Aug 2000 04:37:40 -0400
+From: Ralph Blach <rcblach@raleigh.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: es1371 sound cards
+References: <1.5.4.32.20000821165023.006ac670@pop.esteem.com>
+Content-Type: multipart/mixed;
+ boundary="------------CE469C03A0E40219A7F95E5A"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-How about getting kernel from http://www.s4l.de/powerpc.html
+This is a multi-part message in MIME format.
+--------------CE469C03A0E40219A7F95E5A
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-This kernel is successfully patched with
+Has anybody gotten the ES1371 sound card to run on an Monta Vista
+Embedded Linux?
+Did you have any probems?
 
-patch-2.2.13-mpc8xx-damm.diff.gz
-patch-2.2.13-mpc8xx-bossek.diff.gz
-patch-2.2.13-mpc8xx-mathemu-2.3.33.diff.gz
+If not this card, which one did you use?
 
------ Original Message -----
-From: "Tomas Carmen" <tomas@tcc.com.pe>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Cc: <arsenio@tin.it>
-Sent: Wednesday, August 23, 2000 3:21 AM
-Subject: help with Patches for FADS8xx and suggestions
+Thanks
 
+Ralph "Chip" Blach
+IBM MicroElectornics
+Raleigh, NC
+rcblach@raleigh.ibm.com
+--------------CE469C03A0E40219A7F95E5A
+Content-Type: text/x-vcard; charset=us-ascii;
+ name="rcblach.vcf"
+Content-Description: Card for Ralph Blach
+Content-Disposition: attachment;
+ filename="rcblach.vcf"
+Content-Transfer-Encoding: 7bit
 
->
-> Hi list:
-> I get the kernel mpc8xx-2.2.13.tgz from ftp://linuxppc.cs.nmt.edu
-> and the patches from Damm y Bossek, I'm working on i586 redHat 6.1 and my
-> own crosscompiler, for the patches I'm getting:
->   ls -l /usr/src/
->   lrwxrwxrwx             5 Aug 21 19:29 embedded_2.2.13_org-> linux
->   drwxr-xr-x          2048 Oct 22  1999 linux
->   lrwxrwxrwx             5 Aug 21 18:34 mpc8xx-2.2.13 -> linux
->
->   # gzip -cd patch-2_2_13-mpc8xx-damm_diff.gz | patch -p0
->   patching file `embedded_2.2.13_org/arch/ppc/8xx_io/commproc.h'
->   Hunk #1 FAILED at 457.
->   1 out of 1 hunk FAILED -- saving rejects to
->   embedded_2.2.13_org/arch/ppc/8xx_io/commproc.h.rej
->   patching file `embedded_2.2.13_org/arch/ppc/8xx_io/enet.c'
->   Hunk #1 FAILED at 981.
->   Hunk #2 FAILED at 1022.
->   2 out of 2 hunks FAILED -- saving rejects to
->   embedded_2.2.13_org/arch/ppc/8xx_io/enet.c.rej
->   patching file `embedded_2.2.13_org/arch/ppc/8xx_io/uart.c'
->   Hunk #1 FAILED at 2417.
->   1 out of 1 hunk FAILED -- saving rejects to
->   embedded_2.2.13_org/arch/ppc/8xx_io/uart.c.rej
->   patching file `embedded_2.2.13_org/arch/ppc/config.in'
->   Hunk #1 FAILED at 31.
->   1 out of 1 hunk FAILED -- saving rejects to
->   embedded_2.2.13_org/arch/ppc/config.in.rej
->   patching file `embedded_2.2.13_org/arch/ppc/kernel/irq.c'
->   Hunk #1 FAILED at 54.
->   1 out of 1 hunk FAILED -- saving rejects to
->   embedded_2.2.13_org/arch/ppc/kernel/irq.c.rej
->   patching file `embedded_2.2.13_org/arch/ppc/kernel/ppc8xx_pic.c'
->   Hunk #1 FAILED at 137.
-> .....
-> ...
-> ..
->   Hunk #1 FAILED at 100.
->   1 out of 1 hunk FAILED -- saving rejects to
->   embedded_2.2.13_org/arch/ppc/mbxboot/m8xx_tty.c.rej
->   patching file `embedded_2.2.13_org/arch/ppc/mm/init.c'
->   Hunk #1 FAILED at 51.
->   Hunk #2 FAILED at 74.
->   Hunk #3 FAILED at 1104.
->   3 out of 3 hunks FAILED -- saving rejects to
->   embedded_2.2.13_org/arch/ppc/mm/init.c.rej
->   patching file `embedded_2.2.13_org/include/asm-ppc/ads.h'
->   patching file `embedded_2.2.13_org/include/asm-ppc/fads.h'
->   Hunk #1 FAILED at 1.
->   Hunk #2 FAILED at 73.
->   2 out of 2 hunks FAILED -- saving rejects to
->   embedded_2.2.13_org/include/asm-ppc/fads.h.rej
->   patching file `embedded_2.2.13_org/include/asm-ppc/mpc8xx.h'
->   Hunk #1 FAILED at 12.
->   Hunk #2 FAILED at 58.
->   2 out of 2 hunks FAILED -- saving rejects to
->   embedded_2.2.13_org/include/asm-ppc/mpc8xx.h.rej
->   patching file `embedded_2.2.13_org/include/asm-ppc/processor.h'
->   Hunk #1 FAILED at 70.
->   1 out of 1 hunk FAILED -- saving rejects to
->   embedded_2.2.13_org/include/asm-ppc/processor.h.rej
->
->
-> Its the same for Bossek patches
->
->   # gzip -cd patch-2_2_13-mpc8xx-bossek_diff | patch -p0
->   patching file `mpc8xx-2.2.13/arch/ppc/8xx_io/commproc.h'
->   Hunk #1 FAILED at 459.
->   Hunk #2 FAILED at 479.
->   2 out of 2 hunks FAILED -- saving rejects to
->   mpc8xx-2.2.13/arch/ppc/8xx_io/commproc.h.rej
->   patching file `mpc8xx-2.2.13/arch/ppc/8xx_io/enet.c'
->   Hunk #1 FAILED at 124.
->   Hunk #2 FAILED at 996.
->   2 out of 2 hunks FAILED -- saving rejects to
->   mpc8xx-2.2.13/arch/ppc/8xx_io/enet.c.rej
->
-> What am I missing?
->
-> I'm needing this for MPC 860 and then 823.
-> I want use:
->  SCC1 for ethernet
->  SMC1 for RS232 (UART)
->  SMC2 for RS232 (UART)
->  and PCMCIA
->
-> Do you have any suggestions for .config? Are there other patches?
->
-> Thanks for your help.
->
-> ---------------
-> Tomas Carmen R.
-> TCC S.A.
-> +511-4428842
-> Lima - Peru
->
->
->
+begin:vcard
+n:Blach;Ralph
+tel;work:919-543-1207
+x-mozilla-html:TRUE
+url:www.ibm.com
+org:IBM MicroElectronics
+adr:;;3039 Cornwallis		;RTP;NC;27709;USA
+version:2.1
+email;internet:rcblach@raleigh.ibm.com
+x-mozilla-cpt:;24544
+fn:Ralph Blach
+end:vcard
+
+--------------CE469C03A0E40219A7F95E5A--
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
