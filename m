@@ -1,65 +1,56 @@
-Date: Fri, 27 Aug 1999 13:20:03 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
+Date: Fri, 27 Aug 1999 15:09:41 +0200 (CET)
+From: Marc Dietrich <Marc.Dietrich@hrz.uni-giessen.de>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: CHRP boards and VGA text mode.
-Message-ID: <Pine.HPX.4.10.9908271248020.9440-100000@gra-ux1.iram.es>
+Subject: Re: bug in l2cr status display? 
+Message-Id: <Pine.A41.4.05.9908271508310.19776-100000@c2.hrz.uni-giessen.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hello out there,
 
-	Hi, 
+I've downloaded the 750 PDF Manuel and to Bit #9 (L2DO) it says:
+"L2 Data-only. Setting this bit enables data-only operation in the L2
+cache..."                                    ^^^^
+So setting this bit disables instruction caching therefore it should'nt be
+set on bootup. 
 
-I have setup my boards (with Raven/Falcon chipset) to a CHRP like mapping.
-I need this to have large windows on VME, so I program the chipset
-to operate like an MPC106 in address map B (all Macs with MPC106 probably 
-use this mode). 
+It seems to me, that the L2CR programming is implemented but disabled in
+current kernel version. The L2CR=xxxxxxx doesn't work for me.
 
-However there is a problem because I also have a graphics board (actually
-a PMC module) which I use in text mode for now. To avoid problems with
-several devices responding to the same address I enable the io-hole on the
-PCI side of the bridge (I can also enable the alias low memory space
-although it's not yet done). But right now the bus_to_virt and virt_to_bus
-macros only add or subtract an offset. The problem appears when a bus
-mastering PCI device tries to address the 640k to 1Mb range of memory
-since actually no device (or the graphics board and not the host bridge)
-responds to the access.
+By the way, it seems that Motola (or IBM) uses different cache chips on
+the 750 CPU - one with 0.5 and one with 1.0 ns timings. 0.5 ns are the
+common used chips while mine has a 1.0ns timing. This causes the
+PowerLogix Cache Control to crash my Mac. Has anyone expiriances on this?
+How has this been to recocnice in the kernel boot-up?
 
-Acyually the worst is that this only happens if you have a small kernel so
-nobody might actually have noticed it. My standalone kernels
-(ext2/nfs/ncr53c8xx/de4x5) never have any problem because all DMA
-addresses actually happen to be high enough.
 
-Small nfsroot kernels do exhibit the problem (no ext2 and no scsi driver),
-and then the symptoms are hard to interpret, when I load the scsi driver
-as a module and then try an mke2fs everything seems to succeed but en
-immediate e2fsck reports a few errors on the disk. dd if=/dev/zero
-of=/dev/sda1 seems to work fine, but then od /dev/sda1 shows that some
-apparently random disk blocks are filled with garbage (many 0xff but not
-all). I first believed I had some SCSI cabling or drive problems until I
-exchanged cables/drives/CPU board and it stayed the same (but slightly
-different errors on every iteration).
+Marc
 
-There are at least 2 solutions to the problem: 
+On Thu, 26 Aug 1999, Michel Lanners wrote:
 
-- make bus_to_virt and virt_to_bus more complex to handle the case of <1Mb
-physical addresses. I don't like it, since it will result in even more
-code expansion.
-
-- Make the kernel code loaded at 640 k physical (except for the interrupt
-vectors...). There is no way to build a kernel with less than 384k of
-code (my nfsroot kernels are truly minimal). Reserve the first 16 kB or so 
-for interrupt handlers/whatever, then 624k of normal memory followed by
-the kernel and then higher memory. I would actually prefer this solution,
-but feel free to suggest any other...
-
-Intel's 20 bit addresses will bite us forever, it seeems :-(. 
-
-	Regards,
-	Gabriel.
-
+> 
+> Hi all,
+> 
+> While playing with the l2cr in order to set it manually after OF
+> booting, I've come across the following.
+> 
+> It seems that the effect of the L2CR[DO] bit isn't clear. In the 750
+> user manual, in the table describing l2cr, it says '... setting  this
+> bit enables the caching of instructions'. This doesn't corrsspond to
+> the name of the register, nor to what I see with my G3 upgrade card: in
+> normal operation, L2CR[DO] isn't set, but it makes no sense to disable
+> instruction caching excpet for test purposes.
+> 
+> So, what's happening? Is the user manual wrong? In that case, we should
+> correct arch/ppc/kernel/ppc_htab.c accordingly.
+> 
+> Any Motorola engineer around? Others with better docs? FWIW, I checked
+> the 750 errata already... nothing.
+> 
+> Michel
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
