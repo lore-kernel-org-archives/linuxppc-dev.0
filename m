@@ -1,36 +1,52 @@
-From: Josh Huber <huberj@WPI.EDU>
+Date: Wed, 6 Oct 1999 00:33:58 -0500 (CDT)
+From: Takashi Oe <toe@unlserve.unl.edu>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: Paul.Mackerras@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org
+Subject: update on macserial/DMA
+In-Reply-To: <19990930183542.004164@mailhost.mipsys.com>
+Message-ID: <Pine.LNX.3.96LJ1.1b7.991005234830.1210A-100000@ofey.inetnebr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <14330.56381.536665.10630@cpu.wpi.edu>
-Date: Wed, 6 Oct 1999 01:21:01 -0400 (EDT)
-To: linuxppc-dev@lists.linuxppc.org
-Subject: pcmcia-cs issues with flash?
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Has anyone had any luck with flash cards (compact flash in particular) with pcmcia adaptors on ppc? I've got a Wallstreet PBG3/233.
+Hi,
 
-I grabbed a precompiled rpm (and converted it to .deb with alien), installed it, and started it up.
+I re-wrote the serial DMA support code today and put the patch against
+samba/vger linux-2.2.12 source trees (as of tonight) at
+ftp://ppc.linux.or.jp/pub/users/toe/serial/.
+I think the patch includes most of macserial patches (Ben's and Lou's
+are in there, for sure) that I know of.
 
-I get:
-Oct  5 21:01:09 majere kernel: Linux PCMCIA Card Services 3.0.12
-Oct  5 21:01:09 majere kernel:   kernel build: 2.2.12 #4 Sat Sep 11 02:48:37 CEST 1999
-Oct  5 21:01:09 majere kernel:   options:  [pci] [cardbus]
-Oct  5 21:01:09 majere kernel: Intel PCIC probe: 
-Oct  5 21:01:09 majere kernel:   TI 1131 PCI-to-CardBus at bus 0 slot 19, mem 0x81803000, 2 sockets
-Oct  5 21:01:09 majere kernel:     host opts [0]: [isa irq] [pci irq 22] [lat 32/176] [bus 1/4]
-Oct  5 21:01:09 majere kernel:     host opts [1]: [isa irq] [pci irq 23] [lat 32/176] [bus 6/9]
-Oct  5 21:01:09 majere kernel:     PCI card interrupts, polling interval = 1000 ms
-Oct  5 21:01:09 majere kernel: cs: memory probe 0x90000000-0x90ffffff: clean.
+This code is much better than the previous one in which it was fairly easy
+to cause frame/overrun errors, although it was far better than the vanila
+macserial (w/o DMA support).  To get a feeling of the driver's
+performance, I tried the following operations while downloading 10 MB+
+files at 49 kbps receiving/33.6 kbps transmitting modem<->ISP and 115 kbps
+PMac<->modem (ftp on ppp link):
 
-And then, when I try and insert a compact flash card, this:
-Oct  5 21:01:15 majere kernel: ide_cs: ide_register() at 0x  0 & 0x  e, irq 23 failed
+A: "dd if=/dev/zero of=400MB count=409600 bs=1024; cp 400MB /tmp; rm
+400MB"
+B: planb+xawtv in grabdisplay mode (~10 fps, 640x480x4 bytes/frame)
 
-I tried without luck compiling the newest version of pcmcia-cs (3.1.1something I believe), which managed to drop me into xmon 100% of the time. (i didn't know xmon worked on the local machine -- thought it was only serial! :)
+With vanila macserial:
+"A": ~200 overrun errors; ftp transfers were all aborted.
 
-Anyone?
+With previous DMA code:
+"A": ~20 frame errors per ~600 packets
+"B": a few frame errors per ~50 packets
+"A+B": ~30 frame errors and a few overrun errors per ~600 packets
 
-Josh
+With this new DMA code:
+"A" or "B" or "A+B": no error has been observed after about an hour of
+trials (I did see a few frame errors when pppd started up once.)
+
+These trials are pretty subjective, but I'm at least glad that it passed
+all the tests I tried.
+
+
+Takashi Oe
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
