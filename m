@@ -1,54 +1,69 @@
-Message-ID: <407D2786.3080801@imc-berlin.de>
-Date: Wed, 14 Apr 2004 13:59:02 +0200
-From: Steven Scholz <steven.scholz@imc-berlin.de>
+From: okorpil@fh-landshut.de
+Date: Wed, 14 Apr 2004 14:52:02 +0200 (CEST)
+Reply-To: okorpil@fh-landshut.de
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: MVME2100 patch cleanup / EPIC setup
+Message-ID: <Pine.LNX.4.58.0404141436040.12711@ppcproject1>
 MIME-Version: 1.0
-To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: kfree_skb on hard IRQ ???
-References: <407C065A.9010004@imc-berlin.de> <407C1601.2080100@imc-berlin.de>
-In-Reply-To: <407C1601.2080100@imc-berlin.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Steven Scholz wrote:
+Hello!
 
-> And what means
->
-> alloc_skb called nonatomically from interrupt c00eb8d0
-> kernel BUG at skbuff.c:174!
-> Oops: Kernel Mode Software FPU Emulation, sig: 8
-> NIP: C00E065C XER: 00000000 LR: C00E065C SP: C016BC80 REGS: c016bbd0 TRAP:
-> 1000    Not tainted
-> MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
-> TASK = c0169fa0[0] 'swapper' Last syscall: 120
-> last math 00000000 last altivec 00000000
-> ...
-> Kernel panic: Aiee, killing interrupt handler!
-> In interrupt handler - not syncing
->  <0>Rebooting in 10 seconds..
+A tested and updated version of the MVME2100 patch is up, mainly
+consisting of the following changes:
 
-BTW the backtrace shows
-0xc00dd374 -- 0xc00dd2f4 + 0x0080   alloc_skb
-0xc00e85e8 -- 0xc00e85c0 + 0x0028   rtmsg_ifinfo
-0xc00e8bb4 -- 0xc00e8b50 + 0x0064   rtnetlink_event
-0xc001c200 -- 0xc001c1c0 + 0x0040   notifier_call_chain
-0xc00e1668 -- 0xc00e15b0 + 0x00b8   dev_close
-0xc00e3b84 -- 0xc00e3b60 + 0x0024   unregister_netdevice
-0xc00b396c -- 0xc00b394c + 0x0020   unregister_netdev
-0xc39c320c -- 0xc01afe08 + 0x3813404   _end
-0xc39c5bbc -- 0xc01afe08 + 0x3815db4   _end
-0xc39a8b60 -- 0xc01afe08 + 0x37f8d58   _end
-0xc39a8c80 -- 0xc01afe08 + 0x37f8e78   _end
-0xc39b4dac -- 0xc01afe08 + 0x3804fa4   _end
-0xc0003844 -- 0xc00036b4 + 0x0190   ppc_irq_dispatch_handler
-0xc0003924 -- 0xc00038e8 + 0x003c   do_IRQ
+Only CONFIG_GEN_RTC is enabled, but not CONFIG_RTC (both were before).
+Thanks, Andrew Cox!
 
-The irq comes from unplugging the WLAN pcmcia card without calling "cardctl
-eject" before (which btw worked for every other wlan card so far).
+8259 stuff has been taken out as far as possible.
 
-Ideas?
+As far as I can see, the EPIC in the MVME2100 uses 12 of its 16 possible
+external interrupt sources in serial mode (initsenses and OpenPIC sources
+have been adjusted accordingly). There's no cascaded 8259 as an
+external interrupt source, so I removed that.
 
-Steven
+Now I have a problem when cleaning up the patch - if I initialize the EPIC
+like this -
+
+openpic_init(0);
+
+- the first interrupt (the DEC ethernet) would be mapped to 0. I have a
+PCI IRQ table in the mvme2100_map_irq function, and it doesn't seem to
+work that way, because it would have the same entries as an unused entry
+in the PCI IRQ table with { 0, 0, 0, 0}.
+
+Anyway, I tried it - and left the 8259 stuff completely out (including the
+i8259.o object file in the corresponding Makefile), and it will stop
+booting/showing serial messages after "Now booting Linux".
+
+If I stick with the offset of 16 (NUM_8259_INTERRUPTS) in openpic_init,
+anything will work just fine (and keep the 8259 object in). I tried both
+with an adjusted serial UART irq for serial setup purposes, but only the
+approach with openpic_init(NUM_8259_INTERRUPTS); does work.
+
+Is this maybe an EPIC related problem?
+
+Some platforms set up the openpic_init(0); but those don't have the EPIC
+in serial mode. Those featuring the EPIC in serial mode have a cascaded
+other PIC as well, so my "special case" seems to be limited to me: an EPIC
+in serial mode with no cascaded other PIC. Not all platforms have a PCI
+IRQ mapping table, but only the initsenses. Most platforms have an IRQ
+setup without unused IRQs when initializing the OpenPIC (as I do: IRQ0,
+IRQ6, IRQ11 and IRQ12 on the EPIC have no external sources connected).
+
+Any ideas, anyone?
+
+Look for the patches at -
+
+http://www.fh-landshut.de/~okorpil/mvme2100-linux-2.4.25.patch.gz
+http://www.fh-landshut.de/~okorpil/mvme2100-linux-2.4.25.patch.bz2
+
+Hope anyone had great holidays!
+
+Thanks in advance,
+Oliver Korpilla
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
