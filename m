@@ -1,69 +1,160 @@
-Date: Thu, 17 Oct 2002 17:41:46 +0100 (BST)
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
-To: Marius Groeger <mag@sysgo.de>
-Cc: Tom Rini <trini@kernel.crashing.org>, leeyang <leeyang@ycig.com>,
-	<linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: 860 rtc problem
-In-Reply-To: <Pine.LNX.4.40.0210171832270.15987-100000@mag.devdep.sysgo.de>
-Message-ID: <Pine.LNX.4.44.0210171738180.2469-100000@localhost.localdomain>
+From: "Dominique Letty" <dletty@interfaceconcept.com>
+To: <acurtis@onz.com>
+Subject: RE: Problem with MPC8260 buffer descriptor
+Date: Thu, 17 Oct 2002 18:54:34 +0200
+Message-ID: <001701c275fd$e74f3a20$3501a8c0@none>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-7"
+In-Reply-To: <NCBBIINEHIPFGJPLBEIFAEIMDNAA.acurtis@onz.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, 17 Oct 2002, Marius Groeger wrote:
+Hi Allen,
+
+You will find my SCC configuration below. I was thinking that my problem in
+this driver was
+cache and MMU configurations. But now, I'm not sure.
+Dominique
+        IMAP_ADDR       =       0xff000000
+        scc dpram       =       0xff008000
+        scc_rbase       =       0x890
+        scc_tbase       =       0x8b0
+        scc_rfcr        =       0x30
+        scc_tfcr        =       0x30
+        scc_mrblr       =       0x800
+        scc_rstate      =       0x0
+        scc_idp         =       0x15c006c
+        scc_rbptr       =       0x890
+        scc_ibc         =       0x64
+        scc_rxtmp       =       0x0
+        scc_tstate      =       0x0
+        scc_tdp         =       0x161c068
+        scc_tbptr       =       0x8b0
+        scc_tbc         =       0x0
+        scc_txtmp       =       0x65f00f42
+        scc_rcrc        =       0x9a0ff0bd
+        scc_tcrc        =       0x873759e0
+        c_mask          =       0xdebb20e3
+        c_pres          =       0xffffffff
+        disfc           =       0x0
+        crcec           =       0x0
+        abtsc           =       0x0
+        nmarc           =       0x0
+        retrc           =       0x0
+        mflr            =       0xc8
+        max_cnt         =       0x60
+        rfthr           =       0x1
+        rfcnt           =       0x1
+        hmask           =       0x0
+        haddr1          =       0x0
+        haddr2          =       0x0
+        haddr3          =       0x0
+        haddr4          =       0x0
+        tmp1            =       0x0
+        tmp_mb          =       0xc8
+        SCC register    =       0xff011a00
+        scc_gsmrl       =       0x0
+        scc_gsmrh       =       0x8000
+        scc_pmsr        =       0x800
+        scc_todr        =       0x0
+        scc_dsr         =       0x7e7e
+        scc_scce        =       0x0
+        scc_sccm        =       0x1b
+        scc_sccs        =       0x3
+        rx bd address   =       0xff000890
+        tx bd address   =       0xff0008b0
+
+
+
+-----Message d'origine-----
+De : Allen Curtis [mailto:acurtis@onz.com]
+Envoye : jeudi 17 octobre 2002 16:31
+A : John Nikiforos; Dominique Letty
+Cc : linuxppc-embedded@lists.linuxppc.org
+Objet : RE: Problem with MPC8260 buffer descriptor
+
+
+There are 2 bits in the rfcr & tfcr fields of parameter RAM that are very
+important.
+
+1. GBL - I believe that this is the cache coherency bit you are looking for
+2. DTB - this determines which RAM are the data buffers that the BD
+structures point to are located
+
+Hint, if you are using local RAM for your buffers you do not need GBL. Your
+buffer descriptors must reside in DP RAM. If you want help, post the
+information I requested before, otherwise this is a guessing game.
 
 >
-> On Thu, 17 Oct 2002, Tom Rini wrote:
+>  I don't remember if it is called ECE or ESE.
+> I think it is on the HID0. But I am not sure.
+> I currently don't have the manual handy.
 >
-> > On Thu, Oct 17, 2002 at 05:18:21PM +0100, Alex Zeffertt wrote:
-> > > On Thu, 17 Oct 2002, Tom Rini wrote:
-> > >
-> > > > On Thu, Oct 17, 2002 at 05:02:23PM +0100, Alex Zeffertt wrote:
-> > > > > On Thu, 17 Oct 2002, leeyang wrote:
-> > > > >
-> > > > > Hi,
-> > > > >
-> > > > > I've written a rtc driver for the mpc860.  See attached files.
-> > > > >
-> > > > > HOWTO BUILD
-> > > > >
-> > > > > 1.	Edit KERNEL_DIR in Makefile
-> > > > > 2.	make   (builds rtc.o and rtc)
-> > > >
-> > > > This appears to be a binary file.  And the easiest way to do this is to
-> > > > make ppc_md.set_rtc_time / ppc_md.get_rtc_time point to functions which
-> > > > do what their name implies.  Then enable CONFIG_PPC_RTC
-> > >
-> > > You're right.  This is actually what the module I have sent you does!
-> > > The reason I wrote the module was merely to provide a way for userland
-> > > programs to set the RTC.
+>                        John
+>
+>  --- Dominique Letty <dletty@interfaceconcept.com>
+> έγραψε: >
+> > I don't find any information about this ECE bit in
+> > MPC8260UM and 603eUM.
+> > Where can I enable it?
 > >
-> > Er, okay.  But why not just modify
-> > m8xx_setup.c::m8xx_get_rtc_time/m8xx_set_rtc_time to allow for the
-> > get/set routines there to be overriden ? Doing that would be nice and
-> > clean, and also allow the 'new' genrtc driver in 2.5 to just work as
-> > well.
+> > Thinks for your help.
+> >
+> > Dominique
+> > -----Message d'origine-----
+> > De : John Nikiforos [mailto:ppclinuxuser@yahoo.gr]
+> > Envoye : jeudi 17 octobre 2002 09:57
+> > A : acurtis@onz.com; Dominique Letty;
+> > linuxppc-embedded@lists.linuxppc.org
+> > Objet : RE: Problem with MPC8260 buffer descriptor
+> >
+> >
+> >  Is the ECE bit enabled?
+> > (Cache coherency for the 8260, so that the
+> > CPM wont get any stalled data)
+> >
+> >                     John
+> >
+> >  --- Allen Curtis <acurtis@onz.com> έγραψε: >
+> > > > Now I try to port this driver under Linux 2.4.17
+> > > Kernel for a MPC8260. I
+> > > > have allocated
+> > > > Buffer Descriptors in DPRAM and Data Buffers in
+> > > SDRAM. When I try
+> > > > to send a
+> > > > buffer, I fill
+> > > > a data buffer and the first BD registers, I
+> > think,
+> > > with the
+> > > > correct values.
+> > > > It doesn't work
+> > > > anytimes. When the buffer is transmited, the
+> > > sending data are correct. The
+> > > > problem seems to
+> > > > come from the CPM which can't access to the BD
+> > > modifications in the DPRAM.
+> > > >
+> > > > Does anyone have already meet these problems?
+> > >
+> > > Would it be a problem to post your:
+> > >
+> > > 1. GSMRH & GSRM_L initialization
+> > > 2. SCC Parameter RAM configuration
+> > > 3. Location of your BDs in DPRAM
+> > >
+> > > THX
+> > >
+> > >
+> > >
+> >
+> >
+> >
 >
-> Probably a little late, but: see also drivers/macintosh/rtc.c which is
-> a perfectly generic rtc driver at a perfectly non-generic location.
-> Don't mix this up with drivers/char/rtc.c, which is the other way
-> round. Shudder.
-
-Actually, that's where I got the kernel part of the code I just sent.  :-)
-The userland bit I wrote myself.
-
-I've just remembered.  To get this driver to work you have to change a
-line in m8xx_setup.c from:
-
-unsigned long __init m8xx_get_rtc_time(void)
-
-to:
-
-unsigned long m8xx_get_rtc_time(void)
-
-Alex
+>
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
