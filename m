@@ -1,24 +1,34 @@
-Date: Tue, 25 Jul 2000 17:01:04 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: daenzerm@student.ethz.ch, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Xfree86 version 4.01
-In-Reply-To: <20000725144401.19702@mailhost.mipsys.com>
-Message-ID: <Pine.LNX.4.10.10007251658390.27756-100000@opal.biophys.uni-duesseldorf.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Tue, 25 Jul 2000 08:23:08 -0700
+From: tjw4 <Tim.Wojtulewicz@NAU.EDU>
+Subject: RE: Xfree86 version 4.01
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Message-id: <397D9BA7@webmail.nau.edu>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> I didn't follow the thread from the beginning, so I may have missed
-> something. The r128 driver on top of fbdev works nicely for me and all
-> machines I've tested so far (g4 and Pismo). Note however that the stock
+>===== Original Message From John Grimes <jpgrimes@johngrimes.dyndns.org>
+=====
+<snip>
+>Next is getting multiple monitors (Xinema) to work.  I know there has
+>been
+>discussion of this on the list.
+>
+>First how do I find out the bus address of my internal video?  It doesn't
+>show up in /proc/pci although it is in /proc/fb.  This is on a
+>highly upgraded powercenter.
+>
+>Also, I seem to have not saved it as I had thought, but does anyone have
+>an example XF86Config file for multiple monitors?
+>
 
-The problem was with platinumfb not aty128 IIRC. aty128 worked fine for
-him.
+Could someone who has gotten dual-headed support working post a FAQ of some
+sort about it?  I'm interested in getting it working on my Pismo, but will
+more than likely need some help with it.  Thanks.
 
-	Michael
+Tim
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
