@@ -1,31 +1,41 @@
-Date: Fri, 18 Jun 1999 14:28:33 -0700 (MST)
-From: Matt Porter <mmporter@home.com>
-To: Ben McKenzie <ben@comp.uark.edu>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: mvme 4600 (fwd)
-In-Reply-To: <Pine.SOL.4.10.9906171510080.21875-100000@comp>
-Message-ID: <Pine.LNX.3.96.990618142524.19995A-100000@liberty.chnd1.az.home.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Sat, 19 Jun 1999 00:19:46 +0200
+To: linuxppc-dev@lists.linuxppc.org, huberj@WPI.EDU
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Sleeping the powerbook G3 (more)
+Message-Id: <19990619001946.029087@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 17 Jun 1999, Ben McKenzie wrote:
+I think I have located the piece of MacOS nanokernel code that handles
+the lowest level steps of the sleep/wakeup process.
 
-> Has anyone had any luck getting an MVME 4600 machine to boot?
-> I found a distribution called PowerPLusLinux that supposedly supports
-> MVME boards, but I also noticed that there is specific code in the
-> kernel source for MVME boards.
+You need MacOS 8.6. Open the 'krnl' resource, it contains the nanokernel.
+The function that handles storing the CPU context, putting the 'Lars' and
+function pointers to low memory, and the code called just after wakeup
+(the function pointer) begins at offset 0x6c54 of the nanokernel. It's a
+huge function that does all sorts of things, mostly saving lots of stuffs
+to memory (registers, sprs, ...), calling a function at offset 0x7228
+that puts things to low-mem 0 & 4, and resuming.
+The function pointer itself is the lr on entry of the function at offset
+0x7228, so waking up just resume normal execution after the call to this
+function.
 
-Sure.  Check the archives, Johnnie Peters just posted a patch containing
-code to park the 2nd CPU on the 4600 until the SMP code is more stable.
-Other than that, 2.2.10 official or vger have what you need.
+If you want to disassemble that stuff with MacsBug, either load manually
+this resource somewhere in RAM, or locate the nanokernel in memory with
+the 'f' command.
 
---
-Matt Porter
-mmporter@home.com
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+I can't spend more time on this for now, so if someone wants to continue...
+
+
+-- 
+           Perso. e-mail: <mailto:bh40@calva.net>
+           Work   e-mail: <mailto:benh@mipsys.com>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
