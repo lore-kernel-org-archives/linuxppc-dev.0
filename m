@@ -1,30 +1,25 @@
-Message-Id: <9902130011.AA72862@marc.watson.ibm.com>
-To: Cort Dougan <cort@persephone.cs.nmt.edu>
-Cc: Rick Kwan <kenobi@coruscant.lightsaber.com>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: platform specs (was: PReP spec) 
-In-Reply-To: Message from Cort Dougan <cort@persephone.cs.nmt.edu>
-   of "Fri, 12 Feb 1999 15:35:44 MST." <Pine.LNX.3.96.990212153508.18857A-100000@persephone.cs.nmt.edu>
-Date: Fri, 12 Feb 1999 19:11:35 -0500
-From: David Edelsohn <dje@watson.ibm.com>
+Date: Fri, 12 Feb 1999 17:55:31 -0700 (MST)
+From: Cort Dougan <cort@persephone.cs.nmt.edu>
+To: Matt Porter <mmporter@home.com>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: platform specs (was: PReP spec)
+In-Reply-To: <Pine.LNX.3.96.990212165724.2030D-100000@liberty.chnd1.az.home.com>
+Message-ID: <Pine.LNX.3.96.990212175439.19379A-100000@persephone.cs.nmt.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> Cort Dougan writes:
+That's not chrp, though.  That's just a chrp memmap.  The kernel doesn't
+yet deal with a chrp memmap and no-OF.  I'd rather stick with prep memmaps
+with those boards - it's simple.
 
-Cort> }A list of current CHRP machines would indeed be interesting,
-Cort> }if for nothing else, to show the breadth and flexibility of the
-Cort> }architecture.  (Or lack thereof.)
+}And from the looks of things, all new Motorola boards/systems.  Already,
+}VxWorks BSPs for Moto. boards are easily configured to a CHRP mem map.
+}Only the firmware defaults to PReP and it is getting dated with its poor
+}PCI mapping.
 
-Cort> All new rs6000s.
-
-	Not all new RS/6000 systems are CHRP.  I believe that most or all
-current 32-bit PowerPC systems are CHRP (43P, F50, etc.).  64-bit Model
-S70 might be CHRP.  Newest RS/6000 models are not CHRP, including Power3
-Model 260.
-
-David
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
