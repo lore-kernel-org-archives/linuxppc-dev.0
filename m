@@ -1,48 +1,46 @@
-To: Pavel Roskin <pavel_roskin@geocities.com>
-Cc: kd@flaga.is, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: zeroing of bss segments
-References: <Pine.LNX.4.21.0004241211280.30844-100000@sunapee.transcept.com>
-From: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
-Date: 25 Apr 2000 11:03:30 +0200
-In-Reply-To: Pavel Roskin's message of "Mon, 24 Apr 2000 12:17:54 -0400 (EDT)"
-Message-ID: <kfy3doao8m5.fsf@kieraypc01.p.y.ki.era.ericsson.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <39056609.13496@mta2>
+Date: Tue, 25 Apr 2000 17:31:53 +0800 (CST)
+From: "zzh" <david-1z@263.net>
+To: Dan Malek <dan@netx4.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re:Re: memory map
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Pavel Roskin <pavel_roskin@geocities.com> writes:
-
-> Hello!
+>Steve Tarr wrote:
 >
-> > I forgot to remove the memset.S file from sysdeps/powerpc....
 >
-> I believe we should rewrite memset.S in a 8xx-safe way rather than remove
-> it. Patches are usually more visible than instructions to remove
-> something.
+>> This IMMR  for the MPC8260 is VERY  tricky,
 >
-> Besides, future versions of Glibc could apply that patch permanently.
-> Portability is a strong argument for GNU developers.
+>I didn't think so.  The only thing different is that it isn't stored
+>in a special register, so you have to know the current IMMR to change
+>to a different one. You can read the default setting from the
+>config word or boot rom, and then change it if you wish.
+>
+this should be done as early as possible unless want to set or copy those values again from old to new.The value is really unimportant
+if decide to map it with  BAT.
+ADS manual say this should be 0x0470-0000 with no obvious reason.
+At least it is not mandatary.My pilot board cannot read hwconfig
+from flash(it took me much time to find this before learned it from Motorola web site),the default IMMR after power on is 0x0f00-0000.
+I choose to map it to 0xf000-0000 with  BAT.
+>You have to get the default word from someplace, and that is either
+>the application choice from the boot rom or by asserting RSTCONF and
+>using a default when there isn't a boot rom.
+>
+>I think the implementation is pretty slick, especially when you look
+>at the multiprocessor implementation.
+>
+>Just because Motorola screwed up one of their reference boards (again),
+>doesn't mean it can't work well for others.  The purpose of these reference
+>boards is to demonstrate the ease of using a processor, and I am just
+>amazed they consistently build the most difficult to use and unreliable
+>platform to do that.  Fortunately, there are other choices.
+Any other board ? I know there is one from EST with no FCC.
+>
+>
+>	-- Dan
 
-The problem has been to find out the cache line size at runtime, as
-the Mac users probably don't wan't memset() performance halfed.
-Geoff Keating suggested the following simple way to check for cache
-line size:
-
-  and what we want to do is insert something like this in place of the
-  first 'dcbz':
-
-        stb	r7,31(r6)
-        dcbz	0,r6
-        lbz	r10,31(r6)
-        cmplw	cr0,r10,r7
-        bne	cr0,(somewhere)
-
-I'll try to get time to look at this after this week.
-
-//Marcus
---
-Signature under construction, please come back later.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
