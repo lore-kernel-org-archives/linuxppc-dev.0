@@ -1,22 +1,55 @@
-From: "dong in kang" <dkang@east.isi.edu>
-To: "'Linux PPC Embedded List'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Is PPC linux without page tables possible?
-Date: Thu, 15 May 2003 18:20:32 -0400
-Message-ID: <002d01c31b30$33478090$6501a8c0@Minjoo>
+Message-ID: <20030516042254.48274.qmail@web9704.mail.yahoo.com>
+Date: Thu, 15 May 2003 21:22:54 -0700 (PDT)
+From: None Atall <linux_meis@yahoo.com>
+Subject: Re: ATM drivers for MPC8266
+To: skumar@giga-stream.de
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <16067.12645.963614.189182@gargle.gargle.HOWL>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-In-reply-to: <0B0A39652BB0D411BCCF00508B9512EC08AEBE23@tx14exm05.ftw.mot.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
- I'm trying to port PPC Linux on a PPC 750 based CPU.
-However, its page table logic has flaws so that I cannot use paging.
-Can PPC Linux work without paging but using only BATs?
-Does anyone have such experience?
+ It still has enough bugs..
+You will probably need 2/3 weeks to have a really
+stable code (that works with signaling etc...)
 
- Dong-In Kang
+                 Dimitris.
+
+--- "w.n. jacobs" <willy.jacobs@nl.thalesgroup.com>
+wrote:
+>
+> Sanjay Kumar writes:
+>  >
+>  > Hi all !
+>  >
+>  > I am using POWER QUICC II MPC8266/80. I need ATM
+> drivers for MPC8266/80
+>  > supporting AAL5 functionlities on Montavista
+> Linux.
+>  >
+>  > Any pointers........?
+>
+> This one works for us (Linux 2.4.4):
+>
+> http://sourceforge.net/projects/atm8260
+>
+> --
+> willy
+>
+>
+>
+
+
+=====
+------------------------------------------------------------
+-Dhmhtrios Meidanis
+-Degree in Mathematics, University of the Aegean.
+-Master in Computer Architecture and Digital
+ Systems, University of Crete.
+ Greece.
+------------------------------------------------------------
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
