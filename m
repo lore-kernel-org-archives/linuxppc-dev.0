@@ -1,43 +1,48 @@
-Date: Fri, 4 Aug 2000 13:32:01 -0500 (CDT)
-From: Takashi Oe <toe@unlserve.unl.edu>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: Tom Gall <gall@rochcivictheatre.org>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Getting things in...  Was: Re: shifts on 64bit ints
-In-Reply-To: <20000804174953.16973@mailhost.mipsys.com>
-Message-ID: <Pine.A41.3.96LJ1.1b7.1000804131713.33624A-100000@unlserve.unl.edu>
+From: "Hendricks, Kevin" <khendricks@ivey.uwo.ca>
+To: Takashi Oe <toe@unlserve.unl.edu>
+Cc: Benjamin Herrenschmidt <bh40@calva.net>,
+        Tom Gall
+	 <gall@rochcivictheatre.org>,
+        linuxppc-dev@lists.linuxppc.org
+Message-ID: <398B10DE.FE82BA4A@ivey.uwo.ca>
+Date: Fri, 04 Aug 2000 14:52:14 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: Re: Getting things in...  Was: Re: shifts on 64bit ints
+References: <Pine.A41.3.96LJ1.1b7.1000804131713.33624A-100000@unlserve.unl.edu>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 4 Aug 2000, Benjamin Herrenschmidt wrote:
+Hi,
 
-> I'm an horribly bad web designer, but one cool thing to do if someone is
-> good at it, would be a web-pased patch repository. You send patches with
-> a web form (eventually an upload mecanism) along with your  email, a
-> comment, etc..., they get assigned a patch number automatically, anybody
-> can consult the database, and people with write access to BK can mark
-> them (accepted, refused, postponed, ... along with a comment) once they
-> have been handled.
->
-> Any volunteer to design such a site ?
+> I'm not really against the web site idea, but it's just that there won't
+> be too many people submitting patches in the first place to warrent the
+> extra administrative burden on developers with write access to BK, I would
+> think.
 
-What happened to the BK mailing list?  Is it still closed for non-write
-access members of community?  Or does it still exist?
+I don't agree.  A separate website is important.  I don't work on the kernel
+directly but I have submitted patches here and there and have run into problems
+when testing/debugging the JDK that are kernel issues.
 
-If the BK list were open to people who want to keep track of things, it
-can also serve as a patch bucket, since everybody who has the write access
-is subscribed to the list automatically.  Also, the archive of the list
-can be used as CHANGELOG for rsync only people.
+I don't want write access to any tree, but I do need to see what patches are
+going in, what changed, the status of my own patches, etc.
 
-I'm not really against the web site idea, but it's just that there won't
-be too many people submitting patches in the first place to warrent the
-extra administrative burden on developers with write access to BK, I would
-think.
+Also, I think we could easily modify any of the simple bugdatabase programs like
+bugzilla to do exactly what we want (instead of calling them bugs, call them
+patches, instead of fixed, call them accepted, etc)  You could also create
+categories so that driver patches are separate from other patches easily with
+this type of software.
+
+We are getting more and more people contributing to the kernel process
+
+I think a simple modified bugtracking system linked to http://penguinppc.org
+could be easily made to serve this purpose without having/needing a whole new
+site.
 
 
-Takashi Oe
+My two cents:
 
+Kevin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
