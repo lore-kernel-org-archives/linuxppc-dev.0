@@ -1,24 +1,25 @@
-From: miles.lane@attbi.com
-Message-Id: <200303241737.LAA16808@lists.linuxppc.org>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: linuxppc-2.5 from mvista.com -- drivers/char/agp/agp.h:31: asm/agp.h: No such file or directory
-Date: Mon, 24 Mar 2003 17:37:10 +0000
+Date: Mon, 24 Mar 2003 18:38:35 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: linuxppc-dev@lists.linuxppc.org,
+	Paul Mackerras <paulus@samba.org>
+Subject: Re: ppc: Makefile tidy-up round 2
+Message-ID: <20030324173834.GA950@mars.ravnborg.org>
+References: <20030320222759.GA12267@mars.ravnborg.org> <20030322215403.GA15911@mars.ravnborg.org> <20030324171909.GA13300@ip68-0-152-218.tc.ph.cox.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20030324171909.GA13300@ip68-0-152-218.tc.ph.cox.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-  gcc -Wp,-MD,drivers/char/agp/.backend.o.d -D__KERNEL__ -Iinclude -Wall
--Wstrict-prototypes -Wno-trigraphs -O2 -fno-strict-aliasing -fno-common
--Iarch/ppc -msoft-float -pipe -ffixed-r2 -Wno-uninitialized -mmultiple
--mstring -fomit-frame-pointer -nostdinc -iwithprefix include
--DKBUILD_BASENAME=backend -DKBUILD_MODNAME=agpgart -c -o
-drivers/char/agp/backend.o drivers/char/agp/backend.c
-In file included from drivers/char/agp/backend.c:39:
-drivers/char/agp/agp.h:31: asm/agp.h: No such file or directory
-In file included from drivers/char/agp/backend.c:39:
-drivers/char/agp/agp.h: In function `global_cache_flush':
-drivers/char/agp/agp.h:51: warning: implicit declaration of function
-`flush_agp_cache'
-make[3]: *** [drivers/char/agp/backend.o] Error 1
+On Mon, Mar 24, 2003 at 10:19:09AM -0700, Tom Rini wrote:
+>
+> Well, it's the most used, and has some other bits which need to be
+> cleaned up.  So, yes please.
+I wondered since it was not part of defconfig.
+I will give it a spin - in two or three steps.
+
+	Sam
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
