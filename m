@@ -1,26 +1,40 @@
-Content-Type: text/plain;
-  charset="iso-8859-15"
-From: Rakesh Jagota <j.rakesh@gdatech.co.in>
+From: deepesh@india.tejasnetworks.com
+Date: Thu, 15 May 2003 11:12:55 +0530 (IST)
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: How ?
-Date: Thu, 15 May 2003 10:37:56 +0530
+Subject: Memory used by kernel (fwd)
+Message-ID: <Pine.LNX.4.21.0305151101360.12087-100000@deepesh.india.tejasnetworks.com>
 MIME-Version: 1.0
-Message-ID: <gqj62u6nur4vjg5.150520031028@gda-server>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+Hi,
 
- Can anyone suggest me how we can invoke the interrupt generated in the
-kernel from the user application. I am getting the interrupt in the driver, I
-want to update some register in the application, when the inettrupt will be
-generated, Right now I am using polloing method. Continuously I am calling
-read routines.
+  I am working on a card with the MPC860T processor. We have our DIAG
+terminal on SMC1 of the processor.
 
-Thanks in advance,
 
-Rakesh Jagota
+ Set Up: The DIAG port of the card is connected to the serial port of a
+computer. And we run "minicom" to interact with the DIAG port of the card.
+
+
+ Problem: Extended ascii characters come on the screen(minicom). This
+problem is seen when the minicom setting for the terminal is
+"VT102". There is no problem with the terminal settings as "ANSI".
+
+
+ The above problem was seen only in one card. All other cards seem to work
+well with both "ANSI" and "VT102". So there is definitely some problem
+with the H/W. To debug this I have to know the difference between the two
+terminal settings "ANSI and VT102".
+
+
+ Please give me the basic differences between the two terminal settings.
+
+
+
+Deepesh
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
