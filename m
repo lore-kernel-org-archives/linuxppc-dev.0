@@ -1,27 +1,32 @@
 From: Thomas Graichen <news-innominate.list.linux.ppc.dev@innominate.de>
 Reply-To: Thomas Graichen <graichen@innominate.de>
-Subject: xmon
-Date: 1 Aug 2000 19:48:40 GMT
-Message-ID: <news2mail-8m79io$4da$3@mate.bln.innominate.de>
-References: <8m5o3s$6tj$2@mate.bln.innominate.de>
+Subject: keyboard problems
+Date: 1 Aug 2000 19:49:35 GMT
+Message-ID: <news2mail-8m79kf$4da$4@mate.bln.innominate.de>
+References: <8m5oaq$6tj$3@mate.bln.innominate.de>
 Reply-To: thomas.graichen@innominate.de
 To: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-looks like this one did not reach the list (was there any
-problem with it ?) - so here it is again:
+looks like this one got lost too - so here it is again ...
 
-how do i use the xmon kernel debugger on ppc ? - is there any
-documentation about this ? - can i use it on a blueberry imac
-with usb keyboard (because i even sometimes saw the xmon>
-prompt but was never able to type anything in ...) ? any-
-thing else to take care of ?
+i have a little keyboard problem on my blueberry imac with the
+standard usb keyboard: whenever i type something very quickly
+followed by space the typed in will be repeated before the
+space (best example: i want to type "cd " and get "cdcd ")
+- this gets a bit annoying - does anybody have the same
+problem (or even a fix for it) ? - is it more a soft-
+wareproblem (i hope :-) or maybe a hardwareproblem ?
+(i had it on all kernels from 2.2.x to 2.4.0-testx)
 
 a lot of thanks in advance
 
 t
+
+p.s.: it appears both on the console and under x - so it has
+      to - if software - a problem in the kbd driver
 
 --
 thomas.graichen@innominate.de
