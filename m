@@ -1,35 +1,40 @@
-To: "Leiying Du" <ldu@solectek.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Single-Step Debugger for HP probe 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 19 Mar 2002 15:03:09 PST."
-             <004301c1cf9a$3cac90e0$6649a8c0@LEIYINGDU>
-Date: Wed, 20 Mar 2002 00:27:21 +0100
-Message-Id: <20020319232726.464D2109F3@denx.denx.de>
+Message-ID: <3C987DEB.14F4E05A@imc-berlin.de>
+Date: Wed, 20 Mar 2002 13:17:47 +0100
+From: Steven Scholz <steven.scholz@imc-berlin.de>
+MIME-Version: 1.0
+To: Steve Rossi <srossi@labs.mot.com>
+Cc: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: IDE DMA on 8xx ??
+References: <3C20E057.B9983C96@labs.mot.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <004301c1cf9a$3cac90e0$6649a8c0@LEIYINGDU> you wrote:
->
->   Does anyone have experience using WindRiver's Single debugger to debuge a
-> linux zimage file? I can load the .elf file but it will crash at somewhere
-> when the kernel is booting. Thanks.
+Hi Steve,
 
->From what I've heard, there is no MMU support in their tools.
+> Has anyone attempted to use the internal 8xx IDMA controller to do
+> DMA to a IDE disk? I'm considering making an attempt at it, but I just
+> want to hear first if anyone has tried already and if so what the
+> experience is.
 
-You will not have fun with Linux, then.
+I did last summer. Well actually I tried. It wasn't too hard to use the
+IDMA to transfer data from/to ide disk.
 
-There is a good reason why everybody else uses a BDI2000 :-)
+But at that time my code just started polling after setting up the dma.
+So the cpu was busy waiting instead of doing something useful. But I
+reckon it's not to hard to use irqs for signaling the end of DMA
+transfer to the ide driver.
 
-Wolfgang Denk
+I noticed that the cycle time of the normal (i.e. two-address) IDMA mode
+is huge. So the performance wasn't great.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-The only person who always got his work done by Friday
-                                                 was Robinson Crusoe.
+I have to pick up that work again now.
+
+So I wonder if you or anybody else has done something on this topic?
+
+Thanks,
+
+Steven
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
