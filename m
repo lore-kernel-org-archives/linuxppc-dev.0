@@ -1,35 +1,70 @@
-Date: Fri, 20 Oct 2000 12:18:26 +0200
-From: Olaf Hering <olh@suse.de>
-To: Topi Kanerva <tkanerva@ees2.oulu.fi>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: ADB-Mouse
-Message-ID: <20001020121826.C21610@suse.de>
-Reply-To: linuxppc-dev@lists.linuxppc.org
-References: <Pine.OSF.4.02.10010190958400.3355-100000@ax1305.physik.uni-marburg.de> <Pine.GSO.4.21.0010191518150.27486-100000@stekt6>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.GSO.4.21.0010191518150.27486-100000@stekt6>; from tkanerva@ees2.oulu.fi on Fri, Oct 20, 2000 at 11:18:43AM +0300
+Message-Id: <p04320401b615fad098d5@[172.21.170.210]>
+In-Reply-To: <14831.41519.899373.33270@argo.linuxcare.com.au>
+References: <Pine.LNX.4.21.0010191246070.6734-100000@like.mine.nu>
+ <p04320400b61508915079@[172.21.170.210]>
+ <14831.41519.899373.33270@argo.linuxcare.com.au>
+Date: Fri, 20 Oct 2000 09:46:25 -0400
+To: paulus@linuxcare.com.au
+From: Scott Hankin <shankin@rational.com>
+Subject: Re: 2.4.0-test10 boot failure on Powerbook G3
+Cc: phandel@cise.ufl.edu, linuxppc-dev@lists.linuxppc.org
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Oct 20, Topi Kanerva wrote:
+At 12:38 PM +1100 10/20/00, Paul Mackerras wrote:
+>Scott Hankin writes:
+>
+>>  It turned out that the pc was in do_install_cmap, and lr was in
+>>  atyfb_set_var.  The latter calls the former near the end of the
+>>  routine (check out drivers/video/atyfb.c:2940) but as to why it's
+>>  bombing, I have no clue.
+>
+>Looking at the code for that routine:
+>
+>static void do_install_cmap(int con, struct fb_info *fb)
+>{
+>     struct fb_info_aty *info = (struct fb_info_aty*)info;
+>
+>that first statement doesn't make sense, change it to:
+>
+>     struct fb_info_aty *info = (struct fb_info_aty*) fb;
+>
+>and that should fix it.
+>
+>BTW, I now have copies of my rsync trees at penguinppc.org, which will
+>hopefully have more bandwidth available than ppc.samba.org did.  The
+>tree at penguinppc.org::linux-pmac-devel has this bug fixed.
 
-> guys, how exactly do you make it to work?
+Thanks, Paul, Ben and Peter for the friendly responses.
 
-Put that in boot.local:
+Yes, that line does look a little odd.  I did finally get things
+working by using the BitKeeper archives for my build (the penguinppc
+site is currently unavailable) and it came up fine.
 
-echo "1"  > /proc/sys/dev/mac_hid/mouse_button_emulation
-echo "87" > /proc/sys/dev/mac_hid/mouse_button3_keycode # F11
-echo "88" > /proc/sys/dev/mac_hid/mouse_button2_keycode # F12
+Is there an easy way to compare the current source tree with the
+previous version?  Is there a way to get the previous version and
+brute force it?  I got in this mess partly because using rsync means
+you can't go back.  Had I been able to go back to test9 easily, I
+would have, and waited for the fix.  But as it was, I ended up going
+back to 2.2.17, largely because it was available.
 
+There was a silver lining to all this: my current setup now boots and
+runs cleaning with both 2.2.17 final and 2.4.0-test10 with devfs
+mounted at boot.
 
-Gruss Olaf
+Forgive what must surely seem like trivial problems; I am only slowly
+becoming informed about kernel organization and distribution.  Many
+thanks to all.
 
---
- $ man clone
+- Scott
 
-BUGS
-       Main feature not yet implemented...
+-----------------------------
+Scott Hankin (shankin@rational.com)  In the beginning, there was nothing, then
+Rational Software                    God said, "Let there be light."  And there
+20 Maguire Road                      was light.  There was still nothing, but
+Lexington, MA 02421                  you could see it a lot better.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
