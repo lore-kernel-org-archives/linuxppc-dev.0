@@ -1,61 +1,53 @@
-From: dwayne@austin.ibm.com
-To: linuxppc-dev@lists.linuxppc.org
-cc: dwayne@austin.ibm.com
-Subject: IBM PowerPC Linux Source Trees (draft)
-Reply-To: dwayne@austin.ibm.com
-Date: Wed, 20 Sep 2000 16:58:02 -0500
-Message-Id: <E13brsR-0005j7-00@gnulinux>
+From: Paul Mackerras <paulus@linuxcare.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <14793.16409.167430.562490@argo.linuxcare.com.au>
+Date: Thu, 21 Sep 2000 09:54:17 +1100 (EST)
+To: Roman Zippel <zippel@fh-brandenburg.de>
+Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: __ioremap_at() in 2.4.0-test9-pre2
+In-Reply-To: <Pine.GSO.4.10.10009201023340.21745-100000@zeus.fh-brandenburg.de>
+References: <14791.61311.118516.747495@argo.linuxcare.com.au>
+	<Pine.GSO.4.10.10009201023340.21745-100000@zeus.fh-brandenburg.de>
+Reply-To: paulus@linuxcare.com.au
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-The IBM PowerPC Team is now maintaining several PowerPC Linux
-kernel source trees which represent IBM's current efforts on PowerPC
-Linux. Information about these trees is available at:
+Roman Zippel writes:
 
-http://oss.software.ibm.com/developerworks/opensource/linux/projects/ppc/code.php
+> > example, inb(0x3f8) won't access the first serial port (this is on
+> > machines such as prep and some chrp which have a lot of PC-style
+> > devices).
+>
+> You know that the serial driver supports pci cards? So it's somehow a bad
+> example and even for broken drivers it shouldn't be that much of a problem
+> to add:
 
-We intend to be in sync with the PowerPC Linux community and do not
-want to break any platform with our changes. Members of our team
-will be participating in linuxppc-dev and linuxppc-workstation on
-lists.linuxppc.org.
+You know that prep and chrp machines usually have a super-I/O chip
+that has serial ports at I/O 0x3f8 and 0x2f8?  How does support for
+pci cards in the serial driver help you there?
 
-We have stable and development source trees for both Linux 2.2 and
-Linux 2.4.  The stable versions will have been tested to some degree on
-some set of hardware. The degree of testing will be nominal initially
-but improving over time. The development versions may not compile or have
-incomplete function. Information on specific machines is available at:
+> #if __broken__
+> #define xxx_inb(base, port) inb(port)
+> #else
+> #define xxx_inb(base, port) readb(base + port)
+> #endif
 
-http://oss.software.ibm.com/developerworks/opensource/linux/projects/ppc/models.php
+I can just see Ted T'so adding that extra cruft to the serial driver,
+and then Linus accepting the patch.  Not.
 
-The trees are available via BitKeeper. To obtain the trees use the following
-commmands:
+> All the 8390 based drivers do something like this. (Although currently
+> they abuse inb/outb for that.)
 
-bk clone bk://oss.software.ibm.com:8000 stable_2_2
-bk clone bk://oss.software.ibm.com:8001 dev_2_2
-bk clone bk://oss.software.ibm.com:8002 stable_2_4
-bk clone bk://oss.software.ibm.com:8003 dev_2_4
+Inb/outb are the *correct* things to use for accessing PCI I/O space.
 
-If you do not have BitKeeper it may be obtained from BitMover at:
-
-http://www.bitmover.com/
-
-In addition rsync versions of the trees will be provided in the future.
-
-If you find a bug or have a patch to submit, please use use the ppclinux
-project on sourceforge.net. This project is available at:
-
-http://sourceforge.net/projects/ppclinux/
-
-IBM's PowerPC Linux page is available at:
-
-http://oss.software.ibm.com/developerworks/opensource/linux/projects/ppc/
-
-Dwayne & Tom
+Paul.
 
 --
-Dwayne Grant McConnell		work:  dwayne@austin.ibm.com
-Linux/PowerPC Team		home:  dgm69@austin.rr.com
-Linux Technology Center		notes: dwayne@us.ibm.com
+Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
++61 2 6262 8990 tel, +61 2 6262 8991 fax
+paulus@linuxcare.com.au, http://www.linuxcare.com.au/
+Linuxcare.  Support for the revolution.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
