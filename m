@@ -1,40 +1,40 @@
-Message-ID: <3ED497D6.2070902@embeddededge.com>
-Date: Wed, 28 May 2003 07:04:54 -0400
-From: Dan Malek <dan@embeddededge.com>
+Date: Wed, 28 May 2003 13:33:37 +0200 (CEST)
+From: Marius Groeger <mag@sysgo.de>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: ibm_ocp_phy/enet.c: MII PHY startup()
+Message-ID: <Pine.LNX.4.52.0305281329200.15436@mag.devdep.sysgo.de>
 MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Jean-Denis Boyer <jdboyer@m5t.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: PATCH: arch/ppc/8xx_io_fec.c
-References: <AB5AF73EAF23304EA1B932174137CED702FB6D@m5tmail.m5t.com> <20030527165824.GG3453@ip68-0-152-218.tc.ph.cox.net> <3ED3BDA0.3030208@embeddededge.com> <20030527201343.GM3453@ip68-0-152-218.tc.ph.cox.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Tom Rini wrote:
+Hi All,
 
-> How would you suggest working around both this problem, and the problems
-> that Jean-Denis reported?
+it seems to me that the PHY specific startup() sequence defined in the
+ibm_ocp_phy.c modules is never actually executed from ibm_ocp_enet.c.
+It think that's a bug and probably never really shows up because the
+underlying firmware usually takes care of PHY initialisation. Anyway,
+I appended a patch below.
 
-I understand the problem that needed to be fixed, and that was done.
-It seems quite a few people have been making changes do this driver,
-logic has been copied around and some of it doesn't make sense.
+Regards,
+Marius
 
-In your usual, "send me lots of patches" mode, there should have been
-one to fix the real problem, and another to do "clean up." :-)
+-----------------------------------------------------------------------------
+Marius Groeger           SYSGO Real-Time Solutions AG       mgroeger@sysgo.de
+Software Engineering     Embedded and Real-Time Software    www.sysgo.de
+Voice: +49-6136-9948-0   Am Pfaffenstein 14                 www.osek.de
+FAX:   +49-6136-9948-10  55270 Klein-Winternheim, Germany   www.elinos.com
 
->>The code formatting looks like crap, so that needs to be fixed.
->
->
-> That's trivial 'tho. :)
+--- linux/drivers/net/ibm_ocp/ibm_ocp_enet.c.org	Mon Mar 24 18:07:55 2003
++++ linux/drivers/net/ibm_ocp/ibm_ocp_enet.c	Mon May 26 14:19:20 2003
+@@ -322,6 +322,7 @@ ppc405_enet_open(struct net_device *dev)
+ 		 (dev->dev_addr[2] << 24) | (dev->dev_addr[3] << 16)
+ 		 | (dev->dev_addr[4] << 8) | dev->dev_addr[5]);
 
-If you have time to do it, that's fine.  I don't :-)
-
-Thanks.
-
-
-	-- Dan
-
++	mii_do_cmd(dev, fep->phy->startup);
+ 	mii_do_cmd(dev, fep->phy->ack_int);
+ 	mii_do_cmd(dev, fep->phy->config);
+ 	mii_queue_schedule(dev);
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
