@@ -1,52 +1,63 @@
-Date: Tue, 4 Apr 2000 12:50:36 +0200
-From: Olaf Hering <olh@suse.de>
-To: Tim Wojtulewicz <Tim.Wojtulewicz@NAU.EDU>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Install on a Pismo (going bad)
-Message-ID: <20000404125036.E31973@suse.de>
-Reply-To: linuxppc-dev@lists.linuxppc.org
-References: <p04310100b50f59297908@[134.114.15.89]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <p04310100b50f59297908@[134.114.15.89]>
+Date: Tue, 4 Apr 2000 13:35:34 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Graham Stoney <greyham@research.canon.com.au>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Question about PPC __put_user_asm/__get_user_asm
+In-Reply-To: <20000404064015.6EEF2505F0@brixi.research.canon.com.au>
+Message-ID: <Pine.HPX.4.10.10004041321080.21080-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Apr 04, Tim Wojtulewicz wrote:
+On Tue, 4 Apr 2000, Graham Stoney wrote:
 
 >
-> I've run into a few problems with installing LinuxPPC 2000 on a Pismo
-> powerbook.  First, the keyboard isn't recognized by the installer.
-> I've tried hooking up a USB keyboard from a blue and white G3, but it
-> says that the device wasn't responding and that is was giving up.  Is
-> there a workaround of some sort for this?
+> Hi there,
 >
-> Second (the more major problem), is that somehow the partition table
-> on my hard drive got all screwed up.  Now the LinuxPPC installer
-> tells me it can't read the partition table, and doesn't understand
-> where my hard drive is.  I tried booting back into MacOS and using a
-> multitude of tools to reformat the drive (or just recreate the
-> partition table), with no luck.  Any suggestions?
+> I'm wondering if anyone can please point me to an explanation of the PCC
+> implementations of __put_user_asm/__get_user_asm in include/asm-ppc/uaccess.h.
+> In particular, I'm interested in the reason behind them changing .sections
+> behind the compiler's back, and whether some better approach could be taken to
+> achieve the same goal.
+>
+> The reason I'm asking is because I'm trying to use gcc's -ffunction-sections
+> with ld's --gc-sections to eliminate dead code from my kernel link. This is
+> proving difficult because the aforementioned macros explicitly change back to
+> the .text section, which is incompatible with -ffunction-sections. I can hack
+> the macros to change back to section ".text.__FUNCTION__", but this suffers
+> from equivalent nastiness when -ffunction-sections isn't used.
+>
+> Can anyone explain what the .fixup and __ex_table stuff in __put_user_asm/
+> __get_user_asm do?  I notice that other architectures don't require such
+> trickery.
 
-Boot from the MacOS CD, use Drive Setup, create one big MacOS partition,
-this will/should clean up the partition table. Then create 4 partitions,
-one for MacOS, one Linuxboot partition in HFS Format, one swap and a
-Linux Partition.
-Try the latest Kernel from Ben or our suseboot.hqx file at
-ftp://ftp.suse.com/pub/suse/ppc/update/BETA
-
-Finally, send me the output of
-ftp://ftp.suse.com/pub/suse/ppc/update/BETA/suse_hw_info.sh.
-Thanks.
+At least i386 does the same trick as Documentation/exception.txt explains.
+But using .text explicitly is bad style in any case, you might want to
+replace it by .previous like in this hand-built unified diff for the
+__put_user_asm case:
 
 
-Gruss Olaf
+		".section .fixup,\"ax\"\n"			\
+		"3:     li %0,%3\n"				\
+		"       b 2b\n"					\
++ 		".previous\n"					\
+		".section __ex_table,\"a\"\n"			\
+		"       .align 2\n"				\
+		"       .long 1b,3b\n"				\
+-		".text"						\
++ 		".previous"					\
+                : "=r"(err)                                     \
+                : "r"(x), "b"(addr), "i"(-EFAULT), "0"(err))
 
---
- $ man 1 current_release
+Caution: I don't claim it will solve all your problems: actually it will
+still leave some remnants in the __ex_table and .fixup sectioons which
+will be cause linker errors. But at least the code of the functions will
+stay in the appropriate section. I've no idea on how to generate per
+function __ex_table and fixup sections (actually I think it's the wrong
+approach for 6xx/7xx/7xxx PPC for other reasons).
 
-BUGS
-       Users never read manuals...
+	Gabriel.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
