@@ -1,42 +1,33 @@
-Date: Fri, 4 Jun 2004 12:35:30 -0400 (EDT)
-From: Sharad Gupta <sharad@buckeye.ece.drexel.edu>
-To: PowerPC Linux Mailing List <linuxppc-embedded@lists.linuxppc.org>
-Subject: initrd & root fs
-Message-ID: <Pine.GSO.4.58.0406041221250.19526@buckeye.ece.drexel.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: Re: [PATCH] Take two of the new serial uart driver.
+From: David Woodhouse <dwmw2@infradead.org>
+To: Pantelis Antoniou <panto@intracom.gr>
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	Kumar Gala <kumar.gala@motorola.com>,
+	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <40BF3206.8030705@intracom.gr>
+References: <40BF3206.8030705@intracom.gr>
+Content-Type: text/plain
+Message-Id: <1086426744.4588.121.camel@imladris.demon.co.uk>
+Mime-Version: 1.0
+Date: Sat, 05 Jun 2004 10:12:24 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Friends,
+On Thu, 2004-06-03 at 17:13 +0300, Pantelis Antoniou wrote:
+> Hi
+>
+> The following patch updates the new CPM1/CPM2 uart driver.
 
-I am in the process of putting together a target system with PPC7455 on a
-custom board. Right now, I only have serial port, 8 MB of on-board AMD
-flash, flash card through Xilinx System ACE, and 512 MB SDRAM. I can load
-the linux image & initrd to the flash or directly to the RAM through
-BDI2000.
+It seems to lose queued characters from the kernel output when userspace
+/dev/console is first opened. Should you drain the FIFO before resetting
+the hardware on open? Or indeed refrain from resetting the hardware if
+you're not actually changing anything?
 
-I have linux running successfully alongwith initial ext2 ramdisk with
-busybox (compiled as static with powerpc-linux-gcc). I want to create a
-root fs on flash card and be able to either pivot_root to it after initrd
-boots up or mount it as root disk without any initrd. Since, I only have
-100 MB on flash card, I plan on using uClibc. Now, I have the following
-dilemmas :
+This is with console on ttyCPM0 == SMC1. SysRq is also non-functional.
 
-1.) Is it necessary to cross compile the kernel using uClibc toolchain or
-a glibc one is fine ?
+--
+dwmw2
 
-2.) If I use initrd with flash card as root fs, do I need to build initrd
-as static binary or dynamic one ?
-
-3.) What is the best approach to use given this situation, I havent been
-able to put together a stable system. Everytime, I do pivot_root from
-busybox (loaded from initrd) to the flash card (built from buildroot from
-uClibc), my system hangs after sometime or I see question marks or strange
-characters when I do "ls".
-
-Thanks
---Sharad.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
