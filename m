@@ -1,39 +1,46 @@
-Message-ID: <00933BFA237CD2119B3400409543582704A2BA@MEV01>
-From: Ian Abbott <abbotti@mev.co.uk>
-To: Embedded Linux list <linuxppc-embedded@lists.linuxppc.org>
+From: "Ron Bianco" <ronb@junction.net>
+To: "Ralph Blach" <rcblach@raleigh.ibm.com>
+Cc: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
 Subject: RE: Wait queue question
-Date: Wed, 14 Feb 2001 18:04:07 -0000
+Date: Wed, 14 Feb 2001 10:34:04 -0800
+Message-ID: <000201c096b4$b511dba0$4d012ac7@warp-speed>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <3A8A9EB2.660A7A2D@raleigh.ibm.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Ralph Blach wrote:
+Hi Ralph, perhaps you could not attach your .vcf files anymore?
 
-> If I have a wait queue thats I am using to wake up a device
-> driver read
+If your driver implements non-blocking read() and write() functions, then you don't
+have to sleep.
+Else others have commented on the alternative to sleep_on().
+
+For non-blocking:
+Just use poll_wait() in your poll() function and wakeup_interruptible when there data
+available on your Qs.
+Then user program's select() and poll() system calls will work properly.
+
+Ron
+
+> -----Original Message-----
+> From: owner-linuxppc-embedded@lists.linuxppc.org
+> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Ralph
+> Blach
+> Sent: Wednesday, February 14, 2001 7:05 AM
+> To: Embedded Linux list
+> Subject: Wait queue question
+>
+>
+> If I have a wait queue thats I am using to wake up a device driver read
 > from an interrupt service routine.
 > If I get three interrupt and three wake_up_interrables, will I need to
-> execute three sleep_ons to get the wait queue back to the
-> null state, or
+> execute three sleep_ons to get the wait queue back to the null state, or
 > is it just back after the first sleep_on?
+>
+> Chip
 
-They do not work like semaphores. wake_up and wake_up_interruptible have
-an immediate effect on processes waiting on the specified queue, but
-don't modify a counter or anything like that. This also means you can't
-sleep on an event that has already happened, like you could with a
-semaphore.
-
-Also, you probably want to use interruptible_sleep_on rather than
-sleep_on, unless you've already considered this.
-
-These are general Linux driver writing questions, rather than embedded
-Linux PPC questions. You may be better off addressing these sorts of
-questions to a different list or newsgroup. Also, you may wish to
-consider investing in Alessandro Rubini's "Linux Device Drivers",
-published by O'Reilly. It's starting to get a little out-of-date in
-places but is still a good introduction to writing device drivers for
-Linux.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
