@@ -1,30 +1,41 @@
-Message-Id: <200010161739.MAA15639@lists.linuxppc.org>
-Date: Mon, 16 Oct 2000 13:39:49 -0400
-Reply-To: khendricks@ivey.uwo.ca
+Message-ID: <6BAD6986DF8FD211AB8300A0C931D85514E030@mail.neruo.com>
+From: Brad Douglas <Brad@NERUO.com>
+To: "'James Simmons '" <jsimmons@suse.com>,
+        "'Benjamin Herrenschmidt '"
+	 <bh40@calva.net>
+Cc: "'Geert Uytterhoeven '" <geert@linux-m68k.org>,
+        "'Linux Frame Buffer Device Development '" <linux-fbdev@vuser.vu.union.edu>,
+        "'Linux/PPC Development '" <linuxppc-dev@lists.linuxppc.org>
+Subject: RE: [linux-fbdev] Re: Video driver bug
+Date: Mon, 16 Oct 2000 14:21:29 -0400
+MIME-Version: 1.0
 Content-Type: text/plain;
-	charset=us-ascii
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-To: linuxppc-dev@lists.linuxppc.org
-Mime-Version: 1.0 (Apple Message framework v337)
-Subject: Is the list working today?
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Most of us still have a need to know the last (previous) active console.
+Maybe change info->currcon to info->lastcon?  Or does the API already give
+us the info we need?
 
-I sent an announcement about the JDK 1.3.0 FCS for PPC Linux just released by Blackdown to both the dev and user mailing lists.  I receive the user mailing list in digest form so I can't tell when it was rejected or not, but I do receive the dev mailing list in on-digest and even received some from messages from dev today but no copy of my announcement.
+I apologize in advance for not looking into this myself.
 
-I then checked to make sure I was subscribed at the correct address and according to majordomo for dev I am.
+Brad Douglas
+brad@neruo.com
+http://www.linux-fbdev.org
 
-Is the dev mailing list working today?
+-----Original Message-----
+From: James Simmons
 
-Did anyone see my new JDK announcement?
+> While we are at it, I beleive we should also change atyfb.c so that
+> currcon is no longer a global. My understanding is that can break
+multihead.
 
-If not, could someone please check the majordomo logs to see why my mail was rejected (it would be nice to get back a rejected notice).  Or are things just backed up and something will actually come through today?
-
-Thanks,
-
-Kevin
+That is not the only thing broken for multihead support. The softback code
+is severly broken. Also why don't we use the display_fg field in fb_info
+instead. display_fg->vc_num is already their is it's more multihead
+friendly. IMO real multihead support shoudl wait until 2.5.X since it
+needs a pretty big cleanup.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
