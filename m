@@ -1,49 +1,26 @@
-Date: Mon, 22 Apr 2002 17:22:12 +0200
-From: Olaf Hering <olh@suse.de>
-To: Ani Joshi <ajoshi@shell.unixbox.com>
+Message-ID: <3CC46961.5D72D252@mvista.com>
+Date: Mon, 22 Apr 2002 15:49:53 -0400
+From: "Mark A. Greer" <mgreer@mvista.com>
+MIME-Version: 1.0
+To: Frank <frannk_m1@yahoo.com>
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: ATI 7000 and dual-monitor X? (was Re: 9600 maturity?)
-Message-ID: <20020422172212.A7257@suse.de>
-References: <20020416100152.A4692@suse.de> <Pine.BSF.4.44.0204162227560.49666-100000@shell.unixbox.com>
-Mime-Version: 1.0
+Subject: Re: linux kernel with galileo support
+References: <20020422015453.94732.qmail@web13805.mail.yahoo.com>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.BSF.4.44.0204162227560.49666-100000@shell.unixbox.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Apr 16, Ani Joshi wrote:
+Frank wrote:
 
->
->
-> On Tue, 16 Apr 2002, Olaf Hering wrote:
->
-> > It is a VE, but I have one report where it fails on a 9600, after
-> > loading vgahw.a or something like that. Maybe it must go into another
-> > slot or the guy has to boot without video=ofonly.
-> > More details later..
->
->
-> This is most likely the perennial multiple PCI bus ISA IO problem in
-> userland that plagues many Macs.  I won't go into the discussion again of
-> why this is a problem, as this has been discussed here many times (see old
-> posts about this problem on G4's), but a quick solution may be to put the
-> card in the 1st slot, or whichever slot corresponds to the io_base
-> syscall.  I have never used a 9600 so ask around which slot this is.
->
-> Also, have you tried radeonfb?
+> How can I get a copy of the Linux kernel with the
+> Galileo gt64260 support...
 
-That was the culprit. He had to boot with video=ofonly. I will try to
-get some info why it fails.
-Maybe another slot or a newer kernel, or both.
+There is a version in the linuxppc_2_4_devel tree and another one in the
+linux-galileo tree on source.mvista.com.  If you need more info, look at
+the mail archives.
 
+Mark
 
-Gruss Olaf
-
---
- $ man clone
-
-BUGS
-       Main feature not yet implemented...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
