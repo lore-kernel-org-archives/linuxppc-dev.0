@@ -1,54 +1,38 @@
-Message-ID: <40C87A07.4050105@fh-landshut.de>
-Date: Thu, 10 Jun 2004 17:11:03 +0200
-From: Oliver Korpilla <okorpil@fh-landshut.de>
-Reply-To: okorpil@fh-landshut.de
+Date: Thu, 10 Jun 2004 12:46:30 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+To: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
+Subject: ok, so a statically-built minit seems to work
+Message-ID: <Pine.LNX.4.58.0406101241110.8061@localhost.localdomain>
 MIME-Version: 1.0
-To: "Heater, Daniel (GE Infrastructure)" <Daniel.Heater@gefanuc.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: VME - PowerPC: Resource sizes
-References: <DB1DE297F535B340AEAE1E51B221C3D0016B3DE3@FTWMLVEM02.e2k.ad.ge.com>
-In-Reply-To: <DB1DE297F535B340AEAE1E51B221C3D0016B3DE3@FTWMLVEM02.e2k.ad.ge.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Heater, Daniel (GE Infrastructure) wrote:
+  argh.  took the time to go back to the build, increase the ramdisk size,
+then built minit statically (size jumped from 13K to 450K, hence the need
+to boost the ramdisk size.)
 
->>We could iterate the PCI bus tree to the top (there is some
->>parent bus
->>field, IIRC), and then start complete iteration until a suitable
->>resource is found. This may produce larger resource regions with
->>reasonable effort.
->>
->>
->
->On the x86 boards we've dealt with we've gotten away with opening
->VMEbus windows in PCI space not allocated by the Universe's parent
->bridge because the parent bridges have always been set up for
->subtractive decoding. So if no one else claimed the cycle, it got
->passed down through the bridge to the Universe anyway.
->
->
->>Are you sure you mean 768 _KB_ and 2 _MB_, not 768 _MB_ and 2
->>_GB_? My SLSI window is already 64 MB big.
->>
->>
->
->My bad. It's actually 768KB and 2GB are correct. The SLSI window
->does fail to allocate with the patch.
->
->
-That's not very good. I'm getting an Intel board (I guess VMIVME7700) In
-the near future, so I could test several options. If my code does
-prevent you from getting resonable window sizes, we could either walk
-the tree, or conditionalize the code that way, that for the x86 resource
-are again requested from iomem_resource directly.
+  built my new downloadable image, booted and:
 
-But I guess that walking the tree should have a net result very similar
-to your original code.
+...
+ttyS00 at 0x0280 is a SMC
+RAMDISK: Compressed image found at block 0
+VFS: Mounted root (ext2 filesystem).
+Mounted devfs on /dev
+Freeing unused kernel memory: 52k init
+Trying run_init_process with /sbin/minit
+FIFOs opened successfully.        <-- ah, success, minit is starting
+About to start default service.
+(hang)
 
-With kind regards,
-Oliver Korpilla
+so we're pretty much back to where we started -- hanging shortly after
+getting to user space.  but i'm pretty sure that minit used to get this
+far when it was dynamically linked.  so, in that sense, things seem to
+have regressed, unless there's some magic option i should be setting in
+this build that i never needed in the 2.4 build for dynamically-linked
+executables.
+
+rday
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
