@@ -1,50 +1,37 @@
-Message-ID: <3AF710DC.37209810@mvista.com>
-Date: Mon, 07 May 2001 17:17:16 -0400
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: Eli Chen <eli@routefree.com>
-Cc: brian.kuschak@skystream.com, linuxppc-embedded@lists.linuxppc.org
+Date: Mon, 7 May 2001 14:30:47 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Dan Malek <dan@mvista.com>
+Cc: Eli Chen <eli@routefree.com>, brian.kuschak@skystream.com,
+	linuxppc-embedded@lists.linuxppc.org
 Subject: Re: dcache BUG()
-References: <027b01c0d728$9a702b80$4b00000a@foolio1>
+Message-ID: <20010507143047.B1118@opus.bloom.county>
+References: <027b01c0d728$9a702b80$4b00000a@foolio1> <3AF710DC.37209810@mvista.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3AF710DC.37209810@mvista.com>; from dan@mvista.com on Mon, May 07, 2001 at 05:17:16PM -0400
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Heh....the best free help wasn't available when I wrote that last
-message, so I guess I'll take a stab at an answer :-).
+On Mon, May 07, 2001 at 05:17:16PM -0400, Dan Malek wrote:
 
-Eli Chen wrote:
+> > ...  This is really just a work around for us until we find out what
+> > is the real problem.
+>
+> Is there some simple test I can use to trigger this problem?  It
+> would be nice if you could try a "newer" kernel from FSM Labs.  This
+> was originally in the linuxppc_2_5 tree, and we are merging/changing
+> trees at the moment.  I don't remember the URL......TOM, can you
+> provide some insight?
 
-> ..........  They all seem to be
-> related to a inconsistency with reference counters, which led me to suspect
-> a problem with atomic instructions in our kernel.
+Er, 2_5 isn't unavailable yet.  bk://source.mvista.com/linuxppc_2_5 (mirror)
+or bk://bitkeeper.fsmlabs.com:5005 (master).  But 2_5 is 'dead' in the sense
+that stuff is being moved to a new tree.  The new tree should be a lot more
+populated (with new 6xx/7xx/74xx, 8xx, 82xx and some 4xx) stuff after my
+finals (And I've got 2 tomorrow, so adios. :))
 
-That's an interesting piece of information......
-
-There have been problems with the directory entry counters in
-older 2.3.99/2.4 kernels.  The 4xx development has kind of been on
-a planet all by it's lonesome for a long time, and I am now trying
-to bring it back into the mainstream.  It could very well be there
-were some generic kernel bug fixes that were missed in the 4xx
-kernel.
-
-> ..... I have replaced the
-> lwarx/stcrx pairs in include/asm-ppc/atomic.h with code that just turns off
-> and on interrupts,
-
-What version of silicon do you have, and what platform are you using?
-
-> ...  This is really just a work around for us until we find out what
-> is the real problem.
-
-Is there some simple test I can use to trigger this problem?  It
-would be nice if you could try a "newer" kernel from FSM Labs.  This
-was originally in the linuxppc_2_5 tree, and we are merging/changing
-trees at the moment.  I don't remember the URL......TOM, can you
-provide some insight?
-
-
-	-- Dan
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
