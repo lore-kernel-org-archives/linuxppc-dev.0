@@ -1,46 +1,42 @@
-To: lihong wei <lihongwlh@yahoo.com>
-Cc: ppclinux <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Serial console failure on DENX Linux on MPC850 board 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 18 Dec 2003 10:08:58 PST."
-             <20031218180858.55548.qmail@web41902.mail.yahoo.com>
-Date: Fri, 19 Dec 2003 21:34:14 +0100
-Message-Id: <20031219203419.2CBE5C5F5F@atlas.denx.de>
+Message-ID: <3FE36105.7080401@gcctech.com>
+Date: Fri, 19 Dec 2003 15:35:17 -0500
+From: "Christopher R. Johnson" <cjohnson@gcctech.com>
+Reply-To: cjohnson@gcctech.com
+MIME-Version: 1.0
+To: "listmember@orkun.us" <listmember@orkun.us>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Free ppc linux configuation tool?
+References: <27309.216.110.51.8.1071865134.squirrel@www.orkun.us>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20031218180858.55548.qmail@web41902.mail.yahoo.com> you wrote:
+make xconfig is what I use.  Email me if you'd like the .config file
+generated, but keep in mind my board is proprietary so may be quite
+different from yours.
+
+listmember@orkun.us wrote:
+
+>Sorry for duplicate posting, I forgot to specify a subject first time...
 >
-> I am porting latest version  Denx linux
-> linuxppc_2_4_devel kernel and U-boot 3.0 to our MPC850
->  board. I also used SELF to generate the ext2 file
-> system. I am using the TQM850L configuration
-
-If your board is not a TQM850L you should be extremely carefult - you
-will most probably need your own set of config options instead.
-
->  on my board, and configured the SCC2 as serial
-> console(because the hardware designed like this).
-
-And your hardware design is most probably different from that of  the
-TQM850L< so be careful again.
-
-> I am stuck here and any response will be cordially
-> appreciated!
-
-I guess your serial ports are misconfigured.
-
-Best regards,
-
-Wolfgang Denk
+>I am creating a linux .config file for an embedded PowerPC 405gp board.
+>
+>Is there a menu driven free tool (console or X11 based) to assist me?
+>
+>I read somewhere about Montavista Hardhat Linux Configuration Tool but I
+>am not sure if it is available free.
+>
+>Regards,
+>Tolunay
+>
+>
+>
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"Here's a fish hangs in the net like a poor man's right in  the  law.
-'Twill hardly come out."     - Shakespeare, Pericles, Act II, Scene 1
+Christopher R. Johnson
+Principal Software Engineer
+GCC Printers
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
