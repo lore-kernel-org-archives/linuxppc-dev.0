@@ -4,26 +4,24 @@ From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: John Steele Scott <toojays@toojays.net>
 Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
 	Christiaan Welvaart <cjw@daneel.dyndns.org>
-In-Reply-To: <1085956980.9638.17.camel@gaston>
+In-Reply-To: <200405311003.21439.toojays@toojays.net>
 References: <200405302331.35357.toojays@toojays.net>
-	 <1085956980.9638.17.camel@gaston>
+	 <1085956980.9638.17.camel@gaston>  <200405311003.21439.toojays@toojays.net>
 Content-Type: text/plain
-Message-Id: <1085957029.9638.19.camel@gaston>
+Message-Id: <1085963398.1996.27.camel@gaston>
 Mime-Version: 1.0
-Date: Mon, 31 May 2004 08:43:49 +1000
+Date: Mon, 31 May 2004 10:29:58 +1000
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 2004-05-31 at 08:43, Benjamin Herrenschmidt wrote:
-
-> > Does anyone have any ideas on why this might not work on my system? Is there
-> > something else that needs to be looked at when increasing the frequency after
-> > booting?
 >
-> You might need the proper clock chip tweaks.
+> Is there any datasheet or similar which describes this chip?
 
-Oh, and you may have the voltage wrong too. I'll have a look
+
+No, I need to manually decode some of the platform-do-* properties in
+the device-tree that initialize things properly and implement the
+necessary tweaks. That or finally write an interpreter for those ;)
 
 Ben.
 
