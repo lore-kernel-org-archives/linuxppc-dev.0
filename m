@@ -1,16 +1,31 @@
-Message-ID: <3EC92F65.1050503@mvista.com>
-Date: Mon, 19 May 2003 12:24:21 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-MIME-Version: 1.0
-To: acurtis@onz.com
+Message-ID: <F9102D41F595D311ACA7009027DE2C840527B297@c3po.heurikon.com>
+From: "Johnson, Stephen" <stevebj@artesyncp.com>
+To: "'Mark A. Greer'" <mgreer@mvista.com>, acurtis@onz.com
 Cc: "Curtis, Allen" <Allen.Curtis@Thales-IFS.com>,
 	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 64260/PCI accesses cached by CPU?
-References: <NCBBIINEHIPFGJPLBEIFGEPBEFAA.acurtis@onz.com>
-In-Reply-To: <NCBBIINEHIPFGJPLBEIFGEPBEFAA.acurtis@onz.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: RE: 64260/PCI accesses cached by CPU?
+Date: Mon, 19 May 2003 14:36:56 -0500
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+The Artesyn PM/PPC-750F reference kernel is based on the linux_2_4_galileo tree and has not been updated since  _galileo and  _devel merged.
+
+An updated PM/PPC-750F reference kernel is in process...it's in the queue and it's free ($0.00) so it's one of the first things to get bumped down in priority if something comes up that needs attention.
+
+
+
+
+-----Original Message-----
+From: Mark A. Greer [mailto:mgreer@mvista.com]
+Sent: Monday, May 19, 2003 2:24 PM
+To: acurtis@onz.com
+Cc: Curtis, Allen; linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 64260/PCI accesses cached by CPU?
+
 
 
 Allen Curtis wrote:
