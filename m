@@ -1,85 +1,47 @@
-Message-ID: <004101c087a4$58994580$a66d34c0@oleane.com>
-From: "Lionel TAILLURAT" <Lionel.TAILLURAT@ecrin.com>
-To: "ppc_mailing_list" <linuxppc-embedded@lists.linuxppc.org>
-Subject: MVME 23xx VME drivers problems
-Date: Fri, 26 Jan 2001 15:29:06 +0100
+To: "'linuxppc-embedded@lists.linuxppc.org'"
+    <linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3A718D21.66F9227D@lucent.com>
+Date: Fri, 26 Jan 2001 08:43:45 -0600
+From: Tom Roberts <tjroberts@lucent.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
+Subject: Query: PCI and Ethernet hardware/drivers
+References: <B25E2E5A003CD311B61E00902778AF2A0148B69D@server1.skystream.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+We are in the throes of designing some new hardware, and have several
+questions. We will probably not start porting Linux to the board until
+May or June, and hope that Linux 2.4/PPC will be stable by then. This
+will be an SMP MPC7410 board with lots of SDRAM. (we have existing
+non-SMP boards to work with initially, and we have a "toy" port of
+Linux 2.2.15 to one of them)
 
-I'm using a debian PPC 2.2 with 2.2.17 kernel.
+1) Does Linux/PPC handle the PCI bus properly?
 
-1/
-I'm trying to patch this kernel with the Gabriel Paubert's 2600 VME patch
-(for 2.2.12 kernel).
-I have some failures like :
+2) Are there Linux/PPC drivers for the PLX 9054 (PCI interface) chip?
+   (Yes, that is PPC 60x-bus, not MAX bus; the hardware will handle that)
 
-patching file `linux/arch/ppc/kernel/ppc_ksyms.c'
-...
-Hunk #1 FAILED at 48.
-Hunk #2 FAILED at 212.
-...
+3) What Ethernet MAC chips have people had success using?
+   (right now we favor an AMD chip, which they claim has Linux drivers,
+   but their test plan includes only AMD and Intel CPUs, not PowerPC)
 
-Is there is a way to patch the 2.2.17 kernel or must I use 2.2.12 ?
-
-2/
-I'm trying to use the vmelinux driver ( www.vmelinux.org) it compiles well,
-but when I install it I have the message :
-
-ca91c042.o: init_module: Device or resource busy
-Hint: this error can be caused by incorrect module parameters, including
-invalid IO or IRQ parameters
-
-and error output gives to me :
-
-  Tundra Universe PCI-VME Bridge Driver 1.0 00Oct3
-  Copyright 1997-2000, Michael J. Wyrick
-  Universe device found.  Vendor = 10E3  Device = 0000  Status = 02000007
-  Class = 00068000
-  Misc0 = 00000000
-  Read via mapping, PCI_ID = FFFFFFFF
-  Universe Chip Failed to Return PCI_ID in Memory Map.
-
-What is the problem ?
-
-3/
-
-Finally I'm trying the universe driver
- http://lisa2.physik.uni-bonn.de/~hannappe/software/ ).
-
-It need bigphyarea (which is not available for 2.2.17 kernel) to make DMA
-transfers.
-
-And when I make a cat /dev/vme_stat it returns to me only 0xFFFFFFFF or 0X0
-values :
-...
-VME Register image enabled at VME-Address 0xFFFFFFFF
-...
-
-What's wrong ?
+4) We favor a 4-CPU SMP configuration. What not-so-obvious problems
+   are we likely to face? (e.g. our simulations show that doing this
+   at 133 MHz cannot be done using a CPLD-based memory controller:
+   wimpy data-bus drivers (:-() Our existing boards are all non-SMP,
+   and bus snooping is a bit of a mystery to us....
 
 
-Lionel
+	[While some people may not consider a 4-SMP 7410 board with
+	 4 GB of SDRAM to be "embedded", we certainly do. But it is a
+	 BIG step up from an 860....]
 
--------------------------------------------------------
-Lionel TAILLURAT
-TECHNICAL SERVICE
 
-ECRIN AUTOMATISMES -industrial computer's-
-Rue du pré-de-l'Horme
-B.P 15
-38921 CROLLES CEDEX
-FRANCE
-Tel :(33) 4 76 92 20 01
-Fax :(33) 4 76 08 03 18
-Email: Lionel.TAILLURAT@ecrin.com
-Email: support@ecrin.com
----------------------------------------------------------
+Any comments or suggestions you have will be appreciated.
 
+
+Tom Roberts	tjroberts@lucent.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
