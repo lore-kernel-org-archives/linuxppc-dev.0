@@ -1,48 +1,123 @@
-Message-ID: <19991209044138.23512.qmail@www0i.netaddress.usa.net>
-Date: 8 Dec 99 22:41:37 CST
-From: jeramy b smith <ultrapenguin@netscape.net>
-To: jrestemeier@currantbun.com,
-        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: [Open Sourced Glide on Linux PPC]
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Wed, 8 Dec 1999 22:12:28 -0800 (PST)
+From: Sean Chitwood <darkmane@w-link.net>
+Reply-To: darkmane@w-link.net
+To: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
+Subject: Help w/ mozilla....
+Message-ID: <Pine.LNX.4.10.9912082150180.6080-200000@darkmane.w-link.net>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="2115031201-904205747-944719948=:6149"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Questions:
-> - Has anybody had any success compiling Glide/Linux/PPC/VooDoo1 ?
-> - Is this isa_io_base thingy changed in newer kernels, or did I just mix
-> up my configuration ? I don't really like downloading kernels/patches
-> through my slow connections, so I'd like to be sure...
-> 
-> Thanks,
-> Jens
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+  Send mail to mime@docserver.cac.washington.edu for more info.
 
-I tried this beast today.
-First:
-I noticed 3dfx set x86 CFLAGS in the spec.The spec does this though for
-glibc20 compat libs. I simply commented these lines and their respective
-install lines in the spec.
+--2115031201-904205747-944719948=:6149
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
-Second:
-swlib/include/make/3dfx.mak
-This girl contains the default CFLAGS which are 486 specific. They are beside
-the CNODEBUG.
-I waxed em.
+Hi-
+	I have taken it upon my self to try and modify some MacOS assmebly code for to assembly code for linuxppc. The goal is to get mozilla working on linuxppc again.
 
-Third:
-Ran into the same P6 fence message and some other weird looking messages at
-the same place you did. My guess is that there is some inline ASM jammed in
-there. The only ASM I know is IBM 370 so I was lost at this point. I *should*
-have look at the c file and seen if there was an alternate c routine for the
-inline ASM stuff. The sources I have have OS defs for HPUX and Solaris so
-their might be portable c routines in the code. Basically, if your OSTYPE is
-Linux they assume your using x86.
+	Here is the problem, when I try and assemble the code I get "Error: unsupported relocation type" for pretty much every line. I've read the info, I've researched the best I could but it looks like it should work. I am confused and have turned to you guys.
+
+I am using the as and gasp from binutils-2.9.1.0.990418 and I have attached the file I'm trying to assemble.
+
+As far as I can tell ".text" is a valid section type and should work, but that is the only thing I get out of the error messages is that ".text" is not right. Can someone please help me? Yes, you reading email, could you help me?
 
 
-Afterword:
-I hit the 3dfx sourceforge at sourceforge.net but nothing has been posted yet.
+	Sean aka Darkmane
++------------------------------
++ On October 16, 1999 A.D.
++ Sean Chitwood proudly proclaimed
++ his love for Melissa Webb
++ and made her his lifemate
++------------------------------
 
+
+--2115031201-904205747-944719948=:6149
+Content-Type: TEXT/PLAIN; charset=US-ASCII; name="xptcinvoke_asm_linux_ppc.s"
+Content-ID: <Pine.LNX.4.10.9912082212280.6149@darkmane.w-link.net>
+Content-Description: 
+Content-Disposition: attachment; filename="xptcinvoke_asm_linux_ppc.s"
+Content-Transfer-Encoding: BASE64
+
+IC8qDQogLyogLSotIE1vZGU6IEM7IHRhYi13aWR0aDogODsgaW5kZW50LXRh
+YnMtbW9kZTogbmlsOyBjLWJhc2ljLW9mZnNldDogNCAtKi0qLw0KIC8qKi8N
+CiAvKiBUaGUgY29udGVudHMgb2YgdGhpcyBmaWxlIGFyZSBzdWJqZWN0IHRv
+IHRoZSBOZXRzY2FwZSBQdWJsaWMgTGljZW5zZSovDQogLyogVmVyc2lvbiAx
+LjAgKHRoZSAiTlBMIik7IHlvdSBtYXkgbm90IHVzZSB0aGlzIGZpbGUgZXhj
+ZXB0IGluKi8NCiAvKiBjb21wbGlhbmNlIHdpdGggdGhlIE5QTC4gIFlvdSBt
+YXkgb2J0YWluIGEgY29weSBvZiB0aGUgTlBMIGF0Ki8NCiAvKiBodHRwOi8v
+d3d3Lm1vemlsbGEub3JnL05QTC8qLw0KIC8qKi8NCiAvKiBTb2Z0d2FyZSBk
+aXN0cmlidXRlZCB1bmRlciB0aGUgTlBMIGlzIGRpc3RyaWJ1dGVkIG9uIGFu
+ICJBUyBJUyIgYmFzaXMsKi8NCiAvKiBXSVRIT1VUIFdBUlJBTlRZIE9GIEFO
+WSBLSU5ELCBlaXRoZXIgZXhwcmVzcyBvciBpbXBsaWVkLiBTZWUgdGhlIE5Q
+TCovDQogLyogZm9yIHRoZSBzcGVjaWZpYyBsYW5ndWFnZSBnb3Zlcm5pbmcg
+cmlnaHRzIGFuZCBsaW1pdGF0aW9ucyB1bmRlciB0aGUqLw0KIC8qIE5QTC4q
+Lw0KIC8qKi8NCiAvKiBUaGUgSW5pdGlhbCBEZXZlbG9wZXIgb2YgdGhpcyBj
+b2RlIHVuZGVyIHRoZSBOUEwgaXMgTmV0c2NhcGUqLw0KIC8qIENvbW11bmlj
+YXRpb25zIENvcnBvcmF0aW9uLiAgUG9ydGlvbnMgY3JlYXRlZCBieSBOZXRz
+Y2FwZSBhcmUqLw0KIC8qIENvcHlyaWdodCAoQykgMTk5OSBOZXRzY2FwZSBD
+b21tdW5pY2F0aW9ucyBDb3Jwb3JhdGlvbi4gIEFsbCBSaWdodHMqLw0KIC8q
+IFJlc2VydmVkLiovDQoNCi50ZXh0DQovKg0KLyogICBYUFRDX0ludm9rZUJ5
+SW5kZXgobnNJU3VwcG9ydHMqIHRoYXQsIFBSVWludDMyIG1ldGhvZEluZGV4
+LCovDQovKiAgICAgICAgICAgICAgICAgICBQUlVpbnQzMiBwYXJhbUNvdW50
+LCBuc1hQVENWYXJpYW50KiBwYXJhbXMpKi8NCg0KCQkuZXh0ZXJuCS5pbnZv
+a2VfY291bnRfd29yZHMNCgkJLmV4dGVybgkuaW52b2tlX2NvcHlfdG9fc3Rh
+Y2sNCgkJLmV4dGVybgkuX19wdHJfZ2x1ZQ0KDQpfWFBUQ19JbnZva2VCeUlu
+ZGV4Og0KCQltZmxyCXIwDQoJCXN0dwlyMzEsLTQoc3ApDQovKg0KIHNhdmUg
+b2ZmIHRoZSBpbmNvbWluZyB2YWx1ZXMgaW4gdGhlIGNhbGxlcidzIHBhcmFt
+ZXRlciBhcmVhDQoqLwkJDQoJCXN0dwlyMywyNChzcCkJCQkJLyogdGhhdCAq
+Lw0KCQlzdHcJcjQsMjgoc3ApCQkJCS8qIG1ldGhvZEluZGV4Ki8NCgkJc3R3
+CXI1LDMyKHNwKQkJCQkvKiBwYXJhbUNvdW50Ki8NCgkJc3R3CXI2LDM2KHNw
+KQkJCQkvKiBwYXJhbXMqLw0KCQlzdHcJcjAsOChzcCkNCgkJc3R3dQlzcCwt
+MTM2KHNwKQkJCQkvKiAgPSAyNCBmb3IgbGlua2FnZSBhcmVhLCAgOCAqIDEz
+IGZvciBmcHJEYXRhIGFyZWEsIDggZm9yIHNhdmVkIHJlZ2lzdGVycyovDQoN
+Ci8qIHNldCB1cCBmb3IgYW5kIGNhbGwgJ2ludm9rZV9jb3VudF93b3Jkcycg
+dG8gZ2V0IG5ldyBzdGFjayBzaXplKi8NCi8qCSovDQoJCW1yCXIzLHI1DQoJ
+CW1yCXI0LHI2DQoJCWJsCS5pbnZva2VfY291bnRfd29yZHMNCgkJbm9wDQoN
+Ci8qIHByZXBhcmUgYXJncyBmb3IgJ2ludm9rZV9jb3B5X3RvX3N0YWNrJyBj
+YWxsKi8NCi8qCQkqLw0KCQlsd3oJcjQsMTY4KHNwKQkJCQkvKiBwYXJhbUNv
+dW50Ki8NCgkJbHd6CXI1LDE3MihzcCkJCQkJLyogcGFyYW1zKi8NCi8qCQlh
+ZGRpCXI2LHNwLDEyOAkJCQk7IGZwckRhdGEqLw0KCQltcglyNixzcAkJCQkJ
+LyogZnByRGF0YSovDQoJCXNsd2kJcjMscjMsMgkJCQkgICAgICAgIC8qIG51
+bWJlciBvZiBieXRlcyBvZiBzdGFjayByZXF1aXJlZCovDQoJCWFkZGkJcjMs
+cjMsMjgJCQkJLyogbGlua2FnZSBhcmVhKi8NCgkJbXIJcjMxLHNwCQkJCQkv
+KiBzYXZlIG9yaWdpbmFsIHN0YWNrIHRvcCovDQoJCXN1YglzcCxzcCxyMwkJ
+CQkvKiBidW1wIHRoZSBzdGFjayovDQoJCWx3eglyMywwKHIzMSkJCQkJLyog
+YWN0IGxpa2UgcmVhbCBhbGxvY2EsIHNvIDAoc3ApIGFsd2F5cyBwb2ludHMg
+YmFjayB0byAqLw0KCQlzdHcJcjMsMChzcCkJCQkJLyogcHJldmlvdXMgc3Rh
+Y2sgZnJhbWUuKi8NCgkJYWRkaQlyMyxzcCwyOAkJCQkvKiBwYXJhbWV0ZXIg
+cG9pbnRlciBleGNsdWRlcyBsaW5rYWdlIGFyZWEgc2l6ZSArICd0aGlzJyov
+DQoJCQ0KCQlibAkuaW52b2tlX2NvcHlfdG9fc3RhY2sNCgkJbm9wDQoJCQ0K
+CQlsZmQJZjEsMChyMzEpCQkJCQ0KCQlsZmQJZjIsOChyMzEpCQkJCQ0KCQls
+ZmQJZjMsMTYocjMxKQkJCQkNCgkJbGZkCWY0LDI0KHIzMSkJCQkJDQoJCWxm
+ZAlmNSwzMihyMzEpCQkJCQ0KCQlsZmQJZjYsNDAocjMxKQkJCQkNCgkJbGZk
+CWY3LDQ4KHIzMSkJCQkJDQoJCWxmZAlmOCw1NihyMzEpCQkJCQ0KCQlsZmQJ
+ZjksNjQocjMxKQkJCQkNCgkJbGZkCWYxMCw3MihyMzEpCQkJCQ0KCQlsZmQJ
+ZjExLDgwKHIzMSkJCQkJDQoJCWxmZAlmMTIsODgocjMxKQkJCQkNCgkJbGZk
+CWYxMyw5NihyMzEpCQkJCQ0KCQkNCgkJbHd6CXIzLDE2MChyMzEpCQkJCS8q
+IHRoYXQqLw0KCQlsd3oJcjQsMChyMykJCQkJLyogZ2V0IHZUYWJsZSBmcm9t
+ICd0aGF0JyovDQoJCWx3eglyNSwxNjQocjMxKQkJCQkvKiBtZXRob2RJbmRl
+eCovDQoJCXNsd2kJcjUscjUsMgkJCQkJLyogbWV0aG9kSW5kZXggKiA0Ki8N
+CgkJYWRkaQlyNSxyNSw4CQkJCQkvKiBzdGVwIG92ZXIganVuayBhdCBzdGFy
+dCBvZiB2VGFibGUgISovDQoJCWx3engJcjEyLHI1LHI0CQkJCS8qIGdldCBm
+dW5jdGlvbiBwb2ludGVyKi8NCgkJDQoJCWx3eglyNCwyOChzcCkNCgkJbHd6
+CXI1LDMyKHNwKQ0KCQlsd3oJcjYsMzYoc3ApDQoJCWx3eglyNyw0MChzcCkN
+CgkJbHd6CXI4LDQ0KHNwKQ0KCQlsd3oJcjksNDgoc3ApDQoJCWx3eglyMTAs
+NTIoc3ApDQoJCQ0KCQlibAkuX19wdHJfZ2x1ZQ0KCQlub3AJCQ0KCQkNCgkJ
+DQoJCW1yICAgICAgc3AscjMxDQoJCWx3eglyMCwxNDQoc3ApDQoJCWFkZGkg
+ICAgc3Asc3AsMTM2DQoJCW10bHIgICAgcjANCgkJbHd6ICAgICByMzEsLTQo
+c3ApDQoJCWJscg0KDQovKiB0cmFjZWJhY2sgdGFibGUuKi8NCgl0cmFjZWJh
+Y2s6DQoJCS5sb25nCTANCgkJLmxvbmcJMHgwMDAwMjA0MA0KCQkubG9uZwkw
+DQoJCS5sb25nCSh0cmFjZWJhY2sgLSBfWFBUQ19JbnZva2VCeUluZGV4KQkv
+KiBzaXplIG9mIHRoZSBjb2RlLiovDQoJCS5zaG9ydAkyMAkJCQkJLyogc2hv
+cnQgbGVuZ3RoIG9mIGlkZW50aWZpZXIuKi8NCgkJLmJ5dGUJIl9YUFRDX0lu
+dm9rZUJ5SW5kZXgiDQoNCgkJLnNlY3Rpb24JIi5kYXRhIg0KCQkuZXh0ZXJu
+CVRPQw0KCQkuZ2xvYmFsIAlfWFBUQ19JbnZva2VCeUluZGV4DQoJCQ0KCQku
+bG9uZwlfWFBUQ19JbnZva2VCeUluZGV4DQoJCS5sb25nCVRPQw0KCQkNCg==
+--2115031201-904205747-944719948=:6149--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
