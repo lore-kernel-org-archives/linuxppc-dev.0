@@ -1,33 +1,30 @@
-Date: Fri, 26 Feb 1999 00:18:44 -0700 (MST)
+Date: Fri, 26 Feb 1999 00:21:32 -0700 (MST)
 From: Cort Dougan <cort@persephone.cs.nmt.edu>
-To: VALETTE Eric <valette@crf.canon.fr>
-cc: jpeters@phx.mcd.mot.com, paubert@iram.es, jeremy@goop.org,
-        linuxppc-dev@lists.linuxppc.org
+To: Matt Porter <mmporter@home.com>
+cc: VALETTE Eric <valette@crf.canon.fr>, jpeters@phx.mcd.mot.com,
+        paubert@iram.es, jeremy@goop.org, linuxppc-dev@lists.linuxppc.org
 Subject: Re: Interrupt routing in prep_pci.c
-In-Reply-To: <m10FKAv-0000WXC@tri-yann.crf.canon.fr>
-Message-ID: <Pine.LNX.3.96.990226001517.16892D-100000@persephone.cs.nmt.edu>
+In-Reply-To: <Pine.LNX.3.96.990223132534.4503A-100000@liberty.chnd1.az.home.com>
+Message-ID: <Pine.LNX.3.96.990226001908.16892E-100000@persephone.cs.nmt.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I disagree with that quite a bit.  I don't believe that we can allow the
-"support in this version, not in the next, now in the next..." type of
-flip-flop.  
+No hand-waving.  Send me code.  I need to check this against other boards
+with different IO areas, different register layouts and such.
 
-We can move ahead and we need to do it quickly, yes.  So lets do that.  My
-previous message details my plan.  If there aren't any serious objections
-lets get working rather than trying to use our own bootloaders.  Lets
-merge them or failing that provide a few different ones.
+Please remember, your world of the newer moto boards isn't the entire
+scope of what I'm trying to support.  So when you get frustrated with me
+not taking things that are "obvious and easy" fixes please understand that
+it may not work on other machines.
 
-If we can't do things that way I'll need to stick with the current
-bootloader and just start taking patches against that to get things
-working.  I don't think that's a good solution since the current loader is
-broken.
+I'm not adamantly refusing anyones work, I'm trying to get these things to
+evolve into a single working bootloader.
 
-}  2) Value of a patch should be mesured in number of additionnal cards that works with
-}  a patch versus the number of boards it breaks AND a cleaner design.
+}First determine Raven or Hawk existence, if it is Raven the following
+}works:
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
