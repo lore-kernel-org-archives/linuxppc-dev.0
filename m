@@ -1,21 +1,22 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao01.cox.net (fed1rmmtao01.cox.net [68.230.241.38])
-	by ozlabs.org (Postfix) with ESMTP id D578467A65
+Return-Path: <jason.mcmullan@timesys.com>
+Received: from exchange.timesys.com (mail.timesys.com [65.117.135.102])
+	by ozlabs.org (Postfix) with ESMTP id 931BE67A73
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Mar 2005 07:50:30 +1100 (EST)
-Date: Tue, 15 Mar 2005 13:50:22 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: "McMullan, Jason" <jason.mcmullan@timesys.com>
-Message-ID: <20050315135022.D5861@cox.net>
+	Wed, 16 Mar 2005 07:58:26 +1100 (EST)
+From: Jason McMullan <jason.mcmullan@timesys.com>
+To: Wade Farnsworth <wfarnsworth@mvista.com>
+In-Reply-To: <1110913681.24673.42.camel@rhino.az.mvista.com>
 References: <1110907039.24673.12.camel@rhino.az.mvista.com>
-	<1110915063.5937.93.camel@ad.doubleclick.net>
+	<20050315184153.GB28823@gate.ebshome.net>
+	<1110913681.24673.42.camel@rhino.az.mvista.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-07YD5pPoeoFy4mrSJ4te"
+Date: Tue, 15 Mar 2005 15:58:23 -0500
+Message-Id: <1110920303.5937.103.camel@ad.doubleclick.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1110915063.5937.93.camel@ad.doubleclick.net>;
-	from jason.mcmullan@timesys.com on Tue, Mar 15, 2005 at
-	02:27:57PM -0500
 Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: 440EP FPU patch
+Subject: Re: [PATCH 1/3] PPC440EP SoC and Bamboo board support
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,17 +27,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 15, 2005 at 02:27:57PM -0500, McMullan, Jason wrote:
-> This patch (against vanilla 2.4.11.3) breaks out the FPU code for
-> PowerPC into a common .S code for all the head*.S files.
-> 
-> Less cargo-culted code.
-> 
-> Wade, you may want to integrate this into your 440EP patch.
 
-Hi Jason,
+--=-07YD5pPoeoFy4mrSJ4te
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Can you change CONFIG_FPU->CONFIG_PPC_FPU? Otherwise, this looks
-like exactly what we need to me.
+I think your setup for BAMBOO_PCIL0_PTM1MS is actually incorrect.
+According to the AMCC 440EP docs, BAMBOO_PCIL0_PTM1MS is a mask,
+so the correct code should look more like:
 
--Matt
+        memory_size =3D 0xffffffff - (memory_size - 1);
+	PCI_WRITEL(memory_size | 1, BAMBOO_PCIL0_PTM1MS);
+
+(assuming 'memory_size' is a power of 2)
+
+--=20
+Jason McMullan <jason.mcmullan@timesys.com>
+TimeSys Corporation
+
+
+--=-07YD5pPoeoFy4mrSJ4te
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
+
+iD8DBQBCN0xv8/0vJ5szK6kRAjl0AKDDN196uD2XZ25BNpnmgIoR2zAhhACeMJR+
+dEtGIIA5+A7HpkXCJ+dZYUs=
+=7Wzn
+-----END PGP SIGNATURE-----
+
+--=-07YD5pPoeoFy4mrSJ4te--
