@@ -1,31 +1,42 @@
-Date: Fri, 29 Sep 2000 19:55:38 +0300 (EEST)
+Date: Fri, 29 Sep 2000 20:12:01 +0300 (EEST)
 From: Kostas Gewrgiou <gewrgiou@imbc.gr>
-To: Michel Dänzer <daenzerm@student.ethz.ch>
-cc: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
-        R Shapiro <rshapiro@bbn.com>,
-        Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: Benjamin Herrenschmidt <bh40@calva.net>, Michel Lanners <mlan@cpu.lu>,
         linuxppc-dev@lists.linuxppc.org
-Subject: Re: xf 4.0.1 + ati driver with rage II/rage pro
-In-Reply-To: <39D45ACA.9E151BCC@student.ethz.ch>
-Message-ID: <Pine.LNX.4.21.0009291925410.1084-100000@idd-01.imbc.gr>
+Subject: Re: __ioremap_at() in 2.4.0-test9-pre2
+In-Reply-To: <Pine.LNX.4.10.10009291319510.383-100000@cassiopeia.home>
+Message-ID: <Pine.LNX.4.21.0009292001490.1214-100000@idd-01.imbc.gr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-7
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 29 Sep 2000, Michel [iso-8859-1] Dänzer wrote:
+On Fri, 29 Sep 2000, Geert Uytterhoeven wrote:
 
-> However, I think the "fbdev" option should also be available, it might be more
-> straightforward for some users than the bus ID. Would it also be possible to
-> go the opposite way fbdev -> pcidev and then claim the PCI device?
+> On a PC, the PCI bus (with ISA) is bus 0, while AGP is on bus 1.
 >
+> Hmm, I'm starting to wonder how legacy VGA works then, since the primary video
+> card these days is usually on the AGP bus, i.e. bus 1. But it's quite possible
+> this is some weird legacy quirk again...
 
-It should be possible to do it, i'll give it a try once i have some free
-time. We could get away from the busID requirement in the fbdev driver then
-(its very easy to missmatch busID/fbdev and nothing can detect this error)
 
-  Kostas
+>From the RAC.Notes in the xf4 docs:
+...
+ Systems that host  more than one bus system  link these together using
+ bridges. Bridges  are a  concern to  RAC as they  might block  or pass
+ specific  resources.  PCI-PCI  bridges  may  be set  up  to  pass  VGA
+ resources to the  secondary bus. PCI-ISA buses pass  any resources not
+ decoded on the primary PCI bus  to the ISA bus. This way VGA resources
+ (although  exclusive on  the ISA  bus) can  be shared  by ISA  and PCI
+ cards.  Currently HOST-PCI bridges are not yet handled by RACY as they
+ require specific drivers.
+...
+
+xf4 plays a lot with this (enabling/disabling cards/bridges) to get
+multihead support with cards that use VGA resources.
+
+ Kostas
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
