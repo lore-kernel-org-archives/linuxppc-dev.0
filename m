@@ -1,68 +1,43 @@
-From: "Jacky Wang" <jacky@premierme.com.tw>
-To: "Conn Clark" <clark@esteem.com>
-Cc: "May Ling List" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Does anyone port m8xx_pcmcia driver to Linux Kernel successfully?
-Date: Thu, 18 Apr 2002 09:31:21 +0800
-Message-ID: <NFBBLKLHNAGPKBMPDMALIEIJKAAA.jacky@premierme.com.tw>
+Message-ID: <002401c1e679$7e69f8b0$1a11efcb@industrialDiv.hanasys.co.kr>
+Reply-To: "Sangmoon Kim" <dogoil@etinsys.com>
+From: "Sangmoon Kim" <dogoil@etinsys.com>
+To: <linuxppc-embedded@lists.linuxppc.org>,
+	"Dr. Craig Hollabaugh" <craig@hollabaugh.com>
+References: <3.0.3.32.20020417095725.006a2034@spudcentral.com>
+Subject: Re: Cross compiling glibc-2.2.3
+Date: Thu, 18 Apr 2002 10:36:39 +0900
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-In-Reply-To: <3CBDACD9.A8F9DF27@esteem.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Conn,
+Hi, Dr. Craig Hollabaugh,
 
-while I enter the ftp site of MontaVista, I couldn't see anything on the site.
-If it is the patch file that Magnus loaded in the webpage?
-
-Jacky
-
------Original Message-----
-From: root@esteem.com [mailto:root@esteem.com]On Behalf Of Conn Clark
-Sent: Thursday, April 18, 2002 1:12 AM
-To: Jacky Wang
-Cc: May Ling List
-Subject: Re: Does anyone port m8xx_pcmcia driver to Linux Kernel successfully?
-
-
-Jacky Wang wrote:
+> >3. Edit the sysdeps/powerpc/Makefile
+> >#ifeq ($(subdir),gmon)
+> >#libm-support += fenv_const fe_nomask
+> >#endif
 >
-> Conn,
+> Kim,
 >
-> hmm......
-> sounds good.
+> What does this step actually do?
 >
-> but, I am a newbie about programming with linux kernel and MPC850.
-> Could you tell me which kernel release and how to port it smoothly?
 
-	We are using kernel 2.2.13 and pcmcia card services 3.1.10 .
-Unfortunately our hardware is proprietary and doesn't have a full pcmcia
-interface. I had to comment out all the voltage detect and such. Other
-than that I just followed the instructions that came with the mpc8xx
-patch file. The patch used to be availible from montavista's ftp site
-but
-isn't any more.
+I just referenced the denx patch. So I don't have the exact knowledge obout it. I guess the step is for omitting floating point because MPC860 doesn;t support it.I think supporting floating in kernel by floating-point interrupt,
+and compile glibc without -msoft-float or -D_SOFT_FLOAT is better.But the guys in this list doesn't seam to recommand it.
 
-here is some help full notes.
-
-http://lists.linuxppc.org/linuxppc-embedded/200005/msg00227.html
-
-
-
-Conn
-
-
---
-
-*****************************************************************
-  If you live at home long enough, your parents will move out.
-*****************************************************************
-
-Conn Clark
-Engineering Stooge				clark@esteem.com
-Electronic Systems Technology Inc.		www.esteem.com
+> Also, should that be math above instead gmon?
+>
+> #ifeq ($(subdir),math)
+> #libm-support += fenv_const fe_nomask
+> #endif
+>
+That was my mistake. I meant...
+#ifeq ($(subdir),math)
+#libm-support += fenv_const fe_nomask
+#endif
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
