@@ -1,24 +1,38 @@
-Date: Mon, 26 Apr 1999 13:31:43 +0200
-From: massin@col.bsf.alcatel.fr (Raphael Massin)
-Message-Id: <199904261131.NAA02701@c5s144.clb>
+Date: Mon, 26 Apr 1999 09:42:42 -0400 (EDT)
+From: Kevin Hendrickson <hndrcksn@net178019.hcv.com>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: egcs-1.1.2
-Cc: massin@cabs40
+Subject: Pty problem in RawHide
+Message-ID: <Pine.LNX.3.96.990426091814.16776A-100000@net178019.hcv.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello all,
+I can't telnet into my SuperMac S900, newly installed with RawHide 1.3.4
+from ftp.linuxppc.org on Friday April 23rd. At first all connections where
+simply refused (telnet, finger, etc), but I traced this down to inetd.conf
+having ALL services commented out by default (why?) Anyway now I get
+"telnetd: All network ports in use"! Even when telneting to 127.0.0.1 from
+the console. Also attempts to run xterm fail with "xterm: no available
+ptys"! 
+ 
+Am I missing another configuration file somewhere? I've checked /dev and
+there are plenty of ptyXYs in there. I've built my own telnetd from the
+src.rpm and it seems that openpty() always returns -1. Anyone else having
+this problem? I really don't want to start hacking glibc to see what is
+going on. 
 
-I am currently trying to build the cross compiler egc-1.1.2 on a Solaris 2.5.1
-machine for a powerpc-eabi target. I have the following error: 'can't find
-include file stdlib.h' and 'unistd.h' during the build of libgcc2.
+Until this week, I had been using an earlier RawHide from ftp.linuxppc.org
+and telnetting was a non-issue (as it should be :-)) 
 
-I modified 'configure' to define inhibit_libc, and it works, but there is
-a problem later. I feel i should succeed in building the compiler without
-making any modifications in the Makefile. Can anybody help me, please ?
+Kevin Hendrickson
 
-	Raphael
+*--------+---------+---------+---------+---------+---------+---------+-*
+Kevin Hendrickson          "On the internet, no one knows you're a dog."
+hndrcksn@net178019.hcv.com   "Why, oh why, didn't I take the BLUE pill?"   
+hndrcksn@braincraft.com   _DreaD_    http://net178019.hcv.com/~hndrcksn/ 
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
