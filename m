@@ -1,51 +1,97 @@
-From: "Lionel TAILLURAT" <lionel.TAILLURAT@ecrin.com>
-To: "ppc_mailing_list" <linuxppc-embedded@lists.linuxppc.org>
-Subject: SBS K2 patchs & Stable kernel
-Date: Fri, 22 Mar 2002 12:18:03 +0100
-Message-ID: <GMENJNLABBNPKKGGAFEJOEILCGAA.lionel.TAILLURAT@ecrin.com>
+Message-ID: <3C9B2BF2.E83AEA2A@oamx.net>
+Date: Fri, 22 Mar 2002 14:04:51 +0100
+From: Oliver Amft <oam@oamx.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: f.haverkamp@web.de
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: initial shell respawning too fast
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear,
+Hi Frank,
 
-I would like to use Linux with an SBS K2 CPCI CPU board.
+thanks for your answer - actually I have found this last night! Besides,
+I encountered that INIT version 2.77 generates another problem: shell
+does not receive any character typed on the console, while telnet works
+fine. I am not sure what it is, but updating to INIT 2.84 helps.
+Thanx for the script :-)
+Oliver
 
-I saw that the ppc_devel kernel supports this board but not the stable
-kernel.
 
-Is it possible (with bitkeeper or in an another way) to apply only the K2
-patch to a stable kernel ?
 
-If yes, how ?
-
-This question can be extended to :
-
-How to apply a patch in the devel tree to a stable tree ?
-
-Thanks in advance.
-Best regards.
-
-Lionel
-
---
-
- _________________________________________________________
-|                               |                         |
-| Lionel TAILLURAT              | ECRIN SYSTEMS           |
-| Development & Support Service | Rue du pré-de-l'Horme   |
-|                               | B.P 15                  |
-| Tel :(33) 4 76 92 20 01       | 38921 CROLLES CEDEX     |
-| Fax :(33) 4 76 08 03 18       | FRANCE                  |
-|                               | http://www.ecrin.com    |
-|_______________________________|_________________________|
-|                                                         |
-|Email: Lionel.TAILLURAT@ecrin.com                        |
-|Email: support@ecrin.com                                 |
-|_________________________________________________________|
-
+> I have seen that behaviour when I used a kernel without math
+> emulation on a filesystem which had binaries not compiled with
+> -mcpu=403 having floating point instructions in them.
+>
+> The missbehavior was caused because sh/bash crashed due an invalid
+> instruction and init was trying to respawn it of course without
+> success.
+>
+> #! /bin/bash
+> #
+> # Here's a useful little one-liner that lets you find out if there are any
+> # floating point instructions in an object file.
+> #
+>
+> OBJDUMP=/opt/fsp/i586-pc-linux-gnu/local/bin/powerpc-linux-objdump
+>
+> function usage()
+> {
+>     echo "Here's a useful little one-liner that lets you find out if there"
+>     echo "are any floating point instructions in an object file."
+>     echo
+>     echo "Usage: $(basename $0) ppc-objfile"
+> }
+>
+> if [ -z $1 ]; then
+>         usage
+>         exit
+> else
+>         $OBJDUMP -S $1 | egrep \
+>         'mtfsf|lfd|lfs|stfd|stflwx|stfs|:[ \t]*(fc|fd|fe|ff|ec|ed|ee|ef) ';
+> fi
+>
+> exit 0
+>
+> I found this script which finds out if there are any floating point
+> instructions in you binaries/libraries. I copied it somewhere and
+> hope that the one you originally wrote it is ok with seeing this
+> published ;-)
+>
+> Frank
+>
+> Oliver Amft <oam@oamx.net> schrieb am 20.03.02:
+> > I am trying to boot Linux (linuxppc_2_4_devel 2.4.19-pre1) from a
+> > Walnut,
+> > 405GP Rev D board - All works fine till INIT starts (see screen
+> > printout below). The root fs (nfs boot) is an older version of the
+> > HardHat filesystem. bash crashes somehow, but unforunatly it prints no
+> > report. An old HHL 2.4.0-test2 kernel still works with this root fs.
+> >
+> > INIT: version 2.77 booting
+> > INIT: Entering runlevel: 3
+> > INIT: Id "sh" respawning too fast: disabled for 5 minutes
+> > INIT: no more processes left in this runlevel
+> > INIT: Id "sh" respawning too fast: disabled for 5 minutes
+> > INIT: Id "sh" respawning too fast: disabled for 5 minutes
+> > INIT: Id "sh" respawning too fast: disabled for 5 minutes
+> > INIT: Id "sh" respawning too fast: disabled for 5 minutes
+> >
+> >
+> > Probably I am missing some trivial thing - any ideas welcome!
+> >
+> > Oliver
+> >
+> >
+>
+> --
+> Frank Haverkamp
+> f.haverkamp@web.de
+> ______________________________________________________________________________
+> Die Nummer, die sich jeder merkt: Ihre 01212 Wunschrufnummer von WEB.DE!
+> Jetzt sichern: http://freemail.web.de/?mc=990001
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
