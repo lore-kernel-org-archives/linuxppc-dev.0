@@ -1,17 +1,16 @@
-Return-Path: <emrekara2002@yahoo.co.uk>
-Received: from web25708.mail.ukl.yahoo.com (web25708.mail.ukl.yahoo.com
-	[217.12.10.180]) by ozlabs.org (Postfix) with SMTP id D2AB767A6B
+Return-Path: <g.jaeger@sysgo.com>
+Received: from mail.sysgo.com (mail.sysgo.com [62.8.134.5])
+	by ozlabs.org (Postfix) with ESMTP id 7AC3167A71
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  1 Mar 2005 01:43:56 +1100 (EST)
-Message-ID: <20050228144354.41719.qmail@web25708.mail.ukl.yahoo.com>
-Date: Mon, 28 Feb 2005 14:43:54 +0000 (GMT)
-From: emre kara <emrekara2002@yahoo.co.uk>
-To: emre kara <emrekara2002@yahoo.co.uk>
-In-Reply-To: <20050228131626.78019.qmail@web25704.mail.ukl.yahoo.com>
+	Tue,  1 Mar 2005 03:12:21 +1100 (EST)
+From: Gerhard Jaeger <g.jaeger@sysgo.com>
+Date: Mon, 28 Feb 2005 17:12:12 +0100
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: High processing power and gigabit interface
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200502281712.12798.g.jaeger@sysgo.com>
+Subject: [PATCH][PPC32] Compilation fixes for Ebony, Luan and Ocotea
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,27 +21,52 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I'am sorry.
-I have found a NAPI driver for 440gx on an old topic.
-I'll test it on our gigabit test platform.
-Thanks.
-Emre
---------------------------------------------------
-There is an experimental PPC4xx NAPI EMAC driver,
-which has 440GX 
-support (GigE, TAH, scatter-gather, jumbo) for
-2.4.30-pre1 (2.6 
-version will follow shortly).
+Hi,
 
-Patch can be found at http://kernel.ebshome.net/.
+this patch fixes the problem, that the current kernel (linux-2.6.11-rc5) 
+could not be compiled, when "support for early boot texts over serial port"
+(CONFIG_SERIAL_TEXT_DEBUG=y) is active.
 
-Please, note, full 440GX support is newly added
-feature and therefore 
-don't consider it stable yet. I'm in process of
-testing it. So, use 
-it at your own risk.
-Eugene Surovegin
-------------------------------------------
+Signed-off-by: Gerhard Jaeger <gjaeger@sysgo.com>
+
+--- linux-2.6.11-rc5/arch/ppc/platforms/4xx/ebony.h.orig	2005-02-28 16:55:15.000000000 +0100
++++ linux-2.6.11-rc5/arch/ppc/platforms/4xx/ebony.h	2005-02-28 16:55:56.000000000 +0100
+@@ -61,8 +61,8 @@
+  */
  
-
-Send instant messages to your online friends http://uk.messenger.yahoo.com 
+ /* OpenBIOS defined UART mappings, used before early_serial_setup */
+-#define UART0_IO_BASE	(u8 *) 0xE0000200
+-#define UART1_IO_BASE	(u8 *) 0xE0000300
++#define UART0_IO_BASE	0xE0000200
++#define UART1_IO_BASE	0xE0000300
+ 
+ /* external Epson SG-615P */
+ #define BASE_BAUD	691200
+--- linux-2.6.11-rc5/arch/ppc/platforms/4xx/luan.h.orig	2005-02-28 16:55:07.000000000 +0100
++++ linux-2.6.11-rc5/arch/ppc/platforms/4xx/luan.h	2005-02-28 16:55:43.000000000 +0100
+@@ -47,9 +47,9 @@
+ #define RS_TABLE_SIZE	3
+ 
+ /* PIBS defined UART mappings, used before early_serial_setup */
+-#define UART0_IO_BASE	(u8 *) 0xa0000200
+-#define UART1_IO_BASE	(u8 *) 0xa0000300
+-#define UART2_IO_BASE	(u8 *) 0xa0000600
++#define UART0_IO_BASE	0xa0000200
++#define UART1_IO_BASE	0xa0000300
++#define UART2_IO_BASE	0xa0000600
+ 
+ #define BASE_BAUD	11059200
+ #define STD_UART_OP(num)					\
+--- linux-2.6.11-rc5/arch/ppc/platforms/4xx/ocotea.h.orig	2005-02-28 16:55:29.000000000 +0100
++++ linux-2.6.11-rc5/arch/ppc/platforms/4xx/ocotea.h	2005-02-28 16:56:14.000000000 +0100
+@@ -56,8 +56,8 @@
+ #define RS_TABLE_SIZE	2
+ 
+ /* OpenBIOS defined UART mappings, used before early_serial_setup */
+-#define UART0_IO_BASE	(u8 *) 0xE0000200
+-#define UART1_IO_BASE	(u8 *) 0xE0000300
++#define UART0_IO_BASE	0xE0000200
++#define UART1_IO_BASE	0xE0000300
+ 
+ #define BASE_BAUD	11059200/16
+ #define STD_UART_OP(num)					\
