@@ -1,53 +1,52 @@
-Date: Tue, 5 Mar 2002 10:12:09 +0100 (CET)
-From: Urban Widmark <urban@teststation.com>
-To: Bastien Nocera <hadess@hadess.net>
-Cc: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: problems with smbfs on 2.4.18 kernel (ppc)
-In-Reply-To: <1015293079.1830.55.camel@dozo>
-Message-ID: <Pine.LNX.4.33.0203050945100.21791-100000@cola.teststation.com>
+Date: Tue, 5 Mar 2002 04:47:50 -0500 (EST)
+From: Bill Fink <billfink@mindspring.com>
+To: yellowdog-general@lists.yellowdoglinux.com
+Cc: linuxppc-dev@lists.linuxppc.org, <duanestites@cox.net>,
+	Bill Fink <billfink@mindspring.com>
+Subject: Re: Top No CPU Stats
+Message-ID: <Pine.LNX.4.44.0203050430230.789-100000@gwiz.nasa.atd.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 5 Mar 2002, Bastien Nocera wrote:
+On Wed Feb 20 2002, Duane wrote:
 
-> On Sun, 2002-03-03 at 17:28, Urban Widmark wrote:
-> >
-> > Has smbfs worked for you with previous versions? A patch was added late to
-> > 2.4.18 and it has caused a lot of crashes for people. I don't think it is
-> > related, but since you mention 2.4.18 ...
+> My top does not display the "CPU states: 0.0% user, 0.3% system, 0.0% nice,
+> 99.6% idle" information. I tried starting it up with the -C switch. This
+> brings up the CPU stats line, but everything shows as 0.0% no mater what
+> I am doing.
 >
-> I never tried the previous versions of it.
+> This is a 7200/120 YD2.1 2.4.18-rc1 benh kernel (this also happened with
+> the original kernel). Has anyone had this happen or know of a fix?
 
-Maybe you should.
+Hi Duane,
 
-> $ cat /proc/mounts  | grep smb
-> //kara/Backup1 /mnt/backup smbfs rw,file_mode=0755,dir_mode=0755 0 0
->
-> It seems to be mounted. dmesg says:
-> smbfs: Unrecognized mount option noexec
+I had the same thing happen when I upgraded from a 2.4.6 to a
+2.4.18-ben0 kernel.  I tracked this down to the following code
+in top.c (top is part of the procps-2.0.7-4 RPM on YDL 2.1):
 
-Does it make any difference if you mount it like:
-mount -t smbfs -o username=...,password=... //kara/Backup1 /mnt/backup
+     nr_cpu = sysconf (_SC_NPROCESSORS_ONLN);
 
-(should stop the "Unrecognized mount option" error)
+The problem is that sysconf is returning 0 for _SC_NPROCESSORS_ONLN.
+As a simple workaround, I added the following line immediately after
+the call to sysconf:
 
+     if (nr_cpu < 1) nr_cpu = 1;
 
-> > The entry in mtab is written by smbmnt and one way to get this would be if
-> > the mount fails, but after smbmnt has written and then for some reason it
-> > fails to cleanup.
->
-> smb definetaly works, as I can browse it with the smb gnome-vfs module,
-> as well as smbclient. I'm failing to see why the /mnt/backup directory
-> just "disappears from there".
+Now I once again get the "CPU states" line that includes the idle time.
+This is obviously not the proper solution, but I don't have time to dig
+any further into why the sysconf call isn't working.  I assume sysconf
+is part of glibc.  Besides upgrading the kernel from 2.4.6 to 2.4.18-ben0,
+I had also recently done a yup update which update glibc from glibc-2.2.1-0f
+to glibc-2.2.4-19k, so I'm not sure which change is the culprit.
 
-It can disappear if the request for attributes on that directory fails.
-Try getting a network trace with ethereal and see what the response to the
-QUERY_PATH_INFORMATION request is.
+Perhaps someone else might have a clue as to why the sysconf call is
+returning 0 for _SC_NPROCESSORS_ONLN, but at least the quick hack above
+will get you a working top.
 
-/Urban
+						-Bill
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
