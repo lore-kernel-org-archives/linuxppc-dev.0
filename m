@@ -1,54 +1,45 @@
-Message-Id: <200206171543.g5HFh3W08124@p2.parker.boston.ma.us>
-To: Christian Schroeder <christian.schroeder@imms.de>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: mpc8xx usb hci controller 
-In-Reply-To: Message from Christian Schroeder <christian.schroeder@imms.de>
-   of "Fri, 14 Jun 2002 10:57:53 +0200." <1024045073.3d09b0113c800@imp.imms.de>
-Date: Mon, 17 Jun 2002 11:43:03 -0400
-From: Brad Parker <brad@parker.boston.ma.us>
+Date: Mon, 17 Jun 2002 08:49:25 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Steven Scholz <steven.scholz@imc-berlin.de>
+Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: board specific defines in commproc.h !?!?
+Message-ID: <20020617154925.GT13541@opus.bloom.county>
+References: <3D0DA9C2.D78C43E5@imc-berlin.de> <20020617153255.GS13541@opus.bloom.county> <3D0E0253.A6A56B53@imc-berlin.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3D0E0253.A6A56B53@imc-berlin.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-There was a little usb transfer test program which would download code into
-an EZ-USB chip (I used a keyspan serial converter :-)
+On Mon, Jun 17, 2002 at 05:37:55PM +0200, Steven Scholz wrote:
+> Tom Rini wrote:
+> >
+> > On Mon, Jun 17, 2002 at 11:20:02AM +0200, Steven Scholz wrote:
+> >
+> > > Hi there,
+> > >
+> > > I think we should move the board specific defines such as
+> > >
+> > > /***  RPXCLASSIC  *****************************************************/
+> > [snip]
+> > > etc. out of ./include/asm-ppc/commproc.h into the board specific header
+> > > files like ./arch/ppc/platforms/xxx.h
+> >
+> > Yes, we should.  Patches vs linuxppc-2.5 (note, you won't be able to
+> > boot 8xx unless you perform some other updates) happily accepted.
+>
+> Ehm... Does that mean you won't accept patches vs linuxppc-2.4 though
+> !?!?
 
-It will test interrupt, iso & bulk to some extent.  I've been hacking
-it a little now and then.  It was called "usbstress".  I last saw the
-version # as 0.3.  I've since created a 0.4 version
+That means I want this to be done in 2.5 first.  Where development is
+supposed to happen.  I have this feeling that fixing commproc.h will be
+more than 1 simple patch and we should do it in the development tree
+first.  Then, once that's all done and people are happy with it, we can
+move it to linuxppc_2_4.
 
-If you like I can put it up for ftp.
-
--brad
-
-Christian Schroeder wrote:
->
->Hi list,
->
->I used the usbsample driver from the book "Linux Device Drivers" to
->verify the m8xxhci driver (Brad Parker, rel. 2) for my TQM823L board
->and succeded testing interrupt transfers between the mpc823e and a
->usb mouse/keyboard.
->
->Now I'm looking for a little test utility to verify bulk transfers.
->Is there such a utility on the net or do I have to imlement it myself,
->e.g. using libusb/usbutils ?
->
->thanks very much.
->Christian Schroeder
->
->Dr.-Ing. Christian Schroeder
->Institut fuer Mikroelektronik- und Mechatronik-Systeme
->Langewiesener Strasse 22
->98693 Ilmenau
->Telefon: +49 3677 678315
->Telefax: +49 3677 678337
->Mobil:   +49 173 5789172
->e-mail:  christian.schroeder@imms.de
->www:     http://www.imms.de/~christi/cs.html
->pgp:     finger christi@finger.imms.de
->
->
->
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
