@@ -1,50 +1,89 @@
-Message-ID: <D73A25AA6E54D511AD74009027B1110F3C04B3@ORION>
-From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
-To: "'Donald MacArthur'" <dmacarth@ufl.edu>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Embedded Planet RPX LICC_E board and Timesys
-Date: Fri, 6 Dec 2002 09:13:52 -0500 
+Reply-To: <joakim.tjernlund@lumentis.se>
+From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
+To: "Pantelis Antoniou" <panto@intracom.gr>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Regarding consistent_alloc
+Date: Fri, 6 Dec 2002 15:25:48 +0100
+Message-ID: <IGEFJKJNHJDCBKALBJLLCEJFFIAA.joakim.tjernlund@lumentis.se>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
+In-Reply-To: <3DF0A4D9.4030603@intracom.gr>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I built the Timesys Linux for the 850 and ran it on a LICC_E, it booted into
-the initrd just fine.
+Hi
 
------Original Message-----
-From: Donald MacArthur [mailto:dmacarth@ufl.edu]
-Sent: Friday, December 06, 2002 7:25 AM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Embedded Planet RPX LICC_E board and Timesys
+If you implement the performance improvement I suggested earlier, I don't think
+you need them. Another thing with consistent_xxx() is that you can not use
+__pa() and __va() on addresses returned by the consistent_alloc et. al.
 
+I think Dan Malek and/or Tom Rini knows more about these functions.
 
+   Jocke
 
-I am currently working on a research project involving
-the RPX MPC850SR LICC_E board from Embedded Planet.
-
-I tried the BSP provided by Timesys for the 850
-but after tftping the image to the board and
-'go' nothing happened.  I spoke to the reps from
-timesys and embedded planet and found that the
-850 BSP was compiled for the LITE_CW versions of the
-Embedded Planet boards.  These differed due to the
-existence of NVRAM and an RTC.
-
-I recompiled the kernel using several different configurations
-and was able to get the kernel to boot when the NVRAM option
-was turned off.  I can boot the kernel and load the NFS
-root with the initrd and ramdisk options turned off but
-when I enable these options, the kernel stops booting at
-the ramdisk creation.
-
-Can anyone provide any insight about this problem?
-
-Thank You
-Donald MacArthur
-dmacarth@ufl.edu
+>
+> Pantelis Antoniou wrote:
+>
+> >
+> > Hi
+> >
+> > Can someone tell what is the deal with these functions?
+>
+>                    ^ me
+>
+> >
+> >
+> > consistent_alloc et. al. are very useful to me now that I'm
+> > cleaning up my QMC driver. But they are exported.
+>
+>                                          ^ not
+>
+> >
+> >
+> > Is there any reason why they are not exported for use by
+> > modules?
+> >
+> > Also they appear to be tied to the PCI bus, a reduntant
+> > dependancy IMHO.
+> >
+> > Regards
+> >
+> > --
+> > Pantelis Antoniou
+> > INTRACOM S.A. Greece
+> >
+> > "> I read slashdot because it's so hard to find
+> > >> anything else intelligent to read.
+> >
+> > Keep searching..."
+> > -- as seen on slashdot --
+> >
+> >
+> >
+> >
+>
+> Sigh,
+>
+> Maybe I should read the mail more before hitting send.
+>
+>
+>
+>
+> --
+> Pantelis Antoniou
+> INTRACOM S.A. Greece
+>
+> "> I read slashdot because it's so hard to find
+> >> anything else intelligent to read.
+>
+> Keep searching..."
+> -- as seen on slashdot --
+>
+>
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
