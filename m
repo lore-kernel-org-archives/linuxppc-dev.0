@@ -1,52 +1,58 @@
-Date: Tue, 27 Nov 01 08:34:51 PST
+Date: Tue, 27 Nov 01 09:10:13 PST
 From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
-Message-Id: <0111271634.AA24348@ivan.Harhan.ORG>
+Message-Id: <0111271710.AA24459@ivan.Harhan.ORG>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Please make K2 Linux bootable without PeeMON again
+Subject: Re: VT82C686B IDE and Linux/PPC woes
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tom Rini <trini@kernel.crashing.org> wrote:
+Adrian Cox <adrian@humboldt.co.uk> wrote:
 
-> Alright.  But what other magical bits do you need to shove in the
-> registers?
+> Could there be something wrong with your ppc_ide_md.ide_init_hwif
+> function?
 
-None, I just have one register (R3, the first one) point to bi_recs.
+Aha, I didn't have one. I wrote one:
 
-> The wrappers do:
-> rec = (struct bi_record *)_ALIGN((ulong)zimage_size +
-> (1<<20)-1,(1<<20));
->
-> Does the occult magic know the size?
+static void __init
+adir_ide_init_hwif_ports (hw_regs_t *hw, ide_ioreg_t data_port,
+		ide_ioreg_t ctrl_port, int *irq)
+{
+	ide_ioreg_t reg = data_port;
+	int i;
 
-The booter doesn't know the size. You see, right now the user first loads the
-kernel using whatever means s/he wants, then runs my booter. The booter doesn't
-currently know the kernel size. You want to give my users an extra hassle of
-stuffing the kernel size in a register before starting my booter so the latter
-can know it. Why? What's wrong with the other alternative (my yesterday's
-patch) which would keep me happy, keep my users happy, and keep the rest of the
-Linux/PPC community happy because it doesn't break anything and is completely
-transparent?
+	for (i = IDE_DATA_OFFSET; i <= IDE_STATUS_OFFSET; i++) {
+		hw->io_ports[i] = reg;
+		reg += 1;
+	}
+	hw->io_ports[IDE_CONTROL_OFFSET] = ctrl_port;
 
-> > No, it doesn't. The patch I posted yesterday doesn't and cannot break anything.
->
-> Er, oh yeah, thanks.:w
+	if (irq != NULL)
+		*irq = hw->irq;
+}
 
-So how about applying that patch then?
+But now I get this:
 
-> Well, the register magic is being deprecated in 2.5, or that's the plan
-> anyhow.
+Uniform Multi-Platform E-IDE driver Revision: 6.31
+ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
+VP_IDE: IDE controller on PCI bus 00 dev 19
+VP_IDE: chipset revision 6
+ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
+VP_IDE: VIA vt82c686b (rev 40) IDE UDMA100 controller on pci00:03.1
+VP_IDE: 100% native mode on irq 14
+    ide0: BM-DMA at 0xffffd0-0xffffd7, BIOS settings: hda:pio, hdb:pio
+    ide1: BM-DMA at 0xffffd8-0xffffdf, BIOS settings: hdc:pio, hdd:pio
+hda: no response (status = 0xa1), resetting drive
+hda: no response (status = 0xa1)
+hdb: no response (status = 0xa1), resetting drive
+hdb: no response (status = 0xa1)
+hdc: no response (status = 0xa1), resetting drive
+hdc: no response (status = 0xa1)
+hdd: no response (status = 0xa1), resetting drive
+hdd: no response (status = 0xa1)
 
-I've heard a different plan, namely having one (1) register, no "magic", point
-to bi_recs. That's what I want.
-
-> Why can't the occult load whatever the 2.5 bi_recs look like
-> into memory someplace?
-
-Where is that someplace? I don't see how you can come up with anything other
-than something tied to aspects of the vmlinux ELF image, which I have already
-shown to be not good.
+Any ideas? Again just prior to booting Linux I can poke the IDE registers and
+see the drive using my firmware.
 
 MS
 
