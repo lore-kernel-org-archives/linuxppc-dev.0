@@ -1,42 +1,44 @@
-Message-ID: <3C360516.5030202@mvista.com>
-Date: Fri, 04 Jan 2002 11:40:06 -0800
-From: Matthew Locke <mlocke@mvista.com>
+Subject: Level 7 interrupt
 MIME-Version: 1.0
-To: Liu HongXun-a16975 <a16975@motorola.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Question on the pcmcia module for ppc
-References: <01139FC052A0D411900B00508B9535FC048B108F@ZCH07EXM04.corp.mot.com>
-Content-Type: text/plain; charset=GB2312
+Content-Type: text/plain;
+	charset="Windows-1252"
+Date: Fri, 4 Jan 2002 23:46:26 -0000
+Message-ID: <EADB10BAC266A14A85ECBF8686A73E310A91E1@kolkrabbi.flaga.is>
+From: =?Windows-1252?B?S+FyaSBEYXbt8HNzb24=?= <kd@flaga.is>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Liu HongXun-a16975 wrote:
+Hi,
 
-> Hi, all,
-> I worked on the PCMCIA module for my MPC 857T based board.
-> I downloaded the pcmcia-cs 3.1.29 and modified the file modules/m8xx_pcmcia.c.
-> My board uses the SLOT B. What I did are just like the (F)ADS and RPXLite.
-> I compiled the resulted pcmcia module and loaded them into linux kernel using "insmod".
-> 1. insmod pcmcia_core.o
-> 2. insmod m8xx_pcmcia.o
-> 3. insmod ds.o
-> Here comes the problem.
-> When I inserted ds.o, the driver tells me that "cs: socket 0 timed out during reset"
-> I looked through the source code and the debug info.
-> I found that a lot of the same messages as follows:
-> GetStatus(0) = 0x190
-> ...
-> Such info come from m8xx_pcmcia.c/m8xx_get_status. It seems that someone
-> is not satisfied with the above return value and " get status " again and again.
-> Then it quit.
->
-> Any suggestions are highly appreciated!
-> Thanks a lot
+I am using linuxppc_2_4_devel.
+I have been seeing ocational crash of the kernel during boot (I measured
+around 1% crashes by putting /sbin/reboot in /etc/init.d/rcS).
 
+After having spent some time debugging this I noticed that in
+kernel/m8xx_setup.c there is registered an interrupt handler for the
+tbint,
+interrupt 15 (Level 7). In my desperation I removed this, since the
+interrupt handler is not doing anyting (except printk-ing). Now the
+board
+has been booting for a while (673 times actually) and not a single
+crash.
+The old statistic predicts 6-8 crashes.
 
-I'm not familiar with the 857T pcmcia, perhaps the timing is different.
- Check the timing calculation functions against the 857T UM.
+I had never noticed that this interrupt handler was beeing called, i.e.
+I
+have never seen the printk that is printed in the interrupt handler.
 
+Is there any reason why enabling this interrupt might cause a crash of
+the
+kernel, especially if its interrupt handler is never called, i.e. the
+interrupt is never received!?
+
+The platform is custom board running MPC823E at 48MHz with 16Mb ram.
+
+Thanks for all pointers,
+
+K.D.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
