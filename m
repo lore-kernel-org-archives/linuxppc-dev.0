@@ -1,18 +1,15 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 986DA67A79
+Return-Path: <det.nicolas@free.fr>
+Received: from smtp3.wanadoo.fr (smtp3.wanadoo.fr [193.252.22.28])
+	by ozlabs.org (Postfix) with ESMTP id 0805967A79
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  7 Mar 2005 21:42:07 +1100 (EST)
-Message-ID: <422C30CF.5010906@anagramm.de>
-Date: Mon, 07 Mar 2005 11:45:35 +0100
-From: Clemens Koller <clemens.koller@anagramm.de>
-MIME-Version: 1.0
-To: Kumar Gala <kumar.gala@freescale.com>
-References: <58ddcf3f9fe35315256e2fa3d7361081@freescale.com>
-In-Reply-To: <58ddcf3f9fe35315256e2fa3d7361081@freescale.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: ppcembed Mailing List <linuxppc-embedded@ozlabs.org>
-Subject: Re: gcc-3.3.3 from YDL4 problems?
+	Mon,  7 Mar 2005 21:57:11 +1100 (EST)
+From: Nicolas DET <det.nicolas@free.fr>
+To: Sven Luther <sven.luther@wanadoo.fr>,
+	linuxppc-embedded@ozlabs.org
+Date: 07 Mar 2005 11:56:38 +0100
+In-Reply-To: <20050307065210.GA21270@pegasos>
+Message-Id: <20050307105707.ED89F1C003DA@mwinf0303.wanadoo.fr>
+Subject: Re: mv64x60 updates
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,61 +20,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello, Kumar!
+Hello Sven,
 
-> Has anyone else had any issues with building kernels (2.6.11) with 
-> gcc-3.3.3 from YDL4.  Ran into a problem today were a 2.6.11 build for 
-> MPC8540 ADS breaks with gcc-3.3.3 but works ok with a 3.4.3.
+On 07/03/2005, you wrote:
 
-You know that I build the mpc8540_ads also.
-I use the Denx ELDK 3.1 with gcc 3.3.3 and it breaks due to an unknown
-rfci instruction:
+> But i hear Nicolas has done some useful work yesterday evening, i will
+> review it as soon as he is back from dreamland :)
 
-$ make
-   CHK     include/linux/version.h
-   CC      scripts/mod/empty.o
-   MKELF   scripts/mod/elfconfig.h
-   HOSTCC  scripts/mod/file2alias.o
-   HOSTCC  scripts/mod/modpost.o
-   HOSTCC  scripts/mod/sumversion.o
-   HOSTLD  scripts/mod/modpost
-   CC      arch/ppc/kernel/asm-offsets.s
-   CHK     include/asm-ppc/offsets.h
-   CC      init/main.o
-   CHK     include/linux/compile.h
-   UPD     include/linux/compile.h
-   CC      init/version.o
-   CC      init/do_mounts.o
-   CC      init/do_mounts_devfs.o
-   CC      init/do_mounts_rd.o
-   CC      init/do_mounts_initrd.o
-   LD      init/mounts.o
-   CC      init/initramfs.o
-   CC      init/calibrate.o
-   LD      init/built-in.o
-   CHK     usr/initramfs_list
-   AS      usr/initramfs_data.o
-   LD      usr/built-in.o
-   AS      arch/ppc/kernel/entry.o
-arch/ppc/kernel/entry.S: Assembler messages:
-arch/ppc/kernel/entry.S:800: Error: Unrecognized opcode: `rfci'
-make[1]: *** [arch/ppc/kernel/entry.o] Error 1
-make: *** [arch/ppc/kernel] Error 2
+You can find the patch against 2.6.11 from kernel.org here:
+http://powernico.free.fr/patch_2.6.11_mv64x60.diff.bz2
 
-But if I use your powerpc-linux-gnuspe-* (cross-)toolchain it
-builds fine. Maybe some compile options for 3.3.3 might be sufficient
-to fix that... my way is to use 3.4.3.
+This patch shouldn't break mv code for others platform (non PegasosII), and
+fix Pegasos II init...
 
-Best greets,
+Basicly, I added mv64360_ispegasos2() in include/asm-ppc/mv64x60.h. Then:
 
-Clemens Koller
-_______________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Str. 45/1
-81379 Muenchen
-Germany
+in arch/ppc/syslibs/mv64360_pic.c, I skip the IRQ init code
+in arch/ppc/syslibs/mv64x60.c, I skip all the chip init & patch the
+ressources tables for Pegasos II hardware (register base & IRQ).
+in include/asm-ppc/mv64x60.h: added mv64360_ispegasos2()
+in arch/ppc/kernel/chrp_setup.c, rename/added pegasos2_stuff() and call
+mv64x60_init() if CONFIG_MV64x60
+in drivers/net/mv64xx_eth.c, use SA_SHIRQ instead of SA_INTERRUPT for
+request_irq if pegasos II detected
 
-http://www.anagramm.de
-Phone: +49-89-741518-50
-Fax: +49-89-741518-19
+The only thing to do is to add mv64360_ispegasos2() in include/asm-mips/...
+because I use this function to use the correct flags in the ethernet
+driver.
+
+Of course, this patch may be discuss as there are several architecture
+using Marvell chipsets and each requieres some specific code.
+I don't know where it's the best to place mv64360_ispeasos2(), maybe this
+func could even be renamed mv64x60_ispegasos2()..
+
+Please, people from others MV64x60 architectures review this patch, modify
+if it neeeded and check it doesn't break your architecture (I shouldn't but
+for MIPS ethernet).
+
+Regards
+-- 
+Nicolas DET
+MorphOS & Linux developer
