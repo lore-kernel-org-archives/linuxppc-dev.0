@@ -1,30 +1,29 @@
-Date: Sun, 2 Dec 2001 19:42:25 +0100 (CET)
-From: Haavard Kvaalen <havardk@netcom.no>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Bryce McKinlay <bryce@waitaki.otago.ac.nz>,
-	<linuxppc-dev@lists.linuxppc.org>,
-	Jeff Koftinoff <jeffk@jdkoftinoff.com>
-Subject: Re: Byte order in sound drivers
-In-Reply-To: <20011202095651.24942@smtp.wanadoo.fr>
-Message-ID: <Pine.LNX.4.33.0112021935520.3537-100000@hakva-2.student.nlh.no>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Date: Sun, 2 Dec 2001 21:21:45 +0100
+From: Jean-Jacques Levy <Jean-Jacques.Levy@inria.fr>
+Message-Id: <200112022021.VAA17589@macaron.inria.fr>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: airport + dhcp
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 2 Dec 2001, Benjamin Herrenschmidt wrote:
+Did anybody meet speed problems when connecting an airport to a dhcp
+cable tv ISP?
 
-> Most recent machines don't do HW byteswap, and so accept only
-> big-endian samples. The way this is implemented in our driver
-> currently is a bit weird though, the setformat ioctl won't fail when
-> trying to set an LE format, but it will set the equivalent BE format.
+The speed is then incredibly slow, inducing timeouts for pop servers
+as soon as there are long messages to transfer.
 
-This is the correct way to tell the application what format the driver can
-handle, and XMMS depends on this to be working.
+But the speed is quite normal with a real wire connexion between my
+powerbook and the cable tv modem (ie without the airport), when I use
+the same airport with a fixed IP adress at my office. It seems the
+problem happens only when combining airport and dhcp (under linux or
+macos9/10).
 
---
-Håvard Kvålen
+I run 2.4.15-ben0 kernel on a pbg4.
+
+Thanks for help.
+
+-JJ-
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
