@@ -1,34 +1,37 @@
-Subject: Re: ibook2 will not wake from sleep on 2.4.20-ben7
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ethan Blanton <eblanton@cs.ohiou.edu>
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20030301234940.GB6120@paco.resnet.purdue.edu>
-References: <20030301202916.GA6120@paco.resnet.purdue.edu>
-	 <1046557102.2030.89.camel@zion.wanadoo.fr>
-	 <1046557625.2030.91.camel@zion.wanadoo.fr>
-	 <20030301234940.GB6120@paco.resnet.purdue.edu>
-Content-Type: text/plain
-Message-Id: <1046597586.2019.93.camel@zion.wanadoo.fr>
-Mime-Version: 1.0
-Date: 02 Mar 2003 10:33:06 +0100
+Message-ID: <005401c2e0e4$27a1b6b0$020120b0@jockeXP>
+From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
+To: <linuxppc-dev@lists.linuxppc.org>
+Cc: <drow@false.org>
+Subject: Re: Improved copy_page() function, about 30% speed up for mpc860!
+Date: Sun, 2 Mar 2003 18:50:01 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 2003-03-02 at 00:49, Ethan Blanton wrote:
-> Benjamin Herrenschmidt spake unto us the following wisdom:
-> > > Can you try -ben4 or -ben5 ? Patches against official 2.4.20
-> > > are on kernel.org/pub/linux/kernel/people/benh.
+> > > I can't tell you what revs they were, but all of the MPC860's I could
+> > > get my hands on here the last time I tried to use dcbz on them were
+> > > faulty. You may just not be triggering the bug.
 > >
-> > Hrm... before that, try this patch against -ben7
->
-> You're the man, Ben.  :-)  This patch seems to work perfectly.  I
-> assume you are not interested in the results from -ben4 and -ben5?  (I
-> can still check.)
+> > hmm, what boards was this?
+> > I am planning to a larger test here with all our custom mpc860 and mpc862 boards. We have them in
+> > 100, 80 and 50 MHZ variants.
+> >
+> > May be the bug is related to board design?  Is there an official errata from Motorla
+> > regarding this bug? I can't find any.
+> >
+> > Anyhow I had a flaw in my testprogram, so you can throw this version of copy_page() away.
+> > But enabling the use of dcbz in the current version still gives me 30%+ performance increase.
+> >
+> > See the embedded list for details.
+> >
+> >  Jocke
 
-You assume correctly. I'll release -ben8 early next week with
-that fix.
+I found a link that may have relevance regarding  the dcbz problem , can anybody confirm this?
+http://www.uwsg.iu.edu/hypermail/linux/kernel/0012.0/0529.html
 
-Ben.
+    Jocke
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
