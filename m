@@ -1,31 +1,40 @@
-Message-ID: <3FD5F421.2070100@kegel.com>
-Date: Tue, 09 Dec 2003 08:11:13 -0800
-From: Dan Kegel <dank@kegel.com>
+Message-ID: <007b01c3be71$6ec82c20$0400a8c0@eurostudio.local>
+From: "AlessandroPPC" <aleppcrossi@libero.it>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: busybox problem
+Date: Tue, 9 Dec 2003 17:28:08 +0100
 MIME-Version: 1.0
-To: hyding <nari_dhy@nari-china.com>
-Cc: linuxppc-embed <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: cross compile software package
-References: <00f701c3be5c$39d2a280$4844900a@hydingnb1>
-In-Reply-To: <00f701c3be5c$39d2a280$4844900a@hydingnb1>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hyding wrote:
-> hi,all
->     I have built the cross-compile tools chain for ppc 405,
-> gcc-3.3.1-binutils-2.14-glibc-2.3.2.Now i want to use it to compile some
-> software packages making up of a root fs. I compiled findutils-4.1.20
-> successfully, but failed to compile other packages such as coreutils,
-> vim,etc.
->     Could someone give me some hints about where to download the
-> packages that are able to be cross-compiled. Which version of the
-> cross-compile tools is better?
+Hi to all,
 
-Have a look at http://ptxdist.sf.net
-It knows how to cross-compile lots of packages.
-- Dan
+To solve a problem with ram root filesystem Wolfgang Denk has suggestes to
+me  to use his
+SELF ramdisk image.
+I have successfully used his package.
+But I have found a problem with BusyBox init, when T have tried to
+customized the init board
+configuration.
+The problem is related to /etc/rc.sh init script, in fact editing rc.sh and
+rebuilding the ramdisk
+image the output init is the following:
+
+
+  "Bummer, could not run '/etc/rc.sh': No such device or directory"
+
+Notice that /etc/rc.sh is present, is an exutable file and has root
+privileges.
+
+Any suggestion is appreciated.
+R.R.C.S.C.
+
+Thanks to all
+Regards,
+Alessandro
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
