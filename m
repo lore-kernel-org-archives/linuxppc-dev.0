@@ -1,18 +1,18 @@
-Return-Path: <vijay_padiyar@hotmail.com>
-Received: from hotmail.com (bay1-dav17.bay1.hotmail.com [65.54.244.121])
-	by ozlabs.org (Postfix) with ESMTP id 9BC0467A2C
+Return-Path: <jeff@theptrgroup.com>
+Received: from mail.theptrgroup.com (mail.theptrgroup.com [209.183.211.17])
+	by ozlabs.org (Postfix) with ESMTP id E1A1C67A2C
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  2 Feb 2005 21:56:02 +1100 (EST)
-Message-ID: <BAY1-DAV179F29DC2682774C4B16488B7E0@phx.gbl>
-From: "Vijay Padiyar" <vijay_padiyar@hotmail.com>
-To: "Embedded TUX" <etux@embeddedtux.org>,
-	"LinuxPPC Support" <linuxppc-embedded@ozlabs.org>,
-	"BusyBox Support" <busybox@mail.busybox.net>
-Date: Wed, 2 Feb 2005 16:25:54 +0530
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: Getty prob solved, problem with Telnetd persists
+	Wed,  2 Feb 2005 23:33:30 +1100 (EST)
+From: Jeff Angielski <jeff@theptrgroup.com>
+To: ning <ningmin@yahoo.co.jp>
+In-Reply-To: <20050128100238.27631.qmail@web606.mail.yahoo.co.jp>
+References: <20050128100238.27631.qmail@web606.mail.yahoo.co.jp>
+Content-Type: text/plain
+Message-Id: <1107347293.9091.13.camel@nighteyes.localdomain>
+Mime-Version: 1.0
+Date: Wed, 02 Feb 2005 07:28:13 -0500
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: Serial console problem on MPC8272ADS board
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,56 +23,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all
+On Fri, 2005-01-28 at 05:02, ning wrote:
 
-With reference to my mail to this list yesterday, the Getty problem has been
-solved. It was due to a mistake we made in writing /etc/inittab. Our
-original inittab was:
+> I added SCC4 to rs_table as following:
+> static struct serial_state rs_table[] = {
+> 	/* UART CLK   PORT          IRQ      FLAGS  NUM */
+> 	{ 0,     0, PROFF_SCC1, SIU_INT_SCC1,   0,   (0 |
+> NUM_IS_SCC) }, /* SCC1 ttyS0 */
+> 	{ 0,     0, PROFF_SCC4, SIU_INT_SCC4,   0,   (3 |
+> NUM_IS_SCC) }, /* SCC4 ttyS1 */
+> };
 
-ttyCPM::once:/bin/sh
-..
-ttyCPM::once:/sbin/getty -L 57600 ttyCPM
+Did you configure the SCC4 I/O pins correctly?
 
-This was causing the problem described earlier. It didn't strike us that we
-don't need to call the shell when we're calling getty, as it'll call the
-appropriate shell on its own after user authentication. We commented out the
-first ttyCPM line and now all is fine.
+Have you programmed the BRGs correctly?  Does it match what is routed to
+SCC4 in the CMX registers?
 
-However, the Telnetd problem still persists. When I do a ls -l on a
-directory with several contents, the remote telnet terminal gets _stuck_ and
-there's no way to recover except to either close the telnet terminal window
-or kill the shell application on the target running telnetd.
+When booting using SCC1 as the console, can you read and write data
+using SCC4?  If not, you should get this working and then worry about
+configuring it as the console.
 
-What could the problem be? Please advise.
 
-I would also like to point out a problem with BusyBox 1.00. I have enabled
-the DEVPTS file system in Linux and have enabled support for it in BusyBox.
-This means that CONFIG_FEATURE_DEVPTS is enabled and defined in config.h in
-the include subfolder inside the BusyBox source directory. However, the
-following code still doesn't get compiled:
-
-#ifdef CONFIG_FEATURE_DEVPTS
-        p = open("/dev/ptmx", 2);
-        if (p > 0) {
-                grantpt(p);
-                unlockpt(p);
-                strcpy(line, ptsname(p));
-                return(p);
-        }
-#else
-..
-
-I had to resolve the issue by explicitly including the config.h file from
-telnetd.c, by adding the following line:
-
-#include <config.h>
-
-I don't know if there are similar problems with other headers that don't
-take effect.
-
-However, the problem of the terminal getting stuck still persists. Please
-guide me as to what I need to change.
-
-Regards
-
-Vijay Padiyar
+Jeff Angielski
+The PTR Group
