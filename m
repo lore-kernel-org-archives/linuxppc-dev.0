@@ -1,27 +1,31 @@
-Message-ID: <3969DF97.AA660A2A@erols.com>
-Date: Mon, 10 Jul 2000 10:37:11 -0400
-From: Nelson Abramson <pogtal@erols.com>
+Date: Mon, 10 Jul 2000 16:38:14 +0200 (CEST)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Ethan Benson <erbenson@alaska.net>
+cc: Hollis Blanchard <hollis@amulet.co.jp>, Tom Gall <tom_gall@vnet.ibm.com>,
+        yellowdog-devel@lists.yellowdoglinux.com,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: RFC: Changing default partition type for linux/ppc
+In-Reply-To: <20000707211607.D7162@plato.local.lan>
+Message-ID: <Pine.LNX.4.10.10007101636380.26278-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-To: "Michael A. Peters" <moonglue@141.com>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: yaBoot and Standard Tree
-References: <v04220801b58f50178265@[192.168.0.2]>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"Michael A. Peters" wrote:
+> > So can we get all distributions to agree on this partition type scheme?
+> > IIRC Debian currently relies on the Apple_Unix_SVR2 type, and ignores
+> > everything else for the purpose of installing or creating swap space. I'd
+> > like to update the Debian version of pdisk to recognize types used by
+> > other distributions if possible.
+>
+> this would certainly have to wait for woody...
 
-> Are there patches to the standard 2.2 tree (2.2.16 specifically) that
-> would allow those standard kernels to work with yaBoot?
+Sure, but isn't woody right around the corner ?? :-)
 
-The kernel should have nothing to do with the bootloader, in this case
-yaboot.  Check out the yaboot FAQ if you are having problems getting it
-to work: http://www.linuxppc.org/ybin/doc/yaboot-faq.html
+Just wanted to make sure we get some sort of agreement.
 
-HTH
---Nelson Abramson
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
