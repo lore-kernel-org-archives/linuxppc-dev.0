@@ -1,55 +1,35 @@
-Message-ID: <40473464.8010203@imc-berlin.de>
-Date: Thu, 04 Mar 2004 14:51:32 +0100
-From: Steven Scholz <steven.scholz@imc-berlin.de>
+Message-ID: <2C1BAF8F8E1DD611862B0002A5D4C3FC02B6CFC6@renexch3.rennes.thmulti.com>
+From: Fillod Stephane <stephane.fillod@thomson.net>
+To: "'Steven Scholz'" <steven.scholz@imc-berlin.de>,
+	LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: uncached user space mapping with mmap() ???
+Date: Thu, 4 Mar 2004 15:15:27 +0100 
 MIME-Version: 1.0
-To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: uncached user space mapping with mmap() ???
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="ISO-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi there,
+Hi Steven,
 
-I am trying to access a hardware timer implemented in an FPGA from
-user space. I implemented a simple mmap() functionality (taken from
-Runbini's Linux Device Driver)
+> I am trying to access a hardware timer implemented in an FPGA from
+> user space. I implemented a simple mmap() functionality (taken from
+> Runbini's Linux Device Driver)
 
-int simple_remap_mmap(struct file *filp, struct vm_area_struct *vma)
-{
-      unsigned long offset = vma->vm_pgoff << PAGE_SHIFT;
+Please refer to "11.13. Accessing peripherals from user space"
+in the excellent FAQ from DENX's TWiki at :
 
-      if (offset >= __pa(high_memory) || (filp->f_flags & O_SYNC)) {
-          vma->vm_flags |= VM_IO;
-      }
-      vma->vm_flags |= VM_RESERVED;
+http://www.denx.de/twiki/bin/view/PPCEmbedded/DeviceDrivers#Section_Accessin
+gPeripheralsFromUserSpace
 
-      if (remap_page_range(vma->vm_start, offset,
-	vma->vm_end-vma->vm_start, vma->vm_page_prot))
-	        return -EAGAIN;
 
-      return 0;
-}
+There's no need to implement kernel side stuff. /dev/mem is enough.
 
-I just learned that
 
- > getting an uncached user space mapping is architecture dependent.
- > On ARM, however, passing pgprot_noncached(vma->vm_page_prot) to
- > remap_page_range() will alter the page protections such that the
- > mapping will be uncached.
-
-How could I do this on an MPC8xx?
-
-Thanks a million!
-
+Regards,
 
 --
-Steven Scholz
-
-imc Measurement & Control               imc Meßsysteme GmbH
-Voltastr. 5                             Voltastr. 5
-13355 Berlin                            13355 Berlin
-Germany                                 Deutschland
-
+Stéphane
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
