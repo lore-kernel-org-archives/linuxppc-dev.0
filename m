@@ -1,16 +1,19 @@
-Return-Path: <vijay_padiyar@hotmail.com>
-Received: from hotmail.com (bay1-dav11.bay1.hotmail.com [65.54.244.115])
-	by ozlabs.org (Postfix) with ESMTP id BC84067A65
+Return-Path: <sauros@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.202])
+	by ozlabs.org (Postfix) with ESMTP id 8E95A67A67
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 11 Mar 2005 23:57:38 +1100 (EST)
-Message-ID: <BAY1-DAV11E7EFC29304B234EEB9A38B530@phx.gbl>
-From: "Vijay Padiyar" <vijay_padiyar@hotmail.com>
-To: "LinuxPPC Support" <linuxppc-embedded@ozlabs.org>
-Date: Fri, 11 Mar 2005 18:28:04 +0530
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: query regarding I2C controller on MPC8260
+	Sat, 12 Mar 2005 04:19:36 +1100 (EST)
+Received: by wproxy.gmail.com with SMTP id 71so1607127wra
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 11 Mar 2005 09:19:34 -0800 (PST)
+Message-ID: <c359a7c0050311091271071a09@mail.gmail.com>
+Date: Fri, 11 Mar 2005 14:12:54 -0300
+From: Sauro Salomoni <sauros@gmail.com>
+To: Linux-Embedded <linuxppc-embedded@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Subject: MPC5200 clock manipulation
+Reply-To: Sauro Salomoni <sauros@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,32 +24,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi there
+Good afternoon.
 
-I am using an MPC8260-based target board. My target is running U-Boot 1.1.2
-as the bootloader and Linux-2.6.10 as the kernel with BusyBox-1.0. I wish to
-use the I2C controller on the MPC8260 to access an external EEPROM connected
-to it. I need to do this from *user space*.
+I am using 2.4.25 denx Linux kernel in a MPC5200 custom board and I am
+looking for solutions to reduce power consumption. One possible
+solution is to reduce the frequencies using the CDM Registers.
 
->From what I understand, we can open the I2C device with the open command
-from our application as follows:
+But then I have a problem: the MPC5200 User Manual states that the
+Power On Configuration Register is a read only register, then I can
+only configure it using straps and reseting the board. And the CDM
+Configurations Register, which controls IPB and PCI clocks, is already
+configured for low frequencies by default.
 
-ret = open ("/dev/i2c-0", O_RDWR);
+Does anyone have a sugestion on how to reduce the frequencies (Fsystem
+and XLB) without the need of a reset? Maybe there is a way of
+configuring the clocks that I couldn't figure out.
 
-After this, the device should be accessible using either standard I2C
-functions or SMBus functions.
+Thanks in advance
 
-I read that if the I2C controller supports SMBus, it will be preferable to
-access the device via the SMBus read/write functions, as they seem to be
-more "efficient." What I want to know is, does the PowerPC I2C controller
-support the SMBus protocol? I don't think it does, judging from the MPC8260
-manual, but just want to be sure.
 
-Also, do we need to create the /dev/i2c-0 device file manually or will it be
-created on the fly?
+-- 
+Sauro Salomoni
 
-Regards
-
-Vijay Padiyar
-
-http://www.vijaypadiyar.eu.tf
+Engeneer
+Ztec
+Fone: +55 61 322-2544   FAX:+55 61 224-7171
+www.ztec.com.br
