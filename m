@@ -1,17 +1,19 @@
-Return-Path: <rpjday@mindspring.com>
-Received: from mailhost.rdmcorp.com (world.rdmcorp.com [204.225.180.10])
-	by ozlabs.org (Postfix) with ESMTP id 443072BDA3
+Return-Path: <markc@mail.com>
+Received: from relay04.roc.ny.frontiernet.net (relay04.roc.ny.frontiernet.net
+	[66.133.131.37]) by ozlabs.org (Postfix) with ESMTP id 684822BC0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Oct 2004 04:33:21 +1000 (EST)
-Received: from [10.1.1.102] (10.1.2.1) by mailhost.rdmcorp.com (Worldmail
-	1.3.167) for linuxppc-embedded@ozlabs.org; 13 Oct 2004 14:33:14 -0400
-Date: Wed, 13 Oct 2004 14:26:23 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-To: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-Message-ID: <Pine.LNX.4.60.0410131423540.12426@localhost.localdomain>
+	Thu, 14 Oct 2004 04:48:43 +1000 (EST)
+Message-ID: <005601c4b155$8ae3fbf0$0301a8c0@chuck2>
+From: "Mark Chambers" <markc@mail.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>,
+	"Embedded PPC Linux list" <linuxppc-embedded@ozlabs.org>
+References: <Pine.LNX.4.60.0410131423540.12426@localhost.localdomain>
+Date: Wed, 13 Oct 2004 14:50:34 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Subject: "I2C" versus "IIC"
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Cc: 
+Subject: Re: "I2C" versus "IIC"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,11 +24,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+----- Original Message ----- 
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+To: "Embedded PPC Linux list" <linuxppc-embedded@ozlabs.org>
+Sent: Wednesday, October 13, 2004 2:26 PM
+Subject: "I2C" versus "IIC"
 
-  i was just about to rename some of my variables and macros to be
-consistent with what i *thought* was the standard nomenclature of
-"IIC" as opposed to "I2C".  just checked include/asm-ppc, and grepped
-for case-insensitive instances of both strings ... oh, god.  there's
-really no preferred usage, is there?
+My vote, since nobody asked, would be "I2C".  I've always heard people
+say "I squared C", and since only CBS can get superscripts out of ASCII
+I2C is about as close as you can get.  I2C is more unique and hence
+a more readily recognizable acronym.
 
-rday
+But I'm sure we could get about 50/50 voting on this.
+
+Mark
