@@ -1,19 +1,17 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao05.cox.net (fed1rmmtao05.cox.net [68.230.241.34])
-	by ozlabs.org (Postfix) with ESMTP id 88EC367A6C
+Return-Path: <takeharu1219@ybb.ne.jp>
+Received: from ybbsmtp11.mail.mci.yahoo.co.jp (ybbsmtp11.mail.mci.yahoo.co.jp
+	[210.80.241.185]) by ozlabs.org (Postfix) with SMTP id DFF3167A79
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  4 Mar 2005 02:21:04 +1100 (EST)
-Date: Thu, 3 Mar 2005 08:20:44 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
+	Fri,  4 Mar 2005 02:21:16 +1100 (EST)
+Message-ID: <42272B69.8000303@ybb.ne.jp>
+Date: Fri, 04 Mar 2005 00:21:13 +0900
+From: Takeharu KATO <takeharu1219@ybb.ne.jp>
+MIME-Version: 1.0
 To: Kumar Gala <kumar.gala@freescale.com>
-Message-ID: <20050303082044.A7915@cox.net>
 References: <4226FF62.30007@jp.fujitsu.com>
 	<c56d8feba0d803d74d77ab20f54287e9@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <c56d8feba0d803d74d77ab20f54287e9@freescale.com>;
-	from kumar.gala@freescale.com on Thu, Mar 03, 2005 at 08:53:15AM
-	-0600
+In-Reply-To: <c56d8feba0d803d74d77ab20f54287e9@freescale.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: ppcembed <linuxppc-embedded@ozlabs.org>
 Subject: Re: PowerPC4xx Watchdog
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -26,15 +24,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 03, 2005 at 08:53:15AM -0600, Kumar Gala wrote:
+Hi Kumar,
+
+Thank you for your suggestion.
+Kumar Gala wrote:
 > One thing the code needs is a general name cleanup.  Its just confusing 
 > to me for e500 to have 4xx references.
+> 
+How about the use of booke instead of 4xx?
 
-I suggest booke_wdt* since the Book E spec is where this feature
-came from.
+I seem to use ``booke'' for common name for them like 
+arch/ppc/kernel/head_booke.h in the kernel source.
 
-Since you already picked up the bug-fix patch, we just need a two
-part patch with the name cleanup where 1) arch-specific code
-2) driver portion.
+Strictly speaking, PowerPC4xx series may not be called booke.
+But I think that it is more preferable than current name.
 
--Matt
+-- 
+Takeharu KATO
