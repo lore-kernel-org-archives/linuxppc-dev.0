@@ -1,57 +1,34 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Taylor Holliday <wtholliday@ucdavis.edu>,
-        linuxppc-dev
- <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: state of SMP on daystar quad-604 board
-Date: Sat, 13 Jan 2001 09:39:22 +0100
-Message-Id: <19341208021106.28653@smtp.wanadoo.fr>
-In-Reply-To: <BHEOKMKGNHLELMKKJJIGCEBNCAAA.wtholliday@ucdavis.edu>
-References: <BHEOKMKGNHLELMKKJJIGCEBNCAAA.wtholliday@ucdavis.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Sat, 13 Jan 2001 16:41:49 +0100
+From: Harald Welte <laforge@gnumonks.org>
+To: Martin Costabel <costabel@wanadoo.fr>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: pdisk weirdness
+Message-ID: <20010113164148.L6055@coruscant.gnumonks.org>
+References: <3A5E21E6.DE26A121@wanadoo.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3A5E21E6.DE26A121@wanadoo.fr>; from costabel@wanadoo.fr on Thu, Jan 11, 2001 at 10:13:10PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Thu, Jan 11, 2001 at 10:13:10PM +0100, Martin Costabel wrote:
 >
->Also, could somone point me in the right direction regarding the how to
->debug
->this stuff (beyond what the typical book-about-kernel will tell me)?
->Scouring the web revealed almost no usefull docs on the quad boards.
+> This is pdisk version 0.8a2 (16 May 2000) from the pdisk-0.8-1.ppc.rpm
+> as it is contained in LinuxPPC 2000 and LinuxPPC 2000 Q4 aka Halloween.
+> When I downgrade to the pdisk-0.7-2 RPM from LinuxPPC 1999, it works as
+> it is supposed to. Also I think I remember that the new pdisk works when
+> run with a 2.2 kernel. Only the combination of new pdisk and 2.4 kernel
+> doesn't work.
 
-There are 2 different things:
+I am experiencing _exaclty_ the same problem and solved it exactly the
+same way. My machine is a 2-month old G4
 
- - The old Apple/Daystar 2 CPUs cards. Those should work
- - The old but slightly newer Daystar 2 and 4 CPUs card (using a different
-   mecanism from the previous ones). For those I added support, but the
-   current _2_4 code is slightly bogus.
+> --
+> Martin
 
-First, apply this patch:
-
--#define PSURGE_QUAD_OUT(r, v)  (out_8((quad_base+((r)<<2)+1), (v)))
--#define PSURGE_QUAD_IN(r)      (in_8((quad_base+((r)<<2)+1)) & 0x0f)
-+#define PSURGE_QUAD_OUT(r, v)  (out_8((u8 *)(quad_base+((r)<<2)+1), (v)))
-+#define PSURGE_QUAD_IN(r)      (in_8((u8 *)(quad_base+((r)<<2)+1)) &
-0x0f)
- #define PSURGE_QUAD_BIS(r, v)  (PSURGE_QUAD_OUT((r), PSURGE_QUAD_IN(r) |
-(v)))
- #define PSURGE_QUAD_BIC(r, v)  (PSURGE_QUAD_OUT((r), PSURGE_QUAD_IN(r) &
-~(v)))
-
- /* virtual addresses for the above */
- static volatile u8 *hhead_base;
--static volatile u8 *quad_base;
-+static volatile u32 *quad_base;
- static volatile u32 *psurge_pri_intr;
- static volatile u8 *psurge_sec_intr;
- static volatile u32 *psurge_start;
-
-
-Also, if you have >2 CPUs, you may have to comment out the software TB
-sync code, I've been told it didn't work with more than 2 CPUs.
-
-We are working on a fix.
-
-Ben.
+--
+Live long and prosper
+- Harald Welte / laforge@gnumonks.org                http://www.gnumonks.org
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
