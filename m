@@ -1,32 +1,31 @@
-From: Brad Boyer <flar@pants.nu>
-Message-Id: <200001300356.WAA12189@marcus.pants.nu>
-Subject: Re: HFS+ format
-To: linuxppc-dev@lists.linuxppc.org
-Date: Sat, 29 Jan 2000 19:56:36 -0800 (PST)
-In-Reply-To: <B4B7C54D.602%pajama1@mindspring.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: 604r
+Date: Sat, 29 Jan 2000 20:00:39 -0800
+From: Grant Erickson <erick205@tc.umn.edu>
+To: " Geert Uytterhoeven" <geert@linux-m68k.org>
+cc: <linuxppc-dev-digest@lists.linuxppc.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Message-Id: <iss.2e3c.3893b720.670a9.1@mhub2.tc.umn.edu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Fri, 28 Jan 2000 Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+>Suddenly my CPU type changed with 2.3.41 from `604e rev 18.3' to `604r rev
+>2.3'. Is this OK?
 
-Actually, there is a project to develop an HFS+ filesystem module for Linux.
-However, it isn't useful at the moment.  There is a small amount of code
-available, but it is too much to send in an email, and I don't have a place
-to host it.  If someone wants to volunteer to host this, I'll stick up a web
-page or ftp site with the code and some info.  I currently do have it on a
-publicly accessible site, but I don't want to flood it because it is on a
-slow link to the net.  I might give the address to one or two more people
-who are really interested, since there are already several of us in the
-project.
+Geert,
 
-Currently there is only a basic framework for the VFS interface and some of
-the BTree parsing code, but it crashes frequently and can't do anything
-useful.
+I checked in a change to get_cpuinfo() in arch/ppc/kernel/setup.c which
+made the CPU types and revision numbers reported more consistent with
+documents published by Motorola and IBM as to the correlation between
+PVRs and particular processor names.
 
-	Brad Boyer
-	flar@pants.nu
+I don't have said documents accessible from the machine on which I'm
+typing this; however, I can e-mail them to you on Monday if you'd like.
 
+Regards,
+
+Grant
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
