@@ -1,42 +1,36 @@
-Message-ID: <37406460.9B171AC8@pop.agri.ch>
-Date: Mon, 17 May 1999 20:48:00 +0200
-From: Andreas <toa@pop.agri.ch>
-Reply-To: toa@pop.agri.ch
-MIME-Version: 1.0
-To: Dev-LinuxPPC <linuxppc-dev@lists.linuxppc.org>
-Subject: atyfb and Powerbook G3 250 (wallstreet)
-Content-Type: text/plain; charset=us-ascii
+From: Jesper Skov <jskov@cygnus.co.uk>
+Message-ID: <14144.30220.266959.61233@lassi.cygnus.co.uk>
+Date: Mon, 17 May 1999 21:03:24 +0100 (BST)
+To: Cort Dougan <cort@ppc.kernel.org>
+Cc: linuxppc-dev@lists.linuxppc.org, Paul.Mackerras@cs.anu.edu.au,
+        Geert.Uytterhoeven@cs.kuleuven.ac.be
+Subject: Re: apus stuff
+In-Reply-To: <19990514042823.A13637@attis.cs.nmt.edu>
+References: <Pine.LNX.3.96.981124172403.8824A-100000@persephone.cs.nmt.edu>
+	<199811250103.MAA03951@tango.anu.edu.au>
+	<14139.57218.34287.298264@lassi.cygnus.co.uk>
+	<19990514042823.A13637@attis.cs.nmt.edu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello,
+>>>>> "Cort" == Cort Dougan <cort@ppc.kernel.org> writes:
 
-last week I got my Wallstreet G3 250 back from repair. They changed
-CPU-Board, Chache, Flex Cable and the Display. Don't know why. On the
-MacOS all works ok so far.
-Then I tried LinuxPPC kernel 2.2.6 with no video driver off -> should
-use atyfb.
-I worked for half an hour on the text mode trying to build one of the
-latest kernel. After this half hour the screen went into unreadable
-chars. As usual I thought nothing bad and did a reboot. Same situation
-even worse. Changed back to kernel 2.2.4, same behaviour. Then I checked
-the option no video driver. Huh, the book came in readable chars up. At
-least the console modus works. I then shutdown because I'm very unsure now.
+[about Linux/APUS changes]
+Cort> You're welcome to stick them at ppc.kernel.org, too if you want.
 
-I was working with PB and Linux for quite a long time with different
-kernels. Since BootX gives the option to enter kernel options I did. I
-set video=atyfb vmode:14,cmode:32 and mclk=63.
+Done. apus-vger-990517.tgz is in incoming.
 
-Now I don't know if I hurt the book with this Linux or do I have a ***
-book which  is very affective on things like that.
+Primarily __va/__pa changes and Amiga/APUS updates from as far back as
+October. Still plenty to do (IO macros in particular) but this would
+be a nice start to get in.
 
-Does anybody had symptoms like that? Do I have set something wrong?
+I tried building for PowerMac with my changes in, but the vger tree
+seems to be broken (by other stuff than mine), so I just hope I
+haven't broken something with these changes.
 
-Any hints are appreciated,
-
-thanks
-Andreas
+Cheers,
+Jesper
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
