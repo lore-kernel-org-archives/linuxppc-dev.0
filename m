@@ -1,51 +1,54 @@
-Date: Thu, 20 Jul 2000 08:55:51 -0400
-From: Josh Huber <huber@mclx.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: problems about __cli()
-Message-ID: <20000720085551.B11770@mclx.com>
-References: <200007200919.KAA12257@hyperion.valhalla.net>
+To: schmitz@opal.biophys.uni-duesseldorf.de
+Cc: ajoshi@shell.unixbox.com, linuxppc-dev@lists.linuxppc.org
+Subject: Re: [ANN] New XFree86-pmac rsync tree
+From: Kohkichi Hosoda <khosoda@venus.dti.ne.jp>
+In-Reply-To: <Pine.LNX.4.10.10007171100220.22569-100000@opal.biophys.uni-duesseldorf.de>
+References: <20000715113541Y.kohkichi@venus.dti.ne.jp>
+	<Pine.LNX.4.10.10007171100220.22569-100000@opal.biophys.uni-duesseldorf.de>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-md5;
-	protocol="application/pgp-signature"; boundary="K8nIJk4ghYZn606h"
-In-Reply-To: <200007200919.KAA12257@hyperion.valhalla.net>; from iain@sandoe.co.uk on Thu, Jul 20, 2000 at 10:19:54AM +0100
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <20000720221208U.kohkichi@venus.dti.ne.jp>
+Date: Thu, 20 Jul 2000 22:12:08 +0900
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---K8nIJk4ghYZn606h
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+>>>>> On Mon, 17 Jul 2000 11:01:01 +0200 (CEST), Michael Schmitz <schmitz@mail.biophys.uni-duesseldorf.de> said:
 
-On Thu, Jul 20, 2000 at 10:19:54AM +0100, Iain Sandoe wrote:
->=20
-[snip]
->=20
-> It is *vital* to make sure that there is a symlink named 'linux' in /usr/=
-src
-> that points to your /usr/src/your-kernel-foo-bar/ because there are symli=
-nks
-> in /usr/include that expect to use this to find the build-specific header=
-s.
+>> Acceleration of ati is great.  The problem, however, is
+>> that it can not be used.  When I used ati module, the
+>> color on X was shifted to brown (or red?), and a lot of
+>> spectrum were seen.
 
-A couple notes:
+Schmitz> Use 8 or 15 bpp, nothing else worked for me.
 
-You don't have to put your kernel in /usr/src, and you DON'T have to
-symlink /usr/src/linux to it before you build.  The symlinks (on
-broken RedHat derivatives) in /usr/include should point to the kernel
-headers that your libc was built againt, otherwise you risk breaking
-binary compatibility.
+Schmitz> 	Michael
 
---=20
-Josh
-6B21489A | GnuPG ID/Fingerprint | huber@mclx.com |
-61F0 6138 BE7B FEBF A223  E9D1 BFE1 2065 6B21 489A
+Thank you for quick advice, and sorry for delayed response.
+I'm away for a while.
 
---K8nIJk4ghYZn606h
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+Actually, my correspondign part of XF86Config is as the following;
 
+    Driver      "ati"
+#     Driver      "fbdev"
+        BusID       "PCI:0:18:0"
+EndSection
 
---K8nIJk4ghYZn606h--
+Section "Screen"
+        Identifier "Screen0"
+#       Device     "r128"
+#       Monitor    "Monitor0"
+    Device     "ATY,RagePro_C"
+    Monitor    "iMac Monitor"
+        DefaultDepth      15
+
+I also tried DefaultDepth 8, and both settings also gave me
+a lot of spectrum and strange color on X.
+
+Thanks a lot anyway.
+
+Kohkichi Hosoda
+
+E-mail address: khosoda@venus.dti.ne.jp
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
