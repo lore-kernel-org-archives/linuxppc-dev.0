@@ -1,80 +1,54 @@
-In-Reply-To: <Pine.HPP.3.96.990215103957.5352f-100000@gra-ux1.iram.es>
-Date: Mon, 15 Feb 1999 12:23:01 +0100
-To: Gabriel Paubert <paubert@iram.es>, linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: your mail
-Message-Id: <19990215122301.003056@mail.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <XFMail.990215114908.gdt@linuxppc.org>
+Content-Type: text/plain; charset=us-ascii
+MIME-Version: 1.0
+In-Reply-To: <Pine.LNX.4.04.9902150025360.432-100000@narn.local.drgw.net>
+Date: Mon, 15 Feb 1999 11:49:08 -0000 (GMT)
+From: Gary Thomas <gdt@linuxppc.org>
+To: Troy Benjegerdes <hozer@drgw.net>
+Subject: Re: Why is -msoft-float used in Kernel compilation?
+Cc: linuxppc-dev@lists.linuxppc.org, u497w7n9@umail.furryterror.org,
+        Michel Lanners <mlan@cpu.lu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Feb 15, 1999, Gabriel Paubert <paubert@iram.es> wrote:
 
->One of the first steps I do in prepboot is to invalidate all the BATs and
->all the TLB entries, to make sur that I start from a known state
->(invalidating the BATs is a pain because it's different in 601 and
->others). But then I'm quite sure I'm called with address translation
->disabled, only that some FW version leave stale values in these registers. 
+On 15-Feb-99 Troy Benjegerdes wrote:
+> 
+> On Sun, 14 Feb 1999, Michel Lanners wrote:
+> 
+>> 
+>> On  13 Feb, this message from Gavriel State echoed through cyberspace:
+>> > 
+>> > I can understand using -msoft-float if CONFIG__8xx is on,
+>> > but why use it when compiling for 60x or 7x0 CPUs?
+>> 
+>> I've heard something about a 'no floiting point in kernel' rule, and
+>> I've tried compiling without -msoft-float.... it does boot, but it's an
+>> ugly sight... fp warning messages all over!
+>> 
+>> I have, however, never seen a clear explanation of why that rule
+>> exists...
+> 
+> I'm not sure, but I believe it's an optimization to allow the kernel to
+> not have to save floating point registers on every context switch.
+> 
 
-My bootstrap is now a two-step bootstrap too, written all in asm to avoid
-relocation problems. 
+More importantly it is to keep GCC from trying to use FP registers to
+do structure copies.  Without this option, GCC will try to use the FP
+registers to perform high[er] performance copying of structures.  This
+would mean that the kernel would have to save/restore some number of
+FP registers on every context change, not just the switch from user
+to kernel mode, because these registers are considered totally volatile
+by the compiler.
 
->I still had problems with stale TLB entries between prepboot when the 
->kernel enabled the MMU. You have to flush the TLB before starting the
->kernel to be absolutely sure that there the kernel uses only translations 
->it has defined (I discovered that I had added code accessing I/O 
->space before the corresponding BATs were set up due to staale TLB
->entries).
-
-Since the MMU is switched off by the boostrap, I beleive those TLB
-entries won't do any harm until the kernel switches the MMU back on,
-that's it ? (I just want to make sure I fully understand). So, basically,
-I could add to my bootstrap a piece of code that invalidates all BATs and
-flush the TLB (I'll look at your preploader code for that).
-
->Wrong, what is in r31 before ? You may clear unwanted MSR bits:
-
-You are right. I already changed this to rlwinm approx. 5 minutes after
-sending the previous mail ;-)
-	
->	mfmsr	r0
->	rlwinm  r0,r0,0,17,15
->	mtmsr 	r0
->
->is enough (And if you don't like using rlwinm like this, which is
->guaranteed to work according to the architecture):
->	
->	mfmsr	r0
->	ori	r0,r0,MSR_EE
->	xori	r0,r0,MSR_EE
->	mtmsr	r0
->
->and you never need a sync before or after disabling interrupts. It is
->different when enabling them however, because you have to make
->sure that accesses to the interrupt controller have made it to the bus.  
-
-Ok, so I'll finally remove this sync.
-
->I would recommend that you take a look at the patch files I have for
->prep (only have a look at the prepboot directory): 
->
->	ftp://vcorr1.iram.es/pub/linux-2.2/mvme2600.generic-patch-2.2.1.gz
->
->it is even probably overkill for what you need. But the Makefile
->(with -m rleocatable), the linker script (ppcboot.lds) and the
->early boot (head.S) are probably good examples (and I tried to keep them
->clean). 
-
-Ok, thanks.
-
-
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
-
-
+------------------------------------------------------------------------
+Gary Thomas                              |
+email: gdt@linuxppc.org                  | "Fine wine is a necessity of
+   ... opinions expressed here are mine  |        life for me"
+       and no one else would claim them! |
+                                         |      Thomas Jefferson
+------------------------------------------------------------------------
 
 
 
