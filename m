@@ -1,48 +1,45 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: Trevor Woerner <ppc339@vtnet.ca>
-Reply-To: ppc339@vtnet.ca
-To: "linuxppc-embedded" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: help: why show "Oops: kernel access of bad area, sig: 11"
-Date: Tue, 20 May 2003 21:51:02 -0400
-References: <Law14-OE57bZ2ntWEqp00015e5b@hotmail.com>
-In-Reply-To: <Law14-OE57bZ2ntWEqp00015e5b@hotmail.com>
+Reply-To: <dge@sixnetio.com>
+From: "Dave Ellis" <dge@sixnetio.com>
+To: "'guo_zhenglin'" <guo_zl9@hotmail.com>
+Cc: "linuxppc-embedded" <linuxppc-dev@lists.linuxppc.org>
+Subject: RE: help: why show "Oops: kernel access of bad area, sig: 11"
+Date: Wed, 21 May 2003 08:57:12 -0400
+Message-ID: <00512BA4F9D3D311912A009027E9B8F407E4F6@NT>
 MIME-Version: 1.0
-Message-Id: <200305202151.02291.ppc339@vtnet.ca>
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <Law14-OE66Gotr4KcXx000183b9@hotmail.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On May 19, 2003 04:33 am, guo_zhenglin wrote:
->     Oops: kernel access of bad area, sig: 11
->     NIP: C0076F0C XER: 80009E6C LR: C007B620 SP: C017DE80 REGS:
-> c017ddd0 TRAP: 0300d
-> MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
-> DAR: 000003F9, DSISR: 00018469
-> TASK = c017c000[1] 'swapper' Last syscall: 120
-> last math 00000000 last altivec 00000000
-> GPR00: 00000000 C017DE80 C017C000 C017DE88 00000001 00000000 C0D203B8
-> 000003F8
-> GPR08: 00000000 000003F8 00000000 00000000 0000000D FFFFFFFF C007AC70
-> C007A4C4
-> GPR16: C0079010 C0079CDC C007A5E0 C00770A8 C007701C C007A154 C00790E0
-> C0079058
-> GPR24: C0079D64 C0078F90 C0078F78 C00F28F8 C00F28F8 C011A76C C011A830
-> C017DE88
-> Call backtrace:
-> C0011AE4 C0101028 C00FA5FC C00FA644 C00022CC C0006BE4
-> Kernel panic: Attempted to kill init!
->  <0>Rebooting in 180 seconds..
+guo_zhenglin wrote:
 
-When you get an "access of bad area" oops have a look at the DEAR
-register (I think you misspelled it as DAR above).
+> ppcboot 2.0 use MHZ to set bi_intfreq , while kernel 2.4.20 consider
+> bi_intfreq as HZ.
 
-0x3f9 is the base address of COM1 on an x86 machine
-(http://www.sput.nl/hardware/io.html). My guess is you've got something
-wrong with your UART code. I believe this is where your (current)
-problem lies.
+You should configure PPCBoot properly to match the kernel. This has
+been configurable for a long time. See the PPCBoot README
+re CONFIG_CLOCKS_IN_MHZ.
 
-Just a guess.
-	Trevor
+It has been discussed many times on the ppcboot-users list, for
+example see:
+
+http://sourceforge.net/mailarchive/message.php?msg_id=479868
+
+BTW clocks_in_mhz must be _removed_ from the environment to
+get the clocks in HZ. Setting the value 0 does not work.
+
+Dave
+
+Dave Ellis
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+SIXNET - "Leading the Industrial Ethernet Revolution"
+331 Ushers Road,   P.O. Box 767, Clifton Park, NY 12065 USA
+Tel +1 (518) 877-5173   Fax +1 (518) 877-8346
+Email me at: dge@sixnetio.com
+Detailed product info: www.sixnetio.com
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
