@@ -1,41 +1,34 @@
-Date: Wed, 8 Sep 1999 11:03:29 +1000
-Message-Id: <199909080103.LAA02277@tango.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: hozer@drgw.net
-CC: linuxppc-dev@lists.linuxppc.org
-In-reply-to: <Pine.LNX.4.04.9909070126490.14821-100000@narn.drgw.net> (message
-	from Troy Benjegerdes on Tue, 7 Sep 1999 01:44:38 -0500 (CDT))
-Subject: Re: ioremap (still?) broken
-Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <Pine.LNX.4.04.9909070126490.14821-100000@narn.drgw.net>
+Date: Tue, 7 Sep 1999 21:13:35 -0400 (EDT)
+From: "Joshua M. Thompson" <funaho@jurai.org>
+To: Paul.Mackerras@cs.anu.edu.au
+cc: jquinn@nortelnetworks.com, toa@pop.agri.ch,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: MO-Disk on PPC with 53C94 SCSI-chip
+In-Reply-To: <199909080044.KAA02252@tango.anu.edu.au>
+Message-ID: <Pine.LNX.4.10.9909072111420.16096-100000@ifurita.jurai.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Troy Benjegerdes <hozer@drgw.net> wrote:
+On Wed, 8 Sep 1999, Paul Mackerras wrote:
 
-> The alteon driver does an 'ioremap' on the address provided by the kernel
-> PCI services, and then expects to be able to access the PCI card's memory
-> via accessing the memory returned using 'readl,writel'.
+> mca_53c9x driver is probably worth a look.  I used the esp.c driver as
+> a reference as the ESP chip in Suns is apparently a 53c96 and has
+> marked similarities to the 53c94.  There appear to be no fewer than 4
+> esp drivers there. :-)
 
-That should work.
+You should be able to do something similar to what mac_esp.c (the driver
+for the ESP chip on the Quadra 660AV and 840AV) does...that is, just
+enough work to find the chip and get the interrupts and then pass the buck
+to the NCR53C9x.c driver.
 
-> The first thing the driver does is check the card version by reading a
-> particular register. By using appropriate printf's, I have found that the
-> value returned is '0xffffffff'. (defininitely NOT the register it's
-> looking for)
+-- 
+funaho@jurai.org             | Voodoo is a very interesting religion for the
+http://www.jurai.org/~funaho | whole family, even those members of it who are
+                             | dead.
+                             |  -- (Terry Pratchett & Neil Gaiman, Good Omens)
 
-Possibly you may need to enable PCI memory or I/O space responses in
-the PCI command register in the card's configuration space.
-
-> Before I go on a wild chase again, could someone let me know whether the
-> 2.2.12 kernel might have a better chance with this, or will I need to go
-
-I just checked in a fix to ioremap in the vger 2.2 branch which fixes
-the case where the mapping added by ioremap is the first in a 4MB
-region.  You would be getting kernel DSI exceptions (page faults) if
-you had hit that bug, though.
-
-Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
