@@ -1,22 +1,26 @@
-Message-ID: <XFMail.010403091109.pochini@shiny.it>
-Content-Type: text/plain; charset=us-ascii
-MIME-Version: 1.0
-In-Reply-To: <01139FC052A0D411900B00508B9535FC014A8F55@ZCH07EXM04.corp.mot.com>
-Date: Tue, 03 Apr 2001 09:11:09 +0200 (CEST)
-From: Giuliano Pochini <pochini@shiny.it>
+Date: Tue, 03 Apr 2001 08:37:55 +0100
+Subject: dmasound  patches to 2.4.3-final 
+From: "Iain Sandoe" <iain@sandoe.co.uk>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: 2.4.3: no boot
+Mime-version: 1.0
+Content-type: text/plain; charset="utf-8"
+Message-Id: <20010403073748.79CE02EFC4@apollo.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Yearstday I compiled bk2.4.3+aic7xxx_latest.
-It doesn't boot. It hangs before showing the tux logo.
+Hi all,
 
-(blueG3)
+latest version at:
 
-Bye.
-    Giuliano Pochini ->)|(<- Shiny Network {AS6665} ->)|(<-
+ftp://ftp.penguinppc.org/users/iain/kernel/2_4_x/2.4.3-final/dmasnd-2.4.3-fi
+nal.diff.bz2
 
+applies to 2.4.3 (but also prob. to any after -pre3).
+
+One minor fix this release to make it work compiled-in.
+
+ciao,
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
