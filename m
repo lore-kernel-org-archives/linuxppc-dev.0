@@ -1,48 +1,55 @@
-To: Steven Scholz <steven.scholz@imc-berlin.de>
-Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: I2C RTC causes boot delay... 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 08 Apr 2003 14:20:40 +0200."
-             <3E92BE98.4090907@imc-berlin.de>
-Date: Tue, 08 Apr 2003 14:57:21 +0200
-Message-Id: <20030408125726.80D52C5877@atlas.denx.de>
+From: Arun Dharankar <ADharankar@attbi.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Linux kernel panics and core dumps.
+Date: Tue, 8 Apr 2003 11:58:29 -0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200304081158.29606.ADharankar@ATTBI.Com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3E92BE98.4090907@imc-berlin.de> you wrote:
->
-> Yeah. I know. I should put into PPCBoot/U-Boot.
+Greetings.
 
-It's arelady there.
+On x86 architectures there seem to be at least two ways of
+producing  Linux kernel panic dumps. These projects are
+hosted at
 
-> But in the docs it says it's only for SOFT_I2C aka bitbang!
+    "http://lkcd.sourceforge.net/" (originated in SGI), and
 
-Right, because you cannot toogle the pins at  your  liking  with  the
-CPM's I2C controller.
+    "http://oss.missioncriticallinux.com/projects/mcore/"
+        (originated in MCLX).
 
-> a) can I toggle the pins using GPIO and still use HARD_I2C? or
 
-Yes, you can. But this has not been implemented yet. And if  you  do,
-you  will  find you have copied 90% of the soft_i2c driver so why not
-use this from the beginning? Using HARD_I2C has _zero_ advantage  for
-U-Boot.
+Of the two, the second one seems to work quite well on x86
+PCs. I dont know how much of it is actively supported on
+PowerPCs. So, the first question is:
 
-> b) can I use SOFT_I2C in PPCBoot and CPM I2C (8xx-algo) under linux?
+    Has anyone tried this on PowerPC, specifically Linux
+    kernel versions 2.4.x? The code for PowerPC seems to
+    be there, but the Makefiles dont seem to be up-to-date,
+    and could be broken.
 
-Yes, you can.
+Further more, this same project has some documentation
+which has a good discussion on different approaches to Linux
+kernel memory dumps. One item in this discussion is about
+the BIOS/bootloader support.
+
+
+Essentially, if PPCBoot/U-Boot was to recognize the Linux
+kernel memory layout, a much more reliable scheme could
+be implemented. For example, under all panic or hang
+conditions (watchdog), the system could just be rebooted.
+During the startup, PPCBoot/U-Boot along with Linux, could
+save the Linux kernel dump reliably. MCLX scheme seems
+to follow this approach, but does not rely on the bootloader.
+
+  Has anyone investigated this? Or anything already done,
+  and cares to share it? Any thoughts on this?
+
 
 Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-THIS IS A 100% MATTER  PRODUCT:  In  the  Unlikely  Event  That  This
-Merchandise  Should  Contact  Antimatter  in Any Form, a Catastrophic
-Explosion Will Result.
+-Arun.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
