@@ -1,51 +1,70 @@
-Date: Tue, 8 Oct 2002 14:14:19 +1000
+Date: Tue, 8 Oct 2002 14:17:58 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Matt Porter <porter@cox.net>
-Cc: Andrew May <acmay@acmay.homeip.net>,
-	linuxppc-embedded@lists.linuxppc.org
+To: Todd Poynor <tpoynor@mvista.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: very minor 405GP and 405GPr PCI difference
-Message-ID: <20021008041419.GF32555@zax>
-References: <OF8DC4E66D.5C36B7D3-ON87256C41.00434ACB@boulder.ibm.com> <20020930040143.GF10265@zax> <20021001052121.GV10265@zax> <3D995EC0.2000500@elsoft.ch> <20021002014219.GF1848@zax> <3D9AA452.5070004@elsoft.ch> <20021003011233.GC1102@zax> <20021006052314.GG27824@acmay.homeip.net> <20021006183120.A17129@home.com>
+Message-ID: <20021008041758.GG32555@zax>
+References: <20021002014219.GF1848@zax> <NCBBIINEHIPFGJPLBEIFEEMFDMAA.acurtis@onz.com> <20021002053422.GL1848@zax> <20021002100312.A2240@home.com> <20021003011044.GB1102@zax> <20021003081439.C4643@home.com> <20021004024832.GG1933@zax> <3D9DDEE9.5070909@mvista.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20021006183120.A17129@home.com>
+In-Reply-To: <3D9DDEE9.5070909@mvista.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Sun, Oct 06, 2002 at 06:31:20PM -0700, Matt Porter wrote:
+On Fri, Oct 04, 2002 at 11:33:13AM -0700, Todd Poynor wrote:
 >
-> On Sat, Oct 05, 2002 at 10:23:14PM -0700, Andrew May wrote:
-> >
-> > On Thu, Oct 03, 2002 at 11:12:33AM +1000, David Gibson wrote:
-> > >
-> > > Fair enough.  I'm just trying to come up with the simplest approach
-> > > that still provides the flexibility we need.  Based on the evidence
-> > > immediately available, what I posted seemed like it.  How about you
-> > > tell me something about the non-standard PCI mappings, so I can come
-> > > up with something better.
-> >
-> > It would be nice to have the option to let the boot loader set the
-> > mapping. I have been happy with getting things done in PPCBoot and
-> > ripping out the PCI scanning in the kernel.
+> David Gibson wrote:
 >
-> Yes, that's the ideal situation and going to what David and I would
-> like to see makes that yet another simple fallout feature.
+> >+	/* Now configure the PCI->PLB windows, we only use PTM1 */
+> >+	out_le32((void *) &(pcip->ptm1ms), 0x00000000); /* first disable */
+> >+	out_le32((void *) &(pcip->ptm1la), 0x00000000); /* base address */
+> >+	out_le32((void *) &(pcip->ptm1ms), 0x80000001); /* re-enable */
+> >+	out_le32((void *) &(pcip->ptm2ms), 0x00000000); /* disable PTM2 */
+> >+
+> >+	/* Zero config bars */
+> >+	for (bar = PCI_BASE_ADDRESS_1; bar <= PCI_BASE_ADDRESS_2; bar += 4) {
+> >+		early_write_config_dword(hose, hose->first_busno,
+> >+					 PCI_FUNC(hose->first_busno), bar,
+> >+					 0x00000000);
+> >+		early_read_config_dword(hose, hose->first_busno,
+> >+					PCI_FUNC(hose->first_busno), bar,
+> >+					&bar_response);
+> >+		DBG("BUS %d, device %d, Function %d bar 0x%8.8x is
+> >0x%8.8x\n",
+> >+		    hose->first_busno, PCI_SLOT(hose->first_busno),
+> >+		    PCI_FUNC(hose->first_busno), bar, bar_response);
+> >+	}
 >
-> Your custom port using a good implementation of PPCBoot simply
-> would not call the pci macro init library nor would it use pci_auto.
+> Only PCI_BASE_ADDRESS_1 (aka PCIL0_PTM1BAR) needs to be set since PTM2
+> is disabled (Ash is already doing it this way).  My reading of the
+> manual would indicate that the BAR ought to be set before PTM1 is
+> enabled, but haven't seen any problems with this.
 
-As Matt says, this would fall out naturally from a better control
-structure.  Howeever, I tend to think that leaving things like this to
-the bootloader/firmware is a bad idea:
+I guess that's true.  On the other hand, I wonder if there is merit in
+setting the other BAR, just so that everything is in a known state.
 
-The kernel has to know how PCI addresses are mapped anyway, so this
-becomes yet another point at which the kernel and firmware are bound
-together.  Why should the kernel have code to deal with umpteen
-different cases of how PCI might have been set up, or not set up by
-the firmware/bootloader, when it can just take control of the host
-bridge and reprogram it how it wants?  Once the debugging cruft comes
-out, it should only be a couple of hundred bytes of code.
+> Could enclose the early_read_config_dword() in #ifdef DEBUG.
+
+Yes, good idea.
+
+> Rainier (NP4GS3) PMM1 is setup specially in the existing code, is this
+> no longer needed?
+
+Well, I don't know if it's necessary - it's not there, because I
+didn't notice the difference in the Rainier code before.  Now that I
+do look at it, I'm confused: it appears to be setting up both PMM0 and
+PMM1 to map from the same PLB addresses, but the manual specifically
+prohibits overlapping PMM ranges.
+
+> This code is fragile and tends to break on certain platforms in ways
+> that can't be explained by the available documentation.  I can help test
+> the unified version on Walnut/Sycamore/Ash if needed.
+
+Do you mean the existing code, or my proposed patch (or both).  That
+would be great if you could test the code on those machines -  I don't
+have a Sycamore or Ash, and I'd have to drag the Walnut out again to
+test on it.
 
 --
 David Gibson			| For every complex problem there is a
