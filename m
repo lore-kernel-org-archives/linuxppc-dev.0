@@ -1,40 +1,37 @@
-Message-Id: <200006261623.RAA10793@hyperion.valhalla.net>
-Date: Mon, 26 Jun 2000 17:19:56 +0100
-Subject: Kernel profiling and sound
-From: "Iain Sandoe" <iain@sandoe.co.uk>
+Message-ID: <395786BA.C2857491@claudio.ch>
+Date: Mon, 26 Jun 2000 18:37:14 +0200
+From: Claudio Nieder <private@claudio.ch>
+MIME-Version: 1.0
 To: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Subject: Re: Kernel >=2.2.16 on Lombard
+References: <39551A4B.2D488E6@claudio.ch>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi List,
+Hi,
 
-One of my main interests is in using linuxppc for DSP/Audio related tasks.
+> linuxBenh, which identifies itself as version 2.2.16, will stop
+> early during boot with the message:
+>
+>   pmac nvram is core99: 0
+>   Don't know how to access NVRAM with 0 addresses.
 
-I am on the ALSA & audio-dev lists and there has been a lot of discussion
-about achieving low-latency audio I/O.
+Benjamin has modified his sources, so that this error will not happen
+anymore. Thank you very much.
 
-Could anyone enlighten me as to the state of this topic wrt the linuxppc
-kernels?  It seems to be almost exclusively x86-related.
+> linuxStable, which identifies itself as version 2.2.17pre3 will stop
+> even earlier, after the line
+>
+>   booting...
 
-Specifically:
-
-How does one profile the kernel?
-
-Is there anyone (else) on the list who is trying to do the same kind of
-thing?
-
-Has anyone tried applying the low-latency patches (Ingo's) to *any* ppc
-kernel?
-
-does the ppc 2.4 kernel suffer from the (reported) VM issue that causes it
-to exhibit *more* latency than 2.2.x kernels (this is the ststus of x86)?
-
-I'm sure I'll have more questions soon...
-
-TIA,
-Iain.
+linuxStable was upgraded to 2.2.17pre7. I tried to compile the
+new source, and the resulting kernel works also. My thanks go to
+whoever fixed that.
+				claudio
+--
+Claudio Nieder, Kanalweg 1, CH-8610 Uster, Tel +41 79 357 6743
+mailto:private@claudio.ch  http://www.claudio.ch  icq:42315212
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
