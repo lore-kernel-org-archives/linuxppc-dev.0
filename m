@@ -1,33 +1,28 @@
-Subject: Re: Pegasos 2 support patch ...
-From: Adrian Cox <adrian@humboldt.co.uk>
-To: Sven Luther <sven.luther@wanadoo.fr>
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20040629165029.GA13468@pegasos>
-References: <20040629165029.GA13468@pegasos>
-Content-Type: text/plain
-Message-Id: <1088587090.28598.3.camel@localhost>
-Mime-Version: 1.0
-Date: Wed, 30 Jun 2004 10:18:10 +0100
+Message-ID: <40E28706.4050508@dev.rtsoft.ru>
+Date: Wed, 30 Jun 2004 13:25:26 +0400
+From: Yuri Frolov <yfrolov@dev.rtsoft.ru>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Kgdb on Motorola 8451 ppc board
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 2004-06-29 at 17:50, Sven Luther wrote:
-> The remaining problem for the pegasos 2 is with the via82cxxx ide
-> driver, which needs to support a different irq for both channels, thus
-> breakign when a device is present on the second ide channel. The
-> pegasos-via82cxxx.diff patches is a hcky soltuion for this, but is
-> naturally not fit for mainstream inclusion. I would welcome any hint on
-> how to solve this issue.
+ > I'm trying to run kgdb on  Motorola 8451 ppc board.
+ > I've compiled the kernel with the CONFIG_KGDB option.
+ > The test machine is a linux host.
 
-I have a board which has the same problem.
+Which platform does your linux host runs on?
 
-My current idea is to add an extra flag to the ide_pci_device_t to
-indicate that the device defaults to ports 14 and 15, then modify
-ide_hwif_configure() to use this flag.
+ > Ignoring packet error, continuing...
+ > Ignoring packet error, continuing...
 
-- Adrian Cox
-Humboldt Solutions Ltd.
+What sort of gdb are you using on your linux host? Is it a version which
+compiled for correct target (ppc with correct endian in your case, see
+Net for further explanation)? If you're using vanilla gdb from your's
+x86 distribution package (which compiled with source = target = x86),
+then you should move to correctly prepared gdb...
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
