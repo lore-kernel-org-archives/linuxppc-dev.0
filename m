@@ -1,47 +1,38 @@
-Message-ID: <005d01c2c837$70018720$0700a8c0@pc005>
-Reply-To: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
-From: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
-To: "Junping Zhang" <JZhang@erinc.com>
-Cc: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
-References: <F4608F665DF5D311B231009027B70F700155D4D2@MAIL>
-Subject: Re: question on mcc driver
-Date: Thu, 30 Jan 2003 09:13:13 +0100
+Message-ID: <3E38E3C8.5020203@imc-berlin.de>
+Date: Thu, 30 Jan 2003 09:35:20 +0100
+From: Steven Scholz <steven.scholz@imc-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Keith Outwater <Keith_Outwater@microvision.com>
+Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: I2C RTC with MPC8xx?
+References: <AFA2797FA126FD46B8CD281F2809844E0197DB@taurus.primary.local>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->    Do you have some test programs for MPC8260 mcc driver that I can use? I
+Keith Outwater schrieb:
+> Hi Stephen -
+>
+> I am successfully using a DS1337 RTC with PPCBoot/U-Boot and a
+> linux-2.4.4-10-06 kernel from the Denx FTP site. I haven't gotten around
+> to submitting it, but let me know if you want the patch.
 
-The driver itself does not need a particular code to be tested. Once it has
-been loaded,the function module_init() provides to initialize the MCC1 on
-the two TDMs C1 & D1. The interrupt handler is responsible of re-loading the
-BDs after the completion of receiving process.
-Obviously You must check it with an oscilloscope and verify that all the
-signal needed by the MCC are active.
+I actually wouldn't mind! :o)
 
-Be aware that all the I/O pins and accessories functions have been
-previously programmed, because the driver does not provide any configuration
-of the I/O neither than clocks routing
+I guess it's not to hard to put it onto 2.4.20.
+Yesterday I received a file from Jocke. I would be more than happy to compare them.
 
-> managed to compiled
-> and loaded your driver, but seems like it has some conflicts with Pete's
-ATM
-> driver, once I load
-> ATM driver, mcc driver won't load; if I load mcc driver first, then ATM
-> driver, mcc driver won't unload.
+Maybe Wolfgang is putting that on his 2.4.20 CVS someday!
 
-We have succesfully tested the driver with both M.V. 2.4.0-test2 (by Linux
-CDK 1.2) and 2.4.4 (by ELDK 2.0.2), but unfotunately We did not implemented
-any ATM driver.
+BTW I think I'll need the DS1307. Hope it's only a differnt pinout. It has a
+dedicated battery pin and no irq output.
 
-Regards
+Is the driver or linux using RTC interrupts?
 
-Ing.Gianfranco Morandi
-Eurostudio s.r.l.
-Rome Italy
+Thanks a million,
+
+Steven
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
