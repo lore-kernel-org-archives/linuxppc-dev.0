@@ -1,16 +1,23 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id 0AF8D67A46
+Return-Path: <shawnxjin@gmail.com>
+Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.203])
+	by ozlabs.org (Postfix) with ESMTP id 4407767A77
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Feb 2005 03:38:32 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C51445.F25CD43F"
-Date: Wed, 16 Feb 2005 10:38:30 -0600
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B8592B6@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: <linuxppc-embedded@ozlabs.org>,
-	"Tom Rini" <trini@kernel.crashing.org>
-Subject: [PATCH] Fixup of previous PCI9 patch
+	Thu, 17 Feb 2005 03:59:06 +1100 (EST)
+Received: by rproxy.gmail.com with SMTP id 40so136374rnz
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 16 Feb 2005 08:59:02 -0800 (PST)
+Message-ID: <c3d0340b05021608591692a460@mail.gmail.com>
+Date: Wed, 16 Feb 2005 08:59:02 -0800
+From: Shawn Jin <shawnxjin@gmail.com>
+To: ppcembed <linuxppc-embedded@ozlabs.org>
+In-Reply-To: <20050216025921.GA25838@gate.ebshome.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+References: <c3d0340b05021518037b1758cc@mail.gmail.com>
+	<20050216025921.GA25838@gate.ebshome.net>
+Subject: Re: Incomplete network configuration information when booting from
+	NFS root on Ebony
+Reply-To: Shawn Jin <shawnxjin@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,44 +28,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+> > Is anybody using linux-2.6.10 from kernel.org for testing IBM Ebony board?
+> 
+> Yes, with stock boot loader and great success (bootp + NFS root). I
+> just use "ip=on root=/dev/nfs" and let my bootp server tell the kernel
+> about all other parameters.
 
-------_=_NextPart_001_01C51445.F25CD43F
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+What's your boot loader? I should ask if anybody has successful story
+on using uboot to boot 2.6.10 to test Ebony board.
 
-Previous PCI9 patch had a #endif placed wrong for some unknown reason
-(was correct in local tree)
-This fixes it.
-Signed-off-by: Rune Torgersen <runet@innovsys.com>
+> Did you try looking at net/ipv4/ipconfig.c? This is file responsible
+> for this message.
 
-Rune Torgersen
-System Developer
-Innovative Systems LLC
-1000 Innovative Drive
-Mitchell, SD 57301
-Ph: 605-995-6120
-www.innovsys.com
+Yes. I did find the comment you pointed and thought it might be a
+problem. But another issue I don't understand is why it cannot fetch
+MAC addresses from VPD? Without my hack the MAC addresses fetched from
+VPD are all FF:FF:FF:FF:FF:FF. The Rom Monitor can detect the
+addresses, which I guess are from VPD.
 
-------_=_NextPart_001_01C51445.F25CD43F
-Content-Type: application/octet-stream;
-	name="patch_pci9patch_fixup"
-Content-Transfer-Encoding: base64
-Content-Description: patch_pci9patch_fixup
-Content-Disposition: attachment;
-	filename="patch_pci9patch_fixup"
+> /*
+> * If the config information is insufficient (e.g., our IP address or
+> * IP address of the boot server is missing or we have multiple network
+> * interfaces and no default was set), use BOOTP or RARP to get the
+> * missing values.
+> */
+> 
+> Probably your case - multiple ethernet devices (440GX has 4) and
+> you haven't specified which device should be assigned IP.
 
-LS0tIGxpbnV4LTIuNS9pbmNsdWRlL2FzbS1wcGMvaW8uaAkyMDA1LTAyLTE2IDEwOjEzOjA3Ljg0
-NjExNjMyMCAtMDYwMAorKysgbGludXgtaW5uc3lzLTIuNi45L2luY2x1ZGUvYXNtLXBwYy9pby5o
-CTIwMDUtMDItMTYgMTA6MzI6MDcuMDAwMDAwMDAwIC0wNjAwCkBAIC0zNjAsNiArMzYwLDcgQEAg
-c3RhdGljIGlubGluZSB2b2lkIG1lbWNweV90b2lvKHZvbGF0aWxlIAogewogCW1lbWNweSgodm9p
-ZCBfX2ZvcmNlICopIGRzdCwgc3JjLCBjb3VudCk7CiB9CisjZW5kaWYKIAogI2RlZmluZSBldGhf
-aW9fY29weV9hbmRfc3VtKGEsYixjLGQpCQlldGhfY29weV9hbmRfc3VtKChhKSwodm9pZCBfX2Zv
-cmNlICopKHZvaWQgX19pb21lbSAqKShiKSwoYyksKGQpKQogCkBAIC00MDgsNyArNDA5LDcgQEAg
-ZXh0ZXJuIGlubGluZSB2b2lkICogYnVzX3RvX3ZpcnQodW5zaWduZQogCXJldHVybiAodm9pZCop
-IG1tX3B0b3YgKGFkZHJlc3MpOwogI2VuZGlmCiB9Ci0jZW5kaWYKKwogLyoKICAqIENoYW5nZSB2
-aXJ0dWFsIGFkZHJlc3NlcyB0byBwaHlzaWNhbCBhZGRyZXNzZXMgYW5kIHZ2LCBmb3IKICAqIGFk
-ZHJlc3NlcyBpbiB0aGUgYXJlYSB3aGVyZSB0aGUga2VybmVsIGhhcyB0aGUgUkFNIG1hcHBlZC4K
+Do you know how to set a default active device?
 
-------_=_NextPart_001_01C51445.F25CD43F--
+Thanks,
+-Shawn.
