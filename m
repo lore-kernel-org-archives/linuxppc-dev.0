@@ -1,34 +1,21 @@
-Date: Sat, 21 Apr 2001 16:51:21 -0400
-From: Craig Rodrigues <rodrigc@mediaone.net>
+Date: Sat, 21 Apr 2001 15:33:53 -0600
+From: Cort Dougan <cort@fsmlabs.com>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: gdb hardware breakpoints under Linux PPC?
-Message-ID: <20010421165121.B7985@mediaone.net>
+Subject: Linux/PPC patches on kernel.org
+Message-ID: <20010421153353.M10314@ftsoj.fsmlabs.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello,
+Linux/PPC snapshots and patches against Linus' trees are available from:
 
-I am debugging a problem with an application that
-works under x86 based Redhat Linux 6.2, but
-suffers a bizarre memory corruption under LinuxPPC 2000-Q4.
-I am using gdb version 5 (gdb 5.05 rpm that comes with LinuxPPC).
+ftp://ftp.fsmlabs.com/pub/linuxppc/
 
-I would like to set a hardware watchpoint under gdb
-on a certain region of memory, to see why it is getting
-clobbered (the element getting clobbered under PPC is
-a dynamically allocated structure in a linked list).  Does
-gdb 5 support hardware watchpoints under Linux PPC?
+ftp://ftp.kernel.org/pub/linux/kernel/people/cort and its mirrors
 
-Can someone give me an example of how to set a watchpoint?
-The gdb manual is a bit vague in explaining this.
-
-Thanks.
---
-Craig Rodrigues
-http://www.gis.net/~craigr
-rodrigc@mediaone.net
+I'll be keeping the 2.2 and 2.4 snapshots and patches up-to-date on both
+sites.  Please use the kernel.org (and mirror) sites first.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
