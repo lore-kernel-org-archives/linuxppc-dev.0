@@ -1,56 +1,46 @@
-Message-Id: <v04003a06b8e101c94b83@[24.70.162.28]>
-In-Reply-To: <Pine.BSF.4.44.0204151224090.39853-100000@shell.unixbox.com>
-References: <p05100303b8e0cf886762@[63.220.231.138]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Mon, 15 Apr 2002 17:25:21 -0500
-To: Ani Joshi <ajoshi@shell.unixbox.com>,
-	Stefan Jeglinski <jeglin@4pi.com>
-From: "Tony 'Nicoya' Mantler" <nicoya@apia.dhs.org>
-Subject: Re: ATI 7000 and dual-monitor X? (was Re: 9600 maturity?)
-Cc: linuxppc-dev@lists.linuxppc.org
+From: benh@kernel.crashing.org
+To: <mlan@cpu.lu>
+Cc: <dan_bethe@yahoo.com>, <nicoya@apia.dhs.org>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 9600 maturity?
+Date: Tue, 16 Apr 2002 01:54:25 +0100
+Message-Id: <20020416005425.14127@mailhost.mipsys.com>
+In-Reply-To: <E16xLzp-00008q-00@piglet.grunz.lu>
+References: <E16xLzp-00008q-00@piglet.grunz.lu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 2:27 PM -0500 4/15/02, Ani Joshi wrote:
->On Mon, 15 Apr 2002, Stefan Jeglinski wrote:
 >
-[...]
->> 1. Is the Radeon 7000 supported in XFree86? Rather, the real question
->> is, does anyone know of any gotchas trying to run it in accelerated
->> mode?
+>But is there something in place now in the PCI code to handle the IO
+>space of multiple host bridges now? When I was working on the chaos PCI
+>code, you had plans to implement that part...
 >
->ATI tends to make new cards which are really just newer revisions of older
->ASICs.  For example, the Radeon 7200 is realy just a regular radeon with
->64meg DDR (and perhaps higher clocks).  So its highly possible that the
->7000 is a radeon VE (considering its dualhead).  If so, then it is
->supported.  Even if it isn't, adding support should be very trivial as it
->contains the same 1st generation Radeon ASIC.
-[...]
+>IIRC, you wanted to move both IO spaces into a continous segment and
+>provide some way to find the ber-bus base of IO space...
 
-In the PC version, the Radeon7000 is exactly identical to the RadeonVE,
-except it only has analog VGA out, no DVI (I happen to have one in my l33t
-athlon). This makes things extra confusing, since the Radeon7000 Mac
-Edition actually does have a DVI connector and TV-out.
+it is implemented in 2.4, but a bit differently. Each host has it's own
+IO space ioremapped separately. One is picked up as the "primary" IO space
+and gets all 0-based IOs (basically it's where _IO_BASE points to).
+Then, IO resources of PCI devies on other busses are fixed up by the
+kernel to be offseted by (io_bus_virt - _IO_BASE) (that is the virtual
+address of the IO space of this bus minus the virtual address of IO space
+of the primary bus), thus allowing inx/outx functions to work.
 
-I'm pretty sure that the entire Radeon, RadeonVE and Radeon 7*00 series are
-based on the same R100 chip, with different clocks, connectors, ram, and
-features enabled. The Radeon8500, on the other hand, has the newer R200
-chip, and I think an R300 'Radeon9500' is in the works.
+That means though that there isn't a convenient way to access fixed
+(ie. legacy) IO locations on other busses, except by using platform
+specific routines to find out the real bus virtual IO base. But at
+least, IO resources provided by BARs will work on other busses provided
+that the driver uses the pci_dev->resource fields properly.
 
-You'll have to remember, though, that even with the nice internal
-performance of the Radeon7000, running two displays on one 32/33 PCI card
-will definatley be pushing the bandwidth limits, so performance may not be
-100%.
+However, I haven't yet verified if it works properly for busses like
+bandit that don's issue a 0-based (bus view) IO range, but an "offseted"
+one like it is, I think, the case for second bandit. On UniNorth, each
+host has a 0 based 0...16Mb IO space.
 
-
-Cheers - Tony 'Nicoya' Mantler :)
-
-
---
-Tony "Nicoya" Mantler - Renaissance Nerd Extraordinaire - nicoya@apia.dhs.org
-Winnipeg, Manitoba, Canada           --           http://nicoya.feline.pp.se/
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
