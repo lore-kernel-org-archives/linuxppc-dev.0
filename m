@@ -1,39 +1,34 @@
-From: Francois.CAU@st.com
-Date: Tue, 23 Nov 1999 13:45:34 +0100
-Message-Id: <H0000a4207bc43dd@MHS>
-In-Reply-To: <383A6B90.7734B3D5@ssl.co.uk>
-Subject: Re: tv tuner/video
+Message-ID: <383A9040.5F29987F@macktrucks.com>
+Date: Tue, 23 Nov 1999 08:01:52 -0500
+From: Joe Julicher <joe_julicher@macktrucks.com>
 MIME-Version: 1.0
-To: sacha@ssl.co.uk
-Cc: linuxppc-dev@lists.linuxppc.org
+To: linux Developer <linuxppc-dev@lists.linuxppc.org>
+Subject: B/W
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-     
-> 1. What is the state of tv card support on LinuxPPC? I've searched the 
-> linuxppc-dev logs and seen some announcements of bt848 support. 
+Hello,
+Slightly off topic...
 
-The bttv driver (driver for bt848 based cards) is working on LinuxPPC.
-     
-> 2. The bt848 cards I've seen seems to offer v. limited real-time continuous 
-> capture (320 x240 == 1/4 NTSC); I don't know if this is a limitation of the 
-> chipset or the cards. I'm looking for full streaming PAL capture to memory. 
-> Is this beyond the bandwidth of PCI? If so, is it usual for cards that 
-> offer this to do hardware compression first?
+I have a B/W G3 that went sorta braindead.  I can boot to OF.
+It won't load the firmware file (flashing folder icon)
+In OF, if I say 'boot' it says unable to load HD:
+I moved the HD to my Beige G3 and it boots and seems to be fine.
+Put the HD on the DVD's IDE chain and it gets to an mouse cursor and
+freezes.
 
-The PCI bandwidth is large enough for video. TV applications like xawtv 
-have 2 modes: 
-- Overlay, where the TV card is PCI-bus-master and directly writes in the 
-video memory. 
-- Grabbing, where the application grabs each picture, and then displays it 
-on the screen. You can even process the pictures before displaying them.
+PRAM has been zapped
+Keyboard & with Battery removed.
 
-The bottle-neck for continuous capture of un-compressed, full-size video 
-comes from the hard-disk.
+Questions:
+	Can I access the drive from OF?  I have tried a few different things
+but have been unsuccessful.
+	Is the logic board fried?  (I hope not, expensive)
 
-Francois
-
+Anything else to try?
+I don't have the 8.5 CD, a replacement is in the mail.  When that
+arrives, I will try to boot from the CD.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
