@@ -1,43 +1,36 @@
-Date: Tue, 30 May 2000 11:11:31 -0400 (EDT)
-From: "Mark S. Mathews" <mark@absoval.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: rpx_cfg() copy to NVRAM?
-Message-ID: <Pine.LNX.3.96.1000530110746.8009A-100000@tristar.cc.absoval.com>
+Message-Id: <m12wo4c-001SyaC@bucks>
+From: diekema@bucks.si.com (diekema_jon)
+Subject: Re: Floating Point problems with Linux on the EST SBC8260
+To: roman@alerton.com, linuxppc-embedded@lists.linuxppc.org
+Date: Tue, 30 May 2000 11:36:54 -0400 (EDT)
+In-Reply-To: <392C3ED0.594EB6F7@alerton.com> from "Bill Roman" at May 24, 2000 01:42:56 PM
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+> Date: Wed, 24 May 2000 13:42:56 -0700
+> From: Bill Roman <roman@alerton.com>
 
-I just noticed the following snippet in rpx_cfg() :
+> diekema_jon wrote:
 
-        iic_read(0xa8, eebuf, 0, 128);
-        iic_read(0xa8, &eebuf[128], 128, 128);
-        {
-                int i;
-                cp = (u_char *)0xfa000000;
+> > - I am looking for a floating point validation test suite written in
+> >   C.  The test suite should start with the fundamentals and work out
+> >   from there.
 
-                for (i=0; i<256; i++)
-                        *cp++ = eebuf[i];
-        }
+> Try paranoia.c. A web search should turn up multiple copies, I found one at
 
-It appears to be copying the eeprom data to NVRAM.  Is anyone using this?
-Can I safely take it out?  We have RPX boards that don't have NVRAM and
-this seems a little pointless.
+>     http://www.enseeiht.fr/NetLib/paranoia/index.html
 
-I'm in the process of changing head.S and embed_config.c to work with the
-new EP bootloader.
+> A while back I had the floating point emulator from kernel 2.3
+> patched into kernel 2.2.13 running on an MBX, and it did reasonably
+> well on this test as I recall.
 
--Mark
-
-Mark S. Mathews
-
-AbsoluteValue Systems      Web:    http://www.absoval.com
-P.O. Box 941149            e-mail: mark@absoval.com
-Maitland, FL 32794-1149    Phone:  407.644.8582
-USA                        Fax:    407.539.1294
+paranoia.c was quite helpful in verifying the floating point operation
+on the EST SBC8260 board with a MPC8260 Rev A.1.  I statically compiled
+this program under Yellow Dog Linux champion server 1.2, and ran it
+on the SBC8260.  paranoia.c didn't find anything to complain about. :)
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
