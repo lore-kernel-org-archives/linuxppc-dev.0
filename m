@@ -1,58 +1,122 @@
-Message-ID: <3AAFAF8C.4050206@galileo.co.il>
-Date: Wed, 14 Mar 2001 19:51:08 +0200
-From: Rabeeh Khoury <rabeeh@galileo.co.il>
+Subject: IDE interface driver on the 405gp 
+Date: Wed, 14 Mar 2001 13:52:32 -0500
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Max bus issue
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Message-ID: <FF6CF34C346E724596A2FB5CAAB2C49707F906@voyager.ops.infiniswitch.com>
+From: "Curry, Diane" <dcurry@infiniswitch.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi All,
+Hello -
+  I'm running an IBM 405GP rev D walnut and Monta Vista's 2.4.2 port.  I
+have a
+PCI-to-PCMCIA adapter, a PCMCIA card reader/writer and an IBM
+Microdrive.  I've
+got a root filesystem on the Microdrive and a kernel image built with an
+initial ram disk.
+The kernel boots with the initrd image, my linuxrc scripts loads the
+pcmcia modules and
+switches roots to the microdrive.  This is all working fine, but I'm
+questioning what I did
+to get it working (it seemed too easy).  All of the changes, except some
+endian issues
+which I addressed in the pcmcia i82365.c module, were to ppc4xx_setup.c.
+Essentially
+all I did was initialize the ppc_ide_md structure with function names
+and provide the
+corresponding functions (using m8xx_setup.c as a reference).  If anyone
+could tell me
+whether this seems reasonable, I'd really appreciate it.  Thanks  in
+advance.
 
-I am having a problem running Linux with Max bus on Galileo Technology
-bridge with 7400 CPU.
+Diane Curry
+dcurry@Infiniswitch.com
 
-The following gives the symptoms of the problem (as I can see them from
-a logic anlyzer on the bus between the CPU and the bridge) -
+diff ppc4xx_setup.c ppc4xx_setup.c.orig
 
-1.. The system mounts NFS then starts running /sbin/init and the other
-stuff. The system fails in random places at different times (can reach
-upto 7 seconds from the point mounting the NFS but NEVER failed before
-this point).
-
-2.. The failures are usually that the CPU branches to a an adress of
-about 0xc1...... (32 bit address at the external bus !!! not a virtual
-address at all) which is not available at all (I have 32 MByte SDRAM
-starting from address 0-0x02000000 which is 0xc0000000 to 0xc2000000).
-
-3.. When the CPU branches to this weird address, the bridge returns
-0xffffffff which the CPU thinks this is a trap and executes a trap/debug
-breakpoint code.
-
-4.. The weird address that the CPU branches to is an address that
-branches to after interrupt handler routines or decrementer exception
-handler which makes me think that the problem might be in the common
-function 'transfer_to_handler' in arch/ppc/kernel/head.S ; this function
-moves r23 (which holds the virtual address of where to continue to) to
-the link register, which when finished handling the exception, the CPU
-branches to this address to continue processing the task where it was
-stopped from.
-
-5.. I run kernel 2.4.0-test11 and runs stable on 60x bus (usually it
-shouldn't matter to the software if the bus is 60x or Max but a fact
-that here it really matters).
-6.. The bridge and the CPU runs stable on other operating systems (such
-as VxWorks) with Max Bus feature.
-
-Was there any fixes for arch/ppc/kernel/head.S regarding Max bus issues ?
-Is there any one running Linux on Max bus based platform ?
-Did any one encounter such a problem ?
-
-
-Regards,
-Rabeeh
+257,323d256
+< #if defined(CONFIG_BLK_DEV_IDE) || defined(CONFIG_BLK_DEV_IDE_MODULE)
+<
+< /*
+<  * IDE stuff.
+<  */
+< void
+< ppc4xx_ide_insw(ide_ioreg_t port, void *buf, int ns)
+< {
+<         ide_insw(port+_IO_BASE, buf, ns);
+< }
+<
+< void
+< ppc4xx_ide_outsw(ide_ioreg_t port, void *buf, int ns)
+< {
+<         ide_outsw(port+_IO_BASE, buf, ns);
+< }
+<
+< int
+< ppc4xx_ide_default_irq(ide_ioreg_t base)
+< {
+<         return 14;
+< }
+<
+< ide_ioreg_t
+< ppc4xx_ide_default_io_base(int index)
+< {
+< 	return 0;
+< }
+<
+< int
+< ppc4xx_ide_request_irq(unsigned int irq,
+<                        void (*handler)(int, void *, struct pt_regs *),
+<                        unsigned long flags,
+<                        const char *device,
+<                        void *dev_id)
+< {
+<         return request_irq(irq, handler, flags, device, dev_id);
+< }
+<
+< /* We can use an external IDE controller or wire the IDE interface to
+<  * the internal PCMCIA controller.
+<  */
+< void ppc4xx_ide_init_hwif_ports(ide_ioreg_t *p, ide_ioreg_t base,
+ide_ioreg_t ctrl, int *irq)
+< {
+<         ide_ioreg_t port = base;
+<         int i;
+<
+<         /* Just a regular IDE drive on some I/O port.
+<         */
+<         i = 8;
+< /*
+<  * I think this is initializing io_ports[IDE_DATA_OFFSET] to
+<  * io_ports[IDE_STATUS_OFFSET]...
+<  */
+<         while (i--)
+<                 *p++ = port++;
+< /*
+<  * And this is initializing io_ports[IDE_CONTROL_OFFSET], but
+<  * we aren't using it, we are using what the caller passed in...
+<         *p++ = base + 0x206;
+<  */
+< 	*p++ = ctrl;
+<
+<         if (irq != NULL)
+<                 *irq = 0;
+< }
+< #endif
+921,937d853
+< #endif
+<
+< #if defined(CONFIG_BLK_DEV_IDE) || defined(CONFIG_BLK_DEV_IDE_MODULE)
+<         ppc_ide_md.insw = ppc4xx_ide_insw;
+<         ppc_ide_md.outsw = ppc4xx_ide_outsw;
+<         ppc_ide_md.default_irq = ppc4xx_ide_default_irq;
+<         ppc_ide_md.default_io_base = ppc4xx_ide_default_io_base;
+<         ppc_ide_md.fix_driveid = ppc_generic_ide_fix_driveid;
+<         ppc_ide_md.ide_init_hwif = ppc4xx_ide_init_hwif_ports;
+<         ppc_ide_md.io_base = _IO_BASE;
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
