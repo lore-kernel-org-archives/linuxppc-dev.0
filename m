@@ -1,50 +1,28 @@
-Message-ID: <3D8B05A3.A7BF82C8@opensource.se>
-Date: Fri, 20 Sep 2002 13:25:23 +0200
-From: Magnus Damm <damm@opensource.se>
+Message-ID: <3D8B1950.CE2DB9A1@corelatus.com>
+Date: Fri, 20 Sep 2002 14:49:21 +0200
+From: Thomas Lange <thomas@corelatus.com>
 MIME-Version: 1.0
-To: stefania magistrali <s.magistrali@selta.it>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: loading modules
-References: <3D8A1265.D0CC5D33@selta.it>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Potential problem in fec.c for 8xx
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This might be related to a powerpc-specific bug in the busybox
-insmod implementation. Try the 0.60.4 release or use this patch:
+When using MII, the interrupt for link status changes
+is enabled before the PHY type has been detected.
 
-http://opensource.se/projects/busybox/busybox-0.60.3-insmod_rewrite.patch
+If a link status change happens before PHY is detected,
+you will get kernel panic in mii_link_interrupt
+because the MII functions are undefined.
 
-/ magnus
+The correct way to do this would be to move the
+enabling of MII interrupts from fec_enet_init
+to mii_discover_phy3.
 
-stefania magistrali wrote:
->
-> Hi all!
-> I am working with a PowerPC 860T based board.
-> I have a problem with loading modules: I made:
->
-> make dep make clean make zImage  make modules  and make modules_install
->
-> to create my kernel and modules  , but when I try to load the module
-> hdlc.o with insmod, I have a segmentation fault. I am using busybox
-> version 0.60.3  and linux version 2.4.19pre6. Here I send the last part
-> of the strace sequence of the command "insmod  hdlc"
-> Can anyone help me?
-> Thanks very much in advance!
-> Stefania
->
-> query_module(NULL, 0, NULL, 0)          = 0
-> query_module(NULL, QM_MODULES, { /* 0 entries */ }, 0) = 0
-> mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1,
-> 0) = 0x30033000
-> query_module(NULL, QM_SYMBOLS, 0x30032e08, 16384, 21866) = -1 ENOSPC (No
-> space left on device)
-> mmap(NULL, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1,
-> 0) = 0x30037000
-> query_module(NULL, QM_SYMBOLS, { /* 961 entries */ }, 961) = 0
-> --- SIGSEGV (Segmentation fault) ---
-> +++ killed by SIGSEGV +++
->
+I can prepare a patch if someone points me to
+the correct version to patch.
+
+/Thomas
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
