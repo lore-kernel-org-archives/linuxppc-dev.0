@@ -1,41 +1,23 @@
-Subject: Re: aic7xxx panics (long)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ethan Weinstein <e-d0uble@stinkfoot.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <3F140F1E.1050303@stinkfoot.org>
-References: <3EFFD86B.7060007@stinkfoot.org>
-	 <1056957083.32576.112.camel@gaston>  <3F00E86B.1000309@stinkfoot.org>
-	 <1057053589.32576.310.camel@gaston>  <3F02537C.1090801@stinkfoot.org>
-	 <1057148769.32104.422.camel@gaston>  <3F04D1EA.6060906@stinkfoot.org>
-	 <1057590248.11707.62.camel@gaston>  <3F140C6E.2080609@stinkfoot.org>
-	 <1058278673.515.2.camel@gaston>  <3F140F1E.1050303@stinkfoot.org>
-Content-Type: text/plain
-Message-Id: <1058279423.502.7.camel@gaston>
-Mime-Version: 1.0
-Date: 15 Jul 2003 16:30:24 +0200
+Message-ID: <XFMail.20030716110940.pochini@shiny.it>
+Content-Type: text/plain; charset=us-ascii
+MIME-Version: 1.0
+Date: Wed, 16 Jul 2003 11:09:40 +0200 (CEST)
+From: Giuliano Pochini <pochini@shiny.it>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: G4 mdd help request
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 2003-07-15 at 16:26, Ethan Weinstein wrote:
-> Benjamin Herrenschmidt wrote:
->
-> > I've been turning that problem in my mind for some time now, I suspect
-> > some breakage at the PCI level....
-> >
-> > Do you have an IDE disk you can boot from ? That would help... That way,
-> > you can send me the lspci -vvv output of a working vs. a non-working
-> > kernel...
-> >
-> > Ben.
->
-> I'm sure I do somewhere.  When I get home this evening I'll throw
-> together a simple system the boots from the IDE controller, and have at
-> it.  Would you like to see anything besides `lspci -vvv` for both kernels?
+I bought a dual G4-MDD and I installed my SCSI disk I used on
+my G3. Is there an osx command to get the openfirmware path of
+the yaboot partition on that disc ?  I tried to boot
+/pci@f2000000/ADPT,29160@12/@4:9,ofboot.b but it doesn't work.
+Macosx mounts the HFS partitions on the old disc, but it doesn't
+show any of them on the startup disk utility (does it need to be
+blessed again ?).
 
-Full dmesg output and tarball of /proc/device-tree please
-
-Ben.
+Bye.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
