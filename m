@@ -1,84 +1,209 @@
-Message-ID: <001801c0135c$53caea20$0400a8c0@PeterTympanick>
-From: "Peter Tympanick" <ptymps@ultsol.com>
-To: "Matt Porter" <mporter@mvista.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <Pine.HPX.4.10.10008311300320.15978-100000@gra-ux1.iram.es>
-Subject: Re: Linux on Motorola Sandpoint/PPMC7400
-Date: Thu, 31 Aug 2000 08:01:20 -0700
+Message-ID: <075801c0135e$ac535590$1952df8d@SOYANG>
+From: "Hyun-Joon Cha" <tachyon@postech.ac.kr>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: SDRAM weirdness.
+Date: Fri, 1 Sep 2000 00:18:09 +0900
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
+	charset="EUC-KR"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Using the Abatron BDI2000 and bdiGDB, have you figured out a way to
-implement loadable device drivers for hardware using a PowerPC device?
+Hello all.
 
-Thanks for your help in advance.
+My board uses SAMSUNG K4S643232C SDRAM and it's configuration is  512K x 32bit x 4 banks, 11 rows and 8 column.
 
-Peter Tympanick
-Sales Engineer
-Ultimate Solutions, Inc.
-===============================
-Development Tools for Embedded Systems
-Ph: 978-455-3383
-Fx: 978-926-3091
-Email: ptymps@ultsol.com
-WWW: http://www.ultsol.com
+The Board quipped 2 SDRAMs (total 16MB) and each uses CS2 and CS3.
+
+MPC to SDRAM pin configuration is as below.
+
+MPC                    SDRAM
+========================
+A29                        A0
+A28                        A1
+A27                        A2
+A26                        A3
+A25                        A4
+A24                        A5
+A23                        A6
+A22                        A7
+A21                        A8
+A20                        A9
+GPL_A0                  A10
+A9                          BA0
+A8                          BA1
+OE_GPL_A1            RAS
+GPL_A2                  CAS
+GPL_A3                  WE
+
+The problem is that when I write a word to some location then it will appear another location like a mirror.
+
+The example symptom is - I'm using a BDI2000 for BDM, md is mem. disp. and mm is mem. modify -
+
+BDI>md 0x0 5
+00000000 : 0xffffffff  -         1  ....
+00000004 : 0xffffffff  -         1  ....
+00000008 : 0xffffffff  -         1  ....
+0000000c : 0xffffffff  -         1  ....
+00000010 : 0xffffffff  -         1  ....
+BDI>md 0x100000 5
+00100000 : 0xffffffff  -         1  ....
+00100004 : 0xffffffff  -         1  ....
+00100008 : 0xffffffff  -         1  ....
+0010000c : 0xffffffff  -         1  ....
+00100010 : 0xffffffff  -         1  ....
+BDI>mm 0x0 0x0
+BDI>md 0x0 5
+00000000 : 0x00000000            0  ....
+00000004 : 0xffffffff  -         1  ....
+00000008 : 0xffffffff  -         1  ....
+0000000c : 0xffffffff  -         1  ....
+00000010 : 0xffffffff  -         1  ....
+BDI>md 0x100000 5
+00100000 : 0x00000000            0  ....
+00100004 : 0xffffffff  -         1  ....
+00100008 : 0xffffffff  -         1  ....
+0010000c : 0xffffffff  -         1  ....
+00100010 : 0xffffffff  -         1  ....
+BDI>
+
+As you can see, mem[addr]=data means mem[addr + 0x100000]=data.
+
+So, I've made some program to find duplicated memory area and the result is that
+
+Memory content of left area is equal to right
+==============================================
+0x0 ~ 0xfffff            eq.            0x100000 ~ 0x1fffff
+0x200000 ~ 0x2fffff            eq.            0x300000 ~ 0x3fffff
+0x400000 ~ 0x4fffff            eq.            0x500000 ~ 0x5fffff
+0x600000 ~ 0x6fffff            eq.            0x700000 ~ 0x7fffff
+0x800000 ~ 0x8fffff            eq.            0x900000 ~ 0x9fffff
+0xa00000 ~ 0xafffff            eq.            0xb00000 ~ 0xbfffff
+0xc00000 ~ 0xcfffff            eq.            0xd00000 ~ 0xdfffff
+0xe00000 ~ 0xefffff            eq.            0xf00000 ~ 0xffffff
+
+How can I solve this?
+
+What is the point of it? The UPM table? BR, OR values? MAMR value? SDRAM init. sequence? or HW related? I couldn't find any clue of it.
+
+Please help me.
 
 
------ Original Message -----
-From: Gabriel Paubert <paubert@iram.es>
-To: Dan Malek <dan@netx4.com>
-Cc: Matt Porter <mporter@mvista.com>; <linuxppc-embedded@lists.linuxppc.org>
-Sent: Thursday, August 31, 2000 4:13 AM
-Subject: Re: Linux on Motorola Sandpoint/PPMC7400
+My register configuration for BDI2000 follows. Test program has same register values.
 
+; bdiGDB configuration file for 850 v.2 board
+; -------------------------------------------
+;
+[INIT]
+; init core register
+WSPR    149              0x0082000F     ;DER  : for debug MMU
 
+WSPR    638             0xFF000000      ;IMMR
+WSPR    158             0x00000007      ;ICTRL:
+WSPR    796             0x00000000      ;M_TWB: invalidate TWB
 
-On Wed, 30 Aug 2000, Dan Malek wrote:
+; init SIU register
+WM32    0xFF000000      0x01E10940      ;SIUMCR
+WM32    0xFF000004      0xFFFFFF88      ;SYPCR
+WM16    0xFF000200      0x0001          ;TBSCR
+WM16    0xFF000240      0x0002          ;PISCR
+WM32    0xFF000284      0x0000D000      ;PLPRCR set clock to 25MHz
 
-> Well, not exactly :-).  The code is actually written with some
-> assumptions because I couldn't make it do _everything_.  The download
-> should be located above the address where it is linked to execute.
-> For example, I download to 0x900000, the code relocates to 0x800000,
-> then uncompresses the kernel into the base of memory.
->
-> This follows the MPC8xx boot model with a larger memory window.
-> The MPC8xx had more constraints (smaller main memory 8 Mbyte start
-> up translation), so the load/execution addresses were lower in
-> memory.  Since the kernel is constantly growing and the 82xx had
-> a 16 MByte window, I just decided to move everything further up
-> in the address space.
->
-> Anything below the linked execution address (0x800000 in this case)
-> is considered fair game for allocation by the code, so it could
-> write over itself or other necessary information (like zImage or the
-> ramdisk).
+; init UPM for Samsung KS4S643232C_2Mx32 SDRAM
+SUPM    0xFF000168      0xFF00017c      ;set address for MCR and MDR
+WUPM    0x00000000      0x1F07FC04      ;UPMA single read
+WUPM    0x00000001      0xEEAEFC04
+WUPM    0x00000002      0x11ADFC04
+WUPM    0x00000004      0x1FF77C47
+WUPM    0x00000005      0x1FF77C34
+WUPM    0x00000006      0xEFEABC34
+WUPM    0x00000007      0x1FB57C35      ;last
+WUPM    0x00000008      0x1F07FC04      ;UPMA burst read
+WUPM    0x00000009      0xEEAEFC04
+WUPM    0x0000000A      0x10ADFC04
+WUPM    0x0000000B      0xF0AFFC00
+WUPM    0x0000000C      0xF0AFFC00
+WUPM    0x0000000D      0xF1AFFC00
+WUPM    0x0000000E      0xEFBBBC00
+WUPM    0x0000000F      0x1FF77C47      ;last
+WUPM    0x00000010      0xFFFFFFFF
+WUPM    0x00000011      0xFFFFFFFF
+WUPM    0x00000012      0xFFFFFFFF
+WUPM    0x00000013      0xFFFFFFFF
+WUPM    0x00000014      0xFFFFFFFF
+WUPM    0x00000015      0xFFFFFFFF
+WUPM    0x00000016      0xFFFFFFFF
+WUPM    0x00000017      0xFFFFFFFF
+WUPM    0x00000018      0x1F27FC04      ;UPMA single write
+WUPM    0x00000019      0xEEAEBC00
+WUPM    0x0000001A      0x01B93C04
+WUPM    0x0000001B      0x1FF77C47      ;last
+WUPM    0x0000001C      0xFFFFFFFF
+WUPM    0x0000001D      0xFFFFFFFF
+WUPM    0x0000001E      0xFFFFFFFF
+WUPM    0x0000001F      0xFFFFFFFF
+WUPM    0x00000020      0x1F07FC04      ;UPMA burst write
+WUPM    0x00000021      0xEEAEBC00
+WUPM    0x00000022      0x10AD7C00
+WUPM    0x00000023      0xF0AFFC00
+WUPM    0x00000024      0xF0AFFC00
+WUPM    0x00000025      0xE1BBBC04
+WUPM    0x00000026      0x1FF77C47      ;last
+WUPM    0x00000027      0xFFFFFFFF
+WUPM    0x00000028      0xFFFFFFFF
+WUPM    0x00000029      0xFFFFFFFF
+WUPM    0x0000002A      0xFFFFFFFF
+WUPM    0x0000002B      0xFFFFFFFF
+WUPM    0x0000002C      0xFFFFFFFF
+WUPM    0x0000002D      0xFFFFFFFF
+WUPM    0x0000002E      0xFFFFFFFF
+WUPM    0x0000002F      0xFFFFFFFF
+WUPM    0x00000030      0x1FF5FC84      ;UPMA refresh
+WUPM    0x00000031      0xFFFFFC04
+WUPM    0x00000032      0xFFFFFC04
+WUPM    0x00000033      0xFFFFFC04
+WUPM    0x00000034      0xFFFFFC84
+WUPM    0x00000035      0xFFFFFC07
+WUPM    0x00000036      0xFFFFFFFF
+WUPM    0x00000037      0xFFFFFFFF
+WUPM    0x00000038      0xFFFFFFFF
+WUPM    0x00000039      0xFFFFFFFF
+WUPM    0x0000003A      0xFFFFFFFF
+WUPM    0x0000003B      0xFFFFFFFF      ;last
+WUPM    0x0000003C      0x7FFFFC07      ;UPMA exception ;last
+WUPM    0x0000003D      0xFFFFFFFF
+WUPM    0x0000003E      0xFFFFFFFF
+WUPM    0x0000003F      0xFFFFFFFF
 
-Well, if you have a look at PrePboot, it solves all these kind of
-problems. On my MVME2600:
+; init memory controller
+WM32    0xFF000100      0xFFD20401      ;BR0    8bit!
+WM32    0xFF000104      0xFFC00160      ;OR0
+WM32    0xFF000114      0xFF800A00      ;OR2
+WM32    0xFF000110      0x00000081      ;BR2
+WM32    0xFF00011C      0xFF800A00      ;OR3
+WM32    0xFF000118      0x00800081      ;BR3
+WM16    0xFF00017A      0x0400          ;MPTPR
+WM32    0xFF000170      0x18804114      ;MAMR, loop time is 4
 
-- when booting from network, the zImage is loaded very low in memory,
-- when booting from disk, it finds itself at top of memory (~15Mb),
+; start sdram init
+WM32    0xFF000168      0x80004105      ;MCR for CS2, precharge
+WM32    0xFF000168      0x80006105      ;MCR for CS3, precharge
+WM32    0xFF000170      0x18804118      ;MAMR, loop time is 8
+WM32    0xFF000168      0x80004130      ;MCR for CS2, run refresh
+WM32    0xFF000168      0x80006130      ;MCR for CS3, run refresh
+WM32    0xFF000164      0x88            ;MAR
+WM32    0xFF000168      0x80004106      ;MCR for CS2, run MRS
+WM32    0xFF000168      0x80006106      ;MCR for CS3, run MRS
+WM32    0xFF000170      0x18804114      ;MAMR, loop time is 4
 
-what the code does is first to relocate itself where it is originally
-loaded (compiled with -mrelocatable) so that it can perform a basic
-analyzis of the current memory layout.
+WM32    0xFF000284      0x0010D000      ;PLPRCR set clock to 50MHz
 
-Then it moves itself up or down to the top of memory (yes it can have to
-move itself down to the top, as contradictory as it seems, it actually
-happens quite often), sometimes with partial overlaps, clears its bss,
-relocates itself once again (until this point your have to be very careful
-with what the code does), and setup a basic memory management system
-taking into account firmware needs to avoid stepping on firmware's toes.
+... sniffed host, flash settings.
+------------------------------------------------------------------
 
-At this point, reading OF device tree, decompressing the kernel,
-emulating VGA ROM bioses, etc... becomes almost trivial.
+Thanks in advance.
 
-Regards,
-Gabriel.
-
+Have a nice day.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
