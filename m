@@ -1,51 +1,52 @@
-Message-Id: <200101191606.f0JG6qH09060@denx.local.net>
-To: Francois Tremblay <francois.tremblay@ieee.org>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Kernel on MPC850FADS 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 19 Jan 2001 10:15:11 EST."
-             <200101191515.KAA04626@hermes.usherb.ca>
-Date: Fri, 19 Jan 2001 17:06:52 +0100
+Message-ID: <3A6877E3.AA2238C2@matrox.com>
+Date: Fri, 19 Jan 2001 12:22:43 -0500
+From: Sébastien Côté <scote1@matrox.com>
+MIME-Version: 1.0
+To: Matt Porter <mporter@mvista.com>
+CC: LinuxPPC-embedded list <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: initrd problems
+References: <3A671191.A0254C18@matrox.com> <3A676DC6.FD21D5D8@matrox.com> <20010118130139.A5256@cx258813-a.chnd1.az.home.com>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Francois,
-
-in message <200101191515.KAA04626@hermes.usherb.ca> you wrote:
+Matt Porter wrote:
+> > I was also wondering if I loaded the kernel correctly.  I put my
+> > zImage+initrd (zvmlinux.initrd) at address 0 of ram.  Since I compiled
+> > the kernel with debug symbols, it takes a few Megs... Could it be too
+> > large for it's own good?  Maybe somebody knows about the answer to that
+> > one!
 >
-> I try to put the linux kernel 2.2-18 on a MPC850FADS of Motorola.
+> What does the bootloader show when it relocates the zImage and initrd?
+> How about a progress dump so we have something to help you with?  You
+> make some comments about not using a special bootloader then say
+> you are loading a zImage (from the Sandpoint port) which does have
+> a relocating bootloader.  This smells like a custom board port where
+> you've gutted or dropped a bootloader and don't have the r3-r6 set
+> up correctly for entry into arch/ppc/kernel/head.S.  Are you really
+> just dropping vmlinux at address 0?  Details details...
 
-I'm not sure which kernel you are using - but the plain 2.2.18 kernel
-from ftp.kernel.org etc. is probably NOT a good  starting  point  for
-the embedded PowerPC systems.
+I'll try to see what happens when the image is moved now that I know
+this might be the problem, but my stupid debugger isn't friendly at all
+and it's very difficult to do so.
 
-> In arch/ppc/mbxboot/head.S file, there a ILAP_ADDRESS that is used to
-> decompress the kernel at boot.
-> The ILAP_ADDRESS refer to NVRAM of MBX and is not exist on a FADS board.
->
-> Someone know to fix this problem?
+I tought the image wouldn't be moved if I placed it a address 0.  I copy
+my zvmlinux.initrd at this address so I tought it wouldn't be used.
+This is indeed a custom board and I'm really just dropping vmlinux at
+address 0.
 
-Well, one possible approach could be to use PPCBoot to load and start
-Linux. PPCBoot has been ported to the FADS boards, so it's more or or
-less an compile & install & run issue. See the PPCBoot  project  page
-at Sourceforge. Source is available using anon-CVS at Sourceforge, or
-for FTP on ftp://ftp.denx.de/pub/ppcboot/
+I also found out that the values of initrd_start and initrd_end aren't
+valid when assigned from r4 and r5, so something must be overwriting
+these values (intrd_end is smaller than initrd_start)
 
-With PPCboot, all the stuff inthe mbxboot directory becomes  obsolete
-since  PPCBoot  knows  how  to  load,  uncompress a Linux kernel, and
-possibly also load a ramdisk image.  Kernel  boot  arguments  can  be
-saved  in  flash, so you don't have to enter them each time you boot,
-or recompile the kernel to change them. Network booting and a  couple
-of other goodies are available, too.
+What's the use for r3?  I read it's board identification but I don't
+really care if my board isn't identified correctly (for now at least).
+A looked for documentation about this but couldn't find any (the booting
+process of linux on a PowerPc seems to be terribly undocumented)
 
-Wolfgang Denk
+Thanks for your help,
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-When all else fails, read the instructions.
+Sébastien Côté
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
