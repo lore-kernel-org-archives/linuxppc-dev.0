@@ -1,47 +1,49 @@
-In-Reply-To: <E380A44D523BD5118EAE0002A52CE5C40B9A0601@zcard0k8.ca.nortel.com>
-References: <E380A44D523BD5118EAE0002A52CE5C40B9A0601@zcard0k8.ca.nortel.com>
-Mime-Version: 1.0 (Apple Message framework v613)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <1D730B0C-9CCF-11D8-BFF6-000A95B15278@aimsys.nl>
-Cc: "linuxppc-embedded@lists.linuxppc" <linuxppc-embedded@lists.linuxppc.org>
-From: Jaap-Jan Boor <jjboor@aimsys.nl>
-Subject: Re: Spurious Interrupts.. 2.4.22 82xx platforms
-Date: Mon, 3 May 2004 08:57:17 +0200
-To: "Andrew Williams" <awilliam@nortelnetworks.com>
+From: "John Que" <qwejohn@hotmail.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: cross compiling a complex project 
+Date: Mon, 03 May 2004 11:59:49 +0300
+Mime-Version: 1.0
+Content-Type: text/plain; format=flowed
+Message-ID: <BAY14-F15dPULDvYqNC0000a732@hotmail.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Andrew,
+Hello,
+I had build a cross compiler for embedded linux which runs on embedded
+powerPC.
 
-Are you aware of this?
-http://lists.linuxppc.org/linuxppc-embedded/200211/msg00139.html
+It works ok on simple sample programs I wrote, like
+"hello world", etc, which do not use other libs.
 
-I'm not sure of this is your problem though
+Now I want to use it to build some more complex projects (the complexity is
+relative
+to the samples I wrote, of course).
+I mean projects which have autocinf configure scripts.
+Like , for example ,  speex audio codec , or Midnight Commander.
 
-Jaap-Jan
+Now , it has not have in its configure script the type of ppc I
+use.
 
-On May 2, 2004, at 17:02, Andrew Williams wrote:
+On the other hands, it uses other libraries (speex uses oggs for example).
 
->
-> Trying to wrap my mind around where my "spurrious" interrupts
-> are coming from.
->
-> I've used some debug code to determine where the spurrious
-> counter was being incremented, in an attempt to see the
-> what/how/why. All occurences are a result of m8260_get_irq()
-> returning -1 (empty SIVEC register).
->
-> Ideas or pointers as to what might be occuring here?
-> We're using an 8270.
->
-> Can anyone reference a paper/chat/email that details the nature
-> of the SIVEC/SPINRx solution in linux?
->
->
-> Thanks
-> Andrew
->
+one way is to configure it with no target, and afterwards change the
+makefile.
+But this seems not an easy task.
+I googled the net for solutions.
+
+I saw one solution in http://www.scratchbox.org/
+
+but is says there
+"Supports ARM, x86 and PowerPC targets (PowerPC is experimental at this
+time)"
+So i hesitate a little.
+does anybody has experience with a task like that (on powerpc) and using
+tools
+for that task (like that scratchbox or other?)
+
+regards
+Q.  John
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
