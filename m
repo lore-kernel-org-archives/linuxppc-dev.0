@@ -1,46 +1,30 @@
-To: "somshekar chandrashekar kadam" <ppclinux@rediffmail.com>
-Cc: linuxppc-embedded@lists.linuxppc.org,
-	"Lin,     Nan-Hung" <carl@fiberlogic.com>
-Subject: Re: ramdisk problem 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "13 Jun 2002 15:20:00 -0000."
-             <20020613152000.18777.qmail@webmail22.rediffmail.com>
-Date: Thu, 13 Jun 2002 17:35:03 +0200
-Message-Id: <20020613153508.249C0102F9@denx.denx.de>
+Date: Thu, 13 Jun 2002 08:43:55 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Stefan Roese <stefan.roese@esd-electronics.com>
+Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: PPC405GPr support patch (and a small CPCI405 update)
+Message-ID: <20020613154355.GR13541@opus.bloom.county>
+References: <EFEAIMDCOOOHIEPHDNFJCEAKEBAA.stefan.roese@esd-electronics.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <EFEAIMDCOOOHIEPHDNFJCEAKEBAA.stefan.roese@esd-electronics.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20020613152000.18777.qmail@webmail22.rediffmail.com> you wrote:
->
->       i use kernel provided bootloader to load image,
+On Thu, Jun 13, 2002 at 05:00:50PM +0200, Stefan Roese wrote:
 
-This is not what I mean. You must have some sort of firmware  running
-on  this board. Obviously it is not PPCBoot, because then things were
-very simple.
+> By the way:
+> Upon looking into cputable.c I noticed that all NP4xx ppc's have the wrong
+> cache line size configured (total cache size in kB instead of cache line
+> size). May this cause some problems?
 
-There are firmware implementations which can  load  ELF  images,  but
-either  load only "conventional" segments (text, data) or those which
-have the "LOAD" flag set. The "zImage.initrd"  contains  non-standard
-segments  ("image"  and  "initrd"),  which don't have the "LOAD" flag
-set. Maybe your firmware does not load all segments...
-
->   i am using binary form of zImage
->   i didnt get u denk ,i dont know abt this elf what u have said ,i
-> am not sure abt it ,i will check it
-
-Maybe reading the "Linux for PowerPC Embedded Systems HOWTO" gives
-some additional information, see
-http://penguinppc.org/embedded/howto/PowerPC-Embedded-HOWTO.html
-
-Wolfgang Denk
+Well, if glibc ever makes use of those entries (see
+http://bugs.debian.org/100657) it might.  But for now, iirc it's
+probably harmless.  Patches accepted of course.
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Do not simplify the design of a program if a way can be found to make
-it complex and wonderful.
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
