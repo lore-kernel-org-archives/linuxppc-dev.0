@@ -1,60 +1,36 @@
-Message-Id: <200101080252.f082qVP12117@denx.local.net>
-To: Micael balow <micaelbalow@yahoo.com.cn>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: new PPC Questions 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 08 Jan 2001 10:10:03 +0800."
-             <20010108021003.92030.qmail@web11708.mail.yahoo.com>
-Date: Mon, 08 Jan 2001 03:52:31 +0100
+Date: Mon, 8 Jan 2001 11:03:36 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+To: Cort Dougan <cort@fsmlabs.com>
+cc: diekema_jon <diekema@bucks.si.com>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Root keys on bk://bitkeeper.fsmlabs.com:5000 have changed
+In-Reply-To: <20010107031314.G13210@hq.fsmlabs.com>
+Message-ID: <Pine.HPX.4.10.10101081054020.1811-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Micael,
+On Sun, 7 Jan 2001, Cort Dougan wrote:
 
-in message <20010108021003.92030.qmail@web11708.mail.yahoo.com> you wrote:
 >
-> >AfterI ported a image into the board,when I used the
-> >following commmand
+> } It appears that the BitKeeper repository at bk://bitkeeper.fsmlabs.com:5000
+> } has changed.  What happened to the previous BK tree?  Was it replaced with the
+> } 2.4.0 baseline?
 >
->    => bootm 10020000
->
-> >to boot that image,the message just like the one
-> >listed below was displayed.
->
->    => # Booting  Linux kernel at 10020000
->    =>  Bad Header Checksum
+> Yup.  The 5000 and 5001 trees are completely new.  You need to reclone.
+> Sorry about the abrupt change, it mirrors the abrupt and poorly timed
+> appearance of 2.4.
 
-The linuxppc-embedded mailing listy is not exactly the right place to
-ask this question; what you see is an error message from the  PPCBoot
-firmware  on your board, so if you have to ask the ppcboot-users list
-is probably a better place.
+Nice, I have a copy of the 2.3 tree with my own patches which are quite a
+long list of changes and merges. Recloning is _not_ an option...
 
->     I think,the reason for this has something to do
-> with the way I compile the image. What do you think?
-> Please give a hint.Thank you!
+Fortunately I was still using copy of Linus tree in my own repositories
+which I maintain personnally as my main development branch. I was
+seriously considering switching to the fsmlabs bk trees, now it will never
+happen, ever...
 
-Well, I think the error message is  pretty  clear:  the  one  of  the
-checksums stored with your image is not what PPCboot expects (PPCBoot
-images   have  two  checksums:  the  first  to  validate  the  header
-information, the second to check the data payload).
+	Gabriel.
 
-Either the image you stored at address 0x10020000 is  not  a  PPCBoot
-image  at  all, or it got corrupted during download or in memory. You
-can try to dump the memory region using
-
-	md 10020000
-
-This might give an indication what happened.
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-There are three things I always forget. Names, faces -  the  third  I
-can't remember.                                         - Italo Svevo
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
