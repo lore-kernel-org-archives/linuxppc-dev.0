@@ -1,42 +1,75 @@
-Date: Sat, 26 Jun 1999 14:22:18 -0500 (CDT)
-From: Takashi Oe <toe@unlserve.unl.edu>
-To: Kazunori Aoshima <aoshimak@mail.cc.tohoku.ac.jp>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [Q] PowerStack installimage
-In-Reply-To: <199906261814.DAA03596@mail.cc.tohoku.ac.jp>
-Message-ID: <Pine.LNX.3.96LJ1.1b7.990626140212.13697C-100000@selq119.unl.edu>
+Date: Sun, 27 Jun 1999 01:36:07 -0400 (EDT)
+From: Peter Handel <phandel@cise.ufl.edu>
+To: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: HELP - I'm going mad: mp3/adb conflict; r5/mouse button emu; twm/menu
+Message-ID: <Pine.GSO.4.05.9906270129400.10109-100000@eclipse.cise.ufl.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 27 Jun 1999, Kazunori Aoshima wrote:
+I've got a few problems with my new r5 system, the first of which is
+absolutely driving me nuts.
 
-> Hi.
-> 
-> Now I make kernel and bootimages for R5.
-> I compiled kernel-2.2.1 with prep_fb.patch, and 
-> I would like to add zImage to "Linux1999installer.bin" as a 
-> "ramdisk.image.gz".
+PowerCenter Pro 210 / 96MB RAM.
 
-I don't think "Linux1999installer.bin" is a gzipped file.  It is probably
-a MacBinary file which contains BootX and such for Mac OS based install.
+1) Say I'm playing an mp3 with either xmms or mpg123.  If I move a
+window around w/the mouse, the music will stop completely!  I have to
+quit xmms/mpg123 and restart it for it to work again.  This only
+happens with kernels I compile myself.  I have even tried compiling
+2.2.10 and 2.3.6 with all default values, but still the same problem.
+(Had same problem under r4!)  The only constant here is egcs 2.91.66,
+which I built under r4 and which came prebuilt in r5.  This has been
+extremely frustrating, as I'd like to start playing with the kernel
+code myself.
 
-There is an image file for prep:
-ftp://ftp.linuxppc.org/linuxppc-pre-R5/install/PREP-CHRP-BeBox/PREP.install.image
+Other problems:
 
-If you need to boot via floppy disks for installation, you can perhaps try
-the ramdisk.image.gz at ftp://ppc.linux.or.jp/pub/users/toe/install-R5/.
-I made this RAM disk because it was very hard to fit both the kernel image
-and installer binaries into a single floppy disk.  To use this, put the
-ramdisk.image.gz into arch/ppc/boot/ directory in the kernel source tree,
-and try "make zImage.initrd" to create a bootable file.  The README file
-at the install-R5 directory might help somehow.
+2) Mouse: I cannot get the middle mouse button emulated using XFree86
+- I've tried all the suggestions with the adb_buttons in the bootx
+kernel-args space, and even tried the patched kernel in the
+faq-o-matic; nothing.  Control-click does send a right mouse event and
+has been from day 1, I just can't get the middle one emulated [I'd
+actually like to get option and command-click *and* option-2/3 again, 
+like r4].
+
+3) twm menus are all blue in the background, until I move my mouse
+over the selections, thus making them visible.  Here is a snip of my
+.twmrc:
+
+menu "hosts"
+{
+"Logins"        ("white":"DarkSlateGrey")       f.title
+"Local Shell"   !"xterm &" #theres more here
+...
+"-----"         f.title
+"Exit"          ("white":"CornFlowerBlue") f.quit
+}
+
+So, when I initially click, the menu is all blue until I move my mouse
+over a selection, which then makes the selection act normal.  This
+exact .twmrc worked perfectly under r4.
+
+4) By the way, does anyone have a good /etc/X11/XF86Config file for
+the PowerComputing's 17" monitor?  I don't have my monitor manual
+here, so I don't have the exact h/v frequencies handy.  It works, but
+I'm sure it'd work at a higher refresh rate (ie. 76hz)
 
 
-Takashi Oe
+Thanks,
+Peter
 
+-- 
+Peter F. Handel          "[The anti-Christ] also forced everyone, small and
+phandel@cise.ufl.edu      great ... to receive a mark [smart card?] on his
+www.cise.ufl.edu/~phandel right hand or on his forehead, so that no one could
+FAX: (561) 619-8051       buy or sell unless he had the mark"-Revelation13:16
+> > You are perfectly free to believe what you want to, and so am I.
+> Actually, this turns out not to be the case. God does not give us
+> the freedom to believe anything we wish. We are morally obligated to
+> believe the truth. Doing anything else is a sin. You are not free to
+> interpret the Bible anyway you wish. -DFL (Pretty neat, huh?)
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
