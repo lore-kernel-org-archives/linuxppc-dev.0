@@ -1,43 +1,52 @@
-From: "dong in kang" <dkang@east.isi.edu>
-To: "'Linux PPC Embedded mailing list'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: boot PPClinux on Sandpoint with Atlimus board
-Date: Wed, 14 May 2003 09:53:45 -0400
-Message-ID: <000401c31a20$3ddee7c0$45a97241@Minjoo>
+Date: 14 May 2003 14:36:24 -0000
+Message-ID: <20030514143624.358.qmail@webmail31.rediffmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <Pine.LNX.4.44.0305140737170.30763-100000@spider.ancor.com>
+From: "ramanathan G A" <ramanathan_ga@rediffmail.com>
+Reply-To: "ramanathan G A" <ramanathan_ga@rediffmail.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: linux ppc boot parameters R3, R5
+Content-type: text/plain;
+	format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+Hi All,
 
- Hello,
+I am trying to boot an MPC8260 board with Linux 2.4.4. I cross
+compiled the kernel for PPC using GCC 3.2 and prepared a
+'zImage.initrd'. Since the board has a working bootloader for
+pSOS, I decide to use the same with minimum modifications to suite
+for loading the linux image.
 
- I'm trying to boot PPClinux on Sandpoint with Altimux board (using MPC755
-and MPC107 bridge chip).
-I don't use DINK32. I use Codewarrior v.6.0 with BDI 2000.
-I'm trying to load the zImage.initrd on the SDRAM and directly run the
-kernel without using bootloader.
-I use MontaVista's hardhat linux. I configured the linux to work for
-Sandpoint.
-I use BDI2000 to initialize the bridge chip, which are less than 10
-instructions long.
-After initialization, I can read/write sdram.
-And then I upload zImage.initrd at 0x800000.
-It successfully decompresses the kernel and jump to 0x00000000.
->From there it works fine until it enables MMU and jump to 0xC0000000.
-When it jumps to 0xC0000000, it only finds garbage there. All FFs at
-0xC0000000.
-I checked the register MSR and BATs. They look OK. But address translation
-doesn't seem to occur.
-I think I need to do more initialization before I upload zImage.initrd and
-run it.
-Could anybody tell me what should i do?
+Going through the literature, I could understand that the linux
+image is expecting TWO arguments; in registers R3 and R5.
+R3 - Pointer to board information structure
+R5 - Open Firmware Data. (??)
 
- Thanks,
+Now, I have to modify my boot loader in order to boot linux
+image.
+The boot loader is supposed to do the basic initialization of the
+processor, load the image on to the RAM from flash and give
+control to the image entry point.
 
- Dong-In Kang
+Could some one help me giving pointers to what is meant by this R5
+parameter (Open Firmware Data)? What is the significance? Can I
+avoid this parameter and proceed?
+(I am stuck at this point.)
+
+Any suggestions to improve the situation is welcome.
+
+Thank you.
+
+Rgds,
+Ramanathan G A
+
+
+___________________________________________________
+Impress your clients! Send mail from me @ mycompany.com .
+Just Rs.1499/year.
+Click http://www.rediffmailpro.com to know more.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
