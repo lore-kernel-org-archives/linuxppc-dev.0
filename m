@@ -1,18 +1,21 @@
-Return-Path: <Stefan.Nickl@kontron.com>
-Received: from kom-mail1.kontron-modular.com (unknown [62.159.155.196])
-	by ozlabs.org (Postfix) with ESMTP id B77B067A6F
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 79FEB67A6F
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  6 Apr 2005 01:56:36 +1000 (EST)
-From: Stefan Nickl <Stefan.Nickl@kontron.com>
-To: Rune Torgersen <runet@innovsys.com>
-In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B859335@ismail.innsys.innovsys.com>
-References: <DCEAAC0833DD314AB0B58112AD99B93B859335@ismail.innsys.innovsys.com>
-Content-Type: text/plain
-Date: Tue, 05 Apr 2005 17:56:33 +0200
-Message-Id: <1112716593.12785.29.camel@lucy.pep-kaufbeuren.de>
-Mime-Version: 1.0
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: FCC Ethernet startup crash
+	Wed,  6 Apr 2005 01:58:47 +1000 (EST)
+In-Reply-To: <20050404191718.GA30281@logos.cnet>
+References: <20050404191718.GA30281@logos.cnet>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <ba633c3356ff1ec71f53d4a0998132ff@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Tue, 5 Apr 2005 11:58:17 -0400
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+Cc: Paul Mackerras <paulus@samba.org>,
+	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: 8xx v2.6 TLB problems and suggested workaround
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,25 +26,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2005-04-05 at 10:37 -0500, Rune Torgersen wrote:
-> I've been running into the old problem of the kernel ip stack crasheing
-> the kernel, because of early packets again.
-> 
-> This has been mentioned on this list several times before, but the
-> worarounds that used to work doesn't seem to work anymore.
-> (like changing the order of things in ip_init())
-> 
-> As far as I can tell, it is because the FCC enet drivers starts to
-> receive packets way before the ip stack is initialized.
-> 
-> Does anybody have any good ideas on how to fix this?
 
-Maybe you want to try my version:
+On Apr 4, 2005, at 3:17 PM, Marcelo Tosatti wrote:
 
-http://ozlabs.org/ppc32-patches/patch.pl?id=14
+> Problem is that the "dcbst" instruction will, _sometimes_ (the 
+> failure/success rate is about 1/4
+> with my test application) fault as a _write_ operation on the data.
 
-Or is it equal to your (no longer working) solution?
+Oh, geeze .... It's all coming back to me now ....
 
--- 
-Stefan Nickl
-Kontron Modular Computers
+The 8xx cache operations don't always operate as defined in the PEM.
+There are likely to be some archive discussions within the Freescale
+knowledge data base that describe the different behaviors I've seen
+with the chip variants and revisions.  I can't find any of those e-mail
+discussions, so I'll try to recall from memory.
+
+The PEM cache instructions are all implemented in a microcode that
+uses the 8xx unique cache control SPRs.  Depending upon the state
+of the cache and MMU, it seems in some cases the EA translation is
+subject to a "normal" protection match instead of a load operation 
+match.
+
+The behavior of these operations isn't consistent across all of the 8xx
+processor revisions, especially with early silicon if people are still
+using those.  During conversations with Freescale engineers, it seems
+the only guaranteed operation was to use the 8xx unique SPRs, but
+I think I only did that in 8xx specific functions.
+
+We have way too much code in the TLB exception handlers already,
+so let's just try a tlbia of the EA in the update_mmu_cache, with an 
+#ifdef
+for the 8xx.  It seems if the dcbst causes a TLB miss during execution,
+it does the right thing.  We may want to make the dcbxxx instructions 
+some
+kind of macro, so on 8xx we can include such operations in otherwise
+"standard" software.
+
+Thanks for the great work!
+
+
+	-- Dan
