@@ -1,41 +1,46 @@
-Date: Fri, 12 Dec 2003 22:56:01 +0100
-From: Wouter Cloetens <wouter@mind.be>
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: v2p@mind.be
-Subject: [PATCH] Insight Memec Virtex-II Pro Development Board support
-Message-ID: <20031212215601.GH3935@roadkill.intern.mind.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Ricardo Scop <scop@digitel.com.br>
+To: "Qsyang" <yangqs@163.com>,
+	"linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: close to porting success.....
+Date: Fri, 12 Dec 2003 20:50:54 -0200
+References: <200312120632.AAA23173@lists.linuxppc.org>
+In-Reply-To: <200312120632.AAA23173@lists.linuxppc.org>
+MIME-Version: 1.0
+Message-Id: <200312122050.54421.scop@digitel.com.br>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Mind is making available a set of Linux kernel patches adding support for the Insight
-Memec Virtex-II Pro Development Board using Memec's reference design for Linux on
-ftp://ftp.mind.be/Virtex2Pro/patch-v2.4.23_linuxppc_2_4_devel/.
+Hi Qsyang:
 
-This version of the patches is against kernel version 2.4.23 in the
-linuxppc_2_4_devel tree, BitKeeper tag v2.4.23_linuxppc_2_4_devel.
+On Friday 12 December 2003 04:36, Qsyang wrote:
+> dear all,
+>  I am porting U-boot-1.0.0 to my custom MPC8xx board and success is
+> being expectted coming soon(maybe too conceited^&^). Now i have a
+> question which describes below.
+>     So far it is working fine when i am using BDI2000 and runing 'BDI>go
+> 0x02800100' in Telnet console,and then all the U-boot commands are
+> working very well.
+>  But when i disconnected BDI and power on board directly ,U-Boot
+> crasheed after relocation to RAM. FAQ say that SDRAM initialization is
+> bad ,if this is the case why it is OK when using BDI to boot it. What's
+> the difference between the two conditions? Maybe some hardware problem?
 
-If needed, we can also submit the diff against the linuxppc_2_4 tree.
+Maybe there's some SDRAM controller initialization in BDI2000 configuration
+file that's missing in your U-boot code. You should check this first.
 
-We commit to maintaining this port on an ongoing basis against the
-linuxppc_2_4 tree.
+Have fun,
 
-The patches should be applied in the following order:
- ftp://ftp.mind.be/Virtex2Pro/patch-v2.4.23_linuxppc_2_4_devel/patch-platform-insightv2pro
-   board-specific platform support
-   patch for the 405D5X[12] CPU_212 bug (see http://support.xilinx.com/xlnx/xil_ans_display.jsp?iLanguageID=1&iCountryID=1&getPagePath=14052)
- ftp://ftp.mind.be/Virtex2Pro/patch-v2.4.23_linuxppc_2_4_devel/patch-uartlite
-   Xilinx UART Lite support (not board-specific)
- ftp://ftp.mind.be/Virtex2Pro/patch-v2.4.23_linuxppc_2_4_devel/patch-memec-emac
-   MemecCore Ethernet MAC support (not board-specific)
- ftp://ftp.mind.be/Virtex2Pro/patch-v2.4.23_linuxppc_2_4_devel/patch-mtd
-   MTD support for the NOR flash on the P160 comm module
- ftp://ftp.mind.be/Virtex2Pro/patch-v2.4.23_linuxppc_2_4_devel/patch-defconfig
-   board default configuration
+-Scop.
 
---
-There are 10 types of people in the world: Those who understand binary, and those who don't.
+>
+> 	Any help would be highly appreciated !
+>
+>
+> Qsyang
+>
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
