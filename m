@@ -1,23 +1,19 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx013.isp.belgacom.be (outmx013.isp.belgacom.be
-	[195.238.3.64]) by ozlabs.org (Postfix) with ESMTP id 347D62BF07
+Return-Path: <wd@denx.de>
+Received: from mailout01.sul.t-online.com (mailout01.sul.t-online.com
+	[194.25.134.80]) by ozlabs.org (Postfix) with ESMTP id 0472B2BDB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 25 Dec 2004 23:34:32 +1100 (EST)
-Received: from outmx013.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx013.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
-	ESMTP id iBPCYLvE031974
-	for <linuxppc-embedded@ozlabs.org>; Sat, 25 Dec 2004 13:34:21 +0100
-	(envelope-from <tnt@246tNt.com>)
-Message-ID: <41CD5E60.10404@246tNt.com>
-Date: Sat, 25 Dec 2004 13:34:40 +0100
-From: Sylvain Munaut <tnt@246tNt.com>
-MIME-Version: 1.0
-To: ivica@asist-traffic.com
-References: <41C72733.9030300@asist-traffic.com>
-In-Reply-To: <41C72733.9030300@asist-traffic.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: i2c on mpc5200
+	Sun, 26 Dec 2004 04:10:06 +1100 (EST)
+To: Suresh Chandra Mannava <msuresh@gamebox.net>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Sat, 25 Dec 2004 13:16:35 +0530."
+	<41CD1ADB.3010807@gamebox.net>
+Date: Sat, 25 Dec 2004 18:09:25 +0100
+Sender: wd@denx.de
+Message-Id: <20041225170931.05B4DC14C8@atlas.denx.de>
+Cc: etux@embeddedtux.org, linuxppc-embedded@ozlabs.org
+Subject: Re: kernel for MPC8260 SBC 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,33 +24,52 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi
+Suresh,
 
-> I have a hardware clock (RTC) which is not yet supported in
-> the linux kernel. It is RX-8025 module from EPSON and it is
-> I2C bus-interface based. Before I start writing support for this
-> module I would like to have I2C support working in my kernel.
-> Has anybody succeeded in getting I2C supported for MPC5200
-> based boards with 2.6 kernels? I'm using the one which maintains
-> Sylvain Munaut. If I boot up the kernel with I2C support in it
-> I don't get any initialization messages for I2C, only this one line:
-> ----------------------------------------------------------------------
-> eth0: Phy @ 0x0, type LXT971 (0x001378e2)                           
-> mice: PS/2 mouse device common for all mice
-> i2c /dev entries driver
-> NET: Registered protocol family 2
-> IP: routing cache hash table of 512 buckets, 4Kbytes
-> -----------------------------------------------------------------------
+please read the  netiquette.  Please  never  post  the  same  message
+several times to different newsgroups.
+
+In message <41CD1ADB.3010807@gamebox.net> you wrote:
+> 
+> We developed a SBC based on MPC8260. We are planing to port Linux on it.
+> I downloaded mpc8260 cross compiling tools from denx.de.
+> 
+> I started cross-compiling linux-2.4.4.
+
+Why? 2.4.4 ist very, very old. Use a more recent kernel tree. If  you
+want   to   stay   in   our   source   tree,   then  please  use  the
+linuxppc_2_4_devel module on our CVS server.
+
+> The problem is
+> I am not able to compile kernel. 8260 specific files in arch/ppc are not 
+> compiling due to not inclusion of
+
+Then your configuration is broken. The kkernel compiles fine for many boards.
+
+> "bd_t" structure. I Included the file "asm-ppc/bseip.h".
+> Still encountering many errors.
+
+This is not a big surprise. The "bseip.h" header file is for a MPC8xx
+based board - what makes you think that this might work on your  8260
+based hardware?
+
+> I even tried with linux-2.4.20 and encountered the same problems.
+> Is there any patch required for compiling the kernel cleanly.
+
+No. There is no patch needed. The kernel trees are  clean.  You  just
+have  to  select a correct configuration. Ummm... and for your custom
+board you will probably have to port Linux first.
+
+> Please provide pointer to the sutiable kernel along with patch.
+
+See for example the linuxppc_2_4_devel module on our CVS server.
 
 
-Are you sure it doesn't work ?
-On my system there are no I2C init message either, the driver is just 
-not noisy ... (unless you activate all the I2C debug stuff).
+Best regards,
 
-I have the exact same message than you but if I activate the eeprom 
-support then in
-/sys/bus/i2c/devices, the lite5200 eeprom shows up and I can read it ...
+Wolfgang Denk
 
-
-
-Sylvain
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Every little picofarad has a nanohenry all its own.      - Don Vonada
