@@ -1,57 +1,68 @@
-Message-Id: <5.1.0.14.2.20021120212220.00aebfa0@pop.prodigy.net>
-Date: Wed, 20 Nov 2002 21:47:34 -0800
+Message-ID: <3DDC81F0.50200@tataelxsi.co.in>
+Date: Thu, 21 Nov 2002 12:19:20 +0530
+From: "Omanakuttan" <omanakuttan@tataelxsi.co.in>
+MIME-Version: 1.0
 To: linuxppc-embedded@lists.linuxppc.org
-From: Eugene Surovegin <ebs@innocent.com>
-Subject: [PATCH] correct initialization sequence in ppc405_enet_open
-Cc: David Gibson <david@gibson.dropbear.id.au>,
-	Armin Kuster <akuster@dslextreme.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Subject: cannot compile 2.4.19 with kgdb/xmon
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi!
+Hi,
+I am a new member in this list.
+I am trying to build kernel 2.4.19 for ppc (mpc 8260) on i386 using
+ppc_82xx-gcc cross compiler.
 
-This patch fixes problem in drivers/net/ibm_ocp/ibm_ocp_enet.c.
-Ring buffers initialization (init_rings) is called _after_ enabling MAL rx
-channel.
-If a packet arrives just after MAL was enabled but before init_rings
-initialized buffers, you can see random crashes during EMAC open or receive
-descriptor error interrupt.
+The configuration compiles fine when I exclude kernel hacking options.
+Once kgdb or xmon options (any of them)  of the kernel hacking options
+is included, kernel compilation fails with the following
 
-This bug affects all systems that use drivers/net/ibm_ocp/ibm_ocp_enet.c
-(405GP based, 440GP based, etc).
-This patch is against current devel_2_4, but I think should apply without
-any problems to devel_2_5 also.
-
-Thanks.
-
-===== drivers/net/ibm_ocp/ibm_ocp_enet.c 1.55 vs edited =====
---- 1.55/drivers/net/ibm_ocp/ibm_ocp_enet.c     Thu Aug 22 11:29:32 2002
-+++ edited/drivers/net/ibm_ocp/ibm_ocp_enet.c   Wed Nov 20 21:34:30 2002
-@@ -375,13 +375,15 @@
-                 request_irq(BL_MAL_RXEOB,ppc405_eth_rxeob,0,"OCP EMAC RX
-EOB",dev);
-         }
-
--       /* enable all MAL transmit and receive channels */
-+       /* init buffer descriptors rings */
-+       init_rings(dev);
-
-+       /* enable all MAL transmit and receive channels */
-         enable_mal_chan(fep);
-
-         /* set transmit and receive enable */
-         out_be32(&emacp->em0mr0, EMAC_M0_TXE | EMAC_M0_RXE);
--       init_rings(dev);
-+
-         netif_start_queue(dev);
-         printk(KERN_NOTICE "%s: IBM EMAC: open completed\n\n", dev->name);
+[root@cosine-ipnos /opt/hardhat/previewkit/ppc/82xx/bin]$ ./ppc_82xx-gcc -v
+./ppc_82xx-gcc: Actual path = '/opt/hardhat/previewkit/ppc/82xx/bin/'
+         Actual name = 'ppc_82xx-gcc'
+         Invoking
+/opt/hardhat/previewkit/ppc/82xx/bin/../lib/gcc-lib/powerpc-hardhat-linux/2.95.3/ppc_82xx-gcc
+Reading specs from
+/opt/hardhat/previewkit/ppc/82xx/bin/../lib/gcc-lib/powerpc-hardhat-linux/2.95.3/specs
+gcc version 2.95.3 20010315 (release/MontaVista)
 
 
+[root@cosine-ipnos /usr/src/linux-2.4.19]# make menuconfig dep bzImage
+<snip>
+arch/ppc/kernel/kernel.o: In function `getpacket':
+arch/ppc/kernel/kernel.o(.text+0x8f58): undefined reference to
+`getDebugChar'
+arch/ppc/kernel/kernel.o(.text+0x8f58): relocation truncated to fit:
+R_PPC_REL24 getDebugChar
+<snip>
+arch/ppc/kernel/kernel.o: In function `putpacket':
+arch/ppc/kernel/kernel.o(.text+0x9078): undefined reference to
+`putDebugChar'
+arch/ppc/kernel/kernel.o(.text+0x9078): relocation truncated to fit:
+R_PPC_REL24 putDebugChar
+<snip>
+arch/ppc/kernel/kernel.o: In function `handle_exception':
+arch/ppc/kernel/kernel.o(.text+0x9340): undefined reference to
+`kgdb_interruptible'
+arch/ppc/kernel/kernel.o(.text+0x9340): relocation truncated to fit:
+R_PPC_REL24 kgdb_interruptible
+<snip>
+arch/ppc/kernel/kernel.o: In function `pmac_setup_arch':
+arch/ppc/kernel/kernel.o(.text.init+0x1e50): undefined reference to
+`zs_kgdb_hook'
+arch/ppc/kernel/kernel.o(.text.init+0x1e50): relocation truncated to fit:
+R_PPC_REL24 zs_kgdb_hookmake: *** [vmlinux] Error 1
+[root@cosine-ipnos /usr/src/linux-2.4.19]#
 
-  Eugene Surovegin <mailto:ebs@innocent.com>
+I examined the source code and found out the function is in
+/usr/src/linux-2.4.19/arch/ppc/8xx_io/uart.c but not getting compiled.
+(no .o files in that dir)
+
+Any suggestions?
+
+Thanks and regards,
+Om.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
