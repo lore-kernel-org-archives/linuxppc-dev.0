@@ -1,35 +1,13 @@
-Return-Path: <g.jaeger@sysgo.com>
-Received: from mailgate.sysgo.de (ns.sysgo.de [213.68.67.98])
-	by ozlabs.org (Postfix) with ESMTP id C19052BDA5
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Oct 2004 22:27:05 +1000 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by mailgate.sysgo.de (Postfix) with ESMTP id 3125C47BBD
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Oct 2004 14:23:41 +0200 (CEST)
-Received: from donald.sysgo.com (unknown [172.20.1.30])
-	by mailgate.sysgo.de (Postfix) with ESMTP id 2868E47BBD
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Oct 2004 14:23:41 +0200 (CEST)
-Received: from kah.ulm.sysgo.com (firewall.sysgo.com [172.20.1.35])
-	by donald.sysgo.com (Postfix) with ESMTP id C5AB4CEAE4
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Oct 2004 14:27:02 +0200 (CEST)
-Received: from gja.ulm.sysgo.com (gja.ulm.sysgo.com [172.40.1.130])
-	by kah.ulm.sysgo.com (8.9.3/8.8.8) with ESMTP id OAA06344
-	for <linuxppc-embedded@ozlabs.org>; Fri, 22 Oct 2004 14:27:21 +0200
-From: Gerhard Jaeger <g.jaeger@sysgo.com>
-To: linuxppc-embedded@ozlabs.org
-Date: Fri, 22 Oct 2004 14:27:02 +0200
-References: <20041022085733.0c5289c8.Hiroshi_DOYU@montavista.co.jp>
-	<20041022082955.GA27169@gate.ebshome.net>
-	<006101c4b831$c3d60d30$0301a8c0@chuck2>
-In-Reply-To: <006101c4b831$c3d60d30$0301a8c0@chuck2>
+Return-Path: <runet@innovsys.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200410221427.02301.g.jaeger@sysgo.com>
-Subject: Re: [BUG] IBM440GX works too slow under nfsroot
+	charset="US-ASCII"
+Date: Fri, 22 Oct 2004 08:57:37 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B06DB91@ismail.innsys.innovsys.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: <Linuxppc-embedded@ozlabs.org>
+Cc: 
+Subject: CPM2 Bug
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -40,19 +18,57 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Friday 22 October 2004 14:22, Mark Chambers wrote:
-> > > this problem has been discussed a while ago between my co-worker and
-> > > Matt-Porter - first on the list and later on in private. We also have this
-> > > problem on a custom board using the 440GX. It can be also seen on a Ebony
-> > > (440GP) as well and on our rather old Ocotea. Our kernel originally is
-> > >based
-> etc.
->
-> I'm just curious here - I'm not familiar with IBM processors -
-> is there a separate PHY chip, and if so, what is it?
+I think I found a bug in immap_cmp2.h
 
-Yes, on Ebony and Ocotea we have an AMD NetPHY AM79C875KC, on
-Walnut, I'm not sure, on our custom boards we have also the AMD
-and a NS DP83846A, as well as DP8385...
+(in structue sit_cpm2_t)
 
-Gerhard
+I know that res7 was changed to make room for the PCI structure
+But res6 is 2 bytes shorter in the new one.
+
+I compared to the same structure in u-boot (that got the PCI change at
+about the same time) and it has it at 94 bytes long also.
+
+
+Old structure:
+ /* System Integration Timers.
+ */
+typedef struct sys_int_timers {
+	char	res1[32];
+	ushort	sit_tmcntsc;
+	char	res2[2];
+	uint	sit_tmcnt;
+	char	res3[4];
+	uint	sit_tmcntal;
+	char	res4[16];
+	ushort	sit_piscr;
+	char	res5[2];
+	uint	sit_pitc;
+	uint	sit_pitr;
+	char	res6[94];
+	char	res7[2390];
+} sit8260_t;
+
+New structue:
+typedef struct sys_int_timers {
+	u8	res1[32];
+	u16	sit_tmcntsc;
+	u8	res2[2];
+	u32	sit_tmcnt;
+	u8	res3[4];
+	u32	sit_tmcntal;
+	u8	res4[16];
+	u16	sit_piscr;
+	u8	res5[2];
+	u32	sit_pitc;
+	u32	sit_pitr;
+	u8	res6[92];
+	u8	res7[390];
+} sit_cpm2_t;
+
+Rune Torgersen
+System Developer
+Innovative Systems LLC
+1000 Innovative Drive
+Mitchell, SD 57301
+Ph: 605-995-6120
+www.innovsys.com
