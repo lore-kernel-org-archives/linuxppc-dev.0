@@ -1,34 +1,30 @@
-To: "Aman" <aman@mistralsoftware.com>
-Cc: "linuxppc embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Downloading Linux image using Riscwatch 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 22 Oct 2002 23:54:31 +0530."
-             <002c01c279f8$43c269a0$370da8c0@aman>
-Date: Tue, 22 Oct 2002 21:08:34 +0200
-Message-Id: <20021022190839.E1F0210148@denx.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <00c001c279ff$0f8b6450$db00000a@dejanj>
+From: "Dejan Jovanovic" <dejanj@erlangtech.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: MPC8260 serial on SCC support
+Date: Tue, 22 Oct 2002 14:13:09 -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <002c01c279f8$43c269a0$370da8c0@aman> you wrote:
->
-> I have ported rom monitor code[Openbios from IBM] for my custom
-> board[PPC440GP Processor]. The custom board doesn't support ethernet. Now I
-> want to download a linux image to the RAM of my custom board. What linux
-> image I have to build to download to RAM using JTAG of Riscwatch Debugger .
+Hi,
 
-I have no idea. We use BDI2000's only.
+Is there support for serial console on SCC for MPC8260 in latest kernel
+distributions included in the ELDK or kernel version on the ftp://ftp.denx.de?
+I am using custom MPC8260 board that has serial on SCC. Also I am using ELDK
+with the kernel version linux-2.4.4-2002-08-09.
+I cannot find the SCC serial support.
 
-Best regards,
+I also saw posts with the patches for serial on SCC for MPC8260 and downloaded
+the patch but could not patch the kernel sucesfully.
 
-Wolfgang Denk
+Is there some other patch for this or how can I include support for this in my
+kernel?
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-All he had was nothing, but that was something, and now it  had  been
-taken away.                             - Terry Pratchett, _Sourcery_
+Thanks in advance.
+
+Dejan Jovanovic
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
