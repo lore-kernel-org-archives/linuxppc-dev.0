@@ -1,35 +1,41 @@
-Date: Fri, 29 Dec 2000 12:36:05 -0700
-From: Tom Rini <trini@kernel.crashing.org>
+Message-ID: <3A4D079E.1778BCEC@mvista.com>
+Date: Fri, 29 Dec 2000 16:52:30 -0500
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
 To: Ron Bianco <ronb@junction.net>
-Cc: linuxppc-embedded@lists.linuxppc.org
+CC: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: A stable linux 2.2.xx for sandpoint-8240 anywhere?
-Message-ID: <20001229123605.G5661@opus.bloom.county>
 References: <000501c071cd$44356c00$4d012ac7@warp-speed>
-Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <000501c071cd$44356c00$4d012ac7@warp-speed>; from ronb@junction.net on Fri, Dec 29, 2000 at 11:26:39AM -0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Dec 29, 2000 at 11:26:39AM -0800, Ron Bianco wrote:
+Ron Bianco wrote:
 
-> We've been working with the 2.3.16 port from MontaVista.
 > There are problems as this port was based on an experimental and unstable
 > kernel.
+> There are patches (tons) that fix some of the problems we've been seeing,
 
-I'm not quite sure what's in the 2.3.16 port specifically, but your easiest
-route would probably be the 2.4.x-testxx kernels, specifically the ones
-from the 2_5 bitkeeper tree (http://www.fsmlabs.com/linuxppcbk.html,
-2_5 is on 5005) as it's somewhat similar to 2.3.16 (so it shouldn't be too
-hard to get your changes applied) and other 82xx boards are currently working
-anyways.
+Really?  Although not suitable for a product, there shouldn't be "tons"
+of patches required to make it useful in a development environment.
+There may be patches required to work around the different revisions
+of the Sandpoint hardware.
 
-Of course, Dan should probably speak up, as I'm just getting the hang of
-all this stuff. :)
+> We're facing a deadline and must concentrate on a custom driver for now.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+That is where all of the resources seem to be going right now, to
+custom hardware.  The 8240 is just a 603 with 106/107 OpenPIC PCI
+bridge.  The Sandpoint is what required all of the code changes.  If
+your hardware is like a Sandpoint, then there are still changes
+required to suit your needs.  Most people aren't building Sandpoint-like
+hardware that I know about.
+
+> Eventually we'll make our patches for 8240 available.
+
+Do it quickly, as there will soon be 824x updates in the 2.4 kernel.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
