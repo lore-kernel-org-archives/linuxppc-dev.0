@@ -1,37 +1,42 @@
-From: "Kwansuk Kim" <kskim@neowave.co.kr>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Unable to mount root fs...
-Date: Thu, 6 Jul 2000 21:19:02 +0900
-Message-ID: <NEBBKFENMLEDKDHMEHPJEENPCAAA.kskim@neowave.co.kr>
+Message-ID: <001901bfe74f$12fd8360$640a0a0a@server>
+From: "Paolo Scaffardi" <arsenio@tin.it>
+To: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: MPC823 FADS: need help on best configuration to start developing!
+Date: Thu, 6 Jul 2000 15:28:26 +0200
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-In-Reply-To: <Pine.LNX.4.21.0007060211240.6798-100000@gemini.home.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At last! My kernel started operating on the custom board.
+I need to use the MPC823 FADS to develop a diskless linux box that boots and
+loads the kernel via Ethernet (BOOTP/TFTP). I use a PC with RedHat 6.2 as
+host.
 
-but, soon it halted as followed.
+I have read a lot of informations on this mailing list about working with
+this family of PPC, but there are many questions that i'd like to ask you:
 
-I think the compress ramdisk image is loaded well, and it seems decompressed well as the console output "Compressed image found ..."
+1) does 8xxrom support BOOTP/TFTP to boot from ethernet? have anyone done
+this?
+2) does 8xxrom support the boot from PCMCIA compactflash? What
+type/manufacturer? (i think writing new kernels on a compactflash is better
+then loading it via the ADI card)
+3) it is possible to run the 8xxrom when connected to the debugger via the
+ADI card?
+4) i created my cross-compile development tools by following the
+instructions on http://members.home.com/mmporter/linux/cross/ . Are them
+compatible with my MPC823 or i should apply others patches to them?
+5) i use 8xxrom.0.3.0 without any patch. It is correct?
+6) i use the kernel mpc8xx-2.2.13 with damm and bossek patches but no
+math-emu, because it seems making the kernel not compilable. Is that
+configuration suitable for the FADS?
 
-but why can't the kernel mount the file system?
+Thanx in advance!
+Your help is very helpful!!
 
-I use the kernel included in redhat edk.
+Bye,
+Arsenio
 
--------------------
-
-Now booting the kernel
-ttyS00 at 0x0380 is a SMC
-ttyS01 at 0x0100 is a SCC
-ttyS02 at 0x0200 is a SCC
-pty: 256 Unix98 ptys configured
-RAM disk driver initialized:  16 RAM disks of 4096K size
-eth0: CPM ENET Version 0.2, 00:01:c4:00:00:b1
-RAMDISK: Compressed image found at block 0
-Kernel panic: VFS: Unable to mount root fs on 01:00
-Rebooting in 180 seconds..
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
