@@ -1,48 +1,37 @@
-Message-ID: <3D66CF18.5040801@embeddededge.com>
-Date: Fri, 23 Aug 2002 20:11:04 -0400
-From: Dan Malek <dan@embeddededge.com>
+Content-Type: text/plain; charset=iso-8859-1
 MIME-Version: 1.0
-To: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
-Cc: "Dr. Craig Hollabaugh" <craig@hollabaugh.com>,
-	Marius Groeger <mag@sysgo.de>, John Fisher <John.Fisher@nec.com.au>,
-	Linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: cygwin and embedded linux
-References: <000501c24979$6348a190$37d34c93@neca.nec.com.au>	<3.0.3.32.20020822173918.006dbb00@hollabaugh.com> 	<3D65C5A8.5010408@embeddededge.com> <1030095276.2481.230.camel@spawn>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: paulus@samba.org
+Cc: acurtis@onz.com, dan@embeddededge.com,
+	linuxppc-embedded@lists.linuxppc.org
+From: acurtis@onz.com
+Subject: RE: 8260 Memory Management
+Date: Fri, 23 Aug 2002 17:36:58 -0700 (PDT)
+Message-Id: <20020823173658.25567.h002.c007.wm@mail.directvinternet.com.criticalpath.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Kenneth Johansson wrote:
+> &gt; Basically, remove all the CONFIG_8260 conditional compile stuff.
+>
+> I just looked in arch/ppc in the linuxppc_2_4_devel tree and there are
+> only 3 places where CONFIG_8260 is used in the code.  Two of them are
+> for the cheesy request_8xxirq thing.  The other is for m8260_gorom.
+> So I'm not sure what you're referring to.
 
-> And I remember what you thought about people like me that tried to make
-> the cross compile environment going.
+You need to look in include/asm-ppc. There is things related to address
+translation too.
 
-The only opinion I have changed is that people that can actually make
-this work well (and I know of only a couple) have a special talent
-and I really like them to hang around :-)
+> Dan, can we *please* take out the #define request_irq request_8xxirq
+> and just use request_irq like everyone else?
 
-I guess when you work for a large company that will pay your salary regardless
-of missing schedules and can only provide half-assed tools you have to
-cobble together to make things work, you are both lucky and have my sympathy.
-I don't have the patience or development time to create or debug my
-development tools, they just have to work.  I'm not using anything that
-anyone else can't go out and purchase or download, and it continues to
-baffle me why people won't take the easy route to developing software.
+I already have a patch for this. Do you want it? I was getting ready to submit
+several updates.
 
+TIA
 
-> But it finally did work out OK and nowadays all you really need to now
-> is what parameters to give the configure script.
-
-There is LOTS more to creating an easy to use and properly created set
-of development tools than knowing some parameters to configure scripts.
-Only a couple of people I know understand the magic, and it isn't documented.
-I'm just going to rely on them to make my job easier :-)
-
-Have fun!
-
-
-	-- Dan
-
+------------------------------------------------------------
+Allen Curtis              |  All good things come to those
+Ones and Zeros, Inc.      |  who wait. Some of us have to
+mailto:acurtis@onz.com    |  wait a little longer.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
