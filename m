@@ -1,10 +1,10 @@
 Return-Path: <annamaya@yahoo.com>
-Received: from web53810.mail.yahoo.com (web53810.mail.yahoo.com
-	[206.190.36.205]) by ozlabs.org (Postfix) with SMTP id 1E7BD2BD6A
+Received: from web53805.mail.yahoo.com (web53805.mail.yahoo.com
+	[206.190.36.200]) by ozlabs.org (Postfix) with SMTP id CB8062BDB8
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 12 Oct 2004 03:33:46 +1000 (EST)
-Message-ID: <20041011173344.62221.qmail@web53810.mail.yahoo.com>
-Date: Mon, 11 Oct 2004 10:33:44 -0700 (PDT)
+	Tue, 12 Oct 2004 03:51:02 +1000 (EST)
+Message-ID: <20041011175055.93158.qmail@web53805.mail.yahoo.com>
+Date: Mon, 11 Oct 2004 10:50:54 -0700 (PDT)
 From: annamaya <annamaya@yahoo.com>
 To: Dan Malek <dan@embeddededge.com>
 In-Reply-To: <079593FC-1BA4-11D9-A165-003065F9B7DC@embeddededge.com>
@@ -22,21 +22,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dan,
-First let me thank you for still being around to
-answer questions for people like me. You helped me out
-a lot a few years ago when I was just starting to work
-on all the embedded stuff. I am glad you are still
-helping everyone else.
+I loaded a zImage into address 0x100000 in RAM and
+verified that this was indeed an ELF file. I then said
+"go 0x100040" which would start executing the code
+after skipping the 64 bytes of ELF header. But this is
+what I see happen. 
 
-I will try the zImage trick but I just wanted to know
-if the assumption here is that the kernel already
-understands the EEPROM data format to construct
-bd_info. Is that correct? If the kernel is unable to
-get to this data, is there another way to pass this
-info to the kernel?
+BDI>info
+    Target CPU        : MPC8280/8220/5200 (Zeppo)
+    Target state      : debug mode
+    Debug entry cause : <reserved 0>
+    Current PC        : 0x00100040
+    Current CR        : 0x20004022
+    Current MSR       : 0x00000000
+    Current LR        : 0xfff0531c
 
-Thanks much.
+It looks like address 0x0 is reserved for some weird
+reason. When I do a dump of the 0x0 area, it looks
+like there is copy of the planetcore bootloader here
+since I see some text indicating that. If I dont have
+the BDI hooked up, I see an immediate reboot of the
+device, consistant with executing the bootloader at
+0x0. 
+
+Any inputs on why this is happenning? I just
+understand the PlanetCore bootloader very well.
 
 --- Dan Malek <dan@embeddededge.com> wrote:
 
@@ -77,7 +87,7 @@ Thanks much.
 
 
 		
-__________________________________
+_______________________________
 Do you Yahoo!?
-Yahoo! Mail Address AutoComplete - You start. We finish.
-http://promotions.yahoo.com/new_mail 
+Declare Yourself - Register online to vote today!
+http://vote.yahoo.com
