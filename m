@@ -1,17 +1,19 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id 388C167A6D
+Return-Path: <jpl@xiphos.ca>
+Received: from mail.net (custpop.ca.mci.com [142.77.1.111])
+	by ozlabs.org (Postfix) with ESMTP id 155BB67A7A
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  6 Apr 2005 02:41:18 +1000 (EST)
+	Wed,  6 Apr 2005 02:56:06 +1000 (EST)
+Received: from [216.95.199.148] (account jpl@xiphos.ca HELO [192.168.1.169])
+	by mail.net (CommuniGate Pro SMTP 4.2.8)
+	with ESMTP-TLS id 50947209 for linuxppc-embedded@ozlabs.org;
+	Tue, 05 Apr 2005 11:56:05 -0400
+Message-ID: <4252B50C.2080700@xiphos.ca>
+Date: Tue, 05 Apr 2005 11:55:56 -0400
+From: Joshua Lamorie <jpl@xiphos.ca>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Tue, 5 Apr 2005 11:41:10 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B859338@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: "Stefan Nickl" <Stefan.Nickl@kontron.com>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: RE: FCC Ethernet startup crash
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Recommendations: Small Embedded PPC chip with FPU
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,46 +24,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Thanks....
+Gidday there,
 
-That whole patch works beautifully.
-Had to apply the whole thing (so fcc_restart gets called in the start,
-and end of fcc_open) for it to work.
+I am looking for a new PowerPC for some controls applications and I was 
+wondering if anyone on this list might make some recommendations.  I 
+will be fabricating the board, so I'm just interested in the CPU.  
+Currently I'm doing everything on a Virtex-II Pro (PPC 405).
 
-Without calling fcc_restart in the start, I get lots of "eth0: tx queue
-full!." messages.
+I'm considering the MPC5200, but I would love to have something in a 
+smaller package.
 
-> -----Original Message-----
-> From: Stefan Nickl [mailto:Stefan.Nickl@kontron.com]=20
-> Sent: Tuesday, April 05, 2005 10:57
-> To: Rune Torgersen
-> Cc: linuxppc-embedded
-> Subject: Re: FCC Ethernet startup crash
->=20
-> On Tue, 2005-04-05 at 10:37 -0500, Rune Torgersen wrote:
-> > I've been running into the old problem of the kernel ip=20
-> stack crasheing
-> > the kernel, because of early packets again.
-> >=20
-> > This has been mentioned on this list several times before, but the
-> > worarounds that used to work doesn't seem to work anymore.
-> > (like changing the order of things in ip_init())
-> >=20
-> > As far as I can tell, it is because the FCC enet drivers starts to
-> > receive packets way before the ip stack is initialized.
-> >=20
-> > Does anybody have any good ideas on how to fix this?
->=20
-> Maybe you want to try my version:
->=20
-> http://ozlabs.org/ppc32-patches/patch.pl?id=3D14
->=20
-> Or is it equal to your (no longer working) solution?
->=20
-> --=20
-> Stefan Nickl
-> Kontron Modular Computers
->=20
->=20
->=20
->=20
+Requirements:
+    - Linux support
+    - PowerPC w >= 16k D,I Cache
+    - FPU
+    - Onboard memory controller (SDRAM or DDR)
+    - >= 300 MHz
+    - Industrial temperature (-40 to +85)
+    - package size < 27mmx27mm
+    - everything else is icing
+
+Any suggestions welcome.
+
+I'm sorry if this is somewhat off topic.
+
+Joshua
+
+-- 
+
+Xiphos Technologies
+(514) 848-9640 x227
+(514) 848-9644 fax
+
+www.xiplink.com
+_______________________________________________
+The information transmitted is intended only for the
+person or entity to which it is addressed and may contain
+confidential and/or privileged material.  If you have
+received this in error, please contact the sender and delete
+this communication and any copy immediately. Thank you.
