@@ -1,15 +1,49 @@
-Message-ID: <396CEDF1.44A002B8@mvista.com>
-Date: Wed, 12 Jul 2000 15:15:13 -0700
-From: Frank Rowand <frank_rowand@mvista.com>
-Reply-To: frowand@mvista.com
-MIME-Version: 1.0
-To: Wentao Xu <xuwentao@yahoo.com>
-CC: linuxppc-embedded@lists.linuxppc.org
+From: xuwentao@cn.ibm.com
+To: frowand@mvista.com, benb@m2tech.co.nz
+cc: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <4825691B.00152176.00@d73mta06.au.ibm.com>
+Date: Thu, 13 Jul 2000 09:50:30 +0800
 Subject: Re: Why eth0 does not work
-References: <20000712102145.5376.qmail@web2102.mail.yahoo.com>
-Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Currently I only modify ppc4xx_pic_init() to init IRQ 20 and 26, which is
+used by
+ttys00 and eth0. That error occurs because my CPU is a ppc401 not a 405gp.
+
+I have exported /opt/hardhat/devkit/ppc/8xx/target_ftest4 according
+instructions from
+mvista. The output is broken into 2 lines.
+
+BTW, I disabled the loopback in the config file, and the msg "lo is down'
+still
+appears.
+
+I start the tcpdump at the server, I found that the server recieved many
+ARP packets
+issued from the linux box(7.1.1.5) looking for the server(7.1.1.21). It
+seems that
+the box can not resolve 7.1.1.21 (can not read MAC addr, as Ben said).
+
+Xu Wentao
+IBM China Research Lab
+Tel:          (86-10)  62986677-216
+Internet:    xuwentao@cn.ibm.com
+
+
+Frank Rowand <frank_rowand@mvista.com> on 2000-07-13 06:15:13 AM
+
+Please respond to frowand@mvista.com
+
+To:   Wentao Xu <xuwentao@yahoo.com>
+cc:   linuxppc-embedded@lists.linuxppc.org (bcc: Wen Tao Xu/China/IBM)
+Subject:  Re: Why eth0 does not work
+
+
+
 
 
 Wentao Xu wrote:
@@ -34,7 +68,8 @@ Wentao Xu wrote:
 
 > ERROR: ppc4xx_pic_init() detected wrong PVR_VER
 
-I don't know what changes you have made to ppc4xx_pic_init(), make sure you have
+I don't know what changes you have made to ppc4xx_pic_init(), make sure you
+have
 initialized the pic correctly.
 
 
@@ -134,5 +169,6 @@ kernel or is the path just truncated in the error message?
 --
 Frank Rowand <frank_rowand@mvista.com>
 MontaVista Software, Inc
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
