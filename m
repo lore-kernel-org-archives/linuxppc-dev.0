@@ -1,139 +1,100 @@
-Message-ID: <76C7EB7C8500594F9001B118E7E778F48F4D6A@mdsms3.inside.mdsroc.com>
-From: "Ruhland, Paul" <PRuhland@microwavedata.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: cramfs mpc8xx 2.4.18
-Date: Fri, 13 Feb 2004 14:31:09 -0500
-MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----_=_NextPart_000_01C3F267.EE9F0CA0"
+Date: Sat, 14 Feb 2004 03:37:14 +0800
+Message-Id: <200402140337.AA249168064@actinium.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: "Arun Kumar" <arunkumar@actinium.org>
+Reply-To: <arunkumar@actinium.org>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This message is in MIME format. Since your mail reader does not understand
-this format, some or all of this message may not be legible.
+Hi,
+I could not get able to build the kernel due to this error as it was
+stucking up for the console How can i resolve this.
 
-------_=_NextPart_000_01C3F267.EE9F0CA0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+But I do have /dev/console configured on my PC with 622 permissions and
+5 1 as MAjor,Minor numbers for the character special file.
 
-Without more information I can't really tell what is wrong.  Did you create
-an mtd partition map for your flash (need this to use the mtdblock devices)?
+I used ELDK for the kernel.
 
-I used to mount cramfs images from flash, but ran into problems every so
-often with the cramfs root not decompressing correctly while reprogramming
-other sectors.  So I switched to mounting the cramfs image as a ramdisk.
-You just build the cramfs image as usual but mount is as a ramdisk when
-booting the kernel (I use u-boot so I used mkimage to prep it for that
-also).
+IAD852T Boot Loader ROM for Linux, Version 0.1.0
+Copyright(C) 2000,2001,2002 from Motorola
+***************    ESDL   BEIJING   ***************
+Build time: Tue Feb 10 17:08:56 MYT 2004
+load from 0x281c118 to 0x400000, size=0x92328
 
-I've attached a patch against linuxppc_2_4_devel (2.4.23) which adds this
-capability, if your interested.  It simply changes the ramdisk blocksize to
-match cramfs blocksize if its mounting a cramfs root image.
+Starting at: 0x400000
 
+loaded at:     00400000 004961E4
+board data at: 00011270 0001128C
+relocated to:  003F0100 003F011C
+zimage at:     004054D0 004910E6
+initrd at:     004910E6 004910F2
+avail ram:     004D2000 02000000
 
------Original Message-----
-From: Lokesh Kumar [mailto:kumar.lokesh@wrx-us.com]
-Sent: Friday, February 13, 2004 1:33 PM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: cramfs mpc8xx 2.4.18
+Linux/PPC load: root=/dev/nfs rw nfsroot=192.168.1.206:/ppcroot ip=192.168.1.43:
+::::eth0:off
+Uncompressing Linux...done.
+Now booting the kernel
+Linux version 2.4.2_hhl20 (yewcc@yewcc.actinium) (gcc version 2.95.4 20010319 (p
+rerelease/franzo/20011204)) #18 Tue Feb 10 17:08:31 MYT 2004
+On node 0 totalpages: 8192
+zone(0): 8192 pages.
+zone(1): 0 pages.
+zone(2): 0 pages.
+Kernel command line: root=/dev/nfs rw nfsroot=192.168.1.206:/ppcroot ip=192.168.
+1.43:::::eth0:off
+Decrementer Frequency = 187500000/60
+Warning: real time clock seems stuck!
+Calibrating delay loop... 49.56 BogoMIPS
+Memory: 30548k available (1100k kernel code, 464k data, 48k init, 0k highmem)
+Dentry-cache hash table entries: 4096 (order: 3, 32768 bytes)
+Buffer-cache hash table entries: 1024 (order: 0, 4096 bytes)
+Page-cache hash table entries: 8192 (order: 3, 32768 bytes)
+Inode-cache hash table entries: 2048 (order: 2, 16384 bytes)
+POSIX conformance testing by UNIFIX
+Linux NET4.0 for Linux 2.4
+Based upon Swansea University Computer Society NET3.039
+Initializing RT netlink socket
+Starting kswapd v1.8
+CPM UART driver version 0.03
+ttyS00 at 0x0280 is a SMC
+block: queued sectors max/low 20224kB/6741kB, 64 slots per queue
+eth0: CPM ENET Version 0.2 on SCC4, 08:00:3e:58:15:60
+eth1: FEC ENET Version 0.2, FEC irq 3, addr 08:00:3e:d8:15:60
+PPP generic driver version 2.4.1
+PPP Deflate Compression module registered
+PPP BSD Compression module registered
+Physically mapped flash: Found 2 x16 CFI devices at location 0 in 16 bit mode
+ Amd/Fujitsu Extended Query Table v1.1 at 0x0040
+Physically mapped flash: Swapping erase regions for broken CFI table.
+number of CFI chips: 1
+mtd: Giving out device 0 to primary boot loader partition
+mtd: Giving out device 1 to RSU partition 1
+mtd: Giving out device 2 to CFG main partition
+mtd: Giving out device 3 to CFG secondary partition
+mtd: Giving out device 4 to RSU partition 2
+CPM SPI Driver: $Revision: 1.1 $ wg@denx.de
+rxbuf = 0xc01a0118 tx_buf = 0xc01a0108
+NET4: Linux TCP/IP 1.0 for NET4.0
+IP Protocols: ICMP, UDP, TCP, IGMP
+IP: routing cache hash table of 512 buckets, 4Kbytes
+TCP: Hash tables configured (established 2048 bind 2048)
+IP-Config: Guessing netmask 255.255.255.0
+ip_conntrack (256 buckets, 2048 max)
+ip_tables: (c)2000 Netfilter core team
+NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+Looking up port of RPC 100003/2 on 192.168.1.206
+Looking up port of RPC 100005/2 on 192.168.1.206
+VFS: Mounted root (nfs filesystem).
+Freeing unused kernel memory: 48k init 4k openfirmware
+Warning: unable to open an initial console.
 
+It is coming here and stucking up how can I resolve this please tell me
+in detail.
 
-
-Hi Gurus,
-
-I have a custom board running 2.4.18 with initrd. Now, I want to make cramfs
-as root filesystem. When I built cramfs support in the kernel and gave it
-root=/dev/mtdblock1 (where my cramfs in correct endian order is stored on
-flash) rootfstype=cramfs, the kernel hangs. MTD support is built in the
-kernel. If I build cramfs as module, then boot my kernel with initrd (ext2)
-and then mount it (on say /mnt), I can read cramfs correctly.
-
-I also looked at rd.c file in drivers/block and noticed that this is does
-not have cramfs initrd support. Do I need this? What am I doing wrong?
-Please help
-
-Lokesh Kumar
-
-
-
-
-------_=_NextPart_000_01C3F267.EE9F0CA0
-Content-Type: application/octet-stream;
-	name="linuxppc_2_4_devel-cramfs_ramdisk.patch"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
-	filename="linuxppc_2_4_devel-cramfs_ramdisk.patch"
-
-diff -u -p -r1.1.1.1 -r1.2=0A=
---- drivers/block/rd.c	11 Jan 2004 17:36:58 -0000	1.1.1.1=0A=
-+++ drivers/block/rd.c	16 Jan 2004 21:53:25 -0000	1.2=0A=
-@@ -73,6 +73,8 @@ int initrd_in_ram;=0A=
- int initrd_below_start_ok;=0A=
- #endif=0A=
- =0A=
-+void rd_adjust_blocksize( unsigned int new_blocksize );=0A=
-+=0A=
- /* Various static variables go here.  Most are used only in the RAM =
-disk code.=0A=
-  */=0A=
- =0A=
-@@ -476,6 +478,28 @@ static int __init rd_init (void)=0A=
- 	return 0;=0A=
- }=0A=
- =0A=
-+/*=0A=
-+ * cramfs probably has a different blocksize--adjust the=0A=
-+ * ramdisk's block size to accomodate=0A=
-+ * FIXME: should have a way to determine the cramfs=0A=
-+ * blocksize (if it's going to be variable.....)=0A=
-+ */=0A=
-+void rd_adjust_blocksize( unsigned int new_blocksize )=0A=
-+{=0A=
-+	if (rd_blocksize !=3D new_blocksize) {=0A=
-+		int i;=0A=
-+=0A=
-+		rd_blocksize =3D new_blocksize;=0A=
-+		for (i =3D 0; i < NUM_RAMDISKS; i++) {=0A=
-+			rd_hardsec[i] =3D rd_blocksize;=0A=
-+			rd_blocksizes[i] =3D rd_blocksize;=0A=
-+		}=0A=
-+		printk(KERN_NOTICE "RAMDISK: overriding ramdisk block "=0A=
-+				"size to %d for cramfs filesystem\n",=0A=
-+				rd_blocksize);=0A=
-+	}=0A=
-+}=0A=
-+=0A=
- module_init(rd_init);=0A=
- module_exit(rd_cleanup);=0A=
-=0A=
-diff -u -p -r1.1.1.1 -r1.2=0A=
---- init/do_mounts.c	11 Jan 2004 17:36:00 -0000	1.1.1.1=0A=
-+++ init/do_mounts.c	16 Jan 2004 21:50:43 -0000	1.2=0A=
-@@ -33,6 +33,9 @@ extern asmlinkage long sys_mknod(const c=0A=
- extern asmlinkage long sys_umount(char *name, int flags);=0A=
- extern asmlinkage long sys_ioctl(int fd, int cmd, unsigned long =
-arg);=0A=
- =0A=
-+/* to change ramdisk blocksize (ie. for cramfs) */=0A=
-+extern asmlinkage void rd_adjust_blocksize( unsigned int new_blocksize =
-);=0A=
-+=0A=
- #ifdef CONFIG_BLK_DEV_INITRD=0A=
- unsigned int real_root_dev;	/* do_proc_dointvec cannot handle kdev_t =
-*/=0A=
- static int __initdata mount_initrd =3D 1;=0A=
-@@ -531,6 +534,8 @@ identify_ramdisk_image(int fd, int start=0A=
- 		printk(KERN_NOTICE=0A=
- 		       "RAMDISK: cramfs filesystem found at block %d\n",=0A=
- 		       start_block);=0A=
-+		/* cramfs has blocksize of PAGE_CACHE_SIZE */=0A=
-+		rd_adjust_blocksize(PAGE_CACHE_SIZE);=0A=
- 		nblocks =3D (cramfsb->size + BLOCK_SIZE - 1) >> BLOCK_SIZE_BITS;=0A=
- 		goto done;=0A=
- 	}=0A=
-=0A=
-
-------_=_NextPart_000_01C3F267.EE9F0CA0--
+Thanks in advance,
+Arunkumar.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
