@@ -1,27 +1,33 @@
-Message-Id: <200312041732.LAA13109@lists.linuxppc.org>
-Content-Type: text/plain;
-  charset="iso-8859-15"
-From: "J.Murali" <j.murali@gdatech.co.in>
-Reply-To: j.murali@gdatech.co.in
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: how to switch from serial console to framebuffer console
-Date: Thu, 4 Dec 2003 23:08:02 +0600
 MIME-Version: 1.0
+Subject: RE: RAMDISK Segv
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Thu, 4 Dec 2003 16:13:25 -0500
+Message-ID: <AB5AF73EAF23304EA1B932174137CED7030445@m5tmail.m5t.com>
+From: "Jean-Denis Boyer" <jdboyer@m5t.com>
+To: "Kevin A. Sapp" <Kevin.Sapp@catapult.com>
+Cc: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi all,
+Kevin,
 
-I am working on a custom board, which runs linux-2.4.17.
+> Total memory = 32MB; using 64kB for hash table (at c0140000)
 
-This board has frame buffer support.
-i am loading frame buffer driver as a module and its working
-fine.  The system boots with the serial console. After this i
-dont know how to switch over to framebuffer console.   
+You should not get this line with a 8275, which has a 603e core
+and does not support the HPTE.
+The CPU revision is not correctly recognized.
+You will have to patch arch/ppc/kernel/cputable.c
 
-Can any one help me in this.
-Thanx in advance.
-Murali
+Regards,
+--------------------------------------------
+ Jean-Denis Boyer, Eng.
+ M5T Centre d'Excellence en Télécom Inc.
+ 4283 Garlock Street
+ Sherbrooke (Québec)
+ J1L 2C8  CANADA
+ (819)829-3972 x241
+--------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
