@@ -1,22 +1,36 @@
-Message-ID: <19990611075502.A94786@risc.sps.mot.com>
-Date: Fri, 11 Jun 1999 07:55:02 -0500
-From: Dave Wolfe <dwolfe@risc.sps.mot.com>
-To: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-Subject: Lists outage
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Brad Boyer <flar@cegt201.bradley.edu>
+Cc: jpgarcia@execpc.com (Joseph Palani Garcia),
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: EM86 port for LinuxPPC?
+References: <199906102103.QAA15072@cegt201.bradley.edu>
+From: Andreas Bogk <andreas@andreas.org>
+Date: 11 Jun 1999 15:29:19 +0200
+In-Reply-To: Brad Boyer's message of "Thu, 10 Jun 1999 16:03:00 -0500 (CDT)"
+Message-ID: <m3emjivpao.fsf@soma.andreas.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-My apologies to the linuxppc-* subscribers. Seems there was a little
-problem with a disk filling up on lists late yesterday (6/10/99) which
-starved the mail system. Things are back up now and I'll be resending
-what few messages were captured but not delivered to everyone. If some
-of these messages are duplicates for you, I apologize for that too.
+Brad Boyer <flar@cegt201.bradley.edu> writes:
+
+> our own x86 emulation library to replace it.  This isn't so much of a
+> problem, because there is already a basic x86 emulator in one of the
+> bootloaders, to be able to run BIOS code from PCI cards with x86 BIOS
+> chips on them.  I started looking at it, but then I went on to
+
+And then there is bochs, which is a complete PC emulator, and which
+certainly could be modularized:
+
+http://www.bochs.org
+
+It reaches the speed of a 2 MHz 486 on my 300 MHz G3, so it's not
+exactly a viable option for running x86 binaries on PPC.
+
+Andreas
 
 -- 
- Dave Wolfe
+Reality is two's complement. See:
+ftp://ftp.netcom.com/pub/hb/hbaker/hakmem/hacks.html#item154
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
