@@ -1,60 +1,40 @@
-Date: Fri, 16 Jun 2000 13:27:09 +0200
-From: Olaf Hering <olh@suse.de>
-To: Brad Midgley <brad@turbolinux.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: paul-rsync: make zImage fails
-Message-ID: <20000616132709.B27795@suse.de>
-Reply-To: linuxppc-dev@lists.linuxppc.org
-References: <394988C9.92470C6F@denise.shiny.it> <Pine.LNX.4.20.0006152313080.15387-100000@mail.turbolinux.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.20.0006152313080.15387-100000@mail.turbolinux.com>; from brad@turbolinux.com on Thu, Jun 15, 2000 at 11:19:07PM -0700
+Date: Fri, 16 Jun 2000 10:04:22 -0400 (EDT)
+From: James Simmons <jsimmons@acsu.buffalo.edu>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: Adrian Cox <apc@agelectronics.co.uk>,
+        Linux Frame Buffer Device Development <linux-fbdev@vuser.vu.union.edu>,
+        LinuxPPC-Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: [linux-fbdev] Re: copy_from_user in drivers/video/fbmem.c
+In-Reply-To: <Pine.LNX.4.05.10006161312290.5039-100000@callisto.of.borg>
+Message-ID: <Pine.LNX.4.10.10006160953580.414-100000@maxwell.futurevision.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Jun 15, Brad Midgley wrote:
-
+> > Which do people think is wrong:
+> > Is copy_from_user() on PPC wrong, because it can't write to uncached
+> > space.
+> > Is fbmem.c wrong, because it tries to use copy_from_user() to memory
+> > mapped IO?
 >
-> it's been a long time since i've gotten a chrp image to work, but the
-> current sources can't do it:
->
-> main.c: In function `chrpboot':
-> main.c:43: conflicting types for `_start'
-> main.c:29: previous declaration of `_start'
->
-> is it an unfortunate name collision, or is one of these right and one
-> wrong?
->
->  extern char _start[], _end[];
->    ...
->  extern char _start;
+> Congratulations! You found a bug in fbmem.c! Fbmem.c should not use direct
+> memory accesses to access the frame buffer, but must use fb_writel() and
+> friends instead.
 
---- linux.nokconf/arch/ppc/chrpboot/main.c      Thu Jun 15 20:31:48 2000
-+++ linux.chrp/arch/ppc/chrpboot/main.c Thu Jun 15 23:18:47 2000
-@@ -40,9 +40,9 @@
-     void *dst;
-     unsigned char *im;
-     unsigned initrd_start, initrd_size;
--    extern char _start;
-+   /* extern char _start;
+Let me guess, fb_write and fb_read. I have seen problems also with using
+memset on a mmap framebuffer on the PPC. Geert I like to suggest we move
+fb_write, fb_read, and fb_memset to fb.h so userland apps can use them.
+Also I have though about having generic functions for register access
+based on what is in atyfb.c for userland to use as well. Something like.
 
--    printf("chrpboot starting: loaded at 0x%x\n\r", &_start);
-+    printf("chrpboot starting: loaded at 0x%x\n\r", &_start); */
+static inline u32 ld_le32(unsigned int regindex, struct fb_info *info);
+etc.
 
-     if (initrd_len) {
-        initrd_size = initrd_len;
+Actually this problem is more general. We really should have a generic
+access MMIO region function. I believe some sound cards can be mmapped as
+well.
 
-
-works fine here.
-
-
-Gruss Olaf
-
---
- $ man clone
-
-BUGS
-       Main feature not yet implemented...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
