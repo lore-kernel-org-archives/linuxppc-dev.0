@@ -1,40 +1,67 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Date: Thu, 7 Mar 2002 08:04:13 -0700
-From: Matt Porter <mporter@mvista.com>
-To: Stefan Roese <stefan.roese@esd-electronics.com>
-Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: PPC440GP Support
-Message-ID: <20020307080413.A1162@home.com>
-References: <EFEAIMDCOOOHIEPHDNFJKEAGDMAA.stefan.roese@esd-electronics.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <EFEAIMDCOOOHIEPHDNFJKEAGDMAA.stefan.roese@esd-electronics.com>; from stefan.roese@esd-electronics.com on Wed, Mar 06, 2002 at 03:37:53PM +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: Undefined refence error
+Date: Thu, 7 Mar 2002 10:29:16 -0500
+Message-ID: <FF6CF34C346E724596A2FB5CAAB2C497884382@voyager.ops.infiniswitch.com>
+From: "Wright, David" <dwright@infiniswitch.com>
+To: "satya kumar" <i_satya@yahoo.com>,
+	<linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Mar 06, 2002 at 03:37:53PM +0100, Stefan Roese wrote:
->
-> Hi,
->
-> we are designing a custom PPC440GP Board right now, and would like to know
-> the status of the Linux port.
->
-> When (roughly estimated) and how will it be possible to get a first version
-> supporting the IBM Eboni evaluation board?
+Are you compiling with -O2 optimization?  If you compile without
+optimization, those missing functions won't be inlined and will
+show up as undefined references.
 
-"When it's ready" is the best free software estimate you should expect.
-Don't _ever_ make the mistake of setting a business schedule by the
-release of free software.  If you want a commitment you should talking
-to a commercial vendor.
+  -- David Wright, Infiniswitch Corp.
 
-Past history should show that whatever PPC kernel work we do shows
-up in the tree relatively quickly.
 
-Regards,
---
-Matt Porter
-MontaVista Software, Inc.
-mporter@mvista.com
+
+> -----Original Message-----
+> From: satya kumar [mailto:i_satya@yahoo.com]
+> Sent: Thursday, March 07, 2002 2:02 AM
+> To: linuxppc-embedded@lists.linuxppc.org
+> Subject: Undefined refence error
+>
+>
+>
+> Hai All,
+> My First mail to this group.Not a master , only a
+> newbie ,so please bear with me.
+> I have successfully compiled the binutils, gcc for
+> powerpc. Now I went for compiling glibc, which is
+> giving some problems, so I left it and proceeded with
+> compiling the kernel.
+> Now it is giving following error message when I do
+> make zImage
+> mm/mm.o: In function `__free_pages_ok':
+> mm/mm.o(.text+0xdee4): undefined reference to
+> `__test_and_change_bit'
+> mm/mm.o(.text+0xdee4): relocation truncated to fit:
+> R_PPC_REL24 __test_and_change_bit
+> mm/mm.o: In function `rmqueue':
+> mm/mm.o(.text+0xe0f8): undefined reference to
+> `__change_bit'
+> mm/mm.o(.text+0xe0f8): relocation truncated to fit:
+> R_PPC_REL24 __change_bit
+> mm/mm.o(.text+0xe190): undefined reference to
+> `__change_bit'
+> mm/mm.o(.text+0xe190): relocation truncated to fit:
+> R_PPC_REL24 __change_bit
+> make: *** [vmlinux] Error 1
+>
+>
+> Please help me out.I am stuck. I am compiling it for a
+> MPC860 board. I have selected the machine type as MBX
+> during configuring/compiling kernel( Is it right).
+>
+>
+> Try FREE Yahoo! Mail - the world's greatest free email!
+> http://mail.yahoo.com/
+>
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
