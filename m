@@ -1,47 +1,47 @@
-From: Brian Waite <waite@skycomputers.com>
-To: "Q-ha Park" <qha@infoeq.com>,
-	<linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: can't find "init" when using 1GB ram on 7455.
-Date: Tue, 30 Sep 2003 12:21:21 -0400
-References: <007601c38769$ceb77030$2a21a8c0@qha>
-In-Reply-To: <007601c38769$ceb77030$2a21a8c0@qha>
+Message-ID: <3F79CFE2.4030708@mvista.com>
+Date: Tue, 30 Sep 2003 11:48:02 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <200309301221.26184.waite@skycomputers.com>
+To: Yuxiao Xi <xiyuxiao@harbournetworks.com>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: UART prints very slow
+References: <200309300155.UAA03360@lists.linuxppc.org>
+In-Reply-To: <200309300155.UAA03360@lists.linuxppc.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+Interrupt problem.  Double check the irq you specified in the uart setup
+stuff.
 
-I had almost the exact same problem on the ev64260 platform with 1GB of
-memory. Tak a look and make sure you are not doing any io_block_mapping()
-calls in your platform setup functions. You might have one for early serial
-messages. Look at the mapping and make sure it does not overlap. You might
-have to reduce the io_block_mapping() size. Just a thought
+Mark
+--
 
-Thanks
-Brian
-On Tuesday 30 September 2003 11:44 am, Q-ha Park wrote:
-> Well, actually not just init but all "start" programs such as modprobe,
-> bash, etc. Linux uses NFS as its filesystem, and kernel thinks NFS is
-> mounted correctly, but it doesn't successfully find and execute "start"
-> programs like sh, init, etc. The system that works well with 512MB ram.
+Yuxiao Xi wrote:
+
+>Hello,all,
+>    I am developing my board with CPU MPC8240 and a UART ST16C2552.
+>I use MontaVista Linux 2.1. Now I have successfully logged in the
+>shell.But there is a question that I can't resolve:( I am sure that the
+>UART is successfully initialized except that ST16C2552 is detected as
+>ST16650.I debugged the UART interrupt and the printk info showed that it
+>was OK.
 >
-> This is what I attempted to support two 512 MB DIMM rams:
-> 1. use 2 more BATs to translate up to 0x40000000 (1GB) in ppcboot,
-> changed CFG_INIT_RAM to 0x40000000 accordingly.
-> 2. enable high_mem support in the kernel.
+>QUESTION: when I input commands such as 'ls', 'cd /dev' on the shell,
+>the characters of these commands are printed very slow on the screen
+>and the command execution results as well. I think these commands and
+>their execution results are printed through UART interrupt.Is MPC8240
+>interrupt ACK so slow? BTW: while system booting,the UART prints very
+>quickly in polling print mode.
 >
-> When I made the system load the kernel w/o high_mem support
-> intentionally, UART doens't work anymore; it doesn't generate interrups.
-> Any clues on what might be wrong and what idiotic things I might have
-> done?
->
-> Thanks in advance!
+>　　　　　　　　Yuxiao Xi
+>　　　　　　　　xiyuxiao@harbournetworks.com
+>　　　　　　　　　　2003-09-30
 >
 >
-> Q-ha Park
+>
+>
 >
 >
 
