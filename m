@@ -1,72 +1,50 @@
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: HOWTO: Creating a root file system < 32 MB 
-Date: Fri, 31 Aug 2001 09:35:28 -0500
-Message-ID: <3A494DE356A49A40B37442E1E0D9F3B5063438@ptah.ad.newisys.com>
-From: "Navin Boppuri" <navin.boppuri@newisys.com>
-To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Date: Fri, 31 Aug 2001 07:50:46 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Xavier Grave <grave@ipno.in2p3.fr>
+Cc: embarque ppc <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: mvme5100 one more time...
+Message-ID: <20010831075046.E27811@cpe-24-221-152-185.az.sprintbbd.net>
+References: <20010830170043.A8047@ipnpcu5.in2p3.fr> <20010830091936.N18618@cpe-24-221-152-185.az.sprintbbd.net> <20010831111629.A29808@ipnpcu5.in2p3.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20010831111629.A29808@ipnpcu5.in2p3.fr>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I agree with Wolfgang on this. Look at Linux BootDisk HOWTO doc. There
-is a striaght forward approach to creating a ext2 file system from
-scratch. They also talk about small tricks you can do to cut down on the
-size of the file system. The target file system from Mvista is just a
-collection of all the binaries and libraries for the 8xx. You dont need
-to start from this target, you may just copy the bins and libs into your
-own small file system.
-
-http://www.linuxdoc.org/HOWTO/Bootdisk-HOWTO/buildroot.html
-
-Navin.
------Original Message-----
-From: Wolfgang Denk [mailto:wd@denx.de]
-Sent: Friday, August 31, 2001 8:19 AM
-To: diekema_jon
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: HOWTO: Creating a root file system < 32 MB
-
-
-
-Jon,
-
-in message <m15cnZX-001SysC@bucks> you wrote:
+On Fri, Aug 31, 2001 at 11:16:29AM +0200, Xavier Grave wrote:
 >
-> Objective:
->     Create a Linux root file system that is under 32MB for a MPC8260
-target.
+> Le jeu, 30 ao? 2001 18:19:36, Tom Rini a ?crit :
+> >
+> > On Thu, Aug 30, 2001 at 05:00:43PM +0200, Xavier Grave wrote:
+> >
+> > > I have compiled the last 2.4.10-pre1 kernel from linuxppc_2_4_devel
+> > > and I try to do a :
+> > > ppc6bug> nbo 0 0 ,,, zImage.pplus
+> > >
+> > > The only thing I have is the following :
+> > > Exception : Program (Illegal instruction)
+>
+> > What CPU is this?  I'm assuming you get a register dump, can you post
+> > that
+> > too?
+>
+> I recompiled a kernel with the mvme5100_defconfig, the only difference is
+> that  CONFIG_PPC_STD_MMU=y is set
 
-Ummm... 32 MB? That's HUGE!!! Most of the systems I see  in  products
-have root filesystems in the size of 2...8 MB.
-
-> Direction:
+That's fine..  Can you change arch/ppc/boot/simple/head.S to something like:
+#if 0
+/*
+ * Determine CPU type
 ...
->     board.  We will start with all the packages in HHL 1.2, and
->     removed the fluff until we hit our target size.
+	bge	_setup_L2CR
+#endif
+	b	_setup_6xx
 
-I  disagree  with  this  method  in  general.  Taking  any  "standard
-distribution" and removing things will always be a poor way to design
-an   embedded   system.   You  will  always  get  caught  in  strange
-interdependencies, where you cannot remove A (which you don't  need),
-because  it's  needed  for  some  function of B (which you also don't
-need), but another function of B is used by C, which is important  to
-you.
-
-If you want to build a lean system you have to do it  the  other  way
-round: bottom up.
-
-See also: .sig below :-)
-
-Wolfgang Denk
+If this works, cat /proc/cpuinfo and tell me the PVR of your G4.
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Perfection is reached, not when there is no longer anything  to  add,
-but when there is no longer anything to take away.
-- Antoine de Saint-Exupery
-
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
