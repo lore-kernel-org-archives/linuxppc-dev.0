@@ -1,51 +1,55 @@
-Message-ID: <3B571F13.8F067B1@mvista.com>
-Date: Thu, 19 Jul 2001 10:55:31 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-MIME-Version: 1.0
-To: ashish anand <ashisha@india.infogain.com>
+Date: Thu, 19 Jul 2001 23:36:44 +0100
+Subject: Re: powermac (other ppc?) events
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: "Joseph P. Garcia" <jpgarcia@execpc.com>,
+	Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: PCI Config access doesn't return correct data...
-References: <3B567E57.D2339645@india.infogain.com>
-Content-Type: text/plain; charset=us-ascii
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
+Message-Id: <20010719223636.DAB40DBB56@atlas.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-ashish anand wrote:
+> work as well.  As is, volume keys seem to rank low in the priority queue.
+> something to get practice on.
 
-> Hi all,
-> I found a strange behaviour of pci config access on my board.
-> my host bridge is MPC107(address map b)
-> indirect pci config access method with config_addr and config_data ports
-> at 0xfec00000 and 0xfee00000.
->
-> I am using sandpoint+750 board and Bluecat Linux.
+Look, I don't have a proper opinion on how the keys are achieved ...
 
-Do yourself a favor and either use the latest 2_4_devel kernel or hhl2.0 kernel from mvista
-for the sandpoint.
+---
 
->
-> I have a case of pci config not returning devid and vendorid correctly
-> sometime 0x00000000 , hence the cards put in slot are not even detected ,
-> in following conditions.
-> (card not behaving correctly are scsi aha 294xxx and 3c905b n/w card
-> but surprisingly INTEL 82559 always behaves correctly)
->
-> 1> when you boot through osloader
->
-> 2> when you put your scsi or 3com card in OUTER slot only
->
-> but when i put mb() in definition of pcibios_xxxx_config_xxxx in file indirect_pci.c
-> before and after the reading and writing the pci_config_addr and pci_config_data ports
-> everything behaves correctly.
->
-> it is clear that it was a reordering problem.
-> i want a further comment on this ,why it should happen?
-> noteworthy point is that it only happens when you ,
->
-> boot through osloader + with scsi and 3com cards not intel one +  only when cards are put
-> in OUTER slots.
->
+all I want is that the sound driver is:
 
+1/ called through the standard ioctl() for volume - however many "volumes"
+you want to adjust.
+
+This is so that *your* interface will work with *any* dmasound-supported
+hardware (without hacking dmasound for each chipset).
+
+We currently support 3 1/2 chipsets - with two more in the pipeline + Apple
+is releasing sound hardware variants faster than we can keep up with the
+driver already ;-))
+
+also think about how it might interact with USB audio ...
+
+you ***really*** ***don't*** want to go down the road of hacking every sound
+driver for volume keys.
+
+
+2/ Let dmasound handle the headphone insertion - it is already dealing with
+the hardware and the appropriate interrupts.
+
+By all means - if there is a consensus that we *need* User Control over
+whether headphone insertion disables the internal speaker (or not) - then I
+am happy to use one of the OSS "special purpose" ioctl() values to control
+this as a PMac-specific feature - which will work properly via the proper
+ioctl().
+
+just my 0.02 euro ...
+
+but I am (at least unofficially) maintaining the driver at the moment.
+
+ciao,
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
