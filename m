@@ -1,18 +1,29 @@
-Return-Path: <akpm@osdl.org>
-Received: from mail.osdl.org (fw.osdl.org [65.172.181.6])
-	by ozlabs.org (Postfix) with ESMTP id D0F352BDEB
+Return-Path: <jhuwig@intec-isdn.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 665C92BDEB
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  1 Dec 2004 10:26:25 +1100 (EST)
-Date: Tue, 30 Nov 2004 15:30:39 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: Kumar Gala <galak@linen.sps.mot.com>
-Message-Id: <20041130153039.22b36348.akpm@osdl.org>
-In-Reply-To: <Pine.LNX.4.61.0411301517300.15307@linen.sps.mot.com>
-References: <Pine.LNX.4.61.0411301517300.15307@linen.sps.mot.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed,  1 Dec 2004 19:41:38 +1100 (EST)
+Received: from [212.227.126.160] (helo=mrelayng.kundenserver.de)
+	by moutng.kundenserver.de with esmtp (Exim 3.35 #1)
+	id 1CZQ3M-0006CL-00
+	for linuxppc-embedded@ozlabs.org; Wed, 01 Dec 2004 09:41:36 +0100
+Received: from [80.135.68.198] (helo=intec-isdn.de)
+	by mrelayng.kundenserver.de with asmtp (Exim 3.35 #1)
+	id 1CZQ3L-0006O0-00
+	for linuxppc-embedded@ozlabs.org; Wed, 01 Dec 2004 09:41:35 +0100
+Received: from joerg (192.168.4.32)
+	by intec-isdn.de with MERCUR Mailserver (v4.02.30 ODAtMjMwNS00MzY0)
+	for <linuxppc-embedded@ozlabs.org>; Wed, 1 Dec 2004 09:39:58 +0100
+From: =?iso-8859-1?Q?J=F6rg_Huwig?= <jhuwig@intec-isdn.de>
+To: <wd@denx.de>
+Date: Wed, 1 Dec 2004 09:44:55 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-reply-to: <20041130162456.5D24AC1430@atlas.denx.de>
+Message-Id: <0412010939587000@intec-isdn.de>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH][PPC32] Performance Monitor/Oprofile support for e500
+Subject: Re: USB driver for ISP1362 very slow 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,40 +34,71 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala <galak@linen.sps.mot.com> wrote:
->
-> Andrew,
-> 
-> Adds oprofile support for the e500 PowerPC core.
+Hi Wolfgang,
 
-- arch/ppc/kernel/perfmon_fsl_booke.c has prototypes for init_pmc_stop()
-  and friends, but those prototypes are already in
-  include/asm-ppc/perfmon.h
+I tried different USB memory sticks but the result was always the same.
+Also there were no error messages in the log file.=20
 
-- please don't put prototypes and extern declarations in .c files.  Ever.
-  It defeats typechecking.  Put them in a header file which is visible to
-  all callers/users as well as to the implementation.
+After trying to understand the driver, I found two defines which seem to =
+be
+responsible for the slow transmission.
 
-- Do these need to be exported to modules?
+In     hcd-1161.c: #define ATL_DONE_DELAY   10
+and in hcd-1161.h: #define ATL_BLOCK_SZ     64
 
-	+EXPORT_SYMBOL(init_pmc_stop);
-	+EXPORT_SYMBOL(set_pmc_event);
-	+EXPORT_SYMBOL(set_pmc_user_kernel);
-	+EXPORT_SYMBOL(set_pmc_marked);
-	+EXPORT_SYMBOL(pmc_start_ctr);
-	+EXPORT_SYMBOL(pmc_start_ctrs);
-	+EXPORT_SYMBOL(pmc_stop_ctrs);
-	+EXPORT_SYMBOL(dump_pmcs);
+with this defines the host controller handles every 11 ms one 64Byte ATL
+block, which of cause is very slow.=20
 
-  and if so, does an EXPORT_SYMBOL_GPL() not suffice?
+I have changed the ALT_BLOCK_SZ from 64 to 512 and reduced the=20
+ATL_DONE_DELAY from 10 to 2. With this changes the driver works much =
+faster.
 
-- This:
+Is it OK to change these constants in that way or could this cause =
+trouble?
 
-	+extern void (*perf_irq)(struct pt_regs *);
 
-  should be in a header file.
+Best regards,
+
+Joerg Huwig
 
 
 
-I'll queue the patch up.  Fixups relative to this patch would be
-appreciated, thanks.
+
+
+
+-----Urspr=FCngliche Nachricht-----
+Von: wd@denx.de [mailto:wd@denx.de]=20
+Gesendet: Dienstag, 30. November 2004 17:25
+An: J=F6rg Huwig
+Cc: Linuxppc-embedded@ozlabs.org
+Betreff: Re: USB driver for ISP1362 very slow=20
+
+Hello,
+
+in message <04113016200014900@intec-isdn.de> you wrote:
+>=20
+> I'm using an ISP1362 as an USB host controller connected to a MPC880=20
+> running under Linux 2.4.25.
+> The Driver seems to work fine as I can mount an USB memory stick.=20
+> But the performance is very bad. To copy a 1MByte big file from the=20
+> USB memory stick to the RAM disk takes about 3 minutes.
+
+Are there any error messages in the log files? Did  you  try  another =
+USB
+memory stick, especially any USB 2.0 stick?
+
+> Does anyone has experience with the ISP1362 driver in Kernel 2.4.25??
+
+Sure. We implemented it and tested it with mass storage devices,  USB
+modems, network adapters and in combination with RNDIS on Windoze.
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de "I
+find this a nice feature but it is not according to  the  documen-
+tation. Or is it a BUG?"   "Let's call it an accidental feature. :-)"
+                       - Larry Wall in <6909@jpl-devvax.JPL.NASA.GOV>
