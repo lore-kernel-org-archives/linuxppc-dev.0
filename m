@@ -1,16 +1,29 @@
-Reply-To: <acurtis@onz.com>
-From: "Allen Curtis" <acurtis@onz.com>
-To: "Yu Bo-BOYU1" <Bo.Yu@motorola.com>,
-	<linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <0B0A39652BB0D411BCCF00508B9512EC08AEB46A@tx14exm05.ftw.mot.com>
+From: Yu Bo-BOYU1 <Bo.Yu@motorola.com>
+To: "'acurtis@onz.com'" <acurtis@onz.com>,
+	linuxppc-embedded@lists.linuxppc.org
 Subject: RE: 8260 core/bus/cpm clock
-Date: Thu, 10 Oct 2002 07:07:21 -0700
-Message-ID: <NCBBIINEHIPFGJPLBEIFGECDDNAA.acurtis@onz.com>
+Date: Thu, 10 Oct 2002 09:17:24 -0500
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-In-Reply-To: <0B0A39652BB0D411BCCF00508B9512EC08AEB469@tx14exm05.ftw.mot.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+It works after I changed bd->bi_busfreq = 66 in embed_config.c .
+It even clear my UART baud rate confusion.
+
+Thanks.
+
+Bo
+
+
+-----Original Message-----
+From: Allen Curtis [mailto:acurtis@onz.com]
+Sent: Thursday, October 10, 2002 9:07 AM
+To: Yu Bo-BOYU1; linuxppc-embedded@lists.linuxppc.org
+Subject: RE: 8260 core/bus/cpm clock
 
 
 If you are using EST8260 as your board type, then you are using the embedded
