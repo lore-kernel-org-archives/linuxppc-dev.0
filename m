@@ -1,51 +1,32 @@
-Message-ID: <20030805163657.14967.qmail@web40306.mail.yahoo.com>
-Date: Tue, 5 Aug 2003 09:36:57 -0700 (PDT)
-From: Miku Jha <jha_miku@yahoo.com>
-Subject: using YAMD on powerpc
-To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <3F2FE9E0.1040505@kegel.com>
+Date: Tue, 05 Aug 2003 10:31:12 -0700
+From: Dan Kegel <dank@kegel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Miku Jha <jha_miku@yahoo.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: using YAMD on powerpc
+References: <20030805163657.14967.qmail@web40306.mail.yahoo.com>
+In-Reply-To: <20030805163657.14967.qmail@web40306.mail.yahoo.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Miku Jha wrote:
+> We dont have any tools at present to find out
+> the memory leaks in our embedded environment.
+> ...
+> ps:does anybody know of any other memory management
+> tool for PowerPc .
 
-I have an embedded environment running on linux
-power pc.
+How about the ones built in to glibc?
+http://www.gnu.org/manual/glibc-2.2.5/html_node/Interpreting-the-traces.html#Interpreting%20the%20traces
+- Dan
 
-I was trying to cross compile YAMD for
-PowerPc.
-
-Is it possible for me to do so.
-
-If you could provide me some tips on doing this or
-porting YAMD for PowerPc it will be really
-helpful.
-
-We dont have any tools at present to find out
-the memory leaks in our embedded environment.
-
-
-Right now this is the compilation error I get
-In function `startup':
-yamd.c:1861: `sigsegv_handler' undeclared (first use
-in this function)
-yamd.c:1861: (Each undeclared identifier is reported
-only once
-yamd.c:1861: for each function it appears in.)
-
-Which makes sense since this code is only for
-linux x86.
-
-Thanks.
-
-ps:does anybody know of any other memory management
-tool for PowerPc .
-
-
-=====
-mailto:jha_miku@yahoo.com
+--
+Dan Kegel
+http://www.kegel.com
+http://counter.li.org/cgi-bin/runscript/display-person.cgi?user=78045
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
