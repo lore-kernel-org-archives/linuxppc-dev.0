@@ -1,45 +1,25 @@
-Message-ID: <C18BA5DDB58DD511BD0700C0DF0DD45028B27D@NTSERVER4>
-From: Phil Thompson <philt@4bridgeworks.com>
-To: "'Matt Porter'" <mporter@kernel.crashing.org>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: 440GX Support on Linux v2.4
-Date: Wed, 25 Feb 2004 16:35:31 -0000
-MIME-Version: 1.0
+Subject: MPC8270 PCI
+From: Jaap-Jan Boor <jjboor@aimsys.nl>
+To: linuxppc-embedded@lists.linuxppc.org
 Content-Type: text/plain
+Message-Id: <1077730574.9261.5.camel@linpc003.aimsys.nl>
+Mime-Version: 1.0
+Date: Wed, 25 Feb 2004 18:36:14 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> -----Original Message-----
-> From: Matt Porter [mailto:mporter@kernel.crashing.org]
-> Sent: 25 February 2004 16:32
-> To: Phil Thompson
-> Cc: linuxppc-embedded@lists.linuxppc.org
-> Subject: Re: 440GX Support on Linux v2.4
->
-> On Wed, Feb 25, 2004 at 03:54:08PM -0000, Phil Thompson wrote:
-> >
-> > I need to bring up Linux 2.4 on an IBM 440GX evaluation board (Ocotea I
-> > assume). It is supported on Linux 2.6.
-> >
-> > What's my best option for doing this...
-> >
-> > Somebody already has a patch for 2.4? :)
-> >
-> > Backport the code from 2.6?
-> >
-> > Enable 440GP compatibility mode and hack the existing 2.4 Ebony board
-> > support?
-> >
-> > Something else?
->
-> Clone linuxppc-2.4 and build using the Ocotea config? :)
->
-> -Matt
+Hi,
 
-Yes, it was a case of picking the right tree.
+I've a short question regarding 82xx PCI (like 8266/8270).
+As far as I understand the manual, you should always be
+able to issue config cycles (config read) on the bus,
+if the 60x bus is in PCI mode. Is this true? I've quite
+some problems with this, and want to blame the hardware...
 
-Thanks,
-Phil
+thanks for any info,
+
+Jaap-Jan
+AimSys b.v.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
