@@ -1,40 +1,73 @@
-Subject: HFS+ kernel module
-To: linuxppc-dev@lists.linuxppc.org
-Date: Sat, 30 Sep 2000 19:34:44 -0700 (PDT)
+From: Paul Mackerras <paulus@linuxcare.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-Id: <20001001023444.804932B54A@marcus.pants.nu>
-From: flar@pants.nu (Brad Boyer)
+Message-ID: <14806.62164.27906.255635@argo.linuxcare.com.au>
+Date: Sun, 1 Oct 2000 19:16:20 +1100 (EST)
+To: Dan Malek <dan@mvista.com>
+Cc: frowand@mvista.com,
+        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: __ioremap_at() in 2.4.0-test9-pre2
+In-Reply-To: <39D68EB8.4CAD5168@mvista.com>
+References: <19340822040932.8760@mailhost.mipsys.com>
+	<Pine.LNX.4.10.10009281150130.3468-100000@cassiopeia.home>
+	<14803.57550.118150.759977@argo.linuxcare.com.au>
+	<39D41AA2.C586D738@mvista.com>
+	<14804.7238.688771.238444@argo.linuxcare.com.au>
+	<39D4E85F.926CFD5B@mvista.com>
+	<14805.17492.766815.388301@argo.linuxcare.com.au>
+	<39D66E4D.4364FC8B@mvista.com>
+	<39D68EB8.4CAD5168@mvista.com>
+Reply-To: paulus@linuxcare.com.au
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I finally fixed enough bugs in my hfsplus module that it almost
-works. It isn't ready for regular users, tho. It has a tendency
-to crash, although I must admit that I only had it crash once,
-and only on umount. It also does a very bad job of handling
-non-ASCII characters, and it doesn't do anything to / characters,
-so you may get some strange listings and files that show up in
-the listing but aren't accessible. It's still fairly verbose with
-debugging output, although it's drastically trimmed down from
-what was there.
+Dan Malek writes:
 
-I'd appreciate it if some daring people try it out, and if it
-crashes, please give me the function it crashed in if possible.
-If anyone knows unicode fairly well, and is willing to help
-fix the problems with the unicode conversion, I'd really
-appreciate it, because it's currently very broken for anything
-other than ASCII.
+> This "equivalent" mapping is going to be the greatest challenge.  The
+> reason this happens is because we need access through the MMU before
+> the kernel has initialized the kernel VM allocator.  Parts of the early
+> kernel initialization that have to access control/status registers of
+> various types are going to be mapped 1:1.  After some of these proposed
+> changes, these mappings are going to be destroyed and remapped (to get
+> the "standard" 0xff000000 address).  This is really bad for the
 
-You can find the patch in my directory on devel.linuxppc.org.
+Ummm, no, I think we may have a misunderstanding here.
 
-http://devel.linuxppc.org/pub/users/flar/
+First, you can use ioremap before the kernel VM allocator is set up,
+and you can continue to use the virtual addresses you get by doing so.
+So no mappings are going to be destroyed and remapped.  All we do for
+early ioremaps of addresses < ioremap_base is to allocate addresses
+starting at ioremap_base and going down.  And yes, we will need to do
+that for addresses >= 0xff000000 too (in fact 0xfe000000 if we are
+using CONFIG_HIGHMEM).  Actually, there's really no reason why we
+shouldn't do that for all physical addresses.  So the code in ioremap
+would become something like this:
 
-It is a patch against 2.2.14, but it applies to 2.2.17 and
-should apply to almost any 2.2.x kernel.
+	if (mem_init_done) {
+		struct vm_struct *area;
+		area = get_vm_area(size, VM_IOREMAP);
+		if (area == 0)
+			return NULL;
+		v = VMALLOC_VMADDR(area->addr);
+	} else {
+		v = (ioremap_bot -= size);
+	}
 
-	Brad Boyer
-	flar@allandria.com
+(leaving out the "if (p >= ioremap_base)" test), and we could
+initialize ioremap_bot to 0xff000000 (or 0xfe000000 in the highmem
+case).
 
+Secondly, all your integrated devices would be using memory-mapped
+I/O, so the question of what _IO_BASE is, and how inb/outb work, is
+pretty much irrelevant to you, isn't it?
+
+Paul.
+
+--
+Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
++61 2 6262 8990 tel, +61 2 6262 8991 fax
+paulus@linuxcare.com.au, http://www.linuxcare.com.au/
+Linuxcare.  Support for the revolution.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
