@@ -1,39 +1,45 @@
-Date: Sun, 30 Jan 2000 14:58:11 +0100
-From: Olaf Hering <olh@suse.de>
-To: Brad Boyer <flar@pants.nu>
-Cc: linuxppc-dev@lists.linuxppc.org
+Date: Sun, 30 Jan 2000 07:25:58 -0800 (PST)
+From: Brad Midgley <brad@turbolinux.com>
+To: Dan Bethe <dan_bethe@yahoo.com>
+cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: HFS+ format
-Message-ID: <20000130145811.A9799@suse.de>
-References: <B4B7C54D.602%pajama1@mindspring.com> <200001300356.WAA12189@marcus.pants.nu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200001300356.WAA12189@marcus.pants.nu>
+In-Reply-To: <20000130101504.11105.qmail@web1004.mail.yahoo.com>
+Message-ID: <Pine.LNX.4.20.0001300714140.21387-100000@mail.turbolinux.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Jan 29, Brad Boyer wrote:
+i'll bet there is an implementation of hfs+ in the mach layer.
 
-> Actually, there is a project to develop an HFS+ filesystem module for Linux.
-> However, it isn't useful at the moment.  There is a small amount of code
-> available, but it is too much to send in an email, and I don't have a place
-> to host it.  If someone wants to volunteer to host this, I'll stick up a web
-> page or ftp site with the code and some info.  I currently do have it on a
-> publicly accessible site, but I don't want to flood it because it is on a
-> slow link to the net.  I might give the address to one or two more people
-> who are really interested, since there are already several of us in the
-> project.
+mach needs to understand the filesystem well enough to load the server
+from it. i ported hfsutils (yes, the userland stuff) to the mach layer's
+bootstrap code back when the only way to install mklinux was with a macos
+util and a tarball.  i'll bet mach has an hfs+ implementation (albeit
+read-only) in its bootstrap section in darwin.
 
-We can host it at ftp.suse.com or I can host it on my private domain.
-I'm very interested in the HFS+ implementation.
+i realize you're right that the read/write implementation would be in the
+bsd layer as i think about it...
 
+the best route may be to enhance hfsutils for hfs+ support. you don't have
+to worry about the complexity of multiple readers/writers that way but you
+get a useful, practical result. then jump into writing the kernel code
+after it works satisfactorily.
 
-Gruss Olaf
+brad
 
---
- $ man 1 current_release
+> --- Brad Midgley <brad@turbolinux.com> wrote:
+> > dan,
+> >
+> > > 	Is there any tool or technique to help port BSD source to Linux?  Perhaps
+> > a
+> >
+> > are you sure darwin's hfs+ filesystem lies entirely in the bsd layer? (i
+> > haven't looked at darwin source)
 
-BUGS
-       Users never read manuals...
+Brad
+brad@turbolinux.com | http://www.turbolinux.com/~brad/
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
