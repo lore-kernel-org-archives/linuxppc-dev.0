@@ -1,51 +1,31 @@
-Message-Id: <199903102111.WAA00669@piglet.cpu.lu>
-Date: Wed, 10 Mar 1999 22:11:38 +0100 (CET)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: Sound drops
-To: hub@point-barre.fr
-cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <19990310152621.H896@giordino.point-barre.fr>
-MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+Date: Thu, 11 Mar 1999 09:38:21 +1100
+Message-Id: <199903102238.JAA08360@tango.anu.edu.au>
+From: Paul Mackerras <paulus@cs.anu.edu.au>
+To: tmrini@ntplx.net
+CC: costabel@wanadoo.fr, linuxppc-dev@lists.linuxppc.org
+In-reply-to: <Pine.LNX.4.05.9903101517560.21662-100000@pc.wackyland.com>
+	(message from Tom Rini on Wed, 10 Mar 1999 15:20:46 -0500 (EST))
+Subject: Re: What a day for linuxppc!
+Reply-to: Paul.Mackerras@cs.anu.edu.au
+References: <Pine.LNX.4.05.9903101517560.21662-100000@pc.wackyland.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  10 Mar, this message from Hubert Figuiere echoed through cyberspace:
-> I don't like to work in silence, so I usually play back a 
-> bunch of mp3 with xaudio under Linux PPC from my PowerBook.
+Tom Rini <tmrini@ntplx.net> wrote:
+
+> On Wed, 10 Mar 1999, Martin Costabel wrote:
 > 
-> The problem is that I get a lot of sound drops like if the machine
-> were "mono-tasking". I have never had this with PC hardware under Linux.
+> > 1) The 2.2.3 kernel from Linus. Unfortunately it doesn't compile on PPC,
+> > because Paul's semaphore patches didn't make it. The semaphore patches
+> > for Alpha are there, though, and they are not older, so why is this so?
 > 
-> It appears that those drops occurs when doing intensive graphics like
-> a Netscape redrawing or a huge text scroll within an xterm. This happens
-> with Xpmac or XFB_Dev.
->
-> My question is: Is it a known bug of the sound drivers or is it a 
-> hardware limitation ?
+> Paul didn't send them on.  Linus doesn't go and pick up patches..
 
-IIRC, there was such a question on /. recently. You might ant to look
-over there.
+Actually, I did, twice, and Cort has also sent them in the past, and
+Linus has ignored them all. :-(
 
-I would rather attribute this symptom to a problem in X, where the X
-server is allowed to monopolize much of the machine for redrawing. The
-fact the our current X servers (all those I tried, even Xpmac_mga
-accelerated for my Matrox) eat _huge_ amounts of CPU for all blitting
-operations like scrolling etc.
-
-There seems to be work to do on the X side of things....
-
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
-
+Paul.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
