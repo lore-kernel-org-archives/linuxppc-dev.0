@@ -1,26 +1,28 @@
-Date: Sun, 9 May 2004 13:51:11 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-To: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-Subject: how to move off of using devfs with the 2.6 kernel
-Message-ID: <Pine.LNX.4.58.0405091348290.19145@localhost.localdomain>
+Message-ID: <004001c4362d$82953020$0300a8c0@BIGSHOT>
+Reply-To: "John Zhan" <zhanz@fel.com.cn>
+From: "John Zhan" <zhanz@fel.com.cn>
+To: "linuxppc-embedded@lists.linuxppc" <linuxppc-embedded@lists.linuxppc.org>
+Subject: MPC8245:PCI unstable
+Date: Mon, 10 May 2004 09:24:16 +0800
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="Windows-1252"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-  here's another issue i'd like to resolve.  currently, in moving up to
-the 2.6 kernel, i'm trying to do this as gently as possible so i retained
-the devfs filesystem, even though it's marked as obsolete in 2.6.  (during
-the boot process, i am getting:
+Hi,folks,
+I am working on a custom board based on XPC8245LZU333B, 2 ethernet adapters (DP83816) were used on the PCI bus.
+Of cause with Linux.
+The 100base-tx of the board was connect to LAN and perform a data transfer . The transfer just like ping some host or pinged by some host.The transfer can keep for some time. But Linux maybe crash occasionally. the duration from the start of the transfer to the Linux crash maybe some dozens of minutes or hours.
+My Linux port from mvista 2.4.26 sandpoint.
+I noticed  that  XPC8245LZU333B's PCI host can't support  Type 2 Fast back-to-back transactions, but I am not sure if this cause the problem?
+If the drivers should be updated to avoid PCI Fast back-to-back transactions in 8245 systems? If anything else should be taken into account to make the PCI stable?
 
-  Mounted devfs on /dev
-  Freeing unused kernel memory: 76k init
+Any clues are greatly appreciated.
 
-so it seems to still be feasible to use it.  but what's the quickest
-reconfiguration to move off of devfs onto (i'm assuming) sysfs and udev?
-is it really just a simple kernel reconfiguration?  thanks.
-
-rday
+Best Regards.
+--
+John.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
