@@ -1,33 +1,39 @@
-Message-ID: <3ADD7D28.45D39EA5@wanadoo.fr>
-Date: Wed, 18 Apr 2001 13:40:25 +0200
-From: Martin Costabel <costabel@wanadoo.fr>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alain RICHARD <alain.richard@equation.fr>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: benh 2.4.4-pre3, Titanium and AirPort
+Date: Wed, 18 Apr 2001 13:52:24 +0200
+Message-Id: <20010418115224.25139@mailhost.mipsys.com>
+In-Reply-To: <a05010404b703232d1b66@[192.168.240.10]>
+References: <a05010404b703232d1b66@[192.168.240.10]>
 MIME-Version: 1.0
-To: Iain Sandoe <iain@sandoe.co.uk>
-Cc: Tony Mantler <nicoya@apia.dhs.org>,
-	"michel   =?iso-8859-1?Q?d=E4nzer?=" <michdaen@iiic.ethz.ch>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: XF4, SysRq, VT, mouse buttons, Keymaps and all that
-References: <20010418090307.B0BF42EFB5@apollo.valhalla.net>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> The SysRq situation is more difficult to understand - but the code is very
-> readable (nice stuff from Franz) - I just need to draw myself a picture
-> (gave up at 3am this morning).
->
-> How about a revolution  ;-?
->
-> Could we come to a consensus about a key to use that will work for both
-> Laptops & desktops?
->
-> How about <Power> ?  It seems to send keycode 0x7f (or 0x7e on 3400)...
+>I am currently using Benjamin Herrenschmidt 2.4.4-pre3 kernel on my
+>Titanium. The only problem I am currently experiencing is that the
+>kernel PCMCIA i82365.c driver do not recognized the PCI cardbus
+>adaptator.
 
-Very good idea. Except that it is already hijacked by xmon, IIUC. Maybe
-one could make the use of SysRq and of xmon mutually exclusive :-)
+Looks like I'll really have to find a PCMCIA card...
 
---
-Martin
+>Is there any solution (patch) to get it recognized ?
+>
+>Also as the current airport driver is now based on the orinoco_cs
+>(and hermes) driver that depends on PCMCIA support, I am unable to
+>get airport working. Is there any solution to get it working without
+>PCMCIA ?
+
+The airport driver should work if you built PCMCIA in the kernel
+(no need to actually have a working PCMCIA).
+
+I'm working on a separation of the airport and pcmcia stuffs so
+that the airport driver can be used without pcmcia, but it's not
+done yet.
+
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
