@@ -1,69 +1,78 @@
-Message-ID: <39C65500.B66DEA90@mvista.com>
-Date: Mon, 18 Sep 2000 10:46:40 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-Reply-To: mgreer@mvista.com
+Message-ID: <67505026E29DD311A9AA00508B7315F33B7399@EXCHANGE>
+From: Mike Flynn <mflynn@enerdyne.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'"
+	 <linuxppc-embedded@lists.linuxppc.org>
+Subject: FW: Embedded Planet 860T software reset
+Date: Mon, 18 Sep 2000 11:16:52 -0700
 MIME-Version: 1.0
-To: "Young-Han, Kim" <yhkim@da-san.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Sandpoint MPC750 Kernel...
-References: <01a901c0214f$73ccf9c0$337ceccb@dasan.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Kim,
+Software resets works! Our Julia found John Whitney's comment:
 
-You can get a copy either from the MontaVista Software CDK (www.mvista.com) or
-a later version from  ftp://www.mvista.com/pub/Area51/sandpoint-8240/
+	"I soft reboot my system using "shutdown -nr now..."
 
-Be warned that the later version seems to have some problems...
+Dan's code works as provided. "init 6" and "reboot" don't work, but we have
+something
+that does.
 
-Mark
---
+Mike Flynn
+Enerdyne
+
+-----Original Message-----
+From: Mike Flynn [mailto:mflynn@enerdyne.com]
+Sent: Monday, September 18, 2000 10:17 AM
+To: 'linuxppc-embedded@lists.linuxppc.org'
+Subject: Embedded Planet 860T software reset
 
 
 
-"Young-Han, Kim" wrote:
+Has anyone been able to execute "reset" or "init 6" in linux 2.2.13 running
+on Embedded Planet board and have the system actually reboot?
 
->   Hi!
->   I want to know the location of the newest linux kernel
-> for Sandpoint MPC750.
->   If you know the location, please answer to me...
->
->   Thanks for advanced!
->
-> Best Regards
-> Young-Han, Kim
->
-> -
-> -                              ?
-> -                             '''
-> -                            (o o)
-> - -----------------------oOO--(_)--OOo-----------------------
-> - == English Version ==
-> - Young-Han, Kim
-> - Senior Research Engineer
-> -
-> - E-Mail : yhkim@da-san.com
-> - Direct : ++ 82 2 3484 6579
-> - H.P    : ++ 82 19 254 7566
-> -
-> -                        DASAN Co., Ltd.
-> -                       Technical Support
-> - 6F KOSMO Tower 1002, Daechi-dong, Kangnam-ku, Seoul, Korea
-> -                         Zip : 135-280
-> -                    Tel : ++ 82 2 3484 6500
-> -                    Fax : ++ 82 2 3484 6501
-> -                   http://www.da-san.com
-> - ===========================================================
->
+I found and tried the following code in the archives:
 
---
-Mark A. Greer (mgreer@mvista.com; 480-517-0287)
-MontaVista Software, Inc.
-2141 E. Broadway Road, Suite 108
-Tempe, AZ  85282
++++ linux/arch/ppc/kernel/m8xx_setup.c	Tue Jun 27 09:47:27 2000
+@@ -228,9 +240,17 @@
+ void
+ m8xx_restart(char *cmd)
+ {
+-	extern void m8xx_gorom(void);
++	extern void m8xx_gorom(uint bp, uint startaddr);
++	uint	startaddr;
++
++	startaddr = 0xfff00100;
++
++	if (cmd != NULL) {
++		if (!strncmp(cmd, "startaddr=", 10))
++			startaddr = simple_strtoul(&cmd[10], NULL, 0);
++	}
+
+-	m8xx_gorom();
++	m8xx_gorom((uint)__pa(res), startaddr);
+ }
+
+ void
+
+Dan said, "At one time, I had modified
+the kernel "gorom()" function to simply jump into the boot rom as
+if a reset occurred.  I should make this work again for many reasons."
+
+Does anyone know of any further developments and/or successes?
+
+Thanks,
+
+Mike Flynn
+Principal Software Engineer
+Enerdyne Technologies
+8402 Magnolia Ave.
+Suite C
+Santee, CA 92041
+Voice: 619-562-3061
+MFlynn@Enerdyne.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
