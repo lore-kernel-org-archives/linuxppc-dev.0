@@ -1,20 +1,22 @@
-Message-ID: <8D4C69676E66D511A1CB00508BBBB192157919@ranmx1.ran.harris.com>
-From: "Fend, Matthias" <mfend@harris.com>
-To: "'LinuxPPC-Embedded'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: IIC  slave mode
-Date: Thu, 24 Jan 2002 10:35:46 -0500
+Message-ID: <20020124160735.67756.qmail@web9705.mail.yahoo.com>
+Date: Thu, 24 Jan 2002 08:07:35 -0800 (PST)
+From: None Atall <linux_meis@yahoo.com>
+Subject: Re: ATM driver for 8260 (linux 2.4.x)
+To: linuxppc-embedded@lists.linuxppc.org,
+	linux-atm-general@lists.sourceforge.net
+In-Reply-To: <3C1E3713.C8BF1426@cambridgebroadband.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hello
+ James, Is this patch for 8260 ATM ready? I am realy
+looking forward!!
 
-has anybody some experience or some result using the mpc i2c driver as slave.
-(not SLAVE_MODE - PPC-Device acts as slave)
+                 D. Meidanis
 
-
-thx matthias
+Great stuff seeking new owners in Yahoo! Auctions!
+http://auctions.yahoo.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
