@@ -1,34 +1,60 @@
-To: Philip.Lougher@zarlink.com
-Cc: "leeyang" <leeyang@ycig.com>,
-	linuxppc-embedded@lists.linuxppc.org,
-	owner-linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ELDK 2.0 released 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 06 Nov 2002 13:13:26 GMT."
-             <OFA0FF1C92.032E9ADC-ON80256C69.004861BF@zarlink.com>
-Date: Wed, 06 Nov 2002 19:18:38 +0100
-Message-Id: <20021106181843.D2A8610160@denx.denx.de>
+Date: Thu, 7 Nov 2002 10:09:03 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: embedded list <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: serial reset?
+Message-ID: <20021106230903.GD1746@zax.zax>
+References: <1036602788.17846.146.camel@granite.austin.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1036602788.17846.146.camel@granite.austin.ibm.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <OFA0FF1C92.032E9ADC-ON80256C69.004861BF@zarlink.com> you wrote:
+On Wed, Nov 06, 2002 at 11:13:08AM -0600, Hollis Blanchard wrote:
 >
-> wd is probably Wolfgang Denk's login name. Therefore it won't matter.
+> Hi, I'm working on sleep on the 405LP. In one mode the chip is powered
+> down and all state must be saved/restored by software.
+>
+> My current problem is with the UART (and I'm using serial console only,
+> so it's problem). When I wake up, I can type commands to my shell and
+> see them echoed correctly. However the result of those commands is
+> garbled, like so:
+>   ls
+>     1  tm[lc ;u;v  43m
+> Sometimes I get the message "ttyS: 1 input overrun(s)". Return
+> characters come through as spaces.
 
-You are right in the first part, but it _does_ matter, as  it  points
-out  a gap in our quality insurance which was not detected before the
-final release :-(
+This is a wild guess, but could it be that FIFO mode hasn't been
+turned on during the restore.  That way individual characters being
+echoed (slowly) might work, but faster transfers get garbled, because
+the 405 can't keep up with the interrupts.
 
-Best regards,
+The other thing to check would be the various bits in the CPC which
+affect the serial port.
 
-Wolfgang Denk
+> I've tried to save/restore the UART registers just like all the others.
+> Unfortunately FCR is write-only, and my attempts have just resulted in
+> no serial activity at all.
+>
+> I've also tried the unregister_serial/register_serial calls to the
+> serial driver (intended for PCMCIA). I can't see how those ever worked
+> register_serial to complain the device is already open. When I hack the
+> driver though, I get the same result though: dead serial.
+>
+> This is a 2.4.17 kernel. Can you think of anything situation that would
+> allow correct character echo but not output? I don't mind going through
+> a full serial initialization if necessary, but it doesn't look like the
+> driver was mutated *ahem* written with this in mind...
+>
+> -Hollis
+>
+>
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-See us @ electronica 2002 in Munich, Nov 12-15, Hall A3, Booth A3.325
+David Gibson			| For every complex problem there is a
+david@gibson.dropbear.id.au	| solution which is simple, neat and
+				| wrong.
+http://www.ozlabs.org/people/dgibson
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
