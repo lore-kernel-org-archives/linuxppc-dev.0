@@ -1,59 +1,60 @@
-Message-Id: <m12Gmzf-001SweC@bucks>
-From: diekema@bucks.si.com (diekema_jon)
-Subject: Looking for the PPC gdb debug stubs
-To: bgat@usa.net
-Date: Fri, 4 Feb 2000 12:58:07 -0500 (EST)
-Cc: all@cideas.com, linuxppc-embedded@lists.linuxppc.org,
-        gdb@sourceware.cygnus.com
+Message-ID: <389B7295.B782832F@netx4.com>
+Date: Fri, 04 Feb 2000 19:45:09 -0500
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
+To: Olivier DERVYN <dervyn@digigram.com>
+CC: Linux PPC Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Linux PPC on Sandpoint or YellowKnife board with 750
+References: <200002031505.HAA04494@berkeley.innomedia.com> <389A8104.AC2C196D@jlc.net> <389A8D76.4E667E17@digigram.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-	To: Bill Gatliff
-	    bgat@usa.net
+Olivier DERVYN wrote:
 
-	Subj: Looking for the PPC gdb debug stubs
 
-	In your 9/99 article in Embedded Systems Programming, you hint
-	about the Power PC gdb debug stubs being in progress.  Can you
-	provide with any details like:
+> What is your dev. platform (compiler, JTAG probe and board architecture)
+> ?
 
-	- Is the effort complete?
-	- If so, where can I find the PPC gdb debug stubs?
-	- Who are the people involved with the activity,
-	  and how can I get in touch with them?
 
-	Our initial hardware target is the EST SBC8260 board.  The MPC8260
-	supports a COP/JTAG port.  I wondered if gdb has or is the progess
-	of supporting the MPC8260 Macraigor Wiggler?  From the gdb version
-	4.18 source code, it appears that gdb supports the MPC860
-	Macraigor Wiggler.
+All of my development hosts are Macintosh (iMac, iMac DV,
+PowerBook, G4 server) running Linux/PPC.
 
-	Note: The MPC860 and MPC8260 Wigglers are very different animals.
+No JTAG or BDM necessary as I am using the ROM on the board (DINK).
 
-	Reference:
 
-	http://www.embedded.com/1999/9909/9909feat2.htm
+> What kind of problem stop you ?
 
-	I have posted my attempt at a portable debugging stub on ESPs Web
-	site, at ftp://ftp.mfi.com/pub/espmag/1999/gdb. This source code
-	has been compiled and tested for the Hitachi SH-2, and ports are
-	underway for the Hitachi H8, Power PC, and other processors.
+Time and money.
 
-	Who is Bill Gatliff?
 
-	Bill Gatliff is a freelance embedded developer and senior design
-	engineer with Komatsu Mining Systems, Inc. in Peoria, IL, and is a
-	semi-regular presenter at the Embedded Systems Conferences. He can
-	be reached at bgat@usa.net.
+> I have two sandpoint one with 750+107 and other with 8240, which is your
+> board ?
 
-	GDB: The GNU Debugger
-	http://sourceware.cygnus.com/gdb/
+8240.
 
-	GDB Mailing Lists
-	http://sourceware.cygnus.com/gdb/lists.html
-	gdb@sourceware.cygnus.com
+
+> Do you have used other OS on this board ? (as RTOS or other)
+
+No.
+
+
+Motorola gave me the 8240/Sandpoint to develop the kernel.  I
+spent a few weeks of my own time, have a system booting with
+root NFS (PCI Ethernet), ran Apache and some other tests.  I
+never had the 8259 interrupts working correctly with the
+OpenPIC on the 8240.  I gave the code to MontaVista to continue
+the development.  Depending upon the time available, I will either
+check in what I have or wait for MontaVista to fix it and then
+check it in.
+
+The problem with the Sandpoint is we need a better boot rom
+to support Linux/PPC.  Their standard DINK only supports S-record
+download over the serial port.
+
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
