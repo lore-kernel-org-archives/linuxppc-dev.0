@@ -1,44 +1,39 @@
-Message-ID: <FA06AA2C99BCD511951200005A99441001E3ED51@irvexch1.sextantifs.com>
-From: "Curtis, Allen" <Allen.Curtis@Thales-IFS.com>
-To: "'Dan Malek'" <dan@embeddededge.com>,
-	"Curtis, Allen" <Allen.Curtis@Thales-IFS.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Date: Wed, 28 Aug 2002 12:03:56 -0700
-Subject: RE: 8260/8xx Embedded Boot patch
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Jin Cheng <jcheng@redswitch.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: root login on ELDK nfs booting 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 28 Aug 2002 11:32:03 PDT."
+             <3D6D1722.9421CC3B@redswitch.com>
+Date: Wed, 28 Aug 2002 22:14:09 +0200
+Message-Id: <20020828201415.10D6D1182F@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->currently working without the ability to test everything else that may
->be affected.  You definitely have to take the "if it works,
-
-They are not using this code, it was not working.
-
->> 2. If you assume that any platform that uses
->CONFIG_EMBEDDEDBOOT may want to
->> pass in a bd_info structure,
+In message <3D6D1722.9421CC3B@redswitch.com> you wrote:
 >
->We don't assume that at all.  In fact there are only three
->boards now where
->we make that assumption and it is clear in the code which ones
->they are.
+> I booted on /opt/eldk/ppc_4xx. But it does not allow root login from my
+> serial console.
+> I changed the /etc/passwd so that I can login in as adm. Anyone can give
+> me advice on the
+> problem? Thanks.
 
-You seem to have missed the part about putting the platform specific stuff
-in embed_config.c. When you are starting up and you use documentation such
-as Documentation/powerpc/SBC8260_memory_mapping.txt, which specifies that
-the BIOS passes in bd_info structures, you assume that is what you should do
-and then find out that it only works for specific boards.
+It's difficult to predict what you changed, and how.
 
-This brings me back to my original suggestion, create kernel features with
-specific behaviors that platform specific header files can enable. Keep the
-kernel source free of platform conditional compiles with the exception of
-files contained in the platform directory. In this case CONFIG_EMBEDDED
-indicates that simple boot should be used and the bios may provide a bd_info
-structure. It does not specify the structure or that a structure is required
-but the provision has been made for it.
+A stab into the dark: when installing the ELDK, did you  remember  to
+run  the  ELDK_FIXOWNER  script??  See  section  "7.  Mounting Target
+Components via NFS" at http://www.denx.de/ELDK/eldk-nfs.html
 
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+1st Old Man:  Gee, its windy today.
+2nd Old Man:  No it's not... it's Thursday.
+3rd Old Man:  Yeh, me too.  Let's go for a beer.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
