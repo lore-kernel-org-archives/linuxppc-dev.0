@@ -1,49 +1,45 @@
-From: Alan Mimms <alan@packetengines.com>
-To: "Richard Hendricks" <ra6353@email.sps.mot.com>,
-        Alan Mimms <alanm@unforgettable.com>
-Subject: Re: What is the catch with IDMA on MPC860?
-Date: Fri, 17 Mar 2000 13:35:10 -0800
-Content-Type: text/plain
-Cc: Geir Frode Raanes <geirfrs@invalid.ed.ntnu.no>,
-        linuxppc-embedded@lists.linuxppc.org
-References: <Pine.BSF.4.10.10003171722430.93013-100000@invalid.ed.ntnu.no> <20000317.17233800@alanm.penguinpowered.com> <38D29F6F.4B425B09@email.sps.mot.com>
-In-Reply-To: <38D29F6F.4B425B09@email.sps.mot.com>
+Message-ID: <38D2A7B4.A74AF086@embeddededge.com>
+Date: Fri, 17 Mar 2000 16:46:28 -0500
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-Message-Id: <00031713360201.02646@alan>
+To: Richard Hendricks <ra6353@email.sps.mot.com>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: What is the catch with IDMA on MPC860?
+References: <38D27077.C11A3B28@embeddededge.com> <38D2A182.DA3DA70E@email.sps.mot.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-So THAT's why these big companies never tell us when they find their
-junk sucks.  They have it in the fine print at the front of every manual!
+Richard Hendricks wrote:
+>
+> Ah, but there's an assumption you're making Dan, and that's the IDMA
+> was added for the 860.
 
-a
+Geeze, I guess my couple of years of technical writing classes were
+a waste of time.  Where did it appear I was making an assumption?
 
-On Fri, 17 Mar 2000, Richard Hendricks wrote:
-> Alan Mimms wrote:
-> >
-> > Regarding the "where does the manual say that the performance stinks"
-> > comment: even though people like Richard are VERY forthcoming with
-> > "issues" with chips (THANKS Richard), I doubt a company like MOT will
-> > EVER admit in a manual or other official document they built something
-> > that stinks even a little bit.  See the MPC801 for an example of this
-> > where virtually EVERYTHING about the chip stinks (including the crappy
-> > inaccurate manual) and nothing is ever said in written form to that
-> > effect.  (For those unused to my cynical style, I love MOT and my
-> > company has even made a bunch of money selling devices built on the
-> > MPC801.  But they are NOT perfect - as I'm sure Richard and numerous
-> > will attest - and they will rarely admit it in writing.)
->
-> I think this issue is covered quite well in the boilerplate at the
-> beginning of the MPC823 manual.
->
-> "Motorola makes no warranty, representation or guarantee regarding
-> the suitability of its products for any particular purpose..."
->
---
-Alan Mimms     Packet Engines, Inc.     Spokane, Washington [99214-0497]
-  USA, Earth, Sol, Milky Way, The Local Group, Virgo Supercluster, U0
-Despite the cost of living, have you noticed how popular it remains?
-  -- Steven Wright?
+I said:
+
+	1.  The 860 is a killer communication processor
+	2.  The IDMA is a feature that requires system design trade offs
+	3.  If IDMA wasn't present, people would likely request it
+
+
+> ....  It was really added for camera customers using
+> the MPC821/MPC823.
+
+OK, but we weren't talking about 821 or 823.  There is a wide range of
+features available in the 8xx family, and unfortunately you can't
+get everything all of the time.  The IDMA on the 860 falls into
+this category.
+
+My original response long ago was to ensure people consider the system
+design, and I attempted to include some supporting detail.  This has
+been turned into "performance sucks" and "Dan is making assumptions."
+Neither is true.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
