@@ -1,47 +1,36 @@
-Message-ID: <39EBDC43.3F7E57B8@mvista.com>
-Date: Tue, 17 Oct 2000 00:57:39 -0400
+Message-ID: <39EBE0E7.B9313EEE@mvista.com>
+Date: Tue, 17 Oct 2000 01:17:27 -0400
 From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: mgreer@mvista.com
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: If not CONFIG_ALL_PPC, you're broken
-References: <39EB8A67.E2F9C023@mvista.com>
+To: paulus@linuxcare.com.au
+CC: Tilmann Bitterberg <tibit-ibm@bitterberg.de>,
+        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: HIGHMEM now working
+References: <Pine.LNX.4.21.0010161220230.1783-200000@karl.rchland.ibm.com> <14827.56089.260884.298273@argo.linuxcare.com.au>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"Mark A. Greer" wrote:
->
-> I've haven't been paying attention to this but it seems as though any
-> platform that doesn't fit in CONFIG_ALL_PPC doesn't build anymore.
+Paul Mackerras wrote:
 
-We don't even need CONFIG_ALL_PPC anymore.  We can just rename
-arch/ppc to arch/powermac_workstation, as that is all that works
-right now.  It sucks to have to build a 2 Mbyte kernel with USB,
-keyboard, mouse, and tons of other stuff just to get a kernel that
-will link when all you want is a serial and Ethernet port......and
-then hack init functions that you didn't want anyway so they don't
-try to touch hardware you don't have.
+> ....  I personally think that the code in ioremap which
+> assigns virt = phys for phys >= ioremap_base should go away.
 
-> ........  Yes, I know, I am lazy
-> and should contribute more.  Anyway, I think we all need to pay closer
-> attention to the changes that are being put in, including me.
-
-Well, putting in the time is only part of it.  I am trying to support
-about a dozen different PowerPC boards, none of which look like a
-PowerMac.  By the time I test a kernel across all of these platforms
-and check in a few changes I am completely out of date and have to
-start over.
-
-> What's the best way to get the other platforms working again?
-
-Fortunately, it looks like some people (Matt, Troy, others) have pushed
-a few PReP and CHRP updates, and Paul has a CHRP workstation for testing.
-Maybe when the PMac stuff slows down, we can catch up.  Unfortunately,
-we still have to build huge kernels with lots of stuff we don't need,
-and I don't know how to fix that (well, I do but I don't think it
-is likely to happen :-).
+Right, but that is just the most recent implementation for something
+we have to admit exists and we integrate into your HIGHMEM and other
+changes.  We have to allow, somehow, mapping of board control registers
+or other resources that must be used prior to page tables or other
+VM initialization.  Right now we map things in BATs or large TLB
+entries and then use the code above (or some other variation) to
+ensure the mapping sticks throughout the kernel lifetime.  I don't
+think it has to be virt == phys (which is just convenient for assembly
+set up), but the mapping has to remain consistent even after the kernel
+VM has been initialized.  The reason virt == phys is convenient is
+because we often access this space with and without the MMU enabled.
+We would have to add some code in the places this is done to further
+convert addresses, when right now we just write the functions without
+any MMU assumptions.
 
 
 	-- Dan
