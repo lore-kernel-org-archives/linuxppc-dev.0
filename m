@@ -1,36 +1,46 @@
-Message-Id: <200107021122.HAA83441@p2.parker.boston.ma.us>
-To: yooth@ipone.co.kr
-Cc: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Starting usb in RPXlite(mpx850) board 
-In-reply-to: Your message of "Fri, 22 Jun 2001 18:43:36 +0900."
-             <NFBBLHGHILCOPCKBODHAEEPHCAAA.yooth@ipone.co.kr>
-Date: Mon, 02 Jul 2001 07:22:15 -0400
-From: Brad Parker <brad@parker.boston.ma.us>
+Date: Mon, 2 Jul 2001 04:35:34 -0700
+From: Matt Porter <mporter@mvista.com>
+To: Lionel TAILLURAT <lionel.TAILLURAT@ecrin.com>
+Cc: ppc_mailing_list <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: MVME 5100 & Linux
+Message-ID: <20010702043534.A16884@cx258813-a.chnd1.az.home.com>
+References: <007d01c102fd$5fe502f0$a66d34c0@zaz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <007d01c102fd$5fe502f0$a66d34c0@zaz>; from lionel.TAILLURAT@ecrin.com on Mon, Jul 02, 2001 at 03:46:16PM +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-"Yoo. Jonghoon" wrote:
+On Mon, Jul 02, 2001 at 03:46:16PM +0200, Lionel TAILLURAT wrote:
+> I'm trying to install the Debian PPC Linux 2.2R0 on an MVME5100 + MVME 761 +
+> IPMC 761.
 >
->I'm using Montavista Hardhat linux 2.0(kernel 2.4.3) on
->RPXlite board(mpx850). It uses Brad's HCI driver
->(m8xxhci.c)
+> For that I download the Prep Image by TFTP, and the only thing I have is :
 >
->At first, hci driver does not wanted to be initialized. I looked
->inside source codes and found that
->m8xxhci_start_controller returns error if partnum of cpu is
->not m823. So I skipped partnum checking routine and then
->hci drvier initialized. Is there any problem to do this ?
+> PPC6-Bug>nbo
+> Network Booting from: I82559, Controller 0, Device 0
+> Device Name: /pci@fe000000/pci8086,1209@e,0:0,0
+> Loading: bootfull.bin
 
-yes!  Older mask revs simply won't work.
+Whoa.  The 5100 is not a PReP-like system even though it has the
+capability to boot an image with a PReP header on it.  You're
+trying to boot Debian/PPC's old 2.2 kernel on this system that
+is an a CHRP memory map and has UARTs at non-standard locations.
+That's not going to work.
 
-If you are using an 850 and it's not a "B2" part, it will not
-work.
+> I have seen in the Mailing list archive that there was some problems using
+> Linux with the MVME 5100 and especially with the residual data.
+>
+> Is there is a correction of this problem ?
+>
+> What should I do to have Linux working with this board ?
 
-I have an update driver I am about to release which includes better
-root hub support and lots of bug fixes.
+You should use the MVME5100 port from the linuxppc_2_4_devel tree.
 
--brad
-
+--
+Matt Porter
+MontaVista Software, Inc.
+mporter@mvista.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
