@@ -1,36 +1,74 @@
-Date: Wed, 15 Mar 2000 11:39:09 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux/m68k <linux-m68k@lists.linux-m68k.org>,
-        Linux/PPC for APUS <linux-apus@sunsite.auc.dk>,
-        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: dmasound split
-Message-ID: <20000315113909.D352@opus.bloom.county>
-References: <Pine.LNX.4.05.10003072247180.484-100000@callisto.of.borg> <Pine.LNX.4.05.10003140902060.19873-100000@callisto.of.borg>
-Mime-Version: 1.0
+Message-ID: <38CFD959.52E9F85@clickvision.com>
+Date: Wed, 15 Mar 2000 13:41:29 -0500
+From: "Peter M. Jansson" <petej@clickvision.com>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: SIGALRM can't be delivered after longjmp from handler?
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.05.10003140902060.19873-100000@callisto.of.borg>; from geert@linux-m68k.org on Tue, Mar 14, 2000 at 09:14:23AM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Mar 14, 2000 at 09:14:23AM +0100, Geert Uytterhoeven wrote:
+I wrote the example that follows to illustrate what I think is a
+problem with signal delivery.  If this program works, then it should run
+in 5 cycles; the first 2 end with the "Timed out" message, while the
+last 3 end with the "Wait interrupted" message.  On my PowerMac 7200
+running 2.2.15pre3, I get 2 "Timed out" cycles, one "Wait interrupted"
+cycle, and then two more "Timed out" cycles.  What I think is going on
+is that, once the SIGALRM handler executes the longjmp, no further
+SIGALRM signals are delivered to the process -- I don't know if this is
+because the signals aren't delivered, or because the setitimer call
+isn't working.  I've observed this example to run correctly on BSD/OS,
+IRIX, and Solaris, and seen it fail on LinuxPPC and Linux x86.
 
-> On Tue, 7 Mar 2000, Geert Uytterhoeven wrote:
-> > On Tue, 7 Mar 2000, Geert Uytterhoeven wrote:
-> > > This is my first test release for splitting the DMA sound driver in different
-> > > parts:
-> >
-> > And here's a first patch:
->
-> No comments whether it works on PowerMac and Atari?
+Anyone seen this, and possibly know of a fix or workaround?
 
-Ah, right.  I tried it out on a 9600 and it worked, and seemingly better than
-before (no loud hiss when insmod'ed).  Only sugjestion I would make is to
-follow the trend of drivers/XXX/bigdriver/xxx.c instead of dmasound_*.c
+Pete.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+-------------------------------
+
+#include <signal.h>
+#include <setjmp.h>
+#include <sys/time.h>
+#include <stdio.h>
+
+static jmp_buf env;
+static unsigned int count = 0;
+
+static void
+interrupt()
+{
+        printf ("Interrupt: %d\n", count);
+        if (count > 2)
+                longjmp(env, 1);
+}
+
+main ()
+{
+        struct timeval tv;
+        struct itimerval it, oit;
+
+        while (count++ < 5) {
+                printf("Cycle %d\n", count);
+
+                if (setjmp(env)) {
+                        printf ("Wait interrupted\n");
+                } else {
+                        if (signal(SIGALRM, interrupt) == SIG_ERR)
+                                perror("signal");
+                        getitimer(ITIMER_REAL, &oit);
+                        timerclear(&it.it_interval);
+                        it.it_value.tv_sec = 2;
+                        it.it_value.tv_usec = 16665;
+                        if (setitimer(ITIMER_REAL, &it, &oit) < 0)
+                        perror("tick");
+                        printf ("Set timer; waiting...\n");
+                        tv.tv_sec = 5;
+                        tv.tv_usec = 0;
+                        select(0, NULL, NULL, NULL, &tv);
+                        printf ("Timed out\n");
+                }
+        }
+}
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
