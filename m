@@ -1,42 +1,49 @@
-To: Pantelis Antoniou <panto@intracom.gr>
-Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
-	Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: random ramblings on 8xx patches (long and tedious :-) 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 23 Jul 2004 17:42:54 +0300."
-             <410123EE.4000602@intracom.gr>
-Date: Fri, 23 Jul 2004 19:22:05 +0200
-Message-Id: <20040723172210.5B396C109F@atlas.denx.de>
+From: "Kevin P. Dankwardt" <k@kcomputing.com>
+To: "Embedded Linux PPC list" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Linux is not reliable enough?
+Date: Fri, 23 Jul 2004 16:06:58 -0500
+Message-ID: <KCEOLLHGFJIAFNAMGACHMEMODPAA.k@kcomputing.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <20040723172210.5B396C109F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <410123EE.4000602@intracom.gr> you wrote:
->
-> IMHO we shouldn't even bother.
+I am working with a team on a project where their customer is concerned
+about the reliability of Linux. The customer wants to go with QNX because of
+the belief that QNX Neutrino is inherently more reliable. This belief
+revolves around the differences in design where drivers in QNX do not reside
+in the same address space as the (micro-)kernel.
 
-oops???
+What the team was hoping to use is a MPC5200 based system and the ELDK.
 
-> Then everything should be automatically set up at run-time, based
-> on probing code which should detect the rest.
+The team needs to specifically address their customer's concern that a
+single driver can crash the operating system in Linux, since the driver
+resides in the same memory space as the kernel. They need to present
+convincing arguments to the customer's Chief Software Architect.
 
-You must be joking. This is for embedded systems, and code  size  and
-especially boot time are critical.
+Does anyone know of any good resources/references to address these concerns?
+Any evidence, either way, that QNX Neutrino is more reliable?
 
-Also, this suggestion does not coder Robert's intention of preventint
-the user from selecting bogus configuration options for  stuff  which
-doesn't exist on his chip.
+Will the ELDK be adopting any of the Carrier Grade Linux requirements for
+reliability? Any other projects like this of note?
 
-Best regards,
+Does anyone know of any embedded Linux projects where human lives really do
+depend upon Linux to be robust and reliable?
 
-Wolfgang Denk
+Is UserMode Linux a possibility? Can one create custom drivers for UML and
+mitigate risks that way?
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"Life sucks, but it's better than the alternative."
-- Peter da Silva
+Any clever ideas? Any clever, actually tested, ideas?
+
+Despite all of the hype, would any of you be willing to look a customer in
+the eye and say that an embedded Linux system can be reliable enough for
+human lives to depend on it?
+
+Thanks,
+Kevin Dankwardt
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
