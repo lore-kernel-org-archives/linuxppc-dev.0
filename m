@@ -1,51 +1,69 @@
-Message-ID: <3BA9FD0F.9293D4C3@mvista.com>
-Date: Thu, 20 Sep 2001 07:28:31 -0700
-From: Cal Erickson <cal_erickson@mvista.com>
-Reply-To: cal_erickson@mvista.com
-MIME-Version: 1.0
-To: Pedro Parrilla <pparrilla@prodys.net>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Problems with remote debugging on MBX860
-References: <3BA8C207.79FFF7CD@prodys.net>
+Date: Thu, 20 Sep 2001 07:55:37 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Dan Malek <dan@mvista.com>
+Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>,
+	Linuxppc-Commit <linuxppc-commit@source.mvista.com>
+Subject: Re: CPCI-405 port (PPC405GP)
+Message-ID: <20010920075537.A13721@cpe-24-221-152-185.az.sprintbbd.net>
+References: <20010918115722.A5967@cpe-24-221-152-185.az.sprintbbd.net> <EFEAIMDCOOOHIEPHDNFJCEKKDCAA.stefan.roese@esd-electronics.com> <20010919071751.B8132@cpe-24-221-152-185.az.sprintbbd.net> <3BA8DF9E.FD235CF6@mvista.com> <20010919155742.D8132@cpe-24-221-152-185.az.sprintbbd.net> <3BA9241B.4322817A@mvista.com> <20010919163101.E8132@cpe-24-221-152-185.az.sprintbbd.net> <3BA96CA2.20EC30C8@mvista.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3BA96CA2.20EC30C8@mvista.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Pedro,
-All  you need to add is the -ggdb option after the -g in your build of
-your application. This option provides gdb with more information
-about local variables that -g cannot. Everything else should be fine.
-If you were going to debug a kernel using gdb you would not be
-using gdbserver.
+On Thu, Sep 20, 2001 at 12:12:18AM -0400, Dan Malek wrote:
+> Tom Rini wrote:
+>
+> > ....  We
+> > now define CONFIG_TREEBOOT and CONFIG_EMBEDDEDBOOT for 4xx.
+>
+> Why?  The Makefile can just as easily select this based upon board
+> type.  That's all the configuration script does....
 
-Cal Erickson
-Pedro Parrilla wrote:
+Well, because it keeps us from duplicating 4 lines in the makefile.
+As far as I know, you can't do ifdef CONFIG_8xx || CONFIG_EP405 for
+example, in a Makefile.  CONFIG_TREEBOOT could probably die, unless
+someone revives Oak or TiVo uses it.
 
->  Hello!
+> The only thing unique about treeboot is the way the board information
+> is gathered from the boot rom, which doesn't justify configuration
+> variables like this.
+
+treeboot also needs it's own special image format.  So like I said,
+CONFIG_TREEBOOT could go away if TiVo and Oak (if it gets revived)
+need it.  Remember, Makefile magic isn't as extensible as cpp magic.
+
+
+> > ....  Lets add in
+> > CONFIG_PPCBOOT,
 >
->     I am debugging  a remote target (Hard Hat Linux on a MBX860) from my
+> No, let's not.  All of this stuff is on the way out.  We should be
+> making modifications so the embedded boards support bi_recs....
+
+Not in 2.4 we aren't.  We aren't forcing bi_recs upon everyone just
+yet.
+
+> The PPCboot folks are going to have to do some major revamping
+> of the way it works.  I've warned them (and everyone) about the
+> dependency of always using the compressed image and the bootloaders.
+
+Eh?  As far as I know, PPCBoot takes it's own slighlty mod'ed objcopy'ed
+and gzip'ed vmlinux.  What's wrong with that?  Hell, even in 2.5 as long
+as we get the bi_recs, we shouldn't care what the bootloader does..
+
+> > Or not, 8xx currently does #include <asm/ppcboot.h> in lots of its files.
 >
-> host (Red Hat Linux 7.0 on x86 PC) with ppc_8xx_gdb(cross-dev). I got to
-> connect both with
-> 'target extended-remote' directive in the host, and with gdbserver in
-> the target, gdb can do STEP,RUN...and the like, but I can't see the
-> variables values. If I try to print any local variable GDB response is
-> 'incomplete type'. I've compiled with ppc_8xx-gcc and the 'g' option and
-> I've  loaded the program in GDB with file 'program'...I don't Know what
-> more I should do...Any bad
-> configuration?
->
->  Thanks.
->
+> Crap, I hope not.....It's time for all of that to disappear, along with
+> all of the board information stuff in all of the other 8xx files.....
+
+ppcboot.h just defines the board information struct that PPCBoot passes along.
+Are you talking about the board-specific stuff which is just there to be
+complete or what?
 
 --
-===========================================================================
-Cal Erickson                 MontaVista Software Inc.
-Linux Consultant             1237 E. Arques Ave.
-Phone (408) 328-0304         Sunnyvale CA 94085
-Fax   (408) 328-9204         web http://www.mvista.com
-===========================================================================
-
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
