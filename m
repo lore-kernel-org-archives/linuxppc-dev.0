@@ -1,46 +1,29 @@
-From: =?iso-8859-1?Q?G=E9rard_Gu=E9vel?= <gguevel@interfaceconcept.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: 8260 FCC enet driver problem
-Date: Tue, 30 Sep 2003 17:20:35 +0200
-Message-ID: <000001c38766$68b14d90$5201a8c0@GEG2400>
+Message-ID: <3F79A106.8010608@embeddededge.com>
+Date: Tue, 30 Sep 2003 11:28:06 -0400
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Joakim Tjernlund <joakim.tjernlund@lumentis.se>,
+	Jean-Denis Boyer <jdboyer@m5t.com>,
+	Steffen Rumler <Steffen.Rumler@siemens.com>,
+	linuxppc <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Problem of concurrency in arch/ppc/8260_io/uart.c
+References: <001701c384ce$7a5c3ae0$020120b0@jockeXP> <IGEFJKJNHJDCBKALBJLLKEJOFPAA.joakim.tjernlund@lumentis.se> <20030929153326.GC862@ip68-0-152-218.tc.ph.cox.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Tom Rini wrote:
 
-I use a 2.4.18 Linux kernel on my custom 8260 board with 3 FCC ports.
-These 3 ports work fine at 100Mbs half or full duplex.
+> KGDB still works for me.  Dan, happy with this?
 
-I connect 2 boards on the first port via a 10Mbs hub.
-The ports auto-negotiate and fall into 10Mbs half duplex mode.
+Go for it.
 
-A board sends short udp messages as fast as possible to the other one
-and vice-versa.
+Thanks.
 
-I get the following message and the two ports are locked forever :
 
-> NETDEV WATCHDOG: eth0: transmit timed out
-> eth0: transmit timed out.
->  Ring data dump: cur_tx c0164220 (full) cur_rx c01641e8.
->  Tx @base c0164208 :
-> 9c00 0048 018d1ee2
-> 9c00 0048 018d15e2
-> 9c00 0048 018d1ae2
-
-The PHY devices seem to be well configured.
-
-Does anyone know what are the conditions to fall into this trap ?
-Is it a PHY problem, a driver configuration problem or something else ?
-Why does the problem not disappear when the traffic is interrupted ?
-Only a board reset can reactivate the ports.
-
-Thank you for your help.
-
-Gérard
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
