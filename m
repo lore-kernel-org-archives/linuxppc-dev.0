@@ -1,62 +1,47 @@
-Message-ID: <20030526082722.86882.qmail@web9706.mail.yahoo.com>
-Date: Mon, 26 May 2003 01:27:22 -0700 (PDT)
-From: None Atall <linux_meis@yahoo.com>
-Subject: Re: [MPC8260] accessing I/Os while MMU is off
-To: vincent poirson <poirsonv@yahoo.fr>,
-	linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <20030526061601.60728.qmail@web12701.mail.yahoo.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: PCI interrupt masking, CSR on the MPC8250
+From: Jim Rowe <rowejames@acmsystems.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Message-Id: <1053952637.3773.26.camel@kneedragger>
+Mime-Version: 1.0
+Date: 26 May 2003 05:37:18 -0700
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-You missed a small shift... :)
+Hello,
 
------------------------
-li r16,r16,0x10
-li r13, 0xf001
-slw  r13,r13,r16
-addis r13, 0x0d50
-stw r14, 0(r13)
------------------------
+I have a question on some of Dan's code for the PCI support of the
+MPC8266.
 
-                   Dimitris.
+The kernel is crashing at boot on my MPC8250 when the PCI interrupts are
+being masked during boot in mpc8266ads_pci.c::mpc8266ads_init_irq(). The
+line of code is
 
---- vincent poirson <poirsonv@yahoo.fr> wrote:
->
-> Hello,
->
-> I want to change my PDATC value while in
-> HardwareInterrupt code (in kernel/head.S) where MMU
-> is
-> off. So I simply do :
-> li r13, 0x0d50
-> addis r13, 0xf001
-> stw r14, 0(r13)
-> // where 0xf0010d50 is my PDATC adress and r14 the
-> value I want to store
-> I do not understand why my kernel crahes and goes in
-> machine exception. Surprisingly, I can change PDATC
-> with BDI2000 but not with assembler code. Is this an
-> adress translation problem ?
-> Am I missing something obvious ? Any help will be
-> appreciated.
->
-> Thanks in advance.
->
->
->
+*(volatile) unsigned long *) PCI_INT_MASK_REG |= 0xfff00000;
+
+PCI_INT_MASK_REG is defined in ads8260.h to be 0xf8200004. I've looked
+through the MPC8260 User's Manual as well as the PCI Bridge addendum and
+cannot find the register at this location. Where did this address come
+from? Is this board specific? The only PCI Mask register that I found in
+the documentation is named SIPNR_H located at IMAP_ADDR+0x10C08 (from
+the PCI Bridge addendum section 1.7), and PCI has only one bit in here.
+
+In the same header I also see that BCSR_ADDR is set to 0xf8000000. I
+cannot find this area of memory or a description of the CSR in the
+documentation. Judging by its address, I think I will get a Machine
+Check here as well once the kernel gets that far. What exactly is a CSR?
+
+Thanks for any help!
+
+-- James
 
 
-=====
-------------------------------------------------------------
--Dhmhtrios Meidanis
--Degree in Mathematics, University of the Aegean.
--Master in Computer Architecture and Digital
- Systems, University of Crete.
- Greece.
-------------------------------------------------------------
+--
+Jim Rowe
+Advanced CounterMeasure Systems
+Phone: (916)669-4304
+Email: jrowe@acmsystems.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
