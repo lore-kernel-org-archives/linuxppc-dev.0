@@ -1,57 +1,57 @@
-To: Dan Malek <dan@mvista.com>
-Cc: Josh Huber <huber@alum.wpi.edu>,
-	Tom Rini <trini@kernel.crashing.org>,
+Message-ID: <3BB5EA1D.554D7617@mvista.com>
+Date: Sat, 29 Sep 2001 11:34:53 -0400
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
+To: Wolfgang Denk <wd@denx.de>,
 	Stefan Roese <stefan.roese@esd-electronics.com>,
 	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>,
 	Linuxppc-Commit <linuxppc-commit@source.mvista.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: CPCI-405 port (PPC405GP) 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 24 Sep 2001 00:32:33 EDT."
-             <3BAEB761.194CE057@mvista.com>
-Date: Sat, 29 Sep 2001 09:53:46 +0200
-Message-Id: <20010929075351.24C39100A2@denx.denx.de>
+Subject: Re: CPCI-405 port (PPC405GP)
+References: <20010923180118.83CBB1009E@denx.denx.de> <3BAEB9DA.232C8FEB@mvista.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Dan,
+Dan Malek wrote:
 
-in message <3BAEB761.194CE057@mvista.com> you wrote:
->
-> > There are 50+ boards using the PPCBoot concept by now, and the number
-> > is growing every week.
->
-> Yeah, but there are lots more that don't use it, and people want to
-> just pull those boards off the shelf and have those work as well.
-> Quite frankly PPCboot is pretty good on 8xx, but not many of the other
-> boards where people want to run Linux.
+> I'm not in the bootrom business.  While your experience is nearly
+> exclusively PPCboot, mine is nearly everything but PPCboot.
 
-Just for the record: the last state I know of (I haven't looked into
-this for about two weeks) is:
+I guess I should try to rephrase this.  My effort to use a minimal
+amount of words missed the point I was trying to make.
 
-	8xx  - 32 boards
-	8240 -  3 boards
-	8260 -  7 boards
-	74xx -  1 board
-	4xx  -  9 boards
+When I'm working on a new Linux port, I try to get the most done
+with the minimal amount of effort.  I (or the customer paying me)
+try to use the bootrom that is on the board from the supplier,
+rather than get "into the bootrom business" when the goal is
+to port a kernel.  That's why the piggyback loaders exist, to
+bridge the gap between a variety of boot roms and the kernel.
+If a bootrom doesn't exist or is quite inferior to the job,
+I would certainly port PPCBoot and use that.
 
-PPCBoot is more than just 8xx by today.
+So, while lots of people work on PPCBoot (which I am thankful)
+and see it on a daily basis, I seldom see it in the commercial
+production environments.  I'll change that whenever it it possible.
+The challenge changing or writing the boot rom is often more
+work and testing that the kernel port.  The complexity of the
+processors and memory controllers, sometimes special hardware
+tools and development boards, and of course documentation to
+get this done right isn't always available outside of the
+company that designed the system.
 
-> Remember, PPCboot started from code I wrote long ago.  It doesn't
-> look much like it anymore, but I still have a personal interest
-> in it's success :-).
+My real concern is PPCBoot is tied very tightly to the Linux
+start-up environment.  Through these last few messages, I understand
+the design reasons for features and attempt to minimize code
+duplication.  I just want everyone to be aware, as is happening
+and discussed today, that this environment is subject to change
+as we modify features and attempt to consolidate the code in
+the piggyback loaders that everyone except PPCBoot uses.
 
-That's good to know.
+I hope this helps.
 
-Wolfgang Denk
+Thanks.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Shakespeare's Law of Prototyping: (Hamlet III, iv, 156-160)
-        O, throw away the worser part of it,
-        And live the purer with the other half.
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
