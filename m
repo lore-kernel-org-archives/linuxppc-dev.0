@@ -1,39 +1,43 @@
-From: "Calum Selkirk" <cselkirk@xs4all.nl>
-Date: Sat, 19 Jul 2003 18:20:22 +0200
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Radeon problems
-Message-ID: <20030719162022.GB2427@xs4all.nl>
-Reply-To: Calum Selkirk <cselkirk@xs4all.nl>
-References: <20030719145532.20ff05e3.pochini@shiny.it>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20030719145532.20ff05e3.pochini@shiny.it>
+To: deepesh@india.tejasnetworks.com
+Cc: Ethan Benson <erbenson@alaska.net>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: Question regarding UBOOT. 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Sat, 19 Jul 2003 19:28:08 +0530."
+             <Pine.LNX.4.21.0307191918350.12735-100000@deepesh.india.tejasnetworks.com>
+Date: Sat, 19 Jul 2003 18:29:25 +0200
+Message-Id: <20030719162930.E88E4C6D82@atlas.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-* Giuliano Pochini [pochini@shiny.it] [2003-07-19 14:55 +0000]:
+In message <Pine.LNX.4.21.0307191918350.12735-100000@deepesh.india.tejasnetworks.com> you wrote:
+>
+>
+>  I have an EP8260 board. I have the u-boot binary. The board comes with a
+> boot loader(PlanetCore). I want to load u-boot into RAM and then start
+> executing from there. Is this possible? I tried doing this, but the board
+> goes for a reset.
 
-these really belong on linuxppc-user, still ..
+If the bianry is all you have then the answer is no, it cannot be done.
 
-> Problem #1: Radeonfb sets a video mode that isn't supported by my LCD
-> monitor. I have to blindly type "/usr/sbin/fbset -a 1280x1024-60
-> -depth 16" at the root console every time (*if* it boots, because I
-> make the box crash quite often :( ). Is there a boot option to set the
-> right video mode ?
+If you knoiw exactly what you're doing  you  can  modify  the  U-Boot
+source  code  to  behave  like  you  want  - but then you have to ask
+yourself _why_ you would want to do that.
 
-video=radeonfb:1280x854-8@60
+My $ 0.02: Install U-Boot. Forget the other bootloader.
 
-thats at 8bit but you shouldn't need higher for console.
 
-> Problem #2: I've managed only to use X in fbdev mode at 16bits. No way
-> to use the radeon driver.  Any hint ?
+Best regards,
 
-no idea about YD, nor the configuration of your kernel, nor your
-XF86Config, but 24bit should be possible.
+Wolfgang Denk
 
-best
-
-cal
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+If there are self-made purgatories, then we all have to live in them.
+	-- Spock, "This Side of Paradise", stardate 3417.7
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
