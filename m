@@ -1,111 +1,63 @@
-Message-ID: <3AB0DE72.959AE34F@inn.ericsson.se>
-Date: Thu, 15 Mar 2001 16:23:30 +0100
-From: Kenneth Johansson <kenneth.johansson@inn.ericsson.se>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: mcpn765
+From: bjowi@ida.liu.se (=?iso-8859-1?q?Bj=F6rn?= Wingman)
+Date: 15 Mar 2001 16:44:30 +0100
+Message-ID: <yx2r8zzghpd.fsf@aste15.ida.liu.se>
 MIME-Version: 1.0
-To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Installing debian on embedded ppc Micro-HOWTO
 Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I got a request for the howto so here it is.
+Hello,
 
--------------------
-Installing debian on embedded ppc Micro-HOWTO
+I have an MCPN765 card from Motorola with a 7400 processor, and I'm
+trying to boot linux on it. I use the latest hardhat cross-compilation
+tools, all with the prefix ppc_7xx, which seemed to be the correct choice.
 
-1.  What you need.
+I have set up bootp and so on on my host machine, and transferring the
+kernel image seems to work fine, but all kernels I have tried refuse to boot.
 
-A PowerPC CPU that is compatible with 601 userspace.
-This means that you have to compile in math emulation on most
-embedded version of ppc and that the 8xx series from motorola
-dose not work.
+>From ppcbug I get:
 
-It is assumed that you have set up the system so that it is
-booting to the point of mounting / from a nfs server.
+Residual-Data Located at: $1FF8D93C
 
-And last you need the debian base system for ppc located at
-http://ftp.se.debian.org/debian/dists/potato/main/disks-powerpc/current/base2_2.tgz
+...and then nothing happens.
 
 
+There is a kernel image on
 
-2. Create the root file system
+http://www.linuxcare.com.au/download/ppclinux/mcpn765/zImage
 
-Since the first part of a debian installation never was done a few manual
-changes has to be done.
+that gets a bit further:
 
-Unpack base2_2.tgz into the directory that is used as root mount point.
->From now on / will mean this directory on the server.
+Residual-Data Located at: $1FF8D93C
+loaded at:     00005400 0001C210
+relocated to:  00800000 00816E10
+board data at: 1FF8D93C 1FF94348
+relocated to:  00810304 00816D10
+zimage at:     00010400 000A78CB
+relocated to:  00817000 008AE4CB
+avail ram:     00400000 00800000
 
-do the following changes
+Linux/PPC load: console=ttyS0,9600 root=/dev/sda2 mem=992m
+Uncompressing Linux...done.
+Now booting the kernel
+vector 300: at pc = 9000db1c, msr = 1032, sp = 9012bf88 [9012bed8]
+dar = fe000cf8, dsisr =42000000
+current = 9012a058, pid = 0, comm = swapper
+mon>
 
-/etc/passwd
-	put in a valid root entry with password. Debian has some sanity checks that
-	fails if no password is used for root.
-
-/sbin/unconfigured.sh
-	remove/rename
-
-/etc/fstab
-	To get a rw root change the / entry to
-	"/dev/root	/		none	rw		0	0"
-
-/etc/securetty
-	We need to login as root add the tty used to this file
-	ex.
-	console
-	ttyS0
-	ttyS1
-
-/etc/resolv.conf
-	fill in nameserver
-
-/etc/inittab
-	comment out
-
-	# Format:
-	#  <id>:<runlevels>:<action>:<process>
-	#1:2345:respawn:/sbin/getty 38400 tty1
-	#2:23:respawn:/sbin/getty 38400 tty2
-	#3:23:respawn:/sbin/getty 38400 tty3
-	#4:23:respawn:/sbin/getty 38400 tty4
-	#5:23:respawn:/sbin/getty 38400 tty5
-	#6:23:respawn:/sbin/getty 38400 tty6
-
-	and uncomment
-
-	T0:23:respawn:/sbin/getty -L ttyS0 9600 vt100
+And I end up in some sort of boot-monitor-debugger that I don't know
+anything about.
 
 
-The above has to be done but changing the following can't hurt
+But if I compile the sources provided at linuxcare myself, I get the same
+behaviour as before.
 
-/etc/hostname
-/ets/hosts
-
-
-
-3. Booting the system.
-
-Now you boot and login as root.
-
-If you are behind a firewall set http_proxy with
-Export http_proxy="http://<your_proxy>"
-
-Start dselect
-      first you need to do a update. Then just chose install and wait.
+Any ideas? Do I need a different crosscompiler?
 
 
-This should result in a complete install of debian.
-
-------
-
-if you run a 405 and at any point starts to get segmentation faults just reboot and
-restart deselect.
-
---
-Kenneth Johansson
-Ericsson Business Innovation AB   Tel: +46 8 404 71 83
-Viderögatan 3                     Fax: +46 8 404 72 72
-164 80 Stockholm                  kenneth.johansson@inn.ericsson.se
+       /Björn Wingman
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
