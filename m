@@ -1,18 +1,17 @@
 Return-Path: <samlinuxppc@yahoo.com.cn>
-Received: from web15609.mail.cnb.yahoo.com (web15609.mail.cnb.yahoo.com
-	[202.165.102.63]) by ozlabs.org (Postfix) with SMTP id 59E772BD9F
+Received: from web15607.mail.cnb.yahoo.com (web15607.mail.cnb.yahoo.com
+	[202.165.102.61]) by ozlabs.org (Postfix) with SMTP id CE82B2BD9F
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 12 Oct 2004 11:12:55 +1000 (EST)
-Message-ID: <20041012011250.37596.qmail@web15609.mail.cnb.yahoo.com>
-Date: Tue, 12 Oct 2004 09:12:50 +0800 (CST)
+	Tue, 12 Oct 2004 11:36:40 +1000 (EST)
+Message-ID: <20041012013638.45312.qmail@web15607.mail.cnb.yahoo.com>
+Date: Tue, 12 Oct 2004 09:36:38 +0800 (CST)
 From: Sam Song <samlinuxppc@yahoo.com.cn>
-To: annamaya <annamaya@yahoo.com>,
-	Tom Rini <trini@kernel.crashing.org>
+To: steven.scholz@imc-berlin.de
 In-Reply-To: <20041012003339.B1EB92BDDA@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=gb2312
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Booting Linux using a PlanetCore BootLoader 
+Subject: Re: linux 2.4.27 for 8xx?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,16 +22,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-annamaya <annamaya@yahoo.com> wrote:
-> now able to see the "relocation" messages by zImage
-> and it now halts with the message "Now booting the
-> kernel". I see that it is now hung in some delay
-[snip]
-> Linux/PPC load: root=/dev/nfs rw ip=on
+steven.scholz@imc-berlin.de wrote:
+> is the vanilla kernel 2.4.27 from kernel.org 
+> considered stable for MPC8xx systems?
 
-Well, I guess there is sth wrong in your parameter
-passing to kernel. Add "Console=ttyS0,9600" in it and
-try. 
+I once used it for try but came up some making errors.
+I don't know why.
+
+> Or do I still have to go for the trees on 
+> ppc.bkbits.net ?
+
+You'd better to if u wanna to see the succeed earlier
+or switch to DENX linuxppc_2_4_devel cvs repository. 
+
 
 
 
