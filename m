@@ -1,29 +1,60 @@
-Message-ID: <3B610FD9.17F01F88@xilinx.com>
-Date: Thu, 26 Jul 2001 23:53:13 -0700
-From: "Peter Ryser" <Peter.Ryser@xilinx.com>
+Message-ID: <3B616383.E539C269@seranoa.com>
+Date: Fri, 27 Jul 2001 08:50:11 -0400
+From: Andrew Dixon <andrew.dixon@seranoa.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: mmu problems
-References: <3B4F412F.99A14D9E@comdev.cc>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: root=/dev/ram0
+References: <3B607757.6D4BFE4A@seranoa.com> <01072616453702.25105@sarge> <3B608CA5.2A774BD9@seranoa.com> <3B60D970.7080201@brocade.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Adam,
+Amit D Chaudhary wrote:
+>
+> Hi,
+>
+> Can you give the following details,
+> Are you trying to load it as initrd? Not I assume, else confirm that
+> CONFIG_BLK_DEV_INITRD=y
 
-not a solution for your real problem, but I hope it helps anyway.
+I am trying to load it as initrd.
 
-> Is there any way I can get gcc to annotate the assembly listing with the
-> C source
-> code?  I feel it would help pinpoint what is going on...
+andrew.dixon@pig2:/usr/src/linux$ cat .config |grep
+CONFIG_BLK_DEV_INITRD
+CONFIG_BLK_DEV_INITRD=y
 
-objdump --source vmlinux
+And this is set up correctly in the kernel.  Just to make sure that my
+configuration was a workable solution I recompiled everything for an i86
+architecture and I tried it out on my laptop.  I put my compressed
+ramdisk image and kernel onto a floppy and used ldlinux.sys as a boot
+loader passing it the command:
 
-produces a mixed C/assembly file. Works only if debugging information has been
-included in the kernel during compilation.
+	root=/dev/ram0 initrd=fs.gz
 
-- Peter
+and it works fine.  This prompted me to do a little searching through
+the ramdisk source (/usr/src/linux/drivers/block/rd.c) and I found that
+the ramdisk expects to find the ramdisk image on the floppy drive:
 
+	if (MAJOR(ROOT_DEV) != FLOPPY_MAJOR
+#ifdef CONFIG_BLK_DEV_INITRD
+		&& MAJOR(real_root_dev) != FLOPPY_MAJOR
+#endif
+	)
+	  //ADD
+	  //we don't want to return here because our real_root_dev is not the
+	  //floppy but the disk or flash device.  Right?  Right!
+	  //		return;
+
+
+It still doesn't work but I've got that feeling that I'm getting
+closer.  I'm going to make sure that the hard disk is detected before
+the ramdisk tries to load the image
+
+later,
+Andy
+
+P.S. Do people on the list like to be cc'd on responses or should I keep
+all mail to the list only?
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
