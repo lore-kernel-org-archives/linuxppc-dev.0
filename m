@@ -1,28 +1,36 @@
-Message-Id: <200001211908.OAA27094@mal-ach.watson.ibm.com>
-To: Robert Neugebauer <rneugeba@undergrad.math.uwaterloo.ca>
+From: jlquinn@us.ibm.com
+To: Gabriel Paubert <paubert@iram.es>
 cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: RS6000 to G4 assembly changes
-In-Reply-To: Message from Robert Neugebauer <rneugeba@undergrad.math.uwaterloo.ca>
-   of "Fri, 21 Jan 2000 13:40:14 EST." <Pine.SOL.3.96.1000121133401.17001B-100000@bacon.math.uwaterloo.ca>
-Date: Fri, 21 Jan 2000 14:08:52 -0500
-From: David Edelsohn <dje@watson.ibm.com>
+Message-ID: <8525686D.0070361D.00@D51MTA03.pok.ibm.com>
+Date: Fri, 21 Jan 2000 15:25:55 -0500
+Subject: Re: Fwd: Re: still no accelerated X ($#!$*)
+Mime-Version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-	"movl" is an x86 mnemonic.  "rs6000" is the same as "powerpc" as
-far as GCC configurations are concerned, for the most part.  RISC
-arcihtecture is a generic computer architecture term that does not provide
-any assistance in compatibility.  Other than that, I cannot understand
-what you are trying to accomplish.
+Can you list some of these efficiency issues?  In case anybody wants to
+tackle them.
 
-	Are you trying to build a cross compiler?  From linuxppc to x86
-linux?  From x86 linux to linuxppc?  From either of those to RS/6000 AIX?
-It does not sound like you have the cross-toolchain properly configured
-and/or you are not following the proper sequence to build a
-cross-toolchain and/or you have some old configuration/build files laying
-around when trying to build a new toolchain.
+In fact, it would be interesting to have a page of potential ppc-related
+kernel projects (others as well) that people could refer to if they're
+looking for something to do.  Is there such a page already?  If not, I'd be
+willing to assemble one.  However I don't have a place to host it.
 
-David
+Thanks,
+Jerry Quinn
+jlquinn@us.ibm.com
+
+
+Gabriel Paubert <paubert@iram.es>@lists.linuxppc.org on 01/21/2000 02:08:30
+PM
+[snip]
+I remember, but my goal is a memory-clobber-free kernel, although there
+are many other efficiency issues right now in Linux/PPC...
+
+     Gabriel
+     (desperately trying to build gcc_latest_snapshot)
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
