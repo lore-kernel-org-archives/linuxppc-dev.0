@@ -1,25 +1,23 @@
-Reply-To: <acurtis@onz.com>
-From: "Allen Curtis" <acurtis@onz.com>
-To: "Wolfgang Grandegger" <wolfgang.grandegger@bluewin.ch>,
-	"OHMURA Yutaka" <ohmura@co-nss.co.jp>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: How to use EP8260 MTD device?
-Date: Sat, 1 Feb 2003 13:55:58 -0800
-Message-ID: <NCBBIINEHIPFGJPLBEIFCELCEBAA.acurtis@onz.com>
+Message-ID: <3E3CBF2E.9030107@gmx.de>
+Date: Sun, 02 Feb 2003 14:48:14 +0800
+From: Michael Habermann <mhabermann@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <3E3BA83F.6060002@bluewin.ch>
+To: brian.auld@adic.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Trying to program u-boot into flash using BDI2000
+References: <995FF289C9D69747A09E42992644595405B23639@penguin.adic.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Check http://www.penguinppc.org/dev/kernel.shtml. The patches you
-> mentioned are against the linuxppc_2_4 tree but for a lot of embedded
-> boards the linuxppc_2_4_devel tree is the better choice.
+brian.auld@adic.com wrote:
 
-That is right. I don't think there has been any active development on
-linuxppc_2_4 for quite some time.
+>WORKSPACE   0x000040000      ; RAM buffer for fast flash programming
+>
+>
+Try disabling this line. It can only be used when your RAM is confirmed
+working.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
