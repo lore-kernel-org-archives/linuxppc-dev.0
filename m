@@ -1,41 +1,32 @@
-From: Brian Waite <waite@skycomputers.com>
-To: "invictus rm" <invictus_rm@hotmail.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MV64360 inclusion
-Date: Fri, 25 Jul 2003 13:46:54 -0400
-References: <BAY7-F116VQmcQXu896000057e1@hotmail.com>
-In-Reply-To: <BAY7-F116VQmcQXu896000057e1@hotmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <200307251346.54602.waite@skycomputers.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Fri, 25 Jul 2003 13:47:34 -0400
+From: Kent Borg <kentborg@borg.org>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: IO, ANSI vs GCC structs
+Message-ID: <20030725134734.J29161@borg.org>
+References: <Pine.LNX.4.44.0307251038370.22864-100000@spider.ancor.com> <20030725161940.41FDEC602D@atlas.denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20030725161940.41FDEC602D@atlas.denx.de>; from wd@denx.de on Fri, Jul 25, 2003 at 06:19:35PM +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+How important is it to the kernel coding style that hardware be
+accessed through a structure?  Is it acceptable to do:
 
-I would love to see this happen also. I have been using the _devel tree
-locally for a few months with a port of the 64360 stuff from the _galileo
-tree. I could help with the patch creation if it is able to be put in.
+  #define MYHW  (MY_MBAR+42)
 
-Thanks
-Brian
-On Friday 25 July 2003 12:53 pm, invictus rm wrote:
-> Is there any activity on for the inclusion of mv64360 code base into the
-> live kernel tree (either 2.4/2/6-test) ??
-> i have asked this q before but got the reply from the list that some
-> license needs to be cleaned up .........any updates on the same ...
->
->    Without the base mv64360_pic.c / mv64360.c and include files , its
-> difficult to integrate the boards using MV chipsets :-(
->
-> Best Regards
->
-> _________________________________________________________________
-> It's all happening @ F1. Feel the thrill!
-> http://server1.msn.co.in/sp03/formula2003/index.asp Race along right here!
->
->
+  ...
 
+  out_be32(MYHW, 0xco1df00d);
+
+
+?
+
+
+Thanks,
+
+-kb
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
