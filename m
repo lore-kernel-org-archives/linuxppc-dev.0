@@ -1,44 +1,36 @@
-Date: Wed, 11 Jun 2003 19:53:33 -0500
-From: Chris Zimman <chris@cryptoapps.com>
-To: "Brian S. Park" <brian@corelis.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: writing device driver for memory mapped device
-Message-ID: <20030612005333.GA12236@dingdong.cryptoapps.com>
-Reply-To: Chris Zimman <chris@cryptoapps.com>
-References: <5.1.1.6.2.20030611171936.012e0c68@corelis.com>
-Mime-Version: 1.0
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <20030612014745.47244.qmail@web41509.mail.yahoo.com>
+Date: Wed, 11 Jun 2003 18:47:45 -0700 (PDT)
+From: Bruno Li <libruno@yahoo.com>
+Subject: What to change on u-boot if we want to remove SPD EEPROM?
+To: linuxppc-embedded@lists.linuxppc.org
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5.1.1.6.2.20030611171936.012e0c68@corelis.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Jun 11, 2003 at 05:28:02PM -0700, Brian S. Park wrote:
-> Our custom board has FPGA connected to EBC bus of PPC405gp and is memory
-> mapped. So, I only need a device driver which will allow me to map the
-> memory to the user space application and handle some interrupts. Can any
-> one recommend a good starting point?
+Hi:
 
-This is pretty straight forward.  I assume you've setup the chip select
-for the device ahead of time (eg. in PPCBoot) and configured the bus
-width, memory location, etc.  If that's the case, you can use ioremap()
-in your device driver and map the device into the kernel address space.
+We want to remove SPD EEPROM on ppc440gp to lower the
+expense. The plan is to change u-boot code to use a
+memory buffer (filled with the content of SPD EEPROM).
+Is this possible?
 
-As far as the interrupts go, it depends on how you set them up on the
-board.  If you used one of the IRQ0-6 interrupt pins (aka GPIO17-23)
-pins, you can just add an interrupt handler and register the apprpriate
-interrupt.  You may have to adjust the interrupt routing in the platform
-setup.
+I removed the SPD EEPROM on my ppc440gp board, and
+changed u-boot code to use a memory buffer whenever
+the code need to access SPD EEPROM, however, I found
+that pci bus scan fails, u-boot stops at this line (of
+pci_hose_scan_bus() in drivers/pci.c:
+pci_hose_read_config_byte(hose, dev, PCI_HEADER_TYPE,
+&header_type);
 
-If you get stuck, I can send you an example driver that may help you
-out.  It maps in a memory mapped device on the peripheral bus.
+What extra initialization should I do when SPD EEPROM
+is missing from the system?
 
-> Also, what are we required to do to stay compliant with GPL? Is posting
-> tarball of modified Linux/u-boot source on the web enough?
+Thanks,
 
-Just put a copy of the GPL in the tarball and mark the files as such.
-Making it available for download is good practice.
+Bruno
 
---Chris
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
