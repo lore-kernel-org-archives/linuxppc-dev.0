@@ -1,47 +1,39 @@
-Message-ID: <F14441D40E5AD3118886005004607AD10BDD30@mail.libra.de>
-From: "Halfmann, Klaus" <khalfmann@libra.de>
-To: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
-Subject: Status of hfs support as of 2.4.0-test1-ac21
-Date: Fri, 23 Jun 2000 11:57:55 +0200
+Message-Id: <200006231135.NAA00733@piglet.grunz.lu>
+Date: Fri, 23 Jun 2000 13:35:31 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: Status of hfs support as of 2.4.0-test1-ac21
+To: khalfmann@libra.de
+cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <F14441D40E5AD3118886005004607AD10BDD30@mail.libra.de>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I played around with hfs support in this developer kernel and
-penetrated my hfs partion with some paralell cp-s and rm-s
-(I copied "the linux kernel" documentation around :-)
-After every step I rebootet into MacOs and ran DiskFirstAid (DFA)
-but nothing was found. cp and rm complained about problems with the
-.finderinfo and .resource directories, but I expected it this way.
-I used my iBook for testing.
+Hi Klaus,
 
-Is there anything else i _must_ check for a fs to be considered
-stable ?
+On  23 Jun, this message from Halfmann, Klaus echoed through cyberspace:
+> Is there anything else i _must_ check for a fs to be considered
+> stable ?
 
-In case anyone reports a bug to me in this area I'll try to fix
-it.
+Did you try accessing CDRoms ith their 2K block size? While late
+2.3.99/2.4 kernels have always been able to access hfs disks in a more
+or less stable way, CDRoms have not been working for a very long time...
 
-Meanwhile I'll have a look at the hfsutils
-( http://www.mars.org/home/rob/proj/hfs/ ) and will start
-moving them to HFS+.
+The LinuxPPC 2K CDs are an example of such hfs CDs.
 
-I found however some bugs not related to hfs and may reproduce
-them in detail in case someone asks:
-  - the console driver messed up some pixels while editing
-  - hdparm did not always work correctly
-    (I use pmud and it calls hdparm depending on the battery load)
-    Sometimes I got stuck with the message "hda interrupt lost"
-    or similar.
+Thanks
 
+Michel
 
-Greetings,
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
-|       |                   Klaus Halfmann    khalfmann@libra.de
-|       |
-|    i  | --.  r---  --- |  Libra Software    Tel +49 (0)621 41997-0
-|    |  b-- |  |    a--- |  Erzbergerstr. 17  Fax +49 (0)621 41997-30
-L--- |  --- |  |    .----.  68165 Mannheim
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
