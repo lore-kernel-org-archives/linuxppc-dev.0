@@ -1,28 +1,45 @@
-Message-ID: <3C163F3E.D33F1DE9@laposte.net>
-Date: Tue, 11 Dec 2001 18:15:42 +0100
-From: Phil <ibm405.linux@laposte.net>
+Message-ID: <3C164C50.C20778D6@mvista.com>
+Date: Tue, 11 Dec 2001 10:11:28 -0800
+From: Armin Kuster <Darth_vapor@mvista.com>
 MIME-Version: 1.0
-To: list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Console on 16 bits bus
-References: <20011211164223.5577410E12@denx.denx.de>
+To: Felix Radensky <felix@allot.com>
+Cc: David =?iso-8859-1?Q?M=FCller?= (ELSOFT AG) <d.mueller@elsoft.ch>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: ppc405_enet problems
+References: <3C14B86D.726DBDE6@allot.com> <3C15BB05.7070702@elsoft.ch> <3C160B04.93085D47@allot.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Felix Radensky wrote:
+>
+> Hi,
+>
+> Thanks, David and Armin for your help. I've tried the methods you suggested
+> but none of them worked. The real problem in my case was the MAX_NUM_PHYS
+> constant. I've noticed that after the first for loop in find_phy routine, the
+> value of
+> i is MAX_NUM_PHYS. So I've tried to increase the value of this constant, and
+> my
+> phy was (almost) discovered properly after the 5th iteration. I say almost,
+> because
+> I also had to change the value of phy id from 0x20005c23 to 0x20005c20 (the
+> value
+> reported by find_phy. Armin, can you please explain how this number was
+> determined.
 
-I'm currently trying to integrate the S1D13506 framebuffer driver into
-my linux kernel for the 405GP evaluation board (walnut).The S1D13506
-controller is directly connected to the external bus of the 405GP and
-the data bus width is 16 bits wide.
-The problem I have is that all the console accesses to the framebuffer
-video ram (in console.c file) are made via 32 bits wide calls
-(fb_writel).
-How can I solve this problem?
+Felix,
 
-Thanks,
+I took the easy route, its just phyid1 & phyid2.  The "A" version was
+submitted by some one else and it might be possible to combine them into
+one DP83843 stuct by using a shift factor of 8 ( 2nd eliment in the
+phy_info struct" the diff between 0x20005c23 &  0x20005c20 is the model
+revision number.
 
-Laurent MOHIN, Acterna
+Maybe MAX_NUM_PHYS needs to be renamed to MAX_PHY_ADDR to be more clear.
+
+
+-- armin
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
