@@ -1,84 +1,51 @@
-Message-Id: <l03130300b4ee7a26b302@[192.168.1.2]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Sat, 11 Mar 2000 16:16:29 +0100
-To: linuxppc-dev@lists.linuxppc.org
-From: Christian Jaeger <christian.jaeger@rektorat.ethz.ch>
-Subject: TCP/PPP stall problem; kernel2.3.48 on BWG3
+Date: Sat, 11 Mar 2000 16:39:53 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+To: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
+cc: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
+        Kostas Gewrgiou <gewrgiou@imbc.gr>,
+        Michel Danzer <michdaen@iiic.ethz.ch>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to work on pp
+ cwith r128
+In-Reply-To: <Pine.LNX.3.96.1000310113001.26527B-100000@deepspace.mklinux.org>
+Message-ID: <Pine.HPX.4.10.10003111633140.22162-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Some weeks ago I started suffering from the TCP over PPP stall/machine
-lockup, which several people have reported since october. It's strange that
-I've never had this problem before, but now it seems getting worse and
-worse (perhaps I should contact the internet provider?). Sometimes there's
-no problem at all (several MB transfer with 0 errors), but more often than
-not only some packets are received correctly, then there's this loop of
-receiving a packet with increasing delays between (the delay is doubled
-after each received packet) and (almost?) all received packets increase the
-'errors' and 'overruns' counts in ifconfig. Since logging in to the
-provider again (and also rebooting linux) then doesn't help, it's probably
-tied to the machine(s) at the other end.
 
-I'm using 2.2.15pre11 now. At Jan31 I compiled 2.2.15pre4 from linuxcare
-with IPmasquerading and at the same time updated pppd, some days ago I
-upgraded to the 2.2.15pre11 I'm using now. Before Jan31 I used 2.2.14pre9
-from RShaw.
+On Fri, 10 Mar 2000, David A. Gatwood wrote:
 
-Switching off VJ compression (novj in ~/.ppprc) has not helped against the
-stall. My machine has not _crashed_ the last few tries, but that might be
-coincidence.
+> > What do you mean with x100 ? Is it a series of PMAC models ? sync and
+> > eieio perform an address-only bus broadcast that should be terminated by
+> > the host bridge but never to the PCI bus so they can't crash HW. Is the
+> > host bridge/memory controller really that buggy ?
+>
+> NuBus, not PCI.  There's no bridge involved.  If the value in whichever
+> register, when shifted appropriately, results in a value within the NuBus
+> range, the address-only transaction causes problems, specifically the
+> system just locks up solid.  Only happens with certain cards.
 
-I have a Blue G3 (rev.2).
+Ok, bad HW design, some of the so called address-only transactions do not
+even use the address bits. They just use the address phase of the bus
+protocol.
 
-What is the best solution for this so far? I've read that the 2.3.x kernel
-doesn't have this problem. Is this really true? Is using 2.3.x a good idea?
+> > And isync is not irrelevant on any processor since a) it flushes the
+> > instruction queue and b) it ensures that the effect of all previous
+> > instructions on machine state is taken into account before the next
+> > instruction executes (that's important if you change context by changing
+> > segment registers or modify some MSR bits).
+>
+> My reference manual is in another city, so I can't look this up, but I'm
+> pretty sure isync is either a no-op or is mapped onto another instruction
+> for the 601.
 
-I have rsynced 2.3.48 from PaulM's tree, and have compiled it seven times
-now without any luck getting it booted. The first 6 tries were with
-BOOTX_TEXT (early boot) enabled. (I use BootX.) The first 3 tries hanged
-just after the "booting..." line, the next 3 tries printed some further
-lines and then hanged too.
-(In detail:
-...
- booting...
- pmac_init(): exit
- id mach(): done
- MMU: enter
- MMU: hash_init
- hash: enter
- hash: find_piece
- hash: patch
- hash: done
- MMU: mapin
- MMU: setbat
- MMU: exit
- setup_arch: enter
- setup_arch: bootmem
- arch: exit
-)
+Wrong, and I had a 601 manual in front of me when I wrote this. You might
+have confused it with icbi which is a no-op on 601, but isync definitely
+is not.
 
-I've read the tips on the list from yesterday about 'early booting text'
-and have now tried once more with a fresh source tree (still 2.3.48) with
-.config from linuxcare and 3 changes: DEVFS_FS off, BOOTX_TEXT off, Altivec
-off. Switching the Bootx stuff off has only changed that the MacOS screen
-doesn't disappear. Would this be all right? Should I still try yaboot?
-
-
-BTW: if you switch off General/Powerbook Power Management, the kernel will
-not get linked:
-
-drivers/block/block.a(ide-pmac.o): In function `pmac_ide_init_hwif_ports':
-ide-pmac.o(.text+0xfc): undefined reference to `check_media_bay_by_base'
-
-...which is defined in ./include/asm/mediabay.h,
-./include/asm-ppc/mediabay.h and ./drivers/macintosh/mediabay.c
-
-
-Christian.
-
-(PS. I only receive the digest form of the list)
+	Gabriel.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
