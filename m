@@ -1,44 +1,30 @@
-Message-ID: <20031022195651.56332.qmail@web11508.mail.yahoo.com>
-Date: Wed, 22 Oct 2003 12:56:51 -0700 (PDT)
-From: Khai Trinh <kqtrinh@yahoo.com>
-Subject: Re: PCI adapter interface using IBM ppc440gp
-To: "Jeff H. Zhong" <jeff@doremilabs.com>
-Cc: linuxppc-embedded@lists.linuxppc.org,
-	Eugene Surovegin <ebs@ebshome.net>
-In-Reply-To: <3F95E5A2.9070407@doremilabs.com>
+Message-ID: <000701c39911$53d15f70$4844900a@hydingnb1>
+From: "hyding" <nari_dhy@nari-china.com>
+To: "linuxppc-embed" <linuxppc-embedded@lists.linuxppc.org>
+Subject: mount root on the ml300 board
+Date: Thu, 23 Oct 2003 10:56:59 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I work for Titan Corporation. Our division made a PCI
-board out of the PPC440GP and uses its PCI interface
-to talk to either Solaris or Windows Host. We have
-embedded linux 4.10.17 running on it.
+hi,
+    I am debugging MontaVista linux pro3.0(kernel 2.4.28) on the ml300
+board. I use IBM MicroDrive 1GB card to configure the FPGA and act as
+root fs. But the boot stops and displays the following:
+...
+block: 128 slots per queue, batch=32
+Partition check:
+ xsysacea: xsysacea1 xsysacea2 xsysacea3
+System ACE at 0xCF000000 mapped to 0xC900F000, irq=9, 1052352KB
+Kernel panic: I have no root and I want to scream
+ <0>Rebooting in 180 seconds..
+    There are 3 partitions in the CF card. The 1st is the fat12. The 2st
+is swap and the 3rd is the root. Kernel command line: console=ttyS0,9600
+root=/dev/sysace3 rw
+    Did someone have the problem? Any hints will be appreciable.
 
-You can contact Titan Sales at 858-527-4100 or
-858-231-4100. Maybe you can get it as a reference
-board for your design although we are not really into
-the reference design market.
-
---Khai
---- "Jeff H. Zhong" <jeff@doremilabs.com> wrote:
->
-> Hi Dear Wolfgang, Eugene and whole group,
->
-> We like to use the pci bus on the 440GP as an
-> adapter interface, not a
-> host interface. Is there any support for this mode
-> in the linuxppc kernel?
->
-> Your input is highly appreciated,
->
-> Many thanks in advance,
-> --Jeff
->
->
->
-
+Thanks!
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
