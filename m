@@ -1,44 +1,52 @@
 From: benh@kernel.crashing.org
-To: "Joseph P. Garcia" <jpgarcia@execpc.com>,
-	Matthias Grimm <joker@cymes.de>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: pbbuttons, need some help
-Date: Fri, 8 Mar 2002 13:33:01 +0100
-Message-Id: <20020308123301.27605@mailhost.mipsys.com>
-In-Reply-To: <20020307134140.56d70400.jpgarcia@execpc.com>
-References: <20020307134140.56d70400.jpgarcia@execpc.com>
+To: Harald Welte <laforge@gnumonks.org>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 2.4.18-ben0 on G4 SMP: do_IRQ waiting for irq lock
+Date: Fri, 8 Mar 2002 19:34:09 +0100
+Message-Id: <20020308183409.25542@mailhost.mipsys.com>
+In-Reply-To: <20020308090750.W6936@sunbeam.de.gnumonks.org>
+References: <20020308090750.W6936@sunbeam.de.gnumonks.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->The best way to get battery info now is to use to use /proc/pmu/ in newer
->(2.4) kernels.  My gkrellm-pmu plugin used to use adb directly, then PMUD,
->now /proc/pmu/.  I had to poke and prod at Paul Mackerras' Batmon to figure
->out O'Hare.  But /proc/pmu is transparent to what kind of system its on.
->Divide and conquer.  Nice that another conduit thats system independant
->exists.
+>I've tried to run 2.4.18-ben0 on my G4 SMP (dual 450 MHz) box.
+>
+>I've tried both, a kernel with all IRQ's routed to CPU0 - and a kernel
+>where both CPU's can handle IRQ's.
 
-Note that OHare in /proc/pmu is still known to be flawky as it seems
-not all OHare based pbooks need the same formula. But at least it will
-be fixed one day and I prefer indeed keeping that tricky code in a
-single location. I do have some code to merge one of these days fixing
-calculation for the 2400 for example.
+For some yet unknown reason, letting interrupts be distributed on all
+CPUs will cause occasional lockups on dual G4s. However, with interrupts
+routed to CPU0, I have the machine running rock solid here.
 
->Along those same lines, I have a sugesstion for the gtk client for
->pbbuttons.  The program should use the X keycodes rather than associate
->with the daemon that controls the hardware.  This serves two purposes: X
->handles any client/server mess, and the GUI will be the system independant
->figurehead it should be (IMO).  Bastien wrote a similar program that uses
->the keycodes, so it could be used on any system with the keys, even an x86.
->(hadess.net)
+>Unfortunately in both kernel images, I don't even get past all init scripts,
+>at some (random) point during bootup:
+>
+>do_IRQ waiting for irq lock (holder=1)
+>
+>occurs.
+>
+>Any idea what's causing the problem?  I've already tried to boot in
+>single user mode - and it's working fine.  Then I've started every single
+>init script in /etc/rc2.d (it's debian) by hand - and the problem didn't
+>occur.
+>
+>Am I right assuming that there is a deadlock where one CPU is holding
+>the IRQ lock while the other wants to grab it?
+>
+>And how could this happen on a kernel where all IRQ's are routed to one
+>CPU ??
 
-Well, the daemon will still be needed to get the "special" keys on OHare
-based powerbooks as I think those don't come via ADB.
+Could be a driver bug showing up, difficult to say. The problem definitely
+doesn't happen here (dual G4 450Mhz, 2x7400 CPU with highmem). The fact that
+the IRQ lock can be held by the other CPU is normal though, both CPUs don't
+take external IRQs but decrementer ones for example happen on both.
 
->Thanks for working to improve the Linux user expirience. (and anyone else
->listening for keeping in touch with such ventures :)
+That said, I don't know what is causing your problem.
+
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
