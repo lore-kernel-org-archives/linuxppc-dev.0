@@ -1,15 +1,35 @@
-Message-ID: <393E4156.E7E8153A@eng.uct.ac.za>
-Date: Wed, 07 Jun 2000 14:34:30 +0200
-From: Grant Carter <gcarter@eng.uct.ac.za>
+Message-ID: <A3E34B558F5CD211B4980008C7A4A99001D60AB0@sparrow.eng.gilbarco.com>
+From: "Wohlgemuth, Jason" <jason.wohlgemuth@marconi.com>
+To: "'Grant Carter'" <gcarter@eng.uct.ac.za>,
+        "'linuxppc-embedded'"
+	 <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: SMC2
+Date: Wed, 7 Jun 2000 10:19:23 -0400 
 MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: SMC2
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi
+Grant,
+
+Look in your PowerQuicc 860 User's Manual on page 34-9,
+
+Their is a table which show the proper pbpar,pbdir setting to enable smc2 (I
+think).  I don't know how to explain the pbodr setting right off the top of
+my head.  But it is in pages close to this one.
+
+Hope that helps,
+Jason
+
+-----Original Message-----
+From: owner-linuxppc-embedded@lists.linuxppc.org
+[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Grant
+Carter
+Sent: Wednesday, June 07, 2000 8:35 AM
+To: linuxppc-embedded
+Subject: SMC2
 
 I have been looking at uart.c in the kernel and have come across
 something that I cannot figure out. Perhaps I am just being stupid.
@@ -37,14 +57,5 @@ pins? Those are located in Port A (PA8 and PA9)
 
 I guess my point is why are the Port B registers being modified for SMC2
 pins which are found in Port A?
-
-Many thanks
-Grant
-
---
-Grant Carter                              gcarter@eng.uct.ac.za
-Department of Electrical Engineering      University of Cape Town
-Tel: +27 (0)21 650-3467                   Fax: +27 (0)21 650-3465
-                     "Coffee not found - operator halted!"
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
