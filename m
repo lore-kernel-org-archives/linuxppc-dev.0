@@ -1,32 +1,46 @@
-Date: Tue, 13 Apr 1999 17:26:31 -0400 (EDT)
-From: Tom Rini <tmrini@ntplx.net>
-To: Jim Somerville <somer@nortelnetworks.com>
-cc: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: quik vs. bootx
-In-Reply-To: <03E3E0690542D211A1490000F80836F4877DEC@zcard00f.ca.nortel.com>
-Message-ID: <Pine.LNX.4.05.9904131724590.487-100000@pc.wackyland.com>
+Message-ID: <3713E45B.60335A75@airways.com>
+Date: Tue, 13 Apr 1999 17:42:03 -0700
+From: "D. Lance Robinson" <lancer@airways.com>
+Reply-To: lancer@airways.com
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-raid <linux-raid@vger.rutgers.edu>,
+        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Memory buffer corruption with Raid on PPC
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 13 Apr 1999, Jim Somerville wrote:
+I have linux 2.2.3 with raid014519990309.. patch.
 
-> None of my systems have MacOS on them...I'm using quik.  I have no desire
-> to reinstall MacOS just so I can boot linux.  Will quik work with the 2.2
-> kernel, or will I be screwed here?  I'm currently using 2.1.24 on all my
-> systems.
+On a PPC (Mac G3) system, I am getting what seems to be memory buffer
+courruption when using raidstart. The same kernel source run with i386
+architecture seems to be fine.
 
-Quik works fine w/ 2.2.x and 2.1.xxx.  Tho when you install R5 you might
-have a bit of trouble. (BootX only install ATM, but putting the ramdisk
-and a vmlinux into a .coff ala R4 is doable of course.  And if anyone
-wishes to make the installer do the Quik things needed, patches are
-welcome.)
+To show the problem, I do something like the following...
 
----
-Tom Rini (TR1265)
-http://dobbstown.yeti.edu/
+#  cd ~me
+#  gcc source_a.c 
+#  raidstart /dev/md0 ; gcc source_a.c 
+#  raidstop  /dev/md0 ; gcc source_a.c 
+#  raidstart /dev/md0 ; gcc source_a.c 
+#  raidstop  /dev/md0 ; gcc source_a.c 
+#  raidstart /dev/md0 ; gcc source_a.c 
+#  raidstop  /dev/md0 ; gcc source_a.c 
+#  raidstart /dev/md0 ; gcc source_a.c 
+#  raidstop  /dev/md0 ; gcc source_a.c 
+
+Usually doing this will cause the compile to have a problem. Such as:
+"Illegal Instruction", or some compile error. This indicates some sort
+of memory buffer corruption since the gcc is all done out of memory.
+
+The problem seems to be in the raidstart area. It shows up after
+starting the array, but once the array is started (and passes the gcc
+test,) it works fine.
+
+Any ideas ?
+
+Thanks, <>< Lance.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
