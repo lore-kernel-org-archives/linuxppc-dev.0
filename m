@@ -1,55 +1,69 @@
-Message-ID: <369ABC5D.1E70D477@dgs.monash.edu.au>
-Date: Tue, 12 Jan 1999 14:07:09 +1100
-From: Brendan Simon <brendan@dgs.monash.edu.au>
+Date: Mon, 11 Jan 1999 23:44:31 -0600 (CST)
+From: Troy Benjegerdes <hozer@drgw.net>
+To: Corey Minyard <minyard@acm.org>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: arch/ppc/kernel restructure + MVME/MTX OpenPIC support
+In-Reply-To: <m267advdk2.fsf@wf-rch.cirr.com>
+Message-ID: <Pine.LNX.4.04.9901112254370.926-100000@narn.local.drgw.net>
 MIME-Version: 1.0
-To: linuxppc-users <linuxppc-users@lists.linuxppc.org>,
-        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: KURT & RTLinux for LinuxPPC
-Content-Type: multipart/mixed;
- boundary="------------90C398CE2BE17F6C82001712"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------90C398CE2BE17F6C82001712
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 
+I have just made the changes you suggested, along with updating a couple
+of files (irq.c, setup.c) to match the versions in 2.2.0-pre6. (thanks to 
+keys@brio.yikes.com for pointing this out)
 
-KURT (a firm Real Time Linux) and RTLinux (a hard Real Time Linux) have
-sources/patches available for the i386 based kernels.  Can these patches
-be applied to the LinuxPPC kernels ??
+There is also an additional patch to linux/mm/vmscan.c provided by Ryan
+Nielsen which has been included which allowed me to boot an SMP kernel
+again.
 
-Has anyone tried porting KURT or RTLinux to LinuxPPC ?
+The patch is at
+ftp://ftp.microux.com/pub/linux/linuxppc-rework-troy-2.patch.gz
+ 
+> Also, a couple of small things that probably need to be fixed:
+> 
+>  * The __initfunc()  needs to be removed from all the xxx_setup_residual
+>    function calls, since that is called all the time.
+> 
+Heh, this was causing 'cat /proc/cpuinfo' to crash the kernel
 
-Brendan Simon.
+>  * The patch to idle.c needs to look something like:
+> 
+> --- linux-2.2p4.orig/arch/ppc/kernel/idle.c     Mon Jan  4 16:59:13 1999
+> +++ linux-2.2p4/arch/ppc/kernel/idle.c  Mon Jan  4 16:49:13 1999
+> @@ -301,7 +301,14 @@
+>                         hid0 &= ~(HID0_NAP | HID0_SLEEP | HID0_DOZE);
+>                         hid0 |= (powersave_nap? HID0_NAP: HID0_DOZE) | HID0_DPM;
+>                         asm("mtspr 1008,%0" : : "r" (hid0));
+> -                       msr |= MSR_POW;
+> +
+> +                       /* set the POW bit in the MSR, and enable interrupts
+> +                          so we'll wake up sometime! */
+> +                       _nmask_and_or_msr(0, MSR_POW | MSR_EE);
+> +
+> +                       /* Disable interrupts again so restore_flags will
+> +                          work. */
+> +                       _nmask_and_or_msr(MSR_EE, 0);
+>                 }
+>                 restore_flags(msr);
+>         default:
+> 
+> 
+> -- 
+> Corey Minyard               Internet:  minyard@acm.org
+>   Work: minyard@nortel.ca       UUCP:  minyard@wf-rch.cirr.com
+> 
+> 
 
+--------------------------------------------------------------------------
+| Troy Benjegerdes    |       troy@microux.com     |    hozer@drgw.net   |
+|    Unix is user friendly... You just have to be friendly to it first.  |
+| This message composed with 100% free software.    http://www.gnu.org   |
+--------------------------------------------------------------------------
 
---------------90C398CE2BE17F6C82001712
-Content-Type: text/x-vcard; charset=us-ascii;
- name="brendan.vcf"
-Content-Description: Card for Brendan Simon
-Content-Disposition: attachment;
- filename="brendan.vcf"
-Content-Transfer-Encoding: 7bit
-
-begin:vcard 
-n:Simon;Brendan
-tel;fax:+61 3 9886 0269
-tel;home:+61 3 9561 0817
-tel;work:+61 3 9886 0128
-x-mozilla-html:TRUE
-org:CTAM Pty Ltd
-adr:;;469 Springvale Rd;Glen Waverly;Victoria;3150;Australia
-version:2.1
-email;internet:brendan@dgs.monash.edu.au
-title:Embedded Systems Design Engineer
-x-mozilla-cpt:;-7584
-fn:Brendan Simon
-end:vcard
-
---------------90C398CE2BE17F6C82001712--
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
