@@ -1,28 +1,34 @@
-Message-ID: <E380A44D523BD5118EAE0002A52CE5C40B9A0601@zcard0k8.ca.nortel.com>
-From: "Andrew Williams" <awilliam@nortelnetworks.com>
-To: "linuxppc-embedded@lists.linuxppc" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Spurious Interrupts.. 2.4.22 82xx platforms
-Date: Sun, 2 May 2004 11:02:42 -0400 
+Message-ID: <4095ED18.50605@denayer.wenk.be>
+Date: Mon, 03 May 2004 08:56:24 +0200
+From: Gerrit Van de Velde <gvd@denayer.wenk.be>
+MIME-Version: 1.0
+To: Mark Chambers <mwchambers@citlink.net>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Motorola 5200 MIPS
+References: <02f701c42f01$fcb464d0$0301a8c0@chuck2>
+In-Reply-To: <02f701c42f01$fcb464d0$0301a8c0@chuck2>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Trying to wrap my mind around where my "spurrious" interrupts
-are coming from.
+Don't know, but you're not comparing the right numbers anyway. Try
+running a Dhrystone benchmark. It reported something around 500 MIPS.
+Bogomips is something different: it's the number of times a processor
+can execute "nothing", hence that name: bogo, from bogus :)
 
-I've used some debug code to determine where the spurrious
-counter was being incremented, in an attempt to see the
-what/how/why. All occurences are a result of m8260_get_irq()
-returning -1 (empty SIVEC register).
+> Is this just mucho-bogo-promo on Motorola's part or am I
+>missing something?
+>
+>Mark Chambers
+>
+>
+>
+>
+>.
+>
+>
+>
 
-Ideas or pointers as to what might be occuring here?
-We're using an 8270.
-
-Can anyone reference a paper/chat/email that details the nature
-of the SIVEC/SPINRx solution in linux?
-
-
-Thanks
-Andrew
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
