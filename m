@@ -1,39 +1,34 @@
-Message-ID: <3B02AD71.804119E3@india.infogain.com>
-Date: Wed, 16 May 2001 22:10:17 +0530
-From: ashish anand <ashisha@india.infogain.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3AEDDF71.28439605@mvista.com>
+Date: Mon, 30 Apr 2001 17:56:01 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Amelia De Vivo <amelia.devivo@roma.quadrics.com>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: Addressing PCI memory
-References: <002f01c0dd5c$f64942e0$7a00000a@roma.quadrics.com>
+To: Kevin Fry <kevin@carts.com>
+Cc: Laura Dean <tralad@yahoo.com>,
+	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: ramdisk for rpx-lite
+References: <20010430130651.12703.qmail@web12404.mail.yahoo.com> <3AEDDE2D.849EEFFA@carts.com>
 Content-Type: text/plain; charset=us-ascii
-Sender: owner-linuxppc-dev@lists.linuxppc.org
-List-Id: <linuxppc-dev@lists.linuxppc.org>
+Sender: owner-linuxppc-embedded@lists.linuxppc.org
+List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Amelia De Vivo wrote:
+Kevin Fry wrote:
 >
-> Hi all, I'm trying to write a driver for a 64 bit PCI device. Something like
-> this works well under i386 Linux, but it doesn't work at all for Linux
-> 2.2.15 by Yellow Dog:
->
->     struct pci_dev *dev = NULL;
->     dev = pci_find_device(vendor, device, dev);
->     pci_read_config_dword(dev, PCI_BASE_ADDRESS_0, &cards[0].addr0);
->     cards[0].vaddr = (void *) ioremap((cards[0].addr0 &
-> PCI_BASE_ADDRESS_MEM_MASK), cards[0].size);
->     writeb('A',(cards[0].vaddr)+0x1000);
+> I too am looking for a pre-setup ramdisk .  But I'm looking for the one
+> mentioned that exists for Monta Vista. 2.4.0 kernel.
 
- READ PCI STATUS REGISTER TO CHECK FOR ANY MASTER/TARGET ABORT.
-  LASTLY WHAT IS THE VALUE OF cards[0].size ?
+I don't know who would have mentioned such a thing, because I'm not
+aware of one.  I just install a few of the RPMs, strip the libraries,
+and copy the target directory to the ramdisk.  Minimally, you need to
+install the filesystem, bash, C library, and probably termcap (for
+bash).  I don't use busybox, but you can probably install that somehow
+as well.
 
-> I have a kernel panic on writeb. Has someone some suggestion?
+There will be lots more cooler tools available soon, but this is
+the method I am using now.
 
-LET ME KNOW THE PANIC MESSAGE....
 
-> Thanks in advance
->
-> Amelia
->
+	-- Dan
 
-** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
+** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
