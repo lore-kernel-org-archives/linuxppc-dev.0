@@ -1,95 +1,40 @@
-Message-ID: <6B546A602AD2D211BFF00008C7A428890584401D@hrtades2.atea.be>
-From: Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Kernel Module; globals badly initialized, help needed.
-Date: Thu, 14 Mar 2002 08:39:49 +0100
+Message-ID: <A1C99F4731CAD111BA5400A024FC3B0CBE046E@ESBILMA01EDCGE>
+From: "Billalabeitia, Jose Carlos (IndSys, GEPM)" <jc.billalabeitia@indsys.ge.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Formatting JFFS2 Flash
+Date: Thu, 14 Mar 2002 03:13:53 -0500
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-(This messages was already posted on the linuxppc-dev list, put posting it
-to this list failed...)
+Hi Alex:
 
-Hi,
+First of all, thank you for your answer. You wrote:
 
-I am having lots of problems with global variables that are badly
-initialized in a kernel
-module. I wrote some very simple code showing the problem. The compiler
-I use is gcc 2.95.3
-(the one that comes with HHL2.0).
+> Did you initialise the FS with
+> cat jffs2.image > /dev/mtd0
+> before you tried to mount /mtdblock0 ?
 
-Is this a compiler problem -do I need to use some special options?- or
-could it
-be a problem with insmod, the kernel, ...?
+	I tried it in two ways, and in both of them
+I got the same result:
 
-I had this problem before with DECLARE_WAIT_QUEUE_HEAD where the
-pointers inside the structure where badly initialized. The only
-sollution was to reinitialize the fields at runtime. I posted this issue
-and somebody reported he had seen the same issue.
+	1.- By flashing "jffs2.image" directly to
+	    its location address.
 
-Who can help we with this?
+	2.- cp jffs2.image /dev/mtd0
 
-Thanks!
-Frederic
+and then mounting it into the system.
 
+> Did you use an empty directory with mkfs.jffs2
+> to make your jffs2.image?  This doesn't work
+> - you end up with a 0 length jffs2.image!
 
-#include <linux/module.h>
-#include <linux/kernel.h>
-#include <linux/init.h>
+	No, the directory is not empty.
 
-
-#if defined(CONFIG_SMP)
-#define __SMP__
-#endif
-
-#if defined(CONFIG_MODVERSIONS)
-#define MODVERSIONS
-#include <linux/modversions.h>
-#endif
-
-char MyMemSpace[2*0x100];
-char *MemPointers[2] = {&(MyMemSpace[0]), &(MyMemSpace[0x100])};
-
-typedef struct
-{
-	char *szName;
-	char *szName2;
-} MyStruct_t;
-
-MyStruct_t MyStruct[] = {{"A", "A2"}, {"B", "B2"}};
-
-int init_module(void)
-{
-	printk("TestDriver 3 Loaded\n");
-
-	printk("MyMemSpace: 0x%lx 0x%lx \n",  (long)&(MyMemSpace[0]),
-(long)&(MyMemSpace[0x100]));
-	printk("MemPointers: 0x%lx 0x%lx \n", (long)(MemPointers[0]),
-(long)(MemPointers[1]));
-
-	printk("First Char is MyStruct[0].szName %c\n",
-MyStruct[0].szName[0]);
-
-
-	return -1;
-}
-
-void cleanup_module(void)
-{
-	return;
-}
-
-
-
-
-This is what I get:
-
-MyMemSpace: 0xc304a1ec 0xc304a2ec
-MemPointers: 0xc304a1ec 0xc304a3ec
-First Char is MyStruct[0].szName e
+					Thank you
+						Billa
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
