@@ -1,38 +1,168 @@
-From: Paul Mackerras <paulus@samba.org>
+Date: Wed, 05 Jun 2002 21:06:25 -0700
+Message-ID: <3CFEDFC1.9080603@asu.edu>
+From: "Donald White" <dbwhite@asu.edu>
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15614.49971.298608.61998@argo.ozlabs.ibm.com>
-Date: Thu, 6 Jun 2002 12:04:35 +1000 (EST)
-To: Dan Malek <dan@embeddededge.com>
-Cc: David Gibson <david@gibson.dropbear.id.au>,
-	linuxppc-embedded@lists.linuxppc.org,
-	Tom Rini <trini@kernel.crashing.org>
-Subject: Re: Do we need tlbsx at finish_tlb_load?
-In-Reply-To: <3CFCFDB0.9010304@embeddededge.com>
-References: <20020530080434.GY16537@zax>
-	<20020603024344.GA6765@zax>
-	<3CFC0794.7020907@embeddededge.com>
-	<15612.47115.300768.766742@argo.ozlabs.ibm.com>
-	<3CFCFDB0.9010304@embeddededge.com>
+Subject: Re: Can compile, now on to booting
+References: <20020605191638.298B0102F2@denx.denx.de> <3CFE7197.1040408@linuxfoundary.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek writes:
+I did this once on a mpc860 board.  It involved running the uncompressed
+kernel image through vxhack.c from Dan Malek with a few fixes since the
+segments seemed to have moved around.  The VxWorks loader would then
+load the hacked image through bootp or tftp.  I also had to have one of
+the Linux bootloader files initialize a bd_t structure.  I was able to
+poke around in memory and find where the VxWorks loader was keeping the
+environment.
 
-> IMHO, a tlb miss handler design should simply emulate a hardware implementation,
-> and fetch the PTE entries into the TLB cache as quickly and efficiently as
-> possible.  You are typically loading valid, ready to use PTEs in a much higher
-> proportion to invalid ones, and I don't like the normal fast path cluttered
-> by the overhead of checking the special cases that require more work.
+Don
 
-Well, simpler is better with a TLB miss handler, for sure.
+Dave Strout wrote:
 
-However, in the context of 4xx, if we load an entry into the TLB with
-the valid bit clear, all that will happen is that the cpu will give us
-the same TLB miss exception again immediately.  So that doesn't get us
-anywhere at all.
+>
+> Thanks all for the help with the toolchain -- I'm now cranking out ppc
+> code.
+>
+> Now to boot.  What I'm actually trying to do is replace a VxWorks
+> environment on one of my companies products with Linux. The unit is
+> 405GP based, and pretty close to a walnut, as far as I can tell
+> (comparing the mem map in the docs with the 405gp.h file in the
+> kernel).  I'm hoping to get away with using the existing boot monitor,
+> at least in the short term.  The monitor has the ability to load an ELF
+> executable & jump to it, but I'm not getting very far beyond that -- in
+> fact it crashes with the pc at the first instruction.  I've tried my
+> freshly-built 2.4.18 kernel, and the ppcboot executable, and they both
+> crash on the first instruction.
+>
+> I don't have a hardware debugger for this, so I'm sort of at a loss.
+> There are some LED's on the front that I could try & write some asm to
+> blink as I go along, but since I hang on the first instruction, I'm not
+> sure that would help.......
+>
+> All thoughts greatly appreciated.
+>
+> dave.
+>
+>
+> Dumps:
+>
+> Linux:
+> ftp 134.141.133.254:vmlinux to SDRAM size=1430968
+> Booting system S/W at entry 0xc0000000
+> Starting at 0xc0000000...
+>
+>
+> program
+> Exception current instruction address: 0xc0000000
+> Machine Status Register: 0x00029200
+> Condition Register: 0x24200082
+> Task: 0x1f1a8e0 "tBoot"
+>
+> r0     =   c034dc   sp     =  1f1a4d0   r2     =        0   r3
+> =        0
+> r4     =  1f80000   r5     =  1f1a8e0   r6     =    29200   r7     =
+> 1200
+> r8     =       20   r9     =   ca0000   r10    =        4   r11
+> =        0
+> r12    =        0   r13    =        0   r14    =        0   r15
+> =        0
+> r16    =        0   r17    =        0   r18    =        0   r19
+> =        0
+> r20    =        0   r21    =        0   r22    =        0   r23
+> =        0
+> r24    =        0   r25    =        0   r26    =        0   r27    =
+> ca0000
+> r28    =   ca0000   r29    = c0000000   r30    =  1ffffc8   r31    =
+> c0000000
+> msr    =    29200   lr     =   c034e4   ctr    =        0   pc     =
+> c0000000
+> cr     = 24200082   xer    =        0
+>
+> ppcboot:
+>
+> ftp 134.141.133.254:ppcboot to SDRAM size=186232 + 4
+> Booting system S/W at entry 0xfff80000
+> Starting at 0xfff80000...
+>
+>
+> program
+> Exception current instruction address: 0xfff80000
+> Machine Status Register: 0x00029200
+> Condition Register: 0x24200082
+> Task: 0x1f1a8e0 "tBoot"
+>
+> r0     =   c034dc   sp     =  1f1a4d0   r2     =        0   r3
+> =        0
+> r4     =  1f80000   r5     =  1f1a8e0   r6     =    29200   r7     =
+> 1200
+> r8     =       20   r9     =   ca0000   r10    =        4   r11
+> =        0
+> r12    =        0   r13    =        0   r14    =        0   r15
+> =        0
+> r16    =        0   r17    =        0   r18    =        0   r19
+> =        0
+> r20    =        0   r21    =        0   r22    =        0   r23
+> =        0
+> r24    =        0   r25    =        0   r26    =        0   r27    =
+> ca0000
+> r28    =   ca0000   r29    = fff80000   r30    =  1ffffc8   r31    =
+> fff80000
+> msr    =    29200   lr     =   c034e4   ctr    =        0   pc     =
+> fff80000
+> cr     = 24200082   xer    =        0
+>
+> Objdump says:
+> [dstrout@dstrout dstrout]$ ~/tools/bin/powerpc-linux-objdump -D ppcboot
+> | head -20
+>
+> ppcboot:     file format elf32-powerpc
+>
+> Disassembly of section .resetvec:
+>
+> fffffffc <.resetvec>:
+> fffc:    4b f8 01 04     b    fff80100 <_start>
+> Disassembly of section .text:
+>
+> fff80000 <version_string-0x4>:
+> fff80000:    27 05 19 56     dozi    r24,r5,6486
+>
+> fff80004 <version_string>:
+> fff80004:    50 50 43 42     rlwimi    r16,r2,8,13,1
+> fff80008:    6f 6f 74 20     xoris    r15,r27,29728
+> fff8000c:    31 2e 31 2e     addic    r9,r14,12590
+> fff80010:    35 20 28 4a     addic.    r9,r0,10314
+> fff80014:    75 6e 20 20     andis.    r14,r11,8224
+> fff80018:    35 20 32 30     addic.    r9,r0,12848
+> fff8001c:    30 32 20 2d     addic    r1,r18,8237
+>
+> [dstrout@dstrout dstrout]$ ~/tools/bin/powerpc-linux-objdump -D vmlinux
+> | head -20
+>
+> vmlinux:     file format elf32-powerpc
+>
+> Disassembly of section .text:
+>
+> c0000000 <_start>:
+> c0000000:    7c 7f 1b 78     mr    r31,r3
+> c0000004:    7c 9e 23 78     mr    r30,r4
+> c0000008:    7c bd 2b 78     mr    r29,r5
+> c000000c:    7c dc 33 78     mr    r28,r6
+> c0000010:    7c fb 3b 78     mr    r27,r7
+> c0000014:    3b 00 00 00     li    r24,0
+> c0000018:    48 00 23 49     bl    c0002360 <initial_mmu>
+>
+> c000001c <turn_on_mmu>:
+> c000001c:    38 00 10 32     li    r0,4146
+> c0000020:    7c 1b 03 a6     mtsrr1    r0
+> c0000024:    3c 00 c0 00     lis    r0,-16384
+> c0000028:    60 00 22 c0     ori    r0,r0,8896
+> c000002c:    7c 1a 03 a6     mtsrr0    r0
+>
+>
+>
 
-Paul.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
