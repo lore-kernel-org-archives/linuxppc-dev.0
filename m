@@ -1,35 +1,36 @@
-Message-ID: <38C21CBF.5A718EAE@ncal.verio.com>
-Date: Sun, 05 Mar 2000 00:37:19 -0800
-From: Henry Worth <haworth@ncal.verio.com>
+Message-ID: <38C26453.3668A644@iiic.ethz.ch>
+Date: Sun, 05 Mar 2000 14:42:43 +0100
+From: Michel Dänzer <michdaen@iiic.ethz.ch>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: More Powerbook 2000 (Pismo) data
-References: <38C208F3.FD613B63@ncal.verio.com>
-Content-Type: text/plain; charset=us-ascii
+To: khendricks@ivey.uwo.ca
+CC: Kostas Gewrgiou <gewrgiou@imbc.gr>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to work on pp cwith
+ r128
+References: <Pine.LNX.4.21.0003041753480.1870-100000@idd-01.imbc.gr> <00030413590600.00885@localhost.localdomain>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Kevin Hendricks wrote:
+
+> Here is the patch to fix the cursor for 16bpp and 8bpp for XFree 4.0 r128.
+> (It is attached). It is almost exactly what you sent to me earlier.
+
+This looks a bit complicated to me.
+
+Doesn't it help adding BIT_ORDER_IN_BYTE_MSB_FIRST to the HW cursor flags or
+something? It works in the glint driver (look at pm2_accel.c or pm2_dac.c)
 
 
-While finishing up the last message I decided to try booting again
-as I had the eth0 activated under OS/9 and hadn't previously. Well this
-time it appears the PHY registers were accessible. An extract from
-the kmsgs is below:
+> By the way, true 16 bit depth (565) does not work on my machine. The screen
+> comes up but everything is very very green!
+>
+> Reverting to 16bpp and 15 depth (555) works fine.
 
-<4>PHY regs:
-<4>1000 782d 0040 6212
-<4>01e1 0081 0000 0000
-<4>0000 0000 0000 0000
-<4>0000 0000 0000 0000
-<4>1000 0301 0000 0000
-<4>0000 0131 0100 0000
-<4>003a d00e 0000 ff00
-<4>002a 0000 0080 000b
-<4>mii_interrupt, phy_status: 800e
+Does it report the correct RGB weight?
 
-Does this look more like what's expected?
 
-Henry
+Michel
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
