@@ -1,62 +1,53 @@
-Date: Thu, 6 Apr 2000 15:12:53 -0400 (EDT)
-From: Pavel Roskin <pavel_roskin@geocities.com>
+Message-Id: <200004062001.QAA88680@p2.parker.boston.ma.us>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Minor makefile fixes
-Message-ID: <Pine.LNX.4.21.0004061428150.9152-100000@sunapee.transcept.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: nfsroot and the latest 2.3.99-prexxx?
+Date: Thu, 06 Apr 2000 16:01:04 -0400
+From: Brad Parker <brad@parker.boston.ma.us>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello!
+Hi,
 
-I'm going to post some trivial differences between the kernel sources used
-in Transcept, Inc. and the kernel used in MontaVista's Hard Hat linux.
+I'm not sure what to do with this, so here goes:
 
-I hope that somebody will take care of them.
+I was trying to boot the latest 2.3.99-pre4 this morning using an nfs
+root.  It crashed and I found what looks like a glaring mistake in
+the nfs xdr code...  It wasn't this way in 2.3.47, so it's something
+recently introduced (perhaps as part of the nfs v3 work?).
 
-The patch for arch/ppc/kernel/Makefile is necessary because we are using a
-version control system that makes files read-only.
-If ppc_defs.head is read-only, then ppc_defs.h is read-only too, and the
-subsequent grep fails.
+I was curious if anyone else had seen this or was on the main kernel
+list and saw something about it.  The original memset wipes out
+the file handle pointer (res->fh) and is pretty clearly wrong.
 
-I believe that the build system should not assume source files being
-writeable.
+this does not seem to affect the normal nfs client code - I believe
+it only is used in the case of a 'diskless' nfs root.
 
-The patch to drivers/macintosh/Makefile reduces the number of bloat that
-goes into the kernel e.g. for RPX/Lite. No embedded boards should ever
-need the ADB stuff. This is for PMAC and CHRP only.
+My sense is they really wanted to pre-zero the file handle as it
+has some areas unused by nfs v2 which can confuse the new v3 code.
 
-Regards,
-Pavel Roskin
+-brad
 
-=== cut here ===
-diff --exclude-from=reviewed -urN linux/arch/ppc/kernel/Makefile out/arch/ppc/kernel/Makefile
---- linux/arch/ppc/kernel/Makefile	Tue Apr  4 12:36:23 2000
-+++ out/arch/ppc/kernel/Makefile	Thu Mar  2 11:35:59 2000
-@@ -68,7 +68,7 @@
- 		$(TOPDIR)/include/asm/pgtable.h \
- 		$(TOPDIR)/include/asm/ptrace.h
- 	$(CC) ${CFLAGS} -S mk_defs.c
--	cp ppc_defs.head ppc_defs.h
-+	cat ppc_defs.head >ppc_defs.h
- 	grep '^#define' mk_defs.s >>ppc_defs.h
- 	rm mk_defs.s
-
-diff --exclude-from=reviewed -urN linux/drivers/macintosh/Makefile out/drivers/macintosh/Makefile
---- linux/drivers/macintosh/Makefile	Thu Apr 29 15:53:48 1999
-+++ out/drivers/macintosh/Makefile	Tue Jan 18 16:08:52 2000
-@@ -15,7 +15,7 @@
- L_TARGET := macintosh.a
- M_OBJS   :=
-
--ifndef CONFIG_MBX
-+ifndef CONFIG_8xx
- L_OBJS   := via-cuda.o macio-adb.o via-pmu.o mediabay.o
- LX_OBJS  := adb.o
- endif
-=== cut here ===
-
+===== mount_clnt.c 1.2 vs edited =====
+--- 1.2/fs/nfs/mount_clnt.c	Sun Apr  2 18:40:21 2000
++++ edited/mount_clnt.c	Thu Apr  6 11:52:33 2000
+@@ -120,7 +120,7 @@
+ static int
+ xdr_decode_fhstatus(struct rpc_rqst *req, u32 *p, struct mnt_fhstatus *res)
+ {
+-	memset((u8 *)res, 0, sizeof(*res));
++	memset((u8 *)res->fh, 0, sizeof(res->fh));
+ 	if ((res->status = ntohl(*p++)) == 0) {
+ 		res->fh->size = NFS2_FHSIZE;
+ 		memcpy(res->fh->data, p, NFS2_FHSIZE);
+@@ -131,7 +131,7 @@
+ static int
+ xdr_decode_fhstatus3(struct rpc_rqst *req, u32 *p, struct mnt_fhstatus *res)
+ {
+-	memset((u8 *)res, 0, sizeof(*res));
++	memset((u8 *)res->fh, 0, sizeof(res->fh));
+ 	if ((res->status = ntohl(*p++)) == 0) {
+ 		int size = ntohl(*p++);
+ 		if (size <= NFS3_FHSIZE) {
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
