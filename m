@@ -1,49 +1,68 @@
-Message-ID: <39F47F61.EFBFFCD2@mvista.com>
-Date: Mon, 23 Oct 2000 11:11:45 -0700
-From: Frank Rowand <frank_rowand@mvista.com>
-Reply-To: frowand@mvista.com
+From: Michael Norton <mnorton@cisco.com>
+Message-Id: <200010231922.MAA20122@cisco.com>
+Subject: More Makefile Questions...
+To: linuxppc-dev@lists.linuxppc.org
+Date: Mon, 23 Oct 2000 12:22:25 -0700 (PDT)
 MIME-Version: 1.0
-To: Gabriel Paubert <paubert@iram.es>
-CC: Dan Malek <dan@mvista.com>, minyard@acm.org,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Allowing signal handlers to modify SE and BE
-References: <Pine.HPX.4.10.10010171019190.18996-100000@gra-ux1.iram.es>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Gabriel Paubert wrote:
->
-> On Tue, 17 Oct 2000, Dan Malek wrote:
->
-> > > Is this really the case?  I noticed in the x86 version that setting
-> > > the equivalent of the SE bit is allowed, how does the x86 get away
-> > > with this while the PPC can't?
-> >
-> > These bits are optionally supported by processors.  As I recall,
-> > the 601 doesn't but I don't know of any others.  You may find a
-> > processor where they don't have any effect.  I can't think of any
-> > other reason.
->
-> Slight correction: the 601 does have the SE bit but not the BE bit. The
-> other important difference of the 601 is that it handles debug exceptions
-> differently (different vector etc...).
->
-> So at least the SE bit is present on all processors.
->
->         Gabriel.
+hi,
 
-The SE bit is not present on at least some of the IBM PPC 4xx processors.
-It is not present on the 405 processors.  It is not present on the 403GCX.
-(I did not check the other 403 variants.)
+I am still have problems with my linker. When I compile I see the  following problem:
 
-(This doesn't affect the discussion that led to the question about the SE
-bit, but I thought I would let people know about the 4xx processors....)
+[mnorton@b9 console]#make
+gcc     -I/usr/X11R6/include -I/usr/X11R6/include/GL     glConsole.o /usr/lib/libglut.so.3.7.0 -L/usr/X11R6/lib -L/usr/local/lib -lXext -lX11    -o      gameCon
+/usr/bin/ld: cannot find -lXext
+collect2: ld returned 1 exit status
+make: *** [gameCon] Error 1
 
--Frank
---
-Frank Rowand <frank_rowand@mvista.com>
-MontaVista Software, Inc
+Apparently I am experiencing difficulty with my lib path. Here is my Makefile:
+
+C = gcc
+CFLAGS = -g
+INCLUDE = -I/usr/X11R6/include -I/usr/X11R6/include/GL
+
+GLUT = /usr/lib/libglut.so.3.7.0
+
+LIBPATH = -L/usr/X11R6/lib -L/usr/local/lib
+
+#LDLIBS = -lMesaGLU -lMesaGL -lm -lXmu -lX11 -lXext -lXi -lXt
+LDLIBS = -lXext -lX11
+
+PROG = gameCon
+SRCS = glConsole.c
+OBJS = $(SRCS:.c=.o)
+
+$(PROG) : $(OBJS)
+	$(CC)	$(INCLUDE)	 $(OBJS) $(GLUT) $(LIBPATH)	$(LDLIBS)	-o	$(PROG)
+
+Now for my libraries, for instance -lXext:
+[mnorton@b9 glheretic-1.1]#ls /usr/X11R6/lib/*ext*
+/usr/X11R6/lib/libXext.so.6  /usr/X11R6/lib/libXext.so.6.3
+
+
+I experienced similar problems trying to link Mesa libs:
+[mnorton@b9 console]#make
+gcc     -I/usr/X11R6/include -I/usr/X11R6/include/GL    glConsole.o /usr/lib/libglut.so.3.7.0 -L/usr/X11R6/lib -L/usr/local/lib    -lMesaGLU -lMesaGL -lm -lXmu -lX11 -lXext -lXi -lXt   -o   gameCon
+/usr/bin/ld: cannot find -lMesaGLU
+collect2: ld returned 1 exit status
+make: *** [gameCon] Error 1
+
+I do have these libraries installed for Mesa:
+[mnorton@b9 lib]#ls /usr/lib/*GL*
+/usr/lib/libGL.a     /usr/lib/libGL.so.1.2.030100  /usr/lib/libGLU.so.1
+/usr/lib/libGL.so    /usr/lib/libGLU.a             /usr/lib/libGLU.so.1.2.030100
+/usr/lib/libGL.so.1  /usr/lib/libGLU.so            /usr/lib/libMesaGLw.a
+
+
+Any ideas?
+
+thanks,
+
+Mike
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
