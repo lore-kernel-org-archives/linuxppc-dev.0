@@ -1,37 +1,58 @@
-Date: Mon, 24 May 1999 18:10:43 -0400 (EDT)
-From: Tom Rini <tmrini@ntplx.net>
-To: laures@esiea.fr
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Initio miles tests :-(
-In-Reply-To: <199905242203.SAA10401@mail.ntplx.net>
-Message-ID: <Pine.LNX.4.05.9905241810150.650-100000@pc.wackyland.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <19990525024524.D26885@radicalmedia.com>
+Date: Tue, 25 May 1999 02:45:24 -0400
+From: Mark Abene <phiber@radicalmedia.com>
+To: bh40@calva.net
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: turbo mouse driver fix...
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 25 May 1999 laures@esiea.fr wrote:
+Hey!  Please test the following patch to mac_keyb.c which fixes the TurboMouse
+support you added based on my "mousehack" program.  I tested my changes on a
+2.2.7 kernel.  The problem is that once you determine we are working with a
+TurboMouse 5 (thanks for adding the reg 1 ID detection, btw!), we need to write
+to id 3, which is how you control the TurboMouse 5's modes, not to id 15.
+Observe:
 
-> On 24 Mai, Tom Rini wrote:
->
-> > you go:
-> > pdisk /dev/blank-inito-disk
-> > ... create partitions ...
-> This is not possible since pdisk reports a incredible number of 512
-> bytes block for a 256M disk (the test drive), with a total free space
-> of 126G!!!
-> Here pdisk fail at creating the partition map, and at modifying it
-> sjightly.
-> I wish I could show you the output of pdisk, is it possible to redirect
-> output on a file, still setting the keyborad as input ?
-
-pdisk /dev/blah >log 2>&1
-then type blindly.
+--- mac_keyb.c.orig     Tue May 25 02:07:29 1999
++++ mac_keyb.c  Tue May 25 02:25:36 1999
+@@ -908,13 +908,10 @@
  
----
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+        adb_request(&req, NULL, ADBREQ_SYNC, 1, ADB_FLUSH(id));
+ 
+-       adb_request(&req, NULL, ADBREQ_SYNC, 3,
+-               ADB_WRITEREG(id,3), 0x20 | id, 4);
+-
+-       adb_request(&req, NULL, ADBREQ_SYNC, 1, ADB_FLUSH(id));
++       adb_request(&req, NULL, ADBREQ_SYNC, 1, ADB_FLUSH(3));
+ 
+        adb_request(&req, NULL, ADBREQ_SYNC, 9,
+-       ADB_WRITEREG(id,2),
++       ADB_WRITEREG(3,2),
+            0xe7,
+            0x8c,
+            0,
+@@ -924,10 +921,10 @@
+            0xff,
+            0x94);
+ 
+-       adb_request(&req, NULL, ADBREQ_SYNC, 1, ADB_FLUSH(id));
++       adb_request(&req, NULL, ADBREQ_SYNC, 1, ADB_FLUSH(3));
+ 
+        adb_request(&req, NULL, ADBREQ_SYNC, 9,
+-       ADB_WRITEREG(id,2),
++       ADB_WRITEREG(3,2),
+            0xa5,
+            0x14,
+            0,
+
+
+That should work fine.  If it does for everyone else, it should be committed!
+
+-Mark
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
