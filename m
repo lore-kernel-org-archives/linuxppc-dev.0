@@ -1,17 +1,19 @@
-Return-Path: <SWarren@nvidia.com>
-Received: from HQEMGATE01.nvidia.com (hqemgate01.nvidia.com [216.228.112.170])
-	by ozlabs.org (Postfix) with ESMTP id D655467A6C
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao02.cox.net (fed1rmmtao02.cox.net [68.230.241.37])
+	by ozlabs.org (Postfix) with ESMTP id 2F56767A86
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  9 Mar 2005 07:16:22 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Date: Tue, 8 Mar 2005 12:16:12 -0800
-Message-ID: <DBFABB80F7FD3143A911F9E6CFD477B0056A92E3@hqemmail02.nvidia.com>
-From: "Stephen Warren" <SWarren@nvidia.com>
-To: <wd@denx.de>
+	Wed,  9 Mar 2005 07:33:02 +1100 (EST)
+Date: Tue, 8 Mar 2005 13:32:49 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Rune Torgersen <runet@innovsys.com>
+Message-ID: <20050308133249.C8434@cox.net>
+References: <DCEAAC0833DD314AB0B58112AD99B93B8592E9@ismail.innsys.innovsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B8592E9@ismail.innsys.innovsys.com>;
+	from runet@innovsys.com on Tue, Mar 08, 2005 at 12:37:33PM -0600
 Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: MPC5200 kernel with IDE *and* FEC? 
+Subject: Re: Lots of memory on 826x
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,37 +24,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-From: wd@denx.de [mailto:wd@denx.de]=20
-> In message
-<DBFABB80F7FD3143A911F9E6CFD477B0056A92B5@hqemmail02.nvidia.com> you
-wrote:
-> >=20
-> > By the way, to the people who mentioned using Debian and Gentoo on
-the
-> > MPC5200, are there any web-sites that have info on how to do this
-> > (toolchain and/or distro)? I haven't managed to find anything
-remotely
-> > detailed on cross-building either of these distros. But I'll
-probably
-> > just do it from scratch now I have NPTL-aware toolchain:-)
->=20
-> You don't have to cross-build anything; you can just use the existing
-> ISO images for installation. For Debian Woody you can find a detailed
-> description   (thanks   to    bernhard    Kuhn    for    this!)    at
->
-http://www.denx.de/twiki/bin/view/DULG/DebianOnPowerpcInstallationHowto=20
+On Tue, Mar 08, 2005 at 12:37:33PM -0600, Rune Torgersen wrote:
+> Ok... Got a little closer....
+> 
+> I have PCI (outbound) mapped in the area 0x80000000-0x8fffffff
+> (prefetch/non-prefetch and IO)
+> IMMR of cource is at 0xf0000000
+> 
+> So I map the IO as following:
+> 	/* Map IMMR region to a 256MB BAT */
+> 	addr = (cpm2_immr != NULL) ? (uint)cpm2_immr : CPM_MAP_ADDR;
+> 	io_block_mapping(addr, addr, 0x10000000, _PAGE_IO);
+> 
+> 	io_block_mapping(0x80000000, 0x80000000, 0x10000000, _PAGE_IO);
+> 
+> Now I can almost boot....:
+> It craches when trying to read from harddisk
+> (only happens with more than 512MB)
 
-That could save a lot of time, but is this kernel 2.4-based? The docs
-there imply that (buildling a kernel natively section references paths
-with 2_4 in them).
+That's expected if you are going to 768MB. You have kernel lowmem
+being mapped at 0xc0000000+<size_of_system_memory>. With 768MB that
+takes you all the way to where you have the IMMR mapped 1:1 I
+guess. This leaves no room for vmalloc space.  With 768MB of ram
+the kernel will calculate VMALLOC_START at 0xf1000000 which is a
+problem.
 
-We already have a 2.4-based MontaVista, but we're trying to get a 2.6
-kernel up and running with NPTL to compare the pthreads performance
-differences...
+A few options are:
 
-Thanks for the pointer though.
+* Move the IMMR much higher to allow vmalloc space
+* Modify maximum low memory to limit to 512MB using the advanced
+  options menu
+* Modify KERNELBASE to something like 0xa0000000 using the advanced
+  options menu
 
---=20
-Stephen Warren, Software Engineer, NVIDIA, Fort Collins, CO
-swarren@nvidia.com        http://www.nvidia.com/
-swarren@wwwdotorg.org     http://www.wwwdotorg.org/pgp.html
+All of these methods will provide addition vmalloc space.
+
+Don't forget to turn on HIGHMEM to use everything above MAX_LOW_MEM.
+
+-Matt
