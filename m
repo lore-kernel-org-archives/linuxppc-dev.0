@@ -1,39 +1,75 @@
-To: "zhongqx" <zhongqx@guoguang.com.cn>
-Cc: "MirekP" <ntr_stukacz@poczta.onet.pl>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: All is OK! 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 19 Jun 2002 12:45:18 +0800."
-             <000701c2174c$1de38ac0$7301a8c0@zhongqx>
-Date: Wed, 19 Jun 2002 08:09:26 +0200
-Message-Id: <20020619060931.8890910300@denx.denx.de>
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="----_=_NextPart_001_01C2177E.03EADEFC"
+Subject: set_multicast_list function of ppc enet driver
+Date: Wed, 19 Jun 2002 12:42:31 +0200
+Message-ID: <C287DEEDF2D4C1409FDE10D8253BD7000D4C33@eurobird.dt.net>
+From: "Ludszuweit, Axel" <Axel.Ludszuweit@datentechnik.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <000701c2174c$1de38ac0$7301a8c0@zhongqx> you wrote:
->
-> Hi,
->     Good afternoon!
->     Tell you a good message! I have solved the probelm!Now Linux 2.4.18 run on
-> My fads board quite well.thank you very much! you give me much help! I appreciate
-> you indeed!so i want to evryone know what i did.when you define CONFIG_CLOCKS_IN_MHZ=1,
-> you should update two place with MPC8xx board:
+This is a multi-part message in MIME format.
 
-This is wrong. When you run a 2.4.5-pre5 or later kernel  you  should
-simply NOT define CONFIG_CLOCKS_IN_MHZ in your PPCBoot configuration,
-and all is well. NO CHANGES to the Linux code are required.
+------_=_NextPart_001_01C2177E.03EADEFC
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Please read the relevant documentation  in  the  PPCBoot  README  and
-CHANGELOG files!
+Hello,
 
-Wolfgang Denk
+I have a question about the powerquicc ethernet
+drivers, especcially to the set_multicast_list=20
+routine.
+In this routine, only one multicast address
+is used, to evaluate the appropriate hash value.
+I dont know, how the dmi structure works, but I have=20
+took a look to other drivers.=20
+In my opinion, dev->dmi is the start point=20
+of dev->mc_count chained dmi structures,=20
+which contains all multicast addresses.
+I have attached a patch of the 8260 version of
+enet.c, which will take this in account.
+I dont have tested the patch.
+Have someone experience with the multicast feature
+and can give me some feedback?
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"Tell the truth and run."                          - Yugoslav proverb
+Thanks
+
+
+
+
+--------------------------------------------
+
+Datentechnik Intercom GmbH
+Axel Ludszuweit
+Frankenring 14
+D-30855 Langenhagen
+
+Telefon: +49(0)511 978197-630=20
+Telefax: +49 511 / 978197-670
+mailto:axel.ludszuweit@datentechnik.com
+http://www.datentechnik.com
+
+------_=_NextPart_001_01C2177E.03EADEFC
+Content-Type: application/octet-stream;
+	name="patch_enet.c"
+Content-Transfer-Encoding: base64
+Content-Description: patch_enet.c
+Content-Disposition: attachment;
+	filename="patch_enet.c"
+
+LS0tIGxpbnV4LTIuNC4xOC9hcmNoL3BwYy84MjYwX2lvL2VuZXQuYy5PUklHCVdlZCBKdW4gMTkg
+MTA6NDQ6MTYgMjAwMgorKysgbGludXgtMi40LjE4L2FyY2gvcHBjLzgyNjBfaW8vZW5ldC5jCVdl
+ZCBKdW4gMTkgMTE6MDM6MzggMjAwMgpAQCAtNTc3LDkgKzU3NywxMCBAQAogCQkJZXAtPnNlbl9n
+YWRkcjMgPSAwOwogCQkJZXAtPnNlbl9nYWRkcjQgPSAwOwogCi0JCQlkbWkgPSBkZXYtPm1jX2xp
+c3Q7CiAKLQkJCWZvciAoaT0wOyBpPGRldi0+bWNfY291bnQ7IGkrKykgeworCQkJZm9yIChpPTAs
+IGRtaSA9IGRldi0+bWNfbGlzdDsgCisJCQkgICAgIGkgPCBkZXYtPm1jX2NvdW50ICYmIChkbWkg
+IT0gIChzdHJ1Y3QgZGV2X21jX2xpc3QgKikgTlVMTCk7IAorCQkJICAgICBpKyssIGRtaSA9IGRt
+aS0+bmV4dCkgewogCQkJCQogCQkJCS8qIE9ubHkgc3VwcG9ydCBncm91cCBtdWx0aWNhc3QgZm9y
+IG5vdy4KIAkJCQkqLwo=
+
+------_=_NextPart_001_01C2177E.03EADEFC--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
