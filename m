@@ -1,42 +1,53 @@
-Message-ID: <75DF04AC5ED4D511A9810090273CB4163F5DE2@rokonet-e.rokonet.co.il>
-From: Eli Brin <elib@rokonet.co.il>
-To: "'Wolfgang Denk'" <wd@denx.de>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Access u-boot environment variables from Linux 
-Date: Mon, 14 Jul 2003 12:18:17 +0200
-MIME-Version: 1.0
-Content-Type: text/plain
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Mon, 14 Jul 2003 07:31:10 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Wolfgang Denk <wd@denx.de>
+Cc: Pantelis Antoniou <panto@intracom.gr>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Ethernet PHY chip discovery not working on 855T with 971/972 chips
+Message-ID: <20030714143110.GA1211@ip68-0-152-218.tc.ph.cox.net>
+References: <3F124BF5.6070803@intracom.gr> <20030714075810.D95FAC6D82@atlas.denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20030714075810.D95FAC6D82@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Wolfgang,
+On Mon, Jul 14, 2003 at 09:58:05AM +0200, Wolfgang Denk wrote:
 
->With "burn ... the TQ860L ... at 0x3ff00" you  mean  the  TQ-specific
->Hardware   Information   Block  which  can  be  installed  at  offset
->0x0003FFC0 in the first flash bank?
+> Dear Pantelis,
+>
+> in message <3F124BF5.6070803@intracom.gr> you wrote:
+> >
+> > >>IIRC the last time we such discussions simply nothing  happened:  see
+> > >>for example to code for dp_alloc / dp_free that was submitted several
+> > >>times.
+> > >
+> > >google knows nothing of this, can you give a pointer into the thread
+> > >please?  Thanks.
+> > >
+> > >
+> > I was the one that sent the patches (search for dpalloc).
+>
+> I was referring to a much older implementation  of  this  feature.  I
+> sent it to Tom nearly two years ago:
+>
+> 	Subject: Re: Modifications to linuxppc_2_4_devel
+> 	From: Wolfgang Denk <wd@denx.de>
+> 	Date: Wed, 29 Aug 2001 23:57:30 +0200
+> 	To: Tom Rini <trini@kernel.crashing.org>
+>
+> The patch in question was named "PATCH-006-dpfree+uart".
 
-Yes, but our final target will use 0x0003FF00, so we can have more
-space. We are making our target as compatible as possible to the
-TQM860L.
+I really wish I had looked into making mutt keep a copy of sent mail a
+lot sooner.  I don't suppose you have a copy of my reply to that as
+well?  I suspect it was either "Can you break the uart stuff out from
+the dpfree stuff" and you didn't, or "This is large and intrusive and
+I'd feel better if I could make Dan Malek look at it".
 
->This stuff has been obsoleted by  the  solution  in  tools/env  which
->allows for easy configuration to different boards / setups.
-
-Yes. I didn't know of it. It was absent in ppc-boot, and _reading_ the
-change log from version to version may solve this...
-
->Yes, but it makes little sense to always recompile everything from
->scratch when the same tools are ready available as binaries in the ELDK.
-
-Perhaps, and probably, you are right. I will re-check/re-think. It looks
-easier to make changes on the SELF scripts. And it can be used on Linux
-version that do not support the ELDK rebuild from scratch.
-
-Anyway, my original problem is solved :) . I use the /tools/env, and
-perhaps later the MTD patch.
-
-Thanks,
-Eli Brin
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
