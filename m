@@ -1,20 +1,16 @@
-Return-Path: <jonmasters@gmail.com>
-Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.207])
-	by ozlabs.org (Postfix) with ESMTP id 1B5412BC0F
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Oct 2004 00:53:57 +1000 (EST)
-Received: by rproxy.gmail.com with SMTP id 76so23812rnk
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Oct 2004 07:53:56 -0700 (PDT)
-Message-ID: <35fb2e5904102107535069206b@mail.gmail.com>
-Date: Thu, 21 Oct 2004 15:53:56 +0100
-From: Jon Masters <jonmasters@gmail.com>
-To: linuxppc <linuxppc@4bridgeworks.com>
-In-Reply-To: <C18BA5DDB58DD511BD0700C0DF0DD4502941E6@NTSERVER4>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-References: <C18BA5DDB58DD511BD0700C0DF0DD4502941E6@NTSERVER4>
+Return-Path: <darenh@4bridgeworks.com>
+Received: from ntserver4.diluk.co.uk (mailhost.digitalinterfacesltd.com
+	[62.69.87.37]) by ozlabs.org (Postfix) with ESMTP id 8F10F2BC0F
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Oct 2004 00:59:55 +1000 (EST)
+Message-ID: <C18BA5DDB58DD511BD0700C0DF0DD4502941E7@NTSERVER4>
+From: Daren Hayward <darenh@4bridgeworks.com>
+To: "'jonathan@jonmasters.org'" <jonathan@jonmasters.org>,
+	linuxppc <linuxppc@4bridgeworks.com>
+Date: Thu, 21 Oct 2004 15:59:42 +0100
+MIME-Version: 1.0
+Content-Type: text/plain
 Cc: Linux PPC Dev <linuxppc-dev@ozlabs.org>
-Subject: Re: Problem with PPC 440 GX Transmit Path
-Reply-To: jonathan@jonmasters.org
+Subject: RE: Problem with PPC 440 GX Transmit Path
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,13 +20,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 21 Oct 2004 15:20:55 +0100, linuxppc <linuxppc@4bridgeworks.com> wrote:
+> Perhaps *any* form of useful output or description would be useful.
+> Could you please provide the specific line of debugging that you need
+> to retain at least?
 
-> Any help or guidance
-> will be appreciated, for now I am going to try and implement gdb.....
+Amy of the following
 
-Perhaps *any* form of useful output or description would be useful.
-Could you please provide the specific line of debugging that you need
-to retain at least?
+PKT_DEBUG(("emac_txeob_dev() entry, tx_cnt %d", fep->tx_cnt));
+PKT_DEBUG(("emac_txeob_dev() exit, tx_cnt %d", fep->tx_cnt));
+PKT_DEBUG(("emac_start_xmit() exitn"));
 
-Jon.
+Daren
