@@ -1,47 +1,39 @@
-Subject: RE: BDI2000 vs RiskWatch
+From: "Stefan Roese" <stefan.roese@esd-electronics.com>
+To: "Linuxppc-Commit" <linuxppc-commit@source.mvista.com>,
+	"Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: status of linuxppc_2_4_devel for ppc405gp
+Date: Wed, 22 Aug 2001 12:22:52 +0200
+Message-ID: <EFEAIMDCOOOHIEPHDNFJAEHDDBAA.stefan.roese@esd-electronics.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-Date: Tue, 21 Aug 2001 13:44:18 -0400
-Message-ID: <FF6CF34C346E724596A2FB5CAAB2C49750C3E0@voyager.ops.infiniswitch.com>
-From: "Wright, David" <dwright@infiniswitch.com>
-To: "Scott Anderson" <scott_anderson@mvista.com>,
-	"Felix Radensky" <felix@allot.com>
-Cc: "Linix PPC Emmbedded" <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-IBM only supplies programs to run the RISCWatch on Windows,
-RS/6000, and Sun (no Linux).  As an alternative to buying a
-separate box, you can also run the Windows version of the
-software under VMware on Linux.  You still have the "access
-to sources" problem, though.
+Hi,
 
-  -- David Wright, InfiniSwitch Corp.
+I recently noticed that some new stuff for the ppc4xx found its way into the
+linuxppc_2_4_devel tree (thanks dan).
 
+So I tried to port this linux-tree to our custom ppc405gp board. Up to now
+we are using the MontaVista Linux for the ppc405gp (walnut) from 03-2001.
 
+Within this process I found some problems:
 
-> -----Original Message-----
-> From: Scott Anderson [mailto:scott_anderson@mvista.com]
+Our system crashes in the function "ppc4xx_gdb_init()" in file
+"ppc4xx_setup.c". Without this call bootup look much better ;-). Any
+comments on this?
 
-> Felix Radensky wrote:
-> > Can someone please explain what BDI2000 can do that
-> > RiskWatch cannot.
->
-> To me, the main thing is that it integrates well with a Linux
-> development box.  I use my normal debug tools (ddd/gdb) and
-> the BDI2000
-> acts like a gdbserver for the kernel.  For things such as
-> FLASHing code into the target, you just telnet into the BDI2000.
->
-> Bottom line: If you are developing on Windows, the RiscWatch
-> is probably
-> what you want.  If you are developing on Linux (which I hope is the
-> case), you want a BDI2000.  Otherwise, you're going to need a Windows
-> box for RiscWatch to run on and then you'll have to set up
-> Samba or some
-> other mechanism for the Windows box/RiscWatch to see your
-> sources, etc.
+I noticed that the ppc405_enet driver is not compiled and not started
+(Makefile and Space.c in drivers/net). Is there a patch missing?
+
+Is anybody running this linuxppc_2_4_devel on a walnut board or custom
+ppc405 board? What is the "official status" of the ppc405 support in this
+linux tree?
+
+Thanks and best regards,
+Stefan Roese
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
