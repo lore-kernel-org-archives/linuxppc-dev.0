@@ -1,31 +1,78 @@
-Message-ID: <01C33566.E9EA7960.robdlg@att.net>
-From: "DeLaGarza, Robert" <robdlg@att.net>
-Reply-To: "robdlg@att.net" <robdlg@att.net>
-To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: matroxfb
-Date: Wed, 18 Jun 2003 06:57:35 -0700
+From: =?iso-8859-1?Q?G=E9rard_Gu=E9vel?= <gguevel@interfaceconcept.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Kernel Panic while building IP or TCP hash tables
+Date: Wed, 18 Jun 2003 16:04:44 +0200
+Message-ID: <000001c335a2$9767eb50$5201a8c0@GEG2400>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I'm having a slight problem with a Matrox G450 PCI card.  It's hosted by an Artis SBC-A3000 (it's like a Sandpoint with an
-MPC8245).  The kernel is a modifed MontaVista 2.4.19-pre8, and there is no keyboard.
+Hi,
 
-My kernel command line includes:
+After many days of tests, I can say that the system does not crash anymore
+with the patch installed.
 
-console=tty0 console=ttyS0,9600
-video=matrox:init,vesa:0x105
+The most difficult thing is to determine the frames which generate the
+kernel panic.
+I can exclude arp broadcast frames and ip unicast frames.
+It seems that the multicast frames are the origin of the system crash but I
+can't say
+if it is the only case.
 
-The card initializes and displays console output, and text redirected to /dev/tty0 also appears.  However, after 5 or so
-minutes, the card apparently goes to sleep.  The monitor goes black.  Messages from the kernel do wake the display
-up, however.
+The system runs in any case with the patch. Use it !!!
 
-How can I keep the card from sleeping, if indeed that is what is happening?
+Thanks to Jean-Denis Boyer
 
-Incidentally, while searching the linuxppc-embedded archives, I encountered a question regarding "matroxfb: cannot
-determine memory size."  I had the same error, but using "init" in the kernel command line alleviated it.
+Gérard Guével
+
+
+-----Message d'origine-----
+De : Jean-Denis Boyer [mailto:jdboyer@m5t.com]
+Envoyé : jeu. 5 juin 2003 14:09
+À : Gérard Guével
+Cc : linuxppc-embedded@lists.linuxppc.org
+Objet : RE: Kernel Panic while building IP or TCP hash tables
+
+
+
+I experienced a similar problem with my system, I was not sure if it was
+specific to my implementation. Can you try the following patch and tell us
+if it helps?
+
+It registers the IPv4 handling functions AFTER initializing the IP routing
+stuff. Early packets could enter the stack and crash the system.
+
+--- Kernel.old/net/ipv4/ip_output.c     Thu Jun  5 09:00:39 2003
++++ Kernel/net/ipv4/ip_output.c Thu Jun  5 09:00:28 2003
+@@ -1087,11 +1087,11 @@
+
+ void __init ip_init(void)
+ {
+-       dev_add_pack(&ip_packet_type);
+-
+        ip_rt_init();
+        inet_initpeers();
+
++       dev_add_pack(&ip_packet_type);
++
+ #ifdef CONFIG_IP_MULTICAST
+        proc_net_create("igmp", 0, ip_mc_procinfo);
+ #endif
+
+
+Salutations,
+
+--------------------------------------------
+ Jean-Denis Boyer, Software Designer
+ M5T Centre d'Excellence en Télécom Inc.
+ 4283 Garlock Street
+ Sherbrooke (Québec)
+ J1L 2C8  CANADA
+ (819)829-3972 x241
+--------------------------------------------
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
