@@ -1,30 +1,28 @@
-Date: Wed, 5 Apr 2000 02:27:40 +0200
+Date: Wed, 5 Apr 2000 02:29:22 +0200
 From: Olaf Hering <olh@suse.de>
-To: "William H. Schultz" <whschult@uncc.edu>
+To: Sriranga Veeraraghavan <ranga@CSUA.Berkeley.EDU>
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: kernel args with miboot
-Message-ID: <20000405022740.B20631@suse.de>
+Subject: Re: 2.3.x Sources with working SMP
+Message-ID: <20000405022922.C20631@suse.de>
 Reply-To: linuxppc-dev@lists.linuxppc.org
-References: <200004040459.XAA03713@lists.linuxppc.org> <38EA7D15.C453ED94@uncc.edu>
+References: <200004050006.RAA03800@soda.csua.Berkeley.edu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <38EA7D15.C453ED94@uncc.edu>
+In-Reply-To: <200004050006.RAA03800@soda.csua.Berkeley.edu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Apr 04, William H. Schultz wrote:
+On Tue, Apr 04, Sriranga Veeraraghavan wrote:
 
-> Maybe I'm just not as quick as everyone else, but how do you
-> pass kernel arguments when using miboot?  I found some stuff
-> when I looked at the "Sytem" file with ResEdit, but it
-> didn't look like that's where I was supposed to put the
-> stuff.  I also haven't found any documentation on the
-> bootloader.
+> I want to upgrade my kernel from 2.2.13 to a 2.3.x version. Is there a
+> particular version that has working SMP support for LinuxPPC or should
+> I just try the latest?
 
-There is a resource CMDL, you can have two configurations. Just enter
-your stuff carefully.
-Documentation is available in .c fomat ;)
+I don't think that SMP works with latest kernels, we can be happy that
+the 2.3.99-pre4 compiles without problems in the default configuration
+:)
+
 
 
 Gruss Olaf
