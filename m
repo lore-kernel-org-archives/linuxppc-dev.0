@@ -1,55 +1,47 @@
-Message-ID: <29365-19760@sneakemail.com>
-Date: Fri, 11 Jun 2004 08:52:44 -0700
-From: "Stephen Williams" <612dlag102@sneakemail.com>
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Another problem with pk pull of linuxppc-2.4
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: hjzgq@sohu.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Change FEC and SCC1 sequence,But SCC1 not work? 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 11 Jun 2004 14:22:18 +0800."
+             <116411.1086934938680.JavaMail.postfix@mx27.mail.sohu.com>
+Date: Fri, 11 Jun 2004 18:02:29 +0200
+Message-Id: <20040611160234.6A75BC109F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-The ibm405gpr.h header file is missing the definition of OPB_BASE_START.
-I copied the definitions from the linuxppc_2_4_devel tree and it worked
-just fine, so I believe this is a correct patch.
+In message <116411.1086934938680.JavaMail.postfix@mx27.mail.sohu.com> you wrote:
+>
+>        My bootargs is "setenv bootargs root=/dev/ram ip=10.32.5.17:10.32.5.15::255.255.0.0:bug
+> :::off"
+>        Today,I found fec device down when linux kernel running ,but I can see "eth1(fec ethernet)"  status with "ifconfig" command,I checked linux kernel and found fec device down when kernel running.
+>
+>        After debugging,I found linux kernel close the device when  running "ip_auto_config()" function  in "net/ipv4/ipconfig.c",then, I deleted "ic_open_devs()" funtions, AND EVERYING
+> WORKS WELL!
 
-According to bk, this file hasn't been changed in linuxppc-2.4 in over
-a year (2003-03-12) so *how* pray tell have people been compiling this
-thing for PPC405GPr? Who's the right party for getting this patch
-installed?
+But you are removing perfectly valid code. Don't do this!!
 
-# This is a BitKeeper generated diff -Nru style patch.
-#
-# ChangeSet
-#   2004/06/11 08:49:06-07:00 steve@wing.XXXXXXXXXX
-#   Defines of OPB_BASE_START needed by ibm405gpr.c,
-#   which does not include ibm405gp.h.
-#
-# arch/ppc/platforms/ibm405gpr.h
-#   2004/06/11 08:49:04-07:00 steve@wing.XXXXXXXXXX +2 -0
-#   Defines of OPB_BASE_START needed by ibm405gpr.c,
-#   which does not include ibm405gp.h.
-#
-diff -Nru a/arch/ppc/platforms/ibm405gpr.h b/arch/ppc/platforms/ibm405gpr.h
---- a/arch/ppc/platforms/ibm405gpr.h    2004-06-11 08:50:46 -07:00
-+++ b/arch/ppc/platforms/ibm405gpr.h    2004-06-11 08:50:46 -07:00
-@@ -75,6 +75,8 @@
-  #define PPC4xx_ONB_IO_PADDR    ((uint)0xef600000)
-  #define PPC4xx_ONB_IO_VADDR    PPC4xx_ONB_IO_PADDR
-  #define PPC4xx_ONB_IO_SIZE     ((uint)4*1024)
-+#define OPB_BASE_START        0x40000000
-+#define EBIU_BASE_START       0xF0100000
+Just read the  documentation  (especially  Documentation/nfsroot.txt)
+and pass the CORRECT boot arguments, which in case or several network
+interfaces  MUST  specify  which  interface  to  configure, i. e. the
+minimum information is then
 
-  /* serial port defines */
-  #define RS_TABLE_SIZE  2
+	... ip=10.32.5.17:10.32.5.15::255.255.0.0:bug:eth0:off
 
+[Note that your "ip=" string has one colon too many, too.]
 
+Best regards,
+
+Wolfgang Denk
 
 --
-Steve Williams                "The woods are lovely, dark and deep.
-steve at XXXXXXXXXX           But I have promises to keep,
-http://www.XXXXXXXXXX         and lines to code before I sleep,
-http://www.picturel.com       And lines to code before I sleep."
-
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Software suppliers are trying to make their  software  packages  more
+``user-friendly''.  .  .  .  Their best approach, so far, has been to
+take all the old brochures, and stamp the words, ``user-friendly'' on
+the cover.                                               - Bill Gates
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
