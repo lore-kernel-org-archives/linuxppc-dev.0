@@ -1,39 +1,57 @@
-Date: Thu, 21 Nov 2002 23:47:34 -0500
-From: Ethan Blanton <eblanton@cs.ohiou.edu>
-To: Segher Boessenkool <segher@koffie.nl>
-Cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-	"Halfmann, Klaus" <Klaus.Halfmann@bauer-partner.com>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Unexpected sleep on old iBook
-Message-ID: <20021122044733.GA22490@paco.resnet.purdue.edu>
-References: <2C5637A6A7CE844EA3C0A94565479F5275A2E2@dest-as20-002.int.bauer-partner.com> <Pine.LNX.4.33.0211191743560.11419-100000@opal.biophys.uni-duesseldorf.de> <20021119203347.GK8575@paco.resnet.purdue.edu> <3DDC7AFC.6A8B4A0C@koffie.nl>
-Mime-Version: 1.0
-In-Reply-To: <3DDC7AFC.6A8B4A0C@koffie.nl>
+From: Paul Mackerras <paulus@samba.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Message-ID: <15838.45984.311938.41129@argo.ozlabs.ibm.com>
+Date: Sat, 23 Nov 2002 09:45:52 +1100
+To: Hollis Blanchard <hollis@austin.ibm.com>
+Cc: devel list <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: ppc_irq_dispatch_handler and unhandled interrupts
+In-Reply-To: <1037897936.10521.89.camel@granite.austin.ibm.com>
+References: <1037897936.10521.89.camel@granite.austin.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Segher Boessenkool spake unto us the following wisdom:
-> Ethan Blanton wrote:
-> > (Does it irritate anyone else that there seems to be no *good* way to
-> >  differentiate iBook versions?  I'm sure there's some motherboard
-> >  resource version that's unambiguous, but come on...)
+Hollis Blanchard writes:
+
+> Here's the failure mode:
+> On a 405LP (using ppc405_pic), an irq is becoming unmasked[1] (in
+> UIC0_ER). ppc_irq_dispatch_handler sees irq_desc[0].action == NULL, and
+> correctly complains of an unhandled interrupt and masks it off. However
+> at the end of the same function (label "out"), the irq is unmasked again
+> because irq_desc[0].handler == ppc405_pic (irq_desc[0..NR_IRQS] =
+> ppc405_pic; see ppc4xx_init_IRQ() ). So the irq is unmasked, occurs
+> again, is masked, is unmasked, occurs again...
 >
-> Just read the device tree:
->
-> /proc/device-tree/model  gives you the model name.
-> /proc/device-tree/scb#  gives you the revision number.
+> The attached patch fixes the problem by checking desc->action as well as
+> desc->handler - there is no sense unmasking an interrupt if we already
+> know there are no drivers ready to handle it.
 
-I actually meant for the layman ...  I realize that I can look up
-system resources (in this case OF values) that will tell me, but hand
-me an iBook and ask me what rev it is ... no clue.
+This is the wrong fix IMO.  The situation is no different to calling
+disable_irq during an interrupt handler, and as the comment says, the
+->end() handler has to deal with that.  The problem is that if we
+don't have an ->end() handler we unconditionally call the ->enable()
+handler, which (correctly) just unconditionally enables the
+interrupt.  So the bit of code at the end of ppc_irq_dispatch_handler
+should look like this:
 
-Ethan
+	/*
+	 * The ->end() handler has to deal with interrupts which got
+	 * disabled while the handler was running.
+	 */
+	if (irq_desc[irq].handler) {
+		if (irq_desc[irq].handler->end)
+			irq_desc[irq].handler->end(irq);
+		else if (irq_desc[irq].handler->enable
+			 && !(irq_desc[irq_nr].status
+			      & (IRQ_DISABLED|IRQ_INPROGRESS)))
+			irq_desc[irq].handler->enable(irq);
+	}
 
---
-And if I claim to be a wise man / it surely means that I don't know.
-                -- Kansas, "Carry on Wayward Son"
+> [1] In my particular case, UIC0_ER is being modified by BIOS when waking
+
+BIOS???  What BIOS?
+
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
