@@ -1,46 +1,102 @@
-Message-ID: <38035584.C82792C2@chpc.utah.edu>
-Date: Tue, 12 Oct 1999 09:36:36 -0600
-From: Lou Langholtz <ldl@chpc.utah.edu>
+Date: Tue, 12 Oct 1999 13:18:52 -0500 (CDT)
+From: Jason Haas <jhaas@www.linuxppc.org>
+To: linuxppc-announce@lists.linuxppc.org
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: [Announce] Absoft interested in making Fortran compiler -- needs
+ user feedback
+Message-ID: <Pine.LNX.4.04.9910121317110.24831-100000@www.linuxppc.org>
 MIME-Version: 1.0
-To: Daniel Jacobowitz <drow@false.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: controlfb.c bug in VRAM bank2 check if bank1
-References: <199909101833.UAA17210@piglet.cpu.lu> <3802D9FE.1C166944@chpc.utah.edu> <19991012105001.A698@drow.res.cmu.edu>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Daniel Jacobowitz wrote:
+Dear users,
 
-> Could you check whether that kernel has the patch I posted to this list
-> last month applied?
+We have been asked to assist Absoft, makers of the #1 commercial Linux/x86
+Fortran compiler, in determining if there is a market for their product on
+the Linux/PowerPC platform.
 
-As you suspect, 2.2.13pre15 does not have your patch. AC's 2.2.13pre15 doesn't
-have any changes at all to it's controlfb.c code. It's still the same as even in
-the kernel distro of 2.2.6 (which is the earliest kernel I still have a copy of
-source for on hand). Given a number of different behavioral characteristics
-people have been describing of kernel's from vger I'd say there's been other
-changes as well that still haven't made it into the Linus or AC distributed
-kernel sources either unfortunately. I'm not in the privvy as far as I know
-however to push these changes into the main stream kernel sources but if you or
-someone else on this lilst is I say: "please, please get the in!". ;-) I guess in
-the meantime I'm going to have to try sucking down the sources from vger but
-given that I've been badly afflicted by the PPP/TCP death march that I and others
-have been discussing I'm unsure I'll succeed at getting the whole thing from
-vger.
+The company offers tools for single CPU, auto parallelizing tools for
+multi-processor SMP boxes and are widely used by the Beowulf community.
+Argonne Labs maintains Absoft/MPICH libraries for download.
 
-> The patch was in Message-ID: <19990912141014.A17732@them.org>.
-> On Tue, Oct 12, 1999 at 12:49:34AM -0600, Lou Langholtz wrote:
-> > Michel Lanners wrote:
-> > > On  10 Sep, this message from Lou Langholtz echoed through cyberspace:
-> > > > After getting an extra 2MB VRAM for my PowerMac7500 and seeing that only
-> > > > 2MB were still being recognized (despite having just added the 2MB to
-> > > > total to 4MB VRAM), I dug into the controlfb.c code from 2.2.11 and
-> > > > 2.2.12 and made the following changes to get all 4MB VRAM recognized:
-> > > . . .
-> > Even with 2.2.13pre15, the stock controlfb.c still doesn't detect the
-> > 4MB VRAM in my 7500 (I just tried it). . . .
+According to Wood Lotz of Absoft, "If there is a market for Fortran on
+LinuxPPC we would first offer the basic single CPU Pro Fortran toolset and
+see what happens. I know we could get Argonne to offer Absoft/MPICH for
+PPC, and expect we could quickly expand to offer auto SMP tools and IMSL
+Math and Stat libraries if the market was there."
+
+The proposed Absoft Pro Fortran for LinuxPPC would be similar in content
+and features to the Absoft Pro Fortran for Linux/Intel. Details on this
+product are available at http://www.absoft.com.  Questions on the proposed
+Pro Fortran for LinuxPPC should be directed to Wood Lotz [wlz@absoft.com]
+at Absoft.
+
+What we need from you:
+
+If you would be very interested in purchasing Absoft's Pro Fortan if a
+Linux/PowerPC version were available, we need to hear from you. We're
+looking for a simple head count to determine if it would be worth it for
+Absoft to port.
+
+Simply send an email to "fortran@linuxppc.com" with the word "Yes" as the
+subject. Note that any message sent to this address will be counted as a
+"yes".
+
+About Absoft Pro Fortran for LinuxPPC [proposed]
+
+Pro Fortran is a suite of aggressively optimizing F90 and F77 compilers 
+[including AltiVec support] plus a graphical debugger. Also included are 
+VAX/Unix subroutine compatibility libraries to facilitate porting from
+workstations, precompiled BLAS, LAPACK90 and HDF libraries, printed
+documentation and free tech support. IMSL Math and Stat F90MP v4.0
+libraries would be optional. Absoft/MPICH libraries could be obtained
+from Argonne Labs. Absoft also offers source compatible compilers for
+Macintosh, Win32 and Linux/Intel.
+
+Absoft F90 utilizes a version of Cray's CF90 front end which 
+has been extended to support all popular workstation extensions and
+operate efficiently in the desktop environment. It is largely source
+compatible with Sun and SGI F90 compilers also based on CF90.
+
+Absoft FORTRAN 77 for Linux is a globally optimizing, ANSI
+X3.9-1978/ISO 1539-1980 compiler designed for porting legacy F77
+code from workstations to the desktop. Conforming to iABI
+standards, the compiler meets all DoD MIL-STD 1753, FIPS 69-1,
+and POSIX standards, supports most popular VAX/VMS extensions
+including RECORD, STRUCTURE, POINTER, and UNION, (per
+V5.4 of VMS FORTRAN), as well as others from IBM/VS, Cray,
+included. Absoft F77 is the best solution for porting legacy code to
+the Linux environment.
+
+Fx is a multi-language (C, F90, F77, and assembly), source level
+symbolic debugger with a graphical interface. Fx includes a powerful
+expression analyzer that automatically recognizes source languages 
+as they are encountered. 
+
+Program variables can be displayed in a variety of formats and modified 
+while debugging; arrays can be indexed with expressions, and multiple 
+elements can be displayed with a single command. Hardware breakpoints, 
+variable monitors, and single stepping at both the source and instruction 
+level provide precise control over program execution. Used with Absoft 
+F90 and F77, Fx recognizes constructs such as adjustable arrays, character 
+sub-strings, and complex numbers. ELF core files are supported. 
+
+The proposed Absoft Pro Fortran for LinuxPPC would be similar in content
+and features to the Absoft Pro Fortran for Linux/Intel. Details on this
+product are available at http://www.absoft.com.
+
+Questions on the proposed Pro Fortran for LinuxPPC should be directed to Wood Lotz [wlz@absoft.com] at Absoft.
+
+--
+
+Thank you for your input on this matter.
+
+Sincerely,
+
+Jason Haas, LinuxPPC Inc.
+jhaas@linuxppc.com
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
