@@ -1,54 +1,62 @@
-Message-ID: <36B4BB67.B795BFAC@eos.ncsu.edu>
-Date: Sun, 31 Jan 1999 15:21:59 -0500
-From: Scott Sams <sbsams@eos.ncsu.edu>
-MIME-Version: 1.0
+Date: Mon, 1 Feb 1999 00:08:00 +0000 (GMT)
+From: pdh@colonel-panic.com
 To: linuxppc-dev@lists.linuxppc.org
-Subject: BUG in dmasound.c, allocating buffers
-Content-Type: text/plain; charset=us-ascii
+Subject: MM problems with MBX
+Message-ID: <Pine.LNX.4.04.9901312337110.814-100000@berserk.demon.co.uk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
 
-I am running linux-2.2.0 and I noticed that the kernel crashed 4 times
-in one day when I was playing mp3s (mpg123-p, gqmpeg-0.4.5), always when
-a new song was going to be played, and usually after 30 minutes of
-continuous play. There was absolutely no warning message on the screen
-or in the logs, just the entire system froze, with the exception of the
-console cursor appearing and blinking in the upper left corner of the
-screen.
+I seem to have a major memory management problem on my MBX821. I've hacked
+around with it a bit to get the IDE running, and that all seems to work
+fine. Unfortunately the kernel dies in grand style (trap 0300) when the
+buffer cache grows to it's limit. I tried limiting the size of the buffer
+cache by adding these lines into grow_buffers(), just before the call to
+__get_free_page() :-
 
-This got me digging into dmasound.c and looking at the cvs log. The last
-version I used, this problem did not occur. This was linux-2.1.125 using
-dmasound.c version 1.29. Since then, there have been several updates,
-notably 1.33:
+	if(buffermem >= 0x800000)
+		try_to_free_pages(GFP_BUFFER);
 
->Patch from Jes/Andreas to make it only allocate buffers when opened.
+Great improvement. Now I've successfully managed to copy 200MB from my NFS
+mounted root to the mounted hard disk (using tar). The problem is that now
+when anything that uses the full size of the buffer cache (as the copy
+above) returns to the shell the kernel hangs with 'Bad emulation'. The
+same thing happens if I malloc a large block of memory (say 24MB) which
+would mean some pages would have to be freed from the page cache/buffer
+cache. The 'Bad emulation' error seems to occur in a library, so I assume
+the kernel has paged out the library, and is paging it back in wrongly,
+indicating a problem with page cache ?
 
-I think that the bug must lie in there, maybe in the sq_allocate_buffers
-or sq_release_buffers functions.
+This is all without swap, but the results were identical when I added 128M
+of swap and tried the tests again.
 
-I also saw a patch, 1.37, which said it fixed a couple of bugs that let
-the user crash the kernel. I applied these by hand to my version of
-dmasound.c, just to be safe, but the same crash happened later.
+I'm new to kernel hacking so can some kind guru give me some pointers on
+how I might try and nail this down.  8-)
 
-I don't have the knowledge to fix this bug, but I'll bet if someone who
-is knowledgable looked over the code I have isolated, they will find out
-what is going on.
+TIA
 
-At the very least, someone can insert some debugging output that may
-help discover the problem. I will be glad to test anything.
+	P.
 
-Thanks,
 
-Scott Sams
+System info:
 
--- 
- ____ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~      Scott Sams         
-(____  _  _-|-|-                    sbsams@eos.ncsu.edu      
-_____)(__(_)| |        http://www.catt.ncsu.edu/~sbsams
-~~~~~~~~~~~~~~~~
+MBX821, 48M RAM.
+
+Kernel 2.2.0-pre8 (from CVS) with the new IRQ code from Dan's
+embedded-2.2p7.
+
+--
++---------------------------------------------------------------+
+|  Peter Horton     -    software engineer    -     Linux 2.2.1 |
++---------------------------+-----------------------------------+
+|  pdh@berserk.demon.co.uk  |  http://www.berserk.demon.co.uk   |
+|  pdh@colonel-panic.com    |  http://www.colonel-panic.com     |
++---------------------------+-----------------------------------+
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
