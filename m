@@ -1,36 +1,41 @@
-From: "Albert D. Cahalan" <acahalan@cs.uml.edu>
-Message-Id: <200109222006.f8MK6gG71984@saturn.cs.uml.edu>
+Mime-Version: 1.0
+Message-Id: <p05100301b7d2a21bdfe1@[10.0.0.42]>
+In-Reply-To: <8xu1xvi9sf.fsf@s63.informatik.uni-bremen.de>
+References: <200109211848.f8LImlT19616@saturn.cs.uml.edu>
+ <8xu1xvi9sf.fsf@s63.informatik.uni-bremen.de>
+Date: Sat, 22 Sep 2001 13:26:58 -0700
+To: Holger Bettag <hobold@Informatik.Uni-Bremen.DE>,
+	linuxppc-dev@lists.linuxppc.org
+From: "Timothy A. Seufert" <tas@mindspring.com>
 Subject: Re: ppc LE questions (seeking help hand info pointers)
-To: hobold@Informatik.Uni-Bremen.DE
-Date: Sat, 22 Sep 2001 16:06:42 -0400 (EDT)
-Cc: linuxppc-dev@lists.linuxppc.org, dan@mvista.com,
-	nicoya@apia.dhs.org
-In-Reply-To: <p05100302b7d16386402f@[10.0.0.42]> from "Timothy A. Seufert" at Sep 21, 2001 05:22:29 PM
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Holger Bettag writes:
+At 4:23 PM +0200 9/22/01, Holger Bettag wrote:
 >"Albert D. Cahalan" <acahalan@cs.uml.edu> writes:
-
->> Now do an unconditional 64-bit byte swap on the motherboard.
->> Consider an array of four __u16 values affected by this.
->> They get converted from big-endian to little-endian, and they
->> get moved to different addresses. Excellent! All the weirdness
->> just cancels out, giving perfect little-endian. This works for
->> 8-bit, 16-bit, 32-bit, and 64-bit data. Life is good.
 >
-> Does it work for 128 bit data? The 74x0's most promiment feature,
-> AltiVec, would expose a strange mixed endianness to programmers
-> otherwise.
+>[...]
+>>  Now do an unconditional 64-bit byte swap on the motherboard.
+>>  Consider an array of four __u16 values affected by this.
+>>  They get converted from big-endian to little-endian, and they
+>>  get moved to different addresses. Excellent! All the weirdness
+>>  just cancels out, giving perfect little-endian. This works for
+>>  8-bit, 16-bit, 32-bit, and 64-bit data. Life is good.
+>>
+>Does it work for 128 bit data? The 74x0's most promiment feature,
+>AltiVec, would expose a strange mixed endianness to programmers
+>otherwise.
 
-Yes. Motorola noticed this problem, and added a built-in swap
-to fix the problem. See page 3-6, section 3.1.4, figure 3-5 in
-ALTIVECPEM.pdf, the "AltiVec Technology Programming Environments
-Manual". Unaligned vectors don't work in big-endian or little-endian
-mode, and the code needed to load them is equally long.
-
+For compatability's sake, when AltiVec quad word loads/stores are
+performed in LE mode, you get a double munge (one munge for each of
+the two doublewords in the quadword) and a swap of the two munged
+doublewords.  Details are in the AltiVec PEM.  So AltiVec has true LE
+ordering of doublewords and munged up contents inside doublewords,
+and an unconditional 64-bit swap on the motherboard will fix the
+munging inside each doubleword.
+--
+Tim Seufert
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
