@@ -1,41 +1,54 @@
-To: Balajee Premraj <balajee_78@yahoo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Uboot SMC2 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 25 Aug 2004 13:33:19 PDT."
-             <20040825203319.91070.qmail@web40707.mail.yahoo.com>
-Date: Thu, 26 Aug 2004 02:07:10 +0200
-Message-Id: <20040826000715.01756C109F@atlas.denx.de>
+From: "Andrew Dennison" <andrew.dennison@motec.com.au>
+To: "'Andrey Volkov'" <avolkov@varma-el.com>,
+	"'Sylvain Munaut'" <tnt@246tnt.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Re[2]: mpc5200 and ddr
+Date: Thu, 26 Aug 2004 10:55:41 +1000
+Message-ID: <001e01c48b07$68c32d30$ee00a8c0@CAT>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+In-reply-to: <1134038006.20040825205207@varma-el.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20040825203319.91070.qmail@web40707.mail.yahoo.com> you wrote:
+> Andrey Volkov wrote:
 >
-> I am trying to use uboot to boot my target board based
-> on MPC8260 whose serial is defined on SMC2.
+> Hello Sylvain,
+>
+> Wednesday, August 25, 2004, 8:35:25 PM, you wrote:
+>
+> > Hi,
+>
+> > Sorry I don't have informations, but I'm interested too ;)
+>
+> > I guess you just "connect" them, but I wonder about
+> terminations ? ( or
+> > maybe keeping short trace is ok ? ).
+>
+>
+> Certainly - termination, time diagrams, restrictions (especially
+> capacitors length and likewise) etc. As I wrote before
+> datasheet very foggy and miserly, but may be David or
+> somebody from freescale
+> enlighten me, if so, then I send info to ml.
+>
 
-This is off topic here. U-Boot related questions are discussed on the
-u-boot-users mailing list, not here.
+Hello Andrey, Sylvain,
 
-> I changed the config and tried boot it.I get all the
-> uboot messages on the console but it would not accept
-> any input.
+Micron have a tech note (TN4606) on DDR termination for point-to-point
+systems. Have a look at this if you are working on a design with DDR chips
+on the PCB. It appears that series termination is sufficient with short
+(<50mm) track lengths. However DDR timing requires some careful attention
+to layout (impedence control and track length matching) so all the
+information I have found on DDR is always qualified by "simulate your
+design".
 
-Check  your  terminal  emulator  settings  (flow  control?)  and  the
-hardware.  There  is  no  difference in the U-Boot driver for SMC1 or
-SMC2, and it works fine on several other boards.
+My local Freescale FAE was able to supply some additional information so
+maybe you can ask yours?
 
-Best regards,
+Andrew
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"Love is an ideal thing, marriage a real thing; a  confusion  of  the
-real with the ideal never goes unpunished."                  - Goethe
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
