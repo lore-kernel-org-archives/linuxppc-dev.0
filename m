@@ -1,37 +1,31 @@
-Date: Tue, 26 Oct 1999 10:12:29 -0700 (MST)
-From: Tom Rini <trini@kernel.crashing.org>
-To: luther@dpt-info.u-strasbg.fr
-cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org,
-        jmb@montana.edu
-Subject: Re: iBook/UMA pre3
-In-Reply-To: <19991026095628.A18917@maxime.u-strasbg.fr>
-Message-ID: <Pine.LNX.4.10.9910261012010.1206-100000@opus.bloom.county>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <19991026134728.A25022@alice.realminfo.com>
+Date: Tue, 26 Oct 1999 13:47:28 -0400
+From: Mike Panetta <mpanetta@realminfo.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Problems compiling ppc kernels.
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 26 Oct 1999, Sven LUTHER wrote:
+I have been having some real weird problems with compiling 
+kernels for my iMAC.  I have tried kernel versions 2.2.12, 2.3.23, 2.3.21
+And have goten pretty much the same results.  In all these compile attemts
+I have had to make drivers/usb/mkmap (2.2.x), or drivers/usb/mkmap.adb (2.3.x)
+executable because the Makefile complained that it did not have permissions to
+run the script.  After that was fixed I had various linking problems at the
+very end of the compile when it was making vmlinux.  Usually pertaining to 
+mac_floppy or something.  Disabling this in the .config did not help.  It just
+went on complaining about other symbols not being found.  Could someone please
+point me at some patches or directions on what I am doing wrong?  I have never
+had a problem compiling kernels on my i386, except for some of the 2.3.x series.
+What am I doing wrong? (it must be me since obviously someone compile a kernel!)
 
-> 
-> On Mon, Oct 25, 1999 at 10:36:13PM +0200, Benjamin Herrenschmidt wrote:
-> > 
-> > I updated the patches and kernel to a new version. PCI config is fully
-> > working now, USB works too. I'n now running MacOS under mac-on-linux (the
-> > new version that doesn't require you to patch the kernel) on linux on the
-> > iBook ;)
-> 
-> Is any iof the scsi on USB controllers supported by linux ? 
-> 
-> Is some one working on this, is it difficult to do ?
+Thanks,
+Mike Panetta
 
-They supposedly work, tho I'm not sure if anyone has tried it w/ an OHCI
-controller.
 
----
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
-
+-- 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
