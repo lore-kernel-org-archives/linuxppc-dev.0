@@ -1,37 +1,39 @@
-Subject: Re: pmac_halt() bug
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Igal Baevsky <igal.baevsky@terayon.com>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <booek6$vvl$1@sea.gmane.org>
-References: <7AFDCF4E-FCCB-11D6-8F24-003065F22EAA@mindspring.com>
-	 <booek6$vvl$1@sea.gmane.org>
-Content-Type: text/plain
-Message-Id: <1068508789.31229.70.camel@gaston>
-Mime-Version: 1.0
-Date: Tue, 11 Nov 2003 10:59:50 +1100
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <16304.10740.446366.410358@cargo.ozlabs.ibm.com>
+Date: Tue, 11 Nov 2003 11:14:44 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: John Whitney <john.whitney@timesys.com>
+Cc: "Mailing List: linuxppc-dev" <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Bad code path in DoSyscall
+In-Reply-To: <BBD51F48.2329%john.whitney@timesys.com>
+References: <BBD51F48.2329%john.whitney@timesys.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 2003-11-11 at 03:33, Igal Baevsky wrote:
+John Whitney writes:
 
-> Tim,
-> Is there any way to halt PMAC machine with no powering it off ?
-> I will realy appretiate your answer - the problem you mentioned above is
-> the exact problem I'm dealing with .
-> Thanks.
-> Igal
+> There seems to be a bad code path in the assembly routine DoSyscall()
+> (arch/ppc/kernel/entry.S).
 
-I see no good reason why you want to do such a halt that just spins and
-do nothing but suck power...
+You're right, good catch.  The patch below should fix it.
 
-If the problem is to have the machine turn back on, I fail to see how
-halting it this way would help. The only thing I can imagine is enabling
-the server mode option. I added that feature to my very latest trees
-for Core99 machines and later (AGP machines), and there used to be a
-tool doing that for CUDA based machines.
+Paul.
 
-Ben.
+diff -urN linux-2.5/arch/ppc/kernel/entry.S pmac-2.5/arch/ppc/kernel/entry.S
+--- linux-2.5/arch/ppc/kernel/entry.S	2003-09-27 19:46:43.000000000 +1000
++++ pmac-2.5/arch/ppc/kernel/entry.S	2003-11-11 09:29:34.000000000 +1100
+@@ -233,8 +233,8 @@
+ 	SYNC
+ 	RFI
 
+-66:	li	r3,ENOSYS
+-	b	22b
++66:	li	r3,-ENOSYS
++	b	ret_from_syscall
+
+ 	.globl	ret_from_fork
+ ret_from_fork:
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
