@@ -1,41 +1,60 @@
-Message-ID: <20040105044949.24645.qmail@kunk.qbjnet.com>
-Subject: patch: missing ifdef for CONFIG_ADB_PMU in pmac_nvram.c for 2.4.23-ben1
-To: linuxppc-dev@lists.linuxppc.org
-Date: Sun, 4 Jan 2004 22:49:49 -0600 (CST)
-From: Bob Brose <bob@kunk.qbjnet.com>
+Date: Mon, 5 Jan 2004 15:02:24 +0100 (MET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: PPC32: Add support for the OpenPIC register set to be in BE
+ mode.
+In-Reply-To: <200401032002.i03K23iM024298@hera.kernel.org>
+Message-ID: <Pine.GSO.4.58.0401051501220.3740@waterleaf.sonytel.be>
+References: <200401032002.i03K23iM024298@hera.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-To get 2.4.23-ben1 to compile on a pmac 7200 without CONFIG_ADB_PMU
-being set, I needed to apply the simple patch below. The machine doesn't
-have a lot of memory so I'm trying to eliminate all unused code.
+On Fri, 2 Jan 2004, Linux Kernel Mailing List wrote:
+> ChangeSet 1.1356.1.1, 2004/01/02 08:51:22-07:00, trini@kernel.crashing.org
+>
+> 	PPC32: Add support for the OpenPIC register set to be in BE mode.
+>
+>
+> # This patch includes the following deltas:
+> #	           ChangeSet	1.1356  -> 1.1356.1.1
+> #	arch/ppc/kernel/open_pic.c	1.25    -> 1.26
+> #
+>
+>  open_pic.c |   10 +++++++++-
+>  1 files changed, 9 insertions(+), 1 deletion(-)
+>
+>
+> diff -Nru a/arch/ppc/kernel/open_pic.c b/arch/ppc/kernel/open_pic.c
+> --- a/arch/ppc/kernel/open_pic.c	Sat Jan  3 12:02:04 2004
+> +++ b/arch/ppc/kernel/open_pic.c	Sat Jan  3 12:02:04 2004
+> @@ -166,13 +166,21 @@
+>  {
+>  	u_int val;
+>
+> +#ifdef CONFIG_PPC_OPENPIC_BE
+> +	val = in_be32(addr);
+> +#else
+>  	val = in_le32(addr);
+> +#endif
+>  	return val;
+>  }
 
-Bob
+Wouldn't it be better to #define openpic_in() and openpic_out() macros, so you
+need the #ifdef at one spot only?
 
+Gr{oetje,eeting}s,
 
---- linux-2.4.23-ben1/arch/ppc/platforms/pmac_nvram.c.orig	2004-01-04 20:47:16.000000000 -0600
-+++ linux-2.4.23-ben1/arch/ppc/platforms/pmac_nvram.c	2004-01-04 21:20:52.000000000 -0600
-@@ -526,11 +526,15 @@
- 		nvram_data = ioremap(dp->addrs[1].address, dp->addrs[1].size);
- 		ppc_md.nvram_read_val	= indirect_nvram_read_byte;
- 		ppc_md.nvram_write_val	= indirect_nvram_write_byte;
--	} else if (nvram_naddrs == 0 && sys_ctrler == SYS_CTRLER_PMU) {
-+	}
-+#ifdef CONFIG_ADB_PMU
-+  	else if (nvram_naddrs == 0 && sys_ctrler == SYS_CTRLER_PMU) {
- 		nvram_naddrs = -1;
- 		ppc_md.nvram_read_val	= pmu_nvram_read_byte;
- 		ppc_md.nvram_write_val	= pmu_nvram_write_byte;
--	} else {
-+	}
-+#endif
-+   	else {
- 		printk(KERN_ERR "Don't know how to access NVRAM with %d addresses\n",
- 		       nvram_naddrs);
- 	}
+						Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
