@@ -1,13 +1,23 @@
-Return-Path: <domen@coderock.org>
-Received: from trashy.coderock.org (coderock.org [193.77.147.115])
-	by ozlabs.org (Postfix) with ESMTP id 045362BF0E
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Jan 2005 04:50:01 +1100 (EST)
-To: benh@kernel.crashing.org
-From: domen@coderock.org
-Date: Mon, 10 Jan 2005 18:45:48 +0100
-Message-Id: <20050110174549.E7BD21F1ED@trashy.coderock.org>
-Cc: linuxppc-dev@ozlabs.org, janitor@sternwelten.at, domen@coderock.org
-Subject: [patch 1/2] list_for_each_entry: drivers-macintosh-via-pmu.c
+Return-Path: <j.glisse@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.201])
+	by ozlabs.org (Postfix) with ESMTP id E1F132BF0E
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Jan 2005 05:14:31 +1100 (EST)
+Received: by wproxy.gmail.com with SMTP id 36so327546wra
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Jan 2005 10:14:29 -0800 (PST)
+Message-ID: <4240b9160501101014317b8d85@mail.gmail.com>
+Date: Mon, 10 Jan 2005 19:14:28 +0100
+From: Jerome Glisse <j.glisse@gmail.com>
+To: Tom Rini <trini@kernel.crashing.org>
+In-Reply-To: <20050110145219.GB2226@smtp.west.cox.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+References: <4240b916050109074053e328b1@mail.gmail.com>
+	<16865.39960.274092.996530@cargo.ozlabs.ibm.com>
+	<20050110145219.GB2226@smtp.west.cox.net>
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, linuxppc64-dev@ozlabs.org
+Subject: Re: Classic PPC specific ASM (CONFIG_6XX)
+Reply-To: Jerome Glisse <j.glisse@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,81 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> Signed-off-by: Tom Rini <trini@kernel.crashing.org>
+> 
+> --- 1.40/arch/ppc/boot/simple/Makefile  2005-01-03 16:49:19 -07:00
+> +++ edited/arch/ppc/boot/simple/Makefile        2005-01-10 07:51:34 -07:00
+> @@ -112,11 +112,15 @@
+>           end-$(pcore)                  := pcore
+>     cacheflag-$(pcore)                  := -include $(clear_L2_L3)
+> 
+> +# PPC_PREP can be set to y on a PPC970 configuration, which isn't a real
+> +# machine.
+> +ifeq ($(CONFIG_6xx),y)
+>        zimage-$(CONFIG_PPC_PREP)                := zImage-PPLUS
+>  zimageinitrd-$(CONFIG_PPC_PREP)                := zImage.initrd-PPLUS
+>       extra.o-$(CONFIG_PPC_PREP)                := prepmap.o
+>          misc-$(CONFIG_PPC_PREP)                += misc-prep.o mpc10x_memory.o
+>           end-$(CONFIG_PPC_PREP)                := prep
+> +endif
+> 
+>           end-$(CONFIG_SANDPOINT)       := sandpoint
+>     cacheflag-$(CONFIG_SANDPOINT)       := -include $(clear_L2_L3)
+> 
 
+This do not compile with this patch maybe need also to define
+CONFIG_6xx if PPC970 is selected as processor ?
 
+The errors are:
+undefined reference for cols, lines, vidmems, scroll, orig_x, orig_y
+in functions puts, ClearVideoMemory, putc
 
-
-
-
-Make code more readable with list_for_each_entry.
-
-Signed-off-by: Domen Puncer <domen@coderock.org>
-Signed-off-by: Maximilian Attems <janitor@sternwelten.at>
-Signed-off-by: Domen Puncer <domen@coderock.org>
----
-
-
- kj-domen/drivers/macintosh/via-pmu.c |   18 ++++--------------
- 1 files changed, 4 insertions(+), 14 deletions(-)
-
-diff -puN drivers/macintosh/via-pmu.c~list-for-each-entry-drivers_macintosh_via-pmu drivers/macintosh/via-pmu.c
---- kj/drivers/macintosh/via-pmu.c~list-for-each-entry-drivers_macintosh_via-pmu	2005-01-10 17:59:42.000000000 +0100
-+++ kj-domen/drivers/macintosh/via-pmu.c	2005-01-10 17:59:42.000000000 +0100
-@@ -2054,12 +2054,9 @@ static LIST_HEAD(sleep_notifiers);
- int
- pmu_register_sleep_notifier(struct pmu_sleep_notifier *n)
- {
--	struct list_head *list;
- 	struct pmu_sleep_notifier *notifier;
- 
--	for (list = sleep_notifiers.next; list != &sleep_notifiers;
--	     list = list->next) {
--		notifier = list_entry(list, struct pmu_sleep_notifier, list);
-+	list_for_each_entry(notifier, &sleep_notifiers, list) {
- 		if (n->priority > notifier->priority)
- 			break;
- 	}
-@@ -2085,8 +2082,7 @@ broadcast_sleep(int when, int fallback)
- 	struct list_head *list;
- 	struct pmu_sleep_notifier *notifier;
- 
--	for (list = sleep_notifiers.prev; list != &sleep_notifiers;
--	     list = list->prev) {
-+	list_for_each_prev(list, &sleep_notifiers) {
- 		notifier = list_entry(list, struct pmu_sleep_notifier, list);
- 		ret = notifier->notifier_call(notifier, when);
- 		if (ret != PBOOK_SLEEP_OK) {
-@@ -2107,14 +2103,10 @@ static int __pmac
- broadcast_wake(void)
- {
- 	int ret = PBOOK_SLEEP_OK;
--	struct list_head *list;
- 	struct pmu_sleep_notifier *notifier;
- 
--	for (list = sleep_notifiers.next; list != &sleep_notifiers;
--	     list = list->next) {
--		notifier = list_entry(list, struct pmu_sleep_notifier, list);
-+	list_for_each_entry(notifier, &sleep_notifiers, list)
- 		notifier->notifier_call(notifier, PBOOK_WAKE);
--	}
- 	return ret;
- }
- 
-@@ -2727,15 +2719,13 @@ static void __pmac
- pmu_pass_intr(unsigned char *data, int len)
- {
- 	struct pmu_private *pp;
--	struct list_head *list;
- 	int i;
- 	unsigned long flags;
- 
- 	if (len > sizeof(pp->rb_buf[0].data))
- 		len = sizeof(pp->rb_buf[0].data);
- 	spin_lock_irqsave(&all_pvt_lock, flags);
--	for (list = &all_pmu_pvt; (list = list->next) != &all_pmu_pvt; ) {
--		pp = list_entry(list, struct pmu_private, list);
-+	list_for_each_entry(pp, &all_pmu_pvt, list) {
- 		spin_lock(&pp->lock);
- 		i = pp->rb_put + 1;
- 		if (i >= RB_SIZE)
-_
+Jerome Glisse
