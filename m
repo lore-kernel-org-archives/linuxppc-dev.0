@@ -1,71 +1,36 @@
-Message-ID: <XFMail.981227120521.gdt@linuxppc.org>
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <36862FB3.17B2@post.uni-bielefeld.de>
+Date: Sun, 27 Dec 1998 14:01:40 +0100
+From: "Jens Ch. Restemeier" <jenschrr@post.uni-bielefeld.de>
+Reply-To: jenschrr@post.uni-bielefeld.de
 MIME-Version: 1.0
-In-Reply-To: <3685BC4F.EB0D2158@jlc.net>
-Date: Sun, 27 Dec 1998 12:05:22 -0000 (GMT)
-From: Gary Thomas <gdt@linuxppc.org>
-To: Dan Malek <dmalek@jlc.net>
-Subject: RE: Need ld.so help
-Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: egcs bug  - who can I send it to ?
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hi !
 
-On 27-Dec-98 Dan Malek wrote:
-> 
-> I discovered the problem I am having with the embedded 8xx
-> processors and cache is that there are several assumptions
-> about cache block size in various functions.  The 8xx processors
-> have a 4 word (16 byte) cache line while other PPCs have
-> a 8 word line.  This causes problems when trying to flush and
-> invalidate caches.
-> 
-> One place this is done is dynamic linking functions of ld.so,
-> where it is assumed a cache line is 8 words.  Unfortunately,
-> I have been unable to build ld.so from the glibc SRPM.  I am
-> using the 961212-1h SRPM from the linuxppc.org server, and
-> the appropriate egcs and binutils.  All of the other libraries
-> I build from this SRPM are fine.  From looking at the RPM of
-> the same version, all of the resulting *.so files appear to be
-> nearly identical, except for ld.so which is much larger than
-> found in the RPM.
-> 
-> The details....I have tracked it down to the elf_get_dynamic_info()
-> function, called from _dl_start().  The failure occurs following
-> the 'while' loop.  It appears info[DT_RELA] is OK, or at least
-> not NULL.  However, info[DT_RELAENT] is NULL, causing the
-> program to segfault at this point.
-> 
-> I don't understand enough about the libraries to know where to
-> look from here, so I need some help :-)
-> 
-> Oh yeah, the SRPM didn't build quite right.  I had to hand patch
-> stdlib/exit.c.....
-> 
+I've got a problem compiling the latest snapshot of crystal space on
+Linux/PPC. The same archive compiles on my 486 (after some small fixes).
 
-I'm confused.  Are all of these problems attributable to the cache-line
-size stuff?  Or are there other problems?
+The RPMS I installed didn't have a "mail me for bugs" address.
 
-I [obviously] build the libraries directly from the SRPMS, so I'd like
-to understand what your problems are.
+Is this a known bug ?
 
-Which software pieces are you running?
-  EGCS?
-  BINUTILS?
-  GLIBC?
-  Kernel?
+util/gfx/gifimage.cpp: In method `ImageGifFile::ImageGifFile(UByte *,
+long int)':
+util/gfx/gifimage.cpp:383: internal error--unrecognizable insn:
+(insn 3958 3955 54 (set (mem:SI (plus:SI (reg:SI 18 r18)
+                (const_int 65536)))
+        (reg:SI 19 r19)) -1 (insn_list 3621 (insn_list 3955 (nil)))
+    (nil))
+toplev.c:1360: Internal compiler error in function fatal_insn
+make[1]: *** [out/LINUX/X11_o/util/gfx/gifimage.o] Error 1
+make: *** [cs] Error 2
 
-
-------------------------------------------------------------------------
-Gary Thomas                              |
-email: gdt@linuxppc.org                  | "Fine wine is a necessity of
-   ... opinions expressed here are mine  |        life for me"
-       and no one else would claim them! |
-                                         |      Thomas Jefferson
-------------------------------------------------------------------------
-
-
+Jens
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
