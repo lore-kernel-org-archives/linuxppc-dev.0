@@ -1,36 +1,37 @@
-Message-Id: <l03130300b3cf9d4b53d0@[209.226.106.188]>
-In-Reply-To: 
- <Pine.LNX.4.10.9907211505370.15642-100000@mercator.cs.kuleuven.ac.be>References:
- <Pine.LNX.4.10.9907111312360.392-100000@cassiopeia.home>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Thu, 5 Aug 1999 16:10:59 -0400
-To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>,
-        linuxppc-dev@lists.linuxppc.org
-From: Eric Dorland <dorland@lords.com>
-Subject: Re: Problems with the atyfb driver on Power Mac G3
+Message-Id: <199908052138.RAA29909@mail-1.global2000.net>
+Date: Thu, 05 Aug 1999 17:22:55 -0400
+Subject: Re: How DOES OF Work? (ie multi-OS woes)
+From: "Andrew B. Arthur" <arthur99@global2000.net>
+To: Sean James Swallow <olaph@takilma.nurk.org>,
+        "Ira K. Weiny" <iweiny@kdat.csc.calpoly.edu>
+CC: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->And so I did: not the GUI thing, but a small command line utility. And a patch
->for atyfb, of course:
->
->    http://www.cs.kuleuven.ac.be/~geert/bin/atyfb_dsp_debug.tar.gz
+> I wish you good luck... Maybe you could come up w/ a way to boot from a
+> selection of OS'es via OF. But the mac crowd will still wine, as there is
+> no icons to click on in OF... =/
 
-I finally got a chance to apply this patch to my kernel (thanks very much
-Geert:). The patch applied cleanly to the 2.2.10 kernel and compiled with
-no problems. The atyclk program compiled fine as well, but whenever I try
-to use it I get the error:
+See http://www.linuxppc.org/userguide/bootMenu.html for the Open Firmware
+boot menu.
 
-ioctl ATYIO_CLKR: Invalid argument
+It always used to work quite well, so I expect it would work good now.
 
-Have I missed something? Has anyone else gotten the patch to work?
+Supports timeout (after 180 seconds), and presents you with a boot list like
+this:
 
-Eric Dorland
-mailto:dorland@lords.com
+<m>ac os
+<l>inux-pmac
+<o>pen firmware
 
+Thanks,
 
+Andrew Arthur a.k.a. AArthur
+arthur99@global2000.net
+AIM: arthur998
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
