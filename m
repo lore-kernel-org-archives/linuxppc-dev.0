@@ -1,42 +1,40 @@
-In-Reply-To: <406B4BC8.4040501@embeddededge.com>
-References: <49B568CB-832A-11D8-9FF0-000A95A07384@sands-edge.com> <20040331164423.GA417@gate.ebshome.net> <20040331100318.B17284@home.com> <9B139B02-834D-11D8-9FF0-000A95A07384@sands-edge.com> <20040331150741.D17284@home.com> <406B4BC8.4040501@embeddededge.com>
-Mime-Version: 1.0 (Apple Message framework v613)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <A34D7CCE-839D-11D8-928B-000393DBC2E8@motorola.com>
-Cc: <linuxppc-dev@lists.linuxppc.org>,
-	Matt Porter <mporter@kernel.crashing.org>,
-	John Whitney <johnw@sands-edge.com>
-From: Kumar Gala <kumar.gala@motorola.com>
-Subject: Re: Proposed changes to io.h
-Date: Wed, 31 Mar 2004 23:30:08 -0600
-To: Dan Malek <dan@embeddededge.com>
+Subject: Re: Generic DMA Core
+From: Adrian Cox <adrian@humboldt.co.uk>
+To: John Whitney <johnw@sands-edge.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <034E6544-833B-11D8-9FF0-000A95A07384@sands-edge.com>
+References: <034E6544-833B-11D8-9FF0-000A95A07384@sands-edge.com>
+Content-Type: text/plain
+Message-Id: <1080802903.7999.718.camel@newt>
+Mime-Version: 1.0
+Date: Thu, 01 Apr 2004 08:01:44 +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Agreed, however I dont remember how nice the assembler is (-me500) with
-regards to accepting 'classic' FP instructions.  So, I'm in agreement
-with Matt in that I'd prefer a build time option here.
+On Wed, 2004-03-31 at 18:44, John Whitney wrote:
+> I have written a generic DMA core driver (drivers/dma/) that accepts
+> registrations from low-level DMA hardware drivers (providers).  I've
+> also written a provider driver for the MPC10x dual-channel DMA
+> controller.
+> [...]
+> Is there any interest in this code, and if so, what would be the best
+> way for going about getting it included in the kernel?
 
-- kumar
+I'd be interested in seeing it. I experimented with something similar
+for Linux 2.4.
 
-On Mar 31, 2004, at 4:52 PM, Dan Malek wrote:
+As for getting into the kernel, the main problem I see is that currently
+nothing else uses it. You may need to do a couple of things: write a
+dummy provider for machines without DMA engines, and use it to
+accelerate an existing process.
 
->
-> Matt Porter wrote:
->
->
->> ..... If e500 wanted a version they
->> can use the SPE option to add some code.
->
-> This isn't an issue (yet) for e500.  The only 64-bit external bus is
-> for the DDR.  The only functions using the quad word are for MTD flash,
-> and all flash is on the 32-bit local bus.
->
->
-> 	-- Dan
->
->
+The main use of these DMA engines is to transfer data to PCI cards which
+lack built-in DMA. So you probably need to find some examples and modify
+them to use your API.
+
+- Adrian Cox
+http://www.humboldt.co.uk/
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
