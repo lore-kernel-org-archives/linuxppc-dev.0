@@ -1,36 +1,33 @@
-Date: Tue, 9 Apr 2002 11:11:28 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Michael Sokolov <msokolov@ivan.Harhan.ORG>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: linuxppc_2_4_alt started
-Message-ID: <20020409181128.GB1331@opus.bloom.county>
-References: <0203310558.AA21170@ivan.Harhan.ORG>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <0203310558.AA21170@ivan.Harhan.ORG>
+Date: Tue, 9 Apr 02 12:23:57 PDT
+From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
+Message-Id: <0204091923.AA23957@ivan.Harhan.ORG>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Incoming to helium.harhan.org:/home/linuxppc/linuxppc_2_4_alt
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Mar 30, 2002 at 09:58:33PM -0800, Michael Sokolov wrote:
+Tom Rini <trini@kernel.crashing.org> wrote:
 
-> Linux/PPC developers and users,
->
-> Having had no success in getting my work accepted into linuxppc_2_4_devel, I
-> have decided to start my own alternative tree which I have called
-> linuxppc_2_4_alt. The BK URL for anonymous access (should work, but I couldn't
-> really test access from outside) is:
->
-> bk://helium.Harhan.ORG:5000
+> Well, take a look at what the file used to look like in _devel.  It was
+> around 30-40 lines of that.  Which is not nice to look at.
 
-Okay.  This is now mirrored up on source.mvista.com.  So instead of
-abusing Michael's poor modem you can also get it from:
-bk://source.mvista.com/linuxppc_2_4_alt
-Or
-rsync://source.mvista.com::linuxppc_2_4
+So what's more important, a pretty look or better functionality for the user?
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+> Well, it's a much better system if you want to group unlike hardware
+> together in one kernel. :)
+
+Which is what I want to do, and which is the RTTD for distributions like
+Debian.
+
+> Well, if ISA slots exist on the board, and should be working, they
+> should just work.  And when BenH merges in prep/chrp, it'll be needed.
+> But the question is do you really want to offer this up on machines
+> where it's not tested?
+
+I want to have configurable CONFIG_PCI and CONFIG_ISA support for
+CONFIG_GENERIC_PPC32. Generic means that things like this must be configurable.
+
+MS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
