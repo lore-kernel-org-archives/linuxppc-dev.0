@@ -1,31 +1,42 @@
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: Bitkeeper trouble
-Date: Tue, 28 May 2002 17:37:34 -0500
-Message-ID: <45B36A38D959B44CB032DA427A6E106401281402@cceexc18.americas.cpqcorp.net>
-From: "Cameron, Steve" <Steve.Cameron@hp.com>
-To: "Tom Rini" <trini@kernel.crashing.org>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Tue, 28 May 2002 15:39:47 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Wolfgang Denk <wd@denx.de>
+Cc: Stephen Cameron <steve.cameron@hp.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Bitkeeper trouble
+Message-ID: <20020528223947.GD5997@opus.bloom.county>
+References: <20020528222106.GC5997@opus.bloom.county> <20020528223319.BCE1011973@denx.denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20020528223319.BCE1011973@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> On Tue, May 28, 2002 at 04:56:39PM -0500, Stephen Cameron wrote:
+On Wed, May 29, 2002 at 12:33:14AM +0200, Wolfgang Denk wrote:
+> In message <20020528222106.GC5997@opus.bloom.county> you wrote:
 > >
-> > "bk pull" used to work, (1 week ago) but
-> > now fails for me.
-[...]
-> What does 'bk parent' say?  If it's not
-> bk://ppc.bkbits.net/linuxppc_2_4_devel, try doing:
-> bk parent bk://ppc.bkbits.net/linuxppc_2_4_devel
-> and then pulling again.  I'm not sure why, but
-> ppc.bkserver.net seems to
-> be gone.
+> > What does 'bk parent' say?  If it's not
+> > bk://ppc.bkbits.net/linuxppc_2_4_devel, try doing:
+> > bk parent bk://ppc.bkbits.net/linuxppc_2_4_devel
+> > and then pulling again.  I'm not sure why, but ppc.bkserver.net seems to
+> > be gone.
+>
+> Well, from here it looks like a name server problem:
+>
+> Non-authoritative answer:
+> Name:   ppc.bkserver.net
+> Address: 10.3.9.222
+>
+> This explains why I get "no route to host" errors...
 
-  bk parent http://ppc.bkbits.net/linuxppc_2_4_devel
-  bk pull
+That would do it.  I think it's been broken for a while too (sometime
+between the 24th and the 27th, since the mirror on source.mvista.com
+stopped on the 24th).  Anyone want to ask Larry about it?
 
-works great.  Thanks! -- steve
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
