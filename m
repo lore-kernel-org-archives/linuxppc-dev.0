@@ -1,23 +1,58 @@
-Date: Sat, 27 Feb 1999 19:25:36 -0500 (EST)
-From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-To: Sven Bullmann <bullmann@owl-online.de>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Blue G3
-In-Reply-To: <36D83A69.5C1D4C79@owl-online.de>
-Message-ID: <Pine.LNX.3.96L.990227192518.21225A-100000@unix47.andrew.cmu.edu>
+Message-ID: <36D8D8E1.2C645B8D@hyperconnect.com>
+Date: Sun, 28 Feb 1999 00:49:21 -0500
+From: Adam Sherman <adam@hyperconnect.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Have Blue G3, Will test!
+Content-Type: multipart/mixed;
+ boundary="------------FA297462992CF6F062649732"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 27 Feb 1999, Sven Bullmann wrote:
-> 
-> Does anyone know, if R5 runs on a blue G3 ?
+This is a multi-part message in MIME format.
+--------------FA297462992CF6F062649732
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-http://www.linuxppc.org/userguide/new
+Is anybody working on getting the Blue G3s to boot? I have one and am
+willing to test kernels/ramdisks. I do have a fair bit of programming
+experience, but not very low level.
 
--Hollis
+Send me mail if anyone is interested!
+
+A.
+
+--
+Adam Sherman
+System Administrator
+Hyperconnect Interactive Media
+http://www.hyperconnect.com
+--------------FA297462992CF6F062649732
+Content-Type: text/x-vcard; charset=us-ascii;
+ name="adam.vcf"
+Content-Description: Card for Adam Sherman
+Content-Disposition: attachment;
+ filename="adam.vcf"
+Content-Transfer-Encoding: 7bit
+
+begin:vcard 
+n:Sherman;Adam
+tel;cell:(613) 276-3882
+tel;fax:(613) 562-8371
+tel;work:(613) 562-1091
+x-mozilla-html:TRUE
+url:http://www.hyperconnect.com
+org:Hyperconnect Interactive Media
+version:2.1
+email;internet:adam@hyperconnect.com
+title:System Administrator
+adr;quoted-printable:;;404 Daly=0D=0ASuite 3;Ottawa;Ontario;K1N 1K9;Canada
+x-mozilla-cpt:;1
+fn:Adam Sherman
+end:vcard
+
+--------------FA297462992CF6F062649732--
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
