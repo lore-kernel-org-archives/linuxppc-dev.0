@@ -1,58 +1,58 @@
-Message-ID: <38465F9E.D9B6FB0F@switchboard.ericsson.se>
-Date: Thu, 02 Dec 1999 13:01:34 +0100
-From: Magnus Damm <damm@kieraypc01.p.y.ki.era.ericsson.se>
+Message-ID: <38469B36.15EBF10D@eecs.lehigh.edu>
+Date: Thu, 02 Dec 1999 11:15:50 -0500
+From: Jason Kim <jwk2@eecs.lehigh.edu>
 MIME-Version: 1.0
-To: wung_y@263.net
-CC: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: ask for help
-References: <38451447.BFB42D44@263.net> <384532AA.E0EB8B8E@switchboard.ericsson.se> <3845CAC4.6C2ED79@263.net>
-Content-Type: text/plain; charset=us-ascii
+To: Kevin Buettner <kev@primenet.com>,
+        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>,
+        "gcc-patches@gcc.gnu.org" <gcc-patches@gcc.gnu.org>,
+        Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
+        Richard Henderson <rth@cygnus.com>,
+        "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
+Subject: Re: patch for problem with va-ppc.h included with egcs and gcc-2.95.2
+References: <4.2.2.19991130110534.00b563b0@mail.lauterbach.com>
+		<4.2.2.19991201162019.03c111b0@mail.lauterbach.com>
+		<384574A2.A003F5F6@eecs.lehigh.edu>
+		<99120114490800.04790@localhost.localdomain>
+		<38460186.8CEC249C@eecs.lehigh.edu> <991202072719.ZM11771@saguaro.lan>
+Content-Type: text/plain; charset=iso-2022-kr
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Kevin Buettner wrote:
 
+> How about anything that calls vprintf, vsprintf, or vsnprintf?
 
-> the code in minix_read_super() (fs/minix/inode.c) is like below:
+Works with my patches. no probs.  
+
+> A more concrete example: Suppose you've compiled the perl library
+> to use the old interface and then compile an application which
+> uses it with your va_list interface.  Then suppose the application
+> calls sv_vsetpvfn() in the perl library.  Would it work?
+
+I'll try this as soon as I hack up some src to test it (sometime today, 
+hopefully). 
+
+(crossed fingers??)
+
+-jason.
+
 > 
->         struct minix_super_block *ms;
->         if (!(bh = bread(dev,1,BLOCK_SIZE)))
->                 goto out_bad_sb;
+> I feel like I'm playing devil's advocate here because I would really
+> like it if you (or someone) could straighten out the ppc va_list
+> issues.  I've been bitten by problems similar to the ones that you've
+> encountered more than once over the years.  Recently I had to fix a
+> problem in gdb where it would've been nice to do a va_list copy.
+> Instead, I restructured the code so that a copy wasn't necessary.  It
+> turned out to be doable in this instance, but I'm aware of some code
+> in libiberty that can't be restructured so easily.  (But for some
+> reason, it seems to be working now on linux/ppc.  I remember a time
+> when it didn't.)
 > 
->         ms = (struct minix_super_block *) bh->b_data;
->         /*
->            now ms points to the start of superblock
->            that is 0x00000400+baseaddress
->          */
->         s->s_magic = ms->s_magic;
-> s->s_magic is 0x8f13 but not 0x138f due to the endian problem. so
-> the magic number is wrong and the root fs mount fail.
+> Kevin
 > 
-> if i make a minix fs image in a big endian machine, the image
-> should be looked like this:
-> 
-> 00000410h:  8f 13 00 01 00 00 00 00 00 00 00 00 00 00 00 00
-> 
-> is this correct? if yes, there is no problem any more.
-
-Seems correct after a quick glance.
-
-Question 1: Why use minix?
-
-If you really want minix I suggest you to improve
-the funcionality of it and add endian macros to it.
-
-If you look at fs/fat/inode.c you see that the fat
-code use macros like CF_LE_x to read variables from the structs
-that are mapped on the data from the disk.
-So does ext2.
-The CF_LE_x are translated to lexx_to_cpu in include/linux/msdos_fs.h
-where x is the size.
-
-I would use ext2.
-
-Cheers /
-
-magnus
+> --
+> Kevin Buettner
+> kev@primenet.com, kevinb@cygnus.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
