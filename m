@@ -1,43 +1,42 @@
-To: "sun-zj" <sun-zj@tdk-tech.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: kernel can't boot 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 29 Dec 2003 10:05:53 +0800."
-             <200312290209.UAA07631@lists.linuxppc.org>
-Date: Mon, 29 Dec 2003 09:18:11 +0100
-Message-Id: <20031229081816.CE72AC5F5F@atlas.denx.de>
+Date: Mon, 29 Dec 2003 03:50:10 -0600
+From: Chris Zimman <chris@cryptoapps.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [Question]DMA problem in Sil0680A...
+Message-ID: <20031229095009.GA13346@dingdong.cryptoapps.com>
+Reply-To: Chris Zimman <chris@cryptoapps.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <200312290209.UAA07631@lists.linuxppc.org> you wrote:
+On Mon, Dec 29, 2003 at 01:16:17PM +0900, ?????? wrote:
 >
-> Thank you for your wise instructions. I do as told . After I clear
-> the clock_in_mhz environment variable the kernel boot. It goes well.
-> Thanks again. :)
+> I'm trying to recognize IDE drive via Sil0680A driver
+> in embedded linux enviroments. see below.
+>
+> * OS : denx(http://www.denx.de) linuxppc_devel_2.4 (2.4.23)
+> * board : custom board for DVR
+> * bootloader : u-boot 0.4.0
+> * chipset : sil0680a(Siliconimage ultra ATA/133 PCI to ATA Host Controller)
 
-You are welcome.
+[ snip ]
 
-> Our board use the Intel Flash 28F320C3T which driver for linux is not
-> available now. I found that
+This could be one of at least a few things.  First, make sure that you're
+actually getting the interrupt signaling the end of DMA.  See
+drivers/ide/ide-dma.c:ide_dma_intr().
 
-What makes you think so? This flash chip  is  used  on  a  couple  of
-boards and the existing Linux drivers work fine with it.
+Without knowing how you have things wired up on the board, it's hard to give
+definite suggestions about what might be wrong.  But in general, if you're
+not getting the interrupt, check the interrupt routing etc. (found in
+platforms/sycamore.c or whatever you called it if you've made a custom
+setup for your board).
 
-> I wonder if I want to develop the driver for myself, what should I do
-> for the kernel?
+What external IRQ is the sil680 using?
 
-Nothing.
+By the looks of your PCI table, you also have a QLogic SCSI controller
+on the board.  Have you tried that to see if it works?
 
-Best regards, and a Happy New Year!
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-To be a winner, all you need to give is all you have.
+--Chris
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
