@@ -1,42 +1,34 @@
-Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
-Message-ID: <313680C9A886D511A06000204840E1CF08F43063@whq-msgusr-02.pit.comms.marconi.com>
-From: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
-To: "'crossgcc@sources.redhat.com'" <crossgcc@sources.redhat.com>,
-	"'wd@denx.de'" <wd@denx.de>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: FYI: building u-boot image in cygwin environment fails
-Date: Fri, 23 Jul 2004 08:29:31 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+In-Reply-To: <6505FDD3-DC31-11D8-A541-000393DBC2E8@freescale.com>
+References: <40F57D15.8030700@pi.be> <69A5B0EA-D669-11D8-A9B5-000393DBC2E8@freescale.com> <40F8138F.8090004@pi.be> <6505FDD3-DC31-11D8-A541-000393DBC2E8@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v618)
+Message-Id: <A6FC1F7E-DCA9-11D8-9237-000A95A4DC02@kernel.crashing.org>
+Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
+	Paul Mackerras <paulus@samba.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] align.c
+Date: Fri, 23 Jul 2004 15:10:21 +0200
+To: Kumar Gala <kumar.gala@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-apovolot@USPITLAD104868 ~/U-boot/u-boot-1.1.1
-$ make  MPC8260ADS_config
-Configuring for MPC8260ADS board...
+> Can you explain to me why/when stswi/lswi would get alignment
+> exceptions.  I think I'm missing something :)  The reason I ask is we
+> are working on some emulation handlers but are not doing anything with
+> regards to alignment for e500.
 
-apovolot@USPITLAD104868 ~/U-boot/u-boot-1.1.1
-$ make all
-...............
-make[1]: Entering directory
-`/cygdrive/d/Profiles/apovolot/U-boot/u-boot-1.1.1/t
-ools'
-gcc -Wall -pedantic -D__WIN32__ -I../include -I.. -DTEXT_BASE=0xfff00000
--DUSE_H
-OSTCC -O -c -o img2srec.o img2srec.c
-In file included from img2srec.c:60:
-../include/elf.h:46: warning: redefinition of `uint8_t'
-/usr/include/stdint.h:24: warning: `uint8_t' previously declared here
-../include/elf.h:47: warning: redefinition of `uint16_t'
-/usr/include/stdint.h:25: warning: `uint16_t' previously declared here
-../include/elf.h:48: error: conflicting types for `uint32_t'
-/usr/include/stdint.h:28: error: previous declaration of `uint32_t'
-make[1]: *** [img2srec.o] Error 1
-make[1]: Leaving directory
-`/cygdrive/d/Profiles/apovolot/U-boot/u-boot-1.1.1/to
-ols'
-make: *** [tools] Error 2
+CPU dependent; one example is stswi to cache-inhibited memory, on
+some CPUs; another is trying to execute any string insn while in
+little-endian mode, on some other CPUs.
+
+On the 601, which is what Stef is using, a word-aligned string insn
+that crosses a 256MB boundary causes an alignement exception (as
+does *any* insn that does this); and a not-word-aligned string insn
+that crosses a 4kB boundary, does, too.
+
+
+Segher
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
