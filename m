@@ -1,61 +1,56 @@
-Message-ID: <004101bfc6be$a5c0dff0$69f001dc@sjzhu.sps.mot.com>
-From: "Shuangjun Zhu" <r44089@email.sps.mot.com>
-To: "Magnus Damm" <damm@kieraypc01.p.y.ki.era.ericsson.se>
-Cc: "Dan Malek" <dan@netx4.com>, <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: PCMCIA support for 860 -- lost interrupt
-Date: Fri, 26 May 2000 11:01:09 +0800
+Message-ID: <392E1FCB.64381A5@huawei.com.cn>
+Date: Fri, 26 May 2000 14:55:08 +0800
+From: dony <dony.he@huawei.com.cn>
 MIME-Version: 1.0
-Content-Type: text/plain;	charset="gb2312"
+To: Dan Malek <dan@netx4.com>
+CC: linuxppc-embedded post <linuxppc-embedded@lists.linuxppc.org>
+Subject: app or shell hangs...
+References: <D53137D1F3DDD211A3750800060DA31302B2CCCD@viee122a.erd.siemens.at> <392D6561.1B8E04BC@embeddededge.com> <392D8E10.BE49DB66@motorola.com> <392D92D5.43881EFD@embeddededge.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello, Magnus
+Hello:
+        Now I can boot kernel both from Network or from Flashrom. But there are
+problems.
 
-I found a temp hacker to fix it.
-Socket Driver and ATA/IDE driver share the same IRQ 13.
-So I must modify the arch/ppc/kernel/irq.c: request_8xxirq(),
-it only allow pci-ide share the irq.
-It will not complain "lost interrupt".
+[boot from Network]
+        When I download the kernel via TFTP at 0x400000 ,then go there to run
+it:
+                     .........
+                    VFS: Mounted root (ext2 filesystem).
+                    Freeing unused kernel memory: 28k init
+        As you see here, occasionally it can not even show the bash prompt
+"bash#", and at this time  any input on the Win98 SuperTerminal has no effect.
+        But most of the time it can show "bash#", and at this time I can do
+"ls" "cd" etc, but after a certain time  when I type any commands ,the Win98
+SuperTerminal doesn't response and cannot show the character I just type any
+more. It seems that it cannot receive input via SERIAL port.
+        And If I run an application which will print some debug information all
+the time , it will also hang after a certain time(But it should not so in
+theory).
+       So I suspect either the kernel  is not stable or something is wrong with
+my bootrom.
+       The kernel I use is MPC8xx-2.2.13, I have modified it to suit my
+purpose(uart.c enet.c). But
+to my surprise, When I  use VxWorks bootrom to TFTP download the same kernel
+and
+run it, it doesn't have all the above problem. It works well. So  the kernel
+should be stable.
 
-BRs,
-Shuangjun
+[Boot from flashrom]
+        It has the same symptom as the above.
 
+Does  someone has similar problem? and what's the solutions?
 
-
->>From the code ide_cs.c in pcmcia package, the m8xx_pcmcia interrupt
->>handler will call the ide_event() in ide_cs.c, this function does
->>nothing with ide interrupt handler in the kernel.
->>
->>Here is Dan's ideas
->>>See, this is why I changed the function name in the first place.
->>>request_irq() assumes a PC-like interrupt structure, which doesn't work
->>>on the MPC8xx internal interrupt controller.  You need to add an
->>>indirect function call to the 'md' structure that will install the
->>>IDE interrupt handler.  When you use the PCMCIA for ATA/IDE, you should
->>>call a function that installs the PCMCIA interrupt vector.
->>
->>In drivers/block/ide-probe.c,
->>init_irq() function has installed the IDE interrupt handler of IRQ 9 as
->>ide_intr()
->>In m8xx_pcmcia.c from the pcmcia package, Damm has installed the PCMCIA
->>interrupt
->>IRQ 13 as m8xx_interrupt(), so problem is:
->>without 8259 controller in FADS board, how the m8xx_interrupt() route the
->>interrupt
->>event to the ide_intr(). No hardware triger the IRQ 9, no call ide_intr(),
->>so the
->>kernel think "lost interrupt", I guess.
->
->
->Here is the result:
->bash# cat /proc/inter*
->           CPU0
->  5:       2394   8xx SIU       cpm
->  9:          0   8xx SIU       ide0
-> 13:          9   8xx SIU       m8xx_pcmcia
-> 15:          0   8xx SIU       tbint
->BAD:          0
+        Another question I want to ask is: When you download the kernel via
+TFTP or copy from flashrom to RAM 0x400000 , Do you do SOMETHING SPECIAL ELSE
+(about 860) and then jump there 0x400000 and run it, Or do you DIRECTLY jump
+there 0x400000 and run it?
+        Can you give me any suggestions?
+        Thanks very much.
+        dony
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
