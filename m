@@ -1,26 +1,40 @@
-Date: Tue, 11 Jul 2000 16:10:57 +0200
-From: Claus <enneper@olis.north.de>
-To: Adrian Cox <apc@agelectronics.co.uk>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Going from 2.2.12 to 2.2.17pre10
-Message-ID: <20000711161057.A505@olis.north.de>
-Reply-To: cl.en@gmx.net
-References: <396AEAC7.D8CACCB2@agelectronics.co.uk> <20000711101714.9717@mailhost.mipsys.com> <396B19BF.D2EAF0D7@agelectronics.co.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <396B19BF.D2EAF0D7@agelectronics.co.uk>; from Adrian Cox on Tue, Jul 11, 2000 at 01:57:35PM +0100
+Message-ID: <003b01bfeb47$848cf960$1a6a1504@strayer.edu>
+From: "Robert Thompson" <rothomp3@vt.edu>
+To: "Hollis Blanchard" <hollis@amulet.co.jp>
+Cc: <pogtal@erols.com>, <linuxppc-dev@lists.linuxppc.org>
+References: <003b01bfeaa6$744c6e60$1a6a1504@strayer.edu> <396ACDF9.826580D3@amulet.co.jp>
+Subject: Re: trackpad
+Date: Tue, 11 Jul 2000 10:51:34 -0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-2022-jp"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
- >:
- >: btw: Off topic: which Powerbook uses chipsfb? If they're cheap
- >: secondhand I'll consider becoming my own guinea-pig for the merged
- >: driver.
+> > Hmm... anybody have any clue what's different
+> > between the trackpad on the Pismo and on the iBook? It's not like ADB
+isn't
+> > working: the keyboard works fine, so ADB is working at least mostly
+fine.
+> > Like
+> > I said, I use an external trackball anyway, but I'm sure somebody will
+be
+> > angry
+> > about this at some point...
+>
+> Robbie, I missed the beginning of the thread, but did you follow Ben's
+> directions?
 
-2400/3400/3500
+Yes, I followed them exactly. Like I said, external usb mice work fine, and
+the internal adb keyboard works fine, but the trackpad (also adb) doesn't
+work at all. I tried gpm -m /dev/mouse -t imps2 and several variations
+thereof, but nothing worked. The trackpad is detected correctly by the
+kernel, according to dmesg. There are no errors reported of any kind, the
+trackpad simply does nothing.
 
---
-Yours, ce
+Thanks,
+Robbie Thompson
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
