@@ -1,26 +1,33 @@
-Date: Sun, 6 Feb 2000 02:22:17 -0800 (PST)
+Date: Sun, 6 Feb 2000 02:47:39 -0800 (PST)
 From: Brad Midgley <brad@turbolinux.com>
-To: Takashi Oe <toe@unlserve.unl.edu>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [patch] little-endian dmasound silently fails
-In-Reply-To: <Pine.LNX.3.96LJ1.1b7.1000204221814.20504A-100000@ofey.inetnebr.com>
-Message-ID: <Pine.LNX.4.20.0002060210380.16199-100000@mail.turbolinux.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: [xfree accel bug] Re: 24 bitplanes in X? (openh323 videoconf)
+In-Reply-To: <Pine.LNX.4.20.0002060113280.15781-100000@mail.turbolinux.com>
+Message-ID: <Pine.LNX.4.20.0002060245040.16369-100000@mail.turbolinux.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> don't think this is dmasound's fault.  Luckily for us, many "broken"
-> OSS-compatible apps tend to work just fine if we simply modify them to
-> ask for AFMT_S16_NE not *_LE, though performance critical apps should
-> be fixed with more effort.
+i confirmed this is an accel bug in Xfree86-3.3.6. if i put options
+"noaccel" in my xconfig, then the video is well-behaved, just slow.
 
-is the app broken because it tries to use _LE formats?
+On Sun, 6 Feb 2000, Brad Midgley wrote:
 
-i agree it's not optimal and reflects laziness on the developer's part to
-try to make everything work as if it's little-endian, but that the api
-allows it, right?
+>
+> is anyone having success with specifying 24 bitplanes in their xconfig?
+>
+> apparently this is the only way one can use openh323's videoconferencing
+> but on my bronze powerbook, the screen is messed up (there are 4 mini
+> duplicates of the main screen appearing at the top of the screen)
+>
+> i'm using xfree 3.3.6 (dev-rel-1.1), bootx, and rsync-benh.
+>
+> Brad
+> brad@turbolinux.com | http://www.turbolinux.com/~brad/
+>
+>
 
 Brad
 brad@turbolinux.com | http://www.turbolinux.com/~brad/
