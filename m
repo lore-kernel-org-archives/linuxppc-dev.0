@@ -1,33 +1,36 @@
-Date: Thu, 6 Nov 2003 21:24:45 +0100
-From: Olaf Hering <olh@suse.de>
+Message-ID: <3FAABE62.4090804@g-house.de>
+Date: Thu, 06 Nov 2003 22:34:26 +0100
+From: Christian <evil@g-house.de>
+MIME-Version: 1.0
 To: linuxppc-dev@lists.linuxppc.org
-Subject: [PATCH] incorrect function declaration for claim()
-Message-ID: <20031106202445.GA6293@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Subject: Re: ppc32 lockups with 2.6
+References: <3FA5698A.9000905@g-house.de>
+In-Reply-To: <3FA5698A.9000905@g-house.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-its void * in start.c
+as nobody seems to answer,
 
+yes, i know, if the problem does not occur to other people, it's not
+worth fixing it. and PReP machines seem to be some kind of "exotic"
+(read: outdated) anyways. but i don't have the skills fixing it :-(
 
---- linux-2.4/arch/ppc/boot/chrp/main.c~	2003-07-17 19:28:11.000000000 +0200
-+++ linux-2.4/arch/ppc/boot/chrp/main.c	2003-11-06 21:21:26.000000000 +0100
-@@ -17,7 +17,7 @@ extern char _start, _end;
+so, if at least someone could point me to something i might have
+forgotten to look at, or how to get an oops message out of this here.
+would be nice if it turns out to be a user-error only.
 
- extern int getprop(void *, const char *, void *, int);
- extern unsigned int heap_max;
--extern void claim(unsigned int virt, unsigned int size, unsigned int align);
-+extern void *claim(unsigned int virt, unsigned int size, unsigned int align);
- extern void *finddevice(const char *);
- extern void flush_cache(void *, unsigned long);
- extern void gunzip(void *, int, unsigned char *, int *);
+i also filed a bug in bugzilla:
+http://bugzilla.kernel.org/show_bug.cgi?id=1494
 
+Thanks for reading,
+Christian.
 
 --
-USB is for mice, FireWire is for men!
+BOFH excuse #128:
 
-sUse lINUX ag, nÜRNBERG
+Power Company having EMP problems with their reactor
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
