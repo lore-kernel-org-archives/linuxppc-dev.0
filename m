@@ -1,40 +1,27 @@
-Message-Id: <199903091638.LAA14811@all-night-tool.mit.edu>
-To: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: No-IDE kernel compile link errors 
-In-Reply-To: Your message of "Mon, 08 Mar 1999 23:12:18 EST."
-             <Pine.LNX.3.96L.990308225823.26298C-100000@unix48.andrew.cmu.edu>
-Date: Tue, 09 Mar 1999 11:38:44 EST
-From: "Charles E. Leiserson, Jr." <locutus@MIT.EDU>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Putting OF code in nvram 
+In-reply-to: Your message of "Tue, 09 Mar 1999 15:43:27 +0100." <19990309154327.006222@mail.mipsys.com> 
+Date: Tue, 09 Mar 1999 16:52:05 +0000
+Message-ID: <26673.920998325@isode.com>
+From: Chris Ridd <C.Ridd@isode.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
------BEGIN PGP SIGNED MESSAGE-----
+On Tue, 09 Mar 1999 15:43:27 +0100, Benjamin Herrenschmidt wrote:
+> 
+> Hi !
+> 
+> Does someone still have pointers to those nvram OF patches that existed
+> for old 7500/8500 machines ? I'm looking for infos about the process of
+> putting stuffs in here, not really in the patches themselves.
 
+	http://www.linuxppc.com/userguide/of105.html
 
-> Awesome. Of course it can't find those symbols - I haven't compiled (and don't
-> want) any IDE stuff.
+Cheers,
 
-I seem to recall having read something about the 2.2 kernels not compiling if 
-IDE isn't set.  I had the same problem, so I just compiled in IDE support, 
-even though I have no IDE devices or bus.
-
-Feel free to correct me if I'm wrong.
-
-
-					- Ricky
-
-
------BEGIN PGP SIGNATURE-----
-Version: 2.6.2
-
-iQCVAwUBNuVOk/o7QJfqAx6RAQHquQQAt4t0gsatGCnvVpwvLJQZh7a7Vj2rISNP
-I+pYrvhDN9SyIAr4rTZNnrObB9zM8JntGAxmq8fQQOULcymNJTE+33ll9kLvbJFg
-OdHIfQFgn5phshEPKoo1S5P16Ss76fzGTqhJIbF/NQk+jHJpjU9k8q21yBXJJ1Zs
-73wqg6a++To=
-=TBjn
------END PGP SIGNATURE-----
+Chris
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
