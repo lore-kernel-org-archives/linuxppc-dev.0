@@ -1,26 +1,21 @@
-Message-ID: <3B9E4FA1.8C477AAD@mvista.com>
-Date: Tue, 11 Sep 2001 13:53:37 -0400
-From: Dan Malek <dan@mvista.com>
+Message-ID: <3B9E5654.7080603@pcez.com>
+Date: Tue, 11 Sep 2001 11:22:12 -0700
+From: Shaun Savage <savages@pcez.com>
 MIME-Version: 1.0
-To: Matthew Locke <mlocke@mvista.com>
-Cc: Stefan Roese <stefan.roese@esd-electronics.com>,
-	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>,
-	Linuxppc-Commit <linuxppc-commit@source.mvista.com>
-Subject: Re: AW: CPCI-405 port (PPC405GP)
-References: <EFEAIMDCOOOHIEPHDNFJMEFHDCAA.stefan.roese@esd-electronics.com> <3B9E4B88.2090402@mvista.com>
-Content-Type: text/plain; charset=us-ascii
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: 860T dual ethernet code?
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Matthew Locke wrote:
+HI
 
->   no, I pulled this morning and the walnut works fine.  I am using nfs
-> root with HHL2.0 userland.
-
-I fixed it last night......
+I am looking for the enet.c dual ethernet patch. Please send it to me.
 
 
-	-- Dan
+Thanxs in advance
+Shaun
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
