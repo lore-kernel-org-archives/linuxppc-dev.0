@@ -1,60 +1,33 @@
-Date: Mon, 8 Jul 2002 09:11:57 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Armin <akuster@dslextreme.com>
-Cc: Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: [PATCH/RFC] Change how we pick which _kd_mksound to use.
-Message-ID: <20020708161157.GF695@opus.bloom.county>
-References: <20020701152727.GC20920@opus.bloom.county> <15655.39445.566490.16876@argo.ozlabs.ibm.com> <3D29B8CB.9020204@dslextreme.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3D29B8CB.9020204@dslextreme.com>
+Message-ID: <3D2A09D1.3080700@attbi.com>
+Date: Mon, 08 Jul 2002 14:53:21 -0700
+From: Henry Worth <haworth15@attbi.com>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: XV lockups with SMP 2.4.19-rc1-ben0
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Jul 08, 2002 at 09:07:39AM -0700, Armin wrote:
+Since rsyncing to Ben's 2.4.19-rc1-benh yesterday (and today), I have not
+been able to build an SMP kernel with working XV. System is AGP dual
+PowerMac
+with 450MHz 7400's, Rage 128, XFree85 4.2.0 and YDL 2.2. Kernels built with
+Ben's config and and minimal change for SMP (I've tried distributed and
+non-distribured rupts). I had SMP and XV working with Xine from a Saturday
+rsync, but not since rsync'ing yesterday or today (and I saved and tried
+the same config that had worked). All builds are mrproper. It looks like
+there have been some changes in some DRM and FB header files, but I didn't
+save the previous version to diff against
 
-> Paul Mockeries wrote:
->
-> >Tom Rind writes:
-> >
-> >>The following changes how we pick a _kd_mksound.  The problem is that on
-> >>some machines, such as IBM405, the default _kd_mksound breaks horribly
-> >>due to the inb/outb's attempting to fiddle with timers which don't
-> >>exist.  This changes the test which selects either an empty _kd_mksound
-> >>or the one in question from __powerpc__ to CONFIG_PPC64 (since from what I
-> >>understand, __powerpc__ is defined on ppc64) || (CONFIG_PPC32 &&
-> >>CONFIG_6xx).  The CONFIG_6xx test is because these boards are the ones
-> >>which tend to have a SuperIO chip, or something else with the timers at
-> >>0x61, 0xB6, etc.
-> >>
-> >>The other option would be to define an empty no_kd_mksound or so on
-> >>4xx/8xx and then conditionally set kd_mksound to that, but I would
-> >>prefer this since we're already doing some preprocessor checks anyhow.
-> >>
-> It looks to me as if the CONFIG_REDWOOD should be changed to CONFIG_4XX
-> to start with and there are no guarantees that the timer will be at the
-> same locations plus on a pci base 4xx , in*/out* can't br used on local
-> bus i/o access.
+XV will work with Xine when built as a non-SMP kernel, but an SMP kernel
+will lock-up almost instantly after hitting the Xine play button with dual
+processors and after a couple of seconds with a single CPU (maxcpus=1).
 
-Well, CONFIG_REDWOOD should be changed into something that catches all
-of the other boards that it won't work on. :)
+After lockup I can usually telnet in to reboot, but not always (usually
+the screen blanks or loses sync in these cases). Haven't had any success
+trying to kill and restart the X server as can usual be done with X server
+hangs.
 
-> >This is one of those "there's got to be a better way" places.  The
-> >CONFIG_PPC32 && CONFIG_6xx test doesn't really capture what we want
-> >much better than the existing __powerpc__ test does.  Testing
-> >CONFIG_PPC32 && CONFIG_ISA might go closer.  I would really rather
-> >that _kd_mksound was provided in the platform-specific files on those
-> >platforms where it applies, though.
->
-> For 4xx it should be defined at the board level in most cases :)
-
-Right, just how pmac case is done.  If we want/can have the beep on a
-4xx board :)
-
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
