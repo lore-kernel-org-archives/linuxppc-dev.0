@@ -1,19 +1,20 @@
-Return-Path: <wd@denx.de>
-Received: from mailout11.sul.t-online.com (mailout11.sul.t-online.com
-	[194.25.134.85]) by ozlabs.org (Postfix) with ESMTP id 4290267A6B
+Return-Path: <yuli@arabellasw.com>
+Received: from gold.webfusion.co.uk (gold.webfusion.co.uk [212.67.202.159])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 08EAE67A6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 14 Feb 2005 07:08:54 +1100 (EST)
-To: Joakim.Tjernlund@lumentis.se
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sun, 02 Jan 2005 15:12:01 +0100."
-	<BCEFJBPJCGFCNMMMIDBHOEPBCJAA.Joakim.Tjernlund@lumentis.se>
-Date: Sun, 13 Feb 2005 21:08:42 +0100
-Sender: wd@denx.de
-Message-Id: <20050213200847.1AE42C1430@atlas.denx.de>
+	Mon, 14 Feb 2005 17:46:02 +1100 (EST)
+From: Yuli Barcohen <yuli@arabellasw.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <16912.18711.885679.679568@astp0002.localdomain>
+Date: Mon, 14 Feb 2005 08:45:43 +0200
+To: Markus Westergren <markus.westergren@biologigrand.ac>
+In-Reply-To: <Pine.LNX.4.50.0502131246140.3196-100000@220a.licentiaten.umea.hsb.se>
+References: <Pine.LNX.4.50.0502131246140.3196-100000@220a.licentiaten.umea.hsb.se>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: CPU15 errata workaround for 8xx by WD 
+Subject: Re: Support for Adder875 in Linux 2.4
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,36 +25,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Jocke,
+>>>>> Markus Westergren writes:
 
-sorry for the late reply.
+    Markus> Hi, I'm working on a project which will use hardware based
+    Markus> on Analogue & Micro Adder875 module together with Linux 2.4.
 
-In message <BCEFJBPJCGFCNMMMIDBHOEPBCJAA.Joakim.Tjernlund@lumentis.se> you wrote:
-> 
-> Had a look at your CPU15 errata workaround for 8xx and I have a comment
-> or two:
-> 
-> 1) I think you should make the sysctl support a compile time option
->    as the overhead for sysctl support in the TLB handler is 6 instr. when
->    the fix itself is only 4 instr.
+    Markus> I use RedBoot as bootloader and kernel 2.4.27-pre1, both
+    Markus> came with the Adder module.
 
-You are right.
+    Markus> The project require:
 
-> 2) You placed the workaround in the middle of the CPU6 workaround which will
->    disable the CPU6 workaround(I think). Move it before the #ifdef CONFIG_8xx_CPU6
->    and you should be fine.
+    Markus> - dual ethernet support with AM79C874 PHY
+    Markus>    The driver I've found (fec.c) only supports one
+    Markus>    ethernet. I'v started
+    Markus> 	modifying a newer version of this driver which have
+    Markus> 	support for my PHY. I have made some progress but it's
+    Markus> 	not working yet. Found out that the first FEC is used to
+    Markus> 	communicate with both PHY's. Both devices are detected
+    Markus> 	correctly and the first seems to work but the second
+    Markus> 	hangs the kernel when the first packet is sent or
+    Markus> 	received.
+    Markus> - SPI support
+    Markus>    Have found a simple driver (cpm_spi.c), which I have not
+    Markus>    tested yet.
+    Markus> - PCMCIA support
+    Markus>    Will try to modify the m8xx_pcmcia driver.
 
-You are right again - we fixed this in our CVS tree now.
+    Markus> Not required but would be good to have:
+    Markus> - USB host support
+    Markus>    Have no clue where to start looking.
 
+    Markus> Have anyone used this module together with Linux and are
+    Markus> there working drivers for it? Any tips/ideas?
 
-Best regards,
-
-Wolfgang Denk
+Arabella Linux supports all these. Not sure how you are going to use
+PCMCIA on this specific board - it's not connected.
 
 -- 
-See us @ Embedded World, Nuremberg, Feb 22 - 24,  Hall 10.0 Booth 310
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-The management question ... is not _whether_ to build a pilot  system
-and  throw  it away. You _will_ do that. The only question is whether
-to plan in advance to build a throwaway, or to promise to deliver the
-throwaway to customers.       - Fred Brooks, "The Mythical Man Month"
+========================================================================
+ Yuli Barcohen       | Phone +972-9-765-1788 |  Software Project Leader
+ yuli@arabellasw.com | Fax   +972-9-765-7494 | Arabella Software, Israel
+========================================================================
