@@ -1,46 +1,60 @@
-Date: Wed, 29 Oct 2003 06:56:34 -0800
-From: Peter Ryser <Peter.Ryser@xilinx.com>
-Subject: Re: mount root on the ml300 board
-In-reply-to: <000701c39911$53d15f70$4844900a@hydingnb1>
-To: hyding <nari_dhy@nari-china.com>
-Cc: linuxppc-embed <linuxppc-embedded@lists.linuxppc.org>
-Message-id: <3F9FD522.5050106@xilinx.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii; format=flowed
-References: <000701c39911$53d15f70$4844900a@hydingnb1>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: Problems bring up NFS mount on MPC8270 board
+Date: Wed, 29 Oct 2003 12:26:28 -0500
+Message-ID: <8529B5552D4EAA4DAEDF49650C64B2B41673E2@tarpon.mangrovesystems.com>
+From: "Joe Birch" <jbirch@mangrovesystems.com>
+To: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Make sure to enable device file system (/devfs) support during kernel
-configuration.
+Thanks for the tip. That was the problem.
+A couple of follow up questions for 82xx Hip7 users:
 
-- Peter
+- How to best take advantage of the additional BATs
+- Does PCI behave any differently from MPC8265/66
+- Any other Hip7 oddities
 
-hyding wrote:
+Joe
 
->hi,
->    I am debugging MontaVista linux pro3.0(kernel 2.4.28) on the ml300
->board. I use IBM MicroDrive 1GB card to configure the FPGA and act as
->root fs. But the boot stops and displays the following:
->...
->block: 128 slots per queue, batch=32
->Partition check:
-> xsysacea: xsysacea1 xsysacea2 xsysacea3
->System ACE at 0xCF000000 mapped to 0xC900F000, irq=9, 1052352KB
->Kernel panic: I have no root and I want to scream
-> <0>Rebooting in 180 seconds..
->    There are 3 partitions in the CF card. The 1st is the fat12. The 2st
->is swap and the 3rd is the root. Kernel command line: console=ttyS0,9600
->root=/dev/sysace3 rw
->    Did someone have the problem? Any hints will be appreciable.
+-----Original Message-----
+From: Guy M. Streeter [mailto:streeter@redhat.com]
+Sent: Tuesday, October 28, 2003 10:26 AM
+To: Jean-Denis Boyer
+Cc: Joe Birch; linuxppc-embedded
+Subject: RE: Problems bring up NFS mount on MPC8270 board
+
+
+I haven't looked at the others, but I think the 8280 (G2_LE core, pvr version 0x8082) should have CAN_NAP and HAS_HIGH_BATS, also. This is what I'm using on my board.
+
+--Guy
+
+On Tue, 2003-10-28 at 07:49, Jean-Denis Boyer wrote:
+> The 8270 has a new core revision (Hip7) which have a new PVR:
 >
->Thanks!
+>   Hip3: 0x0081xxxx
+>   Hip4: 0x8081xxxx
+>   Hip7: 0x8082xxxx
 >
+> It is probably not recognized has a 603e core, but a generic PPC
+> (which will not work).
 >
+> May I suggest the patch in attachement (for
+> 'arch/ppc/kernel/cputable.c'). It will correctly recognize the three
+> cpu revisions, and report the chosen one in '/proc/cpuinfo'.
 >
+> Regards,
 >
->
+> --------------------------------------------
+>  Jean-Denis Boyer, Eng.
+>  M5T Centre d'Excellence en Télécom Inc.
+>  4283 Garlock Street
+>  Sherbrooke (Québec)
+>  J1L 2C8  CANADA
+>  (819)829-3972 x241
+> --------------------------------------------
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
