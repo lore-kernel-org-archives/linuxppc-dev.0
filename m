@@ -1,39 +1,56 @@
-Message-ID: <3D8A1265.D0CC5D33@selta.it>
-Date: Thu, 19 Sep 2002 17:07:33 -0100
-From: stefania magistrali <s.magistrali@selta.it>
+Message-ID: <3D8AAE2D.D80646E3@bmrtech.com>
+Date: Fri, 20 Sep 2002 13:12:13 +0800
+From: sjk <jack.sun@bmrtech.com>
+Reply-To: jack.sun@bmrtech.com
 MIME-Version: 1.0
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: loading modules
-Content-Type: text/plain; charset=iso-8859-2
+Subject: cross debug with gdb/gdbserver on 405GP
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all!
-I am working with a PowerPC 860T based board.
-I have a problem with loading modules: I made:
+Hi,
 
-make dep make clean make zImage  make modules  and make modules_install
+I am porting Linux on CSB272 405gp board.The Linux kernel works.
+But I can't debug applications with gdb and gdbserver.
+The problem is described as following:
 
-to create my kernel and modules  , but when I try to load the module
-hdlc.o with insmod, I have a segmentation fault. I am using busybox
-version 0.60.3  and linux version 2.4.19pre6. Here I send the last part
-of the strace sequence of the command "insmod  hdlc"
-Can anyone help me?
-Thanks very much in advance!
-Stefania
+I want to  cross debug applications by gdbserver and gdb.But only one
+breakpoint  can break. Any excute comand including stepi make the
+application run over and exit. The application runs correctlly. Why
+can't I debug the program step by step?
 
-query_module(NULL, 0, NULL, 0)          = 0
-query_module(NULL, QM_MODULES, { /* 0 entries */ }, 0) = 0
-mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1,
-0) = 0x30033000
-query_module(NULL, QM_SYMBOLS, 0x30032e08, 16384, 21866) = -1 ENOSPC (No
-space left on device)
-mmap(NULL, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1,
-0) = 0x30037000
-query_module(NULL, QM_SYMBOLS, { /* 961 entries */ }, 961) = 0
---- SIGSEGV (Segmentation fault) ---
-+++ killed by SIGSEGV +++
+ppc_405gdb version 5.2.
+debug information:
+on host:
+#ppc_405 -g -ggdb -o hello hello.c
+#ddd --debugger ppc_405-gdb  --gdb hello
+(gdb) target remote target:1000
+0x30013a00 in ?? ()
+(gdb) break hello.c:4
+Breakpoint 1 at 0x100004f8: file hello.c, line 4.
+(gdb) cont
+Breakpoint 1, main () at hello.c:4
+(gdb) step
+Program exited with code 037.
+(gdb)
+
+on target:
+#gdbserver host:1000 hello
+rocess hello created; pid = 97
+Remote debugging using 192.9.200.69:1000
+Hello World
+Child exited with retcode = c
+Child exited with status 253
+GDBserver exiting
+
+please give some suggestions!
+thanks
+
+
+Jikun Sun
+jack.sun@bmrtech.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
