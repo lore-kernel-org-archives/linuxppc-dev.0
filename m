@@ -1,42 +1,43 @@
-Date: Thu, 7 Feb 2002 11:55:59 -0800
-From: Jeffery von Ronne <jronne@ics.uci.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: two aty128 frame buffers?
-Message-ID: <20020207115559.G3189@reepicheep.ics.uci.edu>
-References: <20020204154626.C28199@reepicheep.ics.uci.edu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020204154626.C28199@reepicheep.ics.uci.edu>; from jronne@ics.uci.edu on Mon, Feb 04, 2002 at 03:46:26PM -0800
+Message-Id: <p05101400b888906c9a08@[10.0.0.42]>
+In-Reply-To: 
+ <Pine.LNX.4.43.0202071127340.16392-100000@andromeda.dsdk12.net>
+References: <Pine.LNX.4.43.0202071127340.16392-100000@andromeda.dsdk12.net>
+Date: Thu, 7 Feb 2002 12:35:48 -0800
+To: Derrik Pates <dpates@dsdk12.net>
+From: "Timothy A. Seufert" <tas@mindspring.com>
+Subject: Re: two aty128 frame buffers?
+Cc: <linuxppc-dev@lists.linuxppc.org>
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Feb 04, 2002 at 03:46:26PM -0800, Jeffery von Ronne wrote:
-> Does anyone know how hard it would be to hack aty128fb to support a
-> second Rage 128?  Or am I better off trying to get the X server to talk
-> directly to the second card?
+At 11:29 AM -0700 2/7/02, Derrik Pates wrote:
+>On Wed, 6 Feb 2002, Ani Joshi wrote:
+>
+>>  You can't use 2 cards which require ISA IO (vgaHW uses ISA IO on rage128)
+>>  right now, because of the multiple busses on the G4 machines.  You can
+>>  comment out all the vgaHW calls and that will probably work, but without
+>>  doing that it will always crash on any ISA IO operation.  The reason is
+>>  because your second bus's ISA IO isn't mapped.
+>
+>The issue is the same with the G3 tower - the video card is by default in
+>the 32-bit, 66 MHz PCI slot, which is a logically separate bus from the
+>64-bit, 33 MHz bus that the other 3 slots are part of.
 
-FYI, hacking the kernel's aty128fb driver---by removing the return 0;
-in aty128fb_init's PCI probe loop---I can get an aty128fb for both cards.
-So far, I've only gotten X's fbdev driver to work with it.  I looks closer
-into why r128/UseFB isn't working some other time.
+Actually it's not the same issue.  The blue&white G3 tower really has
+just one logical PCI bus.  The host bridge interfaces the processor
+to the 66 MHz bus, and the 33 MHz bus is bridged to the 66 MHz bus
+via a PCI-to-PCI bridge IC.  I'm pretty sure ISA I/O is already
+supposed to work for busses behind bridges.
 
-Unfortunately /dev/fb1 (which is the one open firmware uses, BTW) has a couple
-glitches.
-
-First, it only seems to work in 8bpp: in other modes the screen splits
-into three parts: a top-left, top-right, and bottom.  The bottom just
-has garbage, and the top-left and top-right seem to be mirrored
-minature of a garbaged version what the screen is supposed to contain.
-
-Second, it seems to have trouble erasing things (e.g. instead of putting
-up the X background grid when I move a window or even initially.)
-
+The problem in the G4s is that Apple's Uni-N host bridge has three
+logically distinct PCI busses which are peers rather than
+subordinates.  Each of them thinks it is PCI bus #0 -- the namespaces
+are separate.  The Linux kernel APIs for ISA I/O don't account for
+the possibility of multiple PCI roots.
 --
-Jeffery von Ronne <jronne@ics.uci.edu>
-Graduate Student
-Information and Computer Science
-University of California, Irvine
-
+Tim Seufert
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
