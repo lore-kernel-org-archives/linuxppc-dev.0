@@ -1,22 +1,22 @@
-Return-Path: <Gerald.VanBaren@smiths-aerospace.com>
-Received: from smtp3.smiths.com (smtp3.smiths.com [192.208.34.52])
-	by ozlabs.org (Postfix) with ESMTP id 4C7072BDB5
+Return-Path: <bora.sahin@ttnet.net.tr>
+Received: from fep01.ttnet.net.tr (fep01fe.ttnet.net.tr [212.156.4.130])
+	by ozlabs.org (Postfix) with ESMTP id 76CF82BDB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  4 Dec 2004 08:56:26 +1100 (EST)
-Received: from COSSMGIMS04.email.corp.tld (unknown [10.225.225.147])
-	by smtp3.smiths.com (Postfix) with ESMTP id 55C161C012AC
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  3 Dec 2004 14:56:16 -0700 (MST)
+	Sun,  5 Dec 2004 01:46:03 +1100 (EST)
+Received: from zenon ([81.213.119.17]) by fep01.ttnet.net.tr
+	(InterMail vM.5.01.06.08 201-253-122-130-108-20031117) with ESMTP
+	id <20041204130418.CAFO28130.fep01.ttnet.net.tr@zenon>
+	for <linuxppc-embedded@ozlabs.org>; Sat, 4 Dec 2004 15:04:18 +0200
+Date: Sat, 4 Dec 2004 16:04:11 +0200
+From: =?ISO-8859-15?B?Qm9yYSDeYWhpbg==?= <bora.sahin@ttnet.net.tr>
+Message-ID: <8316506505.20041204160411@ttnet.net.tr>
+To: linuxppc-embedded@ozlabs.org
+In-Reply-To: <065ACD8E84315E4394C835E398C8D5EBBBED0A@COSSMGMBX02.email.corp.tld>
+References: <065ACD8E84315E4394C835E398C8D5EBBBED0A@COSSMGMBX02.email.corp.tld>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Fri, 3 Dec 2004 14:56:13 -0700
-Message-ID: <065ACD8E84315E4394C835E398C8D5EBBBED0A@COSSMGMBX02.email.corp.tld>
-From: "VanBaren, Gerald (AGRE)" <Gerald.VanBaren@smiths-aerospace.com>
-To: "Barbier, Renaud (GE Infrastructure)" <Renaud.Barbier@ge.com>,
-	"Matt Porter" <mporter@kernel.crashing.org>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: 440GX MMU problem
+Content-Type: text/plain; charset=ISO-8859-15
+Subject: (Very) Simple question(s) compared to group topics
+Reply-To: =?ISO-8859-15?B?Qm9yYSDeYWhpbg==?= <bora.sahin@ttnet.net.tr>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,54 +27,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-> -----Original Message-----
-> From: linuxppc-embedded-bounces@ozlabs.org=0D
-> [mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of=0D
-> Barbier, Renaud (GE Infrastructure)
-> Sent: Friday, December 03, 2004 3:53 PM
-> To: Matt Porter
-> Cc: linuxppc-embedded@ozlabs.org
-> Subject: RE: 440GX MMU problem
->=0D
-> actually, I just loaded linux at memory offset=0D
-> 0x10000000(above 256MB) and in this case it is able to boot=0D
-> and use the full 512MB.
-> there maybe indeed something broken.
->=0D
-> Originally, U-boot did not map the full 512MB but only 256MB.
-> I wonder if that could be a possible source of my problem.
+  I was subscribed to list a few days ago. I dont know this group is eligible for my very simple or
+  basic questions compared to list topics. In one side asm codes is discussed like one jump command
+  why not reach to symbol and the other side interrupt handling routines is discussed like whether
+  or not critical interrupt handling is used in 405 EP. Subsequently, my simple question is to stay
+  very basic. However if i get an answer(s) or redirections to correct places, I can be very
+  grateful.
 
-Disclaimer: I don't have experience with the 4xx family, but won't stop
-me from speculating (which drives Wolfgang crazy when I guess wrong ;-).
+  A bit summary about me...
+  
+  So far, let say until the last one week or a bit over, I havent done any work out of x86 including
+  any RISC cpu. I know inner workings of x86(asm) like segmentation, paging, booting etc. not to be
+  very detailed. Before, I have dealt with mem. mag. especially in the means of mm initialization,
+  booting, ...etc on the x86 imp. of the Linux kernel.
 
-On the 82xx u-boot uses BATs to map memory.  On the 82xx, BATs are
-limited to 256MBytes per BAT.  I'm guessing you are running into this.
-Somewhere in your u-boot it doesn't know how to go beyond the 256MByte
-boundary.
+  The subject...
 
-On u-boot, check out the use of "CONFIG_VERY_BIG_RAM".  It doesn't look
-like it applies directly to your board/processor, but you may be able to
-enhance your system using it or a similar concept.
+  PPC and 4xx series of it is absolutely new to me. We think to decode "mpeg 4/level 5" coded films
+  on the 4xx series of ppc if it is possible. I examined a bit these cpus. 4xx series go to 700/800
+  MHZ clock freq but most of them dont contain floating point unit.(Only one of them has fpu if my
+  memory dont serve me. I cant say it is connected. If i understand the doc correctly, you can
+  connect a fpu to the system) This is just a point. I know clock freq is not alone on the cpu
+  performance. I would like to hear experianced users testimonals or thought about decoding of mpeg
+  performance of these cpus...
 
-gvb
-
-
-******************************************
-I apologize for the following message brought to you by the Lawyers'
-League of IdioSpeak:
-
-******************************************
-The information contained in, or attached to, this e-mail, may contain=
- confidential information and is intended solely for the use of the=
- individual or entity to whom they are addressed and may be subject to=
- legal privilege.  If you have received this e-mail in error you should=
- notify the sender immediately by reply e-mail, delete the message from=
- your system and notify your system manager.  Please do not copy it for any=
- purpose, or disclose its contents to any other person.  The views or=
- opinions presented in this e-mail are solely those of the author and do=
- not necessarily represent those of the company.  The recipient should=
- check this e-mail and any attachments for the presence of viruses.  The=
- company accepts no liability for any damage caused, directly or=
- indirectly, by any virus transmitted in this email.
-******************************************
+-- 
+Bora Sahin
+borasahin.port5.com
