@@ -1,52 +1,30 @@
-Message-ID: <3B799A0A.497DFF56@mvista.com>
-Date: Tue, 14 Aug 2001 14:37:14 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
+Message-ID: <47EE8DCFB8C6D311A23700508B8BAD5903DB07@THEBRAIN2>
+From: "Karaaslan, Utku" <UKaraasl@drs.ca>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: A Question on QSPAN-II
+Date: Tue, 14 Aug 2001 18:33:46 -0400
 MIME-Version: 1.0
-To: James F Dougherty <jfd@GigabitNetworks.COM>, anj@aps.anl.gov,
-	mporter@mvista.com, dan@mvista.com,
-	linuxppc-embedded@lists.linuxppc.org, cort@cs.nmt.edu,
-	jfd@cs.stanford.edu
-Subject: Re: MPC8240 EPIC Driver (Attached)
-References: <200108140743.AAA05509@krakatoa.gigabitnetworks.com> <3B7963C3.36191B14@mvista.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-James,
+Hello All,
 
-I took a look around and I think I deleted what I had.  It really wasn't that much
-code anyway.  The important things are to get the functionality and not cause
-wholesale changes to the existing code.
+I have my Ppcboot (version 0.8.3) running on my custom board, and the Linux
+kernel version I am using is
+2.4.1-pre7. Scanning the PCI bus is a walk in the park with the Ppcboot, but
+the Linux kernel doesn't see
+any devices on it during the PCI scanning functions. I have added the
+ioremap entry to accomodate the Qspan-II
+register image, so the physical access under linux shouldn't be a problem,
+however I still cannot see any
+devices when the kernel is running. Would you have any ideas on why this
+could happen - and how I could correct
+it?
 
-Please let me know if you're going to work on it and I'll wait to see what you come up
-with.  Otherwise, now that there seems to be interest, I'll start working on it when
-I'm done with my current project (in a few weeks).
+Many thanks in advance,
 
-Mark
---
-
-"Mark A. Greer" wrote:
-
-> James F Dougherty wrote:
->
-> > Mark,
-> >
-> > Send me your changes and I'll
-> > gladly test them...
->
-> I never finished them.  I had some changes in an old 2.4.0-testxxx kernel but never
-> finished what I started.
-> This was several months ago so I kinda forget but I was going to make the
-> initsenses table look something like what gets passed to openpic_initirq plus a
-> field to specify the offset in from OpenPIC_addr/OpenPIC.  I also added a couple
-> routines to set the epic in serial or direct mode and I think that was about it.
->
-> I may have some of this laying around.  I'll take a look this afternoon & if its
-> worth sending, I'll send it to you.
->
-> Mark
->
-
+Utku
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
