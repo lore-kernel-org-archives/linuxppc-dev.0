@@ -1,32 +1,47 @@
-Message-ID: <FA06AA2C99BCD511951200005A99441001E3ED60@irvexch1.sextantifs.com>
-From: "Curtis, Allen" <Allen.Curtis@Thales-IFS.com>
-To: "'support@bitmover.com'" <support@bitmover.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Date: Wed, 4 Sep 2002 09:55:44 -0700
-Subject: RE: bitkeeper changesets
+Message-ID: <20020904172646.94693.qmail@web40202.mail.yahoo.com>
+Date: Wed, 4 Sep 2002 10:26:46 -0700 (PDT)
+From: Brian Kuschak <bkuschak@yahoo.com>
+Subject: Re: bitkeeper changesets
+To: Tom Rini <trini@kernel.crashing.org>,
+	Allen Curtis <acurtis@onz.com>
+Cc: Brian Kuschak <bkuschak@yahoo.com>,
+	linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <20020904141511.GK761@opus.bloom.county>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->> I see the same thing. It looks like the tag changed to just
->v2.4.19. The
->BK
->> revisions totally changed!
+--- Tom Rini <trini@kernel.crashing.org> wrote:
+> Revision numbers are not constant.  BK keys are.
+> 'bk help key2rev'.
 >
->Revision numbers are not constant.  BK keys are.  'bk help key2rev'.
 
-Re: linuxppc-2_4_devel
+So I assume this is the correct way of getting a
+unique, unchanging revision key corresponding to a
+particular ChangeSet:
 
-According to my notes, the BK repository was:
-rev:	1.1114
-tag:	2.4.19final
+   bk changes -r1.1091.1.23 -nd:KEY:
+   or
+   bk prs -r1.1091.1.23 -nd:KEY:
 
-Now the tag is v2.4.19 with a comment saying automerge to 2.4.19final.
+   ======== ChangeSet 1.1091.1.23 ========
+   paulus@samba.org|ChangeSet|20020803062658|55132
 
-What happened?
+This changeset removes the -rc5 from EXTRAVERSION in
+the top-level Makefile.  But I can't I convert this
+key back to the revision number:
+
+echo "paulus@samba.org|ChangeSet|20020803062658|55132"
+|bk key2rev Makefile
+
+Can't find
+paulus@samba.org|ChangeSet|20020803062658|55132 in
+SCCS/s.Makefile
+
+Thanks,
+Brian
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
