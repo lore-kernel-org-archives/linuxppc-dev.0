@@ -1,32 +1,31 @@
-Message-Id: <199911071307.NAA32306@go.hannover.sgh-net.de>
-Subject: Q: How to address USB devices?
-Date: Sun, 7 Nov 1999 14:07:26 +0100
-From: John L Grantham <jgrantha@hannover.sgh-net.de>
-To: <linuxppc-dev@lists.linuxppc.org>, <linuxppc-user@lists.linuxppc.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+From: Eric Benard <ebenard@ifrance.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: BW G3 & Kernel 2.3.25
+Date: Sun, 7 Nov 1999 15:16:16 +0100
+Content-Type: text/plain
+MIME-Version: 1.0
+Message-Id: <99110715194202.06096@localhost.localdomain>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 Hi all,
 
-A quick question: How do you address a device hooked up via USB with 
-LinuxPPC 1999 Q3? Like, for example, a USB CD drive or CD burner? Is it 
-the same for a Yose as with an iMac?
+I got the sources of 2.3.25 form kernel.org, applied the patch from Ani Joshi
+and successfully compiled the kernel.
+But this kernel doesn't want to boot and allways let me with a black screen.
 
-Just wondering...
+Has someone here managed to boot this kernel on a b&w g3 ?
 
-cya
+thank you
 
-John
-
----
-
-John Grantham | Freelance Graphic and Web Designer
-              | Dipl.-Designer (FH)
-              | Homepage: http://surf.to/multimedia
-              | MacLinux: http://www.maclinux.de/
+eric
+ 
+______________________________________________________________________
+Message envoye depuis iFrance >>  http://www.ifrance.com
+Gratuit >> Hebergement (50 Mo)/Vos emails (POP&HTML,20 Mo)
+Votre agenda online gratuit >> http://agenda.ifrance.com
+NOUVEAU : Faxez gratuitement ! >> http://fax.ifrance.com
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
