@@ -1,54 +1,55 @@
-Message-ID: <38CBAF43.B9F7D50@iiic.ethz.ch>
-Date: Sun, 12 Mar 2000 15:52:51 +0100
-From: Michel Dänzer <michdaen@iiic.ethz.ch>
+Message-Id: <200003121551.QAA00488@piglet.grunz.lu>
+Date: Sun, 12 Mar 2000 16:51:35 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: defconfig for pmac in 2.3.51 and up
+To: toa@pop.agri.ch
+cc: costabel@wanadoo.fr, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <38CB94D1.C443C343@pop.agri.ch>
 MIME-Version: 1.0
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-CC: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
-        Kostas Gewrgiou <gewrgiou@imbc.gr>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to work
- onppcwithr128
-References: <Pine.LNX.4.10.10003111521590.14494-100000@opal.biophys.uni-duesseldorf.de>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michael Schmitz wrote:
+On  12 Mar, this message from Andreas Tobler echoed through cyberspace:
+>> > maybe a dump Q, but I don't find it. In the kernels before 2.3.51 (stable &
+>> > devel) I could type 'make pmac_config' to get the most things set to my needs.
+>> > Now in 2.3.51 this defconfig is away.
+>> > Any idea? Neither on bitkeeper nor on linuxcare. Or are there new methods to
+>> > make defconfigs for certain machines?
+>> > I don't like to set every item by hand. (too much)
+>>
+>> Strange... When I say 'make pmac_config' in the 2.3.51 tree from
+>> bitkeeper, it does
+>> rm -f .config arch/ppc/defconfig
+>> cp -f arch/ppc/configs/pmac_defconfig arch/ppc/defconfig
+>>
+>> The only thing that changed from older kernels is that the config files
+>> now have their own subdirectory arch/ppc/configs/. But this should work
+>> precisely as before.
+>>
+>> (digging a little further...) Oh I see, bitkeeper doesn't have the
+>> complete collection of arch/ppc/configs/*_defconfig files any more; no
+>> more chrp, pmac, or prep. I still have them from a previous version.
+>> Weird...
 
-> I'll try that. But the results I get with X -probeonly are more than
-> confusing. After I tosses out most of the driver modules,
+Wouldn't this be a side-effect of trying to 'unify' all the PPC
+configs? There's only a generic PPC config option as well, an no more
+CONFIG_PMAC, CONFIG_PREP, CONFIG_CHRP etc.., thy are all replaced by
+the single CONFIG_ALL_PPC.
 
-Which drivers? Only r128, fbdev and glint are known to be working on PPC
-AFAIK.
-
-
-> the probe runs once or twice, and gets sporadic SIGILL the rest of the time.
-> To the extent of not succeeding at all for the rest of the day. Or
-> succeeding only from the console but not from a slogin session (signal 4 in
-> the slogin session consistently). The signal happens apparently at different
-> times during X startup - while loading the dbe module, after loading the
-> fbdevhw module.
-
-This is a known bug in the server's cache flush code. There is a fix worked
-out by Kostas Gewrgiou and Kevin Hendricks which unfortunately hasn't made it
-into 4.0.
-
-
-> The chip was detected on the PCI bus - what's the BusID supposed to do in
-> this situation? Keep X from probing the other PCI devices?
-> OK, tried to feed it the BusID (0:17:0 as reported by the probe). Results:
-> a beep, and the warnings 'invalid mem allocation' and 'invalid IO
-> allocation'. The IO range smells like a port address range, is that
-> remapped by the PCI bridge? lspci reports the IO range as disabled. I'll
-> look into Geerts description of the Mach64 memory layout to figure out
-> what aperture X tries to use here.
-
-Are you trying to use the driver for Mach64?
-
-Try the fbdev driver with the BusID. (Mach is only minimally accelerated ATM
-anyway)
-
+I think it still makes sense, though, to keep the default configs for
+each hardware type. Makes kernel config a lot easier...
 
 Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
