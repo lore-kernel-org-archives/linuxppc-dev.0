@@ -1,26 +1,40 @@
-Message-ID: <3FC758AC.2080208@jonmasters.org>
-Date: Fri, 28 Nov 2003 14:16:12 +0000
-From: Jon Masters <jonathan@jonmasters.org>
+Message-ID: <3FC76CEA.9040309@embeddededge.com>
+Date: Fri, 28 Nov 2003 10:42:34 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: Peter Vandenabeele <peter.vandenabeele@mind.be>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [Fwd: ppc4xx Ports]
-References: <3FB416F9.7080303@jonmasters.org> <20031114002023.GA9509@gate.ebshome.net> <3FB423AB.80805@jonmasters.org> <20031114004805.GA9585@gate.ebshome.net> <20031126165238.O7373@mind.be>
-In-Reply-To: <20031126165238.O7373@mind.be>
+To: Jaap-Jan Boor <jjboor@aimsys.nl>
+Cc: Juergen Oberhofer <e9826367@student.tuwien.ac.at>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: mpc / linux kernel - user space
+References: <Pine.GHP.4.58.0311271703390.25225@stud3.tuwien.ac.at>	 <7E0B03AE-2100-11D8-BF18-003065E2BB06@aimsys.nl>	 <Pine.GHP.4.58.0311271903490.4360@stud3.tuwien.ac.at> <1070011018.1263.27.camel@linpc003.aimsys.nl>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+Jaap-Jan Boor wrote:
 
-Hi there,
+> If you want to send a signal to user code, you can use kill_proc()
+> I think.
 
-Just quickly to add that I switched my email provider last night and
-this might have resulted in a couple of lost messages.
+IMHO, trying to use signals to propagate a hardware interrupt to a
+user application is complicated and has design flaws (what happens
+if the application "misses" an interrupt or gets blocked for some
+reason).
 
-If you replied to this message yet please resend.
+A couple of other methods that I find simple and use extensively
+are multi-threading the application and then using a different
+minor ID device to wait on a read() or ioctl() to simply return.
+The driver just uses the standard sleep/wakeup mechanisms to
+synchronize with the application.
 
-Jon.
+Another, and I think most useful, method is to implement a select/poll
+entry point in the driver.  It provides the most flexibility when
+waiting for various events, plus provides a timeout should something
+fail to function properly.
+
+
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
