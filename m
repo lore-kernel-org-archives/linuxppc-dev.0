@@ -1,96 +1,38 @@
-Subject: Re: [PATCH] simple class for adb
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olaf Hering <olh@suse.de>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
+Date: Sat, 1 May 2004 21:07:25 -0700
+From: Brad Boyer <flar@allandria.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Olaf Hering <olh@suse.de>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
 	Greg KH <greg@kroah.com>
-In-Reply-To: <20040501182659.GB18859@suse.de>
-References: <20040501182659.GB18859@suse.de>
-Content-Type: text/plain
-Message-Id: <1083450972.29595.203.camel@gaston>
+Subject: Re: [PATCH] simple class for adb
+Message-ID: <20040502040724.GA11529@pants.nu>
+References: <20040501182659.GB18859@suse.de> <1083450972.29595.203.camel@gaston>
 Mime-Version: 1.0
-Date: Sun, 02 May 2004 08:36:12 +1000
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1083450972.29595.203.camel@gaston>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 2004-05-02 at 04:26, Olaf Hering wrote:
-> This adds /sys/class/adb/, removes unused devfs lines and updates a
-> comment to match reality.
+On Sun, May 02, 2004 at 08:36:12AM +1000, Benjamin Herrenschmidt wrote:
+> I'm not sure I want to keep /dev/adb forever.... This is at best a
+> workaround so that udev creates it. Ultimately, we want a real adb
+> bus in the device-model and a different mecanism to send special
+> commands to the system controller. I think somebody from the m68k
+> folks is already working on the ADB bus stuff though.
 
-I'm not sure I want to keep /dev/adb forever.... This is at best a
-workaround so that udev creates it. Ultimately, we want a real adb
-bus in the device-model and a different mecanism to send special
-commands to the system controller. I think somebody from the m68k
-folks is already working on the ADB bus stuff though.
+Slowly but surely, yes. Although perhaps just slowly. I've got part
+of it written, but I haven't had any time the last month or so due
+to my real job. I will probably have more time to finish up the
+new ADB subsystem later this month.
 
-Ben.
+I definitely agree on getting rid of most of the reasons for
+/dev/adb, but I'm not sure what all people use through it. I know
+the trackpad tool uses it, but I'm not sure of anything else.
+Does the sleep stuff use /dev/adb or /dev/pmu?
 
->
-> diff -p -purN linux-2.6.6-rc3/drivers/macintosh/adb.c linux-2.6.6-rc3.adb/drivers/macintosh/adb.c
-> --- linux-2.6.6-rc3/drivers/macintosh/adb.c	2004-04-04 05:38:26.000000000 +0200
-> +++ linux-2.6.6-rc3.adb/drivers/macintosh/adb.c	2004-05-01 19:58:08.000000000 +0200
-> @@ -10,7 +10,7 @@
->   *
->   * To do:
->   *
-> - * - /proc/adb to list the devices and infos
-> + * - /sys/bus/adb to list the devices and infos
->   * - more /dev/adb to allow userland to receive the
->   *   flow of auto-polling datas from a given device.
->   * - move bus probe to a kernel thread
-> @@ -23,7 +23,6 @@
->  #include <linux/slab.h>
->  #include <linux/module.h>
->  #include <linux/fs.h>
-> -#include <linux/devfs_fs_kernel.h>
->  #include <linux/mm.h>
->  #include <linux/sched.h>
->  #include <linux/smp_lock.h>
-> @@ -36,6 +35,7 @@
->  #include <linux/delay.h>
->  #include <linux/spinlock.h>
->  #include <linux/completion.h>
-> +#include <linux/device.h>
->  #include <asm/uaccess.h>
->  #include <asm/semaphore.h>
->  #ifdef CONFIG_PPC
-> @@ -75,6 +75,8 @@ static struct adb_driver *adb_driver_lis
->  	NULL
->  };
->
-> +static struct class_simple *adb_dev_class;
-> +
->  struct adb_driver *adb_controller;
->  struct notifier_block *adb_client_list = NULL;
->  static int adb_got_sleep;
-> @@ -883,6 +889,7 @@ out:
->  }
->
->  static struct file_operations adb_fops = {
-> +	.owner		= THIS_MODULE,
->  	.llseek		= no_llseek,
->  	.read		= adb_read,
->  	.write		= adb_write,
-> @@ -893,9 +900,13 @@ static struct file_operations adb_fops =
->  static void
->  adbdev_init(void)
->  {
-> -	if (register_chrdev(ADB_MAJOR, "adb", &adb_fops))
-> +	if (register_chrdev(ADB_MAJOR, "adb", &adb_fops)) {
->  		printk(KERN_ERR "adb: unable to get major %d\n", ADB_MAJOR);
-> -	else
-> -		devfs_mk_cdev(MKDEV(ADB_MAJOR, 0),
-> -				S_IFCHR | S_IRUSR | S_IWUSR, "adb");
-> +		return;
-> +	}
-> +	adb_dev_class = class_simple_create(THIS_MODULE, "adb");
-> +	if (IS_ERR(adb_dev_class)) {
-> +		return;
-> +	}
-> +	class_simple_device_add(adb_dev_class, MKDEV(ADB_MAJOR, 0), NULL, "adb");
->  }
---
-Benjamin Herrenschmidt <benh@kernel.crashing.org>
+	Brad Boyer
+	flar@allandria.com
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
