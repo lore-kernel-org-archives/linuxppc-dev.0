@@ -1,17 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <SRS0+4b2dc8d9df8b47542035+453+infradead.org+dwmw2@baythorne.srs.infradead.org>
+Received: from baythorne.infradead.org (baythorne.infradead.org
+	[81.187.226.107])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2B04A2BF07
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Nov 2004 18:00:45 +1100 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>,
-	linuxppc-dev@ozlabs.org, gentoo-ppc-user@gentoo.org
+	by ozlabs.org (Postfix) with ESMTP id 7C5CE2BDB5
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Nov 2004 21:00:50 +1100 (EST)
+From: David Woodhouse <dwmw2@infradead.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1100847411.25521.42.camel@gaston>
+References: <1100847411.25521.42.camel@gaston>
 Content-Type: text/plain
-Date: Fri, 19 Nov 2004 17:56:50 +1100
-Message-Id: <1100847411.25521.42.camel@gaston>
+Message-Id: <1100854258.21273.273.camel@baythorne.infradead.org>
 Mime-Version: 1.0
-Subject: TEST: Sleep suppport for iBook G4 & Aluminium PowerBooks (ATI based)
+Date: Fri, 19 Nov 2004 08:50:58 +0000
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: TEST: Sleep suppport for iBook G4 & Aluminium PowerBooks (ATI
+	based)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,41 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-(Message cross-posted to several lists, please do _NOT_ reply to all of
-them).
+On Fri, 2004-11-19 at 17:56 +1100, Benjamin Herrenschmidt wrote:
+> (Message cross-posted to several lists, please do _NOT_ reply to all of
+> them).
 
-NOTE: Owners of _OTHER_ Apple laptops that could already sleep, like
-earlier iBooks, or Titanium PowerBooks, please test this patch as well
-for regression. More specifically, test if sleep still works, X/DRI, and
-backlight control as I have made significant changes to radeonfb in ways
-that could affect those areas.
+I forwarded it to fedora-ppc@lists.infradead.org too.
 
-NOTE2: This is still quite experimental, be careful if something goes
-wrong (like lots of oopses or crashes on wakeup), you'd rather
-hard-restart the machine right away than let corrupted memory buffers be
-written back to your disk ;)
- 
-First, let's give credit where it's due, as a lot of the work on the
-original Aluminium PowerBook sleep code was done by Paul Mackerras,
-happy owner of one of these beasts, and thanks to Rob Weir too who gave
-me his iBook G4 for a few days, just long enough to get the stuff
-working...
+Since I started using the previous patch and actually suspending, I've
+been seeing the GNOME panel and window list die frequently, and
+occasionally other X apps. When X apps have died which were started from
+the command line it seemed to be a spurious SIGPIPE, strangely.
 
-So here's the new patch, it replaces the previous one for Aluminium
-PowerBooks, and is still against 2.6.9. I'll do something against 2.6.10
-when that one is out (it's a bit late to get that merged with Linus,
-2.6.10 is in freeze mode now) and I hope to get all of that in 2.6.11.
+I don't _think_ I've ever seen it immediately after booting; only after
+suspend/resume. But that could be just a coincidence. Likewise the way
+it started when I added the sleep patch _could_ just be a coincidence --
+I was still running Fedora rawhide and updating other packages (and
+there were other kernel changes) at that time, so a lot of other things
+changed too... but has anyone else seen similar behaviour?
 
-The support for sleep on desktop G4s & dual CPU machines, including
-support for "hotplug CPU" (allowing to put a CPU to sleep dynamically)
-for dual machines isn't in this patch neither, it will be coming
-spearately. It will only support one desktop video card at first anyway,
-though it will be possible to extend that over time.
-
-Get it at:
-
-http://gate.crashing.org/~benh/albook-ibookg4-sleep.diff
-
-Enjoy !
-
-Ben.
+-- 
+dwmw2
