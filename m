@@ -1,36 +1,60 @@
 Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3E5EF447.3B9088D7@tataelxsi.co.in>
-Date: Fri, 28 Feb 2003 11:01:51 +0530
-From: "Kamalesh B" <kamal@tataelxsi.co.in>
+From: "okisoftxman" <okisoftxman@hotmail.com>
+To: "linux-emb" <linuxppc-embedded@lists.linuxppc.org>
+Subject: about  flash_port_width
+Date: Fri, 28 Feb 2003 16:52:55 +0900
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: RAMDISK
-References: <3E5650A4.39677CB0@tataelxsi.co.in> <3E565C04.9020603@embeddededge.com> <3E59BF74.8C163181@tataelxsi.co.in> <027c01c2dbdc$3fbf1290$e600a8c0@udtech.net>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
+Message-ID: <OE14y3UiIMbhiv9sFU300001b52@hotmail.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Hi,
+    I read the flash manual about INTEL 28F640J3A.I know it has two
+programming operations:Byte or Word.Byte is 8 bits and the Word is 16 bits.
+    but I refer some source code in PPCBOOT(/board/nx823/flash.c),I find a
+strange thing:
 
-Right now, iam working booting Linux 2.4.1 on MPC8260ADS. Iam using NFS
-option to boot the linux. Mount point is on the host PC.
+#define FLASH_PORT_WIDTH  ulong
+#define FLASH_PORT_WIDTHV  vu_long
+#endif
 
-Iam using PPCBOOT bootloader.
+#define FPW  FLASH_PORT_WIDTH
+#define FPWV FLASH_PORT_WIDTHV
+............................
 
-Command line argument for linux given is
-root=/dev/nfs    nfsaddrs=<targetip>:<serverip>
+/*-----------------------------------------------------------------------
+ * Write a word or halfword to Flash, returns:
+ * 0 - OK
+ * 1 - write timeout
+ * 2 - Flash not erased
+ */
+static int write_data (flash_info_t *info, ulong dest, FPW data)
+{
+ FPWV *addr = (FPWV *)dest;
+ ulong status;
+ ulong start;
+ int flag;
 
-My query is
-1. How to boot linux-2.4.1 using root file system rather than using
-network file system?
-2. How to make ramdisk(root fs) part of linux kernel? DO i need to
-change some makefiles or config options?
-3. How to remove dependency of nfs to boot-up LINUX i.e, OS image should
-boot in standalone setup?
+.........................
 
-thanks in advance,
-with rgds,
-kamal
+ flag = disable_interrupts();
+
+ *addr = (FPW)0x00400040;  /* write setup */
+ *addr = data;
+
+ /* re-enable interrupts if necessary */
+ if (flag)
+  enable_interrupts();
+
+........................
+
+ return (0);
+}
+
+    Here,"data" is ulong and "*addr" is vu_long ,they are both 32 bits.Does
+this mean programming operation is 32 bits?If so,it is opposition to the
+FLASH manual.Why?
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
