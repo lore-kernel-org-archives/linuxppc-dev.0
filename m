@@ -1,57 +1,57 @@
-Date: Tue, 12 Oct 1999 09:34:30 -0500
-From: Chris McKillop <cdm@debian.org>
-To: Joseph Garcia <jpgarcia@execpc.com>
-Cc: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Apple's iBook Specs
-Message-ID: <19991012093430.A11721@warg.uwaterloo.ca>
-References: <3802B150.E91DBDB1@execpc.com>
+Date: Tue, 12 Oct 1999 10:50:02 -0400
+From: Daniel Jacobowitz <drow@false.org>
+To: Lou Langholtz <ldl@chpc.utah.edu>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: controlfb.c bug in VRAM bank2 check if bank1
+Message-ID: <19991012105001.A698@drow.res.cmu.edu>
+References: <199909101833.UAA17210@piglet.cpu.lu> <3802D9FE.1C166944@chpc.utah.edu>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-md5;
-	protocol="application/pgp-signature"; boundary="opJtzjQTFsWo+cga"
-In-Reply-To: <3802B150.E91DBDB1@execpc.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3802D9FE.1C166944@chpc.utah.edu>; from Lou Langholtz on Tue, Oct 12, 1999 at 12:49:34AM -0600
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Could you check whether that kernel has the patch I posted to this list
+last month applied?
 
---opJtzjQTFsWo+cga
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, Oct 11, 1999 at 10:56:00PM -0500, Joseph Garcia wrote:
->=20
-> According to Ogrady's Powerpage (http://ogrady.org), Apple has posted dev=
-eloper
-> tech notes on the iBook's hardware for the sake of hardware and software
-> developers.  This is quite unexpected i think.  Available in HTML and PDF.
->=20
-
-	What is most interesting is that the AirPort is on the ATA bus that
-the CDROM sits on.  Some neat 3rd party expansion options come to mind. :)
-
-	chris
+The patch was in Message-ID: <19990912141014.A17732@them.org>.
 
 
---=20
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-chris mckillop - cdm@debian.org    "The faster I go, the behinder I get."
-Debian GNU/Linux                                     -- Lewis Carroll=20
-http://www.debian.org/             =20
-Waterloo Aerial Robotics Group - http://ece.uwaterloo.ca/~warg/
 
---opJtzjQTFsWo+cga
-Content-Type: application/pgp-signature
+On Tue, Oct 12, 1999 at 12:49:34AM -0600, Lou Langholtz wrote:
+> 
+> Michel Lanners wrote:
+> 
+> > On  10 Sep, this message from Lou Langholtz echoed through cyberspace:
+> > > After getting an extra 2MB VRAM for my PowerMac7500 and seeing that only
+> > > 2MB were still being recognized (despite having just added the 2MB to
+> > > total to 4MB VRAM), I dug into the controlfb.c code from 2.2.11 and
+> > > 2.2.12 and made the following changes to get all 4MB VRAM recognized:
+> > . . .
+> >
+> > I guess it's time to clear thgis up once and for all. By the way, I do
+> > have 4 MB of VRAM, and all of it is detected with the current version
+> > of controlfb.....
+> 
+> Update:
+> 
+> Even with 2.2.13pre15, the stock controlfb.c still doesn't detect the
+> 4MB VRAM in my 7500 (I just tried it). I have to hack controlfb.c to get it
+> to use all 4MB. This is perhaps a bug specific only to the PowerMac 7500/100
+> as others have reported that all VRAM was detected on their PowerMac's
+> without making any changes like I've had to do.
+> 
+> 
+> 
 
------BEGIN PGP SIGNATURE-----
-Version: 2.6.3ia
 
-iQCVAwUBOANG9tYQs2hke4MxAQHN7QQAtbduN2KL60OwJ7d3I1ccD0r8fTGCJIVY
-bwtDa940CMvA96+PGX7+LvNR+q8n72fCHjg+3lG1DXuDvsn3c4IlQU8Aw4Vcgga+
-vmuO3R9Tk0XNqY7rdSfedz8e91mqOC/amG3PAC+/JuQz0IiZNiMMT4ocBInccWbN
-VoXA8OjF1ew=
-=yumy
------END PGP SIGNATURE-----
+Dan
 
---opJtzjQTFsWo+cga--
+/--------------------------------\  /--------------------------------\
+|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
+|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
+|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
+\--------------------------------/  \--------------------------------/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
