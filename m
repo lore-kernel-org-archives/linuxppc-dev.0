@@ -1,26 +1,36 @@
-Message-ID: <001801bfb31a$8b816d60$54c809c0@zbc>
-From: "zhangbingchen" <shenhuizhang@263.net>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: how to extend the initrd to a customed size ?
-Date: Mon, 1 May 2000 11:08:30 +0800
+Message-ID: <390DB320.DC787D62@ssh.com>
+Date: Mon, 01 May 2000 19:38:56 +0300
+From: Arto Vuori <avuori@ssh.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ISO-8859-1"
-Sender: owner-linuxppc-embedded@lists.linuxppc.org
-List-Id: <linuxppc-embedded@lists.linuxppc.org>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: 8260 io and caches
+Content-Type: text/plain; charset=us-ascii
+Sender: owner-linuxppc-dev@lists.linuxppc.org
+List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello!
-  I have a board of Custom 860 with 16M RAM memory,which is running the specific linux kernel
-  mpc8xx-2.1.3 obtained from bossek.now,I desire to enlarge the size of initrd from 4M to 6M to
- enable the initrd to contain the gigantic libc.so.6 with the size of morethan 4M;to do so,i have modified
- the line rd_size=6144 in .../drivers/block/rd.c file and the ramdisk.image has also been modified correspondly by now.
- But,to my puzzled,the console just displays the panic message:No init found and then reboots while running.
-  I am sure there is no wrong with my ramdisk.image since it can be mountted correctly with
- 6M size.
- That is all and I 'd be very thankful with your help or suggestion.
+Hi all,
 
-   regards
-   john , zhang
+I'm currently trying to get linux running on EST SBC8260 board. I had
+some problems with serial ports. Initially it just sent some garbage. I
+found that serial port driver doesn't initialize BRG division factor in
+SCCR register even though it assumes that it should be set to 0. I
+modified my bootloader to initialize it and output looks now much
+better.
 
-** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
+There still seems to be some problems with caches. Everything is just
+fine with caches disabled, but if i enable caches output doesn't look
+correct. Adding some flush_dcache_range() calls to uart.c seems to fix
+that problem, but shouldn't rx & tx buffers be allocated from some non
+cacheable region??
+
+Thanks
+
+Arto
+
+--
+Arto Vuori
+a-mail: avuori@ssh.com
+mobile:	+358 40 754 5223
+
+** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
