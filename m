@@ -1,41 +1,59 @@
-Message-Id: <004a01bfe680$e8fc1460$a74901b6@riverton.ccrl.mot.com>
-From: "Brett Lindsley" <Brett_Lindsley-ABL001@email.mot.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Wireless Connection
-Date: Wed, 5 Jul 2000 07:59:51 -0500
+Message-ID: <39633DE8.EC3A6E1F@embeddededge.com>
+Date: Wed, 05 Jul 2000 09:53:44 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: mark phillips <msss@ne.mediaone.net>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Problems with HardHat/NFS root filesystems
+References: <39625545.370FE91F@ne.mediaone.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have a need to provide a wireless link between an Embedded Planet
-RPX-Lite embedded system and a custom non-PowerPC system. My
-requirements are:
+mark phillips wrote:
 
-1. Minimum data rate of 1 MBit/sec.
-2. Source for the driver must be available.
-3. The wireless link is not a "network" so the entire protocol stack
-    is not necessary (and actually will not be used).
+> I've been working with HardHat Linux on an Embedded Planet CLLF...
 
-Does anyone have a suggested wireless network card that works
-with the RPX-lite? More important, is the source for the driver available?
-The source is very important because I need to port it to a *non-Linux*
-environment on a specialized non-PowerPC embedded device.
-In terms of a "driver" all I really need is the ability to send/receive
-packets
-directly on top of the network MAC.
+> I have been able to run the mbxroot.min filesystem (both on NFS and as
+> an initrd).
 
-I have extensively investigated 802.11 and 802.11b but details on the
-wireless
-network cards have been too thin to determine how to develop a simple
-driver for them. My development group is in the middle of the Linux/MPC823
-learning curve as this is our first project using the RPX-lite board and
-Linux.
 
-Brett Lindsley, Research Engineer
-Motorola Corporate Research & Development Labs
+I'm surprised this even works.  Mixing tools and libraries is always
+a challenge and seldom works.  The HHL tools and libraries are built
+as a kit that works together.  The tools generate in-line floating point
+and have startup functions ro glibc2.  The HHL tools, libraries and target
+file system work together, and it is unlikely you will be able to mix
+other pieces with any success.
 
+The 'min' and 'full' file systems are old, glibc-1.99 version software.
+The HHL tools will not build executables to work with this library.
+It was a nicer library to use for embedded systems because it was smaller,
+but it was simply obsolete and we couldn't maintain it.  You can strip
+the libraries in the target file system to make them smaller, however
+I think it removes symbols needed for linking (but programs run OK).
+You can also download the glibc SRPM and remove functions you don't need,
+then rebuild it with the HHL tools.
+
+
+> In addition, I've noticed that if I run ldconfig on the mbxroot.min
+> filesystem, it no longer boots.  Removing etc/ld.so.cache fixes the
+> problem.
+
+Don't run ldconfig......you don't need to do that, and as you have
+experienced it does the wrong thing.
+
+> ....trace ends with a bunch of queries to
+> /opt/hardhat/devkit/ppc/8xx/target/opt.
+
+You need a symbolic link in the target file system to resolve the
+problem with abosulte path names of libraries in the dynamic loading.
+In the /opt/hardhat/devkit/ppc/8xx/target directory on the server,
+create a symbolic link opt/hardhat/devkit/ppc/8xx/powerpc-linux -> /.
+This way, the target file system "sees" the same directory path that
+was used when you cross compile on the host.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
