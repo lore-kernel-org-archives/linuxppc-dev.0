@@ -1,89 +1,31 @@
-In-Reply-To: <OFBC5021DB.73FD330B-ON85256EA1.0069EDD8-85256EA1.006A2638@nanometrics.ca>
-Subject: Re: patch for cpu/mpc8xx/cpu.c:get_tbclk - correction
-To: Wolfgang Denk <wd@denx.de>
+Date: Thu, 27 May 2004 13:55:29 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: rdiz@alumni.deec.uc.pt
 Cc: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <OF56B34E9F.F54633BE-ON85256EA1.006B44CD-85256EA1.006B91DC@nanometrics.ca>
-From: David Ho <DavidHo@nanometrics.ca>
-Date: Thu, 27 May 2004 15:34:56 -0400
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Subject: Re: Compiling kernel 2.6.7-rc1 for 8xx
+Message-ID: <20040527205529.GL6763@smtp.west.cox.net>
+References: <4786.62.48.238.11.1085678078.squirrel@alumni.deec.uc.pt>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4786.62.48.238.11.1085678078.squirrel@alumni.deec.uc.pt>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Now that I think of it, the _multiplier_ (as I declared it here) cannot be
-an integer, so this is all wrong.
-
-I don't know how I got this working... I have a 50 Mhz oscillator with 66
-Mhz system clock.
-
-Why not use the oscillator define (CFG_8XX_XIN) for MPC866_et_al?
-
-David
-
-
-owner-linuxppc-embedded@lists.linuxppc.org wrote on 05/27/2004 03:19:26 PM:
+On Thu, May 27, 2004 at 06:14:38PM +0100, rdiz@alumni.deec.uc.pt wrote:
 
 >
-> > The last if condition is wrong in this function.   The change is made
-> > against 0.4.8.  AFAIK, 1.0.2 still has the same problem.
-> >
-> > And I wonder why it has to reverse engineer the oscclk when I pass the
-> > value as a define to come up with the gd->cpu_clk for the MPC866
-> family...
-> > It is a bit useless I think.
-> >
+> I don't know what kind of search I did before, but I found now some recent
+> relevant posts about it. Thanks.
 >
-> Sorry, the last patch breaks on the old 8xx.
->
-> This is a bit better.
->
->
-> /*
->  * Get timebase clock frequency (like cpu_clk in Hz)
->  *
->  * See table 15-5 pp. 15-16, and SCCR[RTSEL] pp. 15-27.
->  */
-> unsigned long get_tbclk (void)
-> {
->         DECLARE_GLOBAL_DATA_PTR;
->
->         volatile immap_t *immr = (volatile immap_t *) CFG_IMMR;
->         ulong oscclk, factor, multiplier;
->
->         if (immr->im_clkrst.car_sccr & SCCR_TBS) {
->                 return (gd->cpu_clk / 16);
->         }
-> #define PLPRCR_val(a) (((CFG_PLPRCR) & PLPRCR_ ## a ## _MSK) >> PLPRCR_
-##
-> a ## _SHIFT)
-> #ifdef CONFIG_MPC866_et_al
->         /*                   MFN
->                      MFI + -------
->                            MFD + 1
->           factor =  -----------------
->                      (PDF + 1) * 2^S
->          */
->
->         factor = (PLPRCR_val(MFI) + PLPRCR_val(MFN)/(PLPRCR_val(MFD)+1));
->
->         multiplier = (PLPRCR_val(MFI) +
-> PLPRCR_val(MFN)/(PLPRCR_val(MFD)+1))/
->                      (PLPRCR_val(PDF)+1) / (1<<PLPRCR_val(S));
-> #else
->         multiplier = factor = PLPRCR_val(MF)+1;
-> #endif
->
->         oscclk = gd->cpu_clk / multiplier;
->
->         if ((immr->im_clkrst.car_sccr & SCCR_RTSEL) == 0 || factor > 2) {
->                 return (oscclk / 4);
->         }
->         return (oscclk / 16);
-> }
->
->
->
+> BTW, do I have to use BitKeeper to download the 2.5 kernel tree?
 
+No.  For Linus' tree there are snapshots of the bitkeeper version on
+kernel.org I believe, and for the linuxppc trees there are still rsync
+mirrors on source.mvista.com.
+
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
