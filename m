@@ -1,28 +1,15 @@
-Message-ID: <B895EFF5AF34724880036BDB5B5B8148135699@amer22.avnet.com>
-From: "Kerl, John" <John.Kerl@Avnet.com>
-To: "'Scott Anderson'" <sanders@mvista.com>,
-	"Kerl, John" <John.Kerl@Avnet.com>
+Date: Mon, 2 Jun 2003 13:49:07 -0700
+Subject: Re: bootstrap of virtex-ii pro eval board ML300
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v552)
 Cc: ??? <nari_dhy@nari-china.com>,
 	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: bootstrap of virtex-ii pro eval board ML300
-Date: Mon, 2 Jun 2003 13:48:17 -0700 
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: "Kerl, John" <John.Kerl@Avnet.com>
+From: Scott Anderson <sanders@mvista.com>
+In-Reply-To: <B895EFF5AF34724880036BDB5B5B8148135698@amer22.avnet.com>
+Message-Id: <A73D055C-953B-11D7-85A6-000A959CAB7C@mvista.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
-
-
-You're saying that the entire zvmlinux.initrd file
-(2-3 MB, say) is contained in the FPGA bitstream??
-I find that hard to believe ...
-
------Original Message-----
-From: Scott Anderson [mailto:sanders@mvista.com]
-Sent: Monday, June 02, 2003 1:49 PM
-To: Kerl, John
-Cc: ???; linuxppc-embedded@lists.linuxppc.org
-Subject: Re: bootstrap of virtex-ii pro eval board ML300
 
 
 On Monday, June 2, 2003, at 01:41  PM, Kerl, John wrote:
@@ -47,5 +34,6 @@ fit in block RAM; rather the ELF got slammed right into
 the 128MB of DDR SDRAM.
 
    Scott
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
