@@ -1,62 +1,68 @@
-Message-ID: <3785A99B.E1DF943C@mpifr-bonn.mpg.de>
-Date: Fri, 09 Jul 1999 09:49:47 +0200
-From: Albrecht Dre_ <ad@MPIfR-Bonn.MPG.de>
+Date: Fri, 9 Jul 1999 02:34:22 -0600 (MDT)
+From: Dan Burcaw <dburcaw@terraplex.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: QuickTime Streaming Server for Linux.. on x86
+In-Reply-To: <Pine.LNX.3.96.990708145504.17464B-100000@newhope.terraplex.com>
+Message-ID: <Pine.LNX.3.96.990709020727.21556D-200000@newhope.terraplex.com>
 MIME-Version: 1.0
-To: Peter Handel <phandel@cise.ufl.edu>
-CC: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-user@lists.linuxppc.org,
-        LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>,
-        Linux/Powermac <linux-pmac@samba.anu.edu.au>
-Subject: Re: linux-pmac 2.2.10: media bay panics on PBG3
-References: <Pine.GSO.4.05.9907081145280.1822-100000@eclipse.cise.ufl.edu>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1228814547-1005911288-931509262=:21556"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Peter Handel wrote:
-[snip]
-> Looks like it's time to bust out "diff" ... You could write a quick
-> /bin/sh script that does something like:
-[snip]
-> ...although I bet they're just different ac releases of 2.2.10.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+  Send mail to mime@docserver.cac.washington.edu for more info.
 
-There are LOTS of differences...  Unfortunately, I do not understand that much
-of the kernel...
+---1228814547-1005911288-931509262=:21556
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
-As a response to Ben's comment about the io addresses: I added a printk to
-mediabay.c to check the ide base addresses, and comparing kernel.org's and
-paulus' dmesg output, it results in:
+Hey all,
 
-2.2.10 from kernel.org:
-ide0 at 0xf3020000-0xf3020007,0xf3020160 on irq 13
-...
-mediabay: 0: base=0xf3021000 irq=14 idx=-1
-mediabay: 1: base=0xd080a000 irq=78 idx=-1
+I just tweaked the Streaming Server to work on PPC Linux and I have a
+patch available. I haven't tested an actual streaming of audio or video to
+see how well it works but at least this will let you build the server
+which is a good first step. 
 
-2.2.10 form the paulus dir:
-ide0 at 0xf5020000-0xf5020007,0xf5020160 on irq 13
-...
-mediabay: 0: base=0xf5021000 irq=14 idx=-1
-mediabay: 1: base=0xd280a000 irq=78 idx=-1
+The good news is that all it took was very little modification of the
+source to make it work.
 
-Checking the diffs, I noticed that in arch/ppc/pmac_setup.c and
-drivers/block/ide_pmac.c some code was adden in the "paulus" versions,
-especially some adds of "_IO_BASE".  Might this be a source of the problems?
+The patch is attached to this email and is called
+"StreamingServer-2-ppclinux.patch". 
 
-Thanks, Albrecht.
 
--- 
-+-----------------------------------------------------------------------------+
-| Dr.-Ing. Albrecht Dre\ss                                     ----           |
-| Max-Planck-Institut f\"ur Radioastronomie   |\       /      /o  o\          |
-| Abteilung f\"ur Infrarot-Interferometrie    |  \    /      |  /   |         |
-| Auf dem H\"ugel 69                          |    \ |        \ ---/          |
-| D-53121 Bonn (Germany)          ------------+------+-------------------     |
-|                                             |    / |                        |
-| Phone (+49) 228 525 319                     |  /  /                         |
-| Fax   (+49) 228 525 411                     |/   /                          |
-| Mail  ad@mpifr-bonn.mpg.de                                                  |
-+-------------- electrical engineers do it with less resistance --------------+
+Regards,
+Dan
+
+Terra Soft Solutions, Inc.
+ email: dburcaw@yellowdoglinux.com
+ website: http://www.yellowdoglinux.com/
+
+
+---1228814547-1005911288-931509262=:21556
+Content-Type: TEXT/PLAIN; charset=US-ASCII; name="StreamingServer-2-ppclinux.patch"
+Content-ID: <Pine.LNX.3.96.990709023422.21556E@newhope.terraplex.com>
+Content-Description: 
+Content-Transfer-Encoding: BASE64
+
+LS0tIFN0cmVhbWluZ1NlcnZlci0yL1JoYXBTZXJ2ZXIvbWFpbi5jcHAubwlG
+cmkgSnVsICA5IDAxOjE1OjE4IDE5OTkNCisrKyBTdHJlYW1pbmdTZXJ2ZXIt
+Mi9SaGFwU2VydmVyL21haW4uY3BwCUZyaSBKdWwgIDkgMDE6MzY6MDcgMTk5
+OQ0KQEAgLTkzLDcgKzkzLDcgQEANCiAJLy8odm9pZCkgOjpzaWduYWwoU0lH
+UElQRSwgU0lHX0lHTik7DQogCXN0cnVjdCBzaWdhY3Rpb24gYWN0Ow0KIAkN
+Ci0jaWYgZGVmaW5lZChzdW4pIHx8IGRlZmluZWQoaTM4NikNCisjaWYgZGVm
+aW5lZChzdW4pIHx8IGRlZmluZWQoaTM4NikgfHwgZGVmaW5lZChwb3dlcnBj
+KQ0KIAlzaWdlbXB0eXNldCgmYWN0LnNhX21hc2spOw0KIAlhY3Quc2FfZmxh
+Z3MgPSAwOw0KIAlhY3Quc2FfaGFuZGxlciA9ICh2b2lkKCopKGludCkpJnNp
+Z2NhdGNoZXI7DQotLS0gU3RyZWFtaW5nU2VydmVyLTIvUmhhcFNlcnZlci9V
+RFBTb2NrZXQuY3BwLm8JRnJpIEp1bCAgOSAwMjowNTo0OCAxOTk5DQorKysg
+U3RyZWFtaW5nU2VydmVyLTIvUmhhcFNlcnZlci9VRFBTb2NrZXQuY3BwCUZy
+aSBKdWwgIDkgMDI6MDc6NDEgMTk5OQ0KQEAgLTQwLDcgKzQwLDExIEBADQog
+I2VuZGlmDQogDQogI2lmIF9fbGludXhfXw0KKyNpZiBfX0dMSUJDX18gPj0g
+Mg0KKyNpbmNsdWRlIDxiaXRzL3NvY2tldC5oPg0KKyNlbHNlDQogI2luY2x1
+ZGUgPHNvY2tldGJpdHMuaD4NCisjZW5kaWYNCiAjZW5kaWYNCiAjaW5jbHVk
+ZSAiVURQU29ja2V0LmgiDQogI2luY2x1ZGUgIk9TLmgiDQo=
+---1228814547-1005911288-931509262=:21556--
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
