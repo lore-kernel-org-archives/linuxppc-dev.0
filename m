@@ -1,22 +1,31 @@
-Date: Wed, 22 Mar 2000 15:31:52 +0100 (CET)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: dirk_dehnert@commerzbank.com
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: AW: Powerbook 2000 (Pismo) status.
-In-Reply-To: <H0000766007ea061@MHS>
-Message-ID: <Pine.LNX.4.10.10003221528060.9473-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <38D8EF56.17970FBC@astro.wisc.edu>
+Date: Wed, 22 Mar 2000 10:05:42 -0600
+From: Matt Haffner <haffner@astro.wisc.edu>
+Reply-To: haffner@astro.wisc.edu
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: DeRobertis <derobert@erols.com>
+CC: Linux/PCC Development Mailing List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: stty crtscts < /dev/ttyS1
+References: <l03130302b4fd80d3a908@[216.164.130.191]>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Where exactly can I get the sources for that kernel from?
-> I tried linuxcare.com.au, but I didn't find it there.
+DeRobertis wrote:
+>
+> Hardware flow control is broken. The command in the subject line (stty
+> crtscts < /dev/ttyS1) freezes linux 2.2.14. Any idea why?
 
-rsync linuxcare.com.au:: shows what's there on linuxcare.
+Try this syntax: "stty -F /dev/ttyS1 crtscts". There's a comment in the
+info doc for stty that letting the shell open the device may block in
+certain situations.
 
-	Michael
-
+mh
+--
+Matt Haffner                      /|------|\    University of Wisconsin
+Dept. of Astronomy               /|--------|\            Madison
+haffner@astro.wisc.edu          /|----------|\
+           WHAM project -- http://www.astro.wisc.edu/wham
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
