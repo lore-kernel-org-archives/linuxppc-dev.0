@@ -1,39 +1,73 @@
-Message-ID: <3C08CFF0.18A1FBC7@wanadoo.fr>
-Date: Sat, 01 Dec 2001 13:41:20 +0100
-From: Martin Costabel <costabel@wanadoo.fr>
+Message-ID: <3C091F3C.7176C145@mvista.com>
+Date: Sat, 01 Dec 2001 10:19:40 -0800
+From: Frank Rowand <frank_rowand@mvista.com>
+Reply-To: frowand@mvista.com
 MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org
-Subject: Re: [PATCH] Minor changes to control/imstt/platinum/valkyrie/atyfb
-References: <20011127143058.R13091@cpe-24-221-152-185.az.sprintbbd.net>
+To: Dan Malek <dan@embeddededge.com>
+Cc: frowand@mvista.com, paulus@samba.org,
+	Ralph Blach <rcblach@us.ibm.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: include/asm-ppc/platforms/
+References: <OF04BCE99E.8AF57CF2-ON85256B14.00425D94@raleigh.ibm.com > <15368.891.368917.13579@argo.ozlabs.ibm.com> <3C0814AC.455D6FEA@mvista.com> <3C084F22.3030505@embeddededge.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tom Rini wrote:
+Dan Malek wrote:
 >
-> Hello all.  The following patches make slight changes to the vmode/cmode
-> logic on a few fb drivers.  Now everone consistantly only tries to get
-> these modes from nvram if CONFIG_NVRAM is defined (otherwise a
-> compile-time error on everyone but atyfb).  On imsttfb I made the logic
-> only executed on CONFIG_ALL_PPC, and removed USE_NV_MODES (which
-> shouldn't be needed now).  However, I have none of this hardware, and I
-> remember some of these drivers being very touchy.  So could people with
-> this hardware apply the patch and let me know if it works still?
+> Frank Rowand wrote:
+>
+> > ....Some concrete
+> > examples of core / chip / board are:
+> >
+> >   403
+> >     403GCX
+> >   405
+> >     405cr
+> >     405gp
+> >       walnut
+> >       cpci405
+> >       ep405
+> >     stb03xxx
+> >       redwood-4
+> >     NPe405H
+> >     NPe405L
+>
+> I think the 4xx has always had this backward from other PowerPC platform
+> definiitons.  While we should define processor cores, their peripherals,
+> and boards, the least common denominator is the processor core.  With the execption
+> of few boards (the Sandpoint comes to mind), simply configuring a board
+> type will allow you to know which processor package is used and further
+> the processor core.  If I say "Walnut" configuration, I already know everything
+> else, I don't need to be asked all of the other configuration questions.
+> Our files should also follow this structure.  The Walnut configuration file
+> should include 405GP (which defines peripherals) which should then include
+> the processor core definitions (if necessary).  This way, when a new processor
+> package with a different peripheral configuration is added, all you need to
+> do is ensure the proper lower level core file is included, you don't have
+> to update all of the board configuration files with stuff they don't care about.
+>
+> If, in this example, the Walnut had different processor types available, it
+> would make sense within that configuration to ask the processor type, but no
+> one else would (nor should) care.  Again, the file structure would follow,
+> with the Walnut board configuration including the appropriately configured
+> processor package.
+>
+> Thanks.
+>
+>         -- Dan
 
-For the valkyriefb driver on my Pmac 6400, I can confirm from a first
-short test that it still works. This is with your patch applied to
-today's 2.4.17-pre1-ben0 kernel.
 
-I am not testing it very extensively, because this kernel crashes on me
-as soon as pppd is started. Yesterday's 2.4.16-ben0 crashed when running
-ping. Even on my iBook, the 2.4.16 gave me an "illegal lseek" when
-trying to run ping (the 2.4.17-pre1 seems to work OK on the iBook).
-Since the 6400 is serving as an adsl router, I prefer to go back to the
-stable 2.4.0-pmac kernel from last January.
+If I understand correctly, you are talking only about the configuration
+structure, not the header file structure -- so a different topic than
+what this thread has been.  Please correct me if you are also talking
+about header file structure.
 
+arch/ppc/config.in has already been changed to match what you propose.
+
+-Frank
 --
-Martin
+Frank Rowand <frank_rowand@mvista.com>
+MontaVista Software, Inc
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
