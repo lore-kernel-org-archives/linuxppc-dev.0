@@ -1,38 +1,42 @@
-Message-ID: <384E7808.5DC38E0A@ccrl.mot.com>
-Date: Wed, 08 Dec 1999 09:23:52 -0600
-From: Steve Rossi <srossi@ccrl.mot.com>
+Message-ID: <384EAD6C.718ABE65@netx4.com>
+Date: Wed, 08 Dec 1999 14:11:40 -0500
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: QSPAN II PCI?
+To: Ruedi Hofer <ruedi.hofer@ascom.ch>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: fadsrom.tgz
+References: <384E09E0.9102ED79@ascom.ch>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I'm beginning the design work on a custom 855T based board (an 860T
-with only 1 SCC) on which I plan to run linux. I'm wondering if there
-is support for the Tunda QSpan II PPC <-> PCI bridge in the kernel and
-at what state is this driver is in? I know there at least appears to be
-support
-for the first rev QSPAN via qspan_pci.c. If it hasn't already been done,
+Ruedi Hofer wrote:
 
-what would it take to update it to support QSpan II?
+> I would like to see the embedded linux running on a 860 FADS board.
 
-Also - If anyone has any suggestions or would like to point out things
-that
-I should be aware of when designing a board to run linux - I would love
-to
-hear it!
 
-Thanks!
-Steve
+The FADS rom code is just an example of something to use for
+processor initialization and loading kernel images.  I used a
+bunch of standard Linux kernel function to get PCMCIA Flash
+file system access.
 
---
--------------------------------------------------------
-Steven K. Rossi                     srossi@ccrl.mot.com
-Research Engineer
-Multimedia Communications Research Laboratory
-Motorola Labs
--------------------------------------------------------
+It once ran a long time ago and I certainly don't maintain it.
+You may have to update the code to match newer data structures
+and include files if you want to continue to use Linux derived
+functions (which isn't necessary).
+
+
+> ... and what to do next, if the fadsrom is running?
+
+
+Ummmm.....well, it is tempting but I will try to provide
+constructive comments.  Go through the mailing list archives
+and search for the messages where that was discussed.  The FADS
+is not currently part of a standard configuration, but you can
+get there from the patches that were posted.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
