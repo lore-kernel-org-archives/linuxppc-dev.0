@@ -1,32 +1,29 @@
-Message-ID: <63637.213.107.143.228.1047755590.squirrel@www.solinno.co.uk>
-Date: Sat, 15 Mar 2003 19:13:10 -0000 (GMT)
-Subject: Re: Escala & linux
-From: "Leigh Brown" <leigh@solinno.co.uk>
-To: <WHarms@bfs.de>
-In-Reply-To: <vines.sxdD+WPoQyA@SZKOM.BFS.DE>
-References: <vines.sxdD+WPoQyA@SZKOM.BFS.DE>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Date: Sun, 16 Mar 2003 16:10:32 +0100 (MET)
+Message-Id: <200303161510.h2GFAWhT018082@harpo.it.uu.se>
+From: mikpe@csd.uu.se
+To: afleming@motorola.com
+Subject: MPC750 perfmon/TAU/decrementer erratum?
+Cc: linuxppc-dev@lists.linuxppc.org, mikpe@csd.uu.se,
+	oprofile-list@lists.sourceforge.net
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Walter Harms said:
-> a PPC-based Bull Escala is going into retirement here.
-> any change getting linux running on that beast ?
+Motorola's MPC750UM.pdf, section C-13 page C-78, states:
+"The performance monitor of the MPC755 functions the same as that
+of the MPC750, (...), except that for both the MPC750 and MPC755,
+no combination of the thermal assist unit, the decrementer register,
+and the performance monitor can be used at any one time. If exceptions
+for any two of these functional blocks are enabled together, multiple
+exceptions caused by any of these three blocks cause unpredictable
+results."
 
-Possibly.  What sort of machine is it?  Can you run some commands under
-AIX?  If so, send the output from the following commands:
+My interpretation: Either the reference is wrong and it actually
+refers to the 745 and 755 instead of 750 and 755, or it sneaks in
+a big fat erratum for the 750 in the 745/755-specific section.
 
-1. bootinfo -p                # Displays the architecture
-2. lscfg                      # Displays the hardware configuration
-3. lsattr -El proc0           # Displays the CPU type
-4. lsattr -El sys0 -a modelname,frequency,fwversion,realmem
+Does anyone know for sure whether the 750 has this erratum or not?
 
-Cheers,
-
-Leigh.
-
+/Mikael
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
