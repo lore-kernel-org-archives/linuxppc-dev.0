@@ -1,59 +1,75 @@
-From: Brad Boyer <flar@cegt201.bradley.edu>
-Message-Id: <199907262017.PAA17351@cegt201.bradley.edu>
-Subject: Re: Question about getservbyport() -
-To: phandel@cise.ufl.edu (Peter Handel)
-Date: Mon, 26 Jul 1999 15:17:47 -0500 (CDT)
+Date: Mon, 26 Jul 1999 16:57:32 -0400 (EDT)
+From: Peter Handel <phandel@cise.ufl.edu>
+To: Brad Boyer <flar@cegt201.bradley.edu>,
+        "Robert M. Fuhrer" <rmf@asgard.cs.columbia.edu>
 Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.GSO.4.05.9907261430310.24590-100000@eclipse.cise.ufl.edu> from "Peter Handel" at Jul 26, 99 02:33:28 pm
+Subject: Kernel adb / sound conflict [was Re: Question about getservbyport()
+ -]
+In-Reply-To: <199907262017.PAA17351@cegt201.bradley.edu>
+Message-ID: <Pine.GSO.4.05.9907261649260.27203-100000@eclipse.cise.ufl.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> I noticed yesterday that when getservbyport() receives a request
-> containing a port that /etc/services doesn't know about (such as
-> 1022), it segfaults the program.  I would have guessed it would return
-> a null servent struct?  Here's the code:
+On Mon, 26 Jul 1999, Brad Boyer wrote:
 
-Yes, the funcion getservbyport returns a NULL on failure.
+>      struct servent sd, *sp;
+>      sp = getservbyport(23, "tcp");
+>      if(sp)
+> 	   sd = *sp;
 
-> #include <iostream.h>
-> #include <netdb.h>
-> 
-> void main() {
->   struct servent sd;
->   sd=*getservbyport(23, "tcp"); //1022
-> }
-> 
-> This works, but when 23 is replaced by 1022, wham-o.
+Thanks a lot for the good advice ... this was actually part of a
+program I was porting, and had forgotten about pointer usage.
 
-Yes, that is what this code will do any time it doesn't find a valid
-result.  I think you're missing something fundamental here in the
-nature of C and pointers.  You shouldn't write your function that
-way.  The problem is that when you give it a port that doesn't exist,
-you are getting a NULL pointer back, and the first thing your code
-tries to do is use it.  You need to save that return value and check
-to see if it NULL before you try to use it.  Here's a somewhat cleaned
-up version of your code.
+Now, if I could only get this problem solved:
 
-void main() {
-     struct servent sd, *sp;
+On Tue, 20 Jul 1999, Peter Handel wrote:
 
-     sp = getservbyport(23, "tcp");
-     if(sp)
-	   sd = *sp;
-}
+> PowerCenter Pro 210 / 96MB RAM.
+> Say I'm playing an mp3 with either xmms or mpg123.  If I move a window
+> around w/the mouse, the music will stop completely!  It may also
+> happen when simply moving the mouse around, leading me to believe that
+> it is an adb bug.  I have to quit xmms/mpg123 and restart it for it to
+> work again.  This only happens with kernels I compile myself, and one
+> precompiled one I've stumbled across from Cort's site.  I have even
+> tried compiling 2.2.10 and 2.3.6 with all default values, but still
+> the same problem. (Had same problem under r4!)  The only constant here
+> is egcs 2.91.66, which I built under r4 and which came prebuilt in r5.  
+> This has been extremely frustrating, as I'd like to start playing with
+> the kernel code myself.
 
-In this way, you prevent crashes by never trying to use the pointer
-before you check the validity of your return value.  In fact, you
-should do something similar with almost any function that returns
-pointers, particularly things like malloc().  This sort of thing
-causes so many problems.  I wish everyone would learn to check for
-errors on anything that has any chance of generating an error...
+I can't think of anything that would cause that. With 2.2.10, 'make
+pmac_config' and then when you 'make menuconfig' look carefully through all
+the options. You may have more luck asking this on the mailing lists (esp.
+linuxppc-dev).
 
-	  Brad Boyer
-	  flar@cegt201.bradley.edu
+Sorry.
+
+hb
+--
+LinuxPPC Support
+
+
+-------------------------------
+
+Thanks,
+Peter
+
+-- 
+phandel@cise.ufl.edu      great ... to receive a mark [smart card?] on his
+www.cise.ufl.edu/~phandel right hand or on his forehead, so that no one could
+FAX: (561) 619-8051       buy or sell unless he had the mark"-Revelation13:16
+> > You are perfectly free to believe what you want to, and so am I.
+> Actually, this turns out not to be the case. God does not give us
+> the freedom to believe anything we wish. We are morally obligated to
+> believe the truth. Doing anything else is a sin. You are not free to
+> interpret the Bible anyway you wish. -DFL (Pretty neat, huh?)
+
+
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
