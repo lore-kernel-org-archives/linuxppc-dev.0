@@ -1,28 +1,18 @@
-Return-Path: <mikpe@user.it.uu.se>
-Received: from aun.it.uu.se (aun.it.uu.se [130.238.12.36])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.srv.it.uu.se",
-	Issuer "Uppsala University CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id A74CC67AB1
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Jan 2005 21:03:10 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <16887.27336.161685.55774@alkaid.it.uu.se>
-Date: Wed, 26 Jan 2005 11:02:48 +0100
-From: Mikael Pettersson <mikpe@csd.uu.se>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1106696846.6250.20.camel@gaston>
-References: <200501221723.j0MHN6eD000684@harpo.it.uu.se>
-	<1106441036.5387.41.camel@gaston> <1106529935.5587.9.camel@gaston>
-	<16885.13185.849070.479328@alkaid.it.uu.se>
-	<1106623515.6244.11.camel@gaston>
-	<16886.2489.823835.17801@alkaid.it.uu.se>
-	<1106696846.6250.20.camel@gaston>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>,
-	Mikael Pettersson <mikpe@csd.uu.se>
-Subject: Re: BUG: 2.6.11-rc2 and -rc1 hang during boot on PowerMacs
+Return-Path: <nico-linux-ppc@schottelius.org>
+Received: from scice.schottelius.org (ns.schottelius.org [213.146.113.242])
+	by ozlabs.org (Postfix) with SMTP id C3DFA67AB3
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Jan 2005 22:41:28 +1100 (EST)
+Date: Wed, 26 Jan 2005 12:35:54 +0100
+From: Nico Schottelius <nico-linux-ppc@schottelius.org>
+To: Joerg Dorchain <joerg@dorchain.net>
+Message-ID: <20050126113554.GD19633@schottelius.org>
+References: <20050118094216.GB25470@Redstar.dorchain.net>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="Q0rSlbzrZN6k9QnT"
+In-Reply-To: <20050118094216.GB25470@Redstar.dorchain.net>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] Heartbeat LED for iBook
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,16 +22,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt writes:
- > On Tue, 2005-01-25 at 09:56 +0100, Mikael Pettersson wrote:
- > 
- > > On the eMac:
- > > /proc/sys/kernel/powersave-nap exists and contains "0".
- > > /proc/device-tree/cpus/PowerPC,G4/flush-on-lock exists as an empty file.
- > 
- > Ok, that is weird... so for some reason, Apple decided not to allow the
- > eMac to do NAP mode, and thus to power manage the CPU when idle...
 
-I assumed it was due to the UniNorth issue that pmac_feature.c mentions.
+--Q0rSlbzrZN6k9QnT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-/Mikael
+Hello!
+
+
+Joerg Dorchain [Tue, Jan 18, 2005 at 10:42:16AM +0100]:
+> [heartbeat blink patch]
+
+Well, wouldn't it make much more sense to write a
+/dev/frontled to access it via userspace?=20
+
+Then one could enable much more features like
+- xmms plugins
+- num-lock led
+- network-traffic
+- morse-codes
+- glowing when typing
+- ...
+
+Nico
+
+--Q0rSlbzrZN6k9QnT
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.5 (GNU/Linux)
+
+iQIVAwUBQfeAmLOTBMvCUbrlAQIL9Q/9HvOU9j27e6s2CbhBkbsIVZmbgb0XXeCt
+68sZR2HJx6iFY/NjGiQWh5jm6mYGDAfvyzHbd8ss4OL0dBP7NJddqgvFcQ9sj1Ev
+6okCaC/tjJSYLqi6YdpAkrd3m8g+ibfZpD77SGJckc6JmIrJFCB/9zGFlwCGLaqK
+saZY+1fBKt8afpld3cEDHy2EQ/QoWV2I16eW6itl81LCGophppkxwYtW5CsFtgqU
+ttMVPN8NsX0YTr6/MhooBo8fWdu4HzRTA2ynQT7iwBPihmN4oPF87ZAd+YiRGWq4
+ASU7R+1yLbVxXV08oENxOinRJ822y2MztyEdAo8HOog5r8S/4QvT34CyGxH0XKBT
+XtPbCWjG8Ew4XYkakkVcJdFfR8NnRTiJeBvlIBLduzUbIT+VJE7KyMU6hNF96z44
+94qXbjz98fw+B6ZgkahKbIpCpImBXTwo8wKqKv8Ih0EOYTnpgJmJ/vmX20y0lMaA
+hzzrDIBxaD4qT15ONm1Izg2fjc96twcj10FIQI8Gc8ZQ/94oa4U5HHir55apBLKD
+6xEdtIRYhVXOicH99EVhuYtEjzNeg1Duy8Xp3256fxeALkrq8/vNu+ebGaJW/kEA
+1FFkzIRjKNydUHM7JUpY3GRiWFnSlFcZqotKlBriEQBXVL92KHWfAHwHTRlI7FuE
+aXO2Ipixj1k=
+=uMod
+-----END PGP SIGNATURE-----
+
+--Q0rSlbzrZN6k9QnT--
