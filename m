@@ -1,69 +1,46 @@
-Date: Sat, 28 Aug 1999 15:17:30 -0400
-From: brad allison <jackal@aol.net>
-To: Multiple recipients of list <linuxppc-dev@lists.linuxppc.org>,
-        linuxppc-user@lists.linuxppc.org
-Subject: Re: lost Button2 in upgrade to 2.2.10
-In-Reply-To: <Pine.SGI.4.00.9908221825100.5682-100000@osiris.office.aol.com
- >
-Message-ID: <Pine.SGI.4.00.9908281507170.18678-100000@osiris.office.aol.com>
+Date: Sat, 28 Aug 1999 18:44:55 -0400 (EDT)
+From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
+To: Michel Lanners <mlan@cpu.lu>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: IBM 850 LinuxPPC installation?
+In-Reply-To: <199908271827.UAA00377@piglet.cpu.lu>
+Message-ID: <Pine.LNX.3.96L.990828184233.3389E-100000@unix47.andrew.cmu.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-
-I booted back into 2.2.10 to give this another try.
-
-I'm using kernel 2.2.10-rev2-mol.
-
-I'm using the XKB Patched:
-	/usr/lib/X11/xkb/compat/mousekeys
-	/usr/lib/X11/xkb/geometry/macintosh
-	/usr/lib/X11/xkb/keycodes/macintosh
-	/usr/lib/X11/xkb/symbols/macintosh/us
-	/etc/X11/XF86Config
-
-I'm using: 
-	/etc/sysconfig/mouse-2.2.10
-	/etc/sysconfig/keyboard-2.2.10
-
-I have a Logitech MouseMan Wheel USB.
-
-I boot into 2.2.10, everything works except Mouse Button2 is no longer
-recognized.  xev doesn't even get anything back from pressing Button2. 
-It worked fine in 2.2.6.
-
-I run /usr/sbin/mouseconfig.  It's set for Bus 1, 3 button emulation.
-
-If I save the changes with mouseconfig it overwrites /etc/sysconfig/mouse
-back to "BusMouse" instead of "IMPS/2".
-
-Any ideas why Mouse Button2 would not work with 2.2.10 but works with
-2.2.6?
-
--b
-
-
-On Sun, 22 Aug 1999, brad allison wrote:
-
+On Fri, 27 Aug 1999, Michel Lanners wrote:
 > 
+> > Here's the IDE info I get before it hangs:
+> > hda: DPEA-31080, ATA DISK drive
+> > hda: IRQ probe failed (0)
+> > hdb: DSAA-3720, ATA DISK drive
+> > hdb: IRQ probe failed (0)
+> > hdc: IRQ probe failed (0)
+> > hdc: IRQ probe failed (0)
+> > hdc: no response (status = 0xd1), resetting drive
+> > hdc: no response (status =0x80)
 > 
-> I upgraded my G3 450 to 2.2.10 today.  I've been running 2.2.6.
+> This means the driver is not able to acces the controller for ide1.
+> That might be a problem with the IO-port addresses.
 > 
-> I pulled the keyboard-2.2.10 and mouse-2.2.10 files and linked them in
-> /etc/sysconfig correctly.
-> 
-> Booted into linux without a problem.
-> 
-> But now Button2 no longer works.  I'm using a Logitech MouseMan Wheel USB 
-> 3 button mouse.
-> 
-> I ran xev to see what Button2 was mapped to.  Button1 shows up as Button1.
-> Button3 shows up as Button3.  Button2 shows up as nothing.  xev registered
-> nothing.
-> 
-> Again, all three buttons worked correctly with 2.2.6.
+> Also, you might want to try patching your kernel with Andre Hedrick's
+> multi-platform uniform IDE driver (look at
+> ftp://ftp.kernel.org/pub/linux/kernel/people/hedrick/). You _might_
+> need additional patches to get it to boot; if so, get back to me, and
+> I'll produce a diff against my working kernel.
+
+I don't know if you read my most recent info, but after disconnecting the
+cdrom drive (hdc), I'm getting lots of 
+hda: lost interrupt
+
+My dmesg otherwise looks the same - just drop every mention of hdc. If you
+think that uniform IDE driver would help with my current problem let me know
+and I'll give it a shot.
+
+-Hollis
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
