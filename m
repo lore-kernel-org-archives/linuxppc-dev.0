@@ -1,88 +1,47 @@
-Date: Thu, 27 Mar 2003 13:25:54 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Leigh Brown <leigh@solinno.co.uk>
-Cc: paulus@samba.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: [PATCH] Fix memory size not being passed to kernel from prep boot loader
-Message-ID: <20030327202554.GH31771@ip68-0-152-218.tc.ph.cox.net>
-References: <63228.213.107.143.228.1048441818.squirrel@www.solinno.co.uk> <20030327201313.GG31771@ip68-0-152-218.tc.ph.cox.net>
+Subject: Re: linux x86 binaries on PPC
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Scott Anderson <scott_anderson@mvista.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <3E835BF0.756A152F@mvista.com>
+References: <20030123151624.GA4998@iram.es> <20030123191224.GA1534@iliana>
+	 <20030124094616.GA1832@iram.es> <1043413132.684.17.camel@zion.wanadoo.fr>
+	 <20030124153858.GC5192@iram.es> <1043423977.684.33.camel@zion.wanadoo.fr>
+	 <20030130083723.GA4654@iram.es> <1043916971.1028.6.camel@zion.wanadoo.fr>
+	 <20030130094655.GA5883@iram.es> <1043922015.1023.12.camel@zion.wanadoo.fr>
+	 <20030130110909.GA6697@iram.es> <1048772134.668.16.camel@zion.wanadoo.fr>
+	 <3E835BF0.756A152F@mvista.com>
+Content-Type: text/plain
+Message-Id: <1048797615.1528.15.camel@zion.wanadoo.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20030327201313.GG31771@ip68-0-152-218.tc.ph.cox.net>
+Date: 27 Mar 2003 21:40:15 +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Mar 27, 2003 at 01:13:13PM -0700, Tom Rini wrote:
+On Thu, 2003-03-27 at 21:15, Scott Anderson wrote:
+> Benjamin Herrenschmidt wrote:
+> >
+> > Remember that old debate we had about 2 years ago about using an x86
+> > emulator to run x86 binaries on linux/ppc ? Looks like Fabrice Bellard
+> > did it ;)
+> >
+> > http://fabrice.bellard.free.fr/qemu/
 >
-> On Sun, Mar 23, 2003 at 05:50:18PM -0000, Leigh Brown wrote:
->
-> > Current linuxppc_2_4 doesn't work on my 140 because the boot loader isn't
-> > passing in the memory size.  This patch fixes that.
->
-> Paul broke it in the massive merge of other PReP changes.  Can you try
-> just adding the BI_MEM_SIZE record code in?  The rest of those changes
-> should be superfluous.  Thanks.
+> I wonder how it compares to bochs:
+>   http://bochs.sourceforge.net/
 
-Ah, I think not.  How about the following patch?  I didn't want to
-remove the 'residual = hold_residual' line due to SMP things
-referencing both.  Troy, can you explain why it's not consistenly
-referencing 'hold_residual' ?
+After a quick look, it's much different.
 
-===== arch/ppc/boot/prep/misc.c 1.10 vs edited =====
---- 1.10/arch/ppc/boot/prep/misc.c	Tue Feb 11 13:37:28 2003
-+++ edited/arch/ppc/boot/prep/misc.c	Thu Mar 27 13:23:19 2003
-@@ -129,7 +129,8 @@
- #endif
- 	extern unsigned long start;
- 	char *cp;
--	unsigned long TotalMemory;
-+	/* Default to 32MiB memory. */
-+	unsigned long TotalMemory = 0x02000000;
- 	int dev_handle;
- 	int mem_info[2];
- 	int res, size;
-@@ -217,13 +218,14 @@
- 				start_multi = 1;
- 		}
- 		memcpy(hold_residual,residual,sizeof(RESIDUAL));
-+
-+		/* Copy the memory info. */
-+		if (residual->TotalMemory)
-+			TotalMemory = residual->TotalMemory;
- 	} else {
- 		/* Tell the user we didn't find anything. */
- 		puts("No residual data found.\n");
+bochs aims to completely emulate an x86 machine, including the
+various HW devices, and in a portable way. I aims to run a whole
+operating system (linux,windows,ms-dos, ...) within the emulator.
+qemu is a dynamic recomiling emulator (thus less portable, though
+potentially much faster) and doesn't do any HW emulation outside
+of the CPU itself.
+It translates syscalls to the kernel in order to run linux x86
+userland binaries on linux ppc.
 
--		/* Assume 32M in the absence of more info... */
--		TotalMemory = 0x02000000;
--
- 		/*
- 		 * This is a 'best guess' check.  We want to make sure
- 		 * we don't try this on a PReP box without OF
-@@ -255,8 +257,6 @@
- 			TotalMemory = mem_info[1];
- 			break;
- 		}
--
--		hold_residual->TotalMemory = TotalMemory;
- 		residual = hold_residual;
+Ben.
 
- 		/* Enforce a sane MSR for booting. */
-@@ -379,6 +379,11 @@
-
- 		rec->tag = BI_FIRST;
- 		rec->size = sizeof(struct bi_record);
-+		rec = (struct bi_record *)((unsigned long)rec + rec->size);
-+
-+		rec->tag = BI_MEMSIZE;
-+		rec->data[0] = TotalMemory;
-+		rec->size = sizeof(struct bi_record) + sizeof(unsigned long);
- 		rec = (struct bi_record *)((unsigned long)rec + rec->size);
-
- 		rec->tag = BI_BOOTLOADER_ID;
-
---
-Tom Rini
-http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
