@@ -1,39 +1,49 @@
-To: Ricardo Scop <scop@digitel.com.br>
-Cc: Owen Green <owenjinggreen@yahoo.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Fast HDLC driver
-References: <20021119161020.83422.qmail@web20104.mail.yahoo.com>
-	<52ptt1bitv.fsf@topspin.com> <200211201439.45731.scop@digitel.com.br>
-From: Roland Dreier <roland@topspin.com>
-Date: 20 Nov 2002 09:41:59 -0800
-In-Reply-To: <200211201439.45731.scop@digitel.com.br>
-Message-ID: <52r8dg9lzs.fsf@topspin.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Searching for Kernel: Hard Hat Journeyman 2.0 -- linux-2.4.2_hhl20
+Date: Wed, 20 Nov 2002 10:11:19 -0800
+Message-ID: <7D036BD3216A084DB1BD9D62BCEAF2901A95DA@mail1irv.inside.istor.com>
+From: "Ken Chou" <kchou@istor.com>
+To: "Poon Yeuk Lan" <h0004855@eee.hku.hk>,
+	<linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->>>>> "Ricardo" == Ricardo Scop <scop@digitel.com.br> writes:
+Hi,
 
-    Roland> I don't have a specific answer about HDLC, but I think
-    Roland> calling netif_rx() from interrupt context is correct.
-    Roland> netif_rx() doesn't do anything except queue the packet for
-    Roland> processing and then mark the network softirq.  In fact if
-    Roland> you want to call netif_rx() from non-interrupt context
-    Roland> then you have to use the netif_rx_ni() function to make
-    Roland> sure the softirq runs soon enough.
+You can use DENX Embedded Linux Development Kit.
 
-    Ricardo> Hmm, is this true? QSLinux driver calls netif_rx() from
-    Ricardo> thew interrupts bottom half; it it ok?
+http://www.denx.de/e/index1.php?main=doc/ELDK/index&mainnav=docsnav&head
+=eldk-head&subnav=eldk-subnav
 
-This should probably be OK.  First, a bottom half is still interrupt
-context.  Second, if I recall correctly, Linux 2.2 does not even
-define netif_rx_ni().  If the driver works well there's no reason to
-change it.
 
-Best,
-  Roland
+Ken Chou
+
+> -----Original Message-----
+> From: Poon Yeuk Lan [mailto:h0004855@eee.hku.hk]
+> Sent: Tuesday, November 19, 2002 6:12 PM
+> To: linuxppc-embedded@lists.linuxppc.org
+> Subject: Searching for Kernel: Hard Hat Journeyman 2.0 -- linux-
+> 2.4.2_hhl20
+>
+>
+> --
+> I am searhing for Hard Hat Journeyman 2.0 - linux-2.4.2_hhl20 so as to
+> port
+> MPC8245 to Linux using Sandpoint X.2.  I have search the homepage
+> MontaVista
+> Software but it seems that it has removed the download link.  Has
+anyone
+> got
+> information on where to download this kernel?  I will also be grateful
+if
+> anyone could suggest any other kernel to port MPC8245 to Linux.
+>
+> Best Regards,
+> Cathy POON
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
