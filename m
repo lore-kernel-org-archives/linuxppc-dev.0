@@ -1,63 +1,56 @@
-Mime-Version: 1.0
-Message-Id: <v04210100b501ab3a304d@[212.6.77.33]>
-In-Reply-To: <200003242210.OAA16878@ shell1.ncal.verio.com>
-References: <200003242210.OAA16878@ shell1.ncal.verio.com>
-Date: Sat, 25 Mar 2000 01:08:15 +0100
-To: "Henry A. Worth" <haworth@ncal.verio.com>
-From: <cesli@ewetel.net>
-Subject: Re: OF compatible serial PCMCIA cards?
-Cc: linuxppc-dev@lists.linuxppc.org
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Message-ID: <38DC10F8.89ED2074@wanadoo.fr>
+Date: Sat, 25 Mar 2000 02:06:00 +0100
+From: Martin Costabel <costabel@wanadoo.fr>
+MIME-Version: 1.0
+To: Jeff Garzik <jgarzik@mandrakesoft.com>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Request for Tulip 2.2.x testing...
+References: <38DA7CF0.BC2E49D9@mandrakesoft.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 14:10 -0800 on 2000-03-24, Henry A. Worth suggested:
+HI,
 
+I did some testing with both versions. They both work for me in the same
+way. The only difference I can see is one more line in /var/log/messages
+when I start the patched module. The unpatched one gives me
 
->Does anyone know of any PCMCIA serial I/O cards that
->would be compatible with OF for use as the OF and/or
->XMON/Linux consoles? This would be for the PB2000.
+kernel: tulip.c:v0.91g-ppc 7/16/99 becker@cesdis.gsfc.nasa.gov
+kernel: eth0: Digital DC21041 Tulip rev 33 at 0x400, 00:00:C5:47:6A:7C,
+IRQ 25.
+kernel: eth0: 21041 Media table, default media 0800 (Autosense).
+kernel: eth0:  21041 media #0, 10baseT.
+kernel: eth0:  21041 media #4, 10baseT-FD.
+
+The patched one gives an additional line
+
+kernel: eth0: 21143 10baseT link beat good.
+
+Otherwise I see no difference in performance between the two (nor with
+the de4x5 driver which I am normally using).
+
+Do you need more information?
+
+# cat /proc/version
+Linux version 2.2.15-pre15 (root@chezmoi) (gcc version 2.95.2 19991024
+(release/franzo)) #22 Sat Mar 25 00:46:00 CET 2000
+
+--
+Martin
+
+Jeff Garzik wrote:
 >
->I ran across a site a with links to PCMCIA cards with
->Mac support.  It had a link to www.socketcom.com, which
->a local store stocks, but the socketcom site did not
->have word-one about Mac support. Their serial cards are
-
-IMHO Mac support does include a Mac driver sitting in your extensions
-folder, so far not really interesting.
-you went through OF ?
-via:
-0> dev /aliases
-0> .properties
-0> words
-0> devaliases
-after that step I can see on my 3400:
-.
-.
-.
-lower	/bandit/ti1130@13
-upper	/bandit/ti1130@13,1
-.
-.
-ata2	/bandit/ti1130@13
-ata3	/bandit/ti1130@13,1
-[the ata2/3 alias works good for MacOS booting from my 2.5" pcmcia
-enclosure HD; did not try it with Linux, 'cause I did not manage to
-mount it from my Linuxbox with the pcmcia-cs ide_cs.o and ide.conf,
-and therefore could not install Linux partitions on that HD]
-
-0> dev /bandit/ti1130@13
-0> .properties			[tells you something about this port]
-0> words				[output gives a hint about
-port-capabilities]
-
-don't know what your input/output defaults are [type 'printenv']
-but if I remember correctly you can change it for example with
-0> "lower" input
-
-HTH
-Claus
-
+> Hi all!
+>
+> I was wondering if I could find anyone on here with a Tulip 21041 chip
+> that could do some simple testing under 2.2.15-pre15?
+>
+> Questions for which answers are sought:
+>
+> Does tulip.c work with your 21041 chip unmodified?
+> If yes, does the below patch break the tulip driver?
+> If no, does the below patch get your 21041 working again?
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
