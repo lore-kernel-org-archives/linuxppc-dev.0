@@ -1,40 +1,32 @@
-Date: Thu, 14 Jan 1999 15:46:51 -0500 (EST)
-From: Tom Rini <tmrini@ntplx.net>
-To: Renaud Dreyer <rdreyer@math.berkeley.edu>
-cc: satadru pramanik <satadru@umich.edu>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Accelerated XF68 on PowerMac 7300? 
-In-Reply-To: <199901142035.MAA03142@fhloston>
-Message-ID: <Pine.LNX.4.05.9901141546030.15415-100000@pc.wackyland.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Alan Cox <alan@cymru.net>
+Message-Id: <199901142052.UAA24588@snowcrash.cymru.net>
+Subject: Re: Synchronization [was Re: The Magic Show: kernel_map() disappearing]
+To: jskov@cygnus.co.uk (Jesper Skov)
+Date: Thu, 14 Jan 1999 20:52:51 +0000 (GMT)
+Cc: cort@persephone.cs.nmt.edu, linuxppc-dev@lists.linuxppc.org,
+        Jes.Sorensen@cern.ch, alan@cymru.net, linux-apus@sunsite.auc.dk
+In-Reply-To: <13981.45420.95483.559227@lassi.cygnus.co.uk> from "Jesper Skov" at Jan 14, 99 08:57:16 am
+Content-Type: text
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 14 Jan 1999, Renaud Dreyer wrote:
+>  eieio: prevent CPU from reordering/collapsing reads/writes to memory.
+>         (but otherwise run at full steam!)
 
-> > On Thu, 14 Jan 1999, satadru pramanik wrote:
-> > 
-> > > Ditto for a 7600/132!
-> > 
-> > The main problem with accel'ed X for any of the internal videos is docs on
-> > howto accel it... :)
-> 
-> So then can I assume that the acceleration will not work on my 7300, no matter
-> what?
+Thats what mb() does - its a memory-barrier hence the name - it imposes
+strong store ordering properties across it. 
 
-The internal video won't be.
+> That's why I added the iobarrier() macros (adding _w/_r/_rw on Alan's
+> request) that are only related to IO synchronization within the same
+> CPU. Essentially it's just renaming the eieio() macro already used in
+> many PPC drivers because it's a bad name; Linux/APUS will be sharing
+> drivers with Linux/m68k where eieio isn't such a helpful name.
 
-> I was thinking of eventually a graphic card for my 7300, with some kind
-> of 3D support. Which one would support acceleration? Thanks,
+Yep.
 
-Right now there's an accel'ed X for ati cards and IMS cards.  Drop one of
-those in, run X on that and it'll be acclerated.
-
----
-Tom Rini (TR1265)
-http://dobbstown.yeti.edu/
-
+x86 and most other processors dont have the notion of a store barrier and
+an i/o barrier beign different
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
