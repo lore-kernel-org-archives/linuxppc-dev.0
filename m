@@ -1,52 +1,41 @@
-Message-ID: <20020601053540.73803.qmail@web15005.mail.bjs.yahoo.com>
-Date: Sat, 1 Jun 2002 13:35:40 +0800 (CST)
-From: =?gb2312?q?Dross=20Zhou?= <zjuzhou@yahoo.com.cn>
-Subject: Can usb and SMC2(uart) work together?
+Date: Mon, 3 Jun 2002 12:43:44 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
 To: linuxppc-embedded@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
+Cc: Dan Malek <dan@embeddededge.com>,
+	Tom Rini <trini@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>
+Subject: Re: Do we need tlbsx at finish_tlb_load?
+Message-ID: <20020603024344.GA6765@zax>
+References: <20020530080434.GY16537@zax>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20020530080434.GY16537@zax>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello All:
- I find in uart.c ,
- static struct serial_state rs_table[] = {
-         /* UART CLK   PORT          IRQ      FLAGS
- NUM   */
- #ifndef CONFIG_SCC3_ENET        /* SMC1 not usable
- with Ethernet on SCC3 */
-         { 0,     0, PROFF_SMC1, CPMVEC_SMC1,   0,
- 0
- },    /* SMC1 ttyS0 */
-#endif
-#if !defined(CONFIG_USB_MPC8xx) &&
- !defined(CONFIG_USB_CLIENT_MPC8xx)
- #ifdef CONFIG_SMC2_UART
-         { 0,     0, PROFF_SMC2, CPMVEC_SMC2,   0,
- 1
- },    /* SMC2 ttyS1 */
- #endif
- #endif  /* CONFIG_USB_xxx */
+On Thu, May 30, 2002 at 06:04:34PM +1000, David Gibson wrote:
+> A question to Dan and Tom in particular:
+>
+> At the moment on 4xx, just after finish_tlb_load, which is called by
+> both the TLB miss handlers, we do a tlbsx to see if an entry for this
+> virtual address already exists.
+>
+> Since this code is only called from the TLB miss handler, I can't see
+> how there could ever be a valid TLB entry present at this point.
+> There is a comment claiming that this path can be hit under some
+> circumstances, but it doesn't make sense to me.
+>
+> Is there any situation where we can reach this point with a valid TLB
+> entry existing for the faulting address?
 
- #ifdef CONFIG_SCC1_UART
-         { 0,     0, PROFF_SCC1, CPMVEC_SCC1,   0,
- (NUM_IS_SCC | 0) },    /* SCC2 ttyS2 */
- #endif
- #ifdef CONFIG_SCC2_UART
-         { 0,     0, PROFF_SCC2, CPMVEC_SCC2,   0,
- (NUM_IS_SCC | 1) },    /* SCC2 ttyS2 */
- #endif
- ....
+Ok, not seeing any replies here.  If no-one speaks up for this tlbsx
+in the next couple of days, I'll remove it from 2_4_devel.
 
- Does this mean usb and smc2 can't work together?Why?
-
- Thx
- --zhouchang
-
-
-
-2002年世界杯群雄鏖战 雅虎中国聚焦日韩
-http://cn.fifaworldcup.yahoo.com/
+--
+David Gibson			| For every complex problem there is a
+david@gibson.dropbear.id.au	| solution which is simple, neat and
+				| wrong.  -- H.L. Mencken
+http://www.ozlabs.org/people/dgibson
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
