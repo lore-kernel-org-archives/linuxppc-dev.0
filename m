@@ -1,26 +1,24 @@
-From: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
-To: "Geert Uytterhoeven" <geert@linux-m68k.org>
-Cc: "Linux/PPC Development" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: CONFIG_ADBMOUSE
-Date: Thu, 17 Oct 2002 20:42:54 +0200
-Message-Id: <20021017184255.8221@192.168.4.1>
-In-Reply-To: <Pine.GSO.4.21.0210171831370.401-100000@vervain.sonytel.be>
-References: <Pine.GSO.4.21.0210171831370.401-100000@vervain.sonytel.be>
+Message-Id: <200210180941.LAA07730@ipnmail.in2p3.fr>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Xavier Grave <grave@ipno.in2p3.fr>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: new powermac pb : no hard disk found
+Date: Fri, 18 Oct 2002 11:38:34 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Does Linux/PPC on PowerMac still use the code in drivers/macintosh/mac_keyb.c
->that's protected by CONFIG_ADBMOUSE? It's removed in the m68k tree.
->If no, I'll send a patch to remove it to Linus.
+Hi,
 
-No, we only used adbhid nowadays, at least in 2.5. I'm about to
-rework significantly the ADB code anyway to use the new driver
-model (define an adb bus type & framework for drivers).
+I've received the new bi processor (2*1GHz) and I try to boot with a debian
+CDrom. I boot in the install24 yaboot mode but the only ide device found is
+the DVD writer.
 
-Ben.
+What do I need to do ?
 
+Thanks in advance for any answer...
+xavier
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
