@@ -1,30 +1,33 @@
-Date: Sun, 11 Nov 2001 09:18:35 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: APUS irq patch
-Message-ID: <20011111091835.A3484@cpe-24-221-152-185.az.sprintbbd.net>
-References: <Pine.LNX.4.33.0111102221430.12896-100000@serv> <20011110195803.C573@cpe-24-221-152-185.az.sprintbbd.net> <3BEE66F1.C963E0A9@linux-m68k.org>
+Date: Sun, 11 Nov 2001 13:11:10 -0500
+From: Joseph Manojlovich <manojlov@cse.psu.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Gxt2000p Patch
+Message-ID: <20011111131110.L28196@cardassian.cse.psu.edu>
+References: <20011110185747.D28196@cardassian.cse.psu.edu> <Pine.GSO.4.21.0111111102290.10838-100000@mullein.sonytel.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3BEE66F1.C963E0A9@linux-m68k.org>
+In-Reply-To: <Pine.GSO.4.21.0111111102290.10838-100000@mullein.sonytel.be>; from geert@linux-m68k.org on Sun, Nov 11, 2001 at 11:03:41AM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, Nov 11, 2001 at 12:54:25PM +0100, Roman Zippel wrote:
-
-> Tom Rini wrote:
+On Sun, Nov 11, 2001 at 11:03:41AM +0100, Geert Uytterhoeven wrote:
+> What are the values res_start and res_size for which request_mem_region()
+> fails? What does /proc/iomem says?
 >
-> > Looks good, applied.  In the future can you please make the patches vs
-> > _devel?
->
-> I did, but I only didn't made them against the newest version.
+> This can only be a workaround for the problem, not a fix. The real fix is
+> probably a fix for the global bus resources.
 
-Oh, okay.
+Yes. I guess I left out "quick and dirty" from the title (other emails
+I sent had it). I hope the next patch info I sent resolves the issue
+more completely. I sent the original hack patch out before my
+realization that all of my issues were related to broken PCI resource
+allocation, instead of just for the graphics card (thanks Olaf!).
 
 --
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Joe Manojlovich
+manojlov@cse.psu.edu
+"And a thermostat on a home furnace... is that supposed to go to
+ 5000 degrees, do you think?"
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
