@@ -1,40 +1,97 @@
-Date: Fri, 31 May 2002 11:25:40 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Cc: Jim Thompson <jim@musenki.com>,
-	Sergiy Kovtun <skovtun@yahoo.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 64Mbytes on Sandpoint-X3B
-Message-ID: <20020531182540.GY32412@opus.bloom.county>
-References: <20020531060244.15732.qmail@web11204.mail.yahoo.com> <20020531145120.GI32412@opus.bloom.county> <15607.36947.107412.219533@gargle.gargle.HOWL> <20020531151130.GN32412@opus.bloom.county> <15607.38056.877088.211807@gargle.gargle.HOWL> <20020531152615.GO32412@opus.bloom.county> <3CF7B768.D2C20A4B@mvista.com> <20020531181349.GX32412@opus.bloom.county> <3CF7BE91.825324EE@mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3CF7BE91.825324EE@mvista.com>
+Message-ID: <01C208B6.2C66F450.svacca@valcom.com>
+From: Steven Vacca <svacca@valcom.com>
+Reply-To: "svacca@valcom.com" <svacca@valcom.com>
+To: "LinuxEmbeddedMailList (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Join Multicast returns error ENODEV
+Date: Fri, 31 May 2002 15:16:43 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, May 31, 2002 at 02:18:57PM -0400, Mark A. Greer wrote:
-> Tom Rini wrote:
->
-> > > I dunno guys, I think the compiler usually optimizes that all away and you
-> > > should never see "openfirmware".  I don't recall ever seeing it print out.  I
-> > > think something fishy is going on...
-> >
-> > Er, first, it becomes:
-> > if (1)
-> > So we always 'do it'.  However, all of the __openfirmware code is now
-> > almost never compiled in on !CONFIG_ALL_PPC, so we never see it being
-> > free'd.
->
-> That was my point.
+Before, when using enet.c,  I used to call setsockopt()
+as follows (this worked fine):
 
-Er, but it didn't make any sense. :)
-The __openfirmware code does not get optimized away, iirc.  Unless we
-lose global functions which don't have any callers..
+  The 1st 4 bytes of tmp64 = the multicast addr 230.0.0.3
+  The next 4 bytes of tmp64 = 0.0.0.0
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+  setsockopt(sd,IPPROTO_IP,IP_ADD_MEMBERSHIP,(const INT_8*) &tmp64,8);
+	.
+	.
+	.
+    if ((recLength = recvfrom(sd,(UINT_8*)
+recBuff,sizeof(MSGPKT),MSG_DONTWAIT,(struct sockaddr*) 0,0)) > 0)
+      {
+      //Process recd pkt.
+      }
+
+
+
+Now, since using fec.c, I found that I can successfully call
+setsockopt() if I put the local IP addr in the next 4 bytes as follows:
+
+  The 1st 4 bytes of tmp64 = the multicast addr 230.0.0.3
+  The next 4 bytes of tmp64 = 192.168.11.15
+
+  setsockopt(sd,IPPROTO_IP,IP_ADD_MEMBERSHIP,(const INT_8*) &tmp64,8);
+	.
+	.
+	.
+    if ((recLength = recvfrom(sd,(UINT_8*)
+recBuff,sizeof(MSGPKT),MSG_DONTWAIT,(struct sockaddr*) 0,0)) > 0)
+      {
+      //Process recd pkt.
+      }
+
+
+But, I never rec any pkts.
+
+
+Any ideas, anyone?
+
+Thanks,
+
+ShutEye Thinkin
+
+
+
+-----Original Message-----
+From:	Steven Vacca [SMTP:svacca@valcom.com]
+Sent:	Friday, May 31, 2002 12:00 PM
+To:	LinuxEmbeddedMailList (E-mail)
+Subject:	Join Multicast returns error ENODEV
+
+When I call setsockopt(IP_ADD_MEMBERSHIP), it fails.
+
+I had multicast Join/Leave working very well with enet.c, but have
+recently changed to using fec.c.  All ethernet comm works very well.
+But, there's a problem with multicast now.
+
+My kernel is v2.2.13.  uP is MPC860T
+
+Here's the flow I see:
+
+    My App:              setsockopt(...,IP_ADD_MEMBERSHIP,...);
+
+    Kernel:
+    ip_sockglue.c:      ip_setsockopt()
+                                   ip_mc_join_group()
+
+    igmp.c:                    ip_mc_join_group()
+                                       if (!imr->imr_ifindex)
+                                         in_dev = ip_mc_find_dev(imr);
+                                       if (!in_dev)
+                                         {
+                                         iml = NULL;
+                                         err = -ENODEV;
+                                         goto done;
+                                         }
+
+Would anyone have any ideas?
+
+Thanks,
+
+ShutEye Thinkin
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
