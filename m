@@ -1,44 +1,42 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: Ricardo Scop <scop@digitel.com.br>
-To: Hihn Jason <JasonHihn@DANFOSS.com>,
-	"'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Position available for 8xx series programmer
-Date: Thu, 2 May 2002 20:03:55 -0300
-Cc: Christensen Henrik USAC <HenrikChristensen@DANFOSS.com>
-References: <E1836A7F3557D311A14000805F9F36FC0141C664@usdfo011.usac.danfoss.net>
-In-Reply-To: <E1836A7F3557D311A14000805F9F36FC0141C664@usdfo011.usac.danfoss.net>
-MIME-Version: 1.0
-Message-Id: <02050220035500.01026@scop.digitel.com.br>
+Date: Fri, 3 May 2002 10:14:13 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: initrd in 2.4.19
+Message-ID: <20020503001413.GT9043@zax>
+References: <D769D33A5A2FBD4381E1F6030D28DBFA01029C92@hq-ex-6>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <D769D33A5A2FBD4381E1F6030D28DBFA01029C92@hq-ex-6>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+On Thu, May 02, 2002 at 10:13:30AM -0700, Brian Kuschak wrote:
+>
+> > I want to use pivot_root, so I don't use the special /linuxrc running
+> > code.  Instead I use "init=/linuxrc" as part of the command line.  If
+> > you do this your first script should work fine (pivot follwed by
+> > chroot).  But to be honest, I don't chroot.  I don't think it's
+> > necessary.
+>
+> Using init=/linuxrc allows my first script to work.
+>
+> However, it's a bit restrictive:  if I want to override the usual boot
+> sequence and get the kernel to mount the real root and drop into a shell I
+> can't use this method.  With the 'old-style' script, I can set
+> "init=/bin/bash".  These get applied AFTER /linuxrc terminates.  If I use
+> your method, I can't do that.
 
-Do you accept foreigners too ;-) ???
+Remember that any kernel command line options that the kernel doesn't
+recognize get passed to init - as environment variables if they
+contain a "=" and as command line arguments otherwise.  So it's fairly
+easy to invent a new parameter to control the "real" init and have
+your linuxrc interpret it and act accordingly.
 
--Scop.
-Brazil
-
-On Thursday 02 May 2002 11:56, Hihn Jason wrote:
-> Hello all,
->
-> Danfoss Inc (www.danfoss.com) a world leader in industrial automation, has
-> a position available for an Embedded PPC software engineer in Baltimore,
-> MD. This position requires low-level experience with the 8xx series
-> processors. Embedded Linux in particular, but any Linux experience is
-> desired, but not required.
->
-> Anyone interested is encouraged to contact my boss, Henrik Christensen at:
-> HenrikChristensen@Danfoss.com or (410)931-6778 x4254
->
-> I look forward to working with you in the future.
->
-> Sincerely,
-> Jason Hihn
-> Danfoss R&D
->
->
+--
+David Gibson			| For every complex problem there is a
+david@gibson.dropbear.id.au	| solution which is simple, neat and
+				| wrong.  -- H.L. Mencken
+http://www.ozlabs.org/people/dgibson
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
