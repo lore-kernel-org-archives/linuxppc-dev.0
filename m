@@ -1,46 +1,34 @@
-Message-ID: <3B4BF1FB.F4DE5523@india.infogain.com>
-Date: Wed, 11 Jul 2001 11:58:11 +0530
-From: ashish anand <ashisha@india.infogain.com>
-MIME-Version: 1.0
+Date: Wed, 11 Jul 2001 08:58:35 -0400 (EDT)
+From: "Justin (Gus) Hurwitz" <ghurwitz@dyndns.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: PCI BAR initialisation...?
-Content-Type: text/plain; charset=us-ascii
+Subject: How fast should a bogomip be
+Message-ID: <Pine.LNX.3.95.1010711084748.21073D-100000@november.bhjjh.erols.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I need a little explanation for following from pci experts.
-As per the pci specs , to determine the resource requirement by  BAR in pci config space
-we write 0xffffffff and then read back , and from the data read we decide the size and
-alignment requirement for pci address in either pci i/o or memory spaces.
+First off- let me run for cover while saying that I know bogomips are
+relatively arbitrary numbers.
 
-In case the firmware hasn't initialised the pci devices BAR in slot we have to handle
-it  at our own as I have to do for sandpoint + mcp750 with DINK32 as firmware.
+I've seen numbers that indicate on 6xx series processors bogomips is
+usually about 2/3 the processor speed- so about 66.6 for a 100Mhz
+processor. I hope this is accurate, because that's what I'm getting.
 
-But by any chance if somebody has come across a random feature of pci BAR.
-that is if you write the required pci addresses in BAR after writing 0xffffffff and
-reading it back , and to confirm if the actual value has reached the BAR , we read it again
-but then it returns funny values.
+But, about what should I expect for a 6xx (603e) 100Mhz processor running
+without cache? I've been trying to disable cache so I can continue
+development until the kernel supports propper allocation of non-cacheable
+memory (on a 603e with broken memory controller). When I run the kernel
+with code changes that *should* disable the cache the bootup process does
+feel marginally slower, and bogomips goes down a whopping .64 (from 66.56
+to 65.92). It then crashes with a segfault in kupdated (when in _wake_up).
+And I've been scratching my head trying to figure out a) whether the
+caches are actually disabled b) what causes that segfault, and c) how the
+two are related.
 
-more surprisingly if i move the code in some other function then everything behaves correctly.
-I am more then sure that nothing relevant is happening betwen two places.
+Any feedback it appreciated,
+--Gus
 
-my sequence is like this,.
-
-1.pcibios_write_config_dword(bus,devfn, PCI_BASE_ADDRESS_1, 0xffffffff);
-2.pcibios_read_config_dword( bus,devfn, PCI_BASE_ADDRESS_1, &add);
-
-3.now I decode the value of add to determine the size and alignment requirement
-  let us say decoded value is "ADD"
-
-4.pcibios_write_config_dword(bus,devfn, PCI_BASE_ADDRESS_1,ADD);
-
-5.now confirming the bar value by,
-    pcibios_read_config_dword(..., ..., base address register , &add);
-
-but value of add is not the actual one written.
-
-sometimes this behaviour gets automatically corrected and then i can read the actual value
-written.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
