@@ -1,55 +1,34 @@
-Reply-To: <joakim.tjernlund@lumentis.se>
-From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: linuxppc_2_4_devel, rc1 and rc2 problem.
-Date: Thu, 21 Nov 2002 16:27:21 +0100
-Message-ID: <IGEFJKJNHJDCBKALBJLLGEDFFIAA.joakim.tjernlund@lumentis.se>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <20021120191423.GA13132@opus.bloom.county>
+Date: Thu, 21 Nov 2002 08:47:33 -0700
+From: Matt Porter <porter@cox.net>
+To: Eugene Surovegin <ebs@innocent.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [PATCH] correct initialization sequence in ppc405_enet_open
+Message-ID: <20021121084733.B8252@home.com>
+References: <5.1.0.14.2.20021120212220.00aebfa0@pop.prodigy.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5.1.0.14.2.20021120212220.00aebfa0@pop.prodigy.net>; from ebs@innocent.com on Wed, Nov 20, 2002 at 09:47:34PM -0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Sending this to the embedded list as well.
-
- Jocke
-> On Wed, Nov 20, 2002 at 07:55:35PM +0100, Joakim Tjernlund wrote:
-> >
-> > > >
-> > > > hmm, my i2c stuff got into rc2 (and uart too?). I see this on rc2 AND rc1, but NOT in pre8.
-> > > > No, I have not tried to port it to vanilla 2.4.x. It requires some work to do that.
-> > >
-> > > They both made it in post rc1 I think, yes.  Try going back carefully
-> > > via bk changes and bk export -tr1.xxxxx (find when
-> > > /home/.../linuxppc_2_4 was merged into /home/.../linuxppc_2_4_devel).
-> >
-> > The error ocurres between changeset 1.1130 - 1.1137.
-> > I forgot to mention that the error only happens on a 862,100Mhz, 16KB icache, 8KB dcache.
-> > My 860,80Mz does not show the problem.
-> >
-> > Idea's ?
+On Wed, Nov 20, 2002 at 09:47:34PM -0800, Eugene Surovegin wrote:
 >
-> Can you narrow down the ChangeSet it occured at a bit?
+> Hi!
+>
+> This patch fixes problem in drivers/net/ibm_ocp/ibm_ocp_enet.c.
 
-Aaargh, now I am getting it in pre8 as well. However I have made
-some progress:
+<snip>
 
-I have 2 custom boards one mpc862(100Mhz, 16KB icache, 8KB dcache) and a
-mpc860(80Mz,4KB icache, 4KB dcache). If I overclock the mpc860 to 100MHz I get
-the same problem. If I set the clock on both boards to 95MHz all is well. If I overclock
-the mpc862 to 105 MHz it works fine.
+> This patch is against current devel_2_4, but I think should apply without
+> any problems to devel_2_5 also.
 
-It turns out that syslog is actually running after the error. If I stop syslog and
-start it again it works fine. If adjust my script so klogd is started before
-syslogd all is well to.
+Looks good, applied to both trees.
 
-This looks like a race somewhere to me, but i have no clue as to where.
-
-Anyone?
-
-    Jocke
-
+Thanks,
+--
+Matt Porter
+porter@cox.net
+This is Linux Country. On a quiet night, you can hear Windows reboot.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
