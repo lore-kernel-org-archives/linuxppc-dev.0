@@ -1,31 +1,22 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Dan Malek <dan@mvista.com>, <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Fwd: CPU features
-Date: Mon, 2 Apr 2001 23:58:04 +0200
-Message-Id: <20010402215804.8232@smtp.wanadoo.fr>
-In-Reply-To: <3AC8C906.666C1B5D@mvista.com>
-References: <3AC8C906.666C1B5D@mvista.com>
+Message-ID: <01139FC052A0D411900B00508B9535FC014A8F55@ZCH07EXM04.corp.mot.com>
+From: Liu HongXun-a16975 <a16975@motorola.com>
+To: "linuxppc-dev@lists. linuxppc. org (E-mail)" <linuxppc-dev@lists.linuxppc.org>
+Subject: the differences between 2.2.13 and 2.2.14 for linux-ppc
+Date: Tue, 3 Apr 2001 10:24:50 +0800 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->
->Is anyone else working on 7450 besides me?  I was holding out
->all of these CPU updates when Ben promised these changes :-).
->Now that this is done, I'll start checking in my changes.  If
->someone else has code, let me know and I will merge it together
->and test it.
+Hi, all,
+I want to run Linuxppc on my custom board based on ppc823. I have gotten the source code for HardHat Linux for ppc.
+I wonder which is the better, 2.2.13 or 2.2.14 ? Is the main difference in Frame Buffer support, or something else?
+There is no strict real-time requirement for my application.
 
-Well, I didn't commit the CPU features yet. It needs to be better
-tested and I still need Cort's ack before pushing. I also need your
-8xx/4xx version of it ;)
-
-Send me any patch you want for my rsync tree, I can push them as
-a batch along with the feature stuff when it's ready.
-
-Ben.
+BRs
+Rolf Liu
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
