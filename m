@@ -1,82 +1,72 @@
-Message-Id: <4.3.2.20000925164441.00b1a290@falcon.si.com>
-Date: Mon, 25 Sep 2000 16:50:32 -0400
-To: Zhaobin Zhu <zzhu@emc.com>
-From: Jerry Van Baren <vanbaren_gerald@si.com>
-Subject: Re: Question regarding PowerPC routine compilation.
+From: clark@esteem.com
+Message-Id: <1.5.4.32.20000925230848.006afd8c@pop.esteem.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Mon, 25 Sep 2000 16:08:48 -0700
+To: "Navin Boppuri" <nboppuri@trinetcommunication.com>
+Subject: Re: NFS problem
 Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <39CFB68A.816F6737@emc.com>
-References: <006d01bfc716$3017b050$4a1f76d8@washington>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Some registers are protected, some are free game.  For details, see the
-ABI (Application Binary Interface) page 3-14 and EABI (Embedded
-Application Binary Interface) specifications:
-   http://www.esofta.com/softspecs.html
+At 02:27 PM 5/26/00 +0100, you wrote:
+>
+>Hello,
+>
+>I am trying to boot my custom board with the linux 2.2.13 kernel. It boots
+>OK but when it tries to do the NFS mount, it fails....... This is how it
+>looks. I dont understand what's going on. I testing the NFS server with some
+>other board and same ip's and it works fine. Any ideas????
+>
+>lcd_lcvcr: 78000
+>loop: registered device at major 7
+>eth0: CPM ENET Version 0.2, 08:00:22:50:70:63
+>PPP: version 2.3.10 (demand dialling)
+>TCP compression code copyright 1989 Regents of the University of California
+>PPP line discipline registered.
+>Looking up port of RPC 100003/2 on 216.118.31.76
+>neighbour table overflow
+>neighbour table overflow
+>neighbour table overflow
+>eth0: transmit timed out.
+> Ring data dump: cur_tx ff0028d0 (full) cur_rx ff0028c8.
+>dc00 002a 0015c642
+>dc00 002a 0015c6e2
+>dc00 002a 0015c782
+>dc00 002a 0015c962
+>dc00 002a 0015ca02
+>dc00 002a 0015caa2
+>dc00 002a 0015c502
+>fc00 002a 0015cb42
+>9c00 005a 00174000
+>9c00 0076 00174800
+>9c00 0076 00161000
+>9c00 0076 00161800
+>9c00 0040 00160000
+>9c00 0040 00160000
+>9c00 0076 0015f000
+>b000 7edd 0015f800
+>eth0: tx queue full!.
+>neighbour table overflow
+>eth0: transmit timed out.
+>
+>and it goes on and on. After some time, it says server returned error -5 and
+>then tries a reboot. What's going on???
+>
+>Navin.
+>
+>
+>
 
-gvb
 
+        Are you sure you compiled your kernel to use the correct SCC port
+for your ethernet interface on the custom board? I have made this mistake
+and it produced very simmilar results. Try changing it and see if this fixes it.
 
-At 04:33 PM 9/25/00 -0400, Zhaobin Zhu wrote:
+Hope this helps,
 
->Hi,
->
->This is a newbie question regarding (PowerPC) calling a C routine
->within a .S
->file:
->
->Let me take an example:
->
->in arch/ppc/kernel/head.S,
->...
->         mr      r3,r31
->         mr      r4,r30
->         mr      r5,r29
->         mr      r6,r28
->         mr      r7,r27
->         bl      identify_machine
->...
->The code calls rountine identify_machine(..) in setup.c.
->
->Questions:
->
->    The identify_machine(..) in setup.c will certainly use some of the
-> registers
->(r0-r31).
->    Will the compiler protect the registers used in the routine (for
-> example
->    push them into stack before entering the routine and pop them out
->    after exiting the routine ) ?
->
->    If yes, how the compiler does the protection ? Will it simply save
-> all the
->regs
->    into stack before entering routine and restore them after
-> returning from the
->
->    routine (except R3 wiich may be used as a pointer to some returned
-> value).
->
->    If compiler does no reg protection, then there is no gurantee that the
->register set
->    will be the same before and after calling a C routine. It's the
-> calling
->code's
->    responsibility to make sure some important regs will not be
-> altered after
->return
->    from a C routine.
->
->Thanks,
->
->--
->  Zhaobin Zhu
->  zzhu@emc.com
->
->
+        Conn Clark
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
