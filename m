@@ -1,51 +1,49 @@
-Date: Mon, 26 Nov 2001 22:24:49 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Michael Sokolov <msokolov@ivan.Harhan.ORG>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Please make K2 Linux bootable without PeeMON again
-Message-ID: <20011126222449.E13091@cpe-24-221-152-185.az.sprintbbd.net>
-References: <0111262101.AA22136@ivan.Harhan.ORG>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <0111262101.AA22136@ivan.Harhan.ORG>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: TiBook, 1394, iPod working (sort of  ;-)
+Date: Tue, 27 Nov 2001 09:02:40 +0100
+Message-ID: <2C5637A6A7CE844EA3C0A94565479F520B4787@dest-as20-002.int.bauer-partner.com>
+From: "Halfmann, Klaus" <Klaus.Halfmann@bauer-partner.com>
+To: "Ira Weiny" <iweiny@acm.org>
+Cc: "linuxppc" <linuxppc-dev@lists.linuxppc.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Nov 26, 2001 at 01:01:49PM -0800, Michael Sokolov wrote:
+Hello Ira, you wrote:
 
-> ChangeSet@1.666, 2001-11-19 09:10:26-07:00, trini@bill-the-cat.bloom.county
->   Remove register magic from platforms which use 'simple'.  A few
->   new platforms forgot parse_bootinfo(find_bootinfo()) as well.
->
->   arch/ppc/platforms/k2_setup.c
->     1.17 01/11/19 09:10:26 trini@bill-the-cat.bloom.county +0 -15
->     Remove cmd_line and initrd register magic.
->
-> is a problem for me. On the K2 I do not use zImage or the braindead PeeMON
-> firmware that it assumes, instead I load vmlinux directly by occult. I need to
-> continue to able to do this, and I need to keep the interface to vmlinux
-> register-based so that I can load vmlinux into memory by occult, put the right
-> values in the right registers, and jump to it. A pointer to bi_recs in a
-> register is fine, but looking for bi_recs in the magic location isn't. (The
-> kernel has already been loaded into memory by occult when I get to it, and
-> without the original ELF header or System.map I cannot determine where will it
-> look for bi_recs in find_bootinfo.)
+> 1) How are things with HFS+?  I don't know much but have done
+> some poking around.  I notice that I can mount the iPod but the files
+it
+> shows are not correct.  But I have another HFS+ drive which seems to
+mount
+> ok?  I have looked at the volume info and have seen that the iPod
+version in the
+> volume header is "05" and the other drive is version "06"?  This seems
+odd
+> since I would think the earlier version would be better supported?
+But I
+> probably don't know what
+> I am talking about...
 
-Er, why can't you find the magic location for the bi_recs and set that
-as well as the other registers you need to?
+HFS+ Volumes are wrapped in a HFS-structure for security reasons, you
+can
+find out about his at some Website at Apple.
 
-> The patch below makes the K2 vmlinux expect a pointer to bi_recs in R3 like I
-> do on the Adirondack and makes the "simple" zImage goo pass a pointer to its
-> magic bi_recs in R3.
+I once started doing a set of HFS+ Tools but got stuck due to personal
+reasons.
+The current state is that _reading_ works and writing works a little
+bit.
+I'd be happy someone would care about these. There is a (rotten) tarball
 
-And breaks all of the other ports which use 'simple' and expect bi_recs
-in the 'normal' place.  For now I'd much rather add back in the register
-checks.  For 2.5 we can agree on a less magical and more predictable
-location.  Would somewhere around the end of memory work for you?
+at penguinppc.org. I use(d) a CVS Repository at SuSE. Since I just
+upgraded
+to SuSE 7.3 I might try to build it again.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+In case you are interested feel free to contact me.
+
+	Klaus Halfmann http://klaus.halfmann.bei.t-online.de
+			   (Mh, I really should update this page)
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
