@@ -1,27 +1,106 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-From: greggiraud@netcourrier.com
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: using bdi2000
-Date: Mon, 21 Apr 2003 12:22:53 CEST
-Mime-Version: 1.0
-Message-Id: <mnet1.1050920573.22642.greggiraud@netcourrier.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Message-ID: <F4608F665DF5D311B231009027B70F700186A0C9@MAIL>
+From: Diego Warszawski <dwarszawski@ERINC.com>
+To: Rakesh Jagota <j.rakesh@gdatech.co.in>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: JFFS2 for IBM ppc405  based Target board
+Date: Mon, 21 Apr 2003 18:13:23 -0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-I am trying to debug my linux with a bdi2000.
-I succeed in loading ppcboot into flash. But I can't debug!
+JFFS2 uses compression.
+There is a paper in Red Hat's web site about JFFS/JFFS2 that you could read.
 
-pc_82xx-gdb
-target remote 192.168.15.3:2001
+Diego
 
-And then how to say the debugger to break at a specific line in a specific file like l 23 in uart.c?
+-----Original Message-----
+From: Rakesh Jagota [mailto:j.rakesh@gdatech.co.in]
+Sent: Monday, April 21, 2003 10:23 AM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: JFFS2 for IBM ppc405 based Target board
 
-thanks for helping
-grego
-greggiraud@netcourrier.com
+
+
+Hi all,
+I have downloaded the source and I have installed it my host machine as per
+the instruction. I am not able to compile it for jffs2, but its getting
+compiled for jffs, using the following command:
+
+In the Makefile I have chnaged the linux directory as per my target sourec
+directory for IBM Power PC 405.
+
+make jffs
+
+
+After that I have complied the "util" using "make" command.
+I am getting confused , to get the final image. I am using the following
+command, can you pl tell em whether I am doing it right or wrong:
+
+====================================================================
+[root@Rakesh mtd]# ./mkfs.jffs -d /home/test/mtd/fs/jffs -o /tmp/jffs.image
+====================================================================
+
+and
+
+
+====================================================================
+[root@Rakesh mtd]# ./mkfs.jffs2 -d /home/test/mtd/fs/jffs -o
+/tmp/jffs.image1
+====================================================================
+
+With the first option I am getting the jffs.image of  1705432Kb and with the
+second option , when I use mkfs.jffs2, I am getting the jffs.image1 of size
+657876KB
+
+
+Can anyone suggest me whether I am doing  it right or not. And can I use
+anyone of the command like mkfs.jffs or mkfs.jffs2.
+
+
+Thanks & Regards,
+
+Rakesh
+
+On Monday 21 April 2003 11:30 am, you wrote:
+> mkfs.jffs2
+
+>
+
+> ----- Original Message -----
+
+> From: "Rakesh Jagota" <j.rakesh@gdatech.co.in>
+
+> To: <linuxppc-embedded@lists.linuxppc.org>
+
+> Sent: Monday, April 21, 2003 1:54 PM
+
+> Subject: JFFS2 for IBM ppc405 based Target board
+
+>
+
+>
+
+>
+> >
+
+> > Hi all,
+
+> > I am using montavista linux priviewkit 2.4.17. Currently I am using nfs.
+> > How
+ can I create jffs2 file fyftem. I am working with IBM power pc 405.
+> > Can anyone suggest me, how to create the jffs2 filesystem for PPC 405.
+> > Thanks & Regards,
+
+> >
+
+> > Rakesh
+
+> >
+
+> >
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
