@@ -1,61 +1,46 @@
-Date: Wed, 28 Apr 1999 08:07:00 -0400
-From: "Paul J. Schinder" <schinder@pobox.com>
-To: Satadru Pramanik <satadru@umich.edu>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Rel 5 ssh?
-Message-ID: <19990428080649.A5927@pobox.com>
-References: <Pine.LNX.4.10.9904280104180.19702-100000@beer.pub.umich.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.10.9904280104180.19702-100000@beer.pub.umich.edu>; from Satadru Pramanik on Wed, Apr 28, 1999 at 01:05:57AM -0400
+Date: Wed, 28 Apr 1999 22:21:32 +1000
+Message-Id: <199904281221.WAA31584@tango.anu.edu.au>
+From: Paul Mackerras <paulus@cs.anu.edu.au>
+To: Christian.Bauer@uni-mainz.de
+CC: linuxppc-dev@lists.linuxppc.org
+In-reply-to: <199904280958.LAA24884@student.physik.uni-mainz.de>
+	(Christian.Bauer@uni-mainz.de)
+Subject: Re: Endianess problems in linuxppc kernel
+Reply-to: Paul.Mackerras@cs.anu.edu.au
+References: <199904280958.LAA24884@student.physik.uni-mainz.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Apr 28, 1999 at 01:05:57AM -0400, Satadru Pramanik wrote:
-} 
-} I've tried to rebuild the ssh-1.2.6 src.rpm under glibc2.1, and I get
-} these errors:
-} gcc -pipe -c -I.  -I./gmp-2.0.2-ssh-2 -DHAVE_CONFIG_H
-} -DHOST_KEY_FILE=\"/etc/ssh/ssh_host_key\"
-} -DHOST_CONFIG_FILE=\"/etc/ssh/ssh_config\"
-} -DSERVER_CONFIG_FILE=\"/etc/ssh/sshd_config\"
-} -DSSH_PROGRAM=\"/usr/bin/ssh1\" -DETCDIR=\"/etc/ssh\"
-} -DPIDDIR=\"/var/run\" -DSSH_BINDIR=\"/usr/bin\"
-} -DTIS_MAP_FILE=\"/etc/ssh/sshd_tis.map\" -O2 -fsigned-char
-} -I/usr/X11R6/include login.c
-} login.c: In function `record_login':
-} login.c:437: structure has no member named `ut_syslen'
-} login.c:441: structure has no member named `e_termination'
-} login.c:442: structure has no member named `e_exit'
-} login.c:454: `WTMPX_FILE' undeclared (first use in this function)
-} login.c:454: (Each undeclared identifier is reported only once
-} login.c:454: for each function it appears in.)
-} make: *** [login.o] Error 1
-} Bad exit status from /var/tmp/rpm-tmp.85594 (%build)
+Christian Bauer <Christian.Bauer@uni-mainz.de> wrote:
 
-There's a patched RPM for 1.2.26 at Yellow Dog
-<ftp://ftp.yellowdoglinux.com/>.  I don't remember the exact location;
-you'll have to hunt around.  It works.
+> The "le16_to_cpus(&hdr->count)" fixes a real bug in the driver (it wouldn't
+> work on big-endian machines, no matter how outsl/insl works), but everything
+> else looks like the outsl/insl functions work with the wrong byte order
+> (little-endian vs. big-endian).
 
-} 
-} 
-} Any thoughts?  Does anybody know how to fix this?  The sshd from this
-} install can't allocate ptys either.
-} 
-} --=
-} satadru pramanik `satadru@umich.edu' www.umich.edu/~satadru
-} Online Editor, The Michigan Daily
-} Yugoslavia declares 'peace' in Kosovo; NATO Airstrikes
-} continue
-} -CNN Interactive, 04/08/99
-} =--
-} 
-} 
+Well, the driver is using insl/outsl to transfer a buffer of bytes,
+not a buffer of longwords, whereas in[s]l/out[s]l are defined to
+transfer longwords (32 bits), and byte-swapping is the right thing to
+do when you're transferring longwords.  The driver is using insl/outsl
+in order to transfer the bytes in 4 byte chunks; what it really should
+use is an insl_ns/outsl_ns which doesn't do byteswapping.
 
--- 
-Paul Schinder
-schinder@pobox.com
+> Playing a module with "mikmod" results in rhythmic noise (16 bit) or silence
+> (8 bit). When I change every instance of
+> 
+>   out_le32(&awacs->byteswap, sound.hard.format != AFMT_S16_BE);
+> 
+> to
+> 
+>   out_le32(&awacs->byteswap, sound.hard.format == AFMT_S16_BE);
+> 
+> in "drivers/sound/dmasound.c", both 8 and 16 bit output work fine.
+
+Is the application perhaps using AFMT_S16_NE (native endianness) but
+assuming that that means little-endian?
+
+Paul.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
