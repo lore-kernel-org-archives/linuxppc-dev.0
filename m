@@ -4,33 +4,28 @@ Subject: Re: PCMCIA
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 10 Mar 2003 09:18:55 +0100."
-             <se6c5894.038@mail.frequentis.com>
-Date: Mon, 10 Mar 2003 09:45:21 +0100
-Message-Id: <20030310084526.99000C58BB@atlas.denx.de>
+In-reply-to: Your message of "Mon, 10 Mar 2003 09:52:06 +0100."
+             <se6c604d.015@mail.frequentis.com>
+Date: Mon, 10 Mar 2003 10:01:45 +0100
+Message-Id: <20030310090150.53F41C58BB@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <se6c5894.038@mail.frequentis.com> you wrote:
->
-> So the (your) DENX Kernel (2.4.4) has PCMCIA support implemented yet?
+In message <se6c604d.015@mail.frequentis.com> you wrote:
+> Thanks for help, with a powerbook, thats a nice hint, at the moment we
+> have 'only' an imac. O.K.
 
-Yes.
+An iMac is ok, too. Any native PPC system will  do  -  it's  just  to
+verify  that  the  Linux  driver  is  working  in  general,  and on a
+big-endian system, too.
 
-> So this is maybe a reason for us to switch over.. (Uhuhu I hope this
-> will not too much work to adapt the configuration again.... :-)
+> I can remember you have an own uart device driver, not the same like in
+> the Montavista tree, and we have a 'special' feature to switch between
+> RS232 and RS422/485.. but that is not your problem ... :-)
 
-I don't think so. It's just the  usual  files  where  board-dependend
-configs have to be added.
+Our driver is highly configurable, maybe it's easier than you think.
 
-> So do you have a list which Ethernet cards work? Or is it only the Xircom card that works?
-
-We also tested with a 3com card, but I don't remember the exact  type
-(sorry,  I  don't  have  this  card  any  more). In general my PCMCIA
-experience is that all cards that work in a "normal" (x86) PC  worked
-fine  on  the  8xx,  too.  Ideally  you  test  before  buying using a
-PowerBook...
 
 Best regards,
 
@@ -39,7 +34,7 @@ Wolfgang Denk
 --
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Too many people are ready to carry the stool when the piano needs  to
-be moved.
+A stone was placed at a ford in a river with the inscription:
+"When this stone is covered it is dangerous to ford here."
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
