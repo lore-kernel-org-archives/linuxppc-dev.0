@@ -1,15 +1,18 @@
-Return-Path: <robin@india.tejasnetworks.com>
-Received: from pop-mail.india.tejasnetworks.com (smtp.india.tejasnetworks.com
-	[164.164.94.83]) by ozlabs.org (Postfix) with SMTP id EEA642BF17
+Return-Path: <mgroeger@sysgo.com>
+Received: from mailgate.sysgo.de (ns.sysgo.de [213.68.67.98])
+	by ozlabs.org (Postfix) with ESMTP id B62032BF12
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  7 Jan 2005 00:29:38 +1100 (EST)
-Message-ID: <41DC9568.6090106@india.tejasnetworks.com>
-Date: Thu, 06 Jan 2005 07:03:28 +0530
-From: Robin <robin@india.tejasnetworks.com>
-MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
+	Fri,  7 Jan 2005 01:26:03 +1100 (EST)
+Date: Thu, 6 Jan 2005 14:56:20 +0100 (CET)
+From: Marius Groeger <mgroeger@sysgo.com>
+Sender: mag@sysgo.com
+To: Robin <robin@india.tejasnetworks.com>
+In-Reply-To: <41DC9568.6090106@india.tejasnetworks.com>
+Message-ID: <Pine.LNX.4.61.0501061450190.4945@mag.sysgo.com>
 References: <20050106121238.BB99AC108D@atlas.denx.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	<41DC9568.6090106@india.tejasnetworks.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Cc: Linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 Subject: Re: TZ variable setting for denx 2.4.20
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -22,45 +25,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Thanks for your response..
+Robin,
 
-I have tried with the standard linux date too. That too doesnt seem to 
-consider
-timezone variable that has been set. Can you give me a way for setting 
-timezone
-for southern hemisphere countries?? The busybox code uses strftime function.
-But that does not seem to consider TZ variable...
+On Thu, 6 Jan 2005, Robin wrote:
+
+> I have tried with the standard linux date too. That too doesnt seem 
+> to consider timezone variable that has been set. Can you give me a 
+> way for setting timezone for southern hemisphere countries?? The 
+> busybox code uses strftime function. But that does not seem to 
+> consider TZ variable...
+
+You should read up on how glibc handles all that timezone stuff:
+
+   sh# info libc "TZ Variable"
+
+Most notably, make sure you /etc/localtime is set up correctly. There 
+is also a tool (script) called tzselect which may be helpful for you.
+
+Note I'm not exactly an expert on this, I'm just giving pointers...
 
 Regards,
-Robin
+Marius
 
-Wolfgang Denk wrote:
-
->In message <4229EDFB.2040402@india.tejasnetworks.com> you wrote:
->
->>I am trying to find a way of setting TZ environment variable with DST
->>
->
->Your subject is misleading. Timezone handling is a user space  issue.
->It has nothing to do with the kernel verison.
->
->>I am using 2.4.20 linux kernel from denx.I am running date command from
->>
->
->This has nothing to do with your problems.
->
->>busybox version 0.6 which in is using strftime. The processor is ppc860T.
->>
->
->BB 0.6 ? AFAICT there is no such version. Do you mean  busybox-0.60.5 ?
->
->This is awfully old. Maybe  you  should  try  running  an  up-to-date
->version  of  busybox  first?  If  this doesn;'t work, please consider
->using the real GNU date  command.  You  should  understand  that  the
->busybox  tools  only provide limited functionality, so fancy features
->like complex timezone support may not be available.
->
->Best regards,
->
->Wolfgang Denk
->
+-- 
+Marius Groeger <mgroeger@sysgo.com>
+SYSGO AG                      Embedded and Real-Time Software
+Voice: +49 6136 9948 0                  FAX: +49 6136 9948 10
+www.sysgo.com | www.elinos.com | www.osek.de | www.imerva.com
