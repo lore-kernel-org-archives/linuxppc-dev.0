@@ -1,28 +1,53 @@
-Message-ID: <000701c28053$dd0f6610$370da8c0@aman>
-From: "Aman" <aman@mistralsoftware.com>
-To: "linuxppc embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Hangs after "Now Booting the kernel "
-Date: Thu, 31 Oct 2002 02:05:19 +0530
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Thu, 31 Oct 2002 14:39:59 +1100
+From: Erik Christiansen <erik@dd.nec.com.au>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Assembler "Error: unsupported relocation against r0"
+Message-ID: <20021031033959.GA1806@dd.nec.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi All
+   powerpc-linux-as, built according to Penguinppc.org's "Cross
+Development mini-howto for PPC Linux", is giving me stick about the
+simplest assembler statements:
 
-I have build a image using the command make zImage.initrd. This gives a
-linux image zImage.initrd.ebony[Ramdisk + Kernel Image]. This image run fine
-in the PPC440 evalkit. However the same image if I run in my custom board
-which has a 440GP processor, it hangs after saying "now booting the kernel".
-What might be the problem ?.
-I have one more question , is the TLB setting is reconfigured during linux
-image booting , if so is it possible to get the memory map of that.
+fred.s >>>
+   .text
+   .align 2
+   li          r0,0
+   addi        r0,0,0
+<<<
 
-Thanking you in advance
-regards
-Aman
+$ powerpc-linux-as fred.s
+fred.s: Assembler messages:
+fred.s:3: Error: unsupported relocation against r0
+fred.s:4: Error: unsupported relocation against r0
+
+The Motorola on-line doco seems to agree that this code is kosher.
+
+   Does anyone know of any description of what powerpc-linux-as will
+swallow?  (I have the generic (g)as document from gnu.org, and it is
+good for getting the directives right. Manpages, info, the archive, and
+the web have not added much substance.
+
+   Before going back to tackling the 1500 lines of board initialisation
+code which assembled with Diab tools, I must discover what daft
+omissions of mine are causing this to fall over.
+
+                          --------------------
+powerpc-linux-as --version
+GNU assembler 2.13.90.0.4 20020814
+Copyright 2002 Free Software Foundation, Inc.
+This program is free software; you may redistribute it under the terms
+of the GNU General Public License.  This program has absolutely no
+warranty.
+This assembler was configured for a target of `powerpc-linux'.
+
+Regards,
+Erik
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
