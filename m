@@ -1,42 +1,37 @@
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Jean-Denis Boyer <jdboyer@mediatrix.com>,
-	Dan Malek <dan@embeddededge.com>,
-	Ibon Gotxi Garcia <igotxi@jazzfree.com>,
-	Linux PPC embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Question about modules 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 03 Mar 2003 15:12:05 MST."
-             <20030303221205.GA12414@ip68-0-152-218.tc.ph.cox.net>
-Date: Mon, 03 Mar 2003 23:23:22 +0100
-Message-Id: <20030303222327.D72CCC6E0C@atlas.denx.de>
+Message-ID: <3E63D648.3000000@embeddededge.com>
+Date: Mon, 03 Mar 2003 17:25:12 -0500
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: Donald MacArthur <dmacarth@ufl.edu>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: SCC3 UART for MPC850
+References: <NDBBIHDFKLJKGJJGMFJOIEANCHAA.dmacarth@ufl.edu>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20030303221205.GA12414@ip68-0-152-218.tc.ph.cox.net> you wrote:
->
-> > In commproc.c, add the following line:
-> >   EXPORT_SYMBOL(m8xx_cpm_hostalloc);
->
-> I'll bite... Dan is there a good reason this isn't exported?  Google
-> shows nothing to me :)
+Donald MacArthur wrote:
 
-IMHO the only "good" reason they were not  exported  right  from  the
-beginnng  is that the standard drivers that come with the kernel tree
-cannot be built as modules anyway, so nobody needed it.
+> I am currently working with an embedded planet LICCE MPC850 Credit card
+> board ...
 
-Please add.
+> ...Does anyone know of modifications required for the kernel
+> to get SCC3 to work as a UART or were possible conflicts might arise?
+
+There are several things that may need attention.  First, ensure the
+version of the 850 you have actually has the SCC3 port.  Second, as
+in many cases, the SCC3 pins are multiplexed with other uses.  In this
+case you have to program the I/O so they are used for SCC3 instead of
+SPI and other functions.  Third, if you are using one of the matching
+Embedded Planet I/O cards, ensure the board control register has been
+written to enable/route the driver.  If you are using the Embedded Planet
+I/O card, check the documentation for the specific card to ensure you
+can enable all of the serial ports.  In some cases not all combinations
+are supported.
 
 
-Wolfgang Denk
+	-- Dan
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-A Perl script is correct if it's halfway readable and  gets  the  job
-done before your boss fires you.
-                       - L. Wall & R. L. Schwartz, _Programming Perl_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
