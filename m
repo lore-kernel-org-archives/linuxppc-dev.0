@@ -1,42 +1,52 @@
-Date: Fri, 21 May 1999 10:15:12 -0400 (EDT)
-From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-To: Derek Moeller <moeller@networksplus.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Diald Compilation problems
-In-Reply-To: <Pine.LNX.3.96.990520183808.529A-100000@ns1.networksplus.net>
-Message-ID: <Pine.LNX.3.96L.990521101250.1510A-100000@unix47.andrew.cmu.edu>
+To: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
+Subject: Re: Mac-on-Linux
+References: <19990519235050.60265@ibrium.se> <Pine.LNX.3.96.990519210752.5706A-100000@EdMcMan.Dyn.Ez-Ip.Net> <19990520192459.17170@ibrium.se> <19990520171823.A409@jasons.dyn.kpn.cx>
+Content-Type: text/plain; charset=US-ASCII
+From: Stefan Berndtsson <stefan@nocrew.org>
+Date: 21 May 1999 17:32:01 +0200
+In-Reply-To: "Jason S."'s message of "Thu, 20 May 1999 17:18:23 -0400"
+Message-ID: <87zp2ysaku.fsf@hades.nocrew.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 20 May 1999, Derek Moeller wrote:
+"Jason S." <jhsterne@mindspring.com> writes:
+
+> On Thu, May 20, 1999 at 07:24:59PM +0200, Samuel Rydh wrote:
 > 
-> 	I've been having problems compiling the Diald package for
-> LinuxPPC/4.1/iMac. Make gives up after complaining about many different
-> errors.  Unfortunately, there is no precompiled rpm avaible that I have
-> seen. Has anyone had success compiling this package, or is there a
-> different one that accomplishes similar? 
-> 	BTW, during make depend it gives me a few warnings.
+> > > Mac-on-Linux looks very promising.  One question though, are you planning
+> > > to use 603 processors?  
 > 
-> cc -E -M *.c > .depend
-> firewall.c:51: warning: `#ifdef' argument starts with a digit
-> firewall.c:58: warning: `#ifdef' argument starts with a digit
-> firewall.c:547: warning: `#ifdef' argument starts with a digit
-> firewall.c:579: warning: `#ifdef' argument starts with a digit
-> firewall.c:598: warning: `#ifdef' argument starts with a digit
-> ppp.c:11: warning: `#ifdef' argument starts with a digit
-> 	
-> 	The #ifdef's mentioned to have a digit (0) right after the
-> argument. I don't know why it's choking on this, though.
-> 	Thanks...
+> > I would appreciate if someone could download try the Mac-on-Linux
+> > patched kernel, also changing the
+> 
+> > 	#define NO_RELOAD_HTAB 1
+> > to
+> > 	#define NO_RELOAD_HTAB 0
+> 
+> > in 'arch/ppc/head.S' and 'arch/ppc/mm/init.c'. This might do the
+> > trick. (Then Mac-on-linux should be able to let MacOS see
+> > the 603 as a 604).
+> 
+> I tried this on a PowerBase 180 and got a kernel panic once it
+> started the emulator:
+> 
+> kernel: Kernel panic: kernel access of bad area pc c0046cd8 lr c004696c address 3C00 tsk mm/175
 
-The compiler might not like that. I know CC on SGI doesn't... try making it
-'#if 0' rather than '#ifdef 0'. Although I guess that won't let you compile...
+I've tried this on a Performa 6400/180 (603e), and also got a panic right after Meta-G.
 
--Hollis
+>From manual work on the backtrace, the following functions are accessed:
 
+c0044c7c: c0044c04 t insert_pte
+c004498c: c004485c t page_fault
+c004478c: c0044704 t mmu_data_access_hook
+c0041d80: c0041d78 t access_exception
+
+This is a cvs-kernel, but not the one from the mac-on-linux-site, 
+but the patches applied cleanly.
+
+/Stefan
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
