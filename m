@@ -1,48 +1,55 @@
-Message-ID: <3B8BB9AB.570AE813@mvista.com>
-Date: Tue, 28 Aug 2001 08:32:59 -0700
-From: Scott Anderson <scott_anderson@mvista.com>
+From: Subodh Nijsure <subodh@best.com>
+Message-Id: <200108282010.NAA29698@shell9.ba.best.com>
+Subject: Unsupported relocation type err while compiling head_8xx.S
+To: linuxppc-embedded@lists.linuxppc.org
+Date: Tue, 28 Aug 2001 13:10:05 -0700 (PDT)
 MIME-Version: 1.0
-To: Mark Pilon <mark.pilon@minolta-qms.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: how to dump other regs via abatron-bdi / gdb ?
-References: <3B8AB925.D2DB3E90@minolta-qms.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Mark Pilon wrote:
->
-> I'm accustomed to printing general purpose registers: print $r0
-> and the like --
->
-> bringing up a board (before establishing an exception vector table)
-> I'm getting some unknown exception -- how do I print the ESR (and
-> other SPRs for that matter ) ??
+Hello,
 
-If all is configured correctly, you can just do:
-  BDI>rd esr
-  esr : 0x00000000  0
-If not, but you know the SPR number, you can just do:
-  BDI>rdspr 0x3d4
-  SPR  980 : 0x00000000            0
+I am trying to compile linux kernel on of my development machine and
+compiler is throwing up these errors while compiling head_8xx.S
 
-> I suspect the problem is an incomplete bdi board config file,
-> but it'd help to be able to figure out what's missing ...
+ppc_8xx-gcc -D__ASSEMBLY__ -D__KERNEL__
+-I/home/baijnath/subodh/NMR/BSP/SCM/linux/include
+-c -o head_8xx.o head_8xx.S
+head_8xx.S: Assembler messages:
+head_8xx.S:227: Error: unsupported relocation type
+head_8xx.S:227: Error: unsupported relocation type
+...
+...
+..
 
-The BDI came with a file called reg405gp.def.  This file contains the
-mappings from names to spr/dcr numbers.  Make sure it is in your tftp
-directory and then make sure you have something like:
-  [REGS]
-  IDCR1	0x010	0x011	;MEMCFGADR and MEMCFGDATA
-  IDCR2	0x012	0x013	;EBCCFGADR and EBCCFGDATA
-  IDCR3	0x014	0x015	;KIAR and KIDR
-  FILE	reg405gp.def
-in your config file.  BOOT your BDI and you should then be set.
+However same kernel source code compiles fine on two other workstations,
+I have exactly same copy of development toolkits ( cross-compilers,
+headers etc. ) on other two workstations i.e. stuff in /opt/hardhat is
+same on all four workstations and only one workstation is having this
+problem....
 
-    Scott Anderson
-    scott_anderson@mvista.com   MontaVista Software Inc.
-    (408)328-9214               1237 East Arques Ave.
-    http://www.mvista.com       Sunnyvale, CA  94085
+Has anybody seen this error before and found a solution?
+[ Its not like I haven't spend lot of time trying to figure out what
+could be wrong, but all the things I have tried don't seem to fix this
+problem, also have searched mailing list archive, deja
+
+Yes I tried compiling things "by hand" and when I usee ppc_8xx-gcc -v the
+compiler and assembler options all same on four machines, only one machine
+doesn't like them. I am using HardHat 1.2 development kits.
+
+
+ppc_8xx-gcc  -v
+Reading specs from /opt/hardhat/devkit/ppc/8xx/lib/gcc-lib/powerpc-hardhat-linux/2.95.2/specs
+gcc version 2.95.2 19991030 (2.95.3 prerelease/franzo)
+ppc_8xx-as  -v
+GNU assembler version 2.10.90 (powerpc-hardhat-linux) using BFD version 2.10.0.12
+
+
+Any pointers...
+
+/Subodh
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
