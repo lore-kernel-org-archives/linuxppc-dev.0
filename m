@@ -1,20 +1,21 @@
-Return-Path: <geert@linux-m68k.org>
-Received: from witte.sonytel.be (witte.sonytel.be [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 72FA12BDB5
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Sep 2004 09:32:46 +1000 (EST)
-Date: Thu, 23 Sep 2004 22:24:59 +0200 (MEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Sender: geert@sonycom.com
-To: Andy Fleming <afleming@freescale.com>
-In-Reply-To: <12D6C166-0D9D-11D9-911D-000393C30512@freescale.com>
-Message-ID: <Pine.GSO.4.61.0409232224050.16612@waterleaf.sonytel.be>
-References: <1095945594.7501.46.camel@nighteyes.localdomain>
-	<35fb2e590409230738605c57b2@mail.gmail.com>
-	<12D6C166-0D9D-11D9-911D-000393C30512@freescale.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: Old mailing list archives
+Return-Path: <linwoes@gmail.com>
+Received: from mproxy.gmail.com (rproxy.gmail.com [64.233.170.193])
+	by ozlabs.org (Postfix) with ESMTP id C827B2BDB5
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Sep 2004 10:38:25 +1000 (EST)
+Received: by mproxy.gmail.com with SMTP id 76so3396237rnl
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Sep 2004 17:38:24 -0700 (PDT)
+Message-ID: <36b714c80409231731257ca5d0@mail.gmail.com>
+Date: Thu, 23 Sep 2004 20:31:44 -0400
+From: Brian Waite <linwoes@gmail.com>
+To: Tom Rini <trini@kernel.crashing.org>
+In-Reply-To: <20040923233035.GH27238@smtp.west.cox.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+References: <20040923164655.0472a8b9.sfr@ozlabs.org>
+	<20040923233035.GH27238@smtp.west.cox.net>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: New mailing list specifically for embedded PowerPC development
+Reply-To: Brian Waite <linwoes@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,30 +25,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 23 Sep 2004, Andy Fleming wrote:
-> Mine goes back to early March 2003.  I am, likewise, willing to tar it up, if
-> we can find somewhere to put it.
+I have to agree with Tom. After trying desperatly to keep up in the
+time of too many lists, I would really like to keep the lists to a
+minimum. If one archive can be searched for answers, life becomes much
+easier. It becomes useless to split the lists as everyone on embedded
+needs to be on dev eventually and everyone on dev usually ends up on
+embedded. It also helps head off rat holes where 2 groups on different
+lists solve the same prolem differently. I vote for one list, but the
+is just me.
 
-Mine goes back to at least January 2003. Older archives are offline on CD, but
-I can check them, if needed.
+Thanks
+Brian 
 
-> On Sep 23, 2004, at 09:38, Jon Masters wrote:
-> > On Thu, 23 Sep 2004 09:19:54 -0400, Jeff Angielski <jeff@theptrgroup.com>
-> > wrote:
-> > 
-> > > Is the archive of the old mailing still available somewhere?
-> > 
-> > My pre-ozlabs archive goes back to the end of 20031113 however others
-> > will have much better logs of old messages - I can tarball mine if you
-> > find that useful.
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+On Thu, 23 Sep 2004 16:30:35 -0700, Tom Rini <trini@kernel.crashing.org> wrote:
+> On Thu, Sep 23, 2004 at 04:46:55PM +1000, Stephen Rothwell wrote:
+> 
+> > Hi all,
+> >
+> > After some representations, I have created linuxppc-embedded@ozlabs.org
+> > for the discussion of all things to do with the development of Linux on
+> > embedded PowerPC platforms.
+> >
+> > General Linux on PowerPC development discussions should, of course, remain
+> > on this list.
+> >
+> > I hope noone feels slighted :-)
+> 
+> Could we please not do this?  IMHO, it's better to keep everyone on one
+> list.  Less cross posting, more communication and all of that.  Thanks.
+> :)
+> 
+> --
+> Tom Rini
+> http://gate.crashing.org/~trini/
+> 
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
+> 
+> 
+>
