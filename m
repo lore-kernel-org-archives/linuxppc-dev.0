@@ -1,33 +1,47 @@
-Message-ID: <3C7BF6F4.CAD54451@lvl7.com>
-Date: Tue, 26 Feb 2002 15:58:28 -0500
-From: Neil Horman <nhorman@lvl7.com>
+Message-ID: <20083A3BAEF9D211BDB600805F8B14F3010A15AE@NTSERVER>
+From: Tzahi Oved <tzahio@voltaire.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: FW: ppcboot 1.1.4 & MPSC
+Date: Tue, 26 Feb 2002 23:03:53 +0200
 MIME-Version: 1.0
-To: Mark Pilon <mpilon@midrivers.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: how to enable core files ?
-References: <3C7BF0F5.A830D984@midrivers.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Mark Pilon wrote:
->
-> That is, what do I have to set / enable / include on my target
-> so that a core file will be created when an application SEGVs ?
->
-> I'm running Wolfgang's SELF -- and really need to be able to poke
-> at a core file when my app dies.
->
-> thanks,
->
-> Mark
+Well, to cancel any baud rate problems I zeroed the CDV field in the BRG
+register so it defaults to 115000. So when I use the ppc boot as is with
+MPSC uart and baud rate of 115000, I listen to the Tx line with a scope and
+see nothing !, what am I doing wrong ??
 
-I'm not erally familiar with SELF, but we had this same problem.  We running
-under bash and found that we could create core files with the following command:
-ulimit -c <size> OR 'unlimited'
-Its a built in bash command, so the implementation may vary if you are running a
-different shell.  For what its worth though, hope that helps!
-Neil
+-----Original Message-----
+From: Wolfgang Denk [mailto:wd@denx.de]
+Sent: Tuesday, February 26, 2002 3:18 PM
+To: Tzahi Oved
+Cc: 'linuxppc-embedded@lists.linuxppc.org'
+Subject: Re: ppcboot 1.1.4 & MPSC
+
+
+In message <20083A3BAEF9D211BDB600805F8B14F3010A15AB@NTSERVER> you wrote:
+>
+> I'm trying to work with the internal uart (MPSC) on the Galileo EVB64260
+> board. When I set the definition CONFIG_MPSC in the EVB64260 config file
+> (which supposed to set the terminal to work on the MPSC) I'm not getting
+any
+> response on my console, do I need to configure anything else ?? any
+
+This can be anything, like just bad baudrate settings. You need to be
+more specific about your setup.
+
+And you have better chances for a useful reply on  the  ppcboot-users
+mailing list.
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Cole's Law: Thinly sliced cabbage.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
