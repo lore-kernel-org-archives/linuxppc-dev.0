@@ -1,40 +1,28 @@
-Message-ID: <389E4DB0.4FFBFB28@erols.com>
-Date: Sun, 06 Feb 2000 23:44:32 -0500
-From: Nelson Abramson <pogtal@erols.com>
+Date: Mon, 7 Feb 2000 00:29:02 -0800 (PST)
+From: Brad Midgley <brad@turbolinux.com>
+To: Chas Williams <chas@cmf.nrl.navy.mil>
+cc: Jeff Garzik <jgarzik@mandrakesoft.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: anyone build 2.3.42 for ppc?
+In-Reply-To: <200002052004.PAA03426@fermi.cmf.nrl.navy.mil>
+Message-ID: <Pine.LNX.4.20.0002070025410.29493-100000@mail.turbolinux.com>
 MIME-Version: 1.0
-To: Rich Young <beethoven@socal.rr.com>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Problems with hfs partitions from Linux.
-References: <389B3038.41FF0A47@socal.rr.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Rich Young wrote:
+you guys are having great luck. i haven't been able to get past
 
-> Howdy,
->
->     I have a HFS partition for transferring files from Mac OS to
-> Linux which has worked in all situations except the following:
-> When using Netscape (under Linux) and downloading RPM's
-> from a FTP site (or http) directly to the HFS partition, the file
-> seems to get corrupted in some way. This does not occur
-> if I download to a Linux directory.
+In file included from init/main.c:33:
+/usr/src/linux/include/linux/pci.h:318: parse error before `dma_addr_t'
+/usr/src/linux/include/linux/pci.h:318: warning: no semicolon at end of struct or union
+/usr/src/linux/include/linux/pci.h:346: parse error before `}'
 
-How does it get corrupted?  Maybe the file names are just getting
-shortened....?
+this is the plain common_config on an rs/6000. using gcc 2.95.2, glibc
+2.1.3-0j.
 
-Also, make sure you shift+click in netscape to make sure it doesn't touch
-the file...
-
-HTH
---Nelson Abramson
-
-
---
-Shouldn't people be arrested and persecuted for engaging in their
-constitutional rights?  http://www.opendvd.org
+Brad
+brad@turbolinux.com | http://www.turbolinux.com/~brad/
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
