@@ -1,19 +1,28 @@
-Return-Path: <akonovalov@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (RT-soft-2.Moscow.itn.ru [80.240.96.70])
-	by ozlabs.org (Postfix) with SMTP id 3ED5E2BDB8
+Return-Path: <steven.scholz@imc-berlin.de>
+Received: from mail.imc-berlin.de (mail.imc-berlin.de [217.110.46.186])
+	by ozlabs.org (Postfix) with ESMTP id 38A722BDB0
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 11 Oct 2004 21:43:56 +1000 (EST)
-Message-ID: <416A7433.4080605@ru.mvista.com>
-Date: Mon, 11 Oct 2004 15:53:23 +0400
-From: Andrei Konovalov <akonovalov@ru.mvista.com>
+	Mon, 11 Oct 2004 22:16:36 +1000 (EST)
+Received: from mailserver.berlin.imc-berlin.de
+	(mailserver.berlin.imc-berlin.de [10.0.0.19])
+	by mail.imc-berlin.de (Postfix) with ESMTP id E54BE2F021
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 11 Oct 2004 13:46:46 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by mailserver.berlin.imc-berlin.de (Postfix) with ESMTP id BF5B110586
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 11 Oct 2004 13:46:46 +0200 (CEST)
+Received: from [10.0.2.10] (scholz.berlin.imc-berlin.de [10.0.2.10])
+	by mailserver.berlin.imc-berlin.de (Postfix) with ESMTP id 56E519FBE
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 11 Oct 2004 13:46:46 +0200 (CEST)
+Message-ID: <416A72AD.9040206@imc-berlin.de>
+Date: Mon, 11 Oct 2004 13:46:53 +0200
+From: Steven Scholz <steven.scholz@imc-berlin.de>
 MIME-Version: 1.0
-To: jonathan@jonmasters.org
-References: <4166CCF5.7040705@ru.mvista.com>
-	<35fb2e5904100912409628a94@mail.gmail.com>
-In-Reply-To: <35fb2e5904100912409628a94@mail.gmail.com>
+To: linuxppc-embedded@ozlabs.org
 Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: akpm@osdl.org, linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH][PPC32] Xilinx ML300 board support (very basic)
+Subject: linux 2.4.27 for 8xx?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,117 +33,13 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Jon Masters wrote:
-> On Fri, 08 Oct 2004 21:23:01 +0400, Andrei Konovalov
-> <akonovalov@ru.mvista.com> wrote:
-> 
-> 
->>Adds minimal Xilinx ML300 board support (enough to boot with ramdisk).
->>The only peripheral devices supported are 16x50 compatible UARTs.
->>
->>Signed-off-by: Andrei Konovalov <akonovalov@ru.mvista.com>
-> 
-> 
-> I'll test this if I get chance soon.
-> 
+Hi there,
 
-Great!
+is the vanilla kernel 2.4.27 from kernel.org considered stable for MPC8xx systems?
 
-> 
->>        /*
->>-        * At one point, we were getting machine checks.  Linux was not
->>-        * invalidating the data cache before it was enabled.  The
->>-        * following code was added to do that.  Soon after we had done
->>-        * that, we found the real reasons for the machine checks.  I've
->>-        * run the kernel a few times with the following code
->>-        * temporarily removed without any apparent problems.  However,
->>-        * I objdump'ed the kernel and boot code and found out that
->>-        * there were no other dccci's anywhere, so I put the code back
->>-        * in and have been reluctant to remove it.  It seems safer to
->>-        * just leave it here.
->>+        * Invalidate the data cache if the data cache is turned off.
->>+        * - The 405 core does not invalidate the data cache on power-up
->>+        *   or reset but does turn off the data cache. We cannot assume
->>+        *   that the cache contents are valid.
->>+        * - If the data cache is turned on this must have been done by
->>+        *   a bootloader and we assume that the cache contents are
->>+        *   valid.
->>         */
-> 
-> 
-> Er...the caveat about the MSR is still worth noting - I had this
-> problem and for a while couldn't figure out why the fsck the board
-> wouldn't come up with cacheing enabled (I've written patches for
-> debugging that turn off various cacheing by modifying the pte macros,
-> etc.) and *still* believe we're not clean from unwanted machine checks
-> here. Just FYI.
-> 
+Or do I still have to go for the trees on ppc.bkbits.net ?
 
-The code which follows the comment above works for me with both ML300
-and the Memec 2VP7 boards I have.
-Do you mean that some boards (or FPGA designs) need cacheing to be
-disabled completely?
+Thanks.
 
-If this is the case, and you have the patch that handles this, I would
-welcome that patch to follow mine.
-
-Is there any chance for me to reproduce that problem on my site with
-the hardware I have (1. ML300; 2. Memec 2VP7 board plus the COMM and the
-System ACE modules)?
-
-> 
-...
-> 
->>+*     This program is free software; you can redistribute it and/or modify it
->>+*     under the terms of the GNU General Public License as published by the
->>+*     Free Software Foundation; either version 2 of the License, or (at your
->>+*     option) any later version.
-> 
-> 
-> ...and then:
-> 
-> 
->>+*     Xilinx hardware products are not intended for use in life support
->>+*     appliances, devices, or systems. Use in such applications is
->>+*     expressly prohibited.
-> 
-> 
-> I've always loved it how Xilinx GPL disclaimers cunningly aren't. They
-> might want to wake up and smell the coffee at some point.
-
-I know this doesn't look good.
-If it *does* prevent this code from getting into the kernel tree I could
-try contacting Xilinx (doubt it will help though - they have already
-changed the copyrights once to be more community friendly).
-
-> 
-> Andrei, you'll want to modify the ML300 xparameters stuff to allow
-> it's location to be specified by a parameter. People who want to use
-> (ewww, spit) autogenerated Xilinx xparameters.h from their EDK will
-> probably also want to choose where it lives.
-> 
-
-Why renaming someone's autogenerated xparameters.h into xparameters_my_ml300.h
-and placing it into arch/ppc/platforms/4xx/xparameters/,
-defining CONFIG_XILINX_MY_ML300, and adding
-few lines to include/asm-ppc/xparameters.h like:
-
-#if defined(CONFIG_XILINX_ML300)
-#include <platforms/4xx/xparameters/xparameters_ml300.h>
-#endif
-
-+#if defined(CONFIG_XILINX_MY_ML300)
-+#include <platforms/4xx/xparameters/xparameters_my_ml300.h>
-+#endif
-
-doesn't work in your oppinion?
-
-> 
-...
-> 
-> Jon.
-> 
-> 
-
-Thanks,
-Andrei
+-- 
+Steven
