@@ -1,26 +1,43 @@
-Date: Mon, 7 May 2001 17:12:45 -0600
-From: Cort Dougan <cort@fsmlabs.com>
-To: "Conyers, Steve" <steve.conyers@lmco.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Would like to upgrade from 2.2.17 to 2.4 or 2.5
-Message-ID: <20010507171245.D680@ftsoj.fsmlabs.com>
-References: <64AFDC09F27AD411BA9500508BDF7E3069E2F9@emss08m04.ems.lmco.com>
+Date: Tue, 8 May 2001 17:14:39 +1000
+From: Steven Hanley <sjh@svana.org>
+To: Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: cant set port_type in new airport driver
+Message-ID: <20010508171439.A1386@wibble.net>
+Reply-To: Steven Hanley <sjh@wibble.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <64AFDC09F27AD411BA9500508BDF7E3069E2F9@emss08m04.ems.lmco.com>; from steve.conyers@lmco.com on Mon, May 07, 2001 at 04:09:29PM -0700
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I can give you a tar file of 2_4_devel or you can pick one up from
-ftp.kernel.org/pub/linux/kernel/people/cort/ or ftp.fsmlabs.com/pub/linuxppc/
+All
 
-} Would be happy to upgrade from 2.2.17.  Using it (temporarily) cuz we got a
-} patch to it from Motorola that "might work" with the MVME5100 board.  One of
-} your associates (Matt Porter) has indicated that a more mature linuxppc
-} already patched for MVME5100 and tested somewhat is under Bitkeeper as
-} version 2.5.  For various reasons, we can't install Bitkeeper here, so we
-} have been pressing on with 2.2.17 with patches and hacks per our
-} correspondence.  This is how far we get with 2.2.17:
+in ben's old driver for the airport I was able to do
+modprobe airport port_type=3
+to set the Mode to Ad-hoc rather than managed.
+
+however if the card is already in Managed mode
+iwconfig airport mode Ad-hoc
+will fail
+
+now in the new driver I can no longer pass the port_type as a paramater to the
+modprobe (it isnt in the sources for airport.c orinoco.c or hermes.c) and yet
+you still can not change to Ad-hoc mode with iwconfig, the sourced in
+orinoco.c for the ioctl to set the mode still are the same effectively.
+
+So doe sanyone know how to set the mode to Ad-hoc in the new airport driver? I
+cant use Managed as I dont use a base station, I use another card in another
+computer also in Ad-hoc mode and set up a cipe link over the link.
+
+        See You
+            Steve
+
+--
+sjh@wibble.net http://wibble.net/~sjh/
+Look Up In The Sky
+   Is it a bird?  No
+      Is it a plane?  No
+         Is it a small blue banana?
+YES
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
