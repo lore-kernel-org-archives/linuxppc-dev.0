@@ -1,22 +1,31 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <20040630105412.41291.qmail@web12824.mail.yahoo.com>
-Date: Wed, 30 Jun 2004 03:54:12 -0700 (PDT)
-From: Alireza Sadri <arsadri@yahoo.ca>
-Subject: RS232 Baud Rate
+Subject: static Elf
+From: bharat <bharat@coraltele.com>
 To: linuxppc-embedded@lists.linuxppc.org
-MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Message-Id: <9921583.1088594424625.JavaMail.administrator@RnDserver>
+Mime-Version: 1.0
+Date: 30 Jun 2004 16:51:20 +0530
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+hi
 
-I am going to use ViosinProbeII with VisionCLICK , and
-i need to set the COM port baud rate , can anyone tell
-me what is MPC8260 RS232 baud rate?
+i am trying to execute  static ELF file in user space o.e by calling
+execve
+after system call every thing went okay
+thread start function called and success full return to sys_execve but
+then system do not execute  my process but sits else(neither hangs nor
+execute)
+what can be problem?
+please reply soon
 
-thakns and regards.
+--
+
+YOU CAN ACHIEVE ANYTHING BY PROGRAMMING YOUR MIND-SET !
+
+with regards
+Bharat Bhushan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
