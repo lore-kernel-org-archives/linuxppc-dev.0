@@ -1,28 +1,51 @@
-Date: Thu, 31 Aug 2000 18:10:55 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Dan Malek <dan@netx4.com>
-cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-        Michel Dänzer <daenzerm@student.ethz.ch>,
-        Tony Mantler <nicoya@apia.dhs.org>,
-        Tom Rini <trini@kernel.crashing.org>,
-        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Platform configuration (was: Re: CONFIG_PPC != Mac)
-In-Reply-To: <39AE80BD.D86B34DA@embeddededge.com>
-Message-ID: <Pine.HPX.4.10.10008311808260.15978-100000@gra-ux1.iram.es>
+Message-ID: <39AE8559.A4F12B6D@relog.ch>
+Date: Thu, 31 Aug 2000 18:18:33 +0200
+From: Michel Dänzer <daenzer@relog.ch>
+Reply-To: daenzerm@student.ethz.ch
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Marc Dietrich <Marc.Dietrich@hrz.uni-giessen.de>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: asm statement in include/asm not ansi conform
+References: <Pine.A41.4.21.0008311751210.17008-100000@c2.hrz.uni-giessen.de>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 31 Aug 2000, Dan Malek wrote:
+Marc Dietrich wrote:
 
-> I would also like to see us spend a little more time trying to
-> stabilize 2.4 instead of trying to solve elaborate configuration and
-> boot schemes.  That is what 2.5 is for.
+> after some testing dri works now. On startup X says "dri enabled" and
+> glinfo shows many supported GL functions. But at least when running
+> "gears" for example, I get no accelaration at all. Still 60 frames per
+> second - same as with software rendering.
 
-What are your problems with 2.4 ? I'm at 2.4.0-test7 and I've not had any
-problem so far, although I still need to upgrade my modutils.
+For me, gears gives even less FPS on startup with DRI than with software
+rendering ;) What happens when you maximize the window?
 
+A few possibilities to find out if you are really using direct rendering:
+
+- set LIBGL_DEBUG=verbose
+- run a program with lots of textured triangles (Quake, fire, ...)
+- test, compare, test, ...
+
+
+> I also have a P-III/500 box with Rage128 (AGP) witch produces 400 frames!
+
+DRI currently only runs in PIO mode as we don't have any GART driver yet.
+
+Anyway, this is a nice preview of what we could expect with AGP GART :)
+
+
+> Glxinfo says something like "RGB error" and breaks.
+
+Hmm, never tried it.
+
+
+Michel
+
+
+--
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and the DRI project
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
