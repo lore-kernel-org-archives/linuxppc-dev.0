@@ -1,19 +1,20 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 9794B67A6B
+Return-Path: <yuli@arabellasw.com>
+Received: from gold.webfusion.co.uk (gold.webfusion.co.uk [212.67.202.159])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B984667A6D
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 12 Mar 2005 07:12:07 +1100 (EST)
-In-Reply-To: <4231F9F9.5080506@246tNt.com>
-References: <4231F9F9.5080506@246tNt.com>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <be4da82f8d12e20b54050e15fd27df36@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Fri, 11 Mar 2005 14:12:02 -0600
-To: "Sylvain Munaut" <tnt@246tNt.com>
-Cc: Tom Rini <trini@kernel.crashing.org>, LKML <linux-kernel@vger.kernel.org>,
-	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH 1/2] MPC52xx updates : sparse clean-ups
+	Sat, 12 Mar 2005 07:39:56 +1100 (EST)
+From: Yuli Barcohen <yuli@arabellasw.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <16946.530.358572.465485@astp0002.localdomain>
+Date: Fri, 11 Mar 2005 22:39:46 +0200
+To: "Vijay Padiyar" <vijay_padiyar@hotmail.com>
+In-Reply-To: <BAY1-DAV11E7EFC29304B234EEB9A38B530@phx.gbl>
+References: <BAY1-DAV11E7EFC29304B234EEB9A38B530@phx.gbl>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: query regarding I2C controller on MPC8260
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,268 +25,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+>>>>> Vijay Padiyar writes:
 
-On Mar 11, 2005, at 2:05 PM, Sylvain Munaut wrote:
+    Vijay> Hi there I am using an MPC8260-based target board. My target
+    Vijay> is running U-Boot 1.1.2 as the bootloader and Linux-2.6.10 as
+    Vijay> the kernel with BusyBox-1.0. I wish to use the I2C controller
+    Vijay> on the MPC8260 to access an external EEPROM connected to
+    Vijay> it. I need to do this from *user space*.
 
-> Hi Tom & all
->
-> Here's some updates related to the Freescale MPC52xx. First some
->  clean-ups for sparse warnings and then PCI support. I'd like to get
->  theses approved & merged before I submit conversion to platform bus
->  model.
->
-> As usual, the patches can also be pulled of a bk repository :
->  bk://tnt.bkbits.net/linux-2.5-mpc52xx-pending
->
-> (note it's _NOT_ the same url as before even if it's close ;)
->
->
->
->
-> =A0=A0=A0 Sylvain
->
-> ---
->
-> diff -Nru a/arch/ppc/syslib/mpc52xx_pic.c=20
-> b/arch/ppc/syslib/mpc52xx_pic.c
-> --- a/arch/ppc/syslib/mpc52xx_pic.c=A0=A0=A0=A0 2005-03-11 20:41:36 =
-+01:00
->  +++ b/arch/ppc/syslib/mpc52xx_pic.c=A0=A0=A0=A0 2005-03-11 20:41:36 =
-+01:00
->  @@ -33,8 +33,8 @@
->  =A0#include <asm/mpc52xx.h>
->
->
->
-> -static struct mpc52xx_intr *intr;
->  -static struct mpc52xx_sdma *sdma;
->  +static struct mpc52xx_intr __iomem *intr;
->  +static struct mpc52xx_sdma __iomem *sdma;
->
-> =A0static void
->  =A0mpc52xx_ic_disable(unsigned int irq)
->  @@ -173,7 +173,7 @@
->  =A0=A0=A0=A0=A0=A0=A0 mpc52xx_ic_disable,=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0=A0 /* disable(irq) */
-> =A0=A0=A0=A0=A0=A0=A0 mpc52xx_ic_disable_and_ack,=A0=A0=A0=A0 /* =
-disable_and_ack(irq) */
->  =A0=A0=A0=A0=A0=A0=A0 mpc52xx_ic_end,=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0=A0=A0=A0 /* end(irq) */
->  -=A0=A0=A0=A0=A0=A0 0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 /* set_affinity(irq, cpumask)
-> SMP. */
->  +=A0=A0=A0=A0=A0=A0 NULL=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 /* set_affinity(irq, cpumask)
-> SMP. */
->  =A0};
+    Vijay> From what I understand, we can open the I2C device with the
+    Vijay> open command from our application as follows:
 
-It looks like others have moved to a C99 initialization style for=20
-hw_interrupt_type, see syslib/ipic.c for an example.
+    Vijay> ret = open ("/dev/i2c-0", O_RDWR);
 
-> =A0void __init
->  @@ -183,10 +183,8 @@
->  =A0=A0=A0=A0=A0=A0=A0 u32 intr_ctrl;
->
-> =A0=A0=A0=A0=A0=A0=A0 /* Remap the necessary zones */
->  -=A0=A0=A0=A0=A0=A0 intr =3D (struct mpc52xx_intr *)
->  -=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 ioremap(MPC52xx_INTR, =
-sizeof(struct mpc52xx_intr));
-> -=A0=A0=A0=A0=A0=A0 sdma =3D (struct mpc52xx_sdma *)
->  -=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 ioremap(MPC52xx_SDMA, =
-sizeof(struct mpc52xx_sdma));
-> +=A0=A0=A0=A0=A0=A0 intr =3D ioremap(MPC52xx_INTR, sizeof(struct =
-mpc52xx_intr));
-> +=A0=A0=A0=A0=A0=A0 sdma =3D ioremap(MPC52xx_SDMA, sizeof(struct =
-mpc52xx_sdma));
->
-> =A0=A0=A0=A0=A0=A0=A0 if ((intr=3D=3DNULL) || (sdma=3D=3DNULL))
-> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 panic("Can't ioremap =
-PIC/SDMA register for init_irq=20
-> !");
->  diff -Nru a/arch/ppc/syslib/mpc52xx_setup.c
->  b/arch/ppc/syslib/mpc52xx_setup.c
-> --- a/arch/ppc/syslib/mpc52xx_setup.c=A0=A0 2005-03-11 20:41:36 +01:00
->  +++ b/arch/ppc/syslib/mpc52xx_setup.c=A0=A0 2005-03-11 20:41:36 =
-+01:00
->  @@ -39,7 +39,8 @@
->  =A0void
->  =A0mpc52xx_restart(char *cmd)
->  =A0{
->  -=A0=A0=A0=A0=A0=A0 struct mpc52xx_gpt* gpt0 =3D (struct =
-mpc52xx_gpt*)=20
-> MPC52xx_GPTx(0);
-> +=A0=A0=A0=A0=A0=A0 struct mpc52xx_gpt __iomem *gpt0 =3D
->  +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 (struct mpc52xx_gpt =
-__iomem *) MPC52xx_GPTx(0);
->
-> =A0=A0=A0=A0=A0=A0=A0 local_irq_disable();
->
-> @@ -102,7 +103,7 @@
->  =A0#endif
->
-> =A0static void
->  -mpc52xx_psc_putc(struct mpc52xx_psc * psc, unsigned char c)
->  +mpc52xx_psc_putc(struct mpc52xx_psc __iomem *psc, unsigned char c)
->  =A0{
->  =A0=A0=A0=A0=A0=A0=A0 while (!(in_be16(&psc->mpc52xx_psc_status) &
->  =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 =
-MPC52xx_PSC_SR_TXRDY));
-> @@ -112,8 +113,9 @@
->  =A0void
->  =A0mpc52xx_progress(char *s, unsigned short hex)
->  =A0{
->  -=A0=A0=A0=A0=A0=A0 struct mpc52xx_psc *psc =3D (struct mpc52xx_psc=20=
+    Vijay> After this, the device should be accessible using either
+    Vijay> standard I2C functions or SMBus functions.
 
-> *)MPC52xx_CONSOLE;
-> =A0=A0=A0=A0=A0=A0=A0 char c;
->  +=A0=A0=A0=A0=A0=A0 struct mpc52xx_psc __iomem *psc =3D
->  +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 (struct mpc52xx_psc =
-__iomem *)MPC52xx_CONSOLE;
->
-> =A0=A0=A0=A0=A0=A0=A0 while ((c =3D *s++) !=3D 0) {
->  =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 if (c =3D=3D '\n')
->  @@ -138,11 +140,11 @@
->  =A0=A0=A0=A0=A0=A0=A0=A0 * else get size from sdram config registers
->  =A0=A0=A0=A0=A0=A0=A0=A0 */
->  =A0=A0=A0=A0=A0=A0=A0 if (ramsize =3D=3D 0) {
->  -=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 struct mpc52xx_mmap_ctl =
-*mmap_ctl;
->  +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 struct mpc52xx_mmap_ctl =
-__iomem *mmap_ctl;
->  =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 u32 sdram_config_0, =
-sdram_config_1;
->
-> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 /* Temp BAT2 mapping =
-active when this is called ! */
->  -=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 mmap_ctl =3D (struct =
-mpc52xx_mmap_ctl*)=20
-> MPC52xx_MMAP_CTL;
-> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 mmap_ctl =3D (struct =
-mpc52xx_mmap_ctl __iomem *)
-> MPC52xx_MMAP_CTL;
->
-> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 sdram_config_0 =3D =
-in_be32(&mmap_ctl->sdram0);
->  =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 sdram_config_1 =3D =
-in_be32(&mmap_ctl->sdram1);
->  @@ -169,13 +171,11 @@
->  =A0=A0=A0=A0=A0=A0=A0 /* if bootloader didn't pass bus frequencies, =
-calculate them=20
-> */
->  =A0=A0=A0=A0=A0=A0=A0 if (xlbfreq =3D=3D 0) {
->  =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 /* Get RTC & Clock =
-manager modules */
->  -=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 struct mpc52xx_rtc *rtc;
->  -=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 struct mpc52xx_cdm *cdm;
->  +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 struct mpc52xx_rtc =
-__iomem *rtc;
->  +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 struct mpc52xx_cdm =
-__iomem *cdm;
->
-> -=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 rtc =3D (struct =
-mpc52xx_rtc*)
->  -=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 =
-ioremap(MPC52xx_RTC, sizeof(struct=20
-> mpc52xx_rtc));
-> -=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 cdm =3D (struct =
-mpc52xx_cdm*)
-> -=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 =
-ioremap(MPC52xx_CDM, sizeof(struct=20
-> mpc52xx_cdm));
-> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 rtc =3D =
-ioremap(MPC52xx_RTC, sizeof(struct mpc52xx_rtc));
-> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 cdm =3D =
-ioremap(MPC52xx_CDM, sizeof(struct mpc52xx_cdm));
->
-> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 if ((rtc=3D=3DNULL) || =
-(cdm=3D=3DNULL))
->  =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 =
-panic("Can't ioremap RTC/CDM while computing=20
-> bus
->  freq");
->  @@ -212,8 +212,8 @@
->  =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 __res.bi_pcifreq =3D =
-pcifreq;
->
-> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 /* Release mapping */
->  -=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 iounmap((void*)rtc);
-> -=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 iounmap((void*)cdm);
-> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 iounmap(rtc);
->  +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 iounmap(cdm);
-> =A0=A0=A0=A0=A0=A0=A0 }
->
-> =A0=A0=A0=A0=A0=A0=A0 divisor =3D 4;
->  diff -Nru a/drivers/serial/mpc52xx_uart.c=20
-> b/drivers/serial/mpc52xx_uart.c
-> --- a/drivers/serial/mpc52xx_uart.c=A0=A0=A0=A0 2005-03-11 20:41:36 =
-+01:00
->  +++ b/drivers/serial/mpc52xx_uart.c=A0=A0=A0=A0 2005-03-11 20:41:36 =
-+01:00
->  @@ -86,7 +86,7 @@
->  =A0=A0=A0=A0=A0=A0=A0=A0 *=A0=A0=A0=A0=A0=A0=A0 the console_init
->  =A0=A0=A0=A0=A0=A0=A0=A0 */
->
-> -#define PSC(port) ((struct mpc52xx_psc *)((port)->membase))
->  +#define PSC(port) ((struct mpc52xx_psc __iomem *)((port)->membase))
->
->
->
-> =A0/* Forward declaration of the interruption handling routine */
->  @@ -190,7 +190,7 @@
->  =A0static int
->  =A0mpc52xx_uart_startup(struct uart_port *port)
-> =A0{
->  -=A0=A0=A0=A0=A0=A0 struct mpc52xx_psc *psc =3D PSC(port);
->  +=A0=A0=A0=A0=A0=A0 struct mpc52xx_psc __iomem *psc =3D PSC(port);
->
-> =A0=A0=A0=A0=A0=A0=A0 /* Reset/activate the port, clear and enable =
-interrupts */
->  =A0=A0=A0=A0=A0=A0=A0 out_8(&psc->command,MPC52xx_PSC_RST_RX);
-> @@ -217,7 +217,7 @@
->  =A0static void
->  =A0mpc52xx_uart_shutdown(struct uart_port *port)
-> =A0{
->  -=A0=A0=A0=A0=A0=A0 struct mpc52xx_psc *psc =3D PSC(port);
->  +=A0=A0=A0=A0=A0=A0 struct mpc52xx_psc __iomem *psc =3D PSC(port);
->
-> =A0=A0=A0=A0=A0=A0=A0 /* Shut down the port, interrupt and all */
->  =A0=A0=A0=A0=A0=A0=A0 out_8(&psc->command,MPC52xx_PSC_RST_RX);
-> @@ -231,7 +231,7 @@
->  =A0mpc52xx_uart_set_termios(struct uart_port *port, struct termios =
-*new,
->  =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0 struct termios *old)
->  =A0{
->  -=A0=A0=A0=A0=A0=A0 struct mpc52xx_psc *psc =3D PSC(port);
->  +=A0=A0=A0=A0=A0=A0 struct mpc52xx_psc __iomem *psc =3D PSC(port);
->  =A0=A0=A0=A0=A0=A0=A0 unsigned long flags;
->  =A0=A0=A0=A0=A0=A0=A0 unsigned char mr1, mr2;
->  =A0=A0=A0=A0=A0=A0=A0 unsigned short ctr;
->  @@ -562,7 +562,7 @@
->  =A0mpc52xx_console_get_options(struct uart_port *port,
-> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0=A0=A0=A0 int *baud, int *parity, int *bits, int=20
-> *flow)
->  =A0{
->  -=A0=A0=A0=A0=A0=A0 struct mpc52xx_psc *psc =3D PSC(port);
->  +=A0=A0=A0=A0=A0=A0 struct mpc52xx_psc __iomem *psc =3D PSC(port);
->  =A0=A0=A0=A0=A0=A0=A0 unsigned char mr1;
->
-> =A0=A0=A0=A0=A0=A0=A0 /* Read the mode registers */
->  @@ -592,7 +592,7 @@
->  =A0mpc52xx_console_write(struct console *co, const char *s, unsigned =
-int
-> count)
->  =A0{
->  =A0=A0=A0=A0=A0=A0=A0 struct uart_port *port =3D =
-&mpc52xx_uart_ports[co->index];
->  -=A0=A0=A0=A0=A0=A0 struct mpc52xx_psc *psc =3D PSC(port);
->  +=A0=A0=A0=A0=A0=A0 struct mpc52xx_psc __iomem *psc =3D PSC(port);
->  =A0=A0=A0=A0=A0=A0=A0 unsigned int i, j;
->
-> =A0=A0=A0=A0=A0=A0=A0 /* Disable interrupts */
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
->  Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+    Vijay> I read that if the I2C controller supports SMBus, it will be
+    Vijay> preferable to access the device via the SMBus read/write
+    Vijay> functions, as they seem to be more "efficient." What I want
+    Vijay> to know is, does the PowerPC I2C controller support the SMBus
+    Vijay> protocol? I don't think it does, judging from the MPC8260
+    Vijay> manual, but just want to be sure.
+
+It does not support SMBus but since it's a full-featured I2C controller,
+it's not a problem. SMBus emulation mode can be used on any I2C
+controller.
+
+    Vijay> Also, do we need to create the /dev/i2c-0 device file
+    Vijay> manually or will it be created on the fly?
+
+It depends on the /dev filesystem which you use. If it's devfs (or you
+use udev), the file will be created on the fly, otherwise you have to
+create it manually.
+
+-- 
+========================================================================
+ Yuli Barcohen       | Phone +972-9-765-1788 |  Software Project Leader
+ yuli@arabellasw.com | Fax   +972-9-765-7494 | Arabella Software, Israel
+========================================================================
