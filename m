@@ -1,47 +1,32 @@
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <007a01c44e69$bb7de860$0301a8c0@chuck2>
+From: "Mark Chambers" <markc@mail.com>
+To: "Matevz Langus" <matevz.langus@fortunal.net>,
+	<linuxppc-embedded@lists.linuxppc.org>
+References: <20040609154634.29212C109F@atlas.denx.de> <1086815570.3985.13.camel@n1020>
+Subject: Re: JTAG debuggers for Motorola 8xx/82xx/85xx
+Date: Wed, 9 Jun 2004 17:35:47 -0400
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-Subject: RE: JTAG debuggers for Motorola 8xx/82xx/85xx
-Date: Wed, 9 Jun 2004 15:22:56 -0600
-Message-ID: <065ACD8E84315E4394C835E398C8D5EB089DB9@cossmgmbx02.email.corp.tld>
-From: "VanBaren, Gerald (AGRE)" <Gerald.VanBaren@smiths-aerospace.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> -----Original Message-----
-> From: owner-linuxppc-embedded@lists.linuxppc.org
-> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Matevz
-> Langus
-> Sent: Wednesday, June 09, 2004 5:13 PM
-> To: linuxppc-embedded@lists.linuxppc.org
-> Subject: JTAG debuggers for Motorola 8xx/82xx/85xx
->
->
->
-> Hi folks,
->
-> I see you are discussing about BDI2000 here. Our company used
-> EST Tools
-> for many years and they were really good but since Windriver
-> bought EST
-> they suck.
+For 8xx, the open source BDM4GDB (which you can get from www.denx.de) is
+great.  I also partially ported the bdm driver to Windows for production
+testing work.  Under Windows, I've used CrossView (from Tasking.com) with
+Macraigor Wiggler (ocdemon.net) - all priced very reasonably.  However
+CrossView does not support linux (but BDM4GDB does, of course)
+
+Mark Chambers
+
 >
 > Which JTAG debugger do you suggest for Mot 8xx/82xx/85xx processors?
 > If possible without stupid licensing model, where every time Motorola
 > changes partnumber for the same chip new license and a couple k$ are
 > needed.
 >
-> I hope to get honest answers as all producers promise amazing things
-> which aren't really to believe.
->
-> thanks,
->   Matevz
-
-BDI2000 beats vision* hands down in pretty much all areas (price, usability, manufacturer's support, linux support, etc.).  Of course, I have to confess I have not used our visionICE since we got our first (of many) BDI2000s, so my knowledge of the visionICE is rather dated :-).
-
-gvb
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
