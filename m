@@ -1,29 +1,33 @@
-Reply-To: jfd@broadcom.com
-From: "James Dougherty" <jfd@broadcom.com>
+Message-ID: <20030627233830.33375.qmail@web40310.mail.yahoo.com>
+Date: Fri, 27 Jun 2003 16:38:30 -0700 (PDT)
+From: Miku Jha <jha_miku@yahoo.com>
+Subject: cross compiling  ksymoops
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Cheap FBDev for LinuxPPC
-Date: Fri, 27 Jun 2003 12:26:57 -0700
-Message-ID: <000201c33ce2$1371b3c0$124c100a@LTSJCAJFD>
 MIME-Version: 1.0
-In-Reply-To: <AB5AF73EAF23304EA1B932174137CED703039D@m5tmail.m5t.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Hi
 
-I am working on a project with MPC8245 and have
-the need for a VGA device which I can use to map
-the frame-buffer ram directly.
+I am trying to compile ksymoops-2.4.7
+for powerpc 440.
 
-A colleague of mine is recommending the SiliconMotion
-chipset.. could anyone comment on this?
+Can you please let me know what should I specify as
+DEF_TARGET :=$(MY_TARGET) and
+DEF_ARCH :=$(MY_ARCH)
 
-If so, what cards could I purchase at Frye's or some
-store..
+in the Makefile
 
-Finally, does anyone have any code for this baby?
+I tried setting DEF_ARCH to "ppc" but doesnot work
 
-Many thanks in advance.
+I am a newbie so please bear with me.
+
+Thanks
+
+=====
+mailto:jha_miku@yahoo.com
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
