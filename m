@@ -1,53 +1,48 @@
-Message-ID: <DB0585C9F6F9D411BE8F00D0B7896A4CC0606B@SNCMAIL>
-From: James Don <JDon@spacebridge.com>
-To: "'Xiaogeng (Shawn) Jin'" <xjin@redswitch.com>,
-	James Don <JDon@spacebridge.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Configure 8xx_io in 2.4.21-pre3
-Date: Tue, 14 Jan 2003 13:02:02 -0500
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <20030114184236.43688.qmail@web41211.mail.yahoo.com>
+Date: Tue, 14 Jan 2003 10:42:36 -0800 (PST)
+From: Prakash kanthi <pkanthi@yahoo.com>
+Subject: ramdisk mount problem
+To: Wolfgang Denk <wd@denx.de>
+Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <20030113075515.9E61AC608E@atlas.denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wish I could help ... I have been mostly using a mvista source tree
-though...
+Hi Folks,
 
-And I have never tried to switch kernel versions yet ;-)
+I am trying to use 2MB ramdisk image from denx as my
+linux filesystem. Linux kernel fails to mount the
+'ext2' type file system from initrd. I pin pointed the
+problem.
 
-Jim
+Looks like the problem is in 'do_mounts.c ->
+mount_block_root' function where a call is made to
+sys_mount as follows:
 
------Original Message-----
-From: Xiaogeng (Shawn) Jin [mailto:xjin@redswitch.com]
-Sent: Tuesday, January 14, 2003 12:59 PM
-To: James Don
-Cc: 'linuxppc-embedded@lists.linuxppc.org'
-Subject: Re: Configure 8xx_io in 2.4.21-pre3
+'int err = sys_mount(name, "/root", p, flags,
+root_mount_data);'
 
-Hi Jim,
+In my case name="/dev/root", p="ext2", flags=32768 and
+root_mount_data=<NULL>.
 
-Thank you for your suggestions. I had a working 2.4.4 (released by DENX)
-kernel on my board, which has more stuff related to 8xx_io than
-2.4.21-pre3. I don't know if those DENX-added stuff are necessary to
-enable 8xx CPM or if the 8xx_io code in 2.4.21 is sufficient to make 8xx
-CPM working. Probably I need to compare the code in these two versions
-line by line.
+The result of this call is EINVAL, i.e. invalid
+argument. Can anyone help me out find which one of the
+arguements could be invalid? If 'root_mount_data' is
+the culprit, why is it null? I see that it's value is
+set in one of the __setup functions. When are these
+functions supposed be executed? I know that all
+__initcalls are executed from dO_initcalls.
 
-- Shawn.
+This failure causes Kernel Panic, complaing about
+"Unable to mount root fs at 01:00".
 
-> 1.) I recommend start with UART only build of the kernel first
->
-> 2.) Did you check that your PA,PB,PC, and PD pins are set up properly ...
->
-> I my custom board had pins moved for things like enet on SCC ? However
-> normally I believe SMC1 only can be on one pair of pins for a UART ...
-> another
->
-> 3.) Another thing to look at is your BRG clock for your board ... in my
-> kernel I found mvista didn't look at the some parts of the hardware reset
-> word that divide down my 80 Mhz reference intenerally before it goes to
-the
-> brg ... I was really surprised this code wasn't there ...
+
+Thanks,
+Prakash
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
