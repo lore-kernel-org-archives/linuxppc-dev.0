@@ -1,63 +1,58 @@
-From: Graf Alex <alex.graf@siemens.com>
-To: "'Song Sam'" <samlinuxppc@yahoo.com.cn>,
-	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <791B3205DB661A42B4BFE5464A7D1D0204B36ECA@chzugexch01.abatos.com>
-Subject: AW: How to set current time to 8xx RTC through Linux application?
-Date: Fri, 11 Jun 2004 08:41:36 +0200
+Message-ID: <40C95EC4.8040504@intracom.gr>
+Date: Fri, 11 Jun 2004 10:27:00 +0300
+From: Pantelis Antoniou <panto@intracom.gr>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: ok, so now my dynamically-linked minit starts after all.  argh.
+References: <Pine.LNX.4.58.0406101346490.18563@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.58.0406101346490.18563@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-If you did implement the Linux rtc interface, you should be able to
-read/write the time with IOCTLs from your app.
+Robert P. J. Day wrote:
 
-fRtc = open("/dev/rtc", O_RDWR, 0);
-ioctl(fRtc, RTC_RD_TIME, &tm );
-ioctl(fRtc, RTC_SET_TIME, &tm);
+>  gack.  after doing a thorough clean of my software tree, and rebuilding
+>with a dynamically-linked minit, well, it works.  go figure.
+>
+>RAMDISK: Compressed image found at block 0
+>VFS: Mounted root (ext2 filesystem).
+>Mounted devfs on /dev
+>Freeing unused kernel memory: 52k init
+>Trying run_init_process with /sbin/minit
+>FIFOs opened successfully.
+>About to start default service.
+>(hang)
+>
+>  in other words, i'm back where i was many days ago -- kernel booting,
+>getting to minit, minit starting, then hanging.  but that's ok, given that
+>i *expected* things to go south once i got to user space, based on
+>previous postings here.
+>
+>  so, my best strategy at this point would seem to be to do the occasional
+>"bk pull", and rebuild to see when i get to go further in user space.  i
+>have no clue why a dynamically-linked minit suddenly started to work.
+>("no, really, i didn't change anything.  honest." :-)
+>
+>  i'll be watching for new and exciting developments.
+>
+>rday
+>
+>
+>
+>
+>
+If you don't happen to have the magical card that Tom seems to have
+you also need to comment out the update_mmu_cache function and
+replace it with at empty define.
 
-Be carefull, System time is NOT equal RTC time! You have to sync it
-periodical.
+:)
 
-Cheers
+Regards
 
-Alex
-
-
------Ursprüngliche Nachricht-----
-Von: Song Sam [mailto:samlinuxppc@yahoo.com.cn]
-Gesendet: Mittwoch, 9. Juni 2004 15:14
-An: Linuxppc-Embedded
-Cc: samlinuxppc@yahoo.com.cn
-Betreff: How to set current time to 8xx RTC through Linux application?
-
-
-
-Hi,
-
-I added 8xx RTC driver both on U-Boot and Linux
-kernel.And I could set current time right under
-U-Boot.But I have no idea on making it through Linux
-application?I could read it with following code but
-how to set it?
-
-#include <time.h>
-
-     time_t t;
-     struct tm * tm;
-
-     time(&t);
-     tm=localtime(&t);
-
-     printf("\nThe corrent time is : %02d.%02d.%02d
-%02d:%02d:%02d\n",tm->tm_year+1900,tm->tm_mon+1,tm->tm_mday,tm->tm_hour,tm->
-tm_min,tm->tm_sec);
-
-Thanks in advance!
-
-Sam
+Pantelis
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
