@@ -1,29 +1,30 @@
-Message-ID: <20000210160919.2103.qmail@web1203.mail.yahoo.com>
-Date: Thu, 10 Feb 2000 08:09:19 -0800 (PST)
-From: Jeremy Knope <swttiggr2@yahoo.com>
-Subject: Re: DVD question(been fiddling with 2.2.15pre6 i patched)
-To: Josh Huber <huberj@wpi.edu>, linuxppc-dev@lists.linuxppc.org
+Date: Thu, 10 Feb 2000 18:49:28 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Larry McVoy <lm@bitmover.com>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Vger CVS R.I.P.
+In-Reply-To: <200002101733.JAA26330@work.bitmover.com>
+Message-ID: <Pine.LNX.4.05.10002101849120.368-100000@callisto.of.borg>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-would be nice to get the Rage128's decoder specs for
-the G3... :-D but i need a working kernel for DVD too.
-my 2.2.15pre6 has hda partition check issues(lost
-interupt) and the linux-pmac-devel wouldn't compile
-for me. some errors in atyfb related stuff and also
-ide-pmac. :-( if anybody can point me to a working
-2.3.39 or similar that i can get to work on my G3 and
-test out DVDs it would be awesome... :-)
-  -Jeremy T. K.
-> Someone needs to contact the right channels to find
-> some specs for the DVD
-> decoder card for powerbooks...hmm...
+On Thu, 10 Feb 2000, Larry McVoy wrote:
+> All of the BitKeeper doc is in a single ascii file which you can grep.
 >
-> Josh
->
->
+> /usr/libexec/bitkeeper/bkdoc.txt
+
+/usr/libexec/bitkeeper/bkhelp.txt
+
+Gr{oetje,eeting}s,
+--
+Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
