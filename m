@@ -1,73 +1,41 @@
-Date: Mon, 19 May 2003 09:25:37 -0700
-Subject: Re: e1000 patch for linuxppc_2_4_devel
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v552)
-Cc: linuxppc-dev@lists.linuxppc.org
-To: Daniel Jacobowitz <drow@false.org>
-From: Mark Rakes <mrakes@vivato.net>
-In-Reply-To: <20030518043901.GA11221@nevyn.them.org>
-Message-Id: <86252EA3-8A16-11D7-B7C7-000393DB7C12@vivato.net>
+Date: Tue, 20 May 2003 03:16:19 -0500 (CDT)
+From: "Milton D. Miller II" <miltonm@realtime.net>
+Message-Id: <200305200816.h4K8GJNq040669@sullivan.realtime.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Pointless ppc_md hook
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-whoops. the le16_to_cpu() isn't there at all in the code.
-trying to learn bk and keep the width under 80 was a bad combo.
+I can not think of a reason a hook that is called immediately after
+platform_init (which sets the other hooks) would be needed.
 
-real patch should look like:
+Therefore, please exclude cset
+trini@kernel.crashing.org|arch/ppc/kernel/setup.c|20030422001245|47202
 
-diff -Nru a/drivers/net/e1000/e1000_main.c
-b/drivers/net/e1000/e1000_main.c
---- a/drivers/net/e1000/e1000_main.c	Mon May 19 09:24:11 2003
-+++ b/drivers/net/e1000/e1000_main.c	Mon May 19 09:24:11 2003
-@@ -2062,7 +2062,8 @@
-  		skb->protocol = eth_type_trans(skb, netdev);
-  		if(adapter->vlgrp && (rx_desc->status & E1000_RXD_STAT_VP)) {
-  			vlan_hwaccel_rx(skb, adapter->vlgrp,
--				(rx_desc->special & E1000_RXD_SPC_VLAN_MASK));
-+				le16_to_cpu(rx_desc->special &
-+					    E1000_RXD_SPC_VLAN_MASK));
-  		} else {
-  			netif_rx(skb);
-  		}
+to both linuxppc and devel.  Here's a patch to fixup pcore, the only
+user in _devel:
 
 
+===== arch/ppc/platforms/pcore_setup.c 1.23 vs edited =====
+--- 1.23/arch/ppc/platforms/pcore_setup.c	Fri Apr 25 13:24:05 2003
++++ edited/arch/ppc/platforms/pcore_setup.c	Tue May 20 02:53:31 2003
+@@ -303,10 +303,10 @@
+ 	ppc_md.nvram_write_val	= todc_m48txx_write_val;
+
+ #ifdef CONFIG_SERIAL
++	ppc_md.early_serial_map = pcore_early_serial_map;
+ #ifdef CONFIG_SERIAL_TEXT_DEBUG
+-	ppc_md.progress_init = gen550_progress_init;
++	gen550_progress_init();
+ 	ppc_md.progress = gen550_progress;
+ #endif
+-	ppc_md.early_serial_map = pcore_early_serial_map;
+ #endif
+ }
 
 
-On Saturday, May 17, 2003, at 09:39  PM, Daniel Jacobowitz wrote:
 
-> On Fri, May 16, 2003 at 05:04:54PM -0700, Mark Rakes wrote:
->>
->> this patch fixes e1000 vlan hardware acceleration on ppc.
->>
->> vlan tags weren't swapped.
->>
->> thanks!
->> -Mark Rakes
->>
->>
->> diff -Nru a/drivers/net/e1000/e1000_main.c
->> b/drivers/net/e1000/e1000_main.c
->> --- a/drivers/net/e1000/e1000_main.c	Fri May 16 17:00:24 2003
->> +++ b/drivers/net/e1000/e1000_main.c	Fri May 16 17:00:24 2003
->> @@ -2062,7 +2062,8 @@
->>  		skb->protocol = eth_type_trans(skb, netdev);
->>  		if(adapter->vlgrp && (rx_desc->status & E1000_RXD_STAT_VP)) {
->>  			vlan_hwaccel_rx(skb, adapter->vlgrp,
->> -				le16_to_cpu(rx_desc->special &
->> E1000_RXD_SPC_VLAN_MASK));
->> +				le16_to_cpu(rx_desc->special &
->> +					    E1000_RXD_SPC_VLAN_MASK));
->>  		} else {
->>  			netif_rx(skb);
->>  		}
->
-> That patch doesn't do anything but move a line break.  Is that really
-> what you meant to do?
->
-> --
-> Daniel Jacobowitz
-> MontaVista Software                         Debian GNU/Linux Developer
-
+milton
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
