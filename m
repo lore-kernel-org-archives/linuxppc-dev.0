@@ -1,47 +1,24 @@
-Message-ID: <3ACA0F79.C65EE5B8@raleigh.ibm.com>
-Date: Tue, 03 Apr 2001 13:59:21 -0400
-From: Ralph Blach <rcblach@raleigh.ibm.com>
+From: "Wang Yong" <wung_y@263.net>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: gdb load address and KERNELLOAD
+Date: Wed, 4 Apr 2001 08:57:27 +0800
+Message-ID: <GEEHLABKDEENGODIMGHAGEFGCAAA.wung_y@263.net>
 MIME-Version: 1.0
-To: Embedded Linux list <linuxppc-embedded@lists.linuxppc.org>
-Subject: ati 3D RAGE LT PRO on walnut 405
-Content-Type: multipart/mixed;
- boundary="------------2BADAFCAEEB254C3812C05AA"
+Content-Type: text/plain;
+	charset="Windows-1252"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------2BADAFCAEEB254C3812C05AA
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Hi, all:
+  I am debugging embedded Linux( linux-2.2.13 for MPC8XX) using bdm/wiggler. I do this
+on windowsNT with cygwin and insight downloaded from www.ocdemon.com. The question is: how
+can I download the vmlinux to a different address from KERNELLOAD which is set to 0xc0000000.
+I want to do this because the SDRAM is mapped to 0x00000000 and the MMU is of course not enabled
+when I download the kernel image via gdb. any comment on this subject is welcome.
 
-Has anybody gotten the ati 3d rage to work on a walnut 405?
+  thank you.
 
-Thanks
-
-Chip
---------------2BADAFCAEEB254C3812C05AA
-Content-Type: text/x-vcard; charset=us-ascii;
- name="rcblach.vcf"
-Content-Description: Card for Ralph Blach
-Content-Disposition: attachment;
- filename="rcblach.vcf"
-Content-Transfer-Encoding: 7bit
-
-begin:vcard
-n:Blach;Ralph
-tel;work:919-543-1207
-x-mozilla-html:TRUE
-url:www.ibm.com
-org:IBM MicroElectronics
-adr:;;3039 Cornwallis		;RTP;NC;27709;USA
-version:2.1
-email;internet:rcblach@raleigh.ibm.com
-x-mozilla-cpt:;15936
-fn:Ralph Blach
-end:vcard
-
---------------2BADAFCAEEB254C3812C05AA--
-
+W.Y.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
