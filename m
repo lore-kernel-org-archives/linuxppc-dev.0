@@ -1,32 +1,32 @@
 Return-Path: <robin.gilks@tait.co.nz>
 Received: from gatekeeper.tait.co.nz (unknown [202.37.96.21])
-	by ozlabs.org (Postfix) with ESMTP id 1A0272BDB5
+	by ozlabs.org (Postfix) with ESMTP id ADD322BDB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Dec 2004 14:49:08 +1100 (EST)
+	Wed,  8 Dec 2004 15:15:13 +1100 (EST)
 Received: from gatekeeper.tait.co.nz (merlin.tait.co.nz [127.0.0.1])
-	by localhost.tait.co.nz (Postfix) with ESMTP id 48EA110BA7A
+	by localhost.tait.co.nz (Postfix) with ESMTP id 730ED10BA2A
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Dec 2004 16:48:59 +1300 (NZDT)
+	Wed,  8 Dec 2004 17:15:12 +1300 (NZDT)
 Received: from sunstrike.tait.co.nz (unknown [172.25.40.92])
-	by gatekeeper.tait.co.nz (Postfix) with ESMTP id A887E10BA30
+	by gatekeeper.tait.co.nz (Postfix) with ESMTP id E7E5410B96D
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Dec 2004 16:48:58 +1300 (NZDT)
+	Wed,  8 Dec 2004 17:15:11 +1300 (NZDT)
 Received: from conversion-daemon.sunstrike.tait.co.nz by sunstrike.tait.co.nz
 	(Sun Java System Messaging Server 6.1 (built Apr 28 2004))
 	id <0I8D00L01VWUF500@sunstrike.tait.co.nz>
 	(original mail from robin.gilks@tait.co.nz) for
-	linuxppc-embedded@ozlabs.org; Wed, 08 Dec 2004 16:48:58 +1300 (NZDT)
+	linuxppc-embedded@ozlabs.org; Wed, 08 Dec 2004 17:15:11 +1300 (NZDT)
 Received: from [172.25.114.91] by sunstrike.tait.co.nz
 	(Sun Java System Messaging Server 6.1 (built Apr 28 2004))
-	with ESMTP id <0I8D00D5CX9M9E90@sunstrike.tait.co.nz> for
-	linuxppc-embedded@ozlabs.org; Wed, 08 Dec 2004 16:48:58 +1300 (NZDT)
-Date: Wed, 08 Dec 2004 16:48:58 +1300
+	with ESMTP id <0I8D00DEHYHB9E90@sunstrike.tait.co.nz> for
+	linuxppc-embedded@ozlabs.org; Wed, 08 Dec 2004 17:15:11 +1300 (NZDT)
+Date: Wed, 08 Dec 2004 17:15:11 +1300
 From: Robin Gilks <robin.gilks@tait.co.nz>
 To: ppc embedded list <linuxppc-embedded@ozlabs.org>
-Message-id: <41B679AA.1090201@tait.co.nz>
+Message-id: <41B67FCF.6040100@tait.co.nz>
 MIME-version: 1.0
 Content-type: text/plain; format=flowed; charset=ISO-8859-1
-Subject: BDI2000 gdb register display
+Subject: Exception handling on mpc8xx cores
 Reply-To: robin.gilks@tait.co.nz
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -40,35 +40,20 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 Greetings
 
-Just been debugging some exception handling stuff and I'm sure that the 
-combination of bdi2000, gdb & ddd I have is suffering an 'off by one' 
-error in the register display
+Any Freescale lurkers out there?
 
-e.g. I see this
-srr0	0x818000
-srr1	0x3fca360
-tbl	0x9002
+The mpc866 manual implies that if the internal core times out an 
+external Transfer Acknowledge bus signal (by exerting the internally 
+generated Transfer Error Acknowledge signal) an exception is generated.
 
-But the sensible values of srr0 & srr1 should be
+I've tried extending the external TA signal well beyond 2040 clock 
+cycles the maximum timeout allows and I see the busses start up again 
+(indicationg that they are no longer waiting) but I don't see anything 
+on TEA and I don't get an exception thrown.
 
-srr0	0x3fca360
-srr1	0x9002
+Any clues? Manual error?, silicon error?, my brain error?
 
-so that fault address is in srr0 and the bits from MSR (EE, ME and RI) 
-are set in srr1.
-
-Anyone seen this and where is the slippage coming from (r0 to r31 look 
-OK as far as I can see but don't really know about the others!!).
-
-I've tried both REGLIST ALL and REGLIST SPR in the bdi2000 config but it 
-doesn't appear to make a difference.
-
-bdi2000 code=1.13, fpga=1.02
-mpc8xx target
-gdb 5.3
-ddd 3.3.1
-
-Many thanks
+Cheers
 
 -- 
 Robin Gilks
