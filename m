@@ -1,64 +1,27 @@
-Message-Id: <m11jkpn-001Sw7C@bucks>
-From: diekema@bucks.si.com (diekema_jon)
-Subject: Trying to find out the current state of Linux on a MPC 8260
+Message-Id: <199911051732.SAA29775@denx.local.net>
 To: linuxppc-dev@lists.linuxppc.org
-Date: Fri, 5 Nov 1999 09:59:23 -0500 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+From: Wolfgang Denk <wd@denx.de>
+Subject: gdbserver ?
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+Date: Fri, 05 Nov 1999 18:32:37 +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-	* I am starting the work of bringing up Linux kernel on the EST
-	Corporation, http://www.estc.com/, SBC 8260 product.
+Hi,
 
-	Ultimately, we will have a custom board that contains a MPC
-	8240/8260 but the hardware development won't be real for a long
-	time.
+has anybody ever tried to build gdbserver for a PPC target?
 
-	I would like to leverage off of the work of others doing the 82XX
-	Linux ports.  I have a number of basic questions, that I could use
-	some help with:
+Are thare any ready-to-use binaries available?
 
-	1) Where are the CVS archives that capture the PPC kernel
-	   development activity located?  Do they support anonymous
-	   access?  If not, what do I need to do to gain access as a named
-	   user?
+Wolfgang Denk
 
-	   I have used anonymous CVS access to cvs.on.openprojects.net
-	   before, but I am not sure that this is best choice.
-	   http://cvs.on.openprojects.net/ doesn't give me any hints.
-
-	   Example:
-	
-	   setenv CVSROOT ":pserver:anonymous@cvs.on.openprojects.net:/cvs/linux"
-	   cvs login
-	   cvs -z 3 checkout linux
-	   cvs logout
-
-	2) Has anybody gotten Linux kernel to run on the EST Corp. SBC 8260
-	   board?  Or, is anybody is the process of doing this?
-
-	3) Has anybody gotten Linux to run on the 8240/8260?  If so,
-	   are there some hints or recipes available?
-
-	   Date: Mon, 13 Sep 1999 00:33:24 -0400
-	   From: Dan Malek <dmalek@jlc.net>
-	   Subject: Re: LinuxPPC: porting to new platforms
-
-	   Dan Malek reports
-
-	   "I am nearly ready to post the first 8240 and 8260 changes.
-	   The 8260 is an extension of the 8xx stuff today.  The 8xx is
-	   somewhat changed to accomodate this, and will be in the 2.3.x
-	   kernels."
-
-	   Has this been done?  If so, where can I get the source?
-
-	4) What is best way to get in touch with embedded MPC 82xx
-	   developers?
-
-	   linuxppc-embedded@lists.linuxppc.org
-	   linuxppc-dev@lists.linuxppc.org
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Ninety-Ninety Rule of Project Schedules:
+        The first ninety percent of the task takes ninety percent of
+the time, and the last ten percent takes the other ninety percent.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
