@@ -1,20 +1,61 @@
-Message-ID: <3D925907.9000303@uow.edu.au>
-Date: Thu, 26 Sep 2002 10:47:03 +1000
-From: Ben Stanley <bds02@uow.edu.au>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [PATCH] remove #ifdef __KERNEL__ from atomic.h
-References: <3D914574.7030300@uow.edu.au> <15761.26951.11211.147081@argo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Sat, 28 Sep 2002 21:19:42 -0800
+From: Ethan Benson <erbenson@alaska.net>
+To: debian-powerpc@lists.debian.org, linuxppc-dev@lists.linuxppc.org
+Subject: [ANN] yaboot 1.3.7 && mailing lists
+Message-ID: <20020929051942.GA29764@plato.local.lan>
+Mime-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-To everybody who replied,
+Yaboot 1.3.7 has been released, this is purely a maintenance release to
+fix some minor bugs that have been discovered since 1.3.6.  The yaboot
+1.x code base is in maintenance mode as all development efforts are
+being centered on rewriting yaboot from scratch for a 2.0 release.
 
-Thanks for the gentle explanations. I'll hassle the glibc people instead.
+Unless you have been affected by one of the fixed bugs, there is no
+compelling reason to upgrade.
 
-Ben Stanley.
+Also some related news; yaboot now has mailing lists:
 
+yaboot-announce         Announcements regarding yaboot (read-only)
+yaboot-users            User related questions/discussion regarding yaboot
+yaboot-devel            Technical and development discussion regarding yaboot
+
+Please see http://lists.penguinppc.org/LISTNAME (where LISTNAME is one
+of the above mentioned lists) for subscription info.
+
+along with the #yaboot irc channel on irc.freenode.net.
+
+Changes since 1.3.6:
+
+        * Documentation:
+          - Add German translation of yaboot-howto.
+          - Small updates to yaboot-howto.
+          - No longer tell people to send bugs to benh in yabootconfig(8).
+
+        * yaboot:
+          - Fix file search so IBM CHRP will work if there is more than
+            one type 0x83 partition.
+          - Fix possible reiserfs symlink resolution failure.
+
+        * yabootconfig:
+          - Fix corner case /etc/fstab parsing failure. (Debian bug#156742).
+
+        * Small build system modifications (mostly to accommodate the use of
+          the arch revision control system.
+
+        * yaboot now includes two changelogs: "ChangeLog" which is a
+          detailed automatically generated list of changes, and "changelog"
+          (this file) which is a hand written understandable summary of
+          changes between releases.
+
+http://penguinppc.org/projects/yaboot/
+and
+http://www.alaska.net/~erbenson/yaboot/
+
+--
+Ethan Benson
+http://www.alaska.net/~erbenson/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
