@@ -1,73 +1,72 @@
-Message-ID: <018701c24db3$e053d3b0$1a11efcb@industrialDiv.hanasys.co.kr>
-Reply-To: "Sangmoon Kim" <dogoil@etinsys.com>
-From: "Sangmoon Kim" <dogoil@etinsys.com>
-To: "Dan Malek" <dan@embeddededge.com>,
-	"Kenneth Johansson" <kenneth.johansson@etx.ericsson.se>
-Cc: "Dr. Craig Hollabaugh" <craig@hollabaugh.com>,
-	"Marius Groeger" <mag@sysgo.de>,
-	"John Fisher" <John.Fisher@nec.com.au>,
-	"Linuxppc embedded" <linuxppc-embedded@lists.linuxppc.org>
-References: <000501c24979$6348a190$37d34c93@neca.nec.com.au>	<3.0.3.32.20020822173918.006dbb00@hollabaugh.com> 	<3D65C5A8.5010408@embeddededge.com> <1030095276.2481.230.camel@spawn> <3D66CF18.5040801@embeddededge.com>
-Subject: Re: cygwin and embedded linux
-Date: Tue, 27 Aug 2002 19:24:00 +0900
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: "Sangmoon Kim" <dogoil@etinsys.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Password on ELDK nfs booting 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 27 Aug 2002 17:17:27 +0900."
+             <007601c24da2$2f0e4420$1a11efcb@industrialDiv.hanasys.co.kr>
+Date: Tue, 27 Aug 2002 15:24:54 +0200
+Message-Id: <20020827132459.6F0741182F@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Hi,
-I built a toolchain for ppc under cygwin about a year ago.
-I used the Billgatliff's script(http://crossgcc.billgatliff.com/build-crossgcc.sh)
-It failed to build glibc. So I copied glibc from a linux machine.
-I've been using the toolchain, without any problem, for our custom MPC755 board, for about a year.
-I recommand the Billgatliff's script, if you are going to make a tool chain for ppc under cygwin.
 
-- Sangmoon Kim -
+in message <007601c24da2$2f0e4420$1a11efcb@industrialDiv.hanasys.co.kr> you wrote:
+>
+> I booted on nfs mounted ELDK.
+> I changed root password, rebooted and enter the password.
+> But the password did not entered.
+> I got Login timed out message after 60 second.
 
------ Original Message -----
-From: "Dan Malek" <dan@embeddededge.com>
-To: "Kenneth Johansson" <kenneth.johansson@etx.ericsson.se>
-Cc: "Dr. Craig Hollabaugh" <craig@hollabaugh.com>; "Marius Groeger" <mag@sysgo.de>; "John Fisher" <John.Fisher@nec.com.au>; "Linuxppc embedded" <linuxppc-embedded@lists.linuxppc.org>
-Sent: Saturday, August 24, 2002 9:11 AM
-Subject: Re: cygwin and embedded linux
+You must have done something wrong; setting, modifying  and  deleting
+passwords works fine here:
+
+bash-2.04# cat /etc/passwd
+root::0:0:root:/root:/bin/bash
+bin:*:1:1:bin:/bin:
+...
+bash-2.04# passwd
+New UNIX password:
+Retype new UNIX password:
+passwd: all authentication tokens updated successfully
+bash-2.04# cat /etc/passwd
+root:$1$kVReOwuM$hoM6p0uK11zbUAFP378O/1:0:0:root:/root:/bin/bash
+bin:*:1:1:bin:/bin:
+...
+bash-2.04# exit
+logout
+
+pm826 login: root
+Password:
+Last login: Tue Aug 27 15:21:01 on console
+bash-2.04# passwd -d root
+Changing password for user root
+Removing password for user root
+passwd: Success
+bash-2.04# cat /etc/passwd
+root::0:0:root:/root:/bin/bash
+bin:*:1:1:bin:/bin:
+...
 
 
->
-> Kenneth Johansson wrote:
->
-> > And I remember what you thought about people like me that tried to make
-> > the cross compile environment going.
->
-> The only opinion I have changed is that people that can actually make
-> this work well (and I know of only a couple) have a special talent
-> and I really like them to hang around :-)
->
-> I guess when you work for a large company that will pay your salary regardless
-> of missing schedules and can only provide half-assed tools you have to
-> cobble together to make things work, you are both lucky and have my sympathy.
-> I don't have the patience or development time to create or debug my
-> development tools, they just have to work.  I'm not using anything that
-> anyone else can't go out and purchase or download, and it continues to
-> baffle me why people won't take the easy route to developing software.
->
->
-> > But it finally did work out OK and nowadays all you really need to now
-> > is what parameters to give the configure script.
->
-> There is LOTS more to creating an easy to use and properly created set
-> of development tools than knowing some parameters to configure scripts.
-> Only a couple of people I know understand the magic, and it isn't documented.
-> I'm just going to rely on them to make my job easier :-)
->
-> Have fun!
->
->
-> -- Dan
->
->
->
->
+> eva login: root
+> Password: Login timed out after 60 seconds
+> tts/0: 1 input overrun(s)
+> d
+
+It seems you are using devfs; try running without  it.  I  don't  see
+much   advantages   of  devfs  for  embedded  systems  where  such  a
+flexibility is usually not needed, on contrary.
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"The algorithm to do that is extremely nasty. You might want  to  mug
+someone with it."                   - M. Devine, Computer Science 340
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
