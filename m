@@ -1,37 +1,46 @@
-Message-ID: <3B6E8B6E.BED87E1A@iogram.ch>
-Date: Mon, 06 Aug 2001 14:19:58 +0200
-From: Michel =?iso-8859-1?Q?D=E4nzer?= <daenzer@iogram.ch>
-Reply-To: daenzer@debian.org
+Subject: RE: I2O driver for PPC platform
 MIME-Version: 1.0
-To: R Shapiro <reshapiro@mediaone.net>
-Cc: Olaf Hering <olh@suse.de>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: lcd17 kernel patches?
-References: <20010805200639.A14938@suse.de>
-		<Pine.LNX.4.05.10108060933320.4858-100000@callisto.of.borg>
-		<20010806100644.A6859@suse.de> <15214.33465.500189.767261@mediaone.net>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Mon, 6 Aug 2001 14:41:32 +0100
+Message-ID: <EB0AF92C5F6B6B45A3EC7A2608347EC0082116@CORK-DC1.raidtec.ie>
+From: "Charles Feng" <Charles.Feng@raidtec.ie>
+To: "Ralph Blach" <rcblach@raleigh.ibm.com>
+Cc: <linuxppc-dev@lists.linuxppc.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-R Shapiro wrote:
+Hi Chip,
+	It's a PPC 750 platform (chrp compatible). The problem is that
+when I tried to do a make menuconfig in Linux 2.4.5, there is no option
+for I2O drivers at all.
+
+Charles
+
+> -----Original Message-----
+> From: Ralph Blach [mailto:rcblach@raleigh.ibm.com]
+> Sent: 06 August 2001 12:08
+> To: Charles Feng
+> Subject: Re: I2O driver for PPC platform
 >
-> Olaf Hering writes:
->  > The correct fix is either "video=1280x1024-8@60" as kernel arg (that may
->  > work)
 >
-> OK, I just had time to rebuild 2.4.8-pre3-ben0 with the patch undone.
-> This video arg with that kernel doesn't solve the problem.  I still
-> get no video on boot.
-
-Wouldn't it have to be video=aty128fb:1280x1024-8@60 anyway, and is the modedb
-even used on PPC yet?
-
-
---
-Earthling Michel Dänzer (MrCooper)    \   Debian GNU/Linux (powerpc) developer
-CS student, Free Software enthusiast   \        XFree86 and DRI project member
+> Charles,
+>
+> Which PPC platform?  I know the 405 port has an I2C driver in
+> the list.
+>
+> Chip
+>
+> Charles Feng wrote:
+> >
+> > Hi guys,
+> >         Does anybody know if Linux I2O driver works on PPC
+> platform? Has
+> > anybody worked on this? Thanks!
+> >
+> > Charles
+> >
+>
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
