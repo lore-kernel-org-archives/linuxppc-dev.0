@@ -1,27 +1,29 @@
-Date: Thu, 28 Aug 2003 20:28:25 +0200
-From: Alexander Hollinger <alexander.hollinger@gmx.net>
+Message-ID: <3439AB3A99ECD5409F3A52ACF814744D158D6F@norcom2.norcom.net>
+From: Lokesh Kumar <lokesh.kumar@wrx-us.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: kernel module for debugging MPC82xx
-Message-ID: <20030828182825.GD11805@jerle.local>
-References: <20030819215043.GA9970@jerle.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20030819215043.GA9970@jerle.local>
+Subject: mic2563 dual slot pcmcia controller
+Date: Thu, 28 Aug 2003 14:45:18 -0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello!
+Hi,
 
-An updated version with read access to supervisor registers is available at
-http://home.in.tum.de/~hollinge/projects/mpc82xx_proc.html
+I have a mpc8xx based board, which has two pcmcia slots, and uses micrel
+2563a power controller. Now, I understand that I have to control this in the
+file drivers/pcmcia/m8xx_setup.c file. I was wondering if anybody has done
+the same and can tell me what is the right way. Also, where do I set the
+other pcmcia related values for example pbr0, memory size etc? Any pointers
+would be helpful.
 
-Kind regards,
-Alexander Hollinger
+Thanks in advance.
 
---
-Alexander Hollinger (alexander.hollinger@gmx.net)
-ICN CP D NT SW3, Siemens AG
-Hoffmannstr. 51, 81359 Muenchen
+Lokesh Kumar
+Wireless Matrix USA Inc.
+703-262-4032
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
