@@ -1,64 +1,41 @@
-Message-ID: <3B592E7F.17F170F8@genetel.co.kr>
-Date: Sat, 21 Jul 2001 16:25:56 +0900
-From: hychon <hychon@genetel.co.kr>
-Reply-To: hychon@genetel.co.kr
-MIME-Version: 1.0
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <20010721101345.5964.qmail@web20104.mail.yahoo.com>
+Date: Sat, 21 Jul 2001 03:13:45 -0700 (PDT)
+From: John Francis <johnfrancsis@yahoo.com>
+Subject: Interfacing user application and interrupt.
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: how to get a physical address from  the mmaped address area?
-Content-Type: text/plain; charset=EUC-KR
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I want to "how to get a physical address from  the mmaped address area !
-"
+Hello,
 
-Hi !!
+I have a situation where one of the controller on my
+board can generate interrupt which I am planning to
+use as a signal for a user process to go and read some
+data from "serial port or socket".
 
-I am working a HDLC program (not device driver) as Embedded Linux
-system  , that  used  SCC2 on the MPC860T target board .
+How is this task commonly done?
 
-I worked initialzed  SCC2 and allocat memory buffer  with the
-kernel-2.2.13 based on PowerPC arch .
+What I want to happen is
 
-In my program,  I allocated  the BD (Buffer Descriptor)  in  a temporary
+A *UNIX user process* waits for interrupt to go off.
+When the interrupt is generated it goes and reads from
+/dev/tty or a socket.
 
-place of DPMEM.
+I also have ppc linux interrupt handler that correctly
+detects the interrupt from the device. Now what I am
+missing is how does the kernel interrupt handler
+indicate to the user process that  there was an
+interrupt and user process needs to do its thing....
 
- RxTxBD = (BDRINGS *)(&IMMR->udata_bd[0x600]);
-      IMMR->PRAM[PAGE2].pg.scc.h.rbase = (UHWORD)&RxTxBD->RxBD[0];   /*
-1 */
-      IMMR->PRAM[PAGE2].pg.scc.h.rbase =
-(UHWORD)0x2E00;                                /* 2 */
+Any pointers on how to do this properly?
 
- case 1 :  BD state not change and down .the system
- case 2 :  BD state are change
+-John
 
-I think that  the RBASE and TBASE in SCC PARAM is a physical address of
-Buffer Descriptor
-
-I want to get a place of BD  in  DPMEM itself  and  retun  as  physical
-address. (as if ,  CPM  get a BD pointer  in commproc.c file )
-
-Question1) How to get  a place(pointer) of BD  in DPMEM  and give RBASE
-(TBASE)  the physical address ?
-
- And Buffer are allocated  in a virtual area , by following
-    mem_addr_buf1 = mmap(0,1024,(PROT_READ|PROT_WRITE),MAP_SHARED,
-mem_buf1,0x100000);
-    buf = (unsigned char *)mem_addr_buf1;
-
- when  I write  buf  as  Buffer addr of BD,  that do not change  Buffer
-(BD) state
-
-I think that  don't find the buffer address
-and the Buffer pointer of BD structure was recognized as physical
-address of  the Buffer (buf) .
-
-Question2) How to get a buffer address pointer of BD struct (a place of
-Buffer) from kernel (virtual address) as physical address?
-
-Help me !
-
+Make international calls for as low as $.04/minute with Yahoo! Messenger
+http://phonecard.yahoo.com/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
