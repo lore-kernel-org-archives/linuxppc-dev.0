@@ -1,41 +1,51 @@
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: SMP G4, BK 2.4.1, aty128, and 22" Apple Cinema Display (ADC)
-References: <20010131162641.A11495@troy.psych.nwu.edu>
-	<3A78943C.D795ABD8@iiic.ethz.ch>
-From: Holger Bettag <hobold@Informatik.Uni-Bremen.DE>
-Date: 01 Feb 2001 10:37:31 +0100
-In-Reply-To: Michel Dänzer's message of Wed, 31 Jan 2001 23:39:56 +0100
-Message-ID: <8xg0hywxpg.fsf@s62.informatik.uni-bremen.de>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Steven Hanley <sjh@wibble.net>,
+        Linux PPC Dev
+ <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: agpgart? or how to use dri?
+Date: Thu, 1 Feb 2001 12:29:39 +0100
+Message-Id: <19341227050123.16989@mailhost.mipsys.com>
+In-Reply-To: <20010201184806.A5957@chiru.svana.org>
+References: <20010201184806.A5957@chiru.svana.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michel Dänzer <michdaen@iiic.ethz.ch> writes:
+>
+>Trying to get the dri stuff to build (this is an X 4.02 tree checked out
+>from the branch Gareth announced two days ago)
+>
+>The problem seems to be the kernel module. When I have agpgart enabled in
+>the kernel the r128 kernel module builds, when I dont have apgart enabled
+>only the tdfx module will build, this is doing a make in the
+>xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/ directory in the
+>X source
+>
+>The problem here of course is agpgart wont build on ppc
+>
+>in /usr/src/linux/drivers/char/agp/agpgart_be.c there is a flush_dcache
+>function defined, and it is only defined for alpha, ia64 and i386.
+>
+>I dont know what the culprit is, but I assume thee dri stuff can be built
+>without agpgart on ppc or some scuh, this kernel tree is the 2.4.1 bk
+>rsynced about half an hour ago.
+>
+>Any hints on getting the dri kernel module to build to the extent that it
+>can be insmod'd and used?
+>
 
->
->
-> T E Whalen wrote:
-> >
-> > I'm running Debian (testing) on the above configuration.  I'm trying to
-> > get XFree 4.0.2 to work.  Right now, I can boot with the "novideo"
-> > option, and XFree 3.3.6 will work in 1600x1200@8bpp.
->
-> [snip]
->
-> > fbset says:
-> > mode "1600x1024-57"
->
-> I thought you wanted 1600x1200, can you try fbset 1600x1200-60 ? Dunno if
-> aty128fb supports that mode on bootup, in doubt check the source.
->
-The LCD panel inside the Cinema Display only understands a single mode:
-1600x1024 at 59.94 Hz, with a dot clock of 107.24 MHz. Olaf Hering added
-the vmode 22 according to a spec sheet I found somwehere on the 'net. I
-am using a Cinema Display with a patched 2.2.18 kernel in said mode; it
-does work at least for me. So far I tried neither XFree 4.x nor any
-2.4 kernel.
+The current agpgart driver won't work on PPC, the Apple AGP host bridge
+is not supported.
 
-  Holger
+The new DRI support announced by Gareth is using the PCI GART which
+doesn't need the AGP capabilities. Don't enable either AGP or DRI in your
+kernel, and build the kernel r128 DRM module from XFree sources. You need
+to use the CVS branch posted earlier by Gareth. I slightly hacked my own
+to build since I lack the glide libs necessary for the 3dfx stuff to compile.
+
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
