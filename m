@@ -1,33 +1,37 @@
-Message-ID: <374C8DA8.AF735D0B@sei.co.kr>
-Date: Thu, 27 May 1999 09:11:22 +0900
-From: "KiPyo Ryu" <kpryu@sei.co.kr>
+Date: Thu, 27 May 1999 02:21:26 +0200 (CEST)
+From: =?ISO-8859-1?Q?Kolbj=F8rn_Barmen?= <kolla@nvg.ntnu.no>
+To: Tom Rini <tmrini@ntplx.net>
+cc: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>,
+        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: ioctl 0x7667 in Xpmac
+In-Reply-To: <Pine.LNX.4.05.9905261445580.26691-100000@pc.wackyland.com>
+Message-ID: <Pine.LNX.4.10.9905270216210.11906-100000@daneel.nvg.ntnu.no>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Q: How to install linux on the MBX860?
-Content-Type: text/plain; charset=EUC-KR
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello all,
+On Wed, 26 May 1999, Tom Rini wrote:
 
-I have a MBX860 with 32MB RAM, a 4GB hard disk and a floppy.
-I would like to install linux on the MBX860.
-
-Where do I get the source? include filename.
-Which machine and how do I compile the source?
-
-After compile, how do I do this?
-
-I would like to know procedure in detail.
-
-Any help appreciated...
-
-Thanks,
-
-Ryu.
+> Which means no frame buffer, and most likely MkL.  We should begin working
+> on the installer changes to support APUS in a day or two.  Mind sending me
+> privatly the emails of a few people that would wish to test things out?
+> (or would the linux-apus list be interested?  I could subscribe for a
+> little while.. :))
 
 
+Whatever you do, put me on your list :)
+
+I've let my linux partitions pending for a while, waiting for some new
+installer images to test. I can test install from ftp, nfs, smb, cdrom, 
+disk.. have I forgotten anything.. http? Anways, I'm ready for whatever :) 
+
+
+ Kolbjørn Barmen |    a3k/o6o/6o4e/AmigaOS/MacOS/LinuxPPC   |    // T e a m
+ <kolla@nvg.org> | a12ooCT/o3o/Linux-m68k  a6oo/o3o/AmigaOS | \XX/ A M I G A
+ Nettverksgruppa |    "I met the Amiga and fell in love..." | <amiga.nvg.org>
+             »» Norwegian University of Technology and Science ««
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
