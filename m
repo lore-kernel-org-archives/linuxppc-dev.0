@@ -1,52 +1,40 @@
-Message-ID: <3B8AB5E8.2609F774@mvista.com>
-Date: Mon, 27 Aug 2001 14:04:41 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
+Message-ID: <3B8AB925.D2DB3E90@minolta-qms.com>
+Date: Mon, 27 Aug 2001 15:18:29 -0600
+From: Mark Pilon <mark.pilon@minolta-qms.com>
 MIME-Version: 1.0
-To: Ole Andreas Torvmark <ole.torvmark@radionor.no>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Problems with Sandpoint 8240 & i82559 & i82550
-References: <MHEAIGEFFBAFIOMKCIGCIEBCCAAA.ole.torvmark@radionor.no>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: how to dump other regs via abatron-bdi / gdb ?
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Ole,
+I'm accustomed to printing general purpose registers: print $r0
+and the like --
 
-Your message is too sparse & cryptic for me to figure out what your problem
-is.
-Would you please provide more info like the complete console output, stack
-backtrace, etc.
+bringing up a board (before establishing an exception vector table)
+I'm getting some unknown exception -- how do I print the ESR (and
+other SPRs for that matter ) ??
 
-Are you using an X2 or X3 sandpoint board??
+I'm using montavista ppc_4xx-gdb -- GNU gdb 5.0 and abatron bdi/gdb:
+BDI Type : BDI2000 (SN: 93170608)
+Loader   : V1.04
+Firmware : V1.05 bdiGDB for PPC400
+Logic    : V1.01 PPC400
 
-I'm assuming that you have *VERY CAREFULLY* set the switches on the board
-correctly.
+I suspect the problem is an incomplete bdi board config file,
+but it'd help to be able to figure out what's missing ...
+
+thanks,
 
 Mark
 --
+Mark Pilon
 
-Ole Andreas Torvmark wrote:
+Minolta-QMS
+5661 Airport Blvd, Ste A.
+Boulder, CO  80301
 
-> Hi Again.
->
-> This is the kernel version.
->
-> Linux version 2.4.2_hhl20 (build@2of9) (gcc version 2.95.3 20010315
-> (release/Mon
-> taVista)) #1 Wed May 23 14:33:28 PDT 2001
-> Motorola SPS Sandpoint Test Platform
-> Sandpoint port (C) 2000, 2001 MontaVista Software, Inc. (source@mvista.com)
->
-> The problem seems to be with all the intel cards. I have now also tried an
-> 82558. and it seems to fail on the self test part too.
->
-> It may seem that the problem is with the sandpoint board rather than the
-> card and driver itself
->
-> regards
-> Ole Andreas Torvmark
->
-
+1-303-443-5505 ext. 326; fax: 303-443-7107
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
