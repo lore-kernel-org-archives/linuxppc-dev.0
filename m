@@ -1,53 +1,71 @@
-To: rekha gvv <rekhagvvc@yahoo.co.in>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Combine kernel and ramdisk image. 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 10 Feb 2003 22:49:11 PST."
-             <20030211064911.50039.qmail@web8007.mail.in.yahoo.com>
-Date: Tue, 11 Feb 2003 09:03:40 +0100
-Message-Id: <20030211080345.C9EDEC6096@atlas.denx.de>
+From: wolfgang.grandegger@bluewin.ch
+Date: Tue, 11 Feb 2003 09:25:43 +0100
+Message-ID: <3E34EB7F00022F54@mss3n.bluewin.ch>
+In-Reply-To: <20030211064911.50039.qmail@web8007.mail.in.yahoo.com>
+Subject: RE: Combine kernel and ramdisk image.
+To: "rekha gvv" <rekhagvvc@yahoo.co.in>,
+	linuxppc-embedded@lists.linuxppc.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="ISO-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20030211064911.50039.qmail@web8007.mail.in.yahoo.com> you wrote:
+>-- Original Message --
+>Date: Mon, 10 Feb 2003 22:49:11 -0800 (PST)
+>From: rekha gvv <rekhagvvc@yahoo.co.in>
+>Subject: Combine kernel and ramdisk image.
+>To: linuxppc-embedded@lists.linuxppc.org
 >
-> PMulti is the Combined kernal image ..
-> wheni download it to the powerpc board using ppcboot I
-> get this .
 >
-> bootm
-> ## Booting image at 00100000 ...
+>
+>Hi all,
+>I want to combine the Linux kernel Image and the
+>ramdisk image.I had used the mkimage tool for doing
+>this
+>./mkimage -A ppc -O Linux -T multi  -C gzip \
+>-n 'Linux-2.4.4-2002-03-21 Multiboot-Image' -e 0 -a 0
+>\
+>-d /SELF/build/linux-2.4.4-2002-03-21/arch/ppc/
+>coffboot/vmlinux.gz:/SELF/build/ramdisk_image.gz \
+>/SELF/images/pMulti
+>
+>PMulti is the Combined kernal image ..
+>wheni download it to the powerpc board using ppcboot I
+>get this .
+>
+>bootm
+>## Booting image at 00100000 ...
+>   Image Name:   Linux-2.4.4-2002-03-21 Multiboot
+>   Image Type:   PowerPC Linux Multi-File Image (gzip
+>compressed)
+>   Data Size:    1580442 Bytes = 1543 kB = 1 MB
+>   Load Address: 00000000
+>   Entry Point:  00000000
+>   Contents:
+>   Image 0:   530861 Bytes = 518 kB = 0 MB
+>   Image 1:  1049566 Bytes = 1024 kB = 1 MB
+>   Verifying Checksum ... OK
+>   Uncompressing Multi-File Image ... OK
+>   Loading Ramdisk to 6fabe000, end 0075a4bc ...
+>
+>
+>
+>what could be the error....
+>when i downlaod the kernel and  the ramdisk separately
+>then the ramdisk gets loaded at this address
+>
+>Loading Ramdisk to 0065a000, end 0075a3de ... OK
+>Linux version 2.4.4 (root@UCLinuxServer.embedded) (gcc
+>version 2.95.3 20010315
+>.................
 
-----------------------^^^^^^^^
+Load the pMulti at 0x200000 to avoid data getting
+overwritten.
 
-Your load address is too low. You will overwrite the  image  contents
-while it's uncompressing.
+Good luck,
 
-...
->    Loading Ramdisk to 6fabe000, end 0075a4bc ...
+Wolfgang.
 
-This is why you see garbage here.
-
-> what could be the error....
-
-Chose a higher load address, something like "bootm 400000".
-
-
-
-And again, this is basicly off topic here.
-
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Anyone who doesn't believe in miracles is not a realist.
-                                                   - David Ben Gurion
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
