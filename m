@@ -1,84 +1,34 @@
-Message-ID: <003601c10e93$7f5a72e0$df0fa8c0@mystore>
-From: "Nguyen Trung Thanh" <jari.nguyen@serialsystem.com.sg>
-To: "Matthew Locke" <mlocke@mvista.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <3B52C152.F5FB58B7@genetel.co.kr> <000901c10df4$f1e85100$df0fa8c0@mystore> <3B532093.4010004@mvista.com>
-Subject: Re: PCMCIA Nokia Cardphone 2.0 for MPC823
-Date: Tue, 17 Jul 2001 15:38:39 +0800
-MIME-Version: 1.0
+From: August Hoerandl <ahoerandl@gmx.at>
+Reply-To: ahoerandl@gmx.at
+To: Brad Bonkoski <bradb59@home.com>,
+	ppc-embed <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Ethernet on 8260
+Date: Tue, 17 Jul 2001 10:28:42 +0200
 Content-Type: text/plain;
-	charset="EUC-KR"
+  charset="iso-8859-1"
+References: <20010717002518.YUJE5550.femail18.sdc1.sfba.home.com@cx263713-b.mesa1.az.home.com>
+In-Reply-To: <20010717002518.YUJE5550.femail18.sdc1.sfba.home.com@cx263713-b.mesa1.az.home.com>
+MIME-Version: 1.0
+Message-Id: <01071710284300.00821@linuxhoe>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Matthew Locke,
-Thank you very much for your reply.
+On Tuesday 17 July 2001 02:19 am, Brad Bonkoski wrote:
+> Hello,
+>
+> I am working with a custom 8260 board which has 3 Ethernet devices that
+> are on using FCC to communicate.  When I try to activate all three I get
+> some funny routing.  Essentailly, I have them all set up on the same
+> network: 192.168.0.X.  When I try to ping one Ethernet device, the
+> system tries to respond on another.  What could lead to this problem?
 
-As you said, I moved to the newest version of Pcmcia Card Service which I
-could find from ftp.mvista.com
-Its version is 3.1.24.. I don't know it is good enough or not.
+you should not put more then one "real" device into one subnet - the
+kernel will always check with the netmask and use the first one that
+matches, there is no idea of "the request was on eth2, the answer has
+to go out on eth2"
 
-Of course, I changed something to avoid conflicts between 8xx serial driver
-(uart.c) and serial.c.
-I mapped the _IO_BASE 0x80000000, hardcode irq = 9.
-Then it worked well with PCMCIA modem such as Xircom.
-
-Now I could use this version with Nokia Cardphone2.0, but the result is the
-same.
-I just wonder why this PCMCIA cardphone can run smoothly in a Sony VAIO
-laptop using this version of linux kernel 2.2.14 and pcmcia-3.1.24, but when
-I run it with my board, I must add some delay in function receive_chars in
-file: serial.c.
-Otherwise, I'd receive a lot of gabage charaters. For example:
-I wrote a string "ATZ" , and then received:
-"aATZOKaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-instead of "ATZOK"???
-
-Would you pls tell me what is the problem here?
-I think that it is due to the timing of 16550A chip, is it right?
-Or it is due to the serial speed?
-If you have any idea about my problem, pls tell me...
-
-Thanks for you kindness,
-Jari
-
->
-> Nguyen Trung Thanh wrote:
->
-> > Hi all,
-> >
-> > Pls help me, I'm stuck with this card.
-> > Now I used kernel Powerpc Hardhat 2.2.14,
-> > and pcmcia-cs-3.1.21 in a custom board using
-> > MPC823.
->
->
-> You should consider moving to 3.1.26, many bugs have been fixed.
->
-> >
-> > I could dial up with this card, but it is not stable,
-> > and I could not transfer data such as ftp....
-> >
-> > Furthermore, I must set the maximum value for
-> > psst = 4, psht = 4, and psl = 20.
-> > and add some delay between each time I read from serial port ( in
-function
-> > receive_chars from file serial.c).
->
->
-> In general, there are conflicts between 8xx serial driver (uart.c) and
-> serial.c.  They may be stepping on each other.
->
-> >
-> > Have anyone done it, before? Or you have any information about thi card
-> > phone, pls give me.
-> >
-> > Does this card use 16550A, and follow the standard of this chip?
-> > Is there any special thing about it spec, timing?
-> >
-> > Thanks very much,
-> > Jari
-
+hth
+Gustl
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
