@@ -1,42 +1,33 @@
-Date: Fri, 26 Mar 1999 22:27:59 -0800
-Message-Id: <199903270627.WAA18114@aragorn.shiresoft.com>
-From: Guy Sotomayor <ggs@shiresoft.com>
-To: dje@watson.ibm.com
+Message-Id: <9903272044.AA52736@marc.watson.ibm.com>
+To: ggs@shiresoft.com
 Cc: paubert@iram.es, linuxppc-dev@lists.linuxppc.org
-Reply-To: ggs@shiresoft.com
 Subject: Re: Apple Job Posting and Good News for LinuxPPC developers 
-In-Reply-To: <9903261613.AA48254@marc.watson.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: Message from Guy Sotomayor <ggs@shiresoft.com>
+   of "Fri, 26 Mar 1999 22:27:59 PST." <199903270627.WAA18114@aragorn.shiresoft.com>
+Date: Sat, 27 Mar 1999 15:44:54 -0500
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> 
-> Gabriel> Do 64 bit PPC processors that can be bought as chips (not in a system)
-> 
-> Gabriel> exist (i.e., can you buy a Power3 in a BGA package and the chipset
-> that
-> Gabriel> goes with) ? 
-> 
->      I doubt it.  The Power3 comes from the server organization and is
-> intended for their use.  IBM, however, does understand customer demand:
-> if there was "enough" market interest, I am sure that it would find a way
-> to sell it.  The Power3 processor price is nowhere near a PPC750 or G4 and
-> does not include AltiVec.
-> 
-Actually I think the 64bit PPCs are called PowerPC II.  They're reasonably
-nice chips last time I looked.  They are expensive to put together in a
-system (ie 8MB L2, 128bit data bus, etc).  Also the 6xx bus is a split
-transaction bus, so the bus controllers are a bit more complex too.  I
-also think that all the data paths are ECC'd with parity on addresses. 
-For a good example on what type of systems are built using these things,
-look at the S70 Advanced server.
+>>>>> Guy Sotomayor writes:
 
+Guy> Actually I think the 64bit PPCs are called PowerPC II.  They're reasonably
+Guy> nice chips last time I looked.  They are expensive to put together in a
+Guy> system (ie 8MB L2, 128bit data bus, etc).  Also the 6xx bus is a split
+Guy> transaction bus, so the bus controllers are a bit more complex too.  I
+Guy> also think that all the data paths are ECC'd with parity on addresses. 
+Guy> For a good example on what type of systems are built using these things,
+Guy> look at the S70 Advanced server.
 
-TTFN - Guy
+	64-bit PowerPC is an architecture, not a single chip.  The first
+implementation was the PPC620 from Somerset, eventually only used by
+Groupe Bull.  The S70 and S7A use a chip from IBM Rochester also used in
+AS/400s.  The Power3 (aka PPC630fp) is yet a third 64-bit PowerPC
+implementation.  IBM's recent 64-bit PowerPC chips are augmented to
+support additional requirements of AS/400 systems.
 
-
+David
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
