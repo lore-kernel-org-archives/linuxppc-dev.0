@@ -1,38 +1,31 @@
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Dan Malek <dan@embeddededge.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Disabling data cache 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 02 Apr 2003 12:46:22 PDT."
-             <20030402194622.GA30107@ip68-0-152-218.tc.ph.cox.net>
-Date: Wed, 02 Apr 2003 22:19:09 +0200
-Message-Id: <20030402201914.6C7F2C587C@atlas.denx.de>
+Content-Type: text/plain;
+  charset="us-ascii"
+From: Srini Amble <samble@xopnetworks.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: thttpd and CGI on MPC 850
+Date: Wed, 2 Apr 2003 14:23:33 -0600
+MIME-Version: 1.0
+Message-Id: <200304021423.33094.samble@xopnetworks.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20030402194622.GA30107@ip68-0-152-218.tc.ph.cox.net> you wrote:
->
-> > It was orginally done for 8xx processors.  I suspect someone (I don't
-> > think it was me) :-) tried to consolidate 8xx and 82xx CPM configurations
-> > and messed it up.
->
-> My guess and recollection is that the 8260 version of this was to
-> disable the DCACHE in a certain manner, because of buggy silicon on a
-> specific board.  Someone unmerged this bit of code later I think.
+Pardon me for posting this message to this mailing list ( it does not quite
+belong here)
 
-It might have been me. We had problems on  the  first  prototypes  of
-TQM8260 boards; the board configuration with L2 cache would only work
-with  DC turned off. The problem disappeared with later silicon, so I
-never checked again what happened with the code.
+I have "thttpd" (version 2.23beta1) running on my MPC850 board. When I submit
+a "FORM" which in turn invokes a CGI program (written in C) the console
+output freezes and I get the error "An error occurred while loading
+http://192.168.0.128/cgi-bin/example.cgi" on the browser window. The board is
+alive because I can ping the board. I can execute the CGI program on the
+shell without any problem. I would appreciate any wisdom from the community
+at large which will help me in debugging this problem.
 
-Wolfgang Denk
+BTW, Identical set of "thttpd", CGI program, and HTML pages works fine on an
+x86 RH 7.3 host.
 
+Thanks in advance
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Intel told us the Pentium would have "RISK" features...
+Srini Amble
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
