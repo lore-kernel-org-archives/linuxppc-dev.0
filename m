@@ -1,11 +1,9 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3CC94299.184463A5@ardistech.com>
-Date: Fri, 26 Apr 2002 14:05:45 +0200
-From: "bart@ardistech.com" <bart@ardistech.com>
-Reply-To: bart@ardistech.com
+Message-ID: <20020426123803.26947.qmail@web12303.mail.yahoo.com>
+Date: Fri, 26 Apr 2002 05:38:03 -0700 (PDT)
+From: Miao Qingjun <qjmiao@yahoo.com>
+Subject: linux v2.4.18 halted on MPC8260ADS board
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-To: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
-Subject: ppcboot on 823e RPXlite config?
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
@@ -13,11 +11,17 @@ List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 Hi,
 
-Does anybody on the list has the configuration files for ppcboot on a
-RPX lite board with an MPC823e processor? In ppcboot 1.1.5 this board
-is set to a MPC850 cpu, but the one I have over here is a MPC823e one.
+I build a 2.4.18 kernel image for MPC8260ADS board.
+But it halts after printing out:
 
-Regards,
-	Bart Thissen
+real time clock seems stuck
+Calibrating delay loop...
+
+
+Does someboday also have this problem???
+
+(My modifications to kernel is bd_t struct,
+CONFIG_SERIAL_CONSOLE_PORT-->2, SCC_IDX_BASE-->2,
+rs_tbl[] SCC2-->SCC1)
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
