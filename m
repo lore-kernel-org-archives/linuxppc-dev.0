@@ -1,37 +1,35 @@
-Date: Wed, 18 Feb 2004 12:03:17 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Rod Boyce <rod_boyce@stratexnet.com>
-Cc: Lokesh Kumar <kumar.lokesh@wrx-us.com>,
+Message-ID: <4033B7DB.8050905@embeddededge.com>
+Date: Wed, 18 Feb 2004 14:07:07 -0500
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: Marcus Overhagen <marcus.overhagen@ims.fhg.de>
+Cc: Tom Rini <trini@kernel.crashing.org>,
 	linuxppc-embedded@lists.linuxppc.org
 Subject: Re: 2.6 kernel ppc tree
-Message-ID: <20040218190317.GS16881@smtp.west.cox.net>
-References: <A3240F62EF3C2749B1A25D3BC9548F41030A01@ExchWENZ02.wenz.global.vpn>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <A3240F62EF3C2749B1A25D3BC9548F41030A01@ExchWENZ02.wenz.global.vpn>
+References: <A3240F62EF3C2749B1A25D3BC9548F410309FE@ExchWENZ02.wenz.global.vpn> <20040217221957.GH16881@smtp.west.cox.net> <007b01c3f648$14ce2bc0$4a34a8c0@av34>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Feb 18, 2004 at 02:13:21PM +1300, Rod Boyce wrote:
+Marcus Overhagen wrote:
 
-> Wow that was great I got a lot further once I copied the 2.5 kernel uart.c file across.
->
-> I had to comment out both referances to ret_from_intercept in the head_8xx.S file I cannot see what is going on there.  I then got to this:
->   LD      init/built-in.o
->   LD      .tmp_vmlinux1
-> arch/ppc/kernel/built-in.o: In function `DoSyscall':
-> arch/ppc/kernel/entry.S(.data+0x350): undefined reference to `sys_pciconfig_iobase'
-> make: *** [.tmp_vmlinux1] Error 1
->
-> I have not more time to spend on this and track down the PCI issues.
+> I tried compiling 2.6.3 for a MPC850 based board today,
 
-That issue in particular has been fixed in later versions.  But
-commenting out the ret_from_interrupt lines isn't quite enough to get
-the platform booting :)
+OK, everyone, just wait a day or so.......
 
---
-Tom Rini
-http://gate.crashing.org/~trini/
+The 8xx stuff hasn't worked at all for a long time......if ever.
+Tom fixed up the drivers for me, I'm working on the VM updates.
+
+Stop trying to compile it and complaining about it because it
+is known to not work properly :-)
+
+I'll post a message when I get this stuff done.
+
+Thanks.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
