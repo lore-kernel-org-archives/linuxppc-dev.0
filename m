@@ -1,56 +1,65 @@
-From: "Jerry Quinn" <jquinn@nortelnetworks.com>
+Date: Tue, 3 Aug 1999 15:52:38 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+To: Wulf Hofbauer <wh@echo.chem.tu-berlin.de>
+cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
+        SPARClinux CVS Repository Team <sparclinux-cvs@vger.rutgers.edu>,
+        Linux Frame Buffer Device Development <linux-fbdev@vuser.vu.union.edu>
+Subject: Re: Patches for endianess problems in atyfb (fwd)
+In-Reply-To: <E11Afp1-00032N-00@mail.zrz.tu-berlin.de>
+Message-ID: <Pine.LNX.4.10.9908031549060.14901-100000@mercator.cs.kuleuven.ac.be>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <14246.62413.948269.176986@gargle.gargle.HOWL>
-Date: Tue, 3 Aug 1999 09:51:09 -0400 (EDT)
-To: Simon Piette <spiette@generation.net>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Help with cd writing scsi error?
-In-Reply-To: <14245.63618.624651.638604@gargle.gargle.HOWL>
-References: <14245.48740.399981.423193@gargle.gargle.HOWL> <37A5EAD7.E4B3CCE@generation.net> <14245.63618.624651.638604@gargle.gargle.HOWL>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> "Jerry" == J  <Quinn> writes:
+On Sat, 31 Jul 1999, Wulf Hofbauer wrote:
+> I've found a fix that cures endianness problems with the ATI264VT
+> framebuffer consoles. I don't really understand why, and I'm not sure
+> if it affects the X server (XF68_FBDev doesn't work correctly with or
+> without the patch).
+> 
+> Ok, so here's what I changed:
+> --- atyfb.c.orig        Wed Jul 21 00:04:40 1999
+> +++ atyfb.c     Sat Jul 31 21:45:51 1999
+> @@ -1740,7 +1740,7 @@
+>                                         
+>      } else {
+>         aty_set_pll_ct(info, &par->pll.ct);
+> -       i = aty_ld_le32(MEM_CNTL, info) & 0xf30fffff;
+> +       i = aty_ld_le32(MEM_CNTL, info) & 0xf00fffff;
+>         if (!(Gx == VT_CHIP_ID && (Rev == 0x40 || Rev == 0x48)))
+>             i |= info->mem_refresh_rate << 20;
+>         switch (par->crtc.bpp) {
+> 
+> This still seems strange to me, and I suspect there is some confusion
+> concerning byte swapping. Somehow I suspect the raw FB driver enables
+> byte swapping, and drivers set on top of the framebuffer do the same again -
+> but that's only gut feeling.
+>
+> Comments?
 
->> "Simon" == Simon Piette <spiette@generation.net> writes:
+These 2 bits specify the byte swapping mode for the upper aperture:
 
- Simon> Jerry Quinn wrote:
- >>> Hi all.  I'm trying to burn an audio CD on a stock kernel.org 2.2.10
- >>> kernel on a Powercenter (R5 dist).  The generic SCSI driver is built as a
- >>> module.  I'm using cdrecord-1.8a24, the latest I could find (1.8a21 gives
- >>> the same error).  I'm setting shmmax to 16M.  My burner is a Panasonic
- >>> CW-7502 with rev 4.17 firmware.
- >>> 
- >>> Basic info gathering from the drive seems to work fine.  I can extract
- >>> digital audio as well.  I pulled one track off a disc to use as a writing
- >>> test.  To do the test I try the following with a CDR blank in the drive:
- >>> 
- >>> cdrecord dev=3,0 -dummy -audio track.wav
- >>> 
- >>> I get the following error -
- >>> 
- >>> cdrecord Input/output error.  read track info: scsi sendcmd: retryable
- >>> error CDB: 52 01 00 00 00 FF 00 00 1C 00 status: 0x2 (CHECK CONDITION)
- >>> Sense Bytes: 70 00 05 00 00 00 0A 00 00 00 00 64 00 00 00 Sense Key: 0x5
- >>> Illegal Request, Segment 0 Sense Code: 0x64 Qual 0x00 (illegal mode for
- >>> this track) Fru 0x0 Sense flags: Blk 0 (not valid) cmd finished after
- >>> 0.003s timeout 240s
- >>> 
- >>> cdrecord says it is using generic SCSI-3/mmc cdr driver (mmc_cdr) and
- >>> driver flags are SWABAUDIO.
- >>> 
- >>> Any ideas?
+   00 = Little endian: (no swapping)
+   01 = Big endian: 16 bpp swapping
+   10 = Big endian: 32 bpp swapping
+   11 = (reserved)
 
- Simon> Could you try :
+So to me, it does seem correct to clear them to zero, before or'ing with the
+correct value later.
 
- Simon> $ cdrecord dev=3,0,0 fs=3800k -dummy -audio track.wav
+Does this cure the problems on other machines with a Mach64 VT? Here I mainly
+mean PowerMacs and UltraSPARC boxes.
 
-I tried this last night and the fs=3800k makes no difference.  The SCSI error
-happens immediately after it starts writing.
+Greetings,
 
+						Geert
 
-Jerry
+--
+Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
+Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
+Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
