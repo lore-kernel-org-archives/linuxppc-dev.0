@@ -1,32 +1,25 @@
-Date: 30 Jul 2003 04:49:04 -0000
-Message-ID: <20030730044904.2591.qmail@webmail9.rediffmail.com>
-MIME-Version: 1.0
-From: "ankush " <ankushrb@rediffmail.com>
-Reply-To: "ankush " <ankushrb@rediffmail.com>
-To: "Matt Porter" <mporter@kernel.crashing.org>
-Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: What's the maximum number of processes in Linux
-Content-type: text/plain;
-	format=flowed
+Date: Wed, 30 Jul 2003 18:03:44 +1200
+From: Dmytro Bablinyuk <dmytro.bablinyuk@tait.co.nz>
+Subject: SMC2 synchronous driver for 8xx
+To: linuxppc mail list <linuxppc-embedded@lists.linuxppc.org>
+Message-id: <3F275FC0.8020705@tait.co.nz>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi !
+I have kernel 2.4.21 and MPC866ADS eval board. The sync should work
+through TSA using signals L1RSYNCx, L1TSYNCx etc.
+I've been suggested to use syncppp.c module in my kernel and hdlcppp.c
+which I could not find anywhere, the ftp://qslinux.org is not working.
+If this is right could somebody please email me a hdlcppp and give me a
+clue where to start.
+I will very much appreciate if anybody already done something similar to
+give me a clue where to look at, and I will very much appreciate any
+code, examples.
 
-Please tell me , How many processes does linux kernel 2.4
-supports.In kernel 2.2 , there was a limit i.e. maximum 512
-processes . But in kerenl 2.4 and above there is no such checking
-being done . I think it just depends upon the available memory.
-
-Also please tell me what' s the meaning of process state
-TASK_UNINTERRUPTIBLE in Linux .
-
-Looking for a positive response !!!
-
-Regards,
-Ankush R. B.
-(Research Engineer)
+Thank you very much for any help.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
