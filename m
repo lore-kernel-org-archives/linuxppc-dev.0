@@ -1,39 +1,53 @@
-Date: Sun, 24 Jan 1999 23:11:14 -0600 (CST)
-From: Ken Roberts <ken@worldnet.att.net>
-Reply-To: Ken Roberts <ken.r@worldnet.att.net>
-To: Tom Harrington <tph@rmi.net>
-cc: Robin Colgrove <robin@louis.bidmc.harvard.edu>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Linux and Mac together (Was: Re: mac-on-linux project status)
-In-Reply-To: <199901250055.RAA20183@shell.rmi.net>
-Message-ID: <Pine.LNX.3.96.990124230812.434A-100000@dancer.at.home>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <s6abd0ea.070@COREL.CA>
+Date: Mon, 25 Jan 1999 02:03:05 -0500
+From: "Gavriel State" <gavriels@COREL.CA>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: PCMCIA Interrupt woes - Megahertz XJEM3336
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> Maybe I am just not understanding this but if both MkLinux and OS X run on 
->> top of the Mach microkernel, could they both be running simultaneously? If 
->
->In principle, yes,  Mach is capable of running multiple server operating 
->systems at the same time.  I have no idea what's involved in making this
->happen, but supposedly one of the advantges of a microkernel-based Linux
+I've been struggling this past weekend to try to get my PB2400 to talk 
+to my PCMCIA ethernet card.  I'm running kernel 2.2.0-pre7 and I'm 
+using the PCMCIA 3.0.5 sources that come with the Pre-R5 distribution.
 
-this was explained to the mklinux list quite some time back.  i believe this
-will not work because mklinux and osx use different versions of the mach kernel.
+Originally, once I got the PCMCIA package compiled and installed, the card
+would be recognized, but would give a bogus MAC address and wouldn't 
+transmit properly.  After a couple of byte-swapping fixes I was able to get
+it transmitting properly, but I've been completely unable to get it to recieve
+anything (and this includes the responses to ARP packets - my PC netmon
+shows the ARP packets being sent and responded to, but my 2400 never
+sees the packets).
 
-from what i remember, mklinux uses a more recent kernel than the official apple
-stuff.  the interfaces are different enough so that the two worlds are
-incompatible.
+After putting a few printks in the code, it looks as though the driver's 
+interrupt handler is never being called.  I've verified that the card's 
+interrupt mask register isn't making out the receive interrupts, so 
+nothing seems wrong at that level.  
 
+I've also tried turning on debug info in the i82365 module, but again I 
+never see any interrupts except for the 1000 ms polling status timer. 
+I tried turning on pci_csc to see if we would get interrupts for card 
+status if the polling were off, and didn't see any interrupts at all!
+Note that /proc/interrupts claims that the card has been assigned
+interrupt 23...
 
---------------------------------------------------------------------------------
-Ken Roberts                                               ken.r@worldnet.att.net
-"A mechanism of world intercommunication will be devised, embracing the whole
-planet, freed from national hindrances and restrictions, and functioning with
-marvelous swiftness and perfect regularity."
-                                                        (Shoghi Effendi, 1936)
+Does anyone have any clues?  This is my first time getting into driver
+level issues, and I'm stumped at this point.  If the driver isn't getting
+any interrupts it's hard to debug the driver.  Is there any way to querey
+the interrupt controller directly to get statistics, etc?  What could be going
+wrong here?
+
+Any assistance would be greatly appreciated.
+
+-Gav
+
+--
+Gavriel State
+Project Leader - Linux Applications Software
+Corel Corp
+gavriels@corel.com
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
