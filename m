@@ -1,29 +1,24 @@
 Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-To: cort@fsmlabs.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Date: Wed, 16 May 2001 16:18:17 -0500
-Subject: linux for the MBX860
-Message-ID: <20010516.161818.350.0.dtpoirot@juno.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: Daniel T Poirot <dtpoirot@juno.com>
+Date: Thu, 17 May 2001 9:55:41 +0800
+From: byf <byfmail@yeah.net>
+To: embeded powerpc <linuxppc-embedded@lists.linuxppc.org>
+Subject: a simple question about ppcboot
+Mime-Version: 1.0
+Content-Type: text/plain; charset="GB2312"
+Message-Id: <20010517015601.437D91C9E8999@smtp2.yeah.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Is there a HOWTO for bringing up standard COTS boards like the MBX860? I
-want to netboot and NFS mount root and other file systems.
+Hello,
 
-I did find an interesting 22 MB LSP from last year for the FADS860 board
-in /pub/Area51 on the MontaVista site.
+I have a question about ppcboot,
+How should I set ethaddr for using tftpboot to load kernel image?
 
+Thank you?
 
-Regards,
-- dan
-________________________________________________________________
-GET INTERNET ACCESS FROM JUNO!
-Juno offers FREE or PREMIUM Internet access for less!
-Join Juno today!  For your FREE software, visit:
-http://dl.www.juno.com/get/tagj.
+	             byf
+            byfmail@yeah.net
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
