@@ -1,24 +1,50 @@
-From: Paul Mackerras <paulus@linuxcare.com>
-To: Linux/PPC Developer list <linuxppc-dev@lists.linuxppc.org>
-Subject: my rsync trees
-Date: Fri, 26 Nov 1999 16:05:13 +1100
-Content-Type: text/plain
+Date: Fri, 26 Nov 1999 10:06:28 +0100 (MET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Dan Malek <dan@netx4.com>
+cc: Christian Zankel <chris@mvista.com>, cort@fsmlabs.com,
+        linuxppc-dev@lists.linuxppc.org, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: bootloader & head.S weirdness & restructuring
+In-Reply-To: <383D92CF.6ECD12D3@netx4.com>
+Message-ID: <Pine.GSO.4.10.9911261005360.29385-100000@dandelion.sonytel.be>
 MIME-Version: 1.0
-Message-Id: <99112616173402.00490@argo.linuxcare.com.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Those of you who were having trouble using rsync -z with the rsync trees at
-linuxcare.com.au should try again.  The trouble was that that is a Debian
-system and the latest debian rsync package got installed.  Some clever
-debian maintainer decided that rsync should use the standard zlib, instead
-of the extended zlib that comes with rsync. :-)
+On Thu, 25 Nov 1999, Dan Malek wrote:
+> Geert Uytterhoeven wrote:
+> > Alternatively, you can base your decisions on specific features that are shared
+> > among different machine types, and say
+> > 
+> >     if (has_feature_a) {
+> >         ...
+> >     }
+> > 
+> > instead of
+> > 
+> >     #if defined(CONFIG_x) || defined(CONFIG_y) || defined(CONFIG_z)
+> >     ...
+> >     #endif
+> 
+> Yes, but one of the things I am trying to do is reduce the
+> code size and instructions to execute.  On a 500 MHz G4 with
+> a Gigabyte of memory, a few extra instructions is no big deal.
+> On a 33 MHz 8xx with 8 Mbytes of memory, you watch all of this
+> pretty closely :-).
 
-Currently linuxcare.com.au::linux-pmac-stable is at 2.2.14-pre9, and
-linux-pmac-devel is at 2.3.29.  There is a precompiled 2.2.14pre9 kernel
-in ftp://linuxcare.com.au/pub/ppclinux/kernels/2.2.14p9/.
+So what's wrong with the approach above? All unused code will be optimized away
+by the compiler. There's no difference between the first and the second
+version, except that the first one is more readable.
 
-Paul.
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven ----------------- Sony Suprastructure Center Europe (SUPC-E)
+Geert.Uytterhoeven@sonycom.com ------------------- Sint-Stevens-Woluwestraat 55
+Voice +32-2-7248632 Fax +32-2-7262686 ---------------- B-1130 Brussels, Belgium
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
