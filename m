@@ -1,47 +1,40 @@
-Date: Sun, 17 Sep 2000 11:47:12 -0500 (CDT)
-From: Troy Benjegerdes <hozer@drgw.net>
-To: Gabriel Paubert <paubert@iram.es>
-cc: Paul Mackerras <paulus@linuxcare.com.au>, linuxppc-dev@lists.linuxppc.org
-Subject: dual G4 time issues..
-In-Reply-To: <Pine.HPX.4.10.10008121339410.27028-100000@gra-ux1.iram.es>
-Message-ID: <Pine.LNX.4.21.0009171144200.26873-100000@altus.drgw.net>
+Date: Sun, 17 Sep 2000 20:59:35 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: __ioremap_at() in 2.4.0-test9-pre2
+Message-ID: <Pine.LNX.4.10.10009172058340.715-100000@cassiopeia.home>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 12 Aug 2000, Gabriel Paubert wrote:
+While reading the test9-pre2 diff, I saw
 
->
-> On Sat, 12 Aug 2000, Paul Mackerras wrote:
->
-> > Gabriel Paubert writes:
-> >
-> > > > Certainly on my 7600 with a 2-cpu powersurge board, with the code that
-> > > > is currently in the devel kernel to use the tb register, you don't get
-> > > > the same time on both cpus.
-> > >
-> > > Yes, we need a way to check that the timebase are in sync and to sync
-> > > them if they are not. That's basically the same problem in any case.
-> > > The problem is to do it in a way that works on all machines...
-> >
-> > Until we get SMP working on the 2-cpu G4 machines (hopefully I will be
-> > getting one soon), the old powersurge board is the only supported SMP
-> > powermac.  I found with mine that when you start the second CPU, it
-> > stops the decrementers (and I expect timebases as well) on both CPUs
-> > until you send an interrupt from the primary to the secondary cpu.
+--- native-2.4.0-test9-pre1/include/asm-ppc/io.h	Sat Jun 24 10:37:42 2000
++++ native-2.4.0-test9-pre2/include/asm-ppc/io.h	Sun Sep 17 19:59:42 2000
+@@ -123,6 +181,8 @@
+  */
+ extern void *__ioremap(unsigned long address, unsigned long size,
+ 		       unsigned long flags);
++extern void *__ioremap_at(unsigned long phys, unsigned long size,
++			  unsigned long flags);
+ extern void *ioremap(unsigned long address, unsigned long size);
+ #define ioremap_nocache(addr, size)	ioremap((addr), (size))
+ extern void iounmap(void *addr);
 
-Benh and I are pushing Mac G4 SMP patches into the recently
-created linuxppc_2_5 tree. It currently seems to work reasonably well,
-except there is some work needing to be done on syncing the timebases on
-CPU's. I seem to have about a 14 second difference between the 2 CPU's on
-the machine I'm testing on now.
+and wondered what __ioremap_at() is used for? It's nowhere defined.
 
-(from ping -f)
+Gr{oetje,eeting}s,
 
-43505 packets transmitted, 43504 packets received, 0% packet loss
-round-trip min/avg/max = -144657.0/0.1/144657.3 ms
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
