@@ -1,41 +1,33 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>,
-	Dan Malek <dan@embeddededge.com>
-Cc: David Gibson <david@gibson.dropbear.id.au>,
-	<linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: CONFIG_PIN_TLB and telnet problems
-Date: Tue, 4 Jun 2002 14:37:08 +0200
-Message-Id: <20020604123708.13854@smtp.adsl.oleane.com>
-In-Reply-To: <20020604122046.29082@mailhost.mipsys.com>
-References: <20020604122046.29082@mailhost.mipsys.com>
+From: Paul Mackerras <paulus@samba.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15612.47115.300768.766742@argo.ozlabs.ibm.com>
+Date: Tue, 4 Jun 2002 22:52:27 +1000 (EST)
+To: Dan Malek <dan@embeddededge.com>
+Cc: David Gibson <david@gibson.dropbear.id.au>,
+	linuxppc-embedded@lists.linuxppc.org,
+	Tom Rini <trini@kernel.crashing.org>
+Subject: Re: Do we need tlbsx at finish_tlb_load?
+In-Reply-To: <3CFC0794.7020907@embeddededge.com>
+References: <20020530080434.GY16537@zax>
+	<20020603024344.GA6765@zax>
+	<3CFC0794.7020907@embeddededge.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->
->To add to these comments, I can reproduce the problem as well on a
->unix socket shared either between two processes, or read & written
->by a single process.
->
->After doing various tests, the problem appears rarely and randomly
->with half the RAM mapped with fixed TLBs, and very reproduceably
->with all the RAM mapped this way. So it seems that reducing the
->kernel pressure on TLBs, thus allowing userland TLBs to live much
->longer, exhibit the problem.
->
->I tried adding a call to _tlbia (not the instruction but our tlbwe
->based implementation) in set_context to make sure I only ever have
->one userland context loaded in the TLB and this appear to kill the
->problem (I'm currently running 2 offending test programs simultaneously
->on the box and none failed yet after a few Gb transferred).
+Dan Malek writes:
 
-Hrm... I added isync/sync (actually, the sync is probably too much)
-to set_context() in head_4xx.S in order to invalidate the shadow TLBs
-and it seems to work ! I'll test a few hours and let you know.
+> An instuction TLB miss will load the TLB with a PTE that indicates it isn't
+> valid.  A subsequent TLB instruction fault to load the page will cause a
 
-Ben.
+If the PTE isn't valid (i.e. the _PAGE_PRESENT bit is 0) we don't put
+it into the TLB.  If we did it would be ignored by the hardware and we
+would get another TLB miss straight away.  I believe that on 8xx you
+actually have two valid bits in each TLB entry, so you can have a TLB
+entry that is "valid" but describes a non-present page.  That isn't
+the case on 4xx.
 
+Paul.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
