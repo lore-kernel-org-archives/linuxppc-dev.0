@@ -1,48 +1,44 @@
-Message-Id: <200010300851.e9U8pKo12926@denx.local.net>
-To: greyham@research.canon.com.au (Graham Stoney)
-cc: ron.flory@adtran.com (Ron Flory), kharris@nexus-tech.net (Kyle Harris),
-        linuxppc-embedded@lists.linuxppc.org
-Subject: Re: BDM recommendations 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 30 Oct 2000 11:01:32 +1100."
-             <20001030000132.C1A904FF2B@brixi.research.canon.com.au>
-Date: Mon, 30 Oct 2000 09:51:20 +0100
+Message-ID: <39FD5054.77244045@centurysys.co.jp>
+Date: Mon, 30 Oct 2000 19:41:25 +0900
+From: Tania Boak <tania@centurysys.co.jp>
+MIME-Version: 1.0
+To: Erik Kunze <Erik.Kunze@philosys.de>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: pppd/pppoed
+References: <20001027103234.A24109@nphilos.philosys.de>
+Content-Type: text/plain; charset=iso-2022-jp
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In  message   <20001030000132.C1A904FF2B@brixi.research.canon.com.au>
-Graham Stoney wrote:
+Hi Erik
 
-> Ron Flory writes:
-> >  couldn't find that one, it seems to live here now...
-> >
-> >     http://sourceforge.net/projects/bdm4gdb/
+If you would prefer not to cross compile, Century Systems has a MPC860T based
+linux product with an optional hard disk on which you can compile both pppd and
+pppoed.  Details at
+http://www.centurysys.co.jp/product/eserver/eserverindex.html.
+
+Tania
+
+Erik Kunze wrote:
+
+> Hi,
 >
-> There's no content there though, which is why there's no pointer to it in the
-> HOWTO.  Try the MPCBDM site at:
->     http://www.vas-gmbh.de/software/mpcbdm/
+> I'm trying to port pppd and pppoed to a MPC860T based embedded board
+> using Hard Hat 1.2 for cross developement. Unfortunately both packages
+> aren't designed for cross compiling.
+>
+> Did anyone already port these programs to embedded Linux/PPC?
+>
+> Erik
+> --
+>    Dipl.-Ing. Erik Kunze               Phone: +49 - 89 - 32 14 07 41
+>    PHILOSYS Software GmbH              Fax:   +49 - 89 - 32 14 07 12
+>    Edisonstr. 6                        Email: Erik.Kunze@philosys.de
+>    D-85716 Unterschleissheim           WWW:   www.philosys.de/~kunze
+>
+>         PGP-Key: http://www.philosys.de/~kunze/public_key.txt
+>
 
-This is the *old* project, which has seen major changes since.
-
-I don't really understand this: both
-
-	http://bdm4gdb.sourceforge.net/
-
-[which introduces the BDM4GDB Interface Project] and
-
-	http://sourceforge.net/projects/bdm4gdb/
-
-[the "official" project home page] work fine for me.
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Real programmers don't comment their code. It was hard to  write,  it
-should be hard to understand.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
