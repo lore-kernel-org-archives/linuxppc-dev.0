@@ -1,16 +1,18 @@
-Return-Path: <stephane.fillod@thomson.net>
-Received: from dmzraw2.extranet.tce.com (dmzraw2.extranet.tce.com
-	[157.254.234.138]) by ozlabs.org (Postfix) with ESMTP id BC39167A64
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Apr 2005 00:05:50 +1000 (EST)
+Return-Path: <dank@kegel.com>
+Received: from relay03.pair.com (relay03.pair.com [209.68.5.17])
+	by ozlabs.org (Postfix) with SMTP id C189A67A64
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Apr 2005 00:10:29 +1000 (EST)
+Message-ID: <42514AC4.8030602@kegel.com>
+Date: Mon, 04 Apr 2005 07:10:12 -0700
+From: Dan Kegel <dank@kegel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Mon, 4 Apr 2005 16:05:36 +0200
-Message-ID: <1CFEB358338412458B21FAA0D78FE86D4F0D2A@rennsmail02.eu.thmulti.com>
-From: "Fillod Stephane" <stephane.fillod@thomson.net>
-To: =?iso-8859-1?Q?Garcia_J=E9r=E9mie?= <GARCIAJ@3il.fr>
+To: Christian <evilninja@gmx.net>
+References: <423B788F.7040705@kegel.com> <42509DB9.4090609@gmx.net>
+	<425147C4.10906@gmx.net>
+In-Reply-To: <425147C4.10906@gmx.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: linuxppc-dev@ozlabs.org
-Subject: RE: RE : How to read/write in flash memories (MTD)?
+Subject: Re: gcc4 compile fixes
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,35 +22,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Bonjour J=E9r=E9mie,
+Christian wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+> 
+> replying to myself:
+> 
+> Christian wrote:
+> 
+>>now it [1] fails with:
+>>
+>>In file included from arch/ppc/kernel/time.c:68:
+>>include/asm/time.h:61: warning: type qualifiers ignored on function return
+>>type
+> 
+> [...]
+> 
+> ..and there were other error messages too. not knowing a *bit* of C, i was
+> able to do minor alterations which i deduced from gcc's error messages.
+> now compiling for ppc604 (PReP) with gcc4 succeeds.
 
-Your mail is a bit off-topic on the linuxppc-dev list. A better list =
-would
-be linux-mtd. Check out: http://www.linux-mtd.infradead.org
+Thanks for the report and the patch.
+Parts of that patch look like ones I've already collected at:
+http://www.kegel.com/crosstool/crosstool-0.30/patches/linux-2.6.11.3/
+Here are the patches I have so far:
+kaz-types.patch
+linux-2.6.11-allow-gcc-4.0-asm-i386.patch
+linux-2.6.11-allow-gcc-4.0-asm-m68k.patch
+linux-2.6.11-allow-gcc-4.0-asm-ppc64.patch
+linux-2.6.11-allow-gcc-4.0-asm-x86_64.patch
+linux-2.6.11-allow-gcc-4.0-i2c.patch
+linux-2.6.11-allow-gcc-4.0-ppc-mikpe.patch
 
->Your reply confirmed my feeling. So I've decided to use the MTD but =
-with my >own driver as I found in a tutorial. So I made the file =
-(module) >/drivers/mtd/maps/myBoardFlash.c in order to support my 2 =
-flash memories. >You can see the code below, but once again (sorry...) I =
-have some questions >and doubts on it.=20
->1- Is that driver correct for my case?=20
->2- Are those R/W routines are usable?
->3- In our application we want to download source code and achievable =
-code >using Ethernet (so R/W operations). Do I need a filesystem for =
-that as JFFS2 ?=20
+In particular,
+http://www.kegel.com/crosstool/crosstool-0.30/patches/linux-2.6.11.3/linux-2.6.11-allow-gcc-4.0-ppc-mikpe.patch
+covers some of what you found.
 
-yes, or any other kind of filesystem on top of "MTD block", but this can =
-be=20
-unreliable. One solution can be also to use raw partitions to store =
-data.
+Maybe if I apply your first patch, I'll make it all the way through.
 
->4- Giving this driver, what is the process to use my R/W routines (if =
-they >are correct...) from the user space?
+Thanks,
+Dan
 
-To use your R/W routines, you can use "MTD char" support.=20
-See fcp.c (from MTD CVS or ftp site) for an example.
-
-
-Regards
---=20
-Stephane
+-- 
+Trying to get a job as a c++ developer?  See http://kegel.com/academy/getting-hired.html
