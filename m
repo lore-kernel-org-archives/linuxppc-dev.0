@@ -1,50 +1,65 @@
-Message-ID: <B171A2EF290DD4118E510010B502900680221C@feriex.feri.de>
-From: "Halfmann, Klaus" <klaus.halfmann@feri.de>
-To: linuxppc-dev@lists.linuxppc.org
-Cc: "'Bill Fink'" <billfink@capu.net>
-Subject: RE: Hang Mounting HFS CDROM with 2.4.3 final kernel
-Date: Wed, 4 Apr 2001 09:36:24 +0200 
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Subject: Re: External Monitor under Pismo
+From: Tuomas Kuosmanen <tigert@ximian.com>
+To: Jason "E." Stewart <jason@openinformatics.com>
+Cc: Andrew Sharp <andy@netfall.com>,
+	Jason "E." Stewart <jason@openinformatics.com>,
+	debian-powerpc@lists.debian.org, stewart.sadler@roke.co.uk,
+	linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <87lmph4e1b.fsf@amadeus.openinformatics.com>
+References: <87vgonhx7p.fsf@amadeus.openinformatics.com>
+	<3AC9B2DC.1567BC90@netfall.com> <986310913.29215.0.camel@spectrolite>
+	<87lmph4e1b.fsf@amadeus.openinformatics.com>
+Content-Type: text/plain
+Date: 04 Apr 2001 11:38:52 +0300
+Message-Id: <986373532.30396.0.camel@spectrolite>
+Mime-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello Bill,
-
-You wrote
-> With a BenH 2.4.3 final kernel, if I do:
+On 03 Apr 2001 19:03:28 -0700, Jason E. Stewart wrote:
+> "Tuomas Kuosmanen" <tigert@ximian.com> writes:
 >
-> 	mount -t hfs /dev/cdrom /mnt
+> > Hi!
+> >
+> > "mirror" works fine for me even on kernel 2.4.3 on my Pismo. Weird. This
+> > kernel is from Ben's rsync and it contains the pismo sleep code as well.
+> >
+> >     rsync -avz --delete penguinppc.org::linux-2.4-benh linux-2.4-benh
+> >
+> > I got scared because I am going to GUADEC (a GNOME conference in
+> > Denmark) this weekend and it would have sucked badly if it didnt work,
+> > but so far it looks good :o)
+> >
+> > I originally had just a binary of "mirror" which worked, but I compiled
+> > the one which was attached to Jason's mail and it worked as well.
 >
-> the system locks up solid (mouse stops moving and can't switch to
-> a virtual console) with no error messages (I also tried it from a
-> virtual console but no error messages there either).  The only
-> recourse is to hit the reset button to power cycle the machine.
-> This is using the built-in DVD ROM drive on a dual G4 (but only
-> running a UP kernel).  I can mount an HFS disk without any problem.
+> Glad it helped. I updated my copy of 2.4-benh, and it works now???!!!
+> So I'm really happy ;-)
 >
-> This isn't actually a major issue to me personally (at least at
-> the moment), but I thought I should go ahead and report it.  I
-> discovered it because I was trying to get the MacOS ROM file from
-> my MacOS 9.0.4 CDROM for use with MOL.
+> Now...
+>
+> Since I'm mirroring the LCD I only get 1024x768, and the pismo can
+> drive a 1600x1200@16 bit depth. So what needs to happen to aty128fb.c
+> to support the external monitor, and what can I do to make it happen??
 >
 
-As far as I know nobody really cares about HFS and Linux
-(well you should crosspost this to linux-fs-devl, but I dont have
- a correct address at hand) So I try to care a bit ...
+That is beyond *me* but maybe someone else knows. I am just the artist
+dude 'round the corner who likes to hack with perl and stuff.. :-)
 
-What sort of disk is it ? HFS / HFS+ / Hybrid / MultiSession / DVD ?
-In case it is HFS+, Linux will only be able to mount the HFS-Wrapper.
-You should try my HFS+-utils to acces that CD, then.
+I think there is no support for the external monitor in that sense in
+the driver. In macos it can do real dualhead, so that would be possible
+at least in theory, and it would be pretty nice. But currently I think
+the mirrored display is all we have for Pismo. Which works nice for
+projectors though.
 
-Can you create an image from the disk (with dd) and does it show the
-same problems ? (Id like to get that image, but I fear it may be to
-large for a reasonable download/test. I only have an iBook :/ )
+Tuomas
 
-Greetings,
-	Klaus Halfmann
-	http://www.penguinppc.org/~hasi
+
+________________________________________________________________________
+
+Tuomas Kuosmanen - Art Director -
+Ximian - tigert@ximian.com -
+www.ximian.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
