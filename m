@@ -1,54 +1,47 @@
-Message-Id: <199906231213.OAA00419@piglet.cpu.lu>
-Date: Wed, 23 Jun 1999 14:13:25 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: MESH problems in 2.2.x
-To: Geert.Uytterhoeven@cs.kuleuven.ac.be
-cc: Paul.Mackerras@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.LNX.4.10.9906221455110.5853-100000@michelin.cs.kuleuven.ac.be>
-MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+Message-Id: <199906231305.IAA26387@www.cedarnet.org>
+Date: Wed, 23 Jun 1999 08:08:01 -0500
+Subject: Re: PowerBook sleep, first try
+From: "Kevin Puetz" <kp11901@cedarnet.org>
+To: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  22 Jun, this message from Geert Uytterhoeven echoed through cyberspace:
-> So to boot recent kernels when you have sync-capable devices on the MESH, two
-> conditions have to be met:
-> 
->   - boot 2.1.130 first
->   - mesh_sync_targets = 0 (setting CONFIG_SCSI_MESH_SYNC_RATE=0 doesn't work)
-> 
-> Anyone else seeing this?
+Cool! Is there any hope of this working on the desktop machines that can 
+sleep? (I like my machine getting quiet when not in use, though I can live
+without.).
 
-No:
+--
++--------------------------------------------------------------------+
+|            .-'''''-.       Kevin Puetz                             |
+|          .'   _/|   `.                                             |
+|         :   =/_/      :    kp11901@cedarnet.org -preferred         |
+|        :   _/ |        :   Kevin.Puetz@039-server.pls.uni.edu      |
+|       (\  /  ,|        :   webmaster@039-server.pls.uni.edu        |
+|        \\/^\/||__     :                                            |
+|     _/~`~`""~`"` \_ .'  "Could you please continue the petty       |
+|  __/  -'/  `-._ `\_\__   bickering?  I find it - most intriguing." |
+|/     /-'`  `\   \  \-.\    --Data, STTNG, "Haven"                  |
++--------------------------------------------------------------------+
 
-scsi0 : MESH
-scsi1 : 53C94
-scsi : 2 hosts.
-mesh: target 1 synchronous at 10.0 MB/s
-  Vendor: IBM       Model: DFHSS1F       !c  Rev: 1717
-  Type:   Direct-Access                      ANSI SCSI revision: 02
-Detected scsi disk sda at scsi0, channel 0, id 1, lun 0
-mesh: target 2 synchronous at 10.0 MB/s
-  Vendor: IBM       Model: DCAS-34330        Rev: S65A
-  Type:   Direct-Access                      ANSI SCSI revision: 02
-Detected scsi disk sdb at scsi0, channel 0, id 2, lun 0
-mesh: target 3 synchronous at 5.0 MB/s
-  Vendor: MATSHITA  Model: CD-ROM CR-8008    Rev: 8.0e
-  Type:   CD-ROM                             ANSI SCSI revision: 02
+----------
+>From: Benjamin Herrenschmidt <bh40@calva.net>
+>To: linuxppc-dev@lists.linuxppc.ORG
+>Cc: kevyn@apple.COM, Paul.Mackerras@cs.anu.edu.au, huberj@WPI.EDU
+>Subject: PowerBook sleep, first try
+>Date: Wed, Jun 23, 1999, 3:43 AM
+>
 
-Works perfectly well with kernel 2.2.8.
-
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
-
+>
+> Hi !
+>
+> I've uploaded a first-try implementation of sleep on PowerBook G3 Series
+> (Grackle/mac-io based). It's NOT functional yet, it still hangs when
+> waking up. However, it no longer resets the machine, so it looks like the
+> ROM code is correctly identifying the wakeup code when the CPU is powered
+> back on.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
