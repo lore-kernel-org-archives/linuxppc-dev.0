@@ -1,30 +1,44 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Message-Id: <v03110700b7e554401d16@[64.230.146.224]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Sat, 6 Oct 2001 20:42:28 -0400
+To: linuxppc-dev@lists.linuxppc.org
 From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Tom Rini <trini@kernel.crashing.org>
-Subject: Re: ATI Radeon 32MB PCI, Apple 17 Flat panel on B+W G3
-Date: Sat, 6 Oct 2001 14:06:34 -0400
-Cc: <linuxppc-dev@lists.linuxppc.org>
-References: <20011006091632.B10546@cpe-24-221-152-185.az.sprintbbd.net> <20011006171107.14805@smtp.wanadoo.fr>
-In-Reply-To: <20011006171107.14805@smtp.wanadoo.fr>
-MIME-Version: 1.0
-Message-Id: <20011006180432.WQQC27768.tomts5-srv.bellnexxia.net@there>
+Subject: no luck with ATI Radeon 32 PCI and FlatPanel
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 Hi Ben,
 
-> Ani and I have found some ways to fix that PLL issues once for all
-> (basically, we have some code to really probe the refclk), and afaik,
-> ATI OF drivers for radeon will actually give that info in the device
-> tree (finally !).
+The flatpanel works fine under MacOS9 but it will not even show the ybin
+prompt which makes it hard to boot into linux  ;-)
 
-If you send that patch along, I would be happy to test it for you.
+Using the display registry on the MacOS side, the Radeon does in fact
+provide all the the nice info we need:
 
-Thanks,
+ATY, RADEONp
+
+ATY, RefCLK = 27000
+ATY,MCLK = 166000
+ATY,SCLK= 166000
+width 1280
+height 1024
+
+RF_VCLK=10800
+RF_MCLK=16615
+RF_YCLK=33230
+RF_SCLK=16615
+
+Any ideas on how to boot this thing if the ybin prompt never even appears
+on the screen (I tried blindly typing but no luck).
+
+I will keep playing (probably in dual video mode) to try and make this
+thing work.
+
+I will let you know how it goes.
 
 Kevin
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
