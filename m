@@ -1,61 +1,49 @@
-Date: Tue, 18 Sep 2001 02:49:08 +0200
-From: cejka@inf.enst.fr
+Date: Mon, 17 Sep 2001 19:08:22 -0700
+From: Tom Rini <trini@kernel.crashing.org>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: MPC860 and audio codec MC145481 problems
-Message-ID: <20010918024908.A18414@inf.enst.fr>
+Subject: Re: Board names for 4xx
+Message-ID: <20010917190822.K14279@cpe-24-221-152-185.az.sprintbbd.net>
+References: <20010914144403.G3851@zax> <20010914072847.R21906@cpe-24-221-152-185.az.sprintbbd.net> <20010917122828.J3851@zax> <20010916211605.D14279@cpe-24-221-152-185.az.sprintbbd.net> <3BA61D1A.3A79E5B9@mvista.com> <3BA620CC.3ACD0547@inn.ericsson.se> <20010917113345.A23163@cpe-24-221-152-185.az.sprintbbd.net> <20010918103530.B1183@zax>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20010918103530.B1183@zax>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi to all PowerPC masters,
-  I'm very new in the PowerPC world and embedded systems. I'm trying
-to find out the way how to control simple audio codec MC145481 by
-PowerQUICC MPC860. Existing connection is as follows:
-  PA0 (CLK8/L1TCLKB / TOUT4) to MCLK/BCLKR/BCLKT
-  PA10 (TXD3 / L1RXDB) to DT
-  PA11 (RXD3 / L1TXDB) to DR
-  PB17 (L1ST3 / RTS3/L1RQb) to FSR/FST
-Protocol to MC145481 is very simple: If I want to send anything, MCLK/BCLKR
-is for main chip clock and a bit clock, DR is synchronous serial receive
-line and FSR is frame sync. To send a byte, it is sufficient to produce one
-clock pulse on FSR and then send a byte to DR with BCLKR rate. The problem
-is that both clock signals MCLK/BCLKR/BCLKT and FSR/FST has to be generated
-by PowerPC and there is none input sync signal into PowerPC.
+On Tue, Sep 18, 2001 at 10:35:30AM +1000, David Gibson wrote:
+>
+> On Mon, Sep 17, 2001 at 11:33:45AM -0700, Tom Rini wrote:
+> >
+> > On Mon, Sep 17, 2001 at 06:11:56PM +0200, Kenneth Johansson wrote:
+> > > Dan Malek wrote:
+> > > >
+> > > > Tom Rini wrote:
+> > > >
+> > > > > I do wish someone else would speak up tho.  Does anyone out there have an
+> > > > > opinion?
+> > > >
+> > > > If the information from /proc is just used for pretty print out of
+> > > > information, I really don't care.  If there are applications that read
+> > > > this for some internal configuration and flexibility, we better have a
+> > > > standard format.
+> > > Debian uses /proc/cpuinfo to find out what utility to use for the RTC
+> > > (clock,hwclock). This could be fixed if the code from clock was integrated in
+> > > hwclock. hwclock tries every method it knows until one works.
+> >
+> > This is no longer true.  Woody anyways assumes that /dev/rtc will work in
+> > the 'standard' way.  But,, debian does parse for machien type for doing
+> > board/platform specific modules.
+>
+> Yes, but last I checked the util-linux install script would still die
+> if the machine: field wasn't present at all.  IIRC it was checking for
+> PReP machines for some reason.
 
-Did anybody do similar thing already? I expect so. I can control audio
-codec by busy loop in Linux kernel with cli()/sti() around this loop,
-but as everybody knows, it is very bad solution, so I'm trying to use
-serial interface, but still without any success.
+util-linux is broken then.  All PPC (save APUS) can have a working
+/dev/rtc, via CONFIG_PPC_RTC.
 
-I see two possible solutions, but then I have several questions:
-
-* If I use SCCn in direct NMSI configuration, do I need to switch wires
-  DT and DR to have connected them TXD3 -> DR and RXD3 -> DT instead of
-  current TXD3 -> DT and RXD3 -> DR? And is there any possibility to
-  generate baud rate clock on PB17? (I think no, but I would like to be
-  sure.)
-
-* If I use SCCn in TSA configuration over TDMB which looks more appropriate
-  because of L1* signals, I can produce clock TOUT4 for audio codec by setting
-  PAPAR[DD0] = 1 and PADIR[DR0] = 1, but is this TOUT4 signal availible
-  internally on the same pin too for L1TCLKB (or CLK8) signal when there
-  is PADIR[DR0] = 1? I understand from MPC860 manual that if I have
-  external clock source on pin PA0 and PADIR[DR0] = 0, it can be used for
-  both L1TCLKB and CLK8, but I could not find anything about possible
-  internal connection (or disconnection?) between TOUT4 and L1TCLCB/CLK8
-  on the same pin when PADIR[DR0] = 1. Maybe I can test it, but I do not
-  know how to check L1TCLCB/CLK8. And the last question, for which I could
-  not find answer in MPC860 manual: Is it possible to start data
-  transmittion without external pulse on input L1TSYNCB signal? For this
-  simple audio codec, I just have to produce strobe signal on L1ST3 and then
-  send a data without any other synchronization, but in manual I see just
-  in-line sync. pattern (???) (29.4.2.1) or default synchronization for
-  receiving after channel is enabled (29.4.2.2), but not anything
-  for default synchronization for transmitting.
-
-Thanks to anybody, who would like to help,
-  Rudolf
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
