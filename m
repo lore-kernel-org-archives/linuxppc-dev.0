@@ -1,48 +1,62 @@
-Date: Fri, 21 Jan 2000 08:58:56 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Kevin Hendricks <khendricks@ivey.uwo.ca>
-cc: Gabriel Paubert <paubert@iram.es>,
-        Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
-        David Edelsohn <dje@watson.ibm.com>, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <00012019473900.07177@localhost.localdomain>
+Date: Fri, 21 Jan 2000 12:54:42 +0100
+To: khendricks@ivey.uwo.ca, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
 Subject: Re: Fwd: Re: still no accelerated X ($#!$*)
-In-Reply-To: <00012021232600.07340@localhost.localdomain>
-Message-ID: <Pine.LNX.4.05.10001210858020.980-100000@callisto.of.borg>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <20000121125442.015889@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 20 Jan 2000, Kevin Hendricks wrote:
-> > I actually doubt that the eieio are necessary but then I'm not a
-> > specialist on this kind of hardware. Every eieio is a bus broadcast
-> > operation (except on 603, on G3 it is IIRC an option controlled by a bit
-> > in HID0) and actually has a cost comparable to a write posted I/O access
-> > but the other consequences (preventing bursts on the I/O bus) may actually
-> > cause a significant performance hit.  So it should be used only when
-> > necessary...
-> >
-> > > Please let me know how to change the above so that I get it right this time.
-> >
-> > Try to determine first whether the eieio are necessary; for access to the
-> > frame buffer I'm almost sure that they are superfluous and potentially
-> > very costly in terms of performance. For the MMIO I suspect that they may
-> > be necessary at some places, but adding them systematically will have less
-> > impact.
+On Thu, Jan 20, 2000, Kevin Hendricks <khendricks@ivey.uwo.ca> wrote:
+
+>From the various posts (given the operand ordering done in the original
+post),
+>here is what I have tried to piece together.
 >
-> Okay, I went and looked at the latest aty128fb.c code and it does not use eieio
-> anywhere.  I looked at ealier verions of this file and it at one time had eieio
-> but they have since been removed.
+>asm volatile ("stwbrx %1,%2,%3; eieio" : "=m" (*(volatile unsigned
+>*)(base_addr+regindex))       : "r" (regdata), "b" (regindex), "r"
+>(base_addr));
+>
+>asm volatile ("lwbrx %0,%1,%2; eieio" : "=r"(val) : "b"(regindex),
+>"r"(base_addr), "m" (*(volatile unsigned *)(base_addr+regindex)));
 
-Perhaps they were replaced by the platform independent wmb()?
+Hi Kevin !
 
-Gr{oetje,eeting}s,
---
-Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
+A good rule is to use eieio() when accessing a register (that means doing
+an access that actually performs an action and whose ordering is
+important relative to other accesses of the same type) and not use it
+when filling the framebuffer. There are usually few enough register
+accesses for this to work. it may be optimal to skip eieio's when writing
+to a bunch "parameters" registers where ordering is not important, in
+this case you just need to put an eieio() between those, and the register
+write that triggers the engine operation that will use those parameters.
+However, when doing that, the PCI bridge is allowed to combine your
+register writes in a burst, and I know some cards who don't handle burst
+access to MMIO registers very well.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Basically, eieio() will make sure that all previous memory accesses will
+have been finished before memory accesses after the eieio are done.
+
+It may be important to make sure that the last bit of framebuffer has
+been written before "starting" an engine operation. So one eieio between
+frame buffer filling and engine register access may be useful in the case
+where you use eieio after the write in the asm.
+
+I personally tend to prefer doing the eieio _before_ the read/write in
+the asm code, but there are some rare cases where you mix eieio and
+non-eieio accesses (like with your framebuffer) where special care must
+be taken and may require both eieio before and after the register access.
+
+Another thing to take care of is PCI write posting: Basically, when you
+write, let's say, a MMIO register, you are not guaranteed that this write
+have actually been done unless you do a read from the same io space. For
+example: If you write an interrupt mask register to disable an interrupt
+followed by critical code in which this interrupt _must not_ happen, you
+need absolutely to do a read (typically to re-read the mask you just
+wrote to) after the write, and before the critical code.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
