@@ -1,18 +1,15 @@
-Return-Path: <clark@esteem.com>
-Received: from mail5.hsphere.cc (mail5.hsphere.cc [216.157.145.25])
-	by ozlabs.org (Postfix) with SMTP id 26E842BF07
+Return-Path: <felix@allot.com>
+Received: from exg.allot.com (mail.allot.com [199.203.223.202])
+	by ozlabs.org (Postfix) with ESMTP id A89AA2BF07
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 Nov 2004 04:34:35 +1100 (EST)
-Message-ID: <4190FE1F.4080105@esteem.com>
-Date: Tue, 09 Nov 2004 09:27:59 -0800
-From: Conn Clark <clark@esteem.com>
+	Wed, 10 Nov 2004 04:42:28 +1100 (EST)
+Message-ID: <4190FDED.3080605@allot.com>
+Date: Tue, 09 Nov 2004 19:27:09 +0200
+From: Felix Radensky <felix@allot.com>
 MIME-Version: 1.0
-To: Peter Asemann <peter.asemann@web.de>
-References: <418F83C4.5000109@web.de>
-In-Reply-To: <418F83C4.5000109@web.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: How much easier makes owning a BDI2000 things?
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: 405GPr ioremap problem
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,50 +20,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Peter Asemann wrote:
-> The tutorials in the web I read about getting custom hardware running
-> suggest that having some BDI-thing like an Abatron BDI2000 is a really
-> good idea.
-> 
-> Actually I need some arguments to have such a device bought. How much
-> easier does it make things?
-> 
-> Peter Asemann
-> 
+Hi, folks
 
+I have a 405GPr based board with 512M of RAM.
+My kernel is 2.4.17 from Monta Vista Linux 2.1.
+I'm  trying to reserve 64M on boot using mem=448M
+and map it later by
 
-	Its worth it weight in gold bringing up custom boards the first time 
-and writing/debuging the boot rom. It allows you to change register 
-values for esential functions such as PLL setings, memory timings and 
-peripheral configuration. This is very handy because you can figure out 
-the values you need before you write the boot rom software. It also 
-allows you to reprogram flash memory in circuit. To do it without this 
-you would need to have removable flash/roms and remove, reprogram and 
-replace them each attempt. I would imagine doing that would get old very 
-fast.
+ioremap(__pa(high_memory), 64*(1<<20));
 
-	We haven't used ours much for debugging once things were up and 
-running(we have fallen back to using printk statements for debugging). 
-Though it can be used for that and some core kernel developers do use 
-it. (probably for debugging the printk code of the kernel  ;-)  )
+This worked fine when system had 256M of RAM,
+but now ioremap fails. If I understand the kernel
+code correctly, by adding more RAM I've reduced
+the vmalloc/ioremap space. I can also see that this
+space is reduced dramatically on boot by mappings
+done in arch/ppc/kernel/ppc4xx_setup.c:m4xx_map_io()
 
-	In production we use it to program the boot rom on brand new boards. It 
-is also occasionaly usefull in finding faults in boards that don't want 
-to come up.
+Is there any way to fix problem ? Is it necessary to have
+a 1:1 virtual to physical mappings as its done in m4xx_map_io()
+or maybe higher virtual addresses can be used, thus
+allowing to save some precious ioremap space.
 
-	To sum things up let me put it this way. I could theoretically bring up 
-a board without one. I can't imagine how much longer it would take to do 
-so however.
+Thanks a lot in advance.
 
--- Conn Clark
+Please CC me, as I'm not on the list.
 
-*****************************************************************
-Give a man a match and you heat him for a moment. Set him on fire
-and you'll heat him for life.
-*****************************************************************
-
-Conn Clark
-Engineering Stooge				clark@esteem.com
-Electronic Systems Technology Inc.		www.esteem.com
-
-Stock Ticker Symbol				ELST
+Felix.
