@@ -1,52 +1,42 @@
-Date: Wed, 3 May 2000 00:18:01 -0500 (CDT)
-From: Troy Benjegerdes <hozer@drgw.net>
-To: Holger Bettag <hobold@Informatik.Uni-Bremen.DE>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Does a Cinema Display work under Linux?
-In-Reply-To: <8xbt3w352n.fsf@s62.informatik.uni-bremen.de>
-Message-ID: <Pine.LNX.4.10.10005030012120.30739-100000@altus.drgw.net>
+Message-ID: <390FE6E2.1DDB8599@wibble.net>
+Date: Wed, 03 May 2000 18:44:18 +1000
+From: Steven Hanley <sjh@wibble.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+        Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 2.3.99-pre6 sound hfs
+References: <Pine.LNX.4.10.10005031013310.17388-100000@opal.biophys.uni-duesseldorf.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 30 Mar 2000, Holger Bettag wrote:
+> Your point being?
 
->
-> Holger Bettag <hobold@informatik.uni-bremen.de> writes:
->
-> >
-> > [I asked about the chances of a Cinema Display functioning with Linux/X11]
-> >
-> > On Tue, 14 Mar 2000, David A. Gatwood wrote:
-> >
-> [...]
->
-> > > Worth mentioning, though, I'm using BootX, so it gets configured, at least
-> > > to some degree, by MacOS.
-> >
-> >
-> > And Tim Seufert wrote:
-> >
-> > > You can probably at least assume that you'll be able to use it
-> > > unaccelerated at its native resolution via offb.
-> >
->
-> I have been loosely following the discussion about the new updated Sawtooth
-> mainboards and noticed that several people seem to be unable to use BootX on
-> those new machines.
->
-> Now I must assume that a Cinema Display won't 'voluntarily' work under Linux.
+I was replying to Scott Knight <scott@re-104-1.read.indiana.edu>
+>         Alright, i have a couple questions.
+...
+> Secondly is hfs support. Its nutty. I cant
+> mount any hfs cdroms. I can mount hfs hard drives but if something is
+> tried to copy to it it crashes the computer hard and emsse up the ahrd
+> drive a bit. Anyone know what the deal is with this? And yes I have hfs
+> support compiled in. ANy advice or help would be greatly apprecaited.
 
-Basically, the accellerated aty128 drivers don't recognize the digital
-output. (I had this problem with a 15" digital flat panel).
+pointing out why hfs is not working, as he obviously was under the
+assumption it was supposed to work in the latest devel kernels.
 
-I've heard that it may work with offb, but one is limited to whatever
-resoultion OF happens to use.
+sorry for not quoting this originally if it added confusion, I tend to
+edit out as much as possible in replies
 
--------------------------------------------------------------------------
-Troy Benjegerdes          troy@blacklablinux.com            hozer@drgw.net
+	See You
+	    Steve
 
+--
+sjh@wibble.net http://wibble.net/~sjh/
+Look Up In The Sky
+   Is it a bird?  No
+      Is it a plane?  No
+         Is it a small blue banana?
+YES
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
