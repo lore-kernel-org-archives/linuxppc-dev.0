@@ -1,37 +1,43 @@
-To: Dan Malek <dan@embeddededge.com>
-Cc: PPC_LINUX <linuxppc-embedded@lists.linuxppc.org>,
-	Ralph Siemsen <rsiemsen@rossvideo.com>
-Subject: Re: Init hangs 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 06 Aug 2004 09:44:41 EDT."
-             <C47B18AA-E7AE-11D8-9B14-003065F9B7DC@embeddededge.com>
-Date: Fri, 06 Aug 2004 16:36:06 +0200
-Message-Id: <20040806143611.5C08AC109F@atlas.denx.de>
+Subject: Re: rpx8260_defconfig problems
+From: Jeff Angielski <jeff@theptrgroup.com>
+To: LinuxPPC Embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <1091647026.4233.95.camel@localhost.localdomain>
+References: <1091647026.4233.95.camel@localhost.localdomain>
+Content-Type: text/plain
+Message-Id: <1091811981.4179.20.camel@localhost.localdomain>
+Mime-Version: 1.0
+Date: 06 Aug 2004 13:06:21 -0400
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <C47B18AA-E7AE-11D8-9B14-003065F9B7DC@embeddededge.com> you wrote:
->
-> On Aug 6, 2004, at 8:46 AM, Wolfgang Denk wrote:
-...
-> > using soft-float on processors without a MMU.
->
-> Without an MMU?  Really? :-)  Just kidding.  I'm just glad I'm
-> not the only one that types stuff like that once in a while.
+On Wed, 2004-08-04 at 15:17, Jeff Angielski wrote:
+> Doing a bk pull on the latest linuxppc-2.4 says that as of July 2004,
+> support for the Embedded Planet EP8260 was working.  However, using the
+> default rpx8260_defconfig will not work on my board.
 
-Brain offline, please wait ;-)
+I finally managed to get a booting linuxppc-2.4 kernel and some console
+output.  Now onto getting a working rootfs...
 
-Best regards,
+For reference in case anybody tries this at home, the problems were:
 
-Wolfgang Denk
+1) arch/ppc/platforms/rpx8260.h defined it's own bd_info structure which
+was not consistent with u-boot.  This caused the time settings to be
+wrong, which in turn caused the decrementer to be set to zero... "That's
+it man, game over man, game over, man!"
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-The only way to learn a new programming language is by  writing  pro-
-grams in it.                                        - Brian Kernighan
+2) drivers/char/tty_io.c has a typo on the CPM2 support in
+console_init() that prevents it from working with anything but 8xx
+architectures
+
+- #if defined(CONFIG_8xx) || defined(CONFIG_CONFIG_CPM2_UART)
++ #if defined(CONFIG_8xx) || defined(CONFIG_CPM2_UART)
+
+
+Cheers,
+
+Jeff Angielski
+The PTR Group
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
