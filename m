@@ -1,50 +1,54 @@
+From: "Bob Doiron" <bob.doiron@amirix.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Possbile bug in hashtable.S : add_hash_page
+Date: Mon, 28 Jun 2004 15:40:26 -0300
+Message-ID: <NBBBIKIPCKOLLCLIHBIMMEPNEBAA.bob.doiron@amirix.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="Windows-1252"
-Subject: Desesperatly looking for a intConnect() equivalent routine... 
-Date: Mon, 28 Jun 2004 17:51:24 +0100
-Message-ID: <85E6ED5B5EC32F439702305CC417E12D9E2A85@email.3il.fr>
-From: =?Windows-1252?Q?Garcia_J=E9r=E9mie?= <GARCIAJ@3il.fr>
-To: <linuxppc-embedded@lists.linuxppc.org>
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi everybody,
-I have to do a vxworks migration to a linux environment.
-In the original application we use the "intConnect" function described as below:
+Hi all. I'm working on an embedded ppc / linux project and I've run into
+what looks like a possible bug.
 
->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+On entry to add_hash_page the return address is stored on the stack like so:
 
-timer_connect( ) - connect a user routine to the timer signal
+   _GLOBAL(add_hash_page)
+      mflr  r0
+      stw   r0,4(r1)  <-- store into *(r1) + 4
 
-SYNOPSIS
-
-int timer_connect
-    (
-    timer_t     timerid, /* timer ID */
-    VOIDFUNCPTR routine, /* user routine */
-    int         arg      /* user argument */
-    )
-
-DESCRIPTION
-
- This routine sets the specified routine to be invoked with arg when fielding a signal indicated by the timer's evp signal number, or if evp is NULL, when fielding the default signal (SIGALRM).
-
-The signal handling routine should be declared as:
+	< do some magic >
+      < then disabled interrupts >
 
 
-    void my_handler
-        (
-        timer_t timerid,      /* expired timer ID */
-        int arg               /* user argument    */
-        )
+then upon return, it's retreived like so:
 
-<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+      mtmsr	r10 <--- interrupts enabled here
+	SYNC_601
+	isync
 
-In order to get a very similar way of working, I'm using the POSIX interface. Unfortunately, the POSIX timers routines do not seem to offer routine similar as intConnect.
+	lwz	r0,4(r1) <-- read out *(r1) + 4
+	mtlr	r0
+	blr
 
-Does anyone would have a clue for a newbie in Linux ppc dev please??
-Tks a lot !!
+
+However - r1 remains unchanged within the function. As it stands, it seems
+that an interrupt could come along and scrible on our return address by
+using the unchanged stack pointer. What I've been seeing is that when under
+heavy interrupt load (nfs mount kernel compile for example) my ppc gets
+stuck in a "here: jump here" loop right at the blr instruction listed above.
+Inspecting the stack @ 4(r1) showed that it did in fact have the address of
+the blr instruction there, which led me to beleive that it is getting
+corrupted by an interrupt. Simply changing the "4" offset in 4(r1) to 12
+makes for a rock stable kernel, but it's a horrific hack.
+
+I guess my question is, am I missing something? or is this a real bug? My
+extremely limited ppc assembly tells seems to think that r1 should be moved
+prior to using stack space...
+
+--Bob
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
