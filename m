@@ -1,27 +1,31 @@
-Date: Thu, 18 Mar 1999 10:28:19 +1100
-Message-Id: <199903172328.KAA18385@tango.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: dmalek@jlc.net
-CC: linuxppc-dev@lists.linuxppc.org
-In-reply-to: <36EFDDD8.44C8F5EB@jlc.net> (message from Dan Malek on Wed, 17
-	Mar 1999 11:52:40 -0500)
-Subject: Re: Mac Audio
-Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <36EFDDD8.44C8F5EB@jlc.net>
+Date: Wed, 17 Mar 1999 19:40:53 -0500 (EST)
+From: Tom Rini <tmrini@ntplx.net>
+To: Joe Julicher <joe_julicher@macktrucks.com>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Apple Open Source
+In-Reply-To: <3.0.5.32.19990317133801.007ec650@mailhost.bulldog.com>
+Message-ID: <Pine.LNX.4.05.9903171939050.992-100000@pc.wackyland.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dan Malek <dmalek@jlc.net> wrote:
+On Wed, 17 Mar 1999, Joe Julicher wrote:
 
-> I am working on some interactive multimedia and could really use
-> full duplex audio on my PowerBook G3.  Is anyone working on this?  If
-> not, I will start investigating the details.  If so, let's work together.
+> Any news on the OF problems?  And getting around them?
+> It would be nice to have a good OF booter for ALL machines.
+> And it would be nice to NetBoot an OS other than MACOS.
 
-Peter Barker and Nathan Hurst here spent some time working on sound
-input.  I'll try to dig up the patch and post it here.
+Which OF problems?  The old (7xxx, 8xxx, 9xxx, beige G3, etc) OFs that
+can't flash, well we're kinda stuck.  OF booting iMacs and Blue G3s and
+anything else down the line is that we have bad ELF headers, or so I
+understand (lost the email of the guy that told me, sorry..).
 
-Paul.
+---
+Tom Rini (TR1265)
+http://dobbstown.yeti.edu/
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
