@@ -1,35 +1,31 @@
-Date: Fri, 14 Mar 2003 00:18:53 +0100
-From: Olaf Hering <olh@suse.de>
-To: mikpe@csd.uu.se
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev@lists.linuxppc.org
 Subject: Re: 2.4.20-ben8 vmlinux.coff CLAIM error on PowerMac 4400
-Message-ID: <20030314001853.A2524@suse.de>
-References: <15984.39762.858447.704784@gargle.gargle.HOWL> <20030313152506.GB28311@suse.de> <15984.43692.736225.647094@gargle.gargle.HOWL> <1047571502.790.76.camel@zion.wanadoo.fr> <15984.47873.428447.186049@gargle.gargle.HOWL> <1047576187.789.82.camel@zion.wanadoo.fr> <15985.4233.198025.809102@gargle.gargle.HOWL>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: mikpe@csd.uu.se
+Cc: Olaf Hering <olh@suse.de>, linuxppc-dev@lists.linuxppc.org
 In-Reply-To: <15985.4233.198025.809102@gargle.gargle.HOWL>
+References: <15984.39762.858447.704784@gargle.gargle.HOWL>
+	 <20030313152506.GB28311@suse.de>
+	 <15984.43692.736225.647094@gargle.gargle.HOWL>
+	 <1047571502.790.76.camel@zion.wanadoo.fr>
+	 <15984.47873.428447.186049@gargle.gargle.HOWL>
+	 <1047576187.789.82.camel@zion.wanadoo.fr>
+	 <15985.4233.198025.809102@gargle.gargle.HOWL>
+Content-Type: text/plain
+Message-Id: <1047597935.581.0.camel@zion.wanadoo.fr>
+Mime-Version: 1.0
+Date: 14 Mar 2003 00:25:36 +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
- On Fri, Mar 14, mikpe@csd.uu.se wrote:
+> vmlinux.coff built from 2.4.18, both vanilla and with Olaf's patch in
+> http://penguinppc.org/~olaf/2.4.18/01_linux-2.4.18-rc4-lxppc_devel-0.diff.gz,
+> boots Ok. However, 2.4.18 has the "excessively slow swim3 floppy writes"
+> problem I mentioned earlier that 2.2.24 doesn't have.
 
-> I also tried 2.4.20-ben8 with coffmain.c from 2.4.18 as you suggested,
-> but it got the same CLAIM error as before. (hack-coff.c was unchanged
-> and I didn't find anything else coff-related.)
+What about Olaf's 2.4.6 for swim3 ?
 
-Your 4400 will work fine with kernel.org kernels.
-I remember Eddie said it broke around 2.4.19-pre7 (probably the benh
-version).
-I do not have much oldworlds left, a 6400 has OF 2.0, I will try it
-tomorrow.
+Ben.
 
-
-Gruss Olaf
-
---
-A: No.
-Q: Should I include quotations after my reply?
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
