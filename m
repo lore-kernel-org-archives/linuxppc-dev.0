@@ -1,26 +1,53 @@
-Message-ID: <CA78D1B723D8D411AF0300508BDCF74FF0C566@NTCORREO>
-From: GOTZON ASTONDOA <gastondoa@fagorautomation.es>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Fast shutdown
-Date: Tue, 12 Nov 2002 16:04:39 +0100
+From: "Stephan Linke" <Stephan.Linke@epygi.de>
+To: "Steven Scholz" <steven.scholz@imc-berlin.de>
+Cc: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Using ioctl from with the kernel ???
+Date: Tue, 12 Nov 2002 16:07:21 +0100
+Message-ID: <FCEAKDJJAPHPLJFINDAJCEACCLAA.Stephan.Linke@epygi.de>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain;
+	charset="us-ascii"
+In-reply-to: <3DD114B7.EFA6E6CE@imc-berlin.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all:
+Hello Steven,
 
-	Our custom board has to microprocessors: 68K and PowerPC. We have
-instaled Linux in the PowerPc side.
-	When the user suddenly shutdowns the board, the 68K sends an
-interrupt to the PowerPC.We have more or less 8 mSeg to close all the Linux
-system (it has hard disk, ethernet, ftp and our own application).
+Your right IOCTL is not applicable for this. You can simply call the driver
+functions directly. If these functions are called different from different
+context(s) (like your driver and the IOCTL function) you have to add some
+protection mechanism. (The code is not reentrant right?) You may try
+spin_lock() for this job (linux/spinlock.h). If you are calling the
+functions from interrupt contect too some extra protection is required...
 
-	Can somebody tell me any idea to close the Linux system in the
-fastest way? We are thinking in capture the interrupt signal, but, is it
-enough fast?
+Regards, Stephan
 
-Thanks for your help in advance.
+
+> -----Original Message-----
+> From: owner-linuxppc-embedded@lists.linuxppc.org
+> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Steven
+> Scholz
+> Sent: Dienstag, 12. November 2002 15:48
+> To: LinuxPPC
+> Subject: Using ioctl from with the kernel ???
+>
+>
+>
+> Hi there,
+>
+> I use a device driver (/dev/status_led from DENX) to manipulate
+> some frontpanel
+> LEDs from user space via some ioctls.
+>
+> Now I'd like to access them from the kernel space. How can I do
+> that? AFAIK I
+> can't use fopen and ioctl...
+>
+> Thanks,
+>
+> Steven
+>
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
