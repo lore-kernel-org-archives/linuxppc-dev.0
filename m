@@ -1,43 +1,33 @@
-From: clark@esteem.com
-Message-Id: <1.5.4.32.20001013212629.006c1058@pop.esteem.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Fri, 13 Oct 2000 14:26:29 -0700
+Message-ID: <39E9F7E1.523E3693@fnc.fujitsu.com>
+Date: Sun, 15 Oct 2000 14:30:57 -0400
+From: Konstantin <konstantin.sabodash@fnc.fujitsu.com>
+MIME-Version: 1.0
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Is there a newer pcmcia package for HardHat 1.2
+Subject: mbxboot->head.S
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 02:16 PM 10/13/00 -0700, you wrote:
->
->Hello,
->
->        Is there a newer pcmcia package for HardHat 1.2? I have obtained
->pcmcia-cs-3.1.10 and a patch to make it work with HardHat 1.0 . However when
->I compile it to work with HHL 1.2 I get the following message on each module.
->
->{standard input}: Assembler messages:
->{standard input}:6: Warning: Ignoring changed section attributes for .modinfo
->
->It does compile and I think it may work (I don't know because we have not
->put the chips on the board we are trying to talk to yet ). It loads and
->shows up in the /proc/modules . Should I just ignore this message?
->
->        Any help welcomed. Thanks in advance.
->
->        Conn Clark
->
->
->
+I try to port Kernel to custom MPC860 board.
+BSEIP architecture is close to my board.
+I used  pROBE   to load zvmImage on my board . ELF loader put   .text
+section straight into 0x180000.
+With current head.S  you lose  value of R7 which should contain zImage
+length.
+I fixed it  and I pass to Kernel R3 through R7 registers with valid
+context.
 
+Still, nothing  happen.  In log_buf I see that kernel  reports 0 K ( and
+some negative values ) memory allocation for its buffers and pages.
 
-        Mabey I should check my mail first before I post a question. I found
-the newer pcmcia card sevices package. But I'm a still a little concerned
-about the warning message.
+The question is what else, besides R3-R7 wee need to pass to kernel  to
+make it work?
+I assume that MMU and  other hardware already set up.
 
+Any idea are welcome.
 
-        Conn Clark
+Constantine.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
