@@ -1,96 +1,38 @@
-Message-ID: <3CD8F421.2050100@esd-electronics.com>
-Date: Wed, 08 May 2002 11:47:13 +0200
-From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+Message-ID: <CA78D1B723D8D411AF0300508BDCF74F3F6D20@NTCORREO>
+From: IGOR LURI <iluri@fagorautomation.es>
+To: =?ISO-8859-1?Q?EMBEDDED_LINUXPPC_=28Correo_electr=F3nico=29?= <linuxppc-embedded@lists.linuxppc.org>
+Subject: I2c ucode patch
+Date: Wed, 8 May 2002 14:12:03 +0200 
 MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: unexpected bahavior with module - relocation problem ?
-References: <3CD8E84F.3010600@esd-electronics.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="ISO-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hi all,
 
-I found the problem. It seems to be a problem with the insmod tool in the busybox
-that I am using on my target (0.61pre from cvs).
+We have a custom board based on a mpc 823e (revision B2) with  I2c ,
+ethernet (on SCC 3), LCD etc..
 
-Matthias
+Motorola says that concurrent operation of Ethernet and I2C or SPI is not
+posible without a ucode patch, but:
 
+- If we don't use I2c ucode patch, we can execute our aplication via nfs,
+that reads voltages and temperatures via I2c, so ethernet and I2c work
+concurrently.
 
-Matthias Fuchs wrote:
+-	If we use I2c ucode patch, aplication  fails while it tries to write
+on I2c device.
 
->
-> Hi all,
->
-> I got a little problem that I cannot really understand.
-> I wrote a little device driver for a 405 PPC board. The driver registers
-> a miscdevice.
->
-> Normally all misc devices are listed under /proc/misc.
-> My first attempt resulted in a /proc/misc looking like this:
->
-> # cat /proc/misc
-> 187          <- "test" is missing here !
-> 185 gpio
->
-> The code is attached. When I change the init stuff for the miscdevice
-> structure
-> a little bit (see below with WORKING defined), I got the expected bahavior.
->
-> Is this a relocation problem when loading the module ? In the two
-> version the NAME string
-> sits in different segments. Is there a way to fix the problem by a
-> compiler switch ? Is this a PPC issue ?
-> I noticed that the Linux rtc driver uses the same code as I do, but it
-> does not have the problem.
-> The difference is that my code is a lkm and mot compiled into the kernel.
->
-> Matthias
->
-> ...
->
-> #define NAME   "test"
-> #define MINOR  187
->
-> #ifdef WORKING
-> static char name[]=NAME;
-> #endif
->
-> static struct file_operations my_fops =
-> {
-> ...
-> };
->
-> static struct miscdevice my_miscdev =
-> {
-> #ifdef WORKING
->   name:  name, // results in correct bahavior
-> #else
->   name:  NAME, // results in missing module name in /proc/misc
-> #endif
->   minor: MINOR,
->   fops:  &my_fops
-> };
->
-> int __init my_init(void)
-> {
->   misc_register(&my_miscdev);
->   return 0;
-> }
->
->
-> void __exit my_exit(void)
-> {
->   misc_deregister(&my_miscdev);
-> }
->
-> module_init(my_init);
-> module_exit(my_exit);
->
->
->
->
+Also, we have compared I2c ucode patch downloaded from Motorola and I2c
+ucode patch of Denx Linux 2.4.4 kernel source and it seems to be different.
 
+Our cuestion are:
+
+Do we need I2c ucode relocation patch if our aplication works without it?
+Why are different Motola and Linux ucode patches?
+
+Thanks in advance.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
