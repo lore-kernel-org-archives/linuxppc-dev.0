@@ -1,52 +1,35 @@
 From: acurtis@directvinternet.com
 Reply-To: <acurtis@directvinternet.com>
-To: "Eugene Surovegin" <ebs@innocent.com>,
-	<joakim.tjernlund@lumentis.se>
+To: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>,
+	"Eugene Surovegin" <ebs@innocent.com>
 Cc: <linuxppc-dev@lists.linuxppc.org>
 Subject: RE: Is the preemptive kernel patch unsafe for 8xx/PPC?
-Date: Thu, 12 Dec 2002 20:08:49 -0800
-Message-ID: <NCBBIINEHIPFGJPLBEIFEEALEAAA.acurtis@directvinternet.com>
+Date: Thu, 12 Dec 2002 20:12:34 -0800
+Message-ID: <NCBBIINEHIPFGJPLBEIFKEALEAAA.acurtis@directvinternet.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-In-Reply-To: <5.1.0.14.2.20021212102609.02d48730@pop.prodigy.net>
+In-Reply-To: <001901c2a21d$f3f4e760$0200a8c0@jockeXP>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Can you be more specific about the "bugs". I just installed the patch. The
-patch did not apply cleanly. Is this what you are referring to? It was
-simple to fix the rejects.
+The patch did not apply cleanly for me using linuxppc_2_4_devel, BK label
+2.4.19 final.
+The following files got rejected:
+	include/asm-ppc/dma.h
+	include/asm-ppc/pgtable.h
 
-THX
+It was very straight forward to apply the patches by hand. The line numbers
+were a bit off.
 
-> -----Original Message-----
-> From: owner-linuxppc-dev@lists.linuxppc.org
-> [mailto:owner-linuxppc-dev@lists.linuxppc.org]On Behalf Of Eugene
-> Surovegin
-> Sent: Thursday, December 12, 2002 10:28 AM
-> To: joakim.tjernlund@lumentis.se
-> Cc: linuxppc-dev@lists.linuxppc.org
-> Subject: Re: Is the preemptive kernel patch unsafe for 8xx/PPC?
 >
+> Was that the 2.4.19-2 patch? What were the bugs and have you fixed them?
 >
+> According to the message Robert posted on lkm is the 2.4.20-1 patch only a
+> rediff of the latest 2.4.19 patch.
 >
-> At 04:56 AM 12/12/2002, you wrote:
-> >I am testing the latest(2.4.20-1) preemtive kernel patch from
-> Robert Love and
-> >I wonder if anybody know if it's unsafe/not working for 8xx or
-> PPC in general?
->
-> I haven't tested patch for 2.4.20 but patch for 2.4.19 contained
-> some bugs.
->
->
->   Eugene Surovegin <mailto:ebs@innocent.com>
->
->
->
->
->
+> BTW, I am on the 2_4_devel branch.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
