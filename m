@@ -1,34 +1,49 @@
-Message-ID: <3CB5B0E9.16F06226@mvista.com>
-Date: Thu, 11 Apr 2002 11:51:05 -0400
-From: "Mark A. Greer" <mgreer@mvista.com>
-MIME-Version: 1.0
-To: Michael Sokolov <msokolov@ivan.Harhan.ORG>
-Cc: linuxppc-dev@lists.linuxppc.org
+From: benh@kernel.crashing.org
+To: <msokolov@ivan.Harhan.ORG>, <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: CONFIG_GENERIC_PPC32
-References: <0204111616.AA28753@ivan.Harhan.ORG>
-Content-Type: text/plain; charset=us-ascii
+Date: Thu, 11 Apr 2002 17:13:02 +0100
+Message-Id: <20020411161302.6159@mailhost.mipsys.com>
+In-Reply-To: <0204111540.AA28629@ivan.Harhan.ORG>
+References: <0204111540.AA28629@ivan.Harhan.ORG>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michael Sokolov wrote:
+>
+>I guess I'll just have to convince Debian to make a package from
+>linuxppc_2_4_alt to support HEC PPCStar machines and show all these exchanges
+>as evidence that the PPC MAINTAINERS are not intent on allowing new machine
+>support into 2.4 any time soon.
 
-> but not StarMON. I remember problems of that sort on K2. Also in your current
-> EV-64260 port the wrapper assumes that the GT registers are at 0x14000000,
-> while StarMON puts them at the much more reasonable 0xF1000000. But I did
-> indeed boot your EV-64260 zImage from StarMON, I just wrote a tiny program that
-> remaps the GT registers back to 0x14000000 and jumps to 0x800000 where zImage
-> lives. (I also had to comment out a few things in the Linux code proper in your
-> wonderful EV-64260 port that prevented it from running on my board, but that's
-> beside the point here.)
+Don't get to conclusions so fast. We have already a whole bunch of new
+machines support pending in _devel that has to be merged, and that will
+happen after 2.4.19. Things aren't fast on a stable kernel, but that's
+the way it should be.
 
-Yes, it assumes the registers are at 0x14000000 because that's where DINK leaves
-them.  It was made clear from the start that the arch/ppc/boot code for the
-ev64260 was built for boards running DINK.
+>> Well.. you forget pmac here ;)
+>>
+>> The problem is that pmac has it's own serial HW with a different driver,
+>> but still may need serial.o for PCI serial cards or pcmcia modems.
+>
+>But then a PMac doesn't need anything in rs_table!
 
-When we see what Benh has for bi_recs, we can start making this more general.
+But a pmac/prep/chrp kernel may.
 
-Mark
+>If in addition to PMacs a CONFIG_GENERIC_PPC32 kernel supports other machines
+>with serial consoles, the serial driver must be compiled in. If no machines
+>other than PMac are selected, you can compile without the serial driver in
+>there as the PMac port won't care about rs_table and won't call
+>early_serial_setup. Then if you load it as a module, you'll have no fixed
+>ports
+>will get all PCI, PCMCIA, etc. ones, which is exactly what you need here.
+>
+>So I don't see a problem.
+
+Not having it as a module may prevent pcmcia modems from working.
+
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
