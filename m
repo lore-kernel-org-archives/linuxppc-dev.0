@@ -1,45 +1,52 @@
-To: "Navin Boppuri" <navin.boppuri@newisys.com>
-Cc: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Flash Driver 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 14 Aug 2001 14:40:28 CDT."
-             <3A494DE356A49A40B37442E1E0D9F3B506341D@ptah.ad.newisys.com>
-Date: Tue, 14 Aug 2001 21:54:51 +0200
-Message-Id: <20010814195456.248D610CBA@denx.denx.de>
+Message-ID: <3B799791.2CEAFCC0@mvista.com>
+Date: Tue, 14 Aug 2001 17:26:41 -0400
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
+To: Peter Desnoyers <pdesnoyers@chinook.com>
+Cc: "Justin (Gus) Hurwitz" <ghurwitz@dyndns.com>,
+	Daris A Nevil <dnevil@snmc.com>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Non-cacheable memory
+References: <Pine.LNX.4.33.0108091838380.11077-100000@localhost.localdomain> <3B72E40D.3080600@chinook.com> <3B74AADC.C2CE7B89@mvista.com> <3B77F684.415638E8@chinook.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3A494DE356A49A40B37442E1E0D9F3B506341D@ptah.ad.newisys.com> you wrote:
->
-> Can I have the dd commands once again? I am not using busybox stuff.
+Peter Desnoyers wrote:
 
-dd if=some_file of=/dev/flashXY bs=ZZZk conv=sync
+> This seems like another case of either too little abstraction, or too
+> much.  An embedded PPC system with PCI basically has two buses, with
+> different DMA addressing, and there's no way to tell consistent_alloc(),
+> etc. about that.
 
-whith:
+Well, if you are using PCI devices, you should be calling the pci_*
+versions of these functions.  Those include a pci_dev structure, so
+you can get the information you need to do this correctly, and seems
+like the solution (more discussion later in the message).
 
-X = 'a' for the first, 'b' for the second flash bank, etc.
-Y = number of the flash partition (1 = 1st, 2 = 2nd, etc.)
+> If you wouldn't mind, could you give me a pointer to the discussion of
+> this phase-out?
 
-ZZZ = your erase block size
+I hear it from other folks on ppc-dev or something.  There are too many
+lists for me to read and find this information first hand :-).
 
-For instance, I can use
 
-	dd if=/tmp/ppcboot.bin of=/dev/flasha1 bs=128k conv=sync
+> I wonder if the proper thing to do is to enhance consistent_alloc to
+> take an argument indicating the bus type?
 
-to write a new PPCboot image to soem of our boards.
+Yep.  Like I said above, you should be using the pci_* versions of
+these functions.  We can extract information from the pci_dev and pass
+it along to consistent_alloc.  The local, internal peripherals can just
+pass a NULL or zero or something, whatever this parameter is supposed to
+mean.  Or, perhaps the pci_* functions fix up the information returned
+from consistent_alloc.
 
-Be careful - /dev/flasha is the full 1st flash bank  (unpartitioned).
-The devices names are similar to those of harddisks.
+> ....  There are more elegant ways
+> of doing things, but this wouldn't involve changes to a lot of code.
 
-Wolfgang Denk
+This seems elegant enough to me :-).
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Remember, there's a big difference between kneeling down and  bending
-over.                                                   - Frank Zappa
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
