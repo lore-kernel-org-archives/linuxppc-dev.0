@@ -1,24 +1,23 @@
-Subject: Re: what is the status of devfs?
+Subject: Re: 2.6.x on MPC82xx
 From: David Woodhouse <dwmw2@infradead.org>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Mark Chambers <markc@mail.com>,
-	Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <Pine.LNX.4.60.0407090817340.3813@localhost.localdomain>
-References: <Pine.LNX.4.60.0407081035280.32470@localhost.localdomain>
-	 <003301c465ad$04db1230$0301a8c0@chuck2>
-	 <Pine.LNX.4.60.0407090817340.3813@localhost.localdomain>
+To: Dan Malek <dan@embeddededge.com>
+Cc: jeff@theptrgroup.com, linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <A64364E3-D14D-11D8-B95B-003065F9B7DC@embeddededge.com>
+References: <4890.69.17.104.254.1089335444.squirrel@mail.theptrgroup.com>
+	 <A64364E3-D14D-11D8-B95B-003065F9B7DC@embeddededge.com>
 Content-Type: text/plain
-Message-Id: <1089377361.28614.1383.camel@hades.cambridge.redhat.com>
+Message-Id: <1089378396.28614.1385.camel@hades.cambridge.redhat.com>
 Mime-Version: 1.0
-Date: Fri, 09 Jul 2004 13:49:21 +0100
+Date: Fri, 09 Jul 2004 14:06:36 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, 2004-07-09 at 08:18 -0400, Robert P. J. Day wrote:
-> what's the story on proposed udev support some day?
+On Thu, 2004-07-08 at 22:14 -0400, Dan Malek wrote:
+> That's a good place to be.  linux-2.5 should work and I think the
+> kernel.org kernels should work, too.
 
-It's working.
+The kernel.org kernels work fine for me.
 
 --
 dwmw2
