@@ -1,48 +1,27 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <81A66F72DCACD511B0600002A551BFCB4E9CEC@kuumex05.barco.com>
-From: =?iso-8859-1?Q?=22Callebaut=2C_Beno=EEt=22?= <benoit.callebaut@barco.com>
+Subject: artic or artic II
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: IRQ config problem on MPC8245
-Date: Tue, 17 Dec 2002 15:08:02 +0100
+Message-ID: <OF27CFD59D.0D385D2F-ON87256C92.004E5FB8@us.ibm.com>
+From: John F Davis <johndavi@us.ibm.com>
+Date: Tue, 17 Dec 2002 09:18:36 -0500
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Hello,
- I   have on a custom board a little problem with the IRQ configuration.
-> Our board is a custom board derived from a sandpoint board X3B with a
-> MPC8245 without any peripheral (no extern bridge, no IRQ controller,...)
-> except 2 MAC/PHY 82449 from Intel and run Montavista Linux 2.1 based on a
-> 2.4.18 Kernel
-> The Interrupt lines from the MAC/PHY are directly connected to the
-> interrupts inputs pins of the EPIC on the MPC8245.
-> The EPIC is well configured (IVPR0,IVPR1, PCTPR,GCR,...)
-> The Linux distribution is also modified to take this in account.
-> The interrupts are generated on the EPIC (seen with an osilloscope and a
-> register dump ).
-> The interrupt handler is never called. There is no jump the address
-> 0X00000500 (external interrupt exception vector )
-> We ask ourselves what is the problem. We have seen that the value of the
-> MSR[EE] bit change sometimesand that the value of MSR[IP] is well on null.
->
-I know that such an question must be asked to Montavista support but such a
-thing is beyond the standard support of Montavista (ie free after buying
-their product)
+Hello
 
-- - - - - - - DISCLAIMER - - - - - - - -
-Unless indicated otherwise, the information contained in this message is
-privileged and confidential, and is intended only for the use of the
-addressee(s) named above and others who have been specifically authorized to
-receive it. If you are not the intended recipient, you are hereby notified
-that any dissemination, distribution or copying of this message and/or
-attachments is strictly prohibited. The company accepts no liability for any
-damage caused by any virus transmitted by this email. Furthermore, the
-company does not warrant a proper and complete transmission of this
-information, nor does it accept liability for any delays. If you have
-received this message in error, please contact the sender and delete the
-message. Thank you.
+Which system are you folks using for development - artic or artic II?
+
+Also, the artic II says to connect a serial port to get terminal access.  I
+do this before
+I boot the box and I don't get anything on the minicom session.  I am using
+the db-9 serial connector on the base unit.  My null modem cable works
+with a different embedded system so I don't think its the cable or the
+setup.  Do you have
+to hold down a button while booting or something?
+
+JD
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
