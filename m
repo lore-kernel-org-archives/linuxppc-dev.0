@@ -1,43 +1,34 @@
-Message-ID: <3DAB41DA.96EB815C@opensource.se>
-Date: Tue, 15 Oct 2002 00:14:50 +0200
-From: Magnus Damm <damm@opensource.se>
-MIME-Version: 1.0
-To: Mark Hatle <fray@mvista.com>
-Cc: Kumar Gala <kumar.gala@motorola.com>,
-	Matt Porter <porter@cox.net>,
-	Bret Indrelee <Bret.Indrelee@qlogic.com>,
-	Linux PPC Embedded mailing list <linuxppc-embedded@lists.linuxppc.org>
+Date: Mon, 14 Oct 2002 15:26:11 -0700
+From: Andrew May <acmay@acmay.homeip.net>
+To: Bret Indrelee <Bret.Indrelee@qlogic.com>
+Cc: Linux PPC Embedded mailing list <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: Binary Compatibility of various flavors of PPC
-References: <816F7B3D-DFAF-11D6-A599-003065BFB10E@motorola.com> <3DAB2923.3060607@mvista.com>
+Message-ID: <20021014222611.GA27644@acmay.homeip.net>
+References: <816F7B3D-DFAF-11D6-A599-003065BFB10E@motorola.com> <Pine.LNX.4.33.0210141629240.24959-100000@localhost.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.33.0210141629240.24959-100000@localhost.localdomain>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> But as Matt said (and later reminded me) the 405 has errata that is 405
-> specific, and the 8xx and 403 half smaller cacheline size.  So anything
-> statically linked may not operator correctly....  but yes, if you switch the
-> whole of userspace to soft-floating point then "in general" they should all be
-> compatable.
+On Mon, Oct 14, 2002 at 04:37:49PM -0500, Bret Indrelee wrote:
+>
+> Float isn't important to us, we could have all float be emulated for as
+> little of it we do.
+>
+> We need the bzImage.gz and RAM disk image have to be the same binary.
+>
+> The reason is simple, we don't want the customer to have the mess of
+> 'which of these N firmware images do I need' when trying to upgrade. We
+> want the whole line of products to use the same binary image.
 
-I don't know if gcc generates any code that tweaks with the cache, but
-if you
-only consider applications/libraries that use assembly routines to
-control the
-cache then it should be possible to convert the assembly code to assume
-16-byte
-cachelines for all processors. That should work for processors with
-larger
-cachelines, with a performance penalty. I use a patch for glibc-2.1.3
-that does
-exactly that. But I've only used it on 8xx-series, so correct me if I'm
-wrong.
+Looks like you are looking at the problem wrong. Send the custumors a big
+binary file with all the images and have the update program be smart about
+selecting the correct images for the hardware out of the big binary.
 
-Btw - does someone know what the status is for recent glibc versions -
-do they work for 8xx out of the box?
-
-Thanks /
-
-magnus
+It is more work to build the images but less work than getting one image
+to work on different CPU's. You could even support x86 parts with a smart
+updater.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
