@@ -1,28 +1,32 @@
-Date: Sat, 15 May 1999 10:13:34 -0400 (EDT)
-From: Tom Rini <tmrini@ntplx.net>
-To: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
-Subject: VGER kernels
-Message-ID: <Pine.LNX.4.05.9905151011150.651-100000@pc.wackyland.com>
+Date: Sat, 15 May 1999 13:00:44 -0500 (CDT)
+From: nathan ingersoll <ningerso@d.umn.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: ide-pmac
+Message-ID: <Pine.SO4.4.02.9905151250240.6513-100000@ub.d.umn.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I've noticed a few mails recently about problems compiling 2.3.x from
-vger.  I think it should be pointed out that you most likely (Unless Cort
-or Paul wishes to contradict me) don't want to be running 2.3.x on your
-machine for day to day use.  It's the devel branch, and it subject to
-crashing and other problems.  You will most likekly want (and I hope Cort
-and/or Paul will keep up w/ the 2.2.x branch as well..) to run your cvs
-updates as:
-cvs update -dP -rlinux_2_2
+I think I found a problem with the cvs kernel. The function
+pmac_ide_init_hwif_ports used to be passed a variable called base (as of
+2.2.9) the 2.3.1 kernel's version does not get passed this parameter, but
+it still references the variable.
 
-So that you get the current stable version.
+If I'm reading it right, the line
+	unsigned long base;
+needs to be moved from pmac_ide_probe to the top and declared as global to
+the file. Making this change has allowed me to get a little further in
+compiling a new kernel.
 
----
-Tom Rini (TR1265)
-http://dobbstown.yeti.edu/
+Is there any reason not to do this? I'm not an experienced kernel
+developer, so please put me in my place if I'm off base here. ;-)
+
+Thanks,
+
+Nathan
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
