@@ -1,39 +1,28 @@
-To: "Jack Liu" <Jack_liu@usish.com>
-Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Sandpoint problems 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 16 Feb 2004 18:59:34 +0800."
-             <200402161059.i1GAxDqA002613@ms.usish.com>
-Date: Mon, 16 Feb 2004 12:04:24 +0100
-Message-Id: <20040216110429.9A721C1096@atlas.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: marko.virkki@mitron.fi
+Message-ID: <17D9D7DF3CD5A94A9B4E82778D24391910A121@MITRON>
+To: wd@denx.de
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Linux on a Motorola MPC5200 ? 
+Date: Mon, 16 Feb 2004 13:22:12 +0200
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <200402161059.i1GAxDqA002613@ms.usish.com> you wrote:
+> We're working on some (simple) I2S stuff.
 >
->  I used u_boot.srec. To program flash, it will first be converted to binary file.
+	What means simple in this context? No ADC, ... What codec you're
+planning to use?
 
-Why not using u-boot.bin directly, then?
+	Has this "project" released any stuff yet? As far as I've been
+searching in latest linuxppc_2_4_devel, I've not been able to find anything
+regarding i2s issue.
 
-> >shouting?) Is the board completely dead? Is there Some output? Which?
-> >Does U-Boot run, but fails to boot Linux? Or what?
->     PCI LED on the board is active continuously.Yet no output. u-boot can not boot. Did I miss anything?
+	br, Marko
 
-attach a debugger.
 
-And please let's continue this thread on u-boot-users.
-
-Best regards,
-
-Wolfgang Denk
-
---
-See us @ Embedded World, Nuremberg, Feb 17 - 19,  Hall 12.0 Booth 440
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Where there's no emotion, there's no motive for violence.
-	-- Spock, "Dagger of the Mind", stardate 2715.1
+;==================================================
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
