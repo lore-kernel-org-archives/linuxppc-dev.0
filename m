@@ -1,16 +1,21 @@
-Return-Path: <dale@farnsworth.org>
-Received: from xyzzy.farnsworth.org (unknown [65.200.49.142])
-	by ozlabs.org (Postfix) with SMTP id F1A8267A33
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 74F3E67A6B
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 31 Mar 2005 10:10:22 +1000 (EST)
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Wed, 30 Mar 2005 17:10:21 -0700
-To: linuxppc-embedded@ozlabs.org
-Message-ID: <20050331001021.GB22041@xyzzy>
+	Thu, 31 Mar 2005 11:07:50 +1000 (EST)
+Date: Wed, 30 Mar 2005 17:07:47 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Dale Farnsworth <dale@farnsworth.org>
+Message-ID: <20050331010747.GA18254@gate.ebshome.net>
+References: <20050331000521.GA22041@xyzzy>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Subject: [PATCH 2.6.10-rc2] ppc32: Call redwood5_platform_add_devices before
-	driver init
+In-Reply-To: <20050331000521.GA22041@xyzzy>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH 2.6.10-rc2] ppc32: Add usb support to IBM stb04xxx
+	platforms including Redwood5
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,28 +26,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Use arch_initcall to call redwood5_platform_add_devices, ensuring
-that platform_add_devices is called before drivers are initialized.
+On Wed, Mar 30, 2005 at 05:05:21PM -0700, Dale Farnsworth wrote:
 
-Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
+[snip]
 
-Index: linux-2.5-usb-405/arch/ppc/platforms/4xx/redwood5.c
-===================================================================
---- linux-2.5-usb-405.orig/arch/ppc/platforms/4xx/redwood5.c
-+++ linux-2.5-usb-405/arch/ppc/platforms/4xx/redwood5.c
-@@ -48,6 +48,7 @@
- {
- 	return platform_add_devices(redwood5_devs, ARRAY_SIZE(redwood5_devs));
- }
-+arch_initcall(redwood5_platform_add_devices);
- 
- void __init
- redwood5_setup_arch(void)
-@@ -76,7 +77,6 @@
- 
- 	printk("\n");
- #endif
--	device_initcall(redwood5_platform_add_devices);
- }
- 
- void __init
+> +/* Power up the USB subsection */
+> +static int enable_usb(struct platform_device *pdev)
+> +{
+> +	u32 mask;
+> +
+> +	mask = 1 << (31 - USB0_IRQ);
+> +	mtdcr(DCRN_UIC_PR(UIC0), mfdcr(DCRN_UIC_PR(UIC0)) | mask);
+> +	mtdcr(DCRN_UIC_TR(UIC0), mfdcr(DCRN_UIC_TR(UIC0)) & ~mask);
+> +	return 0;
+> +}
+> +
+> +/* Power down the USB subsection */
+> +static void disable_usb(struct platform_device *pdev)
+> +{
+> +	u32 mask;
+> +
+> +	mask = 1 << (31 - USB0_IRQ);
+> +	mtdcr(DCRN_UIC_PR(UIC0), mfdcr(DCRN_UIC_PR(UIC0)) & ~mask);
+> +	mtdcr(DCRN_UIC_TR(UIC0), mfdcr(DCRN_UIC_TR(UIC0)) | mask);
+> +}
+
+Dale, I'm curious, what's going on here :) ?.
+
+How changing polarity and triggering setting could power-down USB 
+unit? Some STB funkiness?
+
+--
+Eugene
