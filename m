@@ -1,30 +1,38 @@
-Date: Thu, 13 Sep 2001 10:18:33 -0400
-Message-Id: <200109131418.f8DEIXB20179@hyper.wm.sps.mot.com>
-From: Peter Barada <pbarada@mail.wm.sps.mot.com>
-To: qiuqingjun@263.net
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-reply-to: <008b01c13c12$0d452e00$0200a8c0@aiwa> (qiuqingjun@263.net)
-Subject: Re: In initrd, init program is needed or not?
-References: <002a01c13b93$72b3c5a0$0200a8c0@aiwa> <200109121441.f8CEf1016518@hyper.wm.sps.mot.com> <008b01c13c12$0d452e00$0200a8c0@aiwa>
+Message-ID: <3BA0FA9E.5010204@mvista.com>
+Date: Thu, 13 Sep 2001 11:27:42 -0700
+From: Matthew Locke <mlocke@mvista.com>
+MIME-Version: 1.0
+To: "Donovan, Chris" <cdonovan@lanier.com>
+Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Status on 403 (Oak) support
+References: <C97ABDA0DC2DD511BA400002A50974132804F1@jdry.lanier.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->Hi, Peter Barada,
->Thank your explaination of init program in detail, however , I have
->another question:
+lets move this to the list it belongs on...
+
+Donovan, Chris wrote:
+
+> I'm trying to run linux on a board with a 403GCX processor on it. I ran into
+> an error while trying to compile the kernel as follows:
 >
->Where can I find the source code of the init program?
->Thank you again!
-
-We 'borrowed' the init code from the ucLinux distribution (user/init).
-I'm thinking of changing to the version that is distributed with HardHat.
-I know that will be more code(hence larger footprint), but the
-benifit of using an actively developing piece of code is very appealing.
-
---
-Peter Barada                                   Peter.Barada@motorola.com
-Wizard                                         781-852-2768 (direct)
-WaveMark Solutions(wholly owned by Motorola)   781-270-0193 (fax)
+> {standard input}: Assembler messages:
+> {standard input}:83: Error: unsupported relocation type
+> {standard input}:84: Error: unsupported relocation type
+> {standard input}:111: Error: unsupported relocation type
+> {standard input}:128: Error: unsupported relocation type
+> {standard input}:145: Error: unsupported relocation type
+> {standard input}:149: Error: unsupported relocation type
+> {standard input}:64: Error: unsupported relocation type
+> make[1]: *** [ppc4xx_pic.o] Error 1
+> make[1]: Leaving directory `/d/ctemp/src/src-linuxppc_2_4/arch/ppc/kernel'
+> make: *** [_dir_arch/ppc/kernel] Error 2
+>
+> While searching the archives I found a thread which mentioned that that
+> kernel no longer compiles for the 403 processor and there was no mention of
+> a solution to the problem. Which version of the kernel should work on the
+> 403GCX? Thanks for your help.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
