@@ -1,53 +1,77 @@
-Message-Id: <s0891844.083@EMAIL>
-Date: Fri, 23 Apr 2004 13:20:34 +0530
-From: "Sanjeev R" <sanjeevr@myw.ltindia.com>
-To: <wd@denx.de>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: MPC880 and ELDK
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Fri, 23 Apr 2004 16:37:00 +0500 (GMT+0500)
+From: Ashish R Dhawane <ashish@cdotb.ernet.in>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: U-Boot Problem (MPC8260) 
+In-Reply-To: <000f01c42562$d3713150$a81e1aac@liuming>
+Message-ID: <Pine.OSF.4.21.0404211715180.5736-100000@ws9.cdotb.ernet.in>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thanks for the information. Actually wanted to validate my assumptions and to make it doubly sure that i can look  for support from the list.
+Hi,
+I am newbie to the Linux Porting. I am having a mpc8260 board(custom
+made). I am trying to configure the cogent mpc8260 board. For a testing
+purpose, I am running U-Boot in the SDRAM area, but not from the
+flash. I am getting the following error messages. Any help will
+appreciated.
 
-Thanks
-Sanjeev
+OutPut which is captured on minicom is as follows:
+--------------------------------------------------
 
->>> Wolfgang Denk <wd@denx.de> 04/23/04 12:11AM >>>
-In message <s088e797.066@EMAIL> you wrote:
->
->  Does  ELDK support  MPC880 arch? (linux distro in it)
+U-Boot Version 2.0.0p
 
-The MPC880 is just  another  member  of  the  MPC8xx  family.  It  is
-supported by the ppc_8xx packages in the ELDK.
+U-Boot V 2.0.0lw
 
-> If yes , can i have some details on that?
+MPC8260 Reset Status:
 
-See http://www.denx.de/ELDK.html
+MPC8260 Clock Configuration
+ - Bus-to-Core Mult 3x, VCO Div 2, 60x Bus Freq  33-100, Core Freq 100-300
+ - dfbrg 0, corecnf 0x08, busdf 4, cpmdf 1, plldf 1, pllmf 4
+ - vco_out  333333330, scc_clk   83333332, brg_clk   83333332
+ - cpu_clk  199999998, cpm_clk  166666665, bus_clk   66666666
 
-> If ELDK doesnt is there any other distro i can go for..?
+CPU:   MPC8260 (Rev 14, Mask B.1 4K25A) at 199.999 MHz
+Board: Cogent CMA111 motherboard with a CMA282 CPU Module
+DIPSW: |off|off|off|off|off|off|off|off|
+DRAM:  32 MB
+Top of RAM usable for U-Boot at: 02000000
+Reserving 128k for U-Boot at: 01fdf000
+Reserving 144k for malloc() at: 01fbb000
+Reserving 76 Bytes for Board Info at: 01fbafb4
+Reserving 68 Bytes for Global Data at: 01fbaf70
+Stack Pointer at: 01fbaf58
+New Stack Pointer is: 01fbaf58
+Now running in RAM - U-Boot at: 01fdf000
+FLASH: *** failed ***
+### ERROR ### Please RESET the board ###
 
-I think your question is wrong. You don't need a new or special Linux
-distribution for each new processor. What you need is  processor  and
-board  support in U-Boot and the Linux kernel - but this is obviously
-board dependent.
+regards,
+-Ashish
 
->  Since Uboot supports MPC885 i presume it has to support MPC880, coz except
->  for the extra security module and the SCC they dont differ a lot.
+###########################################################################
+Ashish R Dhawane
+Senior Research Engineer
+W-CDMA Group (3G RAN)
 
-Tey are just like all the other 8xx processors.
+Contacts:
+---------
+Tel(O)	   :+91-80-2282168 (Direct Line)
+Tel(O/Lab) :+91-80-2263399 X 329
+Fax(O)	   :+91-80-2282168
+Mobile	   :98455 36814
+E-Mail(s)  :ashishdhawane@yahoo.com, ashish@cyberspace.org
 
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"Unibus timeout fatal trap program lost sorry"  -  An  error  message
-printed by DEC's RSTS operating system for the PDP-11
+Surface Address (O):			Surface Address (R):
+--------------------			--------------------
+Centre for Development of Telematics,	#50, Ground Floor, 12th Cross,
+71/1, Sneha Complex, 			Ayyappa Block, Manorayan Palya,
+Millers Road,				Sultan Palya Main Road,
+Bangalore-560052,			RT Nagar Post,Bangalore-560032,
+Karnataka, India.			Karnataka, India.
+###########################################################################
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
