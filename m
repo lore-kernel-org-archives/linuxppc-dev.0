@@ -1,65 +1,56 @@
-Reply-To: <govindan@tejasnetworks.com>
-From: "Govindan" <govindan@tejasnetworks.com>
-To: "'Zheng, Haifei'" <haifei.zheng@intel.com>,
-        <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Continously reseting problem
-Date: Mon, 18 Dec 2000 09:30:55 +0530
-Message-ID: <00fe01c068a7$1fe125d0$1b01a8c0@india.tejasnetworks.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <5D2136DF3DD5D311AE89009027C67FB001D8F20E@fmsmsx96.fm.intel.com>
+Message-ID: <01C068F5.2F343240@NB1>
+From: torsten.rissel@t-online.de (Torsten Rissel)
+To: "'Matt Porter'" <mporter@mvista.com>
+Cc: "Linuxppc-Embedded (E-Mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: AW: MVME 5100
+Date: Mon, 18 Dec 2000 13:19:41 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-
-We have the similar setup (CLLF 860T) and a Dell Optiplex GX110
-as our RedHat 6.2 host.  We had trouble in downloading due to
-problem with Ethernet speed. Once we connected a new Ethernet card
-with 10/100 Mbps support, the downloading and booting went smooth.
-The RPX-Lite has trouble with 100 Mbps interface as indicated by HHL
-documentation.
-
-Hope this helps
-Govindan.
-
-"Code it clear rather than clever"
----------------------------------------------------------------------
-Govindan  K Thrithala                 Tel: +91-80-226-7495x4033
-Tejas Networks India Pvt. Ltd.     Fax: +91-80-226 7494
-49, Khanija Bhavan, Race Course Road
-Bangalore 560 001
--------------------------------------------------------------------
-"I care for future, because I spend rest of my life there"
+-----Ursprungliche Nachricht-----
+Von:	Matt Porter [SMTP:mporter@mvista.com]
+Gesendet am:	Freitag, 15. Dezember 2000 23:38
+An:	Torsten Rissel
+Cc:	Linuxppc-Embedded (E-Mail)
+Betreff:	Re: MVME 5100
 
 
+On Thu, Dec 14, 2000 at 04:25:55PM +0100, Torsten Rissel wrote:
+> Thanks, but I have already set up a BAT to cover the area from 0xf0000000 - 0xffffffff
+> because everything is there on the MVME5100 - the serial ports (via the Hawk external
+> registers) [fef88000+], the MPIC [f3f80000+] and the PHC PCI registers [fe000000+].
 
+Right, I have one as well as a similar Hawk-based board that has Linux
+on it.
 
+> The CONFIG_ADDRESS and CONFIG_DATA registers are on fe000cf8 and fe00cfc,
+> and still writing to the CONFIG_ADDRESS and then reading the CONFIG_DATA sometime
+> works and sometimes not !!!??
 
------Original Message-----
-From: owner-linuxppc-embedded@lists.linuxppc.org
-[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Zheng,
-Haifei
-Sent: Friday, December 15, 2000 12:01 AM
-To: 'linuxppc-embedded@lists.linuxppc.org'
-Subject: Continously reseting problem
+I can consistently read from and write to config space on my 5100 board
+via PPCBUG.  The only thing I can think of is that you have somehow
+locked up the Hawk bridge.  I've managaged this on other host bridges
+only by getting a PIB locked up and squatting on the bus.
 
+[Torsten Rissel]  I never saw any problem with PPCBUG neither, still, during kernel startup
+it sometimes works and sometimes not. Now it works a little bit better, because I found out
+that the BAT configuration constructed in mapin_ram() didn't work properly.
 
+What kernel version are you using as a basis for your port?  Are you
+basing the port off the existing prep_*.c support?
 
-Hi,
+[Torsten Rissel]  I've downloaded linuxppc-2-2-snap-tar.gz from fsmlabs (It's my first try with
+linux on PowerPCs, so I just took more or less the first I read about).
+And, yes, I set CONFIG_6xx, CONFIG_PPC, CONFIG_PREP and one I invented (CONFIG_MVME51xx).
+I use PREP-style network boot from PPCBUG. In the moment I try to get the eepro100 driver
+working, because I want to use a root-fs on NFS.
 
-We have a CLLF860T from embedded planet. We are trying to install hardhat
-linux on the board. We have managed to transfer the kernel image using tftp.
-When the boot process starts the boot prompt (Linux/PPC load: root=/dev/nfs
-rw) and just sits there, after a few seconds the board reboots. If however
-we hit enter on the host machine when the boot prompt comes up, it proceeds
-to uncompress kernel, and boot it. But it then reboots again before getting
-much further. We think it may be a watch dog problem. Has anybody else had a
-similar problem?
+[Torsten Rissel]  Regards, Torsten
 
-Haifei Zheng
-
+--
+Matt Porter
+MontaVista Software, Inc.
+mporter@mvista.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
