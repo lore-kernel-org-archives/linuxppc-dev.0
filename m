@@ -1,24 +1,34 @@
-Date: Mon, 9 Aug 1999 18:37:52 -0400 (EDT)
-From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: cvs.on.openprojects.net status?
-Message-ID: <Pine.LNX.3.96L.990809183523.5833A-100000@unix47.andrew.cmu.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Tue, 10 Aug 1999 10:10:54 +1000
+Message-Id: <199908100010.KAA19153@tango.anu.edu.au>
+From: Paul Mackerras <paulus@cs.anu.edu.au>
+To: mlan@cpu.lu
+CC: drow@false.org, mj@ucw.cz, linuxppc-dev@lists.linuxppc.org
+In-reply-to: <199908092023.WAA00328@piglet.cpu.lu> (message from Michel
+	Lanners on Mon, 9 Aug 1999 22:23:25 +0200 (CEST))
+Subject: Re: Trying a Promise Ultra/66 on powerpc
+Reply-to: Paul.Mackerras@cs.anu.edu.au
+References: <199908092023.WAA00328@piglet.cpu.lu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-What's the deal with the CVS tree? The kernel I compiled from it a week or so
-ago has a very screwed platinumfb driver, but now the cvs server
-cvs.on.openprojects.net does not exist. www.openprojects.net has moved to
-openprojects.nu, but no mention made of CVS anywhere...
+Michel Lanners <mlan@cpu.lu> wrote:
 
-Is it just a matter of waiting for it to get set up again, or should I be
-looking elsewhere?
+> I'd vote for making I/O ports a memory addresss like any other, and
+> making sure drivers get this address right. See my other post for
+> details..
 
--Hollis
+The problem is, there are PCI device drivers which assume you can get
+an address in I/O space from a PCI device (either directly from the
+config-space base address registers or from the pci_dev struct) and
+then just do inb and outb on that port address.  That's why inb/outb
+add _IO_BASE to the port number.
 
+One way might be to adjust the base addresses in all the pci_dev
+structs and then make sure all drivers use the address from the
+pci_dev struct rather than reading config space themselves.
+
+Paul.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
