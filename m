@@ -1,15 +1,23 @@
-Return-Path: <bharathg@hcltech.com>
-Received: from rose.ctd.hcltech.com (rose.ctd.hcltech.com [202.54.64.23])
-	by ozlabs.org (Postfix) with ESMTP id F28332BF0E
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Jan 2005 17:34:50 +1100 (EST)
-Message-ID: <012301731C23DE4DBFE035647C68F1CC73F0F9@sindhu.ctd.hcltech.com>
-From: "Bharath G - CTD , Chennai" <bharathg@hcltech.com>
-To: <linuxppc-dev@ozlabs.org>
-Date: Thu, 6 Jan 2005 11:46:42 +0530 
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: Any Patches for MPC 8270 ?
+Return-Path: <sven.luther@wanadoo.fr>
+Received: from smtp6.wanadoo.fr (unknown [193.252.22.25])
+	by ozlabs.org (Postfix) with ESMTP id 3576B2BF12
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Jan 2005 19:07:12 +1100 (EST)
+Date: Thu, 6 Jan 2005 09:15:51 +0100
+To: mikemartin@linux.ca
+Message-ID: <20050106081550.GB18980@pegasos>
+References: <855e88d005010405417d49dcfb@mail.gmail.com>
+	<200501041523.j04FNoO0009594@arbas.nms.ulrich-teichert.org>
+	<855e88d005010407396309a9f9@mail.gmail.com>
+	<855e88d005010420367a92617a@mail.gmail.com>
+	<855e88d00501051935117a64ea@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <855e88d00501051935117a64ea@mail.gmail.com>
+From: Sven Luther <sven.luther@wanadoo.fr>
+Cc: Ulrich Teichert <krypton@ulrich-teichert.org>,
+	Philippe Guyot <pguyot@cvf.fr>, linuxppc-dev@ozlabs.org,
+	debian-powerpc@lists.debian.org
+Subject: Re: 43p-140 install issues
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,51 +27,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, Jan 05, 2005 at 10:35:50PM -0500, Mike Martin wrote:
+> > > > I am begining to believe that there is some sort of hardware problem with your
+> > > > box or it is an upgraded version which was a -140 in it's previous life, but my
+> > > > -140 is rock solid with Leigh's 2.4.19 kernel - once it's up, that is.
+> > > > I will leave it running tonight to see what happens,
+> 
+> [snip]
+> 
+> > The machine was working fine under AIX when it was decomissioned. It
+> > had some issues with a disk going bad due to heat (blocked vents). But
+> > once they were cleared there were no issues. I am going to try the
+> > other machine. I'll keep my finger's crossed.
+> > 
+> > MikeMartin
+> 
+> An update (Sucess!!!):
+> After jogging some people's memory I found out that this machine has a
+> PCI token ring card (which I wasn't using) because the on-board
+> ethernet went flaky. This certainly helps explain my intermitent
+> network, and quite possibly the short up-times before crashing. As we
+> guessed - a hardware problem.
+> 
+> Is there any way (jumper ?) to disable the onboard ethernet? I may try
+> not loading the modules for it and see if the machine becomes stable.
+> Would a standard PCI ethernet card work as a substitute (likely won't
+> netboot)?
 
-Hi All,
-		This is my fist mail to this mailing list. New year
-greetings to all on the list.
+You have to blacklist the module in discover/hotplug, and it won't be loaded
+at install time. In d-i, i believe you could rmmod it as soon as possible, not
+sure if you can blacklist it, i will investigate.
 
-	I am working on a MPC8270 Based board with a montavista linux
-kernel.Now i seem to have bumped into a lot of problems with this =
-kernel.I
-dont seem have support for USB-1.0 or I2C on the controller in this
-distribution.=20
+I want to know something else from you though. In the end, did the debian
+2.6.8 kernel (and d-i) work for you or not, i sort of lost track of this.
 
-	I was wondering where should i kick start my porting effort on a
-2.4.X and a 2.6.x kernel, if anyone has any patches for the MPC8270 i =
-would
-be much obliged to use the same.=20
+> Now the success:
+> I put Leigh's boot floppy and the Woody root floppy (from
+> debian.yorku.ca mirror) into the second machine at noon today. By 1pm
+> I had a fully installed, configured and self-booting installation of
+> Woody on a 43p-140.
+> 
+> By 1:30 I had it re-pinned to "testing" and "dist-upgrad"ing. It was
+> finished and running great when I left work.
+> 
+> Since the machine is at work, I don't have much time to mess with it,
+> (since that's not my job!) but I will try in the next week to test
+> Sven's d-i disks on a second hard disk. It's the least I can do for
+> the help you've all given.
 
-	I am also using a PCI-USB 2.0 on my board.I have seen some nasty
-problems in 2.4.X with a EPIA-M board on the USB 2.0 bus , are these =
-issues
-relevant in the PPC 2.4.X kernel ? I know that a backport has been done =
-for
-the 2.4.X kernel series, but still wanted to check with forum if anyone =
-has
-had any problems on the 2.4.X kernel with USB 2.0.
+Hehe. Also, if we fix the issue, it will come in handy next time you want to
+install it, not to count that you may like eventual security builds of the
+debian kernel down the road.
 
-Any pointers on this would be really helpful,
+Friendly,
 
-Waiting for a reply,
-
-Thanks in advance,
-
-.Bharath.
-
-
-	Be warned that typing \fBkillall \fIname\fP may not have the desired
-effect on non-Linux systems, especially when done by a privileged user.
--From the killall manual page.=20
-DISCLAIMER=20
-This message and any attachment(s) contained here are information that =
-is confidential, proprietary to HCL Technologies=20
-and its customers. Contents may be privileged or otherwise protected by =
-law. The information is solely intended for the=20
-individual or the entity it is addressed to. If you are not the intended =
-recipient of this message, you are not authorized to=20
-read, forward, print, retain, copy or disseminate this message or any =
-part of it. If you have received this e-mail in error,=20
-please notify the sender immediately by return e-mail and delete it from =
-your computer
+Sven Luther
