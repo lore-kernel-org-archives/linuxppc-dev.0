@@ -1,27 +1,39 @@
-Message-ID: <3B83B46C.8030805@cray.com>
-Date: Wed, 22 Aug 2001 08:32:28 -0500
-From: David Updegraff <dave@cray.com>
+From: Benjamin Herrenschmidt <benjamin.herrenschmidt@wanadoo.fr>
+To: Stefan Roese <stefan.roese@esd-electronics.com>
+Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>,
+	Linuxppc-Commit <linuxppc-commit@source.mvista.com>
+Subject: Re: status of linuxppc_2_4_devel for ppc405gp
+Date: Wed, 22 Aug 2001 15:41:55 +0200
+Message-Id: <20010822134155.4105@mailhost.mipsys.com>
+In-Reply-To: <EFEAIMDCOOOHIEPHDNFJAEHDDBAA.stefan.roese@esd-electronics.com>
+References: <EFEAIMDCOOOHIEPHDNFJAEHDDBAA.stefan.roese@esd-electronics.com>
 MIME-Version: 1.0
-To: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Physically mapped FLASH
-References: <EFEAIMDCOOOHIEPHDNFJAEHDDBAA.stefan.roese@esd-electronics.com> <20010822134155.4105@mailhost.mipsys.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi.
+>
+>Our system crashes in the function "ppc4xx_gdb_init()" in file
+>"ppc4xx_setup.c". Without this call bootup look much better ;-). Any
+>comments on this?
 
-Is there a reason why the physical-mapping setup (drivers/mtd/maps/physmap.c)
-is coded to ONLY talk to CFI chips?  For example I have some 405gp things
-that have AMD Flash chips that are physically mapped to the top of memory
-and could be driven by the algorithms in drivers/mtd/chips/amd_flash.c.
+The function dereferences the regs of the init.task which no longer
+exist. (And was previously not properly initialized anyway).
 
-I've patched it and it appears to work ok; is it a bad idea?  is it good idea?
-Any interest in incorporating in?
+>I noticed that the ppc405_enet driver is not compiled and not started
+>(Makefile and Space.c in drivers/net). Is there a patch missing?
 
---
-Dave Updegraff / dave@cray.com / 218-525-1154
+Probably. In my tree, I changed it to use the initcalls.
+
+>Is anybody running this linuxppc_2_4_devel on a walnut board or custom
+>ppc405 board? What is the "official status" of the ppc405 support in this
+>linux tree?
+
+I have the kernel booting with a custom board but userland doesn't work,
+I'm still tracking this.
+
+Ben.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
