@@ -1,43 +1,72 @@
-Mime-Version: 1.0
-Message-Id: <p05101001b82dab7d495a@[10.0.0.42]>
-In-Reply-To: <8xu1vck03a.fsf@s62.informatik.uni-bremen.de>
-References: <XFMail.20011130093626.pochini@shiny.it>
- <8xu1vck03a.fsf@s62.informatik.uni-bremen.de>
-Date: Fri, 30 Nov 2001 13:52:18 -0800
-To: Holger Bettag <hobold@Informatik.Uni-Bremen.DE>,
-	Giuliano Pochini <pochini@shiny.it>
-From: "Timothy A. Seufert" <tas@mindspring.com>
-Subject: Re: 7450 bugs & fixes
+From: Paul Mackerras <paulus@samba.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15368.891.368917.13579@argo.ozlabs.ibm.com>
+Date: Sat, 1 Dec 2001 09:08:59 +1100 (EST)
+To: "Ralph Blach" <rcblach@us.ibm.com>
 Cc: linuxppc-dev@lists.linuxppc.org
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Subject: Re: include/asm-ppc/platforms/
+In-Reply-To: <OF04BCE99E.8AF57CF2-ON85256B14.00425D94@raleigh.ibm.com >
+References: <OF04BCE99E.8AF57CF2-ON85256B14.00425D94@raleigh.ibm.com >
+Reply-To: paulus@samba.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 11:46 AM +0100 11/30/01, Holger Bettag wrote:
->Giuliano Pochini <pochini@shiny.it> writes:
+Ralph Blach writes:
+
+> This does not take into account the embedded world at all.
+> The correct form of the file should be asm-ppc/core/chip/revsion/board
 >
->>
->>
->>  > After reading the 7450 errata book, I'm now trying to figure out
->>  > what need to be done for our kernel to work properly on these. [...]
->>
->>  :-((
->>  I've never seen so many bugs in a mot cpu before.
->>  I hope they are not embracing the Intel's
->>ship-things-asap-regardless-reliability style :(
->>
->To my knowledge, Apple is their only customer that actually delivered the
->buggy revisions to end users. I guess it's not Motorola who's in a hurry.
+> This is because the IBM Core Connect and the Motorola OCEAN internal
+> interconnect systems.
+>
+> These allow for a 405/book E/Mot processor cores to be customized around a
+> large set of
+> customized on chip perphials.  It will make the availabily of a large
+> number different
+> customized chips with different on chip perphials available.
+>
+> Thats my justification for core/chip
 
-The 7450 was probably at least a year late (if not more), going by
-various Motorola announcements, roadmaps, MPF presentations, and so
-forth.  I don't think Apple was supposed to get stuck using the 7400
-for as long as they did.  No doubt Apple put pressure on Motorola to
-deliver a shippable version (meaning one whose bugs Apple could
-remedy with workarounds) as soon as possible.
+How is the kernel supposed to know what on-chip peripherals exist?
+By the CPU version/revision numbers?  Are you *always* going to change
+the cpu revision number when you change the set of on-chip
+peripherals?  Or will the kernel have to "just know" what on-chip
+peripherals there are?
 
---
-Tim Seufert
+The scenario you outline leads me to think that we should flatten the
+structure, rather than making a very deep hierarchical structure as
+you suggest.  What I mean is that we should structure things so that
+we have a collection of device drivers for various on-chip devices, a
+collection of PCI host bridge drivers, a collection of interrupt
+controller drivers, etc.  And these drivers should not make any
+assumptions about addresses etc.
+
+Then for each platform we have a device tree, or some similar kind of
+database, that tells us what devices are where and how they are
+connected.  We could consider using such a database at config time as
+well as at run-time.  The database could be supplied statically by the
+board support package or it could be supplied at runtime by the boot
+loader.
+
+Basically I want the knowledge that "because this is a 405gp chip we
+must have an XYZ ethernet controller at address FOO using interrupt
+N" to be concentrated in one place, not spread out through the
+code.  Then when IBM brings out a 405gp-A that has two XYZ's (neither
+of which are at the same address as in the 405gp) there is just one
+place that we have to change.
+
+> This is my justification for Revision, because different Chip Revision will
+> Have differnet Expansion
+> instruction sets.  The following statements have HUGE implecation on
+> Libraries, because the loader will have to load correct library
+> according to Chip Revision.
+
+It's more a problem for the distributions - they will need to make
+sure the correct libraries get installed.  My guess is that most
+libraries will end up not using the extra instructions.
+
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
