@@ -1,34 +1,30 @@
-To: Wojciech Kromer <krom@dgt-lab.com.pl>
+Date: Thu, 25 Apr 2002 07:36:25 -0700
+From: Matt Porter <mporter@mvista.com>
+To: "David M?ller (ELSOFT AG)" <d.mueller@elsoft.ch>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: console on SCC1 on 8260 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 25 Apr 2002 14:01:28 +0200."
-             <3CC7F018.2040604@dgt-lab.com.pl>
-Date: Thu, 25 Apr 2002 15:15:23 +0200
-Message-Id: <20020425131528.51108FF65@denx.denx.de>
+Subject: Re: file missing ? (was :Re: Status on 405GP i2c driver)
+Message-ID: <20020425073625.A6839@home.com>
+References: <20020422141601.B16319@ecam.san.rr.com> <3CC7B890.3010901@elsoft.ch>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3CC7B890.3010901@elsoft.ch>; from d.mueller@elsoft.ch on Thu, Apr 25, 2002 at 10:04:32AM +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3CC7F018.2040604@dgt-lab.com.pl> you wrote:
+On Thu, Apr 25, 2002 at 10:04:32AM +0200, "David M?ller (ELSOFT AG)" wrote:
 >
-> Huh, I've just discovered that arch/ppc/8260_io/uart.c does not support
->  console on SCC1!
-> Anyone has such version of this driver?
+> Hello
+>
+> Is it possible that the file "linux/i2c-algo-ibm_ocp.h", which should be
+> part of the latest PPC4xx i2c patches from Matt Porter i think, didn't
+> made it into the linuxppc_2_4_devel?
 
-In all such situation just try the version on our FTP server :-)
-
-For instance, the CPU86 configuration uses SCC1 for console.
-
-Wolfgang Denk
+Thanks. I missed it in the previous changeset, it's there now.
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-One essential to success is that you desire be an all-obsessing  one,
-your thoughts and aims be co-ordinated, and your energy be concentra-
-ted and applied without letup.
+Matt Porter
+MontaVista Software, Inc.
+mporter@mvista.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
