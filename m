@@ -1,35 +1,37 @@
-Date: Fri, 4 Aug 2000 10:06:26 +0200 (CEST)
+Date: Fri, 4 Aug 2000 10:08:17 +0200 (CEST)
 From: Ronald Wahl <rwa@peppercon.de>
-To: Matt Porter <mporter@mvista.com>
-cc: Geert Uytterhoeven <geert@linux-m68k.org>, linuxppc-dev@lists.linuxppc.org
+To: Paul Mackerras <paulus@linuxcare.com.au>
+cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: iounmap
-In-Reply-To: <20000803155911.A6226@cx258813-a.chnd1.az.home.com>
-Message-ID: <Pine.LNX.4.21.0008041003040.653-100000@goliath.issistance.de>
+In-Reply-To: <14730.9953.112006.773228@argo.linuxcare.com.au>
+Message-ID: <Pine.LNX.4.21.0008041006320.653-100000@goliath.issistance.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 3 Aug 2000, Matt Porter wrote:
+On Fri, 4 Aug 2000, Paul Mackerras wrote:
 
-> On Thu, Aug 03, 2000 at 02:44:12PM +0200, Geert Uytterhoeven wrote:
-> >
-> > On Thu, 3 Aug 2000, Ronald Wahl wrote:
-> > > I'm currently writing a device driver for an pci controller and have to
-> > > map very large amounts of pci memory and i/o ranges via ioremap. The
-> > > problem is that there is no iounmap and ioremap returns NULL after some
-> > > insmod/rmmod cycles. When gets this implemented?
-> >
-> > When someone steals some spare time and writes the code.
+> Ronald Wahl writes:
 >
-> Done.  The hot swap PCI kernel patches from MCG have iounmap implemented.
-> Very useful when ripping a PCI peripheral out of its slot. :)
+> > I'm currently writing a device driver for an pci controller and have to
+> > map very large amounts of pci memory and i/o ranges via ioremap. The
+> > problem is that there is no iounmap and ioremap returns NULL after some
+> > insmod/rmmod cycles. When gets this implemented?
 >
-> See them at http://www.mcg.mot.com/linux under HA Linux/Downloads.
+> This should do the trick:
+>
+> void iounmap(void *addr)
+> {
+> 	if (addr > high_memory && (unsigned long) addr < ioremap_bot)
+> 		vfree((void *) (PAGE_MASK & (unsigned long) addr));
+> }
+>
+> Could you replace the null iounmap in arch/ppc/mm/init.c with that,
+> test it, and let me know if it works?
 
-Call me blind, but I havn't seen an implementation of iounmap in these
-patches.
+Yes, it seems to work. Thanx!
 
 ron
 
