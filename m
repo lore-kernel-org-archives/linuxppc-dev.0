@@ -1,81 +1,48 @@
-Message-ID: <001601c37d51$019c2860$6401a8c0@sazabimobile>
-From: "Shih-Ying Chou" <sschou@mtu.edu>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: EP405 and PCI and irq problem
-Date: Wed, 17 Sep 2003 15:22:16 -0400
+Message-ID: <3439AB3A99ECD5409F3A52ACF814744D158D86@norcom2.norcom.net>
+From: Lokesh Kumar <lokesh.kumar@wrx-us.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: mpc8xx pcmcia cardmgr problem
+Date: Wed, 17 Sep 2003 15:47:59 -0400
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="big5"
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi All,
-    Currently, I am using Embedded Planet's EP405 development board.  I
-would like to use a USB device with it, but there is no USB connection on
-the EP405 board.  So I connect a PCI to PC104-plus adapter to the EP405,
-then connnect a PCI to USB 2.0 card.  But right now the USB driver is
-complain about it can't not get a irq.
+Hi Guys,
 
-    I have tried to move the jumper on the adapter to different setting, but
-there is no use.  Also, I have changed the register on the EP405 board to
-the appropriate setting, like enable local PCI IRQ controller and changed
-the PCI  (INTA compliment) to enable.  But it still not working.
+I am trying to bring pcmcia up on my mpc855 based board. I am using
+kernel-2.4.18 and have pcmcia extensions.
 
-    Have anyone does anything similar to this or can give me hint or
-pointer?  I am running out of idea.
+I am making pcmcia as module, so  I can insmod pcmcia_core and m8xx_pcmcia
+and ds. When I insert the card and start cardmgr, this is what I get.
 
-The following is the info and the bootup log
 
-kernel version : 2.4.22 download from http://penguinppc.org/
-USB 2.0 board is using VIA chipset
-the PCI to PC104-plus adapter is Sensoray's Model 328.
+Starting PCMCIA services: cardmgr[79]: watching 2 sockets
+done.
+cardmgr[80]: starting, version is 3.2.5
+cardmgr[80]: socket 1: 350 Series Wireless LAN Adapter
+# insmod: insmod: char-major-4: no module by that name found
+cardmgr[80]: executing: 'modprobe airo'
+cardmgr[80]: + Using /lib/modules/2.4.18/kernel/drivers/net/wireless/airo.o
+cardmgr[80]: executing: 'modprobe airo_cs '
+cardmgr[80]: + Using
+/lib/modules/2.4.18/kernel/drivers/net/wireless/airo_cs.o
+m8xx_pcmcia: voltage_set slot=B, vcc=5, vpp=5
+ <7>m8xx_pcmcia: Service(1, 4, 0xc1e9180c)
+m8xx_pcmcia: WRX voltage_set slot=B, vcc=5, vpp=5
+ <7>m8xx_pcmcia: Service(1, 8, 0xc1e91870)
+Kernel panic: request_irq
+ <0>Rebooting in 180 seconds..
 
-usb.c: registered new driver usbdevfs
-usb.c: registered new driver hub
-hcd.c: Found HC with no IRQ.  Check BIOS/PCI 00:0a.2 setup!
-host/usb-uhci.c: $Revision: 1.275 $ time 18:49:57 Sep 16 2003
-host/usb-uhci.c: High bandwidth mode enabled
-host/usb-uhci.c: v1.275:USB Universal Host Controller Interface driver
-host/usb-ohci.c: found OHCI device with no IRQ assigned. check BIOS
-settings!
-host/usb-ohci.c: found OHCI device with no IRQ assigned. check BIOS
-settings!
-usb.c: registered new driver hiddev
-usb.c: registered new driver hid
-hid-core.c: v1.8.1 Andreas Gal, Vojtech Pavlik <vojtech@suse.cz>
-hid-core.c: USB HID support drivers
-Initializing USB Mass Storage driver...
-usb.c: registered new driver usb-storage
-USB Mass Storage support registered.
+What am I missing here?? why is it trying to insmod char-major-4?? and why
+does the kernel panic??
 
-The following is the info I got from /proc after it boots up.
 
-PCI devices found:
-  Bus  0, device  10, function  0:
-    USB Controller: NEC Corporation USB (rev 65).
-      Master Capable.  Latency=128.  Min Gnt=1.Max Lat=42.
-      Non-prefetchable 32 bit memory at 0xbffff000 [0xbfffffff].
-  Bus  0, device  10, function  1:
-    USB Controller: NEC Corporation USB (#2) (rev 65).
-      Master Capable.  Latency=128.  Min Gnt=1.Max Lat=42.
-      Non-prefetchable 32 bit memory at 0xbfffe000 [0xbfffefff].
-  Bus  0, device  10, function  2:
-    USB Controller: NEC Corporation USB 2.0 (rev 2).
-      Master Capable.  Latency=128.  Min Gnt=16.Max Lat=34.
-      Non-prefetchable 32 bit memory at 0xbfffdf00 [0xbfffdfff].
-
-and the following is the info I get after I mount the usbfs and look at the
-driver file
-         usbdevfs
-         hub
- 96-111: hiddev
-         hid
-         usb-storage
-
-Thank you very much
-
-Shih-Ying Chou
+Lokesh Kumar
+Wireless Matrix USA Inc.
+703-262-4032
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
