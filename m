@@ -1,55 +1,44 @@
-Message-ID: <39084D22.417A2FC3@aminocom.com>
-Date: Thu, 27 Apr 2000 14:22:26 +0000
-From: Elizabeth Clarke <eclarke@aminocom.com>
+Message-ID: <39085B6D.CD5C811D@student.ethz.ch>
+Date: Thu, 27 Apr 2000 17:23:25 +0200
+From: Michel Dänzer <daenzerm@student.ethz.ch>
 MIME-Version: 1.0
-To: Matt Porter <mmporter@home.com>
-CC: linuxppc-dev@lists.linuxppc.org, linuxpp-embedded@lists.linuxppc.org
-Subject: Re: glibc-2.1.2 cross-compile problem
-References: <20000426002414.912D83C989@elph.research.canon.com.au> <3906FF25.4E9E6AEA@aminocom.com> <20000426120102.E27105@cx258813-a.chnd1.az.home.com>
-Content-Type: text/plain; charset=us-ascii
+To: Kostas Gewrgiou <gewrgiou@imbc.gr>
+CC: "W. Taylor Holliday" <wtholliday@ucdavis.edu>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: XFree 4.0 dual monitor on AGP G4
+References: <Pine.LNX.4.21.0004271613030.8585-100000@idd-01.imbc.gr>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Matt Porter wrote:
+Kostas Gewrgiou wrote:
 
-> > /usr/local/src/gcc-2.95.2/gcc/xgcc -B/usr/local/src/gcc-2.95.2/gcc/
-> > -B/usr/local/powerpc-linux/bin/ -c -DHAVE_CONFIG_H -g -O2 -I.
-> > -I./../../include  choose-temp.c
-> > choose-temp.c:29: stdio.h: No such file or directory
+> > PS: I still think it should work with the r128 driver if it support the
+> > "fbdev" option...
 >
-> Are you sure you followed the directions on my site?  You need to
-> configure your build of gcc with "--with-newlib" then link to your
-> kernel headers, then build glibc.
+>  Yes it would work, there is a problem with the approach taken by
+> fbdev/glint, the BusID info isn't used at all there for the choise
+> of the device to be opened,
 
-Yes... after all they are not complex instructions.
+Really? The code seems to do it IMHO.
 
-I sorted that problem (stdio.h missing) by copying the newlib headers
-into /usr/local/powerpc-linux/include. So it gets past that now. But....
+> without the fbdev option you always get /dev/fb0 which might not be what you
+> want.
 
-/usr/local/src/gcc-2.95.2/gcc/xgcc -B/usr/local/src/gcc-2.95.2/gcc/
--B/usr/local/powerpc-linux/bin/ -c -g -O2 -I. -I. -D_IO_MTSAFE_IO
-iogetline.c -o pic/iogetline.o
-/usr/local/src/gcc-2.95.2/gcc/xgcc -B/usr/local/src/gcc-2.95.2/gcc/
--B/usr/local/powerpc-linux/bin/ -c -g -O2 -I. -I. -D_IO_MTSAFE_IO
-iogetline.c
-In file included from iolibio.h:1,
-                 from libioP.h:47,
-                 from iogetline.c:26:
-libio.h:30: _G_config.h: No such file or directory
-make[1]: *** [iogetline.o] Error 1
-make[1]: Leaving directory
-`/usr/local/src/gcc-2.95.2/powerpc-linux/libio'
+Almost certainly not (Ask Taylor ;)
 
-So now I'm where Graham Stoney was at Date: Thu, 12 Aug 1999 14:34:44
--0400.
-I *think* it is looking for _G_config.h from my host includes, but it
-simply isn't putting the path on the command line. Which I think it did
-at one point, or at least on of those -I. was -I./../../include.
-Arghh I'm must be going mad, or stupid. Surely its should not be as bad
-as this?
 
-Any help very much appreciated!
-Beth
+> Here is a small patch (untested) that changes r128 to use the "fbdev"
+> option instead of using BusID to get the fbdev device.
+
+The patch you included in the later mail is reversed, so you have to use the
+-R option to apply it.
+
+Just a hint...
+
+
+Michel
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
