@@ -1,31 +1,25 @@
-Date: Tue, 7 May 2002 09:16:25 -0700
-From: andrew may <acmay@acmay.homeip.net>
-To: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
-Cc: linuxppc-embedded@lists.linuxppc.org, kuster@pacbell.net,
-	acmay@acmay.homeip.ne
+Message-ID: <3CD803DD.7DA2661B@etx.ericsson.se>
+Date: Tue, 07 May 2002 18:42:05 +0200
+From: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
+MIME-Version: 1.0
+To: andrew may <acmay@acmay.homeip.net>
+Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: IBM ocp I2C circular dependency
-Message-ID: <20020507091625.B9190@ecam.san.rr.com>
-References: <3CD7D04C.1E9122A0@etx.ericsson.se>
-Mime-Version: 1.0
+References: <3CD7D04C.1E9122A0@etx.ericsson.se> <20020507091625.B9190@ecam.san.rr.com>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3CD7D04C.1E9122A0@etx.ericsson.se>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, May 07, 2002 at 03:02:04PM +0200, Kenneth Johansson wrote:
-> Also I found a problem with the code when I access a i2c memory from
-> userspace and no chip is present at that address. After that it's not
-> possible to access anything else on the I2C bus. Works OK as long as I use
-> addresses that have a device that answers (I think).
+andrew may wrote:
+> ps you forgot a "t" in .net.
 
-There is a suprising lack of copy to/from user functions in the i2c
-code. This may be part of the problem but I think it needs to be fixed
-more in the core code rather than each driver.
+and the a in Armin's email. At least I got the mailinglist right :)
 
-The driver should not support "Quick" 0 len transfers, I am not sure how
-it handles them now. This may be another problem.
-
-ps you forgot a "t" in .net.
+--
+Kenneth Johansson
+Ericsson AB                       Tel: +46 8 404 71 83
+Borgafjordsgatan 9                Fax: +46 8 404 72 72
+164 80 Stockholm                  kenneth.johansson@etx.ericsson.se
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
