@@ -1,55 +1,50 @@
-Message-ID: <3C6FCBFD.80504@pacbell.net>
-Date: Sun, 17 Feb 2002 15:27:57 +0000
-From: Armin <akuster@pacbell.net>
+Message-ID: <1072F1A27E99D3119747005004B9A380C6DCE9@MAIL>
+From: David Dart <DavidD@nulec.com.au>
+To: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
+Subject: FW: HZ=1000 network problem?
+Date: Mon, 18 Feb 2002 07:05:27 +1000
 MIME-Version: 1.0
-To: "David =?ISO-8859-15?Q?M=FCller?= (ELSOFT AG)" <d.mueller@elsoft.ch>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [PATCH] Several patches against linuxppc_devel-2.4.18-rc1
-References: <3C6E5603.5010801@elsoft.ch>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David Müller (ELSOFT AG) wrote:
-> Hello
->
-> The attached patch fixes the following issues:
->
->    - arch/ppc/kernel/Makefile
->       ppc4xx_pm.o missing in export-objs list
->
->    - arch/ppc/kernel/ppc4xx_pm.c
->       missing include file + missing #ifdef #endif
->
-ok.
+Yes,
+    we have had the same problem. If anyone has a solution I would be
+interested.
 
->    - arch/ppc/kernel/ppc4xx_pic.c
->       fixed constant in ppc405_pic_get_irq()
->       (NR_IRQS is not necessarily the total number of UIC irqs)a
-
-hmmmmm... we should get ride of "NR_BOARD_IRQS" instead?
-
->
->    - arch/ppc/platforms/ibm_ocp.h
->       wrong header file included + some little name fixes
-header file fix all ready in.  I will get the name change next patch in.
+Regards
+Dave
 
 
->
->
-> Regarding the newly introduce support for cascaded UICs:
->
-> Isn't the CONFIG_CASCADING_UIC option redundant?
-> If (CONFIG_CASCADING_UIC == (NR_UICS > 1)) is true, CONFIG_CASCADING_UIC
-> could be replace by (NR_UICS > 1).
->
 
-Good point:)
+-----Original Message-----
+From: bart@ardistech.com [mailto:bart@ardistech.com]
+Sent: Friday, 15 February 2002 11:30 PM
+To: Embedded Linux PPC List
+Subject: HZ=1000 network problem?
 
-> Dave
 
-Armin
+
+Hi,
+
+I'm running HH Journeyman 2.0 linux-2.4.2 on a 66MHz RPX Lite with root
+over nfs. When HZ=100 everything works fine. When HZ=1000 the last prints
+I get are
+
+>MTD flash: Found 4 x16 CFI devices at location 0 in 8 bit mode
+> Amd/Fujitsu Extended Query Table v1.2 at 0x0040
+>number of CFI chips: 1
+>NET4: Linux TCP/IP 1.0 for NET4.0
+>IP Protocols: ICMP, UDP, TCP, IGMP
+>IP: routing cache hash table of 512 buckets, 4Kbytes
+>TCP: Hash tables configured (established 4096 bind 4096)
+>IP-Config: Guessing netmask 255.255.0.0
+
+Does this sound familiar to anybody?
+
+Regards,
+	Bart
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
