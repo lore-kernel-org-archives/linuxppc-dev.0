@@ -1,43 +1,28 @@
-Message-ID: <20040302000732.79306.qmail@web21103.mail.yahoo.com>
-Date: Mon, 1 Mar 2004 16:07:32 -0800 (PST)
+Message-ID: <20040302005656.41349.qmail@web21109.mail.yahoo.com>
+Date: Mon, 1 Mar 2004 16:56:56 -0800 (PST)
 From: Lou Rickard <lou_rickard@yahoo.com>
-Subject: ml300 system init very slow
+Subject: Re: ml300 system init very slow
 To: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <20040302000732.79306.qmail@web21103.mail.yahoo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thanks to people on the list, I finally got the ml300
-booting on it's own filesystem.  Thank you.
+Well, I think I may have a solution to my problem,
+though I don't understand it, and am hoping that maybe
+someone here can explain it too me.
 
-And of course, another question.  After kernel boot is
-done, the system begins intialization, but it goes
-REALLY slow.
+I was trying to work on some driver modules, but was
+having a hard time with it, I'd turned module support
+off in the kernel.  So I turned module support back
+on, and that kernel seems to boot up just fine.
 
-It gets to the:
-"Freeing unused kernel memory: 64k init"
-line just fine, but from that point, it takes about
-five minutes to finish coming up and  providing a
-login prompt.
-
->From the following lines:
-"INIT: version 2.78 booting
-INIT: Entering runlevel: 3
-Entering non-interactive startup"
-and on it's just super slow.
-
-At a certain point it starts inetd and telnet
-services, so I can acually telnet into the box and
-everything in that session seems nice an perky, just
-like normal, but everything over the serial line is
-slower than molasses.  This is both over the NFS mount
-and using the flash file system.
-
-Any ideas?
-
-Thanks,
+I'm guessing it was failing to load some module, but I
+don't know what really is going on there.  I'm going
+to keep looking, but if anyone has advice, please
+shoot it at me.
 
 ~lr
 
