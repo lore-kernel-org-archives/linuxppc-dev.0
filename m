@@ -1,88 +1,178 @@
-Message-ID: <393BCDA8.E346B65F@pop.agri.ch>
-Date: Mon, 05 Jun 2000 17:56:37 +0200
-From: Andreas Tobler <toa@pop.agri.ch>
-Reply-To: toa@pop.agri.ch
+Message-ID: <393BEF5D.30EFC6A8@relog.ch>
+Date: Mon, 05 Jun 2000 20:20:13 +0200
+From: Michel Dänzer <daenzer@relog.ch>
+Reply-To: daenzerm@student.ethz.ch
 MIME-Version: 1.0
-To: Linux -Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: 2940UW & 2.4.0-test-ac7 PCI probs
-Content-Type: text/plain; charset=us-ascii
+To: linux-apus-user@lists.sourceforge.net
+CC: debian-powerpc@lists.debian.org, linuxppc-dev@lists.linuxppc.org
+Subject: New experimental X 4.0
+Content-Type: multipart/mixed;
+ boundary="------------D60BC041AC2BC4916ED220AB"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+This is a multi-part message in MIME format.
+--------------D60BC041AC2BC4916ED220AB
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-I try to get the 2.4.0-test1-ac7 to boot on my 7200. It fails. I have a
-2940UW where all my disks are connected to. A 2.3.99p9 from linuxcare
-boots, but the ac7 from bk fails with the following message:
 
-Total memory = 80MB; using 512kB for hash table (at c0300000)
-Linux version 2.4.0-test1-ac7 (root@pm7200) (gcc version 2.95.3 19991030
-(prerelease/franzo)) #4 Mon Jun 5 17:14:33 CEST 2000
-PCI bus 0 controlled by bandit at f2000000
-[snip]
-PCI: Device 00:0e.0 not available because of resource collisions
-[snip]
 
-The kernel can't boot since it doesn't find the root. ;-)
+Hey all
 
-I'm aware of problems with the adaptec on 2.4.0-test1 and up. (Alan Cox
-writes so) But I'm not sure if that is the same problems, since on lk
-people reported about timeouts etc. And on my side I have a general PCI problem.
 
-Are any PCI-fixup patches integrated in bk? Or should I try Michel fixes?
+The URL and filenames have changed a bit:
 
-Thanks,
+http://n.ethz.ch/student/daenzerm/download/XFree86/
 
-Andreas
+This is 4.0b .
 
-Below the lspci -vv from the 2.3.99p9
 
-00:0b.0 Host bridge: Apple Computer Inc. Bandit PowerPC host bridge (rev 03)
-	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr-
-Stepping- SERR- FastB2B-
-	Status: Cap- 66Mhz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort+ >SERR- <PERR-
-	Latency: 32 set, cache line size 08
+Good news for the Permedia2 people: DGA support is here. It's not tested
+though...
 
-00:0d.0 Ethernet controller: 3Com Corporation 3c590 10BaseT [Vortex]
-	Control: I/O- Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-Stepping- SERR- FastB2B-
-	Status: Cap- 66Mhz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort- >SERR- <PERR-
-	Latency: 3 min, 8 max, 32 set
-	Interrupt: pin A routed to IRQ 23
-	Region 0: I/O ports at 0480 [disabled]
+The other important thing is support for the latest PowerBooks in the r128
+driver.
 
-00:0e.0 SCSI storage controller: Adaptec AIC-7881U
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-Stepping- SERR- FastB2B-
-	Status: Cap- 66Mhz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort- >SERR- <PERR-
-	Latency: 8 min, 8 max, 32 set, cache line size 08
-	Interrupt: pin A routed to IRQ 24
-	Region 0: I/O ports at <unassigned>
-	Region 1: Memory at 80801000 (32-bit, non-prefetchable)
 
-00:0f.0 Ethernet controller: 3Com Corporation 3c905B 100BaseTX [Cyclone]
-(rev 64)
-	Subsystem: Unknown device 10b7:9055
-	Control: I/O- Mem- BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr-
-Stepping- SERR- FastB2B-
-	Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort- >SERR- <PERR-
-	Latency: 10 min, 10 max, 32 set, cache line size 08
-	Interrupt: pin A routed to IRQ 25
-	Region 0: I/O ports at 0400 [disabled]
-	Region 1: Memory at 80800000 (32-bit, non-prefetchable) [disabled]
-	Capabilities: <available only to root>
+Michel
+--------------D60BC041AC2BC4916ED220AB
+Content-Type: text/plain; charset=iso-8859-1;
+ name="XFree86-srv-4.0-ppc.readme"
+Content-Disposition: inline;
+ filename="XFree86-srv-4.0-ppc.readme"
+Content-Transfer-Encoding: 8bit
 
-00:10.0 Class ff00: Apple Computer Inc. Grand Central I/O (rev 02)
-	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr-
-Stepping- SERR- FastB2B-
-	Status: Cap- 66Mhz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort- >SERR- <PERR+
-	Latency: 32 set, cache line size 08
-	Region 0: Memory at f3000000 (32-bit, non-prefetchable)
+
+
+
+XFree86 4.0b server with Permedia2 hardware acceleration
+--------------------------------------------------------
+
+Please read the accompanying readmes for every tarball before continuing.
+
+
+
+Contents
+--------
+
+This contains all the necessary files to get an XFree86 4.0b server up and
+running.
+
+- The glint driver provides sophisticated hardware acceleration for Permedia2
+  graphics boards.
+
+- The r128 driver does the same for Rage128 boards (support for all Rage128
+  chips including the Rage Mobility M3 found in the latest PowerBooks)
+
+- I have also included the ati driver for the Mach family of ATI chips.
+  *NOTE* This is untested on PPC and will probably crash and burn! That's why
+  I haven't prepared a Driver Section for it in the XF86Config.
+
+- Finally, the fbdev driver enables everyone with a working framebuffer device
+  to get the server running easily. However, it's not accelerated in any way.
+
+
+Installing
+----------
+
+First of all, make a copy of your XF86Config. Its format has changed since
+3.3.x and an example will be installed with the server (/etc/X11/XF86Config).
+Please edit it to suit your system.
+
+Extract the tarball to your root directory. Apart from the XF86Config issue,
+it should be able to coexist with an existing X installation. (Check out the
+server's -xf86config commandline option!) The new server executable is
+/usr/X11R6/bin/XFree86, depending on your installation you'll have to make it
+suid root (chmod u+s).
+
+
+Read and edit the supplied XF86Config file!
+
+
+*Important note for users with PCI gfx cards*
+
+Apparently, you have to supply a BusID for the fbdev driver to work.
+
+
+
+Features
+--------
+
+- Greatly enhanced hardware acceleration due to the new XAA (XFree
+  Acceleration Architecture)
+
+- Hardware cursor
+
+- Modular design, single modules can be replaced without much hassle
+
+
+Changes since 4.0a:
+
+- DGA 2.0 support in the glint driver (untested)! Please report if it works.
+
+- Support for all Rage128 chips in the r128 driver
+
+- ati driver included (*UNTESTED*)
+
+- documentation (manpages and HTML) for the server, XF86Config and drivers
+
+
+Changes since 3.9.18:
+
+- contains experimental support for the Xv extension, try
+    http://n.ethz.ch/student/daenzerm/download/mpeg2play.bz2
+  (don't forget the -b switch and maximizing the window :)
+  Thanks to Michael Schimek for his code.
+
+- problems with signal 4 are fixed
+
+- new -libs- and -include- tarballs (not needed for normal usage)
+
+- the r128 driver is included again. Kostas Gewrgiou <gewrgiou@imbc.gr> is an
+  X developer working on r128/PowerMac support, contact him if it doesn't
+  work.
+
+
+Changes since 3.9.17f:
+
+- I removed a few supposedly unused modules to make the tarballs smaller.
+  If it complains about something missing, contact me
+
+- Fixed all known acceleration bugs
+
+- Fixed a bug which caused a crash (signal 11) with AfterStep's menu.
+  If you experienced a sig 11 in another situation, this *might* be fixed as
+  well...
+
+
+
+Known Problems
+--------------
+
+- glint: 604e users apparently still have to enable
+    Option "XAANoScanlineCPUToScreenColorExpandFill"
+  in the XF86Config. I'm working on this and will provide an updated driver
+  module once it's fixed.
+
+- r128: Wrong colors after switching away and back with some chips
+
+- fbdev: Some things are _very_ slow (Most notably the GNOME logout screen).
+  If you want to help, send an xscope trace to me or
+  Keith Packard <keithp@suse.com>
+
+For problem reports etc. contact me, *NOT* XFree86! This is in no way an
+official release!
+
+
+Have fun,
+
+Michel Dänzer <daenzerm@student.ethz.ch>
+
+
+
+--------------D60BC041AC2BC4916ED220AB--
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
