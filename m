@@ -1,98 +1,40 @@
-Date: Mon, 11 Sep 2000 16:45:38 -0400 (EDT)
-From: Todd Lipcon <tlipcon@mercea.net>
-To: Dan Foster <dsf@gblx.net>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Roles for distributions
-In-Reply-To: <20000911133200.A20561@gblx.net>
-Message-ID: <Pine.LNX.4.10.10009111644460.25787-100000@mercea.net>
+Message-ID: <39BD4563.A9EFD09B@student.ethz.ch>
+Date: Mon, 11 Sep 2000 22:49:39 +0200
+From: Michel Dänzer <daenzerm@student.ethz.ch>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Todd Lipcon <tlipcon@mercea.net>
+CC: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: Roles for distributions
+References: <Pine.LNX.4.10.10009111558170.25787-100000@mercea.net>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Wow, thanks man- that was quite a bit of advice :) I'll get to reading
-some of those things. I've actually written a little patch for the
-mouse-button-emulation so it worked the way I like and an ip_masq
-module... other than that, I'm kernel-clue-less :) I'll go play with it
-right now...
+Todd Lipcon wrote:
 
-*bong as it goes reboot!*
+> Anyway- I am a fairly decent C, C++, and Java programmer. I'd love to be
+> able to contribute to the Linux/PPC effort, however I don't even know
+> where to start. Most of the projects that are large enough to actually
+> need patches to run correctly on PPC are so large that they are inherently
+> intimidating to one not familiar with the source.
 
--Todd
+Don't let yourself be scared off by the size of something. In every project no
+matter how big (provided that they were designed sensibly at least to some
+degree ;), there are small, self-contained problems which can be solved rather
+easy and quickly.
 
-+---------------------------------------------------------------+
-| Perl CGI scripting                    email tlipcon@csoft.net |
-| Web Design                            email tlipcon@csoft.net |
-|        My Current Projects:                                   |
-| NewsWire				www.squirrelsw.com	|
-| JavaGroove				www.squirrelsw.com	|
-+---------------------------------------------------------------+
+I think it's better to pick something which doesn't work and you would like it
+to, then start digging into it instead of looking for 'the right one which
+needs help the most' where you aren't in it with your heart and soul. :)
 
-On Mon, 11 Sep 2000, Dan Foster wrote:
 
->
-> Hot Diggety! Todd Lipcon was rumored to have wrote:
-> >
-> > Anyway- I am a fairly decent C, C++, and Java programmer. I'd love to be
-> > able to contribute to the Linux/PPC effort, however I don't even know
-> > where to start. Most of the projects that are large enough to actually
-> > need patches to run correctly on PPC are so large that they are inherently
-> > intimidating to one not familiar with the source. Do any of you veteran
-> > hackers have suggestions for the contribution-newbie? What projects are in
-> > the largest need of help, and how can someone who has never seen their
-> > source get into the flow of helping out?
->
-> Suggestion.... learn the kernel before you tackle arch-specific issues.
->
-> Alessandro Rubini's book (_Linux Device Drivers_, wasn't it?) is *excellent*
-> for a nice introduction to the kernel from a kernel programmer's perspective.
->
-> Also look through any UNIX OS textbooks. I love my copy of the Vahalia book
-> because it covers all areas of the UNIX kernel well, and treats us to a case
-> by case comparison of how several different UNIX OSes handles it. Digital UNIX,
-> AIX, FreeBSD, Solaris, ...
->
-> Then, usually very helpful to also just read (and re-read and re-read even
-> more) various kernel source files... a couple key directories. It may be
-> about 110 MB uncompressed, but sheer majority of that is for device drivers.
-> The actual kernel core stuff is *MUCH* smaller.
->
-> Try writing some kernel modules, like ones in the Rubini book, even if they're
-> 'dummy modules', just so you get a feel for things.
->
-> Then when you're feeling more comfortable with the UNIX kernel itself -
-> then start digging into all the files in arch/ppc/* as well as read
-> linuxppc-dev (or the online archives) to get an appreciation of arch-specific
-> issues.
->
-> Endianness is one *big* one - lots of times, people in x86 world will release
-> drivers that assumes the x86 endianness without thinking to use macros that
-> will automagically ensure correct byte order for whatever platform you use.
-> This issue bites the other platforms, too.
->
-> Then of course, we have the PPC hardware stuff. OpenFirmware docs are *great*
-> to read... looking at how the boot loader does it will tell you a thousand
-> things about how things actually *happen* in the dark ages before a kernel is
-> booted. It's a little work, but you can usually eventually manage to dig up
-> hardware tech docs for various chips, so that one knows how to manipulate them.
-> For example, the Motorola web site has PDF files on the CPU and the memory
-> controller (ie MPC106 aka "Grackle").
->
-> IMO, if you can understand a boot loader, you've probably taught yourself a lot
-> of the concepts needed to understand hardware at a low level, and how/why
-> the kernel is structured the way it does for the arch-specific stuff. It's also
-> (IMO) one of the most interesting pieces of software, too.
->
-> And so on... lots of stuff that you can indeed do. I've been doing all of
-> the above (why dispense advice if one doesn't take one's own advice, eh?) for
-> a while now and it's been a rather pleasant, interesting, and fun journey
-> into the innards of Linux for the PowerPC family.
->
-> -Dan
->
->
->
+Michel
 
+
+--
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and The DRI Project
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
