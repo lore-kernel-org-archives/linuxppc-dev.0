@@ -1,25 +1,34 @@
-Message-ID: <37A9A9E0.2D7B8755@mitre.org>
-Date: Thu, 05 Aug 1999 11:12:32 -0400
-From: Charles Lepple <clepple@mitre.org>
-MIME-Version: 1.0
+Date: Thu, 5 Aug 1999 10:30:21 -0500 (CDT)
+From: Grant Erickson <erick205@tc.umn.edu>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: initrd troubles
-Content-Type: text/plain; charset=us-ascii
+cc: Sean James Swallow <olaph@takilma.nurk.org>
+Subject: Re: How DOES OF Work? (ie multi-OS woes)
+In-Reply-To: <199908050500.AAA30434@lists.linuxppc.org>
+Message-Id: <Pine.SOL.4.05.9908051027420.5248-100000@garnet.tc.umn.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Did initrd support break in 2.3.x? I'm trying to load an inital ramdisk
-on a Dy4 card, and the ramdisk.image.gz data is preserved when the card
-boots into linux (passes a simple checksum test). However, I can only
-list directories in the filesystem -- any time I try and read a
-pre-existing file, it is empty (stat calls return a non-zero size,
-though), and when I write a file and read it back, it seems to work. (Of
-course, this means that I can't exec() anything that was on the
-filesystem when the card boots...) Anyone seen this?
+On Thu, 5 Aug 1999, Sean James Swallow <olaph@takilma.nurk.org> wrote:
+> Chris Ridd also posted some OF command info from Sun's site a while ago.
+> 
+>         http://www.sun.com/pci/pci/pcidevkit/fcodeaac.ps
+> 
+> and there's an OpenBoot 3.x supplement for PCI at:
+> 
+>         http://www.sun.com/pci/pci/pcidevkit/obp_3aag.ps
+> 
+> And there's also a sample PCI Fcode driver at:
+> 
+>         http://www.sun.com/pci/pci/pcidevkit/samplaan.fth
 
---Charles Lepple
-clepple@mitre.org
+For what it's worth, these links have changed to:
+
+	http://www.sun.com/io_technologies/develop/pcidevkit/fcodeaac.ps
+	http://www.sun.com/io_technologies/develop/pcidevkit/obp_3aag.ps
+	http://www.sun.com/io_technologies/develop/pcidevkit/samplaan.fth
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
