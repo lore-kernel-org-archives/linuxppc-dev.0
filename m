@@ -1,59 +1,66 @@
-Date: Mon, 12 Nov 2001 21:02:26 +0100 (MET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Jun Sun <jsun@mvista.com>
-Cc: "Maciej W. Rozycki" <macro@ds2.pg.gda.pl>,
-	Linux/MIPS Development <linux-mips@oss.sgi.com>,
-	Linux/m68k <linux-m68k@lists.linux-m68k.org>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: [RFC] generic MIPS RTC driver
-In-Reply-To: <3BF012CA.287A76A@mvista.com>
-Message-ID: <Pine.GSO.4.21.0111122055010.10720-100000@mullein.sonytel.be>
+Message-ID: <3BF0355D.6512A283@iiic.ethz.ch>
+Date: Mon, 12 Nov 2001 21:47:25 +0100
+From: Michel =?iso-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
+Reply-To: daenzer@debian.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Jason E. Stewart" <jason@openinformatics.com>
+Cc: linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org
+Subject: Re: IrDA-patched binaries
+References: <Pine.LNX.4.33.0111012312360.888-100000@auryn.jones.dk>
+		<87y9lc6h13.fsf@openinformatics.com> <3BEF9DA6.14AF8E49@iiic.ethz.ch> <87vggg2bbu.fsf@openinformatics.com>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 12 Nov 2001, Jun Sun wrote:
-> Geert Uytterhoeven wrote:
-> > On Mon, 12 Nov 2001, Maciej W. Rozycki wrote:
-> > >  Unless you use a non-MC146818 RTC, which you need to write a separate
-> > > driver for anyway.
-> >
-> > Yep, so that's why both m68k and PPC have common routines to read/write the
-> > RTC, with a /dev/rtc-compatible abstraction on top of it.
-> >
+"Jason E. Stewart" wrote:
 >
-> Geert, what is the abstraction they used?
-
-At first sight, we only use get_rtc_time() and mach_hwclk().
-
-> The /dev/rtc interface is highly influenced by MC146818 chip, which not all
-> RTC devices are alike.  The only fundamental thing in the driver is really the
-> read and write time.
+> "Michel Dänzer" <michdaen@iiic.ethz.ch> writes:
 >
-> If their abstraction is reasonable, perhaps they can all converge to a better,
-> more generic rtc interface.
+> > "Jason E. Stewart" wrote:
+> > >
+> > > "Jonas Smedegaard" <dr@jones.dk> writes:
+> > >
+> > > > I have made available kernel and irda-packages with the
+> > > > irda-hacks added to make .
+> > >
+> > > I was totally thrilled to see this. Because of reiserfs, I need to
+> > > compile my own kernel, so I grabbed the patches a couple of weeks
+> > > ago. I just had time to look at them and it seems that
+> > > parameters.h has changed a *lot* since this patch was made.
+> > >
+> > > >From BenH's latest kernel:
+> > >
+> > > typedef union {
+> > >         char   *c;
+> > >         __u32   i;
+> > >         __u32 *ip;
+> > > } irda_pv_t;
+> >
+> > Yup, 2.4.15-pre2 has my better fix. :)
+>
+> sorry Michel, I don't understand. Is the irda_pv_t listed above your
+> fix?
 
-Check out the following files from the m68k CVS tree (see
-http://linux-m68k-cvs.apia.dhs.org/):
+Yes, it's in Linus' 2.4.15-pre2 and thus of course also in Ben's.
 
-  - drivers/char/genrtc.c
-  - include/asm-m68k/machdep.h
-  - include/asm-m68k/rtc.h
 
-On PPC, they have something similar.
+> > Now we're working on fixing macserial such that the 'cat /dev/ttyS1
+> > trick' isn't needed anymore...
+>
+> Hmmm.. Sorry, must have missed that one. What is the trick, and why is
+> it needed?
 
-Gr{oetje,eeting}s,
+The macserial driver was missing a delay so you had to open the device
+(most easily with cat) for a while before running irattach, or it
+wouldn't work.
 
-						Geert
+I've verified an idea from Ben for a possible solution today, he'll
+hopefully integrate something soon.
+
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
+XFree86 and DRI project member   /  CS student, Free Software enthusiast
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
