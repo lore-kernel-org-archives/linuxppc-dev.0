@@ -1,30 +1,35 @@
-To: mlan@cpu.lu, linuxppc-dev@lists.linuxppc.org
-Subject: Re: TiBook trackpad in benh's kernel?
-References: <200104162121.XAA01103@piglet.grunz.lu>
-	<m3elurci2s.fsf@adsl-63-196-7-48.dsl.snfc21.pacbell.net>
-From: gtgj@pacbell.net (Gregorio Gervasio Jr.)
-Date: 17 Apr 2001 19:17:38 -0700
-In-Reply-To: <m3elurci2s.fsf@adsl-63-196-7-48.dsl.snfc21.pacbell.net>
-Message-ID: <m366g3c5od.fsf@adsl-63-196-7-48.dsl.snfc21.pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <v04003a14b702bc961130@[24.70.162.12]>
+In-Reply-To: <20010418002843.8305BDBACB@atlas.valhalla.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Tue, 17 Apr 2001 22:40:39 -0500
+To: "Iain Sandoe" <iain@sandoe.co.uk>,
+	=?iso-8859-1?Q?=22Michel_D=E4nzer=22?= <michdaen@iiic.ethz.ch>
+From: Tony Mantler <nicoya@apia.dhs.org>
+Subject: Re: XF4, SysRq, VT, mouse buttons, Keymaps and all that
+Cc: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> On Tue, 17 Apr 2001 14:49:47 -0700, gtgj@pacbell.net (Gregorio Gervasio Jr.) said:
+At 7:28 PM -0500 4/17/2001, Iain Sandoe wrote:
+[...]
+>The frustration is that the keycodes are listed in
+>/proc/sys/dev/mac_hid/mouse_buttonX_keycode - but finding out which physical
+>key combination relates to the numbers doesn't appear to be trivial.
 
->>>>> On Mon, 16 Apr 2001 23:21:50 +0200 (CEST), Michel Lanners <mlan@cpu.lu> said:
+I think if you enable linux keycodes on the console, then use showkeys, you
+can get the proper values to plug into those files.
 
-m> Anyone else seen this? I can't get the trackpad on my TiBook working
-m> with benh's latest tres (rsync'ed a few days ago).
+Bit of a PITA, but at least they'll (hopefully) always be consistant.
 
-g>         Seems to work for me.  I'm using his 2.4.4-pre1 tree rsync'ed
-g> on April 12.  I am using cmode:32, too.
 
-        Oops, sorry, I lied.  I boot in cmode:8 (but run X in 32bpp).
+Cheers - Tony 'Nicoya' Mantler :)
 
-Gregorio Gervasio, Jr.
-gtgj@pacbell.net
+
+--
+Tony "Nicoya" Mantler - Renaissance Nerd Extraordinaire - nicoya@apia.dhs.org
+Winnipeg, Manitoba, Canada           --           http://nicoya.feline.pp.se/
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
