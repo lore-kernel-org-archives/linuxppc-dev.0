@@ -1,48 +1,41 @@
-Date: Wed, 16 Jan 2002 19:43:39 +0100 (CET)
+Date: Wed, 16 Jan 2002 19:59:33 +0100 (CET)
 From: Gabriel Paubert <paubert@iram.es>
-To: Tom Rini <trini@kernel.crashing.org>
+To: Gavin Hemphill <hemphill@drea.dnd.ca>
 Cc: Larry McVoy <lm@bitmover.com>,
-	Kenneth Johansson <ken@kieraypc01.p.y.ki.era.ericsson.se>,
 	"linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: Problems with linuxppc_2_4_devel
-In-Reply-To: <20020116150722.GE5220@cpe-24-221-152-185.az.sprintbbd.net>
-Message-ID: <Pine.LNX.4.33.0201161900290.21073-100000@gra-lx1.iram.es>
+In-Reply-To: <3C459C8B.1020203@drea.dnd.ca>
+Message-ID: <Pine.LNX.4.33.0201161946310.21073-100000@gra-lx1.iram.es>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 16 Jan 2002, Tom Rini wrote:
+On Wed, 16 Jan 2002, Gavin Hemphill wrote:
 
-> On Wed, Jan 16, 2002 at 12:39:58PM +0100, Gabriel Paubert wrote:
-> >
-> >
-> > On Tue, 15 Jan 2002, Tom Rini wrote:
-> >
-> > > On Tue, Jan 15, 2002 at 01:02:03PM -0800, Larry McVoy wrote:
-> > >
-> > > > a) try and connect to a well known time server and see if the time is too
-> > > >    far off at commit time.  May or may not work.
-> > >
-> > > This would require some external program tho, wouldn't it?
-> >
-> > It's called ntpq, and I believe most people should have it installed
-> [snip]
 >
-> Should doesn't mean they will tho. :)  And the first time you assume
-> everyone has something, 5 people pop up screaming 'cuz they don't.
+> Couldn't the pre-trigger actually check with an ntp server at the bk end
+> and put up a warning if the commit times are off by "too much".
 
-No, but as I said, the protocol is trivial if you want a very approximate
-time (use NTP v3 since all V4 servers I know support it). The problem is
-finding the closest server, not sending an UDP packet and decoding the
-answer and giving up if you don't receive anything after 5 packets or so.
-I'm almost certain there is database of servers somewhere, but I just
-don't remember where (between 2 cesium clocks, one hydrogen maser, 2 GPS
-and one radio receiver I have enough references for my use at the
-telescope ;-)). I also don't know whether some people could be blocked
-from using NTP, but I don't think that it is a satisfactory solution in
-any case.
+It is simpler to have the clock of the server be phase-locked on an NTP
+server. I don't know where the bk servers are located but they almost
+certainly have an NTP server within 100ms RTT (round-trip time). If
+paranoid, the pre-trigger script could even refuse any changeset as long
+as the local clock is not phase-locked, i.e., during the first few minutes
+after a reboot (however the ntpdate <time-server-host> which is performed
+normally during boot scripts to initially set the clock before starting
+the NTP daemon should be more than sufficient).
+
+Besides that, this is a good idea, it should only check the timestamp on
+the Changeset is not in the future (bk already ensures that timestamps
+ordering in the graph of changesets). A time well in the past is
+acceptable since a changeset or set of changesets can be pushed well after
+being done in a private tree.
+
+After this, a developer with a bad clock can either wait to push
+(if it's only a few minutes or hours in the future) or undo and redo his
+changeset(s) if his/her clock was far too much in advance.
 
 	Regards,
 	Gabriel.
