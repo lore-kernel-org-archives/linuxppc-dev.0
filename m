@@ -1,49 +1,91 @@
-To: caixupeng <edmoon@huawei.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ppcboot, ebony , change baudrate function has bug. 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 26 Nov 2002 09:44:19 +0800."
-             <001d01c294ed$569cecc0$92690b0a@DBKQW41X>
-Date: Tue, 26 Nov 2002 09:31:59 +0100
-Message-Id: <20021126083204.5EFE8C6134@atlas.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3DE33302.4070907@tataelxsi.co.in>
+Date: Tue, 26 Nov 2002 14:08:26 +0530
+From: "Omanakuttan" <omanakuttan@tataelxsi.co.in>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: ppcboot, linux , hang at the last step
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <001d01c294ed$569cecc0$92690b0a@DBKQW41X> you wrote:
->
-> when you set a new baudrate,
->
-> => setenv  baudrate 38400
-> ## Switch baudrate to 38400 bps and press ENTER ...
->
->
-> it will hang .
+caixupeng wrote:
+ > but, can you tell me the detail?
+ >
+ > Does it mean  the kernel has build in ramdisk ?
+No. The kernel does not have a built in ramdisk. but it uses the ramdisk
+image passed for modules and the like. correct me if I am wrong.
+ > or you have to give a ramdisk separately to the kernel boot args?
+initrd='ramdisk image' is the option I gave.
+I am not very much conversant with linux booting procedure, but I
+believe that the initrd image takes all the dependent modules and link
+them properly when the kernel is booting up. So even if you choose fs
+support in modular format, it will be loaded by the initrd image.
 
-It does not hang. It waits for you to switch the baudrate  and  press
-ENTER.
+ >>when I passed the initrd option into the kernel.
+ >
+ > the option is " root=/dev/ram ",  right?
+Frankly, I am not sure. someone else might be able to help you.
 
-> I find a way  to avoid it.
-> first, clear the baudrate with "setenv baudrate=xxxx"----it's wrong ,
+Thanks and regards,
+Om.
 
-This is an ugly hack,and strongly discouraged.
+caixupeng wrote:
+ > very very thanks.
+ >
+ > but, can you tell me the detail?
+ >
+ > I didn't choose advanced partion features.
+ >
+ > and I chose ext2 fs support, and initrd support too.
+ >
+ > there is a size of ramdisk set in linux config,
+ >
+ > Does it mean  the kernel has build in ramdisk ?
+ > or you have to give a ramdisk separately to the kernel boot args?
+ >
+ >
+ >>when I passed the initrd option into the kernel.
+ >
+ > the option is " root=/dev/ram ",  right?
+ >
+ > thank you very much!
+ >
+ >             edmoon
+ >
+ > ----- Original Message -----
+ > From: "Omanakuttan" <omanakuttan@tataelxsi.co.in>
+ > To: "caixupeng" <edmoon@huawei.com>
+ > Sent: Tuesday, November 26, 2002 1:03 PM
+ > Subject: Re: ppcboot, linux , hang at the last step
+ >
+ >
+ >
+ >>caixupeng wrote:
+ >>
+ >>>When I boot a linux image use "bootm ffa00000 ffb00000"
+ >>>
+ >>>VFS: Cannot open root device "" or 16:01
+ >>>Please append a correct "root=" boot option
+ >>>Kernel panic: VFS: Unable to mount root fs on 16:01
+ >>>
+ >>>I have set the "bootargs=root=/dev/ram"
+ >>
+ >>I faced the same problem, not on ebony.
+ >>My configuration was wrong.
+ >>1. i did not compile in the advanced partition features and consequently
+ >>kernel could not recognize my hda.
+ >>2. The problem still persisted. I found out the file system support was
+ >>absent. I compiled ext2 fs support into the kernel and tried.
+ >>3. I had to create an initrd image using mkinitrd, and all worked fine
+ >>when I passed the initrd option into the kernel.
+ >>
+ >>HTH.
+ >>Om.
+ >>
+ >
+ >
 
-The way the baudrate change is implemented in PPCBoot is  intentional
--  it prevents you to enter a baudrate which you cannot use with your
-terminal. If you cannot type the  enter  and  the  "saveenv"  command
-necessary to store the new baudrate permanently, you can always reset
-the board ans it will come up with the old, working baudrate.
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-For every problem there is one solution which is  simple,  neat,  and
-wrong.                                                - H. L. Mencken
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
