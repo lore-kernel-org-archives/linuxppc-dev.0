@@ -1,33 +1,39 @@
-Date: Wed, 24 Oct 2001 09:21:19 +0200 (CEST)
-From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-	Giuliano Pochini <pochini@shiny.it>, linuxppc-dev@lists.linuxppc.org,
-	Hollis Blanchard <hollis-lists@austin.rr.com>,
-	Tom Rini <trini@kernel.crashing.org>,
-	Martin Costabel <costabel@wanadoo.fr>
-Subject: Re: hfs cdrom broken in 2.4.13pre
-In-Reply-To: <E15w8U2-0000yo-00@the-village.bc.nu>
-Message-ID: <Pine.LNX.4.10.10110240916230.17136-100000@zirkon.biophys.uni-duesseldorf.de>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Derrik Pates <dpates@dsdk12.net>
+Cc: Dave Ray <g4tinker@yahoo.com>, <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Sound on G4 tower, success 
+Date: Wed, 24 Oct 2001 12:18:43 +0200
+Message-Id: <20011024101843.30384@smtp.adsl.oleane.com>
+In-Reply-To: <Pine.LNX.4.33.0110232014430.17119-100000@andromeda.dsdk12.net>
+References: <Pine.LNX.4.33.0110232014430.17119-100000@andromeda.dsdk12.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > kernel at all times, right? Makes it impossibe to build a kernel without
-> > loopback, or with loopback as a module? Am I missing something still?
 >
-> You would need loopback in kernel or as a module. That isnt a big problem
+>Yeah. Apparently there's some weird magic crap that you have to do to make
+>the internal speaker actually work. Far as I know, no one's decoded how to
+>actually make it work in Linux, and no one seems overly interested in
+>figuring out how to anyway (since the internal speaker isn't anything
+>startling sound-quality-wise anyhow).
+>
+>> regardless of whether a plug is connected. Is this a
+>> bug? (Don't get me wrong, I'm delighted that it
+>> works!)
+>
+>No, as I noted above, it's not a bug, it's just something we don't yet
+>know how to control, and no one's felt it pressing to figure it out (and
+>the lack of documentation on it would make it something of a task to
+>figure out).
 
-And whatever your root filesystem, it better not rely on loopback for any
-blocksize mangling. That's what I'm queasy about, mostly (plus the option
-to build kernels without any loopback support, in case anyone wants that).
+Well, I think I know how to control it. It's just that I don't have
+the HW to test on ;)
 
-I'm sure that's been hashed out in excruciating detail, and someone's
-thought of it.
+I'll try to hack something soon.
 
-	Michael
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
