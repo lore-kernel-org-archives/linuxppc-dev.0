@@ -1,21 +1,19 @@
-Return-Path: <sneakums@zork.net>
-Received: from zork.zork.net (zork.zork.net [64.81.246.102])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2E70E2BE83
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Nov 2004 05:36:21 +1100 (EST)
+Return-Path: <michel@daenzer.net>
+Received: from mail1.ati.com (mail1.ati.com [209.50.91.165])
+	by ozlabs.org (Postfix) with ESMTP id 032E62BDF2
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Nov 2004 08:20:44 +1100 (EST)
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
 To: Keith Conger <keith.conger@gmail.com>
+In-Reply-To: <4517b8e04112208383cc9b24c@mail.gmail.com>
 References: <1100847411.25521.42.camel@gaston>
 	<1100852423.3855.2.camel@gaston> <1101083578.13597.5.camel@gaston>
 	<6ullcuggfr.fsf@zork.zork.net>
 	<4517b8e04112208383cc9b24c@mail.gmail.com>
-From: Sean Neakums <sneakums@zork.net>
-Date: Mon, 22 Nov 2004 18:36:02 +0000
-In-Reply-To: <4517b8e04112208383cc9b24c@mail.gmail.com> (Keith Conger's
-	message of "Mon, 22 Nov 2004 11:38:09 -0500")
-Message-ID: <6uzn19g299.fsf@zork.zork.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 22 Nov 2004 16:13:36 -0500
+Message-Id: <1101158016.1623.18.camel@admin.tel.thor.asgaard.local>
+Mime-Version: 1.0
+Sender: Michel Daenzer <michel@daenzer.net>
 Cc: gentoo-ppc-user@gentoo.org,
 	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>,
 	linuxppc-dev list <linuxppc-dev@ozlabs.org>
@@ -29,14 +27,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Keith Conger <keith.conger@gmail.com> writes:
-
+On Mon, 2004-11-22 at 11:38 -0500, Keith Conger wrote:
+>=20
 > Works great here also (15" 1GHz PB). One issue which may be unrelated
 > I have some sound issues. For instance one a sound is played it sounds
 > fine but if a sound is played right after its volume is extremely low.
 > But with headphones this doesn't occur.
 
-I have a similar problem post-resume -- sound from the speakers is
-very quiet (although it seems to be louder at the very beginning) and
-I had to plug and re-plug the headphones to get sound from them.  I
-tried unloading and reloading snd_powermac, to no avail.
+Make sure that DRC is disabled or that it's set up to operate on a
+reasonable (i.e. non-empty :) range.
+
+
+--=20
+Earthling Michel D=C3=A4nzer      |     Debian (powerpc), X and DRI develop=
+er
+Libre software enthusiast    |   http://svcs.affero.net/rm.php?r=3Ddaenzer
