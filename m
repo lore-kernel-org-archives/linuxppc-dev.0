@@ -1,47 +1,33 @@
-Date: Wed, 26 May 1999 14:50:32 -0400 (EDT)
+Date: Wed, 26 May 1999 15:03:56 -0400 (EDT)
 From: Tom Rini <tmrini@ntplx.net>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: ioctl 0x7667 in Xpmac
-In-Reply-To: <Pine.LNX.4.10.9905261743420.7373-100000@mercator.cs.kuleuven.ac.be>
-Message-ID: <Pine.LNX.4.05.9905261445580.26691-100000@pc.wackyland.com>
+To: Elliot Lee <sopwith@redhat.com>
+cc: jpgarcia@execpc.com, linuxppc-dev@lists.linuxppc.org
+Subject: Re: endian patches to esound, audiofile, x11amp_beta for pbG3
+In-Reply-To: <Pine.LNX.4.10.9905261102420.9719-100000@lacrosse.corp.redhat.com>
+Message-ID: <Pine.LNX.4.05.9905261502380.26691-100000@pc.wackyland.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 26 May 1999, Geert Uytterhoeven wrote:
+On Wed, 26 May 1999, Elliot Lee wrote:
 
-> On Wed, 26 May 1999, Tom Rini wrote:
-> > It's easy enough to do, but doesn't APUS have a framebuffer? (Currently
-> > if you don't have a readable /dev/fb0, it assumes MkL and uses Xpmac.  A
-> > more elegant fix would be to check machine type and use that to install
-> > Xbh on PReP and ??? on APUS)
+> The audiofile in GNOME CVS is supposed to have a lot of endianness fixes
+> already - you may want to try it. (Not sure how binary compatible it is
+> with 0.1.6 though).
 > 
-> Hmmm... APUS does have a frame buffer, but it doesn't have the Pmac
-> compatibility mode. Since lots of people are complaining, it looks like it does
-> install Xpmac instead of XF68_FBDev on APUS.
+> Anyways, my main point is that you really need to get these patches to the
+> original authors of the respective packages so that they can be
+> integrated. The audiofile author is michael@68k.org. The esound author is
+> ericmit@ix.netcom.com (that e-mail address reportedly no longer works
+> though - perhaps try getting things through raster@redhat.com instead).
 
-Ok, now that is odd.  I assume when the installer is being run, it says
-Name: Xpmac when doing the inital X setup?  The code that's failing would
-seem to be:
-+#ifdef __powerpc__
-+    int i, fh, rc = 0;
-+    const char * name = "/dev/fb0";
-+    char *server_name = "XF68_FBDev";
-+
-+    if (!(fh = open(name, O_RDONLY)))
-+       rc = 2; /* Failure */
-+
-+    if (!rc && ioctl(fh, FBIOGET_FSCREENINFO, &fix))
-+       rc = 2; /* Failure */
-
-Which means no frame buffer, and most likely MkL.  We should begin working
-on the installer changes to support APUS in a day or two.  Mind sending me
-privatly the emails of a few people that would wish to test things out?
-(or would the linux-apus list be interested?  I could subscribe for a
-little while.. :))
+The main reason most of these programs don't "work" right now is they were
+fixed at one point.  The dmasound driver used to be in big endian mode.
+Now, it's in LE mode and all the old patches need to be reversed on LPPC,
+but not for MkL.  It can be a bit messy.  But, there is a semi-elegant fix
+for it all.
 
 ---
 Tom Rini (TR1265)
