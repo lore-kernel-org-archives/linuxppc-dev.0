@@ -1,15 +1,15 @@
-Return-Path: <domen@coderock.org>
-Received: from trashy.coderock.org (coderock.org [193.77.147.115])
-	by ozlabs.org (Postfix) with ESMTP id 96F852BDB5
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Dec 2004 06:56:40 +1100 (EST)
-Date: Wed, 29 Dec 2004 20:53:09 +0100
-From: Domen Puncer <domen@coderock.org>
-To: paulus@samba.org
-Message-ID: <20041229195309.GB25967@nd47.coderock.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
-Subject: [patch] ppc: remove casts in motorola ethernet drivers
+Return-Path: <wjw@ndsc.com.cn>
+Received: from mail.ndsc.com.cn (unknown [219.150.144.124])
+	by ozlabs.org (Postfix) with SMTP id 9F61A2BDB5
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Dec 2004 19:28:15 +1100 (EST)
+Message-ID: <002c01c4ee47$254516b0$c7c8a8c0@LocalHost>
+From: =?utf-8?B?Smlud3UgV2VpXCjprY/ov5vmraZcKQ==?= <wjw@mail.ndsc.com.cn>
+To: <linuxppc-dev@ozlabs.org>
+Date: Thu, 30 Dec 2004 16:11:20 +0800
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0029_01C4EE8A.33639BC0"
+Subject: help me for: Oops: kernel access of bad area, sig: 11 
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,281 +19,197 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Remove (void *) pointer casts.
+This is a multi-part message in MIME format.
 
+------=_NextPart_000_0029_01C4EE8A.33639BC0
+Content-Type: text/plain;
+	charset="utf-8"
+Content-Transfer-Encoding: base64
 
- arch/ppc/8260_io/enet.c     |   12 ++++++------
- arch/ppc/8260_io/fcc_enet.c |   28 ++++++++++++++--------------
- arch/ppc/8xx_io/enet.c      |   12 ++++++------
- arch/ppc/8xx_io/fec.c       |    6 +++---
- 4 files changed, 29 insertions(+), 29 deletions(-)
+DQpEZWFyLA0KDQogICAgSGVyZSBpcyBteSBwcm9ibGVtcywNCg0KICAgICBPdXIgZW52aXJvbm1l
+dCBpczoNCiAgICBPUzogaGFyZGhhdCBMaW51eCAyLjENCiAgICBwbGF0Zm9ybTogcHBjIGxvcGVj
+IDc0MTANCiAgICB1bmFtZSAtciA6IDIuNC4xN19tdmwyMS1sb3BlYw0KICAgDQogICBXaGVuIHdl
+IHBvcnQgdGhlIHBwcF9nZW5lcmljLmMoV2hpY2ggaXMgYSBrZXJuZWwgbW9kdWxlKSwgYW5kIHRo
+ZSBwcm9ncmFtIGNhbiBiZSBleGVjdXRlZCBvbiBob3N0KHJlZGhhdCA3LjIpLiBIb3dlcnZlciwg
+d2hlbiB3ZSBjb21wbGllZCBpdCBhbmQgcnVubmVkIG9uIHBwYyBsb3BlYzc0MTAgKHRhcmdldCkg
+YnkgdGhlIGNyb3NzLWRldmVsb3BlbW50IGVudmlvcm5tZW50LCB3aGljaCBjYW4gcmVzdWx0IGlu
+IHRoZSBtYWNoaW5lIGRvd24sIGFuZCB3aGVuIHdlaSByZXR1cm4gaW4gdGhlIGJlZ2lubmluZyBv
+ZiBwcHBfeG1pdF9wcm9jZXNzKCksIHRoZSBtYWNoaW5lIGlzIG5vdCBkb3duIGJ1dCB0aGUgZm9s
+bG93aW5nIG1hc3NhZ2VzIGlzIHByaW50ZWQgaW4gdGhlIC92YXIvbG9nL21hc3NhZ2VzOg0KDQpE
+ZWMgMjkgMTM6NTI6MzEgMTAga2VybmVsOiBJTiBwcHBfZ2VuZXJpYy5jKHBwcF93cml0ZSgpKTpj
+YWxsZWQgZnVuY3Rpb24gcHBwX3dyaXRlICgpIDAgIHRpbWVzISANCkRlYyAyOSAxMzo1MjozMSAx
+MCBrZXJuZWw6IEluIHBwcF9nZWJlcmljLmMocHBwX2ZpbGVfd3JpdGUoKSk6IHRoZSBzZW5kIGRl
+dmljZSBraW5kIChwZi0+a2luZCwxPUlOVEVSRkFDRSwyPUNIQU5ORUwpaXMgMSANCkRlYyAyOSAx
+Mzo1MjozMSAxMCBrZXJuZWw6IEluIHBwcF9nZWJlcmljLmMocHBwX2ZpbGVfd3JpdGUoKSk6QWZ0
+ZXIgY29weV9mcm9tX3VzZXIsIHRoZSBkYXRhIGZyb20gcHBwZCB0byBrZXJuZWwgc3BhY2UgaXMg
+OiANCkRlYyAyOSAxMzo1MjozMSAxMCBrZXJuZWw6ICANCkRlYyAyOSAxMzo1MjozMSAxMCBrZXJu
+ZWw6IGMwIDIxIDAxIDAxIDAwIDBhIDAyIDA2IDAwIDAwIDAwIDAwICANCkRlYyAyOSAxMzo1Mjoz
+MSAxMCBrZXJuZWw6IElOIHBwcF9HRU5FUklDLmMgOnBwcF94bWl0X3Byb2Nlc3MoKSxpbnRvIHRo
+aXMgZnVuY3Rpb24gIA0KRGVjIDI5IDEzOjUyOjMxIDEwIGtlcm5lbDogSU4gcHBwX0dFTkVSSUMu
+YyA6cHBwX3htaXRfcHJvY2VzcygpLHBwcC0+eG1pdF9wZW5kaW5nIGlzIDAgIA0KRGVjIDI5IDEz
+OjUyOjMyIDEwIGtlcm5lbDogT29wczoga2VybmVsIGFjY2VzcyBvZiBiYWQgYXJlYSwgc2lnOiAx
+MSANCkRlYyAyOSAxMzo1MjozMiAxMCBrZXJuZWw6IE5JUDogQzAwMTJGNEMgWEVSOiAwMDAwMDAw
+MCBMUjogQzAwMTJGMzQgU1A6IERGNjFGRTQwIFJFR1M6IGRmNjFmZDkwIFRSQVA6IDAzMDAgICAg
+VGFpbnRlZDogUCAgDQpEZWMgMjkgMTM6NTI6MzIgMTAga2VybmVsOiBNU1I6IDAwMDAxMDMyIEVF
+OiAwIFBSOiAwIEZQOiAwIE1FOiAxIElSL0RSOiAxMSANCkRlYyAyOSAxMzo1MjozMiAxMCBrZXJu
+ZWw6IERBUjogMDAwMDAwMDQsIERTSVNSOiA0MjAwMDAwMCANCkRlYyAyOSAxMzo1MjozMiAxMCBr
+ZXJuZWw6IFRBU0sgPSBkZjYxZTAwMFsxMDJdICdwcHBkJyBMYXN0IHN5c2NhbGw6IDE0MiAgDQpE
+ZWMgMjkgMTM6NTI6MzIgMTAga2VybmVsOiBsYXN0IG1hdGggZGY2MWUwMDAgbGFzdCBhbHRpdmVj
+IGRmNjFlMDAwIA0KRGVjIDI5IDEzOjUyOjMyIDEwIGtlcm5lbDogR1BSMDA6IDAwMDAxMDMyIERG
+NjFGRTQwIERGNjFFMDAwIDAwMDAwMDAxIDAwMDA5MDMyIDAwMDAwMEE1IERGREJFREU0IDAwMDFG
+NjE4ICANCkRlYyAyOSAxMzo1MjozMiAxMCBrZXJuZWw6IEdQUjA4OiAwMDAwMDAzQyAwMDAwMDAw
+MCBERjYxOTAwOCBERjYxOTAxNCA4NDI0NDg2MiAxMDA0QkUyOCAxMDA0MDAwMCAxMDA0MDAwMCAg
+DQpEZWMgMjkgMTM6NTI6MzIgMTAga2VybmVsOiBHUFIxNjogMTAwNDAwMDAgMTAwNDAwMDAgMTAw
+NDAwMDAgMTAwNDAwMDAgMDAwMDkwMzIgREY2MUZFRjggREY2MUZFOTggMDAwMDAxMkMgIA0KRGVj
+IDI5IDEzOjUyOjMyIDEwIGtlcm5lbDogR1BSMjQ6IDAwMDAwMDA2IDAwMDAwMDAwIDAwMDAwMTQ1
+IERGNjFGRUQ4IEMwMkIwOTg0IERGNjE5MDBDIERGN0EzNUUwIERGNjE5MDAwICANCkRlYyAyOSAx
+Mzo1MjozMiAxMCBrZXJuZWw6IENhbGwgYmFja3RyYWNlOiAgDQpEZWMgMjkgMTM6NTI6MzIgMTAg
+a2VybmVsOiBDMDAzNTEyOCBDMDA1MTZFMCBFMTAwMzc5QyBDMDA1MUEyOCBDMDA1MUQzMCBDMDAw
+OUZEMCBDMDAwNDA5QyAgDQpEZWMgMjkgMTM6NTI6MzIgMTAga2VybmVsOiAxMDAxQ0JBOCAxMDAw
+NUVDMCAxMDAwNTlCOCAwRkU2OTYyOCAwMDAwMDAwMCAgDQoNCg0KSG93IHRvIGRlYnVnIGl0IGFu
+ZCBjb3JyZWN0ZSBpdCAsIFBsZXNlIGhlbHAgbWUhDQoNClRoYW5rcyBhIGxvdCENCi0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCg0KIEJlc3QgUmVnYXJkcw0KIA0K
+IERyLiBKaW53dSBXZWkNCiANCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQogDQpOYXRpb25hbCBEaWdpdGFsIFN3aXRjaGlu
+ZyBTeXN0ZW0gDQpFbmdpbmVlcmluZyAmIFRlY2hub2xvZ3kgUiZEIENlbnRlciAoTkRTQyksDQpK
+aWFueHVlIHN0cmVldCA3IywgQm94OjEwMDEsIE5vLjc4MywNClpoZW5nemhvdSwgICA0NTAwMDIu
+DQpIZW5hbiBwcm92aW5jZSwgUC5SLiBDaGluYS4NCiANClRlbDogKzg2LTM3MS0zNTMyODczDQoN
+CkZheDogKzg2LTM3MS0zOTQxNzAwDQpFbWFpbDogd2p3QG1haWwubmRzYy5jb20uY24NCg0KICAg
+ICAgICAgIG9yIGJzdGFwMjAwMEB5YWhvby5jb20uY24NCg0KIA0K
 
+------=_NextPart_000_0029_01C4EE8A.33639BC0
+Content-Type: text/html;
+	charset="utf-8"
+Content-Transfer-Encoding: base64
 
-Signed-off-by: Domen Puncer <domen@coderock.org>
+77u/PCFET0NUWVBFIEhUTUwgUFVCTElDICItLy9XM0MvL0RURCBIVE1MIDQuMCBUcmFuc2l0aW9u
+YWwvL0VOIj4NCjxIVE1MIHhtbG5zOnYgPSAidXJuOnNjaGVtYXMtbWljcm9zb2Z0LWNvbTp2bWwi
+IHhtbG5zOm8gPSANCiJ1cm46c2NoZW1hcy1taWNyb3NvZnQtY29tOm9mZmljZTpvZmZpY2UiIHht
+bG5zOncgPSANCiJ1cm46c2NoZW1hcy1taWNyb3NvZnQtY29tOm9mZmljZTp3b3JkIj48SEVBRD48
+QkFTRSANCmhyZWY9ImZpbGU6Ly9DOlxQcm9ncmFtIEZpbGVzXENvbW1vbiBGaWxlc1xNaWNyb3Nv
+ZnQgU2hhcmVkXFN0YXRpb25lcnlcIj4NCjxNRVRBIGh0dHAtZXF1aXY9Q29udGVudC1UeXBlIGNv
+bnRlbnQ9InRleHQvaHRtbDsgY2hhcnNldD11dGYtOCI+DQo8TUVUQSBjb250ZW50PVdvcmQuRG9j
+dW1lbnQgbmFtZT1Qcm9nSWQ+DQo8TUVUQSBjb250ZW50PSJNU0hUTUwgNi4wMC4yODAwLjE0NTgi
+IG5hbWU9R0VORVJBVE9SPg0KPE1FVEEgY29udGVudD0iTWljcm9zb2Z0IFdvcmQgOSIgbmFtZT1P
+cmlnaW5hdG9yPjxMSU5LIA0KaHJlZj0iLi/prY/ov5vmrabnmoTkv6HnurguZmlsZXMvZmlsZWxp
+c3QueG1sIiByZWw9RmlsZS1MaXN0PjwhLS1baWYgZ3RlIG1zbyA5XT48eG1sPg0KIDxvOkRvY3Vt
+ZW50UHJvcGVydGllcz4NCiAgPG86QXV0aG9yPkNvbW1vbjwvbzpBdXRob3I+DQogIDxvOkxhc3RB
+dXRob3I+Q29tbW9uPC9vOkxhc3RBdXRob3I+DQogIDxvOlJldmlzaW9uPjM8L286UmV2aXNpb24+
+DQogIDxvOlRvdGFsVGltZT42PC9vOlRvdGFsVGltZT4NCiAgPG86Q3JlYXRlZD4yMDA0LTA4LTMx
+VDA5OjE4OjAwWjwvbzpDcmVhdGVkPg0KICA8bzpMYXN0U2F2ZWQ+MjAwNC0wOC0zMVQwOToyNjow
+MFo8L286TGFzdFNhdmVkPg0KICA8bzpQYWdlcz4xPC9vOlBhZ2VzPg0KICA8bzpXb3Jkcz43Mzwv
+bzpXb3Jkcz4NCiAgPG86Q2hhcmFjdGVycz40MTk8L286Q2hhcmFjdGVycz4NCiAgPG86Q29tcGFu
+eT5IS1pKWjwvbzpDb21wYW55Pg0KICA8bzpMaW5lcz4zPC9vOkxpbmVzPg0KICA8bzpQYXJhZ3Jh
+cGhzPjE8L286UGFyYWdyYXBocz4NCiAgPG86Q2hhcmFjdGVyc1dpdGhTcGFjZXM+NTE0PC9vOkNo
+YXJhY3RlcnNXaXRoU3BhY2VzPg0KICA8bzpWZXJzaW9uPjkuMjgxMjwvbzpWZXJzaW9uPg0KIDwv
+bzpEb2N1bWVudFByb3BlcnRpZXM+DQo8L3htbD48IVtlbmRpZl0tLT48IS0tW2lmIGd0ZSBtc28g
+OV0+PHhtbD4NCiA8dzpXb3JkRG9jdW1lbnQ+DQogIDx3OkRyYXdpbmdHcmlkVmVydGljYWxTcGFj
+aW5nPjcuOCAmIzMwOTE3OzwvdzpEcmF3aW5nR3JpZFZlcnRpY2FsU3BhY2luZz4NCiAgPHc6Q29t
+cGF0aWJpbGl0eT4NCiAgIDx3OlVzZUZFTGF5b3V0Lz4NCiAgPC93OkNvbXBhdGliaWxpdHk+DQog
+PC93OldvcmREb2N1bWVudD4NCjwveG1sPjwhW2VuZGlmXS0tPg0KPFNUWUxFPkBmb250LWZhY2Ug
+ew0KCWZvbnQtZmFtaWx5OiBTaW1TdW47DQp9DQpAZm9udC1mYWNlIHsNCglmb250LWZhbWlseTog
+U2ltU3VuOw0KfQ0KQHBhZ2UgIHttc28tcGFnZS1ib3JkZXItc3Vycm91bmQtaGVhZGVyOiBubzsg
+bXNvLXBhZ2UtYm9yZGVyLXN1cnJvdW5kLWZvb3Rlcjogbm87IH0NCkBwYWdlIFNlY3Rpb24xIHtz
+aXplOiA1OTUuM3B0IDg0MS45cHQ7IG1hcmdpbjogNzIuMHB0IDkwLjBwdCA3Mi4wcHQgOTAuMHB0
+OyBtc28taGVhZGVyLW1hcmdpbjogNDIuNTVwdDsgbXNvLWZvb3Rlci1tYXJnaW46IDQ5LjZwdDsg
+bXNvLXBhcGVyLXNvdXJjZTogMDsgfQ0KQk9EWSB7DQoJQkFDS0dST1VORC1QT1NJVElPTjogMCUg
+MCU7IENPTE9SOiAjMDAwMDAwOyBCQUNLR1JPVU5ELVJFUEVBVDogbm8tcmVwZWF0DQp9DQpQLk1z
+b05vcm1hbCB7DQoJRk9OVC1TSVpFOiAxMnB0OyBNQVJHSU46IDBjbSAwY20gMHB0OyBGT05ULUZB
+TUlMWTogIlRpbWVzIE5ldyBSb21hbiI7IG1zby1zdHlsZS1wYXJlbnQ6ICIiOyBtc28tcGFnaW5h
+dGlvbjogd2lkb3ctb3JwaGFuOyBtc28tZmFyZWFzdC1mb250LWZhbWlseTogU2ltU3VuDQp9DQpM
+SS5Nc29Ob3JtYWwgew0KCUZPTlQtU0laRTogMTJwdDsgTUFSR0lOOiAwY20gMGNtIDBwdDsgRk9O
+VC1GQU1JTFk6ICJUaW1lcyBOZXcgUm9tYW4iOyBtc28tc3R5bGUtcGFyZW50OiAiIjsgbXNvLXBh
+Z2luYXRpb246IHdpZG93LW9ycGhhbjsgbXNvLWZhcmVhc3QtZm9udC1mYW1pbHk6IFNpbVN1bg0K
+fQ0KRElWLk1zb05vcm1hbCB7DQoJRk9OVC1TSVpFOiAxMnB0OyBNQVJHSU46IDBjbSAwY20gMHB0
+OyBGT05ULUZBTUlMWTogIlRpbWVzIE5ldyBSb21hbiI7IG1zby1zdHlsZS1wYXJlbnQ6ICIiOyBt
+c28tcGFnaW5hdGlvbjogd2lkb3ctb3JwaGFuOyBtc28tZmFyZWFzdC1mb250LWZhbWlseTogU2lt
+U3VuDQp9DQpBOmxpbmsgew0KCUNPTE9SOiBibHVlOyBURVhULURFQ09SQVRJT046IHVuZGVybGlu
+ZTsgdGV4dC11bmRlcmxpbmU6IHNpbmdsZQ0KfQ0KU1BBTi5Nc29IeXBlcmxpbmsgew0KCUNPTE9S
+OiBibHVlOyBURVhULURFQ09SQVRJT046IHVuZGVybGluZTsgdGV4dC11bmRlcmxpbmU6IHNpbmds
+ZQ0KfQ0KQTp2aXNpdGVkIHsNCglDT0xPUjogcHVycGxlOyBURVhULURFQ09SQVRJT046IHVuZGVy
+bGluZTsgdGV4dC11bmRlcmxpbmU6IHNpbmdsZQ0KfQ0KU1BBTi5Nc29IeXBlcmxpbmtGb2xsb3dl
+ZCB7DQoJQ09MT1I6IHB1cnBsZTsgVEVYVC1ERUNPUkFUSU9OOiB1bmRlcmxpbmU7IHRleHQtdW5k
+ZXJsaW5lOiBzaW5nbGUNCn0NCkRJVi5TZWN0aW9uMSB7DQoJcGFnZTogU2VjdGlvbjENCn0NCjwv
+U1RZTEU+DQo8IS0tW2lmIGd0ZSBtc28gOV0+PHhtbD4NCiA8bzpzaGFwZWRlZmF1bHRzIHY6ZXh0
+PSJlZGl0IiBzcGlkbWF4PSIxMDI3Ii8+DQo8L3htbD48IVtlbmRpZl0tLT48IS0tW2lmIGd0ZSBt
+c28gOV0+PHhtbD4NCiA8bzpzaGFwZWxheW91dCB2OmV4dD0iZWRpdCI+DQogIDxvOmlkbWFwIHY6
+ZXh0PSJlZGl0IiBkYXRhPSIxIi8+DQogPC9vOnNoYXBlbGF5b3V0PjwveG1sPjwhW2VuZGlmXS0t
+PjwvSEVBRD4NCjxCT0RZIGxhbmc9WkgtQ04gc3R5bGU9InRhYi1pbnRlcnZhbDogMjEuMHB0IiB2
+TGluaz1wdXJwbGUgbGluaz1ibHVlIA0KYmdDb2xvcj0jZmZmZmZmPg0KPERJVj48Rk9OVCBmYWNl
+PeWui+S9kyBzaXplPTI+PC9GT05UPiZuYnNwOzwvRElWPg0KPERJViBzdHlsZT0iRk9OVDogOXB0
+IOWui+S9kyI+DQo8RElWPkRlYXIsPC9ESVY+PC9ESVY+DQo8RElWPiZuYnNwOzwvRElWPg0KPERJ
+Vj4mbmJzcDsmbmJzcDsmbmJzcDsgSGVyZSBpcyBteSBwcm9ibGVtcyw8L0RJVj4NCjxESVY+Jm5i
+c3A7PC9ESVY+DQo8RElWPiZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwO091ciBlbnZpcm9u
+bWV0IGlzOjwvRElWPg0KPERJVj4mbmJzcDsmbmJzcDsmbmJzcDsgT1M6IGhhcmRoYXQgTGludXgg
+Mi4xPC9ESVY+DQo8RElWPiZuYnNwOyZuYnNwOyZuYnNwOyBwbGF0Zm9ybTogcHBjIGxvcGVjIDc0
+MTA8L0RJVj4NCjxESVY+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7dW5hbWUgLXIgOiA8Rk9OVCAN
+CmZhY2U9QXJpYWw+Mi40LjE3X212bDIxLWxvcGVjPC9GT05UPjwvRElWPg0KPERJVj4mbmJzcDsm
+bmJzcDsgPC9ESVY+DQo8RElWPiZuYnNwOyZuYnNwOyBXaGVuIHdlIHBvcnQgdGhlIHBwcF9nZW5l
+cmljLmMoV2hpY2ggaXMgYSBrZXJuZWwgbW9kdWxlKSwgYW5kIA0KdGhlIHByb2dyYW0gY2FuIGJl
+IGV4ZWN1dGVkIG9uIGhvc3QocmVkaGF0IDcuMikuIEhvd2VydmVyLCB3aGVuIHdlIGNvbXBsaWVk
+IGl0IA0KYW5kIHJ1bm5lZCBvbiBwcGMgbG9wZWM3NDEwICh0YXJnZXQpIGJ5IHRoZSBjcm9zcy1k
+ZXZlbG9wZW1udCBlbnZpb3JubWVudCwgd2hpY2ggDQpjYW4gcmVzdWx0IGluIHRoZSBtYWNoaW5l
+IGRvd24sIGFuZCB3aGVuIHdlaSByZXR1cm4gaW4gdGhlIGJlZ2lubmluZyBvZiANCnBwcF94bWl0
+X3Byb2Nlc3MoKSwgdGhlIG1hY2hpbmUgaXMgbm90IGRvd24gYnV0IHRoZSBmb2xsb3dpbmcgbWFz
+c2FnZXMgaXMgDQpwcmludGVkIGluIHRoZSAvdmFyL2xvZy9tYXNzYWdlczo8L0RJVj4NCjxESVY+
+PEVNPjwvRU0+Jm5ic3A7PC9ESVY+DQo8RElWPjxFTT5EZWMgMjkgMTM6NTI6MzEgMTAga2VybmVs
+OiBJTiBwcHBfZ2VuZXJpYy5jKHBwcF93cml0ZSgpKTpjYWxsZWQgDQpmdW5jdGlvbiBwcHBfd3Jp
+dGUgKCkgMCZuYnNwOyB0aW1lcyEgPEJSPkRlYyAyOSAxMzo1MjozMSAxMCBrZXJuZWw6IEluIA0K
+cHBwX2dlYmVyaWMuYyhwcHBfZmlsZV93cml0ZSgpKTogdGhlIHNlbmQgZGV2aWNlIGtpbmQgDQoo
+cGYtJmd0O2tpbmQsMT1JTlRFUkZBQ0UsMj1DSEFOTkVMKWlzIDEgPEJSPkRlYyAyOSAxMzo1Mjoz
+MSAxMCBrZXJuZWw6IEluIA0KcHBwX2dlYmVyaWMuYyhwcHBfZmlsZV93cml0ZSgpKTpBZnRlciBj
+b3B5X2Zyb21fdXNlciwgdGhlIGRhdGEgZnJvbSBwcHBkIHRvIA0Ka2VybmVsIHNwYWNlIGlzIDog
+PEJSPkRlYyAyOSAxMzo1MjozMSAxMCBrZXJuZWw6Jm5ic3A7IDxCUj5EZWMgMjkgMTM6NTI6MzEg
+MTAgDQprZXJuZWw6IGMwIDIxIDAxIDAxIDAwIDBhIDAyIDA2IDAwIDAwIDAwIDAwJm5ic3A7IDxC
+Uj5EZWMgMjkgMTM6NTI6MzEgMTAga2VybmVsOiANCklOIHBwcF9HRU5FUklDLmMgOnBwcF94bWl0
+X3Byb2Nlc3MoKSxpbnRvIHRoaXMgZnVuY3Rpb24mbmJzcDsgPEJSPkRlYyAyOSANCjEzOjUyOjMx
+IDEwIGtlcm5lbDogSU4gcHBwX0dFTkVSSUMuYyA6cHBwX3htaXRfcHJvY2VzcygpLHBwcC0mZ3Q7
+eG1pdF9wZW5kaW5nIGlzIA0KMCZuYnNwOyA8QlI+RGVjIDI5IDEzOjUyOjMyIDEwIGtlcm5lbDog
+T29wczoga2VybmVsIGFjY2VzcyBvZiBiYWQgYXJlYSwgc2lnOiAxMSANCjxCUj5EZWMgMjkgMTM6
+NTI6MzIgMTAga2VybmVsOiBOSVA6IEMwMDEyRjRDIFhFUjogMDAwMDAwMDAgTFI6IEMwMDEyRjM0
+IFNQOiANCkRGNjFGRTQwIFJFR1M6IGRmNjFmZDkwIFRSQVA6IDAzMDAmbmJzcDsmbmJzcDsmbmJz
+cDsgVGFpbnRlZDogUCZuYnNwOyA8QlI+RGVjIDI5IA0KMTM6NTI6MzIgMTAga2VybmVsOiBNU1I6
+IDAwMDAxMDMyIEVFOiAwIFBSOiAwIEZQOiAwIE1FOiAxIElSL0RSOiAxMSA8QlI+RGVjIDI5IA0K
+MTM6NTI6MzIgMTAga2VybmVsOiBEQVI6IDAwMDAwMDA0LCBEU0lTUjogNDIwMDAwMDAgPEJSPkRl
+YyAyOSAxMzo1MjozMiAxMCANCmtlcm5lbDogVEFTSyA9IGRmNjFlMDAwWzEwMl0gJ3BwcGQnIExh
+c3Qgc3lzY2FsbDogMTQyJm5ic3A7IDxCUj5EZWMgMjkgMTM6NTI6MzIgDQoxMCBrZXJuZWw6IGxh
+c3QgbWF0aCBkZjYxZTAwMCBsYXN0IGFsdGl2ZWMgZGY2MWUwMDAgPEJSPkRlYyAyOSAxMzo1Mjoz
+MiAxMCANCmtlcm5lbDogR1BSMDA6IDAwMDAxMDMyIERGNjFGRTQwIERGNjFFMDAwIDAwMDAwMDAx
+IDAwMDA5MDMyIDAwMDAwMEE1IERGREJFREU0IA0KMDAwMUY2MTgmbmJzcDsgPEJSPkRlYyAyOSAx
+Mzo1MjozMiAxMCBrZXJuZWw6IEdQUjA4OiAwMDAwMDAzQyAwMDAwMDAwMCBERjYxOTAwOCANCkRG
+NjE5MDE0IDg0MjQ0ODYyIDEwMDRCRTI4IDEwMDQwMDAwIDEwMDQwMDAwJm5ic3A7IDxCUj5EZWMg
+MjkgMTM6NTI6MzIgMTAgDQprZXJuZWw6IEdQUjE2OiAxMDA0MDAwMCAxMDA0MDAwMCAxMDA0MDAw
+MCAxMDA0MDAwMCAwMDAwOTAzMiBERjYxRkVGOCBERjYxRkU5OCANCjAwMDAwMTJDJm5ic3A7IDxC
+Uj5EZWMgMjkgMTM6NTI6MzIgMTAga2VybmVsOiBHUFIyNDogMDAwMDAwMDYgMDAwMDAwMDAgMDAw
+MDAxNDUgDQpERjYxRkVEOCBDMDJCMDk4NCBERjYxOTAwQyBERjdBMzVFMCBERjYxOTAwMCZuYnNw
+OyA8QlI+RGVjIDI5IDEzOjUyOjMyIDEwIA0Ka2VybmVsOiBDYWxsIGJhY2t0cmFjZTombmJzcDsg
+PEJSPkRlYyAyOSAxMzo1MjozMiAxMCBrZXJuZWw6IEMwMDM1MTI4IEMwMDUxNkUwIA0KRTEwMDM3
+OUMgQzAwNTFBMjggQzAwNTFEMzAgQzAwMDlGRDAgQzAwMDQwOUMmbmJzcDsgPEJSPkRlYyAyOSAx
+Mzo1MjozMiAxMCANCmtlcm5lbDogMTAwMUNCQTggMTAwMDVFQzAgMTAwMDU5QjggMEZFNjk2Mjgg
+MDAwMDAwMDA8L0VNPiZuYnNwOyA8L0RJVj4NCjxESVY+Jm5ic3A7PC9ESVY+DQo8RElWPiZuYnNw
+OzwvRElWPg0KPERJVj5Ib3cgdG8gZGVidWcgaXQgYW5kIGNvcnJlY3RlIGl0ICwgUGxlc2UgaGVs
+cCBtZSE8L0RJVj4NCjxESVY+Jm5ic3A7PC9ESVY+DQo8RElWPlRoYW5rcyBhIGxvdCE8L0RJVj4N
+CjxESVYgY2xhc3M9U2VjdGlvbjE+DQo8UCBjbGFzcz1Nc29Ob3JtYWw+PFNQQU4gDQpsYW5nPUVO
+LVVTPi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS08L1NQQU4+PC9Q
+Pg0KPFAgY2xhc3M9TXNvTm9ybWFsPjxTUEFOIGxhbmc9RU4tVVMgc3R5bGU9IkZPTlQtU0laRTog
+MTBwdCI+Jm5ic3A7QmVzdCANClJlZ2FyZHM8QlI+Jm5ic3A7PEJSPjwvU1BBTj48U1BBTiBsYW5n
+PUVOLVVTIA0Kc3R5bGU9Im1zby1iaWRpLWZvbnQtc2l6ZTogMTAuMHB0Ij4mbmJzcDtEci4gSmlu
+d3UgV2VpPC9TUEFOPjxTUEFOIGxhbmc9RU4tVVMgDQpzdHlsZT0iRk9OVC1TSVpFOiAxMHB0Ij48
+QlI+Jm5ic3A7PEJSPi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tPEJSPiZuYnNwOzxCUj5OYXRpb25hbCANCkRpZ2l0YWwgU3dp
+dGNoaW5nIFN5c3RlbSA8QlI+RW5naW5lZXJpbmcgJmFtcDsgVGVjaG5vbG9neSBSJmFtcDtEIENl
+bnRlciANCihORFNDKSw8QlI+Smlhbnh1ZSBzdHJlZXQgNyMsIEJveDoxMDAxLCBOby43ODMsPEJS
+PlpoZW5nemhvdSwmbmJzcDsmbmJzcDsgDQo0NTAwMDIuPEJSPkhlbmFuIHByb3ZpbmNlLCBQLlIu
+IENoaW5hLjxCUj4mbmJzcDs8QlI+VGVsOiANCis4Ni0zNzEtMzUzMjg3MzxvOnA+PC9vOnA+PC9T
+UEFOPjwvUD4NCjxQIGNsYXNzPU1zb05vcm1hbD48U1BBTiBsYW5nPUVOLVVTIHN0eWxlPSJGT05U
+LVNJWkU6IDEwcHQiPkZheDogDQorODYtMzcxLTM5NDE3MDA8QlI+RW1haWw6IDxBIA0KaHJlZj0i
+bWFpbHRvOndqd0BtYWlsLm5kc2MuY29tLmNuIj53andAbWFpbC5uZHNjLmNvbS5jbjwvQT48bzpw
+PjwvbzpwPjwvU1BBTj48L1A+DQo8UCBjbGFzcz1Nc29Ob3JtYWw+PFNQQU4gbGFuZz1FTi1VUyBz
+dHlsZT0iRk9OVC1TSVpFOiAxMHB0Ij48U1BBTiANCnN0eWxlPSJtc28tc3BhY2VydW46IHllcyI+
+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IA0K
+PC9TUEFOPm9yIDxBIA0KaHJlZj0ibWFpbHRvOmJzdGFwMjAwMEB5YWhvby5jb20uY24iPmJzdGFw
+MjAwMEB5YWhvby5jb20uY248L0E+PG86cD48L286cD48L1NQQU4+PC9QPg0KPFAgY2xhc3M9TXNv
+Tm9ybWFsPjxTUEFOIA0KbGFuZz1FTi1VUz48IVtpZiAhc3VwcG9ydEVtcHR5UGFyYXNdPjwhW2Vu
+ZGlmXT4mbmJzcDs8bzpwPjwvbzpwPjwvU1BBTj48L1A+PC9ESVY+PC9CT0RZPjwvSFRNTD4NCg==
 
-diff -pruNX dontdiff c/arch/ppc/8260_io/enet.c a/arch/ppc/8260_io/enet.c
---- c/arch/ppc/8260_io/enet.c	2004-12-25 15:50:14.000000000 +0100
-+++ a/arch/ppc/8260_io/enet.c	2004-12-29 20:46:26.000000000 +0100
-@@ -167,7 +167,7 @@ scc_enet_open(struct net_device *dev)
- static int
- scc_enet_start_xmit(struct sk_buff *skb, struct net_device *dev)
- {
--	struct scc_enet_private *cep = (struct scc_enet_private *)dev->priv;
-+	struct scc_enet_private *cep = dev->priv;
- 	volatile cbd_t	*bdp;
- 
- 
-@@ -238,7 +238,7 @@ scc_enet_start_xmit(struct sk_buff *skb,
- static void
- scc_enet_timeout(struct net_device *dev)
- {
--	struct scc_enet_private *cep = (struct scc_enet_private *)dev->priv;
-+	struct scc_enet_private *cep = dev->priv;
- 
- 	printk("%s: transmit timed out.\n", dev->name);
- 	cep->stats.tx_errors++;
-@@ -281,7 +281,7 @@ scc_enet_interrupt(int irq, void * dev_i
- 	ushort	int_events;
- 	int	must_restart;
- 
--	cep = (struct scc_enet_private *)dev->priv;
-+	cep = dev->priv;
- 
- 	/* Get the interrupt events that caused us to be here.
- 	*/
-@@ -419,7 +419,7 @@ scc_enet_rx(struct net_device *dev)
- 	struct	sk_buff *skb;
- 	ushort	pkt_len;
- 
--	cep = (struct scc_enet_private *)dev->priv;
-+	cep = dev->priv;
- 
- 	/* First, grab all of the stats for the incoming packet.
- 	 * These get messed up if we get called due to a busy condition.
-@@ -520,7 +520,7 @@ scc_enet_close(struct net_device *dev)
- 
- static struct net_device_stats *scc_enet_get_stats(struct net_device *dev)
- {
--	struct scc_enet_private *cep = (struct scc_enet_private *)dev->priv;
-+	struct scc_enet_private *cep = dev->priv;
- 
- 	return &cep->stats;
- }
-@@ -542,7 +542,7 @@ static void set_multicast_list(struct ne
- 	u_char	*mcptr, *tdptr;
- 	volatile scc_enet_t *ep;
- 	int	i, j;
--	cep = (struct scc_enet_private *)dev->priv;
-+	cep = dev->priv;
- 
- 	/* Get pointer to SCC area in parameter RAM.
- 	*/
-diff -pruNX dontdiff c/arch/ppc/8260_io/fcc_enet.c a/arch/ppc/8260_io/fcc_enet.c
---- c/arch/ppc/8260_io/fcc_enet.c	2004-12-25 15:50:14.000000000 +0100
-+++ a/arch/ppc/8260_io/fcc_enet.c	2004-12-29 20:46:26.000000000 +0100
-@@ -369,7 +369,7 @@ static void	fcc_stop(struct net_device *
- static int
- fcc_enet_start_xmit(struct sk_buff *skb, struct net_device *dev)
- {
--	struct fcc_enet_private *cep = (struct fcc_enet_private *)dev->priv;
-+	struct fcc_enet_private *cep = dev->priv;
- 	volatile cbd_t	*bdp;
- 	int idx;
- 
-@@ -460,7 +460,7 @@ fcc_enet_start_xmit(struct sk_buff *skb,
- static void
- fcc_enet_timeout(struct net_device *dev)
- {
--	struct fcc_enet_private *cep = (struct fcc_enet_private *)dev->priv;
-+	struct fcc_enet_private *cep = dev->priv;
- 
- 	printk("%s: transmit timed out.\n", dev->name);
- 	cep->stats.tx_errors++;
-@@ -502,7 +502,7 @@ fcc_enet_interrupt(int irq, void * dev_i
- 	int	must_restart;
- 	int idx;
- 
--	cep = (struct fcc_enet_private *)dev->priv;
-+	cep = dev->priv;
- 
- 	/* Get the interrupt events that caused us to be here.
- 	*/
-@@ -644,7 +644,7 @@ fcc_enet_rx(struct net_device *dev)
- 	struct	sk_buff *skb;
- 	ushort	pkt_len;
- 
--	cep = (struct fcc_enet_private *)dev->priv;
-+	cep = dev->priv;
- 
- 	/* First, grab all of the stats for the incoming packet.
- 	 * These get messed up if we get called due to a busy condition.
-@@ -734,7 +734,7 @@ fcc_enet_close(struct net_device *dev)
- 
- static struct net_device_stats *fcc_enet_get_stats(struct net_device *dev)
- {
--	struct fcc_enet_private *cep = (struct fcc_enet_private *)dev->priv;
-+	struct fcc_enet_private *cep = dev->priv;
- 
- 	return &cep->stats;
- }
-@@ -1352,7 +1352,7 @@ set_multicast_list(struct net_device *de
- 	volatile fcc_enet_t *ep;
- 	int	i, j;
- 
--	cep = (struct fcc_enet_private *)dev->priv;
-+	cep = dev->priv;
- 
- return;
- 	/* Get pointer to FCC area in parameter RAM.
-@@ -1417,13 +1417,13 @@ return;
-  */
- int fcc_enet_set_mac_address(struct net_device *dev, void *p)
- {
--	struct sockaddr *addr= (struct sockaddr *) p;
-+	struct sockaddr *addr= p;
- 	struct fcc_enet_private *cep;
- 	volatile fcc_enet_t *ep;
- 	unsigned char *eap;
- 	int i;
- 
--	cep = (struct fcc_enet_private *)(dev->priv);
-+	cep = dev->priv;
- 	ep = cep->ep;
- 
-         if (netif_running(dev))
-@@ -1610,7 +1610,7 @@ init_fcc_param(fcc_info_t *fip, struct n
- 	volatile	cbd_t		*bdp;
- 	volatile	cpm_cpm2_t	*cp;
- 
--	cep = (struct fcc_enet_private *)(dev->priv);
-+	cep = dev->priv;
- 	ep = cep->ep;
- 	cp = cpmp;
- 
-@@ -1624,10 +1624,10 @@ init_fcc_param(fcc_info_t *fip, struct n
- 	/* Allocate space for the buffer descriptors from regular memory.
- 	 * Initialize base addresses for the buffer descriptors.
- 	 */
--	cep->rx_bd_base = (cbd_t *)kmalloc(sizeof(cbd_t) * RX_RING_SIZE,
-+	cep->rx_bd_base = kmalloc(sizeof(cbd_t) * RX_RING_SIZE,
- 			GFP_KERNEL | GFP_DMA);
- 	ep->fen_genfcc.fcc_rbase = __pa(cep->rx_bd_base);
--	cep->tx_bd_base = (cbd_t *)kmalloc(sizeof(cbd_t) * TX_RING_SIZE,
-+	cep->tx_bd_base = kmalloc(sizeof(cbd_t) * TX_RING_SIZE,
- 			GFP_KERNEL | GFP_DMA);
- 	ep->fen_genfcc.fcc_tbase = __pa(cep->tx_bd_base);
- 
-@@ -1809,7 +1809,7 @@ init_fcc_startup(fcc_info_t *fip, struct
- 	volatile fcc_t	*fccp;
- 	struct fcc_enet_private *cep;
- 
--	cep = (struct fcc_enet_private *)(dev->priv);
-+	cep = dev->priv;
- 	fccp = cep->fccp;
- 
- 	fccp->fcc_fcce = 0xffff;	/* Clear any pending events */
-@@ -1968,7 +1968,7 @@ fcc_stop(struct net_device *dev)
- 	volatile fcc_t	*fccp;
- 	struct fcc_enet_private	*fcp;
- 
--	fcp = (struct fcc_enet_private *)(dev->priv);
-+	fcp = dev->priv;
- 	fccp = fcp->fccp;
- 
- 	/* Disable transmit/receive */
-@@ -1982,7 +1982,7 @@ fcc_restart(struct net_device *dev, int 
- 	volatile fcc_t	*fccp;
- 	struct fcc_enet_private	*fcp;
- 
--	fcp = (struct fcc_enet_private *)(dev->priv);
-+	fcp = dev->priv;
- 	fccp = fcp->fccp;
- 
- 	if (duplex)
-diff -pruNX dontdiff c/arch/ppc/8xx_io/enet.c a/arch/ppc/8xx_io/enet.c
---- c/arch/ppc/8xx_io/enet.c	2004-12-25 15:50:14.000000000 +0100
-+++ a/arch/ppc/8xx_io/enet.c	2004-12-29 20:46:26.000000000 +0100
-@@ -197,7 +197,7 @@ scc_enet_open(struct net_device *dev)
- static int
- scc_enet_start_xmit(struct sk_buff *skb, struct net_device *dev)
- {
--	struct scc_enet_private *cep = (struct scc_enet_private *)dev->priv;
-+	struct scc_enet_private *cep = dev->priv;
- 	volatile cbd_t	*bdp;
- 
- 	/* Fill in a Tx ring entry */
-@@ -273,7 +273,7 @@ scc_enet_start_xmit(struct sk_buff *skb,
- static void
- scc_enet_timeout(struct net_device *dev)
- {
--	struct scc_enet_private *cep = (struct scc_enet_private *)dev->priv;
-+	struct scc_enet_private *cep = dev->priv;
- 
- 	printk("%s: transmit timed out.\n", dev->name);
- 	cep->stats.tx_errors++;
-@@ -314,7 +314,7 @@ scc_enet_interrupt(void *dev_id, struct 
- 	ushort	int_events;
- 	int	must_restart;
- 
--	cep = (struct scc_enet_private *)dev->priv;
-+	cep = dev->priv;
- 
- 	/* Get the interrupt events that caused us to be here.
- 	*/
-@@ -449,7 +449,7 @@ scc_enet_rx(struct net_device *dev)
- 	struct	sk_buff *skb;
- 	ushort	pkt_len;
- 
--	cep = (struct scc_enet_private *)dev->priv;
-+	cep = dev->priv;
- 
- 	/* First, grab all of the stats for the incoming packet.
- 	 * These get messed up if we get called due to a busy condition.
-@@ -550,7 +550,7 @@ scc_enet_close(struct net_device *dev)
- 
- static struct net_device_stats *scc_enet_get_stats(struct net_device *dev)
- {
--	struct scc_enet_private *cep = (struct scc_enet_private *)dev->priv;
-+	struct scc_enet_private *cep = dev->priv;
- 
- 	return &cep->stats;
- }
-@@ -572,7 +572,7 @@ static void set_multicast_list(struct ne
- 	u_char	*mcptr, *tdptr;
- 	volatile scc_enet_t *ep;
- 	int	i, j;
--	cep = (struct scc_enet_private *)dev->priv;
-+	cep = dev->priv;
- 
- 	/* Get pointer to SCC area in parameter RAM.
- 	*/
-diff -pruNX dontdiff c/arch/ppc/8xx_io/fec.c a/arch/ppc/8xx_io/fec.c
---- c/arch/ppc/8xx_io/fec.c	2004-12-25 15:50:14.000000000 +0100
-+++ a/arch/ppc/8xx_io/fec.c	2004-12-29 20:46:26.000000000 +0100
-@@ -781,7 +781,7 @@ fec_enet_mii(struct net_device *dev)
- 	mii_list_t	*mip;
- 	uint		mii_reg;
- 
--	fep = (struct fec_enet_private *)dev->priv;
-+	fep = dev->priv;
- 	ep = &(((immap_t *)IMAP_ADDR)->im_cpm.cp_fec);
- 	mii_reg = ep->fec_mii_data;
- 
-@@ -1485,7 +1485,7 @@ fec_enet_close(struct net_device *dev)
- 
- static struct net_device_stats *fec_enet_get_stats(struct net_device *dev)
- {
--	struct fec_enet_private *fep = (struct fec_enet_private *)dev->priv;
-+	struct fec_enet_private *fep = dev->priv;
- 
- 	return &fep->stats;
- }
-@@ -1505,7 +1505,7 @@ static void set_multicast_list(struct ne
- 	struct	fec_enet_private *fep;
- 	volatile fec_t *ep;
- 
--	fep = (struct fec_enet_private *)dev->priv;
-+	fep = dev->priv;
- 	ep = &(((immap_t *)IMAP_ADDR)->im_cpm.cp_fec);
- 
- 	if (dev->flags&IFF_PROMISC) {
+------=_NextPart_000_0029_01C4EE8A.33639BC0--
