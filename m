@@ -1,46 +1,28 @@
-Date: Sat, 22 Jan 2000 15:45:37 -0800 (PST)
-From: Bill Studenmund <wrstuden@nas.nasa.gov>
-To: Robert Neugebauer <rneugeba@undergrad.math.uwaterloo.ca>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: RS6000 to G4 assembly changes
-In-Reply-To: <Pine.SOL.3.96.1000122013827.17059B-100000@fitch.math.uwaterloo.ca>
-Message-ID: <Pine.SOL.3.96.1000122153947.26665B-100000@marcy.nas.nasa.gov>
+Message-ID: <XFMail.000123113118.bregor@anusf.anu.edu.au>
+Content-Type: text/plain; charset=us-ascii
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Sun, 23 Jan 2000 11:31:18 +1100 (EST)
+From: "Roger W. Brown" <bregor@anusf.anu.edu.au>
+To: linuxppc-dev@lists.linuxppc.org, jim.chapman@iname.com
+Subject: Re: Blue G3: v2.3 kernel
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 22 Jan 2000, Robert Neugebauer wrote:
 
-> I am not trying to build a cross compiler, I am not trying to build GCC.
-> My course at university uses its own compiler called uC++ (Micro C++).
->
-> The compiler thus far only has the following targets that work:
-[snip]
->         dmake ibm-rs6000
-[snip]
->
-> By my knowledge rs6000 is a RISC based architecture, thus I tried to build
-> uC++ using the target ibm-rs6000. This resulted in an unrecognized opcode
-> movl during compilation.
->
-> If someone knows what the similar instruction on my G4 is, and any other
-> problems I might/will encounter, I would appreciate it.
+  Jim Chapman asked:
 
-As others have said, there is no similar instruction.
+ "Anyone know whether recent v2.3 kernels run on Apple Blue G3 machines? I
+  couldn't find any mention of v2.3 at www.linuxppc.org/blueg3/".
 
-I think the problem is that you haven't fully set your compile environment
-up to generate ppc code. It sounds like you are using a ppc assembler but
-that the c compiler is still emmiting x86 assembly code (which of course
-the ppc assembler doesn't understand). Or some assembly language fragment
-is getting included, and the wrong one is being pulled in.
+  I have never been successful in building a 2.3.X kernel that will boot
+  on my rev-2 G&W G3.  The problem is with booting, not building.
+  It would be very helpful just to know if 2.3.x kernels can be booted
+  on this platform.  If it is possible, I will try harder, otherwise
+  I'll concentrate on other problems.
 
-Good luck!
 
-Take care,
-
-Bill
-
+  Roger Brown       ( bregor at anusf dot anu dot edu dot au )
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
