@@ -1,20 +1,20 @@
+Message-ID: <3E24240B.4000404@embeddededge.com>
+Date: Tue, 14 Jan 2003 09:51:55 -0500
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
 To: Alex Zeffertt <ajz@cambridgebroadband.com>
 Cc: markc@mail.com,
 	"linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Control-C in bash ??? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "14 Jan 2003 13:31:45 GMT."
-             <1042551106.8605.109.camel@zambia>
-Date: Tue, 14 Jan 2003 15:50:41 +0100
-Message-Id: <20030114145047.03432C608E@atlas.denx.de>
+Subject: Re: Control-C in bash ???
+References: <200301131409.00113.markc@mail.com> <1042551106.8605.109.camel@zambia>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <1042551106.8605.109.camel@zambia> you wrote:
->
+Alex Zeffertt wrote:
+
+
 > I had exactly the same problem with ash (busybox version), but I found
 > it went away when I replaced
 >
@@ -26,36 +26,29 @@ In message <1042551106.8605.109.camel@zambia> you wrote:
 >
 > I have no idea why....
 
-I explained this a couple of times before on the list:
+If all of you would look back into the mailing list archives you would
+notice this discussion before.  The reason ctl-C won't work is you need
+a "controlling tty" device.
 
-Signal handling depends on a controlling tty. If you  start  a  shell
-directly, you don't get one, so ^C will not work.
+The program that is started as process ID 1 is a special program (expected
+to be '/sbin/init') and can't be used as a 'controlling tty'.  Signals to
+this process are managed differently in the kernel.  Any program you start
+in this process ID slot, which is you favorite shell or busybox or whatever,
+can't assign a controlling tty and get the ctl-C signals.  It doesn't matter
+how it is built or what ioctls you try to send to the driver.
 
-We modified the login in our ELDK a bit to assign a controlling  tty,
-so any shell started from login will behave as expected.
+If you start up init, or run /bin/login or any of a variety of things you
+can do to actually configure a controlling tty and spawn a shell will
+obivously work as expected.  Starting up a shell as 'init=/bin/sh', or some
+other program in the 'init' PID 1 slot is considered a recovery method and
+will lose some of its tty functions.  Even for a shell not in the PID 1 slot,
+you have to do something along the path to configure a driver as a "controlling
+tty", using /bin/login or the methods Wolfgang described in past messages.
 
-This is all the magic that it takes:
-
--> cat /opt/eldk/build/target_rpms/util-linux/SOURCES/login-eldk.patch
---- util-linux-2.11f/login-utils/login.c.orig   Fri Jun 21 14:17:36 2002
-+++ util-linux-2.11f/login-utils/login.c        Fri Jun 21 14:18:34 2002
-@@ -259,6 +259,7 @@
-
-     flags &= ~O_NONBLOCK;
-     fcntl(fd, F_SETFL, flags);
-+    ioctl(fd, TIOCSCTTY);
-
-     for (i = 0 ; i < fd ; i++)
-       close(i);
+Thanks.
 
 
-Best regards,
+	-- Dan
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"Free markets select for winning solutions."        - Eric S. Raymond
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
