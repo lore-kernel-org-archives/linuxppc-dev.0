@@ -1,33 +1,69 @@
-Date: Mon, 9 Oct 2000 20:24:06 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Giuliano Pochini <pochini@shiny.it>
-cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org,
-        Giuliano Pochini <pochini@denise.shiny.it>,
-        Topi Kanerva <tkanerva@ees2.oulu.fi>
-Subject: Re: can't boot 2.4.0-t9
-In-Reply-To: <XFMail.001009181549.pochini@shiny.it>
-Message-ID: <Pine.LNX.4.10.10010092018570.30240-100000@opal.biophys.uni-duesseldorf.de>
+From: jcarr@linuxppc.org
+Date: Mon, 9 Oct 2000 14:42:38 -0400 (EDT)
+To: Paul Mackerras <paulus@linuxcare.com.au>
+cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: call_prom & call_method_1
+In-Reply-To: <14776.4770.532985.35715@argo.linuxcare.com.au>
+Message-ID: <Pine.LNX.4.10.10009160815360.24020-100000@jcarr.linuxppc.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > For the X 4 vs. 2.4 issue, I've been biten by this for a long time (on a
-> > Pismo too and on a G4) until I figured out that the X server dies when
-> > looking up font path.
->
-> 4.0.0 works fine here (test7).
+I'll summarize breifly what I think happens and what I can't figure out. I
+was wrong about the call_method() name. I was recalling from memory the
+first time. It's call_prom() and call_method_1() in prom.c in yaboot.
 
-4.0.1 runs fine here on -test9, slightly patched to restore adbmouse
-function.
+Before those routines get called, yaboot_start is called from crt0.S. Then
+prom_init( r5 ) is called. I assume r5 means register 5? I couldn't figure
+out how r5 gets set before yaboot runs but would be interested to know
+just out of curiousity if anyone knows. Once prom_init starts, it calls
 
-BTW: has the cputemp diff been posted for 2.4 already? If not I'd be happy
-to provide it. There's been some discussion on what CPU clock to use if we
-can't get the clock from OF - is there a max. CPU clock known for such
-machines?
+call_prom( "finddevice", 1, 1, "/chosen" );
 
-	Michael
+All of this is fine and dandy up to the line in call_prom:
+prom ( &prom_args );
+Which is the miracle of the whole thing. prom being set to r5 now is
+called and actually returns something from OF!
+
+The confusing part here is that I can not find any reference to the string
+"finddevice" in OF. (There is a "find-device" word.) Other things sent
+to call_prom include "find-package", "getprop", etc. I guessed at
+"setprop" and that works. To make matters worse, call_method_1 is itself
+identical to call_prop( "call-method", ... ) "call-method" is not defined
+in OF either.
+
+call_prom("interpret", 1, 1, char *forth ) is interesting in that it will
+interpret raw forth. This is how I got the mouse to work. However, I can
+not find any example in yaboot where forth words are sent to call_prom().
+So it seems call_prom is not the right call to use.
+
+call_method_1() does infact get passed OF words like "load" and
+"block-size". So the whole syntax for that appears to be the same as:
+
+call_prom( "call-method", prom_handle, "load", prom_handle, nargs, ... );
+
+I suspect I need to do something like:
+
+call_prom( "call-method", multiboot_handle, "get-mouse_event", 3, &x, &y
+&mouse );
+
+So these would be the questions:
+
+1) Does anyone know what other strings can be sent to call_prom besides
+"getprop", "findpackage", "interpret"?
+
+2) Are those strings words within OF that can been looked at with see?
+
+3) Can a phandle
+
+Nonetheless, without having a better correlation between the strings
+("getprop", "setprop", "findpackage", "interpret") and what those strings
+do( and what other valid strings can be used ) it will be hard to receive
+feedback from the mouse.
+Jeff
+jcarr@linuxppc.org
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
