@@ -1,10 +1,10 @@
 Return-Path: <samlinuxppc@yahoo.com.cn>
-Received: from web15806.mail.cnb.yahoo.com (web15806.mail.cnb.yahoo.com
-	[202.165.102.86]) by ozlabs.org (Postfix) with SMTP id B2ECD2BDB5
+Received: from web15805.mail.cnb.yahoo.com (web15805.mail.cnb.yahoo.com
+	[202.165.102.85]) by ozlabs.org (Postfix) with SMTP id 3F40F2BDB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Dec 2004 13:04:17 +1100 (EST)
-Message-ID: <20041214020414.13580.qmail@web15806.mail.cnb.yahoo.com>
-Date: Tue, 14 Dec 2004 10:04:14 +0800 (CST)
+	Tue, 14 Dec 2004 13:10:49 +1100 (EST)
+Message-ID: <20041214020406.19414.qmail@web15805.mail.cnb.yahoo.com>
+Date: Tue, 14 Dec 2004 10:04:06 +0800 (CST)
 From: Sam Song <samlinuxppc@yahoo.com.cn>
 To: Sam Song <samlinuxppc@yahoo.com.cn>,
 	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
