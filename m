@@ -1,58 +1,74 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-Id: <5.1.0.14.0.20010914174808.026db880@pop.gmx.de>
-Date: Fri, 14 Sep 2001 17:58:29 +0800
-To: linuxppc-embedded@lists.linuxppc.org
-From: Michael Habermann <MHabermann@gmx.de>
-Subject: MMU and BDI2000
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-ID: <6B546A602AD2D211BFF00008C7A42889041D6BE3@hrtades2.atea.be>
+From: Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be>
+To: "'ashish anand'" <ashisha@india.infogain.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: "Kernel logical address"  vs "Physical"
+Date: Fri, 14 Sep 2001 12:52:51 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello!
+Hi,
 
-I've not found a BDI newsgroup or FAQ so I'm sorry
-for a little bit off-topic.
+Thank you for your reply! I am afraid that I am still confused...
 
-I'm using a BDI 2000 and I can successfully debug the PPCBOOT and the
-kernel.
+You say "actually when you refer to address mentioned 0xFA400000 in driver
+this address is already virtual address". The address 0xFA40000 is an
+address that I found in the documentation of the hardware vendor (Embedded
+Planet, the board is an CLLF_BW32), where there is no reference to any OS.
+The table containing the chip select mappings mentions that the "Control and
+Status register" is mapped at FA40. So I assume that 0xfA400000 is a pure
+physical address. Or is this a false assumption?
 
-But I've trouble debugging a driver module loaded at runtime. I get the module
-address out of the module_list linked list + sizeof_struct and can break
-successfully in the driver. After calling add-symbol-file in GDB. Even single
-stepping works.
+When I write "char *p=0xFA40000;" it works.
+When I write "char *p=0xFA40000; p = ioremap(p,1);" I get another pointer
+and it works as well... I suppose this could not work when 0xFA40000 was not
+a physical address. When I use p=__va(p); or p=pa(p); it crashes.
 
-But I get problems debugging variables. The BDI often prints:
-'*** MMU: address translation for 0xC100B288 failed',
-and most variables I cannot see. Also entering 'phy 0xC100B288' at the BDI
-returns:
-'# PPC: MMU address translation failed'
+Regards,
+Frederic
 
-The system works without problems, so the MMU seems to work. Only the BDI
-cannot translate it in some cases.
-
-What is wrong?
-
-I'm using a FADS860, PPCBoot and the kernel 2.4.4 from ftp.denx.de.
-
-The INIT and TARGET sections of my BDI config file are:
-
-[INIT]
-WSPR	149	0xFDC3000F      ;DER  : set debug enable register
-WSPR	638	0xFF000000      ;IMMR : internal memory at 0xFF000000
-WSPR	158	0x00000007      ;ICTRL:
-WSPR	796	0x00000000	;M_TWB invalidate TWB
-WM32		0x000000f0	0x00000000	;invalidate page table base (PTBASE)
-WM32    	0xFF000004      0xFFFFFF88      ;SYPCR
+-----Original Message-----
+From: ashish anand [mailto:ashisha@india.infogain.com]
+Sent: vrijdag 14 september 2001 6:50
+To: Goddeeris Frederic; linuxppc-embedded@lists.linuxppc.org
+Subject: Re: "Kernel logical address" vs "Physical"
+Importance: High
 
 
-[TARGET]
-CPUTYPE	    MPC800
-CPUCLOCK    25000000    ;the CPU clock rate after processing the init list
-BDIMODE     AGENT       ;the BDI working mode (LOADONLY | AGENT)
-BREAKMODE   HARD        ;SOFT or HARD, HARD uses PPC hardware breakpoints
-MMU XLAT
 
+> I have been working on a PPC platform, running Linux 2.2. This platform
+has
+> a register where you can enable different options and where you can
+control
+> several LED's. The vendor mentions that this register is mapped in memory
+at
+> FA400000.
+>
+> When I write (in a driver)
+>
+> char *p=0xFA40000;
+>
+> *p = ..; (I know I should use writeb to be more portable.)
+>
+> it seems to work; the leds can be manipulated. But as FA400000 is a
+physical
+> address, I thought that it had to be *p=__va(0xFA40000);
+>
+> Who can help me out? Where do I find a nice document about this?
+
+actually when you refer to adress mentioned 0xFA400000 in driver this
+address is already virtual adress hence no need to  use __va macro.
+this address was originally a physical adress and unaccessible from device
+untill earlier in code
+a call for ioremap would have taken place.
+after ioremapping it is a virtual address and can be used nicely in a
+driver.
+transaction for this address would be valid as processor has now a entry for
+it and would be decoded by host bridge and forwarded to LED.
+without ioremapping if you use you will get a kernel panic.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
