@@ -1,11 +1,11 @@
+Message-ID: <2C1BAF8F8E1DD611862B0002A5D4C3FC02B6D076@renexch3.rennes.thmulti.com>
+From: Fillod Stephane <stephane.fillod@thomson.net>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: http sharing in linux
+Date: Mon, 17 May 2004 15:51:02 +0200
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: http sharing in linux
-Date: Mon, 17 May 2004 15:03:13 +0200
-Message-ID: <FD6CA6C74666E546981AEBE7F147C5121CE8B5@mx-dk1.dk.vitesse.com>
-From: "Holger L. Bille" <hlb@vitesse.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
+	charset="ISO-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
@@ -17,10 +17,11 @@ List-Id: <linuxppc-embedded@lists.linuxppc.org>
 > Ummm... depending on requirements, Mbedthis AppWeb, GoAhead,  khttpd,
 > and others come to mind, too.
 
-I recommend to _not_ use goahead! It is 100% broken in its handling of binary CGI posts. It cost me many hours to realize this. I was working at file uploads at the time.
+For DIY embedded HTTP server, what about the EHS library?
 
-Instead I highly recommend thttpd - a very solid product!
-http://www.acme.com/software/thttpd/
-133531 bytes without tweaking
+	http://freshmeat.net/projects/ehs
+
+
+SF
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
