@@ -1,41 +1,34 @@
-Message-ID: <382333E0.1F57B795@netx4.com>
-Date: Fri, 05 Nov 1999 14:45:36 -0500
-From: Dan Malek <dan@netx4.com>
+Message-ID: <38239C25.D0392585@jlc.net>
+Date: Fri, 05 Nov 1999 22:10:29 -0500
+From: Dan Malek <dmalek@jlc.net>
 MIME-Version: 1.0
-To: diekema_jon <diekema@bucks.si.com>
-CC: Dan Malek <dan@penguin.netx4.com>, linuxppc-embedded@lists.linuxppc.org,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Trying to find out the current state of Linux on a MPC 8260
-References: <m11jo7O-001SwNC@bucks>
+To: Wolfgang Denk <wd@denx.de>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: gdbserver ?
+References: <199911051732.SAA29775@denx.local.net>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-diekema_jon wrote:
+Wolfgang Denk wrote:
 
 
-> What CVS archives do you update?
+> has anybody ever tried to build gdbserver for a PPC target?
 
-I have access to the vger CVS tree, and only update the minimal
-embedded 8xx and 82xx files.  I rely heavily (and thankfully :-)
-on others to ensure these changes are propagated into Linus'
-and other trees.
+I placed a tar image of just the gdbserver sub-directory on ppc.kernel.org.
+It is in the embedded directory.  The binary is built for an R4 system.
+The code is from a 4.17 version of gdb.  I believe all of the changes
+are in low-linux.c.
 
+It works with the latest kernels, and I also built an out-of-the-box
+version of Cygnus Insight on a LinuxPPC 1999 host that worked fine with
+it.
 
-> What are the collection names that contains the updates?  Is it just "linux"?
+I hope someone that knows more about this than I can make these changes
+look prettier and ensure it finds its way into a standard release.
 
-
-Yes, for the kernel.
-
-I think it is time to remind everyone finding, compiling and booting
-a kernel is actually the easy part of the development effort.  The
-real challenges are the applications.....creating the development
-environment with compiler, libraries, debuggers and other tools
-is time consuming.  I try to make the embedded things I do work
-as closely to a desktop or server as possible, but there are
-sometimes differences.
-
+Have fun.
 
 
 	-- Dan
