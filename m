@@ -1,28 +1,40 @@
-Message-ID: <39132E0D.FACBF9F9@sd-star.com>
-Date: Fri, 05 May 2000 13:24:45 -0700
-From: "Kerry Keal" <kealk@sd-star.com>
+From: "Mike Flynn" <mike.psc@connectnet.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: RAM disk size
+Date: Sat, 6 May 2000 04:16:45 -0700
+Message-ID: <001101bfb74c$90881c60$5e621018@elcjn1.sdca.home.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: OT: Job for Motorola MVME 230x Embedded Systems Programer
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-   Hey, Sorry for the off-topic job posting, but my company (Spectral
-Dynamics) is looking for an embedded systems programer. We are
-located in San Jose, CA. We make real-time vibration control test
-systems that are used for things like earthquake simulation and testing,
-satellite testing and a variety of other product testing. I'm just an
-employee of the company and not part of the management. Currently our
-product uses VxWorks. The engineer that did the embedded systems work is
-leaving. I told my boss, that this would be a great time to switch over
-to a Linux embedded kernel and he seemed to like the idea. If anyone is
-interested please let me know.
+I need to flash an image larger than 4 megs to an Embedded Planet RPX CLLF
+(860T) board with 8 MB of flash. I'm having a problem making a RAM disk file
+image larger than 4 MB on a LinuxPPC host preceding the download to the
+target:
+
+mkfs -m 0 /dev/ram XXXX
+or
+mke2fs -c /dev/ram XXXX
+
+ with XXXX anything more than 4000 returns the following message:
+
+"Filesystem larger than apparent filesystem size.
+Proceed anyway? (y,n)"
+
+Proceeding "anyway" seems to work until any activity that would put more
+than 4 MB in /dev/ram (mounted as /mnt) yields:
+
+"No space left on device"
+
+How do I get beyond this host limitation to use more of the available flash
+on the CLLF board?
 
 Thanks,
+Mike Flynn
+Enerdyne Technologies
 
-Kerry Keal
-kealk@sd-star.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
