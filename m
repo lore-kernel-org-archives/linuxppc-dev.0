@@ -1,27 +1,29 @@
-Date: Mon, 25 Oct 1999 17:44:35 -0500
-From: erik cameron <cameron@senta.uchicago.edu>
-To: Jim Terman <terman@ddi.com>
-Cc: Claude Robitaille <crobitaille@videotron.ca>,
-        linuxppc-dev@lists.linuxppc.org
+Date: Mon, 25 Oct 1999 19:28:25 -0400 (EDT)
+From: Claude Robitaille <crobitaille@videotron.ca>
 Subject: Re: question about altivec registers
-Message-ID: <19991025174435.D9975@senta.uchicago.edu>
-References: <199910252051.NAA07105@sade.ddi.com> <Pine.LNX.4.10.9910251826440.434-100000@localhost.localdomain> <199910252231.PAA08775@sade.ddi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <199910252231.PAA08775@sade.ddi.com>
+In-reply-to: <199910252231.PAA08775@sade.ddi.com>
+To: Jim Terman <terman@ddi.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Message-id: <Pine.LNX.4.10.9910251916060.5902-100000@modemcable220.93-200-24.mtl.mc.videotron.net>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+The flag is to actually tell the kernel that your application is using
+the Altivec registers, so that it can save time by not saving and
+restoring them when the interrupted or swapped application is not using
+them. It is supposed to be dynamic so only routines actually using Altivec
+should set (and clear) it. I am not sure of the details so look into the
+manual for the hardware support. I think the kernel should enforce the
+use of this flag since moving the full Altivec register set is time
+consuming (16 bytes X 32 registers = 1/2 KB).
 
-perhaps this is a stupid question, but aren't the values of the altivec
-registers just saved as part of the process' hardware context and swapped
-in and out as part of a context switch?  in which case it wouldn't matter
-if the kernel (or any other process) changed the values while your job
-was on a sleeping.
+Claude
 
-On Mon, Oct 25, 1999 at 03:31:48PM -0700, Jim Terman wrote:
-> 
+On Mon, 25 Oct 1999, Jim Terman wrote:
+
 > I understand how to get it working from the processor point of view.  I 
 > just want to make sure that the linuxppc kernal will not interfere if I 
 > compile a program that uses these registers.
@@ -43,7 +45,9 @@ On Mon, Oct 25, 1999 at 03:31:48PM -0700, Jim Terman wrote:
 > > > 
 > > > I have a question about using the altivec registers on a G4 Macintosh
 > > > running linuxppc.  Will there be any conflicts.  I don't expect any
-> > > kernal support, but can I be confident that the kernal will not touch
+l
+> > > kernal support, but can I be confident that the kernal will not
+touch
 > > > any of the altivec registers.  Any info will be greatly appreciated.
 > > > 
 > > > -- 
@@ -60,10 +64,8 @@ On Mon, Oct 25, 1999 at 03:31:48PM -0700, Jim Terman wrote:
 > Jim Terman       |   323 Vintage Park Dr.   |   Voice: (650) 356-5446
 > terman@ddi.com   |   Foster City, CA        |   Fax:   (650) 356-5490
 > Diab-SDS, Inc.   |   94404                  |   web site - http://www.ddi.com
+> 
+> 
 
--- 
-erik cameron  unix systems administrator
-jfi/mrsec @ the university of chicago
-e-cameron@uchicago.edu
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
