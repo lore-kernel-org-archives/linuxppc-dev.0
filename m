@@ -2,19 +2,17 @@ Return-Path: <laforge@gnumonks.org>
 Received: from ganesha.gnumonks.org (ganesha.gnumonks.org [213.95.27.120])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "ganesha.gnumonks.org", Issuer "Harald Welte" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id BDB8C2BC0F
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Oct 2004 05:46:49 +1000 (EST)
-Date: Fri, 1 Oct 2004 21:46:30 +0200
+	by ozlabs.org (Postfix) with ESMTP id BBE792BDB0
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Oct 2004 05:50:44 +1000 (EST)
+Date: Fri, 1 Oct 2004 21:31:53 +0200
 From: Harald Welte <laforge@gnumonks.org>
 To: Chris Friesen <cfriesen@nortelnetworks.com>
-Message-ID: <20041001194630.GO27499@sunbeam.de.gnumonks.org>
+Message-ID: <20041001193153.GN27499@sunbeam.de.gnumonks.org>
 References: <415D8768.8080808@nortelnetworks.com>
-	<20041001193153.GN27499@sunbeam.de.gnumonks.org>
-	<415DB334.4010809@nortelnetworks.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Bzq2cJcN05fcPrs+"
-In-Reply-To: <415DB334.4010809@nortelnetworks.com>
+	protocol="application/pgp-signature"; boundary="1y1tiN5hVw5cPBDe"
+In-Reply-To: <415D8768.8080808@nortelnetworks.com>
 Cc: netdev@oss.sgi.com, linuxppc-dev@ozlabs.org
 Subject: Re: kernel crash with G5 Xserve and sungem driver
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -27,29 +25,34 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---Bzq2cJcN05fcPrs+
+--1y1tiN5hVw5cPBDe
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Oct 01, 2004 at 01:42:44PM -0600, Chris Friesen wrote:
-> Harald Welte wrote:
+On Fri, Oct 01, 2004 at 10:35:52AM -0600, Chris Friesen wrote:
 >=20
-> >Just don't compile (or load) the sungem driver on those boxes.
+> I have patched 2.6.9-rc2 to run in 32-bit mode on the G5 Xserve.
 >=20
-> Hmm.  That's a pain.  We've got G5 desktops too, and it would be nice to =
-be=20
-> able to run one kernel for both.  It'd be better (IMHO) to fix the driver=
+> When I compile a kernel with the tigon driver and the sungem driver both=
 =20
-> so it doesn't crash.
+> built-in, the kernel crashes.  Removing the sungem driver fixes the probl=
+em.
 
-I recommend talking to Bejamin Herrenschmidt, IIRC he already had
-something in mind in order to fix the issue.
+Yes, I had that too.  The Problem is that the XServe G5 actually has two
+sungem MAC's in the chipset but doesn't use them (and apparently their
+interrupt lines are not connected either).  Apple just doesn't put them
+in their OF tree, but on the PCI they are visible.
 
-I mean, you can always hardcode some exemption into the driver, that's
-two easy lines ;)
+The ethernet chips actually used and connected to the ethernet sockets
+on the back side are th3.
 
-> Chris
+Just don't compile (or load) the sungem driver on those boxes.
+
+> Is there a known incompatibility between the sungem driver and the Xserve?
+
+yes.
+
 
 --=20
 - Harald Welte <laforge@gnumonks.org>               http://www.gnumonks.org/
@@ -60,7 +63,7 @@ two easy lines ;)
 Programming is like sex: One mistake and you have to support it your lifeti=
 me
 
---Bzq2cJcN05fcPrs+
+--1y1tiN5hVw5cPBDe
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 Content-Disposition: inline
@@ -68,9 +71,9 @@ Content-Disposition: inline
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.2.5 (GNU/Linux)
 
-iD8DBQFBXbQWXaXGVTD0i/8RAolKAJ92G/5zs4wo4XSF2WAsqAaD1+GIkwCeICAs
-cHBju+40g4MUwbRTfk6R/Zs=
-=qWQ2
+iD8DBQFBXbCpXaXGVTD0i/8RApp7AJwKFtyJL91PowHWs4uTO6DnaNrthwCgtU9t
+sJl0u37ydJljoTsEsvOrDlU=
+=+Ev2
 -----END PGP SIGNATURE-----
 
---Bzq2cJcN05fcPrs+--
+--1y1tiN5hVw5cPBDe--
