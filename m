@@ -1,51 +1,52 @@
-In-Reply-To: <40EC2DC8.5020400@246tNt.com>
-References: <40EB1C28.3000402@246tNt.com> <40EC2DC8.5020400@246tNt.com>
-Mime-Version: 1.0 (Apple Message framework v618)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <17EAD0B0-D057-11D8-9E83-003065F9B7DC@embeddededge.com>
-Cc: ppc linux embedded <linuxppc-embedded@lists.linuxppc.org>
-From: Dan Malek <dan@embeddededge.com>
-Subject: Re: Getting rid of static IO mapping
-Date: Wed, 7 Jul 2004 16:49:08 -0400
-To: Sylvain Munaut <tnt@246tnt.com>
+Message-ID: <40EC682F.5090004@bluewin.ch>
+Date: Wed, 07 Jul 2004 23:16:31 +0200
+From: Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch>
+MIME-Version: 1.0
+To: Stephen Williams <612dlag102@sneakemail.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: rpm for embedded system
+References: <21704-45627@sneakemail.com> <40EC4D3E.5090405@bluewin.ch> <1138-00007@sneakemail.com>
+In-Reply-To: <1138-00007@sneakemail.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Jul 7, 2004, at 1:07 PM, Sylvain Munaut wrote:
+On 07/07/2004 09:30 PM Stephen Williams wrote:
+> Wolfgang Grandegger wolfgang.grandegger-at-bluewin.ch |PPC Linux
+> Embedded| wrote:
+>> On 07/07/2004 09:11 PM Stephen Williams wrote:
+>>
+>>>I'm using ELDK-3 from Denx for my ppc based board, which has
+>>>disk space (in the form of a compact flash) that I want to
+>>>manage using rpm. (I'd like to rpm install the eldk packages
+>>>that I want on my target.)
+>>>
+>>>So I'm looking for a cross-rpm howto. Seems like the ppc_4xx-rpm
+>>>that comes with the ELDK gets me half way there.
+>>
+>>
+>>
+>> Check http://www.denx.de/twiki/bin/view/DULG/ELDKRebuildingComponents
+>
+> Almost. That is instructions for remaking the ELDK packages
+> from the src.rpms. But I want to take the existing binary
+> rpms and install them on my owh root. This does *not* work:
+>
+>    ppc_4xx-rpm --root=/mnt/flash foo.ppc.rpm
+>
+> I want to do something like that with the packages, so that
+> I can install individual existing ppc.rpm packages from the
+> ELDK disk onyl by flash card.
 
-> I'll try to re-explain my problem more clearly. Maybe some one will
-> see a solution.
+Hm, have a look to the ELDK CDROM, especially check the ".list" files in
+/mnt/cdrom/etc. They actually define the packages to be installed. You
+might copy parts of the tree to disk and tailor the list files according
+to your needs. Then you should be able to install the RPM packages with
+the "install" utility as usual. Nevertheless, a root file system built
+this way is very large, too large for most embedded systems.
 
-I think you are trying too hard to solve something that really
-isn't a problem.
-
-The use of BATs is a significant performance advantage.  It's
-relatively easy to create an ioremap() function that can see if
-a BAT covers a space we want and return an appropriate
-mapped address.  The converse, creating an ioremap() function
-that is smart enough to track all of the I/O usage and determine
-how best to use BATs, is very challenging.
-
-Due to the way we have to access memory and devices for
-initialization (when vm mapping through ioremap() isn't available)
-and the constraints on the kernel VM space, I find it easy to
-just declare the BAT values and let ioremap() work as it does in 2.4.
-
-If you look outside of the traditional PowerPC cores (to things
-like 8xx, 4xx, and 85xx) you will find even more challenging
-early or efficient mapping problems.
-
-Just set the BATs according to the board configurations, keep
-the functions simple, and move on.  These functions are
-currently working fine for many of the 603 core platforms.  I'd
-suggest changing your board setup functions to work with
-the common code already present instead of trying to fix
-something that isn't broken.
-
-Thanks.
-
-	-- Dan
+Wolfgang.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
