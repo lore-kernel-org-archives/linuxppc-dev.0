@@ -1,16 +1,21 @@
-Return-Path: <sonic_amiga@rambler.ru>
-Received: from mxc.rambler.ru (mxc.rambler.ru [81.19.66.31])
-	by ozlabs.org (Postfix) with ESMTP id 799C267A6F
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Feb 2005 18:28:35 +1100 (EST)
-Date: Thu, 24 Feb 2005 10:30:59 -0500
-From: Pavel Fedin <sonic_amiga@rambler.ru>
-To: linux-kernel@vger.kernel.org
-Message-Id: <20050224103059.3b104078.sonic_amiga@rambler.ru>
+Return-Path: <sven.luther@wanadoo.fr>
+Received: from smtp4.wanadoo.fr (smtp4.wanadoo.fr [193.252.22.27])
+	by ozlabs.org (Postfix) with ESMTP id 1B36267A6D
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Feb 2005 18:57:03 +1100 (EST)
+Date: Thu, 24 Feb 2005 08:47:28 +0100
+To: Meelis Roos <mroos@linux.ee>
+Message-ID: <20050224074728.GA31434@pegasos>
+References: <20041206185416.GE7153@smtp.west.cox.net>
+	<Pine.SOC.4.61.0502221031230.6097@math.ut.ee>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="Multipart=_Thu__24_Feb_2005_10_30_59_-0500_TSxoOo8AOAJJ8Otu"
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] Non-DMA mode for floppy on PowerPC, new version
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <Pine.SOC.4.61.0502221031230.6097@math.ut.ee>
+From: Sven Luther <sven.luther@wanadoo.fr>
+Cc: Tom Rini <trini@kernel.crashing.org>, Sven Hartge <hartge@ds9.gnuu.de>,
+	Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Christian Kujau <evil@g-house.de>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2.6.10-rc3][PPC32] Fix Motorola PReP (PowerstackII Utah)
+	PCI IRQ map
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,120 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On Tue, Feb 22, 2005 at 10:36:36AM +0200, Meelis Roos wrote:
+> >The PCI IRQ map for the old Motorola PowerStackII (Utah) boards was
+> >incorrect, but this breakage wasn't exposed until 2.5, and finally fixed
+> >until recently by Sebastian Heutling <sheutlin@gmx.de>.
+> 
+> Yesterday I finally got around to testing it. It seems the patch has 
+> been applied in Linus's tree so I downloaded the latest BK and tried it.
+> 
+> Still does not work for me but this time it's different. Before the 
+> patch SCSI worked fine but PCI NICs caused hangs. Now I can't test PCI 
+> NICs because even the onboard 53c825 SCSI hangs - seems it gets no 
+> interrupts.
+> 
+> It detects the HBA, tries device discovery, gets a timeout, ABORT, 
+> timeout, TARGET RESET, timeout, BUS RESET, timeout, HOST RESET and there 
+> it hangs.
+> 
+> Does it work for anyone else on Powerstack II Pro4000 (Utah)?
 
---Multipart=_Thu__24_Feb_2005_10_30_59_-0500_TSxoOo8AOAJJ8Otu
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Can you try : 
 
- Here is a cleaned up version of my 2.6.8 kernel patch.
+  http://people.debian.org/~luther/d-i/images/daily/powerpc/netboot/vmlinuz-prep.initrd
 
- This patch allows to use floppy drive in non-DMA mode on PegasosPPC and AmigaOne machines. To use it:
- 1. Do not build floppy driver as a module, link it statically. Transferring parameters to it from insmod is still problematic, at least it doesn't work properly on my system. May be i'll clean it up in future.
- 2. Specify floppy=nodma in kernel's arguments. Also you'll need to specify your drive type here using floppy=<Drive number>,<Drive type>,cmos. For example, floppy=0,4,cmos specifies type 4 (1.44 mb 3.5") for drive 0 on my system. Default drive type is 2.88 mb.
- This patch does not affect operation of the driver in DMA mode so it's safe to use on any platform.
+It works for me, and the kernel (2.6.8) has the irqs patched, but not the scsi
+stuff touched, i think.
 
--- 
-Best regards,
-Pavel Fedin,									mailto:sonic_amiga@rambler.ru
+Friendly,
 
---Multipart=_Thu__24_Feb_2005_10_30_59_-0500_TSxoOo8AOAJJ8Otu
-Content-Type: text/plain;
- name="ppc_floppy-vdma.diff"
-Content-Disposition: attachment;
- filename="ppc_floppy-vdma.diff"
-Content-Transfer-Encoding: base64
-
-LS0tIGxpbnV4LTIuNi44LjEtMTBtZGsvaW5jbHVkZS9hc20tcHBjL2Zsb3BweS5oLm9yaWcJMjAw
-NC0wOC0xNCAwNjo1NToxMC4wMDAwMDAwMDAgLTA0MDANCisrKyBsaW51eC0yLjYuOC4xLTEwbWRr
-L2luY2x1ZGUvYXNtLXBwYy9mbG9wcHkuaAkyMDA1LTAyLTI0IDA5OjQxOjU0LjU5NDgzMDgwMCAt
-MDUwMA0KQEAgLTExLDMwICsxMSwxNjMgQEANCiAjaWZuZGVmIF9fQVNNX1BQQ19GTE9QUFlfSA0K
-ICNkZWZpbmUgX19BU01fUFBDX0ZMT1BQWV9IDQogDQorI2luY2x1ZGUgPGxpbnV4L3ZtYWxsb2Mu
-aD4NCisNCisjZGVmaW5lIENTVyBmZF9yb3V0aW5lW2Nhbl91c2VfdmlydHVhbF9kbWEgJiAxXQ0K
-Kw0KICNkZWZpbmUgZmRfaW5iKHBvcnQpCQkJaW5iX3AocG9ydCkNCiAjZGVmaW5lIGZkX291dGIo
-dmFsdWUscG9ydCkJCW91dGJfcCh2YWx1ZSxwb3J0KQ0KIA0KLSNkZWZpbmUgZmRfZW5hYmxlX2Rt
-YSgpICAgICAgICAgZW5hYmxlX2RtYShGTE9QUFlfRE1BKQ0KLSNkZWZpbmUgZmRfZGlzYWJsZV9k
-bWEoKSAgICAgICAgZGlzYWJsZV9kbWEoRkxPUFBZX0RNQSkNCi0jZGVmaW5lIGZkX3JlcXVlc3Rf
-ZG1hKCkgICAgICAgIHJlcXVlc3RfZG1hKEZMT1BQWV9ETUEsImZsb3BweSIpDQotI2RlZmluZSBm
-ZF9mcmVlX2RtYSgpICAgICAgICAgICBmcmVlX2RtYShGTE9QUFlfRE1BKQ0KLSNkZWZpbmUgZmRf
-Y2xlYXJfZG1hX2ZmKCkgICAgICAgY2xlYXJfZG1hX2ZmKEZMT1BQWV9ETUEpDQotI2RlZmluZSBm
-ZF9zZXRfZG1hX21vZGUobW9kZSkgICBzZXRfZG1hX21vZGUoRkxPUFBZX0RNQSxtb2RlKQ0KLSNk
-ZWZpbmUgZmRfc2V0X2RtYV9hZGRyKGFkZHIpICAgc2V0X2RtYV9hZGRyKEZMT1BQWV9ETUEsKHVu
-c2lnbmVkIGludCl2aXJ0X3RvX2J1cyhhZGRyKSkNCi0jZGVmaW5lIGZkX3NldF9kbWFfY291bnQo
-Y291bnQpIHNldF9kbWFfY291bnQoRkxPUFBZX0RNQSxjb3VudCkNCisjZGVmaW5lIGZkX2Rpc2Fi
-bGVfZG1hKCkJQ1NXLl9kaXNhYmxlX2RtYShGTE9QUFlfRE1BKQ0KKyNkZWZpbmUgZmRfcmVxdWVz
-dF9kbWEoKSAgICAgICAgQ1NXLl9yZXF1ZXN0X2RtYShGTE9QUFlfRE1BLCJmbG9wcHkiKQ0KKyNk
-ZWZpbmUgZmRfZnJlZV9kbWEoKSAgICAgICAgICAgQ1NXLl9mcmVlX2RtYShGTE9QUFlfRE1BKQ0K
-KyNkZWZpbmUgZmRfZ2V0X2RtYV9yZXNpZHVlKCkgICAgQ1NXLl9nZXRfZG1hX3Jlc2lkdWUoRkxP
-UFBZX0RNQSkNCisjZGVmaW5lIGZkX2RtYV9tZW1fYWxsb2Moc2l6ZSkJQ1NXLl9kbWFfbWVtX2Fs
-bG9jKHNpemUpDQorI2RlZmluZSBmZF9kbWFfc2V0dXAoYWRkciwgc2l6ZSwgbW9kZSwgaW8pIENT
-Vy5fZG1hX3NldHVwKGFkZHIsIHNpemUsIG1vZGUsIGlvKQ0KICNkZWZpbmUgZmRfZW5hYmxlX2ly
-cSgpICAgICAgICAgZW5hYmxlX2lycShGTE9QUFlfSVJRKQ0KICNkZWZpbmUgZmRfZGlzYWJsZV9p
-cnEoKSAgICAgICAgZGlzYWJsZV9pcnEoRkxPUFBZX0lSUSkNCi0jZGVmaW5lIGZkX2NhY2hlZmx1
-c2goYWRkcixzaXplKSAvKiBub3RoaW5nICovDQotI2RlZmluZSBmZF9yZXF1ZXN0X2lycSgpICAg
-ICAgICByZXF1ZXN0X2lycShGTE9QUFlfSVJRLCBmbG9wcHlfaW50ZXJydXB0LCBcDQotCQkJCQkg
-ICAgU0FfSU5URVJSVVBUfFNBX1NBTVBMRV9SQU5ET00sIFwNCi0JCQkJICAgICAgICAgICAgImZs
-b3BweSIsIE5VTEwpDQogI2RlZmluZSBmZF9mcmVlX2lycSgpICAgICAgICAgICBmcmVlX2lycShG
-TE9QUFlfSVJRLCBOVUxMKTsNCiANCi1fX2lubGluZV9fIHZvaWQgdmlydHVhbF9kbWFfaW5pdCh2
-b2lkKQ0KK3N0YXRpYyBpbnQgdmlydHVhbF9kbWFfY291bnQ7DQorc3RhdGljIGludCB2aXJ0dWFs
-X2RtYV9yZXNpZHVlOw0KK3N0YXRpYyBjaGFyICp2aXJ0dWFsX2RtYV9hZGRyOw0KK3N0YXRpYyBp
-bnQgdmlydHVhbF9kbWFfbW9kZTsNCitzdGF0aWMgaW50IGRvaW5nX3BkbWE7DQorDQorc3RhdGlj
-IGlycXJldHVybl90IGZsb3BweV9oYXJkaW50KGludCBpcnEsIHZvaWQgKmRldl9pZCwgc3RydWN0
-IHB0X3JlZ3MgKiByZWdzKQ0KK3sNCisJdW5zaWduZWQgY2hhciBzdDsNCisNCisJaWYgKCFkb2lu
-Z19wZG1hKQ0KKwkJcmV0dXJuIGZsb3BweV9pbnRlcnJ1cHQoaXJxLCBkZXZfaWQsIHJlZ3MpOw0K
-Kw0KKwl7DQorCQlpbnQgbGNvdW50Ow0KKwkJY2hhciAqbHB0cjsNCisNCisJCXN0ID0gMTsNCisJ
-CWZvciAobGNvdW50PXZpcnR1YWxfZG1hX2NvdW50LCBscHRyPXZpcnR1YWxfZG1hX2FkZHI7IA0K
-KwkJICAgIGxjb3VudDsgbGNvdW50LS0sIGxwdHIrKykgew0KKwkJCXN0PWluYih2aXJ0dWFsX2Rt
-YV9wb3J0KzQpICYgMHhhMCA7DQorCQkJaWYgKHN0ICE9IDB4YTApIA0KKwkJCQlicmVhazsNCisJ
-CQlpZiAodmlydHVhbF9kbWFfbW9kZSkNCisJCQkJb3V0Yl9wKCpscHRyLCB2aXJ0dWFsX2RtYV9w
-b3J0KzUpOw0KKwkJCWVsc2UNCisJCQkJKmxwdHIgPSBpbmJfcCh2aXJ0dWFsX2RtYV9wb3J0KzUp
-Ow0KKwkJfQ0KKwkJdmlydHVhbF9kbWFfY291bnQgPSBsY291bnQ7DQorCQl2aXJ0dWFsX2RtYV9h
-ZGRyID0gbHB0cjsNCisJCXN0ID0gaW5iKHZpcnR1YWxfZG1hX3BvcnQrNCk7DQorCX0NCisNCisJ
-aWYgKHN0ID09IDB4MjApDQorCQlyZXR1cm4gSVJRX0hBTkRMRUQ7DQorCWlmICghKHN0ICYgMHgy
-MCkpIHsNCisJCXZpcnR1YWxfZG1hX3Jlc2lkdWUgKz0gdmlydHVhbF9kbWFfY291bnQ7DQorCQl2
-aXJ0dWFsX2RtYV9jb3VudD0wOw0KKwkJZG9pbmdfcGRtYSA9IDA7DQorCQlmbG9wcHlfaW50ZXJy
-dXB0KGlycSwgZGV2X2lkLCByZWdzKTsNCisJCXJldHVybiBJUlFfSEFORExFRDsNCisJfQ0KKwly
-ZXR1cm4gSVJRX0hBTkRMRUQ7DQorfQ0KKw0KK3N0YXRpYyB2b2lkIHZkbWFfZGlzYWJsZV9kbWEo
-dW5zaWduZWQgaW50IGR1bW15KQ0KIHsNCi0JLyogTm90aGluZyB0byBkbyBvbiBQb3dlclBDICov
-DQorCWRvaW5nX3BkbWEgPSAwOw0KKwl2aXJ0dWFsX2RtYV9yZXNpZHVlICs9IHZpcnR1YWxfZG1h
-X2NvdW50Ow0KKwl2aXJ0dWFsX2RtYV9jb3VudD0wOw0KIH0NCiANCitzdGF0aWMgaW50IHZkbWFf
-cmVxdWVzdF9kbWEodW5zaWduZWQgaW50IGRtYW5yLCBjb25zdCBjaGFyICogZGV2aWNlX2lkKQ0K
-K3sNCisJcmV0dXJuIDA7DQorfQ0KKw0KK3N0YXRpYyB2b2lkIHZkbWFfbm9wKHVuc2lnbmVkIGlu
-dCBkdW1teSkNCit7DQorfQ0KKw0KKw0KK3N0YXRpYyBpbnQgdmRtYV9nZXRfZG1hX3Jlc2lkdWUo
-dW5zaWduZWQgaW50IGR1bW15KQ0KK3sNCisJcmV0dXJuIHZpcnR1YWxfZG1hX2NvdW50ICsgdmly
-dHVhbF9kbWFfcmVzaWR1ZTsNCit9DQorDQorDQorc3RhdGljIGludCBmZF9yZXF1ZXN0X2lycSh2
-b2lkKQ0KK3sNCisJaWYgKGNhbl91c2VfdmlydHVhbF9kbWEpDQorCQlyZXR1cm4gcmVxdWVzdF9p
-cnEoRkxPUFBZX0lSUSwgZmxvcHB5X2hhcmRpbnQsU0FfSU5URVJSVVBULA0KKwkJCQkJCSAgICJm
-bG9wcHkiLCBOVUxMKTsNCisJZWxzZQ0KKwkJcmV0dXJuIHJlcXVlc3RfaXJxKEZMT1BQWV9JUlEs
-IGZsb3BweV9pbnRlcnJ1cHQsDQorCQkJCQkJICAgU0FfSU5URVJSVVBUfFNBX1NBTVBMRV9SQU5E
-T00sDQorCQkJCQkJICAgImZsb3BweSIsIE5VTEwpOwkNCisNCit9DQorDQorc3RhdGljIHVuc2ln
-bmVkIGxvbmcgZG1hX21lbV9hbGxvYyh1bnNpZ25lZCBsb25nIHNpemUpDQorew0KKwlyZXR1cm4g
-X19nZXRfZG1hX3BhZ2VzKEdGUF9LRVJORUwsZ2V0X29yZGVyKHNpemUpKTsNCit9DQorDQorDQor
-c3RhdGljIHVuc2lnbmVkIGxvbmcgdmRtYV9tZW1fYWxsb2ModW5zaWduZWQgbG9uZyBzaXplKQ0K
-K3sNCisJcmV0dXJuIF9fZ2V0X2ZyZWVfcGFnZXMoR0ZQX0tFUk5FTCxnZXRfb3JkZXIoc2l6ZSkp
-Ow0KK30NCisNCitzdGF0aWMgaW50IHZkbWFfZG1hX3NldHVwKGNoYXIgKmFkZHIsIHVuc2lnbmVk
-IGxvbmcgc2l6ZSwgaW50IG1vZGUsIGludCBpbykNCit7DQorCWRvaW5nX3BkbWEgPSAxOw0KKwl2
-aXJ0dWFsX2RtYV9wb3J0ID0gaW87DQorCXZpcnR1YWxfZG1hX21vZGUgPSAobW9kZSAgPT0gRE1B
-X01PREVfV1JJVEUpOw0KKwl2aXJ0dWFsX2RtYV9hZGRyID0gYWRkcjsNCisJdmlydHVhbF9kbWFf
-Y291bnQgPSBzaXplOw0KKwl2aXJ0dWFsX2RtYV9yZXNpZHVlID0gMDsNCisJcmV0dXJuIDA7DQor
-fQ0KKw0KK3N0YXRpYyBpbnQgaGFyZF9kbWFfc2V0dXAoY2hhciAqYWRkciwgdW5zaWduZWQgbG9u
-ZyBzaXplLCBpbnQgbW9kZSwgaW50IGlvKQ0KK3sNCisJLyogYWN0dWFsLCBwaHlzaWNhbCBETUEg
-Ki8NCisJZG9pbmdfcGRtYSA9IDA7DQorCWNsZWFyX2RtYV9mZihGTE9QUFlfRE1BKTsNCisJc2V0
-X2RtYV9tb2RlKEZMT1BQWV9ETUEsbW9kZSk7DQorCXNldF9kbWFfYWRkcihGTE9QUFlfRE1BLCh1
-bnNpZ25lZCBpbnQpdmlydF90b19idXMoYWRkcikpOw0KKwlzZXRfZG1hX2NvdW50KEZMT1BQWV9E
-TUEsc2l6ZSk7DQorCWVuYWJsZV9kbWEoRkxPUFBZX0RNQSk7DQorCXJldHVybiAwOw0KK30NCisN
-CitzdHJ1Y3QgZmRfcm91dGluZV9sIHsNCisJdm9pZCAoKl9kaXNhYmxlX2RtYSkodW5zaWduZWQg
-aW50IGRtYW5yKTsNCisJaW50ICgqX3JlcXVlc3RfZG1hKSh1bnNpZ25lZCBpbnQgZG1hbnIsIGNv
-bnN0IGNoYXIgKiBkZXZpY2VfaWQpOw0KKwl2b2lkICgqX2ZyZWVfZG1hKSh1bnNpZ25lZCBpbnQg
-ZG1hbnIpOw0KKwlpbnQgKCpfZ2V0X2RtYV9yZXNpZHVlKSh1bnNpZ25lZCBpbnQgZHVtbXkpOw0K
-Kwl1bnNpZ25lZCBsb25nICgqX2RtYV9tZW1fYWxsb2MpICh1bnNpZ25lZCBsb25nIHNpemUpOw0K
-KwlpbnQgKCpfZG1hX3NldHVwKShjaGFyICphZGRyLCB1bnNpZ25lZCBsb25nIHNpemUsIGludCBt
-b2RlLCBpbnQgaW8pOw0KK30gZmRfcm91dGluZVtdID0gew0KKwl7DQorCQlkaXNhYmxlX2RtYSwN
-CisJCXJlcXVlc3RfZG1hLA0KKwkJZnJlZV9kbWEsDQorCQlnZXRfZG1hX3Jlc2lkdWUsDQorCQlk
-bWFfbWVtX2FsbG9jLA0KKwkJaGFyZF9kbWFfc2V0dXANCisJfSwNCisJew0KKwkJdmRtYV9kaXNh
-YmxlX2RtYSwNCisJCXZkbWFfcmVxdWVzdF9kbWEsDQorCQl2ZG1hX25vcCwNCisJCXZkbWFfZ2V0
-X2RtYV9yZXNpZHVlLA0KKwkJdmRtYV9tZW1fYWxsb2MsDQorCQl2ZG1hX2RtYV9zZXR1cA0KKwl9
-DQorfTsNCisNCiBzdGF0aWMgaW50IEZEQzEgPSAweDNmMDsNCiBzdGF0aWMgaW50IEZEQzIgPSAt
-MTsNCiANCg==
-
---Multipart=_Thu__24_Feb_2005_10_30_59_-0500_TSxoOo8AOAJJ8Otu--
+Sven Luther
