@@ -1,47 +1,52 @@
-Date: Wed, 30 Jun 2004 11:45:46 +0200
-To: Adrian Cox <adrian@humboldt.co.uk>
-Cc: Sven Luther <sven.luther@wanadoo.fr>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: Pegasos 2 support patch ...
-Message-ID: <20040630094546.GA24491@pegasos>
-References: <20040629165029.GA13468@pegasos> <1088587090.28598.3.camel@localhost> <20040630093030.GA24283@pegasos> <1088588447.28598.13.camel@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1088588447.28598.13.camel@localhost>
-From: Sven Luther <sven.luther@wanadoo.fr>
+Date: Wed, 30 Jun 2004 15:14:31 +0200 (CEST)
+From: Christiaan Welvaart <cjw@daneel.dyndns.org>
+To: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	John Steele Scott <toojays@toojays.net>
+Subject: Re: [PATCH] cpufreq support for 7447A on 2004 iBooks
+In-Reply-To: <200406202044.01554.toojays@toojays.net>
+Message-ID: <Pine.LNX.4.58.0406301456050.17875@zem.cjw.nep>
+References: <200406051846.50718.toojays@toojays.net> <200406191250.18936.toojays@toojays.net>
+ <1087619961.9046.301.camel@gaston> <200406202044.01554.toojays@toojays.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Jun 30, 2004 at 10:40:47AM +0100, Adrian Cox wrote:
-> On Wed, 2004-06-30 at 10:30, Sven Luther wrote:
-> > On Wed, Jun 30, 2004 at 10:18:10AM +0100, Adrian Cox wrote:
-> > > On Tue, 2004-06-29 at 17:50, Sven Luther wrote:
-> > > > The remaining problem for the pegasos 2 is with the via82cxxx ide
-> > > > driver, which needs to support a different irq for both channels, thus
-> > > > breakign when a device is present on the second ide channel. [snip]
->
-> > > My current idea is to add an extra flag to the ide_pci_device_t to
-> > > indicate that the device defaults to ports 14 and 15, then modify
-> > > ide_hwif_configure() to use this flag.
-> >
-> > Ok, sounds nice, do you plan to write this patch anytime soon, or should
-> > i go forward and implement this idea ?
->
-> I've got a few other things to get into the kernel before this, so
-> please don't wait for me. If you make a patch I'll test it.
+On Sun, 20 Jun 2004, John Steele Scott wrote:
 
-Ok, altough i have not much experience with ide stuff.
+> Okay, here it is:
+> http://www.toojays.net/~toojays/misc/7447a_cpufreq_20040619a.patch
 
-> In my case, the initial setup is that the device has been assigned I/O
-> space address in the 0xfe00 range, and no PCI IRQ.  This confuses the
-> PCI IDE code, because it assumes that the device must be an add-in card
-> if it is not on the legacy ports.
+Tested on my 1067MHz iBook that apparently doesn't need the voltage
+tweak - it still works.
 
-Ok.
+The patch breaks (32-bit) kernel builds for G5s etc (non-CONFIG_6xx).
+Patch below fixes that.
 
-Friendly,
 
-Sven Luther
+    Christiaan
+
+
+--- linux-2.6.7/arch/ppc/platforms/pmac_cpufreq.c.bak   2004-06-25 22:35:25.094647214 +0200
++++ linux-2.6.7/arch/ppc/platforms/pmac_cpufreq.c       2004-06-26 04:13:19.182914571 +0200
+@@ -128,6 +128,7 @@
+ /* Switch CPU speed using DFS */
+ static int __pmac dfs_set_cpu_speed(int low_speed)
+ {
++#ifdef CONFIG_6xx
+        if (low_speed == 0) {
+                /* ramping up, set voltage first */
+                pmac_call_feature(PMAC_FTR_WRITE_GPIO, NULL, voltage_gpio, 0x05);
+@@ -150,6 +151,7 @@
+                /* ramping up, disable aack delay last */
+                pmac_call_feature(PMAC_FTR_AACK_DELAY_ENABLE, NULL, 0, 0);
+        }
++#endif
+
+        return 0;
+ }
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
