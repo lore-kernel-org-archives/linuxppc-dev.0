@@ -1,48 +1,47 @@
-Date: Thu, 20 Jan 2000 20:51:46 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 20 Jan 2000 20:59:06 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
 To: Kevin Hendricks <khendricks@ivey.uwo.ca>
-cc: Gabriel Paubert <paubert@iram.es>,
-        Franz Sirl <Franz.Sirl@munich.netsurf.de>,
+cc: Franz Sirl <Franz.Sirl@munich.netsurf.de>,
         David Edelsohn <dje@watson.ibm.com>, linuxppc-dev@lists.linuxppc.org
 Subject: Re: Fwd: Re: still no accelerated X ($#!$*)
 In-Reply-To: <00012014395300.05824@localhost.localdomain>
-Message-ID: <Pine.LNX.4.05.10001202050350.23608-100000@callisto.of.borg>
+Message-ID: <Pine.HPX.4.10.10001202043560.18916-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 20 Jan 2000, Kevin Hendricks wrote:
-> > Actually if base_addr can be reused by the compiler for other accesses
-> > to the same area (byte or big endian), it should be written as:
-> >
-> > "stwbrx %0,%1,%2": : "r" (regdata), "b" (base_addr), "r" (regindex)
-> >
-> > with a volatile qualifier on the asm statement but I disagree on the
-> > "memory" clobber if this does not access areas the compiler will ever
-> > touch and does not have side effect.
-> >
-> > There are already too many memory clobbers out there, they are bad because
-> > they basically tell the compiler that it can not keep a single variable
-> > in a register.
->
+
+
+	Hi,
+
 > In this particular case, the base address can change (but very very rarely
 > such as writing to one Aperature or Another on the Rage 128 card) and all of
 > the writes are made to either the card memory mapped io or the frame buffer
 > itself.
 
-The base_addr may change in between calls, but not while executing the asm
-code. The memory clobber means that memory contents may change while
-executing the asm code without gcc knowing about it.
+Then the memory clobber would force the compiler to reload base_addr
+between 2 writes to the frame buffer.
 
-Gr{oetje,eeting}s,
---
-Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
+> Should I not include the : "memory" clobber in this case?  Will it hurt
+> performance much?
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+I think that it is not necessary: the best thing with a compiler which
+performs alias analysis might be to tell the truth
+
+asm ("stwbrx %1,%2,%3"
+     : "=m" (*(volatile unsigned *)(base_addr+regindex))
+     : "r" (regdata), "b" (base_addr), "r" (regindex));
+
+Note we don't use %0, and it won't produce any aditional code. You may
+want to check what the compiler would have generated as addressing mode
+by appending " # %0" at the end of the code string.
+
+I truly wish there were a constraint for indexed addressing modes (anyway
+this will be necessary for proper Altivec support).
+
+	Gabriel.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
