@@ -1,35 +1,38 @@
-Message-Id: <v04003a14b702bc961130@[24.70.162.12]>
-In-Reply-To: <20010418002843.8305BDBACB@atlas.valhalla.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Tue, 17 Apr 2001 22:40:39 -0500
-To: "Iain Sandoe" <iain@sandoe.co.uk>,
-	=?iso-8859-1?Q?=22Michel_D=E4nzer=22?= <michdaen@iiic.ethz.ch>
-From: Tony Mantler <nicoya@apia.dhs.org>
+Date: Wed, 18 Apr 2001 14:04:21 +1000
+From: Steven Hanley <sjh@svana.org>
+To: linuxppc-dev@lists.linuxppc.org
 Subject: Re: XF4, SysRq, VT, mouse buttons, Keymaps and all that
-Cc: linuxppc-dev@lists.linuxppc.org
+Message-ID: <20010418140421.C535@wibble.net>
+Reply-To: Steven Hanley <sjh@wibble.net>
+References: <20010418002843.8305BDBACB@atlas.valhalla.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20010418002843.8305BDBACB@atlas.valhalla.net>; from iain@sandoe.co.uk on Wed, Apr 18, 2001 at 01:28:52AM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 7:28 PM -0500 4/17/2001, Iain Sandoe wrote:
-[...]
->The frustration is that the keycodes are listed in
->/proc/sys/dev/mac_hid/mouse_buttonX_keycode - but finding out which physical
->key combination relates to the numbers doesn't appear to be trivial.
+On Wed, Apr 18, 2001 at 01:28:52AM +0100, Iain Sandoe wrote:
+> The frustration is that the keycodes are listed in
+> /proc/sys/dev/mac_hid/mouse_buttonX_keycode - but finding out which physical
+> key combination relates to the numbers doesn't appear to be trivial.
 
-I think if you enable linux keycodes on the console, then use showkeys, you
-can get the proper values to plug into those files.
+AFAIU the numbers there are identical to those in
+/usr/src/linux/include/linux/input.h even when you have adb keycodes theya
+re still the linux keycode numbers.
 
-Bit of a PITA, but at least they'll (hopefully) always be consistant.
+if you have the linux keycodes enabled using showkey in console will give
+you the keycode for a key corresponding to what is in that header file.
 
-
-Cheers - Tony 'Nicoya' Mantler :)
-
+	See You
+	    Steve
 
 --
-Tony "Nicoya" Mantler - Renaissance Nerd Extraordinaire - nicoya@apia.dhs.org
-Winnipeg, Manitoba, Canada           --           http://nicoya.feline.pp.se/
-
+sjh@wibble.net http://wibble.net/~sjh/
+Look Up In The Sky
+   Is it a bird?  No
+      Is it a plane?  No
+         Is it a small blue banana?
+YES
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
