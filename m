@@ -1,37 +1,41 @@
-Message-ID: <004f01bfd926$d25edc40$dc52df8d@oslo>
-From: "SangTae Ha" <stha@postech.edu>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: How to initialize SMC2 for another console port  ?
-Date: Sun, 18 Jun 2000 22:12:14 +0900
+From: t.shantha.laxmi@exgate.tek.com
+Message-ID: <21F9768AF088D211BF1C0008C71E5786010F0C1F@ap-bang-m02.india.tek.com>
+To: nboppuri@myiagent.com, linuxppc-embedded@lists.linuxppc.org
+Subject: RE: mpc8bug startup problems
+Date: Sun, 18 Jun 2000 23:10:08 -0700
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="ks_c_5601-1987"
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all.
+You need to add the .rej file which comes with the s/w, into the registry. I
+think using Win 95 is a better option. I used Win 95.
 
-Since my team have purchased HIOX board for RPXLite, me and my friend working on HIOX SMC2 port on linux.
 
-My question is ...
-
-Are there any code for using HIOX SMC2 port as a secondary RS232 serial port (/dev/ttyS1) on linux?
-
-I tried to set BCSR register, But I couldn't get the output (/dev/ttyS1).
-
-/* uart.c */
-
-#if 1
-        /* This enables HIOX Extension Board, I think */
-         *((uint *)0xfac00000) = ((uint)0x380F3C00);
-
-#endif
-
-We use MontaVista linux-2.2.13-7.
-
-Thanks in advance.
-
-Have a nice day.
+-> -----Original Message-----
+-> From: Navin Boppuri [mailto:nboppuri@myiagent.com]
+-> Sent: Friday, June 16, 2000 6:55 PM
+-> To: linuxppc-embedded@lists.linuxppc.org
+-> Subject: mpc8bug startup problems
+->
+->
+->
+-> I am trying to connect to my Motorola FADS 823 board using
+-> mpc8bug on an NT
+-> host. I followed the instructions in the readme of the
+-> mpc8bug correctly.
+-> But for some reason, when I try and run the mpc8bug, it gives up an
+-> Application error window which starts that mpc8bug was not
+-> initialized
+-> properly(0xc000005). I am not able to figure out where the
+-> actual problem
+-> is. I did set up the ADI address and the ADS address.
+->
+->
+-> ** Sent via the linuxppc-embedded mail list. See
+-> http://lists.linuxppc.org/
+->
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
