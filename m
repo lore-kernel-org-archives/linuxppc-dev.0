@@ -1,25 +1,15 @@
-Return-Path: <vitorio@digitel.com.br>
-Received: from hermes.digitel.com.br (hermes.digitel.com.br [200.198.105.36])
-	by ozlabs.org (Postfix) with ESMTP id CA8F12BF23
+Return-Path: <ALEBAS@televes.com>
+Received: from televes.com (unknown [212.163.42.137])
+	by ozlabs.org (Postfix) with SMTP id 65C952BF07
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  5 Jan 2005 00:05:13 +1100 (EST)
-Received: from [10.10.10.160] by hermes.digitel.com.br (GMS
-	9.01.3158/NU1492.00.9f6ce814) with ESMTP id althibaa for
-	linuxppc-embedded@ozlabs.org; Tue, 4 Jan 2005 11:11:42 -0200
-From: =?ISO-8859-1?Q?Lu=EDs_Vit=F3rio?= Cargnini <vitorio@digitel.com.br>
-To: Geert Uytterhoeven <geert@linux-m68k.org>,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-In-Reply-To: <Pine.GSO.4.61.0501031717080.27452@waterleaf.sonytel.be>
-References: <1104758458.14925.5.camel@vitorio>
-	<Pine.GSO.4.61.0501031717080.27452@waterleaf.sonytel.be>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-eHKAYVpr0ErujqILPm2/"
-Date: Tue, 04 Jan 2005 11:07:28 +0000
-Message-Id: <1104836848.5622.8.camel@vitorio>
-Mime-Version: 1.0
-Subject: Re: Making a serial multiplexer (new driver)
-Reply-To: vitorio@digitel.com.br
+	Wed,  5 Jan 2005 00:31:14 +1100 (EST)
+Message-ID: <51DB8827D393D411BB69003048003F46FDCF94@tvesntr>
+From: Bastos Fernandez Alexandre <ALEBAS@televes.com>
+To: 'linuxppc' <linuxppc-embedded@ozlabs.org>
+Date: Tue, 4 Jan 2005 14:31:03 +0100 
+MIME-Version: 1.0
+Content-Type: text/plain
+Subject: Asymmetric throughput in pq2ads. Help needed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,61 +20,52 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi to all,
 
---=-eHKAYVpr0ErujqILPm2/
-Content-Type: text/plain; charset=iso-8859-2
-Content-Transfer-Encoding: quoted-printable
+I have been doing some throughput test in the 8272ads board
+using it as a router.
 
-it can't be done in user space=20
-why?
-Because the multiplexer has an proprietary p=E0otocol 8-(
-so i'll encapsulate the communication of 3 channels to communicate with
-physical device and my user-level applications like pppd don't need to
-know the mux protocol, this will be transparent for the user
-applications.
+Several tests have been done with uboot-1.1.2 (using FCC1 ETHERNET)
+and linux kernel 2.6.10-rc3
 
-On Mon, 2005-01-03 at 17:17 +0100, Geert Uytterhoeven wrote:
-> On Mon, 3 Jan 2005, [ISO-8859-1] Lu=EDs Vit=F3rio Cargnini wrote:
-> > Hi i need to write a driver that must multiplex an serial channel my
-> > driver will have  3 interfaces and i must communicate with another
-> > interface  (midleware) like /dev/ttyS2 for example, how could i write a
-> > driver that will communicate with my existing uart ???
-> >=20
-> > i have a component that could be multiplexed in 3 logical channels thro=
-w
-> > my single physical channel that are accessed with a normal serial
-> > interface using uart, how could this be possible ?
-> > this is necessary to be transparent to software user level.
->=20
-> Do it in userspace using fifos?
->=20
-> Gr{oetje,eeting}s,
->=20
-> 						Geert
->=20
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m6=
-8k.org
->=20
-> In personal conversations with technical people, I call myself a hacker. =
-But
-> when I'm talking to journalists I just say "programmer" or something like=
- that.
-> 							    -- Linus Torvalds
---=20
-Lu=EDs Vit=F3rio Cargnini <vitorio@digitel.com.br>
-Digitel S/A
+To support both FCC interfaces on this board, I have enabled
+FCC2 in BCSR3:
 
---=-eHKAYVpr0ErujqILPm2/
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+In platforms/pq2ads.h
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.6 (GNU/Linux)
+#define BCSR3_FETHIEN2          ((uint)0x10000000)
+#define BCSR3_FETH2_RST         ((uint)0x80000000)
 
-iD8DBQBB2njwyHSZZ0hdDzQRAhzVAJ450scCBfihNBEFjapeQM40Xyds2gCdF8/B
-Khi+8ZrlOG0QqKEEnEXn7E8=
-=2DPT
------END PGP SIGNATURE-----
+In 8260_io/fcc_enet.c
 
---=-eHKAYVpr0ErujqILPm2/--
+*(volatile uint *)(BCSR_ADDR + 12) &= ~BCSR3_FETHIEN2;
+*(volatile uint *)(BCSR_ADDR + 12) |=  BCSR3_FETH2_RST;
+
+No other related changes have been done to linuxppc-2.5 top
+bitkeeper version of kernel.
+
+In this context I have set this trivial net:
+
+
+   PC1 -----X-cable------ 8272ADS ------X-cable------ PC2
+
+The ADS is connected to PC1 through FCC1 and to PC2 through FCC2.
+
+Then, throughput from PC1 to PC2 (measured using ttcp) is not the
+same than throughput from PC2 to PC1.
+
+ UDP ...  PC1 --> PC2  90 Mbps aprox
+              PC2 --> PC1  60 Mbps aprox   !!!!!!!!
+
+  TCP ... PC1 --> PC2   60 Mbps aprox
+             PC2 --> PC1   1 Mbps aprox  !!!!!!!!!!!!
+
+It seems as if the ADS were loosing packets arriving at FCC2.
+
+At this point I am a bit lost. I don't know what I should try to change or
+where I should set any breakpoint with my BDI to find what is going wrong.
+Any idea from guys in the list?
+
+Thanks,
+
+Alex Bastos
