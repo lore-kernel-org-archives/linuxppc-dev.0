@@ -1,44 +1,67 @@
-From: benh@kernel.crashing.org
-To: <yellowdog-devel@lists.yellowdoglinux.com>,
-	<linuxppc-dev@lists.linuxppc.org>,
-	"Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
-Subject: Re: some questions on new dual 1Gig G4's support?
-Date: Mon, 4 Feb 2002 19:15:38 +0100
-Message-Id: <20020204181538.4089@mailhost.mipsys.com>
-In-Reply-To: <20020203185831.MQZJ9396.tomts12-srv.bellnexxia.net@there>
-References: <20020203185831.MQZJ9396.tomts12-srv.bellnexxia.net@there>
+Message-ID: <3C5ED0F9.5060908@cymes.de>
+Date: Mon, 04 Feb 2002 19:20:41 +0100
+From: Matthias Grimm <joker@cymes.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: LinuxPPC-Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Why is the Powerbook Fn-Key handled differently?
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->
->Is this L3 cache problem with DOZE and NAP an errata for 7450?  I looked
->in the updates 7450 manual (with 7455 specifics already added to it) and I
->did not see any limitations on NAP or DOZE (it is 840 some pages long so
->perhaps I am not lookingin the right places yet).
+Hello,
 
-No. It's 2 things. First the NAP must be disabled depending on the
-errata (7450 + L3), but also, neither the 7450 nor the 7455 support
-DOZE, they can only NAP or do nothing. Worst, on the 7455, it's bad
-to set HID0:DOZE as it actually has a different meaning.
+I own an Powerbook G3 which has a Fn-Key for his special functions.
+During my kernel source studies I learned that there are two keyboard
+drivers: 1. The old machintosh keyboard driver and
+          2. The new event driven Human Input Device from Vojtech Pavlik
 
-So let's split the can doze & can nap into 2 different features.
+The old driver map the scancode for the Fn-Key to a different value and
+passes it to the Kernel keyboard driver. The new HID filters the Fn-Key
+completely out, as the attached code fragments below show.
 
->> pmac_feature.c : add an entry in the machine table for your machine
->> based on OF "model" property.
->
->According to the Apple developers note just released for this machine its
->model ID is simply "PowerMac3,5" which is unchanged from previous versions
->and already covered in the pmac_feature.c file.
+Is there any reason to cut out the Fn-Key in the new input driver?
+Nevertheless the Fn-Key is hard wired with the special keys and the
+number block, it would helpful to have an additional qualifier key on
+this small keyboard.
 
-Ok.
+For now this is to check if it makes sense for me to work further in
+this direction.
 
->So I will spend my time reading up on NAP and DOZE and trying to see if
->and how that has changed since the 7450.
->
->Thanks for all your help!
+  Thanks for your help in advance
+    Matthias Grimm
+
+
+Sourcefile: driver/machintosh/mac_keyb.c, old-style keyboard driver
+
+static void
+input_keycode(int keycode, int repeat)
+{
+	[...]
+
+	/* remap the "Fn" key of the PowerBook G3 Series to 0x48
+	   to avoid conflict with button emulation */
+    >>>     if (keycode == 0x3f)
+    >>>		keycode = 0x48;
+
+	[...]
+}
+
+Sourcefile: driver/machintosh/adbhid.c, new-style keyboard event driver
+
+static void
+adbhid_input_keycode(int id, int keycode, int repeat)
+{
+	[...]
+
+	switch (keycode) {
+	[...]
+   >>>	case 0x3f: /* ignore Powerbook Fn key */
+   >>>		return;
+	}
+
+	[...]
+}
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
