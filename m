@@ -1,28 +1,40 @@
-Message-ID: <01ec01c03fa9$041ce7c0$1f01a8c0@hoangmobile>
-From: "Nguyen Xuan Hoang" <jerry.nguyen@serialsystem.com.sg>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Script for RPX Lite DW - Help!!!!
-Date: Thu, 26 Oct 2000 17:01:11 -0700
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-Id: <4.3.2.7.2.20001027005559.00ad3e50@192.168.1.2>
+Date: Fri, 27 Oct 2000 01:34:55 +0100
+To: Kyle Harris <kharris@nexus-tech.net>,
+        linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+From: Eurico Inocencio <emi@cdftel.pt>
+Subject: Re: BDM recommendations
+In-Reply-To: <39F86C2D.C242473B@nexus-tech.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi All,
+Hello
 
-I am using RPX Lite DW board, unfortunately I did erase the boot code on the
-flash and the board become unusable.
+>I'm looking to purchase a new BDM emulator. Does anyone have
+>suggestions. I've been using EST's for several years on the 68xxx
+>platform and have been very pleased with it. But, of course, the PPC is
+>not supported with my current model and they recommend upgrading to
+>visionProbe for support ($$$).
 
-I have an BDM debugger, but don't have the parameter to initialize UPM and
-memory map. So I could not revise the board.
+I also bough one BDI2000 for PowerPc 82XX from Abatron,
+the product is quite good, support works not only fix problems
+but also to improve the product. For example I received frequent
+firmware updates with new features (support for MMU, Linux kernel
+image download). With DDD in control of the BDI box you get a great
+graphical debugger.
 
-Could anybody pls give me the script file or the parameters to initialize
-the UPM and memory for that board?
+Just another happy user
 
-Thanks very much and looking forward to any help.
-Hoang
 
+-----------------------------------------------------------------------
+  Eurico Mendes Inocencio          CDFtel,
+Lda
+  Ph. No:  +351.22.3389843         Rua Goncalo Cristovao, 347 - Sala 205
+  FAX No:  +351.22.3389845         4000-270 PORTO
+  E-mail:  mailto:emi@cdftel.pt    Portugal
+-----------------------------------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
