@@ -1,30 +1,41 @@
-From: zjuzhou@163.net
+Message-ID: <3ADFF92F.131937C5@opensource.se>
+Date: Fri, 20 Apr 2001 10:54:07 +0200
+From: Magnus Damm <damm@opensource.se>
 MIME-Version: 1.0
-Message-Id: <3ADFEAD3.10027@bjapp4>
-Date: Fri, 20 Apr 2001 15:52:51 +0800 (CST)
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Which file tell chip selecting in source,Hard Hat for RPXlite?
+To: Michael Habermann <MHabermann@gmx.de>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MPC8xxFADS support
+References: <5.0.2.1.0.20010420083110.009f5850@pop.gmx.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hello all.
-	i can't find file which file tell me the chip select in hard har linux source.i use MPC850,Hard Hat for RPXlite borad.
-	i am sorry i always ask these base question, i can't access
-linuxppc.org because of my school's firewall.
-	thanks.
+Michael Habermann wrote:
+>
+> I intend to use the MPC8xxFADS board with an 855T. I've read in this
+> newsgroup several times that the FADS are causing problems.
+> Which kind of problems do I have to expect? Is PCMCIA supported reliable?
 
+Don't get me started.
+I had some problems with the ZIF socket on my FADS860T.
+And the MACH chips might have some bugs which makes PCMCIA/FLASH
+accesses
+wierd if not done the right way. I think that the PCMCIA accesses was
+trashed
+in some way if the previous access was made to the flash...
+But that is usually no problem if you run Linux from memory.
 
+Only some versions of the 860T chip seemed to work with my FADS860T,
+even if all my 860:s (T:s and non-T:s) acted normal with my ADS860
+board....
 
+The socket driver for the pcmcia-cs package should support FADS860T.
+I don't know how the 855T is connected to the PCMCIA socket on the FADS,
+you might need to modify the socket driver...
 
+Cheers /
 
-===============================================
-为你而建，为你而设，让你传递真心真意
-
-    ---- 163.net贺卡站（http://ecard.163.net）
-
-163电子邮局全新奉献，精彩无限的电子贺卡站。
-===============================================
-
+Magnus
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
