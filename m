@@ -1,43 +1,40 @@
-Date: Fri, 15 Sep 2000 03:03:40 -0400 (EDT)
-From: Alexander Viro <viro@math.psu.edu>
-To: "Halfmann, Klaus" <khalfmann@libra.de>
-cc: "'linux-fsdevel@vger.kernel.org '" <linux-fsdevel@vger.kernel.org>,
-        "'linuxppc-dev@lists.linuxppc.org '" <linuxppc-dev@lists.linuxppc.org>,
-        "'flar@allandria.com '" <flar@allandria.com>,
-        "'Olaf Hering'" <olh@suse.de>
-Subject: Re: Status of HFS+ support
-In-Reply-To: <F14441D40E5AD3118886005004607AD10BDDA5@MAIL1>
-Message-ID: <Pine.GSO.4.21.0009150254510.3380-100000@weyl.math.psu.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Thomas Graichen <news-innominate.list.linux.ppc.dev@innominate.de>
+Reply-To: Thomas Graichen <graichen@innominate.de>
+Subject: XFree86 4.0 auf imac dv
+Date: 15 Sep 2000 08:46:32 GMT
+Message-ID: <news2mail-8psnl8$1gb$5@mate.bln.innominate.de>
+Reply-To: thomas.graichen@innominate.de
+To: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 15 Sep 2000, Halfmann, Klaus wrote:
+does anyone here have XFree86 4 running suscessfully on a imac dv (or
+blueberry which should be basically the same)? - i ask because i tried
+the DRI test server from michael daenzer and get problems with the
+screen: it shows only the left half and also shows this half again
+on the right side - the mousecursor is moving fine over the full
+screen btw.
 
-> (thanks once again), or even better might help me :). And
-> yes, It should run ox x86 linux, too. But I have no acces to
-> a machine to really test it. (On the other hand, which x86
-> linux user needs this :)
+some more details about the setup: latest paulus kernel, XF86Config
+standard for a r128 card (the card is an 8mb r128 rl) - if you need
+any more information please let me know ...
 
-Put several fs images on anon ftp and let's see what testing can be
-done...
+so has anyone else seen this too or has it working on a similar
+machine ... i just wanted to know this before i start looking
+deeper
 
-> P.S. could someone tell me how to join the linux-fsdevel
-> 	List ? (or better read it offline)
+a lot of thanks in advance
 
-Huh? It's majordomo-controlled. I.e. mail to majordomo@vger.... and put
-subscribe linux-fsdevel
-into body. Then reply to the confirmation request - all as usual.
+t
 
-ObTesting: folks, it's share-the-testsuite time. Really. Everyone who has
-such stuff is very welcome to post URLs.
+p.s.: i think this is more a generic xf4 and r128 problem than having
+      anything to do with the dri stuff
 
-ObTesting2: any volunteers for testing new minixfs? It looks like I've got
-something that approaches beta. I'll put it on anon-ftp tonight and post
-the URL - it may be dangerous, so don't try it on production boxen...
-It should fix the races analogous to ext2 ones.
-
+--
+thomas.graichen@innominate.de
+technical director                                       innominate AG
+clustering & security                                networking people
+tel: +49.30.308806-13  fax: -77                   http://innominate.de
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
