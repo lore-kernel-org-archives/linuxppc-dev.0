@@ -1,35 +1,35 @@
-Message-ID: <3974CA79.C5F0AB2B@execpc.com>
-Date: Tue, 18 Jul 2000 16:22:01 -0500
-From: Joseph Garcia <jpgarcia@execpc.com>
+Date: Tue, 18 Jul 2000 16:30:27 -0500 (CDT)
+From: Nathan Ingersoll <ningerso@d.umn.edu>
+To: Paul Schinder <schinder@pobox.com>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Malloc bug?
+In-Reply-To: <p04320400b59a741412fc@[10.0.1.44]>
+Message-ID: <Pine.SO4.4.02.10007181627250.11229-100000@ub.d.umn.edu>
 MIME-Version: 1.0
-To: Derek Homeier <supas100@astrophysik.uni-kiel.de>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: switching consoles
-References: <Pine.SOL.3.95.1000718225607.3933D-100000@juliet>
-Content-Type: text/plain; charset=iso-2022-jp
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Derek Homeier wrote:
-> However, this might also be a side effect of writing evil things to the PMU,
-> because the crashes were all related to not being able to power on the
-> backlight and wake up from sleep mode. Does the PMU handle the ADB stuff as
-> well (think I heard so, but not positive)?
+On Tue, 18 Jul 2000, Paul Schinder wrote:
 
-i'd think that it would be more likely the nvram resetting.  But PMU is actually
-on ADB.  as far as i know, all direct pmu ioctls (battery query, etc) are sent
-to /dev/adb, while interpreted ioctls (like sleep) are sent to /dev/pmu, which
-is why /dev/pmu features need kernel support and vary from system to system.
+> At 3:40 PM -0500 7/18/00, Nathan Ingersoll wrote:
+> >I've been working on a GTK program for a while now, and I've been
+> >experiencing segfaults within malloc. I was under the impression that
+> >malloc should always return successfully (at least that's what the man
+> >page says).
+>
+> No, it shouldn't.  If there's no memory left, it will return NULL.
+> Software should be checking for this.
 
-The noodle-scratcher in this is the fact that the keyboard's F-key setting is
-maintained post-sleep, while trackpad tapping is always reset.  both being ADB
-devs reset upon wake, id think it would get reset.  there could be something we
-are missing.
+Right, but it's not returning at all. It's segfaulting inside the malloc
+function before it returns anything.
 
---
-Joseph P. Garcia      jpgarcia@execpc.com      jpgarcia@lidar.ssec.wisc.edu
-CS Undergraduate                      Student Employee - Systems Programmer
-University of Wisconsin - Madison                            UW Lidar Group
+---------------------------------------------------------------------------
+|   Nathan Ingersoll             |   Computer Science/Mathematics         |
+|   mailto: ningerso@d.umn.edu   |   University of Minnesota-Duluth       |
+|   http://umn.edu/~ningerso     |   http://www.d.umn.edu                 |
+---------------------------------------------------------------------------
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
