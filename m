@@ -1,38 +1,49 @@
-Message-ID: <3C17A868.605B0BED@ualberta.ca>
-Date: Wed, 12 Dec 2001 11:56:40 -0700
-From: Jesse McCrosky <mccrosky@ualberta.ca>
-MIME-Version: 1.0
-To: LinuxPPC Dev List <linuxppc-dev@lists.linuxppc.org>
-Subject: link error with jdk-1.3
+From: Peter Bergner <bergner@brule.borg.umn.edu>
+Date: Wed, 12 Dec 2001 13:05:22 -0600
+To: Adam C Powell IV <hazelsct@mit.edu>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Why require CONFIG_BOOTX_TEXT for so much of offb?
+Message-ID: <20011212130522.A238707@brule.borg.umn.edu>
+References: <3C158758.5020608@mit.edu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3C158758.5020608@mit.edu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I just downloaded the the blackdown powerpc port of jdk-1.3.
-Unfortunately there
-seems to be some sort of link error.
+: So here are my questions:
+:
+:     * Is there a way around this?
+:     * Is the test for BootX at the start of offb_init() somehow
+:       insufficient, such that all of this code must be eliminated if
+:       non-BootX booting is to work?
+:     * Or is there in fact a hard dependency of that code on other stuff
+:       provided by CONFIG_BOOTX_TEXT?
+:     * Is there some way of separating the two, so a single kernel can
+:       work with BootX and with all versions of OpenFirmware?
+:     * What's the point of offb without this section of code?
 
-When I try to run java I get the following error.
+I believe I'm the person responsible for adding the #ifdef CONFIG_BOOTX_TEXT
+to the code.   IIRC (it's been a while), the problem with that code is that
+when compiling the ppc64 kernel, you get a compile error when building that
+file:
 
-/usr/src/j2sdk1.3/jre/bin/ppc/native_threads/java: error while loading
-shared libraries: /usr/src/j2sdk1.3/jre/lib/ppc/classic/libjvm.so:
-symbol __register_frame_info, version GLIBC_2.0 not defined in file
-libc.so.6 with link time reference
+    offb.c:38:23: asm/bootx.h: No such file or directory
 
-I was actually getting a similar error on realpath before, but I hand
-edited the .java_wrapper file to replaace realpath references with
-absolute pathnames, foolishly thinking this would solve my problem...
+Given that bootx doesn't exist in ppc64 and the code seemed to be used
+_only_ for bootx, I wrapped it with the "#ifdef CONFIG_BOOTX_TEXT".
+Since it's a problem for you, replacing the uses of "#ifdef CONFIG_BOOTX_TEXT"
+(there are 3 uses of it) with "#ifndef CONFIG_PPC64" instead would probably
+work for me and fix your problem too.
 
-I am using glibc-2.2.4
 
-Any ideas?
-
-Thanks.
+Peter
 
 --
-	jesse McCrosky
-	mccrosky@ualberta.ca
-	GPG Public Key: http://www.ualberta.ca/~mccrosky/public_key.asc
+Peter Bergner
+SLIC Optimizing Translator Development / Linux PPC64 Kernel Development
+IBM Rochester, MN
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
