@@ -1,39 +1,24 @@
-In-Reply-To: <v04011700b2bab10bde9f@[209.86.156.161]>
-Date: Thu, 7 Jan 1999 21:15:51 +0100
-To: linuxppc-dev@lists.linuxppc.org, "Timothy A. Seufert" <tas@mindspring.com>
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: Great IDE perf (WAS: Strange PMAC IDE performance)
-Message-Id: <19990107211551.009756@mail.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Thu, 7 Jan 1999 14:17:22 -0700 (MST)
+From: Cort Dougan <cort@persephone.cs.nmt.edu>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+cc: Brad Midgley <brad@pht.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: system.h and "::"
+In-Reply-To: <Pine.LNX.4.03.9901071829510.16860-100000@mercator.cs.kuleuven.ac.be>
+Message-ID: <Pine.LNX.3.96.990107141703.4626A-100000@persephone.cs.nmt.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Jan 7, 1999, Timothy A. Seufert <tas@mindspring.com> wrote:
+I just undid that and sent patches to Linus.  I'll put back the fix and
+resubmit it to Linus.
 
->It's "ohare-ata".  Should apply to any machine with the O'Hare I/O ASIC
->(which includes many (all?) of the desktop 603e PCI machines, not just the
->older PCI PowerBooks).
-
-I'm a little bit afraid of enabling this for older machines blindly. I
-think I'll do a patch that looks for a specific config option on the
-command line until enough people have tested it. After all, this may put
-user's datas at risk.
-
-Until Paul finds a more clear meaning of all this, this option should
-allow to test if the values we found in MacOS are fine for all machines.
-I could add code to BootX that sends the current MacOS values to linux
-but this would really be too hackish, I think.
-
-I'll update my test kernel and patch set later tonight or tomorrow.
-
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
-
-
-
+}> has special meaning to the c++ compiler. the compile succeeds if it's
+}> broken up into ": :" but will that cause any problems? does that have the
+}> same meaning in assembly? the patch ends this message. 
+}
+}Thanks! I fixed all occurencies in the vger tree.
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
