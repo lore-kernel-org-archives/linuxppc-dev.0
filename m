@@ -1,50 +1,29 @@
-Message-Id: <l03130301b972e8973ac8@[192.168.1.2]>
-In-Reply-To: <200208031028.20491.kevin.hendricks@sympatico.ca>
-References: <20020728022655.GA19087@krispykreme>
- <200207231725.30067.kevin.hendricks@sympatico.ca>
- <200207240804.36472.kevin.hendricks@sympatico.ca>
- <20020728022655.GA19087@krispykreme>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Sun, 4 Aug 2002 10:26:39 -0400
-To: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
-From: "Michael R. Zucca" <mrz5149@acm.org>
-Subject: Re: why isync in atomic icc and return and atomic dec and return
- for CONFIG_SMP
-Cc: Anton Blanchard <anton@samba.org>,
-	linuxppc-dev@lists.linuxppc.org,
-	yellowdog-devel@lists.terrasoftsolutions.com
+Date: Mon, 5 Aug 2002 20:07:46 +0200 (MEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: macserial and wait_key
+Message-ID: <Pine.GSO.4.21.0208052005570.1441-100000@vervain.sonytel.be>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 10:28 AM -0400 8/3/02, Kevin B. Hendricks wrote:
+	Hi,
 
->In userland code, say with a fully pre-emptible kernel, if a signal comes
->in to thread A and before returning another thread (call it B)  is run,
->couldn't the same problem happen with prefetching data being old since
->thread B may in fact be the one holding the lock and allowed to change the
->data.
->
->I guess what I am asking is would we need the isync for a userland version
->of this code if threads could actually be pre-empted even for a UP
->machine?
+I just noticed drivers/macintosh/macserial.c still has a wait_key() method in
+its serial console code, while wait_key() was killed a while ago.
 
-I would imagine this still isn't necessary because a preemption must happen
-as the result of an interrupt, which means an rfi gets executed. rfi is
-context synchronizing, just like isync.
+Gr{oetje,eeting}s,
 
-Voluntary context switching would involve making a syscall and sc is also
-context synchronzing.
+						Geert
 
-So I think all of the bases are covered for UP.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-
-----------------------------------------------
- Michael Zucca - mrz5149@acm.org
-----------------------------------------------
- "I'm too old to use Emacs." -- Rod MacDonald
-----------------------------------------------
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
