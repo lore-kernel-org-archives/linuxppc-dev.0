@@ -1,54 +1,53 @@
 From: benh@kernel.crashing.org
-To: "Mark A. Greer" <mgreer@mvista.com>
-Cc: Val Henson <val@nmt.edu>, <linuxppc-dev@lists.linuxppc.org>
+To: <msokolov@ivan.Harhan.ORG>
+Cc: <linuxppc-dev@lists.linuxppc.org>,
+	"Mark A. Greer" <mgreer@mvista.com>
 Subject: Re: EV-64260-BP & GT64260 bi_recs
-Date: Tue, 26 Mar 2002 22:40:52 +0100
-Message-Id: <20020326214053.31653@mailhost.mipsys.com>
-In-Reply-To: <3CA1031D.C072B4D6@mvista.com>
-References: <3CA1031D.C072B4D6@mvista.com>
+Date: Tue, 26 Mar 2002 22:52:35 +0100
+Message-Id: <20020326215235.21322@mailhost.mipsys.com>
+In-Reply-To: <0203270237.AA03006@ivan.Harhan.ORG>
+References: <0203270237.AA03006@ivan.Harhan.ORG>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Ben, et. al.,
 >
->Sorry for dropping out the last few days, I've been very busy with other
->things.
->
->I've skimmed the email but I'll admit I didn't read them all in depth.
->I've made
->an example of actual bi_rec's using the ev64260 to see if my skimming
->worked :)
->In the example, I used a BI_STRUCT to pass in  the mac addr for the 3
-embedded
->enet ctlrs on the gt64260.  I used the DEV_TYPE + DEV_CLASS concept but
->made an
->"EMBEDDED" DEV_TYPE to go along with DEV_PCI so we don't have to add a
-new one
->for each embedded ctlr.  The square brackets are only there to make it
->easier to
->follow.  I'm assuming that every bi_rec is responsible for padding out to a
->4-byte boundary.  Is that what I'm supposed to do?
->
->Please let me know if I'm on the right track.  If so, we--the ev64260
->people--can
->flesh out some more bi_rec's and implement them.
+>It would set a very bad example if it is implemented. In your proposal the
+>records containing the GT-64260 Ethernet information have no indication
+>in them
+>whatsoever that they are for GT-64260 and not some other Ethernet. If
+you make
+>the gt64260_eth driver call a function to grab all bi_recs of this kind, the
+>next engineer who designs a board with other hard-wired Ethernet
+interfaces on
+>it besides the GT-64260 (like an MPC8260 + GT-64260 system) will be simply
+>stuck out of luck as the gt64260_eth driver will unceremoniously grab all
+>records for all Ethernets and there will be no way to tell which MAC address
+>belongs to each Ethernet.
 
-Looks fine except for a couple of points:
+Yah, this is why BI_DEV_TYPE should be GT64260_xxxx
 
- - BI_STRUCT is gone, it's BI_DEVICE and the first "type" field is gone,
-that is BI_DEVICE just contains tags without a header. There is no need
-to "know" if a given BI_REC is actually a struct or not, though if we
-still want to do that for debugging reasons, we can define this info is
-stored in the the high bit of the size field (and make sure bi_rec parsing
-routines ignore that bit when reading size)
+We have several choices here for the design, I'm not sure which is best, so
+please speak up:
 
- - I'm not sure about the "EMBEDDED" dev type. I'd rather have a specific
-type for EV64260_EMBEDDED, and another one for 405_EMBEDDED for example,
-though this is mostly a matter of taste, we have enough room for types
-to define as many as we want ;)
+When dealing with combo-chips like the GT or PPC 4xx/8xx etc..., we can
+either:
+
+ - define one BI_DEV_TYPE per chip (BI_DEV_TYPE_GT64260, ...). The actual
+device within the GT64260 (ethernet in our case) is referenced via the
+BI_DEV_CLASS (ethernet), BI_DEV_ID beeing optionally there in case a
+given device in the chip exist in more than one instance.
+
+ - define one BI_DEV_TYPE per chip (same as above), and define a BI_DEV_ID
+containing both function and the index (for example 'ETH0') thus we don't
+need BI_DEV_CLASS.
+
+ - define a specific BI_DEV_TYPE for each function (that is
+BI_DEV_TYPE_GT64260_ETH), BI_DEV_ID is only an index.
+
+I tend to prefer solution 2)
 
 Ben.
 
