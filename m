@@ -1,46 +1,35 @@
-Message-ID: <398AEF99.26AD7EB9@rochcivictheatre.org>
-Date: Fri, 04 Aug 2000 11:30:17 -0500
-From: Tom Gall <gall@rochcivictheatre.org>
+Message-ID: <398AF755.E10D0C56@student.ethz.ch>
+Date: Fri, 04 Aug 2000 19:03:17 +0200
+From: Michel Dänzer <daenzerm@student.ethz.ch>
 MIME-Version: 1.0
-To: David Edelsohn <dje@watson.ibm.com>
+To: Benjamin Herrenschmidt <bh40@calva.net>
 CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Getting things in... Was: Re: shifts on 64bit ints
-References: <200008041626.MAA22082@mal-ach.watson.ibm.com>
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: Kind of success! (r128 on PPC (Re: LinuxPPC X Server))
+References: <Pine.LNX.4.21.0008031541210.6020-100000@idd-01.imbc.gr> <398ADB57.9ABEDC6F@student.ethz.ch>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-David Edelsohn wrote:
->
-> Tom> This can be a good thing or a bad thing tho. I'd rather like to see
-> Tom> patches posted to the list. Granted there's some line there where they
-> Tom> simply get too big and a link is better. At least with posting to the
-> Tom> list everyone has the chance to comment and better yet test them out!
->
->         I did not mean to send patches to someone *instead* of sending
-> them to the mailinglist.  I meant that sending them to the mailinglist
-> solely as a way of proposing that a patch be merged into the development
-> tree does not make it clear what action should be taken.
+Michel Dänzer wrote:
 
-Hi David,
+> 16 bit doesn't work neither with fbdev (colors completely off - does
+> aty128fb still use 15 bit in fact?)
 
-  Ooops sorry about that. Had a tooth out yesterday so my brain isn't
-exactly in the best of shape today.
+fbset -i reveals that it does.
 
-  Regards,
 
-  Tom
+Is anyone actively maintaining aty128fb or should I try to fix that as well as
+the panning? Looking at the X r128 driver, it shouldn't be too hard.
 
-> David
+
+Michel
+
 
 --
-Hakuna Matata,
-
-Tom
-
------------------------------------------------------------
-Linux Guy          "My heart is human, my blood is boiling,
-tgall@uswest.net    my brain IBM" -- Mr Roboto, Styxx
+Coming to you live from a finite point in the space-time continuum!
+______________________________________________________________________________
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
