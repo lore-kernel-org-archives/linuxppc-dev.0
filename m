@@ -1,44 +1,44 @@
-Message-Id: <200008241552.QAA08359@hyperion.valhalla.net>
-Date: Thu, 24 Aug 2000 16:52:47 +0100
+Message-ID: <39A5488B.872EE342@relog.ch>
+Date: Thu, 24 Aug 2000 18:08:43 +0200
+From: Michel Dänzer <daenzer@relog.ch>
+Reply-To: daenzerm@student.ethz.ch
+MIME-Version: 1.0
+To: Henry Worth <haworth@ncal.verio.com>
+CC: iain@sandoe.co.uk, linuxppc-dev@lists.linuxppc.org
 Subject: Re: [RFC] DMAsound 2.4.0-tx => 2.2.17 back-port.
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Henry Worth <haworth@ncal.verio.com>, linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+References: <39A54154.E02B3E0C@ncal.verio.com>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Henry,
+Henry Worth wrote:
 
-> However, on the Pismo it looks like that in additional to the LE
-> modes not being set, as previously discussed, the 8bit mode and rate
-> parms are also not getting set in the Screamer. The RAW_AFMT_S8_S_44K
-> sample sounds like Alvin and the Chipmonks and the lower rate samples
-> are just high-speed jibberish. Here's the stest ouput for a couple:
+> More recent verisons of esound (looks like those with ALSA changes)
+> have had some sort of buffering problem were they would skip blocks
+> during playback (with both esdplay and XMMS esd output plugin). The
+> blocks that played were at the correct speed, but the
+> track/sample would playback as quick as it could be read off
+> storage. The backport corrects,  or perhaps covers-up, the problem. I
+> need to investigate the root cause some more.
 
-The rate, mode and so is all done in software by the dmasound driver.  The
-only hardware assists are: different sample rates (where supported) and
-LE/BE swapping.
+This sounds familiar.
 
-Oops, my stest instructions were not good enough - you need to tell stest
-what the format of the file is:  **It does not look at *any* header
-information**
+I've been playing with the Quake sound playback In order to enable sound
+without mmap support, Steffen Haeuser advised using a dedicated thread which
+writes sound data to /dev/dsp.
 
-./stest with no params will give you all the options.
+It basically works, but the sound is somewhat distorted, and I think the
+problem might be similar to esd's .
 
 
->  [henry@osprey stest]$ ./stest -f AFMT_S16_LE_S_44K.wav
+Where is your backport (or rather patches against 2.4.0-testx) available?
 
-./stest -b16 -s -B -r 44100 -f  AFMT_S16_LE_S_44K.wav
+Michel
 
-(IIRC) would be right here...
 
-and so on...
-
-Sorry, I'll update the web page to point this out.
-
-ciao,
-Iain
+--
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and the DRI project
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
