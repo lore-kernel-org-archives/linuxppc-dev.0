@@ -1,61 +1,70 @@
-Message-ID: <3D187969.F9273A5F@sgi.com>
-Date: Tue, 25 Jun 2002 09:08:41 -0500
-From: Steven Hein <ssh@sgi.com>
+Date: 25 Jun 2002 14:22:49 -0000
+Message-ID: <20020625142249.2724.qmail@webmail15.rediffmail.com>
 MIME-Version: 1.0
-To: "Cameron, Steve" <Steve.Cameron@hp.com>
-Cc: David Blythe <blythe@broadon.com>,
-	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: cramfs for root filesystem?
-References: <45B36A38D959B44CB032DA427A6E10640167CFE8@cceexc18.americas.cpqcorp.net>
-Content-Type: text/plain; charset=us-ascii
+From: "navinb" <ppc4@rediffmail.com>
+Reply-To: "navinb" <ppc4@rediffmail.com>
+To: "Dan Malek" <dan@embeddededge.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: some lead in scc2 conflict with usb?
+Content-type: text/plain;
+	format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Sorry...  I haven't been living in the development PPC world lately.
-These patches should apply against the stock 2.4.18 kernel.
-Anyone is welcome to adapt them to the PPC development stuff
-and the sourceforge version of mkcramfs   :)
-
-(I'm on a new project involving an ARM processor now, so I'm not
-particularly current with the PPC stuff!)
-
-Steve
+SCC2 doesn't coflicts with USB ,I just have found the code in
+enet.c that is causing problem for USB .
 
 
+          cp->cp_sicr &= ~SICR_ENET_MASK;
+          cp->cp_sicr |=  SICR_ENET_CLKRT;
 
-"Cameron, Steve" wrote:
+if you are enabling USB before ENET then after initialising sicr
+with SICR_ENET_MASK
+USB is just able to recognise the RESET/IDLE events.
+
+consequently when you put SICR_ENET_CLKRT USB becomes lifeless .
+
+these are defined as ,
+
+#ifdefined CONFIG_RPXLITE
+#define SICR_ENET_MASK  ((uint)0x0000ff00)
+#define SICR_ENET_CLKRT ((uint)0x00003d00)
+
+In usb we are using the following for sicr initialisation
+#define SICR_USB_MASK   ((uint)0x000000ff)
+#define SICR_USB_CLKRT  ((uint)0x00000020) /* CLK1 */
+
+how the ordering ( USB after ENET) matters here..?
+
+Best Regards,
+
+On Mon, 24 Jun 2002 Dan Malek wrote :
 >
-> Steven Hein [mailto:ssh@sgi.com] wrote:
+>navinb wrote:
 >
-> > [...] You do need a kernel patch to add cramfs to the list of
-> > filesystems to check for in the initrd, also my patch forces the
-> > blocksize of the initrd to 4K if it finds that it contains cramfs. [...]
+>>problem being faced is that usb (scc1 addres space) works when
+>>my
+>>CPM ENET is not either at SCC1 or SCC2.
 >
-> Hmm, this patch doesn't seem to apply to my fairly recent
-> linuxppc_2_4_devel tree.  identify_ramdisk_image() for instance
-> is in init/do_mounts.c, not drivers/block/rd.c, and there is a
-> #define BUILD_CRAMDISK in there I guess relating to cramfs, though
-> I'm not sure what it's doing.
+>How does USB conflict with SCC2 in Ethernet mode?  The default
+>configuration should just build this way, since the only thing
+>you can run on SCC1 is USB.  On an 823, the default (and about
+>the only configuration) is USB on SCC1, Ethernet on SCC2 and
+>console
+>on SMC1.  Not all parts have SCC3.
 >
-> > I have also previously posted a patch to mkcramfs to swap
-> > endianness on a cramfs filesystem   [...]
-> >     http://lists.linuxppc.org/linuxppc-embedded/200206/msg00128.html
+>Thanks.
 >
-> Hmm, this patch doesn't seem to apply to the mkcramfs I got from
-> sourceforge yesterday.
 >
-> Thanks, just the same.
+>-- Dan
 >
-> -- steve
+>
 >
 
---
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Steve Hein (ssh@sgi.com)              Engineering Diagnostics/Software
-Silicon Graphics, Inc.
-1168 Industrial Blvd.                 Phone: (715) 726-8410
-Chippewa Falls, WI 54729              Fax:   (715) 726-6715
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+_________________________________________________________
+There is always a better job for you at Monsterindia.com.
+Go now http://monsterindia.com/rediffin/
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
