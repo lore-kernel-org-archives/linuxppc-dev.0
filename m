@@ -1,27 +1,24 @@
+Message-ID: <3C2DD464.423D350C@denise.shiny.it>
+Date: Sat, 29 Dec 2001 15:34:12 +0100
+From: Giuliano Pochini <pochini@denise.shiny.it>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Cc: Michel =?iso-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
 Subject: Re: xgamma
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
-To: Giuliano Pochini <pochini@denise.shiny.it>
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <3C2DC85D.145B4873@denise.shiny.it>
-References: <3C2DC85D.145B4873@denise.shiny.it>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: 29 Dec 2001 15:00:51 +0100
-Message-Id: <1009634451.2103.4.camel@pismo>
-Mime-Version: 1.0
+References: <3C2DC85D.145B4873@denise.shiny.it> <1009634451.2103.4.camel@pismo>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 2001-12-29 at 14:42, Giuliano Pochini wrote:
+> > xgamma has no effect with 2.4.17.
 >
-> xgamma has no effect with 2.4.17.
+> I assume you're talking about aty128fb and running X with Option
+> "UseFBDev". Ben seems to have decided not to support this unfortunately.
 
-I assume you're talking about aty128fb and running X with Option
-"UseFBDev". Ben seems to have decided not to support this unfortunately.
+Yep.  Workarounds ?
 
 
---
-Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
-XFree86 and DRI project member   /  CS student, Free Software enthusiast
+Bye.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
