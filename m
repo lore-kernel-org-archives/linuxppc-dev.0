@@ -1,39 +1,40 @@
-To: "leo" <leo_guo@jisung.cn>
-Cc: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: which is the best root File system in embed linux system? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 21 Apr 2004 23:32:17 +0800."
-             <200404211533.KAA04470@lists.linuxppc.org>
-Date: Wed, 21 Apr 2004 19:00:46 +0200
-Message-Id: <20040421170051.74931C109F@atlas.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: "aa aaa" <linux_powerpc@hotmail.com>
+To: wd@denx.de
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: jffs2 problem help!
+Date: Thu, 22 Apr 2004 09:26:44 +0800
+Mime-Version: 1.0
+Content-Type: text/plain; format=flowed
+Message-ID: <BAY13-F46HY44cnNRxG0000368d@hotmail.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <200404211533.KAA04470@lists.linuxppc.org> you wrote:
->
-> MPC852T target board with 8MB flash, which kind foot file system is the
-> best selection among of:
-...
+During creating jffs2 ,I modified the file /drive/mtd/maps/rpxlite.c just
+like the file tqm8xxl.c,I refered the manual DULG.after loading and running
+the kernel,display some following message:
 
-You cannot optimize anything  without  spezifying  your  optimization
-criteria  and  priorities.  What  is  important  for  you  - speed of
-booting, memory footprint in RAM, memory footprint  in  flash,  being
-able to write files to the filesystem, persistent sotrage of writtten
-data, etc. etc.
+init_rpxlite_mtd: chip probing count 0
+request_module[cfi_cmdset_0002]: Root fs not mounted
+Support for command set 0002 not present
+cfi_probe: No supported Vendor Command Set found
+init_rpxlite_mtd: chip probing count 1
+request_module[cfi_cmdset_0002]: Root fs not mounted
+Support for command set 0002 not present
+cfi_probe: No supported Vendor Command Set found
+init_rpxlite_mtd: chip probing count 2
+request_module[cfi_cmdset_0002]: Root fs not mounted
+Support for command set 0002 not present
+cfi_probe: No supported Vendor Command Set found
+init_rpxlite_mtd: chip probing count 3
+request_module[cfi_cmdset_0002]: Root fs not mounted
+Support for command set 0002 not present
+cfi_probe: No supported Vendor Command Set found
+RPXLITE: No support flash chips found!
 
-What's best for my project is probably the worst for yours.
+Where is wrong? and when I use the commmand xd ,show no command,why?
 
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"Plan to throw one away.  You will anyway."
-                              - Fred Brooks, "The Mythical Man Month"
+thanks !!
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
