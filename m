@@ -1,44 +1,54 @@
-Message-ID: <02c101c15df4$58bb2e30$d8020101@aztec.local>
-From: "Frederic Soulier" <soulier@aztec-radiomedia.com>
-To: "Steven Scholz" <steven.scholz@imc-berlin.de>,
-	"LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
-References: <3BD912A4.A623F870@imc-berlin.de>
-Subject: Re: USB and MPC855T/860T ???
-Date: Fri, 26 Oct 2001 10:00:52 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Steven Scholz <steven.scholz@imc-berlin.de>
+Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: CAN and MPC855T/860T 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 26 Oct 2001 09:49:31 +0200."
+             <3BD9158B.D3067C74@imc-berlin.de>
+Date: Fri, 26 Oct 2001 10:06:23 +0200
+Message-Id: <20011026080628.D625310CDA@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Steven,
-
-> I'd love to put some USB functionality to my custom MPC855T board.
+In message <3BD9158B.D3067C74@imc-berlin.de> you wrote:
 >
-> I noticed USB support for USB devices. But which USB controllers are
-> actually supported? Which controller would be the best?
+> I know that TQ Components integrated two intel 82527 on their TQMs /
+> STK8xxL.
+> But I couldn't find any sources supporting them by now.
 
-Linux provides now a good USB hosts/devices support. You can have a look at
-the Linux USB Project page  : http://www.linux-usb.org/. You have to
-consider that your microcontroller doesn't integrate a USB host (if you want
-one, you may reconsider your choice and look a the MPC-850 family).
+You didn't ask before...
 
-Some mails on this mailing-lists were published about USB host/device. Other
-interesting informations should be found through nesgroups like
-news://comp.arch.embedded
+> Could you please give me some pointers to driver source code.
 
-Feel free to ask me directly if you want more precise informations.
+Actually, the driver source code is just one part of the issue.  What
+are you going to do with it?
 
-Regards,
+IMHO there are two Open Source projects that look interesting:
 
-Frederic.
+   1. http://home.wanadoo.nl/arnaud/
+   2. http://www.esstin.uhp-nancy.fr/~tissered/CanFestival/
 
----
-     Frederic Soulier    -    Aztec Radiomedia  /  Digigram Europe
-  31, rue du chemin de fer,  F-67087 Strasbourg Cedex 2, France
-   Phone : +33 (0) 3 88 30 80 36  /  Fax : +33 (0) 3 88 30 90 99
-                     Web site : http://www.digigram.com
+The first provides generic CAN support  for  a  couple  of  controler
+boards  and chips. We have a (preliminary version of) a device driver
+for it running on the TQ modules.
 
+The second project implements (parts of)  the  CANopen  protocol  and
+integrates  with  RTLinux. However, it is a non-trivial job to get it
+running on the TQ hardware, and I'm not sure if the  effort  is  well
+invested.
+
+
+See also:
+
+	http://www.microcontrol.net/CANpie/
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Of course there's no reason for it, it's just our policy.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
