@@ -1,13 +1,33 @@
-From: Paul Miller <pmiller9@users.sourceforge.net>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: 405EP peripheral memory access
-Date: Wed, 29 Oct 2003 08:08:00 -0600
+Message-ID: <D73A25AA6E54D511AD74009027B1110F3C0AD2@ORION>
+From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+To: "'Paul Miller'" <pmiller9@users.sourceforge.net>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: 405EP peripheral memory access
+Date: Wed, 29 Oct 2003 09:31:52 -0500
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200310290808.00654.pmiller9@users.sourceforge.net>
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+I would recommend you get the following books.
+
+
+Embedded Linux: Hardware, Software, and Interfacing by Craig Hollabaugh
+
+Linux Device Drivers, 2nd Edition by Alessandro Rubini, Jonathan Corbet
+
+Building Embedded Linux Systems by Karim Yaghmour
+
+
+
+-----Original Message-----
+From: Paul Miller [mailto:pmiller9@users.sourceforge.net]
+Sent: Wednesday, October 29, 2003 9:08 AM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: 405EP peripheral memory access
+
 
 
 Hi,
@@ -31,5 +51,6 @@ I'd like to just open a device file and read/write to the bus.
 
 Thanks!
 -Paul
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
