@@ -1,30 +1,31 @@
-Content-Type: text/plain; charset=iso-8859-1
+Message-ID: <3DF10EC0.7E6F1561@xilinx.com>
+Date: Fri, 06 Dec 2002 12:55:29 -0800
+From: "Peter Ryser" <Peter.Ryser@xilinx.com>
 MIME-Version: 1.0
-To: "PPC Embedded" <linuxppc-embedded@lists.linuxppc.org>
-From: acurtis@onz.com
-Subject: Unloved MPC hardware wanted
-Date: Fri, 06 Dec 2002 12:36:11 -0800 (PST)
-Message-Id: <20021206123612.23901.h021.c007.wm@mail.directvinternet.com.criticalpath.net>
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: Alexander.J@lntinfotech.com
+Subject: Re: Target CPU selection for Real time Embedded Linux
+References: <OFB8D7A27E.4DFEB42B-ON65256C86.003DE12F@lntinfotech.com> <20021206024109.S1931@mind.be>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I know this isn't development related but it seems like an appropriate place to
-post this request.
+> - Xilinx Virtex II Pro with Linux (Linux port posted 2 months ago and on ftp.mind.be)
 
-Does anyone have unloved, unwanted, 8xx or 82xx development systems laying
-around? We are trying to put together a testing/validation lab for these
-platforms. We will pay all expenses associated with shipping for anyone willing
-to share.
+The Xilinx Virtex-II Pro FPGA is supported and developed as part of the
+linuxppc_2_4_devel tree. The drivers for the various peripherals are implemented by
+Xilinx. Integration work into the Linux kernel is done and support is available from
+MontaVista.
 
-PS: Has anyone considered creating a virtual platform test environment? Thoughts
-on how this may be implemented are welcome.
+- Peter
 
-TIA
 
-------------------------------------------------------------
-Allen Curtis              |  All good things come to those
-Ones and Zeros, Inc.      |  who wait. Some of us have to
-mailto:acurtis@onz.com    |  wait a little longer.
+
+FYI:
+Virtex-II Pro:
+http://www.xilinx.com/xlnx/xil_prodcat_landingpage.jsp?title=Virtex-II+Pro+FPGAs
+Linux running on the Virtex-II Pro based ML300 board: http://www.xilinx.com/ml300
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
