@@ -1,71 +1,37 @@
-Date: Wed, 02 May 2001 14:44:39 -0400
-From: Ira Weiny <iweiny@acm.org>
-Subject: Creative SBLive card
-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Message-id: <3AF05597.F7D0C433@acm.org>
-MIME-version: 1.0
-Content-type: multipart/mixed; boundary="------------5F88F4046AD8E59D5769958F"
+Date: Wed, 2 May 2001 20:57:46 +0200
+From: Erik Mouw <J.A.K.Mouw@ITS.TUDelft.NL>
+To: John Fremlin <chief@bandits.org>
+Cc: "Grover, Andrew" <andrew.grover@intel.com>,
+	"Acpi-PM (E-mail)" <linux-power@phobos.fachschaften.tu-muenchen.de>,
+	sfr@canb.auug.org.au, linux-arm-kernel@lists.arm.linux.org.uk,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: pmevent patch and PM
+Message-ID: <20010502205746.G11059@arthur.ubicom.tudelft.nl>
+References: <4148FEAAD879D311AC5700A0C969E89006CDDD9D@orsmsx35.jf.intel.com> <m23danaayj.fsf@boreas.yi.org.>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <m23danaayj.fsf@boreas.yi.org.>; from chief@bandits.org on Wed, May 02, 2001 at 06:59:32PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------5F88F4046AD8E59D5769958F
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+On Wed, May 02, 2001 at 06:59:32PM +0100, John Fremlin wrote:
+> Hi PM maintainers! ARM and PPC ppl, who is your PM maintainer?
 
-I had the chance to work on getting an SBLive card running on my G3 the
-other day.  The fix is basic and is
-in the following patch if anyone is interested.  I have only testing for
-sound output though.
-
-Ira
+We (= ARM people) have a couple of them, there is no real "PM
+maintainer". We do clock switching (on SA11x0 and XScale), CPU core
+voltage switching, and other things. Note that most ARM systems don't
+have things like ACPI BIOSes that do funky things, everything is
+controlled from the OS. Russell usually coordinates things.
 
 
+Erik
 
---------------5F88F4046AD8E59D5769958F
-Content-Type: text/plain; charset=us-ascii;
- name="emu10k1.ppc.patch"
-Content-Disposition: inline;
- filename="emu10k1.ppc.patch"
-Content-Transfer-Encoding: 7bit
-
-diff -r -U 5 linux.orig/drivers/sound/emu10k1/cardwo.c linux/drivers/sound/emu10k1/cardwo.c
---- linux.orig/drivers/sound/emu10k1/cardwo.c	Sat Mar  3 12:51:48 2001
-+++ linux/drivers/sound/emu10k1/cardwo.c	Tue May  1 15:43:01 2001
-@@ -85,11 +85,12 @@
-
- 			DPD(3, "Bus Addx: %lx\n", busaddx);
-
- 			pageindex = buffer->emupageindex + pagecount * PAGE_SIZE / EMUPAGESIZE + i;
-
--			((u32 *) card->virtualpagetable.addr)[pageindex] = (busaddx * 2) | pageindex;
-+			((u32 *) card->virtualpagetable.addr)[pageindex] =
-+            cpu_to_le32((busaddx * 2) | pageindex);
- 		}
- 	}
-
- 	return 0;
- }
-diff -r -U 5 linux.orig/drivers/sound/emu10k1/main.c linux/drivers/sound/emu10k1/main.c
---- linux.orig/drivers/sound/emu10k1/main.c	Sat Mar  3 12:51:07 2001
-+++ linux/drivers/sound/emu10k1/main.c	Tue May  1 15:42:29 2001
-@@ -473,11 +473,12 @@
- 		pci_free_consistent(card->pci_dev, card->virtualpagetable.size, card->virtualpagetable.addr, card->virtualpagetable.dma_handle);
- 		return -1;
- 	}
-
- 	for (pagecount = 0; pagecount < MAXPAGES; pagecount++)
--		((u32 *) card->virtualpagetable.addr)[pagecount] = (card->silentpage.dma_handle * 2) | pagecount;
-+		((u32 *) card->virtualpagetable.addr)[pagecount] =
-+         cpu_to_le32((card->silentpage.dma_handle * 2) | pagecount);
-
- 	/* Init page table & tank memory base register */
- 	sblive_writeptr_tag(card, 0,
- 			    PTB, card->virtualpagetable.dma_handle,
- 			    TCB, 0,
-
---------------5F88F4046AD8E59D5769958F--
-
+--
+J.A.K. (Erik) Mouw, Information and Communication Theory Group, Department
+of Electrical Engineering, Faculty of Information Technology and Systems,
+Delft University of Technology, PO BOX 5031,  2600 GA Delft, The Netherlands
+Phone: +31-15-2783635  Fax: +31-15-2781843  Email: J.A.K.Mouw@its.tudelft.nl
+WWW: http://www-ict.its.tudelft.nl/~erik/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
