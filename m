@@ -1,32 +1,50 @@
-To: linuxppc-dev@lists.linuxppc.org
-Subject: PCI Detection/ programming / GPIB
-Reply-To: kozioziemski1@llnl.gov
-From: Bernard Kozioziemski <kozioziemski1@llnl.gov>
-Date: 07 Jan 1999 09:31:36 -0800
-Message-ID: <m3k8yz3s7b.fsf@unites9500.llnl.gov>
+In-Reply-To: <Pine.CVX.3.93.990107184738.21285A-100000@atlas.cc.uoa.gr>
+Date: Thu, 7 Jan 1999 18:37:27 +0100
+To: linuxppc-dev@lists.linuxppc.org,
+        Konstantinos Margaritis <kmargar@cc.uoa.gr>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: MouseSystems MacoPoint Pro, 3 btn mouse
+Message-Id: <19990107183727.001350@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Thu, Jan 7, 1999, Konstantinos Margaritis <kmargar@cc.uoa.gr> wrote:
 
-Greets,
-I've been running LinuxPPC for a few months now, but I want to become less
-dependent on MacOS. I would really like to use LinuxPPC to run some data
-collection software similar to what I have under MacOS. 
+>Actually, after I tested the MacX patch by Kelly Campbell -although I had
+>to tweak it a bit, since I use 2.1.131 kernel- I found out it works
+>perfectly with the Macpoint Pro mouse, so instead of sending you my mouse,
+>I would suggest that this patch be inserted to the official kernel tree.
+>That would be best, IMHO.
 
-I have a National Instruments PCI GPIB (IEE-488) card installed in my
-PowerMac 9500. There is some work on the x86 front to support GPIB, so I
-thought I'd start there. Unfortunately, the card is not found by linux when
-booting. /proc/pci lists 3 devices: Apple Bandit, VGA compat controller
-(grpahics card) and Apple Grand Central. I'm not sure where to start in
-detecting this board, and I was wondering if someone on this list could
-give me a few pointers to (beginner :) info, or example code. Thanks,
+This patch is already included in my tree, but I think I have a problem
+with one of the buttons, I'll have to re-check my code carefully.
 
-Bernie Kozioziemski
+I suggest you try a 2.2-pre4 with my test patch (download just the diffs
+next to the test kernel) and enable the MacX option in the config. Tell
+me how it works, and if it doesn't, you may eventually be able to tell me
+what is broken. I may have missed something simple, I juste putted it in
+quickly, it probably needs a little bit of work.
+
+Actually, I'm interested in the theory behind this patch. Is the
+"official" behaviour of MacX mice documented somewhere ? I'm thinking
+about things like "can a MacX mouse be handler 2 or 4 or can it be only
+handler 1 ?". With answers to this, I may be able to auto-disable the
+patch when I know for sure it's a normal mouse, and this allow the same
+kernel to work with both kind of mice. I already have some "hints" about
+the way to do that but I want to be sure and to be able to test ;-)
+
+I think I'll end up just buying one.
 
 -- 
-kozioziemski1@llnl.gov
-(925)424-6317
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
+
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
