@@ -1,11 +1,17 @@
-Return-Path: <j.glisse@free.fr>
-Message-ID: <41CEC6B0.5020106@free.fr>
-Date: Sun, 26 Dec 2004 15:12:00 +0100
-From: Jerome Glisse <j.glisse@free.fr>
+Return-Path: <evilninja@gmx.net>
+Received: from mail.gmx.net (imap.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 62C652C068
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Dec 2004 13:47:15 +1100 (EST)
+Message-ID: <41CF77A9.9040405@gmx.net>
+Date: Mon, 27 Dec 2004 03:47:05 +0100
+From: Christian <evilninja@gmx.net>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
-Content-Type: multipart/mixed; boundary="------------030001050609000605000604"
-Subject: PATCH uninorth3 (G5) agp support
+To: linuxppc-dev@ozlabs.org
+References: <200412261435.13562.marc.dietrich@ap.physik.uni-giessen.de>
+In-Reply-To: <200412261435.13562.marc.dietrich@ap.physik.uni-giessen.de>
+Content-Type: multipart/mixed; boundary="------------010709050009070001090507"
+Cc: Marc Dietrich <Marc.Dietrich@ap.physik.uni-giessen.de>
+Subject: Re: [FYI] linux 2.6 still not working with PReP (ppc32)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,298 +22,280 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 This is a multi-part message in MIME format.
---------------030001050609000605000604
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+--------------010709050009070001090507
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
-Here's a patch which adds AGP support to i think all G5 at
-least uninorth3 chipset. If you could test it even if i am quite
-confident there is no bug in it :)
+Marc Dietrich schrieb:
+> Hi all,
+> 
+> I read this thread about booting a PowerStack with newer kernels. Motivated by 
+> this, I tried to compile a 2.6.10 kernel on my machine (with sym53c825a 
+> onboard). Sadly, the scsi controller always timeouts during initialisation. I 
 
-I also cleaned up a bit the old uninorth by using PAGE_SHIFT,
-PAGE_MASK and other defined macro where they shoud have
-been used.
+yes, booting is fine now, but i don't have a scsi disk (well, i only 
+need the right cable...) in the PReP and booting diskless atm.
 
-Ben i corrected the issue i got with fan, i was writting some
-wrong magic in wrong place.
+> had this problem also with the 2.4er kernels, but this was solved in later 
+> versions (I'm running 2.4.21 now). Now the old driver seem to be removed (or 
+> merged with sym53c8xx_2) and is only available to MCA and GSC devices.
 
-So you should have agp enable with this patch, thus if anyone
-with a g5 & r200 would test the dri to see if it could successfull
-use the agp for the video card. Anyother way to test it ?
+yes, i had scsi timeout issues too with 2.4 and early 2.5 kernels. i've 
+never tried newer 2.4 kernels with scsi-disk inside and i am happy to 
+hear that the issues have been resolved.
 
-If you use Xorg you may need to add this to your conf file if
-you see that you font are corrupted (it seems there is a bug
-somewhere in dri)
+> I also tried to change the irq routings in prep_pci.c like in the latest patch 
+> with the sym53c8xx_2 driver,
+> 	Slot 12 -> IRQ 15 (sym53c825)
+> 	Slot 15 -> IRQ 11 (dec 21140)
+> but this didn't helped.
 
-Option "XaaNoScanlineImageWriteRect"
+i'm still working these out too, gotta find some time...
 
-best,
-Jerome Glisse
+> Has anyone a working config file for this machine (PowerStack II 4000/Utah)?
 
---------------030001050609000605000604
+i've found and attached a file called "config-2.6-minimal" from 
+19-12-2003, linux 2.6.0 was released 17-Dec-2003. in there scsi is 
+enabled, but i doubt i was able to boot this, because of the network 
+issues. however, i only did "yes '' | make oldconfig" from 2.5.30 on, so 
+the scsi part of this .config shouldn't have changed much.
+
+thanks,
+Christian.
+-- 
+BOFH excuse #387:
+
+Your computer's union contract is set to expire at midnight.
+
+--------------010709050009070001090507
 Content-Type: text/plain;
- name="uninorth-patch"
-Content-Transfer-Encoding: 7bit
+ name="config-2.6-minimal"
+Content-Transfer-Encoding: base64
 Content-Disposition: inline;
- filename="uninorth-patch"
+ filename="config-2.6-minimal"
 
-diff -Naur linux/drivers/char/agp/uninorth-agp.c linux-new/drivers/char/agp/uninorth-agp.c
---- linux/drivers/char/agp/uninorth-agp.c	2004-12-26 14:39:28.000000000 +0100
-+++ linux-new/drivers/char/agp/uninorth-agp.c	2004-12-26 14:50:08.000000000 +0100
-@@ -8,8 +8,37 @@
- #include <linux/agp_backend.h>
- #include <asm/uninorth.h>
- #include <asm/pci-bridge.h>
-+#include <asm/sections.h>
-+#include <asm/prom.h>
- #include "agp.h"
- 
-+/*
-+ * NOTES for uninorth3 (G5 AGP) supports :
-+ *
-+ * This are redundant with arch/ppc(64)/platforms/pmac_features.c,
-+ * we need to know uninorth_rev any other way ?
-+ *
-+ * There maybe also possibility to have bigger cache line size for
-+ * agp (see pmac_pci.c and look for cache line). Need to be investigated
-+ * by someone.
-+ *
-+ * Darwin seems to add UNI_N_CFG_GART_PERFRD for all agp3 controller but
-+ * this seems to work without this, so in order to minimize code differences
-+ * between AGP2 & AGP3 uninorth, i do not set this.
-+ *
-+ * PAGE size are hardcoded but this may change, see asm/page.h.
-+ *
-+ * Jerome Glisse <j.glisse@free.fr>
-+ */
-+static struct device_node* uninorth_node __pmacdata;
-+static u32 __iomem * uninorth_base __pmacdata;
-+static u32 uninorth_rev __pmacdata;
-+
-+/*
-+ * Uninorth reg. access. Note that Uni-N regs are big endian
-+ */
-+#define UN_REG(r)	(uninorth_base + ((r) >> 2))
-+
- static int uninorth_fetch_size(void)
- {
- 	int i;
-@@ -17,7 +46,7 @@
- 	struct aper_size_info_32 *values;
- 
- 	pci_read_config_dword(agp_bridge->dev, UNI_N_CFG_GART_BASE, &temp);
--	temp &= ~(0xfffff000);
-+	temp &= ~PAGE_MASK;
- 	values = A_SIZE_32(agp_bridge->driver->aperture_sizes);
- 
- 	for (i = 0; i < agp_bridge->driver->num_aperture_sizes; i++) {
-@@ -73,7 +102,7 @@
- 	/* aperture size and gatt addr */
- 	pci_write_config_dword(agp_bridge->dev,
- 		UNI_N_CFG_GART_BASE,
--		(agp_bridge->gatt_bus_addr & 0xfffff000)
-+		(agp_bridge->gatt_bus_addr & PAGE_MASK)
- 			| current_size->size_value);
- 
- 	/* HACK ALERT
-@@ -111,14 +140,56 @@
- 	}
- 
- 	for (i = 0, j = pg_start; i < mem->page_count; i++, j++) {
--		agp_bridge->gatt_table[j] = cpu_to_le32((mem->memory[i] & 0xfffff000) | 0x00000001UL);
-+		agp_bridge->gatt_table[j] = cpu_to_le32((mem->memory[i] &
-+							 PAGE_MASK) |
-+							0x00000001UL);
-+		flush_dcache_range((unsigned long)__va(mem->memory[i]),
-+				   (unsigned long)__va(mem->memory[i])+0x1000);
-+	}
-+	(void)in_le32((volatile u32*)&agp_bridge->gatt_table[pg_start]);
-+	mb();
-+	flush_dcache_range((unsigned long)&agp_bridge->gatt_table[pg_start], 
-+		(unsigned long)&agp_bridge->gatt_table[pg_start +
-+							mem->page_count]);
-+
-+	uninorth_tlbflush(mem);
-+	return 0;
-+}
-+
-+static int uninorth3_insert_memory(struct agp_memory *mem, off_t pg_start,
-+				int type)
-+{
-+	int i, j, num_entries;
-+	void *temp;
-+
-+	temp = agp_bridge->current_size;
-+	num_entries = A_SIZE_32(temp)->num_entries;
-+
-+	if (type != 0 || mem->type != 0)
-+		/* We know nothing of memory types */
-+		return -EINVAL;
-+	if ((pg_start + mem->page_count) > num_entries)
-+		return -EINVAL;
-+
-+	j = pg_start;
-+
-+	while (j < (pg_start + mem->page_count)) {
-+		if (!PGE_EMPTY(agp_bridge, agp_bridge->gatt_table[j]))
-+			return -EBUSY;
-+		j++;
-+	}
-+
-+	for (i = 0, j = pg_start; i < mem->page_count; i++, j++) {
-+		agp_bridge->gatt_table[j] = ((mem->memory[i] >> PAGE_SHIFT) |
-+						0x80000000UL);
- 		flush_dcache_range((unsigned long)__va(mem->memory[i]),
- 				   (unsigned long)__va(mem->memory[i])+0x1000);
- 	}
- 	(void)in_le32((volatile u32*)&agp_bridge->gatt_table[pg_start]);
- 	mb();
- 	flush_dcache_range((unsigned long)&agp_bridge->gatt_table[pg_start], 
--		(unsigned long)&agp_bridge->gatt_table[pg_start + mem->page_count]);
-+		(unsigned long)&agp_bridge->gatt_table[pg_start +
-+							mem->page_count]);
- 
- 	uninorth_tlbflush(mem);
- 	return 0;
-@@ -134,7 +205,23 @@
- 			      &command);
- 
- 	command = agp_collect_device_status(mode, command);
--	command |= 0x100;
-+	command |= UNI_N_CFG_GART_ENABLE;
-+	
-+	if(uninorth_rev == 0x21) {
-+		/*
-+		 * Darwin disable AGP 4x on this revision, thus we
-+		 * may assume it's broken. This is an AGP2 controller.
-+		 */
-+		command &= ~AGPSTAT2_4X;
-+	}
-+
-+	if((uninorth_rev >= 0x30) && (uninorth_rev <= 0x33)) {
-+		/*
-+		 * We need to to set REQ_DEPTH to 7 for U3 versions 1.0, 2.1,
-+		 * 2.2 and 2.3, Darwin do so.
-+		 */
-+		command |= (7 << AGPSTAT_RQ_DEPTH_SHIFT);
-+	}
- 
- 	uninorth_tlbflush(NULL);
- 
-@@ -146,8 +233,8 @@
- 		pci_read_config_dword(agp_bridge->dev,
- 				       agp_bridge->capndx + PCI_AGP_COMMAND,
- 				       &scratch);
--	} while ((scratch & 0x100) == 0 && ++timeout < 1000);
--	if ((scratch & 0x100) == 0)
-+	} while ((scratch & UNI_N_CFG_GART_ENABLE) == 0 && ++timeout < 1000);
-+	if ((scratch & UNI_N_CFG_GART_ENABLE) == 0)
- 		printk(KERN_ERR PFX "failed to write UniNorth AGP command reg\n");
- 
- 	agp_device_command(command, 0);
-@@ -258,6 +345,22 @@
- 	{4, 1024, 0, 1}
- };
- 
-+static struct aper_size_info_32 uninorth3_sizes[8] =
-+{
-+/*
-+ * Not sure that uninorth3 supports that high aperture sizes but it
-+ * would strange if it did not :)
-+ */
-+	{512, 131072, 7, 128},
-+	{256, 65536, 6, 64},
-+	{128, 32768, 5, 32},
-+	{64, 16384, 4, 16},
-+	{32, 8192, 3, 8},
-+	{16, 4096, 2, 4},
-+	{8, 2048, 1, 2},
-+	{4, 1024, 0, 1}
-+};
-+
- struct agp_bridge_driver uninorth_agp_driver = {
- 	.owner			= THIS_MODULE,
- 	.aperture_sizes		= (void *)uninorth_sizes,
-@@ -299,6 +402,10 @@
- 		.device_id	= PCI_DEVICE_ID_APPLE_UNI_N_AGP2,
- 		.chipset_name	= "UniNorth 2",
- 	},
-+	{
-+		.device_id	= PCI_DEVICE_ID_APPLE_UNI_N_AGP3,
-+		.chipset_name	= "UniNorth 3",
-+	},
- };
- 
- static int __devinit agp_uninorth_probe(struct pci_dev *pdev,
-@@ -327,6 +434,28 @@
- 	return -ENODEV;
- 
-  found:
-+	/*
-+	 * Set specific functions & values for agp3 controller.
-+	 */
-+	if (pdev->device == PCI_DEVICE_ID_APPLE_UNI_N_AGP3) {
-+		uninorth_agp_driver.insert_memory  = uninorth3_insert_memory;
-+		uninorth_agp_driver.aperture_sizes = (void *)uninorth3_sizes;
-+		uninorth_agp_driver.num_aperture_sizes = 8;
-+	}
-+
-+	/* Locate core99 Uni-N */
-+	uninorth_node = of_find_node_by_name(NULL, "uni-n");
-+	/* Locate G5 u3 */
-+	if (uninorth_node == NULL) {
-+		uninorth_node = of_find_node_by_name(NULL, "u3");
-+	}
-+	if (uninorth_node && uninorth_node->n_addrs > 0) {
-+		unsigned long address = uninorth_node->addrs[0].address;
-+		uninorth_base = ioremap(address, 0x40000);
-+		uninorth_rev = in_be32(UN_REG(UNI_N_VERSION));
-+	}
-+
-+
- 	bridge = agp_alloc_bridge();
- 	if (!bridge)
- 		return -ENOMEM;
-diff -Naur linux/include/asm/uninorth.h linux-new/include/asm/uninorth.h
---- linux/include/asm/uninorth.h	2004-12-26 14:40:03.000000000 +0100
-+++ linux-new/include/asm/uninorth.h	2004-12-26 14:57:20.000000000 +0100
-@@ -34,6 +34,11 @@
- #define UNI_N_CFG_GART_ENABLE		0x00000100
- #define UNI_N_CFG_GART_2xRESET		0x00010000
- #define UNI_N_CFG_GART_DISSBADET	0x00020000
-+/* The following seems to only be used only on U3 <j.glisse@free.fr> */
-+#define UNI_N_CFG_GART_SYNCMODE		0x00040000
-+#define UNI_N_CFG_GART_PERFRD		0x00080000
-+#define UNI_N_CFG_GART_B2BGNT		0x00200000
-+#define UNI_N_CFG_GART_FASTDDR		0x00400000
- 
- /* My understanding of UniNorth AGP as of UniNorth rev 1.0x,
-  * revision 1.5 (x4 AGP) may need further changes.
-diff -Naur linux/include/asm-ppc/uninorth.h linux-new/include/asm-ppc/uninorth.h
---- linux/include/asm-ppc/uninorth.h	2004-12-26 14:40:03.000000000 +0100
-+++ linux-new/include/asm-ppc/uninorth.h	2004-12-26 14:57:20.000000000 +0100
-@@ -34,6 +34,11 @@
- #define UNI_N_CFG_GART_ENABLE		0x00000100
- #define UNI_N_CFG_GART_2xRESET		0x00010000
- #define UNI_N_CFG_GART_DISSBADET	0x00020000
-+/* The following seems to only be used only on U3 <j.glisse@free.fr> */
-+#define UNI_N_CFG_GART_SYNCMODE		0x00040000
-+#define UNI_N_CFG_GART_PERFRD		0x00080000
-+#define UNI_N_CFG_GART_B2BGNT		0x00200000
-+#define UNI_N_CFG_GART_FASTDDR		0x00400000
- 
- /* My understanding of UniNorth AGP as of UniNorth rev 1.0x,
-  * revision 1.5 (x4 AGP) may need further changes.
-diff -Naur linux/include/linux/pci_ids.h linux-new/include/linux/pci_ids.h
---- linux/include/linux/pci_ids.h	2004-12-26 14:40:05.000000000 +0100
-+++ linux-new/include/linux/pci_ids.h	2004-12-26 14:50:19.000000000 +0100
-@@ -842,6 +842,7 @@
- #define PCI_DEVICE_ID_APPLE_UNI_N_GMAC2	0x0032
- #define PCI_DEVIEC_ID_APPLE_UNI_N_ATA	0x0033
- #define PCI_DEVICE_ID_APPLE_UNI_N_AGP2	0x0034
-+#define PCI_DEVICE_ID_APPLE_UNI_N_AGP3	0x0059
- #define PCI_DEVICE_ID_APPLE_IPID_ATA100	0x003b
- #define PCI_DEVICE_ID_APPLE_KEYLARGO_I	0x003e
- #define PCI_DEVICE_ID_APPLE_K2_ATA100	0x0043
-
---------------030001050609000605000604--
+IwojIEF1dG9tYXRpY2FsbHkgZ2VuZXJhdGVkIG1ha2UgY29uZmlnOiBkb24ndCBlZGl0CiMK
+Q09ORklHX01NVT15CkNPTkZJR19SV1NFTV9YQ0hHQUREX0FMR09SSVRITT15CkNPTkZJR19I
+QVZFX0RFQ19MT0NLPXkKQ09ORklHX1BQQz15CkNPTkZJR19QUEMzMj15CgojCiMgQ29kZSBt
+YXR1cml0eSBsZXZlbCBvcHRpb25zCiMKQ09ORklHX0VYUEVSSU1FTlRBTD15CkNPTkZJR19D
+TEVBTl9DT01QSUxFPXkKQ09ORklHX1NUQU5EQUxPTkU9eQpDT05GSUdfQlJPS0VOX09OX1NN
+UD15CgojCiMgR2VuZXJhbCBzZXR1cAojCkNPTkZJR19TV0FQPXkKQ09ORklHX1NZU1ZJUEM9
+eQpDT05GSUdfQlNEX1BST0NFU1NfQUNDVD15CkNPTkZJR19TWVNDVEw9eQpDT05GSUdfTE9H
+X0JVRl9TSElGVD0xNApDT05GSUdfSUtDT05GSUc9eQojIENPTkZJR19JS0NPTkZJR19QUk9D
+IGlzIG5vdCBzZXQKIyBDT05GSUdfRU1CRURERUQgaXMgbm90IHNldApDT05GSUdfS0FMTFNZ
+TVM9eQpDT05GSUdfRlVURVg9eQpDT05GSUdfRVBPTEw9eQpDT05GSUdfSU9TQ0hFRF9OT09Q
+PXkKQ09ORklHX0lPU0NIRURfQVM9eQpDT05GSUdfSU9TQ0hFRF9ERUFETElORT15CgojCiMg
+TG9hZGFibGUgbW9kdWxlIHN1cHBvcnQKIwpDT05GSUdfTU9EVUxFUz15CkNPTkZJR19NT0RV
+TEVfVU5MT0FEPXkKIyBDT05GSUdfTU9EVUxFX0ZPUkNFX1VOTE9BRCBpcyBub3Qgc2V0CkNP
+TkZJR19PQlNPTEVURV9NT0RQQVJNPXkKIyBDT05GSUdfTU9EVkVSU0lPTlMgaXMgbm90IHNl
+dApDT05GSUdfS01PRD15CgojCiMgUHJvY2Vzc29yCiMKQ09ORklHXzZ4eD15CiMgQ09ORklH
+XzQweCBpcyBub3Qgc2V0CiMgQ09ORklHXzQ0eCBpcyBub3Qgc2V0CiMgQ09ORklHX1BPV0VS
+MyBpcyBub3Qgc2V0CiMgQ09ORklHX1BPV0VSNCBpcyBub3Qgc2V0CiMgQ09ORklHXzh4eCBp
+cyBub3Qgc2V0CiMgQ09ORklHX0FMVElWRUMgaXMgbm90IHNldAojIENPTkZJR19UQVUgaXMg
+bm90IHNldAojIENPTkZJR19DUFVfRlJFUSBpcyBub3Qgc2V0CiMgQ09ORklHX1BQQzYwMV9T
+WU5DX0ZJWCBpcyBub3Qgc2V0CkNPTkZJR19QUENfU1REX01NVT15CgojCiMgUGxhdGZvcm0g
+b3B0aW9ucwojCkNPTkZJR19QUENfTVVMVElQTEFURk9STT15CiMgQ09ORklHX0FQVVMgaXMg
+bm90IHNldAojIENPTkZJR19XSUxMT1cgaXMgbm90IHNldAojIENPTkZJR19QQ09SRSBpcyBu
+b3Qgc2V0CiMgQ09ORklHX1BPV0VSUE1DMjUwIGlzIG5vdCBzZXQKIyBDT05GSUdfRVY2NDI2
+MCBpcyBub3Qgc2V0CiMgQ09ORklHX1NQUlVDRSBpcyBub3Qgc2V0CiMgQ09ORklHX0xPUEVD
+IGlzIG5vdCBzZXQKIyBDT05GSUdfTUNQTjc2NSBpcyBub3Qgc2V0CiMgQ09ORklHX01WTUU1
+MTAwIGlzIG5vdCBzZXQKIyBDT05GSUdfUFBMVVMgaXMgbm90IHNldAojIENPTkZJR19QUlBN
+Qzc1MCBpcyBub3Qgc2V0CiMgQ09ORklHX1BSUE1DODAwIGlzIG5vdCBzZXQKIyBDT05GSUdf
+U0FORFBPSU5UIGlzIG5vdCBzZXQKIyBDT05GSUdfQURJUiBpcyBub3Qgc2V0CiMgQ09ORklH
+X0syIGlzIG5vdCBzZXQKIyBDT05GSUdfUEFMNCBpcyBub3Qgc2V0CiMgQ09ORklHX0dFTUlO
+SSBpcyBub3Qgc2V0CiMgQ09ORklHX0VTVDgyNjAgaXMgbm90IHNldAojIENPTkZJR19TQlM4
+MjYwIGlzIG5vdCBzZXQKIyBDT05GSUdfUlBYNiBpcyBub3Qgc2V0CiMgQ09ORklHX1RRTTgy
+NjAgaXMgbm90IHNldApDT05GSUdfUFBDX0NIUlA9eQpDT05GSUdfUFBDX1BNQUM9eQpDT05G
+SUdfUFBDX1BSRVA9eQpDT05GSUdfUFBDX09GPXkKQ09ORklHX1BQQ0JVR19OVlJBTT15CiMg
+Q09ORklHX1NNUCBpcyBub3Qgc2V0CiMgQ09ORklHX1BSRUVNUFQgaXMgbm90IHNldAojIENP
+TkZJR19ISUdITUVNIGlzIG5vdCBzZXQKQ09ORklHX0tFUk5FTF9FTEY9eQpDT05GSUdfQklO
+Rk1UX0VMRj15CiMgQ09ORklHX0JJTkZNVF9NSVNDIGlzIG5vdCBzZXQKQ09ORklHX1BST0Nf
+REVWSUNFVFJFRT15CiMgQ09ORklHX1BQQ19SVEFTIGlzIG5vdCBzZXQKIyBDT05GSUdfUFJF
+UF9SRVNJRFVBTCBpcyBub3Qgc2V0CkNPTkZJR19DTURMSU5FX0JPT0w9eQpDT05GSUdfQ01E
+TElORT0icm9vdD0vZGV2L3NkYTUgMiIKCiMKIyBCdXMgb3B0aW9ucwojCiMgQ09ORklHX0lT
+QSBpcyBub3Qgc2V0CkNPTkZJR19HRU5FUklDX0lTQV9ETUE9eQpDT05GSUdfUENJPXkKQ09O
+RklHX1BDSV9ET01BSU5TPXkKIyBDT05GSUdfUENJX0xFR0FDWV9QUk9DIGlzIG5vdCBzZXQK
+Q09ORklHX1BDSV9OQU1FUz15CiMgQ09ORklHX0hPVFBMVUcgaXMgbm90IHNldAoKIwojIFBh
+cmFsbGVsIHBvcnQgc3VwcG9ydAojCiMgQ09ORklHX1BBUlBPUlQgaXMgbm90IHNldAoKIwoj
+IEFkdmFuY2VkIHNldHVwCiMKIyBDT05GSUdfQURWQU5DRURfT1BUSU9OUyBpcyBub3Qgc2V0
+CgojCiMgRGVmYXVsdCBzZXR0aW5ncyBmb3IgYWR2YW5jZWQgY29uZmlndXJhdGlvbiBvcHRp
+b25zIGFyZSB1c2VkCiMKQ09ORklHX0hJR0hNRU1fU1RBUlQ9MHhmZTAwMDAwMApDT05GSUdf
+TE9XTUVNX1NJWkU9MHgzMDAwMDAwMApDT05GSUdfS0VSTkVMX1NUQVJUPTB4YzAwMDAwMDAK
+Q09ORklHX1RBU0tfU0laRT0weDgwMDAwMDAwCkNPTkZJR19CT09UX0xPQUQ9MHgwMDgwMDAw
+MAoKIwojIEdlbmVyaWMgRHJpdmVyIE9wdGlvbnMKIwoKIwojIE1lbW9yeSBUZWNobm9sb2d5
+IERldmljZXMgKE1URCkKIwojIENPTkZJR19NVEQgaXMgbm90IHNldAoKIwojIFBsdWcgYW5k
+IFBsYXkgc3VwcG9ydAojCiMgQ09ORklHX1BOUCBpcyBub3Qgc2V0CgojCiMgQmxvY2sgZGV2
+aWNlcwojCiMgQ09ORklHX0JMS19ERVZfRkQgaXMgbm90IHNldAojIENPTkZJR19CTEtfQ1BR
+X0RBIGlzIG5vdCBzZXQKIyBDT05GSUdfQkxLX0NQUV9DSVNTX0RBIGlzIG5vdCBzZXQKIyBD
+T05GSUdfQkxLX0RFVl9EQUM5NjAgaXMgbm90IHNldAojIENPTkZJR19CTEtfREVWX1VNRU0g
+aXMgbm90IHNldAojIENPTkZJR19CTEtfREVWX0xPT1AgaXMgbm90IHNldAojIENPTkZJR19C
+TEtfREVWX05CRCBpcyBub3Qgc2V0CiMgQ09ORklHX0JMS19ERVZfUkFNIGlzIG5vdCBzZXQK
+IyBDT05GSUdfQkxLX0RFVl9JTklUUkQgaXMgbm90IHNldAojIENPTkZJR19MQkQgaXMgbm90
+IHNldAoKIwojIE11bHRpLWRldmljZSBzdXBwb3J0IChSQUlEIGFuZCBMVk0pCiMKIyBDT05G
+SUdfTUQgaXMgbm90IHNldAoKIwojIEFUQS9BVEFQSS9NRk0vUkxMIHN1cHBvcnQKIwojIENP
+TkZJR19JREUgaXMgbm90IHNldAoKIwojIFNDU0kgZGV2aWNlIHN1cHBvcnQKIwpDT05GSUdf
+U0NTST15CiMgQ09ORklHX1NDU0lfUFJPQ19GUyBpcyBub3Qgc2V0CgojCiMgU0NTSSBzdXBw
+b3J0IHR5cGUgKGRpc2ssIHRhcGUsIENELVJPTSkKIwpDT05GSUdfQkxLX0RFVl9TRD15CiMg
+Q09ORklHX0NIUl9ERVZfU1QgaXMgbm90IHNldAojIENPTkZJR19DSFJfREVWX09TU1QgaXMg
+bm90IHNldAojIENPTkZJR19CTEtfREVWX1NSIGlzIG5vdCBzZXQKIyBDT05GSUdfQ0hSX0RF
+Vl9TRyBpcyBub3Qgc2V0CgojCiMgU29tZSBTQ1NJIGRldmljZXMgKGUuZy4gQ0QganVrZWJv
+eCkgc3VwcG9ydCBtdWx0aXBsZSBMVU5zCiMKIyBDT05GSUdfU0NTSV9NVUxUSV9MVU4gaXMg
+bm90IHNldAojIENPTkZJR19TQ1NJX1JFUE9SVF9MVU5TIGlzIG5vdCBzZXQKIyBDT05GSUdf
+U0NTSV9DT05TVEFOVFMgaXMgbm90IHNldAojIENPTkZJR19TQ1NJX0xPR0dJTkcgaXMgbm90
+IHNldAoKIwojIFNDU0kgbG93LWxldmVsIGRyaXZlcnMKIwojIENPTkZJR19CTEtfREVWXzNX
+X1hYWFhfUkFJRCBpcyBub3Qgc2V0CiMgQ09ORklHX1NDU0lfQUNBUkQgaXMgbm90IHNldAoj
+IENPTkZJR19TQ1NJX0FBQ1JBSUQgaXMgbm90IHNldAojIENPTkZJR19TQ1NJX0FJQzdYWFgg
+aXMgbm90IHNldAojIENPTkZJR19TQ1NJX0FJQzdYWFhfT0xEIGlzIG5vdCBzZXQKIyBDT05G
+SUdfU0NTSV9BSUM3OVhYIGlzIG5vdCBzZXQKIyBDT05GSUdfU0NTSV9BRFZBTlNZUyBpcyBu
+b3Qgc2V0CiMgQ09ORklHX1NDU0lfTUVHQVJBSUQgaXMgbm90IHNldAojIENPTkZJR19TQ1NJ
+X1NBVEEgaXMgbm90IHNldAojIENPTkZJR19TQ1NJX0JVU0xPR0lDIGlzIG5vdCBzZXQKIyBD
+T05GSUdfU0NTSV9DUFFGQ1RTIGlzIG5vdCBzZXQKIyBDT05GSUdfU0NTSV9ETVgzMTkxRCBp
+cyBub3Qgc2V0CiMgQ09ORklHX1NDU0lfRUFUQSBpcyBub3Qgc2V0CiMgQ09ORklHX1NDU0lf
+RUFUQV9QSU8gaXMgbm90IHNldAojIENPTkZJR19TQ1NJX0ZVVFVSRV9ET01BSU4gaXMgbm90
+IHNldAojIENPTkZJR19TQ1NJX0dEVEggaXMgbm90IHNldAojIENPTkZJR19TQ1NJX0lQUyBp
+cyBub3Qgc2V0CiMgQ09ORklHX1NDU0lfSU5JQTEwMCBpcyBub3Qgc2V0CkNPTkZJR19TQ1NJ
+X1NZTTUzQzhYWF8yPXkKQ09ORklHX1NDU0lfU1lNNTNDOFhYX0RNQV9BRERSRVNTSU5HX01P
+REU9MApDT05GSUdfU0NTSV9TWU01M0M4WFhfREVGQVVMVF9UQUdTPTE2CkNPTkZJR19TQ1NJ
+X1NZTTUzQzhYWF9NQVhfVEFHUz02NAojIENPTkZJR19TQ1NJX1NZTTUzQzhYWF9JT01BUFBF
+RCBpcyBub3Qgc2V0CiMgQ09ORklHX1NDU0lfUUxPR0lDX0lTUCBpcyBub3Qgc2V0CiMgQ09O
+RklHX1NDU0lfUUxPR0lDX0ZDIGlzIG5vdCBzZXQKIyBDT05GSUdfU0NTSV9RTE9HSUNfMTI4
+MCBpcyBub3Qgc2V0CiMgQ09ORklHX1NDU0lfREMzOTV4IGlzIG5vdCBzZXQKIyBDT05GSUdf
+U0NTSV9OU1AzMiBpcyBub3Qgc2V0CiMgQ09ORklHX1NDU0lfREVCVUcgaXMgbm90IHNldAoj
+IENPTkZJR19TQ1NJX01FU0ggaXMgbm90IHNldAojIENPTkZJR19TQ1NJX01BQzUzQzk0IGlz
+IG5vdCBzZXQKCiMKIyBGdXNpb24gTVBUIGRldmljZSBzdXBwb3J0CiMKIyBDT05GSUdfRlVT
+SU9OIGlzIG5vdCBzZXQKCiMKIyBJRUVFIDEzOTQgKEZpcmVXaXJlKSBzdXBwb3J0IChFWFBF
+UklNRU5UQUwpCiMKIyBDT05GSUdfSUVFRTEzOTQgaXMgbm90IHNldAoKIwojIEkyTyBkZXZp
+Y2Ugc3VwcG9ydAojCiMgQ09ORklHX0kyTyBpcyBub3Qgc2V0CgojCiMgTmV0d29ya2luZyBz
+dXBwb3J0CiMKQ09ORklHX05FVD15CgojCiMgTmV0d29ya2luZyBvcHRpb25zCiMKQ09ORklH
+X1BBQ0tFVD15CkNPTkZJR19QQUNLRVRfTU1BUD15CiMgQ09ORklHX05FVExJTktfREVWIGlz
+IG5vdCBzZXQKQ09ORklHX1VOSVg9eQojIENPTkZJR19ORVRfS0VZIGlzIG5vdCBzZXQKQ09O
+RklHX0lORVQ9eQojIENPTkZJR19JUF9NVUxUSUNBU1QgaXMgbm90IHNldAojIENPTkZJR19J
+UF9BRFZBTkNFRF9ST1VURVIgaXMgbm90IHNldAojIENPTkZJR19JUF9QTlAgaXMgbm90IHNl
+dAojIENPTkZJR19ORVRfSVBJUCBpcyBub3Qgc2V0CiMgQ09ORklHX05FVF9JUEdSRSBpcyBu
+b3Qgc2V0CiMgQ09ORklHX0FSUEQgaXMgbm90IHNldAojIENPTkZJR19JTkVUX0VDTiBpcyBu
+b3Qgc2V0CiMgQ09ORklHX1NZTl9DT09LSUVTIGlzIG5vdCBzZXQKIyBDT05GSUdfSU5FVF9B
+SCBpcyBub3Qgc2V0CiMgQ09ORklHX0lORVRfRVNQIGlzIG5vdCBzZXQKIyBDT05GSUdfSU5F
+VF9JUENPTVAgaXMgbm90IHNldAojIENPTkZJR19JUFY2IGlzIG5vdCBzZXQKIyBDT05GSUdf
+REVDTkVUIGlzIG5vdCBzZXQKIyBDT05GSUdfQlJJREdFIGlzIG5vdCBzZXQKIyBDT05GSUdf
+TkVURklMVEVSIGlzIG5vdCBzZXQKCiMKIyBTQ1RQIENvbmZpZ3VyYXRpb24gKEVYUEVSSU1F
+TlRBTCkKIwpDT05GSUdfSVBWNl9TQ1RQX189eQojIENPTkZJR19JUF9TQ1RQIGlzIG5vdCBz
+ZXQKIyBDT05GSUdfQVRNIGlzIG5vdCBzZXQKIyBDT05GSUdfVkxBTl84MDIxUSBpcyBub3Qg
+c2V0CiMgQ09ORklHX0xMQzIgaXMgbm90IHNldAojIENPTkZJR19JUFggaXMgbm90IHNldAoj
+IENPTkZJR19BVEFMSyBpcyBub3Qgc2V0CiMgQ09ORklHX1gyNSBpcyBub3Qgc2V0CiMgQ09O
+RklHX0xBUEIgaXMgbm90IHNldAojIENPTkZJR19ORVRfRElWRVJUIGlzIG5vdCBzZXQKIyBD
+T05GSUdfRUNPTkVUIGlzIG5vdCBzZXQKIyBDT05GSUdfV0FOX1JPVVRFUiBpcyBub3Qgc2V0
+CiMgQ09ORklHX05FVF9GQVNUUk9VVEUgaXMgbm90IHNldAojIENPTkZJR19ORVRfSFdfRkxP
+V0NPTlRST0wgaXMgbm90IHNldAoKIwojIFFvUyBhbmQvb3IgZmFpciBxdWV1ZWluZwojCiMg
+Q09ORklHX05FVF9TQ0hFRCBpcyBub3Qgc2V0CgojCiMgTmV0d29yayB0ZXN0aW5nCiMKIyBD
+T05GSUdfTkVUX1BLVEdFTiBpcyBub3Qgc2V0CkNPTkZJR19ORVRERVZJQ0VTPXkKCiMKIyBB
+UkNuZXQgZGV2aWNlcwojCiMgQ09ORklHX0FSQ05FVCBpcyBub3Qgc2V0CiMgQ09ORklHX0RV
+TU1ZIGlzIG5vdCBzZXQKIyBDT05GSUdfQk9ORElORyBpcyBub3Qgc2V0CiMgQ09ORklHX0VR
+VUFMSVpFUiBpcyBub3Qgc2V0CiMgQ09ORklHX1RVTiBpcyBub3Qgc2V0CgojCiMgRXRoZXJu
+ZXQgKDEwIG9yIDEwME1iaXQpCiMKQ09ORklHX05FVF9FVEhFUk5FVD15CiMgQ09ORklHX01J
+SSBpcyBub3Qgc2V0CiMgQ09ORklHX01BQ0UgaXMgbm90IHNldAojIENPTkZJR19CTUFDIGlz
+IG5vdCBzZXQKIyBDT05GSUdfT0FLTkVUIGlzIG5vdCBzZXQKIyBDT05GSUdfSEFQUFlNRUFM
+IGlzIG5vdCBzZXQKIyBDT05GSUdfU1VOR0VNIGlzIG5vdCBzZXQKQ09ORklHX05FVF9WRU5E
+T1JfM0NPTT15CkNPTkZJR19WT1JURVg9bQojIENPTkZJR19UWVBIT09OIGlzIG5vdCBzZXQK
+CiMKIyBUdWxpcCBmYW1pbHkgbmV0d29yayBkZXZpY2Ugc3VwcG9ydAojCkNPTkZJR19ORVRf
+VFVMSVA9eQpDT05GSUdfREUyMTA0WD1tCkNPTkZJR19UVUxJUD1tCiMgQ09ORklHX1RVTElQ
+X01XSSBpcyBub3Qgc2V0CiMgQ09ORklHX1RVTElQX01NSU8gaXMgbm90IHNldApDT05GSUdf
+REU0WDU9bQojIENPTkZJR19XSU5CT05EXzg0MCBpcyBub3Qgc2V0CiMgQ09ORklHX0RNOTEw
+MiBpcyBub3Qgc2V0CiMgQ09ORklHX0hQMTAwIGlzIG5vdCBzZXQKIyBDT05GSUdfTkVUX1BD
+SSBpcyBub3Qgc2V0CgojCiMgRXRoZXJuZXQgKDEwMDAgTWJpdCkKIwojIENPTkZJR19BQ0VO
+SUMgaXMgbm90IHNldAojIENPTkZJR19ETDJLIGlzIG5vdCBzZXQKIyBDT05GSUdfRTEwMDAg
+aXMgbm90IHNldAojIENPTkZJR19OUzgzODIwIGlzIG5vdCBzZXQKIyBDT05GSUdfSEFNQUNI
+SSBpcyBub3Qgc2V0CiMgQ09ORklHX1lFTExPV0ZJTiBpcyBub3Qgc2V0CiMgQ09ORklHX1I4
+MTY5IGlzIG5vdCBzZXQKIyBDT05GSUdfU0lTMTkwIGlzIG5vdCBzZXQKIyBDT05GSUdfU0s5
+OExJTiBpcyBub3Qgc2V0CiMgQ09ORklHX1RJR09OMyBpcyBub3Qgc2V0CgojCiMgRXRoZXJu
+ZXQgKDEwMDAwIE1iaXQpCiMKIyBDT05GSUdfSVhHQiBpcyBub3Qgc2V0CiMgQ09ORklHX0ZE
+REkgaXMgbm90IHNldAojIENPTkZJR19ISVBQSSBpcyBub3Qgc2V0CiMgQ09ORklHX1BQUCBp
+cyBub3Qgc2V0CiMgQ09ORklHX1NMSVAgaXMgbm90IHNldAoKIwojIFdpcmVsZXNzIExBTiAo
+bm9uLWhhbXJhZGlvKQojCiMgQ09ORklHX05FVF9SQURJTyBpcyBub3Qgc2V0CgojCiMgVG9r
+ZW4gUmluZyBkZXZpY2VzCiMKIyBDT05GSUdfVFIgaXMgbm90IHNldAojIENPTkZJR19ORVRf
+RkMgaXMgbm90IHNldAojIENPTkZJR19SQ1BDSSBpcyBub3Qgc2V0CiMgQ09ORklHX1NIQVBF
+UiBpcyBub3Qgc2V0CgojCiMgV2FuIGludGVyZmFjZXMKIwojIENPTkZJR19XQU4gaXMgbm90
+IHNldAoKIwojIEFtYXRldXIgUmFkaW8gc3VwcG9ydAojCiMgQ09ORklHX0hBTVJBRElPIGlz
+IG5vdCBzZXQKCiMKIyBJckRBIChpbmZyYXJlZCkgc3VwcG9ydAojCiMgQ09ORklHX0lSREEg
+aXMgbm90IHNldAoKIwojIEJsdWV0b290aCBzdXBwb3J0CiMKIyBDT05GSUdfQlQgaXMgbm90
+IHNldAoKIwojIElTRE4gc3Vic3lzdGVtCiMKIyBDT05GSUdfSVNETl9CT09MIGlzIG5vdCBz
+ZXQKCiMKIyBHcmFwaGljcyBzdXBwb3J0CiMKIyBDT05GSUdfRkIgaXMgbm90IHNldAoKIwoj
+IENvbnNvbGUgZGlzcGxheSBkcml2ZXIgc3VwcG9ydAojCkNPTkZJR19WR0FfQ09OU09MRT15
+CiMgQ09ORklHX01EQV9DT05TT0xFIGlzIG5vdCBzZXQKQ09ORklHX0RVTU1ZX0NPTlNPTEU9
+eQoKIwojIElucHV0IGRldmljZSBzdXBwb3J0CiMKQ09ORklHX0lOUFVUPXkKCiMKIyBVc2Vy
+bGFuZCBpbnRlcmZhY2VzCiMKQ09ORklHX0lOUFVUX01PVVNFREVWPXkKQ09ORklHX0lOUFVU
+X01PVVNFREVWX1BTQVVYPXkKQ09ORklHX0lOUFVUX01PVVNFREVWX1NDUkVFTl9YPTEwMjQK
+Q09ORklHX0lOUFVUX01PVVNFREVWX1NDUkVFTl9ZPTc2OAojIENPTkZJR19JTlBVVF9KT1lE
+RVYgaXMgbm90IHNldAojIENPTkZJR19JTlBVVF9UU0RFViBpcyBub3Qgc2V0CiMgQ09ORklH
+X0lOUFVUX0VWREVWIGlzIG5vdCBzZXQKIyBDT05GSUdfSU5QVVRfRVZCVUcgaXMgbm90IHNl
+dAoKIwojIElucHV0IEkvTyBkcml2ZXJzCiMKIyBDT05GSUdfR0FNRVBPUlQgaXMgbm90IHNl
+dApDT05GSUdfU09VTkRfR0FNRVBPUlQ9eQpDT05GSUdfU0VSSU89eQpDT05GSUdfU0VSSU9f
+STgwNDI9eQojIENPTkZJR19TRVJJT19TRVJQT1JUIGlzIG5vdCBzZXQKIyBDT05GSUdfU0VS
+SU9fQ1Q4MkM3MTAgaXMgbm90IHNldAojIENPTkZJR19TRVJJT19QQ0lQUzIgaXMgbm90IHNl
+dAoKIwojIElucHV0IERldmljZSBEcml2ZXJzCiMKQ09ORklHX0lOUFVUX0tFWUJPQVJEPXkK
+Q09ORklHX0tFWUJPQVJEX0FUS0JEPXkKIyBDT05GSUdfS0VZQk9BUkRfU1VOS0JEIGlzIG5v
+dCBzZXQKIyBDT05GSUdfS0VZQk9BUkRfWFRLQkQgaXMgbm90IHNldAojIENPTkZJR19LRVlC
+T0FSRF9ORVdUT04gaXMgbm90IHNldAojIENPTkZJR19JTlBVVF9NT1VTRSBpcyBub3Qgc2V0
+CiMgQ09ORklHX0lOUFVUX0pPWVNUSUNLIGlzIG5vdCBzZXQKIyBDT05GSUdfSU5QVVRfVE9V
+Q0hTQ1JFRU4gaXMgbm90IHNldAojIENPTkZJR19JTlBVVF9NSVNDIGlzIG5vdCBzZXQKCiMK
+IyBNYWNpbnRvc2ggZGV2aWNlIGRyaXZlcnMKIwojIENPTkZJR19BREJfQ1VEQSBpcyBub3Qg
+c2V0CiMgQ09ORklHX0FEQl9QTVUgaXMgbm90IHNldAojIENPTkZJR19NQUNfRkxPUFBZIGlz
+IG5vdCBzZXQKIyBDT05GSUdfTUFDX1NFUklBTCBpcyBub3Qgc2V0CiMgQ09ORklHX0FEQiBp
+cyBub3Qgc2V0CgojCiMgQ2hhcmFjdGVyIGRldmljZXMKIwpDT05GSUdfVlQ9eQpDT05GSUdf
+VlRfQ09OU09MRT15CkNPTkZJR19IV19DT05TT0xFPXkKIyBDT05GSUdfU0VSSUFMX05PTlNU
+QU5EQVJEIGlzIG5vdCBzZXQKCiMKIyBTZXJpYWwgZHJpdmVycwojCiMgQ09ORklHX1NFUklB
+TF84MjUwIGlzIG5vdCBzZXQKCiMKIyBOb24tODI1MCBzZXJpYWwgcG9ydCBzdXBwb3J0CiMK
+IyBDT05GSUdfU0VSSUFMX1BNQUNaSUxPRyBpcyBub3Qgc2V0CkNPTkZJR19VTklYOThfUFRZ
+Uz15CkNPTkZJR19VTklYOThfUFRZX0NPVU5UPTI1NgoKIwojIEkyQyBzdXBwb3J0CiMKIyBD
+T05GSUdfSTJDIGlzIG5vdCBzZXQKCiMKIyBJMkMgQWxnb3JpdGhtcwojCgojCiMgSTJDIEhh
+cmR3YXJlIEJ1cyBzdXBwb3J0CiMKCiMKIyBJMkMgSGFyZHdhcmUgU2Vuc29ycyBDaGlwIHN1
+cHBvcnQKIwojIENPTkZJR19JMkNfU0VOU09SIGlzIG5vdCBzZXQKCiMKIyBNaWNlCiMKIyBD
+T05GSUdfQlVTTU9VU0UgaXMgbm90IHNldAojIENPTkZJR19RSUMwMl9UQVBFIGlzIG5vdCBz
+ZXQKCiMKIyBJUE1JCiMKIyBDT05GSUdfSVBNSV9IQU5ETEVSIGlzIG5vdCBzZXQKCiMKIyBX
+YXRjaGRvZyBDYXJkcwojCiMgQ09ORklHX1dBVENIRE9HIGlzIG5vdCBzZXQKIyBDT05GSUdf
+TlZSQU0gaXMgbm90IHNldApDT05GSUdfR0VOX1JUQz1tCkNPTkZJR19HRU5fUlRDX1g9eQoj
+IENPTkZJR19EVExLIGlzIG5vdCBzZXQKIyBDT05GSUdfUjM5NjQgaXMgbm90IHNldAojIENP
+TkZJR19BUFBMSUNPTSBpcyBub3Qgc2V0CgojCiMgRnRhcGUsIHRoZSBmbG9wcHkgdGFwZSBk
+ZXZpY2UgZHJpdmVyCiMKIyBDT05GSUdfRlRBUEUgaXMgbm90IHNldAojIENPTkZJR19BR1Ag
+aXMgbm90IHNldAojIENPTkZJR19EUk0gaXMgbm90IHNldAojIENPTkZJR19SQVdfRFJJVkVS
+IGlzIG5vdCBzZXQKCiMKIyBNdWx0aW1lZGlhIGRldmljZXMKIwojIENPTkZJR19WSURFT19E
+RVYgaXMgbm90IHNldAoKIwojIERpZ2l0YWwgVmlkZW8gQnJvYWRjYXN0aW5nIERldmljZXMK
+IwojIENPTkZJR19EVkIgaXMgbm90IHNldAoKIwojIEZpbGUgc3lzdGVtcwojCkNPTkZJR19F
+WFQyX0ZTPXkKIyBDT05GSUdfRVhUMl9GU19YQVRUUiBpcyBub3Qgc2V0CkNPTkZJR19FWFQz
+X0ZTPXkKIyBDT05GSUdfRVhUM19GU19YQVRUUiBpcyBub3Qgc2V0CkNPTkZJR19KQkQ9eQoj
+IENPTkZJR19KQkRfREVCVUcgaXMgbm90IHNldAojIENPTkZJR19SRUlTRVJGU19GUyBpcyBu
+b3Qgc2V0CiMgQ09ORklHX0pGU19GUyBpcyBub3Qgc2V0CiMgQ09ORklHX1hGU19GUyBpcyBu
+b3Qgc2V0CiMgQ09ORklHX01JTklYX0ZTIGlzIG5vdCBzZXQKIyBDT05GSUdfUk9NRlNfRlMg
+aXMgbm90IHNldAojIENPTkZJR19RVU9UQSBpcyBub3Qgc2V0CiMgQ09ORklHX0FVVE9GU19G
+UyBpcyBub3Qgc2V0CiMgQ09ORklHX0FVVE9GUzRfRlMgaXMgbm90IHNldAoKIwojIENELVJP
+TS9EVkQgRmlsZXN5c3RlbXMKIwojIENPTkZJR19JU085NjYwX0ZTIGlzIG5vdCBzZXQKIyBD
+T05GSUdfVURGX0ZTIGlzIG5vdCBzZXQKCiMKIyBET1MvRkFUL05UIEZpbGVzeXN0ZW1zCiMK
+IyBDT05GSUdfRkFUX0ZTIGlzIG5vdCBzZXQKIyBDT05GSUdfTlRGU19GUyBpcyBub3Qgc2V0
+CgojCiMgUHNldWRvIGZpbGVzeXN0ZW1zCiMKQ09ORklHX1BST0NfRlM9eQpDT05GSUdfUFJP
+Q19LQ09SRT15CiMgQ09ORklHX0RFVkZTX0ZTIGlzIG5vdCBzZXQKQ09ORklHX0RFVlBUU19G
+Uz15CiMgQ09ORklHX0RFVlBUU19GU19YQVRUUiBpcyBub3Qgc2V0CkNPTkZJR19UTVBGUz15
+CiMgQ09ORklHX0hVR0VUTEJfUEFHRSBpcyBub3Qgc2V0CkNPTkZJR19SQU1GUz15CgojCiMg
+TWlzY2VsbGFuZW91cyBmaWxlc3lzdGVtcwojCiMgQ09ORklHX0FERlNfRlMgaXMgbm90IHNl
+dAojIENPTkZJR19BRkZTX0ZTIGlzIG5vdCBzZXQKIyBDT05GSUdfSEZTX0ZTIGlzIG5vdCBz
+ZXQKIyBDT05GSUdfQkVGU19GUyBpcyBub3Qgc2V0CiMgQ09ORklHX0JGU19GUyBpcyBub3Qg
+c2V0CiMgQ09ORklHX0VGU19GUyBpcyBub3Qgc2V0CiMgQ09ORklHX0NSQU1GUyBpcyBub3Qg
+c2V0CiMgQ09ORklHX1ZYRlNfRlMgaXMgbm90IHNldAojIENPTkZJR19IUEZTX0ZTIGlzIG5v
+dCBzZXQKIyBDT05GSUdfUU5YNEZTX0ZTIGlzIG5vdCBzZXQKIyBDT05GSUdfU1lTVl9GUyBp
+cyBub3Qgc2V0CiMgQ09ORklHX1VGU19GUyBpcyBub3Qgc2V0CgojCiMgTmV0d29yayBGaWxl
+IFN5c3RlbXMKIwojIENPTkZJR19ORlNfRlMgaXMgbm90IHNldAojIENPTkZJR19ORlNEIGlz
+IG5vdCBzZXQKIyBDT05GSUdfRVhQT1JURlMgaXMgbm90IHNldAojIENPTkZJR19TTUJfRlMg
+aXMgbm90IHNldAojIENPTkZJR19DSUZTIGlzIG5vdCBzZXQKIyBDT05GSUdfTkNQX0ZTIGlz
+IG5vdCBzZXQKIyBDT05GSUdfQ09EQV9GUyBpcyBub3Qgc2V0CiMgQ09ORklHX0lOVEVSTUVa
+Wk9fRlMgaXMgbm90IHNldAojIENPTkZJR19BRlNfRlMgaXMgbm90IHNldAoKIwojIFBhcnRp
+dGlvbiBUeXBlcwojCiMgQ09ORklHX1BBUlRJVElPTl9BRFZBTkNFRCBpcyBub3Qgc2V0CkNP
+TkZJR19NU0RPU19QQVJUSVRJT049eQoKIwojIFNvdW5kCiMKIyBDT05GSUdfU09VTkQgaXMg
+bm90IHNldAoKIwojIFVTQiBzdXBwb3J0CiMKIyBDT05GSUdfVVNCIGlzIG5vdCBzZXQKIyBD
+T05GSUdfVVNCX0dBREdFVCBpcyBub3Qgc2V0CgojCiMgTGlicmFyeSByb3V0aW5lcwojCkNP
+TkZJR19DUkMzMj1tCgojCiMgS2VybmVsIGhhY2tpbmcKIwpDT05GSUdfREVCVUdfS0VSTkVM
+PXkKIyBDT05GSUdfREVCVUdfU0xBQiBpcyBub3Qgc2V0CkNPTkZJR19NQUdJQ19TWVNSUT15
+CiMgQ09ORklHX0RFQlVHX1NQSU5MT0NLIGlzIG5vdCBzZXQKIyBDT05GSUdfREVCVUdfU1BJ
+TkxPQ0tfU0xFRVAgaXMgbm90IHNldAojIENPTkZJR19LR0RCIGlzIG5vdCBzZXQKQ09ORklH
+X1hNT049eQojIENPTkZJR19CRElfU1dJVENIIGlzIG5vdCBzZXQKIyBDT05GSUdfREVCVUdf
+SU5GTyBpcyBub3Qgc2V0CkNPTkZJR19CT09UWF9URVhUPXkKCiMKIyBTZWN1cml0eSBvcHRp
+b25zCiMKIyBDT05GSUdfU0VDVVJJVFkgaXMgbm90IHNldAoKIwojIENyeXB0b2dyYXBoaWMg
+b3B0aW9ucwojCiMgQ09ORklHX0NSWVBUTyBpcyBub3Qgc2V0Cg==
+--------------010709050009070001090507--
