@@ -1,51 +1,58 @@
-To: tguilliams@sbs.com
-Cc: Linux PPC Embedded List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: ELDK build.sh seg faults 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "14 May 2003 15:18:42 PDT."
-             <1052950722.22337.24.camel@corona>
-Date: Thu, 15 May 2003 00:50:00 +0200
-Message-Id: <20030514225005.67B7CC6092@atlas.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <DEA23DB61B62D4118B5900508B323B84012CC7D6@OPENMAIL>
+From: Jeremy Bowen <Jeremy.Bowen@opennw.com>
+To: "'Wolfgang Denk'" <wd@denx.de>
+Cc: "'Linux PPC'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Problems with MMU: address translation for 0xXXXXXXXX failed 
+Date: Thu, 15 May 2003 11:33:31 +1200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <1052950722.22337.24.camel@corona> you wrote:
-> Trying to build the ELDK from the CVS repository, I continually get a
-> seg fault when build_package() is called in the build.sh script.  I'm
-> running bash version -
+> Tell your friend that he did something illegal, and be aware that you
+> are now using pirated software.
 
-Which version of (native_ RPM is running on your system?
+No! Hang on a minute. I object to your accusations of me being a pirate.
 
-> Suddenly, this is a problem for me.  It was building from CVS for me a
-> couple months ago and I'm thinking some "upgrade" to my RH7.2 distro has
-> caused something bad to happen but it doesn't seem to work for me on my
-> HH8.0 guy either.  Investigating...
+There is absolutely nothing anywhere that would indicate that upgrading the
+firmware is illegal. There are no EULA's in the software or any mention of
+this in any manuals and I can find nothing on the web-site. There is nothing
+that I have to "click" to agree with when installing new firmware. The
+firmware is distributed with no accompanying restrictions.
 
-"HH8.0" probably means RedHat Linux 8.0 ?
+> The Abatron firmware is available only if you pay  for  the  license,
+> then  you  will get one your of updates. After that, you can purchase
+> an extension for the next year for 15% or the original price for  the
+> license.
 
-Be careful; RH 8.0 comes with rpm-4.1 while the LDK build environment
-has been tested only with rpm-4.0 (as used in RH-7.1, 7.2 and 7.3).
+Is this like MicroSoft Licensing V6 ?? "You've bought the product but now
+you have to keep paying us so you can use it!!"
 
-> Anyone have any immediate ideas what could be the problem??
+This is a piece of hardware that I've bought and paid for. I cannot operate
+the hardware that I own, without the firmware so the firmware is integral to
+the device. If the firmware has bugs in it, should I have to pay for
+bug-fixes ?
 
-I am aware of some build problems under RH 8.0 and 9, as well  as  on
-more  recent versions of SuSE etc. However, for maximum compatibility
-we build on a RH-7.1 system so there was no real  need  to  fix  this
-yet.
+If that is, in fact, Abatron's business model then I think it sucks.
 
-Patches welcome.
+Upgrading the firmware/BIOS is commonplace in virtually any electronic
+device these days. 98% of manufacturers make their BIOS updates available
+free. Upgrading the firmware here allowed the product to work correctly.
 
-Best regards,
+As it turns out, my company does recieve updates from Abatron which I simply
+hadn't applied, but again there is nothing in either the zip file or the
+email that indicates anything about any restrictions on the use of the
+firmware.
 
-Wolfgang Denk
+I don't believe I've done anything wrong and I would do the same thing next
+time.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Just go with the flow control, roll with the crunches, and, when  you
-get a prompt, type like hell.
+If you have any evidence to the contrary, please provide it before spreading
+accusations.
+
+Jeremy
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
