@@ -1,30 +1,37 @@
-Date: Tue, 4 Mar 2003 20:30:49 -0700
-From: Matt Porter <porter@cox.net>
-To: John Chan <john@corelis.com>
+Message-ID: <3E65862E.9060606@tataelxsi.co.in>
+Date: Wed, 05 Mar 2003 10:37:58 +0530
+From: "Omanakuttan" <omanakuttan@tataelxsi.co.in>
+MIME-Version: 1.0
+To: Vladimir Gurevich <vag@paulidav.org>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: distribution for Walnut demo board
-Message-ID: <20030304203049.A3343@home.com>
-References: <3E65485B.7070306@corelis.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3E65485B.7070306@corelis.com>; from john@corelis.com on Tue, Mar 04, 2003 at 04:44:11PM -0800
+Subject: Re: problem in ppc-linux-gcc cross compiler.
+References: <3E64DC21.4060802@tataelxsi.co.in> <3E64EA95.7050405@paulidav.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Mar 04, 2003 at 04:44:11PM -0800, John Chan wrote:
-> I got an old IBM walnut demo board /w case from my friend and would like
-> to do a small project around it. I wonder if there is any free and
-> stable Linux-PPC distribution? I had some experience in Linux-x86 but
-> new in PPC. I know there are many Linux-PPC gurus here. Can you give me
-> some suggestions or recommendation?
+Greetings Mr. Vladimir Gurevich,
+Thank you very much. I came across these lines in the info page, but I
+could not understand the meaning, which is pretty clear now.
+It works.
+Thanks a lot,
+have a great day,
+Om.
 
-Get the ELDK, http:/www.denx.de
+Vladimir Gurevich wrote:
+> Hello,
+>
+> You should change the line
+>
+>>              warning, __FILE__, __LINE__, __FUNCTION__, ##msg) ;\
+>
+> to
+>
+>>              warning, __FILE__, __LINE__, __FUNCTION__ , ##msg) ;\
+>
+>
+> This space (after __FUNCTION__) will do the trick.
 
-Regards,
---
-Matt Porter
-porter@cox.net
-This is Linux Country. On a quiet night, you can hear Windows reboot.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
