@@ -1,40 +1,101 @@
-Date: Thu, 28 Mar 2002 10:19:27 +0100 (MET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Dan Bethe <dan_bethe@yahoo.com>
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: slim kernel source
-In-Reply-To: <20020327183028.71552.qmail@web11002.mail.yahoo.com>
-Message-ID: <Pine.GSO.4.21.0203281018110.4979-100000@vervain.sonytel.be>
+Date: Thu, 28 Mar 2002 12:28:27 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: DST flag in NVRAM revisited (was: Re: NVRAM stuck in DST?)
+To: benh@kernel.crashing.org
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20011207213804.7802@smtp.wanadoo.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/plain; charset=us-ascii
+Message-Id: <E16qY53-0000Iw-00@piglet.grunz.lu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 27 Mar 2002, Dan Bethe wrote:
-> Hi all.  Is there a utility or procedure which can remove a bunch of the code
-> from extraneous architectures from my kernel source tree?  I only want to build
-> kernels for my beloved Powermac 8500 and so I can do without code specific to
-> ia32, S390, Alpha, MIPS, and friends.
+Hi all,
+
+Back in December, I had problems with my clock always beeing wrong.
+
+On   7 Dec, this message from Benjamin Herrenschmidt echoed through cyberspace:
+>>Hmmm... DST on? That's wrong; we're not in DST anymore! And the current
+>>offset to GMT is one hour, not two hours. I'm wondering whether
+>>something else besides MacOS sets those values.
 >
-> Even if you just know of a few directories I can remove and save a couple dozen
-> megs of space, that'd be good.
+> AFAIK, MacOS is the only one to set it.
 
-You can remove everything under arch/ and include/ you don't need. But you'll
-be very disappointed when you notice that you haven't saved a couple dozen megs
-of space by doing that. The arch-specific code is _very_ small compared to all
-the driver code, which is valid for most architectures.
+Also my understanding.
 
-Gr{oetje,eeting}s,
+>>If not, then I'll be stuck with whatever NVRAM values MacOS wrote there
+>>when it was last booted. Which means that unless at every DST time
+>>change, unless I bot MacOS once, I'll be stuck with the wrong time....
+>
+> Yup, we need a proper tool for that.
 
-						Geert
+I've since tracked what happens to the GMT offset in nvram on bootup.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+In arch/ppc/kernel/time.c, kernel time is set from the RTC, implicitly
+taking RTC for GMT time. Under MacOS, however, it's localtime. On pmac,
+we use the GMT offset MacOS stores in nvram to correct this, and correct
+kernel time to real GMT. We also set kernel timezone info, but it's use
+is discouraged (have a look at man settimeofday).
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Now, when this offset is wrong (like when DST switched and you didn't
+boot MacOS since), your intial kernel time will be wrong. However, the
+rc files should set the kernel time once more on bootup (which is the
+case now for me in Debian), and everything is peachy again.
+
+So, my initial problem was caused by either my kernel lacking RTC
+support or by my distribution (linuxppc at that time) not forcing the
+clock.
+
+The question, of course, is whether Linux should maintain this GMT
+offset in nvram, since it uses it's information. If so, then who should
+maintain it where?
+
+- Userland tool: doesn't sound like a good idea; it's something very
+  machine-specific.
+
+- kernel: maybe, but when should the info be updated in nvram? Where
+  does the kernel get the DST and offset info from (since it basically
+  doesn't know anything about the local idea of wallclock time)
+
+My proposition would be to correct this everytime that the RTC is
+updated (since the GMT offset belongs logicaly to the RTC function
+block). Debian does this on every system shutdown.
+
+Remains to be seen if the kernel RTC driver should do the work, or a
+useland tool:
+
+> Actually, we need 2 things
+>
+>  - a way for /dev/nvram to let userland know about the partitioning
+> of the nvram (expecially where the xpram is)
+
+There is an ioctl defined for /dev/nvram in include/asm-ppc/nvram.h,
+but it's not accessible from userspace (defined inside #idfdef
+__KERNEL__). I'd say bug?
+
+>  - then a tool using that to write to the MachineLocation record
+> in nvram containing the tz offset and DST flag.
+
+I have something working for OldWorld, but it's a _very_ ugly hack ;-)
+
+
+Obviously, the easiest thing to do is do nothing and entirely rely on
+the bootup scripts to set the correct time.
+
+Comments anyone?
+
+Cheers
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
