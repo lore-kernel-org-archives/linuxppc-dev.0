@@ -1,59 +1,75 @@
-From: Paul Mackerras <paulus@linuxcare.com.au>
+Message-ID: <3A6CCBDC.3D7B722A@mvista.com>
+Date: Mon, 22 Jan 2001 19:10:04 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
+To: tom_gall@vnet.ibm.com
+CC: Tom Gall <tgall@rochcivictheatre.org>, Troy Benjegerdes <hozer@drgw.net>,
+        linuxppc-commit@hq.fsmlabs.com,
+        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: context overflow
+References: <3A68F7A0.693639F1@mvista.com> <20010121222842.A27103@altus.drgw.net> <3A6BB971.7F128273@rochcivictheatre.org> <3A6C822F.7DB50A58@vnet.ibm.com> <3A6C9135.F542F0FA@mvista.com> <3A6CAF58.FB1643F1@vnet.ibm.com>
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <14956.50865.856754.439761@diego.linuxcare.com.au>
-Date: Tue, 23 Jan 2001 10:48:01 +1100 (EST)
-To: Michel Ddnzer <michdaen@iiic.ethz.ch>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Jeff Hartmann <jhartmann@valinux.com>,
-        Gareth Hughes <gareth@valinux.com>, linuxppc-dev@lists.linuxppc.org,
-        dri-devel@lists.sourceforge.net
-Subject: Re: [Dri-devel] PPC Lockup (ati-pcigart-branch)
-In-Reply-To: <3A691166.DC6DCD81@iiic.ethz.ch>
-References: <3A686DFE.9030308@valinux.com>
-	<19341214104258.22601@mailhost.mipsys.com>
-	<3A68FC06.7BEEA13D@iiic.ethz.ch>
-	<3A691166.DC6DCD81@iiic.ethz.ch>
-Reply-To: paulus@linuxcare.com.au
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michel =?iso-8859-1?Q?D=81=E4nzer?= writes:
+tom_gall@vnet.ibm.com wrote:
 
-> I've narrowed down the problem by modifying the code like this:
->
->         for ( i = entry->handle, j = 0 ; j < pages ; i += PAGE_SIZE, j++ ) {
->                 printk("i: %08lx\n", i);
->                 pgd = pgd_offset_k( i );
->                 printk("pgd: %08lx\n", pgd);
->                 pmd = pmd_offset( pgd, i );
->                 printk("pmd: %08lx\n", pmd);
->                 pte = pte_offset( pmd, i );
->                 printk("pte: %08lx\n", pte);
-[snip]
-> The kernel output is as follows:
->
-> [drm] drm_sg_alloc
-> i: ca292000
-> pgd: c014dca0
-> pmd: c014dca0
-> pte: 00000a48
+>   active_mm represents the current context of USER space,
 
-Which means that *pgd == 0, which is very odd indeed, unless of course
-you have run off the end of the vmalloc'd area (I assume you haven't).
-What is the value of the symbol swapper_pg_dir in this kernel?
-Have you tried accessing the vmalloc'd area?  Where did you get the
-kernel source?
+Not exactly.  The mm object may only contain page tables for a
+user thread, but it also contains information about the MMU context
+in general for any thread running on the processor.
 
-I hope to get to have a good look at the drm code myself shortly.
+> ..........If a task doesn't have a current->mm it's
+> a kernel task. It shouldn't be using the Segment Registers in the context.
+> Right? A kernel task should only be concerned with addresses in the range of
+> C0000000-FFFFFFFF which aren't in the context.
 
-Paul.
+No, you are confusing MMU context with kernel memory mapping and
+our (mostly incorrect) use of VSIDs on the 7xx processors.
 
---
-Paul Mackerras, Open Source Research Fellow, Linuxcare, Inc.
-+61 2 6262 8990 tel, +61 2 6262 8991 fax
-paulus@linuxcare.com.au, http://www.linuxcare.com.au/
-Linuxcare.  Support for the revolution.
+>   If what you say is true that incorrect VSID/ASID etc could be handed out, I'm
+> wondering how my box has been up running and stable since last week.
+
+Because you are not running something like an MPC8xx or IBM4xx that
+cares whether it is correct in kernel space.  Some processors do care.
+
+
+>   Since current->mm is NULL, it's a kernel task... granted it doesn't have to be
+> the idle task but it shouldn't matter. Or when you say any task, are you saying
+> that user tasks as well?
+
+The MMU context switching logic doesn't make any assumptions about
+the meaning of current->mm.  If there is a current->mm, it switches
+to that as the active_mm for the thread.  If there isn't a current->mm,
+it locates something to use as the active_mm.  The rules for selecting
+an active_mm can be whatever makes sense for reducing MMU management
+or implementing features.
+
+
+>   Correct me if I'm wrong but from the code we were looking at the sched.c when
+> you pass through switch_mm from a kernel task to a user task, it catches it and
+> you go from state of NO CONTEXT to the correct context.
+
+Yes, but the problem is the context overflowed you did not select a
+new one.  You allowed the thread to run on the processor (regardless of
+what it was) with an expired context, that doesn't match the context
+of active_mm.  Then later, you find yet another context to switch to
+for the same thread that was using the wrong one.
+
+>   Beat me over the head with a crowbar please if I'm missing something.
+
+What's the big deal?  I'm going to say it for the third time.  The
+active_mm is supposed to represent the mmu context for the thread
+currently running on the processor.  When the context overflows, we
+should get (pick a number) and set (in the MMU) the new context for
+the active_mm running on each processor.  It is logically incorrect
+to test current->mm and skip the get/set.  By doing so, you have a
+stale MMU hardware context and an mm object that shouldn't be running
+on a processor.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
