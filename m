@@ -1,64 +1,64 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: <mlan@cpu.lu>, <acurtis@onz.com>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: PCI enlightenment follow-up
-Date: Tue, 6 Aug 2002 23:09:17 +0200
-Message-Id: <20020806210917.13103@192.168.4.1>
-In-Reply-To: <E17cK7s-000080-00@piglet.grunz.lu>
-References: <E17cK7s-000080-00@piglet.grunz.lu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Wed, 7 Aug 2002 10:12:52 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: acurtis@directvinternet.com,
+	"David M?ller (ELSOFT AG)" <d.mueller@elsoft.ch>,
+	linuxppc-dev@lists.linuxppc.org, lm@bitmover.com
+Subject: Re: Problem with bk repository?
+Message-ID: <20020807001252.GF5012@zax>
+References: <3D4FEA26.1070403@elsoft.ch> <NCBBIINEHIPFGJPLBEIFEEGMDKAA.acurtis@directvinternet.com> <20020806161339.GB714@opus.bloom.county>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20020806161339.GB714@opus.bloom.county>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->sym should _not_ play with these bus-view addresses. Have a look at the
->driver where it gets these from.
-
-I think it has to. From what I remember the author of the driver told
-me, the card need to be programmed to point to it's own memory
-or something like that.
-
->> sym53c8xx: setting PCI_COMMAND_PARITY...(fix-up)
->> sym53c8xx: 53c895a detected
->> sym53c895a-0: rev 0x1 on pci bus 0 device 15 function 0 irq 19
->> sym53c8xx: device->slot.base = 0x07fffc00
->> sym53c8xx: device->slot.base_2 = 0x07ffc000
+On Tue, Aug 06, 2002 at 09:13:39AM -0700, Tom Rini wrote:
+> On Tue, Aug 06, 2002 at 08:46:50AM -0700, acurtis@directvinternet.com wrote:
+> >
+> > >
+> > > david@devil:/repository/linuxppc_2_4_devel>bk parent
+> > > Parent repository is bk://ppc.bkbits.net/linuxppc_2_4_devel
+> > > david@devil:/repository/linuxppc_2_4_devel>bk pull -ll
+> > > ERROR-Can't get read lock on the repository.
+> > > pull: remote locked, trying again...
+> > > ERROR-Can't get read lock on the repository.
+> > > pull: remote locked, trying again...
+> > > ERROR-Can't get read lock on the repository.
+> > > pull: remote locked, trying again...
+> > > ERROR-Can't get read lock on the repository.
+> > > pull: remote locked, trying again...
+> >
+> > I was it for the first time today too.
 >
->Should contain the offset from host to PCI bus. With these addresses,
->there's no way to access the SCSI card from the driver.
->
->> sym53c895a-0: ID 7, Fast-40, Parity Checking
->> /* vtobus() mapping looks ok */
->> sym53c8xx: 0x404ba000 = vtobus(0xc04ba000)
->> sym53c8xx: 0x404bd800 = vtobus(0xc04bd800)
->
->Where do these come from? Is that DMA memory?
+> Are either of you still getting this?  What seems to be happening is
+> that when David Gibson pushes something to the tree, it never quite
+> finishes and Bk ends up in a slightly wierd state.  David, are you
+> behind some sort of wierd network setup or anything?
 
-Looks like. It's correct provided the infos Allen gave us regarding
-his bridge setup are correct.
+Ah, crap.  I did run into this the other day - I did a push which got
+interrupted (connection closed by foreign host - probably due to
+SOCKS).  After that my pulls (and attempts to push again) complained
+that there was a lock.  But paulus had a look at the parent repository
+where 'll' denied that there was any lock - at least it did the second
+time it was invoked.  My pulls were still failing and I was going to
+send out a mail, but the next day it seemed to be working again, so I
+figured it was a once off breakage.
 
->> sym53c8xx: np->base2_ba = 0x07ffc000
->> /* 1-to-1 BAT mapping */
->> sym53c8xx: 0x4fffc000 = remap_pci_mem(0x4fffc000, 0x00002000)
->
->This looks good indeed.
->
->> sym53c8xx: ncr_script_copy_and_bind(src 0xc04f7ce0, dst 0xc04be054)
->> sym53c8xx: ncr_script_copy_and_bind(src 0xc04f7ce0, dst 0xc04be054)
->> sym53c8xx: 0xf0ccff07 = cpu_to_scr(0x07ffccf0)
->             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->Nope, reversed address. That will not work. Don't touch the address,
->touch the data if necessary. What needs to be swapped is data going
->_over_ the little-endian PCI bus. Addreses don't go _over_ the bus, they
->address resources _on_ the bus.
+I guess I was wrong.
 
-Sure of that ? First let's look at what the driver actually does in that
-routine. I know that the NCR chips are have bus-masterers ;)
+I'm not sure if my last push was interrupted, or whether there was
+some residual breakage from the earlier push in the repository which
+got triggered again by the later push.
 
-Ben.
+Pulls are working again for me now, so I'm not sure what to do next to
+investigate this.
 
->Cheers
-
+--
+David Gibson			| For every complex problem there is a
+david@gibson.dropbear.id.au	| solution which is simple, neat and
+				| wrong.
+http://www.ozlabs.org/people/dgibson
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
