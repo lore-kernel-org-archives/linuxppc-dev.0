@@ -1,22 +1,18 @@
-Return-Path: <Christian-Hoffmann@siemens.com>
-Received: from goliath.siemens.de (goliath.siemens.de [192.35.17.28])
-	by ozlabs.org (Postfix) with ESMTP id 3079967A66
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jan 2005 22:20:54 +1100 (EST)
-Received: from mail3.siemens.de (mail3.siemens.de [139.25.208.14])
-	by goliath.siemens.de (8.12.6/8.12.6) with ESMTP id j0IAuosD011683
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jan 2005 11:56:50 +0100
-Received: from WITB202A.wit.siemens.de (witb202a.wit.siemens.de
-	[149.246.229.252])
-	by mail3.siemens.de (8.12.6/8.12.6) with ESMTP id j0IAuoUt023433
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jan 2005 11:56:50 +0100
-Message-ID: <3F294367B36FF842B66CC65102BBA9B236C926@witb202a>
-From: Christian-Hoffmann@siemens.com
-To: linuxppc-dev@ozlabs.org
-Date: Tue, 18 Jan 2005 11:55:27 +0100
+Return-Path: <geert@linux-m68k.org>
+Received: from witte.sonytel.be (witte.sonytel.be [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id 71CE767A66
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jan 2005 23:34:40 +1100 (EST)
+Date: Tue, 18 Jan 2005 10:20:34 +0100 (MET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Sender: geert@sonycom.com
+To: "Mark A. Greer" <mgreer@mvista.com>
+In-Reply-To: <41EC29A8.1040703@mvista.com>
+Message-ID: <Pine.GSO.4.61.0501181017110.20681@waterleaf.sonytel.be>
+References: <41EC29A8.1040703@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: cpm_spi.c under kernel 2.6
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Subject: Re: [RFC] Option to disable mapping genrtc calls to ppc_md calls
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,12 +22,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-hi, 
+On Mon, 17 Jan 2005, Mark A. Greer wrote:
+> I have a platform with an i2c rtc chip.  Since much of the code for an rtc
+> driver is already in drivers/char/genrtc.c, I would like to reuse that code
+> and directly implement get_rtc_time(), et. al. in the rtc driver.  The problem
+> is that include/asm-ppc/rtc.h assumes that get_rtc_time(), et. al. should be
+> mapped to ppc_md.get_rtc_time() et. al.  To work around this, I made an option
+> to turn off that assumption.  The patch is included.
+> 
+> There are 2 reasons to not use the ppc_md.get_rtc_time() et. al. interfaces:
+> 1) They are called before the i2c driver is initialized and even loaded if its
+> a module.
 
-has anybody already ported the spi driver available in kernel 2.4.24
-(arch/ppc/8260_io/cpm_spi.c) to kernel 2.6 (2.6.8.1) ?
-if so, where can i get it ?
+How is this solved by your patch if genrtc is builtin? How is your solution
+different from setting ppc_md.get_rtc_time to your get_rtc_time routine?
 
-regards
+> 2) Its ppc-specific.  Implementing get_rtc_time() et. al. directly makes it
+> generic across all architectures.
 
-christian
+... but prevents you from building a kernel that supports both normal RTCs and
+your i2c RTC.
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
