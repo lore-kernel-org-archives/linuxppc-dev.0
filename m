@@ -1,38 +1,36 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "David A. Gatwood" <dgatwood@gatwood.net>
+To: <benh@kernel.crashing.org>
 Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: G4 boot crash problems with 2.4 "stable"
-Date: Wed, 13 Feb 2002 22:06:16 +0100
-Message-Id: <20020213210616.30410@smtp.wanadoo.fr>
-In-Reply-To: <Pine.LNX.3.96.1020213125526.27925B-100000@gatwood.net>
-References: <Pine.LNX.3.96.1020213125526.27925B-100000@gatwood.net>
+Subject: Re: SUNGEM config
+References: <87k7th2ujl.fsf@theorie.physik.uni-muenchen.de>
+	<20020213172847.23608@mailhost.mipsys.com>
+Reply-To: Jens Schmalzing <jens.schmalzing@physik.uni-muenchen.de>
+From: Jens Schmalzing <jens.schmalzing@physik.uni-muenchen.de>
+Date: 14 Feb 2002 06:06:40 +0900
+In-Reply-To: <20020213172847.23608@mailhost.mipsys.com>
+Message-ID: <87u1slf5wf.fsf@theorie.physik.uni-muenchen.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> >Is there a 2.4 kernel source tarball around that is known to boot on
->> >Sawtooth (using BootX)?  Is there a way to yank the OpenPIC support?
->>
->> BootX isn't supported on any newworld mac. You should boot from OF,
->> using yaboot.
->
->BootX works fine for me with every 2.2 kernel I've tried.  It only fails
->for 2.4 TOT builds.  I very much doubt the boot mechanism is at fault.
+Hi,
 
-Well, it can be for various reasons. For example, the interrupt tree
-cannot be properly parsed, we don't get the OF "phandles" and we now
-rely on them (MacOS don't keep them when it gets the device-tree).
-Also, some bus mastering devices aren't properly shut down, potentially
-screwing things up in memory while the kernel loads.
+> Can you tell me more about those machine checks ?
 
-I would really recommend you give a try to yaboot before investigating
-much further.
+I can send you the usual output, it's still in my logs.
 
-(Note: I do have a sawtooth here which just works with latest kernels)
+> I suspect they happen if you try to read the registers while the
+> interface is shutdown, in which case the GEM chip is down.
 
-Ben.
+Precisely.  That's what the ifd daemon does, it polls the device once
+every second via that ioctl in order to see whether it is connected or
+not.
 
+Regards, Jens.
+
+--
+J'qbpbe, le m'en fquz pe j'qbpbe!
+Le veux aimeb et mqubib panz je pézqbpbe je djuz tqtaj!
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
