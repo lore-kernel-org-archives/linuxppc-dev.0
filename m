@@ -1,36 +1,30 @@
-Message-Id: <9904021711.AA35268@marc.watson.ibm.com>
-To: Holger Bettag <hobold@informatik.uni-bremen.de>
+From: Ryan Nielsen <ran@krazynet.com>
+Date: Fri, 2 Apr 1999 13:47:33 -0800
+To: Sacha Varma <sacha@ssl.co.uk>
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Apple Job Posting and Good News for LinuxPPC developers 
-In-Reply-To: Message from Holger Bettag <hobold@informatik.uni-bremen.de>
-   of "02 Apr 1999 14:11:16 +0200." <8x677fp6hn.fsf@s52.informatik.uni-bremen.de>
-Date: Fri, 02 Apr 1999 12:11:12 -0500
-From: David Edelsohn <dje@watson.ibm.com>
+Subject: Re: SMP DayStar nPOWER
+Message-ID: <19990402134733.B10812@gondolin>
+References: <37049A1E.1596F185@ssl.co.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <37049A1E.1596F185@ssl.co.uk>; from Sacha Varma on Fri, Apr 02, 1999 at 11:21:18AM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> Holger Bettag writes:
+Sacha Varma <sacha@ssl.co.uk> wrote:
+> 
+> I have a DayStar nPower dual 604e daughtercard (in a PowerComputing
+> PowerWave), for which it would appear there is currently no support in
+> the kernel.
+>
+> How can I go about adding support for this?
 
-Holger> I have heard rumours that the "Max" core has provisions to physically address
-Holger> more than 4GB of memory (via the MMU's segment registers). Processes would
-Holger> still be limited to a 4GB logical address space, though.
+just enable Symmetric multi-processing support in the Platform Support
+section of config.
 
-	The PowerPC architecture always has been able to address more than
-32-bits of "logical" address space.  That is the reason for the PowerPC
-terminology of "effective address", "virtual address", and "real address".
-The intermediate "virtual address" space of a 32-bit PowerPC
-implementation is 52 bits.
-
-	Pointers still are 32-bits, but a cooperating operating system and
-compiler can allow an application to address more virtual memory through
-runtime modifications to the virtual segments mapped by the segment
-registers, like memory overlays.  That was the original reason for the
-design of the MMU in the POWER (predecessor of PowerPC) architecture.  I
-do not believe that any compiler / OS combination takes advantage of this
-facility. 
-
-David
+I don't use it because netscape (or X?) causes the machine to freeze too often.
+which I'd like to fix..but i have no idea how to track what is causing it down.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
