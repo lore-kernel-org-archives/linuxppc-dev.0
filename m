@@ -1,23 +1,27 @@
-Message-ID: <20021031213635.33920.qmail@web14504.mail.yahoo.com>
-Date: Thu, 31 Oct 2002 13:36:35 -0800 (PST)
-From: francis Yu <kalunyee@yahoo.com>
-Subject: BDI2000 wanted
-To: linuxppc-dev@lists.linuxppc.org
+Message-ID: <001201c23a50$1057cf20$370da8c0@aman>
+From: "Aman" <aman@mistralsoftware.com>
+To: "linuxppc embedded" <linuxppc-embedded@lists.linuxppc.org>
+References: <3D6BB90D.FEA66532@redswitch.com> <001c01c24df2$76195030$370da8c0@aman>
+Subject: Downloading Linux image using Riscwatch
+Date: Fri, 2 Aug 2002 23:41:46 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: owner-linuxppc-dev@lists.linuxppc.org
-List-Id: <linuxppc-dev@lists.linuxppc.org>
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Sender: owner-linuxppc-embedded@lists.linuxppc.org
+List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Please excuse me if I am posting this message at the
-wrong site, but I do not know where else to go.
-Due to the extremely tight budget, I cannot afford to
-pay the full price on a new BDI2000 bundle. Therefore,
-I an asking if any one out there that has one to sell.
-What I need is a BDI2100 for the MPC5xx/8xx. Thanks.
-Kalun
+Hi All
 
-HotJobs - Search new jobs daily now
-http://hotjobs.yahoo.com/
+I am using PPC 440GP processor on custom board. This board doesnt not have
+Ethernet support and there is no rom monitor code in the board. Is it
+possible to download the Linux image to the board using JTAG . If so what
+type of image should I build.
 
-** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
+Thanking you in advance.
+
+Regards
+Aman
+
+
+** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
