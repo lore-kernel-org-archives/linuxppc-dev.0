@@ -1,23 +1,27 @@
-Date: Thu, 11 Oct 01 18:53:12 PDT
-From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
-Message-Id: <0110120153.AA28702@ivan.Harhan.ORG>
+Subject: VGA out on ibook2
+From: EliuG <guile@mac.com>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: SBS Palomar II/IV/V port
+Content-Type: text/plain; charset=ISO-8859-1
+Date: 12 Oct 2001 04:25:23 +0200
+Message-Id: <1002853526.3527.4.camel@milleniumfalcon>
+Mime-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tom Rini <trini@kernel.crashing.org> wrote:
+Hi
+	I'm trying to use the external VGA connector on an ibook2 (the white
+one) with the benh utility m3mirror and, after turning crt on, the
+screen on the monitor looks "wavy" and unusable.
+	Anybody could guide me to solve this problem?
 
-> Okay, does the following look right/work for everyone?
->
-> [...]
->
-> -			initrd_end = data[0] + rec->size;
-> +			initrd_end = data[0] + data[1];
+Also... anybody knows how to turn up the composite video output of the
+ibook2?
 
-This should work for me.
+Thanks a lot!
+--
+Félix Ortega Hortiguela	<guile@mac.com>
+Avoid the gates of hell  --  Use Linux!
 
-MS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
