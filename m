@@ -1,32 +1,20 @@
-Date: Mon, 11 Oct 1999 19:35:04 +0100 (BST)
-From: Jules Bean <jmlb2@hermes.cam.ac.uk>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: The New iMac
-Message-ID: <Pine.SOL.4.10a.9910111932100.13312-100000@red.csi.cam.ac.uk>
+Message-ID: <38023A85.8722D746@chpc.utah.edu>
+Date: Mon, 11 Oct 1999 13:29:09 -0600
+From: Lou Langholtz <ldl@chpc.utah.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: anybody using 2.2.13pre15 ok?
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
-
-I'm pondering buying myself a new computer, and the iMac is one of the
-choices.  It has considerable advantages for me (easy portability, no
-fan), but I certainly don't want something which can't run Linux.
-
-On the other hand, I'm very happy to work on getting Linux to run on it
-(once I've got one) - I know my way around C and have some experience
-prodding around kernels and booting machine off serial consoles.
-
-Has anyone got any information about how hard it's going to be to get
-Linux running on the iMac's, and whether anyone in particular is planning
-to work on it?  (I imagine the linuxppc.com people will be keen to, if
-it's anything like as successful piece of hardware as the original iMac).
-
-Cheers,
-
-Jules
+I was having some panic problems immediately after reboot so I'm just
+wondering if others have booted up and run 2.2.13pre15 w/out problems.
+I'd paste in what the panic message was but of course I didn't write it
+down and can't remember the specifics. I'm gonna try some more with
+different config opts but was just wondering though if 2.2.13pre15 even
+works on Power Mac. Thanks :-)
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
