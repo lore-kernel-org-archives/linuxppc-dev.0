@@ -1,15 +1,18 @@
-Return-Path: <greg.weeks@timesys.com>
-Received: from exchange.timesys.com (mail.timesys.com [65.117.135.102])
-	by ozlabs.org (Postfix) with ESMTP id AE1A767A6B
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 026C567A6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Mar 2005 03:44:37 +1100 (EST)
-Message-ID: <42386274.2020504@timesys.com>
-Date: Wed, 16 Mar 2005 11:44:36 -0500
-From: Greg Weeks <greg.weeks@timesys.com>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Content-Type: multipart/mixed; boundary="------------070305080305030605010102"
-Subject: [patch] fix unitilized spinlock in cpm driver when used as console
+	Thu, 17 Mar 2005 03:51:19 +1100 (EST)
+In-Reply-To: <42386209.2070407@timesys.com>
+References: <42386209.2070407@timesys.com>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <246b789ef278b37c931695987cb49f68@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Wed, 16 Mar 2005 10:51:21 -0600
+To: "Greg Weeks" <greg.weeks@timesys.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: [patch] fix gianfar unitilized spinlock.
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,34 +23,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------070305080305030605010102
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Greg,
 
-Fix unitilized spinlock in the cpm scc driver when used as console.
+This has already been fixed in the current bk tree.
 
-Signed-off-by: Greg Weeks <greg.weeks@timesys.com>
+http://ozlabs.org/ppc32-patches/patch.pl?id=279
 
+- kumar
 
+On Mar 16, 2005, at 10:42 AM, Greg Weeks wrote:
 
---------------070305080305030605010102
-Content-Type: text/x-patch;
- name="cpm.console.spinlock.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="cpm.console.spinlock.patch"
-
---- all/drivers/serial/cpm_uart/cpm_uart_core.c-orig
-+++ all/drivers/serial/cpm_uart/cpm_uart_core.c
-
-@@ -1038,6 +1038,7 @@
- 
- 	port =
- 	    (struct uart_port *)&cpm_uart_ports[cpm_uart_port_map[co->index]];
-+	spin_lock_init(&(port->lock));
- 	pinfo = (struct uart_cpm_port *)port;
- 	
- 	pinfo->flags |= FLAG_CONSOLE;
-
---------------070305080305030605010102--
+> Fix unitilized spinlock in the gianfar tsec etherenet driver.
+>
+> Signed-off-by: Greg Weeks <greg.weeks@timesys.com>
+> <gianfar.spinlock.patch><ATT152677.txt>
