@@ -1,35 +1,26 @@
-Date: Mon, 4 Nov 2002 16:49:53 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: IDE on LongTrail
-Message-ID: <20021104234953.GD13102@opus.bloom.county>
-References: <Pine.GSO.4.21.0211032047160.12607-100000@vervain.sonytel.be>
+From: "Daniel Lao" <laodx@gzjpg.com>
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: A question about the 68-pin SCSI devices
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.GSO.4.21.0211032047160.12607-100000@vervain.sonytel.be>
+Content-Type: text/plain
+Date: Tue, 5 Nov 2002 12:16:19 +0800
+Message-Id: <200211051305359.SM00332@xuyf>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, Nov 03, 2002 at 10:40:42PM +0100, Geert Uytterhoeven wrote:
+Hello,
+My system are based on Motolora's "MVME2700 + 3-row P2 adapter + MVME761
++ 50-pin SCSI devices", the linuxppc kernel is 2.212. Now I would like
+to update my system with 68-pin SCSI devices. That is , the new system
+configuration is "MVME2700 + 5-row P2 adapter + MVME761 + 68-pin SCSI
+devices". The MOT's documents said that the SCSI controler(53C825A)
+on MVME2700 can support 68-pin devices, but I am not sure whether the
+linux kernel(2.2.12) can support them. Should anyone kindly give me some
+advice? Thank a lot!
 
-> I just tried adding an IDE disk to mine. The disk is identified correctly, but
-> I always get `hda: lost interrupt' for any other operation. According to lspci
-> the sl82c105 uses IRQ 32 (OpenPIC), but /proc/interrupt shows no interrupts
-> coming in there.
-
-WHich kernel?  It worked on mine as of 2.4.18'ish I believe.  2.5 has
-known problems with that driver in general, which RMK has on his to fix
-list.
-
-> I'm using 2.4.20-rc1 (from linuxppc_2_4).
-
-I see.  Uh-oh.  I'll have to compile up a new kernel and give it a shot
-this week..
-
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+---
+Daniel Lao
+2002-11-05 12:13:52
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
