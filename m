@@ -1,17 +1,19 @@
-Return-Path: <stern@rowland.harvard.edu>
-Received: from ida.rowland.org (ida.rowland.org [192.131.102.52])
-	by ozlabs.org (Postfix) with SMTP id D6B1767A6D
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Mar 2005 05:53:56 +1100 (EST)
-Date: Thu, 17 Mar 2005 13:47:12 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-To: Paul Mackerras <paulus@samba.org>
+Return-Path: <david-b@pacbell.net>
+Received: from ylpvm29.prodigy.net (ylpvm29-ext.prodigy.net [207.115.57.60])
+	by ozlabs.org (Postfix) with ESMTP id D409467A65
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Mar 2005 06:05:37 +1100 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: linux-usb-devel@lists.sourceforge.net
+Date: Thu, 17 Mar 2005 10:58:54 -0800
+References: <16953.5968.397116.341920@cargo.ozlabs.ibm.com>
 In-Reply-To: <16953.5968.397116.341920@cargo.ozlabs.ibm.com>
-Message-ID: <Pine.LNX.4.44L0.0503171343450.855-100000@ida.rowland.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-usb-devel@lists.sourceforge.net
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200503171058.54285.david-b@pacbell.net>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 Subject: Re: [linux-usb-devel] [PATCH] Make sleep/wakeup work with USB on
- powerbooks
+	powerbooks
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,25 +23,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 17 Mar 2005, Paul Mackerras wrote:
-
+On Wednesday 16 March 2005 9:36 pm, Paul Mackerras wrote:
 > I am currently using this patch on my powerbook to fix the problems
 > that USB was causing with sleep and wakeup.  Basically one of the USB
 > controllers was getting a spurious wakeup immediately when put it
 > into the suspend state.  This would cause the resume routine to be run
 > after we had turned off the device, causing a machine check.
 
-Is this just a hardware glitch or does it go deeper?
+Do you know yet why the spurious wakeup happened?  As I recall from
+earlier discussions, that was indeed the root cause of the problem,
+although there were a few other oddnesses that needed handling too.
+But without the spurious wakeup, they'd have been quite rare.
+
 
 > Also we had some races where we would turn off the clock to the apple
 > OHCI cell(s) and then try to access them.  With this patch, sleep and
 > wakeup are quite reliable.  The patch is against 2.6.11.
 
-Aside from the ppc-specific portions, the changes you made to hcd-pci.c 
-resemble those I just posted in
+Thanks, I'll have a more detailed look soon.  Most of it looks fine,
+except for the stuff related to this:
 
-http://lists.osdl.org/pipermail/linux-pm/2005-March/000616.html
+> +#ifdef CONFIG_USB_SUSPEND
+>  	/* wake on ConnectStatusChange, matching external hubs */
+>  	ohci_writel (ohci, RH_HS_DRWE, &ohci->regs->roothub.status);
+> +#endif
 
-(meant for the gregkh-2.6 USB development tree).
+Thing is, that change would also prevent us from getting rid of
+the root hub timer for OHCI.   IRQ on connect status change is
+not specific to USB_SUSPEND.
 
-Alan Stern
+- Dave
