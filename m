@@ -1,8 +1,10 @@
-Date: Wed, 21 Apr 1999 10:55:07 -0500 (CDT)
-From: Dave Weis <djweis@plconline.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: couple questions on bootloaders
-Message-ID: <Pine.LNX.3.95.990421103051.9340F-100000@catbert.desm.plconline.com>
+Date: Wed, 21 Apr 1999 18:08:57 +0200 (CEST)
+From: Alexander Larsson <alex@signum.se>
+To: Dan Malek <dmalek@jlc.net>
+cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Embedded 8xx 2.2.5 kernel tarball
+In-Reply-To: <37164E34.9B29EDBE@jlc.net>
+Message-ID: <Pine.LNX.4.04.9904211803010.6664-100000@tammy.signum.se>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
@@ -10,32 +12,34 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 
-hello!
 
-i was looking thru identify_machine in setup.c and had a question about
-the handling of residual data. on my rs6000, there is a massive structure
-with pointers to other structures. the book says that a warm boot reuses
-that structure so i can't overwrite it. is there a way that i can prevent
-the kernel from touching the area? alternatively, does anyone know if that
-structure will be located in the available memory space or in the
-architected system memory from 0xff000000 to 0xffffffff? 
-also, what instructions would i use to write an arbitrary byte to memory
-locate 0xff700300?
+On Thu, 15 Apr 1999, Dan Malek wrote:
 
+> To all of you that have been asking lately........
+> 
+> I have finally uploaded the tar image of the directory I am using for the
+> 8xx updates.  I have not checked in all of these changes to CVS as I
+> still have to do my best to ensure I have not broken something.
+> 
+> Some of you have indicated you wish to contribute modifications, so please
+> implement them against this source base and send me the patches or files.
+> 
+> When you use this kernel, I would appreciate hearing of success as well
+> as failure.
 
-thanks for the help!
+I just merged my local changes with the 2.2.5-embedded sources.
+I get an error when starting init. (Booting from nfs.)
 
-dave
+It just says: 
+Freeing unused kernel memory: 32k init
+put_dirty_page: page already exists
 
+and hangs. I tried to disable the SASH thing, but that made no difference.
+I haven't had time to check more, gotta go home now. 
+Do you have any idea?
 
--- 
-David Weis                | 10520 New York Ave, Des Moines, IA 50322
-djweis@plconline.com      | Voice 515-278-0133 Ext 231
+/ Alex
 
-When they took the Fourth Amendment, I was quiet because I didn't deal drugs.
-When they took the Sixth Amendment, I was quiet because I was innocent.
-When they took the Second Amendment, I was quiet because I didn't own a gun.
-Now they've taken the First Amendment and I can't say anything.
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
