@@ -1,50 +1,39 @@
-Subject: Re: multiple separate pci bridges ...
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-Cc: Rob Baxter <robb@synergymicro.com>,
-	Sven Luther <sven.luther@wanadoo.fr>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
+Date: Wed, 7 Jan 2004 10:53:58 +0100
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Sven Luther <sven.luther@wanadoo.fr>,
+	Tom Rini <trini@kernel.crashing.org>, Lee Braiden <jel@ntlworld.com>,
+	debian-powerpc@lists.debian.org,
 	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <Pine.LNX.4.44.0401071000001.8608-100000@opal.biophys.uni-duesseldorf.de>
-References: 
-	 <Pine.LNX.4.44.0401071000001.8608-100000@opal.biophys.uni-duesseldorf.de>
-Content-Type: text/plain
-Message-Id: <1073467436.5753.102.camel@gaston>
+Subject: Re: Would setting the CONFIG_RTC option break the powerpc kernel on your machine ?
+Message-ID: <20040107095358.GA24780@iliana>
+References: <20031219114050.GA5650@iliana> <20031219162800.GE29266@stop.crashing.org> <20031222134504.GA5964@iliana> <20031222161042.GB10841@stop.crashing.org> <20031222162601.GA9021@iliana> <20031222163315.GC10841@stop.crashing.org> <20040107065458.GA20228@iliana> <1073460144.784.79.camel@gaston> <20040107074740.GB22544@iliana> <1073464206.4416.81.camel@gaston>
 Mime-Version: 1.0
-Date: Wed, 07 Jan 2004 20:23:57 +1100
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1073464206.4416.81.camel@gaston>
+From: Sven Luther <sven.luther@wanadoo.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 2004-01-07 at 20:02, Michael Schmitz wrote:
-> > note that there's still a problem with XFree which will "see"  those
-> > BARs and, according to the log posted by Sven, shoke. Sven, can you
-> > try "hiding" the host bridge completely from the config ops and see
-> > if that helps with XFree ? That's not a very good solution though,
-> > we'll have to do something different about it. Now if only XFree
-> > stopped mucking with the PCI bus...
+On Wed, Jan 07, 2004 at 07:30:06PM +1100, Benjamin Herrenschmidt wrote:
 >
-> Is this a problem with overlapping PCI resources again (thought that was
-> fixed in 2.4 anyway)? Resolving the overlap helped there. What does XFree
-> do, simply disable resources?
+> >  1) could a #ifdef __powerpc__ not be enough ?
+>
+> No. _machine is only defined for the "multiarch" config (PREP/CHRP/PMAC)
 
-There should be no overlap.... Let me check the log ...
+Ok. I suppose it doesn't make sense also to include the #ifdef
+CONFIG_ALL_PPC in a #ifdef __powerpc__ ?
 
-(II) Host-to-PCI bridge:
-(II) Bus 16: bridge is at (0:0:0), (-1,16,0), BCTRL: 0x0008 (VGA_EN is
-set)
-(II) Bus 16 I/O range:
-        [0] -1  0       0x00000000 - 0x0000ffff (0x10000) IX[B]
-(II) Bus 16 non-prefetchable memory range:
-        [0] -1  0       0x00000000 - 0xffffffff (0x0) MX[B]
-(II) Bus 16 prefetchable memory range:
-        [0] -1  0       0x00000000 - 0xffffffff (0x0) MX[B]
+> >  2) The other failures in rtc_init return -EIO, not -ENODEV.
+>
+> Well, in this case, -ENODEV makes more sense, though nothing really
+> cares except the kind of error message the user will get when using
+> it as a module.
 
-The problem is on the host bridge BARs again. I don't know what they
-are supposed to do, you need to look at the bridge spec, but you
-definitely need to hide them some way...
+I think i will keep it as the others for the debian package.
 
-Ben.
+Friendly,
 
+Sven Luther
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
