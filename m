@@ -1,41 +1,50 @@
-Date: Wed, 29 Nov 2000 12:18:44 -0600 (CST)
-From: Brian Ford <ford@vss.fsi.com>
-To: Dan Malek <dan@mvista.com>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: EST SBC8260 and Canary CTX-1170
-In-Reply-To: <3A242BE5.C34D48FC@mvista.com>
-Message-ID: <Pine.GSO.4.21.0011291213330.493-100000@eos>
+Message-ID: <3A2550AF.F6585169@mvista.com>
+Date: Wed, 29 Nov 2000 10:53:35 -0800
+From: Matthew Locke <mlocke@mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Nguyen Xuan Hoang <jerry.nguyen@serialsystem.com.sg>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: PCMCIA Card Service
+References: <DKEFKEENEHPHKNLLKHCGGEEICDAA.support@mvista.com> <005201c059b0$2cdef7e0$ef0fa8c0@hoangmobile> <3A23F07A.FF2F643@mvista.com> <004f01c05a58$a60a7920$ef0fa8c0@hoangmobile>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, 28 Nov 2000, Dan Malek wrote:
+you need to install the kernel patches on the ftp site as well. the
+patch with ide and kernel in the name take care of that problem.
 
-> I just checked in the newer driver that will properly do this on
-> the EST board with the National PHY in the CTX-1170 gizmo.  If for
-> some reason this doesn't work, just modify mii_discover_phy_poll() to
-> set 'phy_duplex' to '1'.
+Nguyen Xuan Hoang wrote:
 >
-
-I cracked open my CTX-1170 gizmo and it has a Lucent LU3X51FT-JE80 PHY in
-it.  I manually set the phy_duplex to 1 and the phy_speed to 100, still
-no dice.
-
-Do you know what parts I need to modify in order to get the Lucent PHY
-working too?  I am just looking for a few hints on what needs to be
-done.  I'll be glad to try and do the "dirty" coding work.
-
-Thanks.
-
---
-Brian Ford
-Software Engineer
-Vital Visual Simulation Systems
-FlightSafety International
-Phone: 314-551-8460
-Fax:   314-551-8444
-
+> Hi Matthew,
+>
+> Thank very much for your info. I have look at your patch but it seems not
+> solving our problem. I would like explain more:
+>
+> -  From my investigation is: there's one confliction of the interrupt:
+>
+> 1. The PCMCIA card service (m8xx_pcmcia) register it's interrupt handler by
+> calling:
+>     request_8xxirq(pcmcia_schlvl, m8xx_interrupt, 0, "m8xx_pcmcia", NULL);
+>    well, that seems logical.
+>
+> 2. But when an PCMCIA card plug in, it remap the memory and route it's
+> interrupt to the system interrupt (of course only one PCMCIA interrupt). The
+> problem is most of  driver using REQUEST_8XXIRQ to register the handler. For
+> Example the FLASH card will call IDE driver, IDE driver will call
+> IDE_REQUEST_IRQ to register ide_intr.
+> As I saw the IDE_REQUEST_IRQ call REQUEST_8XXIRQ with PCMCIA interrupt. It
+> fails because the interrupt already occupy by PCMCIA (see step 1).
+>
+> I may be wrong...please give me some advices
+>
+> Thank in advances.
+> Hoang
+>
+> >
+> > yeah, I have done it.  use my patches on
+> > ftp://ftp.mvista.com/pub/Area51/ppc_8xx.  I still have not done a
+> > README, but if you have a MV support contract just contact support and
+> > they will help you out.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
