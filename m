@@ -1,50 +1,58 @@
-Date: Sun, 15 Jun 2003 17:07:07 -0700
+Date: Mon, 16 Jun 2003 08:05:03 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: Christoph Hellwig <hch@lst.de>
-Cc: Matt Porter <mporter@kernel.crashing.org>, akuster@mvista.com,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: GPL inconsistency in arch/ppc/ocp/xlinx/
-Message-ID: <20030616000707.GB17654@ip68-0-152-218.tc.ph.cox.net>
-References: <20030524201213.GA8256@lst.de> <20030612203205.GA23017@lst.de> <20030612134519.C4693@home.com> <20030615174153.GB4511@lst.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: [PATCH] 2.4.21 fixes
+Message-ID: <20030616150503.GB25221@ip68-0-152-218.tc.ph.cox.net>
+References: <Pine.GSO.4.21.0306141056270.14234-100000@vervain.sonytel.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20030615174153.GB4511@lst.de>
+In-Reply-To: <Pine.GSO.4.21.0306141056270.14234-100000@vervain.sonytel.be>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, Jun 15, 2003 at 07:41:53PM +0200, Christoph Hellwig wrote:
+On Sat, Jun 14, 2003 at 11:38:01AM +0200, Geert Uytterhoeven wrote:
 
+>   - arch/ppc/kernel/checks.c: Kill warning about undeclared printf() by
+>     including <stdio.h> _after_ all other includes (including it first doesn't
+>     work)
+
+This should probably just die since it hasn't been useful in a long
+time.
+
+>   - arch/ppc/kernel/open_pic.c: Kill warning about unused openpic_reset(). An
+>     alternative is to add an #ifdef, but since it's never used before its
+>     definition, just removing the forward declaration looks better to me
+
+That reference can go, but the actual call needs an ifdef, see _devel.
+
+>   - arch/ppc/kernel/ppc_ksyms.c, arch/ppc/kernel/setup.c: Define and export
+>     screen_info unconditionally, so vga16fb can be built as a module. An
+>     alternative is to make the definition dependent on CONFIG_FB_VGA16 ||
+>     CONFIG_FB_VGA16_MODULE, and the export on CONFIG_FB_VGA16_MODULE, but this
+>     is ugly.
 >
-> On Thu, Jun 12, 2003 at 01:45:19PM -0700, Matt Porter wrote:
-> > Multiple people have found that Armin in no longer answering linuxppc
-> > related email so this doesn't really mean anything...he's disappeared
-> > from the community.  I'll query a couple folks in mvista, I would
-> > have thought the "right" person would see this here.
+>     Another reason is that screen_info is referenced in
+>     arch/ppc/platforms/prep_setup.c on the following (complex) condition:
 >
-> Well, the original post went to linuxppc-dev, too where other mvista
-> folks are subscribed.
+>     #if defined(CONFIG_PREP_RESIDUAL) && \
+>         (defined(CONFIG_FB_VGA16) || defined(CONFIG_FB_VGA_16_MODULE) || \
+> 	         defined(CONFIG_FB_VESA))
+>
+>     which causes a link failure with the current code, too. The alternative
+>     #ifdef solution would clutter this even more...
 
-... which is why someone told Peter to start with.  But, if you can't
-remove the offending line, neither can anyone at mvista, regardless of
-the hat they are wearing.
+Eh?  What set of conditionals doesn't work, in _devel ?  In fact, I bet
+what happened is that when Paul updated the prep stuff he forgot to grab
+the screen_info stuff.  IIRC, there was a "good" reason for not doing it
+unconditionally, possibly wasted space.
 
-> Really, the problem is that due to this the
-> linuxppc tree isn't distributable in a strictly legaleese sense so
-> I'd really epect some more action from mvista.
+>   - include/asm-ppc/posix_types.h: Kill warning about incorrect printf()-style
+>     format in the ext2 code by making __kernel_ino_t unsigned long, like on
+>     most other architectures.
 
-True.  But this isn't evil proprietary code, it's GPL with a standard
-for the embedded world clause about life support systems.  As an aside,
-would the GPL prevent a big sticker on the box saying "Don't use me in
-life support systems" ?  My (alibiet biased) take is that it's intended
-along those lines.  From an otherwise good-faith effort.
-
-> If this isn't solved by the end of thise week I'll submit a patch
-> to remove these files to Paul.
-
-Please don't.  Paul is aware of the issue, and aware that Xilinx has
-been notified.  If things aren't moving at a pace of his liking, he can
-remove it.
+Should be fine.
 
 --
 Tom Rini
