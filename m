@@ -1,55 +1,73 @@
-Message-Id: <200003121551.QAA00488@piglet.grunz.lu>
-Date: Sun, 12 Mar 2000 16:51:35 +0100 (CET)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: defconfig for pmac in 2.3.51 and up
-To: toa@pop.agri.ch
-cc: costabel@wanadoo.fr, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <38CB94D1.C443C343@pop.agri.ch>
-MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+To: khendricks@ivey.uwo.ca
+Cc: brad@turbolinux.com, linuxppc-dev@lists.linuxppc.org
+Subject: Re: aty128fb does not work in newer sawtooth machines
+In-Reply-To: Your message of "Sat, 11 Mar 2000 12:22:50 -0500"
+	<00031112260400.11535@localhost.localdomain>
+References: <00031112260400.11535@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <20000313014927K.roikawa@rr.iij4u.or.jp>
+Date: Mon, 13 Mar 2000 01:49:27 +0900
+From: Ryuichi Oikawa <roikawa@rr.iij4u.or.jp>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  12 Mar, this message from Andreas Tobler echoed through cyberspace:
->> > maybe a dump Q, but I don't find it. In the kernels before 2.3.51 (stable &
->> > devel) I could type 'make pmac_config' to get the most things set to my needs.
->> > Now in 2.3.51 this defconfig is away.
->> > Any idea? Neither on bitkeeper nor on linuxcare. Or are there new methods to
->> > make defconfigs for certain machines?
->> > I don't like to set every item by hand. (too much)
->>
->> Strange... When I say 'make pmac_config' in the 2.3.51 tree from
->> bitkeeper, it does
->> rm -f .config arch/ppc/defconfig
->> cp -f arch/ppc/configs/pmac_defconfig arch/ppc/defconfig
->>
->> The only thing that changed from older kernels is that the config files
->> now have their own subdirectory arch/ppc/configs/. But this should work
->> precisely as before.
->>
->> (digging a little further...) Oh I see, bitkeeper doesn't have the
->> complete collection of arch/ppc/configs/*_defconfig files any more; no
->> more chrp, pmac, or prep. I still have them from a previous version.
->> Weird...
+Hi,
 
-Wouldn't this be a side-effect of trying to 'unify' all the PPC
-configs? There's only a generic PPC config option as well, an no more
-CONFIG_PMAC, CONFIG_PREP, CONFIG_CHRP etc.., thy are all replaced by
-the single CONFIG_ALL_PPC.
+> Hi,
+>
+> Well from the of-device tree I have found out that my graphics card device id
+> is 0x5046 which equates to a Rage 128 Pro PF card.
+>
+> Luckily the r128 driver in XFree 4.0 knows about this card and it is not
+> significantly different from the Rage128 RE card I have in my B+W G3.
+>
+> I think the whole thing comes down to the default timing info being okay for
+> Rage128RE but not okay for RAGE128PF
+ PLL Timing probe is one of TODO things accordinig to the notes by Anthony, IIRC.
+So it is normal that display FIFO isn't optimally set up other than the card of
+ref.clock=29.5MHz, vram bus width/clock=128bit/75MHz and the same type of SGRAM,
+that can cause screen split, snowing, blank screen, etc. to the high clock cards
+and especially to the 64bit vram bus card(ex. iMacDV).
 
-I think it still makes sense, though, to keep the default configs for
-each hardware type. Makes kernel config a lot easier...
+>  >  > I looked in aty128fb.c in the kernel
+> and they hav hardwired defaults which I > can easily change but I need to know
+> about timing info that Mac OS uses. >  > Do you know of any probe code or
+> anything at all that can determine timing info > from the MacOS side of things.
+>
+> I will keep looking.
+>
+> I am going to add this card to the Xpmac source so that it tries to use its
+> acceleration code simply on the straight OF frame buffer.  If that works, then
+> I should be able to use Xpmac to get some of timing info.
+ Yes, Xpmac should run by simply adding 'PF' to the probe list, but you don't
+need to run Xpmac since MacOS(and OF?) adds clock timing field to device-tree
+like as,
 
-Michel
+/proc/device-tree/pci/ATY,Rage128y:
+name             "ATY,Rage128y"
+vendor-id        00001002 (4098)
+device-id        00005245 (21061)
+...............................
+RF,XCLK          00001d4d (7501)
+RF,MCLK          00001d4d (7501)
+RF,VCLK          000059a6 (22950)
+RF,REF           00000b86 (2950)
+...............................
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+You can put your own values to aty128fb, or more simply, try to read DDA_CONFIG/
+DDA_ON_OF registers when offb is running and directly write these values when
+aty128fb is running, if it works or not.
+ Also, I guess XFree86 3.9 or 4.0 should run without aty128fb as far as PLL/SGRAM
+timings are set up correctly, but I don't have time to try...
 
+
+Regards,
+
+Ryuichi Oikawa
+roikawa@rr.iij4u.or.jp
+
+PS. Please don't forget to build the (a)-(c) for Robert.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
