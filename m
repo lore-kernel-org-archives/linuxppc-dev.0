@@ -1,61 +1,47 @@
-Message-Id: <5.1.0.14.2.20020823083119.02237e00@falcon.si.com>
-Date: Fri, 23 Aug 2002 08:56:40 -0400
+Message-Id: <5.1.0.14.2.20020823090124.0220d5b0@falcon.si.com>
+Date: Fri, 23 Aug 2002 09:10:53 -0400
 To: linuxppc-embedded@lists.linuxppc.org
 From: Jerry Van Baren <vanbaren_gerald@si.com>
-Subject: RE: cygwin and embedded linux
-In-Reply-To: <3.0.3.32.20020822173918.006dbb00@hollabaugh.com>
-References: <Pine.LNX.4.40.0208220914420.2118-100000@mag.devdep.sysgo.d e>
- <000501c24979$6348a190$37d34c93@neca.nec.com.au>
+Subject: Re: cygwin and embedded linux
+In-Reply-To: <3D64C445.836C2FC9@opensource.se>
+References: <000501c24979$6348a190$37d34c93@neca.nec.com.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 05:39 PM 8/22/2002 -0600, Dr. Craig Hollabaugh wrote:
+At 01:00 PM 8/22/2002 +0200, Magnus Damm wrote:
 
->At 09:36 AM 8/22/2002 +0200, Marius Groeger wrote:
-> >2. The "emulation" will never be 100%. Maybe 99%. Maybe 99.99%. That last
-> >   fraction can be a major PITA, because it is not obvious. To compile a
-> >   kernel you need a lot of tools with a lot of explicit and implicit twists
-> >   to them. It is just a gut feeling that I wouldn't want to rely on this,
-> >   if I don't have to. The native way just seems the better way to do it to
-> >   me.
->
->Just because your running on Linux doesn't mean anything because your
->duplicating
->the environment for cross-compiling anyway. So what does it matter if
->cygwin runs
->the cross tools or if Linux runs them?
->
->
->
->I'm curious ...
->
->How many out there actually are compiling PPC code natively on a PowerPC
->Linux box for their embedded devices?
->
->If so, do you run the same development versions on your desktop?
->
->How do you handle the FPU issues?
->
->Craig
+> > Are there others in this situation and how have they chosen to solve it?
 
-We've done native on an iMac and cross on X86 linux.
+[snip]
 
-Additional problems with Cygwin, from my point of view, is that you will
-always be trailing the mainstream development because the Cygwin tools are
-based on the native linux toolsets rebuilt (perhaps with customizations) to
-allow them to run under DOS.  In addition, there are only a fraction as
-many engineers using Cygwin vs. linux so your pool of "informed developers"
-to ask questions of is much smaller.  Perhaps both of those objections go
-away if you pay for Cygwin support :-).
+>Another way to solve it would be to switch to Linux and use VNC to
+>connect
+>to your Windows boxes. I'm not sure how well this works out, though.
 
-My limited experience with Cygwin is that it is like cutting with a dull
-knife: it can get the job done, but you have to work harder and the results
-are a little more ragged than they should be.
+Very well.  It comes with a Windows client that works well.  The linux
+server works very well with minimal slowdown compared to a native X session
+(I use Exceed for X on Windows).  If I didn't already own Exceed, I would
+use VNC exclusively.  (The Windows server also works quite well, but not as
+well as VNC on linux because Windows isn't really set up to do remote
+windows so it has to work a lot harder and is slower as a result.)
+
+The default window manager (TWM?) is very basic so you may want to spend
+some time getting it set up better or getting a more elaborate WM running.
+
+What is really cool about VNC is that you can start a job, reboot your
+Windows box 5 times to install some trivial piece of hardware :-),
+re-attach to your VNC session that was busy running your job all the while,
+just in time to see your job complete.
 
 gvb
+
+
+>/ magnus
+
+[snip]
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
