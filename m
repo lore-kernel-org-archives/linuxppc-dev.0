@@ -1,28 +1,28 @@
-Date: Thu, 6 Mar 2003 08:48:04 +0100 (MET)
-From: Jaap-Jan Boor <jjboor@lucent.com>
-To: Linux PPC embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: MPC8270
-Message-ID: <Pine.GSO.4.33.0303060846070.27640-100000@hzsc257.nl.lucent.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3E670E2E.7010306@dgt-lab.com.pl>
+Date: Thu, 06 Mar 2003 10:00:30 +0100
+From: Wojciech Kromer <krom@dgt-lab.com.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: mpc 8250 problem with 2.4.19 kernel
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+I have some problems running 2.4.19 kernel with mpc 8250, the same
+kernel works with 8260 fine. PPCBoot works fine, but kernel chrashes wit
+random NIP at startup.
 
-Is there already some experience with linux on the MPC8270
-and it's PCI bus?
+Can anyone tell me the differences between 8250 and 8260.
+I turned off any ATM/utopia of course.
 
-thanks,
+Anyone have expiriences with 8250 ?
 
-Jaap-Jan
+--
+* * * * * * * * * * * *
+* per pedes ad astra! *
+* * * * * * * * * * * *    mailto:krom@dgt-lab.com.pl
 
----
-J.G.J. Boor
-Lucent Technologies Nederland b.v.	Room:  BE-525
-Optical Networking Group TMS Data 	Phone: +31 (0)35 687 4721
-Larenseweg 50, P.O. Box 1168, 		Fax:   +31 (0)35 687 5976
-1200 BD, Hilversum, The Netherlands	mailto:jjboor@lucent.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
