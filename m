@@ -1,31 +1,28 @@
-Date: Fri, 4 May 2001 10:17:13 -0500 (CDT)
-From: Ramprasad Rao <ramp@oddjob.uchicago.edu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.linuxppc.org
+To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+Cc: jason@openinformatics.com, linuxppc-dev@lists.linuxppc.org,
+	debian-powerpc@lists.debian.org
 Subject: Re: Success! (was Re: External Monitor under Pismo)
-In-Reply-To: <20010504150921.32284@mailhost.mipsys.com>
-Message-ID: <Pine.GSO.4.10.10105041016000.3482-100000@oddjob.uchicago.edu>
+References: <87hez1pjm1.fsf@amadeus.openinformatics.com>
+	<20010504122935.19790@mailhost.mipsys.com>
+From: jason@openinformatics.com (Jason E. Stewart)
+Date: 04 May 2001 11:10:52 -0600
+In-Reply-To: <20010504122935.19790@mailhost.mipsys.com>
+Message-ID: <87lmodhwf7.fsf@amadeus.openinformatics.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Apple just posted the new iBook developer manuals on their developer website.
-It looks very similar to the new 2001 imacs.
+"Benjamin Herrenschmidt" <benh@kernel.crashing.org> writes:
 
-On Fri, 4 May 2001, Benjamin Herrenschmidt wrote:
+> Note that if you don't want to mess with XFree, I recently added the
+> ability to control the CRT & LCD outputs of the Rage M3 to aty128fb in my
+> rsync tree. The tool to control it is on www.penguinppc.org/~benh
 
-> >From all this discussion can I assume that the new ibooks will run linuxppc.
->
-> Well, difficult to say unless someone test it. I added basic support for it
-> from the few infos I could gather here or there in my tree, but it was not
-> tested yet.
->
-> Ben.
->
->
->
+Excellent. Works nicely.
 
+Thanks Ben,
+jas.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
