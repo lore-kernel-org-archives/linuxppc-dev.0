@@ -2,42 +2,49 @@ Content-Type: text/plain;
   charset="iso-8859-1"
 From: Rakesh jagota <j.rakesh@gdatech.co.in>
 Reply-To: j.rakesh@gdatech.co.in
-To: Matt Porter <porter@cox.net>,
-	Anand Franklin J <franklin@innomedia.soft.net>
-Subject: Re: problem in loading image to ppc_405(IBM)
-Date: Thu, 6 Nov 2003 20:10:01 +0530
-Cc: ppc_embedded_maillist <linuxppc-embedded@lists.linuxppc.org>
-References: <3E5620DD.AFEC3264@innomedia.soft.net> <20030221133227.A28263@home.com>
-In-Reply-To: <20030221133227.A28263@home.com>
+To: Chris Zimman <chris@cryptoapps.com>
+Subject: Re: Problem with kernel loading in PPC IBM405 based board
+Date: Fri, 7 Nov 2003 09:06:34 +0530
+Cc: linuxppc-embedded@lists.linuxppc.org
+References: <f4sdizk28w071ij.110620032000@gda-server> <20030611151322.GA9573@dingdong.cryptoapps.com>
+In-Reply-To: <20030611151322.GA9573@dingdong.cryptoapps.com>
 MIME-Version: 1.0
-Message-ID: <zt6tshxsxyew0xp.110620032004@gda-server>
+Message-ID: <agl575xzx4jdocg.120620030900@gda-server>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Hi all,
 
-I am working with the same processor, I am loading the vmlinux using
-JTAG(RISCWATCH) in the SDRAM. I am not sure abt the loaction. I am loading at
-0x00020000. Can you suggest me exactly atr what loaction we should load the
-vmlinux image and where we should jump to start the kernel.
+I am using openBios code, but i m not able to load the zImage.treeboot using
+tftp or serial port. I am directly loading the zImage.treeboot using JTAG
+(RISCWATCH). But I am not able to find out the exact loaction where we should
+load the image and then from where should be start running the kernel. I have
+seen the stext loaction (0xc0000000). Can you guide me exactly where should I
+load this image.
 
-Thanks & regards,
+Thanks & Regards,
 
 Rakesh
 
-On Saturday 22 February 2003 02:02 am, Matt Porter wrote:
-> On Fri, Feb 21, 2003 at 06:21:41PM +0530, Anand Franklin J wrote:
-> > Hello all,
-> >     I have compiled the linux kernel (vmlinux) and used a objcopy( 'file
-> > vmlinux.srec' returns --> [vmlinux.srec: Motorola S-Record; binary data
-> > in text format]). But the board(ppc_405(IBM))  with OpenBios is giving
-> > "invalid image error".can any body tell what is the error.
+On Wednesday 11 June 2003 08:43 pm, Chris Zimman wrote:
+> On Thu, Nov 06, 2003 at 08:05:59PM +0530, Rakesh jagota wrote:
+> > Hi all,
+> > I am working on PPC IBM 405 based processor board. I have kernel from
+> > "montavista" 2.4.17-mv121 version. I have tried to put the vmlinux image
+> > in the "SDRAM" after doing the all initialization (in boot level).
+> >
+> > We are loading the vmlinux in SDRAM at 0x00020000. I am not able to see
+> > any debug message on the serial port. I am not sure about the kernel jump
+> > location. Is there any way to find out the exact location to load the
+> > kernel and jump to proper location.
 >
-> vmlinux is not directly booted from OpenBios, on PPC40x one boots a
-> zImage.treeboot image.
+> You can't just boot vmlinux directly -- depending on which boot monitor
+> you're using (eg. OSOpen, PPC/UBoot) you need to be using a different
+> kernel image.  If you're using OSOpen, you need zImage.treeboot.  If you're
+> using PPCBoot/UBoot, you need pImage.
 >
-> Regards,
+> --Chris
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
