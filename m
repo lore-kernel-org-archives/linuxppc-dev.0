@@ -1,51 +1,45 @@
-Message-ID: <38C38A78.E1C870CF@inu.se>
-Date: Mon, 06 Mar 2000 11:37:44 +0100
-From: Björn Lundberg <bjorn.lundberg@inu.se>
+Message-ID: <20000306120817.16546.qmail@web118.yahoomail.com>
+Date: Mon, 6 Mar 2000 04:08:17 -0800 (PST)
+From: Salvador Fandino <sfandino@yahoo.com>
+Subject: Recommend me a PPC single board computer
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-To: Brad Hards <bradh@dynamite.com.au>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: commproc.c
-References: <4.2.2.20000302111129.00a638d0@mail.kerbango.com> <38C16DAC.81460D77@inu.se> <38C28434.E79774E6@dynamite.com.au>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Brad Hards wrote:
->
-> Björn Lundberg wrote:
-> >
-> > Steve Calfee wrote:
-> > >
-> > > Hi all,
-> > >
-> > > I have been working on doing a 823 USB driver. It is my first driver for
-> > snip
-> >
-> > We've got an USB host driver in alpha stage for the 850 (done with the
-> > 823 manual since 850 lacked documentation).
-> The 850 Users Manual contains info (including how to program) on the USB
-> host as part of CPM doco - it is chapter 32, and has been recently
-> updated:
-> http://www.mot.com/SPS/RISC/netcomm/aesop/mpc8XX/850/32_USB.pdf
->
-> The whole users manual is linked off:
-> http://www.mot.com/SPS/RISC/netcomm/docs/pubs/850UM.html
->
-> Brad
->
+Hi everybody,
 
-I'm sorry I was unclear. What I ment was: Only USB function mode was
-documented in 850 manuals when we started doing the host mode. This was
-however freshly published for the 823.
 
-The USB parts are the same as far as I've discovered, reading most
-everything coming out from Motorola on both 850 and 823.
+I'm thinking about buying a PPC single board computer
+to play with it, just for fun.
 
-The bottomline is: If there is something that differs, it should be easy
-to adjust.
+I have been looking at motorola website but really I
+get lost and can not imagine which board is the better
+for me so could you give me some advice?
 
-Cheers
-  Bjorn
+I want to run Linux on it and although I'm ready to
+hack around a bit I don't own a lab so I need a board
+easy to setup without special hardware.
+
+Some things I will like to do are:
+  - connecting a CD-ROM or a DVD
+  - playing with sound so some A/D and D/A converters
+will be good
+  - networking via ethernet 10Mb (or at least a serial
+port)
+  - controlling it with an infrared device
+  - and maybe some video output
+
+Oh, and I have a limited budget so it should be
+cheap...
+
+Can somebody help me?
+
+
+Thank you
+
+- Salvador Fandiño
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
