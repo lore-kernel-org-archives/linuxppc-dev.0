@@ -1,40 +1,36 @@
-From: Paul Mackerras <paulus@samba.org>
+Message-ID: <3E05AC49.7080604@tataelxsi.co.in>
+Date: Sun, 22 Dec 2002 17:42:57 +0530
+From: "Omanakuttan" <omanakuttan@tataelxsi.co.in>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15877.25339.355590.772957@argo.ozlabs.ibm.com>
-Date: Sun, 22 Dec 2002 18:00:11 +1100
-To: joakim.tjernlund@lumentis.se
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: New invalidate/clean/flush_dcache functions
-In-Reply-To: <IGEFJKJNHJDCBKALBJLLCEABFJAA.joakim.tjernlund@lumentis.se>
-References: <3E034380.1080404@tataelxsi.co.in>
-	<IGEFJKJNHJDCBKALBJLLCEABFJAA.joakim.tjernlund@lumentis.se>
+To: linuxppc-embedded@lists.linuxppc.org,
+	kernelnewbies <kernelnewbies@nl.linux.org>
+Subject: doubt in arch/ppc/8260_io/uart.c
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Joakim Tjernlund writes:
+Hi,
+in kernel 2.4.17, arch/ppc/8260/uart.c contains the following lines in
+rs_8xx_stop()
+{
+....
+sccp->scc_sccm &= ~UART_SCCM_TX;
+....
+}
+UART_SCCM_TX is defined to 0x00000020
+i.e, only the TX bit is 1
 
-> How about adding new xxx_dcache_range() functions functions to PPC.
-> Below is my suggestion which is more logical and more efficient:
+Now the manual (MPC8260UM.pdf) states that clearing a bit is 1 for both
+SCCE and SCCM. Following it, what I understand is the above C statement
+clears all the bits of ccp->scc_sccm except TX bit.
 
-Why do you say it's more efficient?  Because it's inline?  Inlining
-isn't necessarily a win, you know; by inlining something you can
-reduce the number of instructions executed in a particular code path,
-but usually you increase the size of the kernel, and together with
-that, the icache footprint, which is important because you can execute
-quite a lot of instructions in the time taken for one cache miss.
+Then how does it stop the SCC/SCM?
+Clearly something is wrong in _my_ logic, what can that be?
 
-I'm not saying that your functions aren't more efficient, I'm saying
-that you haven't established that they are more efficient.  Simply
-inlining things doesn't necessarily increase efficiency.  What you
-need to do is to show a measurable increase in efficiency, in the
-context of the kernel, which is sufficient to justify the increased
-size of the kernel.
 
-The other thing is that you haven't included the synchronization
-instructions that are required by the PPC architecture spec.
+Thanks for your time,
+Om.
 
-Paul.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
