@@ -1,22 +1,39 @@
-Date: Mon, 17 May 1999 10:32:48 +1000
-Message-Id: <199905170032.KAA08770@tango.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: accel X server for C&T 65550?
-Reply-to: Paul.Mackerras@cs.anu.edu.au
+Date: Sun, 16 May 1999 20:50:26 -0400 (EDT)
+From: Tom Rini <tmrini@ntplx.net>
+To: Wolfgang Denk <wd@denx.de>
+cc: linuxppc-dev@lists.linuxppc.org, dev@kernel.crashing.org
+Subject: Re: LinuxPPC-DR-1.0: X11 config for Powerbook G3 series?
+In-Reply-To: <199905162253.AAA00308@denx.muc.de>
+Message-ID: <Pine.LNX.4.05.9905162049010.651-100000@pc.wackyland.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Does anyone know of an accelerated X server for the C&T 65550 video
-chip found on the powerbook 3400?  I know about Fabio Riccardi's
-server, of course, but I was wondering if anyone had put the
-acceleration into the updated Xpmac or into XF68_FBDev.
+On Mon, 17 May 1999, Wolfgang Denk wrote:
 
-Also, has anyone actually hacked the chipsfb.c driver to add an ioctl
-to switch the external video output on and off?
+> 	(--) FBDev: Mode "1024x768" needs hsync freq of 93.99 kHz. Deleted.
+                                                        ^^^^^
+> 	(**) FontPath set to "unix/:-1"
+> 	(**) FBDev: Using XF86Config video mode database
+...
+> [root@luke X11]# cat XF86Config
+...
+> # HorizSync is in kHz unless units are specified.
+> # HorizSync may be a comma separated list of discrete values, or a
+> # comma separated list of ranges of values.
+> # NOTE: THE VALUES HERE ARE EXAMPLES ONLY.  REFER TO YOUR MONITOR'S
+> # USER MANUAL FOR THE CORRECT NUMBERS.
+> 
+>     HorizSync   119
 
-Paul.
+Change that.
+
+---
+Tom Rini (TR1265)
+http://dobbstown.yeti.edu/
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
