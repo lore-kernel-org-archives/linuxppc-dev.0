@@ -1,46 +1,49 @@
-Date: Wed, 16 Jul 2003 03:07:11 -0800
-From: Ethan Benson <erbenson@alaska.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: G4 mdd help request
-Message-ID: <20030716110711.GG7926@plato.local.lan>
-References: <20030716093646.GF7926@plato.local.lan> <XFMail.20030716121644.pochini@shiny.it>
-Mime-Version: 1.0
-In-Reply-To: <XFMail.20030716121644.pochini@shiny.it>
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <0b8e01c34ba7$41fb8490$8202a8c0@pit>
+Reply-To: "Peter Dennett" <pdennett@padsoft.com>
+From: "Peter Dennett" <pdennett@padsoft.com>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: IBM PPC750L vs Motorola MPC7410
+Date: Wed, 16 Jul 2003 09:33:37 -0500
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Jul 16, 2003 at 12:16:44PM +0200, Giuliano Pochini wrote:
->
-> On 16-Jul-2003 Ethan Benson wrote:
-> >
-> > On Wed, Jul 16, 2003 at 11:09:40AM +0200, Giuliano Pochini wrote:
-> >>
-> >> I bought a dual G4-MDD and I installed my SCSI disk I used on
-> >> my G3. Is there an osx command to get the openfirmware path of
-> >> the yaboot partition on that disc ?  I tried to boot
-> >> /pci@f2000000/ADPT,29160@12/@4:9,ofboot.b but it doesn't work.
-> >> Macosx mounts the HFS partitions on the old disc, but it doesn't
-> >> show any of them on the startup disk utility (does it need to be
-> >> blessed again ?).
-> >
-> > the yaboot bootstrap partition should be type Apple_Bootstrap and thus
-> > never mounted by any macos, if this is the case there is no need to
-> > rebless it since macos never tampered with it.
->
-> IIRC it's Apple_Bootstrap, but first of all I must know the correct
-> ofpath... I also tried to boot the YDL2.3 cd without success :(
+I have some SBS CK3 boards which can mount
+either a IBM PPC750L or Motorola MPC7410.
+There is a architecture variant for MontaVista
+(older Hard Hat - SBS "K2") for the MPC7410
+and I have been running it.  I have reason to switch
+to the IBM part (it is known to be radiation tolerant
+for space applications).
 
-just walk the device tree in OF.
+When I use the same boot image on the PPC750L
+the system hangs during the bootstrap process.
+(transfers to common routine to decompress the
+kernel, reports successful decompress, then no
+more serial output).
 
-> > now if you didn't follow directions and made it an Apple_HFS then
-> > macos probably broke it yes.
->
-> I'll try to get osx root access.
+I don't come from the PPC world and do not know
+the lineage of these chips - in fact don't know the difference
+between G3 and G4...
 
---
-Ethan Benson
-http://www.alaska.net/~erbenson/
+Is there someone on this list that can be so kind as to give
+me a technical summary of the differences between the
+PPC750L (G3) and Motorola MPC7410 (G4) so far as
+LINUX operation.
+
+I assume some portions of the low level setup (cache,
+memory, serial port, ...) are different between the two
+chips.  I can ferret out and fix it, but I would rather like
+to avoid becoming a complete expert on both parts...
+
+TIA
+
+Peter Dennett   Office: 281 334 3800  Cell: 713 899 6100
+pdennett@padsoft.com                www.padsoft.com
+pdennett@boatbrains.com           www.boatbrains.com
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
