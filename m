@@ -1,36 +1,38 @@
-Date: Wed, 27 Dec 2000 14:51:25 +0100
-From: christophe barbe <christophe.barbe@inup.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: linux-2.2.18 
-Message-ID: <20001227145125.A11036@pc8.inup.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: "kerler" <kerler@newmail.net>
+Cc: "Kaoru Fukui" <k_fukui@highway.ne.jp>, <gcc@gcc.gnu.org>,
+        <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: how to use macro in assemble language embedded in C?
+References: <20001223145258.Postino-022361@smtp01.highway.ne.jp>
+	<or66kazecj.fsf@guarana.lsd.ic.unicamp.br>
+	<3A4613FB.384BAD24@ife.ee.ethz.ch>
+	<orsnnd3d6f.fsf@guarana.lsd.ic.unicamp.br>
+	<00d001c06edc$f3ec3d20$5ef1d092@chn.agilent.com>
+	<20001226221757.Postino-028251@smtp01.highway.ne.jp>
+	<023e01c06fb5$dfe05a80$5ef1d092@chn.agilent.com>
+From: Alexandre Oliva <aoliva@redhat.com>
+Date: 27 Dec 2000 13:50:42 -0200
+In-Reply-To: "kerler"'s message of "Wed, 27 Dec 2000 11:33:41 +0800"
+Message-ID: <orhf3poobx.fsf@guarana.lsd.ic.unicamp.br>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I'm working on a CompactPCI PowerPC card (MCPN750). I've written a little module which uses an IRQ which is simply registred with a request_irq call.
-It works great with a patched kernel 2.2.17.
-I try to upgrade to the last kernel release. Everything seems to be ok except that I never receive IRQ events.
-I've tried to follow the irq path (from head.S, do_IRQ(), ppc_md.do_IRQ(), open_pic_do_IRQ(), ppc_irq_dispatch_handler() to
-irq_desc[irq].action) and in my (limited) understanding it seems good but in fact I never go in the do_IRQ() function. It sounds like my irq is not hard-enabled.
-(I can see it in /proc/interrupts)
+On Dec 27, 2000, "kerler" <kerler@newmail.net> wrote:
 
-I've seem that all the pending patches for ppc have beeb applied in 2.2.18. Is there in this patches something I should know to use my IRQ ?
+> so if i want use only one command line to compile temp.c,
+> such as "gcc -c -other-option temp.c", which other-option should I add to
+> make
+> gcc creat a temporal assemble file /tmp/xxxx.S (not /tmp/xxxx.s) ?
 
-Thanks,
-Christophe
-
+I don't think there's any option to GCC that would make it run the
+assembly code it outputs through a preprocessor.
 
 --
-
-Christophe Barbé
-Software Engineer
-Lineo High Availability Group
-42-46, rue Médéric
-92110 Clichy - France
-phone (33).1.41.40.02.12
-fax (33).1.41.40.02.01
-www.lineo.com
+Alexandre Oliva   Enjoy Guarana', see http://www.ic.unicamp.br/~oliva/
+Red Hat GCC Developer                  aoliva@{cygnus.com, redhat.com}
+CS PhD student at IC-Unicamp        oliva@{lsd.ic.unicamp.br, gnu.org}
+Free Software Evangelist    *Please* write to mailing lists, not to me
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
