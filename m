@@ -1,67 +1,42 @@
-Date: Tue, 5 Mar 2002 16:37:29 -0800 (PST)
-From: Adam Wozniak <awozniak@comdev.cc>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: problems with shared memory
-Message-ID: <Pine.LNX.4.33.0203051631130.24566-100000@rangers.comdev.cc>
+Message-ID: <3C85DE01.6000006@capflow.com>
+Date: Wed, 06 Mar 2002 10:14:41 +0100
+From: Laurent Pinchart <laurent.pinchart@capflow.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: linux-2.4.18 & copy-back cache mode
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Reply-To: laurent.pinchart@capflow.com
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I've got Linux 2.4.16 running on a custom MPC8260 board.
+Hi everybody
 
-when I do the program below in a tight loop
-i.e.
+I tried to boot a FADS860T board with the 2.4.18 linux kernel, and
+experienced problems with cache set in Copy-Back mode.
 
-while true
-do
-./foo 8675 1024
-done
+The kernel configuration help states that you can say 'Y' to Copy-Back
+mode if 'you don't know what that is about', so that's what I did.
 
-Things pop after about 20 iterations.  It'll choose a different spot
-in the kernel to pop depending on what options I've compiled into the
-kernel.  I believe I've got some memory corruption going on.  When I
-poke around with a hardware debugger I see values in kernel structures
-which clearly aren't right.
+I then got a 'kernel access of bad area' just after the 'CPM UART driver
+version 0.03' message.
 
-Any known problems with shared memory in the 2.4.16 kernel on the MPC8260?
+I traced the problem to rs_8xx_init, and found out that a write to .data
+was causing the crash.
 
-This should be easy enough for someone to try to reproduce.
+After some more investigation I found that disabling Copy-Back mode
+(thus enabling Write-Through mode) fixed the problem.
 
-=== begin foo.c
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/shm.h>
+The problem seems to have been solved in the linuxppc repository, so the
+purpose if this message is not to ask for help but rather to give help
+to people who will experience the same problem (no doubt there will be
+some, as the Copy-Back mode is advised by the kernel configurator).
 
-int main (int argc, char **argv)
-{
-   int j;
-   char *q;
-   int p;
+Laurent Pinchart
 
-   p = shmget(atoi(argv[1]),  atoi(argv[2]), IPC_CREAT | 0666);
+PS: I posted a few patches based on the latest linuxppc tree (to fix
+some compilation warnings and a problem with xmon) about one week ago. I
+got no feedback. Have they got through to the list ?
 
-   q = shmat(p, NULL, 0);
-
-   printf("at @ %p \n", q);
-
-   {
-      int i;
-      for (i = 0; i < atoi(argv[2]); i++)
-      {
-         q[i]++;
-      }
-   }
-
-   shmdt(q);
-}
-=== end foo.c
-
---
-Adam Wozniak (KG6GZR)   COM DEV Broadband - Digital and Software Systems
-awozniak@comdev.cc      805 Aerovista Place, San Luis Obispo, CA 93401
-                        http://www.comdev.cc
-                        Voice: (805) 544-1089       Fax: (805) 544-2055
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
