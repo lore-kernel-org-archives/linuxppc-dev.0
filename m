@@ -1,22 +1,33 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from parcelfarce.linux.theplanet.co.uk
-	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6C65567A46
+Return-Path: <pari@gdatech.com>
+Received: from kings.gdatech.com (darwaza.gdatech.com [66.237.41.98])
+	by ozlabs.org (Postfix) with ESMTP id D410367A6F
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  5 Apr 2005 11:25:14 +1000 (EST)
-Date: Mon, 4 Apr 2005 17:09:22 -0300
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>,
-	Dan Malek <dan@embeddededge.com>, Pantelis Antoniou <panto@intracom.gr>
-Message-ID: <20050404200922.GC30252@logos.cnet>
-References: <20050404191718.GA30281@logos.cnet>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050404191718.GA30281@logos.cnet>
-Cc: Paul Mackerras <paulus@samba.org>
-Subject: Re: 8xx v2.6 TLB problems and suggested workaround
+	Tue,  5 Apr 2005 13:33:20 +1000 (EST)
+Received: from kings.gdatech.com (localhost.localdomain [127.0.0.1])
+	by kings.gdatech.com (Postfix) with ESMTP id 0FA1161C0AA
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon,  4 Apr 2005 20:05:39 -0700 (PDT)
+Received: from kings.gdatech.com ([192.168.200.118])
+	by localhost.localdomain ([127.0.0.1]) (port 7027) (Propel SE relay
+	0.1.0.2229 $Rev$) id r544200539D-00-1
+	for linuxppc-embedded@ozlabs.org; Mon, 04 Apr 2005 20:05:39 -0700
+Received: from sierra.gdatech.com (asg_mda [192.168.200.112])
+	by kings.gdatech.com (Postfix) with ESMTP id DE45761C0D0
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon,  4 Apr 2005 20:05:38 -0700 (PDT)
+Received: from sierra.gdatech.com (localhost.localdomain [127.0.0.1])
+	by gdatech.com (8.11.6/8.11.6) with SMTP id j35395t06994
+	for <linuxppc-embedded@ozlabs.org>; Mon, 4 Apr 2005 20:09:05 -0700
+From: "Pari Subramaniam" <pari@gdatech.com>
+To: "'linux-ppc-embedded'" <linuxppc-embedded@ozlabs.org>
+Date: Mon, 4 Apr 2005 20:14:50 -0700
+Message-ID: <00e401c5398d$a0ea5190$acc8a8c0@PARI>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+In-Reply-To: <b383dfd14d6dcc895297851a2424f319@freescale.com>
+Subject: PPC linux v2.6.11 network configuration hangs
+Reply-To: pari@gdatech.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,68 +38,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hum,
 
-The machine seems to be acting strange, but it boots normally 
-and applications run (more importantly there is no TLB entry 
-which could cause dcbst fault strangeness).
+Hi,
 
-Some "dd" hangs till I press "ctrl+c", others just work. Really strange. 
-
-G'night, I'll look at it tomorrow.
- 
-[root@(none) /]# time dd if=/dev/zero of=file bs=16k count=400
-400+0 records in
-400+0 records out
-                                                                                        
-real    0m4.261s
-user    0m0.040s
-sys     0m1.240s
-[root@(none) /]# time dd if=/dev/zero of=file bs=32k count=400
-                                                                                        
-                                                                                        
-real    0m50.369s
-user    0m0.040s
-sys     0m1.680s  (ctrl+c)
-[root@(none) /]# 
+We have 8540 based board running PPC port ver-2.4.30-pre1. when I tried =
+to
+upgrade to ver-2.6.11, the network interface loops (enabled TSEC alone)
+indefinitely in the gfar_probe() at the following while loop:
 
 
-> --- a/arch/ppc/kernel/head_8xx.S.orig	2005-04-04 19:43:23.000000000 -0300
-> +++ b/arch/ppc/kernel/head_8xx.S	2005-04-04 19:47:40.000000000 -0300
-> @@ -359,9 +359,7 @@
->  
->  	. = 0x1200
->  DataStoreTLBMiss:
-> -#ifdef CONFIG_8xx_CPU6
->  	stw	r3, 8(r0)
-> -#endif
->  	DO_8xx_CPU6(0x3f80, r3)
->  	mtspr	M_TW, r10	/* Save a couple of working registers */
->  	mfcr	r10
-> @@ -390,6 +388,16 @@
->  	mfspr	r10, MD_TWC	/* ....and get the pte address */
->  	lwz	r10, 0(r10)	/* Get the pte */
->  
-> +	li	r3, 0
-> +	cmpw	r10, r3            /* does the pte contain a valid address? */
-> +	bne	4f
-> +	mfspr   r10, M_TW       /* Restore registers */
-> +	lwz     r11, 0(r0)
-> +	mtcr    r11
-> +	lwz     r11, 4(r0)
-> +	lwz	r3, 8(r0)
-> +	b DataAccess
-> +4:
->  	/* Insert the Guarded flag into the TWC from the Linux PTE.
->  	 * It is bit 27 of both the Linux PTE and the TWC (at least
->  	 * I got that right :-).  It will be better when we can put
-> @@ -419,9 +427,7 @@
->  	lwz	r11, 0(r0)
->  	mtcr	r11
->  	lwz	r11, 4(r0)
-> -#ifdef CONFIG_8xx_CPU6
->  	lwz	r3, 8(r0)
-> -#endif
->  	rfi
->  
->  /* This is an instruction TLB error on the MPC8xx.  This could be due
+        /* Stop the DMA engine now, in case it was running before */
+        /* (The firmware could have used it, and left it running). */
+        /* To do this, we write Graceful Receive Stop and Graceful */
+        /* Transmit Stop, and then wait until the corresponding bits */
+        /* in IEVENT indicate the stops have completed. */
+
+        tempval =3D gfar_read(&priv->regs->dmactrl);
+        tempval &=3D ~(DMACTRL_GRS | DMACTRL_GTS);
+        gfar_write(&priv->regs->dmactrl, tempval);
+
+        tempval =3D gfar_read(&priv->regs->dmactrl);
+        tempval |=3D (DMACTRL_GRS | DMACTRL_GTS);
+        gfar_write(&priv->regs->dmactrl, tempval);
+/*---------------------------------stays in this loop for
+ever--------------------------------*/
+        while (!(gfar_read(&priv->regs->ievent) & (IEVENT_GRSC | =
+IEVENT_GTSC)))
+                cpu_relax();
+/*-----------------------------------------------------------------------=
+-------
+--------------*/
+
+MPC8540 based system running boot loader U-Boot version-1.1.2. The TSEC =
+port is
+tested from the boot loader. The same behavior observed in all the =
+boards.
+
+I appreciate any help in this regard.
+
+Thanks in advance
+
+regards
+-pari =20
