@@ -1,33 +1,36 @@
-Message-ID: <3B375D00.FC56DFE9@aps.anl.gov>
-Date: Mon, 25 Jun 2001 10:47:12 -0500
-From: Andrew Johnson <anj@aps.anl.gov>
 MIME-Version: 1.0
-To: LinuxPPC-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: MVME2100
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: link error when compiling linux 2.4.5 on powerpc g3
+Date: Mon, 25 Jun 2001 17:54:53 +0100
+Message-ID: <EB0AF92C5F6B6B45A3EC7A2608347EC008201E@CORK-DC1.raidtec.ie>
+From: "Charles Feng" <Charles.Feng@raidtec.ie>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I can't believe I'm the first person to want to run LinuxPPC on the
-Motorola MVME2100 board, although there aren't many references to it in
-the archives.  I have the HardHat Linux 2.0 Journeyman edition installed
-for the 8240 CPU (we're thinking about buying the professional edition),
-but I can see that the Motorola Sandpoint configuration (the nearest
-target to the 2100) isn't going to work without some changes as there is
-no SouthBridge on a 2100 (or else I really don't understand this
-PPC/PCI/ISA architecture stuff yet, give me VME any day!).
+dear list,
+	I tried to compile linux 2.4.5 on powerpc g3 system running
+linux ppc 2000. I had my own customized ramdisk device driver which
+calls several zlib functions like inflateInit, inflate etc. An error
+occured when linking object files. The error message is:
 
-While I'd like to hack together support for the 2100, it would seem a
-waste if someone else has already done this - any offers?  Alternatively
-any pointers to documentation on how to go about supporting a new board
-would be welcome.
+drivers/block/block.o(.text+0x2abc): undefined reference to
+`inflateInit_'
+drivers/block/block.o(.text+0x2abc): relocation truncated to fit:
+R_PPC_REL24 inflateInit_
+drivers/block/block.o(.text+0x2ad0): undefined reference to `inflate'
+drivers/block/block.o(.text+0x2ad0): relocation truncated to fit:
+R_PPC_REL24 inflate
+drivers/block/block.o(.text+0x2b00): undefined reference to `inflateEnd'
+drivers/block/block.o(.text+0x2b00): relocation truncated to fit:
+R_PPC_REL24 inflateEnd
+make: *** [vmlinux] Error 1
 
-TiA,
+	Does anybody have a clue what's wrong there? I definitely have
+the missing functions compiled in. Thanks in acvance.
 
-- Andrew
---
-The world is such a cheerful place when viewed from upside-down
-It makes a rise of every fall, a smile of every frown
+Charles
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
