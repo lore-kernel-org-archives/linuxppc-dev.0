@@ -1,44 +1,44 @@
-Date: Wed, 26 May 2004 13:20:27 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Matt Porter <mporter@kernel.crashing.org>,
-	Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
+Date: Wed, 26 May 2004 10:35:21 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: curious about BK checkin protocol
-In-Reply-To: <20040526165705.GT6763@smtp.west.cox.net>
-Message-ID: <Pine.LNX.4.58.0405261315420.26326@localhost.localdomain>
-References: <Pine.LNX.4.58.0405250909280.14496@localhost.localdomain>
- <20040525102352.A1329@home.com> <Pine.LNX.4.58.0405260714540.24178@localhost.localdomain>
- <20040526165705.GT6763@smtp.west.cox.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <20040526103520.A13563@home.com>
+References: <Pine.LNX.4.58.0405250909280.14496@localhost.localdomain> <20040525102352.A1329@home.com> <Pine.LNX.4.58.0405260714540.24178@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.58.0405260714540.24178@localhost.localdomain>; from rpjday@mindspring.com on Wed, May 26, 2004 at 07:19:53AM -0400
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, 26 May 2004, Tom Rini wrote:
+On Wed, May 26, 2004 at 07:19:53AM -0400, Robert P. J. Day wrote:
+>
+>
+> On Tue, 25 May 2004, Matt Porter wrote:
+>
+> > On Tue, May 25, 2004 at 09:12:10AM -0400, Robert P. J. Day wrote:
+> > >   i thought it had been well-established by now that this had to go.
+> > > what's the protocol for someone putting these changes into the tree?
+> > > just curious.
+> >
+> > Post a patch.  If it's something that is incorrect in linux-2.5
+> > as well, then the patch is expected to be against linux-2.5.
+>
+> post to this list?  sure, if that's the right place.  the only reason i'm
+> obsessed about that little fix as opposed to all the others that are going
 
-> I still like to argue that it's best to loudly blow up than to compile
-> fine and then die in other ways at run-time (if someone hadn't gotten
-> the last problem fixed on 8xx I was getting tempted to move what we had
-> done now up with an #error tossed on top of head_8xx.S pointing people
-> to what's wrong, etc).
+Yes, post to this list for embedded-specific patches (8xx). If
+it's a clear fix, somebody will put it into linux-2.5 and it
+will be pulled into linuxppc-2.5 on the next merge. Put [PATCH]
+in the subject and mention what BK tree it's made against.
 
-that's a fair statement.  but, from my perspective, before i tried this
-recently, i had *no* clue about the possibility of linux on 8xx, and
-grabbed the linuxppc-2.5 tree, which of course didn't compile because of
-that one issue.  once i got that compile issue out of the way, i was
-purely deeeelighted to see a kernel actually load and boot to user space
-and at least start init before hanging.  and this was after doing
-*nothing* in terms of customizing the kernel for my board.
+Let me say this again, but a bit clearer so that _everybody_
+understands.  A patch is the standard unit of communication here.
+If you don't post a patch that represents your ideas or proposed
+fixes, your thoughts are likely to get lost in all the noise on
+these lists.
 
-even with going no further than that, i could at least take comfort in the
-fact that *something* was happening.  it's an admittedly nitpicky
-perspective, but seeing even that partial progress made me one happy
-camper.
-
-anyway, at this point, i'll just be waiting with bated breath for new
-patches.  too exciting for words ...
-
-rday
+-Matt
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
