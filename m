@@ -1,29 +1,36 @@
-Date: Mon, 28 Feb 2000 19:40:04 -0800 (PST)
-From: Ani Joshi <ajoshi@shell.unixbox.com>
-To: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
-Subject: 2.3 kernel status page
-Message-ID: <Pine.LNX.4.10.10002281935040.27433-100000@shell.unixbox.com>
+From: Paul Mackerras <paulus@linuxcare.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: IrDA
+Date: Tue, 29 Feb 2000 14:47:22 +1100
+Content-Type: text/plain
+References: <38BAD4DB.CA50A2E1@mondonet.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <00022914512901.11287@argo.linuxcare.com.au>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Tue, 29 Feb 2000, Mario Scarpa wrote:
 
-Due to the recent number of people interested in the 2.3 trees, i've
-placed a kernel status page at:
+> any luck in putting the irda thing into the kernel ?
+> Trying with a lombard with no success :(
 
-	http://entropy.crashing.org/~ajoshi/kstat.html
+This is how far I have got with the IR port on the 101 (lombard):
 
-i'm not very big on fancy pages so basically all there is right now is
-text status of  linux-pmac-devel and bitkeeper.  the machine does crond
-builds throughout the day so you'll see a timestamp of the last build and
-its status, green or red.  if its red, then a link to the build log is
-also there.  the builds use the defcommon_config.
+By default the transmitter will output a pulse of light on each change of
+level on the transmit data line from the serial port.  To get the effect
+of a pulse of light for each zero bit (which is the IrDA encoding for the
+slower speeds, up to 115.2kB/s) you have to set the serial port chip
+(Z8530) to use NRZI encoding.  This is not too hard for transmission but
+for receiving it means that you have to use the digital phase-locked loop
+(DPLL) in the 8530 chip.  I tried setting it up to do that but I didn't
+have much success, the receiver got mostly garbage when I tried sending
+stuff to it.
 
-perhaps more "features" on this page later...
-
-ani
-
+--
+Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
++61 2 6262 8990 tel, +61 2 6262 8991 fax
+paulus@linuxcare.com.au, http://www.linuxcare.com.au/
+Linuxcare.  Support for the revolution.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
