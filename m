@@ -1,71 +1,45 @@
-Date: Tue, 23 Jan 2001 14:03:48 +0100
-From: Olaf Hering <olh@suse.de>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: mprotect broken on ppc
-Message-ID: <20010123140348.A1745@suse.de>
-References: <20010120221908.A20689@suse.de> <20010120222630.B20689@suse.de> <20010121183031.A25128@suse.de>
-Mime-Version: 1.0
+Message-ID: <3A6DADEF.D525DFCD@cisco.com>
+Date: Tue, 23 Jan 2001 10:14:39 -0600
+From: Mike Beede <mbeede@cisco.com>
+MIME-Version: 1.0
+To: Jeff Hartmann <jhartmann@valinux.com>
+CC: Dan Malek <dan@mvista.com>, Roman Zippel <zippel@fh-brandenburg.de>,
+        michdaen@iiic.ethz.ch,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Gareth Hughes <gareth@valinux.com>, linuxppc-dev@lists.linuxppc.org,
+        dri-devel@lists.sourceforge.net, Paul Mackerras <paulus@linuxcare.com>
+Subject: Re: [Dri-devel] PPC Lockup (ati-pcigart-branch)
+References: <Pine.GSO.4.10.10101221945230.19978-100000@zeus.fh-brandenburg.de> <3A6C8C6E.3C19F151@mvista.com> <3A6C9852.4090201@valinux.com> <3A6CA6A9.7794B603@mvista.com> <3A6CAAA2.6090607@valinux.com>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010121183031.A25128@suse.de>; from olh@suse.de on Sun, Jan 21, 2001 at 06:30:31PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, Jan 21, Olaf Hering wrote:
-
+Jeff Hartmann wrote:
 >
-> On Sat, Jan 20, Olaf Hering wrote:
+> > Dan Malek wrote:
+> > Ummm...of course it is virtually contiguous.  How could it be
+> > different?  You request a size, and it returns a base virtual address.
+> > If there were holes in it, how would you know?
 >
-> >
-> > On Sat, Jan 20, Olaf Hering wrote:
-> >
-> > >
-> > > Hi,
-> > >
-> > > there seems to be a bug in mprotect which was introduced in
-> > > test9->test10.
-> > >
-> > > The result is an invalid pointer from the getpwuid(3) function, this
-> > > function is used in rpm to check owner and group permissions.
-> >
-> > forgot some facts:
-> >
-> > the build host runs always a glibc2.13 system with 2.2 headers. The
-> > build chroot runs a glibc2.2 system with 2.4.0ac2 headers.
-> > And it fails when a kernel 2.4.0-test10 or later is running, every other
-> > kernel works fine.
->
-> I put some debug in mm/mprotect.c:
-> ...
-> asmlinkage long sys_mprotect(unsigned long start, size_t len, unsigned
-> long prot)
-> {
->         unsigned long nstart, end, tmp;
->         struct vm_area_struct * vma, * next;
->         int error = -EINVAL;
->
->         if (start & ~PAGE_MASK) {
->                 printk("sys_mprotect start \n");
->                 return -EINVAL;
->         }
-> ...
->
-> it fails here.
-> Jan 21 18:28:06 mandarine kernel: sys_mprotect start
+> Look at vread in vmalloc.c, I think it would handle holes in a
+> vmalloc'ed area (From a brief reading of the code.)  I've seen postings
+> about this on linux-kernel.  I don't see a vwrite implementation, but I
+> would assume you would have to do something similar for writes.
 
-sys_mprotect start= 6ffdffb0,PAGE_MASK= fffff000
+Separate calls to vmalloc can return noncontiguous regions, but the
+memory
+from a single call is contiguous.  Unless you mean *physically*
+contiguous,
+which isn't guaranteed at all. (I don't think you do--just thought I'd
+be
+clear).  After all, what good would it do to allocate multiple regions
+and
+return a pointer to the first?
 
-
-It was solved with this patch:
-http://penguinppc.org/~olaf/broken_build/elf.diff
-
-
-Gruss Olaf
-
+	Mike
 --
- $ man clone
-
-BUGS
-       Main feature not yet implemented...
+Mike Beede
+Cisco Systems
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
