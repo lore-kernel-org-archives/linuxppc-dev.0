@@ -1,43 +1,35 @@
-In-Reply-To: <Pine.LNX.4.60.0407081923190.2164@localhost.localdomain>
-References: <Pine.LNX.4.60.0407081923190.2164@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v618)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <DFC8D6BB-D145-11D8-B95B-003065F9B7DC@embeddededge.com>
-Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-From: Dan Malek <dan@embeddededge.com>
-Subject: Re: SMC1, ethernet on SCC3 and patches to allow this
-Date: Thu, 8 Jul 2004 21:18:24 -0400
-To: "Robert P. J. Day" <rpjday@mindspring.com>
+Date: Thu, 8 Jul 2004 18:48:53 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Jean-Christophe Dubois <jdubois@mc.com>
+Cc: Bret Indrelee <Bret.Indrelee@qlogic.com>,
+	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: proposed patch for cross compiling from Solaris 2.8
+Message-ID: <20040709014853.GQ23135@smtp.west.cox.net>
+References: <Pine.LNX.4.44.0407060823120.2040-100000@spider.ancor.com> <1089121664.31278.264.camel@fr-jdubois1.ad.mc.com> <1089125860.18578.12.camel@fr-jdubois1.ad.mc.com> <1089279330.18578.2175.camel@fr-jdubois1.ad.mc.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1089279330.18578.2175.camel@fr-jdubois1.ad.mc.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Jul 8, 2004, at 8:28 PM, Robert P. J. Day wrote:
+On Thu, Jul 08, 2004 at 11:35:31AM +0200, Jean-Christophe Dubois wrote:
 
-> but there's no reference to a patch that lets me get away with this.
+>
+> Hello,
+>
+> I rewrote my patches to be a little more well behaved in regards to non
+> linux systems.
+>
+> Any feedback is welcome. Once again this is just to enable Solaris 2.8
+> (and others?) to be a valid host to cross-compile the 2.6 Linux Kernel
+> (for PPC).
 
-There is a microcode patch, but the 8xx drivers aren't written to look
-for it and work with it.  It's not terribly hard to do, but there isn't
-a
-generic solution because the relocation is also dependent upon
-the other devices you may be using withe the CPM.
+Sadly, it looks like Cygwin (the other odd host to build a linux kernel on)
+lacks <inttypes.h>.
 
-> surely others might want to have console SMC1 and ethernet SCC3.
-
-I have not come across anyone that has done this.  "Normally," the
-configurations use SCC2 for Ethernet and SCC3 for other uses.
-The patch most commonly used on these processors is for the USB,
-and you can't load multiple patches.
-
-> ....  how
-> is it done?  (i mean, short of configuring the console on SMC2, which
-> is not an option here.)
-
-You are going to have to get the microcode patch for this processor
-CPM rom version (make sure it matches), and update the uart driver
-to know about the relocation patch.
-
-	-- Dan
-
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
