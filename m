@@ -1,77 +1,34 @@
-Date: Mon, 24 Jul 2000 11:00:21 -0400 (EDT)
-From: John Grimes <jpgrimes@johngrimes.dyndns.org>
-To: Michel Dänzer <daenzerm@student.ethz.ch>
+Date: Mon, 24 Jul 2000 10:01:25 -0500 (CDT)
+From: Jeff Garzik <jgarzik@mandrakesoft.mandrakesoft.com>
+To: Josh Huber <huber@mclx.com>
 cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Xfree86 version 4.01
-In-Reply-To: <397C5502.4825FF94@student.ethz.ch>
-Message-ID: <Pine.LNX.4.21.0007241055570.1920-100000@johngrimes.dyndns.org>
+Subject: Re: problems about __cli()
+In-Reply-To: <20000724081959.B263@mclx.com>
+Message-ID: <Pine.LNX.3.96.1000724100027.30780B-100000@mandrakesoft.mandrakesoft.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=X-UNKNOWN
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 24 Jul 2000, Michel [iso-8859-1] Dänzer wrote:
+On Mon, 24 Jul 2000, Josh Huber wrote:
 
-> John Grimes wrote:
+> On Sat, Jul 22, 2000 at 08:11:07PM +0200, Martin Costabel wrote:
+> > There *are* situations where you need /usr/src/linux to point to your
+> > current kernel sources. This is when you compile modules for the current
+> > kernel, a prominent example being MOL.
 >
-> > For some reason I can not get any other mode to work (i.e. 640x480,1024x768,
-> > 800x600).  If any would fail I would expect it to be 1280x1024 not the
-> > smaller modes.  I have no modelines defined, just letting XF86 decided which
-> > modes to use.  Any ideas why the defaults don't work?
->
-> Look at the log. There should be a reason for every rejected mode.
+> Actually, I prefer to add a -I/path/to/kernel/include to the module
+> makefiles rather than the /usr/src/linux symlink. I suppose it's
+> personal preference, but I find that having to explicitly specify
+> where the kernel source is reduces the posibility of a screwed
+> compile.
 
-There aren't any rejected modes.  I think the suggestion taht I use fbset
-to create modelines is right on.
+Moreover, your method Josh is the only sane method IMHO.  Trusting
+/usr/src/linux to be correct for whatever kernel version you are
+building against is Russian roulette (to put it lightly)...
 
->
->
-> > First how do I find out the bus address of my internal video?  It doesn't
-> > show up in /proc/pci although it is in /proc/fb.  This is on a highly
-> > upgraded powercenter.
->
-> If it's not in /proc/pci, the server probably doesn't bother about it either,
-> so you shouldn't have to care.
->
-> > Also, I seem to have not saved it as I had thought, but does anyone have
-> > an example XF86Config file for multiple monitors?
->
-
-ahh, i think i see now.  By defining a fb device the fbdev driver will
-figure it wou, unlike the r128 driver which wanted a bus id.  Will give it
-a try, how do I do fbset -x to see the modelines on the second monitor?
-
-
-> You have to add Device and Screen (and maybe Monitor) Sections for the
-> internal video (I suppose it needs the fbdev driver?). And then you have to
-> add a Layout Section, something like this:
->
-> Section "ServerLayout"
->     Identifier	"Main Layout"
->     Screen	"Screen 1"
->     Screen	"Screen 2" RightOf "Screen 1"
->     InputDevice	"Mouse1" "CorePointer"
->     InputDevice "Keyboard1" "CoreKeyboard"
-> EndSection
->
->
-> Good luck,
->
-> Michel
->
->
->
-
-
-				thanks a lot,
-				john
-
---
-           John Grimes - Mission Planner for Chandra X-Ray Telescope
-Phone 	(H) 617-591-1393	(W) 617-496-7663	(Fax) 617-495-7356
-Email 	me@johngrimes.com	Web	http://www.johngrimes.com
-Pager	1-800-473-6312 		Alphanumeric  4736312@mobilecomm.net)
+	Jeff
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
