@@ -1,18 +1,20 @@
-Return-Path: <laforge@gnumonks.org>
-Received: from ganesha.gnumonks.org (ganesha.gnumonks.org [213.95.27.120])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ganesha.gnumonks.org", Issuer "Harald Welte" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id BBE792BDB0
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Oct 2004 05:50:44 +1000 (EST)
-Date: Fri, 1 Oct 2004 21:31:53 +0200
-From: Harald Welte <laforge@gnumonks.org>
-To: Chris Friesen <cfriesen@nortelnetworks.com>
-Message-ID: <20041001193153.GN27499@sunbeam.de.gnumonks.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id AC0A02BDB0
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Oct 2004 21:54:33 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Harald Welte <laforge@gnumonks.org>
+In-Reply-To: <20041001194630.GO27499@sunbeam.de.gnumonks.org>
 References: <415D8768.8080808@nortelnetworks.com>
+	<20041001193153.GN27499@sunbeam.de.gnumonks.org>
+	<415DB334.4010809@nortelnetworks.com>
+	<20041001194630.GO27499@sunbeam.de.gnumonks.org>
+Content-Type: text/plain
+Message-Id: <1096717811.3634.45.camel@gaston>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="1y1tiN5hVw5cPBDe"
-In-Reply-To: <415D8768.8080808@nortelnetworks.com>
+Date: Sat, 02 Oct 2004 21:50:11 +1000
 Cc: netdev@oss.sgi.com, linuxppc-dev@ozlabs.org
 Subject: Re: kernel crash with G5 Xserve and sungem driver
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -24,56 +26,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sat, 2004-10-02 at 05:46, Harald Welte wrote:
+> On Fri, Oct 01, 2004 at 01:42:44PM -0600, Chris Friesen wrote:
+> > Harald Welte wrote:
+> > 
+> > >Just don't compile (or load) the sungem driver on those boxes.
+> > 
+> > Hmm.  That's a pain.  We've got G5 desktops too, and it would be nice to be 
+> > able to run one kernel for both.  It'd be better (IMHO) to fix the driver 
+> > so it doesn't crash.
+> 
+> I recommend talking to Bejamin Herrenschmidt, IIRC he already had
+> something in mind in order to fix the issue.
+> 
+> I mean, you can always hardcode some exemption into the driver, that's
+> two easy lines ;)
 
---1y1tiN5hVw5cPBDe
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Or just have the driver test the return value of pci_device_to_OF_node()
+for NULL :)
 
-On Fri, Oct 01, 2004 at 10:35:52AM -0600, Chris Friesen wrote:
->=20
-> I have patched 2.6.9-rc2 to run in 32-bit mode on the G5 Xserve.
->=20
-> When I compile a kernel with the tigon driver and the sungem driver both=
-=20
-> built-in, the kernel crashes.  Removing the sungem driver fixes the probl=
-em.
+One thing is that I'm about to push a patch that will "hide" PCI devices
+from the kernel that are absent from the OF tree since there are other
+issues with newer machines, so that will fix the problem. Both 64 bits
+and 32 bits patches are below:
 
-Yes, I had that too.  The Problem is that the XServe G5 actually has two
-sungem MAC's in the chipset but doesn't use them (and apparently their
-interrupt lines are not connected either).  Apple just doesn't put them
-in their OF tree, but on the PCI they are visible.
+===== arch/ppc64/kernel/pmac_pci.c 1.5 vs edited =====
+--- 1.5/arch/ppc64/kernel/pmac_pci.c	2004-07-25 14:51:52 +10:00
++++ edited/arch/ppc64/kernel/pmac_pci.c	2004-08-04 10:26:07 +10:00
+@@ -271,7 +271,7 @@
+ 				    int offset, int len, u32 *val)
+ {
+ 	struct pci_controller *hose;
+-	struct device_node *busdn;
++	struct device_node *busdn, *dn;
+ 	unsigned long addr;
+ 
+ 	if (bus->self)
+@@ -282,6 +282,16 @@
+ 		return PCIBIOS_DEVICE_NOT_FOUND;
+ 	hose = busdn->phb;
+ 	if (hose == NULL)
++		return PCIBIOS_DEVICE_NOT_FOUND;
++
++	/* We only allow config cycles to devices that are in OF device-tree
++	 * as we are apparently having some weird things going on with some
++	 * revs of K2 on recent G5s
++	 */
++	for (dn = busdn->child; dn; dn = dn->sibling)
++		if (dn->devfn == devfn)
++			break;
++	if (dn == NULL)
+ 		return PCIBIOS_DEVICE_NOT_FOUND;
+ 
+ 	addr = u3_ht_cfg_access(hose, bus->number, devfn, offset);
 
-The ethernet chips actually used and connected to the ethernet sockets
-on the back side are th3.
-
-Just don't compile (or load) the sungem driver on those boxes.
-
-> Is there a known incompatibility between the sungem driver and the Xserve?
-
-yes.
-
-
---=20
-- Harald Welte <laforge@gnumonks.org>               http://www.gnumonks.org/
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D
-Programming is like sex: One mistake and you have to support it your lifeti=
-me
-
---1y1tiN5hVw5cPBDe
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.5 (GNU/Linux)
-
-iD8DBQFBXbCpXaXGVTD0i/8RApp7AJwKFtyJL91PowHWs4uTO6DnaNrthwCgtU9t
-sJl0u37ydJljoTsEsvOrDlU=
-=+Ev2
------END PGP SIGNATURE-----
-
---1y1tiN5hVw5cPBDe--
+===== arch/ppc/platforms/pmac_pci.c 1.21 vs edited =====
+--- 1.21/arch/ppc/platforms/pmac_pci.c	2004-07-29 14:58:35 +10:00
++++ edited/arch/ppc/platforms/pmac_pci.c	2004-08-17 14:18:09 +10:00
+@@ -315,6 +315,10 @@
+ 	unsigned int addr;
+ 	int i;
+ 
++	struct device_node *np = pci_busdev_to_OF_node(bus, devfn);
++	if (np == NULL)
++		return PCIBIOS_DEVICE_NOT_FOUND;
++
+ 	/*
+ 	 * When a device in K2 is powered down, we die on config
+ 	 * cycle accesses. Fix that here.
+@@ -362,6 +366,9 @@
+ 	unsigned int addr;
+ 	int i;
+ 
++	struct device_node *np = pci_busdev_to_OF_node(bus, devfn);
++	if (np == NULL)
++		return PCIBIOS_DEVICE_NOT_FOUND;
+ 	/*
+ 	 * When a device in K2 is powered down, we die on config
+ 	 * cycle accesses. Fix that here.
