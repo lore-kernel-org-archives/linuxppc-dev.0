@@ -1,50 +1,26 @@
-Date: Thu, 18 Sep 2003 11:08:34 -0700
+Date: Thu, 18 Sep 2003 11:11:16 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: Steven Scholz <steven.scholz@imc-berlin.de>
-Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: BOOT_TARGET pImage & uImage ???
-Message-ID: <20030918180834.GC6692@ip68-0-152-218.tc.ph.cox.net>
-References: <3F65917D.1020502@imc-berlin.de> <20030915150935.GB29517@ip68-0-152-218.tc.ph.cox.net> <3F699255.4050000@imc-berlin.de>
+To: Lokesh Kumar <lokesh.kumar@wrx-us.com>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: mpc8xx pcmcia cardmgr problem
+Message-ID: <20030918181116.GD6692@ip68-0-152-218.tc.ph.cox.net>
+References: <3439AB3A99ECD5409F3A52ACF814744D158D87@norcom2.norcom.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3F699255.4050000@imc-berlin.de>
+In-Reply-To: <3439AB3A99ECD5409F3A52ACF814744D158D87@norcom2.norcom.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Sep 18, 2003 at 01:09:09PM +0200, Steven Scholz wrote:
-> Tom Rini wrote:
+On Thu, Sep 18, 2003 at 08:42:47AM -0400, Lokesh Kumar wrote:
+> Thanks Tom,
 >
-> >On Mon, Sep 15, 2003 at 12:16:29PM +0200, Steven Scholz wrote:
-> >
-> >
-> >>is the there any particular reason why the BOOT_TARGETS "pImage" and
-> >>"uImage" for
-> >>the famous boot loader PPCBoot and its successor U-Boot are still not
-> >>supported.
-> >>Neither by linux_2_4_devel. Nor by the vanilla.
-> >
-> >
-> >For a third time:
-> >http://www.geocrawler.com/archives/3/8358/2002/11/0/10241415/
->
-> I have to admit that I don't understand what you're describing there. I am
-> afraid nobody else did. Otherwise someone would realized it by now...
+> I did search on google but found no patch againt airo.c for 2.4.18. Anything
+> you or anybody else aware of?
 
-If I'm making requests and rambling at the same time, can people please
-speek up sooner?  I won't mind, really.
-
-What I want is three things:
-1) The 'mkimage' target must be done in such a fashion that it will
-never run into a 'cannot execute' problem.  My suggestion is to have the
-Makefile do a:
-@chmod +x mkimage.sh
-Or so.  In 2.5/2.6, the build system will handle this for you,
-automagically, on .sh files I believe.  For 2.4, you must handle this
-explicitly.
-2) Do we really need 'pImage' and 'uImage' or can we just have 'uImage'
-?
-3) I really (really!) want a patch for 2.4 and 2.5/2.6 at the same time.
+Now that I think of it, all you might have to do is to change the call
+in airo.c from request_irq() to request_8xxirq().  But I haven't done
+that myself.
 
 --
 Tom Rini
