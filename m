@@ -1,38 +1,37 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <8D7C5F56B409554D9D46AC22195807F3061A1E@exchwenz01.smtp.dmcwave.co.nz>
-From: Rod Boyce <rod_boyce@stratexnet.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Booting sandpoint from ide disk
-Date: Fri, 6 Sep 2002 02:57:59 +1200 
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Rod Boyce <rod_boyce@stratexnet.com>
+Cc: linuxppc-embedded@lists.linuxppc.org,
+	Lauri Ojantakanen <lauri.ojantakanen@solidtech.com>
+Subject: Re: Booting sandpoint from ide disk 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 06 Sep 2002 02:57:59 +1200."
+             <8D7C5F56B409554D9D46AC22195807F3061A1E@exchwenz01.smtp.dmcwave.co.nz>
+Date: Thu, 05 Sep 2002 17:24:57 +0200
+Message-Id: <20020905152502.43E9A11836@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-There is nothing stopping you porting PPCBoot to this CPU.  Once you have
-ported PPCBoot to this CPU you could use PPCBoot...:)
+In message <8D7C5F56B409554D9D46AC22195807F3061A1E@exchwenz01.smtp.dmcwave.co.nz> you wrote:
+>
+> There is nothing stopping you porting PPCBoot to this CPU.  Once you have
+> ported PPCBoot to this CPU you could use PPCBoot...:)
+>
+> Rod
+>
+> PS I'm, sure you could find somebody to pay money to who would do this for
+> you...
 
-Rod
+Sure; we do this work all the time. It takes usually  less  than  two
+weeks. Feel free to contact me.
 
-PS I'm, sure you could find somebody to pay money to who would do this for
-you...
+Wolfgang Denk
 
- -----Original Message-----
-From: 	Lauri Ojantakanen [mailto:lauri.ojantakanen@solidtech.com]
-Sent:	Thursday, September 05, 2002 3:16 AM
-To:	linuxppc-embedded@lists.linuxppc.org
-Subject:	Booting sandpoint from ide disk
-
-
-Hi,
-
-does anyone have a good solution for booting sandpoint X3 (cpu 7410, altivec
-supported) from ide hard disk? Dink32 does not seem to support anything like
-that and ppcboot does not seem to support that CPU.
-
-//lauri
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+There is a biblical analogy I'd like to draw here.   Casts are to C++
+Programmers what the apple was to Eve.         - Scott Douglas Meyers
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
