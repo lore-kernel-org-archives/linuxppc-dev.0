@@ -1,21 +1,31 @@
-Message-ID: <D73A25AA6E54D511AD74009027B1110F3C0A2C@ORION>
-From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
-To: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
-Subject: mini pci
-Date: Thu, 11 Sep 2003 16:21:13 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+From: linas@austin.ibm.com
+Date: Thu, 11 Sep 2003 17:04:36 -0500
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: [PATCH] ppc64 kernel 2.6 ide-related patches (trivial)
+Message-ID: <20030911170436.A20282@forte.austin.ibm.com>
+References: <20030911112823.A27066@forte.austin.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20030911112823.A27066@forte.austin.ibm.com>; from linas@austin.ibm.com on Thu, Sep 11, 2003 at 11:28:23AM -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I was wondering if anyone can recommand a mini pci card.  I need one to test
-a board and I have found many but none of the vendors will provide their
-data sheets.  The type of card does not matter but I need to be able to get
-a data sheet for it.
+On Thu, Sep 11, 2003 at 11:28:23AM -0500, linas@austin.ibm.com wrote:
+>
+> Hi,
+>
+> Im getting complaints that the following patch hasn't made it into
+> the 2.6 BK trees yet.  They prevent the ide code from compiling.
+> Could someone apply this?
 
-Many thanks,
-Steven Blakeslee
+Please ignore the note the above note; its not right.
+
+(My excuse: I was propagating a request w/o double checking. Oops).
+
+I will try to supply correct patches shortly.
+
+--linas
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
