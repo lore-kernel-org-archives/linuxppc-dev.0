@@ -1,31 +1,36 @@
-Message-Id: <199908082101.XAA03061@piglet.cpu.lu>
-Date: Sun, 8 Aug 1999 23:01:09 +0200 (CEST)
+Message-Id: <199908082121.XAA03124@piglet.cpu.lu>
+Date: Sun, 8 Aug 1999 23:21:59 +0200 (CEST)
 From: Michel Lanners <mlan@cpu.lu>
 Reply-To: mlan@cpu.lu
 Subject: Re: Trying a Promise Ultra/66 on powerpc
-To: trini@disparity.net
-cc: hedrick@Astro.Dyer.Vanderbilt.Edu, drow@false.org, mj@ucw.cz,
-        Paul.Mackerras@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.BSF.3.96.990808165209.16262c-100000@silver.teardrop.net>
+To: Geert.Uytterhoeven@cs.kuleuven.ac.be
+cc: bh40@calva.net, linuxppc-dev@lists.linuxppc.org, mj@ucw.cz
+In-Reply-To: <Pine.LNX.4.10.9908082252170.23564-100000@mercator.cs.kuleuven.ac.be>
 MIME-Version: 1.0
 Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On   8 Aug, this message from Tom Rini echoed through cyberspace:
+On   8 Aug, this message from Geert Uytterhoeven echoed through cyberspace:
 > On Sun, 8 Aug 1999, Michel Lanners wrote:
-[snip'ed about PMac IDE stuff]
-> Would this be one of the things solved/cleaned up by seperating ide-pmac.c
-> and the CONFIG option for it into generic enable IDE stuff and a driver
-> for the builtin IDE on some machines?  Last I tried, I needed to enable
-> both cmd646 and ide-pmac on myy blue&white (trying to do this is on my
-> todo list, someplace.. :))
+>> Right, according to 'Designing PCI cards and Drivers..', OF never
+>> enables neither memory space, nor IO space, neither ROM. It should,
+>> however, set both PCI_COMMAND_MASTER and PCI_COMMAND_INVALIDATE. I
+>> didn't chek, though...
+>> 
+>> I'm getting a patch ready that fixes this on the PMac plkatform. Geert,
+>> how about OF in your CHRP box? Does it need the enable fix as well?
+> 
+> Yep, my OF neither enables memory spaces on devices it doesn't have a driver
+> for. It even doesn't allocate space to them.
 
-I hope so ;-). Not that I'm complaining, but <asm-ppc/ide.h> looks like
-quite a mess to me....
+That's even worse.... Might be one more reason for Martin to get the
+dynamic resource allocation stuff for PCI devices into the kernel ;-)
 
 Michel
+
+PS Geert, don't stay up too long ;-)
 
 -------------------------------------------------------------------------
 Michel Lanners                 |  " Read Philosophy.  Study Art.
