@@ -1,23 +1,39 @@
-Message-ID: <39842719.4657298E@denise.shiny.it>
-Date: Sun, 30 Jul 2000 09:01:13 -0400
-From: Giuliano Pochini <pochini@denise.shiny.it>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: XF4, speed and keyboard problems
-References: <39835F2B.36C12CC9@denise.shiny.it>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <200007301300.OAA07050@hyperion.valhalla.net>
+Date: Sun, 30 Jul 2000 14:01:19 +0100
+Subject: Re: Stealth port problems
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: Takashi Oe <toe@unlserve.unl.edu>
+CC: linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Anyway... the real problem in another one: I can't get different codes for
-> left/right shift control and alt keys :(((
-> I tried to patch mac_keyb.c to never translate R to L codes (it worked for
-> XF3) without success. Also, I can't anymore
+On  Sun, Jul 30, 2000, Takashi Oe wrote:
+> On Sun, 30 Jul 2000, Iain Sandoe wrote:
+>
+> [...]
+>> The RX buffer in an 85230 (which is actually the chip - IIRC - an enhanced
+>> 8530) is 8 characters deep
+>
+> Ok, this is a news to me.  I'm certain that SCC on oldworld pmacs is
+> 85C30.  When did the change to 85230 occur?  If I remember correctly,
+> some DMA setup codes in macserial.c need to know about it if it's dealing
+> with 85230 rather than 85C30.
 
-  Oops, this one works, sorry.
+OK - I don't know for certain - but the code refers to an "ESCC" which is
+the name of the 85230 - the 8530 should just be called "SCC".
 
 
-Bye.
+>>                            - so any more that about 700 us IRQ block will
+>> cause a drop out at 115200 continuous...
+>
+> With DMA, this is a non-issue as far as serial driver is concerned.
+
+This is, of course, true - unless something blocks for long enough to
+prevent the IRQ that indicates end-of-dma transfer (assuming there is one).
+
+Iain,
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
