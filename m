@@ -1,35 +1,35 @@
+Message-ID: <4002C3BB.8060805@embeddededge.com>
+Date: Mon, 12 Jan 2004 10:56:43 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <16386.12520.80592.673386@cargo.ozlabs.ibm.com>
-Date: Mon, 12 Jan 2004 16:30:16 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Kumar Gala <kumar.gala@motorola.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: the door is closing for 2.4
-In-Reply-To: <18650AD8-26B7-11D8-B321-000393DBC2E8@motorola.com>
-References: <16334.33020.624995.521330@cargo.ozlabs.ibm.com>
-	<18650AD8-26B7-11D8-B321-000393DBC2E8@motorola.com>
+To: Dan Malek <dan@embeddededge.com>
+Cc: "Matthew S. McClintock" <mattsm@arlut.utexas.edu>,
+	fabidi@ultsol.com, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: TLB and CSSBAR problems with MPC8540 and BDI2000
+References: <704F2B356FCC3E49A909C625BD9E5C4002143D@ultsol01.tewks.ultsol.local>	 <3FFEEAD9.80308@embeddededge.com>	 <1073677509.10794.14.camel@chuck.arlut.utexas.edu>	 <3FFF276C.4060003@embeddededge.com> <1073686698.3275.10.camel@chuck.arlut.utexas.edu> <3FFF2B00.6@embeddededge.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Kumar Gala writes:
+Dan Malek wrote:
 
-> A few questions/requests:
->
-> 1. Can we create a file maybe in platforms for 2.4 that lists the
-> maintainers of all the boards as it stands for official 2.4
+> ..... I'll ask
+> Abatron and post the response.
 
-An excellent idea.  Could board port maintainers send me entries for
-such a file, please?
+I received their response.  Here it is in my words.
 
-> 2. Do you plan on closing down 2.4 based development after marcelo does?
+The BDI2000 doesn't care if the CCSRBAR is changed by software.
+It uses SPRs for debug control, and if it needs to access anything
+in the CCSR space, it will fetch the address from the part.
 
-Once Marcelo has closed down 2.4, I won't be sending him new board
-ports or new drivers.  People can still check stuff into the linuxppc
-trees but they will essentially be a dead end.
+So, I guess there is something else that is incorrect when we
+change the CCSRBAR.
 
-Regards,
-Paul.
+Thanks.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
