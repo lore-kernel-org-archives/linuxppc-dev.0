@@ -1,37 +1,33 @@
-Message-Id: <5.0.2.1.2.20010119123352.03511010@mail.munich.netsurf.de>
-Date: Fri, 19 Jan 2001 12:40:45 +0100
-To: iweiny@pacbell.net
-From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-Subject: Re: Linux/PPC BitKeeper tree announcements
-Cc: linuxppc-dev@lists.linuxppc.org (linuxdev)
-In-Reply-To: <200101190150.RAA01825@batcave2.batcave>
-References: <20010109161126.P18696@hq.fsmlabs.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-ID: <3A68568E.F4A3A60@videotron.ca>
+Date: Fri, 19 Jan 2001 10:00:29 -0500
+From: Alain Birtz <abz@videotron.ca>
+Reply-To: abz@videotron.ca
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: javac and "package not found error"
+Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 02:50 2001-01-19, iweiny@pacbell.net wrote:
+The swing application work great with MacOS and CodeWarrior.
+But when I try to compile the same application with javac under Linux
+(Suse7.0)
+I got "package not found error".
 
->At the risk of sounding stupid I guess I need a newer compiler than egcs for
->the new kernel trees?
->
->fork.c:353: fixed or forbidden register 68 (0) was spilled for class CR0_REGS.
->This may be due to a compiler bug or to impossible asm
->statements or clauses.
+The first error message was for the "import javax.swing.*".
+Setting -classpath to /usr/lib/netbeans21/lib21/swingall.tar solve this
+line error.
+But now javac complaint about every other import line.
 
-You shouldn't be using _anything_ older than gcc-2.95.2 on PPC anymore. In
-the meantime the release of gcc-2.95.3 is pending and I would _strongly_
-recommend you to use it.
-You can find the latest RPM's on
-<ftp://devel.linuxppc.org/users/fsirl/glibc-2.1/>, the current revision is
-2t, which corresponds to gcc-2.95.3.test2.
+The Sun site say that Java class are all in rt.jar. But I cannot found
+any such
+file in my HD. It seem that jdk was installed: /usr/lib hold a directory
+called jdk1.1.8
 
-Minimum download are the cpp and gcc packages, for C++ you need gcc-c++ and
-libstdc++ packages as well.
+Is there something like a default classpath ?
 
-Franz.
+What can I do to solve this problem ?
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
