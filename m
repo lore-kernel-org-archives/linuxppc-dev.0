@@ -1,74 +1,97 @@
-Date: Fri, 24 Mar 2000 21:03:21 +0100 (MET)
+Date: Fri, 24 Mar 2000 21:13:51 +0100 (MET)
 From: Gabriel Paubert <paubert@iram.es>
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-cc: Benjamin Herrenschmidt <bh40@calva.net>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: LongTrail PCI resource assignment
-In-Reply-To: <Pine.LNX.4.10.10003241927550.22814-100000@opal.biophys.uni-duesseldorf.de>
-Message-ID: <Pine.HPX.4.10.10003242053320.14656-100000@gra-ux1.iram.es>
+To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+cc: gcc@gcc.gnu.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Problem with gcc on ppc? was Re: proper regw and regrw16?
+In-Reply-To: <v03110703b5014d1a9f37@[129.100.29.243]>
+Message-ID: <Pine.HPX.4.10.10003242108570.14656-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 24 Mar 2000, Michael Schmitz wrote:
+On Fri, 24 Mar 2000, Kevin B. Hendricks wrote:
 
-> > > They are prioritized the right way: if you memset the whole aperture to 0
-> > > the chip freaks out instead of just painting the whole screen black. Been
-> > > there, done that.
-> >
-> > Ok, anyway memsetting the whole aperture may not be the smartest thing to
-> > do since the aperture may be larger than the installed VRAM.
+> Hi,
 >
-> I was hoping for OF to report the right thing.
+> >From comparing the performance of the XFree 4.0 r128 drivers across x86 and
+> ppc we noticed that the ppc version was much slower.  The following patch
+> made a huge change in x11perf results (improivement).  This is on a ppc
+> with glibc 2.1.3 and the latest gcc 2.95.2 from Franz Sirl.
+>
+> Did I write the output constraint version incorrectly?  Is this what you
+> expected the generated code to look like?
 
-Nope, if it is the assigned addresses properties. It has to be the range
-of addresses potentially decoded by this device to make sure that
-allocation of other devices does not cause conflicts. I remember seeing
-something about allocating subareas in OF but I don't know where to find
-it right now.
+I have just made a test with suppressing the volatile in the parameter to
+the regr/regw/regr16/regw16 macros and the code is even better (one
+instruction less than with the memory clobber):
 
-> Assuming VRAM is from 0x81800000 to 0x81ffffff (the big endian aperture),
-> a perfect place to put MMIO would be 0x817ff000. The same registers appear
-> there, and that's the very place atyfb exports for MMIO mmap. It's just
-> the combination of silly PCI mapping in OF and X boneheadedness that gets
-> us here.
+000003d4 <R128Blank>:
+     3d4:       81 43 00 f8     lwz     r10,248(r3)
+     3d8:       81 6a 00 24     lwz     r11,36(r10)
+     3dc:       39 20 00 54     li      r9,84
+     3e0:       7c 09 5c 2c     lwbrx   r0,r9,r11
+     3e4:       7c 00 06 ac     eieio
+     3e8:       60 00 04 00     ori     r0,r0,1024
+     3ec:       7c 09 5d 2c     stwbrx  r0,r9,r11
+     3f0:       7c 00 06 ac     eieio
+     3f4:       4e 80 00 20     blr
 
-I disagree, mapping in OF or in the resource tree is not that silly. At
-one point you have to describe all address ranges potentially decoded
-by a device to perform correct allocation, even if they corresopnd to
-alias addresses of the same VRAM for example.
+the diff is:
+--- r128_reg.h~	Sat Feb 26 06:38:43 2000
++++ r128_reg.h	Fri Mar 24 23:47:31 2000
+@@ -48,19 +48,19 @@
 
-> Assume the 0x81000000->0x81ffffff mapping is left untouched and I just add
-> a new one for 0x81800000>0x81ffffff, and another one for 0x817ff000->
-> 0x817fffff. X goes along and disables 0x81800000->0x81ffffff, does the
-> 0x81800000>0x81ffffff stil work? X disables 0x81fff000->0x81ffffff, does
-> 0x817ff000->0x817fffff still work?
+ #if defined(__powerpc__)
 
-It depends on how it disables it. By writing 0 to the BAR ?
+-static inline void regw(volatile unsigned long base_addr, unsigned long regindex, unsigned long regdata)
++static inline void regw(unsigned long base_addr, unsigned long regindex, unsigned long regdata)
+ {
+  asm volatile ("stwbrx %1,%2,%3; eieio"
+           : "=m" (*(volatile unsigned *)(base_addr+regindex))
+           : "r" (regdata), "b" (regindex), "r" (base_addr));
+ }
 
-Anyway the resource tree in 2.3 won't let you add the 0x81800000 mapping
-unless you put it as a child of the 0x81000000, which it actually is AFAIU
-the intent of the resource tree code.
+-static inline void regw16(volatile unsigned long base_addr, unsigned long regindex, unsigned short regdata)
++static inline void regw16(unsigned long base_addr, unsigned long regindex, unsigned short regdata)
+ {
+   asm volatile ("sthbrx %0,%1,%2; eieio": : "r"(regdata), "b"(regindex), "r"(base_addr));
+ }
 
-> But probably X will disable both 0x81000000->0x81ffffff and 0x81800000->
-> 0x81ffffff because they overlap the 0x81fff000->0x81ffffff range. No gain.
+-static inline unsigned long regr(volatile unsigned long base_addr, unsigned long regindex)
++static inline unsigned long regr(unsigned long base_addr, unsigned long regindex)
+ {
+   register unsigned long val;
+   asm volatile ("lwbrx %0,%1,%2; eieio"
+@@ -70,7 +70,7 @@
+   return(val);
+ }
 
-Then X needs to be fixed, perhaps the generic X PCI code needs special
-hooks for individual drivers to check whether the configuration is
-acceptable or not. OTOH I don't understand why something there (OF ?)
-insists in overlapping the registers with the VRAM, the PCI code in the
-kernel (2.3) should give the registers a separate area, saving 4kB of MMIO
-space is completely useless.
+-static inline unsigned short regr16(volatile unsigned long base_addr, unsigned long regindex)
++static inline unsigned short regr16(unsigned long base_addr, unsigned long regindex)
+ {
+   register unsigned short val;
+   asm volatile ("lhbrx %0,%1,%2; eieio": "=r"(val):"b"(regindex), "r"(base_addr));
+
+>
+> The generated code difference here are quite striking.  It literally
+> allocates a variable on the local stack frame to store the constraint
+> calculation for each regr and regw and even takes the time to load r9 twice
+> for no apparent reason (once at address 418: and once at address 428:) and
+> then has to unwrap the local variable storage too.
+>
+> What is r9 being used for at 418: and 428: and why didn't the compiler
+> optimization figure out how to just move things from register to register?
+>
+> Is this a compiler optimization "bug"?
+
+Neve use volatile where it is not justified. In this case you declare as
+volatile a value which is used to compute the address while what is
+volatile is what is pointe at. This does not completely explain the
+differences in my eyes however...
 
 	Gabriel.
-
->
-> 	Michael
->
->
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
