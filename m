@@ -1,80 +1,39 @@
-Message-ID: <3BFA3A2E.C0E4C373@folkwang-hochschule.de>
-Date: Tue, 20 Nov 2001 12:10:38 +0100
-From: =?iso-8859-1?Q?J=F6rn?= Nettingsmeier <nettings@folkwang-hochschule.de>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Bill Fink <billfink@mindspring.com>
+Cc: "David S. Miller" <davem@redhat.com>,
+	<linuxppc-dev@lists.linuxppc.org>, Anton Blanchard <anton@samba.org>
+Subject: Re: GigE Performance Comparison of GMAC and SUNGEM Drivers
+Date: Tue, 20 Nov 2001 13:02:32 +0100
+Message-Id: <20011120120232.6517@smtp.adsl.oleane.com>
+In-Reply-To: <Pine.LNX.4.33.0111200110210.28304-100000@gwiz.nasa.atd.net>
+References: <Pine.LNX.4.33.0111200110210.28304-100000@gwiz.nasa.atd.net>
 MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Ivo Kwee <ivo@idsia.ch>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: dmasound
-References: <Pine.GSO.4.21.0111201015370.18779-100000@mullein.sonytel.be>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Geert Uytterhoeven wrote:
 >
->         Hoi Ivo,
->
-> > Ik weet niet of je nog aan de dma_sound driver werkt, maar ik zag je
-> > naam als laatste. Ik ben een beetje aan het prutsen met /dev/dsp op een
->
-> Dat is lang geleden...
->
-> Iain Sandoe werkt er momenteel het hardste aan, geloof ik. Maar zijn adres heb
-> ik hier niet.
+>I'd consider it much more than nice.  Since the whole point of GigE
+>is better performance, taking such a huge peformance/CPU hit would
+>be extremely bad.  OTOH, I probably won't be using the built-in GigE
+>hardware anyway because of its apparent performance ceiling of about
+>660 Mbps and its lack of jumbo frame support.
 
-his address and a link to his linuxppc-sound page is here:
+Well, I think we may get overall better perfs once we have this
+fixed, and (David, can you confirm ?), I think jumbo frames can
+be supported.
 
-http://www.linuxdj.com/audio/lad/resourcesmembers.php3#sandoe
+So there is a small issue with the Tx ring that I'll fix asap
+but it doesn't explain your problem, you are getting way too
+much interrupt, possibly those rxmac/txmac interrupts I've noticed
+here.
 
-regards,
+I'll investigate a bit and send you a patched driver.
 
-jörn
+Thanks for taking the time for testing,
 
+Ben
 
-> > PPC titanium en elke keer locks de computer volop na een
-> > SND_DSP_SETFRAGMENT.  Ten eerst moet volgens my the sq_ioctl for the
-> > case SND_DSP_SETFRAGMENT een return geven met de aktuele settings
-> >          return IOCTL_OUT(arg, size | nbufs << 16);
-> > ipv
-> >          return IOCTL_OUT(arg,write_sq.bufSize | write_sq.numBufs << 16);
-> > niet?
-> >
-> > De lockup gebeurt als ik SND_DSP_SETFRAGMENT roep na een open-device
-> > O_RDWR of O_RDONLY. Ik heb gekeken naar ander code voor andere
-> > geluidskaarten en die checken of the device in read of write mode staat;
-> > de dmasound doet dat niet. Kennelijk wordt alleen write_sq
-> > veronderstelt. Moet er ook een if-read stuk in? Of worden buffers niet
-> > gebruikt in Recording(IN) mode?
->
-> Geen idee. Je vraagt dat best op de mailing list hieronder.
->
-> > P.S.1 Waar moet ik normaal zulke vragen stellen ipv naar jou direkt?
->
-> linuxppc-dev@lists.linuxppc.org
->
-> > P.S.2 Werk je aan de Aibo?
->
-> Neen, dat is een ander team. Ik werk aan set top boxes.
->
-> Gr{oetje,eeting}s,
->
->                                                 Geert
->
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
->
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
->                                                             -- Linus Torvalds
->
-
---
-Jörn Nettingsmeier
-home://Kurfürstenstr.49.45138.Essen.Germany
-phone://+49.201.491621
-http://spunk.dnsalias.org
-http://www.linuxdj.com/audio/lad/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
