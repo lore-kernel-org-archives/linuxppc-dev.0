@@ -1,43 +1,67 @@
-Message-Id: <v04003a0db842c0b7e250@[24.70.162.28]>
-In-Reply-To: <p04330105b8428baee0fe@[24.163.44.170]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Sun, 16 Dec 2001 15:24:55 -0600
-To: Stefan Jeglinski <jeglin@4pi.com>,
-	linuxppc-dev@lists.linuxppc.org
-From: "Tony 'Nicoya' Mantler" <nicoya@apia.dhs.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stefan Jeglinski <jeglin@4pi.com>
+Cc: <linuxppc-dev@lists.linuxppc.org>,
+	Jeff Garzik <jgarzik@mandrakesoft.com>
 Subject: Re: ethtool failure with tulip 21143
+Date: Sun, 16 Dec 2001 22:59:48 +0100
+Message-Id: <20011216215948.15249@smtp.wanadoo.fr>
+In-Reply-To: <p04330107b84297e5c096@[24.163.44.170]>
+References: <p04330107b84297e5c096@[24.163.44.170]>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 11:53 AM -0600 12/16/01, Stefan Jeglinski wrote:
->I have a PowerPC 6500 with a Farallon 10/100 PCI card connected to a
->Netgear 10/100 switch. I have never gotten this card to work right in
->this box. If the number of packets is small, the connection seems to
->work, but any increase in the number of packets (my theory) causes
->the interface/NIC to choke up. I'm using 2.4.14 (bk).
-[...]
+>
+>Jeff Garzik wrote:
+>
+>>correct, it does not support anything but basic driver info yet
+>
+>oops. Sorry, I didn't know the tool only did this so far. I read all
+>the dox I could find, but somehow I missed this point?
+>
+>Benjamin Herrenschmidt wrote:
+>
+>>Jeff, afaik, this one has the broken bridge I told you about.
+>
+>How "broken" is it? With the card in the 6500, the tulip driver sort
+>of works, sometimes. The only error message I get out of it ever is
+>
+>Internal fault: The skbuff addresses do not match in tulip_rx [plus hex
+>output]
 
-I had the same problem with the Farallon 10/100 card in my 9600. It seemed
-that either the driver or the chip weren't talking FDX properly - the card
-worked flawlessly at 100/HDX.
+Which match my idea about broken cache coherency on 6400/6500 machines
+and possibly other derivatives (5x00 ?).
 
-I never figured out how to twiddle the duplex setting in the driver itself,
-I usually ended up unplugging and replugging the ethernet cable a few times
-until I confused the nway into thinking half-duplex is a good idea.
+>but this message doesn't always seem to correspond with the
+>driver/interface/NIC failing. And on the 9500, the card seems to work
+>significantly better than on the 6500 (but we already know the 6500
+>seems to be a pathological beast in places). For example, I have
+>never seen the skbuff message on the 9500, and AFAICT, the card just
+>works.
 
-This was using the 'tulip' driver, iirc. I never had much luck with the
-de4x5 driver. I haven't booted linux on my 9600 in a while, though, so
-things might have improved since then.
+Yes, cache coherency in the 9500 is much better, fortunately ;)
 
+>Actually your comment is an interesting one. When you are saying
+>"bridge" are you talking about something related to the ethernet
+>function or the PCI function? Over time on the 6500, I have been
+>wondering if this card's problems are related to PCI rather than
+>ethernet.
 
-Cheers - Tony 'Nicoya' Mantler :)
+I suspect the cache coherency isn't properly maintained by the
+PCI host bridge, which would break drivers (or cause memory corruptions)
+when DMA happens. It's not completely incoherent however, but you'd
+rather avoid having cache lines shared.
 
+de4x5 has a tweak to align descriptors so that only one exist per
+cache line. This solved the problem for some 6400 users, but
+that tweak must be enabled by hacking the driver a bit.
 
---
-Tony "Nicoya" Mantler - Renaissance Nerd Extraordinaire - nicoya@apia.dhs.org
-Winnipeg, Manitoba, Canada           --           http://nicoya.feline.pp.se/
+Try defining CACHE_ALIGN to CAL_32LONG, and DESC_ALIGN to u32 dummy[4]
+(as in the commented out example).
 
+If this also solve your problem, then we'll need Jeff to add a similar
+tweak to tulip, possibly as a config option.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
