@@ -1,22 +1,29 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao05.cox.net (fed1rmmtao05.cox.net [68.230.241.34])
-	by ozlabs.org (Postfix) with ESMTP id F1D112BDB3
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao01.cox.net (fed1rmmtao01.cox.net [68.230.241.38])
+	by ozlabs.org (Postfix) with ESMTP id 5E0D62BDB4
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  9 Oct 2004 05:48:09 +1000 (EST)
-Date: Fri, 8 Oct 2004 12:48:07 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Dan Malek <dan@embeddededge.com>
-Message-ID: <20041008194807.GG14773@smtp.west.cox.net>
-References: <Pine.LNX.4.60.0410080704170.6219@dell.enoriver.com>
-	<20041008164047.GC14773@smtp.west.cox.net>
-	<944792EE-194E-11D9-9299-003065F9B7DC@embeddededge.com>
-	<20041008180209.GD14773@smtp.west.cox.net>
-	<7079964C-1959-11D9-9299-003065F9B7DC@embeddededge.com>
+	Sat,  9 Oct 2004 06:42:59 +1000 (EST)
+Date: Fri, 8 Oct 2004 13:42:50 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Message-ID: <20041008134250.A15724@home.com>
+References: <E1CFESm-0002PH-00@real.realitydiluted.com>
+	<4165E52E.60908@waitefamily.us>
+	<20041008111345.GA23212@linux-mips.org>
+	<1097234203.318.89.camel@hades.cambridge.redhat.com>
+	<20041008122633.C17999@flint.arm.linux.org.uk>
+	<4166D5E7.8080209@mvista.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <7079964C-1959-11D9-9299-003065F9B7DC@embeddededge.com>
-Cc: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-Subject: Re: cleaning up the Kconfig menu structure -- the bigger picture
+In-Reply-To: <4166D5E7.8080209@mvista.com>;
+	from mgreer@mvista.com on Fri, Oct 08, 2004 at 11:01:11AM -0700
+Cc: Brian Waite <brian@waitefamily.us>, lachwani@pmc-sierra.com,
+	Ralf Baechle <ralf@linux-mips.org>, mdharm@momenco.com,
+	linuxppc-embedded@ozlabs.org, sjhill@realitydiluted.com,
+	David Woodhouse <dwmw2@infradead.org>, rabeeh@galileo.co.il,
+	Russell King <rmk@arm.linux.org.uk>
+Subject: Re: OCP vs. platform_device (was Marvell 64360/64340 GigE driver
+	for MIPS and PPC....)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,45 +34,59 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 08, 2004 at 02:39:51PM -0400, Dan Malek wrote:
+On Fri, Oct 08, 2004 at 11:01:11AM -0700, Mark A. Greer wrote:
+> Moving to a wider PPC audience...
 > 
-> On Oct 8, 2004, at 2:02 PM, Tom Rini wrote:
+> Mark
+> --
 > 
-> >But that's what I just described.  Letting the special config options
-> >(I don't know if I'd call 85xx_PCI2 "I/O", but it is special) live in
-> >platforms/8xx/Kconfig (or ppc/Kconfig.cpm1, or whatever).
+> Russell King wrote:
 > 
-> You are conveniently ignoring the 4xx serial port configuration
-> options that live in the platforms/4xx/Kconfig right now.  Taking
-> debating lessons from dubyah, I guess :-)
+> >On Fri, Oct 08, 2004 at 12:16:43PM +0100, David Woodhouse wrote:
+> >  
+> >
+> >>On Fri, 2004-10-08 at 13:13 +0200, Ralf Baechle wrote:
+> >>    
+> >>
+> >>>I was already considering to implement something like OCP for MIPS also.
+> >>>Since it already exists on PPC I instead would suggest to move
+> >>>arch/ppc/syslib/ocp.c into generic code, something like drivers/ocp/
+> >>>maybe?
+> >>>      
+> >>>
+> >>Fine... but if you're doing that instead of extending platform_device to
+> >>meet your needs, make sure you remove platform_device while you're at it
+> >>and convert its users to OCP.
+> >>    
+> >>
+> >
+> >There are a lot of users of platform devices, and this now includes
+> >virtually everything in the input layer.  This would be a very large
+> >amount of work to rip out platform devices.
 
-No, just that I know Matt wants to see the uart0/uart1 part die and I
-bet SERIAL_SICC would be rewritten and moved it was maintained. :)
+<snip a bunch of valid points>
 
-> If you need change for the sake of change or just because you
-> want to disagree with me, then there isn't anything I can do to
-> convince you otherwise.  There is precedent from previous
-> releases, in the current release with other processors, and from
-> extensive experience that you should make you consider my
-> suggestions.  I can understand moving the sources to better
-> assist the development of code that interacts with these drivers,
-> but scattering the unique and interdependent configuration
-> options around isn't helpful.
 
-I don't get it.  We do agree that the very specific stuff does indeed
-belong somewhere that's obvious to the user, right?  We do agree that
-for cpm2, cpm2-specific and not driver related stuff belongs in
-platforms/85xx/Kconfig, right?  Are we disagreeing that the non-driver
-portions of 8xx_io (and 82xx_io) should just live in syslib/ with
-similar functionality bits of other machine types?  And that drivers
-should live in drivers/ and asked with other drivers?
+> >So I think ripping out platform devices and throwing in something
+> >which is very different is a backwards step.
 
-> The non-ppc folks updating the
-> generic Kconfig files are going to be totally confused by that.
+As I've mentioned a couple time now on #mklinux, we should be
+moving to platform_device on PPC.  When I moved OCP forward from
+2.4 it was because a bunch of work was done to fix it up there
+by BenH and the 4xx stuff had been using it for a long time before
+platform_device was around. There's a bunch of "backend" type info
+that is PPC subarch specific that is encoded in the .additions field
+of the OCP defs that can be moved to the platform_data field.  That's
+really where most of the important stuff for OCP is at.  We really
+just need somebody with time to convert all the subarches to add 
+platform_devices and drivers to gather info from them. I may or
+may not have time to accomplish this myself in the near future.
+ 
+The point here is that I'm 100% behind converting from ocp_device
+to platform_device as long as whoever does it preserves the
+rest of the functionality (which should mostly can accomplished
+by moving the additions info to platform_data. Maybe it's only
+4xx that needs this so other PPC subarches can convert possibly
+with a little less work.
 
-They haven't been confused by all of the other architectures stuff.  In
-fact, they've helped clean things up too.
-
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+-Matt
