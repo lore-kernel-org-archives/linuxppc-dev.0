@@ -1,109 +1,72 @@
-From: kingseft@samsung.co.kr
-Date: Thu, 1 Nov 2001 08:15:02 +0900
-Message-Id: <H00002af054a63a1@MHS>
-Subject: Question about Timer interrupt
+Message-ID: <3BE086F8.3A6158DA@midrivers.com>
+Date: Wed, 31 Oct 2001 16:19:20 -0700
+From: Mark Pilon <mpilon@midrivers.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: building gdb ... 
+References: <20011031213937.C0BC611269@denx.denx.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+I received a patch to fix the problem of gdb core dumping while
+debugging a kernel ... and have hit a snag:
 
-I have one problem about timer interrupt in MPC860.
-I got simple timer interrupt routine. I think it prints out the messages when mpc8xx accept timer2 interrupt.
-But It didn't work. Is there any error or missing??
+after I built gdb 5.0, right from the gnu distribution,
+I ran it -- got the gdb header and prompt and then nothing.
 
-Any comments will help me.
+-- it's as if it's not checking stdin or stdin has been redirected
+elsewhere ...
 
-Thanks,
+I debug'd gdb and got to:
 
-Jason Lee
-kingseft@samsung.co.kr
+-- (gdb)
+Continuing.
 
+Program received signal SIGINT, Interrupt.
+0x40129f50 in __poll (fds=0x81c8e30, nfds=1, timeout=-1)
+    at ../sysdeps/unix/sysv/linux/poll.c:45
+45      in ../sysdeps/unix/sysv/linux/poll.c
+(gdb) where
+#0  0x40129f50 in __poll (fds=0x81c8e30, nfds=1, timeout=-1)
+    at ../sysdeps/unix/sysv/linux/poll.c:45
+#1  0x80c9502 in gdb_wait_for_event () at event-loop.c:773
+#2  0x80c8fd2 in gdb_do_one_event (data=0x0) at event-loop.c:408
+#3  0x80b2183 in catch_errors (func=0x80c8fbc <gdb_do_one_event>, args=0x0,
+    errstring=0x816e480 "", mask=6) at top.c:615
+#4  0x80c9003 in start_event_loop () at event-loop.c:438
+#5  0x8091705 in cli_command_loop () at event-top.c:196
+#6  0x806a675 in captured_command_loop (data=0x0) at main.c:104
+#7  0x80b2183 in catch_errors (func=0x806a660 <captured_command_loop>,
+    args=0x0, errstring=0x8145f11 "", mask=6) at top.c:615
+#8  0x806b053 in captured_main (data=0xbffff9b0) at main.c:749
+#9  0x80b2183 in catch_errors (func=0x806a6a4 <captured_main>,
+    args=0xbffff9b0, errstring=0x8145f11 "", mask=6) at top.c:615
+#10 0x806b07f in main (argc=1, argv=0xbffffa04) at main.c:761
+(gdb) p *fds
+$3 = {fd = 0, events = 1, revents = 0}
+(gdb) quit
 
-[mytimer.c]
--------------------------------------------------------------------
-#include <linux/module.h>
-#include <linux/kernel.h>
-#include <linux/sched.h>
-#include <linux/signal.h>
-#include <linux/errno.h>
-#include <linux/mm.h>
-#include <linux/poll.h>
-#include <linux/miscdevice.h>
-#include <linux/random.h>
-#include <linux/init.h>
-#include <linux/interrupt.h>
-#include <asm/uaccess.h>
-#include <asm/system.h>
-#include <asm/irq.h>
-#include <asm/mpc8xx.h>
-#include <asm/io.h>
-#include <asm/delay.h>
-#include "commproc.h"
+-- the call to poll appears to be looking for input on fd 0 ...
+but stdin isn't consumed by this gdb.  if I suspend, all the
+keystrokes I typed @ the gdb prompt then appear as if passed to
+the shell.
 
-/*
- * Timer commands
- */
-#define TIMER_TGCR_EN1  0x0001
-#define TIMER_TGCR_STP1 0x0002
-#define TIMER_TGCR_EN2  0x0010
-#define TIMER_TGCR_STP2 0x0020
+did I miss something in the configure line? my configure line:
+   ./configure --target=powerpc-linux \
+      --host=i586-pc-linux-gnu \
+      --prefix=/home/mpilon/ppc_tools/ppc_home
 
-static void my_isr(void *dev_id)
-{
-	volatile immap_t	*immap;
-	volatile cpmtimer8xx_t 	*timers;
+has anyone seen this?
 
-	immap = (immap_t *)IMAP_ADDR;
-	timers = (cpmtimer8xx_t *)&(immap->im_cpmtimer);
+Mark
+Mark Pilon
 
-	timers->cpmt_ter2 = 0xffff;
-	timers->cpmt_tcn2 = 0;
+Minolta-QMS
+P.O. Box 37
+Fallon, MT.  59326-0037
 
-	printk("catch...\n");
-
-}
-
-int __init mytimer_init(void)
-{
-	volatile immap_t	*immap;
-	volatile cpmtimer8xx_t 	*timers;
-
-	immap = (immap_t *)IMAP_ADDR;
-	timers = (cpmtimer8xx_t *)&(immap->im_cpmtimer);
-
-	timers->cpmt_tgcr = 0x0000;
-	timers->cpmt_tmr2 = 0x0018;
-	timers->cpmt_tcn2 = 0;
-	timers->cpmt_trr2 = 62;
-	timers->cpmt_ter2 = 0xffff;
-
-	((immap_t *)IMAP_ADDR)->im_cpic.cpic_cimr |= 0x00040000;	// enable timer 2 interrupts in the CPIC
-	timers->cpmt_tgcr |= TIMER_TGCR_EN2;
-
-
-	cpm_install_handler(CPMVEC_TIMER2, my_isr,NULL);
-	return 0;
-}
-
-#ifdef MODULE
-int init_module(void)
-{
-	printk("Installing Timer module by kingseft\n");
-	return mytimer_init();
-}
-
-void cleanup_module(void)
-{
-
-	cpm_free_handler(CPMVEC_TIMER2);
-
-	printk("Timer Module cleanup\n");
-}
-#endif
-
+1-406-853-0433
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
