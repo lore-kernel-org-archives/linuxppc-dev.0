@@ -1,129 +1,85 @@
-Reply-To: <acurtis@onz.com>
-From: "Allen Curtis" <acurtis@onz.com>
-To: <brian.auld@adic.com>, <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Kernel Preemption patch
-Date: Sun, 23 Feb 2003 14:33:55 -0800
-Message-ID: <NCBBIINEHIPFGJPLBEIFGEILECAA.acurtis@onz.com>
+Date: Mon, 24 Feb 2003 17:00:03 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Oops when inserting PCMCIA flash card (IDE)
+To: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_0045_01C2DB48.981EF890"
-In-reply-to: <995FF289C9D69747A09E42992644595405B23680@penguin.adic.com>
-Sender: owner-linuxppc-embedded@lists.linuxppc.org
-List-Id: <linuxppc-embedded@lists.linuxppc.org>
+Content-Type: TEXT/plain; charset=us-ascii
+Message-Id: <E18nL1U-0007Ag-00@piglet.grunz.lu>
+Sender: owner-linuxppc-dev@lists.linuxppc.org
+List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
+Hi all,
 
-------=_NextPart_000_0045_01C2DB48.981EF890
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+For a number of kernel versions (at least 4 months) I get a kernel oops
+when inserting a CF card in my TiBook's PCMCIA slot.
 
-> Has anyone successfully applied and run the linux kernel
-> preemption patch on
-> a 2.4.20 kernel. I have the following:
->
-> - Latest Denx kernel (2_4_devel) running on 440GP ebony
-> - 'preempt-kernel-rml-2.4.20-1.patch' applied to my kernel source
->   (I manually corrected a couple of fails and double checked a few
->    'successfully applied with fuzz' instances when applying the patch).
-> - Kernel compiled with 'Kernel preemption =y' in make oldconfig
+I started debugging the problem today, and have thus far come to this:
 
-Yes, but didn't you get any compile errors? There are some missing brackets,
-etc. to fix. Check the attached message from this list.
+Oops: kernel access of bad area, sig: 11
+NIP: C00D9948 XER: 00000000 LR: C00D834C SP: D70D7530 REGS: d70d7480 TRAP: 0300    Not tainted
+Using defaults from ksymoops -t elf32-powerpc -a powerpc:common
+MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = d70d6000[355] 'cardmgr' Last syscall: 54
+last math d5608000 last altivec 00000000
+GPR00: 00000F94 D70D7530 D70D6000 00000107 000088B8 00000001 D70D7520 C0270000
+GPR08: 00000000 C00D9948 0000001F D70D7470 82002422 10021F3C 00000000 00000000
+GPR16: 00000000 00000000 00000000 00000000 00009032 C59440E0 FFFFFFFF 0000011E
+GPR24: C0230000 00000000 00000000 C0230000 C0230000 00418570 C02A2400 000088B7
+Call backtrace:
+C00D83E0 C00D85A4 C00D933C C00DF820 C00E0420 C00F0304 C00F0760
+C00F0A0C C0114FC8 C01165CC C00F01B0 C0111EE4 C0112C74 C004F024
+C00064FC 20202020 10003428 100048F8 0FEC3E24 00000000
 
-------=_NextPart_000_0045_01C2DB48.981EF890
-Content-Type: message/rfc822
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment
+which ksymoops decodes:
 
-From: "Eugene Surovegin" <ebs@innocent.com>
-Sender: <owner-linuxppc-dev@lists.linuxppc.org>
-To: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-References: <3DF84AD5.9090500@intracom.gr><5.1.0.14.2.20021212102609.02d48730@pop.prodigy.net>
-Subject: Re: Is the preemptive kernel patch unsafe for 8xx/PPC?
-Date: Thu, 12 Dec 2002 22:09:48 -0800
-Message-ID: <5.1.0.14.2.20021212214102.02bf1338@mail.attbi.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: QUALCOMM Windows Eudora Version 5.1
-X-Spam-Status: No, hits=-8.5 required=5.0
-X-MimeOLE: Produced By Microsoft MimeOLE V5.00.3018.1300
-X-Mailing-List: <linuxppc-dev@lists.linuxppc.org>
-X-Loop: linuxppc-dev@lists.linuxppc.org
-Importance: Normal
-In-reply-to: <001901c2a21d$f3f4e760$0200a8c0@jockeXP>
-X-Sender: eugenesurovegin@mail.attbi.com
-X-Message-Flag: Follow up
-X-ICQ-UIN: 1193073
+Trace; c00d83e0 <autoirq_report+e44/f10>
+Trace; c00d85a4 <probe_hwif+f8/3d4>
+Trace; c00d933c <export_probe_for_drive+180/700>
+Trace; c00df820 <ide_probe_module+30/4c>
+Trace; c00e0420 <ide_register_hw+160/1b0>
+Trace; c00f0304 <proc_ide_destroy+3b4/13bc>
+Trace; c00f0760 <proc_ide_destroy+810/13bc>
+Trace; c00f0a0c <proc_ide_destroy+abc/13bc>
+Trace; c0114fc8 <pcmcia_register_client+270/298>
+Trace; c01165cc <CardServices+170/891c>
+Trace; c00f01b0 <proc_ide_destroy+260/13bc>
+Trace; c0111ee4 <unregister_pccard_driver+62c/16bc>
+Trace; c0112c74 <unregister_pccard_driver+13bc/16bc>
+Trace; c004f024 <kill_fasync+49c/4c0>
+Trace; c00064fc <set_context+27c4/29f8>
 
+The NIP in the oops points to ide_mm_inb(); it's trying to read from the
+IDE ports. However, the port the new IDE interface got assinged seems to
+be 0x100 (see r3: 0x107, which is port_base + IDE_STATUS_OFFSET). This
+is of course outside of the range the PCMCIA controller has:
 
-Joakim,
+pooh:/etc/ppp# cat /proc/ioports
+00000000-007fffff : /pci@f2000000
+  00001000-00008fff : PCI CardBus #11
+  00009000-000090ff : PCI CardBus #11
+00802000-01001fff : /pci@f0000000
+  00802400-008024ff : ATI Technologies Inc Rage Mobility M3 AGP 2x
+ff7fe000-ffffdfff : /pci@f4000000
 
-At 12:35 PM 12/12/2002, you wrote:
->Was that the 2.4.19-2 patch? What were the bugs and have you fixed them?
+So the problem seems to be the PCMCIA code gets the wrong ports for the
+PCMCIA card?
 
-I had the following issues with 2.4.19-2 (2.4.20-1 is identical in this
-regard):
+Anybody with any help as to where I can look for the problem?
 
-1) arch/ppc/kernel.entry.S
+This used to work OK, but as I said, broke a few onths ago.
 
-diff -urN linux-2.4.20/arch/ppc/kernel/entry.S linux/arch/ppc/kernel/entry.S
---- linux-2.4.20/arch/ppc/kernel/entry.S        2002-11-28
-18:53:11.000000000 -0500
-+++ linux/arch/ppc/kernel/entry.S       2002-12-11 02:34:47.000000000 -0500
-@@ -278,6 +278,41 @@
-          */
-         cmpi    0,r3,0
-         beq     restore
-+#ifdef CONFIG_PREEMPT
-+       lwz     r3,PREEMPT_COUNT(r2)
-+       cmpi    0,r3,1
-+       bge     ret_from_except
-+       lwz     r5,_MSR(r1)
-+       andi.   r5,r5,MSR_PR
-+       bne     do_signal_ret
+Cheers, and thanks
 
-     <rest of the diff is skipped>
+Michel
 
-I had to change the last command to "bne ret_from_except".
-I checked MontaVista tree, and they have "ret_from_except" there also.
-
-Without this change trivial code:
-
-   while (true) ;
-
-locked the box completely.
-
-2) include/asm-ppc/pgalloc.h  There are curly brackets missing in
-get_pgd_fast()
-
-3) to support 440GP you have to modify
-arc/ppc/kernel/irc.c:preempt_intercept:
-
-#if !defined(CONFIG_4xx) || defined(CONFIG_440)
-         case 0x900:
-#else
-         case 0x1000:
-#endif
-
-With these changes (an maybe some others I forgot to mention here :),
-I have pretty stable preemptable kernel (2.4.19, PPC440GP & 405GP, also
-with rtsched patch by George Anzinger)
-
-Thanks,
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
-  Eugene Surovegin <mailto:ebs@innocent.com>
-
-
-
-
-------=_NextPart_000_0045_01C2DB48.981EF890--
-
-** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
+** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
