@@ -1,36 +1,44 @@
-Message-Id: <200003090638.HAA00445@piglet.grunz.lu>
-Date: Thu, 9 Mar 2000 07:38:12 +0100 (CET)
+Message-Id: <200003090658.HAA00456@piglet.grunz.lu>
+Date: Thu, 9 Mar 2000 07:58:03 +0100 (CET)
 From: Michel Lanners <mlan@cpu.lu>
 Reply-To: mlan@cpu.lu
-Subject: 2.3.48 hang on starting init?
-To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Grabbing an Interrupt for a Brain-dead PCI Device
+To: geert@linux-m68k.org
+cc: grant@borg.umn.edu, mmporter@home.com, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.LNX.4.05.10003082011320.8208-100000@callisto.of.borg>
 MIME-Version: 1.0
 Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi list,
+On   8 Mar, this message from Geert Uytterhoeven echoed through cyberspace:
+>> Also, regarding memory address space resources, is there a routine I can
+>> call that says "Assign this card some resource space because it hasn't
+>> been assigned one yet"?
+>
+> Yes there is, somewhere in drivers/pci/. I don't know yet whether it works.
 
-Yet another quirk I've found with 2.3:
+I doubt it will work on a PowerMac; see what the resource 'checking'
+code finds as parent resources (r is a mem resource, pr is its parent
+resource):
 
-Sometimes, when booting, the kernel would hang just after freeing init
-kernel memory, before starting init.
+Mar  9 07:24:29 piglet kernel:    Resources: r.start=f2000400, r.end=f200043f,
+pr.start=00000000, pr.end=ffffffff.
 
-I've booted 4-5 times now without a problem, but it seems to happen
-every time when the root partition is not marked as clean (i.e. after a
-crash).
+As far as I can tell, parent resource would be the memory region held
+by the parent bridge, out of which this region was allocated. A bit
+huge, this region, isn't it?
 
-It seems to be related either to init not starting, or to the kernel
-not being able to deal with the non-clean root partition. The problem
-appears way before fsck gets a chance at the partition.
+Then again, Apple's host bridges might not conform entirely to the PCI
+spec in the way they advertise their resources available for
+assignment...
 
-Anybody seen something similar? Any idea what I should look at?
+Those with the PCI spec at hand out there, is there such a thing as
+resource registers in bridges (be it P2P or host) that inform about
+what is available to devices behind this particular bridge?
 
-Hmmm, my init is 2.74 from my old R4 install; maybe I should give R5 or
-2000 a try?
-
-Thanks
+Maybe there's another job for the fixup code...
 
 Michel
 
