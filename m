@@ -1,48 +1,44 @@
-Message-ID: <383AF067.2B8EB961@iname.com>
-Date: Tue, 23 Nov 1999 19:52:07 +0000
-From: Jim Chapman <jim.chapman@iname.com>
+Date: Tue, 23 Nov 1999 21:16:38 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Cort Dougan <cort@fsmlabs.com>
+cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org,
+        paulus@linuxcare.com
+Subject: Re: bootloader & head.S weirdness (patch)
+In-Reply-To: <19991123121629.A16956@hq.fsmlabs.com>
+Message-ID: <Pine.LNX.4.05.9911232115090.12629-100000@callisto.of.borg>
 MIME-Version: 1.0
-To: LiuTao <tliu@ict.ac.cn>
-CC: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>,
-        "linuxppc-embedded@lists.linuxppc.org"
- <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: need suggestions
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Re: using a vxworks bootrom to load zImage
+On Tue, 23 Nov 1999, Cort Dougan wrote:
+> Do you keep the list around after the initialization?  We do something
+> similar with the prep residual data but after we grab what we want we free
+> the RAM.  
+> 
+> } The idea is to pass the bootinfo not as a fixed (inherently back/forewards
+> } incompatible) struct, but as a concatenation of records. Each record contains
+> } a tag ID, a size, and data:
+> } 
+> } struct bi_record {
+> }     unsigned short tag;                 /* tag ID */
+> }     unsigned short size;                /* size of record (in bytes) */
+> }     unsigned long data[0];              /* data */
+> } };
 
-I am using a standard vxworks bootrom to load a zImage, but I had to
-make a few modifications to the zImage startup code to make it work. For
-us, it is useful to share the same target hardware between vxworks and
-linux developers, without having to reblow the flash bootrom each time
-we switch. And by building BOOTP into the vxworks bootrom, we simply
-change the BOOTP server entry to have the target boot vxWorks or zImage
-without changing the bootrom. However, once we're rid of vxworks
-altogether, then a linux-centric bootrom would be a much better
-solution.
+No we don't. The structure isn't that large, and the kernel is padded to a multiple
+of the page size anyway (the structure is after the kernel in memory).
 
-It turns out that the vxworks bootrom ELF support doesn't handle named
-ELF sections (it's yet another undocumented feature of Wind River code
--- it silently ignores sections that aren't ".text" or ".data"...), and
-since the compressed vmlinux image is objcopy'd into a special "image"
-section by arch/ppc/mbxboot/Makefile, I had to find a way to put the
-image section inside the text segment so that the image data would be
-copied by the vxworks bootrom. There may be a clever way to do that
-using ld scripts, but I ended up converting the image data to assembly,
-and used a couple of public symbols at the start/end of the data so that
-(a modified) decompress_kernel() could find the image. The
-binary-to-assembly convertor is a simple perl script which does almost
-the same thing as vxWorks' binToAsm tool.
+Gr{oetje,eeting}s,
+P.S. How much Belgian Beer do I have to send you to convince you to put your
+     comments _below_ the text you quote, like all other people do? ;-)
+--
+Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
 
-The initrd stuff would need similar treatment, but since I don't use
-initrd, I haven't implemented it.
-
-If you want more details (and the binToAsm perl script) let me know.
-
--Jim
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
