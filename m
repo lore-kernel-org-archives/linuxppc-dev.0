@@ -1,66 +1,48 @@
-Date: Thu, 13 Jul 2000 07:12:16 -0700
-From: Matt Porter <mmporter@home.com>
-To: Gabriel Paubert <paubert@iram.es>
-Cc: Adrian Cox <apc@agelectronics.co.uk>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Going from 2.2.12 to 2.2.17pre10
-Message-ID: <20000713071216.C264@cx258813-a.chnd1.az.home.com>
-References: <20000712071604.C28921@cx258813-a.chnd1.az.home.com> <Pine.HPX.4.10.10007131339330.9548-100000@gra-ux1.iram.es>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.HPX.4.10.10007131339330.9548-100000@gra-ux1.iram.es>; from paubert@iram.es on Thu, Jul 13, 2000 at 01:43:49PM +0200
+Message-Id: <200007131433.QAA23929@denx.local.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: BDM for Linux Kernel Debugging - MMU Support available
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+Date: Thu, 13 Jul 2000 16:33:09 +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Jul 13, 2000 at 01:43:49PM +0200, Gabriel Paubert wrote:
->
->
-> On Wed, 12 Jul 2000, Matt Porter wrote:
->
-> > > Residual data is useful for things like finding the memory size, and for
-> > > chips designed inside Apple. For almost everything else Linux already
-> > > contains a device tree, built by PCI probing when the kernel boots^*. I
-> > > don't see much need for a parallel, architecture specific, device tree.
-> >
-> > Whoa...you mentioned the key phrase here...it's really only useful or
-> > required for chips design inside Apple where you can't get documentation.
-> > "Residual data" and defined in the PReP spec is only found on PReP systems
-> > where all the hardware is fully documented so it's easy to size the
-> > memory by other means.  It's not that hard to read board registers or
-> > the memory controller setup.
->
-> Indeed, but there is one thing which is very hard to guess: interrupt
-> routing (due to the utterly stupid original Intel/IBM design which was
-> obsolete already before Neanderthal).
+Hi everybody,
 
-Not just hard to guess...impossible.  That's one piece of board specific
-information that you must provide somewhere.  The PReP port provides it
-in a table as you know...all firmware has tables for each board's local
-bus that is supported.  Although many of those tables are incorrect,
-the information is public and it can be fixed (I just found some errors
-in the Utah map since I have one of those at home).
+so far, a BDM debugger was of no much use for Linux kernel debugging:
+once the MMU is turned on (pretty early during kernel initialization)
+the BDM debugger is confronted with virtual  addresses,  and  so  far
+they just barfed.
 
-> Actually very similar boards may have quite different interrupt routing
-> and break an unsuspecting kernel. I also hate all these tables with magic
-> values in the kernel (beside the fact that they don't work with
-> multifunction boards).
->
-> > I can see why the Mac folks have to deal with the broken OF device tree.
-> >
-> > A architecture specific (PPC) device tree (or residual data, if you will)
-> > would be part of a "standard" OpenSource firmware project.  It's only
-> > use would be to provide information for board bringup, etc.  It has it's
-> > advantages and disadvantages...
->
-> For ISA devices and interrupt routing, I consider it a big plus... For PCI
-> devices just ignore it if present.
+This has changed:
 
-If only we could kill off ISA...I about passed out when I got a newly
-designed PPC750 CPCI board with an Acer Labs PCI-ISA bridge. :-/
+* Frank Przybylski has  added  software-tablewalk  code  to  his  GDB
+  extensions   for   the   MPCBDM   "Do-it-yourself"   debugger,  see
+  http://www.vas-gmbh.de/software/mpcbdm/
+
+* Abatron has implemented MMU support in recent firmware versions for
+  their BDI box (see  http://www.abatron.ch/BDI/bdimain.html);  AFAIK
+  they  are  the  first tool provider that offers commercial MMU sup-
+  port, and what's even more interesting: they provide it  especially
+  with  Linux  in  their  mind. [Right now available for MPC8xx CPUs,
+  with PPC6xx/7XX (including MPC82xx) in the works.]
+
+So we now have both a "free" and a "professional"  solution  for  BDM
+based  Linux  kernel  debugging, both interfacing with GDB (or DDD if
+you like) and allowing to debug kernel code (single stepping,  break-
+points,  etc.)  and/or  inspect kernel data... From what I've seen so
+far, both solutions provide the same features, and  work  with  about
+the same speed - and with the same results.
+
+Hope this helps,
+
+Wolfgang Denk
 
 --
-Matt Porter
-mmporter@home.com
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+ The software required `Windows 95 or better', so I installed Linux.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
