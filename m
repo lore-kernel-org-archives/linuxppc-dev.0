@@ -1,46 +1,35 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: Brian Waite <waite@skycomputers.com>
-To: jeffrey.d.kowing@nasa.gov
-Subject: Re: NFS root manipulation without being superuser?
-Date: Fri, 15 Nov 2002 13:48:11 -0500
-References: <15829.8892.699280.307557@igor.jsc.nasa.gov>
-In-Reply-To: <15829.8892.699280.307557@igor.jsc.nasa.gov>
+Date: Fri, 15 Nov 2002 13:48:22 -0600
+From: "William A. Gatliff" <bgat@billgatliff.com>
+To: sjk <jack.sun@bmrtech.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-MIME-Version: 1.0
-Message-Id: <200211151348.11492.waite@skycomputers.com>
+Subject: Re: gdbserver and gdb cross debug?
+Message-ID: <20021115134822.A5906@saturn.billgatliff.com>
+Reply-To: bgat@billgatliff.com
+References: <200210260458.g9Q4wpq15745@ftp1.mvista.com> <3DCF5E9B.406F7565@bmrtech.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3DCF5E9B.406F7565@bmrtech.com>; from jack.sun@bmrtech.com on Mon, Nov 11, 2002 at 03:39:07PM +0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-you could export the fs from the dev host as no_root_squash an insecure
-for example
-/home   *(rw,insecure,no_root_squash)
+Jikun:
 
-That will allow the embedded host to modify files on the NFS filesystem as
-root. Does tha accomplish what you need?
+On Mon, Nov 11, 2002 at 03:39:07PM +0800, sjk wrote:
+> I am porting Linux on EP405 board. So I use gdbserver and gdb to debug
+> applications,but only the first
+> breakpoint could be stopped.Then if i press 'step', the program will
+> execute to end straightforwardly . Any other breakpoints could not break
+> the execution.
 
-Thanks
-Brian
+Have you compiled the application in question with optimizations?  Gdb
+isn't so good at debugging optimized code.  Compile with -g -O0 if you
+intend to debug.
 
-On Friday 15 November 2002 11:37 am, Jeff Kowing wrote:
-> During embedded system developement, I use an NFS root mounted
-> filesystem that is exported from my development workstation.  I am
-> constantly having to "su root" on my development workstation when I
-> want to manipulate the root filesystem for the target machine. I was
-> wondering if anyone uses a safer technique that allows manipulation of
-> the target's root filesystem without being root on the development
-> workstation.
->
-> I know I could make the exported filesystem all be owned by my
-> unprivledged user and group name, but I would like the target machine
-> to see those files as owned by root as would normally be the case.
->
-> Anyways, I was just curious if I am missing out on some cool technique
-> that other's use that I am not brilliant enough to come up with on my
-> own.
->
-> Thanks.
-
+b.g.
+--
+Bill Gatliff
+Do you do embedded GNU?  I do!
+See http://billgatliff.com for details.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
