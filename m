@@ -1,63 +1,46 @@
-Message-ID: <3CB5BC71.AABD12C7@esteem.com>
-Date: Thu, 11 Apr 2002 09:40:17 -0700
-From: Conn Clark <clark@esteem.com>
+Message-ID: <3CB5DE9A.9070802@bluewin.ch>
+Date: Thu, 11 Apr 2002 21:06:02 +0200
+From: Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch>
 MIME-Version: 1.0
-To: Ken Applebaum <applebaumk@embeddedplanet.com>,
-	May Ling List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: kernel size
-References: <D73A25AA6E54D511AD74009027B1110F237353@ORION>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Steven Scholz <steven.scholz@imc-berlin.de>,
+	Christian Pellegrin <chri@infis.univ.trieste.it>,
+	LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: sporadic kernel panic during boot (MPC8xx, FEC)
+References: <Pine.LNX.4.44.0204110914100.18980-100000@sole.infis.univ.trieste.it> <3CB539DF.CF3BDD85@imc-berlin.de> <20020411153136.GE15663@opus.bloom.county>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Ken Applebaum wrote:
+On 04/11/2002 05:31 PM, Tom Rini wrote:
+
+>On Thu, Apr 11, 2002 at 09:23:11AM +0200, Steven Scholz wrote:
+>>
+>> Christian Pellegrin wrote:
+>>
+>> > not really sure this will help you, but I had similar problem (spurious
+>> > hangs during boot/insmod on 823 and 850 MPCs). The ppc mm for 8xx in 2.4
+>> > repository is broken, use that in 2.4-devel that works fine. AFA net
+>> > devices are concerned check that rx start is done in open and not in init
+>> > since linux doesn't like packets before a device is opened.
+>>
+>> Thanks for your reply.
+>>
+>> I got the kernel from the linuxppc_2_4_devel tree using
+>>
+>> bk export ... -rv2.4.18
+>>
+>> So I guess I do have a 2.4-devel. Right?
 >
-> I know that this list is usually reserved for discussions of bringing up
-> kernels, but I have a question on kernel size.
+>No.  -rv2.4.18 got you 2.4.18 from kernel.org, no PPC changes at all.
 >
-> What is the smallest size of kernel (including tcp/ip) that people have been
-> able to build? Do the folks on this list see the large size as an issue to
-> further adoption of linux on the PowerQuicc processors?
->
-> Ken
->
+You mean it's identical to linux-2.4.18.tar.gz from kernel.org?
+[I'm just curious what I really get with the above command.]
 
-	It all depends on what size you are refering to. Is it the size
-of the compressed zImage, the compressed bzImage , the uncompressed
-image, or the runtime RAM usage?
+Thanks,
 
-	Our zImage is just about 400,000 bytes. Our uncompressed image
-is about 1 MB. The others sizes I haven't looked at. Our kernel could
-be smaller if we left out fpu emulation and other modules.
+Wolfgang.
 
-	I see this as an issue that is becoming less and less
-important as RAM and flash storage technology increase in size and
-drop in price.
-
-See what Wolfgang accomplished here.
-http://www.denx.de/embedded-ppc-en.html
-Its about mid page under the heading "PowerPC based Web Server" .
-
-Hope this is helpful
-
-	Conn
---
-
-*****************************************************************
-  If you live at home long enough, your parents will move out.
-*****************************************************************
-
-Conn Clark
-Engineering Stooge				clark@esteem.com
-Electronic Systems Technology Inc.		www.esteem.com
-
-Stock Ticker Symbol				ELST
-
-"clark@esteem.com" Copyright 2000 By Electronic Systems Technology
- This email address may be used to communicate to Conn Clark
- provided it is not being used for advertisement purposes, unless
- prior written consent is given. This email address may not be
- sold under any circumstances. All other rights reserved.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
