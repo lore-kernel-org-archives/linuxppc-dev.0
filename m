@@ -1,39 +1,50 @@
-Date: Wed, 10 Oct 2001 18:06:22 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Val Henson <val@nmt.edu>
-Cc: linuxppc-dev@lists.linuxppc.org,
-	Paul Mackerras <paulus@samba.org>
-Subject: Re: SBS Palomar II/IV/V port
-Message-ID: <20011010180622.B11067@cpe-24-221-152-185.az.sprintbbd.net>
-References: <0110092125.AA22665@ivan.Harhan.ORG> <20011010122415.A22918@boardwalk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20011010122415.A22918@boardwalk>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: bug in XFree86 4.1.0 with Rage 128 driver?
+Date: Wed, 10 Oct 2001 21:21:57 -0400
+MIME-Version: 1.0
+Cc: kevin.hendricks@sympatico.ca
+Message-Id: <20011011011945.DFYL19597.tomts17-srv.bellnexxia.net@there>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Oct 10, 2001 at 12:24:15PM -0600, Val Henson wrote:
->
-> On Tue, Oct 09, 2001 at 02:25:03PM -0700, Michael Sokolov wrote:
->
-> > Some other bi_rec fixes may be needed (initrd ones are broken I think).
->
-> Indeed!  This is on my list of stuff to do - straighten out once and
-> for all how BI_INITRD works and then rewrite the Gemini boot process
-> to use it.  It seemed like we had two interpretations:
->
-> 1. The BI_INITRD boot record contains the start address and the size
->    of the initrd.
->
-> 2. The BI_INITRD boot record contains the entire initrd itself (as a
->    really large boot record).
+Hi,
 
-I thought we had agreed on 1 (and nothing uses it yet anyhow).  Tho my
-memory could be hazy.
+I am trying to track down a bug that causes OpenOffice to segfault under
+XFree86 4.1.0 with rage 128 driver.  This same problem does NOT happen
+with XFree 4.0.2.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+The problem stems from incorrect or missing alpha information in the
+visual.  Olaf tried it with a straight fbdev driver and the problem
+disappears so it appears to be linked to changes in the Rage 128 driver
+from XF 4.0.2 to XF 4.1.0.
+
+I am trying to look at what changed and was wondering about the lack of
+support for depth 32 in the r128 driver.
+
+If I specify depth 32, I used to get 24 bits of color depth with 32 bpp in
+the Rage 128 driver.  Now if I try to specify a  depth of 32 in the
+XF86Config file, I get the following message:
+
+"Given depth (32) is not supported by the r128 driver".
+
+But if I specify 24 bits of color depth I seem to be getting cfb24 being
+used instead of cfb32.
+
+Does anyone know why this change was made?  The kernel itself does support
+depths of "32" in the kernel rage 128 driver.
+
+I agree this confuses the depth versus bpp issue but different code is
+being used (cfb24 versus cfb32) and the resulting visuals have changed.
+
+Any help would be greatly appreciated.
+
+Thanks,
+
+Kevin
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
