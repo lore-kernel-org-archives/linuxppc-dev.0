@@ -1,32 +1,32 @@
-From: "Calum Selkirk" <cselkirk@xs4all.nl>
-Date: Thu, 17 Jul 2003 12:11:49 +0200
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: firewire in 2.4.21-ben2
-Message-ID: <20030717101149.GA2393@xs4all.nl>
-Reply-To: Calum Selkirk <cselkirk@xs4all.nl>
-References: <Pine.LNX.4.56.0307141313050.1861@daronin.digimerc.com> <1058261452.628.36.camel@gaston>
-Mime-Version: 1.0
+Message-ID: <XFMail.20030717124840.pochini@shiny.it>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1058261452.628.36.camel@gaston>
+MIME-Version: 1.0
+In-Reply-To: <20030717073956.GH7926@plato.local.lan>
+Date: Thu, 17 Jul 2003 12:48:40 +0200 (CEST)
+From: Giuliano Pochini <pochini@shiny.it>
+To: Ethan Benson <erbenson@alaska.net>
+Subject: Re: G4 mdd help request
+Cc: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-* Benjamin Herrenschmidt [benh@kernel.crashing.org] [2003-07-15 11:30 +0200]:
-
-[snip]
-> >   After I reboot back in 2.4.20-ben10 everything works fine...
+On 17-Jul-2003 Ethan Benson wrote:
+>> Of course I did, but I was unsure because dev / ls shows a leaf "/disk".
+>> Yesterday night I managed to get from osx the of path, and it's about
+>> the same I wrote above. I mounted the boot partition in /xyz, then I
+>> wrote in a root shell:
+>>
+>> bless -folder9 /xyz -verbose -setOF
 >
-> That's a change in the firewire layer, you have to trigger a scsi
-> probe yourself now. Either using the rescan-scsi-bus.sh script, or the
-> scsiadd command for example
+> NEVER mount bootstrap partitions in any macos, nor let macos ever
+> touch it.  no good will ever result.
 
-just FYI, I have had the kernel oops on one occasion when rescaning the
-scsi bus this way (with a 2.4.21-ben2). Sorry, wasn't able to get a
-backtrace, though I will attempt to if it happens again.
+Who cares ?  For sir G4mdd it was (is) not a bootable partition. What
+damage can it do ?  It already doesn't boot.
 
-best regards
 
-cal
+Bye.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
