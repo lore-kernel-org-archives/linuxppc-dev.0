@@ -1,48 +1,64 @@
-Message-ID: <39AD9CE6.AA56390F@embeddededge.com>
-Date: Wed, 30 Aug 2000 19:46:46 -0400
-From: Dan Malek <dan@netx4.com>
-MIME-Version: 1.0
-To: Matt Porter <mporter@mvista.com>
-CC: linuxppc-embedded@lists.linuxppc.org
+Date: Wed, 30 Aug 2000 17:45:02 -0700
+From: Matt Porter <mporter@mvista.com>
+To: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Linux on Motorola Sandpoint/PPMC7400
-References: <20000828225504.B23679@hectic.net> <39AAF258.B43B901@mvista.com> <20000829201347.A30190@hectic.net> <39AC2AB9.D47ADE73@mvista.com> <20000828225504.B23679@hectic.net> <39AAF258.B43B901@mvista.com> <20000829201347.A30190@hectic.net> <39AC0BF9.38DB6A9A@mvista.com> <20000830220210.C5340@hectic.net> <20000830174502.A3868@cx258813-a.chnd1.az.home.com>
+Message-ID: <20000830174502.A3868@cx258813-a.chnd1.az.home.com>
+References: <20000828225504.B23679@hectic.net> <39AAF258.B43B901@mvista.com> <20000829201347.A30190@hectic.net> <39AC2AB9.D47ADE73@mvista.com> <20000828225504.B23679@hectic.net> <39AAF258.B43B901@mvista.com> <20000829201347.A30190@hectic.net> <39AC0BF9.38DB6A9A@mvista.com> <20000830220210.C5340@hectic.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20000830220210.C5340@hectic.net>; from alexsh@hectic.net on Wed, Aug 30, 2000 at 10:02:10PM +0300
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Matt Porter wrote:
+On Wed, Aug 30, 2000 at 10:02:10PM +0300, Alex Shnitman wrote:
+>
+> Hi again,
+>
+> I'm trying to load a kernel with an initrd image. I have two questions.
+>
+> First, I'm locating the kernel (via the s-records) at 400000. It then
+> relocates to 800000. I'm refering to this output:
+>
+> DINK32_MAX >>go 400000
+> loaded at:     00400000 00414E20
+> relocated to:  00800000 00814E20
+> zimage at:     0040B000 00489577
+> relocated to:  00815000 00893577
+> initrd at:     00489577 00533299
+> relocated to:  00893577 0093D299
+> avail ram:     00400000 00800000
+>
+> After that it boots fine.
+>
+> If I try to locate it at 800000 to begin with, it fails like this:
+>
+> DINK32_MAX >>go 800000
+> loaded at:     00800000 00814E20
+> zimage at:     0080B000 00889577
+> initrd at:     00889577 00933299
+> avail ram:     00400000 00800000
+>
+> Linux/PPC load: root=/dev/ram
+> Uncompressing Linux...bad gzipped data
+> exit
+>
+> Does that make sense to anyone? Not that it disturbs me, but I'm just
+> curious.
 
-> The bootloader relocation algorithm doesn't work when loaded at
-> 0x800000.  Anything else will work.
+The bootloader relocation algorithm doesn't work when loaded at
+0x800000.  Anything else will work.
 
-Well, not exactly :-).  The code is actually written with some
-assumptions because I couldn't make it do _everything_.  The download
-should be located above the address where it is linked to execute.
-For example, I download to 0x900000, the code relocates to 0x800000,
-then uncompresses the kernel into the base of memory.
+> Second, I'm trying to load an initrd image. I put the compressed
+> filesystem image in arch/ppc/boot/ramdisk.image.gz and then did "make
+> zImage.initrd", which created zvmlinux.initrd which I'm loading.
+> However during bootup it says this:
 
-This follows the MPC8xx boot model with a larger memory window.
-The MPC8xx had more constraints (smaller main memory 8 Mbyte start
-up translation), so the load/execution addresses were lower in
-memory.  Since the kernel is constantly growing and the 82xx had
-a 16 MByte window, I just decided to move everything further up
-in the address space.
+No clue here.
 
-Anything below the linked execution address (0x800000 in this case)
-is considered fair game for allocation by the code, so it could
-write over itself or other necessary information (like zImage or the
-ramdisk).
-
-
-> No clue here.
-
-I am not sure the ramdisk stuff was ever tested.  I was just happy to
-get the serial download of the kernel working and let NFS do the rest.
-I am itching to fire up my 8240/Sandpoint (among other things :-), so
-I may be able to help after the weekend.
-
-
-	-- Dan
+--
+Matt Porter
+MontaVista Software, Inc.
+mporter@mvista.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
