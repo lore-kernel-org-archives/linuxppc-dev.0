@@ -1,31 +1,32 @@
-Date: Thu, 17 Aug 2000 11:48:56 +0200 (CEST)
+Date: Thu, 17 Aug 2000 11:51:43 +0200 (CEST)
 From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Giuliano Pochini <pochini@shiny.it>
+To: Thorsten Sprenger <root@informatik.tu-muenchen.de>
 cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: keyboard
-In-Reply-To: <XFMail.000817093717.pochini@shiny.it>
-Message-ID: <Pine.LNX.4.10.10008171147270.8338-100000@opal.biophys.uni-duesseldorf.de>
+Subject: Re: xf4 and lombard
+In-Reply-To: <Pine.LNX.4.21.0008161915300.78-200000@anubis.local>
+Message-ID: <Pine.LNX.4.10.10008171149260.8338-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > You can solve your problem much easier with loadkeys and a tailored
-> > console keymap.
->
-> No, I can't. mac_keyb.c uses a byte to store the pressed key. 1 bit is used
-> for pressed/released flag, so key codes range is 1-127. That special keys
-> have a code > 127 so currently they're not mapped at all.
+> i have compiled xfree 4.0.1 with the latest xfree86-pmac tree from
+> linuxppc.org. as kernel i use the latest pmac-stable and pmac-devel from
+> linuxcare. when starting the x-server i get a dark screen, final beep and
+> - after 180 seconds - the system reboots (kernel panic?).
 
-So it's a more generic problem ...
+Boot Linux using yaboot and you should be fine.
 
-> I must change the kernel to remap that codes to something < 128.
->
-> Or perhaps I'll fix it by allowing int16_t keycodes just like on peecees.
+> the ati driver doesn't recognize the real amount of videoram, even if i
+> use the 'VideoRam'-option. i have attached the some parts of my
+> XF86Config.0.log file (the system i use at the moment is really bad - no
+> cut'n paste).
 
-The latter, if at all possible (because that allows for using the console
-keymap tools again if I'm not mistaken).
+See atimach64ppc.c and remove the gratituous videoram=2048 assignment
+right after the videoram was set from the fb_fix data. In case it's still
+in there, I've not rsynced in a while but forgot to tell Ani about that
+one.
 
 	Michael
 
