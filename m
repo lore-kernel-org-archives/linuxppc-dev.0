@@ -1,15 +1,31 @@
-Message-ID: <3AF74F69.95BFC195@mvista.com>
-Date: Mon, 07 May 2001 21:44:09 -0400
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: Gabriel Paubert <paubert@iram.es>
-Cc: Eli Chen <eli@routefree.com>, brian.kuschak@skystream.com,
+Message-ID: <B25E2E5A003CD311B61E00902778AF2A02044644@SERVER1>
+From: Brian Kuschak <brian.kuschak@skystream.com>
+To: "'Dan Malek'" <dan@mvista.com>, Gabriel Paubert <paubert@iram.es>
+Cc: Eli Chen <eli@routefree.com>,
 	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: dcache BUG()
-References: <Pine.HPX.4.10.10105080200190.22253-100000@gra-ux1.iram.es>
-Content-Type: text/plain; charset=us-ascii
+Subject: RE: dcache BUG()
+Date: Mon, 7 May 2001 18:53:10 -0700 
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+I've been running with Gabriel's suggested patch for about an hour now, and
+I still see the problem.  It hasn't generated an Oops in dcache.h yet, but I
+do still see the 'de_put: entry net already free!' messages.
+
+I'll let it run overnight to see if the oops occurs.
+
+Brian
+
+-----Original Message-----
+From: Dan Malek [mailto:dan@mvista.com]
+Sent: Monday, May 07, 2001 6:44 PM
+To: Gabriel Paubert
+Cc: Eli Chen; Brian Kuschak; linuxppc-embedded@lists.linuxppc.org
+Subject: Re: dcache BUG()
 
 
 Gabriel Paubert wrote:
