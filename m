@@ -1,43 +1,32 @@
-Date: Sat, 2 Jan 1999 19:47:53 -0600 (CST)
-From: Troy Benjegerdes <hozer@drgw.net>
-To: Jeff Rugen <jrugen@primenet.com>
-cc: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>,
-        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: fbcon + X Server + Cirrus/Powerstack
-In-Reply-To: <Pine.BSI.3.96.981228111730.13388A-100000@usr05.primenet.com>
-Message-ID: <Pine.LNX.4.04.9901021921540.9212-100000@narn.local.drgw.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Sun, 3 Jan 1999 17:33:49 +1100
+Message-Id: <199901030633.RAA09630@tango.anu.edu.au>
+From: Paul Mackerras <paulus@cs.anu.edu.au>
+To: brad@pht.com
+CC: drow@cs.cmu.edu, linuxppc-dev@lists.linuxppc.org
+In-reply-to: <Pine.LNX.3.96LJ1.1b7.990102121137.439B-100000@cricket> (message
+	from Brad Midgley on Sat, 2 Jan 1999 12:14:49 -0700 (MST))
+Subject: Re: scsi hangs [drow@cs.cmu.edu: Re: CD-writers] (fwd)
+Reply-to: Paul.Mackerras@cs.anu.edu.au
+References: <Pine.LNX.3.96LJ1.1b7.990102121137.439B-100000@cricket>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> 
-> It seems Troy Benjegerdes had a problem with getting the matrox (?)
-> framebuffer to work with something as well, but I don't remember if that was
-> as a module or if it was with the X server (my tweaked clgenfb doesn't work
-> as a module, and I'm thinking it may be related to the physical address
-> above, but I haven't experimented as a module recently).
+Brad Midgley <brad@pht.com> wrote:
 
-ioremap is broken, at least on PReP. It works during the kernel boot-up
-sequence, but not after (when you try to load a module)
+> what was the result of testing this patch? i see it isn't present at vger.
+> but does it make scsi activity safer? does it need more testing? should i
+> test it as-is?
 
-> 
-> Could the problem be that ioremap doesn't return the same address as passed
-> into it?  It seems I remember seeing a comment or some documentation that
-> indicated it was supposed to...
+[patch to drivers/scsi/sd.c snipped]
 
-Not on PReP.. It's sorta confusing because the kernel is mapped at
-*virtual* address 0xC0000000 and the PCI memory space is mapped at
-*physical* address 0xC0000000.
+It turns out that patch isn't necessary - all that was needed is to do
+spin_lock_irqsave(&io_request_lock, flags) before calling the scsi
+done function in the mesh driver (and spin_unlock_irqrestore after).
+That's done, in different forms, both in vger and Linus' 2.2.0-pre2
+and later, so it should be OK now.
 
---------------------------------------------------------------------------
-| Troy Benjegerdes    |       troy@microux.com     |    hozer@drgw.net   |
-|    Unix is user friendly... You just have to be friendly to it first.  |
-| This message composed with 100% free software.    http://www.gnu.org   |
---------------------------------------------------------------------------
-
-
+Paul.
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
