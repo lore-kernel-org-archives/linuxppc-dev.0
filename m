@@ -1,33 +1,24 @@
-Message-ID: <003701bfe3b2$65435aa0$1952df8d@SOYANG>
-From: "Hyun-Joon Cha" <tachyon@postech.ac.kr>
+From: "Kwansuk Kim" <kskim@neowave.co.kr>
 To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: PCMCIA timing help.
-Date: Sun, 2 Jul 2000 08:16:32 +0900
+Subject: -Ttext  for Kernel
+Date: Mon, 3 Jul 2000 21:08:26 +0900
+Message-ID: <NEBBKFENMLEDKDHMEHPJGENHCAAA.kskim@neowave.co.kr>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="ks_c_5601-1987"
+In-Reply-To: <003701bfe3b2$65435aa0$1952df8d@SOYANG>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello.
+Successfully, I decompressed the kernel, and after decompress_kernel fuction, the instruction pointer is changed to 0x0000 000c, the start point of decompressed kernel.
 
-After sending 2 messages at this mailing list, I checked and read all messages related PCMCIA on list-archive.
+But, after that machine check exception is appeared, because IP is 0xc000 XXXX. (which I do not use.)
 
-Then I found my "Machine check ..." problem is timing related.
+I saw the makefile then I found that one of the link options for the kernel is '-Ttext 0xc000 0000'.
 
-So, I changed the variable clocks from 0 to 47 (under PCMCIA_BMT_LIMIT) in function m8xx_get_speed (line 655) of m8xx_pcmcia.c of pcmcia-cs-3.1.10.
+I know it means linker links the objects from address 0xc000 0000. I think it should be 0x0000 0000, because the kernel is decompressed from address 0x0000 0000 and the headers are used exception handler (e.g. 0x100 is used for reset)
 
-But I can't solve the problem.
-
-There are "Machine check ..." everytime. sigh...
-
-Even if BMT is disabled, no success.
-
-My board is RPX Lite 850 SR, 50MHz cpu clock and bus freq. (bi_busfreq tells 48 though) and PCMCIA cards are Xircom CE3-10BT and 3Com Megahertz 3CCFE574BT.
-
-Please help me anyone.
-
-Thanks in advance.
+Should I change the address to 0x0000 0000 or do something else?
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
