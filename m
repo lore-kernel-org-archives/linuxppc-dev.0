@@ -1,27 +1,30 @@
-Date: Tue, 14 Mar 2000 10:51:00 +0100 (CET)
+Date: Tue, 14 Mar 2000 10:55:34 +0100 (CET)
 From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: phandel@cise.ufl.edu
-cc: "James B. Parker" <pajama1@mindspring.com>,
-        LinuxPPC Developer <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Xfree86 4.0
-In-Reply-To: <Pine.LNX.4.21.0003131705480.27743-100000@adsl-78-160-189.gnv.bellsouth.net>
-Message-ID: <Pine.LNX.4.10.10003141039330.12222-100000@opal.biophys.uni-duesseldorf.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: Linux/m68k <linux-m68k@lists.linux-m68k.org>,
+        Linux/PPC for APUS <linux-apus@sunsite.auc.dk>,
+        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
+        linux-m68k@phil.uni-sb.de
+Subject: Re: dmasound split
+In-Reply-To: <Pine.LNX.4.05.10003140902060.19873-100000@callisto.of.borg>
+Message-ID: <Pine.LNX.4.10.10003141052260.12315-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > Actually, I do have a XF86Config file.  After the build/install I ran
-> > Xconfigurator (it finally recognized 6mb of vram) and then just skipped the
-> > test section.
+> > And here's a first patch:
 >
-> Xconfigurator & Xautoconfig will not create an XF86Config file that
-> XFree86 4.0 can use.  Check out one of Kostas' examples, or send me a note
-> and I'll send you mine.
+> No comments whether it works on PowerMac and Atari?
 
-Please post an URL for Kostas' example files :-) I'd also like to compare
-my hand-edited config with something known to work on LinuxPPC.
+No. I haven't done 2.3.x in a long time on m68k. I can try PowerMac
+though. Would 2.3.48-linuxcare be a good code base?
+
+> I'd like to let this go in 2.4.0, since a driver for the Q40 is soon to be
+> added.
+
+I figure Atari will have more serious problems with 2.4 :-(
 
 	Michael
 
