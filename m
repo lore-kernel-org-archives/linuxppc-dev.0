@@ -1,41 +1,40 @@
-In-Reply-To: <v04210101b4d0e527f293@[192.168.3.42]>
-Date: Thu, 17 Feb 2000 11:18:08 +0100
-To: GIANT Network Productions <gnp@jollygreen.com>,
-        linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: GMAC ethernet
-Message-Id: <20000217111808.000326@mailhost.mipsys.com>
+Message-Id: <v04003a01b4d174851e54@[216.81.27.12]>
+In-Reply-To: <B0CAE42C9EE0D311AAAD00500422FC6302CD71@iis000.microdata.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
+Date: Thu, 17 Feb 2000 04:21:39 -0600
+To: Patrick Lerda <Lerda@microprocess.com>, linuxppc-dev@lists.linuxppc.org,
+        "'debian-powerpc@lists.debian.org'" 	 <debian-powerpc@lists.debian.org>
+From: Tony Mantler <eek@escape.ca>
+Subject: Re: PowerPC in little endian mode
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Feb 16, 2000, GIANT Network Productions <gnp@jollygreen.com> wrote:
+At 2:52 AM -0600 2/17/2000, Patrick Lerda wrote:
+>	Most of the trouble I have on my PowerPC platform came from the fact
+>that
+>	Linux work in big-endian mode,
 
->What's the current status of the GMAC ethernet driver? I've been
->looking to do several things with an iBook that require interface
->aliases and multicast, but those features aren't currently supported.
->I've been pulling linux-pmac-benh from linuxcare.com.au, but Paul
->mentions that Ben's changes have been merged into linux-pmac-stable
->on his new status page and Ben states that he's working on
->'experimental' stuff only...
+[... "please run ppc-linux in little-endian mode" ...]
 
-We could probably allow multicast by enabling the controller's promisc.
-mode and let the kernel filter out packets. Not the most efficient thing
-but at least it would work until we have some details about the chip's
-hash table layout. I'll look into this, but my iBook's hard disk is dead,
-I'm still waiting for a replacement.
+>	And so be able to get all the software from linux i386 working world
+>without headache.
 
->I'm less concerned with video performance (which seems to be where
->Paul is focusing at the moment) than with networking features - Which
->tree should I be pulling to keep better tabs on this issue?
+Perhaps it's just my m68k side speaking (m68k = big endian only, for those
+who don't know), but I think it's safe to say that doing anything to make
+it easier for lazy mouth-breathing code-typists to write sloppy and
+incorrect code is a Bad Thing[tm].
 
-Stick to Paul's tree. atyfb doesn't work on the iBook rage mobility yet,
-but offb along with accelerated X server works for now. I'll do some work
-on atyfb real soon (probably this week-end) to fix other problems, I'll
-also try to fix it on the iBook. XServer acceleration already works (at
-least with Xpmac).
+Besides that, switching ppc-linux to little-endian mode would be (to put it
+mildly) a pain in the ass of galactic proportions.
 
+
+Cheers - Tony :)
+
+
+--
+Tony Mantler         Renaissance Nerd Extraordinaire         eek@escape.ca
+Winnipeg, Manitoba, Canada                       http://www.escape.ca/~eek
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
