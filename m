@@ -1,26 +1,36 @@
-Date: Thu, 28 Oct 1999 13:13:43 -0500 (CDT)
-From: Jason Haas <jhaas@www.linuxppc.org>
-To: Grant Erickson <grant@lcse.umn.edu>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: TiVo Kernel for 403GCX Update (was Re: Support for IBM CPUs?)
-In-Reply-To: <Pine.SGI.4.10.9910281200550.695157-100000@sapphire.lcse.umn.edu>
-Message-ID: <Pine.LNX.4.04.9910281311170.30195-100000@www.linuxppc.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Thu, 28 Oct 1999 21:22:21 -0400 (EDT)
+From: Claude Robitaille <crobitaille@videotron.ca>
+Subject: 2.3.18 on openprojects.net
+To: linuxppc-embedded@lists.linuxppc.org
+Message-id: <Pine.LNX.4.10.9910282101200.3728-100000@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, 28 Oct 1999, Grant Erickson wrote:
+Hi,
 
-> Great news! Linux fully boots on the IBM 403GCX evaluation board! It's
-> time to load up a root file system via NFS and see what happens...
+Yesterday (99-10-27) evening I downloaded 2.3.18 and
+tried to compile it. In order to succeed, I had to turn
+ON CONFIG_MODULE, otherwise I am getting error with
+EXPORT_SYMTAB_not_defined (I think it was in serial.c
+but I am not sure).
 
-Great! I'll have time next week to work on the IBM thin client I have, if
-you're interested. Fair warning: I may need a bit of hand-holding at first, but get my sea legs quickly. Should I compile a kernel with NFS for my PMac hardware?
+Also, I am trying to had MATH_EMULATION but this fails
+in math.c complaining about a structure not having a
+member name tss (in current->tss). I tryied to follow
+the definitinoa little bit ans found that current is
+a struct task_struct but there is no member that has
+the tss (a least not directly). I found many instances
+(using fgrep) in many asm-PROCESSOR files (for i386,
+MIPS, M68K, etc.) but nothing in asm-ppc. I guess
+the task management fucntions is/are in some sort
+of evolution and math_emu is not up to date. Is
+somebody is working on it?
 
-Cheers,
-Jason
+
+Claude
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
