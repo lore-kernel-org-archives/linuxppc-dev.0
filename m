@@ -1,56 +1,66 @@
-Date: Thu, 9 May 2002 09:56:14 -0400
+Date: Thu, 9 May 2002 10:37:02 -0400
 From: Bill Fink <billfink@mindspring.com>
-To: Michel D?nzer <michel@daenzer.net>
-Cc: linuxppc-dev@lists.linuxppc.org,
-	Bill Fink <billfink@mindspring.com>
-Subject: Re: Problems with AGP Apple UniNorth support in 2.4.19-pre7-ben0 kernel
-Message-Id: <20020509095614.13862493.billfink@mindspring.com>
-In-Reply-To: <1020934797.2414.6628.camel@tibook>
-References: <20020424025457.7b323ff0.billfink@mindspring.com>
-	<20020509003815.6873bbbd.billfink@mindspring.com>
-	<1020934797.2414.6628.camel@tibook>
+To: LinuxPPC Developers <linuxppc-dev@lists.linuxppc.org>
+Cc: Bill Fink <billfink@mindspring.com>
+Subject: 2.4.19-pre8-ben0 acenic driver and 867 MHz G4 sound problems
+Message-Id: <20020509103702.528f1a7c.billfink@mindspring.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 09 May 2002, Michel Dänzer wrote:
+Hi,
 
-> On Thu, 2002-05-09 at 06:38, Bill Fink wrote:
-> >
-> > I see that the changes I suggested have been incorporated into the
-> > 2.4.19-pre8-ben0 kernel.  I was able to successfully build and boot
-> > this kernel on my dual 500 MHz G4 (UP kernel), but the DRI was no
-> > longer functional (as reported by glxinfo).
-> >
-> > I had this working with the 2.4.18-ben0 kernel, with modified versions
-> > of drivers/char/drm/r128_{drv,state}.c that I got from a friend who I
-> > believe got them from the XFree86 CVS at the time.  That r128_state.c
-> > is now included in the 2.4.19-pre8-ben0 kernel but the new r128_drv.c
-> > was not included.  The diff is pretty innocuous:
-> >
-> > 42c42
-> > < #define DRIVER_DATE           "20010405"
-> > ---
-> > > #define DRIVER_DATE           "20010917"
-> > 45,46c45,46
-> > < #define DRIVER_MINOR          1
-> > < #define DRIVER_PATCHLEVEL     6
-> > ---
-> > > #define DRIVER_MINOR          2
-> > > #define DRIVER_PATCHLEVEL     0
-> >
-> > I figured what the heck, I didn't have anything to lose, so I went ahead
-> > and made the change, and now the DRI is working once more!
->
-> This is only valid if all of the r128 DRM is indeed 2.2 .
+First, thanks to BenH for his fix in the 2.4.19-pre8-ben0 kernel that
+once again allows booting of the 867 MHz G4.  Unfortunately, I now have
+a new problem as the acenic driver is now broken (using a NetGear GA620
+NIC).  The previously working version was from a 2.4.17-pre2-ben0 kernel.
+I can send a diff between the two sources if that would be of any help.
 
-I may be missing something, but I assume this is true since the matching
-r128_state.c has now been incorporated into the 2.4.19-pre8-ben0 kernel.
-In any event, it didn't work before and it does now.  On a related note,
-I can finally play tuxracer since I got the latest YDL 2.2 RPM.
+Also, is there any update on why sound doesn't work on the 867?  It would
+be nice to listen to CDs or watch DVDs on these machines.
 
 						-Bill
+
+P.S.  For the sound problem, here's some info starting with the dmesg output:
+
+      dmasound_pmac: found Keylargo rev 2 or later - H/W byte-swap disabled
+      PowerMac Tumbler  DMA sound driver rev 016 installed
+      Core driver edition 01.06 : PowerMac Built-in Sound driver edition 00.06
+
+      proc/pci:
+
+        Bus  1, device  23, function  0:
+          Class ff00: Apple Computer Inc. KeyLargo Mac I/O (rev 3).
+            Master Capable.  Latency=16.
+            Non-prefetchable 32 bit memory at 0x80000000 [0x8007ffff].
+        Bus  1, device  24, function  0:
+          USB Controller: Apple Computer Inc. KeyLargo USB (rev 0).
+            IRQ 27.
+            Master Capable.  Latency=16.  Min Gnt=3.Max Lat=86.
+            Non-prefetchable 32 bit memory at 0x80081000 [0x80081fff].
+        Bus  1, device  25, function  0:
+          USB Controller: Apple Computer Inc. KeyLargo USB (#2) (rev 0).
+            IRQ 28.
+            Master Capable.  Latency=16.  Min Gnt=3.Max Lat=86.
+            Non-prefetchable 32 bit memory at 0x80080000 [0x80080fff].
+
+      /dev/sndstat:
+
+      PowerMac Tumbler DMA sound driver rev 016 :
+      Core driver edition 01.06 : PowerMac Built-in Sound driver edition 00.06
+      HW rates: 48000 44100 s/sec
+      HW AFMTS: signed 16 bit BE
+                       === Formats & settings ===
+      Parameter                 soft                hard
+      Format   :    signed 16 bit BE    signed 16 bit BE
+      Samp Rate:         22050 s/sec         44100 s/sec
+      Channels :              stereo              stereo
+                       === Sound Queue status ===
+      Allocated: Buffers  Size
+          write:       4 32768
+      Current  : MaxFrg FragSiz MaxAct Frnt Rear Cnt RrSize A B S L  xruns
+          write:      4   32768      4    0   -1   0      0 0 0 0 0      0
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
