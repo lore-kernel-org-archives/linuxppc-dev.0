@@ -1,50 +1,36 @@
-Date: Sat, 16 Dec 2000 23:18:52 -0900
-From: Ethan Benson <erbenson@alaska.net>
+Date: Sun, 17 Dec 2000 17:37:21 -0800
 To: linuxppc-dev@lists.linuxppc.org
-Cc: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: problem compiling test12
-Message-ID: <20001216231852.E17742@plato.local.lan>
-References: <3A3C0420.ADEF0E3C@denise.shiny.it> <19341110154330.5294@192.168.1.10>
+Subject: TQ_ACTIVE & NFS_STALE undefined
+Message-ID: <20001217173721.A15124@valinux.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="HeFlAV5LIbMFYYuh"
-In-Reply-To: <19341110154330.5294@192.168.1.10>; from bh40@calva.net on Sat, Dec 16, 2000 at 11:11:46PM +0100
+Content-Type: text/plain; charset=us-ascii
+From: Steve DuChene <sad@valinux.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---HeFlAV5LIbMFYYuh
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+When compiling the latest linuxppc_2.3 kernel from the bitkeeper
+archive when it gets to the linking stage I get the following
+errors:
 
-On Sat, Dec 16, 2000 at 11:11:46PM +0100, Benjamin Herrenschmidt wrote:
->=20
-> >I can't compile 2.4.0-test12:
-> >
-> >arch/ppc/mm/mm.o: In function `map_page':
-> >arch/ppc/mm/mm.o(.text+0xd90): undefined reference to `set_pgdir'
->=20
-> Are you using the bk source trees ? The main linus tree is far outdated
-> on PPC specific parts, unfortunately, Linus has ignored almost all PPC
-> patches sent for the patch few monthes (despite sending them the way he
-> wants, in small parts, etc...)
->=20
-> I remember Linus once saying he didn't care about PPC...
+kernel/kernel.o: In function `do_timer':
+kernel/kernel.o(.text+0xd70c): undefined reference to `TQ_ACTIVE'
+kernel/kernel.o(.text+0xd70c): relocation truncated to fit: R_PPC_REL24
+TQ_ACTIVE
+kernel/kernel.o: In function `context_thread':
+kernel/kernel.o(.text+0x12df4): undefined reference to `TQ_ACTIVE'
+kernel/kernel.o(.text+0x12df4): relocation truncated to fit: R_PPC_REL24
+TQ_ACTIVE
+fs/fs.o: In function `__nfs_revalidate_inode':
+fs/fs.o(.text+0x30c5c): undefined reference to `NFS_STALE'
+fs/fs.o(.text+0x30c5c): relocation truncated to fit: R_PPC_REL24 NFS_STALE
+fs/fs.o(.text+0x30d7c): undefined reference to `NFS_STALE'
+fs/fs.o(.text+0x30d7c): relocation truncated to fit: R_PPC_REL24 NFS_STALE
+make: *** [vmlinux] Error 1
 
-maybe you should conspire with Alan Cox to have him submit patches,
-Alan seems to be more friendly towards merging powerpc code into the
-2.2 trees anyway...
-
---=20
-Ethan Benson
-http://www.alaska.net/~erbenson/
-
---HeFlAV5LIbMFYYuh
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
-
---HeFlAV5LIbMFYYuh--
+The two references to TQ_ACTIVE come from kernel/context.c and
+kernel/timer.c  The reference to NFS_STALE comes from fs/nfs/inode.c
+--
+Steven A. DuChene	sad@valinux.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
