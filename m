@@ -1,31 +1,30 @@
-Message-ID: <3AFAC193.F7B1FE96@mvista.com>
-Date: Thu, 10 May 2001 12:28:03 -0400
-From: Dan Malek <dan@mvista.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Reply-To: <joakim.tjernlund@lumentis.se>
+From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: gdb problems
+Date: Thu, 10 May 2001 19:19:07 +0200
+Message-ID: <IGEFJKJNHJDCBKALBJLLGEDNENAA.joakim.tjernlund@lumentis.se>
 MIME-Version: 1.0
-To: mschmid@ascona.de
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Is CONFIG_8xx the right setting for MPC8240
-References: <OF6B040367.6AA70D4B-ONC1256A48.003D8A75@ascona.de>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-mschmid@ascona.de wrote:
+Hi
 
-> Is it wrong to select CONFIG_8xx for a MPC8240 CPU ?
+I am trying to debug ppclinux 2.4 and ppcboot on RPX CLLF board
+connected to an Abatron emulator.
 
-Yes, it is.....
+When I print variables in gdb I get an <error type> message
+instead of the variable value. Breakpoints and stack trace etc. works
+fine. I have enabled -g switch to gcc.
 
-> I know that the sandpoint board or one of them also uses a MPC8240 but i
-> don't know if CONFIG_8xx is used for that sandpoint board.
+Any ideas?
 
-The 8240 is a CHRP/60x configuration.  Just select a 60x processor,
-configure PCI, and your board peripherals.  Use the Sandpoint setup
-as an example for your board configuration.  Any 8240 board should
-be running Linux in just a couple of hours.........
+ Jocke
 
-
-	-- Dan
+I am using Montavistas CDK 1.2 on RH7.1
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
