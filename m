@@ -1,51 +1,46 @@
-To: ssx761221 <ssx761221@sina.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Ricardo Scop <scop@digitel.com.br>
+To: kqtrinh@yahoo.com
+Subject: Re: Fwd: linuxppc_2_4_devel tree
+Date: Thu, 8 Aug 2002 16:23:38 -0300
+References: <18659.020808@vanet.com.br>
+In-Reply-To: <18659.020808@vanet.com.br>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: what 's Kernel stack overflow? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 08 Aug 2002 21:20:13 +0800."
-             <20020808132013.14581.qmail@sina.com>
-Date: Thu, 08 Aug 2002 21:23:07 +0200
-Message-Id: <20020808192312.5A49810DE1@denx.denx.de>
+MIME-Version: 1.0
+Message-Id: <02080816233800.01080@scop.digitel.com.br>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hi Khai,
 
-in message <20020808132013.14581.qmail@sina.com> you wrote:
+Well, it should be:
+
+rsync -avz --delete  source.mvista.com::linuxppc_2_4_devel <your_directory>
+
+but I haven't tested it latelly. BTW, linuxppc_2_5 is now linuxppc-2.5
+(_this_ I know for sure :-)
+
+HTH,
+
+Scop.
+
+On Thursday 08 August 2002 15:49, you wrote:
 >
-> which is downloaded at denx's ftp.  we have ported qt-embedded-free-3.0.5.
-> "hello" demo works well at first, but  it died after running about one hour.
-> Not only that demo but also the whole system .
->   messages like this:
-...
-> Call backtrace:
-> 00000000 C00025DC 00000148 0F847D60 0F67A4E4 0F67A3F0 0F67A7E0
-> 0F847C58 0F67B13C 0F847DC0 0F656364 0F65F6E0 100049B8 10005ECC
-> 0FBE7E9C 0FBE7DAC 0FAF1A2C 0FC05064 0FBA4250 0FBA4048 0FB209D4
-> 0FB1EE1C 0FBA5A5C 0FB1EA34 10003C84 0F626DBC 00000000
-> Kernel stack overflow in process c1ad8000, r1=c1ad8450
-
-It would be very interesting to know where in the kernel you crashed,
-so decodint this call backtrace is something I highly recommend.
-
->  what's the meaning of "kernel stack overflow"
-
-Lierally: you overflowed the kernel's stack.
-
->  memory leak?
-
-or excessive dynamic memory use (large  arrays  as  automatic  data),
-deep recursion, etc.
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Until you walk a mile in another man's moccasins, you  can't  imagine
-the smell.
+> Hi folks,
+>
+> Can someone tell me what's the exact rsync syntax to
+> obtain the source code from mvista rsync server?
+>
+> Thanks,
+> --Khai
+>
+> HotJobs - Search Thousands of New Jobs
+> http://www.hotjobs.com
+>
+>
+>
+> ===8<===========End of original message text===========
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
