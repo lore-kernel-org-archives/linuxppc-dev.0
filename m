@@ -1,21 +1,21 @@
-Return-Path: <Martin.Krause@tqs.de>
-Received: from mail.tqs.de (mail.tqs.de [213.68.230.225])
-	by ozlabs.org (Postfix) with ESMTP id B362E67A87
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao03.cox.net (fed1rmmtao03.cox.net [68.230.241.36])
+	by ozlabs.org (Postfix) with ESMTP id 0DEC167A87
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 19 Feb 2005 02:44:25 +1100 (EST)
-Received: from tq-mailsrv-1.tq-net.de (tq-mailsrv-1 [172.20.1.1])
-	by mail.tqs.de (Postfix) with ESMTP id B26373C5E
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 18 Feb 2005 16:44:20 +0100 (CET)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Fri, 18 Feb 2005 16:44:20 +0100
-Message-ID: <DE2CC66C40EAB74EA6D66AC71BF98E1E03055B96@TQ-MAILSRV-1>
-From: "Martin Krause" <Martin.Krause@tqs.de>
-To: "Matej Kupljen" <matej.kupljen@ultra.si>, "Sylvain Munaut" <tnt@246tNt.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: AW: bdi2000 debugging
+	Sat, 19 Feb 2005 02:56:26 +1100 (EST)
+Date: Fri, 18 Feb 2005 08:56:24 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: "Barbier, Renaud (GE Infrastructure)" <Renaud.Barbier@ge.com>,
+	linuxppc-embedded@ozlabs.org, Matt Porter <mporter@kernel.crashing.org>
+Message-ID: <20050218085624.A11439@cox.net>
+References: <45ABD2373C33C4459D42B40EC4F346F205E1A4F0@FTWMLVEM03.e2k.ad.ge.com>
+	<20050217225414.GA32623@gate.ebshome.net>
+	<20050217233605.GA10915@gate.ebshome.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20050217233605.GA10915@gate.ebshome.net>;
+	from ebs@ebshome.net on Thu, Feb 17, 2005 at 03:36:05PM -0800
+Subject: Re: 440GX interrupt
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,26 +26,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Thu, Feb 17, 2005 at 03:36:05PM -0800, Eugene Surovegin wrote:
+> On Thu, Feb 17, 2005 at 02:54:14PM -0800, Eugene Surovegin wrote:
+> > Probably it's a race which cannot be avoided anyway because external 
+> > IRQs are completely async, and your version of ppc4xx_pic.c just has a 
+> > bug. I'll think about it a little more.
+> 
+> Uhh, yes, I think it's a bug in 4xx version of disable_irq.
+> 
+> We have to ACK parent UIC after disabling IRQ to prevent false 
+> triggering in case this IRQ was already pending during disable_irq 
+> call.
+> 
+> Here is a patch against current 2.6, so you can get an idea what I'm 
+> talking about :):
 
-matej.kupljen@ultra.si wrote:
-> > L25R marking on the top means rev 1.2 IIRC. That's the one I have.
-> > Also, if you have a rev 2, you're lucky, I'd like one ;)
->=20
-> Nope, mine has: 2L25R
+Gah, yes. Please add the sign off line and it can go in the mainline.
 
-Mine also has a 2L25R marking, and it is rev 1.2
-
-U-Boot reads the System-On-Chip Version Register (SVR) and prints
-the version information while booting:
-
-U-Boot 1.1.3 (Feb 16 2005 - 10:38:30)
-
-CPU:   MPC5200 v1.2 at 396 MHz
-       Bus 132 MHz, IPB 132 MHz, PCI 66 MHz
-...
-
-I don't think rev 2 is released officially, yet.
-
-Regards,
-Martin
+-Matt
