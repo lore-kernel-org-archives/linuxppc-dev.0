@@ -1,46 +1,55 @@
-Date: Fri, 15 Jan 1999 09:50:05 +0100
-To: linuxppc-dev@lists.linuxppc.org, Paul.Mackerras@cs.anu.edu.au
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: Synchronization [was Re: The Magic Show: kernel_map() disappearing]
-Message-Id: <19990115095005.011809@smtp.calvacom.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Fri, 15 Jan 1999 03:03:24 -0600 (CST)
+From: Troy Benjegerdes <hozer@drgw.net>
+To: Gabriel Paubert <paubert@iram.es>
+cc: Alexander Gustav Deucher <agd5f@unix.mail.virginia.edu>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: Porting to Nubus PowerMacs
+In-Reply-To: <Pine.HPP.3.96.990114232923.2338Q-100000@gra-ux1.iram.es>
+Message-ID: <Pine.LNX.4.04.9901150301480.632-100000@narn.local.drgw.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Jan 15, 1999, Paul Mackerras <paulus@cs.anu.edu.au> wrote:
+On Thu, 14 Jan 1999, Gabriel Paubert wrote:
+> On Thu, 14 Jan 1999, Alexander Gustav Deucher wrote:
+> 
+> > 
+> > While we are on the subject of porting, How hard would it be to
+> > get linux ppc to boot on machines with NT firmware?  Does
+> > anyone know why this firmware is so problematic? Is there
+> > anywhere one could find documentation on it, etc.
 
->I put a sync in for mb, rmb and wmb, which may be overkill.  Certainly
->I think the eieio that Cort added after the sync for these things is
->unnecessary.
+Is this Open Firmware or some derivative of PPCbug?? I though NT required
+Open Firmware (which would mean the preploader wouldn't work too well)
 
-The sync may still be useful for subtle situations where the driver may
-require the access to be physically done before doing something else,
-like turning on interrupts on the CPU or setting a shared flag which can
-be used by another CPU. Usually, those drivers are broken anyway because
-of the PCI posting which is rarely handled (it was apparently also the
-cause of the bogus interrupts, see the fix I posted previously).
+> 
+> This firmware might even try to boot the image in little endian mode,
+> handling the setting of the processor is rather simple, but resetting the
+> host bridge to big endian operation might be very complex and HW
+> dependant. 
+> 
+> Could you try the zImage and the preploader on my ftp site:
+> 
+> 	ftp://vcorr1.iram.es/pub/zImage-2.2.0-pre5
+> 	ftp://vcorr1.iram.es/pub/preploader.tgz
+> 
+> (preploader is an experimental early boot code which will take your
+> /usr/src/vmlinux and build a zImage ready to boot from 0x41 partition). It
+> could be hacked to spit out a lot of info about what the state of the
+> machine is when the loaded image gets control.
+> 
+> 	Gabriel.
+> 
+> 
+> 
 
-I suggest keeping sync() in mb's for max. compatibility, and
-batch-changing mb() and eieio() in current PPC drivers to iobarrier()
-which, in turns, does eieio()
-
->> x86 and most other processors dont have the notion of a store barrier and
->> an i/o barrier beign different
->
->On x86, i/o accesses are strongly ordered already.  On PPC the eieio
->instruction provides this sort of ordering (if you do it after each
->access).  So I think eieio is right for iobarrier_*.  Whether eieio
->would be sufficient for *mb(), or whether sync is needed, I'm not
->sure.  Certainly sync should be sufficient.
-
-
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
-
-
+--------------------------------------------------------------------------
+| Troy Benjegerdes    |       troy@microux.com     |    hozer@drgw.net   |
+|    Unix is user friendly... You just have to be friendly to it first.  |
+| This message composed with 100% free software.    http://www.gnu.org   |
+--------------------------------------------------------------------------
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
