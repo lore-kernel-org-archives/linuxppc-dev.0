@@ -1,14 +1,27 @@
-Message-ID: <01C0794B.498EFE70.svacca@valcom.com>
+Message-ID: <01C07953.421B5D70.svacca@valcom.com>
 From: Steven Vacca <svacca@valcom.com>
 Reply-To: "svacca@valcom.com" <svacca@valcom.com>
 To: "LinuxEmbeddedMailList (E-mail)"
 	 <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: TCP Server stops accepting after 10mins
-Date: Mon, 8 Jan 2001 08:16:22 -0500
+Subject: RE: TCP Server stops accepting after 10mins
+Date: Mon, 8 Jan 2001 09:13:23 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+I have also discovered that after the 10 mins, when the
+TCP Server stops accepting, then if I wait 1 minute, the
+TCP Client can once again start connecting for another
+10 mins before connect failure.  Again, this is irregardless
+of connect freqs of 50 times per sec or once every 30 secs.
+
+-----Original Message-----
+From:	Steven Vacca [SMTP:svacca@valcom.com]
+Sent:	Monday, January 08, 2001 8:16 AM
+To:	LinuxEmbeddedMailList (E-mail)
+Subject:	Re: TCP Server stops accepting after 10mins
 
 
 Has anyone who is working with Redhat EDK 1.0, with its kernel
