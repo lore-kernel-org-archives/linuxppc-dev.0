@@ -1,50 +1,46 @@
-From: jlquinn@us.ibm.com
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: "D.J. Barrow" <barrow_dj@yahoo.com>,
-        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Message-ID: <852568D9.0050704F.00@D51MTA03.pok.ibm.com>
-Date: Mon, 8 May 2000 10:38:38 -0400
-Subject: Re: Help with cross-endian bitfields?
-Mime-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Message-ID: <957801868.3916e58c8f2c3@rascal.ums.easynet.net>
+Date: Mon, 08 May 2000 17:04:28 +0100
+To: linuxppc-dev@lists.linuxppc.org
+From: "Simon Stapleton" <simon@tufty.co.uk>
+Subject: Wallstreet Ethernet
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In this particular instance, the data is read from the board a short at a
-time (which I don't think I've got control over), but being placed into
-data that we see as chars.  So I've got to undo the swap.  Then, the data
-that has been returned is encoded within several bits inside a char.  In
-this case, mask and shift will correctly access the data.  In general, the
-problem is pretty disgusting, it seems.  At least I know how the data is
-packed to start with.  Without that, there doesn't seem to be much hope for
-portable solutions.
+Hi guys.
 
-It's a shame, because otherwise, bitfields are an elegant way to deal with
-packed data.
+I was wondering if any progress has been made on the Wallstreet /
+ethernet problems issue that was being discussed a while back?
 
-Jerry Quinn
+I'm seeing the same issues - real slow connections, a shedload
+of packet collisions and occasional crashes when the disk is
+grinding.
 
+I can probably gather some more stats if that would be helpful.
 
-Geert Uytterhoeven <geert@linux-m68k.org>@lists.linuxppc.org on 05/08/2000
-10:19:59 AM
-On Mon, 8 May 2000, D.J. Barrow wrote:
-> struct blah
-> {
->    unsigned a : 3;
->    unsigned b : 3;
->    unsigned c : 2;
-> } __attribute__(packed);
->
-> I personally would be expecting to use ((*((u8
-> *)&blah[0]))&0x0e0)>>5 to get the info from blah.a on
-> both little & big endian machines.
+Wallstreet II, kernel 2.2.14p9 (I know, I know, but it seems pretty
+stable and apart from the ethernet issue it all works),
+standard LinuxPPC 1999 install.  192MB memory, some kind of
+IBM disk.
 
-Which no longer works if a is longer than 8 bits and/or spans multiple
-bytes.
-For PCI accesses, you can work around this by using {read,write}l(), which
-do
-byte swapping on big-endian platforms as well.
+If there's a patch out there, or a newer kernel fixes it, I'd be
+grateful.  I'm a bit wary of the 2.3 kernels - I need working
+hfs as well as linux, unfortunately - but I'm willing to give
+them a go.  ISTR there was some question of whether it was the
+disk itself that was causing the problems - If that's the case
+I'll just go and shell out for an 18gig drive (not that I've been
+looking for an excuse, or anything ;-)
+
+I'd have a go at hacking the code if I had the time, but I'm working
+18+ hour days at the moment.  Such is life <sigh>.
+
+Simon
+
+--
+Your mouse has moved.  You must reboot Windows NT for these changes to be
+recognised.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
