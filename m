@@ -1,80 +1,81 @@
-Message-Id: <200012081601.QAA31117@hyperion.valhalla.net>
-Date: Fri, 08 Dec 2000 15:36:18 +0000
+Message-ID: <20001208171951.96997.qmail@web10407.mail.yahoo.com>
+Date: Fri, 8 Dec 2000 09:19:51 -0800 (PST)
+From: "D.J. Barrow" <barrow_dj@yahoo.com>
 Subject: Re: AW: Sound on an iBook?
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Christof Petig <christof.petig@wtal.de>
-CC: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
         "Halfmann, Klaus" <khalfmann@libra.de>,
         linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Christof Petig wrote:
+No I2C is as old as the hills, I2C is a philips serial
+bus standard for talking to upto 256 devices on the
+one two wire bus. It is pretty crappy simple & slow &
+philips generally used it to talk to digital tuners on
+radios.
 
->[...]
+
+It is also commonly used in embedded stuff, I wrote a
+driver for apples tv tuner card on a performa 630 when
+I was working for them.
+
+I didn't talk i2c directly but talked to the cuda
+manager on the mac os, however, I made a fake i2c bus
+via 2 pins on the paralell port of a pc.
+
+If you want to know more about this look for specs on
+the cuda chip if you can find them. However I suspect
+a
+few things have changed since I did my stuff since
+Apple loves moving asics around to keep chip designers
+mentally masturbating :-).
+
+--- Christof Petig <christof.petig@wtal.de> wrote:
+>
+> Iain Sandoe wrote:
+>
+> > duh! just read the whole thread...
+> >
+> > [...]
+> > > Christof could always resort to petitioning
+> Apple to release the specs, or
+> > > digging though Darwin source code to discover
+> the secret.
+> >
+> > the chip specs are freely available:
+> >
+> >
+>
+http://www.micronas.com/documentation/data_sheet/dac3550a_1ds.pdf
+> >
+> > Ben H might know something about driving the iBook
+> i2c busses - I think that
+> > they are the new Apple "cereal" style which are
+> also present on the PCI host
+> > bridges... but not quite sure.
 >
 > The link is dead, but
-> http://www.micronas.com/products/documentation/consumer/dac3550a/index.php
+>
+http://www.micronas.com/products/documentation/consumer/dac3550a/index.php
 > works for me well.
-
-thanks for the update.
-
+>
 > Thank you very much for this information!
+>
+> Christof
+>
+>
+>
 
-OK.  I think my first reply may have gone astray (it never showed up here
-anyway)...
 
-This is what I (think) I know about the "problem".
-
-1/  The output uses dmdma same as the other chips - so fixing up init() to
-recognise the iBook and do the necessary register assignments from the OF
-tree should be an OK solution (i.e. no more ugly than any other version of
-the dmasound driver)... except for:
-
-2/  There is *no* mixer abstraction - because the chip is driven through i2c
-(like the sound control chip on the G3/beige - which I *have* played with -
-unfortunately a different i2c bus).  Which is why you get whatever OF
-leaves..
-
-I suspect that 'freezing' has got nothing to do with the chip per se... but
-probably more to do with invalid mixer abstraction code being called.
-
-========
-
-So you will need to:
-
-Fix up the init code - and maybe the register map. although I suspect this
-has been done in the hack to which Klaus referred.. don't know which hack
-(it's not in mine ;-).
-
-write a mixer abstraction modelled on the ones for awacs and burgundy.  A
-little nasty 'cos the code has evolved into something with many arms... ;-)
-
-also there are many bodges to represent the Apple hardware under OSS - which
-doesn't really have the API for the resources...  I have an idea to address
-this as well - but it will have to wait for a few more weeks.
-
-I have a request...
-
-when I get back on line with the dmasound driver (expect Jan 01) I want to
-continue with a code tidy - basically partitioning the source so that one
-chip set is dealt with in one file (leaving the common dbdma abstraction
-aside).
-
-There are many issues (not least of which is maintaining a common base
-across the 68k stuff as well) to address in this split-up but I think it's
-long overdue.
-
-So, if you have a go (and think there *are* some bits of useful code in
-Darwin)... it would help me if the daca-specific mixer abstraction was
-clearly separated from the other stuff.  (better still in a separate source
-file from the start ;-)
-
-thanks,
-Iain.
+=====
+D.J. Barrow Linux for S/390 kernel developer
+eMail: djbarrow@de.ibm.com,barrow_dj@yahoo.com
+Phone: +49-(0)7031-16-2583
+IBM Germany Lab, Schönaicherstr. 220, 71032 Böblingen
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
