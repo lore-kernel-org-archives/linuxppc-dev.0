@@ -1,29 +1,31 @@
-Date: Mon, 15 Jan 2001 20:24:49 +0100 (CET)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: Iain Sandoe <iain@sandoe.co.uk>, <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: bk 2.4.1pre2 Lombard PCI allocation fails.
-In-Reply-To: <Pine.LNX.4.05.10101151830580.31039-100000@callisto.of.borg>
-Message-ID: <Pine.LNX.4.30.0101152023520.23098-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <3A63840E.4C724E03@mvista.com>
+Date: Mon, 15 Jan 2001 18:13:18 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: kernel mapping
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > > PCI: Cannot allocate resource region 1 of device 00:11.0
->          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> The conflict for the overlapping MMIO region.
->
-> > >   got res[10000000:10000fff] for resource 2 of ATI Technologies Inc 3D Rage
-> > > LT Pro
->
-> Fixed by the kernel, and reassigned to 0x10000000.
+How come we don't use iopa() and friends for all kernel mapping
+information?  It is only defined for CONFIG_APUS, but is the right
+thing to use on 8xx and 4xx, and probably all processors.  The
+virt_to_bus/bus_to_virt contain the quickie arithmetic hack with
+KERNELBASE, but that isn't the right thing to do for any kmalloc()
+or valloc() space or if you don't have BAT mapping.
 
-OK, I misread that error message. Now you just need to supply a valid new
-region :-) (How did the 2.3.99 code differ in that respect?)
+I am considering making these functions more generic, removing the
+#ifdefs, and implementing "simulated" BAT mapping for processors
+like the 8xx and 4xx that don't have BATs (not for 2.4, of course :-).
 
-	Michael
+Why shouldn't I do this?
 
+	-- Dan
+
+--
+
+	I like MMUs because I don't have a real life.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
