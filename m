@@ -1,42 +1,45 @@
-Date: Mon, 13 Aug 2001 15:28:01 +0100
-Subject: Re: Fix for PPC audio devices that can't reendianize samples
-From: "Iain Sandoe" <iain@sandoe.co.uk>
+Date: Mon, 13 Aug 2001 16:58:12 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Derrik Pates <dpates@dsdk12.net>
-Cc: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
-Message-Id: <20010813142736.E9223DBA0D@atlas.valhalla.net>
+Cc: Iain Sandoe <iain@sandoe.co.uk>,
+	Derrik Pates <demon@devrandom.net>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Fix for PPC audio devices that can't reendianize samples
+In-Reply-To: <Pine.LNX.4.33.0108130805450.24665-100000@andromeda.dsdk12.net>
+Message-ID: <Pine.LNX.4.05.10108131657301.21541-100000@callisto.of.borg>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Aug 13, 2001,  Derrik Pates wrote:
+On Mon, 13 Aug 2001, Derrik Pates wrote:
 > On Sun, 12 Aug 2001, Iain Sandoe wrote:
->> Well, actually, I'd like to lose all the translation stuff (rate conversion,
->> format conversion etc.).  This belongs in User-Land and is preventing me
->> from implementing mmio (which would be useful for the more serious
->> applications).
+> > Well, actually, I'd like to lose all the translation stuff (rate conversion,
+> > format conversion etc.).  This belongs in User-Land and is preventing me
+> > from implementing mmio (which would be useful for the more serious
+> > applications).
+>
 > Ok, so why not just take it out, and have the driver printk() a message if
 > userspace tries to force it to accept an audio format it doesn't know,
 > saying basically, "Please ask the developers of the software to properly
-> query the OSS device for supported formats"?
+                                                  ^^^^^^^^^^^^
+You can even printk() the name of the program.
 
-OK.  This is maybe a way forward.
+> query the OSS device for supported formats"? If that's really the way
+> you'd prefer it to be, really nothing else is going to make people sit up
+> and pay attention other than just saying "Ok, this behavior is now broken,
+> not just deprecated, but BROKEN".
 
-However, at the moment, I'm thinking about a bigger restructuring of the
-driver to handle all the newer hardware types.  Depending on how Ben H sees
-this - it may be left 'till 2.5 - rather than breaking existing 2.4.x
-behaviour.  (not to mention the fact that it's not happening ATM owing to
-lack of time ;-)
+Gr{oetje,eeting}s,
 
->If that's really the way you'd prefer it to be,
+						Geert
 
-errm ... I went round the loop you did ...
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-- it's the way that Linus & co. want it to be ... and, of course, once one
-looks at it a little harder, makes perfect sense.
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
-ciao,
-Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
