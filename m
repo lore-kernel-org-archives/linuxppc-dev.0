@@ -1,30 +1,32 @@
-Message-ID: <39EF85BB.FA712976@tcc.com.pe>
-From: Tomas Carmen <tomas@tcc.com.pe>
+Message-ID: <39EFA8CE.33485BAD@mvista.com>
+Date: Thu, 19 Oct 2000 22:07:10 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: kernel for 823 over 16bits
+To: brendan.simon@ctam.com.au
+CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: linux-embedded: smallest kernel for 2.4.0-test9
+References: <39EF7A07.5D946387@ctam.com.au>
 Content-Type: text/plain; charset=us-ascii
-Date: Thu, 19 Oct 2000 19:31:12 -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello
-I will really appreciated if you could help me with this.
-I would like to know if the linux kernel or the bootloader developed for
-PPC (MPC8xx) can working well
-over a 16 bits environment (FLASH and RAM). I couldn't find  references
-about this.
+Brendan J Simon wrote:
 
-Thanks in advance
+> ....  I currently have the kernel down to 520K
+> but would like to get it under 448K (512K minus one 64K sector for a
+> bootloader).  Is this possible ???
 
---
------------------------
-Tomas Carmen Rodriguez
-TCC S.A.
-phone : +51-1-4428842
-Lima-Peru
------------------------
 
+Heh...I did this just the other day with a old -test2 kernel.
+
+Did you remove the ELF header?
+
+	dd if=zImage bs=64k skip=1 of=zImage.bin
+
+The starting instruction is the first word of zImage.bin.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
