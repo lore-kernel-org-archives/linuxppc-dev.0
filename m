@@ -1,54 +1,76 @@
-Message-Id: <5.1.0.14.0.20020517085301.02c5d1f8@sgss.com>
-Date: Fri, 17 May 2002 08:55:25 -0400
-To: linuxppc-embedded@lists.linuxppc.org
-From: Dean McBride <dmcbride@sgss.com>
-Subject: kernel BUG at page_alloc.c:191!
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-ID: <3CE4FECD.5040404@elsoft.ch>
+Date: Fri, 17 May 2002 14:59:57 +0200
+From: =?ISO-8859-1?Q?=22David_M=FCller_=28ELSOFT_AG=29=22?= <d.mueller@elsoft.ch>
+MIME-Version: 1.0
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [PATCH] Several patches agains linuxppc_devel-2.4.19-pre8
+References: <3CE2481B.5070108@elsoft.ch>
+Content-Type: multipart/mixed;
+ boundary="------------010701090101050502090200"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+This is a multi-part message in MIME format.
+--------------010701090101050502090200
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Anyone have any ideas what would cause the following kernel crash?
-Note this problem doesn't occur all the time, or in a consistent fashion!
-I have seen the problem 3 different times the past couple days in my
-testing.  Here's what's spit out to the console window.  Unfortunately this
-is an embedded system with no disk, do I don't have any system log files,
-just what is printed out to the console.
+Hello
 
-kernel BUG at page_alloc.c:191!
+Two new patches:
 
-    &
+    - arch/ppc/kernel/ocp.c
+       add default case in ocp_unregister().
+       GCC 3.1 is not happy without it ;-)
 
-kernel BUG at page_alloc.c:191!
-Kernel stack overflow in process de7c8000, r1=de7c86f0
-Kernel stack overflow in process c0898000, r1=c0898760
+    - drivers/net/ibm_ocp/ibm_ocp_debug.c
+       ibm_ocp_debug.c seems not to be updated by the latest 4xx ethernet
+       driver patches.
 
-I'm running on a VQG4 system with 4-7400 G4's, 512 Mbytes
-of RAM & 2Mbytes of cache per processor.  I'm running Linux
-version 2.4.10-pre10.
 
-I've seen references to the same problem on other x86 machines
-suggesting to run memtest86 to check out memory.  Is there a tool
-similar to this for a PPC?  I didn't see any solutions for the problem
-either ;(
+Dave
 
-I have 2 processes that are reading & writing data to an PMC ADC/DAC
-card.  When the driver is loaded it initially allocates 3 MBytes of memory
-at initialization.  The test do cause high interrupt rates (approximately
-~12,000 interrupts per second).  In the test data I have collected,
-the read/write processes do get moved around on the various CPU's but
-interrupts always seem to be handled by CPU 0.  Both processes are setup
-for Real-time RR scheduling (if you call it that), at a priority of 1.
+--------------010701090101050502090200
+Content-Type: application/octet-stream;
+ name="patch.bz2"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="patch.bz2"
 
-I don't know if any of this information will help, but any feedback,
-suggestions
-will be greatly appreciated!!!
-
-Thank you for your Help!
-Dean
+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
+OXIB1UY/4u5IpwoSE4BcP4A=
+--------------010701090101050502090200--
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
