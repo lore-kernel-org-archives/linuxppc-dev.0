@@ -1,41 +1,39 @@
-Message-ID: <39CF8EA9.E444E5EE@student.ethz.ch>
-Date: Mon, 25 Sep 2000 19:43:05 +0200
-From: Michel Dänzer <daenzerm@student.ethz.ch>
+Date: Mon, 25 Sep 2000 14:01:24 -0400 (EDT)
+From: Henry Worth <haworth@ncal.verio.com>
+To: Michel Dänzer <daenzerm@student.ethz.ch>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Linux keycodes and left cursor on Pismo
+In-Reply-To: <39CE9B1F.84530732@student.ethz.ch>
+Message-ID: <Pine.SOL.4.10.10009251358270.21969-100000@ncal.verio.com>
 MIME-Version: 1.0
-To: rshapiro@bbn.com
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: xf 4.0.1 with rage II/rage pro -- multi-headed display, xinerama
-References: <Pine.LNX.4.10.10009231028030.26749-100000@apollo.kulian.net>
-	 <14798.23332.833379.615321@esb.bbn.com> <39CE8B90.1B318DD2@student.ethz.ch> <14799.19089.742041.388095@esb.bbn.com>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: TEXT/PLAIN; charset=X-UNKNOWN
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-R Shapiro wrote:
+On Mon, 25 Sep 2000, Michel [iso-8859-1] Dänzer wrote:
 
-> I just did it tried running +xinerama with all three monitors at 8pp.
-> It works!  Blackbox is happy to move windows across screens, or even
-> leave a window half on one and half on another.  Basically just like
-> the multiple monitor support that MacOS has always had.
+> Henry Worth wrote:
 >
-> Very nice :)
+> > >After switching to Linux keycodes (and Debian's i386 us keymap), the left
+> > >cursor key doesn't generate a keycode anymore. Interestingly, it works in
+> > >X with Xkb, but not without.
+> > >
+> > >Anyone else sees this?
+> >
+> > Check the dev and user archives, I think this has been discussed a
+> > few times since the new input layer backport went in.
+>
+> I've searched the archives now with no luck.
+>
+> So, can anyone please solve my problem, even if it has been solved before? :)
+>
+>
 
-Cool.
+Serach on keymap around the late-June through Aug. period. I don't
+think any of them specifically addressed your left key problem, but
+rather the need for new, and as of then non-existent, keymaps to use
+the Linux keycodes mode.
 
-
-> Btw for those who might want to try this, +xinerama is a server arg so
-> the command is  'startx -- +xinerama'.
-
-There's also an option for XF86Config, read the manpage - the logical place
-would be in the Layout Section.
-
-
-Michel
-
-
---
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and The DRI Project
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
