@@ -1,34 +1,35 @@
 From: "Chris Backas" <cbackas@rcn.com>
-To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Date: Fri, 14 Jul 2000 18:28:40 -0400 (EDT)
+To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>,
+        "Robert Thompson" <rothomp3@vt.edu>
+Date: Fri, 14 Jul 2000 19:04:09 -0400 (EDT)
 Reply-To: "Chris Backas" <cbackas@bigfoot.com>
+In-Reply-To: <016d01bfedec$18c9b400$1a6a1504@strayer.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Subject: iBook woes: Update
-Message-Id: <E13DEYW-0000Ee-00@smtp01.mrf.mail.rcn.net>
+Subject: Re: iBook woes: Update
+Message-Id: <E13DF6t-0005hH-00@smtp01.mrf.mail.rcn.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello all,
+On Fri, 14 Jul 2000 19:34:27 -0400, Robert Thompson wrote:
 
-Well, I've gotten pretty much everything working nicely on my iBook now.
+>>
+>> Wait! Does your trackpad work? If so, then excuse me...
+>WAAAAAAAAHHHHHHHHH!
+>> Why doesn't mine work? What are you doing differently? Could it be the new
+>> yaboot? Let me try it and see...
+>>
+>Nope, it isn't the new yaboot. Now I'm *really* confused... my trackpad
+>still doesn't work. I can (almost) guarantee that I'm not an idiot, but it's
+>beginning to look like I must be doing something wrong.
 
-The video problem I was having is solved in later kernels.  The kernel that comes with YellowDog won't boot successfully unless I set video to none in my yaboot.conf file
-- it hard locks.  As of the 2.2.17 series, this is no longer true.  Now you *have* to set the mode to 10 and the color depth to 32 (well, I don't think the color depth HAS to be 32,
-but why not go for it? =) )
+Yeah, it works fine, and always did.  I dunno, when I went from the 2.2.15 kernels to the 2.2.17 I followed the instructions on BenH's page for the new input stuff.  I did notice
+that the DOTConfig file provided with 2.2.17pre10-ben1 didn't enable the new input by default, but I turned that on when I compiled it.
 
-With 2.2.17pre10-ben1, this makes XFree work well, but the full screen text consoles are messed up - they bleed weird colors and don't update correctly.  However, after
-updating to the very very latest yaBoot (0.7) and kernel (2.2.17pre10-ben2) , both I believe were released today (7/14/2000) all my video trouble has vanished.  The full
-screen consoles work fine again, and XFree is centered on screen, at 24bit color, and 800x600.
+I think the webpage also forgot to rm /dev/adbmouse; ln -s /dev/input/mice /dev/adbmouse
 
-The 2.2.17 kernels have also fixed networking problems - previously my network performance was sporadic, it would transfer a few hundred K very quickly, then 'play
-dead' for upwards of 20 seconds, and it would also transfer files with CRC errors on occasion.  None of this is true in the 2.2.17 series =)  My OpenFirmware Boot Menu
-recognizes the Linux partition now too, so I can boot between MacOS, MacOSX and Linux by just holding the option key!
-
-So, I guess my only remaining iBook wishes are sound, and an Accelerated XServer.  But, I'm happy for now.  The Airport driver was a nice bonus as well ;)
-
-I've gotta give a special thanks to Ben H. here, for yaBoot, the AirPort driver, and his 'special' kernel patches that seem to make all the difference.  Great job!
+But, I may have just skipped that line by accident, and I did it later anyway.
 
 Chris Backas
 
