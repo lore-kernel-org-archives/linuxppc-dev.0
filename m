@@ -1,45 +1,37 @@
-Date: Tue, 27 Apr 2004 15:39:08 +0200
-From: Magnus Damm <damm@opensource.se>
-To: Oliver Korpilla <okorpil@fh-landshut.de>
-Cc: mgroeger@sysgo.com, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Initrd and PPCbug, can it work?
-Message-Id: <20040427153908.4f1eeb8a.damm@opensource.se>
-In-Reply-To: <408E55DD.7080806@fh-landshut.de>
-References: <Pine.LNX.4.58.0404211503050.20798@ppcproject1>
-	<20040426220944.GI19246@smtp.west.cox.net>
-	<408E000A.6040303@fh-landshut.de>
-	<Pine.LNX.4.56.0404270913230.2035@mag.sysgo.com>
-	<408E1ED0.4050404@fh-landshut.de>
-	<Pine.LNX.4.56.0404271119270.2567@mag.sysgo.com>
-	<408E2AF4.2050907@fh-landshut.de>
-	<Pine.LNX.4.56.0404271313190.3729@mag.sysgo.com>
-	<408E55DD.7080806@fh-landshut.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <20040427155249.37333.qmail@web41510.mail.yahoo.com>
+Date: Tue, 27 Apr 2004 08:52:49 -0700 (PDT)
+From: bhupinder sahran <bhup_sah@yahoo.com>
+Subject: Re: High resolution timer in driver 
+To: Wolfgang Denk <wd@denx.de>
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <20040426180654.5C035C109F@atlas.denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, 27 Apr 2004 14:45:17 +0200
-Oliver Korpilla <okorpil@fh-landshut.de> wrote:
+I understood. It will help.
 
-> Use the initrd loaded with the kernel as a root filesystem in memory
-> after bootup.
+thanx a lot.
+
+Bhupi
+
+--- Wolfgang Denk <wd@denx.de> wrote:
+> In message <20040426164104.21828.qmail@web41503.mail.yahoo.com> you wrote:
 >
-> Exactly what commandline parameters for the kernel would I need to make
-> that?
-
-I don't know what magic patches that are applied to the mvl-3.1 kernel
-that a customer of mine use, but we use one kernel with initrd (ext2fs)
-and nfs root + ip pnp support. Then we select at boot-time how we want
-to boot the system:
-
-Development: "noinitrd ip=on nfsroot=192.168.1.1:/home/nfs/foobar"
-Standalone: "ip=off"
-
-We boot a "Gzipped Multi-File Image" from u-boot, but I guess that booting
-a standard zImage from anywhere would do too.
-
-/ magnus
+> > I am writting a device driver. I have a requirement that i need a
+> > timer base interrupt serive routine which shall be called 1024 times
+> > in a second. But my
+>
+> Find an unused timer on your processor, install an interrupt handler
+> for it, and finally programm it in periodic mode with f=1024 Hz.
+>
+> Where is the problem?
+>
+> > understanding is saying that i can call it only once in a second
+> > through generic linux timer.
+>
+> This is definitely wrong. Wrong twice, at least.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
