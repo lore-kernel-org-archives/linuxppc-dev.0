@@ -1,39 +1,33 @@
-Date: Tue, 31 Aug 1999 08:47:38 -0500
-From: Dave Wolfe <dwolfe@risc.sps.mot.com>
-To: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org,
-        linuxppc-announce@lists.linuxppc.org
-Subject: New lists (was: IBM 850)
-Message-ID: <19990831084738.E15516@miaow.risc.sps.mot.com>
-References: <XFMail.990829054219.gdt@linuxppc.org> <Pine.LNX.3.96L.990830235758.8182E-100000@unix47.andrew.cmu.edu>
-Mime-Version: 1.0
+Message-ID: <37CBFD6B.DB0182B6@wanadoo.fr>
+Date: Tue, 31 Aug 1999 18:06:03 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
+MIME-Version: 1.0
+To: "David D. Kilzer" <ddkilzer@computer.org>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: SMP support for Daystar 604e 200MHz dual-processor card
+References: <v03130301b3f116a864e2@[192.168.1.1]> <v03130300b3f1774818a8@[192.168.1.1]>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.3.96L.990830235758.8182E-100000@unix47.andrew.cmu.edu>; from Hollis R Blanchard on Tue, Aug 31, 1999 at 12:06:26AM -0400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-[ Hollis R Blanchard writes: ]
-> 
-> Hey folks, there's a new list at lists.linuxppc.org for PowerPC
-> workstations. It should be a lot less traffic than linuxppc-user,
-> so hopefully you can join? That is, if you're still interested in
-> Linux/PPC on your hardware.
+"David D. Kilzer" wrote:
 
-Since Hollis has let the cat out of the bag, :-) I'd better make the
-announcement...
+> >>NIP: c00e8818 <autoconfig+ac/490>
+> Trace: c00e87c0 <autoconfig+54/490>
+> Trace: c018c9e8 <rs_init+3a8/494>
 
-Two new lists have been created on lists.linuxppc.org:
+It really looks like it's breaking down in the autoconfig function of
+drivers/char/serial.c. What happens if you eliminate CONFIG_SERIAL=y
+from
+your .config file?
 
-   linuxppc-embedded       Linux on PowerPC embedded systems discussions
-   linuxppc-workstation    Linux on PowerPC PReP and CHRP system discussions
+(On the other hand, I see that Paul M. has CONFIG_SERIAL=m in his
+standard config files. Does this mean that the serial.c stuff is
+supposed to work on the PPC?)
 
-No digest versions for these yet, since they aren't expected to
-reach the volume of mail to need digests, but we'll see. Go to
-http://lists.linuxppc.org/ and follow the links to subscribe or read the
-info files to subscribe via e-mail.
-
--- 
- Dave Wolfe
+--
+Martin
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
