@@ -1,29 +1,35 @@
-From: linas@austin.ibm.com
-Date: Wed, 14 Jan 2004 18:13:50 -0600
-To: valvoline <valvoline@vrlteam.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Broadcom BCM94306
-Message-ID: <20040114181350.B40506@forte.austin.ibm.com>
-References: <20040114161107.GM2658@adapter.n0skillz.org>
+Subject: Re: Ibook G4 modem
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Colin Leroy <colin@colino.net>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <115601c3dabc$06d9cdf0$3cc8a8c0@ANOSP>
+References: <115601c3dabc$06d9cdf0$3cc8a8c0@ANOSP>
+Content-Type: text/plain
+Message-Id: <1074126209.5123.22.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20040114161107.GM2658@adapter.n0skillz.org>; from valvoline@vrlteam.org on Wed, Jan 14, 2004 at 05:11:07PM +0100
+Date: Thu, 15 Jan 2004 11:23:29 +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Jan 14, 2004 at 05:11:07PM +0100, valvoline wrote:
-> of drivers are required? i think that simple win32-drivers cannot work
-> properly in a different architecture with different *endian.
+On Thu, 2004-01-15 at 03:32, Colin Leroy wrote:
+> Hi,
+>
+> Anyone knows what's the modem in the iBook G4 ? It doesn't even appear in
+> `lspci` nor `lsusb`.
+> in the device-tree, however, there's an escc node (compatible:
+> "chrp,es0"), with ch-a and ch-b (but they have empty "slot-names").
+> There's also an i2c-modem node (compatible: "minidash2").
+>
+> Googling for minidash2 returns nothing...
+> Linuxant scripts to detect chipsets don't find anything, either.
+>
+> Anyone knows something about it ?
 
-totally irrelevent and off-topic, but ... the ppc can (or used
-to be able to) switch endianess dynamically.  To be more correct,
-it can run some user-space code that was little endian, by having
-the kernel set the appropriate bit in the MSR before it ran the
-app.  I have no idea is the linux kernel saves/restores this bit(s),
-or if this is still supported on the newest processors.
+The linuxant stuff should work. It's an USB modem. But it's only
+powered up when the USB driver is loaded ;)
 
---linas
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
