@@ -1,48 +1,44 @@
-To: "Omanakuttan" <omanakuttan@tataelxsi.co.in>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ppcboot, linux , hang at the last step 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 26 Nov 2002 14:08:26 +0530."
-             <3DE33302.4070907@tataelxsi.co.in>
-Date: Tue, 26 Nov 2002 11:00:49 +0100
-Message-Id: <20021126100054.4530FC614B@atlas.denx.de>
+Message-ID: <6DF87017DA95D611AC6000606730DE9B0EC10F@BLREXSR>
+From: Nageswari S <nageswari@sanyo.co.in>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: USB Host controller problem
+Date: Tue, 26 Nov 2002 16:14:58 +0530
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3DE33302.4070907@tataelxsi.co.in> you wrote:
->
-> No. The kernel does not have a built in ramdisk. but it uses the ramdisk
-> image passed for modules and the like. correct me if I am wrong.
+Hi,
 
-Please do not confuse the usage of  a  ramdisk  image  with  standard
-distributions  like RedHat etc. With Embedded Systems a ramdisk image
-usually severs a bit a different purpose.
+I have a custom PowerPC board (IBM 405 Based) with USB - OHCI (Ver
+1.1)compliant controller on OPB bus. I have taken SA1111 usb driver as a
+refernce and enabled USB. The root hub got initialised and
+cat /proc/bus/usb/devices outputs
 
->  > or you have to give a ramdisk separately to the kernel boot args?
-> initrd='ramdisk image' is the option I gave.
 
-This may be correct with some boot loader like LILO, bot it i s not a
-valid kernel boot argument.
+" T:  Bus=01 Lev=00 Prnt=00 Port=00 Cnt=00 Dev#=
+" B:  Alloc=  0/900 us ( 0%), #Int=  0, #Iso=  0
+" D:  Ver= 1.10 Cls=09(hub  ) Sub=00 Prot=00 MxP
+" P:  Vendor=0000 ProdID=0000 Rev= 0.00
+" S:  Product=USB OHCI Root Hub
+" S:  SerialNumber=ef601200
+" C:* #Ifs= 1 Cfg#= 1 Atr=40 MxPwr=  0mA
+" I:  If#= 0 Alt= 0 #EPs= 1 Cls=09(hub  ) Sub=00
+" E:  Ad=81(I) Atr=03(Int.) MxPS=   2 Ivl=255ms
 
->  > the option is " root=/dev/ram ",  right?
-> Frankly, I am not sure. someone else might be able to help you.
+But, I get following error message when I connect a USB Mouse
 
-Yes, "root=/dev/ram" (or usually "root=/dev/ram rw") is  the  correct
-kernel boot argument for booting with an initial ramdisk image.
+usb_control/bulk_msg : timeout
+USB device not accepting the new address.
 
-Best regards,
+Also, cat /proc/interrupts gets contnious interrupts for usb-ohci....
 
-Wolfgang Denk
+Could anybody please tell me as to how to write a USB-OHCI host controller
+driver for a non-pci paltform....
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"The computer programmer is a creator of universes for which he alone
-is responsible. Universes of virtually unlimited  complexity  can  be
-created  in  the  form  of  computer  programs." - Joseph Weizenbaum,
-_Computer Power and Human Reason_
+regards,
+Nageswari
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
