@@ -1,36 +1,35 @@
-Message-ID: <3952661E.19D08DC9@relog.ch>
-Date: Thu, 22 Jun 2000 21:16:46 +0200
-From: Michel Dänzer <daenzer@relog.ch>
-Reply-To: daenzerm@student.ethz.ch
+Message-ID: <395267CC.A286E1A0@wanadoo.fr>
+Date: Thu, 22 Jun 2000 21:23:56 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-To: Adam Lebsack <lebsack@mac.com>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: XF86Config 4.0
-References: <a04320400b5781534d79b@[192.168.0.3]>
-Content-Type: text/plain; charset=iso-8859-1
+To: Josh Huber <huber@mclx.com>
+CC: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: PPTP and mppe module
+References: <20000622103704.A4900@mclx.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Adam Lebsack wrote:
->
-> What is the status on xf86config for 4.0?  Is anybody working on
-> this?  It would be nice to be on par with the x86 world when
-> configuring X.
+Josh Huber wrote:
+[]
+> Anyone tried getting a VPN client working on PPC?
 
-There is a new tool in the works, it's called xf86cfg, it's written in perl
-and should be working in 4.0.1 which should be out in a few weeks' time.
+Sure. France Telecom ADSL runs with pptp, and I have been using this for
+quite a while. I compiled a Mandrake SRPM, pptp-adsl-fr-1.0.2-2mdk,
+without any problem. There wasn't any kernel patching involved. My ppp
+RPM is version 2.3.11, also compiled from a SRPM without problem. They
+run with 2.2.17pre kernels as well as with 2.4.0-test1 kernels.
 
-It will be graphical and should work on all platforms :)
-
-
-Michel
-
+We discussed the include/linux/if_ppp.h problems already 2 weeks ago on
+the list (maybe on linuxppc-user?). The one I get from both
+linux-pmac-stable and from bitkeeper linux_2_2 via rsync has
+#define PPP_VERSION     "2.3.7"
+#define PPP_MAGIC       0x5002  /* Magic value for the ppp structure */
+inside. It seems that others are able to get different versions from the
+same rsync server. Mystery.
 
 --
-Men are from Earth. Women are from Earth. Deal with it.
-______________________________________________________________________________
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
