@@ -1,31 +1,29 @@
-Message-ID: <19990429200222.B27844@cygnus.com>
-Date: Thu, 29 Apr 1999 20:02:22 -0700
-From: Richard Henderson <rth@cygnus.com>
-To: Zack Weinberg <zack@rabi.columbia.edu>
-Cc: meissner@cygnus.com, David Edelsohn <dje@watson.ibm.com>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: PATCH: Fix 2 PPC/SYSV varargs problems
-References: <19990429194817.B20300@cygnus.com> <199904300255.WAA16851@blastula.phys.columbia.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <199904300255.WAA16851@blastula.phys.columbia.edu>; from Zack Weinberg on Thu, Apr 29, 1999 at 10:55:36PM -0400
+Message-Id: <9904300308.AA40106@marc.watson.ibm.com>
+To: Richard Henderson <rth@cygnus.com>,
+        Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+Cc: Zack Weinberg <zack@rabi.columbia.edu>, meissner@cygnus.com,
+        linuxppc-dev@lists.linuxppc.org, egcs-patches@egcs.cygnus.com
+Subject: Re: PATCH: Fix 2 PPC/SYSV varargs problems 
+In-Reply-To: Message from Richard Henderson <rth@cygnus.com>
+   of "Thu, 29 Apr 1999 20:02:22 PDT." <19990429200222.B27844@cygnus.com>
+Date: Thu, 29 Apr 1999 23:08:18 -0400
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Apr 29, 1999 at 10:55:36PM -0400, Zack Weinberg wrote:
-> ObDumbQuestion: Is this a bug we really need to fix for 1.2?  It's
-> been around for awhile and all the proposed solutions are either dirty
-> kludges or too invasive.
+>>>>> Richard Henderson writes:
 
-A reasonable question.  Though I don't think my last patch is either.
+Richard> It certainly isn't invasive; as for kludginess, it's in good company
+Richard> with the way the alpha port has done things for a long time.  Infer
+Richard> what you will with that.  ;-)
 
-It certainly isn't invasive; as for kludginess, it's in good company
-with the way the alpha port has done things for a long time.  Infer
-what you will with that.  ;-)
+	I am much more comfortable with a patch along the lines of
+Richard's proposal -- both in the short term for egcs-1.2 release and as a
+long-term solution.  I do not think that there is an elegant way to fix
+this. 
 
-
-r~
+David
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
