@@ -1,43 +1,35 @@
-Message-ID: <A60FFE6CA339C742BE11C311EA8BFF540163D8@mdsms2.inside.mdsroc.com>
-From: "Ruhland, Paul" <PRuhland@microwavedata.com>
-To: linuxppc-dev@lists.linuxppc.org
+From: Eric.Oosterhof@radisys.com
 Subject: RE: diff, patch, and symbolic links
-Date: Wed, 24 Apr 2002 14:18:07 -0400
+To: "Ruhland, Paul" <PRuhland@microwavedata.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Message-ID: <OF97E48CDE.74B2B7E9-ON88256BA5.0065B1DB@radisys.com>
+Date: Wed, 24 Apr 2002 11:34:01 -0700
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Eric,
+>Paul Ruhland suggests:
+>Eric,
+>
+>I always do a 'make mrproper' and then an 'rm -f .config*' ( from the root
+>of the linux tree of course ) before generating any patch files.  Just be
+>sure to save your '.config' somewhere before you remove it.
+>
+>This way all generated files including the 'include/asm' symlink are
+>removed.
+>
+>--
+>Paul Ruhland
+I did a 'make mrproper' prior, and I still have the symlink.  I also
+deleted it by hand, but that didn't help.  In fact, I even have that
+symlink in the original tree.  Is that the root of all evil?  Lastly, when
+I deleted the .config, and then do the diff and patch, patch complains that
+it wants to erase the .config in the ORIGINAL tree, which is totally wrong!
+I absolutely can't have the patch trying to affect the original tree - why
+does that even begin to occur?
 
-I always do a 'make mrproper' and then an 'rm -f .config*' ( from the root
-of the linux tree of course ) before generating any patch files.  Just be
-sure to save your '.config' somewhere before you remove it.
-
-This way all generated files including the 'include/asm' symlink are
-removed.
-
---
-Paul Ruhland
-
-
------Original Message-----
-From: Eric.Oosterhof@radisys.com [mailto:Eric.Oosterhof@radisys.com]
-Sent: Wednesday, April 24, 2002 2:07 PM
-To: linuxppc-dev@lists.linuxppc.org
-Subject: diff, patch, and symbolic links
-
-
-
-I have a customized kernel tree, and am trying to create the appropriate
-patch file.  I use diff -ruN, and then subsequently use patch -p0 to apply
-the patch.  When I apply the patch, the files that I have changed in the
-include/asm-ppc directory cause conflicts with the include/asm symbolic
-links to the same files.  I think that I can resolve this by editing the
-patch file to remove any reference to changes in the include/asm tree, but
-the exclude file that I created that listed all the include/asm files should
-have worked.  At any rate, I am looking for the "right" solution.
 
 Eric Oosterhof
 
