@@ -1,41 +1,25 @@
-To: Brian Boerner <bboerner@yahoo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: libc.so.6: cannot open shared object file: No such file or directory 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 11 Jul 2001 06:45:20 PDT."
-             <20010711134520.31259.qmail@web14202.mail.yahoo.com>
-Date: Wed, 11 Jul 2001 15:58:01 +0200
-Message-Id: <20010711135806.51F3F10DC8@denx.denx.de>
+From: jonathan.hurley@ni.com
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Booting HHL on Motorola Sandpoint X3 (with MPC 8245)
+Message-ID: <OFF9D2B304.538379E0-ON86256A86.006B0650@natinst.com>
+Date: Wed, 11 Jul 2001 14:29:45 -0500
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20010711134520.31259.qmail@web14202.mail.yahoo.com> you wrote:
->
-> IBM Walnut 405GP. Linux is MontaVista
-...
-> I did see one post mentioning that you needed a
-> symbolic link from the hardhat devkit to /. I was a
-> bit unclear on this and didn't see anything about this
-> in the mvista cdk documentation. I may have missed it,
-> anything is possible at this point.
->
-> Does anyone have any idea why init is being killed
-> off? It complains libc.so.6 isn't being found? It's
-> certainly in the ramdisk. I'm sure folks have run into
-> this before.
+I recently downloaded the journeyman HHL distribution to install on a
+Motorola Sandpoint X3 system with an 8245 PPC processor (Unity X4 MPPMC).
+I followed the install instructions, and realized (when the system didn't
+boot) that the init code for the sandpoint was written for the Sanpoint X2
+with an 8240 PPC.  I believe there have been some minor changes in the
+main board design between the X2 and X3, and possibly some changes to the
+MPPMC.  Does HHL currently support the Sandpoint X3 system, and if not are
+there any future plans to add support for the new platform?
 
-See http://www.denx.de/tips+tricks-en.html#libpath
+Thanks, in advance, for any assistance you can give me.
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"He only drinks when he gets depressed." "Why does he get depressed?"
-"Sometimes it's because he hasn't had a drink."
-                                     - Terry Pratchett, _Men at Arms_
+Jonathan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
