@@ -1,38 +1,31 @@
 From: Paul Mackerras <paulus@linuxcare.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <14729.3482.592712.436379@argo.linuxcare.com.au>
-Date: Thu, 3 Aug 2000 16:13:46 +1000 (EST)
-To: Keith Owens <kaos@ocs.com.au>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Where does ppc define __start___ksymtab?
-In-Reply-To: <28827.965112049@ocs3.ocs-net>
-References: <28827.965112049@ocs3.ocs-net>
+Message-ID: <14729.3700.660339.484633@argo.linuxcare.com.au>
+Date: Thu, 3 Aug 2000 16:17:24 +1000 (EST)
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: keyboard problems
+In-Reply-To: <news2mail-8m5oaq$6tj$3@mate.bln.innominate.de>
+References: <news2mail-8m5oaq$6tj$3@mate.bln.innominate.de>
 Reply-To: paulus@linuxcare.com.au
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> I have been trying to find where ppc defines __start___ksymtab and
-> __stop___ksymtab symbols.  These delimit the __ksymtab entries for
-> module symbols.  On every other architecture that supports modules,
-> arch/xxx/vmlinux.lds contains lines like this
+Thomas Graichen writes:
 >
->   __start___ksymtab = .;	/* Kernel symbol table */
->   __ksymtab : { *(__ksymtab) }
->   __stop___ksymtab = .;
->
-> I can find no equivalent lines for ppc in a stock 2.4.0-test5 source
-> tree yet ppc obviously defines them somewhere.  But where?
+> i have a little keyboard problem on my blueberry imac with the
+> standard usb keyboard: whenever i type something very quickly
+> followed by space the typed in will be repeated before the
+> space (best example: i want to type "cd " and get "cdcd ")
+> - this gets a bit annoying - does anybody have the same
+> problem (or even a fix for it) ? - is it more a soft-
+> wareproblem (i hope :-) or maybe a hardwareproblem ?
+> (i had it on all kernels from 2.2.x to 2.4.0-testx)
 
-I think they must be defined automagically by the linker.  They aren't
-defined explicitly anywhere but we still end up with a __ksymtab
-section with the __start___ksymtab and __stop___ksymtab symbols
-defined at the beginning and end of it.
-
-We can add those lines if you like, that's no problem.
-
-Paul.
+It's simply a bug in the USB keyboard driver.  It just means that the
+driver isn't coping with the "overflow" code that the keyboard sends
+when it has too many keys depressed at once.
 
 --
 Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
