@@ -1,46 +1,29 @@
 Subject: Re: Interfaces supported on PPC860?
-To: DBrown03@harris.com ("Brown, David (dbrown03)")
-Date: Fri, 7 Apr 2000 11:12:54 +1000 (EST)
-Cc: linuxppc-embedded@lists.linuxppc.org ('linuxppc-embedded@lists.linuxppc.org')
-In-Reply-To: <BE1C564723B3D21191FD0000F840E39801D81499@rfcmx2.rfc.comm.harris.com> from "Brown, David (dbrown03)" at Apr 06, 2000 12:04:28 PM
+To: jason_wohlgemuth@gilbarco.com (Wohlgemuth, Jason)
+Date: Fri, 7 Apr 2000 11:16:15 +1000 (EST)
+Cc: DBrown03@harris.com ("'Brown, David (dbrown03)'"),
+        linuxppc-embedded@lists.linuxppc.org ('linuxppc-embedded@lists.linuxppc.org')
+In-Reply-To: <200004061620.MAA07501@hoover.gilbarco.com> from "Wohlgemuth, Jason" at Apr 06, 2000 12:20:54 PM
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-Id: <20000407011254.DE97D3C9CA@elph.research.canon.com.au>
+Message-Id: <20000407011615.C0BD63C9C8@elph.research.canon.com.au>
 From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-"Brown, David (dbrown03)" writes:
-> If I should be reading some existing document or web-page instead of asking
-> the list, please kindly redirect me.
+Wohlgemuth, Jason writes:
+> Off the top of my head, I am pretty sure that you will not be able to
+> support RTS/CTS flow control over the  SMC/SCC's, I believe that at one time
+> we thought that the SCC's could do it but it isn't truely done in hardware.
 
-It doesn't answer all of your questions directly, but a good starting point
-is the HOWTO at:
-    http://members.xoom.com/greyhams/linux/PowerPC-Embedded-HOWTO.html
+I know SMC flow control isn't supported because the CPM hardware doesn't
+support SMC flow control, but I was under the impression that SCC flow control
+was supported.
 
-> Interfaces of the existing board:
+Can anyone elaborate on this for me please?
 
-Is the existing board a custom one, or does it have a name you could run past
-us?  Most of the existing off-the-shelf boards are already well supported.
-
-A couple of comments on stuff I know about:
-
-> Flash: 1MB(AMD) + 8MB(Intel)
-
-Fitting a compressed kernel + root filesystem + application in 1MB might be a
-bit of a challenge, but it should be doable provided your app isn't large.
-If you don't need to write to flash from your application, you don't need a
-driver for it.
-
-> SCC1: Ethernet (external PHY), using RXD, TXD, RTS, CTS, CD, and RCLKI
->       (ethernet chip supplies 20MHz clock on RCLKI)
-
-What type of PHY are you using?  You may need some minor tweaks if it's not
-already supported, but the PHY interface is pretty standard so it shouldn't be
-hard.
-
-Regards,
+Thanks,
 Graham
 --
 Graham Stoney
