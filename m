@@ -1,54 +1,38 @@
-Date: Wed, 9 Jul 2003 20:35:36 +0400
-From: Jack Angel <man@oceanography.ru>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: embeddedplanet.com IcePlanet bootloader troubles
-Message-Id: <20030709203536.12e4ed0e.man@oceanography.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <3F0C454C.6080106@earthlink.net>
+Date: Wed, 09 Jul 2003 09:39:40 -0700
+From: Dean Matsen <deanmatsen@earthlink.net>
+To: Dan Malek <dan@embeddededge.com>
+Cc: Eugene Surovegin <ebs@ebshome.net>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Ethernet PHY chip discovery not working on 855T with  971/972
+ chips
+References: <3F0B7B28.7040902@earthlink.net> <5.1.0.14.2.20030708195315.038110e8@mail.ebshome.net> <3F0BA671.1050900@embeddededge.com> <3F0BAD39.9060708@earthlink.net> <3F0C2898.90508@embeddededge.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello.
+Dan Malek wrote:
 
-I've got the following problem with embeddedplanet.com IcePlanet board
+>
+> Dean Matsen wrote:
+>
+>> Yes, I see we have no pullup on that line. We do dedicated HVAC
+>> applications, so we
+>> don't need to do this search.
+>
+>
+> But.......the hardware is broken. The MDIO is supposed to be
+> an open-drain with a pullup. I guess you may be lucky the
+> ends of the connection are driving the line proplerly, but it
+> could be luck that will run out someday.
+>
+>
+> -- Dan
+>
+Well, I don't disagree there. We're going to investigate updating the
+schematics for future products. Thanks for the input.
 
-At the beginning, the iceplanet was, when turned on, waiting for 2
-seconds, and then booting into diagnostic utilities. The boot process
-could be interrupted, leading to the bootloader shell. In this shell,
-config variables may be get/set by the "set" command. The value of
-"Variant" variable which designates the on-board processor type, was
-set to "GPr", and the legal values for this variable were "?" and "GPr".
-
-Trying to load and boot something using tftp, I tried the file which
-is mentioned in the iceplanet manual 4xx_pc_load.pdf as an example -
-PCL4xx103.ep
-After loading, I typed "go", the file executed, spitting out messages
-that it's a planetcore bootloader flash burner, then, almost
-immediately, it displayed the message that burning is underway, and,
-not much time afterwards, complete and that I should press "R" to reset.
-
-After reset, the bootloader loaded to it's shell (no autoboot),
-displaying:
-PPC4xx PlanetCore Boot Loader v1.03
-Copyright 1998-2002 Embedded Planet, LLC. All rights reserved.
-DRAM available size = 64 MB
-wv 435 errors CV 720 errors
-RAM test failed
-
-Before experimenting with tftp, the "DRAM ok" message was displayed.
-Also, the set command exposed the fact that Variant variable was now
-set to "GP" and
-legal value for it were "?", "GP".
-
-Currently, when cold-booted after some off-line time, the DRAM is
-reported ok, and tftp works,
-but after some uptime, the device report the same errors about RAM
-(various numbers each time),  and fails to load anything via tftp.
-Doesn't autoboot, either (manual "go" works though, going to
-diagnostic utilities).
-
---
-The human knowledge belongs to the world
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
