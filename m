@@ -1,51 +1,37 @@
-Message-ID: <19990208104605.3603.qmail@www0i.netaddress.usa.net>
-Date: 8 Feb 99 10:46:05 GMT
-From: Simon Stapleton <s.stapleton@usa.net>
+Date: Mon, 8 Feb 1999 12:53:37 +0200 (EET)
+From: Kostas Gewrgiou <gewrgiou@imbc.gr>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Wacom tablet woes, Xfree86
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: Kernel message
+Message-ID: <Pine.LNX.4.04.9902081248200.459-100000@idd-01.imbc.gr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi.
 
-I've been trying to get some support for my Wacom tablet under LinuxPPC
-(Release 4, 2.130 kernel), with little to no success.  'Out of the box', the
-tablet only works in 'relative' mode, and the buttons my puck all return
-button 1 events.
+I got the following from the kernel, (vger-2.2.0-990201)
+i was playing with loadkeys at that time, maybe its usefull
+in the developers maybe not, i have no idea how to turn this
+to something usefull.
 
-I've tried the various 'mousemode' commands, but the tablet refuses to budge
-from handler 58. Quite what this signifies, I have no idea.
+  Kostas Gewrgiou
 
-I downloaded and installed Xfree86 3.3.3, as it has a wacom driver.  Of
-course, this doesn't work.  The 'mouse' section works fine, albeit with only
-one button, as before, but the Xinput driver assumes a PC Wacom tablet
-connected to a serial port.  And mine, of course, is an ADB model.
-Xinput complains when trying to initialise the tablet, complaining that the
-device is 'not a TTY'.
+NIP: 0182A070 XER: 00000000 LR: 01801EAC REGS: c3483e90 TRAP: 0500
+MSR: 0000d032 EE: 1 PR: 1 FP: 0 ME: 1 IR/DR: 11
+TASK = c3482000[277] 'rc5des' mm->pgd c3480000 Last syscall: 78
+last math c2af0000
+GPR00: E5E74579 7FFFFA84 9B449F0E 0212050F 73E1FEAA 45086972 7C81A0EE
+3C571621
+GPR08: 83F32258 4B765D95 7356167B 313C4254 18253FCD 46DF33E4 07D0C6CC
+63186637
+GPR16: CF819E85 799561AC 68D44C12 CD405D72 3D919D13 950149FD 14B690AE
+A5959BEF
+GPR24: C987064F CDC150F7 B00426E7 85D30A31 1825F482 3E07D996 61FD48F2 
+4BD08963
 
-So, I guess I'm going to have to start hacking.  My question, however, is
-this...
 
-If I put support into the xinput driver, re-initialising the tablet etc, will
-extended information such as tilt and pressure be trapped and dumped by the
-kernel, which only seems to recognise the tablet as a basic one-button mouse? 
-Do I need to hack the kernel as well?  I'm not entirely sure how all the
-drivers hang together (I'm only starting coding under linux, although I have
-many years of commercial 'C' experience.  This will be a first real 'in the
-guts of the beast' experience.).
 
-I assume that If I start hacking the kernel as well, I ought to move up to the
-new 2.2 tree.  Which adds a whole new level of complexity. Heh.
-
-Anyway, TIA for any help or guidance
-
-Simon
-
-____________________________________________________________________
-Get free e-mail and a permanent address at http://www.netaddress.com/?N=1
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
