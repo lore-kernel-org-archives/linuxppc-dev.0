@@ -1,73 +1,65 @@
-Date: Sat, 2 Sep 2000 12:12:18 +0200
-From: Bernhard Reiter <bernhard@intevation.de>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: pppd modem problem (2.4.0-test7 lombard)
-Message-ID: <20000902121218.B16589@cheops.usf.Uni-Osnabrueck.DE>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="eheScQNz3K90DVRs"
+Message-ID: <39B0D6D7.DE13ABA9@pop.agri.ch>
+Date: Sat, 02 Sep 2000 12:30:47 +0200
+From: Andreas Tobler <toa@pop.agri.ch>
+MIME-Version: 1.0
+To: Bernhard Reiter <bernhard@intevation.de>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: pppd modem problem (2.4.0-test7 lombard)
+References: <20000902121218.B16589@cheops.usf.Uni-Osnabrueck.DE>
+Content-Type: multipart/mixed;
+ boundary="------------ACD0761308EAF45213621C65"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---eheScQNz3K90DVRs
+This is a multi-part message in MIME format.
+--------------ACD0761308EAF45213621C65
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-Hi ppc Developers,
-recently tried Pauls devel tree, because I wanted to check=20
-fresh code for the Zyxel Omninet USB TA.
+Bernhard Reiter wrote:
 
-Thanks to Ben and Franz for documenting the changes of the input layer
-(it took me a bit to get the stuff working, but it would have been
-impossible without the hints.)
+> I am using pppd 2.3.10 and
 
-Anyway I ran into a different problem:
-pppd does not work as before. When I boot with the old kernel and run
-over the modem, everything is fine.
+[snip]
 
-Using the same config does not work on the new 2.4.0-test7
-kernel. To my knowledge the kernel configuration has all the ppp
-stuff activated. I did not change this part from Paul's config.
+> I also have the problem that after that sometimes, the ttS0 port cannot
+> be opened anymore.
+>
+> Am I missing something obvious here?
 
-I am using pppd 2.3.10 and
-it starts sending the first
-	send [LCP ConfReq id=3D0x1 <asyncmap .....
+May an update to pppd-2.4.0 would be an idea. I run here almost the latest dev
+kernels on my wallstreet and I have no problems using pppd with ttyS0.
 
-but does not see any result. This message is repeated a couple of time
-before it gets a SIGHUP. (Of course the remote probably closed
-the connection.) Then pppd tries to send two other user requests
-and exits with and Input-Output Error.
-This looks like this (without the debug messages):
-Sep  2 11:24:04 albunea pppd[597]: pppd 2.3.10 started by root, uid 0
-Sep  2 11:24:04 albunea pppd[597]: Using interface ppp0
-Sep  2 11:24:04 albunea pppd[597]: Connect: ppp0 <--> /dev/ttyS0
+The pkg you'll find here: ftp://linuxcare.com.au/pub/ppp/
+It is a tar.gz, if you prefer an rpm then I attach the spec file. With this spec
+file and the source you can build your own rpm with rpm -ba file.spec (-ba
+stands for binary, all. The binary rpm and the src.rpm will be built. This has
+to be done in the appropriate place)
 
-Sep  2 11:24:26 albunea pppd[597]: Hangup (SIGHUP)
+If the spec is ok?? Don't know for me it works.
 
-Sep  2 11:24:32 albunea pppd[597]: Connection terminated.
-Sep  2 11:24:32 albunea pppd[597]: tcflush failed: Input/output error
-Sep  2 11:24:32 albunea pppd[597]: Exit.
+Good luck
 
+Andreas
+--------------ACD0761308EAF45213621C65
+Content-Type: application/x-gzip;
+ name="ppp.spec.gz"
+Content-Disposition: inline;
+ filename="ppp.spec.gz"
+Content-Transfer-Encoding: base64
 
-I also have the problem that after that sometimes, the ttS0 port cannot
-be opened anymore.
+H4sICHSljjkAA3BwcC5zcGVjAHVSyW7bMBC98yvmUN0aqS16CAz04A2G0HiBnORq0ORYJkyR
+LJe2adF/71BeEMTOgaDmzZt5bzhap67j/mUAzjmQHDtrwHFx4C3CznrQyqTfbME77CnsGX1Q
+1gzgS/m1/MQa1MgD5T5zNrbuxat2HwcgVYhebVPkW41s5m1yA1hg/GX9QZm2mvRCga1t8oKq
+exXBPZbCdiVPg8qlbUV6+dwVf1fD8ffhbLp5njbrern4V0buy/YPGyWlZWMtSVax69mMFRKD
+8MpF8ske9wir1eo82p4bqTFAJFhi5EoHsDsIGCP5guSA93QydABlhE6ScCas2ak2+czJpeY4
+CjEi+h0XCNQXHH1b351JuY/B1kbFs5VQsjqCxx9JeXJw1JFe/URPffqKA3qD+iOgosgDvYVT
+GmVO51VYLlEynms7K5PGkoZ1Hh0raADyzoptfhBWVmfDyDp+QKIpEyLXug/hFMCoXkzq5tuH
+ZjXfjJ7qh8mmWS4fqxR8FbYkOh++m++4genj+FYaozgtYkfuA+3DCmimw8l8errKft9w3FKA
+1cPTrF6s2UW4Ense2Vknn/seKu9fcUhCvuFk6C2HJo3hmtfDV/1S5260JJSYhVQeLsMVxxe+
+ANmfuwsoPJLcVdb2f+ONhHtV9R/6XwiWjAMAAA==
+--------------ACD0761308EAF45213621C65--
 
-Am I missing something obvious here?
-
-	Bernhard
---=20
-Professional Service around Free Software                (intevation.net) =
-=20
-The FreeGIS Project				            (freegis.org)
-Association for a Free Informational Infrastructure            (ffii.org)
-
---eheScQNz3K90DVRs
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
-
---eheScQNz3K90DVRs--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
