@@ -1,32 +1,37 @@
-From: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
-To: "Bastien Nocera" <hadess@hadess.net>,
-	"Jeff Garzik" <jgarzik@mandrakesoft.com>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: mii-tool support for gmac/sungem
-Date: Sun, 22 Sep 2002 23:57:33 +0200
-Message-Id: <20020922215733.9005@192.168.4.1>
-In-Reply-To: <1032772148.4083.75.camel@bnocera.surrey.redhat.com>
-References: <1032772148.4083.75.camel@bnocera.surrey.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: mii-tool support for gmac/sungem
+From: Bastien Nocera <hadess@hadess.net>
+To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Date: 23 Sep 2002 01:19:43 +0100
+Message-Id: <1032740384.13093.199.camel@dozo>
+Mime-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Rock, it works. Does ethtool work for every card for which the driver
->has an MII interface ?
+Hello,
 
-Except that on pmacs, the interface is powered down about 10 seconds
-after you ifconfig it down. This is good for power management of
-laptops obviously but means you won't be able to probe for the link
-status at that point.
+I wanted to know if mii-tool was supposed to work with the gmac/sungem
+card in the iBook2 laptops. I tried it out:
 
-Worse (my fault), sungem in the official tree has a bug that will
-cause it to still try to bang the HW if you use the mii ioctls
-while the HW is down, thus causing machine check oops'es (that
-is fixed in my tree, I still have to send the patch to DaveM)
+$ sudo mii-tool
+SIOCGMIIPHY on 'eth0' failed: Operation not supported
+SIOCGMIIPHY on 'eth1' failed: Operation not supported
+no MII interfaces found
 
-Ben.
+I see code for this ioctl in the kernel though in gem_ioctl
+(drivers/net/sungem.c) and some messages that seem relevant in dmesg:
 
+eth0: MII PHY ID: 4061e0 BCM 5221
+eth0: switching to forced 100bt
+eth0: switching to forced 10bt
+etc.
+
+Any ideas ?
+
+Cheers
+
+--
+/Bastien Nocera
+http://hadess.net
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
