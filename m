@@ -1,41 +1,65 @@
-Message-ID: <3CEBD3A2.8090200@pacbell.net>
-Date: Wed, 22 May 2002 10:21:38 -0700
-From: Armin <akuster@pacbell.net>
+Message-ID: <1541.206.104.177.96.1022091123.squirrel@nevil.org>
+Date: Wed, 22 May 2002 13:12:03 -0500 (CDT)
+Subject: No Input from SMC1 on MPC860T - Resolved
+From: "Daris A Nevil" <dnevil@snmc.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Cc: <sjl@dent.vctlabs.com>
+Reply-To: dnevil@snmc.com
 MIME-Version: 1.0
-To: acurtis@onz.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Stable BK for 405GP Walnut?
-References: <NCBBIINEHIPFGJPLBEIFAEGJDHAA.acurtis@onz.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Allen Curtis wrote:
-> I retrieved the latest linuxppc_2_4 source code with the intentions of
-> building a Walnut kernel. We are looking to build the next shippable kernel
-> ASAP so we thought it would be best to use the "stable" version.
-> Unfortunately when I tried to configure and compile we encountered several
-> surprises:
->
-> 1. All the 405GP stuff is missing from the non-development tree. (PCI, DMA,
-> all the OCP support such as Ethernet)
-> 2. Compile errors in ppc4xx_pic.c, invalid relocation type messages. (This
-> is something that I can solve with a little time.)
->
-> What should I use to build a Walnut kernel?
->
->
->
->
+I wrote to the list about a month ago with a problem I experienced while
+porting Linux 2.4.18 to a custom MPC860T based board.  The problem related
+to the console port SMC1.  The console worked fine in PPCBoot, but once in
+Linux the console would output data.  The bash/sash shell could not see
+input from SMC1.
+
+My associate Stephanie Lockwood solved the problem.  In her words:
+
+> After much tracing through kernel source and an insightful comment from
+> my husband (who happens to be a diagnostics engineer), I now have a
+> kernel with reliable terminal input.
+> The key was to not enable the FRZ signal when setting up the timerbase;
+> apparently I was getting a spurious freeze signal which was turning off
+> my timer interrupts partway through. The keyboard interrupts kept
+> coming, but the back-end routine to drain the buffer into the user
+> program stopped running.
 >
 
-Allen,
+I felt this info might be useful to others involved in porting the latest
+kernel to new hardware.
 
 
-you will find all that in linuxppc_2_4_devel
+Here is the patch:
 
-armin
+--- arch/ppc/kernel/m8xx_setup.c.old        Fri May 10 16:07:23 2002
++++ arch/ppc/kernel/m8xx_setup.c        Mon May 13 19:05:11 2002
+@@ -184,10 +184,12 @@
+          * (or from the other point of view, to get decrementer interrupts
+          * we have to enable the timebase).  The decrementer interrupt
+          * is wired into the vector table, nothing to do here for that.
++         *
++         * Do NOT enable the FRZ signal, it stops timer intr -- SJL
+          */
+         ((volatile immap_t *)IMAP_ADDR)->im_sit.sit_tbscr =
+                                 ((mk_int_int_mask(DEC_INTERRUPT) << 8) |
+-                                         (TBSCR_TBF | TBSCR_TBE));
++                                         TBSCR_TBE);
+
+         if (request_8xxirq(DEC_INTERRUPT, timebase_interrupt, 0, "tbint",
+NULL) != 0)
+                 panic("Could not allocate timer IRQ!");
+
+
+Regards,
+Daris Nevil
+Simple Network Magic Corporation
+
+
+--
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
