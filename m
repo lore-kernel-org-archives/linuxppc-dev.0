@@ -1,18 +1,20 @@
-Return-Path: <Steffen.Rumler@siemens.com>
-Received: from david.siemens.de (david.siemens.de [192.35.17.14])
-	by ozlabs.org (Postfix) with ESMTP id 4B2172BF16
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.xs4all.nl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id 4DC192BF16
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Jan 2005 20:07:22 +1100 (EST)
-Received: from mail1.siemens.de (mail1.siemens.de [139.23.33.14])
-	by david.siemens.de (8.12.6/8.12.6) with ESMTP id j0C8cgtr020535
-	for <linuxppc-embedded@ozlabs.org>; Wed, 12 Jan 2005 09:38:42 +0100
-Message-ID: <41E4E1EB.6080903@siemens.com>
-Date: Wed, 12 Jan 2005 09:38:03 +0100
-From: Steffen Rumler <Steffen.Rumler@siemens.com>
+	Wed, 12 Jan 2005 20:52:11 +1100 (EST)
+Received: from linux.local (linux.local [192.168.1.97])
+	by protonic.xs4all.nl (Postfix on SuSE Linux 7.2 (i386)) with ESMTP id
+	43E16D4052 for <linuxppc-embedded@ozlabs.org>;
+	Wed, 12 Jan 2005 10:41:10 +0100 (CET)
+From: David Jander <david.jander@protonic.nl>
+To: linuxppc-embedded@ozlabs.org
+Date: Wed, 12 Jan 2005 10:51:58 +0100
 MIME-Version: 1.0
-To: linuxppc <linuxppc-embedded@ozlabs.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Subject: Kernel boot hangs by parallel flood pings
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200501121051.58953.david.jander@protonic.nl>
+Subject: MPC8xx: Using SCM/SCC and standard 16C550 Uarts together...
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,68 +25,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I'm using a 2.4.20 kernel (PPC).
 
-When I run multiple 'ping -f' directed to my board
-during the kernel boots, sometimes it hangs with
-the following messages:
+Hi all,
 
+The situation is:
+Our custom board needs to use SCM1 as console, and has an external quad uart 
+chip (16C554) connected to the external bus, mapped at 0xf8100000.
+I am using the ppclinux_2_4_devel tree from Denx.
+I ioremapped that address space, and it seems to work. Right now I don't have 
+the daughterboard with the quad-uarts working (as in hardware), so I can't 
+fully test that.
 
-   Memory BAT mapping: BAT2=64Mb, BAT3=32Mb, residual: 84Mb
-   Linux version 2.4.20-rthal5 (ru@styx) (gcc version 2.95.3 20010111 (prerelease/franzo/20010111))
-   #9 Tue Jan 11 17:09:22 CET 2005
-   On node 0 totalpages: 29859
-   zone(0): 29859 pages.
-   zone(1): 0 pages.
-   zone(2): 0 pages.
-   Kernel command line: bootdev=aps0 ip=218.1.36.70:218.1.36.47:218.1.36.254:255.255.255.0::eth0:off
-   panic=1 mem=119436k
-   Calibrating delay loop... 194.15 BogoMIPS
-   ...
-   NET4: Linux TCP/IP 1.0 for NET4.0
-   IP Protocols: ICMP, UDP, TCP
-   IP: routing cache ha
-                 ^^^^^^^
-                   the kernel boot hangs here
+The problem is:
+Apparently arch/ppc/8xx_io/uart.c doesn't take into account other serial 
+drivers that may initialize later, and uses a serial_state struct statically.
+Shouldn't this be visible to the outside? Shouldn't there be a global 
+serial_state structure somewhere that lists all serial ports?
+Right now, I get this:
 
+-----------------------------------
+...
+CPM UART driver version 0.04
+ttyS0 at 0x0280 is on SMC1 using BRG1
+ttyS1 at 0x0200 is on SCC3 using BRG2
+ttyS2 at 0x0300 is on SCC4 using BRG3
+pty: 256 Unix98 ptys configured
+Serial driver version 5.05c (2001-07-08) with MANY_PORTS SHARE_IRQ enabled
+...
+VFS: Mounted root (jffs2 filesystem).
+Mounted devfs on /dev
+Freeing unused kernel memory: 56k init
+------------------------------------
 
-I have checked this with the BDI2000 and found that the
-kernel loops anywhere inside ip_route_input().
+And then nothing more. I assume, at that point init opens /dev/console (ttyS0) 
+and that device doesn't exist, since drivers/char/serial.c doesn't detect any 
+uart at the moment.
+If it did, maybe I would get console stuff out of the first 16c554 port.
 
-I think this is because the ethernet driver (fcc_enet.c)
-enables the hardware too already inside it's init routine (fec_enet_init()).
+Has anybody else tried this?
+What would be the right way to fix this?
 
-In this way, frames may be received and forwarded to the upper
-layers with netif_rx(), before the TCP/IP was initialized.
-
-I suggest to delay the lines
-
-   /* Enable transmit/receive */
-   fccp->fcc_gfmr |= FCC_GFMR_ENR | FCC_GFMR_ENT;
-
-to the open entry point (fcc_enet_open()), which is
-triggered by 'ifconfig up' in the following way:
-
-
-   if(!((fccp->fcc_gfmr) & FCC_GFMR_ENR))
-      fccp->fcc_gfmr |= (FCC_GFMR_ENR | FCC_GFMR_ENT);
-
-By the way, fcc_enet_close() does _NOT_ stop the hardware.
-Hopefully, this is not a real problem.
-
-
-Steffen
+Greetings,
 
 -- 
-
-
---------------------------------------------------------------
-
-Steffen Rumler
-ICN CP D NT SW 3
-Siemens AG
-Hofmannstr. 51                 Email: Steffen.Rumler@siemens.com
-D-81359 Munich                 Phone: +49 89 722-44061
-Germany                        Fax  : +49 89 722-36703
-
---------------------------------------------------------------
+David Jander
+Protonic Holland.
