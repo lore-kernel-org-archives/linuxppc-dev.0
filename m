@@ -1,19 +1,18 @@
 Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao04.cox.net (fed1rmmtao04.cox.net [68.230.241.35])
-	by ozlabs.org (Postfix) with ESMTP id B16D567A71
+Received: from fed1rmmtao02.cox.net (fed1rmmtao02.cox.net [68.230.241.37])
+	by ozlabs.org (Postfix) with ESMTP id 1895667A70
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Feb 2005 05:58:40 +1100 (EST)
-Date: Wed, 23 Feb 2005 11:58:38 -0700
+	Thu, 24 Feb 2005 06:01:34 +1100 (EST)
+Date: Wed, 23 Feb 2005 12:01:23 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: Kumar Gala <galak@freescale.com>
-Message-ID: <20050223185838.GH345@smtp.west.cox.net>
-References: <Pine.LNX.4.61.0502222257230.7799@blarg.somerset.sps.mot.com>
+To: Shawn Jin <shawnxjin@gmail.com>
+Message-ID: <20050223190123.GI345@smtp.west.cox.net>
+References: <c3d0340b05022310396240c8ac@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.61.0502222257230.7799@blarg.somerset.sps.mot.com>
-Cc: akpm@osdl.org, linuxppc-embedded@ozlabs.org
-Subject: Re: [PPC32][update] Report chip version in /proc/cpuinfo for 85xx
-	boards
+In-Reply-To: <c3d0340b05022310396240c8ac@mail.gmail.com>
+Cc: ppcembed <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] Ebony's UBoot awareness
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,16 +23,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Feb 22, 2005 at 10:59:17PM -0600, Kumar Gala wrote:
-> Andrew,
-> 
-> Here here is an updated version of the previous patch which fixes a 
-> build problem.  It is for post 2.6.11.
-> 
-> Report the chip version in /proc/cpuinfo on 85xx ADS and CDS platforms.
+On Wed, Feb 23, 2005 at 10:39:34AM -0800, Shawn Jin wrote:
 
-How about doing it in arch/ppc/kernel/setup.c with a test for it being
-non-null (if needed?).
+> This adds UBoot support on Ebony board and also sets emac's PHY mode
+> explicitly during initialization as Eugene Surovegin provided.
+[snip]
+> +#include "../../../../drivers/net/ibm_emac/ibm_emac_phy.h"
+
+This will not work with O= for example.  The correct method is to modify
+the Makefile with a CFLAGS_foo.o += -Idrivers/net/ibm_emac
 
 -- 
 Tom Rini
