@@ -1,37 +1,33 @@
-Message-Id: <9902151757.AA75924@marc.watson.ibm.com>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: bootstrap stuffs 
-In-Reply-To: Message from Benjamin Herrenschmidt <bh40@calva.net>
-   of "Sun, 14 Feb 1999 19:58:05 +0100." <19990214195805.018190@smtp.calvacom.fr>
-Date: Mon, 15 Feb 1999 12:57:34 -0500
-From: David Edelsohn <dje@watson.ibm.com>
+In-Reply-To: <9902151757.AA75924@marc.watson.ibm.com>
+Date: Mon, 15 Feb 1999 19:20:22 +0100
+To: David Edelsohn <dje@watson.ibm.com>, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: bootstrap stuffs
+Message-Id: <19990215192022.006915@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> Benjamin Herrenschmidt writes:
+On Mon, Feb 15, 1999, David Edelsohn <dje@watson.ibm.com> wrote:
 
-Benjamin> On Sun, Feb 14, 1999, David Edelsohn <dje@watson.ibm.com> wrote:
->> For correctness, "sync" must be used, but for best performance,
->> "sync" should be used sparingly, only when necessary.
+>	As Gabriel correctly explained, a "sync" instruction may be
+>necessary before interrupts are enabled if some off-chip operation, like
+>modifying an interrupt controller on the bus, was performed.  That is
+>because of the bus operations which need to complete before interrupts can
+>be enabled, not because of the enabling itself.
 
-Benjamin> Ok thanks. In this specific case (jump to bootstrap), I don't really care
-Benjamin> about the performance loss introduced by a sync, I'll keep one just after
-Benjamin> the mtmsr to make sure that the interrupt switch is fully done before I
-Benjamin> hack with srr0 and the MMU.
+Yep, I knew this case, the sync after switching them OFF was just a
+paranoid move on my part. Thanks for the tips.
 
-	"isync" is used to discard instruction pre-fetch and ensure that
-all previous instructions have occurred.  isync is not necessary for your
-situation either.
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
-	As Gabriel correctly explained, a "sync" instruction may be
-necessary before interrupts are enabled if some off-chip operation, like
-modifying an interrupt controller on the bus, was performed.  That is
-because of the bus operations which need to complete before interrupts can
-be enabled, not because of the enabling itself.
 
-David
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
