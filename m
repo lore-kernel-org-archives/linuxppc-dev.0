@@ -1,35 +1,41 @@
-Date: Tue, 6 Jun 2000 16:20:29 -0700 (PDT)
-From: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
-To: Ryan Boder <rboder@grn.georet.net>
+Message-Id: <200006070557.HAA01163@piglet.grunz.lu>
+Date: Wed, 7 Jun 2000 07:57:28 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: 2940UW & 2.4.0-test-ac7 PCI probs
+To: toa@pop.agri.ch
 cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: G4 configuration
-In-Reply-To: <393D6256.89D44EA6@grn.georet.net>
-Message-ID: <Pine.LNX.3.96.1000606161902.1622C-100000@deepspace.mklinux.org>
+In-Reply-To: <393CF541.4E4D88B7@pop.agri.ch>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 6 Jun 2000, Ryan Boder wrote:
+Hi Andreas,
 
-> Does anyone have a .config to configure a kernel that is stable on the
-> G4 sawtooth? I have the current stable source but every kernel I compile
-> freezes and corrupts my root file system. If anyone has one will you
-> please mail it to me?
+On   6 Jun, this message from Andreas Tobler echoed through cyberspace:
+>> So if the SCSI driver actually uses the IO region, it will most
+>> certainly not work....
+>
+> How do I find that out?
 
-2.3 or 2.2?  The 2.2.15pre3 that Ben H. built (any recent iBook kernel) is
-rock solid. I have no advice on 2.3....
+RTFS ;-)
 
+> Below it says I/O ports unassigned and it works. (2399p9)
 
-David
+So it is probably using the memory region. A lot of those chips support
+two different views on their register file: via an IO port window and
+via a memory(-mapped) region. But the functionality available is the
+same on both...
 
----------------------------------------------------------------------
-A brief Haiku:
+Michel
 
-Microsoft is bad.
-It seems secure at first glance.
-Then you read your mail.
-
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
