@@ -1,35 +1,32 @@
-Message-ID: <3A22A266.68B77C68@siemens.at>
-Date: Mon, 27 Nov 2000 19:05:26 +0100
-From: Rainer Kloud <rainer.kloud@siemens.at>
+Message-ID: <3A22B028.6182249F@fnc.fujitsu.com>
+Date: Mon, 27 Nov 2000 13:04:08 -0600
+From: Konstantin Sabodash <konstantin.sabodash@fnc.fujitsu.com>
 MIME-Version: 1.0
-To: Julia Elbert <jelbert@enerdyne.com>
-CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: uart.c and scc2
-References: <67505026E29DD311A9AA00508B7315F350A5D1@EXCHANGE>
+To: linuxppc-embedded@lists.linuxppc.org, wg@world.std.com
+Subject: Memory map
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Julia,
+Hello TWG - pat, mark & steve.
 
-> Does anyone know the status of scc2 in uart.c?
-> How far is it from working?
+I've seen your post to linuxppc-embedded@lists.linuxppc.org  regarding
+memory access  from Linux.
+Your code works fine.
 
-I have done a quick port of the uart to SCC1 for my
-Scout Board (MPC 8260, linux2.4.0-test4).
-Because of other problems with my port for Scout
-(and other running projects) I was not able to publish
-this changes.
+ "paddr2 = mmap(0,size,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0x50000000);"
 
-If you want to get the source file I can mail it to you.
-
-Best Regards
-Rainer
+But  page size is 1K and their start addresses  appears in address
+space  with increment 0x1000.
+So if I put 0x50000400 address it give me segmentation fault. It works
+fine in region 0x50000000 ...  0x500003ff  next 0x50001000 ...
+0x500103ff and so on.
+Question : how can we increase page size to eliminate these holes.
+Thanks in advance.
 
 --
-Rainer Kloud               mailto:rainer.kloud@siemens.at
-Siemens AG, PSE ECT OTN 2, Rampengasse 3-5, A-1190 Vienna
-Phone: +43-(0)51707-43873         Fax: +43-(0)51707-53581
+Konstantin Sabodash
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
