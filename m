@@ -1,145 +1,70 @@
-From: "Robert Berger" <rber@intracom.gr>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Cc: "Miku Jha" <jha_miku@yahoo.com>, "Wolfgang Denk" <wd@denx.de>,
-	"Eugene Surovegin" <ebs@ebshome.net>,
-	"Robert Berger" <rber@intracom.gr>
-Subject: RE: ppc440 and i2c 
-Date: Tue, 18 Nov 2003 10:55:35 +0200
-Message-ID: <NHEBIHHKCLHCMOJJOHNGOEGBGMAA.rber@intracom.gr>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <20031118082248.38F8DC5F59@atlas.denx.de>
+Subject: Re: fstream on PPC?
+From: Toni Van Remortel <t.vanremortel@ha.be>
+Reply-To: t.vanremortel@ha.be
+To: Wolfgang Denk <wd@denx.de>
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <20031117155350.D76B7C5F59@atlas.denx.de>
+References: <20031117155350.D76B7C5F59@atlas.denx.de>
+Content-Type: text/plain
+Message-Id: <1069145908.1006.2.camel@toni>
+Mime-Version: 1.0
+Date: Tue, 18 Nov 2003 09:58:29 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
-
-I'm neither a Linux nor a PPC expert, but I've done some work with I2C
-devices.
-
-If I understand you well, you have the following problem:
-Problem:
-The slave device will only release the I2C bus when the clock is restored or
-when the device is temporarily powered down (most devices do not have a
-reset signal that can be connected to the system reset).
-To provide a clock signal on the I2C bus, there has to be a master on the
-I2C bus.
-The problem is that no device can be switched to master mode when the I2C
-bus is busy (conform the I2C bus specification).
-So a typical hardware deadlock occurs: The slave waits for the master to
-generate a clock signal and the master waits for the slave to release the
-bus.
-Solution 1:
-You can issue a number of clocks while SDA is high, so that the devices are
-all out of the above-mentioned sequence.
-This problem was worst with the IIC RTC, because it stayed power on when the
-uP was powered down. That's why later on a reset line was added.
-
-Solution 2:
-
-In the read mode the slave goes high during the ACK bit, in the write mode
-during the data bits.
-After reset before enabling I2C you must test if both SDA and SCL= high.
-If not you must clock SCL up to 9 times until SDA is released. ( This is my
-favourite solution if I have direct control over the SCL and SDA pins and I
-call it free clocking ).
-Then you can generate a stop condition.
-In multimaster applications you must watch that SCL also can be delayed by
-the other master. Then you must wait until SCL = high before generating the
-next clock pulse (SCL = 0, wait 5µs, test SDA == 1, SCL = 1, wait 5µs, SCL =
-0 ...).
-
-Solution 3 With "intelligent" bus master:
-
-What if your master sends some commands to the bus at reset?
-Just send some bogus commands -- the master can ignore a busy bus at reset
-if it is supposed to be in charge.
-Wouldn't a hosed slave reset then?
-Unfortunately, sometimes you can only access the I2C bus via "intelligent"
-bus master hardware.
-This means that you do not have direct control over the SDA and SCL lines.
-I have chosen the following solution: - Connect (wired OR) spare I/O pins
-with the I2C bus lines. - When the bus is locked, Generate clock pulses on
-the SCL line (via an I/O pin) until the SDA line has been released. - Send a
-stop condition - Continue normal operation
-
-I hope this helps.
-
-Regards,
-
-Robert
-
-
-----------------------------------------------------------------------------
-----
-Robert Berger
-Embedded Systems Software Group Leader
-
-INTRACOM S.A.
-Hellenic Telecommunications & Electronics Industry
-Research and Development Division
-New Technologies Dept.
-Advanced Internet and Digital TV Section
-P.O. Box 68, 19.5 km Markopoulo Ave. (Building A)
-190 02 Peania, Athens, GREECE
-Tel.: (+30 210) 667 4353, 667 9000
-Fax.:(+30 210) 667 7101
-email: rber@intracom.gr
-URL: www.intracom.gr
-
-
-"Software development is like making a baby... You can't make a baby in one
-month by impregnating nine women."
-
-"Giving up on assembly language was the apple in our Garden of Eden:
-Languages whose use squanders machine cycles are sinful."
-(Epigrams in Programming,  ACM SIGPLAN Sept. 1982)
-
-My public pgp key is available at:
-http://pgp.mit.edu:11371/pks/lookup?op=get&search=0xD432D756
-
------Original Message-----
-From: owner-linuxppc-embedded@lists.linuxppc.org
-[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Wolfgang
-Denk
-Sent: Tuesday, November 18, 2003 10:23 AM
-To: Eugene Surovegin
-Cc: Miku Jha; linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ppc440 and i2c
-
-
-In message <20031118080843.GA28129@gate.ebshome.net> you wrote:
+Op ma 17-11-2003, om 16:53 schreef Wolfgang Denk:
+> Dear Toni,
 >
-> Your problem sounds strange.
+> in message <1069081757.25853.5.camel@toni> you wrote:
+> >
+> > But when I allow the functions that use fstream (for saving and loading
+> > small files over NFS), I get the following error:
+> >
+> > Linking test...
+> > /opt/eldk/usr/ppc-linux/bin/ld: warning: libstdc++-libc6.2-2.so.3,
+> > needed by /opt/PPC_X/usr/X11R6/lib/libGLU.so, not found (try using
+> > -rpath or -rpath-link)
+> ...
+> > and more than a dozen of these errors. It's a linking problem, that's
+> > what I know. But I don't know how to get to the problem-core. Can I
+>
+> Why not? The error message is pretty plain english:
+>
+> Your  link  step  included   the   /opt/PPC_X/usr/X11R6/lib/libGLU.so
+> library,    which    in    turn    tried    to   link   against   the
+> libstdc++-libc6.2-2.so.3 library, which was not found by the linker.
 
-No. It's just that this version (out of 3 different in a total  of  5
-messages  to  several  mailing lists I've seen so far!) does not even
-explain the problem correctly.
+Strange. It did found it before. Should check that further then.
+Although the resulting binary runs fine on the EP405.
 
-It's just a known issue on the I2C bus.
+> > solve this by a quick hack? Or is it hopeless to start messing with
+> > fstream on PPC?
+>
+> I don't know where  you  got  the  /opt/PPC_X/usr/X11R6/lib/libGLU.so
+> library  from.
 
-> Are you saying that after 440GP _reset_ IIC line state affects 440 ?
+Compiled from source, linked against ELDK. Works perfectly.
 
-No.
+> > PS: don't mind the warning about libstdc++-libc6.2-2.so.3, it's in place
+> > on the embedded system.
+>
+> You must be joking. Of course you have to mind this.  It's  the  root
+> cause  of your problems. And other problems are lurking to hit you as
+> libstdc++-libc6.2-2.so.3 is most probably incompatible to  the  ELDK,
+> too.
 
-> If bootstrap IIC is accidentaly activated you may get problems if you
-> have non-compliant/not-properly-reset device on IIC0 bus.
+Hmm. Still find it strange. It compiles, it runs, and it only complains
+at compile time. Very odd, but I'll try to remove the first warning and
+see what happens.
 
-The problem is an I2C Edge Condition which means that I2C devices may
-be left in a write state if a read  was  occuring  and  the  CPU  was
-reset. This may for example result in EEPROM data corruption.
-
-
-Best regards,
-
-Wolfgang Denk
-
+Thanks for your help.
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-(null cookie; hope that's ok)
+                           Toni Van Remortel
+              Wetenschappelijk Medewerker - D-science lab
+  Real time Linux for embedded systems: http://linemb.d-sciencelab.com
+              Tel: +32 3 205 61 72 - Fax: +32 3 205 61 95
+                      E-mail: t.vanremortel@ha.be
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
