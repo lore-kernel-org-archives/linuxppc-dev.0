@@ -1,35 +1,54 @@
+Message-ID: <39CF2C54.75A03C09@wtal.de>
+Date: Mon, 25 Sep 2000 12:43:32 +0200
+From: Christof Petig <christof.petig@wtal.de>
 MIME-Version: 1.0
+To: Carl Potter <carl@PsychiatryKills.com>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: new iBook and booting.
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <14799.11024.140217.896029@esb.bbn.com>
-Date: Mon, 25 Sep 2000 06:38:08 -0400
-From: R Shapiro <rshapiro@bbn.com>
-To: Martin Costabel <costabel@wanadoo.fr>
-Cc: Michel Ddnzer <daenzerm@student.ethz.ch>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: xf 4.0.1 fbdev screenblanking
-In-Reply-To: <39CEF3FC.A6DB84C6@wanadoo.fr>
-References: <Pine.LNX.4.10.10009231028030.26749-100000@apollo.kulian.net>
-	<14798.23332.833379.615321@esb.bbn.com>
-	<39CE8B90.1B318DD2@student.ethz.ch>
-	<14798.43366.937709.900651@esb.bbn.com>
-	<39CEF3FC.A6DB84C6@wanadoo.fr>
-Reply-To: rshapiro@bbn.com
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Martin Costabel writes:
- > I had this at the beginning after switching to Franz' RPMs, but it went
- > away soon, I don't remember why, maybe with Franz' 0.36a instead of
- > 0.30c.
+Hi Carl,
 
-I was seeing it in 0.36, and it's still there with the complete rsync
-and rebuild I did on Saturday.  It may be an intermittent problem but
-I don't think it's been fixed yet.
+>This is the point where the screen freezes, leaving the above message
+>perfectly readable, yet the kernel continues to boot normally and
+mounts
+>the drive.  I then have to blind-type my username, password, and issue
+a
+>"shutdown -r now".
 
+>Any light you might shed on this would be very appreciated.  I think
+>Linux on PPC is great stuff and I thank you for making possible what we
 
+>can already do with it.
 
---
-rshapiro@bbn.com
+Please try to build a kernel with CONFIG_FBCON_FONTWIDTH8_ONLY enabled.
+This fixed the problem for me (300Mhz,6GB iBook).
+
+Though, admittedly, I don't see any reason in this.
+
+Christof
+
+PS: 433Mhz - I should have waited buying one ...
+
+PPS: if I guessed wrong, here's the relevant part of my .config:
+CONFIG_DUMMY_CONSOLE=y
+CONFIG_FB_ATY=y
+CONFIG_FB_OF=y
+CONFIG_FBCON_CFB8=y
+CONFIG_FBCON_CFB16=y
+CONFIG_FBCON_CFB24=y
+CONFIG_FBCON_CFB32=y
+CONFIG_FBCON_FONTWIDTH8_ONLY=y
+CONFIG_FBCON_FONTS=y
+CONFIG_FONT_8x8=y
+CONFIG_FONT_8x16=y
+CONFIG_FONT_SUN8x16=y
+#
+CONFIG_VT=y
+CONFIG_VT_CONSOLE=y
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
