@@ -1,22 +1,24 @@
-Subject: Re: Final question: best wasy to move /, /usr, /home, etc?
-From: Bastien Nocera <hadess@hadess.net>
-To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+Date: Sun, 17 Feb 2002 19:12:04 -0800 (PST)
+From: "Jeramy B. Smith" <jeramy@penguinppc.org>
+To: "Kevin B.Hendricks" <khendricks@ivey.uwo.ca>
 Cc: yellowdog-devel@lists.yellowdoglinux.com,
-	"linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Final question: best wasy to move /, /usr, /home, etc?
 In-Reply-To: <20020218021717.EDHQ21433.tomts12-srv.bellnexxia.net@there>
-References: <453D45A8-2339-11D6-B84B-0003938E434C@ivey.uwo.ca>
-	<p05101401b895b9cbee49@[10.0.0.42]>
-	<20020217203742.VCID12383.tomts9-srv.bellnexxia.net@there>
-	<20020218021717.EDHQ21433.tomts12-srv.bellnexxia.net@there>
-Date: 18 Feb 2002 02:36:01 +0000
-Message-Id: <1013999761.436.2.camel@dozo>
-Mime-Version: 1.0
-Content-Type: text/plain
+Message-ID: <Pine.LNX.4.44.0202171911480.11448-100000@ash.penguinppc.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 2002-02-18 at 02:17, Kevin B. Hendricks wrote:
+http://www-106.ibm.com/developerworks/library/partplan.html
+
+There is the IBM way.
+
+On Sun, 17 Feb 2002, Kevin B.Hendricks wrote:
+
+> Hi,
 >
 > I am finally at the point I want to give up my old external scsi hard
 > drives.  Unfrotunately, my current /, /usr, /home, etc all exist on scsi
@@ -47,24 +49,12 @@ On Mon, 2002-02-18 at 02:17, Kevin B. Hendricks wrote:
 > to move so much data (and special device files) from one partition to
 > another preserving the owner,group,word, permissions, file ownership,
 > setuid root bits, etc. would be greatly appreciated.
+>
+> Thanks,
+>
+> Kevin
+>
+>
 
-I've done this several times, to install xfs support on live machines
-(ie. on my desktop and laptop that were already full of crap junk and
-other kind of files).
-
-rsync -av --exclude /proc --exclude /home/ / /newroot/
-
-Exclude every mount point from the rsync and do this for every
-partition. Best is to do this from a separate root, or a rescue/boot
-disk, in which case rsync -av /oldroot/ /newroot/ is easy enough without
-having to care.
-
-Cheers
-
-PS: sick people will tell you to use tar with loads of pipes, or cpio,
-don't listen to them ;)
---
-/Bastien Nocera
-http://hadess.net
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
