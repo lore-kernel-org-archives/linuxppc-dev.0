@@ -1,9 +1,9 @@
-From: "ppc glibc-2.1.3" <ppc3@localhost.localdomain>
-Message-ID: <005901bfc800$33ff7c80$57c809c0@nt4srv87>
-Reply-To: <ppc3@localhost.localdomain>
+Message-ID: <008501bfc800$f4da0fb0$57c809c0@nt4srv87>
+Reply-To: "john zhan" <johnzhan@263.net>
+From: "john zhan" <johnzhan@263.net>
 To: "linuxppc-em" <linuxppc-embedded@lists.linuxppc.org>
 Subject: X25 implement in mpc8xx
-Date: Sun, 28 May 2000 01:22:58 +0800
+Date: Sun, 28 May 2000 01:28:11 +0800
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
