@@ -1,43 +1,45 @@
-Message-ID: <3AD4A4D6.811075AD@mvista.com>
-Date: Wed, 11 Apr 2001 11:39:18 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-MIME-Version: 1.0
-To: Dan Malek <dan@mvista.com>
-Cc: =?iso-8859-1?Q?S=E9bastien=20C=F4t=E9?= <scote1@matrox.com>,
-	LinuxPPC-embedded list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: frequency in sandpoint_calibrate_decr
-References: <3AD4722B.3B22120@matrox.com> <3AD48FE2.3FBE7B65@mvista.com>
-Content-Type: text/plain; charset=iso-8859-1
+To: Daris A Nevil <dnevil@snmc.com>
+Cc: Alan Wang <wung_y@sina.com>,
+	Linuxppc-EmbeddedMaillist <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: problem when read internal memory 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 11 Apr 2001 12:06:54 CDT."
+             <3AD48F2E.2C713B89@snmc.com>
+Date: Wed, 11 Apr 2001 21:15:17 +0200
+Message-Id: <20010411191522.8F36D28417@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Yep, I highly recommend upgrading to the latest fsmlabs version.
+In message <3AD48F2E.2C713B89@snmc.com> Daris A Nevil wrote:
+>
+> register to this same value before booting the Linux kernel.  Your boot
+> code should also setup an MMU entry for the IMMR's address by writing to
+> the MD_EPN register (MMU Data Effective Page Number Reg) of the PPC.
 
-Mark
+What makwes you think this is necessary?
+
+> For an example of how this is done you can refer to the boot code for
+> the QS850 (MPC850-based board).  The source is located at
+> ftp://qslinux.org.  Once you uncompress the tarball you can go to
+
+We  have  PPCBoot   (see   the   CVS   server   at   SourceForge   or
+ftp://ftp.denx.de/pub/ppcboot)  booting  on  many,  many  MPC8xx (and
+MPC82xx and IBM 40x) systems, but this has never been needed  to  get
+Linux  running  (not with any kernel from the 2.2.13, 2.2.14 or 2.4.x
+series).
+
+
+Wolfgang Denk
+
 --
-
-Dan Malek wrote:
-
-> Sébastien Côté wrote:
->
-> > In MontaVista's kernel 2.4.0-test2, the frequency in
-> > sandpoint_calibrate_decr() is set to 66 Mhz.  What frequency is this?
-> > The processor, the bus ???
->
-> That's the speed of the processor bus, usually from which all
-> other core clocks are derived.  You should be using a newer version
-> of the kernel, at least from FSM Labs BitKeeper.  In the source
-> code pipeline is a change of the clock value from MHz to Hz.
->
-> > Increasing this speed seems to get rid of my stability problems (at
-> > last!), so I'd like to know the real value I should put there.
->
-> Eh?  On most systems it won't do anything but affect the ability
-> of the kernel to keep time correctly.
->
->         -- Dan
->
-
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+A student of  probability  soon  realizes  that  by  its  nature  the
+billion-to-one  chance  crops  up nine times out of ten, and that the
+greatest odds boil down to a double-sided statement: it will  happen,
+or it will not.         - Terry Pratchett, _The Dark Side of the Sun_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
