@@ -1,47 +1,30 @@
-Message-ID: <386028EE.8AA33490@nibh.go.jp>
-Date: Wed, 22 Dec 1999 10:27:12 +0900
-From: Ichiro Hieda <hieda@nibh.go.jp>
+Date: Wed, 22 Dec 1999 13:26:57 -0600 (CST)
+From: Jeff Garzik <jgarzik@mandrakesoft.mandrakesoft.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: Kostas Gewrgiou <gewrgiou@imbc.gr>,
+        "Jens Ch. Restemeier" <jrestemeier@currantbun.com>,
+        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Update - Re: Open Sourced Glide on Linux PPC
+In-Reply-To: <Pine.LNX.4.05.9912222035500.574-100000@callisto.of.borg>
+Message-ID: <Pine.LNX.3.96.991222132409.836B-100000@mandrakesoft.mandrakesoft.com>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-CC: hieda@nibh.go.jp
-Subject: Comtrol RocketPort porting
-Content-Type: text/plain; charset=iso-2022-jp; x-mac-type="54455854"; x-mac-creator="4D4F5353"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I have been debugging RocketPort driver to LinuxPPC for nearly a month.
-I would like to use it for a ham radio server which needs serial ports.
+On Wed, 22 Dec 1999, Geert Uytterhoeven wrote:
+> >   They do all memory access through the GETxx SETxx defines you can 
+> > do the byteswapping there, the linux specific code doesn't use this 
+> > though so you'll have to change this too.
 
-Today, as far as I believe, the driver finally works on my PowerMac.
+> Use read*()/write*() for all accesses to PCI memory space, as per
+> linux/Documentation/IO-mapping.txt.
 
-Configuration for debugging
-      Comtrol Rocketport PCI Octacable (8port)
-              Firmware revision F
-       Apple PowerMacintosh G4 400
-       LinuxPPC 1999 Q3 (very latest: download on 20 Dec 1999 from
-cdrom.com)
-       Kernel 2.2.14pre9
-       Ted's alpha code, comtrol-1.17
-
-Limitation
-       Tested only with minicom under above configuration.
-       Tested only port 0, 1, 3 and 7
-       The response from minicom seems a little dull if I compare it to
-x86 environment.
-       Auto channel number detection fails. Fixed to 8 channels.
-
-My modification ended up only a few things (most of them are endien
-stuff), but the source codes I am working are currently very messy. I
-will clean up them and do a little more debugging and would like to
-place on my web site.
-
-For someone who can't wait, I place the source codes I am working at
-http://www.aist.go.jp/NIBH/~b0514/Linux/comtrol/
-
-Best regards,
-Ichiro Hieda
-hieda@nibh.go.jp
+I don't know if this applies to the problem, but I thought I would
+reference the VGA read/write routines in drivers/video/vga.h.  If Glide
+has to talk to VGA registers, the functions in there should be best
+for most uses.  They take endianness into account too.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
