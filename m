@@ -1,45 +1,39 @@
-Date: Fri, 11 Feb 2000 18:30:06 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: Benjamin Herrenschmidt <bh40@calva.net>,
-        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
-        linuxppc-bk@fsmlabs.com
+In-Reply-To: <Pine.HPX.4.10.10002111800210.1866-100000@gra-ux1.iram.es>
+Date: Fri, 11 Feb 2000 18:31:23 +0100
+To: Gabriel Paubert <paubert@iram.es>, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
 Subject: Re: Latest OpenPic changes
-In-Reply-To: <Pine.LNX.4.05.10002111816100.356-100000@callisto.of.borg>
-Message-ID: <Pine.HPX.4.10.10002111826230.1866-100000@gra-ux1.iram.es>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <20000211183123.028211@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Fri, Feb 11, 2000, Gabriel Paubert <paubert@iram.es> wrote:
 
+>Please use ISU[irq - open_pic_irq_offset] everywhere. You are not reading
+>the interrupt you are modifying probably. On the other hand I'm using a
+>completely different solution, and I don't read back when enabling the
+>IRQ. I can't see why you could need it, this will go to the bus sooner or
+>later, why wait one or several microseconds while the interrupts are being
+>acttually enabled in the controller ?
 
-On Fri, 11 Feb 2000, Geert Uytterhoeven wrote:
+Hum... I must have broken that ISU stuff when moving my 2.2.x stuff to
+2.3.x. I'll look at fixing this in Cort's tree this week-end. There's
+nothing like that in 2.2.x, all offseting is made outside of openpic.c.
 
-> On Fri, 11 Feb 2000, Gabriel Paubert wrote:
-> > On Fri, 11 Feb 2000, Geert Uytterhoeven wrote:
-> > > After two days of hacking I finally found out what went wrong. Your changes to
-> > > the OpenPIC code cause my machine to hang in openpic_enable_irq(). I added a
-> > > timeout to the do { ... } while (...) loop:
-> >
-> > Please use ISU[irq - open_pic_irq_offset] everywhere. You are not reading
->
-> Doh! I overlooked that one...
-
-Note that there are still problems, some functions use check_arg_irq(irq)
-and then use irq while othre use irq-open_pic_irq_offset after the same
-check. I'm still trying to understand how it should work since I suspect
-something is wrong given the behaviour of my nfsroot machines :-(
-
-Oh and BTW there is a typo in the kernel.org sources:
-
-		if ( !(_machine && (_MACH_gemini|_MACH_Pmac)) )
-
-				^^
-should be & otherwise the cascade interrupt will never be requested.
-
-	Gabriel.
+I read back the interrupt until it's actually changed in the controller
+for the simple reason that if I don't do that, I sometimes get bogus
+interrupts. It looks like the calling path from driver code calling
+disable_irq() and the actual disabling of the irq is short enough to
+cause the interrupt to fall when unexpected in some cases, or to arrive
+after beeing masked (more frequent with IDE). I've seen this behaviour
+with the old pmac pic (which was known to be slow). I used to have tons
+of bogus interrupts on the ibook & G4 (OpenPIC based), and I got rid of
+most of them by adding this code and by implementing an ack_and_mask
+function that actually masks the interrupt (which is, I think, not done
+on CHRP). I still get some when PMU/ADB doing synchronous requests however.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
