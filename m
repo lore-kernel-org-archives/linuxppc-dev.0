@@ -1,27 +1,47 @@
-Date: Sat, 30 Jan 1999 04:09:48 -0800 (PST)
-From: Matt McLean <keys@yikes.com>
-To: "dhiltgen@toocool.calpoly.edu" <dhiltgen@toocool.itslab.calpoly.edu>
-cc: mlan@cpu.lu, O.Waller@ee.qub.ac.uk, linuxppc-dev@lists.linuxppc.org
-Subject: Re: matroxfb, anybody?
-In-Reply-To: <19990130020006.A580@toocool.calpoly.edu>
-Message-ID: <Pine.BSF.4.01.9901300409020.18729-100000@brio.yikes.com>
+Date: Sat, 30 Jan 1999 15:24:20 +0100 (CET)
+From: Gerd Knorr <kraxel@goldbach.in-berlin.de>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: iMac: sound?
+Message-ID: <Pine.LNX.4.05.9901301512490.313-100000@macintoy.masq.in-berlin.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 30 Jan 1999, dhiltgen@toocool.calpoly.edu wrote:
 
-> And the one other simple question... how in the heck do you tell 
-> XF68 which /dev/fb* to go to?  Right now I'm moving the devices
-> around by hand, but I'd eventually like to get a Dual headed X setup
-> going.
+  Hi !
 
-Use the $FRAMEBUFFER environment variable (that's in Documentation/fb.txt
-i think) :-)
+Is the existing Amiga/PowerMac DMAsound driver supported to work on the
+iMac too?  Simply insmoding it seems not to work, I get these messages in
+the syslog:
 
-m.
+	AWACS: error, status = 4f00d0
+	DMA sound driver: Interrupt initialization failed
+
+In /proc/device-tree/pci/mac-io/davbus/sound I've found:
+
+$ for a in *; do echo "$a: `cat $a`"; done | tee ~/y
+#input-channels: 
+#output-channels: 
+compatible: burgundy
+device-id: 
+device_type: sound
+input-encoding-types: 16bit-BE-signed-linear
+input-frame-rates: 
+model: 343S0177
+name: sound
+output-encoding-types: 16bit-BE-signed-linear
+output-frame-rates: 
+sample-frame-size: 
+sample-precisions: 
+sub-frame: 
+vendor-id: 
+
+Any hints?  Is there a change to make sound work with some tweaking in 
+dmasound.c or this something completely different?
+
+  Gerd
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
