@@ -1,34 +1,29 @@
-Date: Mon, 28 Feb 2000 21:15:52 -0600 (CST)
-From: Kumar Gala <kumar@chaos.ph.utexas.edu>
-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: AltiVec enabled GCC
-Message-ID: <Pine.LNX.4.10.10002282113300.24552-100000@chaos.ph.utexas.edu>
+Date: Mon, 28 Feb 2000 19:40:04 -0800 (PST)
+From: Ani Joshi <ajoshi@shell.unixbox.com>
+To: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
+Subject: 2.3 kernel status page
+Message-ID: <Pine.LNX.4.10.10002281935040.27433-100000@shell.unixbox.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-For all of you out there waiting to get your hands on an AltiVec enabled
-GCC it is now available.  Check out http://www.altivec.org/ (Tools
-Section).  There is source and patches available for binutils, gdb, gcc.
-These patches are due to the wonderful work of Tom Wood, and others at
-Motorola.
 
-While Motorola is working on getting them signed over the the FSF, the
-quality of the GCC patches has something to be desired.  Tom's work was
-more a proof of concept/get things working rather then anything else.
-Therefor, the GCC patches are going to require a rework on someone's part
-to get them added to the mainline gcc tree.
+Due to the recent number of people interested in the 2.3 trees, i've
+placed a kernel status page at:
 
-However, these patches have build working Linux Kernel's as well as many
-other applications.  There are still some quarks to take care of.  I am
-starting a site on sourceforge.net for Open Source/AltiVec related
-projects.  When I get it to a point of useability I will let people know.
+	http://entropy.crashing.org/~ajoshi/kstat.html
 
-- kumar gala
+i'm not very big on fancy pages so basically all there is right now is
+text status of  linux-pmac-devel and bitkeeper.  the machine does crond
+builds throughout the day so you'll see a timestamp of the last build and
+its status, green or red.  if its red, then a link to the build log is
+also there.  the builds use the defcommon_config.
 
-ignorance is bliss.
+perhaps more "features" on this page later...
+
+ani
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
