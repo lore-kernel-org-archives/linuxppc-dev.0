@@ -1,38 +1,22 @@
-Message-ID: <20010227171058.56271.qmail@web11103.mail.yahoo.com>
-Date: Tue, 27 Feb 2001 09:10:58 -0800 (PST)
-From: gopi krishna <mgopik@yahoo.com>
-Subject: Unable to read/write consistently to a device.
-To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <3A9BE37B.7E8875BE@vacuumgenesis.com>
+Date: Tue, 27 Feb 2001 09:27:23 -0800
+From: Timothy Ritchey <tritchey@vacuumgenesis.com>
 MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Enable Modules
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi..
+I am getting errors like: "_machine already defined", etc. when I try to
+compile the kernel (2.4.1 with fsmlabs patch) with modules enabled. I
+did a search through the archive, and noted that this problem occured in
+the past, and that there was a patch for the 2.2 series. Is anyone
+compiling their kernel with modules enabled successfully? I couldn't
+find any recent reports on the list regarding this.
 
-  We have custom board based on 860T running
-linux2.2.14
-
-  We have a device 0xf0040000.  This address has been
-ioremapped.
-(Hence directly using the physical address to access
-the memory)
-
-We tried to read the registers using:
-  in_be32(addr)
-  *address
-  in_be32(volatile unsigned *addr)
-but, none of them are giving any consistent results.
-
-With BDM, we are able to get correct and consistent
-results.
-
-Can there be any cache/coherency/any other issues of
-linux which we are overlooking?
-
-thanx in advance
-gopi
-
+Cheers,
+tim
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
