@@ -1,32 +1,53 @@
 From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-To: Paul Mackerras <paulus@linuxcare.com>,
-        Linux/PPC Developer list <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: adb_buttons kernel argument
-Date: Wed, 29 Mar 2000 21:32:01 +0200
+To: Gabriel Paubert <paubert@iram.es>
+Subject: Re: Some issues to resolve with XFree 4.0 yet
+Date: Wed, 29 Mar 2000 21:39:36 +0200
 Content-Type: text/plain
-References: <00032911415300.05568@argo.linuxcare.com.au>
-In-Reply-To: <00032911415300.05568@argo.linuxcare.com.au>
+Cc: David Edelsohn <dje@watson.ibm.com>,
+        "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
+        Ani Joshi <ajoshi@shell.unixbox.com>,
+        Ryuichi Oikawa <roikawa@rr.iij4u.or.jp>,
+        linuxppc-dev@lists.linuxppc.org
+References: <Pine.HPX.4.10.10003291638170.6902-100000@gra-ux1.iram.es>
+In-Reply-To: <Pine.HPX.4.10.10003291638170.6902-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-Message-Id: <00032921380900.03866@enzo.bigblue.local>
+Message-Id: <00032922002201.03866@enzo.bigblue.local>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Am Wed, 29 Mar 2000 schrieb Paul Mackerras:
->I have just realized that with 2.3.xx (since 2.3.18) the format of the
->arguments for the adb_buttons=xxx kernel command-line argument has
->changed.  With 2.2 you can say adb_buttons=1 to emulate buttons 2 and 3
->with the right control and option keys, or you can say adb_buttons=xx,yy
->to use keycodes xx and yy to emulate buttons 2 and 3.  With 2.3 you now
->have to say adb_buttons=1,xx,yy.
+Am Wed, 29 Mar 2000 schrieb Gabriel Paubert:
+>On Wed, 29 Mar 2000, Franz Sirl wrote:
 >
->I propose to change 2.3 back to the 2.2 behaviour since that is what is
->documented.  Does anybody have any problem with that?
+>> Hmm, I was thinking about adding __attribute__((little_endian)) and
+>> __attribute__((big_endian)) to further describe variables. This should give
+>> us optimum optimization on various platforms. Even things like:
+>>
+>> union {
+>>          unsigned long little_var __attribute__((little_endian));
+>>          unsigned long big_var __attribute__((big_endian));
+>> }
+>>
+>> should be possible then.
+>
+>Indeed, but I was considering it as a later step. I have the feeling that
+>adding a builtin would be simpler and would allow to build the necessary
+>infrastructure for attribute support with minimal intermediate breakage
+>(perhaps by implementing it only on some architectures at first).
 
-Well, change the documentation. I think somebody is integrating my xpmac-style
-adb_buttons support and so there will be a adb_buttons=2,xx,yy soon. I think
-the old syntax was a little bit strange anyway and probably was only a mistake
-and no intended behaviour.
+Adding the attributes is quite simple, the part not quite clear to me yet is how
+to evaluate the attribute in the backend and if we need middle-end support.
+Evaluating the attribute directly in the backend mov* patterns seems
+straightforward, but maybe separate reversed_mov* patterns maybe more
+appropriate...
+
+>Furthermore, the subject of adding this attribute has appeared on a quite
+>regular basis on GCC mailing lists in the last few years and nothing has
+>ever been done about it AFAICT. Perhaps a different strategy through
+>builtin functions would get things started, that's why I'm suggesting it.
+
+As always with GCC, if you want something done, do it yourself :-) (unless you
+can pay somebody for coding).
 
 Franz.
 
