@@ -1,37 +1,34 @@
-Message-Id: <v03010d00b35e1bc270f4@[209.96.179.8]>
-In-Reply-To: <9905111522.AA48044@marc.watson.ibm.com>
-References: Message from Joel Klecker <jk@espy.org>    of "Tue, 11 May
- 1999 01:36:38 PDT." <v04204e08b35d9989574a@[206.163.71.146]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Tue, 11 May 1999 13:44:54 -0400
+Message-ID: <3738793B.416467E2@deneba.com>
+Date: Tue, 11 May 1999 14:38:52 -0400
+From: michael cardenas <michael_cardenas@deneba.com>
+MIME-Version: 1.0
 To: linuxppc-dev@lists.linuxppc.org
-From: "Kevin B. Hendricks" <kbhend@business.wm.edu>
-Subject: Anyone playing with Darwin 0.2 binary yet?
+Subject: USB Development
+Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+I recently bought a 3 button unimouse to use in linux with my imac, but
+when I tried it out, I discovered that it uses the 1.16 spec and the usb
+patch in linuxppc4.1 only handles up to 1.0.
 
-I was interested in playing around with Darwin (Apple's open BSD Unix
-variant) and noticed the new binary available from
-http://www.publicsource.apple.com
+But, I am a programmer, and I'm very interested in helping develop
+linux.
 
-It says it will boot on most machines that MacOS server will.  And it now
-includes EGCS as its compiler.
+My question is, where can I get the kernel source to get started and
+what compiler do I use? Is there a kernel build faq? I recently
+purchased the 4.1 cd, but I already had 4.1 installed.
 
-I have a PowerTower 604e system 200Mhz, PCI, 64 meg ram, etc.  It looks
-like a suped up 7200 if I remember correctly.  The machine ID is 108.
+I'd be willing to install pre r5 if I need to to work on the usb source.
 
-Is anyone out in Linux PPC land also playing with Darwin?  Will the new
-binary boot on my machine?  Are there any tricks I need to use to get it to
-boot?
+Any pointers here will be greatly appreciated.
 
-Thanks for any help.
+thanks,
 
-Kevin
-
+Michael Cardenas
+Software Engineer
+Deneba Software
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
