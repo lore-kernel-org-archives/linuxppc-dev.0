@@ -1,81 +1,75 @@
-From: Paul Mackerras <paulus@linuxcare.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <14979.54261.375252.90841@gargle.gargle.HOWL>
-Date: Fri, 9 Feb 2001 22:26:45 +1100 (EST)
-To: Gabriel Paubert <paubert@iram.es>
-Cc: David Edelsohn <dje@watson.ibm.com>, Cort Dougan <cort@fsmlabs.com>,
-        Dan Malek <dan@mvista.com>, tom_gall@vnet.ibm.com,
-        linuxppc-commit@hq.fsmlabs.com,
-        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: context overflow 
-In-Reply-To: <Pine.HPX.4.10.10102091147560.16861-100000@gra-ux1.iram.es>
-References: <14979.48995.833510.969973@gargle.gargle.HOWL>
-	<Pine.HPX.4.10.10102091147560.16861-100000@gra-ux1.iram.es>
-Reply-To: paulus@linuxcare.com.au
+Date: Fri, 9 Feb 2001 14:40:49 +0100
+From: Bernhard Reiter <bernhard@intevation.de>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Stable 2.4.x tree? (network and ppp Problems with Paul's devel)
+Message-ID: <20010209144049.A16734@abnoba.intevation.de>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="zYM0uCDKw75PZbzx"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Gabriel Paubert writes:
+--zYM0uCDKw75PZbzx
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> > - The hash table occupancy rates measured by Cort were very small,
-> >   typically less than 10% IIRC.
->
-> Then it means that the mm system is completely screwed up, even more than
-> I thought. I have to study first how VSID are handled, but this smells
-> definitively wrong.
+Hello Linuxppc Developers,
 
-Gabriel: one word: Measure.  Then criticize, if you like.
+for some time now I try to get a recent 2.4.x kernel to work
+on my Powerbook (Lombard G3/400MHZ).
 
-Cort's measurements were done with lmbench and kernel compiles IIRC.
-Don't forget that not all pages of physical memory are used via HPTEs;
-many pages are used for page-cache pages of files which are read and
-written rather than being mmap'd.  For example, in the case of a
-kernel compile you would hopefully have all of the relevant kernel
-source and object files in the page cache but never mmap'd, and those
-pages would be typically be accessed through the kernel BAT mapping.
+2.4.0-test7 runs fine, but with the latest linux-pmac-devel from
+rsync ppc.linuxcare.com (Paul Mackeras' tree) I have problem in two
+areas:=20
+	network: the network sometimes drops out, it can be
+	revived	 with a restart of the network=20
 
-And the other point is that the recommended hash table sizes are large
-enough to map the whole of physical memory 4 times over.
+	Error Messages: something about NAT dropping untracked messages.
+	I have netfilter configured, but no special rules used at all.
 
-> Yes, I was always worried by the added latency when a hash table clear
-> comes in. But the question is why do we have to do it ? Actually the
-> question is whether flush_tlb_all is even necessary.
+	ppp: even with 2.4.0-test7 I have problems with ppp over the
+	internal modem.
+	I am using pppd-2.4.0 (maybe this is a problem itself)
+	Sometimes the connections just hangs for a couple of seconds.
+	It is not a provider issue as I encounter this with several
+	providers.
 
-As I have already said, flush_tlb_all can be avoided completely, but
-the flush on MMU context overflow is necessary (but fortunately very
-rare).
+	It all runs fine with 2.2.15-pre19.
 
-> I believe that this is a big mistake, faulting a PTE in the hash table is
-> an exception and wil never be as fast as having the entry already in the
-> PTE. And on SMP, you acquire hash_table_lock, an unnecessary variable BTW
-> but let us leave it for a later discussion, which will be very contended
-> and ping pong like mad between processors.
 
-Measurements?
+	ttyS0: If I do not get a connection, the ttyS0 stops working
+	after a couple of attempts. Then I cannot open it even with
+	minicom (V1.82.1).
 
-(David, perhaps you could comment on the need for hash_table_lock and
-the possible hardware deadlocks if you do tlbie/tlbsync on different
-CPUs at the same time?)
 
-Like everything, the hash table size is a tradeoff.  A big hashtable
-has disadvantages, one of which is that less of it will fit in L2
-cache and thus TLB misses will take longer on average.
 
->  In short in all the previous discussion you had with Dan, I stand with
-> him and against you in all and every single aspect, except for the TLB
-> preloading thing.
+If you do not have concrete hints on how to attack my problems,
+maybe you can tell me which is a good place to get a newer but
+reliable kernel. (I refrain from messing with the proprietory
+Bitkeeper stuff.)
 
-I look forward to seeing your benchmark results for the different
-alternatives.
+And were bugs or difficulties like this can be reported proberly.
 
-Paul.
+Thanks,
+	Bernhard
 
---
-Paul Mackerras, Open Source Research Fellow, Linuxcare, Inc.
-+61 2 6262 8990 tel, +61 2 6262 8991 fax
-paulus@linuxcare.com.au, http://www.linuxcare.com.au/
-Linuxcare.  Support for the revolution.
+ps.: Please cc relevant replies to me, as I am not subscribed to the
+list.
+
+--=20
+Professional Service around Free Software                (intevation.net) =
+=20
+The FreeGIS Project                                         (freegis.org)
+Association for a Free Informational Infrastructure            (ffii.org)
+FSF Europe                                            	  (fsfeurope.org)
+
+--zYM0uCDKw75PZbzx
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+
+--zYM0uCDKw75PZbzx--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
