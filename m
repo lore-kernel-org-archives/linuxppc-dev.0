@@ -1,11 +1,11 @@
-Return-Path: <tsawyer@sandburst.com>
-Received: from mta9.adelphia.net (mta9.adelphia.net [68.168.78.199])
-	by ozlabs.org (Postfix) with ESMTP id 5C77767A65
+Return-Path: <tsawyer+linuxppc@sandburst.com>
+Received: from mta11.adelphia.net (mta11.adelphia.net [68.168.78.205])
+	by ozlabs.org (Postfix) with ESMTP id 031E267A65
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 27 Feb 2005 09:30:54 +1100 (EST)
-Message-ID: <4220F8A5.1060209@sandburst.com>
-Date: Sat, 26 Feb 2005 17:31:01 -0500
-From: Travis Sawyer <tsawyer@sandburst.com>
+	Sun, 27 Feb 2005 09:31:13 +1100 (EST)
+Message-ID: <4220F8B8.7040407@sandburst.com>
+Date: Sat, 26 Feb 2005 17:31:20 -0500
+From: "Travis B. Sawyer" <tsawyer+linuxppc@sandburst.com>
 MIME-Version: 1.0
 To: Matt Porter <mporter@kernel.crashing.org>
 References: <1628E43D99629C46988BE46087A3FBB91C4AA7@ep-01.EmbeddedPlanet.local>	<421F89A0.8070502@sandburst.com>
@@ -16,6 +16,7 @@ Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: Ralph Siemsen <rsiemsen@rossvideo.com>,
 	ppcembed <linuxppc-embedded@ozlabs.org>
 Subject: Re: 2.6 4xx GPIO OCP driver?
+Reply-To: tsawyer+linuxppc@sandburst.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
