@@ -1,32 +1,43 @@
-Message-ID: <3EFFE559.2030902@imc-berlin.de>
-Date: Mon, 30 Jun 2003 09:23:05 +0200
-From: Steven Scholz <steven.scholz@imc-berlin.de>
+From: "Sanjay Kumar" <skumar@giga-stream.de>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: MPC8260 ATM channel allocation.
+Date: Mon, 30 Jun 2003 13:06:22 +0200
 MIME-Version: 1.0
-To: zhu jiangbo <zhujb@szonline.net>
-Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: MPC8xx EXT_DIRECT IDE
-References: <200306300305.h5U35OLT014769@mail.berlin.imc-berlin.de>
-Content-Type: text/plain
+Message-ID: <FKEJLMJFECLAHOKCGJFPIEAFCBAA.skumar@giga-stream.de>
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Zhu jiangbo schrieb:
->
->  I have read the mail listed below on the "lists.linuxppc.org"
-> website. It looks like you are the right expert who can help me
-> solving my problem. The embedded linux can't detect my SANDISK CF
-> card. I choosed the EXT_DIRECT mode (CF's TRUE IDE mode), but now
-> I am not sure if my design is right. Would you please send me the
-> schematics and documents about MPC8xx IDE?
+Dear all,
 
-If you don't need a real PCMCIA slot on your board it would be much
-easier to use 8xx_DIRECT instead of EXT_DIRECT!!!
-I had to go for EXT_DIRECT since I do need both - PCMCIA slot for
-let's say WLAN Cards and IDE for a 2.5" HDD.
+I am using MPC8260 for ATM cell switching between FCC1 and FCC2.I have two
+UTOPIA interface connected,one each to FCC1 and FCC2.FCC1 is connected 16
+PHY devices and FCC2 is connected 2 PHY devices.I have following
+questions.
+1.MPC8260 supports 255 internal channels and upto 64k using external
+memory. Does this number of channels(upto 64k) are for both FCC1 and FCC2
+? If yes how these channels can be distributed between FCC1 and FCC2. For
+transfering ATM cells from FCC1 to FCC2 and vice-versa I have to open an
+input channel on FCC1 and an output channel on FCC2.Does this input and
+output channel number should be unique?
 
-So what do you think?
+2. MPC8260 limits 256k for RX BDs(buffer descriptors) and 256k for TX BDs.
+Does this limitation is per FCCs ? I mean can I allocate 256k RX BDs and
+256K TX BDs for FCC1 and then
+256k RX BDs and 256K TX BDs for FCC2?
 
-Steven
+Any idea....
+
+regards,
+sanjay
+
+ ==============================================================
+ Sanjay Kumar                        skumar@giga-stream.de
+ GIGA-STREAM UMTS Technologies GmbH  Tel: +49 (07243) 94976-119
+ Im Ermlisgrund 8                    Fax: +49 (07243) 94976-100
+ 76337 Waldbronn
+ ==============================================================
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
