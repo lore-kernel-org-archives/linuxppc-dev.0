@@ -1,42 +1,64 @@
-Subject: Re: controlfb and X
-To: mlan@cpu.lu
-Date: Mon, 6 Nov 2000 23:05:45 -0800 (PST)
-Cc: bob@kunk.jriver.com, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <200011062245.XAA00760@piglet.grunz.lu> from "Michel Lanners" at Nov 06, 2000 11:44:58 PM
-MIME-Version: 1.0
+Date: Wed, 8 Nov 2000 01:06:10 +1100
+From: Steven Hanley <sjh@svana.org>
+To: Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: bad vidmode on debian install
+Message-ID: <20001108010609.A26617@wibble.net>
+Reply-To: Steven Hanley <sjh@wibble.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-Id: <20001107070546.08EF32B54A@marcus.pants.nu>
-From: flar@pants.nu (Brad Boyer)
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michel Lanners wrote:
->
->
-> On   5 Nov, this message from Robert E Brose II echoed through cyberspace:
-> > The problem is that the controlfb driver doesn't recognize more than
-> > 2 megs of vram. This particular Mac 7500 has 4 megs installed which
-> > works perfectly in MacOS.
->
-> Strange. It should detect 4 meg in 2.2 kernels; but maybe not 2.4
-> kernels.
->
+All
 
-There's been a long standing issue on detecting the full 4M on controlfb
-that regularly pops up. I happen to have a 7600 with the video upgraded to
-4M, so I've been interested in this as well. I've seen several patches
-float over the list, and I don't think any of them actually worked for
-everyone. I believe the conclusion was that control just didn't act the
-same on every machine. I suspect that if you look back through the list
-archives, you'll find lots of discussion on this topic.
+Anyway trying to upgrade form non debian dist to debian (potato) on my
+7220/200, as it is old world I used the hfs floppy image. Anyway it boots
+fine but then the video mode is at a frequency such that no text is clear
+and it is moving around on the screen a bit (like running X i modes a
+machine cant handle)
 
-	Brad Boyer
-	flar@pants.nu
+So I think, all I need to do is type the command line in somewhere to set it
+to a vidmode I know works on the machine.
 
-P.S.: Try the following search on lists.linuxppc.org in linuxppc-dev:
+However this alas does not seem to work, there is some data that flashes up
+in 80x25 before the vidmode switch on booting any kernel wether it be off
+floppy or through bootx into the current ydl install. And looking in
+arch/ppc/boot/misc.c this seems to be useful and interesting information
+including a bit that should wait for 5 seconds for me to enter command line
+arguments. Howevedr the information flashes past so fast I cant even read
+it. I am then on booting off the debian install floppy put into this
+unusable video mode.
 
-controlfb;patch;detect
+I tried changing the #defined CMDLINE in misc.c to have the appropriate
+vidmode command, but then I noticed on a simple makevmlinux the make process
+didnt even enter the boot directory and compile the changed misc.c (all this
+is using a 2.2.18pre18 from paul's ppc.samba.org from yesterday)
 
+What I want to know is what is the official (tm) way in which I am supposed
+to put a command line that will actually be used into the kernel for booting
+off the debian hfs rescue floppy. I made the image I wanted fine and gzipped the
+vmlinux and placed it on the floppy but due to there being no setting of
+video mode it still boots into an unreadable text frame buffer.
+
+I assume rdev is specific to i386 and compressed images. I notice the floppy
+uses a simple gzipped vmlinux, not a compressed ppc zImage even.
+
+I assume it may help me to know for future reference how to set the kernel
+command line if I am no longer using bootx and thus wil be unable to just
+leave the command line there.
+
+Thanks
+
+	See You
+	    Steve
+
+--
+sjh@wibble.net http://wibble.net/~sjh/
+Look Up In The Sky
+   Is it a bird?  No
+      Is it a plane?  No
+         Is it a small blue banana?
+YES
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
