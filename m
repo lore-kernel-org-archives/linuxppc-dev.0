@@ -1,14 +1,32 @@
-Message-ID: <3CD7ED38.448C21D1@etx.ericsson.se>
-Date: Tue, 07 May 2002 17:05:28 +0200
-From: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
+Reply-To: <acurtis@onz.com>
+From: "Allen Curtis" <acurtis@onz.com>
+To: "Kenneth Johansson" <kenneth.johansson@etx.ericsson.se>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: IBM ocp I2C circular dependency
+Date: Tue, 7 May 2002 08:10:38 -0700
+Message-ID: <NCBBIINEHIPFGJPLBEIFKEKCDGAA.acurtis@onz.com>
 MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <3CD7ED38.448C21D1@etx.ericsson.se>
+Sender: owner-linuxppc-embedded@lists.linuxppc.org
+List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+The problem I have, but our source is very old, is that it hung the process.
+Implementing a timeout is half of the solution. The other thing you need to
+do is issue a STOP_TX command to the CP. (allow the CP to continue to the
+next request) Perhaps that is what you are seeing? Check the buffer
+descriptors and see if the CP is still "busy" with the current descriptor
+pointer.
+
+-----Original Message-----
+From: innkeon@etx.ericsson.se [mailto:innkeon@etx.ericsson.se]On Behalf
+Of Kenneth Johansson
+Sent: Tuesday, May 07, 2002 8:05 AM
 To: acurtis@onz.com
 Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: IBM ocp I2C circular dependency
-References: <NCBBIINEHIPFGJPLBEIFMEJMDGAA.acurtis@onz.com>
-Content-Type: text/plain; charset=us-ascii
-Sender: owner-linuxppc-embedded@lists.linuxppc.org
-List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Would that kind of problem not hang the process?? I don't see that.
@@ -33,5 +51,6 @@ Kenneth Johansson
 Ericsson AB                       Tel: +46 8 404 71 83
 Borgafjordsgatan 9                Fax: +46 8 404 72 72
 164 80 Stockholm                  kenneth.johansson@etx.ericsson.se
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
