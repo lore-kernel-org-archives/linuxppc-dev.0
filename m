@@ -1,43 +1,30 @@
-Date: Thu, 11 Feb 1999 16:33:18 +0100
-To: linuxppc-dev@lists.linuxppc.org, Paul Mackerras <paulus@cs.anu.edu.au>
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: PowerBook G3 Series kbd patch
-Message-Id: <19990211163318.028314@mail.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Thu, 11 Feb 1999 10:16:30 -0600 (CST)
+From: Gedanken <gedanken@io.com>
+To: Francis Augusto Medeiros <francis@mgate.com.br>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: My Linux is not obeying me !!!!!!
+In-Reply-To: <199902111459.MAA20513@feijao.mgate.com.br>
+Message-ID: <Pine.BSF.4.02A.9902111014370.699-100000@schultz.io.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Here's a quick patch that remaps the "Fn" key of the Powerbook G3 Series
-keyboard to an unused keycode (actually 0x7e). I'll post clean
-vger-related patches later (when vger is back), this one is relative to
-Paul's rsync tree. (Paul:You may want to include it now, I don't think it
-breaks anything).
-The original keycode of this key is 63, and conflicts with the buttons
-emulation of Xpmac.
+
+There is a script, in /etc/rc.d/  called rc.local that is run at boot up
+that overwrites it.  change it in rc.local and youre in business.  I know
+this from getting ticked off at my linux box for the same thing :)
 
 
---- linux.orig/drivers/macintosh/mac_keyb.c	Tue Jan 26 00:18:30 1999
-+++ linux.dev/drivers/macintosh/mac_keyb.c	Tue Feb  9 22:39:18 1999
-@@ -322,6 +322,9 @@
- 	/* on the powerbook 3400, the power key gives code 0x7e */
- 	if (keycode == 0x7e)
- 		keycode = 0x7f;
-+	/* remap the "Fn" key of the PowerBook G3 Series to 0x7e */
-+	if (keycode == 0x3f)
-+		keycode = 0x7e;
- 
- #ifdef CONFIG_ADBMOUSE
- 	/*
+gedanken
+----
+Heaven and Earth are impartial;
+They see the ten thousand things as straw dogs.
+The wise are impartial;
+They see the people as straw dogs.
 
-
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
-
-
-
+ICQ:  25437703
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
