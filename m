@@ -1,33 +1,112 @@
-Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
-Subject: Re: MPC5200 Patches
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Wolfgang Denk <wd@denx.de>
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	Dale Farnsworth <dale@farnsworth.org>,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <1069116217.7168.52.camel@gaston>
-References: <20031117160250.CD994C5F59@atlas.denx.de>
-	 <1069116217.7168.52.camel@gaston>
-Content-Type: text/plain
-Message-Id: <1069116274.7174.54.camel@gaston>
-Mime-Version: 1.0
-Date: Tue, 18 Nov 2003 11:44:34 +1100
+Message-ID: <3FB972E8.5090701@kienhoefer.com>
+Date: Mon, 17 Nov 2003 17:16:24 -0800
+From: Juergen Kienhoefer <juergen@kienhoefer.com>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: cache coherence problem
+Content-Type: multipart/mixed;
+ boundary="------------020201090004070600050603"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 2003-11-18 at 11:43, Benjamin Herrenschmidt wrote:
-> I only ever got DMA reads to work, DMA writes never kicked the
-> BestComm task..
+This is a multi-part message in MIME format.
+--------------020201090004070600050603
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Argh... I hate that evolution bug that when you remove the
-signature,  it deletes 2 random lines of text...
+Guys,
+Look at the folloging test program. It mmaps memory, puts some
+instructions in it and executes it.
+Sometimes it works, sometimes it crashes with illegal instruction.
+This smells like cache problems.
+Should the kernel clean the instruction cache for these addresses
+in mmap system call?
+Thanks for any thoughts!
+Juergen
 
-So I was asking if you had the IDE DMA working correctly since
-I see that you have my code in there.
 
-Ben.
+
+--------------020201090004070600050603
+Content-Type: text/plain;
+ name="mmapexec.c"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="mmapexec.c"
+
+
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/mman.h>
+#include <errno.h>
+#include <sys/ptrace.h>
+#include <signal.h>
+#include <sched.h>
+
+
+int main( int argc, char** argv ) {
+    long* loc;
+    int (*init)(void);
+    long returninstr0 = 0x38600009; // li r3,4
+    long returninstr1 = 0x4e800020; // blr
+    int returned;
+    int fd;
+    char zero;
+    char tempfile[20] = { "test-XXXXXX" };
+
+    printf( "start of test\n" );
+
+
+    fd = mkstemp( tempfile );
+    printf( "memfile name test-XXXXXX, fd %d\n", fd );
+    if (fchmod(fd, 0777) < 0){
+	perror("fchmod");
+	exit(1);
+    }
+    if( lseek( fd, 32768*1024, SEEK_SET ) != 32768*1024 ){ //32M
+	perror("lseek");
+	exit(1);
+    }
+    zero = 0;
+    if( write(fd, &zero, 1 ) != 1){
+	perror("write");
+	exit(1);
+    }
+    if( fcntl(fd, F_SETFD, FD_CLOEXEC ) != 0)
+	perror("Setting FD_CLOEXEC failed");
+
+
+    loc = mmap( (void *) 0x62800000, 12288,
+	        PROT_READ | PROT_WRITE | PROT_EXEC,
+	        MAP_SHARED | MAP_FIXED,
+	        fd, 0x3a0000);
+
+    printf( "memory allocated at addr %x\n", loc );
+    printf( "data %x\n", loc[0] );
+
+    // random behaviour, sometimes works, sometimes illegal instruction
+    //loc = (long*)0x62800000; // set the address
+    loc = (long*)0x62802000; // set the address
+    // always illegal instruction
+    //loc = (long*)0x62801b44;
+    //loc = (long*)0x62801000;
+    loc[0] = returninstr0;
+    loc[1] = returninstr1;
+
+    printf( "new code: addr %x, %x\n", loc, loc[0] );
+
+    init = (int (*)(void))loc;
+    returned = init();
+
+    printf( "function returned %d\n", returned );
+
+}
+
+--------------020201090004070600050603--
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
