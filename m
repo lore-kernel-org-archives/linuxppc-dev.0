@@ -1,78 +1,48 @@
-Date: Mon, 24 Mar 2003 18:42:52 +0100
-From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
-Subject: RE: dcbz works on 862 everywhere!
-In-reply-to: <3E7F3BE0.7020300@slac.stanford.edu>
-To: Till Straumann <strauman@slac.stanford.edu>
-Cc: "Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>
-Reply-To: joakim.tjernlund@lumentis.se
-Message-id: <IGEFJKJNHJDCBKALBJLLAEGIFLAA.joakim.tjernlund@lumentis.se>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
+Subject: RE: BogoMIPS on 8xx vs 82xx
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Mon, 24 Mar 2003 13:03:44 -0500
+Message-ID: <2702075D4DE2B043BF5EB82E9CFAD45B093BE1@mail1.mediatrix.com>
+From: "Jean-Denis Boyer" <jdboyer@mediatrix.com>
+To: "Wojciech Kromer" <krom@dgt-lab.com.pl>
+Cc: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Joakim Tjernlund wrote:
->
-> >>>Hi list
-> >>>
-> -- snip --
->
-> >>>  I even
-> >>>removed the TLB change bit hack by Tom Rini and everything works.
-> >>>
-> -- snip --
->
-> >
-> >I removed the "copy DAR to MD_EPN" part in the DTLB Error handler and my systems
-> >runs fine.
-> >
->
-> How exactly do you know that "everything works fine" ???
->
-> Please note that
->
->     a) you may have bug-free hardware.
->     b) you may have a valid TLB entry at the time 'dcbz' is executed.
->     c) you may end up with a bogus mapping but not notice it.
+The ppc function used in calibration is __delay.
+It is located in arch/ppc/kernel/misc.S.
+It uses instruction bdnz, looping on itself.
+On 860, it takes 2 cycles per bdnz.
+On 8260, it takes 3 cycles per bdnz.
+I guess it is because both CPUs have different pipelines.
+The result is later multiplied by 2 prior to be displayed,
+around line 197 in init/main.c.
+This is why it gives 1BogoMips = 1MHz on 860.
 
-Every time I tried to use dcbz on user space it failed HARD directly.
-Whenever I tried to "undo" any hacks that were there to compensate for
-buggy dcxx instructions, the kernel would not boot.
+Regards,
+--------------------------------------------
+ Jean-Denis Boyer, B.Eng., Technical Leader
+ Mediatrix Telecom Inc.
+ 4229 Garlock Street
+ Sherbrooke (Québec)
+ J1L 2C8  CANADA
+ (819)829-8749 x241
+--------------------------------------------
 
-Now I can boot and run my app and even run a user space app which clears
-memory with dcbz. I can remove HWWRITE bit setting on kernel space address and
-remove the copying of DAR to MD_EPN in the DTLB Error handler.
-
-I think I am on to something here, don't you?
+> -----Original Message-----
+> From: Wojciech Kromer [mailto:krom@dgt-lab.com.pl]
+> Sent: 24 mars, 2003 02:17
+> To: Linuxppc-Embedded (E-mail)
+> Subject: BogoMIPS on 8xx vs 82xx
 >
-> You really should first confirm that your hardware suffers from the bug by
-> running a _simple_ test program in a _simple_ environment (NOT linux).
-
-I don't have a simple environment. I have ppcboot on my board which doesn't
-use the MMU at all.
-
 >
-> Then, you should confirm that your workaround solution is correct by
-> testing it in the same simple environment.
 >
-> Just because you are able to use 'dcbz' on linux repeatedly without
-> crashing does'nt prove that your hardware is buggy but linux handles
-> it correctly.
-
-Yes, I know that and that's why I write to this list to seek input from
-others that know more than I do and have a simple test environment(hint, hint :-)
-
->
-> -- Till
->
-> PS: please CC me on any replies; I'm not subscribed to this list
->
-> >
-> >   Jocke
-> >
-
- Jocke
-
+> On 8xx running 50 MHz gives ~ 50 BogoMIPS, runnig 65 gives
+> approx 65 and
+> so on, close to linear...
+> but on 8250 running core 266Mhz  (66 on bus, 133 cpm) i get only
+> 175BogoMIPS. Why???
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
