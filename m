@@ -1,23 +1,38 @@
-Date: Sun, 11 Jun 2000 20:12:35 -0700
-From: Jag <agrajag@linuxpower.org>
+Message-Id: <200006120732.JAA00819@piglet.grunz.lu>
+Date: Mon, 12 Jun 2000 09:32:48 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: XFree4 on the control display adaptor
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: What is asmlinkage ?
-Message-ID: <20000611201234.J8893@kotako.icecast.org>
-References: <3943EA46.F7B10185@videotron.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3943EA46.F7B10185@videotron.ca>; from abz@videotron.ca on Sun, Jun 11, 2000 at 03:36:37PM -0400
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 11 Jun 2000, Alain Birtz wrote:
+Hi all,
 
->
-> In /linux/shm.h there are many "asmlinkage" declaration like
->
-> asmlinkage int sys_shmat();
+I've been struggling a bit with running XFree4 on my PowerMac, on the
+control display adaptor.
 
-asmlinkage is #define'd in /usr/include/linux/linkage.h
+For all those that would like to try the same, I've put up a page with
+the required patches:
+
+http://www.cpu.lu/~mlan/linux/dev/xf4.html
+
+The patches are not really clean; rather quick hacks to make it work.
+But they do help out ;-)
+
+Have fun!
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
