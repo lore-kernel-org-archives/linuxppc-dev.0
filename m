@@ -1,34 +1,51 @@
-Message-ID: <3A9161AA.FAD05E67@mvista.com>
-Date: Mon, 19 Feb 2001 13:10:50 -0500
-From: Dan Malek <dan@mvista.com>
+Date: Mon, 19 Feb 2001 13:51:21 -0800 (PST)
+From: William Blew <wblew@home.com>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: OT: Where do I send a PPC centric XF4 patch?
+Message-ID: <Pine.LNX.4.30.0102191339490.19276-100000@apollo.kulian.net>
 MIME-Version: 1.0
-To: Rolf Liu <rolfl@sc.mcel.mot.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: why there is NOT support for FADS board ?
-References: <033b01c09a52$e88f11e0$bf0102c8@sc.mcel.mot.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Rolf Liu wrote:
->
-> Hi, all,
-> I can see supports for MBX, RPXLITE, RPXCLASSIC, etc.
-> but why not FADS support in linux ppc ?
+First, if this is offtopic I apologize...
 
-Because the FADS board is a pain in the ass to support.  I had some
-of it in the kernel years ago, then didn't have access to any hardware
-so I couldn't support it.
+I am putting the finishing touches on a patch to the XF4 tree that
+provides for:
 
-I have recently done the port again and you can find the initial
-work on MontaVista server, in Area51.  It is in the pipeline to get
-back into baseline kernel.  The MontaVista kernel is for the 860,
-and I have recevied patches for the 823, so both will be there.
+1) Fixup the "ati" driver so that it doesn't SIGSEGV on the PPC
+   when the XFree86 server doesn't support loadable modules. I.E>
 
-Maybe you would like to support it :-)?
+	in "xc/config/cf/host.def" "DoLoadableServer NO" appears
 
+   I found that this made debugging XF4 under PPC very doable..
 
-	-- Dan
+2) Add hardware cursor support for mach64 to the "ati" driver.
+
+   While this support whould work on an x86, I have a pmac ;-)
+
+Questions:
+
+1) Where do I send this patch? It is based on the 4.0.2-ie source from
+linuxppc.org that included the PPC drivers' support. Do I just send it
+to fixes@xfree.org? Or perhaps to one of the PPC developers here on
+this list, for integration into the ongoing PPC drivers' work?
+
+2) Is there an xfree.org contributor on this mailing list who is willing
+to take such patches and incorporate them into the ongoing XF4 (PPC) work
+and/or pass them on the appropriate people?
+
+Or, just let me who those people are and I'll pass such things on to them
+myself.
+
+Given that this is the first interesting patch I have produced I am still
+a little undertain as to how these things typically work...
+
+Thanks in advance.
+--
+William Blew, wblew@home.com
+Gamer by Choice, Geek by Birth
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
