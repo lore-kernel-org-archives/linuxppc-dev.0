@@ -1,53 +1,34 @@
-Date: Tue, 22 Dec 1998 11:38:01 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: "David S. Miller" <davem@dm.cobaltmicro.com>
-cc: Paul.Mackerras@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org,
-        linux-m68k@lists.linux-m68k.org
-Subject: Re: TCPv4 checksum errors
-In-Reply-To: <199812221011.CAA09825@dm.cobaltmicro.com>
-Message-ID: <Pine.LNX.4.03.9812221133590.9840-100000@mercator.cs.kuleuven.ac.be>
+Message-Id: <367FC8D2.3DFEFBC0@newbridge.com>
+Date: Tue, 22 Dec 1998 15:29:06 -0100
+From: christophe Jauffret <cjauffre@newbridge.com>
+Reply-To: jauffr_c@epita.fr
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc dev list <linuxppc-dev@lists.linuxppc.org>
+Subject: pci bridge problem 
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 22 Dec 1998, David S. Miller wrote:
->    Date: Tue, 22 Dec 1998 11:01:13 +0100 (CET)
->    From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-> 
->    On Tue, 22 Dec 1998, David S. Miller wrote:
->    > My suggestion is that since you can reproduce it, you should add code
->    > next to this printk statement which dumps the entire packet in HEX to
->    > the console.  Then you can see what and who is at fault and where.
->    > If the packet is sufficiently small you can walk the checksum
->    > algorithm by hand and verify it for this test case.
-> 
->    Which one do I have to dump? skb->h.raw or skb->nh.raw? I guess
->    skb->nh.iph->tot_len bytes at skb->nh.raw?
-> 
-> Look at what the code next to the printk is verifying:
 
-Ooch, didn't notice there was no `break' in between the two cases...
+i have a ZNYX 348 ethernet card who is a Dec pci bridge and two or four
+dev 21140 digital chips
 
-> 		skb->csum = csum_partial((char *)th, len, 0);
-> 		if (tcp_v4_check(th,len,skb->nh.iph->saddr,skb->nh.iph->daddr,skb->csum))
-> 
-> So you need all the bytes from 'th' to 'th + len'.  You also need the
-> values of the source and destination addresses from the IP header (at
-> skb->nh.iph->{saddr,daddr}).
+they function very well on MacOS
+but on LinuxPPC
+the system don't see the two ethernet card but only the DEC bridge
+are there some special option to check in the kernel
 
-Thanks! Rebooting...
+other problem from kernel 2.1.129 i can't load module
 
-Greetings,
+i have modutils 121
+egcs 1.0b
 
-						Geert
-
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
-
+some idea are welcome ?
+-- 
+(°>     Jauffret Christophe 
+//\     jauffr_c@epita.fr
+v_/_    Powered by Clux ;-)
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
