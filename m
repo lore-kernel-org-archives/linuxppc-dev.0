@@ -1,57 +1,77 @@
-Message-Id: <200101191522.f0JFMvH26551@ashley.ivey.uwo.ca>
-Date: Fri, 19 Jan 2001 10:22:56 -0500
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Reply-To: khendricks@ivey.uwo.ca
-Content-Type: text/plain;
-	charset=us-ascii
-Subject: Re: javac and "package not found error"
-Cc: linuxppc-dev@lists.linuxppc.org
-To: abz@videotron.ca
-Mime-Version: 1.0 (Apple Message framework v337)
+Message-ID: <3A686DFE.9030308@valinux.com>
+Date: Fri, 19 Jan 2001 09:40:30 -0700
+From: Jeff Hartmann <jhartmann@valinux.com>
+MIME-Version: 1.0
+To: michdaen@iiic.ethz.ch
+CC: dri-devel@lists.sourceforge.net, linuxppc-dev@lists.linuxppc.org
+Subject: Re: [Dri-devel] PPC Lockup (ati-pcigart-branch)
+References: <3A67B401.8282A00F@relog.ch>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Michel Dänzer wrote:
 
-Swing is now integrated with the Java 2 (JDK 1.2.2 / JDK 1.3) package.  When using jdk 1.1.8 swing must be added as an external package.
-
-The problem was, late in the development of swing they changed the package names to help with its integration into the Java 2 platform.  Sun then released a new and improved standalone Swing package that matched these new package names.
-
-So it sounds like you are out of sync.  Since you are using jdk 1.1.8, you need to get an external Swing package that is up to date from Sun (is the NetBeans one up to date).  That unfortunately may NOT be what is used under MacOS since the MacOS java system is quite old and dated (this is not true of MacOSX which ships with Java2 with integrated Swing).
-
-Please check out the Sun site and grab the latest Swing (probably already integrated with NetBeans if it is a recent version).  If you still have problems, the code itself probably uses the old Swing package names and needs to be updated.  (I believe someone has a java application to make the necessary changes wholesale).
-
-It may also be that the virtual machine is simply finding an older Swing package someplace in its classpath and that changing the classpath may be enough.  To change the classpath, you can use the environment variable CLASSPATH to set its intial value for the jdk 1.1.8 or pass info via the java command line.
-
-Check out the Sun java pages that describe the Java Foundation Classes in more detail if you need more info.
-
-Kevin
-
-On Friday, January 19, 2001, at 10:00 AM, Alain Birtz wrote:
-
+> [CC'ing linuxppc-dev, hopefully someone there knows what might be up...]
 >
-> The swing application work great with MacOS and CodeWarrior.
-> But when I try to compile the same application with javac under Linux
-> (Suse7.0)
-> I got "package not found error".
->
-> The first error message was for the "import javax.swing.*".
-> Setting -classpath to /usr/lib/netbeans21/lib21/swingall.tar solve this
-> line error.
-> But now javac complaint about every other import line.
->
-> The Sun site say that Java class are all in rt.jar. But I cannot found
-> any such
-> file in my HD. It seem that jdk was installed: /usr/lib hold a directory
-> called jdk1.1.8
->
-> Is there something like a default classpath ?
->
-> What can I do to solve this problem ?
+> This is where it dies:
 >
 >
+>         /* FIXME: We should really have a kernel call for this...
+>          */
+>         entry->virtual = __vmalloc( (pages << PAGE_SHIFT),
+>                                     GFP_KERNEL,
+>                                     PAGE_KERNEL);
+>
+>         printk("Checkpoint 2\n");
 >
 >
+> Checkpoint 2 is never reached, the machine is absolutely dead.
+>
+>
+> Michel
+>
+>
+Since your running through klogd, this might not be 'exactly' where you
+die.  I would be TERRIBLY surprised if you died here.  One thing you
+have to remember about kernel debugging is that you can't always trust
+what is in the log.  Here is a technique that works for me when I'm
+unsure of a piece of code:
+
+Do what I suggested first, if it finds a likely problem, then great
+(printk's on every line of a function).
+When you get a general area where there is a failure, comment out every
+line of code after that.
+Line by line put the code back in.
+This will help you find the hang.
+
+This is a very common way of debugging kernel code with hangs.  There
+are other alternatives.
+
+Setup a serial console, and turn of syslogd/klogd.  This will give you
+almost immediate information if you keep the output small (i.e., no
+logging of lots of loop iterations or other high output stuff.)  This is
+one useful tool for kernel debugging.
+
+If through the serial console you get an Oops message, you can use
+ksymoops to find out what section of code was executing right before the
+Oops.  You have to do objdump usually to figure out which line of C code
+caused the problem, unless the logic of the asm makes it obvious.
+(i.e., I only do those types of operations on line X.)
+
+I dunno if the kgdb patch works on powerpc, but you might try it.  You
+could single step through this code since your not at a point where
+interrupts are disabled.
+
+Unfortunately kdb (built-in kernel debugger) does not work on the
+powerpc.  It is REALLY useful when your debugging code when interrupts
+are disabled, but it only works on ia64 and ia32 currently.  I
+personally like it alot more then kgdb, even though it has some
+limitations kgdb doesn't.
+
+Hope this helps,
+-Jeff
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
