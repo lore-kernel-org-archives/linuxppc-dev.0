@@ -1,29 +1,28 @@
 From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+To: Giuliano Pochini <pochini@denise.shiny.it>,
         <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: BootX (the MacOS X kind)
-Date: Sat, 16 Dec 2000 23:09:16 +0100
-Message-Id: <19341110154100.12112@192.168.1.10>
-In-Reply-To: 
- <Pine.LNX.4.10.10012161929330.6742-100000@opal.biophys.uni-duesseldorf.de>
-References: 
- <Pine.LNX.4.10.10012161929330.6742-100000@opal.biophys.uni-duesseldorf.de>
+Subject: Re: problem compiling test12
+Date: Sat, 16 Dec 2000 23:11:46 +0100
+Message-Id: <19341110154330.5294@192.168.1.10>
+In-Reply-To: <3A3C0420.ADEF0E3C@denise.shiny.it>
+References: <3A3C0420.ADEF0E3C@denise.shiny.it>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> 	After much cleaning and polishing, BootX has been moved to
->> the Darwin CVS Repository.  It should be available withing the hour.
->> Basically put, BootX is the booter for Mac OS X and Darwin OS.  It
+>I can't compile 2.4.0-test12:
 >
->Is that one based on BenH's BootX? But that one needs MacOS to run, while
->Apple's tries to boot MacOS. Weird.
->Having BootX use my kernels on the ext2 filesystem would be nice though.
+>arch/ppc/mm/mm.o: In function `map_page':
+>arch/ppc/mm/mm.o(.text+0xd90): undefined reference to `set_pgdir'
 
-No, Apple's BootX is a completely different beast. It uses a BSD
-implementation of ext2.
+Are you using the bk source trees ? The main linus tree is far outdated
+on PPC specific parts, unfortunately, Linus has ignored almost all PPC
+patches sent for the patch few monthes (despite sending them the way he
+wants, in small parts, etc...)
+
+I remember Linus once saying he didn't care about PPC...
 
 Ben.
 
