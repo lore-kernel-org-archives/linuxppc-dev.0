@@ -1,14 +1,23 @@
-Return-Path: <hch@lst.de>
-Date: Wed, 19 Jan 2005 15:10:48 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Sachin P <sachinpc@gmail.com>
-Message-ID: <20050119141048.GA13254@lst.de>
-References: <66164fbc0501190353485dc8e4@mail.gmail.com>
+Return-Path: <SRS0+10f07f6f278ab718f41d+514+infradead.org+dwmw2@canuck.srs.infradead.org>
+Received: from canuck.infradead.org (canuck.infradead.org [205.233.218.70])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E433767A2C
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Jan 2005 01:48:39 +1100 (EST)
+From: David Woodhouse <dwmw2@infradead.org>
+To: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <BD84893E-6A28-11D9-AC28-000393DBC2E8@freescale.com>
+References: <1106120622.10851.42.camel@baythorne.infradead.org>
+	<BD84893E-6A28-11D9-AC28-000393DBC2E8@freescale.com>
+Content-Type: text/plain
+Date: Wed, 19 Jan 2005 14:48:03 +0000
+Message-Id: <1106146083.26551.526.camel@hades.cambridge.redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <66164fbc0501190353485dc8e4@mail.gmail.com>
-Cc: Linuxppc-dev@ozlabs.org
-Subject: Re: consistent_alloc() on PPC
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Linus Torvalds <torvalds@osdl.org>, Paul Mackerras <paulus@samba.org>,
+	"H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] raid6: altivec support
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,13 +27,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 19, 2005 at 05:23:17PM +0530, Sachin P wrote:
-> Hi , 
-> I am facing some problems porting my drivers to the PPC platform . Am
-> currently using consistent_alloc() and consistent_free() to
-> allocate/free (non-cached) DMA ble memory.
-> Is there any function/patch/macro, equivalent to
-> phy_to_virt()/virt_to_phy() for memory returned by consistent_alloc()?
+On Wed, 2005-01-19 at 08:45 -0600, Kumar Gala wrote:
+> We did talk about looking at using some work Ben did in ppc64 with OF 
+> in ppc32.  John Masters was looking into this, but I havent heard much
+> from him on it lately.
+> 
+> The firmware interface on the ppc32 embedded side is some what broken 
+> in my mind.
 
-Don't ever use concistant_alloc directly.  Always use
-dma_alloc_coherent() which will give you both virtual and bus address.
+The binary structure which changes every few weeks and which is shared
+between the bootloader and the kernel? Yeah, "somewhat broken" is one
+way of putting it :)
+
+The ARM kernel does it a lot better with tag,value pairs.
+
+-- 
+dwmw2
