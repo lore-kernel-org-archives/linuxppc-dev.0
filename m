@@ -1,44 +1,53 @@
-Date: Sun, 16 Mar 2003 17:30:26 +0100
-From: Samuel Rydh <samuel@ibrium.se>
-To: mikpe@csd.uu.se
-Cc: afleming@motorola.com, oprofile-list@lists.sourceforge.net,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: MPC750 perfmon/TAU/decrementer erratum?
-Message-ID: <20030316163026.GA4496@ibrium.se>
-References: <200303161510.h2GFAWhT018082@harpo.it.uu.se>
+Date: Mon, 17 Mar 2003 07:03:04 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: linuxppc-dev@lists.linuxppc.org
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: ppc: Update to ppc specific makefiles
+Message-ID: <20030317140304.GB23106@ip68-0-152-218.tc.ph.cox.net>
+References: <20030314194427.GA18790@mars.ravnborg.org> <20030314202148.GA7230@ip68-0-152-218.tc.ph.cox.net> <20030314205636.GA28130@mars.ravnborg.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200303161510.h2GFAWhT018082@harpo.it.uu.se>
+In-Reply-To: <20030314205636.GA28130@mars.ravnborg.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, Mar 16, 2003 at 04:10:32PM +0100, mikpe@csd.uu.se wrote:
+On Fri, Mar 14, 2003 at 09:56:36PM +0100, Sam Ravnborg wrote:
+> On Fri, Mar 14, 2003 at 01:21:48PM -0700, Tom Rini wrote:
+> [Tom's original reply will not show up at linuxppc-dev becasue my initial
+> mail contained the wrong address, and I just bounced it to linuxppc-dev]
 >
-> Motorola's MPC750UM.pdf, section C-13 page C-78, states:
-> "The performance monitor of the MPC755 functions the same as that
-> of the MPC750, (...), except that for both the MPC750 and MPC755,
-> no combination of the thermal assist unit, the decrementer register,
-> and the performance monitor can be used at any one time. If exceptions
-> for any two of these functional blocks are enabled together, multiple
-> exceptions caused by any of these three blocks cause unpredictable
-> results."
+> > > The kernel builds and when a rebuild is made no files are compiled again.
+> > > arch/ppc/boot/{openfirmware,prep,simple}/Makefile could use more
+> > > attention - but wanted to see this applied first.
+> >
+> > I'm open to ideas for how to clean those up.  Please CC me with those
+> > (I'll read it quicker, most likley :)
 >
-> My interpretation: Either the reference is wrong and it actually
-> refers to the 745 and 755 instead of 750 and 755, or it sneaks in
-> a big fat erratum for the 750 in the 745/755-specific section.
+> I will give the most simple one a spin then [prep].
+> Hold on applying this for a while.
+
+I'll wait for the next one. :)
+
+> > Maybe I'm missing something, but won't this cause all of host-progs to
+> > be compiled on any build?  They're small / quick enough to build that I
+> > suppose it wouldn't kill anyone to build extra tools they don't need,
+> > but in that case, the tools- stuff could die in arch/ppc/boot/Makefile,
+> > right?
 >
-> Does anyone know for sure whether the 750 has this erratum or not?
+> It is rather me who missed something I'm afraid.
+> The Makefile in ppc/boot/utils is not needed at all and can be deleted.
+> The "host-prog := " in ppc/boot/Makefile is all what is needed.
+> [tools/ shall be removed from subdir- := in boot/makefile]
+>
+> I would like to delete all the tool selection stuff in boot/Makefile.
+> As you say it does not matter for the total build time.
+> OK with you?
 
-The erratum is correct. Some revs of the 750 definitely have
-this problem. More specifically, the 750 in my iBook exhibits
-this problem but my B&W G3 does not (or perhaps it was
-the B&W G3, not the iBook, that had the problem).
+In the name of code cleanliness, yes, lets just build 'em all.
 
-PVRs:
-	B&W G3: 	0008 0202
-	iBook:  	0008 8300
-
-/Samuel
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
