@@ -1,46 +1,32 @@
-Date: Tue, 14 Mar 2000 12:02:29 -0800 (PST)
-From: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
+Date: Tue, 14 Mar 2000 22:10:28 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
 To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-cc: Dan Bethe <dan_bethe@yahoo.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Different Mac Models.
-In-Reply-To: <Pine.LNX.4.10.10003142008060.17862-100000@opal.biophys.uni-duesseldorf.de>
-Message-ID: <Pine.LNX.3.96.1000314114826.7517F-100000@deepspace.mklinux.org>
+cc: Michel Dänzer <michdaen@iiic.ethz.ch>, Kostas Gewrgiou <gewrgiou@imbc.gr>,
+        "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to workonppcwithr128
+In-Reply-To: <Pine.LNX.4.10.10003141911250.17573-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <Pine.LNX.4.10.10003142207130.18335-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 14 Mar 2000, Michael Schmitz wrote:
-
-> > G4 series, and even they appear to have ADB internally for the front panel
-> > buttons, as far as I can tell, as does the Lombard PowerBook.  I don't
-> > know if Pismo uses ADB, but if I were a betting man....  Oh, and the
+> > Do you use BackingStore? If yes, can you try leaving it off?
 >
-> I bet it does. It would be too much hassle to make USB versions of
-> keyboard and trackpad.
+> Nope, and that's not where it hangs anyway. I just didn't get all of the
+> server output in that case (fflush (stderr) isn't sufficient).
+> Now I can't get beyond xf86HandleColormaps(). Another ioctl that barfs on
+> me, perhaps. I guess it all boils down to PCI messups.
 
-It's not that.  It's that it's too big a hassle to make a USB version of
-the power management stuff that's part of the adb chip.  :-)  Besides, I
-doubt the trackpad and keyboard ADB hardware is on the devices themselves.
-It's probably part of the motherboard, with a raw data connection to the
-devices.  Not sure of that, though -- I've never gutted a trackpad.  ;-)
+After bypassing xf86HandleColormaps()  get all the way through the screen
+init (including FBDevRefreshArea calls that appear to be writing to video
+memory without choking), only to hang a couple of seconds after. I'll dig
+into the kernel ioctl problems now - there will be the cause of the
+colormap failures as well.
 
-
-> > Lombard also appeared to have a SWIM III.  Sad that nobody uses it, as it
-> > would be so much faster at floppies than those bloody SuperDisk drives....
->
-> Floppies are a technologial dead and. ADB, on the other hand ... ;-)
-
-I disagree.  Floppies are the closest thing to a cross-platform storage
-medium that exists currently.  They're dirt cheap so you don't feel bad
-about throwing them away if they fail.  Perhaps most importantly, almost
-every machine on the planet has a floppy drive.  They may be dying, but
-they're sure holding on with a vengeance.  :-)
-
-
-Later,
-David
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
