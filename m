@@ -1,37 +1,38 @@
-Message-ID: <386B8983.AE2F1A5A@wanadoo.fr>
-Date: Thu, 30 Dec 1999 17:34:11 +0100
-From: Martin Costabel <costabel@wanadoo.fr>
-MIME-Version: 1.0
-To: bob@kunk.jriver.com
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.2.14pre16 & usb kbd
-References: <19991230080950.11540.qmail@kunk.jriver.com>
-Content-Type: text/plain; charset=us-ascii
-Sender: owner-linuxppc-dev@lists.linuxppc.org
-List-Id: <linuxppc-dev@lists.linuxppc.org>
+Date: Tue, 30 Nov 1999 19:23:09 -0500 (EST)
+From: Claude Robitaille <crobitaille@videotron.ca>
+Subject: Re: Real Time response/latency question
+In-reply-to: <3843ED00.20D47DF4@netx4.com>
+To: Dan Malek <dan@netx4.com>
+Cc: Graham Stoney <greyham@research.canon.com.au>,
+        linuxppc-embedded@lists.linuxppc.org
+Message-id: <Pine.LNX.4.10.9911301917280.1860-100000@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Sender: owner-linuxppc-embedded@lists.linuxppc.org
+List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-bob@kunk.jriver.com wrote:
+
+
+On Tue, 30 Nov 1999, Dan Malek wrote:
+
 > 
-> The USB keyboard mapping appears to have changed (or been broken) between
-> 2.2.14.pre9 and 2.2.14pre16 from Paul's rsync. (running on an iMac rev C)
+> Graham Stoney wrote:
+> > 
+> > Hi folks,
+> > 
+> > I'm looking at software architecture questions, and wondering how much
+> > application domain work I can move out of driver land and into user space,
 > 
-> Did I miss something that someone can fill me in on?
+> I believe this is a good programming practice, and in many
+> cases I don't even write a driver when the application is
+> allowed to run with root privilege.
+I have not looked yet into this section of my own project but I'll have to
+eventually so I have a question: how about interrupt? I guess a very
+simple driver which kicks some userland waiting thread is good enough in
+most cases. Or is there a way to register some userland code?
 
-On French USB keyboards, these kernels are as broken as they always
-were. Could you elaborate what has changed for your keyboard? 
+Claude
 
-There are some more or less half-baked patches for the USB->ADB
-translation in the kernel floating around, but none of them works
-correctly on European Apple USB keyboards. I wonder whether the idea
-behind this funny translation scheme in the kernel ("translate USB
-keycodes to ADB or PC keycodes, so that you can use the same user space
-keymaps for USB and ADB or PC keyboards") can work at all.
 
-Right now, it doesn't. There are either unmapped keys or different keys
-mapped to the same keycode or, in the best of all cases, exchanged keys.
-
---
-Martin
-
-** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
+** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
