@@ -1,52 +1,36 @@
-Message-Id: <l03130302b4bc2b80bf95@[213.6.45.224]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Tue, 1 Feb 2000 07:20:13 +0100
-To: linuxppc-dev@lists.linuxppc.org
-From: Moritz Thomas <motho@gmx.net>
-Subject: Re: Compilation error during Building Gnustep
+From: phandel@cise.ufl.edu
+Date: Tue, 1 Feb 2000 11:53:16 -0500 (EST)
+To: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: Problem running -O2 compiled Mozilla
+Message-ID: <Pine.LNX.4.21.0002011142420.26593-100000@adsl-78-160-189.gnv.bellsouth.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I compiled GNUStep some days ago with gcc 2.95.2 (not from fsirl however),
-and it gave me the same error when compiling with optimization. 'twas the
-only one, though.
+I'm also seeing that "crash on url-box click" first mentioned here:
 
-mo
+http://lists.linuxppc.org/listarcs/linuxppc-dev/200001/msg00246.html
 
->this bug came up quite some time ago and i believe its fixed now, upgrade
->to gcc 2.95.2 and give it a shot.  you should find all necessary gcc rpms
->in devel.linuxppc.org/users/fsirl/R5/RPMS.
->
->ani
->
->
->On Tue, 25 Jan 2000, Stephane Leon wrote:
->
->>
->> Hi,
->>
->>  I try to install today Gnustep.
->>
->>  I download gstep-core-0.6.0 from gnustep.org.
->>
->>  After ./configure and during make i get :
->>
->>  -I/nowhere/Headers -o
->>  shared_obj/powerpc/linux-gnu/gnu-gnu-gnu/xgps/NSSplitView.o
->>  NSSplitView.m
->>  /usr/src/redhat/BUILD/egcs/1.1.2/gcc/expr.c:570: Internal compiler
->> error
->>  in function convert_move
->>
->>  Is my compiler version ?
->>  I am running Linux ppc kernel 2.2.10.
->>
->>  When i type gcc -v i obtain : reading specs from
->>  /usr/lib/gcc-lib/ppc-redhat-linux/egcs-2.91.66/specs
->>  gcc version egcs-2.91.66 19990314 (egcs-1.1.2 release)
->
+Also, if I resize my compiled version, the portion that was previously not
+viewable becomes black, and I need to reload the page with the large
+browser window.
 
+I've updated gcc et.al.  using the latest rpms from fsirl's
+devel.linuxppc.org directory.
+
+The precompiled version listed here recently does not exhibit any of these
+problems.  Is this a bug in the gcc optimizer?
+
+
+Thanks,
+Peter
+
+--
+Peter F. Handel          "[The anti-Christ] also forced everyone, small and
+phandel@cise.ufl.edu      great ... to receive a mark [smart card?] on his
+www.cise.ufl.edu/~phandel right hand or on his forehead, so that no one could
+FAX: (561) 619-8051       buy or sell unless he had the mark"-Revelation13:16
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
