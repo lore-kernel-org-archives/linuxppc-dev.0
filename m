@@ -1,27 +1,32 @@
-From: Wolfgang Haeuptli <whaeuptli@bluewin.ch>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: scanner not recognized (interrupt in idle phase?)
-Date: Sun, 7 Nov 1999 13:56:55 +0100
-Content-Type: text/plain
-MIME-Version: 1.0
-Message-Id: <99110714573501.00535@localhost.localdomain>
+Message-Id: <199911071307.NAA32306@go.hannover.sgh-net.de>
+Subject: Q: How to address USB devices?
+Date: Sun, 7 Nov 1999 14:07:26 +0100
+From: John L Grantham <jgrantha@hannover.sgh-net.de>
+To: <linuxppc-dev@lists.linuxppc.org>, <linuxppc-user@lists.linuxppc.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello,
+Hi all,
 
-on startup, I see this message (mesh: interrupt in idle phase?) while the system
-checks the scsi bus. This is on a kernel 2.2.9 with sg-driver included, on a
-performa 6400 with a UMAX Astra 1200S scanner (which works on the MacOS 
-side, b.t.w.).
+A quick question: How do you address a device hooked up via USB with 
+LinuxPPC 1999 Q3? Like, for example, a USB CD drive or CD burner? Is it 
+the same for a Yose as with an iMac?
 
-Any scsi-crack around that could give me a pointer how to solve the problem? 
-(Do I need another low-level driver for my scsi-chip ... which would be what??)
+Just wondering...
 
-Thanks for a hint
+cya
 
-Wolfgang Haeuptli
+John
+
+---
+
+John Grantham | Freelance Graphic and Web Designer
+              | Dipl.-Designer (FH)
+              | Homepage: http://surf.to/multimedia
+              | MacLinux: http://www.maclinux.de/
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
