@@ -1,83 +1,53 @@
-Date: Wed, 7 Jun 2000 17:10:39 +0200 (MET DST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Ryuichi Oikawa <roikawa@rr.iij4u.or.jp>
-cc: mlan@cpu.lu, schmitz@opal.biophys.uni-duesseldorf.de,
-        daenzerm@student.ethz.ch, toe@unlserve.unl.edu,
-        linuxppc-dev@lists.linuxppc.org
+Date: Wed, 7 Jun 2000 17:20:54 +0200 (CEST)
+From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+cc: Ryuichi Oikawa <roikawa@rr.iij4u.or.jp>, mlan@cpu.lu,
+        schmitz@opal.biophys.uni-duesseldorf.de, daenzerm@student.ethz.ch,
+        toe@unlserve.unl.edu, linuxppc-dev@lists.linuxppc.org
 Subject: Re: [patch] VRAM detection in controlfb
-In-Reply-To: <20000607233456Z.roikawa@rr.iij4u.or.jp>
-Message-ID: <Pine.GSO.4.10.10006071705280.652-100000@dandelion.sonytel.be>
+In-Reply-To: <Pine.GSO.4.10.10006071705280.652-100000@dandelion.sonytel.be>
+Message-ID: <Pine.LNX.4.10.10006071715540.7397-100000@zirkon.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 7 Jun 2000, Ryuichi Oikawa wrote:
-> Geert did explain the problem. It is due to incorrect offset estimation.
-> Let me explain your case in detail. The authur of fbdev module seems to
-> assume frame buffer size as a multiple of page size:
+> > Now you understand the fix is very simple:
+> > -		fPtr->fboff = fPtr->fix.smem_len & (PAGE_SIZE-1);
+> > +		fPtr->fboff = fPtr->fix.smem_start & (PAGE_SIZE-1);
 >
-> fbdevhw.c
-> void* fbdevHWMapVidmem(ScrnInfoPtr pScrn)
-> {
-> 	fbdevHWPtr fPtr = FBDEVHWPTR(pScrn);
+> That's not sufficient (perhaps it is in this case, though): both fix.smem_start
+> and fix.smem_len may be not page aligned. To catch all cases, you have to use
+> the formula from my previous posting.
+
+Did that just get lost between XFree release 3 and 4, or did we have it
+wrong all along? I wonder if that was what caused problems on some m68k
+Mac video hardware ...
+
+> > Yes, this is wrong as the authur noted, but interestingly this code spreads
+> > over the all drivers supporting fbdev, though I can't distinguish which is
+> > the original :^)  Maybe polite solution is to fix each driver, but quick
+> > fix will be
+> >
+> > +	pScrn->displayWidth = fPtr->fix.line_width /
+> > +				(fPtr->var.bits_per_pixel >> 3)
 >
-> 	TRACE_ENTER("MapVidmem");
-> 	if (NULL == fPtr->fbmem) {
-> 		fPtr->fboff = fPtr->fix.smem_len & (PAGE_SIZE-1);
-> 			    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> 		fPtr->fbmem = mmap(NULL, fPtr->fix.smem_len, PROT_READ | PROT_WRITE,
-> 				   MAP_SHARED, fPtr->fd, 0);
+> Typo: the field is called `line_length', not `line_width'.
 >
-> but the fact is different from his assumption.  As you know very well,
-> controlfb adjusts fb memory size by subtracting display offset(in your
-> case 80 = 0x50 bytes) so that
->     fboff = (4M - 0x50) & 0xfff = 0xfb0
->     fbmem = smem_start & 0xfffff000 = smem_start - 0x50.
+> And that formula is valid for chunky displays only, not for interleaved
+> bitplanes (I suppose pScrn->displayWidth is the width of one line in memory,
+> counted in pixel units?).
 >
-> Thus your Xserver's video memory starts at offset
->     (fbmem + fboff) - smem_start = 0xfb0 - 0x50 = 0xf60 = 3936 bytes.
->
-> Now you understand the fix is very simple:
-> -		fPtr->fboff = fPtr->fix.smem_len & (PAGE_SIZE-1);
-> +		fPtr->fboff = fPtr->fix.smem_start & (PAGE_SIZE-1);
+> If line_length is 0, you must fallback to xres_virtual / bytes_per_pixel.
 
-That's not sufficient (perhaps it is in this case, though): both fix.smem_start
-and fix.smem_len may be not page aligned. To catch all cases, you have to use
-the formula from my previous posting.
+Is the displayWidth / xres_virtual synonymous to the line length (offset
+between start of subsequent lines), or might displayWidth be used for
+something else altogether? displayWidth seems a misnomer (on some
+hardware, there's no video RAM between the end of one scan line and the
+probably page aligned start of the next ...)?
 
-> But looking through the XF4 fbdev support code I saw two more mistakes
-> causing potential problem. One is a confusion of virtual screen width
-> with screen pitch:
->
-> fbdev.c
-> 	pScrn->displayWidth = pScrn->virtualX; /* FIXME: might be wrong */
->
-> Yes, this is wrong as the authur noted, but interestingly this code spreads
-> over the all drivers supporting fbdev, though I can't distinguish which is
-> the original :^)  Maybe polite solution is to fix each driver, but quick
-> fix will be
->
-> +	pScrn->displayWidth = fPtr->fix.line_width /
-> +				(fPtr->var.bits_per_pixel >> 3)
-
-Typo: the field is called `line_length', not `line_width'.
-
-And that formula is valid for chunky displays only, not for interleaved
-bitplanes (I suppose pScrn->displayWidth is the width of one line in memory,
-counted in pixel units?).
-
-If line_length is 0, you must fallback to xres_virtual / bytes_per_pixel.
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven ------------- Sony Software Development Center Europe (SDCE)
-Geert.Uytterhoeven@sonycom.com ------------------- Sint-Stevens-Woluwestraat 55
-Voice +32-2-7248638 Fax +32-2-7262686 ---------------- B-1130 Brussels, Belgium
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
