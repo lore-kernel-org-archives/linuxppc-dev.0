@@ -1,33 +1,37 @@
-Date: Mon, 8 Jan 2001 07:55:44 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: michdaen@iiic.ethz.ch
-Cc: Tony Mantler <nicoya@apia.dhs.org>,
-        Linux/m68k <linux-m68k@lists.linux-m68k.org>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: [PATCH] drivers/macintosh/Config.in
-Message-ID: <20010108075544.E19404@opus.bloom.county>
-References: <20010106171733.M556@opus.bloom.county> <v04003a08b67ddaff44fe@[24.70.162.12]> <20010107173805.B19404@opus.bloom.county> <3A598EB5.638622B6@relog.ch>
-Mime-Version: 1.0
+Message-Id: <20010109000703.Postino-015905@smtp01.highway.ne.jp>
+Date: Tue, 9 Jan 2001 00:07:03 +0900
+To: Tom Rini <trini@kernel.crashing.org>
+CC: linuxppc-dev@lists.linuxppc.org
+From: Kaoru Fukui <k_fukui@highway.ne.jp>
+Subject: Re: status of ppc support in official 2.4.0 or Alan's 2.4.0-ac1
+In-Reply-To: <20010106104247.A1400@opus.bloom.county>
+References: <200101051455.f05Et0v06700@ashley.ivey.uwo.ca>
+ <20010105083740.B14321@opus.bloom.county>
+ <20010105154015.R29805@plato.local.lan>
+ <3A572925.4A791E05@iiic.ethz.ch>
+ <20010106055922.Y29805@plato.local.lan>
+ <20010106104247.A1400@opus.bloom.county>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3A598EB5.638622B6@relog.ch>; from daenzer@relog.ch on Mon, Jan 08, 2001 at 10:56:05AM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Jan 08, 2001 at 10:56:05AM +0100, Michel D?nzer wrote:
-> Tom Rini wrote:
->
-> > I also (may) move things like MOL into that file.
->
-> We're still hoping to get MOL working on APUS anytime soon, and according to
-> the web page it should work on PReP and CHRP boxen.
+From: Tom Rini <trini@kernel.crashing.org>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: status of ppc support in official 2.4.0 or Alan's 2.4.0-ac1
+Date: Sat, 6 Jan 2001 10:42:47 -0700
 
-Well, there's no distinction between PReP, CHRP and Pmac, config wise.  It would
-be in if [ "$CONFIG_6xx" = "y" ]; then ... fi probably (I need to ask one of
-the IBM folks if it would work on POWER3).
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+> Well, the first problem is that it's now linuxppc_2_4 (which isn't a rename,
+> it's a new tree) which needs all the fixes from 2_3, and some of the twitchy
+> stuff left out.  So it may or may not be possible to get a good 2.4 tree
+for
+> a bit (except for 2_5) anyways.
+
+What port number is bk linuxppc_2_4?
+May our user access this linuxppc_2_4?
+
+Kaoru
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
