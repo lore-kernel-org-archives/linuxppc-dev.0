@@ -1,43 +1,31 @@
-Message-Id: <199908290558.HAA00264@piglet.cpu.lu>
-Date: Sun, 29 Aug 1999 07:58:25 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: IBM 850 LinuxPPC installation?
-To: hollis+@andrew.cmu.edu
-cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.LNX.3.96L.990828184233.3389E-100000@unix47.andrew.cmu.edu>
+Message-ID: <37C973C9.B6FB489@usa.net>
+Date: Sun, 29 Aug 1999 13:54:19 -0400
+From: David Riley <happyoscar42@usa.net>
+Reply-To: happyoscar42@usa.net
 MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+To: Stephen Edie <sedie@terraplex.com>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Xfree86 support for Voodoo 3 acceleration
+References: <l03130307b3ec7ec8030d@[192.168.10.2]>
+Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  28 Aug, this message from Hollis R Blanchard echoed through cyberspace:
->> Also, you might want to try patching your kernel with Andre Hedrick's
->> multi-platform uniform IDE driver (look at
->> ftp://ftp.kernel.org/pub/linux/kernel/people/hedrick/). You _might_
->> need additional patches to get it to boot; if so, get back to me, and
->> I'll produce a diff against my working kernel.
-> 
-> I don't know if you read my most recent info, but after disconnecting the
-> cdrom drive (hdc), I'm getting lots of 
-> hda: lost interrupt
-> 
-> My dmesg otherwise looks the same - just drop every mention of hdc. If you
-> think that uniform IDE driver would help with my current problem let me know
-> and I'll give it a shot.
+Stephen Edie wrote:
 
-Definitely give it a try. Do you know what hardwre is your IDE
-interface? Is it integrated into some chipset? If so, which one?
+> Is the full source code to the driver available?  Or is it written using
+> the Glide libraries?  If it is written using Glide, than it will be
+> necessary to contact 3dfx and get Glide ported to PPC Linux before it can
+> be ported.  Otherwise, it's entirely possible.  :)
 
-Michel
+This ought to happen once someone gets a LinuxPPC machine to Darryl Strauss
+<http://glide.xxedgexx.com>.
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+
+--
+--"Your mouse has been moved.  Windows 95 must be restarted for change to take
+effect."
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
