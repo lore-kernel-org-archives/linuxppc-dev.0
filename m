@@ -1,23 +1,22 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+Return-Path: <peter.asemann@web.de>
+Received: from smtp07.web.de (smtp07.web.de [217.72.192.225])
 	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 4E8842BDEB
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7A0442BDEB
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  8 Nov 2004 13:55:17 +1100 (EST)
-Date: Sun, 7 Nov 2004 18:55:04 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Gerhard Jaeger <g.jaeger@sysgo.com>
-Message-ID: <20041108025504.GA4112@gate.ebshome.net>
-References: <20041022085733.0c5289c8.Hiroshi_DOYU@montavista.co.jp>
-	<20041022082955.GA27169@gate.ebshome.net>
-	<20041025011654.GA3290@gate.ebshome.net>
-	<200410250847.00907.g.jaeger@sysgo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200410250847.00907.g.jaeger@sysgo.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [BUG] IBM440GX works too slow under nfsroot
+	Tue,  9 Nov 2004 01:33:58 +1100 (EST)
+Received: from codesigns21.informatik.uni-erlangen.de ([131.188.52.21]
+	helo=web.de) by smtp07.web.de with asmtp (TLSv1:RC4-MD5:128)
+	(WEB.DE 4.101 #44) id 1CRAac-0003I2-00
+	for linuxppc-embedded@ozlabs.org; Mon, 08 Nov 2004 15:33:50 +0100
+Message-ID: <418F83C4.5000109@web.de>
+Date: Mon, 08 Nov 2004 15:33:40 +0100
+From: Peter Asemann <peter.asemann@web.de>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Sender: peter.asemann@web.de
+Subject: How much easier makes owning a BDI2000 things?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,15 +27,11 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 25, 2004 at 08:47:00AM +0200, Gerhard Jaeger wrote:
-> > If there is an interest, I can make a patch against current 2.4 BK
-> > tree, but this will take some time (I'm a little swamped right now).
-> 
-> of course there's some interest, at least by me ;) Would be great if you'll
-> find some time for that.
+The tutorials in the web I read about getting custom hardware running
+suggest that having some BDI-thing like an Abatron BDI2000 is a really
+good idea.
 
-Patch against current 2.4 BK is available at http://kernel.ebshome.net. 
-Quick tested on Ebony & Ocotea.
+Actually I need some arguments to have such a device bought. How much
+easier does it make things?
 
---
-Eugene
+Peter Asemann
