@@ -1,52 +1,61 @@
-Message-ID: <00bc01c04b23$92fbfbe0$57c809c0@fel>
-Reply-To: "john zhan" <johnzhan@btamail.net.cn>
-From: "john zhan" <johnzhan@btamail.net.cn>
-To: Íõ³¬·å <chfwang@sina.com.cn>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <3A02ECF3.1E072842@iigi.net> <3A072049.C2096C5C@mvista.com> <001b01c04972$7f2e3d10$57c809c0@nt4srv87>
-Subject: Re: about ACE860 board
-Date: Fri, 10 Nov 2000 22:26:42 +0800
+Date: Fri, 10 Nov 2000 09:29:46 -0600 (CST)
+From: Don Holmgren <djholm@fnal.gov>
+Reply-To: Don Holmgren <djholm@fnal.gov>
+To: fraher <fraher@pweh.com>
+cc: linuxppc-embedded@lists.linuxppc.org, Gabriel Paubert <paubert@iram.es>
+Subject: Re: MVME2604 Problems with MMU
+In-Reply-To: <Pine.HPX.4.10.10011100955260.19910-100000@gra-ux1.iram.es>
+Message-ID: <Pine.SGI.3.95.1001110092723.15810A-100000@hppc.fnal.gov>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Some older board and its monitor do not support the SIMM which is more than 16MB.
-
-Refer to ACE860 home,I am not sure its still there : www.ace360.com
-If you are using ICE/BDM,please check the value of br(x) and or(x) ,(x) is which
-CS your SIMM connect to.
-
-For more information,please go to www.fel.com.cn ,
-Don't fuck me,
-it's none of my business,
- chinese only,:-)
-
-john zhan.
-
------ Original Message -----
-From: Íõ³¬·å <chfwang@sina.com.cn>
-To: LinuxPPC Mailing List <linuxppc-embedded@lists.linuxppc.org>
-Sent: Wednesday, November 08, 2000 6:56 PM
-Subject: about ACE860 board
-
+On Fri, 10 Nov 2000, Gabriel Paubert wrote:
 
 >
-> Hi,
+> On Thu, 9 Nov 2000, fraher wrote:
 >
-> Does somebody know the ATLAS ACE860 DARWIN board?
-> It's monitor can auto test the 4M/8M DRAM successfully.
-> But when I insert a 32M DRAM, the monitor only pass 16M, then test failed.
-> I use BDM test it, only can access 16M too.
-> Is this the bug of this board?
+> >
+> >    I've got a 2.2.12 kernel with Gabriel's patches (NFS mounted root),
+> > and it works beautifully on a MVME2603 board (many thanks, Gabriel).
+> > However, when I swap out the MVME2603 with a MVME2604, and cause some
+> > SCSI disk activity, the system crashes with
+> >
+> >         end_scsi_request: buffer-list destroyed
+> >         page fault in interrupt handler, addr=8000000
+> >         NIP: 08000000 XER: 20000000 LR: C00C67BC REGS: c00ffc48 TRAP: 0400
+> >         MSR: 40001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+> >         TASK = c00fdfe8[0] 'swapper' mm->pgd c00fc000 Last syscall: 112
+> >                 ...
+> >         kernel panic: kernel access of bad area pc 8000000 lr c00c67bc address 8000000 tsk swapper/0
+> >
+> > The 'page fault' makes me wonder if the 604's TLB miss response differs
+> > sufficiently to cause the kernel panic.
+> > Has anyone else seen problems running on 2.2.12 with an MVME2604?
+> > Are there other patches needed to compensate for the MMU differences
+> > with the 604e?
 >
-> Best regards,
-> Wang Chao Feng
+> I don't have any MVME2604, but I have several MVME2400 with uptimes in
+> the months range. MVME2400 don't have SCSI, but a 750 has processor with
+> an MMU very similar to the 604e. Could it be a subtle SCSI/timing problem ?
+>
+> OTOH, I have reports of working 2604, but I don't remember if it's with
+> root on NFS or using SCSI.
+>
+> 	Gabriel.
 >
 >
->
+
+I've been running 2.2.9 successfully on a '2604 with no problems.  Did
+specific scsi activities cause the crash, or any just activity at all?
+
+When I get a chance I'll give 2.2.12 a try.
+
+Don Holmgren
+Fermilab
+djholm@fnal.gov
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
