@@ -1,28 +1,31 @@
-Message-ID: <3BBB35A2.C2708418@mvista.com>
-Date: Wed, 03 Oct 2001 11:58:26 -0400
-From: Dan Malek <dan@mvista.com>
+Message-ID: <3BBB3ADE.3CEE5E0@chinook.com>
+Date: Wed, 03 Oct 2001 12:20:46 -0400
+From: Peter Desnoyers <pdesnoyers@chinook.com>
 MIME-Version: 1.0
-To: Nguyen Trung Thanh <jaringuyentrungthanh@yahoo.com>
-Cc: "'Linuxppc-Embedded '" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: USB Isochronous for MPC823
-References: <619D608DD3F0D311882C009027732E1A8B1779@ntserver.act.domain> <004001c14bf3$7c326c60$b480a984@int.serialsystem.com.sg>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: GDB + VisionICE?
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Nguyen Trung Thanh wrote:
+[this is a resend - I sent it with an incorrect from: address, and it
+didn't make it to the list]
 
-> I've tried to use m8xxhci.c from Hardhat2.0,
-> but I saw that it still has a bunch of errors.
+Has anyone configured GDB to work with a VisionICE II for a powerpc
+target?It looks like the remote-est target is close, but only works
+for m68k targets.  It might not be much work to adapt it for powerpc,
+which leads to the second question:
 
-The USB on 8xx isn't going to work properly without the
-proper chip revision, matching microcode patch, and specific
-board modification (8xx pin loopbacks).  Have you read the
-Motorola errata, USB application notes, and properly followed
-those?
+Is this a pointless exercise due to the lack of VisionICE support for
+the
+MMU, or would it be worthwhile?
 
-
-	-- Dan
+Thanks,
+--
+.....................................................................
+ Peter Desnoyers            (781) 457-1165   pdesnoyers@chinook.com
+ Chinook Communications     (617) 661-1979   pjd@fred.cambridge.ma.us
+ 100 Hayden Ave, Lexington MA 02421
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
