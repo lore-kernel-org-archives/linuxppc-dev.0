@@ -1,19 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C74B567B28
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Apr 2005 09:20:45 +1000 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Chris Friesen <cfriesen@nortel.com>
-In-Reply-To: <425429BF.1050706@nortel.com>
-References: <425429BF.1050706@nortel.com>
-Content-Type: text/plain
-Date: Thu, 07 Apr 2005 09:19:56 +1000
-Message-Id: <1112829596.9518.210.camel@gaston>
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 0FF7667B35
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Apr 2005 09:21:48 +1000 (EST)
+Date: Wed, 6 Apr 2005 16:21:45 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Wolfgang Denk <wd@denx.de>
+Message-ID: <20050406232145.GA28977@gate.ebshome.net>
+References: <20050406223751.E4297C108D@atlas.denx.de>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: question on inline assembly and long long values
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20050406223751.E4297C108D@atlas.denx.de>
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: Kernel SCM saga..
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,58 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2005-04-06 at 12:26 -0600, Chris Friesen wrote:
-> I want to retrieve the msr (which is 64-bits) on a 970 when running in 
-> 32-bit mode.  I have the following bit of code that seems to work, but 
-> when looking at the code it always seems to use a suboptimal register 
-> for the low word, and then it ends up having to copy it to the right 
-> register to create a long long register pair.
-> 
-> static inline unsigned long long get_msr()
-> {
-> 	union {
-> 		struct {
-> 			unsigned long low;
-> 			unsigned long high;
-> 		} words;
-> 		unsigned long long val;
-> 	} val;
->          asm volatile( \
->                  "mfmsr  %0               \n\t" \
->                  "rldicl %1,%0,32,32       \n\t" \
->                  "rldicl %0,%0,0,32        \n\t" \
->                  : "=r" (val.words.low), "=r" (val.words.high));
-> 	return val.val;
-> }
+On Thu, Apr 07, 2005 at 12:37:46AM +0200, Wolfgang Denk wrote:
+> are there any plans yet how to continue PPC  kernel  development  now
+> that Linus (and probably others, too) stopped using BitKeeper?
 
-Is this in kernel mode ? Why are you doing that ? 
+Well, most of the recent 2.6 PPC kernel development was based on 
+sending _patches_ to akpm, I don't see how Linus' decision to stop 
+using BK will significantly affect this.
 
-> Using this code, the optimised assembly output of
-> 
-> 	unsigned long long a = asdf();
-> 	unsigned long long b = asdf();
-> 
-> is
-> 
-> 	mfmsr  5
-> 	rldicl 0,5,32,32
-> 	rldicl 5,5,0,32
-> 	mr 6,0
-> 	mfmsr  7
-> 	rldicl 9,7,32,32
-> 	rldicl 7,7,0,32
-> 	mr 8,9
-> 
-> I figure it should have been able to use registers 6/8 in the first 
-> place, and save the extra moves.
-> 
-> Is there any way to help gcc optimise this?
-> 
-> 
-> Chris
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
--- 
-Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Also, BK trees don't go anywhere right now, so I guess we can still 
+use BK to get/maintain the latest official sources for patch 
+generation. I'm pretty sure Linus and other maintainers will come up 
+with replacement. Probably it won't be as convenient as BK at first, 
+but I hope this will be fixed eventually - there are couple of open 
+source revision control systems out there which look promising.
+
+So, I wouldn't overly dramatize current situation.
+
+--
+Eugene
