@@ -1,27 +1,43 @@
-Message-ID: <19991020224832.2035.rocketmail@web1003.mail.yahoo.com>
-Date: Wed, 20 Oct 1999 15:48:32 -0700 (PDT)
-From: Dan Bethe <dan_bethe@yahoo.com>
-Subject: ATI XFree86 testing?
-To: linuxppc-dev@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <v03110701b433fe2f8663@[209.183.128.19]>
+In-Reply-To: <19991020150502.A2198@mango.genunix.net>
+References: <v03110700b433ca16486c@[209.183.133.114]>
+ <v03110700b433ca16486c@[209.183.133.114]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Wed, 20 Oct 1999 19:23:27 -0400
+To: anthony tong <atong@uiuc.edu>
+From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+Subject: Re: SuSE Rage 128 Xserver Source and XFree 3.3.6
+Cc: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-http://news.excite.com/news/pr/991020/ati-supports-linux
+Hi Anthony,
 
-	Hi guys.  The above article is the press release for
-ATI's endorsement of open source methods.  I have a
-Wallstreet II series Powerbook with a 4 MB ATI Rage LT
-Pro, kernel 2.2.10 with atyfb Mach64 patches from
-kernel 2.3, and XFree86 3.3.3.1.
-	I'm not a programmer but I run LinuxPPC almost
-exclusively and I trickle in weird OS upgrades all day
- :)  Where should I start as a tester for any new developments?
+>I have the source, and also Precision Insights additions to it (a bit
+>cleaner layout + hw cursor).
+>
+>I've also started merging into our xf68_fbdev but I won't have any free
+>time to continue this (at least for a week or so). The problem is that
+>they're using the xaa interface (which never was ported to ppc), so you
+>have to wrapper all their accel functions by hand.
 
-=====
-"Don't expect your own messiah; this neverworld which you desire is
-only in your mind." -- http://www.dreamtheater.net/songb4.htm#IV5
+Are you allowed to share that source with others?
+
+If so, and if you need help working on it am I sure we could drum up some
+volunteers to help write wrapper code for you (myself and Christopher
+Shepherd already volunteered to help, and I am sure others would also)!
+
+I am sure both LinuxPPC and YellowDogLinux would love to claim acceleration
+for Rage 128 for G3 and G4 systems and they would probably be willing to
+lend you a hand too. (How about it Dan and Jason???)
+
+Just say the word.
+
+Thanks for all of your efforts!
+
+Kevin
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
