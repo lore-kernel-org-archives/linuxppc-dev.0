@@ -1,46 +1,61 @@
-To: hcd1@acpub.duke.edu
-Cc: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
-Subject: Re: SCSI host detected, but not the drive
-From: Kazumitsu Hanai <hanai@koto.kpu-m.ac.jp>
-In-Reply-To: <Pine.SOL.3.91.990827144757.13651A@godzilla6.acpub.duke.edu>
-References: <Pine.SOL.3.91.990827144757.13651A@godzilla6.acpub.duke.edu>
+Message-Id: <v0313030db3ece7c8caa1@[192.168.1.1]>
+In-Reply-To: <19990827163237.012324@mailhost.mipsys.com>
+References: <v03130308b3ec440550d3@[192.168.1.1]>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Message-Id: <19990828075910S.hanai@koto.kpu-m.ac.jp>
-Date: Sat, 28 Aug 1999 07:59:10 +0900
+Content-Type: text/plain; charset="us-ascii"
+Date: Fri, 27 Aug 1999 20:20:13 -0500
+To: linuxppc-dev@lists.linuxppc.org,
+        Linux/mac68k List <linux-mac68k@mac.linux-m68k.org>
+From: "David D. Kilzer" <ddkilzer@computer.org>
+Subject: Re: mac-2.3.14.diff: adb
+Cc: Benjamin Herrenschmidt <bh40@calva.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+>On Fri, Aug 27, 1999, David D. Kilzer <ddkilzer@computer.org> wrote:
+>>Well, drivers/macintosh is PPC ADB code.  If drivers/macintosh shouldn't
+>>exist, then shouldn't it be changed or moved at a higher level?
+>>
+>>In reality, there is some ADB mouse code in drivers/char, too, so I wonder
+>>if drivers/char/adb would make more/less sense than drivers/adb?
 
-A kernel argument "ncr53c8xx=nvram:n" in the BootX window may help you.
-You can find many parameters for the ncr53c8xx scsi driver in README.ncr53c8xx
-that is contained in the kernel source/drivers/scsi. "nvram:n" is one of the
-best known parameters, when the driver cannot find the drive.
+Benjamin Herrenschmidt <bh40@calva.net> wrote:
+>I personally like drivers/macintosh, from my point of view, it makes
+>things clearer. except for macserial, which should be killed in favor of
+>a more generic zilog driver, most of those drivers are really mac-centric
+>stuffs with no "generic" userland interface. Also, drivers/char is
+>already enough of a mess like this.
+>
+>I didn't look at the those new patches, but the adb code in
+>driver/macintosh was abstracted to use a generic "adb controller"
+>sub-driver interface some time ago and so adb.c should be platform
+>independant (useable as-is on PPC and 68k). mac_keyb.c too, with all it's
+>specific mouse support.
 
-On Fri, 27 Aug 1999 15:02:22 -0400 (EDT),
- Hank De Gregorio <hcd1@acpub.duke.edu> wrote: 
-> 
-> when i boot my initrd kernel, the scsi host is detected, but the actual 
-> drive is not identified (see first set of errors below).  consequently, in 
-> the redhat installer, i get the second set of errors below.
-> 
-> can anyone help me?  my system is an mvme2604 333MHz, with a red rock 
-> card with seagate scsi disk and a 761 IO transition module.
-> 
-> hank
-> 
-> ncr53c8xx: at PCI bus 0, device 12, function 0
-> ncr53c8xx: 53c825a detected
-> ncr53c825a-0: rev=0x13, base=0x1042000, io_port=0x11000, irq=19
-> ncr53c825a-0: ID 7, Fast-10, Parity Checking
-> ncr53c825a-0: on-chip RAM at 0x1040000
-> ncr53c825a-0: restart (scsi reset).
-> ncr53c825a-0: Downloading SCSI SCRIPTS.
-> scsi0 : ncr53c8xx - revision 3.1h
-> scsi : 1 host.
-> scsi : detected total.
+Joshua Thompson did some rewriting of the adb.c code (and moved some header
+files around) in order to fully integrate the m68k and PPC ADB code.
+
+>David, did you make a generic (m68k/ppc) cuda driver too ?
+
+Joshua Thompson made the patch, but I didn't include it in the patch I
+submitted to Jes Sorensen (m68k maintainer) since I thought he only wanted
+m68k stuff.  Joshua submitted the PPC side of the patch to Paul Mackerras.
+
+Jes doesn't want to patch anything into drivers/macintosh.  He believes
+that ADB code should be split into the bus code (drivers/adb) and into
+device code (drivers/char/adb or drivers/char) and that drivers/macintosh
+should go away.
+
+I'm afraid that the m68k stuff is going to appear in drivers/[char/]adb
+while the PPC stuff is going to remain in drivers/macintosh, and we'll be
+worse off than we were before the merge!
+
+Do we need to raise this issue on linux-kernel to get it resolved,
+especially since the NeXT port (another m68k-based system) uses ADB as well?
+
+Dave
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
