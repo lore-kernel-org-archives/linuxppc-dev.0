@@ -1,52 +1,88 @@
-Message-ID: <392AFF72.332CB048@motorola.com>
-Date: Tue, 23 May 2000 17:00:18 -0500
-From: "Richard Hendricks" <richard.hendricks@motorola.com>
+Message-ID: <200005232238.SAA24884@hoover.gilbarco.com>
+From: "Banks, Kelly" <kelly_banks@gilbarco.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'"
+	 <linuxppc-embedded@lists.linuxppc.org>
+Subject: MontaVista HardHat gdb on the MPC860....
+Date: Tue, 23 May 2000 18:38:01 -0400
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Porting LinuxPPC
-References: <20000519051051.236093C972@elph.research.canon.com.au> <39253A48.24B90117@snmc.com> <39253D0B.F9AF86EE@raleigh.ibm.com> <392562CE.A71A4F49@embeddededge.com> <00May23.171838est.115222@border.alcanet.com.au> <392AF1A1.892D5886@motorola.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Err, I meant bursts are not used by the core until caching is ENABLED.
+Has anyone been able to use gdb (MontaVista / HHL) on the 8xx platform?
 
-"Richard Hendricks (ra6353)" wrote:
->
-> Are you using a custom UPM table?  This can happen when your UPM burst
-> table is not proper.  Since bursts are not used by the core until
-> caching is disabled, problems usually come from the UPM table.
->
-> Daniel Wu wrote:
-> >
-> > Hi,
-> >
-> > Thanks to all who responsed to my last qeustion. The problem was that the immr
-> > was not setup correctly. Also since it is a custom board (MPC860T based), I had
-> > to rewrite code to fill in the bd_t structure. The board is now sending
-> > characters to the console, which is good but I still have one of the original
-> > problems: I can only step through the code using the BDM debugger, but when I
-> > run the code, it generates a software emulation exception and stops.
-> >
-> > After some investigation, it seems that I can run the code up to the point
-> > where the instructure cache is enabled - actually only a few lines at the top
-> > of the startup code. My question is: are there any restrictions on when the
-> > cache can be enabled? Are there anything else I've missed.
-> >
-> > Thanks,
-> > Daniel
-> >
->
-> --
-> MPC823 Applications Engineering Development
-> Get help from other MPC823 customers on the
-> comp.sys.powerpc.tech newsgroup!
->
+I have been, thus far, unable to use MontaVista's gdb load even with Monta
+vista's Libraries.
 
---
-MPC823 Applications Engineering Development
-Get help from other MPC823 customers on the
-comp.sys.powerpc.tech newsgroup!
+
+Using the pre-pack builds, I get the following:
+
+=============================================================
+init-2.03# gdb
+GNU gdb 4.17.0.11 with Linux support
+Copyright 1998 Free Software Foundation, Inc.
+GDB is free software, covered by the GNU General Public License, and you are
+welcome to change it and/or distribute copies of it under certain
+conditions.
+Type "show copying" to see the conditions.
+There is absolutely no warranty for GDB.  Type "show warranty" for details.
+This GDB was configured as "powerpc-linux".
+(gdb) file hello
+Reading symbols from hello...Segmentation fault
+init-2.03#
+=============================================================
+gdb launches just fine, but fails when selecting the file hello_world (c/cpp
+static/dynamic).
+
+
+
+
+
+Attempting to link statically returns the following:
+
+=============================================================
+/usr/lib/libc.a(regex.o): In function `init_syntax_once':
+/usr/src/rh61_build/glibc/BUILD/glibc-2.1/posix/regex.c:253: multiple
+definition of `re_max_failures'
+libgdb.a(gnu-regex.o):/home/kellyb/gdb+dejagnu-20000424/gdb/gnu-regex.c:164:
+first defined here
+=============================================================
+
+
+
+Linking dynamically, I have been unable to find a suitable libc.
+
+ - Using MontaVista's HHL Libraries, I get the following:
+
+=============================================================
+gdb: error in loading shared libraries:
+/usr/local/crossgcc/tools/target/powerpc-linux-gnu/lib/libncurses.so.4:
+symbol __register_frame_info, version GLIBC_2.0 not defined in file
+libc.so.6 with link time reference
+=============================================================
+
+
+ - Using libc-2.1.3.so, I get a segfault just as above, which I traced into
+a call to memset(~).
+Not always the SAME call to memset, but usually (it moves sometimes when I
+add more printf()s.
+Once in a While, I actually get an ILLEGAL INSTRUCTION!
+
+
+I have heard of certian memset() problems with certian libc builds for the
+ppc...  Which may be contributing to this issue.
+Someone mentioned something about ppc specific assembly code...  Maybe it's
+not calculating byte/hword/word boundries properly.
+
+Can anyone point me to a complete set of tools which may allow gdb native to
+function properly?
+
+After I get through this, I will likely be implementing threads into
+gdbserver for remote operation! ;o)
+
+Thanx in advance for your help,
+Kelly
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
