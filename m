@@ -1,47 +1,46 @@
-Date: Wed, 7 Apr 1999 12:42:08 -0500 (CDT)
-From: "David A. Gatwood" <marsmail@globegate.utm.edu>
-To: a sun <asun@saul1.u.washington.edu>
-cc: jskov@cygnus.co.uk, linuxppc-dev@lists.linuxppc.org, roy@centricsystems.ca,
-        djweis@plconline.com, bh40@calva.net
-Subject: Re: Resurrecting mkLinux
-In-Reply-To: <199904071727.KAA07766@saul1.u.washington.edu>
-Message-ID: <Pine.LNX.3.96.990407123435.3678G-100000@globegate.utm.edu>
+Date: Wed, 7 Apr 1999 13:46:32 -0500 (CDT)
+From: Dave Weis <djweis@plconline.com>
+To: David De Ridder <david.de.ridder@bitsmart.com>
+cc: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: MVME2306 progress
+In-Reply-To: <Pine.SO4.4.05.9904071129260.15656-100000@hsins.uia.ac.be>
+Message-ID: <Pine.LNX.3.95.990407134414.19623G-100000@catbert.desm.plconline.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 7 Apr 1999, a sun wrote:
 
->    Also, the files that do not look like that are so because Jes (m68k
->    maintainer) didn't like '#ifdef __powerpc__' or CONFIG_APUS in
->    arch/m68k specific files... Which I agree with (kind of). With the
->    mach hierarchy, though, both arguments becomes moot and I'll fix up
->    the sources to my liking ;)
+
+> * rpm works fine on the NFS host (a Linux/i386 PC), but not on the
+>   board itself. I suspect it has to do with the path settings.
+>   On the PC, I use ``--root /export'' for the correct path. On the
+>   board however, I get always this message :
+>   
+>   ``failed to open //var/lib/rpm/packages.rpm''
 > 
-> heh. luckily, most of the nubus stuff can be done by adding more
-> gestalt values. hmm, i do have wonderful things like #ifdef
-> __powerpc__ in the via_write/via_read code to do deal with memory
-> barriers and such.
+>   Note the double-slash. Using ``--root /'' on the board did not work.
 
-On a related point, I'm assuming that NuBus support will eventually be
-expended to include the nubus PowerBooks and eventually, the 52/62/53/
-63xx powermac/performa machines.  If not, then you really wouldn't have to
-have the gestalt value.  But it's probably better to go ahead and put that
-in, rather than having to mess with it later.  :-)
+It's not the path settings - I get the same thing if I try to use rpm as a
+non-root user.
 
-Also, a correction: the NuBus machines have a 53C94 and 53CF94, not 53C96
-and 53CF96 as I reported previously.  I'm not sure why I thought they used
-96es.  Oops.  :-)
+[djweis@webdevel djweis]$ rpm --install BitchX-75p3-4.i386.rpm 
+failed to open //var/lib/rpm/packages.rpm
+
+error: cannot open //var/lib/rpm/packages.rpm
+
+Check your nfs exports, make sure no_root_squash it turned on for the
+exported filesystem. Otherwise your root user is basically nobody.
 
 
-Later,
-David
+djweis
 
-David A. Gatwood                         Visit globegate's internet
-dgatwood@globegate.utm.edu                  talker, Deep Space 36
-http://globegate.utm.edu                telnet globegate.utm.edu:9624
+-- 
+David Weis                | 10520 New York Ave, Des Moines, IA 50322
+djweis@plconline.com      | Voice 515-278-0133 Ext 231
+http://www.plconline.com/ | "Great spirits will always encounter violent
+                          | opposition from mediocre minds" - Einstein
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
