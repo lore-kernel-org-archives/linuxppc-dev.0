@@ -1,51 +1,37 @@
-Message-ID: <397ED8AB.678FB32E@francetelecom.fr>
-Date: Wed, 26 Jul 2000 14:25:15 +0200
-From: FASSINO Jean-Philippe <jeanphilippe.fassino@francetelecom.fr>
+Date: Wed, 26 Jul 2000 15:55:12 +0300 (EET DST)
+From: Topi Kanerva <tkanerva@ees2.oulu.fi>
+To: Steffen Haeuser <SteffenH@hyperion-software.de>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: sound again [was: Re: xf4 bug report]
+In-Reply-To: <yam8242.1826.146779528@mail.lf-online.de>
+Message-ID: <Pine.GSO.4.21.0007261551420.7775-100000@stekt6>
 MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-CC: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: RTAS on PowerMac Newworld
-References: <Pine.LNX.4.10.10007252036280.1490-100000@cassiopeia.home>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Geert Uytterhoeven wrote:
+On Wed, 26 Jul 2000, Steffen Haeuser wrote:
 
-> On Tue, 25 Jul 2000, FASSINO Jean-Philippe wrote:
-> > Benjamin Herrenschmidt wrote:
-> > > >In the kernel for PPC, a lot a code is here just to do what doing RTAS :
-> > > >pci config,
-> > > >via (CUDA and PMU) (no need if no ADB keyboard), ...
-> > > >When doing embedded systems, this drivers is very big and can be saving by
-> > > >using
-> > > >RTAS which i think is a very good thing in  CHRP specification. It's
-> > > >strange that
-> > > >apple do not provide it fully.
-> > >
-> > > Well, they didn't care about it. Note that Macs are far from beeing
-> > > embedded boxes ;)
-> >
-> > Yes, but i'm using embedded term for small system that doing dedicate task
-> > and only one (for example firewall, gateway, ... in only 50-100k kernel size).
-> >
-> > I'm actually experienced that with G4 with 4 network card.
+>Just wanted to tell that after putting earphones to the Mac, the sound comes.
+>Appearently it is only the internal speaker which does not work.
 >
-> And what's the smallest amount of memory you can put in a G4? I guess it's an
-> order of magnitude larger than a kernel containing all possible drivers :-)
 
-Sure, but G4 is just a good computer for experimentation !
+so this behaviour is also happening on Burgundy. I've got an AWACS rev 3
+here in my Pismo (device-tree name for the chip is 'screamerawacs')
+and everything else works for me _except_ the damned built-in speakers.
+as long as I don't have any external speakers to connect to, this is _very_
+annoying, I have to boot to MacOS to listen to CD's etc etc... first I
+thought the problem was in the new version of the sound chip, but since
+Burgundies seem to have the same problem, I'm not so sure about it anymore.
+However, poking around the mixer code doesn't shed any more light into the
+problem.
 
-JP
+Now, what do the Burgundy and AWACS rev.3 have in common? Most certainly
+not the registers.
 
 
---
---------------------------------------------------------------------------
- Jean-Philippe FASSINO              France Telecom R&D : DTL/ASR
- Tel : 04 76 76 45 52
- mailto:jeanphilippe.fassino@francetelecom.fr
---------------------------------------------------------------------------
+-topi
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
