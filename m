@@ -1,79 +1,72 @@
-Message-ID: <3C67D5EE.70008@elsoft.ch>
-Date: Mon, 11 Feb 2002 15:32:14 +0100
-From: "David =?ISO-8859-15?Q?M=FCller?= (ELSOFT AG)" <d.mueller@elsoft.ch>
-MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: [PATCH] Several patches against linuxppc_devel-2.4.18-pre9
-Content-Type: multipart/mixed;
- boundary="------------070008040707050007050701"
+To: "David Marqvar (DAM)" <DAM@tt.dk>
+Cc: "Embedded Linux PPC List (E-mail)" <linuxppc-embedded@lists.linuxppc.org>,
+	"Laurits Lassen Petersen (LLP)" <LLP@tt.dk>
+Subject: Re: Kernel 2.4.4 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 11 Feb 2002 11:56:38 +0100."
+             <E8F83D6D2A6AD3118E0300902786A20502371417@NTEX>
+Date: Mon, 11 Feb 2002 16:18:42 +0100
+Message-Id: <20020211151847.8F215109D7@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------070008040707050007050701
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Dear David,
 
-Hello
+in message <E8F83D6D2A6AD3118E0300902786A20502371417@NTEX> you wrote:
+>
+> I've downloaded the Linux kernel 2.4.4-2002-01-19 from ftp.denx.de.
+> I want to compile it for a custom MPC823-based board.
+>
+> I'm a newbie with Linux. Maybe someone have a comment at my problems and
+> fixes.... :)
+>
+> I'm using:
+> gcc-3.0.3, cross-compiling for "powerpc-elf".
+> binutils-2.11.2
+> newlib-1.10.0
 
-The attached patch fixes the following issues:
+If you're new to embedded Linux, I  strongly  recommend  NOT  to  use
+bleeding   edge  tools,  but  some  more  stable  softweare  instead.
+Especially GCC-3.0.3 is probably not a good choice here...
 
-    - drivers/net/ibm_ocp_enet.c
-       wrong prototypes + initialisation in debug code
+> During the compilation (last step) I've encountered the following problems:
 
-    - drivers/net/ibm_ocp_enet.h
-       missing prototypes for [get|set]_maltxdeir()
-       missing prototypes for [get|set]_maltxctp1r()
+These are probably all because of problems with your setup  of  cross
+develpment tools, especially GCC-3.x
 
-    - drivers/net/ibm_ocp_phy.c
-       workaround for MII-PHY communication bug reported by Andrew May
+> 4) I had to stop enabling "Magic SysRq Key" in Kernel hacking in menuconfig.
+> Error: m8xx_setup.c:851: structure has no member named  'kbd_sysrq_xlate'.
 
-    - arch/ppc/mm/fault.c
-       missing type cast
+This option is not supported on 8xx.
 
-    - arch/ppc/mm/cachemap.c
-       missing prototype for map_page() (added mmu_decl.h)
-       2 missing type casts
+> Where do I find the zImage file - it is compressed, right? I've located the
+> vmlinux, but as far as I know this is the uncompressed kernel-image.
 
-Dave
+You probably want to build a "pImage"  file  (make  pImage)  instead,
+which  can  be used with PPCBoot - for older kernels it gets built in
+arch/ppc/mbxboot/, now it's in arch/ppc/boot/images/ .
 
+> I want to compile SASH for powerpc too. Does anyone know a place with
+> powerpc-ready source for this? I've tried to compile it from the latest
+> source, but I'm missing some kind of way to make i compile for powerpc - the
+> Makefile keeps compiling for i386 (working fine by the way).
 
---------------070008040707050007050701
-Content-Type: application/octet-stream;
- name="linuxppc.patch.bz2"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="linuxppc.patch.bz2"
+Replace "cc" by "$(CC)" in the Makefile, and make sure CC  points  to
+your   cross   compiler.  You  may  also  have  to  add  a  "#include
+<linux/fs.h>" to cmds.c .
 
-QlpoOTFBWSZTWY1elmEAApv/gGEwBAB7f///f//e5L/v//5QBhj2WyypVyBqQCkgZIQT0ptN
-R5Mk8k0PUDT1NA0yAaAAAaaAGoQBo0mSegCMJpkDAAAmEwmA1GEEiIino0U8pk8SeTSMRoAA
-AAZAAAA5hNGRoaGQwjQyGmjQAYjJkAwgGARSEE0YhGp6aDJRskzSeKAaNNBgh6nqepoZGSyg
-c1DaHyGIOTlqREAyYbY2OJjzrjYN1rUqSxjQ5mVO8bU86f4zRQhssihNWNo4+GP81ZNYlGFy
-NSyEzBOmVnnd3WqCvs12FMyOvGOkSlaSJSfVI4VXdFUBNN49T66BowL9R7ONsLzPjWA4gCAq
-VWqq1kUKlVUECK9DTTSERERLJFwjJAfaxXhDFOgLnPnGPhtlnyyZ0+gnItQJfMUQt87xjIsQ
-4cmyOvj+Hs/st5zwJfVZzlCprTrTC3nBk7KpAR4i6ekDgMIi5FElAwLcFpJLo8bsBlaYCgEG
-O9Rgla8zKW0AND7AK4AvDN0rbJHgk6uAYNdTuqZkF/bUaEwoMc0siqBMJbqxQKzlq6CiEvvF
-s0D7qOEJGXDcpEi91jwZIvI1VmuGOlGBL8AzbtsiSgwfJw4l3DIEDX6YIIE0T2gaUpKQ9Mkm
-hA4GkrdEZzACXJQw1Zys6DxuzgnLqpEEiKYj8wkJoQxNmBKhGURir/YhkDIa24Nm7Rr57u2V
-GV5G5WFA9YtaDmGdvXFlRrpdFKoEmJrHzYmhpWnmCzt9pYJPpN6UaoheQuGUo2OhW8iSlHIW
-K28vQSX8zFIXmwIY75CsBtMkbDIpFKU4riInHjipVY87gNrma651svITTAso20dJhZBbU133
-xks4MxkDlWwFAu31wb3NefkdGyr3GVfEwDbYrmFcvz0LsiGDAJCeBPiNY+UQohRD09x2nZn5
-vXb3R+/Z4Tus7im+wVYAeHE4bbDghFIzvdEAWB1GGEhdCfBqyQPLPqhcrijqQZBSJtAwXVKu
-2g6ZwZtoxEPkUjhl7k+dBYEMBQGdPQeWhynuMDsia+Yr+0inhGafOHCdp4zq+VbTKgdJmVu+
-9C3M5jqtCDOYjZQsgiwmeeHItAz94rRzNKo06ALUCyFf8yz0FBhfQTgjMXFYfwSOi5lRexvA
-0lpr30Oa0ofiDRdRqH0wPnyZUis9BvMveGGQmt0gOrUERkAuqc5S1CNiNKi5JXE0IhIBtCSZ
-yTWy02GueX1F5maLm2Ey8RJYZVlKsbHaKc2ZJm7JqIxqjhtH+GFfBQqK9Y/QBvpdMqT/WM6Q
-mAlVQwca40ysfqUi0zmEgewyLmAXIMjrSmi9JahpWw2NttttwiMAWgZEmliDjGkx6lo3NCnS
-VWpaSuc/cZiW/TEMpEBYu1GiGVJMbg5Bgg3jUGYmBJhel2i5NEOR0oWLaZNi3q6tJxVJZyvw
-o5L7wLZK8TNTjylzqJGvF2ntM5BUJaLtoZNmkw/Px05YcYSCCA4pIGdvMN9dlVu4d8ZhqYUu
-biYBiugyoSzF5w4GVWFeg3VMzngqMbBl23jfmz7U2AEe+C/xlXeckqQcSSG9C9ZJalYwWAJM
-lLEA4iRQ4KIWEl5FetK2acLw/Hm8mU39DCSZMSwSRahe68dzuj+iKi8FmsXCywq2EZhQLfqU
-UmAi8z5EuZq4n7dvXExSjnqr1cJkAzB38biYys1DCGIBYQhXLGGTlRuNvvs3JWY8hSCs0oZy
-m3n0AWHFzLMznFF5GTLFmnXru6fHCcW4Dl2bAxWuJWnDffKYCaDahCuKwzPhbGwUOrQlQkkF
-aGktRLQyF1QDFaENa23MZSSWWo3ZVNPi7/HUjU/DQ3t4BuHh6NBXqOTlptMxPvLwEVASZLAk
-LI5rSShn0BELUAbwOonItOCxMCP/F3JFOFCQjV6WYQ==
---------------070008040707050007050701--
+> My next step is to find a simple bootloader..
 
+PPCBoot?
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+See us @ Embedded Systems Nuremberg, Feb 19-21, Hall 12 K01 (with TQ)
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
