@@ -1,83 +1,64 @@
-Message-ID: <008201c07eec$52fd7da0$4a1f76d8@washington>
-From: "Navin Boppuri" <nboppuri@trinetcommunication.com>
-To: "Linux PPC embedded" <linuxppc-embedded@lists.linuxppc.org>
-References: <003b01bfbc02$88afc3c0$4a1f76d8@washington> <3A5FBDC0.6785393F@brainlink.com>
-Subject: Re: UART configuration problems
-Date: Mon, 15 Jan 2001 12:11:43 -0000
+Message-ID: <3A62EC61.CF97FA4B@dspace.de>
+Date: Mon, 15 Jan 2001 13:26:09 +0100
+From: Andreas Schreckenberg <ASchreckenberg@dspace.de>
+Reply-To: Andreas Schreckenberg <ASchreckenberg@dspace.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: serial console printf do not work
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello Ormund,
+Hello,
 
->From your mail, I can make out that you worked on the MAX3100 uart before.
-Can you please tell me how I can do a read from the buffer? I am confused as
-to how to read the buffer without overwriting it with the following data.
-How much delay is the right delay? Please help, I am kinda stuck here.
+I am trying to bring up linux on my custom ppc board.
+It seems that the kernel (linux 2.2.14) the ramdisk
+and a static compiled sash (sash 3.4) runs.
 
-Thank you,
-Navin Boppuri
+But output with printf (userspace sash) looses
+charakters on the serial console.
 
------ Original Message -----
-From: "Ormund Williams" <ormundw@brainlink.com>
-To: "Linux PPC embedded" <linuxppc-embedded@lists.linuxppc.org>
-Sent: Saturday, January 13, 2001 2:30 AM
-Subject: Re: UART configuration problems
+I modified serial.c in drivers/char and serial.h in
+include/asm to my needs. (initalize port and irq
+with irq = 0 -> driver in polling mode ?)
 
+I'm a little bit surprised because printk gives
+the correct output without loosing charakters.
 
->
-> Navin Boppuri wrote:
-> >
-> > Hello everyone,
-> >
-> > I am trying to interface a MAX3100 uart to an SPI controller on the
-MPC823.
-> > I have a functional SPI driver running. The transmit part of the UART
-works
-> > just fine. I am able to transmit characters at 9600 8N1 baud. The
-problem
-> > arises when I do a receive. The uart documentation says that the
-internal
-> > fifo is 8 word long. But I notice that the FIFO is able to store only 8
-> > characters. For example, if I transmit the characters
-> >             abcdefghijklmnopqrstuvwxyz
-> >
-> > The uart shows only "yz" in its buffers. The other 24 characters are
-lost. I
-> > noticed that 8 charaters are written in the buffer. It first writes
-> > "abcdefgh" and then overwrites that with "ijklmnop" and so on. The uart
-> > generates an irq interrupt whenever there is incoming data. I do not see
-why
-> > the buffer is not big enough.
-> >
-> The MAX3100 is working as designed, the 8 word fifo can only hold 8
-> characters the other bits in the word hold the parity, framing error,
-> etc.  If the fifo overflows all characters are lost.  The following is
-> from page 5 and 7 of the datasheet.
->
-> "Read data from a 16-bit register that holds the oldest
-> data from the receive FIFO, the received parity data,
-> and the logic level at the CTS input pin. This register
-> also contains a bit that is the framing error in normal
-> operation and a receive-activity indicator in shutdown."
->
-> "Receive data is stored in an 8-word FIFO. The FIFO is
-> cleared if it overflows."
->
-> > Can someone give me some insight into this problem? What do I need to do
-to
-> > correct this?
-> >
-> Read the data before the fifo overflows.
->
->
-> --
-> Ormund
->
->
+Input is possible and the shell echo the chars
+which were typed in. (type 'help' for example gives some
+crypticlike output)
 
+I use seyon with 38400,8,N,1 to /dev/ttyS0 on my x86 host.
+I think I have a correct wired cable from
+the board to the host.
+
+I feel that this has something to do with incorrect
+hardware handshake. But why gives printk the correct
+output ?
+
+...
+ttyS00 at 0xf2000000 (irq = 0) is a 16550A
+RAM disk driver initialized:  16 RAM disks of 4096K size
+RAMDISK: Compressed image found at block 0
+VFS: Mounted root (ext2 filesystem).
+Freeing unused kernel memory: 32k init 28k prep 4k pmac 12k open firmware
+Sl                                    <-- the sash starts, input possible
+r[-sN m u   .u
+N       a emm ]i enpp
+r[-sN m u   .u
+N       a emm ]i enpp
+sfse lla
+...
+
+Is there anyone who can help me or give me a tip where to find
+the problem in the sourcecode ?
+
+bye
+Andreas
+--
+          Life's not fair. But the root password helps ! :-)
+                   http://schrecky.home.pages.de
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
