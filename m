@@ -1,33 +1,66 @@
-Message-ID: <39AB60E2.40872E08@research.canon.com.au>
-Date: Tue, 29 Aug 2000 17:06:10 +1000
-From: Coenraad Jacobsz <cjj@research.canon.com.au>
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: DHCP client - report back
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <200008290758.JAA02594@denx.local.net>
+To: "Hyun-Joon Cha" <tachyon@postech.ac.kr>
+cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Serial 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 29 Aug 2000 11:28:36 +0900."
+             <051301c01160$d5e0b560$1952df8d@SOYANG>
+Date: Tue, 29 Aug 2000 09:58:27 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thanks to Chris Hallinan and Joe Green for their replies.  We chose
-'pump' from MontaVista and it works well.  (Had to recompile for our
-system)
+In message <051301c01160$d5e0b560$1952df8d@SOYANG> you wrote:
+>
+> I'm using 8xxrom-0.3.0 for boot loader and MVista-2.2.13 for kernel.
 
-A few things to remember when using pump are:
+Forget 8xxrom. It's dead.
 
-1. Make sure the kernel is compiled with CONFIG_PACKET defined
+Use the new PPCBoot instead. See http://ppcboot.sourceforge.net/
 
-2. If you "pump -k" to kill the interface, and want to manually
-   start it again with hard coded IP's, make sure the flags are
-   set correctly to bring the interface back up:
+> I tried to remove serial driver for some reason.
 
-      struct ifreq ifr;
-      ifr.ifr_flags |= (IFF_UP | IFF_RUNNING);
-      ioctl(sd, SIOCSIFFLAGS, &ifr);
+What are these reasons? Do you have  another  interface  to  interact
+with the board instead?
 
-This may save some time
+> I have 4 questions abou it.
 
-Regards
-Coenraad
+The following answers are for PPCBoot code.
+
+> 0. If I remove it, will board boot correctly?
+
+Yes, it will. But you will still have a lot of dead code (interactive
+commands) which you might remove as well.
+
+> 1. Can I expect some performance gain with removal?
+
+What type of "performance" do you mean?
+
+Linux will not run any faster when you remove the serial driver  from
+the boot loader.
+
+If you're talking about boot times, the difference is minimal  -  you
+can    get   nearly   the   same   with   PPCBoot   configured   with
+CONFIG_BOOTCOMMAND  set  to  the  command  you  need  to   boot   and
+CONFIG_BOOTDELAY set to 0 so it will boot immediately.
+
+> 2. Are there any easy way to do it?
+
+Just remove the relevant code.
+
+But to be  honest:  I  see  a  lot  of  disadvantages,  and  no  real
+advantages.  But you didn't tell us your reasons, so I cannot comment
+on this.
+
+Hope this helps.
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+A day without sunshine is like night.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
