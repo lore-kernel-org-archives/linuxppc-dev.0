@@ -1,32 +1,36 @@
-Message-ID: <3A5B83C4.3A73B434@mvista.com>
-Date: Tue, 09 Jan 2001 16:33:56 -0500
-From: Dan Malek <dan@mvista.com>
+Reply-To: <myung.choi@gtri.gatech.edu>
+From: "Myung Choi" <myung.choi@gtri.gatech.edu>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: HZ value in the kernel
+Date: Tue, 9 Jan 2001 20:21:04 -0600
+Message-ID: <NDBBIAJKOKHJKMPEIAIMAEOCCGAA.myung.choi@gtri.gatech.edu>
 MIME-Version: 1.0
-To: Ralph Blach <rcblach@raleigh.ibm.com>
-CC: Embedded Linux list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: es1371 on the 405gp and Monta Vista Kernel
-References: <3A5B159E.E8B95DC7@raleigh.ibm.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Ralph Blach wrote:
->
-> I am trying to port the es1371 device driver to the MontaVista kernel on
-> the IBM 405gp.
-> The driver, with no modicifiction, seems to play voice in slow motion.
+Dear LinuxPPC-embedded Group,
 
-When you 'cat /dev/sndstat', what does it think the sampling rate is
-and does that match what you set?  For that matter, what program
-did you use to play the sound and did it try to set the proper
-sampling rate?
+I have one question related to the value of HZ in /include/asm-ppc/param.h.
+This value is set to 100 which gives 10 ms for jiffies. As long as I know,
+the value, 100, is what ix86 provides, and alpha chip takes higher number
+for HZ. I am wondering if this is true for PPC (expecially for MPC823 chip).
+Can I change the value to, for example, 400 or 500 to get 2.5 ms or 2 ms for
+jiffies? Can MPC823 take the higher than 100 for its HZ?
 
-If the /dev/sndstat has the proper sampling rate, check to make sure
-the 'outl' macro is doing the proper byte swapping when setting the
-control registers on the src_write() function.
+Thanks for your help in advance.
 
+Myung.
 
-	-- Dan
+---
+Myung C. Choi, Research Engineer II
+Information Technology & Telecommunications Laboratory
+Georgia Tech Research Institute
+Atlanta, Georgia, 30332-0855
+Phone: (404) 894-3016 Fax: (404) 894-6634
+Email: myung.choi@gtri.gatech.edu
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
