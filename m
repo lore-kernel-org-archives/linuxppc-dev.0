@@ -1,67 +1,36 @@
-Message-ID: <399A6578.906706B5@apus.co.at>
-Date: Wed, 16 Aug 2000 11:57:12 +0200
-From: Rene Pachernegg <rene.pachernegg@apus.co.at>
+Date: Wed, 16 Aug 2000 15:42:36 +0300 (EET DST)
+From: Topi Kanerva <tkanerva@ees2.oulu.fi>
+cc: linuxppc-embedded@lists.linuxppc.org
+Subject: problems w/ CT69000
+In-Reply-To: <399A6578.906706B5@apus.co.at>
+Message-ID: <Pine.GSO.4.21.0008161454070.5745-100000@stekt6>
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: syscall adressing problem
-References: <200008101623.SAA11915@denx.local.net>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
+hello
 
-> In message <3992D331.21C3BD9C@apus.co.at> you wrote:
-> >
-> > Further searching leaded to the following:
-> >     Sometimes fopen or open syscall work well
-> >     Whenever they dont work they are call from the libc.so and the
-> > filename paramter adresses are 0x0fxxxxxx.
->
-> I've seen very similar problems,  but  on  MPC8xx  system  with  more
-> current  kernels.  The  reason  was a change in arch/ppc/lib/string.S
-> which completely f*cked up the caches (ok - the  MPC8xx  have  smalle
-> cache line sizes).
->
+I'm addressing you folks at ppc-embedded because frankly, I don't know how
+to find any relevant info on this issue. We are developing a single-board
+solution with a CT69000 display controller. I built the XFree 4.0.1 on a
+development system (which also has a CT69000 on board, although its an
+intel platform...) and well, it doesn't work properly. There are visible
+artifacts (two vertical bars) at 24 bit pixel depth. Other modes (16bpp and
+8bpp) work even less, thus being almost unusable. Can anyone point me in
+the right direction? How can I find out whether the problem is in the
+XFree86 chips.o driver or in the CT69000 chip / motherboard itself?
+I tried to find some kind of "errata" or other experiences, but the
+information on the CT69000 is very scarce, and since its mostly used for
+embedded development, I figured out that some of you might know what to do
+with this one or even experienced the same problem yourselves.
 
-Thanks for the quick answer.
+BTW, is there any good FAQ on how to boot Linux kernel from DINK32? I
+haven't figured out any proper way to load blocks from a block device
+(e.g. an IDE hard disk)
 
-My cache line size is the standard 32 byte. As I found in older messages
-from the mailing list, these string.S problems concern only unusual cache
-line sizes.
-Anyway I got the 2.2.6 and the 2.2.13 kernel sources and gave it a try
---> no success.
-Then I tried to replace the copy_from_user in sys_open with my own
-read_through (flushes cache first, then reads memory) function.  --> no
-success.
-Actually the strings to be passed to the syscall are readable from
-everywhere in user space, but in kernel space it reads just trash at the
-same adress.
-There are (just my opinion) only two possibilities:
-    an adress translation problem in the kernel for adresses < 0x10000000
-
-   something is overwriting the memory space of the string - parameters
-for sys_open
-
-regards
-    Rene
-
-
->
-> Try (1) disabling caches; and (2) arch/ppc/lib/string.S from an older
-> (2.2.13) kernel version.
->
-> It's just a guess, but maybe worth a try.
->
-> Wolfgang Denk
->
-> --
-> Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-> Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-> In an infinite universe all things are possible, including the possi-
-> bility that the universe does not exist.
->                         - Terry Pratchett, _The Dark Side of the Sun_
+-topi
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
