@@ -1,36 +1,27 @@
-Date: Sat, 13 Feb 1999 02:12:14 +0100
-To: linuxppc-user@lists.linuxppc.org, linux-pmac@samba.anu.edu.au,
-        linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Message-Id: <19990213021214.030720@mail.mipsys.com>
+Message-Id: <199902130247.KAA19808@mule.wantree.com.au>
+Subject: Are 7200s still *officially* supported?
+Date: Sat, 13 Feb 1999 13:20:09 +1030
+From: Keith Jacob <kjacob@wantree.com.au>
+To: "linuxppc-dev list" <linuxppc-dev@lists.linuxppc.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I've posted the long awaited trackpad tool at:
+The subject really says it all: if kernel source releases always need 
+patching to boot 7200s, does that mean that 7200s are no longer 
+officially supported?
 
-<ftp://ftp.linuxppc.org/development/users/benh/trackpad_tool.tar.gz>
+Either way, what needs patching in the 2.2.1 sources to boot a 7200? I 
+looked thru' the recent suspect, linux/arch/ppc/kernel/head.S, "applied" 
+the 2.2 patch, compiled it, but no go.
 
-the syntax is
+Thanks in advance if you can help here, (or just try to :-)
 
-    trackpad notap|tap|drag|lock
-
-where:
-
-    notap       disable tapping
-    tap         enable tapping only
-    drag        enable tapping+dragging
-    lock        enable drag lock
-
-Note that on my machine, drag and drag lock behave the same, but this is
-also true with MacOS.
-
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
-
+--
+Keith Jacob
+kjacob@wantree.com.au
 
 
 
