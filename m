@@ -1,30 +1,50 @@
-Message-Id: <200404220843.DAA10024@lists.linuxppc.org>
-Date: Thu, 22 Apr 2004 16:44:34 +0800
-From: "=?utf-8?B?amVmZnk=?=" <leo_guo@jisung.cn>
-To: "=?utf-8?B?bGludXhwcGMtZW1iZWRkZWRAbGlzdHMubGludXhwcGM=?=" <linuxppc-embedded@lists.linuxppc.org>
-Cc: "=?utf-8?B?V29sZmdhbmcgRGVuaw==?=" <wd@denx.de>
-Subject: =?utf-8?B?UmU6IFJlOiB3aGljaCBpcyB0aGUgYmVzdCByb290IEZpbGUgc3lzdGVtIGluIGVtYmVkIGxpbnV4IHN5c3RlbT8=?=
-Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
+Message-ID: <408788E5.4020602@246tNt.com>
+Date: Thu, 22 Apr 2004 10:57:09 +0200
+From: Sylvain Munaut <tnt@246tNt.com>
+MIME-Version: 1.0
+To: Stefan Nickl <Stefan.Nickl@kontron.com>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Question about process/kernel address space
+References: <1082616231.4760.14.camel@lucy.pep-kaufbeuren.de>
+In-Reply-To: <1082616231.4760.14.camel@lucy.pep-kaufbeuren.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Because our board will be turned on and off frequently, so I think "high
-stability" is the important, and a R/W file system is prefer selection
-too! Another performances such as speed of booting is not the focus!
+Stefan Nickl wrote:
 
-Now our system can runs ok, I use EXT2 FS as the root file system build
-in a 32M DOC2000, but it seems it's unstable! In any time when the linux
-is starting, you turn off the power, maybe the root file system will
-crash!
+>Hi,
+>
+>in some elderly code for a VME-supporting 824x-board from
+>our company I found the following line in ppc_md.setup_io_mappings():
+>
+>io_block_mapping(0x80000000, 0x80000000, 0x10000000, _PAGE_IO);
+>
+>This is obviously meant to map a window of VME IO memory into
+>virtual address space. What puzzles me is that the mapping is
+>located below PAGE_OFFSET (0xc0000000), which, from my general
+>understanding, is bad :(
+>
+>
+>But since apparently nobody had a problem with this for years,
+>(and ranges above PAGE_OFFSET are tight) I'd like to know what
+>the actual implications are.
+>Ok, should a process ever access this range, it would fail
+>(since the BATs go first and allow only supervisor access(?)),
+>but a user process ever using such a high address seems highly unlikely.
+>
+>
+>
+On my PPC kernel, TASK_SIZE is 0x80000000, so that should be OK. ( linux
+2.6.5 )
+I think the area between TASK_SIZE and PAGE_OFFSET can also be used to
+map stuff as long as you take care not to map two things at the same
+place. IIRC, in ARM, the modules are loaded in that space, but I don't
+know for PPC.
 
-I have serval questions want to be confirmed:
-1. Whether the DOC2000 is unstable?
-2. Can I build a EXT2 FS in flash?
-3. How to avoid the file system crash in embed linux system?
 
-Thanks!
+Sylvain Munaut
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
