@@ -1,53 +1,41 @@
-Date: Thu, 26 Oct 2000 01:37:43 +0200
-From: Olaf Hering <olh@suse.de>
+Date: Thu, 26 Oct 2000 01:27:21 +0000
+From: nathan wagner <nw@granicus.if.org>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: ThinkPad 850 Patches for 2.2.16
-Message-ID: <20001026013743.A30528@suse.de>
-References: <20001024200338.A908@suse.de>
+Subject: can't get mouse working under latest devel
+Message-ID: <20001026012721.A1812@granicus.if.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20001024200338.A908@suse.de>; from olh@suse.de on Tue, Oct 24, 2000 at 08:03:39PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Oct 24, Olaf Hering wrote:
+I've rsynced and compiled the latest 2.4.0-test10 kernel from
+penguinppc.org, but can't for the life of me get my trackpad working.
 
-> Hi,
->
-> Linar Yusupov did some patches for the Thinkpad 850 to make sound work
-> on these machines. It fixes also some typos for /proc/cpuinfo.
->
-> I'm not sure if the CAROLINA_IRQ_EDGE_MASK_HI change breaks anything else.
+The hardware is a 500 MHz G3 Pismo powerbook.  If i plug in a usb mouse into
+the back, it is detected and works fine.  So i'm thinking that there is
+either a bug in the recent adb mouse code, or i have missed a module or
+other compile option.
 
-linux-pmac-stable works on the TP, but I need a common config.
-David Monroes carolina minidif is needed to access the SCSI disks.
+Also, i needed to modify the #includes in trackpad.c, evidently adb.h,
+cuda.h, and adb_mouse.h aren't in <asm/*> with the latest kernels and are
+now in <linux/*>.  Then the struct net_device changed a char * to a char[]
+for the device name, so i had to change an assignment to a strcpy().
 
-I tried to remove that patch with CAROLINA_IRQ_EDGE_MASK_HI, but it
-hangs in the cs4231 detection.
+I can send a diff if desired.
 
-I have another strange problem.
-The "bootloader" in produces garbage output, it starts with a few random
-bytes and then it fills up the screen with more random bytes. These
-garbage goes into /proc/cmdline (its hard to copy&paste :):
+The trackpad app, once compiled, claims that i don't have a trackpad.
+However, the kernel detects one and sets a handler.  I've been reading the
+mac device driver code, and see a couple of places were i could turn on
+debugging and log the event bytes.
 
-olaf@tp:~ > hex /proc/cmdline
-0000  72 6f 6f 74 3d 2f 64 65  76 2f 66 64 30 bc ad 73
-0010  ff bc ad 73 ff bc ad 33  fe 3c ad 73 ff 0a
+At any rate, i can recompile and/or post more info, but i'm not sure where
+to begin.
 
-
-Any ideas how to fix that? Could be a termic problem, the machine runs
-here since a few days. And I cant remember that I got this garbage a few
-days ago. But typing here at the console works fine.
-
-
-
-Gruss Olaf
+There were a couple of problems compiling the 0.9.3 airport module as well,
+but i got those fixed, and they aren't relevant to the mouse problem.
 
 --
- $ man clone
-
-BUGS
-       Main feature not yet implemented...
+Chance is irrelevant.  We will succeed.  -- Seven of Nine
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
