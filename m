@@ -1,29 +1,46 @@
-Date: Wed, 18 Sep 2002 09:28:05 -0500
-Subject: Re: mpc8xx fpu emu
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v543)
+Message-ID: <3D889176.4070600@embeddededge.com>
+Date: Wed, 18 Sep 2002 10:45:10 -0400
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: Kumar Gala <kumar.gala@motorola.com>
 Cc: Conn Clark <clark@esteem.com>, Alban Wood <awood@bloodwolf.org>,
 	May Ling List <linuxppc-embedded@lists.linuxppc.org>
-To: Dan Malek <dan@embeddededge.com>
-From: Kumar Gala <kumar.gala@motorola.com>
-In-Reply-To: <3D80D9E1.1020001@embeddededge.com>
-Message-Id: <D8A0BB5A-CB12-11D6-AAF4-003065BFB10E@motorola.com>
+Subject: Re: mpc8xx fpu emu
+References: <D8A0BB5A-CB12-11D6-AAF4-003065BFB10E@motorola.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan,
+Kumar Gala wrote:
 
-> Even when you don't enable the kernel FPU emulation, we still emulate a
-> few FP instructions.  This is to allow programs that use absolutely no
-> floating point to work with the generic FPU PowerPC libraries.
+> Can you elaborate on this?  Why exactly is this done?  Is it because
+> glibc has some minor FP code @ startup?
 
-Can you elaborate on this?  Why exactly is this done?  Is it because
-glibc has some minor FP code @ startup?
+The best example is the setjmp/longjmp code and associated signal functions.
+There is lots of assembly code in the C library specific to processors to
+support this.  When you call some setup functions or use signals (in this
+case) you will execute load/store FP instructions.
 
-thanks
+I originally added these minimal emulations so I could use the standard
+PowerPC libraries even though I didn't do any floating point in the application.
+It was also necessary to simply get a shell running :-)
 
-- kumar
+Note 1, just because you compile libraries with -msoft-float doesn't mean
+there won't be floating point instructions in the code.  You have to go through
+the libraries and fix up all of the assembly code that may use floating
+point instructions.
+
+Note 2, don't ever mix real float instructions, soft-float libraries, soft-float
+applications and kernel emulation.  Everything must properly match for context
+switching and passing of arguments between functions.  A tempting combination
+is an FP enabled library, minimal FP emulation in the kernel, and a soft-float
+application to get maximum performance with minimal effort......don't do that,
+it will not work.  Either use complete user-land soft-float, or real FP
+instructions with complete kernel emulation.
+
+
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
