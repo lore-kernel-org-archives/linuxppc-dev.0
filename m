@@ -1,51 +1,75 @@
-Message-ID: <404665B3.20409@mvista.com>
-Date: Wed, 03 Mar 2004 16:09:39 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
+Message-ID: <4046697E.1090003@sonartech.com.au>
+Date: Thu, 04 Mar 2004 10:25:50 +1100
+From: David Gardiner <daveg@sonartech.com.au>
 MIME-Version: 1.0
-To: "Mark A. Greer" <mgreer@mvista.com>
-Cc: Neil Wilson <NWilson@Airspan.com>,
-	linuxppc-embedded@lists.linuxppc.org,
-	Stuart Yoder <stuart.yoder@conformative.com>
-Subject: Re: Porting Linux into IBM Spruce
-References: <3506EDCDEC47904CBE6FD2E1DEEA8984020CF952@fs5.airspan.com> <40460CEF.4050900@mvista.com>
-In-Reply-To: <40460CEF.4050900@mvista.com>
+To: "Hager, Johannes, HRD/AB" <johannes.hager@lfk.eads.net>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Some questions regarding - ppcbug booting
+References: <2D9AB865A49FD511914700105A0EF679016C48EF@morse.smart.lfk.eads.net>
+In-Reply-To: <2D9AB865A49FD511914700105A0EF679016C48EF@morse.smart.lfk.eads.net>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Mark A. Greer wrote:
+Hager, Johannes, HRD/AB wrote:
 
+>I´m working on a similar project, but my problem is, that I can´t
+>get the kernel, I´ve compiled, working. How do I have to compile the
+>kernel/which options do I have to set, that it can be started with
+>motorolas PPCBug? Which commands do I have to use to boot the Kernel
+>with the PPCBug. Until now I used NBO, but I always got an error
+>message! I am using the MVME3604 board.
 >
-> Neil Wilson wrote:
->
->> What about the IBM 2*750FX + MV64360 dev board ?, would this be a port
->> of Spruce + a different PCI bridge, I cannot seem to find an exact match
->> in the platforms but there again maybe I am looking in the wrong
->> tree/directory, thanks.
+>>-----Ursprüngliche Nachricht-----
+>>Von:	David Gardiner [SMTP:daveg@sonartech.com.au]
+>>Gesendet am:	Mittwoch, 25. Februar 2004 00:25
+>>Betreff:	ppcbug booting
 >>
-> That's an Argan board and, as you note, its very different from a spruce
-> so it will get its own port.  That port is being worked on but isn't
-> ready yet.  If you can hold tight for a bit I will try to get you an
-> early version.
+>>I'm currently running Linux system (linuxppc_2_4 from monta vista,
+>>thanks to all those who have worked on it) that comprises of a
+>>motorolla mvme5100 that has a promise ide pmc with a compact flash and
+>>was hoping to get the compact flash to hold the entire OS+kernel ...
+>>At the moment the system can be booted via nfs / prep boot (if running
+>>with a scsi disk) and bugboot. But what I was hoping to do was boot
+>>of a kernel on the compact flash. My assumption is that using u-boot
+>>to do this would be a heavy handed approach (please point out if I'm
+>>wrong) and I haven't seen anything in my googling. Has anyone ever
+>>tried anything like this? if not can I please get some pointers on the
+>>best way to go about this.
 
-Okay, here is the problem.  We have a port that works (using 1 processor
-only) but its based on the 64360 code that was put into the -galileo
-tree.  AFAIK, that 64360 code it not acceptable for the _2_4_devel or
-the -2.4 tree so we can't put it in those trees.  There is also a file
-with a non-GPL license so that has to be rewritten before anything is
-released.
+Maybe a bit of broad question but I'll try to answer some bits,mainly
+the ppcbug
 
-When that's done, I am told there will be a preview kit for it available
-from mvista.com.  Preview kits are freely available but you have to
-register (free).  Right now, that preview kit is expected to be
-available in ~4 weeks but no guarantees.
+To ppcbug boot, I use the bugboot kernel which when compiled is at:
+arch/ppc/boot/images/zImage.bugboot
+it is just the normal kernel wrapped up with some extra bits, which is
+done by a binary found in:
+linux/arch/ppc/boot/utils/mkbugboot
 
-That's the best I can do so if that's not good enough, you'll have to do
-it yourself or maybe someone else has a working src tree they are
-willing to share.
+To get this onto the machine, in ppcbug I setup niot to tftpboot the
+kernel image onto the machine, to the location specified by:
+Boot File Load Address         =
+which is done using:
+nbh
 
-Mark
+I then pflash(which is basically a copy) this to a different location:
+i.e. pflash from:(from+lgth) to
 
+I then use ppcbug's env command to set it to rom boot the kernel,
+the bits, I know you have to change are:
+Network PReP-Boot Mode Enable [Y/N] = N
+ROM Boot Enable [Y/N]            = Y?
+and the address,
+ROM Boot Direct Starting Address = ....
+is the address that you pflashed the kernel to
+
+ps: the addresses that I use have been left out purposly (as they might
+not be right for your machine) and I would like to note it's pretty easy
+to stuff up a machine using the ppcbug if you use the "wrong" addresses
+(speaking from experience).
+
+also take a look at Mat Porters, description which is at:
+http://www.debian.org/ports/powerpc/inst/prep
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
