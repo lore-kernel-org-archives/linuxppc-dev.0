@@ -1,15 +1,22 @@
-Return-Path: <leigh@solinno.co.uk>
-Received: from george.solinno.co.uk (george.solinno.co.uk [193.110.88.138])
-	by ozlabs.org (Postfix) with ESMTP id 9F8E62BD3C
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Sep 2004 05:35:14 +1000 (EST)
-Date: Thu, 16 Sep 2004 19:25:31 +0100
-To: trini@kernel.crashing.org
-Message-ID: <20040916182531.GA20649@george.solinno.co.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: leigh@solinno.co.uk (Leigh Brown)
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
-Subject: [PReP][PATCH] Fix ISA PIC interrupt acknowledge address detection
+Return-Path: <craig.d.smith@siemens.com>
+Received: from brmx1.boca.ssc.siemens.com (brmx1.fl.icn.siemens.com
+	[12.147.96.32]) by ozlabs.org (Postfix) with ESMTP id D95D92BD6A
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Sep 2004 05:42:26 +1000 (EST)
+Received: from fdns2.rolm.com (localhost [127.0.0.1])
+	by brmx1.boca.ssc.siemens.com (8.12.10/8.12.10) with ESMTP id
+	i8GIuR6u028463
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Sep 2004 14:56:28 -0400
+Received: from stca200a.bus.sc.rolm.com (stca200a.bus.sc.rolm.com
+	[165.218.68.180])
+	by fdns2.rolm.com (8.12.10/8.12.10) with ESMTP id i8GIuR5T009432
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Sep 2004 11:56:27 -0700 (PDT)
+Message-ID: <EA78B62757AF1E4799828249310AC4CA071D280D@stca206a.bus.sc.rolm.com>
+From: "Smith, Craig" <craig.d.smith@siemens.com>
+To: linuxppc-dev@ozlabs.org
+Date: Thu, 16 Sep 2004 11:56:18 -0700
+MIME-Version: 1.0
+Content-Type: text/plain
+Subject: Linux 2.6.x on 8xx status
 List-Id: "Linux on PowerPC \(Including Embedded\) Developers Mail List"
 	<linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -20,29 +27,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The ISA PIC address for acknowledging interrupts is actually defined
-in residual data as a 32-bit system address, rather than a 32-bit 
-memory address.  This is rather embarrasing, as I don't think this
-function has done the right thing, ever.
+Hello,
+Can someone please tell me the current "status" of the
+2.6.9-rc2 kernel source (a bitkeeper clone of linuxppc-2.5)?
+I can compile and run it (with a minor modification to fec.c),
+but I see random "Oops: kernel access of bad area" messages
+when init runs, or other busybox tools run. Sometimes I boot
+up (same file system etc.) and I see no errors. I can provide
+more details if anyone's interested.
 
-Tested and working fine on my Carolina and 140.
+Right now, I just want to know if I should expect to see funny
+behavior from this particular source tree on an 8xx platform or
+should it work OK? Thanks so much.
 
-Thanks,
-
-Leigh.
-
-Signed-off-by: Leigh Brown <leigh@solinno.co.uk>
-
---- arch/ppc/platforms/residual.c.orig	2004-09-14 20:50:16.000000000 +0100
-+++ arch/ppc/platforms/residual.c	2004-09-14 20:50:29.000000000 +0100
-@@ -935,8 +935,8 @@
- 		goto unknown;
- 
- #define p pkt->L4_Pack.L4_Data.L4_PPCPack
--	/* Must be 32-bit memory address */
--	if (!((p.PPCData[0] == 2) && (p.PPCData[1] == 32)))
-+	/* Must be 32-bit system address */
-+	if (!((p.PPCData[0] == 3) && (p.PPCData[1] == 32)))
- 		goto unknown;
- 
- 	/* It doesn't seem to work where length != 1 (what can I say? :-/ ) */
+Regards,
+-Craig
