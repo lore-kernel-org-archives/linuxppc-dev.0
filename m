@@ -1,45 +1,47 @@
-Date: Fri, 28 Jul 2000 16:51:07 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Takashi Oe <toe@unlserve.unl.edu>
-cc: Benjamin Herrenschmidt <bh40@calva.net>,
-        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
-        Linux Frame Buffer Device Development <linux-fbdev@vuser.vu.union.edu>
-Subject: Re: [ANN] IRQ Latency tool 0.1.3 release.
-In-Reply-To: <Pine.LNX.3.96LJ1.1b7.1000728050930.2549D-100000@ofey.inetnebr.com>
-Message-ID: <Pine.LNX.4.10.10007281606400.423-100000@cassiopeia.home>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: "Hendricks, Kevin" <khendricks@ivey.uwo.ca>
+To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Message-Id: <v03110702b5a7508b3a75@[129.100.29.243]>
+In-Reply-To: <4.3.2.7.2.20000728154143.03925220@mail.lauterbach.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Fri, 28 Jul 2000 11:01:01 -0400
+Subject: Re: Fwd: problems with linuxthreads under your latest glibc 15C  
+ rpms
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 28 Jul 2000, Takashi Oe wrote:
-> On Wed, 26 Jul 2000, Geert Uytterhoeven wrote:
-> > There's indeed a global lock on the console, to prevent multiple accesses to
-> > the console at once. This solves some problems, one being that some graphics
-> > hardware crashes when both the CPU and the graphics accelerator touch the video
-> > RAM at the same time.
+Thanks Franz!
+
+Kevin
+
+
+>Hi,
 >
-> Would it be difficult to make the lock per fbdev thing?  If the
-> CPU/accelerator clash is the only reason for the global lock, we can
-> certainly remove that for hardware which doesn't have that kind of
-> problem, can't we?
-
-There could indeed be separate locks per fbdev. But the global console lock
-(console_lock) would still be there. It is needed because the console subsystem
-is not re-entrant (yet). Since fbdev is called from the console subsystem, it
-runs under the same lock (i.e. with interrupts disabled).
-
-Gr{oetje,eeting}s,
-
-						Geert
+>this is a heads-up notice for distribution maintainers using the
+>glibc-2-1-branch. It seems the branch contains a threads bug introduced with:
+>
+>2000-03-16  Ulrich Drepper  <drepper@redhat.com>
+>
+>         * mutex.c (__pthread_mutex_lock): Always initialize __m_owner.
+>         (__pthread_mutex_trylock): Likewise.
+>         (__pthread_mutex_unlock): Always clear __m_owner.
+>
+>Check the appended message for details. I've added the patch to my source
+>tree, maybe someone finds time to check it in into the branch (yes, I know
+>that the branch is more or less dead :-) ).
+>
+>Thanks,
+>Franz.
+>
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Kevin B. Hendricks, Associate Professor of Operations and Information
+Technology
+Richard Ivey School of Business, University of Western Ontario
+London, Ontario  N6A-3K7  CANADA
+khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
