@@ -1,78 +1,95 @@
-Date: Mon, 31 Jul 2000 06:06:21 +0000 (UTC)
-From: David Gatwood <dgatwood@mklinux.org>
-To: mklinux-announce@public.lists.apple.com,
-        mklinux-setup@public.lists.apple.com
-cc: linuxppc-dev@lists.linuxppc.org, linuxppc-users@lists.linuxppc.org,
-        port-macppc@netbsd.org, port-mac68k@netbsd.org
-Subject: MKL-ANN: Performa 52xx/53xx/62xx/63xx Support
-Message-ID: <Pine.LNX.3.96.1000731055118.16733A-100000@mklinux.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Thomas Graichen <news-innominate.list.linux.ppc.dev@innominate.de>
+Reply-To: Thomas Graichen <graichen@innominate.de>
+Subject: SGI XFS on ppc
+Date: 31 Jul 2000 06:17:45 GMT
+Message-ID: <news2mail-8m35m9$3nu$4@mate.bln.innominate.de>
+Reply-To: thomas.graichen@innominate.de
+To: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Apologies in advance for the cross-post.
+[looks like this mail didn't make it into this list (if i am wrong
+sorry for the resend) - please add linux-xfs@oss.sgi.com to the
+cc list if useful]
 
-As of July 31, 2000, the PowerMac 5200/5300/6200/6300 family of
-computers, and their Performa equivalents, are officially
-supported in MkLinux.  Please NOTE that only the 6214 has been
-tested, so there may be some small snags in some of the others.
-Barring any surprises, though, it should "just work".
+i was a bit curious about how hard/easy it would be to get xfs working
+on non intel machines - and this is what i found out about it so far ...
 
-CAVEATS:
+first the results till now:
 
-      * Sound is not supported yet.  That's the next priority....
+[root@aqua /root]# uname -a
+Linux aqua 2.4.0-test1 #11 Mon Jul 31 01:02:00 CEST 2000 ppc unknown
+[root@aqua /root]# cat /proc/filesystems
+nodev	shm
+nodev	pipefs
+nodev	proc
+	ext2
+	msdos
+	vfat
+	iso9660
+	hfs
+nodev	autofs
+	xfs
+nodev	nfs
+nodev	devpts
+[root@aqua /root]#
 
-      * SCSI is working, but rather slow.  It's partially hardware
-        at fault, and partially a lack of pseudo-DMA code.  Oh well.
-        It "mostly works."  As always, your mileage may vary.
+so - i got the kernel compiled with xfs support - it even runs
+stable but it hangs on the try to mount and xfs filesystem :-(
 
-      * Serial is untested.  It should work, but again, YMMV.
+ok - now some more details about my tries to get it at least built
+and some questions ...
 
+* tried to compile it brute force and looked at the errors
+* the typo in arch/ppc/kernel/misc.c was easily fixed
+* first thing in the pagebuf code was that at the ppc the local_bh_count
+  seems to be defined in softirq.h instead of hardirq.h at the x86 - i
+  just added softirq.h to page_buf.c (i think the ppc-dev people
+  should have a look at how to fix this in a clean way)
+* kernel now compiled fine but did not link due to unclear ifdefs
+  for the kallsyms stuff (this should be propagated back to
+  whom ever is maintaining the kallsyms stuff)
+* kernel still did not link due to missing kernel support for
+  some integer functions in the kernel (udivdi3 etc.)
+* looks like sgi added support for this to arch/i386/lib via the
+  file divdi3.c - so i did for arch/ppc/lib by copying the divdi3.c
+  over from the i386 dir and replacing the asm's with the ppc
+  asm's from gcc-2.95.2's longlong.h (question to the ppc-dev
+  people: is that done correctly or does there some code for
+  udiv_qrnnd or sdiv_qrnnd (would result in a simpler udiv_qrnnd
+  than the one used) exist ? - for more details look at the
+  gcc/longlong.h file)
+* kernel linked now!
+* building the tools is a problem due to too deep dependencies of
+  them currently to the system headers - but sgi people are
+  working on it to make them compilable without a lot of problems
+  (right ?)
+* kernel boots! and runs stable so far
+* how to test the xfs filesystem without the tools? - i just made
+  a small 32mb xfs filesystem on an x86 and dd'ed to a file which
+  you can easily dd onto any partition and mount it as xfs fs there
+  (verified to work on x86)
+* trying to mount the dd'ed filesystem just hangs the machine - no
+  output so far (xfs is compiled with debug and vnode tracing and
+  syslog will give *.* to the console) ...
 
-Special Thanks:
+so - what next? - for me to go to bed now (it's half past two over
+now :-) but i hope i have delivered enough info for others to jump
+onto it and get this thing going - i am happy to test new and other
+things if someone from the two camps (sgi or ppc-dev) have an idea
+but so far i am at the end of my knowledge here :-(
 
-      * Tony Mantler (of mac68k-land) for assistance in tracking down a
-        lost IDE interrupt.
+all the diffs, configs, logs etc. i used for my tests can be found at
 
-      * MontaVista Software for my continued employment.
+  http://innominate.org/~graichen/projects/xfs-ppc/
 
-      * Apple Computer for being about as unhelpful as one might expect,
-        and for even releasing a perverse hybrid of a Quadra and a
-        PowerMac in the first place ....
+t
 
-      * Linux-mac68k and NetBSD-mac68k for providing invaluable insight
-        into the Quadra 630 upon which this beast was based, and more
-        significantly, for correcting some of my own insights.
-
-      * Everyone who has offered to help test this support, etc.  Now's
-        your chance.
-
----
-
-You can find a bleeding edge test kernel at
-
-	ftp://ftp.mklinux.org/pub/contrib/Mach_Kernel.PERFORMA.gz
-
-All source code changes have been incorporated into the official MkLinux
-CVS tree.  For more information, please visit our web site at
-
-	http://www.mklinux.org
-
-Or visit our CVSweb system at
-
-	http://cvs.mklinux.org/cgi-bin/cvsweb
-
-For information on this port, feel free to contact me directly at this
-email address.
-
-
-
-Cheers,
-David
-
--- dgatwood@mklinux.org
-
+--
+thomas.graichen@innominate.de
+technical director                                       innominate AG
+clustering & security                                networking people
+fon: +49.30.308806-13 fax: -77 web: http://innominate.de pgp: /pgp/tgr
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
