@@ -1,12 +1,12 @@
 Return-Path: <jchapman@katalix.com>
-Received: from ptb-relay03.plus.net (ptb-relay03.plus.net [212.159.14.214])
+Received: from ptb-relay01.plus.net (ptb-relay01.plus.net [212.159.14.212])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 450E267A67
+	by ozlabs.org (Postfix) with ESMTP id 55FF667A6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  1 Mar 2005 08:31:29 +1100 (EST)
-Message-ID: <42238DAC.2030202@katalix.com>
-Date: Mon, 28 Feb 2005 21:31:24 +0000
+	Tue,  1 Mar 2005 09:13:23 +1100 (EST)
+Message-ID: <4223977C.4070502@katalix.com>
+Date: Mon, 28 Feb 2005 22:13:16 +0000
 From: James Chapman <jchapman@katalix.com>
 MIME-Version: 1.0
 To: "Mark A. Greer" <mgreer@mvista.com>
@@ -25,23 +25,7 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Mark,
-
-Thanks for reviewing my patch.
-
 Mark A. Greer wrote:
-
->  >  diff -Nru a/arch/ppc/platforms/radstone_ppc7d.c 
-> b/arch/ppc/platforms/radstone_ppc7d.c
->  > +void __init ppc7d_setup_peripherals(void)
-> 
->  > +       val32 = mv64x60_read(&bh, MV64x60_PCI1_PCI_DECODE_CNTL);
->  > +       val32 &= ~(1 << 3);
->  > +       mv64x60_write(&bh, MV64x60_PCI1_PCI_DECODE_CNTL, val32);
-> 
-> Bit 3 is already cleared by the core code.
-
-Oh ok. I'll remove it.
 
 >  > +       /* Setup P2P for PCI#0 */
 >  > +       val32 = mv64x60_read(&bh, MV64x60_PCI0_P2P_CONFIG);
@@ -54,12 +38,19 @@ Oh ok. I'll remove it.
 > one hose directly accessing PCI devices on the other hose.  The P2P 
 > stuff seems complicated & unnecessary.
 
-It was a feature that the Radstone folk wanted to allow, although they
-had no application for it at the time. I can probably just remove that
-code for now - if they ever do want to add that support, it would be
-a separate patch.
+Thinking about this more, what is really being configured here is the
+primary bus number before the scan is performed. If the bus number
+doesn't match the hose's primary bus number, the mv64x60 will issue
+Type 2 PCI config cycles instead of Type 1 and the scan will fail.
 
-I'll retest with the above code removed and submit a new patch.
+This board has an on-board PCI-X bridge and potentially other PCI
+bridges on PMC cards. I found that I had to init the P2P_CONFIG
+primary bus value before scan in order for the PCI scan of bus 2
+to work (hose_a has PCI busses 0 and 1).
+
+I think the writes to the P2P config registers are necessary.
+
+/james
 
 -- 
 James Chapman
