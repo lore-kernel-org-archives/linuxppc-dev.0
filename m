@@ -1,57 +1,31 @@
-Message-Id: <199911261615.KAA09452@lists.linuxppc.org>
-Date: Fri, 26 Nov 1999 11:12:42 -0500 (EST)
-From: Kevin_Hendricks <khendricks@admin.ivey.uwo.ca>
-Reply-To: Kevin_Hendricks <khendricks@admin.ivey.uwo.ca>
-Subject: JDK 122 BUGFIX: just released
-To: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org,
-        yellowdog-general@lists.yellowdoglinux.com
-MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Date: Fri, 26 Nov 1999 18:34:14 +0100
+To: linuxppc-dev@lists.linuxppc.org, yellowdog-devel@lists.yellowdoglinux.com
+CC: paulus@linuxcare.com
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: New iBook/iMac/G4 kernel & yaboot 0.3
+Message-Id: <19991126183414.022934@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Hi !
 
-Overnight I received a few bug reports about problems with the just announceed 
-jdk122_pre-v1 running under 32bpp/24planes with Swing/JFC.  This bug has just 
-been fixed.
+I've uploaded a new version of my kernel for new machines. I made a lot
+of cleanup and sync'ed with Paul latest 2.2.14 source tree. The iBook ADB
+and Trackpad now works normally and this kernel can be booted by yaboot.
+I added setting of the colormap to the logo colors (so at least the text
+mode installer is useable) when using offb and booting from OF (when
+supported by the OF driver, which is the case for ATI based machines).
 
-So if you use 32bpp and or JDK 1.2.2, please grab today's bugfix release for the 
-following files:
+I've also updated slightly yaboot (it leaves more space between the
+kernel and ramdisk, ramdisk tended to fail on new iMac). Still no doc,
+but basically, you can do normal OF boot and netboot. I didn't fix the
+config file name vs. FAT (yaboot.conf -> yaboot.cnf) yet.
 
-- README.linuxppc
-- jdk122_pre-v2.tar.bz2 
-or
-- jre122_pre-v2.tar.bz2
-
-Notice the v2 as opposed to yesterday's v1.  Some of the mirrors are still being 
-updated so look closely before downloading again.
-
-Note: JDK 1.1.8 does not exhibit this bug, and the latest release (announced 
-yesterday is fine).
-
-If you just downloaded 21 meg for no good reason, I sincerely apologize.
-
-Kevin
-
-
-
-The following sites are *known* to have the bugfixed version, other mirrors will 
-catch up soon.
-
-http://khendricks.ivey.uwo.ca/linuxppc/jdk/
-ftp://khendricks.ivey.uwo.ca/pub/
-http://www.linuxppc.org/java/
-
-
-
---
-Kevin B. Hendricks
-Associate Professor of Operations and Information Technology
-Richard Ivey School of Business, University of Western Ontario
-London, Ontario  N6A-3K7  CANADA   
-khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
+Paul, I think this version could be merged, but please check I didn't
+break IDE on other machines.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
