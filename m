@@ -1,105 +1,76 @@
-Date: Mon, 11 Feb 2002 05:01:14 -0900
-From: Ethan Benson <erbenson@alaska.net>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Nathan Scott <nathans@sgi.com>, linuxppc-dev@lists.linuxppc.org,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] Extended attributes syscalls for powerpc (updated, re-send)
-Message-ID: <20020211050114.G20789@plato.local.lan>
+Date: Mon, 11 Feb 2002 23:37:30 +0100
+From: Werner Almesberger <wa@almesberger.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: performance monitor exceptions
+Message-ID: <20020211233730.E5079@almesberger.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="/Zw+/jwnNHcBRYYu"
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---/Zw+/jwnNHcBRYYu
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Hi,
 
-Hi Paul,
+I'm banging my head at a problem with exceptions. What I want to
+do is to get the performance monitor to give me exceptions at
+roughly 1 kHz, to drive the kernel profiler. The problem is that
+my changes usually kill the system within a few minutes :-(
 
-This is a re-send of an updated patch for extended attributes syscall
-allocation for powerpc, Linus has added a syscall (tkill) to the
-powerpc arch in 2.5.4 so my patch had to be adjusted and the
-allocation has changed.  Since Linus appears to randomly keep powerpc
-syscalls in sync with other architectures I believe it is imperative
-that this patch be sent along to him ASAP so we don't have to keep
-reallocating these syscalls and thus breaking userspace along the way.
+I'm quite new to the PPC, so I'll include a bit more details, in
+case I made some trivial mistake. My kernel is 2.4.17, my CPU is a
+MPC7410.
 
-Linus has merged the Extended attributes API from Andreas Gruenbacher
-and Nathan Scott (SGI) into 2.5.3, and added the i386 syscalls.
+First of all, I changed the vector to:
 
-By request of Nathan I have created the attached patch to add the
-syscalls to the powerpc arch.
+        . = 0xf00
+        b       PerformanceMonitor
 
-This patch allocates syscalls 209-220, if you have no problems with
-this allocation could you merge this patch with the powerpc 2.5
-kernel tree?  The sooner this can happen the better as Nathan is
-working on getting the userspace utilities fixed to use the official
-API and official syscall numbers, therefore we need the powerpc
-syscall numbers reserved ASAP so the userspace utilities can support
-the powerpc architecture.
+Then, I added a tiny little handler that does nothing but re-enable
+the PE exception. For getting a register, I mimicked EXCEPTION_PROLOG:
 
-TIA
+PerformanceMonitor:
+        // 955 is SIAR
+        mtspr   955,r20
+        mfspr   r20,SPRN_MMCR0
+        oris    r20,r20,MMCR0_PMXE@h
+        mtspr   SPRN_MMCR0,r20
+        mfspr   r20,955
+        SYNC
+        RFI
 
-This patch, and a version against the Linus 2.5.4 tree is also
-available at:
+And then I added of course a bit of code to enable all this:
 
-http://penguinppc.org/~eb/files/ppc-xattr-syscalls-linus.diff (Linus tree (2.5.4))
-http://penguinppc.org/~eb/files/ppc-xattr-syscalls.diff (linuxppc_2_5 tree (2.5.4-pre2))
+int __init setup_perf_mon(void)
+{
+        unsigned long flags;
+
+        local_irq_save(flags);
+        local_irq_disable();
+        /* ca. 3 kHz */
+        mtspr(SPRN_MMCR0,(mfspr(SPRN_MMCR0) & ~MMCR0_TBSEL_MASK) |
+          MMCR0_PMXE | (MMCR0_TBSEL_TBL15 << MMCR0_TBSEL_SHIFT) | MMCR0_TBEE);
+        local_irq_restore(flags);
+        return 0;
+}
+
+It seems to work (I had a handler there that does something a little
+more useful), but when I start kernel builds, I get a dead system
+(rebooted by hardware watchdog) within a few minutes.
+
+Instead of SIAR, I also tried SPRG0 and SPRG1, but got exactly the
+same behaviour. Time to crash varies from one to ten minutes. The
+time increases proportionally if I use TLB[19] (~200 Hz) instead.
+
+Any ideas of what I could be trampling over (or be trampled over
+by) ? This code seems rather bullet-proof to me, and I don't think
+anything else is using SIAR, or could change it while I'm using it.
+
+Thanks,
+- Werner
 
 --
-Ethan Benson
-http://www.alaska.net/~erbenson/
-
---/Zw+/jwnNHcBRYYu
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="ppc-xattr-syscalls.diff"
-
-diff -urN linux-2.5.4-ppc.orig/arch/ppc/kernel/misc.S linux-2.5.4-ppc/arch/ppc/kernel/misc.S
---- linux-2.5.4-ppc.orig/arch/ppc/kernel/misc.S	Thu Feb  7 09:09:17 2002
-+++ linux-2.5.4-ppc/arch/ppc/kernel/misc.S	Mon Feb 11 04:48:01 2002
-@@ -1231,6 +1231,18 @@
- 	.long sys_mincore
- 	.long sys_gettid
- 	.long sys_tkill
-+	.long sys_setxattr
-+	.long sys_lsetxattr	/* 210 */
-+	.long sys_fsetxattr
-+	.long sys_getxattr
-+	.long sys_lgetxattr
-+	.long sys_fgetxattr
-+	.long sys_listxattr	/* 215 */
-+	.long sys_llistxattr
-+	.long sys_flistxattr
-+	.long sys_removexattr
-+	.long sys_lremovexattr
-+	.long sys_fremovexattr	/* 220 */
- 	.rept NR_syscalls-(.-sys_call_table)/4
- 		.long sys_ni_syscall
- 	.endr
-diff -urN linux-2.5.4-ppc.orig/include/asm-ppc/unistd.h linux-2.5.4-ppc/include/asm-ppc/unistd.h
---- linux-2.5.4-ppc.orig/include/asm-ppc/unistd.h	Thu Feb  7 09:08:40 2002
-+++ linux-2.5.4-ppc/include/asm-ppc/unistd.h	Mon Feb 11 04:48:01 2002
-@@ -216,6 +216,18 @@
- #define __NR_mincore		206
- #define __NR_gettid		207
- #define __NR_tkill		208
-+#define __NR_setxattr		209
-+#define __NR_lsetxattr		210
-+#define __NR_fsetxattr		211
-+#define __NR_getxattr		212
-+#define __NR_lgetxattr		213
-+#define __NR_fgetxattr		214
-+#define __NR_listxattr		215
-+#define __NR_llistxattr		216
-+#define __NR_flistxattr		217
-+#define __NR_removexattr	218
-+#define __NR_lremovexattr	219
-+#define __NR_fremovexattr	220
-
- #define __NR(n)	#n
-
-
---/Zw+/jwnNHcBRYYu--
+  _________________________________________________________________________
+ / Werner Almesberger, Lausanne, CH                    wa@almesberger.net /
+/_http://icawww.epfl.ch/almesberger/_____________________________________/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
