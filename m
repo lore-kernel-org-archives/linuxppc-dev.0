@@ -1,31 +1,39 @@
-Date: Tue, 16 Apr 2002 14:55:58 +0100
-From: Adrian Cox <adrian@humboldt.co.uk>
-To: Michel D <michel@daenzer.net>
-Cc: stefan@nocrew.org, linuxppc-dev@lists.linuxppc.org
+Date: Tue, 16 Apr 2002 16:01:42 +0200 (MEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Adrian Cox <adrian@humboldt.co.uk>
+Cc: Michel D <michel@daenzer.net>, stefan@nocrew.org,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: R128 Scaling.
-Message-Id: <20020416145558.0ce378a4.adrian@humboldt.co.uk>
-In-Reply-To: <1018962733.1590.2316.camel@tibook>
-References: <878z7nuamf.fsf@hades.nocrew.org>
-	<20020416133220.782c956e.adrian@humboldt.co.uk>
-	<1018962733.1590.2316.camel@tibook>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20020416145558.0ce378a4.adrian@humboldt.co.uk>
+Message-ID: <Pine.GSO.4.21.0204161601070.12198-100000@vervain.sonytel.be>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 16 Apr 2002 15:12:12 +0200
-Michel D <michel@daenzer.net> wrote:
+On Tue, 16 Apr 2002, Adrian Cox wrote:
+> On 16 Apr 2002 15:12:12 +0200
+> Michel D <michel@daenzer.net> wrote:
+>
+> > You can apply for them with ATI directly, their developer relations
+> > program to be exact.
+>
+> Thanks - found it by Google. I can't find a route to it from ati.com,
+> which is why I missed it.
 
-> You can apply for them with ATI directly, their developer relations
-> program to be exact.
+Because it's atitech.com? ;-) ati.com is an embedded OS supplier.
 
-Thanks - found it by Google. I can't find a route to it from ati.com,
-which is why I missed it.
+Gr{oetje,eeting}s,
 
+						Geert
 
 --
-Adrian Cox
-http://www.humboldt.co.uk/
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
