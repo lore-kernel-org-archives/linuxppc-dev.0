@@ -1,60 +1,37 @@
-Message-ID: <39FEA72D.F0433269@vas-gmbh.de>
-Date: Tue, 31 Oct 2000 12:04:13 +0100
-From: Frank Przybylski <Frank.Przybylski@vas-gmbh.de>
-MIME-Version: 1.0
+Message-ID: <819E3E914E0AD11194DE00805F0D100B0138B8D0@fbi.infocom.dk>
+From: Kim Jørgensen <KIJ@infocom.dk>
 To: linuxppc-embedded@lists.linuxppc.org
-CC: Peter Uttley <P.Uttley-97@student.lboro.ac.uk>
-Subject: Re: Using BDM4GDB on a custom board.
-References: <005e01c042b3$cf071160$74dee783@lboro.ac.uk>
-Content-Type: text/plain; charset=us-ascii
+Subject: Kernel 2.2.14 and SMC2 on an 823/850
+Date: Tue, 31 Oct 2000 15:56:48 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Peter,
+Hi.
 
-> I'm currently trying to get BDM4GDB running on a custom board with a MPC850
-> and being quite new to all this would just like a quick pointer into which
-> parts of mpcbdm I need to configure.
+There seems to be an error in uart.c from mvista kernel 2.2.14.
 
-For general information for embedded linux on ppc look under
-http://members.nbci.com/greyhams/linux/PowerPC-Embedded-HOWTO.html
-(thanks Graham, excellent work!)
+If "Alternate SMC pins" is selected, SMC2 gets enabled like this (line 2772
+in uart.c):
 
-For mpcbdm look under http://www.vas-gmbh.de/software/mpcbdm/ right now. This
-stuff will sooner or later be moved to bdm4gdb at sourceforge (thanks to
-Raphael). There should be a README and script to build the cross gdb. There
-should also be an init script for the cross gdb, called mpc.init. Only a few
-things need to be setup for debugging. Look under the 'init' macro.
+/* SMC2 is on Port A.
+	*/
+	iobits = 0x300;
+	immap->im_ioport.iop_papar |= iobits;
+	immap->im_ioport.iop_padir &= ~iobits;
+	immap->im_ioport.iop_paodr &= ~iobits;
 
-I assume you've built the adapter yourself? Be careful with powering the
-adapter: I think the mpc850 limits voltage to 3.6V for input on BDM, so use
-jumper settings 2-3, powering the adapter from target board.
+According to the User's Manual (and to Dan
+http://lists.linuxppc.org/listarcs/linuxppc-embedded/200006/msg00066.html)
+bit 8 and 9 should be set in papar, and cleared in padir, to make SMC2 work
+on an 823/850.
 
-Right now support for internal registers is designed for mpc860. mpc850 uses
-different internal mappings for some registers, so you have to adapt the
-mpcbdm.h file for you needs, otherwise you'll get wrong information. This
-shouldn't be too hard, thought it take's some time to input (so I'd like to get
-those mapping when you have finished it ;-). But most important registers should
-work out of the box. So configuring for mpcbdm shouldn't be to hard.
-
-I'm working on a new version of software allowing loadable register mappings.
-This will be announced and updated on bdm4gdb. I've also have designed a new
-adapter, avoiding some problems (e.g. the VFSL0..1 vs FRZ, and introduce some
-new problems arg). If there is interest I could produce this adapter for you for
-around $50. I'm also going to publish the schematics. This new adapter includes
-a port for the JTAG/COP for the mpc8260, though I have no idea for the software
-right now due to Motorola' NDA for the COP protocol.
-
-If you have still problems, feel free to contact me.
-
-hth
- Frank
+iobits should be set to 0xC0 and not 0x300.
 
 --
-===============================================================================
-Frank Przybylski,VAS GmbH,Gotenstr.6,20097 Hamburg,GERMANY,TEL:+49-40-238568-14
-   mailto:Frank.Przybylski@vas-gmbh.de , visit us at http://www.vas-gmbh.de
-===============================================================================
+Kim Jorgensen
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
