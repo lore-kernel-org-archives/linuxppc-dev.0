@@ -1,29 +1,31 @@
-Message-ID: <3770E666.BE940A92@americasm01.nt.com>
-Date: Wed, 23 Jun 1999 09:51:34 -0400
-From: "Jerry Quinn" <jquinn@nortelnetworks.com>
+From: Nathan Sheeley <nsheeley@ibmoto.com>
+Message-Id: <199906231408.JAA16450@shippy.ibmoto.com>
+Subject: Re: bug in head.S
+To: Paul.Mackerras@cs.anu.edu.au
+Date: Wed, 23 Jun 1999 09:08:54 -0500 (CDT)
+Cc: nsheeley@ibmoto.com, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <199906230045.KAA02613@tango.anu.edu.au> from "Paul Mackerras" at Jun 23, 99 10:45:22 am
 MIME-Version: 1.0
-To: "sean o'malley" <somalley@ed.mde.state.mi.us>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Project ?
-References: <v04003a00b39506f352e3@[204.22.210.180]>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-There's a site dedicated to free software projects that have a bounty
-attached.  I can't find the reference at the moment, but I believe Eric
-Raymond posts it on comp.os.linux.announce periodically.
 
-Perhaps if the sniping is removed, it can get posted there and someone
-would take it on.
+> > Has anyone tried to build/run a pmac SMP kernel with a recent (2.2.9)
+> > version of Linux?  
+> 
+> I have 2.2.10 running on my 2-cpu powermac at home (it's a 7500 with a
+> 2 x 604e 200MHz cpu card in it).  It mostly runs fine but has frozen
+> up on me a couple of times - I haven't tracked down why/where yet.
 
-I also have no clue about the issues involved :-)
+I pulled the MP card from the 9500, and installed it in an 8500;
+where it works fine w/2.2.0.  The 9500 (even with a single CPU) 
+still appears to hang just after opening the display.  Perhaps
+a problem w/ the mach64 driver that only affects older versions
+of the card?
 
--- 
-Jerry Quinn                             Tel: (514) 761-8737
-jquinn@nortelnetworks.com               Fax: (514) 761-8505
-Speech Recognition Research
+Nate
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
