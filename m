@@ -1,37 +1,38 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Date: Mon, 7 Jul 2003 12:05:23 -0400
-From: Kent Borg <kentborg@borg.org>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: gdbserver, find_extend_vma(), and VM_GROWSDOWN
-Message-ID: <20030707120523.B4527@borg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: "Omanakuttan" <omanakuttan@tataelxsi.co.in>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: kernel hangs after serving interrupt 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 07 Jul 2003 20:58:13 +0530."
+             <3F09918D.5070202@tataelxsi.co.in>
+Date: Mon, 07 Jul 2003 18:35:35 +0200
+Message-Id: <20030707163540.A8163C6D82@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am having gdbserver problems.  I can run gdbserver and attach to it
-with gdb, but the peeks into the application space are failing.
+In message <3F09918D.5070202@tataelxsi.co.in> you wrote:
+>
+> Anybody faced any similar problems with kernel 2.4.1?
 
-For example, in debugging the peek for the first instruction of my
-application, there is a call to find_extend_vma() (in mm/mmap.c).  The
-test for:
+Chances are very small that eanybody is still actively using such  an
+ancient kernel.
 
-  vma->vm_start <= addr
+> Any pointers/suggestions will be greatly apreciated.
 
-fails, and as this vms is VM_GROWSUP (and not VM_GROWSDOWN), the next
-if-statement returns a NULL.  That percolates up until ptrace returns
-zero.
-
-This application code runs pretty well without gdbserver, what should
-I look for next?  Is it indeed perverse for the addr to be below the
-start?  Who is likely to blame for that?  Where should I look next?
-Do I start grepping for every instance of PT_PTRACED in arch/ppc?
+Update to a more  recent  kernel  version.  Eventually  you  fight  a
+problem that has been fixed long since.
 
 
-Thanks,
+Best regards,
 
--kb, the Kent whose gdbserver Makefile says it is 4.12.3, and whose
-kernel is quite close to 2.4.21.rc1.
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"They that can give up essential liberty to obtain a little temporary
+saftey deserve neither liberty not saftey." - Benjamin Franklin, 1759
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
