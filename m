@@ -1,27 +1,20 @@
-Message-Id: <199905180406.MAA10606@relay1.asia.apple.com>
-Date: Tue, 18 May 1999 12:15:36 +0800
-Subject: OpenFirmware I/O access
-From: "Raymond" <samalo.r@asia.apple.com>
+From: nicolas.boussekeyt@afoc.alcatel.fr
 To: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Message-Id: <"/GUID:QMjvPD5wH0xGPigAQS7cwaA*/G=nicolas/S=boussekeyt/O=afoc/PRMD=acab/ADMD=atlas/C=fr/"@MHS>
+Date: 18 May 1999 09:26:31 +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
- I am an intern in Apple.
+I can't access to my OF with my PB.
+What can i do ?
+Please Help me!
+I want run linux on my ppc
 
- Does anybody knows how to access devices in Open Firmware ?
-
- I mean how to use,play,open, read,write,close or access the buffer of these
-devices :
-
- Harddisk/cdrom, audio, ethernet, and  display
-
- do help
-
-ray
+                                         Nicolas BOUSSEKEYT
+                                         ALCATEL Fibre Optique
+                                        Tel : 03 21 79 49 00
+                                        Web : http://www.alcatel.fr
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
