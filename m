@@ -1,37 +1,35 @@
-Message-ID: <38AE67BC.87B8DB89@huawei.com.cn>
-Date: Sat, 19 Feb 2000 17:51:56 +0800
-From: dony <dony.he@huawei.com.cn>
+From: jonb@marel.is
+Subject: 8xxFADS and SingleStep BDM
+To: psosuser@isi.com, linuxppc-embedded@lists.linuxppc.org
+Date: Mon, 21 Feb 2000 11:39:12 +0000
+Message-ID: <OF9754FB8B.2B42D5DE-ON0025688C.003AFCD8@marel.is>
 MIME-Version: 1.0
-CC: LinuxPPC Embedded Mailing List <linuxppc-embedded@lists.linuxppc.org>
-Subject: How to build cross-compile environment under unix-similar cygwin on
- Win98 ?
-References: <20000217005917.4338F1B580@elph.research.canon.com.au> <004701bf78e6$d2ab0de0$0201a8c0@home> <38AC17C6.9AA056B4@netx4.com>
-Content-Type: text/plain; charset=us-ascii
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi:
-   Now I want to build a cross-compile enviroment under unix-similar cygwin on
-win98.
-    By following some suggestions , Now I have installed Full.exe and
-Insight-19991101*.tar.gz. I find that the development tools such as gcc, ld,
-as, etc... is for X86.
-And the insight (also GUI gdb) is also for X86(right ?).
-     Now I have to build a cross-compile environment for Powerpc on win98. Is
-it possible?
-I think I can do the similar things as I have done on Linux by using the
-following packages:
-     binutils-*.tar.gz
-     gcc-core-*.tar.gz
-     gcc-*.tar.gz
-     glibc-*.tar.gz
-     glibc-crypt-*.tar.gz
-     glibc-linuxthreads-*.tar.gz    ==>this file may be changed to other files.
+Hi
 
-Any suggestions?
-Thank you very much.
-dony
+Is anyone using SDS SingleStep BDM with the 823FADS board from Motorola?
+I am having some problems with this combination.  I get a connection
+and I can read/write registers, initialize DRAM and read/write DRAM.
+But when I try downloading an ELF file the result is always the same,
+memory and registers are filled with garbage data after the download.
+
+I would also like to use the SingleStep BDM flash programming tool, which
+works successfully on our custom 821 board, but the flash programming tool
+does not succeed in programming the 8xxFADS flash.
+
+Does anyone have these tools working with 8xxFADS ?
+
+I would be interested in sharing the config files.
+
+
+Regards,
+
+Jon Benediktsson
+Marel hf.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
