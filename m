@@ -1,41 +1,33 @@
-Message-ID: <373CD376.7B669411@worldnet.fr>
-Date: Sat, 15 May 1999 03:52:54 +0200
-From: blokos <blokos@worldnet.fr>
-MIME-Version: 1.0
+From: LinuxPPC-Dev@associate.com
+Date: 15 May 1999 02:11:17 -0000
+Message-ID: <19990515021117.32764.qmail@associate.com>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: maccoach and linux ppc
-References: <199905141333.PAA29803@Bespin.worldnet.net>
-Content-Type: text/plain; charset=us-ascii
+cc: root@associate.com
+Subject: Active Guardian proxy/filter won't compile (socket.h c++)
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Support wrote:
+Hi,
 
-> Maccoach is a great product that permit your server to reboot
-> automatically when it crashes... but it works only with Mac os. So i
-> ve sent an email to Maccoach support and that is the answer
+I'm having a curious problem trying to compile a C++ proxy/filter
+called Active Guardian (http://www.activeguardian.com/download.htm)
+and wonder if someone here could have a try at it.  I've seen this
+kind of problem with socket.h before on R4 - apparently things have
+changed in Linux ix86 and PPC has not kept up?
 
-> >hello,
+Anyway, I tried the project-coordinator's demo site and was very 
+impressed with how the software works.  I'm good at contributing to 
+working software, but not when I can't get it to compile in the first
+place (-;
 
-> >our server is a Power mac with linux PPC,
-> >is your product could work with this system ??
-> >
-> >it will be very great !!
->
-> We don't have a linux PPC version available.
->
-> However we'll be happy to supply all technical information needed to
-> anyone willing make a linux PPC driver.
->
-> Regards,
->
-> Henk Kampman
-> Neuron Data Systems
-> http://www.neuronsys.com/
+Active Guardian hasn't been publicized much, but it's a key to a
+public non-profit Internet Lab I'd like to equip with Linux.  A helping
+hand would be MUCH appreciated!
 
- If some developer would work on it, it will be very cool !!!
+Thanks,
 
+glen_stewart@associate.com
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
