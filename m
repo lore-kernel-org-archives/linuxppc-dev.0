@@ -1,44 +1,22 @@
-Date: Fri, 5 Feb 1999 09:49:08 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Gerd Knorr <kraxel@goldbach.in-berlin.de>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: I/O port access ???
-In-Reply-To: <Pine.LNX.4.05.9902042243220.1124-100000@macintoy.masq.in-berlin.de>
-Message-ID: <Pine.LNX.4.03.9902050948300.23025-100000@mercator.cs.kuleuven.ac.be>
+From: list@rzuni1.fh-bingen.de
+Date: Fri, 5 Feb 1999 12:49:30 +0100 (CET)
+To: linuxppc-dev@lists.linuxppc.org
+Subject: s3-xserver on rs6000
+Message-ID: <Pine.LNX.3.96.990205124716.422A-100000@rzuni1.fh-bingen.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 4 Feb 1999, Gerd Knorr wrote:
-> On Thu, 4 Feb 1999, Geert Uytterhoeven wrote:
-> > On Thu, 4 Feb 1999, Gerd Knorr wrote:
-> > > Is there some way to access the I/O ports, for example the VGA registers
-> > > of some graphics board (assuming the I/O ports are enabled in the PCI
-> > > config space) on ppc boxes?  How can I do that with Linux?  From kernel
-> > > space?  From user space?
-> > 
-> > You have to mmap() /dev/mem. Which address depends on the type of PPC box.
-> > You can find the correct addres in <asm/io.h> (*_ISA_IO_BASE).
-> 
-> Can I easily figure out the machine type (at runtime) somehow?  Parse 
-> /proc/cpuinfo?
+hello out there...
 
-Currently that's the only solution.
+i need a standart vga xserver for my rs6000...
+the s3-xserver does not work because i have to use 2.1.xx kernels...
+HELP
+somebody told me xpmac is a standart xserver but how do i configure that?
 
-Maybe you remember I talked about /proc/bus/isa on linux-kernel some time
-ago? Now you know why...
-
-Greetings,
-
-						Geert
-
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
-
+mart
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
