@@ -1,33 +1,40 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: <christopher.murtagh@wcg.mcgill.ca>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: mmu_context_overflow
-Date: Fri, 16 Feb 2001 09:28:39 +0100
-Message-Id: <19350111020023.29855@smtp.wanadoo.fr>
-In-Reply-To: 
- <Pine.LNX.4.21.0102160021250.5346-100000@saraswati.wcg.mcgill.ca>
-References: <Pine.LNX.4.21.0102160021250.5346-100000@saraswati.wcg.mcgill.ca>
+Message-ID: <3A8CFB2D.310B76CE@ibk.liu.se>
+Date: Fri, 16 Feb 2001 11:04:29 +0100
+From: Mats Soderstrom <mats@ibk.liu.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Repost: Cannot remove directory `xpti.dat': Operation not permitted
+References: <3A8ADFD7.AB3E73B1@ibk.liu.se> <20010214183504.A3488@lsil.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> I usually get 3 of these a day, sometimes 2, sometimes 4, mostly they
->coincide with really high traffic periods (150k http request per hour -
->this server is 99% http traffic), but I have had some at what seem to be
->low traffic periods (but this is rare).
+I posted this earlier asking for help. After a system crash I had to run fsck
+manually on several volumes - for me this is saying "yes" to whatever fsck ask if
+it should fix. Anyway, after a restart the properties of xpti.dat (a mozilla
+component) is changed and I cannot remove it as root. So how do I go about fixing
+this? Can I use fsck and specify a sertan file? This is a bit over my head so I
+need advice from the experienced guys out there.
+
+Thank you in  advance!
+
+/Mats Soderstrom
+
+Original message:
+
 >
-> I haven't seen this on any of our other G4s, but none of them are taking
->on anywhere near that amount of traffic. Do you suspect it might be a
->hardware problem with this particular machine?
-
-Well, it's possible that it's an HW bug. I also suspect a software bug
-that was fixed, but AFAIK, 1.3 is ok. If the driver manages to reset the
-PHY and continue to operate properly, then things are nice. I'll still,
-on my side, check for possible race conditions in the ring Tx code when
-load is really high.
-
-Ben.
+> > I was left with this unremoveable directory that supposed to be a file after I
+> > had to do a volume repair:
+> >
+> > [root@a22 /]# cd /usr/lib/mozilla/components
+> > [root@a22 components]# ls -l
+> > total 2
+> > dr-s--s-wt   2 14409    25193        2048 Apr 19  2032 xpti.dat
+> > [root@a22 components]# rm -rf *
+> > rm: cannot remove directory `xpti.dat': Operation not permitted
+> > [root@a22 components]#
+> >
+> > How do I remove this file?
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
