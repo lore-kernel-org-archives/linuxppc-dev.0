@@ -1,32 +1,72 @@
-Message-ID: <DD38D67B9196D31189EC00508B62563701C4921F@zro01exm01.corp.mot.com>
-From: Diaconescu Bogdan-BDIACON1 <bogdan.diaconescu@motorola.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Gcc longcall option
-Date: Tue, 22 Jul 2003 18:34:06 +0300
+Message-ID: <D73A25AA6E54D511AD74009027B1110F3C0957@ORION>
+From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+To: "'deepesh@india.tejasnetworks.com'" <deepesh@india.tejasnetworks.com>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: EP8260 
+Date: Tue, 22 Jul 2003 11:38:41 -0400
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi guys,
+Was one of the sectors you erased the first sector?  If so that is your
+problem, the hard reset word is located in the beginning of the first
+sector.  To fix this you need to do the following.
 
-I have a question not strictly related to kernel but more related to
-gcc and it's options.
+1. There is a resistor that is removed from the board at location RO2.  This
+resistor sets the default hard reset word.  You have to put a 0ohm resistor
+at this location, a solder glob will also work.
+2. Download the Planet Core FLASH burner and execute it.  Give the command
+hrw to reburn the hard reset word.  If the processor is 233MHz or higher
+give the command hrw h.
+3. Remove the 0ohm resistor(or solder glob) at RO2.
 
-I try to create a big exe image (around 800M with symbolics) using
-gcc-2.95.x and I run into the problems of relative branch addressing
-which has only 24 bits for PPC. I know if I use some __atribute__
-((longcall)) for function prototypes the addressing is done through LR
-so it's changed to indirect branch. I was looking for options like
--mlongcall or -mlong-calls but it seems they don't exist for PPC.
+-----Original Message-----
+From: deepesh@india.tejasnetworks.com
+Sent: Tuesday, July 22, 2003 3:33 AM
+Subject: EP8260
 
-Now the question: do you know a distribution in which gcc is having
-such options or do you know another way to get the link done with the
-big exe image I have?
+  I loaded my EP8260 board with UBOOT. This was working fine. Then I
+loaded a binary into RAM using tftp. Then tried copying the stuff to
+flash. When I could not copy things into flash directly, I erased a few
+sectors randomly and then copied the binary to flash. Then when I reset
+the board, it did not come up.
 
-Regards,
-Bogdan
+I put back the u-boot into the flash using BDI2000. But now I am getting
+weird characters on the screen. I have looked at the minicom settings--
+It is 115200 and 8N1. These were the settings with which I was working
+before also. What I am not able to understand is the reason for the
+weird characters.
 
+I am attaching the weird character file. The last line seems to be the
+U-BOOT prompt. I tried changing the TERMINAL SETTINGS to ANSI from
+VT100, but it did not help.
+------------------------------------------------------------------------
+?וךבף`*m,ןןפ`0nsnp`hSץל rr`r0ps`m@qrzs2zrvi
+
+??fxrv0`?וףופ`?פבפץףz@?רפועמבל`?ןזפl ?רפועמבל`Èבעה
+
+??fxrvp fלןדכ`fןמזיחץעבפיןמ
+`m`,ץףmפןmfןעו`?ץלפ`snuרl`-f?`?יצ rl`v0ר`,ץף`?עוס``sp-xu`l fןעו ?עוס qppm3pp
+`m`הזגעח`q,`דןעודמז`0רqוl`גץףהז`rl`דנםהז`ql`נללהז`ql`נללםז`r
+`m`צדןYןץפ``qyxppp0ppl`ףדדYדלכ```tyupppppl`געחYדלכ```1rswup0p
+`m`דנץYדלכ` rsqpppppp,`דנםYדלכ`@`yyp0ppppL`גץףYדלכ```vvp0pppp
+
+f?*z`` ??fxrvp`h?וצ`q4l`?בףכ`?n0h?i`r<ru?)`בפ`2sq`?Èת
+,ןבעהz ?םגוההוה`?לבמופ`??x2vpl`?וציףיןמ`p.p
+?2fz`` עובהש
+????z `vt`?,
+????^:`qv ?,
+jjj`-בעמימח`m`גבה`f?fl`ץףימח`הוזבץלפ`ומציעןמםומפ
+
+?מz` ``ףועיבל
+?ץפz ``ףועיבל
+?עעz ``ףועיבל
+?Åפz```?ffs`??^?????
+,??,*?zעוÁהש
+}~`
+--------------------------------------------------------------------------
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
