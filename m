@@ -1,32 +1,33 @@
-Message-ID: <38441203.7183CD88@eecs.lehigh.edu>
-Date: Tue, 30 Nov 1999 13:05:55 -0500
-From: Jason Kim <jwk2@eecs.lehigh.edu>
+From: Paul Mackerras <paulus@linuxcare.com>
+To: Martin Costabel <costabel@wanadoo.fr>, Shaw Terwilliger <sterwill@io.nu>
+Subject: Re: 2.3.30-pre3
+Date: Wed, 1 Dec 1999 07:07:06 +1100
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.linuxppc.org
+References: <38423714.D5136535@wanadoo.fr>
 MIME-Version: 1.0
-To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
-        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>,
-        "gcc-patches@gcc.gnu.org" <gcc-patches@gcc.gnu.org>
-Subject: Re: patch for problem with va-ppc.h included with egcs and
-	  gcc-2.95.2
-References: <4.2.2.19991130110534.00b563b0@mail.lauterbach.com>
-Content-Type: text/plain; charset=iso-2022-kr
+Message-Id: <99120107124704.02316@argo.linuxcare.com.au>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> 1. this behaviour is mandated by the ABI
+On Mon, 29 Nov 1999, Martin Costabel wrote:
 
-Hmm. I just checked the SYSVR4 ABI, and indeed it lists va_list as a typedef of
-1 element array. Oh well. But I notice that va-ppc.h does not define 
-void *__va_arg(va_list argp, _va_arg_list_type type) which is *required* by the
-same ABI <grin>
+> Are there several different versions of Paul's devel tree? The one I am
+> getting is only at version 2.3.29 and has been nicely compiling and
+> running for me for a while now. I don't know about chipsfb.c which I am
+> not using, but the others of your patches are essentially those that A.
+> Joshi has published a long time ago. And they don't apply to my version
+> of Paul's devel tree, because they are already built in. 
 
-Do I smell a bug ?? ;)
+This is (partly at least) my fault.  I upgraded to 2.3.30-pre3 (a merge of
+my tree and Cort's), found it didn't work, and reverted the devel tree to
+2.3.29, which does work just fine for me.
 
-> 2. it nicely spots a common programming error
+I think that Shaw possibly got a corrupted include/asm-ppc/keyboard.h,
+maybe I was updating it as he was fetching it or something.  I have
+changed the ifdef in chipsfb.c as Shaw suggested.
 
-Yes, but only in one assignment direction. In any case, it caught the error on
-ssh, and I'll post LinuxPPC specific patches to ssh-2.0.13 soonish.
-
--jason
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
