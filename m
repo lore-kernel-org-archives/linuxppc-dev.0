@@ -1,48 +1,29 @@
-To: bob piatek <bobtek@fishcamp.com>
-Cc: brian.auld@adic.com, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: PowerMac vs. Intel for PowerPC Development Host 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 19 Feb 2003 14:29:55 PST."
-             <AB83137E-4459-11D7-868F-000393D6CBAE@fishcamp.com>
-Date: Wed, 19 Feb 2003 23:44:43 +0100
-Message-Id: <20030219224449.065F7C6E0D@atlas.denx.de>
+Date: Wed, 19 Feb 2003 17:01:12 -0800
+From: Chris Wedgwood <cw@f00f.org>
+To: brian.auld@adic.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: PowerMac vs. Intel for PowerPC Development Host
+Message-ID: <20030220010112.GB22880@f00f.org>
+References: <995FF289C9D69747A09E42992644595405B23678@penguin.adic.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <995FF289C9D69747A09E42992644595405B23678@penguin.adic.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <AB83137E-4459-11D7-868F-000393D6CBAE@fishcamp.com> you wrote:
->
-> I've been using a Mac running the Yellow Dog Linux distribution and
-> have not had any problems.
+On Wed, Feb 19, 2003 at 01:52:58PM -0800, brian.auld@adic.com wrote:
 
-This depends on your target processor.
+> In the Intel vs. Mac debate for a linux development host for
+> embedded ppc development, if money was not an issue, would I get
+> more PowerMac recommendations??
 
-> The plusses are you don't have to worry about cross-compiling or
-> setting up GDB in a cross platform environment.  It is just a couple
-> more things you don't have to worry about.
+Despire what Apple and a few other people claim, Intel solutions are
+faster in terms of compile times, and if money was no barrier, then
+Intel solutions are potentially *much* faster.
 
-This depends on your target processor.
 
-> As a bonus, many of your host's command line tools can be NFS mounted
-> on your embedded system and run directly without having to have special
-> versions for your target.
+  --cw
 
-This depends on your target processor.
-
-For example, with MPC8xx or IBM 4xx systems which don't  have  a  FPU
-and  small  cache  line  sizes  you  may want special versions of the
-libraries, and a  special  configuration  of  GCC  that  automgically
-enables "-msoft-float" etc.
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-See us @ Embedded World, Nuremberg, Feb 18-20, Hall 12.0 Booth 12-442
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
