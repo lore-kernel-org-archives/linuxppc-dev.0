@@ -1,25 +1,43 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-Id: <200402160051.i1G0pKqA003808@ms.usish.com>
-From: "Jack Liu" <Jack_liu@usish.com>
-To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Sandpoint problems
+Date: Sun, 15 Feb 2004 21:14:35 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Yang <yangqs@163.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: clock() seems not work !
+Message-ID: <20040216051435.GA25104@gate.ebshome.net>
+References: <200402160354.VAA15020@lists.linuxppc.org>
 Mime-Version: 1.0
-Content-Type: text/plain
-Date: Mon, 16 Feb 2004 8:51:42 +0800
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200402160354.VAA15020@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi,folks:
-  I am planning to use U-Boot to replace DINK13 shipped in Sandpoint
-platform. I got a sucessful compilation by: Make Sandpoint8245_config,
-Make all . Then I Burn u_boot.src in the Boot ROM. IT CAN'T BOOT. I used
-all default setting in the PrPMC8245 and Sandpoint board. I didn't know
-the reason. Anybody knows?
- Best regards
+On Mon, Feb 16, 2004 at 11:58:07AM +0800, Yang wrote:
+>
+>  i am writting applications based ppc+MVL3.0, which i want to get CPU
+> time,but clock() seems not work for me, for this i did a simple test,as
+> follows:
+> /*----------------*/
+>   while(1)
+> 	{
+>       printf("current time is %ld \n",clock());
+> 	  sleep(1);
+> 	}
+> /*----------------*/
+>      But it printed the same value all the while. How is it?
+>
 
-Jack Liu
-Jack_liu@usish.com
-2004-02-16
+What do you expect from this function?
+
+Did you read manual entry for clock()?
+
+On POSIX systems clock() returns (number of seconds * CLOCKS_PER_SEC)
+spent by the process, not a system time/tick count...
+
+Your program is doing _nothing_, so it's normal that clock() returns
+the same number. Change sleep(1) to some busy loop and you'll see the
+difference.
+
+Eugene.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
