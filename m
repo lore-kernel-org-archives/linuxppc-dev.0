@@ -1,51 +1,29 @@
-Date: Thu, 25 Sep 2003 13:15:15 -0500 (CDT)
-From: Bret Indrelee <Bret.Indrelee@qlogic.com>
-Reply-To: Bret Indrelee <Bret.Indrelee@qlogic.com>
-To: Roland Dreier <roland@topspin.com>
-Cc: Matt Porter <mporter@kernel.crashing.org>,
-	Linux PPC Embedded mailing list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Any restrictions on DMA address boundry?
-In-Reply-To: <52oex8kb07.fsf@topspin.com>
-Message-ID: <Pine.LNX.4.44.0309251306450.12966-100000@spider.ancor.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Thu, 25 Sep 2003 11:21:51 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: "Guy M. Streeter" <streeter@redhat.com>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: /proc/sys/kernel/l2cr and the 750FX
+Message-ID: <20030925182151.GB7337@ip68-0-152-218.tc.ph.cox.net>
+References: <1064506838.1037.11.camel@jarjar.hsv.redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1064506838.1037.11.camel@jarjar.hsv.redhat.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On 25 Sep 2003, Roland Dreier wrote:
-> As I recall, the discussion ended with people like David Miller
-> agreeing that 2.6 would fix this in a better way, but that my patch
-> was OK for 2.4.  However, unaligned DMA buffers only seem to cause
-> pain on non-mainstream platforms, so there was never much push to have
-> my patch merged in 2.4.  I've never really pushed my patch since we've
-> fixed all the problems with our own specific embedded PPC 4xx
-> platform, and no one else seems to care very much.
+On Thu, Sep 25, 2003 at 11:20:39AM -0500, Guy M. Streeter wrote:
 
-I've read through the old thread about short DMAs, but still there are
-things that aren't clear to me.
+> The 750FX has a different L2CR register layout than other processors.
+> The attached patch against 2.4.22 makes /proc/sys/kernel/l2cr show a
+> better decode of the register for the 750FX.
 
-What exactly is the issue?
-
-As I understand it, if there is a DMA to the same cache line as something
-that the CPU is referencing, you've got a cache problem.
-
-Does it matter what type of transfer the PCI device is doing? If it
-always does 32-bit burst memory write transfers instead of memory
-write & invalidate does that make a difference?
-
-Right now, I'm interested in the PPC and x86 compatible (Pentium,
-Pentium 4, Geode) systems, trying to understand the differences and
-requirements of each.
-
-Any insight into the details of the problem would be appreciated, on
-list or off.
-
--Bret
+This shouldn't be needed in 2.4.23-current, can you verify?  Also,
+adding more PVR_XXXX defines is deprecated, as there are cpufeatures for
+such things.
 
 --
-Bret Indrelee                 QLogic Corporation
-Bret.Indrelee@qlogic.com      6321 Bury Drive, St 13, Eden Prairie, MN 55346
-
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
