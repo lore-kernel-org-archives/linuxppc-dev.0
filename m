@@ -1,23 +1,20 @@
-Message-ID: <20040623040111.72256.qmail@web90006.mail.scd.yahoo.com>
-Date: Tue, 22 Jun 2004 21:01:11 -0700 (PDT)
-From: Naveen S <naveenmailid@yahoo.com>
-Subject: ppc webcam application required
-To: linuxppc-embedded@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <200406230935.i5N9Z5V9030272@ms.usish.com>
+From: "Jack Liu" <Jack_liu@usish.com>
+To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: linux shell
+Mime-Version: 1.0
+Content-Type: text/plain
+Date: Wed, 23 Jun 2004 17:35:04 +0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hai friends i am new to this site .I am working on ppc
-8245 .I need some webcam video capturing application
+hi,all
 
-                                Regards ]
-                                Naveen
+ I am wondering about the usage of ". ifcfg-eth0" since ifcfg-eth0 is
+not an execuatable. Can anyone tell me?
 
-
-
-New and Improved Yahoo! Mail - Send 10MB messages!
-http://promotions.yahoo.com/new_mail
+Best regards
+Jack Liu
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
