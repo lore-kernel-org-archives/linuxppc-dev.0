@@ -1,19 +1,21 @@
-Date: Fri, 16 May 2003 15:00:24 -0700 (PDT)
-From: Cameron Palmer <palmerc@gfo.seagate.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: IBM PowerPC 403GCX Eval Kit
-Message-ID: <Pine.LNX.4.53.0305161455500.30791@lum.it.stsj.seagate.com>
+Message-ID: <3EC568D2.6020905@ecubics.com>
+Date: Fri, 16 May 2003 16:40:18 -0600
+From: emanuel stiebler <emu@ecubics.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Virtex II Pro eval Boards
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Does anyone have or know of a source for used PowerPC 403GCX Eval kits? I
-would buy just the board if that is all someone had.
+Hi,
+I remember few people out here talking about the VirtexIIPro. What Eval
+Boards did you use ? Experiences ?
 
-Thank you,
+Anybody used the VirtexIIPro with a PCI-Bridge ?
 
-cameron palmer.
+cheers & thanks in advance
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
