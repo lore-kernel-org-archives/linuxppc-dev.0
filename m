@@ -1,50 +1,28 @@
-Date: Tue, 23 Nov 1999 16:22:58 +0100
-Subject: PoerPC 750 (I-) Address Translation Problem
-From: Roberto Brega <brega@ifr.mavt.ethz.ch>
-To: LinuxPPC-Dev List <linuxppc-dev@lists.linuxppc.org>
-Message-ID: <B4606FE2.3256%brega@ifr.mavt.ethz.ch>
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Date: Tue, 23 Nov 1999 17:12:46 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Cort Dougan <cort@fsmlabs.com>
+cc: Christian Zankel <chris@mvista.com>, linuxppc-dev@lists.linuxppc.org,
+        linuxppc-embedded@lists.linuxppc.org
+Subject: Re: bootloader & head.S weirdness & restructuring
+In-Reply-To: <19991122165535.A13360@hq.fsmlabs.com>
+Message-ID: <Pine.LNX.4.10.9911231707270.23221-100000@opal.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi linux-devs,
+> I don't think this would work in all cases, although it would be great if
+> we could do it.  We can't stomp on the interrupt vectors at physical 0
+> because chrp/pmac need them to do the early OF calls to setup things and
+> copy the device tree before we can safely stomp on physical 0.  If the
 
-I (Ph.D. student, non-profit organisation) am writing an experimental
-real-time operating system running on PowerPC processors. It already runs on
-PowerPC 603x/604x. While porting to the PowerPC 750 (let's say supporting,
-not porting) I encountered the following, critical error.
+How much of space at physical 0 do you need to leave alone? I'm thinking
+about leaving a gap of some k between _start and _stext for that, and
+making all boot loaders load the kernel to physical 0 (skipping the part
+up to _stext), and jump to _stext. 
 
-My OS traps right after bootstrapping, as soon as I enable instruction
-address translation, with a very clumsy error (the srr1 register shows an
-I-fetch from a direct-store segment - which I do not use; or an I-fetch from
-guarded space - same here; or an I-fetch from a "no-exec" segment - I do not
-set No-Exec in segment registers.
-
-The really weird thing is that the same MMU code (the initialisation of
-other parts differ, but the MMU part does not) runs without errors on
-603/603e/604/604e processors.
-
-So, I wondered, did you had some porting issues having to do with the
-address translation on PowerPC750? Do you have some ideas on what is going
-on? Any known errata for this part?
-
-Best regards, thanks for your time,
---Roberto
-
---------------------------------------------------------------------
- Roberto Brega
-    
- Institute of Robotics, CLA H13
- Swiss Federal Institute of Technology
- 8092 Zurich, Switzerland
-    
- Tel: 01 632 46 56     Fax: 01 632 10 78
- Mobile: 079 636 48 03
- email: brega@ifr.mavt.ethz.ch  (pgp on demand)
- web: www.ifr.mavt.ethz.ch
---------------------------------------------------------------------
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
