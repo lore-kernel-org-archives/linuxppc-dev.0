@@ -1,144 +1,47 @@
-Message-ID: <01C1938C.BE523E50.svacca@valcom.com>
-From: Steven Vacca <svacca@valcom.com>
-Reply-To: "svacca@valcom.com" <svacca@valcom.com>
-To: "LinuxEmbeddedMailList (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Problem w/driver writing to User Space
-Date: Wed, 2 Jan 2002 12:55:22 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Date: Wed, 2 Jan 2002 21:54:42 -0800
+From: David Ashley <dash@xdr.com>
+Message-Id: <200201030554.g035sgW00250@dave.home>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: fcc_enet.c phy mii communication broken
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have written a test driver which, via ioctl() calls
-from the app, toggles an LED attached to a PLX PCI
-Bridge chip on an mpc860-based board.  The physical addr
-of the PLX chip is 0x2000.0000.  The LED, though,
-does not respond.
+I switched from HHL 2.4.2 to the standard 2.4.17 kernel (surprisingly
+easy, actually). One thing I found was the mii communication was broken in
+arch/ppc/8260_io/fcc_enet.c
 
-If I temporarily (just as a test) comment-out the
-set_fs(USER_DS) call in start_thread(), then the LED is
-toggled properly.  So the mechanism for the app controlling
-the LED via the driver is in place.
+It was working in 2.4.2 but someone made changes that couldn't
+possibly have worked. There is a loop where in the old version only
+14 bits are clocked out, but in the new version 16 are. Then in both
+versions 2 more bits are clocked either in or out depending on whether
+it is a read or write operation. Then in the new version, on a read,
+one more bit is clocked and lost before bits begin to get saved. The
+net result is the 3 most significant bits are lost, and the data ends up
+getting shifted 3 bits to the left, whereas on the original version it
+worked fine.
 
-I am obviously having some Kernel-to-User Space problem.
+What's more, this code isn't even getting called. Someone broke the
+code, then disabled calling of it. They also removed the phy_speed from
+the fcc_enet_private structure. True, it wasn't getting used but it
+might eventually be. The system was locking the port in half duplex
+mode.
 
-I use ioremap(0x2000.0000,0x4000), called in chr_dev_init() just
-prior to calling execve("/sbin/init") to start up the app, to get a
-virtual ptr for the driver to use to access the PLX chip, and thus
-the LED. The virtual ptr returned is 0xc400.0000.  This ioremap()
-call is made long after the kernel VM init.
+I changed the way the system operates. I added fields in the fcc_info_t
+structures which tell the interrupt number and the phy number, so if they
+are specified those are taken to determine line settings. That is required
+if there is more than one PHY. Then I install an interrupt handler for
+the PHY interrupt, that will set the duplex/speed after auto-negotiation.
+Also the mii_discover_phy_poll has to be called before the init_fcc_startup,
+otherwise the duplex is set wrong. On and on and on...
 
-In response to ioctl() calls from the app, the driver uses put_user()
-and get_user() to write and read from the PLX chip using the
-virtual ptr returned from ioremap(), which is what they were
-designed to do.
+Also someone removed the MII #defines and replaced them with magic numbers.
+Why would anyone do that? It makes the code more cryptic and less useful.
 
-I would very much appreciate someone scanning thru the following
-code sequence (modified for readability) to see what is out of place.
+Anyway just be warned that the mii_send_receive function is broken. You'd
+be better off going back to the 2.4.2 version, if you find you're having
+no luck with mii communication.
 
-
-
-
-init()
-  do_basic_setup()
-     device_setup()
-        chr_dev_init()
-           led_init()			//Register the LED driver.
-  (then execve("/sbin/init");)  	//Get app going.
-
-
-
-
-In driver file led.c, located in /drivers/char:
-
-
-UINT_8* plxPtr;	   		//Virtual ptr to PLX chip base addr.
-
-//The LED driver file operations structure.
-static struct file_operations  led_fops =
-  {
-  NULL,                         //lseek
-  NULL,                         //read
-  NULL,                         //write
-  NULL,                         //readdir
-  NULL,                         //poll
-  led_ioctl,                     //ioctl
-  NULL,	                        //mmap
-  led_open,                   //open
-  NULL,	                       //flush
-  NULL,	                       //release
-  };
-
-
-
-
-INT_32  led_init(void)
-{
-  register_chrdev(LED_MAJOR,"led",&led_fops);	//MAJOR = 240.
-  plxPtr = ioremap((UINT_32) 0x20000000,0x4000);
-  return(0);
-}
-
-
-
-
-static int led_open(struct inode* inode,
-                           struct file*     file)
-{
-  //Verify the virtual ptr returned from ioremap().
-  printk("led_open(): plxPtr = %08x\n",(UINT_32) plxPtr);
-  return(0);
-}
-
-
-
-
-static INT_32  led_ioctl(struct inode* inode,
-                                  struct file*     file,
-                                  UINT_32       cmd,
-                                  ULONG_32   arg)
-{
-  switch (cmd)
-    {
-    case LED_ON:
-
-       plxUser0Write(0);           //Turn LED ON.
-       break;
-
-    case LED_OFF:
-
-       plxUser0Write(1);          //Turn LED OFF.
-       break;
-    }
-
-  return(0);
-}
-
-
-
-
-//Turn LED ON or OFF.
-void  plxUser0Write(UINT_8 ledState)
-{
-  UINT_32  regVal;
-
-
-  get_user(regVal,(UINT_32*) (plxPtr + PCI9054_EEPROM_CTRL_STAT));
-
-  if (ledState == 0)
-    put_user(regVal & ~(1 << 16),(UINT_32*) (plxPtr +
-PCI9054_EEPROM_CTRL_STAT));
-  else
-    put_user(regVal | (1 << 16),(UINT_32*) (plxPtr +
-PCI9054_EEPROM_CTRL_STAT));
-}
-
-
-
-Thanks,
-
-Steven
-
+-Dave
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
