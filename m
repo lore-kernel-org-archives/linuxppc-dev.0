@@ -1,40 +1,54 @@
-Date: Sun, 17 Sep 2000 20:59:35 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: __ioremap_at() in 2.4.0-test9-pre2
-Message-ID: <Pine.LNX.4.10.10009172058340.715-100000@cassiopeia.home>
+Message-ID: <39C518A9.2BA320DA@ncal.verio.com>
+Date: Sun, 17 Sep 2000 12:16:57 -0700
+From: Henry Worth <haworth@ncal.verio.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Troy Benjegerdes <hozer@drgw.net>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: dual G4 time issues..
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-While reading the test9-pre2 diff, I saw
+From: Troy Benjegerdes <hozer@drgw.net>
 
---- native-2.4.0-test9-pre1/include/asm-ppc/io.h	Sat Jun 24 10:37:42 2000
-+++ native-2.4.0-test9-pre2/include/asm-ppc/io.h	Sun Sep 17 19:59:42 2000
-@@ -123,6 +181,8 @@
-  */
- extern void *__ioremap(unsigned long address, unsigned long size,
- 		       unsigned long flags);
-+extern void *__ioremap_at(unsigned long phys, unsigned long size,
-+			  unsigned long flags);
- extern void *ioremap(unsigned long address, unsigned long size);
- #define ioremap_nocache(addr, size)	ioremap((addr), (size))
- extern void iounmap(void *addr);
+>Benh and I are pushing Mac G4 SMP patches into the recently
+>created linuxppc_2_5 tree. It currently seems to work reasonably well,
+>except there is some work needing to be done on syncing the timebases on
+>CPU's. I seem to have about a 14 second difference between the 2 CPU's on
+>the machine I'm testing on now.
+>
+>(from ping -f)
+>
+>43505 packets transmitted, 43504 packets received, 0% packet loss
+>round-trip min/avg/max = -144657.0/0.1/144657.3 ms
 
-and wondered what __ioremap_at() is used for? It's nowhere defined.
+Troy,
 
-Gr{oetje,eeting}s,
+Has your SMP G4 work in Ben's 2.2.18 source tree been folded
+into any of the 2.4 source trees?
 
-						Geert
+So far the main problem I'm seeing with the SMP G4 and smp
+2.2.18pre4-ben1 is the system hangs up occasionally in xpmac
+rev 10, usually when closing an app or logging out. But I've seen
+nearly as many xpmac hangs in 2.2.17pre20-ben1 on a Pismo, but
+there I can switch VT's and recover. Whereas, on the SMP G4, VT
+switches won't work (USB -vs- ADB/PMU?). But, I can't telnet in
+either, so maybe it is a hard hang (though enough is alive that it
+pings -- not that that means much). Of course, if I have already
+telnet'ed in, it never hangs... Will hopefully have time
+to build and give XF86 4.0.x a try in a few days.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Other than that, the other problems are the general non-SMP
+Rage128 nits of the 2.2.18 fb backport (character rendering
+artifacts and occasional raster flickers that probably
+indicate non-optimal mclk/sclk settings).
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Currently, I've got the CPU load up in the 1.4-1.6 range with
+no impact on GUI responsiveness and XMMS playing a CD digitally
+without dropping a beat.
 
+Thanks,
+Henry
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
