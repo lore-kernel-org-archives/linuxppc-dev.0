@@ -1,49 +1,41 @@
-From: Joe Green <jgreen@mvista.com>
-To: "Michael Fischer" <fischi@epygi.de>,
-	<linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Memory optimization of diskless system
-Date: Thu, 9 Aug 2001 09:33:46 -0700
-Content-Type: text/plain
-References: <OEEHJMIIDJHHMFGGDNGDCEPACEAA.fischi@epygi.de>
-In-Reply-To: <OEEHJMIIDJHHMFGGDNGDCEPACEAA.fischi@epygi.de>
+Message-ID: <3B72C2C8.F8685834@mvista.com>
+Date: Thu, 09 Aug 2001 10:05:12 -0700
+From: Scott Anderson <scott_anderson@mvista.com>
 MIME-Version: 1.0
-Message-Id: <01080909352601.18546@minotaur.mvista.com>
+To: Joe Green <jgreen@mvista.com>
+Cc: Michael Fischer <fischi@epygi.de>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Memory optimization of diskless system
+References: <OEEHJMIIDJHHMFGGDNGDCEPACEAA.fischi@epygi.de> <01080909352601.18546@minotaur.mvista.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Michael Fischer wrote:
-> i have a Linuxppc Kernel 2.4.8 pre 4 running on a motorola asd8260 board
-> (16M ram). When using initrd and ramdisk to boot the system i run into out
-> of memory problems.
-> proc/meminfo shows:
->
->         total:    used:    free:  shared: buffers:  cached:
-> Mem:  14958592 12062720  2895872  7421952  6656000  2191360
-> Swap:        0        0        0
-> MemTotal:        14608 kB
-> MemFree:          2828 kB
-> MemShared:        7248 kB
-> Buffers:          6500 kB
-> Cached:           2140 kB
-> Active:           8640 kB
-> Inact_dirty:         0 kB
-> Inact_clean:         0 kB
-> Inact_target:       12 kB
-> HighTotal:           0 kB
-> HighFree:            0 kB
-> LowTotal:        14608 kB
-> LowFree:          2828 kB
-> SwapTotal:           0 kB
-> SwapFree:            0 kB
->
-> is it really necessary to have so many buffers allocated and if not, how can
-> i change the amount?
+Joe Green wrote:
+> How big is you ramdisk?  That's included in the buffers.
 
-How big is you ramdisk?  That's included in the buffers.
+and unfortunately, the kernel thinks the ramdisk buffers can be freed
+up to make more room, but of course, they can't be freed (the data in
+them has no place to go).  I've seen this cause the system to deadlock
+under 2.2.  Under 2.4 I would assume the out of memory killer would
+get invoked.
 
---
-Joe Green <jgreen@mvista.com>
-MontaVista Software, Inc.
+Gory details:
+mm/mmap.c:vm_enough_memory() assumes that all buffermem_pages can be
+freed up to make more space, drivers/block/rd.c:rd_make_request() marks
+buffers as protected, and kswapd calls do_try_to_free_pages which calls
+page_launder which calls fs/buffer.c:try_to_free_buffers() to try to get
+more space, but try_to_free_buffers refuses to free busy (dirty, locked
+or protected) buffers.
+
+In my opinion, the fix is to teach vm_enough_memory() that protected
+buffers can't be freed up.  Fixing this is one of those things I hope
+to get around to; unless of course, someone else fixes it first.
+
+    Scott Anderson
+    scott_anderson@mvista.com   MontaVista Software Inc.
+    (408)328-9214               1237 East Arques Ave.
+    http://www.mvista.com       Sunnyvale, CA  94085
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
