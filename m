@@ -1,35 +1,52 @@
-Date: Thu, 11 Mar 1999 10:02:24 -0500 (EST)
-From: Charles Lepple <clepple@ee.vt.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: IRQ handling in port to DY4 SVME-177
-Message-ID: <Pine.GSO.3.96.990311095123.13324B-100000@birch.ee.vt.edu>
+Date: Thu, 11 Mar 1999 09:37:05 -0600 (CST)
+From: "David A. Gatwood" <marsmail@globegate.utm.edu>
+To: Hubert Figuiere <hub@point-barre.fr>
+cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: ADB Reset
+In-Reply-To: <19990311085536.A1755@giordino.point-barre.fr>
+Message-ID: <Pine.LNX.3.96.990311092940.6932D-100000@globegate.utm.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
-I'm working on porting the kernel to a DY4 SVME-177 board, a mil-spec 603e
-single-board system (no PCI, nonstandard I/O, the works).
+On Thu, 11 Mar 1999, Hubert Figuiere wrote:
 
-Anyway, the problem is with the interrupt controller, and it's more of an
-architectural question. A Tundra SCV64 has several 'local IRQ' lines, but
-as it turns out, they put all the useful stuff (serial, ethernet, SCSI) on
-the same level IRQ level (LIRQ5). The RTC and other timers each get their
-own IRQ level, as does the MAXpack interface. Is it probable that I can
-get by with this sharing arrangement in arch/ppc/kernel/irq.c, or am I
-going to have to create pseudo-IRQs for each device, and make it look like
-a cascaded interrupt? The IRQ lines themselves are all level-sensitive,
-but I'm wondering if the IRQ mask code in irq.c is going to be enough.
-After all, am I losing anything but performance by using the same
-interrupt line? (not that I would have designed it this way...)
+> According to Benjamin Herrenschmidt <bh40@calva.net>:
+> > 
+> > After the bus reset, the mouse must be re-initialised to handler 4. In
+> > fact, the whole device probing and init must be redone (mac_keyb.c). I'm
+> > working on a simple design that allow ADB peripherial drivers to register
+> > to the ADB core in order to be notified of bus resets. Stay tuned.
+> 
+> This is really ugly. Why the hell is mouse related code in the keyboard
+> driver ? I may understand that since it is ADB they are related, but
+> I find this not really clean.
 
---Charles Lepple                    |  Check one:
-System Administrator                |    ( ) Routine matter
-Virginia Tech EE Workstation Labs   |    ( ) Urgent
-clepple@ee.vt.edu                   |    ( ) The future of the known 
-http://www.ee.vt.edu/help/          |        universe hangs in the balance
+They're more than related.  With ADB, most mice (anything with more than
+one button) act as both a mouse and keyboard.  That was presumably the
+only way they could send the extra button information.  Because of this,
+the only way to get all of the mouse code out of the keyboard driver would
+be to literally have two keyboard drivers, one for real keyboards and one
+for the fake mouse-keyboards.  The best you could do would be to have the
+keyboard code only contain the code for detecting the fake keyboards and
+then switch their handler, but that would basically result in two complete
+keyboard drivers with little or no difference between them....
+
+On the other hand, basic device probing and initialization should probably
+be in a separate file, since it's not specific to any given device flavor,
+maybe adb.c or something, if it isn't already.  Just MHO.  With the added
+note that my experience with LinuxPPC's adb drivers is limited to using it
+to try to find some bugs in MkLinux's pmu driver.  ;-)
+
+
+Later,
+David
+
+David A. Gatwood                         Visit globegate's internet
+dgatwood@globegate.utm.edu                  talker, Deep Space 36
+http://globegate.utm.edu                telnet globegate.utm.edu:9624
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
