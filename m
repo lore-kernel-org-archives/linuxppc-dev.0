@@ -1,37 +1,28 @@
-Message-ID: <3D831F3E.ED96A88F@koffie.nl>
-Date: Sat, 14 Sep 2002 13:36:29 +0200
+Message-ID: <3D831FFF.84380C87@koffie.nl>
+Date: Sat, 14 Sep 2002 13:39:43 +0200
 From: Segher Boessenkool <segher@koffie.nl>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
+To: Anton Blanchard <anton@samba.org>
 Cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: RFC: Performance Monitor Counters device
-References: <3D80F2F7.3FB3AE4B@koffie.nl> <15745.23603.313915.127474@argo.ozlabs.ibm.com>
+References: <3D80F2F7.3FB3AE4B@koffie.nl> <20020913100402.GC10515@krispykreme>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Paul Mackerras wrote:
-> I'm curious - how are you going to cope with the fact that different
-> PPC implementations have different numbers of PMCs and different
-> sets of events (and numbering of the events) that the PMCs will count?
+Anton Blanchard wrote:
+> It would be great if we could plug into something like oprofile.
+> Linus was even interested in merging some sort of simple profiling
+> infrastructure.
+>
+> We have a similar issue on ppc64, if we could share at least part
+> of it between ppc32 and ppc64 that would be nice.
 
-The kernel module doesn't care, except for not allowing illegal values;
-userland doesn't care all that much either, really, as a number is just
-a number :)  It's mostly the user that cares.
-
-Ah well, an example might clarify:
-
-
-ppcprofile --pmc1=6 --pmc2=6 ./hello_world
-
-ppcprofile will look for existence of /proc/sys/debug/pmc/pmc[12], and
-do some sysctls on it.  i.e., the kernel module will only make entries
-for available hardware.
-
-Note that the kernel module doesn't need to check if a certain event
-number is defined; it only needs to check if it fits into the number
-of bits allocated to it.
+Some parts of the interface, like the raw/cooked counter reading and
+the simplest forms of profiling interrupts, can probably be shared
+across all architectures; ppc32 and ppc64 can probably share about
+everything.
 
 
 Segher
