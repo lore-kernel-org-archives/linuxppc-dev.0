@@ -1,37 +1,52 @@
-Date: Sat, 21 Aug 2004 11:41:55 +1000
-From: CaT <cat@zip.com.au>
-To: Stefan Jeglinski <jeglin@4pi.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.6 hoses 2.4 on old-world?
-Message-ID: <20040821014155.GB1005@zip.com.au>
-References: <p06100200bd4c49c3daeb@[192.168.0.23]>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <p06100203bd4c5e3aa6d9@[192.168.0.23]>
 In-Reply-To: <p06100200bd4c49c3daeb@[192.168.0.23]>
+References: <p06100200bd4c49c3daeb@[192.168.0.23]>
+Date: Fri, 20 Aug 2004 22:05:24 -0400
+To: linuxppc-dev@lists.linuxppc.org
+From: Stefan Jeglinski <jeglin@4pi.com>
+Subject: Re: 2.6 hoses 2.4 on old-world?
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Aug 20, 2004 at 09:04:23PM -0400, Stefan Jeglinski wrote:
-> But if I try e2fsck /dev/sda6, I get 'couldn't open /dev/null
-> (read-only file system)' despite what mtab says. I can't seem to
-> umount anything to try remounting.
+>Been running a 2.4 kernel on my PowerTowerPro for a long time. Over
+>the months I've tried building 2.6.x, and succeeded for the first
+>time last night with 2.6.8-rc1.
 
-do an 'ls -l /dev/null'. Does it look something like this?
+sorry, that's rc4 I'm using.
 
-crw-rw-rw-  1 root root 1, 3 2004-08-14 04:37 /dev/null
+>Rebooted to the default 2.4 but I'm hosed: The first part of the boot
+>starts, and sometime shortly after I get to the yellow Welcome to
+>Yellowdog lettering, then I'm seeing a lot of "/dev/null, read-only
+>file system" messages,
 
-If not then remove it and type
+The problem is that something overwrote /dev/null as a regular file,
+and the errors leading to boot failure were of the type "bad file
+descriptor."
 
-mknod /dev/null c 1 3
+I remounted rw, deleted /dev/null, and recreated it. I can now boot
+back into 2.4.
 
-You'll need to mount the fs rw first though. This should do it:
+Question remains - is there something about 2.6 on old-world systems?
+Is is not safe? Unstable? (I still haven't figured out why I lose
+video with 2.6).
 
-mount -o 'remount,rw' /
+Steps:
 
-And don't forget to remount ro when you're done.
+make menuconfig
+(do some config)
+make
+make modules_install
+reboot
 
---
-    Red herrings strewn hither and yon.
+I admit to being somewhat confused, this is cleaner but less
+informative than the 2.4 build procedure.
+
+BTW depmod give me lots of unresolved symbols, mostly related to sound.
+
+
+Stefan Jeglinski
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
