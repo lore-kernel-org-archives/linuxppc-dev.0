@@ -1,75 +1,61 @@
-Mime-Version: 1.0
-Content-Type: multipart/alternative; boundary="============_-1298154425==_ma============"
-Message-Id: <v04011700b29fb75fd5f7@[129.177.138.203]>
-In-Reply-To: <3676EBC1.518C11F1@den.wantweb.net>
-References: <3673C7D1.D0934DC7@mail.esiea.fr>
-Date: Fri, 18 Dec 1998 09:00:29 +0100
-To: Ron Nelson <rnelson@den.wantweb.net>
-From: "Frank H. Pierce" <frank.pierce@hedb.uib.no>
-Subject: Re: pre-R5 installation
-Cc: linuxppc-dev@lists.linuxppc.org
+Date: Fri, 18 Dec 1998 11:25:44 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+Reply-To: Gabriel Paubert <paubert@iram.es>
+To: Troy Benjegerdes <hozer@drgw.net>
+cc: Geert Uytterhoeven <geert@geert.cs.kuleuven.ac.be>,
+        Corey Minyard <minyard@acm.org>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Restructure of arch/ppc/kernel and include/asm-ppc
+In-Reply-To: <Pine.LNX.4.04.9812152246120.30336-100000@narn.local.drgw.net>
+Message-ID: <Pine.HPP.3.96.981218111509.12103B-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---============_-1298154425==_ma============
-Content-Type: text/plain; charset="us-ascii"
-
-Hi. I've installed pre-R5 on a PowerCenterPro by first doing a minimal
-install of the R4 release and then installing the R5 rpms by hand. I guess
-this is not a good solution but since my old second hd from a centris 610
-crashed I thought what the h... It looks like it works fine. Some of the
-rpms gave errors about not being able to execute the script but forcing it
-with rpm -U --nodeps --force --noscripts I managed to squeeze them in
-somehow:->
-
-It boots fine with bootX and my old 2.1.130 kernel from my hd connected to
-the Adaptec scsi card. X works with Windowmaker and egcs looks like it
-compiles fine (still get seg.faults but that's nothing new for me)
-
-The only problem I have is that imake and therefore xmkmf does not work.
-This has given me a problem compiling xpm. If any one has compiled
-libXpm.so.* I would love to get the Makefile you used. That might make
-Netscape work to?
 
 
+On Tue, 15 Dec 1998, Troy Benjegerdes wrote:
+
+> 
+> On Sun, 13 Dec 1998, Geert Uytterhoeven wrote:
+> 
+> > 
+> > On 12 Dec 1998, Corey Minyard wrote:
+> > > This is a patch relative to 2.1.131 that significantly restructures
+> > > the Linux PPC stuff.  It is the first step in making the code more
+> > > modular and separating the machine-specific from the
+> > > machine-independant stuff.  This currently works on my MVME2700
+> > > board.
+> 
+> Great! I started working on something like this, but got sidetracked for
+> awhile. I'll verify it works on an MTX board and make the RTC code work
+> correctly (it currently doesn't set Motorola PReP boards at all)
+> 
+> > For PPC, we would need different MILO images for the different machine types.
+> > The kernel can be ELF on all machine types, since we put an ELF loader in MILO.
+> > MILO doesn't need much fancy driver stuff, just SCSI/IDE, floppy, keyboard and
+> > a simple console (serial, VGA text, offb). And BootX can become some special
+> > variant of MILO :-)
+> 
+> Please please please someone do this? Then I can remove the ugly hack I
+> have in matroxfb to remap the PCI registers to something sane.
+
+Did you try my preploader. It attempts to remap all the PCI resources to
+something sane and even includes a black list for devices who lie about
+their requirement (S3). For the latest version I've got success reports on
+quite a lot of Motorola boards: 
+
+	MVME230x, 2300SC, 2400, 260x, 2700, 3600, MTX and MPC750
+
+and for now also 0 failure reports ;-). I'm expecting some however...
+And I'm sure it will fail when somebody tries to use CompactPCI board with
+an MPC750 since I've not yet implemented support for PCI<->PCI bridges
+(I can't test it).
+
+ 	Gabriel.
 
 
-Frank Holton Pierce
-frank.pierce@hedb.uib.no
---============_-1298154425==_ma============
-Content-Type: text/enriched; charset="us-ascii"
-
-<fontfamily><param>Geneva</param>Hi. I've installed pre-R5 on a
-PowerCenterPro by first doing a minimal install of the R4 release and
-then installing the R5 rpms by hand. I guess this is not a good
-solution but since my old second hd from a centris 610 crashed I
-thought what the h... It looks like it works fine. Some of the rpms
-gave errors about not being able to execute the script but forcing it
-with rpm -U --nodeps --force --noscripts I managed to squeeze them in
-somehow:->
-
-
-It boots fine with bootX and my old 2.1.130 kernel from my hd connected
-to the Adaptec scsi card. X works with Windowmaker and egcs looks like
-it compiles fine (still get seg.faults but that's nothing new for me)
-
-
-The only problem I have is that imake and therefore xmkmf does not
-work. This has given me a problem compiling xpm. If any one has
-compiled libXpm.so.* I would love to get the Makefile you used. That
-might make Netscape work to?
-
-
-
-
-  </fontfamily>
-
-Frank Holton Pierce
-
-frank.pierce@hedb.uib.no
-
---============_-1298154425==_ma============--
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
