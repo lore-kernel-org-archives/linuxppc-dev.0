@@ -1,38 +1,39 @@
-Message-ID: <3AFEE17F.6A59CB1F@acm.org>
-Date: Sun, 13 May 2001 12:33:19 -0700
-From: Ira Weiny <iweiny@acm.org>
+Message-ID: <3081DCAFB2F9D311957E0050DA4CCEF877ED57@ia4ds04.aquila.italtel.it>
+From: Centoletti Pietro <Pietro.Centoletti@icn.siemens.it>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Ethernet support on MPC8260
+Date: Mon, 14 May 2001 10:22:49 +0200
 MIME-Version: 1.0
-To: linxuppc-emb <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: linuxppc_2_5 source tree (and others)
-References: <20010510114909.B28206@opus.bloom.county>
-	 <200105101946.f4AJks3441196@saturn.cs.uml.edu> <20010510144442.A29513@opus.bloom.county>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-bk trees: http://www.fsmlabs.com/linuxppcbk.html
+Hi All,
 
-Are these trees designed to work "out of the box" on boards such as the
-Walnut?
+my name is Pietro Centoletti and I am working on the porting
+of Linux on our embedded system controller. This board is
+MPC 8260 based. We use the SCC1 and SCC2 ports as Ethernet
+interfaces (10 BaseT). We would like to use both interfaces and we
+have the Linux Kernel 2.4.3-pre2. With this kernel we can support
+only one Ethernet interface mapped on SCC ports.
+Can you help me in understanding if I can use two Ethernet interfaces
+on SCC ports (SCC1 and SCC2)?
 
-When configuring I don't see any options for the specific 405GP ethernet
-for instance.
+Thanks and Best regards
 
-Also, do I need a password or something to get the devel tree?  Am I
-allowed to get to the devel tree?
+Pietro Centoletti
+Siemens Information and Communication Networks SpA
+R&D Transport Network Fiber Systems
+System Architecture
+località Boschetto
+67100 L' Aquila
 
-As per the instructions on the page (adding -azv):
+Ph.  +39 0862 335703
+Fax +39 0862 335623
 
-$ rsync -azv bitkeeper.fsmlabs.com::linuxppc_2_4_devel
-linuxppc_2_4_devel
-@ERROR: Unknown module 'linuxppc_2_4_devel'
-$ rsync bitkeeper.fsmlabs.com::
-linuxppc_2_2
-linuxppc_2_4
-$
+e-Mail pietro.centoletti@icn.siemens.it
 
-Thanks,
-Ira Weiny
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
