@@ -1,50 +1,35 @@
-Subject: Re: PREEMPT problems
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Colin LEROY <colin@colino.net>,
+Date: Sat, 3 Apr 2004 09:33:58 -0800
+From: Brad Boyer <flar@allandria.com>
+To: Adrian Cox <adrian@humboldt.co.uk>
+Cc: John Whitney <jwhitney-linuxppc@sands-edge.com>,
+	"Michael R. Zucca" <mrz5149@acm.org>,
 	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <1080961566.1425.84.camel@gaston>
-References: <1b6001c417f6$229c2a70$3cc8a8c0@epro.dom>
-	 <1080867387.1203.19.camel@gaston>
-	 <1080921611.11826.13.camel@thor.asgaard.local>
-	 <1080924194.11826.27.camel@thor.asgaard.local>
-	 <1080961566.1425.84.camel@gaston>
-Content-Type: text/plain; charset=UTF-8
-Message-Id: <1080997005.4208.24.camel@thor.asgaard.local>
+Subject: Re: Problems with dma_alloc_coherent()
+Message-ID: <20040403173358.GA19686@pants.nu>
+References: <2C2F00BD-8410-11D8-9FF0-000A95A07384@sands-edge.com> <20040401191715.GC3786@gate.ebshome.net> <406C8104.9050609@acm.org> <20040401220018.GA4130@gate.ebshome.net> <D7F4C570-84C5-11D8-9FF0-000A95A07384@sands-edge.com> <406DB5DC.6060508@acm.org> <C9A11702-84DB-11D8-9FF0-000A95A07384@sands-edge.com> <406DCAF1.1040602@acm.org> <F6294392-84E8-11D8-9FF0-000A95A07384@sands-edge.com> <1080978857.7999.813.camel@newt>
 Mime-Version: 1.0
-Date: Sat, 03 Apr 2004 14:56:45 +0200
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1080978857.7999.813.camel@newt>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 2004-04-03 at 05:06, Benjamin Herrenschmidt wrote:
-> On Sat, 2004-04-03 at 02:43, Michel Dänzer wrote:
-> > On Fri, 2004-04-02 at 18:00, Michel Dänzer wrote:
-> > >
-> > > Note that the stuck processes only started with 2.6.5-rc3-ben0 here; the
-> > > last iteration of 2.6.5-rc2-ben0 is actually quite usable, albeit not
-> > > perfect either.
-> >
-> > I forgot to mention that the spurious segfaults also seemed much rarer
-> > with 2.6.5-rc2-ben0.
->
-> I see no reason for that. I just added more protection ;)
+On Sat, Apr 03, 2004 at 08:54:18AM +0100, Adrian Cox wrote:
+> I've not encountered a chip with more than one platform DMA controller.
+> Rather than having a top level API with low-level providers, consider
+> picking the implementation at Kconfig time.
 
-Sure enough, -rc2-ben0 is now behaving just as badly as -rc3-ben0.
-Probably just fluctuation.
+It's generally better not to decide this sort of thing at compile time
+if you want it to be portable. If you want an example of a kernel that
+can do everything, try compiling Linux for m68k sometime. You can have
+one kernel that can support Amigas, Ataris, Macs, and a few others all
+at once. I'm sure it goes without saying that pretty much everything
+other than the base CPU is different on each platform.  In fact, even
+just with 68k based Macs, Apple changed stuff so often that any two
+models may have almost nothing in common.
 
-> I also added a WARN_ON(), do you see it triggered in dmesg ?
-
-I'm not sure what those would look like, but
-
-zgrep -i warn /var/log/kern.log*
-
-doesn't seem to yield anything relevant.
-
-
---
-Earthling Michel Dänzer      |     Debian (powerpc), X and DRI developer
-Libre software enthusiast    |   http://svcs.affero.net/rm.php?r=daenzer
+	Brad Boyer
+	flar@allandria.com
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
