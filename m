@@ -1,53 +1,53 @@
-Message-ID: <39C6C2EF.4606D448@mvista.com>
-Date: Mon, 18 Sep 2000 21:35:43 -0400
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: Graham Stoney <greyham@research.canon.com.au>
-CC: rshaw@graftononline.net, linuxppc-embedded@lists.linuxppc.org
 Subject: Re: CLLF with Hard Hat Lunix "Sending BOOTP requests" problem
-References: <20000919010525.0A734231@elph.research.canon.com.au>
+To: dan@mvista.com (Dan Malek)
+Date: Tue, 19 Sep 2000 13:21:39 +1100 (EST)
+Cc: greyham@research.canon.com.au (Graham Stoney), rshaw@graftononline.net,
+        linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <39C6C2EF.4606D448@mvista.com> from "Dan Malek" at Sep 18, 2000 09:35:43 PM
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Message-Id: <20000919022139.ACA8D219@elph.research.canon.com.au>
+From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Graham Stoney wrote:
+Hi Dan,
 
-> Which version of the ROM monitor are you using?  The old one couldn't download
-> over the 100 Mbps port, so we had to connect both.  We used the 10 Mbps port
-> to download the kernel, and the 100 Mbps port once the kernel comes up.
+Dan Malek writes:
+> The "old" one could download over the 10/100 port.  It was an option
+> through the test menu.
 
-The "old" one could download over the 10/100 port.  It was an option
-through the test menu.  The new one won't download over the 10/100 port,
-this was in response to customers asking for the smallest possible boot
-rom image.
+Sure, the option is there, but I couldn't ever get it to actually work.
+Tried real hard too; even with help from EP's tech support I couldn't get it
+to go.  Eventually gave up and connected both ports.
 
-> Note that there is a hack in the fec driver which munges the ethernet MAC
-> address for the FEC port by adding 80:00:00 to the number
+> The new one won't download over the 10/100 port, this was in response to
+> customers asking for the smallest possible boot rom image.
 
-This will probably remain as the method for finding a MAC address
-for the second port on the CLLF.  Embedded Planet has said they will
-sequentially update the single MAC address in the on-board EEPROM, and
-we can safely do this.  However, I think it is always wise for anyone that
-creates Ethernet devices to request their own MAC addresses from the
-IEEE and use those.  It allows flexibility and control during production.
+Sounds like my protestations about 100 Mbps download being broken didn't get
+through their tech support firewall at all.  I may have stopped hassling
+their tech support about it constantly once our workaround was going, but I
+certainly did ask them to fix it.
 
-> .........  By the way, they
-> didn't _really_ sell you a board with a MAC address ending in all-zero, did
-> they?
+> > Note that there is a hack in the fec driver which munges the ethernet MAC
+> > address for the FEC port by adding 80:00:00 to the number
+>
+> This will probably remain as the method for finding a MAC address
+> for the second port on the CLLF.  Embedded Planet has said they will
+> sequentially update the single MAC address in the on-board EEPROM, and
+> we can safely do this.
 
-I have seen prototype and semi-custom boards from Embedded Planet
-that have been tested in their engineering department and rushed to
-customers (i.e. bypassed the manufacturing floor) arrive with all
-zeros in the MAC address (at least the last three bytes).  I forget
-the magic rom command to set these.  Call their support staff and
-they will straighten it out.
+This works fine, so long as the user realises that the MAC address that the
+ROM monitor reports isn't exactly the one that the FEC port will use, and
+configures their DHCP server correctly.
 
-
-	-- Dan
-
----
-
-	I like MMUs because I don't have a real life.
+Regards,
+Graham
+--
+Graham Stoney
+Principal Hardware/Software Engineer
+Canon Information Systems Research Australia
+Ph: +61 2 9805 2909  Fax: +61 2 9805 2929
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
