@@ -1,45 +1,32 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-From: "Ashwin Bihari" <raz0redge@hotmail.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Embedded initrd with static programs
-Date: Tue, 23 Dec 2003 10:04:57 -0500
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed
-Message-ID: <BAY9-F37onNzN9rvBmW0007186b@hotmail.com>
+To: "Ashwin Bihari" <raz0redge@hotmail.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Embedded initrd with static programs 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 23 Dec 2003 10:04:57 EST."
+             <BAY9-F37onNzN9rvBmW0007186b@hotmail.com>
+Date: Tue, 23 Dec 2003 16:56:11 +0100
+Message-Id: <20031223155616.3F20EC5F5F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Greetings,
+In message <BAY9-F37onNzN9rvBmW0007186b@hotmail.com> you wrote:
+>
+> So basically I need the other two programs also statically compiled, does
+> anyone of any idea on how I would go about this??
 
-I'm trying to create a initial ramdisk that will get loaded to perform the
-following actions.
+Edit the relevant Makefile and add "-static" to the compiler options?
 
-With a new (empty) hard drive, create the partitions according to the scheme
-chosen, format the partitions as EXT3, get a tarball containing the root
-file system, uncompress this tarball and then reboot.
+Best regards,
 
-Since I need to create the partitions non-interactively, I've found "sfdisk"
-from the util-linux package to do this job for me. For the formatting of the
-partitions as EXT3, I'm using "mke2fs" from the e2fsprogs package. The
-problem is that programs contained with these two packages are all
-dynamically linked.
+Wolfgang Denk
 
-I found the source for e2fsprogs, but I don't see a setting to be able to
-compile the programs statically.
-
-I'm using Busybox compiled statically to provide the basic Unix command set.
-
-So basically I need the other two programs also statically compiled, does
-anyone of any idea on how I would go about this??
-
-Regards.
-
-~Ashwin
-
-_________________________________________________________________
-Enjoy the holiday season with great tips from MSN.
-http://special.msn.com/network/happyholidays.armx
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"This is a test of the Emergency Broadcast System. If this had been an
+actual emergency, do you really think we'd stick around to tell you?"
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
