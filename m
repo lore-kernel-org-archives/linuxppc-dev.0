@@ -1,35 +1,55 @@
-Message-ID: <A33AEFDC2EC0D411851900D0B73EBEF73D9B90@NAPA>
-From: Hua Ji <hji@netscreen.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: About sdata and sbss symbols.
-Date: Tue, 3 Apr 2001 21:36:20 -0700 
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="windows-1252"
+To: Dan Malek <dan@mvista.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: gdb load address and KERNELLOAD 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 03 Apr 2001 22:05:34 EDT."
+             <3ACA816E.71E4FA67@mvista.com>
+Date: Wed, 04 Apr 2001 08:42:19 +0200
+Message-Id: <20010404064224.72482281DB@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
- Hi, folks,
+In message <3ACA816E.71E4FA67@mvista.com> Dan Malek wrote:
+>
+> The only BDM debugger that works successfully with Linux is the
+> Abatron gdb/BDI2000, hosted on a Linux platform.
 
-I met a problem when using the powerpc-eabi-gcc, which I built with gnu
-source.
+This is absolutely correct except for the word "only".
 
-When I built my codes, I opened the "-G 4" option, which means, sdata and
-sbss sections
-will be enabled for containing all 4*8 data(for example, pointers,
-integers).However, when I look at the map file, I found the symbols in sdata
-and sbss are messed up. For example, variable A and variable B even have the
-SAME ADDRESSES, allocated by the linker.
+The BDM4GDB  project  at  sourceforge  (see  bdm4gdb.sourceforge.net)
+provides all necessary information to build a home-made parallel port
+adapter  (schematics, source extension to GDB) which allows to do the
+same. If you cannot build a simple PCB  yourself,  we  offer  BDM4GDB
+adapters  at  production  cost ($ 50, including a CD-ROM with sources
+and binary for the modified GDB) as a service to the Linux community.
 
-I tried to disable the sdata and sbss section by using compiler option
-"-msdata=none" and then
-all symbols went to data and bss sections and the system works well.
+The main differences between the BDI2000 and BDM4GDB:
 
-I guess I missed some points of how to use gcc for (embedde) power pc
-system.Could anyone know?
-Thanks in advance. BTW, my target is powerpc 405GP and I am using gcc
-version 2.95.2 19991024 (release)
+* BDI2000 connects to the Ethernet, BDM4GDB needs a parallel port  on
+  a PC.
+* BDI2000 has support for  many  CPU  types,  BDM4GDB  restricted  to
+  MPC8xx (so far)
+* BDI2000 has support for all comon flash types, BDM4GDB  needs  some
+  more  work  in that area (but you can adapt it yourself when needed -
+  it's Open Source)
+* BDI2000 is much faster for code download / flash programming
+* The BDI2000 costs around $ 2,500, BDM4GDB $ 50.
 
+Shameless plug:
+
+I will give a presentation "Debugging  of  Linux  Kernel  and  Device
+Drivers  Using Low-Cost BDM Interface" featuring the BDM4GDB on May 4
+at the 3rd Brunswick Linux Days, see
+http://braunschweiger.linuxtage.de/programm/index.html
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Remember that Beethoven wrote his first symphony in C ...
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
