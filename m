@@ -1,27 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8C60F67AC4
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Jan 2005 00:52:32 +1100 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Mikael Pettersson <mikpe@csd.uu.se>
-In-Reply-To: <16887.27336.161685.55774@alkaid.it.uu.se>
-References: <200501221723.j0MHN6eD000684@harpo.it.uu.se>
-	<1106441036.5387.41.camel@gaston> <1106529935.5587.9.camel@gaston>
-	<16885.13185.849070.479328@alkaid.it.uu.se>
-	<1106623515.6244.11.camel@gaston>
-	<16886.2489.823835.17801@alkaid.it.uu.se>
-	<1106696846.6250.20.camel@gaston>
-	<16887.27336.161685.55774@alkaid.it.uu.se>
-Content-Type: text/plain
-Date: Thu, 27 Jan 2005 00:51:25 +1100
-Message-Id: <1106747485.5235.68.camel@gaston>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: BUG: 2.6.11-rc2 and -rc1 hang during boot on PowerMacs
+Return-Path: <leigh@solinno.co.uk>
+Received: from titan.server-plant.co.uk (titan.server-plant.co.uk [80.71.3.50])
+	by ozlabs.org (Postfix) with ESMTP id 2E9C767A70
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Jan 2005 05:55:18 +1100 (EST)
+Message-ID: <32862.82.10.231.190.1106765713.squirrel@82.10.231.190>
+Date: Wed, 26 Jan 2005 18:55:13 -0000 (GMT)
+From: "Leigh Brown" <leigh@solinno.co.uk>
+To: "linuxppc-dev list" <linuxppc-dev@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-8859-1
+Subject: cmd_line and cmd_preset in arch/ppc/boot/simple/misc.c
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,25 +18,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2005-01-26 at 11:02 +0100, Mikael Pettersson wrote:
-> Benjamin Herrenschmidt writes:
->  > On Tue, 2005-01-25 at 09:56 +0100, Mikael Pettersson wrote:
->  > 
->  > > On the eMac:
->  > > /proc/sys/kernel/powersave-nap exists and contains "0".
->  > > /proc/device-tree/cpus/PowerPC,G4/flush-on-lock exists as an empty file.
->  > 
->  > Ok, that is weird... so for some reason, Apple decided not to allow the
->  > eMac to do NAP mode, and thus to power manage the CPU when idle...
-> 
-> I assumed it was due to the UniNorth issue that pmac_feature.c mentions.
+Hi,
 
-Not clear. I would expect the eMac to run with a fairly recent revision
-of UniNorth with no issue, and since it's not an SMP machine there
-should be no problem...
+Could someone please confirm that I'm not going mad?  At least wrt
+this ;-)  We have this code in misc.c:
 
-On the other hand, I also suspect that the whole NAP thing does have a
-small impact on performances, so that may be the reason they chose not
-to do it on this HW...
+#ifdef CONFIG_GEMINI
+        /*
+         * If cmd_line is empty and cmd_preset is not, copy cmd_preset
+         * to cmd_line.  This way we can override cmd_preset with the
+         * command line from Smon.
+         */
 
-Ben.
+        if ( (cmd_line[0] == '\0') && (cmd_preset[0] != '\0'))
+                memcpy (cmd_line, cmd_preset, sizeof(cmd_preset));
+#endif
+
+        /* Display standard Linux/PPC boot prompt for kernel args */
+        puts("\nLinux/PPC load: ");
+        cp = cmd_line;
+        memcpy (cmd_line, cmd_preset, sizeof(cmd_preset));
+
+
+Surely the bit in the #ifdef is ineffective?  Also, as cmd_line is
+initialised to zeros, I think this is better:
+
+        /*
+         * If cmd_line is empty and cmd_preset is not, copy cmd_preset
+         * to cmd_line.  This way we can override cmd_preset with the
+         * command line from Smon.
+         */
+
+        if ( (cmd_line[0] == '\0') && (cmd_preset[0] != '\0'))
+                memcpy (cmd_line, cmd_preset, sizeof(cmd_preset));
+
+        /* Display standard Linux/PPC boot prompt for kernel args */
+        puts("\nLinux/PPC load: ");
+        cp = cmd_line;
+
+As, in the general case, cmd_line[0] will always be zero and
+cmd_preset[0] will always be filled, so no need for an #ifdef.
+
+If someone can confirm I'm not mistaken, I can send a patch...
