@@ -1,30 +1,31 @@
-Date: Thu, 18 Jan 2001 11:52:59 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Larry McVoy <lm@bitmover.com>
-Cc: LinuxPPC Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: linuxppc_2_5 snapshots
-Message-ID: <20010118115259.O1995@opus.bloom.county>
-References: <B688E4B5.8511%bootc@worldnet.fr> <20010115093213.B16655@work.bitmover.com> <20010115112211.L29026@opus.bloom.county> <20010118104301.O6787@work.bitmover.com>
-Mime-Version: 1.0
+From: eraineri@axiom-tx.com
+Message-ID: <3A6748FB.42C51F82@axiom-tx.com>
+Date: Thu, 18 Jan 2001 13:50:19 -0600
+Reply-To: eraineri@axiom-tx.com
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: kernel 2.4 SMP on quad PPC
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010118104301.O6787@work.bitmover.com>; from lm@bitmover.com on Thu, Jan 18, 2001 at 10:43:01AM -0800
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Jan 18, 2001 at 10:43:01AM -0800, Larry McVoy wrote:
-> On Mon, Jan 15, 2001 at 11:22:11AM -0700, Tom Rini wrote:
-> > Does bk2.0beta support resuming of clones?
->
-> No, but we will add this if we can't fix the socket problem.  We'd really
-> rather fix it right, the fact that you would ever need the resume indicates
-> we screwed up.  Or, I suppose, that your net connection dropped.  Hmm.  Maybe
-> it's worth it.
+Hello,
+I have searched the arhives and didn't seem to find what I'm looking
+for.  I currently am in the process of porting linux to a custom PPC
+Quad board.  I downloaded a 2.5 kernel  from FSMlabs in December and
+have had success getting 2 processors to come up.  However, I could not
+get 3 or 4.  I am considering going to the 2.4 latest kernel on the
+FSMlabs bitkeeper site.  I'm wondering if the version of the 2.5 kernel
+I downloaded works with more then duals and also if I should instead
+download the 2.4 kernel and us it?  I know that eventually I am going to
+have to go to 2.4 but I would like to show some success before
+abandoning the 2.5 version I've worked so hard to get.  If I in the
+incorrect mailing list I apologize.  I'm fairly new to the Linux kernel
+development world!
 
-Yeah.  modems get disconnected.  firewalls crash.  Things happen. :)
+Thanks for all the help
+Eddy
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
