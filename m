@@ -1,56 +1,221 @@
-From: Kevin Hendricks <khendricks@ivey.uwo.ca>
-Reply-To: khendricks@ivey.uwo.ca
-To: Greg Noel <GregNoel@san.rr.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Patch to fix glibc 2.1.2 so that new semaphore functions work in high signal env.
-Date: Thu, 7 Oct 1999 23:56:19 -0400
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-=_nWlrBbmQBhCDarzOwKkYHIDdqSCD"
-References: <37FA20A4.B9254E73@netscape.com> <v04011700b41f63005778@[204.210.50.90]> <v04011701b422cbe2027e@[204.210.50.90]>
-In-Reply-To: <v04011701b422cbe2027e@[204.210.50.90]>
+From: bob@kunk.jriver.com
+Message-ID: <19991008052744.14168.qmail@kunk.jriver.com>
+Subject: USB printers
+To: linuxppc-dev@lists.linuxppc.org
+Date: Fri, 8 Oct 1999 00:27:44 -0500 (CDT)
 MIME-Version: 1.0
-Message-Id: <99100800025201.16264@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+I have the rev 2.2.12 CVS kernel, an iMac and a Lexmark optra E310 USB laser
+printer. I been trying different kernels to see if any will work with this
+printer without success. I eventually did get it working with a hack.
 
---Boundary-=_nWlrBbmQBhCDarzOwKkYHIDdqSCD
-Content-Type: text/plain
-Content-Transfer-Encoding: 8bit
+First, the prehack dmesg USB output...
 
-Hi,
+usb-ohci: HC c0271220 reset.
+scsi : 1 host.
+usb-ohci: host controller operational
+USB new device connect, assigned device number 1
+Found 02:09
+Found 04:09
+Found 05:07
+parsed = 25 len = 0
+USB hub found
+hub: 4-ports detected
+hub: individual port power switching
+hub: standalone hub
+hub: individual port over current protection
+hub: power on to power good time: 100ms
+hub: hub controller current requirement: 80mA
+hub:  port 1 is removable
+hub:  port 2 is removable
+hub:  port 3 is removable
+hub:  port 4 is removable
+hub: local power source is good
+hub: no over current condition exists
+USB hub 1: enabling power on all ports
+hub: port 1 connection change
+USB new device connect, assigned device number 2
+Found 02:09
+Found 04:09
+Expected descriptor 05/07, got 21/09 - skipping
+ 09 21 00 01 00 01 22 40 00
+Found 05:07
+parsed = 34 len = 0
+Manufacturer: Alps Electric
+Product: M2452
+USB HID boot protocol keyboard detected.
+hub: port 2 connection change
+USB new device connect, assigned device number 3
+Found 02:09
+Found 04:09
+Expected descriptor 05/07, got 21/09 - skipping
+ 09 21 00 01 00 01 22 32 00
+Found 05:07
+parsed = 34 len = 0
+Manufacturer: Logitech
+Product: M4848
+USB mouse found
+hub: port 3 connection change
+USB new device connect, assigned device number 4
+Found 02:09
+Found 04:09
+Found 05:07
+Found 05:07
+parsed = 32 len = 0
+Manufacturer: Lexmark International, Inc.
+Product: Lexmark Optra E310
+SerialNumber: R0UCM000
+Unknown new USB device:
+  Length              = 18
+  DescriptorType      = 01
+  USB version         = 1.00
+  Vendor:Product      = 043d:000c
+  MaxPacketSize0      = 8
+  NumConfigurations   = 1
+  Device version      = 1.00
+  Device Class:SubClass:Protocol = 00:00:00
+    Per-interface classes
+Configuration:
+  bLength             =    9
+  bDescriptorType     =   02
+  wTotalLength        = 0020
+  bNumInterfaces      =   01
+  bConfigurationValue =   01
+  iConfiguration      =   00
+  bmAttributes        =   40
+  MaxPower            =    0mA
 
-I had to make the following patch to get glibc 2.1.2 new semaphores to work in
-high signal environments.  For some reason calls to sem_post made by the
-pthread manager thread were *NOT* resolving to the __new_sem_post but instead
-to somewhere else (__old_sem_post or to kernel sem_post ????).
+  Alternate Setting: 0
+  Interface:
+    bLength             =    9
+    bDescriptorType     =   04
+    bInterfaceNumber    =   00
+    bAlternateSetting   =   00
+    bNumEndpoints       =   02
+    bInterface Class:SubClass:Protocol =   07:01:02
+    iInterface          =   00
+    Endpoint:
+      bLength             =    7
+      bDescriptorType     =   05
+      bEndpointAddress    =   01 (out)
+      bmAttributes        =   02 (Bulk)
+      wMaxPacketSize      = 0040
+      bInterval           =   00
+    Endpoint:
+      bLength             =    7
+      bDescriptorType     =   05
+      bEndpointAddress    =   81 (in)
+      bmAttributes        =   02 (Bulk)
+      wMaxPacketSize      = 0020
+      bInterval           =   00
+hub: port 1 reset change
+hub: port 2 reset change
+hub: port 3 reset change
+---------------------------------------------------
 
-I don't know why (the correct fix might be somewhere else) but this does the
-trick.
+I noticed above that:
 
-The pthread manager only does the sem_post calls when the original thread was
-in a signal handler.
+ bEndpointAddress    =   81 (in)
 
-I am not sure this will help others, but it does wonders for the JDK!!!
+and that /usr/src/linux/drivers/usb/printer.c was looking for 82 so I made
+the following change...
 
-Thanks,
+282c282
+<                   interface->endpoint[1].bEndpointAddress != 0x81 ||
+---
+>                   interface->endpoint[1].bEndpointAddress != 0x82 ||
 
-Kevin
+and got the following USB dmesg from the new kernel...
+---------------------------------------------------
+usb-ohci: HC c0271220 reset.
+scsi : 1 host.
+usb-ohci: host controller operational
+USB new device connect, assigned device number 1
+Found 02:09
+Found 04:09
+Found 05:07
+parsed = 25 len = 0
+USB hub found
+hub: 4-ports detected
+hub: individual port power switching
+hub: standalone hub
+hub: individual port over current protection
+hub: power on to power good time: 100ms
+hub: hub controller current requirement: 80mA
+hub:  port 1 is removable
+hub:  port 2 is removable
+hub:  port 3 is removable
+hub:  port 4 is removable
+hub: local power source is good
+hub: no over current condition exists
+USB hub 1: enabling power on all ports
+hub: port 1 connection change
+USB new device connect, assigned device number 2
+Found 02:09
+Found 04:09
+Expected descriptor 05/07, got 21/09 - skipping
+ 09 21 00 01 00 01 22 40 00
+Found 05:07
+parsed = 34 len = 0
+Manufacturer: Alps Electric
+Product: M2452
+USB HID boot protocol keyboard detected.
+hub: port 2 connection change
+USB new device connect, assigned device number 3
+Found 02:09
+Found 04:09
+Expected descriptor 05/07, got 21/09 - skipping
+ 09 21 00 01 00 01 22 32 00
+Found 05:07
+parsed = 34 len = 0
+Manufacturer: Logitech
+Product: M4848
+USB mouse found
+hub: port 3 connection change
+USB new device connect, assigned device number 4
+Found 02:09
+Found 04:09
+Found 05:07
+Found 05:07
+parsed = 32 len = 0
+Manufacturer: Lexmark International, Inc.
+Product: Lexmark Optra E310
+SerialNumber: R0UCM000
+USB Printer found at address 4
+hub: port 1 reset change
+hub: port 2 reset change
+hub: port 3 reset change
 
---Boundary-=_nWlrBbmQBhCDarzOwKkYHIDdqSCD
-Content-Type: text/x-c;
-  name="glibc.patch"
-Content-Description: patch to pthreads manager.c
-Content-Disposition: attachment; filename="glibc.patch"
-Content-Transfer-Encoding: base64
+------------------------------------
 
-LS0tIG1hbmFnZXIuYy5wcmV2CVRodSBPY3QgIDcgMjM6NDA6MDQgMTk5OQorKysgbWFuYWdlci5j
-CVRodSBPY3QgIDcgMjM6NDA6NDcgMTk5OQpAQCAtMTU2LDcgKzE1Niw3IEBACiAgICAgICAgIH0K
-ICAgICAgICAgYnJlYWs7CiAgICAgICBjYXNlIFJFUV9QT1NUOgotICAgICAgICBzZW1fcG9zdChy
-ZXF1ZXN0LnJlcV9hcmdzLnBvc3QpOworICAgICAgICBfX25ld19zZW1fcG9zdChyZXF1ZXN0LnJl
-cV9hcmdzLnBvc3QpOwogICAgICAgICBicmVhazsKICAgICAgIGNhc2UgUkVRX0RFQlVHOgogCS8q
-IE1ha2UgZ2RiIGF3YXJlIG9mIG5ldyB0aHJlYWQgYW5kIGdkYiB3aWxsIHJlc3RhcnQgdGhlCg==
+Created the device node and boom, it works. I don't know what side effects 
+this will have, if any, but it makes the E310 work.
+One other small concern, if I start with the printer off then turn it on
+after the boot, I get..
 
---Boundary-=_nWlrBbmQBhCDarzOwKkYHIDdqSCD--
+hub: port 3 connection change
+USB new device connect, assigned device number 4
+get_descriptor failed, waiting
+get_descriptor failed, waiting
+get_descriptor failed, waiting
+get_descriptor failed, waiting
+get_descriptor failed, waiting
+giving up
+hub: port 3 reset change
+
+------------------------------------
+Looks like the driver times out too quick. The printer takes 30 seconds or
+more to come up but the above messages take less than 10 seconds to complete.
+With the printer on before boot however it works great.
+
+Bob
+-- 
+Robert E. Brose II    N0QBJ
+http://www.jriver.com/~bob/
+bob@jriver.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
