@@ -1,45 +1,124 @@
-Date: Fri, 9 Jul 2004 15:48:45 +0800
-From: "hu" <hl76@263.net>
-To: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Oops:kernel access of bad area, sig:11
-Mime-Version: 1.0
+Subject: Re: proposed patch for cross compiling from Solaris 2.8
+From: Jean-Christophe Dubois <jdubois@mc.com>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Bret Indrelee <Bret.Indrelee@qlogic.com>,
+	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <20040709014853.GQ23135@smtp.west.cox.net>
+References: <Pine.LNX.4.44.0407060823120.2040-100000@spider.ancor.com>
+	 <1089121664.31278.264.camel@fr-jdubois1.ad.mc.com>
+	 <1089125860.18578.12.camel@fr-jdubois1.ad.mc.com>
+	 <1089279330.18578.2175.camel@fr-jdubois1.ad.mc.com>
+	 <20040709014853.GQ23135@smtp.west.cox.net>
 Content-Type: text/plain
-Message-Id: <20040709074636.D69842F7B3@smtp.263.net>
+Message-Id: <1089363994.1947.43.camel@fr-jdubois1.ad.mc.com>
+Mime-Version: 1.0
+Date: Fri, 09 Jul 2004 11:06:34 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-1)environment
-Linux kernel 2.4.4-rthal5
-ppcboot 1.1.5
-MPC823 board
+On Fri, 2004-07-09 at 03:48, Tom Rini wrote:
+> Sadly, it looks like Cygwin (the other odd host to build a linux kernel on)
+> lacks <inttypes.h>.
 
-2)I'm running a device driver which read data from touchpanel which use
-SIU_IRQ2, but I often get message like that:
+too bad :(
 
-Oops: kernel access of bad area, sig: 11
-NIP: C000C4E8 XER: C000206F LR: C000C4E0 SP: C07FBEF0 REGS: c07fbe40 TRAP: 0300
-MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-DAR: 00000004,DISR: 0000013C
-last math 00000000   last altivec 00000000
-GPR00: 00000002 C07FBEF0 C07FA000 C07FBF08 00009032 C0C09E58 C0C08000 00000020
-GPR08: C01A9138 C0195364 C0C08000 C07FBF30 2F7B6A70 1007C2B8 40024400 00000000
-GPR16: 00000000 00000000 00000000 00000000 00000000 00003400 00580000 00002C7E
-GPR24: 00000000 0001C200 00000001 C07FBEF8 00000000 C07FBF00 00664BDA C07FBEF0
+So here is another shot at it:
 
-Call backtrace:
-  C000C468 C002B440 C0004DA8
+--- linux-2.6.7/scripts/sumversion.c    Wed Jun 16 01:19:43 2004
++++ 2.6/scripts/sumversion.c    Fri Jul  9 04:10:27 2004
+@@ -1,5 +1,9 @@
+ #include <netinet/in.h>
++#ifdef __sun__
++#include <inttypes.h>
++#else // __sun__
+ #include <stdint.h>
++#endif // __sun__
+ #include <ctype.h>
+ #include <errno.h>
+ #include <string.h>
+--- linux-2.6.7/scripts/genksyms/genksyms.c     Wed Jun 16 01:19:23 2004
++++ 2.6/scripts/genksyms/genksyms.c     Thu Jul  8 11:04:04 2004
+@@ -27,7 +27,9 @@
+ #include <unistd.h>
+ #include <assert.h>
+ #include <stdarg.h>
++#ifdef __GNU_LIBRARY__
+ #include <getopt.h>
++#endif /* __GNU_LIBRARY__ */
 
-3) I look through past document in linux-embedded, and I check
-/arch/ppc/kernel/m8xx_setup.c, it exists:
+ #include "genksyms.h"
 
-fp = binfo->bi_intfreq * 1000000 / 16;
-and /arch/ppc/8xx_io/commproc.c, it exits:
-#define BRG_INT_CLK	(((bd_t *)__res)->bi_intfreq * 1000000 )
+@@ -502,12 +504,21 @@
+        fputs("Usage:\n"
+              "genksyms [-dDwqhV] > /path/to/.tmp_obj.ver\n"
+              "\n"
++#ifdef __GNU_LIBRARY__
+              "  -d, --debug           Increment the debug level
+(repeatable)\n"
+              "  -D, --dump            Dump expanded symbol defs (for
+debugging only)\n"
+              "  -w, --warnings        Enable warnings\n"
+              "  -q, --quiet           Disable warnings (default)\n"
+              "  -h, --help            Print this message\n"
+              "  -V, --version         Print the release version\n"
++#else  /* __GNU_LIBRARY__ */
++             "  -d                    Increment the debug level
+(repeatable)\n"
++             "  -D                    Dump expanded symbol defs (for
+debugging only)\n"
++             "  -w                    Enable warnings\n"
++             "  -q                    Disable warnings (default)\n"
++             "  -h                    Print this message\n"
++             "  -V                    Print the release version\n"
++#endif /* __GNU_LIBRARY__ */
+              , stderr);
+ }
 
-------------------------------
-John Hu
-E-mail: hl76@263.net
-------------------------------
+@@ -516,6 +527,7 @@
+ {
+   int o;
+
++#ifdef __GNU_LIBRARY__
+   struct option long_opts[] = {
+     {"debug", 0, 0, 'd'},
+     {"warnings", 0, 0, 'w'},
+@@ -528,6 +540,9 @@
+
+   while ((o = getopt_long(argc, argv, "dwqVDk:p:",
+                          &long_opts[0], NULL)) != EOF)
++#else  /* __GNU_LIBRARY__ */
++  while ((o = getopt(argc, argv, "dwqVDk:p:")) != EOF)
++#endif /* __GNU_LIBRARY__ */
+     switch (o)
+       {
+       case 'd':
+--- linux-2.6.7/arch/ppc/boot/utils/mkbugboot.c Wed Jun 16 01:19:36 2004
++++ 2.6/arch/ppc/boot/utils/mkbugboot.c Fri Jul  9 04:11:43 2004
+@@ -21,6 +21,11 @@
+ #include <stdlib.h>
+ #include <errno.h>
+ #include <fcntl.h>
++#ifdef __sun__
++#include <inttypes.h>
++#else // __sun__
++#include <stdint.h>
++#endif // __sun__
+
+ #ifdef __i386__
+ #define cpu_to_be32(x) le32_to_cpu(x)
+@@ -48,11 +53,6 @@
+
+ /* size of read buffer */
+ #define SIZE 0x1000
+-
+-/* typedef long int32_t; */
+-typedef unsigned long uint32_t;
+-typedef unsigned short uint16_t;
+-typedef unsigned char uint8_t;
+
+ /* PPCBUG ROM boot header */
+ typedef struct bug_boot_header {
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
