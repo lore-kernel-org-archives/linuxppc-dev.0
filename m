@@ -1,16 +1,16 @@
 Return-Path: <olof@austin.ibm.com>
-Date: Fri, 4 Feb 2005 11:20:41 -0600
-To: Pekka Enberg <penberg@gmail.com>
-Message-ID: <20050204172041.GA17586@austin.ibm.com>
+Date: Fri, 4 Feb 2005 12:35:14 -0600
+To: Arnd Bergmann <arnd@arndb.de>
+Message-ID: <20050204183514.GB17586@austin.ibm.com>
 References: <20050204072254.GA17565@austin.ibm.com>
-	<84144f0205020400172d89eddf@mail.gmail.com>
+	<200502041336.59892.arnd@arndb.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <84144f0205020400172d89eddf@mail.gmail.com>
+In-Reply-To: <200502041336.59892.arnd@arndb.de>
 From: olof@austin.ibm.com (Olof Johansson)
 Cc: akpm@osdl.org, trini@kernel.crashing.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, penberg@cs.helsinki.fi,
-	paulus@samba.org, hpa@zytor.com, linuxppc64-dev@ozlabs.org
+	linuxppc-dev@ozlabs.org, paulus@samba.org, hpa@zytor.com,
+	linuxppc64-dev@ozlabs.org
 Subject: Re: [PATCH] PPC/PPC64: Introduce CPU_HAS_FEATURE() macro
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,28 +21,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Feb 04, 2005 at 10:17:48AM +0200, Pekka Enberg wrote:
-> Please drop the CPU_FTR_##x macro magic as it makes grepping more
-> complicated. If the enum names are too long, just do s/CPU_FTR_/CPU_/g
-> or something similar. Also, could you please make this a static inline
-> function?
+On Fri, Feb 04, 2005 at 01:36:55PM +0100, Arnd Bergmann wrote:
+> I have a somewhat similar patch that does the same to the
+> systemcfg->platform checks. I'm not sure if we should use the same inline
+> function for both checks, but I do think that they should be used in a
+> similar way, e.g. CPU_HAS_FEATURE(x) and PLATFORM_HAS_FEATURE(x).
 
-I considered that for a while, but decided against it because:
+Yep. Firmware features are also on the list. I figured I'd do CPU features
+first though since they are the ones that started bugging me.
 
-* cpu-has-feature(cpu-feature-foo) v cpu-has-feature(foo): I picked the
-latter for readability.
-* Renaming CPU_FTR_<x> -> CPU_<x> makes it less obvious that
-it's actually a cpu feature it's describing (i.e. CPU_ALTIVEC vs
-CPU_FTR_ALTIVEC).
-* Renaming would clobber the namespace, CPU_* definitions are used in
-other places in the tree.
-* Can't make it an inline and still use the preprocessor concatenation.
+> The same stuff is obviously possible for cur_cpu_spec->cpu_features as well.
+> Do you think that it will help there?
 
-That being said, you do have a point about grepability. However,
-personally I'd be more likely to look for CPU_HAS_FEATURE than the
-feature itself when reading the code, and would find that easily. The
-other way around (finding all uses of a feature) is harder, but the
-concatenation macro is right below the bit definitions and easy to spot.
+Nice. It won't be quite as easy to do compile-time for cpu features.
+pSeries will need all cpus enabled since we have them all on various
+machines, etc. I guess Powermac/Maple could benefit from it. In the
+end it depends on how hairy the implementation would get vs performance
+improvement.
 
 
 -Olof
