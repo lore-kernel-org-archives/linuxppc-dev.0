@@ -1,37 +1,25 @@
-Message-ID: <020201c3d5d2$f37e1240$21589edd@CHKIMVAIO>
-From: =?ks_c_5601-1987?B?sejEociv?= <willy@airpoint.co.kr>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: socket programming without RTnet.
-Date: Thu, 8 Jan 2004 19:34:09 +0900
+From: "Q-ha Park" <qha@infoeq.com>
+To: "=?ks_c_5601-1987?B?J7HoxKHIryc=?=" <willy@airpoint.co.kr>,
+	<linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: socket programming without RTnet.
+Date: Fri, 9 Jan 2004 13:31:50 +0900
+Message-ID: <00b901c3d669$874545c0$2a21a8c0@qha>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="ks_c_5601-1987"
+In-Reply-To: <020201c3d5d2$f37e1240$21589edd@CHKIMVAIO>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+> If I can't use those APIs, is there any good way to make a
+> socket programming without the help of RTnet?
 
-Well, for my socket programming on RTAI patched linux 2.4.20, I tried
-to find some socket APIs. But there were any what I expected such as
-socket() a standard BSD APIs.
+hmmm, I'm not so sure what your intention is, but why are you trying to
+play around in kernel space instead of userland if the plain network
+program is what you want?
 
-I know I can use the RTnet. But before using it, I want to program a
-socket application without the help of RTnet.
+Q-ha Park
 
-Just before I found some APIs starting sys_ net/socket.c like
-sys_socket, sys_bind(). To use them I added their symbol in netsyms.c.
-And I made a hello-world function using sys_xxx functions.
-
-    Oops: kernel access of bad area
-
-But the problem is that when I loaded my hello-world app as a module
-after booting. Why can't I use those APIs? I think loadable module is a
-part of kernel.
-
-If I can't use those APIs, is there any good way to make a socket
-programming without the help of RTnet?
-
-Willy.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
