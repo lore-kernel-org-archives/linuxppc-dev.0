@@ -1,21 +1,20 @@
-Return-Path: <SRS0+4b2dc8d9df8b47542035+453+infradead.org+dwmw2@baythorne.srs.infradead.org>
-Received: from baythorne.infradead.org (baythorne.infradead.org
-	[81.187.226.107])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7C5CE2BDB5
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Nov 2004 21:00:50 +1100 (EST)
-From: David Woodhouse <dwmw2@infradead.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1100847411.25521.42.camel@gaston>
-References: <1100847411.25521.42.camel@gaston>
-Content-Type: text/plain
-Message-Id: <1100854258.21273.273.camel@baythorne.infradead.org>
+Return-Path: <marc.leeman@gmail.com>
+Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.205])
+	by ozlabs.org (Postfix) with ESMTP id 4B98B2BDB5
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Nov 2004 21:34:21 +1100 (EST)
+Received: by rproxy.gmail.com with SMTP id j1so35970rnf
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Nov 2004 02:34:20 -0800 (PST)
+Message-ID: <1f729c4804111902347a977b9c@mail.gmail.com>
+Date: Fri, 19 Nov 2004 11:34:20 +0100
+From: Marc Leeman <marc.leeman@gmail.com>
+To: "Milligan, Keath" <kmilligan@austin.polycom.com>
+In-Reply-To: <F3CF3D25A7F8F44BB59BC7A2CA83E30B02322252@ausexch00.austin.polycom.com>
 Mime-Version: 1.0
-Date: Fri, 19 Nov 2004 08:50:58 +0000
+Content-Type: text/plain; charset=ISO-8859-1
+References: <F3CF3D25A7F8F44BB59BC7A2CA83E30B02322252@ausexch00.austin.polycom.com>
 Cc: linuxppc-dev@ozlabs.org
-Subject: Re: TEST: Sleep suppport for iBook G4 & Aluminium PowerBooks (ATI
-	based)
+Subject: Re: Large PCI region mapping 8272
+Reply-To: Marc Leeman <marc.leeman@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,23 +24,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2004-11-19 at 17:56 +1100, Benjamin Herrenschmidt wrote:
-> (Message cross-posted to several lists, please do _NOT_ reply to all of
-> them).
+> Could someone point me in the right direction to getting everything
+> initialized and mapped correctly?
 
-I forwarded it to fedora-ppc@lists.infradead.org too.
+I had the same impression (that the PCI initialisation) was not quite
+right. After some investigation, it was me that used a wrong platform
+file (overzealous deleting and copying to minimise custom code).
 
-Since I started using the previous patch and actually suspending, I've
-been seeing the GNOME panel and window list die frequently, and
-occasionally other X apps. When X apps have died which were started from
-the command line it seemed to be a spurious SIGPIPE, strangely.
+>From what I understand (after a brief look in the files), most of the
+changes can be localised in that file.
 
-I don't _think_ I've ever seen it immediately after booting; only after
-suspend/resume. But that could be just a coincidence. Likewise the way
-it started when I added the sleep patch _could_ just be a coincidence --
-I was still running Fedora rawhide and updating other packages (and
-there were other kernel changes) at that time, so a lot of other things
-changed too... but has anyone else seen similar behaviour?
+You can enable debugging in  (IIRC) -#define DEBUG-
+arch/ppc/kernel/pci.c
+to have a more verbose look at what is happening.
 
--- 
-dwmw2
+The same goes for quircks.c and pci.c (in drivers/ somewhere).
+
+In any case, the pci mapping calls your platform dependent fixes.=20
+
+--=20
+ash nazg durbatul=FBk, ash nazg gimbatul,
+ash nazg thrakatul=FBk agh burzum-ishi krimpatul
