@@ -1,37 +1,29 @@
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Boot failure
-Date: Tue, 30 Mar 2004 15:56:55 -0600
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B06DAA8@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
+Message-Id: <200403310303.i2V3366P010744@ms.usish.com>
+From: "Jack Liu" <Jack_liu@usish.com>
+To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Network problem: Ping is OK, Yet telnet and ftp etc is not working
+Mime-Version: 1.0
+Content-Type: text/plain
+Date: Wed, 31 Mar 2004 11:2:22 +0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Found my own error...
-Had compiled in support for Virtual Teminals...
+hi,all
 
-> EXT3 FS on hda3, internal journal
-> EXT3-fs: mounted filesystem with ordered data mode.
-> VFS: Mounted root (ext3 filesystem).
-> Freeing unused kernel memory: 252k init
-> Oops: kernel access of bad area, sig: 11 [#1]
-> NIP: C00DDBA0 LR: C00DDCEC SP: C04B7DC0 REGS: c04b7d10 TRAP:
-> 0301    Not
-> tainted
->
-> MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-> DAR: 00000004, DSISR: 20000000
-> TASK = cffeb9c0[1] 'init' Last syscall: 5
-> GPR00: 00000000 C04B7DC0 CFFEB9C0 CFD63400 00000001 00000000 CFD63558
-> CFFFD370
-> GPR08: 00000008 00000000 00000000 CFD63400 48000842
-> Call trace: [c00ddcec]  [c00e1b08]  [c00cfee4]  [c0052040]  [c00477d4]
-> [c0047668]  [c0047b2c]  [c000779c]
-> Kernel panic: Attempted to kill init!
->  <0>Rebooting in 180 seconds..
->
+     We use ADMTek AN983B chip as our network chip. And I have porting
+linux to this MPC8241 platform.Now I have a very strange problem:
+   If I ping my target, no answer. When I start tcpdump on my target,
+the ping ... works fine. Since the hardware is put into promiscuous
+mode when tcpdump is running, So I use ifconfig to put NIC work in
+promiscuous mode. I thought it can temporarily solve the problem. Now
+ping is OK. However When I telnet other machine, no answer.And When I
+telnet my target, still no answer. I thought it may because of firewall.
+So I undef CONFIG_NETFILTER in .config and autoconf.h. Still the same.
+So what could be the problem?
+
+Best regards
+
+Jack Liu
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
