@@ -1,36 +1,42 @@
-Date: Mon, 06 Dec 1999 10:56:02 -0700
-From: "Joseph N. Hall" <joseph@5sigma.com>
-Reply-To: " <joseph> "@5sigma.com
-Subject: pcmcia enet on pb2400 (more info)
-To: linuxppc-dev@lists.linuxppc.org
-Message-ID: <MailDrop1.2d7j-PPC.991206105602@perlfaq.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=US-ASCII
+Message-Id: <199912062005.UAA21549@go.hannover.sgh-net.de>
+Subject: xDSL via PPPoE?
+Date: Mon, 6 Dec 1999 21:05:34 +0100
+From: John L Grantham <jgrantha@hannover.sgh-net.de>
+To: <linuxppc-dev@lists.linuxppc.org>, <linuxppc-user@lists.linuxppc.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-The attempt to boot is dying during the pcmcia memory probe.  I
-am using the following in config.opts:
+Hi all,
 
->   include port 0x0-0xfff
->   include memory 0x90000000-0x90ffffff
+Well, tomorrow is the big day for me: I'm getting ADSL from Deutsche 
+Telekom installed. Trouble is, in the meantime I have been doing research 
+and have found that xDSL in Germany is done with PPP over Ethernet 
+(PPPoE), and there apparently is only a buggy beta driver for Intel 
+Linux. Anything for PPPoE support under LinuxPPC?
 
-Both slots are filled.  I get a single high beep and then a crash.
-The above configuration is reported to work with pcmcia-cs-3.0.8
-LinuxPPC R4 + 2.2.1 kernel on a pb2400 (confirmed with a Japanese 
-user).  It appears that I am using 2.2.6-15a from the 1999 Q3 RPM.
-Is this broken?  If so, what should I try next?
+If worse comes to worse, I will set up my iMac as a router and gateway 
+under MacOS, but would much rather have the G3 with Linux sitting 
+directly on the DSL pipe...
 
-RSVP to the address below or joseph@5sigma.com for more info.
-Thanks,
+Can anybody suggest a fairly plain English HOWTO for getting PPPoE and 
+DSL running? (I'm using kernel 2.2.10 and Q3.) Where can I get the 
+drivers?
 
-  -joseph
+Thanks in advance...
 
---
-Joseph N. Hall, 5 Sigma Productions        mailto:" <joseph> "@5sigma.com
-Author, Effective Perl Programming . . . . . http://www.effectiveperl.com
-Perl Training  . . . . . . . . . . . . . . .  http://www.perltraining.com
+cya
+
+John
+
+---
+
+John Grantham | Freelance Graphic and Web Designer
+              | Dipl.-Designer (FH)
+              | Homepage: http://surf.to/multimedia
+              | MacLinux: http://www.maclinux.de/
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
