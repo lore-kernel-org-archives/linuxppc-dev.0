@@ -1,76 +1,53 @@
-Message-ID: <003301c0528f$d22d29b0$69f001dc@r44089-d1.sps.mot.com>
-From: "Shuangjun Zhu" <r44089@email.sps.mot.com>
-To: <linuxppc-dev@lists.linuxppc.org>
-Subject: kernel BUG at sched.c:656
-Date: Mon, 20 Nov 2000 09:18:40 +0800
+Message-ID: <20001120050245.2300.qmail@kunk.jriver.com>
+Subject: Re: controlfb and X (fixed)
+In-Reply-To: <200011191036.LAA00685@piglet.grunz.lu> "from Michel Lanners at
+	Nov 19, 2000 11:36:30 am"
+To: mlan@cpu.lu
+Date: Sun, 19 Nov 2000 22:39:44 -0600 (CST)
+From: Robert E Brose II <bob@kunk.jriver.com>
+CC: linuxppc-devel@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: text/plain;	charset="gb2312"
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I built the linux-2.4.0-test1 kernel on x86 platform,
-the powerpc-linux-gcc version is 2.95.2,
-the target board is MPC8260ADS-L2C board from Motorola.
+User Michel Lanners says:
+>
+> > Which 2.4.0 kernel source are YOU using?
+>
+> I'm running BenH's 2.5 kernel, that's the only one I was able to boot on
+> my 7600. Paulus' 2.4 kernels lock my machine 90% of the time at boot. I
+> haven't found what's wrong with them, though...
+>
+> BenH's kernel is at:
+>
+> rsync -arvz penguinppc.org::linux-benh-devel .
+>
+> Happy compiling ;-)
 
-What do this trace information mean?
-Has the root file system mounted on RAM disk?
+FINALLY got the 2.4.0-test10 benh kernel going.
+I had to turn off a bunch of stuff to get it to run (i.e. to avoid
+the black screen of death on boot) and I'm not sure the
+PPP async driver works yet, had to compile it as a module.
 
-Thanks.
+The controlfb driver now senses the 4m video memory properly
+on the 7500.
 
-==========================================
+XFree4.01 runs (though the keyboard is messed up. I have to investigate
+the new input layer)
 
-Starting at: 0x400000
+The stock XFree86 (XFree86-3.3.6-11.2) also works in 24/32 bits now!!!
+HOORAY!! Hopefully the changes will eventually make it to the stock
+trees.
 
-loaded at:     00400000 005C1274
-board data at: 0001126C 00011290
-relocated to:  003F0100 003F0124
-zimage at:     0040A120 0047A8BF
-initrd at:     0047A8BF 005BCE98
-avail ram:     005FD000 01000000
+Thanks Michel!
 
-Linux/PPC load:
-Uncompressing Linux...done.
-Now booting the kernel
-Total memory = 16MB; using 0kB for hash table (at 00000000)
-Linux version 2.4.0-test1 (sjzhu@Linux586.mcel.mot.com) (gcc version 2.95.2
-1990
-Boot arguments: root=/dev/ram
-On node 0 totalpages: 4096
-zone(0): 4096 pages.
-zone(1): 0 pages.
-zone(2): 0 pages.
-Kernel command line: root=/dev/ram
-Calibrating delay loop... 6.20 BogoMIPS
-Memory: 13452k available (888k kernel code, 392k data, 36k init)
-[c0000000,c100]
-Dentry-cache hash table entries: 2048 (order: 2, 16384 bytes)
-Buffer-cache hash table entries: 1024 (order: 0, 4096 bytes)
-Page-cache hash table entries: 4096 (order: 2, 16384 bytes)
-kmem_create: Poisoning requested, but con given - bdev_cache
-Inode-cache hash table entries: 1024 (order: 1, 8192 bytes)
-kmem_create: Poisoning requested, but con given - inode_cache
-POSIX conformance testing by UNIFIX
-Linux NET4.0 for Linux 2.3
-Based upon Swansea University Computer Society NET3.039
-kmem_create: Poisoning requested, but con given - skbuff_head_cache
-NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
-NET4: Linux TCP/IP 1.0 for NET4.0
-IP Protocols: ICMP, UDP, TCP
-IP: routing cache hash table of 512 buckets, 4Kbytes
-TCP: Hash tables configured (established 1024 bind 1024)
-Starting kswapd v1.6
-CPM UART driver version 0.01
-ttyS00 at 0x0000 is a SMC
-ttyS01 at 0x0040 is a SMC
-ttyS02 at 0xttyS03 at 0x8100 is a SCC
-ttyS04 at 0x8200 is a SCC
-RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
-RAMDISK: Compressed image found at block 0
-Freeing initrd memory: 4194301k freed
-kmem_create: Forcing size word alignment - nfs_fh
-VFS: Mounted root (ext2 filesystem).
-bad magic 0 (should be c045b2e0, creator 0), wq bug, forcing oops.
-kernel BUG at sched.c:656!
+Bob
+--
+Robert E. Brose II    N0QBJ
+http://www.jriver.com/~bob/
+bob@kunk.jriver.com
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
