@@ -1,20 +1,30 @@
-Message-Id: <9907231730.AA38796@marc.watson.ibm.com>
-To: Naushit Sakarvadia <nsakarvadia@telogy.com>
-Cc: "'LinuxPPC Developpers'" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Cross Compilaton 
-In-Reply-To: Message from Naushit Sakarvadia <nsakarvadia@telogy.com>
-   of "Fri, 23 Jul 1999 12:02:53 EDT." <61891BA043DED21180920090273F173829B0D0@argentina.telogy.com>
-Date: Fri, 23 Jul 1999 13:30:42 -0400
-From: David Edelsohn <dje@watson.ibm.com>
+Message-ID: <3798D2F8.1F6A25D8@openbits.net>
+Date: Fri, 23 Jul 1999 13:39:20 -0700
+From: "Todd C. Larsen" <tlarsen@openbits.net>
+MIME-Version: 1.0
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Debugging an MPC8xx Linux kernel with GDB
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-	You need to BUILD a cross-compiler version of GCC for the
-particular target.  GCC does not know about EVERY architecture in a single
-compiler executable.  Your x86 EGCS compiler only knows about x86 target.
+Is there a port of the gdb target monitor for the MPC8xx
+family of embedded PowerPC processors?  Has anyone tried
+to debug a Linux kernel built for these processors with
+the serial port-to-gdb monitor configuration, or is there
+some other approach?
 
-David
+I've got the x86 Linux-hosted cross compiler and binutils
+build that target the PowerPC.  I'm just trying to get
+the rest of the pieces together to do kernel device
+driver debugging on an MPC860T target.
+
+Thanks.
+
+--
+Todd C. Larsen
+tlarsen@openbits.net
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
