@@ -1,38 +1,98 @@
-Message-ID: <3A7AFD6B.67378DDD@mvista.com>
-Date: Fri, 02 Feb 2001 10:33:15 -0800
-From: Frank Rowand <frank_rowand@mvista.com>
-Reply-To: frowand@mvista.com
-MIME-Version: 1.0
-To: Subodh Nijsure <SNijsure@SkyStream.com>
-CC: "'jeffrey.d.kowing1@jsc.nasa.gov'" <jeffrey.d.kowing1@jsc.nasa.gov>,
+From: Joe Green <jgreen@mvista.com>
+To: Frank Rowand <frank_rowand@mvista.com>,
+        Subodh Nijsure <SNijsure@SkyStream.com>
+Subject: Re: ppc_8xx-ldd
+Date: Fri, 2 Feb 2001 10:55:11 -0800
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-=_nWlrBbmQBhCDarzOwKkYHIDdqSCD"
+Cc: "'jeffrey.d.kowing1@jsc.nasa.gov'" <jeffrey.d.kowing1@jsc.nasa.gov>,
         linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ping says unknown protocol icmp I have /etc/protocols file.
-References: <B25E2E5A003CD311B61E00902778AF2A0148B6C5@SERVER1>
-Content-Type: text/plain; charset=us-ascii
+References: <B25E2E5A003CD311B61E00902778AF2A0148B6C5@SERVER1> <3A7AFD6B.67378DDD@mvista.com>
+In-Reply-To: <3A7AFD6B.67378DDD@mvista.com>
+MIME-Version: 1.0
+Message-Id: <01020211101301.24872@minotaur.mvista.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Subodh Nijsure wrote:
->
-> Hello Jeffrey,
->
-> Thanks, indeed it was an issue of having libresolv library
->
-> I copied libresolve to /usr/lib when building the ramdisk and
-> ping works now.
->
-> BTW, is there a something equivalent to  ldd in powerpc world, so one
-> can find out which shared library an executable is linked with?
-> I have 8xx environment from MontaVista and I don't see ppc_8xx-ldd
->
-> /Subodh Nijsure
+--Boundary-=_nWlrBbmQBhCDarzOwKkYHIDdqSCD
+Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
 
-Yes, ldd is /bin/ldd in the target file system.
+On Fri, 02 Feb 2001, Frank Rowand wrote:
+> Subodh Nijsure wrote:
+> > BTW, is there a something equivalent to  ldd in powerpc world, so one
+> > can find out which shared library an executable is linked with?
+> > I have 8xx environment from MontaVista and I don't see ppc_8xx-ldd
+>
+> Yes, ldd is /bin/ldd in the target file system.
 
--Frank
+For execution on a development host, I've attached a simple shell script
+that does something like ldd.  (ldd actually loads the program, which
+won't work for cross-developed programs.)  It must be run from the same
+directory as the target architecture objcopy and objdump, and must have
+the same prefix (e.g., ppc_8xx-ldd, ppc_8xx-objcopy, ppc_8xx-objdump).
+
 --
-Frank Rowand <frank_rowand@mvista.com>
-MontaVista Software, Inc
+Joe Green <jgreen@mvista.com>
+MontaVista Software, Inc.
+
+--Boundary-=_nWlrBbmQBhCDarzOwKkYHIDdqSCD
+Content-Type: application/x-shellscript;
+  name="ppc_8xx-ldd"
+Content-Disposition: attachment; filename="ppc_8xx-ldd"
+Content-Transfer-Encoding: base64
+
+IyEvYmluL3NoCgojCiMgIEZJTEU6ICBsZGQtc2NyaXB0CiMKIyAgREVTQ1JJUFRJT046CiMgICAg
+U2hlbGwgc2NyaXB0IHRoYXQgc2ltdWxhdGVzIGxkZCB1c2luZyBvYmpjb3B5IGFuZCBvYmpkdW1w
+LgojICAgIFdvcmtzIGZvciBjcm9zcy1kZXZlbG9wZWQgcHJvZ3JhbXMgb24gaG9zdCBzeXN0ZW0u
+CiMKIyAgQVVUSE9SOiAgTW9udGFWaXN0YSBTb2Z0d2FyZSwgSW5jLiA8c291cmNlQG12aXN0YS5j
+b20+CiMKIyAgQ29weXJpZ2h0IDIwMDEgTW9udGFWaXN0YSBTb2Z0d2FyZSBJbmMuCiMKIyAgVGhp
+cyBwcm9ncmFtIGlzIGZyZWUgc29mdHdhcmU7IHlvdSBjYW4gcmVkaXN0cmlidXRlICBpdCBhbmQv
+b3IgbW9kaWZ5IGl0CiMgIHVuZGVyICB0aGUgdGVybXMgb2YgIHRoZSBHTlUgR2VuZXJhbCAgUHVi
+bGljIExpY2Vuc2UgYXMgcHVibGlzaGVkIGJ5IHRoZQojICBGcmVlIFNvZnR3YXJlIEZvdW5kYXRp
+b247ICBlaXRoZXIgdmVyc2lvbiAyIG9mIHRoZSAgTGljZW5zZSwgb3IgKGF0IHlvdXIKIyAgb3B0
+aW9uKSBhbnkgbGF0ZXIgdmVyc2lvbi4KIwojICBUSElTICBTT0ZUV0FSRSAgSVMgUFJPVklERUQg
+ICBgYEFTICBJUycnIEFORCAgIEFOWSAgRVhQUkVTUyBPUiBJTVBMSUVECiMgIFdBUlJBTlRJRVMs
+ICAgSU5DTFVESU5HLCBCVVQgTk9UICBMSU1JVEVEICBUTywgVEhFIElNUExJRUQgV0FSUkFOVElF
+UyBPRgojICBNRVJDSEFOVEFCSUxJVFkgQU5EIEZJVE5FU1MgRk9SIEEgUEFSVElDVUxBUiBQVVJQ
+T1NFIEFSRSBESVNDTEFJTUVELiAgSU4KIyAgTk8gIEVWRU5UICBTSEFMTCAgIFRIRSBBVVRIT1Ig
+IEJFICAgIExJQUJMRSBGT1IgQU5ZICAgRElSRUNULCBJTkRJUkVDVCwKIyAgSU5DSURFTlRBTCwg
+U1BFQ0lBTCwgRVhFTVBMQVJZLCBPUiBDT05TRVFVRU5USUFMIERBTUFHRVMgKElOQ0xVRElORywg
+QlVUCiMgIE5PVCBMSU1JVEVEICAgVE8sIFBST0NVUkVNRU5UIE9GICBTVUJTVElUVVRFIEdPT0RT
+ICBPUiBTRVJWSUNFUzsgTE9TUyBPRgojICBVU0UsIERBVEEsICBPUiBQUk9GSVRTOyBPUiAgQlVT
+SU5FU1MgSU5URVJSVVBUSU9OKSBIT1dFVkVSIENBVVNFRCBBTkQgT04KIyAgQU5ZIFRIRU9SWSBP
+RiBMSUFCSUxJVFksIFdIRVRIRVIgSU4gIENPTlRSQUNULCBTVFJJQ1QgTElBQklMSVRZLCBPUiBU
+T1JUCiMgIChJTkNMVURJTkcgTkVHTElHRU5DRSBPUiBPVEhFUldJU0UpIEFSSVNJTkcgSU4gQU5Z
+IFdBWSBPVVQgT0YgVEhFIFVTRSBPRgojICBUSElTIFNPRlRXQVJFLCBFVkVOIElGIEFEVklTRUQg
+T0YgVEhFIFBPU1NJQklMSVRZIE9GIFNVQ0ggREFNQUdFLgojCiMgIFlvdSBzaG91bGQgaGF2ZSBy
+ZWNlaXZlZCBhIGNvcHkgb2YgdGhlICBHTlUgR2VuZXJhbCBQdWJsaWMgTGljZW5zZSBhbG9uZwoj
+ICB3aXRoIHRoaXMgcHJvZ3JhbTsgaWYgbm90LCB3cml0ZSAgdG8gdGhlIEZyZWUgU29mdHdhcmUg
+Rm91bmRhdGlvbiwgSW5jLiwKIyAgNjc1IE1hc3MgQXZlLCBDYW1icmlkZ2UsIE1BIDAyMTM5LCBV
+U0EuCiMKCiMgR2V0IHRoZSBjb21tYW5kIHByZWZpeCB0byB1c2UgdG8gZmluZCBvdGhlciBhcmNo
+aXRlY3R1cmUtZGVwZW5kZW50IHRvb2xzLgojIFRoaXMgcmVxdWlyZXMgdGhpcyBzY3JpcHQgYmUg
+bmFtZWQgIjxzb21ldGhpbmc+bGRkIiwgYW5kIHVzYWdlIGJlbG93CiMgcmVxdWlyZXMgdGhhdCBv
+Ympjb3B5IGFuZCBvYmpkdW1wIGZvciB0aGlzIGFyY2hpdGVjdHVyZSBiZSBpbnN0YWxsZWQKIyB3
+aXRoIHRoZSBzYW1lIHBhdGggYW5kIHByZWZpeCBhcyBsZGQuCnByZWZpeD0kezAlbGRkfQoKIyBE
+aXJlY3RvcnkgZm9yIHRlbXBvcmFyeSBmaWxlCnRtcGRpcj0ke1RNUERJUjotL3RtcH0KCmZvciBm
+aWxlIGluICRAIDsgZG8KICAgICMgSWYgbXVsdGlwbGUgZmlsZXMgb24gY29tbWFuZCBsaW5lLCBw
+cmludCBlYWNoIGZpbGUgbmFtZS4KICAgICMgRm9yIGEgc2luZ2xlIGZpbGUsIGp1c3QgcHJpbnQg
+dGhlIGxpYnJhcnkgbGlzdC4KICAgIGlmIFsgJCMgLWd0IDEgXSA7IHRoZW4KCWVjaG8gIiR7Zmls
+ZX06IgogICAgZmkKCiAgICAjIEdldCBsaW5rZWQgc2hhcmVkIGxpYnJhcmllcyBmcm9tIHRoZSBE
+VF9ORUVERUQgZW50cmllcy4KICAgIGxpYnJhcmllcz0kKCR7cHJlZml4fW9iamR1bXAgLXAgJGZp
+bGUgfAoJCWdyZXAgTkVFREVEIHwKCQlzZWQgLWUgJ3MvLipORUVERUQgXCguKlwpJC9cMS8nKQoK
+ICAgICMgR2V0IHRoZSBwcm9ncmFtIGludGVycHJldGVyIGZyb20gdGhlIFBUX0lOVEVSUCBzZWN0
+aW9uLgogICAgIyBIYXZlIHRvIHVzZSBhIHRtcCBmaWxlIGJlY2F1c2Ugb2JqY29weSB3b24ndCBv
+dXRwdXQgdG8gc3Rkb3V0LgogICAgaWYgJHtwcmVmaXh9b2JqY29weSAtaiAuaW50ZXJwIC1PIGJp
+bmFyeSAkZmlsZSAkdG1wZGlyLyQkLmludGVycDsgdGhlbgoJaW50ZXJwPSQodHIgLWQgLWMgIls6
+Z3JhcGg6XSIgPCAkdG1wZGlyLyQkLmludGVycCkKCXJtIC1mICQkLmludGVycAoJbGlicmFyaWVz
+PSIkbGlicmFyaWVzICRpbnRlcnAiCiAgICBmaQoKICAgICMgUHJpbnQgbGlicmFyeSBsaXN0IGlu
+IHNpbXVsYXRlZCBsZGQgb3V0cHV0IGZvcm0uCiAgICAjIE5vdCBsb29raW5nIGF0IHRhcmdldCBs
+aWJyYXJpZXMsIHNvIG5vIGZ1bGwgcGF0aHMgb24gdGhlIHJpZ2h0IHNpZGUuCiAgICAjIENhbid0
+IGdlbmVyYXRlIGxvYWQgYWRkcmVzc2VzIHdpdGggYW55IGNlcnRhaW50eSwgc28ganVzdCB1c2Ug
+MHgwLgogICAgZm9yIGxpYnJhcnkgaW4gJGxpYnJhcmllczsgZG8KCWVjaG8gIgkkbGlicmFyeSA9
+PiAkbGlicmFyeSAoMHgwKSIKICAgIGRvbmUKZG9uZQo=
+
+--Boundary-=_nWlrBbmQBhCDarzOwKkYHIDdqSCD--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
