@@ -1,41 +1,40 @@
-Subject: Re: [PATCH] cpufreq support for 7447A on 2004 iBooks
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: John Steele Scott <toojays@toojays.net>
-Cc: Sebastian Henschel <linux@kodeaffe.de>,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <200406202044.01554.toojays@toojays.net>
-References: <200406051846.50718.toojays@toojays.net>
-	 <200406191250.18936.toojays@toojays.net> <1087619961.9046.301.camel@gaston>
-	 <200406202044.01554.toojays@toojays.net>
-Content-Type: text/plain
-Message-Id: <1087749240.22686.2.camel@gaston>
-Mime-Version: 1.0
-Date: Sun, 20 Jun 2004 11:34:02 -0500
+Message-ID: <20040620204028.58544.qmail@web60402.mail.yahoo.com>
+Date: Sun, 20 Jun 2004 13:40:28 -0700 (PDT)
+From: Dieu Morales <dieumorales@yahoo.com>
+Subject: Asiliantfb (Frame Buffer) Driver
+To: linuxppc-dev@lists.linuxppc.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 2004-06-20 at 06:13, John Steele Scott wrote:
->
-> Okay, here it is:
-> http://www.toojays.net/~toojays/misc/7447a_cpufreq_20040619a.patch
->
-> What is it that is "unknown" about these boards, that they are called
-> PMAC_TYPE_UNKNOWN_INTREPID? There is no such thing as a "known" intrepid?
-
-Bad naming of the constant, I should have called it "GENERIC_INTREPID"
-instead. I used to define constants for machine models, but that ended
-up being useless for newworld (still useful to differenciate some
-oldworld though). So I just use the generic constant nowadays.
-
-> Also, I sent an email to the list asking about sleep a couple of days ago. Can
-> you comment on that?
-
-The problem with sleep at this point is to wake up the video chip which
-is shut down by the hardware. ATI will maybe provide infos for that one
-day... Or I'll be able to reverse engineer enough when I find time...
-
-Ben.
-
+Greetings, I am working with the latest 2.6.7 kernel
+source on a ppc radstone PPC7A board and have included
+the CT69000 frame buffer to attempt to get a vga
+console.  However, when I set
+conswitchp = &dummy_con;
+the video initializes (monitor signal LED turns green
+from orange) and I get a green screen on the monitor.
+And when I set
+vgacon_remap_base = 0xfe000000;
+conswitchp = &vga_con;
+the video initializes (monitor signal LED turns green
+from orange)  and 50% of the time I get nothing on the
+monitor and the other 50% of the time I get what looks
+to be a screen saver that displays colors fading into
+one another (red->green->blue...) for about 10 sec
+like some kind of a video test. I placed
+vgacon_remap_base at the PCI0 I/O base, is this
+correct?
+I have added console=tty0 to the kernel command line
+and have not identified any other configuration items
+needed.  The serial console I/O which I am expecting
+to see on the monitor shows the driver initialized
+without errors.  Am I missing something in terms of
+configuration?  I have also noticed that when using
+vga_con no graphics card is detected in vgacon.c so
+goto no_vga and conswitchp = &dummy_con;
+Would this be related to the problem?
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
