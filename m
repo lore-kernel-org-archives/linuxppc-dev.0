@@ -1,45 +1,56 @@
-Date: Thu, 15 Nov 2001 17:35:45 +0100 (MET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: AGP : ATI128,powerpc
+From: Vincent Katz <vincent.katz@laposte.net>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Vincent Katz <vincent.katz@laposte.net>,
-	Paul Mackerras <paulus@samba.org>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: TiBook-PowerBook XF86Config-4 - gpm
-In-Reply-To: <20011115144707.11171@smtp.adsl.oleane.com>
-Message-ID: <Pine.GSO.4.21.0111151735180.28940-100000@mullein.sonytel.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@lists.linuxppc.org, jhartmann@precisioninsight.com,
+	paulus@samba.org
+In-Reply-To: <20011115144502.20832@smtp.adsl.oleane.com>
+References: <1005833543.16135.143.camel@avalon>
+	<20011115144502.20832@smtp.adsl.oleane.com>
+Content-Type: text/plain
+Date: 15 Nov 2001 18:21:15 +0100
+Message-Id: <1005844877.16584.190.camel@avalon>
+Mime-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 15 Nov 2001, Benjamin Herrenschmidt wrote:
-> >me too, i have a tibook and i'm interesting for your XF86Config-4.
+Ok thanks, i understand the problem ;-)
+this, go against my frame of mind but i yield (i m not narrow-minded ;-)
+), meanwhile the update of the official, i'll use your rsync.
+ thx for all, good luck.
+
+thx also for my gpm problem :-)
+
+vince.
+
+On 15 Nov 2001 15:45:02 +0100, Benjamin Herrenschmidt wrote:
+> >PPC machine : TiBook (Powerbook Titanium)
+> >ATY : aty128fb: Rage Mobility M3 (AGP) [chip rev 0x0] 8M 128-bit SDR
+> >SGRAM (1:1)
 > >
-> >I have a little probleme with the console mode and gpm (v:1.19.6), for
-> >the cut and paste i have an alteration of the characters, i don't know
-> >why ?
+> >Is it possible to add in the flush_cache function a
+> >"defined(__powerpc__)"  like alpha, sparc ..or i386 .. ?
+> >
+> >When the function flush_cache in the file "agpgart_be.c" ll be updated
+> >in the offical kernel for ppc cpu ?
 >
-> This is a problem when VGA console support is enabled in the kernel
-> config. (Beware that if you disable it, you must make distclean before
-> recompiling to get proper display).
+> It's more than flush cache that is needed ;) flush_cache alone will
+> eventually allow AGP to compile, not to work.
 >
-> I know Geert had a fix for that, I'm not sure if that was included in
-> upstream sources or not as I didn't have this option checked for monthes
-> in my kernel.
-
-Accepted by Linus in 2.4.13 or so.
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+> Get my current rsync tree from rsync.penguinppc.org::linux-2.4-benh,
+> it has complete support for UniNorth AGP on r128. (the M3 you have in
+> your Pismo is an r128). Beware however that accelerated GL via DRI
+> is known to crash with this chip for reasons not yet determined.
+>
+> I've sent my current patches to the DRI mailing list, I can't say
+> yet when all this will appear upstream as some merging has to be
+> done with other archs using the "special" agp_ioremap. I will submit
+> the AGP part of the patch directly to linus/marcello once I'm in sync
+> with DRI people, there's no need to send it until something can use it ;)
+>
+> Ben.
+>
+>
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
