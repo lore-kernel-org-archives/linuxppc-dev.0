@@ -1,33 +1,34 @@
+Message-ID: <39362479.BFA75F59@student.ethz.ch>
+Date: Thu, 01 Jun 2000 10:53:13 +0200
+From: Michel Dänzer <daenzerm@student.ethz.ch>
+MIME-Version: 1.0
 To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-Cc: Michel Dänzer <daenzerm@student.ethz.ch>,
+CC: Francois Felix Ingrand <felix@ingrand.net>,
         Stephan Leemburg <stephan@jvc.nl>, linuxppc-dev@lists.linuxppc.org
 Subject: Re: Debian pmud package available
 References: <Pine.LNX.4.10.10005312100280.32107-100000@opal.biophys.uni-duesseldorf.de>
-From: Francois Felix Ingrand <felix@ingrand.net>
-Date: 01 Jun 2000 09:45:24 +0200
-In-Reply-To: Michael Schmitz's message of "Wed, 31 May 2000 21:01:03 +0200 (CEST)"
-Message-ID: <x8q7lc9x2sr.fsf@alf.laas.fr>
-MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de> writes:
+Michael Schmitz wrote:
 
-> >
-> > I already installed this version on my pismo. As far as I can tell, it only
-> > supports battery charge level on this powerbook model. Am I right?
+> > I already installed this version on my pismo. As far as I can tell, it
+> > only supports battery charge level on this powerbook model. Am I right?
 >
-> Yes. Sleep needs kernel support which isn't done yet.
+> Yes.
 
-Indeed, yesterday I closed my pismo... and it fills /var/log/messages with
-messages about not being able to go to sleep.
+How? At least the gkrellm pmud plugin doesn't show the charge level here.
+
+
+Michel
+
 
 --
--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-"Par quelle bizarrerie en arrive-t-on à payer les retraites par capitalisation
- des américains avec les gains de productivités des salariés français?"
-http://www.ingrand.net/felix                  http://www.laas.fr/~felix
+Intel: where Quality is job number 0.9998782345!
+______________________________________________________________________________
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
