@@ -1,56 +1,50 @@
-Date: Sun, 4 Jul 2004 01:33:37 +0200
-From: Olaf Hering <olh@suse.de>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: kernel build failures with gcc 3.3.3 and newer, Inconsistent kallsyms data, try setting CONFIG_KALLSYMS_EXTRA_PASS
-Message-ID: <20040703233337.GA7144@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Message-ID: <40E75DC7.7070601@coditel.net>
+Date: Sun, 04 Jul 2004 03:30:47 +0200
+From: Stef Simoens <stefaan.simoens@coditel.net>
+MIME-Version: 1.0
+To: Olaf Hering <olh@suse.de>
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	Andrew Morton <akpm@osdl.org>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: [PATCH] fix missing option in binutils version check
+References: <20040610001605.GH18212@smtp.west.cox.net> <20040614091530.GA18482@suse.de> <20040614162359.GA7798@smtp.west.cox.net> <20040614173841.GA3247@suse.de> <20040614180734.GB3247@suse.de> <20040614205537.GB7798@smtp.west.cox.net> <20040614211931.GA21113@suse.de> <20040615161258.GA14528@smtp.west.cox.net> <20040615172511.GA21667@suse.de> <20040615174648.GC14528@smtp.west.cox.net> <20040703222918.GA10425@suse.de>
+In-Reply-To: <20040703222918.GA10425@suse.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-linux-2.6.7-bk16 has a new kallsyms check. This check fails with gcc
-newer than 3.3.2. It passes with 3.4.1 and the hammer branch.
+Olaf Hering wrote:
 
-all symbols are 0x10 off with gcc 3.3.3, like:
+>  On Tue, Jun 15, Tom Rini wrote:
+>
+>
+>>And yes, passing -many does work on all older supported versions of
+>>binutils.  So perhaps we should just add -Wa,-many to our cflags and be
+>>done with it now (and for future fixes of this sort).
+>
+>
+> gcc 3.2 passes only -mppc, so all altive instructions will fail to
+> compile without either -many or -maltivec
 
- diff -u System.map .tmp_System.map |  grep tcp_hashinfo
--c032f4e0 D tcp_hashinfo
-+c032f500 D tcp_hashinfo
+Are there altivec instructions when CONFIG_ALTIVEC is not set?
 
-the intial nm -n output has only these differences:
+> diff -purNX /suse/olh/kernel/kernel_exclude.txt linux-2.6.7-bk16.orig/arch/ppc/kernel/Makefile linux-2.6.7-bk16/arch/ppc/kernel/Makefile
+> --- linux-2.6.7-bk16.orig/arch/ppc/kernel/Makefile	2004-07-03 22:33:35.000000000 +0200
+> +++ linux-2.6.7-bk16/arch/ppc/kernel/Makefile	2004-07-03 22:51:16.802332774 +0200
+> @@ -8,6 +8,9 @@ endif
+>  ifdef CONFIG_4xx
+>  EXTRA_AFLAGS		:= -Wa,-m405
+>  endif
+> +ifdef CONFIG_6xx
+> +EXTRA_AFLAGS		:= -Wa,-maltivec
+> +endif
+>  ifdef CONFIG_E500
+>  EXTRA_AFLAGS		:= -Wa,-me500
+>  endif
 
- cut -b 10- gcc332/nm-m-.tmp_vmlinux1 > 2.o
- cut -b 10- gcc333/nm-m-.tmp_vmlinux1 > 3.o
- diff -u 2.o 3.o
---- 2.o 2004-07-04 01:28:31.938466375 +0200
-+++ 3.o 2004-07-04 01:28:34.877522576 +0200
-@@ -8510,8 +8510,8 @@
- t cdrom_read_cdda_old
- t cdrom_read_cdda_bpc
- t cdrom_read_cdda
--T cdrom_ioctl
- a Hash_base
-+T cdrom_ioctl
- t cdrom_switch_blocksize
- t mmc_ioctl
- t cdrom_get_track_info
-@@ -30838,8 +30838,8 @@
- t af_unix_init
- t packet_init
- t init_sunrpc
--T _einittext
- t __setup_str_nosmp
-+T _einittext
- t __setup_str_maxcpus
- t __setup_str_profile_setup
- t __setup_str_debug_kernel
+So, shouldn't this be "ifdef CONFIG_ALTIVEC" ?
 
+Stef
 
-
---
-USB is for mice, FireWire is for men!
-
-sUse lINUX ag, nÜRNBERG
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
