@@ -1,40 +1,41 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-To: "Embedded Linux PPC list" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: list of 2.6-related migration issues for embedded programmers?
-References: <20040720071610.7BC31C109F@atlas.denx.de>
-From: "Linh Dang" <linhd@nortelnetworks.com>
-Date: Tue, 20 Jul 2004 07:29:55 -0400
-In-Reply-To: <20040720071610.7BC31C109F@atlas.denx.de> (Wolfgang Denk's
- message of "Tue, 20 Jul 2004 03:16:05 -0400")
-Message-ID: <wn5vfgi9arw.fsf@linhd-2.ca.nortel.com>
+From: "Prabhakar Kalasani" <kalasani@sena.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Software Flow Control Problem in UART.C 
+Date: Tue, 20 Jul 2004 21:14:01 +0900
+Message-ID: <ACEDKFIMODAHBNCONGOHEEOMCFAA.kalasani@sena.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On 20 Jul 2004, wd@denx.de wrote:
+Hi all,
 
-> In message <wn5zn5v8nl8.fsf@linhd-2.ca.nortel.com> you wrote:
->>
->> - I failed to see what in initramfs mechanism would prevent
->> one from having "separated images which can be updated
->> independently of each other."
->
-> initramfs gets linked with the kernel into one image, similar to
+When I tried to use Software Flow Control it's not working with uart.c
+driver in kernel 2.4.2 , I send Ctrl+S character to stop the flow but the
+flow is not get stopped ,
+I dig something into driver and find like,
 
-But you don't have to. What ever you can do with the good-old initrd
-image you can do with the new initramfs (really cpio archive)
-image. The main difference is the creation: genext2fs vs cpio.
+static void rs_8xx_stop(struct tty_struct *tty)
+{
 
-I just happen to use zImage.initrd (where ramdisk.image.gz is a cpio
-archive) in our project because it's the most appropriate for our
-situation.
+static void rs_8xx_start(struct tty_struct *tty)
+{
 
-Regards
+these two modules are handling with the flow stop(Ctrl+S) and start(Ctrl+Q)
+,
+I think there is a BUG in handling the Event(SCCE) and Mask Registers (SCCM)
+somewhere like
 
---
-L.D.
+	if (info->state->smc_scc_num & NUM_IS_SCC) {
+		sccp = &cpmp->cp_scc[idx];
+		sccp->scc_sccm &= ~UART_SCCM_TX;
+
+Anybody got this problem and solved please let me know
+
+Thanks in Advance,
+KP
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
