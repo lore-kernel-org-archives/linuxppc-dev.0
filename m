@@ -1,27 +1,25 @@
-Message-Id: <200201072223.RAA06381@missioncriticallinux.com>
-From: mod+linuxppc-dev@MissionCriticalLinux.com
-To: linuxppc-dev@lists.linuxppc.org
-Subject: [PATCH] Link-time failures from "simple" CFLAGS changes
-Date: Mon, 07 Jan 2002 17:23:09 -0500
+Date: Mon, 7 Jan 2002 16:00:01 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: mod+linuxppc-dev@MissionCriticalLinux.com
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: [PATCH] Link-time failures from "simple" CFLAGS changes
+Message-ID: <20020107230001.GB13931@cpe-24-221-152-185.az.sprintbbd.net>
+References: <200201072223.RAA06381@missioncriticallinux.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200201072223.RAA06381@missioncriticallinux.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Sheesh!    Well, OK then: please apply this patch:
+On Mon, Jan 07, 2002 at 05:23:09PM -0500, mod+linuxppc-dev@MissionCriticalLinux.com wrote:
 
+> Sheesh!    Well, OK then: please apply this patch:
 
-===== Documentation/Changes 1.12 vs edited =====
---- 1.12/Documentation/Changes  Fri Dec  7 14:01:21 2001
-+++ edited/Documentation/Changes        Mon Jan  7 17:20:20 2002
-@@ -92,6 +92,8 @@
- greater than -O2 may not be wise.  Similarly, if you choose to use gcc-2.95.x
- or derivatives, be sure not to use -fstrict-aliasing (which, depending on
- your version of gcc 2.95.x, may necessitate using -fno-strict-aliasing).
-+On the other hand, -O0 will cause your build to fail because inline
-+functions are only defined when *some* optimization is in effect.
+Feel free to pass it onto Marcelo and/or Linus.
 
- Make
- ----
-
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
