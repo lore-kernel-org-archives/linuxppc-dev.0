@@ -1,31 +1,41 @@
-Message-ID: <3C18445A.80505@embeddededge.com>
-Date: Thu, 13 Dec 2001 01:02:02 -0500
+Message-ID: <3C184765.8050300@embeddededge.com>
+Date: Thu, 13 Dec 2001 01:15:01 -0500
 From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: Andrew Dixon <andrew.dixon@seranoa.com>
-Cc: ppclist <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: root=/dev/nfs on sbc8260
-References: <3C17E07F.7144B7BF@seranoa.com>
+To: Subodh Nijsure <SNijsure@SkyStream.com>
+Cc: "'Wolfgang Denk'" <wd@denx.de>,
+	Michael Habermann <MHabermann@gmx.de>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MMU and BDI2000
+References: <B25E2E5A003CD311B61E00902778AF2A039C3543@SERVER1>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Andrew Dixon wrote:
+Subodh Nijsure wrote:
 
 
-> Any insight that people could give would be greatly appreciated.
-It's either the FCC or the server.  Since you have the FCC working in PPCBoot
-and I've used FCC2 on other boards, I may assume the driver is working.
 
-Since you have DHCP/BOOTP configured in the kernel, do you have a dhcp server
-and can you simply try 'root=/dev/nfs rw ip=any' and see if you can talk to
-dhcp?  You could also use your favorite network sniffer to see what traffic,
-if any, went along the network.
+> I have kernel 2.4.4 and I do have MMU XLAT and latest BDI firmware from
+> Abatron
+
+Can you use a newer kernel that will do all of this for you automatically?
+
+> and I am  not able to get translation to work. I have tried the following
+
+That isn't correct with the latest BDI firmware.  The address at 0xf0 is
+not the address of the page table, it is an indirect pointer to an array
+of page table root pointers.  Later kernels will set up all of this for you.
+
+We unfortunately had a short-lived version of kernel and BDI2000 that did
+use the low address as a pointer to the kernel page tables, but this isn't
+done any longer.
 
 Thanks.
 
-	-- Dan
+
+-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
