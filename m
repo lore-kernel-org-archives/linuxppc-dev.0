@@ -1,48 +1,39 @@
-Message-ID: <01C18705.8C0C5810.svacca@valcom.com>
-From: Steven Vacca <svacca@valcom.com>
-Reply-To: "svacca@valcom.com" <svacca@valcom.com>
-To: "LinuxEmbeddedMailList (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Writing to PCI Bridge in User Space - Problem
-Date: Mon, 17 Dec 2001 14:17:22 -0500
+Message-ID: <3C1E561D.1060005@embeddededge.com>
+Date: Mon, 17 Dec 2001 15:31:25 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+To: "svacca@valcom.com" <svacca@valcom.com>
+Cc: "LinuxEmbeddedMailList (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Writing to PCI Bridge in User Space - Problem
+References: <01C18705.8C0C5810.svacca@valcom.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have a "resident" driver which reads and writes a PLX PCI Bridge
-chip, which is mapped into 0x2000.0000 in MMU_init() (for the mpc860).
+Steven Vacca wrote:
 
-The driver controls an LED, attached to the PLX chip, by writing to the
-one of the PLX chip regs whenever its ioctl() fops func is called.
+> I have a "resident" driver which reads and writes a PLX PCI Bridge
+> chip, which is mapped into 0x2000.0000 in MMU_init() (for the mpc860).
 
-The kernel space, of course, is mapped in at 0xc000.0000.
-
-
-Immediately before executing  - execve("/sbin/init") -  in init(),
-to get the app going, the kernel code can call the same func, say,
-led_onOff(), that the driver's ioctl() calls to turn the LED on and OFF.
-This works fine.
-
-But when my app executes an ioctl(), and then the driver's ioctl() func
-calls the same func, led_onOff(),  the LED doesn't turn ON and OFF
-(doesn't do anything).  There are no addr exceptions errors.  The code
-in led_onOff executes printk()'s OK.
-
-This func, led_onOff() uses get_user() and put_user() to access the
-non-kernel-space address 0x2000.0000 + PLX_reg_offset.
+Bzzzzt!!  Potentially wrong answer.  How are you "mapping" it?  If you
+are using ioremap(), this isn't going to work.  You either need to map it
+much later in the kernel initialization, after the kernel VM is set up,
+or by carefully choosing addresses for io_block_mapping().
 
 
-So, why does it work fine just before starting the app, from the non-driver
-kernel code, but not from the driver's ioctl fops func?
+> So, why does it work fine just before starting the app, from the non-driver
+> kernel code, but not from the driver's ioctl fops func?
+
+Because if you just use ioremap(), it placed the virtual address into the
+user space.  When you started up the user programs the mapping was used for
+it's intended purpose (user space).  There are plenty of messages in the
+archives and FAQs describing the memory mapping.
+
+Thanks.
 
 
-"Thanks for your help  "
-"my fellow linuxonians!"
-     /
-  \O/
-   \/	<---- Steven
- _/\_
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
