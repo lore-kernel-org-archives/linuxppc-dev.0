@@ -1,17 +1,13 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao07.cox.net (fed1rmmtao07.cox.net [68.230.241.32])
-	by ozlabs.org (Postfix) with ESMTP id 877822BF0E
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Jan 2005 09:47:05 +1100 (EST)
-Date: Tue, 11 Jan 2005 15:46:49 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: James Nelson <james4765@cwazy.co.uk>
-Message-ID: <20050111224649.GO3391@smtp.west.cox.net>
-References: <20050108170406.32690.36989.11853@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050108170406.32690.36989.11853@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
-Subject: Re: [RESEND] [PATCH 0/7] ppc: remove cli()/sti() from arch/ppc/*
+Return-Path: <Alexander.Povolotsky@marconi.com>
+Message-ID: <313680C9A886D511A06000204840E1CF0A6474B2@whq-msgusr-02.pit.comms.marconi.com>
+From: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
+To: "'linuxppc-dev@ozlabs.org'" <linuxppc-dev@ozlabs.org>,
+	"'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
+Date: Wed, 12 Jan 2005 14:41:18 -0500
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="ISO-8859-1"
+Subject: Linux 2.6 8xx kernel booting vs watchdog 
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,13 +17,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Jan 08, 2005 at 11:03:49AM -0600, James Nelson wrote:
+Hi,
 
-> This series of patches is to remove the last cli()/sti() function calls in
-> arch/ppc, and add spinlocks where necessary.
+I wonder if someone could help me with answering couple of my questions:
 
-I'll push this to Andrew and hope they move from there, thanks.
+How watchdog resetting is handled for PPC 
+in Linux 2.6 on the kernel level ?
+Does one need to add code for it or is it supported "off the shelf" ?
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+Is "early printk" supported for PPC on 2.6 ?
+If yes - how and where it could be enabled?
+
+Thanks,
+Alex
