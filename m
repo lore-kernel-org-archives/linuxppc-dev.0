@@ -1,54 +1,30 @@
-Message-ID: <F14441D40E5AD3118886005004607AD10BDE55@MAIL1>
-From: "Halfmann, Klaus" <khalfmann@libra.de>
+Mime-Version: 1.0
+Message-Id: <p04330108b649b743e634@[206.6.156.5]>
+In-Reply-To: <F269nW0kKIBXEHt3V5g00007774@hotmail.com>
+References: <F269nW0kKIBXEHt3V5g00007774@hotmail.com>
+Date: Tue, 28 Nov 2000 14:31:11 -0500
 To: linuxppc-dev@lists.linuxppc.org
-Cc: "'Douglas M. Lowder'" <dlowder@mvista.com>
-Subject: AW: [linuxppc-dev] Sound and sleep support for iBook?
-Date: Tue, 28 Nov 2000 08:29:24 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="windows-1252"
+From: Stefan Jeglinski <jeglin@4pi.com>
+Subject: Re: usb wheel mouse, XF4.0
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Douglas M. Lowder [mailto:dlowder@mvista.com] wrote:
->
-> I am using kernel 2.2.17pre20-ben3 (from Benjamin Herrenschmidt's
-> site) and everything else on the system is well supported.
-> I would be very interested in getting information on the
-> last two gaps in hardware support, namely sound and power
-> management.  Anyone out there made progress on this lately?
->
-> -Doug Lowder
+>usb mice work great under linux.
 
-Powermangement works partially when using pmud (Download via
-www.penguinppc.org) Sleep does not work and if it does (BenH
-had some kernels that tried) it does not wake up anymore.
-Upto now nobody found out what needs to be done here. The
-Darvin sources may contain hints. You can however use
-pmud to shut down the iBook when power is low or the lid is
-closed. Im unsure if the "nap"-mode works at all.
 
-There is an (unsupported, ugly ...) version of dmasound that
-sometimes works on iBooks, but it provides no control of the
-output, it just takes what OF or MacOS left behind. So using
-such a Kernel/Module is a kind of russian roulette because it
-will block forever when intializing fails.
+well, that may be true for all the brand spanking new Apple machines
+that get all the linuxppc attention these days, but AFAICT, it's not
+guaranteed at all with old-world machines and USB PCI cards...
 
-Both issues need a good assembler-/Forth- Programmer that must
-use MacsBug in MacOS or dissassemble the OF to find out whats
-going on there. I'd really like to do that but that is nothing
-I can do when going to work by train ....
+... not that there isn't a simple trick, and not that I've exhausted
+all my possibilities yet, but my level of exasperation is rather high
+at the moment... so far I'm chalking it up mostly to usb still being
+not really built into the stable kernel.
 
-              |          __    hasi@penguinppc.org
-+--------+    |   |\  | |  \
-| +----+ |    v   | \ | |__/   Klaus Halfmann
-| |... | |   .^.  |  \| |      Kirchstraﬂe 24a
-| |..  | |  <   >      |       67691 Hochspeyer
-| +----+ |   'v'       |
-|_____==_|+==-------------==+  GERMANY
- |      | |   --__  __--    |
- +------+ +-------==--------+
 
+
+Stefan Jeglinski
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
