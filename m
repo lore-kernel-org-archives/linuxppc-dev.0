@@ -1,51 +1,70 @@
-Message-ID: <3B5F6857.19E14CE2@mvista.com>
-Date: Wed, 25 Jul 2001 17:46:15 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
+Message-ID: <3B5F8CD5.7D80B995@mvista.com>
+Date: Wed, 25 Jul 2001 23:21:57 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Jeff Studer <jstuder@aquilagroup.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
+To: "Mark A. Greer" <mgreer@mvista.com>
+Cc: Jeff Studer <jstuder@aquilagroup.com>,
+	linuxppc-embedded@lists.linuxppc.org
 Subject: Re: PCI bridge support with MontaVista
-References: <Pine.LNX.4.10.10107251625340.31481-100000@jeffs.aquilagroup.com>
+References: <Pine.LNX.4.10.10107251625340.31481-100000@jeffs.aquilagroup.com> <3B5F6857.19E14CE2@mvista.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Jeff Studer wrote:
+"Mark A. Greer" wrote:
 
-> Hello all,
->
-> We are in the early stages of a new embedded MPC860T project and we are
-> looking at using the MontaVista distribution of Linux for the OS.  We need
-> PCI support but are flexible on what PCI bridge we will use.
->
-> What we need to know is what PCI bridges are supported by with this
-> distribution.  I found some PPC PCI bridge support patches mentioned
-> online, so I am assuming there may be some PCI bridges that could be
-> supported by applying a patch, if the support does not yet exist with
-> MontaVista's distribution.  Are there any cases like this?
->
-> I did not see information regarding PCI bridge support on MontaVista's
-> site, so I am asking here.  We really need to know what is supported so we
-> can make a choice on what to use.  Any further information would be
-> helpful, regarding ease of use and cost, or any other personal opinions. I
-> have worked with the QSpanII with another OS, but we had to write our own
-> drivers for that.
+> Just off the top of my head there are several bridges that are supported, the
+> Motorola SPS MPC105, MPC106, MPC107 (and MPC824x), the Motorola MCG Raven,
+> Hawk, Harrier, IBM CPC700 and CPC710, several proprietary bridges, and others
+> that are in the works.
 
-Just off the top of my head there are several bridges that are supported, the
-Motorola SPS MPC105, MPC106, MPC107 (and MPC824x), the Motorola MCG Raven,
-Hawk, Harrier, IBM CPC700 and CPC710, several proprietary bridges, and others
-that are in the works.
+None of these work on the MPC8xx bus, so they aren't options.
 
-Since the code already exists for these bridges, working with them
-[softwarewise] isn't that much of an issue.  Probably the most important thing
-for you would be price & performance.  Unfortunately, I have no idea about the
-price and I've never personally gotten around to doing a true apples-to-apples
-comparison of the various host bridges & their options.  :(
+The first thing I have to ask is do you _really_ need a PCI bridge.
+If yes, because you have PCI slots and expect any PCI card to work,
+I would then strongly suggest looking at something with a real PCI
+bridge solution, like the 824x with an integrated, standard PCI
+bridge.
 
-I'll bet Dan Malek and Matt Porter can provide more insight.
+If you are building a "closed" embedded solution, the most successful
+8xx designs don't use a PCI bridge.  Due to the flexibility of the 8xx
+bus, it is much more efficient (lower cost, less software, lower power,
+higher performance), to simply configure the 8xx bus or add some trivial
+external logic.  This has been done with sound chips, graphics,
+additional
+uarts, IDE, USB, and so on.  You don't need PCI to attach these devices.
 
-Mark
+If you really insist on using a PCI bridge with the 8xx, keep in mind
+the bridge is only a (small) part of the entire system solution.  The
+PCI bridge simply provides the bus translation between the 8xx and the
+PCI.
+You have to solve the problem of interrupts as well.  The best way is
+probably to just connect the PCI INTAs to the MPC8xx external IRQs, then
+you need to somehow adapt the software to work.  This has been the
+source
+of much hacking in the past, without any general solution.  Ensure the
+bridge and your system configuration can actually perform PCI bus
+mastering
+of the 8xx bus, if you need this.  The QSpanII claims to finally be able
+to do this, so check it out.  The PCI bridges also claim a large part of
+the physical address (usually the upper 2G) and do their own decoding.
+I've seen one design that tried to fake a smaller 8xx space with some
+external logic, but this never worked due to bus timing problems. I
+guess the moral of the story is don't be cute with the design :-).
 
+So, make sure you _really_ need that PCI bridge.  Due to the work of
+a few people, the PCI subsystem is very modular and easy to update.
+All you may need to add are a few configuration space access functions
+and an initialization function (which is always unique to the board
+design).  Choose a bridge that has the features you want, connect it
+in a very straightforward design, and the software will fall into place
+rather easily (maybe :-). I still prefer the no PCI design with
+MPC8xx....
+
+Good Luck.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
