@@ -1,31 +1,41 @@
-Message-Id: <sf8d0c4a.082@mail.frequentis.com>
-Date: Wed, 15 Oct 2003 08:58:43 +0200
-From: "Gerhard TAEUBL" <Gerhard.TAEUBL@frequentis.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Patch fec.c
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: quan.zechang@zte.com.cn
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: any one can help me? problem about install ELDK 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 15 Oct 2003 14:42:37 +0800."
+             <OF4261606D.01F5B29B-ON48256DC0.00245225@com.cn>
+Date: Wed, 15 Oct 2003 15:12:03 +0200
+Message-Id: <20031015131208.659E9C59E4@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi!
+In message <OF4261606D.01F5B29B-ON48256DC0.00245225@com.cn> you wrote:
+>
+>   when i am installing the ELDK ,the install software print the error
+> message:
+> any one can tell me the method resolving the problem?thank you !
+>
+> Do you really want to install into /home/achang/program_files/eldk
+> directory[y/n]?: y
+>
+> Installing cross RPMs
+>
+> /bin/sh: line 1: /home/achang/program_files/eldk/bin/rpm: No such file or
+> directory
 
-I found following message:
-http://lists.linuxppc.org/linuxppc-embedded/200305/msg00255.html
+Obviously you did not download all the required files. At  least  the
+file "bin/rpm" seems to be missing.
 
-There Jean-Denis states:
+Best regards,
 
-2 - Or, the worst, in function mdio_read called through the ioctl,
-which would hang the calling process.
+Wolfgang Denk
 
-We have an MPC860T custom board and uses DENX kernel 2.4.4.
-In our project we use also a second ethernet pcmcia card, and we have to bound both ethernet cards as backup medium. We updsate the bounding.c file and compile it as module. It works, but if we enable the mii check on the bounding module the kernel crash. Our hardware has an hardware watchdog, so it resets within one second.
-
-Does anyone have any idea how to patch the code to prevent this 'failure'?
-
-best regards
-Gerhard
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Today is the yesterday you worried about tomorrow.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
