@@ -1,45 +1,53 @@
-Message-ID: <39453D7A.10E9AF8C@embeddededge.com>
-Date: Mon, 12 Jun 2000 15:43:54 -0400
-From: Dan Malek <dan@netx4.com>
+Message-ID: <A3E34B558F5CD211B4980008C7A4A99001D60ACF@sparrow.eng.gilbarco.com>
+From: "Wohlgemuth, Jason" <jason.wohlgemuth@marconi.com>
+To: "'Lucinda Schafer'" <lucsch@adaptivemicro.com>,
+        "'linuxppc-embedded@lists.linuxppc.org'"
+	 <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Software Emulation Kernel Panic
+Date: Mon, 12 Jun 2000 15:49:07 -0400
 MIME-Version: 1.0
-To: Lucinda Schafer <lucsch@adaptivemicro.com>
-CC: linuxppc-embedded@lists.linuxppc.org, cort@cs.nmt.edu,
-        paulus@cs.anu.edu.au
-Subject: Re: Software Emulation Kernel Panic
-References: <A109131318C4D1119AC20060088DECE330F374@amwmail.adaptivemicro.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Lucinda Schafer wrote:
+Hmmm... Does the kernel completely boot-up?  (As in a shell prompt)  Does
+this occur when loading the shell?  What libraries are you using?  Where did
+you get those libraries or did you build them yourself?  Or, is this
+occurring before the kernel is completely booted?
 
-> On our MPC823-based custom boards, we are experiencing the "Kernel Mode
-> Software FPU Emulation" panic
+Jason
 
-
-This has little to do with floating point.  Nearly all instructions
-the processor can't decode are vectored to this function.  It assumes
-the primary reason you are here is to emulate floating point instructions.
-If the function can't decode the instruction as a floating point operation,
-it is really something the processor can't execute, so the panic message
-spews forth.
-
-> Could you shed some light on some situations where this may happen?
-
-This can be either a software or hardware bug.  If it is a software
-bug, just unravel the stack backtrace and debug it.  It could be a
-trashed stack frame, resulting in a bad function return address, or
-some indirect function call that was not properly computed.
-
-It could also happen because of a hardware bug while fetching instructions
-from memory.  Verify the NIP instruction that it tried to decode is
-what is really supposed to be at that location in memory.  This is
-a typical failure when the UPM is not programmed correctly.  Since
-this is a custom board, have you verified all memory cycles?  Disable
-the cache and try again, you will probably get a different result.
+-----Original Message-----
+From: owner-linuxppc-embedded@lists.linuxppc.org
+[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Lucinda
+Schafer
+Sent: Monday, June 12, 2000 2:16 PM
+To: linuxppc-embedded@lists.linuxppc.org; cort@cs.nmt.edu;
+paulus@cs.anu.edu.au
+Subject: Software Emulation Kernel Panic
 
 
-	-- Dan
+
+Greetings:
+
+On our MPC823-based custom boards, we are experiencing the "Kernel Mode
+Software FPU Emulation" panic called from the SoftwareEmulation function in
+/linux/arch/ppc/kernel/traps.c in the 2.2.13 kernel. We see this on boot-up
+or shortly after.
+
+Could you shed some light on some situations where this may happen? Most
+other situations (unimplemented and illegal instructions, floating point,
+etc.) would cause the user_mode(regs) call to return a TRUE condition, but
+ours apparently returns a FALSE condition, thus the panic. Why does one get
+a software emulation exception with the PR bit of the MSR equal to 0?
+
+Any suggestions highly appreciated.
+
+Lucinda Schafer
+Staff Software Engineer
+Adaptive Micro-Ware, Inc.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
