@@ -1,35 +1,61 @@
-Subject: Re: IDMA: Setting Up Parameter RAM.
-To: linuxppc-embedded@lists.linuxppc.org
-Date: Fri, 26 May 2000 12:12:49 +1000 (EST)
-In-Reply-To: <20000525060239.3F99C3C989@elph.research.canon.com.au> from "Greg Johnson" at May 25, 2000 04:02:39 PM
+Message-ID: <004101bfc6be$a5c0dff0$69f001dc@sjzhu.sps.mot.com>
+From: "Shuangjun Zhu" <r44089@email.sps.mot.com>
+To: "Magnus Damm" <damm@kieraypc01.p.y.ki.era.ericsson.se>
+Cc: "Dan Malek" <dan@netx4.com>, <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: PCMCIA support for 860 -- lost interrupt
+Date: Fri, 26 May 2000 11:01:09 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-Id: <20000526021249.D0E5F3C980@elph.research.canon.com.au>
-From: gjohnson@research.canon.com.au (Greg Johnson)
+Content-Type: text/plain;	charset="gb2312"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+Hello, Magnus
 
-Found the source of my IDMA troubles, programmer error. I was inadvertently
-clearing the CPM command register between setting up the IDMA INIT command
-and setting the FLG bit.
+I found a temp hacker to fix it.
+Socket Driver and ATA/IDE driver share the same IRQ 13.
+So I must modify the arch/ppc/kernel/irq.c: request_8xxirq(),
+it only allow pci-ide share the irq.
+It will not complain "lost interrupt".
 
-Sorry to have bothered all. Thanks to those who replied.
+BRs,
+Shuangjun
 
-Regards
 
-Greg.
 
---
-+------------------------------------------------------+
-| Do you want to know more? www.geocities.com/worfsom/ |
-|              ..ooOO Greg Johnson OOoo..              |
-| HW/SW Engineer        gjohnson@research.canon.com.au |
-| Canon Information Systems Research Australia (CISRA) |
-| 1 Thomas Holt Dr., North Ryde, NSW, 2113,  Australia |
-|      "I FLEXed my BISON and it went YACC!" - me.     |
-+------------------------------------------------------+
+>>From the code ide_cs.c in pcmcia package, the m8xx_pcmcia interrupt
+>>handler will call the ide_event() in ide_cs.c, this function does
+>>nothing with ide interrupt handler in the kernel.
+>>
+>>Here is Dan's ideas
+>>>See, this is why I changed the function name in the first place.
+>>>request_irq() assumes a PC-like interrupt structure, which doesn't work
+>>>on the MPC8xx internal interrupt controller.  You need to add an
+>>>indirect function call to the 'md' structure that will install the
+>>>IDE interrupt handler.  When you use the PCMCIA for ATA/IDE, you should
+>>>call a function that installs the PCMCIA interrupt vector.
+>>
+>>In drivers/block/ide-probe.c,
+>>init_irq() function has installed the IDE interrupt handler of IRQ 9 as
+>>ide_intr()
+>>In m8xx_pcmcia.c from the pcmcia package, Damm has installed the PCMCIA
+>>interrupt
+>>IRQ 13 as m8xx_interrupt(), so problem is:
+>>without 8259 controller in FADS board, how the m8xx_interrupt() route the
+>>interrupt
+>>event to the ide_intr(). No hardware triger the IRQ 9, no call ide_intr(),
+>>so the
+>>kernel think "lost interrupt", I guess.
+>
+>
+>Here is the result:
+>bash# cat /proc/inter*
+>           CPU0
+>  5:       2394   8xx SIU       cpm
+>  9:          0   8xx SIU       ide0
+> 13:          9   8xx SIU       m8xx_pcmcia
+> 15:          0   8xx SIU       tbint
+>BAD:          0
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
