@@ -1,15 +1,15 @@
 Return-Path: <vbordug@ru.mvista.com>
 Received: from mail.dev.rtsoft.ru (RT-soft-2.Moscow.itn.ru [80.240.96.70])
-	by ozlabs.org (Postfix) with SMTP id D1B1267A7A
+	by ozlabs.org (Postfix) with SMTP id 399EF67A85
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 19 Feb 2005 04:14:47 +1100 (EST)
-Message-ID: <42162280.6040909@ru.mvista.com>
-Date: Fri, 18 Feb 2005 20:14:40 +0300
+	Sat, 19 Feb 2005 04:27:15 +1100 (EST)
+Message-ID: <42162571.5060204@ru.mvista.com>
+Date: Fri, 18 Feb 2005 20:27:13 +0300
 From: Vitaly Bordug <vbordug@ru.mvista.com>
 MIME-Version: 1.0
 To: linuxppc-embedded@ozlabs.org
-Content-Type: multipart/mixed; boundary="------------080201010202020705020901"
-Subject: [PATCH][PPC32] SCC4 UART for MPC8272
+Content-Type: multipart/mixed; boundary="------------060406060004080008070606"
+Subject: [PATCH] PCI bridge support for MPC8272 and PQ2FADS
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,12 +21,14 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 This is a multi-part message in MIME format.
---------------080201010202020705020901
+--------------060406060004080008070606
 Content-Type: text/plain; charset=KOI8-R; format=flowed
 Content-Transfer-Encoding: 7bit
 
-This patch adds support for SCC4 UART on MPC8272ADS, it is created
-against current linuxppc-2.4 tree.
+This patch adds PCI bridge support for MPC8272 and PQ2FADS to the
+current linuxppc-2.4 tree. Actually it has been tested with 8272, but
+PQ2 _should_ also work, though it will complain that host bridge ID is
+unrecognized.
 
 Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
 
@@ -34,143 +36,653 @@ Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
 Sincerely, Vitaly
 
 
---------------080201010202020705020901
+--------------060406060004080008070606
 Content-Type: text/x-patch;
- name="cpm2.diff"
+ name="pq2-pci.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline;
- filename="cpm2.diff"
+ filename="pq2-pci.patch"
 
-===== uart.c 1.19 vs 1.21 =====
---- 1.19/arch/ppc/cpm2_io/uart.c	2005-01-04 20:12:19 +03:00
-+++ 1.21/arch/ppc/cpm2_io/uart.c	2005-02-18 13:57:22 +03:00
-@@ -179,7 +179,11 @@
- static struct serial_state rs_table[] = {
- 	/* UART CLK   PORT          IRQ      FLAGS  NUM   */
- 	{ 0,     0, PROFF_SCC1, SIU_INT_SCC1,   0, SCC_NUM_BASE},    /* SCC1 ttyS2 */
-+#ifdef CONFIG_ADS8272
-+	{ 0,	 0, PROFF_SCC4, SIU_INT_SCC4,	0, SCC_NUM_BASE + 3 }, /* SCC4 ttyS1 */
-+#else
- 	{ 0,     0, PROFF_SCC2, SIU_INT_SCC2,   0, SCC_NUM_BASE + 1},    /* SCC2 ttyS3 */
-+#endif
- };
- #endif /* SCC_CONSOLE */
+# This is a BitKeeper generated diff -Nru style patch.
+#
+# ChangeSet
+#   2005/02/18 17:11:57+03:00 vbordug@ru.mvista.com 
+#   Fixed compilation warnings for 8260-like boards when CONFIG_PCI=y
+# 
+# include/asm-ppc/mpc8260.h
+#   2005/02/18 17:11:54+03:00 vbordug@ru.mvista.com +2 -0
+#   Fixed compilation warnings when CONFIG_PCI=y
+# 
+# ChangeSet
+#   2005/02/18 16:17:49+03:00 vbordug@ru.mvista.com 
+#   Added support for PCI bridge on MPC8272 and PQ2FADS boards
+# 
+# arch/ppc/platforms/pq2ads.h
+#   2005/02/18 16:17:47+03:00 vbordug@ru.mvista.com +88 -5
+#   Added support for PCI bridge on MPC8272 and PQ2FADS
+# 
+# arch/ppc/platforms/Makefile
+#   2005/02/18 16:17:47+03:00 vbordug@ru.mvista.com +5 -0
+#   Added support for PCI bridge on MPC8272 and PQ2FADS
+# 
+# arch/ppc/kernel/m8260_setup.c
+#   2005/02/18 16:17:47+03:00 vbordug@ru.mvista.com +17 -0
+#   Added support for PCI bridge on MPC8272 and PQ2FADS
+# 
+# arch/ppc/kernel/Makefile
+#   2005/02/18 16:17:47+03:00 vbordug@ru.mvista.com +8 -0
+#   Modules needed for PCI Bridge support on MPC8272 and PQ2FADS
+# 
+# arch/ppc/platforms/pq2ads_pci.c
+#   2005/02/18 16:15:29+03:00 vbordug@ru.mvista.com +361 -0
+#   PCI Bridge setup routines for MPC8272ADS and PQ2FADS (initial revision)
+# 
+# arch/ppc/platforms/pq2ads_pci.c
+#   2005/02/18 16:15:29+03:00 vbordug@ru.mvista.com +0 -0
+#   BitKeeper file /home/common/work/community/kernel/linuxppc-2.4/arch/ppc/platforms/pq2ads_pci.c
+# 
+diff -Nru a/arch/ppc/kernel/Makefile b/arch/ppc/kernel/Makefile
+--- a/arch/ppc/kernel/Makefile	2005-02-18 17:14:12 +03:00
++++ b/arch/ppc/kernel/Makefile	2005-02-18 17:14:12 +03:00
+@@ -108,6 +108,14 @@
+ obj-$(CONFIG_PCI)		+= indirect_pci.o pci_auto.o
+ endif
  
-@@ -2575,6 +2579,12 @@
- 	volatile	cpm2_map_t	*immap;
- 	volatile	iop_cpm2_t	*io;
++ifeq ($(CONFIG_ADS8272),y)
++obj-$(CONFIG_PCI)		+= indirect_pci.o pci_auto.o
++endif
++
++ifeq ($(CONFIG_PQ2FADS),y)
++obj-$(CONFIG_PCI)		+= indirect_pci.o pci_auto.o
++endif
++
+ include $(TOPDIR)/Rules.make
  
-+#ifdef CONFIG_ADS8272
-+	/* Enable the RS-232 transceivers.
-+	*/
-+	*(volatile uint *)(BCSR_ADDR + 4) &= ~(BCSR1_RS232_EN1 | BCSR1_RS232_EN2);
+ entry.o: entry.S ppc_defs.h
+diff -Nru a/arch/ppc/kernel/m8260_setup.c b/arch/ppc/kernel/m8260_setup.c
+--- a/arch/ppc/kernel/m8260_setup.c	2005-02-18 17:14:12 +03:00
++++ b/arch/ppc/kernel/m8260_setup.c	2005-02-18 17:14:12 +03:00
+@@ -54,6 +54,7 @@
+ unsigned char __res[sizeof(bd_t)];
+ 
+ extern void cpm2_reset(void);
++extern void pq2ads_init_irq(void);
+ 
+ static void __init
+ m8260_setup_arch(void)
+@@ -61,6 +62,12 @@
+ 	/* Reset the Communication Processor Module.
+ 	*/
+ 	cpm2_reset();
++
++#ifdef CONFIG_PCI
++	/* Lookup PCI host bridges */
++	m8260_find_bridges();
 +#endif
 +
- 	init_bh(SERIAL_BH, do_serial_bh);
+ }
  
- 	show_serial_version();
-@@ -2693,7 +2703,14 @@
- 	 */
- 	immap->im_cpmux.cmx_scr &= ~0x00ffff00;
- 	immap->im_cpmux.cmx_scr |= 0x00121b00;
--#else
-+#else /* SCC_CONSOLE */ 
-+#if !defined(CONFIG_ADS8272) /* SCC_CONSOLE && !ADS8272 */
-+	/* Connect SCC1, SCC2, SCC3 to NMSI.  Connect BRG1 to SCC1,
-+	 * BRG2 to SCC2, BRG3 to SCC3.
+ static void
+@@ -184,6 +191,13 @@
+ 	cpm2_immr->im_intctl.ic_siprr = 0x05309770;
+ 	cpm2_immr->im_intctl.ic_scprrh = 0x05309770;
+ 	cpm2_immr->im_intctl.ic_scprrl = 0x05309770;
++#if defined (CONFIG_PCI) && ( defined (CONFIG_ADS8272) || defined (CONFIG_PQ2FADS) )
++	/* Install the handlers for the external interrupt controller on the
++	 * MPC8272ADS and PQ2FADS boards.
 +	 */
-+	immap->im_cpmux.cmx_scr &= ~0xffffff00;
-+	immap->im_cpmux.cmx_scr |= 0x00091200;
++	pq2ads_init_irq();
++#endif
 +
- 	/* This configures SCC2 and SCC3 as the IO pins.
- 	*/
- #if !defined(CONFIG_MPC85xx_GP3)
-@@ -2711,13 +2728,31 @@
- 	io->iop_psord |= 0x00000002;	/* Tx */
- 	io->iop_pdird &= ~0x00000001;	/* Rx */
- 	io->iop_pdird |= 0x00000002;	/* Tx */
--
--	/* Connect SCC1, SCC2, SCC3 to NMSI.  Connect BRG1 to SCC1,
--	 * BRG2 to SCC2, BRG3 to SCC3.
-+#else /* SCC_CONSOLE && CONFIG_ADS8272 */
-+	/* wire BRG1 to SCC1 and BRG4 to SCC4 */
-+	immap->im_cpmux.cmx_scr &= ~0xff0000ff;
-+	immap->im_cpmux.cmx_scr |= 0x0000001b;
-+
-+	/* The ADS8272 has serial ports on SCC1 and SCC2 configured as follows:
-+	 *	TXD1	PD30	SCC1 Output
-+	 *	RTS1	PD29	General Purpose Output
-+	 *	RXD1	PD31	SCC1 Input
-+	 *	DCD1	PC14	General Purpose Input
-+	 *
-+	 *	TXD2	PD21	SCC4 Output
-+	 *	RTS2	PD20	General Purpose Output
-+	 *	RXD2	PD22	SCC4 Input
-+	 *	DCD2	PC8	General Purpose Input
- 	 */
--	immap->im_cpmux.cmx_scr &= ~0xffffff00;
--	immap->im_cpmux.cmx_scr |= 0x00091200;
-+	io->iop_ppard |= 0x00000e07;
-+	io->iop_psord &= ~0x00000e05;	/* Rx */
-+	io->iop_psord |= 0x00000002;	/* Tx */
-+	io->iop_pdird &= ~0x00000201;	/* Rx */
-+	io->iop_pdird |= 0x00000c06;	/* Tx */
-+	io->iop_pparc &= ~0x00820000;
-+	io->iop_pdirc &= ~0x00820000;
- #endif
-+#endif /*SCC_CONSOLE*/
  
- 	for (i = 0, state = rs_table; i < NR_PORTS; i++,state++) {
- 		state->magic = SSTATE_MAGIC;
-@@ -2916,6 +2951,11 @@
- 					page = CPM_CR_SCC3_PAGE;
- 					sblock = CPM_CR_SCC3_SBLOCK;
- 					break;
-+				case 3:
-+					page = CPM_CR_SCC4_PAGE;
-+					sblock = CPM_CR_SCC4_SBLOCK;
-+					break;
-+
- 				}
- #else
- 				if (state->smc_scc_num == 2) {
-@@ -3014,6 +3054,16 @@
- 	scp->scc_gsmrl &= ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
+ }
  
- #ifdef CONFIG_SCC1_CONSOLE
+@@ -209,6 +223,9 @@
+ static void __init
+ m8260_map_io(void)
+ {
++#if defined (CONFIG_PCI) && ( defined (CONFIG_ADS8272) || defined (CONFIG_PQ2FADS) )
++	io_block_mapping(0x80000000, 0x80000000, 0x10000000, _PAGE_IO);
++#endif
+ 	io_block_mapping(0xf0000000, 0xf0000000, 0x10000000, _PAGE_IO);
+ 	io_block_mapping(0xe0000000, 0xe0000000, 0x10000000, _PAGE_IO);
+ }
+diff -Nru a/arch/ppc/platforms/Makefile b/arch/ppc/platforms/Makefile
+--- a/arch/ppc/platforms/Makefile	2005-02-18 17:14:12 +03:00
++++ b/arch/ppc/platforms/Makefile	2005-02-18 17:14:12 +03:00
+@@ -98,6 +98,11 @@
+ obj-$(CONFIG_MPC85xx_CDS)	+= mpc85xx_cds_common.o
+ endif
+ 
++ifeq ($(CONFIG_PCI),y)
++obj-$(CONFIG_ADS8272)		+= pq2ads_pci.o 
++obj-$(CONFIG_PQ2FADS)		+= pq2ads_pci.o 
++endif
++
+ ifeq ($(CONFIG_SMP),y)
+ obj-$(CONFIG_ALL_PPC)		+= pmac_smp.o chrp_smp.o
+ endif
+diff -Nru a/arch/ppc/platforms/pq2ads.h b/arch/ppc/platforms/pq2ads.h
+--- a/arch/ppc/platforms/pq2ads.h	2005-02-18 17:14:12 +03:00
++++ b/arch/ppc/platforms/pq2ads.h	2005-02-18 17:14:12 +03:00
+@@ -14,6 +14,10 @@
+ 
+ #include <asm/ppcboot.h>
+ 
++#ifdef CONFIG_PCI
++#include <linux/pci_ids.h>
++#endif
++
+ /* Memory map is configured by the PROM startup.
+  * We just map a few things we need.  The CSR is actually 4 byte-wide
+  * registers that can be accessed as 8-, 16-, or 32-bit values.
+@@ -40,7 +44,79 @@
+ 
+ #define PHY_INTERRUPT	SIU_INT_IRQ7
+ 
++/*-----------------------------------------------------------------------
++ * SIUMCR - SIU Module Configuration Register				 4-31
++ */
++#define SIUMCR_BBD	0x80000000	/* Bus Busy Disable		*/
++#define SIUMCR_ESE	0x40000000	/* External Snoop Enable	*/
++#define SIUMCR_PBSE	0x20000000	/* Parity Byte Select Enable	*/
++#define SIUMCR_CDIS	0x10000000	/* Core Disable			*/
++#define SIUMCR_DPPC00	0x00000000	/* Data Parity Pins Configuration*/
++#define SIUMCR_DPPC01	0x04000000	/* - " -			*/
++#define SIUMCR_DPPC10	0x08000000	/* - " -			*/
++#define SIUMCR_DPPC11	0x0c000000	/* - " -			*/
++#define SIUMCR_L2CPC00	0x00000000	/* L2 Cache Pins Configuration	*/
++#define SIUMCR_L2CPC01	0x01000000	/* - " -			*/
++#define SIUMCR_L2CPC10	0x02000000	/* - " -			*/
++#define SIUMCR_L2CPC11	0x03000000	/* - " -			*/
++#define SIUMCR_LBPC00	0x00000000	/* Local Bus Pins Configuration	*/
++#define SIUMCR_LBPC01	0x00400000	/* - " -			*/
++#define SIUMCR_LBPC10	0x00800000	/* - " -			*/
++#define SIUMCR_LBPC11	0x00c00000	/* - " -			*/
++#define SIUMCR_APPC00	0x00000000	/* Address Parity Pins Configuration*/
++#define SIUMCR_APPC01	0x00100000	/* - " -			*/
++#define SIUMCR_APPC10	0x00200000	/* - " -			*/
++#define SIUMCR_APPC11	0x00300000	/* - " -			*/
++#define SIUMCR_CS10PC00	0x00000000	/* CS10 Pin Configuration	*/
++#define SIUMCR_CS10PC01	0x00040000	/* - " -			*/
++#define SIUMCR_CS10PC10	0x00080000	/* - " -			*/
++#define SIUMCR_CS10PC11	0x000c0000	/* - " -			*/
++#define SIUMCR_BCTLC00	0x00000000	/* Buffer Control Configuration	*/
++#define SIUMCR_BCTLC01	0x00010000	/* - " -			*/
++#define SIUMCR_BCTLC10	0x00020000	/* - " -			*/
++#define SIUMCR_BCTLC11	0x00030000	/* - " -			*/
++#define SIUMCR_MMR00	0x00000000	/* Mask Masters Requests	*/
++#define SIUMCR_MMR01	0x00004000	/* - " -			*/
++#define SIUMCR_MMR10	0x00008000	/* - " -			*/
++#define SIUMCR_MMR11	0x0000c000	/* - " -			*/
++#define SIUMCR_LPBSE	0x00002000	/* LocalBus Parity Byte Select Enable*/
++
++
+ #ifdef CONFIG_PCI
++/*
++ * Define the vendor/device ID for the MPC82XX.
++ */
++#define	PCI_DEVICE_ID_MPC8265	((0x18C0 << 16) | PCI_VENDOR_ID_MOTOROLA)
++#define	PCI_DEVICE_ID_MPC8272	((0x18C1 << 16) | PCI_VENDOR_ID_MOTOROLA)
++
++
++/* Bit definitions for PCIBR registers */
++
++#define PCIBR_ENABLE        	0x00000001
++
++/* Bit definitions for POMCR registers */
++#define POCMR_ENABLE        	0x80000000
++#define POCMR_PCI_IO        	0x40000000
++#define POCMR_PREFETCH_EN   	0x20000000
++#define POTA_ADDR_SHIFT	    	12
++
++/* Bit definitions for PCI Inbound Comparison Mask registers */
++#define PICMR_ENABLE        	0x80000000
++#define PICMR_NO_SNOOP_EN   	0x40000000
++#define PICMR_PREFETCH_EN   	0x20000000
++#define PITA_ADDR_SHIFT	    	12
++
++/* Bit definitions for PCI_GCR register */
++
++#define PCIGCR_PCI_BUS_EN   	0x1
++
++/* Bus parking decides where the bus control sits when idle */
++/* If modifying memory controllers for PCI park on the core */
++
++#define PPC_ACR_BUS_PARK_CORE 	0x6
++#define PPC_ACR_BUS_PARK_PCI  	0x3
++
++
+ /* PCI interrupt controller */
+ #define PCI_INT_STAT_REG	0xF8200000
+ #define PCI_INT_MASK_REG	0xF8200004
+@@ -50,22 +126,23 @@
+ #define PIRQD			(NR_SIU_INTS + 3)
+ 
+ /*
+- * PCI memory map definitions for MPC8266ADS-PCI.
++ * PCI memory map definitions for MPC82XXADS.
+  *
+  * processor view
+  *	local address		PCI address		target
+  *	0x80000000-0x9FFFFFFF	0x80000000-0x9FFFFFFF	PCI mem with prefetch
+  *	0xA0000000-0xBFFFFFFF	0xA0000000-0xBFFFFFFF	PCI mem w/o prefetch
+- *	0xF4000000-0xF7FFFFFF	0x00000000-0x03FFFFFF	PCI IO
++ *	0xF6000000-0xF7FFFFFF	0x00000000-0x01FFFFFF	PCI IO
+  *
+  * PCI master view
+  *	local address		PCI address		target
+- *	0x00000000-0x1FFFFFFF	0x00000000-0x1FFFFFFF	MPC8266 local memory
++ *	0x00000000-0x1FFFFFFF	0x00000000-0x1FFFFFFF	MPC82XXADS local memory
+  */
+ 
+ /* window for a PCI master to access MPC8266 memory */
+ #define PCI_SLV_MEM_LOCAL	0x00000000	/* Local base */
+ #define PCI_SLV_MEM_BUS		0x00000000	/* PCI base */
++#define PCI_SLV_MEM_SIZE	0x10000000	/* 256Mb */
+ 
+ /* window for the processor to access PCI memory with prefetching */
+ #define PCI_MSTR_MEM_LOCAL	0x80000000	/* Local base */
+@@ -78,9 +155,15 @@
+ #define PCI_MSTR_MEMIO_SIZE	0x20000000	/* 512MB */
+ 
+ /* window for the processor to access PCI I/O */
+-#define PCI_MSTR_IO_LOCAL	0xF4000000	/* Local base */
++#define PCI_MSTR_IO_LOCAL	0xF6000000	/* Local base */
+ #define PCI_MSTR_IO_BUS         0x00000000	/* PCI base   */
+-#define PCI_MSTR_IO_SIZE        0x04000000	/* 64MB */
++#define PCI_MSTR_IO_SIZE        0x02000000	/* 32MB */
++
++#if defined CONFIG_ADS8272
++#define PCI_INT_TO_SIU		SIU_INT_IRQ2
++#elif defined CONFIG_PQ2FADS
++#define PCI_INT_TO_SIU		SIU_INT_IRQ6
++#endif
+ 
+ #define _IO_BASE		PCI_MSTR_IO_LOCAL
+ #define _ISA_MEM_BASE		PCI_MSTR_MEMIO_LOCAL
+diff -Nru a/arch/ppc/platforms/pq2ads_pci.c b/arch/ppc/platforms/pq2ads_pci.c
+--- /dev/null	Wed Dec 31 16:00:00 196900
++++ b/arch/ppc/platforms/pq2ads_pci.c	2005-02-18 17:14:12 +03:00
+@@ -0,0 +1,361 @@
++/*
++ * arch/ppc/platforms/pq2fads_pci.c
++ * 
++ * PCI Bridge setup routines for MPC8272 and PQ2FADS boards
++ * 
++ * Based on: PCI setup routines for the Motorola SPS MPC8266ADS-PCI 
++ * reference board by andy_lowe@mvista.com
++ *
++ * Author: Vitaly Bordug <vbordug@ru.mvista.com>
++ *
++ * 2003 (c) MontaVista Software, Inc. This file is licensed under
++ * the terms of the GNU General Public License version 2. This program
++ * is licensed "as is" without any warranty of any kind, whether express
++ * or implied.
++ */
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/pci.h>
++#include <linux/slab.h>
++#include <linux/irq.h>
++
++#include <asm/byteorder.h>
++#include <asm/io.h>
++#include <asm/irq.h>
++#include <asm/uaccess.h>
++#include <asm/machdep.h>
++#include <asm/pci-bridge.h>
++#include <asm/immap_cpm2.h>
++//#include <asm/m8260_pci.h>
++#include <asm/delay.h>
++
++#include "pq2ads.h"
++
++extern void setup_m8260_indirect_pci(struct pci_controller* hose,
++				     u32 cfg_addr,
++				     u32 cfg_data);
++
++/*
++ * interrupt routing
++ */
++
++static inline int
++pq2ads_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned char pin)
++{
++	static char pci_irq_table[][4] =
++	/*
++	 *	PCI IDSEL/INTPIN->INTLINE
++	 * 	  A      B      C      D
++	 */
++	{
++		{ PIRQA, PIRQB, PIRQC, PIRQD },	/* IDSEL 22 - PCI slot 0 */
++		{ PIRQD, PIRQA, PIRQB, PIRQC },	/* IDSEL 23 - PCI slot 1 */
++		{ PIRQC, PIRQD, PIRQA, PIRQB },	/* IDSEL 24 - PCI slot 2 */
++	};
++
++	const long min_idsel = 22, max_idsel = 24, irqs_per_slot = 4;
++	return PCI_IRQ_TABLE_LOOKUP;
++}
++
++static void
++pq2ads_mask_irq(unsigned int irq)
++{
++	int bit = irq - NR_SIU_INTS;
++
++	*(volatile unsigned long *) PCI_INT_MASK_REG |=  (1 << (31 - bit));
++	return;
++}
++
++static void
++pq2ads_unmask_irq(unsigned int irq)
++{
++	int bit = irq - NR_SIU_INTS;
++
++	*(volatile unsigned long *) PCI_INT_MASK_REG &= ~(1 << (31 - bit));
++	return;
++}
++
++static void
++pq2ads_mask_and_ack(unsigned int irq)
++{
++	int bit = irq - NR_SIU_INTS;
++
++	*(volatile unsigned long *) PCI_INT_MASK_REG |=  (1 << (31 - bit));
++	return;
++}
++
++static void
++pq2ads_end_irq(unsigned int irq)
++{
++	int bit = irq - NR_SIU_INTS;
++
++	*(volatile unsigned long *) PCI_INT_MASK_REG &= ~(1 << (31 - bit));
++	return;
++}
++
++struct hw_interrupt_type pq2ads_ic = {
++	"PQ2ADS PCI IC",
++	NULL,
++	NULL,
++	pq2ads_unmask_irq,
++	pq2ads_mask_irq,
++	pq2ads_mask_and_ack,
++	pq2ads_end_irq,
++	0
++};
++
++static void
++pci_irq_demux(int irq, void *dev_id, struct pt_regs *regs)
++{
++	unsigned long stat, mask, pend;
++	int bit;
++
++	for(;;) {
++		stat = *(volatile unsigned long *) PCI_INT_STAT_REG;
++		mask = *(volatile unsigned long *) PCI_INT_MASK_REG;
++		pend = stat & ~mask & 0xf0000000;
++		if (!pend)
++			break;
++		for (bit = 0; pend != 0; ++bit, pend <<= 1) {
++			if (pend & 0x80000000)
++				ppc_irq_dispatch_handler(regs, NR_SIU_INTS + bit);
++		}
++	}
++
++	return;
++}
++
++void
++pq2ads_init_irq(void)
++{
++	int irq;
++	volatile cpm2_map_t* immap = cpm2_immr;
 +#ifdef CONFIG_ADS8272
-+	/* Use Port D for SCC1 and SCC4 */
-+	io->iop_ppard |= 0x00000e07;
-+	io->iop_psord &= ~0x00000e05;	/* Rx */
-+	io->iop_psord |= 0x00000002;	/* Tx */
-+	io->iop_pdird &= ~0x00000201;	/* Rx */
-+	io->iop_pdird |= 0x00000c06;	/* Tx */
-+	io->iop_pparc &= ~0x00820000;
-+	io->iop_pdirc &= ~0x00820000;
++	/* configure chip select for PCI interrupt controller */
++	immap->im_memctl.memc_br3 = PCI_INT_STAT_REG | 0x00001801;
++	immap->im_memctl.memc_or3 = 0xffff8010;
++#elif defined CONFIG_PQ2FADS
++	/* configure chip select for PCI interrupt controller */
++	immap->im_memctl.memc_br8 = PCI_INT_STAT_REG | 0x00001801;
++	immap->im_memctl.memc_or8 = 0xffff8010;
 +#else
- 	/* Use Port D for SCC1 instead of other functions.
- 	*/
- 	io->iop_ppard |= 0x00000003;
-@@ -3021,6 +3071,7 @@
- 	io->iop_psord |= 0x00000002;	/* Tx */
- 	io->iop_pdird &= ~0x00000001;	/* Rx */
- 	io->iop_pdird |= 0x00000002;	/* Tx */
-+#endif /* CONFIG_ADS8272 */
- #endif
- #if defined(CONFIG_SCC2_CONSOLE) && !defined(CONFIG_MPC85xx_GP3)
- 	/* Use Port B for SCC2.
-@@ -3133,6 +3184,11 @@
- 			page = CPM_CR_SCC3_PAGE;
- 			sblock = CPM_CR_SCC3_SBLOCK;
- 			break;
-+		case 4:
-+			page = CPM_CR_SCC4_PAGE;
-+			sblock = CPM_CR_SCC4_SBLOCK;
++#error This software is not intended to support this chip!
++#endif
++
++	for (irq = NR_SIU_INTS; irq < NR_SIU_INTS + 4; irq++)
++                irq_desc[irq].handler = &pq2ads_ic;
++
++	/* make PCI IRQ level sensitive */ 
++	immap->im_intctl.ic_siexr &=
++		~(1 << (14 - (PCI_INT_TO_SIU - SIU_INT_IRQ1)));
++	
++	/* mask all PCI interrupts */
++	*(volatile unsigned long *) PCI_INT_MASK_REG |= 0xfff00000;
++
++	/* install the demultiplexer for the PCI cascade interrupt */
++	if (request_irq(PCI_INT_TO_SIU, pci_irq_demux, SA_INTERRUPT, 
++		"PCI IRQ demux", 0))
++	{
++		printk("Installation of PCI IRQ demux handler failed.\n");
++	}
++	return;
++}
++
++static int                     
++pq2ads_exclude_device(u_char bus, u_char devfn)
++{
++	return PCIBIOS_SUCCESSFUL;
++}
++
++static void 
++pq2ads_hw_init(struct pci_controller *hose)
++{
++	__u32 val;
++	volatile cpm2_map_t *immap = cpm2_immr;
++	/* PCI int lowest prio  */
++	/* Each 4 bits is a device bus request      and the MS 4bits
++	   is highest priority */
++	/* Bus                4bit value
++	   ---                ----------
++	   CPM high      	0b0000
++	   CPM middle           0b0001
++	   CPM low       	0b0010
++	   PCI reguest          0b0011
++	   Reserved      	0b0100
++	   Reserved      	0b0101
++	   Internal Core     	0b0110
++	   External Master 1 	0b0111
++	   External Master 2 	0b1000
++	   External Master 3 	0b1001
++	   The rest are reserved 
++	 */
++	immap->im_siu_conf.siu_82xx.sc_ppc_alrh = 0x61207893;
++	/* park bus on core  */
++	immap->im_siu_conf.siu_82xx.sc_ppc_acr = PPC_ACR_BUS_PARK_CORE;
++	/*
++	 * Set up master windows that allow the CPU to access PCI space. These
++	 * windows are set up using the two SIU PCIBR registers.
++	 */
++
++	immap->im_memctl.memc_pcimsk0 = ~(PCI_MSTR_IO_SIZE - 1U);
++	immap->im_memctl.memc_pcibr0  = PCI_MSTR_IO_LOCAL | PCIBR_ENABLE;
++	
++	immap->im_memctl.memc_pcimsk1 = ~(PCI_MSTR_MEM_SIZE + PCI_MSTR_MEMIO_SIZE - 1U);
++	immap->im_memctl.memc_pcibr1  = PCI_MSTR_MEM_LOCAL | PCIBR_ENABLE;
++#ifdef CONFIG_ADS8272
++	immap->im_siu_conf.siu_82xx.sc_siumcr = (immap->im_siu_conf.siu_82xx.sc_siumcr &
++				~SIUMCR_BBD &
++				~SIUMCR_ESE &
++				~SIUMCR_PBSE &
++				~SIUMCR_CDIS &
++				~SIUMCR_DPPC11 &
++				~SIUMCR_L2CPC11 &
++				~SIUMCR_LBPC11 &
++				~SIUMCR_APPC11 &
++				~SIUMCR_CS10PC11 &
++				~SIUMCR_BCTLC11 &
++				~SIUMCR_MMR11)
++			| SIUMCR_DPPC11 | SIUMCR_L2CPC01 | SIUMCR_LBPC00
++			| SIUMCR_APPC10 | SIUMCR_CS10PC00 | SIUMCR_BCTLC00 | SIUMCR_MMR11;
++#elif defined CONFIG_PQ2FADS
++	/*
++	 * Setting required to enable IRQ1-IRQ7 (SIUMCR [DPPC]),
++	 * and local bus for PCI (SIUMCR [LBPC]).
++	 */
++	immap->im_siu_conf.siu_82xx.sc_siumcr = (immap->im_siu_conf.sc_siumcr &
++				~SIUMCR_LBPC11 &
++				~SIUMCR_CS10PC11 &
++				~SIUMCR_LBPC11) |
++				SIUMCR_LBPC01 | SIUMCR_CS10PC01 | SIUMCR_APPC10;
++#endif
++        /* Enable PCI  */
++	immap->im_pci.pci_gcr = cpu_to_le32(PCIGCR_PCI_BUS_EN);
++	{
++	    /* give it some time */
++	    int i;
++	    for(i=0;i<100;i++)
++		udelay(100);
++	}	
++	
++	/* setup ATU registers */
++	immap->im_pci.pci_pocmr0 = cpu_to_le32(POCMR_ENABLE | POCMR_PCI_IO |
++	                  ((~(PCI_MSTR_IO_SIZE - 1U)) >> POTA_ADDR_SHIFT));
++	immap->im_pci.pci_potar0 = cpu_to_le32(PCI_MSTR_IO_BUS >> POTA_ADDR_SHIFT);
++	immap->im_pci.pci_pobar0 = cpu_to_le32(PCI_MSTR_IO_LOCAL >> POTA_ADDR_SHIFT);
++
++	/* Set-up non-prefetchable window */
++	immap->im_pci.pci_pocmr1 = cpu_to_le32(POCMR_ENABLE | ((~(PCI_MSTR_MEMIO_SIZE-1U)) >> POTA_ADDR_SHIFT));
++	immap->im_pci.pci_potar1 = cpu_to_le32(PCI_MSTR_MEMIO_BUS >> POTA_ADDR_SHIFT);
++	immap->im_pci.pci_pobar1 = cpu_to_le32(PCI_MSTR_MEMIO_LOCAL >> POTA_ADDR_SHIFT);
++
++	/* Set-up prefetchable window */
++	immap->im_pci.pci_pocmr2 = cpu_to_le32(POCMR_ENABLE |POCMR_PREFETCH_EN |
++                  (~(PCI_MSTR_MEM_SIZE-1U) >> POTA_ADDR_SHIFT));
++	immap->im_pci.pci_potar2 = cpu_to_le32((PCI_MSTR_MEM_BUS+PCI_MSTR_MEM_SIZE) >> POTA_ADDR_SHIFT);
++	immap->im_pci.pci_pobar2 = cpu_to_le32((PCI_MSTR_MEM_LOCAL+PCI_MSTR_MEM_SIZE) >> POTA_ADDR_SHIFT);
++
++ 	/* Inbound transactions from PCI memory space */
++	immap->im_pci.pci_picmr0 = cpu_to_le32(PICMR_ENABLE | PICMR_PREFETCH_EN |
++				    ((~(PCI_SLV_MEM_SIZE-1U)) >> PITA_ADDR_SHIFT));
++	immap->im_pci.pci_pibar0 = cpu_to_le32(PCI_SLV_MEM_BUS  >> PITA_ADDR_SHIFT);
++	immap->im_pci.pci_pitar0 = cpu_to_le32(PCI_SLV_MEM_LOCAL>> PITA_ADDR_SHIFT);
++
++#if defined CONFIG_ADS8272
++	/* PCI int highest prio  */
++	immap->im_siu_conf.siu_82xx.sc_ppc_alrh = 0x01236745;
++#elif defined CONFIG_PQ2FADS
++	immap->im_siu_conf.siu_82xx.sc_ppc_alrh = 0x03124567;
++#endif
++	/* park bus on PCI  */
++	immap->im_siu_conf.siu_82xx.sc_ppc_acr = PPC_ACR_BUS_PARK_PCI;
++
++	/* Enable bus mastering and inbound memory transactions */
++	early_read_config_dword(hose, hose->first_busno, 0, PCI_COMMAND, &val);
++	val &= 0xffff0000;
++   	val |= PCI_COMMAND_MEMORY|PCI_COMMAND_MASTER;
++	early_write_config_dword(hose, hose->first_busno, 0, PCI_COMMAND, val);	
++
++}  
++  
++
++void __init
++m8260_find_bridges(void)
++{
++	struct pci_controller *hose;
++	int host_bridge;
++	volatile cpm2_map_t *immap = cpm2_immr;
++
++	hose = pcibios_alloc_controller();
++
++	if (!hose)
++		return;
++
++	hose->first_busno = 0;
++	hose->last_busno = 0xff;
++	hose->bus_offset   = 0;
++	hose->set_cfg_type = 1;
++
++	setup_indirect_pci(hose,
++				(ulong)&immap->im_pci.pci_cfg_addr,
++				(ulong)&immap->im_pci.pci_cfg_data);	
++	
++
++	/* Make sure it is a supported bridge */
++	early_read_config_dword(hose,
++			        0,
++			        PCI_DEVFN(0,0),
++			        PCI_VENDOR_ID,
++			        &host_bridge);
++
++	switch (host_bridge) {
++		case PCI_DEVICE_ID_MPC8265:
++			break;
++		case PCI_DEVICE_ID_MPC8272:
 +			break;
 +
- 		}
++		default:
++			printk("Attempting to use unrecognized host bridge ID"
++			       " 0x%08x.\n", host_bridge);
++			break;
++	}
++
++	pq2ads_hw_init(hose);
++
++	hose->pci_mem_offset = PCI_MSTR_MEM_LOCAL - PCI_MSTR_MEM_BUS;
++	hose->io_space.start = PCI_MSTR_IO_BUS;
++	hose->io_space.end = PCI_MSTR_IO_BUS + PCI_MSTR_IO_SIZE - 1U;
++	hose->mem_space.start = PCI_MSTR_MEM_BUS;
++	hose->mem_space.end = PCI_MSTR_MEMIO_BUS + PCI_MSTR_MEMIO_SIZE - 1U;
++	hose->io_base_virt = (void *)PCI_MSTR_IO_LOCAL;
++	isa_io_base = PCI_MSTR_IO_LOCAL;
++	
++	pci_init_resource(&hose->io_resource,
++			  PCI_MSTR_IO_BUS,
++			  PCI_MSTR_IO_BUS + PCI_MSTR_IO_SIZE - 1U,
++			  IORESOURCE_IO,
++			  "PCI host bridge");
++
++	pci_init_resource(&hose->mem_resources[0],
++			  PCI_MSTR_MEMIO_BUS,
++			  PCI_MSTR_MEMIO_BUS + PCI_MSTR_MEMIO_SIZE - 1U,
++			  IORESOURCE_MEM,
++			  "PCI host bridge");
++
++	pci_init_resource(&hose->mem_resources[1],
++	                  PCI_MSTR_MEM_BUS,
++	                  PCI_MSTR_MEM_BUS + PCI_MSTR_MEM_SIZE - 1U,
++	                  IORESOURCE_MEM | IORESOURCE_PREFETCH,
++	                  "PCI host bridge");
++
++	pci_dram_offset = PCI_SLV_MEM_LOCAL;
++
++	ppc_md.pci_exclude_device = pq2ads_exclude_device;
++	hose->last_busno = pciauto_bus_scan(hose, hose->first_busno);
++
++	ppc_md.pcibios_fixup = NULL;
++	ppc_md.pcibios_fixup_bus = NULL;
++	ppc_md.pci_swizzle = common_swizzle;
++	ppc_md.pci_map_irq = pq2ads_map_irq;
++
++	return;
++}
+diff -Nru a/include/asm-ppc/mpc8260.h b/include/asm-ppc/mpc8260.h
+--- a/include/asm-ppc/mpc8260.h	2005-02-18 17:14:12 +03:00
++++ b/include/asm-ppc/mpc8260.h	2005-02-18 17:14:12 +03:00
+@@ -24,12 +24,14 @@
+ #include <platforms/pq2ads.h>
+ #endif
  
- 		cp->cp_cpcr = mk_cr_cmd(page, sblock, 0,
++#ifndef CONFIG_PCI
+ /* I don't yet have the ISA or PCI stuff done....no 8260 with
+  * such thing.....
+  */
+ #define _IO_BASE        0
+ #define _ISA_MEM_BASE   0
+ #define PCI_DRAM_OFFSET 0
++#endif
+ 
+ #ifndef __ASSEMBLY__
+ /* The "residual" data board information structure the boot loader
 
-
---------------080201010202020705020901--
+--------------060406060004080008070606--
