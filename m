@@ -1,65 +1,31 @@
-Message-ID: <00d001c06edc$f3ec3d20$5ef1d092@chn.agilent.com>
-From: "kerler" <kerler@newmail.net>
-To: <linuxppc-dev@lists.linuxppc.org>
-Cc: <gcc@gcc.gnu.org>
-References: <20001223145258.Postino-022361@smtp01.highway.ne.jp><or66kazecj.fsf@guarana.lsd.ic.unicamp.br><3A4613FB.384BAD24@ife.ee.ethz.ch> <orsnnd3d6f.fsf@guarana.lsd.ic.unicamp.br>
-Subject: how to use macro in assemble language embedded in C?
-Date: Tue, 26 Dec 2000 09:41:09 +0800
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Geert Uytterhoeven <geert@linux-m68k.org>,
+        <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Need testers with MESH SCSI
+Date: Tue, 26 Dec 2000 19:26:43 +0100
+Message-Id: <19341120115827.19132@192.168.1.2>
+In-Reply-To: <Pine.LNX.4.05.10012231533220.12626-100000@callisto.of.borg>
+References: <Pine.LNX.4.05.10012231533220.12626-100000@callisto.of.borg>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-hello,
+>Note that there can be other problems with the mesh as well: I remember
+I once
+>had some early 2.3.x kernels that could not init the mesh when cold-booted,
+>only when warm-booted. So I had to boot an older kernel first each time I had
+>powered down my box :-)
 
-When i use the assemble language embedded in C, how can i use the macro?
+There were issues with powering up the MESH on some powerbooks that were
+fixed some time ago, but maybe your issue is unrelated.
 
-in the following code, i want to use the macro PT_R16 defined in
-asm\ptrace.h.
+Looking at Darwin's MESH driver, they have a whole bunch of workarounds
+for known issues (either with common device protocol errors, or MESH
+internal races).
 
-=========temp.c==========
-asm("#include <asm\\ptrace.h>\n\t");
-void dummy (void)
-{
-    asm("stwu   %r1, -PT_R16(%r1)");             /* stack */
-}
-=========end of temp.c===
-
-when i
-      gcc -c temp.c
-error message:
-/tmp/cc8ztvPf.s: Assembler messages:
-/tmp/cc8ztvPf.s:13: Error: Negative of non-absolute symbol PT_R16
-
-if use
-      gcc -S temp.c
-the file temp.s is:
-
-=========temp.s==========
-        .file   "temp.c"
-gcc2_compiled.:
-        #include <asm\ptrace.h>
-
-        .section        ".text"
-        .align 2
-        .globl dummy
-        .type    dummy,@function
-dummy:
-        stwu 1,-16(1)
-        stw 31,12(1)
-        mr 31,1
-        stwu   %r1, -PT_R16(%r1)
-.L2:
-        lwz 11,0(1)
-        lwz 31,-4(11)
-        mr 1,11
-        blr
-.Lfe1:
-        .size    dummy,.Lfe1-dummy
-        .ident  "GCC: (GNU) 2.95.2 20000220 (Debian GNU/Linux)"
-======end of temp.s=============
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
