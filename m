@@ -1,20 +1,21 @@
-Return-Path: <markc@mail.com>
-Received: from relay03.roc.ny.frontiernet.net (relay03.roc.ny.frontiernet.net
-	[66.133.131.36]) by ozlabs.org (Postfix) with ESMTP id B6A7D2BF07
+Return-Path: <vitorio@digitel.com.br>
+Received: from hermes.digitel.com.br (hermes.digitel.com.br [200.198.105.36])
+	by ozlabs.org (Postfix) with ESMTP id 0CB302BF07
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  4 Jan 2005 01:04:32 +1100 (EST)
-Message-ID: <003c01c4f19d$98a16510$0301a8c0@chuck2>
-From: "Mark Chambers" <markc@mail.com>
-To: "Sylvain Munaut" <tnt@246tNt.com>
-References: <200412301246.48870.david.jander@protonic.nl>	<C6D7331E-5A77-11D9-AECD-003065F9B7DC@embeddededge.com>
-	<061001c4eeaf$0b5e1860$0301a8c0@chuck2>
-	<41D7269E.1070906@246tNt.com>
-Date: Mon, 3 Jan 2005 09:07:39 -0500
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC5200 PCI byte-swapping
+	Tue,  4 Jan 2005 02:32:41 +1100 (EST)
+Received: from [10.10.10.160] by hermes.digitel.com.br (GMS
+	9.01.3158/NU1492.00.9f6ce814) with ESMTP id hkygibaa for
+	linuxppc-embedded@ozlabs.org; Mon, 3 Jan 2005 13:27:16 -0200
+From: =?ISO-8859-1?Q?Lu=EDs_Vit=F3rio?= Cargnini <vitorio@digitel.com.br>
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-2dmQTvC4gijgya6+K0gv"
+Date: Mon, 03 Jan 2005 13:20:58 +0000
+Message-Id: <1104758458.14925.5.camel@vitorio>
+Mime-Version: 1.0
+Subject: Making a serial multiplexer (new driver)
+Reply-To: vitorio@digitel.com.br
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,39 +27,33 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
+--=-2dmQTvC4gijgya6+K0gv
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> Mark Chambers wrote:
-> 
-> >I've just realized that the 5200 does byte-lane swapping
-> >on all PCI accesses.  That is, if you write a 32 bit word
-> >0x12345678, 0x12 will go out on byte 0, 0x34 on byte 1,
-> >etc.  Unfortunately, my target, a T.I. DM642, does not
-> >do this, so I've got a big/little endian mismatch.  A couple
-> >of questions if anybody knows:
-> >
-Sylvain wrote:
+Hi i need to write a driver that must multiplex an serial channel my
+driver will have  3 interfaces and i must communicate with another
+interface  (midleware) like /dev/ttyS2 for example, how could i write a
+driver that will communicate with my existing uart ???
 
-> I'm not sure of what you mean but look at the mapping
-> aroung pdf page 337 of the user manual. It's not configurable
-> as far as I can see.
-> 
+i have a component that could be multiplexed in 3 logical channels throw
+my single physical channel that are accessed with a normal serial
+interface using uart, how could this be possible ?
+this is necessary to be transparent to software user level.
+--=20
+Lu=EDs Vit=F3rio Cargnini <vitorio@digitel.com.br>
+Digitel S/A
 
-Thanks.  I had an older manual that didn't spell it out so
-clearly.
+--=-2dmQTvC4gijgya6+K0gv
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-I've been trying to interpret the PCI sections for some other
-82xx family parts, and it appears that they do NOT do this
-byte lane swapping, so this make the 5200 non-standard in
-this regard, which is unfortunate.  If I'm understanding this
-right, one would have to have different drivers for a PCI
-device on a 5200 and an 8270, for instance.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.6 (GNU/Linux)
 
-Also, I note that when doing simple block reads from pre-
-fetchable PCI space, it appears the 5200 does not prefetch,
-but does each read individually.  This is using stock ELDK
-u-boot and 2.4.24 so I haven't yet determined if it's a
-configuration matter, (or ruled out target disconnects)
-but I'm suspecting that you can't get burst mode from the 
-5200 without using DMA.
+iD8DBQBB2Ua4yHSZZ0hdDzQRAn3aAJ4pAmVCKaaSnNBMlTXxrUsvSRDsDgCgn1KW
+ramVzaVvZTd2l2icH9mpZ5Y=
+=Ajh+
+-----END PGP SIGNATURE-----
 
-Mark Chambers
+--=-2dmQTvC4gijgya6+K0gv--
