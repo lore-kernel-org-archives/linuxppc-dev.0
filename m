@@ -1,21 +1,19 @@
-Return-Path: <kalle.pokki@iki.fi>
-Received: from smtp1.song.fi (smtp1.song.fi [194.100.2.121])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5465F2BF0B
+Return-Path: <g.jaeger@sysgo.com>
+Received: from mailgate.sysgo.de (ns.sysgo.de [213.68.67.98])
+	by ozlabs.org (Postfix) with ESMTP id DBE0B2BE83
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Dec 2004 18:10:18 +1100 (EST)
-Received: from [194.100.64.94] (host94.eke.fi [194.100.64.94])
-	by smtp1.song.fi (Postfix) with ESMTP id C329743CD
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Dec 2004 09:02:57 +0200 (EET)
-Message-ID: <41BE908C.2060608@iki.fi>
-Date: Tue, 14 Dec 2004 09:04:44 +0200
-From: Kalle Pokki <kalle.pokki@iki.fi>
-MIME-Version: 1.0
+	Tue, 14 Dec 2004 19:32:04 +1100 (EST)
+From: Gerhard Jaeger <g.jaeger@sysgo.com>
 To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: state of 8xx
+Date: Tue, 14 Dec 2004 09:31:55 +0100
+References: <20041213213743.GA2487@schottelius.org>
+In-Reply-To: <20041213213743.GA2487@schottelius.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200412140931.55802.g.jaeger@sysgo.com>
+Cc: Nico Schottelius <nico-linux-ppc@schottelius.org>
+Subject: Re: [BUG?] [PPC/403/IBM] compile error 2.6.9 and earlier
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,8 +26,42 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 Hi,
 
-I have tried to compile Linux 2.6 for my custom 8xx board, but the 
-support for 8xx seems to be broken at the moment. Searching the lists 
-indicates there was at least some problem with memory management a 
-couple of months ago. Is anyone looking into this, or do you have any 
-idea when 8xx could be working again?
+On Monday 13 December 2004 22:37, Nico Schottelius wrote:
+> [repost: posted on linux-kernel before / hit the wrong list]
+> 
+> Hello!
+> 
+> I didn't find linux-ppc list on vger, so I hope this list is correct:
+> 
+> When trying to compile a kernel for my ibm thinclient, which has a
+> 403 PPC processor, I get the attached compile error. 
+> 
+> The error exists since 2.6.X, but the times before I tried to cross-compile,
+> this time I tried to built the kernel from my 'new' g3-ibook, which
+> failed again (so this is not a cross-compile error).
+> 
+> Thanks for any hints,
+> 
+> Nico
+> 
+> P.S.: See http://marc.theaimsgroup.com/?l=linux-kernel&m=110293175523284&w=2
+> for one 'possible answer' to my question. If that's true, is anyone
+> out there who wants me to guide to fix it? I'd really love to let the
+> IBM thinclients live with Linux.
+
+when having a closer look at the ppc4xx_pic.c you might find out, that there
+are two "sections" one for CONFIG_403 and another for the other 4xx parts.
+I'm not familiar with the 403 ones, but I think you should concentrate your work
+on the config options there. Selecting "OAK" sets CONFIG_403GCX but not CONFIG_403,
+correct me if I'm wrong, but regarding the IRQ stuff they should be more or less
+the same chips...
+After fixing that, you also have to fix oak.c, as this is also somewhat broken, but 
+should be no big deal.
+
+Hope this helps a bit.
+Gerhard
+
+-- 
+Gerhard Jaeger <gjaeger@sysgo.com>            
+SYSGO AG                      Embedded and Real-Time Software
+www.sysgo.com | www.elinos.com | www.osek.de | www.imerva.com
