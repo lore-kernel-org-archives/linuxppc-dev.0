@@ -1,44 +1,46 @@
-Date: Mon, 28 Dec 1998 20:10:50 -0700 (MST)
-From: Jeff Rugen <jrugen@primenet.com>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: fbcon + X Server + Cirrus/Powerstack
-In-Reply-To: <Pine.LNX.4.03.9812281946552.1425-100000@mercator.cs.kuleuven.ac.be>
-Message-ID: <Pine.BSI.3.96.981228200616.770A-100000@usr02.primenet.com>
+Message-ID: <36887B5C.EC26B913@ixl.com>
+Date: Tue, 29 Dec 1998 00:49:00 -0600
+From: jeramy <jsmith@ixl.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Wayne Chang <wcx@iname.com>
+CC: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: My pre-R5-lite
+References: <v01550100b2ae04f28fb1@[207.217.233.232]>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 28 Dec 1998, Geert Uytterhoeven wrote:
+Welp, I decided to play around and try upgrading an R4 lite clean
+install to glibc2 with the rpms from the pre R5 directories. I got the
+comps.pmac file from the R4 lite and the comps.new from pre-5 and
+compared them. I downloaded all of the RPMS from the the files
+directories. And then I started laoding them in the order they are
+loaded for a R4 lite install. The only exceptions were of course
+libraries and compilers. Anyways, looks like im all done except for
+reconfiguring X for XFB. (My fb0 dissappeared after I formatted for the
+clean R4 lite install and I forgot how I made the bugger the first
+time.) Also, it seems that I need to get the source RPM for XPM and
+compile it as there is a pre-compiled or src.rpm for it under the files
+tree. Very convenient seeing as how half the X rpms and apps want it to
+install. Anywas, a quick visit to a redhat mirror should fix that.
 
-> > fb_info->fbmem = ioremap(0xC0000000, board_size);  /* returns 0xC8000000 */
-> > fb_info->fbmem_phys = virt_to_phys((unsigned char *)fb_info->fbmem);
-> 
-> Try
-> 
->     fb_info->fbmem_phys = 0xC0000000;
-> 
-> instead, i.e. use the address you passed to ioremap()[*].
-> 
+WHAT I NEED: Anyways, if someone has already hand configured the X 3.3.3
+under the pre-R5, send me an outline for getting it going. I did
+softlink the DEV server already so I know my Xservers file is fine. Ive
+got a G3 with standard ati rage. I have KDE and FVWM installed and the
+Xclients files I have look fine.
 
-This didn't work -- it generated a "Machine check in kernel mode."
+NOTE: This was not all fun, I planned it for several days before I tried
+it. During the process I had to wipe out my rpm db's. My fingers grew
+tired from typing in --nodeps for the next few hours.
 
-I'm wondering if this is because virt_to_phys and phys_to_vert don't seem to
-have a relationship to ioremap -- the inline functions in virt_to_phys and
-phys_to_virt for non-APUS machines just add or subtract KERNELBASE from the
-address passed in -- and KERNELBASE is 0xc0000000.  ioremap() returned a
-value 0x0800000 higher than passed in.  I'm not sure what to experiment with
-next.. though I think I'll take a look at how the APUS does the virt_to_phys
-and phys_to_vert.
+MYPLANS: Im gonna try to get gnome .99 and all of its required
+libraries  to compile whether or not I get X up and running. I have a T3
+and a G3 and I'm ready to fly.
 
-----------------------------------------------------------------------------
-Jeff Rugen                      jrugen@primenet.com
 
-..Had this been an actual emergency, we would have fled in terror, and you 
-would not have been informed.
-
+(Geert-style) Cheers!
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
