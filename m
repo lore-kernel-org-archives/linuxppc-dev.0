@@ -1,52 +1,52 @@
-Message-ID: <38FF33CE.7CC78547@aminocom.com>
-Date: Thu, 20 Apr 2000 16:43:58 +0000
-From: Elizabeth Clarke <eclarke@aminocom.com>
+Message-ID: <38FF41D9.2BF99B00@chpc.utah.edu>
+Date: Thu, 20 Apr 2000 11:43:53 -0600
+From: Lou Langholtz <ldl@chpc.utah.edu>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: glibc-2.1.2 cross-compile problem
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: MiniDin9 serial pin outs to talk to DB9 UPS?
+References: <Pine.LNX.4.10.10004201742100.19482-100000@opal.biophys.uni-duesseldorf.de>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I'm having a problem compiling glibc-2.1.2 using the xppc
-cross-compilation toolset. I (believe I) have followed the instructions
-for patching glibc
-and all seemed fine, but I get the following, any help much
-appriciated!:
+Michael Schmitz wrote:
 
+> . . . Nope, you need to connect RTS and CTS, and sometimes DTR and DSR and
+> DCD are also connected together. C onnecting DTR and TxD will only confuse
+> the
+> serial driver.
 
-/opt/xppc/bin/powerpc-linux-gcc ../sysdeps/unix/sysv/linux/poll.c -c
--DNDEBUG=1 -DSOFT_FLOAT -O2 -Wall
--Winline -Wstrict-prototypes -Wwrite-strings -mcpu=860 -msoft-float
--fpic    -I../include -I.  -I.. -I../libio  -I../sysdeps/powerpc/elf
--I../linuxthreads/sysdeps/unix/sysv/linux
--I../linuxthreads/sysdeps/pthread -I../linuxthreads/sysdeps/unix/sysv
--I../linuxthreads/sysdeps/unix -I../linuxthreads/sysdeps/powerpc
--I../sysdeps/unix/sysv/linux/powerpc -I../sysdeps/unix/sysv/linux
--I../sysdeps/gnu -I../sysdeps/unix/common -I../sysdeps/unix/mman
--I../sysdeps/unix/inet -I../sysdeps/unix/sysv -I../sysdeps/unix
--I../sysdeps/posix -I../sysdeps/powerpc -I../sysdeps/wordsize-32
--I../sysdeps/ieee754 -I../sysdeps/libm-ieee754 -I../sysdeps/generic/elf
--I../sysdeps/generic  -nostdinc -isystem
-/opt/xppc/lib/gcc-lib/powerpc-linux/egcs-2.91.66/include -isystem
-/usr/local/amino/module3/linux/linux/include -D_LIBC_REENTRANT -include
-../include/libc-symbols.h  -DPIC   -o poll.os
-../sysdeps/unix/bsd/poll.c: In function `__emulate_poll':
-In file included from ../sysdeps/unix/sysv/linux/poll.c:62:
-../sysdeps/unix/bsd/poll.c:194: internal error--insn does not satisfy
-its constraints:
-(insn 1390 183 187 (set (reg:SI 12 r12)
-        (unspec[
-                (symbol_ref:SI ("@max_fd_size.39"))
-                (reg:SI 65 lr)
-            ]  8)) 398 {*movsi_got_internal} (nil)
-    (nil))
-toplev.c:1367: Internal compiler error in function
-fatal_insn
+>
+> > Mac MiniDin9 by jumpering MiniDin9 pins 1 and 6 together. This didn't
+> > work. Nor did jumpering 1 to 8 or 1 to 7.
+>
+> Try connecting 1 and 2 ...
+>
+>         Michael
 
+Thanks Michael.
 
-Thanks
-Beth
+I just gave connecting 1 and 2 a try and the results were no better than
+before. My UPS terminal program doesn't get anything back from the UPS. It
+just sits there spinning waiting for I/O without blocking apparantly as the
+user and system loads go up. Of course this UPS terminal program itself may
+not be comminicating correctly but at least it compiled without any warnings
+(or errors). If communications works correctly the UPS terminal program says
+that I should see an output string from the UPS doing something like
+identifying itself. I don't see a thing though that appears to come from the
+UPS.
+
+Maybe I should jumper one of the other pairs you mention? Maybe I need to
+change some stty parameters? Are there any other tools you could suggest to
+try talking with the UPS? I haven't tried just using "cat" or "tip" yet. Any
+thing obvious that I should avoid? I'll see if I can't drop a serial analyzer
+box in the middle some how to see what signalling is actually occuring.
+
+Thanks again. Any one else have any ideas?
+
+--Lou
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
