@@ -1,26 +1,39 @@
-Message-ID: <19991001170357.23710.qmail@www0x.netaddress.usa.net>
-Date: 1 Oct 99 12:03:57 CDT
-From: jeramy b smith <ultrapenguin@netscape.net>
-To: Tom Rini <trini@kernel.crashing.org>,
-        jeramy b smith <ultrapenguin@netscape.net>
-Subject: Re: [Re: X 3.3.5 still Broken]
-CC: linuxppc-dev@lists.linuxppc.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-Id: <v04210103b41c524f766b@[209.239.164.140]>
+In-Reply-To: <37F4E561.BD293E92@louis.bidmc.harvard.edu>
+References: <199910011514.LAA21981@novelty.umiacs.umd.edu>
+ <37F4E561.BD293E92@louis.bidmc.harvard.edu>
+Date: Sat, 2 Oct 1999 17:30:58 -0700
+To: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
+From: Peter Chang <weasel@cs.stanford.edu>
+Subject: Re: Scary sudden poweroff (was: Re: Yet another test kernel)
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tom Rini <trini@kernel.crashing.org> wrote:
+This is nowhere near a scientific test, but after i did this 
+accidentally a few times during my commute (carrying my pb in my 
+backpack) I spent some time figuring out how to induce this.
 
-> Which begs the question, have you re-configured X for 3.3.5?
-> 
-Yes. Several dozen times now. I have tested every mode. 
-The "A" rpms broke 16bit color.
-The "C" rpms broke 16 and 24bit color.
+In my case, I can induce this behavior if the computer is on battery 
+power (sleeping or operating), and the area directly beneath the 
+battery area (the left bay if you're facing the computer) gets 
+squeezed. I did not open the machine up, but I assume that this is 
+causing some part of the circuit board to get bent a little 
+disrupting power.
 
-Xconfigurator finds my chip and my ram perfectly. My chip is a RageII+ with 2
-megs of vram, standard beige G3 stock.
+One thing I did notice is that restarting after this sort of power 
+off is a little weird. usually, the display starts up rightaway and 
+it starts doing its memory tests before showing the happy mac. After 
+this power disruption, the machine doesn't immediately respond to 
+hitting the power. Waiting a minute (w/o plugging it in) 'fixes' 
+everything.
 
+\p
+---
+I like the word "indolence."
+It makes my laziness seem classy.
+            --Bern Williams
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
