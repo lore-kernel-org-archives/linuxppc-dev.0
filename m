@@ -1,30 +1,33 @@
-Date: Fri, 24 Sep 1999 18:01:36 +0200
-To: linuxppc-dev@lists.linuxppc.org, Paul.Mackerras@cs.anu.edu.au
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: MacOS 9 vs. linux IDE
-Message-Id: <19990924180136.017702@mailhost.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Fri, 24 Sep 1999 13:57:10 -0400 (EDT)
+From: Anirudh Joshi <ajoshi@Glue.umd.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: SndConfig for Linux/PPC
+In-Reply-To: <99092411060800.00471@lintop>
+Message-ID: <Pine.GSO.4.10.9909241353170.4557-100000@digital.eng.umd.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I've done some experiments with MacOS 9. Apparently, the IDE controller
-is in a strange state after MacOS shutdown, and this is not related to
-the feature control bits of the mac-io. However, I managed to revive it
-after writing various values in the IDE control register (+0x160).
-
-It looks like Apple uses bits in the MSB quartet of the IDE control
-register, which are, to my knowledge, not defined by the standard.
-
-Someone has an idea about this ? I'll continue my tests until I find
-something that works all the time.
+	heh... funny you bring this up, cause just yesterday i decided
+(was coaxed rather) to rewrite the awacs driver.  hopefully when i'm
+finished, it'll be out of dmasound.c and awacs.c will be done The Right
+Way (or whatever way i think is Right :).  anyhow, it'll have all the
+goodies like mixer support, etc...
 
 
--- 
-           Perso. e-mail: <mailto:bh40@calva.net>
-           Work   e-mail: <mailto:benh@mipsys.com>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+ani
 
+On Fri, 24 Sep 1999, Jeramy B Smith wrote:
+
+> 
+> I've been thinking about making sndconfig run on linuxppc. 
+> A. rip out the sun/sbus code
+> B. remove defs for isa cards
+> C. remove the defs for pci cards that don't work on linuxppc
+> D. add dma sound def
+> E. debug, debug, debug
+> 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
