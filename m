@@ -1,38 +1,28 @@
-Message-ID: <38341E81.1B5730E0@netx4.com>
-Date: Thu, 18 Nov 1999 10:42:57 -0500
+Message-ID: <38341F92.5975D96B@netx4.com>
+Date: Thu, 18 Nov 1999 10:47:30 -0500
 From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: "Orjan Gustavsson" <orjan@switchcore.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Compiling for the FADS, yet again...
-References: <45AFD48D077ED211BB4700A0C9DCE8FD012EDC@monza.broadswitch.com>
-Content-Type: text/plain; charset=iso-8859-1
+To: Jim Chapman <jim.chapman@iname.com>
+CC: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: configuring swap on a diskless mpc860 embedded target
+References: <38340F9F.E7A9CC63@iname.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Örjan Gustavsson wrote:
+Jim Chapman wrote:
+> 
+> Is anyone using an NFS-mounted swap file on an mpc860 diskless system?
 
 
-> Which version of the kernel should I get?
+Ummm...no.....That's not very high on the list, as embedded
+products don't usually swap.....
 
-Use the 2.2.13 tar image from ppc.kernel.org.  I do not (yet)
-have 2.2.x updated with 8xx changes.  The 2.3.xx kernel has
-almost everything.  When I am finished with the 82xx, I will
-make another update there, as it affects some of the 8xx code.
-
-
-> (I have tried to change .config directly, but it does not helped much)
-
-You have to make corresponding changes in include/linux/autoconf.h.
-
-
-> Will there be better support for the FADS, or is it a doomed project?
-
-
-I have received a few FADS patches that I will get into CVS with
-my next update, maybe over the holidays.
-
+I don't know much about swapping, except that all of the
+systems I have will use an exclusive disk partition for that.
+There may be some assumptions in the code about underlying
+media....
 
 
 	-- Dan
