@@ -1,29 +1,35 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Scott Hankin <shankin@rational.com>,
-	Linux PPC Developers <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: 2.4.5-pre1 hangs on Wallstreet
-Date: Sat, 5 May 2001 02:05:56 +0200
-Message-Id: <20010505000556.26820@mailhost.mipsys.com>
-In-Reply-To: <200105032145.QAA05255@lists.linuxppc.org>
-References: <200105032145.QAA05255@lists.linuxppc.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+	<linuxppc-dev@lists.linuxppc.org>, <debian-powerpc@lists.debian.org>
+Subject: Re: Success! (was Re: External Monitor under Pismo)
+Date: Sat, 5 May 2001 03:03:18 +0200
+Message-Id: <20010505010318.5183@mailhost.mipsys.com>
+In-Reply-To: 
+ <Pine.LNX.4.30.0105042247590.3732-100000@opal.biophys.uni-duesseldorf.de>
+References: 
+ <Pine.LNX.4.30.0105042247590.3732-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> I built the latest bk tree this morning after rsyncing, and on boot, I
->> only get the initial black screen, then it stops.  No dump, no monitor,
->> no nothing.  Where do I go from here?
+>> Yep. The same is true for atyfb (yes, I should add mirrorring/dualhead
+>support
+>> for the Mobility in my Vaio :-).
 >
->An update:  it hangs after printing out the "MMU: exit" message.  On my
->2.4.4 kernel, it goes on to tell me "xmon uses screen and keyboard" on
->the next line, but on 2.4.5-pre1, it just stops.
+>Please do - I tried Ben's mirror utility on the Lombard but no success.
+>And I still have no aty docs to look up the details in.
 
-BootX/miBoot booting was broken lately.
+Well, if you do that, it may be interesting to impement the same
+ioctls I have in my aty128fb version (I'll send it to you later
+if you don't want to rsync down my entire tree).
 
-I added a workaround to my rsync tree, I'll try to come up with a
-better solution for bk this week-end.
+I beleive you can do something very similar by just toggling the
+CRT & LCD enable bits on the first CRT. No need for CRTC 2 for
+simple mirroring. "Smart" mirroring (with higher refresh rate) would
+require use of CRTC2 however.
 
 Ben.
 
