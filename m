@@ -1,61 +1,44 @@
-Message-ID: <20040504063215.79304.qmail@web8202.mail.in.yahoo.com>
-Date: Tue, 4 May 2004 07:32:15 +0100 (BST)
-From: =?iso-8859-1?q?somshekar=20kadam?= <som_kadam@yahoo.co.in>
-Subject: linuxppc 2.6.5 mpc8xx compilation
-To: runet@innovsys.com
-Cc: shchoi@airpoint.co.kr, linuxppc-embedded@lists.linuxppc.org,
-	som_kadam@yahoo.co.in
+Message-ID: <2C1BAF8F8E1DD611862B0002A5D4C3FC02B6D060@renexch3.rennes.thmulti.com>
+From: Fillod Stephane <stephane.fillod@thomson.net>
+To: "'Bob White'" <bwhite@perigee.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Dual-Port SRAM
+Date: Tue, 4 May 2004 10:48:04 +0200 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-HI ,
+Bob White wrote:
+> What configuration is necessary to map this memory into the kernel?
 
-  Currently i am trying to compile linux-2.6.5 for
-mpc8xx for MBX reference board ,,,
-i have some compilation problems ,, i am not able to
-figure what could be the problem ,, i am not sure
-correct me if i am wrong , is ppc code is completely
-available in linux-2.6.5 verision ,,
+You need ioremap() and a good book on Linux Kernel Driver development.
+Excellent examples are in linux/drivers directory.
 
-i dont get errors if i compile for other 7xx 8260 , it
-compiles fine ,,,
+> Can you point me to some examples?  How does it then get accessed from
+> a user program?
 
-i have the error messages like this
+Bob, Wolfgang was talking about this reply ;-)
 
 
-----------------------------------------------
-make[1]: `arch/ppc/kernel/asm-offsets.s' is up to
-date.
-  CHK     include/asm-ppc/offsets.h
-  CHK     include/linux/compile.h
-dnsdomainname: Unknown host
-  CC      arch/ppc/syslib/m8xx_setup.o
-arch/ppc/syslib/m8xx_setup.c:223:35: macro "mfmsr"
-passed 1 arguments, but takes just 0
-arch/ppc/syslib/m8xx_setup.c: In function
-`m8xx_restart':
-arch/ppc/syslib/m8xx_setup.c:223: error: `mfmsr'
-undeclared (first use in this function)
-arch/ppc/syslib/m8xx_setup.c:223: error: (Each
-undeclared identifier is reported only once
-arch/ppc/syslib/m8xx_setup.c:223: error: for each
-function it appears in.)
-arch/ppc/syslib/m8xx_setup.c:216: warning: unused
-variable `msr'
-make[1]: *** [arch/ppc/syslib/m8xx_setup.o] Error 1
-make: *** [arch/ppc/syslib] Error 2
--------------------------------------------------
+So, here is the FAQ:
+
+Please have a look at Denx's FAQ for accessing memory bus:
 
 
-Thanks In Advance
-Neelu
+http://www.denx.de/twiki/bin/view/PPCEmbedded/DeviceDrivers#Section_Accessin
+gPeripheralsFromUserSpace
+
+For more information, please follow this thread:
+	http://lists.linuxppc.org/linuxppc-embedded/200403/msg00059.html
 
 
+Next time, google and list archive are your friend ;-)
 
-________________________________________________________________________
-Yahoo! India Matrimony: Find your partner online. http://yahoo.shaadi.com/india-matrimony/
+
+Regards,
+Stephane
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
