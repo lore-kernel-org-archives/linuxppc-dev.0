@@ -1,20 +1,13 @@
-Return-Path: <jchapman@katalix.com>
-Received: from ptb-relay01.plus.net (ptb-relay01.plus.net [212.159.14.212])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 81B6E67A79
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Feb 2005 20:01:57 +1100 (EST)
-Message-ID: <421D97FE.4080100@katalix.com>
-Date: Thu, 24 Feb 2005 09:01:50 +0000
-From: James Chapman <jchapman@katalix.com>
+Return-Path: <daren.hayward@4bridgeworks.com>
+Message-ID: <C18BA5DDB58DD511BD0700C0DF0DD450294284@NTSERVER4>
+From: zDL Linux PPC <linuxppc@4bridgeworks.com>
+To: zML Linux PPC Dev <linuxppc-dev@ozlabs.org>
+Date: Thu, 24 Feb 2005 11:46:26 -0000
 MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
-References: <421CEC19.2010703@katalix.com>
-	<20050223222534.GM345@smtp.west.cox.net>
-In-Reply-To: <20050223222534.GM345@smtp.west.cox.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: PATCH: add ppc PVR register values for 7447A and 7457 CPUs
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Cc: zML Linux PPC Embedded <linuxppc-embedded@ozlabs.org>
+Subject: Power PC 440GX Jumbo Packets EMAC2/3
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,26 +17,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Tom Rini wrote:
+I have been doing some experiments with Jumbo packets (MTU 9000) and have
+noticed that once you exceed the 2KB fifo size, I end up with no response
+from the box.
 
-> On Wed, Feb 23, 2005 at 08:48:25PM +0000, James Chapman wrote:
-> 
->>Signed-off-by: James Chapman <jchapman@katalix.com>
->>
->>Trivial patch to add 7447A and 7457 CPU defs.
-> 
-> 
-> Why?  Most of the PVR definitions here can be removed (*muttering about
-> 85xx ones being added).
-> 
+I can ping the box with no problem at all at sizes greater than 2KB, however
+upon further investigation I noticed packets of size 2006 bytes causes no
+further packet to be transmitted (adding debug prints to ibm_emac_core.c,
+the driver believes the packet has been transmitted), after adding a further
+42 bytes of header information this comes to the exact size of the Transmit
+Fifo 2048 (2KB). I have also changed the Transmit Fifo Register to 1024
+bytes, this solves the problem at 2006 bytes however now it has moved to 982
+bytes of data (+42bytes of header = 1024)
 
-I'm in the process of submitting a patch for a new board (Radstone
-PPC7D). Since other boards test CPU type using definitions in this file,
-I was trying to be consistent.
+Has anyone else experienced this problem while either using a smaller
+transmit fifo (512 or 1024 bytes) and  MTU 1500 or a larger MTU (>2033) and
+EMAC transmit fifo of 2048. I guess this will really apply to people with
+larger MTU not many will decrease the Tx fifo, and I am further guessing
+that not many are using 9000 MTU as not much hardware seems to support it, I
+can only use it through a direct connection between PC's and not through a
+switch!
 
-If the community don't think those definitions are useful, I'll just
-move the ones I need into my board support stuff.
-
--- 
-James Chapman
-PGP key : http://www.katalix.com/~jchapman/pgpkey.txt
+Any suggestions on how to overcome this problem??? My only idea is to either
+add data to the packet (don't think this will work) or forceably fragment
+the packet (if it is 2K in size) to ensure that it never uses the exact size
+of the tx fifo.....
