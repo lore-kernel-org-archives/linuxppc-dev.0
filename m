@@ -1,38 +1,33 @@
-To: Julien EYRIES <julien.eyries@thales-bm.com>
+Message-ID: <20020926020325.84540.qmail@web11204.mail.yahoo.com>
+Date: Wed, 25 Sep 2002 19:03:25 -0700 (PDT)
+From: Sergiy Kovtun <skovtun@yahoo.com>
+Subject: RE: Character LCD
+To: julien.eyries@thales-bm.com
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: search for LCD pannel (1x16 or 2x16) 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 25 Sep 2002 11:22:56 +0200."
-             <3D918070.10009@thales-bm.com>
-Date: Wed, 25 Sep 2002 22:47:48 +0200
-Message-Id: <20020925204753.1C43AFA8E@denx.denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3D918070.10009@thales-bm.com> you wrote:
->
-> I'm searching for a LCD panel ( about 1x16 or 2x16 characters, black and
-> white only ) that my MPC8260 could use  .
+Hello,
 
-Most display of this sort come with some sort of serial interface.
+I had an experience work with :
 
-> Is there some support for them in the linux kernel (I use linux 2.4.4
-> from Denx) ?
+MSC-C162DGLY-1N	(character)
+MG-240128-1 	(graphic)
 
-The UART driver is working just fine...
+but only via parallel port x86 MS-DOS and Linux
+2.0.xx.
+It was easy and stable.
 
-Best regards,
+About hardware at:
 
-Wolfgang Denk
+http://www.truly.de/datasheet/character.asp
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Hi there! This is just a note from me, to you, to tell you, the  per-
-son  reading this note, that I can't think up any more famous quotes,
-jokes, nor bizarre stories, so you may as well go home.
+Best wishes
+
+Sergiy
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
