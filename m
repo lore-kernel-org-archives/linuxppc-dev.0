@@ -1,20 +1,30 @@
-Message-ID: <CA78D1B723D8D411AF0300508BDCF74F3F6D0D@NTCORREO>
-From: IGOR LURI <iluri@fagorautomation.es>
-To: =?ISO-8859-1?Q?EMBEDDED_LINUXPPC_=28Correo_electr=F3nico=29?= <linuxppc-embedded@lists.linuxppc.org>
-Subject: Simple FTP server
-Date: Mon, 25 Mar 2002 08:24:41 +0100
+Message-ID: <3C9ED7CE.AF54E6BB@imc-berlin.de>
+Date: Mon, 25 Mar 2002 08:54:54 +0100
+From: Steven Scholz <steven.scholz@imc-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Navin Boppuri <navin.boppuri@newisys.com>
+Cc: "Ppcboot-Users (E-mail)" <ppcboot-users@lists.sourceforge.net>,
+	"Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: External TA assertion timing on GPCM
+References: <D3A72C5007329A4F991C0DD87202259F0EAFD7@sekhmet.ad.newisys.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+Navin,
 
-I need a simple FTP server for a custom board based on a mpc8xx.
+I quotr from MPC860 User Man. Chapter 11.6 Bus Monitor
+"...The timing mechanism is clocked by the system clock devided by
+eight. The maximum value is 2040 system clocks..."
 
-Someone knows where con I get a litle o simple FTP server?
+The bus monitor timing is set in Bits 16-23 of SYPCR.
 
-Thanks in advance.
+Hope this helps,
+
+Steven
+
+
+>I would like to know if there is a maximum limit from the time CS is asserted (during a read/write operation) till TA is asserted by the device externally.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
