@@ -1,41 +1,49 @@
-To: v.sudeep@exgate.tek.com
-Cc: linuxppc-embedded@lists.linuxppc.org,
-	Thamarai.Selvan@lntinfotech.com
-Subject: Re: Porting emlinux on customized MPC860 board 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 14 Jan 2004 00:57:45 PST."
-             <301A812E6528D511A8F70008C71E57860290FEE7@ap-bang-m02.india.tek.com>
-Date: Wed, 14 Jan 2004 10:56:46 +0100
-Message-Id: <20040114095651.64601C10AF@atlas.denx.de>
+Message-ID: <AD59566A9D83864F871AE2E52503064001A2AAA9@aimail.aiinet.priv>
+From: "Dayton, Dean" <deand@aiinet.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Intel Pro 82546 chipset performance
+Date: Wed, 14 Jan 2004 11:00:35 -0500
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <301A812E6528D511A8F70008C71E57860290FEE7@ap-bang-m02.india.tek.com> you wrote:
+Is there a PPC compatible driver available for this the 82546 Intel Pro
+1000. I was just handed an SBE lanPMC card with this chipset on it
+yesterday. I am trying to use it on an 8265 based system with a 2.4.21
+kernel. The driver in this kernel crashes on startup. A quick look at the
+driver makes me think that it has never been used on anything but x86. Am I
+misreading the situation? Is there an enhanced driver available?
+
+Thanks
+Dean Dayton
+
+> -----Original Message-----
+> From: Samuel Agarwal [mailto:sagarwal10@hotmail.com]
+> Sent: Wednesday, January 14, 2004 1:37 AM
+> To: linux-mips@linux-mips.org; linuxppc-embedded@lists.linuxppc.org
+> Subject: Intel Pro 82546 chipset performance
 >
-> The following site
-> http://www.denx.de/twiki/bin/view/PPCEmbedded/HostDevelopmentPlatform in
-> Section 4.2 refers to a document written by Wolfgang Denk for
-> cross-development of tools to compile code for (embedded PowerPC systems
-> using Linux on an Intel PC(http://www.denx.de/cdk-en.html). But the
-
-This was ancient stuff.
-
-> associated link was not active and so the document was not found. Can you
-> please redirect me to the correct location. Or if anybody has still got the
-> document could someone please share it with me.
-
-Please see http://www.denx.de/twiki/bin/view/DULG/Manual instead.
-
-Best regards,
-
-Wolfgang Denk
-
---
-See us @ Embedded World, Nuremberg, Feb 17 - 19,  Hall 12.0 Booth 440
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Lead me not into temptation... I can find it myself.
+>
+>
+> Hi
+>
+> We're trying to use the Intel Pro 1000 adapters with the
+> 82546 chipset for a packet switching application. Has anyone
+> investigated performance on this chipset? With minimum sized
+> ethernet frames, the maximum throughput I can get is about 1
+> million packets per second (versus a 1.4 mill for line rate
+> on a gigethernet) and it looks that performance is skewed
+> towards receiving traffic (rather than sending out).
+>
+> If anyone has any opinions or thoughts I'd appreciate them.
+> It's hard to get information out of Intel.
+>
+> _________________________________________________________________
+> Find out everything you need to know about Las Vegas here for
+> that getaway. http://special.msn.com/msnbc/vivalasvegas.armx
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
