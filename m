@@ -1,54 +1,41 @@
-Date: Wed, 21 May 2003 20:59:20 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: ?????? <hychon@corebell.co.kr>
-Cc: "Mark A. Greer" <mgreer@mvista.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: how to kernel booting on MCP750 board
-Message-ID: <20030521205920.A10342@home.com>
-References: <000b01c31f5a$fcfc80b0$346ab796@corebellhychon> <3ECBC077.2030903@mvista.com> <000601c32006$5222a280$346ab796@corebellhychon>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <000601c32006$5222a280$346ab796@corebellhychon>; from hychon@corebell.co.kr on Thu, May 22, 2003 at 11:03:15AM +0900
+Message-ID: <3ECC532F.1080008@embeddededge.com>
+Date: Thu, 22 May 2003 00:33:51 -0400
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: Jim Rowe <rowejames@acmsystems.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MPC8250 + PCMCIA + airo_cs card + IO Port mapping problem?
+References: <1053557921.16972.149.camel@kneedragger>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, May 22, 2003 at 11:03:15AM +0900, ?????? wrote:
->
-> Thanks your answer.
-> But you are misunderstand my-Question,
->
-> I'm working that is booting kernel on MCP750 target board.
-> But it not do good working. it's display following error.
+Jim Rowe wrote:
 
-<snip>
+>>From what I can see - and please correct me if I'm wrong, the way that
+> Linux translates the Port IO to the memory mapped IO is through the outb
+> and outw macros, which add an offset of _IO_BASE. How do I determine the
+> correct value of _IO_BASE?
 
-> === Error Message ==============
-> PPC1-Bug>
-> PPC1-Bug>nbo 0 0 10.10.10.2 10.10.10.1 vmlinux.bin
-> Network Booting from: DEC21140, Controller 0, Device 0
-> Device Name: /pci@80000000/pci1011,9@e,0:0,0
-> Loading: vmlinux.bin
+The value of _IO_BASE depends upon how you configure and map the host PCI
+bridge on the 8250.
 
-<snip>
+> ... I looked in m8260_setup.c and found
 
-> Residual-Data Located at: $01F88000
->
-> Exception: Program (Illegal Instruction)
+The 8260 doesn't have a PCI bridge, so these mappings aren't appropriate
+for your board.  The 0xf0000000 is needed to get to the IMMR space, but
+those accesses don't (shouldn't) be using in/out macros.  The 0xe0000000
+space is generally used for flash prom, external devices, local sdram
+and so on.
 
-RTFM. :)
+There are a variety of configuration options for the PCI bridge and all of
+the other I/O in your system and the mapping using either BATs or page
+tables.  It depends upon the address ranges of all of the I/O in your
+system and their physical space allocation.
 
-The MontaVista LSP instructions specifically say to go to
-the ENV settings and enable "network PReP boot".  This has
-also been answered countless times in the list archives.
 
-BTW, you first mentioned a "motorola mpc750" board and then
-you properly referred to an mcp750.  mpc750 is a processor.
-mcp750 is the cPCI board from MCG.
+	-- Dan
 
-Regards,
---
-Matt Porter
-mporter@kernel.crashing.org
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
