@@ -1,28 +1,133 @@
-Message-ID: <00aa01bfec59$a84c9960$1a6a1504@strayer.edu>
-From: "Robert Thompson" <rothomp3@vt.edu>
-To: "Benjamin Herrenschmidt" <bh40@calva.net>,
-        <linuxppc-dev@lists.linuxppc.org>
-References: <008301bfec55$bc40c580$1a6a1504@strayer.edu> <20000712231905.23171@192.168.1.10>
-Subject: Re: trackpad
-Date: Wed, 12 Jul 2000 19:33:47 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-Id: <200007130129.CAA04704@hyperion.valhalla.net>
+Date: Thu, 13 Jul 2000 02:29:45 +0100
+Subject: [PATCH] 2.4.0-test3 sys_ctrler fix.
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: linuxppc-dev@lists.linuxppc.org
+CC: Benjamin Herrenschmidt <bh40@calva.net>
+Mime-version: 1.0
+Content-type: multipart/mixed;
+   boundary="MS_Mac_OE_3046300185_55578_MIME_Part"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> What's up if you add "adb_xpmac_compat" to your kernel command line ? It
-> works fine on my pismo here.
->
-Hmmm... no dice on this iBook SE. Still not working, even with that command.
-So, there appears to be some difference in this respect between the Pismo
-and the iBook (at least, the Special Edition iBook... but I'm pretty sure
-the SE is exactly the same as the normal iBook, except for color and the
-366...), and perhaps even between different Pismo's.
+> THIS MESSAGE IS IN MIME FORMAT. Since your mail reader does not understand
+this format, some or all of this message may not be legible.
 
-Later,
-Robbie Thompson
+--MS_Mac_OE_3046300185_55578_MIME_Part
+Content-type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+
+here is a patch against 2.4.0-test3 as of yesterday (i.e. against the
+version with broken timer.c & idle.c).  I was having real problems getting
+the BK rsync stuff until just now...
+
+This patch fixes the cross-referencing of sys_ctrler - a variable indicating
+the ADB controller type (CUDA or PMU).
+
+It is quite wide-ranging and affected pmac_setup, xmon, nvram, time, start,
+via-cuda, via-pmu & dmasound.
+
+It may already have been fixed in 2.4.0-test4 (I just noticed that bitkeeper
+has changed).
+
+====
+
+I'll do a separate patch against 2.4.0-test3 for the dmasound stuff (once
+I've checked it out a bit more).
+
+If you're desperate to try the sound then add a line
+
+extern sys_ctrler_t sys_ctrlr ;
+
+anywhere after machdep.h  has been included - this should fix anyone else
+who has a G3/desktop (with the dmasound sources from test3).
+
+It *might* fix PB problems too (but I can't be certain).
+
+====
+
+It needs the scrutiny of a more experienced bunch - I may not have got the
+conditionalisation right for all PPC platform variants... please be
+gentle-ish...
+
+Iain.
+--MS_Mac_OE_3046300185_55578_MIME_Part
+Content-type: application/binary; name="sys_ctrler.patch";
+ x-mac-creator="3F3F3F3F";
+ x-mac-type="3F3F3F3F"
+Content-disposition: attachment
+Content-Transfer-Encoding: base64
+
+ZGlmZiAtdXJiQncgYmtfZGV2ZWwvYXJjaC9wcGMva2VybmVsL3BtYWNfbnZyYW0uYyBsaW51
+eHBwY18yXzMvYXJjaC9wcGMva2VybmVsL3BtYWNfbnZyYW0uYwotLS0gYmtfZGV2ZWwvYXJj
+aC9wcGMva2VybmVsL3BtYWNfbnZyYW0uYwlNb24gSnVsIDEwIDA4OjE4OjQzIDIwMDAKKysr
+IGxpbnV4cHBjXzJfMy9hcmNoL3BwYy9rZXJuZWwvcG1hY19udnJhbS5jCVRodSBKdWwgMTMg
+MDE6Mjc6MTIgMjAwMApAQCAtNzAsNiArNzAsNyBAQAogCiBleHRlcm4gaW50IHBtYWNfbmV3
+d29ybGQ7CiAKK2V4dGVybiBzeXNfY3RybGVyX3Qgc3lzX2N0cmxlciA7CiAKIHN0YXRpYyB1
+OAogY2hycF9jaGVja3N1bShzdHJ1Y3QgY2hycF9oZWFkZXIqIGhkcikKZGlmZiAtdXJiQncg
+YmtfZGV2ZWwvYXJjaC9wcGMva2VybmVsL3BtYWNfc2V0dXAuYyBsaW51eHBwY18yXzMvYXJj
+aC9wcGMva2VybmVsL3BtYWNfc2V0dXAuYwotLS0gYmtfZGV2ZWwvYXJjaC9wcGMva2VybmVs
+L3BtYWNfc2V0dXAuYwlUdWUgSnVsIDExIDA4OjEyOjE0IDIwMDAKKysrIGxpbnV4cHBjXzJf
+My9hcmNoL3BwYy9rZXJuZWwvcG1hY19zZXR1cC5jCVRodSBKdWwgMTMgMDE6MDA6MzkgMjAw
+MApAQCAtOTQsNiArOTQsOCBAQAogZXh0ZXJuIHZvaWQgcGNrYmRfaW5pdF9odyh2b2lkKTsK
+IGV4dGVybiB2b2lkIHBtYWNfbnZyYW1fdXBkYXRlKHZvaWQpOwogCitzeXNfY3RybGVyX3Qg
+c3lzX2N0cmxlciA9IDAgOworCiB1bnNpZ25lZCBjaGFyIGRyaXZlX2luZm87CiAKIGludCBw
+cGNfb3ZlcnJpZGVfbDJjciA9IDA7CmRpZmYgLXVyYkJ3IGJrX2RldmVsL2FyY2gvcHBjL2tl
+cm5lbC9wbWFjX3RpbWUuYyBsaW51eHBwY18yXzMvYXJjaC9wcGMva2VybmVsL3BtYWNfdGlt
+ZS5jCi0tLSBia19kZXZlbC9hcmNoL3BwYy9rZXJuZWwvcG1hY190aW1lLmMJV2VkIEp1biAy
+OCAwNzo1ODoyNCAyMDAwCisrKyBsaW51eHBwY18yXzMvYXJjaC9wcGMva2VybmVsL3BtYWNf
+dGltZS5jCVRodSBKdWwgMTMgMDE6Mjk6MTMgMjAwMApAQCAtMzEsNiArMzEsOCBAQAogCiBl
+eHRlcm4gcndsb2NrX3QgeHRpbWVfbG9jazsKIAorZXh0ZXJuIHN5c19jdHJsZXJfdCBzeXNf
+Y3RybGVyIDsKKwogLyogQXBwYXJlbnRseSB0aGUgUlRDIHN0b3JlcyBzZWNvbmRzIHNpbmNl
+IDEgSmFuIDE5MDQgKi8KICNkZWZpbmUgUlRDX09GRlNFVAkyMDgyODQ0ODAwCiAKZGlmZiAt
+dXJiQncgYmtfZGV2ZWwvYXJjaC9wcGMva2VybmVsL3BwY19rc3ltcy5jIGxpbnV4cHBjXzJf
+My9hcmNoL3BwYy9rZXJuZWwvcHBjX2tzeW1zLmMKLS0tIGJrX2RldmVsL2FyY2gvcHBjL2tl
+cm5lbC9wcGNfa3N5bXMuYwlNb24gSnVsIDEwIDA4OjE4OjQzIDIwMDAKKysrIGxpbnV4cHBj
+XzJfMy9hcmNoL3BwYy9rZXJuZWwvcHBjX2tzeW1zLmMJVGh1IEp1bCAxMyAwMTo0ODozOSAy
+MDAwCkBAIC02MSw2ICs2MSw4IEBACiBpbnQgYWJzKGludCk7CiBleHRlcm4gdW5zaWduZWQg
+bG9uZyByZXRfdG9fdXNlcl9ob29rOwogCitleHRlcm4gc3lzX2N0cmxlcl90IHN5c19jdHJs
+ZXIgOworCiBFWFBPUlRfU1lNQk9MKGNsZWFyX3BhZ2UpOwogRVhQT1JUX1NZTUJPTChkb19z
+aWduYWwpOwogRVhQT1JUX1NZTUJPTChzeXNjYWxsX3RyYWNlKTsKQEAgLTE5OCw2ICsyMDAs
+OCBAQAogRVhQT1JUX1NZTUJPTChfbWFjaGluZSk7CiAjZW5kaWYKIEVYUE9SVF9TWU1CT0wo
+cHBjX21kKTsKKworRVhQT1JUX1NZTUJPTF9OT1ZFUlMoc3lzX2N0cmxlcikgOwogCiAjaWZk
+ZWYgQ09ORklHX0FEQgogLyoKZGlmZiAtdXJiQncgYmtfZGV2ZWwvYXJjaC9wcGMveG1vbi9z
+dGFydC5jIGxpbnV4cHBjXzJfMy9hcmNoL3BwYy94bW9uL3N0YXJ0LmMKLS0tIGJrX2RldmVs
+L2FyY2gvcHBjL3htb24vc3RhcnQuYwlUaHUgSnVuICA4IDA3OjM4OjE2IDIwMDAKKysrIGxp
+bnV4cHBjXzJfMy9hcmNoL3BwYy94bW9uL3N0YXJ0LmMJVGh1IEp1bCAxMyAwMTowMzowNSAy
+MDAwCkBAIC0yNyw2ICsyNyw4IEBACiBzdGF0aWMgaW50IHhtb25fdXNlX3NjY2IgPSAwOwog
+c3RhdGljIHN0cnVjdCBkZXZpY2Vfbm9kZSAqbWFjaW9fbm9kZTsKIAorZXh0ZXJuIHN5c19j
+dHJsZXJfdCBzeXNfY3RybGVyIDsKKwogI2RlZmluZSBUQl9TUEVFRAkyNTAwMDAwMAogCiBz
+dGF0aWMgaW5saW5lIHVuc2lnbmVkIGludCByZWFkdGIodm9pZCkKZGlmZiAtdXJiQncgYmtf
+ZGV2ZWwvZHJpdmVycy9tYWNpbnRvc2gvdmlhLWN1ZGEuYyBsaW51eHBwY18yXzMvZHJpdmVy
+cy9tYWNpbnRvc2gvdmlhLWN1ZGEuYwotLS0gYmtfZGV2ZWwvZHJpdmVycy9tYWNpbnRvc2gv
+dmlhLWN1ZGEuYwlXZWQgTWFyICAxIDIwOjMwOjMzIDIwMDAKKysrIGxpbnV4cHBjXzJfMy9k
+cml2ZXJzL21hY2ludG9zaC92aWEtY3VkYS5jCVRodSBKdWwgMTMgMDE6MDY6MjUgMjAwMApA
+QCAtMzIsNiArMzIsMTAgQEAKIAogc3RhdGljIHZvbGF0aWxlIHVuc2lnbmVkIGNoYXIgKnZp
+YTsKIAorI2lmZGVmIENPTkZJR19QUEMKK2V4dGVybiBzeXNfY3RybGVyX3Qgc3lzX2N0cmxl
+ciA7CisjZW5kaWYKKwogI2lmZGVmIENPTkZJR19NQUMKICNkZWZpbmUgQ1VEQV9JUlEgSVJR
+X01BQ19BREIKICNkZWZpbmUgX19vcGVuZmlybXdhcmUKZGlmZiAtdXJiQncgYmtfZGV2ZWwv
+ZHJpdmVycy9tYWNpbnRvc2gvdmlhLXBtdS5jIGxpbnV4cHBjXzJfMy9kcml2ZXJzL21hY2lu
+dG9zaC92aWEtcG11LmMKLS0tIGJrX2RldmVsL2RyaXZlcnMvbWFjaW50b3NoL3ZpYS1wbXUu
+YwlNb24gSnVsIDEwIDA4OjE4OjQ0IDIwMDAKKysrIGxpbnV4cHBjXzJfMy9kcml2ZXJzL21h
+Y2ludG9zaC92aWEtcG11LmMJVGh1IEp1bCAxMyAwMTowODo1MSAyMDAwCkBAIC0xNTYsNiAr
+MTU2LDggQEAKIGV4dGVybiBpbnQgZ3JhY2tsZV9wY2liaW9zX3dyaXRlX2NvbmZpZ193b3Jk
+KHVuc2lnbmVkIGNoYXIgYnVzLAogCXVuc2lnbmVkIGNoYXIgZGV2X2ZuLCB1bnNpZ25lZCBj
+aGFyIG9mZnNldCwgdW5zaWduZWQgc2hvcnQgdmFsKTsKIAorZXh0ZXJuIHN5c19jdHJsZXJf
+dCBzeXNfY3RybGVyIDsKKwogLyoKICAqIFRoaXMgdGFibGUgaW5kaWNhdGVzIGZvciBlYWNo
+IFBNVSBvcGNvZGU6CiAgKiAtIHRoZSBudW1iZXIgb2YgZGF0YSBieXRlcyB0byBiZSBzZW50
+IHdpdGggdGhlIGNvbW1hbmQsIG9yIC0xCgpkaWZmIC11cmJCdyBia19kZXZlbC9pbmNsdWRl
+L2FzbS1wcGMvbWFjaGRlcC5oIGxpbnV4cHBjXzJfMy9pbmNsdWRlL2FzbS1wcGMvbWFjaGRl
+cC5oCi0tLSBia19kZXZlbC9pbmNsdWRlL2FzbS1wcGMvbWFjaGRlcC5oCVdlZCBNYXIgIDEg
+MjA6Mjc6MTIgMjAwMAorKysgbGludXhwcGNfMl8zL2luY2x1ZGUvYXNtLXBwYy9tYWNoZGVw
+LmgJVGh1IEp1bCAxMyAwMDo1NToyNyAyMDAwCkBAIC04Nyw5ICs4Nyw5IEBACiAgKiBQb3dl
+ciBtYWNpbnRvc2hlcyBoYXZlIGVpdGhlciBhIENVREEgb3IgYSBQTVUgY29udHJvbGxpbmcK
+ICAqIHN5c3RlbSByZXNldCwgcG93ZXIsIE5WUkFNLCBSVEMuCiAgKi8KLWVudW0gc3lzX2N0
+cmxlcl9raW5kIHsKK3R5cGVkZWYgZW51bSBzeXNfY3RybGVyX2tpbmQgewogCVNZU19DVFJM
+RVJfQ1VEQSA9IDEsCiAJU1lTX0NUUkxFUl9QTVUgPSAyLAotfSBzeXNfY3RybGVyOworfSBz
+eXNfY3RybGVyX3QgOwogCiAjZW5kaWYgLyogX1BQQ19NQUNIREVQX0ggKi8K
+
+--MS_Mac_OE_3046300185_55578_MIME_Part--
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
