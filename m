@@ -1,191 +1,96 @@
-Message-ID: <3E034D21.B1E534B2@wvi.com>
-Date: Fri, 20 Dec 2002 09:02:25 -0800
-From: Jim Potter <jrp@wvi.com>
-Reply-To: jpotter@dualg4.com
-MIME-Version: 1.0
-To: Prakash kanthi <pkanthi@yahoo.com>,
-	LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <20021220170607.22771.qmail@web41207.mail.yahoo.com>
+Date: Fri, 20 Dec 2002 09:06:07 -0800 (PST)
+From: Prakash kanthi <pkanthi@yahoo.com>
 Subject: Re: After Uncompresseing Linux..., what's next
-References: <20021220163238.45233.qmail@web41215.mail.yahoo.com> <3E034A34.A2E32F46@wvi.com>
-Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
+To: Gary Thomas <gary@chez-thomas.org>
+Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <1040403153.32282.6220.camel@hermes.chez-thomas.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I'm not especially familiar with the 4xx cpus, but on the 74xx cpus the MSR
-register has the "privilege level" bit, which determines if the processor can
-execute both user- and supervisor-level instructions, or only user-level
-instructions.
+Gary,
 
-This needs to be setup by the bootloader to allow supervisor-level instructions
-to be executed, else you'll see some errors.
+I really appreciate your help. Here is what i am
+doing. Sorry it is little long. But was necessasry.
+
+1. I have a boot loader(xrom.elf) of size around 400KB
+which basically have menu driven tests along with an
+option to jump to linux kernel(zImage.initrd.elf).
+
+2. xrom.elf is compiled to start at 0xfffffffc and
+jump to 0x00000000 to have rest of functionality.
+zImage.initrd.elf is compiled to start at 0x00400000.
+
+3. I load zImage.initrd.elf first and then xrom.elf
+(xilinx tool makes sure that they are loaded to
+corresponding locations based on ELF header).
+
+4. After loading both, i start running xrom.elf and it
+shows up a menu in my UART terminal. I jump to linux
+(0x00400000).
+
+5. I see that linux is basically reading the board
+info, setting UART, prints some boot messages onto it
+and then performs uncompression (gunzip function takes
+the rest of linux image and puts the uncompressed code
+starting from 0x0).
+
+6. Up untill, everything is ok. After this, control
+jumps to 0x0 and starts executing.
+
+My problems are,
+
+a. Once the uncompression process is done, i am not
+sure if the image is copied to 0x0 (i do see value
+changes in memory starting from 0x0).
+b. As uncompression process is embedded into
+zImage.initrd.elf, i do not objdump does not tell me
+which function it is going to execute after
+uncompression.
+
+Please suggest.
+
+Thanks,
+Prakash
 
 
-> The early code needs to perform many privileged instructions;  make sure that
-> you aren't restricting the cpu to only user instructions.
->
-> > I found the correct exception guys. It means
-> > Privileged Instruction Exception.
-> >
-> > --- Prakash kanthi <pkanthi@yahoo.com> wrote:
-> > >
-> > > Folks,
-> > >
-> > > I just wanted to provide more info on my env. I have
-> > > PPC405 based board with no network support forcing
-> > > me
-> > > to use zImage.initrd.elf.
-> > >
-> > > Can you suggest more on my problem described below?
-> > > I
-> > > saw the memory values at 0x00000000 onwards after
-> > > uncompressing linux and they have changed. But when
-> > > the control jumps to 0x0, my board hangs. I see that
-> > > ESR is showing a value of 0x80000000, meaning either
-> > > illegal instruction or Machine Check.
-> > >
-> > > Can you tell what's going on? What happens next
-> > > after
-> > > uncompressing? I am thinking it executes
-> > > start_kernel
-> > > function which calls lock_kernel. Let me know if i
-> > > am
-> > > wrong.
-> > >
-> > > thanks,
-> > > Prakash
-> > >
-> > >
-> > >
-> > >
-> > > --- James Don <JDon@spacebridge.com> wrote:
-> > > > I just went thru this myself ... ;-)
-> > > >
-> > > > 1.) Get a BDM/JTAG tool look halt the processor
-> > > > after you see " Now booting
-> > > > the kernel" and look for valid asm at 0x0 ... make
-> > > > sure it mathes your
-> > > > start.s file ...
-> > > >
-> > > > 2.) Veryfy you have your mem map from ppcboot
-> > > > matching requirements for the
-> > > > kernel i.e ram (physical=0x0, virtual=0xc0000000)
-> > > > and immr (phys 0xff000000
-> > > > virtual 0xff000000) ... I had my immr in ppc boot
-> > > at
-> > > > 0x02200000 this screwed
-> > > > me for quite a while ... otherwise you have no
-> > > > printk ... the memory map is
-> > > > very important not to screw with some things
-> > > depend
-> > > > on it (unless your
-> > > > careful) ...
-> > > >
-> > > > 3.) verify you SMC1 (uart) is getting proper
-> > > > clocking config ... i.e
-> > > > bus->brg1 and brg1 is 16 times baud rate ...
-> > > > otherwise you have no printk
-> > > >
-> > > > 4.) and always always keep in mind your RAM refesh
-> > > > could be wrong ...
-> > > > everyone will tell you this even when it has
-> > > nothing
-> > > > to do with your problem
-> > > > ... try not to ignore them if you are still stuck
-> > > > ;-) But verifying step 1
-> > > > should prove your ok ...
-> > > >
-> > > > Best of luck,
-> > > > Jim
-> > > >
-> > > >
-> > > > -----Original Message-----
-> > > > From: Prakash kanthi [mailto:pkanthi@yahoo.com]
-> > > > Sent: Wednesday, December 18, 2002 7:14 PM
-> > > > To: LinuxPPC
-> > > > Subject: After Uncompresseing Linux..., what's
-> > > next
-> > > >
-> > > >
-> > > > Hi there,
-> > > >
-> > > > I was trying to load linuxppc_2_4_devel onto my
-> > > > board.
-> > > > It goes through the board info read, UART init and
-> > > > Uncompressing the linux kernel. But after that, i
-> > > do
-> > > > not see any messages and board hangs.
-> > > >
-> > > > Here is the UART output:
-> > > > ------------------------------------
-> > > > OS Booting...
-> > > >
-> > > > loaded at:     00400000 0060D1CC
-> > > > board data at: 00000030 00000044
-> > > > relocated to:  00405C24 00405C38
-> > > > zimage at:     00406290 004A08FF
-> > > > initrd at:     004A1000 006097CA
-> > > > avail ram:     0060E000 007F8000
-> > > >
-> > > > Linux/PPC load: console=ttyS0,9600 console=tty1
-> > > > ip=on
-> > > > root=/dev/xsysace/disc0/pa
-> > > > rt3 rw
-> > > > Uncompressing Linux...done.
-> > > > Now booting the kernel
-> > > > -------------------------------------------
-> > > >
-> > > > After the last line, it hangs. I get a feeling
-> > > that,
-> > > > the uncompressing process is not writing in the
-> > > > memory
-> > > > starting from 0x00000000 and, after uncompressing,
-> > > > it
-> > > > is jumping into 0x00000000 and is not able to find
-> > > > anything.
-> > > >
-> > > > My questions are,
-> > > > 1. How can i make sure that, the uncompressing
-> > > > process
-> > > > is going to start writing the data from
-> > > 0x00000000.
-> > > >
-> > > > 2. How big a space this uncompressing process
-> > > needs?
-> > > > And also how much overall memory is required for
-> > > > running linux. I just have 8MB SDRAM.
-> > > >
-> > > > 3. What is the next step in the booting process?
-> > > > Which
-> > > > Device (eth, pci, ide, ???) Initialization?
-> > > >
-> > > > Your help is appreciated.
-> > > >
-> > > > thanks,
-> > > > Prakash
-> > > >
-> > > >
-> > >
-> > >
-> > >
+
+
+
+--- Gary Thomas <gary@chez-thomas.org> wrote:
+> On Fri, 2002-12-20 at 09:48, Prakash kanthi wrote:
+> > I do have xilinx tools and i am working with their
+> V2P
+> > product. I completely understands what you are
+> said.
+> > But the problem is, right after the uncompression
+> and
+> > cpy to 0x00000000, i loose total control because i
+> > don't have any clue what is getting executed.
 > >
 >
-> --
-> Sincerely,
+> What sort of things can you do with the Xilinx
+> tools?  Is
+> there any way to set [hardware] breakpoints or
+> single step?
 >
-> Jim Potter
-> 45th Parallel Processing
+> > And also, i have my boot monitor code at
+> 0x00000000,
+> > before uncompress process overwrites it. I see
+> that
+> > some of that code is getting executed after jump
+> to
+> > 0x0. I reason i am overwriting 0x0 is because, i
+> only
+> > have 8MB RAM.
+> >
 >
->   Firefighting: Bustin' ours, Savin' yours.
+> 8M should be plenty of RAM.
 >
-
---
-Sincerely,
-
-Jim Potter
-45th Parallel Processing
-
-  Firefighting: Bustin' ours, Savin' yours.
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
