@@ -1,43 +1,56 @@
-Date: Tue, 12 Dec 2000 09:26:47 -0600 (CST)
-From: Brian Ford <ford@vss.fsi.com>
-To: Graham Stoney <greyham@research.canon.com.au>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 2.5 or 2.4 kernel profiling
-In-Reply-To: <20001212133658.C1773@brixi.research.canon.com.au>
-Message-ID: <Pine.GSO.4.21.0012120915570.24199-100000@eos>
+Message-ID: <B25E2E5A003CD311B61E00902778AF2A0148B61A@server1.skystream.com>
+From: Subodh Nijsure <SNijsure@SkyStream.com>
+To: "'Tobias Otto-Adamczak'" <tobias.otto-adamczak@e-technik.tu-chemnitz.de>,
+        Subodh Nijsure <SNijsure@SkyStream.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Connecting to powerpc target via wiggler.
+Date: Tue, 12 Dec 2000 07:42:54 -0800
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, 12 Dec 2000, Graham Stoney wrote:
 
-> Also, doesn't the 8260 have seperate memory subsystems to help get
-> around this?
 >
-I assume you are referring to the local bus?  Well yes, but there are large
-tradeoffs.
+> > Has anybody been successful in connecting to the powerpc board
+> > using the BDM wiggler from MACRAIGOR system?
+>
+> AFAIK Macraigor sells some MS-Windows code that makes the wiggler work
+> with the MS-Windows versions of GDB. I searched the web some
+> months ago if
+> someome succeeded using powerpc board, wiggler, GDB and linux
+> but it seems
+> there is no (free) solution available.
+>
+> Ciao - Tobias
 
-If you use the local bus for the receive buffers then you can have
-simultaneous CPM to local bus and CPU to 60x bus transactions.  The catch
-is that the local bus can not be cached.  So, you trade off bus contention
-for caching/bursting.  The CPU must go across the 60x to local bus bridge
-for those transactions.  The DMA engine can burst between the 60x and
-local busses.
+Actually I got it working.
 
-If the data has to end up in user space, it ends up being about a
-wash, given the checksum and user space copy.  I need more testing to
-confirm this, though.  If the user space copy was not needed, like for
-routing, then it might help some.
+Here is my setup.
 
---
-Brian Ford
-Software Engineer
-Vital Visual Simulation Systems
-FlightSafety International
-Phone: 314-551-8460
-Fax:   314-551-8444
+On my linux machine installed vmware (http://www.vmware.com )
+and NT machine, installed the wiggler software.
+Also under NT installed rproxy.
+It can be downloaded from link http://www.std.com/qqi/labslave/rproxy.html
+Make sure to install rproxy in same directory as wigglers.dll
 
+Now you can start rproxy under NT with command line
+rproxy --port=5555 ppcdbm wigglers.dll
+
+Now under linux connect to this rproxy & thus the wiggler from gdb
+using command
+
+	target remote IPAddress:5555
+
+So you can do all of this on one machine, all you need is vmware and rproxy
+software.
+
+Hope this helps.
+
+
+/Subodh Nijsure
+SkyStream Networks
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
