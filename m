@@ -1,28 +1,29 @@
-Message-ID: <3D4E1E5A.1070206@gmx.de>
-Date: Mon, 05 Aug 2002 08:42:34 +0200
-From: Michael Habermann <MHabermann@gmx.de>
+Content-Type: text/plain;
+  charset="us-ascii"
+From: Mark Chambers <markc@mail.com>
+Reply-To: markc@mail.com
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: fec.c question
+Date: Mon, 5 Aug 2002 09:45:29 -0400
 MIME-Version: 1.0
-To: Narendra <narengh@rediffmail.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: CS_BAD_VCC Error during Card Configaration.
-References: <20020805043039.4380.qmail@webmail6.rediffmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Message-Id: <200208050945.29788.markc@mail.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Narendra wrote:
->
-> But as i found through debug message, socket is configured for
-> 5volts and the CIS read from my card wants 3.3V. So my Config()
-> routine is failing since there is a mismatch in configured Vcc and
-> Requested Vcc. and Kernel is crashing.
->
+I am porting Wolfgang's excellent package to our custom board.  Our board has
+fec but not phy interrupt and I am having some problems with the driver not
+recognizing when the link is up.  I see that there is a function in fec.c
+(kernel 2.4.4) called mii_display_status() that would tell me the current
+status, but I don't know how to get to it from the command line?
 
-You are using a 3.3V card in an 5V socket. If the card can do this - and
-I think Prism 2 can - you  can bypass the code which checks if the Vcc
-is correct. You will maybe find it if you look in the WLAN drivers
-source code and search for conf.Vcc.
+If anyone could point me in the right direction to learn how
+mii_status_status(), and the other fec.c functions get called from the higher
+levels it would be much appreciated as well.
 
+Thanks,
+Mark Chambers
+Microfirst, Inc.
+mchambers@microfirst.com or markc@mail.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
