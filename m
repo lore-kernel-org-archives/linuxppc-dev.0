@@ -1,45 +1,25 @@
-Date: Mon, 22 Feb 1999 09:38:47 -0700 (MST)
-From: Matt Porter <mmporter@home.com>
-To: Cort Dougan <cort@persephone.cs.nmt.edu>
-cc: Paul.Mackerras@cs.anu.edu.au,
-        Hartmut Koptein <koptein@et-inf.fho-emden.de>,
-        zankel@tarantel.rz.fh-muenchen.de, bh40@calva.net,
-        davidsen@prodigy.com, marsmail@globegate.utm.edu, dvdoug@tiac.net,
-        paubert@iram.es, jskov@cygnus.co.uk, hozer@drgw.net,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: [ppc-dev] Summary: Restructuring Efforts
-In-Reply-To: <Pine.LNX.3.96.990219132018.12450A-100000@persephone.cs.nmt.edu>
-Message-ID: <Pine.LNX.3.96.990222093231.1072A-100000@liberty.chnd1.az.home.com>
+From: "Campbell, Marc" <CAMPBMA1@mail.northgrum.com>
+Reply-To: "Campbell, Marc" <campbma1@mail.northgrum.com>
+To: extreme-linux@acl.lanl.gov, beowulf@beowulf.gsfc.nasa.gov,
+        linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
+Message-ID: <36D19553.A41AD20A@mail.northgrum.com>
+Date: Mon, 22 Feb 1999 12:35:21 -0500
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: PowerPC Beowulf Who?
+Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 19 Feb 1999, Cort Dougan wrote:
+Any suggestions on who to contact for PowerPC & PowerPC/AltiVec Beowulf development, integration, sales, and/or support?
 
-I was concerned that people might think that ALL embedded boards would
-fall into the "embedded" bootloader and it could cause confusion down the
-line.  I think most MTX systems out there are running 32MB+ usually.  I
-can't answer for sure what most are using as a boot device, but it does
-vary.  Usually it's going to be out of FLASH since it is intended and
-priced for rugged embedded applications.  Since VxWorks runs on most MCG
-boards in general, you can bet that it is quite common to boot out of
-FLASH.
-  
-> The concern in this discussion (If I'm following along correctly) is RAM
-> size, that's all.  The PReP bootloader works on MTX even though it's not
-> in the embedded dir.  Since RAM is the issue how much RAM does a typical
-> MTX installed system have?  Do they boot from flash or from a hd once
-> deployed?
-> 
-> }PReP and CHRP machines are not necessarily desktops/servers.
+Marc Campbell
+Northrop Grumman
+Technology Development
+High Performance Computing, Group Lead
+Melbourne, FL
 
---
-Matt Porter
-mmporter@home.com
-This is Linux Country. On a quiet night, you can hear Windows reboot.
-
+campbma1@mail.northgrum.com
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
