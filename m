@@ -1,57 +1,94 @@
-Message-Id: <5.1.0.14.2.20030513234918.035106b8@mail.ebshome.net>
-Date: Tue, 13 May 2003 23:56:56 -0700
-To: Xupei Liang <tliang@yahoo.com>
-From: Eugene Surovegin <ebs@ebshome.net>
-Subject: Re: IDE driver support in PPC440
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <20030514051548.90794.qmail@web11008.mail.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: 14 May 2003 15:27:00 +0800
+Message-ID: <20030514152700.68497.qmail@eyou.com>
+From: "rick.liu" <dovi@eyou.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Reply-To: "rick.liu" <dovi@eyou.com>
+Subject: Re: Why my console output nothing
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 10:15 PM 5/13/2003, Xupei Liang wrote:
+Dear Wolfgang
 
+Thanks for ur reply,in your message you wrote:
+======= 2003-05-13 15:46:00 =======
 
->I am working on a PPC440 board that supports
->a PCI-IDE device, and I am experiencing an
->interrupt handling problem.
+>Dear Rick,
 >
->The PCI-IDE controller uses External Interrupt 7 and
->the controller interrupt line is wired to the
->processor directly. When the IDE device is
->being initialized, I can see that the interrupt
->goes off. But the code is stuck in the
->ISR and can not get out. Here are the screen
->debug messages:
 >
-><Linux booting up>
->ide1: CMD649 Bus-Master DMA disabled (BIOS)
->disabling irq 50 defensively
->ppc405_uic_disable - irq 50 word 1 bit 0x12
->hda: SanDisk SDCFB-128, ATA DISK drive
->ppc405_uic_enable - irq 50 word 1 bit 0x12
->ppc405_uic_enable - irq 50 word 1 bit 0x12
->ide0 at 0x2000-0x2007,0x3002 on irq 50
->hda: 250880 sectors (128 MB) w/1KiB Cache,
->CHS=980/8/32
->Partition check:
->  hda:ppc405_pic_get_irq - irq 50 bit 0x2000
->ppc405_uic_disable_and_ack - irq 50 word 1 bit 0x12
->ppc405_pic_get_irq - irq 64 bit 0x0
->ppc405_pic_get_irq - irq 64 bit 0x0
->-------------
+>Chances for useful  replies  are  much  better  in  the  u-boot-users
+>mailing list instead.
 
-Well, "irq 64" bothers me.
-You shouldn't see this message. Real external interrupts are in the range 0-63
+Later I will try :-)
 
-Please, check that you are using latest code from 2.4 devel tree
-(in particular file arch/ppc/kernel/ppc4xx_pic.c)
+>
+>Chances for useful replies would be even better  if  you  provided  a
+>little more information. "modify several line of ..." is not really a
+>precise description of what you did.
+>
 
-BTW, how did you setup trigger and polarity settings for IRQ7 ?
+you mean it's not the problem of my console configuration but the u-boot
+program?
+But I thought it might at least output some message of the board before it can
+output the prompt "=>",is that right? Listing all my chang in the TQM860L.h
+may help:
 
-Eugene.
+#define	CONFIG_CLOCKS_IN_MHZ	50 /*50Mhz osc connected to 860_EXTCLK*/
+#define CONFIG_BOARD_TYPES	0     /*It's a simple board ,supported?*/
+#define CFG_OR0_PRELIM	0xfff80920  /*boot flash is AM29LV040B,512k*/
+#define CFG_BR0_PRELIM	0x40000401  /* magic numbers of my modify take
+                                       /*reference from a working vxworks
+BSP's
+                                       /* romInit.s of the same board*/
+
+/* #define SDRAM_BASE2_PRELIM	0x00000000*/
+#define SDRAM_BASE4_PRELIM	0x00000000  /*cs4 is sdram*/
+
+#define CFG_OR4_PRELIM	0xfe000f60
+#define CFG_BR4_PRELIM	0x00000081
+
+#define CFG_MAMR_11COL	0x10924111 /*11 col,here is the value I write to mamr
+in tqm8xx.c*/
+
+#define CONFIG_SCC1_ENET	1 /*should add a number?*/
+/*#define CONFIG_FEC_ENET*/ /*no FEC*/
+
+and in tqm8xx.c,I did like this:
+
+1.changed upm_table according to my sdram;
+2.modify the register's value in the function initdram()
+
+
+>
+>Porting U-Boot to new hardware requires more  than  just  tweaking  a
+>line  here  and there. It will require both an in-depth understanding
+>of the hardware and U-Boot.
+>
+
+:-),I am trying to learn,would u  recommend some helpful material about
+u-boot?
+
+>
+>Did you read the README that comes with U-Boot?
+>
+yes
+
+>Finally: did you order your BDI2000 yet? You will  probably  need  it
+>soon.
+
+I know that,and I will try to persuade my "boss".
+
+Best regards,
+Rick Liu
+
+
+
+
+
+--http://www.eyou.com
+--稳定可靠的免费电子信箱  语音邮件  移动书签  日历服务  网络存储...亿邮未尽
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
