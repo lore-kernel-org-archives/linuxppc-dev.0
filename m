@@ -1,59 +1,59 @@
-From: "Thomas C. Allison" <allison@dirac.nist.gov>
-Message-Id: <199905192019.QAA00884@dirac.nist.gov>
-Subject: possible egcs c compiler bug
-To: linuxppc-user@lists.linuxppc.org
-Date: Wed, 19 May 1999 16:19:17 -0400 (EDT)
-Cc: linuxppc-dev@lists.linuxppc.org
-Content-Type: text
+Date: Wed, 19 May 1999 13:21:31 -0700 (PDT)
+From: "J. Lewellen" <jasson@u.washington.edu>
+To: Andreas Bogk <andreas@andreas.org>
+cc: Alvin Brattli <Alvin.Brattli@phys.uit.no>, linuxppc-dev@lists.linuxppc.org,
+        linuxppc-user@lists.linuxppc.org
+Subject: Patch: PB G3 Tapping?
+In-Reply-To: <m3r9oceul6.fsf@soma.andreas.org>
+Message-ID: <Pine.A41.4.10.9905191320300.74104-100000@dante15.u.washington.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I have found what *appears* to be a bug in the C compiler.  I have experienced
-this bug in R4 (regardless of the compiler/library installed) as well as in
-the latest (i.e. all the latest packages through 5/15/1999) pre-R5
-installation.  I include a short program below which illustrates the problem
-I am having.  The code compiles without error on my i386 machine
-running RHL 5.2.  The version of EGCS on the PC is 1.0.3 versus 1.1.2 on my
-PowerMac, so I don't know if this is a PPC problem or an EGCS problem.
-Any input is greatly appreciated.
+Can someone point me to a kernel patch to turn tapping off on my G3
+laptop?
 
-The code is as follows:
+Thanks
 
-test.c:
+Jasson
 
-     #include <stdio.h>
-     #include <stdarg.h>
+_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+Jasson Lewellen
+                mailto: jasson@u.washington.edu
+                mailto: jasson@animal.rad.washington.edu
 
-     static int myFunction(va_list inList)
-     {
-        va_list newList;
-        newList = inList;
-     }
+        Pinto  one of many Seattle Mechwarriors
 
-When I try to compile the code
+        Remember:  Research causes cancer in lab rats
+-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-
 
-     % gcc -c test.c
+On 19 May 1999, Andreas Bogk wrote:
 
-I get the following error message
+> 
+> Alvin Brattli <Alvin.Brattli@phys.uit.no> writes:
+> 
+> > Since I have received very little feedback regarding my patches
+> > implementing support for the mute and volume buttons on the PowerBook
+> > G3, I'm reposting the patches here, in case they have been overlooked.
+> 
+> I've used these patches with success and without any problems. I wish
+> they would make it into the standard distribution.
+> 
+> Andreas
+> 
+> -- 
+> Reality is two's complement. See:
+> ftp://ftp.netcom.com/pub/hb/hbaker/hakmem/hacks.html#item154
+> 
+> [[ This message was sent via the linuxppc-user mailing list. Replies are ]]
+> [[ not forced back to the list, so be sure to  Cc linuxppc-user  if your ]]
+> [[ reply is of general interest. Please check http://lists.linuxppc.org/ ]]
+> [[ and http://www.linuxppc.org/ for useful information before posting.   ]]
+> 
+> 
 
-     test.c: In function `myFunction':
-     test.c:7: incompatible types in assignment
-
-Any ideas?
-
-Thanks in advance,
-
-Tom
-
-+------------------------------------------------------------------------------+
-| Dr. Thomas C. Allison                          | thomas.allison@nist.gov     |
-| Computational Chemistry Group                  | (301)975-2216 (voice)       |
-| National Institute of Standards and Technology | (301)869-4020 (fax)         |
-| 100 Bureau Drive, Stop 8380                    |                             |
-| Gaithersburg, Maryland 20899-8380              |                             |
-+------------------------------------------------------------------------------+
-  Chemistry is applied theology.  --- Augustus Stanley Owsley III
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
