@@ -1,78 +1,41 @@
-Date: Thu, 31 Aug 2000 09:52:23 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Michel Lanners <mlan@cpu.lu>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: asm in OF? YES!
-In-Reply-To: <200008302138.XAA00750@piglet.grunz.lu>
-Message-ID: <Pine.HPX.4.10.10008310935230.15978-100000@gra-ux1.iram.es>
+Message-ID: <39AE296A.552A14C3@relog.ch>
+Date: Thu, 31 Aug 2000 11:46:18 +0200
+From: Michel Dänzer <daenzer@relog.ch>
+Reply-To: daenzerm@student.ethz.ch
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Tony Mantler <nicoya@apia.dhs.org>
+CC: Tom Gall <gall@rochcivictheatre.org>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Sourceforge.net
+References: <39ADA344.4D6F0916@rochcivictheatre.org>
+	 <39ADABDC.15B5AE0@student.ethz.ch> <v04003a01b5d368e95453@[24.66.67.194]>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 30 Aug 2000, Michel Lanners wrote:
-
-	Hi,
-
-> Yep, it works! I can boot off mesh again ;-)
-
-Glad it helped...
-
-> > ok code ictc@ ok 979ffffc l, 7f99faa6 l, 4e800420 l, ;code
-> > ok see ictc@
-> > code ictc@
-> > edcc5c     stwu    r28,-4(r31)
-> > edcc60     mfspr   r28,spr1017
+Tony Mantler wrote:
 >
-> 1017 is actually l2cr, but never mind...
-
-Right, anyway the 603e has neither ictc nor l2cr so I presume it would
-work in ay case...
-
-> >> How do you terminate a 'code' sequence?
+> At 8:34 PM -0500 8/30/2000, Tom Gall wrote:
+> [...]
+> >I just setup a
+> >procmail script so in theory when bugs are created or updated they will
+> >be posted here...  stress in theory.
 > >
-> > Oops, forgot about it, my bad. With ';code', isn't it obvious ?
+> >FLAME ME IF THIS IS PURELY STUPID.
 >
-> Hm, doesn't work in Apple's OF 1.0.5. end-code is the answer ;-). Here
-> is my ictc! implementation, if anyone's interested:
+> It's not purely stupid, it just might be an idea to put it on a seperate
+> list. I imagine some people might find automated bug spammy and annoying,
+> while other people obviously want to see them all delivered straight to
+> their mailbox as they're submitted.
 
-You've just got to love OF portability across machines and architecture
-independance :-( Add to this the fact that I have somewhere a FirmWorks
-document which claims that on PPC the top of the stack is always in r28,
-r20/r21 are scratch registers. r31 is still the stack pointer (and r30 the
-return stack AFAIR).
+Good idea, why not set up a list at SourceForge?
 
->
-> code ictc!
->         7e9bfba6 l, 829f0000 l, 3bff0004 l, 4e800020 l,
-> end-code
-[snipped]
->
-> 11 ictc! slows this loop by a factor of 4.
->
-> Now, go figure why this helps the MESH driver... It seems to use some
-> busy loop timing somewhere; however there is the ms word available which
-> uses the timebase and is accurate even on my upgraded box.... That would
-> have been the better choice, unless the driver uses sub-1ms loops. Which
-> would explain...
 
-Indeed, to find it you might simply try to `see' all the words in the mesh
-driver, but it may be large. BTW there is another interesting word in my
-OF (apart from the even more interesting bugs ;-)):
+Michel
 
-' some_word .calls
 
-will show all Forth words which call some_word (with a few false positives
-to make things more entertaining). Does Apple's OF have something similar
-or is it also crippled ?
-
-> Anyway, thanks for your help, Gabriel!
-
-De nada.
-
-	Regards,
-	Gabriel.
-
+--
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and the DRI project
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
