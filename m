@@ -1,33 +1,46 @@
-To: David Ho <DavidHo@nanometrics.ca>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: patch for cpu/mpc8xx/cpu.c:get_tbclk - correction 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 27 May 2004 15:19:26 EDT."
-             <OFBC5021DB.73FD330B-ON85256EA1.0069EDD8-85256EA1.006A2638@nanometrics.ca>
-Date: Thu, 27 May 2004 23:50:32 +0200
-Message-Id: <20040527215037.81AD7C109F@atlas.denx.de>
+Date: Thu, 27 May 2004 15:34:24 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Dan Malek <dan@embeddededge.com>
+Cc: Pantelis Antoniou <panto@intracom.gr>,
+	Kumar Gala <kumar.gala@motorola.com>,
+	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: 8xx-2.6 | Prolog
+Message-ID: <20040527223423.GM6763@smtp.west.cox.net>
+References: <40B4880B.1000801@intracom.gr> <B89F9AE2-AFF4-11D8-89B7-003065F9B7DC@embeddededge.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <B89F9AE2-AFF4-11D8-89B7-003065F9B7DC@embeddededge.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <OFBC5021DB.73FD330B-ON85256EA1.0069EDD8-85256EA1.006A2638@nanometrics.ca> you wrote:
+On Thu, May 27, 2004 at 11:44:21AM -0400, Dan Malek wrote:
+
 >
-> Sorry, the last patch breaks on the old 8xx.
+> On May 26, 2004, at 8:05 AM, Pantelis Antoniou wrote:
+>
+> >Awaiting comments.
+[snip]
+> ... We can't define update_mmu_cache
+> as a null function.  It performs a necessary function of cache
+> management.  We may just be lucky because the caches on the 8xx
+> are small, but this is a subtle bug waiting to happen.
 
-Please stop sending full sources to the wrong mailing list.
+Are you certain?  This is something in 2.4, and while I am having weird
+problems locally (that I can't rule out as being hw issues), adding that
+change in is what gets me a working init=/bin/bash.
 
-Send a patch to the u-boot-users list, but make sure it is  based  on
-CURRENT code, not on some ancient version.
+> I did not check these in.  Tom can you do so and make sure other
+> 8xx boards will at least compile?  I'll fix up the stuff I don't like
+> later :-)
 
-Best regards,
-
-Wolfgang Denk
+I'm going to be checking this all in momentarily.  On my system right
+now, I can get both of my rpxlite's to init=/bin/bash, mostly working,
+if and only if I use the new uart driver and if I configure it for SMC1
+AND SCC1 (which seems wrong).
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-In C we had to code our own bugs, in C++ we can inherit them.
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
