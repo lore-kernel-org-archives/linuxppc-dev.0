@@ -1,34 +1,27 @@
-Date: Thu, 2 Aug 2001 11:17:35 -0700
-From: Matt Porter <mporter@mvista.com>
-To: bhupinder sahran <bhup_sah@yahoo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: pci-pci bridge initialisation code
-Message-ID: <20010802111735.A28848@cx258813-a.chnd1.az.home.com>
-References: <20010802205437.5078.qmail@web3801.mail.yahoo.com>
+Date: Thu,  2 Aug 2001 12:11:16 -0700
+Message-Id: <200108021211.AA923271506@redsonic.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010802205437.5078.qmail@web3801.mail.yahoo.com>; from bhup_sah@yahoo.com on Thu, Aug 02, 2001 at 01:54:37PM -0700
+From: "Zeke  Burgess" <zburgess@redsonic.com>
+Reply-To: <zburgess@redsonic.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: kernel 2.4.4 TQM823L boot problem
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Aug 02, 2001 at 01:54:37PM -0700, bhupinder sahran wrote:
->
-> hi all
-> i have ported linux on my MPC8240 processor.
-> but as i am not having bios kind of stuff so kernek
-> should initialise all the peripherals sitting on the
-> pci bus.
-> i have intigrated the code, but code for mapping the
-> pci-pci bridge is not with me.
-> so i cam not see the device which are sitting on bus
-> after the bridge.
+Using the supplied monitor, MON8xx, I can successfully download and
+start the 2.2.13 kernel (dl'd from denx.de).  However, I cannot get the
+2.4.4-2001-05-12 kernel to go.  It appears to download without any
+problems but with the issued "go 40020000" command, all I get is:
 
-arch/ppc/kernel/pci_auto.c performs PCI enumeration.
+* Starting application at 40020000
 
---
-Matt Porter
-MontaVista Software, Inc.
-mporter@mvista.com
+In perusing the archives, I found that last october, the 2.4.0-test5 kernel was running strong. I assume that the 2.4.4 is known to work by now.
+
+Any suggestions would be greatly appreciated.
+Thanks,
+Zeke
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
