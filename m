@@ -1,22 +1,25 @@
-Date: Tue, 11 Dec 2001 08:44:27 +0100
-From: Harald Welte <laforge@gnumonks.org>
+Message-ID: <3C16283E.90102@gatekeeper.informatik.fh-dortmund.de>
+Date: Tue, 11 Dec 2001 16:37:34 +0100
+From: Ralf Weidemann <linuxppc@gatekeeper.informatik.fh-dortmund.de>
+MIME-Version: 1.0
 To: linuxppc-dev@lists.linuxppc.org
-Subject: gcc/egcs stackguard on PPC ?
-Message-ID: <20011211084427.B23715@sunbeam.de.gnumonks.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: 2.4.17pre4-ben0: cisco aironet driver x86 only / airport roaming support ?
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi!
+Hi all,
 
-I was wondering if anybody has ever seen a working gcc/egcs-stackguard on PPC.
+I have two questions..
 
-Thanks in advance.
+Should the cisco aironet driver work on ppc too or is it x86 only ?
+I can load the modules, but the card seems not to work. Supports the
+apple airport driver roaming with aironet 350 access points ? I can't
+get both working and I wonder me if it should work.
 
---
-Live long and prosper
-- Harald Welte / laforge@gnumonks.org               http://www.gnumonks.org/
+Thanks
+Ralf
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
