@@ -1,59 +1,39 @@
-Date: Thu, 19 Aug 1999 20:38:00 +0300 (EEST)
-From: Kostas Gewrgiou <gewrgiou@imbc.gr>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
-        Debian GNU/Linux PPC <debian-powerpc@lists.debian.org>,
-        recipient list not shown: ;
-Subject: Re: Bugs in xfree68 that made it fail with jdk 1.2.1 found and fixed
- (fwd)
-In-Reply-To: <Pine.LNX.4.10.9908191721440.8446-100000@mercator.cs.kuleuven.ac.be>
-Message-ID: <Pine.LNX.4.10.9908192004590.4521-100000@idd-01.imbc.gr>
+Message-ID: <37BC448C.8F31800B@tin.it>
+Date: Thu, 19 Aug 1999 19:53:16 +0200
+From: Alberto Vignani <vignani@tin.it>
+Reply-To: vignani@tin.it
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+CC: weigand@informatik.uni-erlangen.de
+Subject: Re: [Fwd: Latest version of CPU emulator] (fwd)
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 
+On Wed, 18 Aug 1999 Brad Boyer <flar@marcus.pants.nu> wrote:
 
-On Thu, 19 Aug 1999, Geert Uytterhoeven wrote:
+>Geert Uytterhoeven wrote:
+>> Perhaps Gabriel's 486SX emulator can be included as an optimization?
+>
+>I doubt it, from what I know of both emulators.  The one that was submitted
+>for Wine is protected mode only, and Gabriel's is real mode only.  I
+>imagine the ideas and some of the code from Gabriel's emulator could
+>be adapted to this use, but it definitely couldn't be used without
+>some major changes.  It might be a good place to start, tho.
+>
 
-> 
-> On Tue, 17 Aug 1999, Kostas Gewrgiou wrote:
-> > On Tue, 17 Aug 1999, Geert Uytterhoeven wrote:
-> > > Anybody who'd care to try? I just erased my XFree86 3.3.x tree.
-> > > 
-> > > BTW, I'm always willing to test a glibc-2.1 binary :-)
-> > >
-> > 
-> >  I had to erase my build of 3.9.15x to make space for the 3.3.x build *sigh* :(
-> > I'll have a binary in a few hours if you are intrested (Builds take a looong
-> > time in my 604@132). I have to see if i can fix the no video drivers and the
-> > Modes "default" case first (and write a cleaner patch ;).
-> 
-> I'm interested for sure!
-> 
-> Greetings,
-> 
-> 						Geert
-> 
-> --
-> Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-> Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-> Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
-> 
-> 
+dosemu (www.dosemu.org) has an x86 emulator derived from the one in Twin
+(www.willows.com). I am now testing the Twin version on the iMac and the
+results are already very encouraging, the emulator is quite fast and has
+no endianness problems AFAIK.
+However, the Twin emulator does 16-bit protected mode only. But the dosemu
+version can do almost all, from real mode to 32-bit DPMI. GDT,LDT and
+paging have already been implemented, even if not yet fully debugged.
+The dosemu version is at http://www.dosemu.org/~alberto.
 
-  Test binary at ftp://idd-01.imbc.gr/pub/XF68_FBDev.bz2 
-depth 15 works (requires a Depth 15 entry in XF68Config) 
-the XFree86-VidModeExtension is also working same with xvidtune..
-
- I haven't tested it at all with no video drivers or with no modes set in
-the config (its probably broken there), i'll do proper fixes in the next
-couple of days but feel free to test it now if you want.
-
- Kostas.
-
+Alberto
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
