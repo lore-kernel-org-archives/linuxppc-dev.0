@@ -1,52 +1,48 @@
-Subject: Re: USER Application on IBM 405 based processor using vulcan chip
-From: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
-To: Rakesh Jagota <j.rakesh@gdatech.co.in>
-Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <djbhycas60uzv16.040320031131@gda-server>
-References: <002801c2e1ee$cb9634c0$7300a8c0@avantwave.com>
-	<djbhycas60uzv16.040320031131@gda-server>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: 04 Mar 2003 14:43:11 +0100
-Message-Id: <1046785391.15309.51.camel@spawn>
-Mime-Version: 1.0
+To: Ibon Gotxi Garcia <igotxi@jazzfree.com>
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	Jean-Denis Boyer <jdboyer@mediatrix.com>,
+	Dan Malek <dan@embeddededge.com>,
+	Linux PPC embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Question about modules 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "04 Mar 2003 13:03:30 GMT."
+             <1046783010.328.73.camel@muse>
+Date: Tue, 04 Mar 2003 15:15:27 +0100
+Message-Id: <20030304141532.E7AABC6E0C@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, 2003-03-04 at 07:10, Rakesh Jagota wrote:
+In message <1046783010.328.73.camel@muse> you wrote:
 >
-> Hi all,
-> I am working for Settop Box project with IBM405 processor in linux. I am
-> developing an user application to inetract the user with settop box. I am
-> using i2c interface for this. I am not able to understand the following
-> things:
-> 1. Whether we should decode the Transport straem directly or we should store
-> it first and after that go for decoding and play.
+> I understand that reason, and i'm not certain about the usefulness of
+> modules in embedded systems.
 
-What could possibly be the difference.
+They are _very_ useful during development. They may also be useful to
+make  driver  initialization   and/or   operation   controllable   by
+application code.
 
-> 2. How we should store the channel information and How to tune the channel.
+In general you are right: statically linking the required drivers  is
+usually a better approach.
 
-Is this not in the chip documentation
+> Anyway, my original purpose was to develop the driver as a module, and
+> afterwards insert it into the kernel. I have just done it adding the
+> EXPORT_SYMBOL macro to commproc.c and listing it in export-objs in
+> arch/ppc/8xx_io/Makefile. Right, isn't it?
 
-> 3. How to load the DES register.
-Again read the doc.
+Yes, this is all that is needed.
 
-And for future reference this list is for the linux kernel on powerpc
-chips not for help on mpeg chips.
+Best regards,
 
-Also it's not a good idea to reply to a mail that has nothing whatsoever
-to do with what you write. Some of us has mail readers that can follow
-discussion threads and this gets confusing.
-
-
-/me so this is what you get when you outsource to India.
+Wolfgang Denk
 
 --
-Kenneth Johansson
-Ericsson AB                       Tel: +46 8 719 70 20
-Tellusborgsvägen  90              Fax: +46 8 719 29 45
-126 25 Stockholm                  ken@switchboard.ericsson.se
-
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"In the face of entropy and nothingness, you kind of have to  pretend
+it's  not  there  if  you  want  to  keep writing good code."
+- Karl Lehenbauer
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
