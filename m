@@ -1,28 +1,55 @@
-Date: Wed, 26 Nov 2003 16:52:38 +0100
-From: Peter Vandenabeele <peter.vandenabeele@mind.be>
-To: Jon Masters <jonathan@jonmasters.org>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [Fwd: ppc4xx Ports]
-Message-ID: <20031126165238.O7373@mind.be>
-Reply-To: Peter Vandenabeele <peter.vandenabeele@mind.be>
-References: <3FB416F9.7080303@jonmasters.org> <20031114002023.GA9509@gate.ebshome.net> <3FB423AB.80805@jonmasters.org> <20031114004805.GA9585@gate.ebshome.net>
+Subject: Re: Preemptive Kernel and MPC8xx ???
+From: Jaap-Jan Boor <jjboor@aimsys.nl>
+To: Steven Scholz <steven.scholz@imc-berlin.de>
+Cc: Marius Groeger <mgroeger@sysgo.com>,
+	"linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <3FC30F17.1070904@imc-berlin.de>
+References: <3FC0A1D3.70706@imc-berlin.de>
+	 <B82FB2A3-1E4E-11D8-A8D4-003065E2BB06@aimsys.nl>
+	 <Pine.LNX.4.56.0311241732200.2581@mag.devdep.sysgo.de>
+	 <3FC30F17.1070904@imc-berlin.de>
+Content-Type: text/plain; charset=UTF-8
+Message-Id: <1069863564.1263.1.camel@linpc003.aimsys.nl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20031114004805.GA9585@gate.ebshome.net>; from ebs@ebshome.net on Thu, Nov 13, 2003 at 04:48:05PM -0800
+Date: Wed, 26 Nov 2003 17:19:24 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Nov 13, 2003 at 04:48:05PM -0800, Eugene Surovegin wrote:
-[...]
-> I don't have any PTE/TLB related problems on 405GP/405GPr.
+On Tue, 2003-11-25 at 09:13, Steven Scholz wrote:
+> Hi,
+>
+> > On Mon, 24 Nov 2003, Jaap-Jan Boor wrote:
+> >
+> >>Yes I do on 2.4.20 and 2.4.22 from kernel.org. So far all seems
+> >>to work but didn't do any measurements on it.
+> >>(I both use the preempt and low-latency patches)
+> Have you writting your own device drivers?
+> How did you make them preemptable?
 
-On the PowerPC 405 in the Virtex-II Pro, we needed to turn off
-half of the TLB entries as per "Solution 12" on
-http://support.xilinx.com/xlnx/xil_ans_display.jsp?iLanguageID=1&iCountryID=1&getPagePath=14052
+I didn't... I still assume the kernel will lock
+e.g. the same SIU irq
 
-"... Limit TLB depth to 32 entries by only using even entries in the TLB ...."
+>
+> Marius Groeger wrote:
+> > AFAIK, you can pretty much drop the low-latency patch in favor of
+> > using the lock-breaking patch. It is also available from Robert Love
+> > at the cited home page.
+> How about homemade device drivers when using the lock-breaking patch?
+>
+> Thanks!
+>
+> --
+> Steven Scholz
+>
+> imc Measurement & Control               imc Meßsysteme GmbH
+> Voltastr. 5                             Voltastr. 5
+> 13355 Berlin                            13355 Berlin
+> Germany                                 Deutschland
+> fon: +49 30 467090-0                    Tel: 030 / 467090-0
+> fax: +49 30 4631576                     fax: 030 / 4631576
+>
+>
 
-Peter
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
