@@ -1,43 +1,33 @@
-Date: Mon, 21 Jun 1999 22:48:12 -0400 (EDT)
-From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-To: Troy Benjegerdes <hozer@drgw.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: dl-load.c (ld.so) bug??
-In-Reply-To: <Pine.LNX.4.04.9906212045480.27642-100000@narn.local.drgw.net>
-Message-ID: <Pine.LNX.3.96L.990621222014.5237C-100000@unix47.andrew.cmu.edu>
+Date: Mon, 21 Jun 1999 22:57:44 -0400 (EDT)
+From: Tom Rini <tmrini@ntplx.net>
+To: Brad Midgley <brad@pht.com>
+cc: Paul.Mackerras@cs.anu.edu.au, linuxppc-users@lists.linuxppc.org,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: precompiled 2.2.10 kernel available
+In-Reply-To: <Pine.LNX.3.95.990621201542.23566A-100000@pacific.pht.com>
+Message-ID: <Pine.LNX.4.05.9906212256000.15504-100000@opus.bloom.county>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> No. Electric Fence is designed to catch programming errors, such as
-> attempting to access memory which was not 'malloc'ed. I have traced this
-> down extensively a couple of months ago, and found that it does indeed
-> appear to overrun what it malloced.
+On Mon, 21 Jun 1999, Brad Midgley wrote:
 
-I have two even simpler test cases for you:
+> did the protocol of /dev/usbmouse have to change? :( now it appears as a
+> ps2 mouse not a busmouse. x can't understand it either way but i'm able to
+> use my usb mouse in x by having gpm use it as a ps2 mouse and export it,
+> as in
 
-int main(void){
-    char *ptr=NULL;
-    free(ptr);
-}
+Linus' USB stack differs from Inkays in a few ways.  This is one.  It
+seems Busmouse is too limited or something along those lines, so a
+modified PS/2 is "better".   The goal eventually is for /dev/mouse to be a
+real device, where all mouse data ends up (ala windows and macos w/ multi
+mice) and /dev/mouseX for mouseX.  At least thats how it was at one point.
 
-and
-
-int main(void){
-    char *ptr = (char *)malloc(100);
-}        
-
-Both of these work fine (or at least *appear* to work fine) without Electric
-Fence.
-
-> In normal operation, if I am correct, the ld.so code is just silently
-> overwriting some other data. 
-
-If this were the case, wouldn't you expect ridiculous levels of instability?
-
--Hollis
+---
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
