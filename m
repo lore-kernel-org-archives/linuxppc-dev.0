@@ -1,16 +1,28 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id 31AF467A64
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao06.cox.net (fed1rmmtao06.cox.net [68.230.241.33])
+	by ozlabs.org (Postfix) with ESMTP id 06D2367A6F
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  2 Feb 2005 01:42:00 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Date: Tue, 1 Feb 2005 08:41:58 -0600
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B8592AC@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: 8266 SMC uart corruption
+	Wed,  2 Feb 2005 03:33:55 +1100 (EST)
+Date: Tue, 1 Feb 2005 09:33:52 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Bora ?ahin <bora.sahin@ttnet.net.tr>
+Message-ID: <20050201093352.A30421@cox.net>
+References: <528646bc0501191635b1d318a@mail.gmail.com>
+	<41EF3626.4060502@kegel.com>
+	<528646bc05012715092fd0c5ad@mail.gmail.com>
+	<1849856903.20050130181456@ttnet.net.tr>
+	<528646bc05013107535a422f16@mail.gmail.com>
+	<opslg6nunu49uzoa@localhost>
+	<16211604486.20050201144642@ttnet.net.tr>
+	<opslirxnwd49uzoa@localhost>
+	<3116599689.20050201160957@ttnet.net.tr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3116599689.20050201160957@ttnet.net.tr>;
+	from bora.sahin@ttnet.net.tr on Tue, Feb 01, 2005 at 04:09:57PM
+	+0200
+Cc: Torben Vinther Schmidt <mariachi@itcampus.dk>, linuxppc-embedded@ozlabs.org
+Subject: Re: [linux-cirrus] Re: Cirrus Logic MaverickCrunch support
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,20 +33,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-SGkNCg0KSGFzIGFueWJvcmR5IGVsc2Ugc2VlbiBjb3JydXB0aW9uIG9mIHRoZSBvdXRwdXQgZnJv
-bSBTTUMxIHdoZW4gdXNlZCBhcyBzZXJpYWwgY29uc29sZT8NClRoaXMgb25seSBvY2N1cnMgaW4g
-aW4gMi42LjggYW5kIGxhdGVyICh3aGVuIHRoZSBDUE0gc2VyaWFsIGRyaXZlcnMgZ290IG1vdmVk
-KQ0KQW5kIGl0IG9ubHkgb2NjdXJzIHdoZW4gaW5pdCBpcyB3cml0aW5nIHRvIHNjcmVlbi4gMi42
-LjcgYW5kIGVhcmxpZXIgd29ya3MgcGVyZmVjdGx5Lg0KSXQgaGFwcGVucyBhdCBhbGwgYmF1ZHJh
-dGVzIHRlc3RlZCAoOTYwMCBhbmQgMTE1MjAwKQ0KDQpBbnlib2R5IHNlZW4gc29tZXRoaW5nIHNp
-bWlsYXIgYW5kL29yIGhhdmUgYSBjbHVlIHdoZXJlIHRvIHN0YXJ0IGxvb2tpbmcgZm9yIHRoaXM/
-DQpJIGhhdmUgbG9va2VkIGF0IHRoZSBzZXJpYWwgZHJpdmVycywgYW5kIGNhbm5vdCBmaW5kIGFu
-eSBkaWZmZXJlbmNlcyBsYXJnZSBkaWZmZXJlbmNlcyBmcm9tIHdoZW50aGV5IHN0aWxsIHdlcmUg
-aW4gYXJjaC9wcGMvODI2MF9pbyB0byB0aGUgb25lcyBpbiBkcml2ZXJzL3NlcmlhbC9jcG1fdWFy
-dA0KDQpDYXB0dXJlOg0KDQpGcmVlaW5nIHVudXNlZCBrZXJuZWwgbWVtb3J5OiAyODhrIGnOtXQN
-CknilqBUOiB2ZXJzaW9uIDIuODUgYm9vdOKImWcNCi4uLg0KSeKWoFTCoEVudGVyaW5nIHJ1bmxl
-dmVsOiAzDQoNCg0KVGhlc2UgbGluZXMgYXJlIHRoZSBvbmx5IG9uZXMgdGhhdCBnZXQgY29ycnVw
-dGVkLiBBbGwgb3RoZXIgb3V0cHV0IChrZXJuZWwgcHJpbnRvdXRzLCBjb25zb2xlIGFuZCBzdGFy
-dHVwIHNjcmlwdHMpIGFyZSBub3JtYWwuDQoNClJ1bmUgVG9yZ2Vyc2VuDQpTeXN0ZW0gRGV2ZWxv
-cGVyDQpJbm5vdmF0aXZlIFN5c3RlbXMgTExDDQoxMDAwIElubm92YXRpdmUgRHJpdmUNCk1pdGNo
-ZWxsLCBTRCA1NzMwMQ0KUGg6IDYwNS05OTUtNjEyMA0Kd3d3Lmlubm92c3lzLmNvbQ0K
+On Tue, Feb 01, 2005 at 04:09:57PM +0200, Bora ?ahin wrote:
+> Hi,
+> 
+> Torben> I'm fairly sure that decoding of
+> Torben> mpeg2 video in most cases would be too slow to consider without the help  
+> Torben> of some kind of graphical decoder chip.
+> 
+> Unless you use some powered CPU. As it would require to give an example, MPC8540(667-800 MHz) from
+> PPC family seems ideal for it as a SoC solution...
+
+Even then, this depends completely on what else the platform has to
+do as well as what profile/level of MPEG-2 you are decoding. Something
+like a ~800Mhz e500 core has no chance of handling a main profile high
+level MPEG-2 stream for playback (typically 720p/1080i video). A high-end
+(1.45Ghzish) 7457 with an optimized altivec mpeg2 software decode library
+and a video card with iDCT assist is about the minimum PPC for these
+applications.
+
+This is why most consumer products are using something with a decoder,
+like the integrated one in the IBM STBxxxx chips or the Sigma Designs
+decoders.
+
+-Matt
