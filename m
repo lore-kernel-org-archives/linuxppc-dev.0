@@ -1,14 +1,20 @@
-Return-Path: <trini@kernel.crashing.org>
-Date: Fri, 22 Oct 2004 13:10:52 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Rune Torgersen <runet@innovsys.com>
-Message-ID: <20041022201052.GB7471@smtp.west.cox.net>
-References: <DCEAAC0833DD314AB0B58112AD99B93B06DB90@ismail.innsys.innovsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B06DB90@ismail.innsys.innovsys.com>
-Cc: Linuxppc-embedded@ozlabs.org
-Subject: Re: CPM2 uart early console
+Return-Path: <wd@denx.de>
+Received: from mailout05.sul.t-online.com (mailout05.sul.t-online.com
+	[194.25.134.82]) by ozlabs.org (Postfix) with ESMTP id 38BCD2BDA0
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat, 23 Oct 2004 06:14:34 +1000 (EST)
+To: Zajac Adam-AAZ004 <Adam.Zajac@motorola.com>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 22 Oct 2004 13:59:54 CDT."
+	<EFB813091B18D511BD3600508B644F820A618204@tx14exm06.ftw.mot.com>
+Date: Fri, 22 Oct 2004 21:10:54 +0200
+Sender: wd@denx.de
+Message-Id: <20041022191059.ECE5AC146A@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Help on tuning the Linux kernel for soft real-time requiremen
+	ts
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -19,24 +25,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Oct 21, 2004 at 04:57:56PM -0500, Rune Torgersen wrote:
+Dear Adam,
 
-> Is there any way of getting an early console output on a kernel on an
-> 8260? (running u-boot as bootloader)
+in message <EFB813091B18D511BD3600508B644F820A618204@tx14exm06.ftw.mot.com> you wrote:
+> 
+> What I referred to as "missed deadlines" were slips in order of +/- 20
+> seconds. This was way out of line.
 
-Yes, A mini-driver to hook into ppc_md.progress would be one method.
-Another would be to do what's needed (I don't know off-hand what, sorry)
-so that you can register the console much earlier, like the
-early_printk.c stuff (see arch/x86_64/kernel/early_printk.c) does.
+20 seconds? 
 
+> Do you know if sysstat RPM is available for PPC?
+> It'd be nice to have tools like sar and iostat for debugging my problem.
 
-> BTW..
-> What are the device node numbers for ttyCPM[0..5] ?
+It is included with YDL (for YDL 3.0 it was on CD # 3 in file
+YellowDog/RPMS/sysstat-4.0.5-3.ppc.rpm )
 
-204 42...45 (devices.txt in linuxppc-2.5, Pantelis ever figure out what
-to do about the device # conflict with the i.MX driver so we can push
-that small bit upstream ?)
+Best regards,
+
+Wolfgang Denk
 
 -- 
-Tom Rini
-http://gate.crashing.org/~trini/
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+"Who is the oldest inhabitant of this village?"
+"We haven't got one; we had one, but he died three weeks ago."
