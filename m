@@ -1,96 +1,57 @@
-Message-ID: <3D0EF54A.6080304@cambridgebroadband.com>
-Date: Tue, 18 Jun 2002 09:54:34 +0100
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
+Message-ID: <3D0F2E73.63D2434B@labs.mot.com>
+Date: Tue, 18 Jun 2002 07:58:27 -0500
+From: Steve Rossi <srossi@labs.mot.com>
 MIME-Version: 1.0
-To: zhongqx <zhongqx@guoguang.com.cn>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Kernel panic:I have no root and I want to scream
-References: <000801c216a3$e8fb5160$7301a8c0@zhongqx>
-Content-Type: text/plain; charset=GB2312
+To: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
+Subject: trouble mmapping dma buffer
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-shouldn't the command line be root=/dev/ram, rather than
+I wrote a driver, which used to work under the stable 2.4.16 kernel, but
+since I've moved up to the 2.4.19-pre7 development kernel it has stopped
+working. The driver basically allocates a dma buffer (64K) using
+consistent_alloc and it marks all of the pages in the kernel's mapping
+of this buffer reserved (calling mem_map_reserve for each page). A user
+space application calls mmap on the driver to get direct access to that
+64K DMA buffer. The mmap routine in the driver sets VM_RESERVED in
+vma->vm_flags then uses remap_page_range to map the physical address of
+the DMA buffer to the user space virtual memory area, one page at a
+time. It also marks each page _PAGE_NO_CACHE and _PAGE_GUARDED in the
+user space mapping.
+This all worked just fine under 2.4.16, but now under 2.4.19-pre7 when I
+run the application that mmaps the device I get the following:
 
-> Kernel command line: boot=/dev/ram
+swap_dup: Bad swap file entry 00000004
 
-Alex
+repeated 16 times (note - that's how many pages are in my dma buffer)
+followed by:
 
-zhongqx wrote:
+swap_free: Bad swap file entry 00000004
 
-> Hello everyone,
->       When I boot my linux on fads board, I get a kernel panic:
-> I have no root and I want to scream, i do not the cause of this
-> probelm ,I add loop back surport,but can solve this problem!
-> Has anyone meet this problem ,can you give me some advice?
-> thank you in advance!
->
->
->
-> =>bootm 500000 600000
-> ## Booting image at 00500000 ...
->    Image Name:   2.4.18
->    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
->    Data Size:    557426 Bytes = 544 kB = 0 MB
->    Load Address: 00000000
->    Entry Point:  00000000
->    Verifying Checksum ... OK
->    Uncompressing Kernel Image ... OK
-> ## Loading RAMDisk Image at 00600000 ...
->    Image Name:   ramdisk
->    Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
->    Data Size:    428 Bytes = 0 kB = 0 MB
->    Load Address: 00000000
->    Entry Point:  00000000
->    Verifying Checksum ... OK
->    Loading Ramdisk to 0075b000, end 0075b1ac ... OK
-> Linux version 2.4.18 (root@gaof.guoguang.com.cn) (gcc version 2.95.2 19991024 (r
-> elease)) #2 Tue Jun 18 16:18:50 CST 2002
-> On node 0 totalpages: 2048
-> zone(0): 2048 pages.
-> zone(1): 0 pages.
-> zone(2): 0 pages.
-> Kernel command line: boot=/dev/ram
-> Decrementer Frequency = 180000000/60
-> console init finished!
-> alloc bootmem finished!
-> kmem_cache_init() finished!
-> Calibrating delay loop... 47.82 BogoMIPS
-> Memory: 6620k available (1012k kernel code, 364k data, 44k init, 0k highmem)
-> pgtable_cache_init() run here!
-> Dentry-cache hash table entries: 1024 (order: 1, 8192 bytes)
-> Inode-cache hash table entries: 512 (order: 0, 4096 bytes)
-> Mount-cache hash table entries: 512 (order: 0, 4096 bytes)
-> Buffer-cache hash table entries: 1024 (order: 0, 4096 bytes)
-> Page-cache hash table entries: 2048 (order: 1, 8192 bytes)
-> POSIX conformance testing by UNIFIX
-> Linux NET4.0 for Linux 2.4
-> Based upon Swansea University Computer Society NET3.039
-> Initializing RT netlink socket
-> Starting kswapd
-> devfs: v1.10 (20020120) Richard Gooch (rgooch@atnf.csiro.au)
-> devfs: boot_options: 0x0
-> CPM UART driver version 0.03
-> ttyS00 at 0x0280 is a SMC
-> block: 64 slots per queue, batch=16
-> RAMDISK driver initialized: 16 RAM disks of 2048K size 1024 blocksize
-> eth0: CPM ENET Version 0.2 on SCC1, 00:d0:93:00:12:34
-> loop: loaded (max 8 devices)
-> NET4: Linux TCP/IP 1.0 for NET4.0
-> IP Protocols: ICMP, UDP, TCP, IGMP
-> IP: routing cache hash table of 512 buckets, 4Kbytes
-> TCP: Hash tables configured (established 512 bind 512)
-> NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
-> RAMDISK: Compressed image found at block 0
-> Freeing initrd memory: 0k freed
-> EXT2-fs warning: checktime reached, running e2fsck is recommended
-> VFS: Mounted root (ext2 filesystem).
-> Kernel panic: I have no root and I want to scream
->  <0>Rebooting in 180 seconds..
->
->
->
+also repeated 16 times.
+When the application exists and calls munmap, I get
+swap_free: Bad swap file entry 00000004
+another 16 times.
+I'm running on an 8xx systems with 32MB of RAM. I have no swap space.
+The DMA buffer typically gets allocated around physical address
+0x19A0000, up near the top of the memory. I'm guessing that maybe the
+kernel thinks that the mmaped pages are swapped out?? But why? Has
+anything changed between 2.4.16 and 2.4.19-pre7 that could account for
+this. Is there a problem with using remap_page_range to map RAM? I would
+appreciate any help!
+
+Thanks!
+Steve
+
+--
+-------------------------------------------------------
+Steven K. Rossi                     srossi@labs.mot.com
+Senior Staff Engineer
+Multimedia Communications Research Laboratory
+Motorola Labs
+-------------------------------------------------------
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
