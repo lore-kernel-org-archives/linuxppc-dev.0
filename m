@@ -1,70 +1,36 @@
-Message-Id: <5.1.0.14.2.20030513232326.0350da78@mail.ebshome.net>
-Date: Tue, 13 May 2003 23:41:22 -0700
-To: Dan Malek <dan@embeddededge.com>
-From: Eugene Surovegin <ebs@ebshome.net>
-Subject: Re: set_rtc_time() cleanup / normalization
+To: Eugene Surovegin <ebs@ebshome.net>
 Cc: Matt Porter <mporter@kernel.crashing.org>,
-	Wolfgang Denk <wd@denx.de>, Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <3EC1DB1F.8000408@embeddededge.com>
-References: <5.1.0.14.2.20030513171616.037f6800@mail.ebshome.net>
- <Your <5.1.0.14.2.20030513161846.03805338@mail.ebshome.net>
- <20030514000820.B3397C6092@atlas.denx.de>
- <5.1.0.14.2.20030513171616.037f6800@mail.ebshome.net>
- <5.1.0.14.2.20030513214040.02a6e6d0@mail.ebshome.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+	Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: set_rtc_time() cleanup / normalization 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 13 May 2003 21:52:21 PDT."
+             <5.1.0.14.2.20030513214040.02a6e6d0@mail.ebshome.net>
+Date: Wed, 14 May 2003 08:47:24 +0200
+Message-Id: <20030514064729.EA230C6092@atlas.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 10:58 PM 5/13/2003, Dan Malek wrote:
->Eugene Surovegin wrote:
+In message <5.1.0.14.2.20030513214040.02a6e6d0@mail.ebshome.net> you wrote:
 >
->>Why PPC arch should be different in this respect from other archs (like
->>i386, alpha, mips, mips64, sparc...)?
->
->PPC is different only that it follows the i386 model.  IIRC, the others
->have some selectable (or removed) feature for keeping the rtc updated.
->When you have an inflexible and essentially memory mapped device (like
->on i386) it makes sense to not have any options.  With embedded systems,
->you have a variety of options that don't always fit this model.
+> There is other thing which bothers me.
+> Why PPC arch should be different in this respect from other archs (like
+> i386, alpha, mips, mips64, sparc...)?
 
-Exactly, I use this feature on our systems, somebody doesn't use it at all.
+Because other architectures  already  are  different  than  PPC.  For
+example  on  ARM  the  implementation is board-dependend. Some boards
+don't call set_rtc_time() in their timer interrupt handlers.
 
-So far, the only *real* issue I've seen here is that some RTC drivers weren't
-written correctly.
+Best regards,
 
-When I wrote RTC driver for out hw, simple grep through the code revealed
-the fact, that ppc_md.set_rtc_time was called from interrupt context.
-It's not a rocket science.
+Wolfgang Denk
 
-So all this surprise about kernel setting RTC is a little strange for me.
-And yes, kernel *will* crash if you write a buggy driver.
-
-I don't understand why instead of fixing those drivers we should remove
-this feature altogether.
-
->>Frankly, I expect my tipb to behave exactly the same as my Intel box.
->
->Why would you want such a superior architecture like tipb to work
->so poorly? :-)
-
-Well, I just use tipb as an example of box running PPC kernel which has the
-same setup as my Intel box running the same kernel version.
-
->The tipb isn't the issue, but if you look carefully
->at all of these systems they all use user space programs to ensure
->the rtc and system date/time/timezone are set properly.
->
->>Maybe we should raise this issue on lkml?
->
->They won't care.  One, it's not x86, two, it's architecture specific.
-
-Well, it's not entirely arch specific.
-This behavior is *documented* (see hwclock(8) man pages for example).
-
-Eugene.
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Don't tell me how hard you work.  Tell me how much you get done.
+                                                     -- James J. Ling
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
