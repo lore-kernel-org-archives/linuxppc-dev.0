@@ -1,38 +1,39 @@
-Message-ID: <371CEE40.4711C164@ibm.net>
-Date: Tue, 20 Apr 1999 21:14:40 +0000
-From: "J. Robokos" <roboj@ibm.net>
+Date: Tue, 20 Apr 1999 23:26:01 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: David Edelsohn <dje@watson.ibm.com>
+cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Current egcs, binutils and kernel (fwd) 
+In-Reply-To: <199904202114.RAA69332@kitch12.watson.ibm.com>
+Message-ID: <Pine.HPP.3.96.990420231555.20020R-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Kernel 2.2.6-ac1 problem
-References: <4.2.0.32.19990420113648.044b7ea0@mail.lauterbach.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Franz Sirl wrote:
 
-> At 01:33 20.04.99 , root wrote:
->
-> >I compiled the latest kernel from source and I created vmlinux with no
-> >problems.  After installing it in my system folder on my mac partition
-> >and booting linux again, I get I/O errors somewhat randomly.
-> >The message that is displayed is "No space left on device".  The file
-> >/var/log/messages conatins the following lines:
-> >
-> >Apr 19 23:23:07 localhost kernel: EXT2-fs error (device ide0(3,4)):
-> >ext2_new_block: Free blocks count corrupted for block group 13
->
-> Are you sure you use egcs-1.1.2 for compiling the kernel? egcs versions
-> before 1.1 (or 1.1.1? I don't remember anymore) had this problem.
->
-> Franz.
 
-I re-compiled with Gary Thomas' egcs RPMS's and so far it seems the
-problem no longer exists.  Thanks for the help.
+On Tue, 20 Apr 1999, David Edelsohn wrote:
 
--J. Robokos
+> 	The purpose of my earlier message was to explain what was
+> occurring in rs6000.md and why GCC was calling the function instead of
+> inlining the code.  I thought that some people might actually want to
+> understand *WHY* the function was required and why GCC was behaving as
+> designed. 
+
+Ok, calm down. But I still don't know why GCC does not expand this inline. 
+It's 8 or 10 instructions, without branches so it's not much bigger than a
+call for which you have to set up 3 parameter registers and which may
+destroy many more registers according to the ABI conventions.
+Furthermore if only one of the 2 result registers is needed, it may be
+simplified quite significantly (i'm not sure it's easy to do in current
+GCC to split a variable using 2 registers to remove dead code).
+
+Maybe it's time to add the alternatives in rs6000.md, enabled with a
+-minline-longlongshifts option. But I don't yet know enough of GCC to 
+implement it.
+
+	Gabriel. 
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
