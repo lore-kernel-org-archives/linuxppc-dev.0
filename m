@@ -1,33 +1,32 @@
-Message-ID: <3DC7AC62.6040409@iram.es>
-Date: Tue, 05 Nov 2002 12:32:50 +0100
+Message-ID: <3DC7F628.8070005@iram.es>
+Date: Tue, 05 Nov 2002 17:47:36 +0100
 From: Gabriel Paubert <paubert@iram.es>
 MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: IDE on LongTrail
-References: <Pine.GSO.4.21.0211051111270.27681-100000@vervain.sonytel.be>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Daniel Lao <laodx@gzjpg.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: A question about the 68-pin SCSI devices
+References: <200211051305359.SM00332@xuyf>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Geert Uytterhoeven wrote:
+Daniel Lao wrote:
+> Hello,
+> My system are based on Motolora's "MVME2700 + 3-row P2 adapter + MVME761
+> + 50-pin SCSI devices", the linuxppc kernel is 2.212. Now I would like
+> to update my system with 68-pin SCSI devices. That is , the new system
+> configuration is "MVME2700 + 5-row P2 adapter + MVME761 + 68-pin SCSI
+> devices". The MOT's documents said that the SCSI controler(53C825A)
+> on MVME2700 can support 68-pin devices, but I am not sure whether the
+> linux kernel(2.2.12) can support them. Should anyone kindly give me some
+> advice? Thank a lot!
 
-> According to the IBM LongTrail schematics, PINT[CD] on the W83C553 are
-> connected to EXT_INT[56] on the Apple Hydra, which are OpenPIC inputs.
-> The connections are called `IDE_NM_INT_P/S' and 'IDE_NM_INT_S'. So it should be
-> possible, unless Tatung changed that.
+It should work right out of the box.
 
-Ok, in this case. look at page 125. You have to set bit 11 (LEGIRQ) to
-route the interrupts to IRQC for both channels. You can only separately
-route each channel (IRQC for channel 0, IRQD for channel1) if you channel
-1 in legacy mode it seems. That's at least what I understand.
+But why are you still using 2.2.12, because you use my VME driver ?
 
->
-> Will do some more W83C553 doc parsing soon :-)
-
-Parsing is nothing; you also have to interpret the oracle ;-)
-
+	Regards,
 	Gabriel.
 
 
