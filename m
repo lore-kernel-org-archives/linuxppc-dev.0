@@ -1,41 +1,56 @@
-Date: Wed, 27 Oct 1999 21:06:49 +0000 (   )
-From: John Buswell <johnb@one.net>
-To: Hollis R Blanchard <hollis@andrew.cmu.edu>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: iMac DV and BootX
-In-Reply-To: <38176697.54C0E851@andrew.cmu.edu>
-Message-ID: <Pine.LNX.3.96.991027210159.25681I-100000@shell>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <v04003a00b43d2b8b3cd6@[216.81.1.41]>
+In-Reply-To: <Pine.HPX.4.10.9910271432490.18743-100000@gra-ux1.iram.es>
+References: <3816BEA7.23AF7175@agelectronics.co.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Wed, 27 Oct 1999 17:39:02 -0500
+To: Gabriel Paubert <paubert@iram.es>
+From: Tony Mantler <eek@escape.ca>
+Subject: Re: question about altivec registers
+Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 27 Oct 1999, Hollis R Blanchard wrote:
+At 8:21 AM -0500 10/27/99, Gabriel Paubert wrote:
+[...]
+>And why would you want to use a bitmap ? This seems braindead to me, put a
+>value between 0 and 32 in vrsave. Since all registers are identical
+>in use and purpose, save registers 0 to n. Disclaimer: I've not seen if
+>the ABI specifies how and which Altivec registers are saved restored
+>across calls.
 
-> Well, there's some bad news... the new iMac, the iBook, and the Sawtooth
-> G4's cannot currently run Linux.
+It would seem to me that using a bitmap to mark used registers would allow
+more flexibility on the compiler side to play with register usage without
+incurring longer context switch times. I wouldn't try to guess the relative
+tradeoff values though.
 
-afaik. BenH has got the iBook to boot.
 
-> Of course, if you're curious you might try out the iBook kernel from
-> http://calvaweb.calvacom.fr/bh40/test.html. It would be interesting to
-> see how far it gets on an iMac DV.
+>Paranoid point of view: the restore must reload all altivec registers
+>(or clear the ones which are not specified as used by VRSAVE), otherwise
+>you might leak the contents of the Altivec registers of another process.
+>I'm not a security expert, but I don't like this possibility at all.
+[...]
 
-a few steps ahead of you here :) I've been messing with Ben's patches,
-various kernels and different BootX/MacOS configurations on the iMac DV.
-The problem appears to be that the iMac is not getting past the first
-stage of the BootX boot. I ran bootx 1.2b in debug mode and it gets as far
-as blanking the screen, on a rev.b imac this then throws up the booting
-message, debug info and continues with the boot. Even without proper
-kernel support, with video=ofonly the thing should boot with at least the
-booting message before dying, this just blanks screen, hdd powers down (or
-at least sounds like that). Now the iMac (first generation) without video=
-or no video driver ticked in bootX would give a blank screen and power
-down the monitor, but would still boot (you'd just be blind) :) this isn't
-doing that.. just blank screen.. which (after a few days) has lead me to
-think it might have something to do with something lacking or needing to
-be changed in BootX.
+Beyond security, clearning the registers would also serve to enforce strict
+usage of whatever is defined as the VRSAVE format, and avoid the
+possibility of a mouth-breathing code-typist releasing a binary that
+doesn't mark it's registers, which in theory would only break once a
+different application touches the altivec registers, resulting in a
+situation of either A: the kernel being forced to save all altivec
+registers (bad) or B: allowing those binaries to be broken and upsetting
+it's users (slightly less bad). Obviously pre-breaking those binaries would
+be the preferable solution, so they never need see the light of day.
+
+
+That's my 2c.
+
+Cheers - Tony :)
+
+
+--
+Tony Mantler         Renaissance Nerd Extraordinaire         eek@escape.ca
+Winnipeg, Manitoba, Canada                       http://www.escape.ca/~eek
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
