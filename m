@@ -1,31 +1,92 @@
-Message-ID: <3CB58986.1F9EF650@imc-berlin.de>
-Date: Thu, 11 Apr 2002 15:03:02 +0200
-From: Steven Scholz <steven.scholz@imc-berlin.de>
+Message-ID: <3CB59BBD.8060307@pacbell.net>
+Date: Thu, 11 Apr 2002 14:20:45 +0000
+From: Armin <akuster@pacbell.net>
 MIME-Version: 1.0
-To: =?iso-8859-1?Q?K=E1ri=20Dav=ED=F0sson?= <kd@flaga.is>
-Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: sporadic kernel panic during boot (MPC8xx, FEC)
-References: <EADB10BAC266A14A85ECBF8686A73E31937EED@kolkrabbi.flaga.is>
-Content-Type: text/plain; charset=iso-8859-1
+To: John Tyner <jtyner@cs.ucr.edu>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [PATCH] early serial init
+References: <Pine.LNX.4.30.0204111259350.23686-100000@hill.cs.ucr.edu>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Kári,
+John Tyner wrote:
+> Here is a patch to setup the serial ports early. It works fine on our
+> walnut boards.
+>
+> --- arch/ppc/platforms/walnut.c.orig	Thu Apr 11 12:55:55 2002
+> +++ arch/ppc/platforms/walnut.c	Thu Apr 11 12:58:35 2002
+> @@ -31,6 +31,7 @@
+>  #include <linux/blk.h>
+>  #include <linux/pci.h>
+>  #include <linux/rtc.h>
+> +#include <linux/serial.h>
+>
+>  #include <asm/system.h>
+>  #include <asm/pci-bridge.h>
+> @@ -247,6 +248,11 @@
+>  void __init
+>  board_init(void)
+>  {
+> +	struct serial_struct serial_req;
+> +	bd_t *bip = (bd_t *) __res;
+> +	u32 chrcr;
+> +	int div;
+> +	ulong bb;
+>  #ifdef CONFIG_PPC_RTC
+>  	ppc_md.time_init = todc_time_init;
+>  	ppc_md.set_rtc_time = todc_set_rtc_time;
+> @@ -254,4 +260,40 @@
+>  	ppc_md.nvram_read_val = todc_direct_read_val;
+>  	ppc_md.nvram_write_val = todc_direct_write_val;
+>  #endif
+> +	chrcr = mfdcr(DCRN_CHCR0);
+> +	div = ((chrcr&0x3e)>>1)+1;
+> +	div *= 16;
+> +	bb = bip->bi_intfreq/div;
+> +
+> +	if( !(chrcr & CHR0_U0EC) ){
+> +		memset(&serial_req, 0, sizeof(serial_req));
+> +		serial_req.line       = 0;
+> +		serial_req.baud_base  = bb;
+> +		serial_req.port       = 0;
+> +		serial_req.irq        = UART0_INT;
+> +		serial_req.flags      = ASYNC_BOOT_AUTOCONF | ASYNC_SKIP_TEST;
+> +		serial_req.io_type    = SERIAL_IO_MEM;
+> +		serial_req.iomem_base = (u8 *)UART0_IO_BASE;
+> +		serial_req.iomem_reg_shift = 0;
+> +
+> +		if (early_serial_setup(&serial_req) != 0) {
+> +			printk("Early serial init of port 0 failed\n");
+> +		}
+> +	}
+> +
+> +	if( !(chrcr & CHR0_U1EC) ){
+> +		memset(&serial_req, 0, sizeof(serial_req));
+> +		serial_req.line       = 1;
+> +		serial_req.baud_base  = bb;
+> +		serial_req.port       = 1;
+> +		serial_req.irq        = UART1_INT;
+> +		serial_req.flags      = ASYNC_BOOT_AUTOCONF | ASYNC_SKIP_TEST;
+> +		serial_req.io_type    = SERIAL_IO_MEM;
+> +		serial_req.iomem_base = (u8 *)UART1_IO_BASE;
+> +		serial_req.iomem_reg_shift = 0;
+> +
+> +		if (early_serial_setup(&serial_req) != 0) {
+> +			printk("Early serial init of port 1 failed\n");
+> +		}
+> +	}
+>  }
+>
+>
+>
+>
+>
 
-> I have had this "random crashes" for linux 2.4.18-pre1 from
-> linuxppc-2_4_devel for some time now...
-> ...
-> I got 2.4.19-pre6 last weekend from the rsync source at mvista, merged
-> and compiled. Since
-> then I had the board in my "reboot loop" and rebooted some 6000 times.
-> Not one single crash...
+I thought we all ready had an early boot for walnut?
 
-Thanks. I just pulled cs-1.900.
-It seems to work fine and solved at least one other problem for me! :o)
+armin
 
-Thanks a lot,
-
-Steven
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
