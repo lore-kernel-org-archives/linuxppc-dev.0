@@ -1,13 +1,31 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-From: "Joe Dery" <jedery@mtu.edu>
-To: linuxppc-embedded@lists.linuxppc.org
-Date: Tue, 13 Feb 2001 08:49:44 -0500
+Message-ID: <A109131318C4D1119AC20060088DECE34B8F42@mail.adaptivemicro.com>
+From: Lucinda Schafer <lucsch@adaptivemicro.com>
+To: "'Joe Dery'" <jedery@mtu.edu>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Walnut user-space software problem
+Date: Tue, 13 Feb 2001 09:14:14 -0500
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Subject: Walnut user-space software problem
-Message-ID: <3A88F528.1408.4CC7B04@localhost>
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Could this be a little Endian--big Endian problem?
+
+Your variable size assumptions are correct.
+
+Lucinda Schafer
+Staff Software Engineer
+Adaptive Micro-Ware, Inc.
+
+
+-----Original Message-----
+From: Joe Dery [mailto:jedery@mtu.edu]
+Sent: Tuesday, February 13, 2001 8:50 AM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Walnut user-space software problem
+
 
 
 My senior design group is working with a IBM Walnut board
@@ -52,5 +70,6 @@ methods of work-around.
 Thanks for any help you can provide in advance!
 Joe Dery
 jedery@mtu.edu
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
