@@ -1,24 +1,19 @@
-Return-Path: <waite@skycomputers.com>
-Received: from sky.skycomputers.com (sky.skycomputers.com [198.4.246.2])
-	by ozlabs.org (Postfix) with ESMTP id 317D067A70
+Return-Path: <wd@denx.de>
+Received: from mailout08.sul.t-online.com (mailout08.sul.t-online.com
+	[194.25.134.20]) by ozlabs.org (Postfix) with ESMTP id 8876D67A70
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 18 Mar 2005 03:32:08 +1100 (EST)
-Received: from dayton (dayton [192.9.200.220])
-	by sky.skycomputers.com (Postfix) with ESMTP id 24D6614F299
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Mar 2005 11:40:32 -0500 (EST)
-From: Brian Waite <waite@skycomputers.com>
-To: linuxppc-embedded@ozlabs.org
-Date: Thu, 17 Mar 2005 11:21:48 -0500
-References: <200503170953.02626.waite@skycomputers.com>
-	<200503171111.39210.waite@skycomputers.com>
-	<20050317162509.GB5762@gate.ebshome.net>
-In-Reply-To: <20050317162509.GB5762@gate.ebshome.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1254337.cfc4tLyS2p";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200503171121.51698.waite@skycomputers.com>
-Subject: Re: [PATCH] ppc32: 3/2 HDPU platform fix PCI bus 1 enumeration
+	Fri, 18 Mar 2005 03:32:47 +1100 (EST)
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 17 Mar 2005 10:14:41 EST."
+	<Pine.LNX.4.61.0503171011220.20335@localhost.localdomain>
+Date: Thu, 17 Mar 2005 17:32:18 +0100
+Sender: wd@denx.de
+Message-Id: <20050317163223.6C37EC1510@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: looking for a model for building CRAMFS(?)-based system 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,51 +24,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---nextPart1254337.cfc4tLyS2p
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Dear Robert,
 
-Lets try this again....
+in message <Pine.LNX.4.61.0503171011220.20335@localhost.localdomain> you wrote:
+> 
+> now this is the sticky part.  imagine this system out in the field,
+> where you need to make an update to something in the initrd in the
+> root filesystem.
 
-Signed-off-by: Brian Waite <waite@skycomputers.com>
-Add the proper bus enumeration code that was missing for bus 1.
+This is the szenario where an overly filesystem enters the stage.
 
-===== arch/ppc/platforms/hdpu.c 1.2 vs 1.3 =====
---- 1.2/arch/ppc/platforms/hdpu.c       Thu Mar 17 10:42:34 2005
-+++ 1.3/arch/ppc/platforms/hdpu.c       Thu Mar 17 11:07:38 2005
-@@ -260,6 +260,17 @@
-        ppc_md.pci_swizzle = common_swizzle;
-        ppc_md.pci_map_irq = hdpu_map_irq;
+See http://www.denx.de/e/news.php#MINI_FO
 
-+       mv64x60_set_bus(&bh, 0, 0);
-+       bh.hose_a->first_busno = 0;
-+       bh.hose_a->last_busno = 0xff;
-+       bh.hose_a->last_busno = pciauto_bus_scan(bh.hose_a, 0);
-+
-+       bh.hose_b->first_busno = bh.hose_a->last_busno + 1;
-+       mv64x60_set_bus(&bh, 1, bh.hose_b->first_busno);
-+       bh.hose_b->last_busno = 0xff;
-+       bh.hose_b->last_busno = pciauto_bus_scan(bh.hose_b,
-+               bh.hose_b->first_busno);
-+
-        ppc_md.pci_exclude_device = mv64x60_pci_exclude_device;
+Note that the overlay filesystem was developed specifically for  this
+purpose;  it  has been in production use in some telecom products for
+over a year now.
 
-        hdpu_cpustate_set(CPUSTATE_KERNEL_MAJOR | CPUSTATE_KERNEL_INIT_REG);
+Best regards,
 
+Wolfgang Denk
 
-
-
---nextPart1254337.cfc4tLyS2p
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-
-iD8DBQBCOa6fmxLCz0u+Ko8RAhb7AJ4qSiEjH41W3Cs9NTmaU22m0qhyLQCcDv5f
-NVW0cTsA5lIfYK9OjLl39co=
-=zv+T
------END PGP SIGNATURE-----
-
---nextPart1254337.cfc4tLyS2p--
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Only in our dreams we are free.  The rest of the time we need  wages.
+                                    - Terry Pratchett, _Wyrd Sisters_
