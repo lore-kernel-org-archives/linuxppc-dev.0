@@ -1,30 +1,38 @@
-From: Paul Mackerras <paulus@samba.org>
-MIME-Version: 1.0
+Date: Wed, 28 Nov 2001 16:37:30 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Michael Sokolov <msokolov@ivan.Harhan.ORG>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Platform files question
+Message-ID: <20011128163730.C29541@cpe-24-221-152-185.az.sprintbbd.net>
+References: <0111281854.AA27629@ivan.Harhan.ORG>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <15365.29851.123004.897729@gargle.gargle.HOWL>
-Date: Thu, 29 Nov 2001 10:34:51 +1100 (EST)
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: CONFIG_ALL_PPC
-In-Reply-To: <20011128221928.8366@smtp.wanadoo.fr>
-References: <3C0561FE.80489F5E@vnet.ibm.com>
-	<20011128221928.8366@smtp.wanadoo.fr>
-Reply-To: paulus@samba.org
+In-Reply-To: <0111281854.AA27629@ivan.Harhan.ORG>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt writes:
-
-> It's a difficult choice ;)
+On Wed, Nov 28, 2001 at 10:54:05AM -0800, Michael Sokolov wrote:
 >
-> What about CONFIG_COMMON_PPC ? Still a bit misleading, but probably
-> better than CONFIG_ALL_PPC...
+> Tom Rini <trini@kernel.crashing.org> wrote:
+>
+> > There's no exact way right now.  But it breaks down like this, if you
+> > have a port which does _not_ need to change include/asm-ppc/serial.h,
+> > they can all go in arch/ppc/platforms.  If you change
+> > include/asm-ppc/serial.h AND newBoard_serial.h needs to include
+> > newBoard.h, they both go in include/asm-ppc/platforms/.
+>
+> And what if I have a port that has its newBoard_serial.h, but it doesn't need
+> to include newBoard.h?
 
-You know, what I am really tempted to do is to split out prep again
-and have a CONFIG_PPC_OPENFIRMWARE to indicate pmac and chrp and
-anything else that has a working OF.  But Olaf would kill me... :)
+arch/ppc/platforms/newBoard.h,
+include/asm-ppc/platforms/newBoard_serial.h.
 
-Paul.
+All of the 6xx/7xx/74xx board.h files in platforms/ are there because of
+board_serial.h requiring them.
+
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
