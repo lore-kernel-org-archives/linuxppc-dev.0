@@ -1,24 +1,169 @@
-Date: Fri, 3 Aug 2001 11:46:08 -0500
+Date: Fri, 3 Aug 2001 11:52:56 -0500
 From: Hollis Blanchard <hollis@austin.ibm.com>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: [PATCH] IBM PReP power down
-Message-ID: <20010803114608.A9987@austin.ibm.com>
+Subject: Re: [PATCH] IBM PReP power down
+Message-ID: <20010803115256.A10013@austin.ibm.com>
+References: <20010803114608.A9987@austin.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/mixed; boundary="ikeVEW9yuYc//A+q"
+In-Reply-To: <20010803114608.A9987@austin.ibm.com>; from hollis@austin.ibm.com on Fri, Aug 03, 2001 at 11:46:08AM -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This patch allows IBM PReP machines to power down (instead of 'while (1);') on
-poweroff. It works on 7248-43P, and should work on the other Carolina
-machines: 6070 and 6050 (which are still having serious i8259 problems).
-Because all the older IBM systems seem to have an identical power management
-system, it should also work on the 7043-140 (Tiger 1) in PReP mode and
-probably most other IBM PReP machines.
+--ikeVEW9yuYc//A+q
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-The patch is against _2_4, but applies with slight offsets to _2_4_devel as
-well. Please commit to both?
+On Fri, Aug 03, 2001 at 11:46:08AM -0500, Hollis Blanchard wrote:
+>
+> The patch is against _2_4, but applies with slight offsets to _2_4_devel as
+> well. Please commit to both?
 
--Hollis
+--ikeVEW9yuYc//A+q
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="ibmprep_poweroff.patch"
+
+===== arch/ppc/kernel/prep_setup.c 1.22 vs edited =====
+--- 1.22/arch/ppc/kernel/prep_setup.c	Tue Jun  5 05:45:53 2001
++++ edited/arch/ppc/kernel/prep_setup.c	Tue Jul 31 17:02:24 2001
+@@ -14,6 +14,7 @@
+  */
+
+ #include <linux/config.h>
++#include <linux/delay.h>
+ #include <linux/module.h>
+ #include <linux/errno.h>
+ #include <linux/sched.h>
+@@ -496,21 +497,20 @@
+ void __prep
+ prep_restart(char *cmd)
+ {
+-        unsigned long i = 10000;
+-
++	unsigned long i = 10000;
+
+ 	__cli();
+
+-        /* set exception prefix high - to the prom */
+-        _nmask_and_or_msr(0, MSR_IP);
++	/* set exception prefix high - to the prom */
++	_nmask_and_or_msr(0, MSR_IP);
+
+-        /* make sure bit 0 (reset) is a 0 */
+-        outb( inb(0x92) & ~1L , 0x92 );
+-        /* signal a reset to system control port A - soft reset */
+-        outb( inb(0x92) | 1 , 0x92 );
++	/* make sure bit 0 (reset) is a 0 */
++	outb( inb(0x92) & ~1L , 0x92 );
++	/* signal a reset to system control port A - soft reset */
++	outb( inb(0x92) | 1 , 0x92 );
+
+-        while ( i != 0 ) i++;
+-        panic("restart failed\n");
++	while ( i != 0 ) i++;
++	panic("restart failed\n");
+ }
+
+ /*
+@@ -542,27 +542,92 @@
+ void __prep
+ prep_halt(void)
+ {
+-        unsigned long flags;
++	unsigned long flags;
+ 	__cli();
+ 	/* set exception prefix high - to the prom */
+ 	save_flags( flags );
+ 	restore_flags( flags|MSR_IP );
+-
++
+ 	/* make sure bit 0 (reset) is a 0 */
+ 	outb( inb(0x92) & ~1L , 0x92 );
+ 	/* signal a reset to system control port A - soft reset */
+ 	outb( inb(0x92) | 1 , 0x92 );
+-
++
+ 	while ( 1 ) ;
+ 	/*
+ 	 * Not reached
+ 	 */
+ }
+
++/*
++ * On IBM PReP's, power management is handled by a Signetics 87c750 behind the
++ * Utah component on the ISA bus. To access the 750 you must write a series of
++ * nibbles to port 0x82a (decoded by the Utah). This is described somewhat in
++ * the IBM Carolina Technical Specification.
++ * -Hollis
++ */
++void __prep
++utah_sig87c750_setbit(unsigned int bytenum, unsigned int bitnum, int value)
++{
++	/*
++	 * byte1: 0 0 0 1 0  d  a5 a4
++	 * byte2: 0 0 0 1 a3 a2 a1 a0
++	 *
++	 * d = the bit's value, enabled or disabled
++	 * (a5 a4 a3) = the byte number, minus 20
++	 * (a2 a1 a0) = the bit number
++	 *
++	 * example: set the 5th bit of byte 21 (21.5)
++	 *     a5 a4 a3 = 001 (byte 1)
++	 *     a2 a1 a0 = 101 (bit 5)
++	 *
++	 *     byte1 = 0001 0100 (0x14)
++	 *     byte2 = 0001 1101 (0x1d)
++	 */
++	unsigned char byte1=0x10, byte2=0x10;
++	const unsigned int pm_reg_1=0x82a; /* ISA address */
++
++	/* the 750's '20.0' is accessed as '0.0' through Utah (which adds 20) */
++	bytenum -= 20;
++
++	byte1 |= (!!value) << 2;		/* set d */
++	byte1 |= (bytenum >> 1) & 0x3;	/* set a5, a4 */
++
++	byte2 |= (bytenum & 0x1) << 3;	/* set a3 */
++	byte2 |= bitnum & 0x7;			/* set a2, a1, a0 */
++
++	outb(byte1, pm_reg_1);		/* first nibble */
++	mb();
++	udelay(100);				/* important: let controller recover */
++
++	outb(byte2, pm_reg_1);		/* second nibble */
++	mb();
++	udelay(100);				/* important: let controller recover */
++}
++
+ void __prep
+ prep_power_off(void)
+ {
+-	prep_halt();
++	if ( _prep_type == _PREP_IBM) {
++		/* tested on:
++		 * 		7248-43P (Carolina)
++		 * should work on:
++		 * 		6050, 6070 (Carolina's)
++		 * 		7043-140 (Tiger 1)
++		 */
++		unsigned long flags;
++		__cli();
++		/* set exception prefix high - to the prom */
++		save_flags( flags );
++		restore_flags( flags|MSR_IP );
++
++		utah_sig87c750_setbit(21, 5, 1); /* set bit 21.5, "PMEXEC_OFF" */
++
++		while ( 1 ) ;
++		/* not reached */
++	} else {
++		prep_halt();
++	}
+ }
+
+ int __prep
+
+--ikeVEW9yuYc//A+q--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
