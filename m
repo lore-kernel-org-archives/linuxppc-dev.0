@@ -1,19 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4BD7867A33
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Apr 2005 09:11:10 +1000 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andreas Schwab <schwab@suse.de>
-In-Reply-To: <jek6nf1pcj.fsf@sykes.suse.de>
-References: <1112681154.9517.7.camel@gaston>  <jek6nf1pcj.fsf@sykes.suse.de>
-Content-Type: text/plain
-Date: Thu, 07 Apr 2005 09:10:19 +1000
-Message-Id: <1112829020.9518.202.camel@gaston>
+Return-Path: <trini@kernel.crashing.org>
+Date: Wed, 6 Apr 2005 16:16:40 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Wolfgang Denk <wd@denx.de>
+Message-ID: <20050406231640.GJ3396@smtp.west.cox.net>
+References: <20050406223751.E4297C108D@atlas.denx.de>
 Mime-Version: 1.0
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH] Update ppc32-fix-errata-for-some-g3-cpus.patch
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20050406223751.E4297C108D@atlas.denx.de>
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: Kernel SCM saga..
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,23 +18,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2005-04-07 at 01:02 +0200, Andreas Schwab wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
-> 
-> > The previous version of ppc32-fix-errata-for-some-g3-cpus.patch had an
-> > issue that would crash some G4 CPUs on boot. This is fixed in this new
-> > version, please replace the old one and send to linus asap (it's now
-> > been tested on enough CPUs).
-> 
-> Apparently not.  I'm getting "floating point used in kernel" crashes
-> during wakeup on my iBook G3 (750FX).
+On Thu, Apr 07, 2005 at 12:37:46AM +0200, Wolfgang Denk wrote:
 
-And does removing that patch fixes it ? That is very strange. The patch
-works fine here on a G3 Pismo and a couple of G4s, the code in the patch
-does enable the FPU before initilizing the registers, so the kernel
-shouldn't take any FP exception... Couldn't the above be a different
-problem ? What is the exact PC where the exception occurs ? what
-instruction does it correspond to ?
+> Hi,
+> 
+> are there any plans yet how to continue PPC  kernel  development  now
+> that Linus (and probably others, too) stopped using BitKeeper?
+> 
+> See http://www.lib.uaa.alaska.edu/linux-kernel/archive/2005-Week-14/0826.html
 
-Ben.
- 
+Larely unchanged.  The linuxppc-2.5 tree hasn't been active for a while,
+so "official" trees shouldn't be a problem.  I would hope/imagine that
+whatever is picked up next will allow the sub-projects that've had
+multiple colaborators (such as mpc52xx or marvell support) to work in
+some fashion.  For single-user stuff, I can't recommend quilt
+(http://savannah.nongnu.org/projects/quilt) enough.
+
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
