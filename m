@@ -1,61 +1,44 @@
-Date: Wed, 21 Apr 1999 10:30:40 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Simone Piccardi <Simone.Piccardi@fi.infn.it>
-cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: New boot attempts on a MVME2431 
-In-Reply-To: <371B741C.35603A35@fi.infn.it>
-Message-ID: <Pine.HPP.3.96.990421101949.20020T-100000@gra-ux1.iram.es>
+Message-Id: <199904211245.OAA03567@kieraycl01.kieraydom>
+Date: Wed, 21 Apr 1999 14:45:38 +0200 (MET DST)
+From: Magnus Damm <eramdam@kieray1.p.y.ki.era.ericsson.se>
+Reply-To: Magnus Damm <eramdam@kieray1.p.y.ki.era.ericsson.se>
+Subject: FADS860
+To: tharvan@ellemedia.com
+Cc: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 
+Hi there!
 
-On Mon, 19 Apr 1999, Simone Piccardi wrote:
+Has someone _ever_ run linux on a FADS860 with success?
 
-> 
-> Hi,
-> 
-> I'm still trying to boot LinucPPC on this board. Thanks to new kernel
-> images provided by G. Paubert in his site I could obtain some new
-> results (not a success but at least this time the boot is going a bit
-> further).
+I've exchanged some mail with Helmut <helmut.buchsbaum@siemens.at> 
+and he has linux running on a FADS823.
 
+I have the same problem as Thomas <tharvan@ellemedia.com> with my board.
+Even with Helmuts workaround that resevers one tlb as #31.
 
-Ok, what does the SROM command under PPCBug return. There is a bug in the
-setup of these.
+I mean, what is the difference between the MBX and the FADS?
+Except all crap around the processor - nothing.
+It is the same processor with yes, i know, diffrent pinusage.
+ 
+I suspect the MBX boot does something with the MMU at boot-time. 
 
-You have to type SROM, answer Y to the first question and list all the
-values until the the address 0x80. Then around address 0x20, there is
-probably a byte which is 0x08 and should be 0x00, but I can't tell you the
-exact address without the dump.
+It seems like the FADS is the only board with homebuilt boot-code.
 
-> It seems quite strange to me also the message:
-> OpenPIC Version ? (2 CPUs and 17 IRQ sources) at d1000000
-> Why 2 CPU?
+The boot-code for the brightstar boards, is it open source?
 
-Because the OpenPIC in the Raven and Hawk support up to 2 CPUs. This does
-not mean that they are installed however...
+What is going on when the memoryarea 0x300-0x1200 (ISRs) is trashed?
 
-> time_init: decrementer frequency = 998700000/60 (15MHz)
+Is someone at least a bit worried ?
 
-This is strange, it should be 25 MHz. I have got timing problems on my
-board too... Going to investigate since it seems constant when it should
-not.
+TIA /
 
-
-> My question are: 
-> Is the way I gave the boot parameter (root=/dev/nfs) right? 
-> I exported an empty /home/ppc directory on the same PC that I used as 
-> tftp server, but how the board can recognize just this directory? And 
-> what files I have to put in this directory?
-
-You have to setup you /etc/bootptab entries and /etc/exports. Don't forget 
-to set the export as no_root_squash.
-
-	Gabriel.
+Magnus
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
