@@ -1,83 +1,77 @@
-Message-ID: <3ED517C5.1050102@mrv.com>
-Date: Wed, 28 May 2003 22:10:45 +0200
-From: Eran Mann <emann@mrv.com>
-MIME-Version: 1.0
-To: "Brian S. Park" <brian@corelis.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-Id: <5.1.1.6.2.20030528132553.0128a2f0@corelis.com>
+Date: Wed, 28 May 2003 13:53:08 -0700
+To: linuxppc-embedded@lists.linuxppc.org
+From: "Brian S. Park" <brian@corelis.com>
 Subject: Re: getting Linux working on IBM Walnut demo board
-References: <5.1.1.6.2.20030527160449.0128b868@corelis.com> <Your message of "Tue, 27 May 2003 11:49:51 PDT." <5.1.1.6.2.20030527114004.01282240@corelis.com> <5.1.1.6.2.20030527160449.0128b868@corelis.com> <5.1.1.6.2.20030528113157.012b1008@corelis.com>
-In-Reply-To: <5.1.1.6.2.20030528113157.012b1008@corelis.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <3ED517C5.1050102@mrv.com>
+References: <5.1.1.6.2.20030528113157.012b1008@corelis.com>
+ <5.1.1.6.2.20030527160449.0128b868@corelis.com>
+ <Your message of "Tue, 27 May 2003 11:49:51 PDT." <5.1.1.6.2.20030527114004.01282240@corelis.com>
+ <5.1.1.6.2.20030527160449.0128b868@corelis.com>
+ <5.1.1.6.2.20030528113157.012b1008@corelis.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Brian, see some suggestions below.
+Thank you all for good suggestions.
 
-Brian S. Park wrote:
+It turned out that ELDK default setup does not have any dev files. How do I
+create all the dev files I need?
 
-> Now to the next problem. I'm booting with NFS root file system. Below
-> is the bootargs that I'm using.
->
-> >bootargs=root=/dev/nfs rw nfsroot=192.168.1.78:/home/ELDK/ppc_4xx
-> console=ttyS0,115200
-> >              console=tty0
-> ip=192.168.1.146:192.168.1.78:192.168.1.2:255.255.255.0:netusb::off
->
-> exports file on my development station has
-> >/home/ELDK/ppc_4xx      netusb(rw,no_root_squash)
->
-> /home/ELDK/ppc_4xx is where ELDK installed the target file system on
-> my development machine.
-> Even though I can now ping the target, I can't telnet to it. I get the
-> following error.
->
-> >telnet netusb
-> >Trying 192.168.1.146...
-> >Connected to netusb.
-> >Escape character is '^]'.
-> >telnetd: All network ports in use.
-> >Connection closed by foreign host.
->
-> Is this normal? Do I now need to configure the target file system to
-> enable telnet?
-> Or is there still something wrong with my bootargs?
+ >[root@karla2 dev]# ls
+ >initctl  log  null
 
-It's not normal. Perhaps it's a problem with inetd or xinetd
-configuration? is there any more information in the logs or in dmesg
-(well, once you get a working console..)?
+Also, I have a general question about Embedded Linux.
+What is the reasonable amount of flash to have for a minimally configured
+Embedded Linux system?
 
-> Also, after the kernel comes up, I can no longer type any command
-> through the serial terminal.
-> The following the message at the end of kernel boot. It says it was
-> unable to open the console.
->
-> >IP-Config: Complete:
-> >      device=eth0, addr=192.168.1.146, mask=255.255.255.0,
-> gw=192.168.1.2,
-> >     host=192.168.1.146, domain=, nis-domain=(none),
-> >     bootserver=192.168.1.78, rootserver=192.168.1.78, rootpath=
-> >NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
-> >Looking up port of RPC 100003/2 on 192.168.1.78
-> >Looking up port of RPC 100005/1 on 192.168.1.78
-> >VFS: Mounted root (nfs filesystem).
-> >Freeing unused kernel memory: 76k init
-> >Warning: unable to open an initial console.
+My target will be running small (<<1MB) program which will take commands
+over TCP/IP network.
+So, I want to know how much flash memory we should put on our custom target.
+We do not need support for PCI/Video/Sound/HD/SCSI/Parallel port/...
+All we need from the OS is network support. Probably using Linux is an
+overkill but since it's free. :)
 
-Perhaps you dont have a proper /dev/ttyS0 device in the nfsroot?
+Thank you for any input.
 
+Brian
+
+
+Is this normal? Do I now need to configure the target file system to enable
+telnet?
+>>Or is there still something wrong with my bootargs?
 >
-> Any help will be appreciated.
+>It's not normal. Perhaps it's a problem with inetd or xinetd
+>configuration? is there any more information in the logs or in dmesg
+>(well, once you get a working console..)?
 >
-> Thank you
+>>Also, after the kernel comes up, I can no longer type any command through
+>>the serial terminal.
+>>The following the message at the end of kernel boot. It says it was
+>>unable to open the console.
+>>
+>> >IP-Config: Complete:
+>> >      device=eth0, addr=192.168.1.146, mask=255.255.255.0, gw=192.168.1.2,
+>> >     host=192.168.1.146, domain=, nis-domain=(none),
+>> >     bootserver=192.168.1.78, rootserver=192.168.1.78, rootpath=
+>> >NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+>> >Looking up port of RPC 100003/2 on 192.168.1.78
+>> >Looking up port of RPC 100005/1 on 192.168.1.78
+>> >VFS: Mounted root (nfs filesystem).
+>> >Freeing unused kernel memory: 76k init
+>> >Warning: unable to open an initial console.
 >
-> Brian
-> ===============================================================
-> Brian S. Park  brian@corelis.com  (562) 926-6727 x143
-> ---------------------------------------------------------------
-> Everything we do helps our customers get to market
-> FASTER with HIGHER quality and LOWER cost
-> ===============================================================
+>Perhaps you dont have a proper /dev/ttyS0 device in the nfsroot?
+
+===============================================================
+Brian S. Park  brian@corelis.com  (562) 926-6727 x143
+---------------------------------------------------------------
+Everything we do helps our customers get to market
+FASTER with HIGHER quality and LOWER cost
+===============================================================
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
