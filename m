@@ -1,100 +1,45 @@
-Date: Sun, 7 Apr 2002 17:23:58 -0400
-From: Bill Fink <billfink@mindspring.com>
-To: LinuxPPC Developers <linuxppc-dev@lists.linuxppc.org>
-Cc: YellowDog Linux General <yellowdog-general@lists.terrasoftsolutions.com>,
-	Bill Fink <billfink@mindspring.com>
-Subject: dmasound audio patch
-Message-Id: <20020407172358.36f3fd3e.billfink@mindspring.com>
+Subject: Re: Kernel Gurus: Module insertion deadlock? [Was: SCSI system
+	freeze w/2.4.18]
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+To: Albrecht Dre? <albrecht.dress@arcor.de>
+Cc: mlan@cpu.lu, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20020407143312.GA927@regulus>
+References: <E16tZUq-00007a-00@piglet.grunz.lu>
+	<20020407143312.GA927@regulus>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: 08 Apr 2002 00:32:29 +0200
+Message-Id: <1018218750.1868.772.camel@tibook>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="Multipart_Sun__7_Apr_2002_17:23:58_-0400_1015d800"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
+On Sun, 2002-04-07 at 16:33, Albrecht Dre? wrote:
+>
+> I played a little more with this, and got the following picture:
+>
+> * scsi cd support built into the kernel: the access works without a cd in
+>    the drive
+>
+> * scsi cd support built as module
+>    - do a "modprobe sr_mod" (which inserts sr_mod.o and cdrom.o): access
+>      works like support built fixed into the kernel;
+>    - remove sr_mod (cdrom.o may still be loaded): access leads to the hang as
+>      described.
+>
+> So I think there is some kind of deadlock between dd and the module
+> insertion (which includes a disk access to read/load the module). As I do
+> not see this on an iMac with a ide cd drive, it might be a problem either in
+> sr_mod or in the scsi stuff. However, the iMac has two separate ide busses
+> for the cd and the disk, so the hang might be "same bus" related.
 
---Multipart_Sun__7_Apr_2002_17:23:58_-0400_1015d800
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Indeed, I've experienced the same problem on a Cube where both HD and CD-ROM
+are on the first IDE bus. Used to work before around 2.4.10, don't remember
+exactly.
 
-Hi,
 
-A friend of mine, Rob Scott, worked up a patch to the dmasound driver
-that fixes some of the PPC endianness issues by doing byte swapping
-in the driver.  He uses it on a Titanium PowerBook, and I am using it
-on a dual 500 MHz G4 with good results.  Before the patch, using xmms
-with the AudioCD Reader plugin, I had to use the esound driver since
-the OSS driver just gave static.  Now I can use the OSS driver directly,
-so there's no need to run the esd daemon.
-
-I know this patch probably isn't politically correct, since as I understand
-it Linus doesn't believe that things such as byte swapping should be done
-in the kernel.  But then he lives on a little endian machine and doesn't
-need to mess with dozens of broken audio applications.  So if you're not
-worried about kernel political correctness, you might want to give this
-patch a try.  Of course I make no warranty of any kind, but I can attest
-that it works fine on a couple of different PPC systems with BenH kernels
-around 2.4.18.
-
-						-Bill
-
---Multipart_Sun__7_Apr_2002_17:23:58_-0400_1015d800
-Content-Type: application/octet-stream;
- name="dmasound.patch"
-Content-Disposition: attachment;
- filename="dmasound.patch"
-Content-Transfer-Encoding: base64
-
-ZGlmZiAtdXIgLm9yaWcvZG1hc291bmRfYXdhY3MuYyAubW9kL2RtYXNvdW5kX2F3YWNzLmMKLS0t
-IC5vcmlnL2RtYXNvdW5kX2F3YWNzLmMJVHVlIEZlYiAyNiAwOTozNTozNCAyMDAyCisrKyAubW9k
-L2RtYXNvdW5kX2F3YWNzLmMJVHVlIEZlYiAyNiAyMzoxNzo0MCAyMDAyCkBAIC03NTMsNiArNzUz
-LDE2IEBACiAJCQlkbWFzb3VuZC5kc3Auc2l6ZSA9IHNpemU7CiAJCX0KIAl9CisJZWxzZSB7CisJ
-CWRtYXNvdW5kLnNvZnQuZm9ybWF0ID0gcmVxX2Zvcm1hdDsKKwkJZG1hc291bmQuc29mdC5zaXpl
-ID0gc2l6ZTsKKwkJZG1hc291bmQuaGFyZC5mb3JtYXQgPSBmb3JtYXQ7CisJCWlmIChkbWFzb3Vu
-ZC5taW5EZXYgPT0gU05EX0RFVl9EU1ApIHsKKwkJCWRtYXNvdW5kLmRzcC5mb3JtYXQgPSBmb3Jt
-YXQ7CisJCQlkbWFzb3VuZC5kc3Auc2l6ZSA9IHNpemU7CisJCX0KKwkJZm9ybWF0ID0gcmVxX2Zv
-cm1hdDsKKwl9CiAKIAlyZXR1cm4gZm9ybWF0OwogfQpAQCAtMjY5Miw3ICsyNzAyLDcgQEAKIF9f
-aW5pdCBzZXRfaHdfYnl0ZXN3YXAoc3RydWN0IGRldmljZV9ub2RlICppbykKIHsKIAlzdHJ1Y3Qg
-ZGV2aWNlX25vZGUgKm1pbyA7Ci0JdW5zaWduZWQgaW50ICpwLCBrbCA9IDAgOworCXVuc2lnbmVk
-IGludCBrbCA9IDAgOwogCiAJLyogaWYgc2VlbXMgdGhhdCBLZXlsYXJnbyBjYW4ndCBieXRlLXN3
-YXAgICovCiAKZGlmZiAtdXIgLm9yaWcvZG1hc291bmRfY29yZS5jIC5tb2QvZG1hc291bmRfY29y
-ZS5jCi0tLSAub3JpZy9kbWFzb3VuZF9jb3JlLmMJVHVlIEZlYiAyNiAwOTozNTozNCAyMDAyCisr
-KyAubW9kL2RtYXNvdW5kX2NvcmUuYwlUdWUgRmViIDI2IDIzOjE3OjQwIDIwMDIKQEAgLTEyNjMs
-NyArMTI2Myw3IEBACiAJCQlpZiAocmVzdWx0IDwgMCkKIAkJCQlyZXR1cm4gcmVzdWx0OwogCQkJ
-aWYgKGZvcm1hdCAhPSBkYXRhKQotCQkJCXJldHVybiAtRUlOVkFMOworCQkJCXJldHVybiAtRU5P
-U1lTOwogCQkJcmV0dXJuIDA7CiAJCX0gZWxzZQogCQkJcmV0dXJuIC1FSU5WQUwgOwpkaWZmIC11
-ciAub3JpZy90cmFuc18xNi5jIC5tb2QvdHJhbnNfMTYuYwotLS0gLm9yaWcvdHJhbnNfMTYuYwlU
-dWUgRmViIDI2IDA5OjM1OjM1IDIwMDIKKysrIC5tb2QvdHJhbnNfMTYuYwlUdWUgRmViIDI2IDIz
-OjE3OjQwIDIwMDIKQEAgLTE2MywyMyArMTYzLDMwIEBACiAJc3NpemVfdCBjb3VudCwgdXNlZDsK
-IAlpbnQgc3RlcmVvID0gZG1hc291bmQuc29mdC5zdGVyZW87CiAJc2hvcnQgKmZwID0gKHNob3J0
-ICopICZmcmFtZVsqZnJhbWVVc2VkXTsKKwlzaG9ydCAqdXAgPSAoc2hvcnQgKikgdXNlclB0cjsK
-IAogCWZyYW1lTGVmdCA+Pj0gMjsKIAl1c2VyQ291bnQgPj49IChzdGVyZW8/IDI6IDEpOwogCXVz
-ZWQgPSBjb3VudCA9IG1pbl90KHVuc2lnbmVkIGxvbmcsIHVzZXJDb3VudCwgZnJhbWVMZWZ0KTsK
-LQlpZiAoIXN0ZXJlbykgewotCQlzaG9ydCAqdXAgPSAoc2hvcnQgKikgdXNlclB0cjsKLQkJd2hp
-bGUgKGNvdW50ID4gMCkgewotCQkJc2hvcnQgZGF0YTsKKwl3aGlsZSAoY291bnQgPiAwKSB7CisJ
-CXNob3J0IGRhdGE7CisJCWlmIChnZXRfdXNlcihkYXRhLCB1cCsrKSkKKwkJCXJldHVybiAtRUZB
-VUxUOworCQlpZiAoKGRtYXNvdW5kLmhhcmQuZm9ybWF0ID09IEFGTVRfUzE2X0JFKSAmJiAoZG1h
-c291bmQuc29mdC5mb3JtYXQgPT0gQUZNVF9TMTZfTEUpKSB7CisJCQkqZnArKyA9IHN3YWIxNigg
-ZGF0YSApOworCQl9IGVsc2UgeworCQkJKmZwKysgPSBkYXRhOworCQl9CisJCWlmIChzdGVyZW8p
-IHsKIAkJCWlmIChnZXRfdXNlcihkYXRhLCB1cCsrKSkKIAkJCQlyZXR1cm4gLUVGQVVMVDsKKwkJ
-fQorCQlpZiAoKGRtYXNvdW5kLmhhcmQuZm9ybWF0ID09IEFGTVRfUzE2X0JFKSAmJiAoZG1hc291
-bmQuc29mdC5mb3JtYXQgPT0gQUZNVF9TMTZfTEUpKSB7CisJCQkqZnArKyA9IHN3YWIxNiggZGF0
-YSApOworCQl9IGVsc2UgewogCQkJKmZwKysgPSBkYXRhOwotCQkJKmZwKysgPSBkYXRhOwotCQkJ
-Y291bnQtLTsKIAkJfQotCX0gZWxzZSB7Ci0JCWlmIChjb3B5X2Zyb21fdXNlcihmcCwgdXNlclB0
-ciwgY291bnQgKiA0KSkKLQkJCXJldHVybiAtRUZBVUxUOworCQljb3VudC0tOwogCX0KIAkqZnJh
-bWVVc2VkICs9IHVzZWQgKiA0OwogCXJldHVybiBzdGVyZW8/IHVzZWQgKiA0OiB1c2VkICogMjsK
-QEAgLTIwMywxMyArMjEwLDIxIEBACiAJCWlmIChnZXRfdXNlcihkYXRhLCB1cCsrKSkKIAkJCXJl
-dHVybiAtRUZBVUxUOwogCQlkYXRhIF49IG1hc2s7Ci0JCSpmcCsrID0gZGF0YTsKKwkJaWYgKChk
-bWFzb3VuZC5oYXJkLmZvcm1hdCA9PSBBRk1UX1MxNl9CRSkgJiYgKGRtYXNvdW5kLnNvZnQuZm9y
-bWF0ID09IEFGTVRfUzE2X0xFKSkgeworCQkJKmZwKysgPSBzd2FiMTYoZGF0YSk7CisJCX0gZWxz
-ZSB7CisJCQkqZnArKyA9IGRhdGE7CisJCX0KIAkJaWYgKHN0ZXJlbykgewogCQkJaWYgKGdldF91
-c2VyKGRhdGEsIHVwKyspKQogCQkJCXJldHVybiAtRUZBVUxUOwogCQkJZGF0YSBePSBtYXNrOwog
-CQl9Ci0JCSpmcCsrID0gZGF0YTsKKwkJaWYgKChkbWFzb3VuZC5oYXJkLmZvcm1hdCA9PSBBRk1U
-X1MxNl9CRSkgJiYgKGRtYXNvdW5kLnNvZnQuZm9ybWF0ID09IEFGTVRfUzE2X0xFKSkgeworCQkJ
-KmZwKysgPSBzd2FiMTYoZGF0YSk7CisJCX0gZWxzZSB7CisJCQkqZnArKyA9IGRhdGE7CisJCX0K
-IAkJY291bnQtLTsKIAl9CiAJKmZyYW1lVXNlZCArPSB1c2VkICogNDsK
-
---Multipart_Sun__7_Apr_2002_17:23:58_-0400_1015d800--
+--
+Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
+XFree86 and DRI project member   /  CS student, Free Software enthusiast
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
