@@ -1,8 +1,8 @@
-Message-ID: <001501c01c0a$ce17f0a0$0a00010a@paoloweb>
-From: "Paolo Scaffardi" <arsenio@tin.it>
-To: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Console output to framebuffer device: how?
-Date: Mon, 11 Sep 2000 18:10:22 +0200
+Message-ID: <013801bfbbff$9bdf71f0$4a1f76d8@washington>
+From: "Navin Boppuri" <nboppuri@trinetcommunication.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Differences between MPC823 powerpc & any other powerpc
+Date: Mon, 11 Sep 2000 11:44:00 -0500
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -10,23 +10,14 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I wrote a framebuffer device that i included in the kernel, but i dont know
-how to redirect the output of the console to my framebuffer device instead
-of the serial console.
+Hello,
 
-During the startup the kernel initializes the framebuffer correctly, and
-says:
+I would like to know what are the basic difference between the MPC823
+PowerPC and any other PowerPC , say, the G4? Why dont the binaries running
+on G4 not work correctly on the MPC823?
 
-"Console: switching to frame buffer device"
-
-but nothing happens on it and the output is given only to serial console.
-
-What should i do to make it work correctly, now?
-
-Best regards,
-Paolo Scaffardi (arsenio@tin.it - pscaffardi@supereva.it)
-AIRVENT SAM s.p.a. - RIMINI (ITALY)
-Tel. 0541 383294 - Fax 0541 387086
+Thank you,
+Navin.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
