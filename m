@@ -1,32 +1,31 @@
-Message-ID: <XFMail.000714115828.pochini@shiny.it>
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <396EEA5C.185284E2@wanadoo.fr>
+Date: Fri, 14 Jul 2000 12:24:28 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-Date: Fri, 14 Jul 2000 11:58:28 +0200 (CEST)
-From: Giuliano Pochini <pochini@shiny.it>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: lmbench & segfaults
+To: Iain Sandoe <iain@sandoe.co.uk>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: switching consoles
+References: <200007140929.KAA03269@hyperion.valhalla.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi! When I run lmbench on a PC I get these line at the beginning:
-
-
->Hang on, we are calculating your timing granularity.
->OK, it looks like you can time stuff down to 5000 usec resolution.
+Iain Sandoe wrote:
 >
->Hang on, we are calculating your timing overhead.
->OK, it looks like your gettimeofday() costs 0 usecs.
->
->Hang on, we are calculating your loop overhead.
->OK, it looks like your benchmark loop costs 0.00000000 usecs.
+> anyone know the magic keys to switch consoles on linuxppc?
+> <alt>-fnX doesn't work for me...
+> Iain.
 
-But with my G3 or my PMac7300 I get a segfault for each of them... Why ?
+Depending on your kernel, your configuration and the phase of the moon,
+the <alt> key is sometimes the key labelled "alt" and sometimes the
+"apple" key (aka "command"). And sometimes it is completely disabled.
 
-[kernels 2.2.12-2.2.14]
+In X, you use control-command-fnX, and on the i- and powerbooks you have
+to press the keys in a certain order to make it work (first
+control-command, then fn, then fnX, IIRC).
 
-Bye.
-    Giuliano Pochini ->)|(<- Shiny Corporation {AS6665} ->)|(<-
-
+--
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
