@@ -1,56 +1,31 @@
-From: "Bob Piatek" <bobtek@fishcamp.com>
-To: "'GOTZON ASTONDOA'" <gastondoa@fagorautomation.es>,
-	<linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Can not load modules
-Date: Fri, 1 Feb 2002 09:09:04 -0800
-Message-ID: <000501c1ab43$26e64bf0$a2341204@P4>
+Message-ID: <CA78D1B723D8D411AF0300508BDCF74F91934C@NTCORREO>
+From: GOTZON ASTONDOA <gastondoa@fagorautomation.es>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Access to DPRAM
+Date: Mon, 4 Feb 2002 15:07:01 +0100 
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <CA78D1B723D8D411AF0300508BDCF74F8C1366@NTCORREO>
+	charset="ISO-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I had a similar problem.  It turned out to be my development system
-(yellowdoglinux) had a problem with the modutils package.  I loaded the
-latest version of modutils from:
+  Hi all,
 
-ftp://ftp.fi.kernel.org/pub/linux/utils/kernel/modutils/v2.4/
+	I have a problem that is not probably just a "embedded" problem, but
+i don´t know where i can do this question.
+	In our product we have two microprocesor´s. One is PPC with embedded
+linux.
+	We need to communicate the two procesor with a DPRAM.
+	And now the question are:
+		- How can we say to Linux that it has a DPRAM?
+		- How can we say to Linux that the DPRAM is not cacheable,
+nor swapable?
+		- How can we say to Linux that only our application´s can
+use the DPRAM?
 
-
-That fixed it.
-
-Bob
-
-fishcamp engineering
-105 W. Clark Ave
-Orcutt, CA  93455
-TEL: 805-937-6365
-FAX: 805-937-6252
-
-
------Original Message-----
-From: owner-linuxppc-embedded@lists.linuxppc.org
-[mailto:owner-linuxppc-embedded@lists.linuxppc.org] On Behalf Of GOTZON
-ASTONDOA
-Sent: Friday, February 01, 2002 6:21 AM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Can not load modules
-
-
-
-  Hi,
-
-   In trying to instal a module on my embedded linuxPPC based custom
-board.
-It is a simple hello world module.
-   When i do insmod it says:
-
-		insmod: unresolved symbols printk
-
-   Can anybody help me?
-   Tahnk you very much in advance.
+	Thank for your help and excuse me if the question is not for this
+mailing list or is very simple.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
