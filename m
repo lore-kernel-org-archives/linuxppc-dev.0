@@ -1,5 +1,5 @@
-Message-Id: <20010401000551.Postino-026015@smtp01.highway.ne.jp>
-Date: Sun, 1 Apr 2001 00:05:51 +0900
+Message-Id: <20010401003513.Postino-002933@smtp01.highway.ne.jp>
+Date: Sun, 1 Apr 2001 00:35:13 +0900
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: <linuxppc-dev@lists.linuxppc.org>
 From: Kaoru Fukui <k_fukui@highway.ne.jp>
@@ -21,18 +21,25 @@ Date: Sat, 31 Mar 2001 11:16:15 +0200
 > I finally finished my cpu table & features stuff. It's in my rsync
 > kernel at penguinppc::linux-2.4-benh. It may still need some fixes
 > for 4xx/8xx and power3/4, so please, look at it and send me patches ;)
+>
 
-great your works.
-
-Does this kernel work SMP mode?
-
-I got the source now.
-looking the source ,but almost same for SMP.
-
-I'm goting to compile this using my patch
+Please fix your typo in arch/ppc/kernel/feature.c
+it's in void feature_core99_kick_cpu(int cpu_nr)
 
 
-Thanks a lot
+void
+feature_core99_kick_cpu(int cpu_nr)
+<snip>
+     if (!keylargo_base || nr > 3 )    <-- cpu_nr ?
+
+
+I guess, that nr is your typo.
+Is it cpu_nr   ?
+
+Please fix it where compile stop.
+
+
+Thanks
 Kaoru
 
 
