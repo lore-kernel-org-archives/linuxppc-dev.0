@@ -1,43 +1,37 @@
-Mime-Version: 1.0
-Message-Id: <v04210101b405cc106028@[192.168.0.1]>
-In-Reply-To: <v03130302b40589d1f8f6@[17.202.21.235]>
-References: <v04011701b404e6cd4493@[199.174.193.101]>
- <v04011701b404e6cd4493@[199.174.193.101]>
- <v03130302b40589d1f8f6@[17.202.21.235]>
-Date: Wed, 15 Sep 1999 14:27:30 -0800
-To: Peter Bierman <bierman@apple.com>
-From: Ethan Benson <erbenson@alaska.net>
-Subject: Re: New booter
-Cc: linuxppc-dev@lists.linuxppc.org
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+From: Ira K Weiny <iweiny@falcon.csc.calpoly.edu>
+Message-Id: <199909152235.PAA09175@falcon.csc.calpoly.edu>
+Subject: Re: Asante 10/100 Rev. b now working!
+To: bakerc@pacbell.net
+Date: Wed, 15 Sep 1999 15:35:04 -0700 (PDT)
+Cc: linuxppc-dev@lists.linuxppc.org (linuxdev)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 15/9/99 Peter Bierman wrote:
+This should be defined here.
 
->
->
->Since I'm the one that came up with the "disgusting kludge", do you have
->any ideas to share on how to make it better?
+pci-netif.c:
+ 
+#if (LINUX_VERSION_CODE >= 0x20100)
+char kernel_version[] = UTS_RELEASE;
+#else
+#define PCI_CAPABILITY_LIST   0x34  /* Offset of first capability list entry */
+#define PCI_STATUS_CAP_LIST   0x10  /* Support Capability List */
+#define PCI_CAP_ID_PM      0x01  /* Power Management */
+#endif
+ 
 
-yes I have already mentioned it, do it like intel machines do, the 
-BIOS (OF) loads code from the bootblock of the disk or root partition 
-(marked bootable in the partition table), simple and filesystem 
-independent.
+Check LINUX_VERSION_CODE in /usr/src/linux/include/linux/version.h
+And then /usr/src/linux/include/linux/pci.h for PCI_STATUS_CAP_LIST
 
-requiring a dedicated partition for the BOOTSTRAP is ridiculous. 
-and so is chaining oneself to a single filesystem (HFS)
+Either way PCI_STATUS...  Should be defined.
 
-the bootblock method works on most OF machines since there are plenty 
-of people using quik to do it, its the newworld machines that are 
-either different or broken, however they have a flashable ROM so 
-apple can fix this oversight.
+Maybe you don't have the kernel headers installed?
+Just a guess.
 
+Ira Weiny
 
-
-Best Regards,
-Ethan Benson
-To obtain my PGP key: http://www.alaska.net/~erbenson/pgp/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
