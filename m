@@ -1,317 +1,161 @@
-Date: Thu, 3 Oct 2002 16:21:59 +1000
+Date: Thu, 3 Oct 2002 17:03:33 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Paul Mackerras <paulus@samba.org>, Matt Porter <porter@cox.net>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Remove ocp-proc.c
-Message-ID: <20021003062159.GA6160@zax>
+Subject: OCP probe cleanup
+Message-ID: <20021003070333.GB6160@zax>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This patch completely removes drivers/ocp/ocp-proc.c from 2.5, along
-with all references to it - it's been terminally broken for some time
-now.  Shall I commit this to linuxppc-2.5?
+This patch streamlines the OCP probe logic slightly, abolishing the
+pointless id paramter to the OCP probe callback, and the equally
+pointless ocp_match_device() with it.
 
-diff -urN /home/dgibson/kernel/linuxppc-2.5/arch/ppc/platforms/4xx/Config.in linux-bluefish/arch/ppc/platforms/4xx/Config.in
---- /home/dgibson/kernel/linuxppc-2.5/arch/ppc/platforms/4xx/Config.in	2002-09-19 16:08:06.000000000 +1000
-+++ linux-bluefish/arch/ppc/platforms/4xx/Config.in	2002-10-03 16:17:07.000000000 +1000
-@@ -133,9 +133,6 @@
-        -o "$CONFIG_XILINX_OCP" = "y" ]; then
- 	define_bool CONFIG_OCP y
-   fi
--  if [ "$CONFIG_OCP" = "y" ]; then
--     bool 'OCP Device proc fs support (experimental)' CONFIG_OCP_PROC
--  fi
-   bool "PCI support" CONFIG_PCI
-   dep_bool 'Power Management support (experimental)' CONFIG_PM $CONFIG_EXPERIMENTAL
-
-diff -urN /home/dgibson/kernel/linuxppc-2.5/drivers/ocp/Makefile linux-bluefish/drivers/ocp/Makefile
---- /home/dgibson/kernel/linuxppc-2.5/drivers/ocp/Makefile	2002-09-19 16:09:26.000000000 +1000
-+++ linux-bluefish/drivers/ocp/Makefile	2002-09-19 17:02:04.000000000 +1000
-@@ -14,7 +14,6 @@
- export-objs := ocp.o ocp-driver.o ocp-probe.o ocp-hotplug.o
- obj-y   	+= ocp.o ocp-driver.o ocp-probe.o
-
--obj-$(CONFIG_OCP_PROC) += ocp-proc.o
- obj-$(CONFIG_PM)	+= ocp-power.o
- obj-$(CONFIG_HOTPLUG)  += ocp-hotplug.o
-
-diff -urN /home/dgibson/kernel/linuxppc-2.5/drivers/ocp/ocp-hotplug.c linux-bluefish/drivers/ocp/ocp-hotplug.c
---- /home/dgibson/kernel/linuxppc-2.5/drivers/ocp/ocp-hotplug.c	2002-09-19 16:09:26.000000000 +1000
-+++ linux-bluefish/drivers/ocp/ocp-hotplug.c	2002-09-19 17:02:04.000000000 +1000
-@@ -58,9 +58,6 @@
- {
- 	list_add_tail(&dev->bus_list, &bus->devices);
- 	list_add_tail(&dev->global_list, &ocp_devices);
--#ifdef CONFIG_PROC_FS
--	ocp_proc_attach_device(dev);
--#endif
- 	/* notify userspace of new hotplug device */
- 	run_sbin_hotplug(dev, TRUE);
+diff -urN linux-bluefish-old/arch/ppc/kernel/4xx/ocp_uart.c linux-bluefish/arch/ppc/kernel/4xx/ocp_uart.c
+--- linux-bluefish-old/arch/ppc/kernel/4xx/ocp_uart.c	2002-10-01 12:51:56.000000000 +1000
++++ linux-bluefish/arch/ppc/kernel/4xx/ocp_uart.c	2002-10-03 16:37:32.000000000 +1000
+@@ -135,7 +135,7 @@
  }
-@@ -93,9 +90,6 @@
- 	list_del(&dev->bus_list);
- 	list_del(&dev->global_list);
- //	ocp_free_resources(dev);
--#ifdef CONFIG_PROC_FS
--	ocp_proc_detach_device(dev);
--#endif
+ #endif
 
- 	/* notify userspace of hotplug device removal */
- 	run_sbin_hotplug(dev, FALSE);
-diff -urN /home/dgibson/kernel/linuxppc-2.5/drivers/ocp/ocp-proc.c linux-bluefish/drivers/ocp/ocp-proc.c
---- /home/dgibson/kernel/linuxppc-2.5/drivers/ocp/ocp-proc.c	Thu Sep 19 16:09:26 2002
-+++ linux-bluefish/drivers/ocp/ocp-proc.c	Thu Jan 01 10:00:00 1970
-@@ -1,235 +0,0 @@
--/*
-- * FILE NAME: ocp-proc.c
+-static int __devinit ocp_uart_probe(struct ocp_device *pdev,const struct ocp_device_id *ent)
++static int __devinit ocp_uart_probe(struct ocp_device *pdev)
+ {
+
+ 	DBG("Vendor:%x Device:%x.%d @%lx irq:%d\n", pdev->vendor, pdev->device, pdev->num,
+diff -urN linux-bluefish-old/drivers/i2c/i2c-adap-ibm_ocp.c linux-bluefish/drivers/i2c/i2c-adap-ibm_ocp.c
+--- linux-bluefish-old/drivers/i2c/i2c-adap-ibm_ocp.c	2002-09-19 16:08:30.000000000 +1000
++++ linux-bluefish/drivers/i2c/i2c-adap-ibm_ocp.c	2002-10-03 16:38:26.000000000 +1000
+@@ -239,7 +239,7 @@
+ }
+ #endif
+
+-static int __devinit ocp_iic_probe(struct ocp_device *pdev,const struct ocp_device_id *ent)
++static int __devinit ocp_iic_probe(struct ocp_device *pdev)
+ {
+
+ 	struct i2c_adapter *adap;
+diff -urN linux-bluefish-old/drivers/ide/ibm_ocp_ide.c linux-bluefish/drivers/ide/ibm_ocp_ide.c
+--- linux-bluefish-old/drivers/ide/ibm_ocp_ide.c	2002-09-19 16:08:31.000000000 +1000
++++ linux-bluefish/drivers/ide/ibm_ocp_ide.c	2002-10-03 16:38:46.000000000 +1000
+@@ -490,7 +490,7 @@
+ }
+ #endif
+
+-static int __devinit ocp_ide_probe(struct ocp_device *pdev,const struct ocp_device_id *ent)
++static int __devinit ocp_ide_probe(struct ocp_device *pdev)
+ {
+ 	int i;
+ 	unsigned int index;
+diff -urN linux-bluefish-old/drivers/ide/ocp_stbxxxxx.c linux-bluefish/drivers/ide/ocp_stbxxxxx.c
+--- linux-bluefish-old/drivers/ide/ocp_stbxxxxx.c	2002-09-19 16:08:31.000000000 +1000
++++ linux-bluefish/drivers/ide/ocp_stbxxxxx.c	2002-10-03 16:39:05.000000000 +1000
+@@ -523,7 +523,7 @@
+ }
+ #endif
+
+-static int __devinit ocp_ide_probe(struct ocp_device *pdev,const struct ocp_device_id *ent)
++static int __devinit ocp_ide_probe(struct ocp_device *pdev)
+ {
+ 	printk("IBM IDE driver version %s\n", IDEVR);
+
+diff -urN linux-bluefish-old/drivers/misc/ibm_ocp_gpio.c linux-bluefish/drivers/misc/ibm_ocp_gpio.c
+--- linux-bluefish-old/drivers/misc/ibm_ocp_gpio.c	2002-09-19 16:08:41.000000000 +1000
++++ linux-bluefish/drivers/misc/ibm_ocp_gpio.c	2002-10-03 16:39:17.000000000 +1000
+@@ -291,7 +291,7 @@
+ 	release:ocp_gpio_release,
+ };
+
+-static int __devinit ocp_gpio_probe(struct ocp_device *pdev,const struct ocp_device_id *ent)
++static int __devinit ocp_gpio_probe(struct ocp_device *pdev)
+ {
+
+ 	printk("IBM gpio driver version %s\n", VUFX);
+diff -urN linux-bluefish-old/drivers/net/ibm_ocp/ibm_ocp_enet.c linux-bluefish/drivers/net/ibm_ocp/ibm_ocp_enet.c
+--- linux-bluefish-old/drivers/net/ibm_ocp/ibm_ocp_enet.c	2002-09-26 12:14:09.000000000 +1000
++++ linux-bluefish/drivers/net/ibm_ocp/ibm_ocp_enet.c	2002-10-03 16:36:42.000000000 +1000
+@@ -523,8 +523,7 @@
+ 	.rxde = &ppc405_eth_rxde_dev,
+ };
+
+-static int __devinit ocp_emac_probe(struct ocp_device *pdev,
+-				    const struct ocp_device_id *ent)
++static int __devinit ocp_emac_probe(struct ocp_device *pdev)
+ {
+ 	int err = 0;
+ 	int i;
+diff -urN linux-bluefish-old/drivers/ocp/ocp-driver.c linux-bluefish/drivers/ocp/ocp-driver.c
+--- linux-bluefish-old/drivers/ocp/ocp-driver.c	2002-09-19 16:09:26.000000000 +1000
++++ linux-bluefish/drivers/ocp/ocp-driver.c	2002-10-03 16:42:13.000000000 +1000
+@@ -40,27 +40,6 @@
+  *  Registration of OCP drivers and handling of hot-pluggable devices.
+  */
+
+-/**
+- * ocp_match_device - Tell if a OCP device structure has a matching OCP device id structure
+- * @ids: array of OCP device id structures to search in
+- * @dev: the OCP device structure to match against
 - *
-- * BRIEF MODULE DESCRIPTION:
-- * Based on drivers/pci/proc.c, Copyright (c) 1997--1999 Martin Mares
-- *
-- * Author: Armin <akuster@mvista.com>
-- *
-- *
-- *  This program is free software; you can redistribute  it and/or modify it
-- *  under  the terms of  the GNU General  Public License as published by the
-- *  Free Software Foundation;  either version 2 of the  License, or (at your
-- *  option) any later version.
-- *
-- *  THIS  SOFTWARE  IS PROVIDED   ``AS  IS'' AND   ANY  EXPRESS OR IMPLIED
-- *  WARRANTIES,   INCLUDING, BUT NOT  LIMITED  TO, THE IMPLIED WARRANTIES OF
-- *  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN
-- *  NO  EVENT  SHALL   THE AUTHOR  BE    LIABLE FOR ANY   DIRECT, INDIRECT,
-- *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
-- *  NOT LIMITED   TO, PROCUREMENT OF  SUBSTITUTE GOODS  OR SERVICES; LOSS OF
-- *  USE, DATA,  OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-- *  ANY THEORY OF LIABILITY, WHETHER IN  CONTRACT, STRICT LIABILITY, OR TORT
-- *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
-- *  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-- *
-- *  You should have received a copy of the  GNU General Public License along
-- *  with this program; if not, write  to the Free Software Foundation, Inc.,
-- *  675 Mass Ave, Cambridge, MA 02139, USA.
-- *
-- *  Version 1.0 02/10/02 -Armin
-- *  	initial release
-- *
-- *  Version 1.1 02/13/02 - Armin
-- *   	Added emac support
-- *
-- *  Version 1.2 05/25/02 -Armin
-- *      struct name change from ocp_dev to ocp_dev
-- *
-- *  Version 1.3 05/30/02 - Armin
-- *    added ZMII to show funcs.
-- *
-- *  Version 1.4 06/14/02 - Armin/David Gidson
-- *  using OCP_IRQ_MUL for those devices that have
-- *  more than one irq .
-- *  cleaned the up display format
-- *  Added some cleanups from David Gibson
-- *
-- *  Version 1.5 06/28/02 - Armin
-- *  removed use/need of irq_*
-- *
+- * Used by a driver to check whether a OCP device present in the
+- * system is in its list of supported devices.Returns the matching
+- * ocp_device_id structure or %NULL if there is no match.
 - */
--
--#include <linux/types.h>
--#include <linux/kernel.h>
--#include <linux/proc_fs.h>
--#include <linux/init.h>
--#include <linux/seq_file.h>
--
--#include <asm/uaccess.h>
--#include <asm/byteorder.h>
--#include <asm/ocp.h>
--extern struct type_info ocp_type_info[];
--
--/* iterator */
--static void *
--ocp_seq_start(struct seq_file *m, loff_t * pos)
+-const struct ocp_device_id *
+-ocp_match_device(const struct ocp_device_id *ids, const struct ocp_device *dev)
 -{
--	struct list_head *p = &ocp_list;
--	loff_t n = *pos;
--
--	/* XXX: surely we need some locking for traversing the list? */
--	while (n--) {
--		p = p->next;
--		if (p == &ocp_list)
--			return NULL;
+-	while (ids->vendor || ids->device) {
+-		if ((ids->vendor == OCP_ANY_ID || ids->vendor == dev->vendor) &&
+-		    (ids->device == OCP_ANY_ID || ids->device == dev->device))
+-			return ids;
+-		ids++;
 -	}
--	return p;
--}
--static void *
--ocp_seq_next(struct seq_file *m, void *v, loff_t * pos)
--{
--	struct list_head *p = v;
--	(*pos)++;
--	return p->next != &ocp_list ? p->next : NULL;
--}
--static void
--ocp_seq_stop(struct seq_file *m, void *v)
--{
--	/* release whatever locks we need */
+-	return NULL;
 -}
 -
--static int
--show_device(struct seq_file *m, void *v)
--{
--	struct list_head *p = v;
--	int i;
--	const struct ocp_dev *drv;
+ static int
+ ocp_device_probe(struct device *dev)
+ {
+@@ -72,15 +51,8 @@
+ 	ocp_dev = to_ocp_dev(dev);
+
+ 	if (drv->probe) {
+-		const struct ocp_device_id *id;
 -
--	if (p == &ocp_list)
--		return 0;
--
--	drv = ocp_dev_g(p);
--	seq_printf(m, "%s\t %02d", drv->name, drv->num);
--	i = ocp_get_irq(drv->type, drv->num);
--	if (i == OCP_IRQ_NA)
--		seq_printf(m, " N/A");
--	else
--		seq_printf(m, " %02d", drv->irq);
--
--	seq_printf(m, " %x", drv->paddr);
--	if (drv->vaddr)
--		seq_printf(m, " %x", drv->vaddr);
--	else
--		seq_printf(m, " N/A");
--	seq_putc(m, '\n');
--	return 0;
--}
--
--/*
-- * Convert some of the configuration space registers of the device at
-- * address (bus,devfn) into a string (possibly several lines each).
-- * The configuration string is stored starting at buf[len].  If the
-- * string would exceed the size of the buffer (SIZE), 0 is returned.
-- */
--static int
--show_config(struct seq_file *m, void *v)
--{
--	struct list_head *p = v;
--	int i;
--	const struct ocp_dev *drv;
--	if (p == &ocp_list) {
--		seq_puts(m, "OCP devices found:\n");
--		return 0;
--	}
--	drv = ocp_dev_g(p);
--	seq_printf(m, " Device: %s%02d\n", drv->name, drv->num);
--	seq_printf(m, "  description: %s\n", ocp_type_info[drv->type].desc);
--	i = ocp_get_irq(drv->type, drv->num);
--	if (i == OCP_IRQ_NA)
--		seq_printf(m, "   irq: N/A\n");
--	 else
--		seq_printf(m, "   irq: %02d\n", drv->irq);
--
--
--	seq_printf(m, "   physical: 0x%p\n", drv->paddr);
--	if (drv->vaddr)
--		seq_printf(m, "   virtual: 0x%p\n\n", drv->vaddr);
--	else
--		seq_printf(m, "   virtual: N/A\n\n");
--	return 0;
--}
--static struct seq_operations proc_ocp_op = {
--	start:ocp_seq_start,
--	next:ocp_seq_next,
--	stop:ocp_seq_stop,
--	show:show_device
--};
--
--static struct seq_operations proc_bus_ocp_op = {
--	start:ocp_seq_start,
--	next:ocp_seq_next,
--	stop:ocp_seq_stop,
--	show:show_config
--};
--
--static int
--proc_ocp_open(struct inode *inode, struct file *file)
--{
--	return seq_open(file, &proc_ocp_op);
--}
--static struct file_operations proc_ocp_operations = {
--	open:proc_ocp_open,
--	read:seq_read,
--	llseek:seq_lseek,
--	release:seq_release,
--};
--
--static struct proc_dir_entry *proc_bus_ocp_dir;
--
--int
--ocp_proc_attach_device(struct ocp_dev *dev)
--{
--	struct proc_dir_entry *e;
--	char name[16];
--
--	sprintf(name, "%s%d", dev->name, dev->num);
--	e = dev->procent =
--	    create_proc_entry(name, S_IFREG | S_IRUGO | S_IWUSR,
--			      proc_bus_ocp_dir);
--	if (!e)
--		return -ENOMEM;
--	e->proc_fops = &proc_ocp_operations;
--	e->data = dev;
--	e->size = 256;
--	return 0;
--}
--
--int
--ocp_proc_detach_device(struct ocp_dev *dev)
--{
--	struct proc_dir_entry *e;
--
--	if ((e = dev->procent)) {
--		if (atomic_read(&e->count))
--			return -EBUSY;
--		remove_proc_entry(e->name, proc_bus_ocp_dir);
--		dev->procent = NULL;
--	}
--	return 0;
--}
--
--static int
--proc_bus_ocp_open(struct inode *inode, struct file *file)
--{
--	return seq_open(file, &proc_bus_ocp_op);
--}
--static struct file_operations proc_bus_ocp_operations = {
--	open:proc_bus_ocp_open,
--	read:seq_read,
--	llseek:seq_lseek,
--	release:seq_release,
--};
--
--static int __init
--ocp_proc_init(void)
--{
--	struct proc_dir_entry *entry;
--	proc_bus_ocp_dir = proc_mkdir("ocp", proc_bus);
--	entry = create_proc_entry("devices", 0, proc_bus_ocp_dir);
--	if (entry)
--		entry->proc_fops = &proc_bus_ocp_operations;
--	return 0;
--}
--
--__initcall(ocp_proc_init);
-diff -urN /home/dgibson/kernel/linuxppc-2.5/include/linux/ocp.h linux-bluefish/include/linux/ocp.h
---- /home/dgibson/kernel/linuxppc-2.5/include/linux/ocp.h	2002-09-20 14:36:11.000000000 +1000
-+++ linux-bluefish/include/linux/ocp.h	2002-10-03 16:10:40.000000000 +1000
-@@ -242,8 +242,6 @@
- extern struct ocp_bus *ocp_scan_bus(int bus, void *sysdata);
- extern struct bus_type ocp_bus_type;
- extern struct ocp_device *ocp_get_dev(unsigned int device, int index);
--extern int ocp_proc_attach_device(struct ocp_device *dev);
--extern int ocp_proc_detach_device(struct ocp_device *dev);
- extern unsigned int ocp_get_device(unsigned int index);
- extern unsigned long ocp_get_paddr(unsigned int device, int dev_num);
- extern unsigned int ocp_get_max(unsigned int device);
+-		id = ocp_match_device(drv->id_table, ocp_dev);
+-		DBG("MATCH device-vendor:%x device:%x\n", id->vendor,
+-		    id->device);
+-		if (id) {
+-			error = drv->probe(ocp_dev, id);
+-			DBG("probe return code %d\n", error);
+-		}
++		error = drv->probe(ocp_dev);
++		DBG("probe return code %d\n", error);
+ 		if (error >= 0) {
+ 			ocp_dev->driver = drv;
+ 			error = 0;
+@@ -220,7 +192,6 @@
+
+ postcore_initcall(ocp_driver_init);
+
+-EXPORT_SYMBOL(ocp_match_device);
+ EXPORT_SYMBOL(ocp_register_driver);
+ EXPORT_SYMBOL(ocp_unregister_driver);
+ EXPORT_SYMBOL(ocp_bus_type);
+diff -urN linux-bluefish-old/include/linux/ocp.h linux-bluefish/include/linux/ocp.h
+--- linux-bluefish-old/include/linux/ocp.h	2002-10-03 16:10:40.000000000 +1000
++++ linux-bluefish/include/linux/ocp.h	2002-10-03 16:36:32.000000000 +1000
+@@ -127,7 +127,7 @@
+ 	struct list_head node;
+ 	char *name;
+ 	const struct ocp_device_id *id_table;	/* NULL if wants all devices */
+-	int  (*probe)  (struct ocp_device *dev,const struct ocp_device_id *ent );	/* New device inserted */
++	int  (*probe)  (struct ocp_device *dev);	/* New device inserted */
+ 	void (*remove) (struct ocp_device *dev);	/* Device removed (NULL if not a hot-plug capable driver) */
+ 	int  (*save_state) (struct ocp_device *dev, u32 state);    /* Save Device Context */
+ 	int  (*suspend) (struct ocp_device *dev, u32 state);	/* Device suspended */
 
 
 --
