@@ -1,40 +1,28 @@
-Message-ID: <3A7853D6.5AE4CC71@iiic.ethz.ch>
-Date: Wed, 31 Jan 2001 19:05:10 +0100
+Message-ID: <3A7855C1.C667B03E@iiic.ethz.ch>
+Date: Wed, 31 Jan 2001 19:13:21 +0100
 From: Michel Dänzer <michdaen@iiic.ethz.ch>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: Stefan Jeglinski <jeglin@4pi.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: continuing XF402 (atimisc) problems
-References: <p04330102b69d64c82c08@[24.163.36.97]> <19341226073701.30276@mailhost.mipsys.com>
+To: Josh Kindler <josh@antihype.com>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Quick Question
+References: <B69CD9B5.23C9%josh@antihype.com>
 Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
+Josh Kindler wrote:
 >
-> >I've been over this on the -user list and the YDL list, and cc-ed Ani
-> >a few times with it (no response). No one seems to have a clue as to
-> >the cause of the problem, which is described concisely at:
-> >
-> ><http://lists.linuxppc.org/listarcs/linuxppc-user/200101/msg00672.html>
-> >
-> >(more detail available if necessary)
-> >
-> >This is on a 6500 (on-board RageII) with a RagePro PCI card. I have
-> >tried rolling my own XF402 build, with Ani's driver updates, and get
-> >the exact same XFree log result. I've also tried several of kfukui's
-> >402 rpms, including use of his "old drivers," again with exactly the
-> >same result.
->
-> Check that you have the correct fbdevhw module and that it's loaded in
-> your XF86Config file.
+> The LiVid GATOS project website (linuxvideo.org/gatos) says that there are
+> two versions of the Rage Mobility.
+> Can you tell me which one is in my Pismo Powerbook (2000 model).
 
-The atimisc driver should load fbdevhw if it needs it. Look at the r128 or
-glint, ... drivers on how to do it.
+michdaen@pismo:~> lspci |grep VGA
+00:10.0 VGA compatible controller: ATI Technologies Inc Mobility M3 AGP 2x
+(rev 02)
 
-Anyway, this whole fbdevhw mess will hopefully soon go away for a clean
-solution.
+
+This is the Rage128 based one.
 
 
 --
