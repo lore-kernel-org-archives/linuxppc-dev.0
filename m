@@ -1,38 +1,29 @@
-Date: Tue, 28 Dec 1999 16:54:38 -0800
-From: Geoff Keating <geoffk@cygnus.com>
-Message-Id: <199912290054.QAA13250@localhost.cygnus.com>
-To: dje@watson.ibm.com
-CC: eek@escape.ca, drow@false.org, linuxppc-dev@lists.linuxppc.org,
+Message-Id: <199912290101.UAA23618@mal-ach.watson.ibm.com>
+To: Geoff Keating <geoffk@cygnus.com>
+cc: eek@escape.ca, drow@false.org, linuxppc-dev@lists.linuxppc.org,
         libc-alpha@sourceware.cygnus.com
-In-reply-to: <199912290015.TAA24316@mal-ach.watson.ibm.com> (message from
-	David Edelsohn on Tue, 28 Dec 1999 19:15:59 -0500)
-Subject: Re: DB_THREAD support in Berkeley DB/glibc
-References: <199912290015.TAA24316@mal-ach.watson.ibm.com>
+Subject: Re: DB_THREAD support in Berkeley DB/glibc 
+In-Reply-To: Message from Geoff Keating <geoffk@cygnus.com>
+   of "Tue, 28 Dec 1999 16:54:38 PST." <199912290054.QAA13250@localhost.cygnus.com>
+Date: Tue, 28 Dec 1999 20:01:40 -0500
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Date: Tue, 28 Dec 1999 19:15:59 -0500
-> From: David Edelsohn <dje@watson.ibm.com>
+>>>>> Geoff Keating writes:
 
-You were right about sync being slower than isync.  I expect
-the difference is caused by sync needing to perform bus operations
-where isync does not.
+>> If you only are using the TSL_UNSET in the context that one
+>> already has the lock, then the lwarx/stwcx are unnecessary.  What you have
+>> written, however, is not a general atomic clear macro.
 
-Anyway, they're not substitutes for each other; they do different
-things, and in a given situation only one (or, possibly, both in
-sequence) will be right.
+Geoff> How is it not atomic?
 
-> 	If you only are using the TSL_UNSET in the context that one
-> already has the lock, then the lwarx/stwcx are unnecessary.  What you have
-> written, however, is not a general atomic clear macro.
+	If this thread is the only one that can clear the cell, I think
+that it is okay.  The store to acquire the lock also is atomic, but one
+cannot simply store the value.  If the programming model allows contention
+when clearing the word, one needs to use the lwarx/stwcx instructions.
 
-How is it not atomic?
-
-The PUM says "With the exception of double-precision floating-point
-accesses on 32-bit implementations, all aligned accesses are atomic."
-
--- 
-- Geoffrey Keating <geoffk@cygnus.com>
+David
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
