@@ -1,31 +1,30 @@
-Reply-To: <joakim.tjernlund@lumentis.se>
-From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: linuxppc_2_4 broken for 8xx arch's?
-Date: Mon, 3 Dec 2001 18:09:20 +0100
-Message-ID: <IGEFJKJNHJDCBKALBJLLAEDKFAAA.joakim.tjernlund@lumentis.se>
+Message-ID: <3C0BD4F1.DB6591F3@seranoa.com>
+Date: Mon, 03 Dec 2001 14:39:29 -0500
+From: Andrew Dixon <andrew.dixon@seranoa.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: ppclist <linuxppc-embedded@lists.linuxppc.org>
+Subject: programming ppcboot onto an sbc8260 with a vision ice
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have been trying to make the latest linuxppc_2_4 kernels to run on my
-custom ppc860 board for some time now, but it always fails with a
-Oops: kernel access of bad area, sig: 11 during the boot process.
+Hi All,
 
-One workaround is to replace printk.c with a printk.c from 2.4.2 and
-compile the kernel with -O1 instead of -O2. That way it boots but I get
-an Oops later when I copy files around in my JFFS2 FS.
+I'm trying to put ppcboot onto my sbc8260 board using a vision ice and I
+was wondering if there is a preferred way to do this?  I've compiled
+ppcboot on a native gcc-2.95 with the commands:
 
-I don't think I have a timing problem on my bus since I can run Monta Vistas
-kernel without Oops:es. I have tried to lower my bus frequency also
-but that does not help either.
+$make sbc8260_config
+$make
 
-Does the latest kernel work for all but me on 8xx(mpc860 to be exact)
-arch?
+and I get a binary file ppcboot.bin.  When I try to program the
+ppcboot.bin onto the flash it complains that the format is not
+recognized as mpc8260 code.
 
-        Jocke
+Any ideas on what I'm doing wrong?
+
+Thanks,
+Andy
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
