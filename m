@@ -1,42 +1,30 @@
-Message-ID: <3885E072.19105531@netx4.com>
-Date: Wed, 19 Jan 2000 11:04:02 -0500
+Message-ID: <3885EA14.920A68A0@netx4.com>
+Date: Wed, 19 Jan 2000 11:45:08 -0500
 From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: Alan Mimms <alan@packetengines.com>
-CC: Christer Weinigel <wingel@cendio.se>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: WARNING OFF TOPIC SLIGHTLY: 8xx MMU w/8MB pages
-References: <200001181828.TAA23940@dumburk.cendio.se> <3884B779.25C15918@netx4.com> <0001181114300A.00752@alan.corp.packetengines.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Embedded planet 860T CLLF HELP!
+References: <20000119040935.EB1AB1B2C8@elph.research.canon.com.au>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Alan Mimms wrote:
+I just placed the latest MPC860T FEC driver on ppc.kernel.org.
+This seems to work with the Embedded Planet CLLF.  It is a
+pretty bad hack, as the driver should really determine many
+of the things in #ifdef's dynamically.
 
+Another thing.  On the "back" side of the CLLF, at the edge
+near the four switch pack, you will find an unpopulated R08.
+Place a jumper wire across this, as it is the source of the
+PHY link change interrupt to the Port C pin.  Future CLLF boards
+will have this populated.
 
-> I would like to suggest that using one or two 512MB pages
-
-
-That isn't what I would do.  You can map the entire kernel
-instruction space with a single 8M entry.  You can map the
-entire static data space with another 8M entry.  You can
-map frequently used I/O with another 8M data entry.
-
-You have to move the VM map so dynamically allocated data
-doesn't overlap the 8M page.  You have to make sure dynamically
-loaded modules don't overlap the 8M instruction map.  Or, make
-sure they overlap entirely (either way is fine, just don't mix
-it up).  You can modify the ioremap() functions to operate more
-like they do on the processors with BATs.
-
-All of these are likely to be useful in most applications.  They
-don't require any Linux VM or TLB software changes.  All you
-need to change are some #define configuration vaules in a couple
-of VM/MMU header files and slightly change the MMU initialization.
-
-Maybe I'll do this later today.....I have been thinking about it
-long enough.
-
+And another thing.  This driver doesn't seem to work correctly
+on the 860P version of the boards.  I thought I found all 860P
+differences, but I guess I missed something.  I am working on it,
+and if you have one of these boards, please let me know.
 
 
 	-- Dan
