@@ -1,84 +1,61 @@
-Date: Tue, 20 Nov 2001 01:34:32 -0500 (EST)
-From: Bill Fink <billfink@mindspring.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Bill Fink <billfink@mindspring.com>,
-	Anton Blanchard <anton@samba.org>, <linuxppc-dev@lists.linuxppc.org>,
-	"David S. Miller" <davem@redhat.com>
-Subject: Re: GigE Performance Comparison of GMAC and SUNGEM Drivers
-In-Reply-To: <20011119125459.20923@smtp.adsl.oleane.com>
-Message-ID: <Pine.LNX.4.33.0111200110210.28304-100000@gwiz.nasa.atd.net>
+Date: Tue, 20 Nov 2001 10:19:10 +0100 (MET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Ivo Kwee <ivo@idsia.ch>
+Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: dmasound
+In-Reply-To: <83DAF59A.7000607@idsia.ch>
+Message-ID: <Pine.GSO.4.21.0111201015370.18779-100000@mullein.sonytel.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 19 Nov 2001, Benjamin Herrenschmidt wrote:
+	Hoi Ivo,
 
-> >> The GMAC driver had significantly better performance.  It sustained
-> >> 663 Mbps for the 60 second test period, and used 63 % of the CPU on
-> >> the transmitter and 64 % of the CPU on the receiver.  By comparison,
-> >> the SUNGEM driver only achieved 588 Mbps, and utilized 100 % of the
-> >> CPU on the transmitter and 86 % of the CPU on the receiver.  Thus,
-> >> the SUNGEM driver had an 11.3 % lower network performance while
-> >> using 58.7 % more CPU (and was in fact totally CPU saturated).
+> Ik weet niet of je nog aan de dma_sound driver werkt, maar ik zag je
+> naam als laatste. Ik ben een beetje aan het prutsen met /dev/dsp op een
+
+Dat is lang geleden...
+
+Iain Sandoe werkt er momenteel het hardste aan, geloof ik. Maar zijn adres heb
+ik hier niet.
+
+> PPC titanium en elke keer locks de computer volop na een
+> SND_DSP_SETFRAGMENT.  Ten eerst moet volgens my the sq_ioctl for the
+> case SND_DSP_SETFRAGMENT een return geven met de aktuele settings
+>          return IOCTL_OUT(arg, size | nbufs << 16);
+> ipv
+>          return IOCTL_OUT(arg,write_sq.bufSize | write_sq.numBufs << 16);
+> niet?
 >
-> This is weird and unexpected as GMAC will request interrupt for each
-> transmitted packet while sungem won't
->
-> However, I noticed that sungem is getting a lot of rxmac and txmac
-> interrupts, I'll investigate this a bit more.
->
-> (Could you check the difference of /proc/interrupts between a test
-> with gmac and a test with sungem ?)
+> De lockup gebeurt als ik SND_DSP_SETFRAGMENT roep na een open-device
+> O_RDWR of O_RDONLY. Ik heb gekeken naar ander code voor andere
+> geluidskaarten en die checken of the device in read of write mode staat;
+> de dmasound doet dat niet. Kennelijk wordt alleen write_sq
+> veronderstelt. Moet er ook een if-read stuk in? Of worden buffers niet
+> gebruikt in Recording(IN) mode?
 
-Hi Ben,
+Geen idee. Je vraagt dat best op de mailing list hieronder.
 
-OK.  Here's the GMAC test:
+> P.S.1 Waar moet ik normaal zulke vragen stellen ipv naar jou direkt?
 
- 60 second test:  4698.401 MB at 656.7557 Mbps (63 % TX, 63 % RX)
+linuxppc-dev@lists.linuxppc.org
 
- Transmitter before and after:
+> P.S.2 Werk je aan de Aibo?
 
- 41:        191   OpenPIC   Level     eth0
- 41:     476734   OpenPIC   Level     eth0
+Neen, dat is een ander team. Ik werk aan set top boxes.
 
- Receiver before and after:
+Gr{oetje,eeting}s,
 
- 41:        264   OpenPIC   Level     eth0
- 41:    1157318   OpenPIC   Level     eth0
+						Geert
 
-And here's the SUNGEM test:
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
- 60 second test:  4223.125 MB at 590.4346 Mbps (100 % TX, 87 % RX)
-
- Transmitter before and after:
-
- 41:        193   OpenPIC   Level     eth0
- 41:    4673225   OpenPIC   Level     eth0
-
- Receiver before and after:
-
- 41:        229   OpenPIC   Level     eth0
- 41:    3610859   OpenPIC   Level     eth0
-
-Taking the GMAC case, 4698.401 MB works out to 3284421 1500-byte MTU
-packets (not counting TCP/IP overhead), so it would appear that the
-GMAC driver is doing some type of interrupt coalescing and that the
-SUNGEM driver isn't.
-
-> Note that I just updated sungem in my rsync tree, it now has all of
-> the power management and ethtool/miitool support.
-> I plan to replace gmac with sungem completely, so it would be nice to
-> figure out where that problem comes from.
-
-I'd consider it much more than nice.  Since the whole point of GigE
-is better performance, taking such a huge peformance/CPU hit would
-be extremely bad.  OTOH, I probably won't be using the built-in GigE
-hardware anyway because of its apparent performance ceiling of about
-660 Mbps and its lack of jumbo frame support.
-
-						-Bill
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
