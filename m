@@ -1,35 +1,30 @@
-Message-ID: <2702075D4DE2B043BF5EB82E9CFAD45B093B04@mail1.mediatrix.com>
-From: Jean-Denis Boyer <jdboyer@mediatrix.com>
-To: "'Jim Lin'" <jimmlin@solomon.com.tw>
-Cc: linuppc <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Poor 8xx SCC Ethernet mode performence..
-Date: Wed, 17 Jul 2002 16:11:31 -0400
+Message-ID: <20020717212758.16528.qmail@web11505.mail.yahoo.com>
+Date: Wed, 17 Jul 2002 14:27:58 -0700 (PDT)
+From: Khai Trinh <kqtrinh@yahoo.com>
+Subject: inter-driver communication
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Jim,
+Hi folks,
 
-> 4. Due to custom board running in  NFS  envirment . It's cost
-> some throughput.. now I trying test it without NFS envirment.
->     If I got more  information  I will post again.
+Are there ways in the linux kernel that allows
+driver-driver communications (ie: one driver
+interrupts another driver in an embedded application)?
 
-Send your incoming file to /dev/null to eliminate the NFS cost.
-Example:
-  ftp> get bigfile /dev/null
+I have a driver that handles one device. When it is
+interrupted, I would like then to interrupt the other
+driver to handle the interrupt request?
 
-Then your measure with FTP will be more precise.
+Any suggestion is welcome and appreciated.
 
-Regards,
---------------------------------------------
- Jean-Denis Boyer, B.Eng., System Architect
- Mediatrix Telecom Inc.
- 4229 Garlock Street
- Sherbrooke (Quebec)
- J1L 2C8  CANADA
- (819)829-8749 x241
---------------------------------------------
+Thanks,
+--Khai
+
+Yahoo! Autos - Get free new car price quotes
+http://autos.yahoo.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
