@@ -1,76 +1,101 @@
-Date: Sun, 18 Jan 2004 13:14:07 +0100 (MET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Sven Luther <sven.luther@wanadoo.fr>
-Cc: Debian PowerPC List <debian-powerpc@lists.debian.org>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: 2.4.21-ben2 issues: RTC, Thermal and RTAS
-In-Reply-To: <20040113171606.GA13923@iliana>
-Message-ID: <Pine.GSO.4.58.0401181310240.2808@waterleaf.sonytel.be>
-References: <20030823171845.GA1963@dat.etsit.upm.es> <20031217011849.GA26643@iliana>
- <Pine.GSO.4.58.0312171042530.24864@waterleaf.sonytel.be> <20031217095241.GD2283@iliana>
- <Pine.GSO.4.58.0312171056030.24864@waterleaf.sonytel.be> <20031217100358.GA2655@iliana>
- <Pine.GSO.4.58.0312171112040.24864@waterleaf.sonytel.be> <20040113151230.GA12089@iliana>
- <Pine.GSO.4.58.0401131806560.9060@waterleaf.sonytel.be> <20040113171606.GA13923@iliana>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Sun, 18 Jan 2004 13:15:07 +0100
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Sven Luther <sven.luther@wanadoo.fr>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
+	Rob Baxter <robb@synergymicro.com>
+Subject: Re: multiple separate pci bridges ...
+Message-ID: <20040118121507.GB4603@iliana>
+References: <1073252724.780.5.camel@gaston> <20040104220608.GA1667@iliana> <20040105164038.GA16158@iliana> <1073338095.9497.70.camel@gaston> <20040105214239.GA20252@iliana> <1073340725.9497.105.camel@gaston> <20040106073955.GF735@iliana> <1073376024.26508.220.camel@gaston> <20040106081143.GA1644@iliana> <Pine.GSO.4.58.0401061533510.5752@waterleaf.sonytel.be>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <Pine.GSO.4.58.0401061533510.5752@waterleaf.sonytel.be>
+From: Sven Luther <sven.luther@wanadoo.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 13 Jan 2004, Sven Luther wrote:
-> On Tue, Jan 13, 2004 at 06:09:38PM +0100, Geert Uytterhoeven wrote:
-> > On Tue, 13 Jan 2004, Sven Luther wrote:
-> > > On Wed, Dec 17, 2003 at 11:13:58AM +0100, Geert Uytterhoeven wrote:
-> > > > On Wed, 17 Dec 2003, Sven Luther wrote:
-> > > > > On Wed, Dec 17, 2003 at 10:57:07AM +0100, Geert Uytterhoeven wrote:
-> > > > > > It uses the PC-style RTC driver (genrtc.o is not loaded).
-> > > > >
-> > > > > Mmm, what was your box again ? a chrp no ?
-> > > >
-> > > > Yep, CHRP LongTrail. It has a Winbond/Symphony Labs W83C553 SouthBridge.
-> > >
-> > > Could you tell me the content of your rtc OF node ? In particular i am
-> > > interested in the reg value (probably 70/71 in isa space or so), and of
-> > > the compatible stuff (i have ds1385-rtc).
-> >
-> > /proc/device-tree/pci/isa@1/rtc/ has:
-> >
-> > total 0
-> > -r--r--r--    1 root     root           11 Jan 13 18:06 compatible
-> > -r--r--r--    1 root     root            4 Jan 13 18:06 device_type
-> > -r--r--r--    1 root     root            4 Jan 13 18:06 linux,phandle
-> > -r--r--r--    1 root     root            4 Jan 13 18:06 name
-> > -r--r--r--    1 root     root           12 Jan 13 18:06 reg
-> >
-> > compatible:	pnpPNP,b00			(ASCII)
-> > device_type:	rtc				(ASCII)
-> > linux,phandle:	ff86 2aa4			(hexdump)
-> > name:		rtc				(ASCII)
-> > reg:		0000 0001 0000 0070 0000 0002	(hexdump)
+On Tue, Jan 06, 2004 at 03:40:30PM +0100, Geert Uytterhoeven wrote:
 >
-> Ok. So, this is almost the same as me, except i have a ds1385-rtc
-> compatible version, and some interrupt stuff.
+> On Tue, 6 Jan 2004, Sven Luther wrote:
+> > On Tue, Jan 06, 2004 at 07:00:24PM +1100, Benjamin Herrenschmidt wrote:
+> > > Type 0 is an access to the primary segment (doesn't contain a bus
+> > > number), type 1 is to be forwarded to another bus segment by a P2P
+> > > bridge. So for anything directly attached to the host bridge, it's a
+> > > type 0 access. Anything else is type 1. Typically, if the bus number of
+> > > your "target" == hose->first_busno, it's type 0, else type 1
+> >
+> > Yep, except we have two pci controllers, and it should be type 0 for
+> > both of them.
 >
-> Can you confirm that the GEN_RTC driver works for you ?
+> Yep, two hoses, with different hose->first_busno.
+>
+> > > They could have appeared as on-chip PCI devices on a "pseudo-bus", but
+> > > we can eventually just match with the host's PCI device.
+> >
+> > Ok. but this can also be faked or something ? But, how can we match with
+> > the host PCI device, if we are going to hide it ?
+>
+> Hide the memory BAR only, not the full PCI device.
 
-To my surprise, genrtc in 2.4.23 does not work on my LongTrail!
-The kernel crashes in init/do_mounts.c:mount_block_root() right after the call
-to sys_chdir(), because current->fs is a NULL pointer. Weird, and it doesn't
-really look genrtc-related, although the same source tree works fine if I
-disable genrtc and build in rtc.
+Ok, i have done this. I have followed the recomendations of the hardware
+guy, and did the following :
 
-I also tried 2.6.0, and there it works fine, both in the builtin and modular
-case: the kernel got the correct time, and hwclock works.
+  device 0, function 0 : read access to bytes 0-15, read returns 0 on
+  regs > 15. Write access fails silently.
 
-Gr{oetje,eeting}s,
+  device 0, function 1-7 : both read and writes fail with
+  PCIBIOS_DEVICE_NOT_FOUND.
 
-						Geert
+Additionnally, i have nullified the ressources with :
+	dev->resource[i].flags = 0;
+	dev->resource[i].start = 0;
+	dev->resource[i].end = 0;
+from the pcibios_fixup (not the right place, but i don't know where it
+should be done instead).
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+This allows me to see the host bridge on both buses, and radeonfb works
+fine :
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+$ lspci
+00:00.0 Host bridge: Galileo Technology Ltd.: Unknown device 6460 (rev 03)
+00:01.0 FireWire (IEEE 1394): VIA Technologies, Inc. IEEE 1394 Host Controller (rev 46)
+00:05.0 SCSI storage controller: LSI Logic / Symbios Logic 53c810 (rev 23)
+00:0c.0 ISA bridge: VIA Technologies, Inc. VT8231 [PCI-to-ISA Bridge] (rev 10)
+00:0c.1 IDE interface: VIA Technologies, Inc.  VT82C586A/B/VT82C686/A/B/VT8233/A/C/VT8235 PIPC Bus Master IDE (rev 06)
+00:0c.2 USB Controller: VIA Technologies, Inc. USB (rev 1e)
+00:0c.3 USB Controller: VIA Technologies, Inc. USB (rev 1e)
+00:0c.4 Non-VGA unclassified device: VIA Technologies, Inc. VT8235 ACPI (rev 10)
+00:0c.5 Multimedia audio controller: VIA Technologies, Inc. VT82C686 AC97 Audio Controller (rev 40)
+00:0c.6 Communication controller: VIA Technologies, Inc. Intel 537 [AC97 Modem] (rev 20)
+00:0d.0 Ethernet controller: VIA Technologies, Inc. VT6102 [Rhine-II] (rev 51)
+10:00.0 Host bridge: Galileo Technology Ltd.: Unknown device 6460 (rev 03)
+10:08.0 VGA compatible controller: ATI Technologies Inc: Unknown device 5964 (rev 01)
+
+But :
+
+$ hexdump /proc/bus/pci/10/00.0
+0000000 ab11 6064 0700 b022 0300 0006 2000 0000
+0000010 20df 85cf 20df 85cf 20df 85cf 20df 85cf
+*
+0000040
+
+Why in hell do i have 0x20df85cf on all four bars of the config space
+addresses 0x10 to 0x1f ?
+
+Finally, X works, altough DRI freezes after a second or two with my
+radeon 9200SE, while it works for a Radeon 7500, but this is probably a
+DRI issue.
+
+What makes me wonder, is that X needs around 20 seconds to launch, which
+could not be something normal. It usually takes 5-8 seconds only.
+Something strange is going on.
+
+Thanks for your help.
+
+Friendly,
+
+Sven Luther
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
