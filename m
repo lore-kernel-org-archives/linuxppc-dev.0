@@ -1,110 +1,26 @@
-Message-ID: <380D0B2A.5CAC6409@phx.mcd.mot.com>
-Date: Tue, 19 Oct 1999 17:22:02 -0700
-From: Dan Sheets <dans@phx.mcd.mot.com>
-MIME-Version: 1.0
+Message-Id: <199910200447.VAA21997@finagle>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: PREP IDE Fixes
-Content-Type: multipart/mixed;
- boundary="------------71F0F798CC9D27FBA01A1A57"
+Subject: video driver for PowerBook 3500
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Tue, 19 Oct 1999 21:47:45 -0700
+From: Jeff Woolsey <woolsey@jlw.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------71F0F798CC9D27FBA01A1A57
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-
-Greetings,
-
-Attached to this e-mail is a unified diff, against 2.2.12, to fix up IDE on
-Motorola PowerPlus boards. Specifically I've tested these fixes on MTX, MCP750
-and MCPN750. This has not been tried on any of the PowerStacks.
-
-Briefly, the fixes are in the following areas:
-
-Assigning the correct IRQ
-PIO timings for Winbond based boards
-Support for dual CompactFLASH devices on a single board
-Enabling of IDE on the Via PIB
-IDE Endian issues
-
-Regards
+Where does one find the video driver for this system?  With No
+Video Driver unchecked, anything I put after video= (be it chipsfb
+or guacamole) results in a solid purple screen right after displaying
+Tux and a couple bits of hardware info.  I'm running a 2.2.12 kernel
+from Benjamin Herrenschmidt with an interrupt-driven Ethernet (finally!),
+but I've always seen the problem, from 2.2.1 onwards, at least.
 
 -- 
-___________________________________________________________________
-Dan Sheets                          Motorola Computer Group
-Software Engineer, RTSS             2900 South Diablo Way, MD DW278
-dans@phx.mcd.mot.com                Tempe, AZ 85282
---------------71F0F798CC9D27FBA01A1A57
-Content-Type: encoding/x-gzip;
- name="idefix.udiff.gz"
-Content-Disposition: inline;
- filename="idefix.udiff.gz"
-Content-Transfer-Encoding: base64
-
-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
-o83/AAFT0TiKKwAA
---------------71F0F798CC9D27FBA01A1A57--
+Jeff Woolsey +1 408 487 7177 {woolsey,jlw}@{jlw,mri{,.mentor{,g}},microtec}.com
+"Tried working once.  Didn't work out.  Too much like work."  -Steed
+Why do wrong numbers leave messages in languages that I don't understand
+and are not present in my greeting???
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
