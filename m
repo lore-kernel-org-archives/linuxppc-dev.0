@@ -1,33 +1,39 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Takashi Oe <toe@unlserve.unl.edu>, <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: 2.4.0-test3
-Date: Tue, 11 Jul 2000 00:14:10 +0200
-Message-Id: <20000710221410.2067@192.168.1.10>
-In-Reply-To: 
- <Pine.LNX.3.96LJ1.1b7.1000710164335.14195C-100000@ofey.inetnebr.com>
-References: 
- <Pine.LNX.3.96LJ1.1b7.1000710164335.14195C-100000@ofey.inetnebr.com>
+Message-Id: <200007102217.AAA00852@piglet.grunz.lu>
+Date: Tue, 11 Jul 2000 00:17:25 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: Trying to enable backside on a G4
+To: bh40@calva.net
+cc: guillaume.laures@noos.fr, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20000709203437.29766@192.168.1.10>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hi all,
+
+On   9 Jul, this message from Benjamin Herrenschmidt echoed through cyberspace:
+>>I'm just unsure of the behaviour of :
+>>while test 1 = $((`cat /proc/sys/kernel/l2cr | awk -F : '{print
+>>$1}'`&0x00000001)); do wait; done
 >
->Why is pmac_backlight.c compiled in for CONFIG_ALL_PPC?  Isn't it
->PowerBook only thing?
+> I'd rather fix the kernel code. The set_L2CR function in the kernel is
+> supposed to already handle all that work of waiting for the cache,
+> invalidating, etc...
 
-Well, if you change that, then chipsfb.c, atyfb.c, aty128fb.c and via-
-pmu.c must be changed too. It's not completely powerbook only since, at
-term, this could driver also external LVDS LCD backlight.
+I fully agree. Just didn't have the time to do so.... there were always
+more important bugs to chase ;-)
 
->> Well, you can check disabling that (and the call that sets up this BAT in
->> head.S) but don't forget, if you do that, to also declare
->> bootx_text_mapped to 0 before leaving prom.c
->
->601's BAT doesn't have G bit.  Maybe that's the problem?
+Michel
 
-Maybe. I'll push a change without it and see
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
