@@ -1,12 +1,17 @@
-Return-Path: <linuxppcdev@qbjnet.com>
-Received: from kunk.qbjnet.com (ddsl1-28.ddsl.mr.net [137.192.135.28])
-	by ozlabs.org (Postfix) with SMTP id E8C3767A65
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Mar 2005 13:55:35 +1100 (EST)
-Date: 18 Mar 2005 02:55:29 -0000
-Message-ID: <20050318025529.553.qmail@kunk.qbjnet.com>
-From: linuxppcdev@qbjnet.com
-To: linuxppc-dev@ozlabs.org
-Subject: Re: DMA appears broken in 2.6.11 for Mac 7200
+Return-Path: <kumar.gala@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 0122B67A46
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Mar 2005 16:12:28 +1100 (EST)
+In-Reply-To: <20050317215852.GJ8345@smtp.west.cox.net>
+References: <20050317215852.GJ8345@smtp.west.cox.net>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Message-Id: <5aa169978e1eb58d1b61f211646a873b@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Thu, 17 Mar 2005 23:12:17 -0600
+To: "Tom Rini" <trini@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: building ppc_htab?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,33 +21,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ben Said:
-> On Mon, 2005-03-14 at 03:51 +0000, linuxppcdev@qbjnet.com wrote:
-> > Just updated a couple of old Mac 7200 (601) boxen and ran into trouble with
-> > the ide driver and a promise PDC20267 card. 
-> > 
-> > The very same drives and card work fine on a 9500 but hang on a 7200. If
-> > I set the kernel arg ide=nodma I get in the dmesg:
-> > ide_setup: ide=nodma : Prevented DMA
-> > and the 7200 boots and runs fine.
-> > 
-> > Another suspect, the mace ethernet driver (which also appears to use DMA)
-> > doesn't work on the 7200 with 2.6.11 but does with 2.4.28 and it works 
-> > with 2.6.11 on the 9500.
-> 
-> Interesting. Not sure what's up, though. Those old machines were known
-> to have bugs relative to cache coherency... also check wetehr we are
-> setting the cache line size properly in PCI devices. You can also try to
-> disable use of PCI memory write & invalidate command in all devices.
- 
-Did some more testing on this. Built a 2.4.30-pre1 kernel from bk source.
+> > Crap :(
+>  >
+> > > #ifdef CONFIG_PPC32
+> > >=A0=A0=A0=A0=A0=A0=A0=A0 {
+>  > >=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 extern struct =
+file_operations ppc_htab_operations;
+> > >=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 entry =3D =
+create_proc_entry("ppc_htab",=20
+> S_IRUGO|S_IWUSR,
+>  > > NULL);
+>  > >=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 if (entry)
+>  > >=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
+=A0 entry->proc_fops =3D &ppc_htab_operations;
+> > >=A0=A0=A0=A0=A0=A0=A0=A0 }
+>  > > #endif
+>  > >
+> > > Are you suggesting this should live elsewhere?=A0 I'm not that=20
+> familiar
+> > > with proc code.
+>  >
+> > Yes, it should live in ppc_htab.c.=A0 See the CONFIG_SYSCTL stuff=20
+> already
+>  > in ppc_htab.c for l2crvec.
+>
+> Der, that's not the same thing!=A0 I still swear there's a way to do =
+this
+>  w/o messing w/ fs/proc/proc_misc.c, but I don't recall a good =
+example.
 
-DMA works fine booting 2.4.30
+Will, for now I will add a conditional on CONFIG_PPC_STD_MMU.  We can=20
+move this out once we figure out how to do it outside of=20
+fs/proc/proc_misc.c.
 
-I compared the dmesg and lspci and I see no differences in the cache line
-size.
-
-Is it possible that the ppc 601 kernel fixes aren't getting done properly
-in 2.6??
-
-Bob
+- kumar
