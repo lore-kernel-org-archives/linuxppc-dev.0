@@ -1,43 +1,51 @@
-Message-Id: <200007200919.KAA12257@hyperion.valhalla.net>
-Date: Thu, 20 Jul 2000 10:19:54 +0100
-Subject: Re: problems about __cli() 
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Rolf Liu <rolfl@sc23.sc.mcel.mot.com>, linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Date: Thu, 20 Jul 2000 08:55:51 -0400
+From: Josh Huber <huber@mclx.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: problems about __cli()
+Message-ID: <20000720085551.B11770@mclx.com>
+References: <200007200919.KAA12257@hyperion.valhalla.net>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-md5;
+	protocol="application/pgp-signature"; boundary="K8nIJk4ghYZn606h"
+In-Reply-To: <200007200919.KAA12257@hyperion.valhalla.net>; from iain@sandoe.co.uk on Thu, Jul 20, 2000 at 10:19:54AM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Rolf,
+--K8nIJk4ghYZn606h
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
- Thu, Jul 20, 2000, Rolf Liu wrote:
-> I am currently compiling the kernel 2.2.13.
-> A problem occours, it said the "__cli() is not defined".
-> I wonder where the __cli() is defined in the kernel tree, which file is it
-> in ?
-> thanks a  lot.
+On Thu, Jul 20, 2000 at 10:19:54AM +0100, Iain Sandoe wrote:
+>=20
+[snip]
+>=20
+> It is *vital* to make sure that there is a symlink named 'linux' in /usr/=
+src
+> that points to your /usr/src/your-kernel-foo-bar/ because there are symli=
+nks
+> in /usr/include that expect to use this to find the build-specific header=
+s.
 
-(at 2.2.17preZZ - any reason for using 2.2.13?)
+A couple notes:
 
-Where "your-kernel-foo-bar" is the source tree you are working with:
+You don't have to put your kernel in /usr/src, and you DON'T have to
+symlink /usr/src/linux to it before you build.  The symlinks (on
+broken RedHat derivatives) in /usr/include should point to the kernel
+headers that your libc was built againt, otherwise you risk breaking
+binary compatibility.
 
-__cli() is defined in:
+--=20
+Josh
+6B21489A | GnuPG ID/Fingerprint | huber@mclx.com |
+61F0 6138 BE7B FEBF A223  E9D1 BFE1 2065 6B21 489A
 
-/usr/src/your-kernel-foo-bar/include/asm-ppc/system.h
+--K8nIJk4ghYZn606h
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
-asm-ppc is symlinked to /usr/src/your-kernel-foo-bar/include/asm by the
-build process.
 
-the function is implemented in:
-
-/usr/src/your-kernel-foo-bar/arch/ppc/kernel/misc.S
-
-It is *vital* to make sure that there is a symlink named 'linux' in /usr/src
-that points to your /usr/src/your-kernel-foo-bar/ because there are symlinks
-in /usr/include that expect to use this to find the build-specific headers.
-
-hope this helps,
-Iain.
+--K8nIJk4ghYZn606h--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
