@@ -1,58 +1,72 @@
-To: Owen Green <owenjinggreen@yahoo.com>
+To: priyadk@future.futsoft.com
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Remote Multithread debugging problems 
+Subject: Re: Rpxlite Booting 
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 20 Aug 2002 07:47:03 PDT."
-             <20020820144703.16442.qmail@web20107.mail.yahoo.com>
-Date: Tue, 20 Aug 2002 16:58:14 +0200
-Message-Id: <20020820145819.D051410DF8@denx.denx.de>
+In-reply-to: Your message of "Tue, 20 Aug 2002 19:37:53 +0530."
+             <000501c24852$fa3e4be0$1106140a@future.futsoft.com>
+Date: Tue, 20 Aug 2002 17:24:41 +0200
+Message-Id: <20020820152446.6F29D10DF8@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Owen,
-
-in message <20020820144703.16442.qmail@web20107.mail.yahoo.com> you wrote:
+In message <000501c24852$fa3e4be0$1106140a@future.futsoft.com> you wrote:
 >
-> I`m trying to debug a multi-threaded application using
-> gdbserver on the remote/target side and I`m having
-> some problems, the output I got is depicted below:
+>    I am trying to recompile the Hardhat kernel for Embedded Planet rpxlite
+> board and boot the target. But I have problems.
 
-I'm not surprised. This is broken in most versions of GDB / gdbserver
-floating around.
+... which are  probably  caused  by  not  reading  the  mailing  list
+archives and other documentation.
 
-> I`m using gdbserver5.2.1 (I tried the one from HHL-2.0
-> Journeyman and didn`t worked too) compiled by myself
-> using Mvista HHL 2.0 tools and gdb 5.2.1 on my i386.
-> Am I doing something wrong or remote thread debugging
-> is not supported by gdb? I have read something about
+>    1) Are there any specific options I need to set/change while compiling
+> the Hardhat kernel (with menuconfig or the compiler options)?
 
-Let's say the support is incomplete :-)
+I guess you mean the Linux kernel.
 
-> problems with multi-thread application debugging but I
-> thought that it may be OK at this time...
-> Could someone explain to me what`s happening?
+>       One of the compiler options is mcpu=860. The Rpxlite board is based on
+> MPC823e. Should the mcpu option be changed for it?
 
-Check out our ELDK  (see  http://www.denx.de/ELDK);  it  contains  an
-extended  /  bug  fixed  version  of  GDB  / gdbserver; remote target
-debugging of MT applications was one of the areas where we spend some
-work.
+No.
 
-If you're just looking for the patches: these can be found on our FTP
-server; the README including description of the test procedure is at
-ftp://ftp.denx.de/pub/ppc/patches/README-GDB-MT-Support
+ALl you need to do to get a working default configuration is:
 
-Hope this helps.
+	bash$ make mrproper
+	bash$ make rpxlite_config
+	bash$ make oldconfig
+	bash$ make dep
+	bash$ make pImage
+
+The last step assumes that you have PPCBoot enabled  kernel  sources;
+I'm  not  sure  what version of kernel tree you're using, so I cannot
+comment on this.
+
+>    2) What is the bfdformat of the image expected by the rpxlite board?
+
+This depends on the boot loader you use.
+
+> Should I build the kernel image in S record format?
+
+If your bootloader needs S-records, then yes.
+
+>    3) If so can I compress the image using gzip? Should the compression be
+> done before mkimage or after mkimage?
+
+Since you mention "mkimage" I assume you use PPCBoot as boot loader -
+and actually this is the only reason I reply at all.
+
+Why don't you just read the README that comes with PPCBoot?
+
+If there is anything in this README file which is  not  clear  please
+let me know, and I will try to improve it.
 
 Wolfgang Denk
 
 --
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-That's the thing about people who think  they  hate  computers.  What
-they really hate is lousy programmers.
-- Larry Niven and Jerry Pournelle in "Oath of Fealty"
+It all seemed, he thought, to be rather a lot of  trouble  to  go  to
+just sharpen a razor blade.  - Terry Pratchett, _The Light Fantastic_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
