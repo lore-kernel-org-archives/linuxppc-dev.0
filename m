@@ -1,125 +1,60 @@
 Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-Id: <200006210707.JAA01454@denx.local.net>
-To: Murray Jensen <Murray.Jensen@cmst.csiro.au>
-cc: Mike Coy <coym@embeddedplanet.com>,
-        Lucinda Schafer <lucsch@adaptivemicro.com>,
-        linuxppc-embedded@lists.linuxppc.org
-Subject: Re: PCMCIA ATA flash support? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-Type: multipart/mixed ;
-	boundary="==_Exmh_-21000115340"
-Date: Wed, 21 Jun 2000 09:07:43 +0200
+From: "Kwansuk Kim" <kskim@neowave.co.kr>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Where can I get gcc,binutil, etc for PPC on cygwin
+Date: Wed, 21 Jun 2000 16:11:44 +0900
+Message-ID: <NEBBKFENMLEDKDHMEHPJAELICAAA.kskim@neowave.co.kr>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="ks_c_5601-1987"
+In-Reply-To: <009101bfdb35$99d5ab90$5a01a8c0@blue>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is a multipart MIME message.
+Hmm...
 
---==_Exmh_-21000115340
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 21 Jun 2000 12:09:26 +1000."
-             <5824.961553366@msa.cmst.csiro.au>
-Content-Transfer-Encoding: 8bit
+I've already got GCC from GNU and cross developement kit from redhat, and so on.
 
-In message <5824.961553366@msa.cmst.csiro.au> Murray Jensen wrote:
+But they are all for linux host, not windows host.
+
+I tried to compile the sources on cygwin and djgpp, I fail. Because there are too many errors which did occured during compilation on Linux.
+
+I need compiler bin file for cygwin or djgpp host,
+or
+patch or how to compile cross compiler for powerpc operating on Windows.
+
+I even tried canadian crossing on linux, there were also many errors.
+
+
+-----Original Message-----
+From: sungyeon [mailto:sungyeon@cosmo.etri.re.kr]
+Sent: Wednesday, June 21, 2000 1:03 PM
+To: Kwansuk Kim; linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Where can I get gcc,binutil, etc for PPC on cygwin
+
+
+You can find out at..
+
+GCC: http://gcc.gnu.org
+binutils: http://www.gnu.org/gnulist/production/binutils.html
+
+
+----- Original Message -----
+From: "Kwansuk Kim" <kskim@neowave.co.kr>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Sent: Wednesday, June 21, 2000 12:17 PM
+Subject: Where can I get gcc,binutil, etc for PPC on cygwin
+
+
 >
-> They won't be - the backtrace prints the return (or link in ppc speak)
-> address i.e. the next instruction to be executed after a return from the
-> current function (or stack frame). Just sort your System.map file on the
-
-The System.map file  _is_ already sorted.
-
-> first column (hex address) and then look for the largest value in the
-> first column that is still less than the next address in the backtrace.
-> This gives you some idea of which function that address is within, and
-> how far in that function it is. A bit tedious but ok for a start.
-
-No need to do this by hand. See the attached script - just  give  the
-path  of  the  System.map  file  to  use  as  argument,  and feed the
-backtrace to stdin.
-
-> What would be better is to get kgdb working, then gdb will work all this
-
-I agree.
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Knowledge, sir, should be free to all!
-	-- Harry Mudd, "I, Mudd", stardate 4513.3
-
-
---==_Exmh_-21000115340
-Content-Type: text/plain ; name="backtrace"
-Content-Description: backtrace
-Content-Disposition: attachment; filename="backtrace"
-
-#!/usr/bin/perl -w
-
-my $mapfile = shift || '/LinuxPPC/usr/src/linux/System.map';
-
-print STDERR "Reading symbols from $mapfile\n";
-
-#
-# Read symbol table
-#
-open (MAP, $mapfile) or die "Can't open $mapfile: $!\n";
-
-my $cnt = 0;
-
-while (<MAP>) {
-	chomp;
-	my ($a,$t,$n) = split;
-	$a = eval ('0x' . $a);
-	if ($t =~ /^t$/i) {
-		$addr[$cnt] = $a;
-		$name[$cnt] = $n;
-		++$cnt;
-	}
-}
-close MAP;
-
-my ($i, $n, $last);
-
-#for ($i=0; $i<$cnt; ++$i) {
-#	printf "0x%08x  %s\n", $addr[$i], $name[$i];
-#}
-
-#
-# Now get backtrace info from stdin
-#
-
-while (<>) {
-	chomp;
-	my @a = split;
-	my $aa;
-
-	for ($i=0; $i<=$#a; ++$i) {
-		$aa = eval ('0x' . $a[$i]);
-
-		$last = -1;
-		for ($n=0; $n<$cnt; ++$n) {
-			if ($addr[$n] > $aa) {
-				last;
-			}
-			$last = $n;
-		}
-
-		if ($last >= 0) {
-			my $offset = $aa - $addr[$last];
-
-			printf "0x%08x -- 0x%08x + 0x%04x   %s\n",
-				$aa, $addr[$last], $offset, $name[$last];
-		} else {
-			printf "0x%08x -- unknown address\n", $aa;
-		}
-	}
-}
-
---==_Exmh_-21000115340--
-
+> Unfortunatly my BDM kit doesn't support Linux but Windows
+>
+> So I searched for cross compiler on cygwin or djgpp but I couldn't find it.
+>
+> Is there anyone using that compiler? Or how can I get them?
+>
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
