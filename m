@@ -1,48 +1,44 @@
-Message-ID: <3AB6A1C2.60802@brocade.com>
-Date: Mon, 19 Mar 2001 16:18:10 -0800
-From: Amit D Chaudhary <amitc@brocade.com>
+Message-ID: <3AB6ABF6.253DFF8D@intrex.net>
+Date: Mon, 19 Mar 2001 20:01:42 -0500
+From: Ralph Blach <rblach@intrex.net>
 MIME-Version: 1.0
-To: michael <dony.he@huawei.com.cn>
-Cc: Dan Malek <dan@mvista.com>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: shell prompt cannot appear after "Freeing unused kernel memory:..."
-References: <006401c0af6f$4d1c39e0$8021690a@huawei.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Brad Parker <brad@parker.boston.ma.us>, blythe@routefree.com,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: es1371.o sound module on a IBM405 gp walnut
+References: <200103191113.GAA58475@p2.parker.boston.ma.us>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Brad,
 
-Is your nfs rootfs correct? Check for /sbin/init, /etc/inittab, etc
+Well it was endian problems.  I ran an mp3 to wav conversion that sox
+recomended.  I then had to do a word swap on the 16 bit data and it
+sounded fine.  Is there anyway to tell the driver that the samples are
+byte reversed?
 
-Amit
+Chip
 
-michael wrote:
 
-> Hello:
->     I use ppcboot and can boot kernel with NFS filesystems on my custom
-> board now. But problem occurs ...
->    When it shows the following:
-> ####################################
->          ...........................
->         "VFS:Mounted root(nfs filesystem)".
->         Freeing unused kernel memory:44k init
-> ####################################
+Brad Parker wrote:
+
+> Ralph Blach wrote:
+> >Brad,
+> >
+> >I got the same results with mad play, but 16 bit sound sounds terrible
+> >Try using mpg123 and sox to convert
+> >to a wav file and then try it.  I think it has endian problems.
 >
-> At this moment I should have seen "sash#" ,but  nothing happens . I cannot
-> see anything.
+> thanks - I will.  I looked into that for a few minutes a few weeks ago
+> and didn't see anything obvious;  I'll take another look.
 >
-> I remember that there is a patch for this when I boot kernel on my 860 based
-> custom board last year(linux-2.2.13+860).
-> I don't know if this can work for my 8260 based custom board
-> now(linux-2.4.1+8260).
-> Can you help me?
->
-> Thank you very much.
->
-> michael
->
->
+> -brad
+
+--
+Ralph "Chip" Blach
+KF4WBK
+Chapel Hill, North Carolina
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
