@@ -1,43 +1,36 @@
-Message-Id: <20010920201330.Postino-024975@smtp01.highway.ne.jp>
-Date: Thu, 20 Sep 2001 20:13:30 +0900
-To: MATSUURA Takanori <t-matsuu@protein.osaka-u.ac.jp>
-Cc: linuxppc-dev@lists.linuxppc.org
-From: Kaoru Fukui <k_fukui@highway.ne.jp>
-Subject: Re: 2.4.10-pre12 sysrq.c compile error
-In-Reply-To: <20010920.201024.730567552.t-matsuu@protein.osaka-u.ac.jp>
-References: <200109200500.AAA17467@lists.linuxppc.org>
- <20010920.201024.730567552.t-matsuu@protein.osaka-u.ac.jp>
+Message-ID: <20010920143200.79354.qmail@web11002.mail.yahoo.com>
+Date: Thu, 20 Sep 2001 07:32:00 -0700 (PDT)
+From: Dan Bethe <dan_bethe@yahoo.com>
+Subject: Re: [Question] I want to use CSCOPE to port Linux kernel.
+To: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <200109201107.UAA15781@ldap.dacom.co.kr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-From: MATSUURA Takanori <t-matsuu@protein.osaka-u.ac.jp>
-To: linuxppc-dev@lists.linuxppc.org
+> I have already libncurses.so.5.2
+>
+> So I tried as below, but I had the same result.
+> ---------------------------------------------------
+> # ln -s libncurses.so.5.2 libncurses.so.4
+> # rpm -ivh cscope-15.3-1.i386.rpm
+> error: failed dependencies:
+>         libncurses.so.4 is needed by cscope-15.3-1
 
-> > of `wakeup_bdflush'
-> > make[3]: *** [sysrq.o] Error 1
-> > make[3]: Leaving directory `/usr/src/linuxppc_2_4/drivers/char'
-> > make[2]: *** [first_rule] Error 2
-> > make[2]: Leaving directory `/usr/src/linuxppc_2_4/drivers/char'
-> > make[1]: *** [_subdir_char] Error 2
-> > make[1]: Leaving directory `/usr/src/linuxppc_2_4/drivers'
-> > make: *** [_dir_drivers] Error 2
->
-> `wakeup_bdflush' was defines in two defrent files.
->
-> linuxppc_2_4_devel/drivers/char/sysrq.c (line: 35)
-> extern void wakeup_bdflush(int);
->
-> linuxppc_2_4_devel/include/linux/fs.h (line: 1347)
-> extern void wakeup_bdflush(void);
->
+	Hi there.  RPM's dependancies are based on its database, and not on the actual
+filesystem.  So the 'ln' wouldn't make any difference in this case.  Try this:
 
-if it's same extern , it's no problem.
-Different paramenter is no good.
+# rpm -ivh --nodeps cscope-15.3-1.i386.rpm
 
-Kaoru
+	That bypasses RPM's opinion of what is and should be installed, so you might
+always have to remember that as a one-off.
+
+=====
+Medium System Administrator and Junior I.T. Manager of 5 yrs
+ -- Now available -- Linux, MacOS, Unix-like systems
+    -- http://mmmgood.net -- dan_bethe@yahoo.com
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
