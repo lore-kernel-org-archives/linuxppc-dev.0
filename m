@@ -1,47 +1,74 @@
-Message-ID: <39682BD2.C34BE171@amulet.co.jp>
-Date: Sun, 09 Jul 2000 16:37:54 +0900
-From: Hollis Blanchard <hollis@amulet.co.jp>
+Date: Sun, 9 Jul 2000 01:09:49 -0700 (PDT)
+From: Forwarded SuSE Mail <suse@linux-ide.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: Michel Lanners <mlan@cpu.lu>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Crash in IDE code
+In-Reply-To: <Pine.LNX.4.10.10007081406230.833-100000@cassiopeia.home>
+Message-ID: <Pine.LNX.4.10.10007090108570.2423-200000@master.linux-ide.org>
 MIME-Version: 1.0
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-CC: yellowdog-devel@lists.yellowdoglinux.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: RFC: Changing default partition type for linux/ppc
-References: <Pine.LNX.4.10.10007071754400.28685-100000@opal.biophys.uni-duesseldorf.de>
-Content-Type: text/plain; charset=iso-2022-jp
+Content-Type: multipart/mixed; BOUNDARY="-1019260510-1237063275-963130189=:2423"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michael Schmitz wrote:
->
-> >
-> > Well, they don't at this point. For example in partitioning tool in
-> > LinuxPPC 2000, LinuxPPC Inc decided it would be better to use the type
-> > "Linux_PPC". This works (in that nothing gets overwritten, corrupted,
-> > etc) but has the disadvantage that no other software knows anything
-> > about that type.
->
-> So can we get all distributions to agree on this partition type scheme?
-[snip]
-> LinuxPPC 1999 used the same type, and I think the 2000 change is a bad
-> thing. What are YellowDog and SuSE using?
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+  Send mail to mime@docserver.cac.washington.edu for more info.
 
-I agree. So far the Linux "standard" has been to pretend to be A/UX
-partitions. To my knowledge, every distribution with the exception of
-LinuxPPC 2000 uses Apple_UNIX_SVR2. (And I'm not sure that alteration
-was especially well thought out.)
-
-> Benh: are you maintaining the official version of pdisk now?
-
-That would be Eryk Vershen <eryk@cfcl.com>, who recently resurfaced in
-February
-(http://lists.linuxppc.org/listarcs/linuxppc-user/200002/msg01471.html).
+---1019260510-1237063275-963130189=:2423
+Content-Type: text/plain; charset=us-ascii
 
 
+Apply this against any 2.4.0-test3 and it should go.
 
-So now that the conversation's died down, it seems like everybody's
-happy with "Linux" (Mark Hatle's suggestion was for "Linux_*") and
-"Linux_swap".
+If this fails then holler.
 
--Hollis
+Cheers,
+
+Andre Hedrick
+The Linux ATA/IDE guy
+
+
+---1019260510-1237063275-963130189=:2423
+Content-Type: text/plain; charset=us-ascii; name="altstatus.diff"
+Content-ID: <Pine.LNX.4.10.10007090109490.2423@master.linux-ide.org>
+Content-Description: 
+Content-Disposition: attachment; filename="altstatus.diff"
+Content-Transfer-Encoding: base64
+
+ZGlmZiAtdXJOIGxpbnV4LTIuNC4wLXQzLTYvZHJpdmVycy9pZGUvaWRlLmMg
+bGludXgtMi40LjAtdDMtNi4xL2RyaXZlcnMvaWRlL2lkZS5jDQotLS0gbGlu
+dXgtMi40LjAtdDMtNi9kcml2ZXJzL2lkZS9pZGUuYwlTYXQgSnVsICA4IDAy
+OjAxOjE4IDIwMDANCisrKyBsaW51eC0yLjQuMC10My02LjEvZHJpdmVycy9p
+ZGUvaWRlLmMJU2F0IEp1bCAgOCAyMjo0MjowOSAyMDAwDQpAQCAtNDgxLDEz
+ICs0ODEsMTkgQEANCiAgKi8NCiBzdGF0aWMgaW5saW5lIGludCBkcml2ZV9p
+c19yZWFkeSAoaWRlX2RyaXZlX3QgKmRyaXZlKQ0KIHsNCisJYnl0ZSBzdGF0
+ID0gMDsNCiAJaWYgKGRyaXZlLT53YWl0aW5nX2Zvcl9kbWEpDQogCQlyZXR1
+cm4gSFdJRihkcml2ZSktPmRtYXByb2MoaWRlX2RtYV90ZXN0X2lycSwgZHJp
+dmUpOw0KICNpZiAwDQogCXVkZWxheSgxKTsJLyogbmVlZCB0byBndWFyYW50
+ZWUgNDAwbnMgc2luY2UgbGFzdCBjb21tYW5kIHdhcyBpc3N1ZWQgKi8NCiAj
+ZW5kaWYNCi0vLwlpZiAoR0VUX1NUQVQoKSAmIEJVU1lfU1RBVCkJLyogTm90
+ZTogdGhpcyBtYXkgY2xlYXIgYSBwZW5kaW5nIElSUSEhICovDQotCWlmIChJ
+Tl9CWVRFKElERV9BTFRTVEFUVVNfUkVHKSAmIEJVU1lfU1RBVCkNCisNCisJ
+aWYgKElERV9DT05UUk9MX1JFRykNCisJCXN0YXQgPSBHRVRfQUxUU1RBVCgp
+Ow0KKwllbHNlDQorCQlzdGF0ID0gR0VUX1NUQVQoKTsJLyogTm90ZTogdGhp
+cyBtYXkgY2xlYXIgYSBwZW5kaW5nIElSUSEhICovDQorDQorCWlmIChzdGF0
+ICYgQlVTWV9TVEFUKQ0KIAkJcmV0dXJuIDA7CS8qIGRyaXZlIGJ1c3k6ICBk
+ZWZpbml0ZWx5IG5vdCBpbnRlcnJ1cHRpbmcgKi8NCiAJcmV0dXJuIDE7CQkv
+KiBkcml2ZSByZWFkeTogKm1pZ2h0KiBiZSBpbnRlcnJ1cHRpbmcgKi8NCiB9
+DQpkaWZmIC11ck4gbGludXgtMi40LjAtdDMtNi9pbmNsdWRlL2xpbnV4L2lk
+ZS5oIGxpbnV4LTIuNC4wLXQzLTYuMS9pbmNsdWRlL2xpbnV4L2lkZS5oDQot
+LS0gbGludXgtMi40LjAtdDMtNi9pbmNsdWRlL2xpbnV4L2lkZS5oCVNhdCBK
+dWwgIDggMDI6MDE6MjkgMjAwMA0KKysrIGxpbnV4LTIuNC4wLXQzLTYuMS9p
+bmNsdWRlL2xpbnV4L2lkZS5oCVNhdCBKdWwgIDggMjI6NTM6MDQgMjAwMA0K
+QEAgLTE2Miw2ICsxNjIsNyBAQA0KIA0KICNkZWZpbmUgR0VUX0VSUigpCQlJ
+Tl9CWVRFKElERV9FUlJPUl9SRUcpDQogI2RlZmluZSBHRVRfU1RBVCgpCQlJ
+Tl9CWVRFKElERV9TVEFUVVNfUkVHKQ0KKyNkZWZpbmUgR0VUX0FMVFNUQVQo
+KQkJSU5fQllURShJREVfQ09OVFJPTF9SRUcpDQogI2RlZmluZSBPS19TVEFU
+KHN0YXQsZ29vZCxiYWQpCSgoKHN0YXQpJigoZ29vZCl8KGJhZCkpKT09KGdv
+b2QpKQ0KICNkZWZpbmUgQkFEX1JfU1RBVAkJKEJVU1lfU1RBVCAgIHwgRVJS
+X1NUQVQpDQogI2RlZmluZSBCQURfV19TVEFUCQkoQkFEX1JfU1RBVCAgfCBX
+UkVSUl9TVEFUKQ0K
+---1019260510-1237063275-963130189=:2423--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
