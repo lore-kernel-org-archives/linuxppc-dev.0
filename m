@@ -1,25 +1,35 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3CD2255B.330FA4E4@ardistech.com>
-Date: Fri, 03 May 2002 07:51:23 +0200
-From: "bart@ardistech.com" <bart@ardistech.com>
-Reply-To: bart@ardistech.com
+Message-ID: <014801c1f26b$d713dc30$1a11efcb@industrialDiv.hanasys.co.kr>
+Reply-To: "Sangmoon Kim" <dogoil@etinsys.com>
+From: "Sangmoon Kim" <dogoil@etinsys.com>
+To: =?ks_c_5601-1987?B?wPzH/b+1?= <hychon@corebell.co.kr>,
+	"linuxppc_mailing" <linuxppc-embedded@lists.linuxppc.org>
+References: <003a01c1f23d$37cad0d0$3200a8c0@genetelhychon>
+Subject: Re: can you terll me how to find  sources 
+Date: Fri, 3 May 2002 15:29:12 +0900
 MIME-Version: 1.0
-To: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
-Cc: dmalek@jlc.net
-Subject: MP8xx: not initialized CPM RAM crash
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="ks_c_5601-1987"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Hi,
 
-I found in ./drivers/i2c/i2c-rpx.c in rpx_iic_init the structure member
-ii->iic_rpbase != 0. Very likely because ppcboot uses this area as initial
-stack. This causes the kernel to get a machine check during i2c init. Should
-the CPM RAM not be zero'd somewhere during kernel boot?
 
-Regards,
-	Bart
+> checking  whetehr setvbuf argument are reserved... configure: error cannot
+> run test program while cross compiling
+>
+> I think it was correct!
+> what's problem?? I'm not understanding.
+> help me?
+
+It seams I responded your message before. At that time I didn't think bash can be crosscompiled.  But according to the David Muller's message, responding to your mail or perhaps mine, I was wrong.  His patch against bash-2.05a was nice. I could crosscompile bash with the patch. Sorry for the wrong information.
+
+> Could you tell me how to find  sources and  how to correct compiling ??
+>
+You don't like the Wolfgang Denk's SELF, I recommended before, don't you? The sources you are finding so eargerly may be all here... ftp://ftp.linuxfromscratch.org/lfs-packages/3.3/
+
+Good luck!
+- Sangmoon Kim -
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
