@@ -1,30 +1,32 @@
-Message-Id: <200404201305.IAA27777@lists.linuxppc.org>
-Date: Tue, 20 Apr 2004 21:03:48 +0800
-From: "leo" <leo_guo@jisung.cn>
-To: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: DOC2000 unstable problem!!!
-Mime-Version: 1.0
-Content-Type: text/plain
+Date: Tue, 20 Apr 2004 18:48:24 +0200 (CEST)
+From: Marius Groeger <mgroeger@sysgo.com>
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: atyfb Framebuffer driver
+Message-ID: <Pine.LNX.4.56.0404201842490.20260@mag.sysgo.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
-I am porting linux to my MPC852 board, and linux now can runs ok, but it
-seems that the DOC2000 is unstable! My system config as follows:
+Hi All,
 
-MCU: MPC852T 80M
-SDRAM: 32MB
-FLASH: 2MB
-DOC2000: 32MB
+does anyone know about the state of the atyfb_base.c driver in 2.4.25
+on kernel.org? I'm trying to use it on a Keenya (Tanzania 4400 Board)
+but it seems to generate strange sync signals my TFT display can't
+catch. Tried almost all video=atyfb:vmode:.. configurations to no
+avail. BTW, the OFFB driver doesn't seem to work either.
 
-I make a EXT2 file system on DOC2000, but sometimes, turn off the
-board's power when linux is running, and then turn on the power, the
-linux can't mount the root filesystem!
+Any clue from the masters? Any hints appreciated!
 
-Could you give me some advices? And I want know between the NAND flash
-and DOC, which is the better selection?
+Regards,
+Marius
 
-BRs!
+--
+Marius Groeger <mgroeger@sysgo.com>           Project Manager
+SYSGO AG                      Embedded and Real-Time Software
+Voice: +49 6136 9948 0                  FAX: +49 6136 9948 10
+www.sysgo.com | www.elinos.com | www.osek.de | www.imerva.com
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
