@@ -1,41 +1,36 @@
-Message-Id: <v03010d0cb43a9d52cd3e@[192.168.1.16]>
-In-Reply-To: 
- <Pine.LNX.4.10.9910251916060.5902-100000@modemcable220.93-200-24.mtl.mc.vi
- deotron.net>
-References: <199910252231.PAA08775@sade.ddi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Mon, 25 Oct 1999 16:53:52 -0700
-To: linuxppc-dev@lists.linuxppc.org
-From: Rob Barris <rbarris@quicksilver.com>
+Date: Mon, 25 Oct 1999 23:42:38 -0500 (CDT)
+From: Kumar Gala <kumar@chaos.ph.utexas.edu>
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: question about altivec registers
+In-Reply-To: <199910252051.NAA07105@sade.ddi.com>
+Message-ID: <Pine.LNX.4.10.9910252336320.2381-100000@chaos.ph.utexas.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->The flag is to actually tell the kernel that your application is using
->the Altivec registers, so that it can save time by not saving and
->restoring them when the interrupted or swapped application is not using
->them. It is supposed to be dynamic so only routines actually using Altivec
->should set (and clear) it. I am not sure of the details so look into the
->manual for the hardware support. I think the kernel should enforce the
->use of this flag since moving the full Altivec register set is time
->consuming (16 bytes X 32 registers = 1/2 KB).
+The linux kernel as is will not effect the AltiVec registers in any way.
+However, there is a minor change to the kernel that will be required.  You
+will need to enable the MSR VEC bit (bit 6 in the MSR) to tell the
+processor that the AltiVec Unit is available (this is similar to the MSR
+FP bit).  If the bit is not set the processor will generate an AltIVec
+Unavailable exception which will be trapped (incorrectly) as an unknown
+0xf00 exception
 
-   I worked this out once, the extra 512 bytes of register context,
-multiplied by (say) a thousand context switches per second only add up to
-about a MB of memory traffic per second - a fraction of a percent of the
-available memory bandwidth in a G4 machine.  Most of that will sit in cache
-anyway depending on the working set size of the processes involved.
+the 0xf00 exception is for the performance monitors
+and 0xf20 in the AltiVec unavailable exception.
 
-   Wiggling the mouse probably causes more memory traffic than that (code
-fetches and ISR handling).
+All if these details are documented in the AltiVec Programming Environ
+Manual (available from the Motorola Website).  
 
-   And this is with a very high hypothetical context switch rate which I
-suspect may never be seen in real life use.
+If you need any help getting a simple kernel up and running for running
+single altiVec enabled processes let me know.
 
---
-Rob Barris       Quicksilver Software Inc.      rbarris@quicksilver.com
+- kumar gala
+
+
+ignorance is bliss.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
