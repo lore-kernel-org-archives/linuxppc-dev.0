@@ -1,38 +1,40 @@
-Message-ID: <38172075.EC2839C2@netx4.com>
-Date: Wed, 27 Oct 1999 11:55:33 -0400
-From: Dan Malek <dan@netx4.com>
+Date: Wed, 27 Oct 1999 18:05:01 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Gabriel Paubert <paubert@iram.es>
+cc: Adrian Cox <apc@agelectronics.co.uk>,
+        Kumar Gala <kumar@chaos.ph.utexas.edu>, Jim Terman <terman@ddi.com>,
+        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: question about altivec registers
+In-Reply-To: <Pine.HPX.4.10.9910271432490.18743-100000@gra-ux1.iram.es>
+Message-ID: <Pine.LNX.4.05.9910271803570.6037-100000@callisto.of.borg>
 MIME-Version: 1.0
-To: wung_y@263.net
-CC: linux-ppc <linuxppc-dev@lists.linuxppc.org>,
-        linuxppc embedded mail list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: What's MMU context?
-References: <3816E6FD.481FA27D@263.net>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Wang Yong wrote:
+On Wed, 27 Oct 1999, Gabriel Paubert wrote:
+> On Wed, 27 Oct 1999, Adrian Cox wrote:
+> > As for the cache thrashing effect, remember that 512 bytes going in and
+> > out of the L2 cache is not very expensive, and that there is probably 1
+> > or 2MB of L2 fitted.
 > 
-> as the source code of linuxPPC, there is a global variable named
-> next_mmu_context which is increased by one at each time of create a new
-> process. what does this mean and what is mmu context?
+> My feeling is that it is unlikely that the code is in the L1 cache, this
+> code is not a tight loop which is executed 1000 times in a row, and it is
+> probably saturating L2 cache bandwidth. If you need 8 bytes of code and 16
+> bytes of data for each register save/load on average, it's 3 L2 data beats
+> or 6 clocks in the most common scenario (L2 at 1/2 core frequency).
 
+I wasn't primarily concerned about code taking space in the L1 cache, but the
+saved Altived registers pushing out valuable data of the L1 cache on each save.
 
-I intened to use it on the 8xx processors, as they have an address
-space id that allows a TLB optimization so you don't have to
-invalidate the entire TLB on context switches.  I assume the
-MIPS folks use it as well, since that is where I first used
-such an optimization (in an OS other than Linux).  Unfortunately,
-the ratio of entries to ASIDs is wrong for my original MIPS-like
-algorithm to work, and I never got around to writing something
-new.
+Gr{oetje,eeting}s,
+--
+Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
 
-This was already part of the Linux/PPC port when I started the 8xx
-work, and I don't know if other processors use it or if it was
-just part of the generic port that was maintained.
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
-
-	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
