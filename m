@@ -1,38 +1,25 @@
-Message-ID: <006c01bffb67$fe4e2280$c2080b0a@huawei.com.cn>
-From: "ligl" <sahala@sz.huawei.com.cn>
-To: "Gabriel Paubert" <paubert@iram.es>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <Pine.HPX.4.10.10007311503090.9070-100000@gra-ux1.iram.es>
-Subject: Re: Where do head.S initialize UART?
-Date: Tue, 1 Aug 2000 11:24:25 +0800
+Message-ID: <39864DEA.9A9B89C6@embeddededge.com>
+Date: Tue, 01 Aug 2000 00:11:22 -0400
+From: Dan Malek <dan@netx4.com>
+MIME-Version: 1.0
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Embedded and 2.4.0-test5
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-initialize the UART at arch/ppc/8xx_io/uart.c
-    rs_8xx_init()
+I just pushed the latest version of the 8260 FCC Ethernet driver.
+The MII/MDIO for PHY control status is not complete and is very
+board specific.  I am testing the funky MDIO pulse for interrupt,
+which people claim will work.....we'll see.
 
->
-> On Mon, 31 Jul 2000, Pei-Jie Hong wrote:
->
-> >
-> > I am porting Linux to a PowerPC VME board. I am now tracing head.S. Can
-> > anyone
-> > tell me where do head.S start to initialize the UART? Thanks.
->
-> It does not, the UART basic setup should be done by the Firmware or
-> perhaps by the initial bootloader. But otherwise it is postponed until
-> the console is initialized.
->
-> Regards,
-> Gabriel.
->
->
-> P.S: which VME board ? (I have a few Motorola's ones around 2400, and
-> 2600)
->
->
->
+I found trouble with the inclusion of the drivers/macintosh
+directory that is automatically included with CONFIG_PPC.  I had
+to remove this from the Makefiles, and I am now working with the
+workstation folks to find a solution.
 
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
