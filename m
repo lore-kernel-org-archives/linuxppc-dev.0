@@ -1,39 +1,50 @@
-Date: Wed, 9 Aug 2000 23:27:06 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-cc: Josh Huber <huber@mclx.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: [Dri-devel] Re: Kind of success! (r128 on PPC (Re: LinuxPPC X
- Server))
-In-Reply-To: <Pine.LNX.4.10.10008092219190.21827-100000@opal.biophys.uni-duesseldorf.de>
-Message-ID: <Pine.LNX.4.10.10008092326510.416-100000@cassiopeia.home>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: dmasound - kernel panic
+From: Jiri Masik <masik@pc203b.fzu.cz>
+Date: 10 Aug 2000 00:02:03 +0200
+Message-ID: <4vu2cu9jqc.fsf@darbujan.fzu.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 9 Aug 2000, Michael Schmitz wrote:
-> > > Both the fbdev and ati driver use the fbdvhw functions to do mode init and
-> > > the like. So it seems the bug is in the kernel driver (sorry Geert).
-> >
-> > I don't see how it can be in the kernel driver, if running 3.3.6 XF68FB_Dev
-> > changes the contents of the DSP registers.
->
-> Which doesn't use any fbdev IOCTLs to do mode init (via setting the var
-> screeninfo), I gather?
+Hi,
 
-It's the _fbdev_ server, so it does use the ioctl()s.
+I'm testing the new dmasound_awacs patches snd-2.2.17p15-b1-s2.p.bz2
+with the rsync pmac-benh kernel as of today.
+Linux version 2.2.17pre15-ben1 (root@pbuk) (gcc version 2.95.2
+20000220 (Debian GNU/Linux)) #10 Wed Aug 9 11:36:18 CEST 2000
 
-Gr{oetje,eeting}s,
+I have a Pismo powerbook and the chip is reported as follows
+DMA sound driver core [Ed 18] [4 buffers of 32k for output]
+............................. [4 buffers of 32k for  input]
+DMA sound driver core called by PowerMac (AWACS rev 3 [screamer])
 
-						Geert
+PowerMac (AWACS rev 3 [screamer]) DMA sound driver:
+  sound.format = 0x20 (signed 16 bit big)(Phys:  signed 16 bit big)
+  sound.speed = 44100Hz (phys. 44100Hz)
+  sound.stereo = 0x1 (stereo)
+  write_sq.block_size = 256 write_sq.max_count = 4 write_sq.max_active = 4
+  write_sq.count = 4 write_sq.rear_size = 256
+  write_sq.active = 2 write_sq.syncing = 0
+  read_sq.block_size = 0 read_sq.max_count = 0 read_sq.max_active = 0
+  read_sq.count = 0 read_sq.rear_size = 0
+  read_sq.active = 0 read_sq.syncing = 0
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+The audio playback is working fine for mpg123, both headphones and
+internal speakers. I'd like to record sounds from the built-in mic and
+I've found that I can crash the kernel by cat /dev/audio. This is the
+message I'm getting immediately
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+kernel access of bad area pc 0 lr c8822220c address 0 tsk 398
+
+I've put the ksyms to http://darbujan.fzu.cz/~masik/ksymoops/
+I'm not familiar with the kernel debugging please let me know if the
+information is incomplete.
+thanks,
+
+	Jiri
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
