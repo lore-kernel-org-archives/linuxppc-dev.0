@@ -1,48 +1,50 @@
-Message-ID: <3A5BB3F4.A9096E29@erols.com>
-Date: Tue, 09 Jan 2001 19:59:32 -0500
-From: Nelson Abramson <pogtal@erols.com>
+Date: Wed, 10 Jan 2001 02:09:28 +0100 (MET)
+From: Derek Homeier <supas100@astrophysik.uni-kiel.de>
+To: Iain Sandoe <iain@sandoe.co.uk>
+cc: Linux PPC Developer Mailing List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: status of ppc support in official 2.4.0 or Alan's 2.4.0-ac1
+In-Reply-To: <20010109235443.8FE65DBA32@atlas.valhalla.net>
+Message-ID: <Pine.SOL.3.95.1010110020032.19163B-100000@juliet>
 MIME-Version: 1.0
-To: Chris Boot <bootc@worldnet.fr>
-CC: LinuxPPC Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: /proc/sys/net/ipv4/ip_always_defrag
-References: <B6813150.8234%bootc@worldnet.fr>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Chris Boot wrote:
+On Tue, 9 Jan 2001, Iain Sandoe wrote:
 
-> Hi,
 >
-> I just upgraded to kernel 2.4.0 from bitkeeper.fsmlabs.com (linuxppc_2_4)
-> and managed to get over all problems I had (very few) relatively easily.  I
-> immediately noticed the speed increase (my 5400/180 can serve files at an
-> amazing 6400 Kb/sec!).  Nice work!
+> On Tue, Jan 9, 2001,  Derek Homeier  wrote:
+> > On Mon, 8 Jan 2001, Iain Sandoe wrote:
+> >> For now, I suggest that (unless you desperately need it), - you disable the
+> >> OSS stuff in your .config.
 >
-> One minor problem though, is that when I boot up (from a LinuxPPC 2000
-> installation), after the "Entering non-interactive startup" message, I get a
-> message stating that it could not find the file
-> "/proc/sys/net/ipv4/ip_always_defrag", which it tries to set to "1" by
-> echoing to it.  Can this be ignored?  Is there a way of either getting this
-> proc entry back or removing the script code that echoes to it?  I must admit
-> that I haven't looked at any of the files in /etc/rc.d with great detail...
+> > O.K., did that (I did not have ALSA enabled in the first place), and didn't
+> > see the errors again. Nonetheless, xmms is still erring on the Bus
+> > (i.e. crashes as soon it is started).
+>
+> OK.  I'm getting back up to steam - just sorting out the bk stuff :-/
+>
+> You might trawl the list for xmms comments - I believe that there were
+> issues that others resolved.  Which version of xmms?
+>
+1.0.1
 
-Putting a "1" in that file is to turn an option for IP Masquerading on.  As you
-say you just upgraded your kernel, perhaps one of two things is occuring.
-Perhaps either you failed to select all of the options necessary to use IP
-Masquerading, or ip_always_defrag has been deprecated in 2.4 (I thought
-I remembered seeing something to that effect, but I can't find it again, so I'm
-assuming I'm wrong).
+> any way of you telling me where xmms is trashing in the dmaosund driver?
+>
+Actually it seems to crash before the sound modules are even loaded, so
+I'm no longer sure it is dmasound-related, but it definitely only occurs in
+2.4.
+Still, even without OSS enabled, sound behaves very badly. The speaker tends
+to mute in the middle of playing a file, and some apps like wmapm or
+wmmon mysteriously crash while sound output is active.
 
-For deleting the rc script that does it, I imagine it will be called something
-like "firewall" (if you followed the naming convention proposed by the
-LDP HOWTO) or "ip_masq".  Just be aware that you will probably be unable to
-IP Masq. if you delete that rc script (without issuing the commands manually
-obviously).
+The "modprobe: Can't locate module sound-service-1-0" and
+"modprobe: Can't locate module sound-slot-1" messages still appear when
+I'm starting gmix.
 
-HTH
---Nelson Abramson
+Cheers,
+							Derek
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
