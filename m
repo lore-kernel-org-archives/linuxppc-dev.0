@@ -1,10 +1,9 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <F1BED55F35F4D3118C0F00E0295CFF4DFF9F62@mail.mediatrix.com>
+Message-ID: <F1BED55F35F4D3118C0F00E0295CFF4DFF9F63@mail.mediatrix.com>
 From: Jean-Denis Boyer <jdboyer@mediatrix.com>
-To: "'Steven Scholz'" <steven.scholz@imc-berlin.de>
+To: "'Wolfgang Denk'" <wd@denx.de>
 Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: MPC8xx, FEC and DP83847 !?
-Date: Thu, 21 Mar 2002 13:43:16 -0500
+Subject: RE: MPC8xx, FEC and DP83847 !? 
+Date: Thu, 21 Mar 2002 13:55:44 -0500
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -12,36 +11,21 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Steven,
+> In most cases you can just switch off the whole MDIO stuff  and  rely
+> on  autonegotiation; the only thing you lose is a kernel message when
+> the link status changes. Of course this requires sane hardware, which
+> is not always the case :-(
 
-> > - The DP83847 can not drive an external IRQ on the PPC,
-> while LXT can.
-> So does that mean, that the kernel can't detect link changes?
-Exactly!
+On full duplex connections, we have experienced problems with
+the kernel-level BOOTP/DHCP. The offer returned by the server was not
+caught. After investigating, it appeared that even though the PHY
+auto-negociated correctly, the FEC was not aware of the full duplex
+condition. I had to fix it by correctly reading the duplex mode
+from the PHY, since this information should be given to the FEC.
 
-However, I have added a call back, driven by the timer interrupt,
-to periodically check for link changes. Of course, it can not
-be detected as fast as with interrupt, but it will be correct
-in most applications.
-
-Detecting link changes at run-time is not absolutely neccessary,
-except for the duplex mode, because the FEC must be aware of it.
-
-> Is there any special reason why your code is not in a recent
-> kernel (e.g DENX)?
-You are the first one to ask for it ;-)
-Really, I have sent it in the past (without the timer call back),
-along with a bug fix. But someone at MVista (Tom Rini, I think),
-decided not to integrate it for now, since only a few (or no) people
-were using it, and it did not follow extensive testing.
-
-And BTW, Mr. Denx just asked me for the patch a few minutes ago.
-
-
-Another cool thing I have added to the 8xx FEC driver is the standard IOCTL
-interface,
-to manipulate the PHY through the mii-tool program (net-tools package).
-If someone wants it, I will prepare a patch.
+It may also cause a 'working but deficient' communication,
+especially under heavy traffic, since the collision detection should
+be disabled in full duplex.
 
 --------------------------------------------
  Jean-Denis Boyer, B.Eng., System Architect
