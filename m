@@ -1,41 +1,57 @@
+Subject: Re: Dynamic lib loading & memory question
+From: Jeff Angielski <jangiels@speakeasy.net>
 To: "Smith, Craig" <Craig.Smith@icn.siemens.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Dynamic lib loading & memory question 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 24 Jun 2004 14:58:55 PDT."
-             <EA78B62757AF1E4799828249310AC4CA04E09F03@stca206a.bus.sc.rolm.com>
-Date: Fri, 25 Jun 2004 00:39:20 +0200
-Message-Id: <20040624223925.6E67FC109F@atlas.denx.de>
+Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <EA78B62757AF1E4799828249310AC4CA04E09F03@stca206a.bus.sc.rolm.com>
+References: 
+	 <EA78B62757AF1E4799828249310AC4CA04E09F03@stca206a.bus.sc.rolm.com>
+Content-Type: text/plain
+Message-Id: <1088119724.4208.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+Date: 24 Jun 2004 19:28:44 -0400
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Craig,
+On Thu, 2004-06-24 at 17:58, Smith, Craig wrote:
 
-in message <EA78B62757AF1E4799828249310AC4CA04E09F03@stca206a.bus.sc.rolm.com> you wrote:
+> Memory: 14112k available (1564k kernel code, 436k data, 68k init, 0k
+> highmem)
+
+<snip>
+
+> ########################################
+> root@raptorlinux->~ [2] cat /proc/meminfo
+>         total:    used:    free:  shared: buffers:  cached:
+> Mem:  14520320  4505600 10014720        0        0  2531328
+> Swap:        0        0        0
+> MemTotal:        14180 kB
+> MemFree:          9780 kB
+> MemShared:           0 kB
+> Buffers:             0 kB
+> Cached:           2472 kB
+> SwapCached:          0 kB
+> Active:           1088 kB
+> Inactive:         1792 kB
+> HighTotal:           0 kB
+> HighFree:            0 kB
+> LowTotal:        14180 kB
+> LowFree:          9780 kB
+> SwapTotal:           0 kB
+> SwapFree:            0 kB
 >
-> I have a simple hello world program I'm trying to compile and run on a
-> custom PPC(855T) board. It will work fine if I statically link the
-> executable with the necessary libs. However if I don't statically link
-> (relying on ld.so etc.), the program will core dump. My system has 16M of
-> SDRAM (I just upgraded it from 8M and I believe it's configured right).
-> Anyway, here's the output and other info that might help someone tell me
-> what I'm doing wrong...thanks so much!
+> Question: Why the total (and "available" value at startup) indicates
+> ~14M...why doesn't it say 16M (and what is the ~2.5M "cached" value). Thanks
+> again in advance.
 
-Which type of board is this, which boot loader  are  you  using,  and
-where is your toolchain coming from?
+The memory line from the boot sequence tells you why total is not 16MB.
+The kernel is already using it... :)
 
-Best regards,
+You can find the answer to your cached question if you look at the code
+from fs/proc/proc_misc.c
 
-Wolfgang Denk
+Jeff Angielski
+The PTR Group
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-A Perl script is correct if it's halfway readable and  gets  the  job
-done before your boss fires you.
-                       - L. Wall & R. L. Schwartz, _Programming Perl_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
