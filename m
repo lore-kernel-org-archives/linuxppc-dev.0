@@ -1,18 +1,28 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 26A0D2BDF2
+Return-Path: <joern@wohnheim.fh-wedel.de>
+Received: from moskovskaya.fh-wedel.de (mail.fh-wedel.de [213.39.232.198])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 32E622BDF2
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 15 Jan 2005 01:43:52 +1100 (EST)
-In-Reply-To: <41E7A410.6060008@anagramm.de>
-References: <41E7A410.6060008@anagramm.de>
-Mime-Version: 1.0 (Apple Message framework v619)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <B29E7784-663A-11D9-A3DB-000393DBC2E8@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Fri, 14 Jan 2005 08:43:47 -0600
-To: "Clemens Koller" <clemens.koller@anagramm.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Kernel 2.6.x to MPC8540/Microsys Board
+	Sat, 15 Jan 2005 01:55:21 +1100 (EST)
+Date: Fri, 14 Jan 2005 15:55:18 +0100
+From: =?iso-8859-1?Q?J=F6rn?= Engel <joern@wohnheim.fh-wedel.de>
+To: Andy Fleming <afleming@freescale.com>,
+	Kumar Gala <kumar.gala@freescale.com>, Netdev <netdev@oss.sgi.com>,
+	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Message-ID: <20050114145518.GA21418@wohnheim.fh-wedel.de>
+References: <FC6D9B81-5514-11D9-8D51-000393C30512@freescale.com>
+	<A3A281FF-5525-11D9-80ED-000393C30512@freescale.com>
+	<20050106070245.GA6539@gate.ebshome.net>
+	<61A37C72-659C-11D9-8D70-000393C30512@freescale.com>
+	<20050113212152.GA16041@gate.ebshome.net>
+	<20050113215808.GA15124@wohnheim.fh-wedel.de>
+	<20050114010016.GA16635@gate.ebshome.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20050114010016.GA16635@gate.ebshome.net>
+Subject: Re: [RFC] Patch to Abstract Ethernet PHY support (using driver
+	model)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,46 +33,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-[snip]
-> My questions are now:
->  Which is the best Kernel source tree to start porting 2.6.x to the=20
-> pm854
-> platform? I would prefer to stuck with the official sources. Is that a
-> good idea?
+On Thu, 13 January 2005 17:00:16 -0800, Eugene Surovegin wrote:
+> On Thu, Jan 13, 2005 at 10:58:08PM +0100, J?rn Engel wrote:
+> > 
+> > http://www.broadcom.com/collateral/pb/5325-PB05-R.pdf
+> > 
+> > With some thinking and very little code, you can use this neat chip
+> > almost like a normal phy.
+> 
+> Yeah, but why would I want to? If you connect your MAC to any 5 PHYs 
+> my statement still stands, if directly to MII you don't need any PHY 
+> stuff at all, because link is always ON and speed/duplex is fixed.
+> 
+> In fact, we use different switch chips connected to PPC4xx directly. 
+> In this situation, in my NAPI IBM EMAC driver I just have special 
+> "PHY-less" case which is trivial "fixed settings" one. And all this 
+> PHY lib is completely unneeded bloat.
 
-I would suggest 2.6.10 if you want an official kernel release.  Is this=20=
+Wrt. the proposed PHY lib, I agree.  Didn't even bother to look at the
+code, it's mere size said enough.
 
-board generally available to people?  If so, and you want support for=20
-this board in the official kernel, send me your patches for review. =20
-I'll then push them up stream.
+But an abstraction different from drivers/net/mii.c is needed to
+handle the 5325 chip.  Or, you could have the special cases all over
+in your code, but that's a) ugly and b) more code.  I used to have
+such a mess and after doing the proper abstraction, it line count went
+down.
 
-Be aware there are some infrastrucal changes I'm working on that moves=20=
+Jörn
 
-the 85xx sub-arch support from using OCP to platform_device.  However,=20=
-
-these have minor changes on the board files.
-
-> Is it a good idea to just 'copy' the pm854 platform specific files =
-(PCI
-> =A0 initialization and some MTD driver options) to the 2.6.10 tree and=20=
-
-> see
->  how it works?
-
-I would take a look at how 2.6 is structured for 85xx.  I tried to do a=20=
-
-better job and provide more common code for a board port to leverage. =20=
-
-So for something like PCI, you should hopefully just have to setup your=20=
-
-memory map and IRQ routing.
-
-> As there anybody who has already a working 2.6.10-something for =
-MPC8540
-> (well, non mpc8540ads).
-
-I'm not aware of anyone else with another MPC8540 port, I know of other=20=
-
-MPC8560's, and MPC8555/41 ports.
-
-- kumar
+-- 
+Time? What's that? Time is only worth what you do with it.
+-- Theo de Raadt
