@@ -1,47 +1,39 @@
-Date: Tue, 5 Oct 1999 09:36:07 +0100 (BST)
-From: Charlie McLachlan <cim@uk.research.att.com>
-To: anthony tong <atong@uiuc.edu>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Do you XF86? Was: ATIRage128 
-In-Reply-To: <19991004120035.A2956@mango.genunix.net>
-Message-ID: <Pine.SO4.4.04.9910050925060.25985-100000@marrow>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <Pine.LNX.4.10.9910041156210.15818-100000@lacrosse.corp.redhat.com>
+Date: Tue, 5 Oct 1999 10:54:31 +0200
+To: Elliot Lee <sopwith@redhat.com>, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: esound for PPC
+Message-Id: <19991005105431.012853@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 4 Oct 1999, anthony tong wrote:
+On Mon, Oct 4, 1999, Elliot Lee <sopwith@redhat.com> wrote:
 
-> I haven't seen any indications that suse.de has merged their sources with
-> the XFree86-3.x tree.
+>That isn't the problem here. Apparently someone put a bad hack into the
+>PPC sound driver that makes it default to little endian instead of big
+>endian format, and esound is expecting that "native endian" on the sound
+>device is "big endian", not "little endian".
 
-from http://www.suse.de/en/support/xsuse/
+I may be wrong, but to me, this looks like a bug in esound. The driver
+seems capable of telling the application about it's current format and
+can be told to change it. If esound does assumptions about the default
+format instead of querying the driver, then esound is broken. (Also the
+driver may have been switched to another format by an application before
+esound takes control anyway. I don't remember which of /dev/audio or
+/dev/dsp will keep the current setting so this may not be an issue).
 
-"XFree86 complient, in this context, means that the sources to these
-servers are already part of the XFree86 development sources and that
-these servers will be included (with full sources) in one of the next
-XFree86 releases"
-...
-"Of course, all of them will be integrated into future versions of
-XFree86"
+I agree that the driver lacks a call to query about the native endian, so
+if you really want to, you can add code to esound to force-switch to big
+endian on PowerMac, but at least, it should be fixed to not rely on a
+supposed default setting.
 
-also, from http://www.xfree86.org/snapshots/3.9.16/ati3.html#3, regarding
-the latest develop tree snapshot (3.9.16):
-
-"The newer Rage 128 chips are not yet supported"
-
-The sources are in the development tree, which you can't get if you aren't
-a member of XFree86, and they don't like making people members just so
-they can try out new code.
-
-So back to the question, Is anyone here a member, and have they tried
-compiling the SUSE code for PPC? 
-
--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-Charlie McLachlan - Responsible for VNC on the Mac
-	AT&T Research Lab. Cambridge.
--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+-- 
+           Perso. e-mail: <mailto:bh40@calva.net>
+           Work   e-mail: <mailto:benh@mipsys.com>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
