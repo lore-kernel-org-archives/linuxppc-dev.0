@@ -2,42 +2,38 @@ From: Joe Green <jgreen@mvista.com>
 To: Frank Rowand <frank_rowand@mvista.com>,
         Subodh Nijsure <SNijsure@SkyStream.com>
 Subject: Re: ppc_8xx-ldd
-Date: Fri, 2 Feb 2001 10:55:11 -0800
+Date: Fri, 2 Feb 2001 11:18:52 -0800
 Content-Type: Multipart/Mixed;
-  boundary="Boundary-=_nWlrBbmQBhCDarzOwKkYHIDdqSCD"
+  boundary="Boundary-=_XrJmOWFrxsjyBldbEFSArCBynEcd"
 Cc: "'jeffrey.d.kowing1@jsc.nasa.gov'" <jeffrey.d.kowing1@jsc.nasa.gov>,
         linuxppc-embedded@lists.linuxppc.org
-References: <B25E2E5A003CD311B61E00902778AF2A0148B6C5@SERVER1> <3A7AFD6B.67378DDD@mvista.com>
-In-Reply-To: <3A7AFD6B.67378DDD@mvista.com>
+References: <B25E2E5A003CD311B61E00902778AF2A0148B6C5@SERVER1> <3A7AFD6B.67378DDD@mvista.com> <01020211101301.24872@minotaur.mvista.com>
+In-Reply-To: <01020211101301.24872@minotaur.mvista.com>
 MIME-Version: 1.0
-Message-Id: <01020211101301.24872@minotaur.mvista.com>
+Message-Id: <01020211203602.24872@minotaur.mvista.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---Boundary-=_nWlrBbmQBhCDarzOwKkYHIDdqSCD
+--Boundary-=_XrJmOWFrxsjyBldbEFSArCBynEcd
 Content-Type: text/plain
 Content-Transfer-Encoding: 8bit
 
-On Fri, 02 Feb 2001, Frank Rowand wrote:
-> Subodh Nijsure wrote:
-> > BTW, is there a something equivalent to  ldd in powerpc world, so one
-> > can find out which shared library an executable is linked with?
-> > I have 8xx environment from MontaVista and I don't see ppc_8xx-ldd
->
-> Yes, ldd is /bin/ldd in the target file system.
+On Fri, 02 Feb 2001, Joe Green wrote:
+> For execution on a development host, I've attached a simple shell script
+> that does something like ldd.  (ldd actually loads the program, which
+> won't work for cross-developed programs.)  It must be run from the same
+> directory as the target architecture objcopy and objdump, and must have
+> the same prefix (e.g., ppc_8xx-ldd, ppc_8xx-objcopy, ppc_8xx-objdump).
 
-For execution on a development host, I've attached a simple shell script
-that does something like ldd.  (ldd actually loads the program, which
-won't work for cross-developed programs.)  It must be run from the same
-directory as the target architecture objcopy and objdump, and must have
-the same prefix (e.g., ppc_8xx-ldd, ppc_8xx-objcopy, ppc_8xx-objdump).
+Of course, it would be better if it correctly removed the tmp file, as
+the attached version does.  :-/
 
 --
 Joe Green <jgreen@mvista.com>
 MontaVista Software, Inc.
 
---Boundary-=_nWlrBbmQBhCDarzOwKkYHIDdqSCD
+--Boundary-=_XrJmOWFrxsjyBldbEFSArCBynEcd
 Content-Type: application/x-shellscript;
   name="ppc_8xx-ldd"
 Content-Disposition: attachment; filename="ppc_8xx-ldd"
@@ -85,14 +81,14 @@ ICAgICMgR2V0IHRoZSBwcm9ncmFtIGludGVycHJldGVyIGZyb20gdGhlIFBUX0lOVEVSUCBzZWN0
 aW9uLgogICAgIyBIYXZlIHRvIHVzZSBhIHRtcCBmaWxlIGJlY2F1c2Ugb2JqY29weSB3b24ndCBv
 dXRwdXQgdG8gc3Rkb3V0LgogICAgaWYgJHtwcmVmaXh9b2JqY29weSAtaiAuaW50ZXJwIC1PIGJp
 bmFyeSAkZmlsZSAkdG1wZGlyLyQkLmludGVycDsgdGhlbgoJaW50ZXJwPSQodHIgLWQgLWMgIls6
-Z3JhcGg6XSIgPCAkdG1wZGlyLyQkLmludGVycCkKCXJtIC1mICQkLmludGVycAoJbGlicmFyaWVz
-PSIkbGlicmFyaWVzICRpbnRlcnAiCiAgICBmaQoKICAgICMgUHJpbnQgbGlicmFyeSBsaXN0IGlu
-IHNpbXVsYXRlZCBsZGQgb3V0cHV0IGZvcm0uCiAgICAjIE5vdCBsb29raW5nIGF0IHRhcmdldCBs
-aWJyYXJpZXMsIHNvIG5vIGZ1bGwgcGF0aHMgb24gdGhlIHJpZ2h0IHNpZGUuCiAgICAjIENhbid0
-IGdlbmVyYXRlIGxvYWQgYWRkcmVzc2VzIHdpdGggYW55IGNlcnRhaW50eSwgc28ganVzdCB1c2Ug
-MHgwLgogICAgZm9yIGxpYnJhcnkgaW4gJGxpYnJhcmllczsgZG8KCWVjaG8gIgkkbGlicmFyeSA9
-PiAkbGlicmFyeSAoMHgwKSIKICAgIGRvbmUKZG9uZQo=
+Z3JhcGg6XSIgPCAkdG1wZGlyLyQkLmludGVycCkKCXJtIC1mICR0bXBkaXIvJCQuaW50ZXJwCgls
+aWJyYXJpZXM9IiRsaWJyYXJpZXMgJGludGVycCIKICAgIGZpCgogICAgIyBQcmludCBsaWJyYXJ5
+IGxpc3QgaW4gc2ltdWxhdGVkIGxkZCBvdXRwdXQgZm9ybS4KICAgICMgTm90IGxvb2tpbmcgYXQg
+dGFyZ2V0IGxpYnJhcmllcywgc28gbm8gZnVsbCBwYXRocyBvbiB0aGUgcmlnaHQgc2lkZS4KICAg
+ICMgQ2FuJ3QgZ2VuZXJhdGUgbG9hZCBhZGRyZXNzZXMgd2l0aCBhbnkgY2VydGFpbnR5LCBzbyBq
+dXN0IHVzZSAweDAuCiAgICBmb3IgbGlicmFyeSBpbiAkbGlicmFyaWVzOyBkbwoJZWNobyAiCSRs
+aWJyYXJ5ID0+ICRsaWJyYXJ5ICgweDApIgogICAgZG9uZQpkb25lCg==
 
---Boundary-=_nWlrBbmQBhCDarzOwKkYHIDdqSCD--
+--Boundary-=_XrJmOWFrxsjyBldbEFSArCBynEcd--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
