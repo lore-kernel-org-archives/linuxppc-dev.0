@@ -1,35 +1,28 @@
-From: Larry McVoy <lm@bitmover.com>
-Date: Fri, 7 Sep 2001 22:11:28 -0700
-Message-Id: <200109080511.f885BSF22039@work.bitmover.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: hosting service change
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ira Weiny <iweiny@acm.org>,
+	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: System map in XMON (was: Cardbus issues on TiBook)
+Date: Sat, 8 Sep 2001 14:45:14 +0200
+Message-Id: <20010908124514.30569@smtp.wanadoo.fr>
+In-Reply-To: <3B995CA4.4CEC51C5@acm.org>
+References: <3B995CA4.4CEC51C5@acm.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi, as you know, we host the PPC trees here.  Our 1.5Mbit DSL line
-is dieing, the provider went belly up.  We have a backup line which is
-.4Mbit/sec and we are getting a real T1 line.  The T1 line is dramatically
-more expensive but is supposed to be dramatically more reliable and
-consistent.  We're getting it from Global Crossing who have a very nice
-set of fibers strung throughout the world.  They commit to, in writing,
-100ms ping times to Europe and 60ms ping times to anywhere in the US.
-Looks good.  Those are worst case, they claim much better (I've seen
-stuff more like 10-20ms in my tests).  And the T1 line is completely
-unshared, I have 1.5Mbit/sec to their backbone whether I need it or
-not.  That's why it is so much more expensive, DSL shares, T1 doesn't.
+>
+>image=/boot/vmlinux-fw
+>	sysmap=/boot
+>
 
-I ordered this about 2 weeks ago as soon as the DSL guys indicated they
-were dieing; it will be here some time in the next month.
+Try that
 
-In the meantime, I'll shift the DNS records to point at the slower DSL
-line this weekend so you won't be disrupted, it just means somewhat
-slower access.  I doubt you'll notice.
+image=/boot/vmlinux-fw
+	sysmap=/boot/System.map
 
-As soon as I get the new T1 line, we'll switch over to that.  In any case,
-you should not see any loss of access, just somewhat reduced performance
-until we get the T1 line.  If you notice problems, let us know.
+You'll need at least version 1.2.3 of yaboot.
 
---lm
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
