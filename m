@@ -1,30 +1,37 @@
-Date: Tue, 7 Sep 1999 10:43:15 +1000
-Message-Id: <199909070043.KAA01407@tango.anu.edu.au>
+Date: Tue, 7 Sep 1999 11:08:48 +1000
+Message-Id: <199909070108.LAA01543@tango.anu.edu.au>
 From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: toa@pop.agri.ch
-CC: jquinn@nortelnetworks.com, linuxppc-dev@lists.linuxppc.org,
-        linux-kernel@vger.rutgers.edu
-In-reply-to: <37D3A439.3A41F55@pop.agri.ch> (message from Andreas Tobler on
-	Mon, 06 Sep 1999 13:23:41 +0200)
-Subject: Re: MO-Disk on PPC with 53C94 SCSI-chip
+To: otto@cable.a2000.nl
+CC: linuxppc-dev@lists.linuxppc.org
+In-reply-to: <37D3F17F.F876DEC1@cable.a2000.nl> (message from Otto Moerbeek on
+	Mon, 06 Sep 1999 18:53:18 +0200)
+Subject: Re: 2.2.12 and USB on a B&W G3
 Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <37BC482D.7EB2A4AF@pop.agri.ch> <14273.21611.490430.724369@gargle.gargle.HOWL> <37D3A439.3A41F55@pop.agri.ch>
+References: <37D36242.9A70B7F2@cable.a2000.nl> <199909060712.RAA00937@tango.anu.edu.au> <37D3F17F.F876DEC1@cable.a2000.nl>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> and second, a mac53c94 driver which may have some bugs.
+Otto Moerbeek <otto@cable.a2000.nl> wrote:
 
-I wrote the mac53c94 driver a long time ago and I haven't spent
-anything like as much time on it as on the mesh driver (which isn't
-perfect either).
+> I would like to get these USB patches, so I can try to run my USB
+> devices on 2.2.12. Are they available somewhere?
 
-The opportunity is sitting there, waiting for someone to pick it up,
-to stress-test, debug and optimize the mac53c94 driver, including
-doing things like implementing disconnect/reconnect.  In the Open
-Source tradition, this should be someone for whom this is an itch that
-they want to scratch. :-)
+The easiest thing, from my point of view at least, is for you to get
+my current 2.2 tree by anonymous rsync from
+samba.anu.edu.au::linux-pmac-stable.  I could make a patch if you need
+it.
 
+> Apart from the USB stuff, should the rest of 2.2.12 work on a B&W G3?
+> IOW have the other patches reached the 2.2.12 tree or should I expect
+> some more problems?
+
+2.2.12 is relatively up-to-date w.r.t. the PPC port.  I have heard
+though that vger-current doesn't work on B&W G3s, so possibly vanilla
+2.2.12 won't either.  I heard recently that my linux-pmac-stable tree
+does, though.
+
+Regards,
 Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
