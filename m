@@ -1,48 +1,38 @@
-Date: Thu, 25 Mar 2004 10:18:22 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Markus Bernauer <markus.bernauer@freenet.de>
+To: "Rupesh S" <rupeshs@myw.ltindia.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Further questions on performance of IBM440GX/GP regarding boot time
-Message-ID: <20040325181822.GB13701@gate.ebshome.net>
-References: <4062C61E.1040004@freenet.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4062C61E.1040004@freenet.de>
+Subject: Re: MC850 peripheral support in linux 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 25 Mar 2004 18:21:06 +0530."
+             <s0632321.003@EMAIL>
+Date: Thu, 25 Mar 2004 20:36:55 +0100
+Message-Id: <20040325193700.42BCAC118A@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Mar 25, 2004 at 12:44:30PM +0100, Markus Bernauer wrote:
-> I was following the discussion about the performance of  different
-> IBM440GX/GP systems with increasing interest.
-> We are going to use an IBM400GP in conjunction with the Ebony-Evalboard
-> for a project that demands boot times as short as possible. Could you
-> please give me any hints about how fast your systems boot and whether
-> you optimized the systems to reach these bootup times.
+In message <s0632321.003@EMAIL> you wrote:
+>
+> 1) Does the I2C bus support in the kernel works for the internal I2C controller of MC850
+> 2) Does the RTC support in the kernel (char driver) works for the internal RTC of MC850
+> 3) Does the PCMCIA support in the kernel (IDE drivers)  works for the internal PCMCIA Socket controller of MC850
 
-Well, I cannot say I spent any time optimizing boot times :).
+3 x yes. But I can only speak of the DENX kernel trees.
 
-My estimation is 1-2s for bootloader, 2-3s for Linux kernel, provided you kernel
-is in the flash memory, and doesn't have a lot of hw to detect (like SCSI
-disks). Also note that time I gave to the kernel doesn't include startup
-scripts (everything started by init). Usually init processing takes a lot of
-time, so using something like busybox helps a lot.
+> This is to help me finalizing Linux for one of my Embedded Projects that will be built on MC850.
 
-One thing, to achieve such boot speeds _disable_ serial system console.
+Don't expect too much of performance out of a 850;  the  tiny  caches
+are a major pain.
 
-My estimations are based on 405GPr-based hw boot times.
+Best regards,
 
-> I know that there are several possibilites to reduce boot time of linux,
-> but at the moment it would suffice to have some values for orientation.
-> I also know that there are differences in boot time dependent on
-> hardware and software configuration so it would be nice to get
-> at least little information about the systems the different boot times
-> belong to.
-> The other, less preferable possibility to achieve fast bootup, would be
-> to use SCIOPTA. But I am afraid this would be off topic, isn?t it?;-)
+Wolfgang Denk
 
-Hmm, I have no idea what SCIOPTA is :).
-
-Eugene
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+There are three things I always forget. Names, faces -  the  third  I
+can't remember.                                         - Italo Svevo
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
