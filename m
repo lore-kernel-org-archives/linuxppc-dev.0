@@ -1,19 +1,21 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id ED8862BD6A
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao05.cox.net (fed1rmmtao05.cox.net [68.230.241.34])
+	by ozlabs.org (Postfix) with ESMTP id 0DF022BD6A
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  6 Oct 2004 06:20:27 +1000 (EST)
+	Wed,  6 Oct 2004 06:53:57 +1000 (EST)
+Date: Tue, 5 Oct 2004 13:53:56 -0700
+From: Tom Rini <trini@kernel.crashing.org>
 To: "Robert P. J. Day" <rpjday@mindspring.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 05 Oct 2004 15:52:59 EDT."
-	<Pine.LNX.4.60.0410051543230.3549@localhost.localdomain>
-Date: Tue, 05 Oct 2004 22:20:12 +0200
-Sender: wd@denx.de
-Message-Id: <20041005202017.6DC7BC1430@atlas.denx.de>
+Message-ID: <20041005205355.GM32692@smtp.west.cox.net>
+References: <Pine.LNX.4.60.0410051228520.5107@dell.enoriver.com>
+	<A337CA12-1703-11D9-B4FB-003065F9B7DC@embeddededge.com>
+	<20041005192950.GL32692@smtp.west.cox.net>
+	<Pine.LNX.4.60.0410051559560.3683@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.60.0410051559560.3683@localhost.localdomain>
 Cc: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] first in a series to enhance microcode patches 
+Subject: Re: [PATCH] first in a series to enhance microcode patches
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,33 +26,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <Pine.LNX.4.60.0410051543230.3549@localhost.localdomain> you wrote:
+On Tue, Oct 05, 2004 at 04:00:45PM -0400, Robert P. J. Day wrote:
+
+> On Tue, 5 Oct 2004, Tom Rini wrote:
 > 
-> that's definitely understandable.  it's just potentially confusing to 
-> have a structure's reserved chunks declared as some combination of 
-> uchar, ushort, uint and/or ulong, when it's obviously more 
-> comprehensible to make each reserved chunk a standard array of char 
-> whose size is obvious at a glance.
+> >On Tue, Oct 05, 2004 at 03:20:37PM -0400, Dan Malek wrote:
+> 
+> >>No, send a whole patch that _does_ something.  Let's see all of these
+> >>changes at once.  By itself, this patch is useless and doesn't add any
+> >>features, it just wastes our time discussing it.
+> >
+> >A series of inter-dependant patches might be better, but I like small,
+> >easy to understand patches.
+> 
+> you know, it's a good thing i'm severely bipolar. :-)  somebody needs 
+> to make a decision -- i'll go with whatever it is.
 
-Actually this might not be confusing, but making the code  easier  to
-read,  to  understand,  and  maybe  one day to extend - remember that
-these struct definitions are direct translations of Motorola provided
-documentation - and I tend to  believe  that  the  chip  manufacturer
-knows  more about the internals of his chips than you or me. One day,
-a "uint reserved_xxx;" may turn into a new, shiny 32 bit register.
-
->    now *that* kind of creeps me out.  why is reserved space being 
-> declared as "volatile"?  yeesh.
-
-It does not hurt, and it makes it easier to adapt the code  when  new
-register definitions pop up in a later version of the chip?
-
-
-Best regards,
-
-Wolfgang Denk
+Ah.  I assumed you were sending out one chunk at a time something you
+had 'done', sorry.  To be clear, what I prefer is a series of patches
+that get something done.  A single small cleanup like you posted is
+fine, but if you have it as part of a larger change, just include it in
+the series.  'Documentation/SubmittingPatches' is probably a good
+reference, subsituting linux-kernel with linuxppc-embedded :)
 
 -- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Intel told us the Pentium would have "RISK" features...
+Tom Rini
+http://gate.crashing.org/~trini/
