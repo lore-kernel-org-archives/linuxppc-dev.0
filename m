@@ -1,14 +1,18 @@
-Return-Path: <frannk_m1@yahoo.com>
-Received: from web13803.mail.yahoo.com (web13803.mail.yahoo.com
-	[216.136.175.13]) by ozlabs.org (Postfix) with SMTP id 38DAA2BD7B
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Sep 2004 07:57:02 +1000 (EST)
-Message-ID: <20040917215020.72936.qmail@web13803.mail.yahoo.com>
-Date: Fri, 17 Sep 2004 14:50:20 -0700 (PDT)
-From: Frank <frannk_m1@yahoo.com>
+Return-Path: <ken@kenmoffat.uklinux.net>
+Received: from ppgpenguin.kenmoffat.uklinux.net
+	(spc2-brig1-3-0-cust232.asfd.broadband.ntl.com [82.1.142.232])
+	by ozlabs.org (Postfix) with ESMTP id 6BAC92BD6A
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Sep 2004 08:24:07 +1000 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by ppgpenguin.kenmoffat.uklinux.net (Postfix) with ESMTP id 7B2DE146E0
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Sep 2004 23:03:20 +0100 (BST)
+Date: Fri, 17 Sep 2004 23:03:20 +0100 (BST)
+From: Ken Moffat <ken@kenmoffat.uklinux.net>
 To: linuxppc-dev@ozlabs.org
+Message-ID: <Pine.LNX.4.58.0409172249520.23520@ppg_penguin.kenmoffat.uklinux.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Subject: cascading 8259 interrupts
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Subject: Problem with 745x errata in 2.6.8
 List-Id: "Linux on PowerPC \(Including Embedded\) Developers Mail List"
 	<linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -19,41 +23,149 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I am having problems getting the 8259 interrupts setup on my
-mpc8245 based board. here is what I have:
-EPIC interrupt 0: ethernet controller
-EPIC interrupt 1: unused at this time
-EPIC interrupt 2: 8259 PIC controller
-EPIC interrupt 3: internal uart
+Hi,
 
+ I'm trying to get the port to the AmigaOne/Teron into a fit state to
+attempt to submit it.  I've got it working adequately in 2.6.7 (no ide
+dma, obviously, and no floppy disk, plus other minor issues) but
+obviously I need to get it up to the current version before asking for
+your comments on what needs to be changed to make it acceptable.
 
-I have the ethernet and urat working just fine. I can NFS mount
-my root directory accross the network and I console I/O working
-just fine. The problem is when I try to cascade the 8259 PIC to
-interrupt 2, Linux hangs when booting. I have tried using the
-sandpoint board as a model but it doesn't cacscade 8259
-interrupts to EPIC interrupt2, it uses EPIC interrupt 0
-according to the comments. 
-How can I cacscade the 8259 to my EPIC interrupt 2???
-Here's my code in my baord_setup.c:
+ Unfortunately, the following changes in 2.6.8-rc3 stop my 7455 from
+booting (with a vga console, it stops after the console: colour VGA+
+80x25 message, and also the top of the screen is blank).  If I revert
+these, it runs.  I'm totally out of my depth here, I don't even know how
+to work out which sort of 7455 I've got, much less what this is all
+doing.  Can anybody offer me some pointers, please ?
 
-   openpic_set_sources(0, 2, OpenPIC_Addr + 0x10200);
-   openpic_set_sources(2, 1, OpenPIC_Addr + 0x10240);
-   openpic_set_sources(3, 1, OpenPIC_Addr + 0x11120);
+Ken
 
-   openpic_init(NUM_8259_INTERRUPTS);
-   openpic_hookup_cascade(18, "8259 cascade to EPIC",
-&i8259_irq);
+--- linux-2.6.8-rc2/arch/ppc/kernel/cputable.c=092004-09-17 15:26:38.000000=
+000 +0100
++++ linux-2.6.8-rc3/arch/ppc/kernel/cputable.c=092004-09-17 15:27:45.000000=
+000 +0100
+@@ -55,7 +55,8 @@ extern void __setup_cpu_generic(unsigned
+ #endif
 
-        for ( i = 2 ; i < 3 ; i++ )
-             irq_desc[i].handler = &i8259_pic;
-        i8259_init(0xfef00000);
+ /* We need to mark all pages as being coherent if we're SMP or we
+- * have a 754x and an MPC107 host bridge. */
++ * have a 754x and an MPC107 host bridge.
++ */
+ #if defined(CONFIG_SMP) || defined(CONFIG_MPC10X_BRIDGE)
+ #define CPU_FTR_COMMON                  CPU_FTR_NEED_COHERENT
+ #else
+@@ -263,7 +264,7 @@ struct cpu_spec=09cpu_specs[] =3D {
+ =09CPU_FTR_COMMON |
+     =09CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+ =09CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR |
+-=09CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450,
++=09CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | CPU_FTR_NEED_COHERENT,
+ =09COMMON_PPC | PPC_FEATURE_ALTIVEC_COMP,
+ =0932, 32,
+ =09__setup_cpu_745x
+@@ -274,7 +275,7 @@ struct cpu_spec=09cpu_specs[] =3D {
+     =09CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | CPU_FTR_CAN_NAP |
+ =09CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR |
+ =09CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | CPU_FTR_NAP_DISABLE_L2_PR |
+-=09CPU_FTR_L3_DISABLE_NAP,
++=09CPU_FTR_L3_DISABLE_NAP | CPU_FTR_NEED_COHERENT,
+ =09COMMON_PPC | PPC_FEATURE_ALTIVEC_COMP,
+ =0932, 32,
+ =09__setup_cpu_745x
+@@ -284,7 +285,8 @@ struct cpu_spec=09cpu_specs[] =3D {
+ =09CPU_FTR_COMMON |
+     =09CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | CPU_FTR_CAN_NAP |
+ =09CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR |
+-=09CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | CPU_FTR_NAP_DISABLE_L2_PR,
++=09CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | CPU_FTR_NAP_DISABLE_L2_PR |
++=09CPU_FTR_NEED_COHERENT,
+ =09COMMON_PPC | PPC_FEATURE_ALTIVEC_COMP,
+ =0932, 32,
+ =09__setup_cpu_745x
+@@ -294,7 +296,8 @@ struct cpu_spec=09cpu_specs[] =3D {
+ =09CPU_FTR_COMMON |
+     =09CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+ =09CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR |
+-=09CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | CPU_FTR_HAS_HIGH_BATS,
++=09CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | CPU_FTR_HAS_HIGH_BATS |
++=09CPU_FTR_NEED_COHERENT,
+ =09COMMON_PPC | PPC_FEATURE_ALTIVEC_COMP,
+ =0932, 32,
+ =09__setup_cpu_745x
+@@ -305,7 +308,7 @@ struct cpu_spec=09cpu_specs[] =3D {
+     =09CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | CPU_FTR_CAN_NAP |
+ =09CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR |
+ =09CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | CPU_FTR_NAP_DISABLE_L2_PR |
+-=09CPU_FTR_L3_DISABLE_NAP | CPU_FTR_HAS_HIGH_BATS,
++=09CPU_FTR_L3_DISABLE_NAP | CPU_FTR_NEED_COHERENT | CPU_FTR_HAS_HIGH_BATS,
+ =09COMMON_PPC | PPC_FEATURE_ALTIVEC_COMP,
+ =0932, 32,
+ =09__setup_cpu_745x
+@@ -316,18 +319,40 @@ struct cpu_spec=09cpu_specs[] =3D {
+     =09CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | CPU_FTR_CAN_NAP |
+ =09CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR |
+ =09CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | CPU_FTR_NAP_DISABLE_L2_PR |
+-=09CPU_FTR_HAS_HIGH_BATS,
++=09CPU_FTR_HAS_HIGH_BATS | CPU_FTR_NEED_COHERENT,
++=09COMMON_PPC | PPC_FEATURE_ALTIVEC_COMP,
++=0932, 32,
++=09__setup_cpu_745x
++    },
++    {=09/* 7447/7457 Rev 1.0 */
++    =090xffffffff, 0x80020100, "7447/7457",
++=09CPU_FTR_COMMON |
++    =09CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | CPU_FTR_CAN_NAP |
++=09CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR |
++=09CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | CPU_FTR_NAP_DISABLE_L2_PR |
++=09CPU_FTR_HAS_HIGH_BATS | CPU_FTR_NEED_COHERENT | CPU_FTR_NO_BTIC,
++=09COMMON_PPC | PPC_FEATURE_ALTIVEC_COMP,
++=0932, 32,
++=09__setup_cpu_745x
++    },
++    {=09/* 7447/7457 Rev 1.1 */
++    =090xffffffff, 0x80020101, "7447/7457",
++=09CPU_FTR_COMMON |
++    =09CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | CPU_FTR_CAN_NAP |
++=09CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR |
++=09CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | CPU_FTR_NAP_DISABLE_L2_PR |
++=09CPU_FTR_HAS_HIGH_BATS | CPU_FTR_NEED_COHERENT | CPU_FTR_NO_BTIC,
+ =09COMMON_PPC | PPC_FEATURE_ALTIVEC_COMP,
+ =0932, 32,
+ =09__setup_cpu_745x
+     },
+-    {=09/* 7457 */
+-    =090xffff0000, 0x80020000, "7457",
++    {=09/* 7447/7457 Rev 1.2 and later */
++    =090xffff0000, 0x80020000, "7447/7457",
+ =09CPU_FTR_COMMON |
+     =09CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | CPU_FTR_CAN_NAP |
+ =09CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR |
+ =09CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | CPU_FTR_NAP_DISABLE_L2_PR |
+-=09CPU_FTR_HAS_HIGH_BATS,
++=09CPU_FTR_HAS_HIGH_BATS | CPU_FTR_NEED_COHERENT,
+ =09COMMON_PPC | PPC_FEATURE_ALTIVEC_COMP,
+ =0932, 32,
+ =09__setup_cpu_745x
+@@ -338,7 +363,7 @@ struct cpu_spec=09cpu_specs[] =3D {
+     =09CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | CPU_FTR_CAN_NAP |
+ =09CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP |
+ =09CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | CPU_FTR_NAP_DISABLE_L2_PR |
+-=09CPU_FTR_HAS_HIGH_BATS,
++=09CPU_FTR_HAS_HIGH_BATS | CPU_FTR_NEED_COHERENT,
+ =09COMMON_PPC | PPC_FEATURE_ALTIVEC_COMP,
+ =0932, 32,
+ =09__setup_cpu_745x
+@@ -351,8 +376,8 @@ struct cpu_spec=09cpu_specs[] =3D {
+ =0932, 32,
+ =09__setup_cpu_603
+     },
+-    {=09/* 8280 is a G2_LE (603e core, plus some) */
+-=090x7fff0000, 0x00820000, "8280",
++    {=09/* All G2_LE (603e core, plus some) have the same pvr */
++=090x7fff0000, 0x00820000, "G2_LE",
+ =09CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_CAN_DOZE | CPU_FTR_USE_TB |
+ =09CPU_FTR_CAN_NAP | CPU_FTR_HAS_HIGH_BATS,
+ =09COMMON_PPC,
 
-
-
-
-		
-__________________________________
-Do you Yahoo!?
-New and Improved Yahoo! Mail - Send 10MB messages!
-http://promotions.yahoo.com/new_mail 
+--=20
+ das eine Mal als Trag=F6die, das andere Mal als Farce
