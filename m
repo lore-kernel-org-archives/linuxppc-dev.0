@@ -1,17 +1,19 @@
-Message-ID: <3CBD98FE.B6D3E77B@timesys.com>
-Date: Wed, 17 Apr 2002 21:17:10 +0530
-From: ashish anand <ashish.anand@timesys.com>
+From: "Chris Hallinan" <clh@net1plus.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: BDI2000 .cfg file for PMC750
+Date: Wed, 17 Apr 2002 11:52:25 -0400
+Message-ID: <NEBBKJPFOLJNBMFNKBIIOENFCMAA.clh@net1plus.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: pcmcia controller for mpc 823..?
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-which is the driver for mpc823 pcmcia controller..
+Anyone have a working BDI2000 config file for the Mot PrPMC750 board
+they are willing to share?
 
-Best regards
-Ashish
+-Chris Hallinan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
