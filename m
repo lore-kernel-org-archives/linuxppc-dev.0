@@ -1,28 +1,55 @@
-Message-ID: <3AC516D4.A5C27628@mvista.com>
-Date: Fri, 30 Mar 2001 16:29:24 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-Reply-To: mgreer@mvista.com
+From: "Ron Bianco" <ronb@junction.net>
+To: <mgreer@mvista.com>,
+	"=?iso-8859-1?B?U+liYXN0aWVuIEP0dOk=?=" <scote1@matrox.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Stability of MontaVista's 2.4.0-test2-1.2.2-1
+Date: Fri, 30 Mar 2001 16:25:54 -0800
+Message-ID: <000a01c0b979$25c93aa0$4d012ac7@warp-speed>
 MIME-Version: 1.0
-To: =?iso-8859-1?Q?S=E9bastien=20C=F4t=E9?= <scote1@matrox.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Stability of MontaVista's 2.4.0-test2-1.2.2-1
-References: <H00002af04b2e173@MHS> <3AC23B01.A9162C3B@matrox.com> <3AC25348.C33F8692@mvista.com> <20010330175204.A881@dyn-52-73.matrox.com> <3AC5146D.CB770D1B@mvista.com>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <3AC5146D.CB770D1B@mvista.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Sébastien,
+Check out:
 
-One more thing.  If your host bridge is an MPC107 or you're using an 8240 AND
-the IDSEL line is hooked up on your hardware, you need to make sure that you
-don't select the bridge itself when walking the PCI bus.  That is, when you scan
-the PCI bus for devices, make sure you skip the device that would correspond to
-your host bridge.
+http://www.mot.com/SPS/PowerPC/teksupport/tools/DINK32/VERSION12/dinkindex.htm
 
-Make sense?
+Most of DINK source code is easily downloadable, and the full source is obtainable thru a Motorola rep.
+Not sure if that link is to the most current version.
 
-Mark
+Cheers, Ron
 
+> -----Original Message-----
+
+> > Anyway, I have another question.  In the header from
+> > arch/ppc/kernel/sandpoint_setup.c,I see the following comment:
+> >  * The firmware on the sandpoint is called DINK (not my acronym :).  This
+> > port
+> >  * depends on DINK to do some basic initialization (e.g., initialize the
+> > memory
+> >  * ctlr) and to ensure that the processor is using MAP B (CHRP map).
+> >
+> > Since I don't really have a Sandpoint, and I don't have the DINK which
+> > comes with it, I guess I will run into trouble.
+> > Is there a place where I could find info on what I should do I exactly as
+> > far as initialization goes?!?
+>
+> No, I don't know of any place you can go that would tell you what you have to
+> init.  You could look at some of the open source firmwares that are out there
+> which should give you a good idea.  If you have a JTAG probe, you can put it
+> on a board similar to yours with known good firmware and look the host-bridge
+> regs, etc to how it sets everything up.  I dunno...
+>
+> You will definitely need to have the PCI arbiter, power mgmt, memory
+> controller, and certain bits in HID0 and L2CR (if you have an L2 ctlr on your
+> processor) all set up correctly.  Maybe some board regs too.
+>
+> Mark
+>
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
