@@ -1,25 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2064B67A78
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Mar 2005 17:29:08 +1100 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Takeharu KATO <kato.takeharu@jp.fujitsu.com>
-In-Reply-To: <4237C8F0.1010605@jp.fujitsu.com>
-References: <20050303124435.GA24233@Redstar.dorchain.net>
-	<4227153C.3030201@gmx.net>	<20050303141832.GU25080@Redstar.dorchain.net>
-	<20050304075703.GA15637@Redstar.dorchain.net>
-	<422FD24F.4070108@jp.fujitsu.com>
-	<20050310072803.GR4017@Redstar.dorchain.net>	<423073A9.70404@ybb.ne.jp>
-	<4231387D.6030204@jp.fujitsu.com>	<1110932285.25201.66.camel@gaston>
-	<4237C319.4050109@jp.fujitsu.com>  <4237C8F0.1010605@jp.fujitsu.com>
-Content-Type: text/plain
-Date: Wed, 16 Mar 2005 17:28:59 +1100
-Message-Id: <1110954539.5272.0.camel@gaston>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: boot time scheduling hile atomic
+Return-Path: <kumar.gala@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id E04B667A6B
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Mar 2005 17:57:22 +1100 (EST)
+Received: from de01smr01.am.mot.com (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	j2G6wWPv029614
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Mar 2005 23:58:32 -0700 (MST)
+Received: from [192.168.1.109] (IL01D100043.pci.local [10.214.72.26] (may be
+	forged))
+	by de01smr01.am.mot.com (8.13.1/8.13.0) with ESMTP id j2G6x7Pn004708
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Mar 2005 00:59:08 -0600 (CST)
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Message-Id: <4e44f753c3a197eff3b584f24a239f06@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Wed, 16 Mar 2005 00:57:24 -0600
+Subject: building ppc_htab?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,21 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2005-03-16 at 14:49 +0900, Takeharu KATO wrote:
-> Hi Benjamin:
-> 
-> I forgot writing that I've sent the revised edition of
-> the patch to the PPC-Dev ML.
-> Please see the patch as ``boot time scheduling w hile atomic fix''
-> which I posted in 2005-03-15 from Patch tracking
-> system for PowerPC Linux as follows.
-> 
-> http://ozlabs.org/ppc32-patches/
-> 
-> It changes the implementation of kernel_thread function
-> to be performed with function call.
+Is there any reason not to make the following change so we build 
+ppc_htab only on PPC STD MMU?  This would also require fixing up 
+fs/proc/proc_misc.c.
 
-I prefer your previous patch. Paul hacked it a bit and will commit his
-modified version.
+--- 1.52/arch/ppc/kernel/Makefile       2005-03-13 17:29:44 -06:00
++++ edited/Makefile     2005-03-16 00:44:17 -06:00
+@@ -2,7 +2,7 @@
+  # Makefile for the linux kernel.
+  #
 
-Ben.
+-extra-$(CONFIG_PPC_STD_MMU)    := head.o
++extra-$(CONFIG_PPC_STD_MMU)    := head.o ppc_htab.o
+  extra-$(CONFIG_40x)            := head_4xx.o
+  extra-$(CONFIG_44x)            := head_44x.o
+  extra-$(CONFIG_E500)           := head_e500.o
+@@ -14,7 +14,7 @@
+  obj-y                          := entry.o traps.o irq.o idle.o time.o 
+misc.o \
+                                         process.o signal.o ptrace.o 
+align.o \
+                                         semaphore.o syscalls.o setup.o \
+-                                       cputable.o ppc_htab.o perfmon.o
++                                       cputable.o perfmon.o
+  obj-$(CONFIG_6xx)              += l2cr.o cpu_setup_6xx.o
+  obj-$(CONFIG_SOFTWARE_SUSPEND) += swsusp.o
+  obj-$(CONFIG_POWER4)           += cpu_setup_power4.o
+
+- kumar
