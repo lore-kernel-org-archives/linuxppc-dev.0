@@ -1,34 +1,37 @@
-From: benh@kernel.crashing.org
-To: Jens Schmalzing <jens.schmalzing@physik.uni-muenchen.de>,
-	<linuxppc-dev@lists.linuxppc.org>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: SUNGEM config
-Date: Wed, 13 Feb 2002 18:28:47 +0100
-Message-Id: <20020213172847.23608@mailhost.mipsys.com>
-In-Reply-To: <87k7th2ujl.fsf@theorie.physik.uni-muenchen.de>
-References: <87k7th2ujl.fsf@theorie.physik.uni-muenchen.de>
+Date: Wed, 13 Feb 2002 19:06:36 +0100 (MET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: john.khan@liquidation.com
+Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: RE: Updated PPC Ambassador Tux
+In-Reply-To: <NGBBKEOKAMAPDDCNPGFEEEAJCBAA.john.khan@liquidation.com>
+Message-ID: <Pine.GSO.4.21.0202131904210.17760-100000@vervain.sonytel.be>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->On Debian systems, this is done by a small daemon named ifd in the
->laptop-net package.
->
->Unfortunately, it uses the SIOCGMIIPHY and SIOCGMIIREG ioctls for link
->detection, which on my Pismo reproducibly lead to machine check
->oopses.  I've managed to track down the problem, a patch is included
->below.  Basically, instead of really reading the registers it fakes
->and returns a register setting from the cached status of the device.
->Right now, it is fairly ugly, since it only works for that relevant
->one bit.
+On Wed, 20 Feb 2002 john.khan@liquidation.com wrote:
+> Here is all three together http://gfxgeek.com/ppclogo.html Feel free to use
+> them at will but let me know, as I would love to know if either of them is
+> used :)
 
-Can you tell me more about those machine checks ? I suspect they happen
-if you try to read the registers while the interface is shutdown, in
-which case the GEM chip is down.
+How many colors does the image have (max. 224)?
+Do you also have a black-and-white version?
+Do you have a version using the 16 console colors?
 
-Ben.
+Cfr. http://home.tvd.be/cr26864/Linux/fbdev/logo.html
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
