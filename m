@@ -1,34 +1,34 @@
-Message-ID: <3938C6A2.8FB95D17@student.ethz.ch>
-Date: Sat, 03 Jun 2000 10:49:38 +0200
+Message-ID: <3938C6EC.40FFE599@student.ethz.ch>
+Date: Sat, 03 Jun 2000 10:50:52 +0200
 From: Michel Dänzer <daenzerm@student.ethz.ch>
 MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-CC: Takashi Oe <toe@unlserve.unl.edu>, Michel Lanners <mlan@cpu.lu>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: [patch] VRAM detection in controlfb
-References: <Pine.LNX.4.05.10006030930000.1278-100000@callisto.of.borg>
+To: "David L. Thompson" <dthompsn@vizsolutions.com>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: XFree86-4.0 Status?
+References: <200006030459.XAA19940@lists.linuxppc.org> <p04320405b55e4e6caf0a@[192.168.1.1]>
 Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Geert Uytterhoeven wrote:
-
-> > XF4's fbdev is not working right for me either.  The weird displacement
-> > occurs on both of display cards (control, matrox) I have.  I think the
-> > current XF4 is of no use for fbdev only people.
+"David L. Thompson" wrote:
 >
-> Probably XF4 handles fix.smem_start being not on a page boundary
-> incorrectly.
+> I was wondering if anybody could comment on the status of
+> XFree86-4.0. I tried installing this on a PowerBook G3/250 and have
+> had no luck. I've seen just a few posts in regards to "support isn't
+> there yet" so I was wondering if anybody could comment.
 
-What would it have to do to handle it?
+I suppose that's Mach64 hardware, so you have to use the fbdev driver _and_ a
+patched kernel to correct broken OF PCI memory mappings.
+
+Ask Michael Schmitz :)
 
 
 Michel
 
 
 --
-Man invented language to satisfy his deep need to complain.
+I believe the technical term is "Oops!"
 ______________________________________________________________________________
 Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
 Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
