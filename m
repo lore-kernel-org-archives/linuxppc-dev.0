@@ -1,52 +1,62 @@
-Message-ID: <3F723C33.9030003@mvista.com>
-Date: Wed, 24 Sep 2003 17:52:03 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
+From: "Q-ha Park" <qha@infoeq.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: using bdi2000 to debug ppcboot on mpc7455
+Date: Thu, 25 Sep 2003 09:56:34 +0900
+Message-ID: <004c01c382ff$de2da2f0$2a21a8c0@qha>
 MIME-Version: 1.0
-To: =?x-windows-949?B?vcWw5rz2?= <ksshin@essetel.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: PCI DMA in GT64260
-References: <009501c37dba$0f462470$c50aa8c0@ksshin>
-In-Reply-To: <009501c37dba$0f462470$c50aa8c0@ksshin>
-Content-Type: text/plain; charset=x-windows-949
+Content-Type: text/plain;
+	charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Well there are a lot of things that could be wrong. I'd have to actually
-see your code to figure out what's wrong. Use
-arch/ppc/platforms/ev64260.c as an example, if you haven't already.
-Sorry I can't help more but there are simply too many possibilities and
-not enough info to narrow down the possibilities to suggest anything.
+[I apologize this question is off topic in this mailing
+list:ppc-embedded. But I coundn't find a better place to ask,
+ppcboot-users is inactive..]
 
-Mark
---
+I'm new to BDI2000, and after reading a manual that came with the tool,
+I tried to debug ppcboot using bdi2000 and gdb. The problem is I just
+can't set the breakpoint whether be it software or hardware breakpoint;
+For example, when I set the break point at "boot_cold" and type
+"continue", the program just runs without ever stopping at the
+breakpoint where it's supposed to stop!
 
-½Å°æ¼ö wrote:
+Here's what I did:
+a. turn on bdi2000.
+b. connect to bdi2000 in gdb session.
+c. set the breakpoint
+d. type "continue"
 
->Dear all.
->
->I have a board that consisted of mpc7410+gt64260+pci_device,
->and I have already success to read/write the pci_device.
->After init the pci_device, I command to the pci_device
->that read data from main memory(sdram),
->but, the pci_device does not operate and return only fail...
->
->I think that this is the DMA Problem...
->so I want to know that how to set the register of gt64260 to do
->DMA operation.
->
->I already set PCI SCS[0] Size Reg, PCI SCS[0] Base Addr Remap Reg,
->and PCI Base Address Enable Reg. what I omitted? or ...
->
->please help me...
->
->Thanks everybody.
->
->
->
->
->
->
+==========
+90              li      r21, BOOTFLAG_COLD      /* Normal Power-On: Boot
+from FLASH */
+(gdb) l
+85              .ascii  CONFIG_IDENT_STRING, "\0"
+86
+87              . = EXC_OFF_SYS_RESET
+88              .globl  _start
+89      _start:
+90              li      r21, BOOTFLAG_COLD      /* Normal Power-On: Boot
+from FLASH */
+91              b       boot_cold
+92              sync
+93
+94              . = EXC_OFF_SYS_RESET + 0x10
+(gdb) b boot_cold
+Breakpoint 1 at 0xfff02000: file
+/home/users/qpark/hobby/ppcboot-1.1.6/cpu/74xx_7xx/start.S, line 253.
+(gdb) cont
+Continuing.
+(continues for good...)
+==========
+
+What am I probably doing wrong? FYI, I tried to remove H/W breakpoint
+before I entered "go"
+
+Any help would be greatly appreciated!!
+
+:::::::::::::::::::::::::::::::::::::::::::::::::
+Q-ha Park
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
