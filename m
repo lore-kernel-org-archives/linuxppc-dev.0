@@ -1,73 +1,46 @@
-Message-ID: <3BD6895C.5080000@elsoft.ch>
-Date: Wed, 24 Oct 2001 11:26:52 +0200
+Message-ID: <3BD68B50.8090904@elsoft.ch>
+Date: Wed, 24 Oct 2001 11:35:12 +0200
 From: "David =?ISO-8859-1?Q?M=FCller?= (ELSOFT AG)" <d.mueller@elsoft.ch>
 MIME-Version: 1.0
-To: Dan Malek <dan@mvista.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Additional IRQ handlers in ppc4xx_init_IRQ()
-References: <3BD517E5.5090204@elsoft.ch> <3BD5B7D8.C060B6AF@mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Registering RTC access methods in platform_init()
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek wrote:
+Hello
 
-> "David Müller (ELSOFT AG)" wrote:
->
->
->>I have a question regarding the registration of additional IRQ handlers
->>for a PPC405GP based board.
->>
->
-> Where are Matt's changes for the Tivo?  It would address this and give
-> us another example of how this should be structured.
->
->
->
->>extended ppc4xx_init_IRQ as follows:
->>
->
-> This is not an appealing solution.  We should change ppc4xx_pic_init()
-> to initialize the internal interrupt controller irq descriptor, and then
-> create a standard board initialization call for board specific changes.
->
->
->
->>static void __init
->>ppc4xx_init_IRQ(void)
->>{
->>        int i;
->>
->>        ppc4xx_pic_init();
->>
->>
-> +	  ppc4xx_pic_board_init();
->
->>        return;
->>}
->>
->>
->
-> The '...board_init()' function can be empty for those boards that don't
-> require any additional controller initialization.
->
->
->
->>        for (i = 0; i < NR_IRQS; i++)
->>                irq_desc[i].handler = ppc4xx_pic;
->>
->
-> The NR_IRQS should represent the total number of interrupts across all
-> controllers.  The pic_init() should change this loop to initialize either
-> NR_AIC or NR_UIC depending upon a 403 or 405 interrupt controller.  No
-> #ifdefs necessary.
->
+I have a question regarding the registering of the RTC access methods in
+platform_init() in ppc4xx_setup.c.
+The problem is quite similar to the one i stated in
+one of my previous e-mails "Additional IRQ handlers in ppc4xx_init_IRQ()".
+
+Currently this is done in this way:
+
+#ifdef CONFIG_PPC_RTC
+/* new timer stuff */
+	ppc_md.time_init = todc_time_init;
+	ppc_md.set_rtc_time = todc_set_rtc_time;
+	ppc_md.get_rtc_time = todc_get_rtc_time;
+
+#if !defined(CONFIG_PIP405) && !defined(CONFIG_MIP405)
+	ppc_md.nvram_read_val = todc_direct_read_val;
+	ppc_md.nvram_write_val = todc_direct_write_val;
+#else
+	ppc_md.nvram_read_val = todc_mc146818_read_val;
+	ppc_md.nvram_write_val = todc_mc146818_write_val;
+#endif
+#endif
 
 
-This seems to be pretty much the same as my second proposal (except for the
+All other ports using a MC146818 RTC have their own xxx_setup.c file
+(Sandpoint, Adirondack, ...).
 
-#defines) if i understand you correctly.
+I suppose the preferred way to solve this is to replace this whole init
+code by a call to a board specific init routine?
+
+
 
 
 Dave
