@@ -1,25 +1,29 @@
-Date: Thu, 25 Oct 2001 08:36:19 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Kent Borg <kentborg@borg.org>
+Message-ID: <3BD8338B.B93FCF3C@laposte.net>
+Date: Thu, 25 Oct 2001 17:45:15 +0200
+From: "ibm405.linux" <ibm405.linux@laposte.net>
+MIME-Version: 1.0
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: source.mvista.com::linuxppc_2_4_devel rsync alive?
-Message-ID: <20011025083619.B29107@cpe-24-221-152-185.az.sprintbbd.net>
-References: <20011025112401.B11751@borg.org>
-Mime-Version: 1.0
+Subject: 405GP Dhrystone Benchmark
+References: <AEEDJHMEPHBIHBAHOOCDIELKCAAA.ogoh@asu.edu> <3BD82D8A.F0DC3B77@mvista.com>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20011025112401.B11751@borg.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Oct 25, 2001 at 11:24:01AM -0400, Kent Borg wrote:
+Hi,
 
-> Is the source.mvista.com::linuxppc_2_4_devel rsync alive and current?
+Does anyone perform Dhrystone 2.1 benchmark with a 405GP  ?
+I've tried and i got : 172 Mips  (Walnut board @200Mhz, HHL2.0).
+I've also tried to run the same benchmark with the same board with the
+basic_os and the ibm "highcppc" compiler and i found
+237 Mips (the 405GP specifications give 282 Mips @200Mhz, they told me that
+was obtained with a Diab compiler).
+Is there any reason my result (172 Mips) is so far from ~240 Mips.
+(i've used  : ppc_405-gcc   -DUNIX -DROPT -O2 -fomit-frame-pointer   dhry21a.c
+dhry21b.c timers_b.c -o dhry21 )
 
-It is now..  A pull failed and thus it got stuck.
+thanks,
+Phil.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
