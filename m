@@ -1,33 +1,32 @@
-Message-ID: <396D5E57.A270E342@wanadoo.fr>
-Date: Thu, 13 Jul 2000 08:14:47 +0200
-From: Martin Costabel <costabel@wanadoo.fr>
-MIME-Version: 1.0
-To: Stu Palmer <whistler@bitmuncher.net>
+Message-Id: <200007130655.HAA16851@hyperion.valhalla.net>
+Date: Thu, 13 Jul 2000 07:55:05 +0100
+Subject: Re: iBook woes
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: Chris Backas <cbackas@bigfoot.com>
 CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: late 2.3/2.4.0-{pre,test} work?
-References: <20000712144444.A18972@delirium.bitmuncher.net>
-Content-Type: text/plain; charset=us-ascii
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Stu Palmer wrote:
-[]
-> 1) Is there any work being done to make the late 2.3.x kernels or the
->    2.4-test series PPC-friendly?  Most traffic seems to be stabilizing
->    2.2 and/or getting 2.2 supported on the latest boxes.  (Also
->    phrased, "Where's the 2.4.x rsync/CVS repository?")
+Thu, Jul 13, 2000,  Chris Backas wrote:
+[...]
+> Ok, now for the sound.  Simply put, I've never heard a peep out of this
+> thing under Linux.  Is the dmasound module the correct one for the iBook?
+> I have 'alias sound
+> dmasound' on /etc/conf.modules, and 'lsmod' lists dmasound as loaded (but
+> unused). When I start X, I can see complaints from esd that /dev/dsp does
+> not exist (it does)
+> But perhaps it's not setup properly?
 
-rsync/bk repository: Have a look at
-http://www.fsmlabs.com/linuxppcbk.html
-It is called _2_3, but it is 2.4.0-test4.
+what does cat /dev/sndstat say ?
+you should also find some lines in dmesg with "DMA sound" stuff in them...
 
-Other rsync repositories: Say "rsync linuxcare.com.au::" and "rsync
-penguinppc.org::"
+I'd be interested to know what soundchip you have (AWACS version or is it a
+Burgundy) etc.  which you can either find from those entries or from the
+MacOS side...
 
-CVS repository: R.I.P.
-
---
-Martin
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
