@@ -1,32 +1,30 @@
-Message-ID: <XFMail.20030717124840.pochini@shiny.it>
-Content-Type: text/plain; charset=us-ascii
-MIME-Version: 1.0
-In-Reply-To: <20030717073956.GH7926@plato.local.lan>
-Date: Thu, 17 Jul 2003 12:48:40 +0200 (CEST)
-From: Giuliano Pochini <pochini@shiny.it>
-To: Ethan Benson <erbenson@alaska.net>
-Subject: Re: G4 mdd help request
-Cc: linuxppc-dev@lists.linuxppc.org
+Date: Thu, 17 Jul 2003 16:36:02 +0200
+From: Olaf Hering <olh@suse.de>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: sunrpc in 2.4 requires local_flush_tlb_page
+Message-ID: <20030717143602.GA1522@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 17-Jul-2003 Ethan Benson wrote:
->> Of course I did, but I was unsure because dev / ls shows a leaf "/disk".
->> Yesterday night I managed to get from osx the of path, and it's about
->> the same I wrote above. I mounted the boot partition in /xyz, then I
->> wrote in a root shell:
->>
->> bless -folder9 /xyz -verbose -setOF
->
-> NEVER mount bootstrap partitions in any macos, nor let macos ever
-> touch it.  no good will ever result.
+Hello,
 
-Who cares ?  For sir G4mdd it was (is) not a bootable partition. What
-damage can it do ?  It already doesn't boot.
+the current 2.4 bk tree has an unresolved symbol:
+/lib/modules/2.4.22-pre7/kernel/net/sunrpc/sunrpc.o
+depmod:         local_flush_tlb_page
+
+I think that happens only with CONFIG_HIGHMEM. net/sunrpm/xdr.c includes
+linux/pagemap.h.
+bh_kmap_irq() calls kmap_atomic(), which calls local_flush_tlb_page().
+
+Is there a reason why local_flush_tlb_page is not exported?
 
 
-Bye.
+Gruss Olaf
 
+--
+USB is for mice, FireWire is for men!
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
