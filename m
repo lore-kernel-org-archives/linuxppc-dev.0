@@ -1,30 +1,57 @@
-Message-Id: <200008030957.KAA17120@hyperion.valhalla.net>
-Date: Thu, 03 Aug 2000 10:56:55 +0100
-Subject: Re: rtc again...
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Benjamin Herrenschmidt <bh40@calva.net>,
-        martin costabel <costabel@wanadoo.fr>, linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Date: Thu, 3 Aug 2000 11:58:36 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Keith Owens <kaos@ocs.com.au>
+cc: paulus@linuxcare.com.au, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Where does ppc define __start___ksymtab? 
+In-Reply-To: <29943.965289793@ocs3.ocs-net>
+Message-ID: <Pine.HPX.4.10.10008031038520.9070-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-and the 2.2.17pre15 dmesg contains the lines:
+On Thu, 3 Aug 2000, Keith Owens wrote:
 
-====
-Linux version 2.2.17pre15-ben1-snd (root@athena) (gcc version 2.95.2
-19991024 (release/franzo)) #2 Wed Aug 2 23:16:52 BST 2000
-[...]
-pmac nvram is core99: 0
-System has 64 possible interrupts
-GMT Delta read from XPRAM: 60 minutes, DST: on
+>
+> On Thu, 3 Aug 2000 16:13:46 +1000 (EST),
+> Paul Mackerras <paulus@linuxcare.com.au> wrote:
+> >> I have been trying to find where ppc defines __start___ksymtab and
+> >> __stop___ksymtab symbols.  These delimit the __ksymtab entries for
+> >> module symbols.  On every other architecture that supports modules,
+> >> arch/xxx/vmlinux.lds contains lines like this
+> >>
+> >>   __start___ksymtab = .;	/* Kernel symbol table */
+> >>   __ksymtab : { *(__ksymtab) }
+> >>   __stop___ksymtab = .;
+> >>
+> >> I can find no equivalent lines for ppc in a stock 2.4.0-test5 source
+> >> tree yet ppc obviously defines them somewhere.  But where?
+> >
+> >I think they must be defined automagically by the linker.  They aren't
+> >defined explicitly anywhere but we still end up with a __ksymtab
+> >section with the __start___ksymtab and __stop___ksymtab symbols
+> >defined at the beginning and end of it.
+> >
+> >We can add those lines if you like, that's no problem.
+>
+> Please add them.  It makes the ppc vmlinux.lds more consistent with the
+> other archs that support modules.
+>
 
-====
+Indeed they are automagically defined by the linker, which adds these
+symbols to "orphan" section, i.e., the ones which are not explicitly
+loaded (or discarded) in the linker script. The code that does all this
+magic is somehat hidden in binutils/ld/emultempl/elf32.em.
 
-which, as I said, works as long as RTC is -not- involved.
-are we applying a correct twice?
+What I hate in all this is that the combination of 2 bugs (no
+ksymtab/kstrtab in vmlinux.lds and no definition of the start and stop
+symbols) ends up in something working through behind the scenes black
+magic. Perhaps names should be chosen such that they will never clash with
+the ones the linker feels free to generate ?
 
-Iain.
+	Regards,
+	Gabriel.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
