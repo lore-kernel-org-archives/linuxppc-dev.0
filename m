@@ -1,74 +1,34 @@
-Date: Tue, 18 Nov 2003 08:52:31 +0100
-From: Olaf Hering <olh@suse.de>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: _syscall6 for klibc
-Message-ID: <20031118075231.GA24421@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+To: Juergen Kienhoefer <juergen@kienhoefer.com>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: cache coherence problem 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 17 Nov 2003 21:00:44 PST."
+             <3FB9A77C.3030101@kienhoefer.com>
+Date: Tue, 18 Nov 2003 09:04:34 +0100
+Message-Id: <20031118080439.7AF33C5F59@atlas.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-klibc requires this change for unistd.h
+In message <3FB9A77C.3030101@kienhoefer.com> you wrote:
+>
+> Basically, what I need to do is:
+...
+> for every 32 bytes of the memory block I put code in.
+...
 
+s/32/CACHE_LINE_SIZE/g
 
---- ./include/asm-ppc/unistd.h	2003-08-23 10:30:55.000000000 +0200
-+++ linuxppc-2.5/include/asm-ppc/unistd.h	2003-11-14 21:01:47.000000000 +0100
-@@ -279,6 +279,7 @@
- 		register unsigned long __sc_5  __asm__ ("r5");		\
- 		register unsigned long __sc_6  __asm__ ("r6");		\
- 		register unsigned long __sc_7  __asm__ ("r7");		\
-+		register unsigned long __sc_8  __asm__ ("r8");		\
- 									\
- 		__sc_loadargs_##nr(name, args);				\
- 		__asm__ __volatile__					\
-@@ -287,10 +288,10 @@
- 			: "=&r" (__sc_0),				\
- 			  "=&r" (__sc_3),  "=&r" (__sc_4),		\
- 			  "=&r" (__sc_5),  "=&r" (__sc_6),		\
--			  "=&r" (__sc_7)				\
-+			  "=&r" (__sc_7),  "=&r" (__sc_8)		\
- 			: __sc_asm_input_##nr				\
- 			: "cr0", "ctr", "memory",			\
--			  "r8", "r9", "r10","r11", "r12");		\
-+			        "r9", "r10","r11", "r12");		\
- 		__sc_ret = __sc_3;					\
- 		__sc_err = __sc_0;					\
- 	}								\
-@@ -318,6 +319,9 @@
- #define __sc_loadargs_5(name, arg1, arg2, arg3, arg4, arg5)		\
- 	__sc_loadargs_4(name, arg1, arg2, arg3, arg4);			\
- 	__sc_7 = (unsigned long) (arg5)
-+#define __sc_loadargs_6(name, arg1, arg2, arg3, arg4, arg5, arg6)	\
-+	__sc_loadargs_5(name, arg1, arg2, arg3, arg4, arg5);		\
-+	__sc_8 = (unsigned long) (arg6)
+Best regards,
 
- #define __sc_asm_input_0 "0" (__sc_0)
- #define __sc_asm_input_1 __sc_asm_input_0, "1" (__sc_3)
-@@ -325,6 +329,7 @@
- #define __sc_asm_input_3 __sc_asm_input_2, "3" (__sc_5)
- #define __sc_asm_input_4 __sc_asm_input_3, "4" (__sc_6)
- #define __sc_asm_input_5 __sc_asm_input_4, "5" (__sc_7)
-+#define __sc_asm_input_6 __sc_asm_input_5, "6" (__sc_8)
+Wolfgang Denk
 
- #define _syscall0(type,name)						\
- type name(void)								\
-@@ -362,6 +367,12 @@ type name(type1 arg1, type2 arg2, type3
- 	__syscall_nr(5, type, name, arg1, arg2, arg3, arg4, arg5);	\
- }
-
-+#define _syscall6(type,name,type1,arg1,type2,arg2,type3,arg3,type4,arg4,type5,arg5,type6,arg6) \
-+type name(type1 arg1, type2 arg2, type3 arg3, type4 arg4, type5 arg5, type6 arg6)	\
-+{									\
-+	__syscall_nr(6, type, name, arg1, arg2, arg3, arg4, arg5, arg6);	\
-+}
-+
- #ifdef __KERNEL__
-
- #define __NR__exit __NR_exit
 --
-USB is for mice, FireWire is for men!
-
-sUse lINUX ag, nÜRNBERG
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Windows95 = graphical user interface for a single-threaded  interrupt
+handler (DOS)
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
