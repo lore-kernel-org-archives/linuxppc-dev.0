@@ -1,45 +1,39 @@
-Message-ID: <3A6DADEF.D525DFCD@cisco.com>
-Date: Tue, 23 Jan 2001 10:14:39 -0600
-From: Mike Beede <mbeede@cisco.com>
+Subject: Re: quad 604 SMP update
+To: benh@kernel.crashing.org (Benjamin Herrenschmidt)
+Date: Tue, 23 Jan 2001 10:01:00 -0800 (PST)
+Cc: wtholliday@ucdavis.edu (Taylor Holliday),
+        linuxppc-dev@lists.linuxppc.org (linuxppc-dev)
+In-Reply-To: <19341218020215.28389@mailhost.mipsys.com> from "Benjamin Herrenschmidt" at Jan 23, 2001 09:30:31 AM
 MIME-Version: 1.0
-To: Jeff Hartmann <jhartmann@valinux.com>
-CC: Dan Malek <dan@mvista.com>, Roman Zippel <zippel@fh-brandenburg.de>,
-        michdaen@iiic.ethz.ch,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Gareth Hughes <gareth@valinux.com>, linuxppc-dev@lists.linuxppc.org,
-        dri-devel@lists.sourceforge.net, Paul Mackerras <paulus@linuxcare.com>
-Subject: Re: [Dri-devel] PPC Lockup (ati-pcigart-branch)
-References: <Pine.GSO.4.10.10101221945230.19978-100000@zeus.fh-brandenburg.de> <3A6C8C6E.3C19F151@mvista.com> <3A6C9852.4090201@valinux.com> <3A6CA6A9.7794B603@mvista.com> <3A6CAAA2.6090607@valinux.com>
 Content-Type: text/plain; charset=us-ascii
+Message-Id: <20010123180101.13EE62B54A@marcus.pants.nu>
+From: flar@pants.nu (Brad Boyer)
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Jeff Hartmann wrote:
+Benjamin Herrenschmidt wrote:
+> >
+> >Started removing DIMMS - and the machine booted :-).
+> >
+> >Any idea why total bogomips would say 11.96 when it should be 1196?
 >
-> > Dan Malek wrote:
-> > Ummm...of course it is virtually contiguous.  How could it be
-> > different?  You request a size, and it returns a base virtual address.
-> > If there were holes in it, how would you know?
+> Mark is having the same issue, I'll look into it.
 >
-> Look at vread in vmalloc.c, I think it would handle holes in a
-> vmalloc'ed area (From a brief reading of the code.)  I've seen postings
-> about this on linux-kernel.  I don't see a vwrite implementation, but I
-> would assume you would have to do something similar for writes.
+> Note that the DIMMs might or might not be the reason of the problem.
+> Please tell me what PCI hardware you have in the box (and also, try with
+> other DIMMs...)
+>
 
-Separate calls to vmalloc can return noncontiguous regions, but the
-memory
-from a single call is contiguous.  Unless you mean *physically*
-contiguous,
-which isn't guaranteed at all. (I don't think you do--just thought I'd
-be
-clear).  After all, what good would it do to allocate multiple regions
-and
-return a pointer to the first?
+I don't have a quad CPU machine, but my 7600 when upgraded to a dual 200MHz
+board had similar trouble. It has trouble booting Linux if I have all of
+the memory I have in it, or in the wrong places. However, the MacOS can
+use both CPUs fine with any configuration I try. I have no PCI cards in
+this machine, so that isn't the problem for me. Incidentally, the DIMMS
+I have to remove are the ones Apple shipped in it.
 
-	Mike
---
-Mike Beede
-Cisco Systems
+	Brad Boyer
+	flar@pants.nu
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
