@@ -1,45 +1,44 @@
-Message-ID: <393BCD68.556D4423@embeddededge.com>
-Date: Mon, 05 Jun 2000 11:55:20 -0400
+Message-ID: <393BD32A.741C33B0@embeddededge.com>
+Date: Mon, 05 Jun 2000 12:19:54 -0400
 From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
 To: Dan Malek <dan@netx4.com>
 CC: Daniel Wu <Daniel.Wu@alcatel.com.au>, linuxppc-embedded@lists.linuxppc.org
 Subject: Re: kernel crashes at InstructionTLBMiss
-References: <00Jun4.144038est.115228@border.alcanet.com.au> <393BBE5D.49B17E9C@embeddededge.com>
+References: <00Jun4.144038est.115228@border.alcanet.com.au> <393BBE5D.49B17E9C@embeddededge.com> <393BCD68.556D4423@embeddededge.com>
 Content-Type: multipart/mixed;
- boundary="------------E2311C818DB60A4A300CECD8"
+ boundary="------------9F99AE2E7866653B6AA68AF2"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 This is a multi-part message in MIME format.
---------------E2311C818DB60A4A300CECD8
+--------------9F99AE2E7866653B6AA68AF2
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 
 Dan Malek wrote:
 
-> ..... This is a 2.2.13 kernel with all patches and
-> the option to include the "CPU6" patch.  Don't apply any other patches
-> from anywhere.
+> I was just reminded of a patch to correct a mistake I made in this
+> particular kernel.  It is attached.  Apply just this one to the
+> MontaVista kernel :-).
 
+Nope, not that one......try this one, sorry.  Too many windows open
+and didn't see the build error......
 
-I was just reminded of a patch to correct a mistake I made in this
-particular kernel.  It is attached.  Apply just this one to the
-MontaVista kernel :-).
 
 
 	-- Dan
---------------E2311C818DB60A4A300CECD8
+--------------9F99AE2E7866653B6AA68AF2
 Content-Type: text/plain; charset=us-ascii;
- name="mv-cpu6-3.patch"
+ name="mv-cpu6-1.patch"
 Content-Disposition: inline;
- filename="mv-cpu6-3.patch"
+ filename="mv-cpu6-1.patch"
 Content-Transfer-Encoding: 7bit
 
 diff -Nru linux-2.2.13.orig/arch/ppc/kernel/head.S linux-2.2.13/arch/ppc/kernel/head.S
---- linux-2.2.13.orig/arch/ppc/kernel/head.S	Mon Jun  5 11:44:56 2000
-+++ linux-2.2.13/arch/ppc/kernel/head.S	Mon Jun  5 11:45:59 2000
+--- linux-2.2.13.orig/arch/ppc/kernel/head.S	Fri Mar 24 23:43:32 2000
++++ linux-2.2.13/arch/ppc/kernel/head.S	Fri Mar 24 23:51:19 2000
 @@ -2452,11 +2452,11 @@
  	SYNC			/* Some chip revs need this... */
  	mtmsr	r6
@@ -62,13 +61,14 @@ diff -Nru linux-2.2.13.orig/arch/ppc/kernel/head.S linux-2.2.13/arch/ppc/kernel/
  	.space	512
 +
 +#ifdef CONFIG_8xx_CPU6
++cpu6_bug:
 +	.space	4
 +#endif
 
  /*
   * An undocumented "feature" of 604e requires that the v bit
 
---------------E2311C818DB60A4A300CECD8--
+--------------9F99AE2E7866653B6AA68AF2--
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
