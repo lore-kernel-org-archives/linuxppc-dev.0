@@ -1,26 +1,41 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <40CF0671.4040002@ztec.com.br>
-Date: Tue, 15 Jun 2004 11:23:45 -0300
-From: iida <iida@ztec.com.br>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: watchdog in lite5200
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: MPC8260 ethernet transmit problem
+Date: Tue, 15 Jun 2004 09:05:38 -0600
+Message-ID: <065ACD8E84315E4394C835E398C8D5EB089DD8@cossmgmbx02.email.corp.tld>
+From: "VanBaren, Gerald (AGRE)" <Gerald.VanBaren@smiths-aerospace.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-i am tring to use the watchdog in a lite5200
-In menuconfig , i find the watchdog in char devices
-but none of the cotrolers is for internal watchdog of mpc5200
-In 5xxx/IO dont appear to show a driver for internal watchdog either.
+Check your port initialization: do you have the Tx (and Rx) clock configured properly?  Do you have the Tx data and control lines configured properly?
 
-So i have to develop the driver for watchdog in mpc5200 ?
-thanks
---
-Atenciosamente,
-Renato Iida
-Z Tecnologia em Comunicação
-www.ztec.com.br
+gvb
+
+
+> -----Original Message-----
+> From: owner-linuxppc-embedded@lists.linuxppc.org
+> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of
+> matik@ug.bilkent.edu.tr
+> Sent: Tuesday, June 15, 2004 1:37 PM
+> To: linuxppc-embedded@lists.linuxppc.org
+> Subject: MPC8260 ethernet transmit problem
+>
+>
+>
+> Hi all,
+>
+> I am using Windriver SBCPowerQUICC2 with MPC8265 on it with
+> 2.4.26 kernel. When I configure FCC ethernet on one of
+> FCC1/2/3 it does not transmit any packet through channel
+> although it successfully calls 'fcc_enet_xmit' function.
+> Note: reception works.
+>
+> Thanks.
+> matik
+>
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
