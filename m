@@ -1,7 +1,6 @@
-Message-ID: <3C0D06F8.57DD8837@mvista.com>
-Date: Tue, 04 Dec 2001 09:25:12 -0800
-From: Frank Rowand <frank_rowand@mvista.com>
-Reply-To: frowand@mvista.com
+Message-ID: <3C0D2544.D7C4C45F@mvista.com>
+Date: Tue, 04 Dec 2001 11:34:28 -0800
+From: Armin Kuster <akuster@mvista.com>
 MIME-Version: 1.0
 To: Phil <ibm405.linux@laposte.net>
 Cc: Tom Rini <trini@kernel.crashing.org>,
@@ -31,36 +30,11 @@ Phil wrote:
 > >
 > > What date?  This isn't a problem anymore, at least on a few walnuts I've
 > > gotten people to test.
-
-Rev 1.731 of linuxppc_2_4_devel(mid-day California time yesterday) boots
-fine on my walnut.
-
-HHL2.0 toolchain and ibm OpenBios.
-
-I used an almost default configuration (I was working on a KGDB
-problem so I enabled KGDB):
-
-   make walnut_config
-   make menconfig
-        select KGDB
-        select CONFIG_MORE_COMPILE_OPTIONS
-   make dep
-   make zImage
-
-(I needed to fix config.in to allow CONFIG_MORE_COMPILE_OPTIONS - see
-the patch I posted yesterday.)
-
-You shouldn't have to enable KGDB.
+>
 
 
-Do you have KGDB enabled by mistake?  If you do, it will sit at the
-"Now booting the kernel" console message until KGDB connects to the
-target.
+Change set 1.735 works.  Its prior to the kgdb patches
 
-
--Frank
---
-Frank Rowand <frank_rowand@mvista.com>
-MontaVista Software, Inc
+-- armin
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
