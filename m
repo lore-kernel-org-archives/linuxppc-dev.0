@@ -1,68 +1,40 @@
-Message-Id: <20010711014136.Postino-029152@smtp01.highway.ne.jp>
-Date: Wed, 11 Jul 2001 01:41:36 +0900
-To: Kaoru Fukui <k_fukui@highway.ne.jp>,
-	<Jean-Jacques.Levy@inria.fr>, <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-From: Kaoru Fukui <k_fukui@highway.ne.jp>
-Subject: Re: __divdi3 unresolved + X pointer blocks
-In-Reply-To: <20010711010133.Postino-018213@smtp01.highway.ne.jp>
-References: <20010711010133.Postino-018213@smtp01.highway.ne.jp>
-MIME-Version: 1.0
+Date: Tue, 10 Jul 2001 10:44:03 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Olaf Hering <olh@suse.de>
+Cc: Kaoru Fukui <k_fukui@highway.ne.jp>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: Kernel-2.4.7.pre5
+Message-ID: <20010710104403.G692@opus.bloom.county>
+References: <20010710210004.Postino-030256@smtp01.highway.ne.jp> <20010710142113.B21458@suse.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20010710142113.B21458@suse.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> From: Jean-Jacques Levy <Jean-Jacques.Levy@inria.fr>
-> To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Subject: Re: __divdi3 unresolved + X pointer blocks
+On Tue, Jul 10, 2001 at 02:21:13PM +0200, Olaf Hering wrote:
+>
+> On Tue, Jul 10, Kaoru Fukui wrote:
+>
+> >
+> > Hi!
+> >
+> > I had this problem in linuxppc_2_4 bk tree's linux-2.4.7.pre5.
+> > Is my fix correct ?
+>
+> The "correct" fix would be somthing like that:
+> /mirror/kernel/people/andrea/kernels/v2.4/2.4.7pre3aa1/00_ksoftirqd-7_ppc-2
+>
+> But Paul was/is not very happy about that softirq thing...
 
-> 2.4.6-pre6. It didn't boot. Open Firmware answer (called
-> by yaboot): DEFAULT CATCH! code = 300 %SRR0 01016cf8 $SRR! 00003030
-> I cannot decipher OF msgs.
+iirc, Paul doesn't think the first chunk is still needed. The 2nd chunk is
+needed for pre4/pre5, but the last chunk looks wierd.  It removes
+__cpu_raise_softirq on PPC, which in pre5 all arches still have (x86 is
+slightly different then the rest).
 
-Hi! Ben and JJ.
-I also got same problem at kernel-2.4.7.pre  boot  which kernel be compiled
-with gcc-3.0.1cvs,
-But I tried kenel compilation continusly with kernel-2.2.19
-when it needed the patch.
-So I could take bootable kernel-2.2.19 which using gcc-3.0.1cvs.
-Please look  my dmesg
-
-I think boot problem which is in the kernel-2.4.x's source.
-Please look the problem in kernel-2.4.x.
-
-My using gcc-3.0.1 here is
-ftp://ftp.linuxppc.org/users/kfukui/glibc-2.2.x-room/RPMS/
-
-Thanks
-Kaoru
-
- ------ dmesg ----------------
-device tree used 41060 bytes
-Total memory = 256MB; using 1024kB for hash table (at c0400000)
-Linux version 2.2.19-0a (root@g4mpKFUKUI) (gcc version 3.0.1 20010707 (prerelease))
- #1 Wed Jul 11 00:39:55 JST 2001
-PMU driver initialized for Core99
-xmon uses screen and keyboard
-PCI bus 0 controlled by pci at f0000000
-PCI buses 0..1 controlled by pci at f2000000
-PCI bus 0 controlled by pci at f4000000
-Uni-N revision: 8, KeyLargo revision: 3
-
-------- the patch to kernel-2.2.19 --------
-diff -urN base/kernel/sched.c fixed/kernel/sched.c
---- base/kernel/sched.c	Tue Jun 26 07:12:15 2001
-+++ fixed/kernel/sched.c	Wed Jul 11 00:29:08 2001
-@@ -49,7 +49,7 @@
- long tick = (1000000 + HZ/2) / HZ;	/* timer interrupt period */
-
- /* The current time */
--volatile struct timeval xtime __attribute__ ((aligned (16)));
-+struct timeval xtime __attribute__ ((aligned (16)));
-
- /* Don't completely fail for HZ > 500.  */
- int tickadj = 500/HZ ? : 1;		/* microsecs */
-
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
