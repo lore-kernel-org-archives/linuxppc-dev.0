@@ -1,34 +1,30 @@
-Date: Thu, 28 Jan 1999 11:40:57 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Martin Costabel <costabel@wanadoo.fr>
-cc: Cort Dougan <cort@persephone.cs.nmt.edu>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: clearinghouse for your patches - I want your patches!
-In-Reply-To: <36B02D03.1741187F@wanadoo.fr>
-Message-ID: <Pine.LNX.4.03.9901281140361.29084-100000@mercator.cs.kuleuven.ac.be>
+Message-ID: <36B06D9F.96F2AD48@akos.net>
+Date: Thu, 28 Jan 1999 09:01:11 -0500
+From: Russell Hires <inet2@akos.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: AWACS Bug
+Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 28 Jan 1999, Martin Costabel wrote:
-> Will the patches that were already in the vger tree before the official
-> release of 2.2.0 make it into mainstream 2.2 soon? I am talking about
-> those that were in the last vger snapshot (pre9 = 2.2.0-final) that
-> managed to escape before the door was closed (it's on your site,
-> anyway). For example, atyfb-v1.101 vs 1.98 in the official 2.2.0, or
-> BenH's patches to drivers/macintosh/mac_keyb.c.
+For some reason AWACS is causing Linux to crash. Here's the error
+message I get: AWACS: error, status 4f40da9. I have a G3/266, which I
+bought in late November 1998. 64 MB RAM, 6MB VRAM, DVD-ROM, 4 G SCSI HD
+that runs Linux on 1.5 G partition (which is, of course, divided up into
+/usr and so on...)  using the 2.2pre9 kernel (final).
 
-I sent the video patches to Linus yesterday.
+About my crashes: it seems to happen when I use BootX the Application,
+and not
+BootX the Extension. Also, it happens when I try to backspace too much
+at the prompt, or lately when I try to come out of X (using AfterStep)
+back into the shell...I tried the user support list, and they suggested
+that I ask the developers if they knew anything. So,
+Do you know of what could be causing this, or how I should try to fix
+it?
 
-Greetings,
-
-						Geert
-
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
+Russell Hires
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
