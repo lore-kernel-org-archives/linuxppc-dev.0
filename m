@@ -1,26 +1,54 @@
-Date: Fri, 24 Mar 2000 14:24:58 -0700
-From: Cort Dougan <cort@fsmlabs.com>
-To: Zirong WANG <zirong.wang@ocegr.fr>
-Cc: "Dan A. Dickey" <ddickey@charter.net>,
-        "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Anyone tried 2.3.99.pre?
-Message-ID: <20000324142458.Q10224@medea.fsmlabs.com>
-References: <38DAB8D3.F930393@charter.net> <20000323174654.B11626@medea.fsmlabs.com> <38DB969A.E5088271@ocegr.fr>
+Message-ID: <20000324225355.21418.qmail@dag.newtech.fi>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Porting to a VME board w. MPC740
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <38DB969A.E5088271@ocegr.fr>; from Zirong WANG on Fri, Mar 24, 2000 at 05:23:54PM +0100
+Date: Sat, 25 Mar 2000 00:53:55 +0200
+From: Dag Nygren <dag@newtech.fi>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-That is the kernel.org tree I'm referring to.  It's all there and
-up-to-date with our work.
+Hi,
 
-} > The latest v2.3.99-pre3-pre7 works on PPC.  8xx doesn't work since it's not
-} > finished in 2.3.
-}
-} I am just wondering when this release will be merged in the
-} kernel.org tree for easy downloading. I am looking for a version
-} of PPC linux that deals well with IDE disk on my MTX board.
+just got back home after a long day trying to get Linux
+up on a VME bord from ELTEC using MPC740.
+
+The problem seems to be quite common when I browsed
+the mailing lists, but I couldn't find any real answer :-(
+
+I am using the VxWorks monitor to load a kernel image
+(zvmlinux) over ftp from my x86 Linux system where I also
+have done the crosscompiling.
+The kernel is compiled from the standard 2.2.14 distribution
+and I did have to change some IO addresses of the serial port
+to get the bootloader running.
+Now it shows that the kernel is decompressed into 0x0 and
+should try to run it. The problem is that I don't have any other
+means of checking what it does but direct writes to the serial
+port and I have tracked down the halt to the
+position where boot/head.S does a blr to address 0x4.
+Writing to the serial port before this works nicely, but even when I
+put a write directly after the NOPS in kernel/head.S there is no
+output....
+
+Dumping the code at 0x0-0x20 shows that there is the expected stuff..
+
+I also tried to disable the cache in boot/head.S, but nothing changed.
+
+It seems like  my system refuses to execute the code in 0x0-> ...
+
+Any clues appreciated.
+
+BRGDS
+
+
+--
+Dag Nygren                               email: dag@newtech.fi
+Oy NewTech Ab                            phone: +358 9 8024910
+Trasktorpet 3                              fax: +358 9 8024916
+02360 ESBO                                 NMT: 0400-426312
+FINLAND
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
