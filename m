@@ -1,32 +1,46 @@
-Message-ID: <3897386A.8A1411D@netx4.com>
-Date: Tue, 01 Feb 2000 14:47:54 -0500
-From: Dan Malek <dan@netx4.com>
+Date: Tue, 1 Feb 2000 15:11:12 -0500
+From: brad allison <jackal@aol.net>
+To: Stephen Edie <sedie@terraplex.com>
+cc: Multiple recipients of list <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: USB problems in 2.2.14pre9
+In-Reply-To: <Pine.LNX.4.10.10001251234480.13666-100000@newhope.terraplex.c
+ om>
+Message-ID: <Pine.SGI.4.00.10002011510110.14840-100000@osiris.office.aol.com>
 MIME-Version: 1.0
-To: Peter Allworth <linsol@zeta.org.au>
-CC: linuxppc-embedded@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Low memory problems in 8xx Linux
-References: <kfy3drel1xy.fsf@kieraypc07.p.y.ki.era.ericsson.se> <38964A23.3CAFFD88@zeta.org.au> <kfyoga04wy2.fsf@kieraypc01.p.y.ki.era.ericsson.se>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Peter Allworth <linsol@zeta.org.au> writes:
 
-> > The good news is I'm pretty sure I have a fix. You've caught me in
-> > the process of learning how to make an official contribution to the
-> > Linux kernel.
+On Tue, 25 Jan 2000, Stephen Edie wrote:
 
-I have already incorporated most of these into 2.3.xx
-kernel, and a 2.2.13 version that I will update as a tar file
-on a server.
+> Hmm,
+>
+> > But I'm only pressing a maximum of _two_ keys "cd" and it's coming out as
+> > "cdcd".
+> >
+> > It's a real pain cause I do "cd" a lot.
+>
+> You are probably hitting three keys:  "cd<space>"  Anyway, this problem
+> occurs at the console as well as in X, however, strangely it is much worse
+> at the console.
+>
 
-Now, who is the real author of these modifications????  I have
-received e-mail from three different people in the past week
-providing similar patches against different versions of the kernel.
+Oh it's driving me crazy!
 
+# cdd -
+cdd: Command not found.
+# cdcd
+cdcd: Command not found.
+# cdcd
+cdcd: Command not found.
 
+Everyday.. over and over.
 
-	-- Dan
+This is a bug that only affects fast typest.
+
+-b
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
