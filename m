@@ -1,42 +1,38 @@
-Message-ID: <01C28974.1A34BA30.svacca@valcom.com>
-From: Steven Vacca <svacca@valcom.com>
-Reply-To: "svacca@valcom.com" <svacca@valcom.com>
-To: "LinuxEmbeddedMailList (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Using sys_sendto() in Kernel instead of sendto() in app
-Date: Mon, 11 Nov 2002 11:18:46 -0500
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [PATCH] ethtool support to 8260 fcc ethernet driver (and other stuff) 
+In-reply-to: Your message of "Mon, 11 Nov 2002 07:49:57 -0700"
+             <20021111144957.GB602@opus.bloom.county>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
+Date: Tue, 12 Nov 2002 10:12:32 +1100
+Message-ID: <26563.1037056352@msa.cmst.csiro.au>
+From: Murray Jensen <Murray.Jensen@csiro.au>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-MPC860T, QMC-mode on SCC2.
+On Mon, 11 Nov 2002 07:49:57 -0700, Tom Rini <trini@kernel.crashing.org> writes:
+>Could you please split this up into 9 logical patches then?
 
-When QMC data is available to be read from a particular
-QMC channel, the SCC2 interrupts, and I want to
-immediately read and send that data out to a destination
-unit on the LAN using sys_sendto(), from within the ISR.
-I already know the destination IP addr and UDP port, but
-not the dest MAC addr.  So ARP is needed.
+Hi Tom, I knew you would say this :-) But I don't have a lot of spare time at
+the moment, just enough to put this patch together and get it out in case it
+would help others. To produce this patch was fairly trivial - just a simple
+diff, but to split it up would take a fair amount of effort (since there
+would be a number of places where the various bits clashed). I will do it
+eventually, but don't hold your breath. Perhaps there is someone out there
+with more time? (yeah right :-)
 
-Using a network sniffer, after executing the 1st sys_sendto(),
-I see that the IP stack ARPs for the dest unit's MAC addr,
-and receives the ARP response which contains the MAC addr.
-But then the IP stack sends an ICMP msg stating
-"Destination Unreachable", and does not send any pkts to the
-dest unit after that.
+>That part should also just be:
+>obj-$(CONFIG_FCC_GENERIC_MII) += mii.o
 
-When I do the above using the usual sendto() from within my
-app, it works fine, and after receiving the ARP response, the
-sendto()'s send recd QMC pkts out onto the LAN continuously,
-as normal.
+OK, thanks. Cheers!
+								Murray...
+--
+Murray Jensen, CSIRO Manufacturing & Infra. Tech.      Phone: +61 3 9662 7763
+Locked Bag No. 9, Preston, Vic, 3072, Australia.         Fax: +61 3 9662 7853
+Internet: Murray.Jensen@csiro.au
 
-Could I have some guidance on using sendto()'s (sys_sendto()'s)
-from within the kernel?
-
-Thanks,
-
-Steven
+Hymod project: http://www.msa.cmst.csiro.au/projects/Hymod/
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
