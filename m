@@ -1,30 +1,36 @@
-Message-ID: <3C4DCEA7.3040200@embeddededge.com>
-Date: Tue, 22 Jan 2002 15:42:15 -0500
-From: Dan Malek <dan@embeddededge.com>
+From: jdweyer@rockwellcollins.com
+Subject: /dev/vme Permissions for users other than root...
+To: linuxppc-embedded@lists.linuxppc.org
+Date: Tue, 22 Jan 2002 16:57:13 -0600
+Message-ID: <OFEA27A9BB.3CE5E820-ON86256B49.007E0567@collins.rockwell.com>
 MIME-Version: 1.0
-To: "Kerl, John" <John.Kerl@Avnet.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: FW: Linux on 857T?
-References: <C08678384BE7D311B4D70004ACA371050B7632AC@amer22.avnet.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Kerl, John wrote:
+(disregard prior email; subject was not included)
 
-> Sorry, forgot to cc the mailing list.
+Greetings,
 
-Set burst inhibit (BIH) in the memory controller ORx register for
-your DRAM banks.  If that has no effect (but I suspect it will),
-disable copyback cache (this is a configuration option).  If this
-has no effect (but I suspect it will), modify the code in head_8xx.S
-to globally disable (or actually not enable) the cache.  If you need
-help with this last one, let me know.
+We are using Linux version 2.2.12 with Gabriel Paubert's patches for the
+Motorola MVME2600 platform.   I have
+my application working opening /dev/vme and then doing ioctl calls to set
+the attributes.  It works
+fine only when I am root.  When another user tries to run the application,
+the ioctl (not the open) fails.
+I have changed the permissions of /dev/vme to rw for all (ugo) and have
+even gone as far as
+changing ownership and group to the user's instead of root, but to no
+avail.  The permissions
+of /dev/vme are crwxrwxrwx.  I realize the execute (x) permission is
+ineffective, but I'm trying everything.
 
-None of the ICEs you listed are Linux friendly.....run without them.
+Do you have any ideas of what to try?
 
+Thanks for any help you can provide,
 
-	-- Dan
+JoAnna Weyer
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
