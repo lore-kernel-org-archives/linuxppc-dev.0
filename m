@@ -1,85 +1,47 @@
-Message-ID: <36C99DC8.357EEF2A@mailserv.rz.fh-muenchen.de>
-Date: Tue, 16 Feb 1999 17:33:12 +0100
-From: Christian Zankel <zankel@tarantel.rz.fh-muenchen.de>
+Date: Tue, 16 Feb 1999 17:43:14 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+To: Gabriel Paubert <paubert@iram.es>,
+        Rob Hagopian <hagopiar@vuser.vu.union.edu>,
+        Peter De Schrijver <Peter.De_schrijver@alcatel.be>,
+        Ulrik De Bie <winmute@kotnet.org>
+cc: David Edelsohn <dje@watson.ibm.com>,
+        Benjamin Herrenschmidt <bh40@calva.net>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: bootstrap stuffs 
+In-Reply-To: <Pine.HPP.3.96.990216123042.1977B-100000@gra-ux1.iram.es>
+Message-ID: <Pine.LNX.4.03.9902161741290.20281-100000@mercator.cs.kuleuven.ac.be>
 MIME-Version: 1.0
-To: Cort Dougan <cort@persephone.cs.nmt.edu>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Restructuring Efforts
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello,
+On Tue, 16 Feb 1999, Gabriel Paubert wrote:
+> On Mon, 15 Feb 1999, David Edelsohn wrote:
+> 
+> > 	As Gabriel correctly explained, a "sync" instruction may be
+> > necessary before interrupts are enabled if some off-chip operation, like
+> > modifying an interrupt controller on the bus, was performed.  That is
+> > because of the bus operations which need to complete before interrupts can
+> > be enabled, not because of the enabling itself.
+> 
+> Actually I have come to the conclusion that the best way to handle this is
+> to add a sync instruction in the mask/disable interrupt routines (the ones
+> that access the interrupt controllers), so that all following __cli/__sti
+> only need to access the MSR (for enable/unmask you don't care to
+> synchronize of course).
 
-> > [ some sentences about porting LinuxPPC to Force CPCI 750 board ]
+Then do we need sync in the OpenPIC routines, too?
 
-> It depends on what the board provides, some residual data, an OF like
-> device tree or nothing (worst case since interrupt routing may be the [...]
+Greetings,
 
-Actually, the Force PowerCore 6750 has nothing (or almost nothing). I've
-just started with the port, but ran
-into some difficulties: There seems to be a lot of dependencies between
-different machines (ie. pmac, prep, chrp, mbx, etc.), I didn't want to
-pay attention to. (E.g. I do not need PMac's keyboard and SCSI driver,
-which seems to be compiled in per default. Especially, I do not need any
-calls to read the OF tree, residual data, etc.)
+						Geert
 
-> Restructuring efforts have been announced and some patches are floating
-> around.
+--
+Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
+Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
+Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
 
-I've seen that you have setup a directory for those patches. But
-couldn't you start with a seperate cvs tree to move the process of
-restructuring the kernel forward? I mean, having a kind of 'official'
-inofficial LinuxPPC developer kernel. I'd also really appreciate it if
-there could be a kind of a statement(?) and perhaps a short discussion
-about the restructured arch/ppc tree. I'd like to ask especially you,
-Cort, as you seem to be the maintainer of the LinuxPPC port, how you see
-the restructured arch/ppc tree. I'd like to help, but need to know where
-arch/ppc is going to be. 
-
-I hope that a little discussion is allowed here:
-(Please, understand that my point of view is from a board where the
-initialization is different from those with an OF)
-
-1. Directory Structure
-It seems that efforts are going to create one 'super' PPC-kernel
-suitable for all the PPC machines.
-I can't say that I'm really happy about it. I think there might be more
-overhead, unreadibility (i.e. a lot #ifdef's), bigger kernels, etc. I'd
-like to see the Macintosh, PreP, CHRP, etc. more seperated, ie. in
-different directories (one for pmac, prep, chrp, apus, mbx, pcore6750,
-etc.) I think, it's then much easier to add new machines, new PPC
-generations, etc. Short: I don't think is wise to have only one
-CONFIG_PMAC_PREP_CHRP_?_? for all machines and let the kernel decide at
-boot time what to do. Do I overlook here something?
-
-2. kernel/head.S
-It seems that the basic initialization varies from board to board.
-Porting LinuxPPC to the Force board would result in more #ifdef's. I'd
-suggest to seperate the 'exceptions' part (into trap.S) from the
-initialization code and put the later one into the mach-dirs.
-
-3. OF
-The Force board has no OF and no residual structures. What I have in
-mind is to replace the firmware of the board completely with a MILO-like
-firmware. This firmware should be able to boot an elf-vmlinux image
-either from the same flash, or the user-flash, from network, or scsi.
-Would it possible to seperate the calls to read data from OF and to read
-residual data, from the generic sources (especially in arch/ppc/mm) ? 
-
-These are some questions I ran into porting LinuxPPC to the Force board.
-Mainly, I do not understand why those three machines, PowerMac
-(PPC601-PPC750), CHRP and PReP are put so closely together. For me, it
-seems that a lot of #ifdef's, switch(es) and branches are necessary to
-achieve this. Perhaps someone can point me in the right direction here.
-
-
-Thanks,
-Christian
-
--- 
-Christian Zankel       <zankel@mailserv.rz.fh-muenchen.de>
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
