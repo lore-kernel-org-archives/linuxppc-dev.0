@@ -1,28 +1,36 @@
-From: Paul Mackerras <paulus@linuxcare.com>
-To: Linux/PPC Developer list <linuxppc-dev@lists.linuxppc.org>
-Subject: adb_buttons kernel argument
-Date: Wed, 29 Mar 2000 11:37:21 +1000
-Content-Type: text/plain
+Date: Wed, 29 Mar 2000 12:06:00 +0300 (EEST)
+From: Kostas Gewrgiou <gewrgiou@imbc.gr>
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+cc: michdaen@iiic.ethz.ch, "William H. Schultz" <whschult@uncc.edu>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: XFree86 4.0 working as fbdev on Voodoo3
+In-Reply-To: <Pine.LNX.4.10.10003282253070.7557-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <Pine.LNX.4.21.0003291114060.1371-100000@idd-01.imbc.gr>
 MIME-Version: 1.0
-Message-Id: <00032911415300.05568@argo.linuxcare.com.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I have just realized that with 2.3.xx (since 2.3.18) the format of the
-arguments for the adb_buttons=xxx kernel command-line argument has
-changed.  With 2.2 you can say adb_buttons=1 to emulate buttons 2 and 3
-with the right control and option keys, or you can say adb_buttons=xx,yy
-to use keycodes xx and yy to emulate buttons 2 and 3.  With 2.3 you now
-have to say adb_buttons=1,xx,yy.
+On Tue, 28 Mar 2000, Michael Schmitz wrote:
 
-I propose to change 2.3 back to the 2.2 behaviour since that is what is
-documented.  Does anybody have any problem with that?
+>
+> > > Doesn't the tdfx driver work?
+> > >
+> >
+> >   Beyond endianess problems the tdfx driver uses PIO which isn't
+> > working under ppc right now (and unless the kernel people decide
+> > on a way to export iobase to userland some time soon PIO might
+> > take a while until it gets supported)
+>
+> Can't we use the MMIO aperture to access the PIO registers?
+>
 
---
-Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
-+61 2 6262 8990 tel, +61 2 6262 8991 fax
-paulus@linuxcare.com.au, http://www.linuxcare.com.au/
-Linuxcare.  Support for the revolution.
+  Most of the PIO registers are available under MMIO as well,
+unfortunately the crtc registers (and a few others) are only
+available in the PIO aperture :(
+
+  Kostas
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
