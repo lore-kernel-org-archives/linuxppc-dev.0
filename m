@@ -1,41 +1,44 @@
-Message-ID: <40C6F3C0.8010208@fh-landshut.de>
-Date: Wed, 09 Jun 2004 13:25:52 +0200
-From: Oliver Korpilla <okorpil@fh-landshut.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Wed,  9 Jun 2004 09:56:29 -0300
+Message-Id: <HZ1LA5$9EA97153A3F2D2EC1AD72AC1798B6528@bol.com.br>
+Subject: Re: ioctl(TIOCMGET) on Lite5200
 MIME-Version: 1.0
-To: "Heater, Daniel (GE Infrastructure)" <Daniel.Heater@gefanuc.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: VME driver patch for PowerPC
-References: <DB1DE297F535B340AEAE1E51B221C3D0016B3DCB@FTWMLVEM02.e2k.ad.ge.com> <40C48A1C.30602@fh-landshut.de>
-In-Reply-To: <40C48A1C.30602@fh-landshut.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=iso-8859-1
+From: "saurosalomoni" <saurosalomoni@bol.com.br>
+To: "wd" <wd@denx.de>
+Cc: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello!
+> In message
+<HZ0056$6237825DE310949AB818EA81D16B09F0@bol.com.br> you
+wrote:
+> >
+> > I'm having a problem with a specific argument of the
+> > ioctl function, which is ioctl(TIOCMGET).
+> > I wrote a simple routine which just reads or writes the
+> > RTS pin.
+> > It worked OK on my Red Hat 9, under x86, but when I try
+> > to run it on a Lite5200 using denx kernel 2.4-25, it
+> > keeps saying "TIOCMGET failed: Invalid argument" and
+>
+> Well, that says it all: the TIOCMGET ioctl() is not
+available for the
+> 5200's PSC uart driver.
+>
+> Best regards,
+>
+> Wolfgang Denk
 
-I tried dereferencing the pointer in kernel space like this:
+So, if the 5200 series don't support TIOCMGET and
+TIOCMSET ioctl() (nor TIOCMBIS and TIOCMBIC, I've just
+tried them), what could I possibly use to get/set the
+control pin RTS in my Lite5200?...
+Is there any other system call or function that
+accomplishes that?
 
-unsigned long int *virtaddr = 0;
+Thank you very much.
 
-// [...]
-
-// After the Universe register were written in
-// __create_master_window()
-virtaddr = ioremap_nocache(window->phys_base, window->size);
-printk(KERN_INFO "Dereferenced pointer 0x%08X.\n", *virtaddr);
-
-
-Guess what that produced: A single-beat transaction producing the date within
-the expected time constraints without a cache burst or any other "bad stuff".
-
-So kernel space pages are fine, correctly set to cache-inhibited and guarded (no
-reordering of accesses).
-
-The culprit could be the vme_mmap_phys() function, because it introduces another
-mapping of pages, and with mmap you cannot control caching behaviour.
-
-With kind regards,
-Oliver Korpilla
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
