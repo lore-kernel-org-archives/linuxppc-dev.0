@@ -1,38 +1,41 @@
-Date: Fri, 14 Nov 2003 10:09:30 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: "Guy M. Streeter" <streeter@redhat.com>
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: /proc/sys/kernel/l2cr and the 750FX
-Message-ID: <20031114170930.GG13003@ip68-0-152-218.tc.ph.cox.net>
-References: <1068824641.18764.7.camel@jarjar.hsv.redhat.com> <20031114162745.GE13003@ip68-0-152-218.tc.ph.cox.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20031114162745.GE13003@ip68-0-152-218.tc.ph.cox.net>
+Message-ID: <3FB50DDC.3090309@kegel.com>
+Date: Fri, 14 Nov 2003 09:16:12 -0800
+From: Dan Kegel <dank@kegel.com>
+MIME-Version: 1.0
+To: Matt Porter <mporter@kernel.crashing.org>
+Cc: Jon Masters <jonathan@jonmasters.org>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 4xx ports
+References: <3FB4D07C.4010909@jonmasters.org> <20031114082854.A23689@home.com>
+In-Reply-To: <20031114082854.A23689@home.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Nov 14, 2003 at 09:27:45AM -0700, Tom Rini wrote:
+Matt Porter wrote:
+> On Fri, Nov 14, 2003 at 12:54:20PM +0000, Jon Masters wrote:
+>> I am trying to find out how we can get the stock
+>>official kernel distributed by kernel.org to reflect some of the changes
+>>which have been made.
 >
-> On Fri, Nov 14, 2003 at 09:44:01AM -0600, Guy M. Streeter wrote:
+> Post patches versus the BK linux-2.4 tree here so they can be discussed.
+> If they are suitable for merging upstream (Paul is happy) then they will
+> be moved into the for-marcelo-ppc tree.  This is a slow process unless
+> the changes are straightforward bug fixes or cleanups.
 >
-> >   In September I posted a version of this patch, which corrects the
-> > formatted display of the L2CR register for 750FX processors.
-> > Tom Rini suggested that it should use a cpu feature flag instead of the
-> > processors version register, and also that the change might already have
-> > been made in later kernel source.
-> >   I have check all the 2.4.23+ and 2.6.0 source trees, and I don't see
-> > any fix for this. I have changed the patch to use a feature flag instead
-> > of checking the PVR. I would like to see this change considered for
-> > inclusion.
->
-> I've checked this into my 2.4.24-pre tree.
+> Merging patches into linuxppc-2.4 is much quicker and allows a wider
+> audience to test significant changes to help determine if they are
+> suitable to go upstream.  Stuff will get merged from linuxppc-2.4
+> upstream over time.
 
-.. with a change to turn CPU_FTR_DUAL_PLL_750FX into CPU_FTR_750FX,
-since that is applied to all revs of the 750FX.
+Hey, if Jon wants to help merge stuff from linuxppc-2.4 upstream,
+don't discourage him! :-)
 
---
-Tom Rini
-http://gate.crashing.org/~trini/
+But it's true, some of the stuff Jon's interested might still be
+stuck in linuxppc_2_4_devel, and need merging into linuxppc-2.4
+(hope I got those names right), and maybe he should do that first.
+- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
