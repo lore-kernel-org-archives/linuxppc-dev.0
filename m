@@ -1,40 +1,32 @@
-Date: Wed, 13 Feb 2002 11:01:09 -0800 (PST)
-From: "David A. Gatwood" <dgatwood@gatwood.net>
-To: benh@kernel.crashing.org
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: G4 boot crash problems with 2.4 "stable"
-In-Reply-To: <20020213124811.28885@mailhost.mipsys.com>
-Message-ID: <Pine.LNX.3.96.1020213104616.6305C-100000@gatwood.net>
+Message-ID: <3C6AB858.BDCAE817@vnet.ibm.com>
+Date: Wed, 13 Feb 2002 13:02:48 -0600
+From: Peter Bergner <bergner@vnet.ibm.com>
+Reply-To: bergner@vnet.ibm.com
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: john.khan@liquidation.com
+Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Updated PPC Ambassador Tux
+References: <NGBBKEOKAMAPDDCNPGFEKEAPCBAA.john.khan@liquidation.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 13 Feb 2002 benh@kernel.crashing.org wrote:
+john.khan@liquidation.com wrote:
+>
+> What's that you say? Check one more time ;)
+>
+> http://gfxgeek.com/ppclogo.html
 
-> A workaround for pmac or openpic ppc32 is to use the keylargo or the
-> openpic timer instead of the DEC. That could be a "kernel hacking" option
-
-Speaking of OpenPIC....  I tried to build a kernel from BK TOT last night
-for a PowerMac G4, and it hung about a half screen into booting after some
-yammering about OpenPIC.
-
-openpic enter
-openpic timer
-openpic ext
-(hang)
+Ahh, most excellent!
 
 
-Is there a 2.4 kernel source tarball around that is known to boot on
-Sawtooth (using BootX)?  Is there a way to yank the OpenPIC support?
+Peter
 
-
-David
-
----------------------------------------------------------------------
-                    Check out my weekly web comic:
-                     http://www.techmagazine.org
-
+--
+Peter Bergner
+SLIC Optimizing Translator Development / Linux PPC64 Kernel Development
+IBM Rochester, MN
+bergner@vnet.ibm.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
