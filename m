@@ -1,63 +1,37 @@
-Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
-Message-ID: <4014C088.1020208@devcom.cz>
-Date: Mon, 26 Jan 2004 08:23:52 +0100
-From: Jan Damborsky <jan.damborsky@devcom.cz>
-MIME-Version: 1.0
-To: Steven Blakeslee <BlakesleeS@embeddedplanet.com>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: MPC823E SMC/I2C/SPI micropatch
-References: <D73A25AA6E54D511AD74009027B1110F5BB008@ORION>
-In-Reply-To: <D73A25AA6E54D511AD74009027B1110F5BB008@ORION>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <1074906498.1262.52.camel@gaston>
+References: <20040123111725.GB23537@iliana> <1074883450.2842.9.camel@otta.rchland.ibm.com> <20040123185433.GB5125@iliana> <1074906498.1262.52.camel@gaston>
+Mime-Version: 1.0 (Apple Message framework v609)
+Message-Id: <62A0C520-4FD4-11D8-99B7-000A95A4DC02@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
+	Peter Bergner <bergner@vnet.ibm.com>,
+	Sven Luther <sven.luther@wanadoo.fr>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: chrp mmu and booting.
+Date: Mon, 26 Jan 2004 08:51:01 +0100
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
-I have found out that CPM micropatch
-available in linux-2.4 from Wolfgang Denk
-site (the kernel we use successfuly on our
-custom boards at present) is applicable as well.
-After some changes in 8xx CPM and UART code
-I have succeeded.
-For now, ethernets on SCC2 and SCC3, UARTs
-on SMC1 and SMC2 work altogether.
-Thank you very much.
-                    Sincerely, Jan Damborsky
+> If you are talking about non-IBM HW, then you can't rely on what
+> happens
+> on IBM CHRP as a reference :) Any OF implementation does things
+> differently
+> (and for example, Apple's one runs in virtual mode, not in real mode,
+> thus
+> the translate call is useful in case you are loaded at a non-1:1
+> address).
 
-Steven Blakeslee wrote:
-> I've used the one in the linuxppc_2_4_devel tree with success.
-> http://ppc.bkbits.net
-> It is found in directory arch/ppc/8xx_io
->
-> -----Original Message-----
-> From: Jan Damborsky [mailto:jan.damborsky@devcom.cz]
-> Sent: Monday, January 19, 2004 11:20 AM
-> To: linuxppc-dev@lists.linuxppc.org
-> Subject: MPC823E SMC/I2C/SPI micropatch
->
->
->
-> Hi,
->
-> we want to use SCCs and SMCs on our custom board
-> with MPC823E in following configuration:
-> Ethernets on SCC2 and SCC3,
-> UARTs on SMC2 and SMC1. Normally it is not possible,
-> because SCC3 ethernet parameter RAM overlaps SMC1 one.
-> I have found Motorola micropatch
-> for SMC/I2C/SPI relocation only for MPC850 and MPC860
-> processors. They are slightly different (exactly
-> these patches differ in one word). I would like
-> to ask if somebody tries to use one of them
-> for MPC823E. Or if  another microcode patch exists
-> especially for MPC823E.
->
->                     Regards, Jan Damborsky
->
->
->
->
+Any compliant PowerPC OF implementation is required to be able to run in
+both real- and virtual mode.  Apple's OF runs in virtual mode by
+default;
+IBM's in real mode.  And neither runs very well in the "other" mode, as
+it
+is seldom (if ever) tested...
+
+
+Segher
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
