@@ -1,40 +1,30 @@
-Message-Id: <199908201732.TAA09408@mail.shiny.it>
-To: toa@pop.agri.ch
-Subject: Re: MO-Disk on PPC with 53C94 SCSI-chip
-Cc: linuxppc-dev@lists.linuxppc.org, x-linux-kernel@vger.rutgers.edu
-Date: Thu, 19 Aug 1999 22:45:46 CEST
-From: "Giuliano Pochini" <pochini@denise.shiny.it>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
+From: Ryan Nielsen <ran@krazynet.com>
+Date: Thu, 19 Aug 1999 20:47:26 -0700
+To: Michel Lanners <mlan@cpu.lu>
+Cc: mj@ucw.cz, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Various PMac PCI patches
+Message-ID: <19990819204726.A82@gondolin.asf>
+References: <199908082034.WAA02973@piglet.cpu.lu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <199908082034.WAA02973@piglet.cpu.lu>; from Michel Lanners on Sun, Aug 08, 1999 at 10:34:15 +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Michel Lanners wrote:
+> 2. I've hacked pmac_pcibios_fixup with a few changes:
+> 
+> - It now checks for PCI buses other than the first one, on all bridges.
+> This should help on the 7x00/8x00 machines (bandit and chaos host
+> bridges) as well as on the 9x00 (two bandit bridges; second bus would
+> be invisible up to now). If anyone has a 9x00, can  you test if this
+> works? For me it only detects one of two devices on bus 1....
+ 
+It detects two out of two on mi 9600.
 
->I have a LinuxPPC R5 system running on a PowerMac 7200 with the
->2.2.12pre8 kernel. 
-[...]
->I can create a fs on the partiton, I can read/write from/to it. BUT,
->when I try to change the side of the media I get the same fs tree as 
-on
->the first side.
-
-Some removable medias don't tell Linux when you change the disk. The 
-easies way to make it work is to try to mount the device before 
-reinserting a new disk (you'll get some orrors of course... ignore 
-them), so Linux notices you changed it.
-
->So I tried booting without media in to verify if it works on the clean
->way. This what the dmesg says:
-
-[...]
-
-Strange. I get a "READ CAPACITY failed, blah blah blah", but then all 
-works fine.
-
-[PMac 7300, MO Fujitsu 640MB on ext. SCSI bus]
-
-Bye.
+isa_io_base is set to the address of bus 0 !
+so inl() and friends use wrong address for cards on bus 1.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
