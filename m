@@ -1,41 +1,39 @@
-In-Reply-To: <199902171250.HAA00182@darkstar.prodigy.com>
-Date: Wed, 17 Feb 1999 18:27:16 +0100
-To: Bill Davidsen <davidsen@prodigy.com>, linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
+Date: Wed, 17 Feb 1999 17:44:31 -0600 (CST)
+From: "David A. Gatwood" <marsmail@globegate.utm.edu>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: Bill Davidsen <davidsen@prodigy.com>, linuxppc-dev@lists.linuxppc.org
 Subject: Re: [ppc-dev] Re: Restructuring Efforts
-Message-Id: <19990217182716.027588@mail.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <19990217182716.027588@mail.mipsys.com>
+Message-ID: <Pine.LNX.3.96.990217172825.19695C-100000@globegate.utm.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Feb 17, 1999, Bill Davidsen <davidsen@prodigy.com> wrote:
+On Wed, 17 Feb 1999, Benjamin Herrenschmidt wrote:
 
->Well, you can preserve readability if you are willing to put the
->machine types in an enum and make use of "pointer to function
->returning" arrays. So instead of doing something like init_mem() you
->would use (*init_mem[_machine])() instead.
+> I like the function pointers idea but I don't like indexing by machines
+> each time the table is accessed. I beleive we should define a structure
+> of function pointers for each subsystem (setup, mm, irq, ...) at have
+> some boot logic fill the kernel static tables with pointers from the
+> subsystem exported tables. The decision based on the architecure must be
+> done only once.
 
-What we are trying to do here is a HAL ;-) 
-
-I like the function pointers idea but I don't like indexing by machines
-each time the table is accessed. I beleive we should define a structure
-of function pointers for each subsystem (setup, mm, irq, ...) at have
-some boot logic fill the kernel static tables with pointers from the
-subsystem exported tables. The decision based on the architecure must be
-done only once.
-
-Eventually, those tables could be "optimised" so that they are all in the
-same page, each table beeing aligned on a cache line boundary.
+Sounds a lot like a bunch of things in BSD-like kernels, where, in
+MkLinux, for instance, interrupt_heathrow.c, interrupt_pdm.c, etc. each
+have a static structure with pointers to their externally visible
+functions, and the main function checks the hardware type and assigns a
+global pointer to point to the static structure for the particular set of
+routines.  Is that what you mean?
 
 
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+Later,
+David
 
-
-
+David A. Gatwood                         Visit globegate's internet
+dgatwood@globegate.utm.edu                  talker, Deep Space 36
+http://globegate.utm.edu                telnet globegate.utm.edu:9624
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
