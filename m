@@ -1,287 +1,275 @@
-Message-ID: <410726E9.9050804@acm.org>
-Date: Tue, 27 Jul 2004 23:09:13 -0500
-From: Corey Minyard <minyard@acm.org>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Patch for debug setcontext
-Content-Type: multipart/mixed;
- boundary="------------060301070305000100050802"
+Date: Wed, 28 Jul 2004 08:24:27 +0200
+From: Olaf Hering <olh@suse.de>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Giuliano Pochini <pochini@shiny.it>,
+	LinuxPPC-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Can't compile 2.6.7 with gcc 3.4.1
+Message-ID: <20040728062427.GA12238@suse.de>
+References: <20040726223832.3edafe0a.pochini@shiny.it> <20040727174707.GB10891@smtp.west.cox.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20040727174707.GB10891@smtp.west.cox.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------060301070305000100050802
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+ On Tue, Jul 27, Tom Rini wrote:
 
-The attached patch adds the ability to do a setcontext and set up debug
-information in the kernel.  It lets you set a context and turn on
-single-stepping and branch tracing.
+> On Mon, Jul 26, 2004 at 10:38:32PM +0200, Giuliano Pochini wrote:
+>
+> >
+> > Is this a known problem ?  I can't compile the kernel 2.6.7 with gcc 3.4.1:
+>
+> You're trying to use gcc-3.4 and binutils-2.14, which is a bad
+> combination.
+>
+> Olaf, did you ever get a chance to try the last patch I had with your
+> matrix of toolchain versions?
 
-I am using this to enable an in-application debugger.  Basically, you
-can insert traps and cause a signal (or cause a signal via other
-means).  From the signal handler you can single step or branch trace
-using this patch.  The single-stepping is important so that an
-instruction may be emulated in a different location so the trap doesn't
-have to be replaced.  It is also used to step threads out of critical
-areas in some cases.
+ yes, it worked fine
 
-In the future, even cooler things could be added to this framework like
-support for setting up hardware breakpoints.  I have done this in the
-past in another job and it can be quite handy.
 
-I have tested this on 440GP and 750.  The patch is relative to stock 2.6.7.
+diff -pruNX /suse/olh/kernel/kernel_exclude.txt linux-2.6.8-rc1.orig/arch/ppc/Makefile linux-2.6.8-rc1/arch/ppc/Makefile
+--- linux-2.6.8-rc1.orig/arch/ppc/Makefile	2004-07-12 06:02:54.000000000 +0000
++++ linux-2.6.8-rc1/arch/ppc/Makefile	2004-07-15 14:23:18.000000000 +0000
+@@ -22,7 +22,7 @@ endif
 
-The most problematic part of this patch is probably the 4xx part using
-the values in the dbcr0 register to figure out if it needs to be
-loaded.  I did it this way because it seems the easiest way to do it
-since you can't just use PT_PTRACE to know if the register needs to be
-loaded.  I didn't see any problems but I don't know if there are any
-races that might cause problems with this method.
+ LDFLAGS_vmlinux	:= -Ttext $(KERNELLOAD) -Bstatic
+ CPPFLAGS	+= -Iarch/$(ARCH)
+-AFLAGS		+= -Iarch/$(ARCH)
++aflags-y	+= -Iarch/$(ARCH)
+ cflags-y	+= -Iarch/$(ARCH) -msoft-float -pipe \
+ 		-ffixed-r2 -Wno-uninitialized -mmultiple
+ CPP		= $(CC) -E $(CFLAGS)
+@@ -31,10 +31,16 @@ ifndef CONFIG_E500
+ cflags-y	+= -mstring
+ endif
 
-Signed-off-by: Corey Minyard <minyard@acm.org>
++aflags-$(CONFIG_4xx)		+= -m405
+ cflags-$(CONFIG_4xx)		+= -Wa,-m405
++aflags-$(CONFIG_6xx)		+= -maltivec
++cflags-$(CONFIG_6xx)		+= -Wa,-maltivec
++aflags-$(CONFIG_E500)		+= -me500
+ cflags-$(CONFIG_E500)		+= -Wa,-me500
++aflags-$(CONFIG_PPC64BRIDGE)	+= -mppc64bridge
+ cflags-$(CONFIG_PPC64BRIDGE)	+= -Wa,-mppc64bridge
 
---------------060301070305000100050802
-Content-Type: text/plain;
- name="ppc_debug_setcontext.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="ppc_debug_setcontext.diff"
++AFLAGS += $(aflags-y)
+ CFLAGS += $(cflags-y)
 
-Index: linux-ipmi/arch/ppc/kernel/entry.S
-===================================================================
---- linux-ipmi.orig/arch/ppc/kernel/entry.S	2004-06-22 13:31:41.000000000 -0500
-+++ linux-ipmi/arch/ppc/kernel/entry.S	2004-07-27 21:14:55.000000000 -0500
-@@ -111,8 +111,10 @@
- 	addi	r11,r1,STACK_FRAME_OVERHEAD
- 	stw	r11,PT_REGS(r12)
- #if defined(CONFIG_40x) || defined(CONFIG_BOOKE)
--	lwz	r12,PTRACE-THREAD(r12)
--	andi.	r12,r12,PT_PTRACED
-+	/* Check to see if the dbcr0 register is set up to debug.  Use the
-+	   single-step bit to do this. */
-+	lwz	r12,THREAD_DBCR0(r12)
-+	andis.	r12,r12,DBCR0_IC@h
- 	beq+	3f
- 	/* From user and task is ptraced - load up global dbcr0 */
- 	li	r12,-1			/* clear all pending debug events */
-@@ -242,9 +244,10 @@
- 	bne-	syscall_exit_work
- syscall_exit_cont:
- #ifdef CONFIG_4xx
--	/* If the process has its own DBCR0 value, load it up */
--	lwz	r0,PTRACE(r2)
--	andi.	r0,r0,PT_PTRACED
-+	/* If the process has its own DBCR0 value, load it up.  The single
-+	   step bit tells us that dbcr0 should be loaded. */
-+	lwz	r0,THREAD+THREAD_DBCR0(r2)
-+	andis.	r10,r0,DBCR0_IC@h
- 	bnel-	load_4xx_dbcr0
- #endif
- 	stwcx.	r0,0,r1			/* to clear the reservation */
-@@ -590,9 +593,10 @@
+ head-y				:= arch/ppc/kernel/head.o
+@@ -106,17 +112,24 @@ GOODVER	:= 2.12.1
+ else
+ NEW_AS	:= 0
+ endif
++# gcc-3.4 and binutils-2.14 are a fatal combination.
++GCC_VERSION	:= $(shell $(CONFIG_SHELL) $(srctree)/scripts/gcc-version.sh $(CC))
++BAD_GCC_AS	:= $(shell echo mftb 5 | $(AS) -mppc -many -o /dev/null >/dev/null 2>&1 ; echo $$?)
 
- restore_user:
- #ifdef CONFIG_4xx
--	/* Check whether this process has its own DBCR0 value */
--	lwz	r0,PTRACE(r2)
--	andi.	r0,r0,PT_PTRACED
-+	/* Check whether this process has its own DBCR0 value.  The single
-+	   step bit tells us that dbcr0 should be loaded. */
-+	lwz	r0,THREAD+THREAD_DBCR0(r2)
-+	andis.	r10,r0,DBCR0_IC@h
- 	bnel-	load_4xx_dbcr0
- #endif
+-ifneq ($(NEW_AS),0)
+ checkbin:
++ifeq ($(GCC_VERSION)$(BAD_GCC_AS),03041)
++	@echo -n '*** ${VERSION}.${PATCHLEVEL} kernels no longer build '
++	@echo 'correctly with gcc-3.4 and your version of binutils.'
++	@echo '*** Please upgrade your binutils or downgrade your gcc'
++	@false
++endif
++ifneq ($(NEW_AS),0)
+ 	@echo -n '*** ${VERSION}.${PATCHLEVEL} kernels no longer build '
+ 	@echo 'correctly with old versions of binutils.'
+ 	@echo '*** Please upgrade your binutils to ${GOODVER} or newer'
+ 	@false
+-else
+-checkbin:
+-	@true
+ endif
++	@true
 
-@@ -867,14 +871,13 @@
-  * having first saved away the global DBCR0.
-  */
- load_4xx_dbcr0:
--	mfmsr	r0		/* first disable debug exceptions */
--	rlwinm	r0,r0,0,~MSR_DE
--	mtmsr	r0
-+	mfmsr	r10		/* first disable debug exceptions */
-+	rlwinm	r10,r10,0,~MSR_DE
-+	mtmsr	r10
- 	isync
- 	mfspr	r10,SPRN_DBCR0
- 	lis	r11,global_dbcr0@ha
- 	addi	r11,r11,global_dbcr0@l
--	lwz	r0,THREAD+THREAD_DBCR0(r2)
- 	stw	r10,0(r11)
- 	mtspr	SPRN_DBCR0,r0
- 	lwz	r10,4(r11)
-Index: linux-ipmi/arch/ppc/kernel/misc.S
-===================================================================
---- linux-ipmi.orig/arch/ppc/kernel/misc.S	2004-06-22 13:31:41.000000000 -0500
-+++ linux-ipmi/arch/ppc/kernel/misc.S	2004-07-27 15:14:06.000000000 -0500
-@@ -1385,7 +1385,7 @@
- 	.long sys_fstatfs64
- 	.long ppc_fadvise64_64
- 	.long sys_ni_syscall		/* 255 - rtas (used on ppc64) */
--	.long sys_ni_syscall		/* 256 reserved for sys_debug_setcontext */
-+	.long sys_debug_setcontext
- 	.long sys_ni_syscall		/* 257 reserved for vserver */
- 	.long sys_ni_syscall		/* 258 reserved for new sys_remap_file_pages */
- 	.long sys_ni_syscall		/* 259 reserved for new sys_mbind */
-Index: linux-ipmi/arch/ppc/kernel/signal.c
-===================================================================
---- linux-ipmi.orig/arch/ppc/kernel/signal.c	2004-06-22 13:28:05.000000000 -0500
-+++ linux-ipmi/arch/ppc/kernel/signal.c	2004-07-27 21:12:25.000000000 -0500
-@@ -462,6 +462,96 @@
- 	return 0;
- }
+ CLEAN_FILES +=	include/asm-$(ARCH)/offsets.h \
+ 		arch/$(ARCH)/kernel/asm-offsets.s
+diff -pruNX /suse/olh/kernel/kernel_exclude.txt linux-2.6.8-rc1.orig/arch/ppc/kernel/Makefile linux-2.6.8-rc1/arch/ppc/kernel/Makefile
+--- linux-2.6.8-rc1.orig/arch/ppc/kernel/Makefile	2004-07-12 06:02:54.000000000 +0000
++++ linux-2.6.8-rc1/arch/ppc/kernel/Makefile	2004-07-15 11:23:14.000000000 +0000
+@@ -2,16 +2,6 @@
+ # Makefile for the linux kernel.
+ #
 
-+int sys_debug_setcontext(struct ucontext __user *ctx,
-+			 int ndbg, struct sig_dbg_op *dbg,
-+			 int r6, int r7, int r8,
-+			 struct pt_regs *regs)
-+{
-+	struct sig_dbg_op op;
-+	int i;
-+	unsigned long new_msr = regs->msr;
-+#if defined(CONFIG_4xx)
-+	unsigned long new_dbcr0 = current->thread.dbcr0;
-+#endif
+-ifdef CONFIG_PPC64BRIDGE
+-EXTRA_AFLAGS		:= -Wa,-mppc64bridge
+-endif
+-ifdef CONFIG_4xx
+-EXTRA_AFLAGS		:= -Wa,-m405
+-endif
+-ifdef CONFIG_E500
+-EXTRA_AFLAGS		:= -Wa,-me500
+-endif
+-
+ extra-$(CONFIG_PPC_STD_MMU)	:= head.o
+ extra-$(CONFIG_40x)		:= head_4xx.o
+ extra-$(CONFIG_44x)		:= head_44x.o
+@@ -35,7 +25,5 @@ obj-$(CONFIG_SMP)		+= smp.o smp-tbsync.o
+ obj-$(CONFIG_TAU)		+= temp.o
+ obj-$(CONFIG_ALTIVEC)		+= vecemu.o vector.o
+
+-ifdef CONFIG_MATH_EMULATION
+-obj-$(CONFIG_8xx)		+= softemu8xx.o
+-endif
+-
++sw-math-emu-$(CONFIG_8xx)	+= softemu8xx.o
++obj-$(CONFIG_MATH_EMULATION)	+= $(sw-math-emu-y)
+diff -pruNX /suse/olh/kernel/kernel_exclude.txt linux-2.6.8-rc1.orig/arch/ppc/mm/Makefile linux-2.6.8-rc1/arch/ppc/mm/Makefile
+--- linux-2.6.8-rc1.orig/arch/ppc/mm/Makefile	2004-07-12 06:02:54.000000000 +0000
++++ linux-2.6.8-rc1/arch/ppc/mm/Makefile	2004-07-15 11:23:14.000000000 +0000
+@@ -2,10 +2,6 @@
+ # Makefile for the linux ppc-specific parts of the memory manager.
+ #
+
+-ifdef CONFIG_PPC64BRIDGE
+-EXTRA_AFLAGS		:= -Wa,-mppc64bridge
+-endif
+-
+ obj-y				:= fault.o init.o mem_pieces.o \
+ 					mmu_context.o pgtable.o
+
+diff -pruNX /suse/olh/kernel/kernel_exclude.txt linux-2.6.8-rc1.orig/arch/ppc/platforms/Makefile linux-2.6.8-rc1/arch/ppc/platforms/Makefile
+--- linux-2.6.8-rc1.orig/arch/ppc/platforms/Makefile	2004-07-12 06:02:54.000000000 +0000
++++ linux-2.6.8-rc1/arch/ppc/platforms/Makefile	2004-07-15 11:23:14.000000000 +0000
+@@ -2,29 +2,23 @@
+ # Makefile for the linux kernel.
+ #
+
+-ifdef CONFIG_PPC64BRIDGE
+-EXTRA_AFLAGS		:= -Wa,-mppc64bridge
+-endif
+-ifdef CONFIG_40x
+-EXTRA_AFLAGS		:= -Wa,-m405
+-endif
+-
+ # Extra CFLAGS so we don't have to do relative includes
+ CFLAGS_pmac_setup.o	+= -Iarch/$(ARCH)/mm
+
+-obj-$(CONFIG_APUS)		+= apus_setup.o
+-ifeq ($(CONFIG_APUS),y)
+-obj-$(CONFIG_PCI)		+= apus_pci.o
+-endif
++# Multiple dependancies
++apus-$(CONFIG_PCI)		+= apus_pci.o
++chrp-$(CONFIG_SMP)		+= chrp_smp.o
++pmac-$(CONFIG_NVRAM)		+= pmac_nvram.o
++pmac-$(CONFIG_CPU_FREQ_PMAC)	+= pmac_cpufreq.o
++pmac-$(CONFIG_SMP)		+= pmac_smp.o
 +
-+	for (i=0; i<ndbg; i++) {
-+		if (__copy_from_user(&op, dbg, sizeof(op)))
-+			return -EFAULT;
-+		switch (op.dbg_type) {
-+		case SIG_DBG_SINGLE_STEPPING:
-+#if defined(CONFIG_4xx)
-+			if (op.dbg_value) {
-+				new_msr |= MSR_DE;
-+				new_dbcr0 |= (DBCR0_IDM | DBCR0_IC);
-+			} else {
-+				new_msr &= ~MSR_DE;
-+				new_dbcr0 &= ~(DBCR0_IDM | DBCR0_IC);
-+			}
-+#else
-+			if (op.dbg_value)
-+				new_msr |= MSR_SE;
-+			else
-+				new_msr &= ~MSR_SE;
-+#endif
-+			break;
-+		case SIG_DBG_BRANCH_TRACING:
-+#if defined(CONFIG_4xx)
-+			return -EINVAL;
-+#else
-+			if (op.dbg_value)
-+				new_msr |= MSR_BE;
-+			else
-+				new_msr &= ~MSR_BE;
-+#endif
-+			break;
-+
-+		default:
-+			return -EINVAL;
-+		}
-+	}
-+
-+	/* We wait until here to actually install the values in the
-+	   registers so if we fail in the above loop, it will not
-+	   affect the contents of these registers.  After this point,
-+	   failure is a problem, anyway, and it's very unlikely unless
-+	   the user is really doing something wrong. */
-+	regs->msr = new_msr;
-+#if defined(CONFIG_4xx)
-+	current->thread.dbcr0 = new_dbcr0;
-+#endif
-+
-+	/*
-+	 * If we get a fault copying the context into the kernel's
-+	 * image of the user's registers, we can't just return -EFAULT
-+	 * because the user's registers will be corrupted.  For instance
-+	 * the NIP value may have been updated but not some of the
-+	 * other registers.  Given that we have done the verify_area
-+	 * and successfully read the first and last bytes of the region
-+	 * above, this should only happen in an out-of-memory situation
-+	 * or if another thread unmaps the region containing the context.
-+	 * We kill the task with a SIGSEGV in this situation.
-+	 */
-+	if (do_setcontext(ctx, regs, 1)) {
-+		force_sig(SIGSEGV, current);
-+		goto out;
-+	}
-+
-+	/*
-+	 * It's not clear whether or why it is desirable to save the
-+	 * sigaltstack setting on signal delivery and restore it on
-+	 * signal return.  But other architectures do this and we have
-+	 * always done it up until now so it is probably better not to
-+	 * change it.  -- paulus
-+	 */
-+	do_sigaltstack(&ctx->uc_stack, NULL, regs->gpr[1]);
-+
-+	sigreturn_exit(regs);
-+	/* doesn't actually return back to here */
-+
-+ out:
-+	return 0;
++obj-$(CONFIG_APUS)		+= apus_setup.o $(apus-y)
+ obj-$(CONFIG_PPC_PMAC)		+= pmac_pic.o pmac_setup.o pmac_time.o \
+ 					pmac_feature.o pmac_pci.o pmac_sleep.o \
+-					pmac_low_i2c.o
+-obj-$(CONFIG_PPC_CHRP)		+= chrp_setup.o chrp_time.o chrp_pci.o
++					pmac_low_i2c.o $(pmac-y)
++obj-$(CONFIG_PPC_CHRP)		+= chrp_setup.o chrp_time.o chrp_pci.o \
++					$(chrp-y)
+ obj-$(CONFIG_PPC_PREP)		+= prep_pci.o prep_setup.o
+-ifeq ($(CONFIG_PPC_PMAC),y)
+-obj-$(CONFIG_NVRAM)		+= pmac_nvram.o
+-obj-$(CONFIG_CPU_FREQ_PMAC)	+= pmac_cpufreq.o
+-endif
+ obj-$(CONFIG_PMAC_BACKLIGHT)	+= pmac_backlight.o
+ obj-$(CONFIG_PPC_RTAS)		+= error_log.o proc_rtas.o
+ obj-$(CONFIG_PREP_RESIDUAL)	+= residual.o
+@@ -48,8 +42,3 @@ obj-$(CONFIG_PRPMC800)		+= prpmc800.o
+ obj-$(CONFIG_SANDPOINT)		+= sandpoint.o
+ obj-$(CONFIG_SBC82xx)		+= sbc82xx.o
+ obj-$(CONFIG_SPRUCE)		+= spruce.o
+-
+-ifeq ($(CONFIG_SMP),y)
+-obj-$(CONFIG_PPC_PMAC)		+= pmac_smp.o
+-obj-$(CONFIG_PPC_CHRP)		+= chrp_smp.o
+-endif
+diff -pruNX /suse/olh/kernel/kernel_exclude.txt linux-2.6.8-rc1.orig/arch/ppc/platforms/tqm8260_setup.c linux-2.6.8-rc1/arch/ppc/platforms/tqm8260_setup.c
+--- linux-2.6.8-rc1.orig/arch/ppc/platforms/tqm8260_setup.c	2004-07-12 06:02:54.000000000 +0000
++++ linux-2.6.8-rc1/arch/ppc/platforms/tqm8260_setup.c	2004-07-15 11:23:14.000000000 +0000
+@@ -77,3 +77,4 @@ platform_init(unsigned long r3, unsigned
+
+ 	callback_setup_arch	= ppc_md.setup_arch;
+ 	ppc_md.setup_arch	= tqm8260_setup_arch;
 +}
-+
- /*
-  * OK, we're invoking a handler
-  */
-Index: linux-ipmi/arch/ppc/kernel/traps.c
-===================================================================
---- linux-ipmi.orig/arch/ppc/kernel/traps.c	2004-06-22 13:31:41.000000000 -0500
-+++ linux-ipmi/arch/ppc/kernel/traps.c	2004-07-27 15:55:49.000000000 -0500
-@@ -516,7 +516,7 @@
- void
- SingleStepException(struct pt_regs *regs)
- {
--	regs->msr &= ~MSR_SE;  /* Turn off 'trace' bit */
-+	regs->msr &= ~(MSR_SE | MSR_BE);  /* Turn off 'trace' bits */
- 	if (debugger_sstep(regs))
- 		return;
- 	_exception(SIGTRAP, regs, TRAP_TRACE, 0);
-Index: linux-ipmi/include/asm-ppc/signal.h
-===================================================================
---- linux-ipmi.orig/include/asm-ppc/signal.h	2003-12-17 20:58:08.000000000 -0600
-+++ linux-ipmi/include/asm-ppc/signal.h	2004-07-27 15:06:55.000000000 -0500
-@@ -153,4 +153,23 @@
- #define ptrace_signal_deliver(regs, cookie) do { } while (0)
- #endif /* __KERNEL__ */
+diff -pruNX /suse/olh/kernel/kernel_exclude.txt linux-2.6.8-rc1.orig/arch/ppc/syslib/Makefile linux-2.6.8-rc1/arch/ppc/syslib/Makefile
+--- linux-2.6.8-rc1.orig/arch/ppc/syslib/Makefile	2004-07-12 06:02:54.000000000 +0000
++++ linux-2.6.8-rc1/arch/ppc/syslib/Makefile	2004-07-15 11:23:14.000000000 +0000
+@@ -2,39 +2,27 @@
+ # Makefile for the linux kernel.
+ #
 
-+/*
-+ * These are parameters to dbg_sigreturn syscall.  They enable or
-+ * disable certain debugging things that can be done from signal
-+ * handlers.  The dbg_sigreturn syscall *must* be called from a
-+ * SA_SIGINFO signal so the ucontext can be passed to it.  It takes an
-+ * array of struct sig_dbg_op, which has the debug operations to
-+ * perform before returning from the signal.
-+ */
-+struct sig_dbg_op {
-+	int dbg_type;
-+	unsigned long dbg_value;
-+};
-+
-+/* Enable or disable single-stepping.  The value sets the state. */
-+#define SIG_DBG_SINGLE_STEPPING		1
-+
-+/* Enable or disable branch tracing.  The value sets the state. */
-+#define SIG_DBG_BRANCH_TRACING		2
-+
- #endif
-Index: linux-ipmi/include/asm-ppc/unistd.h
-===================================================================
---- linux-ipmi.orig/include/asm-ppc/unistd.h	2004-06-22 13:32:19.000000000 -0500
-+++ linux-ipmi/include/asm-ppc/unistd.h	2004-07-27 15:04:30.000000000 -0500
-@@ -260,7 +260,7 @@
- #define __NR_fstatfs64		253
- #define __NR_fadvise64_64	254
- #define __NR_rtas		255
--/* Number 256 is reserved for sys_debug_setcontext */
-+#define __NR_sys_debug_setcontext 256
- /* Number 257 is reserved for vserver */
- /* Number 258 is reserved for new sys_remap_file_pages */
- /* Number 259 is reserved for new sys_mbind */
+-ifdef CONFIG_PPC64BRIDGE
+-EXTRA_AFLAGS		:= -Wa,-mppc64bridge
+-endif
+-ifdef CONFIG_4xx
+-EXTRA_AFLAGS		:= -Wa,-m405
+-endif
+-ifdef CONFIG_E500
+-EXTRA_AFLAGS		:= -Wa,-me500
+-endif
+-
+ CFLAGS_prom_init.o      += -fPIC
+ CFLAGS_btext.o          += -fPIC
 
---------------060301070305000100050802--
++# Multiple dependancies
++ibm-4xx-$(CONFIG_GEN_RTC)	+= todc_time.o
++ibm-4xx-$(CONFIG_KGDB)		+= ppc4xx_kgdb.o
++ibm-40x-$(CONFIG_PCI)		+= indirect_pci.o pci_auto.o ppc405_pci.o
++mpc-8xx-$(CONFIG_PCI)		+= qspan_pci.o i8259.o
++gen550-$(CONFIG_KGDB)		+= gen550_kgdb.o gen550_dbg.o
++gen550-$(CONFIG_SERIAL_TEXT_DEBUG)	+= gen550_dbg.o
++mpc-85xx-$(CONFIG_PCI)		+= indirect_pci.o pci_auto.o
++
+ obj-$(CONFIG_PPCBUG_NVRAM)	+= prep_nvram.o
+ obj-$(CONFIG_PPC_OCP)		+= ocp.o
+ obj-$(CONFIG_IBM_OCP)		+= ibm_ocp.o
+ obj-$(CONFIG_44x)		+= ibm44x_common.o
+ obj-$(CONFIG_440GP)		+= ibm440gp_common.o
+ obj-$(CONFIG_440GX)		+= ibm440gx_common.o
+-ifeq ($(CONFIG_4xx),y)
+-obj-$(CONFIG_4xx)		+= ppc4xx_pic.o
+-obj-$(CONFIG_40x)		+= ppc4xx_setup.o
+-obj-$(CONFIG_GEN_RTC)		+= todc_time.o
+-obj-$(CONFIG_KGDB)		+= ppc4xx_kgdb.o
+-ifeq ($(CONFIG_40x),y)
+-obj-$(CONFIG_KGDB)		+= ppc4xx_kgdb.o
+-obj-$(CONFIG_PCI)		+= indirect_pci.o pci_auto.o ppc405_pci.o
+-endif
+-endif
+-obj-$(CONFIG_8xx)		+= m8xx_setup.o ppc8xx_pic.o
+-ifeq ($(CONFIG_8xx),y)
+-obj-$(CONFIG_PCI)		+= qspan_pci.o i8259.o
+-endif
++obj-$(CONFIG_4xx)		+= ppc4xx_pic.o $(ibm-4xx-y)
++obj-$(CONFIG_40x)		+= ppc4xx_setup.o $(ibm-40x-y)
++obj-$(CONFIG_8xx)		+= m8xx_setup.o ppc8xx_pic.o $(mpc-8xx-y)
+ obj-$(CONFIG_PPC_OF)		+= prom_init.o prom.o of_device.o
+ obj-$(CONFIG_PPC_PMAC)		+= open_pic.o indirect_pci.o
+ obj-$(CONFIG_POWER4)		+= open_pic2.o
+@@ -73,16 +61,11 @@ obj-$(CONFIG_8260)		+= m8260_setup.o cpm
+ obj-$(CONFIG_PCI_8260)		+= m8260_pci.o indirect_pci.o
+ obj-$(CONFIG_8260_PCI9)		+= m8260_pci_erratum9.o
+ obj-$(CONFIG_CPM2)		+= cpm2_common.o
+-ifeq ($(CONFIG_PPC_GEN550),y)
+-obj-$(CONFIG_KGDB)		+= gen550_kgdb.o gen550_dbg.o
+-obj-$(CONFIG_SERIAL_TEXT_DEBUG)	+= gen550_dbg.o
+-endif
++obj-$(CONFIG_PPC_GEN550)	+= $(gen550-y)
+ obj-$(CONFIG_BOOTX_TEXT)	+= btext.o
+ obj-$(CONFIG_MPC10X_BRIDGE)     += mpc10x_common.o indirect_pci.o
+ obj-$(CONFIG_MPC10X_OPENPIC)	+= open_pic.o
+ obj-$(CONFIG_40x)		+= dcr.o
+ obj-$(CONFIG_BOOKE)		+= dcr.o
+-obj-$(CONFIG_85xx)		+= open_pic.o ppc85xx_common.o ppc85xx_setup.o
+-ifeq ($(CONFIG_85xx),y)
+-obj-$(CONFIG_PCI)		+= indirect_pci.o pci_auto.o
+-endif
++obj-$(CONFIG_85xx)		+= open_pic.o ppc85xx_common.o ppc85xx_setup.o \
++					$(mpc-85xx-y)
+--
+USB is for mice, FireWire is for men!
 
+sUse lINUX ag, nÜRNBERG
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
