@@ -1,61 +1,37 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Date: Mon, 19 Jul 2004 18:12:10 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-To: Wolfgang Denk <wd@denx.de>
-Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: "Embedded Linux PPC list" <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: list of 2.6-related migration issues for embedded programmers?
-In-Reply-To: <20040719220430.C64FCC109F@atlas.denx.de>
-Message-ID: <Pine.LNX.4.60.0407191803330.26356@dell.enoriver.com>
-References: <20040719220430.C64FCC109F@atlas.denx.de>
+References: <Pine.LNX.4.60.0407191558120.24452@dell.enoriver.com>
+From: "Linh Dang" <linhd@nortelnetworks.com>
+Date: Mon, 19 Jul 2004 21:29:38 -0400
+In-Reply-To: <Pine.LNX.4.60.0407191558120.24452@dell.enoriver.com> (Robert
+ P. J. Day's message of "Mon, 19 Jul 2004 16:01:08 -0400")
+Message-ID: <wn54qo3a2kd.fsf@linhd-2.ca.nortel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, 20 Jul 2004, Wolfgang Denk wrote:
-
-> In message <Pine.LNX.4.60.0407191731390.24783@dell.enoriver.com> you wrote:
->>
->> sadly for me, the version floating around doesn't build FIFOs (even
->> though the command-line options suggest it does).  and i need FIFOs to
->> support minit.  so i merged a couple different versions to get one
->> that handles the extended device file format (erik andersen's??), and
->> a small patch to handle FIFOs.
+On 19 Jul 2004, rpjday@mindspring.com wrote:
+[...]
 >
-> I thought Erik Anderse's version _is_ the standard version these days ;-)
-
-it is, except as i mentioned, it doesn't support FIFOs, although it
-does handle the extended device file format that i needed.  i got
-another version that didn't support the extended file format, but
-handled FIFOs.  quick merge, and i had what i wanted.
-
-> And I thought you were using the ELDK?
-
-i am.  not sure what that has to do with genext2fs.  what's a big deal
-for me is to make sure the entire build and test process can be done
-without any access to the root account on the development system.
-
->> i most likely wouldn't use it for the final build, but it would still
->> be more efficient for testing, rather than reflashing the root
->> filesystem on the unit every time.  once the image is finalized, then
->> i can flash the kernel and rootFS separately.
+> and all i need to change is "ramdisk.image.gz" to, say, my "newc"
+> format gzipped cpio archive, "initramfs.cpio.gz", and the early
+> kernel code should recognize it as such automatically?
 >
-> I can't follow. Why would you flash the  root  filesystem  if  you're
-> still  testing  it? Just TFTP the test image and use it from RAM (the
-> kernel may be stored in flash if you like).
+> i'll give that a shot later.
+>
+> rday
 
-but the whole idea is that using genext2fs required me to make a
-couple small changes to allow non-root users to do the entire process.
-IIRC, the ability to mount and umount.  initramfs looks like an easier
-way to just let regular users do all this.  and when we have the final
-image, then burn *that* to flash.
+look at populate_rootfs(), it's that simple. Our local kernel tree has
+the following in the boot/simple/Makefile:
 
-sorry, i didn't mean to drag this out so much.  i just see initramfs
-as a cheap and easy way to let non-root users build and test.  and if
-i can reduce my dependency on tools additional (i.e., genext2fs), so
-much the better.
+ZRDIMAGE := $(images)/ramdisk.image.gz
+ROOTDIR := $(srctree)/............/path/to/dir/containing/root-fs
 
-rday
+$(ZRDIMAGE) :  $(OUR_LOCAL_RULES_FOR_BUSYBOX) FORCE
+        (cd $(ROOTDIR) &&  find | grep -v '~$$' | cpio -o -Hnewc ) | \
+        gzip -9 -c > $@
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
