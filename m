@@ -1,25 +1,37 @@
-In-Reply-To: <Pine.LNX.3.96.990825204441.30523B-100000@mvista.com>
-Date: Thu, 26 Aug 1999 10:53:30 +0200
-To: "David A. Gatwood" <dgatwood@mvista.com>, linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: Performa 5200
-Message-Id: <19990826105330.022136@mailhost.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Thu, 26 Aug 1999 10:55:22 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+To: Martin Costabel <costabel@wanadoo.fr>
+cc: linuxppc-dev@lists.linuxppc.org, Paul.Mackerras@cs.anu.edu.au
+Subject: Re: vger-2.3.15 on pmac
+In-Reply-To: <37C4FD7C.BBEC0F1@wanadoo.fr>
+Message-ID: <Pine.LNX.4.10.9908261054470.29782-100000@mercator.cs.kuleuven.ac.be>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Aug 25, 1999, David A. Gatwood <dgatwood@mvista.com> wrote:
+On Thu, 26 Aug 1999, Martin Costabel wrote:
+> Thanks to the efforts of Paul M. and Cort, the 2.3.15 kernel from
+> cvs.on.openprojects is now compiling on a Pmac (first time after 2.3.6,
+> 2 months ago).
+> 
+> I propose 2 patches: The first one is an obvious correction in the
+> valkyriefb driver, and the second one allows to configure support for
+> Apple partition maps without going to the section of exotic partitions.
+> It is obvious, too.
 
->Wait a sec.  Don't you have code to remap the video to 1 meg?
+I just checked in the first one (+ a similar fix to chipsfb) at vger, and sent
+a patch to Linus.
 
-Yep, it's in BootX already (but yet untested).
+Greetings,
 
--- 
-           Perso. e-mail: <mailto:bh40@calva.net>
-           Work   e-mail: <mailto:benh@mipsys.com>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+						Geert
+
+--
+Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
+Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
+Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
