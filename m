@@ -1,35 +1,19 @@
-From: Christian =?iso-8859-15?q?Tr=F6ster?= <please.see.sig@gmx.de>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Notifying a user space application
-Date: Thu, 1 Jul 2004 00:29:05 +0200
+Message-ID: <40E386E7.6020100@pobox.com>
+Date: Wed, 30 Jun 2004 23:37:11 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
 MIME-Version: 1.0
-Message-Id: <200407010029.05546.please.see.sig@gmx.de>
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+To: Pantelis Antoniou <panto@intracom.gr>
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: [PATCH] fec_8xx driver take 2 (+ethtool)
+References: <40CD902A.4020702@intracom.gr> <40D4B1AF.3070209@pobox.com> <40D695A3.50809@intracom.gr>
+In-Reply-To: <40D695A3.50809@intracom.gr>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+applied
 
-Hi!
-
-I'd like to notify a user space application if an interrupt occurs. I had no
-problems to install a custom signal handler but I am not sure what's the best
-way to notify the application.
-
-My first idea was to send a signal to the application. But as far as I know
-one has to know the pid to send the signal. So I'd need some mechanism to get
-this pid - perhaps via a /proc entry. Is this a clean solution?
-
-Another idea was to create a (blocking) character device and have the
-application listening on that using select() or something like that. But this
-seems to be a little bit bloated just for one signal. :)
-
-Are there any other better ways I am not yet aware of. What do you think?
-
-Bye, Christian
-
-- --
-| Mail: c dot troester at gmx dot de | PGP-Id: FA006C74 |
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
