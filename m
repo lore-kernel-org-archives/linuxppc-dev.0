@@ -1,35 +1,31 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Albrecht Dre_ <ad@mpifr-bonn.mpg.de>,
-        "T.R.
- Kobayashi" <tkoba@ike-dyn.ritsumei.ac.jp>,
-        <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: PCMCIA card eject does not work?
-Date: Fri, 22 Sep 2000 18:56:53 +0200
-Message-Id: <19340817102837.20051@mailhost.mipsys.com>
-In-Reply-To: <39CB407E.DF3494EF@mpifr-bonn.mpg.de>
-References: <39CB407E.DF3494EF@mpifr-bonn.mpg.de>
+Message-ID: <39CBA6E4.8C6AC0B5@wanadoo.fr>
+Date: Fri, 22 Sep 2000 20:37:24 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: Paolo Scaffardi <arsenio@tin.it>
+CC: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: SH crashes when i press BACKSPACE in the first position
+References: <006d01c0246b$4045f100$0a00010a@paoloweb>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Thanks for your links... Your patches do indeed eject a CardBus card on my
->Wallstreet. Great! However, I think the mechanics is a little problematic on
->this box, as the card sometimes seems to have contact to the connector
->after the
->eject. This leads to an immediate re-recognition of the card, and as the
->contact
->is everything but perfect, I get a panic. Maybe I try to file more than one
->eject command to the PMU and see what happens...
+Paolo Scaffardi wrote:
+>
+> I have this simple problem (i am using HardHat 1.2 toolkit and kernel
+> 2.2.14):
+>
+> when i press BACKSPACE on the shell prompt and i am on the first position
+> (and it cant go to the left again), i got this kernel panic:
+>
+> "kernel access of bad area pc..."
+>
+> Have you seen this before? :-o
 
-Here, 2.4 may help. I think the PCMCIA layer has some de-bouncing
-mecanism, and inb/outb should no longer cause a panic when accessing non-
-existent HW. For memory-mapped devices, you may still have a problem,
-which could be solved by the oops patch (in linuxppc_2_5 but not in _2_3
-yet) which would cause the driver to oops rather than panic (well, in
-most cases...)
+Could be a sound related problem. But you don't give enough details.
 
-Ben.
+--
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
