@@ -1,44 +1,24 @@
-Message-Id: <36C144A0.A11501B1@schweiz.ch>
-Date: Wed, 10 Feb 1999 09:34:40 +0100
-From: Andreas Tobler <a.tobler@schweiz.ch>
 Mime-Version: 1.0
-To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>,
-        egcs@egcs.cygnus.com
-Subject: building egcs under LinuxPPC pre-R5
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Message-Id: <v04020a00b2e6f5596238@[136.152.65.18]>
+Date: Wed, 10 Feb 1999 00:44:20 -0800
+To: linuxppc-dev@lists.linuxppc.org
+From: Brian C Burke <bcburke@socrates.berkeley.edu>
+Subject: v2.2.1 and serial fixes
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello,
+I posted this over the weekend but got no response so I'll try again.
 
-since the beginning of February I try to build egcs snapshot 19990131
-and now 19990208. The succcess is small. I got the 19990131 snapshot to
-build and install, but when I compile c++ code with some include
-restrictions it seems that it overrides it which causes an error. The
-egcs I used before and now again, was 2.91.60 I think, for LinuxPPC
-folks egcs-1.1.1.1c. With this compiler I haven't had this error.
-My question, is there something specific when building an egcs on
-LinuxPPC that I have to take care of? It's not necessary for me to take
-a snapshot, but I need to build an egcs & libstdc++ with the option
--fno-vtable-thunks.
+Over the last few weeks I seen reference to BenH fixing some serial driver
+bugs that may be involved in ppp hangs. I grapped the 2.2.1 kernel in hopes
+that these fixes were incorporated. Unfortunatelly I'm still finding ppp
+connections often hang and the only fix is to reboot. If I boot into
+mklinux ppp is stone reliable, so the problem is in linuxppc  Were the
+serial fixes incorporated in 2.2 or do I need to get the latest sources?
 
-my config: 	LinuxPPC pre-R5 with glibc-2.0.108
-		Kernel 2.2.0 self built
-		running compiler egcs-1.1.1.1c
-How I did egcs:	./configure --enable-shared --enable-threads
---prefix=/usr/local/egcs
-		make LANGUAGES="c c++"
-		make LANGUAGES="c c++" install
-Any hints?
-Thanks
-
-Andreas
--- 
-| Andreas Tobler				
-| CH-8004 Zuerich 							
-| E-Mail: andreas.tobler@alcatel.ch	| a.tobler@schweiz.ch
------------------------------------------------------------
+Brian
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
