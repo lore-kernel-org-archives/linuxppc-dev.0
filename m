@@ -1,52 +1,33 @@
-Subject: Re: MATSHITADVD-ROM SR-8176
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-To: Bastien Nocera <hadess@hadess.net>
-Cc: AMANO Kazuhiro <haa13142@jnb.odn.ne.jp>,
-	"linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <1012763434.29823.13.camel@dozo>
-References: <20020203155250172.VDPS.18601.t-mta3.odn.ne.jp@mta3.odn.ne.jp>
-	<1012763434.29823.13.camel@dozo>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: 03 Feb 2002 23:31:13 +0100
-Message-Id: <1012775473.18215.19572.camel@pismo>
 Mime-Version: 1.0
+Message-Id: <p05101400b8836c3106a5@[10.0.0.42]>
+In-Reply-To: <20020203185831.MQZJ9396.tomts12-srv.bellnexxia.net@there>
+References: <20020202144614.WRFZ11118.tomts10-srv.bellnexxia.net@there>
+ <20020202201115.17827@smtp.wanadoo.fr>
+ <20020203185831.MQZJ9396.tomts12-srv.bellnexxia.net@there>
+Date: Sun, 3 Feb 2002 14:39:49 -0800
+To: yellowdog-devel@lists.yellowdoglinux.com,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev@lists.linuxppc.org
+From: "Timothy A. Seufert" <tas@mindspring.com>
+Subject: Re: some questions on new dual 1Gig G4's support?
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Son, 2002-02-03 at 20:10, Bastien Nocera wrote:
->
-> On Sun, 2002-02-03 at 15:52, AMANO Kazuhiro wrote:
-> >
-> > I'm in trouble with MATSHITA DVD-ROM SR-8176 drive on iBook2
-> >  under kernel-2.4.18-pre7-ben0.
-> >
-> > First problem is in audio CD play. I'm using xmms-cdread-0.14a, but
-> > I cannot get track list of CD and cannot play.
-> >
-> > To solve this problem, I made a tiny patch:
-> > --- linux/drivers/ide/ide-cd.c-ORIG	Mon Jan 28 20:20:31 2002
-> > +++ linux/drivers/ide/ide-cd.c	Sun Feb  3 22:03:42 2002
-> > @@ -2644,7 +2644,8 @@
-> >  	 * but they do support reading TOC & audio datas
-> >  	 */
-> >  	if (strcmp (drive->id->model, "MATSHITADVD-ROM SR-8187") == 0 ||
-> > -	    strcmp (drive->id->model, "MATSHITADVD-ROM SR-8186") == 0)
-> > +	    strcmp (drive->id->model, "MATSHITADVD-ROM SR-8186") == 0 ||
-> > +	    strcmp (drive->id->model, "MATSHITADVD-ROM SR-8176") == 0)
-> >  		CDROM_CONFIG_FLAGS (drive)->audio_play = 1;
-> >
-> >  #if ! STANDARD_ATAPI
->
-> Blimey! All this time this little patch was the thing missing ?
+At 2:02 PM -0500 2/3/02, Kevin B. Hendricks wrote:
 
-I have an SR-8174, and audio grabbing etc. also works. Maybe we can
-assume it works with any Matsushita DVD-ROM drive, or at least the
-SR-81xx series?
+>According to the Apple developers note just released for this machine its
+>model ID is simply "PowerMac3,5" which is unchanged from previous versions
+>and already covered in the pmac_feature.c file.
 
+Yep.  It is exactly the same motherboard as the previous set of
+machines (733 / dual 800 / 867).  There might be firmware changes to
+support the new cpus but the hardware is identical, and I believe
+that Apple's intent with the model IDs is to identify motherboard
+architectures, not cpus.
 
 --
-Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
-XFree86 and DRI project member   /  CS student, Free Software enthusiast
+Tim Seufert
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
