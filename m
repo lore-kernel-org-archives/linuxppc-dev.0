@@ -1,52 +1,50 @@
-Message-Id: <200007301031.LAA32665@hyperion.valhalla.net>
-Date: Sun, 30 Jul 2000 11:31:33 +0100
-Subject: Re: Stealth port problems
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Giuliano Pochini <pochini@denise.shiny.it>,
-        linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+From: Steffen Haeuser <SteffenH@hyperion-software.de>
+Reply-To: SteffenH@hyperion-software.de
+To: Takashi Oe <toe@unlserve.unl.edu>
+CC: linuxppc-dev@lists.linuxppc.org
+Date: Sun, 30 Jul 2000 12:27:01 +0100
+Message-ID: <yam8246.90.146624920@mail.lf-online.de>
+In-Reply-To: <Pine.LNX.3.96LJ1.1b7.1000729174054.1508B-100000@ofey.inetnebr.com>
+Subject: Re: LinuxPPC X Server
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Sun, Jul 30, 2000,   Giuliano Pochini wrote:
-> Giuliano Pochini wrote:
->>
->> > >Hi!  I have troubles with my stealth port on a G3-blue. When it runs at
->> > 115200
->> > >ifconfig
->> > >shows a lot of overruns. At 57600 it works fine, but it's slow :-((
->
-> The problem is definitely X.  I made a lot of tests: with dma and non-dma
-> serial driver, X accelerated, non accelerated, X bare.bone (started with
-> xinit). The problem is X. When X is running the serial ports looses packets
-> :-((
-> Am I the only one who is having this problem ???  Why does X cause overruns ??
+Am 29-Jul-00 schrieb Takashi Oe:
 
-If you can try 2.2.17pre10ben2 or pre13ben2 (linuxcare linux-pmac-benh) then
-you can apply the IRQ latency test and see if it is that which is blocking
-you.  Scan the dev list for "[ANN} IRQ".
+>On Sat, 29 Jul 2000, Steffen Haeuser wrote:
 
-It is possible (there was a discussion in the ANN thread about fb IRQ
-blocks) - X may aggravate this.
+Hi!
 
-I have seen 2ms of IRQ blocking on the Lombard (using IDE CDROM) and around
-450-750 us of IRQ blocking on my other machines (SCSI). [when heavily
-loaded].
+>> - A bugfix so that Fullscreen 640x480
+>>   works
 
-The RX buffer in an 85230 (which is actually the chip - IIRC - an enhanced
-8530) is 8 characters deep - so any more that about 700 us IRQ block will
-cause a drop out at 115200 continuous...
+>What bug?  What is not working for you?  On what hardware?  For both
+>hardware I own (control and matrox), it is working just fine.
 
-So it looks like music might not be the only pressure to tune the IRQ
-latencies :-)
+If I use VidModeExtension at first modes which are entered in XF86Config
+are entered as 640x481 (but this is of course a minor problem and can be
+workarounded). The big problem is that the Screen is totally messed up, looks
+to me as if the Bytes_Per_Line are not correct. With 1024x768 it works
+correct, but with no other resolutions (and 1024x768 is too slow for the
+software renderer of the game, I need 640x480). The Hardware is a
+"Blue/White" G3 Mac 1st Revision with (naturally) ATI Rage Graphics
+Hardware. I am using the ATI Rage Driver.
 
-Note that an x86 kernel guru said on the lad list "a well tuned kernel
-should not exhibit more than about 60 us worst-case IRQ block"
+>> - A likely timeframe for first 3D Drivers
+>>   to be released, which optimally should
+>>   not be more than 3 months from now
 
-we have a ways to go to get to that.
+>Again, what is not working for you?  What have you tried to get them
+>working for you and how did it fair?
 
-Iain.
+I cannot try getting something to work what does not exist. And appearently
+there are no GLX- or DRI-Drivers for ATI Rage (or any other hardware) yet.
+I am talking about Hardware Accelerated Mesa3D here...
+
+Steffen
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
