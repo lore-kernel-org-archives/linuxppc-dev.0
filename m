@@ -1,18 +1,19 @@
-Return-Path: <typedef@eircom.net>
-Received: from eurodubx.europlex.local (mail.europlex.ie [83.141.76.10])
-	by ozlabs.org (Postfix) with ESMTP id 9011967A7F
+Return-Path: <wd@denx.de>
+Received: from mailout10.sul.t-online.com (mailout10.sul.t-online.com
+	[194.25.134.21]) by ozlabs.org (Postfix) with ESMTP id 54B2F67A67
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 29 Mar 2005 20:17:22 +1000 (EST)
-Message-ID: <42492C93.2060906@eircom.net>
-Date: Tue, 29 Mar 2005 11:23:15 +0100
-From: Bryan O'Donoghue <typedef@eircom.net>
-MIME-Version: 1.0
-To: bdonadt@arabellasw.com
-References: <NEBBIHDFOLIPIPJAKJAMMELCGEAA.bdonadt@arabellasw.com>
-In-Reply-To: <NEBBIHDFOLIPIPJAKJAMMELCGEAA.bdonadt@arabellasw.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: 'linuxppc-embedded ' <linuxppc-embedded@ozlabs.org>
-Subject: Re: MPC885 CryptoApi support.
+	Tue, 29 Mar 2005 20:44:00 +1000 (EST)
+To: Bryan O'Donoghue <typedef@eircom.net>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 29 Mar 2005 11:23:15 BST."
+	<42492C93.2060906@eircom.net>
+Date: Tue, 29 Mar 2005 12:43:35 +0200
+Sender: wd@denx.de
+Message-Id: <20050329104340.70E0EC108D@atlas.denx.de>
+Cc: bdonadt@arabellasw.com, 'linuxppc-embedded ' <linuxppc-embedded@ozlabs.org>
+Subject: Re: MPC885 CryptoApi support. 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,28 +24,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Bruce Donadt wrote:
-
-> To answer the original question. The code is provided under a GPL license to
-> companies that purchase a subscription to the Arabella Linux distribution.
-> We have invested many man months in developing a commercial grade security
-> solution for the PowerQUICCs and all of it has been written from the ground
-> up. You are correct when you say that none of this is included in our "free"
-> evaluation kit.
+In message <42492C93.2060906@eircom.net> you wrote:
 > 
-> Best Regards,
-> 
-> Bruce
+> If it is the case that you have provided a GPL-Arabella-Linux-Kernel, to 
+> a customer and all the code is GPL compliant, then that customer, is 
+> *free* to fork and/or redistribute that code, which seems like a bit of 
+> an oxymoron, for a commercial offering !
 
-Don't mean to start an argument or unnecessarily continue a discussion, 
-Bruce, but, GPL=/the right to fork/.
+Maybe we should start a collect to buy one "license" and put it on  a
+FTP server :-)
 
-If it is the case that you have provided a GPL-Arabella-Linux-Kernel, to 
-a customer and all the code is GPL compliant, then that customer, is 
-*free* to fork and/or redistribute that code, which seems like a bit of 
-an oxymoron, for a commercial offering !
+Best regards,
 
+Wolfgang Denk
 
---
-Best
-Bryan
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+"I haven't lost my mind - it's backed up on tape somewhere."
