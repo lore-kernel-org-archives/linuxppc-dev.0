@@ -1,40 +1,46 @@
-Date: Wed, 23 Dec 1998 23:36:53 -0800
-Message-Id: <199812240736.XAA06955@dm.cobaltmicro.com>
-From: "David S. Miller" <davem@dm.cobaltmicro.com>
-To: alan@cymru.net
-CC: Geert.Uytterhoeven@cs.kuleuven.ac.be, Paul.Mackerras@cs.anu.edu.au,
-        linuxppc-dev@lists.linuxppc.org, linux-m68k@lists.linux-m68k.org,
-        VANDROVE@vc.cvut.cz
-In-reply-to: <199812232158.VAA21083@snowcrash.cymru.net> (message from Alan
-	Cox on Wed, 23 Dec 1998 21:58:04 +0000 (GMT))
-Subject: Re: TCPv4 checksum errors
-References: <199812232158.VAA21083@snowcrash.cymru.net>
+Date: Thu, 24 Dec 1998 09:43:36 +0100
+To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+CC: linuxppc-user@lists.linuxppc.org, Paul Mackerras <paulus@cs.anu.edu.au>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: ADB spy tool
+Message-Id: <19981224094336.028768@smtp.calvacom.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-   From: Alan Cox <alan@cymru.net>
-   Date: Wed, 23 Dec 1998 21:58:04 +0000 (GMT)
+Ooops, I firgot the URL, it's:
 
-   The classic bad packet error is a frame that ends up with
+<http://calvaweb.calvacom.fr/bh40/TraceADB.sit>
 
-   checksum =FFFF end around carry left =1
 
-I challenge you to generate a packet which will create this condition,
-it is impossible as far as I have tried....
+I've built a little tools for tracing ADB requests issued by MacOS.
+There's a little INIT that records all ADB commands issues thru the
+_ADBOp trap and an application for displaying those traces. It also
+records the datas with the outgoing command. Since it's not a tail patch,
+it won't display incoming datas, but you can use a tool like ADB Parser
+to read the content of registers.
 
-However, I'm very very interested in being proved wrong.  Because if I
-am, then every single checksum implementation in the kernel would need
-to be fixed and we should therefore settle this asap.
+With this tool, you can spy the activity of your device, see all the
+commands issued by the driver to the device, etc...
 
-Instead of tiring one's brain like I did, to find if the case even
-exists, better would probably be to put a piece of debugging code
-which checked for this condition and printed out a nice message and
-dumped the packet contents when triggered.
+The INIT will start recording in a ring buffer as soon as it's loaded, so
+if you want to to loard earlier, you may want to change it's type to
+'scri'. The ring buffer is about 32k and older traces are lost when it's
+full. The application for emptying the buffer is PPC only unless you ask
+for a 68k version. If you use MountX, make sure you don't use the debug
+version of MountX nor it's trace application, it will conflict with this
+patch (will be fixed in an new bootx release).
 
-Later,
-David S. Miller
-davem@dm.cobaltmicro.com
+
+
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
