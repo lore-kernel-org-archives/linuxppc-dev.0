@@ -1,19 +1,25 @@
-Return-Path: <jpl@xiphos.ca>
-Received: from mail.net (custpop.ca.mci.com [142.77.1.111])
-	by ozlabs.org (Postfix) with ESMTP id 3E09267A85
+Return-Path: <Ofer.Eyal@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id F12E767A7B
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 30 Jan 2005 12:53:39 +1100 (EST)
-Received: from [216.95.199.150] (account jpl@xiphos.ca HELO [192.168.1.169])
-	by mail.net (CommuniGate Pro SMTP 4.2.5)
-	with ESMTP id 41107498 for linuxppc-embedded@ozlabs.org;
-	Sat, 29 Jan 2005 19:53:38 -0500
-Message-ID: <41FC3051.2050004@xiphos.ca>
-Date: Sun, 30 Jan 2005 00:54:41 +0000
-From: Joshua Lamorie <jpl@xiphos.ca>
+	Sun, 30 Jan 2005 19:53:27 +1100 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	j0U5ouGH005848 for <linuxppc-embedded@ozlabs.org>;
+	Sat, 29 Jan 2005 22:50:56 -0700 (MST)
+Received: from zil05exm01.ea.freescale.net (zil05exm01.ea.freescale.net
+	[216.3.95.200])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id j0U5p0aB000449
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat, 29 Jan 2005 23:51:02 -0600 (CST)
+Message-ID: <D39C8B3D64A0D511A61E00D0B7828EEA12056408@zil05exm01.ea.freescale.net>
+From: Eyal Ofer-R55413 <Ofer.Eyal@freescale.com>
+To: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
+Date: Sun, 30 Jan 2005 07:50:33 +0200
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: mmap on Virtex-II Pro
+Content-Type: text/plain
+Subject: ppc 8260 ethernet driver fails to put port into promiscuous or mu
+	lticast modes
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,60 +30,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Gidday there,
+hello,
 
-I have Linux running on a Virtex-II Pro system (with a second FPGA 
-connected by a custom OPB/PLB bridge).
+1. the function in the ppc 8260 ethernet driver that's suppose to put the interface into promiscuous or multicast modes contains a 'return' statement immediately at the beginning. this prevents running an 8260-based system as a bridge for example. the 'return' statement is not indented, and there's no comment to explain it. it is unclear if it was forgotten there by the writer or whether it serves some functional role (improve performance for other modes of operations, cover up for untested code later, etc.). removing it does not seem to hurt the operation of the system though. unless there's a known use for this 'return', i would like to suggest the following patch (demonstrated here for 2.4.22):
 
-I have a device on the OPB bus that I want to provide to applications 
-through mmap.  However, with my current implementation there are some 
-strange behaviours.
 
-If I mmap in my application, I can read everything in the device memory 
-(in blockram and other registers) with no problems.
-However if I write only a few bytes, they don't seem to go through to 
-the memory area, and instead some of the memory is cleared.  When I 
-write a large number of values (e.g. the counter in a for loop).  The 
-values show up, but the first 4 bytes are missing, and it only writes 
-every other 4 bytes.  For example...
+--- fcc_enet.c.orig	Thu Jan 27 07:56:35 2005
++++ fcc_enet.c	Thu Jan 27 07:57:00 2005
+@@ -1080,7 +1080,6 @@
+ 
+ 	cep = (struct fcc_enet_private *)dev->priv;
+ 
+-return;
+ 	/* Get pointer to FCC area in parameter RAM.
+ 	*/
+ 	ep = (fcc_enet_t *)dev->base_addr;
 
-0000:0000 | 04 05 06 07 00 00 00 00 0c 0d 0e 0f 00 00 00 00
-0000:0010 | 14 15 16 17 00 00 00 00 1c 1d 1e 1f 00 00 00 00
 
-I'm using Rubini's Linux Device Drivers 2nd edition as a reference and 
-inside the mmap function of my module I simply do
 
-remap_page_range(vm_start,physical_address, vm_end-vm_start,vm_page_prot)
+problem persists ever since the driver's introduction into the 2.4.0-test9-pre2 kernel and up to it's latest version in 2.6.10
 
-I did a quick search through the archives and I noticed that there was a 
-call io_remap_page_range but that is just a macro pointing to 
-remap_page_ranger.  I also noticed that pgprot_noncached was used in a 
-64 bit instance, but that doesn't exist in my kernel.
+path to problem:
+early 2.4.x and all 2.6.x:
+	arch/ppc/8260_io/fcc_enet.c
+later 2.4.2x (at least 2.4.26 and on):
+	arc/ppc/cpm_io/fcc_enet.c
 
-I'm using 2.4.26, probably almost a year old now.
+problem in function: set_multicast_list()
 
-Are there any simple examples of mapping OPB memory to user space?
 
-I'm also setting a couple of vm_flags such as VM_IO and VM_RESERVED.  
-Could there be a magic one that I'm missing?  I know that there are some 
-elements of the busses connected to the PPC405 in the Virtex-II Pro that 
-are 64-bit... is it possible that I'm mapping a 64-bit area and nothing 
-is correctly written?
+2. please CC me personally on answer as i'm not a subscriber on the lkml.
 
-Thanks in advance for any advice.
 
-Joshua
-
--- 
-
-Xiphos Technologies
-(514) 848-9640 x227
-(514) 848-9644 fax
-
-www.xiplink.com
-_______________________________________________
-The information transmitted is intended only for the
-person or entity to which it is addressed and may contain
-confidential and/or privileged material.  If you have
-received this in error, please contact the sender and delete
-this communication and any copy immediately. Thank you.
+best regards,
+ofer eyal
+Metrowerks - Freescale Semiconductor Israel
+Tel +972-9-952-2504  Fax +972-9-952-2890
+freescale semiconductor general business use
