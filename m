@@ -1,33 +1,29 @@
-From: eric_mariacher@fr.ibm.com
+Date: Fri, 7 Jan 2000 21:35:29 +0000
+From: "Robin O'Leary" <robin@equiinet.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <C125685F.00384643.00@d07mta01.fr.ibm.com>
-Date: Fri, 7 Jan 2000 10:59:08 +0100
-Subject: Where can I find a glibc-2.1/sysdeps/unix/fork.S working for
-	 powerpc?
+Subject: linux-2.3.37
+Message-ID: <20000107213528.A29581@mail.ro.nu>
 Mime-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+I just tried building the latest 2.3.37 from ftp.kernel.org for the 8xx.
+It failed with the error:
+    arch/ppc/8xx_io/8xx_io.a: In function `m8xx_cpm_reset':
+    arch/ppc/8xx_io/8xx_io.a(.text+0x54): undefined reference to `find_pte'
 
+There is no inline find_pte() in include/asm-ppc/pgtable.h as there was
+before, yet arch/ppc/8xx_io/commproc.c (and enet.c and fec.c) still try
+to use this function.  Where has it gone?
 
-Hi everybody,
+What is the currently recommended kernel for 860-based development and
+where can I get it?
 
-     I am trying to get linux working on a board featuring a MPC860. I am
-currently following instructions given at
-http://members.home.com/mmporter/linux/cross/ to install a cross-compiler for
-powerpc on my PC. There seems to be fork.S files for every platform existing
-except for PowerPC.
-
-Can anyone help me?
-
-Thanks in advance.
-
-Best regards,
-Eric Mariacher.
-OEM Prizma - SSC microcode.
-Eric_Mariacher@fr.ibm.com, Tel:(33/0)4 92 11 53 32, Fax:(33/0)4 93 24 78 18.
-
+Robin O'Leary.
+-- 
+email: robin@equiinet.com  Equiinet Ltd., Innovation Centre, Singleton Park,
+Tel.:  +44 1792 540008     Swansea  SA2 8PP, Wales, U.K.  51.6101N 3.9831W
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
