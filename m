@@ -1,8 +1,9 @@
+Return-Path: <bouncefilter+linuxppc-embedded=wd=denx.de@lists.linuxppc.org>
 From: jtm@smoothsmoothie.com
-Date: Thu, 22 Feb 2001 06:38:11 -0600
+Date: Thu, 22 Feb 2001 08:34:27 -0600
 To: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: 8260 console problems
-Message-ID: <20010222063811.A21743@shamus.smoothsmoothie.com>
+Message-ID: <20010222083427.A21811@shamus.smoothsmoothie.com>
 References: <20010221231831.A19177@shamus.smoothsmoothie.com> <20010222082318.71ACE281D9@denx.denx.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -15,7 +16,10 @@ List-Id: <linuxppc-embedded@lists.linuxppc.org>
 > "include/asm-ppc/est8260.h""  to  match  the  definition as passed by
 > PPCBoot.
 
-I did modify it.
+You were right. I went back and checked, and I missed a line when
+I copied from ppcboot.h to est8260.h.
+
+Thanks.
 
 --
 Jay Monkman	    The truth knocks on the door and you say "Go away, I'm
