@@ -1,55 +1,57 @@
-Date: Fri, 24 Nov 2000 17:26:27 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Gabriel Paubert <paubert@iram.es>, <linuxppc-dev@lists.linuxppc.org>,
+        <debian-powerpc@lists.debian.org>
 Subject: Re: apmd and other archs
-In-Reply-To: <19341019090504.27268@192.168.1.2>
-Message-ID: <Pine.HPX.4.10.10011241719070.14737-100000@gra-ux1.iram.es>
+Date: Fri, 24 Nov 2000 18:31:05 +0100
+Message-Id: <19341019110249.29808@192.168.1.2>
+In-Reply-To: <Pine.HPX.4.10.10011241719070.14737-100000@gra-ux1.iram.es>
+References: <Pine.HPX.4.10.10011241719070.14737-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 24 Nov 2000, Benjamin Herrenschmidt wrote:
+>Ok, I don't see very much the point of saving fractions of watt on a
+>desktop but...
 
-> Yup. Almost all Apple recent machines can do power management in various
-> ways. Some can deep sleep (not only portables), all can switch off power
-> to some PCI devices & ASICs, some support turning off the CPU...
+It can be more than fraction of watts when you put it all together, especially
+in deep sleep. And multiply that by the number of machines out there...
 
-Ok, I don't see very much the point of saving fractions of watt on a
-desktop but...
+Also, the Cube is sensitive to heat problems, having some power
+management (and CPU temp control, but that's another issue) helps.
 
-> >BTW: I dislike any idea of playing with the scheduler.
->
-> Me too. The problem is that the IDE layer will always schedule if you do
-> something more complex that setting a few registers. scheduling in the
-> middle of putting things to sleep is bad, except is drivers that have
-> already been put to sleep can cope with it by just blocking userland IOs
-> or returning errors.
+>Returning errors to user mode looks like a bad idea, it should be
+>absolutely transparent to applications.
 
-Returning errors to user mode looks like a bad idea, it should be
-absolutely transparent to applications.
+Well, that depends. I prefer blocking them, definitely, but that may not
+always be possible.
+Some things can just not be handled this way. We cannot, for example,
+afford to schedule (or even printk) after the video driver have put the
+chip to sleep. That's why we have these ordering rules x86 lacks, so that
+we can sleep this driver very late in the sleep process, and wake it up
+first. In the case of SMP boxes, we would have needed to put the other
+CPUs to sleep before that point.
 
-> For other CPUs, I beleive we can go with a cross-CPU function call, the
-> called function putting the other CPU in a spin-loop. My problem with
-> that is that it happens all at interrupt time, which may not be the best
-> place to put the CPU to sleep. Maybe I can manage to schedule a bottom
-> half or soemthing like that.
+>I'm lost. Can't power management be done by the idle task ? There is one
+>per CPU but it can't handle signala AFAIR. After all power management
+>seems better handled by a task which never does I/O and whose only purpose
+>is to sleep...
 
-I'm lost. Can't power management be done by the idle task ? There is one
-per CPU but it can't handle signala AFAIR. After all power management
-seems better handled by a task which never does I/O and whose only purpose
-is to sleep...
+That could be done this way too. Are there any guarantees that the idle
+task will run at all, however, if a process is using all the available
+CPU time ? If we need all processors to stop scheduling userland code and
+wait in a sleep loop (not doze nor nap in this case), we need to have a
+way to let the idle task know that we need it to enter this special sleep
+stage ASAP. It will have to flush all caches properly and go to sleep. On
+some boxes, the CPU(s) will be shut down and revived via ROM hooks.
 
-> Apple's code is smarter in that sense that they can apparently easily
-> turn CPUs on/off (putting them in sleep loops when they are off), causing
-> all processes to migrate to the still running CPU. However, AFAIK, their
-> current Darwin kernel cannot sleep on SMP machines properly neither yet.
+>What do you call a sleep loop ?
 
-What do you call a sleep loop ?
+An infinite loop where the CPU goes to sleep mode. It exists via an
+external reset or CPU shut down.
 
-	Gabriel.
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
