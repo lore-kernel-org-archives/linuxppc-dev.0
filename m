@@ -1,24 +1,20 @@
-Return-Path: <rick.mcbain@logicsense.com>
-Received: from mail78.megamailservers.com (mail78.megamailservers.com
-	[216.251.36.78])
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
 	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 861EC2BDF2
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 39BD62BDEB
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  4 Nov 2004 10:58:02 +1100 (EST)
-Received: from RicksPresario900 (d154-20-197-204.bchsia.telus.net
-	[154.20.197.204])
-	by mail78.megamailservers.com (8.12.10/8.12.9) with ESMTP id
-	iA3NHSxU009811
-	for <linuxppc-embedded@ozlabs.org>; Wed, 3 Nov 2004 18:17:37 -0500
-From: "Rick McBain" <rick.mcbain@logicsense.com>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Wed, 3 Nov 2004 15:17:27 -0800
-Message-ID: <002b01c4c1fb$49adde60$6802a8c0@RicksPresario900>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: Linux port for the AMCC (was IBM) 440EP
+	Thu,  4 Nov 2004 11:27:38 +1100 (EST)
+Date: Wed, 3 Nov 2004 16:27:34 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Rick McBain <rick.mcbain@logicsense.com>
+Message-ID: <20041104002734.GA4063@gate.ebshome.net>
+References: <002b01c4c1fb$49adde60$6802a8c0@RicksPresario900>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <002b01c4c1fb$49adde60$6802a8c0@RicksPresario900>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Linux port for the AMCC (was IBM) 440EP
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,17 +25,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Does anybody have a working distribution for the 440EP? We were planning
-to use a Timesys port, but we've now been told it doesn't exist (after
-months of promises it did.).  Our other option is to pay US$25K to
-MontaVista, but that seems a tad pricey, and our previous experience
-with them is that they delivered us an ARM port which fundamentally
-didn't work.
+On Wed, Nov 03, 2004 at 03:17:27PM -0800, Rick McBain wrote:
+> Does anybody have a working distribution for the 440EP? We were planning
+> to use a Timesys port, but we've now been told it doesn't exist (after
+> months of promises it did.).  Our other option is to pay US$25K to
+> MontaVista, but that seems a tad pricey, and our previous experience
+> with them is that they delivered us an ARM port which fundamentally
+> didn't work.
+> 
 
-Best regards,
-Rick McBain
-LogicSense Networks
-www.logicsense.com
+Just FYI, 44x port was made by MontaVista.
 
-BTW. We are currently in the process of debugging our Uboot/PPCboot port
-to the 440EP which supports NAND flash...
+Try the following exercise, grep the kernel code and see how much was 
+written for PPC by Timesys and then make your decision.
+
+FWIW, it should be relatively simple to do 440EP port, we already 
+have working 440GP & 440GX in both 2.4 & 2.6.
+
+--
+Eugene.
