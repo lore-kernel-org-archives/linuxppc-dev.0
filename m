@@ -1,40 +1,33 @@
-Message-ID: <791B3205DB661A42B4BFE5464A7D1D02010E461A@chzugexch01.abatos.com>
-From: Graf Alex <alex.graf@siemens.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: AW: Serial Console at MPC8xx SCC1?
-Date: Thu, 14 Aug 2003 11:30:53 +0200
+Message-ID: <3F3B623D.1090708@imc-berlin.de>
+Date: Thu, 14 Aug 2003 12:19:41 +0200
+From: Steven Scholz <steven.scholz@imc-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Graf Alex <alex.graf@siemens.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: AW: Serial Console at MPC8xx SCC1?
+References: <791B3205DB661A42B4BFE5464A7D1D02010E461A@chzugexch01.abatos.com>
+In-Reply-To: <791B3205DB661A42B4BFE5464A7D1D02010E461A@chzugexch01.abatos.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Yes this works very well!
-Be sure you have defined CONFIG_SERIAL_CONSOLE_PORT for your uart.c! If you
-use SMC1+2 for uarts, define it as 2!
+Alex,
 
-cheers
+> Yes this works very well!
+> Be sure you have defined CONFIG_SERIAL_CONSOLE_PORT for your uart.c! If you
+> use SMC1+2 for uarts, define it as 2!
 
-alex
+Yeah. I found that one!
 
+I was under the (stupid) impression that it would be enough to just
+pass console=ttyS2,115200 to the linux kernel.
 
------Ursprüngliche Nachricht-----
-Von: Steven Scholz [mailto:steven.scholz@imc-berlin.de]
-Gesendet: Mittwoch, 13. August 2003 17:25
-An: linuxppc-embedded@lists.linuxppc.org
-Betreff: Serial Console at MPC8xx SCC1?
+I think it wouldn't be too hard to make it work like that. (I think
+there'S just too much hardcoded...) Maybe I give it a try after my
+vacations...
 
-
-
-Hi there,
-
-has anyone successfully used MPC8xx SCC1 as serial console for Linux?
-
-I am using SMC1 and it works well.
-SCC1 is working under U-Boot. But not with linux-2.4.20...
-
-Thanks,
+Thanks anyway!
 
 Steven
 
