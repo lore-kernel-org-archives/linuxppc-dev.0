@@ -1,41 +1,49 @@
-Message-ID: <408476A2.2070106@jonmasters.org>
-Date: Tue, 20 Apr 2004 02:02:26 +0100
-From: Jon Masters <jonathan@jonmasters.org>
+Message-ID: <4084FFEE.4070308@dgt-lab.com.pl>
+Date: Tue, 20 Apr 2004 12:48:14 +0200
+From: Wojciech Kromer <krom@dgt-lab.com.pl>
 MIME-Version: 1.0
 To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: System ACE MPU interface to CF card
-References: <407470ED.3030607@buckeye.ece.drexel.edu> <6058-40021@sneakemail.com> <407ADCFE.8080302@buckeye.ece.drexel.edu> <25757-52278@sneakemail.com> <407EDCF7.2020009@buckeye.ece.drexel.edu> <6334-88322@sneakemail.com> <4081CBB0.7090800@jonmasters.org>
-In-Reply-To: <4081CBB0.7090800@jonmasters.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: console terminal on mpc8xx
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+i have mpx8xx custom board with console on SMC1
 
-Jon Masters wrote:
+but there are some problems using it as a terminal with minicom
 
-| I am having problems with xilinx_sysace at my end. This is on a
-| non-ML300 which is not running at anything like the same clock as the
-| rest of you at this moment in time (for various hardware development
-| reasons unrelated to the Linux side). I have a classic case of debugging
-| printk code altering the rate of execution and making things work.
+here is some otputs:
 
-I received a mail offlist about this concerning the issues with an
-earlier revision of the xilinx_sysace driver brokenly not following the
-datasheet and failing to hold the device configuration controller in
-reset while doing transfers. I have now upgraded to a new verson.
 
-This has fixed the ``hardware seems fairly screwed, it's not giving me
-interrupts when I want it! arrrgh!'' type problems but I still get
-random lockups and corruption of the request queue, which I think is
-related to a missing spinlock aquisition somewhere else.
+# stty -a
+speed 115200 baud; rows 0; columns 0;
+intr = ^C; quit = ^\; erase = ^?; kill = ^U; eof = ^D; eol = <undef>;
+eol2 = <undef>; start = ^Q; stop = ^S; susp = ^Z; rprnt = ^R; werase = ^W;
+lnext = ^V; flush = ^O; min = 1; time = 0;
+-parenb -parodd cs8 hupcl -cstopb cread clocal -crtscts
+-ignbrk brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr icrnl ixon
+-ixoff
+-iuclc -ixany imaxbel
+opost -olcuc -ocrnl onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0
+vt0 ff0
+isig icanon iexten echo echoe echok -echonl -noflsh -xcase -tostop -echoprt
+echoctl echoke
+#
 
-To be honest I might soon get annoyed enough with it to rewrite it.
-Clearly Xilinx think it is a really good idea to have this HAL concept
-(and I think it is a really really bad one) - and I am one of the people
-that ends up using this code so really want something that works :-).
+and programs using stdandard \e[x;yH command to set cursor position
+displays correct only first two lines
 
-Jon.
+TERM is set to vt102 booth on minicom and console
+
+and:
+-setting  'stty rows 24 columns 80 this'  changes nothing
+-same program on telnet session works fine
+
+
+Q:
+ -where the problem is (kernel, minicom, program, tty setings, or whatever)?
+- how to correct this problem?
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
