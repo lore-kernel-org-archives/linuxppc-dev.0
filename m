@@ -1,35 +1,38 @@
-Date: Fri, 28 Jul 2000 12:39:44 +0200 (CEST)
-From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: mlan@cpu.lu, schmitz@opal.biophys.uni-duesseldorf.de, geert@linux-m68k.org,
-        linuxppc-dev@lists.linuxppc.org, paulus@linuxcare.com
-Subject: Re: MacSerial and Serial driver cohabitation
-In-Reply-To: <20000728083743.21545@mailhost.mipsys.com>
-Message-ID: <Pine.LNX.4.10.10007281237510.26855-100000@zirkon.biophys.uni-duesseldorf.de>
+Message-ID: <XFMail.000728162326.pochini@shiny.it>
+Content-Type: text/plain; charset=us-ascii
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20000728083426.19235@mailhost.mipsys.com>
+Date: Fri, 28 Jul 2000 16:23:26 +0200 (CEST)
+From: Giuliano Pochini <pochini@shiny.it>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: Stealth port problems
+Cc: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> >Whoever fixes this problem should be decorated, and a statue put up in
-> >his memory. ;-)
-> >
-> >But if anyone is brave enough to attempt it, don't forget that there are
-> >_two_ places where serial ports are probed for: serial console init very
-> >early in the booting, and driver init much later in the boot process.
-> >Those two should be guaranteed to be in sync re minor assignment/device
-> >naming. Right now, that's not the case.
+>>Hi!  I have troubles with my stealth port on a G3-blue. When it runs at
+> 115200
+>>ifconfig
+>>shows a lot of overruns. At 57600 it works fine, but it's slow :-((
+>>
+>>Does any of you own that serial port ?  Suggestions ??
 >
-> My current rsync tree contains a fix done by Andreas Tobler that helps
-> cohabitation of macserial and legacy serial. I know Paul and Theodore
-> have been working on a more definitive fix, I don't know it's status however,
+> Which kernel ?
 
-We will have to find a way to adopt the more definitive fix for m68k
-anyway, that's something constantly slipping down on my todo list but it's
-been on there for over a year now. I'll ask Paul and Ted about details.
+2.2.16p (usb patches)
 
-	Michael
+> With the DMA serial driver, it should work better than
+> that... The Stealth hardware is probaly not responsible, it's just a line
+> driver plugged instead of the modem, the actual zilog SCC is part of
+> Apple's ASIC.
+
+I just discovered a strange thing... It seems to work fine in console, but when
+X is running it doesn't.  (??)
+
+
+Bye.
+    Giuliano Pochini ->)|(<- Shiny Corporation {AS6665} ->)|(<-
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
