@@ -1,41 +1,33 @@
-Date: Fri, 27 Aug 2004 19:14:09 +0200
-Subject: Re: ushort fcc_fcce
-From: Jaap Jan Boor <jjboor@aimsys.nl>
-To: Dan Malek <dan@embeddededge.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <BD553881.251%jjboor@aimsys.nl>
-In-Reply-To: <CE15CB43-F838-11D8-BF10-003065F9B7DC@embeddededge.com>
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+In-Reply-To: <314790494.20040827191642@varma-el.com>
+References: <927068331.20040827153454@varma-el.com> <E832C827-F839-11D8-BF10-003065F9B7DC@embeddededge.com> <314790494.20040827191642@varma-el.com>
+Mime-Version: 1.0 (Apple Message framework v619)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <735B3B8C-F851-11D8-8E7D-003065F9B7DC@embeddededge.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+From: Dan Malek <dan@embeddededge.com>
+Subject: Re: Re[2]: [RFC] Remove G2_LE core decl from CLASSIC_PPC part of arch/ppc/kernel/cputable.c
+Date: Fri, 27 Aug 2004 13:49:31 -0400
+To: Andrey Volkov <avolkov@varma-el.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On 27-08-2004 16:53, "Dan Malek" <dan@embeddededge.com> wrote:
+On Aug 27, 2004, at 11:16 AM, Andrey Volkov wrote:
 
->
-> On Aug 27, 2004, at 5:31 AM, Jaap-Jan Boor wrote:
->
->> Why is
->> include/asm-ppc/immap_8260.h:   ushort  fcc_fcce;
->
-> Because in the original documentation I had under NDA
-> many years ago when this was written didn't describe
-> ATM nor HDLC.  It listed this as a 16-bit field for Ethernet.
->
-> I've made a note to change it.
+> Maybe ~2K of rubbish for somebody "few" - for me not :) (don't forget
+> its embedded platform).
 
-ok, thanks
+If you have a system of this magnitude where a couple of Kbytes is
+going to be the difference between success or failure, I'd suggest
+looking other places than adding an superfluous #ifdef around
+the cpu table.
 
-Jaap-Jan
+There are lots of places in the kernel where thorough analysis
+and careful configuration will save you lots more than this and
+probably make a difference.
 
->
-> Thanks.
->
-> -- Dan
->
->
->
+
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
