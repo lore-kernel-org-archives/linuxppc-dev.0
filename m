@@ -1,41 +1,48 @@
-Date: Thu, 29 Jul 2004 22:35:01 +0100
-To: paulus@samba.org
-Cc: trini@kernel.crashing.org, linuxppc-dev@lists.linuxppc.org,
-	barbieri@gmail.com
-Subject: [9/9] Support for old IBM PReP boxes
-Message-ID: <20040729213501.GA5929@george.solinno.co.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: leigh@solinno.co.uk (Leigh Brown)
+Message-ID: <4109B225.8020604@mvista.com>
+Date: Thu, 29 Jul 2004 21:27:49 -0500
+From: Corey Minyard <cminyard@mvista.com>
+MIME-Version: 1.0
+To: Kumar Gala <kumar.gala@freescale.com>
+Cc: linuxppc-dev@lists.linuxppc.org,
+	Kumar Gala <kumar.gala@motorola.com>
+Subject: Re: Patch for debug setcontext
+References: <41090F9A.8000901@mvista.com> <BA214A7E-E195-11D8-8E6C-000393DBC2E8@freescale.com>
+In-Reply-To: <BA214A7E-E195-11D8-8E6C-000393DBC2E8@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This makes the /proc/interrupts display the correct edge/level
-indicator for each interrupt.  This is purely cosmetic, but does
-reduce confusion.
+I'm using stock 2.6.7.  Is there a different kernel I should be using?
 
-diff -urNX /home/leigh/.diffex linux-2.6.8-rc2-bk8.prev/arch/ppc/platforms/prep_pci.c linux-2.6.8-rc2-bk8/arch/ppc/platforms/prep_pci.c
---- linux-2.6.8-rc2-bk8.prev/arch/ppc/platforms/prep_pci.c	2004-07-29 20:44:33.000000000 +0100
-+++ linux-2.6.8-rc2-bk8/arch/ppc/platforms/prep_pci.c	2004-07-29 20:56:09.000000000 +0100
-@@ -1029,11 +1029,18 @@
- 		}
- 	} else if ( _prep_type == _PREP_IBM ) {
- 		unsigned char irq_edge_mask_lo, irq_edge_mask_hi;
-+		unsigned short irq_edge_mask;
-+		int i;
+-Corey
 
- 		setup_ibm_pci(&irq_edge_mask_lo, &irq_edge_mask_hi);
+Kumar Gala wrote:
 
- 		outb(inb(0x04d0)|irq_edge_mask_lo, 0x4d0); /* primary 8259 */
- 		outb(inb(0x04d1)|irq_edge_mask_hi, 0x4d1); /* cascaded 8259 */
-+
-+		irq_edge_mask = (irq_edge_mask_hi << 8) | irq_edge_mask_lo;
-+		for (i = 0; i < 16; ++i, irq_edge_mask >>= 1)
-+			if (irq_edge_mask & 1)
-+				irq_desc[i].status |= IRQ_LEVEL;
- 	} else {
- 		printk("No known machine pci routing!\n");
- 		return;
+>
+> On Jul 29, 2004, at 9:54 AM, Corey Minyard wrote:
+>
+>> Kumar Gala wrote:
+>>
+>> > I'm guessing, this should really be #if defined(CONFIG_4xx) ||
+>> > defined(CONFIG_BOOKE)
+>> > There are a number of similar cases later in this code as well.
+>>
+>> That may be the case, but it is very confusing in entry.S.  The dbcr0
+>> register seems to only be defined on 4xx processor, not on book E.
+>> Look, for instance, at load_4xx_dbcr0:, it is only defined if 4xx is
+>> enabled, not if book E is enabled.
+>
+>
+> Corey,
+>
+> I think you may have an old linux-2.6 tree.  I remember renaming
+> load_4xx_dbcr0 to just load_dbcr0 because of such issues.  Hopefully a
+> newer tree (one with e500 support, if its going head_e500.S) should be
+> cleaner.  If not, let me know.
+>
+> - kumar
+>
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
