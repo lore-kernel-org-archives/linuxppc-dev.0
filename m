@@ -1,458 +1,73 @@
-Date: Sat, 27 Sep 2003 15:43:51 +0200
-From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
-Subject: RE: Problem of concurrency in arch/ppc/8260_io/uart.c
-In-reply-to: <001701c384ce$7a5c3ae0$020120b0@jockeXP>
-To: Joakim Tjernlund <Joakim.Tjernlund@lumentis.se>,
-	Dan Malek <dan@embeddededge.com>
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	Jean-Denis Boyer <jdboyer@m5t.com>,
-	Steffen Rumler <Steffen.Rumler@siemens.com>,
-	linuxppc <linuxppc-embedded@lists.linuxppc.org>
-Reply-To: joakim.tjernlund@lumentis.se
-Message-id: <IGEFJKJNHJDCBKALBJLLKEJOFPAA.joakim.tjernlund@lumentis.se>
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
+Message-ID: <002801c38626$9be65a70$ea01a8c0@gohas>
+From: "Michael G." <gohas@actinium.org>
+To: "Mark Hatle" <fray@mvista.com>, <gklug@giga-stream.de>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <1064558689.16329.8.camel@localhost.localdomain> <3F747B09.9010109@mvista.com>
+Subject: Re: Kernel panic: No init found.
+Date: Mon, 29 Sep 2003 09:10:21 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> > If that freaks out the CPM, put one
-> > byte of zero into the buffer and give it a count of 1.  Then you just have
-> > to hold the lock across the update of the BD ptr, just like everywhere else.
+Thanks Mark & Georg,
+
+My /bin/init is link to /etc/rc .. I did try to mount it on the host
+computer and try to run the init and it works but it would not work for the
+MPC857 board.  I'll try the static shell debugging as you suggested ..
+thanks again.
+
+Regards,
+Mike G.
+
+----- Original Message -----
+From: "Mark Hatle" <fray@mvista.com>
+Sent: Saturday, September 27, 2003 1:44 AM
+Subject: Re: Kernel panic: No init found.
+
+> Well first make try passing init= as a kernel argument and point it to
+> something that should be on the root disk..
 >
-> That will work, but wont the zero show up on the console? hmm, since
-> the zero count will be very unlikely case anyhow,  I can live with that.
-
-OK, this patch does the above. I left my test function(err_copy_from_user)
-to simulate bad copy_from_user() copies every now and then. Just remove
-it and change the call in rs_8xx_write when you have tested it.
-Works great for me, not even jove(emacs like editor) will break it.
-
- Jocke
-Index: arch/ppc/8xx_io/uart.c
-===================================================================
-RCS file: /home/cvsadmin/cvsroot/kernel/linuxppc/arch/ppc/8xx_io/uart.c,v
-retrieving revision 1.7
-diff -u -r1.7 uart.c
---- arch/ppc/8xx_io/uart.c	13 Jun 2003 09:04:43 -0000	1.7
-+++ arch/ppc/8xx_io/uart.c	27 Sep 2003 13:29:53 -0000
-@@ -81,7 +81,11 @@
- #define TX_WAKEUP	ASYNC_SHARE_IRQ
-
- static char *serial_name = "CPM UART driver";
--static char *serial_version = "0.03";
-+static char *serial_version = "0.04";
-+
-+/* TX buffer length used by my_console_write.
-+   Assume minumun length until it gets set by this driver */
-+static int console_tx_buf_len = 1;
-
- static DECLARE_TASK_QUEUE(tq_serial);
-
-@@ -196,6 +200,7 @@
-
- /* The number of buffer descriptors and their sizes.
- */
-+#define EARLY_BUF_SIZE	4
- #define RX_NUM_FIFO	4
- #define RX_BUF_SIZE	32
- #define TX_NUM_FIFO	4
-@@ -1068,6 +1073,7 @@
- 	ser_info_t *info = (ser_info_t *)tty->driver_data;
- 	volatile cbd_t	*bdp;
- 	unsigned char *cp;
-+	unsigned long flags;
-
- 	if (serial_paranoia_check(info, tty->device, "rs_put_char"))
- 		return;
-@@ -1075,7 +1081,16 @@
- 	if (!tty)
- 		return;
-
-+	local_irq_save(flags);
- 	bdp = info->tx_cur;
-+	/* Get next BD.
-+	*/
-+	if (bdp->cbd_sc & BD_SC_WRAP)
-+		info->tx_cur = info->tx_bd_base;
-+	else
-+		info->tx_cur = (cbd_t *)bdp + 1;
-+	local_irq_restore(flags);
-+
- 	while (bdp->cbd_sc & BD_SC_READY);
-
- 	cp = info->tx_va_base + ((bdp - info->tx_bd_base) * TX_BUF_SIZE);
-@@ -1083,14 +1098,20 @@
- 	bdp->cbd_datlen = 1;
- 	bdp->cbd_sc |= BD_SC_READY;
-
--	/* Get next BD.
--	*/
--	if (bdp->cbd_sc & BD_SC_WRAP)
--		bdp = info->tx_bd_base;
--	else
--		bdp++;
-+}
-+int err_copy_from_user(void * to, void* from, int len)
-+{
-+	static int err;
-+	int res;
-+
-+	err = (err+1)%13;
-
--	info->tx_cur = (cbd_t *)bdp;
-+	res = copy_from_user(to, from, len);
-+	if(!err && len > 1)
-+		return len-1; /* partial copy */
-+	if(!err)
-+		return len; /* nothing copied */
-+	return res;
- }
-
- static int rs_8xx_write(struct tty_struct * tty, int from_user,
-@@ -1100,6 +1121,7 @@
- 	ser_info_t *info = (ser_info_t *)tty->driver_data;
- 	volatile cbd_t *bdp;
- 	unsigned char	*cp;
-+	unsigned long flags;
-
- #ifdef CONFIG_KGDB_CONSOLE
-         /* Try to let stub handle output. Returns true if it did. */
-@@ -1113,44 +1135,47 @@
- 	if (!tty)
- 		return 0;
-
--	bdp = info->tx_cur;
--
- 	while (1) {
- 		c = MIN(count, TX_BUF_SIZE);
-
- 		if (c <= 0)
- 			break;
-
-+		local_irq_save(flags);
-+		bdp = info->tx_cur;
- 		if (bdp->cbd_sc & BD_SC_READY) {
- 			info->flags |= TX_WAKEUP;
-+			local_irq_restore(flags);
- 			break;
- 		}
-+		/* Get next BD.
-+		 */
-+		if (bdp->cbd_sc & BD_SC_WRAP)
-+			info->tx_cur = info->tx_bd_base;
-+		else
-+			info->tx_cur = (cbd_t *)bdp + 1;
-+		local_irq_restore(flags);
-
- 		cp = info->tx_va_base + ((bdp - info->tx_bd_base) * TX_BUF_SIZE);
--		if (from_user) {
--			if (copy_from_user((void *)cp, buf, c)) {
--				if (!ret)
--					ret = -EFAULT;
--				break;
--			}
--		} else {
-+		if (from_user)
-+			c -= err_copy_from_user((void *)cp, buf, c);
-+		else
- 			memcpy((void *)cp, buf, c);
-+
-+		if (c) {
-+			bdp->cbd_datlen = c;
-+			bdp->cbd_sc |= BD_SC_READY;
-+		} else {
-+			bdp->cbd_datlen = 1;/* Need to TX at least 1 char to keep CPM sane */
-+			*cp = 0;
-+			bdp->cbd_sc |= BD_SC_READY;
-+			if (!ret)
-+				ret = -EFAULT;
-+			break;
- 		}
--
--		bdp->cbd_datlen = c;
--		bdp->cbd_sc |= BD_SC_READY;
--
- 		buf += c;
- 		count -= c;
- 		ret += c;
--
--		/* Get next BD.
--		*/
--		if (bdp->cbd_sc & BD_SC_WRAP)
--			bdp = info->tx_bd_base;
--		else
--			bdp++;
--		info->tx_cur = (cbd_t *)bdp;
- 	}
- 	return ret;
- }
-@@ -1210,28 +1235,28 @@
- {
- 	volatile cbd_t	*bdp;
- 	unsigned char	*cp;
-+	unsigned long flags;
-
- 	ser_info_t *info = (ser_info_t *)tty->driver_data;
-
- 	if (serial_paranoia_check(info, tty->device, "rs_send_char"))
- 		return;
-
-+	local_irq_save(flags);
- 	bdp = info->tx_cur;
-+	/* Get next BD.
-+	*/
-+	if (bdp->cbd_sc & BD_SC_WRAP)
-+		info->tx_cur = info->tx_bd_base;
-+	else
-+		info->tx_cur = (cbd_t *)bdp + 1;
-+	local_irq_restore(flags);
- 	while (bdp->cbd_sc & BD_SC_READY);
-
- 	cp = info->tx_va_base + ((bdp - info->tx_bd_base) * TX_BUF_SIZE);
- 	*cp = ch;
- 	bdp->cbd_datlen = 1;
- 	bdp->cbd_sc |= BD_SC_READY;
--
--	/* Get next BD.
--	*/
--	if (bdp->cbd_sc & BD_SC_WRAP)
--		bdp = info->tx_bd_base;
--	else
--		bdp++;
--
--	info->tx_cur = (cbd_t *)bdp;
- }
-
- /*
-@@ -1802,7 +1827,7 @@
- static void rs_8xx_wait_until_sent(struct tty_struct *tty, int timeout)
- {
- 	ser_info_t *info = (ser_info_t *)tty->driver_data;
--	unsigned long orig_jiffies, char_time;
-+	unsigned long orig_jiffies, char_time, tst_res;
- 	/*int lsr;*/
- 	volatile cbd_t *bdp;
-
-@@ -1837,6 +1862,7 @@
- 	 * are empty.
- 	 */
- 	do {
-+		unsigned long flags;
- #ifdef SERIAL_DEBUG_RS_WAIT_UNTIL_SENT
- 		printk("lsr = %d (jiff=%lu)...", lsr, jiffies);
- #endif
-@@ -1854,12 +1880,15 @@
- 		 * is the buffer is available.  There are still characters
- 		 * in the CPM FIFO.
- 		 */
-+		local_irq_save(flags);
- 		bdp = info->tx_cur;
- 		if (bdp == info->tx_bd_base)
- 			bdp += (TX_NUM_FIFO-1);
- 		else
- 			bdp--;
--	} while (bdp->cbd_sc & BD_SC_READY);
-+		tst_res = !!(bdp->cbd_sc & BD_SC_READY);
-+		local_irq_restore(flags);
-+	} while (tst_res);
- 	current->state = TASK_RUNNING;
- #ifdef SERIAL_DEBUG_RS_WAIT_UNTIL_SENT
- 	printk("lsr = %d (jiff=%lu)...done\n", lsr, jiffies);
-@@ -2261,10 +2290,11 @@
- {
- 	struct		serial_state	*ser;
- 	ser_info_t			*info;
--	unsigned			i;
-+	unsigned			i, c, cr_missing, max_tx_size;
- 	volatile	cbd_t		*bdp, *bdbase;
- 	volatile	smc_uart_t	*up;
- 	volatile	u_char		*cp;
-+	unsigned long                   flags;
-
- 	ser = rs_table + idx;
-
-@@ -2273,40 +2303,39 @@
- 	 * we simply use the single buffer allocated.
- 	 */
- 	if ((info = (ser_info_t *)ser->info) != NULL) {
--		bdp = info->tx_cur;
- 		bdbase = info->tx_bd_base;
--	}
--	else {
--		/* Pointer to UART in parameter ram.
--		*/
-+	} else {
-+		/* Pointer to UART in parameter ram. */
- 		up = (smc_uart_t *)&cpmp->cp_dparam[ser->port];
--
--		/* Get the address of the host memory buffer.
--		 */
--		bdp = bdbase = (cbd_t *)&cpmp->cp_dpmem[up->smc_tbase];
-
-+		/* Get the address of the host memory buffer.*/
- 		info = &consinfo;
-+		info->tx_bd_base = (cbd_t *)bdbase = (cbd_t *)&cpmp->cp_dpmem[up->smc_tbase];
-+		info->tx_cur = (cbd_t *)bdbase;
- 	}
-+	max_tx_size = console_tx_buf_len;
-+	cr_missing = 0;
-+	while (1){
-+		c = MIN(max_tx_size, count);
-+		if (c <= 0)
-+			break;
-
--	/*
--	 * We need to gracefully shut down the transmitter, disable
--	 * interrupts, then send our bytes out.
--	 */
--
--	/*
--	 * Now, do each character.  This is not as bad as it looks
--	 * since this is a holding FIFO and not a transmitting FIFO.
--	 * We could add the complexity of filling the entire transmit
--	 * buffer, but we would just wait longer between accesses......
--	 */
--	for (i = 0; i < count; i++, s++) {
-+		local_irq_save(flags);
-+		bdp = info->tx_cur;
-+		bdbase = info->tx_bd_base;
-+		if (bdp->cbd_sc & BD_SC_WRAP)
-+			info->tx_cur = (cbd_t *)bdbase;
-+		else
-+			info->tx_cur = (cbd_t *)(bdp+1);
-+		local_irq_restore(flags);
-+
- 		/* Wait for transmitter fifo to empty.
- 		 * Ready indicates output is ready, and xmt is doing
- 		 * that, not that it is ready for us to send.
- 		 */
- 		while (bdp->cbd_sc & BD_SC_READY);
-
--		/* Send the character out.
-+		/* Send the characters out.
- 		 * If the buffer address is in the CPM DPRAM, don't
- 		 * convert it.
- 		 */
-@@ -2314,55 +2343,32 @@
- 			cp = (u_char *)(bdp->cbd_bufaddr);
- 		else
- 			cp = info->tx_va_base + ((bdp - info->tx_bd_base) * TX_BUF_SIZE);
--		*cp = *s;
--
--		bdp->cbd_datlen = 1;
--		bdp->cbd_sc |= BD_SC_READY;
--
--		if (bdp->cbd_sc & BD_SC_WRAP)
--			bdp = bdbase;
--		else
--			bdp++;
--
--		/* if a LF, also do CR... */
--		if (*s == 10) {
--			while (bdp->cbd_sc & BD_SC_READY);
--
--			/* This 'if' below will never be true, but a few
--			 * people argued with me that it was a "bug by
--			 * inspection" that is was easier to add the code
--			 * than continue the discussion.  The only time
--			 * the buffer address is in DPRAM is during early
--			 * use by kgdb/xmon, which format their own packets
--			 * and we never get here. -- Dan
--			 */
--			if ((uint)(bdp->cbd_bufaddr) > (uint)IMAP_ADDR)
--				cp = (u_char *)(bdp->cbd_bufaddr);
--			else
--				cp = info->tx_va_base + ((bdp - info->tx_bd_base) * TX_BUF_SIZE);
--			*cp = 13;
--			bdp->cbd_datlen = 1;
--			bdp->cbd_sc |= BD_SC_READY;
-
--			if (bdp->cbd_sc & BD_SC_WRAP) {
--				bdp = bdbase;
--			}
--			else {
--				bdp++;
--			}
-+		i=1; /* Keeps track of consumed TX buffer space */
-+		if (cr_missing) {
-+			/* Previus loop didn't have room for the CR, insert it first in this */
-+			*cp++ = '\r';
-+			i++;
-+		}
-+		cr_missing = 0;
-+		for (; i <= c; i++) {
-+			if ((*cp++ = *s++) != '\n')
-+				continue; /* Copy bytes until a NewLine is found */
-+			/* NewLine found, see if there is space in the TX buffer to add a CR */
-+			if (i < max_tx_size) {
-+				*cp++ = '\r'; /* yes, there is space to add a CR */
-+				i++;
-+			} else
-+				cr_missing = 1; /* No space in the TX buffer,
-+						   rember it so it can be inserted in the next loop */
- 		}
--	}
--
--	/*
--	 * Finally, Wait for transmitter & holding register to empty
--	 *  and restore the IER
--	 */
--	while (bdp->cbd_sc & BD_SC_READY);
-+		count -= (c-cr_missing);
-+		bdp->cbd_datlen = i-1;
-+		bdp->cbd_sc |= BD_SC_READY;
-
--	if (info)
--		info->tx_cur = (cbd_t *)bdp;
-+	}
-+	/* while (bdp->cbd_sc & BD_SC_READY); is this really needed? */
- }
--
- static void serial_console_write(struct console *c, const char *s,
- 				unsigned count)
- {
-@@ -3003,7 +3009,7 @@
-
- 		}
- 	}
--
-+	console_tx_buf_len = TX_BUF_SIZE;
- 	return 0;
- }
-
-@@ -3059,7 +3065,7 @@
- 	 * memory yet because vm allocator isn't initialized
- 	 * during this early console init.
- 	 */
--	dp_addr = m8xx_cpm_dpalloc(8);
-+	dp_addr = m8xx_cpm_dpalloc(2*EARLY_BUF_SIZE);
- 	mem_addr = (uint)(&cpmp->cp_dpmem[dp_addr]);
-
- 	/* Allocate space for two buffer descriptors in the DP ram.
-@@ -3073,10 +3079,10 @@
- 	bdp->cbd_bufaddr = iopa(mem_addr);
- 	(bdp+1)->cbd_bufaddr = iopa(mem_addr+4);
-
--	consinfo.rx_va_base = mem_addr;
--	consinfo.rx_bd_base = bdp;
--	consinfo.tx_va_base = mem_addr + 4;
--	consinfo.tx_bd_base = bdp+1;
-+	consinfo.rx_va_base = (unsigned char *) mem_addr;
-+	consinfo.rx_bd_base = (cbd_t *) bdp;
-+	consinfo.tx_va_base = (unsigned char *) (mem_addr + EARLY_BUF_SIZE);
-+	consinfo.tx_bd_base = (cbd_t *) (bdp+1);
-
- 	/* For the receive, set empty and wrap.
- 	 * For transmit, set wrap.
-@@ -3177,7 +3183,7 @@
- 	/* Set up the baud rate generator.
- 	*/
- 	m8xx_cpm_setbrg((ser - rs_table), bd->bi_baudrate);
--
-+	console_tx_buf_len = EARLY_BUF_SIZE;
- 	return 0;
- }
-
+> Second, if the disk is mounting right, most likely you are missing a
+> shared library and/or program interpreter.
+>
+> Best way to debug this IMHO is to put a static shell there,
+> ash.static, sash, etc... pass init=<static shell> then try to run the
+> init process manually.. you may get more informative error messages.
+>
+> Mike G. wrote:
+>
+> > Can someone help me with this.. .been try to figure it out for
+> > quite sometime... and still stuck at it. I am using u-boot-0.4.0
+> > and linux-2.4.20-rc2 and runnig it for a board equip with MPC857.
+> > I don't know what is wrong with this. I have check it ramdisk log
+> > file everything seem to be there .. including the init. I have
+> > try to mount the squashfs on the host PC and run the init and it
+> > works. Hmm.. I am out of ideas on what to try next.. Help me please
+> > please....
+> >
+> > here the output :-
+> >
+> > Inte0: Swapping erase regions for broken CFI table.
+> > number of CFI chips: 1
+> > init_inte: bank1, name:Inte0, size:4194304bytes
+> > Inte flash0: Using Static image partition definition
+> > Creating 5 MTD partitions on "Inte0":
+> > 0x00000000-0x00080000 : "kernel"
+> > 0x00080000-0x00180000 : "ramdisk"
+> > 0x00180000-0x00300000 : "user1"
+> > 0x00300000-0x00380000 : "uboot"
+> > 0x00380000-0x00400000 : "user2"
+> > NET4: Linux TCP/IP 1.0 for NET4.0
+> > IP Protocols: ICMP, UDP, TCP, IGMP
+> > IP: routing cache hash table of 512 buckets, 4Kbytes
+> > TCP: Hash tables configured (established 1024 bind 1024)
+> > NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+> > VFS: Mounted root (squashfs filesystem) readonly.
+> > Freeing unused kernel memory: 44k init
+> > Kernel panic: No init found.  Try passing init= option to kernel.
+> >  <0>Rebooting in 180 seconds..
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
