@@ -1,55 +1,42 @@
-Date: Fri, 2 Apr 2004 19:32:26 -0900
-From: Ethan Benson <erbenson@alaska.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: arch/ppc/Makefile wiping out /dev/null
-Message-ID: <20040403043226.GO21226@plato.local.lan>
-References: <20BB0EB5-841D-11D8-9FF0-000A95A07384@sands-edge.com> <20040402045027.GG21226@plato.local.lan> <BDE6B8B0-8525-11D8-9FF0-000A95A07384@sands-edge.com>
+Subject: Re: Problems with dma_alloc_coherent()
+From: Adrian Cox <adrian@humboldt.co.uk>
+To: Paul Mackerras <paulus@samba.org>
+Cc: John Whitney <jwhitney-linuxppc@sands-edge.com>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <16493.61242.908659.82167@cargo.ozlabs.ibm.com>
+References: <9EB527A2-83F5-11D8-9FF0-000A95A07384@sands-edge.com>
+	 <20040401100546.A27472@home.com>
+	 <4317F0F4-8405-11D8-9FF0-000A95A07384@sands-edge.com>
+	 <20040401181926.GA3630@gate.ebshome.net> <406C658E.10500@embeddededge.com>
+	 <20040401185956.GB3786@gate.ebshome.net>
+	 <2C2F00BD-8410-11D8-9FF0-000A95A07384@sands-edge.com>
+	 <20040401191715.GC3786@gate.ebshome.net> <406C8104.9050609@acm.org>
+	 <20040401220018.GA4130@gate.ebshome.net>
+	 <D7F4C570-84C5-11D8-9FF0-000A95A07384@sands-edge.com>
+	 <16493.61242.908659.82167@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Message-Id: <1080977598.7999.791.camel@newt>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <BDE6B8B0-8525-11D8-9FF0-000A95A07384@sands-edge.com>
+Date: Sat, 03 Apr 2004 08:33:19 +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Apr 02, 2004 at 11:16:55PM -0500, John Whitney wrote:
->
-> Can you explain the insecurity a bit more? Any ideas on a better
+On Fri, 2004-04-02 at 23:54, Paul Mackerras wrote:
 
-$$ maps to the process pid, which is not hard to predict, especially
-on linux where PIDs are allocated incrementally rather then randomly.
+> If you want to write code to handle a separate DMA controller, go
+> ahead.  You will need to design your own separate API for it.  I
+> wouldn't try to make it too general, though, since there are very few
+> systems these days that have DMA controllers (as distinct from
+> bus-master capable I/O devices).
 
-so unless $(AS) opens its output file O_EXCL there is a race where
-someone can create a symlink or hardlink to another file as
-/tmp/.as.$$$$, $(AS) will then overwrite the target with its output.
-(even if it unlinks the file first, thats no good unless its final
-open() includes the O_EXCL flag).
+Actually, they are extremely common in the embedded market. On my desk I
+have three Linux systems with this class of DMA engine: an MPC107/7410,
+an ARM9 from Cirrus, and an ARM9 from TI. Most system-on-a-chip
+processors have DMA engines which can move between any two of memory,
+PCI, and internal peripherals.
 
-short story it lets another user destroy any file you have
-permissions to, if your building as root (bad idea) that means anything.
+- Adrian Cox
 
-> construct that won't cause /dev/null to be erased in some cases? I
-> just want a solution, it doesn't have to be the one I put in there.
-> :-)
-
-well its a good reason to never build software as root, build as a
-user, then bugs like this won't break your system.
-
-but in any event im not sure you even need -o at all..
-
-if not then id suggest just creating the file in the object root,
-where any other .o file would be build, then be sure to rm it.  since
-the build root and source tree is typically not writable by other
-users there isn't a security issue that way.
-
-> Would it be possible just to do something like "$(AS) --version"
-> instead, as this code is theoretically just checking for an old
-> version of as?
-
-theres a lot of crap in that output, and distros seem to like to screw
-with it, so thats probably fragile.
-
---
-Ethan Benson
-http://www.alaska.net/~erbenson/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
