@@ -1,32 +1,26 @@
-Date: Mon, 7 Jan 2002 17:21:44 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: mod+linuxppc-dev@MissionCriticalLinux.com
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [PATCH] Link-time failures from "simple" CFLAGS changes
-Message-ID: <20020108002144.GD13931@cpe-24-221-152-185.az.sprintbbd.net>
-References: <20020107230001.GB13931@cpe-24-221-152-185.az.sprintbbd.net> <200201072328.SAA07991@missioncriticallinux.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200201072328.SAA07991@missioncriticallinux.com>
+Date: Tue, 8 Jan 2002 09:59:56 -0500 (EST)
+From: Jack Howarth <howarth@bromo.med.uc.edu>
+Message-Id: <200201081459.JAA51702@bromo.msbb.uc.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: guppi3
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Jan 07, 2002 at 06:28:53PM -0500, mod+linuxppc-dev@MissionCriticalLinux.com wrote:
->
-> >> Sheesh!    Well, OK then: please apply this patch:
-> >
-> >Feel free to pass it onto Marcelo and/or Linus.
->
-> I can wait - it'll eventually make it into the main
-> branch when the linuxppc work gets merged, right?
-
-If you send it to them, and they accept it, yes, it will get back in the
-linuxppc trees.  I don't intend on committing it to the PPC trees
-however.  It's a generic documentation thing, not a PPC-specific thing.
-
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Hello,
+   Has anyone on YDL or SuSe ppclinux successfully built
+guppi3 for use with gnumeric 1.0? We are finding that
+there are apparent ppc specific crashes in guppi-gnumeric
+as well as the guppi demo program. It looks to be difficult
+to debug because the crash occurs in a library. I've tried
+the obvious stuff of making sure we compile with -fsigned-char
+but that didn't help. Just curious if this problem is specific
+to Debian ppc sid at the moment or if other ppclinux distros
+exhibit the same problem.
+                 Jack
+ps You can crash guppi on debian ppc sid by running gnumeric 1.0
+, creating some two columns and three rows of data, selecting
+these cells and clicking on the graph icon in the gnumeric tool
+bar. On debian ppc sid, this results in a crash in guppi-gnumeric.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
