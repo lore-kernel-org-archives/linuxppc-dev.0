@@ -1,58 +1,37 @@
-Date: Mon, 26 Mar 2001 12:51:09 +0100
-Subject: Re: Sound skips
+Date: Mon, 26 Mar 2001 13:00:22 +0100
+Subject: dmasound hangs on new G4s (2)
 From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Giuliano Pochini <pochini@shiny.it>
-Cc: linuxppc-dev@lists.linuxppc.org,
-	Geert Uytterhoeven <geert@linux-m68k.org>, cort@fsmlabs.com
+To: Benjamin Herrenschmidt <benjamin.herrenschmidt@wanadoo.fr>,
+	Tom Rini <trini@kernel.crashing.org>
+Cc: linuxppc-dev@lists.linuxppc.org
 Mime-version: 1.0
 Content-type: text/plain; charset="US-ASCII"
-Message-Id: <20010326115110.7587C2EFE4@apollo.valhalla.net>
+Message-Id: <20010326120026.59A232EFC1@apollo.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-[Geert, Cort - the question for you guys is "has the Console IRQ block been
-solved?" - I was under the impression it had from some traffic on
-Linux-audio-dev]
+>>Okay, dmasound compiled in hangs the new G4s, but this change had no effect
+>>on it otherwise (I also have a few Bogus interrupts, w/ or w/o this).
+>
+> One of those new G4s that have the new "digital sound" chip ?
+>If I remember correctly, they have no AWACS, but an ibook-like chip on the
+> I2S bus. I beleive it's normal dmasound doesn't work properly with it.
 
-Mon, Mar 26, 2001,  Giuliano Pochini wrote:
->>> Ok, I'll try, but this problem regards interrupt latency,
->>> not user-spacelatency.
->> can you be sure it is IRQ and not scheduling latency?
-> No, but it's likely to be. The audio buffer is 32 fragments (2KB),
-> that is 1.48s. I don't think an app can remain blocked so long
+"Tumbler" audio (whatever that is ;-))) [WWDC, Ben?]
 
-an FB scroll would block my G3/beige for 1.9 sec! (but YMMV).
+OK - could you send me the device-tree stuff? - and I'll compare it with
+what we've got.
 
->and it
-> doesn't explain why libtool blocks the sound since it executes in much
-> less time than one second.
+http://tibit.org/ppc/ has a nice (if somewhat slow) script that turns the
+dev-tree into html.
 
-no it doesn't... hmmm interesting... but see below:
+With the BK _2_4 tree (and no other patches) i2s-a is checked and connected
+for output - *but* there may be a 'mixer-related' issue (because that's
+different too).  I've fixed that up for the iBook (so that it doesn't try
+and do any AWACS-related stuff).... but that won't work for the new G4
+necessarily.
 
---
-
-for dmasound: regardless of how many fragments are buffered only two (max)
-will be queued for dbdma - so IRQs blocked for longer than 23-ish ms will
-skip with that setup.
-
-[the IRQ routine deals with queuing fragments written by the app but not yet
- queued for dbdma]
-
-In addition - unless the app can write all 32 fragments ahead - if *it* is
-blocked (by scheduling latency) this will also cause the same effects.
-
->> If so, can you
->> identify what driver or function is holding off IRQs for this length of
->> time? [a few hundred ms is a 'monstrous' time to hold IRQs off].
-> Console scrolling does it IFAIK, but this is not the case.
-
-Yes, console is/was a bad offender - but I thought that the IRQ block in
-that had been solved...
-
-Cort? Geert?
-
-ciao,
-Iain.
+Iain
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
