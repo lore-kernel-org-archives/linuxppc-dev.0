@@ -1,36 +1,26 @@
-Message-ID: <01C1DB26.5F692110.svacca@valcom.com>
-From: Steven Vacca <svacca@valcom.com>
-Reply-To: "svacca@valcom.com" <svacca@valcom.com>
-To: "LinuxEmbeddedMailList (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: QMC SCC2 time slot data input to data buffer.
-Date: Wed, 3 Apr 2002 15:43:58 -0500
+Message-ID: <20020403214207.92576.qmail@web9503.mail.yahoo.com>
+Date: Wed, 3 Apr 2002 13:42:07 -0800 (PST)
+From: Pete McCormick <pete261@yahoo.com>
+Subject: porting linux kernel to Motorola MPC8260ADS board
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have an MPC860T setup, using QMC mode.
+Looking for some info on what changes you have to make to the generic linux
+kernel (let's say, 2.4.18) in order to get things running on the Motorola
+MPC8260ADS board.
 
-In my kernel driver, in the immap_t struct, I set the QMC Multi-channel
-base ptr = the address of the Buffer Desc pool.  I also set the interrupt
-queue ptr = the addr of the circular interrupt queue.
+Seems that the board is not supported explicitly.  Anyone know why, seeing as
+how this is a standard evaluation board that has been around for a while...
 
-When a QMC channel is activated, for Rx, then TDM data should get
-written to a buffer, thru the associated TDM time slot.
+Thanks in advance,
 
-My question is,
+Pete
 
-is it OK to allocate the Rx Buff Descriptor Pool in the Kernel driver,
-and then set the immap_t reg using that kernel space addr,
-or do I need to do any kind of re-mapping in order
-for the external CPM hardware section to access kernel space memory?
-
-Once the data is written into the buffer, SCC2 should interrupt, for
-data buff processing.
-
-Thanks,
-
-Steven
+Yahoo! Tax Center - online filing with TurboTax
+http://taxes.yahoo.com/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
