@@ -1,36 +1,28 @@
-Date: Thu, 24 Oct 2002 09:10:53 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
-Cc: linuxppc-embedded@lists.linuxppc.org,
-	sensors@stimpy.netroedge.com
-Subject: Re: 8xx i2c refers to unspecified chip errata
-Message-ID: <20021024161053.GK669@opus.bloom.county>
-References: <20021015165731.GG695@opus.bloom.county> <IGEFJKJNHJDCBKALBJLLEEEIFHAA.joakim.tjernlund@lumentis.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <IGEFJKJNHJDCBKALBJLLEEEIFHAA.joakim.tjernlund@lumentis.se>
+Date: Thu, 24 Oct 2002 19:01:19 +0200
+Mime-Version: 1.0 (Apple Message framework v482)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Subject: PrPMC800 interrupt problem
+From: Anders Blomdell <anders.blomdell@control.lth.se>
+To: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+Message-Id: <37671D04-E772-11D6-A4F1-0003931C2BFA@control.lth.se>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Oct 22, 2002 at 11:15:38AM +0200, Joakim Tjernlund wrote:
->
-> > On Fri, Oct 11, 2002 at 11:12:02AM +0200, Joakim Tjernlund wrote:
-> >
-> > > OK, here it is.
-> > >
-> > > Perhaps someone can add it to the ppctree?
-> >
-> > If you can submit this as a patch vs what's in the i2c CVS tree or the
-> > ppctree, than yes, this can be committed there, and to the ppctrees.
->
-> Here is a patch against the PPC 2.4 devel tree for the i2c-algo-8xx.c
+When trying to use the linuxppc_2_4_devel on a PrPMC800, the system stops
+responding to external interrupts after the first serial interrupt. Many
+things works, since the system correctly gets its IP address via DHCP.
 
-Can you please split this into logical chunks, or give me a list of each
-fix in here?  Thanks.
+The system handles a little more than 100 interrupts that gets routed to
+'e100intr', then it starts up my shell that does a write to the console.
+This write triggers an interrupt that gets routed to 'rs_interrupt_single'
+. After this no more interrupts are received, but 'rs_interrupt_single' is
+called from the timer task in the serial driver, but the ethernet is
+totally dead. Anybody that has a good idea what to do about this?
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Regards
+
+Anders Blomdell
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
