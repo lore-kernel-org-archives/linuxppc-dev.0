@@ -1,37 +1,63 @@
-Message-ID: <3CFF5CF1.8080204@linuxfoundary.com>
-Date: Thu, 06 Jun 2002 09:00:33 -0400
-From: Dave Strout <dstrout@linuxfoundary.com>
+Message-ID: <20020606130408.58860.qmail@web9502.mail.yahoo.com>
+Date: Thu, 6 Jun 2002 06:04:08 -0700 (PDT)
+From: Pete McCormick <pete261@yahoo.com>
+Subject: Re: 8260 timer
+To: "M?sz?ros_Lajos" <ludwigm@siemens.hu>,
+	linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <37D0F88E70D96C428C19EEB865701A38E834F3@buda902a.siemens.hu>
 MIME-Version: 1.0
-To: Donald White <dbwhite@asu.edu>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Can compile, now on to booting
-References: <20020605191638.298B0102F2@denx.denx.de> <3CFE7197.1040408@linuxfoundary.com> <3CFEDFC1.9080603@asu.edu>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Ahhh -- I was hoping that somebody would have some thoughts like that.
- Could someone send me a copy of vxhack.c ?  The link in the FAQ (
-ftp://ftp.mvista.com/pub/Area51/ppc-8xx/vxhack.c  ) doesn't have
-anything anymore....
+I had this problem before.  Make sure the frequency members of the bd_t
+structure are in Hz, not MHz.
 
-thanks,
-dave.
+I made a change in M8260Setup.c:
 
+void __init
+platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
+	      unsigned long r6, unsigned long r7)
+{
+	/* PEM : added */
+	bd_t	*binfo;
+	binfo = (bd_t *)__res;
 
-Donald White wrote:
+	if ( r3 )
+		memcpy( (void *)__res,(void *)(r3+KERNELBASE), sizeof(bd_t) );
 
+	/* PEM : frequencies reported by ppcboot are in MHz, not Hz */
+	/* Linux makes calculations assuming they are in Hz */
+	binfo->bi_intfreq *= 1000000L;		/* Internal Freq, in MHz */
+	binfo->bi_busfreq *= 1000000L;		/* Bus Freq, in MHz */
+	binfo->bi_cpmfreq *= 1000000L;		/* CPM_CLK Freq, in MHz */
+	binfo->bi_brgfreq *= 1000000L;		/* BRG_CLK Freq, in MHz */
+	binfo->bi_sccfreq *= 1000000L;		/* SCC_CLK Freq, in MHz */
+	binfo->bi_vco *= 1000000L;			/* VCO Out from PLL, in MHz */
+
+Not sure if this is the correct place to do this, but it worked for me.  I
+suppose you could also rebuild ppcboot, but I didn't feel like doing this.
+
+Pete
+--- Mészáros_Lajos <ludwigm@siemens.hu> wrote:
 >
-> I did this once on a mpc860 board.  It involved running the uncompressed
-> kernel image through vxhack.c from Dan Malek with a few fixes since the
-> segments seemed to have moved around.  The VxWorks loader would then
-> load the hacked image through bootp or tftp.  I also had to have one of
-> the Linux bootloader files initialize a bd_t structure.  I was able to
-> poke around in memory and find where the VxWorks loader was keeping the
-> environment.
+> Hi All!
 >
-> Don
+> On our MPC8260ADS board the 2.4.18 kernel starts fine from PPCBoot, but
+> after
+> "Warning: real time clock seems stuck!"
+>    message, (which seems true) stops on
+> "Calibrating delay loop... "
+>    message. (which proves the previous assumption)
+>
+> Where to find the initial settings of the 8260 timer?
+> In the PPCBoot or in the kernel?
+>
+> Best Regards
+> 	Ludwig
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
