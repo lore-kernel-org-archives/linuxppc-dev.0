@@ -1,29 +1,29 @@
-Reply-To: <acurtis@onz.com>
-From: "Allen Curtis" <acurtis@onz.com>
-To: "Dan Malek" <dan@embeddededge.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: 8260/8xx Embedded Boot patch
-Date: Tue, 27 Aug 2002 21:16:18 -0700
-Message-ID: <NCBBIINEHIPFGJPLBEIFAEEKDLAA.acurtis@onz.com>
+Message-ID: <3D6C5FC2.1090204@embeddededge.com>
+Date: Wed, 28 Aug 2002 01:29:38 -0400
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <3D6C4B8E.8070706@embeddededge.com>
+To: acurtis@onz.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: FCC patch..really
+References: <NCBBIINEHIPFGJPLBEIFMEEJDLAA.acurtis@onz.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Please explain these changes.  You shouldn't be using embed_config.c if
-> you don't have EMBEDDEDBOOT defined.  The EMBEDDEDBOOT is a generic
-> bootloader that should only have unique functions in embed_config.c
-> You should be definining a board configuration for whatever you are
-> doing and use that.
+Allen Curtis wrote:
 
-I am using a modified EST8260 configuration. However the EST8260 embedded
-stuff was broke. The bd_info structure was not passed up from head.S. The
-call to configure the clocks was missing at the end of embed_config(). You
-will also see that I translate the CONFIG_RPX (and other platform
-conditionals) into CONFIG_EMBEDDED and use the single conditional compile.
+> I have another update that does the same thing with the MDIO lines per PHY
+> ;)
+
+Please don't.  This stuff doesn't belong in configuration files.  There is
+nothing wrong with creating platform specific configuration in files
+that can be compiled and using a single configuration option and #define to
+make this happen.  Cluttered configuration scripts are a source of error
+and headache.
+
+
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
