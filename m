@@ -1,27 +1,30 @@
-In-Reply-To: <v04220802b500d91f6693@[10.0.0.42]>
-Date: Fri, 24 Mar 2000 14:12:55 +0100
-To: "Timothy A. Seufert" <tas@mindspring.com>, linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
+Date: Fri, 24 Mar 2000 14:27:27 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
 Subject: Re: LongTrail PCI resource assignment
-Message-Id: <20000324141255.013260@mailhost.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <Pine.GSO.4.10.10003241335460.7616-100000@dandelion.sonytel.be>
+Message-ID: <Pine.LNX.4.10.10003241423530.21215-100000@opal.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Mar 24, 2000, Timothy A. Seufert <tas@mindspring.com> wrote:
+> > On a somewhat related issue (the PCI mapping funnies for the Lombard and
+> > possibly other Rage Pro devices): what are the penalties if I 'correct'
+> > the PCI mapping for the Rage Pro within atyfb_of_init?
+>
+> To be a bit more constructive: what about adapting my patches and use them on
+> the Lombard as well? Then the conflicting secondary aperture will be assigned a
+> new region, while the valid regions will stay what they are.
 
->If there was a really, really good reason to keep OF up to date
->(like, say, if we could break back into the OF console like you can
->on Sparcs), then it would be OK.  Otherwise it is most likely
->unnecessary bloat, and leads to potential confusion (and bugs).  Is
->there any such reason on ppc?
+Fine with me. I forgot to mention that I'm currently working on the 2.2.15
+atyfb source, do your patches apply to that as well? (Frankly, I tried to
+follow your argument about the PCI / OF resource handling but couldn't
+make out where it would fit in with the problem I try to solve.)
 
-After thinking a bit more about this, I beleive we could simply add a
-property to the nodes of cards for which we change the bus number,
-indicating the new linux pci dev infos. The way, we keep the "reg"
-property intact (it may be useful for rebuilding OF path).
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
