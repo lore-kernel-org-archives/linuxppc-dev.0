@@ -1,35 +1,60 @@
-Message-Id: <l03130300b4aef8bd7dd2@[24.218.140.90]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Sat, 22 Jan 2000 01:08:11 -0500
-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-From: "Michael R. Zucca" <mrz5149@acm.org>
-Subject: Stock 2.2.14 won't boot
+Date: Sat, 22 Jan 2000 01:45:00 -0500 (EST)
+From: Robert Neugebauer <rneugeba@undergrad.math.uwaterloo.ca>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: RS6000 to G4 assembly changes
+In-Reply-To: <200001220016.TAA19532@mal-ach.watson.ibm.com>
+Message-ID: <Pine.SOL.3.96.1000122013827.17059B-100000@fitch.math.uwaterloo.ca>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I've compiled a stock (ftp.us.kernel.org) 2.2.14 with different stuff in
-and out. While it seems to compile just fine I can't seem to get it to boot.
+I am not trying to build a cross compiler, I am not trying to build GCC.
+My course at university uses its own compiler called uC++ (Micro C++).
 
-I'm using a PowerCenter 132 (604e@133MHz). Booting with BootX 1.1.1.
+The compiler thus far only has the following targets that work:
+        dmake sun-sparc-sunos
+        dmake sun-sparc-svr4
+        dmake sun-m68k-sunos
+        dmake dec-ultrix-mips
+        dmake dec-alpha
+        dmake sgi-mips-r4000
+        dmake sgi-mips-r3000
+        dmake ibm-rs6000
+        dmake hp-hppa
+        dmake pc-i386-linux
+        dmake gizmo
 
-The same config works great with the yellowdog 2.2.6 kernel.
+By my knowledge rs6000 is a RISC based architecture, thus I tried to build
+uC++ using the target ibm-rs6000. This resulted in an unrecognized opcode
+movl during compilation.
 
-What, if anything am I doing wrong?
+If someone knows what the similar instruction on my G4 is, and any other
+problems I might/will encounter, I would appreciate it.
 
-P.S. if the solution is to just "download the latest kernel using anon CVS
-from vger" please let me know how to do that. I'm not a CVS user. Clearcase
-is good, though :-)
+Thank You
 
-Thanks folks!
+Bob Neugebauer
 
 
-____________________________________________________________________
- Michael Zucca - mrz5149@acm.org - http://www.mdc.net/~mrz5149/
- "I will choose a path that's clear. I will choose Freewill. "
-  --Rush, Freewill
-____________________________________________________________________
+On Fri, 21 Jan 2000, David Edelsohn wrote:
+
+>
+> 	Others probably can answer configuring GCC for Linux/PPC better
+> than I, but it is looking for something like "powerpc-unknown-linux-gnu"
+> as the target.
+>
+> 	rs6000 is NOT another ppc based architecture.
+>
+> 	If you are trying to build a linuxppc compiler hosted on x86
+> Linux, then you need to build a cross-compiler.  Please read the cross-gcc
+> FAQ to learn how to do this:
+>
+> http://www.objsw.com/CrossGCC/
+>
+> David
+>
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
