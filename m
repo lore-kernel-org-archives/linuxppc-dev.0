@@ -1,38 +1,39 @@
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: hdparm and disc errors
-References: <4vr8t0veui.fsf@darbujan.fzu.cz>
-	<20010921142218.5696@smtp.adsl.oleane.com>
-From: Jiri Masik <masik@pc203b.fzu.cz>
-Date: 24 Sep 2001 11:40:45 +0200
-Message-ID: <4vhett0vvm.fsf@darbujan.fzu.cz>
+Message-ID: <3BAF691B.9020207@mc.com>
+Date: Mon, 24 Sep 2001 13:10:51 -0400
+From: Mark Salisbury <mbs@mc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: "Timothy A. Seufert" <tas@mindspring.com>
+Cc: "Albert D. Cahalan" <acahalan@cs.uml.edu>,
+	linuxppc-dev@lists.linuxppc.org, dan@mvista.com,
+	hobold@Informatik.Uni-Bremen.DE, nicoya@apia.dhs.org
+Subject: Re: ppc LE questions (seeking help hand info pointers)
+References: <200109211848.f8LImlT19616@saturn.cs.uml.edu> <p05100302b7d16386402f@[10.0.0.42]>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+Timothy A. Seufert wrote:
 
-> >Do you think it is a real disc failure or is anything wrong with the
-> >hdparm setting? Is the unmasking dangerous for Pismo?
->
-> That's weird. Note that there are chances that 2.2 lockup on such IDE errors.
->
-> The driver did evolve slightly, but not in a way that explains your problem.
->
-> Ben.
+> Assuming you've identified all the needed changes for PPC LE with a
+> LE board (*), I humbly submit that Mark & co. should get to work
+> making a patch if they really want this feature.  The only item which
+> might touch very much code is #5 (anybody know how frequently such
+> instructions are used?), and a strong argument can be made that those
+> instructions should not be used by anybody given their clearly
+> deprecated status.  The rest of it is small enough to be maintained
+> outside the regular trees, so they will not lose big time if it gets
+> refused for integration.
 
-Hi Ben,
 
-it does not happen with 2.2 at all. I think there was a change in the
-driver before 2.4.8-ben0. This is the first kernel I tried which
-actually reports the error. Before that I had 2.4.7-ben0 and
-2.4.6-pre8 which were crashing without anything reported. I guess it
-was caused by the disc as well as the crash was accompanied by the
-sound of repeated access to a faulty floppy disc.
+we'll see how it goes and let you know...
 
-Jiri
+
+--
+/*------------------------------------------------**
+**   Mark Salisbury | Mercury Computer Systems    **
+**   mbs@mc.com     | System OS - Kernel Team     **
+**------------------------------------------------*/
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
