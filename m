@@ -1,24 +1,22 @@
-Date: Tue, 15 Dec 1998 18:51:09 -0500 (EST)
+Date: Tue, 15 Dec 1998 21:59:18 -0500 (EST)
 From: satadru pramanik <satadru@umich.edu>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: inet.h
-Message-ID: <Pine.LNX.4.05.9812151850260.1072-100000@beer.pub.umich.edu>
+Subject: external drive not syncing.
+Message-ID: <Pine.SOL.3.95.981215215757.27481A-100000@poleposition.rs.itd.umich.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-does anyboy have a fixed copy of this?
-compiling always lands in trouble because of this file.
-
+I have an external drive that refuses to sync after 15 minutes of intense
+drive activity.  any attempt to sync, ex, typing "sync" at the command
+prompt, causes a hard crash, not even a kernel panic.  Any thoughts?
 
 ----
-satadru pramanik `satadru@umich.edu'
-"Put your hand on a hot stove for a minute, and it seems like an hour. Sit
-with a pretty girl for an hour, and it seems like a minute. THAT'S
-relativity." 
--Albert Einstein
+satadru pramanik www.umich.edu/~satadru
+Do, or do not.  There is no try.
+-Yoda
 ---
 
 
