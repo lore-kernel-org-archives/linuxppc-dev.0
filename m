@@ -1,43 +1,50 @@
-Date: Tue, 29 Oct 2002 13:00:33 -0700
-From: "Tim M. Sanders" <tsanders@synergymicro.com>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: linuxppc_2_4_devel tree and 2.4.19
-Message-ID: <20021029130033.B26986@evilcat.ioinc.tucson.az.us>
-References: <20021029114712.J25527@evilcat.ioinc.tucson.az.us> <20021029192059.GI688@opus.bloom.county>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20021029192059.GI688@opus.bloom.county>; from trini@kernel.crashing.org on Tue, Oct 29, 2002 at 12:20:59PM -0700
+Message-ID: <3DBEF0B4.3050508@pop.agri.ch>
+Date: Tue, 29 Oct 2002 21:33:56 +0100
+From: Andreas Tobler <toa@pop.agri.ch>
+MIME-Version: 1.0
+To: vinai <vroopcha@mcw.edu>
+Cc: Debian PowerPC List <debian-powerpc@lists.debian.org>,
+	"LinuxPPC Developers' List" <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Sonnet G4 800 in 1st gen PCI mac + linux ...
+References: <Pine.LNX.4.44.0210291117140.311-100000@kaiso.biophysics.mcw.edu>
+In-Reply-To: <Pine.LNX.4.44.0210291117140.311-100000@kaiso.biophysics.mcw.edu>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Thanks, that worked.  My misunderstanding.
+vinai wrote:
 
-On Tue, Oct 29, 2002 at 12:20:59PM -0700, Tom Rini wrote:
+> Hey Folks,
 >
-> On Tue, Oct 29, 2002 at 11:47:12AM -0700, Tim M. Sanders wrote:
-> >
-> > I have the latest linuxppc_2_4_devel tree from
-> > bk://source.mvista.com/linuxppc_2_4_devel.  I wanted to get the 2.4.19 "release"
-> > out of the tree.  I do bk clone -rv2.4.19 linuxppc_2_4_devel linuxppc_2419.  I
-> > know that the directory arch/ppc/platforms is suppose to be part of the 2.4.19
-> > tree, but it is not in the cloned tree.  What am I doing wrong?
->
-> v2.4.19 is kernel.org, as of 2.4.19, not the tree as of 2.4.19.  Do a
-> 'bk changes', and look at where linuxppc_2_4 of the time was merged into
-> linuxppc_2_4_devel.
->
-> --
-> Tom Rini (TR1265)
-> http://gate.crashing.org/~trini/
->
+> I posted a note to one of the mac sites with this question and I thought
+> I'd ask here as well.  Is anyone using (or has tried to use) one of the
+> new Sonnet G4 CPU's in a 1st generation PCI mac (7300 to 9600) with any
+> degree of success ?  I'm considering trying this in my 8500 ...
 
---
---
-===========================
-Tim M. Sanders
-Synergy Microsystems
-520.690.1709 x323
+Well, I can't speak for sonnet nor for G4, but I recentley got a G3/533
+ZIF for my 8600/200. It was a nightmare until I found out that this CPU
+doesn't like interleaving. After de-interleaving the DIMM's I could run
+the CPU with 50MHz Bus and 500 MHz CPU Speed. L2 is half of the CPU.
+
+My two rp.
+
+Andreas
+
+2.4.20-pre11-ben0
+[andreas@pm8600 cvs]$ cat /proc/cpuinfo
+cpu             : 740/750
+temperature     : 33 C (uncalibrated)
+clock           : 510MHz
+revision        : 3.2 COP (pvr 0008 8302)
+bogomips        : 999.42
+machine         : Power Macintosh
+motherboard     : AAPL,8500 MacRISC
+detected as     : 16 (PowerMac 8500/8600)
+pmac flags      : 00000000
+memory          : 560MB
+l2cr override   : 0xb9080050
+pmac-generation : OldWorld
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
