@@ -1,47 +1,44 @@
-Date: Mon, 22 Mar 1999 13:45:25 +0100 (MET)
-From: David De Ridder <s970707@uia.ua.ac.be>
-Reply-To: David De Ridder <david.de.ridder@bitsmart.com>
-To: Michael Lundkvist <ml@epact.se>
-cc: David De Ridder <david.de.ridder@bitsmart.com>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: MVME 2306 almost up and running
-In-Reply-To: <qpsoaxd7ze.fsf@erbium.epact.se>
-Message-ID: <Pine.SO4.4.05.9903221342440.18896-100000@hsins.uia.ac.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Mon, 22 Mar 1999 14:15:44 +0100
+To: linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Generic problem with BootX
+Message-Id: <19990322141544.028907@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 22 Mar 1999, Michael Lundkvist wrote:
+I think I finally found the cause of the crash: During relocation of the
+kernel by BootX, it looks like the UW is still DMA-ing things to main
+memory, damaging the kernel. I added a reset of the Symbios chip just
+before switching the MMU off, and now, my kernel boots again on the G3.
 
-> David De Ridder <s970707@uia.ua.ac.be> writes:
-> 
-> > 
-> >  So, the kernel seems to be requesting those files (and receiving them ?).
-> >  You could be right about the dynamic libraries. But, before I reinstall
-> >  the entire root fs, I want to make sure *that* is the problem. Does
-> >  any of you kind people have a statically linked program I could use to
-> >  test, e.g. a Hello World program ?
-> > 
-> 
-> Try /bin/rpm.
+This is a generic problem with any device that may do DMA. I thought most
+of this would be fixed by the shutdown-proc mecanism used in bootx, but
+apparently, this is not the case.
 
- Thank you ! The dynamic libraries seem to be the problem. You suggest to
- go for an R5 instead of R4 ? I noticed at several FTP sites that there
- are only so-called 'pre-R5' RPMS available. Are those the ones you mean ?
+So, I'll soon release a version of BootX that resets this card before
+booting, and also resets all the DBDMA channels (could someone send me a
+list of all possible DBDMA channels on various chips ? I think I know
+where the mac-io ones are, but I don't have a Grand-Central not OHare
+based machine available now).
 
- Kind regards from rainy and traffic-congested Belgium,
+I beleive I also need to reset an eventual adaptec board, and BootX will
+probably require similar fixes for all sorts of boards (fortunately,
+boards that DMA to system memory all the time even after a MacOS shutdown
+are quite rare).
 
-+-----------------------------------------------------------------+
-|   David 'Septimus' De Ridder   | "Never underestimate the       |  
-|                                |  power of the soul unleashed." |
-| <david.de.ridder@bitsmart.com> |   - 'Essence Flare', M:TG      |
-+-----------------------------------------------------------------+
+If you know of a device that may fall in this category, please send me
+enough infos for me to reset it (device-tree name, how to reset it, etc...)
 
---
-"Only the bamboo bows when the storm grumbles. Steel breaks !"
- - Yemitsu, last words
+
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
+
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
