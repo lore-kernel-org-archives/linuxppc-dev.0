@@ -1,108 +1,61 @@
-From: Jim Thompson <jim@musenki.com>
+Message-ID: <3CC006F1.5940B04E@imc-berlin.de>
+Date: Fri, 19 Apr 2002 14:00:49 +0200
+From: Steven Scholz <steven.scholz@imc-berlin.de>
 MIME-Version: 1.0
+To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>,
+	Dan Malek <dan@embeddededge.com>,
+	Frank Przybylski <frank.przybylski@vas-gmbh.de>
+Subject: Re: MPC8xx and IDMA !?!?
+References: <3CBD321A.60CE328@imc-berlin.de>
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <15552.1573.160528.28254@zaphod.musenki.com>
-Date: Fri, 19 Apr 2002 06:57:25 -0500
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Bogomips and loops_per_jiffy
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I've noticed that about half the time, the kernels I build take what I
-think is a long time (> 20 seconds) in calibrate_delay().
+To whom it may concern,
 
-That is, there is quite a pause between
-    Calibrating delay loop...
-and (the answer, of sorts)
-    133.12 BogoMIPS
+> a while ago (aprox. kernel 2.4.11) I succesfully played around with IDMA
+> on MPC855/860.
+> ...
+> The code is NOT working on recent kernels (I pulled it yesterday).
+> I set up the IDMA. Trigger DREQ0 using a GPIO pin. SDMACK1 is going LOW
+> but then instead of toggeling it just stays LOW. And instead of
+> transfering data the MPC8xx just hangs.
+>
+> Have there been changes in the DPRAM layout ..?
 
-    => bootm ff800000
-    ## Booting image at ff800000 ...
-       Image Name:   Musenki kernel 2.4.19pre1
-       Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-       Data Size:    674330 Bytes = 658 kB = 0 MB
-       Load Address: 00000000
-       Entry Point:  00000000
-       Verifying Checksum ... OK
-       Uncompressing Kernel Image ... OK
-    Memory BAT mapping: BAT2=32Mb, BAT3=0Mb, residual: 0Mb
-    Linux version 2.4.19pre1 (jim@ford) (gcc version 2.95.4 20011002 (Debian prerelease)) #4 Fri Apr 19 05:58:00 CDT 2002
-    Musenki M3/M1: See www.musenki.com for details
-    On node 0 totalpages: 8192
-    zone(0): 8192 pages.
-    zone(1): 0 pages.
-    zone(2): 0 pages.
-    Kernel command line: root=/dev/nfs rw nfsroot=192.168.0.8:/usr/local/m1_nfsroot ip=192.168.0.42:192.168.0.8:192.168.0.1:255.255.255.0:fuckme::off
-    OpenPIC Version 1.2 (1 CPUs and 138 IRQ sources) at fc040000
-    time_init: decrementer frequency = 25.000000 MHz
-    Calibrating delay loop... 133.12 BogoMIPS
-    Memory: 30452k available (1200k kernel code, 480k data, 88k init, 0k highmem)
-    Dentry-cache hash table entries: 4096 (order: 3, 32768 bytes)
-    Inode-cache hash table entries: 2048 (order: 2, 16384 bytes)
-    Mount-cache hash table entries: 512 (order: 0, 4096 bytes)
-    Buffer-cache hash table entries: 1024 (order: 0, 4096 bytes)
-    Page-cache hash table entries: 8192 (order: 3, 32768 bytes)
-    POSIX conformance testing by UNIFIX
-    PCI: Probing PCI hardware
-    [...]
+I (think I) figured out the problem:
 
-I, as on so many other machines in arch/ppc/platforms/, set
+I use
+	m8xx_cpm_dpalloc( sizeof(idma_bd_t) );
 
-	loops_per_jiffy = 50000000 / HZ;
+to allocate space for the buffer descriptors in the DP ram.
 
-as the first line of musenki_setup_arch(), though I've tried
-"100000000 / HZ;" with no difference in effect.
+The User Man says "Note that IBASE should be burst-aligned (divisible by
+16)"
+(Does the English "should be" means "have to be, otherwise everything
+goes wrong!"???)
 
-Interestingly, loops_per_jiffy is apparently over-written when
-calibrate_delay() is called:
+The older kernel versions always returned (by pure accident?) a
+burst-aligned address (%16) (e.g. 0x850 offset from dpmem start). So
+everything was fine.
 
-    void __init calibrate_delay(void)
-    {
-	    unsigned long ticks, loopbit;
-	    int lps_precision = LPS_PREC;
+The newer kernels return (by pure accident?) a NON burst-aligned address
+(e.g. 0x0918) und the IDMA crashes.
 
-	    loops_per_jiffy = (1<<12);
+So my workaround for now is to allocate more than I need and correct the
+value for IBASE like
+	ibase += ibase % 16
 
-	    printk("Calibrating delay loop... ");
-	    while (loops_per_jiffy <<= 1) {
-		    /* wait for "start of" clock tick */
-		    ticks = jiffies;
-		    while (ticks == jiffies)
-			    /* nothing */;
-		    /* Go .. */
-		    ticks = jiffies;
-		    __delay(loops_per_jiffy);
-		    ticks = jiffies - ticks;
-		    if (ticks)
-			    break;
-	    }
+Could anyone think of a better solution? Since I waste at least 16 bytes
+in the DPRAM.
 
-    /* Do a binary approximation to get loops_per_jiffy set to equal one clock
-       (up to lps_precision bits) */
-	    loops_per_jiffy >>= 1;
-	    loopbit = loops_per_jiffy;
-	    while ( lps_precision-- && (loopbit >>= 1) ) {
-		    loops_per_jiffy |= loopbit;
-		    ticks = jiffies;
-		    while (ticks == jiffies);
-		    ticks = jiffies;
-		    __delay(loops_per_jiffy);
-		    if (jiffies != ticks)   /* longer than 1 tick */
-			    loops_per_jiffy &= ~loopbit;
-	    }
+BTW:
+Where is Wolfgangs m8xx_cpm_dpfree() !?!?
+I can't find it in the recent source trees.
 
-    /* Round the value and print it */
-	    printk("%lu.%02lu BogoMIPS\n",
-		    loops_per_jiffy/(500000/HZ),
-		    (loops_per_jiffy/(5000/HZ)) % 100);
-    }
+Cheers,
 
-
-
-anyone have a clue to offer?
-
-Jim
-
+Steven
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
