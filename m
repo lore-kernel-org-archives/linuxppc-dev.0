@@ -1,51 +1,27 @@
-From: "Stefan Roese" <stefan.roese@esd-electronics.com>
-To: "'Eugene Surovegin'" <ebs@ebshome.net>
-Cc: "'Linuxppc-Embedded'" <linuxppc-embedded@lists.linuxppc.org>,
-	<benh@kernel.crashing.org>, <akuster@mvista.com>,
-	"'Matt Porter'" <mporter@kernel.crashing.org>
-Subject: RE: PPC4xx enet driver problem (version 2.0)
-Date: Thu, 4 Dec 2003 16:54:21 +0100
-Message-ID: <000101c3ba7e$e22be900$0212000a@PCSTEFAN>
-MIME-Version: 1.0
+Message-Id: <200312041732.LAA13109@lists.linuxppc.org>
 Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <20031203193545.GB28733@gate.ebshome.net>
+  charset="iso-8859-15"
+From: "J.Murali" <j.murali@gdatech.co.in>
+Reply-To: j.murali@gdatech.co.in
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: how to switch from serial console to framebuffer console
+Date: Thu, 4 Dec 2003 23:08:02 +0600
+MIME-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> 2.5 tree has an _old_ driver + some modifications + some 440GX code.
->
-> linuxppc-2.4 has a new driver re-written by Ben + some 440GX
-> code. Eventually 2.4 version will be merged into 2.5. So it
-> is _not_ a dead end, although it has some problems as you noticed.
+hi all,
 
-OK, good to know!
+I am working on a custom board, which runs linux-2.4.17.
 
-> Currently, Matt Porter is hacking on 440GX support and
-> probably he (?) will be the one who will merge 2.4 into 2.5.
->
-> I also have something done (mostly some stuff Ben havn't
-> finished during re-write, and some NAPI bits) sitting in my
-> tree (I'm pretty busy now to finish and push it to Matt :( ).
+This board has frame buffer support.
+i am loading frame buffer driver as a module and its working
+fine.  The system boots with the serial console. After this i
+dont know how to switch over to framebuffer console.   
 
-If you have an updated driver, I would be glad to test it on our 405ep
-board.
-
-> I'll try to look at your problem during this weekend, I don't
-> have 405ep boards with two EMACs (yet), so I'll try to
-> reproduce the problem on 440GP/GX eval boards.
-
-That would be great. Please let me know, if you need any further
-infos...
-
-> If you have some fixes feel free to post them here :).
-
-Sorry, I tried to dig deeper into this problem, but without a solution
-so far.
-
-Thanks,
-Stefan.
-
+Can any one help me in this.
+Thanx in advance.
+Murali
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
