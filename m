@@ -1,48 +1,49 @@
-Message-ID: <19990522193719.15424@ibrium.se>
-Date: Sat, 22 May 1999 19:37:19 +0200
-From: Samuel Rydh <samuel@ibrium.se>
-To: linuxppc-dev@lists.linuxppc.org, marsmail@globegate.utm.edu
+Date: Sat, 22 May 1999 23:11:50 -0500 (CDT)
+From: "David A. Gatwood" <marsmail@globegate.utm.edu>
+To: Samuel Rydh <samuel@ibrium.se>
+cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: Mac-on-Linux
-References: <19990522020440.49547@ibrium.se> <Pine.LNX.3.96.990521213127.19285C-100000@globegate.utm.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.3.96.990521213127.19285C-100000@globegate.utm.edu>; from David A. Gatwood on Fri, May 21, 1999 at 09:35:21PM -0500
+In-Reply-To: <19990522193719.15424@ibrium.se>
+Message-ID: <Pine.LNX.3.96.990522230946.28685E-100000@globegate.utm.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, May 21, 1999 at 09:35:21PM -0500, David A. Gatwood wrote:
+On Sat, 22 May 1999, Samuel Rydh wrote:
+
+> The Mac-on-Linux kernel support code has in principle the following 
+> tasks:
 > 
+>   - Emulate privileged instructions.
+>   - Handle the MMU (maps ROM, RAM etc.)
 > 
-> Quick question: what is the nature of the kernel support for mac-on-linux? 
-> Some folks in the MkLinux camp have been discussing writing equivalent
-> 2.0.xx kernel code that works through mach.  I know that it will likely
-> need to be able to map the ROMs into user space.  I also suspect that
-> handling code (which could be very messy, but we'll cross that bridge when
-> we get to it) and possibly the memory management code.  Beyond that, what
-> other hurdles are there?
+> The implementation is primarily based upon hooks in the
+> low-level exception handlers. Besides this, the interaction
+> with the kernel has been kept at a minimum.
+> 
+> I believe the exception hooks must be put into the
+> mach kernel - possibly it is easiest to put all code 
+> there.
 
-The Mac-on-Linux kernel support code has in principle the following 
-tasks:
-
-  - Emulate privileged instructions.
-  - Handle the MMU (maps ROM, RAM etc.)
-
-The implementation is primarily based upon hooks in the
-low-level exception handlers. Besides this, the interaction
-with the kernel has been kept at a minimum.
-
-I believe the exception hooks must be put into the
-mach kernel - possibly it is easiest to put all code 
-there.
-
-/Samuel
+There would be advantages and disadvantages.  Speed-wise, it'd be great if
+it were all in mach and if the mac-on-linux binary were mach aware,
+detecting Mach's presense, and using direct calls into Mach. 
+Simplicity-wise, we could stick an abstraction layer in there in the linux
+server so that it mostly looked the same to mac-on-linux whether it was
+running on LinuxPPC or MkLinux.  Not sure which would end up being the
+most advantageous, but it's probably a moot point until the Mach handling
+changes are made.  :-)
 
 
-----------------------------------------------------------
- E-mail <samuel@ibrium.se>  WWW: <http://www.ibrium.se>
-  Phone/fax: (home) +46 8 4418431, (work) +46 8 7908470   
-----------------------------------------------------------
+Later,
+David
+
+David A. Gatwood                         Visit globegate's internet
+dgatwood@globegate.utm.edu                  talker, Deep Space 36
+http://globegate.utm.edu                telnet globegate.utm.edu:9624
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
