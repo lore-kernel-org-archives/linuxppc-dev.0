@@ -1,18 +1,18 @@
-Return-Path: <raphael.bossek@gmx.de>
-Received: from mail.gmx.net (pop.gmx.de [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id B66EC2BDB5
+Return-Path: <Alexander.Povolotsky@marconi.com>
+Received: from mailgate.pit.comms.marconi.com (mailgate.pit.comms.marconi.com
+	[169.144.68.6]) by ozlabs.org (Postfix) with ESMTP id 8E3102BDB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 27 Dec 2004 06:21:34 +1100 (EST)
-Date: Sun, 26 Dec 2004 20:14:52 +0100 (MET)
-From: "Raphael Bossek" <raphael.bossek@gmx.de>
-To: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
+	Mon, 27 Dec 2004 06:26:56 +1100 (EST)
+Message-ID: <313680C9A886D511A06000204840E1CF0A647413@whq-msgusr-02.pit.comms.marconi.com>
+From: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
+To: "'Raphael Bossek'" <raphael.bossek@gmx.de>
+Date: Sun, 26 Dec 2004 14:26:32 -0500
 MIME-Version: 1.0
-References: <313680C9A886D511A06000204840E1CF0A6473FC@whq-msgusr-02.pit.comms.marconi.com>
-Message-ID: <15989.1104088492@www42.gmx.net>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Linux2.6.10-rc3 for 8xx booting "load_kernel(...)" function
-	prob	lem vs configuring and initializing serial console ?
+Subject: RE: Linux2.6.10-rc3 for 8xx  booting "load_kernel(...)" function
+	problem vs configuring and initializing serial console ?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,6 +22,66 @@ List-Post: <mailto:linuxppc-embedded@ozlabs.org>
 List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+
+Hi!
+
+What flavor of 8xx do you have ?
+You are correct - Wolfgang does not support it yet (neither Dan Malek nor
+Tom Rini) ;-)
+but some people claim that 2.6.10-rc3 boots for them - I would really
+appreciate though if you could give it a try
+and let me know !!! If you need CONFIG_I2C support (for your kernel build) -
+you could try to use my changes,
+which make the kernel to be compilable ...
+
+1) i2c-algo-8xx.h is copied from 2.4(.26) and placed into
+./include/linux/i2c-algo-8xx.h
+
+2) i2c-algo-8xx.c is copied from 2.4(.26) and placed into
+./drivers/i2c/algos/i2c-algo-8xx.c
+
+3) added into ./drivers/i2c/algos/Makefile 
+   after existing line:
+   obj-$(CONFIG_I2C_ALGOITE)       += i2c-algo-ite.o
+   the following new line:
+   obj-$(CONFIG_I2C_ALGO8XX)       += i2c-algo-8xx.o
+
+4) added into ./include/asm-ppc/commproc.h
+   after existing line:
+   extern void cpm_free_handler(int vec);
+   the following new line:
+   extern const char *cpm_int_name[];
+
+5) in ./drivers/i2c/busses/i2c-rpx.c
+   changed the order of include files: 
+   moving the line:
+   #include <asm/commproc.h>
+   to be above the line:
+   #include <linux/i2c-algo-8xx.h>
+
+   so now includes are in the following order:
+   ...
+#include <linux/config.h>
+#include <linux/kernel.h>
+#include <linux/module.h>
+#include <linux/init.h>
+#include <linux/stddef.h>
+#include <linux/i2c.h>
+#include <asm/commproc.h>
+#include <linux/i2c-algo-8xx.h>
+#include <asm/mpc8xx.h>
+   ...
+ 
+Thanks,
+Alex 
+
+-----Original Message-----
+From: Raphael Bossek [mailto:raphael.bossek@gmx.de]
+Sent: Sunday, December 26, 2004 2:15 PM
+To: Povolotsky, Alexander
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Linux2.6.10-rc3 for 8xx booting "load_kernel(...)" function
+problem vs configuring and initializing serial console ?
 
 Hi Alexander,
 
