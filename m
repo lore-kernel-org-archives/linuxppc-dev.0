@@ -1,47 +1,26 @@
-Message-ID: <3969E6B8.D0AE0169@pop.agri.ch>
-Date: Mon, 10 Jul 2000 17:07:39 +0200
-From: Andreas Tobler <toa@pop.agri.ch>
-Reply-To: toa@pop.agri.ch
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <bh40@calva.net>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.4.0-test3
-References: <200007101156.MAA26609@hyperion.valhalla.net> <20000710121009.20193@mailhost.mipsys.com>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <200007101517.LAA29422@mal-ach.watson.ibm.com>
+To: daniel.marmier@lightning.ch
+cc: Dan Malek <dan@netx4.com>, linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Help with string.S 
+In-Reply-To: Message from Daniel Marmier <daniel.marmier@lightning.ch>
+   of "Mon, 10 Jul 2000 08:14:57 +0200." <396969E1.A7256E4A@lightning.ch>
+Date: Mon, 10 Jul 2000 11:17:02 -0400
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
->
-> >Does anyone know of a source of 2.4.0-test3 that will build for PPC?
-> >
-> >I grabbed the bitkeeper 2_3 rsync last night - but it doesn't build...  and
-> >linux-pmac-devel is currently at test1-ac21...
->
-> Grab the bk tree again, I fixed the build yesterday evening (late)
+>>>>> Daniel Marmier writes:
 
-It doesn't compile per se, in pmac_backlight.c asm/pmu.h & asm/adb.h
-should be linux/pmu.h & linux/adb.h. This isn't a tragedy.
+Daniel> IIRC, I have sent you a patch that did the right thing for 16-byte
+Daniel> cache lines at time of 2.3.99-pre5. So this is a known problem and
+Daniel> had already been fixed. Of course, if there are caches with 64 or
+Daniel> 128 byte lines, some more work needs to be done.
 
-More problems I get on booting on a wallstreet I. A panic occurs in
-combination with mesh. Have to figure out. I removed mesh and 53c94 from
-the kernel and now it boots.
+	Current 64-bit PowerPC chips use a cacheline size of 128 bytes.
+Assuming 32 bytes or 32 bytes and 16 bytes or any small number of values
+is a mistake.
 
-A patched 7200 fails completely to boot, it stops on displaying
-'booting....'. This kernel is patched with mftb patch from Takashi,
-pci-resource & serial-console patch from Michel. (Otherwise a 7200 would
-not boot)
-
-In the sccstool I read in prom.c Calc BAT..... this may cause trouble if
-the framebuffer is really badly aligned.......
-TODO: Check 601 case...
-
-How can I help?
-
-
-Regards,
-Andreas
-
+David
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
