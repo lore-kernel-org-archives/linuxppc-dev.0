@@ -1,48 +1,46 @@
-To: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: execute from flash? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 25 Feb 2002 15:17:14 EST."
-             <D73A25AA6E54D511AD74009027B1110F0F30B0@ORION>
-Date: Mon, 25 Feb 2002 21:50:37 +0100
-Message-Id: <20020225205042.64FC9109E3@denx.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3C7AA49D.8020809@embeddededge.com>
+Date: Mon, 25 Feb 2002 15:54:53 -0500
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: David Ashley <dash@xdr.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Linux 2.4.17 bug, mmap of /dev/mem
+References: <200202252027.g1PKRqt01988@xdr.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Steven,
+David Ashley wrote:
 
-in message <D73A25AA6E54D511AD74009027B1110F0F30B0@ORION> you wrote:
->
-> Does anyone know how I can run a program in flash from my embedded linux
-> kernel that is also running in flash?  Below is the code that I tried but it
 
-I don't think your kernel is running from  flash.  It  is  stored  in
-flash,  but  usually  then it gets loaded (and probably uncompressed)
-into RAM, and is running from RAM.
+> #define ADDR 0xf0010000
+> #define SIZE 0x00002000
 
-YOu can do similar things whith your own code:  you  can  put  it  in
-flash,  and load it from flash into RAM to run it. This requires that
-you have some way to access  the  flash  memory  -  under  Unix  this
-requires  either  a basic device driver (character device), or a more
-sophisticated device driver (block device) that allows you to  put  a
-filesystem in flash.
+Oh, now I remember......I found it amusing someone could think they
+could just map the CPM memory and start reading and writing it.
+You can't do stuff like that and expect the system to keep running
+correctly.  The first 128 bytes of the DPRAM are initialized for
+the SMC (whether you use it or not).  You have to be really, really
+careful when you map anything like this, and you have to understand
+the interaction of everything else that may also have access to these
+memory spaces.  A common mistake is people map things like GPIO into
+application space, and then think they can atomically update the
+registers.  This doesnt' work because there may be drivers that
+also do the same thing.
 
-> 	int addr = 0xfff80000;
+> The above program fails at about iteration 228 on linux 2.4.17. On 2.4.14
+> it fails at an unpredictable iteration, from maybe 180 to 350. The number
+> of other seemingly harmless shell comands executed, like "ls",
 
-You cannot access arbitrary physical addresses  from  an  application
-program.  Linux  uses  virtual memory, and you should get used to the
-idea that you cannot access physical memory or devices except through
-some special interfaces  provided  by  the  OS  (system  calls  which
-usually require some device drivers).
+How does it fail?  If you are actually using the SMC as a console device
+I'm surprised it runs that long.
 
-Wolfgang Denk
+There isn't anything wrong with mmap()......
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-I must follow the people.  Am I not their leader? - Benjamin Disraeli
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
