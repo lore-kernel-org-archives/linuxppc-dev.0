@@ -1,33 +1,38 @@
-Subject: Re: 750 and Discovery II coherency with PCI....
+Subject: Re: [PATCH] Workaround for 745x data corruption bug
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Steven J. Hill" <sjhill@realitydiluted.com>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <410F05EC.1040405@realitydiluted.com>
-References: <410F05EC.1040405@realitydiluted.com>
+To: Brian Waite <linwoes@gmail.com>
+Cc: "Mark A. Greer" <mgreer@mvista.com>,
+	Adrian Cox <adrian@humboldt.co.uk>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <36b714c804080306175c5dc3f6@mail.gmail.com>
+References: <1091291276.987.57.camel@localhost>
+	 <410E85EE.8050707@mvista.com>  <36b714c804080306175c5dc3f6@mail.gmail.com>
 Content-Type: text/plain
-Message-Id: <1091580163.1922.39.camel@gaston>
+Message-Id: <1091580331.1922.42.camel@gaston>
 Mime-Version: 1.0
-Date: Wed, 04 Aug 2004 10:42:44 +1000
+Date: Wed, 04 Aug 2004 10:45:32 +1000
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 2004-08-03 at 13:26, Steven J. Hill wrote:
-> Greetings.
+> Looking at this errata, I don't think poeple using Marvell chips will
+> be affected by this errata.
+> I don't see this as impacting the IO subsystem only the internal MPX system. IE
+> using a 2 74xx system and not using the M bit. This race can also
+> occur on a single processor system with the M disabled, as it is in
+> Linux, but it has nothing to do with the memory controller mapping its
+> PCI<->mem windows as non cacheable. You should be able to boost the IO
+> throughput using non coherency without this errata impacting you any
+> more than it already is.
 >
-> I am writing a device driver for a PMC card that is nothing
-> fancy. It is not a PCI-X card though. My Linux driver properly
-> detects the device, 'ioremaps' the PCI IO and MEM regions then
-> attempts to start writing the devices registers for setup
-> and configuration. I am not getting valid reads and there
-> appears to be some coherency issues. I have verified that no
-> other drivers or resources in the system are utilizing the
-> addresses that are returned to me from 'ioremap'. I have the
-> following code snippet:
+> Anyone please correct me if I am wrong because I need to know.
 
-There is no coherency issues with non cacheable (ioremap'ed)
-access of that kind... Note that if you are dealing with IO space,
-then you should use inX/outX accessors and not ioremap.
+Note that I feel obligated to re-state again that doing non-coherent
+DMA on a 6xx/7xx/7xxx CPU is a big no brainer and is asking for all sorts
+of cache aliasing issues because of the way the kernel linear mapping of
+memory is BAT mapped... (Note that 2.6 should be able to deal with the
+DBAT beeing disabled, at the expense of perfs, though I'm pretty sure we
+need the IBAT still set).
 
 Ben.
 
