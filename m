@@ -1,37 +1,30 @@
-Message-ID: <39C9118F.A80FB79B@wanadoo.fr>
-Date: Wed, 20 Sep 2000 21:35:43 +0200
+Message-ID: <39C91248.251CF42A@wanadoo.fr>
+Date: Wed, 20 Sep 2000 21:38:48 +0200
 From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-To: ian reinhart geiser <geiseri@msoe.edu>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Build problems with the latest BenH Rsync
-References: <Pine.OSF.3.96.1000920100052.25487C-100000@torres.msoe.edu>
-Content-Type: text/plain; charset=us-ascii
+To: Michel Dänzer <daenzerm@student.ethz.ch>
+CC: Iain Sandoe <iain@sandoe.co.uk>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.4.0-t8 (dumb question & two crashes)
+References: <200009201537.QAA05334@hyperion.valhalla.net> <39C8DC33.8B652F3C@student.ethz.ch>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-ian reinhart geiser wrote:
+Michel Dänzer wrote:
 >
-> Greetings,
->         I cannot seem to get the latest Ben H kernel to build.
->         I get the following error:
-> cc -D__KERNEL__ -I/usr/src/linux/include -Wall -Wstrict-prototypes -O3
-> -fomit-frame-pointer -fno-strict-aliasing -D__powerpc__ -fsigned-char
-> -msoft-float -pipe -fno-builtin -ffixed-r2 -Wno-uninitialized -mmultiple
-> -mstring   -c -o keyboard.o keyboard.c
-> ./mkmap.adb > keymap-mac.c
-> /bin/sh: ./mkmap.adb: Permission denied
-> make[3]: *** [keymap-mac.c] Error 126
-> make[3]: Leaving directory `/usr/src/linux/drivers/usb'
-> make[2]: *** [first_rule] Error 2
+> Iain Sandoe wrote:
 >
->         Is this an issue with my rsync arguments?
+> > I don't seem to be able to get modprobe to work on 2.4.0-t8 unless I move
+> > the modules from where the build puts them into their old positions.
+> > According to rpmfind I have the latest modutils... where am I going wrong?
+>
+> Wrong distro? ;^)
+>
+> You need at least 2.3.14 or 13, Debian woody has it.
 
-This used to be an issue with the usb files (namely that the script
-mkmap.adb didn't have the x bit set), but this hasn't existed for quite
-a while in BenH's tree. You must have an old drivers/usb/Makefile and
-also the obsolete mkmap.adb script.
+LinuxPPC has it, too: Version 2.3.15 is in
+ftp://dev.linuxppc.org/users/fsirl/R5/RPMS/ppc/
 
 --
 Martin
