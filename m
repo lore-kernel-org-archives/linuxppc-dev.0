@@ -1,26 +1,30 @@
-Message-Id: <200103071915.OAA22062@mal-ach.watson.ibm.com>
-To: Alexandre.Nikolaev@matrox.com
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: who loads argc in elf binary??????? 
-In-Reply-To: Message from Daniel Jacobowitz <dmj+@andrew.cmu.edu>
-   of "Wed, 07 Mar 2001 14:10:14 EST." <20010307141014.A28040@nevyn.them.org>
-Date: Wed, 07 Mar 2001 14:15:06 -0500
-From: David Edelsohn <dje@watson.ibm.com>
+Message-ID: <3AA69A1D.F1F85B48@denise.shiny.it>
+Date: Wed, 07 Mar 2001 21:29:17 +0100
+From: Giuliano Pochini <pochini@denise.shiny.it>
+MIME-Version: 1.0
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: "Timothy A. Seufert" <tas@mindspring.com>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: Console text selection bug
+References: <Pine.LNX.4.05.10103060750360.29713-100000@callisto.of.borg>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-	I believe that glibc (including the ld.so dynamic linker) extract
-the arguments and place them into registers before calling main().
+>> It's an endian bug in fbcon when accessing the text/attribute buffer.
 
-	For instance, glibc sysdeps/unix/sysv/linux/powerpc/dl-sysdep.c
-defines a macro called
+> Nevertheless, it's a bug. Can someone please change fbcon_invert_region() to
+> use scr_{read,write}w() to access the shadow screen buffer and see whether it
+> works? Patches are accepted at linux-fbdev-devel@lists.sourceforge.net :-)
 
-DL_FIND_ARG_COMPONENTS(cookie, argc, argv, envp, auxp)
+Yes, it's an endianess bug.  scr_{read,write}w() are defined as normal
+assignments in vt_buffer.h, so I wonder where is the bug. Is the shadow buffer
+supposed to be native endian ?
 
-which is used by glibc to extract argc/argv/envp from the auxilliary
-argument block.
 
-David
+Bye.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
