@@ -1,35 +1,38 @@
-Message-ID: <369BB46B.206BB152@d.umn.edu>
-Date: Tue, 12 Jan 1999 14:45:33 -0600
-From: Nathan Ingersoll <ningerso@d.umn.edu>
+Date: Tue, 12 Jan 1999 21:57:40 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+To: Cort Dougan <cort@persephone.cs.nmt.edu>
+cc: Paul Mackerras <paulus@cs.anu.edu.au>, Dan Malek <dmalek@jlc.net>,
+        bh40@calva.net, linuxppc-dev@lists.linuxppc.org
+Subject: Re: new irq.c
+In-Reply-To: <Pine.LNX.3.96.990111182245.1184A-100000@persephone.cs.nmt.edu>
+Message-ID: <Pine.LNX.4.03.9901122155550.26849-100000@mercator.cs.kuleuven.ac.be>
 MIME-Version: 1.0
-To: satadru pramanik <satadru@umich.edu>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: GPM services nonfunctional on linuxppc/Redhat
-References: <Pine.LNX.4.05.9901121044140.8499-100000@beer.pub.umich.edu>
-Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-It works fine with my one button mouse. I think your problem is that the
-kernel isn't emulating 3-buttons. Pass the argument adb_buttons=113,115 to
-use F15 as button 2 and Home as button 3. You can change these values to use
-different keys.
+On Mon, 11 Jan 1999, Cort Dougan wrote:
+> I've tested it pretty well.  You guys want to check it out for me?
+> Comments?
+> 
+> I haven't finished cleaning up the chrp stuff yet.
 
-satadru pramanik wrote:
+| irq.c: In function `gatwick_action':
+| irq.c:653: gatwick_action causes a section type conflict
+| irq.c: In function `pmac_set_irq_mask':
+| irq.c:704: pmac_set_irq_mask causes a section type conflict
 
-> Gpm fails to work on my system because I use the standard Apple on ebutton
-> mouse type.  Interestingly, gpm seems to load only after i quit x-windows.
-> Is gpm part of one of the default Xwindows scripts? Also, has anybdy
-> gotten gpm working functionally with a one button mouse?
->
-> ----
-> satadru pramanik `satadru@umich.edu'
-> "Put your hand on a hot stove for a minute, and it seems like an hour. Sit
-> with a pretty girl for an hour, and it seems like a minute. THAT'S
-> relativity."
-> -Albert Einstein
-> ---
+Ugh?
+
+Greetings,
+
+						Geert
+
+--
+Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
+Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
+Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
