@@ -1,86 +1,43 @@
-Message-ID: <398934C7.663E6BD9@wanadoo.fr>
-Date: Thu, 03 Aug 2000 11:00:55 +0200
-From: Martin Costabel <costabel@wanadoo.fr>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-CC: Iain Sandoe <iain@sandoe.co.uk>
-Subject: Re: rtc again...
-References: <200008022249.XAA32651@hyperion.valhalla.net>
-Content-Type: multipart/mixed;
- boundary="------------D406740818560C9929615480"
+Message-Id: <200008030930.KAA12700@hyperion.valhalla.net>
+Date: Thu, 03 Aug 2000 10:30:48 +0100
+Subject: Re: [alsa-devel] ALSA sequencer + Timidity on GNU/Linux PPC
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: alsa-devel@alsa-project.org, "alsa-devel" <alsa-devel@alsa-project.org>
+CC: linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------D406740818560C9929615480
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+On  Thu, Aug 3, 2000, Matthias Pfisterer wrote:
+> I tried the above combination (plus pmidi). It generally works; timing
+> seems to be correct. However, the sound of most (all?) notes is very
+> distorted. Is there any way to debug this? Timidity in standalone-mode
+> works ok---some timing problems if doing real-time playback, but perfect
+> in doing batch-processing (rendering to a wav file).
+> I'm using alsa-drivers 0.5.8b, Timidity 2.10.0a3 and a patched dmasound
+> driver (that's the OSS driver for Macs, sorry, no ALSA driver for it
+> yet).
 
-Iain Sandoe wrote:
->
-> Hi,
->
-> under 2.2.17pre15ben1
->
-> rtc does not give me the right answer when built in - what am I doing wrong?
->
-> It won't build load as a module right now 'cos I forgot to check ppc_ksyms
-> before doing the build :-( .... (I remembered for 2.4.0).
->
-> under 2.4.0-test5 it seems to be fine as a module (haven't tried built in).
+Which kernel (2.2.17pxx or 2.4.0?)
+(a) What frag sizes & number of frags are you using for the driver?
 
-I am using it as module both for 2.2.17-bk and for 2.4.0-test5. They
-don't give the same time, and I think it is the one in 2.4.0 that is
-right. I am at GMT+2:00, and the time in 2.2.17 is 2 hours early. When I
-change /etc/sysconfig/clock from "UTC=false" to "UTC=true", both times
-shift by 2 hours, but the discrepancy remains.
+(b) I think we may have an issue with the order in which SNDCTL_XXX IOCTLs
+are sent to the dmasound driver.  This is being investigated (today) as it
+came to light last night...
 
-The following patch for bitkeeper linuxppc_2_2 fixes this problem for
-me. It brings 2.2.17pre13 in line with 2.4.0-test5 (and MacOS). I cannot
-test the VIAPMU part, so maybe there the offset is necessary, but for
-the VIACUDA part, it seems wrong.
+It is possible that the distortion is simply that the mode that Timidity
+*thinks* it has set is different for what is *actually* set in the driver.
 
---
-Martin
---------------D406740818560C9929615480
-Content-Type: text/plain; charset=us-ascii;
- name="pmac_time.patch"
-Content-Disposition: inline;
- filename="pmac_time.patch"
-Content-Transfer-Encoding: 7bit
+Once the kernel (OSS) driver is "sorted" I will (if no-one else
+volunteers/does it in the meantime) try to get an ALSA one going ASAP.
 
---- arch/ppc/kernel/pmac_time.c~	Mon Jun 26 09:09:05 2000
-+++ arch/ppc/kernel/pmac_time.c	Thu Aug  3 09:22:36 2000
-@@ -78,7 +78,6 @@
- unsigned long pmac_get_rtc_time(void)
- {
- 	struct adb_request req;
--	int offset = sys_tz.tz_minuteswest * 60;
+BTW I will try and replicate the effect if you mail me the configs/URLs
+(off-list).  Last time I tried Timidity I didn't get any action :-( but I
+had very little time to experiment.
 
- 	/* Get the time from the RTC */
- 	if (adb_controller == 0)
-@@ -95,7 +94,7 @@
- 			printk(KERN_ERR "pmac_get_rtc_time: got %d byte reply\n",
- 			       req.reply_len);
- 		return (req.reply[3] << 24) + (req.reply[4] << 16)
--			+ (req.reply[5] << 8) + req.reply[6] - RTC_OFFSET + offset;
-+			+ (req.reply[5] << 8) + req.reply[6] - RTC_OFFSET;
- 	case ADB_VIAPMU:
- 		if (pmu_request(&req, NULL, 1, PMU_READ_RTC) < 0) {
- 			printk("pmac_read_rtc_time: pmu_request failed\n");
-@@ -107,7 +106,7 @@
- 			printk(KERN_ERR "pmac_get_rtc_time: got %d byte reply\n",
- 			       req.reply_len);
- 		return (req.reply[1] << 24) + (req.reply[2] << 16)
--			+ (req.reply[3] << 8) + req.reply[4] - RTC_OFFSET + offset;
-+			+ (req.reply[3] << 8) + req.reply[4] - RTC_OFFSET;
- 	default:
- 		return 0;
- 	}
-
-
---------------D406740818560C9929615480--
-
+regards,
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
