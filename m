@@ -1,61 +1,83 @@
-Message-ID: <3E765932.7040206@embeddededge.com>
-Date: Mon, 17 Mar 2003 18:24:34 -0500
-From: Dan Malek <dan@embeddededge.com>
+Reply-To: <jwalden@digitalatlantic.com>
+From: "Jerry Walden" <jwalden@digitalatlantic.com>
+To: "Linux PPC embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Bringing up Linux kernel of custom 405gpr board dies in serial_putc
+Date: Mon, 17 Mar 2003 18:56:12 -0500
+Message-ID: <EGEGIJHKDKJGAJMGIDPNIEJDCJAA.jwalden@digitalatlantic.com>
 MIME-Version: 1.0
-To: "Penn, John" <jpenn@magisnetworks.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 8250  idma problem - cache?
-References: <BD92DBD34D62AC4FA034933E33E53F7E1724D5@grog>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Penn, John wrote:
+Greetings:
 
-> ...I seem
-> to have a transmit problem that could be explained
-> by the dcache holding the packet,
+I am trying to bring up the Monta Vista Kernel
+(Linux-2.4.18_mvl30) on a custom 405GPr based
+board.  I can bring up u-boot just fine and dandy -
+all the u-boot peripheral configurations work
+just fine.
 
-I guess you mean you wrote something into memory and
-the IDMA didn't move it to the device on the local bus?
-Can you use a bus analyzer to ensure the IDMA actually
-ran as expected?  What DMA mode are you using?
+I am using a BDI-2000 to assist in debugging.
 
-> 	snooping - tried enabling it on tx DGBL, no difference
-> 			SIUMCR - ESE is enabled
+I perform the following steps:
 
-If I understand "transmitting", that would be from main memory
-to the device, so you need to set SGBL.
+1) Reset the board using the BDI
+2) U-boot comes up just fine
+3) I issue the halt command from the BDI
+4) I issue the command - load 0x200000 vmlinux.PPCBoot BIN from the BDI
+5) I issue the command - go 0x03xx_xxxx which continues the u-boot monitor
+from the halt
+6) I issue the imi command - imi 0x200000 - and it prints out that all is
+well with the image
+7) I issue the u-boot command - bootm 0x200000, and it proceeds to boot
+linux and then I get not
+   response or output after the message (Transferring control to Linux at
+address 00000000...)
 
-> 	using local bus memory instead of 603 memory for buffers
-> 		I would rather use 603 memory
+So in order to investigate what could be going wrong, before I issue the
+bootm command in step
+7, I halt the processor using the BDI, and have set succesive breakpoints
+deeper into the code
+until I think I have found the function which is causing problems -the code
+below crashes in serial_putc
+at the first readb.  It looks to me like the comport address is the same as
+in my u-boot code,
+as is the register offset UART_LSR.
 
-If you have a device on the local bus, that would be a wise choice. :-)
+Any ideas at what to look into further.
 
-> 	the 8260 is fully cache coherent so you don't have
-> 		to invalidate the dcache.
+Kindest Regards,
 
-That's true, but in the case of transmitting you wouldn't want to
-invalidate, you would want to flush.
-
-> Now I am at the point of needing some clarification.
->
-> 1. 	Do I have to invalidate dcache and if so how?
-
-You do not need to do this.
-
-> 2. 	Has anyone used the IDMA with 603 memory or must
-> 	I use local bus memory?
-
-The system (603) memory works fine, it just sounds like you
-need to ensure the channel is correctly configured and your
-device protocol on the local bus is working correctly.
-
-Thanks.
+Jerry
 
 
-	-- Dan
+/* We assume that the UART has already been initialized by the
+   firmware or the boot loader */
+static void
+serial_putc(u8 * com_port, unsigned char c)
+{
+	while ((readb(com_port + (UART_LSR)) & UART_LSR_THRE) == 0) ;
+	writeb(c, com_port);
+}
+
+static void
+ppc4xx_progress(char *s, unsigned short hex)
+{
+	char c;
+#ifdef SERIAL_DEBUG_IO_BASE
+	u8 *com_port = (u8 *) SERIAL_DEBUG_IO_BASE;
+
+	while ((c = *s++) != '\0') {
+		serial_putc(com_port, c);
+	}
+	serial_putc(com_port, '\r');
+	serial_putc(com_port, '\n');
+#else
+	printk("%s\r\n");
+#endif
+}
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
