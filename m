@@ -1,40 +1,35 @@
-From: "Jeffrey D. Kowing" <jeffrey.d.kowing1@jsc.nasa.gov>
+Message-ID: <3ACE1256.2000200@brocade.com>
+Date: Fri, 06 Apr 2001 12:00:38 -0700
+From: Amit D Chaudhary <amitc@brocade.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15053.55321.570589.702338@igor.jsc.nasa.gov>
-Date: Fri, 6 Apr 2001 09:52:09 -0500
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: DiskOnChip Millennium flash chip on PPC
-Reply-To: jeffrey.d.kowing1@jsc.nasa.gov
+To: Masahide Tomita <tomita@itl.nyc.co.jp>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: What init in initrd shold do when booting?
+References: <200104060124.KAA08060@itl.nyc.co.jp>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Recently, the hardware guys in my group are considering the DiskOnChip
-Millennium MD2810.
+Hi,
 
-http://www.m-sys.com/content/products/product.asp?PID=1&FILE=docmillennium&FAM=doc
+PSB,
 
-Some time ago there were some discussions about the DiskOnChip from
-M-Systems on Linux/PPC targets.
+Masahide Tomita wrote:
 
-http://lists.linuxppc.org/listarcs/linuxppc-embedded/200005/msg00069.html
-http://lists.linuxppc.org/listarcs/linuxppc-embedded/199912/msg00097.html
+> Hi,
+>
+> So, the real quation is how can I mount regular storage (I mean block devices) from init?
+As you would mount normally, add the corresponding entries to /etc/fstab
+and your rc* scripts will mount them
 
->From the MTD for Linux website, http://www.linux-mtd.infradead.org/, I
-gather that there is now a GPL'd driver available (not from M-Systems,
-but from David Woodhouse of the MTD project) and that it is in the
-Linux 2.4 kernel.  There are also references to its use in the GNU
-Grub and LinuxBios projects.
+>What should the init program should do to maount other devices and free the unused memory?
 
-I was wondering since the time of the previous discussions on this
-list if anyone has had any further experience or advice about the
-DiskOnChip on PPC targets that they would care to share?
+What is the unsued memory you are refering to? The one used by initrd?
+In which case doing a umount /initrd should do, though using blockdev
+command to flushbuffers on /dev/ram0 is advised.
 
-Many thanks.
+Amit
 
---
-Jeff Kowing
-jeffrey.d.kowing1@jsc.nasa.gov
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
