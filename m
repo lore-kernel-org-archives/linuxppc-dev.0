@@ -1,31 +1,37 @@
-From: john.khan@liquidation.com
-To: <linuxppc-dev@lists.linuxppc.org>
-Subject: Idea for linux_log.h
-Date: Tue, 19 Feb 2002 16:34:51 -0500
-Message-ID: <NGBBKEOKAMAPDDCNPGFEIEAECBAA.john.khan@liquidation.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+From: ghannon@cspi.com
+To: linuxppc-dev@lists.linuxppc.org
+Message-ID: <85256B65.0078DAC9.00@pine.cspi.com>
+Date: Tue, 19 Feb 2002 17:19:50 -0500
+Subject: SCSI error on MVME5100
+Mime-Version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+I am running an MVME5100 board using a
+2.4.11 kernel, and keep getting the following error with the
+SCSI driver.
+It will run for a while before the error occurs, but once it starts it just
+keeps posting this error.
 
-I'm new to the list. But have something I would like to add or get opininos
-on.
+sym53c895a-0:0: ERROR (a0:0) (0-a0-0) (0/f) @ (script a14:c0040b5d).
+sym53c895a-0: script cmd = 00000174
+sym53c895a-0: regdump: da 10 c0 0f 47 00 00 0e 72 08 80 a8 80 00 08 08 00
+e0 b7
+03 0a 00 00 00.
 
-I came up with this http://gfxgeek.com/ppcLinux.gif If you like it, i will
-convert it to the header file. I have about 7 years experience with digital
-art and some programming and want to help linuxppc anyway I can. I'm open to
-ideas and willing to offer help in any area of graphics needed for linuxppc
-:)
+Has anyone seen this before?
 
-John Khan
-----------------------
-Liquidation.com
-202.467.6868 x305
-http://www.liquidation.com
+Also,  I tried building a 2.4.18-pre9 kernel, and I see that
+CONFIG_MVME5100
+is no longer in the source at all.  Did it get merged in at some point?
+
+I can post more info if this is not enough to go on.
+
+Thanks,
+Gary Hannon
+CSPI
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
