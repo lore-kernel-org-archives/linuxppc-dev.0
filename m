@@ -1,53 +1,37 @@
-Message-ID: <001b01c0d635$04e06740$5b682dd5@default>
-From: "Lorenzo De Vito" <lorenzodevito@libero.it>
-To: =?iso-8859-1?Q?Michel_D=E4nzer?= <michdaen@iiic.ethz.ch>
-Cc: <debian-powerpc@lists.debian.org>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Two problems
-Date: Sun, 6 May 2001 16:00:26 +0200
+Date: Sun, 6 May 2001 12:45:30 -0700 (PDT)
+From: Paul White <pwhite@networkrobots.com>
+To: Michel =?iso-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: IP Connection Tracking & Net Filter
+In-Reply-To: <3AF5503D.DE57CB9@iiic.ethz.ch>
+Message-ID: <Pine.LNX.4.21.0105061245090.7687-100000@stimpy.networkrobots.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
- Xterm don't recognize some types but these work fine with any text editor,
- when I type don't print anything on the screen, Wvdial don't recpgnize my
- password and it close the connection, pppd connect but I cannot see with
- "ifconfig" the ppp connection.
- What I can use for internet connection ?
+Michel,
 
-> ----- Original Message -----
-> From: Michel Dänzer <michdaen@iiic.ethz.ch>
-> To: Lorenzo De Vito <lorenzodevito@tin.it>
-> Cc: <debian-powerpc@lists.debian.org>
-> Sent: Sunday, May 06, 2001 3:25 PM
-> Subject: Re: Two problems
+Yes - I believe so?  I've heard of the FTP security hole, is there yet another one?
+
+Thanks,
+
+Paul W.
+
+On Sun, 6 May 2001, Michel Dänzer wrote:
+
+> Paul White wrote:
+>
+> > Does anyone have IP Connection Tracking and Netfilter working on LinuxPPC?
+> >
+> > I am currently using Kernel version 2.4.0 (drived from the linuxppc_24
+> > tree).
+>
+> I'm sorry I can't help you, but are you aware that there is a security hole
+> with connection tracking which has only been fixed for 2.4.4?
 >
 >
-> > Lorenzo De Vito wrote:
-> >
-> > > my connection on internet (ppp) don't work with wvdial and also with
-pon
-> or
-> > > pppd.
-> >
-> > Does it fail to establish a connection, or what's the problem?
-> >
-> > A problem with wvdial is that it doesn't handle DNS servers. Have you
-> tried
-> > pppconfig? It has an option for that.
-> >
-> >
-> > --
-> > Earthling Michel Dänzer (MrCooper)    \   Debian GNU/Linux (powerpc)
-> developer
-> > CS student, Free Software enthusiast   \        XFree86 and DRI project
-> member
-> >
-> >
-> >
 >
 
 
