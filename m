@@ -1,43 +1,36 @@
-Message-Id: <200003151515.PAA20192@hyperion.valhalla.net>
-Date: Wed, 15 Mar 2000 15:15:28 +0000
-Subject: Re: 2.3.51 Trashes RTC on Beige G3 Mini-tower
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Christiaan Welvaart <C.J.Welvaart@phys.uu.nl>
-CC: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Date: Wed, 15 Mar 2000 11:39:09 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linux/m68k <linux-m68k@lists.linux-m68k.org>,
+        Linux/PPC for APUS <linux-apus@sunsite.auc.dk>,
+        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: dmasound split
+Message-ID: <20000315113909.D352@opus.bloom.county>
+References: <Pine.LNX.4.05.10003072247180.484-100000@callisto.of.borg> <Pine.LNX.4.05.10003140902060.19873-100000@callisto.of.borg>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.05.10003140902060.19873-100000@callisto.of.borg>; from geert@linux-m68k.org on Tue, Mar 14, 2000 at 09:14:23AM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Tue, Mar 14, 2000 at 09:14:23AM +0100, Geert Uytterhoeven wrote:
+
+> On Tue, 7 Mar 2000, Geert Uytterhoeven wrote:
+> > On Tue, 7 Mar 2000, Geert Uytterhoeven wrote:
+> > > This is my first test release for splitting the DMA sound driver in different
+> > > parts:
+> >
+> > And here's a first patch:
 >
->> at boot time {with options vmode=atyfb, vmode:16,code:32 single }
->> the usual "rtc time is" ... prints the correct date...
->> then we get "setting time to ... some time in Feb 1932...
->> from then on the RTC is wrong although using 'date' to set the correct time
->> behaves as expected on the running system.
->> Is this a library problem? (I'm using 2.3.51 with a system installed from
->> linuxPPC Q3 - but I've also updated to glibc-2.1.3 - j).
->
-> On a beige G3 Dekstop, with the standard 2.3.51 sources, I don't see this
-> problem At least there are no wrong dates set in /var/messages, though I
-> only booted 2.3.51 twice. I use glibc-2.1.3-4a (with linux 2.2.14 now).
+> No comments whether it works on PowerMac and Atari?
 
-As of today's rsync - the trashing is no more...
-It turns out the /etc/adjtime had got some very silly numbers in it - so I
-can't tell at what point the problem went away.
+Ah, right.  I tried it out on a 9600 and it worked, and seemingly better than
+before (no loud hiss when insmod'ed).  Only sugjestion I would make is to
+follow the trend of drivers/XXX/bigdriver/xxx.c instead of dmasound_*.c
 
-> I did find a different problem: the builtin ethernet port doesn't work. It
-> seems to work (almost?) perfectly from within linux (i.e. no errors), but
-> no ethernet connection is made. The light on the hub stays off while the
-> kernel reports that BMAC ethernet was succesfully initialized.
->
-
-This problem I don't have - at least I connected to linuxppc.org quite
-happily 5 minutes ago ;-)
-
-swap .config files?
-Iain.
-
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
