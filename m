@@ -1,33 +1,48 @@
-From: bob@kunk.jriver.com
-Message-ID: <20001107212230.7256.qmail@kunk.jriver.com>
-Subject: Re: controlfb and X
-To: mlan@cpu.lu
-Date: Tue, 7 Nov 2000 15:22:30 -0600 (CST)
-Cc: flar@pants.nu, bob@kunk.jriver.com, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <200011071947.UAA00693@piglet.grunz.lu> from "Michel Lanners" at Nov 07, 2000 08:47:51 PM
-MIME-Version: 1.0
+Date: Wed, 8 Nov 2000 09:46:25 +1100
+From: Steven Hanley <sjh@wibble.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: bad vidmode on debian install
+Message-ID: <20001108094625.B10734@svana.org>
+Reply-To: Steven Hanley <sjh@wibble.net>
+References: <20001108010609.A26617@wibble.net> <20001107150800.A24537@suse.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20001107150800.A24537@suse.de>; from olh@suse.de on Tue, Nov 07, 2000 at 03:08:00PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-User Michel Lanners says:
-> Yup. AFAICT, there are two versions of the detect code that have been
-> alternating between 2.1 kernel versions in the past, then the 2.2
-> kernels stabilized on the 7x00-friendly version, but the 2.4 kernels
-> went for the 8x00-savvy version.
+On Tue, Nov 07, 2000 at 03:08:00PM +0100, Olaf Hering wrote:
+> On Wed, Nov 08, Steven Hanley wrote:
+>
+> >
+> > All
+> >
+> > Anyway trying to upgrade form non debian dist to debian (potato) on my
+> > 7220/200, as it is old world I used the hfs floppy image. Anyway it boots
+> > fine but then the video mode is at a frequency such that no text is clear
+> > and it is moving around on the screen a bit (like running X i modes a
+> > machine cant handle)
+>
+> You cant pass a video mode to platinumfb.
 
-I don't know see then why I cannot get the paulus 2.2 stable kernel to
-take a bootx 4m override or to automatically detect 4m on the 7500.
+it is a Mach 64 video card
 
-> No. Either 7x00-style machines worked, or 8x00.
+> Do you have 834x624 and more than 8 bit color depth? If yes, change the
+> resolution or set the color depth to 8 bit.
 
-Is there any easy way to see that in the code?
+wouldnt doing this involve the passing of a video=atyfb:vmode:8 or some such
+?
 
-Bob
+	See You
+	    Steve
+
 --
-Robert E. Brose II    N0QBJ
-http://www.jriver.com/~bob/
-bob@kunk.jriver.com
+sjh@wibble.net http://wibble.net/~sjh
+Look Up In The Sky
+    Is it a bird?   No
+        Is it a plane    No
+            Is it a small blue banana?
+Yes
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
