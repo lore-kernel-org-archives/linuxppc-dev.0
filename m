@@ -1,45 +1,38 @@
-To: jmouro@iol.pt
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: PCMCIA polling!?! 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 11 Jun 2003 15:51:55 BST."
-             <5bf7b05c1bab.5c1bab5bf7b0@iol.pt>
-Date: Wed, 11 Jun 2003 22:31:14 +0200
-Message-Id: <20030611203119.34349C5FD7@atlas.denx.de>
+Message-Id: <5.1.1.6.2.20030611171936.012e0c68@corelis.com>
+Date: Wed, 11 Jun 2003 17:28:02 -0700
+To: linuxppc-embedded@lists.linuxppc.org
+From: "Brian S. Park" <brian@corelis.com>
+Subject: writing device driver for memory mapped device
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Jmouro,
+Hello all,
+I have successfully booted Linux and u-Boot on our custom target (based on
+IBM Walnut demo board) and I'm ready to start writing device driver for
+Linux so that I can access my hardware on the board.
 
-in message <5bf7b05c1bab.5c1bab5bf7b0@iol.pt> you wrote:
->
-> I'm working on a embedded system with a  TQM860L, and a I have a doubt that perhaps you might answer.
-> I've 2 signals related with system defects (power supply defects) connected to PCMCIA channel II (IPBx). Is there a way to check if those signals where triggered without polling them? Like in interrupt lines? In that way I could
+Our custom board has FPGA connected to EBC bus of PPC405gp and is memory
+mapped. So, I only need a device driver which will allow me to map the
+memory to the user space application and handle some interrupts. Can any
+one recommend a good starting point?
 
-Maybe you can explain what exactly you are  trying  to  do?  Actually
-there are 4 voltage detect lines: CBVS1/2 (Voltage Sense 1 and 2) and
-CBBVD1/2  (Battery  Voltage  Detect 1 and 2). Interrupts can be abled
-individualy for each of the 4 pins in  the  PCMCIA  Interface  Enable
-Register.
+Also, what are we required to do to stay compliant with GPL? Is posting
+tarball of modified Linux/u-boot source on the web enough?
 
-But normally you don't have to care about this stuff - if you want to
-use a PCMCIA Card with the system the PCMCIA  Card  Services  package
-will  handle  all  such  events.  PCMCIA Card Service support for the
-TQM8xxL modules / STK8xxL starter kit  is  ready  available  -  don't
-re-invent the wheel.
+Any help will be appreciated.
+
+Thank you.
 
 
+===============================================================
+Brian S. Park  brian@corelis.com  (562) 926-6727 x143
+---------------------------------------------------------------
+Everything we do helps our customers get to market
+FASTER with HIGHER quality and LOWER cost
+===============================================================
 
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Overdrawn?  But I still have checks left!
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
