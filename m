@@ -1,73 +1,41 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <39F4BB39.8C0F3238@snmc.com>
-Date: Mon, 23 Oct 2000 17:27:05 -0500
-From: Daris A Nevil <dnevil@snmc.com>
-MIME-Version: 1.0
-To: clark@esteem.com
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Talking to the parrallel i/o ports
-References: <5.0.0.25.1.20001023142754.00a40ac0@pop.esteem.com>
+Message-ID: <20001024111608.B11739@saw.sw.com.sg>
+Date: Tue, 24 Oct 2000 11:16:08 +0800
+From: Andrey Savochkin <saw@saw.sw.com.sg>
+To: Hai-Pao Fan <haipao@mvista.com>,
+        "ZHANG,HAI-TAO Non-A-China,ex1\"" <hai-tao_zhang@non.agilent.com>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: root filesystem over nfs
+References: <2F67A63DFFB1D31185D90090278CBB2D017D2A39@apmail6.chn.agilent.com> <39F4A4B1.6EC2B309@mvista.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <39F4A4B1.6EC2B309@mvista.com>; from "Hai-Pao Fan" on Mon, Oct 23, 2000 at 01:50:57PM
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello Conn,
+Hello,
 
-I wrote a nice little I/O control subsystem for the MPC850.  It is in
-QSLinux (http://qslinux.org, ftp::/qslinux.org), and is in the
-subdirectories snmc/qslinux/kernel and snmc/qspin.
-
-The subsystem gives you the ability to check, request, and configure the
-function of the I/O pins on the MPC850.  It is modeled after the I/O
-address allocator for the 80x86 architecture.  You can access the
-subsystem either from kernel space, or from a user space program.
-
-You will need to modify the subsystem for operation with other MPC8xx
-processor (i.e. the MPC860 has more I/O pins). But this should not be
-difficult.
-
-I don't have a command-line driven program that interfaces to the
-subsystem, but if you write one and are willing to share it I would love
-to have a copy :-).
-
-Regards,
-Daris
-
-
-clark@esteem.com wrote:
+On Mon, Oct 23, 2000 at 01:50:57PM -0700, Hai-Pao Fan wrote:
+> This is one of the changes I made in eepro100.c for the ppc 4xx system. I think
+> the maintainer should know this also.
 >
-> Hello everyone,
 >
->         I was wondering if any one has written a nice little utility to control
-> the parallel i/o ports of the MPC8xx. I was hoping to be able to call it
-> from other programs as well as manipulate the ports from the the command
-> prompt and scripts. I thought I would check to see if anybody has already
-> done it before I tried to do it my self.
+> "ZHANG,HAI-TAO (Non-A-China,ex1)" wrote:
 >
->         Many thanks in advance,
->
->         Conn Clark
-> *****************************************************************
->    If you live at home long enough, your parrents will move out.
-> *****************************************************************
->
-> Conn Clark
-> Engineering Stooge                              clark@esteem.com
-> Electronic Systems Technology Inc.              www.esteem.com
->
-> Stock Ticker Symbol                             ELST
->
+> > Hi,
+> >
+> > I tried to change one line in eepro100.c and now the 2.4.0-test9 boot is ok.
+> >
+> > $ diff eepro100.c eepro100.c.orig
+> > 1098c1098
+> > <       outl(TX_RING_ELEM_DMA(sp, sp->dirty_tx % TX_RING_SIZE),
+> > ---
+> > >       outl(cpu_to_le32(TX_RING_ELEM_DMA(sp, sp->dirty_tx % TX_RING_SIZE)),
 
---
-Daris A Nevil
-Simple Network Magic Corporation
-401 Kentucky Lane
-McKinney, TX 75069
-214-793-7757
-dnevil@snmc.com
-www.snmc.com
-quickstack.com
-qslinux.org
+yes, of course.
+Thank you for the notice.
+
+Best regards
+			Andrey
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
