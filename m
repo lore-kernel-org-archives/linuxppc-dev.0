@@ -1,37 +1,41 @@
-To: "Mark Chambers" <markc@mail.com>
-Cc: "Matevz Langus" <matevz.langus@fortunal.net>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: JTAG debuggers for Motorola 8xx/82xx/85xx 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 09 Jun 2004 17:35:47 EDT."
-             <007a01c44e69$bb7de860$0301a8c0@chuck2>
-Date: Thu, 10 Jun 2004 00:38:05 +0200
-Message-Id: <20040609223810.DB4B7C109F@atlas.denx.de>
+Date: Wed, 9 Jun 2004 19:17:35 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+To: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
+Subject: trying to debug my failure to start "init"
+Message-ID: <Pine.LNX.4.58.0406091911340.3310@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <007a01c44e69$bb7de860$0301a8c0@chuck2> you wrote:
->
-> For 8xx, the open source BDM4GDB (which you can get from www.denx.de) is
-> great.  I also partially ported the bdm driver to Windows for production
-> testing work.  Under Windows, I've used CrossView (from Tasking.com) with
-> Macraigor Wiggler (ocdemon.net) - all priced very reasonably.  However
-> CrossView does not support linux (but BDM4GDB does, of course)
+  just before i pack it in for the day, i'm still grappling with why i
+can't get the linuxppc-2.5 kernel to start the init/minit program on my
+8xx board.  very curious, since it used to be able to, even if it hung
+immediately afterwards.
 
-Note that the GDB in our ELDK not only supports the BDM4GDB, but also
-the wiggler ...
+  for more feedback, i added a printk() call to the run_init_process()
+function in init/main.c to see what it thought it was doing.  the tail end
+of my boot sequence was:
 
-Best regards,
+...
+Kernel command line: console=ttyS0,9600 rw root=/dev/ram0 init=/sbin/minit
+... snip ...
+RAMDISK: Compressed image found at block 0
+VFS: Mounted root (ext2 filesystem).             <-- good
+Mounted devfs on /dev                            <-- also good
+Freeing unused kernel memory: 52k init
+Trying run_init_process with /sbin/minit         <-- hmm, that should work
+Trying run_init_process with /sbin/init
+Trying run_init_process with /etc/init
+Trying run_init_process with /bin/init
+Trying run_init_process with /bin/sh
+Kernel panic: No init found.  Try passing init= option to kernel.
 
-Wolfgang Denk
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"You shouldn't make my toaster angry." - Household security explained
-in "Johnny Quest"
+  at this point, i'm out of ideas, and in need of a beer.  thanks to
+everyone who's provided advice so far.
+
+rday
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
