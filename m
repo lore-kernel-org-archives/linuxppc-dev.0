@@ -1,75 +1,48 @@
-From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-To: Derek Homeier <supas100@astrophysik.uni-kiel.de>
-Subject: Re: Keycodes for the new input layer
-Date: Thu, 13 Jul 2000 01:29:33 +0200
-Content-Type: Multipart/Mixed;
-  boundary="------------Boundary-00=_9LYL3ZFZOOTHTQO9XNYK"
-Cc: linuxppc-dev@lists.linuxppc.org
-References: <Pine.SOL.3.95.1000712143953.21439H-100000@juliet>
-In-Reply-To: <Pine.SOL.3.95.1000712143953.21439H-100000@juliet>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Benjamin Herrenschmidt <bh40@calva.net>, <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: trackpad
+Date: Thu, 13 Jul 2000 01:31:59 +0200
+Message-Id: <20000712233159.26202@192.168.1.10>
+In-Reply-To: <20000712231905.23171@192.168.1.10>
+References: <20000712231905.23171@192.168.1.10>
 MIME-Version: 1.0
-Message-Id: <00071301293300.05612@enzo.bigblue.local>
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---------------Boundary-00=_9LYL3ZFZOOTHTQO9XNYK
-Content-Type: text/plain
-Content-Transfer-Encoding: 8bit
-
-On Wed, 12 Jul 2000, Derek Homeier wrote:
-> On Wed, 12 Jul 2000, Franz Sirl wrote:
-> > The problem here is that newer Apple keyboards additionally label OptionL
-> > as ALT and 3rd party keyboards with an additional OptionR label it as
-> > ALTGR, which pretty much limits the correct choices :-(. Anyway, I'll put
-> > keymap .inc files into console-tools that let you easily change it (eg.
-> > option-left-as-alt.inc, command-leftright-as-altgr.inc, etc.).
 >
-> I see. Which of these is equivalent to the old single Option key?
-
-optionL-as-alt + commandLR-as-altgr probably. It's in the new console-tools
-package I have on devel now.
-
-> Personally, I'd like something different for both, so they could be
-> independently bound to the mousebuttons. If one wanted to use it as
-> KP_Enter, it could probably still be bound in the console and xkb
-> keymaps? I've no idea for a name, though. I think with the older kernels
-> it was just NoKey (and couldn't be bound to any Key Symbol, but to the
-> mousebuttons). KEY_LINEFEED, perhaps?
+>>OK, I've tried it. No function from the trackpad still. I downloaded the
+>>sources and recompiled. Still no trackpad. I turned off "Enable new input
+>>layer" and make dep'd make clean make vmlinux etc and *still* no trackpad!
+>>I'm on the Yellow Dog list, and people are starting to report similar
+>>problems with 2000 "Pismo" PowerBooks and these kernels...
 >
->  Fn-RET = KEY_KPENTER
->  _^ = KEY_KPENTER
->   Fn-_^ = [something different]
->
-> would probably also be o.k., though.
+>What's up if you add "adb_xpmac_compat" to your kernel command line ? It
+>works fine on my pismo here.
 
-How about the appended patch?
+What I wrote can be a bit confusing. I meant:
 
-Franz.
+ - The new layer will create new devices that mix all mice (including
+trackpad) and route them to the new /dev/input/mice device. Of course,
+you need to create this device (with mknod) and eventually link /dev/
+mouse, /dev/adbmouse and /dev/usbmouse (yes, all 3 of them) to /dev/
+input/mice. There are some explanation on how to do that on my page.
+Those will output imps2 protocol.
 
---------------Boundary-00=_9LYL3ZFZOOTHTQO9XNYK
-Content-Type: text/x-c;
-  name="kbd6-ben1-9.patch"
-Content-Disposition: attachment; filename="kbd6-ben1-9.patch"
-Content-Transfer-Encoding: base64
+ - The latest kernel (pre10-ben1) will keep the old /dev/adbmouse device
+alive. That means that if you don't set /dev/adbmouse to point to the new
+/dev/input/mice but instead keep it to it's old major/minor, you'll still
+get a busmouse-like device on /dev/adbmouse
 
-LS0tIGxpbnV4LXBtYWMtYmVuaC9kcml2ZXJzL21hY2ludG9zaC9tYWNfa2V5Yi5jCVRodSBKdWwg
-MTMgMDA6MjM6MzcgMjAwMAorKysgbGludXgtcG1hYy1iZW5oLWZyYS9kcml2ZXJzL21hY2ludG9z
-aC9tYWNfa2V5Yi5jCVRodSBKdWwgMTMgMDE6MTg6MjEgMjAwMApAQCAtMjYwLDEwICsyNjAsMTAg
-QEAgdW5zaWduZWQgY2hhciBhZGJfdG9fbGludXhfa2V5Y29kZXNbMTI4XQogCSAzMCwgMzEsIDMy
-LCAzMywgMzUsIDM0LCA0NCwgNDUsIDQ2LCA0NywgODYsIDQ4LCAxNiwgMTcsIDE4LCAxOSwKIAkg
-MjEsIDIwLCAgMiwgIDMsICA0LCAgNSwgIDcsICA2LCAxMywgMTAsICA4LCAxMiwgIDksIDExLCAy
-NywgMjQsCiAJIDIyLCAyNiwgMjMsIDI1LCAyOCwgMzgsIDM2LCA0MCwgMzcsIDM5LCA0MywgNTEs
-IDUzLCA0OSwgNTAsIDUyLAotCSAxNSwgNTcsIDQxLCAxNCwgIDAsICAxLCAyOSwxMjUsIDQyLCA1
-OCwgNTYsMTA1LDEwNiwxMDgsMTAzLCAgMCwKKwkgMTUsIDU3LCA0MSwgMTQsIDk2LCAgMSwgMjks
-MTI1LCA0MiwgNTgsIDU2LDEwNSwxMDYsMTA4LDEwMywgIDAsCiAJICAwLCA4MywgIDAsIDU1LCAg
-MCwgNzgsICAwLCA2OSwgIDAsICAwLCAgMCwgOTgsIDk2LCAgMCwgNzQsICAwLAogCSAgMCwxMTcs
-IDgyLCA3OSwgODAsIDgxLCA3NSwgNzYsIDc3LCA3MSwgIDAsIDcyLCA3MywxMjQsIDg5LCAgMCwK
-LQkgNjMsIDY0LCA2NSwgNjEsIDY2LCA2NywgNDEsIDg3LDExMiwgOTksICAwLCA3MCwgIDAsIDY4
-LCAgMCwgODgsCisJIDYzLCA2NCwgNjUsIDYxLCA2NiwgNjcsIDQxLCA4NywxMTIsIDk5LCAgMCwg
-NzAsICAwLCA2OCwxMDEsIDg4LAogCSAgMCwxMTksMTEwLDEwMiwxMDQsMTExLCA2MiwxMDcsIDYw
-LDEwOSwgNTksIDU0LDEwMCwgOTcsMTE2LDExNgogfTsKIAo=
+ - I also added this new "adb_xpmac_compat" kernel command line option
+(at least until Xpmac is fixed). With this, the driver will, by default,
+enable sending of ADB mouse moves as fake keycodes to the console, like
+MkLinux, in a way compatible with Xpmac. The new driver won't do it any
+more unless you use that option or your do
 
---------------Boundary-00=_9LYL3ZFZOOTHTQO9XNYK--
+echo "1" >/proc/sys/dev/mac_hid/adb_mouse_sends_keycodes
+
+Ben.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
