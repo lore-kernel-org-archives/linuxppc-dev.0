@@ -1,17 +1,50 @@
-Message-Id: <5.1.1.6.2.20030528113157.012b1008@corelis.com>
-Date: Wed, 28 May 2003 11:53:18 -0700
-To: Eran Mann <emann@mrv.com>
-From: "Brian S. Park" <brian@corelis.com>
-Subject: Re: getting Linux working on IBM Walnut demo board
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <3ED48719.60004@mrv.com>
-References: <5.1.1.6.2.20030527160449.0128b868@corelis.com>
- <Your message of "Tue, 27 May 2003 11:49:51 PDT." <5.1.1.6.2.20030527114004.01282240@corelis.com>
- <5.1.1.6.2.20030527160449.0128b868@corelis.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-ID: <B895EFF5AF34724880036BDB5B5B8148135683@amer22.avnet.com>
+From: "Kerl, John" <John.Kerl@Avnet.com>
+To: "'Brian S. Park'" <brian@corelis.com>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: getting Linux working on IBM Walnut demo board
+Date: Wed, 28 May 2003 11:56:45 -0700
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Brian:
+
+You can get the "all network ports in use" error when
+there do not exist /dev/ttyp* -- these are the pseudo-ttys
+needed by telnet.  You can mknod them; but I would double-check
+your /dev directory.  If you're using ELDK, /dev/ttyp* should
+already be there.
+
+The "Unable to open an initial console" message is in init/main.c,
+and occurs when /dev/console can't be opened.  Again, this points
+suspicion at your filesystem.
+
+To peek at your RAM disk, you can do the following (as root):
+
+# gunzip < ramdisk.image.gz > ramdisk.image
+# mkdir foo
+# mount -o loop ramdisk.image foo
+
+and then cd into foo and ls, etc.  Don't forget
+to then do:
+
+# umount foo
+# rmdir foo
+# rm ramdisk.image
+
+
+
+-----Original Message-----
+From: Brian S. Park [mailto:brian@corelis.com]
+Sent: Wednesday, May 28, 2003 11:53 AM
+To: Eran Mann
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: getting Linux working on IBM Walnut demo board
+
 
 
 Eran,
