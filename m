@@ -1,52 +1,71 @@
-To: "Sarnath Kannan" <sparc64@rediffmail.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: DINK - the downloader ! 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "22 Nov 2001 12:21:32 GMT."
-             <20011122122132.18969.qmail@mailweb26.rediffmail.com>
-Date: Thu, 22 Nov 2001 14:17:13 +0100
-Message-Id: <20011122131718.999A6F9BA@denx.denx.de>
+Date: Thu, 22 Nov 2001 14:19:57 -0300
+From: Ricardo Scop <scop@digitel.com.br>
+Reply-To: scop@digitel.com.br
+Message-ID: <8597.011122@digitel.com.br>
+To: Wolfgang Denk <wd@denx.de>
+Cc: "Sarnath Kannan" <sparc64@rediffmail.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re[2]: DINK - the downloader !
+In-reply-To: <20011122131718.999A6F9BA@denx.denx.de>
+References: <20011122131718.999A6F9BA@denx.denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Sarnath,
+Hello guys,
 
-in message <20011122122132.18969.qmail@mailweb26.rediffmail.com> you wrote:
->
->  I am really impatient with the way DINK downloads
-> the kernel over the serial line..
->  i just want to get rid of it..
->
-> Is it possible to download a "Ethernet boot"
-> utility thru which I can download the kernel
-> via ethernet card. Any such utilities for the
-> sandpoint platform are available.. ?
+Thursday, November 22, 2001, 10:17:13 AM, you wrote:
 
-Use PPCBoot.
+WD> Dear Sarnath,
 
-I'm not sure how good the Sandpoint support is  at  the  moment,  but
-it's  there,  and  it compiles, and some people say they actually use
-it.
+WD> in message <20011122122132.18969.qmail@mailweb26.rediffmail.com> you wrote:
+>>
+[snip]
+>> via ethernet card. Any such utilities for the
+>> sandpoint platform are available.. ?
 
->  Whats "tftp" and How do I set it up ?
+WD> Use PPCBoot.
 
-Trivial File Transfer Protocol.
+I second this :-)
 
-> (no RTFMs please...)
+WD> I'm not sure how good the Sandpoint support is  at  the  moment,  but
+WD> it's  there,  and  it compiles, and some people say they actually use
+WD> it.
 
-Ummm... but this _is_ a RFTM job.
+>>  Whats "tftp" and How do I set it up ?
 
-Or ask your friendly network administrator :-)
+I think this is a fair question. When I bought my Abatron BDI2000, I
+had a hard time setting up a TFTP server on my Linux host... it was
+much easier to use the Windowze-based TFTP server that came along
+with the Abatron firmware :-(
 
-Wolfgang Denk
+Fortunatelly, we have some local Linux gurus here at my job place. So,
+basically, what has to be done, assuming a Linux host, is:
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-You may call me by my name, Wirth, or by my value, Worth.
-- Nicklaus Wirth
+1 - Check if you're lucky: try locating in.tftpd in your bin
+directories (mainly in /usr/sbin)
+
+2 - If you don't have it, download it from the web; better download
+both server and clients apps
+
+3 - Install them (I have a Red Hat box, so installing rpm's is
+straightforward for me :-)
+
+4 - Now, the tough part: you'll have to manually configure inetd (or
+worse, xinetd - depending on your system). I can put a copy of a
+sample conf file here, if you need it...
+
+HTH,
+
+Ricardo Scop                            mailto:scop@digitel.com.br
+R SCOP Consulting
+
+------------------------------------------------------------------
+"What's money? A man is a success if he gets up in the morning and
+goes to bed at night and in between does what he wants to do."
+~Bob Dylan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
