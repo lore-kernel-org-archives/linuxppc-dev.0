@@ -1,52 +1,113 @@
-Message-ID: <A3E34B558F5CD211B4980008C7A4A99003163E46@sparrow.eng.gilbarco.com>
-From: "Williams, Kevin M." <kevin.m.williams@marconi.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Tue, 10 Apr 2001 16:07:03 +0200 (MET DST)
+From: "WN.Jacobs" <WN.Jacobs@net.HCC.nl>
+Reply-To: WN.Jacobs@net.HCC.nl
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Linux stand-alone boot & mtd info
-Date: Tue, 10 Apr 2001 09:00:26 -0400
+Subject: Linux 2.5 + PPCBOOT and boot arguments transfer
+Message-ID: <Pine.GSO.4.21.0104101605470.18610-100000@hatert.nijmegen.inter.nl.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Claire,
+On our STK860L boards running PPCBOOT (0.7.1 or 0.8.3) we use
+linux 2.4.0-test13-pre2 and a NFS file system without a problem:
+ppcboot 0.7.1 (Apr 10 2001 - 12:03:33)
 
-Go here:
+Initializing...
+  CPU:   XPC860xxZPnnD3 at 80 MHz: 4 kB I-Cache 4 kB D-Cache FEC present
+  Board: ### No HW ID - assuming TQM8xxL
+  DRAM:  16 MB
+  FLASH:  8 MB
+  Input:  serial
+  Output: serial
 
-ftp://ftp.uk.linux.org/pub/people/dwmw2/mtd/cvs/
+Hit any key to stop autoboot:  0
+BOOTP broadcast 1
+ARP broadcast 0
+TFTP from server 192.7.1.37; our IP address is 192.7.1.61
+Filename 'stk860l-linux-2.4.img'.
+Load address: 0x100000
+Loading: #########################################################################################
+done
+## Booting Linux kernel at 00100000 ...
+   Image Name:   STK860L
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    451627 Bytes = 441 kB = 0 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+Linux version 2.4.0-test13-pre2 (willy@suns100c21) (gcc version 2.95.2
+19991024 (release)) #14 Fri Feb 9 14:11:45 MET 2001
+Boot arguments: root=/dev/nfs rw
+nfsroot=192.7.1.37:/opt/hardhat/devkit/ppc/8xx/target
+ip=192.7.1.61:192.7.1.37::255.255.255.0:::off
+On node 0 totalpages: 4096
+zone(0): 4096 pages.
+zone(1): 0 pages.
+zone(2): 0 pages.
+Kernel command line: root=/dev/nfs rw
+nfsroot=192.7.1.37:/opt/hardhat/devkit/ppc/8xx/target
+ip=192.7.1.61:192.7.1.37::255.255.255.0:::off
+etc.
 
-Grab the latest snapshot of the mtd code and read mtd-jffs-HOWTO.txt in the
-root directory.  It describes the procedure at the end of the document, but
-it's not entirely complete.
+Switching to the latest linux 2.5 (from FSMLABS) with the same PPCBOOT
+(+bootargs) now shows:
 
-As the name implies, the HOWTO has (up to date!) info on jffs.  It even
-spells out what options to set in the 2.4 kernel to get mtd to work.  That
-might answer a couple other questions asked recently.
+## Booting Linux kernel at 00100000 ...
+   Image Name:   STK860L
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    447951 Bytes = 437 kB = 0 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+Linux version 2.4.2 (willy@suns100c21) (gcc version 2.95.2 19991024
+(release)) #10 Tue Apr 10 15:42:40 MET DST 2001
+On node 0 totalpages: 4096
+zone(0): 4096 pages.
+zone(1): 0 pages.
+zone(2): 0 pages.
+Kernel command line: ip=autoconf
+Decrementer Frequency = 300000000/60
+Calibrating delay loop... 79.66 BogoMIPS
+Memory: 14856k available (840k kernel code, 340k data, 40k init, 0k
+highmem)
+Dentry-cache hash table entries: 2048 (order: 2, 16384 bytes)
+Buffer-cache hash table entries: 1024 (order: 0, 4096 bytes)
+Page-cache hash table entries: 4096 (order: 2, 16384 bytes)
+Inode-cache hash table entries: 1024 (order: 1, 8192 bytes)
+POSIX conformance testing by UNIFIX
+Linux NET4.0 for Linux 2.4
+Based upon Swansea University Computer Society NET3.039
+Starting kswapd v1.8
+CPM UART driver version 0.03
+ttyS00 at 0x0280 is a SMC
+pty: 256 Unix98 ptys configured
+block: queued sectors max/low 9792kB/3264kB, 64 slots per queue
+eth0: CPM ENET Version 0.2 on SCC1, 00:40:2f:00:4c:08
+NET4: Linux TCP/IP 1.0 for NET4.0
+IP Protocols: ICMP, UDP, TCP
+IP: routing cache hash table of 512 buckets, 4Kbytes
+TCP: Hash tables configured (established 1024 bind 1024)
+IP-Config: Incomplete network configuration information.
+NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+Root-NFS: No NFS server available, giving up.
+VFS: Unable to mount root fs via NFS, trying floppy.
+request_module[block-major-2]: Root fs not mounted
+VFS: Cannot open root device "" or 02:00
+Please append a correct "root=" boot option
+Kernel panic: VFS: Unable to mount root fs on 02:00
+Rebooting in 180 seconds..
 
-If anyone else out there is working with jffs and has executable versions of
-the jffs utilities (namely 'erase' and 'mkfs.jffs') for an PPC860 I'd REALLY
-appreciate a copy.  We've hacked up makefiles enough to get CygWin to cross
-compile and build a kernel, but I'm not having much luck building the jffs
-utilities...
+For some reason the boot arguments are not recognized by Linux.
+Did anyone else had the same problem?
 
-Kevin Williams
-
------Original Message-----
-From: Claire Troussier [mailto:troussier@digigram.com]
-Sent: Tuesday, April 10, 2001 5:46 AM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Linux stand-alone boot
-
-
-
-I would like to know if documentation exits describing how to configure
-and build Linux kernel to boot a target in stand alone mode. The target
-is based on a PowerPC MPC8240.
-
-Thank you for your interest
-
-Claire
+Regards,
+---
+willy
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
