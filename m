@@ -1,35 +1,26 @@
-Date: Mon, 25 Oct 1999 18:11:43 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: atyfb and ppc config
-In-Reply-To: <Pine.LNX.4.10.9910250832260.18574-100000@shell.unixbox.com>
-Message-ID: <Pine.LNX.4.05.9910251811010.32285-100000@callisto.of.borg>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <19991024204740.022621@smtp.calvacom.fr>
+Date: Mon, 25 Oct 1999 18:39:52 +0200
+To: linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: iBook/UMA pre2
+Message-Id: <19991025183952.002644@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 25 Oct 1999, Ani Joshi wrote:
-> hey geert, i was playing with 2.3.23 last nite and fixing it up for ppc
-> when i noticed my vmode/cmode kernel args weren't "working" with 2.3.23,
-> then i when back and realized that in atyfb_setup, you only allow these if
-> CONFIG_PMAC is defined, and i had build a "common" CONFIG_PPC_ALL kernel.
-> 
-> should you add #ifdefined CONFIG_PMAC || or defined CONFIG_PPC_ALL
-> or for a more general solution, if CONFIG_PPC_ALL is defined, shouldn't
-> CONFIG_PMAC also be defined, along with PREP, etc...
+On Sun, Oct 24, 1999, BenH <bh40@calva.net> wrote:
 
-What do you guys think about this? I like the idea of having CONFIG_PMAC etc.
-be defined if CONFIG_PPC_ALL is defined.
+>I've just updated my iBook patches, the PMU shutdown issue is gone (it
+>was simply not liking the kbd LEDs request, I should have found this one
+>earlier). I still don't receive CB1 interrupts however and the timer I'm
+>using may not be safe (I can probably not be sure of MacOS setting on
+>this timer) and is slow enough to be annoying with the trackpad.
 
-Gr{oetje,eeting}s,
---
-Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+I've found more problems with the PCI code, I'll upload a new version
+later tonight or tomorrow with also correct support for cascaded bridges
+(so it should work with the G4 and it's DEC bridge).
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
