@@ -1,37 +1,47 @@
-To: Steven Scholz <steven.scholz@imc-berlin.de>
+Subject: Re: Linux on Force Computers CPCI-3750 eth drivers
+From: luca gambazzi <luca.gambazzi@epfl.ch>
+To: Matt Porter <porter@cox.net>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: parse error before `{', stray '\' in program 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 11 Apr 2003 09:01:33 +0200."
-             <3E96684D.7000601@imc-berlin.de>
-Date: Fri, 11 Apr 2003 09:24:58 +0200
-Message-Id: <20030411072503.64755C5877@atlas.denx.de>
+In-Reply-To: <20030409082223.C24217@home.com>
+References: <1049880169.3724.16.camel@shampoo.epfl.ch>
+	 <20030409082223.C24217@home.com>
+Content-Type: text/plain
+Message-Id: <1050057631.13294.1.camel@shampoo.epfl.ch>
+Mime-Version: 1.0
+Date: 11 Apr 2003 12:40:32 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3E96684D.7000601@imc-berlin.de> you wrote:
+hi matt
+
+as you said the problem was on the eth card irq,... the irq is 9.
+i prepear a patch and i'll send you in next days.
+
+happy weekend
+luca
+
+On Wed, 2003-04-09 at 17:22, Matt Porter wrote:
+> On Wed, Apr 09, 2003 at 11:22:49AM +0200, luca gambazzi wrote:
+> > Hi Matt
+> >
+> > I'm booting with the pcore kernel.
+> >
+> > the pcore_find_bridges function in pcore_pci.c recognize my card as a
+> > 6750, but the 3750 uses a 21150 bridge and not a 21154.
+> >
+> > Do you know where can i find documentation to solve this problem?
+> > and where I have to modify?
 >
-> Good you please post the URL to the list if you find one!
-> I am facing this problem from time to time ...
+> Oh, I should have mentioned the shotgun alternative to waiting on docs
+> from Force.  Assume that the 3750 uses cascade irqs 9-12 for all pci
+> interrupts just like the 6750.  Try changing the 6750 tulip map_irq
+> entry to be 9,11,12 and see if any work.
 >
-> Does anyone know if the ppc_8xx-gcc 2.95.4 from DENX ELDK has this
-> patch applied?
+> BTW, saw your list of devices in the /proc/pci dump.  Looks like a
+> fun project. :)
+>
+> Regards,
 
-No, it has not, and will not.
-
-I see no sense in a modification that supports violations  of  the  C
-standard.
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Work 8 hours, sleep 8 hours; but not the same 8 hours.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
