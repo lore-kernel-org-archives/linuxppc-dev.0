@@ -1,142 +1,295 @@
-Message-ID: <3E4D3804.4080503@mvista.com>
-Date: Fri, 14 Feb 2003 11:40:04 -0700
+Message-ID: <3E52B7E6.9060903@mvista.com>
+Date: Tue, 18 Feb 2003 15:47:02 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
 To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: linuxppc_2_4_devel patch for 745x cache invalidate (in bootwrapper)
+Subject: linuxppc_2_4_devel /proc/sys/kernel/l3cr patch
 Content-Type: multipart/mixed;
- boundary="------------000802020703010304000308"
+ boundary="------------090008010403040409050108"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 This is a multi-part message in MIME format.
---------------000802020703010304000308
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+--------------090008010403040409050108
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 
-There are some differences in the L2CR register between the 75x/74x0 and
-the 745x processors that weren't accounted for in the arch/ppc/boot/...
-bootwrapper code.  Also, there was no bootwrapper code to turn off L3
-cache on 745x processors.
+Attached is a patch that does the following:
 
-The attached patch does the following:
-a) Modify arch/ppc/boot/common/util.S:_setup_L2CR to poll on the proper
-bit when doing an L2 global invalidate.  On 75x & 74x0 processors, that
-means polling the L2IP bit; on 745x processors, that means polling on
-the L2I bit.  BTW, the code is already correct in arch/ppc/kernel/l2cr.S.
-b) Add arch/ppc/boot/common/util.S:_setup_l3CR routine which turns off
-L3 cache and does a global invalidate on it.
-c) Modify arch/ppc/boot/simple/head.S:start_ to call _setup_L3CR if
-running on a 745x processor.  This is #ifdef'd out for all platforms
-except CONFIG_FORCE, CONFIG_K2, CONFIG_EV64260, and CONFIG_PAL4--the
-#ifdef was already there.
+a) Adds /proc/sys/kernel/l3cr which provides the same functionality as
+/proc/sys/kernel/l2cr but for the L3CR register.
+b) Accounts for the differences in the L2CR register between the
+75x/74x0 and 745x processors.
+c) Updates 'clockstrings[]' for the 74x0 processor in proc_dol2crvec()
+(i.e., adds +3.5 & +4 clock).
 
-This patch has been successfully tested on a few platforms inside
-MontaVista.  However, those of you that use the bootwrapper on 745x
-platforms may want to test it as well.  If you do test it, please
-respond to this email with your results.  If there are no responses by
-mid-week next week, say, I will assume the patch is fine and ask that it
-get applied to the public linuxppc_2_4_devel source.
-
-Thanks,
+I do have a question...should I add 'KERN_PPC_L3CR=57' to
+include/linux/sysctl.h the way that I did or should I move it behind
+'KERN_PPC_L2CR=31' and renumber the following entries??
 
 Mark
+--
 
---------------000802020703010304000308
+--------------090008010403040409050108
 Content-Type: text/plain;
- name="745x.patch"
+ name="proc.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline;
- filename="745x.patch"
+ filename="proc.patch"
 
-===== arch/ppc/boot/common/util.S 1.10 vs edited =====
---- 1.10/arch/ppc/boot/common/util.S	Wed Feb 12 13:34:20 2003
-+++ edited/arch/ppc/boot/common/util.S	Fri Feb 14 10:01:45 2003
-@@ -100,7 +100,7 @@
- 	isync
- 	mfspr	r8,L2CR
- 	rlwinm	r8,r8,0,1,31
--	oris	r8,r8,0x0020
-+	oris	r8,r8,L2CR_L2I@h
- 	sync
- 	isync
- 	mtspr	L2CR,r8
-@@ -108,14 +108,51 @@
- 	isync
+===== arch/ppc/kernel/ppc_htab.c 1.30 vs edited =====
+--- 1.30/arch/ppc/kernel/ppc_htab.c	Sun Nov  4 05:02:40 2001
++++ edited/arch/ppc/kernel/ppc_htab.c	Tue Feb 18 14:55:16 2003
+@@ -444,18 +444,18 @@
+     }
+ }
 
- 	/* Wait for the invalidation to complete */
--1:	mfspr	r8,L2CR
--	rlwinm.	r9,r8,0,31,31
-+	mfspr   r8,PVR
-+	srwi    r8,r8,16
-+	cmplwi  r8,(PVR_7450 >> 16)
-+	bne     2f
++#define TMPBUFLEN 512
+ int proc_dol2crvec(ctl_table *table, int write, struct file *filp,
+ 		  void *buffer, size_t *lenp)
+ {
+ 	int vleft, first=1, len, left, val;
+-	#define TMPBUFLEN 256
+ 	char buf[TMPBUFLEN], *p;
+ 	static const char *sizestrings[4] = {
+ 		"2MB", "256KB", "512KB", "1MB"
+ 	};
+ 	static const char *clockstrings[8] = {
+-		"clock disabled", "+1 clock", "+1.5 clock", "reserved(3)",
+-		"+2 clock", "+2.5 clock", "+3 clock", "reserved(7)"
++		"clock disabled", "+1 clock", "+1.5 clock", "+3.5 clock",
++		"+2 clock", "+2.5 clock", "+3 clock", "+4 clock"
+ 	};
+ 	static const char *typestrings[4] = {
+ 		"flow-through burst SRAM", "reserved SRAM",
+@@ -511,22 +511,177 @@
+ 				*p++ = '\t';
+ 			val = _get_L2CR();
+ 			p += sprintf(p, "0x%08x: ", val);
+-			p += sprintf(p, " %s", (val >> 31) & 1 ? "enabled" :
++			p += sprintf(p, " L2 %s", (val >> 31) & 1 ? "enabled" :
+ 				     	"disabled");
+ 			p += sprintf(p, ", %sparity", (val>>30)&1 ? "" : "no ");
+-			p += sprintf(p, ", %s", sizestrings[(val >> 28) & 3]);
+-			p += sprintf(p, ", %s", clockstrings[(val >> 25) & 7]);
+-			p += sprintf(p, ", %s", typestrings[(val >> 23) & 2]);
+-			p += sprintf(p, "%s", (val>>22)&1 ? ", data only" : "");
+-			p += sprintf(p, "%s", (val>>20)&1 ? ", ZZ enabled": "");
+-			p += sprintf(p, ", %s", (val>>19)&1 ? "write-through" :
+-					"copy-back");
+-			p += sprintf(p, "%s", (val>>18)&1 ? ", testing" : "");
+-			p += sprintf(p, ", %sns hold",holdstrings[(val>>16)&3]);
+-			p += sprintf(p, "%s", (val>>15)&1 ? ", DLL slow" : "");
+-			p += sprintf(p, "%s", (val>>14)&1 ? ", diff clock" :"");
+-			p += sprintf(p, "%s", (val>>13)&1 ? ", DLL bypass" :"");
 +
-+1:	mfspr	r8,L2CR		/* On 745x, poll L2I bit (bit 10) */
-+	rlwinm.	r9,r8,0,10,10
- 	bne	1b
-+	b	3f
++			/* 75x & 74x0 have different L2CR than 745x */
++			if (!(cur_cpu_spec[0]->cpu_features &
++						CPU_FTR_SPEC7450)) {
++				p += sprintf(p, ", %s",
++					sizestrings[(val >> 28) & 3]);
++				p += sprintf(p, ", %s",
++					clockstrings[(val >> 25) & 7]);
++				p += sprintf(p, ", %s",
++					typestrings[(val >> 23) & 3]);
++				p += sprintf(p, "%s", (val>>22)&1 ?
++					", data only" : "");
++				p += sprintf(p, "%s", (val>>20)&1 ?
++					", ZZ enabled": "");
++				p += sprintf(p, ", %s", (val>>19)&1 ?
++					"write-through" : "copy-back");
++				p += sprintf(p, "%s", (val>>18)&1 ?
++					", testing" : "");
++				p += sprintf(p, ", %sns hold",
++					holdstrings[(val>>16)&3]);
++				p += sprintf(p, "%s", (val>>15)&1 ?
++					", DLL slow" : "");
++				p += sprintf(p, "%s", (val>>14)&1 ?
++					", diff clock" :"");
++				p += sprintf(p, "%s", (val>>13)&1 ?
++					", DLL bypass" :"");
++			} else { /* 745x */
++				p += sprintf(p, ", %sinstn only", (val>>20)&1 ?
++					"" : "no ");
++				p += sprintf(p, ", %sdata only", (val>>16)&1 ?
++					"" : "no ");
++				p += sprintf(p, ", %s replacement",
++					(val>>12)&1 ?  "secondary" : "default");
++			}
 +
-+2:      mfspr   r8,L2CR		/* On 75x & 74x0, poll L2IP bit (bit 31) */
-+	rlwinm. r9,r8,0,31,31
-+	bne     2b
++			p += sprintf(p,"\n");
 
--	rlwinm	r8,r8,0,11,9		/* Turn off L2I bit */
-+3:	rlwinm	r8,r8,0,11,9	/* Turn off L2I bit */
- 	sync
- 	isync
- 	mtspr	L2CR,r8
-+	sync
-+	isync
-+	blr
++			len = strlen(buf);
++			if (len > left)
++				len = left;
++			if(copy_to_user(buffer, buf, len))
++				return -EFAULT;
++			left -= len;
++			buffer += len;
++			break;
++		}
++	}
 +
-+	.globl	_setup_L3CR
-+_setup_L3CR:
-+	/* Invalidate/disable L3 cache */
-+	sync
-+	isync
-+	mfspr	r8,L3CR
-+	rlwinm	r8,r8,0,1,31
-+	ori	r8,r8,L3CR_L3I@l
-+	sync
-+	isync
-+	mtspr	L3CR,r8
-+	sync
-+	isync
++	if (!write && !first && left) {
++		if(put_user('\n', (char *) buffer))
++			return -EFAULT;
++		left--, buffer++;
++	}
++	if (write) {
++		p = (char *) buffer;
++		while (left) {
++			char c;
++			if(get_user(c, p++))
++				return -EFAULT;
++			if (!isspace(c))
++				break;
++			left--;
++		}
++	}
++	if (write && first)
++		return -EINVAL;
++	*lenp -= left;
++	filp->f_pos += *lenp;
++	return 0;
++}
 +
-+	/* Wait for the invalidation to complete */
-+1:	mfspr	r8,L3CR
-+	rlwinm.	r9,r8,0,21,21
-+	bne	1b
++int proc_dol3crvec(ctl_table *table, int write, struct file *filp,
++		  void *buffer, size_t *lenp)
++{
++	int vleft, first=1, len, left, val;
++	char buf[TMPBUFLEN], *p;
++	static const char *clockstrings[8] = {
++		"+6 clock", "reserved(1)", "+2 clock", "+2.5 clock",
++		"+3 clock", "+3.5 clock", "+4 clock", "+5 clock"
++	};
++	static const char *clocksampstrings[4] = {
++		"2 clock", "3 clock", "4 clock", "5 clock"
++	};
++	static const char *pclocksampstrings[8] = {
++		"0 P-clock", "1 P-clock", "2 P-clock", "3 P-clock",
++		"4 P-clock", "5 P-clock", "reserved(6)", "reserved(7)"
++	};
++	static const char *typestrings[4] = {
++		"MSUG2 DDR SRAM",
++		"Pipelined synchronous late-write SRAM",
++		"Reserved", "PB2 SRAM"
++	};
 +
-+	rlwinm	r8,r8,0,22,20		/* Turn off L3I bit */
-+	sync
-+	isync
-+	mtspr	L3CR,r8
- 	sync
- 	isync
- 	blr
-===== arch/ppc/boot/simple/head.S 1.7 vs edited =====
---- 1.7/arch/ppc/boot/simple/head.S	Tue Jan 14 08:45:33 2003
-+++ edited/arch/ppc/boot/simple/head.S	Thu Feb 13 17:20:30 2003
-@@ -76,6 +76,14 @@
- #if defined(CONFIG_FORCE) || defined(CONFIG_K2)		\
- 	|| defined(CONFIG_EV64260) || defined(CONFIG_PAL4)
- 	bl	_setup_L2CR
++	if (!(cur_cpu_spec[0]->cpu_features & CPU_FTR_L3CR))
++		return -EFAULT;
 +
-+	/* If 745x, turn off L3CR as well */
-+	mfspr	r8,PVR
-+	srwi	r8,r8,16
-+	cmplwi	r8,(PVR_7450 >> 16)
-+	bne	1f
-+	bl	_setup_L3CR
-+1:
++	if ( /*!table->maxlen ||*/ (filp->f_pos && !write)) {
++		*lenp = 0;
++		return 0;
++	}
++
++	vleft = table->maxlen / sizeof(int);
++	left = *lenp;
++
++	for (; left /*&& vleft--*/; first=0) {
++		if (write) {
++			while (left) {
++				char c;
++				if(get_user(c,(char *) buffer))
++					return -EFAULT;
++				if (!isspace(c))
++					break;
++				left--;
++				((char *) buffer)++;
++			}
++			if (!left)
++				break;
++			len = left;
++			if (len > TMPBUFLEN-1)
++				len = TMPBUFLEN-1;
++			if(copy_from_user(buf, buffer, len))
++				return -EFAULT;
++			buf[len] = 0;
++			p = buf;
++			if (*p < '0' || *p > '9')
++				break;
++			val = simple_strtoul(p, &p, 0);
++			len = p-buf;
++			if ((len < left) && *p && !isspace(*p))
++				break;
++			buffer += len;
++			left -= len;
++			_set_L3CR(val);
++		} else {
++			p = buf;
++			if (!first)
++				*p++ = '\t';
++			val = _get_L3CR();
++			p += sprintf(p, "0x%08x: ", val);
++			p += sprintf(p, " L3 %s", (val >> 31) & 1 ? "enabled" :
++				     	"disabled");
++			p += sprintf(p, ", %sdata parity", (val>>30)&1 ? "" :
++					"no ");
++			p += sprintf(p, ", %saddr parity", (val>>29)&1 ? "" :
++					"no ");
++			p += sprintf(p, ", %s", (val>>28)&1 ? "2MB" : "1MB");
++			p += sprintf(p, ", clocks %s", (val>>27)&1 ? "enabled" :
++					"disabled");
++			p += sprintf(p, ", %s", clockstrings[(val >> 23) & 7]);
++			p += sprintf(p, ", %sinstn only", (val>>22)&1 ? "" :
++					"no ");
++			p += sprintf(p, ", %ssample point override",
++					(val>>18)&1 ? "" : "no ");
++			p += sprintf(p, ", %s sample point",
++					clocksampstrings[(val>>16)&3]);
++			p += sprintf(p, ", %s sample point",
++					pclocksampstrings[(val>>13)&7]);
++			p += sprintf(p, ", %s replacement", (val>>12)&1 ?
++					"secondary" : "default");
++			p += sprintf(p, ", %s", typestrings[(val >> 8) & 3]);
++			p += sprintf(p, ", %sclock cntl", (val>>7)&1 ? "" :
++					"no ");
++			p += sprintf(p, ", %sdata only", (val>>6)&1 ? "" :
++					"no ");
++			p += sprintf(p, ", private mem %s", (val>>2)&1 ?
++					"enabled" : "disabled");
++			p += sprintf(p, ", %sprivate mem", val&1 ? "2MB " :
++					"1MB ");
+ 			p += sprintf(p,"\n");
+
+ 			len = strlen(buf);
+===== include/linux/sysctl.h 1.18 vs edited =====
+--- 1.18/include/linux/sysctl.h	Tue Jan 28 12:44:31 2003
++++ edited/include/linux/sysctl.h	Tue Feb 18 14:26:51 2003
+@@ -125,6 +125,9 @@
+ 	KERN_TAINTED=53,	/* int: various kernel tainted flags */
+ 	KERN_CADPID=54,		/* int: PID of the process to notify on CAD */
+  	KERN_CORE_PATTERN=56,	/* string: pattern for core-files */
++
++	KERN_PPC_L3CR=57,       /* l3cr register on PPC */
++
+ };
+
+
+===== kernel/sysctl.c 1.28 vs edited =====
+--- 1.28/kernel/sysctl.c	Tue Jan  7 04:00:12 2003
++++ edited/kernel/sysctl.c	Tue Feb 18 14:27:38 2003
+@@ -91,6 +91,8 @@
+ extern int powersave_nap;
+ int proc_dol2crvec(ctl_table *table, int write, struct file *filp,
+ 		   void *buffer, size_t *lenp);
++int proc_dol3crvec(ctl_table *table, int write, struct file *filp,
++		   void *buffer, size_t *lenp);
  #endif
+
+ #ifdef CONFIG_BSD_PROCESS_ACCT
+@@ -193,6 +195,8 @@
+ 	 0644, NULL, &proc_dointvec},
+ 	{KERN_PPC_L2CR, "l2cr", NULL, 0,
+ 	 0644, NULL, &proc_dol2crvec},
++	{KERN_PPC_L3CR, "l3cr", NULL, 0,
++	 0644, NULL, &proc_dol3crvec},
  #endif
+ 	{KERN_CTLALTDEL, "ctrl-alt-del", &C_A_D, sizeof(int),
+ 	 0644, NULL, &proc_dointvec},
 
-
---------------000802020703010304000308--
+--------------090008010403040409050108--
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
