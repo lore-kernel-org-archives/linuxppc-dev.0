@@ -1,28 +1,26 @@
-From: NBLIST@sbcglobal.net
-To: linuxppc-embedded@lists.linuxppc.org
-Message-Id: <AA-0296B6B7975FF39FEDDBA26C4B9351E2-ZZ@homebase1.prodigy.net>
-Date: Wed, 22 May 2002 20:00:10 -0500
-Subject: ethernet works only the first time
+Reply-To: <acurtis@onz.com>
+From: "Allen Curtis" <acurtis@onz.com>
+To: "Armin" <akuster@pacbell.net>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Stable BK for 405GP Walnut?
+Date: Wed, 22 May 2002 19:21:09 -0700
+Message-ID: <NCBBIINEHIPFGJPLBEIFKEHMDHAA.acurtis@onz.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-reply-to: <3CEBD3A2.8090200@pacbell.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello all,
+>you will find all that in linuxppc_2_4_devel
 
-I am using the fec on the MPC855T on my custom board.
-I seem to be having some weird ethernet configuration
-problems. My eth0 interface comes up only the first
-time. If I "ifconfig down" the eth0 and bring it back
-up by doing "ifconfig up", the eth0 interface shows up
-fine. But ethernet doesnt work anymore. After a couple
-of minutes, I get "tx buffer full" error messages. But
-it always works the first time I boot the linux kernel
-and bring up etho using ifconfig.
+Are you saying that the code will not make it into stable? Are you saying
+that stable does not compile for the Walnut? What is your recommendation?
+Take the stable or kernel.org 2.4.18 w/PPC patch and then all the "devel"
+pieces that are missing?
 
-What's going on here? Any ideas, clues, tips????
-
-Thank you,
-NB
+TIA
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
