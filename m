@@ -1,76 +1,52 @@
-Message-ID: <4129B219.6020003@analogue-micro.com>
-Date: Mon, 23 Aug 2004 10:00:09 +0100
-From: Frank Robbins <frank.Robbins@analogue-micro.com>
-Reply-To: frank.Robbins@analogue-micro.com
+Message-ID: <20040823145515.29558.qmail@web15610.mail.cnb.yahoo.com>
+Date: Mon, 23 Aug 2004 22:55:15 +0800 (CST)
+From: Song Sam <samlinuxppc@yahoo.com.cn>
+Subject: RE: How to check MTD partition content? 
+To: Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch>,
+	Wolfgang Denk <wd@denx.de>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <40F7BFA600107805@mssbzhh-int.msg.bluewin.ch>
 MIME-Version: 1.0
-To: annamaya@yahoo.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [Fwd: Evaluation boarf for MPC8270]
-References: <1093031175.10455.185.camel@hermes>
-In-Reply-To: <1093031175.10455.185.camel@hermes>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Try the rattler series of boards
+Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch> wrote:
 
-http://www.analogue-micro.com
-
-Regards
-
-
-Frank Robbins
-
-Email: frank.robbins@analogue-micro.com
-
-
-Analogue & Micro Ltd
-
-9 Clytha Park Road
-
-Newport
-
-NP20 4PB
-
-UK (Great Britain)
-
-
-Tel : 44 (0)1633 666787
-
-Fax : 44 (0)1633 666788
-
-
-
-Gary Thomas wrote:
-
->Possible lead
+> >I followed the command in DULG to check partition content but
+> >failed.Target console displayed no such command.
+> >
+> ># xd /dev/mtd3 | head -4
 >
+>http://www.denx.de/twiki/bin/view/DULG/FlashFilesystemsMTD
 >
+> >Could anyone show me a light?
 >
-> ------------------------------------------------------------------------
->
-> Subject:
-> Evaluation boarf for MPC8270
-> From:
-> annamaya <annamaya@yahoo.com>
-> Date:
-> Fri, 20 Aug 2004 12:08:27 -0700 (PDT)
-> To:
-> linuxppc-embedded@lists.linuxppc.org
->
-> To:
-> linuxppc-embedded@lists.linuxppc.org
->
->
->I am looking for a good eval board with an MPC8270
->running on it. I would like to stay away from the FADS
->board for the 82xx since I've worked with FADS boards
->before I do not like them too much. Any suggestions
->would be appreciated.
->
->
->
->
+> You can use any program to dump the data on the device, e.g. "od".
+> Type "man od" for further information.
+
+Thanks for your hints. I did it and could see the
+content but not nice as expected as DULG said.
+
+Fortunately, I searched the wanted command 'xxd'
+rather than DULG had 'xd'.I guess it's a typo.So pls
+Wolfgang Denk check it and make a correction.
+
+root@172.16.115.7:/# od -tx /dev/mtd1 | head -4
+0000000 27051956 552d426f 6f742031 2e312e32
+0000020 20284175 67202037 20323030 34202d20
+0000040 32323a34 313a3334 29000000 00000000
+0000060 00000000 00000000 00000000 00000000
+
+root@172.16.115.7:/# xxd /dev/mtd1 | head -4
+0000000: 2705 1956 552d 426f 6f74 2031 2e31 2e32 '..VU-Boot 1.1.2
+0000010: 2028 4175 6720 2037 2032 3030 3420 2d20 (Aug  7 2004 -
+0000020: 3232 3a34 313a 3334 2900 0000 0000 0000 22:41:34).......
+0000030: 0000 0000 0000 0000 0000 0000 0000 0000 ................
+
+Best regards,
+
+Sam
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
