@@ -1,31 +1,25 @@
-Reply-To: <acurtis@onz.com>
-From: "Allen Curtis" <acurtis@onz.com>
-To: "Ppc Embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: 8260 bios
-Date: Thu, 8 May 2003 06:35:39 -0700
-Message-ID: <NCBBIINEHIPFGJPLBEIFCEHGEFAA.acurtis@onz.com>
+Message-ID: <3EBA7983.C275A2E3@mvista.com>
+Date: Thu, 08 May 2003 08:36:35 -0700
+From: Scott Anderson <scott_anderson@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: James Don <JDon@spacebridge.com>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: advice please: virtex pro 2
+References: <DB0585C9F6F9D411BE8F00D0B7896A4CC065FE@SNCMAIL>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have a BIOS, not as capable as u-boot, but it runs totally out of flash
-and dual-port RAM. This makes it very nice when bringing up boards since all
-you need is flash and the processor functioning. It is fairly flexible and I
-have several maintenance type menus for playing with the various 8260
-peripherals. I really like the initialization because it is table driven and
-the code fits within the 256 bytes of the reset exception vector.
+James Don wrote:
+> 4.) Is debugging support with BDI, vision ICE, etc there yet for this
+> board? Is it just good old JTAG or something different?
 
-Does this sound useful?
+I've used a BDI2000 with a single core Virtex-II Pro and "it just works".
 
-Recommendations for where it should be posted? (source forge, BK, Motorola
-some how?)
-
-Suggestions?
-
-Thanks
-
+    Scott Anderson
+    scott_anderson@mvista.com   MontaVista Software Inc.
+    (408)328-9214               1237 East Arques Ave.
+    http://www.mvista.com       Sunnyvale, CA  94085
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
