@@ -1,50 +1,41 @@
-Date: Wed, 16 Jul 2003 10:26:57 -0400
-From: Kent Borg <kentborg@borg.org>
-To: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
-Cc: Jean-Denis Boyer <jdboyer@m5t.com>,
-	"linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: ptrace Problem
-Message-ID: <20030716102657.D20719@borg.org>
-References: <AB5AF73EAF23304EA1B932174137CED70303AE@m5tmail.m5t.com> <20030715174945.G12505@borg.org> <1058351871.31114.26.camel@spawn>
+Date: Wed, 16 Jul 2003 09:29:36 -0500
+From: Chris Zimman <chris@cryptoapps.com>
+To: Brian Padalino <bpadalino@perigee.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: PPCBoot on Ebony board
+Message-ID: <20030716142936.GA30975@dingdong.cryptoapps.com>
+Reply-To: Chris Zimman <chris@cryptoapps.com>
+References: <20030715213254.GA27907@dingdong.cryptoapps.com> <DGEEIPOFGGPOACEFBGGCOEHCCAAA.bpadalino@perigee.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1058351871.31114.26.camel@spawn>; from kenneth.johansson@etx.ericsson.se on Wed, Jul 16, 2003 at 12:37:51PM +0200
+In-Reply-To: <DGEEIPOFGGPOACEFBGGCOEHCCAAA.bpadalino@perigee.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Jul 16, 2003 at 12:37:51PM +0200, Kenneth Johansson wrote:
->
-> On Tue, 2003-07-15 at 23:49, Kent Borg wrote:
->
-> > Looking at likely source tarballs we have sitting around it seems very
-> > likely that binutils were built from 2.13.2.1, and glibc 2.3.2.  (How
-> > can I be sure?)
->
-> binutils binaries usually respond with the version when given -V on the
-> command line.
+On Wed, Jul 16, 2003 at 07:59:28AM -0400, Brian Padalino wrote:
+> I found the flash programmer utility, but I am actually a bit scared to
+> flash the flash with  the version of PPCBoot that I made.  I am working
+> without a JTAG interface, so flashing using JTAG is out of the question, and
+> how would I re-flash if the PPCBoot binary I have doesn't work properly?  Is
+> the board running out of EEPROM right now with the IBM Open Shell always
+> there?  I have sifted through the documentation a bit, but haven't found a
+> straight answer as to exactly how the board is setup right out of the box.
 
-Oh!  I thought that was a version of an individual component, but
-lordy, nm and objdump both give the same number and it matches the tar
-I had guessed we had used.
+If you built a standard U-Boot 440GP config, odds are that it will work fine.
+If you have a flash programmer, you can always save a copy of the OSOpen
+image and then reflash with that if U-Boot doesn't come up right.
 
-> libc can be checked with objdump -x and checking the Version
-> definitions.
+I'm not sure if your board is using the EEPROM, but that's only used for
+strapping anyway.
 
-It lists a series of numbers ranging from 2.0 to 2.2.2.
+> Any sort of help is appreciated.  I am extremely new to ICE, JTAG and such
+> embedded systems -- so please, be patient with me (if you can).
 
-> This should not be a problem gdb dose all the work using ptrace.
+The first thing I would recommend you do is to get a BDI2000 JTAG
+debugger.  If you're going to be doing any serious work on U-Boot,
+Linux, etc. this is one of the most valuable tools you can have.
 
-Indeed, gdb didn't drag me down into any libraries.
-
-> Regarding your gdb problems have you tried with a kernel without bdi2000
-> support in the kernel.
-
-No, but I will now.
-
-
-Thanks,
-
--kb
+--Chris
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
