@@ -1,44 +1,40 @@
-Message-ID: <3F4C7713.2030703@imc-berlin.de>
-Date: Wed, 27 Aug 2003 11:17:07 +0200
-From: Steven Scholz <steven.scholz@imc-berlin.de>
-MIME-Version: 1.0
-To: Rod Boyce <rod_boyce@stratexnet.com>
-Cc: "'LinuxPPC '" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: PCMCIA Modem/Serial Cards and MPC8xx?
-References: <8D7C5F56B409554D9D46AC22195807F3061CAD@exchwenz01.dmcwave.co.nz>
-In-Reply-To: <8D7C5F56B409554D9D46AC22195807F3061CAD@exchwenz01.dmcwave.co.nz>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Steven Scholz <steven.scholz@imc-berlin.de>
+Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: PCMCIA Modem/Serial Cards and MPC8xx? 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 26 Aug 2003 12:40:13 +0200."
+             <3F4B390D.1060101@imc-berlin.de>
+Date: Wed, 27 Aug 2003 12:37:58 +0200
+Message-Id: <20030827103803.3C471C59E4@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Rod,
+Dear Steven,
 
-Thanks for your reply.
+in message <3F4B390D.1060101@imc-berlin.de> you wrote:
+>
+> is someone using a PCMCIA Modem or Serial Port card with an MPC8xx system?
 
-> I am not at my desk but can tell you that you will have to change the
-> options for serial driver.  I have use the PCMCIA for serial ports but I
-> have setup both the MPC8xx uarts and a standard 16550 uart chip to work in
-> the same Linux kernel.
-Could you please give my a pointer how you did that?
-Did you have MPC8xx uarts _and_ a standard 16550 uart _and_ PCMCIA?
+Yes, we tested this on a couple of boards, including a TQM8xxL board.
 
->  from the look of your kernel output you have not
-> emabled any serial options so your driver is looking for a build in 16550
-> and failing to find one.
-Hmm. But even if I define one. The kernel won't find a UART if it's on
-PCMCIA since PCMCIA is started much later... ?
+> I build a kernel for a TQM860L based board enabeling CONFIG_SERIAL=y
+> as the PCMCIA HowTo states. (I also have CONFIG_SERIAL_CONSOLE=y). But
+> while booting (or insmod serial.o) I get :
 
->there is a file in <kernel root>/include/asm
-> called serial.h this fle contains the devines for the serial ports used
-> butthe kernel.  There are not used by the MPC8xx uart driver. You are going
-> to have to figure out what you want to definein there for your PCMCIA serial
-> port.
-Any hints?
+So far, this is only supported by our linux-2.4 kernel (normally, the
+8xx UART driver and the standard serial driver  [as  needed  for  the
+modem] will cause conflicts; these are trivially to fix, though).
 
-Thanks,
+Best regards,
 
-Steven
+Wolfgang Denk
 
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Bus error -- driver executed.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
