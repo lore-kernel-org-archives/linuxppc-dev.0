@@ -1,35 +1,93 @@
-To: =?gb2312?q?song=20sam?= <samsongshzu@yahoo.com.cn>
-Cc: "PPC Linux Mailing List (E-Mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Comments on Embedded World 2004 exhibition 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 23 Feb 2004 11:53:19 +0800."
-             <20040223035319.45320.qmail@web15205.mail.bjs.yahoo.com>
-Date: Mon, 23 Feb 2004 17:26:04 +0100
-Message-Id: <20040223162609.8A52BC0655@atlas.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: PCI daughter card with USB on a 405GP
+From: Xavier Miville <xmiville@oerlikon.ca>
+To: v.sudeep@exgate.tek.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <301A812E6528D511A8F70008C71E578602B6D6DF@ap-bang-m02.india.tek.com>
+References: 
+	 <301A812E6528D511A8F70008C71E578602B6D6DF@ap-bang-m02.india.tek.com>
+Content-Type: text/plain
+Message-Id: <1077553750.11751.7.camel@PC856-DDUVAL.oerlikon.ca>
+Mime-Version: 1.0
+Date: 23 Feb 2004 11:29:10 -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20040223035319.45320.qmail@web15205.mail.bjs.yahoo.com> you wrote:
+Hi Sudeep,
+
+I've used a PCI card with a NEC upd720100A HC (a StarTech PCI4USBV2)
+with my walnut evb, kernel 2.4.22 and the linuxppc-2.4.22 patch.
+
+The OHCI was working fine, but installation of the EHCI (USB2.0) did
+froze the system (didn't had time to debug this problem).
+
+Do OPTi 82c861 and ALi M5273 have OHCI or UHCI for USB1.1? Maybe you
+could try the same setup.
+
+Cheers,
+
+Xavier Miville
+
+On Mon, 2004-02-23 at 11:11, v.sudeep@exgate.tek.com wrote:
+> Hi Everyone !!!
 >
-> Could any lucky ones who attended Embedded World 2004
-> exhibition make a comment on this event? Or give some
-> nice information on it?
-
-We've been there (as exhibitors) and found the exhibition very rewar-
-ding. What exactly do you want to know?
-
-
-Wolfgang Denk
-
+> I am finding it a bit difficult to overcome a problem related to the PCI
+> daughter card with USB on my 405GP IBM Walnut board. If anyone can help me,
+> I would be greatful to them.
+>
+> My problem is as follows....
+> I want to install a USB printer on my 405GP board. Unfortunately the 405GP
+> does not have a USB port. So I am trying to use a PCI daughter card with
+> USB. I tried using two different cards  - OPTi 82c861 and ALi M5273. In both
+> cases it seems to have some problems in booting up. i.e when the kernel is
+> probing the pci bus, some errors seem to happen. I snooped the kernel code
+> and identified as to when the error is being thrown out but am not sure what
+> exactly is wrong and how I can set it right.
+>
+> This error occurs in :
+> 	file 	- ./drivers/pci/setup-res.c
+> 	function - pci_assign_bus_resource
+> 	line 	- if ((res->flags ^ r->flags) & type_mask)
+> 			continue;
+>
+> This results in a kernel panic.  I am not sure of how I could go around this
+> problem. Any suggestions on how to get the USB card up will be greatly
+> appreciated.
+>
+> And thanks in advance.
+>
+>
+> Note:
+>
+> 1.	Our setup over here is as follows:
+> 		Host Machine : Intel x86 having Red Hat 9 installed
+> 		Target Board : IBM Walnut board - 405GP with PowerPC
+> processor
+> 		Cross-Compiler: MonteVista Hard Hat Linux 2.0  for the
+> ibm-walnut board
+>
+> 2. 	Also attaching a file containing all the messages that the kernel
+> pattered out.
+>
+>  <<booting-up-messages>>
+>
+> - S u d e e p    V
+> Don't change horses in mid stream.
+>
+>
+>
+>
+>  <<booting-up.messages>>
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-How many seconds are there in a year? If I tell you there are 3.155 x
-10^7, you won't even try to remember it. On the other hand, who could
-forget that, to within half a percent, pi seconds is  a  nanocentury.
-                                               -- Tom Duff, Bell Labs
+Xavier Miville
+Junior Firmware Engineer
+Engineering Department
+Oerlikon Contraves Inc.
+
+Tel: (450) 542-5683
+Fax: (450) 358-7708
+xmiville@oerlikon.ca
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
