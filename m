@@ -1,37 +1,45 @@
-Message-ID: <39819D52.DAC049B4@embeddededge.com>
-Date: Fri, 28 Jul 2000 10:48:50 -0400
-From: Dan Malek <dan@netx4.com>
+Date: Fri, 28 Jul 2000 16:51:07 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Takashi Oe <toe@unlserve.unl.edu>
+cc: Benjamin Herrenschmidt <bh40@calva.net>,
+        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
+        Linux Frame Buffer Device Development <linux-fbdev@vuser.vu.union.edu>
+Subject: Re: [ANN] IRQ Latency tool 0.1.3 release.
+In-Reply-To: <Pine.LNX.3.96LJ1.1b7.1000728050930.2549D-100000@ofey.inetnebr.com>
+Message-ID: <Pine.LNX.4.10.10007281606400.423-100000@cassiopeia.home>
 MIME-Version: 1.0
-To: daniel.marmier@lightning.ch
-CC: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Altivec on 2.4.xx?
-References: <3980DEAF.ACFB0C43@embeddededge.com> <39813520.673CF3E0@lightning.ch>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Daniel Marmier wrote:
+On Fri, 28 Jul 2000, Takashi Oe wrote:
+> On Wed, 26 Jul 2000, Geert Uytterhoeven wrote:
+> > There's indeed a global lock on the console, to prevent multiple accesses to
+> > the console at once. This solves some problems, one being that some graphics
+> > hardware crashes when both the CPU and the graphics accelerator touch the video
+> > RAM at the same time.
+>
+> Would it be difficult to make the lock per fbdev thing?  If the
+> CPU/accelerator clash is the only reason for the global lock, we can
+> certainly remove that for hardware which doesn't have that kind of
+> problem, can't we?
 
-> If my understanding of Motorola's docs is correct, the only MPC8xx
-> exception that has a valid DSISR setting is the implementation
-> specific data TLB error interrupt
+There could indeed be separate locks per fbdev. But the global console lock
+(console_lock) would still be there. It is needed because the console subsystem
+is not re-entrant (yet). Since fbdev is called from the console subsystem, it
+runs under the same lock (i.e. with interrupts disabled).
 
-This is a PowerPC architecture definition. It isn't unique to the MPC8xx,
-as I am obviously using a 7400 with Altivec here.
+Gr{oetje,eeting}s,
 
-Having the common page fault handler is a good thing, we just have
-to make sure we extract the information properly from the appropriate
-register.
+						Geert
 
-I thought there was more (than none :-) development happening with
-Altivec on PowerPC Linux.  Maybe tiny test applications will work,
-but my MPEG-2 decoder won't.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-I'm just adding one instruction to the Instruction Exception handler
-to mask the bit, so I will just check it in.
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
-
-	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
