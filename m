@@ -1,35 +1,26 @@
-Message-Id: <200006052039.WAA01344@piglet.grunz.lu>
-Date: Mon, 5 Jun 2000 22:39:52 +0200 (CEST)
+Message-Id: <200006052102.XAA01374@piglet.grunz.lu>
+Date: Mon, 5 Jun 2000 23:02:28 +0200 (CEST)
 From: Michel Lanners <mlan@cpu.lu>
 Reply-To: mlan@cpu.lu
-Subject: Re: 2940UW & 2.4.0-test-ac7 PCI probs
-To: toa@pop.agri.ch
-cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <393BCDA8.E346B65F@pop.agri.ch>
+Subject: Re: New experimental X 4.0
+To: bh40@calva.net
+cc: daenzerm@student.ethz.ch, debian-powerpc@lists.debian.org,
+        linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20000605203311.2488@192.168.1.10>
 MIME-Version: 1.0
 Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Andreas,
+On   5 Jun, this message from Benjamin Herrenschmidt echoed through cyberspace:
+(about XF4)
+> Did you use my patch or did you fix the r128 driver yourself ? Also, did
+> you already submit the patch to xfree ? (I didn't submit mine yet, I was
+> planning to do so once I've fixed the PLL/BIOS probe)
 
-On   5 Jun, this message from Andreas Tobler echoed through cyberspace:
-> I try to get the 2.4.0-test1-ac7 to boot on my 7200. It fails. I have a
-> 2940UW where all my disks are connected to. A 2.3.99p9 from linuxcare
-> boots, but the ac7 from bk fails with the following message:
->
-> Total memory = 80MB; using 512kB for hash table (at c0300000)
-> Linux version 2.4.0-test1-ac7 (root@pm7200) (gcc version 2.95.3 19991030
-> (prerelease/franzo)) #4 Mon Jun 5 17:14:33 CEST 2000
-> PCI bus 0 controlled by bandit at f2000000
-> [snip]
-> PCI: Device 00:0e.0 not available because of resource collisions
-> [snip]
-
-Get either my PCI patches or Geert's patches posted here a few hours
-ago. Then enable hotswap (still needed, right, Geert?), and the resource
-code should fix any collisions it finds.
+And how about the fbdev framebuffer memory start offset problem? Anybody
+looking at that?
 
 Michel
 
@@ -39,5 +30,6 @@ Michel Lanners                 |  " Read Philosophy.  Study Art.
 L-1710 Luxembourg              |
 email   mlan@cpu.lu            |
 http://www.cpu.lu/~mlan        |                     Learn Always. "
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
