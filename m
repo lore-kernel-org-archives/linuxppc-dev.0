@@ -1,30 +1,30 @@
-Message-ID: <91E484D18CA9D411A52100B0D03E4AA93A95DB@WINSRV1>
-From: "Frank D'Arcy" <fdarcy@pxit.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: PCI peripheral with Tundra Powerspan II - need to write driver for embedded linux side
-Date: Fri, 23 Jan 2004 10:12:54 -0000
+Message-ID: <401316E9.5080600@jonmasters.org>
+Date: Sun, 25 Jan 2004 01:07:53 +0000
+From: Jon Masters <jonathan@jonmasters.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: huailin@xtrj.org
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: FYI: Free Online Book: Inside Linux Kernel and PowerPC
+References: <20040122185859.54320.qmail@web21410.mail.yahoo.com>
+In-Reply-To: <20040122185859.54320.qmail@web21410.mail.yahoo.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-I've got a CompactPCI/PXI PPC card (MEN F6) running an
-application developed in embedded linux (ELinOS v2.1).
-PCI bus communication is not yet enabled.
 
-The card has a Tundra Powerspan II PCI-to-PCI bridge chip which
-I need to write a driver for to operate the card as a PCI peripheral.
+Huailin Chen wrote:
 
-Does anyone know if this code has already been written somewhere?
-Or is there any similar code that I could get ideas from?
+| The Link is: www.xtrj.org/ppc
 
-I'm an embedded linux newbie
-so any help would be greatly appreciated.
+Hi there,
 
-Thanks,
-Frank D'Arcy
+I think you and I are both looking at the same thing and have similar
+goals so I will go through what you have put up and get in touch.
+
+Cheers,
+
+Jon.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
