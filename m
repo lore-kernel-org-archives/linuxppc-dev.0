@@ -1,76 +1,66 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <20030908145948.75210.qmail@web41410.mail.yahoo.com>
-Date: Mon, 8 Sep 2003 07:59:48 -0700 (PDT)
-From: Jeff Stevens Stevens <jsteve17@yahoo.com>
-Subject: Problems with EP862 and ELDK
-To: linuxppc-embedded@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Jeff Stevens Stevens <jsteve17@yahoo.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Problems with EP862 and ELDK 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 08 Sep 2003 07:59:48 PDT."
+             <20030908145948.75210.qmail@web41410.mail.yahoo.com>
+Date: Mon, 08 Sep 2003 17:31:47 +0200
+Message-Id: <20030908153152.80FF3C59E4@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Does anyone have PPCBoot and ELDK up an running on an
-EP862 board?
+In message <20030908145948.75210.qmail@web41410.mail.yahoo.com> you wrote:
+>
+> Does anyone have PPCBoot and ELDK up an running on an
+> EP862 board?
+>
+> I have PPCBoot working with SDRAM and Flash, but when
 
-I have PPCBoot working with SDRAM and Flash, but when
-I compile it to read the environment variables from
-the EEPROM, it won't boot.  Does anyone have this
-working?
+Please note that PPCBoot is a dead  project.  You  are  wasting  your
+time. Please use the successor project U-Boot instead.
 
-I can however get it to boot if I compile it to get
-its environment variables from flash (it just
-complains and then loads some defaults).  However,
-when I TFTP ELDK over to the EP862 and "GO 00400000",
-it complains.
+> I compile it to read the environment variables from
+> the EEPROM, it won't boot.  Does anyone have this
+> working?
 
-Here is the screen dump:
+Works fine on many boards.
 
-U-Boot 0.4.0 (Sep  5 2003 - 11:59:56)
+> I can however get it to boot if I compile it to get
+> its environment variables from flash (it just
+> complains and then loads some defaults).  However,
+> when I TFTP ELDK over to the EP862 and "GO 00400000",
+> it complains.
 
-CPU:   XPC855xxZPnnD4 at 48 MHz: 4 kB I-Cache 4 kB
-D-Cache FEC present
-Board: SBC 855 M EP862-1.1
-I2C:   ready
-DRAM:  16 MB
-FLASH:  8 MB
-env_relocate[205] offset = 0x4fe0000
-env_relocate[223] malloced ENV at 00fb8008
-*** Warning - bad CRC, using default environment
+As it should. "go" is not the command used to  boot  a  Linux  kernel
+image.
 
-In:    serial
-Out:   serial
-Err:   serial
-Net:   FEC ETHERNET
-=> tftp 00400000 zImage.eldk
-TFTP from server 198.30.206.97; our IP address is
-198.30.206.218
-Filename 'zImage.eldk'.
-Load address: 0x400000
-Loading: #####
-done
-Bytes transferred = 25384 (6328 hex)
-=> go 400000
-## Starting application at 0x00400000 ...
-loaded at:     00400000 0040C57C
-board data at: 004001B8 004001D4
-relocated to:  00200100 0020011C
-zimage at:     00407000 004974CB
-avail ram:     00498000 01000000
+> What is the proper way to create the zImage for
+> PPCBoot (U-Boot)?
 
-Linux/PPC load:
-Uncompressing Linux...bad gzipped data
-exit
+It's a two-step procedure.
+
+The first step is reading the documentation,  i.  e.  especially  the
+README and then the DULG - see
+http://www.denx.de/twiki/bin/view/DULG/Manual
+
+The second step is using "make uImage" in you kernel tree  (or  "make
+pImage" if the new alias is still not there).
 
 
-What is the proper way to create the zImage for
-PPCBoot (U-Boot)?
+Finally, please note that this is off topic here.  Please  send  such
+requests to the u-boot-users mailing list instead.
 
+Best regards,
 
-Thanks in advance,
- Jeff Stevens
- Software Engineer
- Systran Corporation
+Wolfgang Denk
 
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+I am a computer. I am dumber than any human and smarter than any  ad-
+ministrator.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
