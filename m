@@ -1,32 +1,42 @@
-Date: Fri, 7 Jul 2000 07:43:23 -0700 (PDT)
-From: Ani Joshi <ajoshi@shell.unixbox.com>
-To: Henning Loeser <Henning.Loeser@Physik.Uni-Marburg.DE>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re:3dfx Voodoo3/Banshee accelerated driver
-In-Reply-To: <Pine.OSF.4.02.10007071009340.1770-100000@ax1305.physik.uni-marburg.de>
-Message-ID: <Pine.LNX.4.10.10007070742300.18547-100000@shell.unixbox.com>
+Message-ID: <3965F335.42ABEEFD@erols.com>
+Date: Fri, 07 Jul 2000 11:11:49 -0400
+From: Nelson Abramson <pogtal@erols.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Iain Sandoe <iain@sandoe.co.uk>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.2.17pre10-ben1 & dmasound & atfb driver
+References: <200007071603.RAA18464@hyperion.valhalla.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 7 Jul 2000, Henning Loeser wrote:
+Iain Sandoe wrote:
 
-> I gave the new 4.0.1 and your xfree86 tree a try. I included the tdfx
-> driver in the xfree86.cf file and everything compiled and installed
-> nicely. So I decided to send you a quick testreport.
-> The driver unfortunately only seems to run in 8bit color. 16bit starts but
-> the screen looks very wierd, colors all off ... 24 and 32 bit color modes
-> are reported beeing unsupported at the moment. There is also a problem
-> with scrolling in windows, no matter which I tried, netscape, a terminal,
-> lines of text get clobbed or are not displayed at all. Other that that
-> the Server is nice and pretty fast (compared to fbdev...).
+> <snip>
+> Also, someone posted some instructions on how to set up the new input layer
+> but I can't seem to find them in my linuxppc archive  - I'm assuming that
+> the new stack has been back-ported to 2.2.17pre10 which is why my adbmouse
+> doesn't...
 
-The screen artifacts bug is fixed.  Only problem remaining is 24bpp.
+I can't find the message in my archive, but here's the skinny (mainly quoted
+from BenH--I wrote it down :-) ):
+
+Delete both /dev/usbmouse and /dev/mouse (I moved them to temp_* just in
+case).
+cd /dev
+mkdir input
+mknod input/mice c 13 63
+ln -s input/mice mouse
+ln -s input/mice usbmouse
+
+and add:
+ none   /proc/bus/usb     usbdevfs    defaults 0 0
+to your /etc/fstab
 
 
-ani
+HTH
+--Nelson Abramson
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
