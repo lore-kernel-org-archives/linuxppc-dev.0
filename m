@@ -1,15 +1,43 @@
-Message-ID: <40F43AA9.6010009@loowit.net>
-Date: Tue, 13 Jul 2004 12:40:25 -0700
-From: James Perkins <james@loowit.net>
-MIME-Version: 1.0
-To: Arun Prasad Velu <arun@ossi.co.in>
+Message-ID: <762A181C0D966E459A2EB3B810142C77038614F1@nmrusdunsx12.nmrlan.net>
+From: "Wells, Charles" <Charles.Wells@nielsenmedia.com>
+To: "'James Perkins'" <james@loowit.net>,
+	Arun Prasad Velu <arun@ossi.co.in>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Cross compiling for VxWorks/PowerPC Target from a Linux/x86 Machine
-References: <NIBBKGBHPKFDFAOHCGBLAECMCAAA.arun@ossi.co.in>
-In-Reply-To: <NIBBKGBHPKFDFAOHCGBLAECMCAAA.arun@ossi.co.in>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: RE: Cross compiling for VxWorks/PowerPC Target from a Linux/x86 M
+	achine
+Date: Tue, 13 Jul 2004 16:32:18 -0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+James,
+
+> ...and Wind River will provide it free to people they've distributed
+> the binaries to...
+
+Our company is a current Wind River customer that pays WRS for customer
+support.  I put in a request for a list of which components of the Tornado
+toolset were covered by GPL/LGPL and which weren't.  No immediate response.
+After several requests, WRS responded that I would have to have "our lawyer
+call their lawyer" in order to find out which ones were GPLed.  Since my
+request was related to a background project, I let it drop.
+
+I'll be interested in hearing if Arun has any luck at all.  I'm a bit
+cynical.
+
+Charlie
+
+-----Original Message-----
+From: James Perkins [mailto:james@loowit.net]
+Sent: Tuesday, July 13, 2004 3:40 PM
+To: Arun Prasad Velu
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Cross compiling for VxWorks/PowerPC Target from a Linux/x86
+Machine
+
 
 
 Arun Prasad Velu wrote:
@@ -58,6 +86,8 @@ James Perkins         james@loowit.net         http://loowit.net/~james
     I have no fear of death.... It's how you live that really counts.
 		    -- Katharine Hepburn, 1907-2003
 
+
+** This list is shutting down 7/24/2004.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
 ** This list is shutting down 7/24/2004.
