@@ -1,25 +1,23 @@
-Date: Mon, 29 Jan 2001 15:27:50 +0000
-Subject: Re: powerbook doubles as a frying pan
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: brad@turbolinux.com, linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
-Message-Id: <20010129152739.6BC022EFB4@apollo.valhalla.net>
+Message-Id: <200101291530.f0TFUv913977@ginger.cmf.nrl.navy.mil>
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, brad@turbolinux.com,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: powerbook doubles as a frying pan 
+In-reply-to: Your message of "Mon, 29 Jan 2001 16:15:51 +0100."
+             <Pine.LNX.4.30.0101291602350.2636-100000@opal.biophys.uni-duesseldorf.de>
+Date: Mon, 29 Jan 2001 10:30:58 -0500
+From: Chas Williams <chas@cmf.nrl.navy.mil>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> probes on a PB motherboard and really measured the operating temperature?
-> What would the best 'hot spots' be for such an experiment?
+In message <Pine.LNX.4.30.0101291602350.2636-100000@opal.biophys.uni-duesseldor
+f.de>,Michael Schmitz writes:
+>What would the best 'hot spots' be for such an experiment?
 
-from the work I did in my last company - it is usually the bridge chips that
-are the hottest and therefore the weakest link.
-
-I guess that Brad's experience could be bad luck (component do sometimes
-fail randomly after all).
-
-Iain.
+since heat is a result of power consumed by the device, i would guess that
+devices that consume the most power would be the hottest.  the cpu is
+one of those.  the other would be the disk drive.  and indeed my powerbook
+gets fairly hot around the disk drive area.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
