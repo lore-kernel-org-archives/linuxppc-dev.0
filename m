@@ -1,32 +1,21 @@
-Return-Path: <markc@mail.com>
-Received: from relay04.roc.ny.frontiernet.net (relay04.roc.ny.frontiernet.net
-	[66.133.131.37]) by ozlabs.org (Postfix) with ESMTP id 45B1B67A30
+Return-Path: <lagrange@fr.oleane.com>
+Received: from smtp12.clb.oleane.net (smtp12.clb.oleane.net [213.56.31.47])
+	by ozlabs.org (Postfix) with ESMTP id 0DEBA67A30
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  3 Feb 2005 00:11:30 +1100 (EST)
-Received: from filter02.roc.ny.frontiernet.net
-	(filter02.roc.ny.frontiernet.net [66.133.131.177])
-	by relay04.roc.ny.frontiernet.net (Postfix) with ESMTP id D213910685
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  2 Feb 2005 13:11:25 +0000 (UTC)
-Received: from relay04.roc.ny.frontiernet.net ([66.133.131.37])
-	by filter02.roc.ny.frontiernet.net (filter02.roc.ny.frontiernet.net
-	[66.133.131.177]) (amavisd-new, port 10024)
-	with LMTP id 16961-60-97 for <linuxppc-embedded@ozlabs.org>;
-	Wed, 2 Feb 2005 13:11:25 +0000 (UTC)
-Received: from chuck2 (70-97-124-104.br1.rmn.wv.frontiernet.net
-	[70.97.124.104])
-	by relay04.roc.ny.frontiernet.net (Postfix) with ESMTP id 8FA8F1066E
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  2 Feb 2005 13:11:22 +0000 (UTC)
-Message-ID: <002b01c50929$3bd6f720$0301a8c0@chuck2>
-From: "Mark Chambers" <markc@mail.com>
-To: <linuxppc-embedded@ozlabs.org>
-References: <DE2CC66C40EAB74EA6D66AC71BF98E1E03055B60@TQ-MAILSRV-1>
-Date: Wed, 2 Feb 2005 08:15:11 -0500
+	Thu,  3 Feb 2005 05:36:13 +1100 (EST)
+Received: from GEG2400 ([62.160.30.216]) (authenticated)
+	by smtp12.clb.oleane.net with ESMTP id j12Ia6B1015187
+	for <linuxppc-embedded@ozlabs.org>; Wed, 2 Feb 2005 19:36:10 +0100
+From: "Laurent Lagrange" <lagrange@fr.oleane.com>
+To: "'Laurent Lagrange'" <lagrange@fr.oleane.com>
+Date: Wed, 2 Feb 2005 19:40:15 +0100
+Message-ID: <000001c50956$a3f72e10$5201a8c0@GEG2400>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: Re: The RS485 driver problem...
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0001_01C5095F.05BB9610"
+In-Reply-To: 
+Cc: linuxppc-embedded@ozlabs.org
+Subject: MPC8560 TCP/IP Offloading (SDP)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -37,25 +26,69 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
 
-linuxppc-embedded-bounces@ozlabs.org wrote on :
-> If you want to connect a RS485 transceiver to a normal UART, you
-> always have the problem of dealing with enabling/disabling
-> transmitter and recveiver. I have seen hardware that misuses RS-232
-> hardware handshaking lines (RTS/CTS) for this purpose. What I have
-> not been able to find is a linux driver or software solution to this
-> problem. 
-> 
-> Has anybody used the CPM uarts (or even a standard 16C550 uart) for
-> this purpose? How?
+------=_NextPart_000_0001_01C5095F.05BB9610
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 
-I took a look at some old non-linux code for the MPC860, and it appears
-that the RTSM bit in GSMR_H provides switched-RTS in UART mode.
-It will negate RTS after the last character in a BD.  (SCCs only, not SMC)
+Hi,
 
-Another trick you can use, depending on your hardware config, is to loop
-your transmit data back to receive.  When you receive the last character
-you sent you know it's safe to turn off RTS, and since you're getting an
-interrupt it's deterministic.
+I work on a custom MPC8560 board with Linux 2.4.25.
+I plan to use it as a TCP/IP Offloading Engine (TOE).
+Does anybody know where I can get Socket Direct Protocol (SDP) 
+source code for Linux ?
 
-Mark Chambers
+There are tons of documentation on implementation of the SDP and 
+user APIs but no direction where and how to download the SDP package.
+
+Thanks
+Laurent
+
+------=_NextPart_000_0001_01C5095F.05BB9610
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+<TITLE></TITLE>
+
+<META content=3D"MSHTML 6.00.2800.1226" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><FONT size=3D2><FONT face=3DArial>Hi,<BR><BR><SPAN =
+class=3D625021618-02022005>I=20
+work on a custom MPC8560 board with&nbsp;Linux=20
+2.4.25.</SPAN></FONT></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D625021618-02022005>I plan =
+to use it as=20
+a TCP/IP Offloading Engine (TOE).</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial><FONT size=3D2>Does anybody know where I can get =
+<FONT=20
+style=3D"BACKGROUND-COLOR: #ffbfbf">Socket</FONT> <FONT=20
+style=3D"BACKGROUND-COLOR: #b8e6ff">Direct</FONT> <FONT=20
+style=3D"BACKGROUND-COLOR: #ffbde9">Protocol</FONT> (SDP) <BR>source =
+code for=20
+<FONT style=3D"BACKGROUND-COLOR: #ffffb0">Linux<SPAN =
+class=3D625021618-02022005>=20
+</SPAN></FONT>?</FONT></FONT></DIV>
+<DIV><FONT face=3DArial><FONT size=3D2></FONT></FONT>&nbsp;</DIV>
+<DIV><FONT><FONT face=3DArial><FONT size=3D2>There are tons of<SPAN=20
+class=3D625021618-02022005> </SPAN>documentation on implementation of =
+the SDP and=20
+</FONT></FONT></FONT></DIV>
+<DIV><FONT><FONT><FONT face=3DArial><FONT size=3D2>user APIs but no =
+direction<SPAN=20
+class=3D625021618-02022005> </SPAN>where and how to <FONT=20
+style=3D"BACKGROUND-COLOR: #b7ffe8">download</FONT> the SDP=20
+package.<BR><BR>Thanks</FONT></FONT></FONT></FONT></DIV>
+<DIV><FONT><FONT><FONT><SPAN class=3D625021618-02022005></SPAN><FONT =
+face=3DArial=20
+size=3D2>L<SPAN=20
+class=3D625021618-02022005>aurent</SPAN><BR></FONT></DIV></FONT></FONT></=
+FONT></BODY></HTML>
+
+------=_NextPart_000_0001_01C5095F.05BB9610--
