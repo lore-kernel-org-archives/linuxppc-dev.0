@@ -1,24 +1,22 @@
-To: linuxppc-dev@lists.linuxppc.org
-Subject: MPC405 - supported?
-From: davidw@linuxcare.com (David N. Welton)
-Date: 26 Sep 2000 15:34:01 +0200
-In-Reply-To: Dan Bethe's message of "Tue, 8 Feb 2000 17:44:10 -0800 (PST)"
-Message-ID: <87aecvmg52.fsf@eugene.prosa.it>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <200009261433.KAA22222@mal-ach.watson.ibm.com>
+To: davidw@linuxcare.com (David N. Welton)
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: MPC405 - supported? 
+In-Reply-To: Message from davidw@linuxcare.com (David N. Welton)
+   of "26 Sep 2000 15:34:01 +0200." <87aecvmg52.fsf@eugene.prosa.it>
+Date: Tue, 26 Sep 2000 10:33:08 -0400
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I've been having a look at the mailing lists, searching sites for
-information and so on, but I haven't been able to find anything that
-indicates one way or another whether it is or not, and how well.
+	Are you referring to the IBM PowerPC 405 embedded processor?  IBM
+part numbers are PPC405 (not Motorola MPC505).  I am pretty sure that the
+4xx numbers are IBM parts.
 
-Thankyou,
---
-David N. Welton, Responsabile Progetti Open Source, Linuxcare Italia spa
-tel +39.049.8043411 fax +39.049.8043412 cel +39.348.2879508
-davidw@linuxcare.com, http://www.linuxcare.com/
-Linuxcare. Support for the revolution.
+	I have seen patches from MontaVista for 405 support in the
+toolchain, so they may be working with PPC405 chips.
+
+David
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
