@@ -1,37 +1,73 @@
-Message-ID: <3F5C15E8.70802@kegel.com>
-Date: Sun, 07 Sep 2003 22:38:48 -0700
-From: Dan Kegel <dank@kegel.com>
+Message-ID: <791B3205DB661A42B4BFE5464A7D1D02010E4659@chzugexch01.abatos.com>
+From: Graf Alex <alex.graf@siemens.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: AW: isp1161 usb driver for mpc 8xx
+Date: Mon, 8 Sep 2003 09:45:40 +0200 
 MIME-Version: 1.0
-To: ??? <ksshin@essetel.com>
-Cc: "Mark A. Greer" <mgreer@mvista.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: interrupt handling in 7410+64260
-References: <Pine.LNX.4.21.0308262014240.17370-100000@stimpy.bivio.net> <007301c36c53$079163c0$960aa8c0@ksshin> <3F4CE88B.2050307@mvista.com> <003301c375c4$866c2520$960aa8c0@ksshin>
-In-Reply-To: <003301c375c4$866c2520$960aa8c0@ksshin>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-??? wrote:
-> according to your message, I try to find example source in
-> my linux kernel(my Linux kernel is 2.4.18 from montavista)
-> but I cannot find sources like cpci690.c, hxeb100.c and ev64260.c
+Hi Chris
 
-Search http://marc.theaimsgroup.com/?l=linux-ppc for cpci690.c
-You'll find a patch that refers to the arch/ppc/platforms/cpci690.c
-in the linuxppc_2_4_devel tree.  This tree can be found at
-http://www.penguinppc.org/dev/kernel.shtml
+Wolfgang Denk is developing a driver for the isp 1362 for Siemens. I suggest
+you, to use this one! It's the next generation of 1161. USB 2.0, OTG, ...
+In the newest kernel (linux-2.4_devel) a beta version is allready in.
 
-Maybe those files are in other trees, but hey, at least you know
-where one example of them is now.
-- Dan
+Cheers
 
+Alex
+
+
+-----Ursprüngliche Nachricht-----
+Von: Chris Simmonds [mailto:chris@2net.co.uk]
+Gesendet: Freitag, 5. September 2003 21:47
+An: linuxppc-embedded@lists.linuxppc.org
+Betreff: isp1161 usb driver for mpc 8xx
+
+
+
+Hi,
+
+Has anyone got a driver for the Philips isp 1161 usb hcd chip. There is
+an x86 version by Roman Weissgaerber from a couple of years ago and I
+have seen references to a port to 8xx. Ring a bell?
+
+Best regards,
+Chris.
 
 --
-Dan Kegel
-http://www.kegel.com
-http://counter.li.org/cgi-bin/runscript/display-person.cgi?user=78045
+Chris Simmonds                        2net Limited
+chris@2net.co.uk                      http://www.2net.co.uk/
+Tel:   +44 (0)1962 869003             Fax:   +44 (0)870 056 7556
+"If it's not connected, it's not effective"(tm)
+
+
+
+-----Ursprüngliche Nachricht-----
+Von: Chris Simmonds [mailto:chris@2net.co.uk]
+Gesendet: Freitag, 5. September 2003 21:47
+An: linuxppc-embedded@lists.linuxppc.org
+Betreff: isp1161 usb driver for mpc 8xx
+
+
+
+Hi,
+
+Has anyone got a driver for the Philips isp 1161 usb hcd chip. There is
+an x86 version by Roman Weissgaerber from a couple of years ago and I
+have seen references to a port to 8xx. Ring a bell?
+
+Best regards,
+Chris.
+
+--
+Chris Simmonds                        2net Limited
+chris@2net.co.uk                      http://www.2net.co.uk/
+Tel:   +44 (0)1962 869003             Fax:   +44 (0)870 056 7556
+"If it's not connected, it's not effective"(tm)
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
