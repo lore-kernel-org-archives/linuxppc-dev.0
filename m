@@ -1,40 +1,57 @@
-Message-ID: <392D92D5.43881EFD@embeddededge.com>
-Date: Thu, 25 May 2000 16:53:41 -0400
-From: Dan Malek <dan@netx4.com>
+Subject: Re: IDMA: Setting Up Parameter RAM.
+To: richard.hendricks@motorola.com (Richard Hendricks)
+Date: Fri, 26 May 2000 09:20:56 +1000 (EST)
+Cc: linuxppc-embedded@lists.linuxppc.org (Linux PPC Mailing List)
+In-Reply-To: <392D47A4.DEFFD152@motorola.com> from "Richard Hendricks" at May 25, 2000 10:32:52 AM
 MIME-Version: 1.0
-To: Richard Hendricks <richard.hendricks@motorola.com>
-CC: linuxppc-embedded post <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: MPC850 and USB
-References: <D53137D1F3DDD211A3750800060DA31302B2CCCD@viee122a.erd.siemens.at> <392D6561.1B8E04BC@embeddededge.com> <392D8E10.BE49DB66@motorola.com>
 Content-Type: text/plain; charset=us-ascii
+Message-Id: <20000525232056.7BFDC3C971@elph.research.canon.com.au>
+From: gjohnson@research.canon.com.au (Greg Johnson)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Richard Hendricks wrote:
+I have read the MPC860 Users manual section on IDMA, as well as many
+other sections. I do indeed call INIT_IDMA after setting things up.
+I have even tried calling it several times.
 
-> If not...Then I blame the web gremlins, it should have been there a
-> few weeks back.  (#include <long story about Motorola changing its
-> web>)
+The strange thing is that after a power-on, no matter how many times
+I reload the driver and attempt the proceedure, it does not work.
+I write to the IDMA parameter RAM and read back to check it and it
+looks fine. Upon starting IDMA by asserting DMA Enable, the CPM attempts
+to do the IDMA but IDSR asserts OB (out of buffer descriptors). The buffers
+have been allocated and set up, I am sure of this.
 
-Better dig out the story book :-).  I find the Motorola web site (and
-may other vendors) very hard to navigate when trying to find these things.
+It is as though the values I am writing into the parameter RAM are
+no taking effect, even though I call IDMA_INIT after writing them.
+And the bizzar part is that they seem to take affect after a reset,
+as though the reset causes them to be written into the CPM??? Like
+I said, bizzar.
 
-> Yet again, I don't speak for the MPC850 team.  But I *do* speak
-> for the MPC823 team (being all of it anyways).  The patch is out
-> there.
+Greg.
 
-Try again.  I couldn't find it with a 'search' either.  At least the
-Netcomm site has a high level engineering support page and you can
-find things from there :-).  My bookmark to that has lasted years now.
+Quoth Richard Hendricks:
+>
+>
+> Have you tried looking at the IDMA section in the MPC823 User's Manual?
+> An electronic copy of that portion is at
+>
+> http://www.mot.com/SPS/ADC/pps/download/823/823RM/16-cpm2.pdf
+>
+> Also, you could try the IDMA demo under Engineer's Toolbox at
+> http://www.mot.com/mpc823
+>
+> It sounds to me like you're not executing the INIT_IDMA command after
+> setting up.
 
-The patch we received was from MSIL a long time ago for early testing,
-and although several people have tried, I don't know anyone that ever
-found it on a Motorola server.  If you are sure it is there and we
-can get it, we will test it to make sure it works and include it in the
-Linux kernel.
-
-
-	-- Dan
+--
++------------------------------------------------------+
+| Do you want to know more? www.geocities.com/worfsom/ |
+|              ..ooOO Greg Johnson OOoo..              |
+| HW/SW Engineer        gjohnson@research.canon.com.au |
+| Canon Information Systems Research Australia (CISRA) |
+| 1 Thomas Holt Dr., North Ryde, NSW, 2113,  Australia |
+|      "I FLEXed my BISON and it went YACC!" - me.     |
++------------------------------------------------------+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
