@@ -1,12 +1,25 @@
-Message-ID: <40755890.5030102@com2gether.net>
-Date: Thu, 08 Apr 2004 15:50:08 +0200
-From: sutra <pierre.sutra@com2gether.net>
+Message-ID: <D73A25AA6E54D511AD74009027B1110F5BB16C@ORION>
+From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+To: "'sutra'" <pierre.sutra@com2gether.net>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: RE: SPI bus on MPC8xx
+Date: Thu, 8 Apr 2004 10:44:08 -0400 
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: SPI bus on MPC8xx
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
+
+
+You could assign a known virtual address to the physical address you want to
+view.  You can then dump that virtual address to see the physical contents.
+
+-----Original Message-----
+From: sutra [mailto:pierre.sutra@com2gether.net]
+Sent: Thursday, April 08, 2004 9:50 AM
+To: linuxppc-dev@lists.linuxppc.org
+Subject: SPI bus on MPC8xx
+
 
 
 Hello,
