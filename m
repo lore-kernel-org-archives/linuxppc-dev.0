@@ -1,65 +1,83 @@
-Date: Sat, 31 Mar 2001 15:16:06 -0500 (EST)
-From: Bill Fink <billfink@capu.net>
-To: Henry Worth <haworth@ncal.verio.com>
-Cc: linuxppc-dev@lists.linuxppc.org, billfink@capu.net
-Subject: Re: xine, ppc and illegal instructions 
-In-Reply-To: <3AC418FD.2FA4AE67@ncal.verio.com>
-Message-ID: <Pine.LNX.4.21.0103311202470.25703-100000@gwiz.nasa.atd.net>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: nunninger@web.de
+To: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Date: Thu, 1 Mar 2001 16:15:47 +0100
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Sender: owner-linuxppc-dev@lists.linuxppc.org
-List-Id: <linuxppc-dev@lists.linuxppc.org>
+Content-type: text/plain; charset=US-ASCII
+Subject: Switching on virtual adresses -> TLB miss -> break
+Reply-To: nunninger@web.de
+Message-ID: <3A9E75B3.23216.ABFCB3D@localhost>
+Sender: owner-linuxppc-embedded@lists.linuxppc.org
+List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> On Thu, 29 Mar 2001, Henry Worth wrote:
->
-> Bill Fink wrote:
-> >
-> >A theory why xine 0.4.01 would work on Henry's system but not on mine
-> >was that Henry was running with a newer glibc (2.2.something).  I was
->
-> Actually, I'm at 2.1.3 and 2.95.3 compiler, but the common
-> denominator for those failing seems to be Debian distributions,
-> whereas I'm LPPC Q4.
+Hello out there,
 
-OK, maybe it's the compiler.  I'm running YDL 1.2.1 with:
+I got a problem running linux on a custom MPC860 board for which
+I hope somebody knows a solution. I'm using linux 2.2.14 from
+Montavista.
 
-gwiz% rpm -q -a | egrep 'gcc|glibc'
-gcc-2.95.2-1i
-gcc-c++-2.95.2-1i
-gcc-objc-2.95.2-1i
-gcc-g77-2.95.2-1i
-glibc-2.1.3-15f
-glibc-devel-2.1.3-15f
+My code arrives at the point in /kernel/head.S where virtual address
+translation is switched on.
 
-You're running gcc-2.95.3 while I'm running gcc-2.95.2-1i.
+turn_on_mmu:
+mfmsr	r0
+ori		r1,	r0,	MSR_DR|MSR_IR
+mtspr	SRR1, 	r1
+lis		r0,	start_here@h
+ori		r0,	r0,	start_here@l
+mtspr	SRR0,	r0
+SYNC
+rfi
 
-Well so much for that theory.  I just upgraded to gcc-2.95.3-2n from
-LPPC 2000 Q4 and it didn't help.
-
-How about shared libraries?  Here's the list of packages from my
-system that provide shared libraries for xine (from ldd):
-
-	glibc-2.1.3-15f
-	XFree86-libs-4.0.2-2a
-	imlib-1.9.8-1
-	libjpeg-devel-6b-10
-	libtiff-devel-3.5.4-5
-	libungif-4.1.0-3
-	libpng-devel-1.0.5-3
-	zlib-1.1.3-6
-	esound-0.2.20-0
-	audiofile-0.1.9-3
-
-Henry, could you please let me know what versions of the above you
-are running on your system so I can compare?
-
-I have a suspicion it might be an X problem although I can't say why
-I feel that way.  I'm running using Xv on an ATY Rage128.
-
-						-Thanks
-
-						-Bill
+start_here:
+lis		r2,	init_task_union@h
+ori		r2,	r2,	init_task_union@l
+...
 
 
-** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
+Direktly after the rfi instruction the code jumps into the
+"DataStoreTLBMiss"-exception at position 0x1200. There it stops
+at line 0x1214. Just to be sure the exception is not called from
+some other place I placed a breakpoint direktly after rfi on the first
+instruction of start_here. This breakpoint is never hit. The code
+which is used in that exception for 8xx looks like this:
+
+mtspr	M_TW, r20		/* save a couple of working registers */
+mfcr	r20
+stw		r20, 	0(r0)
+stw		r21,	4(r0)
+mfspr	r20,	M_TWB	/* Get level 1 tabel entry address */
+lwz		r21,	0(r20)		/* Get the level 1 entry */	!!!!!!!!!!
+rlwinm.	r20,	r21,	0,	0,	19	/* Extract page descriptor page
+address */
+beq		2f				/* If zero, don't try to find a pte */
+
+I marked the line where the execution stops like this !!!!!!!!!!
+
+So I got two questions:
+First why does the code arrives here after all? T
+Second how can I get it to continue?
+
+I'm not sure if this is related to the above problem:
+Some time ago I found that right at the begin of /kernel/head.S
+there are two instructions which do not behave as I expect them to
+do. This is in the code that initializes the TLBs. The instructions
+are both:
+	mtspr MD_TWC, 	r8
+in both TLB initializations. When I check the value of MD_TWC it
+did not change as I would expect it to do. However there is no sign
+of an error. This seems strange to me. As it is related to the TLBs
+might this cause the failure described above? If so what might be
+the reason that these two instructions do not work?
+
+I found this using the debugger of VisionClick. By now I switched to
+BDM4GDB. However with GDB I can not verify wheter these
+instruction work or not as I don't get propper symbol information in
+the assembler files. However no matter which debugger I'm using
+the code stops in the exception described above.
+
+Many thanks for any comment
+	Stefan
+
+** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
