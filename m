@@ -1,34 +1,33 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Geert Uytterhoeven <geert@linux-m68k.org>,
-        linuxppc-dev
- <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: CONFIG_PPC != Mac
-Date: Wed, 2 Aug 2000 23:15:35 +0200
-Message-Id: <20000802211535.26758@mailhost.mipsys.com>
-In-Reply-To: <Pine.LNX.4.10.10008021351010.427-100000@cassiopeia.home>
-References: <Pine.LNX.4.10.10008021351010.427-100000@cassiopeia.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-Id: <200008022120.WAA28589@hyperion.valhalla.net>
+Date: Wed, 02 Aug 2000 22:16:25 +0100
+Subject: rtc 2.4.0 ksyms again...
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->BTW, ADB code should be in driverd/adb/, cfr. all other bus types. It
->should be
->protected using CONFIG_ADB, which should be configurable depending on
->either of
->CONFIG_MAC, CONFIG_PMAC, CONFIG_CHRP or CONFIG_NEXT in
->arch/{m68k,ppc}/config.in. That way you can leave out ADB support if you
-don't
->need it (e.g. for server PowerMac boxes, and for CHRP boxes that use the PS/2
->port only).
+Hi,
 
-I don't think there's real need anymore for an adb directory. The only
-file in it would be adb.c. The mouse and kbd drivers are moving to input,
-the controller drivers (Cuda,PMU) do not only ADB but all sort of other
-machine admin tasks (like power control, I2C, ...) and so are needed even
-whithout ADB support as part of "PowerMac" support. Cuda can be shared
-with m68k, maybe PMU too, so drivers/macintosh is not a so bad place for it.
+ could someone (who can) put this into the bk-tree so that the paranoid
+amongst us can build rtc.o as a module...
 
+--- bk-devel/arch/ppc/kernel/ppc_ksyms.c Sun Jul 16 08:00:19 2000
++++ linux-2.4.0-t5-wrk/arch/ppc/kernel/ppc_ksyms.c Wed Aug  2 22:33:16 2000
+@@ -254,7 +254,7 @@
+ EXPORT_SYMBOL(pmac_xpram_read);
+ EXPORT_SYMBOL(pmac_xpram_write);
+ #endif /* CONFIG_NVRAM */
+-#ifdef CONFIG_PPC_RTC
++#ifdef CONFIG_PPC_RTC_MODULE
+ EXPORT_SYMBOL(mktime);
+ EXPORT_SYMBOL(to_tm);
+ #endif
+
+
+thanks,
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
