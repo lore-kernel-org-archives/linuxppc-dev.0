@@ -1,93 +1,97 @@
-Date: Wed, 2 Jun 1999 10:47:18 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: MESH problems in 2.2.x
-Message-ID: <Pine.LNX.4.10.9906021030230.17255-100000@mercator.cs.kuleuven.ac.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <199906021206.OAA14059@denx.muc.de>
+To: linuxppc-dev@lists.linuxppc.org
+From: Wolfgang Denk <wd@denx.muc.de>
+Subject: MPC8xx: wrong zimage_start
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+Date: Wed, 02 Jun 1999 14:06:05 +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-	Hi,
+Hi,
 
-During boot up I now see the message:
+I think I need some help... I'm trying to port Linux to a  "non-stan-
+dard"   MPC860  board.  Obviously,  it  does  not  provide  the  same
+environment as the EPPC-Bug on the MBX860 boards.
 
-    scsi1: device driver called scsi_done() for a syncronous reset
+I'm running  into  problems  when  it  comes  to  decompressiong  and
+starting  the  kernel;  here is what I see on the console (I've added
+some debugging code):
 
-during SCSI probe, followed by nothing (Caps Lock still toggles the LED, so the
-machine is alive).
+    decompress_kernel: load_addr 00010000 num_words 0003F510 cksum 96CF6339 &residual 01FFFDD8 
+    loaded at:     00010000 0010D440
+    relocated to:  00100000 001FD440
+    board data at: 01FFFDD8 01FFFE00
+    relocated to:  00000100 00000128
+    zimage at:     00017000 0006B2F3
+    avail ram:     001FD440 00600000
 
-scsi0 is sym53c875, scsi1 is mesh. Kernel is either 2.2.4 or 2.2.7.
+    Linux/PPC load: console=tty0 console=ttyS0,115200n8
 
+    gunzip: dst 0 dstlen 0x400000 zimage_start 00017000 zimage_size 000542F3 
 
-What happens to my box: I had following devices on my SCSI chains:
+    Uncompressing Linux... bad gzipped data
+     00017000 : 3D29C000    A3E90000    7C0006AC    48000010 
+     00017010 : A0093C82    541F043E    7C0006AC    3D20C000 
+     00017020 : A0093CAC    5400043E    7C0006AC    2C800000 
+     00017030 : 4186001C    31202010    5529043E    3D29C000 
+     00017040 : B1690000    7C0006AC    4800000C    B1693C90 
+     00017050 : 7C0006AC    3D20C000    A0093CAC    5400043E 
+     00017060 : 7C0006AC    2C800000    4186001C    31202020 
+     00017070 : 5529043E    3D29C000    B3E90000    7C0006AC 
+     00017080 : 4800000C    B3E93CA0    7C0006AC    3D20C000 
+     00017090 : A0093CAC    5400043E    7C0006AC    2C800000 
+     000170A0 : 41860020    31202004    5529043E    3D29C000 
+     000170B0 : 38000010    98090000    7C0006AC    48000010 
+     000170C0 : 38000010    98093C84    7C0006AC    3D20C000 
+     000170D0 : A0093CAC    5400043E    7C0006AC    2C800000 
+     000170E0 : 41860020    31202005    5529043E    3D29C000 
+     000170F0 : 38000010    98090000    7C0006AC    48000010 
+    Searching [0x4000 - 0x1000000]...  
+    at 004E7C00 : 1F8B0808  DC0D5337  0203766D  6C696E75 
+    ......looks good...done.
 
-  - scsi0 (sym53c875) wide chain:
-      o id 0: QUANTUM VIKING II 4.5WLS (FAST-20 WIDE)
-  - scsi0 (sym53c875) narrow chain:
-      o id 3: PLEXTOR CD-ROM PX-12TS (FAST-10)
-      o id 4: HP HP35480A (FAST-5)
-      o id 5: QUANTUM FIREBALL_TM3200S (FAST-20)
+I'm booting from flash memory; zImage is at 40700000, so I start with
+a `go 40710000'; I have 32 MB RAM and created a faked "bd_info"
+struct at the end of RAM. Everything seems to be fine, but the
+compressed image is not where it is expected to be: objdump says
 
-  - scsi1 (mesh) narrow chain:
-      o id 0: CONNER CP3040A-40mb-3.5
+    -> objdump -h zvmlinux
 
-This worked fine with all kernels I tested (up to 2.2.7, 2.2.8 and beyond don't
-boot on CHRP LongTrail, which is was investigating when the disaster mentioned
-below happens). I used the Conner to boot from using Open Firmware (no OF
-driver for the sym53c875).
+    zvmlinux:     file format elf32-powerpc
 
-Then the Conner died :-( To be able to boot (I can no longer boot from floppy
-due to media errors, aarghl...), I moved the narrow chain from the sym875 to
-the mesh, and I was able to boot an old kernel (2.1.130):
+    Sections:
+    Idx Name          Size      VMA       LMA       File off  Algn
+      0 .text         00004fa0  00100000  00100000  00010000  2**2
+		      CONTENTS, ALLOC, LOAD, READONLY, CODE
+      1 .rodata       00000618  00104fa0  00104fa0  00014fa0  2**2
+		      CONTENTS, ALLOC, LOAD, READONLY, DATA
+      2 .data         00000314  00106000  00106000  00016000  2**2
+		      CONTENTS, ALLOC, LOAD, DATA
+      3 .bss          0000bbbc  00107000  00107000  00017000  2**2
+		      ALLOC
+      4 image         0005421a  00000000  00000000  00017000  2**0
+		      CONTENTS, READONLY
 
-  - scsi0 (sym53c875) wide chain:
-      o id 0: QUANTUM VIKING II 4.5WLS (FAST-20 WIDE)
+so the value of 00017000 for zimage_start looks good. I've added some
+code to search for the real position in memory, and found it  to  sit
+at 004E7C00 instead.
 
-  - scsi1 (mesh) narrow chain:
-      o id 3: PLEXTOR CD-ROM PX-12TS (FAST-10)
-      o id 4: HP HP35480A (FAST-5)
-      o id 5: QUANTUM FIREBALL_TM3200S (FAST-20 capable running at FAST-10)
+Hmmm... I guess that EPPC-Bug might be doing some magic things to the
+ELF file which I am still missing.
 
-The weird thing is that 2.2.x kernels no longer boot. They hang during SCSI
-probe with the message mentioned above. Then I moved most narrow devices to the
-sym875 again (mesh sometimes looses arbitration when having multiple devices),
-so I have my boot disk only at the mesh chain:
+Can anybody see what I'm doing wrong, or at least give me a few hints
+where to look?
 
-  - scsi0 (sym53c875) wide chain:
-      o id 0: QUANTUM VIKING II 4.5WLS (FAST-20 WIDE)
-  - scsi0 (sym53c875) narrow chain:
-      o id 3: PLEXTOR CD-ROM PX-12TS (FAST-10)
-      o id 4: HP HP35480A (FAST-5)
+Thanks in advance,
 
-  - scsi1 (mesh) narrow chain:
-      o id 5: QUANTUM FIREBALL_TM3200S (FAST-20 capable running at FAST-10)
+Wolfgang
 
-Same happens: 2.1.130 works, 2.2.4 and 2.2.7 don't.
-
-Since the message mentions `syncronous reset' and since the old Conner doesn't
-seem to do synchronous mode, this makes me think the mesh driver fails with
-synchronous devices in 2.2.x. Is this correct? Does anyone else see this
-problem?
-
-Well, now I have two problems to debug with 2.2.8 and above (or vger since a
-few months) on my CHRP LongTrail:
-
-  - it hangs after `instantiating rtas... done'
-  - MESH hangs during probe
-
-Happy hacking! ;-)
-
-Greetings,
-
-						Geert
-
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
-
+-- 
+Phone: (+49)-8142-4596-87  Fax: -88  Home: -86  Email: wd@denx.muc.de
+Any time things appear to be going better, you have overlooked  some-
+thing.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
