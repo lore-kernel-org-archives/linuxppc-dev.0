@@ -1,39 +1,35 @@
-Date: Sun, 6 Dec 1998 16:12:30 +0100 (MET)
+Date: Sun, 6 Dec 1998 16:13:38 +0100 (MET)
 From: Geert Uytterhoeven <geert@geert.cs.kuleuven.ac.be>
 Reply-To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Elgin Lee <ehl@funghi.com>
+To: Martin Costabel <costabel@wanadoo.fr>
 cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: XF68_FBDev under MkLinux? 
-In-Reply-To: <199812060154.RAA01357@porcini.funghi.com>
-Message-ID: <Pine.LNX.4.02.9812061549170.323-100000@cassiopeia.home>
+Subject: Re: XF68_FBDev under MkLinux?
+In-Reply-To: <366A3198.105944B9@wanadoo.fr>
+Message-ID: <Pine.LNX.4.02.9812061549490.323-100000@cassiopeia.home>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 5 Dec 1998, Elgin Lee wrote:
-> Recent (non-official) MkLinux kernels support /dev/adbmouse (busmouse
-> emulation).  GPM works with it, so I suspect that XF68_FBdev would as
-> well.  Choice #2 does seem the least amount of work.
+On Sun, 6 Dec 1998, Martin Costabel wrote:
+> Geert Uytterhoeven wrote:
+> > Another thing is keyboard and mouse (ADB) handling. Xpmac uses the plain
+> > /dev/adb device, while XF68_FBDev takes the standard Linux keyboard input and
+> > uses the adbmouse driver. I assume keyboard won't be a problem. But the mouse
+> > requires the adbmouse driver.
+> 
+> Did you fix the problem with the non-working option (alt) keys?
+> In the XF68_FBDev of the new R5beta linuxppc, it is still there.
+> For me (PM6400, standard Apple keyboard and 1-button mouse), XF68_FBDev
+> is pretty much useless. 
 
-Nice.
+What about the XF68_FBDev from XFree86 3.3.3?
 
-> One question--would acceleration would still require framebuffer
-> devices?
+> If you need more information to get to the bottom of this problem, just
+> say what kind of tests to perform.
 
-No. Xpmac does it without frame buffer devices: it just mmap()s /dev/mem. All
-that has to be changed is the interface to the frame buffer device API: instead
-of asking the frame buffer device for address and size of frame buffer and MMIO
-region, and mmap()ing that, something else has to be done.
-
-One other thing to consider is video mode programming. XF68_FBDev uses
-modelines (except for `mode "default"'), while Xpmac can take a vmode and cmode
-argument. But I think this can be solved by putting the Modeline <->
-vmode/cmode conversion routine in XF68_FBDev (cfr. drivers/video/macmodes.c).
-
-And of course there won't be support for virtual screens, as the vmode/cmode
-API doesn't provide for this.
+Problem is that I don't know anything about ADB, nor have ADB devices :-(
 
 Greetings,
 
