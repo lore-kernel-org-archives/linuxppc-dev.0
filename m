@@ -1,39 +1,32 @@
-Date: Thu, 2 Nov 2000 23:56:06 +0100
-From: Olaf Hering <olh@suse.de>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Lombard Sleep Crash (Was: 2.2.18pre17 again)
-Message-ID: <20001102235606.B30436@suse.de>
-Reply-To: linuxppc-dev@lists.linuxppc.org
-References: <14839.53124.753011.489351@argo.linuxcare.com.au> <39F96E14.C06AB6FB@mpifr-bonn.mpg.de> <20001027163923.A13804@suse.de> <3A015F72.2576BB01@mpifr-bonn.mpg.de>
+Message-Id: <v04003a00b627c64303c3@[24.70.162.12]>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <3A015F72.2576BB01@mpifr-bonn.mpg.de>; from ad@mpifr-bonn.mpg.de on Thu, Nov 02, 2000 at 01:34:58PM +0100
+Content-Type: text/plain; charset="us-ascii"
+Date: Thu, 2 Nov 2000 20:16:20 -0600
+To: Linux/PPC Dev <linuxppc-dev@lists.linuxppc.org>
+From: Tony Mantler <nicoya@apia.dhs.org>
+Subject: Promise ATA{66,100} PCI cards work
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Nov 02, Albrecht Dreß wrote:
+Just as a note for anyone interested, with 2.2.17 + pci patches + ide
+patches, both my 9600/200mp and my friend's 7600/120 can talk to the
+Promise ATA66 and ATA100 boards.
 
-> Olaf Hering wrote:
-> > Try current linux-pmac-benh.
->
-> O.K., I rsynced linux-pmac-benh from penguinppc.org (which is version
-> 2.2.18pre17-ben1), built it, and now I get a kernel panic upon wakeup. My pmud
-> version is still 0.7.1.
->
-> I attach the kernel .config and the relevant part from /var/log/messages, and as
-> always, any help is _really_ welcome!
+Bad things happen if I try to do things like 'hdparm -Xnn /dev/hde' or 'cat
+/proc/ide/pdc202xx' but I don't tend to do that very often so it doesn't
+bother me. Everything else seems to work peachy-keen.
 
-Hmm, I can provide diffs between 2.2.18pre15-ben1 and the current tree,
-if someone needs that.
+Of course, IDE still sucks, but if you can't get enough of those cheap
+drives... ;)
 
 
-Gruss Olaf
+Cheers - Tony 'Nicoya' Mantler :)
+
 
 --
- $ man clone
+Tony "Nicoya" Mantler - Renaissance Nerd Extraordinaire - nicoya@apia.dhs.org
+Winnipeg, Manitoba, Canada           --           http://nicoya.feline.pp.se/
 
-BUGS
-       Main feature not yet implemented...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
