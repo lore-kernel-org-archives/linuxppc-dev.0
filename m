@@ -1,45 +1,58 @@
-To: linuxppc-embedded@lists.linuxppc.org
-From: =?ISO-8859-1?Q?Stefan_St=FCrke?= <sst@pandatel.com>
-Subject: Re: m8xx hang in reboot
-Date: Thu, 26 Aug 2004 08:40:57 +0200
-Message-ID: <cgk0lp$5dk$1@sea.gmane.org>
-References: <Pine.LNX.4.61.0408251615540.9890@chef.linux-wlan.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-In-Reply-To: <Pine.LNX.4.61.0408251615540.9890@chef.linux-wlan.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="Windows-1252"
+Subject: RE: Current PPC 2.4 kernel trees?
+Date: Thu, 26 Aug 2004 08:45:04 +0200
+Message-ID: <80908CC5B2C9DB47AAF8C77892FCB44315F88C@lion.vector.com.pl>
+From: "Andriy Korud" <a.korud@vector.com.pl>
+To: "Matt Porter" <mporter@kernel.crashing.org>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Mark S. Mathews wrote:
->
-> Hey Folks,
->
-> I've got an mpc850 based setup running 2.4.27 that, under certain
-> circumstances, hangs in the the m8xx_restart() function (instead of
-> rebooting) when I issue the usermode reboot cmd.
->
-> I've traced all through the path and confirmed that yes, it is hanging in
-> this function.  ;-)
+Thanks.
+Concerning PPChameleon - it's 405EP based.
+I prepared a patch against stock 2.6.7 with support for board itself, GPIO and onboard flash chips (still no support for RTC)
+Patch is available here
+http://hamlet.integra.com.ua/ppchameleon-2.6.7.patch.gz
 
-Maybe you can have a look at your boot flash when you enter the
-m8xx_restart() function. I had a similar problem and found that
-my boot flash was in read status state in that moment, so it was
-impossible to fetch the correct programm code after reset.
-
-HTH,
-Stefan
+regards,
 
 --
-PANDATEL AG
-Bayernstrasse 33
-30855 Langenhagen
-Germany
 
-Tel.: +49 (0)511 978199-15
-Fax.: +49 (0)511 978199-77
-mailto:sst-news2003@pandatel.com
-www.pandatel.com
+Andriy
+
+
+
+-----Original Message-----
+From: Matt Porter [mailto:mporter@kernel.crashing.org]
+Sent: Wed 25.08.2004 20:02
+To: Andriy Korud
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Current PPC 2.4 kernel trees?
+
+On Wed, Aug 25, 2004 at 11:29:56AM +0200, Andriy Korud wrote:
+>
+> Hi,
+> can anybody explain which 2.4 kernel trees (especially for PPC) are actual and how are they related with kernel.org's kernel? (I know about Denx's one, any other available, i.e. MontaVista's?).
+
+http://penguinppc.org/dev/kernel.shtml has a list of 2.4 trees.
+
+linuxppc-2.4 is a direct child of linux-2.4 that has additional
+functionality not in that kernel.org tree. It has the latest
+4xx and 85xx.
+
+linuxppc_2_4_devel is a previous 2.4 devel tree that still has some
+good and bad things in it that might be desired on some platforms.
+8xx and 82xx might be better here, IIRC.
+
+> I'm currently running 2.6 from kernel.org (PPChameleon board), but for some reason need to downgrade.
+
+I've heard of this board..isn't it 4xx? Do you have patches for this
+against 2.6? It isn't in 2.6 now.
+
+-Matt
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
