@@ -1,42 +1,47 @@
-Message-ID: <384D0835.74F85CEC@mitre.org>
-Date: Tue, 07 Dec 1999 08:14:29 -0500
-From: Frank McPherson <frank@mitre.org>
-MIME-Version: 1.0
-To: Claude Robitaille <crobitaille@videotron.ca>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Debugging with thread(s)
-References: <Pine.LNX.4.10.9912062143190.1956-100000@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii
+Date: Tue, 07 Dec 1999 08:18:44 -0500
+Subject: Re: xDSL via PPPoE?
+From: "Justin McKillican" <linuxppc@home.com>
+To: John L Grantham <jgrantha@hannover.sgh-net.de>,
+        linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
+Message-Id: <19991207131533.COTA14330.mail.rdc3.on.home.com@[24.112.218.109]>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Claude Robitaille wrote:
 
-> anybody has tried to debug an application that uses thread
-> using GUI frontend to gdb? ... I execute pthread_create I get an
-> unknown signal and the breakpoints I set in the called
-> (created) thread do not activate. 
+> 
+> Hi all,
+> 
+> Well, tomorrow is the big day for me: I'm getting ADSL from Deutsche
+> Telekom installed. Trouble is, in the meantime I have been doing research
+> and have found that xDSL in Germany is done with PPP over Ethernet
+> (PPPoE), and there apparently is only a buggy beta driver for Intel
+> Linux. Anything for PPPoE support under LinuxPPC?
+>
+> If worse comes to worse, I will set up my iMac as a router and gateway
+> under MacOS, but would much rather have the G3 with Linux sitting
+> directly on the DSL pipe...
+>
+> Can anybody suggest a fairly plain English HOWTO for getting PPPoE and
+> DSL running? (I'm using kernel 2.2.10 and Q3.) Where can I get the
+> drivers?
+>
+> Thanks in advance...
+>
+> cya
+>
+> John
+>
 
-I get the same behavior when using gdb without any frontend.  Pthreads
-seems to use real-time signals (32 and higher), and though the
-documentation for gdb indicates it should be able to handle them, I
-haven't been able to get it to work.  I posted a query about this
-yesterday called "real-time signals, gdb".    
 
-It has been suggested to me by another list member that the signal
-handling code in the Linux kernel may be seriously deficient, and
-aggrevating if not outright causing this problem.  I haven't had a
-chance yet to look and see if that's the case. 
+go to www.freshmeat.net and search for 'pppoe'
 
-Has anyone else had success debugging threads with gdb? 
+it will come up with 2 pages, both have sources and instructions on how to
+set up pppoe
 
--Frank
 
--- 
-Frank H. McPherson IV
-W118 Embedded Solutions Team
-The MITRE Corporation
-703-883-5404
+justin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
