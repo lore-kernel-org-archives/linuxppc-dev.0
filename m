@@ -1,54 +1,33 @@
-Date: Mon, 31 Jul 2000 19:38:26 +0200 (CEST)
-From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-        Martin Costabel <costabel@wanadoo.fr>,
-        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: CONFIG_PPC != Mac
-In-Reply-To: <4.3.2.7.2.20000731184833.00ce9900@mail.lauterbach.com>
-Message-ID: <Pine.LNX.4.10.10007311926140.10200-100000@zirkon.biophys.uni-duesseldorf.de>
+From: tom_gall@vnet.ibm.com
+Message-ID: <3985BC68.46C8DEC5@vnet.ibm.com>
+Date: Mon, 31 Jul 2000 17:50:32 +0000
+Reply-To: tom_gall@vnet.ibm.com
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Donald Cowart <dcowart@acld.lib.fl.us>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: RS/6000 Model 170 Boots Linux
+References: <Pine.LNX.4.20.0007311238420.16971-100000@bookworm.acld.lib.fl.us>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> At 18:40 31.07.00, Michael Schmitz wrote:
-> > > I am fighting with the "new input layer" right now, although I don't
-> > > quite understand why this thing is being inflicted upon innocent ADB
-> > > users.
-> >
-> >My question exactly.
+Donald Cowart wrote:
 >
-> But we are talking about developer trees (2.4 and benh) right now, or? I
-> have no problem breaking things here for some time, as long as a working
-> version ends up in the stable trees.
+> What are the 604e PowerPC chips, 32bit or 64bit?
 
-I have no problem with you breaking things in the developer trees either,
-but I was talking about 2.2.17 which also appears to have the new input
-stuff, and that's what bothers me. I already know I have to make a number
-of changes to my system with 2.4 (devfs will probably be the first
-stumbling block) but didn't expect major breakage with 2.2 kernels.
+Hi Donald,
 
-> >ADB keyboard and mouse work (and button emulation works as well) with
-> >CONFIG_NEW_INPUT_LAYER not set. What doesn't work for me anymore is the
-> >USB mouse. The 2.2.17 kernel (rsynced last Thursday) only compiled after I
-> >added a #ifdef CONFIG_MOUSEDEV somewhere in mac_keyb.c as a consequence of
-> >not having CONFIG_NEW_INPUT_LAYER defined. I'd look it up on the Lombard
-> >but the box just crashed on me the second time in a row today. 2.2.17 sure
-> >is exciting.
->
-> I'll try myself without CONFIG_NEW_INPUT_LAYER set later. But I wonder why
-> your USB mouse would no longer work. It certainly works for me in console
-> and XF4. X or console? Xpmac (which rev?) or XFree? Did you link
-> /dev/usbmouse to /dev/input/mice?
+  The 604e is a 32 bit chip.
 
-Neither gpm nor XFree (never used Xpmac) have the USB mouse working. I've
-used /dev/input/mice, /dev/hidbp-mse-0, and the miscdev USB mouse device,
-with various combinations of config options in the USB sections, to no
-avail.
+> --Donald
 
-	Michael
-
+--
+Tom Gall - PowerPC Linux Team    "Where's the ka-boom? There was
+Linux Technology Center           supposed to be an earth
+(w) tom_gall@vnet.ibm.com         shattering ka-boom!"
+(w) 507-253-4558                 -- Marvin Martian
+(h) tgall@uswest.net
+http://oss.software.ibm.com/developerworks/opensource/linux
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
