@@ -1,33 +1,23 @@
-To: "Sanjeev R" <sanjeevr@myw.ltindia.com>
+To: "Sanjeev Gopalan" <sanjeevgt@myw.ltindia.com>
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: SPI Driver for ppc8xx 
+Subject: Re: SPI driver source codes 
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 20 May 2004 19:44:34 +0530."
-             <s0ad0aac.011@EMAIL>
-Date: Thu, 20 May 2004 18:10:00 +0200
-Message-Id: <20040520161005.15FAEC109F@atlas.denx.de>
+In-reply-to: Your message of "Thu, 20 May 2004 19:46:38 +0530."
+             <s0ad0b24.014@EMAIL>
+Date: Thu, 20 May 2004 18:11:06 +0200
+Message-Id: <20040520161111.76419C109F@atlas.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message <s0ad0aac.011@EMAIL> you wrote:
+In message <s0ad0b24.014@EMAIL> you wrote:
 >
-> Is the driver for SPI in mpc8xx availbale online. If yes where can i
-> get it. I read that the kernel needs to be patched with the microcode
+> I am not able to download the SPI driver from the ftp site given in penguinpcc.org. If anybody has the SPI driver source files pls send it to me.
 
-We have a SPI driver for the 8xx in the linux-2.4 module on  our  CVS
-server.
-
-> before using the SPI drivers if available.And the option is also
-
-The  need  for  the  uCode  patch  depends  on  your  use  of   other
-peripheresls, i. e. if ther eis an overlap in the parameter RAM.
-
-> availbale in the menuconfig. What happens when it is patched?
-
-The parameter RAM gets shifted to avoild the overlaps.
+This is your third  message  about  the  same  topic  within  just  2
+minutes. Please be a _little_ more patient.
 
 Best regards,
 
@@ -36,7 +26,7 @@ Wolfgang Denk
 --
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Clothes make the man. Naked people have little  or  no  influence  on
-society.                                                 - Mark Twain
+There are three things I always forget. Names, faces -  the  third  I
+can't remember.                                         - Italo Svevo
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
