@@ -1,57 +1,42 @@
-From: "Jon-Erling Dahl" <jon-erling.dahl@its4mobility.com>
-To: "Michael Habermann" <MHabermann@gmx.de>,
-	"'Linux PPC'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: libraryopt
-Date: Sat, 2 Mar 2002 10:53:58 +0100
-Message-ID: <GKEKJGELJKLLBBAFIGAIMEKACAAA.jon-erling.dahl@its4mobility.com>
+Message-ID: <20020302101140.14107.qmail@web8102.in.yahoo.com>
+Date: Sat, 2 Mar 2002 10:11:40 +0000 (GMT)
+From: =?iso-8859-1?q?somshekar=20kadam?= <som_kadam@yahoo.co.in>
+Subject: head.S next what
+To: Karsten Jeppesen <kj-list@jeppesens.com>,
+	Norm Legare <normlegare@yahoo.com>,
+	linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <B8A5057F.106E7%kj-list@jeppesens.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-In-Reply-To: <5.1.0.14.0.20020301083221.01d7da58@pop.gmx.de>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> >I'm having problems getting libraryopt doing something.
-> >(http://libraryopt.sourceforge.net)
-> >Is there anybody out there that have used this utility
-> >successfully?
->
-> There was a thread about this topic, with detailed descriptions.
-> Maybe this
-> link helps you:
-> http://lists.linuxppc.org/linuxppc-embedded/200110/msg00156.html
->
-> I have not managed to use libraryopt (I tried not very hard), but was
-> successful with mklibs.sh.
-> If you are using hardhat linux, libraryopt is recommended.
+hi,
+  i am new to ppc linux
+i am using 8264 processor ,limon as my monitor code
 
-I managed to get it working. The libopt program seems to look
-for the build script in the wrong directory (at least according
-to my setup ;). Changing that, and the build script executed.
+ i want to know
+  how control from arch/ppc/kernel/head.S is given to
+start_kernel
 
-However, the build script is supposed to get all needed object
-files as input. My build script didn't get any object files at
-all and I think its because of this:
+ i am seing identify_machine
+ then mmu_init is called  in head.S
 
-I have an application 'myapp' that depends on a shared library
-'mylib'. 'mylib' in turn depends on 'somelib', like this:
+or i my control flow is worng
 
-myapp -> mylib -> somelib -> libc, libstdc++, etc
+  i am confused
+can anybody make it clear
 
-What I tried was to create an optimizer for somelib. But since
-myapp doesn't depend on somelib directly, it seems that libopt
-doesn't think any of the object files in 'somelib' is needed,
-and hence no object files as input to the build script.
-Is this correct? Does libopt only work when an application is
-linked directly against the lib you're trying to optimize?
-Am I completely missing something here?
-I built an optimizer for 'mylib', and it worked correctly...
+sorry if i asking silly question
+thanks in advance
+somshekar
 
-Are there any other utilities for solving this problem? Does
-mklibs.sh solve it better?
 
-Regards,
-Jon-Erling
+
+
+________________________________________________________________________
+Looking for a job?  Visit Yahoo! India Careers
+      Visit http://in.careers.yahoo.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
