@@ -1,126 +1,91 @@
-Message-ID: <000a01c18857$ae010800$1a11efcb@industrialDiv.hanasys.co.kr>
-From: "Sangmoon Kim" <dogoil@etinsys.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-References: <BE684E2C997AD51199530002A56B207906623B@MCHH2A1E>
-Subject: Re: MPC755 Porting Problem
-Date: Wed, 19 Dec 2001 15:37:50 +0900
+Message-ID: <3C20B5E2.4C3AA604@chinook.com>
+Date: Wed, 19 Dec 2001 10:44:34 -0500
+From: Peter Desnoyers <pdesnoyers@chinook.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ks_c_5601-1987"
+To: Jeff Studer <jstuder@aquilagroup.com>
+Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: PCI QSPAN2 resource conflicts
+References: <3C1F9452.AB979826@aquilagroup.com> <3C1F8DE8.9FA7CECE@chinook.com> <3C1FBADD.FF66E2A7@aquilagroup.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thank you for response.
+An aside - when I was bringing up PCI on our system, I used a
+tulip-based card (Staples has one from Linksys for $20) because the 3com
+vortex driver had some issues with PPC or vice versa.  Or something like
+that.  (I don't remember the details, and it could have been pilot
+error)
 
-I solved the problem.
-After the RFI, MMU begins to work.
-I tried to access the phiscal address in serial_hello().
-While the address is mapped to another area by BAT.
+Walking through your lspci output:
 
-I think, It's something like the uncertainty theory.
-We cannot watch a phenominan precisely, because the action of watching affects the phenominan.
+> # lspci -xxx
+> 00:03.0 Class 0000: 16b2:5100
+> 00: b2 16 00 51 00 00 00 00 00 02 00 00 00 40 00 00
+> 10: 41 ff ff f5 81 ff ff f5 00 00 00 00 00 00 00 00
+> 20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> 30: 00 00 00 00 00 00 00 00 00 00 00 00 06 01 0a 0a
 
-Any way, I encountered another problem.
-I'm porting linux on my MPC755 board.
-It is the dump message of xmon after the kernel was crashed during initialization.
+vendor = 0x16b2, device = 0x5100   - I assume it's your device
+status = 0x0000  weird - I would expect at least 0x0200 (devsel=medium)
+- 0s in the 0x0600 mask is devsel=fast
+command = 0x0000 weirder - no bus master enable, no I/O access enable,
+no memory access enable.  I.e. it does nothing except suck electricity
+and emit heat.
 
-vector: 400 at pc = 20002024, lr = 20002024
-msr = 40001032, sp = c0130320 [c0130270]
-current = c012e420, pid = 0, comm = swapper
-mon>
+base reg 0: f5ffff41 = i/o, addr=f5ffff40, size=64
+base reg 1: f5ffff81 = i/o, addr=f5ffff80, size=128
 
-The point where it happens was  in __alloc_bootmem_core.
-After the following function.
-      memset(ret, 0, size);
-where
-      ret = 0xC01D9000
-      size = 0x200040
+I assume you've set the QSpan up correctly with (in your case) an I/O
+target image of size 0x01000000 at 0xf5000000 and a memory target image
+of the same size at 0xf4000000.
 
-Where can I start to debug this.
+I'm not sure why lspci -vv is displaying the region size incorrectly as
+65 and 129, unless you're supposed to know that .
 
-Thanks in advance.
-- Sangmoon Kim -
+Now on to the 3Com device:
 
------ Original Message -----
-From: "Babic Stefano" <Stefano.Babic@icn.siemens.de>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Sent: Wednesday, December 19, 2001 1:36 AM
-Subject: AW: MPC755 Porting Problem
+> 00:04.0 Class 0200: 10b7:9055 (rev 30)
+> 00: b7 10 55 90 07 00 10 02 30 00 00 02 00 00 00 00
+> 10: 01 00 00 f4 80 ff ff f5 00 00 00 00 00 00 00 00
+> 20: 00 00 00 00 00 00 00 00 00 00 00 00 b7 10 55 90
+> 30: 00 00 00 00 dc 00 00 00 00 00 00 00 08 01 0a 0a
 
+status = 0x0210 - devsel = medium
+command = 0x0007 - master, i/o, memory all enabled
 
->
-> Hi,
->
-> we have already ported linux on our board based on MPC 755. The kernel is set at 0xc0000000, as you can see on arch/ppc/Makefile (KERNELLOAD=0xc0000000). We did not want to change it, because it is quite a standard value for external tools.
-> We are using the boot loader in mbx directory (or mbxboot, depending on version you are using), so we are using really the head_8260.S file instead of head.S.
-> From the sources of the loader it seems necessary to load the kernel in high memory range (physical address), in any case greater as 0x400000 (which address is not important). Then the loader remapped it to 0xc0000000.
-> For us it is not a problem to load the kernel at a higher address and in this way the loader can correctly start the kernel.
->
-> I hope it could be help.
->
-> stefano babic
->
-> -----Ursprungliche Nachricht-----
-> Von: Sangmoon Kim [mailto:dogoil@etinsys.com]
-> Gesendet: Samstag, 15. Dezember 2001 07:24
-> An: linuxppc-embedded@lists.linuxppc.org
-> Betreff: MPC755 Porting Problem
->
->
->
-> Hi?
-> I'm porting linux for a MPC755 board which I designed,
-> and having some trouble with arch/ppc/kernel/head.S
-> I load the kernel at phiscal address 0x00000000
-> and head.S seams to relocate it to 0xc0000000
-> The code is like this
->
->         mfmsr   r0 /* Inst and data addr translations are disabled */
->         ori     r0,r0,MSR_DR|MSR_IR /* enable Inst and data addr translation */
->         mtspr   SRR1,r0
->         lis     r0,start_here@h
->         ori     r0,r0,start_here@l
->         mtspr   SRR0,r0
->         SYNC
->         RFI /* jump to SRR0 */
->
-> start_here:
->         /* Call setup_cpu for CPU 0 */
->         li      r3,0            /* data offset */
->         li      r24,0           /* cpu# */
->         bl      call_setup_cpu
->
-> It is running at base address 0x00000000.
-> start_here is at address 0xc000369c.
-> And the IBAT0, and DBAT0 is C0001FFE-00000002.
-> So after RFI it should go to start_here.
->
-> But If I insert some code like 'bl serial_hello',
-> which prints hello? to serial console after start_here.
-> It never prints a message. It works before the RFI.
->
-> Where can I start to debug it?
->
-> serial_hello is like this.
->
-> void
-> serial_hello()
-> {
->         serial_putc(SCC_A_ADDRESS,'h');
->         serial_putc(SCC_A_ADDRESS,'e');
->         serial_putc(SCC_A_ADDRESS,'l');
->         serial_putc(SCC_A_ADDRESS,'l');
->         serial_putc(SCC_A_ADDRESS,'o');
->         serial_putc(SCC_A_ADDRESS,'?');
->         serial_putc(SCC_A_ADDRESS,'\n');
->         serial_putc(SCC_A_ADDRESS,'\r');
-> }
-> Thanks in advance.
-> - Sangmoon Kim -
->
->
->
->
+Base registers don't make sense compared to the previous chip:
+
+br0 = f4000001, i/o at 0xf4000000, size 128 (weird - assigned from
+bottom of range here, not top)
+br1 = f5ffff80, memory at 0xf5ffff80 size 128
+
+You can't have it both ways - 0xf5ffffxx is either I/O or memory, but
+not both.  I'm getting a feeling that the values in the base registers
+of your device are completely fictitious, and might not come from the
+PCI enumeration code.  Or you're doing the PCI enumeration in a
+bootloader and doing it wrong...
+
+Note also that the memory space at f5ffff80 totally overlaps with the
+first I/O region of your device, besides being the wrong type.  But the
+conflict shouldn't matter, since your device is completely turned off,
+and isn't going to do anything.  So you shouldn't be loading a driver
+for your device, because it isn't there, and if you don't you won't get
+any resource conflicts.
+
+Looks like you've got a hardware issue in your device, compounded by the
+fact that the PCI bus enumeration code is actually assigning addresses
+to your device even though it's disabled.  (although it's probably not
+the fault of that code, as I assume it's writing something to the
+command register and it's just not sticking)
+
+You're not loading an FPGA after the OS is up and then poking in these
+values by hand, are you?
+
+--
+.....................................................................
+ Peter Desnoyers            (781) 457-1165   pdesnoyers@chinook.com
+ Chinook Communications     (617) 661-1979   pjd@fred.cambridge.ma.us
+ 100 Hayden Ave, Lexington MA 02421
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
