@@ -1,45 +1,44 @@
-Message-ID: <38AF40D5.F266CFB3@denise.shiny.it>
-Date: Sat, 19 Feb 2000 20:18:13 -0500
-From: Giuliano Pochini <pochini@denise.shiny.it>
+Message-ID: <20000220081542.2794.qmail@web1006.mail.yahoo.com>
+Date: Sun, 20 Feb 2000 00:15:42 -0800 (PST)
+From: Dan Bethe <dan_bethe@yahoo.com>
+Subject: Powerbook USB adapters
+To: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-To: Adrian Cox <apc@agelectronics.co.uk>
-CC: Rob Barris <rbarris@quicksilver.com>,
-        LinuxPPC-Dev <linuxppc-dev@lists.linuxppc.org>,
-        Debian PowerPC <debian-powerpc@lists.debian.org>
-Subject: Re: Altivec and binary compatibility
-References: <389AAA06.CBCDB19A@agelectronics.co.uk>
-		 <389EE09A.571A6C26@denise.shiny.it>
-		 <389F09C2.18FD4AA5@agelectronics.co.uk> <v03010d02b4cce4346bac@[192.168.1.16]> <38A7D0FD.D6A7E95D@agelectronics.co.uk>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+	Greetings, my friends.  As you may have memorized by now, I have a
+Powerbook G3 Wallstreet series, which comes with no USB.  My local SF
+Bay Area Macintosh dealer, www.computerware.com, has two USB adapters
+for me.
+	One is at http://www.macally.com/new/usb/newuh276.html.  The second
+one is from Orange Micro, to which I can't find a URL so far.
+	Do you guys have any idea how feasible it would be to support either
+one under LinuxPPC?
+	I realize that there is a lot of unstable work right now integrating
+pcmcia support into the standard kernel tree.  Hopefully Linus's laptop
+usage will propel that as it did with USB  ;)  But I don't know how
+well the two peripheral protocols have converged, considering that I'm
+hearing from people on this list whose machines halt when they simply
+insert a card of an arbitrary type.
+	Shall I buy one now, and cheer you guys on until it works?
+	I've said it before, and I'll say it again.  I want my Powerbook to
+rock, and that requires Linux support.  So, if any of you want to take
+on support for any given item, just let me know what would motivate
+you, and I'll see what I can do.  I'm not an employer; just a highly
+motivated and motivatable non-programming citizen.  I could send
+someone one of these USB cards, if they like.  For free!
+	But I'm working on that non-programming part.  I just spent $200 on
+Apple literature, from corporate tales to Apple // hacking.  I read
+"Inside the Apple //gs" cover to cover in one evening, and understood
+most of it except some specific device driver (usually assembly)
+techniques.  But, back then, almost everything was a device driver.
+	Anyhow, lemme know.
 
-> >    This is not correct.  OS's on P-III have to be updated to provide proper
-> > context switch support for the SSE registers.  I'm pretty sure Win98 has it
-> > covered.  It's really the same type of jump as AltiVec - use of SSE
-> > features is not restricted to OS or driver code, apps use them too.
->
-> I know that the OS has to support these registers. Latest development
-> kernels *DO* support them.
->
-> That is not the problem.
->
-> The problem is with C++ exception sequences and setjmp being different
-> for Altivec and non-Altivec code.
-
-IMHO C++ exceptions are not a problem. All objects are destroyed when a
-function exits with an exception and it's an exit without return. The thrown
-object is put on the stack (I think) and the calling code will handle it.
-Obviously you can't mix code compiled for Altivec and code compiled for plain
-PPC if they exchange data with exceptions, jumps and friends.
-
-> How does Linux on ia32 handle linking between generic ia32 and Pentium-III user-space code ?
-
-No idea... It's likely an unsolved issue yet.
-
-Bye.
-
+=====
+"Don't expect your own messiah; this neverworld which you desire is
+only in your mind." -- http://www.dreamtheater.net/songb4.htm#IV5
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
