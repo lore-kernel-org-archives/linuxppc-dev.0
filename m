@@ -1,41 +1,38 @@
-Message-ID: <006601c1e424$2347d3f0$1a11efcb@industrialDiv.hanasys.co.kr>
-Reply-To: "Sangmoon Kim" <dogoil@etinsys.com>
-From: "Sangmoon Kim" <dogoil@etinsys.com>
-To: "Timothy Robb" <xavier@vianet.ca>,
-	<linuxppc-embedded@lists.linuxppc.org>
-References: <000b01c1e418$f49c0c20$0a02a8c0@WorkGroup>
-Subject: Re: Trouble building a cross compiler
-Date: Mon, 15 Apr 2002 11:20:39 +0900
+Message-ID: <3CBABBB2.60100@thales-bm.com>
+Date: Mon, 15 Apr 2002 13:38:26 +0200
+From: Julien Eyries <julien.eyries@thales-bm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: building a cross compiler (2)
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Now the problem lies with my glibc.  I do the following, which I got
-> from the instructions for building a sh4-linux target but with some
-> input for the embedded power pc stuff and it doesn't work.
->
-> CC=powerpc-linux-gcc AR=powerpc-linux-ar RANLIB=powerpc-linux-ranlib
-> configure --host=$TARGET --prefix=$PREFIX
-> --with-headers=$PREFIX/TARGET/include --disable-debug
-> --disable-profile --disable-sanity-checks
-> make
->
-It seams like you forgot the linuxthreads thing.
-Try this.
-tar -xzf glibc-2.2.5.tar.gz
-cd glibc-2.2.5
-tar -xzf ../glibc-linuxthreads-2.2.5.tar.gz
-cd ..
-mkdir build-glibc; cd build-glibc
-CC=${TARGET}-gcc AR=${TARGET}-ar RANLIB=${TARGET}-ranlib \
-   ../glibc-2.2.5/configure --host=$TARGET --prefix=${PREFIX}/${TARGET} \
-   --enable-add-ons=linuxthreads --with-headers=${PREFIX}/${TARGET}/include \
-   2>&1 | tee configure.log
-make all install info install-info 2>&1 | tee make.log
-cd ..
-- Sangmoon Kim -
+I also want to build a cross compiler for powerpc8260,
+and i have downloaded these packages :
+
+binutils-2.12
+gcc-3.0.4
+uClibc-0.9.11
+linux 2.4.18
+
+I see a lot of people here working with gcc-2.95.xx and linux-2.4.17,
+is there some good reason not to use newer packages ?
+is something broken with the latest version of these packages ?
+
+
+thanks,
+
+Julien.
+
+--
+Julien Eyries
+R&D engineer
+Thales Broadcast & Multimedia (ex-thomcast)
+email: julien.eyries@thales-bm.com
+fax: 33(0) 1 34 90 31 10
+tel: 33(0) 1 34 90 31 01
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
