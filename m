@@ -1,44 +1,33 @@
-Message-ID: <3F154239.C333EE33@prodys.net>
-Date: Wed, 16 Jul 2003 14:16:57 +0200
-From: Pedro Parrilla <pparrilla@prodys.net>
+Message-ID: <3F155AC2.5000301@embeddededge.com>
+Date: Wed, 16 Jul 2003 10:01:38 -0400
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Samba shares on a Jffs Filesystem...
-Content-Type: text/plain; charset=us-ascii
+To: Darin.Johnson@nokia.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [RFC] consistent_sync and non L1 cache line aligned buffers
+References: <F0B628F30F48064289D8CCC1EE21B7A80C48A8@mvebe001.americas.nokia.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-  Hi!
+Darin.Johnson@nokia.com wrote:
 
-    Could anyone help me about a problem with Samba...? We have a
-folder on a Jffs Filesystem on our second flash partition (1 MB size and
+> My headache example was the 4 byte buffer that MPC860 CPM
+> was using to talk to an I2C device, there just wasn't an
+> elegant solution...
 
-800 KB free); this folder is shared by our samba daemon and it can be
-accesed from any Windows Pc in our Lan... reading a file works fine, but
+You should have used consistent_alloc and never used consistent_sync()
+in this case.  FYI, consistent_sync() should never be used on
+consistent_alloc()'ed buffers.....another tidbit for documentation.
+The consistent_* are used to manage a variety of consistency related
+features of non-coherent processors, not that you should necessarily
+use all of them to solve a particular implementation requirement.
 
-if you try to copy a file greater than 200KB, Windows File Explorer
-shows the following message:
+Thanks.
 
-    Cannot create the file FILENAME: Cannot read from the source file...
 
-(This a translation from spanish Windows;-)
-
-    Besides, it is possible to copy several files, from any Windows Pc,
-up to 800 KB, but this files have to be smaller than 200 KB size.
-    Of course,from console, you can copy a file greater than 200 KB into
-
-that folder without problem...
-
-    Do you any experience in this regard?
-
-    Than you in advance.
-
-    Ciao.
-
-    Pedro Parrilla Jimena                          Prodys S. L.
-    R&D,Embedded Systems                   Trigo,54
-    e-mail:pparrilla@prodys.net             Leganes(Madrid)
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
