@@ -1,38 +1,41 @@
-Message-ID: <3A64E4E9.AFB4E5A7@mvista.com>
-Date: Tue, 16 Jan 2001 16:18:49 -0800
-From: Frank Rowand <frank_rowand@mvista.com>
-Reply-To: frowand@mvista.com
+Message-ID: <A33AEFDC2EC0D411851900D0B73EBEF7063E4D@NAPA>
+From: Hua Ji <hji@netscreen.com>
+To: "'frowand@mvista.com'" <frowand@mvista.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: About monta-vista linux for ppc 405gp
+Date: Tue, 16 Jan 2001 20:22:46 -0800
 MIME-Version: 1.0
-To: Hua Ji <hji@netscreen.com>
-CC: "'frowand@mvista.com'" <frowand@mvista.com>, Dan Malek <dan@mvista.com>,
-        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: linux-ppc and 405gp
-References: <A33AEFDC2EC0D411851900D0B73EBEF7063E4B@NAPA>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hua Ji wrote:
->
-> Folks,
->
-> I want to reading some linux codes relating to 405GP. Does the 2.4 linux
-> kernel
-> cover this? Or any other urls?
->
-> Thanks in advance,
+Thanks Frank.
 
+I already loaded the linux package. A quick question.
+>From makefile, I didn't see support for 405GP, but I do see the support for
+403.
+Also, for 4xx, the kernel init codes is started from head_4xx.S. Am I right?
 
-  http://dev.mvista.com/projects/405gp_status/main.html
+Thanks -Hua
 
-has pointers to a 2.4.0-test2 based source tree.  I am updating that kernel
-to 2.4.0.  You may also soon see some 405gp source pushed into the
-FMS labs bitkeeper repository by Dan Malek.
+--------------------
+ifdef CONFIG_4xx
+CFLAGS := $(CFLAGS) -mcpu=403
+endif
 
--Frank
---
-Frank Rowand <frank_rowand@mvista.com>
-MontaVista Software, Inc
+ifdef CONFIG_8xx
+CFLAGS := $(CFLAGS) -mcpu=860 -I../8xx_io
+endif
+
+ifdef CONFIG_PPC64BRIDGE
+CFLAGS := $(CFLAGS) -Wa,-mppc64bridge
+endif
+
+ifdef CONFIG_4xx
+  HEAD := arch/ppc/kernel/head_4xx.o
+else
+-----------------------
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
