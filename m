@@ -1,39 +1,44 @@
-To: "Jean-Denis Boyer" <jdboyer@m5t.com>
-Cc: "Joao Vicente" <joao.vicente@spectel.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: RAMDISK problem 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 12 Nov 2003 16:01:43 EST."
-             <AB5AF73EAF23304EA1B932174137CED703042C@m5tmail.m5t.com>
-Date: Wed, 12 Nov 2003 22:29:20 +0100
-Message-Id: <20031112212925.2EEAAC5F59@atlas.denx.de>
+Date: Thu, 13 Nov 2003 09:10:31 +0100 (CET)
+From: Geir Frode Raanes <geirfrs@invalid.ed.ntnu.no>
+To: llandre <r&d@wawnet.biz>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Silicon Motion VGA controllers and PPC architecture
+In-Reply-To: <5.1.1.6.0.20031112173538.01bd2e78@dns.struinfo.it>
+Message-ID: <20031113085435.N79832@invalid.ed.ntnu.no>
+References: <5.1.1.6.0.20031112173538.01bd2e78@dns.struinfo.it>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <AB5AF73EAF23304EA1B932174137CED703042C@m5tmail.m5t.com> you wrote:
->
-> A silly question but...
-> Why does U-boot report a ramdisk size of about 555kB,
+On Wed, 12 Nov 2003, llandre wrote:
 
-He  was  using  the  old  "simple-ramdisk.PPCBoot"  image  wich   was
-optimized for size. It is really just 550 kB.
+> I'm looking for a VGA controller to use with an embedded PPC405-based system.
+> I had a look at the Silicon Motion chips (712/722) and they seem very
+> suited for embedded applications.
 
-> while the original from Denx's ftp server has a size of 1.33MB ?
+Errr - may I ask what is special about this brand?
+I believe ATI is the only manufacturer of VGA chips that actually
+support alternative architectures, at least PowerPC[MAC].
 
-You mean a different image (the SELF based one).
+ http://www.ati.com/products/embedded/overview.html
 
+> Unfortunately the techical support claims that these chips, because the
+> presence of x86 BIOS, support only the x86 architecture. Anybody can
+> confirm this?
 
-Best regards,
-
-Wolfgang Denk
+I once attempted to follow the flow of a x86 BIOS.
+In other words, I disassembled it. It was intriguing for a while.
+You might want to do the same thing with this expansion BIOS -
+after all, you are only interested in the initialization sequence.
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"My doctor told me to stop having intimate dinners for  four.  Unless
-there are three other people."                         - Orson Welles
+  ******************************************************
+  Never ever underestimate the power of human stupidity.
+  -Robert Anson Heinlein
+
+		GeirFRS@INVALID.and.so.forth
+  ******************************************************
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
