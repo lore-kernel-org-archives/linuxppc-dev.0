@@ -1,38 +1,41 @@
-Date: Mon, 10 Sep 2001 04:09:35 -0700
-From: Matt Porter <mporter@mvista.com>
-To: Cindy Peters <cinpet@adaptivemicro.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Problem during decompressing kernel routine
-Message-ID: <20010910040935.A27886@cx258813-a.chnd1.az.home.com>
-References: <41EDEC3C1B88D51186EB00A0C9CFADF702FA6C@AMWMAIL>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <41EDEC3C1B88D51186EB00A0C9CFADF702FA6C@AMWMAIL>; from cinpet@adaptivemicro.com on Mon, Sep 10, 2001 at 09:20:18AM -0500
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <41EDEC3C1B88D51186EB00A0C9CFADF702FA6C@AMWMAIL>
+From: Cindy Peters <cinpet@adaptivemicro.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Problem during decompressing kernel routine
+Date: Mon, 10 Sep 2001 09:20:18 -0500
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Sep 10, 2001 at 09:20:18AM -0500, Cindy Peters wrote:
->
-> I am upgrading to kernel version 2.4.6 from version 2.2.13. I have followed
-> through the boot loader code and everything seems to be running correctly. I
-> see the following messages:
+I am upgrading to kernel version 2.4.6 from version 2.2.13. I have followed
+through the boot loader code and everything seems to be running correctly. I
+see the following messages:
 
-<snip>
+loaded at:	00200000   0020FBF0
+relocated at:	00100000   0010FBF0
+board data at:	001001F8   00100214
+relocated to:	00200100   0020011C
+zimage at:	00205328   00277584
+initrd at:		00277584   0046B35B
+relocated to:	00E0C000  00FFFDF8
+avail ram:	00278000   00600000
 
-> An image with the same boot loader and the old kernel will run just fine. I
-> have examined the header of the vmlinux.gz file and compared it to the old
-> version and it looks OK.
->
-> Does anyone have any ideas of what the problem is?
+Linux/PPC load: root=/dev/ram
+Uncompressing Linux...
 
-Hi Cindy,
+An image with the same boot loader and the old kernel will run just fine. I
+have examined the header of the vmlinux.gz file and compared it to the old
+version and it looks OK.
 
-You forgot to mention what platform is exhibiting the problem.
+Does anyone have any ideas of what the problem is?
 
---
-Matt Porter
-MontaVista Software, Inc.
-mporter@mvista.com
+Thanks,
+
+Cindy Peters
+Adaptive Micro-Ware, Inc.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
