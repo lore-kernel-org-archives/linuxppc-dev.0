@@ -1,25 +1,24 @@
-Date: Mon, 30 Oct 2000 12:31:12 -0500
-Subject: BMAC driver issue addressed?
-From: Jim Blackburn <blackbjm@jmu.edu>
-To: <linuxppc-dev@lists.linuxppc.org>
-Message-ID: <B6231A90.1458%blackbjm@jmu.edu>
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Date: Mon, 30 Oct 2000 19:13:08 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Chris Leishman <chris@sharinga.com>
+cc: Paul Mackerras <paulus@linuxcare.com.au>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.2.18-pre17 candidate
+In-Reply-To: <20001031023914.B364@nina.dev.fol>
+Message-ID: <Pine.LNX.4.10.10010301912070.11674-100000@opal.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all:
+> Also, when I tried using the new input stuff my mapping of right/middle mouse
+> buttons to F9 and F10 (use append="adb_buttons=101,109" in yaboot) stopped
+> working.
 
-I experience the infamous problems with the bmac driver on my beige g3
-minitower.  A while back there was talk of analyzing Darwin's workaround for
-the bmac's hardware issues and implementing that into Linux's kernel.  Has
-anyone taken on this project since that discussion, or has it been shuffled
-down to the bottom of the deck in light of more pressing issues with the
-kernel?
---
-Jim Blackburn
-blackbjm@jmu.edu
+Which is expected. Use the proc interface to set the emulation keys (as
+described in Franz' input layer docs IIRC).
+
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
