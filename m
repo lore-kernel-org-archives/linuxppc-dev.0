@@ -1,75 +1,54 @@
-Date: Wed, 30 Jun 1999 15:37:27 -0400 (EDT)
-From: Tom Rini <trini@disparity.net>
-To: Martin Costabel <costabel@wanadoo.fr>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: USB under LinuxPPC
-In-Reply-To: <377A65AC.BB9784E1@wanadoo.fr>
-Message-ID: <Pine.BSF.3.96.990630153242.425D-100000@silver.teardrop.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <l03130302b3a0940e99c0@[216.67.44.31]>
+In-Reply-To: <01JCZKMNZI508X05JV@uni.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Wed, 30 Jun 1999 23:54:28 -0400
+To: Kevin Puetz <puetz@penguinpowered.COM>
+From: "Michael R. Zucca" <mrz5149@acm.org>
+Subject: Re: Problems with the atyfb driver on Power Mac G3
+Cc: Eric Dorland <dorland@lords.COM>, linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 30 Jun 1999, Martin Costabel wrote:
+At 10:58 PM -0400 6/29/99, Kevin Puetz wrote:
 
-> I am picking this 8 weeks old thread up, because I didn't see any update
-> on this story. I have a couple of questions. Main question: What sources
-> are supposed to produce kernels working on B&W G3s?
+>this is a _developmental_ branch.
 
-I think 2.2.10 from vger will now, and paul m put up his 2.2.10 tarball
-which works as well.  Keep in mind there is some "wacky" problem with the
-new B&Ws.
+As a past contributor and somebody who does this professionally, I
+understand the risks and am happily walking on the hot coals of my own
+volition. Thanks for the tip, though :-)
 
-> Other form of the same question (this has been asked several times, but
-> I didn't see any answer, which IMHO contradicts somehow the open source
-> spirit): Which sources and which config options were used by the guys
-> who compiled the kernels for B&W G3s? 
+>Now, the ? files are not a sign of already done damage. They are harmless
+>(created by a bug in gmc, the gnome file manager) and can be deleted or
+>ignored.
 
-The patches (which have been fixed up and included in vger now) which YDL
-made are on their site, along w/ the dot.config.
+I didn't know this as I've never had any experience with GNOME. That is one
+nasty little bug, though. Those files can be quite the pain to get rid of.
 
-> None of the kernels available on the net recognizes the USB keyboard and
-> mouse of this machine! By this I don't mean the problem with French
-> keymaps. The keyboard and mouse just don't give *any* reaction. This
-> starts with the redhat installer where you have to hit some button to
-> say "OK" first. Impossible with this USB keyboard. Hard reboot
-> necessary. Needless to say that it works under MacOS. Under MacOS, you
-> even can use 2 keyboards and mice (ADB and USB) at the same time.
+>On a happier note, I checked out 2.2.10 today (use -rlinux_2_2 if you use
+>cvs to switch branches), and built it, and the dancing pixels and other
+>artifacts are gone (on a rev 1 G3 desktop with Rage II+, but I had the same
+>symptoms, so maybe the same fix will help).
 
-Hmm.  That is very odd.  The Blue&White kernel supplied w/ R5 works on
-mine, as does the 2.2.10 Paul put up.  Give Pauls a shot..
+I think 2.2.10's driver is just the 2.3.6 driver code. It may be working
+for you out of sheer luck or perhaps the fix was enough for Rage II+. The
+problem persists on my Rage Pro.
 
-> So what I would like is to compile my own kernel for this machine in
-> order to try to get the keyboard recognized. In the vger sources, there
-> is a drivers/usb directory, and after some patching of some config.in
-> and defconfig files, it can be compiled in (not by default). 
+>I think 2.2.10 has the mach64 work from 2.3.6 backported into it w/o the
+>other potential problems
 
-USB in vger won't work.  Paul's endian fixes aren't in yet (2.3.x or
-2.2.x), so use his tarball.
+Well, as far as I can tell the 2.3.6 fb code only partially solves the
+problem. We probe for the MCLK now but perhaps we should also probe for PLL
+clock (are we already?). Can't we just get these values from OF? I thought
+I saw an entry in the card's device tree for such stuff.
 
-> Question: Is this USB stuff supposed to work on Macs? I couldn't test
-> it, because the IDE driver in this kernel doesn't see the internal (and
-> only) hard disk of this machine. So it doesn't boot completely, because
-> the root filesystem is absent.
+_______________________________________________________________________
+ Michael Zucca - mrz5149@acm.org - http://www.mdc.net/~mrz5149/
+ "I will choose a path that's clear. I will choose Freewill. "
+  --Rush, Freewill
+_______________________________________________________________________
 
-B&W's need CMD646 and Pmac-ide suppoprt right now.
-
-> In the official R5 2.2.6 kernel sources, there is a uusb directory
-> containing quite different things compared to the vger drivers/usb
-> stuff.
-
-The 2.2.6 sources use Inkay's uusbd, which is now defunct.
-
-> Question again: Is this supposed to work on B&W G3s, and if so, with
-> what patches and config options? Is the IDE driver there supposed to
-> work on these machines?
-
-I can't think of anything I forgot above.. :)
-
----
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
