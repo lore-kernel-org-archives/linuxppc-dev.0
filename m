@@ -1,25 +1,28 @@
-Date: Wed, 6 Oct 1999 16:01:56 -0700 (PDT)
-From: Louis Kowolowski <louisk@usw-dsl125.pond.net>
-To: Chris Baker <cbaker@adrenalin.com>
-cc: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: scsi error playing mp3 file
-In-Reply-To: <wkzoxwh0h8.fsf@adrenalin.com>
-Message-ID: <Pine.LNX.4.10.9910061601080.6425-100000@usw-dsl125.pond.net>
+Date: Wed, 6 Oct 1999 16:47:22 -0700 (MST)
+From: Tom Rini <trini@kernel.crashing.org>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: ADB probing
+Message-ID: <Pine.LNX.4.10.9910061626290.10804-100000@opus.bloom.county>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I had problems like that on a scsi drive and solved it by moving the drive
-to an external case (was told it might not be getting enough power) with
-it's own supply and it's worked fine since.
+Hello all.
 
+I've run into a wierd problem with ADB stuff, and I wonder if anyone has
+an idea on how to work/fix this.  What I'm trying to do right now is fix
+up kudzu so it can probe for things on the ADB bus.  Right now it does
+what all the other old config tools did, and pokes at /dev/adbmouse.  The
+problem is right now this works if there's any adb device present (one of
+the machines I checked only has an adb kbd, tho adbmouse suport is
+compiled in).  Also, is there any way to see if the machine has an adb
+keyboard installed?  Thanks..
 
-L
---
-gpg key/info                http://usw-dsl125.pond.net/~louisk/gpgsig.html
-gpg fingerprint         6D82 323C D0B2 B568 FD37  9F50 91B0 3547 EBBC B27E
+---
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
