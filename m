@@ -1,25 +1,34 @@
-Message-ID: <40C9D4C9.4030907@nortelnetworks.com>
-Date: Fri, 11 Jun 2004 11:50:33 -0400
-From: Chris Friesen <cfriesen@nortelnetworks.com>
-MIME-Version: 1.0
-To: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-Cc: rvinson@mvista.com, mgreer@mvista.com
-Subject: trying to boot 2.6.6 on new version of Motorola mcpn765
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Fri, 11 Jun 2004 18:26:19 +0200
+From: Colin Leroy <colin@colino.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.6.7-rc3: another strange bug(?)
+Message-Id: <20040611182619.0ef46253@jack.colino.net>
+In-Reply-To: <20040608201921.7059a87a@jack.colino.net>
+References: <20040608201921.7059a87a@jack.colino.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-We've got some mcpn765 cards that have different hardware and are not being
-recognized by the current kernel code.
+On 08 Jun 2004 at 20h06, Colin Leroy wrote:
 
-The differences are that the hawk chip is reporting revision 3, and the VIA
-bridge is the VT82C686 [Apollo Super South] rather than the VT82C586/A/B
-PCI-to-ISA [Apollo VP.
+Hi,
 
-I'm not sure how different the 686 is from the 586--can I just go ahead and take
-the same code path, or do I bypass it completely, or what?
+> I've installed 2.6.7-rc3, and it seems to work quite fine. However
+> something strange happened after a few hours of uptime: pbbuttonsd had
+> dimmed the display, I came back on the laptop (iBook G4), moved the
+> trackpad, and when the display came back it was all garbled - as when
+> UseFBDev isn't used in X. It's ok after a reboot...
 
-Chris
+again; Happened after ~ 1 day of uptime. Restarting X or switching vts
+doesn't help. It started to appear with the rc2 -> rc3 patch...
+
+I'm pretty much clueless about this one :-(
+I'll be on holidays for a week (yay!) starting about now, but will
+occasionnaly check my mail and could try patches if it helps.
+
+--
+Colin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
