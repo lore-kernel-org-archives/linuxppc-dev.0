@@ -1,27 +1,32 @@
-Return-Path: <mroos@linux.ee>
-Received: from math.ut.ee (math.ut.ee [193.40.36.2])
-	by ozlabs.org (Postfix) with ESMTP id 4029067A7A
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Feb 2005 07:55:44 +1100 (EST)
-Date: Thu, 24 Feb 2005 22:51:45 +0200 (EET)
-From: Meelis Roos <mroos@linux.ee>
-Sender: mroos@math.ut.ee
-To: Sven Luther <sven.luther@wanadoo.fr>
-In-Reply-To: <20050224170150.GA7746@pegasos>
-Message-ID: <Pine.SOC.4.61.0502242250050.21289@math.ut.ee>
-References: <20041206185416.GE7153@smtp.west.cox.net>
-	<Pine.SOC.4.61.0502221031230.6097@math.ut.ee>
-	<20050224074728.GA31434@pegasos>
-	<Pine.SOC.4.61.0502241746450.21289@math.ut.ee>
-	<20050224160657.GB11197@pegasos>
-	<Pine.SOC.4.61.0502241832510.21289@math.ut.ee>
-	<20050224170150.GA7746@pegasos>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: Tom Rini <trini@kernel.crashing.org>, Sven Hartge <hartge@ds9.gnuu.de>,
-	Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Christian Kujau <evil@g-house.de>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2.6.10-rc3][PPC32] Fix Motorola PReP (PowerstackII Utah)
- PCI IRQ map
+Return-Path: <olof@austin.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 97A7167A76
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Feb 2005 08:54:32 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e4.ny.us.ibm.com (8.12.11/8.12.11) with ESMTP id j1OLsRJo001469
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Feb 2005 16:54:27 -0500
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.12.10/NCO/VER6.6) with ESMTP id
+	j1OLsRm1052470
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Feb 2005 16:54:27 -0500
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11/8.12.11) with ESMTP id j1OLsR0k015885
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Feb 2005 16:54:27 -0500
+Received: from localhost.localdomain (dyn953186154.austin.ibm.com
+	[9.53.186.154])
+	by d01av02.pok.ibm.com (8.12.11/8.12.11) with ESMTP id j1OLsR82015868
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Feb 2005 16:54:27 -0500
+Date: Thu, 24 Feb 2005 15:50:07 -0600
+To: linuxppc-dev@ozlabs.org
+Message-ID: <20050224215007.GC15818@austin.ibm.com>
+References: <20050216181430.GA27031@austin.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20050216181430.GA27031@austin.ibm.com>
+From: olof@austin.ibm.com (Olof Johansson)
+Subject: Re: iBook G4: first wakeup has black screen
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,18 +36,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Then just dd your /boot/vmlinuz-2.6.10-powerpc to your prep partition, or
-> better yet to a tftp server, and try it out. If the scsi problems are there,
-> can you fill a bug report against kernel-source-2.6.10 ?
+On Wed, Feb 16, 2005 at 12:14:30PM -0600, Olof Johansson wrote:
 
-Thanks for the new kernel. Just filed a bug report on 
-kernel-source-2.6.10.
+> I've noticed one thing though: The very first time I wake the machine up
+> after sleeping the screen is dark (backlight off?). If I put it to sleep
+> and wake it up again everything goes back to normal.
 
-> You may probably want also to modify /etc/mkinitrd/mkinitrd:MODULES_DEP to dep
-> instead of MOST, or you may hit size problems with your initrd, i would be
-> interested in knowing that.
+... seems fixed in 2.6.11-rc5, at least I have yet to reproduce it.
 
-It worked without changing the module list, with 5.2M resulting vmlinuz.
 
--- 
-Meelis Roos (mroos@linux.ee)
+-Olof
