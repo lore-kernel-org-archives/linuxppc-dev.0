@@ -1,15 +1,28 @@
-Message-ID: <00ee01c104ba$882f1660$0400a8c0@earthlink.net>
-From: "Raymond Lo" <lo@routefree.com>
-To: "John Cagle" <jcagle@kernel.org>,
-	<linuxppc-embedded@lists.linuxppc.org>
-References: <Pine.LNX.3.95.1010627084008.2380C-100000@november.bhjjh.erols.com> <20010629104618.A22541@kernel.org>
-Subject: Re: 405GP network receive problem
-Date: Wed, 4 Jul 2001 11:52:53 -0700
+Message-ID: <1DF71FB881F4D311A6B700C04FA06A1AC43694@orca.desanasystems.com>
+From: "Marti, Felix" <fmarti@desanasystems.com>
+To: "'Raymond Lo'" <lo@routefree.com>,
+	John Cagle <jcagle@kernel.org>, linuxppc-embedded@lists.linuxppc.org
+Subject: RE: 405GP network receive problem
+Date: Wed, 4 Jul 2001 13:31:54 -0700 
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Hmmm, I'm sorry if this is too obvious and you already checked it, but I
+remember that our montavista kernel 2.4.0-test2 did not set the MAC address
+correctly... which caused some packets to be dropped.
+
+felix
+
+-----Original Message-----
+From: Raymond Lo [mailto:lo@routefree.com]
+Sent: Wednesday, July 04, 2001 11:53 AM
+To: John Cagle; linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 405GP network receive problem
+
 
 
 ----- Original Message -----
