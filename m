@@ -1,48 +1,32 @@
-Message-ID: <20000510234741.4727.qmail@web1701.mail.yahoo.com>
-Date: Wed, 10 May 2000 16:47:41 -0700 (PDT)
-From: Gabriel Ricard <g_ricard@yahoo.com>
+Message-ID: <20000511001504.11506.qmail@www0p.netaddress.usa.net>
+Date: 10 May 00 19:15:04 CDT
+From: jeramy b smith <ultrapenguin@netscape.net>
+To: chris mccraw <chrism@brahma.ticam.utexas.edu>
 Subject: Re: Lombard hard freeze (update: mem>64MB)
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-        Bernhard Reiter <bernhard@intevation.de>
-Cc: linuxppc-dev@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+CC: Bernhard Reiter <bernhard@intevation.de>, linuxppc-dev@lists.linuxppc.org
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Well, I've got a lombard and I'm having issues, and
-I'll do whatever I can to help some hackers get it
-working. I'm also looking to upgrade my memory
-(preferably from powerbookguy.com) so I'll have the
-64MB default module on the side, which I could easily
-send to you if it'd really help debug the problem.
+chris mccraw <chrism@ticam.utexas.edu> wrote:
+> i bought a 64M SO-DIMM from viking for $cheap when i got my lombard a year
+> ago.  in addition to the stock 64M, i've had no stability problems in
+linux.
+> macos is another story, of course...
+>
+> i've done some reasonably big compiles and run seti@home at the same time.
+> however i've never kept at it for excessive periods of time...i'll leave a
+> kernel make looping tonight building off an nfs disk to the local disk
+> and see if anything turns up by morning...
 
-Anything else?
+I have left my lombard running for 4 days in a row which included several
+sleeps. During this period I did a 6 hour stint playing with the development
+kernel code and did about 20 makes. No problems and this was after I bumped it
+up to 192. I could try building GRASS just to empirical though.
 
---- Michael Schmitz
-<schmitz@opal.biophys.uni-duesseldorf.de> wrote:
->
-> > It would so nice to have a person who can debug
-> it.
->
-> Send me a memory module :-)
->
-> Does this mean I was lucky to get only 64 MB, or to
-> get a working 64MB
-> module?
->
-> How much RAM does Paul have in his Lombard?
->
-> 	Michael
->
->
->
-
-
-=====
-Gabriel Ricard
-g_ricard@yahoo.com
+-Jeramy
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
