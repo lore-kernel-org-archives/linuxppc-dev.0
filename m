@@ -1,21 +1,30 @@
-Message-ID: <004f01bf31ab$ae8e6740$67f102de@sjzhu>
-Reply-To: "Shuangjun Zhu (r44089)" <r44089@email.sps.mot.com>
-From: "Shuangjun Zhu" <r44089@email.sps.mot.com>
-To: "Linux -Dev" <linuxppc-dev@lists.linuxppc.org>
-Subject: Help on Linux for MPC860
-Date: Thu, 18 Nov 1999 18:00:01 +0800
-MIME-Version: 1.0
-Content-Type: text/plain;	charset="gb2312"
+Date: Thu, 18 Nov 1999 11:01:19 +0100
+To: "David N. Welton" <davidw@linuxcare.com>, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: again 2.3.28
+Message-Id: <19991118110119.020630@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello,
+On Wed, Nov 17, 1999, David N. Welton <davidw@linuxcare.com> wrote:
 
-How to disable the I-Cache and D-Cache in the kernel for MPC860?
+>So, we can't use prom_print to print checkpoints and we can't use
+>printk yet.
 
+if using BootX, you can use prom_print after mmu_init provided that you
+make sure the fb is mapped (look at the function in prom.c for that, it's
+called by xmon initialisation).
 
-Thanks!
-Shuangjun Zhu
+If you are not using BootX, then you can grab code that make prom_print
+available the same way it does with BootX, but with OF. (Basically, it
+fills a fake boot_info structure for use by the display code from infos
+returned by OF). The code for that is in my iBook patches, look at the
+prom.c patches.
+
+In both case, you have to take care of mapping the fb.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
