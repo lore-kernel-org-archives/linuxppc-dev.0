@@ -1,31 +1,31 @@
-Date: Thu, 07 Oct 1999 23:39:20 -0700
-From: Hugh Caley <hcaley@loomer.com>
-Subject: Re: XML tool for Linuxppc??
-To: Scott Janis <sjanis@thewire.ap.org>, linuxppc-dev@lists.linuxppc.org
-Reply-to: hcaley@loomer.com
-Message-id: <37FD9197.2B92C688@loomer.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii; x-mac-type="54455854";
- x-mac-creator="4D4F5353"
+Message-ID: <37FD998B.3D0E62B0@chpc.utah.edu>
+Date: Fri, 08 Oct 1999 01:13:16 -0600
+From: Lou Langholtz <ldl@chpc.utah.edu>
+MIME-Version: 1.0
+To: Takashi Oe <toe@unlserve.unl.edu>
+Cc: Benjamin Herrenschmidt <bh40@calva.net>, Paul.Mackerras@cs.anu.edu.au,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: update on macserial/DMA
+References: <Pine.LNX.3.96LJ1.1b7.991005234830.1210A-100000@ofey.inetnebr.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I've been able to get IBM's java XML editor Xeena to work with the
-jdk121_pre-v1 mentioned at www.linuxppc.org.
+Takashi Oe wrote:
 
-I don't know what I'm doing with it...so I can't comment on how good it is ; )
+> Hi,
+>
+> I re-wrote the serial DMA support code today and put the patch against
+> samba/vger linux-2.2.12 source trees (as of tonight) at
+> ftp://ppc.linux.or.jp/pub/users/toe/serial/.
+> I think the patch includes most of macserial patches (Ben's and Lou's
+> are in there, for sure) that I know of. . .
 
-http://www.alphaworks.ibm.com
-
-
-Hugh
-
-Date: Thu, 07 Oct 1999 12:45:11 -0400
-From: Scott Janis <sjanis@thewire.ap.org>
-Subject: XML tool for Linuxppc??
-
-Anyone know whre or how I can aquire an XML tool for linuxppc R4 and R5?
+We should probably also clean up the two unneeded buf[64] allocations. These
+would be at lines 1535 and 1572 in Takashi Oe's macserial.c file. They've
+been left over for a few rounds now and I don't see how they're needed for
+anything.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
