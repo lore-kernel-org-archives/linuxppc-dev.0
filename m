@@ -1,34 +1,42 @@
-Date: Tue, 25 May 1999 17:13:54 -0400 (EDT)
-From: "Jason Y. Sproul" <jsproul@mail.wesleyan.edu>
-Reply-To: jsproul@mail.wesleyan.edu
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: controlfb update
-In-Reply-To: <Pine.GSO.4.05.9905251650320.14882-100000@mail.wesleyan.edu>
-Message-ID: <Pine.GSO.4.05.9905251706510.14882-100000@mail.wesleyan.edu>
+Message-ID: <374B35B4.F477CA84@dgs.monash.edu.au>
+Date: Tue, 25 May 1999 23:43:48 +0000
+From: Brendan Simon <brendan@dgs.monash.edu.au>
+Reply-To: brendan@dgs.monash.edu.au
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: David Edelsohn <dje@watson.ibm.com>
+CC: egcs mailing list <egcs@egcs.cygnus.com>,
+        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>,
+        Cross-GCC <crossgcc@cygnus.com>
+Subject: Re: can't find crt1.o. egcs powerpc-linux cross-compile problem.
+References: <9905251517.AA44940@marc.watson.ibm.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 25 May 1999, Jason Y. Sproul wrote:
+David Edelsohn wrote:
 
-> Now that the dual-bank stuff is in, my boot logo and colours in X are
-> rather munged [...] I changed the colour mode returned to the fb
-> subsystem when using CMODE_32 from DIRECTCOLOR to TRUECOLOR?
+>         Did you build cross-binutils at the same time as cross-gcc?
+>
+> David
 
-Okay, just shoot me for that one. Doh! (Note to self: Don't "fix" things
-you don't fully understand.)
+Nope.  I built binutils seperately and installed them.  I then added the
+install path to my PATH environment variable and then started to build
+egcs.  I was following the LinuxPPC cross-compiler instructions and have
+done this for a powerpc-eabi cross-compiler.  The only difference was
+that I left out the --with-newlib option to configure.  Having read
+other replies, this option MIGHT solve my problem.  The LinuxPPC
+instructions for building a cross-compiler say that the --with-newlib
+option is there to avoid linking in __eprintf.  I know that Linux now
+uses glibc and was a bit worried about using the --with-newlib switch in
+case it stuffed things up later.  I couldn't find any references to
+linux in the newlib source (which is sort of what I expected) so I
+thought that I did not need use the --with-newlib option.
 
-I'm still having intermittent problems with jerky scrolling on the console,
-though. Not sure what's going on there... it seems it may happen only after
-running X once. Is there some magic in the hardware panning? I have no clue
-how this works just yet.
+Can anyone advise me on the best approach ?
 
-........................................................................
-Jason Y. Sproul                    http://www.con.wesleyan.edu/~jsproul/
-jsproul@wesleyan.edu            jsproul@iced.com    http://www.iced.com/
-     Eagles may soar, but weasels don't get sucked into jet engines.
+Thanks,
+Brendan Simon.
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
