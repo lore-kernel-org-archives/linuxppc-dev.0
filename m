@@ -1,53 +1,48 @@
-Date: Thu, 12 Aug 1999 12:00:45 -0700 (PDT)
-From: "David A. Gatwood" <dgatwood@mvista.com>
-To: Paul.Mackerras@cs.anu.edu.au
-cc: Jes.Sorensen@cern.ch, Geert.Uytterhoeven@cs.kuleuven.ac.be,
-        linuxppc-dev@lists.linuxppc.org, linux-fbdev@vuser.vu.union.edu,
-        rth@cygnus.com
-Subject: Re: [linux-fbdev] Re: readl() and friends and eieio on PPC
-In-Reply-To: <199908112352.JAA25021@tango.anu.edu.au>
-Message-ID: <Pine.LNX.3.96.990812115345.25431A-100000@mvista.com>
+Message-ID: <37B31A3B.8532D794@wanadoo.fr>
+Date: Thu, 12 Aug 1999 21:02:19 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: toa@pop.agri.ch
+CC: Linux-User <linuxppc-user@lists.linuxppc.org>,
+        Linux-Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: xhfs & MacOS standard disks corruption
+References: <37B30E49.844CA5A8@pop.agri.ch>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 12 Aug 1999, Paul Mackerras wrote:
-
-> Jes Sorensen <Jes.Sorensen@cern.ch> wrote:
+Andreas Tobler wrote:
 > 
-> > I will have to disagree with you on this one, I consider the PPC
-> > implementation to be very broken in this regard.
+> Hi,
 > 
-> "Very broken" - because drivers work and there is no measurable
-> performance impact?? !!! ??
+> has anybody made similar experiences with xhfs (from hfsutils-3.2-1b):
 > 
-> The only possible argument for *not* having the eieio in readl/writel
-> is that it hurts performance (actually and measurably, not just
-> potentially).
+> Under MacOs 8.6 cleaned the disk with DiskFirstAid 8.5.2.
 
-No, that's not the only argument.  eieio and... isync, I think... causes
-the PPC 601 to shift one of its registers a few bits and send out an
-address only transaction using the address that results from that.  I
-can't remember which register off the top of my head.  MkLinux ran into
-this in the late Pre-DR3 stage and it nearly cost us a large percentage of
-x100 support do to a hardware bug that can cause the machine to hang if an
-address only transaction is done into certain parts of the address space.
+hfsutils-3.2-1b is pretty old, maybe from the times when hfs support was
+indeed unsafe (March 1998 or so). Are you still using R4? Even then, you
+could get a newer hfsutils*.src.rpm and compile it; for ex. from the
+contrib directory on ftp.linuxppc.org.
 
-The workaround is a really nasty bunch of code that creates a sizable
-performance hit by forcing that register to be cleared before the eieio
-and restored afterwards.  As a result, putting eieio in those macros will
-have a _very_ major performance hit if yuo ever start supporting x100
-PowerMacs.  It will also require lots of really nasty #ifdef structures in
-the readl and writel code that can be avoided just by making a macro
-eieio() and using it only where needed.  It will also greatly decrease the
-headaches for x100 folks have in their efforts to find all the eieios and
-figure out why their machines crash randomly.  :-)
+> Boot into Linux, startx, xhfs & open the cleaned partition, transfer a
+> file, in my case 9MB, to the mounted partition.
+> Afterwards closed the xhfs shut the machine down to reboot into MacOS.
+> 
+> A check on this partition gives me an error in the catalog tree.
+> Ok, doing a repair to it works. But as it happened to me doing that
+> several times without checking/reparing the partition I got an
+> unreparable partition which I had to erase.
+> This is done with 2.2.10 & 2.2.11.
+> Question: is xhfs bad? or is there something uggly with hfs support?
 
+MacOS 8.6 + Linux 2.2.10, and then hfsutils-3.2-1b: Somewhat
+incongruous.
 
-David
+Disclaimer: Your problem could be something else entirely, of course.
 
+--
+Martin
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
