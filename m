@@ -1,61 +1,73 @@
-Date: Wed, 7 Aug 2002 15:51:31 -0700
-From: Matt Porter <porter@cox.net>
-To: acurtis@directvinternet.com
-Cc: mlan@cpu.lu, linuxppc-dev@lists.linuxppc.org
-Subject: Re: PCI enlightenment follow-up
-Message-ID: <20020807155131.B20123@home.com>
-References: <E17cK7s-000080-00@piglet.grunz.lu> <NCBBIINEHIPFGJPLBEIFGEHLDKAA.acurtis@directvinternet.com>
+Subject: Weird interrupt problem
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+To: linuxppc-dev@lists.linuxppc.org
+Content-Type: multipart/mixed; boundary="=-ucK6nKLzBlp2Y33RYoYr"
+Date: 08 Aug 2002 01:05:17 +0200
+Message-Id: <1028761518.1262.1236.camel@tibook>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <NCBBIINEHIPFGJPLBEIFGEHLDKAA.acurtis@directvinternet.com>; from acurtis@directvinternet.com on Wed, Aug 07, 2002 at 09:03:53AM -0700
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Aug 07, 2002 at 09:03:53AM -0700, acurtis@directvinternet.com wrote:
->
-> > > ======= Board specs ========
-> > > Host phys: 0x40000000 - 0x47ffffff	=>
-> > > PCI I/O space 0x00000000 - 0x07ffffff
-> > >
-> > > Host phys: 0x48000000 - 0x4fffffff =>
-> > > PCI Memory space 0x00000000 - 0x07ffffff
-> > >
-> > > PCI phys: 0x40000000 -  0x47ffffff =>
-> > > Host Memory 0x00000000 - 0x07ffffff
-> > >
-> > > Host Memory:
-> > > phys: 0x00000000
-> > > virt: 0xc0000000
-> > > size: 0x08000000
-> > >
-> > > PCI BAR: (only 1 bus)
-> > > Memory: 0x00000000
-> > > I/O:    0x00000000
-> > >
-> > > ========== Boot Messages ===========
-> > > /* SCSI controller resource allocation is fine */
-> > > PCI:00:0f.0: Resource 0: 47ffff00-47ffffff (f=101)
-> > > PCI:00:0f.0: Resource 1: 4ffffc00-4fffffff (f=200)
-> > > PCI:00:0f.0: Resource 2: 4fffc000-4fffdfff (f=200)
-> >
-> > OK, obviously, the pci_dev resource regions get set up with the
-> > necessary offset to get to the right address on the PCI bus.
->
-> Yes, but I am beginning to suspect that this is where the problem is. If the
-> I/O addresses should not be translated because the in/out() functions
-> automagically add the offset, then perhaps the I/O regions should not be
-> fixed?
+--=-ucK6nKLzBlp2Y33RYoYr
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Yep, that's a problem.  Your comment states that
-isa_io_base == io_base_virt.  Yet I see isa_io_base=0x00000000
-and io_base_virt=0x40000000.  You should have isa_io_base=0x40000000.
-You don't want those I/O BARs fixed up as you've suggested above.
 
-Regards,
---
-Matt Porter
-porter@cox.net
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+Today this happened to me the second time: All of a sudden, the USB
+mouse stopped working. At the same time this appeared in the syslog:
+
+Aug  7 17:19:57 tibook kernel: Unhandled interrupt 1d, disabled=20
+
+Plugging the mouse to the other socket worked, but it wouldn't work
+again in the original one. As you can see in the attached
+/proc/interrupts, interrupt 29 (=3D1d) is unknown. Interestingly,
+interrupt 28 seems to be for the USB socket which stopped working (I
+think it was the same one when the first problem first occured, might be
+coincidence though). Was it somehow rewarded for its 100'000th
+occurence? ;) Seriously, is it possible that the number changed somehow?
+
+
+This wouldn't be all that bad, if the whole system wasn't very sluggish
+afterwards. When it occured the first time, I had CONFIG_TAU enabled in
+the kernel, which Ben said might cause the sluggishness at least. But
+now it's disabled.
+
+
+This is on a TiBook III/667 running 2.4.18-ben0-lotsanicestuff if it
+matters. The first occurence was with 2.4.19-presomething-ben0.
+
+
+Has anyone experienced anything similar?
+
+
+--=20
+Earthling Michel D=E4nzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
+XFree86 and DRI project member   /  CS student, Free Software enthusiast
+
+--=-ucK6nKLzBlp2Y33RYoYr
+Content-Disposition: attachment; filename=interrupts.BAD
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; name=interrupts.BAD; charset=ISO-8859-1
+
+           CPU0      =20
+  1:       1908   OpenPIC   Edge      Built-in Sound out
+  2:          0   OpenPIC   Edge      Built-in Sound in
+ 19:     132189   OpenPIC   Level     ide0
+ 20:         51   OpenPIC   Level     ide1
+ 25:    1557896   OpenPIC   Level     VIA-PMU
+ 26:        226   OpenPIC   Level     keywest i2c
+ 27:      33611   OpenPIC   Level     usb-ohci
+ 28:     108865   OpenPIC   Level     usb-ohci
+ 41:    1800835   OpenPIC   Level     eth0
+ 42:          0   OpenPIC   Level     keywest i2c
+ 47:     398650   OpenPIC   Level     GPIO1/ADB
+ 55:          0   OpenPIC   Edge      NMI - XMON
+ 57:         19   OpenPIC   Level     Airport
+ 61:          1   OpenPIC   Edge      Headphone detect
+BAD:          1
+
+--=-ucK6nKLzBlp2Y33RYoYr--
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
