@@ -1,45 +1,29 @@
-Date: Fri, 21 Sep 2001 09:04:32 +0200 (MEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Dan Malek <dan@mvista.com>,
-	Stefan Roese <stefan.roese@esd-electronics.com>,
-	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>,
-	Linuxppc-Commit <linuxppc-commit@source.mvista.com>
-Subject: Re: CPCI-405 port (PPC405GP)
-In-Reply-To: <20010920145632.A17555@cpe-24-221-152-185.az.sprintbbd.net>
-Message-ID: <Pine.GSO.4.21.0109210903000.3006-100000@mullein.sonytel.be>
+Message-ID: <3BAAF48B.2C734E71@mvista.com>
+Date: Fri, 21 Sep 2001 04:04:27 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Errata 67/77 / walnut bugs (was: Re: Erratum 51 bugfix?)
+References: <20010917152316.O3851@zax> <3BA62583.55E48A97@mvista.com> <20010918102901.A1183@zax> <3BA7980B.EEBF1F5D@mvista.com> <20010919121954.D13693@zax> <3BA83D9D.87F9B1E1@mvista.com> <20010921143645.F20058@zax> <3BAACEBA.F71605F@mvista.com> <20010921153359.G20058@zax>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, 20 Sep 2001, Tom Rini wrote:
-> On Thu, Sep 20, 2001 at 05:43:10PM -0400, Dan Malek wrote:
-> > Tom Rini wrote:
-> > > .... In some parts of the PPC world, we can't/don't for various
-> > > reasons (technical and/or ingrained).
-> >
-> > I can't think of any that don't......Help me remember :-).
->
-> heh.  Well, chrp and pmac really should use yaboot or something similar.
+David Gibson wrote:
 
-Do you use yaboot on your LongTrail?
+> ... but it's certainly improved from what it was before.
 
-I still use the goof old OF booting, and cannot test another boot method right
-now because all my hardware is packed for the move (which is happening in
-different stages :-(
+I pushed the patch.  It would be nice if you could send patches
+against the latest version of the tree, like do a pull and test
+it just before you post it.  There were parts of the patch that
+wouldn't apply and I had to do it manually.  Check it to ensure
+I got everything OK.
 
-Gr{oetje,eeting}s,
+Thanks.
 
-						Geert
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
