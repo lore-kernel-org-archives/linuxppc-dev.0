@@ -1,28 +1,24 @@
-Date: Mon, 29 May 2000 10:51:58 -0600
-Subject: Looking for development kit
+Date: Mon, 29 May 2000 13:25:35 -0600
+Subject: IBM PowerPC - Linux Connections?
 From: Mark Morrill <mmorrill@powersurfr.com>
 To: <linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <B557FC4D.6F72%mmorrill@powersurfr.com>
+Message-ID: <B558204F.6F93%mmorrill@powersurfr.com>
+In-Reply-To: <B5581C35.6F8D%mmorrill@powersurfr.com>
 Mime-version: 1.0
 Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hi
 
-I'm interested in developing a specialized box that runs Linux on a G3 chip.
-My background is more software so I need to be pointed in the right
-direction here... :)
+http://www.chips.ibm.com/products/powerpc/linux/
 
-I'm looking for a kit that would consist of a motherboard, chip,
-powersupply, ethernet, harddrive, ...
 
-I also need some raw resources to figure out where to go next :)  For
-example, is there a website on "How I built a PowerPC out of bits and
-pieces, a Swiss army knife, and a potato for power"?
+I've been looking for a means to build a Linux appliance and this IBM url
+seems to have the answer - except for a real product I can play with.
 
-Thanks,
+Anybody know where I could get my hands on one of these boards?
 
 Mark
 
