@@ -1,62 +1,145 @@
-Message-ID: <36D506B0.72582B7E@wanadoo.fr>
-Date: Thu, 25 Feb 1999 09:15:44 +0100
-From: Martin Costabel <costabel@wanadoo.fr>
-MIME-Version: 1.0
-To: nsheeley@austin.rr.com
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: semaphore-helper.h
-References: <013092421221829FE5@mail5.austin.rr.com>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <v04003a02b2fac8f8e52a@[204.22.210.180]>
+In-Reply-To: <Pine.LNX.4.04.9902242145360.503-100000@narn.local.drgw.net>
+References: <Pine.LNX.3.96.990223143830.3620A-100000@lx1.microbsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Thu, 25 Feb 1999 10:28:42 +0000
+To: linuxppc-dev@lists.linuxppc.org
+From: "sean o'malley" <somalley@ed.mde.state.mi.us>
+Subject: Re: PowerPC Beowulf Who?
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-When I just rechecked, I saw that it is fixed now!
-Paul and Gary are faster than the delays in the mailing lists.
-Thanks!
+Brief:
+Firewire is _begging_ for clustering/Assymetrical processing (think about a
+block of networked RAM). Its almost a waste not to use it for that.
 
---
-Martin
+Second its begging to _not_ to use TCP/IP
 
-nsheeley@austin.rr.com wrote:
-> 
-> I just checked out the current CVS from
-> 
-> :pserver:cvs@cvs.samba.org:/cvsroot
-> 
-> All seems well until I try to do a make:
-> 
-> make[2]: Entering directory `/local/src/CVS_kernel/linux/kernel'
-> gcc -D__KERNEL__ -I/local/src/CVS_kernel/linux/include -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer -D__powerpc__ -fsigned-char -msoft-float -pipe -fno-builtin -ffixed-r2 -Wno-uninitialized -mmultiple -mstring   -fno-omit-frame-pointer -c -o sched.o sched.c
-> sched.c:39: asm/semaphore-helper.h: No such file or directory
+Third I dont think it needs routers/switches and it definately doesnt need
+as much work to install a network vs fibre.
 
-You don't get the __down_trylock error in ksyms.c? Did they already
-start repairing the 2.2.2 bug?
+Fourth if someone wants to hack at a firewire driver try (I dont have a
+firewire)
+http://www.edu.uni-klu.ac.at/~epirker/ieee1394.html
 
-> 
-> Hmm.. only three arch's asm-includes have semaphore-helper.h
-> (i386, sparc, sparc64), but its not ifdef'ed in any way in
-> sched.c
-> 
-> So my question are:
-> 
->         a.  Should I expect to be able to CVS checkout and
->             make a working kernel?  I am wondering about the stability
->             of the tree -- what's my percent chance that I won't have
->             to debug anything?
+Fifth, I really need to read up on this stuff =)
 
-In principle, it should work. But there are always bugs possible. And
-then there are guys with a weird sense of humour, in this case Linus
-Himself. Read
-http://lists.linuxppc.org/listarcs/linuxppc-user/199902/msg01298.html
+Sixth, Compaq is selling Linux clusters with the new Alphas. (or so i read
+somewhere)
 
->         b.  If yes to a., does anyone have a patch for the above problem.
+Sean
 
-Check out ("cvs update") kernel/ksyms.c -r1.107 and kernel/sched.c
--r1.124.
+>On Tue, 23 Feb 1999, Robert G. Werner wrote:
+>
+>>
+>> I'm pretty new to Beowulf myself but I haven't ran across any groups
+>> specifically oriented toward supporting PPC.
+>>
+>> As in regards to the General Beowulf:
+>> Turnkey systems for Beowulf are still a new phenomenon.  Most of the famous
+>> clusters I've ever heard of were hand built.
+>> I've heard of some companies (don't remember names) that will sell turnkey
+>> systems but I'm assuming those are IA32 or Aplha.
+>> What exactly do you mean by SW revision support?
+>>
+>> On the PPC:
+>> IIRC Firewire isn't even working under LinuxPPC as a regular interface
+>>yet.
+>> Looking into using it for networking in a Beowulf cluster is a bit
+>> premature IMHO.  Is there even any commercial HW for this?
+>> I really do have a hunch that once you can get Firewire,  say,  to work
+>>with
+>> Linux on PPC,  then it will be trivial to make it work with the clustering
+>> libs.
+>
+>I wouldn't hold out high hopes for firewire.. Fast ethernet and Gigabit
+>ethernet are both much more cost effective, and available now. One of the
+>things that makes fast ethernet work so well for Beowulf applications is
+>the price/performance one can get with fast ethernet switches. Gigabit
+>ethernet is quickly getting very affordable also.
+>
+>I doubt firewire switches will be available any time in the near future,
+>not to mention TCP/IP support for firewire.
+>>
+>> Check out the Linux Paralale-HOWTO
+>> (at http://metalab.unc.edu/mdw/HOWTO/Parallel-Processing-HOWTO-2.html)
+>> for some information on who is developing the non-ethernet networking
+>> technologies for clustering.  Perdue is big in this field,  IIRC.  They
+>>have
+>> a nice technique using the paralale port for networking even(PAPERS).
+>> As far as I know,  all of these are great questions but Beowulf clustering
+>> technology is still experimental enough that many of your questions haven't
+>> been completely answered for IA32 and Alpha let alone PPC.
+>> Again,  I'm not an expert.  Just an enthusiastic beginer like yourself.
+>>
+>
+>Also see http://www.scl.ameslab.gov/Projects/ClusterCookbook/
+>
+>Actually, I would say Beowulf applications are quite useable.. I work at
+>the Scalable Computing Lab (the above url), and we regularly users running
+>scientific applications on a 64 node Pentium Pro cluster.
+>
+>> BTW,  what applications are you looking to use your cluster for?  Do you
+>>have a
+>> specific task in mind or are you just looking to make sure that LinuxPPC
+>>can do
+>> clusters too?
+>>
+>> Robert G. Werner
+>> rwerner@lx1.microbsys.com
+>> Impeach Conggress!!
+>>
+>> "Just think, with VLSI we can have 100 ENIACS on a chip!"
+>> -- Alan Perlis
+>>
+>> On Tue, 23 Feb 1999, Campbell, Marc wrote:
+>>
+>> > There are several issues.  Some PPC specific and some not.
+>> >
+>> > General issues would include the ability to procure turn key system
+>>and software revision support.
+>> >
+>> > PPC specific issues start with the assurance that the necessary  libs
+>>(e.g. MPI) have been checked out on PPC hardware clusters.
+>> >
+>> > Another PPC issue is cluster communication.  In some cases standard
+>>ethernet is not enough cluster bandwidth.  In what case does FireWire
+>>make sense in a PPC Beowulf (Linux) cluster?  Is Myrinet (www.myri.com) a
+>>more appropriate clustering communication
+>>  system? If Myrinet, then where are the LinuxPPC or YDL drivers?
+>>Myrinet lists Alpha Linux and x86 Linux but NOT PPC Linux
+>>(http://www.myri.com:80/GM/).
+>> >
+>> > Who is taking initiative in the PowerPC/AltiVec Beowulf (Linux
+>>clustering) area?
+>
+>It seems the Linux clustering area is a rather small (but quickly growing)
+>niche, and the PPC niche even smaller. To compound the problem, PPC
+>hardware either isn't supported very well under Linux (the new Apple
+>G3's), or is expensive (Motorola's MTX boards). This isn't to say the new
+>G3's won't get support eventually, but by the time it's available, the
+>hardware is old. Someone building a cluster wants it to work ASAP, and
+>doesn't want year-old hardware.
+>
+>I personally think the Motorola MTX boards would be terrific for clusters
+>since one could rack mount the boards on an approximately 2-3 inch
+>spaceing since SCSI and fast ethernet are built on the board. Then there's
+>the bonus that they only draw 30 watts for a dual 604e, cutting down on
+>cooling and power bills. The only difficulty is you're going to pay about
+>twice what a similiar Pentium II cluster will cost. (of course, rack
+>mounting PII's isn't exactly cheap either)
+>
+>--------------------------------------------------------------------------
+>| Troy Benjegerdes    |       troy@microux.com     |    hozer@drgw.net   |
+>|    Unix is user friendly... You just have to be friendly to it first.  |
+>| This message composed with 100% free software.    http://www.gnu.org   |
+>--------------------------------------------------------------------------
+>
 
---
-Martin
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
