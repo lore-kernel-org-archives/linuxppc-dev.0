@@ -1,55 +1,67 @@
-Message-ID: <20040119133539.90526.qmail@web9503.mail.yahoo.com>
-Date: Mon, 19 Jan 2004 14:35:39 +0100 (CET)
-From: =?iso-8859-1?q?sulvin=20xavier?= <sulvinx@yahoo.fr>
-Subject: M4 error in RedHat 9.0 and kdevelop
-To: central-hack@yahoogroups.com, hackerz2@yahoogroups.com,
-	hackerz_forum@yahoogroups.com, happyhacker@yahoogroups.com,
-	hh-unix@yahoogroups.com, hhnetwork@yahoogroups.com,
-	hthr@yahoogroups.yahoo.com, linuxppc-embedded@lists.linuxppc.org,
-	moldsat@yahoogroups.com, tvrsatelit@yahoogroups.com
+Message-ID: <A3240F62EF3C2749B1A25D3BC9548F410309BE@ExchWENZ02.wenz.global.vpn>
+From: Rod Boyce <rod_boyce@stratexnet.com>
+To: Alex Zeffertt <ajz@cambridgebroadband.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Stable File System for embedded product
+Date: Mon, 19 Jan 2004 10:47:16 -0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+I would much more strongly suggest not mounting this partition
+read-write as this is most likely what is corrupting the partition also
+try noatime as well.  /etc is required for boot up so I would suggest
+changing the way you use /etc.  We have soft links to another location
+on another file system and keep /etc combined with the root file system.
+Upwards of 10K power cycles can't be wrong.
 
 
-I have just installed a new copy of Redhat 9.0 and
-tried my new KDevelop. I have create a new project
-without writing any additional code and tried to
-compile it, but I am getting following error:
+Rod
 
-
-aclocal.m4:3009: your implementation of
-AM_INIT_AUTOMAKE comes from an
-aclocal.m4:3009: old Automake version. You should
-recreate aclocal.m4
-aclocal.m4:3009: with aclocal and run automake again.
-
-
-I guess that it some type of version mix up but I
-can't get the right versions so it will all work out.
-
-
-Automake - 1.6.3
-Autoconf - 2.57
-M4 - 1.4.1
-KDevelop - 2.1.5
-KDE - 3.1-10
-
-
-Any suggestions ?
-
-
-Thanks
-
-
-
-
-_________________________________________________________________
-Do You Yahoo!? -- Une adresse @yahoo.fr gratuite et en français !
-Yahoo! Mail : http://fr.mail.yahoo.com
+> -----Original Message-----
+> From: Alex Zeffertt [mailto:ajz@cambridgebroadband.com]
+> Sent: Monday, 19 January 2004 11:04 p.m.
+> To: S. Hebbar
+> Cc: linuxppc-embedded@lists.linuxppc.org
+> Subject: Re: Stable File System for embedded product
+>
+>
+> Are you using a flash device (i.e. /dev/mtdblockN) for /etc?  If so,
+> then I would recommend JFFS for this partition.  JFFS2 is (supposedly)
+> more reliable, but we have found that you can't fit it on a flash
+> partition of only 4 flash sectors since it needs more than that for
+> scratch.
+>
+> If it's not flash then maybe you should consider ext3 - a journalling
+> extension to ext2.
+>
+> Alex
+>
+> On Mon, 2004-01-19 at 06:23, S. Hebbar wrote:
+> > Hello,
+> >
+> > I am trying to find which file system is the best for
+> > /etc partition on an embedded linux platform.
+> >
+> > I am using the following file systems for linux & rootfs:-
+> > Linux: CramFS (linux 2.4.20 denx) (read-only)
+> > RootFS: CramFS  (read-only)
+> >
+> > At the moment, I am using ext2 partition for /etc (read-write)
+> > But, 1 out of  4 power-cycles of the board corrupts the
+> > /etc partition.
+> >
+> > Any information related to the above topic is
+> > grately appreciated.
+> >
+> > Regards,
+> > S. Hebbar.
+> >
+> >
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
