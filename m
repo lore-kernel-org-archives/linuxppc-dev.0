@@ -1,54 +1,45 @@
-Message-ID: <3BD44C6D.10209@metaparadigm.com>
-Date: Tue, 23 Oct 2001 00:42:21 +0800
-From: Michael Clark <michael@metaparadigm.com>
+Message-ID: <20011022181106.29532.qmail@web13107.mail.yahoo.com>
+Date: Mon, 22 Oct 2001 11:11:06 -0700 (PDT)
+From: Dave Ray <g4tinker@yahoo.com>
+Subject: Re: idebus=133 ?
+To: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20011022131938.21190@smtp.adsl.oleane.com>
 MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Late Broadcom link detection makes IP config (bootp) fail
-References: <3BD39166.7020600@metaparadigm.com> <20011022131636.2681@smtp.adsl.oleane.com> <20011022084148.G4933@cpe-24-221-152-185.az.sprintbbd.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tom Rini wrote:
+Ben and Tom,
 
-> On Mon, Oct 22, 2001 at 03:16:36PM +0200, Benjamin Herrenschmidt wrote:
+Thanks for the replies. The reason I ask is that when
+I use "idebus=66" in the boot argument, the syslog
+shows bootup message "using 66MHz bus speed.." rather
+than "assuming 33MHz bus speed..". So I assumed the
+inclusion of the boot argument sped up the computer.
+Are the appearances of these messages in the syslog
+fictitious? Or should I simply not go over 66?
+
+-Dave
+
+--- Benjamin Herrenschmidt <benh@kernel.crashing.org>
+wrote:
+> >
+> >It's my understanding the Mac G4 towers run at a
+> bus
+> >speed of 133 MHz. However the kernel argument for
+> >idebus=xx apparently only allows values up to 66.
+> Is
+> >this intentional?
 >
->>>Okay, changed to BMAC and it works okay - should BMAC detection come
->>>before GMAC?
->>>
->>There is no way bmac would replace gmac, those are different drivers
->>for different chips.
->>
->
-> But would bmac ever try and init some gmac hw?  That's sort of what it
-> sounded like Michael was saying.  But anyhow, gmac and bmac use the
-> module_init bits and thus there's no way to enforce ordering of init.
-
-
-My apologies. I had been using gmac all along but it appears to be an
-intermittent problem. Sometimes the interface comes up in time for IP
-autoconfig and sometimes not. I'll go have a look at the IP config code
-to see if get it to wait a while for the interface to come up.
-
-Here's a successful (garbled) log where the link came up just in time (i
-can't capture the failed log as I don't have a serial port on my iMac).
-
-eth0: PHY ID: 0x00406212
-eth0: Found Broadcom BCM5201 PHY
-Sending BOOTP requests .<6>eth0: Link state change, phy_status: 0x782d
-eth0:    Link up ! BCM5201/5221 aux_stat: 0x003e
-eth0:    Full Duplex: 0, Speed: 100
-. OK
-IP-Config: Got BOOTP answer from 10.1.0.4, my address is 10.1.0.42
-IP-Config: Complete:
-       device=eth0, addr=10.1.0.42, mask=255.255.0.0, gw=10.1.0.254,
-      host=10.1.0.42, domain=, nis-domain=(none),
-      bootserver=10.1.0.4, rootserver=10.1.0.7, rootpath=/nb/root
-
-~mc
+> I don't think this value has any meaning on macs.
+> It's
+> related to the IDE bus frequency, which is 66Mhz on
+> Apple "UDMA capable" HW and 33 on older chipsets,
+> but
+> the ide-pmac.c code does all the calculations
+> internally
+> and shouldn't rely on the generic idebus value.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
