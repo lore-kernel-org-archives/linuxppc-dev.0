@@ -1,34 +1,32 @@
-Date: Mon, 1 Feb 1999 11:34:29 -0700 (MST)
-From: Matt Porter <mmporter@home.com>
-To: Gabriel Paubert <paubert@iram.es>
-cc: David De Ridder <david.de.ridder@bitsmart.com>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: LinuxPPC on MVME 2306 board
-In-Reply-To: <Pine.HPP.3.96.990201140400.16636D-100000@gra-ux1.iram.es>
-Message-ID: <Pine.LNX.3.96.990201113120.32358B-100000@liberty.chnd1.az.home.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <Pine.SGI.4.02A.9902011514570.11398-100000@myst.ee.qub.ac.uk>
+Date: Mon, 1 Feb 1999 20:14:48 +0100
+To: Owen Waller <O.Waller@ee.qub.ac.uk>, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: matroxfb, anybody? (More details...)
+Message-Id: <19990201201448.020647@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 1 Feb 1999, Gabriel Paubert wrote:
+On Mon, Feb 1, 1999, Owen Waller <O.Waller@ee.qub.ac.uk> wrote:
 
-> > As I understand from some messages in this list, several people have
-> > been able to run LinuxPPC on such boards.
-> 
-> At least simliar ones, I don't remember exactly what the 230x has. But as
-> long as it has a DEC21x4x Ethernet, there should not be any problem...
+>If I have two idential video boards in my Mac one "mac" specific which
+>shows up in the OF tree, and one that is x86 sourced and doesn't show up
+>under OF how can we initialise both boards correctly.
 
-One note: there is a problem with DEC21143 support in the current de4x5
-driver that causes the MVME2300sc and 2400 to crash on driver init.  I'm
-still chasing this...These are these only MVME boards with major problems
-under Linux (unless you don't build in Ethernet support).
+It will not appear in OF as a display device and may not appear with a
+name, but are you sure it doesn't appear at all under it's generic
+pciXXXX,YYYY name ? (where XXXX is the vendorID and YYYY the deviceID).
 
---
-Matt Porter
-mmporter@home.com
-Unix is a Linux-like operating system.
+
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
+
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
