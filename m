@@ -1,26 +1,29 @@
-Message-ID: <004a01c252f7$6afed300$4c00a8c0@udtech.net>
-From: "Luo Yanjun" <yjluo@udtech.com.cn>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: About Scout(MPC750+MPC8260) running Linux
-Date: Tue, 3 Sep 2002 11:10:11 +0800
+Message-ID: <036601c25326$f8276830$3e200a82@KHK>
+Reply-To: "HyunKook Kim" <k5r2a@chollian.net>
+From: "HyunKook Kim" <k5r2a@chollian.net>
+To: <linux_meis@yahoo.com>
+Cc: "HyunKook Kim" <k5r2a@chollian.net>,
+	<linuxppc-embedded@lists.linuxppc.org>
+Subject: Can I get the mpc8260 atm driver
+Date: Tue, 3 Sep 2002 17:50:35 +0900
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="gb2312"
+	charset="ks_c_5601-1987"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi list,
-I'm porting linux to our custom board which similar as Scout(MPC750+MPC8260),
-and I use ELDK cross environment, I need use MPC7xx pompiler but also i need
-MPC8260 peripheral such as CPM module.
-I just wonder how to config the kernel to build. It must support MPC750,but
-how to make it support MPC8260 peripheral. I had already searched the list,
-but have not find something useful.
+Hello, all.
+
+What is the status of the linux ATM driver for MPC8260?
+
+I found something at http://www.csd.uch.gr/~meidanis/linux-atm/ ,
+http://sourceforge.net/projects/atm8260/
+but, I can't find the driver..
+Where can i get it?
 
 Thanks in advance.
-Luo Yanjun.
-09/03/2002.
+k5r2a
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
