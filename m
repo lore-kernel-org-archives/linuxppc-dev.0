@@ -1,34 +1,29 @@
-Date: Wed, 9 Feb 2000 21:04:06 +0100 (CET)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: "David N. Welton" <davidw@linuxcare.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: the state of the linuxppc-dev community
-In-Reply-To: <20000209100229.B5973@linuxcare.com>
-Message-ID: <Pine.LNX.4.10.10002092054400.15008-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <38A1D167.ABFED7F4@madison-web.com>
+Date: Wed, 09 Feb 2000 15:43:43 -0500
+From: Jason Haas <jhaas@madison-web.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: the great state of the linuxppc-dev community
+References: <20000209070157.23913.qmail@wwcst271.netaddress.usa.net>
+Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > I do see the problem that information is splintered over too many
-> > web pages and FTP servers (I fail to see what this has to do with
-> > the GPL).
->
-> I have, in the past, been unable to find sources for kernel
-> binaries...  Out of date binaries, mind you, for less than
-> run-of-the-mill systems, but still, it's frustrating.  Let's see what
-> can be fixed and improvied though, and move on.
+FWIW, I think we're really close to being able to jettison linuxppc.org into the
+world at large.
 
-Short of using a CVS server, tagging each kernel build as a separate
-branch, or posting a diff along with each kernel, that would be
-impossible. I agree that a release kernel (:= kernel binary used in some
-distribution) should have a corresponding diff and .config - demanding
-'show me the source' in each case where someone posts a kernel someplace
-would be asking too much, in my book. YMMV; I don't post kernels anyway;
-I'm going to shut up now. Thank you.
+- Most of the LinuxPPC.com-specific info has been removed.
+- All known distros are now represented, sorted by alpha.
+- A new design is being worked on for the main page, which is so very very 1996
+in terms of web design.
 
-	Michael
+I think we'll be ready to really set it on its own soon, probably next month.
+Apparently Dan Bethe has big plans for it. ;-)
+
+-- Jason
+
+(really really hating being in the Mac OS)
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
