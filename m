@@ -1,44 +1,36 @@
-Date: Wed, 21 Nov 2001 12:15:39 +0100 (CET)
-From: Roman Zippel <zippel@linux-m68k.org>
-To: Armin Kuster <akuster@mvista.com>
-Cc: ppcdevel <linuxppc-dev@lists.linuxppc.org>,
-	ppclists <Majordomo@lists.linuxppc.org>
-Subject: Re: New API for non cache coherent ppc cpu's
-In-Reply-To: <3BFAB960.DAA72239@mvista.com>
-Message-ID: <Pine.LNX.4.33.0111211152230.6681-100000@serv>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: <davidw@dedasys.com>, <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: sleep: trackpad settings, screen blanking
+Date: Wed, 21 Nov 2001 15:58:21 +0100
+Message-Id: <20011121145821.2126@mailhost.mipsys.com>
+In-Reply-To: <873d39n32k.fsf@dedasys.com>
+References: <873d39n32k.fsf@dedasys.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+>
+>[ please CC replies to me ]
+>
+>I have a first generation tibook, running Linux 2.4.14, and I have a
+>few itches that need scratching:
+>
+>1) The screen doesn't always get blanked when it gets put to sleep.
+>   Known problem?  Fix being worked on?  If yes, I'd still be curious
+>   to hear what the problem was, as I had a cursory look at the code,
+>   but didn't have time to do any rebooting/hacking.
 
-On Tue, 20 Nov 2001, Armin Kuster wrote:
+Which kernel ? My rsync ? bk _2_4 ? _2_4_devel ? Linus ?
 
-> About a month ago a new API made its way into the ppc,
-> consistent_sync_page.
+>2) Trackpad settings aren't restored (or saved beforehand?) after
+>   sleep.  Same questions apply.
+>
 
-Another one?
-We have now 3 APIs for this:
-- cache_(push|clear): that's the old m68k API (and also used by APUS)
-- dma_cache_(inv|wback|wback_inv): used by mips(64), parisc, sh
-- consistent_sync_page: ppc
+That's normal for now.
 
->  For CONFIG_NOT_COHERENT_CACHE  processors,
-> requires
-> proper flushing of the page being used.  Please review and provide feed
-> back
-
-Two comments:
-- I'm not sure about the page argument, although I'd like to see it, the
-problem is the drivers usually don't have a page pointer.
-- I think it was never defined, what should be done if offset/size isn't
-cache line aligned. That's especially a problem in the invalidate only
-case. I'd prefer to make this illegal, as it's mostly not a problem for
-drivers.
-
-bye, Roman
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
