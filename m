@@ -1,35 +1,31 @@
-Message-ID: <3BF0371F.8040575B@linux-m68k.org>
-Date: Mon, 12 Nov 2001 21:54:55 +0100
-From: Roman Zippel <zippel@linux-m68k.org>
+To: linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org
+Subject: Re: IrDA-patched binaries
+References: <Pine.LNX.4.33.0111012312360.888-100000@auryn.jones.dk>
+	<87y9lc6h13.fsf@openinformatics.com> <3BEF9DA6.14AF8E49@iiic.ethz.ch>
+	<87vggg2bbu.fsf@openinformatics.com> <3BF0355D.6512A283@iiic.ethz.ch>
+From: jason@openinformatics.com (Jason E. Stewart)
+Date: 12 Nov 2001 14:16:48 -0700
+In-Reply-To: <3BF0355D.6512A283@iiic.ethz.ch>
+Message-ID: <87lmhbg05b.fsf@openinformatics.com>
 MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Jun Sun <jsun@mvista.com>,
-	"Maciej W. Rozycki" <macro@ds2.pg.gda.pl>,
-	Linux/MIPS Development <linux-mips@oss.sgi.com>,
-	Linux/m68k <linux-m68k@lists.linux-m68k.org>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
-	rz@linux-m68k.org
-Subject: Re: [RFC] generic MIPS RTC driver
-References: <Pine.GSO.4.21.0111122055010.10720-100000@mullein.sonytel.be>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+"Michel Dänzer" <michdaen@iiic.ethz.ch> writes:
 
-Geert Uytterhoeven wrote:
-
-> > Geert, what is the abstraction they used?
+> > > Yup, 2.4.15-pre2 has my better fix. :)
+> >
+> > sorry Michel, I don't understand. Is the irda_pv_t listed above your
+> > fix?
 >
-> At first sight, we only use get_rtc_time() and mach_hwclk().
+> Yes, it's in Linus' 2.4.15-pre2 and thus of course also in Ben's.
 
-Over the weekend I changed it into set_rtc_time()/get_rtc_time(), which
-are now defined in <asm/rtc.h>, so mach_hwclk() is gone in the generic
-part.
-Another feature is the emulation of the timer interrupt, although I have
-no idea which program is using this. Richard?
+Ah.. Thanks. So I assume that I can use BenH's kernel as is with my
+Pismo and my Palm, with no patch needed?
 
-bye, Roman
+Thanks,
+jas.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
