@@ -1,42 +1,30 @@
-Date: Wed, 29 Jan 2003 12:29:11 -0700 (MST)
-From: daRonin <daronin@digimerc.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Radeon an 22" Apple Cinema Display
-Message-ID: <Pine.LNX.4.50L0.0301291217390.1470-100000@daronin.digimerc.com>
+Message-ID: <001801c2b161$5fa973c0$faffa8c0@VISHWANATH>
+From: "Vishwanath" <vishwanath@mistralsoftware.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: ioremap64 and remap_page_range in 440GP
+Date: Wed, 1 Jan 2003 12:15:29 +0530
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Sender: owner-linuxppc-dev@lists.linuxppc.org
-List-Id: <linuxppc-dev@lists.linuxppc.org>
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Sender: owner-linuxppc-embedded@lists.linuxppc.org
+List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hi All,
 
-I am trying to get Cinema Display working with my Powerbook G4 (Radeon M6
-LY).
+In PPC Linux, to bring a particular IO page onto Linux addressing space, we
+use ioremap64(). Is my understanding correct? If I want to map this remapped
+address on user space, I have to use  remap_page_range() of kernel in my
+driver.  remap_page_range() takes a 32-bit physical address as argument. But
+in 440GP, all addresses are 36-bit with respect to processor. Is there any
+64-bit equivalent of remap_page_range(). If it exists, how to use it?
 
-Running the latest benh kernel (2.4.20-ben4).
+Please help me out since I am stuck while mapping an external peripheral
+registers onto user space.
 
-Tried the following video options:
+Thanks in advance.
 
-video=radeon:1600x1024-8@60
-video=radeon:of_edid,dfp
-video=radeonfb:1600x1024-8@60
+Regards,
+vishwa
 
-etc.
-
-Pretty much in every of those tries the Cinema display went blank and LCD
-display on the laptop went white, after the radeonfb was loaded.
-
-The only way I can get it working is if I skip the video driver altogether
-and do
-
-video=ofonly
-
-Unfortunately in this case I can only can 8bit colors in my X...
-
-Any ideas how I can get his working?
-
-Andrew
-
-
-** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
+** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
