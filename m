@@ -1,60 +1,29 @@
-Message-ID: <398EAE77.EEB275AC@student.ethz.ch>
-Date: Mon, 07 Aug 2000 14:41:27 +0200
-From: Michel Dänzer <daenzerm@student.ethz.ch>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Gabriel Paubert <paubert@iram.es>, <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: rtc again... 
+Date: Mon, 7 Aug 2000 15:18:42 +0200
+Message-Id: <20000807131842.21074@mailhost.mipsys.com>
+In-Reply-To: <Pine.HPX.4.10.10008071127140.9070-100000@gra-ux1.iram.es>
+References: <Pine.HPX.4.10.10008071127140.9070-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-To: Tim Wojtulewicz <Tim.Wojtulewicz@NAU.EDU>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Multi-head on Pismo
-References: <854304.3174574500@[209.147.134.131]>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tim Wojtulewicz wrote:
->
-> I've been playing around recently trying to get multi-head support on my
-> Pismo laptop to work.  This is using the built-in VGA port along with the
-> LCD.  I have a few questions/comments.  Currently, I'm using XF86 4.0.1
-> with the r128 driver and kernel 2.2.17pre10-ben2.
->
-> I have tried simply modifying the ServerLayout in the XF86Config file, but
-> this will not work (I don't think) since both the VGA port and the LCD are
-> run off the same Rage128 chip.  All examples I have seen of using Xinerama
-> to do this have used 2 sepearte cards.  I'm using the command 'startx --
-> +xinerama' to start X.
->
-> When the machine boots, a message pops up on the external message as
-> follows:
->
-> ...ok
-> Copying OF device tree...done
-> Initing fake screen
-> Calling quiesce
->
-> then the screen goes black and remains that way for the session.  What does
-> this mean?
->
-> (Possible OT) Another thing I noticed while poking around in the device
-> tree is that there are two ATY,RageM3p entries under
-> /proc/device-tree/pci/ATY,RageM3pParent.  They are pA and pB.  What do
-> these two have to do with each other?
->
-> Has anyone else out there worked on this, and (hopefully) gotten it to work
-> right?  Thanks for any help you can give.
+>Can anybody with a Macintosh SMP G4 confirm that the time bases are
+>synchronized at boot ?
 
-AFAIK dualhead isn't properly supported by either XFree86 nor aty128fb yet.
-The only possibility might be to set things up in MacOS, then boot using BootX
-'without video driver' and then use offb.
+AFAIK, on those machines, I think Apple uses their "timer" device in the
+new version of the mac-io ASIC to sync. timebases.
 
+Reading Apple's CPU startup code in Darwin is _very_ interesting in fact.
+That's for example how I learned that the only way to correctly and
+completely flush the cache is to either reserve CPU-specific regions of
+memory, use the ROM, or have external HW assist. Without that, any
+snooping on the bus will garbage the flush process.
 
-Michel
+Ben.
 
-
---
-People who are wrong the most are wrong the loudest.
-______________________________________________________________________________
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
