@@ -1,22 +1,37 @@
-Message-ID: <011201c12519$94d06520$2408a8c0@dnaent.com>
-From: "William H. Short, Jr." <bshort@dna-cs.com>
-To: <linuxppc-dev@lists.linuxppc.org>
-Subject: yellowfin.c problems after LK1.1.3 added
-Date: Tue, 14 Aug 2001 18:33:54 -0500
+Message-ID: <20010815042501.132.qmail@web20003.mail.yahoo.com>
+Date: Tue, 14 Aug 2001 21:25:01 -0700 (PDT)
+From: Raghava Raju <vraghava_raju@yahoo.com>
+Subject: Panic...
+To: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This driver was working fine with the 53c885 combo chip before the lastest
-mods has anyone else tried it out?
-Now this driver will transmit but all receive packets are erroring out.  If
-no one else has tried it, I might get a chance tomorrow to look into it;
-however, ncr885e.c will work.  If it works for the 83c8xx series people,
-I'll just switch over.
-Bill
+Hi,
 
+      1)I have to access the contents of program
+counter and stack pointer in panic() function. Above
+values should be describing the location where panic
+happened.
+
+      2)Similarly I have  to access registers values
+after entering "die" function in
+arch/ARCH/kernel/traps.c . Here pt_regs being passed
+to this function does't seems to be containing all the
+registers.Registers which are missing ex: special
+purpose registers etc..
+
+       3) Is it that in "2)" fields defined in pt_regs
+are enough to describe the state of process
+completely. Hence no purpose of accessing the remainig
+registers.
+
+	Any advice and pointers would be helpful.
+
+
+      Thankyou.
+      Raj.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
