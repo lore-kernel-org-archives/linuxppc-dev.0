@@ -1,30 +1,39 @@
-Message-ID: <399C69C1.AEF6646E@sympatico.ca>
-Date: Thu, 17 Aug 2000 18:40:01 -0400
+Message-ID: <399C6F3D.1CFE185E@sympatico.ca>
+Date: Thu, 17 Aug 2000 19:03:25 -0400
 From: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
 Reply-To: khendricks@ivey.uwo.ca
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Nautilus builds and works from source on ppc
+To: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
+CC: khendricks@ivey.uwo.ca, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Another signal handling bug?
+References: <Pine.LNX.3.96.1000817193728.8005E-100000@deepspace.mklinux.org>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Hi David,
 
-In case anyone is interested.  I upgraded a straight YDL CS 1.2 system with the
-latest binutils, glibc, and gcc from Franz and installed the helix code and
-updated it to the latest releases.
+> > 2.  You should techically always be calling async signal safe routines
+> > frominside any signal handlers.  Grabbing a mutex lock is not one of these.
+>
+> Wait a sec... how can taking a lock be an atomic operation, but not async
+> signal safe?  That seems a little odd.
 
-I then grabbed all of the required parts and followed the build instructions
-from Eazel and shortly had a working Nautilus file manager (I did have to edit
-one makefile in Nautilus to add the -lrpm library to one of the component view
-tools but that is it.
+Here is what the pthread_mutex_lock page says:
 
-It seems to build rather easily.  If it turns out to be stable I will build tar
-archives for installation into /usr/local/ so other people can play with it.
+ASYNC-SIGNAL SAFETY
+       The mutex functions are not async-signal safe.  What  this
+       means is that they should not be called from a signal han<AD>
+       dler.  In  particular,   calling   pthread_mutex_lock   or
+       pthread_mutex_unlock  from  a  signal handler may deadlock
+       the calling thread.
 
-Just let me know if you are interested.
+You have already experienced the deadlock problem first hand!
+
+If you use a spinlock and keep track of the current owner you can implement a
+simple mutex with recursion allowed and possibly get away with it but in
+general, using mutexes in signal handlers are a big no-no.
 
 Kevin
 
