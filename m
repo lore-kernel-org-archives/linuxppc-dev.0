@@ -1,42 +1,58 @@
-Date: Sat, 12 May 2001 14:51:00 -0700
-From: Ira Weiny <iweiny@acm.org>
+Message-ID: <3AFE3C09.835966B5@folkwang-hochschule.de>
+Date: Sun, 13 May 2001 09:47:21 +0200
+From: =?iso-8859-1?Q?J=F6rn?= Nettingsmeier <nettings@folkwang-hochschule.de>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: pismo sleep behaviour w/ 2.4.4-benh
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Message-id: <3AFDB044.85BDB846@acm.org>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-References: <3AFD9868.29C558@folkwang-hochschule.de>
- <20010512203422.23549@smtp.wanadoo.fr>
+References: <3AFD9868.29C558@folkwang-hochschule.de> <20010512203422.23549@smtp.wanadoo.fr>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 Benjamin Herrenschmidt wrote:
+>
+> >
+> >* the box usually falls asleep again after waking up. when woken
+> >again, it stays up like it should.
+>
+> Never seen that. How do you trigger sleep ?
+
+either by closing the lid, by not doing anything for a while or by
+using the "snooze" program that comes with pmud.
 
 > >* every 10 or so sleep cycles, the machine locks up. blank screen,
 > >no standby-led, and i can only power off with ctrl-alt-apple-power.
 > >sysrq fails, too.
 >
 > It locks up on wakeup or on sleep ?
+
+well, it looks like it's going to sleep, but the standby led doesn't
+blink. just like when i switch it off, except i can't switch it on
+again by simply pressing "power", so i suspect it hangs.
+
+
+> >* the box falls asleep sometimes even when i'm busy typing or moving
+> >the mouse. this happens at least once every half hour.
 >
+> What do you mean by "fall asleep" ? it stops working ? how do you
+> get it back ?
 
-Just for the record, my Titanium did this the other day as well.  I woke
-it up.  I got a screen.  It blanked (the video driver was driving the
-screen but displaying all black.) and that was it...  It happened out of
-the blue, not before or since.
+it enters sleep mode, even though there are pretty many keyboard and
+mouse events that should keep it from doing so.
+i get it back by pressing a key after waiting a few seconds.
+(immediately after entering sleep mode, key events seem to be
+ignored for a few seconds.)
 
-I could not try to telnet into the box, no other machine.  So I don't
-know if it was really down or not.  This is with a recent (< 1week) Ben's
-tree and no logs pertaining to anything wrong?
 
-Anyway,  I have not been counting my sleep cycles so I will try what the
-gentelman above said to see if I can reproduce it.  But I don't think
-I can since I rarely shutdown the machine, just make it sleep.
 
-Anyway thanks because this is working great 99.999% of the time...  ;-)
 
-Ira
-
+--
+Jörn Nettingsmeier
+home://Kurfürstenstr.49.45138.Essen.Germany
+phone://+49.201.491621
+http://icem-www.folkwang-hochschule.de/~nettings/
+http://www.linuxdj.com/audio/lad/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
