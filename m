@@ -1,54 +1,40 @@
-Date: Sat, 13 Feb 1999 05:23:26 +0100
-To: linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Bootstrap code with egcs
-Message-Id: <19990213052326.032488@mail.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Fri, 12 Feb 1999 21:45:17 -0700 (MST)
+From: Matt Porter <mmporter@home.com>
+To: Cort Dougan <cort@persephone.cs.nmt.edu>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: platform specs (was: PReP spec)
+In-Reply-To: <Pine.LNX.3.96.990212175439.19379A-100000@persephone.cs.nmt.edu>
+Message-ID: <Pine.LNX.3.96.990212213821.3668A-100000@liberty.chnd1.az.home.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi !
+On Fri, 12 Feb 1999, Cort Dougan wrote:
 
-I'm in the process of improving the way BootX boots and adding support
-for NuBus PowerMacs. However, I need to write some PPC bootstrap code
-that will take control before the kernel is actually entered. Part of it
-is PPC asm, but I want some C code too.
+Yes, but from my point of view it is the most important feature. Sticking
+with prep memmaps is fine for the current average configuration of a
+single or dual cpu setup with a few PCI slaves.  When people start putting
+together systems with 8-20 CPU's peering over the CPCI bus then PReP
+simply won't work because of all the windows that will need to be opened
+to map the other processors' board resources in local space.  It's good to
+keep in mind for the future...
 
-The Mac-hosted tools I have (CodeWarrior and MrC) can only, to my
-knowledge, produce PEF (or XCOFF), so the boostrap code needs a complex
-relocation before beeing entered, and I have to handle a TOC which is not
-what I want in this boostrap.
+> That's not chrp, though.  That's just a chrp memmap.  The kernel doesn't
+> yet deal with a chrp memmap and no-OF.  I'd rather stick with prep memmaps
+> with those boards - it's simple.
+> 
+> }And from the looks of things, all new Motorola boards/systems.  Already,
+> }VxWorks BSPs for Moto. boards are easily configured to a CHRP mem map.
+> }Only the firmware defaults to PReP and it is getting dated with its poor
+> }PCI mapping.
+> 
 
-I was wondering what kind of options are available with egcs for
-generating code that is suitable for bootstraps, if possible, relocatable
-code (datas are PC relative).
-
-The bootstrap will be entered with both data and instructions MMUs
-disabled, so the logical-physical mapping will be 1:1. The boostreap
-itself will be made contiguous and resident somewhere in this physical
-memory by BootX along with some memory for a small stack, and eventually
-some datas. It will be passed a map of the physical RAM, a map of the
-kernel pages (scattered in memory) and will take care of putting the
-kernel pages back contiguously in physical mem before entering the kernel.
-
-I'm not very experienced with egcs, ELF format, etc... so some details
-about how I can generate an easy-to-relocate code (I can use a RELOC
-macro all the time like prom.c does if fixed link address is used) and
-how I must parse the resulting ELF (I beleive the way I parse the kernel
-header) would help. (By details I mean which tools with which option, I
-don't know the gnu toolchain very well).
-
-Thanks in advance !
-
-
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
-
-
-
+--
+Matt Porter
+mmporter@home.com
+Unix is a Linux-like operating system.
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
