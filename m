@@ -1,50 +1,31 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-To: "Justin T. Gibbs" <gibbs@scsiguy.com>
-Subject: Re: now random kernel panics with aic7xxx driver 6.2.4 in kernel 2.4.12
-Date: Sun, 14 Oct 2001 19:54:18 -0400
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev@lists.linuxppc.org
-References: <200110142053.f9EKq3Y43599@aslan.scsiguy.com>
-In-Reply-To: <200110142053.f9EKq3Y43599@aslan.scsiguy.com>
+Date: Sun, 14 Oct 2001 22:53:28 -0500 (CDT)
+From: Takashi Oe <toe@unlserve.unl.edu>
+To: Andrew P McPherson <apm@MIT.EDU>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Compiling BootX?
+In-Reply-To: <Pine.GSO.4.30L.0110140340130.6055-100000@nerd-xing.mit.edu>
+Message-ID: <Pine.A41.3.96LJ1.1b7.1011014224838.138592A-100000@unlserve.unl.edu>
 MIME-Version: 1.0
-Message-Id: <20011014235202.PYHV2701.tomts7-srv.bellnexxia.net@there>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Justin,
+On Sun, 14 Oct 2001, Andrew P McPherson wrote:
 
-> It would be interesting to know what type of panics you saw prior
-> to 6.2.4.  It might help me track down where this problem began.
+> I'm attempting to port the experimental nubus-pmac kernel to 68k Macs
+> upgraded with a PowerPC card.  I have found that the BootX version
+> modified for the Nubus powermacs, avalable at nubus-pmac.sourceforge.net,
+> nearly works with my Quadra 700+PPC card, but that it hangs while
+> configuring the video.
 
-This is my first foray into 2.4.X kernels.  I did not have any panics with
-the old aic7xxx driver.  I first used 6.2.1 in kernel 2.4.11.  So you
-pretty much know the whole story.  The reason I moved to your 6.2.4 was
-that at some point I could not even boot 2.4.12 since it came back with:
+It would be very nice if we can build BootX with freely available tools,
+but, that said, I'd think Apple's MkLinux Booter should work on your
+machine.   Of course, you still need to port the kernel, but you have one
+less thing to worry about.
 
-scsi0:A:1: ahc_intr - referenced scb not valid during seqint 0x71 scb(0)
-...
-Kernel panic: for safety
-In interrupt handler - not syncing
-<0>Rebooting in 180 seconds
 
-But the message logs never caught any of the error message since a sync
-was not done.
-
-> The card seems to be loosing some of its resources.  I can't say
-> why yet.  I think it may be a regression in some of the abort
-> code in the kernel.  Could you try running with AHC_DEBUG_SEQUENCER
-> enabled?  You can just #define this to 1 in aic7xxx.c.
-
-I have to go out of town tonight but I will rebuild with this define and
-send you a full error message log on Wedsnesday.
-
-Thanks, I hope we can get this nailed down.  I really would rather use
-your new driver.
-
-Kevin
+Takashi Oe
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
