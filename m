@@ -1,34 +1,106 @@
-Subject: Re: glibc 2.2.5 error
-From: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
-To: rekha gvv <rekhagvvc@yahoo.co.in>
-Cc: Linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <20021105111412.27408.qmail@web8005.mail.in.yahoo.com>
-References: <20021105111412.27408.qmail@web8005.mail.in.yahoo.com>
-Content-Type: text/plain
-Date: 05 Nov 2002 13:08:40 +0100
-Message-Id: <1036498120.22848.12.camel@spawn>
-Mime-Version: 1.0
+Message-ID: <007c01c284d1$1745d900$370da8c0@aman>
+From: "Aman" <aman@mistralsoftware.com>
+To: "linuxppc embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: EXT2-f error
+Date: Tue, 5 Nov 2002 19:11:49 +0530
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, 2002-11-05 at 12:14, rekha gvv wrote:
->
-> HI,
-> when i try to compile glibc 2.2.5 for the
-> powerpc-linux target on a i686 host system ..i get the
-> following errors.can i know which version of glibc
-> should i use ?
-> i did a configure and set --target=powerpc-linux
-> --host=i686-pc-linux-gnu
+Hi All
 
-Why do you not read the INSTALL file?
+I have built a zImage.initrd.ebony image [ Kernel + Ramdisk] for my custom
+board which has 440GP as its processor. This board doesn't have ethernet
+support. However the kernel image contain network and ethernet support.
 
---
-Kenneth Johansson
-Ericsson AB                       Tel: +46 8 404 71 83
-Borgafjordsgatan 9                Fax: +46 8 404 72 72
-164 80 Stockholm                  kenneth.johansson@etx.ericsson.se
+If I download this image to the custom board , I get the following errors.
+"EXT2-fs error (device ramdisk(1,0)): ext2_check_page: bad entry in
+directory #20: unaligned directory entry - offset=0, inode=4294967295,
+rec_len=65535, name_len=255".
+
+I tried the same image with my evaluation board , it works fine.  I have
+taken the ramdisk image from HHL. Can you help me in solving this issue.
+
+Thanking you in advance
+Regards
+Aman
+
+
+
+Below is the console output of my custom board
+
+loaded at: 01000000 0134A1BC
+zimage at: 01005970 010829D3
+initrd at: 01083000 013465FE
+avail ram: 00400000 00800000
+
+Linux/PPC load: root=/dev/ram0 ramdisk_size=8192
+Uncompressing Linux...done.
+Now booting the kernel
+Linux version 2.4.17_mvl21-ebony (root@hardhat) (gcc version 2.95.3 20010315
+(release/MontaVista)) #146 Sun Nov 3 22:05:41 IST 2002
+IBM Ebony port (C) 2002 MontaVista Software, Inc. (source@mvista.com)
+On node 0 totalpages: 32768
+zone(0): 4096 pages.
+zone(1): 28672 pages.
+zone(2): 0 pages.
+Kernel command line: root=/dev/ram0 ramdisk_size=8192
+Warning: real time clock seems stuck!
+Calibrating delay loop... 599.65 BogoMIPS
+Memory: 124584k available (908k kernel code, 352k data, 68k init, 0k
+highmem)
+Dentry-cache hash table entries: 16384 (order: 5, 131072 bytes)
+Inode-cache hash table entries: 8192 (order: 4, 65536 bytes)
+Mount-cache hash table entries: 2048 (order: 2, 16384 bytes)
+Buffer-cache hash table entries: 8192 (order: 3, 32768 bytes)
+Page-cache hash table entries: 32768 (order: 5, 131072 bytes)
+POSIX conformance testing by UNIFIX
+PCI: Probing PCI hardware
+Linux NET4.0 for Linux 2.4
+Based upon Swansea University Computer Society NET3.039
+Initializing RT netlink socket
+Starting kswapd
+Disabling the Out Of Memory Killer
+pty: 256 Unix98 ptys configured
+Serial driver version 5.05c (2001-07-08) with MANY_PORTS SHARE_IRQ
+SERIAL_PCI enabled
+ttyS00 at 0xfdfe9200 (irq = 0) is a 16550A
+ttyS01 at 0xfdfe8300 (irq = 1) is a 16550A
+block: 128 slots per queue, batch=32
+RAMDISK driver initialized: 16 RAM disks of 8192K size 1024 blocksize
+loop: loaded (max 8 devices)
+eth0: Got bad Phy Read, missing MDIO pullup?
+eth0: No PHY device found.
+removing net dev
+eth0: Got bad Phy Read, missing MDIO pullup?
+eth0: No PHY device found.
+removing net dev
+NET4: Linux TCP/IP 1.0 for NET4.0
+IP Protocols: ICMP, UDP, TCP, IGMP
+IP: routing cache hash table of 1024 buckets, 8Kbytes
+TCP: Hash tables configured (established 8192 bind 8192)
+IP-Config: No network devices available.
+NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+RAMDISK: Compressed image found at block 0
+Freeing initrd memory: 2829k freed
+EXT2-fs warning: mounting unchecked fs, running e2fsck is recommended
+VFS: Mounted root (ext2 filesystem).
+Freeing unused kernel memory: 68k init
+EXT2-fs error (device ramdisk(1,0)): ext2_check_page: bad entry in directory
+#20: unaligned directory entry - offset=0, inode=4294967295, rec_len=65535,
+name_len=255
+Warning: unable to open an initial console.
+EXT2-fs error (device ramdisk(1,0)): ext2_check_page: bad entry in directory
+#104: unaligned directory entry - offset=0, inode=4294967295, rec_len=65535,
+name_len=255
+EXT2-fs error (device ramdisk(1,0)): ext2_check_page: bad entry in directory
+#59: unaligned directory entry - offset=0, inode=620723148, rec_len=25099,
+name_len=46
+Kernel panic: No init found. Try passing init= option to kernel.
+<0>Rebooting in 180 seconds..
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
