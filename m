@@ -1,39 +1,53 @@
-Message-ID: <3CFCF745.8090002@embeddededge.com>
-Date: Tue, 04 Jun 2002 13:22:13 -0400
+Message-ID: <3CFCFC20.80101@embeddededge.com>
+Date: Tue, 04 Jun 2002 13:42:56 -0400
 From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: pt_regs.dbcr0/1
-References: <15608.22230.504008.818858@argo.ozlabs.ibm.com>	<3CFC16A4.7090902@embeddededge.com> <15612.18916.648386.173632@argo.ozlabs.ibm.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-embedded@lists.linuxppc.org,
+	Paul Mackerras <paulus@samba.org>
+Subject: Re: First cut at large page support on 40x
+References: <20020531042153.GD16537@zax> <3CFC0D3F.9030901@embeddededge.com> <20020604035947.GH2762@zax>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Paul Mackerras wrote:
+David Gibson wrote:
 
-> So has anyone done a 4xx-aware gdb yet?
+> That sounds dangerous to me:
 
-Not to my knowledge.  Daniel Jacobowitz (drow) has discussed it a little,
-but I have not heard much about it lately.
+It's not.  All you end up finding are the kernel ram pages and the
+early 1:1 mapping of I/O space that never changes. The vmalloc()'ed
+space isn't properly ordered to find monotonically increasing page
+frame numbers.  It's just a cleaner implementation because you have
+processor specific functions to set up the PMD that aren't cluttering
+the generic functions.  If necessary, you can sift through the VM ranges
+and ensure the things you feel are inappropriate aren't put into the PMD
+large page mapping.
 
-> ....  I think we are in violent agreement. :)
 
-Not again......It must be that Aussie English :-)
+> ......  Furthermore this way we
+> save a little bit of RAM, because we don't need to store the bottom
+> level page tables for the kernel mapping,
 
+If you would allow these to stay, you wouldn't have to change any other
+mapping functions, like iopa().  It's only a couple of pages.......
 
-> ..... gdb + xmon/kgdb
-> may be possible but we will have to see how complex it looks once we
-> know what the kernel support for gdb looks like.
+> ..... and the TLB miss handler is
+> simpler and faster because like a normal PTE it can load most of the
+> TLB_DATA field directly from the PMD entry.
 
-I believe we have tied the BDI context switch configuration option to
-allowing external debugging by ensuring the kernel doesn't mess around
-with the debug registers.  We have at least discussed doing it.  As
-long as we properly context switch the debug registers, all of the software
-modes should coexist happily.
+That's the idea :-)
 
-Thanks.
+For the MPC8xx I did two simple things.  First, added the function to
+scan the usual page tables that were built and update the PMD to indicate
+the large pages.  Second, changed the tlb miss handler to load the PMD into
+the MMU register with making any modifications to the bits.  The PTE is
+then loaded just as it always was (the 8xx has nice support for large pages
+following the normal PTE loading path).
+
+This is of course after Paulus modified the page table macros to be aware of
+additional control bits in the PMD :-)
 
 
 	-- Dan
