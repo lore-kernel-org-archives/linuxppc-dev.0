@@ -1,60 +1,38 @@
-Date: Tue, 7 Mar 2000 22:00:10 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Grant Erickson <grant@borg.umn.edu>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Grabbing an Interrupt for a Brain-dead PCI Device
-In-Reply-To: <Pine.SGI.4.21.0003071435240.45384-100000@brule.borg.umn.edu>
-Message-ID: <Pine.LNX.4.05.10003072154320.484-100000@callisto.of.borg>
+Message-Id: <200003072129.WAA00353@piglet.grunz.lu>
+Date: Tue, 7 Mar 2000 22:29:45 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: nvram access in 2.3.48?
+To: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 7 Mar 2000, Grant Erickson wrote:
-> So, unfortunately, I didn't do the design for this "dumb" PCI device and
-> neither can I fix its shortcomings in these regards.
+Hi list,
 
-Hmm... That's bad luck. Then you have to do some things manually (read: in your
-own code).
+Another weiredity I've come across in my 2.3 crusade: /dev/nvram
+doesn't seem to work anymore.
 
-> Below, we've acknowledged and discovered how to sort of work-around the
-> problem of the invalid vendor ID and the base address. Now, I've yet
-> another problem.
->
-> The device has an interrupt at INTA#. Unfortunately, the device being dumb
-> as it is, doesn't utilize the interrupt pin register to advertise that it
-> does in fact have an interrupt there. So, I assume that once again, the
-> PROM doesn't give it one.
->
-> Is there a way, in Linux, for me to programmatically and manually assign
-> an interrupt to this device as might have been done in the PROM? I'm
-> guessing I have to twiddle some registers in the North Bridge, correct?
+I've enabled nvram support under the char devices, but the device
+doesn't seem to get included in the kernel image: kmod tries to load a
+module for char-major-10-144 upon access, but it's not built as a
+module...
 
-In most machines, PCI interrupt routing is hardwired on the motherboard.  Hence
-you probably don't have to program the North Bridge for that.
+Anybody experienced this, and wants to spare me a few hours chasing
+that problem?
 
-Furthermore the interrupt pin register is read-only on normal cards, and
-initialized to INTA#. It's not used by the PCI device itself. The interrupt
-number register is read-write and is only there so the PROM code (which is
-supposed to know the interrupt routing on the motherboard) can fill in the
-correct value and applications can read it back later.
+Thanks
 
-I think it's sufficient to let your PCI fixup code fix up the interrupt fields
-in the struct pci_dev that corresponds to your weird device.
+Michel
 
-Good luck!
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
