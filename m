@@ -1,55 +1,56 @@
-In-Reply-To: <199908090513.PAA09905@tango.anu.edu.au>
-Date: Mon, 9 Aug 1999 08:50:29 +0200
-To: Paul.Mackerras@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: Trying a Promise Ultra/66 on powerpc
-Message-Id: <19990809085029.001336@smtp.calvacom.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Mon, 9 Aug 1999 10:17:17 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+cc: Linux Frame Buffer Device Development <linux-fbdev@vuser.vu.union.edu>
+Subject: readl() and friends and eieio on PPC
+Message-ID: <Pine.LNX.4.10.9908091008460.25523-100000@mercator.cs.kuleuven.ac.be>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Aug 9, 1999, Paul Mackerras <paulus@cs.anu.edu.au> wrote:
 
->Basically the problem is that the IDE driver assumes that you access
->all IDE controllers via I/O ports.  When you have a controller that
->has memory-mapped registers, there is a problem.  When you have a
->system where one IDE controller has I/O ports and another has memory-
->mapped registers, you have a bigger problem.  The current approach to
->solving this problem is to map the addresses of the memory-mapped
->registers into pseudo I/O port numbers (by subtracting _IO_BASE).  If
->there is a better way, somebody let me know. :-)
+Jes Sørensen pointed out to me that readl() and friends should not use eieio on
+PPC. On other architectures (e.g. AXP) this isn't done neither.
 
-Looks like the best way would be to store the port base or pointers to
-the in/out functions in the HWIF structure.
+Currently we have[*]:
 
->> I've solved the problem by adding the right offset directly to the
->> io-port values as found in the kernel's PCI structures. I think this
->> needs more serious rework, though. Paul, are you the author of the
->> PowerMac IDE stuff? So we can work this out... 
->
->Yep, for my sins. :-) :-)
->
->Also, does anyone know how a quick way to get the best DMA cycle
->timing values in a tuneproc?
+#define readl(addr) in_le32((volatile unsigned *)(addr))
+#define inl(port)               in_le32((unsigned *)((port)+_IO_BASE))
+#define inl_p(port)             in_le32((unsigned *)((port)+_IO_BASE))
 
-I looked for this not so long ago, when fixing the sl82c105.c for a board
-we are designing. unfortunately, it looks like the Linux kernel expect
-the BIOS to have done all the work of setting the DMA mode. This is
-especially nasty for removable drives and for controllers like the
-winbond using the same register for DMA and PIO timings.
-Also, I heard (I didn't check) that the tuneproc is not appropriate for
-this since it may be called with using_dma not set to it's definitive value.
-I was thinking about doing this in the dma_proc itself, when DMA is
-enabled/disabled.
+extern inline unsigned in_le32(volatile unsigned *addr){
+        unsigned ret;
 
+        __asm__ __volatile__("lwbrx %0,0,%1; eieio" : "=r" (ret) :
+                             "r" (addr), "m" (*addr));
+        return ret;
+}
 
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+[*] Except on APUS, where readl() uses native endianness.
 
+Hence both inl() and readl() protect against reordering. This is not necessary
+for readl(). Drivers that need to protect against reordering should use
+wmb()/rmb()/mb() theirselves.
 
+If readl() and friends don't do eieio, the fbcon-* routines won't be slowed
+down by using readl() and friends (but we're still having the byte swapping
+then).
+
+And atyfb should use readl()/writel() instead of aty_{ld,st}_le32(), so we can
+get rid of the inline assembler. Note that this will probably break on Atari,
+since on m68k readl() doesn't do byte swapping. But that can be circumvented
+with one #ifdef.
+
+Greetings,
+
+						Geert
+
+--
+Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
+Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
+Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
