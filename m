@@ -1,86 +1,67 @@
-From: Michael Engel <engel@math.uni-siegen.de>
-Message-Id: <199906230835.KAA26148@fourier.numerik.math.uni-siegen.de>
-Subject: Re: Xbh not working (Cirrus X server)
-To: jrugen@primenet.com
-Date: Wed, 23 Jun 1999 10:35:10 +0200 (MET DST)
-Cc: engel@math.uni-siegen.de, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.BSI.3.96.990622225336.2245A-100000@usr08.primenet.com> from "Jeff Rugen" at Jun 22, 99 11:09:02 pm
-Content-Type: text
+In-Reply-To: <19990614114347.006593>
+Date: Wed, 23 Jun 1999 10:43:45 +0200
+To: linuxppc-dev@lists.linuxppc.org
+CC: kevyn@apple.com, Paul.Mackerras@cs.anu.edu.au, huberj@WPI.EDU
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: PowerBook sleep, first try
+Message-Id: <19990623104345.023685@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hi !
 
-Jeff,
+I've uploaded a first-try implementation of sleep on PowerBook G3 Series
+(Grackle/mac-io based). It's NOT functional yet, it still hangs when
+waking up. However, it no longer resets the machine, so it looks like the
+ROM code is correctly identifying the wakeup code when the CPU is powered
+back on.
 
-> On Wed, 23 Jun 1999, Michael Engel wrote:
-> 
-> > I'm experiencing a problem with Xbh on the Motorola PowerStack Series E
-> > and PowerStack II here. Xbh crashes with segmentation fault shortly after
-> > starting the server, gdb shows that the server is crashing in
-> > gd54xx_memsize
-> > (in xc/programs/Xserver/hw/bh/gd54xx.c). I built XFree from source
-> > (rpm --rebuild) with the same result. When setting a fixed memsize of 2 MB
-> > in gd54xx_memsize, the server crashes in outb() in
-> > gd54xx_setcolor
+I would really appreciate if some people could review it and give me
+their feeling about possible bugs and why it's currently not working. The
+overall layout along with some strange hacks are directly reverse-eng.
+from MacOS nanokernel (MacOS 8.6 version).
 
-[...]
+The code is at <http://calvaweb.calvacom.fr/bh40/sleep_test.tar.gz>, the
+patches were made against a 2.2.9 vger kernel but should apply cleanly
+(hum... mostly) on 2.2.10.
 
-> Are you starting Xbh with the -mmap option?  If you're using 2.2.x or later,
-> you have to have that option selected, and it might not be default:
-> 
-> startx -- -mmap
+For those who didn't follow the whole story, when the PowerBook goes to
+sleep, it actually shuts down the CPU (but not Grackle). There is some
+code in the ROM reset vectors that detects that Grackle is not in it's
+initial state. If it is not, it then looks for the magic value 'Lars' at
+address 4 (physical). If found, it looks for a pointer at address 0. at
+this pointer address, there's a pointer to the code to be executed.
 
-Thanks a lot, that did it ! (and promptly hung up my keyboard somehow and with
-it my telnet session where I wanted to write that reply ... ;-) - but the display
-works fine now).
+So basically, just after we have sent the PMU sleep command (we then have
+approx. 1/2 second to backup everything) we need to backup the CPU
+context and store those magic values. The code also must make sure that
+all those datas are properly flushed before the CPU is reset (I disable
+the data cache to be sure). Apparently, we must also switch the CPU to
+sleep mode (which in turn will put Grackle in NAP mode) and wait to be reset.
+For unknown reasons, the MacOS code for that just re-enables the i-cache
+and does some strange things around the sleep code. My code does approx.
+the same. I've heard "rumors" about Grackle bugs that needed to be worked
+around by Apple, I'm wondering if those strange tricks may be related to
+those bugs, and in this case, if my fixes are correct.
 
-> If that doesn't work, read on. :-)
+According to an Apple eng. I met at WWDC, there is no need to save the
+pci config registers, PCI devices are not turned off unless explicitely
+done by their respective drivers.
 
-Still reading on ;-).
+Of course, we still lack a sleep notifier for devices like bmac, and the
+hack I added to atyfb is probably not correct, but I want to get the core
+operation to work first, and then spend time with the various devices.
 
-> I might be the de-facto maintainer for Xbh right now (I'm the latest person
-> I know to play with it much).  A couple questions:
 
-If you need a tester or some help, please let me know. As I wrote, I don't 
-know much about X servers yet but writing a server was a thing I wanted to 
-learn for some time now (I got around it for our DECstation port by writing
-a frame buffer device driver ;-)).
+-- 
+           Perso. e-mail: <mailto:bh40@calva.net>
+           Work   e-mail: <mailto:benh@mipsys.com>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
-> 1) How much video memory does your graphics chip have (it sounds like 2 MB
-> with you setting a fixed memsize).
 
-I've got a 2 MB card with a 5446 chip set.
-
-> 2) What version of Linux are you running.
-
-LinuxPPC R5 with kernel 2.2.1 (as I can't get any later kernels to run without
-SCSI timeouts on the PowerStack E, the PowerStack II works fine with kernels
-2.2.6 and 2.2.10).
-
-> 3) Is your Series E one in a black case, or is it a standard PC
-> tower/desktop model (I can't remember if my motherboard is considered the
-> series E, but its a standard PC tower with 2MB video memory -- I'm using
-> various 2.2.x and 2.3.x kernels, though Xbh mainly with an older 2.2.x
-> kernel).
-
-It's the black stackable case model, the video card is a separate PCI board.
-
-> Which version of glibc do you have?  (Are you a R5 or pre-R5 distribution,
-> with the newer glibc, or an older R4+ with glibc 1.99?)
-
-glibc-2.1 with R5 final.
-
-> If you're running R5 (glibc of 2.1 or something like that), is it convenient
-> for you to download the Xbh I have compiled at
-> ftp://linuxppc.cs.nmt.edu/pub/linuxppc/patches/Xbh-16bit-glibc2x
-
-OK, I'll try it right now.
-
-Once again, thanks a lot !
-
-Best regards,
-	Michael Engel	(engel@unix-ag.org)
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
