@@ -1,32 +1,29 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Topi Kanerva <tkanerva@ees2.oulu.fi>, <linuxppc-dev@lists.linuxppc.org>
+Date: Thu, 10 Aug 2000 11:50:04 +0200 (CEST)
+From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+To: Topi Kanerva <tkanerva@ees2.oulu.fi>
+cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+        Derek Homeier <supas100@astrophysik.uni-kiel.de>,
+        linuxppc-dev@lists.linuxppc.org
 Subject: Re: Backlight control on Lombard PB
-Date: Thu, 10 Aug 2000 10:19:54 +0200
-Message-Id: <20000810081954.22687@mailhost.mipsys.com>
 In-Reply-To: <Pine.GSO.4.21.0008100940040.28327-100000@stekt6>
-References: <Pine.GSO.4.21.0008100940040.28327-100000@stekt6>
+Message-ID: <Pine.LNX.4.10.10008101149110.1740-100000@zirkon.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Well, the backlight control surely doesn't work on Pismos... I just hate
->it when I have to boot over to MacOS to switch up the backlight level
->(I usually keep it low because it eats so much battery...)
->Now, I realize that the PMU on Pismos is somewhat different, but supposedly
->there is a way (in MacOS) to try to poke what kind of values are being
->written to the registers when you change the backlight in MacOS (fn-F1/F2)
+> >Should be fixed in BenH's current tree, he said he was going to do it this
+> >past weekend. The pmu backlight controller didn't get registered on the
+> >Lombard (and possibly Wallstreet) because the backlight-control property
+> >is missing on these machines.
 >
->actually, to be able to turn off the backlight is perharps the most
->important single power-saving feature. unfortunately, I myself don't have
->any reverse-engineering experience on MacOS (this is my first mac ever...)
+> Well, the backlight control surely doesn't work on Pismos... I just hate
 
-Backlight control should work on Pismo with my latest kernels. It's not
-driven by te PMU on those machines, it's directly controlled by the ATI
-chip. I finally found some time to push the Lombard fix yesterday.
+I was speaking about Lombard and related machines. On the Pismo, the
+backlight control is in the display driver IIRC.
 
-Ben.
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
