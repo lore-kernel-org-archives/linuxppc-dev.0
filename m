@@ -1,50 +1,23 @@
-Message-ID: <534be22204081812574594026b@mail.gmail.com>
-Date: Wed, 18 Aug 2004 16:57:11 -0300
-From: Sulamita Garcia <toskinha@gmail.com>
-Reply-To: Sulamita Garcia <toskinha@gmail.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: MPC855T
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Message-ID: <2D9AB865A49FD511914700105A0EF679016C49C0@morse.smart.lfk.eads.net>
+From: "Hager, Johannes, HRD/AB" <johannes.hager@eads.com>
+To: "PPC Linux Mailing List (E-Mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: No L2 Cache on PReP Machine
+Date: Thu, 19 Aug 2004 09:43:41 +0200
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Hi
+I am usign Linux on the Motorola MVME3604 Board. This Board complies to the
+PReP standard. So I configured the linux machine type to
+"CHRP/PowerMac/PReP".
+The kernel starts without showing any errors, but the problem is, that the
+L2 cache of the board is not recognized by the kernel. Does the linux not
+support L2 caches on PReP machines or is it another problem?
 
-I'm trying to compile a ppc kernel and having some problems. I
-followed the http://penguinppc.org/embedded/ and installed gcc and
-binutils to powerpc. When I try compile 2.6.7 kernel, I had this:
-
-  CC      arch/ppc/kernel/traps.o
-In file included from arch/ppc/kernel/traps.c:29:
-include/linux/interrupt.h:47: error: parse error before '(' token
-include/linux/interrupt.h:47: warning: function declaration isn't a prototype
-include/linux/interrupt.h:47: error: parse error before '*' token
-include/linux/interrupt.h:47: error: `irqreturn_t' declared as
-function returning a function
-include/linux/interrupt.h:47: warning: function declaration isn't a prototype
-include/linux/interrupt.h:47: error: 'irqreturn_t' redeclared as
-different kind of symbol
-include/asm/mpc8xx.h:99: error: previous declaration of 'irqreturn_t' was here
-include/linux/interrupt.h:47: error: parse error before "unsigned"
-arch/ppc/kernel/traps.c: In function `AltivecUnavailException':
-arch/ppc/kernel/traps.c:650: warning: unsigned int format, long
-unsigned int arg (arg 3)
-make[1]: *** [arch/ppc/kernel/traps.o] Error 1
-make: *** [arch/ppc/kernel] Error 2
-
-When I let the kernel config to 6xx/7xx/74xx/8260 processor, I'm able
-to compile the kernel without problems. When I change to 8xx
-processor, I got this error.
-
-I'm trying set am cross compile enviroment to MPC855T box. Can you
-give some light?
-Thanks
---
--------------------------------------------------------------
-  °v°  Sulamita Garcia
- /(_)\  LinuxChix Brasil
- ^ ^  http://www.linuxchix.org.br/
+Best regards,
+Johannes
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
