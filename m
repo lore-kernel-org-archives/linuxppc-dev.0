@@ -1,65 +1,46 @@
-Date: Tue, 02 Mar 2004 13:44:15 -0800
-From: Peter Ryser <Peter.Ryser@xilinx.com>
-Subject: Re: ml300 system init very slow
-In-reply-to: <20040302173411.50777.qmail@web21113.mail.yahoo.com>
-To: Lou Rickard <lou_rickard@yahoo.com>
+To: Bob Beck <beck@assurtech.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Message-id: <4045002F.1020905@xilinx.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii; format=flowed
-References: <20040302173411.50777.qmail@web21113.mail.yahoo.com>
+Subject: Re: Booting Linux on a Custom PPC Board 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "02 Mar 2004 12:58:54 +1400."
+             <1078181934.4198.20.camel@budweiser>
+Date: Wed, 03 Mar 2004 00:51:44 +0100
+Message-Id: <20040302235149.72299C0655@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Lou,
+In message <1078181934.4198.20.camel@budweiser> you wrote:
+>
+> We are writing our own boot loader code for a couple of reasons.
+>
+> o U-Boot does not support our ethernet chip or serial chip.
 
-make sure you don't have a mismatch between
-arch/ppc/platforms/xilinx_ocp/xparameters_ml300.h and your system.mhs
-especially when looking at the interrupt signals and defines. If you
-made changes to xparameters_ml300.h you might want to rebuild the kernel
-completely:
-$ make clean dep bzImage modules.
+And you really  think  that  developing  a  complete  new  bootloader
+(including drivers for your ethernet and serial chips) is less effort
+or easier that just adding these drivers to U-Boot?
 
-Besides that I assume that you use a recent kernel (eg. the one in
-MVL3.1) and EDK (vs. V2PDK) as a development tool kit.
+C'me on!
 
-- Peter
+> o VxWorks is in flash and we cannot change that in the near future.
+> o The VxWorks boot loader initializes the hardware and
+>   we run our custom boot loader from its shell.
+
+U-Boot can boot VxWorks just fine.
 
 
-Lou Rickard wrote:
+Best regards,
 
->And as the kernel boots, it loads an improved serial
->module stored on the root filesystem, which works
->fine?  Would that explain why it works fine with
->module support turned on, but doesn't work well with
->module support turned off (and hence stuck using the
->serial module that is built into the kernel)?
->
->~lr
->
->--- "VanBaren, Gerald (AGRE)"
-><Gerald.VanBaren@smiths-aerospace.com> wrote:
->
->
->>Just in case nobody answered yet (I didn't see an
->>answer), the problem 99.9999% certainty is that your
->>serial interrupts are not interrupting so the kernel
->>is polling for serial I/O.  This is a fallback
->>operation with REALLY LONG timeouts.  The symptoms
->>are REALLY SLOW console interaction == your
->>symptoms.  Your follow-up message indicates the
->>problem is in your serial driver module.
->>
->>gvb
->>
->>
->
->
->
->
->
->
+Wolfgang Denk
 
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Space is big. You just won't believe how vastly, hugely, mind-
+bogglingly big it is. I mean, you may think it's a long way down the
+road to the drug store, but that's just peanuts to space.
+                              -- The Hitchhiker's Guide to the Galaxy
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
