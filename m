@@ -1,43 +1,30 @@
-Message-ID: <397C7D9C.77735326@embeddededge.com>
-Date: Mon, 24 Jul 2000 13:32:12 -0400
-From: Dan Malek <dan@netx4.com>
-MIME-Version: 1.0
-To: Ralph Blach <rcblach@raleigh.ibm.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 405gp pci mapping registers
-References: <397C7361.3E97D93D@raleigh.ibm.com>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <4.3.2.7.0.20000824132843.00b1f9a0@10.0.0.2>
+Date: Thu, 24 Jul 2000 13:36:02 -0400
+To: linuxppc-embedded@lists.linuxppc.org
+From: Mike Coy <coym@embeddedplanet.com>
+Subject: flash filesystem
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Ralph Blach wrote:
+I've noticed that the size of my initrd is limited not by the size of my
+flash, but by the amount of ram I have to decompress it into.
+I would like to put a filesystem in the unused portion of my flash and read
+it (read-only) without first copying it into ram.
+I'm not entirely sure how to get at this filesystem, though.  The only way
+I've seen flash accessed is with the initrd at boottime.
+Has anyone done this?
 
-> This is interesting because since the 405gp has three sets of these
-> register leading to split mappings.
+The best that I can come up with is that the flash is probably mapped into
+memory somewhere, and maybe I could fool the ramdisk code into reading a
+pre-existant ramdisk at a given address.  This didn't appear to be too
+trivial at my first browse through the code, though.
+What is the right way to get at data in flash?
 
-It isn't conceptually any different than the enormous flexibility of
-the MPC8xx memory controller, and is very similar to PCI bridges
-on the MPC8xx boards.
+Thanks,
+Mike
 
-> My question is this.  How should we manage this kind of address
-> flexability?
-
-You stamp a "Linux" memory map and leave it alone.  Just because
-you have the flexibility doesn't imply it should be exposed as
-configuration options.  When I did the MPC8xx port, I chose to utilize
-all of the flexibility so I could make the memory map look as much
-like Prep as possible.  All of the assumptions or knowledge about the
-PowerPC workstation memory maps are mostly valid for the 8xx as well.
-I used the flexibility to emulate something that already existed.
-
-I learned a valuable lesson, and hope others will do the same.  Use
-that flexibility so make all of the systems look similar.  Otherwise,
-you will end up on a technology island, frustrated that the rest of
-the world is moving forward with new features and you are unable to
-keep up with your own little custom hacks.
-
-
-	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
