@@ -1,31 +1,33 @@
-Message-ID: <20010211043822.8854.qmail@kunk.jriver.com>
-Subject: Re: BMAC stuff - what I have
-To: linuxppc-dev@lists.linuxppc.org
-Date: Sat, 10 Feb 2001 22:38:22 -0600 (CST)
-From: Robert E Brose II <bob@kunk.jriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Sat, 10 Feb 2001 22:40:43 -0600
+From: Dave Wolfe <dwolfe@lists.linuxppc.org>
+To: Tom Gall <gall@rochcivictheatre.org>
+Cc: linuxppc-dev@lists.linuxppc.org, Rich Lafferty <rich@alcor.concordia.ca>,
+        David Edelsohn <dje@watson.ibm.com>
+Subject: Re: https://sourceforge.net/projects/ppclinux/
+Message-ID: <20010210224043.A10011@lists.linuxppc.org>
+References: <3A8579F6.4C5E97CD@vnet.ibm.com> <20010210185305.C7667@alcor.concordia.ca> <3A85D80E.93FD01C9@rochcivictheatre.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3A85D80E.93FD01C9@rochcivictheatre.org>; from Tom Gall on Sat, Feb 10, 2001 at 06:08:46PM -0600
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
--- forwarded message --
+[ Tom Gall writes: ]
+>
+> Rich Lafferty wrote:
+> >
+> > There any chance of bug report updates going to a hypothetical
+> > "linuxppc-bugs" rather than -dev?
+>
+>   Seems like a reaonable approach...  someone from lists.linuxppc.org
+> wanna create it?
 
-Kernel version: any (2.2.x - 2.4.x)
+Ask an ye shall receive. I'll try to get to it in the next couple of
+days. Do anyone know who to talk to at sourceforge to change where the
+reports go? Does it need to be a restricted list or general discussion?
 
-Symptoms: high speed transfers from a macintosh with a BMAC network device are limited to less than 100kB/s and often corrupted.  Systems known to have this are some Wallstreets and beige Desktops.  10/100 chips in Lombard are BMAC+ which do not seem to have the bug.  This is a hardware bug that exists in some releases of the chip, and only effects Tx packets.
-
--- end of forwarded message --
-
-
-I see the same problem on my Rev C iMac at 100 mb in both 2.2 and 2.4
-kernels. I get slow transfers and broken scp's but not corrupted
-data on complete transfers. Same machine works fine in MacOS and OSX.
-
-Bob
 --
-Robert E. Brose II    N0QBJ
-http://www.jriver.com/~bob/
-bob@kunk.jriver.com
+ Dave Wolfe
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
