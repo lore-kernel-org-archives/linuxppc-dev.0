@@ -1,23 +1,19 @@
-Date: Fri, 15 Jan 1999 12:36:51 -0700 (MST)
+Date: Fri, 15 Jan 1999 13:10:04 -0700 (MST)
 From: Cort Dougan <cort@persephone.cs.nmt.edu>
 To: Alois Fertl <alois_fertl@mucmot.muenchen.europe.mcd.mot.com>
-cc: Alexander Gustav Deucher <agd5f@unix.mail.virginia.edu>,
-        Gabriel Paubert <paubert@iram.es>, Troy Benjegerdes <hozer@drgw.net>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Porting to Nubus PowerMacs
-In-Reply-To: <369F68F7.F983C816@mucmot.muenchen.europe.mcd.mot.com>
-Message-ID: <Pine.LNX.3.96.990115123600.10322A-100000@persephone.cs.nmt.edu>
+cc: Michael Meissner <meissner@cygnus.com>, linux-kernel@vger.rutgers.edu,
+        linuxppc-dev@lists.linuxppc.org, gdt@cygnus.com
+Subject: Re: Booting 2.2.0-pre6 on a PowerStack-II (Net 4000/200)
+In-Reply-To: <369F5EB6.E34F17E8@mucmot.muenchen.europe.mcd.mot.com>
+Message-ID: <Pine.LNX.3.96.990115130921.10558B-100000@persephone.cs.nmt.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I didn't mean to reject them outright.  They do need to be reworked a bit
-so they don't kill IDE on the IBMs, though.
-
-}3) To get the kernel running with the standard IDE equipment I had to add
-}   some changes which according to Cort will break IDE on IBM.
+It should find the pci devices.  It doesn't use residual data, it uses the
+hard code table for interrupt routing.
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
