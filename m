@@ -1,69 +1,61 @@
-Message-Id: <v03110701b4fd5f523b24@[129.100.29.243]>
-In-Reply-To: <Pine.LNX.4.21.0003211716210.18439-100000@idd-01.imbc.gr>
-References: <00032021464800.00801@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Tue, 21 Mar 2000 12:26:47 -0500
-To: Kostas Gewrgiou <gewrgiou@imbc.gr>
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Subject: Re: Patches to fix aty128fb and xf400 r128 to work with both
- Rage128  and Rage128Pros
-Cc: anthony tong <atong@uiuc.edu>, Benjamin Herrenschmidt <bh40@calva.net>,
-        linuxppc-dev@lists.linuxppc.org
+Message-ID: <38D7B56B.3E351682@ncal.verio.com>
+Date: Tue, 21 Mar 2000 09:46:19 -0800
+From: Henry Worth <haworth@ncal.verio.com>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Powerbook 2000 (Pismo) status.
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Just a quick update on status for the PB2000,
 
-> From the patches i see that the reference freq is still assumed to be
->29.50Mhz
->     /* Assume REF clock is 2950 (in units of 10khz) */
->     /* and that all pllclk must be between 125 Mhz and 250Mhz */
->     pll->reference_freq = 2950;
->     pll->min_pll_freq   = 12500;
->     pll->max_pll_freq   = 25000;
+The remaining media bay problems were fixed this weekend.
 
+Ben Herrenschmidt fixed the color map problems on the mobility
+chip for the aty128fb, and I debugged and tested them last night.
+Once we verify a few fixes for offb, I think it will be time
+to get a binary out for testing. Since Ben has mentioned
+it on the user list, the sources are in his linux-pmac-benh source
+tree at linuxcare.au if anyone with a compile platform wants
+to try to involved in testing.
 
-Yes, that's true.  Luckily, all of the Mac's use Rage128 cards with 2950 AFAIK.
-I will keep looking through the manual to see if I can figure out a way to
-determine this without a bios.
+I have also been testing a version of the Rage Xpmac which
+recognizes the Mobility chip courtesy of Kevin Hendricks.
+No problems yet.
 
-> From the comments in the xfree driver (and the ati docs) this isn't always
->true:
->     /* These probably aren't going to work for
->        the card you are using.  Specifically,
->        reference freq can be 29.50MHz,
->        28.63MHz, or 14.32MHz.  YMMV. */
+So far the networking is working well, I've seen transfers of
+over 6MBs. If not connected at boot it detects an active line
+being plugged in and initializes the PHY chip.
 
-Yes I know.
+Remaining issues are inconveniences and several are shared with
+the iBooks:
 
->  I'll be more than happy to get the patches in the xfree tree, even with
->the reference_freq hardcoded its still an improvement.
+> Like the iBook there is no power management yet, the new
+  PMU is undocumented and hasn't been reverse engineered. Ben's
+  iBook has a dead hard disk which is holding up his efforts,
+  though he seems to keep pretty busy on other projects...
 
-Jacl Howarth just report a 30% performance increase in some x11perf tests
-on XF 4.0 with the new patch versus the old values!  That makes me feel
-better.
+> The LCD display is bright! There are no brightness or
+  contrast controls yet, the question that needs to be
+  researched is whether these are controlled by the PMU or
+  the Rage Mobility's power management facilities.
 
->#ifdef __powerpc__ for this it should be better to see if the card has
->an OF or BIOS rom first since that will allow people to keep using cards
->with bios roms under ppc (i wonder if anyone is doing this)
->Any ideas on how we can check if a card has OF or BIOS roms ?
+> Sound??? Haven't tried, haven't even inquired as to the
+  iBook's status.
 
-Unforntunately, the current xf4 bios check does not work on some G3s and
-G4's.  Literally tmp[] comes back with the right values that leads you to
-believe that the Bios is there but the values for ref, the max and min pll,
-read from the "Bios" etc are truly garbage (i.e. xlck reads as 0).  The
-only reason it still worked was that none of the builtin modes fit the max
-and min pll values so no modes were found so the r128_driver.c just
-defaulted to the current fb mode which works.
+> USB traps: some combinations of the keyboard and mouse I have
+  will work on one boot and cause a trap on the next (I think
+  the mouse, a Logitech 4-button scroller is causing the
+  driver's confusion).
 
-I think a better check for a bios being present would detect the issue and
-we code default to of values set in the pll registers next.
+> PCMCIA/card slot: there is a new PCI bridge used that will
+  need support.
 
-Thanks!
+> Support for the second framebuffer or mirroring the LCD
+  framebuffer to the external monitor or video ports.
 
-Kevin
-
+Henry
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
