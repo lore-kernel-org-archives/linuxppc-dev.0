@@ -1,43 +1,48 @@
+Date: Wed, 29 Aug 2001 14:08:50 -0700
+From: Daniel Jacobowitz <dmj+@andrew.cmu.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: glibc 2.1 -> 2.2 gotchas?
+Message-ID: <20010829140850.A1211@false.org>
+References: <998751333.12597.3.camel@yoda> <01082511424509.15847@localhost.localdomain> <20010826005515.Postino-022357@smtp01.highway.ne.jp> <01082513443402.16172@localhost.localdomain> <3B882749.346A0B39@iiic.ethz.ch> <20010825154233.S14302@cpe-24-221-152-185.az.sprintbbd.net> <20010825155417.A8892@nevyn.them.org> <20010825213629.U14302@cpe-24-221-152-185.az.sprintbbd.net>
 Mime-Version: 1.0
-Message-Id: <p05100300b7b3044d8b12@[10.0.0.42]>
-In-Reply-To: <20010829041634.M28241@plato.local.lan>
-References: <15244.11337.823289.698210@titan.metzler>
- <p05100304b7b1e866127d@[10.0.0.42]>
- <15244.47416.198967.661158@titan.metzler>
- <p05100300b7b28192a28d@[10.0.0.42]>
- <20010829041634.M28241@plato.local.lan>
-Date: Wed, 29 Aug 2001 13:48:51 -0700
-To: Ethan Benson <erbenson@alaska.net>,
-	linuxppc-dev@lists.linuxppc.org
-From: "Timothy A. Seufert" <tas@mindspring.com>
-Subject: Re: firewire screwup
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20010825213629.U14302@cpe-24-221-152-185.az.sprintbbd.net>; from trini@kernel.crashing.org on Sat, Aug 25, 2001 at 09:36:29PM -0700
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 4:16 AM -0800 8/29/01, Ethan Benson wrote:
->On Wed, Aug 29, 2001 at 04:38:51AM -0700, Timothy A. Seufert wrote:
->>
->>  It isn't enough to remove the main battery of a PowerBook -- all Macs
->>  and PowerBooks have a tiny internal backup battery which keeps the
->>  real time clock and NVRAM contents alive when the normal power
->>  sources are not present.  You have to disconnect it if you want to
->>  reset anything.  You also need to allow time for all capacitors to
->>  fully discharge before the NVRAM is truly cleared (it's battery
->>  backed SRAM, and SRAM can keep its contents alive on microamps of
->>  current).  Overnight usually seems to be enough.
+On Sat, Aug 25, 2001 at 09:36:29PM -0700, Tom Rini wrote:
 >
->that won't even work on a NewWorld, since on newworld nvram contents
->are stored in flash.
+> On Sat, Aug 25, 2001 at 03:54:17PM -0700, Daniel Jacobowitz wrote:
+> >
+> > On Sat, Aug 25, 2001 at 03:42:33PM -0700, Tom Rini wrote:
+> > >
+> > > On Sun, Aug 26, 2001 at 12:31:37AM +0200, Michel D?nzer wrote:
+> > >
+> > > > > What I recommend won't hurt and can certainly help flush older shared
+> > > > > libraries out of memory.
+> > > >
+> > > > The point is probably that in the Debian packages, the maintainer scripts take
+> > > > care of the necessary steps, so the user doesn't have to.
+> > >
+> > > This always got me tho...  If a program is already running, how do you
+> > > make it stop using the old libraries?  If 'restarting' /sbin/init makes it
+> > > reload, I'll take your word at it.  But what about all of the other apps that
+> > > happen to be running?  The bash session I happen to be doing this upgrade
+> > > from.  Or X (yes, in an ideal world, you goto single user to do this
+> > > anyhow.. :))
+> >
+> > They keep running with the old libc.  No big deal, really :)  The RAM
+> > will basically not be reclaimed until after you reboot.
+>
+> That's sorta what I figured.  So on debian certain services get restarted
+> so that new children are sane, yes?
 
-Did work on a New World for me (B&W).  Maybe only core99 & later use
-flash for nvram?
+Yes, precisely.  Most of the network daemons that use NSS need to be
+restarted, because of how NSS is loaded.
 
-I'll have to ask a guy I know at Apple about this.  He works with
-prototype hardware&firmware that have lots of bugs, so the various
-reset procedures are permanently burned into his brain.
 --
-Tim Seufert
+Daniel Jacobowitz                           Carnegie Mellon University
+MontaVista Software                         Debian GNU/Linux Developer
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
