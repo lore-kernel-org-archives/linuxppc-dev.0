@@ -1,16 +1,12 @@
-Return-Path: <SWarren@nvidia.com>
-Received: from HQEMGATE01.nvidia.com (hqemgate01.nvidia.com [216.228.112.170])
-	by ozlabs.org (Postfix) with ESMTP id B0F4D67A8A
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 26 Mar 2005 03:35:57 +1100 (EST)
+Return-Path: <ncaruso@irobot.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-Date: Fri, 25 Mar 2005 08:35:54 -0800
-Message-ID: <DBFABB80F7FD3143A911F9E6CFD477B005FDAFF6@hqemmail02.nvidia.com>
-From: "Stephen Warren" <SWarren@nvidia.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: RE: MPC5200 IDE DMA and Machine checks due to TEA
+Date: Fri, 25 Mar 2005 11:58:14 -0500
+Message-ID: <712A2DEC228C7448978CBD7A7AD5B090012EE448@fever.wardrobe.irobot.com>
+From: "Caruso, Nick" <ncaruso@irobot.com>
+To: <linuxppc-embedded@ozlabs.com>
+Subject: Question regarding Interrupt "delivery" to user mode process
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,17 +17,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I wrote:
-> Does anyone have IDE DMA really working on the MPC5200...
-> ...
-> The reason I ask is that we keep on getting machine check
-> exceptions with DMA enabled.
 
-Incidentally, if anyone thinks they are able to do consulting on this
-with a good chance of finding out the problem (timescale is short:-( )
-then we're willing to discuss payment.
+Note that "delivery" is in quotes - I don't mean to actually deliver an
+interrupt, but rather to wake the process when the interrupt occurs.
 
---=20
-Stephen Warren, Software Engineer, NVIDIA, Fort Collins, CO
-swarren@nvidia.com        http://www.nvidia.com/
-swarren@wwwdotorg.org     http://www.wwwdotorg.org/pgp.html
+This is a broad question, but I'm hoping someone out there with real
+experience in this area can comment on a design idea we're kicking
+around.
+If there's a better mailing list for asking this type of question,
+please tell me!
+
+We are building a device with an MPC5200 processor which needs to detect
+incoming pulses at a 13 mSec rate.  We've got this incoming pulse wired
+to an IRQ on the MPC5200 and we now need a method for detecting these
+interrupts in a user mode process.
+
+The design we're contemplating is a small character device driver in the
+kernel that will allow a user mode process to perform a blocking read on
+a file descriptor, and return from the read call whenever an interrupt
+occurs. =20
+
+We're not concerned (for the moment) with missing interrupts - we think
+we can service them fast enough (we just need to record a
+chronometer-type timestamp for some other incoming (serial) data).
+
+Does this sound like a workable approach?  Does anyone know of a better
+way?  My implementation plan is to derive something from the 3rd edition
+Linux Device Drivers book "scull-pipe" device driver.
+
+Any comments or suggestions would be greatly appreciated.
+
+    thanks and best regards,
+       Nick Caruso
