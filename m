@@ -1,37 +1,52 @@
-Subject: Kernel versions
-From: Gary Thomas <gary@mlbassoc.com>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <20031003151729.GC21468@ip68-0-152-218.tc.ph.cox.net>
-References: <20031002121733.A2E32C59E4@atlas.denx.de>
-	 <001101c3894c$38833ab0$2803050a@JackyLam> <3F7D3238.2090400@bluewin.ch>
-	 <20031003151729.GC21468@ip68-0-152-218.tc.ph.cox.net>
-Content-Type: text/plain
-Message-Id: <1065224171.18201.805.camel@hermes>
-Mime-Version: 1.0
-Date: 03 Oct 2003 17:36:11 -0600
+Date: Fri, 3 Oct 2003 22:42:01 -0400 (EDT)
+From: "Shih-Ying S. Chou" <sschou@mtu.edu>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Question about IBM 405GP PCI mapping on EP405 board
+Message-ID: <Pine.GSO.4.53.0310032240420.17354@tesla2.ee.mtu.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Tom,
+Hi,
+     As I am reading the IBM 405GP user manual, and check the PCI memory
+mapping in the ep405.c in the kernel source.  I run in a question about
+there is a difference between the manual and the code's comment.  Can
+anyone explain to me if it is normal or it is an typo in the code.
+     In the user manual, the range of PLB to PCI I/O mapping is
 
-For more than a year now, I've been working from the linuxppc_2_4_devel
-tree, sending updates which have been merged in, etc.  I just looked at
-the recently discussed 2.4 tree (http://ppc.bkbits.net:8080/linuxppc-2.4)
-and I see none of this work present.
+PLB address range    Description                      PCI address range
+0xE8000000 -         PCI I/O                          0x00000000 -
+0xE800FFFF           Accesses to this range are       0x0000FFFF
+                     translated to an I/O access
+                     on PCI in the range 0 to 64KB-1.
 
-So my questions are:
-* What is the "proper" tree to be working from (2.4, 2.6)?
-* What is the merge path from the work in 2_4_devel to these other trees?
+But in the ep405.c in the kernel source
 
-... I wouldn't want all of my efforts to just get lost.
+ /*
+  * Expected PCI mapping:
+  *
+  *  PLB addr                    PCI memory addr
+  *  ---------------------       ---------------------
+  *  0000'0000 - 7fff'ffff <---  0000'0000 - 7fff'ffff
+  *  8000'0000 - Bfff'ffff --->  8000'0000 - Bfff'ffff
+  *
+  *  PLB addr                    PCI io addr
+  *  ---------------------       ---------------------
+  *  e800'0000 - e800'ffff --->  0000'0000 - 0001'0000
+  */
+                                     ^
+                                     |
+                                     |
+				isn't here should
+                                be same as PCI I/O address
+                                range??
 
-Thanks.
 
---
-Gary Thomas <gary@mlbassoc.com>
-MLB Associates
+Thank you
+
+Shih-Ying Chou
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
