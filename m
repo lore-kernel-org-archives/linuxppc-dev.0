@@ -1,46 +1,56 @@
-In-Reply-To: <3891008C.A83C47B4@mvista.com>
-Date: Fri, 28 Jan 2000 11:21:26 +0100
-To: Jun Sun <jsun@mvista.com>, linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: the ppc_n_lost_interrupts thing...
-Message-Id: <20000128112126.007819@mailhost.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-Id: <200001281022.LAA30623@denx.local.net>
+To: "Linux PPC Embedded" <linuxppc-embedded@lists.linuxppc.org>,
+        "Linux PPC Dev" <linuxppc-dev@lists.linuxppc.org>,
+        greyham@research.canon.com.au (Graham Stoney)
+Subject: Re: [ANNOUNCE] MPC8xx example device drivers
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 14 Jan 2000 00:34:01 +0100."
+Date: Fri, 28 Jan 2000 11:22:06 +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Jan 27, 2000, Jun Sun <jsun@mvista.com> wrote:
+While trying to help some  customers  getting  started  with  writing
+device  drivers for MPC8xx systems we developed some example drivers.
+The drivers are quite simple and more for educational than  practical
+purposes:
 
->I am a newbie to PowerPC-linux.  Hopefully this question is
->not too dumb.
+trv:	["TRiVial" driver] This driver demonstrates the use of the
+        basic kernel functions and system calls for a memory "buffer"
+        device. It is generic and runs on PPC and x86 as well.
 
-Definitely not ;) Here's my understanding:
+tid:	["Trivial Interrupt Driver"] The purpose of this driver is to
+        demonstrate real hardware accesses, CPM interrupt processing,
+        and passing of module parameters. It  uses  one  of  the  CPM
+        timers to create interrupts.
 
->From this, I can infer that ppc_n_lost_interrupts is used to
->"fake" a new interrupt at the end of an interrupt handling.
+tqm_led: ["TQM8xx LED" driver] This driver  is  specific  to  the  TQ
+        Components  STK8xx  starter  kit:  it  provides a very simple
+        example how to control external devices (here the LEDs on the
+        starter kit board) using the CPM parallel ports.
 
-That's it.
+The sources for these drivers can be found on:
 
->However,
->what I don't understand is - how could this possibly detect an
->interrupt that happens while the CPU is blocking external
->interrupt?
->In this case, ppc_n_lost_interrupts won't be incremented and when
->the external interrupt is re-enabled, we won't be able to get
->into interrupt mode.
+	ftp://ftp.denx.de/pub/LinuxPPC/usr/src/drivers.tar.gz
 
-The interrupt will be lost only when it's masked in the controller while
-beeing issued by the device. It's a PIC bug.
 
-So, we need to check it out only when unmasking the interrupt -in the
-controller-. That's what we do in pmac-pic.c. If interrupts are masked on
-the CPU but not on the controller, they are not lost. If they are masked
-in both, it's not a problem neither, at least until someone tries to
-umask one in the controller.
+I'm especially grateful to Jean-Jacques Germond, Frédéric Soulier and
+Christian Batt for allowing to make their work Open Source.
 
-Note that our implementation if restore_flags() will check
-lost_interrupts since the unmask call can be done while MSR_EE is 0.
 
+ALL type of feedback is welcome,  especially  all  contributions  for
+improvement.
+
+
+Wolfgang
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+No, I'm not going to explain it. If you  can't  figure  it  out,  you
+didn't want to know anyway... :-)
+                   - Larry Wall in <1991Aug7.180856.2854@netlabs.com>
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
