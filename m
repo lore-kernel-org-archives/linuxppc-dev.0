@@ -1,42 +1,66 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-From: "XOL" <xol@mail.ru>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: How to change Bus speed for MPC8xx CPU 
-Mime-Version: 1.0
-Date: Sun, 18 May 2003 14:42:41 +0400
-Reply-To: "XOL" <xol@mail.ru>
-Content-Type: text/plain; charset=koi8-r
-Message-Id: <E19HLcn-000NAv-00.xol-mail-ru@f20.mail.ru>
+To: "XOL" <xol@mail.ru>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Re[4]: How to change Bus speed for MPC8xx CPU 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Sun, 18 May 2003 16:02:07 +0400."
+             <E19HMrf-0008UY-00.xol-mail-ru@f9.mail.ru>
+Date: Sun, 18 May 2003 18:16:31 +0200
+Message-Id: <20030518161636.8EA6FC6162@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello.
- I'm working with single board computer EP862 ( from EP ) with
- motorola MPC 862 CPU.
- If I run
- cat /proc/cpuinfo
- I get
- cpu MHz : 100
- bus MHz : 50
+Hello,
 
- My board is runnig from external clock of 10M and boot monitor
- has parameter called mulitplier which is equal to 10.
- Boot monitor is RS232 terminal runnign before kernel boot.
- It brings kernel image from tftp server.
+in message <E19HMrf-0008UY-00.xol-mail-ru@f9.mail.ru> you wrote:
+>
+> You r right I've posted same message to
+> embedded list. I though this is better place for this topic.
+> Ok, I can get configuration of
+> CPU 100M
+> Bus 50M
+> Or
+> CPU 80M
+> Bus 40M
+> In the worst case second is ok for me, but
+> I have a luck of performance in my system and do not
+> want to loose 20% of CPU speed.
 
- I need to slow bus speed to 40MHz and from 862 data sheet I see
- what this can be done by writing to internal registers of clock
- engine.
+There is no other choice.
 
- My question is how kernel deal with it. Where and how clock are configured
- and how can I change it. Is it done on the boot time by kernel boot loader ?
- How information present in /proc/cpuinfo is collected by kernel.
- Maybe you can apoint me to the source in kernel where clock parameters
- are configured. IMHO it should be somwhere in boot.
- This can help me to find a way to change bus speed.
+> So I want to find a way how to get
+> CPU 100M
+> Bus 40M
 
- Thank you
+You cannot. The MPC8xx CPUs gives you two options: you can select the
+EBDF bits in SCCR either for a divider factor of 1 (bus clock ==  CPU
+clock) or 2 (bus clock = CPU clock / 2).
 
+No other modes are supported on this platform.
+
+> Also I'm driving a PPC Bus via number of boards in the system
+> and 40M can be problematic. So probably I'll need to
+> downgrade it to 30/35M.
+
+In this case you have to run the CPU at 60 or 70 MHz, resp.
+
+> This is reason I can't just use multiplier but have to
+> find a way control bus speed by myself.
+
+You cannot. Bus clock and CPU clock depend on  each  other,  and  the
+only  option is a divider factor of 1 or 2. See the documentation for
+the clocks and the SCCR register in the UM.
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Nothing ever becomes real till it is experienced -- even a proverb is
+no proverb to you till your life has illustrated it.     - John Keats
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
