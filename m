@@ -1,59 +1,47 @@
-Date: Mon, 7 Dec 1998 21:06:24 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Elgin Lee <ehl@funghi.com>
-cc: "David A. Gatwood" <marsmail@globegate.utm.edu>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: XF68_FBDev under MkLinux? 
-In-Reply-To: <199812071822.KAA02538@porcini.funghi.com>
-Message-ID: <Pine.LNX.4.03.9812072105450.10596-100000@mercator.cs.kuleuven.ac.be>
+Date: Mon, 7 Dec 1998 14:47:17 -0600 (CST)
+From: Troy Benjegerdes <hozer@drgw.net>
+To: VALETTE Eric <valette@crf.canon.fr>
+cc: cort@persephone.cs.nmt.edu, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Incomplete (potentially broken) Raven Chipset support for PREP
+ machines.
+In-Reply-To: <m0zlzYS-0000WWC@tri-yann.crf.canon.fr>
+Message-ID: <Pine.LNX.4.04.9812071441070.13527-100000@narn.local.drgw.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 7 Dec 1998, Elgin Lee wrote:
-> Perhaps I misunderstand.  What ioctls are you proposing to use?
-> MkLinux (Linux and Mach sides combined) supports ioctls like
-> VC_GETMODE, VC_SETMODE, VC_INQMODE, VC_SETCMAP, and VC_GETCMAP.
+On Fri, 4 Dec 1998, VALETTE Eric wrote:
 
-These ioctls.
-
-> However, I believe that the Mach drivers will currently only allow you
-> to use the one video mode (width, height, depth, etc.) in effect from
-> the MacOS side.  That one mode should be revealed by the video ioctls.
+> 3) Once the PCI Configuration space routine have been correctly set,
+> If the raven is detected, then why not enabling the OPENPIC and use
+> the open_pic code provided by CHRP machines?
 > 
-> Would that restriction cause a problem?
-
-No problem. That's very similar to `mode "default"' with XF68_FBDev.
-
-> >>>>> In <Pine.LNX.3.96.981207114602.20658A-100000@globegate.utm.edu> 
-> >>>>>	"David A. Gatwood" <marsmail@globegate.utm.edu> wrote:
+> At least this would remove the hugly code for PCI interrupt mapping
+> and enable to support correctly multi-function devices...
 > 
-> > On Mon, 7 Dec 1998, Geert Uytterhoeven wrote:
-> > 
-> > > On Sun, 6 Dec 1998, David A. Gatwood wrote:
-> > > > On Sat, 5 Dec 1998, Elgin Lee wrote:
-> > > > > >   2. Adopt XF68_FBdev so it can use the MkLinux video mode ioctl stuff.
-> > > > 
-> > > > vmode ioctl stuff?  Since when does MkLinux support detecting or changing
-> > > > video modes?  This is where we're going to run into trouble either way.
-> > > 
-> > > Doesn't the stuff in <asm/vc_ioctl.h> come from MkLinux?
-> > 
-> > Maybe.  I'm not saying the linux server part doesn't have the support,
-> > just that the mach kernel drivers don't, AFAIK.  :-)
+> Note : I'm asking theses questions because I will work on this code.
+> The better I understand it, the sooner I may send patches. I have
+> 10 years of OS programming behind me (Chorus) but I'm totally new to
+> PPC (1 month or so) so please be patient...
 > 
 
-Greetings,
+OpenPic support for Raven, and in turn, SMP for the MTX boards, is on my
+list of things to work on in the next month or so.
 
-						Geert
+I started working on an 'architecture' for detecting various things like
+this and setting appropriate function pointers at boot time. I got as far
+as redoing the RTC reading/setting code. (since the setting the clock
+didn't work on my MTX)
 
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
+Please let me know if you get any patches made.
 
+--------------------------------------------------------------------------
+| Troy Benjegerdes    |    troybenj@iastate.edu    |    hozer@drgw.net   |
+|    Unix is user friendly... You just have to be friendly to it first.  |
+| This message composed with 100% free software.    http://www.gnu.org   |
+--------------------------------------------------------------------------
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
