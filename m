@@ -1,60 +1,32 @@
-Reply-To: <acurtis@onz.com>
-From: "Allen Curtis" <acurtis@onz.com>
-To: "Ppc Developers" <linuxppc-dev@lists.linuxppc.org>
-Subject: 8260 Network Performance update
-Date: Wed, 5 Jun 2002 22:00:27 -0700
-Message-ID: <NCBBIINEHIPFGJPLBEIFOEDMDIAA.acurtis@onz.com>
+From: benh@kernel.crashing.org
+To: Christopher Murtagh <christopher.murtagh@mcgill.ca>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: SMP/HIGHMEM/7450 status ?
+Date: Thu, 6 Jun 2002 07:37:12 +0200
+Message-Id: <20020606053712.8506@mailhost.mipsys.com>
+In-Reply-To: <Pine.LNX.4.33.0206061134150.20358-100000@blues.wcg.mcgill.ca>
+References: <Pine.LNX.4.33.0206061134150.20358-100000@blues.wcg.mcgill.ca>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-1. Unidirectional TCP/IP traffic (ftp):   get 180MBfile /dev/null
-(Thanks Jean-Denis)
+> I was wondering if anyone has had any luck with the 7450 with SMP and
+>HIGHMEM recently. There were problems with it in the past, and I was
+>wondering if any fixes have been included in the current
+>source.mvista.com::linuxppc_2_4 rsync tree. The reason why I ask is
+>because the only dual 7450 machine I have is currently in production and I
+>can't do any testing on it, and I need to turn on the second CPU some
+>time soon.
+>
+> Any info would be much appreciated.
 
-			10T Hub	|	100BT switch
-		 -------------------------------------|
-	2.4.2  |	839KBps	|	6526KBps	  |
-		 --------------------------------------
-	2.4.19 |	838KBps	|	9412KBps	  |
-		 --------------------------------------
+Well... It sorta works until you put really high load on it, then
+usually, a CPU locks up in an unrecoverable way. We haven't yet been
+able to find a workaround.
 
-These numbers look good!
-
-2. Here is a description of the original test and some new test results.
-
-		-------------	FTP Put	-------------
-		|		|---------------->|		|
-		|   Host	|	NFS save	| 8260 PPC	|
-		|		|<----------------|		|
-		-------------			-------------
-
-Given that the unidirectional transfers look good I assume that the problem
-is either resource related (running out of Ethernet buffers) or scheduling
-related. The following tests use the 2.4.19pre9 kernel but vary the number
-of RX/TX buffers. (symmetric allocation)
-
-			10T Hub	|	100BT switch
-		 -------------------------------------|
-	16 RTB |	440KBps	|	190KBps	  |
-		 --------------------------------------
-	32 RTB |	450KBps	|	230KBps	  |
-		 --------------------------------------
-	64 RTB |	450KBps	|	240KBps	  |
-		 --------------------------------------
-
-
-The above data shows that this is not a raw communication speed issue but
-rather a scheduling or resource issue where either FTP or NFS is getting
-starved. My guess is that FTP is taking all the receive buffers leaving
-nothing for NFS to work with when storing the file.
-
-Does this help to identify the problem and a possible solution? Additional
-tests recommendations?
-
-TIA!
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
