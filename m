@@ -1,84 +1,55 @@
-Message-ID: <E0A487F3EEFFD111A3C5004033933F9ABBF6C3@postoffice.iotech.com>
-From: Derrik Weeks <derrikW@iotech.com>
-To: "'Sangmoon Kim'" <dogoil@etinsys.com>,
-	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: execve system call question
-Date: Tue, 26 Feb 2002 09:34:58 -0500
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3C7B9F2E.40BC7C46@lvl7.com>
+Date: Tue, 26 Feb 2002 09:43:58 -0500
+From: "John W. Linville" <linville@lvl7.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
+To: Dan Malek <dan@embeddededge.com>
+Cc: David Ashley <dash@xdr.com>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Linux 2.4.17 bug, mmap of /dev/mem
+References: <200202260315.g1Q3Fmt18809@dave.home> <3C7B0605.3080308@embeddededge.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Dan,
 
-This sounds like a problem I had a while back with the location of the IMMR
-of on my processor.  What I discovered (via the archives of this mail list)
-is the IMMR needs to be located in high memory above F0000000.  Check your
-code to see if the memory map for your custom board has placed the IMMR at a
-low memory address.
+Could you elaborate on the problems associated w/ bus timings that
+you've seen on the 8xx?  We've been seeing a lot of unexplained Oops
+messages (and even crashes) on one of our hardware platforms.  The only
+common thread seems to be dereferncing bad pointer values, but they
+occur in so many different places...
 
->From experience I know that if this is your issue, your kernel will crash
-whether you're running NFS or a ram disk.  Once you move the IMMR to high
-memory, you'll get to shell prompt with no problem.  I'm 75% sure you're
-looking at the same situation as I was, but if not, I wish you luck in your
-troubleshooting.
+I've asked our hardware guys to take a look at the settings for the UPM
+we are using to control SDRAM.  Do you think we are on the right track?
+Can you provide any guidance?
 
->From what I can tell by my limited time on this mail list, this issue has
-snagged many people new to Linux.  It's apparently well known in lore that
-the IMMR needs to be in high memory, it's just not particularly well
-documented, although those details can be found with enough digging.
+Thanks in advance for any help you can provide!  I'll buy you a beer and
+some maple candy the next time I'm up your way! :-)
 
-Hope this helps!
-Derrik Weeks
-Digital Hardware Architect
-IOtech, Inc.
+John
 
------Original Message-----
-From: Sangmoon Kim [mailto:dogoil@etinsys.com]
-Sent: Tuesday, February 26, 2002 5:35 AM
-To: linuxppc-embedded
-Subject: execve system call question
+Dan Malek wrote:
+>
+> David Ashley wrote:
+>
+> > Maybe you can point me to some discussion of how linux operates? I mean,
+> > once the memory is mapped with the page tables, what happens once the
+> > process does a read to a page? Does that generate a page fault?
+>
+> It isn't really unique to Linux.  Yes, the access can generate a page
+> fault, which will cause a kernel exception to load the TLB.  This can
+> generate some weird looking, early terminated bus timing, which is
+> perfectly within the specifications of the hardware but isn't something
+> the designers always consider.  I've seen this quite often on the 8xx,
+> but fortunately have never had to attach a logic analyzer to a 60x bus.
+>
+> So, I doubt it is any Linux or software problem, but more likely something
+> wrong with the timing on the bus that is resulting in incorrect data
+> returned to a memory access.
 
-
-
-Hi!
-I'm debugging a custom MPC755 board
-with linuxppc_devel from montavista rsync,
-and /opt/hardhat/devkit/ppc/7xx/target for NFS root.
-It booted and stoped after the message.
-
---------------------------------------------------------
-NET4: Linux TCP/IP 1.0 for NET4.0
-IP Protocols: ICMP, UDP, TCP
-IP: routing cache hash table of 1024 buckets, 8Kbytes
-TCP: Hash tables configured (established 8192 bind 8192)
-IP-Config: Complete:
-      device=eth0, addr=203.239.17.200, mask=255.255.255.0,
-gw=203.239.17.57,
-     host=dogoil, domain=, nis-domain=(none),
-     bootserver=203.239.17.57, rootserver=203.239.17.57, rootpath=
-NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
-Looking up port of RPC 100003/2 on 203.239.17.57
-Looking up port of RPC 100005/1 on 203.239.17.57
-VFS: Mounted root (nfs filesystem).
-Freeing unused kernel memory: 76k init
---------------------------------------------------------
-
-I traced the code and the point of stopping is after calling
-execve("/sbin/init", argv_init, envp_init)
-in init/main.c
-
-I was trying to trace more, but it was impossible
-because of the complexity of the code.
-
-Is there any method to debug this?
-I'm debugging it for a month.
-
-Please help me.
-
-- Sangmoon Kim -
-
+--
+John W. Linville
+LVL7 Systems, Inc.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
