@@ -1,40 +1,42 @@
-Message-Id: <200104171403.QAA00755@piglet.grunz.lu>
-Date: Tue, 17 Apr 2001 16:03:45 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
+Date: Tue, 17 Apr 2001 06:19:55 -0800
+From: Ethan Benson <erbenson@alaska.net>
+To: linuxppc-dev@lists.linuxppc.org
 Subject: Re: boot params
-To: iain@sandoe.co.uk
-Cc: erbenson@alaska.net, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20010417093736.4BEC72F001@apollo.valhalla.net>
-MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Message-ID: <20010417061955.C6381@plato.local.lan>
+References: <20010417093736.4BEC72F001@apollo.valhalla.net> <200104171403.QAA00755@piglet.grunz.lu>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="oTHb8nViIGeoXxdp"
+In-Reply-To: <200104171403.QAA00755@piglet.grunz.lu>; from mlan@cpu.lu on Tue, Apr 17, 2001 at 04:03:45PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  17 Apr, this message from Iain Sandoe echoed through cyberspace:
->
->> everyone i know running quik doesn't have any problems.
->
-> That may be true with quik itself - but console usage of OF is a PITA for
-> most of the older (OF 1.0.5-ish) machines - I can't get my 9600 to retain
-> the re-mapping of kbd/screen for more than one reboot - i.e. set the OF vars
-> (using BootVars) reboot - OF is OK to screen & kbd.   Next reboot they are
-> reset back to point to 38400 serial :-((( ...
+--oTHb8nViIGeoXxdp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-You sure your backup battery is OK? It's not completely dead, I think
-otherwise the box wouldn't boot; but you may test it anyhow.
+On Tue, Apr 17, 2001 at 04:03:45PM +0200, Michel Lanners wrote:
+>=20
+> You sure your backup battery is OK? It's not completely dead, I think
+> otherwise the box wouldn't boot; but you may test it anyhow.
+>=20
+> Also, you could add an nvsetenv script on shutdown as a workaround.
 
-Also, you could add an nvsetenv script on shutdown as a workaround.
+well on some machines the MacOSROM resets the nvram, so you must never
+allow it to boot.  quik is generally best for people wanting to get
+rid of the useless space wasting MacOS in these cases. =20
 
-Michel
+--=20
+Ethan Benson
+http://www.alaska.net/~erbenson/
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+--oTHb8nViIGeoXxdp
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
+
+--oTHb8nViIGeoXxdp--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
