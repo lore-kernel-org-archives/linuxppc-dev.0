@@ -1,17 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BDB8967A7D
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Mar 2005 15:00:58 +1100 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andreas Schwab <schwab@suse.de>
-In-Reply-To: <jed5tuqlp1.fsf@sykes.suse.de>
-References: <jed5tuqlp1.fsf@sykes.suse.de>
-Content-Type: text/plain
-Date: Mon, 21 Mar 2005 14:59:48 +1100
-Message-Id: <1111377588.3835.258.camel@gaston>
-Mime-Version: 1.0
+Return-Path: <schwab@suse.de>
+Received: from Cantor.suse.de (mail.suse.de [195.135.220.2])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "mail.suse.de",
+	Issuer "SuSE Linux AG internal IMAP-Server CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 6660667A67
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Mar 2005 21:35:51 +1100 (EST)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <jed5tuqlp1.fsf@sykes.suse.de> <1111377588.3835.258.camel@gaston>
+From: Andreas Schwab <schwab@suse.de>
+Date: Mon, 21 Mar 2005 11:35:45 +0100
+In-Reply-To: <1111377588.3835.258.camel@gaston> (Benjamin Herrenschmidt's
+	message of "Mon, 21 Mar 2005 14:59:48 +1100")
+Message-ID: <jey8che16m.fsf@sykes.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 Subject: Re: Wakeup broken on iBook G3
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -23,22 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2005-03-20 at 18:19 +0100, Andreas Schwab wrote:
-> Ever since the massive changes to the radeonfb pm code I've never been
-> able to get a working wakeup on my iBook G3.  The screen keeps blank after
-> wakeup, I hear the cdrom drive being reset, and then the system crashes
-> hard.
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-What video chip is this ? And what CPU ? Are you sure it's the radeonfb
-patch ? There have been other changes to the system PM code
-approximately at the same time. The "massive" PM change didn't really
-change what was done to the vidoe chip on older models (mostly _added_
-new code, totally separate, for new models). I suspect for example a
-problem with the cache flush code in pmac_cache.S on some G3 CPUs ...
+> What video chip is this ?
 
-There is also an old problem with AGP and sleep that is coming & going
-lately. Can you check if it works if you never go to X ? (That is boot
-in console mode, do not ever launch X, launching X and quitting X breaks
-the test I want you to do, then suspend/resume).
+Radeon Mobility M7 LY
 
-Ben.
+> And what CPU ?
+
+750FX
+
+> Are you sure it's the radeonfb patch ?
+
+It's hard to tell.  I tried going back to the 2.6.10 radeon driver, but
+that doesn't have the necessary hooks to tell the PM code that it can
+sleep.  If you can give a hint how to forward port that I can give it a
+try.
+
+> There is also an old problem with AGP and sleep that is coming & going
+> lately. Can you check if it works if you never go to X ?
+
+Did that, same problem.
+
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
