@@ -1,19 +1,19 @@
-Return-Path: <Administrator@rossvideo.com>
-Received: from server06.rossvideo.com (unknown [209.87.241.202])
-	by ozlabs.org (Postfix) with ESMTP id A71032BDCF
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Sep 2004 13:02:02 +1000 (EST)
-From: <Administrator@ozlabs.org>
-Sender: <Administrator@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-Date: Wed, 22 Sep 2004 22:49:47 -0400
-Message-ID: <026f01c4a117$fcd454b0$0201000a@rossvideo.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Subject: [MailServer Notification]To recipient: Message matched eManager
-	setting and action was taken.
-List-Id: "Linux on PowerPC \(Including Embedded\) Developers Mail List"
-	<linuxppc-dev.ozlabs.org>
+Return-Path: <sfr@ozlabs.org>
+Received: from oak (bh02i525f01.au.ibm.com [202.81.18.30])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BDF3D2BDD3
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Sep 2004 16:47:01 +1000 (EST)
+Date: Thu, 23 Sep 2004 16:46:55 +1000
+From: Stephen Rothwell <sfr@ozlabs.org>
+To: linuxppc-dev@ozlabs.org
+Message-Id: <20040923164655.0472a8b9.sfr@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="pgp-sha1";
+	boundary="Signature=_Thu__23_Sep_2004_16_46_55_+1000_9.hfuXha0swWI2y5"
+Subject: New mailing list specifically for embedded PowerPC development
+List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
 List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
@@ -22,15 +22,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-**************** eManager Notification *****************
+--Signature=_Thu__23_Sep_2004_16_46_55_+1000_9.hfuXha0swWI2y5
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-The following mail was blocked since it contains sensitive content.
+Hi all,
 
-Source mailbox: Jon Masters
-Destination mailbox(es): T Michael Turney;linuxppc-dev@ozlabs.org
-Rule/Policy: Custom
-Action: Quarantine to C:\Program Files\Trend\SMCF\Quarantine\2004-09-22\22\49\DFImessagebody415239ca3512.tmp
+After some representations, I have created linuxppc-embedded@ozlabs.org
+for the discussion of all things to do with the development of Linux on
+embedded PowerPC platforms.
 
-Content filter has detected a sensitive e-mail.
+General Linux on PowerPC development discussions should, of course, remain
+on this list.
 
-******************* End of message *********************
+I hope noone feels slighted :-)
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@ozlabs.org
+
+--Signature=_Thu__23_Sep_2004_16_46_55_+1000_9.hfuXha0swWI2y5
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.5 (GNU/Linux)
+
+iD8DBQFBUnFk4CJfqux9a+8RAntXAJ40BNrIdpy+wxCn6ri/f3n9laOuCgCgkzXj
+BeIfC/79SRfUdeZG0bZ7Lg4=
+=PxMg
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__23_Sep_2004_16_46_55_+1000_9.hfuXha0swWI2y5--
