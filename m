@@ -1,36 +1,40 @@
-Date: Sun, 30 Sep 2001 13:13:08 -0500
-From: "Joseph P. Garcia" <jpgarcia@execpc.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.4.10-ben0 doesn't see ide1
-Message-Id: <20010930131308.156a8063.jpgarcia@execpc.com>
-In-Reply-To: <20010930175148.29787@smtp.wanadoo.fr>
-References: <20010930122211.2cf9b2f7.jpgarcia@execpc.com>
-	<20010930175148.29787@smtp.wanadoo.fr>
+Date: Sun, 30 Sep 2001 11:52:06 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: PowerStack interrupt?problem
+Message-ID: <20010930115206.E776@cpe-24-221-152-185.az.sprintbbd.net>
+References: <Pine.GSO.4.10.10109301319240.29063-100000@rose.sonytel.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.GSO.4.10.10109301319240.29063-100000@rose.sonytel.be>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 30 Sep 2001 19:51:48 +0200
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Sun, Sep 30, 2001 at 01:23:46PM +0200, Geert Uytterhoeven wrote:
 
-> BTW. Once that's fixed, does media bay works on lombard & wallstreet
-> machines with my new kernel ? I rewrote the media bay driver but
-> didn't yet have a chance to test it on anything but Pismo.
->
-> Also, Joseph, did you notice similar problem with other OF resources
-> ranges or is this specific to IDE ?
+> We're having interrupt problems with a Motorola PowerStack running 2.4.9 (from
+> MontaVista rsync).
 
-I think this is specific to IDE.  When it happened, I did a quick scan of the log for any other failures and found none.  But this was with a kernel from a linux-2.4.10-pre10-ben0 from 2001.09.21.  A recent linux-2.4.10-ben0-benh from 2001.09.29 seemed to work, but then the bottom fell out in the form of nothing could be found.  Binaries couldn't be run, etc.  (A few days before that, it couldn't mount root and panicked in boot.)
+Goody, which? :)  I've got a 604/100 right here.
 
-I'll see about testing one from today.  I still have a nasty problem of ADB locking up at random. Sometimes 2 minutes after boot, once almost 24 hours after boot.  Gotten it in the console and X, so I was thinking its either some corruption from the new video drivers (ATY-CT) or maybe some funky DMA race condition.  Would the semaphore proposed in adb.c help this?  PMU interrupts still get thru.  remote login -> procinfo show things still good, battery status still updated (maybe).
+> Symptoms are:
+>   - We receive lots of PS/2 mouse interrupts (irq 12), a few hundreds or
+>     thousands for each mouse move
+>   - The number of BAD interrupts increases when moving the mouse, a few tens
+>     for each mouse move
+>   - Sometimes the machine locks up (no ping response) after heavy mouse
+>     movement
+>   - The PS/2 keyboard is fine
 
-Building kernel...
+Hmm.  I sort-of wonder if the PS/2 changes a while back goofed something up.
+My kbd is fine too, and I'll try and throw a mouse on later this week.
+Can you grab the bk version and go back to 2.4.8, .7, et al and see if
+it works?  I think some PS/2 stuff was done in maybe .5 or .6..
 
 --
-Joseph P. Garcia
-http://www.lycestra.com/
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
