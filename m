@@ -1,54 +1,41 @@
-Date: Mon, 25 Mar 2002 20:21:32 -0700
-From: Val Henson <val@nmt.edu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: EV-64260-BP & GT64260 bi_recs
-Message-ID: <20020325202132.M24258@boardwalk>
-References: <20020322210103.C3363@boardwalk> <20020324122048.8670@smtp.wanadoo.fr>
+To: Val Henson <val@nmt.edu>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: EV-64260-BP & GT64260 bi_recs 
+In-Reply-To: Message from Val Henson <val@nmt.edu>
+   of "Mon, 25 Mar 2002 20:21:32 PDT." <20020325202132.M24258@boardwalk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020324122048.8670@smtp.wanadoo.fr>; from benh@kernel.crashing.org on Sun, Mar 24, 2002 at 01:20:48PM +0100
+Date: Tue, 26 Mar 2002 15:14:34 +1100
+Message-ID: <19114.1017116074@msa.cmst.csiro.au>
+From: Murray Jensen <Murray.Jensen@cmst.csiro.au>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, Mar 24, 2002 at 01:20:48PM +0100, Benjamin Herrenschmidt wrote:
->
-> What I now want to do is to keep the exising scheme for most
-> informations (that is a flat list of bi_recs), with only one
-> exception that doesn't affect the current parsing code, only
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-I like this part!
+On Mon, 25 Mar 2002 20:21:32 -0700, Val Henson <val@nmt.edu> writes:
+>I'm happy to hear reasons for why a more complicated interface is a
+>good idea.
 
-<A bunch of stuff about various ways to identify driver specific
-bi_recs>
+benh wanted to "find" a particular BI_DEVICE bi_rec within multiple instances.
+I think what you are suggesting requires that there be only one instance of any
+given (top-level) tag. yes? If not, how do you determine which bi_rec to return?
+Always the first one you come across? or maintain a pointer and have subsequent
+calls return the next one, until there are no more, at which time you return NULL?
 
-> What do you think ?
+I think benh was suggesting that you have many "top-level" BI_DEVICE bi_recs,
+then have some interface to "find" one of them (either by "name", or by some
+variable length "device id") - each driver (that wants to) then looks for it's
+bi_rec when it is initialised. This would require that every BI_DEVICE bi_rec
+"contains" either a "name" bi_rec or a "device id" bi_rec - otherwise it would
+never be found (using the proposed interface functions). Cheers!
+								Murray...
+--
+Murray Jensen, CSIRO Manufacturing Sci & Tech,         Phone: +61 3 9662 7763
+Locked Bag No. 9, Preston, Vic, 3072, Australia.         Fax: +61 3 9662 7853
+Internet: Murray.Jensen@csiro.au
 
-I like the general idea - have a bunch of bi_recs that the kernel
-ignores, and then define a driver interface to easily get that
-information.
+Hymod project: http://www.msa.cmst.csiro.au/projects/Hymod/
 
-I would like a simpler, more generic interface between drivers and
-bi_recs.  The model is this: Firmware creates a top-level bi_rec and
-puts something in it.  When the driver wants to get the information,
-it calls:
-
-  my_bi_rec = bi_find_id(NULL, BI_SOME_ID);
-
-This gives it a pointer to the top-level bi_rec containing its info.
-If the firmware put more bi_recs inside that bi_rec, the driver calls:
-
-  my_other_bi_rec = bi_find_id(&(my_bi_rec->data), BI_SOME_OTHER_ID);
-
-Basically, don't create special cases, just treat the generic case of
-a driver and a bootloader and some information you want to pass
-between them.  I don't like BI_DEVICE, I do like BI_NOT_FOR_THE_KERNEL
-or something shorter but equivalent. :)
-
-I'm happy to hear reasons for why a more complicated interface is a
-good idea.
-
--VAL
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
