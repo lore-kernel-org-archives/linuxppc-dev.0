@@ -1,29 +1,34 @@
-Message-ID: <3C879933.8090200@embeddededge.com>
-Date: Thu, 07 Mar 2002 11:45:39 -0500
-From: Dan Malek <dan@embeddededge.com>
+Message-ID: <3C87B6C8.9070905@cymes.de>
+Date: Thu, 07 Mar 2002 19:51:52 +0100
+From: Matthias Grimm <joker@cymes.de>
 MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: benh@kernel.crashing.org, Paul White <pwhite@bivio.net>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: MPC7455
-References: <Pine.LNX.4.21.0203062152510.30207-100000@stimpy.networkrobots.com> <20020306214849.11643@mailhost.mipsys.com> <20020307153005.GF19531@opus.bloom.county>
+To: PPC-Dev Mailingliste <linuxppc-dev@lists.linuxppc.org>
+Subject: pbbuttons, need some help
+References: <3C852E12.3030300@cymes.de> <20020306090814.15511@mailhost.mipsys.com>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tom Rini wrote:
+Hi everybody,
 
-> I'd think that outside of CONFIG_ALL_PPC (or wherever CHRP/Pmac end up
-> in 2.5.x) we don't care what the firmware did.
+I wrote the program PBButtons <http://www.cymes.de/members/joker/> and
+need your help for a special task.
 
-That's a very good point.  Anything we do inside of the kernel with
-cputable/features must be generic to all of the boards we support.  If
-there is something unique (which is always the case of embedded boards :-),
-that needs to be done in the bootloader before we get to the kernel or
-in the board specific setup files for the platform.
+I would ask for someone who could assist me with debugging some code on
+an OHARE-based Powerbook? I teached pbbuttonsd to read battery
+information but I could only test the part depending on
+PMU_SMART_BATTERY_STATE because I have no OHARE-based Powerbook at hand.
+I took the part depending on PMU_BATTERY_STATE from the kernel source
+but I would like to verify it again before I release it to the public.
 
-	-- Dan
+I would also be confident with some valid data sets the PMU returned on
+PMU_BATERY_STATE, so I could simulate a OHARE-based Powerbook.
+
+If anyone have some documentation he would be welcome to send me a copy
+
+   Regards
+     Matthias Grimm
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
