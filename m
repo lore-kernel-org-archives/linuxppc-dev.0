@@ -1,15 +1,16 @@
-Return-Path: <ningmin@yahoo.co.jp>
-Received: from web605.mail.yahoo.co.jp (web605.mail.yahoo.co.jp [211.14.15.79])
-	by ozlabs.org (Postfix) with SMTP id 2CC2367A88
+Return-Path: <galak@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 4C85067A88
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 23 Jan 2005 20:03:32 +1100 (EST)
-Message-ID: <20050123085652.42295.qmail@web605.mail.yahoo.co.jp>
-Date: Sun, 23 Jan 2005 17:56:51 +0900 (JST)
-From: ning <ningmin@yahoo.co.jp>
-To: linuxppc-embedded@ozlabs.org
+	Mon, 24 Jan 2005 05:28:00 +1100 (EST)
+Date: Sun, 23 Jan 2005 12:27:44 -0600 (CST)
+From: Kumar Gala <galak@freescale.com>
+To: akpm@osdl.org
+Message-ID: <Pine.LNX.4.61.0501231220001.19795@blarg.somerset.sps.mot.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-2022-jp
-Subject: Serial console problem on MPC8272ADS board 
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
+Subject: [PATCH] ppc32: fix PCI2 IO space mapping on CDS
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,36 +21,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello to all
+The ppc pci bus and resource fixups will automatically adjust the IO space 
+mappings by (hose->io_base_virt - isa_io_base).  Since we map all of PCI 
+IO space (PCI1 & PCI2) with a single mapping so it is continguious in 
+virtual, physical, and PCI IO space the offset will equal 
+MPC85XX_PCI1_IO_SIZE.  There for we needed to reduce the setting by 
+that amount for everything to work properly on CDS.
 
-I am trying to use ttyS1(SCC4) as Linux serial console
-port on on MPC8272ADS board.
-but it doesn't work. 
-My linux kernel is 2.4.22,and using u-boot-1.1.1 as a
-bootload.
-Linux kernel doesn't output any log information after
-u-boot's message:
- Uncompressing kernel Image ...  OK
+Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+
+---
+diff -Nru a/arch/ppc/platforms/85xx/mpc85xx_cds_common.h b/arch/ppc/platforms/85xx/mpc85xx_cds_common.h
+--- a/arch/ppc/platforms/85xx/mpc85xx_cds_common.h	2005-01-23 12:22:34 -06:00
++++ b/arch/ppc/platforms/85xx/mpc85xx_cds_common.h	2005-01-23 12:22:34 -06:00
+@@ -60,8 +60,10 @@
+ #define MPC85XX_PCI1_IO_SIZE         0x01000000
  
-If I use ttyS0(SCC1) as a serial console port,Linux will
-startup successfully.
-
-  CPM UART driver version 0.01
-  ttyS0 at 0x8000 is a SCC
-  ttyS1 at 0x8300 is a SCC
-  ...
-
-I found serial console port seems be defined in
-/arch/ppc/8260_io/uart.c,
-but it doesn't work enen if I change
-CONFIG_SERIAL_CONSOLE_PORT to 1 (default:0) 
-
-I wonder serial console port only can be set to
-ttyS0(SCC1) on MPC8272ADS?
-
-Thanks.
-
-__________________________________
-Do You Yahoo!?
-Upgrade Your Life
-http://bb.yahoo.co.jp/
+ /* PCI 2 memory map */
+-#define MPC85XX_PCI2_LOWER_IO        0x01000000
+-#define MPC85XX_PCI2_UPPER_IO        0x01ffffff
++/* Note: the standard PPC fixups will cause IO space to get bumped by
++ * hose->io_base_virt - isa_io_base => MPC85XX_PCI1_IO_SIZE */
++#define MPC85XX_PCI2_LOWER_IO        0x00000000
++#define MPC85XX_PCI2_UPPER_IO        0x00ffffff
+ 
+ #define MPC85XX_PCI2_LOWER_MEM       0xa0000000
+ #define MPC85XX_PCI2_UPPER_MEM       0xbfffffff
