@@ -1,38 +1,24 @@
-From: "Stefano Coluccini" <s.coluccini@caen.it>
-To: <kingseft@samsung.co.kr>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Question about making ramdisk for ppc
-Date: Mon, 5 Mar 2001 13:02:31 +0100
-Message-ID: <NDBBIFIMCKPOADMAJOKMMEKPCPAA.s.coluccini@caen.it>
+Message-ID: <3AA3EFDB.1B1A4508@intel.com>
+Date: Mon, 05 Mar 2001 11:58:19 -0800
+From: "Bruno R. Barreyra" <bruno.r.barreyra@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <H00002af04a72993@MHS>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Cross compiling bash
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->  Hi developers!!
->
->  Now, I'm trying to make a ramdisk image for ppc on intel platform.
->  also, I read "The Linux Bootdisk Howto" and I knew the procedure
-> of making ramdisk.
->
->  But I have one question about that!!
->  Our linux host system's CPU is Intel and I'd like to make a
-> ramdisk for ppc
->
->  of course, I think the directories of linux host system are not
-> suitable for ppc ramdisk..
->  Could you please exaplain or describe How to make ramdisk for
-> ppc on Intel Platform...
+How does one cross-compile bash?
 
-The tree is the same; of course the executables must be for the ppc CPU so
-you can obtain the binary from some ppc distribution or recompile the source
-with your cross-compiler.
+When I run configure on the 2.0.4 source, it complains on getpgrp,
+saying that it can't check it if we are cross-compiling, and I haven't
+been able to get around that yet. Can anyone help me?
 
-Bye.
-Stefano.
+--
+[]'s Bruno Renato Barreyra
+bruno.r.barreyra@ufl.edu
+barreyra@ufl.edu
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
