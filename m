@@ -1,39 +1,35 @@
-Message-ID: <B895EFF5AF34724880036BDB5B5B8148135727@amer22.avnet.com>
-From: "Kerl, John" <John.Kerl@Avnet.com>
-To: "'brian.auld@adic.com'" <brian.auld@adic.com>,
-	"'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Reference hardware
-Date: Wed, 25 Jun 2003 08:45:30 -0700
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: cedric_aubert@yahoo.fr
+Cc: LinuxPPC Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: (Sudo off topic)Simple cheap IDE intrerface for IBM 405 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 25 Jun 2003 00:06:37 PDT."
+             <20030625070637.16435.qmail@web41812.mail.yahoo.com>
+Date: Wed, 25 Jun 2003 18:03:08 +0200
+Message-Id: <20030625160313.29C3BC5FD7@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Here are two of our boards with a Linux port:
+In message <20030625070637.16435.qmail@web41812.mail.yahoo.com> you wrote:
+>
+> For information, what is the cheap simple IDE interface for the MPC8xx
+> that you talk about ?
 
-www.ads.avnet.com/mot857t.html
-
-www.ads.avnet.com/virtexIIprodev.html
-
-
-
------Original Message-----
-From: brian.auld@adic.com [mailto:brian.auld@adic.com]
-Sent: Wednesday, June 25, 2003 5:14 AM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Reference hardware
+Using the internal PCMCIA controller. All you need is bus drivers and
+a trivial (2 gates) address decoder.
 
 
+Best regards,
 
-What's the best way one would go about getting their hands on embedded linux
-hardware ... SBC reference boards ... that are reliable and are also well
-priced.
+Wolfgang Denk
 
-Thanks.
-
--- Brian
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+On the subject of C program indentation: "In My Egotistical  Opinion,
+most  people's  C  programs  should be indented six feet downward and
+covered with dirt."                               - Blair P. Houghton
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
