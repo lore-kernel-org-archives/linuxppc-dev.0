@@ -1,36 +1,47 @@
-Date: Sat, 23 Sep 2000 14:38:58 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Martin Costabel <costabel@wanadoo.fr>
-cc: linuxppc-dev@lists.linuxppc.org, Benjamin Herrenschmidt <benh@mipsys.com>
-Subject: Re: Re; 2.4.0-test9 on B&W G3
-In-Reply-To: <39CBAA3C.2CC16A34@wanadoo.fr>
-Message-ID: <Pine.LNX.4.10.10009231436510.413-100000@cassiopeia.home>
+From: "Geiser, Ian" <geiseri@msoe.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Date: Sat, 23 Sep 2000 07:48:16 -0500 (CDT)
+Subject: Odd SCSI Errors
+Message-ID: <Pine.LNX.4.10.10009230745020.26149-100000@sleepchamber.geekcentral.msoe.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 22 Sep 2000, Martin Costabel wrote:
-> On the other hand, I am running a kernel obtained from this tree by
-> applying just the "official" test9-pre1 patch, and I have now an uptime
-> of 4 days, 22:02. This is the longest uptime I ever had with a 2.3/4
-> kernel. No spontaneous freezes so far <knocking on wood>.
+Greetings,
+	I have a powercenter 132 w/ G3 upgrade card
+	and a whole mess of SCSI drives.  I have one
+	external drive connected to the onboard SCSI
+	that randomly gives the following errors:
+EXT2-fs error (device sd(8,37)): ext2_readdir: bad entry in directory
+#1169550:
+inode out of bounds - offset=224, inode=135387292, rec_len=20, name_len=9
+EXT2-fs error (device sd(8,37)): ext2_readdir: bad entry in directory
+#1169550:
+inode out of bounds - offset=224, inode=135387292, rec_len=20, name_len=9
+EXT2-fs error (device sd(8,37)): ext2_readdir: bad entry in directory
+#1169550:
+inode out of bounds - offset=224, inode=135387292, rec_len=20, name_len=9
+EXT2-fs error (device sd(8,37)): ext2_readdir: bad entry in directory
+#1171563:
+inode out of bounds - offset=48, inode=135391981, rec_len=36, name_len=27
 
-Looks like I should be happy I wasn't able to upgrade since test1-ac10, which
-reached 54 days before I hit the power switch (and the reason I hit that switch
-was not computer-related at all :-)...
+It will do this when the machine is idle, or during a build. I have
+heard about problems with SCSI on the 7200 series mother boards, could
+this be it?  Or is the drive failing?  I have only had it for less than
+a year.  I bought it to replace another failed drive.
 
-Gr{oetje,eeting}s,
+This problem has occured with 2.2.15-2.2.17 kernels from various places.
 
-						Geert
+Thanks
+-ian reinhart geiser
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+.---------------------------------------------------.
+| Ian Reinhart Geiser - Computer Engineering Student|
+| HOME: <geiseri@msoe.edu>                          |
+| WORK: <geiseri@linuxppc.com>                      |
+| WEB:  http://www.msoe.edu/~geiseri                |
+`---------------------------------------------------'
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
