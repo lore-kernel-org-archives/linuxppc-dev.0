@@ -1,32 +1,36 @@
-Date: Tue, 4 Dec 2001 14:57:21 -0700
-From: Matt Porter <mporter@mvista.com>
-To: Sally Wang <swang@otcwireless.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Linux on SandPoint with PPC8240
-Message-ID: <20011204145721.A636@cx258813-a.chnd1.az.home.com>
-References: <JEEJJBIBHMGFHCANFACIMEDNCAAA.swang@otcwireless.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <6776269.1007503954578.JavaMail.tester@hvwww8>
+Date: Tue, 4 Dec 2001 17:12:34 -0500 (EST)
+From: Alejandro Erives <pelochino@hotvoice.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: TCP/IP Performance
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <JEEJJBIBHMGFHCANFACIMEDNCAAA.swang@otcwireless.com>; from swang@otcwireless.com on Tue, Dec 04, 2001 at 03:43:24PM -0800
+Content-Type: multipart/mixed;
+	boundary="----=_Part_57656_6777095.1007503954578"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Dec 04, 2001 at 03:43:24PM -0800, Sally Wang wrote:
->
-> My name is Sally Wang.
->
-> I am thinking to port linux upon SandPoint board. Where can I get the source
-> codes which can be easily ported to SandPoint ?
+------=_Part_57656_6777095.1007503954578
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-Too late.  It's already ported to the X2, X3, and X3B in the
-linuxppc_2_4_devel tree.  See http://penguinppc.org/dev/kernel.shtml
-for instructions on retrieving a copy of the tree and commit list info.
+Hello,
 
-Regards,
---
-Matt Porter
-MontaVista Software, Inc.
-mporter@mvista.com
+Where can I find information relating to the performance (frames/second,
+etc) of TCP/IP under PowerPC embedded Linux?  Would this be
+different depending upon the device?  The devices in consideration
+are the MPC860 and the MPC8260.  Thank you for all your help.
+
+Sincerely,
+Alejandro
+
+
+
+--------------------------------------------------------------------------
+Global Internet phone calls, voicemail, fax, e-mail and instant messaging.
+Sign-up today at http://www.hotvoice.com
+------=_Part_57656_6777095.1007503954578--
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
