@@ -1,29 +1,72 @@
-From: "=?big5?B?S2lyayBMZWU=?=" <mpc@mail2000.com.tw>
-Reply-To: mpc@mail2000.com.tw
-Subject: =?big5?B?QWR2aWNlIGZvciBQQ0kgYnJpZGdlIGNoaXAgbmVl?=
-	=?big5?B?ZGVk?=
-Message-ID: <985274516.50628.mpc@mail2000.com.tw>
-To: "=?big5?B?bGludXhwcGMtZW1iZWRkZWQ=?=" <linuxppc-embedded@lists.linuxppc.org>
-Date: Thu, 22 Mar 2001 23:21:56 +0800 (CST)
+Message-ID: <3ABA1B6A.87C5FE9B@intrex.net>
+Date: Thu, 22 Mar 2001 10:34:03 -0500
+From: Ralph Blach <rblach@intrex.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=big5
+To: linuxppc-embedded@lists.linuxppc.org,
+	David Blythe <blythe@routefree.com>
+Subject: Proposed new kernel noncaching memory allocator for the 405gp
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear All:
+David,
 
- We are looking for a PCI bridge chip
- to connect with MPC855.
- We hope that there is one such chip
- with ready linux driver and suitable
- to work with MPC855.
+This is what I propose,
 
- Could anyone recommend one such PCI bridge chip??
+I propose a kmalloc_noncache and a kfree_noncached.
 
- Thanks
+These would be module and would be loaded when necessary.  They would
+operate allocating say 16k (could be any size)  of memory during boot
+time
+and then mapping it non cached.  The the kmalloc_noncached routine would
 
- kirk
+carve out little chucks of it and the free routine would release it.  It
+
+would also have a noncached to real routine
+to return the real address of a noncached section.
+
+Does this sound interesting?
+
+Chip
+
+
+
+
+David Blythe wrote:
+
+> Ralph Blach wrote:
+> >
+> > David,
+> >
+> > Do you have USB working from on OHCI pci card?
+> >
+> > Would a kmalloc_nocache and kfree_cache be useful to you?
+> >
+> > Chip
+> >
+> >
+>
+> I think something more general then pci_alloc_consistent would be
+better
+> for devices that are not pci based.  We are still working on getting a
+
+> pci OHCI usb to work with the walnut card and are running into a lot
+of
+> cache coherency problems.
+>         david
+
+--
+Ralph "Chip" Blach
+KF4WBK
+Chapel Hill, North Carolina
+
+
+
+--
+Ralph "Chip" Blach
+KF4WBK
+Chapel Hill, North Carolina
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
