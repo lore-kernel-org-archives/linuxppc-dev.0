@@ -1,42 +1,35 @@
-Message-ID: <3CB6B3D7.8030007@poczta.onet.pl>
-Date: Fri, 12 Apr 2002 12:15:51 +0200
-From: Krzysztof Jankowski <kjankow@poczta.onet.pl>
+Date: Fri, 12 Apr 2002 12:42:15 +0200 (CEST)
+From: Geir Frode Raanes <geirfrs@invalid.ed.ntnu.no>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: MPC5xx now with MMU
+Message-ID: <20020412095643.U79588-100000@invalid.ed.ntnu.no>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: early stage boot progress indication
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-I'm pretty new to PPC but I was following this newsgroup for some time.
-I've got PPC405 on a custom design board and I'd like to debug the reason why my
-linux kernel doesn't work on it. I've downloaded the latest kernel sources
-(2.4-devel) so there is no problem with missing or broken 405 support on it.
-I wanted to use UART0 for debugging purposes, so I've created simple C function
-sending a character to a physical PLB address of UART0 (this function doesn't use
-stack for sure, a character to be send is being passed via R3). I'm accessing
-physical memory using writel() and readl() macros. The idea seems to be OK.
+Has anyone kept an eye on the Motorola Automotive PowerPC group
+lately? Apparently their line is upgraded with parts with MMU:
 
-I put a few my function calls into head_4xx.S file and everything seems to work (I
-could see characters on minicom) till the kernel started to execute after
-'start_here' label. I know that at this stage kernel's addresses were remapped
-from 0x0000xxxx to 0xc000xxxx (am I right?) due MMU being enabled by
-'turn_on_mmu'. So I remapped UART's memory space by 'io_block_mapping' - but this
-didn't help.
+ http://e-www.motorola.com/webapp/sps/site/taxonomy.jsp?nodeId=01M98648
 
-What's going on ? Why I'm not seeing characters now ? Did the kernel hang
-somewhere in the middle or am I tottaly wrong in the early debugging idea ?
-
-Thanks for any help,
-Krzysztof
-
+At the bottom there is now a MGT5100 PowerPC chip that has lots of
+System-on-a-chip goodies, like DDR, 100Base-T, USB, PCI and an ATA
+port. At 250 MHz. So unless one really need the QICC serial ports,
+this is a interesting part indeed. The User Manual claims 603
+conformity and lists Linux among its operation systems support -
+but is this the doing of 'our' developers or is it an Motorola SPS
+port? Or does it just lend on the fact that 603 itself is supported?
 
 
 --
-Encyklopedia multimedialna w prezencie!
-http://www.e-mail.onet.pl
+  ******************************************************
+  Never ever underestimate the power of human stupidity.
+  -Robert Anson Heinlein
+
+		GeirFRS@invalid.and.so.forth
+  ******************************************************
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
