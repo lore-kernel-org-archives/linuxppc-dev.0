@@ -1,58 +1,135 @@
-Subject: [PATCH] MPC85XX TSEC driver: fix for mdio speed
+Subject: [PATCH] MPC85XX TSEC driver: support for intel phy
 From: Stefan Nickl <Stefan.Nickl@kontron.com>
 To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
 Cc: Kumar Gala <kumar.gala@freescale.com>
-Content-Type: multipart/mixed; boundary="=-a3aU3+FYXTF5XUJej2aW"
-Message-Id: <1088504263.4834.14.camel@lucy.pep-kaufbeuren.de>
+Content-Type: multipart/mixed; boundary="=-G6M81CLr9K86VLVG9kRz"
+Message-Id: <1088505754.4834.28.camel@lucy.pep-kaufbeuren.de>
 Mime-Version: 1.0
-Date: Tue, 29 Jun 2004 12:17:44 +0200
+Date: Tue, 29 Jun 2004 12:42:39 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---=-a3aU3+FYXTF5XUJej2aW
+--=-G6M81CLr9K86VLVG9kRz
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 
-In gianfar_phy.c, the divisor for the MDIO interface to the PHYs
-is set to a safe value as part of running a phy_cmd.
-However, there is one MDIO transaction that happens before any command
-is sent: reading the PHYs manufactuere identifier in get_phy_info.
+I've added support for Intel-style PHYs to gianfar,
+which is the one attached to the FEC on our module.
 
-This patch adds a "dummy command" to use the side effect of
-phy_run_commands.
+I'm a bit unsure on the naming, since the Intel PHYs
+970-973 seem to be somewhat compatible, at least the
+971 and 972 seem to share the relevant part of the
+PHY identifier.
+The actual chip that I worked on is a LXT972A.
 
-Background is that the initial revision of our hardware only works
-reliably with the slowest divisor as long as the FEC PHY is the only
-(MDIO) bus load. We kept reading slightly distorted ID from the FEC's
-PHY when the 2 Marvells were not yet up.
+Maybe some of the more experienced folks around the
+list can share some insights on this.
+
+PS: I hand-edited the patch to separate it from what's
+    next, so "patch" may not actually like it...
 
 --
 Stefan Nickl
 Kontron Modular Computers
 
 
---=-a3aU3+FYXTF5XUJej2aW
-Content-Disposition: attachment; filename=gfar_mdiospeed.patch
-Content-Type: text/x-patch; name=gfar_mdiospeed.patch; charset=ISO-8859-15
+--=-G6M81CLr9K86VLVG9kRz
+Content-Disposition: attachment; filename=gfar_lxt971.patch
+Content-Type: text/x-patch; name=gfar_lxt971.patch; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 
-diff -Nru a/drivers/net/gianfar_phy.c b/drivers/net/gianfar_phy.c
---- a/drivers/net/gianfar_phy.c	2004-06-29 12:07:12 +02:00
-+++ b/drivers/net/gianfar_phy.c	2004-06-29 12:07:12 +02:00
-@@ -496,6 +496,8 @@
- 	int i;
- 	struct phy_info *theInfo = NULL;
+--- linuxppc-2.4/drivers/net/gianfar_phy.c	2004-05-18 14:29:35.000000000 +0200
++++ linuxppc-2.4_85xx/drivers/net/gianfar_phy.c	2004-06-29 11:59:54.000000000 +0200
+@@ -227,6 +228,28 @@
+ 	return 0;
+ }
 
-+	/* make sure the interface speed is safe from the first access */
-+	phy_run_commands(dev, (const struct phy_cmd[]){{miim_end}});
++u16 mii_parse_lxt971_sr2(u16 mii_reg, struct net_device *dev)
++{
++	struct gfar_private *priv = (struct gfar_private *) dev->priv;
++
++	if(priv->link) {
++		if (mii_reg & MIIM_LXT971_SR2_DUPLEX)
++			priv->duplexity = 1;
++		else
++			priv->duplexity = 0;
++
++		if(mii_reg & MIIM_LXT971_SR2_SPEED)
++			priv->speed = 100;
++		else
++			priv->speed = 10;
++	} else {
++		priv->speed = 0;
++		priv->duplexity = 0;
++	}
++	return 0;
++}
++
+ static struct phy_info phy_info_M88E1011S = {
+ 	0x01410c6,
+ 	"Marvell 88E1011S",
+@@ -404,11 +444,70 @@
+ 	},
+ };
 
- 	/* Grab the bits from PHYIR1, and put them in the upper half */
- 	phy_reg = read_phy_reg(dev, MIIM_PHYIR1);
++static struct phy_info phy_info_lxt971 = {
++	0x001378e,
++	"Intel LXT971",
++	4,
++	(const struct phy_cmd[]) {	/* config */
++		{MIIM_CONTROL, MIIM_CR_INIT, NULL},
++		{miim_end,}
++	},
++	(const struct phy_cmd[]) {	/* startup */
++		/* Status is read once to clear old link state */
++		{MIIM_STATUS, miim_read, NULL},
++		/* Auto-negotiate */
++		{MIIM_STATUS, miim_read, mii_parse_sr},
++		/* Read the status */
++		{MIIM_LXT971_SR2, miim_read, mii_parse_lxt971_sr2},
++		/* Clear the ISR register */
++		{MIIM_LXT971_ISR, miim_read, NULL},
++		/* Set up the mask */
++		{MIIM_LXT971_IER, MIIM_LXT971_IER_INIT, NULL},
++		{miim_end,}
++	},
++	(const struct phy_cmd[]) {	/* ack_int */
++		/* Clear the interrupt */
++		{MIIM_LXT971_ISR, miim_read, NULL},
++		/* Disable interrupts */
++		{MIIM_LXT971_IER, MIIM_LXT971_IER_CLEAR, NULL},
++		{miim_end,}
++	},
++	(const struct phy_cmd[]) {	/* handle_int */
++		/* Read the Status (2x to make sure link is right) */
++		{MIIM_STATUS, miim_read, NULL},
++		/* Check the status */
++		{MIIM_STATUS, miim_read, mii_parse_sr},
++		{MIIM_LXT971_SR2, miim_read, mii_parse_lxt971_sr2},
++		/* Enable Interrupts */
++		{MIIM_LXT971_IER, MIIM_LXT971_IER_INIT, NULL},
++		{miim_end,}
++	},
++	(const struct phy_cmd[]) {	/* shutdown */
++		{MIIM_LXT971_ISR, miim_read, NULL},
++		{MIIM_LXT971_IER, MIIM_LXT971_IER_CLEAR, NULL},
++		{miim_end,}
++	},
++};
++
++
+ static struct phy_info *phy_info[] = {
+ 	&phy_info_cis8201,
+ 	&phy_info_cis8204,
+ 	&phy_info_M88E1011S,
+ 	&phy_info_dm9161,
++	&phy_info_lxt971,
+ 	NULL
+ };
 
 
-
---=-a3aU3+FYXTF5XUJej2aW--
+--=-G6M81CLr9K86VLVG9kRz--
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
