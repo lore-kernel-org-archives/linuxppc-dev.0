@@ -1,33 +1,29 @@
-From: "Kevin P. Dankwardt" <k@kcomputing.com>
-To: "m madhuker" <mythri_madhuker@yahoo.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Your valuable Suggestions / Advise for Beginners in DeviceDriver Development under Embedded Linux P
-Date: Mon, 12 Jul 2004 09:35:50 -0500
-Message-ID: <KCEOLLHGFJIAFNAMGACHOEOBDOAA.k@kcomputing.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <1089639405.6032.25.camel@veena.timesys>
+Subject: List shutting down?
+From: Stefan Nickl <Stefan.Nickl@kontron.com>
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Content-Type: text/plain
+Message-Id: <1089643448.5954.60.camel@lucy.pep-kaufbeuren.de>
+Mime-Version: 1.0
+Date: Mon, 12 Jul 2004 16:44:08 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-The books and references that others have listed are certainly helpful. In
-fact no matter what route a developer takes, getting training, figuring it
-all out for one's self, or working with a vendor - the books and Web are
-essential.
+I just noticed that the footer added by the
+list daemon changed to include:
 
-The fastest route for a developer to get up to speed is to take one or more
-training courses.
+** This list is shutting down 7/24/2004.
 
-The cheapest way is to get the books and use the Web.
+There's a short notice dated from yesterday about
+the entire lists.linuxppc.org going down, but
+no mention of any reason or clear migration path
+for the users.
 
-The most expensive way is to hire an embedded Linux vendor.
+What's going on ???
 
-Of course, they all have other tradeoffs as well.
-
-Kevin Dankwardt
-K Computing
+--
+Stefan Nickl
+Kontron Modular Computers
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
