@@ -1,55 +1,47 @@
-To: "Dr. Craig Hollabaugh" <craig@hollabaugh.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Can I run linux without a file system? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 21 Jun 2002 14:31:33 MDT."
-             <3.0.3.32.20020621143133.006d37a8@hollabaugh.com>
-Date: Fri, 21 Jun 2002 23:06:07 +0200
-Message-Id: <20020621210612.4C9C31030A@denx.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: Can I run linux without a file system?
+Date: Fri, 21 Jun 2002 16:13:01 -0500
+Message-ID: <45B36A38D959B44CB032DA427A6E10640167CFE3@cceexc18.americas.cpqcorp.net>
+From: "Cameron, Steve" <Steve.Cameron@hp.com>
+To: "Dr. Craig Hollabaugh" <craig@hollabaugh.com>,
+	"Jerry Van Baren" <vanbaren_gerald@si.com>,
+	<linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3.0.3.32.20020621143133.006d37a8@hollabaugh.com> you wrote:
+Dr. Craig Hollabaugh wrote:
 >
-> I can say that a minimum RedHat install uses 29,296 files – 382.020MB, debian 10,734 files - 67.428MB, my minimal root filesystem 82 files and 4.8MB.
+> I can say that a minimum RedHat install uses 29,296 files -
+> 382.020MB, debian 10,734 files - 67.428MB, my minimal root
+> filesystem 82 files and 4.8MB.
+>
 
-You cannot really call this a "minimal root filesystem".
+Hmm, my minimal rootfs is (so far) 7 Mb, (as reported by du -s).
+Or, is this 4Mb you cite compressed?  I wonder because my
+libc.so is over 5 Mb. (which I got from DENX eldk-1.0)
 
-A small (not even this is minimal, nor optimized) image can be found at
-ftp://ftp.denx.de/pub/LinuxPPC/usr/src/mini-2048kB-ramdisk.image.gz
+Instead of ldd, I used "objdump -x $library | grep NEEDED"
+which has the advantage that you can (er, that I know how to :-)
+run it in a cross environment, so I don't have to fire up the
+powerpc just to run ldd on a bunch of binaries.  (maybe
+there's a way to cross run ldd? ) Using that, I wrote a script
+(just today, as a matter of fact) to scan all the executables
+and their libraries (and links to libs) iteratively until it
+produced a minimal set, then deletes whatever isn't on the list,
+which got me down to 7Mb with busybox and tinylogin as my only
+apps.  (It occurs to me now that apps using dlopen() could be
+a problem, but those are relatively rare.)
 
-This has:
-	-> find .
-	.
-	./lost+found
-	./bin
-	./bin/sh
-	./bin/ls
-	./dev
-	./dev/ttyS0
-	./dev/tty
-	./dev/console
-	./lib
-	./lib/ld.so.1
-	./lib/libc-1.99.so
-	./lib/libc.so.6
-	./lib/libtermcap.so.2.0.8
-	./lib/libtermcap.so.2
-	-> du -sk .
-	1367    .
+Any hints or links to into on crunching down the
+individual libraries would be helpful.
 
-Obvious optimizations: rmdir lost+found, use busybox instead of  bash
-+ ls, ...
+BTW, nice book.
 
+-- steve
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Were there fewer fools, knaves would starve.              - Anonymous
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
