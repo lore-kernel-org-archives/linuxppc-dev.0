@@ -1,59 +1,47 @@
-Date: Fri, 18 Jun 2004 08:51:09 +0200
-From: Marc Leeman <marc.leeman@barco.com>
-To: m madhuker <mythri_madhuker@yahoo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: NFS probelm in MPC8245
-Message-ID: <20040618065109.GH10248@smtp.barco.com>
-Reply-To: Marc Leeman <marc.leeman@barco.com>
-References: <20040618061127.50148.qmail@web13601.mail.yahoo.com>
+Subject: Re: MPC5200Lite PCI & IRQ
+From: David Woodhouse <dwmw2@infradead.org>
+To: Bertrand Baudet <bbaudet@lacie.com>
+Cc: linuxppc-embedded@lists.linuxppc.org, jgarzik@redhat.com,
+	B.Zolnierkiewicz@elka.pw.edu.pl
+In-Reply-To: <5A96167EBCEA8440A48790B5419953AE13C443@gr-lafayette.lacie.com>
+References: <5A96167EBCEA8440A48790B5419953AE13C443@gr-lafayette.lacie.com>
+Content-Type: text/plain
+Message-Id: <1087550915.19489.3137.camel@hades.cambridge.redhat.com>
 Mime-Version: 1.0
-In-Reply-To: <20040618061127.50148.qmail@web13601.mail.yahoo.com>
-Content-Type: text/plain; charset=iso-8859-15
+Date: Fri, 18 Jun 2004 10:28:35 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> -C >targets/
-> oky, what is this target.scn.tar.gz...and why???
+On Fri, 2004-06-04 at 15:00 +0200, Bertrand Baudet wrote:
+> Hi,
+>
+> I'm trying to plug a sata card in the PCI slot of the MPC5200Lite.
+...
+> By default the IRQ line of the sata card is 0,
+...
+> From the source code, it looks like a value 0 for the IRQ means the IRQ
+> is disabled.
+>
+> From "drivers/ide/ide-probe.c", in the 'hwif_init' function:
+> ...
+> if (!hwif->irq) {
+>    if (!(hwif->irq = ide_default_irq(hwif->io_ports[IDE_DATA_OFFSET])))
+>    {
+>       printk("%s: DISABLED, NO IRQ\n", hwif->name);
+>       return (hwif->present = 0);
+>    }
+> }
+> ...
+>
+> Commenting out the above code allow the PCI card to run properly.
 
-I did not write this for you, I just wrote it for internal use on our
-intranet. So the filenames might be slightly off.
+This is a bug in the IDE driver. Zero is a perfectly valid IRQ number --
+I have boxes where PCI slots get IRQ #0 too. Please fix the IDE driver
+and send the patch to the IDE maintainer.
 
-> where we get it..
+--
+dwmw2
 
-You can get a PPC target from ELDK (somewhere on ftp.leo.org). It should
-be name accordingly; search Wolfgang's site for the details.
-
-> as u said :in kernel configuration of board ..
-> >Have you configured the kernel to activate BOOTP?
-> >CONFIG_IP_PNP_BOOTP=y
-> >CONFIG_NFS_FS=y
-> >CONFIG_ROOT_NFS=y
->i had enabled these all.
-
-And recompiled and loaded the NFS kernel on the target board?
-
-> oky, when i run this command:
-> ]#/etc/init.d/nfs restart
-> it is getting restarted oky,..
-
-I hope this is on the NFS server machine?
-
-> iam getting some erors that "configuration file has errors"
-
-You should close all the brackets you open, there is one missing at the
-end.
-
-> ]# "mount -t nfs [ip]:/hostresource  /mnt "
-> iam getting following o/p:
-
-How can you mount your root FS on your board after you have boot it.
-
-> sir, one doubt.. to mount NFS in board...
-
-Wait, do you want to mount just a simple share or do you want to mount
-your root FS on the board, ...
-
-If it's just an NFS share, then there's some missunderstanding here.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
