@@ -1,34 +1,26 @@
-Date: Thu, 10 Dec 1998 12:55:50 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Alois Fertl <alois_fertl@TalkNet.de>
-cc: Cort Dougan <cort@persephone.cs.nmt.edu>,
-        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>,
-        Matt Porter <mmporter@home.com>, VALETTE Eric <valette@crf.canon.fr>
-Subject: Re: PREP Hardware goes IDE again
-In-Reply-To: <366EEC05.E01F2088@talknet.de>
-Message-ID: <Pine.HPP.3.96.981210125441.17076z-100000@gra-ux1.iram.es>
+Date: Thu, 10 Dec 1998 09:22:27 -0600 (CST)
+From: nathan ingersoll <ningerso@d.umn.edu>
+To: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: Kernel 2.1.131
+In-Reply-To: <Pine.LNX.4.05.9812092345380.723-100000@beer.pub.umich.edu>
+Message-ID: <Pine.SO4.4.02.9812100917210.132-100000@ub.d.umn.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Has anyone successfully compiled and used the 2.1.131 kernel from
+ftp.kernel.org? I downloaded it and compiled it without error, but when I
+try to boot all I get is a black screen with the line "Welcome to Linux
+kernel 2.1.131" or something like that. Nothing happens after this. I did
+forget to compile and install the modules, but I don't think that would
+cause the system to hang right off the bat. Any ideas on the problem?
 
+Thanks,
 
-On Wed, 9 Dec 1998, Alois Fertl wrote:
+Nathan
 
-> The second problem was that the partition table of a DOS IDE drive
-> was not recognized unless I specified hda=swapdata at the boot prompt.
-> IDE CD-Rom drives were not recognized at all. All the required coding
-> to operate IDE devices correctly is already there but it is not used
-> for PREP hardware. I changed ide.h so that PREP is handled the same
-> way as CHRP. This makes IDE disks and CD-roms work without the need
-> to specify boot options.
-
-Indeed, I always wondered why this was this way. But not having any IDE
-interface...
-
-	Gabriel.
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
