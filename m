@@ -1,14 +1,36 @@
-Date: Thu, 29 Aug 2002 09:51:14 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: pcmcia- config.opts, cis and pci
-Message-ID: <20020828235113.GA7330@zax>
-References: <6DF87017DA95D611AC6000606730DE9B0BD764@BLREXSR>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <6DF87017DA95D611AC6000606730DE9B0BD764@BLREXSR>
+Message-ID: <6DF87017DA95D611AC6000606730DE9B0BD768@BLREXSR>
+From: Sanjeev Manral <sanjeevm@sanyo.co.in>
+To: "'David Gibson'" <david@gibson.dropbear.id.au>
+Cc: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
+Subject: RE: pcmcia- config.opts, cis and pci
+Date: Thu, 29 Aug 2002 09:30:27 +0530
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
+
+
+Thank you david,
+
+right now I 'm using 16 bit card. does it mean that enabling pci has no
+sigficant as there is no pci bus.
+you can have a look at hardware(visit link)
+http://www.sanyo.com/industrial/semiconductors/systemlsi/IAPr.html
+
+do I need to write a driver for sockets of my controller?
+
+Regards,
+-sanjeev
+
+
+
+-----Original Message-----
+From: David Gibson [mailto:david@gibson.dropbear.id.au]
+Sent: Thursday, August 29, 2002 5:21 AM
+To: 'linuxppc-dev@lists.linuxppc.org'
+Subject: Re: pcmcia- config.opts, cis and pci
+
 
 
 On Wed, Aug 28, 2002 at 03:30:14PM +0530, Sanjeev Manral wrote:
@@ -23,7 +45,8 @@ On Wed, Aug 28, 2002 at 03:30:14PM +0530, Sanjeev Manral wrote:
 >
 > I'm having one more doubt. there is no PCI brige in manual of my hardware.
 > It is using coreconnect architecture and PCMCIA controller is directly
-> connected to processor local bus. In hardware there is not a single mention
+> connected to processor local bus. In hardware there is not a single
+mention
 > of pci-plb bridge.
 >
 > If I disable "pci" in "make xconfig" "card bus support" is also disabling
@@ -55,5 +78,6 @@ David Gibson			| For every complex problem there is a
 david@gibson.dropbear.id.au	| solution which is simple, neat and
 				| wrong.
 http://www.ozlabs.org/people/dgibson
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
