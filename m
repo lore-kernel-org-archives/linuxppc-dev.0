@@ -1,37 +1,30 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <75DF04AC5ED4D511A9810090273CB4163F5DDD@rokonet-e.rokonet.co.il>
-From: Eli Brin <elib@rokonet.co.il>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Access u-boot environment variables from Linux
-Date: Sun, 13 Jul 2003 17:38:55 +0200
+Message-ID: <3F117F3C.7090008@embeddededge.com>
+Date: Sun, 13 Jul 2003 11:48:12 -0400
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Paul Mackerras <paulus@samba.org>
+Cc: Dean Matsen <deanmatsen@earthlink.net>,
+	Tom Rini <trini@kernel.crashing.org>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Ethernet PHY chip discovery not working on 855T with 971/972
+ chips
+References: <3F0C8112.5060001@earthlink.net>	<20030709212145.49E24C6D82@atlas.denx.de>	<20030711151834.GU17433@ip68-0-152-218.tc.ph.cox.net>	<3F0F468F.1050909@earthlink.net> <16143.24034.31805.589402@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Paul Mackerras wrote:
 
-I use the SELF from Denx (with busybox 0.60.1).
+ > .... It's a bit disappointing
+> that 8xx still doesn't compile in 2.5.  I don't have any 8xx hardware
+> to test on so I have been relying on others to update it.
 
-I have configure the config.mk.TQM860L_FEC file with: HAVE_FLASH_ENV = yes.
-Also, I have copied the /lib/modules folder from the ELDK so the modprobe
-wont complain.
+Ok, OK....I'll work on it some more.  I'm travelling for the next week or
+so, but when I get back I'll push some updates and get it going.
 
-Trying to do: printenv, flash_info or any command result in :
 
-modprobe: modprobe: Can't locate module char-major-60
-/dev/flasha: No such device
-
-I can see all /dev/flasha and others.
-
-The kernel is the default TQM860L_FEC  from the ELDK (not from SELF, but
-should be the same).
-
-Please advise...
-
-Thank you,
-Eli Brin
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
