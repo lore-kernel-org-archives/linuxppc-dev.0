@@ -1,44 +1,29 @@
-Content-Type: text/plain; charset=iso-8859-1
-MIME-Version: 1.0
-To: porter@cox.net
-Cc: mlan@cpu.lu, linuxppc-dev@lists.linuxppc.org
-From: "Allen Curtis" <acurtis@directvinternet.com>
-Subject: Re: PCI enlightenment follow-up
-Date: Wed, 07 Aug 2002 16:10:03 -0700 (PDT)
-Message-Id: <20020807161004.6999.h021.c007.wm@mail.directvinternet.com.criticalpath.net>
+Subject: Re: Weird interrupt problem
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+To: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <1028761518.1262.1236.camel@tibook>
+References: <1028761518.1262.1236.camel@tibook>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: 08 Aug 2002 01:14:11 +0200
+Message-Id: <1028762052.1115.1311.camel@tibook>
+Mime-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> &gt; Yes, but I am beginning to suspect that this is where the problem is. If
-the
-> &gt; I/O addresses should not be translated because the in/out() functions
-> &gt; automagically add the offset, then perhaps the I/O regions should not be
-> &gt; fixed?
+D'oh, sorry for following up to myself...
+
+On Thu, 2002-08-08 at 01:05, Michel Dänzer wrote:
 >
-> Yep, that's a problem.  Your comment states that
-> isa_io_base == io_base_virt.  Yet I see isa_io_base=0x00000000
-> and io_base_virt=0x40000000.  You should have isa_io_base=0x40000000.
-> You don't want those I/O BARs fixed up as you've suggested above.
+> This is on a TiBook III/667 running 2.4.18-ben0-lotsanicestuff if it
+> matters.
 
-I will give this a try but there are several things that bother me:
-1. In the 2.4.2 version of this code that works, lspci shows that the I/O region
-has been fixed-up.
+Make that 2.4.19-ben0-lotsanicestuff.
 
-2. It appears that the ncr_regtest() passes and I am getting reasonable values
-from the DSP (script instruction pointer) when using I/O instructions.
 
-3. isa_io_base is set to io_base_virt in pcibios_fixup_bus(). This gives the
-fixup routines time to do their thing before the in/out functions reference these
-values. (statement in the dump indicates this) I believe I have tested this with
-the variable initialization in both places. I am not sure that I have tested it
-with version 2 of the sym53c8xx driver, since version 1 is suspenct.
+--
+Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
+XFree86 and DRI project member   /  CS student, Free Software enthusiast
 
-BTW: Could you elaborate on your statement about the 0x40000000 BAT being in the
-middle of user task space. I thought all memory was at 0xc0000000. This is how it
-is configured under 2.4.2 and it works fine. Is there an updated memory map to
-consult?
-
-TIA
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
