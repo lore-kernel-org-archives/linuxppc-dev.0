@@ -1,55 +1,32 @@
-Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
-To: m.arturo@libero.it
-Cc: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Timidity
-References: <3A9CFE58.DDF8B47D@libero.it>
-From: Jan Nieuwenhuizen <janneke@gnu.org>
-Date: 05 Mar 2001 12:32:30 +0100
-In-Reply-To: X-Artu's message of "Wed, 28 Feb 2001 14:34:16 +0100"
-Message-ID: <m3bsrga1td.fsf@appel.lilypond.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: linuxppc-dev@lists.linuxppc.org
+Subject: "unhandled relocation type 18" ???
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+Date: Mon, 05 Mar 2001 20:09:21 +0100
+Message-Id: <20010305190926.8ED2E287EA@denx.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-X-Artu <m.arturo@libero.it> writes:
+Hi,
 
-> Why Timidity lost notes on my G4/400....help me pls.
+when trying to "insmod" a  kernel  module  that  uses  floating-point
+functions  like  "sin", we get error messages:
 
-I'd like to know too, but I've got no idea how to debug this.
-Generating audio in batch may work, though, try:
+	unhandled relocation type 18
 
-  timidity -Ou foo.midi
-  cat foo.au >/dev/audio
+This is on a MPC8xx CPU with kernel 2.4.x, modutils-2.4.1; the module
+and all code linked with it was compiled with "-msoft-float".
 
-> Track name: ====================
-> Track name:  XXXXXXXXXXXXXXXXXX
-> Track name:   XXXXXXXXXXXXXXXX
-> Track name:
-> Track name: XXXXXXXXXXXXXXXXXXX
-> Track name: XXXXXXXXXXXXXXXXXXX
-> channel 17 => 1
-> channel 18 => 2
-> channel 19 => 3
-> channel 20 => 4
-> channel 25 => 9
-> Playing time: ~81 seconds
-> Notes cut: 444
-> Notes lost totally: 1312
->
-> sigh :(
->
-> Ciao.
->       Marco.
->
->
->
->
+
+[Before you ask why we are doing something like that: it's for RTAI.]
+
+Wolfgang Denk
 
 --
-Jan Nieuwenhuizen <janneke@gnu.org> | GNU LilyPond - The music typesetter
-http://www.xs4all.nl/~jantien       | http://www.lilypond.org
-
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Why is an average signature file longer than an average Perl script??
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
