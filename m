@@ -1,35 +1,37 @@
-Date: Fri, 9 Apr 2004 21:20:23 -0400
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [resolved] Re: 2.6.5/iBook G3: Oops on resume from sleep
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Aaron Lunansky <muffin@csclub.uwaterloo.ca>
 Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-Subject: [resolved] Re: 2.6.5/iBook G3: Oops on resume from sleep
-Message-ID: <20040410012023.GA7393@csclub.uwaterloo.ca>
-References: <20040405215318.GA2822@mortadelo.pirispons.net> <20040407191719.GA4852@csclub.uwaterloo.ca> <1081378171.1380.68.camel@gaston> <20040408131404.GA28251@csclub.uwaterloo.ca> <1081490612.1382.125.camel@gaston> <20040409134748.GA11157@csclub.uwaterloo.ca> <1081554759.25144.155.camel@gaston>
+In-Reply-To: <20040410012023.GA7393@csclub.uwaterloo.ca>
+References: <20040405215318.GA2822@mortadelo.pirispons.net>
+	 <20040407191719.GA4852@csclub.uwaterloo.ca>
+	 <1081378171.1380.68.camel@gaston>
+	 <20040408131404.GA28251@csclub.uwaterloo.ca>
+	 <1081490612.1382.125.camel@gaston>
+	 <20040409134748.GA11157@csclub.uwaterloo.ca>
+	 <1081554759.25144.155.camel@gaston>
+	 <20040410012023.GA7393@csclub.uwaterloo.ca>
+Content-Type: text/plain
+Message-Id: <1081561642.1401.162.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1081554759.25144.155.camel@gaston>
-From: muffin@csclub.uwaterloo.ca (Aaron Lunansky)
+Date: Sat, 10 Apr 2004 11:47:22 +1000
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-heh, good call, it was pmac_zilog that was causing the weird behaviour.
-Removed it from my kernel (it was compiled in) and my system sleeps fine now.
+On Sat, 2004-04-10 at 11:20, Aaron Lunansky wrote:
+> heh, good call, it was pmac_zilog that was causing the weird behaviour.
+> Removed it from my kernel (it was compiled in) and my system sleeps fine now.
 
-Thanks,
-Aaron
+Can you enable debugging in the driver (turn #undef DEBUG to #define
+DEBUG at the beginning of the driver, you may also need to boot the
+kernel with "debug" on the command line to get the messages).
 
-On Sat, Apr 10, 2004 at 09:52:40AM +1000, Benjamin Herrenschmidt wrote:
->
-> On Fri, 2004-04-09 at 23:47, Aaron Lunansky wrote:
-> > What I was saying is the system doesn't seem to crash, but ends up in a bad state.
-> > The system doesn't make it to sleep (the led does not 'snore').
-> >
-> > Did I miss anything?
->
-> Ah ok, that's what I wanted to know. I tdid _not_ snore.
->
-> At this point, I don't know what's up. Make sure you don't have a
-> broken driver (like Alsa). Eventually remove pmac_zilog too (it
-> should work but then, I did hear about problems with earlier versions)
+See what messages you get from the driver both during boot and when
+trying to suspend. Eventually, add some more output to pmz_suspend()
+function to find out where it dies
+
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
