@@ -1,35 +1,69 @@
-Message-Id: <200112040050.fB40o6610661@mailout6-0.nyroc.rr.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: Paul Ruhland <pruhland@rochester.rr.com>
-To: "Gerhard TAEUBL" <Gerhard.TAEUBL@frequentis.com>
-Subject: Re: JFFS
-Date: Mon, 3 Dec 2001 19:50:06 -0500
-References: <sc0b75df.064@mail.frequentis.com>
-In-Reply-To: <sc0b75df.064@mail.frequentis.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <3C0CD3C6.ECB0E61B@laposte.net>
+Date: Tue, 04 Dec 2001 14:46:46 +0100
+From: Phil <ibm405.linux@laposte.net>
 MIME-Version: 1.0
+To: Matt Porter <mporter@mvista.com>
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	Simon Winwood <sjw@cse.unsw.edu.au>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: More walnut boottime "fun"
+References: <20011127103042.A11612@cse.unsw.edu.au> <20011126221728.D13091@cpe-24-221-152-185.az.sprintbbd.net> <20011127050754.B15728@cx258813-a.chnd1.az.home.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello Gerhard.
+I'am trying to boot the latest linuxppc_2_4_devel kernel version
+(2.4.27-pre2).
+I got it with the rsync access from Montavista.
+I build the kernel for my Walnut board using HHL2.0 toolchain
+(ppc-405-xxx) and i try to load it
+with the original bootloader (from ibm)
+Nothing appened after "Now booting the kernel".
+It seems it's a known problem.
+Thanks.
+-Phil
 
-> I try to get rum mtd and jffs, mtd semmd to work fin, I get the line that
-> physmap worked, but now I'm looking for the needed utils (erase and
-> mkfs.jffs(2)) for the MPC860. Any ideas whre I could download it? Or any
-> patches for the makefile?
->
+Here is my boot console:
+--------------------------------
+ENET Speed is 10
+Mbs...
+HALF duplex
+connection
+Booting from [ENET] Ethernet
+...
+Sending bootp request
+...
 
-'erase', 'mkfs.jffs', etc. are located in the 'util' directory of the mtd
-source tree.  Instructions regarding compile the utils is contained in the
-README in that directory.
 
-If the mtd stuff came with your kernel the util directory may be in the linux
-source tree...I don't know off hand since I used the mtd source.
+Loading file "pvillet/kernel/vmlinuz-target"
+...
+Sending tftp boot request
+...
+Transfer Complete
+...
+Loaded successfully
+...
+Entry point at 0x500000
+...
 
---
-Paul Ruhland
-pruhland@rochester.rr.com
+loaded at:     00500000
+0058388C
+relocated to:  00400000
+0048388C
+board data at: 004807BC
+004807FC
+relocated to:  0048077C
+004807BC
+zimage at:     00405400
+0047FF59
+avail ram:     00484000
+02000000
+
+Linux/PPC load: root=/dev/nfs rw
+ip=auto
+Uncompressing
+Linux...done.
+Now booting the kernel
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
