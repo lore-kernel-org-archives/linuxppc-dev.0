@@ -1,38 +1,76 @@
-Message-Id: <v03130305b4ef3818f765@[10.0.0.55]>
-In-Reply-To: <002001bf8add$8b37aaf0$1dc9a4cd@rtdsp.com>
-References: <Pine.HPX.4.10.10003071044220.22162-100000@gra-ux1.iram.es>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Fri, 10 Mar 2000 15:46:37 -0800
-To: "Rob Grimm" <rgrimm@rtdsp.com>, <linuxppc-embedded@lists.linuxppc.org>
-From: Gilbert Coville <gilbert@mvista.com>
-Subject: Re: Cross-compiling Bash
+Message-Id: <200003110808.AA00070@shanghai.cityfujisawa.ne.jp>
+From: Quan Qu <ququan@cityfujisawa.ne.jp>
+Date: Sat, 11 Mar 2000 17:08:31 +0900
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: cdk building
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 2:11 PM -0800 3/10/00, Rob Grimm wrote:
+hello,everybody.I am new to this mail-list.
 
->Does anyone have any suggestions?  I'm trying to avoid going out and buying
->a powermac.  How do others handle this problem, when developing code
->on a non-powerpc platform?
+I am using Mr. wolfgang 's solution below on Redhat6.1  to build CDK.
 
-Cross compiling bash is pretty weird.
+>Summary: I've put the scripts I'm using to build the PPC Cross
+>Development Kit for the MPC8xx CPUs on
+>
+>	ftp://ftp.denx.de/pub/LinuxPPC/usr/src/CDK.tar.gz
+>
+>or URL where I got the sources from:
+>
+>ftp://ftp.valinux.com/pub/support/hjl/binutils/binutils-2.9.5.0.22.t
+ar.bz2
+>ftp://ftp.sunet.se/pub/gnu/egcs/releases/gcc-2.95.2/gcc-core-2.95.2.
+tar.bz2
+>ftp://ftp.sunet.se/pub/gnu/egcs/releases/gcc-2.95.2/gcc-2.95.2.tar.b
+z2
+>ftp://ftp.sunet.se/pub/gnu/glibc/glibc-2.1.2.tar.gz
+>ftp://ftp.gwdg.de/pub/linux/glibc/2.1.2/glibc-crypt-2.1.2.tar.gz
+>ftp://ftp.sunet.se/pub/gnu/glibc/glibc-linuxthreads-2.1.2.tar.gz
+>ftp://linuxppc.cs.nmt.edu/pub/mirror/PPC/embedded/mpc8xx-2.2.13.tgz
+>	(renamed to linux-2.2.13.tar.gz)
 
-Check out how we did it in the 8xx version of our Cross Development Kit.
-The recipe will be the same for your 750 -- just point it to your 750 cross
-tools.  The recipe is in the %build portion of the SPEC file in the SRPM
-for bash:
-ftp://ftp.mvista.com/pub/CDK/1.0/ppc_8xx/SRPMS/hhl-ppc_8xx-bash-2.03-4.src.rpm
+I copy the downloaded gzip source to the /LinuxPPC/usr/src/tarballs
+,and modify ENVIRONMENT.
+then do:
+make binutils
+make egcs-core
+make linux
+make glibc
+make egcs
 
-Also, we'll have a 750-based version of our CDK out in a few days, if
-you're willing to wait.
+everything go smoothly until I reach the glibc. I got linker error:
+----------------------------------------------------------
+a - elf/dl-addr.os
+a - elf/dl-profstub.os
+a - elf/dl-origin.os
+: /LinuxPPC/usr/src/CDK/obj/glibc-2.1.2/libc_pic.a
+powerpc-linux-gcc   -nostdlib -nostartfiles -r -o
+/LinuxPPC/usr/src/CDK/obj/glibc-2.1.2/elf/librtld.os '-Wl,-('
+/LinuxPPC/usr/src/CDK/obj/glibc-2.1.2/elf/dl-allobjs.os
+/LinuxPPC/usr/src/CDK/obj/glibc-2.1.2/libc_pic.a -lgcc '-Wl,-)'
+/LinuxPPC/usr/src/CDK/obj/glibc-2.1.2/libc_pic.a(init-first.os): In
+function
+`_dl_start':
+init-first.os(.text+0x128): multiple definition of `_dl_start'
+/LinuxPPC/usr/src/CDK/obj/glibc-2.1.2/elf/dl-allobjs.os(.text+0x680):
+first
+defined here
+/LinuxPPC/CDK/powerpc-linux/bin/ld: Warning: size of symbol
+`_dl_start' changed
+from 568 to 48 in init-first.os
+collect2: ld returned 1 exit status
+gmake[4]: *** [/LinuxPPC/usr/src/CDK/obj/glibc-2.1.2/elf/librtld.os]
+Error 1
+----------------------------------------------------------
+it seems that /LinuxPPC/CDK/powerpc-linux/bin/ld can not handle
+the dynamic link libary.Does anyone have the same failure ?
+and any suggestion? thanks
 
-Gilbert
 
---
-Gilbert Coville			MontaVista Software Inc.
-gilbert@mvista.com		+1 408-328-9208
-
+----
+Quan Qu  ququan@cityfujisawa.ne.jp
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
