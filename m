@@ -1,34 +1,31 @@
-Date: Tue, 23 Mar 1999 18:49:03 -0500 (EST)
-From: "David T. McWherter" <dtm@vramp.net>
-To: Darron Froese <darron@calgary.westworld.ca>
-cc: linuxppc-dev@lists.linuxppc.org,
-        linuxppc-ans-support@hellfire.dusers.drexel.edu
-Subject: Re: ANS Patches en route to the 2.2.x kernel?
-In-Reply-To: <199903230217.TAA11981@moses.odi.ca>
-Message-ID: <Pine.NEB.3.96.990323184611.16020B-100000@water.vramp.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <4.1.19990323193518.0092d900@pop6.ibm.net>
+Date: Tue, 23 Mar 1999 19:38:52 -0500
+To: linuxppc-dev@lists.linuxppc.org
+From: Oded Ilan <oded@congruency.com>
+Subject: linux for the MPC823 processor
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> I've been trying to watch all of the recent kernel releases and ac patches
-> for signs of the ANS patches (video, ethernet, etc.) by David T. McWherter
-> and have been left unsatisfied.
-> 
-> Is there a way to look and see if various patches have been
-> sent/accepted/waiting in queue? I've grepped through some of the latest
-> patches without finding it....anyone know where it is and it's status?
+Hello,
+I am considering using linux for an embedded system based on the motorola
+823 ppc-based processor. It closely resembles the 821. I am also new to linux.
+My question is - do I need a specific version of linux for this processor,
+or do I build a kernel in the same way that is done for the desktop PPC
+processors? in addition, will the kernel recognize the different resources
+embedded in the 823 processor (IrDA, LCD driver, Ethernet)?
 
-It's not in the pending queue, yet, as I've been too busy to 
-work on it up until now.  Within the week, I hope to work with
-G. Corville to get the patches into the queue...As they're 
-fairly stable, and no major updates are seemingly going to
-happen for a short while (at  least no updates from me -
-I'm working towards an installer and such, though.).
+Thanks,
 
--David
-
+Oded
+-----------------------------------------------
+Oded Ilan
+Congruency, Inc.
+Tel: (201) 712-5590
+email: oded@congruency.com
+web: www.congruency.com
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
