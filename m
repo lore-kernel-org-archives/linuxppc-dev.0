@@ -1,38 +1,30 @@
-From: "Robert E. Brose II" <bob@kunk.qbjnet.com>
-Date: Wed, 19 Mar 2003 05:22:37 +0000 (UTC)
-Message-ID: <b58uqt$a7r$1@kunk.qbjnet.com>
-References: <mailman.73.1047742214.1628.linuxppcdev@lists.qbjnet.com>
-To: linuxppcdev@lists.qbjnet.com
-Subject: Re: Escala & linux
-List-Help: <mailto:linuxppcdev-request@lists.qbjnet.com?subject=help>
-List-Post: <mailto:linuxppcdev@lists.qbjnet.com>
-List-Subscribe: <http://lists.qbjnet.com/mailman/listinfo/linuxppcdev>,
-	<mailto:linuxppcdev-request@lists.qbjnet.com?subject=subscribe>
-List-Unsubscribe: <http://lists.qbjnet.com/mailman/listinfo/linuxppcdev>,
-	<mailto:linuxppcdev-request@lists.qbjnet.com?subject=unsubscribe>
+Subject: Re: 4xx users: Big merge party now
+From: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>,
+	Paul Mackerras <paulus@samba.org>, Matt Porter <porter@cox.net>
+In-Reply-To: <1047493719.789.29.camel@zion.wanadoo.fr>
+References: <1047493719.789.29.camel@zion.wanadoo.fr>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: 19 Mar 2003 16:41:56 +0100
+Message-Id: <1048088516.29400.9.camel@spawn>
+Mime-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-<WHarms@bfs.de>(walter wrote:
+On Wed, 2003-03-12 at 19:28, Benjamin Herrenschmidt wrote:
+>
+> All interested 4xx users, especially board maintainers, here's
+> what's going on with 4xx now.
 
-What model? The ppc based Bulls are repackaged RS6000's IIRC..
-
-Bob
-
-> Hi list,
-> a PPC-based Bull Escala is going into retirement here.
-> any change getting linux running on that beast ?
-
-> 	walter
-
-
-
+Where are the changes? I did not see anything on the commit list.
 
 --
-/~\ The ASCII       | Robert E. Brose II    N0QBJ
-\ / Ribbon Campaign | http://www.qbjnet.com/
- X  Help cure       | mailto:bob@qbjnet.com
-/ \ HTML Email      | public key at http://www.qbjnet.com/key.html
+Kenneth Johansson
+Ericsson AB                       Tel: +46 8 719 70 20
+Tellusborgsvägen  90              Fax: +46 8 719 29 45
+126 25 Stockholm                  ken@switchboard.ericsson.se
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
