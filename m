@@ -1,27 +1,26 @@
-Message-ID: <3A6775B0.2108F1DE@relog.ch>
-Date: Fri, 19 Jan 2001 00:01:04 +0100
-From: Michel Dänzer <daenzer@relog.ch>
-Reply-To: michdaen@iiic.ethz.ch
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Bogus interrupt -1
-Content-Type: text/plain; charset=iso-8859-1
+Date: Fri, 19 Jan 2001 00:04:46 +0000
+Subject: Re: [PATCH] 2.4.1p4 : dmasound ed21- Pismo byte-swap
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: Iain Sandoe <iain@sandoe.co.uk>, linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="utf-8"
+Message-Id: <20010119000317.336152EFC5@apollo.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I have tons of messages like this in my logs:
+I forgot to say...
 
-Jan 18 23:06:54 pismo kernel: Bogus interrupt -1 from PC = c00065d0
+this should (now I fixed a typo in the machine name) also solve the LE
+byte-swapping problem on Pismo (by soft-swapping).
 
-Anyone knows where these (may) come from?
+It is still not obvious why the Pismo does not swap in H/ware (it has the
+smae AWACS chip id as the Lombard).
 
+if you downloaded the modules or the diff before 00:00 GMT 19/01/2001 you
+need to fetch it again.
 
-Michel
-
-
---
-Earthling Michel Dänzer (MrCooper)    \   Debian GNU/Linux (powerpc) developer
-CS student, Free Software enthusiast   \        XFree86 and DRI project member
+cioa,
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
