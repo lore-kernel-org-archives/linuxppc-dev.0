@@ -1,34 +1,46 @@
-Date: Mon, 17 Nov 2003 08:19:48 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Wolfgang Denk <wd@denx.de>
-Cc: Dale Farnsworth <dale@farnsworth.org>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: MPC5200 Patches
-Message-ID: <20031117151948.GB30251@ip68-0-152-218.tc.ph.cox.net>
-References: <20031117060701.GA26252@zenos.farnsworth.org> <20031117083537.5DAFDC5F59@atlas.denx.de>
+Subject: Re: New 745x errata
+From: Adrian Cox <adrian@humboldt.co.uk>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20031117150409.GA30251@ip68-0-152-218.tc.ph.cox.net>
+References: <1068721518.23764.84.camel@newt>
+	<20031114162414.GD13003@ip68-0-152-218.tc.ph.cox.net>
+	<1069081074.10537.16.camel@newt>
+	<20031117150409.GA30251@ip68-0-152-218.tc.ph.cox.net>
+Content-Type: text/plain
+Date: 17 Nov 2003 15:34:05 +0000
+Message-Id: <1069083245.10537.58.camel@newt>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20031117083537.5DAFDC5F59@atlas.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Nov 17, 2003 at 09:35:32AM +0100, Wolfgang Denk wrote:
->
-> In message <20031117060701.GA26252@zenos.farnsworth.org> you wrote:
-> >
-> > Per your suggestion above, I created
-> > bk://source.mvista.com/linuxppc_2_4_mpc5200
->
-> Which source tree / change set is this based on?
+On Mon, 2003-11-17 at 15:04, Tom Rini wrote:
+> On Mon, Nov 17, 2003 at 02:57:53PM +0000, Adrian Cox wrote:
 
-It's semi-moot.  I've created a linux-2.4-mgt5100 tree, based off of
-Marcelo's tree to carefully check things into, and hopefully get him to
-pull from in 2.4.24-pre time-frame.  I'll email everyone again once I've
-got it populated with stuff from Dale's tree.
+> > Any opinion on the dcbt issue?  It looks like it could provide a way for
+> > a malicious userspace application to crash the machine, though it needs
+> > a combination of:
+> > 1) good timing
+> > 2) a peripheral that would be confused by an extra read cycle
 
---
-Tom Rini
-http://gate.crashing.org/~trini/
+> It depends on what the fix is.  For example, Linus just fixed a
+> theoretical race that has a 1-3 cycle (depending on x86 cpu I think he
+> said) race because he happened to be in there anyhow (and it turns out
+> the fix is easy).
+
+The fix is simple, but carries a performance cost: set the HID0_NOPTI
+bit and disable all dcbt instructions. The kernel uses dcbt instructions
+in a lot of places, but copy_page is what matters the most.
+
+A copy_page routine using dst instructions might be faster anyway, and
+would be immune to this problem.
+
+On closer reading, I now think this problem may be harmless - see my
+explanation to Gabriel Paubert for more details.
+
+- Adrian Cox
+http://www.humboldt.co.uk/
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
