@@ -1,39 +1,33 @@
-Date: Thu, 28 Mar 2002 10:14:41 +0100 (MET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Cc: Matt Porter <mporter@mvista.com>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	msokolov@ivan.Harhan.ORG,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: EV-64260-BP & GT64260 bi_recs
-In-Reply-To: <3CA1E0FB.EC5935DB@mvista.com>
-Message-ID: <Pine.GSO.4.21.0203281013390.4979-100000@vervain.sonytel.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Thu, 28 Mar 2002 00:16:11 -0900
+From: Ethan Benson <erbenson@alaska.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: slim kernel source
+Message-ID: <20020328001611.S26309@plato.local.lan>
+References: <20020327183028.71552.qmail@web11002.mail.yahoo.com>
+Mime-Version: 1.0
+In-Reply-To: <20020327183028.71552.qmail@web11002.mail.yahoo.com>; from dan_bethe@yahoo.com on Wed, Mar 27, 2002 at 10:30:28AM -0800
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 27 Mar 2002, Mark A. Greer wrote:
-> I also adde NULL termination to the overall bi_rec and to each nested one so the
-> parsing code can stop when a NULL is hit whether its a nested one or not
-> (therefore we can never have a valid tag with value 0).  I also adjusted the size
+On Wed, Mar 27, 2002 at 10:30:28AM -0800, Dan Bethe wrote:
+>
+> Hi all.  Is there a utility or procedure which can remove a bunch of the code
+> from extraneous architectures from my kernel source tree?  I only want to build
+> kernels for my beloved Powermac 8500 and so I can do without code specific to
+> ia32, S390, Alpha, MIPS, and friends.
+>
+> Even if you just know of a few directories I can remove and save a couple dozen
+> megs of space, that'd be good.
 
-Don't we have BI_LAST for that?
-
-Note that on m68k and on PPC/APUS, BI_LAST == 0, but on other PPC platforms
-BI_LAST = 0x1011.
-
-Gr{oetje,eeting}s,
-
-						Geert
+you can probably safly rm -rf everything under arch/* except arch/ppc
+and include/asm-* except include/asm-ppc.  i haven't tried this but i
+would expect this not to break anything (and if it does thats probably
+a bug).
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+Ethan Benson
+http://www.alaska.net/~erbenson/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
