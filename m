@@ -1,94 +1,65 @@
+Date: Tue, 6 Jan 2004 08:14:12 +0100
+To: Marcus Barrow <mbarrow@sangate.com>
+Cc: Sven Luther <sven.luther@wanadoo.fr>,
+	linuxppc-dev@lists.linuxppc.org
 Subject: Re: multiple separate pci bridges ...
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Sven Luther <sven.luther@wanadoo.fr>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
-	Rob Baxter <robb@synergymicro.com>
-In-Reply-To: <20040105214239.GA20252@iliana>
-References: <20040101181145.GA27294@iliana>
-	 <1073016223.1502.179.camel@gaston> <20040102074049.GA2032@iliana>
-	 <1073029796.1501.228.camel@gaston> <20040104210335.GA858@iliana>
-	 <1073252724.780.5.camel@gaston> <20040104220608.GA1667@iliana>
-	 <20040105164038.GA16158@iliana> <1073338095.9497.70.camel@gaston>
-	 <20040105214239.GA20252@iliana>
-Content-Type: text/plain
-Message-Id: <1073340725.9497.105.camel@gaston>
+Message-ID: <20040106071412.GB735@iliana>
+References: <20040101181145.GA27294@iliana> <1073016223.1502.179.camel@gaston> <20040102074049.GA2032@iliana> <1073029796.1501.228.camel@gaston> <20040104210335.GA858@iliana> <1073252724.780.5.camel@gaston> <20040104220608.GA1667@iliana> <20040105164038.GA16158@iliana> <1073338730.9456.2487.camel@boat.sangate.com>
 Mime-Version: 1.0
-Date: Tue, 06 Jan 2004 09:12:06 +1100
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1073338730.9456.2487.camel@boat.sangate.com>
+From: Sven Luther <sven.luther@wanadoo.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Mmm, will look into this. Actually, linux should not write to those, but
-> read access should be ok.
-
-If the BARs contain address ranges that will confuse linux resource
-management (like RAM location), then you have to hide them completely.
-
-> Well, i tried ioremapping 0x10000, but without much success
-> (cfg_addr/data is at cf8/cfc, and this magic stuff is at f118/f11c). I
-> just got a sig 11 OOPS, so ...
-
-I don't fully understand... If you are doing IO cycles, there's no
-ioremapping needed at all at this point, just use the one that is done
-once for the bridge IO space. neither cf8/cfc not f118 look like
-addresses that can be ioremap'ed anyway...
-
-> > just ioremap that in a global once... I do that for a few things in
-> > pmac_feature.c, like the northbridge registers.
+On Mon, Jan 05, 2004 at 04:38:50PM -0500, Marcus Barrow wrote:
 >
-> Yeah, i have seen.
+> 	Hi Sven:
 >
-> > > Also, i had to manually set hose->bus_offset = 0x10, since that didn't
-> > > seem to be set automatically. I don't know why though.
-> >
-> > Why do you need hose->bus_offset ? For indirect_pci ? Well... that's
->
-> Nope, i checked, and it was trying to read the bus 0x10, while the bus
-> is in reallity 0. That said, if i understood stuff correctly, it should
-> be ok, since type 0 config ignores bus and device, right ?
+> 	I think there is some basic brokeness in the Discovery
+> 	specific code. I've been meaning to go and look at some
+> 	of the original code, to see if some stuff was left on
+> 	the floor.
 
-Yes. And for type 1, just issue a cycle to (bus - hose->first_busno)
+Mmm. What code are you speaking about here ?
 
-> > a kludge, you should rather fix indirect_pci to use first_busno
-> > instead... I don't know where this bus_offset comes from in the first
-> > place, it's defined in pci_controller but not used at all in 2.6...
->
-> Yeah, nor in 2.4, if my grep is correct. I can't use indirect_pci for
-> the second bus though.
->
-> > (BTW. You should really work on 2.6, not 2.4...)
->
-> Ah, yes, but 2.4 means suppoprt for debian-installer. Once that works, i
-> will work on 2.6.x. Also, 2.4 provides me a known working base.
+> 	On our evalution boards the P2P registers are not set
+> 	up. So you indeed have two PCI bus 0. The P2P register
+> 	for PCI bus 1 should be initialized to identify it as
+> 	bus 1, or whatever the right value is considering
+> 	any more bridges found on bus 0.
 
-I still don't like the idea of new dev. beeing done on 2.4...
+Mmm, i understand that the 2.6.x pci domain will make this not
+necessary. I might be wrong though.
 
-> This is which bewilders me, the bridge spec speak about type 0 and type
-> 1, and using the last 2 bits for this.
+> 	If you insert pci cards which contain bridges on them,
+> 	they only work on the bus 0 slots...
 
-Yes. Usually, you don't put the last 2 bits of the offsets in cfg_addr,
-you crop that value to the closest 32 bits boundary (or 64 bits in some
-chips), and then you "offset" the cfg_data access.
+bus 1 is used as an agp bus anyway, and i doubt there are many agp
+graphic cards out there with pci bridges on them. When i inserted my
+Appian Jeronimo 2000 in that board, it refused to powerup at all, but
+then, maybe it is drawing too much power or something. After all, it has
+a 3dlabs gamma and two permedia3 on it.
 
-For example, for a 8 bits access at an offset of 7, you would use 4
-as the offset in cfg_addr, and then do a 8 bits access at cfg_data + 3
+> 	Do you have something like ppcboot or uboot starting
+> 	your system or just a kernel? If you are using a real
 
+Well, there is a customized SmartFirmware OpenFirmware on the board. I
+even have (non-free though) access to the source of it. The board is
+mostly a CHRP design.
 
-> The Marvell Discovery II has (one, two or three) gigabit ethernets
-> included, these do not appear on the pci bus, but need to be programmed
-> directly with the NB registers. On the other hand, the sk98 driver
-> provides driver for various Marvell gigabit ethernet.
+> 	boot rom, you could try initializing the p2p registers
+> 	by hand, then booting...
 
-Argh ????? They don't appear on PCI ? What piece of SHIT is this bridge ?
+The Firmware guy told me don't touch it though.
 
-Really totally insane.
+> 	I'm hoping to work on this in the next few days.
 
-I strongly suggest you still match them as PCI devices, eventually using
-the bridge device itself as the match for the driver.... The DMA mapping
-ops are designed to work with PCI anyway.
+Ok, great.
 
-Ben.
+Friendly,
 
+Sven Luther
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
