@@ -1,37 +1,33 @@
-From: ghannon@cspi.com
-To: jwalden@digitalatlantic.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <85256D17.0055A864.00@pine.cspi.com>
-Date: Tue, 29 Apr 2003 11:41:24 -0400
-Subject: Re: get program exception in early setup
+Date: Tue, 29 Apr 2003 11:11:05 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Joakim Tjernlund <Joakim.Tjernlund@lumentis.se>,
+	"Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: BK Id header removals causes patch to fail!
+Message-ID: <20030429181105.GA15338@ip68-0-152-218.tc.ph.cox.net>
+References: <IGEFJKJNHJDCBKALBJLLMEFBFMAA.joakim.tjernlund@lumentis.se> <IGEFJKJNHJDCBKALBJLLCEFDFMAA.joakim.tjernlund@lumentis.se> <16045.43640.243207.193539@nanango.paulus.ozlabs.org> <001301c30dd8$f5f691e0$020120b0@jockeXP> <16045.52678.862078.705908@argo.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <16045.52678.862078.705908@argo.ozlabs.ibm.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Jerry Walden wrote:
+On Tue, Apr 29, 2003 at 10:56:38AM +1000, Paul Mackerras wrote:
+>
+> Joakim Tjernlund writes:
+>
+> > hmm, the tree I am patching is a CVS tree. I can't get these in %F%
+> > form with CVS.
+>
+> True.  Well, the best I can suggest is to write a script that runs sed
+> on all the files to change the BK Id lines back to the %F% form.
 
-> From System.map:
+BTW, I nuked the tags, both in BK and in a CVS tree, with the same bit
+of sed'ing.
 
-> c0113000 A __bss_start
->     |
->     |
->     |
->     V
-> c013c050 A _end
-
-> The symbol _end does not come after the bss - it is at the end of the
-> kernel, so the memset gets an exception.
-
-_end is correctly after bss_start.
-
-There is probably a different problem with how memory is mapped.
-
-Did your kernel get decompressed correctly at 0?
-
-
-Gary
-
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
