@@ -1,32 +1,38 @@
-To: "ARIBAUD Albert" <A.ARIBAUD@giat-industries.fr>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ppcboot 8260 LXT971A 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 30 Jun 2003 10:46:57 +0200."
-             <30C145E544071F4FB8B627789F7910BD32BE35@csy-exchange1.giat.intra>
-Date: Mon, 30 Jun 2003 11:00:20 +0200
-Message-Id: <20030630090025.487CDC592A@atlas.denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: ppcboot 8260 LXT971A 
+Date: Mon, 30 Jun 2003 11:49:45 +0200
+Message-ID: <30C145E544071F4FB8B627789F7910BD328FF4@csy-exchange1.giat.intra>
+From: "ARIBAUD Albert" <A.ARIBAUD@giat-industries.fr>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <30C145E544071F4FB8B627789F7910BD32BE35@csy-exchange1.giat.intra> you wrote:
 >
-> My problem had something to do with MII state change interrupts not being detected properly, so the Ethernet driver was not told when the line went up after autonegociation, and thus never sent any packet.
+> > My problem had something to do with MII state change
+> interrupts not being detected properly, so the Ethernet
+> driver was not told when the line went up after
+> autonegociation, and thus never sent any packet.
+>
+> Assuming your hardware is OK this means you  have  misconfigured  the
+> Linux kernel (wrong MII interrupt?)
+>
+> Best regards,
+>
+> Wolfgang Denk
 
-Assuming your hardware is OK this means you  have  misconfigured  the
-Linux kernel (wrong MII interrupt?)
+Hi Wolfgang,
 
-Best regards,
+As far as I remember, the hardware designer and I had checked that: we were using the right interrupt, it was triggered and the interrupt driver received it, but somehow in the driver the line state evolution from 'init' to 'up' was lost.
 
-Wolfgang Denk
+Unfortunately, we did not have enough time for messing with the kernel then (1), so we tried alternatives, and disabling MDIO worked, so we did not investigate further. If you think it could be useful, I could reproduce that setting and do some tracing.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Certainly there are things in life that money  can't  buy,  but  it's
-very funny - Did you ever try buying them without money? - Ogden Nash
+All the best,
+
+Albert.
+
+(1) I can't believe I just wrote that, considering that I have just modified i2c-algo-8xx.c extensively (and i2c-rpx.c also, but more slightly) to get I2C_RDWR ioctl working, two days before project deadline. :)
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
