@@ -1,39 +1,26 @@
-Date: Tue, 9 Apr 2002 22:32:39 -0400 (EDT)
-From: Christopher Murtagh <christopher.murtagh@mcgill.ca>
-To: <linuxppc-dev@lists.linuxppc.org>
-Cc: <tech@totalimpact.com>
-Subject: 2.4 kernel on briQ
-Message-ID: <Pine.LNX.4.33.0204092230310.25004-100000@blues.wcg.mcgill.ca>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Tue, 9 Apr 2002 23:36:45 -0400
+From: Bill Fink <billfink@mindspring.com>
+To: LinuxPPC Developers <linuxppc-dev@lists.linuxppc.org>
+Cc: Bill Fink <billfink@mindspring.com>
+Subject: Re: dmasound audio patch
+Message-Id: <20020409233645.78550d1d.billfink@mindspring.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
- Just wondering if anyone has gotten a 2.4 kernel to compile and run on a
-briQ with 1GB of RAM?
+On Mon, 8 Apr 2002, Ethan Benson wrote:
 
- I have 4 of them that I have been playing with and would like to go into
-production very soon, and I'm just wondering if I should wait a little
-longer or stick with a 2.2 kernel and only 512 MB for now.
+> On Mon, Apr 08, 2002 at 09:52:00PM -0400, Bill Fink wrote:
+> > I understand that ALSA is now available for PPC. I'll have to take a
+> > closer look at it when I get a chance. When do you think ALSA will be
+> > an integral part of the stable kernel?
+>
+> when 2.5 becomes the next stable kernel (2.6 or 3.0).
 
- Any info would be much appreciated. Thanks.
+I was afraid that was what someone would say.  :-)
 
-Cheers,
-
-Chris
-
---
-
-Christopher Murtagh
-Webmaster / Sysadmin
-Web Communications Group
-McGill University
-Montreal, Quebec
-Canada
-
-Tel.: (514) 398-3122
-Fax:  (514) 398-2017
-
+				-Bill
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
