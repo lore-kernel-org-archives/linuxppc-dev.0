@@ -1,28 +1,32 @@
-Message-Id: <3.0.3.32.20030122141233.00749e14@hollabaugh.com>
-Date: Wed, 22 Jan 2003 14:12:33 -0700
-To: "Muaddi, Cecilia" <cecilia.muaddi@alloptic.com>,
-	linuxppc-embedded@lists.linuxppc.org
-From: "Dr. Craig Hollabaugh" <craig@hollabaugh.com>
-Subject: Re: where to get ppc_8xx-gdb
-In-Reply-To: <885489B3B89FB6449F93E525DF78777F064563@srvnt506.ALLOPTIC.C
- OM>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+To: "Muaddi, Cecilia" <cecilia.muaddi@alloptic.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: where to get ppc_8xx-gdb 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 22 Jan 2003 12:08:39 PST."
+             <885489B3B89FB6449F93E525DF78777F064563@srvnt506.ALLOPTIC.COM>
+Date: Wed, 22 Jan 2003 22:15:10 +0100
+Message-Id: <20030122211515.4BA8FC608E@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 12:08 PM 1/22/2003 -0800, Muaddi, Cecilia wrote:
+In message <885489B3B89FB6449F93E525DF78777F064563@srvnt506.ALLOPTIC.COM> you wrote:
 >
->Hello all,
->
->My embeded distribution for PPC 860 did not come with the cross-compiled
->gdb.
->
->Can someone point me to where I can get the ppc_8xx-gdb which will allow
->me to using GDB on the host=pc and target=power-pc-860
+> My embeded distribution for PPC 860 did not come with the cross-compiled
+> gdb.
 
+See http://www.denx.de/re/ELDK.html
 
-Try ELDK at denx.de.
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"If you want to eat hippopatomus, you've got to pay the  freight."  -
+attributed to an IBM guy, about why IBM software uses so much memory
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
