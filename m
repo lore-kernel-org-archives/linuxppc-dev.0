@@ -1,226 +1,44 @@
-Date: Mon, 3 Apr 2000 20:42:39 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Michel Lanners <mlan@cpu.lu>
-cc: geert@linux-m68k.org, michdaen@iiic.ethz.ch, paubert@iram.es,
-        bh40@calva.net, linuxppc-dev@lists.linuxppc.org
-Subject: Re: LongTrail PCI resource assignment
-In-Reply-To: <200004030858.KAA00243@piglet.grunz.lu>
-Message-ID: <Pine.LNX.4.10.10004031854280.15106-200000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <38E90159.DB89C967@machinasapiens.com>
+Date: Mon, 03 Apr 2000 16:38:49 -0400
+From: Pierre Sarrazin <sarrazip@machinasapiens.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="1669728176-1145109286-954787359=:15106"
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: R_PPC_REL24 relocation out of range, with trivial program
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-  Send mail to mime@docserver.cac.washington.edu for more info.
+Last month I posted the following message:
 
---1669728176-1145109286-954787359=:15106
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-
-> > - OF reports two base addresses for the Mach64, one of which is the I/O
-> > region (according to the PCI BAR values) at 0xc00. OF reports its address
->                                               ^^^^^
-> Where does that address come from? I'm missing something here..
-
-Straight from the BAR for region 1, with the resource type bits masked
-off. BTW lspci also reports this.
-
-> > as 0x80881000 or some such. Does this mean the I/O registers are
-> > accessible at 0x80881000, or did OF probing get some bogus values there?
+From: Pierre Sarrazin
+Date: Thu, 02 Mar 2000 18:25:46 -0500
+> This is another message about the "R_PPC_REL24 relocation out of range"
+> problem. I have a trivial program and library system that illustrates it.
+> I have read some of the previous messages on this topic but the solutions
+> proposed did not make a difference.
 >
-> When talking PCI IO space on PowerMacs, always keep in mind that the
-> host bridge adds an offset to PCI IO space, i.e. IO port 0xc00 on the
-> bus will have processor physical address 0xf2000c00 or something like
-> that. The offset might be reprogrammable, but I'd suggest _not_
-> changing it, as it is also the base address for config space accesses on
-> that bus...
-
-0xfe000000 is what pmac_pci.c uses for my machine (processor physical as
-well as virtual). I'm not trying to change that, I just didn't understand
-the address reported by OF for that region. I still don't understand it.
-
-> > - I can successfully remap the MMIO range of the chip to some area outside
-> > the VRAM range. XFree86 no longer barfs on the mem resource conflict
-> > (though it still reports the I/O resource conflict with the DVD decoder),
-> > reports the new mapping of the MMIO range, and starts up nicely. lspci -vv,
-> > however, still reports the old range. Where's that one stored
-> > (assuming /proc/pci somewhere), and wouldn't it make more sense to have
-> > the PCI bus rescanned on reading /proc/pci entries?
+> The problem happens when the dlopened library exports a C++
+> function returning 'string', but not when it exports a function
+> returning 'const char *'.
 >
-> If you remap the MMIO range, you need to do two things:
->
-> 1. change the BAR setting, so that the device will respond to the new
-> address
+> Here is the program:
+	[...]
 
-That's been done :-)
 
-> 2. change the values stored in struct pci_dev, so that the kernel at
-> large (that includes other drivers, and the interface used by lspci)
-> knows about it.
+The full message is at:
+http://lists.linuxppc.org/listarcs/linuxppc-dev/200003/msg00025.html
 
-That's what I missed. I changed the value in the OF tree but forgot the
-PCI side.
 
-> > - I picked a range to remap MMIO to more or less at random. How can I find
-> > out what ranges are believed to be unassigned from OF data?
->
-> There's no other way than to look up all assigned regions. However,
-> don't rely (only) on what OF tells you in the devide tree, as some
-> assigments may have been changed by PCI fixup code, and OF may have
-> forgotten some assigments.
+I would like to know if there is a chance that this problem will
+be fixed soon. I have had to suspend my LinuxPPC work for the
+last month. My company's support for the LinuxPPC platform is
+delayed by this issue.
 
-As seen for the MMIO region :-) No thanks, I'l just use the address that
-appears to be unused (right beyond the framebuffer). If someone wants to
-generalize this hack, be careful. On a side note: I've not changed
-ati_regbase after remapping the MMIO region, it still points to the old
-location at the end of the LE aperture, and does apparently still work due
-to the video RAM aperture remaining unchanged.
+Is there a way to ask gcc to generate only long branch instructions
+so as to avoid this whole problem? Thanks.
 
-Patch appended (use at your own risk, works for me but I don't fully
-understand why, etc.).
-
-	Michael
-
---1669728176-1145109286-954787359=:15106
-Content-Type: TEXT/PLAIN; charset=US-ASCII; name="atyfb-2.2.15-pci.diff"
-Content-ID: <Pine.LNX.4.10.10004032042390.15106@opal.biophys.uni-duesseldorf.de>
-Content-Description: 2.2.15 atyfb PCI remap patch
-Content-Disposition: attachment; filename="atyfb-2.2.15-pci.diff"
-Content-Transfer-Encoding: BASE64
-
-LS0tIGRyaXZlcnMvdmlkZW8vYXR5ZmIuYy5vcmcJTW9uIEFwciAgMyAyMDoy
-MDoyNCAyMDAwDQorKysgZHJpdmVycy92aWRlby9hdHlmYi5jCU1vbiBBcHIg
-IDMgMjA6MjY6MTEgMjAwMA0KQEAgLTMxNzYsNyArMzE3Niw3IEBADQogICAg
-IHU4IGJ1cywgZGV2Zm47DQogICAgIHUxNiBjbWQ7DQogICAgIHN0cnVjdCBm
-Yl9pbmZvX2F0eSAqaW5mbzsNCi0gICAgaW50IGk7DQorICAgIGludCBpLCBp
-X2ZyYW1lLCBpX3JlZ3MsIG5hZGRyOw0KIA0KICAgICBpZiAoZGV2aWNlX2lz
-X2NvbXBhdGlibGUoZHAsICJBVFksMjY0TFRQcm8iKSkgew0KIAkvKiBYWFgg
-a2x1ZGdlIGZvciBub3cgKi8NCkBAIC0zMjA0LDYgKzMyMDQsMTMgQEANCiAJ
-ICAgIHJldHVybjsNCiAgICAgfQ0KIA0KKyAgICBwcmludGsoImF0eWZiOiBv
-Zl9pbml0IGdvdCAlZCBPRiBhZHJlc3NlcyBmb3IgQVRZOlxuIiwgZHAtPm5f
-YWRkcnMpOw0KKyAgICBmb3IgKGkgPSAwOyBpIDwgZHAtPm5fYWRkcnM7IGkr
-KykNCisJcHJpbnRrKCIgJTA4eC0lMDh4IiwgZHAtPmFkZHJzW2ldLmFkZHJl
-c3MsDQorCSAgICAgICBkcC0+YWRkcnNbaV0uYWRkcmVzcytkcC0+YWRkcnNb
-aV0uc2l6ZS0xKTsNCisgICAgaWYgKGRwLT5uX2FkZHJzKQ0KKwlwcmludGso
-IlxuIik7DQorDQogICAgIGluZm8gPSBrbWFsbG9jKHNpemVvZihzdHJ1Y3Qg
-ZmJfaW5mb19hdHkpLCBHRlBfQVRPTUlDKTsNCiAgICAgaWYgKCFpbmZvKSB7
-DQogCXByaW50aygiYXR5ZmJfb2ZfaW5pdDogY2FuJ3QgYWxsb2MgZmJfaW5m
-b19hdHlcbiIpOw0KQEAgLTMyMTUsNiArMzIyMiw4IEBADQogICAgIGluZm8t
-PmF0aV9yZWdiYXNlID0gKHVuc2lnbmVkIGxvbmcpaW9yZW1hcChpbmZvLT5h
-dGlfcmVnYmFzZV9waHlzLA0KIAkJCQkJCSAgIDB4MTAwMCk7DQogDQorICAg
-IHByaW50aygiYXR5ZmI6IHJlZ2Jhc2UgcGh5cyAweCVseCB2aXJ0IDB4JWx4
-XG4iLCBpbmZvLT5hdGlfcmVnYmFzZV9waHlzLCBpbmZvLT5hdGlfcmVnYmFz
-ZSk7DQorDQogICAgIGlmKCEgaW5mby0+YXRpX3JlZ2Jhc2UpIHsNCiAJICAg
-IHByaW50aygiYXR5ZmJfaW5pdDogaW9yZW1hcCgpIHJldHVybmVkIE5VTExc
-biIpOw0KIAkgICAga2ZyZWUoaW5mbyk7DQpAQCAtMzIyNiw2ICszMjM1LDUw
-IEBADQogDQogICAgIC8qIGVuYWJsZSBtZW1vcnktc3BhY2UgYWNjZXNzZXMg
-dXNpbmcgY29uZmlnLXNwYWNlIGNvbW1hbmQgcmVnaXN0ZXIgKi8NCiAgICAg
-aWYgKHBjaV9kZXZpY2VfbG9jKGRwLCAmYnVzLCAmZGV2Zm4pID09IDApIHsN
-CisNCisJZm9yIChpID0gMDsgaSA8IGRwLT5uX2FkZHJzICsgMjsgaSsrKSB7
-DQorCSAgICBpbnQgaW8sIGJyZWcgPSBQQ0lfQkFTRV9BRERSRVNTXzAgKyAo
-aSA8PCAyKTsNCisJICAgIHVuc2lnbmVkIGxvbmcgYmFzZTsNCisJICAgIHUz
-MiBzaXplLCBwYmFzZTsNCisNCisJICAgIGJhc2UgPSBkcC0+YWRkcnNbaV0u
-YWRkcmVzczsNCisNCisJICAgIHBjaWJpb3NfcmVhZF9jb25maWdfZHdvcmQo
-YnVzLCBkZXZmbiwgYnJlZywgJnBiYXNlKTsNCisJICAgIHBjaWJpb3Nfd3Jp
-dGVfY29uZmlnX2R3b3JkKGJ1cywgZGV2Zm4sIGJyZWcsIDB4ZmZmZmZmZmYp
-Ow0KKwkgICAgcGNpYmlvc19yZWFkX2NvbmZpZ19kd29yZChidXMsIGRldmZu
-LCBicmVnLCAmc2l6ZSk7DQorCSAgICBwY2liaW9zX3dyaXRlX2NvbmZpZ19k
-d29yZChidXMsIGRldmZuLCBicmVnLCBwYmFzZSk7DQorDQorCSAgICBpbyA9
-IChwYmFzZSAmIFBDSV9CQVNFX0FERFJFU1NfU1BBQ0UpPT1QQ0lfQkFTRV9B
-RERSRVNTX1NQQUNFX0lPOw0KKw0KKwkgICAgaWYgKGlvKQ0KKwkJc2l6ZSAm
-PSB+MTsNCisJICAgIHNpemUgPSB+KHNpemUpICsgMTsNCisJICAgIA0KKwkg
-ICAgaWYgKHNpemUgPT0gMCkgDQorCSAgICAJYnJlYWs7DQorDQorCSAgICBw
-cmludGsoImF0eWZiOiBjaHVuayAlZCBvZmJhc2UgMHglbHggYnJlZyAlZCBp
-byAlZCBwYmFzZSAweCVseCBzaXplIDB4JWx4IFxuIiwNCisJCWksIGJhc2Us
-IGJyZWcsIGlvLCBwYmFzZSwgc2l6ZSk7DQorDQorCSAgICBpZiAoIWJhc2Up
-IHsNCisJCXByaW50aygiYXR5ZmI6IGNodW5rICVkIGFzc2lnbmluZyBvZmJh
-c2UgMHglbHggXG4iLCBpLCBwYmFzZSk7DQorCQlkcC0+YWRkcnNbaV0uYWRk
-cmVzcyA9IHBiYXNlOw0KKwkJZHAtPmFkZHJzW2ldLnNpemUgPSBzaXplOw0K
-KwkgICAgfQ0KKwkgICAgaWYgKHBiYXNlID09IGFkZHIpIHsNCisJCXByaW50
-aygiYXR5ZmI6IGNodW5rICVkIGFzc2lnbmVkIGFzIFZSQU0gYXBlcnR1cmUh
-IFxuIiwgaSk7DQorCQlpX2ZyYW1lID0gaTsNCisJICAgIH0NCisJICAgIGlm
-IChzaXplID09IDB4MTAwMCkgew0KKwkJcHJpbnRrKCJhdHlmYjogY2h1bmsg
-JWQgYXNzaWduZWQgYXMgTU1JTyBhcGVydHVyZSEgXG4iLCBpKTsNCisJCWlf
-cmVncyA9IGk7DQorCSAgICB9DQorDQorCX0NCisNCisJbmFkZHIgPSBpOw0K
-KwlwcmludGsoImF0eWZiOiBmb3VuZCAlZCBQQ0kgYWRkcmVzc2VzIHRvdGFs
-LiBcbiIsIGkpOw0KKw0KIAlwY2liaW9zX3JlYWRfY29uZmlnX3dvcmQoYnVz
-LCBkZXZmbiwgUENJX0NPTU1BTkQsICZjbWQpOw0KIAlpZiAoY21kICE9IDB4
-ZmZmZikgew0KIAkgICAgY21kIHw9IFBDSV9DT01NQU5EX01FTU9SWTsNCkBA
-IC0zMjQyLDEyICszMjk1LDgwIEBADQogICAgIGluZm8tPmZyYW1lX2J1ZmZl
-cl9waHlzID0gYWRkcjsNCiAgICAgaW5mby0+ZnJhbWVfYnVmZmVyID0gKHVu
-c2lnbmVkIGxvbmcpaW9yZW1hcChhZGRyLCAweDgwMDAwMCk7DQogDQorICAg
-IHByaW50aygiYXR5ZmI6IGZyYW1lYnVmZmVyIHBoeXMgMHglbHggdmlydCAw
-eCVseFxuIiwgaW5mby0+ZnJhbWVfYnVmZmVyX3BoeXMsIGluZm8tPmZyYW1l
-X2J1ZmZlcik7DQorDQogICAgIGlmKCEgaW5mby0+ZnJhbWVfYnVmZmVyKSB7
-DQogCSAgICBwcmludGsoImF0eWZiX2luaXQ6IGlvcmVtYXAoKSByZXR1cm5l
-ZCBOVUxMXG4iKTsNCiAJICAgIGtmcmVlKGluZm8pOw0KIAkgICAgcmV0dXJu
-Ow0KICAgICB9DQogDQorICAgIC8qIA0KKyAgICAgKiBGaXggTU1JTyBtYXBw
-aW5nIGlmIE1NSU8gYW5kIFZSQU0gb3ZlcmxhcCANCisgICAgICogTm90ZSB0
-aGF0IHdlIGNhbid0IG1vdmUgdGhlIFZSQU0gYmFzZSBhZGRyZXNzIHRvIHRo
-ZSBCRSBhcGVydHVyZSAodGhpcyB3b3VsZCBtb3ZlIHRoZSB3aG9sZQ0KKyAg
-ICAgKiBWUkFNIHJlZ2lvbiwgbm90IHJlc2l6ZSBpdCkgc28gaXQncyBlYXNp
-ZXIgdG8gcmVtYXAgTU1JTyBzb21lcGxhY2UgZWxzZS4NCisgICAgICovDQor
-ICAgIGlmICggKGRwLT5hZGRyc1tpX2ZyYW1lXS5hZGRyZXNzIDwgZHAtPmFk
-ZHJzW2lfcmVnc10uYWRkcmVzcytkcC0+YWRkcnNbaV9yZWdzXS5zaXplIA0K
-KwkgJiYgZHAtPmFkZHJzW2lfZnJhbWVdLmFkZHJlc3MrZHAtPmFkZHJzW2lf
-ZnJhbWVdLnNpemUgPj0gZHAtPmFkZHJzW2lfcmVnc10uYWRkcmVzcykNCisg
-ICAgCSB8fCAoZHAtPmFkZHJzW2lfcmVnc10uYWRkcmVzcyA8IGRwLT5hZGRy
-c1tpX2ZyYW1lXS5hZGRyZXNzK2RwLT5hZGRyc1tpX2ZyYW1lXS5zaXplDQor
-ICAgIAkgICAgJiYgZHAtPmFkZHJzW2lfcmVnc10uYWRkcmVzcytkcC0+YWRk
-cnNbaV9yZWdzXS5zaXplID49IGRwLT5hZGRyc1tpX2ZyYW1lXS5hZGRyZXNz
-KSApIHsNCisNCisJICAgIHN0cnVjdCBwY2lfZGV2ICpwZGV2ID0gcGNpX2Zp
-bmRfc2xvdChidXMsIGRldmZuKTsNCisJICAgIGludCBpbywgYnJlZyA9IFBD
-SV9CQVNFX0FERFJFU1NfMCArIChpX3JlZ3MgPDwgMik7DQorCSAgICBpbnQg
-ZmxhZ3M7DQorCSAgICB1bnNpZ25lZCBsb25nIGJhc2U7DQorCSAgICB1MzIg
-c2l6ZSwgcGJhc2UsIG5ldzsNCisNCisJICAgIGJhc2UgPSBkcC0+YWRkcnNb
-aV9yZWdzXS5hZGRyZXNzOw0KKw0KKwkgICAgcGNpYmlvc19yZWFkX2NvbmZp
-Z19kd29yZChidXMsIGRldmZuLCBicmVnLCAmcGJhc2UpOw0KKwkgICAgcGNp
-Ymlvc193cml0ZV9jb25maWdfZHdvcmQoYnVzLCBkZXZmbiwgYnJlZywgMHhm
-ZmZmZmZmZik7DQorCSAgICBwY2liaW9zX3JlYWRfY29uZmlnX2R3b3JkKGJ1
-cywgZGV2Zm4sIGJyZWcsICZzaXplKTsNCisJICAgIHBjaWJpb3Nfd3JpdGVf
-Y29uZmlnX2R3b3JkKGJ1cywgZGV2Zm4sIGJyZWcsIHBiYXNlKTsNCisNCisJ
-ICAgIGlvID0gKHBiYXNlICYgUENJX0JBU0VfQUREUkVTU19TUEFDRSk9PVBD
-SV9CQVNFX0FERFJFU1NfU1BBQ0VfSU87DQorCSAgICBmbGFncyA9IChwYmFz
-ZSAmIFBDSV9CQVNFX0FERFJFU1NfTUVNX01BU0spOw0KKw0KKwkgICAgaWYg
-KGlvKQ0KKwkJc2l6ZSAmPSB+MTsNCisJICAgIHNpemUgPSB+KHNpemUpICsg
-MTsNCisJICAgIA0KKwkgICAgcHJpbnRrKCJhdHlmYjogY2h1bmsgJWQgb2Zi
-YXNlIDB4JWx4IGJyZWcgJWQgaW8gJWQgcGJhc2UgMHglbHggc2l6ZSAweCVs
-eCBuZWVkcyByZWFzc2lnbmluZyEgXG4iLA0KKwkJaV9yZWdzLCBiYXNlLCBi
-cmVnLCBpbywgcGJhc2UsIHNpemUpOw0KKw0KKwkgICAgLyogbW92ZSBNTUlP
-IHBhc3QgZnJhbWUgYnVmZmVyIGZvciBub3cuIE5lZWQgdG8gd2FsayBQQ0kg
-cmVzb3VyY2VzIHRvIGZpbmQgc2FmZSBwbGFjZSAqLw0KKwkgICAgbmV3ID0g
-KGRwLT5hZGRyc1tpX2ZyYW1lXS5hZGRyZXNzK2RwLT5hZGRyc1tpX2ZyYW1l
-XS5zaXplKSB8IChmbGFncyAmIDB4MGYpOw0KKw0KKwkgICAgcGNpYmlvc193
-cml0ZV9jb25maWdfZHdvcmQoYnVzLCBkZXZmbiwgYnJlZywgbmV3KTsNCisN
-CisJICAgIHBjaWJpb3NfcmVhZF9jb25maWdfZHdvcmQoYnVzLCBkZXZmbiwg
-YnJlZywgJnBiYXNlKTsNCisJICAgIHBjaWJpb3Nfd3JpdGVfY29uZmlnX2R3
-b3JkKGJ1cywgZGV2Zm4sIGJyZWcsIDB4ZmZmZmZmZmYpOw0KKwkgICAgcGNp
-Ymlvc19yZWFkX2NvbmZpZ19kd29yZChidXMsIGRldmZuLCBicmVnLCAmc2l6
-ZSk7DQorCSAgICBwY2liaW9zX3dyaXRlX2NvbmZpZ19kd29yZChidXMsIGRl
-dmZuLCBicmVnLCBwYmFzZSk7DQorDQorCSAgICBpZiAobmV3ICE9IHBiYXNl
-KSANCisJICAgIAlwcmludGsoImF0eWZiOiBmYWlsZWQgdG8gcmVtYXAgTU1J
-TyByZWdpb24hIFxuIik7DQorDQorCSAgICAvKiB1cGRhdGUgUENJIHN0cnVj
-dCAqLw0KKwkgICAgaWYgKCFwZGV2KSANCisJICAgIAlwcmludGsoImF0eWZi
-OiBubyBwY2lfZGV2IHJlZ2lzdGVyZWQgZm9yIGRldmljZSFcbiIpOw0KKwkg
-ICAgZWxzZQ0KKwkgICAgCXBkZXYtPmJhc2VfYWRkcmVzc1tpX3JlZ3NdID0g
-cGJhc2U7DQorDQorCSAgICBpbyA9IChwYmFzZSAmIFBDSV9CQVNFX0FERFJF
-U1NfU1BBQ0UpPT1QQ0lfQkFTRV9BRERSRVNTX1NQQUNFX0lPOw0KKwkgICAg
-ZmxhZ3MgPSAocGJhc2UgJiB+UENJX0JBU0VfQUREUkVTU19NRU1fTUFTSyk7
-DQorDQorCSAgICBpZiAoaW8pDQorCQlzaXplICY9IH4xOw0KKwkgICAgc2l6
-ZSA9IH4oc2l6ZSkgKyAxOw0KKwkgICAgDQorCSAgICBwcmludGsoImF0eWZi
-OiBjaHVuayAlZCBvZmJhc2UgMHglbHggYnJlZyAlZCBpbyAlZCByZWFzc2ln
-bmVkIHRvIHBiYXNlIDB4JWx4IHNpemUgMHglbHggISBcbiIsDQorCQlpX3Jl
-Z3MsIGJhc2UsIGJyZWcsIGlvLCBwYmFzZSwgc2l6ZSk7DQorDQorCSAgICAv
-KiB1cGRhdGUgT0YgZGV2aWNlIHRyZWUgKi8NCisJICAgIGRwLT5hZGRyc1tp
-X3JlZ3NdLmFkZHJlc3MgPSBkcC0+YWRkcnNbaV9mcmFtZV0uYWRkcmVzcytk
-cC0+YWRkcnNbaV9mcmFtZV0uc2l6ZTsNCisgICAgfQ0KKw0KICAgICBpZiAo
-IWF0eV9pbml0KGluZm8sIGRwLT5mdWxsX25hbWUpKSB7DQogCWtmcmVlKGlu
-Zm8pOw0KIAlyZXR1cm47DQpAQCAtMzI2Nyw3ICszMzg4LDYgQEANCiAjZW5k
-aWYgLyogQ09ORklHX0ZCX0NPTVBBVF9YUE1BQyAqLw0KIH0NCiAjZW5kaWYg
-LyogQ09ORklHX0ZCX09GICovDQotDQogDQogX19pbml0ZnVuYyh2b2lkIGF0
-eWZiX3NldHVwKGNoYXIgKm9wdGlvbnMsIGludCAqaW50cykpDQogew0K
---1669728176-1145109286-954787359=:15106--
+--
+Pierre Sarrazin <sarrazip@machinasapiens.com>
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
