@@ -1,25 +1,48 @@
-Message-Id: <200003080630.BAA26474@mal-ach.watson.ibm.com>
-To: David Monro <davidm@amberdata.demon.co.uk>
-cc: Gabriel Paubert <paubert@iram.es>,
-        Linux/ppc Dev List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: IBM 850 - Open Firmware or not? and more on the ide byteswapgame...
-In-Reply-To: Message from David Monro <davidm@amberdata.demon.co.uk>
-   of "Tue, 07 Mar 2000 20:19:08 GMT." <38C5643C.D9C2A4BD@amberdata.demon.co.uk>
-Date: Wed, 08 Mar 2000 01:30:48 -0500
-From: David Edelsohn <dje@watson.ibm.com>
+Message-Id: <200003080639.HAA00275@piglet.grunz.lu>
+Date: Wed, 8 Mar 2000 07:39:53 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: nvram access in 2.3.48?
+To: trini@kernel.crashing.org
+cc: chas@cmf.nrl.navy.mil, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20000307160835.H399@opus.bloom.county>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> David Monro writes:
+On   7 Mar, this message from Tom Rini echoed through cyberspace:
+[about NVRAM]
+>> > there were some posts about this about a month or so ago.
+>>
+>> Here is the essence:
+>>
+>> http://lists.linuxppc.org/listarcs/linuxppc-dev/200002/msg00079.html
+>>
+>> And to say I do read every message on this list...
+>
+> Yeah, that did it (it forgot to change the CONFIG_MAC version).  I'll pass
+> it along to BK.
+>
+> I still think it would be a good idea to try and merge the two macintosh nvram
+> drivers into one tho.
 
-David> According to the PREP spec Solaris/PPC was also little-endian!
-David> Presumably they decided PReP machines looked more like PCs than sparcs.
+Be careful; isn't the one in drivers/macintosh needed by the M68K port?
 
-	It's more that Sun used their x86 Solaris base for all of their
-non-SPARC ports, and their x86 base was little endian.  Everyone thought
-that more software would be available for little-endian OSes.
+Of course, there could be one general drivers/char/nvram.c file with
+all the high-level stuff, and platform-specific files only implementing
+the low-level access routines. But then, there is an API to be defined
+between the two.....
 
-David
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
