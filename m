@@ -1,35 +1,31 @@
-Message-ID: <3D9C75B6.F0400D23@synergymicro.com>
-Date: Thu, 03 Oct 2002 09:52:06 -0700
-From: Dave Wilhardt <wilhardt@synergymicro.com>
-Reply-To: wilhardt@synergymicro.com
+Message-ID: <3D9C7A26.3030602@mvista.com>
+Date: Thu, 03 Oct 2002 10:11:02 -0700
+From: Todd Poynor <tpoynor@mvista.com>
 MIME-Version: 1.0
-To: Anders Blomdell <anders.blomdell@control.lth.se>
-Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: PrPMC800
-References: <F0A416BC-D6EB-11D6-8F3F-0003931C2BFA@control.lth.se>
-Content-Type: text/plain; charset=us-ascii
+To: Matt Porter <porter@cox.net>
+Cc: Paul Mackerras <paulus@samba.org>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Remove ocp-proc.c
+References: <20021003062159.GA6160@zax> <20021003075753.B4643@home.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-We had a Debian distribution running at MCG.  I think you can get it from MCG
-on a CD.
+>>This patch completely removes drivers/ocp/ocp-proc.c from 2.5, along
+>>with all references to it - it's been terminally broken for some time
+>>now.  Shall I commit this to linuxppc-2.5?
 
-- Dave
+Using driverfs instead sounds fine to me.  It's definitely the way to go
+if all the other /proc/bus/ denizens are moving to driverfs in the near
+future, anyhow.  Even if not, and /proc/bus/ lives on for certain
+busses, "ocp" is something of an artificial bus anyhow, and using a
+driverfs interface with a structure more closely approximating the real
+bus structure of the platform should be a good thing.
 
-Anders Blomdell wrote:
-
-> I recently bought a few Motorola PrPMC800 boards, has anybody succeeded
-> with running linux on these beasts?
->
-> Regards
->
-> Anders Blomdell
->
 
 --
-Dave Wilhardt
-Synergy Microsystems
+Todd
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
