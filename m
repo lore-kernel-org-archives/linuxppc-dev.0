@@ -1,40 +1,42 @@
-Message-ID: <40867E82.3010202@nortelnetworks.com>
-Date: Wed, 21 Apr 2004 10:00:34 -0400
-From: Chris Friesen <cfriesen@nortelnetworks.com>
+From: "Christian Kujau" <evil@g-house.de>
+To: linuxppc-dev@lists.linuxppc.org
+Cc: patrick.pelgrims@pandora.be
+Reply-To: evil@g-house.de
+Subject: Re: GCC and Linux for Motorola's MPC8540ADS
+Date: Wed, 21 Apr 2004 19:42:50 +0100
+Message-Id: <20040421174055.M21512@g-house.de>
+In-Reply-To: <000201c42707$ee9764d0$0500a8c0@amdwin2000>
+References: <000201c42707$ee9764d0$0500a8c0@amdwin2000>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: help with asm code?
-References: <4085483B.1090604@nortelnetworks.com> <1082506664.2077.9.camel@gaston>
-In-Reply-To: <1082506664.2077.9.camel@gaston>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
-
->>	lis	r5,hrt_ak_offsets@ha
->>	addi	r5,r5,hrt_ak_offsets@l
->>	lbzx	r6,r6,r5
->>	add	r10,r4,r6
->>
->>
->>I'm having a small problem, in that when I run this code it hangs my
->>kernel.  Any ideas what's wrong?  The values in r6 and r5 seem to match
->>what I expect, but when I do the lbzx it dies.
+On Tue, 20 Apr 2004 20:47:29 +0200, Patrick Pelgrims wrote
+> Dears,
 >
+> Who can help me with building the GCC for Motorola's
+> MPC8540ADS ?
 >
-> I don't know for sure, maybe you MMU context is wrong at the time ?
+> Is there someone who have already a booting and stable Linux system?
+>
+> Who has build its own GCC cross compiler (X86 dev. Machine and
+> PPC target)?
 
-The code is being called from fast_exception_return, syscall_exit_cont,
-and restore_user.
+don't know exactly about this MPC8540ADS, but
 
-> How do you know it dies there and not elsewhere ?
+http://www.kegel.com/crosstool/
 
-If I remove the lbzx/add lines, everything works fine.  With the lbzx
-line it dies, even if r10 is overwritten right away.
+helped with my PPC604 (PReP) setup - i'm able to compile ppc binaries
+under x86 now :-)
 
-Chris
+
+--
+BOFH excuse #268:
+
+Neutrino overload on the nameserver
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
