@@ -5,24 +5,32 @@ Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
 In-Reply-To: <1073423344.5358.160.camel@boat.sangate.com>
 References: <1073423344.5358.160.camel@boat.sangate.com>
 Content-Type: text/plain
-Message-Id: <1073429964.773.16.camel@gaston>
+Message-Id: <1073430050.773.19.camel@gaston>
 Mime-Version: 1.0
-Date: Wed, 07 Jan 2004 09:59:24 +1100
+Date: Wed, 07 Jan 2004 10:00:51 +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->         Would you care to rethink those comments?
+On Wed, 2004-01-07 at 08:09, Marcus Barrow wrote:
+> oops, sorry i sent wrong note previously...
 >
->         It seems unfair to call a chip shit, when you don't have
->         a manual for it and appear to lack any knowledge of it's
->         internals. Do the math for 3 GigE ports running line speed with
->         64 byte packets, and full bandwidth on 2 PCI busses...
+>         I enabled the debugging option in drivers/pci.c and rebooted.
+>         Here is the pertinent output. As you can see, the two pci busses
+>         have different bus numbers (in dev->bus->number ).
+>
+>         We use a modified version of the Marvell eval. board code. It
+>         doesn't seem to have been changed for some time now. Perhaps you
+>         need to look at your "agp ops"? Is this helpfull?
 
-It would still have been easy to have them "show up" as PCI devices
-for the sake of proper discovery (and eventually mapping their control
-registers as PCI devices), without impairing their ability to use
-a fast path for DMA transfers.
+You do NOT care about bus numbers on the primary segment of a given
+PCI domain. These are type 0 config cycles and so do not carry any
+kind of bus numbers.
+
+If the host bridge do try to muck with those, then it's not fully
+on spec, but then, that can be worked around.
+
+I'd still like to see the docs of this chipset though...
 
 Ben.
 
