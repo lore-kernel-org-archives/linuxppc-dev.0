@@ -1,37 +1,42 @@
-Date: Tue, 30 Sep 2003 13:47:16 -0700
-From: Greg KH <greg@kroah.com>
-To: Adrian Cox <adrian@humboldt.co.uk>
-Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>,
-	lm78@Stimpy.netroedge.com
-Subject: Re: MPC10x I2C driver update
-Message-ID: <20030930204716.GA20450@kroah.com>
-References: <1064915037.12438.1142.camel@newt>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1064915037.12438.1142.camel@newt>
+To: bradbosch@attbi.com
+Cc: "Mark A. Greer" <mgreer@mvista.com>, Q-ha Park <qha@infoeq.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: using bdi2000 to debug ppcboot on mpc7455 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 25 Sep 2003 09:25:51 CDT."
+             <16242.64239.133401.668446@waldo.lisle.iphase.com>
+Date: Tue, 30 Sep 2003 23:32:41 +0200
+Message-Id: <20030930213246.6FC87C59E4@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Sep 30, 2003 at 10:43:55AM +0100, Adrian Cox wrote:
-> I have released a small update to my driver for the
-> MPC107/MPC8240/MPC8245 I2C adapter. This corrects a bug reported by
-> several people: the transfer function now follows the other I2C
-> algorithm drivers by returning the number of elements transferred.
+In message <16242.64239.133401.668446@waldo.lisle.iphase.com> you wrote:
 >
-> http://www.humboldt.co.uk/mpc10xi2c.html
+> In addition to the issue Mark pointed out, you can't use soft
+> breakpoints while you are running from ROM which is the common case
+> for the early init parts of U-Boot.
 >
-> I'd like to get this into the kernel. Which would be more useful to
-> people:
-> 1) Getting it into lm-sensors?
-> 2) Getting it into linuxppc-2.4-devel?
+> Also, once U-Boot has relocated itself, you need to identify the new
+> base address and inform gdb of the new load address.
 
-3) sending me a patch to get it into the 2.6 kernel tree.
+And not to forget that, in the very  early  startup  code  (like  the
+symbol  "boot_cold" mentioned by Q-ha Park), the memory controller is
+still running in the reset configuration, i. e.  the  PC  will  still
+point  to the reset vector area (0x0000'01xx or 0xFFF0'01xx), and NOT
+yet  to  the  addresses  in  the  U-Boot  symbol  table.  Only  after
+"in_flash" the symbols are correct.
 
-:)
 
-thanks,
+Best regards,
 
-greg k-h
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"A little knowledge is a dangerous thing."                - Doug Gwyn
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
