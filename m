@@ -1,13 +1,13 @@
 Return-Path: <domen@coderock.org>
 Received: from trashy.coderock.org (coderock.org [193.77.147.115])
-	by ozlabs.org (Postfix) with ESMTP id A9BC42BF0E
-	for <linuxppc-dev@ozlabs.org>; Sun, 26 Dec 2004 04:53:20 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id B29E32BDB5
+	for <linuxppc-dev@ozlabs.org>; Sun, 26 Dec 2004 04:53:22 +1100 (EST)
 To: paulus@samba.org
 From: domen@coderock.org
-Date: Sat, 25 Dec 2004 18:46:55 +0100
-Message-Id: <20041225174645.708021EA0F@trashy.coderock.org>
+Date: Sat, 25 Dec 2004 18:46:49 +0100
+Message-Id: <20041225174639.5D1141EA0F@trashy.coderock.org>
 Cc: linuxppc-dev@ozlabs.org, domen@coderock.org
-Subject: [patch 3/3] delete unused file
+Subject: [patch 1/3] delete unused file
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,182 +24,59 @@ Signed-off-by: Domen Puncer <domen@coderock.org>
 ---
 
 
- kj/arch/ppc/syslib/ppc4xx_serial.c |  171 -------------------------------------
- 1 files changed, 171 deletions(-)
+ kj/arch/ppc/kernel/find_name.c |   48 -----------------------------------------
+ 1 files changed, 48 deletions(-)
 
-diff -L arch/ppc/syslib/ppc4xx_serial.c -puN arch/ppc/syslib/ppc4xx_serial.c~remove_file-arch_ppc_syslib_ppc4xx_serial.c /dev/null
---- kj/arch/ppc/syslib/ppc4xx_serial.c
+diff -L arch/ppc/kernel/find_name.c -puN arch/ppc/kernel/find_name.c~remove_file-arch_ppc_kernel_find_name.c /dev/null
+--- kj/arch/ppc/kernel/find_name.c
 +++ /dev/null	2004-12-24 01:21:08.000000000 +0100
-@@ -1,171 +0,0 @@
+@@ -1,48 +0,0 @@
+-#include <stdio.h>
+-#include <asm/page.h>
+-#include <sys/mman.h>
+-#include <strings.h>
 -/*
-- * arch/ppc/syslib/ppc405_serial.c
-- *
-- * Author: MontaVista Software, Inc.
-- *         	frank_rowand@mvista.com or source@mvista.com
-- * 	   	debbie_chu@mvista.com
-- *
-- * This is a fairly standard 165xx type device that will eventually
-- * be merged with other similar processor/boards.	-- Dan
-- *
-- * 2000 (c) MontaVista, Software, Inc.  This file is licensed under
-- * the terms of the GNU General Public License version 2.  This program
-- * is licensed "as is" without any warranty of any kind, whether express
-- * or implied.
-- *
-- * Console I/O support for Early kernel bringup.
+- * Finds a given address in the System.map and prints it out
+- * with its neighbors.  -- Cort
 - */
 -
--#include <linux/config.h>
--
--#if defined(CONFIG_IBM405GP) || defined(CONFIG_IBM405CR)
--
--#ifdef CONFIG_KGDB
--#include <asm/kgdb.h>
--#include <linux/init.h>
--#endif
--
--#ifdef CONFIG_DEBUG_BRINGUP
--
--#include <linux/console.h>
--
--extern void ftr_reset_preferred_console(void);
--
--
--static int ppc405_sercons_setup(struct console *co, char *options)
+-int main(int argc, char **argv)
 -{
--#ifdef CONFIG_UART0_DEBUG_CONSOLE
--    volatile unsigned char *uart_dll  = (char *)0xef600300;
--    volatile unsigned char *uart_fcr  = (char *)0xef600302;
--    volatile unsigned char *uart_lcr  = (char *)0xef600303;
--#endif
--
--#ifdef CONFIG_UART1_DEBUG_CONSOLE
--    volatile unsigned char *uart_dll  = (char *)0xef600400;
--    volatile unsigned char *uart_fcr  = (char *)0xef600402;
--    volatile unsigned char *uart_lcr  = (char *)0xef600403;
--#endif
--
--    *uart_lcr = *uart_lcr | 0x80;   /* DLAB on  */
--
--/* ftr revisit - there is no config option for this
--**  also see include/asm-ppc/ppc405_serial.h
--**
--** #define CONFIG_IBM405GP_INTERNAL_CLOCK
--*/
--
--
--#ifdef  CONFIG_IBM405GP_INTERNAL_CLOCK
--    /* ftr revisit
--    ** why is bit 19 of chcr0 (0x1000) being set?
--    */
--    /* 0x2a results in data corruption, kgdb works with 0x28 */
--    *uart_dll = 0x28;		    /* 9600 baud */
--    _put_CHCR0((_get_CHCR0() & 0xffffe000) | 0x103e);
--#else
--    *uart_dll = 0x48;		    /* 9600 baud */
--#endif
--    *uart_lcr = *uart_lcr & 0x7f;   /* DLAB off */
--
--    return 0;
--}
--
--
--/*
-- * This is a bringup hack, writing directly to uart0 or uart1
-- */
--
--static void
--ppc405_sercons_write(struct console *co, const char *ptr,
--            unsigned nb)
--{
--    int i;
--
--#ifdef CONFIG_UART0_DEBUG_CONSOLE
--    volatile unsigned char *uart_xmit = (char *)0xef600300;
--    volatile unsigned char *uart_lsr  = (char *)0xef600305;
--#endif
--
--#ifdef CONFIG_UART1_DEBUG_CONSOLE
--    volatile unsigned char *uart_xmit = (char *)0xef600400;
--    volatile unsigned char *uart_lsr  = (char *)0xef600405;
--#endif
--
--    for (i = 0; i < nb; ++i) {
--
--	/* wait for transmit reg (possibly fifo) to empty */
--	while ((*uart_lsr & 0x40) == 0)
--	    ;
--
--	*uart_xmit = (ptr[i] & 0xff);
--
--	if (ptr[i] == '\n') {
--
--	    /* add a carriage return */
--
--	    /* wait for transmit reg (possibly fifo) to empty */
--	    while ((*uart_lsr & 0x40) == 0)
--		;
--
--	    *uart_xmit = '\r';
+-	unsigned long addr, cmp, i;
+-	FILE *f;
+-	char s[256], last[256];
+-	
+-	if ( argc < 2 )
+-	{
+-		fprintf(stderr, "Usage: %s <address>\n", argv[0]);
+-		return -1;
 -	}
--    }
 -
--    return;
+-	for ( i = 1 ; argv[i] ; i++ )
+-	{
+-		sscanf( argv[i], "%0lx", &addr );
+-		/* adjust if addr is relative to kernelbase */
+-		if ( addr < PAGE_OFFSET )
+-			addr += PAGE_OFFSET;
+-		
+-		if ( (f = fopen( "System.map", "r" )) == NULL )
+-		{
+-			perror("fopen()\n");
+-			exit(-1);
+-		}
+-		
+-		while ( !feof(f) )
+-		{
+-			fgets(s, 255 , f);
+-			sscanf( s, "%0lx", &cmp );
+-			if ( addr < cmp )
+-				break;
+-			strcpy( last, s);
+-		}
+-		
+-		printf( "%s%s", last, s );
+-	}		
+-	fclose(f);
+-	return 0;
 -}
--
--
--static int
--ppc405_sercons_read(struct console *co, char *ptr, unsigned nb)
--{
--#ifdef CONFIG_UART0_DEBUG_CONSOLE
--    volatile unsigned char *uart_rcv  = (char *)0xef600300;
--    volatile unsigned char *uart_lsr  = (char *)0xef600305;
--#endif
--
--#ifdef CONFIG_UART1_DEBUG_CONSOLE
--    volatile unsigned char *uart_rcv  = (char *)0xef600400;
--    volatile unsigned char *uart_lsr  = (char *)0xef600405;
--#endif
--
--
--    /* ftr revisit: not tested */
--
--    if (nb == 0)
--	return(0);
--
--    if (!ptr)
--	return(-1);
--
--    /* wait for receive reg (possibly fifo) to contain data */
--    while ((*uart_lsr & 0x01) == 0)
--	;
--
--    *ptr = *uart_rcv;
--
--    return(1);
--}
--
--static struct console ppc405_sercons = {
--	.name =		"dbg_cons",
--	.write =	ppc405_console_write,
--	.setup =	ppc405_console_setup,
--	.flags =	CON_PRINTBUFFER,
--	.index =	-1,
--};
--
--void
--register_debug_console(void)
--{
--	register_console(&ppc405_sercons);
--}
--
--void
--unregister_debug_console(void)
--{
--	unregister_console(&ppc405_sercons);
--}
--
--#endif	/* CONFIG_DEBUG_BRINGUP */
--
--#endif	/* #if defined(CONFIG_IBM405GP) || defined(CONFIG_IBM405CR) */
 _
