@@ -1,28 +1,36 @@
-Message-ID: <382FDE6B.4A758279@schweiz.ch>
-Date: Mon, 15 Nov 1999 11:20:38 +0100
-From: Andreas Tobler <a.tobler@schweiz.ch>
-Reply-To: a.tobler@schweiz.ch
+Message-ID: <19991115140645.12495.rocketmail@web207.mail.yahoo.com>
+Date: Mon, 15 Nov 1999 06:06:45 -0800 (PST)
+From: "D.J. Barrow" <barrow_dj@yahoo.com>
+Subject: Bug in ptrace on smp systems
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
 MIME-Version: 1.0
-To: Linux -Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: kernel 2.3.27/28 ?
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 Hi,
+I found a bugs which causes gdb to go to sleep 
+forever on smp systems occaisionally
+in ptrace.c in the 2.2.10 kernel
+( maybe you've this fixed maybe not ) 
+in the sys_ptrace call you are
+setting exit_code in most cases after calling
+wake_up_process(child) this is incorrect as the
+function sys_wait4 will get very confused on smp
+systems as the process will be woken up on another
+processor & deliver a new exit_code from do_signal
+which this code will subsequently clear.
 
-has anybody had success with a kernel 2.3.27/28 on a PowerMac?
-I can build both after some modifications in driver/net/setup.c. But it
-doesn't boot. It hangs with saying 'booting...' On a 7200 and on a
-wallstreet I.
-A 2.3.26 I got to boot. But now I don't know where to look for the boot stuff.
-When hanging in the beginning, which part of code is responsible for
-that? Is it in pmac_setup init etc? 
+It also would be wise to move the clear_single_step
+statement before wake_up_process in PTRACE_CONT.
 
-Thanks for any hint.
+For the correct treatment of exit_code look at the
+intel code.
 
+D.J.
 
-Andreas
+=====
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
