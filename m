@@ -1,58 +1,33 @@
-Date: Fri, 3 Nov 2000 16:59:45 +0100 (MET)
-From: Derek Homeier <supas100@astrophysik.uni-kiel.de>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Date: Fri, 3 Nov 2000 22:51:04 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Albrecht Dreﬂ <ad@mpifr-bonn.mpg.de>
+cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
 Subject: Re: Lombard Sleep Crash (Was: 2.2.18pre17 again)
-In-Reply-To: <19340928092447.1002@192.168.1.2>
-Message-ID: <Pine.SOL.3.95.1001103165021.20257D-100000@juliet>
+In-Reply-To: <3A02B060.4C470BFB@mpifr-bonn.mpg.de>
+Message-ID: <Pine.LNX.4.10.10011032246590.26034-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 3 Nov 2000, Benjamin Herrenschmidt wrote:
+> > Did all your kernels that crash lack ADB support, or just the latest you
+> > built with CONFIG_ALL_PPC=y ?
+>
+> Just the latest rsync'ed linux-pmac-stable from penguinppc.org. Before, I always
+> used Ben's (rsync'ed) kernels, and configured them for PowerMac's only. No
+> problems with starting pmud. Now, both configuring for PowerMac only and for
+> ALL_PPC have no /dev/adb. I'm afraid I have to dig into the sources...SIGH!
 
-> >I just had 2.2.18pre17-benh1 running (and sleeping) for about a week on
-> >my Lombard, this morning it simply powered down and reset pram when I
-> >tried to wake it up (battery was 95% full).
->
-> I though that was fixed for a long time... weird.
->
-Thought so, too. This was the only time this happened to me since then,
-but Albrecht seems to have the same problem.
+The reason is simple: adbdev_init() is now declared as module_init, and no
+longer called from drivers/char/mem.c (which used to call all chardev init
+functions). However, the adbdev code is not built as a module, rather
+compiled in. What were you trying to achieve here, Paul?
 
-> >I also noted some other problems with sleep, mostly irregularly:
-> >
-> > xscreensaver tends to become somehow disconnected from the display, when
-> > 	this happens, it will run in the background after wakeup and begin
-> >	to consume 90%+ cpu, but doesn't blank the screen. It can be
-> >	easily killed, however.
->
-> Yup. Fortunately, even if you don't kill it, it tends to stop playing the
-> CPU hog after a few seconds (or minutes ?)
->
-Rather minutes. I didn't remember it ever spinning down on its own
-(before I killed it, that is), and I certainly sometimes only noticed it
-after 15-30 minutes.
+I guess just adding back the adbdev_init() call to mem.c should restore
+pmud to function. Or try forcing a build of adb.o as module.
 
-> >	I added some lines to pwrctl-local to kill it before sleeping
-> >	and relaunch it afterwards, but even then it happenened once again
-> >	(before, it was about every other time, though)
-> >
-> > power consumption during sleep is occasionally (not frequently) 5-10
-> >	times the normal rate, which will discharge the battery within
-> >	24-36 hours.
->
-> Bizarre... The new sleep code is supposed to be a lot less robust to
-> those various issues. Well, I suggest you try again with pmac-stable once
-> the ADB problem is ironed out. Both Paul and I did various fixes to the
-> sleep process.
->
-Again, this only happened once with newer kernels.
-
-Thanks,
-								Derek
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
