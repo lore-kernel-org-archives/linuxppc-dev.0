@@ -2,10 +2,10 @@ Mime-Version: 1.0 (Apple Message framework v612)
 In-Reply-To: <1076361029.763.13.camel@gaston>
 References: <27203D60-5B28-11D8-A96D-000A95B30208@vrlteam.org> <1076361029.763.13.camel@gaston>
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <809C6564-5CB1-11D8-B40D-000A95B30208@vrlteam.org>
-From: Costantino Pistagna <cpistagna@vrlteam.org>
+Message-Id: <015F12CA-5CC6-11D8-B40D-000A95B30208@tiscalinet.it>
+From: Costantino Pistagna <valvoline@tiscalinet.it>
 Subject: Re: ibook G4 Status Report
-Date: Wed, 11 Feb 2004 17:44:04 +0100
+Date: Wed, 11 Feb 2004 20:10:50 +0100
 To: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
