@@ -1,33 +1,53 @@
-Message-ID: <3ACC0989.4BAA6CB9@mvista.com>
-Date: Thu, 05 Apr 2001 01:58:33 -0400
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: jerry <jerry.nguyen@serialsystem.com.sg>
-Cc: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <002001c0bd99$96c03a00$de0fa8c0@mystore>
+From: "jerry" <jerry.nguyen@serialsystem.com.sg>
+To: "Dan Malek" <dan@mvista.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <20010404155419.8B369281DB@denx.denx.de> <001001c0bd86$c54562a0$de0fa8c0@mystore> <3ACC0989.4BAA6CB9@mvista.com>
 Subject: Re: how to get the physival address
-References: <20010404155419.8B369281DB@denx.denx.de> <001001c0bd86$c54562a0$de0fa8c0@mystore>
-Content-Type: text/plain; charset=us-ascii
+Date: Thu, 5 Apr 2001 14:28:11 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-jerry wrote:
+Yes, if I use kmalloc is OK, either __pa or virt_to_phys will return the
+physical address.
+
+But it does not work  for  defined variable (it was defined in driver so it
+should be in kernel space, isn't it?). I  wonder  which memory space, this
+variable belong to?
+
+Thank in advances
+Jerry
+
+- Original Message -----
+From: "Dan Malek" <dan@mvista.com>
+To: "jerry" <jerry.nguyen@serialsystem.com.sg>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Sent: Thursday, April 05, 2001 1:58 PM
+Subject: Re: how to get the physival address
 
 
-> I try to print out:  buffer_array = 0xC4056220
+> jerry wrote:
+>
+>
+> > I try to print out:  buffer_array = 0xC4056220
+>
+> To get an address like this, you must be loading the
+> driver as a module.  There are a variety of opinions about
+> how to do this, like using kmalloc() to dynamically allocate
+> the space after the module is loaded.  In the linuxppc_2_5
+> kernel from FSM Labs are some VM modifications I have started.
+> The virt_to_phys() is appropriate to use on the MPC8xx for this
+> sort of thing, and you can even do consistent_alloc() if you want
+> cache inhibited pages.  In older kernels, there are no functions
+> that will provide this for you (well, you can trudge through the
+> page tables, get the PTE and convert it yourself, but that sucks :-).
+>
+>
+> -- Dan
 
-To get an address like this, you must be loading the
-driver as a module.  There are a variety of opinions about
-how to do this, like using kmalloc() to dynamically allocate
-the space after the module is loaded.  In the linuxppc_2_5
-kernel from FSM Labs are some VM modifications I have started.
-The virt_to_phys() is appropriate to use on the MPC8xx for this
-sort of thing, and you can even do consistent_alloc() if you want
-cache inhibited pages.  In older kernels, there are no functions
-that will provide this for you (well, you can trudge through the
-page tables, get the PTE and convert it yourself, but that sucks :-).
-
-
-	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
