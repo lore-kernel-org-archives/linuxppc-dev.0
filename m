@@ -1,44 +1,73 @@
-Date: Wed, 12 Dec 2001 12:21:02 -0700
-From: Matt Porter <mporter@mvista.com>
-To: Kent Borg <kentborg@borg.org>
-Cc: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Compile Penguin PPC for x386?
-Message-ID: <20011212122102.B21676@cx258813-a.chnd1.az.home.com>
-References: <20011212165819.D1790@borg.org>
-Mime-Version: 1.0
+Message-ID: <3C17BFB2.A40932ED@ixiacom.com>
+Date: Wed, 12 Dec 2001 12:36:02 -0800
+From: Dan Kegel <dkegel@ixiacom.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: building gcc3.02 for ppc405 with Hardhat 2 Journeyman tools
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20011212165819.D1790@borg.org>; from kentborg@borg.org on Wed, Dec 12, 2001 at 04:58:19PM -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Dec 12, 2001 at 04:58:19PM -0500, Kent Borg wrote:
->
-> Is the i386 arch vaguely up to date in the PPC tree?  Does it work?
->
-> I mean, if I want to debug some driver that doesn't need actual
-> hardware (maybe dummy out actual HW banging), can I swap over to
-> building an i386 kernel?  It would be nice to be using the same
-> kernel.
->
-> If I can do that, how?  In Makefile I changed "ARCH" to i386, changed
-> "CROSS_COMPILE" to be nothing, did a "make mrproper", copied in a
-> .config from my Red Hat install, defaulted everything asked by "make
-> oldconfig", did "make dep", and "make bzImage".
->
-> But then it chokes on some problem in include/linux/highmem.h (48:
-> parse error before `0').
->
-> Should this work?
+Here's how I built gcc3 and
+integrated it into the hardhat tools for ppc405.  Works for me,
+but YMMV.  Thanks to Bryan Rittmeyer for the recipe.
 
-No, the PPC MM changes in 2_4_devel rely on changes to the generic
-MM API that aren't yet in the kernel.org release.  You could modify
-the appropriate files in arch/i386/mm/ and include/asm-i386/ to match
-if you like.
+#!/bin/sh
 
---
-Matt Porter
-MontaVista Software, Inc.
-mporter@mvista.com
+set -x -e
+WORKDIR=`pwd`
+
+#wget ftp://ftp.gnu.org/pub/gnu/gcc/gcc-3.0.2/gcc-core-3.0.2.tar.gz
+#wget ftp://ftp.gnu.org/pub/gnu/gcc/gcc-3.0.2/gcc-g++-3.0.2.tar.gz
+
+# Muck around in the hardhat tree to let the gcc build process find what it
+# needs.  FIXME These steps must all be run as root.
+cd /opt/hardhat/devkit/ppc/405
+
+# Avoid exit if links exist by using a subshell
+(
+ln -s powerpc-hardhat-linux powerpc-linux
+cd bin
+ln -s ppc_405-ar powerpc-linux-ar
+ln -s ppc_405-ld powerpc-linux-ld
+ln -s ppc_405-nm powerpc-linux-nm
+ln -s ppc_405-ranlib powerpc-linux-ranlib
+ln -s ppc_405-strip powerpc-linux-strip
+)
+
+find . -name crt?.o -exec cp {} powerpc-linux/lib \;
+
+# Extract the source into the same directory as the tarballs
+cd $WORKDIR
+tar zxvf gcc-core-3.0.2.tar.gz
+tar zxvf gcc-g++-3.0.2.tar.gz
+
+PATH=/opt/hardhat/devkit/ppc/405/bin:$PATH
+export PATH
+
+mkdir gcc-build
+cd gcc-build
+../gcc-3.0.2/configure \
+        --target=powerpc-linux \
+        --prefix=/opt/hardhat/devkit/ppc/405 \
+        --with-headers=/opt/hardhat/devkit/ppc/405/target/usr/include \
+        --enable-shared \
+        --enable-long-long \
+        --enable-threads=posix \
+        --enable-langugages=c,c++ \
+        --nfp \
+        --with-cpu=403
+
+make
+make install
+
+# FIXME: are these paths right?
+cp -d /opt/hardhat/devkit/ppc/405/powerpc-linux/lib/nof/libs*
+/opt/hardhat/devkit/ppc/405/target/usr/lib
+cp -d /opt/hardhat/devkit/ppc/405/powerpc-linux/lib/libgcc_s_nof*
+/opt/hardhat/devkit/ppc/405/target/lib
+cp -R -d /opt/hardhat/devkit/ppc/405/include/g++-v3
+/opt/hardhat/devkit/ppc/405/target/usr/include
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
