@@ -1,44 +1,52 @@
-To: "Joao Vicente" <joao.vicente@spectel.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Problem debugging ppc kernel with DDD/GDB/BDI2000 on a custom MPC8260 board 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 15 Oct 2003 18:47:11 BST."
-             <DEF39A0710293E489D45B10E06645CBD0243B3B2@dub-msx1.spectelcorp.com>
-Date: Wed, 15 Oct 2003 19:56:27 +0200
-Message-Id: <20031015175632.21AB5C59E4@atlas.denx.de>
+Message-ID: <3439AB3A99ECD5409F3A52ACF814744D158DA1@norcom2.norcom.net>
+From: Lokesh Kumar <kumar.lokesh@wrx-us.com>
+To: "'Steven Scholz'" <steven.scholz@imc-berlin.de>,
+	Lokesh Kumar <kumar.lokesh@wrx-us.com>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: mpc8xx memory mapped 16550A uart garbage
+Date: Wed, 15 Oct 2003 16:34:27 -0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Joao,
+Hi Steven,
+I did measure the bit width and that is around 104us, which is correct.
+Anything else?
 
-in message <DEF39A0710293E489D45B10E06645CBD0243B3B2@dub-msx1.spectelcorp.com> you wrote:
->
-> on u-boot IMMR was set to 0x04700000, which is acceptable as far as
-> u-boot is concerned, but not allowed once the kernel is initialised.
->
-> The other issue was that the Chip Select was not configured properly on
-> u-boot (2MB instead of 32MB), which was not noticed in u-boot since the
-> u-boot never tried to access memory above that region, but caused the
-> kernel to reset the target.
-...
-> I am using the denx distribution linuxppc_2_4_devel, and I am
-> configuring it using the TQM8260 default configuration, customising some
-> CPM settings for UART and FEC.
+Thanks,
+Lokesh
 
-I would like to point out that you certainly did NOT pick up  such  a
-bogus memory map from the TQM8260 default configuration, nor from any
-other board maintened by DENX.
+-----Original Message-----
+From: Steven Scholz [mailto:steven.scholz@imc-berlin.de]
+Sent: Wednesday, October 15, 2003 10:22 AM
+To: Lokesh Kumar
+Cc: 'linuxppc-embedded@lists.linuxppc.org'
+Subject: Re: mpc8xx memory mapped 16550A uart garbage
 
-Best regards,
 
-Wolfgang Denk
+Lokesh Kumar wrote:
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Old programmers never die, they just branch to a new address.
+> Hi,
+> I got the serial.c from DENX linuxppc_2.4._devel tree which has support
+for
+> 16550A as memory mapped uart, and am using it as a module. I made
+> modifications to match my board. When I start it, it correctly recognizes
+> that I have a 16550A and at correct IRQ. However, when I open and send
+> something through the port (I just do cat>/dev/ttySe0), I get garbage on
+the
+> other side. My 16550 has a crystal of 3.6864MHz and the processor runs at
+> 49MHz. I thought that this kind of garbage problem is generally due to
+baud
+> rate not set correctly. I see the divisor correctly calculated as
+> 3686400/16/9600 = 24 and being sent to 16550. What else could I be doing
+> wrong?
+
+Did you verify the baudrate using a scope to measure the bittime?
+
+Steven
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
