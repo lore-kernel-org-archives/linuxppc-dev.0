@@ -1,37 +1,40 @@
-Message-ID: <000601c15323$17398190$020aa8c0@dimbar>
-From: "Nils Krueger" <nilz@hoschi.de>
-To: <paulus@samba.org>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-References: <15302.40082.869098.88039@cargo.ozlabs.ibm.com>
-Subject: Re: boot methods
-Date: Fri, 12 Oct 2001 15:37:51 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Fri, 12 Oct 2001 05:51:50 -0800
+From: Ethan Benson <erbenson@alaska.net>
+To: Debian-powerpc <debian-powerpc@lists.debian.org>,
+	Linux/PPC-devel <linuxppc-dev@lists.linuxppc.org>
+Subject: Last call for testing: yaboot-1.3.4pre3
+Message-ID: <20011012055150.B10713@plato.local.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Paul!
+I am going to take the resounding silence as an indication that there
+are no problems with yaboot 1.3.4pre.
 
-> I would like to make a complete list of the methods people use to boot
-> the PPC/Linux kernel on different platforms.  As a start, here is what
-> I can think of off the top of my head:
+I plan to release 1.3.4 this weekend unless someone speaks up and
+points out some problem.
 
-I have a Motorola PowerStack "Series E" PReP machine.
+pre3 is up now, one test i would like to see is netbooting by holding
+down the `n' key on bootup of a PCI G4 (not G3), these machines appear
+to netboot with dhcp rather then bootp and i want to know if yaboot
+will parse the bootpath properly.
 
-I can boot the zImage.prep from a "PPC PReP Boot" partition (type 41) having
-written it to that partition using the dd command.
+On Blue G3s when booting via the `n' key the bootpath ends up being
+enet:bootp yaboot has to throw away the bootp part to work, what i
+want to know is if dhcp versions of OF use something like enet:dhcp or
+equivilent.
 
-The PPCBug firmware has also the following options. I have only tested
-booting from floppy.
+Simply booting yaboot via `n key' netboot will answer this question,
+if its using something like enet:dhcp yaboot will fail to locate its
+config file and print out the device path it tried, just send me that
+error message.
 
-- boot zImage from floppy disk, CD or tape (also directly written to it)
-- network boot (tftp)
+http://master.penguinppc.org/projects/yaboot/1.3.4pre/
 
-Nilz
 --
-http://www.hoschi.de/nilz   (Nilz' Homepage)
-
+Ethan Benson
+http://www.alaska.net/~erbenson/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
