@@ -1,40 +1,28 @@
-Date: Sun, 27 Jun 1999 19:46:49 -0500 (CDT)
-From: Troy Benjegerdes <hozer@drgw.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: sym53c8xx timeouts and aborts... egcs-1.1.2e problem??
-Message-ID: <Pine.LNX.4.04.9906271940400.5764-100000@narn.local.drgw.net>
+Date: Sun, 27 Jun 1999 20:58:50 -0400 (EDT)
+From: Tom Rini <tmrini@ntplx.net>
+To: Troy Benjegerdes <hozer@drgw.net>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: sym53c8xx timeouts and aborts... egcs-1.1.2e problem??
+In-Reply-To: <Pine.LNX.4.04.9906271940400.5764-100000@narn.local.drgw.net>
+Message-ID: <Pine.LNX.4.05.9906272057130.20302-100000@opus.bloom.county>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I have a Motorola MTX board, which I just tried to upgrade the kernel to
-2.2.10 on.
+On Sun, 27 Jun 1999, Troy Benjegerdes wrote:
 
-I built the kernel on a PowerMac G3 which had 
-binutils-2.9.1.0.990418-1c, egcs-1.1.2-12e, and glibc-2.1.1-6h installed.
+> Can anyone give me a success or failure report on an ncr/sym53c8xx board
+> on a kernel compiled with egcs-1.1.2-12e?
 
-When the sym53c driver loaded, it scanned the bus, and then proceeded to
-go into an infinite loop of timeouts and aborts.
+Er.  I shoulda mentioned this on IRC I guess, but the Apple ncr53c8xx
+cards (Beige G3 UW problem threads) are done with 12e and people haven't
+had problems.  Which narrows it down to sym53c8xx.[ch] and egcs, yes?
 
-This occurs with the sym53c8xx and ncr53c8xx drivers on 2.2.10, *and* on
-the same 2.2.3 based kernel sources I had previously been using
-successfully on this machine.
-
-The only thing that has I can think of that has changed is that the latest
-kernels have been compiled with the new egcs.
-
-Can anyone give me a success or failure report on an ncr/sym53c8xx board
-on a kernel compiled with egcs-1.1.2-12e?
-
-Thanks.
-
---------------------------------------------------------------------------
-| Troy Benjegerdes    |       troy@microux.com     |    hozer@drgw.net   |
-|    Unix is user friendly... You just have to be friendly to it first.  |
-| This message composed with 100% free software.    http://www.gnu.org   |
---------------------------------------------------------------------------
+---
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
