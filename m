@@ -1,34 +1,35 @@
-Date: Tue, 12 Nov 2002 14:28:52 +0100 (MET)
-Message-Id: <200211121328.gACDSqp17587@hzsc257.nl.lucent.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: jffs2 as root
-From: Jaap-Jan Boor <jjboor@lucent.com>
+Message-ID: <D73A25AA6E54D511AD74009027B1110F3C0439@ORION>
+From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+To: "'Crawford Matthew A'" <rygad@tamu.edu>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: EP405GP GPIO Control Question
+Date: Tue, 12 Nov 2002 08:58:36 -0500
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+It's in the Embedded Planet user manual under Board Control Status
+Registers.
 
-I'm using a jffs2 fs on mtd now as my root fs.
+-----Original Message-----
+From: Crawford Matthew A [mailto:rygad@tamu.edu]
+Sent: Monday, November 11, 2002 6:16 PM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: EP405GP GPIO Control Question
 
-To be able to do that however, I patched
-the root_dev_names[] table in init/main.c
-to at a mtd device with a hardcoded major/minor set.
 
-I pass root=/dev/mtd to the kernel.
 
-There should be a more elegant way, does somebody
-know which one?
+Does anyone out there know where I can find information on, or know how to
+control the output pins
+associated with the GPIO on this board?  We are trying to write a small
+driver that will send a
+signal out to trigger some power measuring equipment.
 
-thanks,
+Thanks,
+Matt
 
-Jaap-Jan
-
----
-J.G.J. Boor
-Lucent Technologies Nederland b.v.	Room:  BE-525
-Optical Networking Group TMS Data 	Phone: +31 (0)35 687 4721
-Larenseweg 50, P.O. Box 1168, 		Fax:   +31 (0)35 687 5976
-1200 BD, Hilversum, The Netherlands	mailto:jjboor@lucent.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
