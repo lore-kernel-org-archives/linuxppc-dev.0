@@ -1,61 +1,58 @@
-Message-Id: <4.3.2.20010711154256.00c59320@falcon.si.com>
-Date: Wed, 11 Jul 2001 16:30:19 -0400
-To: linuxppc-embedded@lists.linuxppc.org
-From: Jerry Van Baren <vanbaren_gerald@si.com>
-Subject: Re: How fast should a bogomip be
-In-Reply-To: <Pine.LNX.3.95.1010711084748.21073D-100000@november.bhjjh.e
- rols.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <001301c10a89$5f588a80$1701a8c0@paulplanet>
+From: "Paul Chu (Accusys)" <paulchu@accusys.com.tw>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: MMU & cache questions on 8240 (kernel 2.4.6)
+Date: Thu, 12 Jul 2001 12:16:02 +0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Circumstantial evidence would indicate bogomips should go down by a
-factor of 14.  On July 9, 2001, Andrew <anj@aps.anl.gov> sent a message
-complaining about speed: he was running a 8240 (603e core) at 200MHz
-without caches and getting a bogomips rating of 9.59 where he expected
-133.  This matches my experience that caches are VERY important on
-modern processors.  He later confirmed that his problem was that caches
-were disabled.
+Hello:
 
-Main memory speed is  VERY slow compared to the 100MHz or 200MHz core
-clock rate.  Even with "PC133" or such SDRAM, which would lead you to
-believe that it is fast memory, you have to look at latency, not just
-the data clocking speed.  What you will find is that the initial
-latency causes a substantial delay, and then it will burst the data at
-bus speed (50MHz, 66MHz, or what have you).  Note also that the
-bursting ONLY takes place if it is cached, which REALLY kills your
-memory subsystem speed if you are running with caches disabled because
-EVERY memory access causes the multiple clock cycle latency.
-
-gvb
-
-
-At 08:58 AM 7/11/01 -0400, Justin (Gus) Hurwitz wrote:
-
->First off- let me run for cover while saying that I know bogomips are
->relatively arbitrary numbers.
->
->I've seen numbers that indicate on 6xx series processors bogomips is
->usually about 2/3 the processor speed- so about 66.6 for a 100Mhz
->processor. I hope this is accurate, because that's what I'm getting.
->
->But, about what should I expect for a 6xx (603e) 100Mhz processor running
->without cache? I've been trying to disable cache so I can continue
->development until the kernel supports propper allocation of non-cacheable
->memory (on a 603e with broken memory controller). When I run the kernel
->with code changes that *should* disable the cache the bootup process does
->feel marginally slower, and bogomips goes down a whopping .64 (from 66.56
->to 65.92). It then crashes with a segfault in kupdated (when in _wake_up).
->And I've been scratching my head trying to figure out a) whether the
->caches are actually disabled b) what causes that segfault, and c) how the
->two are related.
->
->Any feedback it appreciated,
->--Gus
->
->
+    Thank you for reading my questions.
+    I'm porting kernel 2.4.6 to my custom 8240 board without
+open firmware or any BIOS like that. I have questions at "head.S"
+in the /arch/ppc/kernel directory. I cannot go back to running
+unmapped after "MMU_init" and before "load_up_mmu". The
+program is as follwos:
+        DEBUG_OUT(0xAA)
+        lis     r4,2f@h
+        ori     r4,r4,2f@l
+        tophys(r4,r4)
+        li      r3,MSR_KERNEL & ~(MSR_IR|MSR_DR)
+        FIX_SRR1(r3,r5)
+        mtspr   SRR0,r4
+        mtspr   SRR1,r3
+        SYNC
+        RFI
+    2: DEBUG_OUT(0xBB)
+This piece of code is from kernel and not modified at all; I'm
+sure that the address caculation of "2" is correct. But I just
+cannot get 0xBB at my debug port. And, when I disable
+cache-enabling code, then this code can run to DEBUG_OUT(0xBB).
+My cache-enabling code looks like this:
+        mfspr   r3,HID0                 // enable i cache
+        li      r4,0
+        ori     r4,r4,(HID0_ICE|HID0_ICFI)
+        or      r3,r3,r4
+        mtspr   HID0,r3
+        andc    r3,r3,r4
+        ori     r3,r3,HID0_ICE
+        mtspr   HID0,r3
+        sync
+        isync
+        mfspr   r3,HID0                 // enable d cache
+        ori     r3,r3,(HID0_DCE|HID0_DCI)
+        rlwinm  r4,r3,0,22,20
+        sync
+        mtspr   HID0,r3
+        mtspr   HID0,r4
+        sync
+        isync
+Any advices are welcome, thank you !!
+Paul Chu
+Email: paulchu@accusys.com.tw
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
