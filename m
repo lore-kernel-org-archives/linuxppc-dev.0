@@ -1,53 +1,60 @@
-Message-ID: <001b01bff7e1$ab6b4720$640a0a0a@server>
-From: "Paolo Scaffardi" <arsenio@tin.it>
-To: <linuxppc-dev@lists.linuxppc.org>
-Subject: MPC8xx-2.2.13 kernel and Framebuffer support: cannot compile!
-Date: Thu, 27 Jul 2000 17:43:43 +0200
+Message-ID: <39805F0A.5CE376C6@execpc.com>
+Date: Thu, 27 Jul 2000 11:10:50 -0500
+From: Joseph Garcia <jpgarcia@execpc.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+CC: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: powerbook hang from post-sleep cdrom access - fix
+References: <Pine.LNX.4.10.10007271407230.23151-100000@opal.biophys.uni-duesseldorf.de>
+Content-Type: text/plain; charset=iso-2022-jp
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I trying to develop a simple framebuffer driver for my MPC823FADS Video
-analog output, but when i modify the kernel to include the any frame buffer
-device driver, the compilers reports me:
+Michael Schmitz wrote:
+> Aye. Can you be more specific about 'do whatever needs to be done'? Can I
+> just send the disk a read command to wake it up? Send a reset
+> command?? Will a reset command hurt if I always send a drive reset
+> there?
 
-   powerpc-linux-ld -T arch/ppc/vmlinux.lds -Ttext 0xc0000000 -Bstatic
-arch/ppc/kernel/head.o init/Main.o init/version.o \
-        --start-group \
-        arch/ppc/kernel/kernel.o arch/ppc/mm/mm.o arch/ppc/lib/lib.o
-kernel/kernel.o mm/mm.o fs/fs.o ipc/ipc.o \
-        arch/ppc/math-emu/math-emu.o fs/filesystem.a net/network.a
-drivers/block/block.a drivers/char/char.a drivers/misc.misc.a \
-        drivers/net/net.a drivers/machintosh/machintosh.a
-arch/ppc/8xx_io/8xx_io.a drivers/net/net.a\
-        LinuxPPC/mpc8xx-2.2.13/lib/lib.a --end-group -o vmlinux
+My expirience is that just reading the drive causes a problem, much like
+userspace trying to read it.  there is also the door locking feature that I
+suppose could be done explicitly on wakeup if mounted.  I dont know what else a
+"media change" ctl entails, but it seems to do enough to get the cdrom back to
+where it left off.
 
-    init/main.o(.data.init+0x64): undefined reference to 'video_setup'
-    drivers/char/char.a(mem.o): In function 'chr_dev_init':
-    mem.o(.text.init+0x40): undefined reference to 'fbmem_init'
-    mem.o(.text.init+0x40): relocation truncated to fit R_PPC_REL24
-fbmem_init
-    make: *** [vmlinux]  Error 1
+> I'll try that on my Lombard to see if I can save the nasty timeout when
+> the drive was powered off with hdparm -Y ?? That would help fake sleep
+> mode on the Pismo, or did you implement pmu sleep/wakeup there yet?
 
-Why this?
+My wallstreet has the same problem.  it has to reset the whole ide bus to get it
+going again.  rather, i use hdparm -y, which just puts it in standby rather than
+sleep.  When the drive does a normal hardware-timeout sleep, it seems to do
+this, since it doesn't require a reset to wake up.
 
-I enabled the voice "General setup/Support for frame buffer devices" ,
-enabled the voice "Console drivers/Virtual Frame Buffer support" and run
-"make clean; make zImage".
+Last I remember, the result to when it resets the bus so it can wake up from a
+-Y, the flaky 8G (DYLA) drive is set in such a way that it can then wake up
+correctly from -Y. I recall that unmaskirq should be one way for the 8G, but
+upon the reset, its the other way.  my current 6G (from brother's upgraded
+lombard) seems to always time out in my PDQ (at wakeup, using_dma varies,
+unmaskirq is always off).  judging by message log, its another lost interrupt
+problem.  It would make sense.  8G - reset, regains irq, wake normally.  6G -
+reset, still no irq when drive eventually wakes.
 
-Is it needed a patch to fix this? What can i do?
-I cannot use other kernels because of my FADS board (not supported by
-HardHat and similars).
+heres two sequential wakes from -Y sleep with the 6G in my PDQ
 
-Thanx in advance!
+Jul 27 10:48:07 momiji kernel: hda: lost interrupt
+Jul 27 10:48:07 momiji kernel: hda: dma_intr: status=0xd0 { Busy }
+Jul 27 10:48:07 momiji kernel: ide0: reset: success
+Jul 27 10:48:33 momiji kernel: hda: irq timeout: status=0xd0 { Busy }
+Jul 27 10:48:33 momiji kernel: ide0: reset: success
 
-- MAY THE PINGUIN B WITH U -
+sidenote, a powerbook hard drive compatibility grid can be found at
+http://www01.u-page.so-net.ne.jp/ba2/nsxt/faq1E.html
 
-Thanx,
-Paolo Scaffardi
-AIRVENT SAM s.p.a - RIMINI (ITALY)
+--
+Joseph P. Garcia      jpgarcia@execpc.com      jpgarcia@lidar.ssec.wisc.edu
+CS Undergraduate                      Student Employee - Systems Programmer
+University of Wisconsin - Madison                            UW Lidar Group
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
