@@ -1,23 +1,49 @@
-Message-ID: <3900617F.6813D9B3@raleigh.ibm.com>
-Date: Fri, 21 Apr 2000 10:11:11 -0400
-From: Ralph Blach <rcblach@raleigh.ibm.com>
+Message-ID: <390085CD.5A5E39ED@embeddededge.com>
+Date: Fri, 21 Apr 2000 12:46:05 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: ATI Xclaim 3D Plus(ATI Rage LT  pro)
+To: ipv6@263.net
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: whats wrong with ifconfig?
+References: <008601becb11$9b48e1c0$57c809c0@nt4srv87>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am working in a port of linux on the PPC405gp and I would like to put
-in video support in.
+ipv6@263.net wrote:
 
-Does anybody have initialization code for the ATI Rage LT pro to
-initialize the card to 80x25 character mode?
+> my custom 860 board boot ok,
+> but in bash prompt
+> I got these:
+>
+> init-2.00# /sbin/ifconfig eth0 192.9.200.81
+> 192.9.200.81: Resolver Error 0 (no error)
 
-Thanks
+> some thing wrong with my kernel?
 
-Chip
-IBM Microelectronics
+No, it is a combination of configuration files in /etc, the
+libraries and the program.  I wish I knew how to both reproduce and
+fix this error because I have some systems that work and others that
+don't.  I just get lost among the dynamic libraries that are
+supposed to map (or not) depending upon the configuration files.
+
+I suggest visiting the MontaVista ftp site, ftp.mvista.com, tracking
+down the CDK 1.0 for the 8xx and loading those RPMs.  That is a
+consistent set of programs, libraries, and configurations that work.
+
+
+	-- Dan
+
+> or just shell command lines
+>
+> Hope someone can help.
+>
+> thank you
+>
+> Regards.
+> john zhan.
+> hacking time.
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
