@@ -1,36 +1,33 @@
-Date: Thu, 1 Nov 2001 17:57:03 -0700
+Date: Thu, 1 Nov 2001 19:10:23 -0700
 From: Tom Rini <trini@kernel.crashing.org>
 To: Roman Zippel <zippel@linux-m68k.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: APUS irq patch
-Message-ID: <20011101175703.A26802@cpe-24-221-152-185.az.sprintbbd.net>
-References: <Pine.LNX.4.33.0111020007080.8971-100000@serv> <20011101165333.A26680@cpe-24-221-152-185.az.sprintbbd.net> <3BE1E882.6EAE635D@linux-m68k.org>
+Cc: linuxppc-dev@lists.linuxppc.org,
+	linuxppc-commit@source.mvista.com
+Subject: Re: Incoming to hostme.bitkeeper.com:/ua/repos/p/ppc/linuxppc_2_4_devel
+Message-ID: <20011101191023.A26982@cpe-24-221-152-185.az.sprintbbd.net>
+References: <20011101115619.A25864@cpe-24-221-152-185.az.sprintbbd.net> <Pine.LNX.4.33.0111012309400.8554-100000@serv>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3BE1E882.6EAE635D@linux-m68k.org>
+In-Reply-To: <Pine.LNX.4.33.0111012309400.8554-100000@serv>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Nov 02, 2001 at 01:27:46AM +0100, Roman Zippel wrote:
-
-> Tom Rini wrote:
+On Thu, Nov 01, 2001 at 11:22:14PM +0100, Roman Zippel wrote:
+> Hi,
 >
-> > > This patch converts the irq assembly in head.S into C, the only problem is
-> > > that I needed to change a prototype in <linux/irq.h>, as some additional
-> > > info has to be saved/restored during an irq.
-> >
-> > Ack.  Won't this break other things?  I'm assuming other arches use
-> > -end() too..
+> On Thu, 1 Nov 2001, Tom Rini wrote:
 >
-> Quite a lot actually and I don't think it's solvable before 2.5.
-> It's a bit unfortunate that a architecture specific structure is in a
-> general header. post_irq doesn't exist anymore (which had the pt_regs
-> pointer), the only other solution would be to rename hw_interrupt_type
-> and use a private version.
+> > Arg, not my day.  Can you split up the rest of the changes into seperate
+> > patches (01, 02, 0n) and make it vs the _devel tree?  It'll help stop me
+> > from doing things like that. :)
+>
+> Hmm, there isn't much left to split.
+> BTW the second patch depends on the first and only the last patch doesn't
+> apply to the stable tree.
 
-Well, could we accomidate APUS with some PPC-specific changes that don't
-touch generic stuffs?
+Just wondering, but have you tried these changes on a 'fake'
+CONFIG_HIGHMEM setup? (eg set MAX_LOW_MEM to half your real RAM or so..)
 
 --
 Tom Rini (TR1265)
