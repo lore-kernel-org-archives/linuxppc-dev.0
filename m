@@ -1,39 +1,32 @@
-From: Paul Mackerras <paulus@samba.org>
+Date: Thu, 13 Feb 2003 14:19:41 -0600 (CST)
+From: vinai <vroopcha@mcw.edu>
+To: "LinuxPPC Developers' List" <linuxppc-dev@lists.linuxppc.org>
+Subject: vmalloc limits in PPC kernels ?
+Message-ID: <Pine.LNX.4.44.0302131412270.278-100000@kaiso.biophysics.mcw.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15946.57553.943418.884633@argo.ozlabs.ibm.com>
-Date: Thu, 13 Feb 2003 11:03:29 +1100
-To: Cort Dougan <cort@fsmlabs.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [PATCH] vs. latest linuxppc_2_4_devel and linuxppc_2_4 for xmon
-In-Reply-To: <20030212203120.GC12358@host109.fsmlabs.com>
-References: <20030212203120.GC12358@host109.fsmlabs.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Cort Dougan writes:
+Hey Folks,
 
-> Allows printing of pgtables in xmon.  Mighty useful in both trees.
+I've been doing a little work trying to update an in-house custom driver
+for x86.  We acquired fairly large chunks of data, and we can't afford
+to lose any of it. To do this, we reserve a fairly large chunk of memory
+in which the data can be stored, as we can't afford system latencies
+when writing to disk.  We were able to this in 2.2 without any problems,
+but in 2.4, a new "feature" was introduced to x86 that limited how much
+memory one can "vmalloc".  I did a quick check, but didn't find anything
+in the ppc asm directory.  Do we have such a limit ?
 
-Nice idea. :)
+cheers
+vinai
 
-The main problem I have with the patch is that it doesn't check the
-pointers in the page table tree, so if the page tables are corrupted
-then xmon itself will get a DSI.  Yes, if that is the case then your
-system is pretty badly hosed, but it is in those sorts of situations
-that you most need xmon to work.  We should also be using mread() to
-read the pagetables safely.
+"I can't understand people who hate other people based on things like race,
+ religion, or sexual orientation.  When you really do get to know a person,
+ aren't there so many more worthwhile reasons for despising them ?"
 
-The other problem is that it could print thousands or millions of
-lines of output.  It would be nice to be able to specify an address or
-a range of addresses to look up rather than printing them all.
-
-BTW, we have other points where we need to use mread() - for example I
-noticed that the top-level xmon() function calls smp_processor_id(),
-which is current->processor, which will break badly if r2 is bad.
-
-Regards,
-Paul.
+                                        Dennis Miller
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
