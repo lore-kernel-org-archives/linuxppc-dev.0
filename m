@@ -1,66 +1,42 @@
-Message-ID: <40844F11.4060502@lucent.com>
-Date: Mon, 19 Apr 2004 16:13:37 -0600
-From: Mike Wellington <wellington@lucent.com>
+Message-ID: <40845BA6.6010706@buckeye.ece.drexel.edu>
+Date: Mon, 19 Apr 2004 19:07:18 -0400
+From: Sharad Gupta <sharad@buckeye.ece.drexel.edu>
 MIME-Version: 1.0
-To: Peter Ryser <Peter.Ryser@xilinx.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: did you give me the right ml300_edk*.zip link?
-References: <1b6001c417f6$229c2a70$3cc8a8c0@epro.dom> <40842D14.9040708@lucent.com> <40843B02.6080907@xilinx.com> <40843D73.9090500@lucent.com> <40844D11.7080900@xilinx.com>
-In-Reply-To: <40844D11.7080900@xilinx.com>
+To: Jeff Angielski <jangiels@speakeasy.net>
+Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: more SystemACE problems
+References: <407470ED.3030607@buckeye.ece.drexel.edu>	 <6058-40021@sneakemail.com> <407ADCFE.8080302@buckeye.ece.drexel.edu>	 <25757-52278@sneakemail.com>  <407EDCF7.2020009@buckeye.ece.drexel.edu>	 <1082322389.23738.13.camel@localhost.localdomain>	 <4084151A.4050805@buckeye.ece.drexel.edu> <1082399912.8706.11.camel@localhost.localdomain>
+In-Reply-To: <1082399912.8706.11.camel@localhost.localdomain>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-the link that you sent me was to ml300_edk2.zip ,
-how can I download the ml300_edk3.zip ?
-
--mikew
-
-
-
-eter Ryser wrote:
-> Mike,
+Jeff Angielski wrote:
+> On Mon, 2004-04-19 at 14:06, Sharad Gupta wrote:
+> I would suggest instrumenting the code in the driver that actually
+> handles the block request from the kernel.  For instance, is the request
+> being received by the xsa_thread?  Is the driver actually making a
+> request to the device.  And most importantly and where I suspect your
+> problem lies, is the xsa_complete_request() ever getting run?
 >
-> the ml300_edk2.zip design does not have PCI at all. Only the
-> ml300_edk3.zip, i.e. the design to which the link currently points has
-> the pcore that works with Linux.
->
-> - Peter
->
->
-> Mike Wellington wrote:
->
->> Peter - I thought that the edk2 example from the link
->> you gave me was the pcore I was using.  I will start
->> over from scratch and try again.
->>
->> My machine is busy doing some big  downloads/backups
->> so it will be tonite/tomorrow before I can verify
->> and report back.
->>
->>
->>
->>
->>
->> Peter Ryser wrote:
->>
->>> The PCI support that is currently included in the Linux kernel tree
->>> is for the V2PDK based OPB -> PCI bridge. It will not work with the
->>> EDK based OPB -> PCI bridge, i.e. you will find exactly what you see.
->>>
->>> Please download the EDK reference design for ML300 from
->>> http://www.xilinx.com/ise/embedded/edk_examples.htm (design #6). The
->>> design contains the V2PDK based bridge (including the pcore therefor)
->>> and, thus, the Linux kernel will work fine with that design.
->>>
->>> We are currently working on moving to the EDK based bridge and the
->>> Linux kernel tree will be patched once this work is completed.
->>>
->>> - Peter
->>>
->>>
->>
+> Jeff Angielski
+> The PTR Group
 
+Hi Jeff,
+
+Thanks very much for your help. I have enabled the interrupts for
+SystemACE now. And in fact xsa_complete_request() was never called. I
+fixed that in xsa_thread.
+
+I was wondering if you could send in your modifications to the
+xilinx_systemace/* files so that I can know better where else the
+potential problems may lie.
+
+Do I need to have a device entry for xsystemacea (0/1) in my /dev
+directory ? If yes, then what should it be like ?
+
+Thanks
+Sharad.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
