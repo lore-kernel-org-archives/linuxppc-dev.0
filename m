@@ -1,55 +1,59 @@
-Message-ID: <3BDDE9F9.5060902@mvista.com>
-Date: Mon, 29 Oct 2001 15:44:57 -0800
-From: Matthew Locke <mlocke@mvista.com>
-MIME-Version: 1.0
-To: Hans Johnson <hjohnson@sfu.ca>
+Message-Id: <5.1.0.14.0.20011030095652.02d84ec0@pop.gmx.de>
+Date: Tue, 30 Oct 2001 10:00:44 +0800
+To: Jean-Denis Boyer <jdboyer@mediatrix.com>
+From: Michael Habermann <MHabermann@gmx.de>
+Subject: RE: Reducing glibc with mklibs.sh
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Linux on an NCD X Terminal?
-References: <C9448467-CCC3-11D5-9A1D-0030655A0600@sfu.ca>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <F1BED55F35F4D3118C0F00E0295CFF4D414C7E@mail.mediatrix.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hans Johnson wrote:
+At 05:36 PM 10/29/2001 -0500, Jean-Denis Boyer wrote:
+>In your script:
+> > cp *.map ../lib/
+>might be bad, because the makefile of glibc produces libm.map,
+>while mklibs.sh looks for libm_pic.map (the name differs).
 
- >
- > Hi Folks,
- >
- > Just wondering if anyone has attempted a port of PPC Linux to the NCD
-EXplora X Terminals? I just picked one up cheap ($10) and upon opening
- > it up, discovered that it seems to be constructed out of essentially
- > standard components.
- >
- > it has a PPC 403GCX CPU, an S3 Trio64 video chipset, an AMD PCNet fast
- > ethernet chipset, and a National Semiconductor I/O controller.  I'm not
- > sure what it has for a PCMCIA controller, but it does have a slot.
- >
- > Anyway, just curious if has attempted this before. I think this could be
- > a really neat little box, if it had an operating system. :)
- >
+Sorry for having posted this buggy script. Here's the correct one:
+---
+CC=powerpc-linux-gcc \
+AR=powerpc-linux-ar \
+RANLIB=powerpc-linux-ranlib \
+CFLAGS="-Os -DNDEBUG" \
+./configure \
+--enable-kernel=2.4.4 \
+--disable-profile \
+--host=powerpc-linux \
+--enable-add-ons=linuxthreads \
+--with-headers=/usr/local/powerpc-linux/include \
+--prefix=
 
-I happen to have one on my desk:)  I have not tried to boot linux on it
-yet.  The 403 code is in the latest _devel kernel
+make
+make install_root=/usr/local/powerpc-linux install
 
- > > EXplora X Terminals? I just picked one up cheap ($10) and upon
- > opening it up, discovered that it seems to be constructed out of
- > essentially standard components.
- >
- > it has a PPC 403GCX CPU, an S3 Trio64 video chipset, an AMD PCNet
- > fast ethernet chipset, and a National Semiconductor I/O controller.
- >   I'm not sure what it has for a PCMCIA controller, but it does
- > have a slot.
- >
- > Anyway, just curious if has attempted this before. I think this
- > could be a really neat little box, if it had an operating system. :)
- >
+#Prepare the lib directory for reducing the standard library size with
+#mklibs.shcp
+#copy pic files to ../lib/
+cp `find -name "*_pic.a"` ../lib/
 
-I happen to have one on my desk:)  I have not tried to boot linux on it
-yet.  The 403 code is in the latest _devel kernel.  It *should* work but
-I haven't tested it lately.  Let me know if it works.
+#rename *.map file to ../lib/*_pic.map
+for i  in *.map; do
+     cp $i ../lib/${i%%.map}_pic.map
+done
 
-btw, the PCMCIA seems to be a custom pld.
+#libc requires special handling
+mkdir ../lib/libc_pic
+cp elf/interp.os ../lib/libc_pic/interp.o
+cp elf/soinit.os ../lib/libc_pic/soinit.o
+cp elf/sofini.os ../lib/libc_pic/sofini.o
+
+#libm doesn't work
+rm -f ../lib/libc.map
+rm -f ../lib/libc_pic.a
+---
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
