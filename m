@@ -1,13 +1,31 @@
-Message-ID: <DB0585C9F6F9D411BE8F00D0B7896A4CC0601D@SNCMAIL>
+Message-ID: <DB0585C9F6F9D411BE8F00D0B7896A4CC0601E@SNCMAIL>
 From: James Don <JDon@spacebridge.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: SELF: compile of util-linux
-Date: Thu, 9 Jan 2003 20:35:49 -0500 
+To: James Don <JDon@spacebridge.com>,
+	"'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: SELF: compile of util-linux
+Date: Thu, 9 Jan 2003 20:43:52 -0500 
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
+
+Scratch question 2 ...
+I thin the answer is that "patch" basically buts in the files necessary to
+build a cross compiled version of "util-linux" .... after I patch I think
+this will mean that the SED command will find some matches ...
+
+I didn't need the "patch part" to build busy box (0.60.5) when I tried ...
+so I thought I could skip it ...
+
+I think anyways,
+Jim
+
+-----Original Message-----
+From: James Don
+Sent: Thursday, January 09, 2003 8:36 PM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: SELF: compile of util-linux
 
 Hi,
 
