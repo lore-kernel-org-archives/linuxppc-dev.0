@@ -1,39 +1,30 @@
-Message-ID: <3E631078.7040000@devcom.cz>
-Date: Mon, 03 Mar 2003 09:21:12 +0100
-From: Jan Damborsky <jan.damborsky@devcom.cz>
-MIME-Version: 1.0
-To: g.ramakrishna@exgate.tek.com
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: X windows for Linux PPC embedded
-References: <301A812E6528D511A8F70008C71E578601D3402A@AP-BANG-M02>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Re: porting oprofile to ppc
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Albert Cahalan <albert@users.sourceforge.net>
+Cc: Segher Boessenkool <segher@koffie.nl>,
+	oprofile-list@lists.sourceforge.net, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <1046679297.1090.405.camel@cube>
+References: <1046474835.1090.303.camel@cube>  <3E62B4C4.6030306@koffie.nl>
+	 <1046679297.1090.405.camel@cube>
+Content-Type: text/plain
+Message-Id: <1046680119.2019.112.camel@zion.wanadoo.fr>
+Mime-Version: 1.0
+Date: 03 Mar 2003 09:28:39 +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-g.ramakrishna@exgate.tek.com wrote:
+On Mon, 2003-03-03 at 09:14, Albert Cahalan wrote:
 
->>>>I would like to ask, if there is some project
->>>>for porting X windows system to Embedded
->>>>PPC Linux. I use board with MPC823E with
->>>>VGA TFT display+touch screen, 32MB RWM,
->>>>4MB FLASH, Ethernet, serial RS232,....
->>>>I would like to use it as remote graphic terminal
->>>>communicating via Ethernet by means of X protocol.
->>>>Does somebody know how to make it work ?
->>>>
->>>>
->>>>
->>>>
->>>There is nothing much to port.  Few months back I had cross-compiled TinyX
->>>successfully for a MPC860 board on x86 platform.
->>>Except the proprietary touch screen interface(we added this ourself),
->>>everything else worked fine on the target framebuffer device.  But I
->>>
->>>
-Could you send me please appropriate link to TinyX source tree
-you successfully used for building working X ?
-       Thank you, HANYS
+> > You are talking about the time base?  It runs at 1/4th
+> > the cpu clock.  It can be disabled by means of a hardware
+> > pin (GPIO9 on most Mac's); default is running and that's
+> > just what you want, I think ;)
+>
+> Yes. I wonder where I got the 1/16 idea.
 
+Isn't it the bus clock rather ?
+
+Ben.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
