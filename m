@@ -1,48 +1,73 @@
-Message-ID: <3B49BCDD.CD4632B7@raleigh.ibm.com>
-Date: Mon, 09 Jul 2001 10:17:01 -0400
-From: Ralph Blach <rcblach@raleigh.ibm.com>
+Message-ID: <3B49C726.7307F80F@esd-electronics.com>
+Date: Mon, 09 Jul 2001 17:00:54 +0200
+From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
 MIME-Version: 1.0
-To: Embedded Linux list <linuxppc-embedded@lists.linuxppc.org>
-Subject: How do I get the latest files off of bit keeper
-Content-Type: multipart/mixed;
- boundary="------------E770220037419717B58CFCAD"
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: gdb with 405 target
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------E770220037419717B58CFCAD
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Hi,
 
-How do I get the latest tree of off bitkeeper to so that I can review
-and build the source tree?
+I got the following problem when I try to debug a sample program on one
+of our IBM405 targets.
+I read some earlier postings in this list that describe similar
+problems.
 
-Thanks
+So my question: Is this problem already fixed ? Where can I find a fix ?
 
-Chip
---------------E770220037419717B58CFCAD
-Content-Type: text/x-vcard; charset=us-ascii;
- name="rcblach.vcf"
-Content-Transfer-Encoding: 7bit
-Content-Description: Card for Ralph Blach
-Content-Disposition: attachment;
- filename="rcblach.vcf"
+The kernel is build from the MontaVista 405 sources from beginning of
+march.
 
-begin:vcard
-n:Blach;Ralph
-tel;work:919-543-1207
-x-mozilla-html:TRUE
-url:www.ibm.com
-org:IBM MicroElectronics
-adr:;;3039 Cornwallis		;RTP;NC;27709;USA
-version:2.1
-email;internet:rcblach@raleigh.ibm.com
-x-mozilla-cpt:;15936
-fn:Ralph Blach
-end:vcard
+sh-2.03# gdb /bin/demo
+GNU gdb 5.0
+Copyright 2000 Free Software Foundation, Inc.
+GDB is free software, covered by the GNU General Public License, and you
+are
+welcome to change it and/or distribute copies of it under certain
+conditions.
+Type "show copying" to see the conditions.
+There is absolutely no warranty for GDB.  Type "show warranty" for
+details.
+This GDB was configured as "powerpc-hardhat-linux"...
+(gdb) run
+Starting program: /bin/demo
 
---------------E770220037419717B58CFCAD--
+Program terminated with signal SIGTRAP, Trace/breakpoint trap.
+The program no longer exists.
+(gdb)
 
+Oops: Exception in kernel mode, sig: 5
+NIP: C0002D70 XER: 00000000 LR: C00028BC SP: C0997E80 REGS: c0997dd0
+TRAP: 2000
+MSR: 00009230 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c0996000[33] 'demo' Last syscall: 6
+last math 00000000 last altivec 00000000
+GPR00: 00000001 C0997E80 C0996000 C0997E90 30002BC0 30000828 30000828
+00000000
+GPR08: 300275C8 00000000 00000003 30026FF8 30026DC8 100A11E4 1009FDB0
+00000000
+GPR16: 00000000 00000000 00000000 1004CA70 00009230 00997E80 00000000
+C00028BC
+GPR24: C0002D70 10000034 00000000 30026B54 00000000 30026B88 300262C0
+7FFFFA50
+Call backtrace:
+C00028BC 30004704 3000DEE0 30003204 30003144 30010C8C
+
+
+Thanks for advice
+Matthias
+--
+-------------------------------------------------
+\ Matthias Fuchs                                 \
+ \ esd electronic system design Gmbh              \
+  \ Vahrenwalder Straﬂe 205                        \
+   \ D-30165 Hannover                               \
+    \ email: matthias.fuchs@esd-electronics.com      \
+     \ phone: +49-511-37298-0                         \
+      \ fax:   +49-511-37298-68                        \
+       --------------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
