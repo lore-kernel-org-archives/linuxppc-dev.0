@@ -1,46 +1,33 @@
-Date: Thu, 24 Jan 2002 17:54:29 +0000
-From: Adrian Cox <adrian@humboldt.co.uk>
-To: paulus@samba.org
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: OpenPIC_NumInitSenses
-Message-Id: <20020124175429.32e84f7c.adrian@humboldt.co.uk>
-In-Reply-To: <15439.64102.68217.293733@argo.ozlabs.ibm.com>
-References: <15439.64102.68217.293733@argo.ozlabs.ibm.com>
+Date: Thu, 24 Jan 2002 11:03:13 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: hollis@austin.ibm.com
+Cc: linuxppc-dev@lists.linuxppc.org, sdi@remote.org,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: RFC: vesafb
+Message-ID: <20020124180313.GB1839@cpe-24-221-152-185.az.sprintbbd.net>
+References: <20020123192010.GP510@austin.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20020123192010.GP510@austin.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 24 Jan 2002 23:13:26 +1100 (EST)
-Paul Mackerras <paulus@samba.org> wrote:
+On Wed, Jan 23, 2002 at 01:20:10PM -0600, hollis@austin.ibm.com wrote:
 
-> Who was it that wanted this horrible hack in open_pic.c?
+> The attached patch allows vesafb to work on PPC. vesafb does surprisingly
+> little with the BIOS (which I thought was the whole point of VESA). With some
+> ifdef's I'm able to use it as sort of a VGA offb -- the firmware initializes
+> the card, and the driver just uses it and never mucks with it.
 
-I've been using it to deal with the DMA interrupts on the MPC107.
-
-> 	/* Needed because of the way we overload EPIC on a standard
-> 	 * Open PIC structure.
-> 	 */
-> 	if (OpenPIC_NumInitSenses > NumSources)
-> 		NumSources = OpenPIC_NumInitSenses;
-> [...]
-
-> 	openpic_set_sources(0, 16, NULL);
-> 	openpic_set_sources(16, 16, ioremap(isr_base, 16 * 32));
->
-> (Actually maybe I should let openpic_set_sources do the ioremap.)
->
-> Comments?
-
-Looks like a lot less of a hack than the current system. I'll have to
-renumber the DMA interrupts, but that's trivial work. I'm happy with
-doing the ioremap in my own platform code, and it provides flexibility
-for boards which have already mapped their openpic registers with
-io_block_mapping().
+This looks good to me.  My only comment is you should probably use
+CONFIG_MTRR around the mtrr bits instead of __i386__ (which is what
+other drivers do).  Geert, since you're still overall fb maintainer
+(yes?) would you be willing to sign off on these changes to be sent to
+Marcelo for 2.4.19-pre1?
 
 --
-Adrian Cox
-http://www.humboldt.co.uk/
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
