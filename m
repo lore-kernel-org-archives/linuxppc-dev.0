@@ -1,54 +1,43 @@
-Message-ID: <3C91DF80.4040904@pacbell.net>
-Date: Fri, 15 Mar 2002 11:48:16 +0000
-From: Armin <akuster@pacbell.net>
-MIME-Version: 1.0
-To: andrew may <acmay@acmay.homeip.net>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [PATCH] another for ibm_ocp_enet
-References: <20020314222859.A24861@ecam.san.rr.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Message-Id: <200203151349.OAA21194@scully.gams.co.at>
+To: "David Marqvar (DAM)" <DAM@tt.dk>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Transfer files via terminal (Zmodem) 
+In-reply-to: Your message of "Thu, 14 Mar 2002 14:09:47 +0100."
+             <E8F83D6D2A6AD3118E0300902786A2050237142D@NTEX>
+Reply-To: mike@gams.at
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Fri, 15 Mar 2002 14:49:37 +0100
+From: Mike Neuhauser <mike@gams.at>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-andrew may wrote:
-> This patch includes the last patch that I sent before the
-> directory move, plus some more stuff.
->
-> 1. Fix merge error with MAX_NUM_PHYS in find phy loop.
-> (the for loop condition should match the if check)
->
-> 2. Fix bad Partner Link check for the added Phy.
->
-> 3. added mal.sh to generate a new ibm_ocp_mal.c
-> 	mal.sh  DCRN_MAL_BASE >ibm_ocp_mal.c
-> or	mal.sh  DCRN_MAL_BASE DCRN_MAL1_BASE >ibm_ocp_mal.c
-> will work. It seems that the second on generates a smaller
-> object file even though the code is bigger for the 405GP.
-> I would think it is because MAL1 is 0.
-> This condenses all the get/set mal calls into one for get
-> and one for set. I also changed mal_num to mal, just to help
-> me find/change things.
+In message <E8F83D6D2A6AD3118E0300902786A2050237142D@NTEX>, "David Marqvar (DAM
+)" writes:
 
-The script idea is cool.
+> > > Has anyone compiled sz/rz for ppc (MPC823) in order to use ZModem to
+> > > transfer files via terminal connection to the target?
+> > > Or, is the some other way of transferring files to my embedded system.
+> > > I'm connected to it using a terminal (minicom, kermit). No network.
+> > ppcboot supports kermit.
+> > most of us just use srecords over a plain ascii connection.
+>
+> I want to do it directly within Linux after boot.
+> (I'm currently running Busybox).
+> I'm looking for a small Linux-util to reviece files from the serial line.
 
-The mal_num is more descriptive to me so give me a better argument
+Try http://www.ohse.de/uwe/software/lrzsz.html, it's GPL, it works for me
+(together with minicom).
 
->
-> I think this is a better approach than what was in the _mal.c,
-> but I didn't change the makefile to generate the code on the
-> fly yet.
->
-> 4. Added skb_res as a module param and config.in option.
->
-> 5. Created rx_clean/fill functions to remove duplicate code
-> in open and the 2 rx interrupts.
->
-> 6. Handle dev_alloc failures better by retrying to alloc before
-> the rxde interrupt.
->
+Regards,
+Mike
 
-armin
+--
+Dr. Michael Neuhauser             Phone: +43(1)205-255/201
+maxxio technologies               Fax:   +43(1)205-255/900
+Prinz Eugen-Strasse 8             Email: michael.neuhauser@maxxio.com
+A-1040 Vienna/Austria/Europe
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
