@@ -1,26 +1,25 @@
-Date: Fri, 15 Jan 1999 12:28:17 -0700 (MST)
-From: Cort Dougan <cort@persephone.cs.nmt.edu>
-To: Alan Cox <alan@cymru.net>
-cc: Paul.Mackerras@cs.anu.edu.au, jskov@cygnus.co.uk,
-        linuxppc-dev@lists.linuxppc.org, Jes.Sorensen@cern.ch,
-        linux-apus@sunsite.auc.dk
-Subject: Re: Synchronization [was Re: The Magic Show: kernel_map() disappearing]
-In-Reply-To: <199901151610.QAA16497@snowcrash.cymru.net>
-Message-ID: <Pine.LNX.3.96.990115122713.10155A-100000@persephone.cs.nmt.edu>
+Date: Fri, 15 Jan 1999 14:30:20 -0500 (EST)
+From: satadru pramanik <satadru@umich.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: 2.1.24 header files
+Message-ID: <Pine.LNX.4.05.9901151429290.29682-100000@beer.pub.umich.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Then my paranoid use of sync can go away, and we can stick with eieio as
-long as we have the "memory" marked changed in the linline asm.  Sound
-good to everyone?
+Is ther a rpm to replace these header files with those from the 2.2.0-pre
+distributions?  or is this too tightly ties to glibc2?
 
-}	rmb()	Do not re-order reads across this point (CPU or compiler)
-}	wmb() 	Do not re-order writes across this point (CPU or compiler)
-}	mb()	Do not re-order reads or write across this point
 
+----
+satadru pramanik `satadru@umich.edu'
+"Put your hand on a hot stove for a minute, and it seems like an hour. Sit
+with a pretty girl for an hour, and it seems like a minute. THAT'S
+relativity." 
+-Albert Einstein
+---
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
