@@ -1,98 +1,68 @@
-Date: Thu, 11 Apr 2002 14:26:41 -0700 (PDT)
-From: John Tyner <jtyner@cs.ucr.edu>
-To: Armin <akuster@pacbell.net>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: [PATCH] early serial init
-In-Reply-To: <3CB59BBD.8060307@pacbell.net>
-Message-ID: <Pine.LNX.4.30.0204111424410.10803-100000@hill.cs.ucr.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: tlbwe, rfci instructions and gcc cross assembler
+Date: Thu, 11 Apr 2002 16:53:18 -0500
+Message-ID: <45B36A38D959B44CB032DA427A6E10640167CFAE@cceexc18.americas.cpqcorp.net>
+From: "Cameron, Steve" <Steve.Cameron@COMPAQ.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I remember seeing something awhile ago about early boots, but I didn't
-think it was for Walnut. Where is it/would it be?
+I wrote about trouble compiling linuxppc_2_4
+kernel on i686->powerpc cross compiler:
+[...]
+> /usr/local/ppc/bin/powerpc-linux-gcc -D__ASSEMBLY__
+> -D__KERNEL__ -I/home/scameron/ppc/testdir/include   -c -o
+> head_4xx.o head_4xx.S
+> head_4xx.S: Assembler messages:
+> head_4xx.S:111: Error: Unrecognized opcode: `tlbwe'
+> head_4xx.S:112: Error: Unrecognized opcode: `tlbwe'
+> head_4xx.S:420: Error: Unrecognized opcode: `rfci'
+> make[1]: *** [head_4xx.o] Error 1
+> make[1]: Leaving directory
 
-On Thu, 11 Apr 2002, Armin wrote:
+I have a bit more info.  Looking through my binutils
+(v. 2.12.90.0.4) I see some references to "tlbwe" so
+I would think my binutils is recent enough...but
+perhaps still broken?
 
-> John Tyner wrote:
-> > Here is a patch to setup the serial ports early. It works fine on our
-> > walnut boards.
-> >
-> > --- arch/ppc/platforms/walnut.c.orig	Thu Apr 11 12:55:55 2002
-> > +++ arch/ppc/platforms/walnut.c	Thu Apr 11 12:58:35 2002
-> > @@ -31,6 +31,7 @@
-> >  #include <linux/blk.h>
-> >  #include <linux/pci.h>
-> >  #include <linux/rtc.h>
-> > +#include <linux/serial.h>
-> >
-> >  #include <asm/system.h>
-> >  #include <asm/pci-bridge.h>
-> > @@ -247,6 +248,11 @@
-> >  void __init
-> >  board_init(void)
-> >  {
-> > +	struct serial_struct serial_req;
-> > +	bd_t *bip = (bd_t *) __res;
-> > +	u32 chrcr;
-> > +	int div;
-> > +	ulong bb;
-> >  #ifdef CONFIG_PPC_RTC
-> >  	ppc_md.time_init = todc_time_init;
-> >  	ppc_md.set_rtc_time = todc_set_rtc_time;
-> > @@ -254,4 +260,40 @@
-> >  	ppc_md.nvram_read_val = todc_direct_read_val;
-> >  	ppc_md.nvram_write_val = todc_direct_write_val;
-> >  #endif
-> > +	chrcr = mfdcr(DCRN_CHCR0);
-> > +	div = ((chrcr&0x3e)>>1)+1;
-> > +	div *= 16;
-> > +	bb = bip->bi_intfreq/div;
-> > +
-> > +	if( !(chrcr & CHR0_U0EC) ){
-> > +		memset(&serial_req, 0, sizeof(serial_req));
-> > +		serial_req.line       = 0;
-> > +		serial_req.baud_base  = bb;
-> > +		serial_req.port       = 0;
-> > +		serial_req.irq        = UART0_INT;
-> > +		serial_req.flags      = ASYNC_BOOT_AUTOCONF | ASYNC_SKIP_TEST;
-> > +		serial_req.io_type    = SERIAL_IO_MEM;
-> > +		serial_req.iomem_base = (u8 *)UART0_IO_BASE;
-> > +		serial_req.iomem_reg_shift = 0;
-> > +
-> > +		if (early_serial_setup(&serial_req) != 0) {
-> > +			printk("Early serial init of port 0 failed\n");
-> > +		}
-> > +	}
-> > +
-> > +	if( !(chrcr & CHR0_U1EC) ){
-> > +		memset(&serial_req, 0, sizeof(serial_req));
-> > +		serial_req.line       = 1;
-> > +		serial_req.baud_base  = bb;
-> > +		serial_req.port       = 1;
-> > +		serial_req.irq        = UART1_INT;
-> > +		serial_req.flags      = ASYNC_BOOT_AUTOCONF | ASYNC_SKIP_TEST;
-> > +		serial_req.io_type    = SERIAL_IO_MEM;
-> > +		serial_req.iomem_base = (u8 *)UART1_IO_BASE;
-> > +		serial_req.iomem_reg_shift = 0;
-> > +
-> > +		if (early_serial_setup(&serial_req) != 0) {
-> > +			printk("Early serial init of port 1 failed\n");
-> > +		}
-> > +	}
-> >  }
-> >
-> >
-> >
-> >
-> >
->
-> I thought we all ready had an early boot for walnut?
->
-> armin
->
+So thinking maybe I wasn't running the assembler
+I thought I was running, I did this:
 
+cd /home/scameron/ppc/testdir/arch/ppc/kernel
+strace /usr/local/ppc/bin/powerpc-linux-gcc -D__ASSEMBLY__ -D__KERNEL__ -I/home/scameron/ppc/testdir/include   -c -o head_4xx.o head_4xx.S
+[...]
+access("/usr/local/ppc/powerpc-linux/bin/as", X_OK) = 0
+vfork()                                 = 16198
+wait4(-1, head_4xx.S: Assembler messages:
+head_4xx.S:111: Error: Unrecognized opcode: `tlbwe'
+head_4xx.S:112: Error: Unrecognized opcode: `tlbwe'
+head_4xx.S:420: Error: Unrecognized opcode: `rfci'
+[WIFEXITED(s) && WEXITSTATUS(s) == 1], 0, NULL) = 16198
+--- SIGCHLD (Child exited) ---
+stat64("head_4xx.o", 0xbffff780)        = -1 ENOENT (No such file or directory)
+stat64("/tmp/cc7egQ8n.s", {st_mode=S_IFREG|0600, st_size=49044, ...}) = 0
+unlink("/tmp/cc7egQ8n.s")               = 0
+_exit(1)                                = ?
+
+So, I'm running /usr/local/ppc/powerpc-linux/bin/as
+for my assembler, which seems right.  Let me try:
+
+strings /usr/local/ppc/powerpc-linux/bin/as | grep tlbwe
+tlbwe
+tlbwelo
+tlbwehi
+
+So...looks like my assembler has at least _some_ kind
+of knowledge of the tlbwe instruction.  Looking through
+my binutils source, I see the "tlbwe" instruction in
+a big table along with other instructions in
+opcodes/ppc-opc.c
+
+Hmmm, running out of ideas here.
+
+-- steve
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
