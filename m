@@ -1,34 +1,54 @@
-To: Richard Danter <richard.danter@windriver.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 750/107 CHRP question 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 31 Jul 2003 22:41:01 BST."
-             <3F298CED.8010701@windriver.com>
-Date: Fri, 01 Aug 2003 01:32:25 +0200
-Message-Id: <20030731233230.59FBCC602D@atlas.denx.de>
+Message-ID: <3F29ED34.5080304@kegel.com>
+Date: Thu, 31 Jul 2003 21:31:48 -0700
+From: Dan Kegel <dank@kegel.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: crosstool-0.16: ppc405 working in glibc-2.3.2 now
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3F298CED.8010701@windriver.com> you wrote:
->
-> Yes, I work for WRS, but this is a little personal project just for the
-> hell of it. I just happen to be using a WRS board and vICE to do the
-> debugging.
+crosstool is a set of scripts for building and testing cross-compilers
+based on gcc/glibc/linux.
 
-Did you try what happens when you disconnect the visionIce?
-Are you 100% sure it understands virtual addresses correctly?
+A new release is ready, and can be downloaded from
+      http://kegel.com/crosstool
 
-Best regards,
+The big change with this release is that it builds glibc-2.3.2
+properly on ppc405, thanks to a patch from Daniel Jacobowitz.
+You can see the regression test summaries at
+      http://www.kegel.com/crosstool/current/summaries/
 
-Wolfgang Denk
+Changelog:
+
+0.16 21 July 2003 "Shaking out glibc-2.3.2 a bit"
+
+      glibc-2.3.2-patches/glibc-2.3.2-without-fp.patch, straight from Daniel
+      Jacobowitz, fixes the --without-fp option of glibc-2.3.2, needed for ppc405.
+
+      glibc-2.3.2-patches/glibc-2.3.2-cross.patch, from cvs, avoids a glaring build failure.
+
+      gcc-3.3-patches/sh-pic-set_fpscr.patch is a partial fix for problems
+      building gcc-3.3/glibc-2.3.2 for sh4.  Work in progress.
+
+      gcc3.3-glibc2.3.2.dat now refers to binutils-2.14.90.0.5 in hopes
+      that fixes problems on sh4 (or at least makes it easier for Kaz to
+      play with)
+
+      My gcc-*-patches directories are a bit out of sync; if you run
+      into a problem, it could be the patch you need hasn't been copied
+      or symlinked into your version of gcc's patches directory yet.
+
+      Note that wget on Red Hat 9 is rumored to not be able to fetch from
+      gnu.org.  Workaround - use vanilla wget, or perhaps add the flag to use
+      passive mode.
+
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-And now remains  That we find out the cause of this effect, Or rather
-say, the cause of this defect...           -- Hamlet, Act II, Scene 2
+Dan Kegel
+http://www.kegel.com
+http://counter.li.org/cgi-bin/runscript/display-person.cgi?user=78045
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
