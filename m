@@ -1,92 +1,69 @@
-Date: Sun, 21 Feb 1999 16:05:23 +0100
-To: Paul.Mackerras@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Strange PPC things (was: 601 vs head.S)
-Message-Id: <19990221160523.008759@smtp.calvacom.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <36D03ACA.F8626298@phx.mcd.mot.com>
+Date: Sun, 21 Feb 1999 09:56:43 -0700
+From: Johnnie Peters <jpeters@phx.mcd.mot.com>
+MIME-Version: 1.0
+To: Gabriel Paubert <paubert@iram.es>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, linuxppc-dev@lists.linuxppc.org,
+        cort@cs.nmt.edu
+Subject: Re: Interrupt routing in prep_pci.c
+References: <Pine.HPP.3.96.990211100221.5352B-100000@gra-ux1.iram.es>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, Feb 21, 1999, Paul Mackerras <paulus@cs.anu.edu.au> wrote:
+Hi Gabriel
 
->Found it... had to take out the 2 nop's in hash_page this time.  Vger
->(cvs) and samba (rsync) have the fix, if you want a precompiled
->kernel, try ftp://ftp.linuxppc.org/linuxppc/kernel/powermac/test/vmlinux.
+I would like to try your stuff out but I have not been able to get to your site.  Do
+you have it anywhere else I can retrieve it from?
 
-Is this the problem you already mentioned here about some 601 needing a
-special alignement for the rfi instruction ? This issue will certainly
-arise again when porting to NuBus machines... Is there any way, via
-eventually some assembler directives, to align it all the time the way it
-should be or is the problem more tricky ? We could have kind of "fix 601"
-option for the kernel like there is for some bogus x86.
+I tried a version of it a while back and it did not seem to compile with the standard
+R4 compiler.  At that time I tried to compile and use the latest egcs and binutils
+stuff and it seemed to work for the kernel but when I tried compiling user level
+stuff it gave me several problems.  I have asked several people on the net and have
+not got a good answer as to what compiler I should be using with R4.  Can you tell me
+the combination you are using?
 
-Actually, you wrote:
+Thanks for your time,
 
-<<<<
-Sync and isync turn out to be needed on some revs of some chips
-(particularly the 601) around rfi and mtmsr instructions.
+Johnnie
 
-(In fact the 601 seems to have another weird bug - in the hash_page
-routine in head.S, the location of the rfi instruction w.r.t. cache
-lines appears to be critical on the 601; if it's wrong, you get a
-machine check on the rfi instruction.  At one stage I found that with
-2, 3, 6, or 7 nops added, it would work; with 0, 1, 4 or 5 nops added
-it wouldn't. :-)
->>>>
 
-I prefer making BootX bootstrap rock solid, so I'll put back a couple of
-syncs. Do I need both sync and isync ?
+Gabriel Paubert wrote:
 
-Also, did you experiment show you that this rfi had to be aligned in this
-specific case (exception ?) or is it a generic problem with rfi ? I do
-have one rfi in the new BootX bootloader, so I'm wondering...
-
-I have one other "strange" things about the PPC, I'll dump it now:
-
-Apple's implementation of CompareAndSwap is using both sync and isync, I
-don't know why exactly. It does some other "interesting" things so I'm
-wondering if there could be so;e problems with the reservation too. If
-you want to look at it, use macsbug and do an "ilp CompareAndSwap". On my
-PowerBook, I have approximately:
-
-(on entry, r5=ptr to value, r3=old value, r4=new value)
-
- clrlwi.r6,r5,1e
- beq    do_compare_and_swap
- b      some_other_piece_of_code
-do_compare_and_swap: 
- lwarx  r6,0,r5
- cmpw   r6,r3
- bne    failed
- sync
- stwcx. r4,0,r5
- bne-   do_compare_and_swap
- sync
- isync
- li     r3,1
- blr
-failed:
- sync
- stwcx. r6,0,r5
- li     r3,0
- blr
-
-Note that this changed with versions of Apple's lib, and I don't know for
-sure why it's doing the second stwcx. (looks like it's trying to put back
-the previously read value. I beleive they do that to get rid of the
-reservation when leaving the function. The early version of the
-DriverServicesLib did something much more simple, but still with the sync.
-
-Note also that if the value to CompareAndSwap is not strictly aligned on
-a cache line boundary, they jump to some other piece of code I've not
-traced yet, looks like there is a potential issue here too. We don't have
-any of those things in linux implementation of atomic operations.
-
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+> On Wed, 10 Feb 1999, Jeremy Fitzhardinge wrote:
+>
+> >
+> > Hi Cort/all,
+> >
+> > I'm trying to work out what kernel/prep_pci.c is doing with interrupt routing.
+> > I'm looking at the stuff in the standard 2.2 kernel, so perhaps there's a better
+> > place for me to look.
+> >
+> > Firstly, in route_pci_interrupts it does an inb(0x800) to get something to
+> > determine the interrupt architecture of the board.  What is this value, and
+> > where does it come from?
+>
+> It's a value which give sthe board type on rather old IBM/Motorola boards.
+>
+> > Rather than having hard-coded tables, can't the interrupt routing be determined
+> > from either firmware or the interrupt controller itself?  The comment at the
+> > top of the file is that this will go away soon.  What are you planning to
+> > replace it?
+>
+> Indeed, that's what I do from residual data on PreP machines and it seems
+> to work on several kinds of boards. You'll find it embedded somewhere
+> in the patch file at:
+>
+>         ftp://vcorr1.iram.es/pub/linux-2.2/mvm2600.generic-patch-2.2.1
+>
+> > Background: I'm porting LinuxPPC to a Yellowknife-like board running Open
+> > Firmware.  It works well except that the drivers can't find their interrupts.
+>
+> Note that this patch includes a new bootloader for PreP machines, I'd like
+> to extend it to support OF too but don't have te time right now.
+>
+>         Gabriel.
 
 
 
