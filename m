@@ -1,37 +1,38 @@
-Message-ID: <20020625134347.87851.qmail@web21307.mail.yahoo.com>
-Date: Tue, 25 Jun 2002 15:43:47 +0200 (CEST)
-From: =?iso-8859-1?q?pepe=20potamo?= <termitaaa@yahoo.es>
-Subject: Re: cramfs for root filesystem? 
-To: termitaaa@yahoo.com
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <20020625123534.97ECE10340@denx.denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: cramfs for root filesystem?
+Date: Tue, 25 Jun 2002 08:46:54 -0500
+Message-ID: <45B36A38D959B44CB032DA427A6E10640167CFE8@cceexc18.americas.cpqcorp.net>
+From: "Cameron, Steve" <Steve.Cameron@hp.com>
+To: "Steven Hein" <ssh@sgi.com>, "David Blythe" <blythe@broadon.com>
+Cc: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-good morning, i made a little patch of ide driver to
-eject the card without do an cardctl eject. works
-fine, and status error and driver not ready for
-command message errors dissapear, irq is free
-perfectly and all inode and buffers information is
-removed.
+Steven Hein [mailto:ssh@sgi.com] wrote:
 
-Also, i made a patch for mtd with and interlaced of 4,
-useful for the mbx860, and adaptable to other flash
-memory interlaced system.
+> [...] You do need a kernel patch to add cramfs to the list of
+> filesystems to check for in the initrd, also my patch forces the
+> blocksize of the initrd to 4K if it finds that it contains cramfs. [...]
 
-I modified ppcboot 1.1.4 and boot perfectly on a
-mbx860 too.
+Hmm, this patch doesn't seem to apply to my fairly recent
+linuxppc_2_4_devel tree.  identify_ramdisk_image() for instance
+is in init/do_mounts.c, not drivers/block/rd.c, and there is a
+#define BUILD_CRAMDISK in there I guess relating to cramfs, though
+I'm not sure what it's doing.
 
-bye.
+> I have also previously posted a patch to mkcramfs to swap
+> endianness on a cramfs filesystem   [...]
+>     http://lists.linuxppc.org/linuxppc-embedded/200206/msg00128.html
 
-
+Hmm, this patch doesn't seem to apply to the mkcramfs I got from
+sourceforge yesterday.
 
-_______________________________________________________________
-Copa del Mundo de la FIFA 2002
-El único lugar de Internet con vídeos de los 64 partidos.
-¡Apúntante ya! en http://fifaworldcup.yahoo.com/fc/es/
+Thanks, just the same.
+
+-- steve
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
