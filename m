@@ -1,18 +1,18 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao11.cox.net (fed1rmmtao11.cox.net [68.230.241.28])
-	by ozlabs.org (Postfix) with ESMTP id EAB1367A77
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id EA5CB67A6B
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Mar 2005 09:22:17 +1100 (EST)
-Date: Wed, 16 Mar 2005 15:22:15 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Takeharu KATO <takeharu1219@ybb.ne.jp>
-Message-ID: <20050316222215.GC8345@smtp.west.cox.net>
-References: <42331CA8.3030400@ybb.ne.jp>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <42331CA8.3030400@ybb.ne.jp>
-Cc: galak@freescale.com, linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] compilation failure due to confliction of time_offset
+	Thu, 17 Mar 2005 09:51:59 +1100 (EST)
+In-Reply-To: <20050316221402.GA8345@smtp.west.cox.net>
+References: <20050316221402.GA8345@smtp.west.cox.net>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Message-Id: <97927672280934c417f3e8fceb7a144b@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Wed, 16 Mar 2005 16:52:00 -0600
+To: "Tom Rini" <trini@kernel.crashing.org>
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: 440EP FPU patch
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,26 +23,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Sun, Mar 13, 2005 at 01:45:28AM +0900, Takeharu KATO wrote:
+I dont have either of these readily available at this point.
 
-> Hi all:
-> 
-> I send carbon copy of the mail to maintainers of Embedded PowerPC,
-> because I can not figure out who is responsible for arch/ppc/kernel/time.c.
-> 
-> I found a trivial bug made compilation fail.
-> I show error log as follows:
-> 
-> -- error log
-> arch/ppc/kernel/time.c:92: error: static declaration of 'time_offset'
-> follows non-static declaration
-> include/linux/timex.h:236: error: previous declaration of 'time_offset'
-> was heremake[1]: *** [arch/ppc/kernel/time.o] Error 1
-> make: *** [arch/ppc/kernel] Error 2
+If you dont mind running it through when you get a chance.  However, is=20=
 
-Are you certain that the 'time_offset' referenced in <linux/timex.h> is
-what wants to be used in arch/ppc/kernel/time.c ?  Thanks.
+this going to test anything but FP?
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+- kumar
+
+On Mar 16, 2005, at 4:14 PM, Tom Rini wrote:
+
+> On Wed, Mar 16, 2005 at 01:22:48AM -0600, Kumar Gala wrote:
+>
+> > Jason,
+>  >
+> > Is it possible to make this against a newer tree (like a current bk
+> > pull).=A0 The patch doesn't apply cleanly against head.S, which I'm
+> > guessing is due to the SPRN changes pushed upstream recently.
+>  >
+> > If I can apply it cleanly, I will get it pushed upstream.
+>
+> Can one of you run say LTP on a classic box, just as a sanity test
+>  before pushing?=A0 If not, lemme know and I'll do it :)
+>
+> --=20
+> Tom Rini
+>  http://gate.crashing.org/~trini/
