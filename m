@@ -1,37 +1,31 @@
-Date: Fri, 14 Sep 2001 05:54:05 -0700
+Date: Fri, 14 Sep 2001 06:09:50 -0700
 From: Matt Porter <mporter@mvista.com>
-To: Xavier Grave <grave@ipno.in2p3.fr>
-Cc: embarque ppc <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: driver for the mvme5100
-Message-ID: <20010914055405.A12955@cx258813-a.chnd1.az.home.com>
-References: <20010914100154.A7161@ipnpcu5.in2p3.fr>
+To: yah <hay8888@21cn.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Romboot problem
+Message-ID: <20010914060950.B12955@cx258813-a.chnd1.az.home.com>
+References: <yJ989087856096.17193@webmail1.inner-21cn.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010914100154.A7161@ipnpcu5.in2p3.fr>; from grave@ipno.in2p3.fr on Fri, Sep 14, 2001 at 10:01:54AM +0200
+In-Reply-To: <yJ989087856096.17193@webmail1.inner-21cn.com>; from hay8888@21cn.com on Wed, Sep 12, 2001 at 02:39:03PM +0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Sep 14, 2001 at 10:01:54AM +0200, Xavier Grave wrote:
-> in the driver there is two code lines :
-> pci_read_config_dword(carte.pci,PCI_BASE_ADDRESS_0,&tmp);
-> carte.bus_delta = carte.pci->resource[0].start - tmp;
-> on the mvme2303 it gives 0xc000 0000 which is the prep offset.
-> on the mvme5100 it gives 0. Since the mvme5100 is chrp-like I wait
-> for a 0x4000000 value or something different from zero ?
+On Wed, Sep 12, 2001 at 02:39:03PM +0800, yah wrote:
 >
-> Does anybody have an idea ?
+> Hi,
+>   I'm trying to boot Linux from my custom board (MCP750).I compiled the kernel using zimage.initrd. And it can boot correctly via net. But when I fill it in the onboard flash, the system can't boot. Here are the boot trace.
 
-That's what you should expect to see.  In Linux a PCI mem resource
-is defined as an ioremapable token.  It may or may not be a PCI or
-processor bus address.  In the case of a PReP memory map, PCI bus
-addresses are translated in a non-1:1 fashion.  So an offset of
-0xc0000000 is correct for the difference between the actual BAR
-value and the corresponding Linux resource value.  In the case
-of a CHRP memory map, PCI bus addresses are 1:1 with processor
-bus addresses (like most developers like to assume..x86).  In
-this case the mem resource start will be the same as the actual
-memory BAR value.
+<snip>
+
+This doesn't make sense.  Are you running a custom board or an MCP750?
+Looks like PPCBUG to me so it must not be a custom board.
+
+Anyway, MCP750 needs residual data to boot since it's part of the
+PReP port.  Are you using the standalone bugboot package to
+correctly create a PPCBUG rombootable image?  See
+http://members.home.net/mmporter/linux/linuxppc/bugboot-0.3.tar.gz
 
 --
 Matt Porter
