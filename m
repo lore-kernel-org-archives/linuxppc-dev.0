@@ -1,58 +1,48 @@
-From: "T Michael Turney" <tmike@recipes4linux.com>
-To: "VanBaren, Gerald (AGRE)" <Gerald.VanBaren@smiths-aerospace.com>,
-	<linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: MPC8260 ethernet transmit problem
-Date: Tue, 15 Jun 2004 08:39:54 -0700
-Message-ID: <GEEKLLHMFHLAJOBEEELHCEPHCJAA.tmike@recipes4linux.com>
+Message-ID: <40CF32FA.6030901@mvista.com>
+Date: Tue, 15 Jun 2004 10:33:46 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <065ACD8E84315E4394C835E398C8D5EB089DD8@cossmgmbx02.email.corp.tld>
+To: Adrian Cox <adrian@humboldt.co.uk>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [PATCH][RFC] OCP support for MPC107 and relatives
+References: <1087207803.7360.83.camel@newt>  <40CDDAC7.4090608@mvista.com> <1087287047.2374.6.camel@newt>
+In-Reply-To: <1087287047.2374.6.camel@newt>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Also check the PHY initialization function.
-Cheers,
-T.mike
+Adrian Cox wrote:
 
------Original Message-----
-From: owner-linuxppc-embedded@lists.linuxppc.org
-[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of
-VanBaren, Gerald (AGRE)
-Sent: Tuesday, June 15, 2004 8:06 AM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: MPC8260 ethernet transmit problem
-
-
-
-Check your port initialization: do you have the Tx (and Rx) clock configured
-properly?  Do you have the Tx data and control lines configured properly?
-
-gvb
-
-
-> -----Original Message-----
-> From: owner-linuxppc-embedded@lists.linuxppc.org
-> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of
-> matik@ug.bilkent.edu.tr
-> Sent: Tuesday, June 15, 2004 1:37 PM
-> To: linuxppc-embedded@lists.linuxppc.org
-> Subject: MPC8260 ethernet transmit problem
+>On Mon, 2004-06-14 at 18:05, Mark A. Greer wrote:
 >
 >
 >
-> Hi all,
+>>That's great that you're OCP-ifying the mpc10x code!  My only comment is
+>>thatI don't like hardcoding the position of an entry in the OCP (e.g.,
+>>core_ocp[0].vedor/paddr).  I don't think its safe to assume that any
+>>particular piece of code will always know all of the entries in the OCP
+>>and therefore what an entry's position will be.  You can use
+>>'ocp_for_each_device()' and a routine that checks for the fields that
+>>you want to accomplish the same thing.
+>>
+>>
 >
-> I am using Windriver SBCPowerQUICC2 with MPC8265 on it with
-> 2.4.26 kernel. When I configure FCC ethernet on one of
-> FCC1/2/3 it does not transmit any packet through channel
-> although it successfully calls 'fcc_enet_xmit' function.
-> Note: reception works.
+>I'll try to do a new version of the patch at the end of the week.
 >
-> Thanks.
-> matik
+>Would it work to have an empty core_ocp[] array, and then call
+>ocp_add_one_device() to insert the entries? That would deal with these
+>issues, as the code would look like:
+>mpc10x_i2c_ocp.paddr = phys_eumb_base + MPC10X_EUMB_I2C_OFFSET;
+>ocp_add_one_device(&mpc10x_i2c_ocp);
 >
+>Then the MPC106 path would simply not add any entries, rather than
+>having to go through and mark them as invalid.
+>
+>
+FWIW, that's fine with me.
+
+Mark
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
