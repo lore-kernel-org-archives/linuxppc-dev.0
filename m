@@ -1,46 +1,37 @@
-Message-ID: <36887B5C.EC26B913@ixl.com>
-Date: Tue, 29 Dec 1998 00:49:00 -0600
-From: jeramy <jsmith@ixl.com>
+Message-ID: <36889B26.35B8C562@cybernex.net>
+Date: Tue, 29 Dec 1998 09:04:38 +0000
+From: John Droggitis <johnd@CYBERNEX.NET>
 MIME-Version: 1.0
-To: Wayne Chang <wcx@iname.com>
-CC: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-Subject: My pre-R5-lite
-References: <v01550100b2ae04f28fb1@[207.217.233.232]>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+CC: linuxppc-dev@lists.linuxppc.org, Cort Dougan <cort@ladron.cs.nmt.edu>,
+        Paul Mackerras <paulus@cs.anu.edu.au>
+Subject: Re: New patches & test kernel
+References: <19981228180118.022846@mail.mipsys.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Welp, I decided to play around and try upgrading an R4 lite clean
-install to glibc2 with the rpms from the pre R5 directories. I got the
-comps.pmac file from the R4 lite and the comps.new from pre-5 and
-compared them. I downloaded all of the RPMS from the the files
-directories. And then I started laoding them in the order they are
-loaded for a R4 lite install. The only exceptions were of course
-libraries and compilers. Anyways, looks like im all done except for
-reconfiguring X for XFB. (My fb0 dissappeared after I formatted for the
-clean R4 lite install and I forgot how I made the bugger the first
-time.) Also, it seems that I need to get the source RPM for XPM and
-compile it as there is a pre-compiled or src.rpm for it under the files
-tree. Very convenient seeing as how half the X rpms and apps want it to
-install. Anywas, a quick visit to a redhat mirror should fix that.
+Benjamin Herrenschmidt wrote:
 
-WHAT I NEED: Anyways, if someone has already hand configured the X 3.3.3
-under the pre-R5, send me an outline for getting it going. I did
-softlink the DEV server already so I know my Xservers file is fine. Ive
-got a G3 with standard ati rage. I have KDE and FVWM installed and the
-Xclients files I have look fine.
+> Hi All !
+>
+> I'm uploading a test kernel with new patches to my web page. It contains
+> all diffs between this morning's vger and some of my latest patches. Not
+> all or them are functional (wallstreet sleep still doesn't work and uses
+> an horrible hack I made at the end of irq.c so you can avoid all irq.c
+> and via-pmu.c patches).
 
-NOTE: This was not all fun, I planned it for several days before I tried
-it. During the process I had to wipe out my rpm db's. My fingers grew
-tired from typing in --nodeps for the next few hours.
+A bit of a feedback here:  This is the first kernel EVER that I've booted
+that recognizes my kensington orbit trackball as a three-button mouse.  The
+left button acts as the left button, and the right one acts as middle.  And
+for anyone using XF68, there's an option that lets you chord to emulate the
+third button:  In XF86Config, in the "Pointer" section, on a line by itself
+say: ChordMiddle.  To be honest, I just found this option and haven't tried
+it yet, but for anyone with a two-button mouse this is worth a try.
 
-MYPLANS: Im gonna try to get gnome .99 and all of its required
-libraries  to compile whether or not I get X up and running. I have a T3
-and a G3 and I'm ready to fly.
+--John
 
-
-(Geert-style) Cheers!
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
