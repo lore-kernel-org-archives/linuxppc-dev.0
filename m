@@ -1,174 +1,98 @@
-Date: Tue, 5 Dec 2000 02:39:36 -0500 (EST)
-From: Alex Avriette <alex@macachu.yi.org>
-Reply-To: alex@cosmo.allay.net
-To: linuxppc-dev@lists.linuxppc.org
-cc: max@trega.com
-Subject: lots of questions (va_list, embedded perl, cvsd, introduction - sort
- of)
-In-Reply-To: <200012050600.AAA21723@lists.linuxppc.org>
-Message-ID: <Pine.LNX.4.10.10012050215570.22364-100000@macachu.ex-pressnet.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Mime-Version: 1.0
+Message-Id: <a05010406b65254022de4@[192.168.240.10]>
+In-Reply-To: <19341029132129.28967@192.168.1.2>
+References: 
+  <Pine.LNX.3.96L.1001204120321.24147A-100000@IBUPROFEN.WEH.ANDREW.CMU.EDU>
+ <19341029132129.28967@192.168.1.2>
+Date: Tue, 5 Dec 2000 09:30:06 +0100
+To: Benjamin Herrenschmidt <bh40@calva.net>
+From: Alain RICHARD <alain.richard@equation.fr>
+Subject: Re: vmode & atyfb (fwd)
+Cc: linuxppc-dev@lists.linuxppc.org
+Content-Type: text/plain; charset="iso-8859-1" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-first i wanted to give everyone a brief introduction so somebody can tell
-me to go away if im in the wrong place. the description on
-lists.linuxppc.org says that its for linuxppc developers. well, im a
-developer, and i use linuxppc, but im not developing linuxppc. im actively
-participating in the development of a couple items. opennap
-(opennap.sourceforge.net), which is an opensource napster server. tear
-(tear.sourceforge.net), which is a perl script that rips and encodes
-cds->mp3's very easily. im also developing a much-less-public foray into
-artificial intelligence that covers all the bases (c, perl, lisp, and
-bash). somebody tell me to go away if im in the wrong place.
+>  >in the current kernels (2.2.18pre) and with the first ibook (ATI RAGE
+>>Mobility,  not a Rage 128), there are several problems I am aware of :
+>>
+>>- the color table is bad so there is some gitch on the console
+>>colors. You may see in booting in level 3 (no X login) and trying a
+>>make menuconfig. The only fix I have found was to reinitilise the
+>>console with vmode (or fbset when you correct the second problem I am
+>>reporting)
+>
+>That's new. Did you ever had this problem before ? Can you track it down
+>to a specific kernel version ?
 
-okay, so to the real meat of this post. ive been having some problems with
-the opennap server. i find that the va_list functions (primarily v*printf)
-are giving me segfaults and data corruption. this, however, is *not*
-happening on an x86 bsd machine. i have limited machines to test this on,
-so im not quite sure that its glibc, but i have my suspicions. the general
-behaviour is thus:
+All the kernels I have tested have had this problem (i mean all -benh
+kernels and the current 2.2.18pre). The problem is not obvious but is
+shown in menuconfig and probably other curse based utilities.
 
-if i have one va_list and i use it twice, with two separate
-va_start-va_end clauses, the second one segfaults. i believe this is
-because the string in the second clause gets null'ed and strlen()
-segfaults. gdb falsely reports soinit.c:59, but i tracked down that issue
-on google. :)
+>
+>>- the geometry reported by the framebuffer is bad because the virtual
+>>number of lines is very big (~2600). I have tracked the problem in
+>>following code in aty_init() function :
+>>
+>>      if (var.yres == var.yres_virtual) {
+>>          u32 vram = (info->total_vram - (PAGE_SIZE << 2));
+>>          var.yres_virtual = ((vram * 8) / var.bits_per_pixel) /
+>>var.xres_virtual;
+>>          if (var.yres_virtual < var.yres)
+>>                  var.yres_virtual = var.yres;
+>>      }
+>
+>I'll see this with Geert, it may indeed be an atyfb bug
+>
+>>- there are some problems with the atyfb : it seems to be not working
+>>with XFree-FB (hangs up). Also it hange when you try some simple
+>>thing as copy from or to /dev/fb0 (hangup the system). I think there
+>>are some problems with the starting and ending addresses of the
+>>framebuffer.
+>
+>I don't know for XFree-FB (it's possible that the old XFree-FB ATI
+>driver has troubles with the mobility chip). It should work with XF4.
+>Accessing /dev/fb0 can be dangerous since the chip's MMIO registers
+are located at the end of the framebuffer.
 
-i wrote a chassis to reproduce this, and have added it to the bottom of
-this message. the actual code which causes problems is here:
+the probleme here is that a simple user space command like cp
+/dev/fb0 /dev/null may kill the system. Isn't it a poor design ?
 
-void
-log (const char *fmt, ...)
-{
-    va_list ap;
+>
+>>In all of theses cases, the vmode utility is working when fbset is
+>>not. Also I think vmode works when not using a dedicated framebuffer
+>>driver (for example with video=ofonly), so it is a good utility to
+>>tests new drivers or for fresh install.
+>
+>vmode cannot work without a driver. All vmode does is to send an ioctl
+>that ends up to a call to the framebuffer set_disp routine, exactly
+>like fbset. The difference is that vmode us hard-coded mode values from
+>a table (in macmodes.c) and fbset uses values from /dev/fb.modes. fbset
+>also does more sanity check (your bug above).
+>
+>Ben.
 
-    char buf[1024];
+ok, so it may be a good idea to comment all theses things (I mean the
+framebuffer stuff and all the commands associated with it). Currently
+there is no real information about :
 
-    va_start (ap, fmt); vsnprintf ( buf, 1022, fmt, ap ); va_end (ap);
-    va_start (ap, fmt); vprintf ( fmt, ap ); va_end (ap);
+- fb drivers parameters (it is always possible to look at the source
+code, but a clever approach would be to comment them)
+- fb driver loading (for example in some kernels the driver may be
+build as a module : how to load it at startup ?).
+- add a comment in the readme for pmac-utils just to say vmode is
+replace with fbset.
+- in testing and developing, it seems we all have problems with fb,
+of, XFree and XPmac interractions, so a little dev document may be
+helpfull.
 
-    fputc ('\n', stdout);
-    fflush (stdout);
-
-    putchan ( "#log", "logd", buf );
-}
-
-in the above code, buf is null. furthermore, in the second va_start-end
-clause, ap is clobbered. so putchan never has anything to "put." because
-the chassis is so thorough, i am adding it to the bottom of the message so
-my next question actually gets read. but i would really love it if people
-would take it and run it and tell me what they get.
-
-there is an irc server written in perl. its called pircd, and i believe
-its available at pircd.sourceforge.net. at any rate, the author makes the
-excellent observation "well, if youre going to make a server that is based
-on chat and text, what *better* language to write it in than perl?" so,
-because this napster server is so string-heavy, i have decided i'd like to
-embed perl into it. i have every perl book oreilly makes and a few others.
-_advanced_perl_programming_ has two chapters on embedded perl. the most
-promising part of it is the Ext::Embed module. my main difficulty here is
-that the code in APP is non-object oriented and monolithic. i had amazon
-send me a few books, notably the oreilly _make_ book and a book on c++
-authoring in gnu. these should help but im looking for some nudges in the
-right direction. has anyone on the list used embedded perl?
-
-okay, next question. i want to run cvs. our network is comprised of six
-servers at the moment, and i would like my fellow administrators to be
-able to sync up my current source tree. i havent found any rpms for cvsd,
-and i would preferr a tarball. in fact, i dont have rpm. so a tarball
-would be, er, necessary. :) i suppose rsync would work too, but i dont
-know about the server-side of that transaction.
-
-
-sorry to ask so many questions at once. but i trust you all have the
-smarts and patience to help (or tell me to go away! heh!).
-
-anyway, here's the chassis for va_list and v*printf (use gcc filename.c -o
-filename):
-
-/* begin */
-#include <stdarg.h>
-#include <stdio.h>
-
-void vsn_test ( const char *fmt, ...)
-{
-  va_list ap; char buf [1024]; int i;
-
-  va_start ( ap, fmt ); vsnprintf ( buf, 1022, fmt, ap ); va_end ( ap );
-
-  for (i = 1; i < 5; i++)
-  { printf ( "pass [%d] %s\n", i, buf );
-    va_start ( ap, fmt ); vsnprintf ( buf, 1022, fmt, ap ); va_end ( ap ); }
-}
-
-void v_test ( const char *fmt, ...)
-{
-  va_list ap; int i;
-
-  for (i = 1; i != 5; i++)
-  { printf ( "pass [%d] ", i );
-    va_start ( ap, fmt ); vprintf ( fmt, ap ); va_end ( ap ); printf ("\n"); }
-}
-
-void vs_test ( const char *fmt, ...)
-{
-  va_list ap; char buf[1024]; int i;
-
-  for (i = 1; i != 5; i++)
-  { printf ("pass [%d] %s\n", i );
-    va_start ( ap, fmt ); vsprintf ( buf, fmt, ap ); va_end ( ap ); }
-}
-
-
-void dual_va_test ( const char *fmt, ...)
-{
-  va_list ap; char buf [1024]; int i;
-
-  for (i = 1; i < 5; i++)
-  { va_start ( ap, fmt ); vsnprintf ( buf, 1022, fmt, ap); va_end ( ap ) ;
-    printf ( "dual-run pass [%d][vsn] %s\n", i, buf );
-    printf ( "dual-run pass [%d][v] ", i);
-    va_start ( ap, fmt ); vprintf ( fmt, ap ); va_end ( ap ); printf ("\n"); }
-}
-
-void nested_test ( const char *fmt, ...)
-{
-  va_list ap; char bufa [1024]; char bufb [1024]; int i;
-
-  for (i = 1; i < 5; i++)
-  { va_start ( ap, fmt );
-    vsnprintf ( bufa, 1022, fmt, ap );
-    vsnprintf ( bufb, 1022, fmt, ap );
-    va_end ( ap );
-
-    printf ("buffer [a] pass [%d]: %s\n", i, bufa);
-    printf ("buffer [b] pass [%d]: %s\n", i, bufb); }
-}
-
-void main (void)
-{
-  int tf = 25;   char string[256] = "somestring";
-  vsn_test     ( "int: %d string: %s", tf, string );
-  vs_test      ( "int: %d string: %s", tf, string );
-  v_test       ( "int: %d string: %s", tf, string );
-  dual_va_test ( "int: %d string: %s", tf, string );
-  nested_test  ( "int: %d string: %s", tf, string );
-}
-/* end */
-
-anyhow. thanks everyone.
-
-alex
-
+Regards,
 --
-alex avriette [alex@cosmo.allay.net]
-
-"No man who uses EMACS is deserving of love."
-	Tom Christiansen <tchrist@perl.com>,
-	_Perl Cookbook_, pp. 653
-
+-------------------------------------------------------
+Alain RICHARD <mailto:alain.richard@equation.fr>
+EQUATION SA <http://www.equation.fr/>
+Tel : +33 477 79 48 00	 Fax : +33 477 79 48 01
+Applications client/serveur, ingénierie réseau et Linux
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
