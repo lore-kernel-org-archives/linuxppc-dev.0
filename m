@@ -1,198 +1,56 @@
-Message-ID: <4003E98B.4010002@g-house.de>
-Date: Tue, 13 Jan 2004 13:50:19 +0100
-From: Christian <evil@g-house.de>
-MIME-Version: 1.0
-To: Mikael Pettersson <mikpe@csd.uu.se>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: perfctr-2.6.4 released with PPC32 support
-References: <200401130932.i0D9WmBh027467@harpo.it.uu.se>
-In-Reply-To: <200401130932.i0D9WmBh027467@harpo.it.uu.se>
-Content-Type: multipart/mixed;
- boundary="------------030607080900050604050501"
+Date: Tue, 13 Jan 2004 16:12:30 +0100
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Sven Luther <sven.luther@wanadoo.fr>,
+	Debian PowerPC List <debian-powerpc@lists.debian.org>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.4.21-ben2 issues: RTC, Thermal and RTAS
+Message-ID: <20040113151230.GA12089@iliana>
+References: <20030823171845.GA1963@dat.etsit.upm.es> <20031217011849.GA26643@iliana> <Pine.GSO.4.58.0312171042530.24864@waterleaf.sonytel.be> <20031217095241.GD2283@iliana> <Pine.GSO.4.58.0312171056030.24864@waterleaf.sonytel.be> <20031217100358.GA2655@iliana> <Pine.GSO.4.58.0312171112040.24864@waterleaf.sonytel.be>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <Pine.GSO.4.58.0312171112040.24864@waterleaf.sonytel.be>
+From: Sven Luther <sven.luther@wanadoo.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------030607080900050604050501
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+On Wed, Dec 17, 2003 at 11:13:58AM +0100, Geert Uytterhoeven wrote:
+> On Wed, 17 Dec 2003, Sven Luther wrote:
+> > On Wed, Dec 17, 2003 at 10:57:07AM +0100, Geert Uytterhoeven wrote:
+> > > On Wed, 17 Dec 2003, Sven Luther wrote:
+> > > > On Wed, Dec 17, 2003 at 10:43:24AM +0100, Geert Uytterhoeven wrote:
+> > > > > On Wed, 17 Dec 2003, Sven Luther wrote:
+> > > > > > On Sun, Aug 24, 2003 at 03:18:46AM +1000, J. Javier Maestro wrote:
+> > > > > > > I just recompiled the 2.4.21-ben2 kernel several times, trying to get it
+> > > > > > > running. I finally fixed the FB problem I was having at compilation, and
+> > > > > > > when booting, the kernel froze in the middle of the boot, when trying to
+> > > > > > > set the System time. I can track this to the RTC support, since the
+> > > > > > > kernel booted nicely when I unset CONFIG_RTC.
+> > > > > >
+> > > > > > Strange, i am experiencing exactly the opposite behavior, but then i
+> > > > > > have a Pegasos, which is of CHRP lineage, and uses a via southbridge.
+> > > > >
+> > > > > And the VIA SouthBridge has a builtin PC-style RTC, right?
+> > > >
+> > > > Yep, it does. What about your longtrail, what does it use for RTC ?
+> > >
+> > > | callisto$ grep rtc .config
+> > > | CONFIG_GEN_RTC=m
+> > > | CONFIG_RTC=y
+> > > | callisto$
+> > >
+> > > It uses the PC-style RTC driver (genrtc.o is not loaded).
+> >
+> > Mmm, what was your box again ? a chrp no ?
+>
+> Yep, CHRP LongTrail. It has a Winbond/Symphony Labs W83C553 SouthBridge.
 
+Could you tell me the content of your rtc OF node ? In particular i am
+interested in the reg value (probably 70/71 in isa space or so), and of
+the compatible stuff (i have ds1385-rtc).
 
-Mikael Pettersson wrote:
-|>ppc.c: In function `mcontext_pc':
-|>ppc.c:15: error: structure has no member named `regs'
-|>make[4]: *** [ppc.o] Error 1
-|
-| Hmm, must be a glibc or kernel headers version problem.
-| I'm running YDL3.0.1 with glibc-2.3.1.
+Friendly,
 
-this is debian/unstable with glibc 2.3.2.ds1-10, kernel headers are
-*not* under /usr/src/linux/include as one might expect, any way to
-specify them with the "make" command? i did not see any hint in the
-Makefile how to do this, sorry. but: there is a package named
-"linux-kernel-headers" in debian/unstable since a few weeks (?) now. i
-have to install it, other -dev packages depend on it, its version is
-"2.5.999-test7-bk-14", kinda weird, perhaps this is some bug or so and
-hopefully resolved soon by the maintainer.
-
-| What version of glibc do you have? How does it define an
-| mcontext_t (struct sigcontext_struct)?
-
-hm, don't know if i picked the one you meant, but
-/usr/include/sys/ucontext.h shows:
-
-- -----------------
-/* Context to describe whole processor state.  */
-typedef struct
-{
-~        gregset_t gregs;
-~        fpregset_t fpregs;
-~        vrregset_t vrregs __attribute__((__aligned__(16)));
-} mcontext_t;
-
-#else
-
-/* For 64-bit, a machine context is exactly a sigcontext.  */
-typedef struct sigcontext mcontext_t;
-
-#endif
-- -----------------
-
-| Nothing in dmesg?
-
-/var/log/dmesg is attached (booting a vanilla (!) 2.4.24), but there are
-of course no messages during "make"...
-
-no, i was not even aware of using perfctr, but you said testing helps,
-and so i did :-)
-
-Thank you for your time,
-Christian.
-
-- --
-BOFH excuse #429:
-
-Temporal anomaly
-
---------------030607080900050604050501
-Content-Type: text/plain;
- name="dmesg"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="dmesg"
-
-TWVtb3J5IEJBVCBtYXBwaW5nOiBCQVQyPTEyOE1iLCBCQVQzPTBNYiwgcmVzaWR1YWw6IDBN
-YgpUb3RhbCBtZW1vcnkgPSAxMjhNQjsgdXNpbmcgMjU2a0IgZm9yIGhhc2ggdGFibGUgKGF0
-IGMwMjAwMDAwKQpMaW51eCB2ZXJzaW9uIDIuNC4yNCAoZXZpbEBzaGVlcCkgKGdjYy1WZXJz
-aW9uIDMuMy4zIDIwMDMxMjI5IChwcmVyZWxlYXNlKSAoRGViaWFuKSkgIzIgRnIgSmFuIDkg
-MTM6Mzg6NDEgQ0VUIDIwMDQKUFJlUCBhcmNoaXRlY3R1cmUKT24gbm9kZSAwIHRvdGFscGFn
-ZXM6IDMyNzY4CnpvbmUoMCk6IDMyNzY4IHBhZ2VzLgp6b25lKDEpOiAwIHBhZ2VzLgp6b25l
-KDIpOiAwIHBhZ2VzLgpLZXJuZWwgY29tbWFuZCBsaW5lOiByb290PS9kZXYvc2RhNQp0aW1l
-X2luaXQ6IGRlY3JlbWVudGVyIGZyZXF1ZW5jeSA9IDE2LjY1NzcxNCBNSHoKQ29uc29sZTog
-Y29sb3VyIFZHQSsgODB4MjUKQ2FsaWJyYXRpbmcgZGVsYXkgbG9vcC4uLiAyOTkuMDAgQm9n
-b01JUFMKTWVtb3J5OiAxMjc0MDBrIGF2YWlsYWJsZSAoMTEwOGsga2VybmVsIGNvZGUsIDQ2
-OGsgZGF0YSwgMjc2ayBpbml0LCAwayBoaWdobWVtKQpEZW50cnkgY2FjaGUgaGFzaCB0YWJs
-ZSBlbnRyaWVzOiAxNjM4NCAob3JkZXI6IDUsIDEzMTA3MiBieXRlcykKSW5vZGUgY2FjaGUg
-aGFzaCB0YWJsZSBlbnRyaWVzOiA4MTkyIChvcmRlcjogNCwgNjU1MzYgYnl0ZXMpCk1vdW50
-IGNhY2hlIGhhc2ggdGFibGUgZW50cmllczogNTEyIChvcmRlcjogMCwgNDA5NiBieXRlcykK
-QnVmZmVyIGNhY2hlIGhhc2ggdGFibGUgZW50cmllczogODE5MiAob3JkZXI6IDMsIDMyNzY4
-IGJ5dGVzKQpQYWdlLWNhY2hlIGhhc2ggdGFibGUgZW50cmllczogMzI3NjggKG9yZGVyOiA1
-LCAxMzEwNzIgYnl0ZXMpClBPU0lYIGNvbmZvcm1hbmNlIHRlc3RpbmcgYnkgVU5JRklYClBD
-STogUHJvYmluZyBQQ0kgaGFyZHdhcmUKU2V0dGluZyBQQ0kgaW50ZXJydXB0cyBmb3IgYSAi
-VXRhaCAoUG93ZXJzdGFjayBJSSBQcm80MDAwKSIKUENJOiBtb3ZlZCBkZXZpY2UgMDA6MGIu
-MSByZXNvdXJjZSA0ICgxMDEpIHRvIDEwYTAKUENJOiBtb3ZlZCBkZXZpY2UgMDA6MGIuMSBy
-ZXNvdXJjZSA1ICgxMDEpIHRvIDEwYjAKUENJOiBtb3ZlZCBkZXZpY2UgMDA6MTIuMCByZXNv
-dXJjZSAwICgxMjA4KSB0byAwCkxpbnV4IE5FVDQuMCBmb3IgTGludXggMi40CkJhc2VkIHVw
-b24gU3dhbnNlYSBVbml2ZXJzaXR5IENvbXB1dGVyIFNvY2lldHkgTkVUMy4wMzkKSW5pdGlh
-bGl6aW5nIFJUIG5ldGxpbmsgc29ja2V0ClN0YXJ0aW5nIGtzd2FwZApKb3VybmFsbGVkIEJs
-b2NrIERldmljZSBkcml2ZXIgbG9hZGVkCnB0eTogMjU2IFVuaXg5OCBwdHlzIGNvbmZpZ3Vy
-ZWQKU0NTSSBzdWJzeXN0ZW0gZHJpdmVyIFJldmlzaW9uOiAxLjAwClBDSTogRW5hYmxpbmcg
-ZGV2aWNlIDAwOjBjLjAgKDAwMDAgLT4gMDAwMykKc3ltNTNjOHh4OiBhdCBQQ0kgYnVzIDAs
-IGRldmljZSAxMiwgZnVuY3Rpb24gMApzeW01M2M4eHg6IHNldHRpbmcgUENJX0NPTU1BTkRf
-TUFTVEVSIFBDSV9DT01NQU5EX1BBUklUWS4uLihmaXgtdXApCnN5bTUzYzh4eDogY2hhbmdp
-bmcgUENJX0xBVEVOQ1lfVElNRVIgZnJvbSAwIHRvIDgwLgpzeW01M2M4eHg6IDUzYzgyNWEg
-ZGV0ZWN0ZWQgCnN5bTUzYzgyNWEtMDogcmV2IDB4MTMgb24gcGNpIGJ1cyAwIGRldmljZSAx
-MiBmdW5jdGlvbiAwIGlycSAxNQpzeW01M2M4MjVhLTA6IElEIDcsIEZhc3QtMTAsIFBhcml0
-eSBDaGVja2luZwpzY3NpMCA6IHN5bTUzYzh4eC0xLjcuM2MtMjAwMTA1MTIKYmxrOiBxdWV1
-ZSBjN2ZlYjE3NCwgSS9PIGxpbWl0IDQwOTVNYiAobWFzayAweGZmZmZmZmZmKQpzeW01M2M4
-MjVhLTAtPDAsKj46IEZBU1QtMTAgV0lERSBTQ1NJIDIwLjAgTUIvcyAoMTAwLjAgbnMsIG9m
-ZnNldCA4KQogIFZlbmRvcjogSUJNLUVTWFMgIE1vZGVsOiBTVDMxODMwNUxXICAgICEjICBS
-ZXY6IEIyNDUKICBUeXBlOiAgIERpcmVjdC1BY2Nlc3MgICAgICAgICAgICAgICAgICAgICAg
-QU5TSSBTQ1NJIHJldmlzaW9uOiAwMwpibGs6IHF1ZXVlIGM3ZmViMjc0LCBJL08gbGltaXQg
-NDA5NU1iIChtYXNrIDB4ZmZmZmZmZmYpCnN5bTUzYzgyNWEtMC08MSwqPjogRkFTVC0xMCBX
-SURFIFNDU0kgMjAuMCBNQi9zICgxMDAuMCBucywgb2Zmc2V0IDgpCiAgVmVuZG9yOiBJQk0t
-RVNYUyAgTW9kZWw6IFNUMzE4MzA1TFcgICAgISMgIFJldjogQjI0NAogIFR5cGU6ICAgRGly
-ZWN0LUFjY2VzcyAgICAgICAgICAgICAgICAgICAgICBBTlNJIFNDU0kgcmV2aXNpb246IDAz
-CmJsazogcXVldWUgYzdmZWIzNzQsIEkvTyBsaW1pdCA0MDk1TWIgKG1hc2sgMHhmZmZmZmZm
-ZikKc3ltNTNjODI1YS0wLTwyLCo+OiBGQVNULTEwIFdJREUgU0NTSSAyMC4wIE1CL3MgKDEw
-MC4wIG5zLCBvZmZzZXQgOCkKICBWZW5kb3I6IElCTS1FU1hTICBNb2RlbDogU1QzMzY2MDdM
-VyAgICBGTiAgUmV2OiBCMjU4CiAgVHlwZTogICBEaXJlY3QtQWNjZXNzICAgICAgICAgICAg
-ICAgICAgICAgIEFOU0kgU0NTSSByZXZpc2lvbjogMDMKYmxrOiBxdWV1ZSBjN2ZlYjQ3NCwg
-SS9PIGxpbWl0IDQwOTVNYiAobWFzayAweGZmZmZmZmZmKQpBdHRhY2hlZCBzY3NpIGRpc2sg
-c2RhIGF0IHNjc2kwLCBjaGFubmVsIDAsIGlkIDAsIGx1biAwCkF0dGFjaGVkIHNjc2kgZGlz
-ayBzZGIgYXQgc2NzaTAsIGNoYW5uZWwgMCwgaWQgMSwgbHVuIDAKQXR0YWNoZWQgc2NzaSBk
-aXNrIHNkYyBhdCBzY3NpMCwgY2hhbm5lbCAwLCBpZCAyLCBsdW4gMApzeW01M2M4MjVhLTAt
-PDAsKj46IEZBU1QtMTAgV0lERSBTQ1NJIDIwLjAgTUIvcyAoMTAwLjAgbnMsIG9mZnNldCA4
-KQpTQ1NJIGRldmljZSBzZGE6IDM1NTQ4MzIwIDUxMi1ieXRlIGhkd3Igc2VjdG9ycyAoMTgy
-MDEgTUIpClBhcnRpdGlvbiBjaGVjazoKIHNkYTogc2RhMSBzZGEyIHNkYTMgPCBzZGE1IHNk
-YTYgc2RhNyBzZGE4IHNkYTkgPiBzZGE0CnN5bTUzYzgyNWEtMC08MSwqPjogRkFTVC0xMCBX
-SURFIFNDU0kgMjAuMCBNQi9zICgxMDAuMCBucywgb2Zmc2V0IDgpClNDU0kgZGV2aWNlIHNk
-YjogMzU1NDgzMjAgNTEyLWJ5dGUgaGR3ciBzZWN0b3JzICgxODIwMSBNQikKIHNkYjogc2Ri
-MSBzZGIyIHNkYjMKc3ltNTNjODI1YS0wLTwyLCo+OiBGQVNULTEwIFdJREUgU0NTSSAyMC4w
-IE1CL3MgKDEwMC4wIG5zLCBvZmZzZXQgOCkKU0NTSSBkZXZpY2Ugc2RjOiA3MTA5NjY0MCA1
-MTItYnl0ZSBoZHdyIHNlY3RvcnMgKDM2NDAxIE1CKQogc2RjOiBzZGMxIHNkYzIKSW5pdGlh
-bGl6aW5nIENyeXB0b2dyYXBoaWMgQVBJCk5FVDQ6IExpbnV4IFRDUC9JUCAxLjAgZm9yIE5F
-VDQuMApJUCBQcm90b2NvbHM6IElDTVAsIFVEUCwgVENQCklQOiByb3V0aW5nIGNhY2hlIGhh
-c2ggdGFibGUgb2YgMTAyNCBidWNrZXRzLCA4S2J5dGVzClRDUDogSGFzaCB0YWJsZXMgY29u
-ZmlndXJlZCAoZXN0YWJsaXNoZWQgODE5MiBiaW5kIDE2Mzg0KQpORVQ0OiBVbml4IGRvbWFp
-biBzb2NrZXRzIDEuMC9TTVAgZm9yIExpbnV4IE5FVDQuMC4Ka2pvdXJuYWxkIHN0YXJ0aW5n
-LiAgQ29tbWl0IGludGVydmFsIDUgc2Vjb25kcwpFWFQzLWZzOiBtb3VudGVkIGZpbGVzeXN0
-ZW0gd2l0aCBvcmRlcmVkIGRhdGEgbW9kZS4KVkZTOiBNb3VudGVkIHJvb3QgKGV4dDMgZmls
-ZXN5c3RlbSkgcmVhZG9ubHkuCkZyZWVpbmcgdW51c2VkIGtlcm5lbCBtZW1vcnk6IDI3Nmsg
-aW5pdCAzMmsgcG1hYyA0ayBjaHJwIDRrIG9wZW5maXJtd2FyZQpBZGRpbmcgU3dhcDogMzIw
-MDMyayBzd2FwLXNwYWNlIChwcmlvcml0eSAxKQpBZGRpbmcgU3dhcDogOTkzMjBrIHN3YXAt
-c3BhY2UgKHByaW9yaXR5IDEpCkVYVDMgRlMgMi40LTAuOS4xOSwgMTkgQXVndXN0IDIwMDIg
-b24gc2QoOCw1KSwgaW50ZXJuYWwgam91cm5hbApsb29wOiBsb2FkZWQgKG1heCA4IGRldmlj
-ZXMpCmtqb3VybmFsZCBzdGFydGluZy4gIENvbW1pdCBpbnRlcnZhbCA1IHNlY29uZHMKRVhU
-MyBGUyAyLjQtMC45LjE5LCAxOSBBdWd1c3QgMjAwMiBvbiBzZCg4LDYpLCBpbnRlcm5hbCBq
-b3VybmFsCkVYVDMtZnM6IG1vdW50ZWQgZmlsZXN5c3RlbSB3aXRoIG9yZGVyZWQgZGF0YSBt
-b2RlLgpram91cm5hbGQgc3RhcnRpbmcuICBDb21taXQgaW50ZXJ2YWwgNSBzZWNvbmRzCkVY
-VDMgRlMgMi40LTAuOS4xOSwgMTkgQXVndXN0IDIwMDIgb24gc2QoOCw5KSwgaW50ZXJuYWwg
-am91cm5hbApFWFQzLWZzOiBtb3VudGVkIGZpbGVzeXN0ZW0gd2l0aCBvcmRlcmVkIGRhdGEg
-bW9kZS4Ka2pvdXJuYWxkIHN0YXJ0aW5nLiAgQ29tbWl0IGludGVydmFsIDUgc2Vjb25kcwpF
-WFQzIEZTIDIuNC0wLjkuMTksIDE5IEF1Z3VzdCAyMDAyIG9uIHNkKDgsNyksIGludGVybmFs
-IGpvdXJuYWwKRVhUMy1mczogbW91bnRlZCBmaWxlc3lzdGVtIHdpdGggb3JkZXJlZCBkYXRh
-IG1vZGUuCmtqb3VybmFsZCBzdGFydGluZy4gIENvbW1pdCBpbnRlcnZhbCA1IHNlY29uZHMK
-RVhUMyBGUyAyLjQtMC45LjE5LCAxOSBBdWd1c3QgMjAwMiBvbiBzZCg4LDgpLCBpbnRlcm5h
-bCBqb3VybmFsCkVYVDMtZnM6IG1vdW50ZWQgZmlsZXN5c3RlbSB3aXRoIG9yZGVyZWQgZGF0
-YSBtb2RlLgpram91cm5hbGQgc3RhcnRpbmcuICBDb21taXQgaW50ZXJ2YWwgNSBzZWNvbmRz
-CkVYVDMgRlMgMi40LTAuOS4xOSwgMTkgQXVndXN0IDIwMDIgb24gc2QoOCw0KSwgaW50ZXJu
-YWwgam91cm5hbApFWFQzLWZzOiBtb3VudGVkIGZpbGVzeXN0ZW0gd2l0aCBvcmRlcmVkIGRh
-dGEgbW9kZS4Ka2pvdXJuYWxkIHN0YXJ0aW5nLiAgQ29tbWl0IGludGVydmFsIDUgc2Vjb25k
-cwpFWFQzIEZTIDIuNC0wLjkuMTksIDE5IEF1Z3VzdCAyMDAyIG9uIHNkKDgsMzMpLCBpbnRl
-cm5hbCBqb3VybmFsCkVYVDMtZnM6IG1vdW50ZWQgZmlsZXN5c3RlbSB3aXRoIG9yZGVyZWQg
-ZGF0YSBtb2RlLgpram91cm5hbGQgc3RhcnRpbmcuICBDb21taXQgaW50ZXJ2YWwgNSBzZWNv
-bmRzCkVYVDMgRlMgMi40LTAuOS4xOSwgMTkgQXVndXN0IDIwMDIgb24gc2QoOCwxNyksIGlu
-dGVybmFsIGpvdXJuYWwKRVhUMy1mczogbW91bnRlZCBmaWxlc3lzdGVtIHdpdGggb3JkZXJl
-ZCBkYXRhIG1vZGUuCmtqb3VybmFsZCBzdGFydGluZy4gIENvbW1pdCBpbnRlcnZhbCA1IHNl
-Y29uZHMKRVhUMyBGUyAyLjQtMC45LjE5LCAxOSBBdWd1c3QgMjAwMiBvbiBsb29wKDcsNyks
-IGludGVybmFsIGpvdXJuYWwKRVhUMy1mczogbW91bnRlZCBmaWxlc3lzdGVtIHdpdGggb3Jk
-ZXJlZCBkYXRhIG1vZGUuClBDSTogRW5hYmxpbmcgZGV2aWNlIDAwOjEwLjAgKDAwMDAgLT4g
-MDAwMykKM2M1OXg6IERvbmFsZCBCZWNrZXIgYW5kIG90aGVycy4gd3d3LnNjeWxkLmNvbS9u
-ZXR3b3JrL3ZvcnRleC5odG1sClNlZSBEb2N1bWVudGF0aW9uL25ldHdvcmtpbmcvdm9ydGV4
-LnR4dAowMDoxMC4wOiAzQ29tIFBDSSAzYzkwNUMgVG9ybmFkbyBhdCAweDEwMDAuIFZlcnMg
-TEsxLjEuMTgtYWMKIDAwOjAxOjAyOmYxOjgzOjM3LCBJUlEgMTAKICBwcm9kdWN0IGNvZGUg
-NDY0YSByZXYgMDAuMTMgZGF0ZSAxMS0xMi0wMAogIEludGVybmFsIGNvbmZpZyByZWdpc3Rl
-ciBpcyAxODAwMDAwLCB0cmFuc2NlaXZlcnMgMHhhLgogIDhLIGJ5dGUtd2lkZSBSQU0gNToz
-IFJ4OlR4IHNwbGl0LCBhdXRvc2VsZWN0L0F1dG9uZWdvdGlhdGUgaW50ZXJmYWNlLgogIE1J
-SSB0cmFuc2NlaXZlciBmb3VuZCBhdCBhZGRyZXNzIDI0LCBzdGF0dXMgNzgyZC4KICBFbmFi
-bGluZyBidXMtbWFzdGVyIHRyYW5zbWl0cyBhbmQgd2hvbGUtZnJhbWUgcmVjZWl2ZXMuCjAw
-OjEwLjA6IHNjYXR0ZXIvZ2F0aGVyIGVuYWJsZWQuIGgvdyBjaGVja3N1bXMgZW5hYmxlZApT
-ZXJpYWwgZHJpdmVyIHZlcnNpb24gNS4wNWMgKDIwMDEtMDctMDgpIHdpdGggTUFOWV9QT1JU
-UyBTSEFSRV9JUlEgU0VSSUFMX1BDSSBlbmFibGVkCnR0eVMwMCBhdCAweDAzZjggKGlycSA9
-IDQpIGlzIGEgMTY1NTBBCnR0eVMwMSBhdCAweDAyZjggKGlycSA9IDMpIGlzIGEgMTY1NTBB
-Cg==
---------------030607080900050604050501--
+Sven Luther
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
