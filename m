@@ -1,42 +1,45 @@
-Mime-Version: 1.0
-Message-Id: <v04220800b4f3a7681988@[10.0.0.42]>
-In-Reply-To: <8x8zzmvi3j.fsf@s63.informatik.uni-bremen.de>
-References: <8x8zzmvi3j.fsf@s63.informatik.uni-bremen.de>
-Date: Tue, 14 Mar 2000 00:35:49 -0800
-To: Holger Bettag <hobold@Informatik.Uni-Bremen.DE>,
-        linuxppc-dev@lists.linuxppc.org
-From: "Timothy A. Seufert" <tas@mindspring.com>
-Subject: Re: Does a Cinema Display work with Linux?
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Message-Id: <200003140918.JAA19674@hyperion.valhalla.net>
+Date: Tue, 14 Mar 2000 09:18:17 +0000
+Subject: Different Mac Models.
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 7:29 PM +0100 3/13/00, Holger Bettag wrote:
->Hi people,
->
->I have this crazy idea of wasting all my savings on a G4 PowerMac with a
->Cinema Display. Can I hope for this setup to work under Linux (or rather X11)?
->
->I suspect that Macs bundled with a Cinema Display possibly come with a
->different graphics card (than other G4 Macs),
+Hello All,
+I new to the list so apologies if this is a bit dumb.
 
-Apple is only shipping one type of card right now, regardless of
-display.  It's a Rage 128 Pro AGP board with both a VGA connector and
-a digital flat panel connector on the back.
+Is there a cross-reference matrix anywhere between Mac Machine IDs (the one
+you can get out of system profiler) and the required kernel build config
+flags?  Preferably ;) by kernel version.
 
->  or that at least the graphics
->hardware has to be programmed completely differently.
+I have G3 minitower (Apple UW scsi), G3 PB (although if it's a "1999" or
+"lombard" beats me) & a 9600/233 604.
 
-It probably does need to have some different programming, yes.
+I succeeded (by trial & error) to find the right combinations to build
+2.2.14p9 on both G3 & PB (but never got the USB mouse working on the PB, and
+the trackpad is frustratingly fast to say the least)... and then had to
+spend some time of paid work - restarted last week...
 
->Can anybody give me a hint as to what I can expect? (I don't think I'd be
->qualified to extend Linux or XFree with support for this LCD, so I won't
->just buy it and worry later.)
+I am about to (if it hasn't been claimed already) think about doing an ALSA
+driver for pmac internal sound.
 
-You can probably at least assume that you'll be able to use it
-unaccelerated at its native resolution via offb.
+I have (just about) succeeded in getting the latest (yesterday) rsyncs
+(2.3.51) from linuxcare to build and boot on the G3 minitower - although I
+had to leave a lot of PB stuff in to get it to build.
 
-   Tim Seufert
+However, (I appreciate this is not going to be helpful so I don't expect an
+answer) once X (Xpmac rev 6) is up the machine stops dead after a few
+minutes... three finger salute required to get anywhere :(
+
+Would I be better off sticking with the 2.2.XX tree for ALSA driver
+development - or should I be in amongst the 2.3.xx tree?
+I think this is a PPC rather than ALSA question (?).
+
+regards,
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
