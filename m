@@ -1,38 +1,55 @@
-Date: Thu, 5 Dec 2002 09:57:19 +0100 (CET)
-From: Marius Groeger <mag@sysgo.de>
-To: Omanakuttan <omanakuttan@tataelxsi.co.in>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: embedded help for linux links
-In-Reply-To: <3DEDFFFC.9080404@tataelxsi.co.in>
-Message-ID: <Pine.LNX.4.40.0212050953180.1256-100000@mag.devdep.sysgo.de>
+Message-ID: <3DEF30F1.9149B5A7@opensource.se>
+Date: Thu, 05 Dec 2002 11:56:49 +0100
+From: Magnus Damm <damm@opensource.se>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jerry Van Baren <vanbaren_gerald@si.com>
+Cc: Omanakuttan <omanakuttan@tataelxsi.co.in>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: embedded help for linux links
+References: <5.1.0.14.2.20021204111401.02405920@falcon.si.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, 4 Dec 2002, Omanakuttan wrote:
+For some generic Embedded Linux PowerPC information,
+have a look at this HOWTO:
 
-> I am a newbie in the embedded linux world, we are working to build a
-> bridge (E1/T1 ethernet and E3/T3 ) with ppc8260.
-> Could anybody direct me some links so that I can have a good starting
-> point of linux on PPC in order to get a better idea of what is happening
-> in this list and embedded linux world in general?
+http://penguinppc.org/embedded/howto/PowerPC-Embedded-HOWTO.html
 
-Besides tons of free stuff on the internet (which is more or less well
-supported), you might consider buying an embedded linux distribution.
-See my signature for my favorite one. You'll be getting a complete
-Embedded Linux development environment with ready-to-go examples and
-support.
+I use Miniboot as a bootloader.
+It only supports mpc8xx out of the box, though.
 
-Regards,
-Marius
+http://www.opensource.se/projects/miniboot/
 
------------------------------------------------------------------------------
-Marius Groeger           SYSGO Real-Time Solutions AG       mgroeger@sysgo.de
-Software Engineering     Embedded and Real-Time Software    www.sysgo.de
-Voice: +49-6136-9948-0   Am Pfaffenstein 14                 www.osek.de
-FAX:   +49-6136-9948-10  55270 Klein-Winternheim, Germany   www.elinos.com
+/ magnus
 
+Jerry Van Baren wrote:
+>
+> Denx Software
+>    http://www.denx.de/
+> See especially the ELDK stuff.
+>
+> For a BootROM solution, U-boot (also maintained by Wolfgang Denks for Denx
+> Software)
+>    http://sourceforge.net/projects/u-boot
+>
+> gvb
+>
+> At 06:45 PM 12/4/2002 +0530, Omanakuttan wrote:
+>
+> >Hi,
+> >I am a newbie in the embedded linux world, we are working to build a
+> >bridge (E1/T1 ethernet and E3/T3 ) with ppc8260.
+> >Could anybody direct me some links so that I can have a good starting
+> >point of linux on PPC in order to get a better idea of what is happening
+> >in this list and embedded linux world in general?
+> >
+> >Thanks for your time..
+> >bye..
+> >Om.
+> >
+> >
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
