@@ -1,31 +1,41 @@
-Date: Tue, 2 Nov 1999 10:51:59 +0100 (CET)
-From: Michael Schmitz <schmitz@simul.biophys.uni-duesseldorf.de>
-To: dsmk@bu.edu
-cc: Troy Benjegerdes <hozer@drgw.net>, Paul Mackerras <paulus@linuxcare.com>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: (simple /proc/apm support for pmud) Re: PMU daemon
-In-Reply-To: <Pine.LNX.4.20.9911011005150.14599-100000@faust.bu.edu>
-Message-ID: <Pine.LNX.4.10.9911021045170.10616-100000@simul.biophys.uni-duesseldorf.de>
+From: Thomas Capricelli <capricel@enst.fr>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: long-term 7600-booting patch
+Date: Tue, 2 Nov 1999 13:33:04 +0100
+Content-Type: text/plain
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <9911021333290B.13454@uranium>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > Finally, does anyone know how feasable it would be to make pmud have the
-> > same API as the intel-ish APMD, since there are a bunch of nice X
-> > apps/applets for various window managers that talk to APMD?
-> 
-> Well, I threw together a quick patch to pmud that does this.  Here is the
-> message that I sent to Paul Mackerras the other day.
 
-Just what I need to use the Gnome applet :-) Thanks for implementing this. 
-Please take care with the 'pmud sleeps machine at low power'
-feature, the write to stderr should be omitted or replaced by a
-syslog write there. At least on my machine, writing to stderr kills pmud
-in the least 'convenient' moment. 
+>> 	As my 2.1.125 kernel from linuxppc R4 was always fine but I need to
+>> boot new kernels, I've made this patch. Not that I understand a lot of what
+>> i've done, mainly backporting the mesh code from 2.1.125.
+>> 
+>> 	At least, my mac now always BOOT. Before applying this patch, I had to
+>> try between 6 and 16 times to boot my computer. You DON'T know how tiring this
+>> is
+>
+>Can you please try a 2.3.x kernel? I suffered from a similar problem and it was
+>solved in 2.3.x.
 
-	Michael
+	My macintosh still won't boot with 2.3.24 until my pacth is applied.
+This problem is here since march, 1999. on all >2.2.0 kernel.
 
+	Also, the stock-linux-2.3.24 is really a pain to compile. The kernel won't link
+until pmu is added (pmu is powerbook-related stuff), and some other minor
+problems.
+	Also, I don't dare to compile anything as module anymore, cause most of
+them won't link when insmod'ed. (unresolved symbols such as memcpy...)
+
+	Those two last problems are here since at least 2.3.18, probably  much
+more longer.
+
+Thomas
+
+-- 
+Thomas Capricelli
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
