@@ -1,11 +1,12 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from localhost.localdomain (adsl-63-203-10-66.dsl.lsan03.pacbell.net
-	[63.203.10.66]) by ozlabs.org (Postfix) with SMTP id A28142BDA1
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao12.cox.net (fed1rmmtao12.cox.net [68.230.241.27])
+	by ozlabs.org (Postfix) with ESMTP id 489AD2BC0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 28 Sep 2004 16:46:30 +1000 (EST)
-Received: from [172.20.101.118] by localhost.localdomain for
-	<linuxppc-embedded@ozlabs.org>; Tue, 28 Sep 2004 06:44:01 -7GMT
-In-Reply-To: <20040927233749.E30772@home.com>
+	Tue, 28 Sep 2004 16:59:51 +1000 (EST)
+Date: Mon, 27 Sep 2004 23:59:48 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: David Gardiner <daveg@sonartech.com.au>
+Message-ID: <20040927235948.G30772@home.com>
 References: <4153A362.8010604@sonartech.com.au>
 	<AE8972FB-0E3A-11D9-BC8B-000A95A4DC02@kernel.crashing.org>
 	<4158DD68.2060707@sonartech.com.au>
@@ -14,15 +15,13 @@ References: <4153A362.8010604@sonartech.com.au>
 	<20040927224825.B30772@home.com>
 	<7C908338-1113-11D9-8370-000A95A4DC02@kernel.crashing.org>
 	<20040927231438.D30772@home.com>
-	<F80E3944-1116-11D9-8370-000A95A4DC02@kernel.crashing.org>
-	<20040927233749.E30772@home.com>
-Mime-Version: 1.0 (Apple Message framework v619)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <FB412DE8-1119-11D9-8370-000A95A4DC02@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Date: Tue, 28 Sep 2004 01:45:27 -0500
-To: Matt Porter <mporter@kernel.crashing.org>
-Cc: David Gardiner <daveg@sonartech.com.au>, linuxppc-embedded@ozlabs.org
+	<415908DC.3090409@sonartech.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <415908DC.3090409@sonartech.com.au>;
+	from daveg@sonartech.com.au on Tue, Sep 28, 2004 at 04:46:52PM
+	+1000
+Cc: linuxppc-embedded@ozlabs.org
 Subject: Re: powerpc with gigabit card hanging
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -34,22 +33,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->> Sure.  But the interrupt _assignment_ should be done by firmware.
->
-> I can't argue with ideaology.
+On Tue, Sep 28, 2004 at 04:46:52PM +1000, David Gardiner wrote:
+> so where do I look ??? I'm thinking it's in the mvme5100 platform setup, 
+> am I assuming right?
+ 
+Yes, mvme5100_map_irq() is what you want. Comparing 2_4_devel to 2.6,
+only the PMCSPAN IDSEL routing is missing. Don't know what your 2.4
+kernel looks like or your current map in your 2.6 port.
 
-It's not ideology; it's what the PCI spec says.
-
->> p.s.  And I know this isn't always practically possible; but why
->> then support a product like that at all, in the Open Source
->> community?
->
-> By this reasoning, we should also not support the many BIOS/OF
-> platforms that report incorrect data and have to have their
-> reported data fixed up by the kernel. That's gross too by the
-> same measure.
-
-There is a difference between patching some errors and doing
-all the work yourself.
-
-But hey, let not me stop you from doing this.
+-Matt
