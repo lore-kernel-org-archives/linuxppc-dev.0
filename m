@@ -1,75 +1,81 @@
-Message-ID: <16763.216.110.51.8.1078873137.squirrel@www.orkun.us>
-Date: Tue, 9 Mar 2004 16:58:57 -0600 (CST)
-Subject: PPC405GP: Spurious interrupt during handing level triggered
-     interrupts
-From: "listmember@orkun.us" <listmember@orkun.us>
-To: linuxppc-embedded@lists.linuxppc.org
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <404E51E7.4070909@iti.fi>
+Date: Wed, 10 Mar 2004 01:23:19 +0200
+From: Kate Alhola <kate@iti.fi>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-References: 
-In-Reply-To: 
+To: Wolfgang Denk <wd@denx.de>
+Cc: David Jander <david.jander@protonic.nl>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MPX8xx: MMC over SPI....
+References: <20040309152515.A912DC0655@atlas.denx.de>
+In-Reply-To: <20040309152515.A912DC0655@atlas.denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Cogent CSB272 (PPC405GP)
-U-Boot 1.0.2  (CVS)
-Linux 2.4.25-pre4 snapshot from linuxppc-2.4 BK tree (via rsync)
-There are a couple of minor patches for getting Linux working with U-Boot.
+Wolfgang Denk wrote:
 
-I am working with an I2C device which notifies certain events via
-interrupt. It holds the irq line low until its status register is read and
-and interrupt is cleared at the device. There can be multiple I2C devices
-of this type on the same IRQ (wire-ored).
+>>I am going to write a SPI driver and on top of that a MMC driver for linux for
+>>the MPC852T, unless there is something already out there.
+>>Anyone tried this before and has some sources to share? Or pointers to
+>>sources?
+>>
+>>
+I am just doing same thing for mpc5200 ( http://www.iti.fi/iti5200.php )
+board.
+In this board there is MMC connector connected to PSC
 
-Because, I2C is too slow, we do not clear he interrupt (at the device) at
-kernel space. I've written a simple device driver so user process can be
-notified of events using select() and handle the event in the user daemon.
+>
+>The SPI driver is there, but I don't recommend to use it for any type
+>of data transfers that require any  significant  bandwidth.  Motorola
+>writes:
+>
+>
+There is simple spi driver arch/ppc/8260_io/cpm_spi.c but i think that
+one like
+i2c subsystem will be much more usefull. I have been planning make one based
+on i2c driver.
 
-The interrupt handler basically:
+I am plannigg 3-layer model like in i2c or USB. interface-HW-driver in
+lowest level,
+then subsystem driver and then target HW driver. Like in this case
+PSC_SPI-> SPI_subsystem->MMC  ---->FS
 
-- disables the interrupts on the particular line via disable_irq()
-- wakes up the process sleeping on select()
-- returns from the handler routine.
+>        The SPI was not designed to be a high-bandwidth channel. It
+>        can run very quickly for bursts of up to 16-bits. But the
+>        peripheral has no FIFO and low priority in the MPC860 and
+>        thus you cannot burst lots of data quickly through the
+>        interface.
+>        ...
+>        Note that the SPI is of lower priority internally than the
+>        SCCs, thus, the SPI will be the first device to be "starved".
+>        Since it has no FIFO, it is especially sensitive to underruns.
+>        The best way to prevent this is to use a buffer size of 1
+>        "character" (of size programmed in the mode register).
+>        ...
+>
+>
+>
+There is same problem in mpc5200 SPI and for this reason i am planning to
+use PSC in SPI mode. Then i will have fifo etc. I am also considering to
+use bestcom DMA. I just have heard that there is lot of problems with it
+when used with I2S. What is actually causing the problems ?
+Bestcom API library ? Should it be better to use directly bestcom HW
+without library ?
 
-User process then wakes up, communicates with i2c devices to find out
-which one has a pending event and clears the event and re-enables the
-interrupt on the particular line by making an ioctl call.
+>Also, you should be aware that the SPI  protocol  is  implemented  as
+>microcode  running  on the CPM, so any high-speed data transfers will
+>suck up CPM performance.
+>
+>
 
-Now I am getting an extra spurious interrupt after I re-enable interrupts
-after the interrupting device de-asserted the interrupt request.
+Of cource it does not give best performance but it is also wery simple
+glueless
+interface to cheap small low cost mass media. If we like to have full fast
+MMC/SD interface then we should consider some FPGA implementation
+but in most cases simpler will give enough proformace.
 
-My understanding is the following is happening:
-
-- Interrupt is asserted
-- Linux executes prolog code and acks interrupt
-- Since the interrupt is level triggered, this ack is no-op
-- ISR entered and disables the interrupt
-- Interrupt is de-assered by "user" code
-- Interrupt is re-enabled via ioctl
-- However PPC405 had already latched IRQ so PPC405 UIC0_SR bit is still set.
-- Because of UIC0_SR bit still set, another ISR braching is taken
-- Linux ACK the interrupt (UICO_SR bit is now clear)
-- ISR entered and disables the interrupt
-- "user" code cannot locate any interrupting device.
-- Interrupt is de-assered by ioctl and interrupts is re-enabled.
-
-I think my problem is similar to what is described here:
-
-http://lists.linuxppc.org/linuxppc-embedded/200306/msg00123.html
-
-Now, to prevent the second spurious branching, I used ack_irq() call
-(actuall macro) to manually ack the interrupt (before enabling interrupts
-again in ioctl). It works this way.
-
-Is this OK to use or is there a preferred way to do this?
-
-Best regards,
-Tolunay
-
-Note: I know this will probably would not be an issue if I changed to edge
-triggering but I am concerned about lost interrupts when using edge
-triggers especially when I have multiple I2C devices on the same irq line.
-
+Kate
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
