@@ -1,43 +1,31 @@
-Date: Sat, 4 Aug 2001 22:57:09 -0400
-From: Ethan Blanton <eblanton@cs.ohiou.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: DRI on an iBook2
-Message-ID: <20010804225709.A861@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="GvXjxJ+pjyke8COw"
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15213.39238.648678.281815@mediaone.net>
+Date: Sun, 5 Aug 2001 15:06:46 -0400
+From: R Shapiro <reshapiro@mediaone.net>
+To: Olaf Hering <olh@suse.de>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: lcd17 kernel patches?
+In-Reply-To: <20010805200639.A14938@suse.de>
+References: <15213.15313.170106.433877@mediaone.net>
+	<20010805200639.A14938@suse.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---GvXjxJ+pjyke8COw
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Olaf Hering writes:
+ > Try this one in the meantime:
 
-Hi,
-I see on the DRI project (http://dri.sourceforge.net/) page that the
-ATI Rage128 Mobility chipset is supported by XFree86 DRI.  However,
-I'm not having a whole lot of luck getting anything working on my
-iBook2.  I notice that I *can* turn on the kernel option for the DRM
-and select support for the ATI Rage128.  My question to this list
-before I spend too much time beating my head against this is whether
-or not DRM and/or DRI for the ATI chipsets are supported on LinuxPPC.
+I tried this patch with the current benh tree.  No luck.  It compiles
+ok, in fact in runs ok, but without any video.  This is the same
+behavior I get when I run my previously built 2.4.6 and 2.4.7 kernels.
+This is *not* the behavior with the 2.4.2 kernel at the suse ftp site.
+Something more must have been done to that one.
 
-Thanks...
-Ethan
+I guess I'll stick with 2.4.2 a little longer.
 
---=20
-If I've told you once, I've told you once
-And once is all that you needed.
-		-- The Refreshments, "Carefree"
-
---GvXjxJ+pjyke8COw
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
-
---GvXjxJ+pjyke8COw--
+--
+reshapiro@mediaone.net
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
