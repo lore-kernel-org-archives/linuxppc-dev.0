@@ -1,55 +1,107 @@
-Date: Wed, 30 Aug 2000 17:05:34 -0400 (EDT)
-From: Alexander Viro <viro@math.psu.edu>
-To: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
-cc: flar@allandria.com, Andi Kleen <ak@suse.de>, Steve Lord <lord@sgi.com>,
-        Matthew Wilcox <matthew@wil.cx>, Halfmann Klaus <khalfmann@libra.de>,
-        Roman Zippel <roman@augan.com>, linuxppc-dev@lists.linuxppc.org,
-        linux-fsdevel@vger.kernel.org
-Subject: Re: Btree directories (Re: Status of HFS+ support)
-In-Reply-To: <Pine.LNX.3.96.1000830133511.10035C-100000@deepspace.mklinux.org>
-Message-ID: <Pine.GSO.4.10.10008301648450.28976-100000@weyl.math.psu.edu>
+Message-Id: <200008302138.XAA00750@piglet.grunz.lu>
+Date: Wed, 30 Aug 2000 23:38:24 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: asm in OF? YES!
+To: paubert@iram.es
+cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.HPX.4.10.10008301549190.15978-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 30 Aug 2000, David A. Gatwood wrote:
+Hi all,
 
-> In my mind, this really screams the need for a pure vnode API in addition
-> to keeping the current API for more traditional filesystems.  You could
-> then keep track of these complex keys with either a table or hashing
-> method into slots/buckets with 32 bit identifiers, then provide these to
-> the vnode layer.  Sounds much easier than trying to make this look like a
-> more traditional fs.
+Yep, it works! I can boot off mesh again ;-)
 
-??? Current API _is_ vnode one with namespace made visible to VFS and some
-race-protection done there, along with generic checks like "thou shalt not
-remove other's file from other's sticky directory even if you have write
-permissions".
+On  30 Aug, this message from Gabriel Paubert echoed through cyberspace:
+>> Apple's OF seems to have that capability as well (I think, guess and hope ;-).
+>> However, it does _not_ seem to have an assembler built-in. The 'code' word
+>> is defined all right.
+>
+> You don't have any ppc-assembler vocabulary or similar, then ?
 
-WTF is "traditional" filesystem? Inumber-based one? No such thing at the
-VFS level.
+Nope. Definitely not. We have hexdump and l, , isn't that enough? No
+real hacker would use an assembler; thats for lamers ;-)
 
-VFS does not rely on inode numbers and it does not pass them around. Even
-in ->lookup(). It passes the request "here's dentry with name foo and
-parent bar, see if such file exists and say d_instantiate()". All other
-requests are done in terms of such "filled" dentries. Period. VFS doesn't
-care for inodes. You can have all inodes on your filesystem with random
-->i_ino and/or constant ->i_ino with whatever internal search scheme you
-like. They don't have to be anywhere near icache. Moreover, quite a few
-filesystems work that way. VFS simply doesn't give a fuck.
+> Ok, how can something this close to the machine be delivered without an
+> assembler ?
 
-Guys, WTF? Could you please read the (slightly outdated, whatever)
-description of the current API _before_ discussing what should be changed?
+See above ;-))
 
-That's bloody ridiculous - I challenge anyone who did fs work on 2.2, let
-alone 2.4 to stand up and say how much common the thing has with 2.0.
+> Well, sincee you can type in hex, there is still some hope...
 
-"I don't know what's there, but it got to be replaced with $FOO, because
-I think that currently it's $BAR or something" is just plain silly,
-_especially_ when $FOO is pretty much what we have right now, with several
-stupid things fixed and _NONE_ of them relevant to problems in question.
+Hex worked.
+
+>> I will try this tonight, but I doubt I will be able to enter this as asm
+>> words. Do you know the alternate syntax? Would something lime this work:
+>>
+>> code 60000000 l, 6000000 l,
+>
+> I think so, let me try:
+>
+> ok code ictc@ ok 979ffffc l, 7f99faa6 l, 4e800420 l, ;code
+> ok see ictc@
+> code ictc@
+> edcc5c     stwu    r28,-4(r31)
+> edcc60     mfspr   r28,spr1017
+
+1017 is actually l2cr, but never mind...
+
+> edcc64     bcctr   always
+> ok ictc@ .
+> 264d2
+> ok
+
+>> How do you terminate a 'code' sequence?
+>
+> Oops, forgot about it, my bad. With ';code', isn't it obvious ?
+
+Hm, doesn't work in Apple's OF 1.0.5. end-code is the answer ;-). Here
+is my ictc! implementation, if anyone's interested:
+
+code ictc!
+        7e9bfba6 l, 829f0000 l, 3bff0004 l, 4e800020 l,
+end-code
+
+That is roughly this in asm:
+
+	mtictc	r20	(or mtspr 1019,r20)
+	lwz	r20,0(r31)
+	addi	r31,r31,4
+	blr
+
+Verifyed to slow the system on a busy loop:
+
+: loop
+	begin
+	1- dup 0<
+	until
+	drop
+;
+
+11 ictc! slows this loop by a factor of 4.
+
+Now, go figure why this helps the MESH driver... It seems to use some
+busy loop timing somewhere; however there is the ms word available which
+uses the timebase and is accurate even on my upgraded box.... That would
+have been the better choice, unless the driver uses sub-1ms loops. Which
+would explain...
+
+Anyway, thanks for your help, Gabriel!
+
+Cheers
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
