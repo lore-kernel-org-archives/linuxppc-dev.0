@@ -1,31 +1,63 @@
-From: Thomas Capricelli <capricel@enst.fr>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: long-term 7600-booting patch
-Date: Wed, 27 Oct 1999 18:41:04 +0200
-Content-Type: text/plain
-References: <Pine.LNX.4.05.9910271833130.6037-100000@callisto.of.borg>
-In-Reply-To: <Pine.LNX.4.05.9910271833130.6037-100000@callisto.of.borg>
+Date: Wed, 27 Oct 1999 20:19:28 +0300 (EEST)
+From: Kostas Gewrgiou <gewrgiou@imbc.gr>
+To: Kevin_Hendricks <khendricks@admin.ivey.uwo.ca>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Netscape and missing libnullplugin.so
+In-Reply-To: <199910271530.KAA32070@lists.linuxppc.org>
+Message-ID: <Pine.LNX.4.20.9910272004410.1425-100000@idd-01.imbc.gr>
 MIME-Version: 1.0
-Message-Id: <99102718461003.28945@uranium>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 
->Can you please try a 2.3.x kernel? I suffered from a similar problem and it was
->solved in 2.3.x.
 
-	I'm having a close look at 2.3. Recently (2.3.21 I guess), one very
-small part of my patch wasn't needed anymore because it was part of it.
+  I don't think that netscape supports plugins, i to use the flash plugin (the
+free one not macromedia's) some time ago but netscape never recognized the
+plugin :(
 
-	It does work very well with latest 2.3.x + my patch. I haven't tried
-whithout it, though. 
-	I'll try and tell you soon.(tomorrow probably)
+  Kostas Gewrgiou.
 
-sincerely,
-Thomas
-ps : I'm on the linuxppc-dev list 
--- 
-Thomas Capricelli
+On Wed, 27 Oct 1999, Kevin_Hendricks wrote:
+
+> 
+> Hi,
+> 
+> I now have the source to the java plugin for Netscape/Mozilla (via my license 
+> with Blackdown) and I have ported both the java plugin 1.1.2 (allowing the use 
+> of jdk118 inside Netscape and plugin 1.2 (to allow the forthcoming jdk 1.2.2 to 
+> work within netscape).
+> 
+> I have been unable to get either plugin to be recognized by the latest Netscape 
+> rpm available from LinuxPPC.
+> 
+> I went and downloaded the Sparc version of the plugin to see how the whole 
+> process worked under Solaris and noticed that the Solaris Netscape plugins 
+> already includes a libnullplugin.so which does not seem to exist in the ppc 
+> version of Netscape.  The description of libnullplugin.so is that it helps 
+> support plugins under Netscape.
+> 
+> Should there be a libnullplugin.so in /usr/lib/netscape/plugins/ under ppc?  Is 
+> it needed to get other plugins to work?
+> 
+> Any info here would be greatly appreciated.
+> 
+> Thanks,
+> 
+> Kevin
+> 
+> 
+> 
+> --
+> Kevin B. Hendricks
+> Associate Professor of Operations and Information Technology
+> Richard Ivey School of Business, University of Western Ontario
+> London, Ontario  N6A-3K7  CANADA   
+> khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
+> 
+> 
+> 
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
