@@ -1,55 +1,63 @@
-Date: Mon, 3 Dec 2001 12:45:59 +0100
-From: Olaf Hering <olh@suse.de>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: CONFIG_ALL_PPC
-Message-ID: <20011203124559.A3441@suse.de>
-References: <3C0561FE.80489F5E@vnet.ibm.com> <20011128221928.8366@smtp.wanadoo.fr> <15365.29851.123004.897729@gargle.gargle.HOWL> <20011129011941.A10393@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20011129011941.A10393@suse.de>
+Date: Mon, 3 Dec 2001 14:16:04 +0100 (MET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Martin Costabel <costabel@wanadoo.fr>
+Cc: Paul Mackerras <paulus@samba.org>,
+	Tom Rini <trini@kernel.crashing.org>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
+	Debian GNU/Linux PPC <debian-powerpc@lists.debian.org>
+Subject: Re: [PATCH] Minor changes to control/imstt/platinum/valkyrie/atyfb
+In-Reply-To: <3C0AA2AF.97E7FCB4@wanadoo.fr>
+Message-ID: <Pine.GSO.4.21.0112031415170.5519-100000@mullein.sonytel.be>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Nov 29, Olaf Hering wrote:
-
->
-> On Thu, Nov 29, Paul Mackeras wrote:
->
+On Sun, 2 Dec 2001, Martin Costabel wrote:
+> Paul Mackerras wrote:
+> > Martin Costabel writes:
+> > > For the valkyriefb driver on my Pmac 6400, I can confirm from a first
+> > > short test that it still works. This is with your patch applied to
+> > > today's 2.4.17-pre1-ben0 kernel.
 > >
-> > Benjamin Herrenschmidt writes:
-> >
-> > > It's a difficult choice ;)
-> > >
-> > > What about CONFIG_COMMON_PPC ? Still a bit misleading, but probably
-> > > better than CONFIG_ALL_PPC...
-> >
-> > You know, what I am really tempted to do is to split out prep again
-> > and have a CONFIG_PPC_OPENFIRMWARE to indicate pmac and chrp and
-> > anything else that has a working OF.  But Olaf would kill me... :)
+> > Do you still have macos on the 6400?  If so can you confirm whether,
 >
-> Hmm, why? :)
+> Yes, I still have MacOS 8.6. No 9.x, though.
+>
+> > if you set the screen resolution and colour depth in macos, that the
+> > value you have set in macos is the default that linux will use?
+>
+> I did some tests with the 2 useful modes of the 6400: 1024x768x8bit at
+> 72Hz (vmode 15, cmode 8) and 800x600x16bit at 60Hz (vmode 10, cmode 16).
+>
+> The results, with or without Tom's patch, were the same as they always
+> were:
+> The vmode of MacOS is used by the Linux console; the cmode 16 is not
+> recognized, so instead of vmode 10 16 one always gets vmode 10 8 as
+> default. The log says
+>
+> kernel: Monitor sense value = 0x62b, <6>using video mode 10 and color
+> mode 0
 
-Ok, got that.
-Is it worth the trouble?
+<video/macmodes.h>:
 
-banana:/usr/src/linux # l arch/ppc/kernel/*prep*o drivers/video/*vga*o
--rw-r--r--    1 root     root         3172 Dec  3 11:32 arch/ppc/kernel/prep_nvram.o
--rw-r--r--    1 root     root        17108 Dec  3 11:32 arch/ppc/kernel/prep_pci.o
--rw-r--r--    1 root     root        16412 Dec  3 11:32 arch/ppc/kernel/prep_setup.o
--rw-r--r--    1 root     root         7188 Dec  3 11:32 arch/ppc/kernel/prep_time.o
--rw-r--r--    1 root     root        29084 Dec  3 11:17 drivers/video/vgacon.o
+| #define CMODE_8                 0       /* 8 bits/pixel */
+| #define CMODE_16                1       /* 16 (actually 15) bits/pixel */
+| #define CMODE_32                2       /* 32 (actually 24) bits/pixel */
 
-70kb uncompressed code.
+So please try `cmode 1' instead of `cmode 16'.
 
+Gr{oetje,eeting}s,
 
-Gruss Olaf
+						Geert
 
 --
- $ man clone
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-BUGS
-       Main feature not yet implemented...
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
