@@ -1,25 +1,21 @@
-Return-Path: <SRS0+65cdfcdee250eb80995e+514+infradead.org+dwmw2@baythorne.srs.infradead.org>
-Received: from baythorne.infradead.org (baythorne.infradead.org
-	[81.187.226.107])
+Return-Path: <joerg@dorchain.net>
+Received: from Redstar.dorchain.net (153-133-088-212.ip-addr.teresto.net
+	[212.88.133.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 385DB67A63
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jan 2005 18:43:52 +1100 (EST)
-From: David Woodhouse <dwmw2@infradead.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1106107876.4534.163.camel@gaston>
-References: <200501082324.j08NOIva030415@hera.kernel.org>
-	<20050109151353.GA9508@suse.de>
-	<1105956993.26551.327.camel@hades.cambridge.redhat.com>
-	<1106107876.4534.163.camel@gaston>
-Content-Type: text/plain
-Date: Wed, 19 Jan 2005 07:43:42 +0000
-Message-Id: <1106120622.10851.42.camel@baythorne.infradead.org>
+	by ozlabs.org (Postfix) with ESMTP id 1AFA767A61
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jan 2005 21:14:54 +1100 (EST)
+Received: (from joerg@localhost)
+	by Redstar.dorchain.net (8.13.2/8.13.2) id j0JAEmMa001712
+	for linuxppc-dev@ozlabs.org; Wed, 19 Jan 2005 11:14:48 +0100
+Date: Wed, 19 Jan 2005 11:14:48 +0100
+From: Joerg Dorchain <joerg@dorchain.net>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Message-ID: <20050119101448.GA1374@Redstar.dorchain.net>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Linus Torvalds <torvalds@osdl.org>, "H. Peter Anvin" <hpa@zytor.com>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] raid6: altivec support
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="6TrnltStXW4iwmi0"
+Subject: nvram driver not possible as a module
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,14 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2005-01-19 at 15:11 +1100, Benjamin Herrenschmidt wrote:
-> We should probably "backport" that simplification to ppc32...
 
-Yeah.... I'm increasingly tempted to merge ppc32/ppc64 into one arch
-like mips/parisc/s390. Or would that get vetoed on the basis that we
-don't have all that horrid non-OF platform support in ppc64 yet, and
-we're still kidding ourselves that all those embedded vendors will
-either not notice ppc64 or will use OF?
+--6TrnltStXW4iwmi0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
--- 
-dwmw2
+Hi,
+
+KConfig says CONFIG_NVRAM is possible as a module. Loading the module
+fails because of an unknown symbol __alloc_bootmem. __alloc_bootmem is
+marked __init. The obvious workaround is to compile the driver not as a
+module, but how can this get really fixed?
+
+Bye,
+
+Joerg
+
+--6TrnltStXW4iwmi0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
+
+iD8DBQFB7jMYjY4+4PdzvOARAnCHAKCFQ6vnjvzP86ypEfIAtZzWqLKjtgCgj1sD
+isoih5INQaMb2KDi6jYeqdM=
+=UOdN
+-----END PGP SIGNATURE-----
+
+--6TrnltStXW4iwmi0--
