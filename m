@@ -1,9 +1,10 @@
-Message-ID: <3AC8ED90.54885AAF@corelatus.com>
-Date: Mon, 02 Apr 2001 23:22:24 +0200
-From: Thomas Lange <thomas@corelatus.com>
+Message-ID: <3AC97EED.2389B670@opensource.se>
+Date: Tue, 03 Apr 2001 09:42:37 +0200
+From: Magnus Damm <damm@opensource.se>
 MIME-Version: 1.0
 To: Dan Malek <dan@mvista.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
+Cc: Jim Chapman <jim.chapman@bigwig.net>,
+	linuxppc-embedded@lists.linuxppc.org
 Subject: Re: MII PHY support?
 References: <3AC76542.A4D27697@bigwig.net> <3AC8BA81.3BC77AC4@mvista.com>
 Content-Type: text/plain; charset=us-ascii
@@ -17,14 +18,16 @@ Dan Malek wrote:
 > making a big configuration mess of the FCC Ethernet driver.  I'm about
 > to do that for some 8xx FEC functions as well.
 
-We have a custom board (GTH) with an 860 using the SCC and the FEC for
-ethernet, so we have two transceivers on board.
-To support auto neg. and full duplex on the SCC, we need to be able to
-communicate with both transceivers. Since this communication is done
-on the same MDIO pins, it would be nice to move the code out of the
-fec driver and make it possible to use for scc ethernet too.
+the MII stuff is shared between many other drivers in the Linux kernel.
+I've seen PCMCIA hardware that bitbangs some port to play around with
+the
+PHY registers. So, some generic bitbanging code with callbacks for the
+bitsetting would be nice for them.
 
-/Thomas Lange/
+Have a look at the mii-tool program from the net-tools package!
 
+Cheers /
+
+magnus
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
