@@ -1,44 +1,42 @@
-Date: Fri, 11 May 2001 17:36:20 -0600
-From: Val Henson <val@nmt.edu>
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-Cc: Ken Offer <koffer@arlut.utexas.edu>,
-	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Problem with linuxppc smp.c
-Message-ID: <20010511173620.K18959@boardwalk>
-References: <3AF8554D.BF250E0A@arlut.utexas.edu> <Pine.LNX.4.30.0105091253400.17484-100000@opal.biophys.uni-duesseldorf.de>
+Date: Fri, 11 May 2001 18:25:06 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Christiaan Welvaart <C.J.Welvaart@phys.uu.nl>
+Cc: bj93543@binghamton.edu, linuxppc-dev@lists.linuxppc.org
+Subject: Re: swim3 + ide-floppy devfs patch (was Re: Q: devfs and swim3)
+Message-ID: <20010511182506.R30868@opus.bloom.county>
+References: <Pine.GSO.BU-L4.10.10103022135250.25059-100000@bingsun2> <Pine.OSF.4.33.0103282255180.22208-100000@ruunat.phys.uu.nl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.30.0105091253400.17484-100000@opal.biophys.uni-duesseldorf.de>; from schmitz@opal.biophys.uni-duesseldorf.de on Wed, May 09, 2001 at 12:54:36PM +0200
+In-Reply-To: <Pine.OSF.4.33.0103282255180.22208-100000@ruunat.phys.uu.nl>; from C.J.Welvaart@phys.uu.nl on Wed, Mar 28, 2001 at 11:19:52PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, May 09, 2001 at 12:54:36PM +0200, Michael Schmitz wrote:
+On Wed, Mar 28, 2001 at 11:19:52PM +0200, Christiaan Welvaart wrote:
 >
-> > smp.c: In function `smp_gemini_kick_cpu':
-> > smp.c:670: `i' undeclared (first use in this function)
-> > smp.c:670: (Each undeclared identifier is reported only once
-> > smp.c:670: for each function it appears in.)
-> > smp.c: In function `smp_gemini_setup_cpu':
-> > smp.c:679: `cpu_nr' undeclared (first use in this function)
+> On Fri, 2 Mar 2001 bj93543@binghamton.edu wrote:
+>
+> > Is there known any reason why swim3 floppy controler is not inserted
+> > in devfs ?
+> > or can be swim3.c patched like:
 > >
-> > Any thoughts?  I guess I could try to grok the author's meaning and fix
-> > this... ;-)
+> > -swim3.c:1034:  ...register_blkdev...
+> > +swim3.c:1034:  ...devfs_register_blkdev...
 >
-> I guess it's obvious that both of these should be declared int.
+> This is not enough, it just prevents the floppy driver to be registered if
+> you tell devfs to not use the old-style device system with major/minor
+> numbers I believe. Below a patch that seems to work, though I'm not sure
+> if the permissions are right. I also included a patch for ide-floppy since
+> my zip drive was missing from devfs as well. That one should probably be
+> sent to the regular linux-kernel list though.
 
-Actually, this dates back from the last big SMP reorganization (in
-September 2000 or so).  The variable names weren't changed to match
-the variable name passed to the (newly created) function.  Gemini
-hasn't compiled SMP since then.
+[I ment to do something about this sooner, really].
+I've applied the swim3 patch to the 2_4 bk tree, so this should propogate
+eventually.  The ide-floppy one really should goto l-k or better yet the
+IDE maintainer.
 
-I've written one patch to make SMP work on the Gemini (similar to an
-earlier patch by Dan Cox) but Cort asked for some rewrites.  I'm
-working on it as we speak.
-
-For the confused, I'm the official Gemini board maintainer now (taking
-over from Dan Cox).
-
--VAL
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
