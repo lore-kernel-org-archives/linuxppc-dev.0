@@ -1,30 +1,50 @@
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: ati_drv.o & fonts in XFree86-4.1
-From: Kohkichi Hosoda <khosoda@venus.dti.ne.jp>
-In-Reply-To: <20010624015513C.kohkichi@venus.dti.ne.jp>
-References: <20010624015513C.kohkichi@venus.dti.ne.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Message-Id: <20010624161324J.kohkichi@venus.dti.ne.jp>
-Date: Sun, 24 Jun 2001 16:13:24 +0900
+Message-Id: <200106240954.LAA00837@piglet.grunz.lu>
+Date: Sun, 24 Jun 2001 11:54:29 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: getting the 8600 to boot 2.4.5
+To: guillaume.laures@noos.fr
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <3B337C7B.1040309@noos.fr>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Sorry for self-reply.
+On  22 Jun, this message from Guillaume Laurès echoed through cyberspace:
+> The trick is that in 2.4 kernel, linux tries to open the first frame
+> buffer, and on machines of the 8x00 class this mean opening the sixty
+> convoluer, a frame buffer that allows the use of the video output (Y/C
+> and composite).
 
-Application of XFree86-4.1-AJ-atim64.drv-v4.0.patch from
-Fukui-san's src.rpm and recompilation of ati directory
-almost solved the problem.  Actually, I exchanged original
-drivers of xf4.1 for these new ati_drv.o and atimisc_drv.o.
-I still have a little bit weird fonts on X, but it's OK and
-much more readable.  In addition, x11perf --scroll500 showed
-118.0/sec on 24 depth again.  Great!
+Ah, there it is! I've long wondered how Sixty6 would appear in the
+device tree ;-)
 
-Thank you for your kind advice, Oikawa-san.
+> Unfortunately, linux has not a driver for it
 
-Kohkichi Hosoda
+Would be a fun project to write one ;-)
 
-E-mail address: khosoda@venus.dti.ne.jp
+[snip]
+> controlfb: Memory bank 1 present, bank 2 absent, total VRAM 2MB
+>
+> On a side note, this is wrong, I have the 2 banks filled, but I'll check
+> this later
+
+Yeah; Takashi Oe fixed the VRAM detection for good, but it seems his
+patches have not made into any released tree yet. Maybe it's in BenH's
+tree; but I didn't check recently.
+
+If you're desperate, I can try to dig it out.
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
