@@ -1,44 +1,36 @@
 Subject: Re: just compiled a 2.4.19 kernel with smp support...
 From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: GRAVE Xavier <grave@ipno.in2p3.fr>,
-	linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20021022163130.5160@192.168.4.1>
+To: Xavier Grave <grave@ipno.in2p3.fr>
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <200210221503.RAA21965@ipnmail.in2p3.fr>
 References: <Pine.OSF.3.91.1021022160554.3474A-100000@ipnosl.in2p3.fr>
-	<20021022163130.5160@192.168.4.1>
+	<20021022163130.5160@192.168.4.1>  <200210221503.RAA21965@ipnmail.in2p3.fr>
 Content-Type: text/plain; charset=ISO-8859-1
-Date: 22 Oct 2002 17:12:29 +0200
-Message-Id: <1035299550.1129.1812.camel@tibook>
+Date: 22 Oct 2002 17:27:45 +0200
+Message-Id: <1035300466.1129.1904.camel@tibook>
 Mime-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Die, 2002-10-22 at 18:31, Benjamin Herrenschmidt wrote:
+On Die, 2002-10-22 at 17:00, Xavier Grave wrote:
 >
-> >> Yah, though XFree CVS should work, and Michel Danzer debs
-> >> might too, but that has to be tested with him.
-> >I'll try them in a few minutes...
-> >> What about radeonfb ? (The kernel framebuffer device). Does
-> >> it work with my kernel ?
-> >
-> >It is in the kernel, but how do you now it work ?
-> >
-> >I have the two penguin at start.
+> > >But I don't know how to make xfree86 to use radeonfb.
 >
-> Ok, if you have the penguins and the text console, then it
-> works.
+> > Use "fbdev" as the driver in xfree, that will cause X to
+> > run unaccelerated on top of radeonfb, so it will at least
+> > be able to set mode & colors properly.
+> >
+> > I think support for the 9000 have been added to XFree CVS
+> > recently, though that may not yet be in the DRI one (and
+> > so Michel snapshots). The XFree CVS is beeing merged
+> > again into the DRI one now, so this should be fixed soon.
+>
+> where can I find the .deb files from Michel, please ?
 
-Not necessarily if you're booting with video=ofonly. cat /proc/fb
+http://dri.sourceforge.net/snapshots/README.Debian
 
-
-> I think support for the 9000 have been added to XFree CVS
-> recently, though that may not yet be in the DRI one (and
-> so Michel snapshots). The XFree CVS is beeing merged
-> again into the DRI one now, so this should be fixed soon.
-
-Yep, and in the meantime, you could try telling the radeon driver to
-treat it like a 8500 with the ChipID or Chipset directive.
+Beware that the radeon 2D driver is still basically 4.2.0.
 
 
 --
