@@ -1,31 +1,52 @@
-To: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: gdb and NPTL
-From: "Linh Dang" <linhd@nortelnetworks.com>
-Date: Mon, 05 Jul 2004 11:10:59 -0400
-In-Reply-To: <1089036206.6006.27.camel@lucy.pep-kaufbeuren.de> (Stefan
- Nickl's message of "Mon, 5 Jul 2004 10:03:27 -0400")
-Message-ID: <wn5y8lymqv0.fsf@linhd-2.ca.nortel.com>
-References: <1089036206.6006.27.camel@lucy.pep-kaufbeuren.de>
+Message-ID: <40E97EB5.2040008@fh-landshut.de>
+Date: Mon, 05 Jul 2004 18:15:49 +0200
+From: Oliver Korpilla <okorpil@fh-landshut.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: okorpil@fh-landshut.de
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: [more info - please help!] MPC7455 DMA buffer strangeness 
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi
+I checked my Page Table Entries (PTEs) for the MPC7455 and MPC8240 after the
+remap_page_range() took place.
 
-We're migrating out target (proprietary ppc-7447/discovery based
-board) from VxWorks to 2.6.7 and NPTL. Building/running multi-threaded
-applications is fine but gdb (6.1,6.1.1,cvs) doesn't work. I keep
-complaining about cannot find new threads and and the app died with:
+Except for the RPN part (the physical address of the page) the PTEs match,
+ending with the last 11 Bits (flags as in arch/ppc/mm/pgtable.h):
 
-        "Program terminated with signal SIGTRAP, Trace/breakpoint trap"
+Kernel space: 0x581
+User   space: 0x72D
 
-both native and remote debugging had similar problems.
+(for user space this does mean - from least significant to most significant:
+Page present: 	no,
+Hashed PTE: 	yes,
+User mode: 	yes,
+Guarded: 	yes,
+Coherent: 	no,
+Inihibited: 	yes,
+Write-Through:	no,
+Changed:	no,
+Referenced:	yes,
+Exec:		yes,
+Read-Write:	yes.)
 
-Any suggestion/help would be really appreciated.
+This does look correct for my application. But it does yield different results
+on the two processors, while both seem to definitely match the same physical
+address (the 1st 21 bits do match in the Linux PTEs).
 
---
-Linh Dang
+How are these Linux PTEs mapped to the MMU PTEs (64 bit wide descriptors)?
+
+The "Programming Environments Manual For 32-Bit Implementations of the PowerPC
+Architecture", the MPC603e and MPC7450 reference manuals depict a completely
+different format, so how and where are these converted? (Hopefully not in
+assembler! ;) )
+
+I'm so confused by this! It doesn't seem logical that I cannot access those
+buffers correctly!
+
+Thanks in advance,
+Oliver Korpilla
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
