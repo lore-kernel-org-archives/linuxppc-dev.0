@@ -1,100 +1,43 @@
-Message-ID: <83E3831A88E65844B01DB1A73FB66F9314082E@CSDNT99.cdcgy.com>
-From: "Dang, James" <James.Dang@gdcanada.com>
-To: "'greggiraud@netcourrier.com'" <greggiraud@netcourrier.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: boot linux mpc8260ads
-Date: Fri, 11 Apr 2003 11:46:17 -0600
+Message-ID: <3E9703B8.4E82B68E@tataelxsi.co.in>
+Date: Fri, 11 Apr 2003 23:34:40 +0530
+From: "Kamalesh B" <kamal@tataelxsi.co.in>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: SASH and Busybox problem
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Your problem is due to which communication controller you used as your
-console. PPCBoot uses SCC1 as console while Linux ttyS0 is configured to use
-SMC1 as console. You have to make them the same have proper console.
+hello,
 
-James Dang.
+Iam working on MPC8260 based embedded system and trying to port linux on
+it. I have put linux on the board and it boots till a message "Freeing
+unused kernel memory: 48k init". After this, it hangs.
 
------Original Message-----
-From: greggiraud@netcourrier.com [mailto:greggiraud@netcourrier.com]
-Sent: Friday, April 11, 2003 12:51 PM
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: James.Dang@gdcanada.com
-Subject: boot linux mpc8260ads
+I went through many mails in mailing lists giving instructions what to
+do.
+As suggested i tried,
+1. I statically compiled a simple hello.c program and placed it in
+"sbin" directory. After booting it prints "Hello". From this, it means
+loading the shared lib has some problem.
+2. I am using busybox (statically linked) as my shell as "/sbin/init" is
+linked to "busybox" itself. It hangs giving no messages on the screen.
+3. I also read about SASH (Standalone Shell). I downloaded the source
+code and compiled with static option. I loaded the executable (sash)
+file to "/sbin" directory. I booted the linux, it went till the end and
+invoked the shell. But shell is very unstable as there are many hangs.
+Only some commands work and other hangs. And even the one which works is
+not consistent and hangs frequently.
 
+I have not kept any memory or IO device are mapped below 0xf0000000.
 
-greggiraud@netcourrier.com
+What i should i do to get my BUSYBOX working???
+Iam stuck at this point,
+any help???
 
-Hi, very strange...
-I use a MPC8260ADS card. IMMR=0xf0000000 on mpc8260ads.h (in ppcboot) and
-IMAP_ADDR=0xf0000000  in ppcboot.h (/linux/...).
-moreover mpc8260ads.h contains <asm/ppcboot.h>.
-I put pImage and pRamdisk in flash at 0xff800000 and at 0xfff40000 (after
-ppcboot.bin)
-So Normally there is no pb, but...
-
-let's see!
-
-PPCBoot 1.2.1 (Apr 10 2003 - 16:13:49)
-
-MPC8260 Reset Status: External Soft, External Hard
-
-MPC8260 Clock Configuration
- - Bus-to-Core Mult 3x, VCO Div 2, 60x Bus Freq  33-100, Core Freq 100-300
- - dfbrg 0, corecnf 0x08, busdf 3, cpmdf 1, plldf 0, pllmf 1
- - vco_out  266666664, scc_clk   66666666, brg_clk   66666666
- - cpu_clk  199999998, cpm_clk  133333332, bus_clk   66666666
-
-CPU:   MPC8260 (Rev 14, Mask A.0(A) 2K25A) at 199.999 MHz
-Board: Motorola MPC8260ADS
-I2C:   ready
-DRAM:  16 MB
-FLASH:  8 MB
-*** Warning - bad CRC, using default environment
-
-In:    serial
-Out:   serial
-Err:   serial
-Hit any key to stop autoboot:  0
-=> bootm fff40000 ff800000
-## Booting image at fff40000 ...
-   Image Name:   Linux-2.4.4
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    471457 Bytes = 460.4 kB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-## Loading RAMDisk Image at ff800000 ...
-   Image Name:   Simple Ramdisk Image
-   Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
-   Data Size:    567988 Bytes = 554.7 kB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Loading Ramdisk to 00ed4000, end 00f5eab4 ... OK
-TTaammoooo  MM  ii  kkff  ssttl a 0500
-
-                                      iu eso .. ro@@clotlcllmi)(c eein29.
-0001 p
-oe1:0pgse. 06) 5juaa 01:62  S 03
-
-        oe2:0pgs
-
-airtn ea op.11..  ggIIdln:ro==e/a w
-nnyyaaeeaa al nre:24 odr ,134btsaaiibb  11  rrlloo,,6kdt,4kii,0 ihe)
-uue-ah ahtbeetis 04(re:0 06bts
-
-                              aeccehs al nre:49 odr ,134bts
-                                                           IIddcch ahtbeetis
-04(
-re:1 12bts
-nn  TT00ooLLuu22X
-MMAA  iirvrin00 BBeeuunnwwss nvriyCmue oit E309SSrrnnkwp 18
-
-               tS nSC t000,BG
+with rgds,
+kamal
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
