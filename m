@@ -1,11 +1,11 @@
-Message-Id: <200012010709.IAA00844@piglet.grunz.lu>
-Date: Fri, 1 Dec 2000 08:09:21 +0100 (CET)
+Message-Id: <200012011956.UAA00670@piglet.grunz.lu>
+Date: Fri, 1 Dec 2000 20:56:28 +0100 (CET)
 From: Michel Lanners <mlan@cpu.lu>
 Reply-To: mlan@cpu.lu
-Subject: Re: usb wheel mouse, XF4.0
-To: bh40@calva.net
-cc: jeglin@4pi.com, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <19341024104634.3912@192.168.1.2>
+Subject: Re: dual IRQ 23 (was: USB?; 2.2.18 no boot?; aic7xxx?)
+To: jeglin@4pi.com
+cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <p04330100b64a0cac23a1@[192.168.0.1]>
 MIME-Version: 1.0
 Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
@@ -14,28 +14,47 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 Hi all,
 
-On  29 Nov, this message from Benjamin Herrenschmidt echoed through cyberspace:
->>In addition, yesterday I speculated that the dual IRQ 23 might help
->>explain why I was having 2.2.18preX boot problems with the aic7xxx.
->>This can't really be the case because one of the slot summary tests
->>was to remove the USB card (and all others). There was no difference,
->>so my boot issue remains a separate one with its odd workaround.
+On  28 Nov, this message from Stefan Jeglinski echoed through cyberspace:
+> lspci -vv is attached at the end. The key point is that the entry for
+> the Adaptec 2940UW card and the Orangelink USB card BOTH say:
 >
-> Ok, I found the problem, I think, with the interrupt. I'm still
-> investigating, but what it looks like is that the OF tree puts the
-> AAPL,interrupt property in the pci-bridge node, not in the sub-nodes.
+> 	Interrupt: pin A routed to IRQ 23
 
-I remember seeing this documented somewhere in the kernel sources, I
-think.
+> 00:0d.0 SCSI storage controller: Adaptec AIC-7881U
+[snip]
+> 	Interrupt: pin A routed to IRQ 23
 
-Also, another 'shot in the dark': might we have a bug in the PCI-bridge
-code, that (erronously) rotates interrupts? On Intel machines, the 4 PCI
-interrupt lines are BIOS-wired to some IRQs, and are rotated one
-position while passing to the next PCI slot. They are also, IIRC,
-rotated by each PCI bridge. This _could_ make the USB card be configured
-for the wrong interrupt, maybe the adjacent slot: SCSI controller....
+> 00:0e.0 Ethernet controller: Digital Equipment Corporation DECchip
+> 21142/43 (rev 41)
+[snip]
+> 	Interrupt: pin A routed to IRQ 24
+>
+> 00:0f.0 PCI bridge: Action Tec Electronics Inc: Unknown device 0100
+> (rev 11) (prog-if 00 [Normal decode])
+>
+[snip]
+> 01:0c.0 FireWire (IEEE 1394): NEC Corporation: Unknown device 00cd
+> (rev 01) (prog-if 10 [OHCI])
+[snip]
+> 	Interrupt: pin A routed to IRQ 1
+       This is most certainly wrong -> ^
+>
+> 01:0d.0 USB Controller: OPTi Inc. 82C861 (rev 10) (prog-if 10 [OHCI])
+[snip]
+> 	Interrupt: pin A routed to IRQ 23
+                        and this too ->^^
 
-Just a thought...
+Bot of these devices should get IRQ25. Why? Because on Macs, all four
+IRQ lines of a PCI slot are OR'ed together on the bridge chip.
+Therefore, there is one single fixed IRQ per PCI slot. So, the devices
+behind the PCI-to-PCI bridge in slot 00:0f should all have the same IRQ,
+which should be, following the obvious logic, IRQ 25.
+
+Either a problem with the P2P bridge code in Linux, or with detecting
+the IRQ's out of OF, as Ben suggested.
+
+Stefan, you could try hardcoding that IRQ in the PCI fixup code, or in
+the driver, and see whether that works...
 
 Michel
 
@@ -45,5 +64,6 @@ Michel Lanners                 |  " Read Philosophy.  Study Art.
 L-1710 Luxembourg              |
 email   mlan@cpu.lu            |
 http://www.cpu.lu/~mlan        |                     Learn Always. "
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
