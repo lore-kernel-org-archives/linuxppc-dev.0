@@ -1,53 +1,24 @@
-Message-Id: <l03130300b6ec56671fa7@[24.218.240.205]>
-In-Reply-To: 
- <Pine.A41.3.96LJ1.1b7.1010328152002.32200D-100000@unlserve.unl.edu>
-References: <20010328070644.8D1F9DB9D3@atlas.valhalla.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Sat, 31 Mar 2001 23:01:44 -0500
-To: <linuxppc-dev@lists.linuxppc.org>
-From: "Michael R. Zucca" <mrz5149@acm.org>
+Date: Sun, 01 Apr 2001 12:02:53 +0100
 Subject: Re: Sound stoppage
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: "Michael R. Zucca" <mrz5149@acm.org>,
+	linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
+Message-Id: <20010401110310.A98CEDBA31@atlas.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-First, I've recently discovered that the problem isn't limited to sound.
-I've also noticed that my Adaptec SCSI card has bouts of timeouts.
-Something I wasn't aware of before.
 
-Ok, so I had a sec this weekend and I wanted to quickly see if the PCI
-timing hack that Ben described worked. Now, perhaps I wrote it wrong, but I
-noticed that I still get the sound stoppage as well as disk burps. Nothing
-seems to have improved :-(
+> I'm hacking on a 2.2 snapshot at the moment (yes, yes, I'll get 2.4 as soon
+> as I can!) :-)
 
-I'm hacking on a 2.2 snapshot at the moment (yes, yes, I'll get 2.4 as soon
-as I can!) :-)
+2.2.x is ***broken*** in dmasound dbdma - (even with my last patch)... the
+is a memory allocation bug in the dbdma cmd buffs.
 
-Here's a snippet I added to the end of init_bandit() in pmac_pci.c:
+so - all bets are off about what might happen ;-)
 
-#define BANDIT_POWERCENTER_HACK_ADDR	0x58
-#define BANDIT_POWERCENTER_HACK_DATA	0x12
-
-#if 1
-	/* PowerCenter PCI timing hack */
-	out_le32(bp->cfg_addr, (1UL << BANDIT_DEVNUM) +
-BANDIT_POWERCENTER_HACK_ADDR);
-	udelay(2);
-	out_8(bp->cfg_data, BANDIT_POWERCENTER_HACK_DATA) ;
-	printk(KERN_INFO "PowerCenter PCI timing hack enabled.\n") ;
-#endif
-
-Any thoughts?
-
-
-
-
-____________________________________________________________________
- Michael Zucca - mrz5149@acm.org - http://www.mdc.net/~mrz5149/
- "I will choose a path that's clear. I will choose Freewill. "
-  --Rush, Freewill
-____________________________________________________________________
-
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
