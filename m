@@ -1,37 +1,49 @@
-Date: Fri, 11 Jul 2003 00:27:27 -0700
-From: Peter Ryser <Peter.Ryser@xilinx.com>
-Subject: Re: Linux on the Virtex II Pro?
-To: "Kerl, John" <John.Kerl@avnet.com>
-Cc: "'Charles Lockhart'" <lockhart@jeans.ifa.hawaii.edu>,
-	linuxppc-embedded@lists.linuxppc.org
-Message-id: <3F0E66DF.2BD1A6CA@xilinx.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-References: <C7FFFEA58B43D311920D0004ACE5333F0F53583A@amer25.avnet.com>
+From: Christophe.LINDHEIMER@fr.thalesgroup.com
+Message-ID: <D96E2AFA0DF3D211B139009027454948034CBEBC@helios.gnv.tcc.thomson-csf.com>
+To: slowforce@21cn.com, linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Minimal ramdisk
+Date: Fri, 11 Jul 2003 11:16:44 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Current Linux/PPC trees already
-> include support for 405 as well as the Xilinx ML300 board.
-> (The Linux/PPC tree I got had slightly stale libgen'ed
-> code, which I simply replaced with current libgen'ed code
-> from my XPS project.)  I can send you a patch file on request.
+Hi.
 
-At the beginning of July the linuxppc_2_4_devel tree has been updated with the
-drivers shipping with EDK 3.2 SP2. Further, all necessary changes have been
-pushed to move from V2PDK to EDK (interrupt controller bit ordering, System ACE
-byte/word addressing, etc.).
+I am currently using a non compressed file system that is around 1.6Mb.
+So you should gain some place with compression.
+Use BusyBox for your shell and commands ( 300Ko but you can remove options
+).
+For the lib I use standards libs but it must possible to find size optimized
+libs.
 
-Unfortunately, the on-going changes to the OCP implementation (not Virtex-II
-Pro related) break the kernel compilation for ML300.
+Regards
 
-- Peter
+Chris
 
 
-----
-http://www.xilinx.com/ml300
-http://www.xilinx.com/edk
-
+> -----Message d'origine-----
+> De: li [mailto:slowforce@21cn.com]
+> Date: jeudi 10 juillet 2003 16:09
+> À: linuxppc-embedded@lists.linuxppc.org
+> Objet: Minimal ramdisk
+>
+>
+>
+> Hi all,
+> My custom board has only 2Mbyte Flash memory
+> i need to install an ppcboot, kernel image,
+> file system, application and some parameters(several hundred
+> bytes) on that memory.
+> So a minimal ramdisk is very important to me.
+> Does anyone have much experiments on this topic
+> Thanks in advance!
+> Regards!
+> Li
+>
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
