@@ -1,44 +1,127 @@
-Date: Thu, 2 Nov 2000 11:46:31 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Todd Inglett <tinglett@vnet.ibm.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Yet another RS6k whipped!
-In-Reply-To: <3A006299.73525FEE@vnet.ibm.com>
-Message-ID: <Pine.HPX.4.10.10011021136540.15431-100000@gra-ux1.iram.es>
+Message-ID: <3A015F72.2576BB01@mpifr-bonn.mpg.de>
+Date: Thu, 02 Nov 2000 13:34:58 +0100
+From: Albrecht Dreﬂ <ad@mpifr-bonn.mpg.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Olaf Hering <olh@suse.de>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Lombard Sleep Crash (Was: 2.2.18pre17 again)
+References: <14839.53124.753011.489351@argo.linuxcare.com.au> <39F96E14.C06AB6FB@mpifr-bonn.mpg.de> <20001027163923.A13804@suse.de>
+Content-Type: multipart/mixed;
+ boundary="------------2752A4E46C17162BE738CFF4"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 1 Nov 2000, Todd Inglett wrote:
+This is a multi-part message in MIME format.
+--------------2752A4E46C17162BE738CFF4
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
->
-> Enclosed is the original boot log for Linux on a 43P-140 (200mhz).  As
-> you might guess it is still a way off from being useful.  Thanks go to
-> Tom Gall who did the initial work (but ran out of time) and Dave Monroe
-> for being on irc when I got frustrated :).
->
-> For those interested this box boots as prep but has an openpic.  It can
-> run with a chrp style memory map which is probably what I am going
-> attempt next after installing something on the disk.  This boot log is
-> with a prep memory map.
+Olaf Hering wrote:
+> Try current linux-pmac-benh.
 
-Ok, there were a few bugs with Openpic on PreP: some functions were marked
-__chrp while openpic support is a completely orthogonal issue. Yours seems
-to work, however, which source tree are you using ?  (I'm still basing
-everything on kernel.org).
+O.K., I rsynced linux-pmac-benh from penguinppc.org (which is version
+2.2.18pre17-ben1), built it, and now I get a kernel panic upon wakeup. My pmud
+version is still 0.7.1.
 
-Besides this, it's fairly close to what I do on my MVME boxes: the
-firmware puts them in PreP mode and I reorganize them as CHRP. This forces
-me to reorganize all the PCI space (but the code has not been with bridges
-and will probably fail). You have open firmware, which is hopefully more
-flexible than PPCBUG which I have to use.
+I attach the kernel .config and the relevant part from /var/log/messages, and as
+always, any help is _really_ welcome!
 
-I am late in publishing my patches (on ftp://vlab1.iram.es/pub/liux-2.4),
-hopefully I can be back to hacking around the 15th...
+Thanks in advance, Albrecht.
 
-	Gabriel
+--
+--------------2752A4E46C17162BE738CFF4
+Content-Type: application/octet-stream;
+ name="panic_upon_wakeup.gz"
+Content-Disposition: attachment;
+ filename="panic_upon_wakeup.gz"
+Content-Transfer-Encoding: base64
 
+H4sICKFdAToCA3BhbmljX3Vwb25fd2FrZXVwAI1V72/aOhT93r/iftsmdWDHLiSR3pNCEvrQ
+yoZg1SYhPrixaSPy6zmGrv/9rkNKAuumRSLcXJ97fO5x7FT5Xq4ZczY+VBjC2mhVP5WZhH+A
+O+QacqEf0wKf6M0GaiO0UfKq6qoW83s4KF2nZQGU+kA9z4NbBndl/iD0GVQKlSOqNmVVKQnv
+K6FVYUD9SE1aPMK6KI2CxSzafGiq/pqbIbfeF4UlGSqTDKvyWelh9awTk2EDP9J8n4NIWtam
+z6aTfQX1PkmUktjT1RoGeMHmqs+bFihONPr2tdKg1f97VaMHUGdKVX8noYG+CmjRj6XFmrLl
+2SldqMyHXMlUwIN4AQJJWRiRFjUICKOPyy9zkDo9KDiBd+rlQarDIPFhidYeLKPNlWiOlV7t
+De3QQTQ5jYIw4FzDkyhkhl31UJEyKrH99eHXYF4qBbPVl2uon0VVtTPVgzfFBFL+WYo64MIT
+H2L7D1iVJgq2pf4FeHw+av9vFgG+CHh3fGeQ8As6+js654LOuaQb++MB3Z4blZe43NYl1rlU
+K2MXjMN7o0Wyq4T80BU1BdjSYjV02upLIexCsfM7xexCMbtUzHw2ID2bnqRArkI8ZNb3+T4z
+6bcSVzmaB9Br/94ilO3h2BIcB+Dz/d0dVPhCGuxSKq22+CuSpv9DivtEZCCkxJOhBtJcDpqg
+tEbB/JggPSs+zxY+hIRElE45fI+XfltFCNwt2yEvIrCMb1d4LDAy2iYuga/LAAsJQ9iJa75q
+qz3CHFjH8WwZLefxpkN8DVaf8HiyLApxzfaCd3anvYM8//hv9Shx0FXH6UVtoH6pE5Fh6Q2H
+jiezQ7kwTyAdpgTpq7hdLAnpCY9wsinemiC20JA4hHDOu05DQscj7rlNhreZKY/HLpwTuz17
+TkE8jScRckJIJ+PAwwznrfGUEBq7k7ADYyZgN5ScE9PRW8RvB4271HYVu20zrtMGDk51Ruxw
+awWdkFPjLj2pcTDg1L0Zn2ZwXwPaN6e1qyMOcUnw4Et2dnMpvz9CaOB5odv5jxlKg2nYyOAe
+4U3GIa7NEBZyrwkI85y+djKdupEXNBYSxhBkAzpC53CITEZez9Su7NNxl1SiSBP/dc8I/G7g
+dii3qBmPU60EVAkkhEhKtxwyfYw9SU5bB9fO1Lvm+zPEtxSufgLqRIIkfQcAAA==
+--------------2752A4E46C17162BE738CFF4
+Content-Type: application/octet-stream;
+ name="kernel-config.gz"
+Content-Disposition: attachment;
+ filename="kernel-config.gz"
+Content-Transfer-Encoding: base64
+
+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
+q8zZJLJXCEtWX/z/AQIMYatMMwAA
+--------------2752A4E46C17162BE738CFF4--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
