@@ -1,41 +1,32 @@
-Date: 2 May 2002 13:09:32 -0000
-Message-ID: <20020502130932.3019.qmail@webmail11.rediffmail.com>
+Message-ID: <E1836A7F3557D311A14000805F9F36FC0141C664@usdfo011.usac.danfoss.net>
+From: Hihn Jason <JasonHihn@DANFOSS.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Cc: Christensen Henrik USAC <HenrikChristensen@DANFOSS.com>
+Subject: Position available for 8xx series programmer
+Date: Thu, 2 May 2002 16:56:09 +0200 
 MIME-Version: 1.0
-From: "navinb" <ppc4@rediffmail.com>
-Reply-To: "navinb" <ppc4@rediffmail.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: USB problem ..
-Content-type: text/plain;
-	format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Hello all,
 
-I am facing specific problems in getting USB working on
-mpc823.
+Danfoss Inc (www.danfoss.com) a world leader in industrial automation, has a
+position available for an Embedded PPC software engineer in Baltimore, MD.
+This position requires low-level experience with the 8xx series processors.
+Embedded Linux in particular, but any Linux experience is desired, but not
+required.
 
-sometimes it gets hanged as soon I write to USCOM (usb command)
-register , also I am not able to set
-"endpoint->tstate" equal to zero during initialisation.
+Anyone interested is encouraged to contact my boss, Henrik Christensen at:
+HenrikChristensen@Danfoss.com or (410)931-6778 x4254
 
-I can see that it indefinitely keeps awaiting for idle
-bit set in USBS(usb status register) register.
+I look forward to working with you in the future.
 
-as per the MPC823 manual I should first operate on cpcr
-(cpm command register) with usb commands before issuing
-USCOM but their example code doesn't do that.
-
-I am using only endpoint zero.
-
-should I use my buffers in dpram or host memory?
-any issues specific to this...
-
-any pointer on this / known issues or working driver code..
-
-with Regards,
-Navin
+Sincerely,
+Jason Hihn
+Danfoss R&D
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
