@@ -1,56 +1,33 @@
-Date: Fri, 27 Aug 1999 15:09:41 +0200 (CET)
-From: Marc Dietrich <Marc.Dietrich@hrz.uni-giessen.de>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: bug in l2cr status display? 
-Message-Id: <Pine.A41.4.05.9908271508310.19776-100000@c2.hrz.uni-giessen.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <Pine.HPX.4.10.9908271248020.9440-100000@gra-ux1.iram.es>
+Date: Fri, 27 Aug 1999 15:17:48 +0200
+To: Gabriel Paubert <paubert@iram.es>, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: CHRP boards and VGA text mode.
+Message-Id: <19990827151748.028421@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello out there,
-
-I've downloaded the 750 PDF Manuel and to Bit #9 (L2DO) it says:
-"L2 Data-only. Setting this bit enables data-only operation in the L2
-cache..."                                    ^^^^
-So setting this bit disables instruction caching therefore it should'nt be
-set on bootup. 
-
-It seems to me, that the L2CR programming is implemented but disabled in
-current kernel version. The L2CR=xxxxxxx doesn't work for me.
-
-By the way, it seems that Motola (or IBM) uses different cache chips on
-the 750 CPU - one with 0.5 and one with 1.0 ns timings. 0.5 ns are the
-common used chips while mine has a 1.0ns timing. This causes the
-PowerLogix Cache Control to crash my Mac. Has anyone expiriances on this?
-How has this been to recocnice in the kernel boot-up?
+On Fri, Aug 27, 1999, Gabriel Paubert <paubert@iram.es> wrote:
 
 
-Marc
+>- Make the kernel code loaded at 640 k physical (except for the interrupt
+>vectors...). There is no way to build a kernel with less than 384k of
+>code (my nfsroot kernels are truly minimal). Reserve the first 16 kB or so 
+>for interrupt handlers/whatever, then 624k of normal memory followed by
+>the kernel and then higher memory. I would actually prefer this solution,
+>but feel free to suggest any other...
 
-On Thu, 26 Aug 1999, Michel Lanners wrote:
+Side note: having the ability to locate the kernel at a different address
+than the exception vectors would help the NuBus port.
 
-> 
-> Hi all,
-> 
-> While playing with the l2cr in order to set it manually after OF
-> booting, I've come across the following.
-> 
-> It seems that the effect of the L2CR[DO] bit isn't clear. In the 750
-> user manual, in the table describing l2cr, it says '... setting  this
-> bit enables the caching of instructions'. This doesn't corrsspond to
-> the name of the register, nor to what I see with my G3 upgrade card: in
-> normal operation, L2CR[DO] isn't set, but it makes no sense to disable
-> instruction caching excpet for test purposes.
-> 
-> So, what's happening? Is the user manual wrong? In that case, we should
-> correct arch/ppc/kernel/ppc_htab.c accordingly.
-> 
-> Any Motorola engineer around? Others with better docs? FWIW, I checked
-> the 750 errata already... nothing.
-> 
-> Michel
+-- 
+           Perso. e-mail: <mailto:bh40@calva.net>
+           Work   e-mail: <mailto:benh@mipsys.com>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
