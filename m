@@ -1,22 +1,18 @@
-Date: Tue, 5 Jan 1999 11:52:40 -0600 (CST)
-Message-Id: <v03110700b2b7abbf9cdd@[129.59.235.1]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Message-Id: <v04011700b2b80bfaa277@[209.86.156.99]>
 In-Reply-To: <3691F885.77C7D466@mpifr-bonn.mpg.de>
 References: <v04011700b2b76717bf6b@[209.86.156.101]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-To: LinuxPPC-Dev List <linuxppc-dev@lists.linuxppc.org>
-From: "Marcus H. Mendenhall" <mendenmh@nashville.net>
+Date: Tue, 5 Jan 1999 10:49:17 -0800
+To: <linuxppc-dev@lists.linuxppc.org>
+From: "Timothy A. Seufert" <tas@mindspring.com>
 Subject: Re: Strange PMAC IDE performance problem
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Timothy A. Seufert wrote:
->[snip]
->> Needless to say, the IDE performance figures are far less than those drives
->> are capable of!  Under MacOS they benchmark much higher (for example, the
->[snip]
->
+At 12:33 PM +0100 1/5/99, Albrecht Dreß wrote:
+
 >I can confirm this behaviour on my PowerBook G3/300 with almost the same rate
 >under 2.1.130 (the disk is an IBM DYLA 28100). Furthermore, the whole system
 >nearly freezes under heavy io load (I simply used a program which writes and
@@ -29,35 +25,19 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 >arch/ppc/kernel/irq.c (try "dmesg" and do a "cat /proc/interrupts" before and
 >after your test; you will see the increase in the "BAD" line).
 
-It goes beyond just temporary freezes/slowdowns.  After heavy i/o activity
-on my G3 (rev2)/300 desktop machine, I get total freezes.  If I am out of X
-(very rare...) I get a kernel stack overflow panic and a backtrace.  In X,
-I get no chance to see the message.  I have not yet succeeded in copying
-down enough of the message before the kernel autoreboots to be useful
-(since it has only happened about twice when I was not in X).  If I
-recompile a large package (ROOT, for example (a great scientific package
-from root.cern.ch, incidentally)) I have nearly a 100% chance of at least
-one such lockup during the operation.
+Interesting -- I don't get any bogus interrupts on either of my machines.
+I also don't experience such harsh penalties to system responsiveness if
+there's a lot of I/O going on -- I often use grep with find supplying the
+filenames to recursively search the kernel source tree, which cranks the
+disk quite a bit, and have no problems using other programs while it's
+churning away.
 
-I have never had enough time between the time the machine starts to slow
-down and when it panics to look at dmesg and see the errors there.
+I would guess that you have the same performance problem along with some
+serious bug that for some reason is only showing up on your machine (as I
+believe there are many other people using PowerBook G3 Series machines
+without such problems).
 
-This is the only serious problem I know of in kernels of the 2.1.130
-vintage.  My machine at home (a 7300/180) has been running with absolutely
-no problems of any type on the recent kernels.  If anyone who is following
-this problem needs more info (for example the detailed backtrace) to help
-debug, I will try to provoke it when not in X and hand-copy the info.  If
-enough of that information has already been collected, I don't want to
-spend a lot of time going through the exercise.
-
-Looking forward to a solution... (and don't have time myself at present to
-put out this particular fire)
-
-Thanks in advance
-
-Marcus Mendenhall
-
-
+  Tim Seufert
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
