@@ -1,48 +1,80 @@
-Date: Thu, 11 Apr 2002 12:12:58 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch>
-Cc: Steven Scholz <steven.scholz@imc-berlin.de>,
-	Christian Pellegrin <chri@infis.univ.trieste.it>,
-	LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: sporadic kernel panic during boot (MPC8xx, FEC)
-Message-ID: <20020411191258.GA2785@opus.bloom.county>
-References: <Pine.LNX.4.44.0204110914100.18980-100000@sole.infis.univ.trieste.it> <3CB539DF.CF3BDD85@imc-berlin.de> <20020411153136.GE15663@opus.bloom.county> <3CB5DE9A.9070802@bluewin.ch>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3CB5DE9A.9070802@bluewin.ch>
+Date: Thu, 11 Apr 2002 13:00:53 -0700 (PDT)
+From: John Tyner <jtyner@cs.ucr.edu>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: [PATCH] early serial init
+Message-ID: <Pine.LNX.4.30.0204111259350.23686-100000@hill.cs.ucr.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Apr 11, 2002 at 09:06:02PM +0200, Wolfgang Grandegger wrote:
-> On 04/11/2002 05:31 PM, Tom Rini wrote:
->
-> >On Thu, Apr 11, 2002 at 09:23:11AM +0200, Steven Scholz wrote:
-> >>
-> >> Christian Pellegrin wrote:
-> >>
-> >> > not really sure this will help you, but I had similar problem (spurious
-> >> > hangs during boot/insmod on 823 and 850 MPCs). The ppc mm for 8xx in 2.4
-> >> > repository is broken, use that in 2.4-devel that works fine. AFA net
-> >> > devices are concerned check that rx start is done in open and not in init
-> >> > since linux doesn't like packets before a device is opened.
-> >>
-> >> Thanks for your reply.
-> >>
-> >> I got the kernel from the linuxppc_2_4_devel tree using
-> >>
-> >> bk export ... -rv2.4.18
-> >>
-> >> So I guess I do have a 2.4-devel. Right?
-> >
-> >No.  -rv2.4.18 got you 2.4.18 from kernel.org, no PPC changes at all.
-> >
-> You mean it's identical to linux-2.4.18.tar.gz from kernel.org?
+Here is a patch to setup the serial ports early. It works fine on our
+walnut boards.
 
-Yes.
+--- arch/ppc/platforms/walnut.c.orig	Thu Apr 11 12:55:55 2002
++++ arch/ppc/platforms/walnut.c	Thu Apr 11 12:58:35 2002
+@@ -31,6 +31,7 @@
+ #include <linux/blk.h>
+ #include <linux/pci.h>
+ #include <linux/rtc.h>
++#include <linux/serial.h>
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+ #include <asm/system.h>
+ #include <asm/pci-bridge.h>
+@@ -247,6 +248,11 @@
+ void __init
+ board_init(void)
+ {
++	struct serial_struct serial_req;
++	bd_t *bip = (bd_t *) __res;
++	u32 chrcr;
++	int div;
++	ulong bb;
+ #ifdef CONFIG_PPC_RTC
+ 	ppc_md.time_init = todc_time_init;
+ 	ppc_md.set_rtc_time = todc_set_rtc_time;
+@@ -254,4 +260,40 @@
+ 	ppc_md.nvram_read_val = todc_direct_read_val;
+ 	ppc_md.nvram_write_val = todc_direct_write_val;
+ #endif
++	chrcr = mfdcr(DCRN_CHCR0);
++	div = ((chrcr&0x3e)>>1)+1;
++	div *= 16;
++	bb = bip->bi_intfreq/div;
++
++	if( !(chrcr & CHR0_U0EC) ){
++		memset(&serial_req, 0, sizeof(serial_req));
++		serial_req.line       = 0;
++		serial_req.baud_base  = bb;
++		serial_req.port       = 0;
++		serial_req.irq        = UART0_INT;
++		serial_req.flags      = ASYNC_BOOT_AUTOCONF | ASYNC_SKIP_TEST;
++		serial_req.io_type    = SERIAL_IO_MEM;
++		serial_req.iomem_base = (u8 *)UART0_IO_BASE;
++		serial_req.iomem_reg_shift = 0;
++
++		if (early_serial_setup(&serial_req) != 0) {
++			printk("Early serial init of port 0 failed\n");
++		}
++	}
++
++	if( !(chrcr & CHR0_U1EC) ){
++		memset(&serial_req, 0, sizeof(serial_req));
++		serial_req.line       = 1;
++		serial_req.baud_base  = bb;
++		serial_req.port       = 1;
++		serial_req.irq        = UART1_INT;
++		serial_req.flags      = ASYNC_BOOT_AUTOCONF | ASYNC_SKIP_TEST;
++		serial_req.io_type    = SERIAL_IO_MEM;
++		serial_req.iomem_base = (u8 *)UART1_IO_BASE;
++		serial_req.iomem_reg_shift = 0;
++
++		if (early_serial_setup(&serial_req) != 0) {
++			printk("Early serial init of port 1 failed\n");
++		}
++	}
+ }
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
