@@ -1,35 +1,26 @@
-Message-Id: <v03020900b2c32a566a02@[128.32.144.85]>
-In-Reply-To: <Pine.LNX.3.96.990113124607.9183B-100000@globegate.utm.edu>
-References: <19990113104026.C1056@dirkpitt.solsoft.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Thu, 14 Jan 1999 10:33:53 -0800
-To: "David A. Gatwood" <marsmail@globegate.utm.edu>,
-        Hubert Figuiere <Hubert.Figuiere@solsoft.fr>
-From: Michael Schmitz <schmitzm@uclink4.berkeley.edu>
-Subject: Re: Porting to NuBus PowerMacs
-Cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
+Date: Thu, 14 Jan 1999 14:18:55 -0500 (EST)
+From: Tom Rini <tmrini@ntplx.net>
+To: satadru pramanik <satadru@umich.edu>
+cc: Renaud Dreyer <rdreyer@math.berkeley.edu>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Accelerated XF68 on PowerMac 7300?
+In-Reply-To: <Pine.LNX.4.05.9901140947290.21411-100000@beer.pub.umich.edu>
+Message-ID: <Pine.LNX.4.05.9901141418260.15415-100000@pc.wackyland.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 12:55 PM -0600 1/13/99, David A. Gatwood wrote:
->On Wed, 13 Jan 1999, Hubert Figuiere wrote:
->> ADB: "CUDA" chip similar to several 68k Mac. Accessed thru the
->> "PrimeTime II". It is the 68HC05 and also handles PRAM, RTC,
->> power supply control.
->
->As long as we can get the base of the cuda portion of the chip, that's
->easy enough.
+On Thu, 14 Jan 1999, satadru pramanik wrote:
 
-The CUDA hangs off VIA1 in the m68k machines. If this machine is just a
-040 Mac with a PPC glued on top, the m68k code should do.
+> Ditto for a 7600/132!
 
-VIA1 and VIA2 are at fairly constant base addresses throughout the
-m68k series. But Apple might have played some tricks on us again :-(
+The main problem with accel'ed X for any of the internal videos is docs on
+howto accel it... :)
 
-	Michael
-
+---
+Tom Rini (TR1265)
+http://dobbstown.yeti.edu/
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
