@@ -1,42 +1,50 @@
-Date: Thu, 9 Dec 1999 10:16:31 +0100 (CET)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Tony Mantler <eek@escape.ca>
-cc: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Non-OF Ports (was Re: Need developer to help move JDK ppc port
- forward)
-In-Reply-To: <v04003a03b474c17e6e53@[216.81.20.25]>
-Message-ID: <Pine.LNX.4.10.9912091012470.32113-100000@opal.biophys.uni-duesseldorf.de>
+Date: Thu, 9 Dec 1999 13:00:30 +0200 (EET DST)
+From: Linas Nenorta IFD-5 <nenolina@pit.ktu.lt>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: NE2000 problem
+In-Reply-To: <199912081904.UAA00469@piglet.grunz.lu>
+Message-ID: <Pine.GSO.3.96.991209125535.13598A-100000@vejas.pit.ktu.lt>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> The interrupt handling in
-> <http://www.mklinux.org/cgi-bin/cvsweb/osfmk/src/mach_kernel/ppc/POWERMAC/interr
-> upt_performa.c?rev=1.6> looks like what I was hoping I wouldn't have to
-> write. Somehow I can't picture apple using a 'check every IRQ source on
-> interrupt' method for routing between the 68k and PPC interrupt styles, but
-> I guess I wouldn't put it past them. (It also leaves the question of where
-> does the NMI go)
 
-You should know Apple better than that. Did you ever hear Mikael Forselius
-describe the structure of the Apple interrupt handlers he disassembled? It
-was like
 
-- get level 2 interrupt
+On Wed, 8 Dec 1999, Michel Lanners wrote:
 
-- get interrupt pending mask, handle first level 2 interrupt
+> On   8 Dec, this message from Linas Nenorta IFD-5 echoed through cyberspace:
+> > I have IBM Power Personal Series 830 and ISA NE2000 compatible board
+> > (which btw works great on x86 Linux). So I compiled 2.2.6 kernel with
+> > ne2000 support but the board doesn't work. ifconfig shows TX=x errors=0
+> > but RX=0 errors=y
+> 
+> This might not solve your problem; but do you have an up-to-date
+> ifconfig? I once had erroneous stats on ionterfaces, caused by an old
+> version of ifconfig interpreting some values the wrong way.
+> 
+> My ifconfig is from the 'net-tools-1.32.alpha-2B' RPM (don't remember
+> where I got that).
+>
 
-- get level 1 interrupt pending mask, handle first level 1 interrupt
+Yes I have net-tools-1.52 
+BTW once I had precompiled kernel (2.0.32 I guess) which worked fine with
+that ISA Ne2000 board .. It came with PPC Redhat 4 install (FD_BOOT image)
+Maybe ne2000 driver had some patches applied to it? Now with 2.2.x damn
+adapter doesn't work...  
 
-- iterate from 2 until all cows came home. 
-
-Not quite 'every source' but that shouldn't be necessary as you always get
-higer level ones immediately anyway.
-
-	Michael
+ 
+> Michel
+> 
+> -------------------------------------------------------------------------
+> Michel Lanners                 |  " Read Philosophy.  Study Art.
+> 23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+> L-1710 Luxembourg              |
+> email   mlan@cpu.lu            |
+> http://www.cpu.lu/~mlan        |                     Learn Always. "
+> 
+> 
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
