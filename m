@@ -1,33 +1,44 @@
-Date: Wed, 21 Nov 2001 16:36:13 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Bill Fink <billfink@mindspring.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: GigE Performance Comparison of GMAC and SUNGEM Drivers
-Message-ID: <20011121163613.D10454@krispykreme>
-References: <20011119111548.F4531@krispykreme> <Pine.LNX.4.33.0111202216050.17140-100000@gwiz.nasa.atd.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.33.0111202216050.17140-100000@gwiz.nasa.atd.net>
+Date: Wed, 21 Nov 2001 12:15:39 +0100 (CET)
+From: Roman Zippel <zippel@linux-m68k.org>
+To: Armin Kuster <akuster@mvista.com>
+Cc: ppcdevel <linuxppc-dev@lists.linuxppc.org>,
+	ppclists <Majordomo@lists.linuxppc.org>
+Subject: Re: New API for non cache coherent ppc cpu's
+In-Reply-To: <3BFAB960.DAA72239@mvista.com>
+Message-ID: <Pine.LNX.4.33.0111211152230.6681-100000@serv>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hi,
 
-> That's an understatement.  That's damn good!  I hope I can reproduce
-> that.  What NIC card were you using?  Unfortunately, I just checked
-> the NetGear web page and they don't seem to have the GA620T anymore.
-> They now have a GA622T, but I believe that uses a different chip,
-> which I don't think is supported by the acenic driver.
+On Tue, 20 Nov 2001, Armin Kuster wrote:
 
-Yes I use acenic type cards (IBM and Netgear GA620). I havent tested
-the GA622 at all although I think there is a Linux driver for it.
+> About a month ago a new API made its way into the ppc,
+> consistent_sync_page.
 
-> Is there any more extensive documentation anywhere for
-> how this auto tuning of TCP receive and send buffers is done?
+Another one?
+We have now 3 APIs for this:
+- cache_(push|clear): that's the old m68k API (and also used by APUS)
+- dma_cache_(inv|wback|wback_inv): used by mips(64), parisc, sh
+- consistent_sync_page: ppc
 
-Check out Documentation/networking/ip-sysctl.txt in the kernel source
-for some information. Its not much but its a start :)
+>  For CONFIG_NOT_COHERENT_CACHE  processors,
+> requires
+> proper flushing of the page being used.  Please review and provide feed
+> back
 
-Anton
+Two comments:
+- I'm not sure about the page argument, although I'd like to see it, the
+problem is the drivers usually don't have a page pointer.
+- I think it was never defined, what should be done if offset/size isn't
+cache line aligned. That's especially a problem in the invalidate only
+case. I'd prefer to make this illegal, as it's mostly not a problem for
+drivers.
+
+bye, Roman
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
