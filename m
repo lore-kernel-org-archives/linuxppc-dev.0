@@ -1,62 +1,54 @@
-Date: Thu, 21 Sep 2000 21:44:47 +0200
-From: Samuel Rydh <samuel@ibrium.se>
+Date: Thu, 21 Sep 2000 13:07:39 -0700
+From: Tom Rini <trini@kernel.crashing.org>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: PCI bridge bases, IDE on the B&W G3
-Message-ID: <20000921214446.A865@ibrium.se>
+Subject: Re: PCI bridge bases, IDE on the B&W G3
+Message-ID: <20000921130739.A482@opus.bloom.county>
+References: <20000921214446.A865@ibrium.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20000921214446.A865@ibrium.se>; from samuel@ibrium.se on Thu, Sep 21, 2000 at 09:44:47PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Thu, Sep 21, 2000 at 09:44:47PM +0200, Samuel Rydh wrote:
 
-I recently installed an ACARD 6260 IDE card in my B&W G3.
-While trying to get it working with the 2.4 kernel, I found
-three problems:
+> - The B&W G3 has two PCI-buses. The second one is
+> accessed through a DEC,21154 controller. The expension
+> slots as well as the internal CMD646 IDE-controller is on
+> the second bus. The problem is that the bridge reports
+> zero in the both baseregisters (the new PCI resource
+> allocation scheme then fails miserably). This problem
+> is simply fixed by (arch/ppc/kernel/pci.c):
+>
+>  void __init pcibios_fixup_bus(struct pci_bus *bus)
+>  {
+> +       pci_read_bridge_bases(bus);
+> +
+>         if ( ppc_md.pcibios_fixup_bus )
+>                 ppc_md.pcibios_fixup_bus(bus);
+>  }
 
-- The B&W G3 has two PCI-buses. The second one is
-accessed through a DEC,21154 controller. The expension
-slots as well as the internal CMD646 IDE-controller is on
-the second bus. The problem is that the bridge reports
-zero in the both baseregisters (the new PCI resource
-allocation scheme then fails miserably). This problem
-is simply fixed by (arch/ppc/kernel/pci.c):
+Hmm, I wonder if this will fix all of thouse pci resource conflicts I see here.
 
- void __init pcibios_fixup_bus(struct pci_bus *bus)
- {
-+       pci_read_bridge_bases(bus);
-+
-        if ( ppc_md.pcibios_fixup_bus )
-                ppc_md.pcibios_fixup_bus(bus);
- }
+> - The pci card was never enabled. I solved this by calling
+> pci_enable_device(dev) by hand. But... shouldn't this really
+> be done automatically by the generic ide layer?
 
-(i386 does it this way too).
+Nope.  the driver for that card should be doing pci_enable_device(dev).
 
-- The pci card was never enabled. I solved this by calling
-pci_enable_device(dev) by hand. But... shouldn't this really
-be done automatically by the generic ide layer?
+> - If yaboot loads the kernel (or the yaboot config file?)
+> from the ACARD IDE-bus, then the card will not work (lost
+> interrupts). The same problem (lost interrupts) occurs if
+> one tries to boot from the built-in CMD646 controller.
+> Possibly, IDE devices are not left in a good state by the
+> firmware/yaboot on the B&W G3?
 
-- If yaboot loads the kernel (or the yaboot config file?)
-from the ACARD IDE-bus, then the card will not work (lost
-interrupts). The same problem (lost interrupts) occurs if
-one tries to boot from the built-in CMD646 controller.
-Possibly, IDE devices are not left in a good state by the
-firmware/yaboot on the B&W G3?
+iirc, around 2.4.0-test5 or 6 there were some IDE updates and the only working
+IDE driver for us right now is/was ide-pmac.  Ben knows more tho :)
 
-The ACARD card works great if the kernel is loaded from
-a CMD-controlled device.
-
-
-Cheers,
-
-/Samuel
-
-
-
-----------------------------------------------------------
- E-mail <samuel@ibrium.se>  WWW: <http://www.ibrium.se>
-  Phone/fax: (home) +46 8 4418431, (work) +46 8 7908470
-----------------------------------------------------------
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
