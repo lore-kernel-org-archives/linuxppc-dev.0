@@ -1,33 +1,32 @@
-Message-ID: <3984273D.1A818C44@student.ethz.ch>
-Date: Sun, 30 Jul 2000 15:01:49 +0200
+Message-ID: <39842797.3EDD80B6@student.ethz.ch>
+Date: Sun, 30 Jul 2000 15:03:19 +0200
 From: Michel Dänzer <daenzerm@student.ethz.ch>
 MIME-Version: 1.0
-To: Giuliano Pochini <pochini@denise.shiny.it>
-CC: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Stealth port problems
-References: <39811B2C.4D34DDD@denise.shiny.it>
-	 <20000728083426.19235@mailhost.mipsys.com> <398373C9.2D38B631@denise.shiny.it>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+CC: Tony Mantler <nicoya@apia.dhs.org>, Tom Rini <trini@kernel.crashing.org>,
+        Dan Malek <dan@netx4.com>,
+        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: CONFIG_PPC != Mac
+References: <Pine.LNX.4.10.10007292003430.3886-100000@cassiopeia.home>
 Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Giuliano Pochini wrote:
+Geert Uytterhoeven wrote:
 
-> Now I run XF4 and the problem is even worse. I get underruns at 38400
-> :-(((((((((((((
->
-> What can I do ?  And why X affects the serial port ??
+> The Master PPC Penguin decided to no longer allow to build machine specific
+> kernels, but treat PowerMac/PReP/MTX/CHRP as one big machine type
+> (`CONFIG_ALL_PPC').
 
-I assume you are running an accelerated driver, which moves load from the CPU
-to the graphics chip, which may increase interrupt and/or bus load/latency.
+Where does APUS fit in there?
 
 
 Michel
 
 
 --
-Chaos, panic and disorder -- my work here is done.
+There's no place like ~
 ______________________________________________________________________________
 Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
 Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
