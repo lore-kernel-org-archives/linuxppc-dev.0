@@ -1,46 +1,32 @@
-Message-Id: <200003312105.XAA13716@denx.local.net>
-To: Naushit Sakarvadia <naushit@yahoo.com>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Cross compiler for Sun sparc2.7 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 31 Mar 2000 12:47:14 -0800."
-             <20000331204714.28878.qmail@web701.mail.yahoo.com>
-Date: Fri, 31 Mar 2000 23:05:58 +0200
+Message-ID: <38E513DF.E6F5E27A@cray.com>
+Date: Fri, 31 Mar 2000 15:08:47 -0600
+From: Mike Wolf <mwolf@sgi.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Cross compiler for Sun sparc2.7
+References: <20000331204714.28878.qmail@web701.mail.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20000331204714.28878.qmail@web701.mail.yahoo.com> you wrote:
+Naushit Sakarvadia wrote:
+>
+> hello,
 >
 > Anyone knows, where can I get precompiled cross compliner + binutils and glibc for SUN platform?
 > any help will be highly appreciated.
 
-Ummm... "Sun platform" is not really clear. Are you running Linux  on
-it? :-)
+I dont know where you can get precompiled tools, but Grant Erickson has
+go0d
+directions for compiling a cross-compiler:
 
-The subject says "sparc2.7" which I'll interpret as Sun SPARC running
-Solaris 2.7. Is that what you mean?
-
-I have a set ot Makefiles and patches that will build the full  cross
-development  kit  (binutils, GCC, glibc) plus zlib+sash under Solaris
-2.6; I guess this will work under  Solaris  2.7,  too,  but  I  never
-tested.
-
-Just drop me a note if you're interested.
-
-NOTE: The tools on my web  page  http://www.denx.de/solutions-en.html
-are  an  older version and will not build under Solaris. I would like
-to get some more testing done (especially under Redhat 6.x on  Sparc)
-before posting a newer release.
-
-Wolfgang Denk
+http://www.lcse.umn.edu/~grant/Linux/index.html
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Not one hundred percent efficient, of course ... but nothing ever is.
-	-- Kirk, "Metamorphosis", stardate 3219.8
+Mike Wolf
+Cray Research
+655-F Lone Oak Drive, Eagan, MN 55121
+mwolf@cray.com          (651)683-5313
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
