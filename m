@@ -1,45 +1,50 @@
-Date: Fri, 13 Oct 2000 17:20:04 +0200 (CEST)
-From: Xavier Grave <grave@ipno.in2p3.fr>
-To: Matt Porter <mporter@mvista.com>
-cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: 2.4 kernel doesn't allocate resource for my PCI Board
-In-Reply-To: <20001012101130.A2964@cx258813-a.chnd1.az.home.com>
-Message-ID: <Pine.LNX.4.21.0010131718080.5959-100000@ipnpcu5>
+Date: Fri, 13 Oct 2000 18:26:29 +0300 (EEST)
+From: Kostas Gewrgiou <gewrgiou@imbc.gr>
+To: Michel Dänzer <daenzerm@student.ethz.ch>
+cc: "Hendricks, Kevin" <khendricks@ivey.uwo.ca>, Josh Huber <huber@mclx.com>,
+        Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: dual head r128
+In-Reply-To: <39E62C4C.42287094@student.ethz.ch>
+Message-ID: <Pine.LNX.4.21.0010131549280.1099-100000@idd-01.imbc.gr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=ISO-8859-7
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+On Thu, 12 Oct 2000, Michel [iso-8859-1] Dänzer wrote:
 
-I've downloaded the linuxppc_2_5 tree with bitkeeper and compiled it for
-my prep board I always have the same message :
-PCI: Cannot allocate resource region 0 of device 00:0d.0
-PCI: Cannot allocate resource region 1 of device 00:0e.0
-PCI: Cannot allocate resource region 1 of device 00:11.0
-PCI: Cannot allocate resource region 2 of device 00:11.0
-PCI: Failed to allocate resource 2 for Symbios Logic Inc. (formerly
-NCR) 53c895
+> Kostas Gewrgiou wrote:
+> >
+> > On Thu, 12 Oct 2000, Michel [iso-8859-1] Dänzer wrote:
+> >
+> > > But there is an #ifdef _powerpc_ so it can't break x86 machines?
+> >
+> > Yes but it *does* break x86 cards used in ppc machines.
+> > (linux/ppc isn't the only ppc os supported in xfree and they won't
+> > be happy if we break things for them)
+>
+> And the int10 or whatever code works for them?
 
-and after the sym53c8xx driver give the following :
+ISA IO/MEM works for them so yes int10/vgahw should be fine there, i think
+that linux/ppc is the only platform with this broken (with the new syscalls
+we its simple to get it working for machines with one iobase and a working
+ISA memory)
 
-sym53c895-0: Downloading SCSI SCRIPTS.
-scsi0 : sym53c8xx - version 1.6b
-scsi : aborting command due to timeout : pid 0, scsi0, channel 0, id 0,
-lun 0 Inquiry 00 00 00 ff 00
-sym53c8xx_abort: pid=0 serial_number=1 serial_number_at_timeout=1
-SCSI host 0 abort (pid 0) timed out - resetting
-SCSI bus is being reset for host 0 channel 0.
-sym53c8xx_reset: pid=0 reset_flags=2 serial_number=1
-serial_number_at_timeout=1
+> And then set info->VBIOS = NULL for OF and change the #ifdef _powerpc_ to if
+> (!info->VBIOS) or similar?
 
-Any idea why this continue to fail ?
+Right something along this lines will do, you probably need to change the
+R128_BIOS16/32 macros to do byteswapping as well since the fields in the rom
+are in little endian format.
 
-xavier
+> I have my last exam for this year tomorrow and leave for two weeks of vacation
+> on Saturday, so I wish good luck to any takers :)
 
-33 (0) 1 69 15 79 59
-De chacun selon ses forces, a chacun selon ses besoins
+Good luck in your exam, i'll try to write something over the weekend if i
+can find some free time.
+
+ Kostas
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
