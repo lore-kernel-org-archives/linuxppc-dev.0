@@ -1,23 +1,30 @@
-From: linas@austin.ibm.com
-Date: Fri, 16 Jan 2004 17:19:30 -0600
-To: Gabriel Paubert <paubert@iram.es>
-Cc: Segher Boessenkool <segher@kernel.crashing.org>,
-	valvoline <valvoline@vrlteam.org>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Broadcom BCM94306
-Message-ID: <20040116171930.D40476@forte.austin.ibm.com>
-References: <20040114161107.GM2658@adapter.n0skillz.org> <20040114181350.B40506@forte.austin.ibm.com> <70D6BF86-473D-11D8-A8C3-000A95A4DC02@kernel.crashing.org> <20040115115023.GA12001@iram.es> <C404D01A-475A-11D8-A8C3-000A95A4DC02@kernel.crashing.org> <20040116195406.GA25566@iram.es>
+Subject: RE: ppc826x BAD interrupts
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Muhammad Sarwar <msarwar@mangrovesystems.com>
+Cc: Jeff Angielski <jeff@theptrgroup.com>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <8529B5552D4EAA4DAEDF49650C64B2B436E589@tarpon.mangrovesystems.com>
+References: 
+	 <8529B5552D4EAA4DAEDF49650C64B2B436E589@tarpon.mangrovesystems.com>
+Content-Type: text/plain
+Message-Id: <1074309733.8360.20.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20040116195406.GA25566@iram.es>; from paubert@iram.es on Fri, Jan 16, 2004 at 08:54:06PM +0100
+Date: Sat, 17 Jan 2004 14:22:13 +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Jan 16, 2004 at 08:54:06PM +0100, Gabriel Paubert wrote:
-> find that I think, live and breathe big-endianly ;-) (bit 0 is the most
+On Sat, 2004-01-17 at 03:29, Muhammad Sarwar wrote:
+> This problem was discussed on mailing list before also and you can eliminate this problem by inserting a sync instruction at a certain place in the 8260 interrupt handling code. See, for example, http://www.geocrawler.com/archives/3/8358/2002/11/100/10173445/
+>
+> Add a __asm__ volatile("sync"); at the end of the m8260_mask_and_ack  function in arch/ppc/kernel/ppc8260_pic.c to fix it.
 
-awww, come on, I thought "bug endian" was pretty funny!
+The code looks like crap... do we have any guarantee that those accesses
+are done in order and did read the controller ?
 
---linas
+I'd rather add eieios and read back the value to enforce ordering...
+
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
