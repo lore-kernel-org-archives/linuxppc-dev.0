@@ -1,26 +1,28 @@
-Subject: patch for cpu/mpc8xx/cpu.c:get_tbclk
+In-Reply-To: <OFFF069FF9.720525F3-ON85256EA1.00688E39-85256EA1.0069104C@nanometrics.ca>
+Subject: Re: patch for cpu/mpc8xx/cpu.c:get_tbclk - correction
 To: Wolfgang Denk <wd@denx.de>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <OFFF069FF9.720525F3-ON85256EA1.00688E39-85256EA1.0069104C@nanometrics.ca>
+Message-ID: <OFBC5021DB.73FD330B-ON85256EA1.0069EDD8-85256EA1.006A2638@nanometrics.ca>
 From: David Ho <DavidHo@nanometrics.ca>
-Date: Thu, 27 May 2004 15:07:34 -0400
+Date: Thu, 27 May 2004 15:19:26 -0400
 MIME-Version: 1.0
 Content-type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Wolfgang,
+> The last if condition is wrong in this function.   The change is made
+> against 0.4.8.  AFAIK, 1.0.2 still has the same problem.
+>
+> And I wonder why it has to reverse engineer the oscclk when I pass the
+> value as a define to come up with the gd->cpu_clk for the MPC866
+family...
+> It is a bit useless I think.
+>
 
-The last if condition is wrong in this function.   The change is made
-against 0.4.8.  AFAIK, 1.0.2 still has the same problem.
+Sorry, the last patch breaks on the old 8xx.
 
-And I wonder why it has to reverse engineer the oscclk when I pass the
-value as a define to come up with the gd->cpu_clk for the MPC866 family...
-It is a bit useless I think.
-
-David
-
+This is a bit better.
 
 
 /*
@@ -33,7 +35,7 @@ unsigned long get_tbclk (void)
         DECLARE_GLOBAL_DATA_PTR;
 
         volatile immap_t *immr = (volatile immap_t *) CFG_IMMR;
-        ulong oscclk, factor, mf;
+        ulong oscclk, factor, multiplier;
 
         if (immr->im_clkrst.car_sccr & SCCR_TBS) {
                 return (gd->cpu_clk / 16);
@@ -48,17 +50,18 @@ a ## _SHIFT)
                      (PDF + 1) * 2^S
          */
 
-        mf     = (PLPRCR_val(MFI) + PLPRCR_val(MFN)/(PLPRCR_val(MFD)+1));
+        factor = (PLPRCR_val(MFI) + PLPRCR_val(MFN)/(PLPRCR_val(MFD)+1));
 
-        factor = (PLPRCR_val(MFI) + PLPRCR_val(MFN)/(PLPRCR_val(MFD)+1))/
-                 (PLPRCR_val(PDF)+1) / (1<<PLPRCR_val(S));
+        multiplier = (PLPRCR_val(MFI) +
+PLPRCR_val(MFN)/(PLPRCR_val(MFD)+1))/
+                     (PLPRCR_val(PDF)+1) / (1<<PLPRCR_val(S));
 #else
-        factor = PLPRCR_val(MF)+1;
+        multiplier = factor = PLPRCR_val(MF)+1;
 #endif
 
-        oscclk = gd->cpu_clk / factor;
+        oscclk = gd->cpu_clk / multiplier;
 
-        if ((immr->im_clkrst.car_sccr & SCCR_RTSEL) == 0 || mf > 2) {
+        if ((immr->im_clkrst.car_sccr & SCCR_RTSEL) == 0 || factor > 2) {
                 return (oscclk / 4);
         }
         return (oscclk / 16);
