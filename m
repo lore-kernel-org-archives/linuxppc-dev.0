@@ -1,77 +1,29 @@
-From: "invictus rm" <invictus_rm@hotmail.com>
-To: Ashok.Hegde@fci.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: SMP support problem with NFS mounting
-Date: Wed, 31 Dec 2003 14:41:30 +0530
+Subject: Re: 2.6.0-ben3: Badness in redraw_screen
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Andreas Schwab <schwab@suse.de>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <m3wu8dp6bk.fsf@whitebox.m5r.de>
+References: <m3wu8dp6bk.fsf@whitebox.m5r.de>
+Content-Type: text/plain
+Message-Id: <1072932212.768.27.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; format=flowed
-Message-ID: <BAY7-F21lQgdYXSVvR000008720@hotmail.com>
-Sender: owner-linuxppc-embedded@lists.linuxppc.org
-List-Id: <linuxppc-embedded@lists.linuxppc.org>
+Date: Thu, 01 Jan 2004 15:43:32 +1100
+Sender: owner-linuxppc-dev@lists.linuxppc.org
+List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Just a shot in the dark.
-   Ur limited description points to the cache / TLB related issues .
+On Wed, 2003-12-31 at 22:36, Andreas Schwab wrote:
+> I'm getting this badness in redraw_screen when my iBook wakes up with
+> 2.6.0-ben3:
 
-    What happens if you do cache flushing / TLB invalidation on each task
-switch ?
-    Does Moto claims it be working for SMP kernels ?
+Just a warning that I added to a bunch of VT functions to spot various
+races in the VT code. I've started adding more grabs of the console
+semaphore here or there though I 'forgot' some way the sleep code
+before pushing 2.6.0-ben3. There's a 2.6.1-rc1-ben1 now online with
+that problem gone
 
-
-
->From: "Hegde, Ashok" <Ashok.Hegde@fci.com>
->To: 'invictus rm' <invictus_rm@hotmail.com>,
->linuxppc-embedded@lists.linuxppc.org
->Subject: RE: SMP support problem with NFS mounting
->Date: Wed, 31 Dec 2003 11:38:51 +0530
->
->Thanks a lot for your instant reply.
->I turned off Altivec Support, Still same problem.
->Any thing else to look in to??
->Thanks,
->Ashok
->
->-----Original Message-----
->From: invictus rm [mailto:invictus_rm@hotmail.com]
->Sent: Tuesday, December 30, 2003 6:58 PM
->To: Ashok.Hegde@fci.com
->Cc: linuxppc-embedded@lists.linuxppc.org
->Subject: RE: SMP support problem with NFS mounting
->
->
->
->Can u try turning off the Altivec Support ?
->
->
-> >From: "Hegde, Ashok" <Ashok.Hegde@fci.com>
-> >To: "'linuxppc-embedded@lists.linuxppc.org'"
-> ><linuxppc-embedded@lists.linuxppc.org>
-> >Subject: SMP support problem with NFS mounting
-> >Date: Tue, 30 Dec 2003 16:48:02 +0530
-> >
-> >
-> >	Hi All,
-> >
-> >		There is a problem with  supporting NFS mounting in
-> >SMP(Symmetric MultiProcessor) mode for MPC 7447 processor(with controller
-> >MV
-> >64360) based PMC board(We tried with Kernel.org-2.4.20  and
-> >MontaVista-2.4.18 flavours). It will hang after giving message
-> >"Initializing
-> >random number generator... done."
-> >
-> >	  { It works fine Without NFS support and Single CPU with NFS }
-> >
-> >	 What I need to look into?????
-> >
-> >
-> >
-> >	Thanks,
-> >	Ashok
-> >
-> >
-> >
->
+Ben.
 
 
-** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
+** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
