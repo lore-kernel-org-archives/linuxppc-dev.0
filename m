@@ -1,24 +1,27 @@
-Return-Path: <rpjday@mindspring.com>
-Received: from mailhost.rdmcorp.com (world.rdmcorp.com [204.225.180.10])
-	by ozlabs.org (Postfix) with ESMTP id 93F8F2BDAB
+Return-Path: <tony.p.lee@gmail.com>
+Received: from mproxy.gmail.com (rproxy.gmail.com [64.233.170.198])
+	by ozlabs.org (Postfix) with ESMTP id 3C4E92BDAB
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  8 Oct 2004 08:34:55 +1000 (EST)
-Date: Thu, 7 Oct 2004 18:27:51 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-To: Dan Malek <dan@embeddededge.com>
-In-Reply-To: <0927BD6D-18A9-11D9-9049-003065F9B7DC@embeddededge.com>
-Message-ID: <Pine.LNX.4.60.0410071817420.8278@dell.enoriver.com>
-References: <1096517265.27208.18.camel@localhost.localdomain>
-	<20041007154029.GE14773@smtp.west.cox.net>
-	<Pine.LNX.4.60.0410071158320.5191@dell.enoriver.com>
-	<20041007173023.GK14773@smtp.west.cox.net>
-	<Pine.LNX.4.60.0410071354340.6526@dell.enoriver.com>
-	<20041007184840.GN14773@smtp.west.cox.net>
-	<0927BD6D-18A9-11D9-9049-003065F9B7DC@embeddededge.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] remove obsolete arch/ppc/8xx_io/uart.c
+	Fri,  8 Oct 2004 08:40:51 +1000 (EST)
+Received: by mproxy.gmail.com with SMTP id 76so5226964rnk
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 07 Oct 2004 15:40:43 -0700 (PDT)
+Message-ID: <470b63970410071534422f6617@mail.gmail.com>
+Date: Thu, 7 Oct 2004 15:34:00 -0700
+From: Tony Lee <tony.p.lee@gmail.com>
+To: Andrei Konovalov <akonovalov@ru.mvista.com>
+In-Reply-To: <41641222.6080405@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+References: <000001c4aace$245a5060$6500a8c0@PortatileLG>
+	<35fb2e5904100508157a393ee2@mail.gmail.com>
+	<4162C649.6060900@ru.mvista.com>
+	<35fb2e590410051507367017a@mail.gmail.com>
+	<41641222.6080405@ru.mvista.com>
+Cc: jonathan@jonmasters.org, linuxppc-embedded@ozlabs.org,
+	Luca Giuliani <l.giuliani@tiscali.it>
+Subject: Re: Linux on Memec Virtex II Pro V4P7 Rev. 3
+Reply-To: Tony Lee <tony.p.lee@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,84 +32,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, 7 Oct 2004, Dan Malek wrote:
+On Wed, 06 Oct 2004 19:41:22 +0400, Andrei Konovalov
+<akonovalov@ru.mvista.com> wrote:
+> Jon Masters wrote:
+> > On Tue, 05 Oct 2004 20:05:29 +0400, Andrei Konovalov
+> > <akonovalov@ru.mvista.com> wrote:
+> >
+> >
+> > While we're on this subject I will ask - do you also need something
+> > like the nointr mods I pointed out in order to use sysace for writing
+> > on that board? The hardware generates more interrupts than anything
+> > documented suggests that it should and your driver dies horribly (or
+> > is completely unreliable) unless I modify it as I mentioned. It's
+> > probably a sysaceism.
+> 
+> Not too much to say about sysace at the moment.
+> We do not use xsysace in our Memec 2VP7 design (this is a chip select
+> issue with P160 flash and xsysace sitting on the same bus - we do
+> not have HW engineer to do an IP to control the chip select inputs;
+> by default both are tied to ground - always selected).
+> With ML300 we've never seen this problem. I was just asked to try
+> to enhance the xsysace driver performance - will use this opportunity
+> to have a deeper look at the driver's internals.
+> 
 
->
-> On Oct 7, 2004, at 2:48 PM, Tom Rini wrote:
->
->>>   CONFIG_8xx_UART
->>>   CONFIG_SMC2_UART
->>>   CONFIG_ALTSMC2
->>>   CONFIG_CONS_SMC2
->>>   CONFIG_USE_SCC_IO
->> 
->> Not all of these options exist in linux-2.6.
->
-> Why not?  They must or some equivalent to get these features. I 
-> dislike this 2.6 "forward progress" that continually removes 
-> features we have deemed necessary in previous kernel versions.
+I have to use the non-interrupt mode in sysace.  I thought there were some
+HW issue in our HW board (no ML 300).   Good to know other have the 
+same problem.   We don't have ML300, otherwise, I will run the 
+kernel with printk in the sysace driver to see that system ISR behavior
+on write.  The problem I had was: I can not turn off the ISR when write
+to the system (nor when send ID drive command).
 
-   actually, i was going to mention this very point earlier, but i got 
-the impression that others were already all over this issue so i left 
-it alone.
+ 
+Jon,  what kind of performance you got from the sysace?
 
-   in the current Kconfig file, you have the option of selecting which 
-of SMC1 or SMC2 you want to be the console.  fair enough, and a useful 
-feature to be sure.
+When I copy 18 MB of ace file into sysace with Linux, the 
+sync command took minutes to complete for me.
 
-   but if the UART-related stuff is removed from arch/ppc/8xx_io, then 
-i'm assuming you'll do that configuration under the menu
-
-   Device Drivers -->
-     Character devices -->
-       Serial drivers
-         CPM SCC/SMC serial port support
-
-at least, that's what it looks like.  but there's no equivalent 
-selection to pick *exactly* where you want your console in that 
-submenu.  i wasn't suggesting that all the above *features* had to be 
-expunged -- just that those specific variables were related to the old 
-UART way of doing things and had to be dealt with, one way or the 
-other.
-
-   obviously, new variables should be added to the new config part of 
-the menu to add that functionality back in (the same names could, of 
-course, be re-used).  as it stands, from what i can see by looking 
-through the directory drivers/serial/cpm_uart, there is currently no 
-way to select your console (among other things).
-
-   before messing with any more code, i think someone has to sit down 
-and just design the Kconfig menus that will represent all the features 
-you want, with menus, submenus, variables, dependencies and so on.
-
-   thoughts?
-
-rday
+Sysace ISR should not be the issue, since there is no seeks
+and all the IO is dirven from the kernel.
 
 
-
-
-
-
-
-
->
->> I think this had been discussed before, but perhaps not.  What should
->> happen at some point is something more like "Do you hae SMC1 ? What is
->> it? Do you have SMC2 ? What is it? Do youhave SCC1? What is it?" and so
->> on.  For now, I wouldn't worry about it.
->
-> I don't understand the "what is it?" part of these questions.  As I
-> have continually pointed out over the years, we don't have "SMC" or
-> "SCC" drivers.  We have UART drivers that use SMCs or SCC, Ethernet
-> drivers that use SCCs or FECs, audio drivers that use SMCs or SCCs,
-> and so on.  It's a subtle but important configuration selection.  You
-> select the feature you want (uart, Ethernet, audio, ATM, etc.), then
-> you can be further prompted for peripheral routing information if necessary.
-> We have discussed this at length in the past.
->
-> Thanks.
->
->
-> 	-- Dan
->
+-- 
+-Tony
