@@ -1,40 +1,37 @@
-Date: Sat, 30 Mar 2002 17:25:48 +0100 (CET)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: crash on sleep with 2.4.19-pre4-ben0
-To: benh@kernel.crashing.org
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20020328141439.20362@mailhost.mipsys.com>
-MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
-Message-Id: <E16rLfu-00009C-00@piglet.grunz.lu>
+Date: Sat, 30 Mar 02 21:58:33 PST
+From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
+Message-Id: <0203310558.AA21170@ivan.Harhan.ORG>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: linuxppc_2_4_alt started
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  28 Mar, this message from benh@kernel.crashing.org echoed through cyberspace:
->>How? The keyboard doesn't work under xmon.... I need to power-cycle.
->
-> You can try manually adding a call to backtrace() in xmon entry point
+Linux/PPC developers and users,
 
-AAArrgh! It doesn't crash anymore now! Thanks for the solution ;-))).
+Having had no success in getting my work accepted into linuxppc_2_4_devel, I
+have decided to start my own alternative tree which I have called
+linuxppc_2_4_alt. The BK URL for anonymous access (should work, but I couldn't
+really test access from outside) is:
 
-Seriously, after adding a call to backtrace upon entry of xmon's main
-(infinte) loop, I've not been able to reproduce the crash. And I tried
-sleeping and waking up in a loop at least 50 times...
+bk://helium.Harhan.ORG:5000
 
-I'll keep on trying.
+This tree has linuxppc_2_4_devel as its BK parent. I have had this BK tree for
+a while but I've just now made it publicly accessible. (The patches in my CVS
+were generated from this tree with bk export -tpatch between the last cset
+pulled from 2_4_devel and the very top cset.)
 
-Cheers
+I have set it up to post to linuxppc-commit@source.mvista.com on incoming just
+like the trees at BitMover. This way y'all will now what I'm doing in there and
+see if you like it. If enough people like it maybe we'll take over. Anyone who
+likes this tree, wants to do development in it, and wants read/write access
+should contact me.
 
-Michel
+Have fun!
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+MS
 
+P.S. It's on a 33.6 Kbps modem connection, so it's going to be *really* slow.
+Any volunteers to host it for me on a machine with a better net connection? :-)
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
