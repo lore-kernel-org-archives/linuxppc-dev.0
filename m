@@ -1,38 +1,27 @@
-Reply-To: <joakim.tjernlund@lumentis.se>
-From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: MPC860 reorder and invalidate dcache
-Date: Fri, 16 Aug 2002 17:50:42 +0200
-Message-ID: <IGEFJKJNHJDCBKALBJLLEELOFFAA.joakim.tjernlund@lumentis.se>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-reply-to: <45B36A38D959B44CB032DA427A6E10640167D022@cceexc18.americas.cpqcorp.net>
+Date: Fri, 16 Aug 2002 10:02:33 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: James Dougherty <jfd@broadcom.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: rsynch to date/tag
+Message-ID: <20020816170233.GE26993@opus.bloom.county>
+References: <3D5AF45E.2E42C48B@broadcom.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3D5AF45E.2E42C48B@broadcom.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi
+On Wed, Aug 14, 2002 at 05:22:54PM -0700, James Dougherty wrote:
 
-I wonder if the MPC860 really can reorder I/O memory accesses?
+> How is it possible to rsynch to a particular date
+> for linuxppc_2_4_devel. Better yet, is there an anonymous
+> CVS server out there I can use?
 
-I am using JFFS2 FS on Intel Strata flash. I remap the flash with
-ioremap_nocache(flash_start, flash_size) and use the resulting address
-to access the flash. Whenever a write is performed to the flash I do a
-wmb() to enforce ordered writes and that affects performance somewhat.
-Is the wmb() required or can I skip it?
+Nope.  You can convert from BK to CVS, with only minor hassels however.
 
-
-Invalidate Data Cache
-------------------------
-I have noticed that invalidate_dcache_range() performs a 'sync' just before it returns. Why?
-Is it not enough to execute 'dcbi' on the affected address space?
-
-Is there a faster way to invalidate the dcache for a big(256KB) area than using invalidate_dcache_range().
-The area is PAGE aligned.
-
- Regards
-           Jocke
-
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
