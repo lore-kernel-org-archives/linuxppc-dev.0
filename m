@@ -1,54 +1,46 @@
-Date: Fri, 10 Jan 2003 11:42:43 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Hollis Blanchard <hollis@austin.ibm.com>
-Cc: paulus@samba.org, devel list <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: get_pteptr prototype
-Message-ID: <20030110004243.GB19829@zax.zax>
-References: <1041893967.1207.42.camel@granite.austin.ibm.com> <20030107005751.GP22215@zax.zax> <1042040929.1021.80.camel@granite.austin.ibm.com> <20030108234908.GA1088@zax.zax> <1042071086.1207.206.camel@granite.austin.ibm.com> <20030109023300.GC6569@zax.zax> <1042127751.1021.221.camel@granite.austin.ibm.com>
-Mime-Version: 1.0
+Message-ID: <3E1F7800.7DDF49E@synergymicro.com>
+Date: Fri, 10 Jan 2003 17:48:49 -0800
+From: Bill Fincke <willy@synergymicro.com>
+Reply-To: willy@synergymicro.com
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Discovery gt64260_mpsc.c serial port driver
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1042127751.1021.221.camel@granite.austin.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Jan 09, 2003 at 09:55:40AM -0600, Hollis Blanchard wrote:
->
-> On Wed, 2003-01-08 at 20:33, David Gibson wrote:
-> >
-> > Hmm... what's the reason that wakeup_info needs to be reserved in
-> > head_4xx.S, rather than just being a normal variable in the data area
-> > (which should be writable anyway)?  Its not obvious to me from the
-> > patch.
->
-> Sorry, I was hoping the Documentation file explained it well enough. On
-> wake the firmware needs to transfer control back to Linux, so the
-> firmware needs to know where to jump to. The only way I could think of
-> communicating that information was with a fixed memory location known to
-> both the firmware and to Linux. In future processors there will be a
-> scratch register (whose contents are saved during sleep) to solve this
-> problem.
+We've ported the gt64260_mpsc.c driver from the MontaVista tree
+to the Gemini kernel.  We're not using the 2 async serial ports
+as console ports (we have 16552 UARTs for that), but as aux ports.
+The driver seems to work OK when connected as a 9600-baud terminal
+port and typed at by hand.  But we tried a loop back test, with
+one port writing into the other and had all kinds of problems:
 
-Ah, ok - I only skimmed the patch I'm afraid, so I didn't notice that.
+If we run 1 gt64260 port into the other, we never get any
+received data - all the interrupts are "Tx done", but never
+"Rx buffer ready".
 
-> > Actually, skimming through the patch I noticed a minor nit: you only
-> > have one .long in head_4xx.S reserving space for the wakeup_info
-> > struct which is 3 words long.  In practice the . = in the exception
-> > handlers will give you plenty of space, but I think it would be good
-> > form to explicitly reserve the right amount of space.
->
-> It's just a (physical) pointer to the structure which is elsewhere in
-> memory (actually on the stack).
+If we write from a 16552 port into the gt64260, sending 1 character
+at a time, with a 2-second loop delay, we can read OK.  But
+if we take out the delay, or write a line at a time, the gt64260
+gets 1 Rx interrupt for the 1st character, and that's all.
 
-Hmm... in that case, why does the pointer need to be updated at
-runtime: could you just statically allocate the real structure (in the
-data segment), and have the value at 0xc00000fc filled in constant at
-link time.
+Has anyone used the gt64260_mpsc driver for anything other than
+a manual console?  Is there a reason why the driver appears to
+not work reading 1 port and writing the other simultaneously?
+I've read the gt64260 errata and haven't found anything that
+appears to be related.
 
---
-David Gibson			| For every complex problem there is a
-david@gibson.dropbear.id.au	| solution which is simple, neat and
-				| wrong.
-http://www.ozlabs.org/people/dgibson
+Also, the driver came with the major device number set to 4 and
+device name "/dev/ttys0".  We had to change the major to something
+else (240 at the moment, and "/dev/ttyGT0") to keep the driver
+from colliding with the real console. Is there an official major
+number and tty device name for the gt64260 when it's not used as
+the console?
+
+Thanks,
+  Bill Fincke
+  Synergy Microsystems
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
