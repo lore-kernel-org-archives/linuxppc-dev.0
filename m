@@ -1,32 +1,58 @@
-Subject: Re: How to remove JFFS2 'Making dirty' display on RPXlite DW?
-From: David Woodhouse <dwmw2@infradead.org>
-To: Mark Chambers <markc@mail.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <005301c47afc$d2599510$0301a8c0@chuck2>
-References: <20040805042134.41548.qmail@web15610.mail.cnb.yahoo.com>
-	 <004101c47af6$3f8d8800$0301a8c0@chuck2>
-	 <1091717309.4383.4625.camel@hades.cambridge.redhat.com>
-	 <005301c47afc$d2599510$0301a8c0@chuck2>
-Content-Type: text/plain
-Message-Id: <1091718257.4383.4627.camel@hades.cambridge.redhat.com>
-Mime-Version: 1.0
-Date: Thu, 05 Aug 2004 16:04:17 +0100
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: Marco Schramel <Schramel.Linux@go.bartec.de>
+To: Wolfgang Denk <wd@denx.de>
+Subject: Re: Init hangs
+Date: Thu, 5 Aug 2004 17:28:52 +0200
+References: <20040805103324.9CA4EC109F@atlas.denx.de>
+In-Reply-To: <20040805103324.9CA4EC109F@atlas.denx.de>
+Cc: "PPC_LINUX" <linuxppc-embedded@lists.linuxppc.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200408051728.52442.Schramel.Linux@go.bartec.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, 2004-08-05 at 10:59 -0400, Mark Chambers wrote:
-> Well, I've done it.  Dumb luck?  eraseall, then the command as shown, but I
-> don't remember the rest of the options.
+Hi Wolfgang,
 
-Yeah -- that should work as well as just making an image with the same
-options, then writing it. But it would be nicer if it'd do the eraseall,
-and interrogate the device to find its characteristics.
+thanks for your reply.
 
-Please don't top-post.
+> > my kernel hangs by initializing the system. My target is mpc8270-based. I use ELDK 3.0 and mount my root-fs over nfs.
+> > Denx-kernel 2.4.25.
+> ...
+> > It seems like it hangs in "run_init_process("/sbin/init");" or the /sbin/init - file does not work.
+> > Sometimes the message "INIT: version 2.84 booting" is showed. And after printing this message it hangs, too.
+> > But the most times it looks like above.
+> >
+> > Any ideas?
+>
+> Run ethereal and have a look at  the  network  traffic.  Check  which
+> files get loaded and/or accessed. This might give you an idea.
 
---
-dwmw2
+i started ethereal and saw that the NFS read calls from target to host, are answered with two IP "fragmented IP protocols" by the host,
+followed by a NFS read reply [Unreassembled Packet] by the host, too. And that goes on and on until the connection is dead.
+I am not sure whether the fragmentation of ip in two packets is correct? There is no additional traffic it is "only" mounting and using rootfs over NFS.
 
+Can you help me ?
+
+Thanks
+Marco
+
+
+
+
+
+
+---------
+Marco Schramel
+R&D
+Bartec GmbH
+Schulstr. 30
+94239 Gotteszell, Germany
+www.bartec.de
+Marco.Schramel@go.bartec.de
+Phone:  +49 (0)9929/301332
+Fax:    +49 (0)9929/301112
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
