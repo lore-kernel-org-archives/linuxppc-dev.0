@@ -1,59 +1,42 @@
-Message-ID: <408FD605.2010302@gcctech.com>
-Date: Wed, 28 Apr 2004 12:04:21 -0400
-From: "Christopher R. Johnson" <cjohnson@gcctech.com>
-Reply-To: cjohnson@gcctech.com
-MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-Cc: Sergey Urvanov <abs@dts.ru>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ioperm
-References: <20040427195058.E7E89C109F@atlas.denx.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Message-Id: <5.0.2.1.2.20040428124651.035cbd98@bhawley.mailhost.luminex.com>
+Date: Wed, 28 Apr 2004 12:48:21 -0700
+To: linuxppc-embedded@lists.linuxppc.org
+From: Brian Hawley <bhawley@luminex.com>
+Subject: Ebony PPC440GP & linux 2.6.3
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I stand humbled before the master.  Not that I ever doubted, really.
- Please forward information regarding your favorite local bar or liquor
-store, along with your beer preference.
+Hello.
 
-Is there a concept of having "I/O permissions" for user mode programs on
-ppc?  If so, how do they acquire such permission?
+It is clear from the archives that people have gotten the Ebony 440GP
+working with linux.
 
-Wolfgang Denk wrote:
+We are using the linux 2.6.3 kernel, and have had little luck getting it
+booted up.
 
->In message <408EACA5.8090005@gcctech.com> you wrote:
->
->>Normally I would agree, except that he's getting link errors with
->>ioperm, inb and outb - he's not even running the code.  As to whether
->>the code will work, you have an excellent point.  Maybe we're both
->>right, so beers all around!
->>
->
->He's on a PowerPC system. Quoting "arch/ppc/kernel/syscalls.c":
->
->int sys_ioperm(unsigned long from, unsigned long num, int on)
->{
->	printk(KERN_ERR "sys_ioperm()\n");
->	return -EIO;
->}
->
->Guess what?
->
->Wolfgang Denk
->
->--
->Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
->Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
->If you think the problem is bad now, just wait until we've solved it.
->                                                        Epstein's Law
->
->
+We are using u-boot as the boot loader to load the zImage.
 
---
-Christopher R. Johnson
-Principal Software Engineer
-GCC Printers
-(781)276-8763
+It decompresses the kernel, and says it transfers control, but then just stops.
+
+Any suggestions or directions would be most helpful and appreciated.
+
+
+Thanks,
+
+-- Brian
+
+
+
+
++==========================================================+
+Brian N. Hawley                 bhawley@luminex.com
+Luminex Software, Inc.          http://www.luminex.com
+PO Box 5908                     voice: 909-781-4100 x112
+Riverside, CA  92517            fax: 909-781-4105
++==========================================================+
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
