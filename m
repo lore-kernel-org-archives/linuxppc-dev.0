@@ -1,17 +1,16 @@
-Return-Path: <galak@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id F179167A65
+Return-Path: <annamaya@yahoo.com>
+Received: from web53804.mail.yahoo.com (web53804.mail.yahoo.com
+	[206.190.36.199]) by ozlabs.org (Postfix) with SMTP id 2440267A74
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 22 Jan 2005 03:47:52 +1100 (EST)
-Date: Fri, 21 Jan 2005 10:47:39 -0600 (CST)
-From: Kumar Gala <galak@freescale.com>
-To: akpm@osdl.org
-Message-ID: <Pine.LNX.4.61.0501211044060.20917@blarg.somerset.sps.mot.com>
+	Sat, 22 Jan 2005 07:16:37 +1100 (EST)
+Message-ID: <20050121201632.69802.qmail@web53804.mail.yahoo.com>
+Date: Fri, 21 Jan 2005 12:16:32 -0800 (PST)
+From: annamaya <annamaya@yahoo.com>
+To: annamaya <annamaya@yahoo.com>, linuxppc-embedded@ozlabs.org
+In-Reply-To: <20050120224936.33390.qmail@web53804.mail.yahoo.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org
-Subject: ppc32: allow usage of gen550 on platforms that do not define
- SERIAL_PORT_DFNS
+Content-Type: text/plain; charset=us-ascii
+Subject: Re: Kernel booting issues on a MPC8270 board
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,32 +21,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Allows a platform to initialize serial_state completely from gen550_init 
-and no longer requires it to define SERIAL_PORT_DFNS.
+I debugged this problem a little more and realized
+that the reset was happenning right after the
+execution of the first kernel instruction at
+0x0000000c. The instruction at this location was
+"mfpvr r28". I traced this back to a snippet of code
+that was dealing with pipeline depth issues on the
+MPC8260. Once I commented this code out, more
+instructions were issued but the reboot happens
+elsewhere. I am not able to pin-point the location of
+the debug since my BDI fails to catch the reset when
+it happens. Can someone point me to the cause of this
+situation? Thanks in advance.
 
-Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+--- annamaya <annamaya@yahoo.com> wrote:
 
----
-diff -Nru a/arch/ppc/syslib/gen550_dbg.c b/arch/ppc/syslib/gen550_dbg.c
---- a/arch/ppc/syslib/gen550_dbg.c	2005-01-21 10:43:30 -06:00
-+++ b/arch/ppc/syslib/gen550_dbg.c	2005-01-21 10:43:30 -06:00
-@@ -29,6 +29,11 @@
- 
- #define SERIAL_BAUD	9600
- 
-+/* SERIAL_PORT_DFNS is defined in <asm/serial.h> */
-+#ifndef SERIAL_PORT_DFNS
-+#define SERIAL_PORT_DFNS
-+#endif
-+
- static struct serial_state rs_table[RS_TABLE_SIZE] = {
- 	SERIAL_PORT_DFNS	/* defined in <asm/serial.h> */
- };
-@@ -154,6 +159,7 @@
- 	rs_table[i].port = serial_req->iobase;
- 	rs_table[i].iomem_base = serial_req->membase;
- 	rs_table[i].iomem_reg_shift = serial_req->regshift;
-+	rs_table[i].baud_base = serial_req->uartclk ? serial_req->uartclk / 16 : BASE_BAUD;
- }
- 
- #ifdef CONFIG_SERIAL_TEXT_DEBUG
+> I am trying to boot a mvista Linux Kernel ver.
+> 2.4.20
+> on  a MPC8270 board. I am using the embed_config()
+> in
+> zImage to pass the board info since the bootloader
+> is
+> not ppcboot. After the message, "Now booting the
+> kernel", the board just reboots, as if someone
+> yanked
+> the reset line. I have BDI hooked up but it doesn't
+> seem to catch the reset point in the code. And I am
+> unable to trace this to anything in the code. Any
+> suggestions? Thanks in advance.
+> 
+> 
+> 		
+> __________________________________ 
+> Do you Yahoo!? 
+> Yahoo! Mail - now with 250MB free storage. Learn
+> more.
+> http://info.mail.yahoo.com/mail_250
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+>
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
+
+
+
+		
+__________________________________ 
+Do you Yahoo!? 
+Read only the mail you want - Yahoo! Mail SpamGuard. 
+http://promotions.yahoo.com/new_mail 
