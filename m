@@ -1,58 +1,27 @@
-Message-Id: <199909260638.IAA00291@piglet.cpu.lu>
-Date: Sun, 26 Sep 1999 08:38:05 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: Inbound TCP Circuits over PPP Stall; MTUs and Kppp
-To: rrschulz@cris.com
-cc: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <v04210101b4132312764f@[206.173.234.57]>
+Message-ID: <37EE39B6.9C0AC07@netx4.com>
+Date: Sun, 26 Sep 1999 11:20:22 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+To: "@Jean-Jacques GERMOND" <jjg@sxb.bsf.alcatel.fr>
+CC: dan@penguin.netx4.com, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Ramdisk problem with 2.3.18 on mpc8xx boards
+References: <199909241350.PAA02356tenor>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
-
-On  25 Sep, this message from Randall R Schulz echoed through cyberspace:
-> In my lonely quest to solve the problem I'm having with the stalling 
-> of inbound (only, it seems) TCP streams over PPP (but not local 
-> loopback, it seems), I'm reaching the grasping at straws stage.
-
-I've had that same problem repeatedly in the past; I don't see it now
-because I don't use PPP anymore.
-
-What was weired for me is that the problem seemed to depend on file
-content, so the actual data transfered did make a difference.
-
-For instance, I always had problems with the glibc RPM files.
-Downloading them to a different machine at my provider, gzip'ing them
-there, I was able to download them to my box without a problem.
-
-> By using tcpdump, I have discovered what seems to be a relevant fact: 
-> When the stream stalls, the sending side (always the remote) is 
-> resending the same range of bytes (sequence numbers) over and over 
-> again with an inter-packet arrival time that increases gradually 
-> until it reaches about two minutes where it holds until one side or 
-> the other gives up and closes the stream. Each such packet has the 
-> PUSH flag set and elicits an ACK from my system, but for whatever 
-> reason, the remote just keeps sending repetitions of a packet 
-> containing the same range of sequence numbers (with a total of 1448 
-> data bytes each).
-
-Does your box send out the ACK's for the incoming data? In that case,
-either these never reach the remote end, or the ACK packets contain
-some form of error...
+@Jean-Jacques GERMOND wrote:
 
 
-Michel
+> We still want to port Linux, even an older version, on an mpc860
+> or mpc823 board in order to get linux experience.
+> We have a (probably VM) crash with the 2.2.10 in:
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+For 8xx, you should only be using the 2.2.5 or 2.3.18 tar image
+from ppc.kernel.org/embedded, or the latest CVS tree.
 
+
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
