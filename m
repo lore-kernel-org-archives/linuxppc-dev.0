@@ -1,70 +1,53 @@
-Subject: Re: CLLF with Hard Hat Lunix "Sending BOOTP requests" problem
-To: rshaw@graftononline.net
-Date: Tue, 19 Sep 2000 12:05:25 +1100 (EST)
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <001401c01eb2$48a92330$0100a8c0@nonewr2gx24hxi> from "rshaw@graftononline.net" at Sep 14, 2000 09:14:18 PM
+Message-ID: <39C6C2EF.4606D448@mvista.com>
+Date: Mon, 18 Sep 2000 21:35:43 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
+To: Graham Stoney <greyham@research.canon.com.au>
+CC: rshaw@graftononline.net, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: CLLF with Hard Hat Lunix "Sending BOOTP requests" problem
+References: <20000919010525.0A734231@elph.research.canon.com.au>
 Content-Type: text/plain; charset=us-ascii
-Message-Id: <20000919010525.0A734231@elph.research.canon.com.au>
-From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-rshaw@graftononline.net writes:
-> While loading the kernel via tftp I found that in order for the boot process
-> to work I have to use both the 10 Mbps and 100 Mbps ports.
+Graham Stoney wrote:
 
-Which version of the ROM monitor are you using?  The old one couldn't download
-over the 100 Mbps port, so we had to connect both.  We used the 10 Mbps port
-to download the kernel, and the 100 Mbps port once the kernel comes up.  Of
-course, you need a 10/100 switch to do this.  I believe that Embedded
-Planet are working on a new ROM monitor, which hopefully will correct this
-problem; I don't know if they're shipping it with production boards yet
-though.
+> Which version of the ROM monitor are you using?  The old one couldn't download
+> over the 100 Mbps port, so we had to connect both.  We used the 10 Mbps port
+> to download the kernel, and the 100 Mbps port once the kernel comes up.
 
-Note that there is a hack in the fec driver which munges the ethernet MAC
-address for the FEC port by adding 80:00:00 to the number that the monitor
-reports on the CPM port.  You'll need to configure your dhcp & nfs server to
-recognise the board via the munged address.  Your tftp server on the other
-hand needs to recognise the unmunged address.
+The "old" one could download over the 10/100 port.  It was an option
+through the test menu.  The new one won't download over the 10/100 port,
+this was in response to customers asking for the smallest possible boot
+rom image.
 
-> OK, This gets us to a Linux shell prompt even though I had to execute the
-> script files using both the 10 Mbps and 100 Mbps ports, which I shouldn't
-> have to do. I'm hoping someone might be able to help me with why I need to
-> use both ports and execute these arp commands.  Is something wrong with my
-> DHCP configuration?
->
-> Here are some of my configuration files.
->
-> Here is /etc/dhcpd.conf file contents
->
-> allow bootp;
-> subnet 192.168.0.0 netmask 255.255.0.0 {
->   default-lease-time 1209600;   #two weeks
->   max-lease-time 31557600;   #one year
->   group {
->     host CLLFBOARD {
->       hardware ethernet 00:10:EC:00:00:00;
->       fixed-address 192.168.0.3;
->       option root-path "/opt/hardhat/devkit/ppc/8xx/target";
->     }
->   }
-> }
+> Note that there is a hack in the fec driver which munges the ethernet MAC
+> address for the FEC port by adding 80:00:00 to the number
 
-You're using the unmunged address here, where it should be 00:10:EC:80:00:00.
-This is probably why your bootp server doesn't respond.  By the way, they
-didn't _really_ sell you a board with a MAC address ending in all-zero, did
-they?
+This will probably remain as the method for finding a MAC address
+for the second port on the CLLF.  Embedded Planet has said they will
+sequentially update the single MAC address in the on-board EEPROM, and
+we can safely do this.  However, I think it is always wise for anyone that
+creates Ethernet devices to request their own MAC addresses from the
+IEEE and use those.  It allows flexibility and control during production.
 
-Once you've got it set up, your arp scripts will be unnecessary.
+> .........  By the way, they
+> didn't _really_ sell you a board with a MAC address ending in all-zero, did
+> they?
 
-Regards,
-Graham
---
-Graham Stoney
-Principal Hardware/Software Engineer
-Canon Information Systems Research Australia
-Ph: +61 2 9805 2909  Fax: +61 2 9805 2929
+I have seen prototype and semi-custom boards from Embedded Planet
+that have been tested in their engineering department and rushed to
+customers (i.e. bypassed the manufacturing floor) arrive with all
+zeros in the MAC address (at least the last three bytes).  I forget
+the magic rom command to set these.  Call their support staff and
+they will straighten it out.
+
+
+	-- Dan
+
+---
+
+	I like MMUs because I don't have a real life.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
