@@ -1,16 +1,16 @@
-Return-Path: <ningmin@yahoo.co.jp>
-Received: from web606.mail.yahoo.co.jp (web606.mail.yahoo.co.jp [211.14.15.80])
-	by ozlabs.org (Postfix) with SMTP id 3BC6467AA2
+Return-Path: <vijay_padiyar@hotmail.com>
+Received: from hotmail.com (bay1-dav5.bay1.hotmail.com [65.54.244.109])
+	by ozlabs.org (Postfix) with ESMTP id C7DE667A7F
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 28 Jan 2005 21:02:40 +1100 (EST)
-Message-ID: <20050128100238.27631.qmail@web606.mail.yahoo.co.jp>
-Date: Fri, 28 Jan 2005 19:02:38 +0900 (JST)
-From: ning <ningmin@yahoo.co.jp>
-To: linuxppc-embedded@ozlabs.org
-In-Reply-To: <41F602F8.1090007@yandex.ru>
+	Sat, 29 Jan 2005 00:58:02 +1100 (EST)
+Message-ID: <BAY1-DAV565FDDF51898BE3F6E73D8B790@phx.gbl>
+From: "Vijay Padiyar" <vijay_padiyar@hotmail.com>
+To: "LinuxPPC Support" <linuxppc-embedded@ozlabs.org>
+Date: Fri, 28 Jan 2005 19:28:13 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-2022-jp
-Subject: Re: Serial console problem on MPC8272ADS board 
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: problem executing simple app on ppc target running linux
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,64 +21,65 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,Vitaly
+Hi
 
-Thanks for your reply.
+I have a doubt regarding execution of applications on Linux.
 
-I added SCC4 to rs_table as following:
-static struct serial_state rs_table[] = {
-	/* UART CLK   PORT          IRQ      FLAGS  NUM */
-	{ 0,     0, PROFF_SCC1, SIU_INT_SCC1,   0,   (0 |
-NUM_IS_SCC) }, /* SCC1 ttyS0 */
-	{ 0,     0, PROFF_SCC4, SIU_INT_SCC4,   0,   (3 |
-NUM_IS_SCC) }, /* SCC4 ttyS1 */
-};
+I am developing applications to execute on an MPC8260 (PowerPC) target. I
+started off by building a toolchain for the target (using Kegel's
+crosstool).
 
-ttyS0,ttyS1 work as COM port,but linux boot log only is
-outputed at ttyS0,how can I redirect it at ttyS1?
-After linux boots successfully,linux prompt will display
-at ttyS1,and I use it normally.
-(u-boot parameter: setenv bootargs root=/dev/nfs rw
-console=ttyS1,115200n8
-rootfs: /dev/console --> ttyS1)
+The compiler created for my target bears the name
+'powerpc-603e-linux-gnu-gcc.'
 
-at \arch\ppc\boot\simple\m8260_tty.c,Even if I define
-SCC_CONSOLE to 4,Linux boot log is outputed at ttyS0.
-the following  comment is written at m8260_tty.c:
+Then I built the Linux 2.6.10 kernel with this cross-compiler and got the
+executable image. I downloaded this image on the target and executed it
+successfully. I have now obtained the Linux command prompt.
 
-/* If defined, enables serial console.  The value (1
-through 4) should designate which SCC is used, but this
-isn't complete.  Only SCC1 is known to work at this time.
-*/
+I am using U-Boot 1.1.1 as the bootloader and am loading the JFFS2 partition
+on my Flash directly as the root drive, using the boot argument
+'root=/dev/mtdblock3.'
 
-#ifdef CONFIG_SCC_CONSOLE
-#define SCC_CONSOLE 4
-#endif
+The directory structure on my JFFS2 partition is as follows:
 
+/bin (with Busybox)
+/dev
+/etc
+/home (for my programs)
+/lib (currently empty)
+/proc (empty)
+/sbin
+/tmp
+/usr - bin, sbin
+/var
 
-Maybe it is true.
+Now, I built a simple "Hello, World!" application with my cross-compiler
+with the following command:
 
---- Vitaly Bordug <vvv75@yandex.ru> からのメッセージ：
-> Ning,
-> Well, AFAIK the serial console on the second UART
-> (and second UART on 
-> SCC4 as well) haven't been included yet to the
-> community tree. To be 
-> sure you can take a look in the 8260_io/uart.c where
-> in rs_table 
-> structure second entry should be {0, 0, PROFF_SCC4
-> ... Implementation is 
-> not that hard, you need only make proper mentioned
-> entry, enable 
-> transceiver (BCSR+4), and program parallel port pins
-> (take a look at 
-> chapter 37 of MPC8272 reference manual, grep for
-> SCC4).
-> 
-> --
-> Regards, Vitaly
+$ powerpc-603e-linux-gnu-gcc -o hello hello.c
 
-__________________________________
-Let's Celebrate Together!
-Yahoo! JAPAN
-http://pr.mail.yahoo.co.jp/so2005/
+When I try to execute the resulting file on my target from the Linux kernel
+prompt, I get a message saying:
+
+/home # ./hello
+/bin/sh: hello: No such file or directory
+
+When I compile the above file with my native gcc and execute on the target,
+I get a message saying:
+
+/home # ./hello
+/bin/sh: hello: Line 1: Unexpected '(' in file (or something to that effect)
+
+I know I can't execute apps built with gcc on the target. But why does it
+not work even when built with the cross-compiler?
+
+Another thing is, how do I compile applications with shared libraries? And
+how do I know which specific shared library files I need to put in the /lib
+and /usr/lib folders on my target JFFS2 partition for the program to execute
+successfully?
+
+Please give me some guidance. I'm a bit new to Linux.
+
+Regards
+
+Vijay Padiyar
