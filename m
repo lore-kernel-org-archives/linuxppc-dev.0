@@ -1,43 +1,42 @@
-To: "Embedded Linux PPC list" <linuxppc-embedded@lists.linuxppc.org>
-Subject: BAT mapping exported to user-space
-Reply-To: "Embedded Linux PPC list" <linuxppc-embedded@lists.linuxppc.org>
-From: "Linh Dang" <linh@linhdang.home>
-Date: Mon, 26 Jul 2004 13:20:40 -0400
-Message-ID: <wn5wu0qsn13.fsf@linhd-2.ca.nortel.com>
+Message-ID: <410543CA.2080706@mvista.com>
+Date: Mon, 26 Jul 2004 10:47:54 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: sjhill@realitydiluted.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 64360 serial driver for 2.6....
+References: <E1Bp491-0000SM-00@real.realitydiluted.com>
+In-Reply-To: <E1Bp491-0000SM-00@real.realitydiluted.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+sjhill@realitydiluted.com wrote:
 
-In our project, our application continuously does random-access to
-various ASICs. The ASICs are mapped by a bat register:
+>Greetings.
+>
+>I see that a few people are working with the 64x60 chips
+>from Marvell. Has anyone ported the serial driver from 2.4
+>into 2.6 yet? I have the 2.4 code and have ported the
+>serial console code to 2.6 just fine, but I would rather
+>not waste my time porting the serial driver proper if
+>someone else has done it already. Please CC: me on the
+>reply as I cannot subscribe to any of the PPC lists, even
+>after multiple attempts.
+>
+>
 
-- Forcing the application to use system-calls for accessing the ASICs
-  would incur a too-big overhead.
+Steve,
 
-- Adding _PAGE_USER to bat-mapping is ok but would export the mapping
-  to every single userspace processes.
+bk://source.mvista.com/linux-2.5-marvell is the current working tree for
+Marvell 64x60 devices in 2.6.  There is a new mpsc driver that fits
+under the new 2.6 serial infrastructure.  Its new and still has some
+problems but you should at least be able to use the console.  So far,
+only the ev64260 platform uses it.  You should take a look at that code
+to see what you need to do to get it to work on your platform.
 
-- I'm contemplating adding 2 bitmasks (1 read, 1 write) into the
-  mm_struct:
-  - each bit in the mask represent a BAT register that should be
-    accessible from userspace.
-  - in switch_mm, prior to the call to set_context(), the BATs's Vp
-    bits would be updated based on the masks of the `next' mm.
+Mark
 
-My questions are:
-- has it been discussed/comptemplate/done before?
-- what issues (performance,style,...) do you think such a change would
-  create?
-- How the X server access the hw on PPC?
-
-
-Thanx
-
---
-Linh Dang
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
