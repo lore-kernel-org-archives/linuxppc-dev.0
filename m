@@ -1,37 +1,28 @@
-From: Phillip Lougher <phillip@lougher.demon.co.uk>
-Message-Id: <200108222229.XAA01202@lougher.demon.co.uk>
-Subject: Re: status of linuxppc_2_4_devel for ppc405gp
-To: dan@mvista.com (Dan Malek)
-Date: Wed, 22 Aug 2001 23:29:23 +0100 (BST)
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <3B83D964.9DCFA510@mvista.com> from "Dan Malek" at Aug 22, 2001 12:10:12 PM
+Message-ID: <3B8436B7.FF5CACAE@mvista.com>
+Date: Wed, 22 Aug 2001 18:48:23 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
+To: Phillip Lougher <phillip@lougher.demon.co.uk>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: status of linuxppc_2_4_devel for ppc405gp
+References: <200108222229.XAA01202@lougher.demon.co.uk>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek wrote:
->
-> Almost all of the kernel proper is structurally sound.  I needed to
-> get the files there so others could also start making their updates.
-> I'm sure I missed a few little details, so when you see something
-> let me know.  Some of the patches I have are nearly six months old
-> and don't apply as well as they should :-).......then I wandered
-> into bootloader land where nothing works for the 4xx right now.  If
-> you don't need a 'treeboot' loader, or can stuff an image with a
-> JTAG debugger, you can get the kernel to boot.
->
+Phillip Lougher wrote:
 
-What doesn't work with the treeboot loader?  From what I've seen,
-there's nothing much to break?
+> What doesn't work with the treeboot loader?  From what I've seen,
+> there's nothing much to break?
 
-Phil Lougher
+The 4xx stuff wasn't kept up to date in the linuxppc_2_4 tree.
+I have new things to check in there, and along with other bootloader
+changes we want to accomplish I'm just trying to merge it with
+others.  There are more 4xx processors than Walnut boards with
+the treeboot rom, and we have to accomodate those as well.
 
->
-> 	-- Dan
->
->
 
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
