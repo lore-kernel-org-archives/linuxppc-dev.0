@@ -1,73 +1,113 @@
-Message-ID: <20030429214955.47605.qmail@web40909.mail.yahoo.com>
-Date: Tue, 29 Apr 2003 14:49:55 -0700 (PDT)
-From: Brian Kuschak <bkuschak@yahoo.com>
-Subject: Re: console not responding on walnut 405gp
-To: Darin.Johnson@nokia.com, linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <F0B628F30F48064289D8CCC1EE21B7A80C486F@mvebe001.americas.nokia.com>
+Message-ID: <0B0A39652BB0D411BCCF00508B9512EC08AEBD4E@tx14exm05.ftw.mot.com>
+From: Yu Bo-BOYU1 <Bo.Yu@motorola.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: 21143 driver question
+Date: Tue, 29 Apr 2003 21:35:26 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Darin,
+I finally got the hardhat preview 2.1 linux boot on my 7410+107 custom
+board.
+Now I am trying to get the network work. The board has a 21143 MAC and one
+intel
+8-port PHY but the 21143 has no direct MDIO connection with such PHY.
+The tulip driver did not complain about the 21143 during boot except I saw
+the PHY LED
+is blinking like crazy and of course I could not ping the target either.
 
-/sbin/init may need to be patched and rebuilt.  CREAD
-flag is required for linux kernels > 2.4.3.
+1. How to disable all MDIO related operation from the driver?  I just want
+to configure
+the device as MII mode and the PHY should work out of reset. This has been
+proven
+in our vxWorks based driver code.
 
-Regards,
-Brian
+2. How to correctly configure target ip address ? Is "ip=192.168.0.100"
+enough ?
+I saw something like "gw=255.255.255.255" in init log but I really don't
+care gateway. All 1s look odd.
 
---- init.c.old     Sat Jan 13 02:45:33 2001
-+++ init.c         Sat Mar  8 11:45:20 2003
-@@ -684,7 +684,7 @@
-                (void) tcgetattr(fd, &tty);
+Thanks.
 
-                tty.c_cflag &=
-CBAUD|CBAUDEX|CSIZE|CSTOPB|PARENB|PARODD;
--               tty.c_cflag |= HUPCL|CLOCAL;
-+               tty.c_cflag |= HUPCL|CLOCAL|CREAD;
-
-                tty.c_cc[VINTR]  = 3;   /* ctrl('c')
-*/
-                tty.c_cc[VQUIT]  = 28;  /* ctrl('\\')
-*/
-
-
---- Darin.Johnson@nokia.com wrote:
->
-> After booting up on a walnut 405gp board, the
-> console prints
-> the shell prompt, but does not respond to input.
-> This works
-> ok when I used an older hardhat 1.2 release, but is
-> failing
-> when I try to use something newer.  I can telnet in
-> to the
-> system, and can send output to /dev/console or
-> /dev/ttyS0,
-> and I can even open up a shell on /dev/ttyS1.  Thus
-> the uart
-> code appears to be correct.  Terminal flow control
-> is turned
-> off.  Other hints from the mail archives didn't
-> provide any
-> leads.
->
-> The relevant line from inittab is
->    /bin/sh < /dev/console > /dev/console 2>
-> /dev/console
->
-> This problem occurs with kernel 2.4.21-pre6 (via
-> linuxppc-2.4-devel) and 2.4.20-2002-12-04 (from
-> ftp.denx.de).
->
-> Darin Johnson
->
->
+Bo
 
 
-The New Yahoo! Search - Faster. Easier. Bingo.
-http://search.yahoo.com
+
+
+
+Linux/PPC load: console=ttyS0,9600 console=tty0 root=/dev/ram
+ip=192.168.0.100
+Uncompressing Linux...done.
+Now booting the kernel
+Memory BAT mapping: BAT2=128Mb, BAT3=0Mb, residual: 0Mb
+Total memory = 128MB; using 256kB for hash table (at c0180000)
+Linux version 2.4.17_mvl21 (root@ibm-t30) (gcc version 2.95.3 20010315
+(release/
+MontaVista)) #152 Tue Apr 29 20:34:01 CDT 2003
+Host bridge init okay
+Motorola SPS Sandpoint Test Platform
+Sandpoint port (C) 2000, 2001 MontaVista Software, Inc. (source@mvista.com)
+On node 0 totalpages: 32768
+zone(0): 32768 pages.
+zone(1): 0 pages.
+zone(2): 0 pages.
+Kernel command line: console=ttyS0,9600 console=tty0 root=/dev/ram
+ip=192.168.0.
+100
+OpenPIC Version 1.2 (1 CPUs and 26 IRQ sources) at fdfd0000
+time_init: decrementer frequency = 1.000000 MHz
+Calibrating delay loop... 31.84 BogoMIPS
+Memory: 126680k available (984k kernel code, 392k data, 72k init, 0k
+highmem)
+Dentry-cache hash table entries: 16384 (order: 5, 131072 bytes)
+Inode-cache hash table entries: 8192 (order: 4, 65536 bytes)
+Mount-cache hash table entries: 2048 (order: 2, 16384 bytes)
+Buffer-cache hash table entries: 8192 (order: 3, 32768 bytes)
+Page-cache hash table entries: 32768 (order: 5, 131072 bytes)
+POSIX conformance testing by UNIFIX
+PCI: Probing PCI hardware
+Linux NET4.0 for Linux 2.4
+Based upon Swansea University Computer Society NET3.039
+Initializing RT netlink socket
+Starting kswapd
+Disabling the Out Of Memory Killer
+Serial driver version 5.05c (2001-07-08) with MANY_PORTS SHARE_IRQ
+SERIAL_PCI en
+abled
+ttyS00 at 0xfdfce000 (irq = 16) is a TI16750
+block: 128 slots per queue, batch=32
+RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
+loop: loaded (max 8 devices)
+Linux Tulip driver version 0.9.15-pre9 (Nov 6, 2001)
+tulip0: Old style EEPROM with no media selection information.
+eth0: Digital DS21143 Tulip rev 65 at 0xbfff80, EEPROM not present,
+00:4C:69:6E:
+75:79, IRQ 20.
+NET4: Linux TCP/IP 1.0 for NET4.0
+IP Protocols: ICMP, UDP, TCP, IGMP
+IP: routing cache hash table of 1024 buckets, 8Kbytes
+TCP: Hash tables configured (established 8192 bind 8192)
+IP-Config: Guessing netmask 255.255.255.0
+IP-Config: Complete:
+      device=eth0, addr=192.168.0.100, mask=255.255.255.0,
+gw=255.255.255.255,
+     host=192.168.0.100, domain=, nis-domain=(none),
+     bootserver=255.255.255.255, rootserver=255.255.255.255, rootpath=
+NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+RAMDISK: Compressed image found at block 0
+Freeing initrd memory: 494k freed
+VFS: Mounted root (ext2 filesystem).
+Freeing unused kernel memory: 72k init
+done open console...
+bash#
+bash# ping
+init: ping: command not found
+bash#
+bash#
+bash#
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
