@@ -1,84 +1,89 @@
-Message-ID: <38C5643C.D9C2A4BD@amberdata.demon.co.uk>
-Date: Tue, 07 Mar 2000 20:19:08 +0000
-From: David Monro <davidm@amberdata.demon.co.uk>
+Date: Tue, 7 Mar 2000 14:40:58 -0600
+From: Grant Erickson <grant@borg.umn.edu>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Grabbing an Interrupt for a Brain-dead PCI Device
+In-Reply-To: <Pine.GSO.4.10.10003061202100.23760-100000@dandelion.sonytel.be>
+Message-ID: <Pine.SGI.4.21.0003071435240.45384-100000@brule.borg.umn.edu>
 MIME-Version: 1.0
-To: Gabriel Paubert <paubert@iram.es>
-CC: Linux/ppc Dev List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: IBM 850 - Open Firmware or not? and more on the ide byteswapgame...
-References: <Pine.HPX.4.10.10003071102520.22162-100000@gra-ux1.iram.es>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Gabriel Paubert wrote:
->
-> On Mon, 6 Mar 2000, David Monro wrote:
->
+So, unfortunately, I didn't do the design for this "dumb" PCI device and
+neither can I fix its shortcomings in these regards.
+
+Below, we've acknowledged and discovered how to sort of work-around the
+problem of the invalid vendor ID and the base address. Now, I've yet
+another problem.
+
+The device has an interrupt at INTA#. Unfortunately, the device being dumb
+as it is, doesn't utilize the interrupt pin register to advertise that it
+does in fact have an interrupt there. So, I assume that once again, the
+PROM doesn't give it one.
+
+Is there a way, in Linux, for me to programmatically and manually assign
+an interrupt to this device as might have been done in the PROM? I'm
+guessing I have to twiddle some registers in the North Bridge, correct?
+
+Thanks,
+
+Grant
+
+
+On Mon, 6 Mar 2000, Geert Uytterhoeven wrote:
+> On Sun, 5 Mar 2000, Grant Erickson wrote:
+> > After modifying the Linux kernel to accept PCI devices with the invalid
+> > vendor/device ID combination of 0xffff/0x0000, I noticed something odd
+> > about the way the system PROM (and to a lesser extent Linux) configured
+> > the chip's base addresses. Looking at a number of other devices in the
+> > system:
 > >
-> > Did the IBM 850 implement Open Firmware as described in the PReP spec?
-> > I'm guessing not, which is a pity. Can anybody enlighten me for certain?
+> >         grant@marathon% cat /proc/iomem
+> >         81800000-8180001f : PCI device 1022:2000 AMD Lance Ethernet
+> >         81900000-819fffff : PCI device 1022:2000 AMD Lance Ethernet
+> >         82000000-82ffffff : PCI device 1002:4754 ATI Mach 128
+> >         f3000000-f307ffff : PCI device 106b:0010 Apple Heathrow I/O
+> >         fffc0000-ffffffff : PCI device ffff:0000 ???
 > >
-> > btw I've figured out why the 850 needs byteswapping of the IDE hard
-> > drives to work properly - I just realized that NT/ppc ran little endian,
-> > and the firmware understands little-endian FDISK style partition tables.
-> > Since we understand them too, but we are running big-endian, we end up
-> > in a mess. Why are we running big-endian btw?
+> > Clue 1: The address range programmed for the chip looks suspiciously like
+> > the state it might be left in after determining how much address space it
+> > needs.
 >
-> Hmm, I'm starting to wonder, are you sure that the system is completely
-> reset to big endian mode ?  If the ARC firmware is designed to run NT, it
-> might set all the bits to little endian mode (that's not only the
-> processor but also the bridge and maybe more bits here and there).
+> Yes.
 >
+> > Before Linux does this address space sizing, it saves the base address.
+> > In the case of my chip, it would have read "0x0" since nothing was
+> > programmed there previously. If Linux does find 0x0, it just leaves the
+> > result of the address sizing there and moves on.
+> >
+> > So, that led me to wonder where the addresses in the other devices were
+> > coming from...
+> >
+> > I found that even before Linux executes a single line of code, all the
+> > other devices above have valid addresses programmed into their base
+> > address registers. Who's doing this?
+> >
+> > I believe that the Open Firmware PROM in the PowerPC system probes all
+> > PCI devices in the system at power up. It then assigns valid base
+> > addresses to those devices with VALID vendor and device IDs.
+>
+> OF (should) assign addresses. On my box (CHRP), it does so for _recognized_
+> devices only.
+>
+> > Because my chip uses an invalid vendor ID of 0xFFFF, Open Firmware must
+> > just ignore it and never programs in a valid base address! Therefore,
+> > when we go and try to access the chip at 0xFFFC0000 (which is outside the
+> > valid PCI address space on PReP/CHRP/PowerMac systems?) we're off probing
+> > never-never land. The PCI controller never assumes the transaction!
+>
+> How difficult is it to make the PCI chip use a valid vendor/device ID? I don't
+> think you can assume any boot ROM will try to assign a region to it. There's no
+> way to distinguish a device with an invalid vendor/device ID from a device
+> that's not even present.
+>
+> Go read the PCI spec and use valid IDs.
 
-Oh, I think it is properly set up etc; I just finally had a realization
-that since NT was running little-endian, it didn't have the overhead of
-swapping the disk in order to run the same way round as the partition
-table indicated it was running.
-
-> Or is it that we should make the firmware believe that Linux/PPC is little
-> endian and then switch to big endian the whole system ourselves. My
-> interpretation is that the firmware might attempt to run both big and
-> little endian OS but that the disk access and especially partition table
-> interpretation routines only work correctly when the processor is in
-> little endian mode. IOW the firmware is hopelessly buggy.
-
-It isn't really that bad - basically they picked one format for the
-parition table (which happened to be the NT one). Other OSs can do what
-they like as long as the firmware sees a valid little-endian FDISK
-partition table with a PReP boot partition in it (and then the OS has to
-make sure it doesn't stomp on the boot partition). This afternoon I had
-a look at an AIX disk and discovered it was partitioned with a 3M PReP
-partition starting 2M from the front of the disk and nothing else. So
-I'd imagine that AIX probably stores something in the first 2M, and then
-uses everything execpt the first 5M of the disk under its own scheme.
-
-> BTW: big endian is the right way for PPC, you don't want to run a PPC
-> in niadne-elttil mode under any circumstance.
-
-Unless you are Micro$oft :-) For that matter, Workplace OS (ie OS/2 for
-ppc) ran little-endian. I would guess in both cases the compaines
-decided that the endian cleanup of the source wasn't worth the hassle.
-Actually, why does it matter which way up you run the CPU?
-
-According to the PREP spec Solaris/PPC was also little-endian!
-Presumably they decided PReP machines looked more like PCs than sparcs.
-In which case the only OS that the PReP spec mentions which runs
-big-endian is AIX. (What was Taligent - something from Apple maybe? The
-name in mentioned in the spec, but all the slots in the tables under
-that heading are blank, and so is the appendix for it :-))
-
-[..]
-> At a time due to these problems, I had code in the kernel which could grok
-> a partition table in any endianness but the rest of the disk was in normal
-> order (even the extended partition tables).
-
-Have you still got this code anywhere? This is exactly what we need; to
-grok the primary partition table little-endian but everything else
-native. Then we just need to write an fdisk to work with it :-)
-
-Cheers,
-
-	David
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
