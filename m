@@ -1,33 +1,40 @@
-Message-ID: <3BD82792.49CDFF62@mandrakesoft.com>
-Date: Thu, 25 Oct 2001 10:54:10 -0400
-From: Jeff Garzik <jgarzik@mandrakesoft.com>
-MIME-Version: 1.0
-To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: any easy way to force 10/100 nics to 10?
-References: <20011023211459.NUPA19597.tomts17-srv.bellnexxia.net@there> <3BD60FF5.24C4B841@mandrakesoft.com> <20011025134153.EDVF12483.tomts13-srv.bellnexxia.net@there>
+Date: Thu, 25 Oct 2001 08:30:32 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: "KOBAYASHI R. Taizo" <tkoba@ike-dyn.ritsumei.ac.jp>
+Cc: jeglin@4pi.com, linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.4.13-pre5 crash when mounting proc
+Message-ID: <20011025083032.A29107@cpe-24-221-152-185.az.sprintbbd.net>
+References: <p04330100b7f7f805ef9a@[24.163.33.28]> <20011025.233136.74750056.tkoba@ike-dyn.ritsumei.ac.jp>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20011025.233136.74750056.tkoba@ike-dyn.ritsumei.ac.jp>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"Kevin B. Hendricks" wrote:
+On Thu, Oct 25, 2001 at 11:31:36PM +0900, KOBAYASHI R. Taizo wrote:
 >
-> Hi,
+> On Sun, 21 Oct 2001 00:02:12 -0400
+> Stefan Jeglinski <jeglin@4pi.com> wrote:
+> Subject: 2.4.13-pre5 crash when mounting proc
+> > 6500, Linux/PPC 2KQ4 running 2.2.19, I compiled 2.4.13-pre5, rsynced
+> > from bk yesterday. On boot, when it gets to "mounting proc
+> > filesystem," I get a break into the mon debugger, but I have no
+> > keyboard response (so no backtrace). The info I can copy is:
+> >
+> > vector: 300 at pc = c02432fc lr = c00544e0 msr = b032 sp = c5dc3ef0
+> >
+> > plus some more that I'm not sure will help much. For this output
+> > alone, should I include System.map also?
 >
-> One other question:
->
-> Why are we advertising more than our capabilities and what is 100baseT4?
->
-> >   capabilities: 100baseTx-FD 100baseTx-HD 10baseT-FD 10baseT-HD
-> >   advertising:  100baseT4 100baseTx-FD 100baseTx-HD 10baseT-FD
+> My pb2400 got well again with following:
+[snip]
 
-Looks like a bug...
+Um.  Is that _all_ that changed?  That really shouldn't have any effect
+at all...  What compiler/binutils combo is this?
 
 --
-Jeff Garzik      | Only so many songs can be sung
-Building 1024    | with two lips, two lungs, and one tongue.
-MandrakeSoft     |         - nomeansno
-
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
