@@ -1,21 +1,20 @@
-Return-Path: <vitorio@digitel.com.br>
-Received: from hermes.digitel.com.br (hermes.digitel.com.br [200.198.105.36])
-	by ozlabs.org (Postfix) with ESMTP id 92B2E67A67
+Return-Path: <akpm@osdl.org>
+Received: from smtp.osdl.org (fire.osdl.org [65.172.181.4])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 20D6A67A65
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 19 Mar 2005 07:49:56 +1100 (EST)
-Received: from [10.10.10.160] by hermes.digitel.com.br (GMS
-	9.01.3158/NU1492.00.9f6ce814) with ESMTP id tnrwkbaa for
-	linuxppc-embedded@ozlabs.org; Fri, 18 Mar 2005 17:39:24 -0200
-From: =?ISO-8859-1?Q?Lu=EDs_Vit=F3rio?= Cargnini <vitorio@digitel.com.br>
-To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-E5Sp2aUiMUDlqFvMwgTK"
-Date: Fri, 18 Mar 2005 17:38:02 -0300
-Message-Id: <1111178282.3555.11.camel@vitorio>
+	Sat, 19 Mar 2005 08:45:04 +1100 (EST)
+Date: Fri, 18 Mar 2005 13:44:29 -0800
+From: Andrew Morton <akpm@osdl.org>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Message-Id: <20050318134429.7dae3962.akpm@osdl.org>
+In-Reply-To: <423B2310.4020005@mvista.com>
+References: <423B2310.4020005@mvista.com>
 Mime-Version: 1.0
-Subject: problemsm  cross-compiling
-Reply-To: vitorio@digitel.com.br
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH 2.6.12] ppc32: Fix mv64x60 internal SRAM size
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,51 +25,100 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+"Mark A. Greer" <mgreer@mvista.com> wrote:
+>
+>  ppc32: Fix wrong size for mv64[34]60's internal SRAM.
 
---=-E5Sp2aUiMUDlqFvMwgTK
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+This got a reject against other ppc32 patches which I had (they've all just
+been flushed to Linus).
 
-Hi all,
-i'm trying to cross-compilate linuxppc-2.4.30-pre1 but i have some
-problems in the end during kernel linkage
-the message is the follow:
-make[1]: Leaving directory `/linuxppc2_merge/arch/ppc/8xx_io'
-ppc_8xx-ld -T arch/ppc/vmlinux.lds -Ttext 0xc0000000 -Bstatic
-arch/ppc/kernel/head_8xx.o init/main.o init/version.o init/do_mounts.o \
-        --start-group \
-        arch/ppc/kernel/kernel.o arch/ppc/platforms/platform.o
-arch/ppc/mm/mm.o arch/ppc/lib/lib.o kernel/kernel.o mm/mm.o fs/fs.o
-ipc/ipc.o arch/ppc/math-emu/math-emu.o \
-         drivers/char/char.o drivers/block/block.o drivers/misc/misc.o
-drivers/net/net.o drivers/net/wan/wan.o drivers/mtd/mtdlink.o
-drivers/macintosh/macintosh.o drivers/video/video.o
-drivers/media/media.o crypto/crypto.o arch/ppc/8xx_io/8xx_io.o \
-        net/network.o \
-        /linuxppc2_merge/lib/lib.a \
-        --end-group \
-        -o vmlinux
-net/network.o(__ksymtab+0x490): undefined reference to `arp_create'
-net/network.o(__ksymtab+0x498): undefined reference to `arp_xmit'
-make: *** [vmlinux] Error 1
+The reject was in arch/ppc/Kconfig.  Please check that I fixed it up
+correctly.
 
-how could i solve this ???
-someone had this problem ????=20
- someone could sent me the files to fix this ?
---=20
-Lu=EDs Vit=F3rio Cargnini <vitorio@digitel.com.br>
-Digitel S/A
 
---=-E5Sp2aUiMUDlqFvMwgTK
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+From: "Mark A. Greer" <mgreer@mvista.com>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.6 (GNU/Linux)
+ppc32: Fix wrong size for mv64[34]60's internal SRAM.
 
-iD8DBQBCOzwqyHSZZ0hdDzQRAnMwAKDCn5Xx4iqdE9U0PIu0lKH/gmwkPQCeKVVf
-cpXA/JsnI8uHu6MRgSouMnQ=
-=xSDD
------END PGP SIGNATURE-----
+- Fix incorrect SRAM size
+- Minor Kconfig cleanups for mv64x60 platforms
 
---=-E5Sp2aUiMUDlqFvMwgTK--
+Signed-off-by: Mark A. Greer <mgreer@mvista.com>
+Signed-off-by: Andrew Morton <akpm@osdl.org>
+---
+
+ 25-akpm/arch/ppc/Kconfig               |   10 ++--------
+ 25-akpm/arch/ppc/platforms/chestnut.h  |    4 ++--
+ 25-akpm/arch/ppc/platforms/katana.h    |    2 +-
+ 25-akpm/include/asm-ppc/mv64x60_defs.h |    2 +-
+ 4 files changed, 6 insertions(+), 12 deletions(-)
+
+diff -puN arch/ppc/Kconfig~ppc32-fix-mv64x60-internal-sram-size arch/ppc/Kconfig
+--- 25/arch/ppc/Kconfig~ppc32-fix-mv64x60-internal-sram-size	2005-03-18 13:41:27.000000000 -0800
++++ 25-akpm/arch/ppc/Kconfig	2005-03-18 13:42:57.000000000 -0800
+@@ -577,7 +577,6 @@ config SANDPOINT
+ 
+ config RADSTONE_PPC7D
+ 	bool "Radstone Technology PPC7D board"
+-	select MV64360
+ 
+ config ADIR
+ 	bool "SBS-Adirondack"
+@@ -753,16 +752,11 @@ config GT64260
+ 	depends on EV64260 || CPCI690
+ 	default y
+ 
+-config MV64360
++config MV64360		# Really MV64360 & MV64460
+ 	bool
+-	depends on KATANA || RADSTONE_PPC7D || HDPU
++	depends on CHESTNUT || KATANA || RADSTONE_PPC7D || HDPU
+ 	default y
+ 
+-config MV64360
+-	bool
+-	depends on CHESTNUT
+-  	default y
+-
+ config MV64X60
+ 	bool
+ 	depends on (GT64260 || MV64360)
+diff -puN arch/ppc/platforms/chestnut.h~ppc32-fix-mv64x60-internal-sram-size arch/ppc/platforms/chestnut.h
+--- 25/arch/ppc/platforms/chestnut.h~ppc32-fix-mv64x60-internal-sram-size	2005-03-18 13:41:27.000000000 -0800
++++ 25-akpm/arch/ppc/platforms/chestnut.h	2005-03-18 13:41:27.000000000 -0800
+@@ -28,8 +28,8 @@
+  *    0xffd00000-0xffd00004      - CPLD
+  *    0xffc00000-0xffc0000f      - UART
+  *    0xffb00000-0xffb07fff      - FRAM
+- *    0xffa00000-0xffafffff      - *** HOLE ***
+- *    0xff800000-0xff9fffff      - MV64460 Integrated SRAM
++ *    0xff840000-0xffafffff      - *** HOLE ***
++ *    0xff800000-0xff83ffff      - MV64460 Integrated SRAM
+  *    0xfe000000-0xff8fffff      - *** HOLE ***
+  *    0xfc000000-0xfdffffff      - 32bit Flash
+  *    0xf1010000-0xfbffffff      - *** HOLE ***
+diff -puN arch/ppc/platforms/katana.h~ppc32-fix-mv64x60-internal-sram-size arch/ppc/platforms/katana.h
+--- 25/arch/ppc/platforms/katana.h~ppc32-fix-mv64x60-internal-sram-size	2005-03-18 13:41:27.000000000 -0800
++++ 25-akpm/arch/ppc/platforms/katana.h	2005-03-18 13:41:27.000000000 -0800
+@@ -24,7 +24,7 @@
+  * on a boundary that is a multiple of the window size):
+  *
+  *    0xff800000-0xffffffff      - Boot window
+- *    0xf8400000-0xf85fffff      - Internal SRAM
++ *    0xf8400000-0xf843ffff      - Internal SRAM
+  *    0xf8200000-0xf83fffff      - CPLD
+  *    0xf8100000-0xf810ffff      - MV64360 Registers (CONFIG_MV64X60_NEW_BASE)
+  *    0xf8000000-0xf80fffff      - Socketed FLASH
+diff -puN include/asm-ppc/mv64x60_defs.h~ppc32-fix-mv64x60-internal-sram-size include/asm-ppc/mv64x60_defs.h
+--- 25/include/asm-ppc/mv64x60_defs.h~ppc32-fix-mv64x60-internal-sram-size	2005-03-18 13:41:27.000000000 -0800
++++ 25-akpm/include/asm-ppc/mv64x60_defs.h	2005-03-18 13:41:27.000000000 -0800
+@@ -347,7 +347,7 @@
+ #define	MV64360_SRAM_ERR_DATA_HI		0x03a0
+ #define	MV64360_SRAM_ERR_PARITY			0x03a8
+ 
+-#define	MV64360_SRAM_SIZE			0x00200000 /* 2 MB of SRAM */
++#define	MV64360_SRAM_SIZE			0x00040000 /* 2Mb/256KB SRAM */
+ 
+ /*
+  *****************************************************************************
+_
