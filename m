@@ -1,14 +1,16 @@
 Return-Path: <benh@kernel.crashing.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200502041336.59892.arnd@arndb.de>
+To: Olof Johansson <olof@austin.ibm.com>
+In-Reply-To: <20050204183514.GB17586@austin.ibm.com>
 References: <20050204072254.GA17565@austin.ibm.com>
 	<200502041336.59892.arnd@arndb.de>
+	<20050204183514.GB17586@austin.ibm.com>
 Content-Type: text/plain
-Date: Sat, 05 Feb 2005 10:49:49 +1100
-Message-Id: <1107560989.2189.119.camel@gaston>
+Date: Sat, 05 Feb 2005 10:50:44 +1100
+Message-Id: <1107561044.2189.120.camel@gaston>
 Mime-Version: 1.0
 Cc: Andrew Morton <akpm@osdl.org>, Tom Rini <trini@kernel.crashing.org>,
+	Arnd Bergmann <arnd@arndb.de>,
 	Linux Kernel list <linux-kernel@vger.kernel.org>,
 	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
@@ -23,97 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2005-02-04 at 13:36 +0100, Arnd Bergmann wrote:
-> On Freedag 04 Februar 2005 08:22, Olof Johansson wrote:
-> > It's getting pretty old to have see and type cur_cpu_spec->cpu_features
-> > & CPU_FTR_<feature>, when a shorter and less TLA-ridden macro is more
-> > readable.
-> > 
-> > This also takes care of the differences between PPC and PPC64 cpu
-> > features for the common code; most places in PPC could be replaced with
-> > the macro as well.
+On Fri, 2005-02-04 at 12:35 -0600, Olof Johansson wrote:
+> On Fri, Feb 04, 2005 at 01:36:55PM +0100, Arnd Bergmann wrote:
+> > I have a somewhat similar patch that does the same to the
+> > systemcfg->platform checks. I'm not sure if we should use the same inline
+> > function for both checks, but I do think that they should be used in a
+> > similar way, e.g. CPU_HAS_FEATURE(x) and PLATFORM_HAS_FEATURE(x).
 > 
-> I have a somewhat similar patch that does the same to the
-> systemcfg->platform checks. I'm not sure if we should use the same inline
-> function for both checks, but I do think that they should be used in a
-> similar way, e.g. CPU_HAS_FEATURE(x) and PLATFORM_HAS_FEATURE(x).
+> Yep. Firmware features are also on the list. I figured I'd do CPU features
+> first though since they are the ones that started bugging me.
+> 
+> > The same stuff is obviously possible for cur_cpu_spec->cpu_features as well.
+> > Do you think that it will help there?
+> 
+> Nice. It won't be quite as easy to do compile-time for cpu features.
+> pSeries will need all cpus enabled since we have them all on various
+> machines, etc. I guess Powermac/Maple could benefit from it. In the
+> end it depends on how hairy the implementation would get vs performance
+> improvement.
 
-Note that I would prefer cpu_has_feature(), it doesn't strictly have to
-be a macro and has function semantics anyway.
+One other thing we did on ppc32 was to have separate ELF sections for
+pmac, chrp and prep specific code & get rid of them after boot... It may
+be worth bringing this back in...
 
-> My implementation of the platform checks tries to be extra clever by turning
-> runtime checks into compile time checks if possible. This reduces code size
-> and in some cases execution speed. It can also be used to replace compile
-> time checks, i.e. it allows us to write
-> 
-> static inline unsigned int readl(const volatile void __iomem *addr)
-> {
-> 	if (platform_is(PLATFORM_PPC_ISERIES))
-> 		return iSeries_readl(addr);
-> 	if (platform_possible(PLATFORM_PPC_PSERIES))
-> 		return eeh_readl(addr);
-> 	return in_le32();
-> }
-> 
-> which will always result in the shortest code for any combination of
-> CONFIG_PPC_ISERIES, CONFIG_PPC_PSERIES and the other platforms.
-
-That's a good idea !
-
-> The required code for this is roughly
-> 
-> enum {
-> 	PPC64_PLATFORM_POSSIBLE =
-> #ifdef CONFIG_PPC_ISERIES
-> 		PLATFORM_ISERIES |
-> #endif
-> #ifdef CONFIG_PPC_PSERIES
-> 		PLATFORM_PSERIES |
-> #endif
-> #ifdef CONFIG_PPC_PSERIES
-> 		PLATFORM_PSERIES_LPAR |
-> #endif
-> #ifdef CONFIG_PPC_POWERMAC
-> 		PLATFORM_POWERMAC |
-> #endif
-> #ifdef CONFIG_PPC_MAPLE
-> 		PLATFORM_MAPLE |
-> #endif
-> 		0,
-> 	PPC64_PLATFORM_ONLY =
-> #ifdef CONFIG_PPC_ISERIES
-> 		PLATFORM_ISERIES &
-> #endif
-> #ifdef CONFIG_PPC_PSERIES
-> 		PLATFORM_PSERIES &
-> #endif
-> #ifdef CONFIG_PPC_POWERMAC
-> 		PLATFORM_POWERMAC &
-> #endif
-> #ifdef CONFIG_PPC_MAPLE
-> 		PLATFORM_MAPLE &
-> #endif
-> 		-1ul,
-> };
-> 
-> static inline platform_is(unsigned long platform)
-> {
-> 	return ((PPC64_PLATFORM_ONLY & platform) 
-> 	 || (PPC64_PLATFORM_POSSIBLE & platform & systemcfg->platform));
-> }
-> 
-> static inline platform_possible(unsigned long platform)
-> {
-> 	reutrn !!(PPC64_PLATFORM_POSSIBLE & platform);
-> }
-> 
-> The same stuff is obviously possible for cur_cpu_spec->cpu_features as well.
-> Do you think that it will help there?
-> 
-> 	Arnd <><
-> _______________________________________________
-> Linuxppc64-dev mailing list
-> Linuxppc64-dev@ozlabs.org
-> https://ozlabs.org/cgi-bin/mailman/listinfo/linuxppc64-dev
--- 
-Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Ben.
