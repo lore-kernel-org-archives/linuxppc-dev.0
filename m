@@ -1,97 +1,37 @@
-Date: Sat, 26 Feb 2000 09:23:14 -0700
+Date: Sat, 26 Feb 2000 09:35:24 -0700
 From: Kevin Buettner <kev@primenet.com>
-Message-Id: <1000226162314.ZM9153@saguaro.lan>
-In-Reply-To: Pierre Sarrazin <sarrazip@machinasapiens.com>
-        "Re: Help w/ gdb" (Feb 16,  2:11pm)
-References: <38AAF67E.36D2@machinasapiens.com>
-To: Pierre Sarrazin <sarrazip@machinasapiens.com>,
-        linuxppc-dev@lists.linuxppc.org
+Message-Id: <1000226163524.ZM9177@saguaro.lan>
+In-Reply-To: Sean Chitwood <darkmane@w-link.net>
+        "Help w/ gdb" (Jan 15, 11:12pm)
+References: <Pine.LNX.4.10.10001152247220.28099-100000@darkmane.w-link.net>
+To: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: Help w/ gdb
+Cc: darkmane@w-link.net
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Feb 16,  2:11pm, Pierre Sarrazin wrote:
+On Jan 15, 11:12pm, Sean Chitwood wrote:
 
-[lots of stuff snipped]
-> The program executes fine by itself, as well as in GDB without
-> breakpoints.
->
-> Here is the scenario.  I enter GDB and set a breakpoint on this line
-> of prog.c:
->
->         (*function)();
->
-> Then I run the program and GDB stops on that line. I give the "step"
-> command and get this:
->
-> ---------------------------------------------------------------------------
-> (gdb) break 15
-> Breakpoint 1 at 0x1800734: file prog.c, line 15.
-> (gdb) run
-> Starting program: /home/sarrazip/pgm/bug-gdb-dll/prog
->
-> Breakpoint 1, main (argc=1, argv=0x7ffffbd4) at prog.c:15
-> 15              (*function)();
-> (gdb) step
-> 0x161a61c in library_function () at libfoo.c:7
-> 7       }
-> (gdb) next
-> This is library_function()
-> --------------------------
-> main (argc=1, argv=0x7ffffbd4) at prog.c:17
-> 17              dlclose(handle);
-> (gdb)
-> ---------------------------------------------------------------------------
+[Regarding gdb...]
 
-Pierre,
+> When I attempt to debug an assert/crash as I bring up the stack
+> trace I notice that some of the frames point only to the ending
+> curly brace of a function (Not always the one it says is being
+> debugged).  I cannot examine variables, or learn anything else
+> productive about the situation.
 
-Thanks for including the program and detailed bug report.  I mentioned in
-earlier email that I was merging the patches for linux/ppc gdb into the
-current sourcebase.  I am happy to report that this merge is complete and
-that the source may be downloaded from the sourceware site.  See
+I had sent some earlier replies to Sean suggesting a couple of
+workarounds.  These workarounds should no longer be necessary if you
+build gdb with the current development sources from
+sourceware.cygnus.com.
 
-    http://sourceware.cygnus.com/gdb
-
-for more information.  Franz Sirl has also created an RPM from sources
-earlier in the week and placed it in
-
-    ftp://devel.linuxppc.org/users/fsirl/
-
-(I'm not sure if his sources contain my most recent shared library fixes
-though.)
-
-Anyway, when I run your program, I'm now seeing the following
-(correct, I believe) output:
-
-    GNU gdb 20000204
-    Copyright 1998 Free Software Foundation, Inc.
-    GDB is free software, covered by the GNU General Public License, and you are
-    welcome to change it and/or distribute copies of it under certain conditions.
-    Type "show copying" to see the conditions.
-    There is absolutely no warranty for GDB.  Type "show warranty" for details.
-    This GDB was configured as "powerpc-unknown-linux-gnu"...
-    (gdb) b 15
-    Breakpoint 1 at 0x1800734: file prog.c, line 15.
-    (gdb) r
-    Starting program: /home/kev/ctests/pierre/prog
-
-    Breakpoint 1, main (argc=1, argv=0x7ffffd54) at prog.c:15
-    15              (*function)();
-    (gdb) s
-    library_function () at libfoo.c:5
-    5               printf("This is library_function()\n");
-    (gdb) next
-    This is library_function()
-    6               printf("--------------------------\n");
-    (gdb) next
-    --------------------------
-    7       }
-    (gdb) next
-    main (argc=1, argv=0x7ffffd54) at prog.c:17
-    17              dlclose(handle);
+See http://sourceware.cygnus.com/gdb for more information on how to
+download these sources.  (If you're going to download via ftp, you'll
+want to wait for next week's snapshot as it will contain several
+shared library fixes.)
 
 Kevin
 
