@@ -1,22 +1,24 @@
-Message-ID: <234D417E5348D411830000D0B774DD5054A3D0@exns01.bri.com>
-From: Satya Singotam <Satya.Singotam@bri.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Hard Hat Linux 2.0(embedded Linux by Monta Vista)
-Date: Mon, 4 Mar 2002 15:35:41 -0600 
-MIME-Version: 1.0
-Content-Type: text/plain
+Message-Id: <sc84a537.012@gw_tms_syd2.pty.tms.thomson-csf.com>
+Date: Tue, 05 Mar 2002 10:59:45 +1100
+From: "Jeremy Rosen" <Jeremy.Rosen@au.thalesgroup.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: [PATCH] use of /proc/iomem in 8xx boards
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
-I am looking for "Hard Hat Linux, Journey man edition(ver 2.0)" Evaluation
-Software by Montavista for PPC 82xx targets.
-It used to be available to download at Montavista website earlier.
-But it's not available now.
-I am just wondering if anyone has a copy of that sofware,so that
-I can use for my evaluation
+Here is a patch to have the memory map displayed in /proc/iomem.
+it was mainly adapted from arch/ppc/i386/kernel/setup.c
 
-thanks
+I have tested it with my board ( FADS with an 860T ) but I didn't test
+for other board.
+This also mean that the names for the IO regions of other board were my
+best guess :-)
+
+Thx
+
+Jeremy
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
