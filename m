@@ -1,163 +1,30 @@
-Reply-To: <govindan@tejasnetworks.com>
-From: "Govindan" <govindan@tejasnetworks.com>
-To: "'Matthew Locke'" <mlocke@onemain.com>, <linuxppc-dev@lists.linuxppc.org>,
-        <damm@kierayapc01.p.y.ki.era.ericsson.se>,
-        <dhinds@pcmcia.sourceforge.org>
-Cc: <gopi@tejasnetworks.com>
-Subject: RE: Problem with PCMCIA and RPXCLASSIC
-Date: Wed, 20 Dec 2000 23:08:46 +0530
-Message-ID: <013101c06aab$b4cbf070$1b01a8c0@india.tejasnetworks.com>
+Date: Wed, 20 Dec 2000 22:09:55 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: jeramy b smith <ultrapenguin@netscape.net>
+cc: Josh Huber <huber@mclx.com>,
+        Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: ethernet issue with lombard
+In-Reply-To: <20001220144559.22791.qmail@www0d.netaddress.usa.net>
+Message-ID: <Pine.LNX.4.10.10012202208380.10833-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <382386870.977252793244.JavaMail.root@web624-wrb.mail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Mathew Locke,
+> I've only seen it twice in 5-6 days of uptime myself.
+>
+> Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de> wrote:
+> >
+> > I've seen problems recently with NFS over 100 Mbit - the server just
+> > 'disappears' for my Lombard. I'd say it's only in .18 because that's what
+> > I use most of the time and I don't recall trouble in .17
 
-Thanks for the response, and the new status...
+Losing NFS twice in 5 days uptime is a lot (in fact I can't lose the same
+NFS server twice, the machine needs a reboot in order to recover as the
+NFS tasks are blocked in the kernel).
 
-kernel version: 2.2.14
-pcmcia-c version: 3.1.22
+	Michael
 
-We have applied both the patches to the kernel put up on your site.
-
-The pcmcia-3.1.22 has compilation problems as the mpc8xx_bdinfo is not
-defined.  It is used only for the frequency, hence we hard coded it to
-40MHz(which is our boards operating freq).
-
-Then we gave _IO_BASE = 0x80000000
-This still did not work and the kernel panics.  We had to comment out
-a line in ll_rw_blk.c( where and outb_p is called)..
-After this the kernel comes up.
-
-Wpe suspect some goof up in the file: arch/ppc/kernel/m8xx_setup.c
-Here ATA_FLASH is defined to 1.(and the comment is:
-  /* Define this to make a PCMCIA ATA Flash card work.
-  */
-)
-But with this define, the function rpx_pcmcia_config() doesnt get
-called at all.
-
-Does anyone have a patch for this file?
-
-Also, what should be the values in the config.opts for this?
-I HAVE READ IN THE MAILING LIST from Dan dated TUE 02, may 2000
-that he has successfully used IBM Micro drive with MPC860 PCMCIA.
-has anybody got the detail information ?
-
-thanx
-Govindan
-
-"Code it clear rather than clever"
----------------------------------------------------------------------
-Govindan  K Thrithala                 Tel: +91-80-226-7495x4033
-Tejas Networks India Pvt. Ltd.     Fax: +91-80-226 7494
-49, Khanija Bhavan, Race Course Road
-Bangalore 560 001
--------------------------------------------------------------------
-"I care for future, because I spend rest of my life there"
-
-
-
-
-
------Original Message-----
-From: Matthew Locke [mailto:mlocke@onemain.com]
-Sent: Wednesday, December 20, 2000 12:37 AM
-To: govindan@tejasnetworks.com; linuxppc-dev@lists.linuxppc.org;
-damm@kierayapc01.p.y.ki.era.ericsson.se; dhinds@pcmcia.sourceforge.org
-Cc: gopi@tejasnetworks.com
-Subject: RE: Problem with PCMCIA and RPXCLASSIC
-
-
-two patches need to be applied to the kernel to get PCMCIA ide cards to
-work.  Did you apply both patches?  they are on
-ftp://ftp.mvista.com/pub/area51/ppc_8xx
-
-That should be the only issue.  I have not tested the IBM microdrive
-specifically, but other IDE flash cards work fine.
-
-since the RPX-lite and cllf do not have PCI, 0x80000000 will work.
-
-
-
-------Original Message------
-From: "Govindan" <govindan@tejasnetworks.com>
-To: linuxppc-dev@lists.linuxppc.org,
-damm@kierayapc01.p.y.ki.era.ericsson.se, dhinds@pcmcia.sourceforge.org
-Sent: December 19, 2000 1:22:04 PM GMT
-Subject: Problem with PCMCIA and RPXCLASSIC
-
-
-
-Hi,
-
-
-[We are using Hard HAt Linux (Kernel 2.2.14) and PCMCIA
-patch for pcmcia-cs-3.1.19]
-
-
-
-I am trying to get IBM microdrive based on PCMCIA  up on CLLF
-board(RPXCLASSIC).
-
-With _IO_BASE=0x80000000(in mpc8xx.h), kernel doesnt come up at all,
-just prints a kernel panic msg about access to memory..
-
-So, we tried changing the IO_BASE to 0(this was the value in older
-versions before the patch of pcmcia-3.1.19 was put up).
-
-With this as IO_BASE the kernel comes up and we get the shell prompt
-also.(BUt what is the correct value of _IO_BASE for cllf rpxclassic
-board)?
-
-
-Now when trying to get the IBM microdrive up as an ide disc, when we
-invoke cardmgr(after doing insmod of the pcmcia basic modules),
-the following error is shown..
-
---------------------------------------------------------------------------
-sh-2.03# cardmgr
-cardmgr[27]: starting, version is 3.1.19
-sh-2.03# cardmgr[27]: watching 1 sockets
-cardmgr[27]: initializing socket 0
-cardmgr[27]: socket 0: IBM microdrive
-NIP: C00AA784 XER: E000A77F LR: C00AAB04 REGS: c0d09450 TRAP: 0300
-MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-TASK = c0d08000[27] 'cardmgr' mm->pgd c0d0a000 Last syscall: 54
-last math 00000000
-GPR00: 000000A0 C0D09500 C0D08000 C0119C90 000000EC 00000000 C0D09564
-00050000
-GPR08: 0100010F 00000106 C011A30C C0D09568 33F33453 10021674 100B6FF0
-00000000
-GPR16: 100BE450 FFFFFFFF FFFFFFFF 00000000 00009032 00D09E80 00000000
-C01686E0
-GPR24: C011180C 00009032 C0119DA1 C0119CE0 000000EC C0119C60 C0119C60
-C0119C90
-Call backtrace:
-C404D000 C00AAB04 C00AB60C C00A4CA8 C00A548C C40115BC C4011970
-C40021A8 C4003864 C4011178 C400E84C C400F55C C0033690 C00022D0
-100026FC 10002D90 100041B8 0FF094F8 00000000
-Kernel panic: kernel access of bad area pc c00aa784 lr c00aab04 address 106
-tsk
-cardmgr/27
---------------------------------------------------------------------------
-
-Any idea what the problem is..
-
-Thanks in advance,
-Govindan
-
-"Code it clear rather than clever"
----------------------------------------------------------------------
-Govindan  K Thrithala                 Tel: +91-80-226-7495x4033
-Tejas Networks India Pvt. Ltd.     Fax: +91-80-226 7494
-49, Khanija Bhavan, Race Course Road
-Bangalore 560 001
--------------------------------------------------------------------
-"I care for future, because I spend rest of my life there"
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
