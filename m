@@ -1,39 +1,47 @@
-Subject: RE: This question may be simple for you, but it doesn't let me sleeping.
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Wed, 13 Aug 2003 14:05:09 -0400
-Message-ID: <AB5AF73EAF23304EA1B932174137CED70303CA@m5tmail.m5t.com>
-From: "Jean-Denis Boyer" <jdboyer@m5t.com>
-To: <zjzhou@newrocktech.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Kernel panic: No init found.?? Try passing init= option to kernel
+From: "Mike G." <gohas@actinium.org>
+To: linuxppc-embedded@lists.linuxppc.org
+Content-Type: text/plain
+Message-Id: <1060827870.1060.20.camel@localhost.localdomain>
+Mime-Version: 1.0
+Date: 14 Aug 2003 10:29:59 +0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> I have linux2.4.1 from Lineo runing on ppc8250, IMMR =
-> 0xF0000000, in my driver function, I can directly access
-> 0xF00xxxxx( internal memory area on PPC's chip), why?
+Hi there,
+Can someone give me a clue what's going on?  I been trying to figure out
+what wrong with this kernel. Is it because of the squashfs system which
+I am trying to use.  I know this is quite a common problem and I have
+been search old news archive but to no avail. Please help
 
-A BAT is configured to map this region with addressing virtual == physical.
-See function m8260_map_io in arch/ppc/kernel/m8260_setup.c
+OUTPUT:-
 
-> When passing a logical address pointer to BD's address
-> pointer that allocated by function kmalloc().
+Int flash0: Using Static image partition definition
+Creating 5 MTD partitions on "Int0":
+0x00000000-0x00080000 : "kernel"
+0x00080000-0x00180000 : "ramdisk"
+0x00180000-0x00300000 : "user1"
+0x00300000-0x00380000 : "uboot"
+0x00380000-0x00400000 : "user2"
+VFS: Mounted root (squashfs filesystem) readonly.
+Freeing unused kernel memory: 36k init
+Kernel panic: No init found.  Try passing init= option to kernel.
 
-Memory should probably be uncached (as the IMMR is).
-Use function m8260_cpm_hostalloc instead of kmalloc, then use __pa.
-See for example arch/ppc/8260_io/fcc_enet.c
 
-Regards,
---------------------------------------------
- Jean-Denis Boyer, Eng.
- Software Designer
- M5T Centre d'Excellence en Télécom Inc.
- 4283 Garlock Street
- Sherbrooke (Québec)
- J1L 2C8  CANADA
- (819)829-3972 x241
---------------------------------------------
+I have check, the init is located at this location in the Ramdisk.
+
+/bin/init -> ../etc/rc
+
+But I am not sure the file system is mounted correctly.  Or is it
+something wrong with the MTD because I customize the Flash mapping
+myself.
+
+Thank you in advance!
+
+
+--
+Mike G. <gohas@actinium.org>
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
