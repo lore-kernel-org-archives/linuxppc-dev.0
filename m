@@ -1,37 +1,31 @@
-To: Steven Scholz <steven.scholz@imc-berlin.de>
-Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: jffs2 partition on a TQM860L??? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 02 Jun 2003 18:55:53 +0200."
-             <3EDB8199.8090805@imc-berlin.de>
-Date: Mon, 02 Jun 2003 21:56:50 +0200
-Message-Id: <20030602195655.BF2AEC5492@atlas.denx.de>
+Date: Mon, 2 Jun 2003 13:25:57 -0700
+Subject: Re: file system over CF flash
+Content-Type: text/plain; charset=ISO-2022-JP; format=flowed
+Mime-Version: 1.0 (Apple Message framework v552)
+Cc: Magnus Damm <damm@opensource.se>,
+	=?ISO-8859-1?B?tqG68dPA?= <nari_dhy@nari-china.com>,
+	linuxppc-embedded@lists.linuxppc.org
+To: Mark Hatle <fray@mvista.com>
+From: Scott Anderson <sanders@mvista.com>
+In-Reply-To: <3EDA1076.8010701@mvista.com>
+Message-Id: <6B220287-9538-11D7-85A6-000A959CAB7C@mvista.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3EDB8199.8090805@imc-berlin.de> you wrote:
->
-> I want to use JFFS2 as root fs on a TQM860L with 8MB flash.
-> This flash is seperated into two flash banks each 4MB.
->
-> (How) can I define one big jffs2 partition (in
-> ./drivers/mtd/maps/tqm8xxl.c) that contains sectors from both flash banks?
+Hey guys, you missed where he said "IBM MicroDrive"...
+On Saturday, May 31, 2003, at 07:46  PM, 丁厚永 wrote:
+> There is a CF flash of IBM MicroDrive in xilinx virtex-ii pro eval
+> board ML300.
+> Can someone tell me what type of fs is used over such kind of flash
+> device?
 
-Just use a more recent version  of  the  MTD  code,  for  example  as
-contained  in our linuxppc_2_4_devel tree. It will automagically join
-adjacent flash banks into one MTD device.
+The MicroDrive is actually spinning media and does not have the typical
+FLASH concerns that Magnus and Mark pointed out.  In this particular
+instance, I believe Xilinx is shipping it with a DOS partition, a Linux
+swap partition and an ext2 partition.
 
-Best regards,
+    Scott
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"An open mind has but one disadvantage: it collects dirt."
-                                                    - a saying at RPI
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
