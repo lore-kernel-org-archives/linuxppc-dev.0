@@ -1,59 +1,56 @@
-To: boehringer@snom.de
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Problem booting Linux on MPC8XXFADS 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 26 Mar 2002 09:41:27 +0100."
-             <3CA03437.5E724251@snom.de>
-Date: Tue, 26 Mar 2002 09:55:28 +0100
-Message-Id: <20020326085533.96CE7109F3@denx.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: "Stephan Linke" <Stephan.Linke@epygi.de>
+To: <wd@denx.de>
+Cc: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: problems running I2C and/or SPI on 857 board 
+Date: Tue, 26 Mar 2002 11:03:47 +0100
+Message-ID: <FCEAKDJJAPHPLJFINDAJEENDCDAA.Stephan.Linke@epygi.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <20020325131107.8D3B6109F3@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3CA03437.5E724251@snom.de> you wrote:
+At the moment all my tries are based on the existing drivers in PPCBOOT.
+Using no microcode patch, and DPRAM allocation.
+DPRAM allocation pointed out a bug so I guess it's not that well tested yet
+:( .
+Trying fixed DPRAM offsets and microcode now...
+
+Thanks, Stephan
+
+> -----Original Message-----
+> From: wd@denx.de [mailto:wd@denx.de]
+> Sent: Montag, 25. März 2002 14:11
+> To: Stephan Linke
+> Cc: Linuxppc-Embedded
+> Subject: Re: problems running I2C and/or SPI on 857 board
 >
-> > Check that you have configured the console on the correct  port;  you
-> > should be able to get a good configuration with
+>
+> In message <FCEAKDJJAPHPLJFINDAJCEMMCDAA.Stephan.Linke@epygi.de>
+> you wrote:
 > >
-> >         $ make FADS860_config
-> >         $ make oldconfig
-> >         $ make dep
-> >         $ make pImage
+> > I'm trying to get I2C and/or SPI running on a 857 board.
+> Register settings
+> > and BDs look good. But when the start command is issued nearly nothing
+> > happens as if there would be no clock.
 >
-> Thanks for that hint. With your sources (linux-2.4.4-2002-03-21.tar.bz2)
-> and the configuration it works! Now i try to port that to 2.4.17
-
-Fine.
-
-> (possible? :-).
-
-Better use 2_4_devel ...
-
-> > But you should be aware - your chances to succesfully run Linux on  a
-> > FADS rev ENG or PILOT board are pretty limted anyway.
+> I guess your implementation is basedon existing code? Which one?
+> [Hint: we have I2C running on a couple of systems...]
 >
-> What exactly do you mean with "be aware of"? Are there any common
-> failures with that board? Unfortunately, i have to use this Board :-(
+> > Is there anyone who has an idea?
+>
+> Start from some code that is known to work?
+>
+> Wolfgang Denk
+>
+> --
+> Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+> Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+> The existence of god implies a violation of causality.
+>
 
-The  (F)ADS8xx  is  (in)famous.  Maybe  it  was  sponsered   by   the
-unemployment  office  to keep all these programmers busy, hunting for
-software problems for weeks and weeks and weeks (util  they  realized
-they had hardware problems).
-
-You don't have to use this board.
-
-There are alternative solutions. Just divide the  price  for  another
-board  (stable  hardware with full Linux support) by your hourly rate
-and you probably already now wasted money on the FADS...
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-No journaling file system can recover your data if the disk dies.
-                                 - Steve Rago in <D4Cw1p.L9E@plc.com>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
