@@ -1,37 +1,27 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: <mlan@cpu.lu>, <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Strange OF display while booting
-Date: Sun, 19 Aug 2001 23:58:36 +0200
-Message-Id: <20010819215836.31159@smtp.wanadoo.fr>
-In-Reply-To: <200108190938.LAA00865@piglet.grunz.lu>
-References: <200108190938.LAA00865@piglet.grunz.lu>
+To: "Timothy A. Seufert" <tas@mindspring.com>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: About TAU (and ICTC)
+Date: Mon, 20 Aug 2001 00:02:14 +0200
+Message-Id: <20010819220214.32000@smtp.wanadoo.fr>
+In-Reply-To: <p05100301b7a5c073cc62@[10.0.0.42]>
+References: <p05100301b7a5c073cc62@[10.0.0.42]>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->
->With recent BenH kernels, the early boot messages (before switching to
->aty128fb in my case) are messed up. The first few messages start in the
->middle of the top row, with some white areas to the left of the
->messages, then at the middle hight of the screen there's a white area
->spannig all the width, and below that the text messages are aligned
->correctly again to the left edge of the screen.
->
->FWIW, this was not the case with older kernels (2.4.5-pre3 comes to
->mind).
->
->Maybe somenody will know what changed...
+>The exception would be when it's desired to use the feature for its
+>original intended purpose, reduction of die temperature when that
+>temperature reaches a critical threshold.  That would also mean using
+>the TAU the way it was intended: you set the upper and lower TAU
+>thresholds as desired, and the TAU ISR turns ICTC on when the high
+>threshold is passed and off when it moves past the lower.
 
-That code have been hacked a bit by both paulus and me lately. Can
-you try out my current rsync ?
-
-There were several issue, including some miscalculation of the display
-BAT, and some problems writing to some old machine framebuffer with
-cache enabled. I moved out the bootx text from prom.c and now start
-displaying things only in platform_init (where we have the display BAT
-set to non-cachable).
+Unfortunately, the TAU is too badly calibrated to be useful. There
+_might_ be some other temp sensors in recent Apple machines, on the
+I2C bus, I'll do some "probing" one of these days.
 
 Ben.
 
