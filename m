@@ -1,29 +1,37 @@
-Message-ID: <3FFC0C8D.8060402@mixed-mode.de>
-Date: Wed, 07 Jan 2004 14:41:33 +0100
-From: Tamas Bara <tba@mixed-mode.de>
+Message-ID: <020201c3d5d2$f37e1240$21589edd@CHKIMVAIO>
+From: =?ks_c_5601-1987?B?sejEociv?= <willy@airpoint.co.kr>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: socket programming without RTnet.
+Date: Thu, 8 Jan 2004 19:34:09 +0900
 MIME-Version: 1.0
-To: linuxppc mail list <linuxppc-embedded@lists.linuxppc.org>
-Subject: IDMA on MPC8265
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="ks_c_5601-1987"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Hi,
 
-I have an MPC8265 board with linux-2.4.20 as
-OS and and a Gigabit Ethernet controller on
-the PCI bus.
+Well, for my socket programming on RTAI patched linux 2.4.20, I tried
+to find some socket APIs. But there were any what I expected such as
+socket() a standard BSD APIs.
 
-I have to implement a workaround, using one of
-the IDMA channels, to avoid a deadlock caused
-by PCI bus mastering of the GBE card.
+I know I can use the RTnet. But before using it, I want to program a
+socket application without the help of RTnet.
 
-Are there any mean pitfalls I should keep an
-eye on, like using only certain regions of the
-Dual Port RAM?
+Just before I found some APIs starting sys_ net/socket.c like
+sys_socket, sys_bind(). To use them I added their symbol in netsyms.c.
+And I made a hello-world function using sys_xxx functions.
 
-Thanks.
+    Oops: kernel access of bad area
 
+But the problem is that when I loaded my hello-world app as a module
+after booting. Why can't I use those APIs? I think loadable module is a
+part of kernel.
+
+If I can't use those APIs, is there any good way to make a socket
+programming without the help of RTnet?
+
+Willy.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
