@@ -1,28 +1,32 @@
-Date: Mon, 9 Jul 2001 16:46:40 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: James F Dougherty <jfd@GigabitNetworks.COM>
-Cc: dan@mvista.com, anj@aps.anl.gov,
-	linuxppc-embedded@lists.linuxppc.org, cort@cs.nmt.edu
-Subject: Re: ppc-linux EPIC (OpenPIC) and Interrupts on MPC8240
-Message-ID: <20010709164640.A15805@opus.bloom.county>
-References: <200107092157.OAA18907@krakatoa.gigabitnetworks.com>
-Mime-Version: 1.0
+Message-ID: <3B4A44ED.79D7D545@aps.anl.gov>
+Date: Mon, 09 Jul 2001 18:57:33 -0500
+From: Andrew Johnson <anj@aps.anl.gov>
+MIME-Version: 1.0
+To: LinuxPPC-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: SSSSlllloooowwww MPC8240
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200107092157.OAA18907@krakatoa.gigabitnetworks.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Jul 09, 2001 at 02:57:24PM -0700, James F Dougherty wrote:
+Can anybody suggest why I'm seeing the following:
 
-> Dan, is there a more recent version of the kernel source
-> which I should use?
+Under Hard Hat Linux 2.0 (2.4.2 kernel) on my MVME2100 board (MPC8240 CPU
+running at 200MHz), Linux startup reports a BogoMIPS rating of 9.59.  I've
+just built and run the exact same calibration code under vxWorks, and here
+I get a rating of 133.73 BogoMIPS, which seems much more likely to be
+correct.  Linux does seem rather sluggish at running things, so I don't
+think it's problem with the calibration.  Any ideas what could be going on
+behind the scenes to slow Linux down, and how I might track it down?
 
-The linuxppc_2_4_devel, with some minor patching (the compile will
-fail and tell you where the patch is, iirc) should work fine on this.
+I wonder whether it's related to that openpic interrupt stuff in the other
+thread...
 
+TIA,
+
+- Andrew
 --
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+The world is such a cheerful place when viewed from upside-down
+It makes a rise of every fall, a smile of every frown
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
