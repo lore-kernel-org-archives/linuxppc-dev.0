@@ -1,50 +1,57 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Giuliano Pochini <pochini@denise.shiny.it>,
-        <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: 2.2.18p19
-Date: Sat, 4 Nov 2000 05:20:34 +0100
-Message-Id: <19340928215218.14436@192.168.1.10>
-In-Reply-To: <3A037737.2B131815@denise.shiny.it>
-References: <3A037737.2B131815@denise.shiny.it>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Mime-Version: 1.0
+Message-Id: <p04330100b629527c3036@[192.168.0.1]>
+In-Reply-To: <19340928092828.1670@192.168.1.2>
+References: <p04330100b627ff09296b@[192.168.0.1]>
+ <19340928092828.1670@192.168.1.2>
+Date: Sat, 4 Nov 2000 01:03:01 -0500
+To: Benjamin Herrenschmidt <bh40@calva.net>, <linuxppc-dev@lists.linuxppc.org>
+From: Stefan Jeglinski <jeglin@4pi.com>
+Subject: Re: whacked out 2.2.18pre17?
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+>  >I am aware that this kernel is being worked on daily (that's why I
+>>try to rebuild it each night), but I'm a little surprised that I am
+>>having so much trouble with a pre17 kernel. Anybody know what's up?
+>>Is this thing going through such big changes that I should let it go
+>>for a while instead of trying each night?
 >
->Ok, I've just tried 2.2.18p19 tree from linuxcare. At the end of the make
->process, after vmlinux has been created, it complains:
->
->
->ld -T ../vmlinux.lds -Ttext 0x00800000 -o zvmlinux.tmp head.o misc.o
->../coffboot/zlib.o vreset.o kbd.o of1275.o
->vreset.o: In function `vga_init':
->vreset.o(.text+0x3c2): undefined reference to `loops_per_jiffy'
->vreset.o(.text+0x3c6): undefined reference to `loops_per_jiffy'
+>Well, first try with a more recent bootx.. that may help.
 
-I fixed that in the bitkeeper _2_2 tree, looks like Paulus don't have the
-fix. You should not really care since you probably don't need the zImage.
-The fix is easy, repalce the definition of loops_per_sec by
-loops_per_jiffy in arch/ppc/boot/vreset.c and divide the value by HZ (100).
 
->Same thing with the official 2.2.18p19.
->
->I first tried USB-HIDBP and it freezes at boot. Less a second after the
->mouse is turned on, it lights off and all freezes. 2.2.16p hadn't this
->problem. USB-HID works fine.
->My IDE CDROM is now /dev/hda instead hde. The ZIP is hdb instead of hdf.
->
->I'm now trying to d/l the bk tree. rsync connection refused :-(
+After a long evening of playing with this, I stand by my original assertion :-)
 
-Hrm.... remind me your hardware ? I'll update my rsync tree from the
-latest _2_2 tomorrow, I don't know it Paul's linux-pmac-stable is up-to-
-date with bk _2_2.
+I did update to BootX 1.2.2, and started from scratch by playing with
+several settings. I also scrounged several 2.2.18 versions, newly
+rsynced from penguinppc.org::linux-pmac-stable and
+ppc.linuxcare.com::linux-pmac-stable, and also earlier 2.2.18 rsyncs
+that were stored on different computers available to me.
 
-Also, I don't think the boot protocol USB drivers will do any good for
-you, especially if you use ADB-like keymaps. You should probably use the
-HID drivers, as those were well tested on macs.
+The two things that are constant on my hardware (PowerTowerPro +
+PowerLogix G3, 6 PCI cards, most of which are not seen anyway,
+2940UW):
 
-Ben.
+1. Full boot is impossible, always with one of the following circumstances:
+	a) freeze at "booting..."
+	b) can't find MAC address for MACE device -> kernel panic
+	c) "machine check in kernel mode" -> "unknown values in srr1" ->
+		kernel panic
+
+2. no video checkbox is ignored, on or off. There is no way to force
+OFfb, regardless of kernel args or video checkboxes. The imstt card
+is -always- found and the driver -always- loaded. Most odd, I've
+never seen this one before.
+
+
+Reverting to 2.2.17-linux-pmac-stable fixes everything. Looks to me
+like 2.2.18-linux-pmac-stable is undergoing serious under-the-hood
+changes, at least for my hardware. It makes me pretty nervous. I
+don't think I have the expertise to sleuth this, I just wanted to
+post to the list in case the info helped anyone.
+
+
+Stefan Jeglinski
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
