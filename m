@@ -1,53 +1,34 @@
-In-Reply-To: <Pine.LNX.3.96.990824104012.26367B-100000@mvista.com>
-Date: Tue, 24 Aug 1999 20:21:52 +0200
-To: "David A. Gatwood" <dgatwood@mvista.com>, linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: BootX enhancement request
-Message-Id: <19990824202152.007307@mail.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <37C2E5F7.F92E76E4@generation.net>
+Date: Tue, 24 Aug 1999 14:35:35 -0400
+From: Simon Piette <spiette@generation.net>
+MIME-Version: 1.0
+To: Jerry Quinn <jquinn@nortelnetworks.com>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Patch for powercomputing keyboards
+References: <14269.42715.336106.140568@gargle.gargle.HOWL>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Aug 24, 1999, David A. Gatwood <dgatwood@mvista.com> wrote:
+Jerry Quinn wrote:
+> 
+> Hi all.  I've put together a hack that allows the CapsLock key on
+> PowerComputing keyboards to work reasonably as a control key.
+> 
+> So anyone with a Powercomputing keyboard, please try this out and let me know
+> what you think.  The patch is against Linus' 2.2.10.  If it seems good, I
+> think it also will need a configuration, unless someone has a suggestion on
+> how to make it play nicely with Apple keyboards.
+> 
 
->That's not _entirely_ true.  The hardware itself relies on the nvram
->setting in order to determine the initial startup mode before it starts
->loading MacOS.  That's why you can do tricks with newer versions of MacOS
->like have the preferences set to 1024x768 and the pram/nvram set to
->640x480 and have it switch half-way into booting. (Makes it nice for
->MkLinux on x100's where you have to be in 8-bit color, but don't want to
->run MacOS that way.)  The Monitors & Sound CP does set the nvram value, at
->least on some machines, unless it changed quite recently, but you
->sometimes have to delete its prefs files to convince it to do so.
+Hi,
 
-Yes, you are right. But the fact remains that video drivers are free to
-store this in any proprietary format they want and I had some trouble
-getting this to work with iMacs and blue G3s. Also, this nvram setting is
-limited to those "official" mode values, but the driver is free to
-implement completely different modes, and there's also some support for
-DCC slowly appearing in MacOS. I don't think we can rely reliably on this
-nvram value.
+I have a Umax J700 and the patch work perfectly. Thanks a lot for this
+annoying bug fix! Do you think it will be integrated in the vger and/or samba
+kernel?
 
-What I could eventually do is to add code to BootX that asks the driver
-about the current mode (the driver should be able to return me all sorts
-of informations, including some, but not all, of the timings) and build a
-kernel command line with those. We should find something generic since
-I'm not sure I can easily find out which kind of driver to use on the
-command line (atyfb, platinumfb, controlfb, ...)
-
-I have plans to extend BootX so that i can also setup OF environement
-variables for quik-based booting. It would be able to setup those infos
-there too. I'll look into this as soon as I have a new hard drive for my
-8500 (the old one joined my pile of dead HDs last week, I'll soon be able
-to make some kind of modern art with all those HDs ;-).
-
--- 
-           Perso. e-mail: <mailto:bh40@calva.net>
-           Work   e-mail: <mailto:benh@mipsys.com>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
-
+Simon
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
