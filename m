@@ -1,31 +1,29 @@
-Date: Wed, 12 May 1999 17:37:30 -0400 (EDT)
-From: Tom Rini <tmrini@ntplx.net>
-To: Martin Costabel <costabel@wanadoo.fr>
-cc: Konstantinos Margaritis <kmargar@cc.uoa.gr>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: cvs kernel does not compile
-In-Reply-To: <3739F32D.E4A5BD10@wanadoo.fr>
-Message-ID: <Pine.LNX.4.05.9905121737010.651-100000@pc.wackyland.com>
+Date: Wed, 12 May 1999 23:47:42 +0200 (CEST)
+From: =?ISO-8859-1?Q?Kolbj=F8rn_Barmen?= <kolla@nvg.ntnu.no>
+To: Samuel Rydh <samuel@ibrium.se>
+cc: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
+Subject: Re: Mac-on-linux is now working...
+In-Reply-To: <19990510213309.43528@ibrium.se>
+Message-ID: <Pine.LNX.4.10.9905122346030.26829-100000@daneel.nvg.ntnu.no>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 12 May 1999, Martin Costabel wrote:
+On Mon, 10 May 1999, Samuel Rydh wrote:
 
-> 2.3.0 (cvs) compiled fine for me this morning, I'm running it now
-> (LinuxPPC R5 beta):
-> 
-> root[8]#dmesg | grep Linux
-> Linux version 2.3.0 (root@chezmoi) (gcc version egcs-2.91.66 19990314
-> (egcs-1.1.2 release)) #14 Wed May 12 09:30:40 CEST 1999
+> Mac-on-linux is an open source emulator which 
+> runs Mac OS on linuxPPC machines.
 
-Well.  2.3.0 is 2.2.8.  2.3.1-pre2 (in CVS now) is not. :)
+LinuxPPC machines in general, or does it have to be PowerMacs?
+Theoretically speaking ofcourse :)
 
----
-Tom Rini (TR1265)
-http://dobbstown.yeti.edu/
+
+ Kolbjørn Barmen |    a3k/o6o/6o4e/AmigaOS/MacOS/LinuxPPC   |    // T e a m
+ <kolla@nvg.org> | a12ooCT/o3o/Linux-m68k  a6oo/o3o/AmigaOS | \XX/ A M I G A
+ Nettverksgruppa |    "I met the Amiga and fell in love..." | <amiga.nvg.org>
+             »» Norwegian University of Technology and Science ««
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
