@@ -1,60 +1,34 @@
-Message-ID: <39C8DE1A.BC8EF0B6@mvista.com>
-Date: Wed, 20 Sep 2000 11:56:10 -0400
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: paulus@linuxcare.com.au
-CC: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Date: Wed, 20 Sep 2000 09:31:10 -0700
+From: Matt Porter <mporter@mvista.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: __ioremap_at() in 2.4.0-test9-pre2
-References: <Pine.LNX.4.10.10009172058340.715-100000@cassiopeia.home>
-		<14790.58502.25252.825448@argo.linuxcare.com.au>
-		<20000919150621.A9826@cx258813-a.chnd1.az.home.com> <14791.61311.118516.747495@argo.linuxcare.com.au>
+Message-ID: <20000920093110.C30600@beef.az.mvista.com>
+References: <20000919150621.A9826@cx258813-a.chnd1.az.home.com> <Pine.LNX.4.10.10009201408040.389-100000@cassiopeia.home>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.10.10009201408040.389-100000@cassiopeia.home>; from geert@linux-m68k.org on Wed, Sep 20, 2000 at 02:08:42PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Paul Mackerras wrote:
+On Wed, Sep 20, 2000 at 02:08:42PM +0200, Geert Uytterhoeven wrote:
+> On Tue, 19 Sep 2000, Matt Porter wrote:
+> > would only be used on the "primary" host bridge.  I realize there
+> > are plenty of drivers (like de4x5) that insist on using inw/outw
+> > (and thus break on host bridge 2) but these drivers should be
+> > fixed.
+>
+> Is there still a need for de4x5? Since Jeff Garzik fixed the Tulip driver,
+> that one works fine on PPC.
 
-
-> ....  The virtual <-> physical
-> mappings are set up so that the 2nd host bridge's I/O space is mapped
-> in starting at 0xff100000.  The result is that doing inb(0x101000)
-> accesses the device as expected.
-
-You still have to be careful here.  Drivers that are written to
-do this may also make the assumption they can store that "address"
-in a 16-bit (signed, even worse) variable.  You will have to change
-drivers (or structures) in this case.
-
-I don't so much care if in/out is used/abused, but I think device
-drivers should be written such that they ask for addresses through
-the PCI (or other I/O) subsystem, rather than just grab BARs and
-expect to use them.  The x86 in/out was stupid back in 1983, and is
-even less useful today.  It is lots easier to adopt a memory mapped
-model and adapt it to x86, than for the rest of us to keep trying to
-create contortions of an address map just so we can use poorly written
-x86 device drivers.  I think it is easier to update a driver, which
-I have done on a couple of occasions, to be more portable than to
-try and find ways to use it without making any changes.  The authors
-of the drivers have even accepted this in some cases :-).
-
-These address mapping hacks were fine years ago when there was
-only one PCI bus at a fixed address in the system.  Today, there
-are lots of busses, with transparent (or not) bridges, and we have
-a PCI subsystem in Linux that is maturing into a really useful set of
-functions.  The embedded CompactPCI systems are way ahead of workstations
-in terms of complexity of PCI (and other) bus structures.  In these
-environments we rely heavily on the virtual mapping of I/O, and if
-you have a BAR it doesn't mean much to your driver.  I would like to
-see us look toward the future, to a model where we map I/O through
-the VM subsystem, instead of trying to find hacks to support addressing
-assumptions that just aren't valid any longer.
-
-
-	-- Dan
+Yep, there's a little workaround for a buggy SROM on some embedded boards
+in the de4x5 that I haven't yet moved to the tulip driver.  Of course,
+it's written using I/O as well. :-/
 
 --
-
-	I like MMUs because I don't have a real life.
+Matt Porter
+MontaVista Software, Inc.
+mporter@mvista.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
