@@ -1,36 +1,43 @@
-Date: Thu, 11 Apr 2002 08:29:26 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Michael Sokolov <msokolov@ivan.Harhan.ORG>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Incoming to helium.harhan.org:/home/linuxppc/linuxppc_2_4_alt
-Message-ID: <20020411152926.GD15663@opus.bloom.county>
-References: <20020410150936.GB26754@opus.bloom.county> <0204110311.AA27153@ivan.Harhan.ORG>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <0204110311.AA27153@ivan.Harhan.ORG>
+Date: Thu, 11 Apr 02 08:40:29 PDT
+From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
+Message-Id: <0204111540.AA28629@ivan.Harhan.ORG>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: CONFIG_GENERIC_PPC32
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Apr 10, 2002 at 08:11:56PM -0700, Michael Sokolov wrote:
->
-> Tom Rini <trini@kernel.crashing.org> wrote:
->
-> > So why not ask it for boards where it's reasonable?
->
-> So you mean replace the "$CONFIG_GENERIC_PPC32" = "y" condition with
-> "$CONFIG_BOARD_X" = "y" -o "$CONFIG_BOARD_Y" = "y" etc? Fine with me, but I
-> thought that was ugly code by your standards... :-)
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-Config files are where you're supposed to figure things out, not the C
-files :)
+> Let's do it first in 2.5, we can backport it once we are satisfied
 
-Maybe someday we'll have some automagic bits in the config language
-where we can specific sections and create all of the config questions on
-the fly or something, but for now...
+Bleah. 2.5 == never to me. It doesn't help me with my goal of getting support
+for my boards in 2.4. I work on stable kernels and not development ones because
+I'm not a Linux developer, I'm just a HW engineer trying to make Linux
+(existing stable one) support my boards at least as well as it does those from
+my competitors (IBM, Sun, etc).
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+I guess I'll just have to convince Debian to make a package from
+linuxppc_2_4_alt to support HEC PPCStar machines and show all these exchanges
+as evidence that the PPC MAINTAINERS are not intent on allowing new machine
+support into 2.4 any time soon.
+
+> Well.. you forget pmac here ;)
+>
+> The problem is that pmac has it's own serial HW with a different driver,
+> but still may need serial.o for PCI serial cards or pcmcia modems.
+
+But then a PMac doesn't need anything in rs_table!
+
+If in addition to PMacs a CONFIG_GENERIC_PPC32 kernel supports other machines
+with serial consoles, the serial driver must be compiled in. If no machines
+other than PMac are selected, you can compile without the serial driver in
+there as the PMac port won't care about rs_table and won't call
+early_serial_setup. Then if you load it as a module, you'll have no fixed ports
+will get all PCI, PCMCIA, etc. ones, which is exactly what you need here.
+
+So I don't see a problem.
+
+MS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
