@@ -1,52 +1,67 @@
-Message-Id: <387461B6.FDB5DB5C@ict.ac.cn>
-Date: Thu, 06 Jan 2000 17:34:46 +0800
-From: LiuTao <tliu@ict.ac.cn>
-Mime-Version: 1.0
-To: "linuxppc-embedded@lists.linuxppc.org"
- <linuxppc-embedded@lists.linuxppc.org>
-Subject: the problem of booting kernel
-Content-Type: text/plain; charset=gb2312
+From: Ruedi.Hofer@ascom.ch
+Date: Thu, 06 Jan 2000 17:06:18 +0100 (CET)
+Subject: Antwort: Re: Loading the Kernel on a FADS
+To: raphael.bossek@solutions4linux.de
+Cc: linuxppc-embedded@lists.linuxppc.org
+Message-id: <0FNX00C4U99OTE@pmdf-it.hasler.ascom.ch>
+MIME-version: 1.0
+Content-type: MULTIPART/MIXED; BOUNDARY="Boundary_(ID_f3LL66+q3gPGsf/IFhwWjQ)"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all:
 
-I am porting Linux to a board which has MPC860MH50, 16M RAM and 2M
-Flash.
-I am using visionPROBE(emulator of EST) to debug my program.
-I download the zImage to the board by emulator, then run it.
-I can see the following:
+--Boundary_(ID_f3LL66+q3gPGsf/IFhwWjQ)
+Content-type: TEXT/PLAIN
+Content-Transfer-Encoding: 7BIT
 
-loaded at:     00800000 0080B1C8
-board data at: 00800158 00800180
-relocated to:  007F0100 007F0128
-zimage at:     00830263 0088A2B1
-avail ram:     0088B000 01000000
+Hi Raphael
 
-Linux/PPC load:
-Uncompressing Linux...done.
-Now booting the kernel
+After some troubles your 8xxrom seems to work. It starts up and I can read the help...
 
-Now, I find that the program stoped at 0x111C.
+Your homepage was a great help!
 
-So I set a breakpoint at "blr" in head.S at which the program will jump
-to the kernel. I ran the program again, it stoped at the breakpoint.
-Then I ran it step by step, I found that it jumped to 0x0000000C, I
-think
-that's the correct address. Then, I ran it continuously, it stopped at
-0x111C again.
+Unfortunately, I'm still waiting to get the PCMCIA Flash Disk. 
 
-That's very strange. If I don't set breakpoint at "blr" but set a
-breakpoint
-at 0x000C, the program can't stop at the breakpoint but stop at 0x111C.
-If I
-set breakpoint at "blr" and run it step by step, the program can get
-0x000C.
+Without Flash Disk, the following changes had to be made to get it running:
+- disk_init() in main.c only called if PCMCIA present. Otherwise it crashes. *)
+- For being able to compile it, I had to define CONFIG_SCC1_ENET in Make.config.
 
-Do you have any suggestions?
-Thanks!
+The following Problem is still open (Any Ideas?)
+- If I press a couple of keys and then backspace, the board crashes *)
+- if I call md with parameters, the board crashes *)  (md without params is ok)
+- If the first key is a <return> (and no key was printed coincidentially) the board crashes *)
 
-LiuTao
+Might it be a stack or memory problem?
+
+What does this exception mean?
+
+Best regards
+                                          
+Ruedi Hofer                       
+                                 
+----------------------------------------------------------------------
+
+
+*) crash always means :
+
+8xxROM >
+Machine check in kernel mode.
+Caused by (from msr): regs 003efec0 Machine check signal - probably due to mm fa
+ult
+with mmu off
+NIP: FE008510 XER: E000FE7F LR: FE00255C REGS: 003efec0 TRAP: 0200
+MSR: 00001002 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 00
+
+GPR00: 0000006D 003EFFB0 FE00408C 00000000 FE0095C4 00000002 00010000 00000000
+GPR08: FF002808 00010000 00001E48 FFFFFFFF FE010000 00000000 FE010000 FE010000
+GPR16: FE010000 FE010000 FE010000 FE010000 FE010000 FE010000 FE010000 FE010000
+GPR24: 00010000 00010000 003F0000 00010000 FF002FD8 FF002FDC 00000000 00010304
+Call backtrace:
+FE0024F8 00400000
+machine check
+
+
+--Boundary_(ID_f3LL66+q3gPGsf/IFhwWjQ)--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
