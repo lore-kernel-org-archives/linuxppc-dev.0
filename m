@@ -1,60 +1,52 @@
-Message-ID: <382B5CCB.8FB26DD8@brightstareng.com>
-Date: Thu, 11 Nov 1999 19:18:19 -0500
-From: Stuart Adams <sja@brightstareng.com>
+Message-ID: <382B66F8.BFE03655@jlc.net>
+Date: Thu, 11 Nov 1999 20:01:44 -0500
+From: Dan Malek <dmalek@jlc.net>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-CC: Dan Malek <dan@netx4.com>, reekes@kerbango.com
-Subject: Re: does soft-float work?
+To: bsimon@ctam.com.au
+CC: linux-embedded <linux-embedded@waste.org>,
+        linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: LinuxEmbedded: minimal network system packages.
+References: <382B4396.57669F9B@ctam.com.au>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-We saw similar problems and found that there was a compiler
-bug which emitted bad code when using varargs to pass doubles.
-
-This only occurred when using -mcpu=8xx not with -msoft-float.
-
-For example the following code did not work with egcs-1.1 when using
--mcpu=8xx
-
-------
-  #include <stdarg.h>
-
-  double d = 500.0;
-
-  vtst(char *fmt, ...) {
-   double z;
-   va_list ap;
-   va_start(ap,fmt);
-   z = va_arg(ap,double);
-   printf("vatst=%d\n",(int)z);  // should print 500
- }
+Brendan Simon wrote:
 
 
- main() {
-   vtst("jj",d);
- }
-------
+> 
+> Things I think I need are :
+> * init
 
-I have not tried gcc 2.95.X so the bug may have been fixed.
+I don't run init, I just have the kernel start up with a
+shell and runs /linuxrc to start whatever daemons I need.
 
-The problem with printf is that libc was probably compiled with
--mcpu=8xx with a version of gcc with this bug. (libc/printf uses varags
-to pass doubles internally) We recompiled libc with -msoft-float
-and now things work fine.
+> * mount (do I NEED this ?)
 
--- Stuart
+It's nice, because I at least mount /proc.
 
-------------------------------------- 
+> * ifconfig (do I NEED this ?)
 
-Stuart Adams
-Bright Star Engineering Inc.
-19 Enfield Drive
-Andover MA 01810 USA
-Tel: +1-978-470-8738
-Fax: +1-978-470-8878
-Email: sja@brightstareng.com
-Web: http://www.brightstareng.com/
+Depends how you start the embedded system.  If it is always part
+of a network where a server can provide the necessary information
+via BOOTP/DHCP, you don't need ifconfig.
+
+> * inet
+
+inetd....and associated network information files.
+
+
+> Any pointers to documentation about getting a minimal embedded networked
+> system up and running.
+
+It's pretty straight forward.  Just think about what you need.  If
+you have the "disk" space, you can go through the layers of rc.x and
+sysconfig files, or just make a simple shell script to configure what
+you need.  Do you want resolver library baggage or just use /etc/hosts?
+Things like that.  It's a learning experience :-).
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
