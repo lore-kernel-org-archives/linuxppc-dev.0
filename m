@@ -1,64 +1,38 @@
-Date: Fri, 12 Mar 1999 02:15:01 -1000 (HST)
-From: Dean Takemori <dean@uhheph.phys.hawaii.edu>
-Message-Id: <199903121215.CAA20597@uhhepm.phys.hawaii.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Expect
+Date: Fri, 12 Mar 1999 07:50:03 -0500
+Message-Id: <199903121250.HAA18674@pc1.fred.org>
+From: "F. Heitkamp" <fheitka@ibm.net>
+To: Franz.Sirl-kernel@lauterbach.com
+CC: fheitka@ibm.net, linuxppc-dev@lists.linuxppc.org, hjl@varesearch.com
+In-reply-to: <4.2.0.25.19990311162952.03ed2b80@mail.lauterbach.com> (message
+	from Franz Sirl on Thu, 11 Mar 1999 16:37:18 +0100)
+Subject: Re: binutils-2.9.1.0.22b
+References: <4.2.0.25.19990311162952.03ed2b80@mail.lauterbach.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I've been having problems with the expect package, which is part
-of the tcltk distribution.  The problem is essentially the TIOCSCTTY
-error as reported below from the Expect FAQ.  [Note, not all expect
-scripts have this problem, just the ones that allocate ptys.
-Unfortunately, this means most (all?) dejanew tests fail.]
+   X-Sender: fsirl-kernel@mail.lauterbach.com
+   Date: Thu, 11 Mar 1999 16:37:18 +0100
+   From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+   Cc: linuxppc-dev@lists.linuxppc.org,hjl@varesearch.com (H.J. Lu)
+   Content-Type: text/plain; charset="us-ascii"; format=flowed
 
-I am working with a R4 system, upgraded to egcs-1.1.1-1c,
-binutils-2.9.1-19b and glibc-0.961212-1o.
+   Hmm, are you sure you did everything right during configure/make? I have no 
+   problems with 22b on glibc-2.1 (R5) here. Just the usual ld testsuite FAILs:
 
-The rest of the tcltk package (tcl-8.0.3-20b, tk-8.0.3-20b,
-tix-4.1.0.6-20b and tclx-8.0.3-20b) all compile and install
-and test ok.  Expect 5.25, 5.26 and 5.28 all fail.
+I've been using all the latest tools I can find (the usuall gettext,
+autoconf, automake etc.  I also am using glibc-2.1.  I would like to 
+recompile it though, since the texinfo I had at the time was broken.
+I do get a problem in the math library that I sort of ignored.  The 
+system has been running mostly fine in spite of that error.  I did not
+add any special options to configure, other than a --prefix=<dir>.
 
-The FAQ entries quoted below suggest that maybe this is the old
-glibc 1.99 != 2 problem in another form
+I'll going to replace my kernel header files and try again.  There may
+be a problem there.  I'll let you know what happens.
 
-Anyone have any ideas?
+Any tips are greatly appreciated.
 
->From the Expect 5.28 FAQ:
->#52. Why does Expect fail on RedHat 5.0?
->
->Lots of people have reported the following error from Expect on
->RedHat 5.0:
->
->failed to get controlling terminal using TIOCSCTTY
->parent sync byte write: broken pipe
-> 
->Martin Bly <ussc@star.rl.ac.uk> reports that:
-> 
->The fault is/was in the GNU libc (aka glibc) provided by Red Hat
->Software.  Our sysadmin updated the version of the C libraries we have
->installed and both problems have vanished - in the case of the expect
->test, without a rebuild.
->======================================================================
-> 
->#53. Why does Expect fail on RedHat 5.1?
-> 
->People have reported the following error from Expect on RedHat
->5.1:
-> 
->failed to get controlling terminal using TIOCSCTTY
->parent sync byte write: broken pipe
-> 
->If there are any people
->who have some debugging experience and can reproduce that error on
->RedHat 5.1, read on:
-> 
->First look in the man page (or perhaps diff the 5.1 and pre-5.1 man
->pages) governing TIOCSTTY and let me know what you find.
->Alternatively look at the source to xterm (or some other program that
->must allocate a pty) and see how it is allocating a pty.
-
+Fred
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
