@@ -1,35 +1,42 @@
-In-Reply-To: <Pine.LNX.4.58.0403151120080.4038@acs.sysgo.com>
-References: <20040118122134.GA4994@iliana> <20040119152954.GD13454@stop.crashing.org> <20040119154758.GA23038@iliana> <20040119155801.GF13454@stop.crashing.org> <20040119163857.GB23613@iliana> <20040119164849.GG13454@stop.crashing.org> <20040119170741.GA23943@iliana> <20040119172251.GH13454@stop.crashing.org> <20040119173000.GA24440@iliana> <Pine.GSO.4.58.0401191839350.551@waterleaf.sonytel.be> <20040119174950.GA24764@iliana> <Pine.GSO.4.58.0401191852470.551@waterleaf.sonytel.be> <Pine.LNX.4.58.0403151120080.4038@acs.sysgo.com>
-Mime-Version: 1.0 (Apple Message framework v613)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <812B9EB8-7714-11D8-A105-000393DBC2E8@motorola.com>
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-From: Kumar Gala <kumar.gala@motorola.com>
-Subject: Re: linuxppc latest ?
-Date: Tue, 16 Mar 2004 00:38:15 -0600
-To: Armin Schindler <armin.schindler@sysgo.com>
+Date: Tue, 16 Mar 2004 12:40:30 +0100
+From: Marc Leeman <marc.leeman@barco.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: PCI Memory mapping
+Message-ID: <20040316114030.GB7133@smtp.barco.com>
+Reply-To: Marc Leeman <marc.leeman@barco.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mar 15, 2004, at 4:31 AM, Armin Schindler wrote:
+I am currently trying the following
 
->
-> Hi all,
->
-> I'm somehow confused with the status of linuxppc.
->
-> If I want to patch my 2.4.25 kernel, what should I do to have the
-> latest linuxppc code ?
->
-> penguinppc.org tells me to use bitkeeper's linuxppc-2.4, but this tree
-> seems to be incomplete (directory arch/ppc/8260_io is missing).
-> Even together with the main linux-2.4 tree, some features I know from
-> the "old" snapshots are missing.
+ +-----+        +-----+
+ | mem |        | mem |
+ +-----+        +-----+
+    |              |
+ +-----+        +-----+
+ | ppc |        | dsp |
+ +-----+        +-----+
+    |     pci      |
+    +--------------+
 
-The the arch/ppc/8260_io dir has been renamed to cpm2_io.
+For a number of reasons (load on ppc, dsp silicon bug), we are trying to
+transform the ppc dma transfers (ppc master write) to transfers
+initiated by the dsp; where the memory block that is the result of
+processing by the ppc is fetched by the dsp (ppc slave read).
 
-- kumar
+Mapping pci devices registers and memory  into ppc kernel memory is well
+documented, but I seem to be missing information about the other way
+around: I (ppc) want to signal the dsp that data is ready at address
+0xXXXXXXXX, come and get it (virt_to_bus(0xXXXXXXXX)?).
 
+Most likely I have been searching archives with the wrong keywords since
+I haven't found a good reference next to some notes in IO-mapping.txt
+which seem to indicate that this is possible.
+
+Any pointers about making cpu memory visible on the pci bus would greatly
+be appreciated.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
