@@ -1,41 +1,39 @@
-Date: Wed, 5 Jul 2000 12:27:57 -0400 (EDT)
-From: "TWG - pat, mark & steve" <twg@world.std.com>
+Date: Wed, 05 Jul 2000 09:47:57 -0700
+From: Matthew Locke <mlocke@jps.net>
+Subject: PCMCIA (some answers)
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Problems with HardHat/NFS root filesystems
-Message-ID: <Pine.SGI.3.95.1000705121641.27740C-100000@world.std.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-id: <NDBBJCEBJMJJJBIMCFBECEAICEAA.mlocke@jps.net>
+MIME-version: 1.0
+Content-type: text/plain; charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thanks, Wolfgang, for your response.  It helped somewhat.  Here's what I
-discovered:
+Well, at least one answer.  There have been several people asking about
+using an ATA flash card with a RPX-lite.  The kernel has some routines that
+connect the 8xx PCMCIA controller to the kernel's IDE driver.  Two changes
+were necessary to make that work.  One change is timing related specific to
+a SanDisk.  I tested the patch on both a RPX-lite CW and a CLLF BW.  Here
+are the steps I took to make this work
 
-1. I am also unable to run ash.static
-2. I forgot to mention another error message (actually, I thought it was
-trivial but it's not), I also get a "Warning: unable to open an initial
-console" error message.
+apply patch  ftp://ftp.mvista.com/pub/unsupported/embedded-planet/
+select _IDE and _IDEDISK config options
+make dep
+make zImage
 
-3. I also had to make a change when installing HHL, and I think this is
-the key to my problem.  Basically, the RedHat install I chose left me with
-a relatively small root partition, giving most of the disk space to
-partitions mounted as /usr and /home.  Since the HHL stuff wouldn't fit in
-/opt, I made a directory, /usr/opt, and linked it to /opt. (soft)
+Make sure you insert the flash card before you boot linux.  the IDE driver
+probes for a disk at boot time.
 
-In /etc/exports, I export the volume as /opt/hardhat.....
+As for the pcmcia-cs questions...
 
-However, when I do an "exportfs -av" the exported volume shows up as
-/usr/opt/hardhat.....
-
-I specified /opt/hardhat... in /etc/dhcpd.conf
-
-I think, therefore, that NFS is not allowing access to the proper
-directories, and that's why it can't find an init (or a /dev/console!)
-
-Am I on the right track?
-Thanks,
-Mark Phillips
+Magnus provided a patch to pcmcia-cs to run on 8xx and Jo-Ellen provided a
+kernel patch to the MV 2.2.13 kernel. Since Mark and Jo-Ellen wrote thier
+own pcmcia module (for thier super cool wireless project), they didn't run
+into the problems using the ide,ethernet pcmcia modules.  I know that the
+above mentioned 8xx pcmcia/ide kernel routines conflict with the pcmcia-cs
+ide module.  Some work in the kernel will be necessary to resolve that
+conflict.  As for the ethernet problems, I tried several different 3COM
+models with strange results.  I haven't looked into that any further.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
