@@ -1,47 +1,57 @@
-To: Dean Matsen <deanmatsen@earthlink.net>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Ethernet PHY chip discovery not working on 855T with 971/972 chips 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 09 Jul 2003 13:54:42 PDT."
-             <3F0C8112.5060001@earthlink.net>
-Date: Wed, 09 Jul 2003 23:21:40 +0200
-Message-Id: <20030709212145.49E24C6D82@atlas.denx.de>
+From: "dong in kang" <dkang@east.isi.edu>
+To: "'Omanakuttan'" <omanakuttan@tataelxsi.co.in>,
+	<greggiraud@netcourrier.com>, <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: use bdi2000
+Date: Wed, 9 Jul 2003 17:34:17 -0400
+Message-ID: <001b01c34661$dbed2630$45a97241@Minjoo>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-reply-to: <3F0BFC93.3080801@tataelxsi.co.in>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3F0C8112.5060001@earthlink.net> you wrote:
->
-> I think the search should be made smarter (especially, keep going to
-> the next address until it has gone through ALL address w/o finding a
-> valid ID).  The kernel could still panic if it can't find any PHY chip,
-> but not the first time it reads the floating line and can't find the
-> answer in its table.  The odds of reading a valid PHY ID from the
-> floating line is phenominally low.  I'd submit a proposed patch for
-> this, but it doesn't sound like anyone else thinks this is important
-> enough to warrant a change.
+ Actually, I also have the same problem.
+I tried to use SOFT break, and the problem seems to disappear.
+Am I doing right?
 
-I agree that it makes little sense for th kernel to panic if it finds
-an unsupported PHY id.
+ Here is my configuration file.
 
-> the automatic PHY search will work.  Unless the pullup is required for
-> non-search applications (which I assert it isn't), then I think the code
-> should be fixed, not the hardware.
+BREAKMODE SOFT
+MMY  XLAT
+BDIMODE  AGENT
 
-We changed this in our kernel tree some time ago. If no valid PHY  is
-found  we simply do not enable the interface, but we do not panic any
-more.
+ Thanks,
+
+ Dong-In
 
 
-Best regards,
 
-Wolfgang Denk
+-----Original Message-----
+From: owner-linuxppc-embedded@lists.linuxppc.org
+[mailto:owner-linuxppc-embedded@lists.linuxppc.org] On Behalf Of Omanakuttan
+Sent: Wednesday, July 09, 2003 7:29 AM
+To: greggiraud@netcourrier.com; linuxppc-embedded@lists.linuxppc.org
+Subject: Re: use bdi2000
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"A witty saying proves nothing."                           - Voltaire
+
+
+greggiraud@netcourrier.com wrote:
+> Hi,
+> I have some problem with the use of the bdi 2000 to debug linux kernel
+> with DDD. In fact, I am connecting to the bdi2000 (target remote ....).
+And then, if I do step by step. But When I click  on "step", DDD print: "
+error accessing memory access". And then, when I click again on "step" it
+steps. Is it normal???
+seems like you have not enabled MMU XLAT in the configuration file of bdi.
+check if the .cfg file contains the following lines, whithout an initial
+semi colon.
+MMU         XLAT        ;translate effective to physical address
+
+
+Regards,
+Om.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
