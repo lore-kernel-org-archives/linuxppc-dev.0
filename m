@@ -1,35 +1,31 @@
-Message-ID: <BFC0587634C3D111AACB00805FA766FA02C1C698@exchny12.ny.smb.com>
-From: "Velasquez, Carlos" <carlos.velasquez@ssmb.com>
-To: "Linuxppc Mailing List (E-mail)" <linuxppc-dev@lists.linuxppc.org>
-Subject: Install on SCSI Jazz...
-Date: Mon, 26 Jul 1999 11:02:48 -0400
+Message-ID: <379CA4D8.205F1B1B@openbits.net>
+Date: Mon, 26 Jul 1999 11:11:37 -0700
+From: "Todd C. Larsen" <tlarsen@openbits.net>
+MIME-Version: 1.0
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: fadsrom
+References: <NCBBKCLAOLHFIOJGGGALCEFLCCAA.bill@spicetech.com> <379C6BA0.D755ECF3@jlc.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello,
+Dan Malek wrote:
+> For some reason, the dates on bintos19 and start.S are weird,
+> but it is all there.
 
-I just received my LinuxPPC R5 and I must say that the new graphical install
-is very very impressive! Good work to you guys.
 
-Now for the problem:
-I am trying to install it onto my scsi Jazz drive (already partitioned via
-pdisk) but it doesn't. In the 'Format and Mount' section, it recognizes my
-drive and it displays all my partitions that I defined. When I choose to
-install the packages, it doesn't write (much less access) my drive. Anyone
-have any suggestions? I really want to start using it!
+Dan,
 
-Carlos
+I had the same experience as Bill and the others, but I was able to
+retrieve the files using WinZip.
 
-P.S. I have a Umax S900 with 192 Meg ram, 2 SCSI-2 hard drives, MacOS 8.1,
-TwinTurbo 8 meg card.
+I got the files, though, so I'm not complaining...
 
-______________________________________________________________________
-C.F. Velasquez
-Asst. Vice President
-Global Database and Technology Division
-Salomon Smith Barney, Inc.
-
+--
+Todd C. Larsen                         Yesterday it worked
+tlarsen@openbits.net                   Today it is not working
+ICQ: 29125733, "RealTime" on /.        Windoze is like that
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
