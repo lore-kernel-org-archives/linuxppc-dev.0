@@ -1,34 +1,37 @@
-Message-ID: <3AF80226.3E03034@snmc.com>
-Date: Tue, 08 May 2001 09:26:46 -0500
-From: Daris A Nevil <dnevil@snmc.com>
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: 8xx SPI Driver
-Content-Type: text/plain; charset=us-ascii
+To: Freddy Lugo <wilflugo@yahoo.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Uncompress Ok, but cannot run linux kernel... 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 08 May 2001 06:50:03 PDT."
+             <20010508135003.34130.qmail@web9906.mail.yahoo.com>
+Date: Tue, 08 May 2001 17:21:52 +0200
+Message-Id: <20010508152157.613E32814D@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Someone wrote about a week ago looking for the 8xx based SPI driver.  I
-am also looking for it.  I downloaded the latest 2.4 snapshot from
-ftp://ftp.kernel.org/pub/linux/kernel/people/cort, but did not find it
-there, unless I overlooked it.  The link pointed to by Graham's PowerPC
-FAQ is broken (no response from the FTP server).  Any body out there
-have a copy of the patch or driver file?  If you send it to me I'd be
-happy to post in on qslinux.org for general access.
+In message <20010508135003.34130.qmail@web9906.mail.yahoo.com> you wrote:
+>
+> I am dealing with same problem.  After the rfi (on
+> turn_on_mmu) instruction an signal is generated and
+> the progam counter is lost.  When performing an rfi
+...
+> the exception is executed.  gdb only said it recevies
+> a SIGSTOP signal.  I will be working with that today.
 
-Regards,
-Daris
+What exectly are you trying to do?
+
+Single-stepping over an RFI instruction? I  don't  think  you'll  get
+this working.
+
+Wolfgang Denk
 
 --
-Daris A Nevil
-Simple Network Magic Corporation
-401 Kentucky Lane
-McKinney, TX 75069
-214-793-7757
-dnevil@snmc.com
-www.snmc.com
-quickstack.com
-qslinux.org
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Gods don't like people not doing much work. People  who  aren't  busy
+all the time might start to _think_.  - Terry Pratchett, _Small Gods_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
