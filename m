@@ -1,47 +1,42 @@
-Message-ID: <3C67E38C.2020304@embeddededge.com>
-Date: Mon, 11 Feb 2002 10:30:20 -0500
-From: Dan Malek <dan@embeddededge.com>
+Message-ID: <3C67E711.2108C6DD@ardistech.com>
+Date: Mon, 11 Feb 2002 16:45:21 +0100
+From: "bart@ardistech.com" <bart@ardistech.com>
+Reply-To: bart@ardistech.com
 MIME-Version: 1.0
-To: bart@ardistech.com
+To: Dan Malek <dan@embeddededge.com>
 Cc: Alex Zeffertt <ajz@cambridgebroadband.com>,
 	Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>,
 	dmalek@jlc.net
 Subject: Re: MPC823: i2c-algo-8xx read interrupt?
-References: <3C63EC39.ACEECA08@ardistech.com> <3C640532.5000708@embeddededge.com> <3C640C11.4080407@cambridgebroadband.com> <3C6776CC.634AB65D@ardistech.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+References: <3C63EC39.ACEECA08@ardistech.com> <3C640532.5000708@embeddededge.com> <3C640C11.4080407@cambridgebroadband.com> <3C6776CC.634AB65D@ardistech.com> <3C67E38C.2020304@embeddededge.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-bart@ardistech.com wrote:
+Dan Malek wrote:
 
+>
+> How do you know when you have received the proper number of bytes?  Are we
+> always changing the value of mrblr (I don't remember the code anymore)?
+>
+I knew about the TX counter being used for the number of RX'd bytes, but expected
+the RX interrupt to be the last one, after the RX buffer was closed (This often
+seems to be the case, as long as the RX interrupt does not dissapear).
 
-> The way I interpret the data sheet (I assume the 823 and 860 are similar) is that I get the TX
-> interrupt when the I2C address is sent plus the two character times. The rest of the TX buffer
-> is just a place holder and will not be sent.
+>
+> You could just poll the receive buffer for about two plus a little character
+> times.  If you don't get the empty flag cleared in this time report some error.
+>
+I think that's the best solution.
 
-Not correct.  The data isn't sent on the data lines, but the CPM decrements the
-counter and uses it to time the receive transfer.  The I2C thinks it is sending
-something, but the bits just fall off the sand into a bucket.  It is used to generate
-the timing of the clock and count how many receive bytes you wish to acquire.
+> The interesting thing about any I2C controller is the overhead of trying to
+> manage this thing is higher than just clocking bits in software.  I seldom
+> use the I2C controller, just a few lines of C code to do the job. Think about it.
+>
+You're right, but spending XX$ on a fast PPC chip and after that let it run
+busy loops to time the I2C control makes me feel bad :)
 
-> .... The RX interrupt is fired when all the RX bytes are
-> received and written to mem.
-
-How do you know when you have received the proper number of bytes?  Are we
-always changing the value of mrblr (I don't remember the code anymore)?
-
-> So I assume waiting for two char times would not help.
-
-You could just poll the receive buffer for about two plus a little character
-times.  If you don't get the empty flag cleared in this time report some error.
-
-The interesting thing about any I2C controller is the overhead of trying to
-manage this thing is higher than just clocking bits in software.  I seldom
-use the I2C controller, just a few lines of C code to do the job.  Think about it.
-
-
-	-- Dan
-
+	Bart
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
