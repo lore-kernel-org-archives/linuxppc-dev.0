@@ -1,65 +1,42 @@
-Date: Wed, 2 Jun 1999 12:30:54 -0400 (EDT)
-From: satadru pramanik <satadru@umich.edu>
-To: Martin Costabel <costabel@wanadoo.fr>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: compilation failure of 2.2 series cvs kernel sources
-In-Reply-To: <3754D532.A161F647@wanadoo.fr>
-Message-ID: <Pine.LNX.4.10.9906021228590.15449-100000@beer.pub.umich.edu>
+Message-ID: <XFMail.990602185116.heinz@bintec.de>
+Content-Type: text/plain; charset=us-ascii
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <37553687.F6737A9@switchboard.ericsson.se>
+Date: Wed, 02 Jun 1999 18:51:16 +0200 (CEST)
+From: Heinz Blaettner <heinz@bintec.de>
+To: Magnus Damm <damm@kieraypc01.p.y.ki.era.ericsson.se>
+Subject: Re: MPC8xx: wrong zimage_start
+Cc: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-yes. I did upgrade glibc recently. ;-)
+Hi Magnus
 
-However, the symlink is still the same.   Do I need to change it?  And
-wouldn't doing a cvs update change the scsi.h file "back"?  Or is that the
-problem?
-
-On Wed, 2 Jun 1999, Martin Costabel wrote:
-
-Satadru Pramanik wrote:
+On 02-Jun-99 Magnus Damm wrote:
 > 
-> After getting the sources with "cvs update -dP -rlinux_2_2"
->  I use the enclosed file as my .config, and then run a "make vmlinux"  The
-> only change I made was to line 455 of linux/net/ipv4/ip_options.c,
-> deleting "kfree_skb(skb);"  to fix the DOS attack on the 2.2 series
-> kernels recently found.
-> 
-> Any output would be appreciated.  Thanks.  I have a egcs 1.1.2 system.
-> 
-> here's the dying output of the compile:
-> gcc -D__KERNEL__ -I/usr/src/linux/include -Wall
-> -Wstrict-prototypes -O2 -fomit-frame-pointer -D__powerpc__ -fsigned-char
-> -msoft-float -pipe -fno-builtin -ffixed-r2 -Wno-uninitialized -mmultiple
-> -mstring   -c -o scsi.o scsi.c
-> scsi.c: In function `scan_scsis_single':
-> scsi.c:768: `TYPE_ENCLOSURE' undeclared (first use in this function)
-
-Just a wild guess: Did you upgrade your glibc-devel recently? 
-
-TYPE_ENCLOSURE is defined in /usr/src/linux/include/scsi/scsi.h.
-Formerly, /usr/include/scsi/ was a symlink to
-/usr/src/linux/include/scsi/. It is now owned by glibc which has its own
-scsi.h file without this definition. It happened to me that upgrading
-glibc overwrote the contents of /usr/src/linux/include/scsi, with
-disastrous results. Why there is such a directory in glibc is beyond me;
-these *are* kernel headers, after all.
-
---
-Martin
+> Another thing - remember to read the errata for the 860.
+> Revisions before C tend to have some problems.
+> And 860T has still (B3) got problems.
+>  
 
 
+Please give me a hint where to find the errata sheets ?.
+What problems about the 860T ?    Because we choose that device :-(
 
-----
-satadru pramanik `satadru@umich.edu'
-"Put your hand on a hot stove for a minute, and it seems like an hour. Sit
-with a pretty girl for an hour, and it seems like a minute. THAT'S
-relativity." 
--Albert Einstein
----
 
+thanks
+
+        heinz
+
+___________________________________________________
+Larkinson's Law:
+        All laws are basically false.
+___________________________________________________
+Heinz Blaettner          / BinTec Communications AG
+fon:    +49 911 96 73-0  / Suedwestpark 94  
+fax:    +49 911 688 0725 / D-90449 Nuernberg
+E-Mail: heinz@bintec.de  / http://www.bintec.de
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
