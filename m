@@ -1,33 +1,60 @@
-Message-Id: <m13Qrpt-001SzbC@bucks>
-From: diekema@bucks.si.com (diekema_jon)
-Subject: Re: decrementer_count, count_period_num, and count_period_den has
-To: paubert@iram.es (Gabriel Paubert), linuxppc-embedded@lists.linuxppc.org
-Date: Mon, 21 Aug 2000 09:41:57 -0400 (EDT)
-In-Reply-To: <Pine.HPX.4.10.10008211412090.15550-100000@gra-ux1.iram.es> from "Gabriel Paubert" at Aug 21, 2000 02:18:19 PM
+From: "Chris Hallinan" <clh@net1plus.com>
+To: "Coenraad Jacobsz" <cjj@research.canon.com.au>,
+        <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: DHCP client
+Date: Mon, 21 Aug 2000 10:07:28 -0400
+Message-ID: <NEBBKJPFOLJNBMFNKBIIAEKKCCAA.clh@net1plus.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <39A0ED3D.BDCDEA7F@research.canon.com.au>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Does this patch make sense?
+We tried the ISC implementation (version 2.0) of the client.
+It compiled and executed successfully on our '850 board (BSE
+IP) with very little effort. We are using the Monta Vista
+CDK 1.0 development environment.
+
+The bulk of the effort was involved with providing
+persistent storage of the lease data required by DHCP in our
+flash.
+
+The client seems to work well...I also use it on my laptop,
+and I've used it at several customer sites to configure my
+laptop for their network without any problems.
+
+-Chris Hallinan
+DS4.COM, Inc.
+
+-----Original Message-----
+From: owner-linuxppc-embedded@lists.linuxppc.org
+[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf
+Of Coenraad Jacobsz
+Sent: Monday, August 21, 2000 4:50 AM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: DHCP client
 
 
-dell 200} bk diffs -r1.7 -u arch/ppc/kernel/m8260_setup.c
-===== arch/ppc/kernel/m8260_setup.c 1.7 vs 1.10 =====
---- 1.7/arch/ppc/kernel/m8260_setup.c   Wed Aug  2 12:53:58 2000
-+++ 1.10/arch/ppc/kernel/m8260_setup.c  Mon Aug 21 09:34:30 2000
-@@ -113,9 +113,8 @@
+Hi everyone
 
-        freq = (binfo->bi_busfreq * 1000000);
-         divisor = 4;
--        decrementer_count = freq / HZ / divisor;
--        count_period_num = divisor;
--        count_period_den = freq / 1000000;
-+       tb_ticks_per_jiffy = freq / divisor / HZ;
-+       tb_to_us = mulhwu_scale_factor(freq / divisor, 1000000);
- }
+Is there anyone who has implemented a DHCP client for 8xx
+successfully?
+If so, could you point us in the right direction please.
 
- /* The 8260 has an internal 1-second timer update register that
+A search for DHCP on the MontaVista site came up with "No
+documents
+match...", but there are other sources e.g. the www.isc.org
+site, or
+maybe Red Hat's 'pump'  However, that may require
+substantial
+modification...
+
+Any help appreciated
+
+Thanks,
+Coenraad
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
