@@ -1,50 +1,33 @@
-Message-ID: <40EB28C7.5020105@246tNt.com>
-Date: Wed, 07 Jul 2004 00:33:43 +0200
-From: Sylvain Munaut <tnt@246tnt.com>
-MIME-Version: 1.0
-To: ppc linux embedded <linuxppc-embedded@lists.linuxppc.org>
+To: "ppc linux embedded" <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: Getting rid of static IO mapping
-References: <40EB1C28.3000402@246tNt.com>
-In-Reply-To: <40EB1C28.3000402@246tNt.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <40EB28C7.5020105@246tNt.com>
+From: "Linh Dang" <linhd@nortelnetworks.com>
+Date: Tue, 06 Jul 2004 23:58:56 -0400
+In-Reply-To: <40EB28C7.5020105@246tNt.com> (Sylvain Munaut's message of
+ "Tue, 6 Jul 2004 18:33:43 -0400")
+Message-ID: <wn5isd0jwn3.fsf@linhd-2.ca.nortel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Sylvain Munaut wrote:
+On 6 Jul 2004, tnt@246tnt.com wrote:
+[...]
+> I wonder how it works. At the mapin_ram(), my BAT are overwritten,
 
- > In the current situation, I use the physical address and there is a
- >  1:1 mapping. The mapping is first done by directly manipulating
- > {D,I}BAT2, then by setup_io_mappings.
+No they're not. the BAT configurations (which will be used later by
+load_up_mmu) are written, NOT the BATs themselves.
 
-Actually, looking at the code in arch/ppc/mm/init.c
+> then the "MMU:setio" progress is called, but at this point, my BAT
+> is no longer active and my setup_io_mappings is not yet
+> called. Shouldn't that crash ? During these two calls, the uart zone
+> shouldn't be mapped.
 
-        /* Map in all of RAM starting at KERNELBASE */
-        if (ppc_md.progress)
-                ppc_md.progress("MMU:mapin", 0x301);
-        mapin_ram();
+setup_io_mappings is similar to mapin_ram. the configurations are
+changed but not the BATs.
 
-#ifdef CONFIG_HIGHMEM
-        ioremap_base = PKMAP_BASE;
-#else
-        ioremap_base = 0xfe000000UL;    /* for now, could be 0xfffff000 */
-#endif /* CONFIG_HIGHMEM */
-        ioremap_bot = ioremap_base;
-
-        /* Map in I/O resources */
-        if (ppc_md.progress)
-                ppc_md.progress("MMU:setio", 0x302);
-        if (ppc_md.setup_io_mappings)
-                ppc_md.setup_io_mappings();
-
-
-I wonder how it works. At the mapin_ram(), my BAT are overwritten,
-then the "MMU:setio" progress is called, but at this point, my BAT is
-no longer active and my setup_io_mappings is not yet called. Shouldn't
-that crash ? During these two calls, the uart zone shouldn't be mapped.
-
-
-Sylvain Munaut
-
+--
+Linh Dang
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
