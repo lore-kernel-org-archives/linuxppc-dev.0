@@ -1,31 +1,67 @@
-Message-ID: <001f01c03f60$982d74a0$0a00010a@airvent.it>
-From: "Paolo Scaffardi" <arsenio@tin.it>
-To: "linuxppc-emb" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Using MPC8BUG on custom boards...
-Date: Thu, 26 Oct 2000 17:22:44 +0200
+Message-ID: <39F856FD.31D39499@mvista.com>
+Date: Thu, 26 Oct 2000 09:08:29 -0700
+From: Cal Erickson <cal_erickson@mvista.com>
+Reply-To: cal_erickson@mvista.com
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: MAC21C@chollian.net
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: QM_MODULES
+References: <200010260055.JAA14919@ldap.dacom.co.kr>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I'm using MPC8BUG connected via the ADI port to my FADS823, and the FADS
-connected via the debug port to our custom board. I cannot load a program
-into a flash because MPC8BUG doesnt detect it correctly.
+Have you built the modutils package so that
+you can use insmod, modprobe and others?
+Cal
 
-Does anyone know how to configure MPC8BUG to use other flashes than the
-FADS?
+MAC21C@chollian.net wrote:
 
-Another way can be writing a custom code on the RAM that does that...
+> hello all!!
+>
+> I have a problum.
+>
+> I made the test.c file for device driver test.
+>
+> ========== test.c ===================
+> #define MODULE
+> #include <linux/kernel.h>
+> #include <linux/module.h>
+>
+> #if CONFIG_MODVERSIONS==1
+> #define MODVERSION
+> #include <linux/modversions.h>
+> #endif
+>
+> int init_module(void) { printk("Hello, kim\n"); return 0; }
+> void cleanup_module(void) { printk("Goodbye Kim\n"); }
+> ======================================
+> And, compile options
+> powerpc-linux-gcc -D__KERNEL__ -O -c test.c
+> /tmp/cc8k7ews.s: Assembler messages:
+> /tmp/cc8k7ews.s:6: Warning: Ignoring changed section attributes for .modinfo
+>
+> warning message and i execute the insmod
+>
+> insmod test.o
+> insmod : QM_MODULES function not implmented
+>
+> I don't know, warning message and error message.
+>
+> help me~~!!
+>
 
-Thank you.
-
-- may the pinguin b with u -
-
-Have a nice day,
-Paolo Scaffardi.
-AIRVENT SAM s.p.a. - RIMINI - ITALY
+--
+===========================================================================
+Cal Erickson                 MontaVista Software Inc.
+Customer Support Engineer    490 Potrero Avenue
+Phone (408) 328-0304         Sunnyvale CA 94085
+Fax   (408) 328-9204         e-mail cal_erickson@mvista.com
+Pager 877-566-2012           support 1-800-759-8888 pin 202-7489
+web http://www.mvista.com    support e-mail: support@mvista.com
+eCode: http://cal@work.com.ecode.com
+===========================================================================
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
