@@ -1,87 +1,59 @@
-Message-ID: <3B37189D7A56D511B404000629EE15D843772B@4rf_nz.local.4rf.com>
-From: Richard Laing <Richard.Laing@4rf.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Problem with ramdisk image
-Date: Mon, 25 Nov 2002 14:09:24 +1300
-MIME-Version: 1.0
+Subject: Re: Debuging Problem in PPC440GP
+From: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
+To: Aman <aman@mistralsoftware.com>
+Cc: Linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <001001c2926f$c29d2960$370da8c0@aman>
+References: <001001c2926f$c29d2960$370da8c0@aman>
 Content-Type: text/plain
+Date: 25 Nov 2002 09:48:54 +0100
+Message-Id: <1038214134.929.19.camel@spawn>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+On Fri, 2002-11-22 at 22:40, Aman wrote:
+>
+> Hi All
+>
+> I wanted to debug the application in ppc440gp. To debug I am using gdbserver
+> and ddd. The application which I have written is hello world program. In the
+> target the command is
+>
+> root@192.168.13.246:~# gdbserver 192.168.13.242:4000 hello
+> Process hello created; pid = 107
+>
+> In the host the command is
+> ddd --debugger ppc_405-gdb --gdb hello and then in the GUI the following
+> command is given
+>
+> target remote 192.168.13.246:4000 which in turn creates the following line
+> in the target
+> Remote debugging using 192.168.13.242:4000
+>
+> In the above situation , if I say "cont" , the program executes normally.
+> However if I say "run" , it gives the following error
+>
+> (gdb) run
+> Don't know how to run.  Try "help target".
+>
+> and in the target it says
+>
+> "Killing inferior".
+>
+> Can anybody help me in solving this issue.
 
-I am having a problem getting a ramdisk image to start correctly. I am
-building for an RPX-Lite target using a 2.4.19 kernel and a ramdisk image
-containing Busybox (statically linked against uClibc), TinyLogin Net-Snmp
-and Zebra built using uClibc shared libraries. If I run the kernel and use
-the file system over NFS then the system boots and runs as expected, if
-however I build the ramdisk.image.gz and use make zImage.initrd it starts
-but there is a problem with the file system. The relevant messages are as
-follows:
+Solve what? from the output it's clear that gdbserver already created
+the process and since it's already running you can just use continue.
 
-RAMDISK: Compressed image found at block 0
-crc error<6>Freeing initrd memory: 1251k freed
-VFS: Mounted root (ext2 filesystem) readonly.
-Freeing unused kernel memory: 52k init
-init started: Busybox v0.60.5 (...
-
-# mount
-rootfs on / type rootfs (rw)
-/dev/ram on / type ext2 (rw)
-proc on /proc type proc (rw)
-# snmpd
-EXT2-fs error (device ramdisk(1,0)):ext2_check_page: bad entry in directory
-#22
-EXT2-fs error (device ramdisk(1,0)):ext2_check_page: bad entry in directory
-#20
-snmpd: No such file or directory
-# ls -l sbin/snmpd
--rwxr-xr-x   1 0       0    760916 Nov 21  2002 sbin/snmpd
-
-I am cross-compiling from a PC for the target.
-
-It appears that the ramdisk image is corrupt (crc error<6>) and yet busybox
-works correctly, only the dynamically linked applications fail. If I unzip
-and mount the ramdisk.image.gz file the filesystem check says it is okay.
-
-I am assuming I have missed something either in the build process or in my
-configuration of the system.
-
-/etc/inittab is:
-
-::sysinit:/etc/init.d/rcS
-::respawn:/bin/ash
-::shutdown:/etc/init.d/umountfs
-::restart:/sbin/init
-
-/etc/init.d/rcS is:
-
-#!/bin/ash
-/bin/mount -n -o remount,rw /
-
-# Clear out mtab
-> /etc/mtab
-
-/bin/mount -a
-
-
-/etc/fstab is
-
-# <file system >     <mount point>   <type>    <options>  <dump> <pass>
-proc                 /proc           proc      defaults   0       0
-/dev/ram             /               ext2      defaults   1       1
-
-Any ideas would be appreciated.
-
-Cheers
-Richard Laing
+Also the remote protocol is very low level it dose not know how to start
+a program.
 
 --
-4RF Communications
-Wellington, New Zealand
-+64 4 499 6000 (Phone)
-Richard.Laing@4RF.Com (Email)
+Kenneth Johansson
+Ericsson AB                       Tel: +46 8 404 71 83
+Borgafjordsgatan 9                Fax: +46 8 404 72 72
+164 80 Stockholm                  kenneth.johansson@etx.ericsson.se
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
