@@ -1,45 +1,40 @@
-Message-ID: <36A37938.FC241BB6@jlc.net>
-Date: Mon, 18 Jan 1999 13:11:04 -0500
-From: Dan Malek <dmalek@jlc.net>
-MIME-Version: 1.0
-To: Gary Thomas <gthomas@cygnus.co.uk>
-CC: Michael Meissner <meissner@cygnus.com>, linuxppc-dev@lists.linuxppc.org,
-        linux-kernel@vger.rutgers.edu,
-        Cort Dougan <cort@persephone.cs.nmt.edu>,
-        Alois Fertl <alois_fertl@mucmot.muenchen.europe.mcd.mot.com>,
-        Johnnie Peters <jpeters@phx.mcd.mot.com>
-Subject: Re: Booting 2.2.0-pre6 on a PowerStack-II (Net 4000/200)
-References: <XFMail.990118130140.gthomas@cygnus.co.uk>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.3.96.990118095104.18478A-100000@persephone.cs.nmt.edu>
+Date: Mon, 18 Jan 1999 20:26:00 +0100
+To: linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Choosing an Ethernet controller...
+Message-Id: <19990118202600.009236@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Gary Thomas wrote:
+I know this is a little bit out-of-topic, but I'm sure someone on this
+list can answer and I didn't really know how to actually ask this...
 
-> Here's what I got to work (patches):
+For an embedded developement, I have to choose among 3 different PCI
+ethernet controllers. A DEC/Intel 21143 (Tulip), an AMD79C971 (PCNet32)
+or a SMC83C171 (Epic100).
 
-Yeah.  You just moved the free space out of the way of the image
-you loaded.  That is the right thing to do, now we just need to make
-this happen
+The processor will not be a PPC but a StrongARM. (we proposed a PPC, but
+the client wanted a StrongARM).
+All three seems to be supported by Linux, I will use a 2.0.x kernel at
+first, on a StrongARM, but we plan to move to 2.2 once it's stable enough.
 
-Let's take Cort's suggestion and break the loader.  Make it work
-correctly for the Prep machines.  I will then take that and make
-minor changes for the 8xx ports.  I am considering throwing out
-all of the hacks for the MBX (inet addresses and stuff).  I have
-only two goals for the 8xx ports.  One, it should load in a small
-memory (less than 4 Meg) configuration.  Two, it should load
-from a high memory flash rom address.  I am willing to toss the 4M
-goal because I don't think you can do anything useful in that
-amount of space (you can't use a ramdisk).
+Are there any known problems with one of those chips ? Is someone aware
+of any specific problem with one of those beasts or it's linux driver ? 
 
+Which one would you choose ?
 
-> I'll try upgrading to 2.2.0p7 tonight and see how that works.
-
-I should do that too :-).
+Thanks !
 
 
-    -- Dan
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
+
 
 
 
