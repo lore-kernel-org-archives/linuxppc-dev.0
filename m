@@ -1,61 +1,42 @@
-Date: Tue, 1 Jun 1999 21:00:46 -0700 (MST)
-From: Jeff Rugen <jrugen@primenet.com>
-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-cc: linuxppc-user <linuxppc-user@lists.linuxppc.org>
-Subject: Re: Crashes with 2.2.9
-In-Reply-To: <374878E2.1D00A662@phx.mcd.mot.com>
-Message-ID: <Pine.BSI.3.96.990601205536.16317A-100000@usr07.primenet.com>
+Date: Wed, 2 Jun 1999 00:17:13 -0400 (EDT)
+From: Satadru Pramanik <satadru@umich.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: compilation failure of 2.2 series cvs kernel sources
+Message-ID: <Pine.LNX.4.10.9906020011480.10882-100000@beer.pub.umich.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Jeff Rugen wrote:
-> 
-> > I'm running 2.2.9 (from vger a couple days ago) on a Motorola PowerStack
-> > (100MHx 604).  The entire OS is locking up on me in two different
-> > circumstances.
-> >
+After getting the sources with "cvs update -dP -rlinux_2_2"
+ I use the enclosed file as my .config, and then run a "make vmlinux"  The
+only change I made was to line 455 of linux/net/ipv4/ip_options.c,
+deleting "kfree_skb(skb);"  to fix the DOS attack on the 2.2 series
+kernels recently found.  
 
-<snip>
+Any output would be appreciated.  Thanks.  I have a egcs 1.1.2 system.
 
-> >
-> > #2 SCSI timeouts or something.  The following was dumped to the console
-> > (this happens even while I'm not doing anything at the machine).
-> >
-> > scsi : aborting command due to timeout : pid 30858, scsi0, channel 0, id 2, lun
-> > 0 0x0a 0d 40 28 08 00
-> > ncr53c8xx_abort: pid=30858 serial_number=30863 serial_number_at_timeout=30863
-> >
+here's the dying output of the compile:
+gcc -D__KERNEL__ -I/usr/src/linux/include -Wall
+-Wstrict-prototypes -O2 -fomit-frame-pointer -D__powerpc__ -fsigned-char
+-msoft-float -pipe -fno-builtin -ffixed-r2 -Wno-uninitialized -mmultiple
+-mstring   -c -o scsi.o scsi.c
+scsi.c: In function `scan_scsis_single':
+scsi.c:768: `TYPE_ENCLOSURE' undeclared (first use in this function)
+scsi.c:768: (Each undeclared identifier is reported only once
+scsi.c:768: for each function it appears in.)
+scsi.c: In function `resize_dma_pool':
+scsi.c:2499: `TYPE_ENCLOSURE' undeclared (first use in this function)
+make[3]: *** [scsi.o] Error 1
+make[3]: Leaving directory `/usr/src/linux/drivers/scsi'
+make[2]: *** [first_rule] Error 2
+make[2]: Leaving directory `/usr/src/linux/drivers/scsi'
+make[1]: *** [_subdir_scsi] Error 2
+make[1]: Leaving directory `/usr/src/linux/drivers'
+make: *** [_dir_drivers] Error 2
 
-Interestingly enough, I reproduced some scsi aborts due to timeouts in
-2.2.2, and the kernel did not lock up.  The timeout info was sent to my
-current console instead of to my serial console on that version as well (but
-I don't know if I have that built in to that version, and don't have access
-to my other computer to look now).
-
-The way I was able to generate the scsi timeouts nearly at will was with a
-sequence of commands like:
-
-     1  20:52   cat /proc/bus/pci/00/0b.0
-     2  20:52   cat /proc/bus/pci/00/0c.0
-     3  20:52   cat /proc/bus/pci/00/0e.0
-     4  20:52   cat /proc/bus/pci/00/0f.0
-     5  20:52   cat /proc/scsi/
-
-The 3rd one I hit ^D a few times before hitting return.  I don't know for
-sure if that specifically caused the problem, but by playing around with cat
-/proc/<whatever> I generated scsi timeouts that did not lock up the machine
-on 2.2.2.  Maybe the error handling code for this situation was tweaked in a
-later version of the kernel?  (Or maybe it was wrong in 2.2.2 and I would be
-safer had the machine locked up).
-
-----------------------------------------------------------------------------
-Jeff Rugen                      jrugen@primenet.com
-
-...Had this been an actual emergency, we would have fled in terror, and you 
-would not have been informed.
+Thanks again.
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
