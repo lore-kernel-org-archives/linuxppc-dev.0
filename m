@@ -1,29 +1,29 @@
-Date: Tue, 16 Nov 1999 14:52:03 -0700 (MST)
-From: Tom Rini <trini@kernel.crashing.org>
-To: Matt Haffner <haffner@astro.wisc.edu>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: XFree, E, and refresh rates...
-In-Reply-To: <3831CE5A.DE7F3566@astro.wisc.edu>
-Message-ID: <Pine.LNX.4.10.9911161451180.3875-100000@opus.bloom.county>
+Message-ID: <3831DE3B.5F2C790@wanadoo.fr>
+Date: Tue, 16 Nov 1999 23:44:11 +0100
+From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+CC: Dev-Linux <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Kernel debugging??
+References: <Pine.LNX.4.05.9911161844270.25661-100000@callisto.of.borg>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 16 Nov 1999, Matt Haffner wrote:
+Geert Uytterhoeven wrote:
 
-> Is it possible then for XConfigurator spit out the modelines in reverse
-> order from what it does now? It looks like it's in order of increasing
-> hsync right now, but maybe decreasing hsync or vrefresh would be better?
-> That way we get the highest refresh rate right out of the box. Totally
-> trival though :)
+> > And I could boot a stock 2.3.26 with changes in asm-ppc/fcntl.h
+> > (O_LARGEFILE ....)
+> 
+> That's very interesting to know! It means we just have to analyse the 2.3.27
+> and 2.3.28 patches to find out what went wrong.
 
-I'll be beating up Xconfigurator soon, so we shall see.
+Just for information: Paul M's 2.3.27 rsync kernel compiles and runs
+just fine on this Pmac 6400. The machine swaps like crazy and is
+therefore rather slow, but I am not sure if this is the kernel's fault.
 
----
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
-
+--
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
