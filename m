@@ -1,86 +1,48 @@
-From: "Ole Andreas Torvmark" <ole.torvmark@radionor.no>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Problems with DMA transfers on Sandpoint
-Date: Fri, 9 Nov 2001 18:38:26 +0100
-Message-ID: <MHEAIGEFFBAFIOMKCIGCKEJLCAAA.ole.torvmark@radionor.no>
+Message-ID: <3BEC1A7C.DA3119C4@midrivers.com>
+Date: Fri, 09 Nov 2001 11:03:40 -0700
+From: Mark Pilon <mpilon@midrivers.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: 405 -- a little console help, resolution
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi
+The problem w/ sash "not responding" (it was SEGVing) was
+due to the kernel checking for execute permission on the page of
+sash it was to execute.
 
-I'm having problems with what I think is DMA transfers on the Motorola
-Sandpoint X3
+Thanks to David Gibson for his help.
 
-I have tried numerous different cards like sound cards,network adapters and
-even frame grabbers and all the cards that use dma transfers dont work.
+the patch, (found fixed in the _devel tree I just pulled)
+in arch/ppc/mm/fault.c:
 
-The only card that has ever worked is an old realtek 8029. This card does
-not support dma transfers.
+#if 0
+		/* It would be nice to actually enforce the VM execute
+		   permission on CPUs which can do so, but far too
+		   much stuff in userspace doesn't get the permissions
+		   right, so we let any page be executed for now. */
+		if (! (vma->vm_flags & VM_EXEC))
+			goto bad_area;
+#endif
 
-I have then focused on testing one card and that is a etherExpress 10/100
-from intel with the 82550 chip on it. The card fails during self test. I
-have traced through the driver and found that when the self-test is
-initiated the driver is waiting for the card to do a DMA transfer into the
-drivers buffer (correct me if this is way off ). I have copied in the
-section of the driver source at the bottom of this mail.
+the #if 0 was added to the code fragment.
 
-Since this is just one of the cards that fail in the sandpoint board i am
-wondering if there is something that I haven't done to initialize DMA
-transfers on the sandpoint or should they just work ?
+ALSO, is everyone who sends something to this list getting
+an email bounce for hideo noda,mutoh @mutoh.co.jp ?? every post
+to this list gives me this bounce.
 
-
-
-My setup:
-
-Motorola SPS Sandpoint X3 with Unity X4 PPMC MPC8240 @ 266 MHz
-IRQ and GNT/REQ mode = 1 (Sandpoint X2 Compability) (I have tested the other
-modes too)
-Kernel : 2.4.2 MontaVista Hard Hat Journeyman v2.0
+perhaps some hack to the list server, or, the reply-to of the
+list emails I'm responding to?
 
 
+Mark Pilon
 
+Minolta-QMS
+P.O. Box 37
+Fallon, MT.  59326-0037
 
-
-
-This is a transcript of the code that fails (from eepro100.c):
-
-          /* Perform a system self-test. */
-		            self_test_results = (s32*) ((((long) tx_ring_space) + 15) &
-~0xf);
-		            self_test_results[0] = 0;
-		       	self_test_results[1] = -1;
-DMA transfer---->>>>	outl(tx_ring_dma | PortSelfTest, ioaddr + SCBPort);
-				do {
-   				    udelay(100);
-				   } while (self_test_results[1] == -1  &&  --boguscnt >= 0);
-		                if (boguscnt < 0) {             /* Test optimized out. */
-			 ---->>>>	printk(KERN_ERR "Self test failed, status %8.8x:\n"
-This is what I get ---->>>>    KERN_ERR " Failure to initialize the
-i82557.\n"
-			 ---->>>>    KERN_ERR " Verify that the card is a bus-master"
-				                " capable slot.\n",
-				       self_test_results[1]);
-				      } else
-				printk(KERN_INFO "  General self-test: %s.\n"
-				       KERN_INFO "  Serial sub-system self-test: %s.\n"
-				       KERN_INFO "  Internal registers self-test: %s.\n"
-				       KERN_INFO "  ROM checksum self-test: %s (%#8.8x).\n",
-				        self_test_results[1] & 0x1000 ? "failed" : "passed",
-				        self_test_results[1] & 0x0020 ? "failed" : "passed",
-				        self_test_results[1] & 0x0008 ? "failed" : "passed",
-				        self_test_results[1] & 0x0004 ? "failed" : "
-
-
-
-Any help apreciated
-
-regards
-
-Ole Andreas Torvmark
-
+1-406-853-0433
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
