@@ -1,35 +1,27 @@
-Date: Fri, 06 Apr 2001 07:51:48 +0100
-Subject: Re: DMASOUND->rev6 (2.4.3)(attn: Xine, MOL, PowerComputing, ibook,
-	  Tumbler)
+Date: Fri, 06 Apr 2001 09:26:18 +0100
+Subject: MoL (BK) was:  Re: VTs and MOL broken since 2.4.3-...
 From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Henry Worth <haworth@ncal.verio.com>,
-	linuxppc-dev@lists.linuxppc.org
+To: billfink@capu.net, linuxppc-dev@lists.linuxppc.org
 Mime-version: 1.0
 Content-type: text/plain; charset="US-ASCII"
-Message-Id: <20010406065139.D7795DBA1A@atlas.valhalla.net>
+Message-Id: <20010406082604.E06B3DB9C8@atlas.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Henry,
+Hi Bill,
 
-> Applied to 2.4.3-benh, it is still reporting back 48K.
-
+>  This was fixed by getting the latest 0.9.56 version.  In
+> P.S.  The 0.9.56 version of MOL can be obtained at:
 >
-> In case I've got the wrong level:
+>   ftp://ftp.nada.kth.se/home/f95-sry/Public/mac-on-linux/mol-0.9.56-1.src.rpm
 
-'fraid so...
-
-> PowerMac (AWACS rev 3 [screamer])  DMA sound driver rev 016 installed
-> Core driver edition 01.05 : PowerMac Built-in Sound driver edition 00.05
-                        ^^^                                            ^^^
-the fixes are in in 1.06          0.06
-
-- you  need to apply *both* posted patches -final first and then -to-rev6
-(or try the binaries).
+Is the MoL BK repo dead?
+(I've been unable to pull from it for ages with either "bk pull" (just comes
+returns) or "bk opull" (says it can't find the server).  Couldn't telnet to
+it either...
 
 ciao,
 Iain.
-
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
