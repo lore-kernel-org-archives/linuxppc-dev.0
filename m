@@ -1,32 +1,30 @@
-Date: Tue, 25 Jul 2000 20:42:56 +0200 (CEST)
+Date: Tue, 25 Jul 2000 20:49:00 +0200 (CEST)
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-cc: Godmar Back <gback@cs.utah.edu>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: diff to tonight's kaffe cvs tree to work on ppc
-In-Reply-To: <397DCCDD.5BF75110@ivey.uwo.ca>
-Message-ID: <Pine.LNX.4.10.10007252039040.1490-100000@cassiopeia.home>
+To: Steffen Haeuser <SteffenH@hyperion-software.de>
+cc: Iain Sandoe <iain@sandoe.co.uk>, daenzerm@student.ethz.ch,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: sound again [was: Re: xf4 bug report]
+In-Reply-To: <yam8241.1084.150101632@mail.lf-online.de>
+Message-ID: <Pine.LNX.4.10.10007252047110.1490-100000@cassiopeia.home>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 25 Jul 2000, Kevin B. Hendricks wrote:
-> Will you you replace the kaffe_cleanups.patch I just sent you with the slightly
-> revised one attached.
->
-> After some discussions with Tom Gall (of IBM for Linux and 64bit ppc and Linux),
-> it would be better to change the unsigned int types I used in the align with
-> unsigned long.
+On Tue, 25 Jul 2000, Steffen Haeuser wrote:
+> BTW: Note about this page: at the start there is written
+> "PowerMac/Amiga/Atari/etc."
+> There is no such thing as a PowerAtari... there is a PowerAmiga, yes... but no
+> PowerAtari... Atari never got rid of the 68k CPU Architecture...
 
-Which has been a general remark since ages (the first 64-bit Linux port (AXP)
-was started in 1995): _never_ put pointers in an int, use long.
+Please note that it's _not_ written "Power{Mac/Amiga/Atari}".
 
-To catch more bugs, use SPARC64: it is big endian and 64-bit. Or better, use
-64-bit PPC when available, since it also has chars that are unsigned by
-default.
+> (and never, never name Amiga and Atari in one sentence :) )
 
-So far for the 3 most occurring portability problems with Linux.
+Why not? Linux/m68k first ran on the Amiga, then on the Atari, and only much
+later on the Mac. You can even compile a kernel that will run on both Amiga
+and Atari! :-)
 
 Gr{oetje,eeting}s,
 
