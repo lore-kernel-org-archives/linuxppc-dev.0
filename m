@@ -1,63 +1,77 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3EDCFB6C.4040102@mvista.com>
-Date: Tue, 03 Jun 2003 14:47:56 -0500
-From: Mark Hatle <fray@mvista.com>
-MIME-Version: 1.0
 To: Sam Ravnborg <sam@ravnborg.org>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Failsafe bootloader
-References: <20030603192851.GA1921@mars.ravnborg.org>
-In-Reply-To: <20030603192851.GA1921@mars.ravnborg.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Re: Failsafe bootloader 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 03 Jun 2003 21:28:51 +0200."
+             <20030603192851.GA1921@mars.ravnborg.org>
+Date: Tue, 03 Jun 2003 22:05:47 +0200
+Message-Id: <20030603200552.AD3C3C5492@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-A bit off topic, but I'll jump in.  (The comments are based on experience
-designing items for myself, and also information from looking at commercial
-product designs. i.e. hacking things like my TiVo.)
-
-Sam Ravnborg wrote:
-> Hi all.
+In message <20030603192851.GA1921@mars.ravnborg.org> you wrote:
 >
-> We are developing an application for an embedded target that will be
-> located in some rural areas. We foresee a need to update the target
-> with a new version of the application or a new kernel from time to time.
->
-
-First thing, make sure you have some mechanism for checksuming and possibly
-signing updates.  The first assumption is the update made it over properly if
-that stuff passes.. (and your company did QA it..)  ;)
-
 > A few of the added requirements on top of that are:
 > 1) The target shall boot up in the old kernel, if a bogus kernel is loaded
 
-This will require a watchdog timer, and modification to a bootloader to do
-counting and other items to instruct it to go to the backup kernel.
+Define "bogus kernel"! Depending if you mean one which was  corrupted
+during  download/installation  you can use a checkum; if you mean one
+which fails to start the application you can use a watchdog.
+
+Both is trivial and supporeted by several bootloaders.
 
 > 2) The target shall boot up in the old application, if a bogus
 > 	application is loaded
 
-A simple application daemon (init?) can do similar.
+Same as above. Here it comes handy if you don't have  to  bundle  the
+application with the kernel into one image.
 
 > 3) On the management side an update shall be handled as a single file,
 > 	the target may decide to 'unpack' it when received.
->
 
-cpio, tar, even RPM have been used for this.  These are standard field-upgrade
-techniques..  the key is that every product is unique.
+OK, not too difficult.
 
-What _I_ personally would do is have two sets of "partitions" (memory, disk
-doesn't matter) one set for two kernels, current and "updates" and one set for
-userspace current and "updates".  Then you have magic values that tell the
-bootloader what matches with what.  On an initial update, you make this magic
-value "temporary" until the boot (application run) has succeeded and then you
-make it perminant.
+> We have looked all over the net, but none of the bootloaders found
+> so far could meet the above demands.
 
-But all in all this will require you to make changes to an existing bootloader
-or write your own.
+Ummm... how comes you missed to look into U-Boot? It easily  performs
+all your reqirements. Without modifying a single line of code.
 
---Mark
+> The boot loaders usually have an interactive mode used to select
+> between different configurations - and there are no feedback from
+> the application side if the reboot actually went well.
+> The interactiviness does not fit well with an embedded target.
 
+U-Boot allows for canned command sequences and even shell scripts.
+
+> Do you know of a boot loader that partially or fully meets the above
+> requirements?
+
+U-Boot meets your rrequirements fully (and some more :-)
+
+> Today we are using VxWorks - for which we have made our own boot loader.
+> The boot laoder allows the boot loader itself, and the application part
+> to be upgraded - and if a restart is failed the old version will
+> be activated on a subsequent build.
+> I want the same behaviour in the Linux based target.
+
+==> http://sourceforge.net/projects/u-boot
+
+See also: http://www.denx.de/re/DPLG.html
+
+If you have questions, send an email to the u-boot-users mailing list
+(or to me).
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Bus error -- please leave by the rear door.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
