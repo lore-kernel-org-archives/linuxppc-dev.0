@@ -1,43 +1,41 @@
-Mime-Version: 1.0
-Message-Id: <p04310102b4fc39105641@[192.168.1.5]>
-In-Reply-To: 
- <Pine.LNX.3.96L.1000320150426.3504B-100000@unix48.andrew.cmu.edu>
-References: 
- <Pine.LNX.3.96L.1000320150426.3504B-100000@unix48.andrew.cmu.edu>
-Date: Mon, 20 Mar 2000 14:24:30 -0600
-To: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-From: Justin Shore <listuser@vinnie.ksu.ksu.edu>
-Subject: Re: PPC601 support
-Cc: David Edelsohn <dje@watson.ibm.com>, linuxppc-dev@lists.linuxppc.org
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Date: Mon, 20 Mar 2000 21:45:05 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+To: David Edelsohn <dje@watson.ibm.com>
+cc: Florian Lohoff <flo@rfc822.org>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: PPC/MCA RS/6000 port ? 
+In-Reply-To: <200003200257.VAA26624@mal-ach.watson.ibm.com>
+Message-ID: <Pine.HPX.4.10.10003202103070.28648-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 3:05 PM -0500 3/20/00, Hollis R Blanchard wrote:
->On Mon, 20 Mar 2000, David Edelsohn wrote:
->>
->>	I did not think thta PPC601 systems were supported by Linux/PPC,
->>  only by MkLinux.
->
->I thought PowerMac 7200's and 7500's had 601 chips.
+On Sun, 19 Mar 2000, David Edelsohn wrote:
 
-They do.  They are also PCI based which is what the advertised
-requirement for LPPC is.  My mirror server is a 7500/100 w/ a ~380Mhz
-G3 in it. :-)  I can't remember if the 7200 was built with the
-processor on a daughtercard or not though.
+> 	The PPC601 was a POWER architecture chip with additional user-mode
+> PowerPC instructions.  It was based on the existing RSC (RIOS Single Chip)
+> processor that IBM already was using and allowed the first PowerPC chip
+> implementation to be developed and deployed very rapidly.  The supervisor
+> state of the chip was all POWER architecture, not PowerPC Books II and
+> III.  The direct store segments were a way to access special devices on
+> the I/O bus.
 
-Cheers,
-   Justin
---
+Actually I thought that the supervisor mode of the 601 was a mixture of
+POWER and PPC. I read somewhere that the hash table implementation of the
+POWER was very different for example (and POWER had only SPR 0 to 31
+while PPCs, including 601, have many more).
 
---
-Justin Shore       K-State Linux Distro Mirror, Sysadmin
-macdaddy@vinnie.ksu.ksu.edu
-<http://vinnie.ksu.ksu.edu/mirror/rpm2html>
-<ftp://vinnie.ksu.ksu.edu/pub/mirror/linux>
+Have a look at the code, there are quite a lot of tests for 601 specific
+differences (for cache control operations, to avoid touching HID0,
+different BATs). And a few ugly things like using the decrementer even in
+cases where the tb/rtc would be more appropriate IMHO but the wraparound
+at 1e9 of 601's RTCL would be awkward to handle.
 
-*Internet2 Users*
-<ftp://quest.ksu.ksu.edu/pub/mirror/linux>
+However, if the use direct store segments is _unavoidable_, significant
+kernel modifications are required.
+
+	Gabriel.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
