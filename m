@@ -1,45 +1,30 @@
-Message-Id: <200102221712.MAA15343@odonnell.lowell.mclinux.com>
+From: Subodh Nijsure <subodh@best.com>
+Message-Id: <200102221739.JAA03312@shell9.ba.best.com>
+Subject: Status of linux-ppc kernel.
 To: linuxppc-embedded@lists.linuxppc.org
-From: mod+linuxppc-embedded@world-f.std.com
-Subject: Re: do md5sums differ across architectures?
-In-Reply-To: Your message of "Thu, 22 Feb 2001 11:03:45 EST."
-             <200102221603.f1MG3k716096@ashley.ivey.uwo.ca>
-Date: Thu, 22 Feb 2001 12:12:35 -0500
+Date: Thu, 22 Feb 2001 09:39:08 -0800 (PST)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Simple test cases: on both machines do
+Hi,
 
-for string in \
-   "" \
-   "a" \
-   "abc" \
-   "message digest" \
-   "abcdefghijklmnopqrstuvwxyz" \
-   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" \
-   "12345678901234567890123456789012345678901234567890123456789012345678901234567890"
-do
-    echo -n $string | md5sum
-done
+[ I am not trying to stir up things, but just making sure I am getting
+things from right source and I am not spending time on things that
+have already been fixed. ]
 
+Is bitkeeper.fsmlabs.com still the correct place to get the latest
+2.4 kernel for linux-ppc?
 
-The results MUST be:
+Also there seem to be few patches like Wolfgang's ethernet patch
+found on ftp.denx.de or m8xx_pcmcia stuff that hasn't shown up in
+2.4.X latest kernel.  Are these things going to get merged into
+"mainline" sometime and does anybody know probable dates etc.?
 
-   d41d8cd98f00b204e9800998ecf8427e
-   0cc175b9c0f1b6a831c399e269772661
-   900150983cd24fb0d6963f7d28e17f72
-   f96b697d7cb7938d525a2f31aaf161d0
-   c3fcd3d76192e4007dfb496cca67e13b
-   d174ab98d277d9f5a5611c2c9f419d9f
-   57edf4a22be3c955ac49da2e2107b67a
+Also I read reference to kernel 2.5 whats the location?
 
-...respectively, or it's broken.
-
-
-SEE ALSO: RFC 1321
-
- (e.g. http://rfc.asuka.net/rfc/rfc1321.html )
-
+/Subodh Nijsure
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
