@@ -1,44 +1,37 @@
-Date: Sun, 25 Jul 1999 19:57:29 -0600 (CST)
-From: Kamran Karimi <karimi@cs.uregina.ca>
-To: Paul Mackerras <paulus@cs.anu.edu.au>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: DIPC for PowerPC
-In-Reply-To: <199907260021.KAA01971@tango.anu.edu.au>
-Message-ID: <Pine.SGI.3.91.990725195009.22777A-100000@MERCURY.CS.UREGINA.CA>
+Date: Mon, 26 Jul 1999 09:55:25 -0400 (EDT)
+From: Tom Rini <trini@disparity.net>
+To: Neil Jolly <jollyn@cadvision.com>
+cc: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: XFree86-3.3.4 [TESTERS NEEDED]
+In-Reply-To: <379B8D93.DC61A320@cadvision.com>
+Message-ID: <Pine.BSF.3.96.990726095505.1221K-100000@silver.teardrop.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Paul,
+On Sun, 25 Jul 1999, Neil Jolly wrote:
 
-On Mon, 26 Jul 1999, Paul Mackerras wrote:
+> Tom Rini wrote:
+> 
+> > Ok/  Adfter waiting on redhat to port/fix/remove all their patches and put
+> > out a new SRPM, we have xree86-3.3.4-2a.  it's untested at the moment
+> > however.  If you're the adventerous sort, or have an IMS card, pyou might
+> > wanna pick 'em up and give it a shot.
+> >
+> >
+> 
+> Tom: I downloaded & went to install, but rpm complains as usualll :-). Rpm is
+> looking for pam-.66-19. I currently have pam.66-18. I looked briefly for the
+> newer version, but couldn't find it. Do you have it somewhere, or can I safely
+> ignore the upgrade?
 
-> I tried it on the weekend.  I had to make a couple of small changes to
-> get the kernel to compile: asm-ppc/ipc.h didn't define DIPC, and PPC
-> systems (at least the vast majority of the systems that Linux will run
-> on) are 32-bit, not 64-bit.  I have appended below the diffs for
-> include/asm-ppc (ipc.h and dipc.h).
+Since RedHat hasn't posted 0.66-19 (last I checked) ignore it.
 
- Thanks. I'll incorporate your changes ASAP. Is there a way to determine 
-at kernel compile time whether the machine is 32 bit or 64 bit?
- 
-> I had to hack the userland stuff a bit to get it to compile, due to
-> the fact that we use glibc-2.1 which doesn't define union semun.  It
-> seems to work fine on one machine, but when I tried using two, dipcd
-> on the second machine wasn't creating the ~dipcd/referee_backdoor
-> socket which seems to be necessary.  I haven't figured out why yet.
-
- Please inform me of the needed changes. Do you know if the changes will 
-affect the compilation of the programs in other architectures? 
-
- It is normal for that UNIX socket to exist only in one machine, as only one 
-computer in a DIPC cluster is the referee, and the socket is created there.
-
- Have you tried the benchmark programs?
-
--Kamran
+---
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
