@@ -1,66 +1,65 @@
-From: ALOEFF@de.ibm.com
-To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <C1256A33.002D977B.00@d12mta11.de.ibm.com>
-Date: Thu, 19 Apr 2001 10:17:58 +0200
-Subject: Re: Can I use RiscWatch to load ppcboot?
-Mime-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Message-ID: <3ADEE023.7BCFCD29@raleigh.ibm.com>
+Date: Thu, 19 Apr 2001 08:54:59 -0400
+From: Ralph Blach <rcblach@raleigh.ibm.com>
+MIME-Version: 1.0
+To: iweiny@pacbell.net
+Cc: linuxemb <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Walnut IDE support
+References: <200104182216.PAA02532@batcave2.batcave>
+Content-Type: multipart/mixed;
+ boundary="------------61D6C1B9F51C2B71C5E570CB"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi
+This is a multi-part message in MIME format.
+--------------61D6C1B9F51C2B71C5E570CB
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-i currently use the riscwatch to load ppcboot into ram and then run it
-from there
-to do so i changed the start of code segment in board/walnut405/config.mk
-to a
-address in ram eg. 30000.
-in include/config_WALNUT405.h i set th flash and monitor base to the same
-address (CFG_FLASH_BASE, CFG_MONITOR_BASE)
-load ppcboot with 'load file ppcboot',  set iar to the start address, run
+Ira,
 
-hope this helps
+You might want to try the latest MontaVista kernel.  I had to use
+hda=swapdata to get it to function.
 
-p/s: please excuse the message format.
+Chip
 
-Andreas Loeffler
+iweiny@pacbell.net wrote:
+>
+> I am trying to get a Promise Ultra66 IDE card running on the Walnut board.
+> The kernel recognizes the card but gives the following errors.
+>
+> PDC20262: IDE controller on PCI bus 00 dev 08
+> PDC20262: device not capable of full native PCI mode
+> PDC20262: device disabled (BIOS)
+>
+> Is there a configuration setting or kernel param I am missing?
+>
+> Thanks,
+> Ira Weiny
+>
+--------------61D6C1B9F51C2B71C5E570CB
+Content-Type: text/x-vcard; charset=us-ascii;
+ name="rcblach.vcf"
+Content-Description: Card for Ralph Blach
+Content-Disposition: attachment;
+ filename="rcblach.vcf"
+Content-Transfer-Encoding: 7bit
 
---
-EL HD S/390 SPP (Support Processor Platform Development)
-IBM Entwicklungslabor          Phone: +49 (0) 7031 16 5035
-Schoenaicher Str. 220          Fax:   +49 (0) 7031 16 4632
-71032 Boeblingen               URL:   http://www.ibm.com
+begin:vcard
+n:Blach;Ralph
+tel;work:919-543-1207
+x-mozilla-html:TRUE
+url:www.ibm.com
+org:IBM MicroElectronics
+adr:;;3039 Cornwallis		;RTP;NC;27709;USA
+version:2.1
+email;internet:rcblach@raleigh.ibm.com
+x-mozilla-cpt:;15936
+fn:Ralph Blach
+end:vcard
 
-
-
-
-byf <byfmail@yeah.net>
-04/19/01 03:51 AM
-Please respond to byf
-
-
-        To:     "linuxppc-embedded@lists.linuxppc.org"
-<linuxppc-embedded@lists.linuxppc.org>
-        cc:
-        Subject:        Can I use RiscWatch to load ppcboot?
-
-
-
-
-Hello,
-
-I am working for walnut 405GP, it has a ROM Monitor and RiscWatch.
-now I want to use PPCBoot to overwrite ROM Monitor,
-Can I use RiscWatch to load PPCBoot to flash or to ram and run it?
-
-or can I use a kernel with mtd support to finish this?
-I have no BDI2000.
-
-Thank you!
-
-                                  byf
-                             byfmail@yeah.net
+--------------61D6C1B9F51C2B71C5E570CB--
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
