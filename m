@@ -1,39 +1,39 @@
-Message-Id: <200010121640.MAA06292@mal-ach.watson.ibm.com>
-To: Gabriel Paubert <paubert@iram.es>
-cc: Benjamin Herrenschmidt <bh40@calva.net>,
-        Kostas Gewrgiou <gewrgiou@imbc.gr>,
-        Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: dual head r128 
-In-Reply-To: Message from Gabriel Paubert <paubert@iram.es>
-   of "Thu, 12 Oct 2000 17:49:22 +0200." <Pine.HPX.4.10.10010121719150.16113-100000@gra-ux1.iram.es>
-Date: Thu, 12 Oct 2000 12:40:17 -0400
-From: David Edelsohn <dje@watson.ibm.com>
+Date: Thu, 12 Oct 2000 19:44:24 +0300 (EEST)
+From: Kostas Gewrgiou <gewrgiou@imbc.gr>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: dual head r128
+In-Reply-To: <19340906084536.29942@192.168.1.2>
+Message-ID: <Pine.LNX.4.21.0010121922330.977-100000@idd-01.imbc.gr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> Gabriel Paubert writes:
+On Thu, 12 Oct 2000, Benjamin Herrenschmidt wrote:
 
->> On the kernel side, one of the PCI IO busses will be mapped to ISA. What
->> I'll do is basically to change the kernel inb/outb functions to do
->> something like
->>
->> if (addr < 64k)
->> do_io(isa_io_base + addr)
->> else
->> do_io(addr)
+> Unfortunately, there's no simple way to allow two busses to have the
+> legacy IOs. That means on UniN machines that they'll be available either
+> on the AGP bus, or the external PCI bus, but not both.
 
-Gabriel> No please, is there anybody bloat-conscious on this damned list ? Burying
-Gabriel> more and more code inside each {in,out}[bwl] is not the solution.
+That wont help much for the xfree side, we need legacy IO/mem access
+to both busses.
 
-Gabriel> Just define a macro ISA_PORT or something like this and update the kernel
-Gabriel> to replace all the in/out to fixed ports to do in/out(ISA_PORT(n)). If you
-Gabriel> don't do it you'll get a nice panic so you'll find all the places quite
-Gabriel> fast.
+> What you might do is to consider the ISA io base to be the IO base of the
+> bus that holds the card for which you are trying to run the BIOS. (By
+> using the syscall to retreive this IO base for the VGA card) instead of
+> asking the kernel for the "legacy" IO base.
 
-	Yes, it is very important to avoid adding many layers of branches
-to the code if anyone cares about performance.
+Thats what i am trying to do at the moment, unfortunately its not very
+easy there are many places that legacy IO is used and for most of them
+the calls are inside generic modules that usually have no idea about
+which card they use.
 
-David
+If as Gabriel suggested is possible to redirect the VGA part of the
+IO space then we could talk to all cards which will simplify things.
+
+  Kostas
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
