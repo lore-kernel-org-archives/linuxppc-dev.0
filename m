@@ -1,37 +1,37 @@
-Date: Mon, 2 Oct 2000 15:24:40 +0200 (CEST)
-From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-To: Michel Dänzer <daenzerm@student.ethz.ch>
-cc: Kostas Gewrgiou <gewrgiou@imbc.gr>,
-        Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: beige g3 rage II xf4.0.1 and miBoot
-In-Reply-To: <39D85AD0.D2B28422@student.ethz.ch>
-Message-ID: <Pine.LNX.4.10.10010021515110.13068-100000@zirkon.biophys.uni-duesseldorf.de>
+Message-ID: <39D89C8F.4F328DAF@home.com>
+Date: Mon, 02 Oct 2000 09:32:47 -0500
+From: Tim Montgomery <tjmontgo@home.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linux PPC Developer <linuxppc-dev@lists.linuxppc.org>
+Subject: flying blind with BATs
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > Which isn't exactly the same because the problem only manifests with
-> > conflicting PCI resources set up before the kernel starts. And that -so
-> > far- only happened with some Mach64 based Macs.
-> >
-> > aty128fb not having any problem doesn't prove atyfb can't have these
-> > problems on Intel, too.
->
-> AFAIK Kostas was talking about the problem that if you don't specify the bus
-> ID when using an fbdev driver, X disables the graphics chip because no driver
-> claims it. And he wondered why this locks the machine on PPC while it only
-> makes the server fail on i386. Right, Kostas?
+hello,
 
-My answer would be similar - with UseFBDev, the X server handles color
-maps and mode switching via the kernel driver (at least for mach64,
-didn't check r128). A failed PCI access in a kernel driver results in a
-panic on PPC (machine check). It may be caught and handled by a signal on
-x86 (simple bus error?).
+I am trying to get the ppc kernel loaded on a 750-based embedded board,
+and I've got an ultra-basic bootloader (the board is not PReP or
+CHRP-compliant), but I believe I am having trouble with the BAT
+mappings.
 
-	Michael
+I have the BATs configure (by the bootloader) such that 0xc0000000
+(virtual) is mapped to 0x00000000 (phys SDRAM base), but after
+the image is decompressed (to the virtual addr), I get garbage when
+I do a dump at 0xc0000000 (i.e. the kernel isn't there.)
 
+I am executing the bootloader itself out of a region well above
+(4MB) the kernel space.
+
+Before I spend too much time reinventing the wheel (and beating my
+head against the wall), I was curious if there was a 7xx-based
+bootloader out there that I could modify to fit my needs.
+
+Any other pointers/tips regarding machine state required on a 750
+prior to jumping to the kernel would also be appreciated.
+
+Regards,
+Tim
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
