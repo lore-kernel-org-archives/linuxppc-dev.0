@@ -1,32 +1,36 @@
-Message-Id: <200011091841.MAA32610@localhost.localdomain>
-Date: Thu, 9 Nov 2000 12:41:27 -0600 (CST)
-From: "Joseph P. Garcia" <jpgarcia@execpc.com>
-Subject: Re: Example miboot on new world rom problem
-To: jcarr@mail.linuxppc.org
-cc: bh40@calva.net, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.LNX.4.21.0011091043510.1824-100000@jcarr.linuxppc.org>
+Date: Thu, 9 Nov 2000 20:34:29 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Jon Erick Ween <jween@som.llu.edu>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.2.18pre18 kernel panic on Lombard
+In-Reply-To: <77374543518.AAAEB2@som.llu.edu>
+Message-ID: <Pine.LNX.4.10.10011092032240.4683-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  9 Nov, jcarr@mail.linuxppc.org wrote:
-> The functionality of SetPRAMBoot(by that I mean the ability to do what
-> startup disk does) needs to be added to yaboot not for the reasons I
+> >> below). Is this a problem with the new input layer (I don't seem to have
+>
+> >> /dev/input/) or a problem with the Lombard's usb ports?
+> >
+> >Neither. I use a self compiled 2.2.18 and there's no such problem. At the
+> >time where you see the panic, the kernel doesn't yet know about the root
+> >filesystem, and consequently doesn't know about /dev/input/ either. What
+> >sort of USB mouse are you using? Do you have both ADB mouse and USB HID
+> >support configured?
+>
+>
+> I have a logitech wheel mouse and configured in support for both adb (to
+> use the track pad) and usb hid. Curiously, the options for confugring the
+> mac input layer were not activated, only the "old driver" was available.
+> Did I miss some important previous step?
 
-'functionality'...  has anyone tested/written new code SPB for other
-systems yet?
+Where did you get the kernel source from? Alan's 2.2.18pre doesn't have
+the input layer code AFAIK, but both the BenH and Paul sources do.
 
-also must remember to add the bootvars/nvsetenv/ybin functionality for
-the OF settings too.  Darwin seems to have its own System Disk program
-that has XPRAM and OF covered.. except the pram part.  If that project
-is open, might we want to try some code sharing?  Or does Apple own it?
-Or might Apple be willing to share 9's Startup Disk info...
-
---
-Joseph P. Garcia
-http://www.execpc.com/~jpgarcia
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
