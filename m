@@ -1,46 +1,35 @@
-Message-Id: <199908072033.NAA10643@soda.CSUA.Berkeley.EDU>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Working SMP Kernel Source for PMac
-Date: Sat, 07 Aug 1999 13:33:03 -0700
-From: Sriranga Veeraraghavan <ranga@CSUA.Berkeley.EDU>
+Date: Sat, 7 Aug 1999 17:57:13 -0600 (CST)
+From: Kamran Karimi <karimi@cs.uregina.ca>
+To: linuxppc-announce@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org,
+        linuxppc-user@lists.linuxppc.org
+Subject: Distributed Programming under Linux/PowerPC
+Message-ID: <Pine.SGI.3.91.990807173836.12629A-100000@MERCURY.CS.UREGINA.CA>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-
 Hi,
 
-I am trying to build an SMP kernel for my system. I am running
-LinuxPPC R4 on a PMac 7600 with a nPower 400 (2 604e 200's). I would
-like to know where to get a complete kernel source tar-ball that
-supports SMP on PMac's.
+ People interested in distributed programming are invited to try DIPC 
+(Distributed Inter-Process Communication). It allows you to transparently 
+use System V IPC's semaphores, messages and shared memories over a 
+network of computers. Its Transparent Distributed Shared Memory (DSM) 
+puts it in a different class from other systems like PVM or MPI. Using DIPC, 
+you can easily write distributed program even if you have only one machine. 
+The same code can later be used in a real cluster, or a multi-processor, 
+without any changes.
 
-So far I have tried the stock 2.2.6 and 2.2.7 sources from kernel.org
-and the 2.2.10-pmac sources from sunsite.anu.edu.au. I have not been
-able to build a bootable SMP kernel from any of these source
-tarballs. The kernels built from these images crashes during boot in
-"swapper".
+ DIPC has been tested under Linux/PowerPC by Hugo Delchini and Paul 
+Mackerras. You can download the file dipc-2.0-pre3.tgz from 
+orion.cs.uregina.ca /pub/dipc (It also patches i386, Alpha, MIPS and 
+SPARC code in the kernel). Please try it and let me know the positive 
+and negative results. 
 
-The process I am using for building the kernel is:
+ Recommendations and wish lists for the final package are welcome. 
 
-# cd /usr/src/linux 
-# make mrproper ; make pmac_config ; make menuconfig ; 
-# make dep && make clean && make vmlinux
-
-If there is something additional that I need to do please let me know.
-
-I am curretly using a SMP 2.2.7 kernel from borg.mit.edu, but it
-appears that borg.mit.edu only has compiled kernel images, not source
-tar-balls. If anyone has the sources for this kernel, I would
-appreciate a pointer.
-
-The only SMP kernel I have been able to built and boot sucessfully was
-2.2.0-pre6. I don't want to go back to this version since the DEC
-2x14x ethernet support was flaky.
-
-Thanks,
-
-----ranga <ranga@soda.berkeley.edu>
+Kamran
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
