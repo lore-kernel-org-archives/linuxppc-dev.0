@@ -1,61 +1,38 @@
-Date: Tue, 23 Sep 2003 11:37:43 +0200
-From: Lorenzo Pivetta <lorenzo.pivetta@elettra.trieste.it>
-To: ppc <linuxppc-embedded@lists.linuxppc.org>
-Cc: me <lorenzo.pivetta@elettra.trieste.it>
-Subject: MVME5100 patch
-Message-Id: <20030923113743.5458916f.lorenzo.pivetta@elettra.trieste.it>
+To: linuxppc-embedded@lists.linuxppc.org
+Date: Wed, 24 Sep 2003 12:04:41 -0500
+From: "Augustine Nebu Philips" <nebuphilips@eudoramail.com>
+Message-ID: <PBEHCIIEFPBFGFAA@whowhere.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Reply-To: nebuphilips@eudoramail.com
+Subject: 64-bit Data Flash Access Problem [MPC8245]
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This simple patch to make the IRQ lines work with the PMCSpan PMC
-carriers on the MVME51xx. (works with 2.4.21 too).
-Thanks and regards,
-Lorenzo.
+Hi
+I have a set of 8 1GB data flash chips (Samsung) on an MPC8245 Ref. Board. These are on a 64-bit bus-mode.
 
---
-Ing. Lorenzo Pivetta   \ e-mail: lorenzo.pivetta@elettra.trieste.it
-                        \ tel.:  040 - 3758361 - fax: 040 - 9380902
-Sincrotrone Trieste SCpA \ url:  http://www.elettra.trieste.it
+-------DBUS_SIZ[0-1]:DBUS_SIZ[2] = 110b -------
+
+All 8 chips are selected by a single chip select (RCS1). Trying a 32-bit read from the Data Address Location after giving the Command to Access the flash IDs, only 4 flashes on a common byte lane seem to be responding. 32-bit writes appear only on the DH[0-31] and not on DL[0-31].
+
+I am not very clear as to:
+
+(a) How do we perform writes to send out data out on
+    all 64-bits of the bus..?
+(b) How would we ideally access 64-bit data through 32-    bit reads..?
+(c) Or must we *have* 64- bit read/write
+    instructions..?
+
+many thanks in advance for any response ..
+
+Regards
+Nebu
 
 
-
->diff -Naur linuxppc-2.4.18-devel/arch/ppc/platforms/mvme5100_pci.c linuxppc-2.4.18-work/arch/ppc/platforms/mvme5100_pci.c
---- linuxppc-2.4.18-devel/arch/ppc/platforms/mvme5100_pci.c     Fri Feb 15 01:52:34 2002
-+++ linuxppc-2.4.18-work/arch/ppc/platforms/mvme5100_pci.c      Tue Sep 23 11:13:11 2003
-@@ -26,6 +26,13 @@
- #include <platforms/mvme5100.h>
- #include <asm/pplus.h>
-
-+#define DEBUG_CONFIG    0
-+#if DEBUG_CONFIG
-+# define DBGC(args)     printk args
-+#else
-+# define DBGC(args)
-+#endif
-+
- static inline int
- mvme5100_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned char pin)
- {
-@@ -46,10 +53,15 @@
-                { 28, 25, 26, 27 },     /* IDSEL 17 - PMC Slot 2 */
-                {  0,  0,  0,  0 },     /* IDSEL 18 - unused */
-                { 29,  0,  0,  0 },     /* IDSEL 19 - Enet 2 */
--               {  0,  0,  0,  0 },     /* IDSEL 20 - PMCSPAN */
-+               { 25, 26, 27, 28 },     /* IDSEL 20 - PMCSPAN */
-        };
-
-        const long min_idsel = 11, max_idsel = 20, irqs_per_slot = 4;
-+
-+       DBGC((KERN_INFO "PCI mvme5100 map irq: <bus>:<slot> %02d:%02d, \
-+               pin %d, idsel %d\n", dev->bus->number, \
-+               PCI_SLOT(dev->devfn), pin, idsel));
-+
-        irq = PCI_IRQ_TABLE_LOOKUP;
-        /* If lookup is zero, always return 0 */
-        if (!irq)
-
+Need a new email address that people can remember
+Check out the new EudoraMail at
+http://www.eudoramail.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
