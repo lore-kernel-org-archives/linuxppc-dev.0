@@ -1,38 +1,63 @@
-Date: Wed, 28 Jul 1999 02:18:09 -0400 (EDT)
-From: Tom Rini <trini@disparity.net>
-To: Daniel Jacobowitz <drow@false.org>
-cc: Martin Mares <mj@ucw.cz>,
-        "Andre M. Hedrick" <hedrick@Astro.Dyer.Vanderbilt.Edu>,
-        linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Date: Wed, 28 Jul 1999 02:17:39 -0500 (CDT)
+From: "Andre M. Hedrick" <hedrick@Astro.Dyer.Vanderbilt.Edu>
+To: Michel Lanners <mlan@cpu.lu>
+cc: drow@false.org, mj@ucw.cz, linuxppc-user@lists.linuxppc.org,
+        linuxppc-dev@lists.linuxppc.org
 Subject: Re: Trying a Promise Ultra/66 on powerpc
-In-Reply-To: <19990727230416.A457@them.org>
-Message-ID: <Pine.BSF.3.96.990728021558.16098B-100000@silver.teardrop.net>
+In-Reply-To: <199907280548.HAA00294@piglet.cpu.lu>
+Message-ID: <Pine.LNX.3.96.990728021015.14664A-100000@Astro.Dyer.Vanderbilt.Edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 27 Jul 1999, Daniel Jacobowitz wrote:
+On Wed, 28 Jul 1999, Michel Lanners wrote:
 
-> (A) You can't compile IDE as a module and enable ide-pmac.  There will
-> be link errors in pmac_setup.c.
+> > On a much less related note:
+> > drow:~# hdparm -p /dev/hdc
+> > 
+> > /dev/hdc:
+> >  attempting to auto-tune PIO mode
+> >  HDIO_SET_PIO_MODE failed: Function not implemented
+> > 
+> > pdc202xx.c has no tuneproc.  Is this deliberate?
+
+YES, there are no known or possible way to ever get the card in to a PIO
+mode that is meaningful.  The BIOS defaults to a fixed value.
+
+> > 
+> > As it is I get this (off a 5400 RPM Maxtor 25.4G DiamondMax)
+> > /dev/hdc:
+> >   Timing buffered disk reads:  32 MB in  5.83 seconds = 5.49 MB/sec
 > 
-> (B) Very closely tied to that, if ide-pmac is not enabled, a dummy
-> pmac_ide_init_hwif_ports() is compiled in pmac_setup.c.  But the real
-> version of this function (in ide-pmac.c) does more than just onboard
-> IDE specific tasks.  For PCI IDE cards it is still needed.  Enabling
-> ide-pmac eventually let me make use of the card.
+> This is not brilliant, but acceptable. What mode of operation was that
+> in? UDMA? Or regular DMA or even PIO?
 
-This is because the ide-pmac option is general IDE support and onboard IDE
-on the older macs.  It should be setup ALA x86, so that config_ide or
-whatever does yes/no to IDE support and ide-pmac is pmac ide driver only.
-The module thing was (i think) fixed or atleast worked around a while
-back, check the linuxpp.cs.nmt.edu dirs..
+I am glad that it meets with your approval, if you can do better do it!
+The drive is in a DMA mode 2, based on the xfer rate.
 
----
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+> On a related note, can you provide the patches you needed to apply
+> (minus the uniform IDE stuff from Andre, which I have)? I'm planning to
+> get my Ultra66 on Friday ;-)...
+
+You will need more as I have just found a quirk in the chipset.
+I know on no real way to test the adpater for the correct ribbon, yet.
+It also does a fake and allows a drive to invoke the UDMA4 flag from the
+drive with the wrong cable.
+
+> Michel
+> 
+> -------------------------------------------------------------------------
+> Michel Lanners                 |  " Read Philosophy.  Study Art.
+> 23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+> L-1710 Luxembourg              |
+> email   mlan@cpu.lu            |
+> http://www.cpu.lu/~mlan        |                     Learn Always. "
+> 
+
+Andre Hedrick
+The Linux IDE guy
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
