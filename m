@@ -1,35 +1,30 @@
-Subject: Re: Trouble with 2.6.0-test1 on ibook2
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-To: Ryan Boder <icanoop@bitwiser.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20030718170258.GE6596@bitwiser.org>
-References: <20030718014622.GA5430@bitwiser.org>
-	 <1058517715.23548.71.camel@thor.holligenstrasse29.lan>
-	 <20030718170258.GE6596@bitwiser.org>
-Content-Type: text/plain; charset=iso-8859-1
-Message-Id: <1058617502.28382.78.camel@thor.holligenstrasse29.lan>
-Mime-Version: 1.0
-Date: 19 Jul 2003 14:25:03 +0200
+Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
+From: deepesh@india.tejasnetworks.com
+Date: Sat, 19 Jul 2003 19:28:08 +0530 (IST)
+To: deepesh@india.tejasnetworks.com
+Cc: Ethan Benson <erbenson@alaska.net>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Question regarding UBOOT.
+In-Reply-To: <20030719113722.1dab30c0.pochini@shiny.it>
+Message-ID: <Pine.LNX.4.21.0307191918350.12735-100000@deepesh.india.tejasnetworks.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 2003-07-18 at 19:02, Ryan Boder wrote:
-> On Fri, Jul 18, 2003 at 10:41:55AM +0200, Michel Dänzer wrote:
-> > What graphics chip does the machine have, and have you built OFfb into
-> > the kernel?
->
-> Rage Mobility M3 AGP 2x (rev 02).
->
-> Yes, I did. I'll try again without that as soon as my iso finished
-> downloading.
+Hi,
 
-Well, OFfb comes up fine here.
+ I have an EP8260 board. I have the u-boot binary. The board comes with a
+boot loader(PlanetCore). I want to load u-boot into RAM and then start
+executing from there. Is this possible? I tried doing this, but the board
+goes for a reset.
+
+ CAN I START UBOOT AS AN APPLICATION FROM PLANETCORE BOOTLOADER? that is
+it possible to start one bootloader from another one?
 
 
---
-Earthling Michel Dänzer   \  Debian (powerpc), XFree86 and DRI developer
-Software libre enthusiast  \     http://svcs.affero.net/rm.php?r=daenzer
+deepesh
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
