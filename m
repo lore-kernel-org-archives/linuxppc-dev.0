@@ -1,52 +1,24 @@
-Message-ID: <387D8686.EF88134E@dalim.de>
-Date: Thu, 13 Jan 2000 09:02:14 +0100
-From: Stephane GEORGES <sg@dalim.de>
-MIME-Version: 1.0
-To: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
-CC: iweiny@pacbell.net, linuxdev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: User level Macros for Endianess
-References: <E869F6EDBD5F4E50C1256864006C9E10.006C9E4AC1256864@kehl.dalim.de>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.10.10001121541450.18221-100000@opus.bloom.county>
+Date: Thu, 13 Jan 2000 11:25:35 +0100
+To: Tom Rini <trini@kernel.crashing.org>, linuxppc-dev@lists.linuxppc.org,
+        hughc@babcockbrown.com
+From: BenH <bh40@calva.net>
+Subject: Re: USB Mouse Changed in 2.2.14
+Message-Id: <20000113112535.015369@192.168.1.10>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I use my own executable compiled by GNU before compiling anything else:
+On Wed, Jan 12, 2000, Tom Rini <trini@kernel.crashing.org> wrote:
 
-bigendian.c
------------
+>Yes, yes it has.  And since Paul didn't sync up to something current
+>enough ( :(((( ) 2.2.14 and 2.4.0 are looking lilke they'll have different
+>userland configs still.
 
-int main()
-{
-  unsigned short val = 0x0011;
-  unsigned char* str = (unsigned char*)&val;
-  if ( str[0] == 0x00 )
-    return 1;
-  else
-    return 0;
-}
-
-in my GNUmakefile
------------------
-
-- one rule to compile bigendian.c if exe not compiled
-- one rule testing the return value of exe and setting
-
-    MEMORY_IS_LITTLE_ENDIAN or MEMORY_IS_BIG_ENDIAN
-
-That way I do not need to look for the right MACRO on the right SYSTEM.
-
-I compile my code on IRIX (SGI), Solaris (SUN), intel Linux and LinuxPPC.
-
---
-
-/====================================================================/|
-| Stephane GEORGES                     |                             ||
-| DALiM SOFTWARE GmbH      R&D         |    Tel: +49 7851 9196 40    ||
-| Strassburger Str.6                   |    Fax: +49 7851 7357 6     ||
-| D-77696                              |                             ||
-| Kehl-Sundheim (Germany)              |    E-mail: sg@dalim.de      ||
-|____________________________________________________________________|/
+Paul just included the hack to put back the mouse at device 10 32. rsync
+again, it should work.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
