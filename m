@@ -1,35 +1,50 @@
-Date: Mon, 12 Feb 2001 07:41:49 -0700
-From: Matt Porter <mporter@mvista.com>
-To: Marius Groeger <mag@sysgo.de>
-Cc: =?iso-8859-1?Q?S=E9bastien_C=F4t=E9?= <scote1@matrox.com>,
-	linuxppc-embedded@lists.linuxppc.org
+Date: Mon, 12 Feb 2001 09:54:29 -0500
+From: "Ross A. Osborn" <rosborn@GI.com>
 Subject: Re: Progress - new problem
-Message-ID: <20010212074149.A11677@cx258813-a.chnd1.az.home.com>
-References: <3A87F956.82DF0B3F@matrox.com> <Pine.LNX.4.30.0102121533230.10064-100000@mag.devdep.sysgo.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <Pine.LNX.4.30.0102121533230.10064-100000@mag.devdep.sysgo.de>; from mag@sysgo.de on Mon, Feb 12, 2001 at 03:35:33PM +0100
+In-reply-to: <20010212135230.44A5D281D9@denx.denx.de>; from wd@denx.de on Mon,
+ Feb 12, 2001 at 02:52:25PM +0100
+To: linuxppc-embedded@lists.linuxppc.org
+Message-id: <20010212095429.E8453@gi.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+References: <20010212083954.A768@dyn-52-73.matrox.com>
+ <20010212135230.44A5D281D9@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Feb 12, 2001 at 03:35:33PM +0100, Marius Groeger wrote:
+On Mon, Feb 12, 2001 at 02:52:25PM +0100, Wolfgang Denk wrote:
 >
-> On Mon, 12 Feb 2001, Sébastien Côté wrote:
+> Dear Sébastien,
 >
-> > Believe me, I'd really like to do the doorstop thing but support for
-> > 74xx is very difficult to find.  Abatron doesn't seem to be an
-> > exception... :-(
+> in message <20010212083954.A768@dyn-52-73.matrox.com> you wrote:
+> >
+> > > Oops? Why do you think this makes debugging more complicated? I don't
+> > > care where something is mapped, it's  the  job  of  the  debugger  to
+> > > resolve those addresses, isn't it?
+> >
+> > Yes, the debugger should do it but ours don't.  Also, I haven't found a way
 >
-> Check out http://www.abatron.ch/News/news.html. The latest version of
-> the firmware, V1.07 supports the MPC7400.
+> Then convert it into a doorstop, and get a real debugger.
+>
+> I strongly recommend the BDI2000  by  Abatron  (see  www.abatron.ch).
+> Send me a message when you want a quote for it.
 
-MPC7410 support is there, as well.  The new rev. C hardware that handles
-down to 1.8V I/O is supposed to be available too.
+I have been fighting with an old Nohau BDM debugger and was trying to
+get information together to talk my boss into ordering the BDI2000.  I
+could not find any price information on there web site.
+
+So, the right thing to do is to send you a message to a quote?  Is it
+just me or is this an odd way to conduct business?
+
+This will certainly not make it any easier to convice my boss to buy
+this instead of (or in addition to) the EST products they are currently
+looking at.
 
 --
-Matt Porter
-MontaVista Software, Inc.
-mporter@mvista.com
+|      Ross Osborn        |   Motorola, Broadband Comm. Sector   |
+|     rosborn@gi.com      |        101 Tournament Drive          |
+|                         |         Horsham, PA 19044            |
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
