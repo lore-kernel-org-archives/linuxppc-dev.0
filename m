@@ -1,56 +1,34 @@
-Date: Thu, 1 Apr 2004 10:33:30 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: John Whitney <jwhitney-linuxppc@sands-edge.com>
-Cc: Matt Porter <mporter@kernel.crashing.org>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: Problems with dma_alloc_coherent()
-Message-ID: <20040401183330.GA3768@gate.ebshome.net>
-References: <9EB527A2-83F5-11D8-9FF0-000A95A07384@sands-edge.com> <20040401100546.A27472@home.com> <4317F0F4-8405-11D8-9FF0-000A95A07384@sands-edge.com> <20040401181926.GA3630@gate.ebshome.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20040401181926.GA3630@gate.ebshome.net>
+References: <9EB527A2-83F5-11D8-9FF0-000A95A07384@sands-edge.com> <20040401100546.A27472@home.com> <4317F0F4-8405-11D8-9FF0-000A95A07384@sands-edge.com> <20040401181926.GA3630@gate.ebshome.net>
+Mime-Version: 1.0 (Apple Message framework v613)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <1A3C4ACE-840B-11D8-9FF0-000A95A07384@sands-edge.com>
+Cc: linuxppc-dev@lists.linuxppc.org,
+	Matt Porter <mporter@kernel.crashing.org>
+From: John Whitney <jwhitney-linuxppc@sands-edge.com>
+Subject: Re: Problems with dma_alloc_coherent()
+Date: Thu, 1 Apr 2004 13:33:42 -0500
+To: Eugene Surovegin <ebs@ebshome.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Apr 01, 2004 at 10:19:26AM -0800, Eugene Surovegin wrote:
-> On Thu, Apr 01, 2004 at 12:51:54PM -0500, John Whitney wrote:
-> > I noticed that all the PCI and DMA coherency routines seem to assume
-> > that DMA will occur between memory and a bus device (all physical
-> > addresses returned are converted to a bus address).  Is this really the
-> > desired action?  I would have prefered to have the PCI routines return
-> > bus-correct physical addresses, and the DMA routines return processor
-> > physical addresses (so they can be used for non-bus-related DMA, to a
-> > direct memory-mapped encryption chip, for example).  Is this the
-> > eventual implementation of those functions, or are all DMA transactions
-> > expected to be to or from a PCI-based device?
->
-> Hmm, I don't understand this, bus != PCI bus. All devices sit on some kind of
+> Hmm, I don't understand this, bus != PCI bus. All devices sit on some
+> kind of
 > bus, even your encryption chip.
 >
-> As far as I understand, DMA API was added exactly because we may have different
-> (from PCI) buses.
->
-> Current implementation just relies on the fact that PCI devices view system
-> memory the same way as other-bus devices (e.g. OCP devices which sit on OPB).
->
-> In more general case, yes, "views" can be different for each bus type or even
-> for each bus...
 
-Let me clarify my point.
+Yes, but both pci_alloc_consistent() and dma_alloc_coherent() return
+physical addresses made with virt_to_bus() (at least they do in the
+PowerPC tree).  This routine specifically adds the PCI-bus view of the
+address space to the physical address produced.  I don't understand why
+two different APIs are needed, if they both do the same thing.
 
-You are right that returning PCI-bus address _may_ not be very good. I think
-it's OK for now, because it should work for the reason I pointed earlier.
+This means that the address produced by pci_alloc_... and dma_alloc_...
+are incorrect for a device like a direct memory-mapped encryption chip,
+or in my case a northbridge DMA controller.
 
-In future, implementation may change...
+John
 
-What you are proposing isn't better than the current PCI-bus addresses. Phys
-address is just an address on processor local bus, so changing PCI-bus as a
-default to PLB as a default doesn't seem wise.
-
-Correct implementation should devise DMA-addresses (and actual bus) from the
-_device_ passed to DMA API function...
-
-Eugene.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
