@@ -1,37 +1,40 @@
-Date: Thu, 14 Jan 1999 22:25:26 -0700 (MST)
-From: Brad Midgley <brad@pht.com>
-Reply-To: Brad Midgley <brad@pht.com>
-To: Paul.Mackerras@cs.anu.edu.au
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: floppy vs. read-only
-In-Reply-To: <199901131133.WAA00819@tango.anu.edu.au>
-Message-ID: <Pine.LNX.3.96LJ1.1b7.990114220022.875A-100000@cricket>
+Date: Fri, 15 Jan 1999 02:27:54 -0500 (EST)
+From: Ty Hedrick <thedrick@netspace.org>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Powerbase IDE: DMA & ohare-ata
+Message-ID: <Pine.LNX.4.05.9901150212250.26871-100000@netspace.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-on intel, mount attempts the mount read-write, the mount fails with EROFS,
-and then mount attempts it again ro.
+I just noticed the thread from a few days ago on greatly speeding up IDE
+transfer rates by poking at ohare and thought I'd give it a shot
+on my Powerbase. The first thing I noticed is that my IDE drive was still
+operating in PIO mode, even with BenH.'s latest test kernel.  
 
-brad
+It seems that even though the Powerbase is perfectly capable of DMA, the
+test in ide-pmac.c to setup DMA 
 
-mount("/dev/fd0", "/mnt/floppy", "vfat", MS_NOSUID|MS_NODEV|0xc0ed0000,
-0x80507d0) = -1 EROFS (Read-only file system) 
+#ifdef CONFIG_BLK_DEV_IDEDMA_PMAC
+                if (np->n_addrs >= 2 && np->n_intrs >= 2) {
 
-write(2, "mount: block device /dev/fd0 is "..., 67mount: block device
-/dev/fd0 is write-protected, mounting read-only) = 67
+fails because n_intrs is 0.  Risking my mostly worthless IDE drive I
+removed the test and recompiled.  DMA appears to work without a hitch -
+transfer rates are almost identical to those under PIO, but cpu usage was 
+much lower.
 
-write(2, "\n", 1 )  = 1
+After looking at DMA I decided to enable the ohare register mentioned
+earlier, stuffing the new value in also resulted in a working system, and
+approximately doubled the IDE transfer rate as measured by hdparm - to a
+whopping 3.7 MB/s.
 
-sigprocmask(SIG_BLOCK, ~[], NULL)  = 0
+Is there any way to be kind to all the Powerbase owners out there and
+enable DMA by default without breaking any other systems?  Also, the mod
+to ohare and heathrow does seem to help lots of platforms.
 
-mount("/dev/fd0", "/mnt/floppy", "vfat",
-MS_RDONLY|MS_NOSUID|MS_NODEV|0xc0ed0000, 0x8050818) = 0
-
-
-
+Ty    
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
