@@ -1,38 +1,46 @@
-From: Paul Mackerras <paulus@samba.org>
+Message-ID: <3D0912F4.4020300@embeddededge.com>
+Date: Thu, 13 Jun 2002 17:47:32 -0400
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15625.4799.671581.186354@argo.ozlabs.ibm.com>
-Date: Fri, 14 Jun 2002 07:46:39 +1000 (EST)
-To: Steffen Rumler <Steffen.Rumler@icn.siemens.de>
-Cc: Neil Horman <nhorman@lvl7.com>,
-	linuxppc <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Accessing the user stack inside system call service routine
-In-Reply-To: <3D08AA25.9AF41113@icn.siemens.de>
-References: <3D084D1F.95AFFCBB@icn.siemens.de>
-	<3D087D95.5070206@lvl7.com>
-	<3D08AA25.9AF41113@icn.siemens.de>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Eugene Surovegin <ebs@innocent.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [PATCH] pci_alloc_consistent in an interrupt context
+References: <5.1.0.14.2.20020613122317.02e34480@mail.zultys.com> <20020613205824.GX13541@opus.bloom.county>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Steffen Rumler writes:
+Tom Rini wrote:
 
-> The copy_from_user() works fine. The printk() message does not
-> appear.
 
-The copy_from_user call looks correct to me.
+> It looks okay.
 
-> Later, when I inspect 'current->user_stack_xxx' (temporary
-> added to struct_task) for all processes with 'current->in_suspend'
-> set, all seems to be zero. I do this check within a kernel
-> module, I can load when the threads are hanging.
+It's not quite right.......
 
-That is indeed very strange.  The first word should be non-zero at the
-very least.  Is it possible that your program has in fact trashed its
-stack?  Another thing to try would be to check the contents of
-current->user_stack_xxx immediately after you copy it to see whether
-it is all zero at that point.
+The consistent_alloc() should not always call get_vm_area() with GFP_ATOMIC
+set.  It should use the 'gfp' that is passed into consistent_alloc().
+Normally, you will call consistent_alloc() with GFP_KERNEL, and
+interrupt functions must know to call the consistent allocators with GFP_ATOMIC.
 
-Paul.
+> ..... But I don't see (immediatly) why the change to
+> pci_alloc_consistent was needed as well.
+
+It was a mistake on my part......when CONFIG_NOT_COHERENT_CACHE is used,
+the consisten_alloc() returns the dma_handle, and we have to ensure we
+don't do the virt_to_bus later to get it (because it will be wrong once
+iopa() is discarded :-)
+
+
+> But aside from that, it looks good and the next step would be to try and
+> get the generic changes into 2.5 (and the 2.4.20-pre1, 2.4.19 is more or
+> less frozen, esp for a change like this I suspect).
+
+Good Luck ;-)
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
