@@ -1,42 +1,27 @@
 From: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
-To: "Segher Boessenkool" <segher@koffie.nl>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: RFC: Performance Monitor Counters device
-Date: Mon, 16 Sep 2002 14:38:07 +0200
-Message-Id: <20020916123807.15088@192.168.4.1>
-In-Reply-To: <3D831D5A.BF11BC0D@koffie.nl>
-References: <3D831D5A.BF11BC0D@koffie.nl>
+To: "Armando Di Cianno" <armando@nycap.rr.com>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: titanium 800mhz revIII sleep
+Date: Mon, 16 Sep 2002 14:51:41 +0200
+Message-Id: <20020916125141.32195@192.168.4.1>
+In-Reply-To: <200209131631.12013.armando@nycap.rr.com>
+References: <200209131631.12013.armando@nycap.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->It does not exist on 7450 etc.
->It exists on 7410 before version 1.3 .
->I have no data on 7400.
->It does not exist on 750 etc.
+>If bits for a working sleep are not in any kernel yet, but are being/plan to
+>be worked on, I'll gladly offer my services and tibook as a test platform.
 >
->[As my only G4 is a 7410 version 1.3, I won't be affected by this.  Hurray.]
+>... some days I really wish I knew how to hack kernel space. :-)
 
-I had it happening on 7400.
+FAQ question unfortunately :(
 
->The problem itself: if two of thermal assist, decrementer, performance
->monitor interrupts happen within 1 cycle of each other, evil things
->happen with SRR0 and SRR1, so that the return address becomes
->unrecoverable.
->
->Suggested solution:
->
->We can forget about thermal assist, as the TAU on all 74xx is broken
->and unsupported.  (Says those same errata sheets).
->If necessary, it's possible to disable the decrementer interrupt and have
->the performance monitor perform its function.
->
->But I won't run into this, so I'm happy for now :)
-
-We can't disable the DEC that easily as it's the primary timer
-source of the kernel ;)
+ATI still didn't provide us with the necessary informations to get
+the Radeon M7 to sleep properly, thus currently, if you try to
+sleep, the video chip will just lock up.
 
 Ben.
 
