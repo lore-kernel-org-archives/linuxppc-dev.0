@@ -1,35 +1,47 @@
-Date: Wed, 10 Feb 1999 12:33:59 +1100 (EST)
-From: Nathan Hurst <njh@drongo.anu.edu.au>
-To: linuxppc-user@lists.linuxppc.org
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Generalised installer howto.
-In-Reply-To: <Pine.LNX.4.05.9902091952000.2398-100000@p12-42.hartford.dialin.ntplx.com>
-Message-ID: <Pine.LNX.3.95.990210122315.30124A-100000@drongo.anu.edu.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <l03130301b2e69f7f1da5@[209.251.79.177]>
+In-Reply-To: <19990209131436.011982@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Tue, 9 Feb 1999 21:35:49 -0500
+To: BenH <bh40@calva.net>
+From: "Michael R. Zucca" <mrz5149@acm.org>
+Subject: Re: NuBus PowerMacs and PDM video
+Cc: linuxppc-dev@lists.linuxppc.org,
+        mklinux-development-system@public.lists.apple.com
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-After receiving several thousand positive mails from people regarding my
-linuxppc-imac HOWTO, and numerous people wondering if I would write
-similar howtos for other platforms; I've been thinking about a general
-solution to the problem of maintaining and creating installation
-instructions. 
+At 7:14 AM -0500 2/9/99, BenH wrote:
 
-My suggestion(I will implement this if enough people show interest):
+>I'm doing some experiments with the MMU (learning it's usage). The goal
+>is to add some better bootstrap code to BootX (get rid of the -622 error
+>with MacOS VM) and to add support for the rather "special" memory
+>mappings of the NuBus PowerMacs.
 
-Setup (possibly on FAQ-O-Matic) a tree of questions to determine the type
-of machine, and any distinguishing hardware, and after a series of
-questions(do you have the linuxppc CD? e.g.), give either a generated or
-previously written HOWTO for the particular setup requested.  The way to
-do this would be for people who are setting up their machines to keep a
-log of what they did, and submit it to a maintainer(probably me, unless
-someone else feels an urge) for inclusion onto some website. 
+The PDM PowerMacs have their guts designed after 68k macs. They have the
+same weird problems like aliasing, and a discontiguous memory.
 
-Thoughts?
+>I beleive MkLinux booter moves it elswhere, but I don't know how to do
+>that (I don't have infos about the chip and I don't have one of those
+>machines to test with).
 
-njh
+You just need to know the physical base address of the frame buffer.
+Once you know that you can just rewrite the page tables to put the
+frame buffer anywhere you'd like it.
+
+You need to write a program under MacOS that will find a physical address
+for a given virtual address. You'll probably need to do this in assembly
+or there may even be a toolbox call that will do this for you.
+
+
+
+_______________________________________________________________________
+ Michael Zucca - mrz5149@acm.org - http://www.mdc.net/~mrz5149/
+ "I will choose a path that's clear. I will choose Freewill. "
+  --Rush, Freewill
+_______________________________________________________________________
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
