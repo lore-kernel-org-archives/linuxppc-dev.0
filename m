@@ -1,36 +1,57 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: Joe Green <jgreen@mvista.com>
-To: Michael Habermann <MHabermann@gmx.de>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Reducing glibc with mklibs.sh
-Date: Fri, 26 Oct 2001 10:48:43 -0700
-References: <5.1.0.14.0.20011018123155.026b01c0@pop.gmx.de> <5.1.0.14.0.20011024100413.02d78e40@pop.gmx.de>
-In-Reply-To: <5.1.0.14.0.20011024100413.02d78e40@pop.gmx.de>
+Message-ID: <3BD9B30C.929F4747@midrivers.com>
+Date: Fri, 26 Oct 2001 13:01:32 -0600
+From: Mark Pilon <mpilon@midrivers.com>
 MIME-Version: 1.0
-Message-Id: <01102610484300.05612@minotaur>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: will the real ppc kernel please stand up
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tuesday 23 October 2001 19:18, Michael Habermann wrote:
-> > ppc_8xx-libindex -r interp.o sofini.o soinit.o -o <other_objs> > index
->
-> I think there was a typo, the library is not specified.
+I know we've been over this before, but I was following some
+advice to get the latest development kernel via pengiunppc.org, via
+rsync:
 
-D'oh.  Yes, you're right.
+rsync -avz --delete source.mvista.com::<tree> <directory>,
+where <tree> is one of:
 
-> Assuming that other_objs is empty in my case, I've used this command:
->
-> ppc_8xx-libindex libc-2.2.2.so -r interp.o sofini.o soinit.o > index
+                        linuxppc_2_4
+                        linuxppc_2_4_devel
 
-Well, that indicates a library with no optional objects.  There's no
-point in using the optimizer on such a library.
+naively hoping to get something stable, I pulled linuxppc_2_4, configured
+it for ppc4xx / walnut and attempted to build it.  no luck:
+powerpc-linux-gcc -D__KERNEL__
+-I/home/mpilon/ppc_tools/BUILDS/linuxppc_2_4/include -Wall
+-Wstrict-prototypes -Wno-trigraphs -O2 -fomit-frame-pointer
+-fno-strict-aliasing -fno-common -D__powerpc__ -fsigned-char -msoft-float
+-pipe -ffixed-r2 -Wno-uninitialized -mmultiple -mstring -mcpu=403    -c -o
+ppc4xx_pic.o ppc4xx_pic.c
+{standard input}: Assembler messages:
+{standard input}:83: Error: unsupported relocation type
+{standard input}:84: Error: unsupported relocation type
+{standard input}:111: Error: unsupported relocation type
+{standard input}:128: Error: unsupported relocation type
+{standard input}:145: Error: unsupported relocation type
+{standard input}:149: Error: unsupported relocation type
+{standard input}:64: Error: unsupported relocation type
+make[1]: *** [ppc4xx_pic.o] Error 1
 
-It's more common to have a library with no required objects.
+does anyone know where & how to get a reasonably recent snapshot of
+the development tree which builds?
+
+"reasonably recent" could be a month or 2 old ... I'd rather have
+something which builds and runs than the bleeding edge ...
+
+Mark
 
 --
-Joe Green <jgreen@mvista.com>
-MontaVista Software, Inc.
+Mark Pilon
+
+Minolta-QMS
+P.O. Box 37
+Fallon, MT.  59326-0037
+
+1-406-853-0433
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
