@@ -1,38 +1,25 @@
-Date: Mon, 24 Apr 2000 15:07:52 -0400
-From: Daniel Jacobowitz <drow@false.org>
-To: Michel Lanners <mlan@cpu.lu>
-Cc: geert@linux-m68k.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: aty128 and offb and linux-2.3.99pre6
-Message-ID: <20000424150752.A25359@drow.res.cmu.edu>
-References: <Pine.LNX.4.10.10004192247200.436-100000@cassiopeia.home> <200004240651.IAA00313@piglet.grunz.lu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200004240651.IAA00313@piglet.grunz.lu>; from mlan@cpu.lu on Mon, Apr 24, 2000 at 08:51:12AM +0200
+Message-Id: <200004242009.QAA23947@ginger.cmf.nrl.navy.mil>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: mlan@cpu.lu, linuxppc-dev@lists.linuxppc.org, drow@false.org
+Subject: Re: aty128 and offb and linux-2.3.99pre6 
+In-reply-to: Your message of "Mon, 24 Apr 2000 20:10:03 +0200."
+             <Pine.LNX.4.10.10004242008100.316-100000@cassiopeia.home>
+Date: Mon, 24 Apr 2000 16:09:33 -0400
+From: Chas Williams <chas@cmf.nrl.navy.mil>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Apr 24, 2000 at 08:51:12AM +0200, Michel Lanners wrote:
-> control is only PCI-based with some abstractions.... It can, however,
-> be made to look entirely like a PCI device, if you can avoid poking at
-> it afterwards.
->
-> I have patches for control anyway (adding it to the PCI device chain,
-> precisely); so I might try and implement the changes for control. Or
-> are you already working on this, Dan?
+In message <Pine.LNX.4.10.10004242008100.316-100000@cassiopeia.home>,Geert Uytt
+erhoeven writes:
+>Huh? This has nothing to do with the order of 2 RAGE PROs. Atyfb is probed for
+>before offb (like it should be) since a long time, and the order is always the
+>same.
 
-I've been too busy with Debian to touch controlfb lately; patches would
-be appreciated.
+with a 2.2 kernel, the console appears on the agp card.
+with a 2.3 kernel, the console appears on the pci card. [yes, it tooks
+me a while i figure this out since the other card was not connected to
+a monitor]
 
-Also, what is the current state of your memory testing?  Or was that
-not you?
-
-Dan
-
-/--------------------------------\  /--------------------------------\
-|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
-|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
-|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
-\--------------------------------/  \--------------------------------/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
