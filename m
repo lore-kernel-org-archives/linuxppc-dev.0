@@ -1,42 +1,39 @@
-Date: Thu, 19 Oct 2000 16:22:32 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: Nelson Abramson <pogtal@erols.com>, Jean-Jacques.Levy@inria.fr,
+Date: Thu, 19 Oct 2000 08:03:31 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+        Thomas Graichen <graichen@innominate.de>,
         linuxppc-dev@lists.linuxppc.org
-Subject: Re: video mirroring mode + acrobat reader
-In-Reply-To: <Pine.LNX.4.10.10010191516570.422-100000@cassiopeia.home>
-Message-ID: <Pine.HPX.4.10.10010191619560.3208-100000@gra-ux1.iram.es>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: Re: openoffice on ppc anyone?
+Message-ID: <20001019080331.H15104@opus.bloom.county>
+References: <20001018172044.E15104@opus.bloom.county> <Pine.LNX.4.10.10010190955320.28045-100000@opal.biophys.uni-duesseldorf.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.10.10010190955320.28045-100000@opal.biophys.uni-duesseldorf.de>; from schmitz@opal.biophys.uni-duesseldorf.de on Thu, Oct 19, 2000 at 10:00:20AM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 19 Oct 2000, Geert Uytterhoeven wrote:
+On Thu, Oct 19, 2000 at 10:00:20AM +0200, Michael Schmitz wrote:
 
-> On Wed, 18 Oct 2000, Gabriel Paubert wrote:
-> > On Wed, 18 Oct 2000, Nelson Abramson wrote:
-> > > Jean-Jacques Levy wrote:
-> > > > <snip>
-> > > > Can we have Acrobat reader working on LinuxPPC? Not xpdf which I feel
-> > > > very poor?
-> > >
-> > > Acroread is ia-32 only.  It is binary, closed source software.  Unless you
-> > > can convince Adobe to release a PPC version or port it yourself via an
-> > > NDA, the answer is to use xpdf.
-> >
-> > Don't they have an AIX version around ? I have the HP-UX one for sure.
+> > http://porting.openoffice.org/ implies anwyays the src for the tools should be
+> > around.  Finally, gcc 2.95.2 (or 2.95.3) and glibc 2.1.3 are good for you.
+> > JDK 1.2.2 should be fine (Kevin?)
 >
-> How well does the AIX version run under Linux/PPC? :-)
+> The day I tried (Oct. 13) nothing besides the raw source tarball was up on
+> the site. I'll check again though. I've read to different and conflicting
+> build instructions (one suggested JDK 1.1.8, the other 1.2.2).
 
-Well, I don't know. I don't have access to any AIX box, but some
-linker scripts were changed (start address raised to 256Mo=0x10000000) for
-reasons of similarity with AIX or so. Ask Cort, he did the changes, so he
-must have had a good reason to do it.
+Well, make sure to update your tree.  One of the mailing lists on that page
+says some diffs for linux/ppc have been checked in.
 
-Maybe Linux/PPC binaries can be made to run under AIX ?
+> I'm already using a recent gcc 2.95.3 but libc upgrades always freak me
+> out ...
 
-	Gabriel.
+It's not as bad as it used to be. :)
 
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
