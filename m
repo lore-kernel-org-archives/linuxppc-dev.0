@@ -1,32 +1,44 @@
-Date: Sun, 05 Dec 1999 23:29:46 -0700
-From: "Joseph N. Hall" <joseph@5sigma.com>
-Reply-To: " <joseph> "@5sigma.com
-Subject: PCMCIA enet on pb2400
-To: linuxppc-dev@lists.linuxppc.org
-Message-ID: <MailDrop1.2d7j-PPC.991205232946@perlfaq.com>
+Message-Id: <199912060651.HAA00385@piglet.grunz.lu>
+Date: Mon, 6 Dec 1999 07:51:56 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: Update:  RE: G4 + Linux + PCI device + x86 driver = 0
+To: geert@linux-m68k.org
+cc: dwp@bluesteelnet.com, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.LNX.4.05.9912052040150.376-100000@callisto.of.borg>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=US-ASCII
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I apologize for posting this to the developer list but, heck, maybe
-none of you know either.  Is PCMCIA working in the latest (Q3 1999)
-RPM release for the PB2400.  If so, could someone who has this working
-please lend me a clue.  I have a Farallon enet card that I'd really
-like to use (ANY ethernet at all actually).  I gather this has worked 
-on past versions of linuxppc but I have been unable to find any sort of 
-guidance on the net about the current state of PCMCIA on this machine.
+Hi Geert,
 
-If you have any information to share with me, respond to the address
-below, or joseph@5sigma.com if your mailer dislikes it.  Many thanks!
+On   5 Dec, this message from Geert Uytterhoeven echoed through cyberspace:
+>> David pointed out le16_to_cpu() et al; personally, I use in_/out_le32
+>> et al for access to PCI memory space like this:
+>> 
+>> out_le32 (&device->register, val);
+> 
+> Which is wrong! Portable PCI memory space accesses must be done using
+> {read,write}[bwl]()!
 
-  -joseph
+Ooopppss.... Thanks for letting me know. I guess it doesn't make much
+difference, because the code I use it in is purely PowerMac, but
+anyway... I'll go read...
 
---
-Joseph N. Hall, 5 Sigma Productions        mailto:" <joseph> "@5sigma.com
-Author, Effective Perl Programming . . . . . http://www.effectiveperl.com
-Perl Training  . . . . . . . . . . . . . . .  http://www.perltraining.com
+> See linux/Documentation/IO-mapping.txt 
+
+....that ;-)
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
