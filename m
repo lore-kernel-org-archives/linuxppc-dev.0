@@ -1,55 +1,54 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3FA5235B.7080007@iti.fi>
-Date: Sun, 02 Nov 2003 17:31:39 +0200
-From: Kate Alhola <kate@iti.fi>
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: linuxppc_2_4_mpc5200 / 5200lite zImage continued
-References: <3FA4F3B2.6050106@iti.fi> <3FA50B32.4010400@iti.fi>
-In-Reply-To: <3FA50B32.4010400@iti.fi>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Kate Alhola <kate@iti.fi>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: linuxppc_2_4_mpc5200 / 5200lite zImage continued 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Sun, 02 Nov 2003 17:31:39 +0200."
+             <3FA5235B.7080007@iti.fi>
+Date: Sun, 02 Nov 2003 16:55:59 +0100
+Message-Id: <20031102155604.35E0AC5F59@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Kate Alhola wrote:
-
+In message <3FA5235B.7080007@iti.fi> you wrote:
 >
->
-> and in this case the mgt5100_tty.c look a like have one dependence
-> to ppcboot, it took the ibp bus clock frequency from ppcboot bd struct
-> even
-> not ppc-boot configuration. I replaced it with just plain #define .
-> Now just i should do testing ...
+> I just fixed it by comenting out setting baudrate, then it will leave it as
 
+This is not a good idea.
 
-I just fixed it by comenting out setting baudrate, then it will leave it as
-it was after dBug. Now i get kernel booting up and initial strings
-coming out
-but kernel crashes after initMMU ( early boot prit enabled ),
-I think that i have something wrong in .config.
-I did not find goog example gor 5200lite from denx tree so i made
-my best quess and it seems not to bee so good.
+> it was after dBug. Now i get kernel booting up and initial strings
+> coming out
+> but kernel crashes after initMMU ( early boot prit enabled ),
+> I think that i have something wrong in .config.
 
+No. It's much more likely that you missed to pass  someother  of  the
+required  information.  You  have  several options: manually set up a
+bd_info structure with _all_ of the required  information;  modifying
+U-Boot  so  that  you  can load and start U-Boot from RAM; installing
+U-Boot into flash.
 
-Kate
--- continues hacking ....
+You can always get a tested and working configuration  by  performing
+the standard kernel build procedure:
 
-dBUG> dn -i zImage.icecube
-Address:  0x00020000
-Downloading Image 'zImage.icecube' from 195.218.81.140
-..............
-939645 bytes read via TFTP
-dBUG> go 20000
-loaded at:     00020000 001071B8
-relocated to:  00800000 008E71B8
-zimage at:     00805830 008E3C88
-avail ram:     00400000 00800000
+	bash$ make mrproper
+	bash$ make icecube_5200_config
+	bash$ make oldconfig
+	bash$ make dep
+	bash$ make uImage
 
-Linux/PPC load: console=ttyS0,9600 root=/dev/sda2
-Uncompressing Linux...done.
-Now booting the kernel
-id mach(): doneMMU:enterMMU:hw initMMU:mapin
+[The "LITE5200" can  be  considered  identical  to  the  "IceCube"  /
+"IceCube+" as far as the Linux kernel is affected.]
 
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Don't you know anything? I should have thought anyone knows that  who
+knows anything about anything...      - Terry Pratchett, _Soul Music_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
